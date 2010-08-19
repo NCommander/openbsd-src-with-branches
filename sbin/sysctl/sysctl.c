@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.171 2010/04/21 04:07:13 deraadt Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.172 2010/04/21 19:40:59 deraadt Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -444,6 +444,9 @@ parse(char *string, int flags)
 				return;
 			warnx("use fstat to view %s information", string);
 			return;
+		case KERN_CONSDEV:
+			special |= CHRDEV;
+			break;
 		}
 		break;
 
