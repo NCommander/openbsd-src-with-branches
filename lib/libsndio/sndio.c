@@ -1,4 +1,4 @@
-/*	$OpenBSD: sndio.c,v 1.24 2010/04/06 20:07:01 ratchov Exp $	*/
+/*	$OpenBSD: sndio.c,v 1.25 2010/04/24 06:15:54 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -197,7 +197,10 @@ sio_open(const char *str, unsigned mode, int nbio)
 			    minor(sb.st_rdev) & 0xf);
 		} else
 			strlcpy(buf, "0", sizeof(buf));
-		return sio_open_sun(buf, mode, nbio);
+		hdl = sio_open_sun(buf, mode, nbio);
+		if (hdl != NULL)
+			return hdl;
+		return NULL;
 	}
 	sep = strchr(str, ':');
 	if (sep == NULL) {
