@@ -65,6 +65,6 @@ srt0.o: srt0.s
 	${NORMAL_S}
 
 # Explicit dependency for this.
-boot.o: boot.c elfXX_exec.c
+boot.o: boot.c elf64_exec.c
 
 .include <bsd.prog.mk>

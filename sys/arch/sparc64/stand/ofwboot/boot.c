@@ -267,7 +267,7 @@ loadfile(int fd, char *args)
 }
 
 #ifdef SPARC_BOOT_ELF
-#include "elfXX_exec.c"
+#include "elf64_exec.c"
 #endif /* SPARC_BOOT_ELF */
 
 int
