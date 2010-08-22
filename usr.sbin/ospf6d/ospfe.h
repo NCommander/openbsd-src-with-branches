@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.h,v 1.15 2009/03/29 16:24:38 stsp Exp $ */
+/*	$OpenBSD: ospfe.h,v 1.16 2010/05/26 13:56:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -85,6 +85,7 @@ struct nbr {
 	u_int32_t		 ls_ret_cnt;
 	u_int32_t		 options;
 	u_int32_t		 last_rx_options;
+	u_int32_t		 link_options;	/* options from link-LSA */
 
 	time_t			 uptime;
 	int			 state;
