@@ -1,4 +1,4 @@
-/*	$OpenBSD: xbow.c,v 1.28 2010/03/21 13:50:59 miod Exp $	*/
+/*	$OpenBSD: xbow.c,v 1.29 2010/04/06 19:02:57 miod Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -137,8 +137,9 @@ static const bus_space_t xbowbus_tag = {
 	xbow_write_raw_8,
 	xbow_space_map,
 	xbow_space_unmap,
-	xbow_space_region
-
+	xbow_space_region,
+	xbow_space_vaddr,
+	NULL
 };
 
 /*
