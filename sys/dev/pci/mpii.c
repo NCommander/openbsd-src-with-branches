@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpii.c,v 1.33 2010/07/15 23:52:32 dlg Exp $	*/
+/*	$OpenBSD: mpii.c,v 1.34 2010/07/16 01:23:11 dlg Exp $	*/
 /*
  * Copyright (c) 2010 Mike Belopuhov <mkb@crypt.org.ru>
  * Copyright (c) 2009 James Giannoules
@@ -2020,6 +2020,7 @@ void		mpii_refresh_sensors(void *);
 	    (_h), (_r), (_p), (_l))
 
 static const struct pci_matchid mpii_devices[] = {
+	{ PCI_VENDOR_SYMBIOS,	PCI_PRODUCT_SYMBIOS_SAS2004 },
 	{ PCI_VENDOR_SYMBIOS,	PCI_PRODUCT_SYMBIOS_SAS2008 }
 };
 
