@@ -1,7 +1,7 @@
-/*	$OpenBSD: ialloc.c,v 1.10 2005/08/08 08:05:38 espie Exp $ */
+/*	$OpenBSD: ialloc.c,v 1.11 2007/06/30 13:20:42 millert Exp $ */
 /*
 ** This file is in the public domain, so clarified as of
-** Feb 14, 2003 by Arthur David Olson (arthur_david_olson@nih.gov).
+** 2006-07-17 by Arthur David Olson.
 */
 
 /*LINTLIBRARY*/
