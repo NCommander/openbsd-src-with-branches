@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccdconfig.c,v 1.34 2008/06/26 05:42:06 ray Exp $	*/
+/*	$OpenBSD: ccdconfig.c,v 1.35 2010/08/12 04:33:40 tedu Exp $	*/
 /*	$NetBSD: ccdconfig.c,v 1.6 1996/05/16 07:11:18 thorpej Exp $	*/
 
 /*-
@@ -477,9 +477,11 @@ do_io(char *path, u_long cmd, struct ccd_ioctl *cciop)
 			cp = "unknown";
 		}
 		warn("ioctl (%s): %s", cp, path);
+		close(fd);
 		return (1);
 	}
 
+	close(fd);
 	return (0);
 }
 
