@@ -1,4 +1,4 @@
-/* $OpenBSD: if_mpe.c,v 1.20 2010/05/31 11:46:02 claudio Exp $ */
+/* $OpenBSD: if_mpe.c,v 1.21 2010/07/02 02:40:16 blambert Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -343,6 +343,17 @@ mpeioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			break;
 		ifm->sc_shim.shim_label = shim.shim_label;
 		break;
+	case SIOCSIFRDOMAIN:
+		/* must readd the MPLS "route" for our label */
+		ifm = ifp->if_softc;
+		if (ifr->ifr_rdomainid != ifp->if_rdomain) {
+			if (ifm->sc_shim.shim_label) {
+				shim.shim_label = ifm->sc_shim.shim_label;
+				error = mpe_newlabel(ifp, RTM_ADD, &shim);
+			}
+		}
+		/* return with ENOTTY so that the parent handler finishes */
+		return (ENOTTY);
 	default:
 		return (ENOTTY);
 	}
