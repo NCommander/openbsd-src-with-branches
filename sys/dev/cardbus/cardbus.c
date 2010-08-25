@@ -1,4 +1,4 @@
-/*	$OpenBSD: cardbus.c,v 1.43 2010/03/27 20:04:03 jsg Exp $	*/
+/*	$OpenBSD: cardbus.c,v 1.44 2010/03/27 21:40:13 jsg Exp $	*/
 /*	$NetBSD: cardbus.c,v 1.24 2000/04/02 19:11:37 mycroft Exp $	*/
 
 /*
@@ -83,7 +83,8 @@ STATIC void disable_function(struct cardbus_softc *, int);
 
 
 struct cfattach cardbus_ca = {
-	sizeof(struct cardbus_softc), cardbusmatch, cardbusattach
+	sizeof(struct cardbus_softc), cardbusmatch, cardbusattach,
+	NULL, config_activate_children
 };
 
 struct cfdriver cardbus_cd = {

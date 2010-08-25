@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560.c,v 1.48 2010/05/19 15:27:35 oga Exp $  */
+/*	$OpenBSD: rt2560.c,v 1.49 2010/08/04 19:48:33 damien Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -341,7 +341,7 @@ rt2560_suspend(void *xsc)
 	struct ifnet *ifp = &sc->sc_ic.ic_if;
 
 	if (ifp->if_flags & IFF_RUNNING)
-		rt2560_stop(ifp, 0);
+		rt2560_stop(ifp, 1);
 }
 
 void

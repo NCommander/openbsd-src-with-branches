@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2860.c,v 1.56 2010/07/19 19:47:52 damien Exp $	*/
+/*	$OpenBSD: rt2860.c,v 1.57 2010/08/04 19:48:33 damien Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -429,7 +429,7 @@ rt2860_suspend(void *xsc)
 	struct ifnet *ifp = &sc->sc_ic.ic_if;
 
 	if (ifp->if_flags & IFF_RUNNING)
-		rt2860_stop(ifp, 0);
+		rt2860_stop(ifp, 1);
 }
 
 void
