@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.176 2010/07/20 15:36:03 matthew Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.177 2010/08/02 10:30:00 matthew Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -1247,8 +1247,8 @@ carp_send_ad(void *v)
 			    &ip6->ip6_src, sizeof(struct in6_addr));
 		/* set the multicast destination */
 
-		ip6->ip6_dst.s6_addr8[0] = 0xff;
-		ip6->ip6_dst.s6_addr8[1] = 0x02;
+		ip6->ip6_dst.s6_addr16[0] = htons(0xff02);
+		ip6->ip6_dst.s6_addr16[1] = htons(sc->sc_carpdev->if_index);
 		ip6->ip6_dst.s6_addr8[15] = 0x12;
 
 		ch_ptr = (void *)ip6 + sizeof(*ip6);
