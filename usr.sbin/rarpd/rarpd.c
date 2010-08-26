@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.48 2008/05/17 23:31:52 sobrado Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.49 2009/10/27 23:59:54 deraadt Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -134,14 +134,20 @@ main(int argc, char *argv[])
 			/* NOTREACHED */
 		}
 	}
-	ifname = argv[optind++];
-	if ((aflag && ifname) || (!aflag && ifname == 0))
+	argc -= optind;
+	argv += optind;
+
+	if ((aflag && argc > 0) || (!aflag && argc == 0))
 		usage();
 
 	if (aflag)
 		init_all();
 	else
-		init_one(ifname);
+		while (argc > 0) {
+			init_one(argv[0]);
+			argc--;
+			argv++;
+		}
 
 	if ((!fflag) && (!dflag)) {
 		pid = fork();
@@ -247,7 +253,7 @@ init_all(void)
 void
 usage(void)
 {
-	(void) fprintf(stderr, "usage: rarpd [-adflt] interface\n");
+	(void) fprintf(stderr, "usage: rarpd [-adflt] if0 [... ifN]\n");
 	exit(1);
 }
 
