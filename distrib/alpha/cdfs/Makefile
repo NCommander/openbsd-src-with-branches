@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2008/03/05 21:29:13 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2009/04/17 03:58:54 deraadt Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -33,7 +33,6 @@ ${CDROM}:
 	    -s `cat log | grep -v 'Name' | egrep "/cd-dir/${OSREV}/${MACHINE}/boot$$" | cut -d' ' -f1` \
 	    -e `cat log | grep -v 'Name' | egrep "/cd-dir/${OSREV}/${MACHINE}/boot$$" | cut -d' ' -f2` \
 	    /mnt/${OSREV}/${MACHINE}/boot /usr/mdec/bootxx /dev/rsvnd0c
-	#disklabel -w svnd0 fakecdrom "OpenBSD/${MACHINE}   "
 	umount /mnt
 	vnconfig -u svnd0
 
