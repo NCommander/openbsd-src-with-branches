@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde_lib.c,v 1.23 2010/06/30 05:21:38 claudio Exp $ */
+/*	$OpenBSD: lde_lib.c,v 1.24 2010/06/30 22:15:02 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -480,9 +480,11 @@ lde_check_request(struct map *map, struct lde_nbr *ln)
 		lre->fec = rn->fec;
 		lre->msgid = map->messageid;
 
-		if (fec_insert(&ln->recv_req, &lre->fec))
+		if (fec_insert(&ln->recv_req, &lre->fec)) {
 			log_warnx("failed to add %s/%u to recv req",
 			    inet_ntoa(lre->fec.prefix), lre->fec.prefixlen);
+			free(lre);
+		}
 	}
 }
 
