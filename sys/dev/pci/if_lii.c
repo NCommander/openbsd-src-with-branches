@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lii.c,v 1.26 2010/02/08 12:28:42 jsing Exp $	*/
+/*	$OpenBSD: if_lii.c,v 1.27 2010/07/26 22:21:59 deraadt Exp $	*/
 
 /*
  *  Copyright (c) 2007 The NetBSD Foundation.
@@ -271,7 +271,6 @@ lii_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_ioctl = lii_ioctl;
 	ifp->if_start = lii_start;
 	ifp->if_watchdog = lii_watchdog;
-	ifp->if_init = lii_init;
 	IFQ_SET_READY(&ifp->if_snd);
 
 	if_attach(ifp);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpi.c,v 1.105 2010/08/12 15:04:00 oga Exp $	*/
+/*	$OpenBSD: if_wpi.c,v 1.106 2010/08/12 16:59:29 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -301,7 +301,6 @@ wpi_attach(struct device *parent, struct device *self, void *aux)
 
 	ifp->if_softc = sc;
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
-	ifp->if_init = wpi_init;
 	ifp->if_ioctl = wpi_ioctl;
 	ifp->if_start = wpi_start;
 	ifp->if_watchdog = wpi_watchdog;

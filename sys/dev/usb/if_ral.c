@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.111 2009/10/13 19:33:17 pirofti Exp $	*/
+/*	$OpenBSD: if_ral.c,v 1.112 2010/04/20 22:05:43 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006
@@ -322,7 +322,6 @@ ural_attach(struct device *parent, struct device *self, void *aux)
 
 	ifp->if_softc = sc;
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
-	ifp->if_init = ural_init;
 	ifp->if_ioctl = ural_ioctl;
 	ifp->if_start = ural_start;
 	ifp->if_watchdog = ural_watchdog;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.57 2010/08/27 04:09:18 deraadt Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.58 2010/08/27 16:06:25 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -342,7 +342,6 @@ rt2661_attachhook(void *xsc)
 
 	ifp->if_softc = sc;
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
-	ifp->if_init = rt2661_init;
 	ifp->if_ioctl = rt2661_ioctl;
 	ifp->if_start = rt2661_start;
 	ifp->if_watchdog = rt2661_watchdog;

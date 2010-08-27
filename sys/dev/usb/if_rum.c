@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rum.c,v 1.88 2010/04/20 22:05:43 tedu Exp $	*/
+/*	$OpenBSD: if_rum.c,v 1.89 2010/07/02 03:13:42 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2005-2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -419,7 +419,6 @@ rum_attach(struct device *parent, struct device *self, void *aux)
 
 	ifp->if_softc = sc;
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
-	ifp->if_init = rum_init;
 	ifp->if_ioctl = rum_ioctl;
 	ifp->if_start = rum_start;
 	ifp->if_watchdog = rum_watchdog;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.93 2010/08/06 05:26:24 mglocker Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.94 2010/08/07 03:50:01 krw Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -798,7 +798,6 @@ bwi_attach(struct bwi_softc *sc)
 
 	/* setup interface */
 	ifp->if_softc = sc;
-	ifp->if_init = bwi_init;
 	ifp->if_ioctl = bwi_ioctl;
 	ifp->if_start = bwi_start;
 	ifp->if_watchdog = bwi_watchdog;
