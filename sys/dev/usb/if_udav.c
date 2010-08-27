@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_udav.c,v 1.44 2009/10/13 19:33:17 pirofti Exp $ */
+/*	$OpenBSD: if_udav.c,v 1.45 2009/11/22 22:13:51 jsg Exp $ */
 /*	$NetBSD: if_udav.c,v 1.3 2004/04/23 17:25:25 itojun Exp $	*/
 /*	$nabe: if_udav.c,v 1.3 2003/08/21 16:57:19 nabe Exp $	*/
 /*
@@ -41,7 +41,6 @@
  * TODO:
  *	Interrupt Endpoint support
  *	External PHYs
- *	powerhook() support?
  */
 
 #include <sys/cdefs.h>
