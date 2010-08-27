@@ -1,4 +1,4 @@
-/*	$OpenBSD: safevar.h,v 1.5 2003/08/20 16:28:35 jason Exp $	*/
+/*	$OpenBSD: safevar.h,v 1.6 2008/07/21 04:12:21 kevlo Exp $	*/
 
 /*-
  * Copyright (c) 2003 Sam Leffler, Errno Consulting
@@ -155,7 +155,6 @@ struct safe_softc {
 	struct resource		*sc_sr;		/* memory resource */
 	bus_dma_tag_t		sc_dmat;
 	u_int			sc_chiprev;	/* major/minor chip revision */
-	int			sc_suspended;
 	int			sc_needwakeup;	/* notify crypto layer */
 	int32_t			sc_cid;		/* crypto tag */
 	struct safe_dma_alloc	sc_ringalloc;	/* PE ring allocation state */
