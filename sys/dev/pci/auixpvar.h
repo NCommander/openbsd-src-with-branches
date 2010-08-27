@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: auixpvar.h,v 1.1 2005/08/07 20:08:45 mickey Exp $ */
 /* $NetBSD: auixpvar.h,v 1.3 2005/01/12 15:54:34 kent Exp $*/
 
 /*
@@ -114,8 +114,4 @@ struct auixp_softc {
 	/* last set audio parameters */
 	struct audio_params	sc_play_params;
 	struct audio_params	sc_rec_params;
-
-	/* suspend/resume */
-	void			*powerhook;
-	u_int16_t		*savemem;
 };
