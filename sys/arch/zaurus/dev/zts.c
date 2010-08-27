@@ -1,4 +1,4 @@
-/* $OpenBSD: zts.c,v 1.10 2007/04/10 22:37:17 miod Exp $ */
+/* $OpenBSD: zts.c,v 1.11 2007/05/29 21:09:43 robert Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@openbsd.org>
  *
@@ -207,7 +207,6 @@ zts_power(int why, void *v)
 	struct zts_softc *sc = v;
 
 	switch (why) {
-	case PWR_STANDBY:
 	case PWR_SUSPEND:
 		sc->sc_enabled = 0;
 #if 0

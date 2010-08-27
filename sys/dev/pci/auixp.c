@@ -1,4 +1,4 @@
-/* $OpenBSD: auixp.c,v 1.24 2009/10/12 19:43:52 jakemsr Exp $ */
+/* $OpenBSD: auixp.c,v 1.25 2010/07/15 03:43:11 jakemsr Exp $ */
 /* $NetBSD: auixp.c,v 1.9 2005/06/27 21:13:09 thorpej Exp $ */
 
 /*
@@ -1854,7 +1854,6 @@ auixp_powerhook(int why, void *hdl)
 	sc = (struct auixp_softc *)hdl;
 	switch (why) {
 	case PWR_SUSPEND:
-	case PWR_STANDBY:
 		auixp_suspend(sc);
 		break;
 	case PWR_RESUME:
