@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcivar.h,v 1.59 2009/05/05 14:16:17 kettenis Exp $	*/
+/*	$OpenBSD: pcivar.h,v 1.60 2010/08/17 19:14:52 kettenis Exp $	*/
 /*	$NetBSD: pcivar.h,v 1.23 1997/06/06 23:48:05 thorpej Exp $	*/
 
 /*
@@ -193,6 +193,7 @@ struct pci_softc {
 };
 
 extern int pci_ndomains;
+extern int pci_dopm;
 
 /*
  * Locators devices that attach to 'pcibus', as specified to config.
