@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pgt_cardbus.c,v 1.10 2010/03/27 20:04:03 jsg Exp $ */
+/*	$OpenBSD: if_pgt_cardbus.c,v 1.11 2010/03/27 21:40:13 jsg Exp $ */
 
 /*
  * Copyright (c) 2006 Marcus Glocker <mglocker@openbsd.org>
@@ -31,6 +31,7 @@
 #include <sys/malloc.h>
 #include <sys/timeout.h>
 #include <sys/device.h>
+#include <sys/workq.h>
 
 #include <machine/bus.h>
 #include <machine/intr.h>
