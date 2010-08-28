@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.21 2010/06/27 03:03:48 thib Exp $ */
+/*	$OpenBSD: machdep.c,v 1.22 2010/06/27 13:24:39 miod Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -376,7 +376,8 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv,
 			/* better expose the problem than limit to 256MB */
 			goto unsupported;
 		}
-	}
+	} else
+		memhi = 0;
 
 	uncached_base = PHYS_TO_XKPHYS(0, CCA_NC);
 
