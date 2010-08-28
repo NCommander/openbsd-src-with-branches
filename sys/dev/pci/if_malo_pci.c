@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_malo_pci.c,v 1.4 2009/03/29 21:53:52 sthen Exp $ */
+/*	$OpenBSD: if_malo_pci.c,v 1.5 2010/08/08 16:36:33 deraadt Exp $ */
 
 /*
  * Copyright (c) 2006 Marcus Glocker <mglocker@openbsd.org>
@@ -171,8 +171,7 @@ malo_pci_activate(struct device *self, int act)
 		workq_queue_task(NULL, &sc->sc_resume_wqt, 0,
 		    malo_pci_resume, sc, NULL);
 		break;
-}
-
+	}
 	return (0);
 }
 
