@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemulconf.c,v 1.6 2006/12/09 20:06:48 miod Exp $ */
+/* $OpenBSD: wsemulconf.c,v 1.7 2010/07/01 02:33:06 maja Exp $ */
 /* $NetBSD: wsemulconf.c,v 1.4 2000/01/05 11:19:37 drochner Exp $ */
 
 /*
@@ -56,8 +56,7 @@ static const struct wsemul_ops *wsemul_conf[] = {
 };
 
 const struct wsemul_ops *
-wsemul_pick(name)
-	const char *name;
+wsemul_pick(const char *name)
 {
 	const struct wsemul_ops **ops;
 
@@ -78,8 +77,7 @@ wsemul_pick(name)
 }
 
 const char *
-wsemul_getname(idx)
-	int idx;
+wsemul_getname(int idx)
 {
 	if (idx >= nitems(wsemul_conf) - 1)
 		return (NULL);
