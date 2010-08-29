@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.52 2010/01/12 23:33:24 yasuoka Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.53 2010/05/11 09:36:07 claudio Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -149,9 +149,9 @@
 
 #ifdef IPSEC
 #include <netinet/ip_ipsp.h>
-#include <netinet/ip_ether.h>
 #endif
 
+#include <netinet/ip_ether.h>
 #include <netinet/ip_ipip.h>
 
 #include "gre.h"
