@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_apm.c,v 1.15 2010/04/21 03:11:30 deraadt Exp $	*/
+/*	$OpenBSD: zaurus_apm.c,v 1.16 2010/07/20 12:23:02 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@bsdx.de>
@@ -634,7 +634,6 @@ zapm_resume(struct pxa2x0_apm_softc *pxa_sc)
 #endif
 	}
 
-	bufq_restart();
 	return (wakeup);
 }
 
