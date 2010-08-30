@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfxga.c,v 1.18 2009/09/05 14:09:35 miod Exp $	*/
+/*	$OpenBSD: cfxga.c,v 1.19 2009/10/13 19:33:16 pirofti Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, Matthieu Herrb and Miodrag Vallat
@@ -319,12 +319,8 @@ cfxga_activate(struct device *dev, int act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		if (pcmcia_function_enable(sc->sc_pf) != 0) {
-			printf("%s: function enable failed\n",
-			    sc->sc_dev.dv_xname);
-		} else {
-			cfxga_reset_and_repaint(sc);
-		}
+		pcmcia_function_enable(sc->sc_pf);
+		cfxga_reset_and_repaint(sc);
 		break;
 	case DVACT_DEACTIVATE:
 		pcmcia_function_disable(sc->sc_pf);
