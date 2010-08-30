@@ -76,6 +76,7 @@ struct disk {
 	struct rwlock	dk_lock;	/* disk lock */
 	struct mutex	dk_mtx;		/* busy/unbusy mtx */
 	char		*dk_name;	/* disk name */
+	dev_t		dk_devno;	/* disk device number. */
 	int		dk_flags;	/* disk flags */
 #define DKF_CONSTRUCTED  0x0001
 
@@ -105,7 +106,7 @@ struct disk {
 	 * must be dynamically allocated, otherwise the size of this
 	 * structure becomes machine-dependent.
 	 */
-	daddr64_t	dk_labelsector;		/* sector containing label */
+	daddr64_t	dk_labelsector;	/* sector containing label */
 	struct disklabel *dk_label;	/* label */
 };
 
@@ -142,6 +143,7 @@ struct disksort_stats {
 TAILQ_HEAD(disklist_head, disk);	/* the disklist is a TAILQ */
 
 #ifdef _KERNEL
+extern	struct disklist_head disklist;	/* list of disks attached to system */
 extern	int disk_count;			/* number of disks in global disklist */
 extern	int disk_change;		/* disk attached/detached */
 
