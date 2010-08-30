@@ -1,4 +1,4 @@
-/*	$OpenBSD: ohcivar.h,v 1.27 2009/10/13 19:33:17 pirofti Exp $ */
+/*	$OpenBSD: ohcivar.h,v 1.28 2009/11/04 19:14:10 kettenis Exp $ */
 /*	$NetBSD: ohcivar.h,v 1.32 2003/02/22 05:24:17 tsutsui Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/ohcivar.h,v 1.13 1999/11/17 22:33:41 n_hibma Exp $	*/
 
@@ -144,4 +144,4 @@ usbd_status	ohci_init(ohci_softc_t *);
 int		ohci_intr(void *);
 int		ohci_detach(ohci_softc_t *, int);
 int		ohci_activate(struct device *, int);
-void		ohci_power(int, void *);
+void		ohci_powerhook(int, void *);
