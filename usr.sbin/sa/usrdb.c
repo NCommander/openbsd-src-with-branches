@@ -1,4 +1,4 @@
-/*	$OpenBSD: usrdb.c,v 1.7 2003/06/28 20:22:21 deraadt Exp $	*/
+/*	$OpenBSD: usrdb.c,v 1.8 2009/10/27 23:59:54 deraadt Exp $	*/
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
  * All rights reserved.
@@ -264,7 +264,7 @@ usracct_print(void)
 static int
 uid_compare(const DBT *k1, const DBT *k2)
 {
-	u_long d1, d2;
+	uid_t d1, d2;
 
 	memcpy(&d1, k1->data, sizeof(d1));
 	memcpy(&d2, k2->data, sizeof(d2));
