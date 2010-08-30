@@ -53,6 +53,12 @@ struct sr_uuid {
 	u_int8_t		sui_id[SR_UUID_MAX];
 } __packed;
 
+struct sr_disk {
+	dev_t			sdk_devno;
+	SLIST_ENTRY(sr_disk) 	sdk_link;
+};
+SLIST_HEAD(sr_disk_head, sr_disk);
+
 struct sr_metadata {
 	struct sr_meta_invariant {
 		/* do not change order of ssd_magic, ssd_version */
