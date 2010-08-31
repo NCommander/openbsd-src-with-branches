@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxp.c,v 1.103 2010/08/27 18:25:47 deraadt Exp $	*/
+/*	$OpenBSD: fxp.c,v 1.104 2010/08/31 16:29:10 deraadt Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -297,6 +297,9 @@ fxp_activate(struct device *self, int act)
 	int rv;
 
 	switch (act) {
+	case DVACT_QUIESCE:
+		rv = config_activate_children(self, act);
+		break;
 	case DVACT_SUSPEND:
 		if (ifp->if_flags & IFF_RUNNING)
 			fxp_stop(sc, 1, 0);
