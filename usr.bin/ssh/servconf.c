@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.c,v 1.208 2010/05/07 11:30:29 djm Exp $ */
+/* $OpenBSD: servconf.c,v 1.209 2010/06/22 04:22:59 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -142,6 +142,8 @@ fill_default_server_options(ServerOptions *options)
 			    _PATH_HOST_RSA_KEY_FILE;
 			options->host_key_files[options->num_host_key_files++] =
 			    _PATH_HOST_DSA_KEY_FILE;
+			options->host_key_files[options->num_host_key_files++] =
+			    _PATH_HOST_ECDSA_KEY_FILE;
 		}
 	}
 	/* No certificates by default */
