@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.104 2010/06/27 00:14:06 jsing Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.106 2010/08/30 16:53:28 jsing Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -1023,7 +1023,7 @@ parsedisk(char *str, int len, int defpart, dev_t *devp)
 		    dv->dv_xname[len] == '\0') {
 			majdev = findblkmajor(dv);
 			if (majdev < 0)
-				panic("parsedisk");
+				return NULL;
 			*devp = MAKEDISKDEV(majdev, dv->dv_unit, part);
 			break;
 		}
