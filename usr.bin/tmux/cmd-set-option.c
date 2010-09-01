@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-set-option.c,v 1.36 2010/05/14 19:03:09 nicm Exp $ */
+/* $OpenBSD: cmd-set-option.c,v 1.37 2010/06/27 00:22:22 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -293,6 +293,7 @@ cmd_set_option_exec(struct cmd *self, struct cmd_ctx *ctx)
 	 */
 	if (strcmp(entry->name, "status-left") == 0 ||
 	    strcmp(entry->name, "status-right") == 0 ||
+	    strcmp(entry->name, "status") == 0 ||
 	    strcmp(entry->name, "set-titles-string") == 0 ||
 	    strcmp(entry->name, "window-status-format") == 0) {
 		for (i = 0; i < ARRAY_LENGTH(&clients); i++) {
