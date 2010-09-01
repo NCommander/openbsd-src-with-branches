@@ -1,4 +1,4 @@
-/*	$OpenBSD: namespace.c,v 1.9 2010/06/29 21:54:38 martinh Exp $ */
+/*	$OpenBSD: namespace.c,v 1.10 2010/07/10 14:27:15 martinh Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -151,7 +151,7 @@ namespace_reopen(const char *path)
 		return -1;
 	}
 
-	return imsg_compose_event(iev_ldapd, IMSG_LDAPD_OPEN, 0, 0, -1, &req,
+	return imsgev_compose(iev_ldapd, IMSG_LDAPD_OPEN, 0, 0, -1, &req,
 	    sizeof(req));
 }
 
