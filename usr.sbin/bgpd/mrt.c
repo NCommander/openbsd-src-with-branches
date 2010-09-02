@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.c,v 1.68 2010/05/26 13:56:07 nicm Exp $ */
+/*	$OpenBSD: mrt.c,v 1.69 2010/06/04 10:13:00 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -584,7 +584,7 @@ mrt_dump_hdr_rde(struct ibuf **bp, u_int16_t type, u_int16_t subtype,
 	default:
 		log_warnx("mrt_dump_hdr_rde: unsupported type");
 		goto fail;
-	}	
+	}
 	return (0);
 
 fail:

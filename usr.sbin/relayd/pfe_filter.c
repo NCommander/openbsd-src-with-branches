@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe_filter.c,v 1.42 2010/01/12 23:27:23 dlg Exp $	*/
+/*	$OpenBSD: pfe_filter.c,v 1.43 2010/03/24 16:29:37 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -264,9 +264,9 @@ kill_srcnodes(struct relayd *env, struct table *table)
 
 		switch (host->conf.ss.ss_family) {
 		case AF_INET:
-		sain = (struct sockaddr_in *)&host->conf.ss;   
+		sain = (struct sockaddr_in *)&host->conf.ss;
 			bcopy(&sain->sin_addr,
-			    &psnk.psnk_dst.addr.v.a.addr.v4, 
+			    &psnk.psnk_dst.addr.v.a.addr.v4,
 			    sizeof(psnk.psnk_dst.addr.v.a.addr.v4));
 			break;
 		case AF_INET6:
@@ -274,12 +274,12 @@ kill_srcnodes(struct relayd *env, struct table *table)
 			bcopy(&sain6->sin6_addr,
 			    &psnk.psnk_dst.addr.v.a.addr.v6,
 			    sizeof(psnk.psnk_dst.addr.v.a.addr.v6));
-			break;   
+			break;
 		default:
 			fatalx("kill_srcnodes: unknown address family");
 			break;
 		}
-			
+
 		psnk.psnk_af = host->conf.ss.ss_family;
 		psnk.psnk_killed = 0;
 

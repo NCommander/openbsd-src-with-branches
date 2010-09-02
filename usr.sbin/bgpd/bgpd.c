@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.164 2010/06/27 19:53:34 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.165 2010/06/28 19:52:03 sobrado Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -505,7 +505,7 @@ reconfigure(char *conffile, struct bgpd_config *conf, struct mrt_head *mrt_l,
 		if (imsg_compose(ibuf_rde, IMSG_RECONF_RDOMAIN, 0, 0, -1,
 		    rd, sizeof(*rd)) == -1)
 			return (-1);
-		
+
 		/* export targets */
 		if (imsg_compose(ibuf_rde, IMSG_RECONF_RDOMAIN_EXPORT, 0, 0,
 		    -1, NULL, 0) == -1)

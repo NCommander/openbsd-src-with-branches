@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.53 2010/05/17 15:49:29 claudio Exp $ */
+/*	$OpenBSD: config.c,v 1.54 2010/06/27 19:53:34 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -78,7 +78,7 @@ merge_config(struct bgpd_config *xconf, struct bgpd_config *conf,
 			nla->reconf = RECONF_REINIT;
 
 	} else {
-		/* 
+		/*
 		 * merge new listeners:
 		 * -flag all existing ones as to be deleted
 		 * -those that are in both new and old: flag to keep

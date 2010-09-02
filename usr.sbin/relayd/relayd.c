@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.96 2010/02/17 14:39:30 jsg Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.97 2010/05/14 11:13:36 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -1091,7 +1091,7 @@ canonicalize_host(const char *host, char *name, size_t len)
 	 * Canonicalize a hostname
 	 */
 
-	/* 1. remove repeated dots and convert upper case to lower case */	
+	/* 1. remove repeated dots and convert upper case to lower case */
 	plen = strlen(host);
 	bzero(name, len);
 	for (i = j = 0; i < plen; i++) {

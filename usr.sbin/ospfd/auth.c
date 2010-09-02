@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth.c,v 1.17 2009/06/06 07:31:26 eric Exp $ */
+/*	$OpenBSD: auth.c,v 1.18 2010/05/26 13:56:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -264,7 +264,7 @@ md_list_send(struct auth_md_head *head, struct imsgev *to)
 	struct auth_md	*m;
 
 	TAILQ_FOREACH(m, head, entry)
-		if (imsg_compose_event(to, IMSG_RECONF_AUTHMD, 0, 0, -1, m, 
+		if (imsg_compose_event(to, IMSG_RECONF_AUTHMD, 0, 0, -1, m,
 		    sizeof(*m)) == -1)
 			return (-1);
 
