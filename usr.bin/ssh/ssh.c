@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.347 2010/08/12 23:34:39 tedu Exp $ */
+/* $OpenBSD: ssh.c,v 1.350 2010/08/31 12:33:38 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -917,6 +917,7 @@ control_persist_detach(void)
 		tty_flag = otty_flag;
  		close(muxserver_sock);
  		muxserver_sock = -1;
+		options.control_master = SSHCTL_MASTER_NO;
  		muxclient(options.control_path);
 		/* muxclient() doesn't return on success. */
  		fatal("Failed to connect to new control master");
