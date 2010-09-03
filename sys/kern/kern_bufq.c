@@ -1,6 +1,7 @@
-/*	$OpenBSD: kern_bufq.c,v 1.17 2010/09/01 19:30:59 kettenis Exp $	*/
+/*	$OpenBSD: kern_bufq.c,v 1.18 2010/09/02 07:05:39 matthew Exp $	*/
 /*
  * Copyright (c) 2010 Thordur I. Bjornsson <thib@openbsd.org>
+ * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
