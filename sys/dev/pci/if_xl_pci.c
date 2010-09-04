@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xl_pci.c,v 1.31 2010/08/12 14:21:55 kettenis Exp $	*/
+/*	$OpenBSD: if_xl_pci.c,v 1.32 2010/08/27 15:43:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -91,7 +91,6 @@
 int xl_pci_match(struct device *, void *, void *);
 void xl_pci_attach(struct device *, struct device *, void *);
 int xl_pci_detach(struct device *, int);
-int xl_activate(struct device *, int);
 void xl_pci_intr_ack(struct xl_softc *);
 
 struct xl_pci_softc {
