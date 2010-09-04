@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.11 2009/11/13 20:09:54 jsg Exp $	*/
+/*	$OpenBSD: parser.h,v 1.12 2010/01/11 06:40:14 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -44,5 +44,3 @@ struct parse_result {
 };
 
 struct parse_result	*parse(int, char *[]);
-const struct token      *match_token(const char *, const struct token *);
-void                     show_valid_args(const struct token *);
