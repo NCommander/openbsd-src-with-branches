@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbus.c,v 1.16 2007/05/29 09:54:13 sobrado Exp $	*/
+/*	$OpenBSD: sbus.c,v 1.17 2010/07/10 19:32:24 miod Exp $	*/
 /*	$NetBSD: sbus.c,v 1.17 1997/06/01 22:10:39 pk Exp $ */
 
 /*
@@ -258,9 +258,9 @@ sbus_translate(dev, ca)
 
 			for (j = 0; j < sc->sc_nrange; j++) {
 				if (sc->sc_range[j].cspace == cspace) {
-					(int)ca->ca_ra.ra_reg[i].rr_paddr +=
+					ca->ca_ra.ra_reg[i].rr_paddr +=
 						sc->sc_range[j].poffset;
-					(int)ca->ca_ra.ra_reg[i].rr_iospace =
+					ca->ca_ra.ra_reg[i].rr_iospace =
 						sc->sc_range[j].pspace;
 					break;
 				}
