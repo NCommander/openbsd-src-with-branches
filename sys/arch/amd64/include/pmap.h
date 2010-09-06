@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.32 2010/05/08 16:54:07 oga Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.33 2010/05/13 19:27:24 oga Exp $	*/
 /*	$NetBSD: pmap.h,v 1.1 2003/04/26 18:39:46 fvdl Exp $	*/
 
 /*
@@ -317,8 +317,6 @@ struct pmap {
 	struct vm_page *pm_ptphint[PTP_LEVELS-1];
 					/* pointer to a PTP in our pmap */
 	struct pmap_statistics pm_stats;  /* pmap stats (lck by object lock) */
-
-	int pm_flags;			/* see below */
 
 	union descriptor *pm_ldt;	/* user-set LDT */
 	int pm_ldt_len;			/* number of LDT entries */
