@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365.c,v 1.27 2008/05/22 19:23:04 mk Exp $	*/
+/*	$OpenBSD: i82365.c,v 1.28 2009/08/02 17:20:08 blambert Exp $	*/
 /*	$NetBSD: i82365.c,v 1.10 1998/06/09 07:36:55 thorpej Exp $	*/
 
 /*
@@ -837,7 +837,7 @@ pcic_power(why, arg)
 	struct pcic_softc *sc = (struct pcic_softc *)h->ph_parent;
 	struct pcic_event *pe;
 
-	if (why != PWR_RESUME) {
+	if (why != DVACT_RESUME) {
 		timeout_del(&sc->poll_timeout);
 	}
 	else {

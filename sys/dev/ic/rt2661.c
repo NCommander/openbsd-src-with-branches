@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.60 2010/08/28 18:08:07 deraadt Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.61 2010/09/06 18:22:02 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -2934,10 +2934,10 @@ rt2661_powerhook(int why, void *arg)
 
 	s = splnet();
 	switch (why) {
-	case PWR_SUSPEND:
+	case DVACT_SUSPEND:
 		rt2661_suspend(sc);
 		break;
-	case PWR_RESUME:
+	case DVACT_RESUME:
 		rt2661_resume(sc);
 		break;
 	}

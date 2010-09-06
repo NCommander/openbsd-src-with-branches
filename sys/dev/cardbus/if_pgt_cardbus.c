@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pgt_cardbus.c,v 1.11 2010/03/27 21:40:13 jsg Exp $ */
+/*	$OpenBSD: if_pgt_cardbus.c,v 1.12 2010/08/27 20:06:38 deraadt Exp $ */
 
 /*
  * Copyright (c) 2006 Marcus Glocker <mglocker@openbsd.org>
@@ -218,10 +218,10 @@ pgt_cardbus_disable(struct pgt_softc *sc)
 void
 pgt_cardbus_power(struct pgt_softc *sc, int why)
 {
-	if (why == PWR_RESUME)
+	if (why == DVACT_RESUME)
 		if (sc->sc_enable != NULL)
 			(*sc->sc_enable)(sc);
-	if (why == PWR_SUSPEND)
+	if (why == DVACT_SUSPEND)
 		if (sc->sc_disable != NULL)
 			(*sc->sc_disable)(sc);
 }

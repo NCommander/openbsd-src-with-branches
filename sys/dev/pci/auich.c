@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.88 2010/08/31 06:12:28 deraadt Exp $	*/
+/*	$OpenBSD: auich.c,v 1.89 2010/08/31 17:13:44 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -555,7 +555,7 @@ auich_attach(parent, self, aux)
 	sc->audiodev = audio_attach_mi(&auich_hw_if, sc, &sc->sc_dev);
 
 	/* Watch for power changes */
-	sc->suspend = PWR_RESUME;
+	sc->suspend = DVACT_RESUME;
 	sc->powerhook = powerhook_establish(auich_powerhook, sc);
 
 	sc->sc_ac97rate = -1;

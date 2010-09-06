@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_cardbus.c,v 1.18 2010/03/27 20:04:03 jsg Exp $	*/
+/*	$OpenBSD: if_re_cardbus.c,v 1.19 2010/03/27 21:40:13 jsg Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -280,6 +280,6 @@ re_cardbus_powerhook(int why, void *arg)
 	struct rl_softc *sc = arg;
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 
-	if (why == PWR_RESUME)
+	if (why == DVACT_RESUME)
 		re_init(ifp);
 }
