@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.118 2010/08/30 23:25:15 deraadt Exp $	*/
+/*	$OpenBSD: dc.c,v 1.119 2010/08/31 17:13:46 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -3129,7 +3129,7 @@ dc_activate(struct device *self, int act)
 {
 	struct dc_softc *sc = (struct dc_softc *)self;
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
-	int rv;
+	int rv = 0;
 
 	switch (act) {
 	case DVACT_QUIESCE:
