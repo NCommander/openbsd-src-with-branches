@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560var.h,v 1.7 2010/08/04 19:48:33 damien Exp $  */
+/*	$OpenBSD: rt2560var.h,v 1.8 2010/08/27 16:06:25 kettenis Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -161,7 +161,6 @@ struct rt2560_softc {
 #define sc_txtap		sc_txtapu.th
 	int			sc_txtap_len;
 #endif
-	void			*sc_powerhook;	/* power management hook */
 };
 
 int	rt2560_attach(void *, int);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2860var.h,v 1.18 2010/08/04 19:48:33 damien Exp $	*/
+/*	$OpenBSD: rt2860var.h,v 1.19 2010/08/27 16:06:25 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2007
@@ -198,7 +198,6 @@ struct rt2860_softc {
 #define sc_txtap			sc_txtapu.th
 	int				sc_txtap_len;
 #endif
-	void				*sc_powerhook;
 };
 
 int	rt2860_attach(void *, int);

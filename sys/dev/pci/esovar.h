@@ -1,4 +1,4 @@
-/*	$OpenBSD: esovar.h,v 1.3 2002/06/09 02:31:20 mickey Exp $	*/
+/*	$OpenBSD: esovar.h,v 1.4 2007/11/11 01:32:52 jakemsr Exp $	*/
 /*	$NetBSD: esovar.h,v 1.5 2004/05/25 21:38:11 kleink Exp $	*/
 
 /*
@@ -89,7 +89,6 @@ struct eso_softc {
 	struct device		sc_dev;
 	pci_intr_handle_t *	sc_ih;
 	unsigned int		sc_revision;	/* PCI Revision ID */
-	void *			sc_powerhook;
 
 	/* Optionally deferred configuration of Audio 1 DMAC I/O space */
 	struct pci_attach_args	sc_pa;

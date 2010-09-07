@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnxreg.h,v 1.34 2009/11/23 10:54:43 claudio Exp $	*/
+/*	$OpenBSD: if_bnxreg.h,v 1.35 2010/05/24 21:23:23 sthen Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -4776,7 +4776,6 @@ struct bnx_softc {
 	bus_size_t		bnx_size;
 
 	void			*bnx_intrhand;		/* Interrupt handler */
-	void			*bnx_powerhook;
 	void			*bnx_shutdownhook;
 
 	/* ASIC Chip ID. */
