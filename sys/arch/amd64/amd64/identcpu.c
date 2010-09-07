@@ -1,4 +1,4 @@
-/*	$OpenBSD: identcpu.c,v 1.28 2010/06/26 23:24:43 guenther Exp $	*/
+/*	$OpenBSD: identcpu.c,v 1.29 2010/07/01 00:24:27 thib Exp $	*/
 /*	$NetBSD: identcpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*
@@ -50,9 +50,7 @@ int cpuspeed;
 
 int amd64_has_xcrypt;
 #ifdef CRYPTO
-#ifdef notyet
 int amd64_has_aesni;
-#endif
 #endif
 
 const struct {
@@ -372,10 +370,8 @@ identifycpu(struct cpu_info *ci)
 		setperf_setup = est_init;
 	}
 
-#ifdef notyet
 	if (cpu_ecxfeature & CPUIDECX_AES)
 		amd64_has_aesni = 1;
-#endif
 
 	if (!strncmp(cpu_model, "Intel", 5)) {
 		u_int32_t cflushsz;
