@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.c,v 1.77 2010/07/31 16:28:31 zinovik Exp $	*/
+/*	$OpenBSD: buf.c,v 1.78 2010/08/01 09:19:29 zinovik Exp $	*/
 /*
  * Copyright (c) 2003 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -127,11 +127,9 @@ buf_putc(BUF *b, int c)
 {
 	u_char *bp;
 
-	bp = b->cb_buf + b->cb_len;
-	if (bp == (b->cb_buf + b->cb_size)) {
+	if (SIZE_LEFT(b) == 0)
 		buf_grow(b, BUF_INCR);
-		bp = b->cb_buf + b->cb_len;
-	}
+	bp = b->cb_buf + b->cb_len;
 	*bp = (u_char)c;
 	b->cb_len++;
 }
