@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.182 2010/07/09 16:58:06 reyk Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.183 2010/08/20 02:48:31 dlg Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -1557,6 +1557,12 @@ ip_forward(m, srcrt)
 		ipstat.ips_cantfrag++;
 		break;
 
+	case EACCES:
+		/*
+		 * pf(4) blocked the packet. There is no need to send an ICMP
+		 * packet back since pf(4) takes care of it.
+		 */
+		goto freecopy;
 	case ENOBUFS:
 		/*
 		 * a router should not generate ICMP_SOURCEQUENCH as
