@@ -221,8 +221,6 @@ sun_extended_sum(struct sun_disklabel *sl, void *end)
 
 /*
  * Given a SunOS disk label, set lp to a BSD disk label.
- * Returns NULL on success, else an error string.
- *
  * The BSD label is cleared out before this is called.
  */
 static int
