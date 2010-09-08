@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.81 2010/09/06 18:34:34 kettenis Exp $	*/
+/*	$OpenBSD: pccbb.c,v 1.82 2010/09/07 16:21:45 deraadt Exp $	*/
 /*	$NetBSD: pccbb.c,v 1.96 2004/03/28 09:49:31 nakayama Exp $	*/
 
 /*
@@ -2825,9 +2825,6 @@ pccbbactivate(struct device *self, int act)
 
 		DPRINTF(("%s: power: why %d stopping intr\n",
 		    sc->sc_dev.dv_xname, why));
-		if (sc->sc_pil_intr_enable) {
-			(void)pccbbintr_function(sc);
-		}
 		sc->sc_pil_intr_enable = 0;
 
 		/* Save registers that may get lost. */
