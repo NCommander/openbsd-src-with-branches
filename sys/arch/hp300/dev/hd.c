@@ -295,7 +295,7 @@ hdattach(parent, self, aux)
 	 * Initialize and attach the disk structure.
 	 */
 	sc->sc_dkdev.dk_name = sc->sc_dev.dv_xname;
-	disk_attach(&sc->sc_dkdev);
+	disk_attach(&sc->sc_dev, &sc->sc_dkdev);
 
 	sc->sc_slave = ha->ha_slave;
 	sc->sc_punit = ha->ha_punit;

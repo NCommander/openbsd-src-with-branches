@@ -161,7 +161,7 @@ presto_attach(struct device *parent, struct device *self, void *args)
 #endif
 
 	sc->sc_dk.dk_name = sc->sc_dev.dv_xname;
-	disk_attach(&sc->sc_dk);
+	disk_attach(&sc->sc_dev, &sc->sc_dk);
 }
 
 /*

@@ -1118,7 +1118,7 @@ ccdioctl(dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 
 		/* Attach the disk. */
 		cs->sc_dkdev.dk_name = cs->sc_xname;
-		disk_attach(&cs->sc_dkdev);
+		disk_attach(NULL, &cs->sc_dkdev);
 
 		/* Try and read the disklabel. */
 		ccdgetdisklabel(dev, cs, cs->sc_dkdev.dk_label, 0);

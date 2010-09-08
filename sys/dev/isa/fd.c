@@ -304,7 +304,7 @@ fdattach(parent, self, aux)
 	 * Initialize and attach the disk structure.
 	 */
 	fd->sc_dk.dk_name = fd->sc_dev.dv_xname;
-	disk_attach(&fd->sc_dk);
+	disk_attach(&fd->sc_dev, &fd->sc_dk);
 
 	/* Needed to power off if the motor is on when we halt. */
 	fd->sc_sdhook = shutdownhook_establish(fd_motor_off, fd);

@@ -146,7 +146,7 @@ hpattach(parent, self, aux)
 	 * Init and attach the disk structure.
 	 */
 	sc->sc_disk.dk_name = sc->sc_dev.dv_xname;
-	disk_attach(&sc->sc_disk);
+	disk_attach(&sc->sc_dev, &sc->sc_disk);
 
 	/*
 	 * Fake a disklabel to be able to read in the real label.

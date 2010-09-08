@@ -369,7 +369,7 @@ wdattach(struct device *parent, struct device *self, void *aux)
 	timeout_set(&wd->sc_restart_timeout, wdrestart, wd);
 
 	/* Attach disk. */
-	disk_attach(&wd->sc_dk);
+	disk_attach(&wd->sc_dev, &wd->sc_dk);
 	wd->sc_wdc_bio.lp = wd->sc_dk.dk_label;
 }
 

@@ -1619,7 +1619,7 @@ raidinit(RF_Raid_t *raidPtr)
 	 * other things, so it's critical to call this *BEFORE* we try
 	 * putzing with disklabels.
 	 */
-	disk_attach(&rs->sc_dkdev);
+	disk_attach(NULL, &rs->sc_dkdev);
 
 	/*
 	 * XXX There may be a weird interaction here between this, and

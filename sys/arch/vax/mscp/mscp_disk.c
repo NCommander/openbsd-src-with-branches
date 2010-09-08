@@ -519,7 +519,7 @@ rxattach(parent, self, aux)
 	mi->mi_dp[mp->mscp_unit] = self;
 
 	rx->ra_disk.dk_name = rx->ra_dev.dv_xname;
-	disk_attach((struct disk *)&rx->ra_disk);
+	disk_attach(&rx->ra_dev, &rx->ra_disk);
 
 	/* Fill in what we know. The actual size is gotten later */
 	dl = rx->ra_disk.dk_label;
