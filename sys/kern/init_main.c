@@ -140,7 +140,7 @@ void	start_init(void *);
 void	start_cleaner(void *);
 void	start_update(void *);
 void	start_reaper(void *);
-void	init_crypto(void);
+void	crypto_init(void);
 void	init_exec(void);
 void	kqueue_init(void);
 void	workq_init(void);
@@ -387,6 +387,7 @@ main(void *framep)
 			(*pdev->pdev_attach)(pdev->pdev_count);
 
 #ifdef CRYPTO
+	crypto_init();
 	swcr_init();
 #endif /* CRYPTO */
 	
@@ -523,11 +524,6 @@ main(void *framep)
 	/* Create the aiodone daemon kernel thread. */ 
 	if (kthread_create(uvm_aiodone_daemon, NULL, NULL, "aiodoned"))
 		panic("fork aiodoned");
-
-#ifdef CRYPTO
-	/* Create the crypto kernel thread. */
-	init_crypto();
-#endif /* CRYPTO */
 
 	microtime(&rtv);
 	srandom((u_int32_t)(rtv.tv_sec ^ rtv.tv_usec) ^ arc4random());
