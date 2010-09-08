@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.90 2010/08/31 17:00:32 deraadt Exp $ */
+/*	$OpenBSD: wd.c,v 1.92 2010/09/08 14:47:12 jsing Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -183,7 +183,7 @@ bdev_decl(wd);
 
 #define wdlock(wd)  disk_lock(&(wd)->sc_dk)
 #define wdunlock(wd)  disk_unlock(&(wd)->sc_dk)
-#define wdlookup(unit) (struct wd_softc *)device_lookup(&wd_cd, (unit))
+#define wdlookup(unit) (struct wd_softc *)disk_lookup(&wd_cd, (unit))
 
 
 int
