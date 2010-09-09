@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_subr.c,v 1.21 2010/08/22 21:23:07 tedu Exp $	*/
+/*	$OpenBSD: ntfs_subr.c,v 1.22 2010/09/04 21:35:58 tedu Exp $	*/
 /*	$NetBSD: ntfs_subr.c,v 1.4 2003/04/10 21:37:32 jdolecek Exp $	*/
 
 /*-
@@ -155,7 +155,7 @@ ntfs_findvattr(ntmp, ip, lvapp, vapp, type, name, namelen, vcn)
 /*
  * Search attribute specified in ntnode (load ntnode if necessary).
  * If not found but ATTR_A_ATTRLIST present, read it in and search through.
- * VOP_VGET node needed, and lookup through its ntnode (load if nessesary).
+ * VOP_VGET node needed, and lookup through its ntnode (load if necessary).
  *
  * ntnode should be locked
  */

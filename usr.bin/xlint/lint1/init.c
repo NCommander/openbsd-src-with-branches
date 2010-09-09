@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.10 2006/05/29 20:47:22 cloder Exp $	*/
+/*	$OpenBSD: init.c,v 1.11 2007/11/26 09:28:34 martynas Exp $	*/
 /*	$NetBSD: init.c,v 1.4 1995/10/02 17:21:37 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: init.c,v 1.10 2006/05/29 20:47:22 cloder Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.11 2007/11/26 09:28:34 martynas Exp $";
 #endif
 
 #include <stdlib.h>
@@ -394,7 +394,7 @@ mkinit(tnode_t *tn)
 		goto end;
 
 	/*
-	 * Store the tree memory. This is nessesary because otherwise
+	 * Store the tree memory. This is necessary because otherwise
 	 * expr() would free it.
 	 */
 	tmem = tsave();
