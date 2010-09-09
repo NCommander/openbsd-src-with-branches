@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.17 2010/06/29 21:04:42 reyk Exp $	*/
+/*	$OpenBSD: iked.h,v 1.18 2010/07/01 02:15:08 reyk Exp $	*/
 /*	$vantronix: iked.h,v 1.61 2010/06/03 07:57:33 reyk Exp $	*/
 
 /*
@@ -772,5 +772,6 @@ int	 parse_config(const char *, struct iked *);
 void	 print_user(struct iked_user *);
 void	 print_policy(struct iked_policy *);
 size_t	 keylength_xf(u_int, u_int, u_int);
+size_t	 noncelength_xf(u_int, u_int);
 
 #endif /* _IKED_H */
