@@ -78,7 +78,9 @@ CROSSGCC=	${CROSSDIR}/.gcc_done
     ${TARGET_ARCH} == "sparc" || ${TARGET_ARCH} == "vax"
 TARGET_USE_GCC3=No
 COMPILER_VERSION=gcc2
-.elif ${TARGET_ARCH} == "amd64" || ${TARGET_ARCH} == "sparc64"
+.elif ${TARGET_ARCH} == "amd64" || ${TARGET_ARCH} == "hppa" || \
+    ${TARGET_ARCH} == "i386" || ${TARGET_ARCH} == "powerpc" || \
+    ${TARGET_ARCH} == "sparc64"
 TARGET_USE_GCC4=Yes
 COMPILER_VERSION=gcc4
 .else
