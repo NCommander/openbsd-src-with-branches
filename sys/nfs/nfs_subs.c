@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_subs.c,v 1.108 2010/05/19 08:31:23 thib Exp $	*/
+/*	$OpenBSD: nfs_subs.c,v 1.109 2010/09/06 23:44:10 thib Exp $	*/
 /*	$NetBSD: nfs_subs.c,v 1.27.4.3 1996/07/08 20:34:24 jtc Exp $	*/
 
 /*
@@ -1252,7 +1252,7 @@ nfs_namei(struct nameidata *ndp, fhandle_t *fhp, int len,
 	 * And call lookup() to do the real work
 	 */
 	cnp->cn_proc = p;
-	error = lookup(ndp);
+	error = vfs_lookup(ndp);
 	if (error)
 		goto out;
 	/*
