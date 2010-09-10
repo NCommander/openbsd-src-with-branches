@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommu.c,v 1.28 2009/04/21 17:05:29 oga Exp $	*/
+/*	$OpenBSD: iommu.c,v 1.29 2009/05/04 16:48:37 oga Exp $	*/
 
 /*
  * Copyright (c) 2005 Jason L. Wright (jason@thought.net)
@@ -134,7 +134,7 @@ struct bus_dma_tag amdgart_bus_dma_tag = {
 	sg_dmamap_load_uio,
 	sg_dmamap_load_raw,
 	sg_dmamap_unload,
-	NULL,
+	_bus_dmamap_sync,
 	sg_dmamem_alloc,
 	_bus_dmamem_free,
 	_bus_dmamem_map,
