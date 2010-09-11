@@ -1,4 +1,4 @@
-/* $OpenBSD: tty-term.c,v 1.15 2009/11/26 14:46:08 nicm Exp $ */
+/* $OpenBSD: tty-term.c,v 1.16 2009/12/03 22:50:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -249,7 +249,8 @@ tty_term_override(struct tty_term *term, const char *overrides)
 			} else if (entstr[strlen(entstr) - 1] == '@') {
 				entstr[strlen(entstr) - 1] = '\0';
 				removeflag = 1;
-			}
+			} else
+				continue;
 
 			for (i = 0; i < NTTYCODE; i++) {
 				ent = &tty_term_codes[i];
