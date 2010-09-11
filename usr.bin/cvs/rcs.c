@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.299 2010/09/02 00:21:41 tobias Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.300 2010/09/03 08:37:52 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1625,7 +1625,7 @@ rcs_parse_desc(RCSFILE *rfp, RCSNUM *rev)
 /*
  * rcs_parse_init()
  *
- * Initial parsing of file <path>, which are in the RCS format.
+ * Initial parsing of file <path>, which is in the RCS format.
  * Just does admin section.
  */
 static void
