@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.91 2010/09/07 16:21:44 deraadt Exp $	*/
+/*	$OpenBSD: auich.c,v 1.92 2010/09/12 02:04:31 jakemsr Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -566,13 +566,13 @@ auich_activate(struct device *self, int act)
 	case DVACT_ACTIVATE:
 		break;
 	case DVACT_QUIESCE:
-		rv = config_activate_children(self, DVACT_QUIESCE);
+		rv = config_activate_children(self, act);
 		break;
 	case DVACT_SUSPEND:
 		break;
 	case DVACT_RESUME:
 		auich_resume(sc);
-		rv = config_activate_children(self, DVACT_RESUME);
+		rv = config_activate_children(self, act);
 		break;
 	case DVACT_DEACTIVATE:
 		if (sc->audiodev != NULL)
