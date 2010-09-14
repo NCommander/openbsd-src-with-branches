@@ -1,4 +1,4 @@
-/*	$OpenBSD: arcbios.c,v 1.11 2009/06/19 17:39:02 miod Exp $	*/
+/*	$OpenBSD: arcbios.c,v 1.12 2009/07/22 20:23:44 miod Exp $	*/
 /*-
  * Copyright (c) 1996 M. Warner Losh.  All rights reserved.
  * Copyright (c) 1996-2004 Opsycon AB.  All rights reserved.
@@ -36,7 +36,7 @@
 
 #include <stand.h>
 
-static int	bios_is_32bit;
+int	bios_is_32bit;
 
 u_int	kl_n_shift = 32;
 int	arcbios_init(void);
