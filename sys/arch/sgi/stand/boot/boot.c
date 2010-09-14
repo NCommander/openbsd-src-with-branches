@@ -148,11 +148,9 @@ dobootopts(int argc, char **argv)
 			SystemPartition = &cp[16];
 	}
 
-	/* If "OSLoadFilename=" is missing, see if any arg was given. */
-	if (bootauto == AUTO_NONE) {
-		if (*argv[1] == '/')
-			OSLoadFilename = argv[1];
-	}
+	/* If "OSLoadOptions=" is missing, see if any arg was given. */
+	if (bootauto == AUTO_NONE && *argv[1] == '/')
+		OSLoadFilename = argv[1];
 
 	if (bootauto == AUTO_MINI) {
 		static char loadpart[64];
