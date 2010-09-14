@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.h,v 1.136 2010/08/25 00:31:35 dlg Exp $	*/
+/*	$OpenBSD: scsiconf.h,v 1.137 2010/09/08 00:58:05 dlg Exp $	*/
 /*	$NetBSD: scsiconf.h,v 1.35 1997/04/02 02:29:38 mycroft Exp $	*/
 
 /*
@@ -396,6 +396,7 @@ struct scsi_link {
 
 	struct	scsi_runq queue;
 	u_int	running;
+	u_short	pending;
 
 	struct	scsi_iopool *pool;
 };
