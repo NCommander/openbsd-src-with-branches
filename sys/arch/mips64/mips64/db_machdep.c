@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.29 2010/08/30 08:52:10 syuu Exp $ */
+/*	$OpenBSD: db_machdep.c,v 1.30 2010/09/12 18:30:19 miod Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -437,8 +437,7 @@ db_inst_type(ins)
 
 	case OP_COP1:
 		switch (inst.RType.rs) {
-		case OP_BCx:
-		case OP_BCy:
+		case OP_BC:
 			ityp = IT_BRANCH;
 			break;
 		}
