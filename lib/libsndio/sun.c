@@ -1,4 +1,4 @@
-/*	$OpenBSD: sun.c,v 1.39 2010/07/21 23:00:16 ratchov Exp $	*/
+/*	$OpenBSD: sun.c,v 1.40 2010/08/06 06:52:17 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -894,6 +894,8 @@ sun_revents(struct sio_hdl *sh, struct pollfd *pfd)
 	int xrun, dmove, dierr = 0, doerr = 0, delta;
 	int revents = pfd->revents;
 
+	if (!hdl->sio.started)
+		return pfd->revents;
 	if (hdl->sio.mode & SIO_PLAY) {
 		if (ioctl(hdl->fd, AUDIO_PERROR, &xrun) < 0) {
 			DPERROR("sun_revents: PERROR");
@@ -957,13 +959,11 @@ sun_revents(struct sio_hdl *sh, struct pollfd *pfd)
 	 * right now to adjust revents, and avoid busy loops
 	 * programs
 	 */
-	if (hdl->sio.started) {
-		if (hdl->filling)
-			revents |= POLLOUT;
-		if ((hdl->sio.mode & SIO_PLAY) && !sun_wsil(hdl))
-			revents &= ~POLLOUT;
-		if ((hdl->sio.mode & SIO_REC) && !sun_rdrop(hdl))
-			revents &= ~POLLIN;
-	}
+	if (hdl->filling)
+		revents |= POLLOUT;
+	if ((hdl->sio.mode & SIO_PLAY) && !sun_wsil(hdl))
+		revents &= ~POLLOUT;
+	if ((hdl->sio.mode & SIO_REC) && !sun_rdrop(hdl))
+		revents &= ~POLLIN;
 	return revents;
 }
