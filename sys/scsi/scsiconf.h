@@ -396,7 +396,6 @@ struct scsi_link {
 
 	struct	scsi_runq queue;
 	u_int	running;
-	u_short	pending;
 
 	struct	scsi_iopool *pool;
 };
