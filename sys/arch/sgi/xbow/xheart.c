@@ -1,4 +1,4 @@
-/*	$OpenBSD: xheart.c,v 1.18 2009/11/25 17:39:51 syuu Exp $	*/
+/*	$OpenBSD: xheart.c,v 1.19 2009/11/26 23:32:46 syuu Exp $	*/
 
 /*
  * Copyright (c) 2008 Miodrag Vallat.
@@ -326,8 +326,7 @@ xheart_intr_establish(int (*func)(void *), void *arg, int intrbit,
 	ih->ih_level = level;
 	ih->ih_irq = intrbit;
 	if (name != NULL)
-		evcount_attach(&ih->ih_count, name, &ih->ih_level,
-		    &evcount_intr);
+		evcount_attach(&ih->ih_count, name, &ih->ih_level);
 
 	s = splhigh();
 

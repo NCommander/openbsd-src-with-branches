@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.12 2005/01/14 22:39:27 miod Exp $	*/
+/*	$OpenBSD: clock.c,v 1.13 2005/12/03 21:36:17 brad Exp $	*/
 /*	$NetBSD: clock.c,v 1.20 1997/04/27 20:43:38 thorpej Exp $	*/
 
 /*
@@ -253,8 +253,8 @@ cpu_initclocks()
 	timer3min = statmin;
 	statprev = statint;
 
-	evcount_attach(&statcnt, "stat", &stat_ipl, &evcount_intr);
-	evcount_attach(&clockcnt, "clock", &clock_ipl, &evcount_intr);
+	evcount_attach(&statcnt, "stat", &stat_ipl);
+	evcount_attach(&clockcnt, "clock", &clock_ipl);
 
 	/* finally, load hardware */
 	clk->clk_cr2 = CLK_CR1;

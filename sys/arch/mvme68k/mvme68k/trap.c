@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.69 2010/06/29 20:30:32 guenther Exp $ */
+/*	$OpenBSD: trap.c,v 1.70 2010/07/02 19:57:14 tedu Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -1101,7 +1101,7 @@ intr_establish(vec, ih, name)
 		}
 	}
 
-	evcount_attach(&ih->ih_count, name, &ih->ih_ipl, &evcount_intr);
+	evcount_attach(&ih->ih_count, name, &ih->ih_ipl);
 	SLIST_INSERT_HEAD(list, ih, ih_link);
 	return (0);
 }

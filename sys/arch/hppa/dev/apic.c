@@ -1,4 +1,4 @@
-/*	$OpenBSD: apic.c,v 1.10 2010/05/24 15:04:53 deraadt Exp $	*/
+/*	$OpenBSD: apic.c,v 1.11 2010/08/07 03:50:01 krw Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -188,7 +188,7 @@ apic_intr_establish(void *v, pci_intr_handle_t ih,
 			return (NULL);
 		}
 
-		evcount_attach(cnt, name, NULL, &evcount_intr);
+		evcount_attach(cnt, name, NULL);
 		biv = apic_intr_list[irq];
 		while (biv->next)
 			biv = biv->next;

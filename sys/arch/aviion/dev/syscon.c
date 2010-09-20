@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscon.c,v 1.4 2007/12/19 22:05:06 miod Exp $ */
+/*	$OpenBSD: syscon.c,v 1.5 2010/04/21 19:33:47 miod Exp $ */
 /*
  * Copyright (c) 2007 Miodrag Vallat.
  *
@@ -179,8 +179,7 @@ sysconintr_establish(u_int intsrc, struct intrhand *ih, const char *name)
 		return (EINVAL);
 	}
 
-	evcount_attach(&ih->ih_count, name, (void *)&ih->ih_ipl,
-	    &evcount_intr);
+	evcount_attach(&ih->ih_count, name, &ih->ih_ipl);
 	SLIST_INSERT_HEAD(list, ih, ih_link);
 
 	intsrc_enable(intsrc, ih->ih_ipl);

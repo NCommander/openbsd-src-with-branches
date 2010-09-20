@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.84 2010/09/08 17:54:37 deraadt Exp $	*/
+/*	$OpenBSD: pccbb.c,v 1.85 2010/09/08 17:56:16 deraadt Exp $	*/
 /*	$NetBSD: pccbb.c,v 1.96 2004/03/28 09:49:31 nakayama Exp $	*/
 
 /*
@@ -1534,8 +1534,7 @@ pccbb_intr_establish(struct pccbb_softc *sc, int irq, int level,
 	newpil->pil_func = func;
 	newpil->pil_arg = arg;
 	newpil->pil_level = level;
-	evcount_attach(&newpil->pil_count, name, &sc->sc_intrline,
-	    &evcount_intr);
+	evcount_attach(&newpil->pil_count, name, &sc->sc_intrline);
 	newpil->pil_next = NULL;
 
 	if (sc->sc_pil == NULL) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.35 2010/04/16 22:35:24 kettenis Exp $	*/
+/*	$OpenBSD: intr.c,v 1.36 2010/07/07 15:35:23 kettenis Exp $	*/
 /*	$NetBSD: intr.c,v 1.39 2001/07/19 23:38:11 eeh Exp $ */
 
 /*
@@ -228,9 +228,9 @@ intr_establish(int level, struct intrhand *ih)
 		panic("intr_establish: bad intr number %x", ih->ih_number);
 
 	if (strlen(ih->ih_name) == 0)
-		evcount_attach(&ih->ih_count, "unknown", NULL, &evcount_intr);
+		evcount_attach(&ih->ih_count, "unknown", NULL);
 	else
-		evcount_attach(&ih->ih_count, ih->ih_name, NULL, &evcount_intr);
+		evcount_attach(&ih->ih_count, ih->ih_name, NULL);
 
 	q = intrlev[ih->ih_number];
 	if (q == NULL) {

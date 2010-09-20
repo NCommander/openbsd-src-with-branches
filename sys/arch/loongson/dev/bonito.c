@@ -1,4 +1,4 @@
-/*	$OpenBSD: bonito.c,v 1.15 2010/07/18 13:36:13 miod Exp $	*/
+/*	$OpenBSD: bonito.c,v 1.16 2010/08/31 10:24:46 pirofti Exp $	*/
 /*	$NetBSD: bonito_mainbus.c,v 1.11 2008/04/28 20:23:10 martin Exp $	*/
 /*	$NetBSD: bonito_pci.c,v 1.5 2008/04/28 20:23:28 martin Exp $	*/
 
@@ -400,7 +400,7 @@ bonito_intr_establish(int irq, int type, int level, int (*handler)(void *),
 	ih->ih_arg = arg;
 	ih->ih_level = level;
 	ih->ih_irq = irq;
-	evcount_attach(&ih->ih_count, name, (void *)&ih->ih_irq, &evcount_intr);
+	evcount_attach(&ih->ih_count, name, &ih->ih_irq);
 
 	s = splhigh();
 

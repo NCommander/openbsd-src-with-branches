@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.73 2010/08/17 20:05:06 miod Exp $	*/
+/*	$OpenBSD: fd.c,v 1.75 2010/09/08 14:47:10 jsing Exp $	*/
 /*	$NetBSD: fd.c,v 1.51 1997/05/24 20:16:19 pk Exp $	*/
 
 /*-
@@ -426,7 +426,7 @@ fdcattach(parent, self, aux)
 		return;
 	}
 	evcount_attach(&fdc->sc_hih.ih_count, self->dv_xname,
-	    &fdc->sc_hih.ih_vec, &evcount_intr);
+	    &fdc->sc_hih.ih_vec);
 #endif
 	fdc->sc_sih = softintr_establish(IPL_FDSOFT, fdcswintr, fdc);
 

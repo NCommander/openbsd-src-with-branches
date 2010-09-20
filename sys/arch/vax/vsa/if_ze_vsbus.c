@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ze_vsbus.c,v 1.4 2006/08/30 19:28:13 miod Exp $	*/
+/*	$OpenBSD: if_ze_vsbus.c,v 1.5 2008/08/22 17:09:08 deraadt Exp $	*/
 /*      $NetBSD: if_ze_vsbus.c,v 1.5 2000/07/26 21:50:49 matt Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -117,8 +117,7 @@ zeattach(parent, self, aux)
 	sc->sc_intvec = SGECVEC;
 	scb_vecalloc(va->va_cvec, (void (*)(void *)) sgec_intr,
 	    sc, SCB_ISTACK, &sc->sc_intrcnt);
-	evcount_attach(&sc->sc_intrcnt, sc->sc_dev.dv_xname,
-	    (void *)&sc->sc_intvec, &evcount_intr);
+	evcount_attach(&sc->sc_intrcnt, sc->sc_dev.dv_xname, &sc->sc_intvec);
 
 	/*
 	 * Map in, read and release ethernet rom address.

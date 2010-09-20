@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.236 2010/06/27 03:03:48 thib Exp $	*/
+/* $OpenBSD: machdep.c,v 1.237 2010/06/27 12:41:23 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -777,8 +777,7 @@ intr_establish(int vec, struct intrhand *ih, const char *name)
 		}
 	}
 
-	evcount_attach(&ih->ih_count, name, (void *)&ih->ih_ipl,
-	    &evcount_intr);
+	evcount_attach(&ih->ih_count, name, &ih->ih_ipl);
 	SLIST_INSERT_HEAD(list, ih, ih_link);
 
 #ifdef MVME188

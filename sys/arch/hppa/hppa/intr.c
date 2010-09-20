@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.33 2010/05/24 15:04:54 deraadt Exp $	*/
+/*	$OpenBSD: intr.c,v 1.34 2010/07/01 21:14:01 jsing Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -193,7 +193,7 @@ cpu_intr_map(void *v, int pri, int irq, int (*handler)(void *), void *arg,
 		}
 	}
 
-	evcount_attach(cnt, name, NULL, &evcount_intr);
+	evcount_attach(cnt, name, NULL);
 	iv->pri = pri;
 	iv->irq = irq;
 	iv->flags = 0;
@@ -247,7 +247,7 @@ cpu_intr_establish(int pri, int irq, int (*handler)(void *), void *arg,
 		free(cnt, M_DEVBUF);
 		iv->cnt = NULL;
 	} else
-		evcount_attach(cnt, name, NULL, &evcount_intr);
+		evcount_attach(cnt, name, NULL);
 
 	return (iv);
 }

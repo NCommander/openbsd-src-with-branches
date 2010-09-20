@@ -1,4 +1,4 @@
-/*	$OpenBSD: i80321_clock.c,v 1.7 2007/05/21 14:54:35 drahn Exp $ */
+/*	$OpenBSD: i80321_clock.c,v 1.8 2008/02/14 19:53:22 drahn Exp $ */
 
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@openbsd.org>
@@ -320,8 +320,8 @@ cpu_initclocks()
 
 	ticks_per_intr = ticks_per_second / hz;
 
-	evcount_attach(&clk_count, "clock", (void *)&clk_irq, &evcount_intr);
-	evcount_attach(&stat_count, "stat", (void *)&stat_irq, &evcount_intr);
+	evcount_attach(&clk_count, "clock", &clk_irq);
+	evcount_attach(&stat_count, "stat", &stat_irq);
 
 	(void) i80321_intr_establish(ICU_INT_TMR0, IPL_CLOCK, i80321_intr,
 	    NULL, NULL);

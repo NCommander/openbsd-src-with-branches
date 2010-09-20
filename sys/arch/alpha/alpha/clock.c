@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.18 2007/04/30 04:35:05 miod Exp $	*/
+/*	$OpenBSD: clock.c,v 1.19 2010/06/30 20:38:49 tedu Exp $	*/
 /*	$NetBSD: clock.c,v 1.29 2000/06/05 21:47:10 thorpej Exp $	*/
 
 /*
@@ -132,7 +132,7 @@ cpu_initclocks(void)
 	platform.clockintr = hardclock;
 	schedhz = 16;
 
-	evcount_attach(&clk_count, "clock", (void *)&clk_irq, &evcount_intr);
+	evcount_attach(&clk_count, "clock", &clk_irq);
 
 	/*
 	 * Get the clock started.
