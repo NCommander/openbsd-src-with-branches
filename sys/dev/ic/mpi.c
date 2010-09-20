@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.161 2010/09/13 07:48:12 dlg Exp $ */
+/*	$OpenBSD: mpi.c,v 1.162 2010/09/14 00:03:04 dlg Exp $ */
 
 /*
  * Copyright (c) 2005, 2006, 2009 David Gwynne <dlg@openbsd.org>
@@ -1233,7 +1233,7 @@ mpi_scsi_cmd(struct scsi_xfer *xs)
 		DNPRINTF(MPI_D_CMD, "%s: CBD too big %d\n",
 		    DEVNAME(sc), xs->cmdlen);
 		bzero(&xs->sense, sizeof(xs->sense));
-		xs->sense.error_code = SSD_ERRCODE_VALID | 0x70;
+		xs->sense.error_code = SSD_ERRCODE_VALID | SSD_ERRCODE_CURRENT;
 		xs->sense.flags = SKEY_ILLEGAL_REQUEST;
 		xs->sense.add_sense_code = 0x20;
 		xs->error = XS_SENSE;

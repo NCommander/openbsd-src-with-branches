@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.47 2010/06/28 18:31:01 krw Exp $	*/
+/*	$OpenBSD: aac.c,v 1.48 2010/08/07 03:50:01 krw Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -2429,7 +2429,7 @@ aac_internal_cache_cmd(struct scsi_xfer *xs)
 	case REQUEST_SENSE:
 		AAC_DPRINTF(AAC_D_CMD, ("REQUEST SENSE tgt %d ", target));
 		bzero(&sd, sizeof sd);
-		sd.error_code = 0x70;
+		sd.error_code = SSD_ERRCODE_CURRENT;
 		sd.segment = 0;
 		sd.flags = SKEY_NO_SENSE;
 		aac_enc32(sd.info, 0);

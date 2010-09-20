@@ -1,4 +1,4 @@
-/*	$OpenBSD: twe.c,v 1.36 2010/05/20 00:55:17 krw Exp $	*/
+/*	$OpenBSD: twe.c,v 1.37 2010/06/28 18:31:02 krw Exp $	*/
 
 /*
  * Copyright (c) 2000-2002 Michael Shalayeff.  All rights reserved.
@@ -808,7 +808,7 @@ twe_scsi_cmd(xs)
 	case REQUEST_SENSE:
 		TWE_DPRINTF(TWE_D_CMD, ("REQUEST SENSE tgt %d ", target));
 		bzero(&sd, sizeof sd);
-		sd.error_code = 0x70;
+		sd.error_code = SSD_ERRCODE_CURRENT;
 		sd.segment = 0;
 		sd.flags = SKEY_NO_SENSE;
 		*(u_int32_t*)sd.info = htole32(0);
