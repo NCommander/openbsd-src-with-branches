@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_skvar.h,v 1.5 2009/07/08 20:18:05 sthen Exp $	*/
+/*	$OpenBSD: if_skvar.h,v 1.6 2009/10/04 18:32:41 deraadt Exp $	*/
 /*	$NetBSD: if_skvar.h,v 1.6 2005/05/30 04:35:22 christos Exp $	*/
 
 /*-
@@ -26,7 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/*	$OpenBSD: if_skvar.h,v 1.5 2009/07/08 20:18:05 sthen Exp $	*/
+/*	$OpenBSD: if_skvar.h,v 1.6 2009/10/04 18:32:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -227,7 +227,6 @@ struct sk_if_softc {
 	LIST_HEAD(__sk_jfreehead, sk_jpool_entry)	sk_jfree_listhead;
 	LIST_HEAD(__sk_jinusehead, sk_jpool_entry)	sk_jinuse_listhead;
 	SIMPLEQ_HEAD(__sk_txmaphead, sk_txmap_entry)	sk_txmap_head;
-	void			*sk_sdhook;
 };
 
 struct skc_attach_args {

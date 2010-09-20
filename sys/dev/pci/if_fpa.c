@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fpa.c,v 1.25 2009/03/29 21:53:52 sthen Exp $	*/
+/*	$OpenBSD: if_fpa.c,v 1.26 2009/08/13 14:24:47 jasper Exp $	*/
 /*	$NetBSD: if_fpa.c,v 1.15 1996/10/21 22:56:40 thorpej Exp $	*/
 
 /*-
@@ -170,12 +170,6 @@ pdq_pci_attach(parent, self, aux)
 	bcopy((caddr_t) sc->sc_pdq->pdq_hwaddr.lanaddr_bytes,
 	    sc->sc_arpcom.ac_enaddr, 6);
 	pdq_ifattach(sc, NULL);
-
-	sc->sc_ats = shutdownhook_establish((void (*)(void *)) pdq_hwreset,
-	    sc->sc_pdq);
-	if (sc->sc_ats == NULL)
-		printf("%s: warning: couldn't establish shutdown hook\n",
-		    self->dv_xname);
 }
 
 struct cfattach fpa_ca = {

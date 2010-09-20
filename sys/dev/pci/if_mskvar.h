@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mskvar.h,v 1.7 2008/06/26 05:42:17 ray Exp $	*/
+/*	$OpenBSD: if_mskvar.h,v 1.8 2009/03/23 21:58:54 kettenis Exp $	*/
 /*	$NetBSD: if_skvar.h,v 1.6 2005/05/30 04:35:22 christos Exp $	*/
 
 /*-
@@ -26,7 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/*	$OpenBSD: if_mskvar.h,v 1.7 2008/06/26 05:42:17 ray Exp $	*/
+/*	$OpenBSD: if_mskvar.h,v 1.8 2009/03/23 21:58:54 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -219,7 +219,6 @@ struct sk_if_softc {
 	int			sk_tx_bmu;	/* TX BMU register */
 	int			sk_if_flags;
 	SIMPLEQ_HEAD(__sk_txmaphead, sk_txmap_entry)	sk_txmap_head;
-	void			*sk_sdhook;
 };
 
 struct skc_attach_args {
