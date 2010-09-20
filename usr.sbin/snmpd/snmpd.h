@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.28 2010/04/01 14:42:32 claudio Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.29 2010/06/11 10:45:36 jsg Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -362,7 +362,7 @@ int		 trap_send(struct ber_oid *, struct ber_element *);
 
 /* mps.c */
 struct ber_element *
-		 mps_getreq(struct ber_element *, struct ber_oid *);
+		 mps_getreq(struct ber_element *, struct ber_oid *, u_int);
 struct ber_element *
 		 mps_getnextreq(struct ber_element *, struct ber_oid *);
 int		 mps_setreq(struct ber_element *, struct ber_oid *);
