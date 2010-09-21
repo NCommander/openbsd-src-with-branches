@@ -1,4 +1,4 @@
-/*	$OpenBSD: esovar.h,v 1.4 2007/11/11 01:32:52 jakemsr Exp $	*/
+/*	$OpenBSD: esovar.h,v 1.5 2010/09/07 16:21:44 deraadt Exp $	*/
 /*	$NetBSD: esovar.h,v 1.5 2004/05/25 21:38:11 kleink Exp $	*/
 
 /*
@@ -108,6 +108,7 @@ struct eso_softc {
 
 	/* Audio 1 DMAC device */
 	unsigned int		sc_dmac_configured;
+	bus_addr_t		sc_dmac_addr;
 	bus_space_tag_t		sc_dmac_iot;
 	bus_space_handle_t	sc_dmac_ioh;
 
