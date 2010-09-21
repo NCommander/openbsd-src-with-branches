@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.95 2010/07/02 01:25:05 art Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.96 2010/07/03 03:04:55 tedu Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -455,7 +455,7 @@ pool_get(struct pool *pp, int flags)
 
 #ifdef DIAGNOSTIC
 	if ((flags & PR_WAITOK) != 0)
-		splassert(IPL_NONE);
+		assertwaitok();
 #endif /* DIAGNOSTIC */
 
 	mtx_enter(&pp->pr_mtx);
