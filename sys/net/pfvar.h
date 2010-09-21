@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.310 2010/06/27 01:39:43 henning Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.311 2010/06/28 23:21:41 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1211,6 +1211,7 @@ struct pf_pdesc {
 	u_int16_t	 ndport;	/* dst port after NAT */
 
 	u_int32_t	 p_len;		/* total length of payload */
+	u_int32_t	 rh_cnt;	/* # of routing headers */
 
 	u_int16_t	*ip_sum;
 	u_int16_t	*proto_sum;
@@ -1735,6 +1736,11 @@ extern void			 pf_addrcpy(struct pf_addr *, struct pf_addr *,
 void				 pf_rm_rule(struct pf_rulequeue *,
 				    struct pf_rule *);
 struct pf_divert		*pf_find_divert(struct mbuf *);
+int				 pf_setup_pdesc(sa_family_t, int,
+				    struct pf_pdesc *, struct mbuf *,
+				    u_short *, u_short *, struct pfi_kif *,
+				    struct pf_rule **, struct pf_rule **,
+				    struct pf_ruleset **, int *, int *);
 
 #ifdef INET
 int	pf_test(int, struct ifnet *, struct mbuf **, struct ether_header *);
