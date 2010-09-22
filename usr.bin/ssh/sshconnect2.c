@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.183 2010/04/26 22:28:24 djm Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.184 2010/08/31 11:54:45 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -129,6 +129,8 @@ ssh_kex2(char *host, struct sockaddr *hostaddr)
 	if (options.hostkeyalgorithms != NULL)
 		myproposal[PROPOSAL_SERVER_HOST_KEY_ALGS] =
 		    options.hostkeyalgorithms;
+	if (options.kex_algorithms != NULL)
+		myproposal[PROPOSAL_KEX_ALGS] = options.kex_algorithms;
 
 	if (options.rekey_limit)
 		packet_set_rekey_limit((u_int32_t)options.rekey_limit);
