@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.75 2010/09/08 14:47:10 jsing Exp $	*/
+/*	$OpenBSD: fd.c,v 1.76 2010/09/20 06:33:47 matthew Exp $	*/
 /*	$NetBSD: fd.c,v 1.51 1997/05/24 20:16:19 pk Exp $	*/
 
 /*-
@@ -1007,7 +1007,7 @@ fdread(dev, uio, flag)
 	int flag;
 {
 
-        return (physio(fdstrategy, NULL, dev, B_READ, minphys, uio));
+        return (physio(fdstrategy, dev, B_READ, minphys, uio));
 }
 
 int
@@ -1017,7 +1017,7 @@ fdwrite(dev, uio, flag)
 	int flag;
 {
 
-        return (physio(fdstrategy, NULL, dev, B_WRITE, minphys, uio));
+        return (physio(fdstrategy, dev, B_WRITE, minphys, uio));
 }
 
 void

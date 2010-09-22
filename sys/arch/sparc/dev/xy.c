@@ -1,4 +1,4 @@
-/*	$OpenBSD: xy.c,v 1.46 2010/08/28 20:23:22 matthew Exp $	*/
+/*	$OpenBSD: xy.c,v 1.48 2010/09/08 14:47:10 jsing Exp $	*/
 /*	$NetBSD: xy.c,v 1.26 1997/07/19 21:43:56 pk Exp $	*/
 
 /*
@@ -917,7 +917,7 @@ xyread(dev, uio, flags)
 	int flags;
 {
 
-	return (physio(xystrategy, NULL, dev, B_READ, minphys, uio));
+	return (physio(xystrategy, dev, B_READ, minphys, uio));
 }
 
 int
@@ -927,7 +927,7 @@ xywrite(dev, uio, flags)
 	int flags;
 {
 
-	return (physio(xystrategy, NULL, dev, B_WRITE, minphys, uio));
+	return (physio(xystrategy, dev, B_WRITE, minphys, uio));
 }
 
 

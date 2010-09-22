@@ -1,4 +1,4 @@
-/*	$OpenBSD: ct.c,v 1.19 2008/06/10 20:50:22 beck Exp $	*/
+/*	$OpenBSD: ct.c,v 1.21 2008/06/12 06:58:33 deraadt Exp $	*/
 /*	$NetBSD: ct.c,v 1.21 1997/04/02 22:37:23 scottr Exp $	*/
 
 /*
@@ -864,7 +864,7 @@ ctread(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	return (physio(ctstrategy, NULL, dev, B_READ, minphys, uio));
+	return (physio(ctstrategy, dev, B_READ, minphys, uio));
 }
 
 int
@@ -874,7 +874,7 @@ ctwrite(dev, uio, flags)
 	int flags;
 {
 	/* XXX: check for hardware write-protect? */
-	return (physio(ctstrategy, NULL, dev, B_WRITE, minphys, uio));
+	return (physio(ctstrategy, dev, B_WRITE, minphys, uio));
 }
 
 /*ARGSUSED*/
