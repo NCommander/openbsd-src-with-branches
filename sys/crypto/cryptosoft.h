@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptosoft.h,v 1.11 2007/09/10 22:19:42 henric Exp $	*/
+/*	$OpenBSD: cryptosoft.h,v 1.12 2010/01/10 12:43:07 markus Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -63,6 +63,7 @@ extern const u_int8_t hmac_opad_buffer[HMAC_MAX_BLOCK_LEN];
 int	swcr_encdec(struct cryptodesc *, struct swcr_data *, caddr_t, int);
 int	swcr_authcompute(struct cryptop *, struct cryptodesc *, struct swcr_data *,
 	caddr_t, int);
+int	swcr_combined(struct cryptop *);
 int	swcr_compdec(struct cryptodesc *, struct swcr_data *, caddr_t, int);
 int	swcr_process(struct cryptop *);
 int	swcr_newsession(u_int32_t *, struct cryptoini *);
