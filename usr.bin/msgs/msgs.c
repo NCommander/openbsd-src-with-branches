@@ -1,4 +1,4 @@
-/*	$OpenBSD: msgs.c,v 1.33 2007/09/11 18:22:42 cloder Exp $	*/
+/*	$OpenBSD: msgs.c,v 1.34 2009/10/27 23:59:40 deraadt Exp $	*/
 /*	$NetBSD: msgs.c,v 1.7 1995/09/28 06:57:40 tls Exp $	*/
 
 /*-
@@ -150,7 +150,7 @@ main(int argc, char *argv[])
 	bool newrc, already;
 	int rcfirst = 0;		/* first message to print (from .rc) */
 	int rcback = 0;			/* amount to back off of rcfirst */
-	int firstmsg, nextmsg, lastmsg = 0;
+	int firstmsg = 0, nextmsg, lastmsg = 0;
 	int blast = 0;
 	FILE *bounds;
 	char *cp;
