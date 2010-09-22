@@ -1,4 +1,4 @@
-/*	$OpenBSD: elroy.c,v 1.7 2010/05/24 15:06:03 deraadt Exp $	*/
+/*	$OpenBSD: elroy.c,v 1.8 2010/07/24 19:34:54 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -468,7 +468,7 @@ elroy_alloc_parent(struct device *self, struct pci_attach_args *pa, int io)
 		return (NULL);
 
 	extent_free(ex, start, size, EX_NOWAIT);
-	return rbus_new_root_share(tag, ex, start, size, 0);
+	return rbus_new_root_share(tag, ex, start, size);
 #else
 	return (NULL);
 #endif

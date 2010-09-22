@@ -1,4 +1,4 @@
-/*	$OpenBSD: dino.c,v 1.25 2009/03/30 21:24:57 kettenis Exp $	*/
+/*	$OpenBSD: dino.c,v 1.27 2010/04/29 13:48:29 jsing Exp $	*/
 
 /*
  * Copyright (c) 2003-2005 Michael Shalayeff
@@ -639,7 +639,7 @@ dino_alloc_parent(struct device *self, struct pci_attach_args *pa, int io)
 		return (NULL);
 
 	extent_free(ex, start, size, EX_NOWAIT);
-	return rbus_new_root_share(tag, ex, start, size, 0);
+	return rbus_new_root_share(tag, ex, start, size);
 }
 #endif
 

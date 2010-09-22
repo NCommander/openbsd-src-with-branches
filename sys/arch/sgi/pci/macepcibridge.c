@@ -1,4 +1,4 @@
-/*	$OpenBSD: macepcibridge.c,v 1.38 2010/04/06 19:12:34 miod Exp $ */
+/*	$OpenBSD: macepcibridge.c,v 1.39 2010/08/23 16:56:18 miod Exp $ */
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -887,7 +887,7 @@ mace_pcibr_rbus_parent_io(struct pci_attach_args *pa)
 	rbus_tag_t rb;
 
 	rb = rbus_new_root_share(pa->pa_iot, pa->pa_ioex,
-	    0x0000, 0xffff, 0);
+	    0x0000, 0xffff);
 	if (rb != NULL)
 		rb->rb_md = &mace_pcibr_rb_md_fn;
 
@@ -900,7 +900,7 @@ mace_pcibr_rbus_parent_mem(struct pci_attach_args *pa)
 	rbus_tag_t rb;
 
 	rb = rbus_new_root_share(pa->pa_memt, pa->pa_memex,
-	    0, 0xffffffff, 0);
+	    0, 0xffffffff);
 	if (rb != NULL)
 		rb->rb_md = &mace_pcibr_rb_md_fn;
 
