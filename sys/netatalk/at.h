@@ -1,4 +1,4 @@
-/*	$OpenBSD: at.h,v 1.2 1997/09/06 14:49:02 deraadt Exp $	*/
+/*	$OpenBSD: at.h,v 1.3 2003/05/14 02:02:55 itojun Exp $	*/
 
 /*
  * Copyright (c) 1990,1991 Regents of The University of Michigan.
@@ -132,10 +132,5 @@ struct sockaddr_at {
 };
 
 #define	sat_zero	sat_range.r_zero
-
-#ifdef _KERNEL
-extern struct domain	atalkdomain;
-extern struct protosw	atalksw[];
-#endif
 
 #endif	/* __AT_HEADER__ */
