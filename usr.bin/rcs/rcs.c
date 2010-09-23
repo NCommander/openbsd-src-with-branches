@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.62 2010/09/02 00:21:41 tobias Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.63 2010/09/11 07:26:00 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1207,8 +1207,10 @@ rcs_getrev(RCSFILE *rfp, RCSNUM *frev)
 	if (RCSNUM_ISBRANCH(rev)) {
 		brev = rev;
 		rdp = rcs_findrev(rfp, rev);
-		if (rdp == NULL)
+		if (rdp == NULL) {
+			buf_free(rbuf);
 			return (NULL);
+		}
 
 		rev = rdp->rd_num;
 	} else {
@@ -1274,6 +1276,7 @@ rcs_getrev(RCSFILE *rfp, RCSNUM *frev)
 			rcs_parse_deltatexts(rfp, rdp->rd_num);
 
 		rbuf = rcs_patchfile(data, dlen, patch, plen, rcs_patch_lines);
+		xfree(data);
 
 		if (rbuf == NULL)
 			break;
