@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.40 2010/06/11 10:45:36 jsg Exp $	*/
+/*	$OpenBSD: mib.c,v 1.41 2010/09/20 16:29:51 sthen Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -1428,8 +1428,7 @@ mib_memiftable(struct oid *oid, struct ber_oid *o, struct ber_element **elm)
 		ber = ber_add_string(ber, kif->if_name);
 		break;
 	case 2:
-		ber = ber_add_integer(ber, kif->if_data.ifi_livelocks);
-		ber_set_header(ber, BER_CLASS_APPLICATION, SNMP_T_COUNTER64);
+		ber = ber_add_string(ber, 0);
 		break;
 	default:
 		return (-1);
