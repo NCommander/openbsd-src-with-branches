@@ -1,4 +1,4 @@
-/*	$OpenBSD: rf_disks.c,v 1.13 2008/06/26 05:42:17 ray Exp $	*/
+/*	$OpenBSD: rf_disks.c,v 1.14 2010/05/23 13:49:35 naddy Exp $	*/
 /*	$NetBSD: rf_disks.c,v 1.31 2000/06/02 01:17:14 oster Exp $	*/
 
 /*
@@ -598,7 +598,7 @@ rf_AutoConfigureDisks(RF_Raid_t *raidPtr, RF_Config_t *cfgPtr,
 	ac = auto_config;
 	while(ac != NULL) {
 		if (ac->flag == 0) {
-			VOP_CLOSE(ac->vp, FREAD, NOCRED, 0);
+			VOP_CLOSE(ac->vp, FREAD, NOCRED, curproc);
 			vput(ac->vp);
 			ac->vp = NULL;
 #if	DEBUG
