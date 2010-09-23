@@ -1619,9 +1619,10 @@ set_uid(struct disklabel *lp)
 	char *s;
 	int i;
 
-	printf("The disklabel UID is currently: ");
-	uid_print(stdout, lp);
-	printf("\n");
+	printf("The disklabel UID is currently: "
+	    "%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx\n",
+            lp->d_uid[0], lp->d_uid[1], lp->d_uid[2], lp->d_uid[3],
+            lp->d_uid[4], lp->d_uid[5], lp->d_uid[6], lp->d_uid[7]);
 
 	do {
 		s = getstring("uid", "The disklabel UID, given as a 16 "
