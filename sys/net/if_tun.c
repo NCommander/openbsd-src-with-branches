@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.107 2010/07/08 08:40:29 yasuoka Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.108 2010/09/22 05:44:27 matthew Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -818,7 +818,7 @@ tunread(dev_t dev, struct uio *uio, int ioflag)
 		m_freem(m0);
 	}
 	if (error)
-		ifp->if_ierrors++;
+		ifp->if_oerrors++;
 
 	return (error);
 }
