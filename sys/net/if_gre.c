@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.50 2010/06/26 22:11:51 claudio Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.51 2010/07/03 04:44:51 guenther Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -736,20 +736,20 @@ gre_in_cksum(u_int16_t *p, u_int len)
 	while (nwords-- != 0)
 		sum += *p++;
 
-		if (len & 1) {
-			union {
-				u_short w;
-				u_char c[2];
-			} u;
-			u.c[0] = *(u_char *) p;
-			u.c[1] = 0;
-			sum += u.w;
-		}
+	if (len & 1) {
+		union {
+			u_short w;
+			u_char c[2];
+		} u;
+		u.c[0] = *(u_char *) p;
+		u.c[1] = 0;
+		sum += u.w;
+	}
 
-		/* end-around-carry */
-		sum = (sum >> 16) + (sum & 0xffff);
-		sum += (sum >> 16);
-		return (~sum);
+	/* end-around-carry */
+	sum = (sum >> 16) + (sum & 0xffff);
+	sum += (sum >> 16);
+	return (~sum);
 }
 
 void
