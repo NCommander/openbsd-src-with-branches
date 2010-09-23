@@ -229,6 +229,7 @@ cdattach(struct device *parent, struct device *self, void *aux)
 	    &sc->sc_xsh);
 
 	/* Attach disk. */
+	sc->sc_dk.dk_flags = DKF_NOLABELREAD;
 	disk_attach(&sc->sc_dev, &sc->sc_dk);
 }
 

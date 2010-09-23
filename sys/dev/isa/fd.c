@@ -303,6 +303,7 @@ fdattach(parent, self, aux)
 	/*
 	 * Initialize and attach the disk structure.
 	 */
+	fd->sc_dk.dk_flags = DKF_NOLABELREAD;
 	fd->sc_dk.dk_name = fd->sc_dev.dv_xname;
 	disk_attach(&fd->sc_dev, &fd->sc_dk);
 
