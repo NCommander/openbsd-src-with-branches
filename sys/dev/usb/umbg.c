@@ -1,4 +1,4 @@
-/*	$OpenBSD: umbg.c,v 1.10 2009/10/13 19:33:19 pirofti Exp $ */
+/*	$OpenBSD: umbg.c,v 1.11 2009/11/21 14:30:35 deraadt Exp $ */
 
 /*
  * Copyright (c) 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -295,8 +295,6 @@ umbg_detach(struct device *self, int flags)
 {
 	struct umbg_softc *sc = (struct umbg_softc *)self;
 	usbd_status err;
-
-	sc->sc_dying = 1;
 
 	timeout_del(&sc->sc_to);
 	timeout_del(&sc->sc_it_to);

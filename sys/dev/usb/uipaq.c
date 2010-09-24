@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipaq.c,v 1.16 2008/06/26 05:42:18 ray Exp $	*/
+/*	$OpenBSD: uipaq.c,v 1.17 2009/10/13 19:33:19 pirofti Exp $	*/
 
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -383,7 +383,6 @@ uipaq_detach(struct device *self, int flags)
 	int rv = 0;
 
 	DPRINTF(("uipaq_detach: sc=%p flags=%d\n", sc, flags));
-	sc->sc_dying = 1;
 	if (sc->sc_subdev != NULL) {
 		rv |= config_detach(sc->sc_subdev, flags);
 		sc->sc_subdev = NULL;

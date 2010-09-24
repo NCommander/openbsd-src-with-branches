@@ -1,4 +1,4 @@
-/*	$OpenBSD: uplcom.c,v 1.51 2008/06/26 05:42:19 ray Exp $	*/
+/*	$OpenBSD: uplcom.c,v 1.52 2009/10/13 19:33:19 pirofti Exp $	*/
 /*	$NetBSD: uplcom.c,v 1.29 2002/09/23 05:51:23 simonb Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -432,7 +432,6 @@ uplcom_detach(struct device *self, int flags)
                 sc->sc_intr_pipe = NULL;
         }
 
-	sc->sc_dying = 1;
 	if (sc->sc_subdev != NULL) {
 		rv = config_detach(sc->sc_subdev, flags);
 		sc->sc_subdev = NULL;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvisor.c,v 1.40 2010/07/02 03:13:42 tedu Exp $	*/
+/*	$OpenBSD: uvisor.c,v 1.41 2010/08/31 16:38:42 deraadt Exp $	*/
 /*	$NetBSD: uvisor.c,v 1.21 2003/08/03 21:59:26 nathanw Exp $	*/
 
 /*
@@ -408,7 +408,6 @@ uvisor_detach(struct device *self, int flags)
 	int i;
 
 	DPRINTF(("uvisor_detach: sc=%p flags=%d\n", sc, flags));
-	sc->sc_dying = 1;
 	for (i = 0; i < sc->sc_numcon; i++) {
 		if (sc->sc_subdevs[i] != NULL) {
 			rv |= config_detach(sc->sc_subdevs[i], flags);

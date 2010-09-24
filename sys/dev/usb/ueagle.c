@@ -1,4 +1,4 @@
-/*	$OpenBSD: ueagle.c,v 1.26 2010/06/05 13:06:57 damien Exp $	*/
+/*	$OpenBSD: ueagle.c,v 1.27 2010/08/27 17:08:01 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2003-2006
@@ -242,7 +242,6 @@ ueagle_detach(struct device *self, int flags)
 	if (sc->fw != NULL)
 		return 0; /* shortcut for pre-firmware devices */
 
-	sc->gone = 1;
 	ueagle_stop(ifp, 1);
 
 	/* wait for stat thread to exit properly */

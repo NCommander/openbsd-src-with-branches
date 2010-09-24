@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.44 2009/10/13 19:33:17 pirofti Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.45 2010/03/06 17:09:31 mk Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -372,12 +372,10 @@ cdce_detach(struct device *self, int flags)
 	struct ifnet		*ifp = GET_IFP(sc);
 	int			 s;
 
-	s = splusb();
-
-	if (!sc->cdce_attached) {
-		splx(s);
+	if (!sc->cdce_attached)
 		return (0);
-	}
+
+	s = splusb();
 
 	if (ifp->if_flags & IFF_RUNNING)
 		cdce_stop(sc);
