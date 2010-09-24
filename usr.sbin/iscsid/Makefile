@@ -1,10 +1,10 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2010/09/24 09:43:19 claudio Exp $
 
 PROG=	iscsid
 SRCS=	connection.c control.c initiator.c iscsid.c log.c pdu.c task.c \
 	util.c vscsi.c
 
-#MAN=	iscsid.8
+MAN=	iscsid.8
 
 DEBUG=-g
 CFLAGS+= -Wall
