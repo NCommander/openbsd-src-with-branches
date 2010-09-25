@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.68 2009/11/25 12:55:35 dlg Exp $ */
+/*	$OpenBSD: parse.y,v 1.1 2010/09/24 09:45:17 claudio Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -609,7 +609,7 @@ pushfile(const char *name, int secret)
 		free(nfile->name);
 		free(nfile);
 		return (NULL);
-	} 
+	}
 	nfile->lineno = 1;
 	TAILQ_INSERT_TAIL(&files, nfile, entry);
 	return (nfile);
