@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: iscsid.c,v 1.1 2010/09/24 09:43:19 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -145,7 +145,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s [-d] [-n vscsi] [-s socket]\n",
+	fprintf(stderr, "usage: %s [-d] [-n device] [-s socket]\n",
 	    __progname);
 	exit(1);
 }
