@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.96 2010/07/03 03:04:55 tedu Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.97 2010/09/21 01:09:10 matthew Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -452,6 +452,8 @@ void *
 pool_get(struct pool *pp, int flags)
 {
 	void *v;
+
+	KASSERT(flags & (PR_WAITOK | PR_NOWAIT));
 
 #ifdef DIAGNOSTIC
 	if ((flags & PR_WAITOK) != 0)
