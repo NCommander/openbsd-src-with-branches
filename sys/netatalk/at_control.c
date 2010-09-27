@@ -1,4 +1,4 @@
-/*	$OpenBSD: at_control.c,v 1.15 2010/01/13 02:13:12 henning Exp $	*/
+/*	$OpenBSD: at_control.c,v 1.16 2010/07/02 05:45:25 blambert Exp $	*/
 
 /*
  * Copyright (c) 1990,1991 Regents of The University of Michigan.
@@ -190,8 +190,6 @@ at_control( cmd, data, ifp, p )
 
 	    aa = aa0;
 
-	    ifa_add(ifp, (struct ifaddr *)aa);
-
 	    /* FreeBSD found this. Whew */
 	    aa->aa_ifa.ifa_refcnt++;
 
@@ -208,6 +206,8 @@ at_control( cmd, data, ifp, p )
 		aa->aa_flags |= AFA_PHASE2;
 	    }
 	    aa->aa_ifp = ifp;
+
+	    ifa_add(ifp, (struct ifaddr *)aa);
 	} else {
 	    at_scrub( ifp, aa );
 	}
