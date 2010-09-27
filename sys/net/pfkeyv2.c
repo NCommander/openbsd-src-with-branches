@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.120 2010/07/01 02:09:45 reyk Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.121 2010/07/09 16:58:06 reyk Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -1616,7 +1616,7 @@ pfkeyv2_send(struct socket *socket, void *message, int len)
 			}
 
 			/* Allocate policy entry */
-			ipo = pool_get(&ipsec_policy_pool, 0);
+			ipo = pool_get(&ipsec_policy_pool, PR_NOWAIT);
 			if (ipo == NULL) {
 				splx(s);
 				rval = ENOMEM;
