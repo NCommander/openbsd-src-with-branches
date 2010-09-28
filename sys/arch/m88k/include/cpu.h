@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.48 2009/04/19 17:56:13 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.49 2009/05/02 14:32:27 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -163,6 +163,10 @@ struct cpu_info {
 #define	CI_IPI_ICACHE_FLUSH	0x00000080
 #define	CI_IPI_DMA_CACHECTL	0x00000100
 	void		(*ci_softipi_cb)(void);	/* 88110 softipi callback */
+
+#ifdef DIAGNOSTIC
+	int	ci_mutex_level;
+#endif
 };
 
 extern cpuid_t master_cpu;

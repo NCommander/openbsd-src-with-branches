@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.74 2010/06/03 15:48:58 jsing Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.75 2010/06/29 00:50:40 jsing Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -100,6 +100,9 @@ struct cpu_info {
 
 	struct schedstate_percpu ci_schedstate;
 	u_int32_t	ci_randseed;
+#ifdef DIAGNOSTIC
+	int		ci_mutex_level;
+#endif
 } __attribute__((__aligned__(64)));
 
 #define		CPUF_RUNNING	0x0001		/* CPU is running. */

@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.32 2008/06/26 05:42:13 ray Exp $
+#	$OpenBSD: genassym.cf,v 1.33 2008/08/07 18:46:04 kettenis Exp $
 #	$NetBSD: genassym.cf,v 1.23 2001/08/08 00:09:30 eeh Exp $
 
 #
@@ -157,6 +157,9 @@ member	ci_rwsp
 member	ci_mmfsa
 member	ci_cpumq
 member	ci_devmq
+endif
+ifdef DIAGNOSTIC
+member	ci_mutex_level
 endif
 
 # FPU state

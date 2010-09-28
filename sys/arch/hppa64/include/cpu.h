@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.16 2009/11/25 23:18:14 jsing Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.17 2010/07/24 21:27:57 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -137,6 +137,9 @@ struct cpu_info {
 	void		*ci_initstack;
 
 	u_long		ci_itmr;
+#ifdef DIAGNOSTIC
+	int		ci_mutex_level;
+#endif
 };
 
 struct cpu_info *curcpu(void);
