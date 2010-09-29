@@ -49,8 +49,6 @@ struct savefpu {
 struct trapframe;
 struct cpu_info;
 
-extern uint32_t	fpu_mxcsr_mask;
-
 void fpuinit(struct cpu_info *);
 void fpudrop(void);
 void fpudiscard(struct proc *);
