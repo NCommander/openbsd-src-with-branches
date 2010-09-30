@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.183 2010/07/12 14:35:13 bluhm Exp $ */
+/*	$OpenBSD: kroute.c,v 1.184 2010/09/02 14:03:21 sobrado Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -421,7 +421,7 @@ ktable_exists(u_int rtableid, u_int *rdomid)
 {
 	size_t			 len;
 	struct rt_tableinfo	 info;
-	int			 mib[7];
+	int			 mib[6];
 
 	mib[0] = CTL_NET;
 	mib[1] = AF_ROUTE;
