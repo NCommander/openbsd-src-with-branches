@@ -1,6 +1,6 @@
 define(MACHINE,vax)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.41 2010/07/03 03:59:15 krw Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.42 2010/09/04 12:18:04 miod Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -136,6 +136,7 @@ _DEV(fdesc, 53)
 _DEV(lkm, 28)
 _DEV(nnpfs, 74)
 _DEV(pf, 42)
+_DEV(pppx, 80)
 _DEV(rnd, 67)
 _DEV(systrace, 49)
 _DEV(tun, 57)
