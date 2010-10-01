@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile.inc,v 1.36 2010/02/20 20:28:11 markus Exp $
+#	$OpenBSD: Makefile.inc,v 1.37 2010/10/01 23:05:32 djm Exp $
 
 CFLAGS+=	-I${.CURDIR}/..
 
 CDIAGFLAGS=	-Wall
-CDIAGFLAGS+=	-Werror
+#CDIAGFLAGS+=	-Werror
 CDIAGFLAGS+=	-Wpointer-arith
 CDIAGFLAGS+=	-Wuninitialized
 CDIAGFLAGS+=	-Wstrict-prototypes
