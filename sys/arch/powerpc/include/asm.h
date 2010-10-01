@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.5 2001/09/01 15:49:05 drahn Exp $	*/
+/*	$OpenBSD: asm.h,v 1.7 2002/09/15 09:01:59 deraadt Exp $	*/
 /*	$NetBSD: asm.h,v 1.1 1996/09/30 16:34:20 ws Exp $	*/
 
 /*
@@ -102,5 +102,8 @@ _TMP_LABEL(y):; \
 #define	ASMSTR		.asciz
 
 #define RCSID(x)	.text; .asciz x
+
+#define WEAK_ALIAS(alias,sym) \
+	.weak alias; .set alias,sym
 
 #endif /* !_POWERPC_ASM_H_ */
