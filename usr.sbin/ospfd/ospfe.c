@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.75 2010/05/26 13:56:08 nicm Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.76 2010/06/28 23:02:07 bluhm Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -547,8 +547,8 @@ ospfe_dispatch_rde(int fd, short event, void *bula)
 				}
 			} else {
 				/*
-				 * flood on all area interfaces on
-				 * area 0.0.0.0 include also virtual links.
+				 * Flood on all area interfaces. For
+				 * area 0.0.0.0 include the virtual links.
 				 */
 				area = nbr->iface->area;
 				LIST_FOREACH(iface, &area->iface_list, entry) {
