@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Add.pm,v 1.114 2010/07/24 10:49:01 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -39,7 +39,7 @@ sub manpages_index
 				$destdir.$k, join(@l)) if $state->verbose >= 2;
 		} else {
 			try {
-				OpenBSD::Makewhatis::merge($destdir.$k, \@l, 
+				OpenBSD::Makewhatis::merge($destdir.$k, \@l,
 				    $state);
 			} catchall {
 				$state->errsay("Error in makewhatis: #1", $_);

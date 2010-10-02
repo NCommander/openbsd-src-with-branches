@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: State.pm,v 1.15 2010/07/12 09:31:52 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -46,7 +46,7 @@ sub read_file
 		} elsif (($k, $add, $v) = m/^\s*(.*?)\s*(\+?)\=\s*(.*)\s*$/) {
 		} else {
 			# bad line: should we say so ?
-			$state->errsay("Bad line in #1: #2 (#3)", 
+			$state->errsay("Bad line in #1: #2 (#3)",
 			    $filename, $_, $.);
 		}
 		# remove caps

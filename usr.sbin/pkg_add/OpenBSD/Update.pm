@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Update.pm,v 1.144 2010/07/31 11:17:22 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2004-2010 Marc Espie <espie@openbsd.org>
 #
@@ -192,7 +192,7 @@ sub process_handle
 			$h->{update_found} = $h;
 			$set->move_kept($h);
 
-			$self->progress_message($state, 
+			$self->progress_message($state,
 			    "No need to update #1", $pkgname);
 
 			return 0;
