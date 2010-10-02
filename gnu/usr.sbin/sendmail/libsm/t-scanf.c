@@ -8,7 +8,7 @@
  */
 
 #include <sm/gen.h>
-SM_IDSTR(id, "@(#)$Sendmail: t-scanf.c,v 1.2 2001/08/21 20:36:46 ca Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: t-scanf.c,v 1.5 2001/11/13 00:51:28 ca Exp $")
 
 #include <sm/limits.h>
 #include <sm/io.h>
@@ -26,10 +26,12 @@ main(argc, argv)
 	char *r;
 
 	sm_test_begin(argc, argv, "test scanf point stuff");
+#if !SM_CONF_BROKEN_SIZE_T
 	(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
 "If tests for \"h == 2\" fail, check whether size_t is signed on your OS.\n\
 If that is the case, add -DSM_CONF_BROKEN_SIZE_T to confENVDEF\n\
 and start over. Otherwise contact sendmail.org.\n");
+#endif /* !SM_CONF_BROKEN_SIZE_T */
 
 	d = 2;
 	sm_snprintf(buf, sizeof(buf), "%d", d);

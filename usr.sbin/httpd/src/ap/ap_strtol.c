@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -67,11 +69,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -110,7 +108,8 @@
  *  upper/lower case A-I, J-R, and S-Z are contiguous.)
  */
 
-API_EXPORT(long) ap_strtol(const char *nptr, char **endptr, int base)
+API_EXPORT(long)
+ap_strtol(const char *nptr, char **endptr, int base)
 {
 	const char *s;
 	unsigned long acc;
@@ -127,7 +126,8 @@ API_EXPORT(long) ap_strtol(const char *nptr, char **endptr, int base)
 	s = nptr;
 	do {
 		c = *s++;
-	} while (ap_isspace(c));
+	}
+	while (ap_isspace(c));
 	if (c == '-') {
 		neg = 1;
 		c = *s++;
@@ -172,34 +172,16 @@ API_EXPORT(long) ap_strtol(const char *nptr, char **endptr, int base)
 	for ( ; ; c = *s++) {
 		if (c >= '0' && c <= '9')
 			c -= '0';
-#ifdef CHARSET_EBCDIC
-		else if (c >= 'A' && c <= 'I')
-			c -= 'A' - 10;
-		else if (c >= 'a' && c <= 'i')
-			c -= 'a' - 10;
-		else if (c >= 'J' && c <= 'R')
-			c -= 'J' - 19;
-		else if (c >= 'j' && c <= 'r')
-			c -= 'j' - 19;
-		else if (c >= 'S' && c <= 'Z')
-			c -= 'S' - 28;
-		else if (c >= 's' && c <= 'z')
-			c -= 's' - 28;
-#else
 		else if (c >= 'A' && c <= 'Z')
 			c -= 'A' - 10;
 		else if (c >= 'a' && c <= 'z')
 			c -= 'a' - 10;
-#endif /* CHARSET_EBCDIC */
 		else
 			break;
 		if (c >= base)
 			break;
 		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim)) {
 			any = -1;
-#ifdef AP_STRTOL_OVERFLOW_IS_BAD_CHAR
-			break;
-#endif
 		} else {
 			any = 1;
 			acc *= base;

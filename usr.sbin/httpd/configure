@@ -63,6 +63,10 @@
 ##  Initially written by Ralf S. Engelschall <rse@apache.org>
 ##
 
+## Force SSL_BASE=SYSTEM
+SSL_BASE=SYSTEM
+export SSL_BASE
+
 #   default input separator chars: <space><tab><cr>
 DIFS=' 	
 '
@@ -118,7 +122,7 @@ esac
 ##
 ##  determine platform id
 ##
-PLATFORM="`$aux/GuessOS`"
+PLATFORM="`sh $aux/GuessOS`"
 
 ##
 ##  display version information
@@ -146,7 +150,7 @@ fi
 ##  determine path to (optional) Perl interpreter
 ##
 PERL=no-perl-on-this-system
-perlpath="`$aux/PrintPath perl5 perl miniperl`"
+perlpath="`sh $aux/PrintPath perl5 perl miniperl`"
 if [ "x$perlpath" != "x" ]; then
     PERL="$perlpath"
 fi
@@ -179,7 +183,7 @@ fi
 ##  problems for our scripts under some platforms.
 ##
 AWK=awk
-awkpath="`$aux/PrintPath nawk gawk awk`"
+awkpath="`sh $aux/PrintPath nawk gawk awk`"
 if [ "x$awkpath" != "x" ]; then
     AWK="$awkpath"
 fi
@@ -190,11 +194,11 @@ fi
 ## the actual data) option.
 ##
 TAR=tar
-tarpath="`$aux/PrintPath gtar gnutar tar`"
+tarpath="`sh $aux/PrintPath gtar gnutar tar`"
 if [ "x$tarpath" != "x" ]; then
     TAR="$tarpath"
 fi
-case "`$TAR --version 2>/dev/null`" in
+case "`$TAR -tf /dev/null --version 2>/dev/null`" in
     *GNU*) TAROPT="-hcf" ;;
     *) if $TAR -hcf - Makefile.tmpl > /dev/null 2>&1
        then
@@ -220,7 +224,7 @@ esac
 ##
 SHELL=/bin/sh
 if [ ! -f "$SHELL" ]; then
-    SHELL="`$aux/PrintPath sh`"
+    SHELL="`sh $aux/PrintPath sh`"
     if [ "x$SHELL" = "x" ]; then
         echo "configure:Error: Cannot determine path to Bourne-Shell" 1>&2
         exit 1
@@ -1061,7 +1065,7 @@ for var in CC CPP OPTIM CFLAGS CFLAGS_SHLIB LDFLAGS LD_SHLIB LDFLAGS_SHLIB \
             -e 's:$:" \\:' >>$configstatus
     fi
 done
-echo $SEO "./configure \\" >>$configstatus
+echo $SEO "${SHELL} ./configure \\" >>$configstatus
 for arg
 do
     echo "$arg" |\
@@ -1085,7 +1089,7 @@ if [ "x$suexec" = "x1" ]; then
         echo "                 and htdocs/manual/suexec.html documents first."
         exit 1
     fi
-    if [ "x`$aux/getuid.sh`" != "x0" ]; then
+    if [ "x`${SHELL} $aux/getuid.sh`" != "x0" ]; then
         echo " + Warning: You have enabled the suEXEC feature. Be aware that you need" 1>&2
         echo " + root privileges to complete the final installation step." 1>&2
     fi
@@ -1200,12 +1204,12 @@ if [ "x$confadjust" = "x1" ]; then
         done
     fi
     fi
-    if [ "x`$aux/getuid.sh`" != "x0" -a "x$port" = "x" ]; then
+    if [ "x`${SHELL} $aux/getuid.sh`" != "x0" -a "x$port" = "x" ]; then
         conf_port="8080"
         conf_port_ssl="8443"
     fi
-    conf_serveradmin="`$aux/buildinfo.sh -n %u@%h%d`"
-    conf_servername="`$aux/buildinfo.sh -n %h%d`"
+    conf_serveradmin="`${SHELL} $aux/buildinfo.sh -n %u@%h%d`"
+    conf_servername="`${SHELL} $aux/buildinfo.sh -n %h%d`"
 fi
  
 ##
@@ -1597,14 +1601,15 @@ rm -f $tplconf 2>/dev/null
 if [ "x$verbose" = "xyes" ]; then
     vflag="-v";
 fi
+exec 4>&1
 rc=`if [ "x$quiet" = "xyes" ]; then
-    (cd $src; ./Configure ${vflag} -file Configuration.apaci >/dev/null; echo $? >&3; );
+    (cd $src; ${SHELL} ./Configure ${vflag} -file Configuration.apaci >/dev/null; echo $? >&3; );
 else
-    (cd $src; ( ./Configure ${vflag} -file Configuration.apaci; echo $? >&3; ) |\
+    (cd $src; (${SHELL} ./Configure ${vflag} -file Configuration.apaci; echo $? >&3; ) |\
      sed -e '/^Using config file:.*/d' \
          -e "s:Makefile in :Makefile in $src\\/:" \
-         -e "s:Makefile\$:Makefile in $src:")
-fi 3>&1 1>&2`
+         -e "s:Makefile\$:Makefile in $src:" >&4 )
+fi 3>&1`
 
 ## Ugly. So far, we've only used -eq, so just in case, use this
 ## stupid code unless we're *sure* that -ne is also available

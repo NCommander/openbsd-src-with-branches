@@ -168,6 +168,7 @@ public:
   hunits get_subscript_correction(charinfo *);
   friend tfont *make_tfont(tfont_spec &);
 };
+tfont *make_tfont(tfont_spec &);
 
 inline int env_definite_font(environment *env)
 {
@@ -1491,7 +1492,7 @@ void glyph_node::operator delete(void *p)
 
 void ligature_node::operator delete(void *p)
 {
-  delete p;
+  delete[] (char *)p;
 }
 
 glyph_node::glyph_node(charinfo *c, tfont *t, node *x)
@@ -2428,7 +2429,7 @@ bracket_node::~bracket_node()
 node *bracket_node::copy()
 {
   bracket_node *on = new bracket_node;
-  node *last, *tem;
+  node *last = NULL, *tem;
   for (tem = list; tem; tem = tem->next) {
     if (tem->next)
       tem->next->last = tem;

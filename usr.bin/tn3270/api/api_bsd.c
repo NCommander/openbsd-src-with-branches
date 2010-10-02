@@ -1,3 +1,5 @@
+/*	$OpenBSD: api_bsd.c,v 1.6 2009/10/27 23:59:45 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)api_bsd.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: api_bsd.c,v 1.3 1995/04/29 05:56:57 cgd Exp $";
-#endif /* not lint */
-
 #if	defined(unix)
 
 #include <sys/types.h>
@@ -44,6 +37,8 @@ static char rcsid[] = "$Id: api_bsd.c,v 1.3 1995/04/29 05:56:57 cgd Exp $";
 #include <netdb.h>
 #include <stdio.h>
 #include <string.h>
+#include <pwd.h>
+#include <unistd.h>
 
 #include "../ctlr/api.h"
 #include "api_exch.h"
@@ -73,7 +68,7 @@ char	*string;		/* if non-zero, where to connect to */
 #if	!defined(htons)
     extern unsigned short htons();
 #endif	/* !defined(htons) */
-    char thehostname[100];
+    char thehostname[MAXHOSTNAMELEN];
     char keyname[100];
     char inkey[100];
     FILE *keyfile;
@@ -122,14 +117,15 @@ char	*string;		/* if non-zero, where to connect to */
 	return -1;
     }
     keyfile = fopen(keyname, "r");
-    if (keyfile == 0) {
+    if (keyfile == NULL) {
 	perror("fopen");
 	return -1;
     }
-    if (fscanf(keyfile, "%s\n", inkey) != 1) {
+    if (fscanf(keyfile, "100%s\n", inkey) != 1) {
 	perror("fscanf");
 	return -1;
     }
+    fclose(keyfile);
     sd.length = strlen(inkey)+1;
     if (api_exch_outtype(EXCH_TYPE_STORE_DESC, sizeof sd, (char *)&sd) == -1) {
 	return -1;
@@ -139,7 +135,7 @@ char	*string;		/* if non-zero, where to connect to */
     }
     while ((i = api_exch_nextcommand()) != EXCH_CMD_ASSOCIATED) {
 	int passwd_length;
-	char *passwd, *getpass();
+	char *passwd;
 	char buffer[200];
 
 	switch (i) {
@@ -165,7 +161,10 @@ char	*string;		/* if non-zero, where to connect to */
 		return -1;
 	    }
 	    buffer[sd.length] = 0;
-	    passwd = getpass(buffer);		/* Go to terminal */
+	    if ((passwd = getpass(buffer)) == NULL) { /* Go to terminal */
+	    	perror("getpass");
+	        return -1;
+	    }
 	    passwd_length = strlen(passwd);
 	    if (api_exch_intype(EXCH_TYPE_STORE_DESC, sizeof sd, (char *)&sd) == -1) {
 		return -1;

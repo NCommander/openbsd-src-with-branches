@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: crt0.c,v 1.2 2007/03/02 06:11:54 miod Exp $	*/
 /*	$NetBSD: crt0.c,v 1.10 2004/08/26 21:16:41 thorpej Exp $ */
 
 /*
@@ -40,6 +40,7 @@
 #include <sys/param.h>
 
 #include <machine/asm.h>
+#include <machine/fpu.h>
 #include <stdlib.h>
 
 static char     *_strrchr(const char *, char);
@@ -75,6 +76,16 @@ ___start(int argc, char **argv, char **envp, void *ps_strings,
 	const void *obj, void (*cleanup)(void))
 {
 	char *s;
+
+#if defined(__SH4__) && !defined(__SH4_NOFPU__)
+	extern void __set_fpscr(unsigned int);
+	extern unsigned int __fpscr_values[2];
+
+	__set_fpscr(0);
+	__fpscr_values[0] |= FPSCR_DN;
+	__fpscr_values[1] |= FPSCR_DN;
+	__asm__ __volatile__ ("lds %0, fpscr" : : "r" (__fpscr_values[1]));
+#endif
 
  	environ = envp;
 

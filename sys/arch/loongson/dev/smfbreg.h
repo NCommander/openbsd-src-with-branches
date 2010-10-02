@@ -1,7 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: smfbreg.h,v 1.3 2010/02/09 05:39:39 miod Exp $	*/
 
 /*
- * Copyright (c) 2009 Miodrag Vallat.
+ * Copyright (c) 2009, 2010 Miodrag Vallat.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,7 +26,9 @@
 
 #define	DPR_COORDS(x, y)		(((x) << 16) | (y))
 
-#define	DPR_BASE			0x00408000
+#define	SM5XX_DPR_BASE			0x00100000
+#define	SM7XX_DPR_BASE			0x00408000
+
 #define	DPR_SRC_COORDS			0x00
 #define	DPR_DST_COORDS			0x04
 #define	DPR_SPAN_COORDS			0x08
@@ -61,10 +63,10 @@
  * VPR (Video Parameter Registers)
  */
 
-#define	VPR_BASE			0x0040c000
+#define	SM7XX_VPR_BASE			0x0040c000
 
 /*
- * MMIO
+ * MMIO (SM7XX only)
  */
 
-#define	MMIO_BASE			0x00700000
+#define	SM7XX_MMIO_BASE			0x00700000

@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: key.c,v 1.4 2006/04/01 19:57:32 otto Exp $ */
 
 /*
  * key.c
@@ -30,9 +30,10 @@
  *   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  *   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: key.c,v 1.2 2005/04/01 16:47:31 dugsong Exp $
+ * $Vendor: key.c,v 1.2 2005/04/01 16:47:31 dugsong Exp $
  */
 
+#include <sys/limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
@@ -46,6 +47,7 @@
 #include <unistd.h>
 
 #include "key.h"
+#include "ssh.h"
 #include "ssh2.h"
 #include "util.h"
 #include "x509.h"
@@ -53,12 +55,14 @@
 typedef int (*key_loader)(struct key *, struct iovec *);
 
 static key_loader pubkey_loaders[] = {
+	ssh_load_public,
 	ssh2_load_public,
 	x509_load_public,
 	NULL
 };
 
 static key_loader privkey_loaders[] = {
+	ssh_load_private,
 	x509_load_private,
 	NULL
 };
@@ -75,7 +79,7 @@ load_file(struct iovec *iov, char *filename)
 	if (fstat(fd, &st) < 0)
 		return (-1);
 	
-	if (st.st_size == 0) {
+	if (st.st_size == 0 || st.st_size >= SIZE_MAX) {
 		errno = EINVAL;
 		return (-1);
 	}
@@ -97,12 +101,7 @@ load_file(struct iovec *iov, char *filename)
 struct key *
 key_new(void)
 {
-	struct key *k;
-
-	if ((k = calloc(sizeof(*k), 1)) == NULL)
-		return (NULL);
-
-	return (k);
+	return (calloc(1, sizeof(struct key)));
 }
 
 int

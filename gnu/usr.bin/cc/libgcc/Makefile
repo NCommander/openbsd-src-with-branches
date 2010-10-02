@@ -1,10 +1,20 @@
 # $FreeBSD: src/gnu/lib/libgcc/Makefile,v 1.58.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.11 2010/05/07 18:47:29 kettenis Exp $
 
 .include <bsd.own.mk>
 
 GCCLIB= ${.CURDIR}/../../../gcc
 GCCDIR= ${GCCLIB}/gcc
+
+.include "../Makefile.tgt"
+
+.if defined(CROSS_TARGET)
+#Building cc for target, CC should already be the cross compiler
+.elif exists(${.CURDIR}/../cc/obj)
+CC=${.OBJDIR}/../cc/cc -B ${.OBJDIR}/../cc1
+.else
+CC=${.CURDIR}/../cc/cc -B ${.CURDIR}/../cc1
+.endif
 
 .include "${.CURDIR}/../Makefile.ver"
 
@@ -59,7 +69,7 @@ LIB2ADD_ST = $(LIB2FUNCS_STATIC_EXTRA)
 
 # Additional sources to handle exceptions; overridden by targets as needed.
 LIB2ADDEH = unwind-dw2.c unwind-sjlj.c gthr-gnat.c \
-	unwind-c.c
+	unwind-c.c unwind-dw2-fde-openbsd.c
 LIB2ADDEHSTATIC = $(LIB2ADDEH)
 LIB2ADDEHSHARED = $(LIB2ADDEH)
 
@@ -100,6 +110,11 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 #	Platform specific bits.
 #	When upgrading GCC, get the following definitions from config/<cpu>/t-*
 #
+.if ${TARGET_ARCH} == "alpha"
+CFLAGS+=	-mieee
+LIB2FUNCS_EXTRA = qrnnd.asm
+.endif
+
 .if ${TARGET_ARCH} == "arm"
 #	from config/arm/t-strongarm-elf
 CFLAGS+=	-Dinhibit_libc -fno-inline
@@ -116,16 +131,17 @@ LIB2FUNCS_EXTRA = floatunsidf.c floatunsisf.c
 #	_fixsfsi _fixunssfsi _floatdidf _floatdisf
 .endif
 
+.if ${TARGET_ARCH} == "hppa"
+CFLAGS+=	-fPIC -DELF=1 -DLINUX=1
+LIB1ASMFUNCS =	_divI _divU _remI _remU _div_const _mulI _dyncall
+LIB1ASMSRC =	pa/milli64.S
+LIB2FUNCS_EXTRA = fptr.c
+.endif
+
 .if ${TARGET_ARCH} == "powerpc"
 #	from config/rs6000/t-ppccomm
 LIB2FUNCS_EXTRA = tramp.asm darwin-ldouble.c
 LIB2FUNCS_STATIC_EXTRA = eabi.asm
-.endif
-
-.if ${TARGET_ARCH} == "sparc64"
-#	from config/sparc/t-elf
-LIB1ASMSRC =   lb1spc.asm
-LIB1ASMFUNCS = _mulsi3 _divsi3 _modsi3
 .endif
 
 #-----------------------------------------------------------------------
@@ -170,7 +186,7 @@ OBJ_GRPS =	STD DIV
 # Floating point emulation functions
 #
 .if ${TARGET_ARCH} == "armNOT_YET" || ${TARGET_ARCH} == "powerpc" || \
-    ${TARGET_ARCH} == "sparc64"
+    ${TARGET_ARCH} == "sparc" || ${TARGET_ARCH} == "sparc64"
 
 FPBIT_CFLAGS =	-DFINE_GRAINED_LIBRARIES -DFLOAT
 DPBIT_CFLAGS =	-DFINE_GRAINED_LIBRARIES
@@ -247,7 +263,7 @@ ${ASM_V}: ${LIB1ASMSRC}
 	${CC} -x assembler-with-cpp -c ${CFLAGS} -DL${.PREFIX} \
 	    -o ${.PREFIX}.vo ${.ALLSRC:N*.h}
 	( nm -pg ${.PREFIX}.vo | \
-		awk 'NF == 3 && $$2 !~ /^[UN]$$/ { print "\t.hidden ", $$3 }'\
+		awk 'NF == 3 && $$2 !~ /^[FUN]$$/ { print "\t.hidden ", $$3 }'\
 	) > ${.TARGET}
 
 CLEANFILES += ${ASM_V} ${ASM_V:R:S/$/.vo/}
@@ -260,8 +276,9 @@ CLEANFILES += ${ASM_V} ${ASM_V:R:S/$/.vo/}
 EH_OBJS_T = ${LIB2ADDEHSTATIC:R:S/$/.o/}
 EH_OBJS_P = ${LIB2ADDEHSTATIC:R:S/$/.po/}
 EH_OBJS_S = ${LIB2ADDEHSHARED:R:S/$/.So/}
-EH_CFLAGS = -fexceptions -D__GLIBC__=3 -DElfW=__ElfN
-SOBJS    += ${EH_OBJS_S}
+EH_CFLAGS = -fexceptions
+SOBJS   += ${EH_OBJS_S}
+OBJS    += ${EH_OBJS_T}
 
 .for _src in ${LIB2ADDEHSTATIC}
 ${_src:R:S/$/.o/}: ${_src} ${COMMONHDRS}
@@ -286,4 +303,10 @@ beforeinstall:
 
 .include <bsd.lib.mk>
 
-.SUFFIXES: .vis .vo
+
+.SUFFIXES: .vis .vo .asm
+
+.if ${TARGET_ARCH} == "alpha" || ${TARGET_ARCH} == "powerpc"
+.asm.o:
+	${CC_T} ${CFLAGS} -xassembler-with-cpp -o ${.TARGET} ${.IMPSRC}
+.endif

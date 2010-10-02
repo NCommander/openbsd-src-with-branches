@@ -1,3 +1,4 @@
+/*	$OpenBSD: SYS.h,v 1.12 2002/02/19 22:12:36 millert Exp $	*/
 /*-
  * Copyright (c) 1994
  *	Andrew Cagney.  All rights reserved.
@@ -34,7 +35,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)SYS.h	8.1 (Berkeley) 6/4/93
- *      $Id: SYS.h,v 1.1.1.1 1996/09/30 05:09:55 drahn Exp $ 
  */
 
 #include <sys/syscall.h>
@@ -45,27 +45,39 @@
 #include "machine/asm.h"
 
 #ifdef __STDC__
-#define PSEUDO_PREFIX(x,y)	.globl _C_LABEL(x) ; \
-				.align 2; \
-				.extern cerror ; \
-			_C_LABEL(x):	li 0, SYS_##y ; \
+#define _CONCAT(x,y)	x##y
+#define PSEUDO_PREFIX(p,x,y)	.extern _ASM_LABEL(__cerror) ; \
+			ENTRY(p##x) \
+				li 0, SYS_##y ; \
 				/* sc */
 #else /* !__STDC__ */
-#define PSEUDO_PREFIX(x,y)	.globl _C_LABEL(x) ; \
-				.align 2; \
-				.extern cerror ; \
-			_C_LABEL(x):	li 0, SYS_/**/y ; \
+#define _CONCAT(x,y)	x/**/y
+#define PSEUDO_PREFIX(p,x,y)	.extern _ASM_LABEL(__cerror) ; \
+			ENTRY(p/**/x) \
+				li 0, SYS_/**/y ; \
 				/* sc */
 #endif /* !__STDC__ */
 #define PSEUDO_SUFFIX		cmpwi 0, 0 ; \
 				beqlr+ ; \
-				b cerror
+				b PIC_PLT(_ASM_LABEL(__cerror))
 
-#define PREFIX(x)		PSEUDO_PREFIX(x,x)
+#define PSEUDO_NOERROR_SUFFIX	blr
 
 #define SUFFIX			PSEUDO_SUFFIX
 
-#define	PSEUDO(x,y)		PSEUDO_PREFIX(x,y) ; \
+#define ALIAS(x,y)		.weak y; .set y,_CONCAT(x,y);
+		
+#define PREFIX(x)		ALIAS(_thread_sys_,x) \
+				PSEUDO_PREFIX(_thread_sys_,x,x)
+#define PREFIX2(x,y)		ALIAS(_thread_sys_,x) \
+				PSEUDO_PREFIX(_thread_sys_,x,y)
+#define	PSEUDO_NOERROR(x,y)	ALIAS(_thread_sys_,x) \
+				PSEUDO_PREFIX(_thread_sys_,x,y) ; \
+				sc ; \
+				PSEUDO_NOERROR_SUFFIX
+
+#define	PSEUDO(x,y)		ALIAS(_thread_sys_,x) \
+				PSEUDO_PREFIX(_thread_sys_,x,y) ; \
 				sc ; \
 				PSEUDO_SUFFIX
 

@@ -1,4 +1,4 @@
-/*	$NetBSD: clockreg.h,v 1.5 1994/11/20 20:54:07 deraadt Exp $ */
+/*	$OpenBSD: nvramreg.h,v 1.4 2003/06/02 23:27:50 millert Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -56,13 +52,34 @@ struct clockreg {
 	volatile u_char	cl_year;	/* year (0..99; BCD) */
 };
 
+/*
+ * MK48T08 clock registers as found on MVME165 (sparse layout)
+ */
+struct clockreg_165 {
+	volatile u_char __cl_pad0[3];
+	volatile u_char	cl_csr;		/* control register */
+	volatile u_char __cl_pad1[3];
+	volatile u_char	cl_sec;		/* seconds (0..59; BCD) */
+	volatile u_char __cl_pad2[3];
+	volatile u_char	cl_min;		/* minutes (0..59; BCD) */
+	volatile u_char __cl_pad3[3];
+	volatile u_char	cl_hour;	/* hour (0..23; BCD) */
+	volatile u_char __cl_pad4[3];
+	volatile u_char	cl_wday;	/* weekday (1..7) */
+	volatile u_char __cl_pad5[3];
+	volatile u_char	cl_mday;	/* day in month (1..31; BCD) */
+	volatile u_char __cl_pad6[3];
+	volatile u_char	cl_month;	/* month (1..12; BCD) */
+	volatile u_char __cl_pad7[3];
+	volatile u_char	cl_year;	/* year (0..99; BCD) */
+};
+
 /* bits in cl_csr */
 #define	CLK_WRITE	0x80		/* want to write */
 #define	CLK_READ	0x40		/* want to read (freeze clock) */
 
 /*
  * Motorola chose the year `1900' as their base count.
- * XXX what happens when it wraps?
  */
 #define	YEAR0	0
 

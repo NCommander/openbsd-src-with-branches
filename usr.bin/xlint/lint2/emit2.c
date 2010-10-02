@@ -1,3 +1,4 @@
+/*	$OpenBSD: emit2.c,v 1.5 2005/11/20 17:09:55 cloder Exp $	*/
 /*	$NetBSD: emit2.c,v 1.2 1995/07/03 21:24:44 cgd Exp $	*/
 
 /*
@@ -32,23 +33,22 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: emit2.c,v 1.2 1995/07/03 21:24:44 cgd Exp $";
+static char rcsid[] = "$OpenBSD: emit2.c,v 1.5 2005/11/20 17:09:55 cloder Exp $";
 #endif
 
 #include <err.h>
 
 #include "lint2.h"
 
-static	void	outtype __P((type_t *));
-static	void	outdef __P((hte_t *, sym_t *));
-static	void	dumpname __P((hte_t *));
+static	void	outtype(type_t *);
+static	void	outdef(hte_t *, sym_t *);
+static	void	dumpname(hte_t *);
 
 /*
  * Write type into the output buffer.
  */
 static void
-outtype(tp)
-	type_t	*tp;
+outtype(type_t *tp)
 {
 	int	t, s, na;
 	tspec_t	ts;
@@ -58,6 +58,7 @@ outtype(tp)
 		if ((ts = tp->t_tspec) == INT && tp->t_isenum)
 			ts = ENUM;
 		switch (ts) {
+		case BOOL:	t = 'B';	s = '\0';	break;
 		case CHAR:	t = 'C';	s = '\0';	break;
 		case SCHAR:	t = 'C';	s = 's';	break;
 		case UCHAR:	t = 'C';	s = 'u';	break;
@@ -72,6 +73,12 @@ outtype(tp)
 		case FLOAT:	t = 'D';	s = 's';	break;
 		case DOUBLE:	t = 'D';	s = '\0';	break;
 		case LDOUBLE:	t = 'D';	s = 'l';	break;
+		case COMPLEX:	t = 'X';	s = 's';	break;
+		case DCOMPLEX:	t = 'X';	s = '\0';	break;
+		case LDCOMPLEX:	t = 'X';	s = 'l';	break;
+		case IMAGINARY:	 t = 'J';	s = 's';	break;
+		case DIMAGINARY: t = 'J';	s = '\0';	break;
+		case LDIMAGINARY:t = 'J';	s = 'l';	break;
 		case VOID:	t = 'V';	s = '\0';	break;
 		case PTR:	t = 'P';	s = '\0';	break;
 		case ARRAY:	t = 'A';	s = '\0';	break;
@@ -128,9 +135,7 @@ outtype(tp)
  * Write a definition.
  */
 static void
-outdef(hte, sym)
-	hte_t	*hte;
-	sym_t	*sym;
+outdef(hte_t *hte, sym_t *sym)
 {
 	/* reset output buffer */
 	outclr();
@@ -180,8 +185,7 @@ outdef(hte, sym)
  * Write the first definition of a name into the lint library.
  */
 static void
-dumpname(hte)
-	hte_t	*hte;
+dumpname(hte_t *hte)
 {
 	sym_t	*sym, *def;
 
@@ -191,7 +195,7 @@ dumpname(hte)
 
 	/*
 	 * If there is a definition, write it. Otherwise write a tentative
-	 * definition. This is neccessary because more than one tentative
+	 * definition. This is necessary because more than one tentative
 	 * definition is allowed (except with sflag).
 	 */
 	def = NULL;
@@ -213,8 +217,7 @@ dumpname(hte)
  * Write a new lint library.
  */
 void
-outlib(name)
-	const	char *name;
+outlib(const char *name)
 {
 	/* Open of output file and initialisation of the output buffer */
 	outopen(name);

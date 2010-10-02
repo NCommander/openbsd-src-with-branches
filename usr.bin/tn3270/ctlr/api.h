@@ -1,3 +1,4 @@
+/* *	$OpenBSD: api.h,v 1.3 2003/06/03 02:56:19 millert Exp $*/
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,7 +28,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)api.h	4.4 (Berkeley) 4/26/91
- *	$Id: api.h,v 1.2 1993/08/01 18:05:45 mycroft Exp $
  */
 
 /*
@@ -325,7 +321,7 @@ typedef struct {
 #define	FP_OFF(y)	((unsigned int)(((unsigned long)(y))&0xFFFF))
 
 /*
- * Undo the preceeding.
+ * Undo the preceding.
  */
 
 #define	SEG_OFF_BACK(x,y)	(((x)<<16)|(y))

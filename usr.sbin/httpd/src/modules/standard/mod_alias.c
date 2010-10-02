@@ -1,3 +1,5 @@
+/*	$OpenBSD: mod_alias.c,v 1.11 2003/10/29 10:11:00 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -68,6 +70,7 @@
 #include "http_core.h"
 #include "http_config.h"
 #include "http_log.h"
+#include "http_main.h"
 
 typedef struct {
     char *real;
@@ -136,18 +139,16 @@ static const char *add_alias_internal(cmd_parms *cmd, void *dummy, char *f, char
 
     /* XX r can NOT be relative to DocumentRoot here... compat bug. */
 
+    ap_server_strip_chroot(r, 1);
+
     if (use_regex) {
 	new->regexp = ap_pregcomp(cmd->pool, f, REG_EXTENDED);
 	if (new->regexp == NULL)
 	    return "Regular expression could not be compiled.";
         new->real = r;
     }
-#ifndef OS2
     else
         new->real = ap_os_canonical_filename(cmd->pool, r);
-#else
-    new->real = r;
-#endif
     new->fake = f;
     new->handler = cmd->info;
 

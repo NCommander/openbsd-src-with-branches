@@ -13,10 +13,6 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_copysignf.c,v 1.4 1995/05/10 20:46:59 jtc Exp $";
-#endif
-
 /*
  * copysignf(float x, float y)
  * copysignf(x,y) returns a value with the magnitude of x and
@@ -26,12 +22,8 @@ static char rcsid[] = "$NetBSD: s_copysignf.c,v 1.4 1995/05/10 20:46:59 jtc Exp 
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
-	float copysignf(float x, float y)
-#else
-	float copysignf(x,y)
-	float x,y;
-#endif
+float
+copysignf(float x, float y)
 {
 	u_int32_t ix,iy;
 	GET_FLOAT_WORD(ix,x);

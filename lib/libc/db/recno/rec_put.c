@@ -1,4 +1,4 @@
-/*	$NetBSD: rec_put.c,v 1.7 1995/02/27 13:25:13 cgd Exp $	*/
+/*	$OpenBSD: rec_put.c,v 1.10 2005/08/05 13:03:00 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)rec_put.c	8.4 (Berkeley) 5/31/94";
-#else
-static char rcsid[] = "$NetBSD: rec_put.c,v 1.7 1995/02/27 13:25:13 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 
@@ -65,16 +53,13 @@ static char rcsid[] = "$NetBSD: rec_put.c,v 1.7 1995/02/27 13:25:13 cgd Exp $";
  *	already in the tree and R_NOOVERWRITE specified.
  */
 int
-__rec_put(dbp, key, data, flags)
-	const DB *dbp;
-	DBT *key;
-	const DBT *data;
-	u_int flags;
+__rec_put(const DB *dbp, DBT *key, const DBT *data, u_int flags)
 {
 	BTREE *t;
-	DBT tdata;
+	DBT fdata, tdata;
 	recno_t nrec;
 	int status;
+	void *tp;
 
 	t = dbp->internal;
 
@@ -84,11 +69,37 @@ __rec_put(dbp, key, data, flags)
 		t->bt_pinned = NULL;
 	}
 
+	/*
+	 * If using fixed-length records, and the record is long, return
+	 * EINVAL.  If it's short, pad it out.  Use the record data return
+	 * memory, it's only short-term.
+	 */
+	if (F_ISSET(t, R_FIXLEN) && data->size != t->bt_reclen) {
+		if (data->size > t->bt_reclen)
+			goto einval;
+
+		if (t->bt_rdata.size < t->bt_reclen) {
+			tp = realloc(t->bt_rdata.data, t->bt_reclen);
+			if (tp == NULL)
+				return (RET_ERROR);
+			t->bt_rdata.data = tp;
+			t->bt_rdata.size = t->bt_reclen;
+		}
+		memmove(t->bt_rdata.data, data->data, data->size);
+		memset((char *)t->bt_rdata.data + data->size,
+		    t->bt_bval, t->bt_reclen - data->size);
+		fdata.data = t->bt_rdata.data;
+		fdata.size = t->bt_reclen;
+	} else {
+		fdata.data = data->data;
+		fdata.size = data->size;
+	}
+
 	switch (flags) {
 	case R_CURSOR:
-		if (!ISSET(t, B_SEQINIT))
+		if (!F_ISSET(&t->bt_cursor, CURS_INIT))
 			goto einval;
-		nrec = t->bt_rcursor;
+		nrec = t->bt_cursor.rcursor;
 		break;
 	case R_SETCURSOR:
 		if ((nrec = *(recno_t *)key->data) == 0)
@@ -121,11 +132,11 @@ einval:		errno = EINVAL;
 	 * already in the database.  If skipping records, create empty ones.
 	 */
 	if (nrec > t->bt_nrecs) {
-		if (!ISSET(t, R_EOF | R_INMEM) &&
+		if (!F_ISSET(t, R_EOF | R_INMEM) &&
 		    t->bt_irec(t, nrec) == RET_ERROR)
 			return (RET_ERROR);
 		if (nrec > t->bt_nrecs + 1) {
-			if (ISSET(t, R_FIXLEN)) {
+			if (F_ISSET(t, R_FIXLEN)) {
 				if ((tdata.data =
 				    (void *)malloc(t->bt_reclen)) == NULL)
 					return (RET_ERROR);
@@ -139,18 +150,18 @@ einval:		errno = EINVAL;
 				if (__rec_iput(t,
 				    t->bt_nrecs, &tdata, 0) != RET_SUCCESS)
 					return (RET_ERROR);
-			if (ISSET(t, R_FIXLEN))
+			if (F_ISSET(t, R_FIXLEN))
 				free(tdata.data);
 		}
 	}
 
-	if ((status = __rec_iput(t, nrec - 1, data, flags)) != RET_SUCCESS)
+	if ((status = __rec_iput(t, nrec - 1, &fdata, flags)) != RET_SUCCESS)
 		return (status);
 
 	if (flags == R_SETCURSOR)
-		t->bt_rcursor = nrec;
+		t->bt_cursor.rcursor = nrec;
 	
-	SET(t, R_MODIFIED);
+	F_SET(t, R_MODIFIED);
 	return (__rec_ret(t, NULL, nrec, key, NULL));
 }
 
@@ -166,16 +177,12 @@ einval:		errno = EINVAL;
  *	RET_ERROR, RET_SUCCESS
  */
 int
-__rec_iput(t, nrec, data, flags)
-	BTREE *t;
-	recno_t nrec;
-	const DBT *data;
-	u_int flags;
+__rec_iput(BTREE *t, recno_t nrec, const DBT *data, u_int flags)
 {
 	DBT tdata;
 	EPG *e;
 	PAGE *h;
-	indx_t index, nxtindex;
+	indx_t idx, nxtindex;
 	pgno_t pg;
 	u_int32_t nbytes;
 	int dflags, status;
@@ -206,7 +213,7 @@ __rec_iput(t, nrec, data, flags)
 		return (RET_ERROR);
 
 	h = e->page;
-	index = e->index;
+	idx = e->index;
 
 	/*
 	 * Add the specified key/data pair to the tree.  The R_IAFTER and
@@ -216,13 +223,13 @@ __rec_iput(t, nrec, data, flags)
 	 */
 	switch (flags) {
 	case R_IAFTER:
-		++index;
+		++idx;
 		break;
 	case R_IBEFORE:
 		break;
 	default:
 		if (nrec < t->bt_nrecs &&
-		    __rec_dleaf(t, h, index) == RET_ERROR) {
+		    __rec_dleaf(t, h, idx) == RET_ERROR) {
 			mpool_put(t->bt_mp, h, 0);
 			return (RET_ERROR);
 		}
@@ -236,23 +243,23 @@ __rec_iput(t, nrec, data, flags)
 	 */
 	nbytes = NRLEAFDBT(data->size);
 	if (h->upper - h->lower < nbytes + sizeof(indx_t)) {
-		status = __bt_split(t, h, NULL, data, dflags, nbytes, index);
+		status = __bt_split(t, h, NULL, data, dflags, nbytes, idx);
 		if (status == RET_SUCCESS)
 			++t->bt_nrecs;
 		return (status);
 	}
 
-	if (index < (nxtindex = NEXTINDEX(h)))
-		memmove(h->linp + index + 1, h->linp + index,
-		    (nxtindex - index) * sizeof(indx_t));
+	if (idx < (nxtindex = NEXTINDEX(h)))
+		memmove(h->linp + idx + 1, h->linp + idx,
+		    (nxtindex - idx) * sizeof(indx_t));
 	h->lower += sizeof(indx_t);
 
-	h->linp[index] = h->upper -= nbytes;
+	h->linp[idx] = h->upper -= nbytes;
 	dest = (char *)h + h->upper;
 	WR_RLEAF(dest, data, dflags);
 
 	++t->bt_nrecs;
-	SET(t, B_MODIFIED);
+	F_SET(t, B_MODIFIED);
 	mpool_put(t->bt_mp, h, MPOOL_DIRTY);
 
 	return (RET_SUCCESS);

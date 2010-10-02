@@ -1,11 +1,9 @@
-#	$OpenBSD$
-#	@(#)Makefile	8.1 (Berkeley) 7/24/94
+#	$OpenBSD: Makefile,v 1.4 1998/07/24 00:10:26 millert Exp $
 
 PROG=	gomoku
 SRCS=	bdinit.c bdisp.c main.c makemove.c pickmove.c stoc.c
 MAN=	gomoku.6
-DPADD=	${LIBOCURSES} ${LIBTERMCAP}
-LDADD=	-locurses -ltermcap
-HIDEGAME=hidegame
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
 
 .include <bsd.prog.mk>

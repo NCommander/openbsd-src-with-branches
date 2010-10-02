@@ -824,7 +824,7 @@ compare_serial(uint32_t a, uint32_t b)
 uint16_t
 qid_generate(void)
 {
-	return (uint16_t) random();
+	return (uint16_t) arc4random();
 }
 
 void

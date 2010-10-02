@@ -7,21 +7,23 @@
                          
  */
 
-
 #ifndef HTGOPHER_H
 #define HTGOPHER_H
 
-#include "HTAccess.h"
-#include "HTAnchor.h"
+#include <HTAccess.h>
+#include <HTAnchor.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifdef GLOBALREF_IS_MACRO
-extern GLOBALREF (HTProtocol, HTGopher);
+    extern GLOBALREF (HTProtocol, HTGopher);
+
 #else
-GLOBALREF HTProtocol HTGopher;
-#endif /* GLOBALREF_IS_MACRO */
+    GLOBALREF HTProtocol HTGopher;
+#endif				/* GLOBALREF_IS_MACRO */
 
-#endif /* HTGOPHER_H */
-
-/*
-
-   end of gopher module */
+#ifdef __cplusplus
+}
+#endif
+#endif				/* HTGOPHER_H */

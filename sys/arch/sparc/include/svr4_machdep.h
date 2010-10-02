@@ -1,4 +1,5 @@
-/*	$NetBSD: svr4_machdep.h,v 1.1 1995/03/31 02:55:59 christos Exp $	 */
+/*	$OpenBSD: svr4_machdep.h,v 1.6 1997/08/08 08:26:50 downsj Exp $	*/
+/*	$NetBSD: svr4_machdep.h,v 1.4 1996/03/31 22:21:45 pk Exp $	 */
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -64,7 +65,7 @@
 
 typedef int svr4_greg_t;
 
-typedef struct { 
+typedef struct {
 	svr4_greg_t	rwin_lo[8];
 	svr4_greg_t	rwin_in[8];
 } svr4_rwindow_t;
@@ -78,7 +79,10 @@ typedef struct {
 typedef svr4_greg_t svr4_gregset_t[SVR4_SPARC_MAXREG];
 
 typedef struct {
-	double		 fpu_regs[32];
+	union {
+		u_int	 fp_ri[32];
+		double	 fp_rd[16];
+	} fpu_regs;
 	void		*fp_q;
 	unsigned	 fp_fsr;
 	u_char		 fp_nqel;
@@ -95,9 +99,30 @@ typedef struct {
 
 struct svr4_ucontext;
 
-void svr4_getcontext __P((struct proc *, struct svr4_ucontext *,
-			  int, int));
-int svr4_setcontext __P((struct proc *p, struct svr4_ucontext *));
-void svr4_sendsig __P((sig_t, int, int, u_long));
+void svr4_getcontext(struct proc *, struct svr4_ucontext *,
+			  int, int);
+int svr4_setcontext(struct proc *p, struct svr4_ucontext *);
+void svr4_sendsig(sig_t, int, int, u_long, int, union sigval);
+int svr4_trap(int, struct proc *);
+
+/*
+ * Processor traps
+ */
+#define	SVR4_T_DIVIDE		0
+#define	SVR4_T_TRCTRAP		1
+#define	SVR4_T_NMI		2
+#define	SVR4_T_BPTFLT		3
+#define	SVR4_T_OFLOW		4
+#define	SVR4_T_BOUND		5
+#define	SVR4_T_PRIVINFLT	6
+#define	SVR4_T_DNA		7
+#define	SVR4_T_DOUBLEFLT	8
+#define	SVR4_T_FPOPFLT		9
+#define	SVR4_T_TSSFLT		10
+#define	SVR4_T_SEGNPFLT		11
+#define	SVR4_T_STKFLT		12
+#define	SVR4_T_PROTFLT		13
+#define	SVR4_T_PAGEFLT		14
+#define	SVR4_T_ALIGNFLT		17
 
 #endif /* !_SPARC_SVR4_MACHDEP_H_ */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: sym.c,v 1.5 2001/11/19 19:02:14 mpech Exp $	*/
+
 /* sym - symbol table routines */
 
 /*-
@@ -11,29 +13,34 @@
  * to contract no. DE-AC03-76SF00098 between the United States
  * Department of Energy and the University of California.
  *
- * Redistribution and use in source and binary forms are permitted provided
- * that: (1) source distributions retain this entire copyright notice and
- * comment, and (2) distributions including binaries display the following
- * acknowledgement:  ``This product includes software developed by the
- * University of California, Berkeley and its contributors'' in the
- * documentation or other materials provided with the distribution and in
- * all advertising materials mentioning features or use of this software.
- * Neither the name of the University nor the names of its contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the University nor the names of its contributors
+ * may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE.
  */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/sym.c,v 1.7 1995/05/05 05:35:42 jtc Exp $ */
+/* $Header: /cvs/src/usr.bin/lex/sym.c,v 1.5 2001/11/19 19:02:14 mpech Exp $ */
 
 #include "flexdef.h"
 
 
 /* declare functions that have forward references */
 
-int hashfunct PROTO((register char[], int));
+int hashfunct PROTO((char[], int));
 
 
 struct hash_entry *ndtbl[NAME_TABLE_HASH_SIZE];
@@ -49,16 +56,16 @@ struct hash_entry *findsym();
  */
 
 int addsym( sym, str_def, int_def, table, table_size )
-register char sym[];
+char sym[];
 char *str_def;
 int int_def;
 hash_table table;
 int table_size;
 	{
 	int hash_val = hashfunct( sym, table_size );
-	register struct hash_entry *sym_entry = table[hash_val];
-	register struct hash_entry *new_entry;
-	register struct hash_entry *successor;
+	struct hash_entry *sym_entry = table[hash_val];
+	struct hash_entry *new_entry;
+	struct hash_entry *successor;
 
 	while ( sym_entry )
 		{
@@ -128,7 +135,7 @@ Char ccltxt[];
 /* findsym - find symbol in symbol table */
 
 struct hash_entry *findsym( sym, table, table_size )
-register char sym[];
+char sym[];
 hash_table table;
 int table_size;
 	{
@@ -137,7 +144,7 @@ int table_size;
 		(struct hash_entry *) 0, (struct hash_entry *) 0,
 		(char *) 0, (char *) 0, 0,
 		} ;
-	register struct hash_entry *sym_entry =
+	struct hash_entry *sym_entry =
 		table[hashfunct( sym, table_size )];
 
 	while ( sym_entry )
@@ -154,11 +161,11 @@ int table_size;
 /* hashfunct - compute the hash value for "str" and hash size "hash_size" */
 
 int hashfunct( str, hash_size )
-register char str[];
+char str[];
 int hash_size;
 	{
-	register int hashval;
-	register int locstr;
+	int hashval;
+	int locstr;
 
 	hashval = 0;
 	locstr = 0;

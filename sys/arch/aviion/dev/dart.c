@@ -1,4 +1,4 @@
-/*	$OpenBSD: dart.c,v 1.47 2006/04/17 13:30:02 miod Exp $	*/
+/*	$OpenBSD: dart.c,v 1.10 2010/06/28 14:13:27 deraadt Exp $	*/
 
 /*
  * Mach Operating System
@@ -40,9 +40,9 @@
 
 #include <dev/cons.h>
 
-#include <machine/av400.h>
-#include <aviion/dev/sysconreg.h>
+#include <machine/avcommon.h>
 #include <aviion/dev/dartreg.h>
+#define	SPKRDIS	0x10	/* disable speaker on OP3 */
 #include <aviion/dev/dartvar.h>
 
 #ifdef	DDB
@@ -175,12 +175,7 @@ dart_common_attach(struct dartsoftc *sc)
 	dart_write(sc, DART_ACR, BDSET2 | CCLK16 | IPDCDIB | IPDCDIA);
 #endif
 	dart_write(sc, DART_IMR, sc->sc_sv_reg->sv_imr);
-#if 0
-	dart_write(sc, DART_OPCR, OPSET);
-#endif
-#if 0
-	dart_write(sc, DART_IVR, SYSCON_VECT + SYSCV_SCC);
-#endif
+	dart_write(sc, DART_OPCR, OPSET | SPKRDIS);
 
 	sc->sc_dart[A_PORT].tty = sc->sc_dart[B_PORT].tty = NULL;
 	sc->sc_dart[A_PORT].dart_swflags = sc->sc_dart[B_PORT].dart_swflags = 0;
@@ -196,7 +191,7 @@ const struct dart_s {
 	int dspeed;
 } dart_speeds[] = {
 	{ B0,		0	},	/* 0 baud, special HUP condition */
-        { B50,		NOBAUD	},	/* 50 baud, not implemented */
+	{ B50,		NOBAUD	},	/* 50 baud, not implemented */
 	{ B75,		BD75	},	/* 75 baud */
 	{ B110,		BD110	},	/* 110 baud */
 	{ B134,		BD134	},	/* 134.5 baud */
@@ -267,15 +262,9 @@ dartstart(struct tty *tp)
 	if (tp->t_state & (TS_TIMEOUT | TS_BUSY | TS_TTSTOP))
 		goto bail;
 
-	if (tp->t_outq.c_cc <= tp->t_lowat) {
-		if (tp->t_state & TS_ASLEEP) {
-			tp->t_state &= ~TS_ASLEEP;
-			wakeup((caddr_t)&tp->t_outq);
-		}
-		selwakeup(&tp->t_wsel);
-		if (tp->t_outq.c_cc == 0)
-			goto bail;
-	}
+	ttwakeupwr(tp);
+	if (tp->t_outq.c_cc == 0)
+		goto bail;
 
 	tp->t_state |= TS_BUSY;
 	while (tp->t_outq.c_cc != 0) {
@@ -610,7 +599,7 @@ dartopen(dev_t dev, int flag, int mode, struct proc *p)
 	if (dart->tty != NULL)
 		tp = dart->tty;
 	else
-		tp = dart->tty = ttymalloc();
+		tp = dart->tty = ttymalloc(0);
 
 	tp->t_oproc = dartstart;
 	tp->t_param = dartparam;
@@ -644,7 +633,7 @@ dartopen(dev_t dev, int flag, int mode, struct proc *p)
 
 		(void)dartmctl(sc, port, TIOCM_DTR | TIOCM_RTS, DMSET);
 		tp->t_state |= TS_CARR_ON;
-	} else if (tp->t_state & TS_XCLUDE && p->p_ucred->cr_uid != 0) {
+	} else if (tp->t_state & TS_XCLUDE && suser(p, 0) != 0) {
 		splx(s);
 		return (EBUSY);
 	}
@@ -655,7 +644,7 @@ dartopen(dev_t dev, int flag, int mode, struct proc *p)
 	 */
 	tp->t_dev = dev;
 	splx(s);
-	return ((*linesw[tp->t_line].l_open)(dev, tp));
+	return ((*linesw[tp->t_line].l_open)(dev, tp, p));
 }
 
 int
@@ -672,7 +661,7 @@ dartclose(dev_t dev, int flag, int mode, struct proc *p)
 	dart = &sc->sc_dart[port];
 
 	tp = dart->tty;
-	(*linesw[tp->t_line].l_close)(tp, flag);
+	(*linesw[tp->t_line].l_close)(tp, flag, p);
 	ttyclose(tp);
 
 	return (0);
@@ -817,7 +806,7 @@ dartintr(void *arg)
 		 * ready change on a disabled port). This should not happen,
 		 * but we have to claim the interrupt anyway.
 		 */
-#ifdef DIAGNOSTIC
+#if defined(DIAGNOSTIC) && !defined(MULTIPROCESSOR)
 		printf("%s: spurious interrupt, isr %x imr %x\n",
 		    sc->sc_dev.dv_xname, isr, imr);
 #endif
@@ -870,9 +859,9 @@ dartintr(void *arg)
 #define	dart_cnwrite(reg, val)	dart_write(sc, (reg), (val))
 #else
 #define	dart_cnread(reg) \
-	*(volatile u_int8_t *)(DART_BASE + 3 + ((reg) << 2))
+	*(volatile u_int8_t *)(CONSOLE_DART_BASE + 3 + ((reg) << 2))
 #define	dart_cnwrite(reg, val) \
-	*(volatile u_int8_t *)(DART_BASE + 3 + ((reg) << 2)) = (val)
+	*(volatile u_int8_t *)(CONSOLE_DART_BASE + 3 + ((reg) << 2)) = (val)
 #endif
 
 void
@@ -880,7 +869,7 @@ dartcnprobe(struct consdev *cp)
 {
 	int maj;
 
-	if (badaddr(DART_BASE, 4) != 0)
+	if (badaddr(CONSOLE_DART_BASE, 4) != 0)
 		return;
 
 #ifdef USE_PROM_CONSOLE
@@ -897,7 +886,7 @@ dartcnprobe(struct consdev *cp)
 		return;
 
 	cp->cn_dev = makedev(maj, CONS_PORT);
-	cp->cn_pri = CN_NORMAL;
+	cp->cn_pri = CN_LOWPRI;
 }
 
 void

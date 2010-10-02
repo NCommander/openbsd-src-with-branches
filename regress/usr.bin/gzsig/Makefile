@@ -1,7 +1,8 @@
-# $OpenBSD$
-# $Id: Makefile,v  1.2 2005/04/01 16:47:32 dugsong Exp $
+# $OpenBSD: Makefile,v 1.3 2005/05/31 14:15:41 art Exp $
 
-regress:
-	@sh ${.CURDIR}/gzsig.sh
+do-regress:
+	@sh ${.CURDIR}/gzsig.sh ${.CURDIR}
+
+REGRESS_TARGETS=do-regress
 
 .include <bsd.regress.mk>

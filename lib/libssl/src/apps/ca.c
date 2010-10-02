@@ -858,8 +858,8 @@ bad:
 			perror(outdir);
 			goto err;
 			}
-#ifdef S_IFDIR
-		if (!(sb.st_mode & S_IFDIR))
+#ifdef S_ISDIR
+		if (!S_ISDIR(sb.st_mode))
 			{
 			BIO_printf(bio_err,"%s need to be a directory\n",outdir);
 			perror(outdir);
@@ -1283,7 +1283,7 @@ bad:
 				goto err;
 				}
 
-			strcpy(buf[2],outdir);
+			strlcpy(buf[2],outdir,sizeof(buf[2]));
 
 #ifndef OPENSSL_SYS_VMS
 			BUF_strlcat(buf[2],"/",sizeof(buf[2]));
@@ -1946,7 +1946,7 @@ again2:
 			p="Valid";
 		else
 			p="\ninvalid type, Data base error\n";
-		BIO_printf(bio_err,"Type	  :%s\n",p);;
+		BIO_printf(bio_err,"Type	  :%s\n",p);
 		if (rrow[DB_type][0] == 'R')
 			{
 			p=rrow[DB_exp_date]; if (p == NULL) p="undef";

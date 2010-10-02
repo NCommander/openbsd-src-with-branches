@@ -1,5 +1,4 @@
-/*	$NetBSD: authunix_prot.c,v 1.2 1995/02/25 03:01:36 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,12 +28,6 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)authunix_prot.c 1.15 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)authunix_prot.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: authunix_prot.c,v 1.2 1995/02/25 03:01:36 cgd Exp $";
-#endif
-
 /*
  * authunix_prot.c
  * XDR for UNIX style authentication parameters for RPC
@@ -52,9 +45,7 @@ static char *rcsid = "$NetBSD: authunix_prot.c,v 1.2 1995/02/25 03:01:36 cgd Exp
  * XDR for unix authentication parameters.
  */
 bool_t
-xdr_authunix_parms(xdrs, p)
-	register XDR *xdrs;
-	register struct authunix_parms *p;
+xdr_authunix_parms(XDR *xdrs, struct authunix_parms *p)
 {
 
 	if (xdr_u_long(xdrs, &(p->aup_time))

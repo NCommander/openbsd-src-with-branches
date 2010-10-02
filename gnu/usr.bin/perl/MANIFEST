@@ -11,6 +11,7 @@ cc_runtime.h		Macros need by runtime of compiler-generated code
 cflags.SH		A script that emits C compilation flags per file
 Changes			Describe how to peruse changes between releases
 config_h.SH		Produces config.h
+config.over		Site-specific overrides for Configure defaults
 configpm		Produces lib/Config.pm
 Configure		Portability tool
 configure.com		Configure-equivalent for VMS
@@ -1026,7 +1027,6 @@ ext/Module-Pluggable/t/acme/Acme/MyTest/Plugin/Foo.pm	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/Acme/Foo-Bar.pm			Module::Pluggable tests
 ext/Module-Pluggable/t/lib/Acme/MyTest/Plugin/Foo.pm	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Bar.pm		Module::Pluggable tests
-ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Bar.pm~	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Bar.pm.swo	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Bar.pm.swp	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Foo.pm		Module::Pluggable tests
@@ -1144,7 +1144,10 @@ ext/Safe/t/safe2.t		See if Safe works
 ext/Safe/t/safe3.t		See if Safe works
 ext/Safe/t/safeload.t		Tests that some modules can be loaded by Safe
 ext/Safe/t/safeops.t		Tests that all ops can be trapped by Safe
+ext/Safe/t/safesort.t		See if Safe works
 ext/Safe/t/safeuniversal.t	Tests Safe with functions from universal.c
+ext/Safe/t/safeutf8.t		See if Safe works
+ext/Safe/t/safewrap.t		See if Safe works
 ext/SDBM_File/Makefile.PL	SDBM extension makefile writer
 ext/SDBM_File/sdbm/biblio	SDBM kit
 ext/SDBM_File/sdbm/CHANGES	SDBM kit
@@ -1592,6 +1595,7 @@ fakethr.h			Fake threads header
 form.h				Public declarations for formats
 generate_uudmap.c		Generate uudmap.h, the uuencode decoding map
 genpacksizetables.pl		Generate the size tables for pack/unpack
+git_version.h			Pre-generated git_version.h for OpenBSD
 globals.c			File to declare global symbols (for shared library)
 global.sym			Symbols that need hiding when embedded
 globvar.sym			Global variables that need hiding when embedded
@@ -1961,6 +1965,7 @@ lib/Class/Struct.t		See if Class::Struct works
 lib/complete.pl			A command completion subroutine
 lib/Config/Extensions.pm	Convenient hash lookup for built extensions
 lib/Config/Extensions.t		See if Config::Extensions works
+lib/Config_git.pl		Pre-generated git_version.h for OpenBSD
 lib/Config.t			See if Config works
 lib/constant.pm			For "use constant"
 lib/constant.t			See if compile-time constants work
@@ -4069,6 +4074,7 @@ t/lib/Test/Builder/NoOutput.pm	Utility module for testing Test::Builder
 t/lib/Test/Simple/Catch.pm	Utility module for testing Test::Simple
 t/lib/Test/Simple/sample_tests/death_in_eval.plx	for exit.t
 t/lib/Test/Simple/sample_tests/death.plx		for exit.t
+t/lib/Test/Simple/sample_tests/death_with_handler.plx	for exit.t
 t/lib/Test/Simple/sample_tests/death_with_handler.plx	for exit.t
 t/lib/Test/Simple/sample_tests/exit.plx			for exit.t
 t/lib/Test/Simple/sample_tests/extras.plx		for exit.t

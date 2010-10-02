@@ -1,53 +1,36 @@
-# Generated automatically from Makefile.in by configure.
-#	@(#)Makefile	5.2 (Berkeley) 3/5/91
+#	$OpenBSD: Makefile,v 1.22 2004/01/18 23:54:20 marc Exp $
+
+#
+# The pthread library is formed from the FreeBSD uthread sources of 
+# libc_r, and exploits weak symbols in libc.
 #
 
-LIB=pthread
-#NOPIC=
-#NOPROFILE=1
-CPPFLAGS+= -I${.CURDIR} -I${.CURDIR}/include -I${srcdir}/include -DPTHREAD_KERNEL
-CDEBUGFLAGS= -g -O2 -Werror
-CFLAGS+= ${CDEBUGFLAGS}
-# CFLAGS+= ${CPPFLAGS} <- done by bsd.lib.mk
-CFLAGS+= ${CPPFLAGS} 
-LIBDIR= $(exec_prefix)/lib
-BINDIR= $(exec_prefix)/bin
-INCDIR= $(exec_prefix)/include
-MANDIR= $(exec_prefix)/man
+SRCDIR=		${.CURDIR}
+LIBCSRCDIR=	${.CURDIR}/../libc
 
-.OBJDIR != if test -d ${.CURDIR}/obj ; then true ; else mkdir ${.CURDIR}/obj || exit 1 ; fi ; echo ${.CURDIR}/obj
+LIB=		pthread
+WANTLINT=
+LINTFLAGS=	-z
+CFLAGS+=	-DPTHREAD_KERNEL -D_POSIX_THREADS -D_THREAD_SAFE -Wall
+CFLAGS+=	-Wpointer-arith -Wwrite-strings -Wstrict-prototypes
+CFLAGS+=	-Wmissing-prototypes -Wsign-compare # -Werror
+CFLAGS+=	-I${SRCDIR}/uthread
+CFLAGS+=	-I${SRCDIR}/include
+CFLAGS+=	-I${LIBCSRCDIR}/include
+AINC+=		-I${SRCDIR}/uthread
 
-# Standard bsd install rules look for the "install" program, rather than
-# using some variable.  So, hack things so that that install rule works.
-BINGRP != echo " " `groups` " " | sed 's/ [0-9][0-9]* / /g' | awk '{print $$1}'
-BINOWN != echo $${USER}
-LIBMODE = 644 # so ranlib can run!
+# Uncomment this if you want libpthread to contain debug information for
+# thread locking.
+CFLAGS+=	-D_LOCK_DEBUG
+#DEBUG=		-g
 
-.include "config.flags"
+# enable extra internal consistency checks
+CFLAGS+=	-D_PTHREADS_INVARIANTS
 
-# %!$@ pmake seems to automagically cd into the obj directory, so relative 
-# srcdir references are completely botched.  Try to figure out an absolute
-# pathname for srcdir here, and live with it.
-srcdir = $(srctop)
-
-beforeinstall: install-dirs
-
-.include "${srcdir}/pthreads/Makefile.inc"
-.include "${srcdir}/stdlib/Makefile.inc"
-.include "${srcdir}/stdio/Makefile.inc"
-.include "${srcdir}/string/Makefile.inc"
-.include "${srcdir}/gen/Makefile.inc"
-.include "${srcdir}/net/Makefile.inc"
-.include "${srcdir}/scripts/Makefile.inc"
-
-$(OBJS) : $(config) $(types) $(paths)
-
-Makefile: ${srcdir}/config/Makefile.in
-	cd ${.CURDIR} && sh config.status
-
-all-lib : libpthread.a
-# Removed make install since mysql uses this in place.
-#install : install-bin install-include
-install:
+.include "${SRCDIR}/include/Makefile.inc"
+.include "${SRCDIR}/sys/Makefile.inc"
+.include "${SRCDIR}/thread/Makefile.inc"
+.include "${SRCDIR}/uthread/Makefile.inc"
+.include "${SRCDIR}/man/Makefile.inc"
 
 .include <bsd.lib.mk>

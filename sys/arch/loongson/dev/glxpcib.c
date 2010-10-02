@@ -1,4 +1,4 @@
-/*      $OpenBSD: glxpcib.c,v 1.7 2008/06/11 20:07:31 mbalmer Exp $	*/
+/*      $OpenBSD: glxpcib.c,v 1.5 2010/04/21 03:03:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -24,9 +24,9 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/gpio.h>
-#include <sys/sysctl.h>
 #include <sys/timetc.h>
 
 #include <machine/bus.h>
@@ -171,8 +171,10 @@ int
 glxpcib_match(struct device *parent, void *match, void *aux)
 { 
 	if (pci_matchbyid((struct pci_attach_args *)aux, glxpcib_devices,
-	    sizeof(glxpcib_devices) / sizeof(glxpcib_devices[0])))
+	    nitems(glxpcib_devices))) {
+		/* needs to win over pcib */
 		return 2;
+	}
 
 	return 0;
 }
@@ -183,22 +185,27 @@ glxpcib_attach(struct device *parent, struct device *self, void *aux)
 	struct glxpcib_softc *sc = (struct glxpcib_softc *)self;
 	struct timecounter *tc = &sc->sc_timecounter;
 #if NGPIO > 0
+	struct pci_attach_args *pa = (struct pci_attach_args *)aux;
 	u_int64_t wa, ga;
 	struct gpiobus_attach_args gba;
 	int i, gpio = 0;
 #endif
 
+	printf(": rev %d",
+	    (int)rdmsr(AMD5536_REV) & AMD5536_REV_MASK);
 	tc->tc_get_timecount = glxpcib_get_timecount;
 	tc->tc_counter_mask = 0xffffffff;
 	tc->tc_frequency = 3579545;
 	tc->tc_name = "CS5536";
+#ifdef __loongson__
+	tc->tc_quality = 0;
+#else
 	tc->tc_quality = 1000;
+#endif
 	tc->tc_priv = sc;
 	tc_init(tc);
 
-	printf(": rev %d, 32-bit %lluHz timer",
-	    (int)rdmsr(AMD5536_REV) & AMD5536_REV_MASK,
-	    tc->tc_frequency);
+	printf(", 32-bit %lluHz timer", tc->tc_frequency);
 
 #if NGPIO > 0
 	/* Attach the watchdog timer */

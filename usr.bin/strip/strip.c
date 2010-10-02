@@ -1,3 +1,5 @@
+/*	$OpenBSD: strip.c,v 1.28 2010/05/24 23:42:39 jmc Exp $	*/
+
 /*
  * Copyright (c) 1988 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,17 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1988 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)strip.c	5.8 (Berkeley) 11/6/91";*/
-static char rcsid[] = "$Id: strip.c,v 1.13 1994/03/28 02:17:50 cgd Exp $";
-#endif /* not lint */
-
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -52,38 +40,65 @@ static char rcsid[] = "$Id: strip.c,v 1.13 1994/03/28 02:17:50 cgd Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
+#include <ranlib.h>
+#include "byte.c"
+
+#ifdef MID_MACHINE_OVERRIDE
+#undef MID_MACHINE
+#define MID_MACHINE MID_MACHINE_OVERRIDE
+#if MID_MACHINE_OVERRIDE == MID_M68K
+#undef __LDPGSZ
+#undef ELF_TARG_DATA
+#undef ELF_TARG_MACH
+#include "m68k/exec.h"
+#elif MID_MACHINE_OVERRIDE == MID_M88K
+#undef __LDPGSZ
+#undef ELF_TARG_DATA
+#undef ELF_TARG_MACH
+#include "m88k/exec.h"
+#endif
+#endif
 
 typedef struct exec EXEC;
 typedef struct nlist NLIST;
 
 #define	strx	n_un.n_strx
 
-void err __P((const char *fmt, ...));
-int s_stab __P((const char *, int, EXEC *, struct stat *));
-int s_sym __P((const char *, int, EXEC *, struct stat *));
-void usage __P((void));
+int s_stab(const char *, int, EXEC *, struct stat *, off_t *);
+int s_sym(const char *, int, EXEC *, struct stat *, off_t *);
+void usage(void);
 
 int xflag = 0;
-        
-main(argc, argv)
-	int argc;
-	char *argv[];
+
+int
+main(int argc, char *argv[])
 {
-	register int fd, nb;
+	int fd;
 	EXEC *ep;
 	struct stat sb;
-	int (*sfcn)__P((const char *, int, EXEC *, struct stat *));
+	int (*sfcn)(const char *, int, EXEC *, struct stat *, off_t *);
 	int ch, errors;
-	char *fn;
+	char *fn, *ofile = NULL;
+	off_t newsize;
 
 	sfcn = s_sym;
-	while ((ch = getopt(argc, argv, "dx")) != EOF)
+	while ((ch = getopt(argc, argv, "dgsxo:")) != -1)
 		switch(ch) {
-                case 'x':
-                        xflag = 1;
-                        /*FALLTHROUGH*/
+		case 'x':
+			xflag = 1;
+			/*FALLTHROUGH*/
+		case 'g':
 		case 'd':
 			sfcn = s_stab;
+			break;
+		case 's':
+			/* reset back to the defaults */
+			xflag = 0;
+			sfcn = s_sym;
+			break;
+		case 'o':
+			ofile = optarg;
 			break;
 		case '?':
 		default:
@@ -92,13 +107,59 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
+	if (ofile != NULL && argc > 1)
+		usage();
 	errors = 0;
-#define	ERROR(x) errors |= 1; err("%s: %s", fn, strerror(x)); continue;
-	while (fn = *argv++) {
-		if ((fd = open(fn, O_RDWR)) < 0) {
+#define	ERROR(x) errors |= 1; warnx("%s: %s", fn, strerror(x)); continue;
+	while ((fn = *argv++)) {
+		if (ofile) {
+			char buf[8192];
+			ssize_t wn;
+			size_t rn;
+			off_t off;
+			int wfd;
+
+			if ((fd = open(fn, O_RDONLY)) < 0) {
+				ERROR(errno);
+				break;
+			}
+			if ((wfd = open(ofile, O_RDWR|O_CREAT)) < 0) {
+				ERROR(errno);
+				break;
+			}
+			do {
+				rn = read(fd, buf, sizeof buf);
+				if (rn == (ssize_t)-1) {
+					int save_errno = errno;
+
+					unlink(ofile);
+					ERROR(save_errno);
+					exit(errors);
+				}
+				if (rn == 0)
+					break;
+
+				off = 0;
+				while (rn - off > 0) {
+					wn = write(wfd, buf + off, rn - off);
+					if (wn == (ssize_t)-1) {
+						int save_errno = errno;
+
+						unlink(ofile);
+						ERROR(save_errno);
+						exit(errors);
+					}
+					off += wn;
+				}
+			} while (rn > 0);
+
+			fn = ofile;
+			close(fd);
+			fd = wfd;
+		} else if ((fd = open(fn, O_RDWR)) < 0) {
 			ERROR(errno);
 		}
-        	if (fstat(fd, &sb)) {
+		if (fstat(fd, &sb)) {
 			(void)close(fd);
 			ERROR(errno);
 		}
@@ -107,17 +168,29 @@ main(argc, argv)
 			ERROR(EFTYPE);
 		}
 		if ((ep = (EXEC *)mmap(NULL, sb.st_size, PROT_READ|PROT_WRITE,
-		    MAP_SHARED, fd, (off_t)0)) == (EXEC *)-1) {
+		    MAP_SHARED, fd, (off_t)0)) == MAP_FAILED) {
 			(void)close(fd);
 			ERROR(errno);
 		}
-		if (N_BADMAG(*ep)) {
+		if (BAD_OBJECT(*ep)) {
 			munmap((caddr_t)ep, sb.st_size);
 			(void)close(fd);
 			ERROR(EFTYPE);
 		}
-		errors |= sfcn(fn, fd, ep, &sb);
+		/*
+		 * Since we're dealing with an mmap there, we have to convert
+		 * once for dealing with data in memory, and a second time
+		 * for out.
+		 */
+		fix_header_order(ep);
+		newsize = 0;
+		errors |= sfcn(fn, fd, ep, &sb, &newsize);
+		fix_header_order(ep);
 		munmap((caddr_t)ep, sb.st_size);
+		if (newsize  && ftruncate(fd, newsize)) {
+			warn("%s", fn);
+			errors = 1;
+		}
 		if (close(fd)) {
 			ERROR(errno);
 		}
@@ -127,13 +200,12 @@ main(argc, argv)
 }
 
 int
-s_sym(fn, fd, ep, sp)
-	const char *fn;
-	int fd;
-	register EXEC *ep;
-	struct stat *sp;
+s_sym(const char *fn, int fd, EXEC *ep, struct stat *sp, off_t *sz)
 {
-	register char *neweof, *mineof;
+	char *neweof;
+#if	0
+	char *mineof;
+#endif
 	int zmagic;
 
 	zmagic = ep->a_data &&
@@ -184,34 +256,36 @@ s_sym(fn, fd, ep, sp)
 	ep->a_syms = ep->a_trsize = ep->a_drsize = 0;
 
 	/* Truncate the file. */
-	if (ftruncate(fd, neweof - (char *)ep)) {
-		err("%s: %s", fn, strerror(errno));
-		return 1;
-	}
+	*sz = neweof - (char *)ep;
 
 	return 0;
 }
 
 int
-s_stab(fn, fd, ep, sp)
-	const char *fn;
-	int fd;
-	EXEC *ep;
-	struct stat *sp;
+s_stab(const char *fn, int fd, EXEC *ep, struct stat *sp, off_t *sz)
 {
-	register int cnt, len, nsymcnt;
-	register char *nstr, *nstrbase, *p, *strbase;
-	register NLIST *sym, *nsym;
+	int cnt, len;
+	char *nstr, *nstrbase=0, *used=0, *p, *strbase;
+	NLIST *sym, *nsym;
+	u_long allocsize;
+	int mid;
 	NLIST *symbase;
+	unsigned int *mapping=0;
+	int error=1;
+	unsigned int nsyms;
+	struct relocation_info *reloc_base;
+	unsigned int i, j;
 
 	/* Quit if no symbols. */
 	if (ep->a_syms == 0)
 		return 0;
 
 	if (N_SYMOFF(*ep) >= sp->st_size) {
-		err("%s: bad symbol table", fn);
+		warnx("%s: bad symbol table", fn);
 		return 1;
 	}
+
+	mid = N_GETMID(*ep);
 
 	/*
 	 * Initialize old and new symbol pointers.  They both point to the
@@ -226,88 +300,141 @@ s_stab(fn, fd, ep, sp)
 	 * of the string table.
 	 */
 	strbase = (char *)ep + N_STROFF(*ep);
-	if ((nstrbase = malloc((u_int)*(u_long *)strbase)) == NULL) {
-		err("%s", strerror(ENOMEM));
-		return 1;
+	allocsize = fix_32_order(*(u_long *)strbase, mid);
+	if ((nstrbase = malloc((u_int) allocsize)) == NULL) {
+		warnx("%s", strerror(ENOMEM));
+		goto end;
 	}
 	nstr = nstrbase + sizeof(u_long);
+
+	/* okay, so we also need to keep symbol numbers for relocations. */
+	nsyms = ep->a_syms/ sizeof(NLIST);
+	used = calloc(nsyms, 1);
+	if (!used) {
+		warnx("%s", strerror(ENOMEM));
+		goto end;
+	}
+	mapping = calloc(nsyms, sizeof(unsigned int));
+	if (!mapping) {
+		warnx("%s", strerror(ENOMEM));
+		goto end;
+	}
+
+	if ((ep->a_trsize || ep->a_drsize) && byte_sex(mid) != BYTE_ORDER) {
+		warnx("%s: cross-stripping not supported", fn);
+		goto end;
+	}
+
+	/* first check the relocations for used symbols, and mark them */
+	/* text */
+	reloc_base = (struct relocation_info *) ((char *)ep + N_TRELOFF(*ep));
+	if (N_TRELOFF(*ep) + ep->a_trsize > sp->st_size) {
+		warnx("%s: bad text relocation", fn);
+		goto end;
+	}
+	for (i = 0; i < ep->a_trsize / sizeof(struct relocation_info); i++) {
+		if (!reloc_base[i].r_extern)
+			continue;
+		if (reloc_base[i].r_symbolnum > nsyms) {
+			warnx("%s: bad symbol number in text relocation", fn);
+			goto end;
+		}
+		used[reloc_base[i].r_symbolnum] = 1;
+	}
+	/* data */
+	reloc_base = (struct relocation_info *) ((char *)ep + N_DRELOFF(*ep));
+	if (N_DRELOFF(*ep) + ep->a_drsize > sp->st_size) {
+		warnx("%s: bad data relocation", fn);
+		goto end;
+	}
+	for (i = 0; i < ep->a_drsize / sizeof(struct relocation_info); i++) {
+		if (!reloc_base[i].r_extern)
+			continue;
+		if (reloc_base[i].r_symbolnum > nsyms) {
+			warnx("%s: bad symbol number in data relocation", fn);
+			goto end;
+		}
+		used[reloc_base[i].r_symbolnum] = 1;
+	}
 
 	/*
 	 * Read through the symbol table.  For each non-debugging symbol,
 	 * copy it and save its string in the new string table.  Keep
 	 * track of the number of symbols.
 	 */
-	for (cnt = ep->a_syms / sizeof(NLIST); cnt--; ++sym)
+	for (cnt = nsyms, i = 0, j = 0; cnt--; ++sym, ++i) {
+		fix_nlist_order(sym, mid);
 		if (!(sym->n_type & N_STAB) && sym->strx) {
 			*nsym = *sym;
 			nsym->strx = nstr - nstrbase;
 			p = strbase + sym->strx;
-                        if (xflag && 
-                            (!(sym->n_type & N_EXT) ||
-                             (sym->n_type & ~N_EXT) == N_FN ||
-                             strcmp(p, "gcc_compiled.") == 0 ||
-                             strcmp(p, "gcc2_compiled.") == 0 ||
-                             strncmp(p, "___gnu_compiled_", 16) == 0)) {
-                                continue;
-                        }
+			if (xflag && !used[i] &&
+			    (!(sym->n_type & N_EXT) ||
+			     (sym->n_type & ~N_EXT) == N_FN ||
+			     strcmp(p, "gcc_compiled.") == 0 ||
+			     strcmp(p, "gcc2_compiled.") == 0 ||
+			     strncmp(p, "___gnu_compiled_", 16) == 0)) {
+				continue;
+			}
 			len = strlen(p) + 1;
+			mapping[i] = j++;
+			if (N_STROFF(*ep) + sym->strx + len > sp->st_size) {
+				warnx("%s: bad symbol table", fn);
+				goto end;
+			}
 			bcopy(p, nstr, len);
 			nstr += len;
-			++nsym;
+			fix_nlist_order(nsym++, mid);
 		}
+	}
+
+	/* renumber symbol relocations */
+	/* text */
+	reloc_base = (struct relocation_info *) ((char *)ep + N_TRELOFF(*ep));
+	for (i = 0; i < ep->a_trsize / sizeof(struct relocation_info); i++) {
+		if (!reloc_base[i].r_extern)
+			continue;
+		reloc_base[i].r_symbolnum = mapping[reloc_base[i].r_symbolnum];
+	}
+	/* data */
+	reloc_base = (struct relocation_info *) ((char *)ep + N_DRELOFF(*ep));
+	for (i = 0; i < ep->a_drsize / sizeof(struct relocation_info); i++) {
+		if (!reloc_base[i].r_extern)
+			continue;
+		reloc_base[i].r_symbolnum = mapping[reloc_base[i].r_symbolnum];
+	}
 
 	/* Fill in new symbol table size. */
 	ep->a_syms = (nsym - symbase) * sizeof(NLIST);
 
 	/* Fill in the new size of the string table. */
-	*(u_long *)nstrbase = len = nstr - nstrbase;
+	len = nstr - nstrbase;
+	*(u_long *)nstrbase = fix_32_order(len, mid);
 
 	/*
 	 * Copy the new string table into place.  Nsym should be pointing
 	 * at the address past the last symbol entry.
 	 */
 	bcopy(nstrbase, (void *)nsym, len);
+	error = 0;
+end:
 	free(nstrbase);
+	free(used);
+	free(mapping);
 
 	/* Truncate to the current length. */
-	if (ftruncate(fd, (char *)nsym + len - (char *)ep)) {
-		err("%s: %s", fn, strerror(errno));
-		return 1;
-	}
+	*sz = (char *)nsym + len - (char *)ep;
 
-	return 0;
+	return error;
 }
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr, "usage: strip [-dx] file ...\n");
+	extern char *__progname;
+
+	fprintf(stderr, "usage: %s [-dgsx] [-o outfile] file ...\n",
+	    __progname);
 	exit(1);
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#if __STDC__
-err(const char *fmt, ...)
-#else
-err(fmt, va_alist)
-	char *fmt;
-        va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "strip: ");
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-}

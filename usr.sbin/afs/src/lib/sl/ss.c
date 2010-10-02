@@ -112,12 +112,11 @@ ss_execute_line (int index, const char *line)
 int
 ss_listen (int index)
 {
-    char *prompt = malloc(strlen(subsystems[index].name) + 3);
-    if(prompt == NULL) {
-	abort();
+    char *prompt;
+
+    if (asprintf(&prompt, "%s: ", subsystems[index].name) == -1) {
+	errx(-1, "ss_listen: malloc failed\n");
     }
-    strcpy(prompt, subsystems[index].name);
-    strcat(prompt, ": ");
     sl_loop(subsystems[index].table, prompt);
     free(prompt);
     return 0;

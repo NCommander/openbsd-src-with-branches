@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.1.1.1 1995/10/08 22:40:41 gwr Exp $
+#	$OpenBSD$
 
 PROG=		rdconfig
 MAN=		rdconfig.8

@@ -1,3 +1,5 @@
+/*	$OpenBSD: outbound.c,v 1.5 2003/06/03 02:56:19 millert Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)outbound.c	4.3 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: outbound.c,v 1.2 1993/08/01 18:05:46 mycroft Exp $";
-#endif /* not lint */
 
 #include <stdio.h>
 
@@ -97,9 +90,9 @@ init_ctlr()
 
 
 FieldInc(position)
-register int	position;		/* Position in previous field */
+int	position;		/* Position in previous field */
 {
-    register ScreenImage *ptr;
+    ScreenImage *ptr;
 
     ptr = (ScreenImage *)memNSchr((char *)Host+position+1, ATTR_MASK,
 			HighestScreen()-position, ATTR_MASK, sizeof Host[0]);
@@ -116,7 +109,7 @@ register int	position;		/* Position in previous field */
 FieldDec(position)
 int	position;
 {
-    register ScreenImage *ptr;
+    ScreenImage *ptr;
 
     ptr = (ScreenImage *)memNSchr((char *)(Host+position)-1, ATTR_MASK,
 			position-LowestScreen(), ATTR_MASK, -sizeof Host[0]);
@@ -181,13 +174,13 @@ char	character;
 int
 DataFromNetwork(Buffer, count, control)
 char	*Buffer;				/* what the data is */
-register int	count;				/* and how much there is */
+int	count;					/* and how much there is */
 int	control;				/* this buffer ended block? */
 {
     int origCount;
-    register unsigned char *buffer = (unsigned char *)Buffer;
-    register int c;
-    register int i;
+    unsigned char *buffer = (unsigned char *)Buffer;
+    int c;
+    int i;
     static int Command;
     static int Wcc;
 
@@ -223,7 +216,7 @@ int	control;				/* this buffer ended block? */
 		{
 		    char s_buffer[100];
 
-		    sprintf(s_buffer,
+		    snprintf(s_buffer, sizeof s_buffer,
 			"Unexpected read command code 0x%x received.\n",
 								    Command);
 		    ExitString(s_buffer, 1);
@@ -322,7 +315,7 @@ int	control;				/* this buffer ended block? */
 	    {
 		char s_buffer[100];
 
-		sprintf(s_buffer,
+		snprintf(s_buffer, sizeof s_buffer,
 			"Unexpected write command code 0x%x received.\n",
 								Command);
 		ExitString(s_buffer, 1);
@@ -412,7 +405,8 @@ int	control;				/* this buffer ended block? */
 		if ((i < 0) || (i > HighestScreen())) {
 		    char s_buffer[200];
 
-		    sprintf(s_buffer, "tn3270:  %s%d.\n\t%s%d%s%d%s\n",
+		    snprintf(s_buffer, sizeof s_buffer,
+			"tn3270:  %s%d.\n\t%s%d%s%d%s\n",
 			"Invalid 3270 order 'Repeat to Address' to address ",
 			i,
 			"(Screen currently set to ",
@@ -450,7 +444,8 @@ int	control;				/* this buffer ended block? */
 		if ((i < 0) || (i > HighestScreen())) {
 		    char s_buffer[200];
 
-		    sprintf(s_buffer, "tn3270:  %s%d.\n\t%s%d%s%d%s\n",
+		    snprintf(s_buffer, sizeof s_buffer,
+			"tn3270:  %s%d.\n\t%s%d%s%d%s\n",
 			"Invalid 3270 order 'Erase Unprotected to Address' to address ",
 			i,
 			"(Screen currently set to ",
@@ -504,7 +499,7 @@ int	control;				/* this buffer ended block? */
 			    break;
 			}
 		    }
-		    sprintf(s_buffer,
+		    snprintf(s_buffer, sizeof s_buffer,
 			"Unsupported order '%s' (%s, 0x%x) received.\n",
 			porder->long_name, porder->short_name, c);
 		    ExitString(s_buffer, 1);

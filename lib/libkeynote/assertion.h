@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: assertion.h,v 1.4 2001/09/03 20:14:51 deraadt Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -8,7 +7,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -23,7 +22,28 @@
 #ifndef __ASSERTION_H__
 #define __ASSERTION_H__
 
-#include "keynote.h"
+/*
+ * These can be changed to reflect more assertions/session or more
+ * sessions respectively
+ */
+#define HASHTABLESIZE                   37
+#define SESSIONTABLESIZE                37
+
+struct keynote_session   
+{
+    int                     ks_id;
+    int                     ks_assertioncounter;
+    int                     ks_values_num;
+    struct environment     *ks_env_table[HASHTABLESIZE];
+    struct environment     *ks_env_regex;
+    struct keylist         *ks_action_authorizers;
+    struct assertion       *ks_assertion_table[HASHTABLESIZE];
+    char                  **ks_values;
+    char                   *ks_authorizers_cache;
+    char                   *ks_values_cache;
+    struct keynote_session *ks_prev;
+    struct keynote_session *ks_next;
+};
 
 struct keylist
 {
@@ -54,8 +74,8 @@ struct assertion
     int			as_signeralgorithm;
     int                 as_result;
     int			as_error;
-    u_char		as_flags;
-    u_char 		as_internalflags;
+    unsigned char	as_flags;
+    unsigned char	as_internalflags;
     char		as_kresult;
     char                as_sigresult;
     struct keylist     *as_keylist;
@@ -69,8 +89,6 @@ struct assertion
 #define ASSERT_IFLAG_WEIRDSIG	 0x0004  /* Needs Signature re-processing */
 #define ASSERT_IFLAG_NEEDPROC    0x0008  /* Needs "key field" processing */
 #define ASSERT_IFLAG_PROCESSED   0x0010  /* Handled repositioning already */
-
-extern struct assertion *keynote_current_assertion;
 
 #define KRESULT_UNTOUCHED	0
 #define KRESULT_IN_PROGRESS	1	/* For cycle detection */
@@ -86,21 +104,69 @@ extern struct assertion *keynote_current_assertion;
 
 #define KEYNOTE_FLAG_EXPORTALL	0x1
 
+/* List types for cleanup */
 #define LEXTYPE_CHAR		0x1
 
-struct keylist *keynote_keylist_find(struct keylist *, char *);
-struct assertion *keynote_parse_assertion(char *, int, int);
-int    keynote_evaluate_authorizer(struct assertion *, int);
-struct assertion *keynote_find_assertion(void *, int, int);
-int    keynote_evaluate_assertion(struct assertion *);
-int    keynote_parse_keypred(struct assertion *, int);
-int    keynote_keylist_add(struct keylist **, char *);
-int    keynote_add_htable(struct assertion *, int);
-void   keynote_free_assertion(struct assertion *);
-void   keynote_keylist_free(struct keylist *);
-int    keynote_in_authorizers(void *, int);
-char  *keynote_get_private_key(char *);
-int    keynote_evaluate_query(void);
-int    keynote_lex_add(void *, int);
-void   keynote_lex_remove(void *);
+/* Length of random initializer */
+#define KEYNOTE_RAND_INIT_LEN           1024
+
+/* Variables */
+extern char **keynote_values;
+extern char *keynote_privkey;
+
+extern struct assertion *keynote_current_assertion;
+
+extern struct environment *keynote_init_list;
+extern struct environment *keynote_temp_list;
+
+extern struct keylist *keynote_keypred_keylist;
+
+extern struct keynote_session *keynote_sessions[SESSIONTABLESIZE];
+extern struct keynote_session *keynote_current_session;
+
+extern int keynote_exceptionflag;
+extern int keynote_used_variable;
+extern int keynote_returnvalue;
+extern int keynote_justrecord;
+extern int keynote_donteval;
+extern int keynote_errno;
+
+/* Extern definitions */
+extern int knlineno;
+
+/* Function prototypes */
+extern int keynote_env_add(char *, char *, struct environment **,
+                           unsigned int, int);
+extern char *keynote_env_lookup(char *, struct environment **, unsigned int);
+extern int keynote_env_delete(char *, struct environment **, unsigned int);
+extern struct keylist *keynote_keylist_find(struct keylist *, char *);
+extern struct environment *keynote_get_envlist(char *, char *, int);
+extern struct assertion *keynote_parse_assertion(char *, int, int);
+extern int keynote_evaluate_authorizer(struct assertion *, int);
+extern struct assertion *keynote_find_assertion(void *, int, int);
+extern void keynote_env_cleanup(struct environment **, unsigned int);
+extern int keynote_get_key_algorithm(char *, int *, int *);
+extern int keynote_sigverify_assertion(struct assertion *);
+extern int keynote_evaluate_assertion(struct assertion *);
+extern int keynote_parse_keypred(struct assertion *, int);
+extern int keynote_keylist_add(struct keylist **, char *);
+extern int keynote_add_htable(struct assertion *, int);
+extern void keynote_free_assertion(struct assertion *);
+extern int keynote_in_action_authorizers(void *, int);
+extern struct keynote_session *keynote_find_session(int);
+extern void keynote_keylist_free(struct keylist *);
+extern void keynote_free_env(struct environment *);
+extern int  keynote_in_authorizers(void *, int);
+extern int  keynote_sremove_assertion(int, int);
+extern unsigned int keynote_stringhash(char *, unsigned int);
+extern char *keynote_get_private_key(char *);
+extern void keynote_free_key(void *, int);
+extern int keynote_evaluate_query(void);
+extern int keynote_lex_add(void *, int);
+extern void keynote_lex_remove(void *);
+extern void keynote_cleanup_kth(void);
+extern int keynote_retindex(char *);
+extern void knerror(char *);
+extern int knparse(void);
+extern int knlex(void);
 #endif /* __ASSERTION_H__ */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: dohits.c,v 1.10 2007/10/17 20:10:44 chl Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,10 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)dohits.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: dohits.c,v 1.3 1994/04/10 07:20:47 cgd Exp $";
-#endif /* not lint */
 
 /*
  * This program scans a file which describes a keyboard.  The output
@@ -55,6 +49,7 @@ static char rcsid[] = "$Id: dohits.c,v 1.3 1994/04/10 07:20:47 cgd Exp $";
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #if	defined(unix)
 #include <strings.h>
 #else	/* defined(unix) */
@@ -72,15 +67,13 @@ struct Hits Hits[256];		/* one for each of 0x00-0xff */
 
 struct thing *table[100];
 
-extern char *malloc();
-
 unsigned int
 dohash(seed, string)
 unsigned int seed;
 char *string;
 {
-    register unsigned int i = seed;
-    register unsigned char c;
+    unsigned int i = seed;
+    unsigned char c;
 
     while (c = *string++) {
 	if (c >= 0x60) {
@@ -103,10 +96,11 @@ int value;
     item = &firstentry(second);
     this = (struct thing *) malloc(sizeof *this);
     this->next = *item;
+    this->hits = NULL;
     *item = this;
     this->value = value;
-    strcpy(this->name, first);
-    strcpy(this->name+strlen(this->name), second);
+    strlcpy(this->name, first, sizeof this->name);
+    strlcpy(this->name+strlen(this->name), second, sizeof this->name);
 }
 
 void
@@ -116,10 +110,10 @@ char *file,		/* Name of file to scan for whitespace prefix */
 {
     FILE *ourfile;
     char compare[100];
-    char what[100], value[100];
+    char what[100];
     char line[200];
 
-    sprintf(compare, " %s%%[^,\t \n]", prefix);
+    snprintf(compare, sizeof compare, " %s%%[^,\t \n]", prefix);
     if ((ourfile = fopen(file, "r")) == NULL) {
 	perror("fopen");
 	exit(1);
@@ -135,7 +129,7 @@ char *file,		/* Name of file to scan for whitespace prefix */
 		}
 		break;
 	    }
-	} while (line[strlen(line)-1] != '\n');
+	} while (strchr(line, '\n') == NULL);
     }
 }
 
@@ -150,7 +144,7 @@ char *file,		/* Name of file to scan for #define prefix */
     char line[200];
     int whatitis;
 
-    sprintf(compare, "#define %s%%s %%s", prefix);
+    snprintf(compare, sizeof compare, "#define %s%%s %%s", prefix);
     if ((ourfile = fopen(file, "r")) == NULL) {
 	perror("fopen");
 	exit(1);
@@ -175,7 +169,7 @@ char *file,		/* Name of file to scan for #define prefix */
 		}
 		break;
 	    }
-	} while (line[strlen(line)-1] != '\n');
+	} while (strchr(line, '\n') == NULL);
     }
 }
 
@@ -235,11 +229,7 @@ char	*aidfile, *fcnfile;
     unsigned char plain[100], shifted[100], alted[100], shiftalted[100];
     unsigned char line[200];
     int keynumber, scancode;
-    int empty;
-    int i;
     struct hit *hit;
-    struct hits *ph;
-    struct Hits *Ph;
 
     memset((char *)Hits, 0, sizeof Hits);
 
@@ -259,15 +249,14 @@ char	*aidfile, *fcnfile;
     scanwhite(fcnfile, "FCN_");
 
     while (fgets(line, sizeof(line), stdin) != NULL) {
-	if (line[strlen(line)-1] == '\n')
-		line[strlen(line)-1] = '\0';
+	line[strcspn(line, "\n")] = '\0';
 	if (!isdigit(line[0])) {
 	    continue;
 	}
 	plain[0] = shifted[0] = alted[0] = shiftalted[0] = 0;
 	keynumber = -1;
 	scancode = -1;
-	(void) sscanf(line, "%d %x %s %s %s %s", &keynumber,
+	(void) sscanf(line, "%d %x %99s %99s %99s %99s", &keynumber,
 		    &scancode, plain, shifted, alted, shiftalted);
 	if ((keynumber == -1) || (scancode == -1)
 		|| ((plain[0] == 0)

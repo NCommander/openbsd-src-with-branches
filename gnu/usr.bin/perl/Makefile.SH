@@ -381,7 +381,7 @@ CCCMD    = `sh $(shellflags) cflags "optimize='$(OPTIMIZE)'" $@`
 CCCMDSRC = `sh $(shellflags) cflags "optimize='$(OPTIMIZE)'" $<`
 
 CONFIGPM_FROM_CONFIG_SH = lib/Config.pm lib/Config_heavy.pl
-CONFIGPM = $(CONFIGPM_FROM_CONFIG_SH) lib/Config_git.pl
+CONFIGPM = $(CONFIGPM_FROM_CONFIG_SH)
 
 CONFIGPOD = lib/Config.pod
 
@@ -413,7 +413,7 @@ esac
 ## In the following dollars and backticks do not need the extra backslash.
 $spitshell >>$Makefile <<'!NO!SUBS!'
 
-private = preplibrary $(CONFIGPM) $(CONFIGPOD) lib/ExtUtils/Miniperl.pm git_version.h
+private = preplibrary $(CONFIGPM) $(CONFIGPOD) lib/ExtUtils/Miniperl.pm
 
 # Files to be built with variable substitution before miniperl
 # is available.
@@ -552,8 +552,9 @@ sperl.i: perl.c $(h)
 
 .PHONY: all translators utilities
 
-lib/Config_git.pl git_version.h: miniperl$(EXE_EXT) make_patchnum.pl
-	$(LDLIBPTH) $(RUN) ./miniperl$(EXE_EXT) -Ilib make_patchnum.pl
+# We use pre-generated lib/Config_git.pl and git_version.h files
+#lib/Config_git.pl git_version.h: miniperl$(EXE_EXT) make_patchnum.pl
+#	$(LDLIBPTH) $(RUN) ./miniperl$(EXE_EXT) -Ilib make_patchnum.pl
 
 # make sure that we recompile perl.c if the git version changes
 perl$(OBJ_EXT): git_version.h
@@ -647,9 +648,9 @@ CCDLFLAGS		= `echo $ccdlflags|sed -e 's@-bE:.*/perl\.exp@-bE:perl.exp@'`
 LIBPERL_NONSHR		= libperl_nonshr$(LIB_EXT)
 MINIPERL_NONSHR		= miniperl_nonshr$(EXE_EXT)
 
-$(LIBPERL_NONSHR): $(obj)
-	$(RMS) $(LIBPERL_NONSHR)
-	$(AR) rcu $(LIBPERL_NONSHR) $(obj)
+#$(LIBPERL_NONSHR): $(obj)
+#	$(RMS) $(LIBPERL_NONSHR)
+#	$(AR) rcu $(LIBPERL_NONSHR) $(obj)
 
 $(MINIPERL_NONSHR): $(LIBPERL_NONSHR) miniperlmain$(OBJ_EXT) opmini$(OBJ_EXT)  perlmini$(OBJ_EXT)
 	$(CC) $(LDFLAGS) -o $(MINIPERL_NONSHR) miniperlmain$(OBJ_EXT) \
@@ -729,33 +730,33 @@ $(DTRACE_O): perldtrace.d
 		;;
     esac
 	$spitshell >>$Makefile <<'!NO!SUBS!'
-$(LIBPERL): $& $(obj) $(DYNALOADER) $(LIBPERLEXPORT)
-!NO!SUBS!
-	case "$useshrplib" in
-	true)
-		$spitshell >>$Makefile <<'!NO!SUBS!'
-	rm -f $@
-	$(LD) -o $@ $(SHRPLDFLAGS) $(obj) $(DYNALOADER) $(libs)
-!NO!SUBS!
-		case "$osname" in
-		aix)
-			$spitshell >>$Makefile <<'!NO!SUBS!'
-	rm -f libperl$(OBJ_EXT)
-	mv $@ libperl$(OBJ_EXT)
-	$(AR) qv $(LIBPERL) libperl$(OBJ_EXT)
-!NO!SUBS!
-			;;
-		esac
-		;;
-	*)
-		$spitshell >>$Makefile <<'!NO!SUBS!'
-	rm -f $(LIBPERL)
-	$(AR) rcu $(LIBPERL) $(obj) $(DYNALOADER)
-	@$(ranlib) $(LIBPERL)
-!NO!SUBS!
-		;;
-	esac
-	$spitshell >>$Makefile <<'!NO!SUBS!'
+#$(LIBPERL): $& $(obj) $(DYNALOADER) $(LIBPERLEXPORT)
+#!NO!SUBS!
+#	case "$useshrplib" in
+#	true)
+#		$spitshell >>$Makefile <<'!NO!SUBS!'
+#	rm -f $@
+#	$(LD) -o $@ $(SHRPLDFLAGS) $(obj) $(DYNALOADER) $(libs)
+#!NO!SUBS!
+#		case "$osname" in
+#		aix)
+#			$spitshell >>$Makefile <<'!NO!SUBS!'
+#	rm -f libperl$(OBJ_EXT)
+#	mv $@ libperl$(OBJ_EXT)
+#	$(AR) qv $(LIBPERL) libperl$(OBJ_EXT)
+#!NO!SUBS!
+#			;;
+#		esac
+#		;;
+#	*)
+#		$spitshell >>$Makefile <<'!NO!SUBS!'
+#	rm -f $(LIBPERL)
+#	$(AR) rcu $(LIBPERL) $(obj) $(DYNALOADER)
+#	@$(ranlib) $(LIBPERL)
+#!NO!SUBS!
+#		;;
+#	esac
+#	$spitshell >>$Makefile <<'!NO!SUBS!'
 
 # How to build executables.
 
@@ -1238,14 +1239,13 @@ _mopup:
 	-rm -f cygwin.c libperl*.def libperl*.dll cygperl*.dll *.exe.stackdump
 	-rm -f perl$(EXE_EXT) suidperl$(EXE_EXT) miniperl$(EXE_EXT) $(LIBPERL) libperl.* microperl
 	-rm -f opcode.h-old opnames.h-old pp.sym-old pp_proto.h-old
-	-rm -f config.arch config.over $(DTRACE_H)
+	-rm -f $(DTRACE_H)
 
 # Do not 'make _tidy' directly.
 _tidy:
 	-cd pod; $(LDLIBPTH) $(MAKE) clean
 	-cd utils; $(LDLIBPTH) $(MAKE) clean
 	-cd x2p; $(LDLIBPTH) $(MAKE) clean
-	-rm -f lib/Config_git.pl git_version.h
 	-@for x in $(DYNALOADER) $(dynamic_ext) $(static_ext) $(nonxs_ext) ; do \
 	$(LDLIBPTH) $(RUN) ./miniperl$(EXE_EXT) -Ilib make_ext.pl --target=clean $$x MAKE=$(MAKE) ; \
 	done

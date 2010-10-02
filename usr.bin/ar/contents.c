@@ -1,3 +1,4 @@
+/*	$OpenBSD: contents.c,v 1.4 2003/06/12 20:58:08 deraadt Exp $	*/
 /*	$NetBSD: contents.c,v 1.5 1995/03/26 03:27:49 glass Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)contents.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: contents.c,v 1.5 1995/03/26 03:27:49 glass Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -65,8 +54,7 @@ static char rcsid[] = "$NetBSD: contents.c,v 1.5 1995/03/26 03:27:49 glass Exp $
  *	skipping member contents.
  */
 int
-contents(argv)
-	char **argv;
+contents(char **argv)
 {
 	int afd, all;
 	struct tm *tp;

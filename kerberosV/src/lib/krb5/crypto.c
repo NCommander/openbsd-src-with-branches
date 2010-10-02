@@ -3451,6 +3451,12 @@ decrypt_internal_derived(krb5_context context,
 	return KRB5_BAD_MSIZE;
     }
 
+    if (len < checksum_sz + et->confoundersize) {
+	krb5_set_error_string(context, "Encrypted data shorter then "
+				  "checksum + confunder");
+	return KRB5_BAD_MSIZE;
+    }
+
     p = malloc(len);
     if(len != 0 && p == NULL) {
 	krb5_set_error_string(context, "malloc: out of memory");
@@ -3525,6 +3531,13 @@ decrypt_internal(krb5_context context,
     }
 
     checksum_sz = CHECKSUMSIZE(et->checksum);
+
+    if (len < checksum_sz + et->confoundersize) {
+	krb5_set_error_string(context, "Encrypted data shorter then "
+				  "checksum + confunder");
+	return KRB5_BAD_MSIZE;
+    }
+
     p = malloc(len);
     if(len != 0 && p == NULL) {
 	krb5_set_error_string(context, "malloc: out of memory");
@@ -3587,6 +3600,12 @@ decrypt_internal_special(krb5_context context,
 
     if ((len % et->padsize) != 0) {
 	krb5_clear_error_string(context);
+	return KRB5_BAD_MSIZE;
+    }
+
+    if (len < cksum_sz + et->confoundersize) {
+	krb5_set_error_string(context, "Encrypted data shorter then "
+				  "checksum + confunder");
 	return KRB5_BAD_MSIZE;
     }
 
@@ -4176,7 +4195,7 @@ krb5_string_to_key_derived(krb5_context context,
     struct encryption_type *et = _find_enctype(etype);
     krb5_error_code ret;
     struct key_data kd;
-    size_t keylen = et->keytype->bits / 8;
+    size_t keylen;
     u_char *tmp;
 
     if(et == NULL) {
@@ -4184,6 +4203,8 @@ krb5_string_to_key_derived(krb5_context context,
 			       etype);
 	return KRB5_PROG_ETYPE_NOSUPP;
     }
+    keylen = et->keytype->bits / 8;
+
     ALLOC(kd.key, 1);
     if(kd.key == NULL) {
 	krb5_set_error_string (context, "malloc: out of memory");

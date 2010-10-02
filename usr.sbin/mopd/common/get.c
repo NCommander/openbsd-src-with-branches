@@ -1,5 +1,7 @@
+/*	$OpenBSD: get.c,v 1.7 2006/04/17 13:17:07 maja Exp $ */
+
 /*
- * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
+ * Copyright (c) 1993-2006 Mats O Jansson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -27,122 +24,104 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINT
-static char rcsid[] = "$Id: get.c,v 1.5 1996/03/31 18:50:14 moj Exp $";
-#endif
-
 #include <sys/types.h>
 #include "common/mopdef.h"
 
 u_char
-mopGetChar(pkt, index)
-	register u_char *pkt;
-	register int    *index;
+mopGetChar(u_char *pkt, int *idx)
 {
-        u_char ret;
+	u_char ret;
 
-	ret = pkt[*index];
-	*index = *index + 1;
-	return(ret);
+	ret = pkt[*idx];
+	*idx = *idx + 1;
+	return (ret);
 }
 
 u_short
-mopGetShort(pkt, index)
-	register u_char *pkt;
-	register int    *index;
+mopGetShort(u_char *pkt, int *idx)
 {
-        u_short ret;
-	
-	ret = pkt[*index] + pkt[*index+1]*256;
-	*index = *index + 2;
-	return(ret);
+	u_short ret;
+
+	ret = pkt[*idx] + pkt[*idx+1]*256;
+	*idx = *idx + 2;
+	return (ret);
+}
+
+u_short
+mopGetNShort(u_char *pkt, int *idx)
+{
+	u_short ret;
+
+	ret = pkt[*idx]*256 + pkt[*idx+1];
+	*idx = *idx + 2;
+	return (ret);
 }
 
 u_long
-mopGetLong(pkt, index)
-	register u_char *pkt;
-	register int    *index;
+mopGetLong(u_char *pkt, int *idx)
 {
-        u_long ret;
-	
-	ret = pkt[*index] +
-	      pkt[*index+1]*0x100 +
-	      pkt[*index+2]*0x10000 +
-	      pkt[*index+3]*0x1000000;
-	*index = *index + 4;
-	return(ret);
+	u_long ret;
+
+	ret = pkt[*idx] + pkt[*idx+1]*0x100 + pkt[*idx+2]*0x10000 +
+	    pkt[*idx+3]*0x1000000;
+	*idx = *idx + 4;
+	return (ret);
 }
 
 void
-mopGetMulti(pkt, index, dest, size)
-	register u_char *pkt,*dest;
-	register int    *index,size;
+mopGetMulti(u_char *pkt, int *idx, u_char *dest, int size)
 {
 	int i;
 
-	for (i = 0; i < size; i++) {
-	  dest[i] = pkt[*index+i];
-	}  
-	*index = *index + size;
-
+	for (i = 0; i < size; i++)
+		dest[i] = pkt[*idx+i];
+	*idx = *idx + size;
 }
 
 int
-mopGetTrans(pkt, trans)
-	u_char	*pkt;
-	int	 trans;
+mopGetTrans(u_char *pkt, int trans)
 {
-	u_short	*ptype;
-	
+	u_short	ptype;
+
 	if (trans == 0) {
-		ptype = (u_short *)(pkt+12);
-		if (ntohs(*ptype) < 1600) {
+		ptype = pkt[12]*256 + pkt[13];
+		if (ptype < 1600)
 			trans = TRANS_8023;
-		} else {
+		else
 			trans = TRANS_ETHER;
-		}
 	}
-	return(trans);
+	return (trans);
 }
 
 void
-mopGetHeader(pkt, index, dst, src, proto, len, trans)
-	u_char	*pkt, **dst, **src;
-	int	*index, *len, trans;
-	u_short	*proto;
+mopGetHeader(u_char *pkt, int *idx, u_char **dst, u_char **src,
+    u_short *proto, int *len, int trans)
 {
 	*dst = pkt;
 	*src = pkt + 6;
-	*index = *index + 12;
+	*idx = *idx + 12;
 
-	switch(trans) {
+	switch (trans) {
 	case TRANS_ETHER:
-		*proto = (u_short)(pkt[*index]*256 + pkt[*index+1]);
-		*index = *index + 2;
-		*len   = (int)(pkt[*index+1]*256 + pkt[*index]);
-		*index = *index + 2;
+		*proto = mopGetNShort(pkt, idx);
+		*len   = (int)mopGetShort(pkt, idx);
 		break;
 	case TRANS_8023:
-		*len   = (int)(pkt[*index]*256 + pkt[*index+1]);
-		*index = *index + 8;
-		*proto = (u_short)(pkt[*index]*256 + pkt[*index+1]);
-		*index = *index + 2;
+		*len   = (int)mopGetNShort(pkt, idx);
+		*idx   = *idx + 6;
+		*proto = mopGetNShort(pkt, idx);
 		break;
 	}
 }
 
 u_short
-mopGetLength(pkt, trans)
-	u_char	*pkt;
-	int	 trans;
+mopGetLength(u_char *pkt, int trans)
 {
-	switch(trans) {
+	switch (trans) {
 	case TRANS_ETHER:
-		return(pkt[15]*256 + pkt[14]);
-		break;
+		return (pkt[14] + pkt[15]*256);
 	case TRANS_8023:
-		return(pkt[12]*256 + pkt[13]);
-		break;
+		return (pkt[12]*256 + pkt[13]);
 	}
-	return(0);
+	return (0);
 }

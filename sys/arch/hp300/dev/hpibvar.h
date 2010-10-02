@@ -1,6 +1,8 @@
-/*	$NetBSD: hpibvar.h,v 1.6 1995/03/28 18:16:09 jtc Exp $	*/
+/*	$OpenBSD: hpibvar.h,v 1.9 2005/11/16 21:23:55 miod Exp $	*/
+/*	$NetBSD: hpibvar.h,v 1.10 1997/03/31 07:34:25 scottr Exp $	*/
 
 /*
+ * Copyright (c) 1996, 1997 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1982, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -12,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,6 +32,8 @@
  *
  *	@(#)hpibvar.h	8.1 (Berkeley) 6/10/93
  */
+
+#include <sys/queue.h>
 
 #define	HPIB_IPL(x)	((((x) >> 4) & 0x3) + 3)
 
@@ -66,11 +66,83 @@
 #define	C_UNT_P		0xdf	/*  with odd parity */
 #define	C_SCG		0x60	/* Secondary group commands */
 
-struct	hpib_softc {
-	struct	hp_ctlr *sc_hc;
-	int	sc_flags;
-	struct	devqueue sc_dq;
-	struct	devqueue sc_sq;
+struct hpibbus_softc;
+
+/*
+ * Each of the HP-IB controller drivers fills in this structure, which
+ * is used by the indirect driver to call controller-specific functions.
+ */
+struct	hpib_controller {
+	void	(*hpib_reset)(struct hpibbus_softc *);
+	int	(*hpib_send)(struct hpibbus_softc *,
+		    int, int, void *, int);
+	int	(*hpib_recv)(struct hpibbus_softc *,
+		    int, int, void *, int);
+	int	(*hpib_ppoll)(struct hpibbus_softc *);
+	void	(*hpib_ppwatch)(void *);
+	void	(*hpib_go)(struct hpibbus_softc *,
+		    int, int, void *, int, int, int);
+	void	(*hpib_done)(struct hpibbus_softc *);
+	int	(*hpib_intr)(void *);
+};
+
+/*
+ * Attach an HP-IB bus to an HP-IB controller.
+ */
+struct hpibdev_attach_args {
+	struct	hpib_controller *ha_ops;	/* controller ops vector */
+	int	ha_type;			/* XXX */
+	int	ha_ba;
+	struct hpibbus_softc **ha_softcpp;	/* XXX */
+};
+
+/*
+ * Attach an HP-IB device to an HP-IB bus.
+ */
+struct hpibbus_attach_args {
+	u_int16_t ha_id;		/* device id */
+	int	ha_slave;		/* HP-IB bus slave */
+	int	ha_punit;		/* physical unit on slave */
+};
+
+/* Locator short-hand */
+#define	hpibbuscf_slave		cf_loc[0]
+#define	hpibbuscf_punit		cf_loc[1]
+
+#define	HPIBBUS_SLAVE_UNK	-1
+#define	HPIBBUS_PUNIT_UNK	-1
+
+#define	HPIB_NSLAVES		8	/* number of slaves on a bus */
+#define	HPIB_NPUNITS		2	/* number of punits per slave */
+
+/*
+ * An HP-IB job queue entry.  Slave drivers have one of these used
+ * to queue requests with the controller.
+ */
+struct hpibqueue {
+	TAILQ_ENTRY(hpibqueue) hq_list;	/* entry on queue */
+	void	*hq_softc;		/* slave's softc */
+	int	hq_slave;		/* slave on bus */
+
+	/*
+	 * Callbacks used to start and stop the slave driver.
+	 */
+	void	(*hq_start)(void *);
+	void	(*hq_go)(void *);
+	void	(*hq_intr)(void *);
+};
+
+struct dmaqueue;
+
+/*
+ * Software state per HP-IB bus.
+ */
+struct hpibbus_softc {
+	struct	device sc_dev;		/* generic device glue */
+	struct	hpib_controller *sc_ops; /* controller ops vector */
+	volatile int sc_flags;		/* misc flags */
+	struct	dmaqueue *sc_dq;
+	TAILQ_HEAD(, hpibqueue) sc_queue;
 	int	sc_ba;
 	int	sc_type;
 	char	*sc_addr;
@@ -86,11 +158,55 @@ struct	hpib_softc {
 #define	HPIBF_TIMO	0x10
 #define	HPIBF_DMA16	0x8000
 
+/*
+ * Description structure for CS/80 devices.
+ */
+
+struct cs80_describe {
+	u_int	d_iuw:16,	/* controller: installed unit word */
+		d_cmaxxfr:16,	/* controller: max transfer rate (Kb) */
+		d_ctype:8,	/* controller: controller type */
+		d_utype:8,	/* unit: unit type */
+		d_name:24,	/* unit: name (6 BCD digits) */
+		d_sectsize:16,	/* unit: # of bytes per block (sector) */
+		d_blkbuf:8,	/* unit: # of blocks which can be buffered */
+		d_burstsize:8,	/* unit: recommended burst size */
+		d_blocktime:16,	/* unit: block time (u-sec) */
+		d_uavexfr:16,	/* unit: average transfer rate (Kb) */
+		d_retry:16,	/* unit: optimal retry time (1/100-sec) */
+		d_access:16,	/* unit: access time param (1/100-sec) */
+		d_maxint:8,	/* unit: maximum interleave */
+		d_fvbyte:8,	/* unit: fixed volume byte */
+		d_rvbyte:8,	/* unit: removable volume byte */
+		d_maxcyl:24,	/* volume: maximum cylinder */
+		d_maxhead:8,	/* volume: maximum head */
+		d_maxsect:16,	/* volume: maximum sector on track */
+		d_maxvsecth:16,	/* volume: maximum sector on volume (MSW) */
+		d_maxvsectl:32,	/* volume: maximum sector on volume (LSWs) */
+		d_interleave:8;	/* volume: current interleave */
+} __packed;
+
 #ifdef _KERNEL
-extern	struct hpib_softc hpib_softc[];
 extern	caddr_t internalhpib;
 extern	int hpibtimeout;
 extern	int hpibdmathresh;
-void	fhpibppwatch __P((void *arg));
-void	nhpibppwatch __P((void *arg));
+
+void	hpibreset(int);
+int	hpibsend(int, int, int, void *, int);
+int	hpibrecv(int, int, int, void *, int);
+int	hpibustart(int);
+void	hpibstart(void *);
+void	hpibgo(int, int, int, void *, int, int, int);
+void	hpibdone(void *);
+int	hpibpptest(int, int);
+void	hpibppclear(int);
+void	hpibawait(int);
+int	hpibswait(int, int);
+int	hpibid(int, int);
+
+int	hpibreq(struct device *, struct hpibqueue *);
+void	hpibfree(struct device *, struct hpibqueue *);
+
+int	hpibintr(void *);
+int	hpibdevprint(void *, const char *);
 #endif

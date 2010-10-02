@@ -113,14 +113,15 @@ decode_u_int32 (uint32_t *number, unsigned char **buf, size_t *sz)
  *
  */
 
-static void
+static int
 decode_stringz (char *str, size_t str_sz, unsigned char **buf, size_t *sz)
 {
     char *s = (char *)*buf;
     size_t l = strlen (s) + 1;
-    if (l > str_sz) abort();
-    strlcpy (str, s, l);
+    if (strlcpy (str, s, str_sz) >= str_sz)
+	    return 0;
     *sz -= l; *buf += l;
+    return(1);
 }
 
 /*
@@ -169,13 +170,13 @@ decode_answer (char *label, unsigned char *buf, size_t sz,
 	goto fail;
     
 #define destrz(f) decode_stringz(answer->f,sizeof(answer->f), &buf, &sz)
-    destrz(user);
-    destrz(instance);
-    destrz(realm);
-    destrz(server_user);
-    destrz(server_instance);
+    if (!destrz(user) ||
+	destrz(instance) ||
+	destrz(realm) ||
+	destrz(server_user) ||
+	destrz(server_instance))
+        goto fail;
 #undef destrz
-    
     if (sz < ticket_sz)
 	goto fail;
 
@@ -402,8 +403,8 @@ ka_auth (const char *user, const char *instance, const char *cell,
     req_challange = tv.tv_sec;
 
     des_set_key (key, schedule);
-    des_pcbc_encrypt ((unsigned char *)&f, 
-		      (unsigned char *)buf,
+    des_pcbc_encrypt ((des_cblock *)&f, 
+		      (des_cblock *)&buf,
 		      sizeof(f), 
 		      schedule,
 		      key, 
@@ -445,8 +446,8 @@ ka_auth (const char *user, const char *instance, const char *cell,
      */
 
     des_set_key (key, schedule);
-    des_pcbc_encrypt ((unsigned char *)answer.Seq.val,
-		      (unsigned char *)answer.Seq.val,
+    des_pcbc_encrypt ((des_cblock *)answer.Seq.val,
+		      (des_cblock *)answer.Seq.val,
 		      answer.Seq.len,
 		      schedule,
 		      key,
@@ -556,8 +557,8 @@ ka_getticket (const char *suser, const char *sinstance, const char *srealm,
 
     /* decrypt it */
     des_set_key (&adata->sessionkey, schedule);
-    des_pcbc_encrypt ((unsigned char *)answer.Seq.val,
-		      (unsigned char *)answer.Seq.val,
+    des_pcbc_encrypt ((des_cblock *)answer.Seq.val,
+		      (des_cblock *)answer.Seq.val,
 		      answer.Seq.len,
 		      schedule,
 		      &adata->sessionkey,

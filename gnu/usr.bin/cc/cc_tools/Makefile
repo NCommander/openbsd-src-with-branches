@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/usr.bin/cc/cc_tools/Makefile,v 1.88.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.5 2010/04/29 03:41:51 marco Exp $
 
 .include <bsd.own.mk>
 
@@ -35,18 +35,30 @@ TARGET_INC+=	${GCC_CPU}/unix.h
 TARGET_INC+=	${GCC_CPU}/att.h
 .endif
 TARGET_INC+=	dbxelf.h
+.if ${TARGET_ARCH} == "alpha"
+TARGET_INC+=	alpha/elf.h
+TARGET_INC+=	alpha/openbsd1.h
+.else
 TARGET_INC+=	elfos.h
+.endif
 TARGET_INC+=	openbsd.h
 TARGET_INC+=	openbsd-libpthread.h
 TARGET_INC+=	openbsd-native.h
+.if ${TARGET_ARCH} == "powerpc"
+TARGET_INC+=	freebsd-spec.h
+.endif
 .if ${TARGET_ARCH} != "i386" && ${TARGET_ARCH} != "amd64"
 .if exists(${GCCDIR}/config/${GCC_CPU}/sysv4.h)
 TARGET_INC+=	${GCC_CPU}/sysv4.h
 .endif
 .endif
 .if ${TARGET_ARCH} == "amd64"
-TARgET_INC+=	${GCC_CPU}/x86-64.h
+TARGET_INC+=	${GCC_CPU}/x86-64.h
 TARGET_INC+=	${GCC_CPU}/openbsd64.h
+.elif ${TARGET_ARCH} == "sparc64"
+TARGET_INC+=	${GCC_CPU}/openbsd64.h
+.elif ${TARGET_ARCH} == "i386"
+TARGET_INC+=	${GCC_CPU}/openbsdelf.h
 .else
 TARGET_INC+=	${GCC_CPU}/openbsd.h
 .endif

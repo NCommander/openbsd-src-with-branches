@@ -1,3 +1,6 @@
+/*	$OpenBSD: sys_bsd.c,v 1.13 2002/06/12 06:07:16 mpech Exp $	*/
+/*	$NetBSD: sys_bsd.c,v 1.11 1996/02/28 21:04:10 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,42 +30,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)sys_bsd.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: sys_bsd.c,v 1.6 1995/03/17 18:03:08 mycroft Exp $";
-#endif /* not lint */
+#include "telnet_locl.h"
+#include <err.h>
 
 /*
  * The following routines try to encapsulate what is system dependent
  * (at least between 4.x and dos) which is used in telnet.c.
  */
-
-
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <signal.h>
-#include <errno.h>
-#include <arpa/telnet.h>
-
-#include "ring.h"
-
-#include "fdset.h"
-
-#include "defines.h"
-#include "externs.h"
-#include "types.h"
-
-#if	defined(CRAY) || (defined(USE_TERMIO) && !defined(SYSV_TERMIO))
-#define	SIG_FUNC_RET	void
-#else
-#define	SIG_FUNC_RET	int
-#endif
-
-#ifdef	SIGINFO
-extern SIG_FUNC_RET ayt_status();
-#endif
 
 int
 	tout,			/* Output file descriptor */
@@ -83,8 +53,8 @@ int	olmode = 0;
 # define old_tc ottyb
 
 #else	/* USE_TERMIO */
-struct	termio old_tc = { 0 };
-extern struct termio new_tc;
+struct	termios old_tc = { 0 };
+extern struct termios new_tc;
 
 # ifndef	TCSANOW
 #  ifdef TCSETS
@@ -115,17 +85,14 @@ extern struct termio new_tc;
 # endif
 #endif	/* USE_TERMIO */
 
-static fd_set ibits, obits, xbits;
-
+fd_set *ibitsp, *obitsp, *xbitsp;
+int fdsn;
 
     void
 init_sys()
 {
     tout = fileno(stdout);
     tin = fileno(stdin);
-    FD_ZERO(&ibits);
-    FD_ZERO(&obits);
-    FD_ZERO(&xbits);
 
     errno = 0;
 }
@@ -141,7 +108,7 @@ TerminalWrite(buf, n)
 
     int
 TerminalRead(buf, n)
-    char *buf;
+    unsigned char *buf;
     int  n;
 {
     return read(tin, buf, n);
@@ -224,14 +191,15 @@ TerminalSpecialChars(c)
 /*
  * Flush output to the terminal
  */
- 
+
     void
 TerminalFlushOutput()
 {
 #ifdef	TIOCFLUSH
-    (void) ioctl(fileno(stdout), TIOCFLUSH, (char *) 0);
+    int com = FWRITE;
+    (void) ioctl(fileno(stdout), TIOCFLUSH, (int *) &com);
 #else
-    (void) ioctl(fileno(stdout), TCFLSH, (char *) 0);
+    (void) ioctl(fileno(stdout), TCFLSH, (int *) 0);
 #endif
 }
 
@@ -279,7 +247,7 @@ TerminalSaveState()
 
     cc_t *
 tcval(func)
-    register int func;
+    int func;
 {
     switch(func) {
     case SLC_IP:	return(&termIntChar);
@@ -329,7 +297,7 @@ TerminalDefaultChars()
     nttyb.sg_kill = ottyb.sg_kill;
     nttyb.sg_erase = ottyb.sg_erase;
 #else	/* USE_TERMIO */
-    memcpy(new_tc.c_cc, old_tc.c_cc, sizeof(old_tc.c_cc));
+    memmove(new_tc.c_cc, old_tc.c_cc, sizeof(old_tc.c_cc));
 # ifndef	VDISCARD
     termFlushChar = CONTROL('O');
 # endif
@@ -383,10 +351,16 @@ TerminalRestoreState()
  *		local/no signal mapping
  */
 
+#ifdef SIGTSTP
+static void susp();
+#endif /* SIGTSTP */
+#ifdef SIGINFO
+static void ayt();
+#endif
 
     void
 TerminalNewMode(f)
-    register int f;
+    int f;
 {
     static int prevmode = 0;
 #ifndef	USE_TERMIO
@@ -395,7 +369,7 @@ TerminalNewMode(f)
     struct sgttyb sb;
     int lmode;
 #else	/* USE_TERMIO */
-    struct termio tmp_tc;
+    struct termios tmp_tc;
 #endif	/* USE_TERMIO */
     int onoff;
     int old;
@@ -530,9 +504,7 @@ TerminalNewMode(f)
 #ifndef	USE_TERMIO
 	ltc.t_lnextc = _POSIX_VDISABLE;
 #else
-# ifdef VLNEXT
-	tmp_tc.c_cc[VLNEXT] = (cc_t)(_POSIX_VDISABLE);
-# endif
+	tmp_tc.c_lflag &= ~IEXTEN;
 #endif
     }
 
@@ -597,10 +569,14 @@ TerminalNewMode(f)
 		tmp_tc.c_iflag &= ~ISTRIP;
 	else
 		tmp_tc.c_iflag |= ISTRIP;
-	if (f & MODE_OUTBIN) {
+	if ((f & MODE_OUTBIN) || (f & MODE_OUT8)) {
 		tmp_tc.c_cflag &= ~(CSIZE|PARENB);
 		tmp_tc.c_cflag |= CS8;
-		tmp_tc.c_oflag &= ~OPOST;
+		if(f & MODE_OUTBIN)
+			tmp_tc.c_oflag &= ~OPOST;
+		else
+			tmp_tc.c_oflag |= OPOST;
+
 	} else {
 		tmp_tc.c_cflag &= ~(CSIZE|PARENB);
 		tmp_tc.c_cflag |= old_tc.c_cflag & (CSIZE|PARENB);
@@ -611,13 +587,6 @@ TerminalNewMode(f)
     }
 
     if (f != -1) {
-#ifdef	SIGTSTP
-	SIG_FUNC_RET susp();
-#endif	/* SIGTSTP */
-#ifdef	SIGINFO
-	SIG_FUNC_RET ayt();
-#endif
-
 #ifdef	SIGTSTP
 	(void) signal(SIGTSTP, susp);
 #endif	/* SIGTSTP */
@@ -663,14 +632,19 @@ TerminalNewMode(f)
 		tc.t_brkc = esc;
 #endif
     } else {
+#ifdef	SIGTSTP
+	sigset_t mask;
+#endif	/* SIGTSTP */
 #ifdef	SIGINFO
-	SIG_FUNC_RET ayt_status();
+	void ayt_status();
 
-	(void) signal(SIGINFO, ayt_status);
+	(void) signal(SIGINFO, (void (*)(int))ayt_status);
 #endif
 #ifdef	SIGTSTP
 	(void) signal(SIGTSTP, SIG_DFL);
-	(void) sigsetmask(sigblock(0) & ~(1<<(SIGTSTP-1)));
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGTSTP);
+	sigprocmask(SIG_UNBLOCK, &mask, NULL);
 #endif	/* SIGTSTP */
 #ifndef USE_TERMIO
 	ltc = oltc;
@@ -705,13 +679,50 @@ TerminalNewMode(f)
 
 }
 
+/*
+ * Try to guess whether speeds are "encoded" (4.2BSD) or just numeric (4.4BSD).
+ */
+#if B4800 != 4800
+#define	DECODE_BAUD
+#endif
+
+#ifdef	DECODE_BAUD
+#ifndef	B7200
+#define B7200   B4800
+#endif
+
+#ifndef	B14400
+#define B14400  B9600
+#endif
+
 #ifndef	B19200
-# define B19200 B9600
+# define B19200 B14400
+#endif
+
+#ifndef	B28800
+#define B28800  B19200
 #endif
 
 #ifndef	B38400
-# define B38400 B19200
+# define B38400 B28800
 #endif
+
+#ifndef B57600
+#define B57600  B38400
+#endif
+
+#ifndef B76800
+#define B76800  B57600
+#endif
+
+#ifndef B115200
+#define B115200 B76800
+#endif
+
+#ifndef B230400
+#define B230400 B115200
+#endif
+
 
 /*
  * This code assumes that the values B0, B50, B75...
@@ -722,27 +733,33 @@ struct termspeeds {
 	long speed;
 	long value;
 } termspeeds[] = {
-	{ 0,     B0 },     { 50,    B50 },   { 75,    B75 },
-	{ 110,   B110 },   { 134,   B134 },  { 150,   B150 },
-	{ 200,   B200 },   { 300,   B300 },  { 600,   B600 },
-	{ 1200,  B1200 },  { 1800,  B1800 }, { 2400,  B2400 },
-	{ 4800,  B4800 },  { 9600,  B9600 }, { 19200, B19200 },
-	{ 38400, B38400 }, { -1,    B38400 }
+	{ 0,      B0 },      { 50,    B50 },    { 75,     B75 },
+	{ 110,    B110 },    { 134,   B134 },   { 150,    B150 },
+	{ 200,    B200 },    { 300,   B300 },   { 600,    B600 },
+	{ 1200,   B1200 },   { 1800,  B1800 },  { 2400,   B2400 },
+	{ 4800,   B4800 },   { 7200,  B7200 },  { 9600,   B9600 },
+	{ 14400,  B14400 },  { 19200, B19200 }, { 28800,  B28800 },
+	{ 38400,  B38400 },  { 57600, B57600 }, { 115200, B115200 },
+	{ 230400, B230400 }, { -1,    B230400 }
 };
+#endif	/* DECODE_BAUD */
 
     void
 TerminalSpeeds(ispeed, ospeed)
     long *ispeed;
     long *ospeed;
 {
-    register struct termspeeds *tp;
-    register long in, out;
+#ifdef	DECODE_BAUD
+    struct termspeeds *tp;
+#endif	/* DECODE_BAUD */
+    long in, out;
 
     out = cfgetospeed(&old_tc);
     in = cfgetispeed(&old_tc);
     if (in == 0)
 	in = out;
 
+#ifdef	DECODE_BAUD
     tp = termspeeds;
     while ((tp->speed != -1) && (tp->value < in))
 	tp++;
@@ -752,6 +769,10 @@ TerminalSpeeds(ispeed, ospeed)
     while ((tp->speed != -1) && (tp->value < out))
 	tp++;
     *ospeed = tp->speed;
+#else	/* DECODE_BAUD */
+	*ispeed = in;
+	*ospeed = out;
+#endif	/* DECODE_BAUD */
 }
 
     int
@@ -799,7 +820,7 @@ NetSigIO(fd, onoff)
 NetSetPgrp(fd)
     int fd;
 {
-    int myPid;
+    pid_t myPid;
 
     myPid = getpid();
     fcntl(fd, F_SETOWN, myPid);
@@ -811,7 +832,7 @@ NetSetPgrp(fd)
  */
 
     /* ARGSUSED */
-    SIG_FUNC_RET
+    void
 deadpeer(sig)
     int sig;
 {
@@ -819,11 +840,18 @@ deadpeer(sig)
 	longjmp(peerdied, -1);
 }
 
+volatile sig_atomic_t intr_happened = 0;
+volatile sig_atomic_t intr_waiting = 0;
+
     /* ARGSUSED */
-    SIG_FUNC_RET
+    void
 intr(sig)
     int sig;
 {
+    if (intr_waiting) {
+	intr_happened = 1;
+	return;
+    }
     if (localchars) {
 	intp();
 	return;
@@ -833,7 +861,7 @@ intr(sig)
 }
 
     /* ARGSUSED */
-    SIG_FUNC_RET
+    void
 intr2(sig)
     int sig;
 {
@@ -850,7 +878,7 @@ intr2(sig)
 
 #ifdef	SIGTSTP
     /* ARGSUSED */
-    SIG_FUNC_RET
+    void
 susp(sig)
     int sig;
 {
@@ -863,7 +891,7 @@ susp(sig)
 
 #ifdef	SIGWINCH
     /* ARGSUSED */
-    SIG_FUNC_RET
+    void
 sendwin(sig)
     int sig;
 {
@@ -875,7 +903,7 @@ sendwin(sig)
 
 #ifdef	SIGINFO
     /* ARGSUSED */
-    SIG_FUNC_RET
+    void
 ayt(sig)
     int sig;
 {
@@ -936,7 +964,7 @@ sys_telnet_init()
 process_rings(netin, netout, netex, ttyin, ttyout, poll)
     int poll;		/* If 0, then block until something to do */
 {
-    register int c;
+    int c;
 		/* One wants to be a bit careful about setting returnValue
 		 * to one, since a one implies we did some useful work,
 		 * and therefore probably won't be called to block next
@@ -944,36 +972,48 @@ process_rings(netin, netout, netex, ttyin, ttyout, poll)
 		 */
     int returnValue = 0;
     static struct timeval TimeValue = { 0 };
+    int maxfd = -1;
+    int tmp;
 
-    if (netout) {
-	FD_SET(net, &obits);
-    } 
-    if (ttyout) {
-	FD_SET(tout, &obits);
+    if ((netout || netin || netex) && net > maxfd)
+	maxfd = net;
+    if (ttyout && tout > maxfd)
+	maxfd = tout;
+    if (ttyin && tin > maxfd)
+	maxfd = tin;
+    tmp = howmany(maxfd+1, NFDBITS) * sizeof(fd_mask);
+    if (tmp > fdsn) {
+	if (ibitsp)
+	    free(ibitsp);
+	if (obitsp)
+	    free(obitsp);
+	if (xbitsp)
+	    free(xbitsp);
+	fdsn = tmp;
+	if ((ibitsp = (fd_set *)malloc(fdsn)) == NULL)
+	    err(1, "malloc");
+	if ((obitsp = (fd_set *)malloc(fdsn)) == NULL)
+	    err(1, "malloc");
+	if ((xbitsp = (fd_set *)malloc(fdsn)) == NULL)
+	    err(1, "malloc");
+	memset(ibitsp, 0, fdsn);
+	memset(obitsp, 0, fdsn);
+	memset(xbitsp, 0, fdsn);
     }
-#if	defined(TN3270)
-    if (ttyin) {
-	FD_SET(tin, &ibits);
-    }
-#else	/* defined(TN3270) */
-    if (ttyin) {
-	FD_SET(tin, &ibits);
-    }
-#endif	/* defined(TN3270) */
-#if	defined(TN3270)
-    if (netin) {
-	FD_SET(net, &ibits);
-    }
-#   else /* !defined(TN3270) */
-    if (netin) {
-	FD_SET(net, &ibits);
-    }
-#   endif /* !defined(TN3270) */
-    if (netex) {
-	FD_SET(net, &xbits);
-    }
-    if ((c = select(16, &ibits, &obits, &xbits,
-			(poll == 0)? (struct timeval *)0 : &TimeValue)) < 0) {
+
+    if (netout)
+	FD_SET(net, obitsp);
+    if (ttyout)
+	FD_SET(tout, obitsp);
+    if (ttyin)
+	FD_SET(tin, ibitsp);
+    if (netin)
+	FD_SET(net, ibitsp);
+    if (netex)
+	FD_SET(net, xbitsp);
+
+    if ((c = select(maxfd+1, ibitsp, obitsp, xbitsp,
+      (poll == 0)? (struct timeval *)0 : &TimeValue)) < 0) {
 	if (c == -1) {
 		    /*
 		     * we can get EINTR if we are in line mode,
@@ -994,9 +1034,9 @@ process_rings(netin, netout, netex, ttyin, ttyout, poll)
 			 * to make sure we are selecting on the right
 			 * ones.
 			*/
-		FD_ZERO(&ibits);
-		FD_ZERO(&obits);
-		FD_ZERO(&xbits);
+		memset(ibitsp, 0, fdsn);
+		memset(obitsp, 0, fdsn);
+		memset(xbitsp, 0, fdsn);
 		return 0;
 	    }
 #	    endif /* defined(TN3270) */
@@ -1010,8 +1050,8 @@ process_rings(netin, netout, netex, ttyin, ttyout, poll)
     /*
      * Any urgent data?
      */
-    if (FD_ISSET(net, &xbits)) {
-	FD_CLR(net, &xbits);
+    if (FD_ISSET(net, xbitsp)) {
+	FD_CLR(net, xbitsp);
 	SYNCHing = 1;
 	(void) ttyflush(1);	/* flush already enqueued data */
     }
@@ -1019,10 +1059,10 @@ process_rings(netin, netout, netex, ttyin, ttyout, poll)
     /*
      * Something to read from the network...
      */
-    if (FD_ISSET(net, &ibits)) {
+    if (FD_ISSET(net, ibitsp)) {
 	int canread;
 
-	FD_CLR(net, &ibits);
+	FD_CLR(net, ibitsp);
 	canread = ring_empty_consecutive(&netiring);
 #if	!defined(SO_OOBINLINE)
 	    /*
@@ -1086,7 +1126,7 @@ process_rings(netin, netout, netex, ttyin, ttyout, poll)
 		    int i;
 		    i = recv(net, netiring.supply + c, canread - c, MSG_OOB);
 		    if (i == c &&
-			  bcmp(netiring.supply, netiring.supply + c, i) == 0) {
+			 memcmp(netiring.supply, netiring.supply + c, i) == 0) {
 			bogus_oob = 1;
 			first = 0;
 		    } else if (i < 0) {
@@ -1132,25 +1172,22 @@ process_rings(netin, netout, netex, ttyin, ttyout, poll)
     /*
      * Something to read from the tty...
      */
-    if (FD_ISSET(tin, &ibits)) {
-	FD_CLR(tin, &ibits);
+    if (FD_ISSET(tin, ibitsp)) {
+	FD_CLR(tin, ibitsp);
 	c = TerminalRead(ttyiring.supply, ring_empty_consecutive(&ttyiring));
+	if (c < 0 && errno == EIO)
+	    c = 0;
 	if (c < 0 && errno == EWOULDBLOCK) {
 	    c = 0;
 	} else {
-	    if (c < 0) {
-		return -1;
-	    }
-	    if (c == 0) {
+	    /* EOF detection for line mode!!!! */
+	    if ((c == 0) && MODE_LOCAL_CHARS(globalmode) && isatty(tin)) {
 		/* must be an EOF... */
-		if (MODE_LOCAL_CHARS(globalmode) && isatty(tin)) {
-		    *ttyiring.supply = termEofChar;
-		    c = 1;
-		} else {
-		    clienteof = 1;
-		    shutdown(net, 1);
-		    return 0;
-		}
+		*ttyiring.supply = termEofChar;
+		c = 1;
+	    }
+	    if (c <= 0) {
+		return -1;
 	    }
 	    if (termdata) {
 		Dump('<', ttyiring.supply, c);
@@ -1160,12 +1197,12 @@ process_rings(netin, netout, netex, ttyin, ttyout, poll)
 	returnValue = 1;		/* did something useful */
     }
 
-    if (FD_ISSET(net, &obits)) {
-	FD_CLR(net, &obits);
+    if (FD_ISSET(net, obitsp)) {
+	FD_CLR(net, obitsp);
 	returnValue |= netflush();
     }
-    if (FD_ISSET(tout, &obits)) {
-	FD_CLR(tout, &obits);
+    if (FD_ISSET(tout, obitsp)) {
+	FD_CLR(tout, obitsp);
 	returnValue |= (ttyflush(SYNCHing|flushout) > 0);
     }
 

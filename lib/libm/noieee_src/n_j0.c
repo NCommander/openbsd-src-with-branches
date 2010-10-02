@@ -1,3 +1,4 @@
+/*	$OpenBSD: n_j0.c,v 1.6 2008/06/21 08:26:19 martynas Exp $	*/
 /*	$NetBSD: n_j0.c,v 1.1 1995/10/10 23:36:52 ragge Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,10 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)j0.c	8.2 (Berkeley) 11/30/93";
-#endif /* not lint */
-
 /*
  * 16 December 1992
  * Minor modifications by Peter McIlroy to adapt non-IEEE architecture.
@@ -47,18 +40,18 @@ static char sccsid[] = "@(#)j0.c	8.2 (Berkeley) 11/30/93";
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  *
  * ******************* WARNING ********************
  * This is an alpha version of SunPro's FDLIBM (Freely
- * Distributable Math Library) for IEEE double precision 
+ * Distributable Math Library) for IEEE double precision
  * arithmetic. FDLIBM is a basic math library written
- * in C that runs on machines that conform to IEEE 
- * Standard 754/854. This alpha version is distributed 
- * for testing purpose. Those who use this software 
- * should report any bugs to 
+ * in C that runs on machines that conform to IEEE
+ * Standard 754/854. This alpha version is distributed
+ * for testing purpose. Those who use this software
+ * should report any bugs to
  *
  *		fdlibm-comments@sunpro.eng.sun.com
  *
@@ -85,20 +78,20 @@ static char sccsid[] = "@(#)j0.c	8.2 (Berkeley) 11/30/93";
  * 	   (To avoid cancellation, use
  *		sin(x) +- cos(x) = -cos(2x)/(sin(x) -+ cos(x))
  * 	    to compute the worse one.)
- *	   
+ *
  *	3 Special cases
  *		j0(nan)= nan
  *		j0(0) = 1
  *		j0(inf) = 0
- *		
+ *
  * Method -- y0(x):
  *	1. For x<2.
- *	   Since 
+ *	   Since
  *		y0(x) = 2/pi*(j0(x)*(ln(x/2)+Euler) + x^2/4 - ...)
  *	   therefore y0(x)-2/pi*j0(x)*ln(x) is an even function.
  *	   We use the following function to approximate y0,
  *		y0(x) = U(z)/V(z) + (2/pi)*(j0(x)*ln(x)), z= x^2
- *	   where 
+ *	   where
  *		U(z) = u0 + u1*z + ... + u6*z^6
  *		V(z) = 1  + v1*z + ... + v4*z^4
  *	   with absolute approximation error bounded by 2**-72.
@@ -115,16 +108,16 @@ static char sccsid[] = "@(#)j0.c	8.2 (Berkeley) 11/30/93";
 #include <float.h>
 #include <errno.h>
 
-#if defined(vax) || defined(tahoe)
+#if defined(__vax__)
 #define _IEEE	0
 #else
 #define _IEEE	1
 #define infnan(x) (0.0)
 #endif
 
-static double pzero __P((double)), qzero __P((double));
+static double pzero(double), qzero(double);
 
-static double 
+static double
 huge 	= 1e300,
 zero    = 0.0,
 one	= 1.0,
@@ -141,8 +134,7 @@ s03 =   5.135465502073181376284426245689510134134e-0007,
 s04 =   1.166140033337900097836930825478674320464e-0009;
 
 double
-j0(x) 
-	double x;
+j0(double x)
 {
 	double z, s,c,ss,cc,r,u,v;
 
@@ -204,8 +196,7 @@ v03 =   2.591508518404578033173189144579208685163e-0007,
 v04 =   4.411103113326754838596529339004302243157e-0010;
 
 double
-y0(x) 
-	double x;
+y0(double x)
 {
 	double z, s, c, ss, cc, u, v;
     /* Y0(NaN) is NaN, y0(-inf) is Nan, y0(inf) is 0  */
@@ -335,8 +326,7 @@ static double ps2[5] = {
    1.465761769482561965099880599279699314477e+0001,
 };
 
-static double pzero(x)
-	double x;
+static double pzero(double x)
 {
 	double *p,*q,z,r,s;
 	if (x >= 8.00)			   {p = pr8; q= ps8;}
@@ -348,7 +338,7 @@ static double pzero(x)
 	s = one+z*(q[0]+z*(q[1]+z*(q[2]+z*(q[3]+z*q[4]))));
 	return one+ r/s;
 }
-		
+
 
 /* For x >= 8, the asymptotic expansions of qzero is
  *	-1/8 s + 75/1024 s^3 - ..., where s = 1/x.
@@ -427,8 +417,7 @@ static double qs2[6] = {
   -5.310954938826669402431816125780738924463e+0000,
 };
 
-static double qzero(x)
-	double x;
+static double qzero(double x)
 {
 	double *p,*q, s,r,z;
 	if (x >= 8.00)			   {p = qr8; q= qs8;}
