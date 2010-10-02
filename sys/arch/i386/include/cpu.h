@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.115 2010/09/24 13:21:30 matthew Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.116 2010/09/28 20:27:54 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -111,7 +111,7 @@ struct cpu_info {
 #endif
 
 	paddr_t		ci_idle_pcb_paddr; /* PA of idle PCB */
-	u_long		ci_flags;	/* flags; see below */
+	volatile u_long	ci_flags;	/* flags; see below */
 	u_int32_t	ci_ipis; 	/* interprocessor interrupts pending */
 	int		sc_apic_version;/* local APIC version */
 
