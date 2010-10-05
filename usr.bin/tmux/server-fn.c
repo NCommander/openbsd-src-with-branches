@@ -1,4 +1,4 @@
-/* $OpenBSD: server-fn.c,v 1.41 2010/08/11 07:36:23 nicm Exp $ */
+/* $OpenBSD: server-fn.c,v 1.42 2010/09/26 20:43:30 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -368,7 +368,7 @@ server_next_session(struct session *s)
 	s_out = NULL;
 	for (i = 0; i < ARRAY_LENGTH(&sessions); i++) {
 		s_loop = ARRAY_ITEM(&sessions, i);
-		if (s_loop == s)
+		if (s_loop == NULL || s_loop == s)
 			continue;
 		if (s_out == NULL ||
 		    timercmp(&s_loop->activity_time, &s_out->activity_time, <))
