@@ -1,4 +1,4 @@
-/*	$OpenBSD: xform.h,v 1.20 2010/01/10 12:43:07 markus Exp $	*/
+/*	$OpenBSD: xform.h,v 1.21 2010/09/22 11:54:23 mikeb Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -78,7 +78,6 @@ extern struct enc_xform enc_xform_des;
 extern struct enc_xform enc_xform_3des;
 extern struct enc_xform enc_xform_blf;
 extern struct enc_xform enc_xform_cast5;
-extern struct enc_xform enc_xform_skipjack;
 extern struct enc_xform enc_xform_rijndael128;
 extern struct enc_xform enc_xform_aes_ctr;
 extern struct enc_xform enc_xform_aes_gcm;
