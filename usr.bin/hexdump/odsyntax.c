@@ -1,4 +1,4 @@
-/*	$OpenBSD: odsyntax.c,v 1.18 2009/11/12 07:54:38 nicm Exp $	*/
+/*	$OpenBSD: odsyntax.c,v 1.19 2010/03/23 08:43:03 fgsch Exp $	*/
 /*	$NetBSD: odsyntax.c,v 1.15 2001/12/07 15:14:29 bjh21 Exp $	*/
 
 /*-
@@ -307,8 +307,8 @@ oldusage(void)
 {
 	extern char *__progname;
 	fprintf(stderr, "usage: %s [-aBbcDdeFfHhIiLlOovXx] [-A base] "
-	    "[-j offset] [-N length] [-t type_string]\n"
-	    "\t[[+]offset[.][Bb]] [file ...]\n", __progname);
+	    "[-j offset] [-N length]\n"
+	    "\t[-t type_string] [[+]offset[.][Bb]] [file ...]\n", __progname);
 	exit(1);
 }
 
