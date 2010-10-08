@@ -1,4 +1,4 @@
-/*	$OpenBSD: odsyntax.c,v 1.19 2010/03/23 08:43:03 fgsch Exp $	*/
+/*	$OpenBSD: odsyntax.c,v 1.20 2010/10/07 16:04:36 sobrado Exp $	*/
 /*	$NetBSD: odsyntax.c,v 1.15 2001/12/07 15:14:29 bjh21 Exp $	*/
 
 /*-
@@ -130,7 +130,6 @@ oldsyntax(int argc, char ***argvp)
 		case 'F':
 			odadd("2/8 \"          %21.14e \" \"\\n\"");
 			break;
-			
 		case 'f':
 			odadd("4/4 \" %14.7e \" \"\\n\"");
 			break;
