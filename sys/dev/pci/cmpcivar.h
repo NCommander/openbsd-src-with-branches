@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmpcivar.h,v 1.5 2007/10/28 18:29:13 fgsch Exp $	*/
+/*	$OpenBSD: cmpcivar.h,v 1.6 2008/01/09 02:17:52 jakemsr Exp $	*/
 /*	$NetBSD: cmpcivar.h,v 1.9 2005/12/11 12:22:48 christos Exp $	*/
 
 /*
@@ -179,6 +179,10 @@ struct cmpci_channel {
 	void		(*intr)(void *);
 	void		*intr_arg;
 	int		md_divide;
+	int		bps;
+	int		blksize;
+	int		nblocks;
+	int		swpos;
 };
 
 struct cmpci_softc {
