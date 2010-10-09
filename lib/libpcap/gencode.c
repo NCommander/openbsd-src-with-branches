@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencode.c,v 1.34 2010/07/27 04:13:34 canacar Exp $	*/
+/*	$OpenBSD: gencode.c,v 1.35 2010/09/08 02:04:47 krw Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
@@ -618,7 +618,7 @@ nl2X_stmt(void)
 			sappend(s, tmp);
 
 			tmp = new_stmt(BPF_ALU|BPF_AND|BPF_K);
-			tmp->s.k = 0xf6;
+			tmp->s.k = 0xfc;
 			sappend(s, tmp);
 
 			nl_reg = alloc_reg();
