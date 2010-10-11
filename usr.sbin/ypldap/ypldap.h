@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypldap.h,v 1.9 2009/06/06 05:02:58 eric Exp $ */
+/*	$OpenBSD: ypldap.h,v 1.10 2009/06/06 18:31:42 pyr Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -184,10 +184,6 @@ __dead void	 fatalx(const char *);
 /* parse.y */
 int		 parse_config(struct env *, const char *, int);
 int		 cmdline_symset(char *);
-
-/* listener.c */
-void		 listener_setup(struct env *);
-void		 listener_init(struct env *);
 
 /* ldapclient.c */
 pid_t		 ldapclient(int []);
