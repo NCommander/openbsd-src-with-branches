@@ -1,4 +1,4 @@
-/*	$OpenBSD: atascsi.c,v 1.95 2010/09/20 06:17:49 krw Exp $ */
+/*	$OpenBSD: atascsi.c,v 1.96 2010/09/23 11:44:22 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -596,6 +596,7 @@ atascsi_disk_inquiry(struct scsi_xfer *xs)
 	inq.version = 0x05; /* SPC-3 */
 	inq.response_format = 2;
 	inq.additional_length = 32;
+	inq.flags |= SID_CmdQue;
 	bcopy("ATA     ", inq.vendor, sizeof(inq.vendor));
 	ata_swapcopy(ap->ap_identify.model, inq.product,
 	    sizeof(inq.product));
