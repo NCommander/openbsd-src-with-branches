@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.12 2006/03/31 21:13:23 biorn Exp $
+# $OpenBSD: Makefile,v 1.12 2006/04/14 08:28:55 biorn Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -25,7 +25,7 @@ SRCS+=	parse_bytes.c
 
 CFLAGS+=-I${KRB5SRC}/lib/krb5 -I${KRB5SRC}/kdc
 
-DPADD+=	${LIBKRB5} ${LIBDES} ${LIBCRYPTO} ${LIBUTIL}
-LDADD+=	-lkrb5 -ldes -lcrypto -lutil
+DPADD+=	${LIBKRB5} ${LIBCRYPTO} ${LIBUTIL}
+LDADD+=	-lkrb5 -lcrypto -lutil
 
 .include <bsd.prog.mk>

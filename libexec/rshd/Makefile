@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2002/05/06 22:23:53 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 2003/05/14 07:35:31 mho Exp $
 
 PROG=	rshd
 SRCS=	rshd.c
@@ -11,8 +11,8 @@ CFLAGS+= -Wall -Wno-unused
 #SRCS+=	des_rw.c
 #.PATH:	${.CURDIR}/../../usr.bin/rsh
 #CFLAGS+=-DKERBEROS
-#DPADD+=	${LIBKRB} ${LIBDES}
-#LDADD+=	-lkrb -ldes
+#DPADD+=	${LIBKRB}
+#LDADD+=	-lkrb
 #.endif
 
 .include <bsd.prog.mk>
