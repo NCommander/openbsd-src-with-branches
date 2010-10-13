@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.6 2010/07/27 16:59:03 stsp Exp $
+#	$OpenBSD: Makefile,v 1.7 2010/07/28 16:16:55 stsp Exp $
 
 .include <bsd.own.mk>
 LIB=    stubs
-SRCS=	db.c setlocale.c sha2.c getgrent.c getpwent.c \
+SRCS=	db.c setlocale.c sha1.c sha2.c getgrent.c getpwent.c \
 	ethers.c getaddrinfo.c gethostnamadr.c getnetnamadr.c \
 	mbrtowc_sb.c vfprintf.c
 NOPIC=	Yes
