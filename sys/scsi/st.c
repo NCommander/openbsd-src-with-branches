@@ -1,4 +1,4 @@
-/*	$OpenBSD: st.c,v 1.113 2010/09/20 02:51:52 deraadt Exp $	*/
+/*	$OpenBSD: st.c,v 1.114 2010/09/22 01:18:57 matthew Exp $	*/
 /*	$NetBSD: st.c,v 1.71 1997/02/21 23:03:49 thorpej Exp $	*/
 
 /*
@@ -841,10 +841,6 @@ ststrategy(struct buf *bp)
 	SC_DEBUG(sc_link, SDEV_DB2, ("ststrategy: %ld bytes @ blk %d\n",
 	    bp->b_bcount, bp->b_blkno));
 
-	if (st->flags & ST_DYING) {
-		bp->b_error = ENXIO;
-		goto bad;
-	}
 	/*
 	 * If it's a null transfer, return immediately.
 	 */
