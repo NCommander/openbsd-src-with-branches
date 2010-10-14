@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcib.c,v 1.1.1.1 2009/12/25 21:04:34 miod Exp $	*/
+/*	$OpenBSD: pcib.c,v 1.2 2010/05/08 21:59:56 miod Exp $	*/
 
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -42,8 +42,8 @@
 
 #include <dev/isa/isavar.h>
 
-#include <loongson/dev/glxreg.h>
-#include <loongson/dev/glxvar.h>
+#include <dev/pci/glxreg.h>
+#include <dev/pci/glxvar.h>
 
 #include "isa.h"
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: glxreg.h,v 1.1.1.1 2009/12/25 21:04:27 miod Exp $	*/
+/*	$OpenBSD: glxreg.h,v 1.2 2010/02/12 19:37:29 miod Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
