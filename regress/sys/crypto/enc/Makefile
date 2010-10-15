@@ -1,8 +1,8 @@
-#       $OpenBSD: Makefile,v 1.3 2002/10/21 20:54:02 mickey Exp $
+#       $OpenBSD: Makefile,v 1.4 2004/12/29 04:28:39 david Exp $
 
 PROG=   des3
-LDADD=-ldes
-DPADD=${LIBDES}
+LDADD=-lcrypto
+DPADD=${LIBCRYPTO}
 
 REGRESS_ROOT_TARGETS=	run-regress-${PROG}
 
