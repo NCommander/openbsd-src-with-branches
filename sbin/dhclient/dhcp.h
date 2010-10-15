@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcp.h,v 1.6 2007/01/11 01:51:59 stevesk Exp $	*/
+/*	$OpenBSD: dhcp.h,v 1.7 2007/02/01 22:39:43 krw Exp $	*/
 
 /* Protocol structures... */
 
@@ -152,6 +152,7 @@ struct dhcp_packet {
 #define DHO_DHCP_REBINDING_TIME		59
 #define DHO_DHCP_CLASS_IDENTIFIER	60
 #define DHO_DHCP_CLIENT_IDENTIFIER	61
+#define DHO_TFTP_SERVER			66
 #define DHO_DHCP_USER_CLASS_ID		77
 #define DHO_END				255
 

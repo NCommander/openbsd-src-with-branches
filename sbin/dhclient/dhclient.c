@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.135 2010/06/26 20:48:45 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.136 2010/09/24 13:44:14 claudio Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -2059,6 +2059,7 @@ check_option(struct client_lease *l, int option)
 	case DHO_DHCP_CLASS_IDENTIFIER:
 	case DHO_DHCP_CLIENT_IDENTIFIER:
 	case DHO_DHCP_USER_CLASS_ID:
+	case DHO_TFTP_SERVER:
 	case DHO_END:
 		return (1);
 	default:
