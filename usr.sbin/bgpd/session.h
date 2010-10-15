@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.107 2010/05/26 13:56:07 nicm Exp $ */
+/*	$OpenBSD: session.h,v 1.108 2010/06/27 19:53:34 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -92,6 +92,13 @@ enum suberr_open {
 	ERR_OPEN_AUTH,
 	ERR_OPEN_HOLDTIME,
 	ERR_OPEN_CAPA
+};
+
+enum suberr_fsm {
+	ERR_FSM_UNSPECIFIC = 0,
+	ERR_FSM_UNEX_OPENSENT,
+	ERR_FSM_UNEX_OPENCONFIRM,
+	ERR_FSM_UNEX_ESTABLISHED
 };
 
 enum opt_params {
