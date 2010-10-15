@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.27 2005/07/26 01:32:24 brad Exp $
+#	$OpenBSD: Makefile,v 1.28 2005/09/22 00:08:24 brad Exp $
 
 PROG=	ppp
 SRCS=	alias.c alias_cuseeme.c alias_db.c alias_ftp.c alias_irc.c \
@@ -13,8 +13,8 @@ SRCS=	alias.c alias_cuseeme.c alias_db.c alias_ftp.c alias_irc.c \
 CFLAGS+=-Wall -DNO_FW_PUNCH -DNOI4B -DNONETGRAPH
 CFLAGS+=-DLOCALNAT -DLOCALRAD
 M4FLAGS=-DLOCALNAT -DLOCALRAD
-LDADD+= -lcrypto -ldes -lutil -lz
-DPADD+=	${LIBDES} ${LIBUTIL} ${LIBZ} ${LIBCRYPTO}
+LDADD+= -lcrypto -lutil -lz
+DPADD+=	${LIBUTIL} ${LIBZ} ${LIBCRYPTO}
 .if defined(NOSUID) || defined(PPP_NOSUID)
 BINMODE=554
 .else

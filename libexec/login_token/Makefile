@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.3 2002/11/21 22:00:49 millert Exp $
+#	$OpenBSD: Makefile,v 1.4 2002/11/21 22:14:51 millert Exp $
 
 PROG=	login_token
 SRCS=	login_token.c init.c token.c tokendb.c
 MAN=	login_token.8
-DPADD=	${LIBDES}
-LDADD=	-ldes
+DPADD=	${LIBCRYPTO}
+LDADD=	-lcrypto
 
 TOKENS=	activ crypto snk
 

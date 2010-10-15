@@ -1,10 +1,10 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2004/09/28 15:02:01 millert Exp $
 
 PROG=	login_tis
 MAN=	login_tis.8
 CFLAGS+=-Wall
-LDADD+=	-ldes
-DPADD+=	${LIBDES}
+LDADD+=	-lcrypto
+DPADD+=	${LIBCRYPTO}
 
 BINOWN=	root
 BINGRP=	auth
