@@ -1,4 +1,4 @@
-/* $OpenBSD: client.c,v 1.43 2010/08/22 16:09:49 nicm Exp $ */
+/* $OpenBSD: client.c,v 1.44 2010/08/23 17:36:32 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -89,8 +89,6 @@ server_started:
 	if ((mode = fcntl(fd, F_GETFL)) == -1)
 		fatal("fcntl failed");
 	if (fcntl(fd, F_SETFL, mode|O_NONBLOCK) == -1)
-		fatal("fcntl failed");
-	if (fcntl(fd, F_SETFD, FD_CLOEXEC) == -1)
 		fatal("fcntl failed");
 	imsg_init(&client_ibuf, fd);
 	event_set(&client_event, fd, EV_READ, client_callback, NULL);
