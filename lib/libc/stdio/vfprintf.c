@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfprintf.c,v 1.57 2009/10/28 21:15:02 naddy Exp $	*/
+/*	$OpenBSD: vfprintf.c,v 1.58 2009/11/09 00:18:27 kurt Exp $	*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -62,7 +62,7 @@ union arg {
 	unsigned long long	ulonglongarg;
 	ptrdiff_t		ptrdiffarg;
 	size_t			sizearg;
-	size_t			ssizearg;
+	ssize_t			ssizearg;
 	intmax_t		intmaxarg;
 	uintmax_t		uintmaxarg;
 	void			*pvoidarg;
