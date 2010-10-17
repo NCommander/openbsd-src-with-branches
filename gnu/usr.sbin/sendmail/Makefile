@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2003/03/09 00:18:04 millert Exp $
+#	$OpenBSD: Makefile,v 1.9 2004/06/29 04:07:49 millert Exp $
 
 # We only use these libs internally
 .if !make(install)
@@ -15,7 +15,7 @@ SUBDIR+= libmilter sendmail mailstats makemap praliases smrsh editmap cf/cf
 
 # These just get installed verbatim
 .if make(install)
-SUBDIR+= doc/op cf
+SUBDIR+= cf
 .endif
 
 .include <bsd.subdir.mk>
