@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2009/07/26 19:12:07 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.15 2010/02/05 22:30:59 todd Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -10,7 +10,7 @@ RELDIR?=	/home/rel-${MACHINE}
 
 BASE=		${RELDIR}/base${OSrev}.tgz ${RELDIR}/comp${OSrev}.tgz \
 		${RELDIR}/etc${OSrev}.tgz ${RELDIR}/game${OSrev}.tgz \
-		${RELDIR}/man${OSrev}.tgz ${RELDIR}/misc${OSrev}.tgz \
+		${RELDIR}/man${OSrev}.tgz \
 		${RELDIR}/bsd.IP27 ${RELDIR}/bsd.rd.IP27 \
 		${RELDIR}/bsd.IP30 ${RELDIR}/bsd.rd.IP30 \
 		${RELDIR}/bsd.IP32 ${RELDIR}/bsd.rd.IP32 \
