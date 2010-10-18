@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.35 2009/04/17 03:58:54 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.36 2009/04/17 15:59:48 deraadt Exp $
 
 REV=		${OSrev}
 
@@ -32,7 +32,7 @@ KERNEL?=	RAMDISK
 UTILS?=		${.CURDIR}/../miniroot
 STRIP?=		strip
 
-LISTS=		${.CURDIR}/list ${ARCHDIR}/list
+LISTS=		${.CURDIR}/list ${ARCHDIR}/list.local
 MTREE=		${UTILS}/mtree.conf
 
 FLOPPY?=	floppy${REV}.fs
