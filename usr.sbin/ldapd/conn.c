@@ -1,4 +1,4 @@
-/*	$OpenBSD: conn.c,v 1.4 2010/06/29 21:00:34 martinh Exp $ */
+/*	$OpenBSD: conn.c,v 1.5 2010/07/01 20:09:34 martinh Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -68,6 +68,7 @@ conn_close(struct conn *conn)
 		bufferevent_free(conn->bev);
 	close(conn->fd);
 	free(conn->binddn);
+	free(conn->pending_binddn);
 	free(conn);
 
 	--stats.conns;
