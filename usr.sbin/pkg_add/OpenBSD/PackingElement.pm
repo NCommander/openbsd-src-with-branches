@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.182 2010/06/30 10:51:04 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -478,6 +478,7 @@ sub keyword() { "shell" }
 __PACKAGE__->register_with_factory;
 
 package OpenBSD::PackingElement::Manpage;
+use File::Basename;
 our @ISA=qw(OpenBSD::PackingElement::FileBase);
 
 sub keyword() { "man" }
@@ -528,6 +529,10 @@ sub format
 		}
 	}
 	open my $oldout, '>&STDOUT';
+	my $dir = dirname("$base/$out");
+	unless (-d $dir) {
+		mkdir($dir);
+	}
 	open STDOUT, '>', "$base/$out" or die "Can't write to $base/$out";
 	system(OpenBSD::Paths->groff,
 	    '-Tascii', '-mandoc', '-Wall', '-mtty-char', @extra, '--', $fname);
