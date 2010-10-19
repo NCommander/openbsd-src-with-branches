@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: PackingElement.pm,v 1.184 2010/10/19 07:29:41 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -520,7 +520,7 @@ sub format
 	my @extra = ();
 	# extra preprocessors as described in man.
 	if ($line =~ m/^\'\\\"\s+(.*)$/o) {
-		for my $letter (split $1) {
+		for my $letter (split '', $1) {
 			if ($letter =~ m/[ept]/o) {
 				push(@extra, "-$letter");
 			} elsif ($letter eq 'r') {
