@@ -1,4 +1,4 @@
-/*	$OpenBSD: attributes.c,v 1.1 2010/05/31 17:36:31 martinh Exp $ */
+/*	$OpenBSD: attributes.c,v 1.2 2010/07/13 12:54:51 martinh Exp $ */
 
 /*
  * Copyright (c) 2009 Martin Hedenfalk <martin@bzero.se>
@@ -99,7 +99,9 @@ ldap_add_attribute(struct ber_element *entry, const char *attr,
 	}
 
 	last = entry->be_sub;
-	while (last && last->be_next != NULL)
+	if (last == NULL)
+		last = entry;
+	else while (last != NULL && last->be_next != NULL)
 		last = last->be_next;
 
 	if ((elm = ber_add_sequence(last)) == NULL)
