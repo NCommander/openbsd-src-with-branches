@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.113 2010/07/30 21:47:18 ray Exp $	*/
+/*	$OpenBSD: co.c,v 1.114 2010/09/08 15:15:50 tobias Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -366,8 +366,8 @@ checkout_rev(RCSFILE *file, RCSNUM *frev, const char *dst, int flags,
 	/*
 	 * File inherits permissions from its ,v file
 	 */
-	if (file->rf_fd != -1) {
-		if (fstat(file->rf_fd, &st) == -1)
+	if (file->rf_file != NULL) {
+		if (fstat(fileno(file->rf_file), &st) == -1)
 			err(1, "%s", file->rf_path);
 		file->rf_mode = mode = st.st_mode;
 	} else {
