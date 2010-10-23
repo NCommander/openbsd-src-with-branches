@@ -1,4 +1,4 @@
-/*	$OpenBSD: mio_thru.c,v 1.10 2010/07/21 23:00:16 ratchov Exp $	*/
+/*	$OpenBSD: mio_thru.c,v 1.11 2010/10/21 18:57:42 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -51,7 +51,7 @@ static struct mio_ops thru_ops = {
 	thru_revents,
 };
 
-struct mio_hdl *
+static struct mio_hdl *
 thru_open(const char *str, char *sock, unsigned mode, int nbio)
 {
 	extern char *__progname;
