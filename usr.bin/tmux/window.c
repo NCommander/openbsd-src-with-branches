@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.55 2010/08/25 19:19:43 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.56 2010/10/16 08:31:55 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -368,9 +368,11 @@ window_add_pane(struct window *w, u_int hlimit)
 void
 window_remove_pane(struct window *w, struct window_pane *wp)
 {
-	w->active = TAILQ_PREV(wp, window_panes, entry);
-	if (w->active == NULL)
-		w->active = TAILQ_NEXT(wp, entry);
+	if (wp == w->active) {
+		w->active = TAILQ_PREV(wp, window_panes, entry);
+		if (w->active == NULL)
+			w->active = TAILQ_NEXT(wp, entry);
+	}
 
 	TAILQ_REMOVE(&w->panes, wp, entry);
 	window_pane_destroy(wp);
