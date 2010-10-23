@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.113 2010/08/27 17:08:01 jsg Exp $	*/
+/*	$OpenBSD: if_ral.c,v 1.114 2010/10/23 15:42:09 jakemsr Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006
@@ -367,8 +367,10 @@ ural_detach(struct device *self, int flags)
 	if_detach(ifp);
 
 	usb_rem_task(sc->sc_udev, &sc->sc_task);
-	timeout_del(&sc->scan_to);
-	timeout_del(&sc->amrr_to);
+	if (timeout_initialized(&sc->scan_to))
+		timeout_del(&sc->scan_to);
+	if (timeout_initialized(&sc->amrr_to))
+		timeout_del(&sc->amrr_to);
 
 	if (sc->amrr_xfer != NULL) {
 		usbd_free_xfer(sc->amrr_xfer);

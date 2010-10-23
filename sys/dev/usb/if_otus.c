@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_otus.c,v 1.18 2010/08/27 17:08:00 jsg Exp $	*/
+/*	$OpenBSD: if_otus.c,v 1.19 2010/10/23 15:42:09 jakemsr Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -250,8 +250,10 @@ otus_detach(struct device *self, int flags)
 	while (sc->cmdq.queued > 0)
 		tsleep(&sc->cmdq, 0, "cmdq", 0);
 
-	timeout_del(&sc->scan_to);
-	timeout_del(&sc->calib_to);
+	if (timeout_initialized(&sc->scan_to))
+		timeout_del(&sc->scan_to);
+	if (timeout_initialized(&sc->calib_to))
+		timeout_del(&sc->calib_to);
 
 	if (ifp->if_flags != 0) {	/* if_attach() has been called. */
 		ifp->if_flags &= ~(IFF_RUNNING | IFF_OACTIVE);

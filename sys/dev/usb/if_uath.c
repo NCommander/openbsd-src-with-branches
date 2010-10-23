@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.43 2010/08/27 17:08:01 jsg Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.44 2010/10/23 15:42:09 jakemsr Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -447,8 +447,10 @@ uath_detach(struct device *self, int flags)
 	/* post-firmware device */
 
 	usb_rem_task(sc->sc_udev, &sc->sc_task);
-	timeout_del(&sc->scan_to);
-	timeout_del(&sc->stat_to);
+	if (timeout_initialized(&sc->scan_to))
+		timeout_del(&sc->scan_to);
+	if (timeout_initialized(&sc->stat_to))
+		timeout_del(&sc->stat_to);
 
 	/* abort and free xfers */
 	uath_free_tx_data_list(sc);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: umbg.c,v 1.12 2010/09/24 08:33:59 yuo Exp $ */
+/*	$OpenBSD: umbg.c,v 1.13 2010/10/23 15:42:09 jakemsr Exp $ */
 
 /*
  * Copyright (c) 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -296,8 +296,10 @@ umbg_detach(struct device *self, int flags)
 	struct umbg_softc *sc = (struct umbg_softc *)self;
 	usbd_status err;
 
-	timeout_del(&sc->sc_to);
-	timeout_del(&sc->sc_it_to);
+	if (timeout_initialized(&sc->sc_to))
+		timeout_del(&sc->sc_to);
+	if (timeout_initialized(&sc->sc_it_to))
+		timeout_del(&sc->sc_it_to);
 
 	usb_rem_task(sc->sc_udev, &sc->sc_task);
 
