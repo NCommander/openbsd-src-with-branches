@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.66 2010/09/28 20:27:55 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.67 2010/10/02 20:49:22 syuu Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -603,6 +603,7 @@ void	tlb_write_indexed(int, struct tlb_entry *);
 int	tlb_update(vaddr_t, unsigned);
 void	tlb_read(int, struct tlb_entry *);
 
+void	build_trampoline(vaddr_t, vaddr_t);
 void	savectx(struct user *, int);
 
 void	enable_fpu(struct proc *);
