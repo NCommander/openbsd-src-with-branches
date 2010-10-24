@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.10 2010/01/13 06:02:37 claudio Exp $ */
+/*	$OpenBSD: util.c,v 1.11 2010/03/29 09:04:43 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -156,7 +156,7 @@ log_ext_subtype(u_int8_t subtype)
 	case EXT_COMMUNITY_BGP_COLLECT:
 		return ("bdc");	/* bgp data collection */
 	default:
-		snprintf(etype, sizeof(etype), "[%i]", (int)subtype);
+		snprintf(etype, sizeof(etype), "[%u]", subtype);
 		return (etype);
 	}
 }
