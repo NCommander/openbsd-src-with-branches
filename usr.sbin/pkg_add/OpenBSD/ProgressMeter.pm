@@ -26,10 +26,11 @@ sub new
 
 sub setup
 {
-	my ($self, $opt_x, $opt_m) = @_;
+	my ($self, $opt_x, $opt_m, $state) = @_;
 	if ($opt_m || (!$opt_x && -t STDOUT)) {
 		require OpenBSD::ProgressMeter::Term;
 		bless $self, "OpenBSD::ProgressMeter::Term";
+		$self->{state} = $state;
 		$self->init;
 	}
 }
