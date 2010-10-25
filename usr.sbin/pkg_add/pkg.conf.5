@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pkg.conf.5,v 1.1 2010/07/04 18:30:28 espie Exp $
+.\"	$OpenBSD: pkg.conf.5,v 1.2 2010/07/04 19:41:33 jmc Exp $
 .\"
 .\" Copyright (c) 2010 Marc Espie
 .\"
@@ -48,6 +48,10 @@ the install.
 Currently defined options are as follows:
 .Pp
 .Bl -tag -width fullkeyword -compact
+.It Ar fullwidth
+Set to
+.Ar yes
+if you really want to use the full width of the terminal for the progressmeter.
 .It Ar installpath
 URL to package repository updated during installation.
 Used for accessing packages if the environment variable
