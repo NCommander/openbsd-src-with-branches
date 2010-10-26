@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpe.h,v 1.10 2010/05/26 13:56:08 nicm Exp $ */
+/*	$OpenBSD: ldpe.h,v 1.11 2010/09/06 08:28:43 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2008 Esben Norby <norby@openbsd.org>
@@ -31,9 +31,7 @@ TAILQ_HEAD(ctl_conns, ctl_conn)	ctl_conns;
 
 struct mapping_entry {
 	TAILQ_ENTRY(mapping_entry)	entry;
-	u_int32_t			label;
-	u_int32_t			prefix;
-	u_int8_t			prefixlen;
+	struct map			map;
 };
 
 struct nbr {
