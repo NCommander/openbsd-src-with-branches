@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.292 2010/10/08 23:35:42 david Exp $
+#	$OpenBSD: Makefile,v 1.293 2010/10/18 14:54:47 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -255,6 +255,9 @@ distribution-etc-root-var: distrib-dirs
 	    ${DESTDIR}/var/mail/root
 	${INSTALL} -c -o root -g wheel -m 440 ../usr.bin/sudo/sudoers \
 	    ${DESTDIR}/etc/sudoers
+	cd rc.d; \
+		${INSTALL} -c -o root -g wheel -m 644 rc.subr \
+		    ${DESTDIR}/etc/rc.d
 
 distribution:
 	exec ${SUDO} ${MAKE} distribution-etc-root-var
