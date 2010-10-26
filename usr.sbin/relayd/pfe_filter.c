@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe_filter.c,v 1.43 2010/03/24 16:29:37 pyr Exp $	*/
+/*	$OpenBSD: pfe_filter.c,v 1.44 2010/09/02 14:03:22 sobrado Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -394,9 +394,14 @@ sync_ruleset(struct relayd *env, struct rdr *rdr, int enable)
 		memset(&rio, 0, sizeof(rio));
 		(void)strlcpy(rio.anchor, anchor, sizeof(rio.anchor));
 
-		rio.rule.action = PF_PASS;
+		if (rdr->conf.flags & F_MATCH) {
+			rio.rule.action = PF_MATCH;
+			rio.rule.quick = 0;
+		} else {
+			rio.rule.action = PF_PASS;
+			rio.rule.quick = 1; /* force first match */
+		}
 		rio.rule.direction = PF_IN;
-		rio.rule.quick = 1; /* force first match */
 		rio.rule.keep_state = PF_STATE_NORMAL;
 
 		switch (t->conf.fwdmode) {
