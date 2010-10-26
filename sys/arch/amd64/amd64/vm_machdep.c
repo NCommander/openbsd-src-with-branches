@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.21 2009/06/06 23:45:35 guenther Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.22 2009/06/09 02:56:38 krw Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.1 2003/04/26 18:39:33 fvdl Exp $	*/
 
 /*-
@@ -107,7 +107,7 @@ cpu_fork(struct proc *p1, struct proc *p2, void *stack, size_t stacksize,
 	*pcb = p1->p_addr->u_pcb;
 
 	/*
-	 * Activate the address space.  Note this will refresh pcb_ldt_sel.
+	 * Activate the address space.
 	 */
 	pmap_activate(p2);
 
