@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.114 2010/10/23 15:42:09 jakemsr Exp $	*/
+/*	$OpenBSD: if_ral.c,v 1.115 2010/10/23 16:14:07 jakemsr Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006
@@ -363,8 +363,10 @@ ural_detach(struct device *self, int flags)
 
 	s = splusb();
 
-	ieee80211_ifdetach(ifp);	/* free all nodes */
-	if_detach(ifp);
+	if (ifp->if_softc != NULL) {
+		ieee80211_ifdetach(ifp);	/* free all nodes */
+		if_detach(ifp);
+	}
 
 	usb_rem_task(sc->sc_udev, &sc->sc_task);
 	if (timeout_initialized(&sc->scan_to))

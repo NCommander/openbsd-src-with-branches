@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.45 2010/03/06 17:09:31 mk Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.46 2010/09/24 08:33:58 yuo Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -380,9 +380,10 @@ cdce_detach(struct device *self, int flags)
 	if (ifp->if_flags & IFF_RUNNING)
 		cdce_stop(sc);
 
-	ether_ifdetach(ifp);
-
-	if_detach(ifp);
+	if (ifp->if_softc != NULL) {
+		ether_ifdetach(ifp);
+		if_detach(ifp);
+	}
 
 	sc->cdce_attached = 0;
 	splx(s);

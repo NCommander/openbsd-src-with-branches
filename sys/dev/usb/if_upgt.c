@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.51 2010/10/23 15:42:09 jakemsr Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.52 2010/10/23 16:14:07 jakemsr Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -499,7 +499,7 @@ upgt_detach(struct device *self, int flags)
 	/* free firmware */
 	upgt_fw_free(sc);
 
-	if (sc->sc_flags & UPGT_DEVICE_ATTACHED) {
+	if (ifp->if_softc != NULL) {
 		/* detach interface */
 		ieee80211_ifdetach(ifp);
 		if_detach(ifp);
