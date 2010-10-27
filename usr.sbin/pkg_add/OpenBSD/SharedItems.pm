@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: SharedItems.pm,v 1.27 2010/08/01 10:03:24 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2004-2006 Marc Espie <espie@openbsd.org>
 #
