@@ -1,4 +1,4 @@
-/*	$OpenBSD: obio.c,v 1.3 2010/10/10 16:38:55 syuu Exp $ */
+/*	$OpenBSD: obio.c,v 1.4 2010/10/26 00:02:01 syuu Exp $ */
 
 /*
  * Copyright (c) 2000-2004 Opsycon AB  (www.opsycon.se)
@@ -166,6 +166,7 @@ uint64_t obio_imask[MAXCPUS][NIPLS];
 	{ name, &obio_tag, &obio_tag, &obio_bus_dma_tag, addr, i }
 struct obio_attach_args obio_children[] = {
 	OBIODEV("octcf", OCTEON_CF_BASE, 0),
+	OBIODEV("pcibus", 0, 0),
 };
 #undef	OBIODEV
 
