@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.h,v 1.20 2006/05/03 16:10:52 drahn Exp $ */
+/*	$OpenBSD: syscall.h,v 1.21 2008/10/02 20:12:08 kurt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -257,7 +257,7 @@ _dl_fcntl(int fd, int cmd, int flag)
 }
 
 static inline int
-_dl_getdirentries(int fd, char *buf, int nbytes, long *basep)
+_dl_getdirentries(int fd, char *buf, int nbytes, off_t *basep)
 {
 	register int status;
 

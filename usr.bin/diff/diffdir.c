@@ -1,4 +1,4 @@
-/*	$OpenBSD: diffdir.c,v 1.36 2010/07/16 23:27:58 ray Exp $	*/
+/*	$OpenBSD: diffdir.c,v 1.37 2010/07/17 00:00:32 ray Exp $	*/
 
 /*
  * Copyright (c) 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -167,7 +167,7 @@ slurpdir(char *path, char **bufp, int enoentok)
 {
 	char *buf, *ebuf, *cp;
 	size_t bufsize, have, need;
-	long base;
+	off_t base;
 	int fd, nbytes, entries;
 	struct stat sb;
 	struct dirent **dirlist, *dp;

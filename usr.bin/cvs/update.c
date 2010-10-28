@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.164 2010/09/29 18:14:52 nicm Exp $	*/
+/*	$OpenBSD: update.c,v 1.165 2010/10/27 08:35:45 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -235,7 +235,7 @@ cvs_update_enterdir(struct cvs_file *cf)
 void
 cvs_update_leavedir(struct cvs_file *cf)
 {
-	long base;
+	off_t base;
 	int nbytes;
 	int isempty;
 	size_t bufsize;

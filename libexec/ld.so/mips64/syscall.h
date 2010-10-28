@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.h,v 1.4 2006/05/03 16:10:52 drahn Exp $ */
+/*	$OpenBSD: syscall.h,v 1.5 2008/10/02 20:12:08 kurt Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
@@ -244,7 +244,7 @@ _dl_fcntl(int fd, int cmd, int flag)
 }
 
 extern inline ssize_t
-_dl_getdirentries(int fd, char *buf, int nbytes, long *basep)
+_dl_getdirentries(int fd, char *buf, int nbytes, off_t *basep)
 {
 	register int status __asm__ ("$2");
 
