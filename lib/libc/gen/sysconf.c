@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysconf.c,v 1.10 2008/06/25 14:54:44 millert Exp $ */
+/*	$OpenBSD: sysconf.c,v 1.11 2010/01/15 08:35:47 sthen Exp $ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -213,6 +213,10 @@ yesno:		if (sysctl(mib, namelen, &value, &len, NULL, 0) == -1)
 		    KERN_SEMINFO_SEMMNS : KERN_SEMINFO_SEMVMX;
 		namelen = 3;
 		break;
+
+/* Unsorted */
+	case _SC_HOST_NAME_MAX:
+		return (MAXHOSTNAMELEN - 1); /* does not include \0 */
 
 /* Extensions */
 	case _SC_PHYS_PAGES:
