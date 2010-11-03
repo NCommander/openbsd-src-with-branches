@@ -1,5 +1,5 @@
+#	$OpenBSD$
 #	from: @(#)Makefile	8.2 (Berkeley) 4/22/94
-#	$Id: Makefile,v 1.2 2005/02/18 15:51:02 henning Exp $
 
 .include "../config/Makefile.config"
 
