@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmt.c,v 1.8 2010/10/26 00:57:21 dlg Exp $ */
+/*	$OpenBSD: vmt.c,v 1.9 2010/10/26 01:16:11 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -245,8 +245,9 @@ vmt_probe(void)
 int
 vmt_match(struct device *parent, void *match, void *aux)
 {
-	/* we cant get here unless vmt_probe previously succeeded */
-	return (1);
+	const char **busname = (const char **)aux;
+
+	return (strcmp(*busname, vmt_cd.cd_name) == 0);
 }
 
 void
