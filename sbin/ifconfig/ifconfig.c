@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.240 2010/10/18 04:10:57 deraadt Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.241 2010/11/01 05:24:58 deraadt Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -4876,7 +4876,7 @@ setinstance(const char *id, int param)
 	const char *errmsg = NULL;
 	int rdomainid;
 
-	rdomainid = strtonum(id, 0, 128, &errmsg);
+	rdomainid = strtonum(id, 0, RT_TABLEID_MAX, &errmsg);
 	if (errmsg)
 		errx(1, "rdomain %s: %s", id, errmsg);
 
