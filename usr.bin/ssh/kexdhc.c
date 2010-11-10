@@ -1,4 +1,4 @@
-/* $OpenBSD: kexdhc.c,v 1.10 2006/10/31 16:33:12 markus Exp $ */
+/* $OpenBSD: kexdhc.c,v 1.11 2006/11/06 21:25:28 markus Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -24,6 +24,8 @@
  */
 
 #include <sys/types.h>
+
+#include <openssl/dh.h>
 
 #include <stdio.h>
 #include <string.h>
