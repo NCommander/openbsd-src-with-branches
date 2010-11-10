@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.311 2010/09/02 14:03:21 sobrado Exp $ */
+/*	$OpenBSD: session.c,v 1.312 2010/10/15 07:45:32 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -247,7 +247,7 @@ session_main(int pipe_m2s[2], int pipe_s2r[2], int pipe_m2r[2],
 	peer_cnt = 0;
 	ctl_cnt = 0;
 
-	if ((conf = malloc(sizeof(struct bgpd_config))) == NULL)
+	if ((conf = calloc(1, sizeof(struct bgpd_config))) == NULL)
 		fatal(NULL);
 	if ((conf->listen_addrs = calloc(1, sizeof(struct listen_addrs))) ==
 	    NULL)
