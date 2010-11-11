@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.12 2010/09/19 23:34:33 miod Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.13 2010/09/20 23:37:08 miod Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -51,7 +51,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)kadb.c	8.1 (Berkeley) 6/10/93
- *      $Id: db_disasm.c,v 1.12 2010/09/19 23:34:33 miod Exp $
+ *      $Id: db_disasm.c,v 1.13 2010/09/20 23:37:08 miod Exp $
  */
 
 #ifdef _KERNEL
@@ -589,7 +589,7 @@ dbmd_print_insn(uint32_t ins, db_addr_t mdbdot, int (*pr)(const char *, ...))
 		if (i.word == 0) {
 			(*pr)("nop");
 			break;
-		} else if (i.word == 1 << 5) {
+		} else if (i.word == 1 << 6) {
 			(*pr)("ssnop");
 			break;
 		}
