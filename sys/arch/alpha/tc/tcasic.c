@@ -1,4 +1,4 @@
-/* $OpenBSD: tcasic.c,v 1.14 2006/03/16 22:32:01 miod Exp $ */
+/* $OpenBSD: tcasic.c,v 1.15 2006/06/15 20:08:29 brad Exp $ */
 /* $NetBSD: tcasic.c,v 1.36 2001/08/23 01:16:52 nisimura Exp $ */
 
 /*
@@ -94,7 +94,10 @@ tcasicattach(parent, self, aux)
 		intr_setup = tc_3000_500_intr_setup;
 		iointr = tc_3000_500_iointr;
 
-		tba.tba_speed = TC_SPEED_25_MHZ;
+		if ((hwrpb->rpb_type & SV_ST_MASK) == SV_ST_SANDPIPER)
+			tba.tba_speed = TC_SPEED_22_5_MHZ;
+		else
+			tba.tba_speed = TC_SPEED_25_MHZ;
 		tba.tba_nslots = tc_3000_500_nslots;
 		tba.tba_slots = tc_3000_500_slots;
 		if (hwrpb->rpb_variation & SV_GRAPHICS) {
