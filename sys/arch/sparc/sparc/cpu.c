@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.46 2010/06/07 19:54:33 miod Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.47 2010/07/10 19:32:24 miod Exp $	*/
 /*	$NetBSD: cpu.c,v 1.56 1997/09/15 20:52:36 pk Exp $ */
 
 /*
@@ -741,8 +741,8 @@ sun4_hotfix(sc)
 {
 	if ((sc->flags & CPUFLG_SUN4CACHEBUG) != 0) {
 		kvm_uncache((caddr_t)trapbase, 1);
-		snprintf(cpu_hotfix, sizeof cpu_hotfix,
-		    "cache chip bug - trap page uncached");
+		strlcpy(cpu_hotfix, "cache chip bug - trap page uncached",
+		    sizeof cpu_hotfix);
 	}
 
 }

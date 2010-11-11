@@ -1,4 +1,4 @@
-/*	$OpenBSD: cbus.c,v 1.6 2009/05/10 12:48:24 kettenis Exp $	*/
+/*	$OpenBSD: cbus.c,v 1.7 2009/12/14 16:06:35 kettenis Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -220,7 +220,7 @@ cbus_alloc_bus_tag(struct cbus_softc *sc, bus_space_tag_t parent)
 	if (bt == NULL)
 		panic("could not allocate cbus bus tag");
 
-	snprintf(bt->name, sizeof(bt->name), "%s", sc->sc_dv.dv_xname);
+	strlcpy(bt->name, sc->sc_dv.dv_xname, sizeof(bt->name));
 	bt->cookie = sc;
 	bt->parent = parent;
 	bt->asi = parent->asi;
