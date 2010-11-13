@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.45 2010/08/11 21:22:44 kettenis Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.46 2010/10/06 16:37:29 deraadt Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -303,7 +303,7 @@ acpi_resume_machdep(void)
 		p = ci->ci_schedstate.spc_idleproc;
 		pcb = &p->p_addr->u_pcb;
 
-		tf = (struct trapframe *)pcb->pcb_tss.tss_rsp0 - 1;
+		tf = (struct trapframe *)pcb->pcb_kstack - 1;
 		sf = (struct switchframe *)tf - 1;
 		sf->sf_r12 = (u_int64_t)sched_idle;
 		sf->sf_r13 = (u_int64_t)ci;

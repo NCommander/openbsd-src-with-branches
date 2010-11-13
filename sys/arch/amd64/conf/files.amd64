@@ -1,4 +1,4 @@
-#	$OpenBSD: files.amd64,v 1.57 2010/07/01 00:24:27 thib Exp $
+#	$OpenBSD: files.amd64,v 1.58 2010/09/07 16:22:48 mikeb Exp $
 
 maxpartitions 16
 maxusers 2 16 128
@@ -6,7 +6,7 @@ maxusers 2 16 128
 file	arch/amd64/amd64/autoconf.c
 file	arch/amd64/amd64/conf.c
 file	arch/amd64/amd64/disksubr.c		disk
-file	arch/amd64/amd64/gdt.c
+file	arch/amd64/amd64/gdt.c			multiprocessor
 file	arch/amd64/amd64/machdep.c
 file	arch/amd64/amd64/identcpu.c
 file	arch/amd64/amd64/via.c

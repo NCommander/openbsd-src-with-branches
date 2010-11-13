@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.13 2010/07/21 14:08:09 kettenis Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.14 2010/10/02 23:14:32 deraadt Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $ */
 
 /*-
@@ -54,7 +54,6 @@
 #include <machine/i82489reg.h>
 #include <machine/i82489var.h>
 #include <machine/mtrr.h>
-#include <machine/gdt.h>
 #include <machine/fpu.h>
 
 #include <ddb/db_output.h>
@@ -80,13 +79,12 @@ void (*ipifunc[X86_NIPI])(struct cpu_info *) =
 	x86_64_ipi_synch_fpu,
 	NULL,
 	x86_64_ipi_reload_mtrr,
-	gdt_reload_cpu,
+	x86_setperf_ipi,
 #ifdef DDB
 	x86_ipi_db,
 #else
 	NULL,
 #endif
-	x86_setperf_ipi,
 };
 
 void
