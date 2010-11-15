@@ -1,4 +1,4 @@
-/*	$OpenBSD: compile.c,v 1.32 2010/07/01 17:02:02 naddy Exp $	*/
+/*	$OpenBSD: compile.c,v 1.33 2010/07/01 17:04:24 naddy Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -685,8 +685,9 @@ compile_text(void)
 		}
 	}
 	free(lbuf);
+	text = xrealloc(text, size + 1);
 	text[size] = '\0';
-	return (xrealloc(text, size + 1));
+	return (text);
 }
 
 /*
