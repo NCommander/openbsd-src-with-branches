@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiio.h,v 1.7 2006/07/23 02:50:20 dlg Exp $	*/
+/*	$OpenBSD: scsiio.h,v 1.8 2006/11/27 18:32:33 dlg Exp $	*/
 /*	$NetBSD: scsiio.h,v 1.3 1994/06/29 06:45:09 cgd Exp $	*/
 
 #ifndef _SYS_SCSIIO_H_
@@ -9,11 +9,12 @@
 #include <sys/ioctl.h>
 
 #define	SENSEBUFLEN 48
+#define	CMDBUFLEN   16
 
 typedef struct	scsireq {
 	u_long	flags;		/* info about the request status and type */
 	u_long	timeout;
-	u_char	cmd[16];	/* 12 is actually the max */
+	u_char	cmd[CMDBUFLEN];
 	u_char	cmdlen;
 	caddr_t	databuf;	/* address in user space of buffer */
 	u_long	datalen;	/* size of user buffer (request) */
