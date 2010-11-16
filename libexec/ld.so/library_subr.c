@@ -1,4 +1,4 @@
-/*	$OpenBSD: library_subr.c,v 1.31 2010/07/01 19:25:44 drahn Exp $ */
+/*	$OpenBSD: library_subr.c,v 1.32 2010/10/25 20:34:44 kurt Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -439,14 +439,8 @@ done:
 			    sod.sod_name, sod.sod_major,
 			    req_sod.sod_minor, sod.sod_minor);
 		object = _dl_tryload_shlib(hint, type, flags);
-		if (object) {
-			object->sod = req_sod;
-		} else {
-			_dl_free((char *)sod.sod_name);
-		}
-	} else {
-		_dl_free((char *)sod.sod_name);
 	}
+	_dl_free((char *)sod.sod_name);
 	return(object);
 }
 

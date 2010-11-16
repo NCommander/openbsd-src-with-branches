@@ -1,4 +1,4 @@
-/*	$OpenBSD: library_mquery.c,v 1.36 2008/10/02 20:12:08 kurt Exp $ */
+/*	$OpenBSD: library_mquery.c,v 1.37 2010/10/25 20:34:44 kurt Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -38,6 +38,7 @@
 #include "syscall.h"
 #include "archdep.h"
 #include "resolve.h"
+#include "sod.h"
 
 #define PFLAGS(X) ((((X) & PF_R) ? PROT_READ : 0) | \
 		   (((X) & PF_W) ? PROT_WRITE : 0) | \
@@ -280,7 +281,7 @@ retry:
 		object->dev = sb.st_dev;
 		object->inode = sb.st_ino;
 		object->obj_flags |= flags;
-
+		_dl_build_sod(object->load_name, &object->sod);
 	} else {
 		/* XXX no point. object is never returned NULL */
 		_dl_load_list_free(lowld);
