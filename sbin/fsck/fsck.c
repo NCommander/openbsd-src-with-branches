@@ -172,7 +172,7 @@ main(int argc, char *argv[])
 	for (; argc--; argv++) {
 		char *spec, *type;
 
-		if (strncmp(*argv, "/dev/", 5) == 0 &&
+		if ((strncmp(*argv, "/dev/", 5) == 0 || isduid(*argv, 0)) &&
 		    (type = readlabelfs(*argv, 0))) {
 			spec = *argv;
 		} else if ((fs = getfsfile(*argv)) == NULL &&
