@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbic.c,v 1.27 2010/05/20 00:55:17 krw Exp $ */
+/*	$OpenBSD: sbic.c,v 1.28 2010/06/29 21:12:01 krw Exp $ */
 /*	$NetBSD: sbic.c,v 1.2 1996/04/23 16:32:54 chuck Exp $	*/
 
 /*
@@ -55,7 +55,6 @@
 #include <sys/device.h>
 #include <sys/kernel.h> /* For hz */
 #include <sys/disklabel.h>
-#include <sys/dkstat.h>
 #include <sys/buf.h>
 #include <sys/queue.h>
 #include <scsi/scsi_all.h>

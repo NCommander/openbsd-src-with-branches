@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.94 2010/08/04 19:43:52 deraadt Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.95 2010/09/20 06:17:49 krw Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -36,9 +36,7 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/buf.h>
-#include <sys/dkstat.h>
 #include <sys/disklabel.h>
-#include <sys/dkstat.h>
 #include <sys/malloc.h>
 #include <sys/proc.h>
 #include <sys/reboot.h>

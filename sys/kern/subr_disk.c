@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.111 2010/09/23 18:49:39 oga Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.112 2010/09/24 07:08:50 deraadt Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -54,7 +54,6 @@
 #include <sys/disk.h>
 #include <sys/reboot.h>
 #include <sys/dkio.h>
-#include <sys/dkstat.h>		/* XXX */
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/workq.h>

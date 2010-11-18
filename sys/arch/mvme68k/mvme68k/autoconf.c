@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.44 2009/03/01 22:08:13 miod Exp $ */
+/*	$OpenBSD: autoconf.c,v 1.45 2009/10/26 20:17:27 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -74,7 +74,6 @@
 #include <sys/extent.h>
 #include <sys/malloc.h>
 #include <sys/buf.h>
-#include <sys/dkstat.h>
 #include <sys/conf.h>
 #include <sys/reboot.h>
 #include <sys/device.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: db_structinfo.c,v 1.2 2010/05/26 15:33:51 guenther Exp $ */
+/* $OpenBSD: db_structinfo.c,v 1.3 2010/06/28 23:00:30 guenther Exp $ */
 /* public domain */
 /*
  * This file is intended to be compiled with debug information,
@@ -21,7 +21,6 @@
 #include <sys/disklabel.h>
 #include <sys/dirent.h>
 #include <sys/dkbad.h>
-#include <sys/dkstat.h>
 #include <sys/evcount.h>
 #include <sys/event.h>
 #include <sys/eventvar.h>

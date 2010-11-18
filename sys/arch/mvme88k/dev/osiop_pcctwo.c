@@ -1,4 +1,4 @@
-/*	$OpenBSD: osiop_pcctwo.c,v 1.4 2006/04/15 22:29:49 miod Exp $	*/
+/*	$OpenBSD: osiop_pcctwo.c,v 1.5 2006/05/08 14:36:10 miod Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  *
@@ -28,7 +28,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/disklabel.h>
-#include <sys/dkstat.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
