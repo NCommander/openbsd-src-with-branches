@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.193 2010/09/23 13:24:22 jsing Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.194 2010/11/02 09:36:09 dlg Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -468,6 +468,9 @@ kern_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 			for (i = 0; i < CPUSTATES; i++)
 				cp_time[i] += ci->ci_schedstate.spc_cp_time[i];
 		}
+
+		for (i = 0; i < CPUSTATES; i++)
+			cp_time[i] /= ncpus;
 
 		return (sysctl_rdstruct(oldp, oldlenp, newp, &cp_time,
 		    sizeof(cp_time)));
