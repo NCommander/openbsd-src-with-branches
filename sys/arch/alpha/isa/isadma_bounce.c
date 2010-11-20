@@ -1,4 +1,4 @@
-/*	$OpenBSD: isadma_bounce.c,v 1.8 2008/06/26 05:42:08 ray Exp $	*/
+/*	$OpenBSD: isadma_bounce.c,v 1.9 2010/03/27 02:09:54 oga Exp $	*/
 /* $NetBSD: isadma_bounce.c,v 1.3 2000/06/29 09:02:57 mrg Exp $ */
 
 /*-
@@ -125,7 +125,7 @@ isadma_bounce_dmamap_create(bus_dma_tag_t t, bus_size_t size, int nsegments,
 	 * in memory below the 16M boundary.  On DMA reads,
 	 * DMA happens to the bounce buffers, and is copied into
 	 * the caller's buffer.  On writes, data is copied into
-	 * but bounce buffer, and the DMA happens from those
+	 * the bounce buffer, and the DMA happens from those
 	 * pages.  To software using the DMA mapping interface,
 	 * this looks simply like a data cache.
 	 *
