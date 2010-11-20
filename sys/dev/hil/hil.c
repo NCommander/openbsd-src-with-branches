@@ -1,4 +1,4 @@
-/*	$OpenBSD: hil.c,v 1.22 2006/11/05 14:39:32 miod Exp $	*/
+/*	$OpenBSD: hil.c,v 1.23 2006/12/16 20:07:13 miod Exp $	*/
 /*
  * Copyright (c) 2003, 2004, Miodrag Vallat.
  * All rights reserved.
@@ -465,6 +465,7 @@ hil_thread(void *arg)
 			hilempty(sc);
 			break;
 		}
+		splx(s);
 	}
 }
 
