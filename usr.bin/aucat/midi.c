@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.c,v 1.30 2010/10/21 19:10:52 ratchov Exp $	*/
+/*	$OpenBSD: midi.c,v 1.31 2010/11/14 13:51:27 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -475,7 +475,7 @@ ctl_qfr(struct aproc *p)
 		p->u.ctl.fr -= p->u.ctl.fps;
 		p->u.ctl.sec++;
 		if (p->u.ctl.sec < 60)
-			break;;
+			break;
 		p->u.ctl.sec = 0;
 		p->u.ctl.min++;
 		if (p->u.ctl.min < 60)
