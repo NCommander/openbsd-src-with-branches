@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.18 2009/10/01 20:19:18 kettenis Exp $	*/
+/*	$OpenBSD: zs.c,v 1.19 2010/04/09 17:01:30 jasper Exp $	*/
 /*	$NetBSD: zs.c,v 1.17 2001/06/19 13:42:15 wiz Exp $	*/
 
 /*
@@ -175,11 +175,7 @@ void zssoft(void *);
 int zs_txdma_int(void *);
 #endif
 
-void zscnprobe(struct consdev *);
-void zscninit(struct consdev *);
-int  zscngetc(dev_t);
-void zscnputc(dev_t, int);
-void zscnpollc(dev_t, int);
+cons_decl(zs);
 
 /*
  * Is the zs chip present?
