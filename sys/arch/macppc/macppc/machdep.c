@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.120 2010/07/31 21:15:05 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.121 2010/08/07 03:50:01 krw Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -189,7 +189,6 @@ initppc(startkernel, endkernel, args)
 #ifdef DDB
 	extern void *ddblow; extern int ddbsize;
 #endif
-	extern void consinit(void);
 	extern void callback(void *);
 	extern void *msgbuf_addr;
 	int exc, scratch;
