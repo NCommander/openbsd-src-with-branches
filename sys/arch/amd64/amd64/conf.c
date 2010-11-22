@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.29 2010/07/03 03:59:16 krw Exp $	*/
+/*	$OpenBSD: conf.c,v 1.30 2010/09/22 13:03:47 claudio Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -441,12 +441,6 @@ dev_rawpart(struct device *dv)
 	return (NODEV);
 }
 
-/*
- * This entire table could be autoconfig()ed but that would mean that
- * the kernel's idea of the console would be out of sync with that of
- * the standalone boot.  I think it best that they both use the same
- * known algorithm unless we see a pressing need otherwise.
- */
 #include <dev/cons.h>
 
 cons_decl(com);
