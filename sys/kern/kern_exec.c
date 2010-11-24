@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.112 2010/05/18 22:26:10 tedu Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.113 2010/07/26 01:56:27 guenther Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -615,6 +615,12 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 	/* map the process's signal trampoline code */
 	if (exec_sigcode_map(p, pack.ep_emul))
 		goto free_pack_abort;
+
+#ifdef __HAVE_EXEC_MD_MAP
+	/* perform md specific mappings that process might need */
+	if (exec_md_map(p, &pack))
+		goto free_pack_abort;
+#endif
 
 	if (p->p_flag & P_TRACED)
 		psignal(p, SIGTRAP);
