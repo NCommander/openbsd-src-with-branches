@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.177 2010/08/02 10:30:00 matthew Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.178 2010/08/26 13:28:15 claudio Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -2585,7 +2585,7 @@ carp_group_demote_adj(struct ifnet *ifp, int adj, char *reason)
 
 		if (adj > 0 && *dm == 1)
 			carp_send_ad_all();
-		CARP_LOG(LOG_NOTICE, nil,
+		CARP_LOG(LOG_ERR, nil,
 		    ("%s demoted group %s by %d to %d (%s)",
 		    ifp->if_xname, ifgl->ifgl_group->ifg_group,
 		    adj, *dm, reason));
