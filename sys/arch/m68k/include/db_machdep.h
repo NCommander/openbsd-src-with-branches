@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.9 2005/01/04 21:14:35 espie Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.10 2005/11/13 17:50:44 fgsch Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.20 1997/06/26 01:26:58 thorpej Exp $	*/
 
 /* 
@@ -84,8 +84,6 @@ extern db_regs_t	ddb_regs;	/* register state */
 #define	inst_return(ins)	(((ins)&M_RTS) == I_RTS)
 #define	inst_call(ins)		(((ins)&M_JSR) == I_JSR || \
 				 ((ins)&M_BSR) == I_BSR)
-#define inst_load(ins)		0
-#define inst_store(ins)		0
 
 /*
  * Things needed by kgdb:
