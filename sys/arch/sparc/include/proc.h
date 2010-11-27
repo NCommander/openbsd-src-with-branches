@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.2 1997/08/08 08:26:39 downsj Exp $	*/
+/*	$OpenBSD: proc.h,v 1.3 2003/06/02 23:27:54 millert Exp $	*/
 /*	$NetBSD: proc.h,v 1.3 1996/09/26 18:51:17 christos Exp $ */
 
 /*
@@ -47,8 +47,4 @@
 struct mdproc {
 	struct	trapframe *md_tf;	/* trap/syscall registers */
 	struct	fpstate *md_fpstate;	/* fpu state, if any; always resident */
-	u_long	md_flags;
 };
-
-/* md_flags */
-#define	MDP_FIXALIGN	0x1		/* Fix unaligned memory accesses */
