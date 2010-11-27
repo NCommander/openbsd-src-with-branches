@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafbvar.h,v 1.10 2003/11/12 20:08:31 miod Exp $	*/
+/*	$OpenBSD: vgafbvar.h,v 1.11 2006/04/09 12:22:56 matthieu Exp $	*/
 /*	$NetBSD: vgavar.h,v 1.2 1996/11/23 06:06:43 cgd Exp $	*/
 
 /*
@@ -75,7 +75,6 @@ void	vgafb_common_setup(bus_space_tag_t, bus_space_tag_t,
 	    u_int32_t, size_t);
 void	vgafb_wscons_attach(struct device *, struct vgafb_config *, int);
 void	vgafb_wscons_console(struct vgafb_config *);
-void	vgafb_cnprobe(struct consdev *cp);
 void	vgafb_cnattach(bus_space_tag_t iot, bus_space_tag_t memt,
 	    void *pc, int bus, int device, int function);
 void	vgafb_wsdisplay_attach(struct device *parent,
