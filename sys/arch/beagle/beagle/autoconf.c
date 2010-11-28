@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.2 2005/04/21 00:15:43 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.1 2009/05/08 03:13:26 drahn Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.2 2001/09/05 16:17:36 matt Exp $	*/
 
 /*
@@ -52,8 +52,6 @@
 #include <machine/bootconfig.h>
 #include <machine/intr.h>
 
-struct device *booted_device;
-int booted_partition;
 struct device *bootdv = NULL;
 extern char *boot_file;
 
