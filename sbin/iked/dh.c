@@ -1,4 +1,4 @@
-/*	$OpenBSD: dh.c,v 1.3 2010/06/23 11:26:13 reyk Exp $	*/
+/*	$OpenBSD: dh.c,v 1.4 2010/06/29 19:38:26 reyk Exp $	*/
 /*	$vantronix: dh.c,v 1.13 2010/05/28 15:34:35 reyk Exp $	*/
 
 /*
@@ -401,12 +401,9 @@ modp_getlen(struct group *group)
 int
 modp_create_exchange(struct group *group, u_int8_t *buf)
 {
-	int	 codes;
 	DH	*dh = group->dh;
 
 	if (!DH_generate_key(dh))
-		return (-1);
-	if (!DH_check(dh, &codes))
 		return (-1);
 	if (!BN_bn2bin(dh->pub_key, buf))
 		return (-1);
