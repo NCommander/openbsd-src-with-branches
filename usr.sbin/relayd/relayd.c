@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.97 2010/05/14 11:13:36 reyk Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.98 2010/09/02 14:03:22 sobrado Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -21,6 +21,7 @@
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 
 #include <net/if.h>
 #include <netinet/in.h>
@@ -1358,4 +1359,25 @@ map4to6(struct sockaddr_storage *in4, struct sockaddr_storage *map)
 	bcopy(&out6, in4, sizeof(*in4));
 
 	return (0);
+}
+
+void
+socket_rlimit(int maxfd)
+{
+	struct rlimit	 rl;
+
+	if (getrlimit(RLIMIT_NOFILE, &rl) == -1)
+		fatal("socket_rlimit: failed to get resource limit");
+	log_debug("socket_rlimit: max open files %d", rl.rlim_max);
+
+	/*
+	 * Allow the maximum number of open file descriptors for this
+	 * login class (which should be the class "daemon" by default).
+	 */
+	if (maxfd == -1)
+		rl.rlim_cur = rl.rlim_max;
+	else
+		rl.rlim_cur = MAX(rl.rlim_max, (rlim_t)maxfd);
+	if (setrlimit(RLIMIT_NOFILE, &rl) == -1)
+		fatal("socket_rlimit: failed to set resource limit");
 }

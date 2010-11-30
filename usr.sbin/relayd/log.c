@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.14 2008/12/05 16:37:55 reyk Exp $	*/
+/*	$OpenBSD: log.c,v 1.15 2010/01/11 06:40:14 jsg Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -196,8 +196,14 @@ host_error(enum host_error he)
 	case HCE_ICMP_WRITE_TIMEOUT:
 		return ("icmp write timeout");
 		break;
-	case HCE_TCP_CONNECT_ERROR:
-		return ("tcp connect error");
+	case HCE_TCP_SOCKET_ERROR:
+		return ("tcp socket error");
+		break;
+	case HCE_TCP_SOCKET_LIMIT:
+		return ("tcp socket limit");
+		break;
+	case HCE_TCP_SOCKET_OPTION:
+		return ("tcp socket option");
 		break;
 	case HCE_TCP_CONNECT_FAIL:
 		return ("tcp connect failed");
