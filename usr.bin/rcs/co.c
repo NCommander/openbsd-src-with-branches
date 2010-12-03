@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.114 2010/09/08 15:15:50 tobias Exp $	*/
+/*	$OpenBSD: co.c,v 1.115 2010/10/20 19:53:53 tobias Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -25,6 +25,7 @@
  */
 
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include <err.h>
 #include <fcntl.h>
