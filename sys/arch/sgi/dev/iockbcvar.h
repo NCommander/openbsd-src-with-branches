@@ -16,4 +16,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-int	iockbc_cnattach();
+int	iockbc_cnattach(void);
