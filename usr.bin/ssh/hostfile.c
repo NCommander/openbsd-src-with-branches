@@ -1,4 +1,4 @@
-/* $OpenBSD: hostfile.c,v 1.48 2010/03/04 10:36:03 djm Exp $ */
+/* $OpenBSD: hostfile.c,v 1.49 2010/11/29 23:45:51 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -314,6 +314,7 @@ load_hostkeys(struct hostkeys *hostkeys, const char *host, const char *path)
 		num_loaded++;
 	}
 	debug3("%s: loaded %lu keys", __func__, num_loaded);
+	fclose(f);
 	return;
 }	
 
