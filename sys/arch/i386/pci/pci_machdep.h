@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.18 2009/10/06 21:35:43 kettenis Exp $	*/
+/*	$OpenBSD: pci_machdep.h,v 1.19 2010/06/29 22:08:28 jordan Exp $	*/
 /*	$NetBSD: pci_machdep.h,v 1.7 1997/06/06 23:29:18 thorpej Exp $	*/
 
 /*
@@ -88,6 +88,7 @@ void		pci_attach_hook(struct device *, struct device *,
 		    struct pcibus_attach_args *);
 int		pci_bus_maxdevs(pci_chipset_tag_t, int);
 pcitag_t	pci_make_tag(pci_chipset_tag_t, int, int, int);
+int		pci_conf_size(pci_chipset_tag_t, pcitag_t);
 pcireg_t	pci_conf_read(pci_chipset_tag_t, pcitag_t, int);
 void		pci_conf_write(pci_chipset_tag_t, pcitag_t, int,
 		    pcireg_t);
