@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.90 2010/07/31 20:48:32 blambert Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.91 2010/08/07 03:50:02 krw Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -549,8 +549,9 @@ nfsrv_init(int terminating)
 	    M_WAITOK|M_ZERO);
 	TAILQ_INSERT_HEAD(&nfssvc_sockhead, nfs_udpsock, ns_chain);
 
-	pool_init(&nfsrv_descript_pl, sizeof(struct nfsrv_descript), 0, 0, 0,
-	    "ndscpl", &pool_allocator_nointr);
+	if (!terminating)
+		pool_init(&nfsrv_descript_pl, sizeof(struct nfsrv_descript),
+		    0, 0, 0, "ndscpl", &pool_allocator_nointr);
 }
 #endif /* NFSSERVER */
 
