@@ -1,4 +1,4 @@
-/*	$OpenBSD: pyro.c,v 1.18 2009/03/29 22:52:11 kettenis Exp $	*/
+/*	$OpenBSD: pyro.c,v 1.19 2010/12/04 17:06:32 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -276,7 +276,7 @@ pyro_print(void *aux, const char *p)
 int
 pyro_conf_size(pci_chipset_tag_t pc, pcitag_t tag)
 {
-	return PCI_CONFIG_SPACE_SIZE;
+	return PCIE_CONFIG_SPACE_SIZE;
 }
 
 pcireg_t
