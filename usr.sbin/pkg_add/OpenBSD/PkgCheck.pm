@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: PkgCheck.pm,v 1.24 2010/10/02 13:33:43 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -632,6 +632,7 @@ sub parse_and_run
 	}
 	lock_db(0) unless $state->{subst}->value('nolock');
 	$self->run($state);
+	return 0;
 }
 
 1;
