@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsdiff.c,v 1.76 2010/07/23 21:46:05 ray Exp $	*/
+/*	$OpenBSD: rcsdiff.c,v 1.77 2010/07/28 09:07:11 ray Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -25,6 +25,7 @@
  */
 
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include <err.h>
 #include <fcntl.h>
