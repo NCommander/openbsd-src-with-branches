@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upl.c,v 1.43 2009/10/13 19:33:17 pirofti Exp $ */
+/*	$OpenBSD: if_upl.c,v 1.44 2010/09/24 08:33:59 yuo Exp $ */
 /*	$NetBSD: if_upl.c,v 1.19 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -334,7 +334,8 @@ upl_detach(struct device *self, int flags)
 	if (ifp->if_flags & IFF_RUNNING)
 		upl_stop(sc);
 
-	if_detach(ifp);
+	if (ifp->if_softc != NULL)
+		if_detach(ifp);
 
 #ifdef DIAGNOSTIC
 	if (sc->sc_ep[UPL_ENDPT_TX] != NULL ||
