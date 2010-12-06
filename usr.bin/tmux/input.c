@@ -1,4 +1,4 @@
-/* $OpenBSD: input.c,v 1.28 2010/03/22 19:02:54 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.29 2010/04/17 23:31:09 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -681,7 +681,9 @@ input_parse(struct window_pane *wp)
 
 	if (EVBUFFER_LENGTH(evb) == 0)
 		return;
+
 	wp->window->flags |= WINDOW_ACTIVITY;
+	wp->window->flags &= ~WINDOW_SILENCE;
 
 	/*
 	 * Open the screen. Use NULL wp if there is a mode set as don't want to
