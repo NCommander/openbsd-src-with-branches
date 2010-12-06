@@ -1,4 +1,4 @@
-/*	$OpenBSD: devopen.c,v 1.5 2005/05/24 20:38:20 uwe Exp $	*/
+/*	$OpenBSD: devopen.c,v 1.6 2007/06/27 20:29:38 mk Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -38,13 +38,13 @@ const char bdevs[][4] = {
 	"", "", "", "", "", "", "", "scd", "", "hd", ""
 
 };
-const int nbdevs = NENTS(bdevs);
+const int nbdevs = nitems(bdevs);
 
 const char cdevs[][4] = {
 	"cn", "", "", "", "", "", "", "",
 	"", "", "", "", "com"
 };
-const int ncdevs = NENTS(cdevs);
+const int ncdevs = nitems(cdevs);
 
 /* pass dev_t to the open routines */
 int
