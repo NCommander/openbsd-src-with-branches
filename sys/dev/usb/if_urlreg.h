@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urlreg.h,v 1.11 2007/06/10 10:15:35 mbalmer Exp $ */
+/*	$OpenBSD: if_urlreg.h,v 1.12 2007/11/25 16:40:03 jmc Exp $ */
 /*	$NetBSD: if_urlreg.h,v 1.1 2002/03/28 21:09:11 ichiro Exp $	*/
 /*
  * Copyright (c) 2001, 2002
@@ -175,8 +175,6 @@ struct url_softc {
 #define	sc_media url_mii.mii_media
 	struct url_cdata	sc_cdata;
 
-	int                     sc_attached;
-	int			sc_dying;
         int                     sc_refcnt;
 
 	struct usb_task		sc_tick_task;

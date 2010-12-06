@@ -1,4 +1,4 @@
-/*	$OpenBSD: ueaglevar.h,v 1.1 2005/04/16 14:55:10 damien Exp $	*/
+/*	$OpenBSD: ueaglevar.h,v 1.2 2007/06/06 19:25:49 mk Exp $	*/
 
 /*-
  * Copyright (c) 2003-2005
@@ -183,8 +183,6 @@ struct ueagle_softc {
 
 	uint16_t		isize;
 	char			ibuf[32];
-
-	int			gone;
 
 	uint16_t		index;
 	uint32_t		data;
