@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.119 2010/07/01 19:25:44 drahn Exp $ */
+/*	$OpenBSD: loader.c,v 1.120 2010/10/25 20:34:44 kurt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -194,7 +194,7 @@ _dl_dopreload(char *paths)
 		shlib = _dl_load_shlib(cp, _dl_objects, OBJTYPE_LIB,
 		_dl_objects->obj_flags);
 		if (shlib == NULL) {
-			_dl_printf("%s: can't load library '%s'\n",
+			_dl_printf("%s: can't preload library '%s'\n",
 			    _dl_progname, cp);
 			_dl_exit(4);
 		}
