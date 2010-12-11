@@ -1,4 +1,4 @@
-/*	$OpenBSD: umsm.c,v 1.67 2010/08/21 18:46:30 jsg Exp $	*/
+/*	$OpenBSD: umsm.c,v 1.68 2010/10/12 21:08:08 mpf Exp $	*/
 
 /*
  * Copyright (c) 2008 Yojiro UO <yuo@nui.org>
@@ -157,6 +157,7 @@ static const struct umsm_type umsm_devs[] = {
 	{{ USB_VENDOR_ZTE, USB_PRODUCT_ZTE_UMASS_INSTALLER2 }, DEV_UMASS6},
 	{{ USB_VENDOR_ZTE, USB_PRODUCT_ZTE_UMASS_INSTALLER }, DEV_UMASS4},
 	{{ USB_VENDOR_ZTE, USB_PRODUCT_ZTE_K3565Z }, 0},
+	{{ USB_VENDOR_ZTE, USB_PRODUCT_ZTE_MF112 }, DEV_UMASS4},
 	{{ USB_VENDOR_ZTE, USB_PRODUCT_ZTE_MF633 }, 0},
 	{{ USB_VENDOR_ZTE, USB_PRODUCT_ZTE_MF637 }, 0},
 
