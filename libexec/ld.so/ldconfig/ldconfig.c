@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldconfig.c,v 1.26 2009/08/19 19:38:17 bluhm Exp $	*/
+/*	$OpenBSD: ldconfig.c,v 1.27 2010/03/30 17:42:50 zinovik Exp $	*/
 
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
@@ -430,12 +430,6 @@ buildhints(void)
 		goto out;
 	}
 	if (close(fd) != 0) {
-		warn("%s", _PATH_LD_HINTS);
-		goto out;
-	}
-
-	/* Install it */
-	if (unlink(_PATH_LD_HINTS) != 0 && errno != ENOENT) {
 		warn("%s", _PATH_LD_HINTS);
 		goto out;
 	}
