@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhcivar.h,v 1.22 2009/11/04 19:14:10 kettenis Exp $ */
+/*	$OpenBSD: uhcivar.h,v 1.23 2010/09/07 16:21:46 deraadt Exp $ */
 /*	$NetBSD: uhcivar.h,v 1.36 2002/12/31 00:39:11 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/uhcivar.h,v 1.14 1999/11/17 22:33:42 n_hibma Exp $	*/
 
@@ -159,7 +159,6 @@ typedef struct uhci_softc {
 
 	char sc_isreset;
 	char sc_suspend;
-	char sc_dying;
 
 	LIST_HEAD(, uhci_intr_info) sc_intrhead;
 
