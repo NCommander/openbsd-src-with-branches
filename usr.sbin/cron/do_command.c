@@ -1,4 +1,4 @@
-/*	$OpenBSD: do_command.c,v 1.32 2007/05/25 17:50:41 millert Exp $	*/
+/*	$OpenBSD: do_command.c,v 1.33 2009/10/27 23:59:51 deraadt Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -127,7 +127,7 @@ child_process(entry *e, user *u) {
 	switch (fork()) {
 	case -1:
 		log_it("CRON", getpid(), "error", "can't fork");
-		exit(ERROR_EXIT);
+		_exit(ERROR_EXIT);
 		/*NOTREACHED*/
 	case 0:
 		Debug(DPROC, ("[%ld] grandchild process fork()'ed\n",
@@ -343,7 +343,7 @@ child_process(entry *e, user *u) {
 
 		Debug(DPROC, ("[%ld] child2 done sending to grandchild\n",
 			      (long)getpid()))
-		exit(0);
+		_exit(OK_EXIT);
 	}
 
 	/* close the pipe to the grandkiddie's stdin, since its wicked uncle
