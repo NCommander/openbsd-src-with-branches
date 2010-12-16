@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.h,v 1.52 2010/09/22 11:54:23 mikeb Exp $	*/
+/*	$OpenBSD: cryptodev.h,v 1.53 2010/10/06 22:19:20 mikeb Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -109,6 +109,8 @@
 #define CRYPTO_AES_256_GMAC	26
 #define CRYPTO_AES_GMAC		27
 #define CRYPTO_ALGORITHM_MAX	27 /* Keep updated */
+
+#define CRYPTO_VIAC3_MAX	3
 
 /* Algorithm flags */
 #define	CRYPTO_ALG_FLAG_SUPPORTED	0x01 /* Algorithm is supported */
