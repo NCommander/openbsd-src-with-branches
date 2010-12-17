@@ -1,4 +1,4 @@
-/*	$OpenBSD: check.c,v 1.11 2006/05/27 22:30:09 thib Exp $	*/
+/*	$OpenBSD: check.c,v 1.13 2010/11/17 12:31:11 jsing Exp $	*/
 /*	$NetBSD: check.c,v 1.8 1997/10/17 11:19:29 ws Exp $	*/
 
 /*
@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <util.h>
 
 #include "ext.h"
 
