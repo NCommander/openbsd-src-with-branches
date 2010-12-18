@@ -8954,6 +8954,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "LW153",
 	},
 	{
+	    USB_VENDOR_SWEEX2, USB_PRODUCT_SWEEX2_LW154,
+	    "LW154",
+	},
+	{
 	    USB_VENDOR_SWEEX2, USB_PRODUCT_SWEEX2_LW303,
 	    "LW303",
 	},
