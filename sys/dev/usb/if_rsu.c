@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rsu.c,v 1.5 2010/12/14 21:38:03 kettenis Exp $	*/
+/*	$OpenBSD: if_rsu.c,v 1.6 2010/12/15 16:51:39 damien Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -115,7 +115,8 @@ static const struct usb_devno rsu_devs[] = {
 	{ USB_VENDOR_SENAO,		USB_PRODUCT_SENAO_RTL8192SU_1 },
 	{ USB_VENDOR_SENAO,		USB_PRODUCT_SENAO_RTL8192SU_2 },
 	{ USB_VENDOR_SITECOMEU,		USB_PRODUCT_SITECOMEU_WL349V1 },
-	{ USB_VENDOR_SITECOMEU,		USB_PRODUCT_SITECOMEU_WL353 }
+	{ USB_VENDOR_SITECOMEU,		USB_PRODUCT_SITECOMEU_WL353 },
+	{ USB_VENDOR_SWEEX2,		USB_PRODUCT_SWEEX2_LW154 }
 };
 
 #ifndef IEEE80211_NO_HT
