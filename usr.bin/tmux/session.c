@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.22 2010/12/20 00:19:20 nicm Exp $ */
+/* $OpenBSD: session.c,v 1.23 2010/12/20 00:43:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -190,7 +190,6 @@ session_next_session(struct session *s)
 	if (ARRAY_LENGTH(&sessions) == 0 || session_index(s, &i) != 0)
 		return (NULL);
 
-	i = 0;
 	do {
 		if (i == ARRAY_LENGTH(&sessions) - 1)
 			i = 0;
