@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet6.c,v 1.40 2009/11/05 20:50:14 michele Exp $	*/
+/*	$OpenBSD: inet6.c,v 1.41 2010/10/21 10:51:05 bluhm Exp $	*/
 /*	BSDI inet.c,v 2.3 1995/10/24 02:19:29 prb Exp	*/
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -413,8 +413,6 @@ ip6_stats(char *name)
 	}
 	p(ip6s_mext1, "\t\t%llu one ext mbuf%s\n");
 	p(ip6s_mext2m, "\t\t%llu two or more ext mbuf%s\n");
-	p(ip6s_exthdrtoolong,
-	    "\t%llu packet%s whose headers are not continuous\n");
 	p(ip6s_nogif, "\t%llu tunneling packet%s that can't find gif\n");
 	p(ip6s_toomanyhdr,
 	    "\t%llu packet%s discarded due to too many headers\n");
