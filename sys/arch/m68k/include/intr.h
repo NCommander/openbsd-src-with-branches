@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.9 2007/11/17 05:32:05 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.1 2009/03/15 20:40:25 miod Exp $	*/
 /*
  * Copyright (c) 2001 Wasabi Systems, Inc.
  * All rights reserved.
@@ -100,11 +100,6 @@ void	softintr_dispatch(int);
 void	softintr_schedule(void *);
 
 extern int softpending;
-
-/* XXX For legacy software interrupts. */
-extern struct soft_intrhand *softnet_intrhand;
-
-#define	setsoftnet()	softintr_schedule(softnet_intrhand)
 
 #endif	/* _LOCORE */
 

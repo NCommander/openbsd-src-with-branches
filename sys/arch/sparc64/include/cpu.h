@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.73 2010/09/28 20:27:55 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.74 2010/11/27 19:41:48 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.28 2001/06/14 22:56:58 thorpej Exp $ */
 
 /*
@@ -220,8 +220,6 @@ struct clockframe {
 #define	CLKF_INTR(framep)	((framep)->saved_intr_level != 0)
 
 extern void (*cpu_start_clock)(void);
-
-void setsoftnet(void);
 
 #define aston(p)	((p)->p_md.md_astpending = 1)
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: files,v 1.503 2010/09/22 13:03:48 claudio Exp $
+#	$OpenBSD: files,v 1.504 2010/10/06 22:19:20 mikeb Exp $
 #	$NetBSD: files,v 1.87 1996/05/19 17:17:50 jonathan Exp $
 
 #	@(#)files.newconf	7.5 (Berkeley) 5/10/93
@@ -807,6 +807,7 @@ file net/if_loop.c			loop
 file net/if_media.c			ifmedia
 file net/if_sl.c			sl			needs-count
 file net/if_ppp.c			ppp			needs-count
+file net/netisr.c
 file net/ppp_tty.c			ppp
 file net/bsd-comp.c			ppp_bsdcomp
 file net/ppp-deflate.c			ppp_deflate

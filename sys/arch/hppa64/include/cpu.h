@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.17 2010/07/24 21:27:57 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.18 2010/09/28 20:27:54 miod Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -110,9 +110,6 @@
 #define	splx(c)		spllower(c)
 
 #define	setsoftast()		(astpending = 1)
-#define	setsoftclock()		/* TODO */
-#define	setsoftnet()		/* TODO */
-#define	setsofttty()		/* TODO */
 
 #ifndef _LOCORE
 #include <sys/time.h>
