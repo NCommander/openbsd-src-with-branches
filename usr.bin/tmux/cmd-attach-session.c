@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-attach-session.c,v 1.11 2009/12/03 22:50:09 nicm Exp $ */
+/* $OpenBSD: cmd-attach-session.c,v 1.12 2010/02/06 22:55:31 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -47,7 +47,7 @@ cmd_attach_session_exec(struct cmd *self, struct cmd_ctx *ctx)
 	char			*overrides, *cause;
 	u_int			 i;
 
-	if (ARRAY_LENGTH(&sessions) == 0) {
+	if (RB_EMPTY(&sessions)) {
 		ctx->error(ctx, "no sessions");
 		return (-1);
 	}
