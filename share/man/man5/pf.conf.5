@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pf.conf.5,v 1.483 2010/12/22 21:05:19 henning Exp $
+.\"	$OpenBSD: pf.conf.5,v 1.484 2010/12/22 22:20:36 jmc Exp $
 .\"
 .\" Copyright (c) 2002, Daniel Hartmeier
 .\" All rights reserved.
@@ -996,10 +996,12 @@ This should be a keyword from the following ordered list
 .Cm info ,
 and
 .Cm debug .
+The last keyword,
+.Cm debug ,
+must be quoted.
 These keywords correspond to the similar (LOG_) values specified to the
 .Xr syslog 3
-library routine,
-and may be abbreviated.
+library routine.
 .It Ar set fingerprints
 Load fingerprints of known operating systems from the given filename.
 By default fingerprints of known operating systems are automatically
