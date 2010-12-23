@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.23 2007/11/27 16:22:13 martynas Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.24 2009/03/05 21:55:12 miod Exp $ */
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 2004, Miodrag Vallat.
@@ -325,9 +325,7 @@ mainbus_attach(struct device *parent, struct device *self, void *args)
 	 * try to issue BUG calls (i.e. when printing their information
 	 * on console), so we postpone this to the end of autoconf.
 	 */
-	if (brdtyp == BRD_188)
-		startuphook_establish(cpu_hatch_secondary_processors, NULL);
-	else
+	if (brdtyp != BRD_188)
 		cpu_hatch_secondary_processors(NULL);
 #endif
 
