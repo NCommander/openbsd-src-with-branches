@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2008/10/06 14:17:49 kurt Exp $
+#	$OpenBSD: Makefile,v 1.10 2009/10/27 23:59:59 deraadt Exp $
 #	from: @(#)Makefile	5.5 (Berkeley) 5/21/91
 
 OBJS=		crt0.o gcrt0.o crtbegin.o crtend.o crtbeginS.o crtendS.o
@@ -7,6 +7,8 @@ SRCS=		crt0.c crtbegin.c crtbeginS.c crtend.c crtendS.c
 ELFDIR=		${.CURDIR}/../common_elf
 .PATH:		${ELFDIR}
 CFLAGS+=	-I${ELFDIR} -I${.CURDIR}
+
+PICFLAG=	-fPIC
 
 all: ${OBJS}
 
