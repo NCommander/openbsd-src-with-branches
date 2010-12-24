@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.713 2010/09/24 02:28:10 henning Exp $ */
+/*	$OpenBSD: pf.c,v 1.714 2010/12/07 11:39:40 jsg Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -485,9 +485,9 @@ pf_src_connlimit(struct pf_state **state)
 				if (sk->af ==
 				    (*state)->key[PF_SK_WIRE]->af &&
 				    (((*state)->direction == PF_OUT &&
-				    PF_AEQ(&sn->addr, &sk->addr[0], sk->af)) ||
+				    PF_AEQ(&sn->addr, &sk->addr[1], sk->af)) ||
 				    ((*state)->direction == PF_IN &&
-				    PF_AEQ(&sn->addr, &sk->addr[1], sk->af))) &&
+				    PF_AEQ(&sn->addr, &sk->addr[0], sk->af))) &&
 				    ((*state)->rule.ptr->flush &
 				    PF_FLUSH_GLOBAL ||
 				    (*state)->rule.ptr == st->rule.ptr)) {
