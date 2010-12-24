@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Replace.pm,v 1.78 2010/10/27 14:35:56 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2004-2010 Marc Espie <espie@openbsd.org>
 #

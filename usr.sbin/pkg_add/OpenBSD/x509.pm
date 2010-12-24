@@ -92,7 +92,7 @@ sub check_signature
 	close $fh;
 	close $fh2;
 	my ($fh3, $fname3) = mkstemp("/tmp/commandresult.XXXXXXXXX");
-	if ($state->system(sub { open STDERR ,">&", $fh3}, 
+	if ($state->system(sub { open STDERR ,">&", $fh3},
 	    OpenBSD::Paths->openssl, "smime", "-verify",
 	    "-binary", "-inform", "DEM", "-in", $fname2, "-content", $fname,
 	    "-CAfile", OpenBSD::Paths->pkgca, "-out", "/dev/null") != 0) {

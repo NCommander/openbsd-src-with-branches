@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.187 2010/10/27 14:35:56 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -556,12 +556,12 @@ sub format
 	}
 	if (my ($dir, $file) = $fname =~ m/^(.*)\/([^\/]+\/[^\/]+)$/) {
 		$state->system(sub {
-		    open STDOUT, '>', "$dest" or 
+		    open STDOUT, '>', "$dest" or
 			die "Can't write to $dest";
 		    chdir($dir) or die "Can't chdir to $dir";
-		    }, 
+		    },
 		    OpenBSD::Paths->groff,
-		    '-Tascii', '-mandoc', '-Wall', '-mtty-char', @extra, '--', 
+		    '-Tascii', '-mandoc', '-Wall', '-mtty-char', @extra, '--',
 		    $file);
 	} else {
 		die "Can't parse source name $fname";
@@ -1448,7 +1448,7 @@ sub restore_fontdir
 	if (-f "$dirname/fonts.dir.dist") {
 
 		unlink("$dirname/fonts.dir");
-		$state->copy_file("$dirname/fonts.dir.dist", 
+		$state->copy_file("$dirname/fonts.dir.dist",
 		    "$dirname/fonts.dir");
 	}
 }

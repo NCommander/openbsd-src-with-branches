@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: SharedLibs.pm,v 1.53 2010/12/20 08:58:03 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -32,7 +32,7 @@ package OpenBSD::PackingElement::Lib;
 sub mark_available_lib
 {
 	my ($self, $pkgname, $state) = @_;
-	OpenBSD::SharedLibs::register_libname($self->fullname, 
+	OpenBSD::SharedLibs::register_libname($self->fullname,
 	    $pkgname, $state);
 }
 
