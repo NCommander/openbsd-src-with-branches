@@ -1,4 +1,4 @@
-/* $OpenBSD: agp.c,v 1.32 2009/05/10 16:57:44 oga Exp $ */
+/* $OpenBSD: agp.c,v 1.33 2009/12/15 20:26:21 jasper Exp $ */
 /*-
  * Copyright (c) 2000 Doug Rabson
  * All rights reserved.
@@ -219,7 +219,7 @@ agpmmap(void *v, off_t off, int prot)
 		 * XXX this should use bus_space_mmap() but it's not
 		 * availiable on all archs.
 		 */
-		return atop(sc->sc_apaddr + off);
+		return (sc->sc_apaddr + off);
 	}
 	return (-1);
 }

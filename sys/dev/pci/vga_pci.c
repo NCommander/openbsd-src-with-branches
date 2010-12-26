@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_pci.c,v 1.63 2010/08/08 19:33:35 miod Exp $ */
+/* $OpenBSD: vga_pci.c,v 1.64 2010/08/31 17:13:44 deraadt Exp $ */
 /* $NetBSD: vga_pci.c,v 1.3 1998/06/08 06:55:58 thorpej Exp $ */
 
 /*
@@ -399,7 +399,7 @@ vga_pci_mmap(void *v, off_t off, int prot)
 	if (sc->sc_mode == WSDISPLAYIO_MODE_DUMBFB) {
 		if (off < 0 || off > vesabios_softc->sc_size)
 			return (-1);
-		return atop(sc->sc_base + off);
+		return (sc->sc_base + off);
 	}
 #endif
 	return -1;

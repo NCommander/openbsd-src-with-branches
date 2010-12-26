@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvram.c,v 1.5 2007/12/20 05:19:35 miod Exp $ */
+/*	$OpenBSD: nvram.c,v 1.6 2010/04/21 19:33:47 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -410,7 +410,7 @@ nvrammmap(dev, off, prot)
 	/* allow access only in RAM */
 	if (off < 0 || off >= round_page(sc->sc_len))
 		return (-1);
-	return (atop(sc->sc_base + off));
+	return (sc->sc_base + off);
 #else
 	/* disallow mmap due to non-linear layout */
 	return (-1);

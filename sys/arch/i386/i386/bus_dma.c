@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.22 2010/09/06 19:05:48 kettenis Exp $	*/
+/*	$OpenBSD: bus_dma.c,v 1.23 2010/11/20 20:33:24 miod Exp $	*/
 /*-
  * Copyright (c) 1996, 1997 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -516,7 +516,7 @@ _bus_dmamem_mmap(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, off_t off,
 			continue;
 		}
 
-		return (atop(segs[i].ds_addr + off));
+		return (segs[i].ds_addr + off);
 	}
 
 	/* Page not found. */

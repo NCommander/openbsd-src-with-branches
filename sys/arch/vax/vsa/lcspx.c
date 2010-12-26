@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcspx.c,v 1.14 2007/12/28 20:44:39 miod Exp $	*/
+/*	$OpenBSD: lcspx.c,v 1.15 2008/12/21 21:39:50 miod Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -485,7 +485,7 @@ lcspx_mmap(void *v, off_t offset, int prot)
 	if (offset >= ss->ss_fbsize || offset < 0)
 		return (-1);
 
-	return (LCSPX_FB_ADDR + offset) >> PGSHIFT;
+	return (LCSPX_FB_ADDR + offset);
 }
 
 int

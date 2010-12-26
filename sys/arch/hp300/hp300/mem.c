@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.24 2007/09/08 09:28:49 martin Exp $	*/
+/*	$OpenBSD: mem.c,v 1.25 2009/06/10 15:58:49 miod Exp $	*/
 /*	$NetBSD: mem.c,v 1.25 1999/03/27 00:30:06 mycroft Exp $	*/
 
 /*
@@ -253,7 +253,7 @@ mmmmap(dev, off, prot)
 	 */
 	if ((u_int)off < lowram || (u_int)off >= 0xFFFFFFFC)
 		return (-1);
-	return (atop(off));
+	return (off);
 }
 
 int

@@ -1,4 +1,4 @@
-/*      $OpenBSD: bus_dma.c,v 1.14 2010/03/29 19:21:58 oga Exp $	*/
+/*      $OpenBSD: bus_dma.c,v 1.15 2010/06/26 23:24:44 guenther Exp $	*/
 /*      $NetBSD: bus_dma.c,v 1.2 2001/06/10 02:31:25 briggs Exp $        */
 
 /*-
@@ -608,7 +608,7 @@ bus_dmamem_mmap(t, segs, nsegs, off, prot, flags)
                         continue;
                 }
 
-                return (atop(segs[i].ds_addr + off));
+                return (segs[i].ds_addr + off);
         }
 
         /* Page not found. */

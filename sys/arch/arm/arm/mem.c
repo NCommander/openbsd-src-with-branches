@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.8 2008/05/04 09:57:46 martin Exp $	*/
+/*	$OpenBSD: mem.c,v 1.9 2008/11/05 06:32:47 matthieu Exp $	*/
 /*	$NetBSD: mem.c,v 1.11 2003/10/16 12:02:58 jdolecek Exp $	*/
 
 /*
@@ -259,7 +259,7 @@ mmmmap(dev, off, prot)
 	if ((paddr_t)off >= ptoa((paddr_t)physmem) &&
 	    suser(p, 0) != 0)
 		return -1;
-	return atop(off);
+	return off;
 }
 /*ARGSUSED*/
 int

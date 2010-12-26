@@ -1,4 +1,4 @@
-/* $OpenBSD: lunafb.c,v 1.9 2008/06/26 05:42:11 ray Exp $ */
+/* $OpenBSD: lunafb.c,v 1.10 2009/09/05 14:09:35 miod Exp $ */
 /* $NetBSD: lunafb.c,v 1.7.6.1 2002/08/07 01:48:34 lukem Exp $ */
 
 /*-
@@ -293,7 +293,7 @@ omfbmmap(v, offset, prot)
 	if (offset >= OMFB_SIZE || offset < 0)
 		return (-1);
 
-	return atop(trunc_page(sc->sc_dc->dc_videobase) + offset);
+	return (trunc_page(sc->sc_dc->dc_videobase) + offset);
 }
 
 int
