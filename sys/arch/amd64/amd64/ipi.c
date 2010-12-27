@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipi.c,v 1.7 2007/05/25 16:22:11 art Exp $	*/
+/*	$OpenBSD: ipi.c,v 1.8 2008/06/26 05:42:09 ray Exp $	*/
 /*	$NetBSD: ipi.c,v 1.2 2003/03/01 13:05:37 fvdl Exp $	*/
 
 /*-
@@ -95,23 +95,6 @@ x86_broadcast_ipi(int ipimask)
 		return;
 
 	x86_ipi(LAPIC_IPI_VECTOR, LAPIC_DEST_ALLEXCL, LAPIC_DLMODE_FIXED);
-}
-
-void
-x86_multicast_ipi(int cpumask, int ipimask)
-{
-	struct cpu_info *ci;
-	CPU_INFO_ITERATOR cii;
-
-	cpumask &= ~(1U << cpu_number());
-	if (cpumask == 0)
-		return;
-
-	CPU_INFO_FOREACH(cii, ci) {
-		if ((cpumask & (1U << ci->ci_cpuid)) == 0)
-			continue;
-		x86_send_ipi(ci, ipimask);
-	}
 }
 
 void
