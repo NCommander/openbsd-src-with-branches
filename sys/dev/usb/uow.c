@@ -1,4 +1,4 @@
-/*	$OpenBSD: uow.c,v 1.26 2009/10/13 19:33:19 pirofti Exp $	*/
+/*	$OpenBSD: uow.c,v 1.27 2010/03/07 08:59:32 mk Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -278,6 +278,7 @@ uow_activate(struct device *self, int act)
 	case DVACT_DEACTIVATE:
 		if (sc->sc_ow_dev != NULL)
 			rv = config_deactivate(sc->sc_ow_dev);
+		usbd_deactivate(sc->sc_udev);
 		break;
 	}
 
