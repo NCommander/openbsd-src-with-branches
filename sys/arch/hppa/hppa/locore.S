@@ -1087,6 +1087,29 @@ $fpusw_set
 	sync
 
 $fpusw_nosave
+
+#ifdef MULTIPROCESSOR
+	/* See if this process has FPU context on another CPU. */
+	ldw	HFP_CPU(r9), r1
+	comb,=,n r1, r0, $fpusw_noshoot
+
+	/* Perform FPU shootdown. */
+	ldi	(1 << HPPA_IPI_FPU_SAVE), r1
+	ldw	HFP_CPU(r9), r16
+	stw	r1, CI_IPI(r16)
+	ldi	1, r1
+	ldw	CI_HPA(r16), r16
+	stw	r1, 0(r16)
+
+$fpusw_spin
+	/* Wait for shootdown to complete. */
+	sync
+	ldw	HFP_CPU(r9), r1
+	comb,<>,n r1, r0, $fpusw_spin
+
+$fpusw_noshoot
+#endif
+
 	/* count switches */
 	.import	uvmexp, data
 	ldil	L%(uvmexp+FPSWTCH), r1

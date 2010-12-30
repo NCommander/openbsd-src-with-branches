@@ -164,6 +164,8 @@ member	ci_cpl
 member	ci_ipending
 member	ci_trap_save
 member	ci_fpu_state
+member	ci_ipi
+member	ci_hpa
 
 struct	hppa_fpstate
 member	hfp_regs
