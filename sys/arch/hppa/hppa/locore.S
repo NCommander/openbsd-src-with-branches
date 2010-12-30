@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.181 2010/12/10 09:13:02 kettenis Exp $	*/
+/*	$OpenBSD: locore.S,v 1.183 2010/12/30 14:30:12 jsing Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -680,6 +680,10 @@ $syscall_return
 	/* t3 == VA trapframe */
 
 	/* disable interrupts, just in case */
+#ifdef MULTIPROCESSOR
+	mfctl	eiem, t1
+	stw	t1, TF_CR15(t3)
+#endif
 	mtctl	r0, eiem
 
 	/*
