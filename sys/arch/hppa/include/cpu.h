@@ -200,7 +200,6 @@ extern int cpu_hvers;
 #define	CLKF_USERMODE(framep)	((framep)->tf_flags & T_USER)
 #define	CLKF_SYSCALL(framep)	((framep)->tf_flags & TFF_SYS)
 
-#define	signotify(p)		setsoftast(p)
 #define	need_resched(ci)						\
 	do {								\
 		(ci)->ci_want_resched = 1;				\
@@ -222,6 +221,7 @@ extern int cpu_hvers;
 
 extern int (*cpu_desidhash)(void);
 
+void	signotify(struct proc *);
 void	delay(u_int us);
 void	hppa_init(paddr_t start);
 void	trap(int type, struct trapframe *frame);

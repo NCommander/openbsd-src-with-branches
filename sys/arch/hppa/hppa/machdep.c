@@ -1437,6 +1437,13 @@ sys_sigreturn(p, v, retval)
 	return (EJUSTRETURN);
 }
 
+void
+signotify(struct proc *p)
+{
+	setsoftast(p);
+	cpu_unidle(p->p_cpu);
+}
+
 /*
  * machine dependent system variables.
  */
