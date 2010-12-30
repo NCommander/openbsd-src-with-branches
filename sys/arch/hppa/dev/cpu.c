@@ -269,4 +269,11 @@ cpu_hatch(void)
 	SCHED_LOCK(s);
 	cpu_switchto(NULL, sched_chooseproc());
 }
+
+void
+cpu_unidle(struct cpu_info *ci)
+{
+	if (ci != curcpu())
+		hppa_ipi_send(ci, HPPA_IPI_NOP);
+}
 #endif

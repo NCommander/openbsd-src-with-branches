@@ -135,8 +135,6 @@ curcpu(void)
 #define CPU_INFO_FOREACH(cii, ci) \
 	for (cii = 0, ci = &cpu_info[0]; cii < ncpus; cii++, ci++)
 
-#define cpu_unidle(ci)
-
 /* types */
 enum hppa_cpu_type {
 	hpcxs, hpcxt, hpcxta, hpcxl, hpcxl2, hpcxu, hpcxu2, hpcxw
@@ -240,6 +238,9 @@ int	cpu_dump(void);
 void	cpu_boot_secondary_processors(void);
 void	cpu_hw_init(void);
 void	cpu_hatch(void);
+void	cpu_unidle(struct cpu_info *);
+#else
+#define	cpu_unidle(ci)
 #endif
 #endif
 
