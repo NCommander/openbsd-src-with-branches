@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rsu.c,v 1.7 2010/12/18 22:55:18 jakemsr Exp $	*/
+/*	$OpenBSD: if_rsu.c,v 1.8 2010/12/27 03:03:50 jakemsr Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -374,13 +374,11 @@ rsu_activate(struct device *self, int act)
 	switch (act) {
 	case DVACT_ACTIVATE:
 		break;
-
 	case DVACT_DEACTIVATE:
 		usbd_deactivate(sc->sc_udev);
 		break;
 	}
-
-	return 0;
+	return (0);
 }
 
 int

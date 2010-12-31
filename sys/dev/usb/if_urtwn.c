@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urtwn.c,v 1.10 2010/12/11 21:07:38 damien Exp $	*/
+/*	$OpenBSD: if_urtwn.c,v 1.11 2010/12/27 03:03:50 jakemsr Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -404,13 +404,11 @@ urtwn_activate(struct device *self, int act)
 	switch (act) {
 	case DVACT_ACTIVATE:
 		break;
-
 	case DVACT_DEACTIVATE:
 		usbd_deactivate(sc->sc_udev);
 		break;
 	}
-
-	return 0;
+	return (0);
 }
 
 int
