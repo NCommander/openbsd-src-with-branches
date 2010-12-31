@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayctl.c,v 1.40 2009/09/01 08:51:34 claudio Exp $	*/
+/*	$OpenBSD: relayctl.c,v 1.41 2010/01/11 06:40:14 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -32,6 +32,7 @@
 
 #include <err.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

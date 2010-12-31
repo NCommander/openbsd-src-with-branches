@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.9 2008/03/24 16:11:04 deraadt Exp $ */
+/*	$OpenBSD: packet.c,v 1.10 2010/05/26 13:56:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -29,6 +29,7 @@
 
 #include <errno.h>
 #include <event.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 

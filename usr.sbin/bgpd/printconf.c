@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.83 2010/06/27 19:53:34 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.84 2010/08/06 14:32:13 jsg Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -16,6 +16,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
