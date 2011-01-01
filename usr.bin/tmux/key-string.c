@@ -1,4 +1,4 @@
-/* $OpenBSD: key-string.c,v 1.17 2010/06/05 15:51:53 nicm Exp $ */
+/* $OpenBSD: key-string.c,v 1.18 2010/06/06 19:00:13 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -25,7 +25,7 @@
 int	key_string_search_table(const char *);
 int	key_string_get_modifiers(const char **);
 
-struct {
+const struct {
 	const char     *string;
 	int	 	key;
 } key_string_table[] = {
