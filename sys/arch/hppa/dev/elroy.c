@@ -1,4 +1,4 @@
-/*	$OpenBSD: elroy.c,v 1.7 2010/09/22 02:28:37 jsg Exp $	*/
+/*	$OpenBSD: elroy.c,v 1.8 2010/12/04 17:06:31 miod Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -233,9 +233,12 @@ elroy_make_tag(void *v, int bus, int dev, int func)
 void
 elroy_decompose_tag(void *v, pcitag_t tag, int *bus, int *dev, int *func)
 {
-	*bus = (tag >> 16) & 0xff;
-	*dev = (tag >> 11) & 0x1f;
-	*func= (tag >>  8) & 0x07;
+	if (bus)
+		*bus = (tag >> 16) & 0xff;
+	if (dev)
+		*dev = (tag >> 11) & 0x1f;
+	if (func)
+		*func= (tag >>  8) & 0x07;
 }
 
 int
