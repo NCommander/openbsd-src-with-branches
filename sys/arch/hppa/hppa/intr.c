@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.35 2010/09/20 06:33:47 matthew Exp $	*/
+/*	$OpenBSD: intr.c,v 1.36 2010/12/21 14:56:23 claudio Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -358,22 +358,27 @@ softintr_establish(int pri, void (*handler)(void *), void *arg)
 		return (NULL);
 
 	if (iv->handler) {
-		iv->next = malloc(sizeof *iv, M_DEVBUF, M_NOWAIT);
-		iv = iv->next;
+		struct hppa_iv *nv;
+
+		nv = malloc(sizeof *iv, M_DEVBUF, M_NOWAIT);
+		if (!nv)
+			return (NULL);
+		while (iv->next)
+			iv = iv->next;
+		iv->next = nv;
+		iv = nv;
 	} else
 		imask[pri] |= (1 << irq);
 
-	if (iv != NULL) {
-		iv->pri = pri;
-		iv->irq = 0;
-		iv->bit = 1 << irq;
-		iv->flags = HPPA_IV_SOFT;
-		iv->handler = (int (*)(void *))handler;	/* XXX */
-		iv->arg = arg;
-		iv->cnt = NULL;
-		iv->next = NULL;
-		iv->share = NULL;
-	}
+	iv->pri = pri;
+	iv->irq = 0;
+	iv->bit = 1 << irq;
+	iv->flags = HPPA_IV_SOFT;
+	iv->handler = (int (*)(void *))handler;	/* XXX */
+	iv->arg = arg;
+	iv->cnt = NULL;
+	iv->next = NULL;
+	iv->share = NULL;
 
 	return (iv);
 }
