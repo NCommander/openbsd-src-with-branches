@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.45 2010/12/20 00:17:22 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.46 2010/12/29 21:49:06 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -761,11 +761,8 @@ server_client_msg_dispatch(struct client *c)
 
 			if (gettimeofday(&c->activity_time, NULL) != 0)
 				fatal("gettimeofday");
-			if (c->session != NULL) {
-				memcpy(&c->session->activity_time,
-				    &c->activity_time,
-				    sizeof c->session->activity_time);
-			}
+			if (c->session != NULL)
+				session_update_activity(c->session);
 
 			tty_start_tty(&c->tty);
 			server_redraw_client(c);
