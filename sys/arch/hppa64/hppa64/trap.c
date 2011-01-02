@@ -36,11 +36,11 @@
 #include <machine/psl.h>
 
 #ifdef DDB
-#ifdef TRAPDEBUG
-#include <ddb/db_output.h>
-#else
 #include <machine/db_machdep.h>
 #endif
+
+#ifdef TRAPDEBUG
+#include <ddb/db_output.h>
 #endif
 
 static __inline int inst_store(u_int ins) {
