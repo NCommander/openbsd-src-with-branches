@@ -56,6 +56,11 @@ include	"dev/pcmcia/files.pcmcia"
 include "dev/usb/files.usb"
 
 #
+# Bluetooth
+#
+include "dev/bluetooth/files.bluetooth"
+
+#
 # Machine-independent 1-Wire drivers
 #
 include "dev/onewire/files.onewire"
