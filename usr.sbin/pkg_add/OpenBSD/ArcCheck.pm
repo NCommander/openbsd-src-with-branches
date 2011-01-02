@@ -118,16 +118,22 @@ package OpenBSD::Ustar;
 sub prepare_long
 {
 	my ($self, $item) = @_;
-	my $filename = $item->name;
-	my $entry = $self->prepare($filename);
+	my $entry;
+	if (defined $item->{wtempname}) {
+		$entry = $self->prepare($item->{wtempname}, '');
+	} else {
+		$entry = $self->prepare($item->name);
+	}
 	if (!defined $entry->{uname}) {
 		$self->fatal("No user name for #1 (uid #2)",
-		    $entry->name, $entry->{uid});
+		    $item->name, $entry->{uid});
 	}
 	if (!defined $entry->{gname}) {
 		$self->fatal("No group name for #1 (uid #2)",
-		    $entry->name, $entry->{gid});
+		    $item->name, $entry->{gid});
 	}
+
+	$entry->set_name($item->name);
 	my ($prefix, $name) = split_name($entry->name);
 	if (length($name) > MAXFILENAME || length($prefix) > MAXPREFIX) {
 		$self->{name_index} = 0 if !defined $self->{name_index};
