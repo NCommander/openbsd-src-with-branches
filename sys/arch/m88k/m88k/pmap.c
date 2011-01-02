@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.57 2010/12/31 21:22:33 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.58 2010/12/31 21:38:08 miod Exp $	*/
 
 /*
  * Copyright (c) 2001-2004, 2010, Miodrag Vallat.
@@ -654,7 +654,7 @@ pmap_bootstrap()
 	sdt_entry_t *sdt;
 	pt_entry_t *pdt;
 	paddr_t pa, epdtpa;
-	pmap_table_t ptable;
+	const struct pmap_table *ptable;
 	extern void *kernelstart;
 	extern void *etext;
 
