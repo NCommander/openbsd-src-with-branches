@@ -1,4 +1,4 @@
-/* $OpenBSD: status.c,v 1.68 2010/12/30 23:16:18 nicm Exp $ */
+/* $OpenBSD: status.c,v 1.69 2011/01/01 16:51:21 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -456,7 +456,7 @@ status_replace(struct client *c,
 			break;
 		ch = *iptr++;
 
-		if (ch != '#') {
+		if (ch != '#' || *iptr == '\0') {
 			*optr++ = ch;
 			continue;
 		}
