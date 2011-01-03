@@ -1,4 +1,4 @@
-/*	$OpenBSD: fortune.c,v 1.28 2009/10/27 23:59:24 deraadt Exp $	*/
+/*	$OpenBSD: fortune.c,v 1.29 2010/07/02 23:43:42 tedu Exp $	*/
 /*	$NetBSD: fortune.c,v 1.8 1995/03/23 08:28:40 cgd Exp $	*/
 
 /*-
@@ -663,8 +663,10 @@ add_dir(FILEDESC *fp)
 	if (fp->num_children == 0) {
 		(void) fprintf(stderr,
 		    "fortune: %s: No fortune files in directory.\n", fp->path);
+		closedir(dir);
 		return FALSE;
 	}
+	closedir(dir);
 	return TRUE;
 }
 
