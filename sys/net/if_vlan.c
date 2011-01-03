@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.84 2010/06/03 16:15:00 naddy Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.85 2010/07/02 02:40:16 blambert Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -365,8 +365,9 @@ vlan_config(struct ifvlan *ifv, struct ifnet *p, u_int16_t tag)
 		return EPROTONOSUPPORT;
 	if (ifv->ifv_p == p && ifv->ifv_tag == tag) /* noop */
 		return (0);
-	if (ifv->ifv_p)
-		return EBUSY;
+
+	/* Reset the interface */
+	vlan_unconfig(&ifv->ifv_if);
 
 	ifv->ifv_p = p;
 
