@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.3 2010/04/25 17:35:31 schwarze Exp $
+# $OpenBSD: Makefile,v 1.4 2010/06/27 19:56:11 phessler Exp $
 
-SUBDIR+= mdoc char roff
+SUBDIR+= roff char mdoc man
 
 groff groff-clean: _SUBDIRUSE
 depend:	groff
