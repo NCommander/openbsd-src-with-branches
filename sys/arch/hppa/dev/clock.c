@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.25 2010/08/01 09:01:45 kettenis Exp $	*/
+/*	$OpenBSD: clock.c,v 1.26 2011/01/01 19:00:56 jasper Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -40,13 +40,6 @@
 #include <machine/reg.h>
 #include <machine/cpufunc.h>
 #include <machine/autoconf.h>
-
-#if defined(DDB)
-#include <uvm/uvm_extern.h>
-#include <machine/db_machdep.h>
-#include <ddb/db_sym.h>
-#include <ddb/db_extern.h>
-#endif
 
 u_long	cpu_hzticks;
 
