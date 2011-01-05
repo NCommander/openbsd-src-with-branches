@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.50 2010/09/28 20:27:55 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.51 2010/12/23 20:05:08 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -104,6 +104,12 @@ struct cpu_info {
 			    (__cpu_simple_lock_t *lock, uint *csr);
 	void		(*ci_mp_atomic_end)
 			    (uint32_t psr, __cpu_simple_lock_t *lock, uint csr);
+
+	/*
+	 * Other processor-dependent routines
+	 */
+	void		(*ci_zeropage)(vaddr_t);
+	void		(*ci_copypage)(vaddr_t, vaddr_t);
 
 	/*
 	 * The following fields are used differently depending on
