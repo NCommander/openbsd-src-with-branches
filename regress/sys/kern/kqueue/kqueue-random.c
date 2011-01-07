@@ -1,4 +1,4 @@
-/*	$OpenBSD: kqueue-random.c,v 1.3 2003/07/31 03:23:41 mickey Exp $	*/
+/*	$OpenBSD: kqueue-random.c,v 1.4 2003/07/31 21:48:08 deraadt Exp $	*/
 /*	Written by Michael Shalayeff, 2002, Public Domain	*/
 
 #include <stdlib.h>
@@ -21,7 +21,7 @@ do_random(void)
 	int n, fd, kq;
 	struct timespec ts;
 	struct kevent ev;
-	u_int32_t buf[POOLWORDS];
+	u_int32_t buf[BUFSIZ];
 
 	if ((fd = open("/dev/srandom", O_RDONLY)) < 0) {
 		warn("open: /dev/srandom");
