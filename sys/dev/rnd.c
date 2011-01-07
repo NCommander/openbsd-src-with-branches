@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.123 2011/01/06 15:41:50 deraadt Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.124 2011/01/06 22:49:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996, 1997, 2000-2002 Michael Shalayeff.
@@ -894,6 +894,8 @@ randomwrite(dev_t dev, struct uio *uio, int flags)
 		while (n % sizeof(u_int32_t))
 			((u_int8_t *)buf)[n++] = 0;
 		add_entropy_words(buf, n / 4);
+		if (ret == 0 && uio->uio_resid > 0)
+			yield();
 		newdata = 1;
 	}
 
