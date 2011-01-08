@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.25 2010/06/27 03:03:48 thib Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.26 2010/06/27 13:28:46 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -482,7 +482,7 @@ dumpsys(void)
 {
 }
 
-int imask[IPL_NUM];
+int cpu_imask[IPL_NUM];
 
 int
 lcsplx(int ipl)
