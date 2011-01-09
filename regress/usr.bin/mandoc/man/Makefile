@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.10 2010/12/19 12:10:33 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2011/01/04 01:15:39 schwarze Exp $
 
-SUBDIR= nf IP TP
+SUBDIR= nf BI IP TP
 
 groff groff-clean: _SUBDIRUSE
 
