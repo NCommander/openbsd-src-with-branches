@@ -1,4 +1,4 @@
-/*	$OpenBSD: locking.c,v 1.8 2006/04/01 22:48:57 deraadt Exp $	*/
+/*	$OpenBSD: locking.c,v 1.9 2009/10/27 23:59:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996-1998 Theo de Raadt <deraadt@theos.com>
@@ -141,12 +141,14 @@ void
 baditem(char *path)
 {
 	char npath[MAXPATHLEN];
+	int fd;
 
 	if (unlink(path) == 0)
 		return;
 	snprintf(npath, sizeof npath, "%s/mailXXXXXXXXXX", _PATH_MAILDIR);
-	if (mktemp(npath) == NULL)
+	if ((fd = mkstemp(npath)) == -1)
 		return;
+	close(fd);
 	if (rename(path, npath) == -1)
 		unlink(npath);
 	else
