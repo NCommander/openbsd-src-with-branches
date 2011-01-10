@@ -1,4 +1,4 @@
-/*	$OpenBSD: libkern.h,v 1.26 2009/05/24 10:50:34 jsg Exp $	*/
+/*	$OpenBSD: libkern.h,v 1.27 2010/07/20 15:28:44 matthew Exp $	*/
 /*	$NetBSD: libkern.h,v 1.7 1996/03/14 18:52:08 christos Exp $	*/
 
 /*-
@@ -143,6 +143,7 @@ void	 __assert(const char *, const char *, int, const char *)
 	    __attribute__ ((__noreturn__));
 int	 bcmp(const void *, const void *, size_t);
 void	 bzero(void *, size_t);
+void	 explicit_bzero(void *, size_t);
 int	 ffs(int);
 void	*memchr(const void *, int, size_t);
 int	 memcmp(const void *, const void *, size_t);
