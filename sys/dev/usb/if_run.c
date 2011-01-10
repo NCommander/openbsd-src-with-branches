@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_run.c,v 1.81 2010/11/06 00:09:30 deraadt Exp $	*/
+/*	$OpenBSD: if_run.c,v 1.82 2010/12/30 05:22:51 jakemsr Exp $	*/
 
 /*-
  * Copyright (c) 2008-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -198,6 +198,7 @@ static const struct usb_devno run_devs[] = {
 	USB_ID(MELCO,		WLIUCAG300N),
 	USB_ID(MELCO,		WLIUCG300N),
 	USB_ID(MELCO,		WLIUCGN),
+	USB_ID(MELCO,		WLIUCGNHP),
 	USB_ID(MELCO,		WLIUCGNM),
 	USB_ID(MOTOROLA4,	RT2770),
 	USB_ID(MOTOROLA4,	RT3070),
