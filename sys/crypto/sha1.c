@@ -1,4 +1,4 @@
-/*	$OpenBSD: sha1.c,v 1.7 2007/07/20 19:54:01 otto Exp $	*/
+/*	$OpenBSD: sha1.c,v 1.9 2011/01/11 15:47:33 deraadt Exp $	*/
 
 /*
  * SHA-1 in C
@@ -164,13 +164,13 @@ SHA1Final(unsigned char digest[SHA1_DIGEST_LENGTH], SHA1_CTX *context)
             digest[i] = (unsigned char)((context->state[i >> 2] >>
                 ((3 - (i & 3)) * 8)) & 255);
       }
+    explicit_bzero(&finalcount, 8);
 #if 0	/* We want to use this for "keyfill" */
     /* Wipe variables */
     i = 0;
     bzero(context->buffer, 64);
     bzero(context->state, 20);
     bzero(context->count, 8);
-    bzero(&finalcount, 8);
 #ifdef SHA1HANDSOFF  /* make SHA1Transform overwrite its own static vars */
     SHA1Transform(context->state, context->buffer);
 #endif
