@@ -1,4 +1,4 @@
-/*	$OpenBSD: aesni.c,v 1.17 2010/12/15 23:34:23 mikeb Exp $	*/
+/*	$OpenBSD: aesni.c,v 1.18 2011/01/11 15:42:05 deraadt Exp $	*/
 /*-
  * Copyright (c) 2003 Jason Wright
  * Copyright (c) 2003, 2004 Theo de Raadt
@@ -275,7 +275,7 @@ aesni_freesession(u_int64_t tid)
 		free(swd, M_CRYPTO_DATA);
 	}
 
-	bzero(ses, sizeof (*ses));
+	explicit_bzero(ses, sizeof (*ses));
 	pool_put(&aesnipl, ses);
 
 	return (0);
