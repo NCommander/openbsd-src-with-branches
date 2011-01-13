@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcidump.c,v 1.27 2011/01/12 20:17:56 kettenis Exp $	*/
+/*	$OpenBSD: pcidump.c,v 1.28 2011/01/13 14:17:21 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 David Gwynne <loki@animata.net>
@@ -91,7 +91,8 @@ const char *pci_capnames[] = {
 	"Secure",
 	"PCI Express",
 	"Extended Message Signaled Interrupts (MSI-X)",
-	"SATA"
+	"SATA",
+	"PCI Advanced Features"
 };
 
 int
