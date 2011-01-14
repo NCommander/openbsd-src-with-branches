@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.27 2010/09/23 05:02:14 claudio Exp $	*/
+/*	$OpenBSD: conf.c,v 1.28 2010/11/28 20:48:44 miod Exp $	*/
 /*	$NetBSD: conf.c,v 1.10 2002/04/19 01:04:38 wiz Exp $	*/
 
 /*
@@ -402,8 +402,8 @@ struct cdevsw cdevsw[] = {
 	cdev_pppx_init(NPPPX,pppx),		/* 103: pppx */
 };
 
-int nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
-int nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
+int nblkdev = nitems(bdevsw);
+int nchrdev = nitems(cdevsw);
 
 int mem_no = 2; 	/* major device number of memory special file */
 
@@ -515,7 +515,7 @@ int chrtoblktbl[] = {
     /* 70 */	    NODEV,
     /* 71 */	    71,		/* raid */
 };
-int nchrtoblktbl = sizeof(chrtoblktbl) / sizeof(chrtoblktbl[0]);
+int nchrtoblktbl = nitems(chrtoblktbl);
 
 dev_t
 getnulldev()
