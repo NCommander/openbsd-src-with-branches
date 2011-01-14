@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.16 2009/04/21 09:12:29 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.17 2010/08/17 19:17:14 deraadt Exp $
 
 kernels: bsd bootblocks
 	cp ${.CURDIR}/../sys/arch/sparc/compile/GENERIC/bsd \
@@ -18,7 +18,7 @@ bootblocks:
 	${DESTDIR}/usr/mdec/binstall net /tmp && \
 	    mv /tmp/boot.sparc.openbsd ${RELEASEDIR}/boot.net
 
-MDEXT=	bsd bsd.rd bsd.scsi3 cd${OSrev}.iso install${OSrev}.iso \
+MDEXT=	bsd bsd.rd bsd.scsi3 cd${OSrev}.iso \
 	floppy${OSrev}.fs miniroot${OSrev}.fs \
 	boot boot.net bootxx installboot
 
