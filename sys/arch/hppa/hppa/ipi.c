@@ -94,6 +94,21 @@ hppa_ipi_send(struct cpu_info *ci, u_long ipi)
 	return 0;
 }
 
+int
+hppa_ipi_broadcast(u_long ipi)
+{
+	CPU_INFO_ITERATOR cii;
+	struct cpu_info *ci;
+	int count = 0;
+
+	CPU_INFO_FOREACH(cii, ci)
+		if (ci != curcpu() && (ci->ci_flags & CPUF_RUNNING))
+			if (hppa_ipi_send(ci, ipi))
+				count++;
+
+	return count;	
+}
+
 void
 hppa_ipi_nop(void)
 {
