@@ -1,4 +1,4 @@
-.\"	$OpenBSD: mdoc.7,v 1.59 2011/01/09 12:49:22 schwarze Exp $
+.\"	$OpenBSD: mdoc.7,v 1.60 2011/01/09 15:24:57 schwarze Exp $
 .\"
 .\" Copyright (c) 2009, 2010 Kristaps Dzonsons <kristaps@bsd.lv>
 .\" Copyright (c) 2010 Ingo Schwarze <schwarze@openbsd.org>
@@ -55,6 +55,9 @@ character, and, in certain circumstances, the tab character.
 All manuals must have
 .Ux
 line terminators.
+.Pp
+If the first character of a line is a space, that line is printed
+with a leading newline.
 .Ss Comments
 Text following a
 .Sq \e\*q ,
