@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.42 2008/06/14 08:46:30 kjell Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.43 2008/08/27 04:11:52 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -241,7 +241,7 @@ static PF metasqf[] = {
 
 static PF metal[] = {
 	lowerword,		/* l */
-	rescan,			/* m */
+	backtoindent,		/* m */
 	rescan,			/* n */
 	rescan,			/* o */
 	rescan,			/* p */

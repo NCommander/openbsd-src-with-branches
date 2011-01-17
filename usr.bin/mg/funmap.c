@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.31 2008/06/14 08:46:30 kjell Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.32 2008/09/15 16:13:35 kjell Exp $	*/
 
 /* This file is in the public domain */
 
@@ -26,6 +26,7 @@ static struct funmap functnames[] = {
 	{auto_execute, "auto-execute", },
 	{fillmode, "auto-fill-mode",},
 	{indentmode, "auto-indent-mode",},
+	{backtoindent, "back-to-indentation",},
 	{backchar, "backward-char",},
 	{delbword, "backward-kill-word",},
 	{gotobop, "backward-paragraph",},
