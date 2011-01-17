@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.1 2010/07/01 05:29:57 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2011/01/04 01:15:39 schwarze Exp $
 
-REGRESS_TARGETS=indent
-GROFF_TARGETS=indent
+REGRESS_TARGETS=indent args
+GROFF_TARGETS=indent args
 
 .include <bsd.regress.mk>
