@@ -1,4 +1,4 @@
-/*	$OpenBSD: env.c,v 1.21 2008/02/29 23:33:29 deraadt Exp $	*/
+/*	$OpenBSD: env.c,v 1.22 2009/10/27 23:59:51 deraadt Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -200,6 +200,9 @@ load_env(char *envstr, FILE *f) {
 				c++;
 			else
 				state++;
+			break;
+		case ERROR:
+			/* handled below */
 			break;
 		}
 	}
