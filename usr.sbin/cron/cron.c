@@ -1,4 +1,4 @@
-/*	$OpenBSD: cron.c,v 1.40 2009/01/29 22:50:16 sobrado Exp $	*/
+/*	$OpenBSD: cron.c,v 1.41 2009/10/27 23:59:51 deraadt Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -94,7 +94,6 @@ main(int argc, char *argv[]) {
 	(void) sigaction(SIGTERM, &sact, NULL);
 	sact.sa_handler = SIG_IGN;
 	(void) sigaction(SIGPIPE, &sact, NULL);
-	(void) sigaction(SIGUSR1, &sact, NULL);	/* XXX */
 
 	acquire_daemonlock(0);
 	set_cron_uid();
