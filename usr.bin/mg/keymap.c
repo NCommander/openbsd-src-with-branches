@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.43 2008/08/27 04:11:52 kjell Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.44 2011/01/17 03:12:06 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -228,7 +228,7 @@ static PF metasqf[] = {
 	NULL,			/* [ */
 	delwhite,		/* \ */
 	rescan,			/* ] */
-	rescan,			/* ^ */
+	joinline,		/* ^ */
 	rescan,			/* _ */
 	rescan,			/* ` */
 	rescan,			/* a */
