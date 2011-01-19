@@ -1,4 +1,4 @@
-/*	$OpenBSD: strptime.c,v 1.12 2008/06/26 05:42:05 ray Exp $ */
+/*	$OpenBSD: strptime.c,v 1.13 2010/11/08 19:16:16 jasper Exp $ */
 /*	$NetBSD: strptime.c,v 1.12 1998/01/20 21:39:40 mycroft Exp $	*/
 
 /*-
@@ -142,7 +142,7 @@ literal:
 
 		case 'F':	/* The date as "%Y-%m-%d". */
 			_LEGAL_ALT(0);
-			if (!(bp = _strptime(bp, "%Y/%m/%d", tm, 0)))
+			if (!(bp = _strptime(bp, "%Y-%m-%d", tm, 0)))
 				return (NULL);
 			continue;
 
