@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.719 2011/01/10 18:57:59 bluhm Exp $ */
+/*	$OpenBSD: pf.c,v 1.720 2011/01/11 13:35:58 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5852,6 +5852,8 @@ pf_test(int dir, struct ifnet *ifp, struct mbuf **m0,
 		goto done;
 	}
 	m = *m0;	/* pf_normalize messes with m0 */
+	if (m == NULL)
+		return (PF_PASS);
 	h = mtod(m, struct ip *);
 
 	if (pf_setup_pdesc(AF_INET, dir, &pd, m, &action, &reason, kif, &a, &r,
@@ -6117,6 +6119,8 @@ pf_test6(int dir, struct ifnet *ifp, struct mbuf **m0,
 		goto done;
 	}
 	m = *m0;	/* pf_normalize messes with m0 */
+	if (m == NULL)
+		return (PF_PASS);
 	h = mtod(m, struct ip6_hdr *);
 
 #if 1
