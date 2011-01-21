@@ -1,4 +1,4 @@
-/*	$OpenBSD: search.c,v 1.36 2008/06/12 21:58:33 kjell Exp $	*/
+/*	$OpenBSD: search.c,v 1.37 2009/06/04 02:23:37 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -12,6 +12,7 @@
  */
 
 #include "def.h"
+
 #include <ctype.h>
 
 #ifndef NO_MACRO

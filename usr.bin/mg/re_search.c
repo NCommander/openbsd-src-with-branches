@@ -1,4 +1,4 @@
-/*	$OpenBSD: re_search.c,v 1.24 2006/07/25 08:22:32 kjell Exp $	*/
+/*	$OpenBSD: re_search.c,v 1.25 2009/06/04 02:23:37 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -14,10 +14,11 @@
  */
 
 #ifdef REGEX
+#include "def.h"
+
 #include <sys/types.h>
 #include <regex.h>
 
-#include "def.h"
 #include "macro.h"
 
 #define SRCH_BEGIN	(0)		/* search sub-codes		    */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: random.c,v 1.28 2011/01/18 16:25:40 kjell Exp $	*/
+/*	$OpenBSD: random.c,v 1.29 2011/01/19 16:11:38 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -10,6 +10,7 @@
  */
 
 #include "def.h"
+
 #include <ctype.h>
 
 /*
