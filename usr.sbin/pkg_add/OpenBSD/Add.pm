@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Add.pm,v 1.118 2010/12/24 09:09:54 espie Exp $
+# $OpenBSD: Add.pm,v 1.119 2010/12/29 13:03:05 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -93,7 +93,7 @@ sub record_partial_installation
 			undef $last->{d};
 		}
 	}
-	register_installation($n);
+	register_installation($n, $state);
 	return $borked;
 }
 
