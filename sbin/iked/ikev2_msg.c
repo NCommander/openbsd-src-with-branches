@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.8 2010/09/30 10:34:56 mikeb Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.9 2010/12/22 16:22:27 mikeb Exp $	*/
 /*	$vantronix: ikev2.c,v 1.101 2010/06/03 07:57:33 reyk Exp $	*/
 
 /*
@@ -69,8 +69,8 @@ ikev2_msg_cb(int fd, short event, void *arg)
 	memcpy(&msg.msg_local, &sock->sock_addr, sizeof(sock->sock_addr));
 
 	if ((len = recvfromto(fd, buf, sizeof(buf), 0,
-	    (struct sockaddr*)&msg.msg_peer, &msg.msg_peerlen,
-	    (struct sockaddr*)&msg.msg_local, &msg.msg_locallen)) <
+	    (struct sockaddr *)&msg.msg_peer, &msg.msg_peerlen,
+	    (struct sockaddr *)&msg.msg_local, &msg.msg_locallen)) <
 	    (ssize_t)sizeof(natt))
 		return;
 
