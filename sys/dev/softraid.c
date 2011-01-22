@@ -3188,6 +3188,12 @@ sr_ioctl_installboot(struct sr_softc *sc, struct bioc_installboot *bb)
 	if (sd == NULL)
 		goto done;
 
+	/* Ensure that boot storage area is large enough. */
+	if (sd->sd_meta->ssd_data_offset < (SR_BOOT_OFFSET + SR_BOOT_SIZE)) {
+		printf("%s: insufficient boot storage!\n", DEVNAME(sd->sd_sc));
+		goto done;
+	}
+
 	if (bb->bb_bootblk_size > SR_BOOT_BLOCKS_SIZE * 512)
 		goto done;
 
