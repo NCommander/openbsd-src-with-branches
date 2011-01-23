@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: AddDelete.pm,v 1.43 2010/12/24 09:09:54 espie Exp $
+# $OpenBSD: AddDelete.pm,v 1.44 2010/12/29 13:03:05 espie Exp $
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -65,7 +65,7 @@ sub framework
 		# cleanup various things
 		$state->{recorder}->cleanup($state);
 		$state->ldconfig->ensure;
-		OpenBSD::PackingElement::Fontdir::finish_fontdirs($state);
+		OpenBSD::PackingElement->finish($state);
 		$state->progress->clear;
 		$state->log->dump;
 		$self->finish_display($state);
