@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.271 2010/09/22 06:02:59 henning Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.272 2010/10/12 17:45:06 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -318,7 +318,7 @@ string_to_loglevel(const char *name)
 	}
 	*p = '\0';
 	for (c = prioritynames; c->c_name; c++)
-		if (!strcmp(buf, c->c_name))
+		if (!strcmp(buf, c->c_name) && c->c_val != INTERNAL_NOPRI)
 			return (c->c_val);
 
 	return (-1);
