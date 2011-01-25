@@ -1,4 +1,4 @@
-/*	$OpenBSD: udcf.c,v 1.51 2010/12/06 04:41:40 jakemsr Exp $ */
+/*	$OpenBSD: udcf.c,v 1.52 2010/12/17 21:53:34 jasper Exp $ */
 
 /*
  * Copyright (c) 2006, 2007, 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -275,9 +275,6 @@ udcf_attach(struct device *parent, struct device *self, void *aux)
 		break;
 	}
 
-	usbd_add_drv_event(USB_EVENT_DRIVER_ATTACH, sc->sc_udev,
-	    &sc->sc_dev);
-
 	/* convert timevals to hz */
 	t.tv_sec = 0L;
 	t.tv_usec = 150000L;
@@ -355,8 +352,6 @@ udcf_detach(struct device *self, int flags)
 	if (sc->sc_detect_ct)
 		usb_rem_task(sc->sc_udev, &sc->sc_ct_task);
 
-	usbd_add_drv_event(USB_EVENT_DRIVER_DETACH, sc->sc_udev,
-	    &sc->sc_dev);
 	return 0;
 }
 

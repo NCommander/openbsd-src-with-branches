@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upl.c,v 1.45 2010/12/06 05:46:17 jakemsr Exp $ */
+/*	$OpenBSD: if_upl.c,v 1.46 2010/12/17 13:48:06 jasper Exp $ */
 /*	$NetBSD: if_upl.c,v 1.19 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -301,9 +301,6 @@ upl_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->sc_attached = 1;
 	splx(s);
-
-	usbd_add_drv_event(USB_EVENT_DRIVER_ATTACH, sc->sc_udev,
-	    &sc->sc_dev);
 }
 
 int
@@ -337,9 +334,6 @@ upl_detach(struct device *self, int flags)
 
 	sc->sc_attached = 0;
 	splx(s);
-
-	usbd_add_drv_event(USB_EVENT_DRIVER_DETACH, sc->sc_udev,
-	    &sc->sc_dev);
 
 	return (0);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: umsm.c,v 1.69 2010/12/11 22:53:30 jsg Exp $	*/
+/*	$OpenBSD: umsm.c,v 1.70 2010/12/30 16:28:12 ajacoutot Exp $	*/
 
 /*
  * Copyright (c) 2008 Yojiro UO <yuo@nui.org>
@@ -385,9 +385,6 @@ umsm_attach(struct device *parent, struct device *self, void *aux)
 	uca.info = NULL;
 	uca.portno = UCOM_UNK_PORTNO;
 
-	usbd_add_drv_event(USB_EVENT_DRIVER_ATTACH, sc->sc_udev,
-	    &sc->sc_dev);
-	
 	sc->sc_subdev = config_found_sm(self, &uca, ucomprint, ucomsubmatch);
 }
 
@@ -410,9 +407,6 @@ umsm_detach(struct device *self, int flags)
 		rv = config_detach(sc->sc_subdev, flags);
 		sc->sc_subdev = NULL;
 	}
-
-	usbd_add_drv_event(USB_EVENT_DRIVER_DETACH, sc->sc_udev,
-			   &sc->sc_dev);
 
 	return (rv);
 }

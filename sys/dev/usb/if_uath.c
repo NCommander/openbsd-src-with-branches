@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.47 2010/12/06 04:41:39 jakemsr Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.48 2011/01/06 19:49:58 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -416,9 +416,6 @@ uath_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_txtap.wt_ihdr.it_present = htole32(UATH_TX_RADIOTAP_PRESENT);
 #endif
 
-	usbd_add_drv_event(USB_EVENT_DRIVER_ATTACH, sc->sc_udev,
-	    &sc->sc_dev);
-
 	return;
 
 fail4:	uath_free_tx_data_list(sc);
@@ -466,9 +463,6 @@ uath_detach(struct device *self, int flags)
 	}
 
 	splx(s);
-
-	usbd_add_drv_event(USB_EVENT_DRIVER_DETACH, sc->sc_udev,
-	    &sc->sc_dev);
 
 	return 0;
 }

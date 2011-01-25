@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rsu.c,v 1.8 2010/12/27 03:03:50 jakemsr Exp $	*/
+/*	$OpenBSD: if_rsu.c,v 1.9 2010/12/31 20:50:14 damien Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -332,8 +332,6 @@ rsu_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_txtap.wt_ihdr.it_len = htole16(sc->sc_txtap_len);
 	sc->sc_txtap.wt_ihdr.it_present = htole32(RSU_TX_RADIOTAP_PRESENT);
 #endif
-
-	usbd_add_drv_event(USB_EVENT_DRIVER_ATTACH, sc->sc_udev, &sc->sc_dev);
 }
 
 int
@@ -362,7 +360,6 @@ rsu_detach(struct device *self, int flags)
 	rsu_free_rx_list(sc);
 	splx(s);
 
-	usbd_add_drv_event(USB_EVENT_DRIVER_DETACH, sc->sc_udev, &sc->sc_dev);
 	return (0);
 }
 
