@@ -1,4 +1,4 @@
-/* $OpenBSD: server-window.c,v 1.18 2010/12/06 22:51:02 nicm Exp $ */
+/* $OpenBSD: server-window.c,v 1.19 2010/12/21 22:37:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -23,7 +23,6 @@
 
 #include "tmux.h"
 
-int	server_window_backoff(struct window_pane *);
 int	server_window_check_bell(struct session *, struct winlink *);
 int	server_window_check_activity(struct session *, struct winlink *);
 int	server_window_check_silence(struct session *, struct winlink *);
