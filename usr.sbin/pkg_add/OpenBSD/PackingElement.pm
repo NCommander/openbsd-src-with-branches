@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.192 2011/01/14 14:32:18 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.193 2011/01/23 06:56:53 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -171,7 +171,7 @@ sub finish
 	OpenBSD::PackingElement::Fontdir->finish($state);
 	OpenBSD::PackingElement::RcScript->report($state);
 	if ($state->{readmes}) {
-		$state->say("Look in /usr/local/share/doc/pkg-readmes for extra documentation");
+		$state->say("Look in /usr/local/share/doc/pkg-readmes for extra documentation.");
 	}
 }
 
@@ -506,7 +506,7 @@ sub report
 	if (@l > 0) {
 		$state->say("The following new rcscripts were installed: #1",
 		    join(' ', @l));
-		$state->say("See rc.d(8) for details");
+		$state->say("See rc.d(8) for details.");
 	}
 }
 
