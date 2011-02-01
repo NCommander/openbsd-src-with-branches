@@ -20,6 +20,10 @@ Austria:
     ftp://ftp5.eu.openbsd.org/pub/OpenBSD (Vienna)
     http://ftp.wu-wien.ac.at/pub/OpenBSD (Vienna)
 
+Bulgaria:
+    http://mirror.telepoint.bg/OpenBSD (Sofia)
+    ftp://mirror.telepoint.bg/OpenBSD (Sofia)
+
 Canada:
     http://ftp.OpenBSD.org/pub/OpenBSD (Alberta)
     ftp://ftp.OpenBSD.org/pub/OpenBSD (Alberta)
