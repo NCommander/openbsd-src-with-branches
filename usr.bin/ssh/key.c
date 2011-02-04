@@ -1,4 +1,4 @@
-/* $OpenBSD: key.c,v 1.94 2010/10/28 11:22:09 djm Exp $ */
+/* $OpenBSD: key.c,v 1.95 2010/11/10 01:33:07 djm Exp $ */
 /*
  * read_bignum():
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1823,10 +1823,9 @@ key_certify(Key *k, Key *ca)
 	buffer_put_cstring(&k->cert->certblob, key_ssh_name(k));
 
 	/* -v01 certs put nonce first */
-	if (!key_cert_is_legacy(k)) {
-		arc4random_buf(&nonce, sizeof(nonce));
+	arc4random_buf(&nonce, sizeof(nonce));
+	if (!key_cert_is_legacy(k))
 		buffer_put_string(&k->cert->certblob, nonce, sizeof(nonce));
-	}
 
 	switch (k->type) {
 	case KEY_DSA_CERT_V00:
