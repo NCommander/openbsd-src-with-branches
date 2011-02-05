@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.721 2011/01/19 11:39:56 bluhm Exp $ */
+/*	$OpenBSD: pf.c,v 1.722 2011/01/22 11:43:57 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -3047,7 +3047,7 @@ pf_test_rule(struct pf_rule **rm, struct pf_state **sm, int direction,
 	}
 
 	/* copy back packet headers if we performed NAT operations */
-	if (rewrite)
+	if (rewrite && hdrlen)
 		m_copyback(m, off, hdrlen, pd->hdr.any, M_NOWAIT);
 
 #if NPFSYNC > 0
@@ -5517,6 +5517,7 @@ pf_setup_pdesc(sa_family_t af, int dir, struct pf_pdesc *pd, struct mbuf *m,
 	if (pd->hdr.any == NULL)
 		panic("pf_setup_pdesc: no storage for headers provided");
 
+	*hdrlen = 0;
 	switch (af) {
 #ifdef INET
 	case AF_INET: {
