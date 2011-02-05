@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.2 2010/01/01 20:08:17 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2010/07/01 05:29:57 schwarze Exp $
 
-REGRESS_TARGETS=section
-GROFF_TARGETS=section
+REGRESS_TARGETS=section noarg
+GROFF_TARGETS=section noarg
 
 .include <bsd.regress.mk>
