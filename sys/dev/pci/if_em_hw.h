@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: if_em_hw.h,v 1.45 2010/08/03 16:39:34 jsg Exp $ */
+/* $OpenBSD: if_em_hw.h,v 1.46 2010/09/19 13:10:21 yasuoka Exp $ */
 /* $FreeBSD: if_em_hw.h,v 1.15 2005/05/26 23:32:02 tackerman Exp $ */
 
 /* if_em_hw.h
@@ -2353,6 +2353,7 @@ struct em_host_command_info {
 
 /* EEPROM Size definitions */
 #define EEPROM_WORD_SIZE_SHIFT  6
+#define EEPROM_WORD_SIZE_SHIFT_MAX 14
 #define EEPROM_SIZE_SHIFT       10
 #define EEPROM_SIZE_MASK        0x1C00
 
