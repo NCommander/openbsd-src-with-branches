@@ -1,4 +1,4 @@
-/*	$OpenBSD: hce.c,v 1.55 2010/05/14 11:13:36 reyk Exp $	*/
+/*	$OpenBSD: hce.c,v 1.56 2010/11/30 14:38:45 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -258,6 +258,8 @@ hce_launch_checks(int fd, short event, void *arg)
 		TAILQ_FOREACH(host, &table->hosts, entry) {
 			if (host->flags & F_DISABLE || host->conf.parentid)
 				continue;
+			bcopy(&tv, &host->cte.tv_start,
+			    sizeof(host->cte.tv_start));
 			switch (table->conf.check) {
 			case CHECK_ICMP:
 				schedule_icmp(env, host);
@@ -270,8 +272,6 @@ hce_launch_checks(int fd, short event, void *arg)
 				host->last_up = host->up;
 				host->cte.host = host;
 				host->cte.table = table;
-				bcopy(&tv, &host->cte.tv_start,
-				    sizeof(host->cte.tv_start));
 				check_tcp(&host->cte);
 				break;
 			}
