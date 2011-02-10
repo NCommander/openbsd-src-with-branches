@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_types.h,v 1.7 2002/12/16 16:27:41 fgsch Exp $	*/
+/*	$OpenBSD: linux_types.h,v 1.8 2005/05/19 18:27:28 mickey Exp $	*/
 /*	$NetBSD: linux_types.h,v 1.5 1996/05/20 01:59:28 fvdl Exp $	*/
 
 /*
@@ -195,6 +195,11 @@ struct linux_stat64 {
 	unsigned int	__unused3;	/* will be high 32 bits of ctime someday */
 
 	unsigned long long lst_ino;
+};
+
+struct l_timespec {
+	linux_time_t	tv_sec;
+	long		tv_nsec;
 };
 
 #endif /* !_LINUX_TYPES_H */
