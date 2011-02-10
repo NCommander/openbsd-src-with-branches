@@ -724,4 +724,10 @@
 /* syscall: "linux_exit_group" ret: "int" args: "int" */
 #define	LINUX_SYS_linux_exit_group	252
 
+/* syscall: "clock_gettime" ret: "int" args: "clockid_t" "struct l_timespec *" */
+#define	LINUX_SYS_clock_gettime	265
+
+/* syscall: "clock_getres" ret: "int" args: "clockid_t" "struct l_timespec *" */
+#define	LINUX_SYS_clock_getres	266
+
 #define	LINUX_SYS_MAXSYSCALL	268
