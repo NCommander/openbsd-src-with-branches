@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.305 2011/01/27 17:19:09 sthen Exp $ */
+/*	$OpenBSD: rde.c,v 1.306 2011/01/29 17:10:45 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -922,8 +922,8 @@ rde_update_dispatch(struct imsg *imsg)
 			fas = aspath_neighbor(asp->aspath);
 			if (peer->conf.remote_as != fas) {
 			    log_peer_warnx(&peer->conf, "bad path, "
-				"starting with %i, "
-				"enforce neighbor-as enabled", fas);
+				"starting with %s, "
+				"enforce neighbor-as enabled", log_as(fas));
 			    rde_update_err(peer, ERR_UPDATE, ERR_UPD_ASPATH,
 				    NULL, 0);
 			    goto done;
