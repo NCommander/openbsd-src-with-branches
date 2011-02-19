@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.246 2010/11/24 14:15:31 jsing Exp $	*/
+/*	$OpenBSD: editor.c,v 1.247 2010/12/13 01:01:41 marco Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -901,7 +901,7 @@ editor_add(struct disklabel *lp, char *p)
 			return;
 	}
 	/* Bailed out at some point, so effectively delete the partition. */
-	DL_SETPSIZE(pp, 0);
+	memset(pp, 0, sizeof(*pp));
 }
 
 /*
