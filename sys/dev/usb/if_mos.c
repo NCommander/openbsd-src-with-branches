@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mos.c,v 1.12 2010/12/06 04:41:39 jakemsr Exp $	*/
+/*	$OpenBSD: if_mos.c,v 1.13 2011/01/25 20:03:35 jakemsr Exp $	*/
 
 /*
  * Copyright (c) 2008 Johann Christian Rode <jcrode@gmx.net>
@@ -719,7 +719,7 @@ mos_attach(struct device *parent, struct device *self, void *aux)
 	/* Initialize interface info.*/
 	ifp = GET_IFP(sc);
 	ifp->if_softc = sc;
-	ifp->if_flags = IFF_SIMPLEX | IFF_MULTICAST;
+	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
 	ifp->if_ioctl = mos_ioctl;
 	ifp->if_start = mos_start;
 	ifp->if_watchdog = mos_watchdog;
