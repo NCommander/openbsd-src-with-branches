@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.66 2010/02/26 23:11:57 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.68 2010/04/23 15:25:20 jsing Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
@@ -92,6 +92,7 @@ done:
 		bp->b_flags |= B_INVAL;
 		brelse(bp);
 	}
+	disk_change = 1;
 	return (error);
 }
 
@@ -127,6 +128,7 @@ done:
 		bp->b_flags |= B_INVAL;
 		brelse(bp);
 	}
+	disk_change = 1;
 	return (error);
 }
 

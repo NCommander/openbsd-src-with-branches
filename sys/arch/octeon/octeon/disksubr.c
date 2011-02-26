@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.1.1.1 2009/08/17 06:34:30 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.1 2010/09/20 06:32:30 syuu Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -89,6 +89,7 @@ done:
 		bp->b_flags |= B_INVAL;
 		brelse(bp);
 	}
+	disk_change = 1;
 	return (error);
 }
 
@@ -128,5 +129,6 @@ done:
 		bp->b_flags |= B_INVAL;
 		brelse(bp);
 	}
+	disk_change = 1;
 	return (error);
 }
