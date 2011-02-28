@@ -1,6 +1,9 @@
-#	$OpenBSD: Makefile,v 1.2 1996/06/23 14:30:15 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:36:20 deraadt Exp $
 
 PROG=	dumpfs
 MAN=	dumpfs.8
+
+LDADD=  -lutil
+DPADD=  ${LIBUTIL}
 
 .include <bsd.prog.mk>
