@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_script.c,v 1.9 2009/06/05 00:04:01 pyr Exp $	*/
+/*	$OpenBSD: check_script.c,v 1.10 2009/06/05 23:39:51 pyr Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -156,7 +156,7 @@ script_exec(struct relayd *env, struct ctl_script *scr)
 		if (WIFEXITED(status))
 			ret = WEXITSTATUS(status);
 		else
-			ret = -1;
+			ret = 0;
 	}
 
  done:
