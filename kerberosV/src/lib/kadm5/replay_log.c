@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 1998, 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997-2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,10 @@
 
 #include "iprop.h"
 
-RCSID("$KTH: replay_log.c,v 1.7 1999/12/04 19:51:11 assar Exp $");
+RCSID("$KTH: replay_log.c,v 1.11 2003/11/18 23:19:22 lha Exp $");
+
+int start_version = -1;
+int end_version = -1;
 
 static void
 apply_entry(kadm5_server_context *server_context,
@@ -45,6 +48,12 @@ apply_entry(kadm5_server_context *server_context,
 {
     krb5_error_code ret;
 
+    if((start_version != -1 && ver < start_version) ||
+       (end_version != -1 && ver > end_version)) {
+	/* XXX skip this entry */
+	krb5_storage_seek(sp, len, SEEK_CUR);
+	return;
+    }
     printf ("ver %u... ", ver);
     fflush (stdout);
 
@@ -57,9 +66,14 @@ apply_entry(kadm5_server_context *server_context,
     printf ("done\n");
 }
 
+static char *config_file;
 int version_flag;
 int help_flag;
+
 struct getargs args[] = {
+    { "config-file", 'c', arg_string, &config_file },
+    { "start-version", 0, arg_integer, &start_version, "start replay with this version" },
+    { "end-version", 0, arg_integer, &end_version, "end replay with this version" },
     { "version", 0, arg_flag, &version_flag },
     { "help", 0, arg_flag, &help_flag }
 };
@@ -73,6 +87,7 @@ main(int argc, char **argv)
     void *kadm_handle;
     kadm5_config_params conf;
     kadm5_server_context *server_context;
+    char **files;
 
     krb5_program_setup(&context, argc, argv, args, num_args, NULL);
     
@@ -82,6 +97,18 @@ main(int argc, char **argv)
 	print_version(NULL);
 	exit(0);
     }
+
+    if (config_file == NULL)
+	config_file = HDB_DB_DIR "/kdc.conf";
+
+    ret = krb5_prepend_config_files_default(config_file, &files);
+    if (ret)
+	krb5_err(context, 1, ret, "getting configuration files");
+
+    ret = krb5_set_config_files(context, files);
+    krb5_free_config_files(files);
+    if (ret)
+	krb5_err(context, 1, ret, "reading configuration files");
 
     memset(&conf, 0, sizeof(conf));
     ret = kadm5_init_with_password_ctx (context,
@@ -95,9 +122,9 @@ main(int argc, char **argv)
 
     server_context = (kadm5_server_context *)kadm_handle;
 
-    ret = server_context->db->open(context,
-				   server_context->db,
-				   O_RDWR | O_CREAT, 0);
+    ret = server_context->db->hdb_open(context,
+				       server_context->db,
+				       O_RDWR | O_CREAT, 0);
     if (ret)
 	krb5_err (context, 1, ret, "db->open");
 
@@ -111,7 +138,7 @@ main(int argc, char **argv)
     ret = kadm5_log_end (server_context);
     if (ret)
 	krb5_warn(context, ret, "kadm5_log_end");
-    ret = server_context->db->close (context, server_context->db);
+    ret = server_context->db->hdb_close (context, server_context->db);
     if (ret)
 	krb5_err (context, 1, ret, "db->close");
     return 0;

@@ -1,5 +1,6 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1120,6 +1121,26 @@ make_node (code)
 
     case 'c':
       TREE_CONSTANT (t) = 1;
+      break;
+
+     case 'e':
+      switch (code)
+	{
+	case INIT_EXPR:
+	case MODIFY_EXPR:
+	case RTL_EXPR:
+	case PREDECREMENT_EXPR:
+	case PREINCREMENT_EXPR:
+	case POSTDECREMENT_EXPR:
+	case POSTINCREMENT_EXPR:
+	  /* All of these have side-effects, no matter what their
+	     operands are.  */
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  break;
+
+	default:
+	  break;
+	}
       break;
     }
 
@@ -3107,6 +3128,24 @@ build1 (code, type, node)
 	TREE_RAISES (t) = 1;
     }
 
+  switch (code)
+    {
+     case INIT_EXPR:
+     case MODIFY_EXPR:
+     case RTL_EXPR:
+     case PREDECREMENT_EXPR:
+     case PREINCREMENT_EXPR:
+     case POSTDECREMENT_EXPR:
+     case POSTINCREMENT_EXPR:
+      /* All of these have side-effects, no matter what their
+       operands are.  */
+      TREE_SIDE_EFFECTS (t) = 1;
+      break;
+
+     default:
+      break;
+    }
+
   return t;
 }
 
@@ -3300,7 +3339,6 @@ build_type_attribute_variant (ttype, attribute)
         current_obstack = TYPE_OBSTACK (ttype);
 
       ntype = copy_node (ttype);
-      current_obstack = ambient_obstack;
 
       TYPE_POINTER_TO (ntype) = 0;
       TYPE_REFERENCE_TO (ntype) = 0;
@@ -3335,6 +3373,12 @@ build_type_attribute_variant (ttype, attribute)
 
       ntype = type_hash_canon (hashcode, ntype);
       ttype = build_qualified_type (ntype, TYPE_QUALS (ttype));
+
+      /* We must restore the current obstack after the type_hash_canon call,
+	 because type_hash_canon calls type_hash_add for permanent types, and
+	 then type_hash_add calls oballoc expecting to get something permanent
+	 back.  */
+      current_obstack = ambient_obstack;
     }
 
   return ttype;

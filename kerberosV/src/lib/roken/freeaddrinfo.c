@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1999 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: freeaddrinfo.c,v 1.2 1999/12/03 04:10:06 assar Exp $");
+RCSID("$KTH: freeaddrinfo.c,v 1.5 2005/04/12 11:28:41 lha Exp $");
 #endif
 
 #include "roken.h"
@@ -42,11 +42,16 @@ RCSID("$KTH: freeaddrinfo.c,v 1.2 1999/12/03 04:10:06 assar Exp $");
  * free the list of `struct addrinfo' starting at `ai'
  */
 
-void
+void ROKEN_LIB_FUNCTION
 freeaddrinfo(struct addrinfo *ai)
 {
-    for (; ai != NULL; ai = ai->ai_next) {
+    struct addrinfo *tofree;
+
+    while(ai != NULL) {
 	free (ai->ai_canonname);
 	free (ai->ai_addr);
+	tofree = ai;
+	ai = ai->ai_next;
+	free (tofree);
     }
 }

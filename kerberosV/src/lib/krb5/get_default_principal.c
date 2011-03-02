@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,19 +33,75 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: get_default_principal.c,v 1.5 1999/12/02 17:05:09 joda Exp $");
+RCSID("$KTH: get_default_principal.c,v 1.10 2005/04/20 20:53:29 lha Exp $");
 
 /*
  * Try to find out what's a reasonable default principal.
  */
 
+static const char*
+get_env_user(void)
+{
+    const char *user = getenv("USER");
+    if(user == NULL)
+	user = getenv("LOGNAME");
+    if(user == NULL)
+	user = getenv("USERNAME");
+    return user;
+}
+
+/*
+ * Will only use operating-system dependant operation to get the
+ * default principal, for use of functions that in ccache layer to
+ * avoid recursive calls.
+ */
+
 krb5_error_code
+_krb5_get_default_principal_local (krb5_context context, 
+				   krb5_principal *princ)
+{
+    krb5_error_code ret;
+    const char *user;
+    uid_t uid;
+
+    *princ = NULL;
+
+    uid = getuid();    
+    if(uid == 0) {
+	user = getlogin();
+	if(user == NULL)
+	    user = get_env_user();
+	if(user != NULL && strcmp(user, "root") != 0)
+	    ret = krb5_make_principal(context, princ, NULL, user, "root", NULL);
+	else
+	    ret = krb5_make_principal(context, princ, NULL, "root", NULL);
+    } else {
+	struct passwd *pw = getpwuid(uid);	
+	if(pw != NULL)
+	    user = pw->pw_name;
+	else {
+	    user = get_env_user();
+	    if(user == NULL)
+		user = getlogin();
+	}
+	if(user == NULL) {
+	    krb5_set_error_string(context,
+				  "unable to figure out current principal");
+	    return ENOTTY; /* XXX */
+	}
+	ret = krb5_make_principal(context, princ, NULL, user, NULL);
+    }
+    return ret;
+}
+
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_get_default_principal (krb5_context context,
 			    krb5_principal *princ)
 {
     krb5_error_code ret;
     krb5_ccache id;
-    const char *user;
+
+    *princ = NULL;
 
     ret = krb5_cc_default (context, &id);
     if (ret == 0) {
@@ -55,13 +111,5 @@ krb5_get_default_principal (krb5_context context,
 	    return 0;
     }
 
-    user = get_default_username ();
-    if (user == NULL)
-	return ENOTTY;
-    if (getuid () == 0) {
-	ret = krb5_make_principal(context, princ, NULL, user, "root", NULL);
-    } else {
-	ret = krb5_make_principal(context, princ, NULL, user, NULL);
-    }
-    return ret;
+    return _krb5_get_default_principal_local(context, princ);
 }

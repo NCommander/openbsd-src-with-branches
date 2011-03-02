@@ -2849,7 +2849,7 @@ insn_unit (insn)
          range, don't cache it.  */
       if (FUNCTION_UNITS_SIZE < HOST_BITS_PER_SHORT
 	  || unit >= 0
-	  || (~unit & ((1 << (HOST_BITS_PER_SHORT - 1)) - 1)) == 0)
+	  || (unit & ~((1 << (HOST_BITS_PER_SHORT - 1)) - 1)) == 0)
 	INSN_UNIT (insn) = unit;
     }
   return (unit > 0 ? unit - 1 : unit);
@@ -3952,16 +3952,11 @@ sched_analyze (head, tail)
 		  {
 		    for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		    reg_last_uses[i] = 0;
 
 		    for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-		    if (global_regs[i])
-		      for (u = reg_last_clobbers[i]; u; u = XEXP (u, 1))
-		        add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-
-		    SET_REGNO_REG_SET (reg_pending_sets, i);
+		    SET_REGNO_REG_SET (reg_pending_clobbers, i);
 		  }
 	    }
 
@@ -4630,12 +4625,15 @@ attach_deaths (x, insn, set_p)
 
 	if (regno >= FIRST_PSEUDO_REGISTER || ! global_regs[regno])
 	  {
-	    /* Never add REG_DEAD notes for the FRAME_POINTER_REGNUM or the
-	       STACK_POINTER_REGNUM, since these are always considered to be
-	       live.  Similarly for ARG_POINTER_REGNUM if it is fixed.  */
-	    if (regno != FRAME_POINTER_REGNUM
+	    /* Never add REG_DEAD notes for STACK_POINTER_REGNUM
+	       since it's always considered to be live.  Similarly
+	       for FRAME_POINTER_REGNUM if a frame pointer is needed
+	       and for ARG_POINTER_REGNUM if it is fixed.  */
+	    if (! (regno == FRAME_POINTER_REGNUM
+		   && (! reload_completed || frame_pointer_needed))
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-		&& ! (regno == HARD_FRAME_POINTER_REGNUM)
+		&& ! (regno == HARD_FRAME_POINTER_REGNUM
+		      && (! reload_completed || frame_pointer_needed))
 #endif
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
 		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])

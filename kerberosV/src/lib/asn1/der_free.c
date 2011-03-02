@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,16 +33,25 @@
 
 #include "der_locl.h"
 
-RCSID("$KTH: der_free.c,v 1.7 1999/12/02 17:05:01 joda Exp $");
+RCSID("$KTH: der_free.c,v 1.10 2003/08/20 16:18:49 joda Exp $");
 
 void
-free_general_string (general_string *str)
+free_general_string (heim_general_string *str)
 {
     free(*str);
+    *str = NULL;
 }
 
 void
-free_octet_string (octet_string *k)
+free_octet_string (heim_octet_string *k)
 {
     free(k->data);
+    k->data = NULL;
+}
+
+void
+free_oid (heim_oid *k)
+{
+    free(k->components);
+    k->components = NULL;
 }

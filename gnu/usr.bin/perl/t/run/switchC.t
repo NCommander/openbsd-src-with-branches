@@ -9,16 +9,20 @@ BEGIN {
 	print "1..0 # Skip: not perlio\n";
 	exit 0;
     }
+    if ($ENV{PERL_CORE_MINITEST}) {
+	print "1..0 # Skip : -C and \$ENV{PERL_UNICODE} are disabled on miniperl\n";
+	exit 0;
+    }
+	
 }
 
-require "./test.pl";
+BEGIN { require "./test.pl"; }
 
-plan(tests => 6);
+plan(tests => 9);
 
 my $r;
 
-my @tmpfiles = ();
-END { unlink @tmpfiles }
+my $tmpfile = tempfile();
 
 my $b = pack("C*", unpack("U0C*", pack("U",256)));
 
@@ -45,14 +49,12 @@ $r = runperl( switches => [ '-CE', '-w' ],
 like( $r, qr/^$b(?:\r?\n)?$/s, '-CE: UTF-8 stderr' );
 
 $r = runperl( switches => [ '-Co', '-w' ],
-	      prog     => 'open(F, q(>out)); print F chr(256); close F',
+	      prog     => "open(F, q(>$tmpfile)); print F chr(256); close F",
               stderr   => 1 );
 like( $r, qr/^$/s, '-Co: auto-UTF-8 open for output' );
 
-push @tmpfiles, "out";
-
 $r = runperl( switches => [ '-Ci', '-w' ],
-	      prog     => 'open(F, q(<out)); print ord(<F>); close F',
+	      prog     => "open(F, q(<$tmpfile)); print ord(<F>); close F",
               stderr   => 1 );
 like( $r, qr/^256(?:\r?\n)?$/s, '-Ci: auto-UTF-8 open for input' );
 
@@ -62,3 +64,19 @@ $r = runperl( switches => [ '-CA', '-w' ],
               args     => [ chr(256) ] );
 like( $r, qr/^256(?:\r?\n)?$/s, '-CA: @ARGV' );
 
+$r = runperl( switches => [ '-CS', '-w' ],
+	      progs    => [ '#!perl -CS', 'print chr(256)'],
+              stderr   => 1, );
+like( $r, qr/^$b(?:\r?\n)?$/s, '#!perl -C' );
+
+$r = runperl( switches => [ '-CA', '-w' ],
+	      progs    => [ '#!perl -CS', 'print chr(256)' ],
+              stderr   => 1, );
+like( $r, qr/^Too late for "-CS" option at -e line 1\.$/s,
+      '#!perl -C with different -C on command line' );
+
+$r = runperl( switches => [ '-w' ],
+	      progs    => [ '#!perl -CS', 'print chr(256)' ],
+              stderr   => 1, );
+like( $r, qr/^Too late for "-CS" option at -e line 1\.$/s,
+      '#!perl -C but not command line' );

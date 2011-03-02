@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1998 - 2001, 2004 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: simple_exec.c,v 1.8 2000/11/05 16:41:06 joda Exp $");
+RCSID("$KTH: simple_exec.c,v 1.14 2005/04/13 11:39:00 lha Exp $");
 #endif
 
 #include <stdarg.h>
@@ -58,32 +58,183 @@ RCSID("$KTH: simple_exec.c,v 1.8 2000/11/05 16:41:06 joda Exp $");
    -1   on `unspecified' system errors
    -2   on fork failures
    -3   on waitpid errors
+   -4   exec timeout
    0-   is return value from subprocess
    126  if the program couldn't be executed
    127  if the program couldn't be found
    128- is 128 + signal that killed subprocess
+
+   possible values `func' can return:
+   ((time_t)-2)		exit loop w/o killing child and return
+   			`exec timeout'/-4 from simple_exec
+   ((time_t)-1)		kill child with SIGTERM and wait for child to exit
+   0			don't timeout again
+   n			seconds to next timeout
    */
 
-static int
-check_status(pid_t pid)
+static int sig_alarm;
+
+static RETSIGTYPE
+sigtimeout(int sig)
 {
+    sig_alarm = 1;
+    SIGRETURN(0);
+}
+
+int ROKEN_LIB_FUNCTION
+wait_for_process_timed(pid_t pid, time_t (*func)(void *), 
+		       void *ptr, time_t timeout)
+{
+    RETSIGTYPE (*old_func)(int sig) = NULL;
+    unsigned int oldtime = 0;
+    int ret;
+
+    sig_alarm = 0;
+
+    if (func) {
+	old_func = signal(SIGALRM, sigtimeout);
+	oldtime = alarm(timeout);
+    }
+
     while(1) {
 	int status;
 
-	while(waitpid(pid, &status, 0) < 0)
-	    if (errno != EINTR)
-		return -3;
+	while(waitpid(pid, &status, 0) < 0) {
+	    if (errno != EINTR) {
+		ret = -3;
+		goto out;
+	    }
+	    if (func == NULL)
+		continue;
+	    if (sig_alarm == 0)
+		continue;
+	    timeout = (*func)(ptr);
+	    if (timeout == (time_t)-1) {
+		kill(pid, SIGTERM);
+		continue;
+	    } else if (timeout == (time_t)-2) {
+		ret = -4;
+		goto out;
+	    }
+	    alarm(timeout);
+	}
 	if(WIFSTOPPED(status))
 	    continue;
-	if(WIFEXITED(status))
-	    return WEXITSTATUS(status);
-	if(WIFSIGNALED(status))
-	    return WTERMSIG(status) + 128;
+	if(WIFEXITED(status)) {
+	    ret = WEXITSTATUS(status);
+	    break;
+	}
+	if(WIFSIGNALED(status)) {
+	    ret = WTERMSIG(status) + 128;
+	    break;
+	}
     }
+ out:
+    if (func) {
+	signal(SIGALRM, old_func);
+	alarm(oldtime);
+    }
+    return ret;
 }
 
-int
-simple_execvp(const char *file, char *const args[])
+int ROKEN_LIB_FUNCTION
+wait_for_process(pid_t pid)
+{
+    return wait_for_process_timed(pid, NULL, NULL, 0);
+}
+
+int ROKEN_LIB_FUNCTION
+pipe_execv(FILE **stdin_fd, FILE **stdout_fd, FILE **stderr_fd, 
+	   const char *file, ...)
+{
+    int in_fd[2], out_fd[2], err_fd[2];
+    pid_t pid;
+    va_list ap;
+    char **argv;
+
+    if(stdin_fd != NULL)
+	pipe(in_fd);
+    if(stdout_fd != NULL)
+	pipe(out_fd);
+    if(stderr_fd != NULL)
+	pipe(err_fd);
+    pid = fork();
+    switch(pid) {
+    case 0:
+	va_start(ap, file);
+	argv = vstrcollect(&ap);
+	va_end(ap);
+	if(argv == NULL)
+	    exit(-1);
+
+	/* close pipes we're not interested in */
+	if(stdin_fd != NULL)
+	    close(in_fd[1]);
+	if(stdout_fd != NULL)
+	    close(out_fd[0]);
+	if(stderr_fd != NULL)
+	    close(err_fd[0]);
+
+	/* pipe everything caller doesn't care about to /dev/null */
+	if(stdin_fd == NULL)
+	    in_fd[0] = open(_PATH_DEVNULL, O_RDONLY);
+	if(stdout_fd == NULL)
+	    out_fd[1] = open(_PATH_DEVNULL, O_WRONLY);
+	if(stderr_fd == NULL)
+	    err_fd[1] = open(_PATH_DEVNULL, O_WRONLY);
+
+	/* move to proper descriptors */
+	if(in_fd[0] != STDIN_FILENO) {
+	    dup2(in_fd[0], STDIN_FILENO);
+	    close(in_fd[0]);
+	}
+	if(out_fd[1] != STDOUT_FILENO) {
+	    dup2(out_fd[1], STDOUT_FILENO);
+	    close(out_fd[1]);
+	}
+	if(err_fd[1] != STDERR_FILENO) {
+	    dup2(err_fd[1], STDERR_FILENO);
+	    close(err_fd[1]);
+	}
+
+	closefrom(3);
+
+	execv(file, argv);
+	exit((errno == ENOENT) ? EX_NOTFOUND : EX_NOEXEC);
+    case -1:
+	if(stdin_fd != NULL) {
+	    close(in_fd[0]);
+	    close(in_fd[1]);
+	}
+	if(stdout_fd != NULL) {
+	    close(out_fd[0]);
+	    close(out_fd[1]);
+	}
+	if(stderr_fd != NULL) {
+	    close(err_fd[0]);
+	    close(err_fd[1]);
+	}
+	return -2;
+    default:
+	if(stdin_fd != NULL) {
+	    close(in_fd[0]);
+	    *stdin_fd = fdopen(in_fd[1], "w");
+	}
+	if(stdout_fd != NULL) {
+	    close(out_fd[1]);
+	    *stdout_fd = fdopen(out_fd[0], "r");
+	}
+	if(stderr_fd != NULL) {
+	    close(err_fd[1]);
+	    *stderr_fd = fdopen(err_fd[0], "r");
+	}
+    }
+    return pid;
+}
+
+int ROKEN_LIB_FUNCTION
+simple_execvp_timed(const char *file, char *const args[], 
+		    time_t (*func)(void *), void *ptr, time_t timeout)
 {
     pid_t pid = fork();
     switch(pid){
@@ -93,13 +244,20 @@ simple_execvp(const char *file, char *const args[])
 	execvp(file, args);
 	exit((errno == ENOENT) ? EX_NOTFOUND : EX_NOEXEC);
     default: 
-	return check_status(pid);
+	return wait_for_process_timed(pid, func, ptr, timeout);
     }
 }
 
+int ROKEN_LIB_FUNCTION
+simple_execvp(const char *file, char *const args[])
+{
+    return simple_execvp_timed(file, args, NULL, NULL, 0);
+}
+
 /* gee, I'd like a execvpe */
-int
-simple_execve(const char *file, char *const args[], char *const envp[])
+int ROKEN_LIB_FUNCTION
+simple_execve_timed(const char *file, char *const args[], char *const envp[],
+		    time_t (*func)(void *), void *ptr, time_t timeout)
 {
     pid_t pid = fork();
     switch(pid){
@@ -109,11 +267,17 @@ simple_execve(const char *file, char *const args[], char *const envp[])
 	execve(file, args, envp);
 	exit((errno == ENOENT) ? EX_NOTFOUND : EX_NOEXEC);
     default: 
-	return check_status(pid);
+	return wait_for_process_timed(pid, func, ptr, timeout);
     }
 }
 
-int
+int ROKEN_LIB_FUNCTION
+simple_execve(const char *file, char *const args[], char *const envp[])
+{
+    return simple_execve_timed(file, args, envp, NULL, NULL, 0);
+}
+
+int ROKEN_LIB_FUNCTION
 simple_execlp(const char *file, ...)
 {
     va_list ap;
@@ -130,7 +294,7 @@ simple_execlp(const char *file, ...)
     return ret;
 }
 
-int
+int ROKEN_LIB_FUNCTION
 simple_execle(const char *file, ... /* ,char *const envp[] */)
 {
     va_list ap;
@@ -149,7 +313,7 @@ simple_execle(const char *file, ... /* ,char *const envp[] */)
     return ret;
 }
 
-int
+int ROKEN_LIB_FUNCTION
 simple_execl(const char *file, ...) 
 {
     va_list ap;
