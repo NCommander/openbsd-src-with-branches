@@ -1,4 +1,4 @@
-/* $OpenBSD: zts.c,v 1.13 2010/08/30 21:35:57 deraadt Exp $ */
+/* $OpenBSD: zts.c,v 1.14 2010/09/07 16:21:41 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@openbsd.org>
  *
@@ -511,7 +511,9 @@ zts_irq(void *v)
 	
 	if (down) {
 		zts_avgpos(&tp);
-		if (!sc->sc_rawmode) {
+		if (!sc->sc_rawmode &&
+		    (sc->sc_tsscale.maxx - sc->sc_tsscale.minx) != 0 &&
+		    (sc->sc_tsscale.maxy - sc->sc_tsscale.miny) != 0) {
 			/* Scale down to the screen resolution. */
 			tp.x = ((tp.x - sc->sc_tsscale.minx) *
 			    sc->sc_tsscale.resx) /
@@ -571,6 +573,8 @@ zts_ioctl(void *v, u_long cmd, caddr_t data, int flag, struct proc *p)
 		    wsmc->resx >= 0 && wsmc->resy >= 0 &&
 		    wsmc->minx < 32768 && wsmc->maxx < 32768 &&
 		    wsmc->miny < 32768 && wsmc->maxy < 32768 &&
+		    (wsmc->maxx - wsmc->minx) != 0 &&
+		    (wsmc->maxy - wsmc->miny) != 0 &&
 		    wsmc->resx < 32768 && wsmc->resy < 32768 &&
 		    wsmc->swapxy >= 0 && wsmc->swapxy <= 1 &&
 		    wsmc->samplelen >= 0 && wsmc->samplelen <= 1))
