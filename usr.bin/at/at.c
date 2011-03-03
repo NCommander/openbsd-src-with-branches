@@ -1,4 +1,4 @@
-/*	$OpenBSD: at.c,v 1.56 2009/10/27 23:59:35 deraadt Exp $	*/
+/*	$OpenBSD: at.c,v 1.57 2010/07/02 23:40:09 krw Exp $	*/
 
 /*
  *  at.c : Put file into atrun queue
@@ -505,7 +505,7 @@ list_jobs(int argc, char **argv, int count_only, int csort)
 
 	PRIV_END;
 
-	if (fstat(spool->dd_fd, &stbuf) != 0)
+	if (fstat(dirfd(spool), &stbuf) != 0)
 		perr2("Cannot stat ", AT_DIR);
 
 	/*
