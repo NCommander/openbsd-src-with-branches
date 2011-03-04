@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.13 2007/04/25 08:16:10 sobrado Exp $	*/
+/*	$OpenBSD: util.c,v 1.14 2009/10/27 23:59:21 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.12 1995/09/07 06:43:02 jtc Exp $	*/
 
 /*
@@ -59,7 +59,7 @@ void
 usage(void)
 {
 	(void)fprintf(stderr,
-	    "usage: %s [-1AaCcdFfghikLlmnopqRrSsTtux] [file ...]\n",
+	    "usage: %s [-1AaCcdFfgHhikLlmnopqRrSsTtux] [file ...]\n",
 	    __progname);
 	exit(1);
 }
