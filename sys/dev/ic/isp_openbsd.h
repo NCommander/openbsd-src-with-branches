@@ -1,4 +1,4 @@
-/*      $OpenBSD: isp_openbsd.h,v 1.32 2009/07/01 20:55:57 kettenis Exp $ */
+/*      $OpenBSD: isp_openbsd.h,v 1.33 2010/06/26 23:24:44 guenther Exp $ */
 /*
  * OpenBSD Specific definitions for the QLogic ISP Host Adapter
  */
@@ -170,7 +170,7 @@ case SYNC_SFORCPU:						\
 case SYNC_REG:							\
 	bus_space_barrier(isp->isp_bus_tag,			\
 	    isp->isp_bus_handle, offset, size, 			\
-	    BUS_SPACE_BARRIER_READ);				\
+	    BUS_SPACE_BARRIER_READ | BUS_SPACE_BARRIER_WRITE);	\
 	break;							\
 default:							\
 	break;							\
