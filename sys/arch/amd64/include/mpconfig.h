@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpconfig.h,v 1.5 2007/11/16 16:16:07 deraadt Exp $	*/
+/*	$OpenBSD: mpconfig.h,v 1.6 2008/01/15 19:30:32 kettenis Exp $	*/
 /*	$NetBSD: mpconfig.h,v 1.2 2003/05/11 00:05:52 fvdl Exp $	*/
 
 /*
@@ -33,7 +33,6 @@ struct mp_intr_map {
  	int flags;		/* from mp spec intr record */
 	u_int32_t redir;
 	int cpu_id;
-	int global_int;		/* ACPI global interrupt number */
 };
 
 #if defined(_KERNEL)
