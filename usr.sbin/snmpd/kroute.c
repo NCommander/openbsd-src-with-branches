@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.14 2010/06/11 10:45:36 jsg Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.15 2010/10/15 09:27:03 sthen Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -780,7 +780,7 @@ mask2prefixlen6(struct sockaddr_in6 *sa_in6)
 		case 0x00:
 			return (l);
 		default:
-			fatalx("non continguous inet6 netmask");
+			fatalx("non contiguous inet6 netmask");
 		}
 	}
 
