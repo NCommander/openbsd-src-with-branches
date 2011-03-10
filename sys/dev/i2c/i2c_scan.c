@@ -1,4 +1,4 @@
-/*	$OpenBSD: i2c_scan.c,v 1.136 2010/03/22 23:17:34 kettenis Exp $	*/
+/*	$OpenBSD: i2c_scan.c,v 1.137 2010/07/09 08:05:45 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt <deraadt@openbsd.org>
@@ -733,6 +733,15 @@ iic_probe_sensor(struct device *self, u_int8_t addr)
 		    (iicprobe(0x16) & 0x0f) == 0x00 &&
 		    (iicprobe(0x17) & 0x0f) == 0x00)
 			name = "tmp401";
+		break;
+	case 0xa1:
+		if ((addr >= 0x48 && addr <= 0x4f) &&
+		    iicprobe(0xff) == 0x00 &&
+		    (iicprobe(0x03) & 0xf8) == 0x00 &&
+		    iicprobe(0x04) <= 0x09) {
+			name = "sa56004x";	/* NXP sa56004x */
+			skip_fc = 1;
+		}
 		break;
 	}
 
