@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.173 2010/08/19 18:14:14 kettenis Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.174 2010/11/02 10:24:34 dlg Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -392,7 +392,6 @@ parse(char *string, int flags)
 			warnx("use pstat to view %s information", string);
 			return;
 		case KERN_PROC:
-		case KERN_PROC2:
 			if (flags == 0)
 				return;
 			warnx("use ps to view %s information", string);
