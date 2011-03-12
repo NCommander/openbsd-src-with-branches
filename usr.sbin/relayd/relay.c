@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.127 2010/11/30 14:49:14 reyk Exp $	*/
+/*	$OpenBSD: relay.c,v 1.128 2010/12/20 12:38:06 dhill Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -906,7 +906,7 @@ relay_read(struct bufferevent *bev, void *arg)
 		goto fail;
 	if (con->se_done)
 		goto done;
-	bufferevent_enable(con->se_in.bev, EV_READ);
+	bufferevent_enable(cre->dst->bev, EV_READ);
 	return;
  done:
 	relay_close(con, "last read (done)");
