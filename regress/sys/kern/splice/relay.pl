@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#	$OpenBSD$
+#	$OpenBSD: relay.pl,v 1.1 2011/01/07 22:06:08 bluhm Exp $
 
 # Copyright (c) 2010 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -76,9 +76,12 @@ $s->down;
 
 exit if $args{nocheck};
 
-my $clen = $c->loggrep(qr/^LEN: /) unless $args{client}{nocheck};
-my $rlen = $r->loggrep(qr/^LEN: /) unless $args{relay}{nocheck};
-my $slen = $s->loggrep(qr/^LEN: /) unless $args{server}{nocheck};
+my $clen = $c->loggrep(qr/^LEN: /) // die "no client len"
+    unless $args{client}{nocheck};
+my $rlen = $r->loggrep(qr/^LEN: /) // die "no relay len"
+    unless $args{relay}{nocheck};
+my $slen = $s->loggrep(qr/^LEN: /) // die "no server len"
+    unless $args{server}{nocheck};
 !$clen || !$rlen || $clen eq $rlen
     or die "client: $clen", "relay: $rlen", "len mismatch";
 !$rlen || !$slen || $rlen eq $slen
