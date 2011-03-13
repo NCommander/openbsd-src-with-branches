@@ -1,4 +1,4 @@
-/*	$OpenBSD: unixdev.c,v 1.5 2005/05/24 20:38:20 uwe Exp $	*/
+/*	$OpenBSD: unixdev.c,v 1.6 2007/06/16 00:26:33 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996-1998 Michael Shalayeff
@@ -41,7 +41,7 @@
 #include <lib/libsa/unixdev.h>
 
 int
-unixstrategy(void *devdata, int rw, daddr_t blk, size_t size, void *buf,
+unixstrategy(void *devdata, int rw, daddr32_t blk, size_t size, void *buf,
     size_t *rsize)
 {
 	int	rc = 0;

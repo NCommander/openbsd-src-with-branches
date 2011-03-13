@@ -1,4 +1,4 @@
-/*	$OpenBSD: rawfs.c,v 1.3 2006/01/18 14:15:12 deraadt Exp $	*/
+/*	$OpenBSD: rawfs.c,v 1.4 2006/08/17 06:31:10 miod Exp $	*/
 /*	$NetBSD: rawfs.c,v 1.2 1996/10/06 19:07:53 thorpej Exp $	*/
 
 /*
@@ -53,7 +53,7 @@ extern int debug;
  * In-core open file.
  */
 struct rawfs_file {
-	daddr_t		fs_nextblk;	/* block number to read next */
+	daddr32_t	fs_nextblk;	/* block number to read next */
 	int		fs_len;		/* amount left in f_buf */
 	char *		fs_ptr;		/* read pointer into f_buf */
 	char		fs_buf[RAWFS_BSIZE];

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdc.c,v 1.18 2004/04/07 18:24:20 mickey Exp $	*/
+/*	$OpenBSD: pdc.c,v 1.19 2005/04/07 00:21:51 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -128,7 +128,7 @@ int
 iodcstrategy(devdata, rw, blk, size, buf, rsize)
 	void *devdata;
 	int rw;
-	daddr_t blk;
+	daddr32_t blk;
 	size_t size;
 	void *buf;
 	size_t *rsize;

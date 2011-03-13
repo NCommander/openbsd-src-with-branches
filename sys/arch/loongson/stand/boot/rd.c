@@ -1,4 +1,4 @@
-/*	$OpenBSD: rd.c,v 1.1 2010/02/17 21:25:49 miod Exp $	*/
+/*	$OpenBSD: rd.c,v 1.2 2010/04/03 19:13:27 miod Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -29,7 +29,7 @@ static	off_t rdoffs;
  */
 
 int
-rd_iostrategy(void *f, int rw, daddr_t dblk, size_t size, void *buf,
+rd_iostrategy(void *f, int rw, daddr32_t dblk, size_t size, void *buf,
     size_t *rsize)
 {
 	/* never invoked directly */

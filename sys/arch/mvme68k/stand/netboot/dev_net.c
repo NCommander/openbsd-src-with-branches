@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_net.c,v 1.7 1999/01/11 05:11:41 millert Exp $ */
+/*	$OpenBSD: dev_net.c,v 1.8 2003/08/20 00:26:00 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Gordon W. Ross
@@ -202,7 +202,7 @@ net_ioctl(struct open_file *f, u_long cmd, void *data)
 }
 
 int
-net_strategy(void *devdata, int rw, daddr_t blk, size_t size, void *buf,
+net_strategy(void *devdata, int rw, daddr32_t blk, size_t size, void *buf,
     size_t *rsize)
 {
 	return EIO;

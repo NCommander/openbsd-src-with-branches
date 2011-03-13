@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootxx.c,v 1.1 2001/06/26 21:58:01 smurph Exp $ */
+/*	$OpenBSD: bootxx.c,v 1.2 2002/03/14 03:15:58 millert Exp $ */
 
 /*
  * Copyright (c) 1994 Paul Kranenburg
@@ -63,7 +63,7 @@
  */
 int     	block_size = 512;	/* default */
 int     	block_count = MAXBLOCKNUM;	/* length of table */
-daddr_t 	block_table[MAXBLOCKNUM] = { 0 };
+daddr32_t 	block_table[MAXBLOCKNUM] = { 0 };
 
 extern		char *version;
 

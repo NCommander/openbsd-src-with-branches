@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugdev.c,v 1.4 2007/06/17 00:28:56 deraadt Exp $ */
+/*	$OpenBSD: bugdev.c,v 1.6 2010/04/23 15:25:20 jsing Exp $ */
 
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -103,14 +103,14 @@ int
 bugscstrategy(devdata, func, dblk, size, buf, rsize)
 	void *devdata;
 	int func;
-	daddr_t dblk;
+	daddr32_t dblk;
 	size_t size;
 	void *buf;
 	size_t *rsize;
 {
 	struct mvmeprom_dskio dio;
 	register struct bugsc_softc *pp = (struct bugsc_softc *)devdata;
-	daddr_t	blk = dblk + pp->poff;
+	daddr32_t blk = dblk + pp->poff;
 
 	twiddle();
 
