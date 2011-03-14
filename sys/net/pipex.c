@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.14 2011/01/28 06:43:00 dlg Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.15 2011/02/24 04:21:34 yasuoka Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -2545,13 +2545,6 @@ pipex_mppe_output(struct mbuf *m0, struct pipex_session *session,
 
 	mppe = &session->mppe_send;
 
-	/* prepend mppe header */
-	M_PREPEND(m0, sizeof(struct mppe_header), M_NOWAIT);
-	if (m0 == NULL)
-		goto drop;
-	hdr = mtod(m0, struct mppe_header *);
-	hdr->protocol = protocol;
-
 	/*
 	 * create a deep-copy if the mbuf has a shared mbuf cluster.
 	 * this is required to handle cases of tcp retransmition.
@@ -2566,6 +2559,12 @@ pipex_mppe_output(struct mbuf *m0, struct pipex_session *session,
 			break;
 		}
 	}
+	/* prepend mppe header */
+	M_PREPEND(m0, sizeof(struct mppe_header), M_NOWAIT);
+	if (m0 == NULL)
+		goto drop;
+	hdr = mtod(m0, struct mppe_header *);
+	hdr->protocol = protocol;
 
 	/* check coherency counter */
 	flushed = 0;
