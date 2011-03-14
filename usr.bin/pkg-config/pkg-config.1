@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pkg-config.1,v 1.16 2011/03/10 19:07:45 jasper Exp $
+.\"	$OpenBSD: pkg-config.1,v 1.17 2011/03/10 19:13:14 jasper Exp $
 .\"
 .\"	Copyright (c) 2006 Chris Kuethe <ckuethe@openbsd.org>
 .\"
@@ -154,6 +154,16 @@ will write the passed arguments.
 This can be used to specify a colon-separated list of paths to search for
 package files.
 If given, this list of paths is prepended to the standard search path.
+.It Ev PKG_CONFIG_SYSROOT_DIR
+This modifies
+.Fl I
+and
+.Fl L
+to use the target sysroot directory.
+Thus -I/usr/local/include will become -I/target/usr/local/include when
+PKG_CONFIG_SYSROOT_DIR is set to /target, which is useful when crosscompiling
+packages that use
+.Nm .
 .It Ev PKG_CONFIG_TOP_BUILD_DIR
 If set
 .Nm
