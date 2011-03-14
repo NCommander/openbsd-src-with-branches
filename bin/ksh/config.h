@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.12 2004/12/18 21:04:52 millert Exp $	*/
+/*	$OpenBSD: config.h,v 1.13 2004/12/18 22:42:26 millert Exp $	*/
 
 /* config.h.  NOT generated automatically. */
 
@@ -31,9 +31,6 @@
 
 /* Specify default $ENV? */
 /* #undef DEFAULT_ENV */
-
-/* Include game-of-life? */
-/* #undef SILLY */
 
 /* The number of bytes in a int.  */
 #define SIZEOF_INT 4
