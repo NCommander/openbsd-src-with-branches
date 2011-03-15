@@ -453,7 +453,7 @@ struct sr_volume {
 
 	/* sensors */
 	struct ksensor		sv_sensor;
-	struct ksensordev	sv_sensordev;
+	int			sv_sensor_attached;
 	int			sv_sensor_valid;
 };
 
@@ -573,7 +573,9 @@ struct sr_softc {
 	struct rwlock		sc_hs_lock;	/* Lock for hotspares list. */
 	int			sc_hotspare_no; /* Number of hotspares. */
 
+	struct ksensordev	sc_sensordev;
 	int			sc_sensors_running;
+
 	/*
 	 * during scsibus attach this is the discipline that is in use
 	 * this variable is protected by sc_lock and splhigh
