@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.9 2005/12/01 05:06:40 cloder Exp $	*/
+/*	$OpenBSD: read.c,v 1.10 2010/07/24 22:17:03 guenther Exp $	*/
 /*	$NetBSD: read.c,v 1.2 1995/07/03 21:24:59 cgd Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: read.c,v 1.9 2005/12/01 05:06:40 cloder Exp $";
+static char rcsid[] = "$OpenBSD: read.c,v 1.10 2010/07/24 22:17:03 guenther Exp $";
 #endif
 
 #include <stdio.h>
@@ -161,6 +161,8 @@ readfile(const char *name)
 		if (cp == eptr)
 			inperr();
 		cp = eptr;
+		if (isrc < 0 || isrc >= ninpfns)
+			inperr();
 		isrc = inpfns[isrc];
 
 		/* line number in isrc */
