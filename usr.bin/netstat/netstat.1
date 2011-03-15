@@ -38,7 +38,7 @@
 .Nd show network status
 .Sh SYNOPSIS
 .Nm netstat
-.Op Fl Aan
+.Op Fl AaBn
 .Op Fl f Ar address_family
 .Op Fl p Ar protocol
 .Op Fl M Ar core
@@ -119,6 +119,11 @@ With the interface display (options
 or
 .Fl i ) ,
 show multicast addresses.
+.It Fl B
+With the default display,
+show buffer sizes for TCP sockets.
+This includes the send window size, receive window size and congestion
+window size.
 .It Fl b
 With the interface display (options
 .Fl I

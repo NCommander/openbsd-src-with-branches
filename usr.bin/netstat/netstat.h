@@ -39,6 +39,7 @@
 
 int	Aflag;		/* show addresses of protocol control block */
 int	aflag;		/* show all sockets (including servers) */
+int	Bflag;		/* show TCP send and receive buffer sizes */
 int	bflag;		/* show bytes instead of packets */
 int	dflag;		/* show i/f dropped packets */
 int	Fflag;		/* show routes whose gateways are in specified AF */
