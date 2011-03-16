@@ -1138,8 +1138,7 @@ udav_rxeof(usbd_xfer_handle xfer, usbd_private_handle priv, usbd_status status)
 		goto done;
 	}
 
-	if (total_len < ETHERMIN ||
-	    total_len > ifp->if_hardmtu ||
+	if (total_len < sizeof(struct ether_header) ||
 	    h->pktstat & UDAV_RSR_ERR) {
 		ifp->if_ierrors++;
 		goto done;
