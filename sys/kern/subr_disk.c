@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.114 2010/11/24 15:31:34 jsing Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.115 2011/03/14 17:20:00 krw Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -400,7 +400,7 @@ readdoslabel(struct buf *bp, void (*strat)(struct buf *),
 	 * Read dos partition table, follow extended partitions.
 	 * Map the partitions to disklabel entries i-p
 	 */
-	while (wander && loop < 8) {
+	while (wander && loop < DOS_MAXEBR) {
 		loop++;
 		wander = 0;
 		if (part_blkno < extoff)
