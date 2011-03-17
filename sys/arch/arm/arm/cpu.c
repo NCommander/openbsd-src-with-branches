@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.11 2010/04/22 21:03:17 drahn Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.12 2010/07/01 22:39:08 drahn Exp $	*/
 /*	$NetBSD: cpu.c,v 1.56 2004/04/14 04:01:49 bsh Exp $	*/
 
 
@@ -388,6 +388,8 @@ const struct cpuidtab cpuids[] = {
 	{ CPU_ID_OMAP3430,	CPU_CLASS_ARMv7,	"ARM OMAP3[45]30",
 	  generic_steppings },
 	{ CPU_ID_OMAP3530,	CPU_CLASS_ARMv7,	"ARM OMAP3530",
+	  generic_steppings },
+	{ CPU_ID_OMAP3630,	CPU_CLASS_ARMv7,	"ARM OMAP3630/DM3730",
 	  generic_steppings },
 
 
