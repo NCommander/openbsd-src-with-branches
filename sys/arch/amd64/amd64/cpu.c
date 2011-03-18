@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.39 2010/11/26 11:59:40 krw Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.40 2010/11/27 13:03:04 kettenis Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -85,7 +85,6 @@
 #include <machine/specialreg.h>
 #include <machine/segments.h>
 #include <machine/gdt.h>
-#include <machine/mtrr.h>
 #include <machine/pio.h>
 
 #if NLAPIC > 0
