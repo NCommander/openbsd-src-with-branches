@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageLocation.pm,v 1.27 2010/12/24 09:04:14 espie Exp $
+# $OpenBSD: PackageLocation.pm,v 1.28 2010/12/29 13:03:05 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -92,6 +92,7 @@ sub _opened
 	}
 	require OpenBSD::Ustar;
 	my $archive = OpenBSD::Ustar->new($fh, $self->{state});
+	$archive->set_description($self->{repository}->url($self->{name}));
 	$self->{_archive} = $archive;
 
 	if (defined $self->{_current}) {
