@@ -1,4 +1,4 @@
-/*	$OpenBSD: pucdata.c,v 1.71 2010/07/07 21:32:50 sthen Exp $	*/
+/*	$OpenBSD: pucdata.c,v 1.72 2010/07/22 17:16:10 pirofti Exp $	*/
 /*	$NetBSD: pucdata.c,v 1.6 1999/07/03 05:55:23 cgd Exp $	*/
 
 /*
@@ -1326,6 +1326,14 @@ const struct puc_device_description puc_devs[] = {
 	    {	0xffff,	0xffff,				      0xffff, 0xffff },
 	    {
 		{ PUC_PORT_TYPE_LPT, 0x10, 0x00 },
+	    },
+	},
+
+	{   /* NetMos NM9922: 2S */
+	    {   PCI_VENDOR_NETMOS, PCI_PRODUCT_NETMOS_NM9922, 0xa000, 0x1000 },
+	    {	0xffff,	0xffff,				      0xffff, 0xffff },
+	    {
+		{ PUC_PORT_TYPE_COM, 0x10, 0x00, COM_FREQ },
 	    },
 	},
 
