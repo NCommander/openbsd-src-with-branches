@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.12 2008/06/26 05:42:13 ray Exp $	*/
+/*	$OpenBSD: intr.h,v 1.13 2011/03/23 16:54:37 pirofti Exp $	*/
 /*	$NetBSD: intr.h,v 1.8 2001/01/14 23:50:30 thorpej Exp $ */
 
 /*-
@@ -33,9 +33,7 @@
 #ifndef _MACHINE_INTR_H_
 #define _MACHINE_INTR_H_
 
-#ifndef _MACHINE_INTR_H_
 #include <sparc64/sparc64/intreg.h>
-#endif
 
 #include <sys/evcount.h>
 
