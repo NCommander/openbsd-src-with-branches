@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.1 2009/05/08 03:13:26 drahn Exp $	*/
+/*	$OpenBSD: intr.h,v 1.2 2010/04/23 03:50:22 miod Exp $	*/
 /*	$NetBSD: intr.h,v 1.12 2003/06/16 20:00:59 thorpej Exp $	*/
 
 /*
@@ -36,8 +36,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_BEAGLEBOARD_INTR_H_
-#define	_BEAGLEBOARD_INTR_H_
+#ifndef	_MACHINE_INTR_H_
+#define	_MACHINE_INTR_H_
 
 #ifdef _KERNEL
 
@@ -100,5 +100,5 @@
 
 #endif /* _KERNEL */
 
-#endif	/* _BEAGLEBOARD_INTR_H_ */
+#endif	/* _MACHINE_INTR_H_ */
 

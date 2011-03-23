@@ -1,4 +1,4 @@
-/*	$OpenBSD: pte_motorola.h,v 1.4 2003/06/02 23:27:48 millert Exp $	*/
+/*	$OpenBSD: pte_motorola.h,v 1.5 2005/09/25 22:19:57 miod Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -38,8 +38,8 @@
  *	@(#)pte.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef	_PTE_MOTOROLA_H_
-#define	_PTE_MOTOROLA_H_
+#ifndef	_M68K_M68K_M68K_PTE_MOTOROLA_H_
+#define	_M68K_M68K_M68K_PTE_MOTOROLA_H_
 
 /*
  * m68k hardware with motorola MMU segment/page table entries
@@ -110,4 +110,4 @@ typedef int	pt_entry_t;	/* Mach page table entry */
 #define	kvtopte(va) \
 	(&Sysmap[((unsigned)(va) - VM_MIN_KERNEL_ADDRESS) >> PGSHIFT])
 
-#endif /* !_PTE_MOTOROLA_H_ */
+#endif /* !_M68K_M68K_M68K_PTE_MOTOROLA_H_ */

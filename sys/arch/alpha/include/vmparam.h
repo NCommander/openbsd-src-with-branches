@@ -1,4 +1,4 @@
-/* $OpenBSD: vmparam.h,v 1.18 2008/10/06 23:09:37 brad Exp $ */
+/* $OpenBSD: vmparam.h,v 1.19 2010/12/15 05:30:18 tedu Exp $ */
 /* $NetBSD: vmparam.h,v 1.18 2000/05/22 17:13:54 thorpej Exp $ */
 
 /*
@@ -39,8 +39,8 @@
  *	@(#)vmparam.h	8.2 (Berkeley) 4/22/94
  */
 
-#ifndef	_ALPHA_VMPARAM_H_
-#define	_ALPHA_VMPARAM_H_
+#ifndef	_MACHINE_VMPARAM_H_
+#define	_MACHINE_VMPARAM_H_
 
 /*
  * Machine dependent constants for Alpha.
@@ -136,4 +136,4 @@ struct pmap_physseg {
 	struct pv_head *pvhead;		/* pv list of this seg */
 };
 
-#endif	/* ! _ALPHA_VMPARAM_H_ */
+#endif	/* ! _MACHINE_VMPARAM_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpbiosvar.h,v 1.7 2007/01/23 21:17:18 kettenis Exp $	*/
+/*	$OpenBSD: mpbiosvar.h,v 1.8 2008/06/26 05:42:10 ray Exp $	*/
 /* $NetBSD: mpbiosvar.h,v 1.1.2.3 2000/02/29 13:17:20 sommerfeld Exp $ */
 
 /*-
@@ -33,8 +33,8 @@
  */
 
 
-#ifndef _I386_MPBIOSVAR_H_
-#define _I386_MPBIOSVAR_H_
+#ifndef _MACHINE_MPBIOSVAR_H_
+#define _MACHINE_MPBIOSVAR_H_
 
 #define MP_TRAMPOLINE  (7 * PAGE_SIZE)
 
@@ -83,4 +83,4 @@ void mpbios_intr_fixup(void);
 
 #endif
 
-#endif /* !_I386_MPBIOSVAR_H_ */
+#endif /* !_MACHINE_MPBIOSVAR_H_ */

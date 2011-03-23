@@ -1,4 +1,4 @@
-/*	$OpenBSD: reg.h,v 1.5 2005/02/17 18:07:35 jfb Exp $	*/
+/*	$OpenBSD: reg.h,v 1.6 2005/04/03 20:21:44 kettenis Exp $	*/
 /*	$NetBSD: reg.h,v 1.14 1995/10/11 04:20:24 mycroft Exp $	*/
 
 /*-
@@ -35,8 +35,8 @@
  *	@(#)reg.h	5.5 (Berkeley) 1/18/91
  */
 
-#ifndef _I386_REG_H_
-#define _I386_REG_H_
+#ifndef _MACHINE_REG_H_
+#define _MACHINE_REG_H_
 
 /*
  * Location of the users' stored
@@ -100,4 +100,4 @@ struct xmmregs {
 	char	__data[512];
 };
 
-#endif /* !_I386_REG_H_ */
+#endif /* !_MACHINE_REG_H_ */

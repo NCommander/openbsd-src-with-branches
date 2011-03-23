@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.6 2007/05/28 21:02:49 thib Exp $	*/
+/*	$OpenBSD: param.h,v 1.7 2008/05/03 20:18:24 martin Exp $	*/
 /*     OpenBSD: param.h,v 1.29 2004/08/06 22:31:31 mickey Exp 	*/
 
 /*
@@ -41,8 +41,8 @@
  *	@(#)param.h	8.1 (Berkeley) 6/11/93
  */
 
-#ifndef _SOLBOURNE_PARAM_H_
-#define _SOLBOURNE_PARAM_H_
+#ifndef _MACHINE_PARAM_H_
+#define _MACHINE_PARAM_H_
 
 #define	_MACHINE	solbourne
 #define	MACHINE		"solbourne"
@@ -163,4 +163,4 @@ extern int mmumod;
 #define PAGE_MASK	(PAGE_SIZE - 1)
 #define PAGE_SHIFT	SUN4_PGSHIFT
 
-#endif /* _SOLBOURNE_PARAM_H_ */
+#endif /* _MACHINE_PARAM_H_ */

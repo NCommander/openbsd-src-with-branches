@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.5 2006/03/13 19:43:22 brad Exp $	*/
+/*	$OpenBSD: intr.h,v 1.6 2009/03/15 20:39:53 miod Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _LUNA88K_INTR_H_
-#define _LUNA88K_INTR_H_
+#ifndef _MACHINE_INTR_H_
+#define _MACHINE_INTR_H_
 
 /*
  * IPL levels.
@@ -48,4 +48,4 @@
 
 #include <m88k/intr.h>
 
-#endif /* _LUNA88K_INTR_H_ */
+#endif /* _MACHINE_INTR_H_ */

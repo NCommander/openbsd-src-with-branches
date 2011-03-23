@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.26 2009/09/18 19:32:39 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.27 2010/04/23 03:50:22 miod Exp $	*/
 /*	$NetBSD: intr.h,v 1.2 1997/07/24 05:43:08 scottr Exp $	*/
 
 /*-
@@ -30,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _HP300_INTR_H_
-#define	_HP300_INTR_H_
+#ifndef _MACHINE_INTR_H_
+#define	_MACHINE_INTR_H_
 
 #include <machine/psl.h>
 #include <sys/evcount.h>
@@ -104,4 +104,4 @@ void	intr_dispatch(int);
 void	intr_printlevels(void);
 #endif /* _KERNEL */
 
-#endif /* _HP300_INTR_H_ */
+#endif /* _MACHINE_INTR_H_ */

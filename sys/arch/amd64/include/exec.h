@@ -1,10 +1,10 @@
-/*	$OpenBSD: exec.h,v 1.1 2004/01/28 01:39:39 mickey Exp $	*/
+/*	$OpenBSD: exec.h,v 1.2 2004/02/27 17:41:25 deraadt Exp $	*/
 /*
  * Written by Artur Grabowski <art@openbsd.org> Public Domain
  */
 
-#ifndef _AMD64_EXEC_H_
-#define _AMD64_EXEC_H_
+#ifndef _MACHINE_EXEC_H_
+#define _MACHINE_EXEC_H_
 
 #define __LDPGSZ 4096
 

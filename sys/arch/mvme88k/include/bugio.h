@@ -1,7 +1,7 @@
-/*	$OpenBSD: bugio.h,v 1.15 2005/12/11 21:45:31 miod Exp $ */
+/*	$OpenBSD: bugio.h,v 1.16 2006/05/02 21:43:08 miod Exp $ */
 
-#ifndef __MACHINE_BUGIO_H__
-#define __MACHINE_BUGIO_H__
+#ifndef _MACHINE_BUGIO_H_
+#define _MACHINE_BUGIO_H_
 
 #include <machine/prom.h>
 
@@ -14,4 +14,4 @@ void	bugbrdid(struct mvmeprom_brdid *);
 void	bugdiskrd(struct mvmeprom_dskio *);
 int	spin_cpu(cpuid_t, vaddr_t);
 
-#endif /* __MACHINE_BUGIO_H__ */
+#endif /* _MACHINE_BUGIO_H_ */

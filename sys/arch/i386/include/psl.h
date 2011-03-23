@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.15 2004/02/02 23:02:42 deraadt Exp $	*/
+/*	$OpenBSD: psl.h,v 1.16 2004/06/28 01:41:53 aaron Exp $	*/
 /*	$NetBSD: psl.h,v 1.30 1996/05/13 01:28:05 mycroft Exp $	*/
 
 /*-
@@ -35,8 +35,8 @@
  *	@(#)psl.h	5.2 (Berkeley) 1/18/91
  */
 
-#ifndef _I386_PSL_H_
-#define _I386_PSL_H_
+#ifndef _MACHINE_PSL_H_
+#define _MACHINE_PSL_H_
 
 /*
  * 386 processor status longword.
@@ -94,4 +94,4 @@ struct intrhand {
 #endif /* _LOCORE */
 #endif /* _KERNEL */
  
-#endif /* !_I386_PSL_H_ */
+#endif /* !_MACHINE_PSL_H_ */

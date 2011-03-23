@@ -1,4 +1,4 @@
-/*	$OpenBSD: pctr.h,v 1.14 2007/10/17 14:54:32 deraadt Exp $	*/
+/*	$OpenBSD: pctr.h,v 1.15 2007/10/24 17:56:59 mikeb Exp $	*/
 
 /*
  * Pentium performance counter driver for OpenBSD.
@@ -9,8 +9,8 @@
  * OpenBSD project by leaving this copyright notice intact.
  */
 
-#ifndef _I386_PCTR_H_
-#define _I386_PCTR_H_
+#ifndef _MACHINE_PCTR_H_
+#define _MACHINE_PCTR_H_
 
 #include <sys/ioccom.h>
 
@@ -90,4 +90,4 @@ int	pctrclose(dev_t, int, int, struct proc *);
 int	pctrioctl(dev_t, u_long, caddr_t, int, struct proc *);
 
 #endif /* _KERNEL */
-#endif /* ! _I386_PCTR_H_ */
+#endif /* ! _MACHINE_PCTR_H_ */

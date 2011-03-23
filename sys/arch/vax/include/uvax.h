@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvax.h,v 1.4 2000/04/26 03:08:43 bjc Exp $ */
+/*	$OpenBSD: uvax.h,v 1.5 2002/09/21 13:42:43 hugh Exp $ */
 /*	$NetBSD: uvax.h,v 1.5 1999/02/02 18:37:22 ragge Exp $ */
 /*
  * Copyright (c) 2002 Hugh Graham.
@@ -34,8 +34,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _VAX_UVAX_H_
-#define _VAX_UVAX_H_
+#ifndef _MACHINE_UVAX_H_
+#define _MACHINE_UVAX_H_
 
 /*
  * Generic definitions common on all MicroVAXen clock chip.

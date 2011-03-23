@@ -1,4 +1,4 @@
-/*	$OpenBSD: segments.h,v 1.8 2010/11/13 04:16:42 guenther Exp $	*/
+/*	$OpenBSD: segments.h,v 1.9 2010/11/20 20:11:17 miod Exp $	*/
 /*	$NetBSD: segments.h,v 1.1 2003/04/26 18:39:47 fvdl Exp $	*/
 
 /*-
@@ -47,8 +47,8 @@
  *	William F. Jolitz (william@ernie.berkeley.edu) 6/20/1989
  */
 
-#ifndef _AMD64_SEGMENTS_H_
-#define _AMD64_SEGMENTS_H_
+#ifndef _MACHINE_SEGMENTS_H_
+#define _MACHINE_SEGMENTS_H_
 
 /*
  * Selectors
@@ -279,4 +279,4 @@ void cpu_init_idt(void);
 #define VALID_USER_DSEL(s) \
     ((s) == GSEL(GUDATA_SEL, SEL_UPL))
 
-#endif /* _AMD64_SEGMENTS_H_ */
+#endif /* _MACHINE_SEGMENTS_H_ */

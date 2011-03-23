@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.4 2004/12/31 14:58:53 drahn Exp $	*/
+/*	$OpenBSD: param.h,v 1.1 2009/09/05 01:22:11 marex Exp $	*/
 /*	$NetBSD: param.h,v 1.4 2002/02/12 06:58:19 thorpej Exp $	*/
 
 /*
@@ -33,8 +33,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef	_PALM_PARAM_H_
-#define	_PALM_PARAM_H_
+#ifndef	_MACHINE_PARAM_H_
+#define	_MACHINE_PARAM_H_
 
 /*
  * 1 page should be enough
@@ -48,4 +48,4 @@
 #define	_MACHINE	palm
 #define	MACHINE		"palm"
 
-#endif	/* _PALM_PARAM_H_ */
+#endif	/* _MACHINE_PARAM_H_ */

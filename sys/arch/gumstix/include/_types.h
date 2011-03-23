@@ -1,7 +1,7 @@
-/* 	$OpenBSD: _types.h,v 1.2 2008/11/27 20:51:48 miod Exp $	*/
+/* 	$OpenBSD: _types.h,v 1.3 2009/11/04 19:14:09 kettenis Exp $	*/
 
-#ifndef _GUMSTIX__TYPES_H_
-#define	_GUMSTIX__TYPES_H_
+#ifndef _MACHINE__TYPES_H_
+#define	_MACHINE__TYPES_H_
 
 #include <arm/_types.h>
 

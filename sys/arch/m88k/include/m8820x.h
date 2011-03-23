@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x.h,v 1.7 2006/05/06 16:59:26 miod Exp $ */
+/*	$OpenBSD: m8820x.h,v 1.8 2010/04/18 22:04:39 miod Exp $ */
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  *
@@ -49,8 +49,8 @@
  * the rights to redistribute these changes.
  */
 
-#ifndef	__M88K_M8820X_H__
-#define	__M88K_M8820X_H__
+#ifndef	_M88K_M8820X_H_
+#define	_M88K_M8820X_H_
 
 /*
  * 8820x CMMU definitions
@@ -211,4 +211,4 @@ void	m8820x_setup_board_config(void);
 cpuid_t	m8820x_cpu_number(void);
 
 #endif	/* _LOCORE */
-#endif	/* __M88K_M8820X_H__ */
+#endif	/* _M88K_M8820X_H_ */

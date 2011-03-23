@@ -1,4 +1,4 @@
-/*	$OpenBSD: _types.h,v 1.9 2008/07/21 20:50:54 martynas Exp $	*/
+/*	$OpenBSD: _types.h,v 1.10 2009/11/04 19:14:09 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -32,8 +32,8 @@
  *	@(#)ansi.h	8.2 (Berkeley) 1/4/94
  */
 
-#ifndef _I386__TYPES_H_
-#define _I386__TYPES_H_
+#ifndef _MACHINE__TYPES_H_
+#define _MACHINE__TYPES_H_
 
 #if defined(_KERNEL)
 typedef struct label_t {
@@ -119,4 +119,4 @@ typedef	void *			__wctype_t;
 /* Feature test macros */
 #define __HAVE_TIMECOUNTER
 
-#endif	/* _I386__TYPES_H_ */
+#endif	/* _MACHINE__TYPES_H_ */

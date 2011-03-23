@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.19 2008/02/11 20:44:11 miod Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.20 2010/11/27 19:57:23 miod Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.9 1996/05/03 19:23:59 christos Exp $	*/
 
 /* 
@@ -27,8 +27,8 @@
  * the rights to redistribute these changes.
  */
 
-#ifndef	_I386_DB_MACHDEP_H_
-#define	_I386_DB_MACHDEP_H_
+#ifndef	_MACHINE_DB_MACHDEP_H_
+#define	_MACHINE_DB_MACHDEP_H_
 
 /*
  * Machine-dependent defines for new kernel debugger.
@@ -112,4 +112,4 @@ extern struct mutex ddb_mp_mutex;
 #define DDB_STATE_RUNNING	1
 #define DDB_STATE_EXITING	2
 
-#endif	/* _I386_DB_MACHDEP_H_ */
+#endif	/* _MACHINE_DB_MACHDEP_H_ */

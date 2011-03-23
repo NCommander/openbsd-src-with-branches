@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.5 2010/08/19 19:31:53 kettenis Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.6 2010/12/07 22:12:44 deraadt Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.3 2003/05/08 10:27:43 fvdl Exp $	*/
 
 /*-
@@ -30,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _AMD64_CPUFUNC_H_
-#define	_AMD64_CPUFUNC_H_
+#ifndef _MACHINE_CPUFUNC_H_
+#define	_MACHINE_CPUFUNC_H_
 
 /*
  * Functions to provide access to i386-specific instructions.
@@ -309,4 +309,4 @@ void amd64_errata(struct cpu_info *);
 
 #endif /* _KERNEL */
 
-#endif /* !_AMD64_CPUFUNC_H_ */
+#endif /* !_MACHINE_CPUFUNC_H_ */

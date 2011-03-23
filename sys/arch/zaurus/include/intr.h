@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.8 2009/04/08 21:19:31 kettenis Exp $	*/
+/*	$OpenBSD: intr.h,v 1.9 2010/04/23 03:50:22 miod Exp $	*/
 /*	$NetBSD: intr.h,v 1.12 2003/06/16 20:00:59 thorpej Exp $	*/
 
 /*
@@ -36,8 +36,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_EVBARM_INTR_H_
-#define	_EVBARM_INTR_H_
+#ifndef	_MACHINE_INTR_H_
+#define	_MACHINE_INTR_H_
 
 #ifdef _KERNEL
 
@@ -101,5 +101,5 @@
 
 #endif /* _KERNEL */
 
-#endif	/* _EVBARM_INTR_H_ */
+#endif	/* _MACHINE_INTR_H_ */
 

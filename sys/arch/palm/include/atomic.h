@@ -1,10 +1,10 @@
-/*	$OpenBSD: atomic.h,v 1.4 2007/02/19 17:18:43 deraadt Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.1 2009/09/05 01:22:11 marex Exp $	*/
 
 /* Public Domain */
 
-#ifndef __PALM_ATOMIC_H__
-#define __PALM_ATOMIC_H__
+#ifndef _MACHINE_ATOMIC_H_
+#define _MACHINE_ATOMIC_H_
 
 #include <arm/atomic.h>
 
-#endif /* __PALM_ATOMIC_H__ */
+#endif /* _MACHINE_ATOMIC_H_ */

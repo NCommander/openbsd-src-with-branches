@@ -1,8 +1,8 @@
-/*	$OpenBSD: joystick.h,v 1.4 1997/09/16 07:52:33 deraadt Exp $ */
+/*	$OpenBSD: joystick.h,v 1.5 2005/01/09 16:39:55 jmc Exp $ */
 /*	$NetBSD: joystick.h,v 1.1 1996/03/27 19:18:56 perry Exp $	*/
 
-#ifndef _JOY_IOCTL_H_
-#define _JOY_IOCTL_H_
+#ifndef _MACHINE_JOYSTICK_H_
+#define _MACHINE_JOYSTICK_H_
 
 #include <sys/ioccom.h>
 
@@ -20,4 +20,4 @@ struct joystick {
 #define JOY_GET_X_OFFSET  _IOR('J', 5, int)    /* get offset on X-axis */
 #define JOY_GET_Y_OFFSET  _IOR('J', 6, int)    /* get offset on Y-axis */
 
-#endif /* _JOY_IOCTL_H_ */
+#endif /* _MACHINE_JOYSTICK_H_ */

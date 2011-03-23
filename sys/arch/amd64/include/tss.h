@@ -1,4 +1,4 @@
-/*	$OpenBSD: tss.h,v 1.2 2010/11/13 04:16:42 guenther Exp $	*/
+/*	$OpenBSD: tss.h,v 1.3 2010/11/20 20:11:17 miod Exp $	*/
 /*	$NetBSD: tss.h,v 1.1 2003/04/26 18:39:49 fvdl Exp $	*/
 
 /*
@@ -36,8 +36,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _AMD64_TSS_H_
-#define _AMD64_TSS_H_
+#ifndef _MACHINE_TSS_H_
+#define _MACHINE_TSS_H_
 
 /*
  * TSS structure. Since TSS hw switching is not supported in long
@@ -59,4 +59,4 @@ struct x86_64_tss {
 	u_int16_t	tss_iobase;
 } __packed;
 
-#endif /* _AMD64_TSS_H_ */
+#endif /* _MACHINE_TSS_H_ */

@@ -1,4 +1,4 @@
-/*      $OpenBSD: cpu.h,v 1.35 2009/03/26 17:24:33 oga Exp $      */
+/*      $OpenBSD: cpu.h,v 1.36 2010/09/28 20:27:56 miod Exp $      */
 /*      $NetBSD: cpu.h,v 1.41 1999/10/21 20:01:36 ragge Exp $      */
 
 /*
@@ -31,8 +31,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _VAX_CPU_H_
-#define _VAX_CPU_H_
+#ifndef _MACHINE_CPU_H_
+#define _MACHINE_CPU_H_
 #ifdef _KERNEL
 
 #include <sys/cdefs.h>
@@ -176,4 +176,4 @@ int	kdbrint(int);
 	{ "led_blink", CTLTYPE_INT } \
 }
 
-#endif /* _VAX_CPU_H_ */
+#endif /* _MACHINE_CPU_H_ */

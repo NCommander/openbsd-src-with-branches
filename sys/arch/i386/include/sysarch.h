@@ -1,8 +1,8 @@
-/*	$OpenBSD: sysarch.h,v 1.5 2004/09/15 18:46:50 deraadt Exp $	*/
+/*	$OpenBSD: sysarch.h,v 1.6 2011/03/12 03:52:26 guenther Exp $	*/
 /*	$NetBSD: sysarch.h,v 1.8 1996/01/08 13:51:44 mycroft Exp $	*/
 
-#ifndef _I386_SYSARCH_H_
-#define _I386_SYSARCH_H_
+#ifndef _MACHINE_SYSARCH_H_
+#define _MACHINE_SYSARCH_H_
 
 /*
  * Architecture specific syscalls (i386)
@@ -55,4 +55,4 @@ int i386_set_gsbase(void *);
 int sysarch(int, void *);
 #endif
 
-#endif /* !_I386_SYSARCH_H_ */
+#endif /* !_MACHINE_SYSARCH_H_ */

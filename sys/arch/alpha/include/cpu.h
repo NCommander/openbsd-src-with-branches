@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.41 2010/09/28 20:27:54 miod Exp $ */
+/* $OpenBSD: cpu.h,v 1.42 2010/11/28 21:00:04 miod Exp $ */
 /* $NetBSD: cpu.h,v 1.45 2000/08/21 02:03:12 thorpej Exp $ */
 
 /*-
@@ -69,8 +69,8 @@
  *	@(#)cpu.h	8.4 (Berkeley) 1/5/94
  */
 
-#ifndef _ALPHA_CPU_H_
-#define _ALPHA_CPU_H_
+#ifndef _MACHINE_CPU_H_
+#define _MACHINE_CPU_H_
 
 #ifndef NO_IEEE
 typedef union alpha_s_float {
@@ -414,4 +414,4 @@ void alpha_enable_fp(struct proc *, int);
 #endif
 
 #endif /* _KERNEL */
-#endif /* _ALPHA_CPU_H_ */
+#endif /* _MACHINE_CPU_H_ */

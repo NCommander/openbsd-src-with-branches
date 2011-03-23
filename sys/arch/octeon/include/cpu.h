@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.1 2010/09/20 06:32:30 syuu Exp $ */
+/* $OpenBSD: cpu.h,v 1.2 2010/11/23 18:46:29 syuu Exp $ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -41,8 +41,8 @@
  *	from: @(#)cpu.h	8.4 (Berkeley) 1/4/94
  */
 
-#ifndef _OCTEON_CPU_H_
-#define _OCTEON_CPU_H_
+#ifndef _MACHINE_CPU_H_
+#define _MACHINE_CPU_H_
 
 #ifdef _KERNEL
 #if defined(MULTIPROCESSOR) && !defined(_LOCORE)
@@ -75,4 +75,4 @@ void hw_cpu_init_secondary(struct cpu_info *);
 
 #include <mips64/cpu.h>
 
-#endif /* !_OCTEON_CPU_H_ */
+#endif /* !_MACHINE_CPU_H_ */

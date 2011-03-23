@@ -1,6 +1,6 @@
-/* $OpenBSD: cpu.h,v 1.4 2004/11/08 16:39:28 miod Exp $ */
+/* $OpenBSD: cpu.h,v 1.5 2009/02/16 22:55:03 miod Exp $ */
 /* public domain */
-#ifndef	_LUNA88K_CPU_H_
+#ifndef	_MACHINE_CPU_H_
 #define	_LUNA88k_CPU_H_
 
 #include <m88k/cpu.h>

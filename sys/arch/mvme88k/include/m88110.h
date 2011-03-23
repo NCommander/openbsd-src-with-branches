@@ -1,7 +1,7 @@
-/*	$OpenBSD: m88110.h,v 1.22 2007/12/02 21:32:44 miod Exp $ */
+/*	$OpenBSD: m88110.h,v 1.23 2010/12/31 20:54:21 miod Exp $ */
 
-#ifndef	__MACHINE_M88110_H__
-#define	__MACHINE_M88110_H__
+#ifndef	_MACHINE_M88110_H_
+#define	_MACHINE_M88110_H_
 
 /*
  *	88110 CMMU definitions
@@ -204,4 +204,4 @@ m88110_skip_insn(struct trapframe *frame)
 }
 
 #endif	/* _LOCORE */
-#endif	/* __MACHINE_M88110_H__ */
+#endif	/* _MACHINE_M88110_H_ */

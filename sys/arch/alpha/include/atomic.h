@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.7 2008/06/26 05:42:08 ray Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.8 2009/04/25 19:14:58 miod Exp $	*/
 /* $NetBSD: atomic.h,v 1.7 2001/12/17 23:34:57 thorpej Exp $ */
 
 /*-
@@ -35,8 +35,8 @@
  * Misc. `atomic' operations.
  */
 
-#ifndef _ALPHA_ATOMIC_H_
-#define	_ALPHA_ATOMIC_H_
+#ifndef _MACHINE_ATOMIC_H_
+#define	_MACHINE_ATOMIC_H_
 
 #if defined(_KERNEL)
 
@@ -225,4 +225,4 @@ atomic_clearbits_int(__volatile unsigned int *uip, unsigned int v)
 }
 
 #endif /* defined(_KERNEL) */
-#endif /* _ALPHA_ATOMIC_H_ */
+#endif /* _MACHINE_ATOMIC_H_ */

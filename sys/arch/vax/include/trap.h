@@ -1,4 +1,4 @@
-/*      $OpenBSD: trap.h,v 1.11 2001/08/25 13:33:36 hugh Exp $     */
+/*      $OpenBSD: trap.h,v 1.12 2003/06/02 23:27:57 millert Exp $     */
 /*      $NetBSD: trap.h,v 1.18 2000/06/04 02:19:26 matt Exp $     */
 
 /*-
@@ -39,8 +39,8 @@
  * Trap type values
  * also known in trap.c for name strings
  */
-#ifndef _VAX_TRAP_H_
-#define _VAX_TRAP_H_
+#ifndef _MACHINE_TRAP_H_
+#define _MACHINE_TRAP_H_
 
 #define	T_RESADFLT	0	/* reserved addressing */
 #define	T_PRIVINFLT	1	/* privileged instruction */
@@ -90,4 +90,4 @@ struct	trapframe {
 
 #endif /* _LOCORE */
 
-#endif /* _VAX_TRAP_H_ */
+#endif /* _MACHINE_TRAP_H_ */

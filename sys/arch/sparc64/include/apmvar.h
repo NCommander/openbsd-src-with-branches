@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmvar.h,v 1.1 2008/08/11 18:38:10 kettenis Exp $	*/
+/*	$OpenBSD: apmvar.h,v 1.2 2009/02/26 17:19:47 oga Exp $	*/
 
 /*
  *  Copyright (c) 2001 Alexander Guy
@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * 
  */
-#ifndef _SPARC64_APMVAR_H_
-#define _SPARC64_APMVAR_H_
+#ifndef _MACHINE_APMVAR_H_
+#define _MACHINE_APMVAR_H_
 
 #include <sys/ioccom.h>
 
@@ -117,4 +117,4 @@ struct apm_ctl {
 #define	APM_IOC_STANDBY_REQ	_IO('A', 7)	/* request standby */
 #define	APM_IOC_SUSPEND_REQ	_IO('A', 8)	/* request suspend */
 
-#endif /* _SPARC64_APMVAR_H_ */
+#endif /* _MACHINE_APMVAR_H_ */

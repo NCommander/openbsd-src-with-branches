@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.4 2010/12/06 20:57:18 miod Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.5 2010/12/26 15:41:00 miod Exp $	*/
 /*
  * Copyright (c) 2005, Miodrag Vallat
  *
@@ -24,8 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_SOLBOURNE_PMAP_H_
-#define _SOLBOURNE_PMAP_H_
+#ifndef	_MACHINE_PMAP_H_
+#define _MACHINE_PMAP_H_
 
 #include <machine/pte.h>
 
@@ -91,4 +91,4 @@ void		pmap_writetext(unsigned char *, int);
 
 #endif /* _KERNEL */
 
-#endif /* _SOLBOURNE_PMAP_H_ */
+#endif /* _MACHINE_PMAP_H_ */

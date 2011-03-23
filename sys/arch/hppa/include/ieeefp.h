@@ -1,11 +1,11 @@
-/*	$OpenBSD: ieeefp.h,v 1.1 2002/03/11 02:05:22 miod Exp $	*/
+/*	$OpenBSD: ieeefp.h,v 1.2 2002/05/22 20:04:55 miod Exp $	*/
 
 /* 
  * Written by Miodrag Vallat.  Public domain.
  */
 
-#ifndef _HPPA_IEEEFP_H_
-#define _HPPA_IEEEFP_H_
+#ifndef _MACHINE_IEEEFP_H_
+#define _MACHINE_IEEEFP_H_
 
 typedef int fp_except;
 #define FP_X_INV	0x10	/* invalid operation exception */
@@ -21,4 +21,4 @@ typedef enum {
     FP_RM=3			/* round toward negative infinity */
 } fp_rnd;
 
-#endif /* _HPPA_IEEEFP_H_ */
+#endif /* _MACHINE_IEEEFP_H_ */

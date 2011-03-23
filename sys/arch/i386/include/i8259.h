@@ -1,4 +1,4 @@
-/*	$OpenBSD: i8259.h,v 1.3 2006/04/14 21:52:47 weingart Exp $	*/
+/*	$OpenBSD: i8259.h,v 1.4 2006/04/14 22:26:46 weingart Exp $	*/
 /*	$NetBSD: i8259.h,v 1.3 2003/05/04 22:01:56 fvdl Exp $	*/
 
 /*-
@@ -35,8 +35,8 @@
  *	@(#)icu.h	5.6 (Berkeley) 5/9/91
  */
 
-#ifndef	_I386_I8259_H_
-#define	_I386_I8259_H_
+#ifndef	_MACHINE_I8259_H_
+#define	_MACHINE_I8259_H_
 
 #include <dev/isa/isareg.h>
 
@@ -145,4 +145,4 @@ extern void i8259_reinit(void);
 #endif /* ICU_HARDWARE_MASK */
 #endif /* ICU_SPECIAL_MASK_MODE */
 
-#endif /* !_X86_I8259_H_ */
+#endif /* !_MACHINE_I8259_H_ */

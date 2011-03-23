@@ -1,10 +1,10 @@
-/*	$OpenBSD: atomic.h,v 1.1 2007/02/06 17:13:33 art Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.2 2007/02/19 17:18:43 deraadt Exp $	*/
 
 /* Public Domain */
 
-#ifndef __MVME88K_ATOMIC_H__
-#define __MVME88K_ATOMIC_H__
+#ifndef _MACHINE_ATOMIC_H_
+#define _MACHINE_ATOMIC_H_
 
 #include <m88k/atomic.h>
 
-#endif /* __MVME88K_ATOMIC_H__ */
+#endif /* _MACHINE_ATOMIC_H_ */

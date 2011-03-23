@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.33 2007/05/28 21:02:49 thib Exp $ */
+/*	$OpenBSD: param.h,v 1.34 2008/08/14 11:41:30 martin Exp $ */
 /*      $NetBSD: param.h,v 1.39 1999/10/22 21:14:34 ragge Exp $    */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -34,8 +34,8 @@
  *	@(#)param.h	5.8 (Berkeley) 6/28/91
  */
 
-#ifndef _VAX_PARAM_H_
-#define _VAX_PARAM_H_
+#ifndef _MACHINE_PARAM_H_
+#define _MACHINE_PARAM_H_
 
 /*
  * Machine dependent constants for VAX.
@@ -140,4 +140,4 @@ void	delay(int);
 #define	DELAY(x) delay(x)
 #endif /* _KERNEL */
 
-#endif /* _VAX_PARAM_H_ */
+#endif /* _MACHINE_PARAM_H_ */

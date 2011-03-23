@@ -1,4 +1,4 @@
-/*      $OpenBSD: trap.h,v 1.11 2009/11/12 19:45:53 miod Exp $	*/
+/*      $OpenBSD: trap.h,v 1.12 2010/01/18 16:57:44 miod Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -37,8 +37,8 @@
  *	from: @(#)trap.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef _MIPS_TRAP_H_
-#define _MIPS_TRAP_H_
+#ifndef _MIPS64_TRAP_H_
+#define _MIPS64_TRAP_H_
 
 /*
  * Trap codes (ExcCode in the cause register); also known in trap.c for
@@ -125,4 +125,4 @@ void trapDump(char *msg);
 #endif
 #endif /* _LOCORE */
 
-#endif /* !_MIPS_TRAP_H_ */
+#endif /* !_MIPS64_TRAP_H_ */

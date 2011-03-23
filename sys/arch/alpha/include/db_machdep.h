@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.19 2005/12/17 07:31:23 miod Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.20 2010/11/27 19:57:23 miod Exp $	*/
 
 /*
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -24,8 +24,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_ALPHA_DB_MACHDEP_H_
-#define	_ALPHA_DB_MACHDEP_H_
+#ifndef	_MACHINE_DB_MACHDEP_H_
+#define	_MACHINE_DB_MACHDEP_H_
 
 /* XXX - Need to include vm.h for boolean_t */
 #include <uvm/uvm_extern.h>
@@ -99,4 +99,4 @@ db_addr_t next_instr_address(db_addr_t, int);
 #define inst_call db_inst_call
 #endif
 
-#endif	/* _ALPHA_DB_MACHDEP_H_ */
+#endif	/* _MACHINE_DB_MACHDEP_H_ */

@@ -1,8 +1,8 @@
-/*	$OpenBSD: conf.h,v 1.1 2006/05/29 17:13:19 drahn Exp $	*/
+/*	$OpenBSD: conf.h,v 1.2 2010/11/28 20:49:45 miod Exp $	*/
 /*	$NetBSD: conf.h,v 1.8 2002/02/10 12:26:03 chris Exp $	*/
 
-#ifndef _ARMISH_CONF_H
-#define	_ARMISH_CONF_H
+#ifndef _MACHINE_CONF_H_
+#define	_MACHINE_CONF_H_
 
 #include <sys/conf.h>
 
@@ -14,4 +14,4 @@
 
 #include <arm/conf.h>
 
-#endif	/* _ARMISH_CONF_H */
+#endif	/* _MACHINE_CONF_H_ */

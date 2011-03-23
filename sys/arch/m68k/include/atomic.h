@@ -1,9 +1,9 @@
-/*	$OpenBSD: atomic.h,v 1.2 2007/02/19 17:18:43 deraadt Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.3 2007/03/21 05:28:20 miod Exp $	*/
 
 /* Public Domain */
 
-#ifndef __M68K_ATOMIC_H__
-#define __M68K_ATOMIC_H__
+#ifndef _M68K_ATOMIC_H_
+#define _M68K_ATOMIC_H_
 
 #if defined(_KERNEL)
 
@@ -34,4 +34,4 @@ atomic_clearbits_int(__volatile unsigned int *uip, unsigned int v)
 }
 
 #endif /* defined(_KERNEL) */
-#endif /* __M68K_ATOMIC_H__ */
+#endif /* _M68K_ATOMIC_H_ */

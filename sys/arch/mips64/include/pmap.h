@@ -1,4 +1,4 @@
-/*      $OpenBSD: pmap.h,v 1.23 2010/12/06 20:57:17 miod Exp $ */
+/*      $OpenBSD: pmap.h,v 1.24 2010/12/26 15:40:59 miod Exp $ */
 
 /*
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -35,8 +35,8 @@
  *	from: @(#)pmap.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef	_MIPS_PMAP_H_
-#define	_MIPS_PMAP_H_
+#ifndef	_MIPS64_PMAP_H_
+#define	_MIPS64_PMAP_H_
 
 #ifdef	_KERNEL
 
@@ -163,4 +163,4 @@ vm_page_t pmap_unmap_direct(vaddr_t);
 
 #endif	/* _KERNEL */
 
-#endif	/* !_MIPS_PMAP_H_ */
+#endif	/* !_MIPS64_PMAP_H_ */

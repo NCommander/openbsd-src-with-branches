@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.9 2006/04/24 14:30:07 drahn Exp $	*/
+/*	$OpenBSD: asm.h,v 1.10 2007/05/27 18:34:01 art Exp $	*/
 /*	$NetBSD: asm.h,v 1.7 1994/10/27 04:15:56 cgd Exp $	*/
 
 /*-
@@ -35,8 +35,8 @@
  *	@(#)asm.h	5.5 (Berkeley) 5/7/91
  */
 
-#ifndef _I386_ASM_H_
-#define _I386_ASM_H_
+#ifndef _MACHINE_ASM_H_
+#define _MACHINE_ASM_H_
 
 #ifdef PIC
 #define PIC_PROLOGUE	\
@@ -120,4 +120,4 @@
 
 #endif /* _KERNEL */
 
-#endif /* !_I386_ASM_H_ */
+#endif /* !_MACHINE_ASM_H_ */

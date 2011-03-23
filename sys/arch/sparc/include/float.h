@@ -1,4 +1,4 @@
-/*	$OpenBSD: float.h,v 1.5 2003/06/02 23:27:54 millert Exp $	*/
+/*	$OpenBSD: float.h,v 1.6 2008/07/21 20:50:55 martynas Exp $	*/
 /*	$NetBSD: float.h,v 1.6 1997/07/18 05:11:52 thorpej Exp $ */
 
 /*
@@ -41,8 +41,8 @@
  *	@(#)float.h	8.1 (Berkeley) 6/11/93
  */
 
-#ifndef _SPARC_FLOAT_H_
-#define _SPARC_FLOAT_H_
+#ifndef _MACHINE_FLOAT_H_
+#define _MACHINE_FLOAT_H_
 
 #include <sys/cdefs.h>
 
@@ -84,4 +84,4 @@ __END_DECLS
 #define LDBL_MAX	DBL_MAX
 #define LDBL_MAX_10_EXP	DBL_MAX_10_EXP
 
-#endif	/* _SPARC_FLOAT_H_ */
+#endif	/* _MACHINE_FLOAT_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pio.h,v 1.1 2004/01/28 01:39:39 mickey Exp $	*/
+/*	$OpenBSD: pio.h,v 1.2 2008/06/26 05:42:09 ray Exp $	*/
 /*	$NetBSD: pio.h,v 1.2 2003/02/27 11:22:46 fvdl Exp $	*/
 
 /*-
@@ -30,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_PIO_H_
-#define _X86_PIO_H_
+#ifndef _MACHINE_PIO_H_
+#define _MACHINE_PIO_H_
 
 /*
  * Functions to provide access to x86 programmed I/O instructions.
@@ -222,4 +222,4 @@ outsl(unsigned port, const void *addr, int cnt)
 			 "d" (port), "0" (addr), "1" (cnt));
 }
 
-#endif /* _X86_PIO_H_ */
+#endif /* _MACHINE_PIO_H_ */

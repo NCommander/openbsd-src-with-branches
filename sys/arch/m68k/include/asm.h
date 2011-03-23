@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.7 2007/05/15 13:46:22 martin Exp $	*/
+/*	$OpenBSD: asm.h,v 1.8 2007/11/24 20:58:26 deraadt Exp $	*/
 /*	$NetBSD: asm.h,v 1.13 1997/04/24 22:49:39 thorpej Exp $	*/
 
 /*
@@ -39,8 +39,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _ASM_H_
-#define _ASM_H_
+#ifndef _M68K_ASM_H_
+#define _M68K_ASM_H_
 
 #ifdef	__ELF__
 #define	_C_LABEL(name)		name
@@ -169,4 +169,4 @@
 
 #endif /* _KERNEL */
 
-#endif /* _ASM_H_ */
+#endif /* _M68K_ASM_H_ */

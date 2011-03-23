@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.16 2009/12/09 14:28:46 oga Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.17 2010/08/19 19:31:53 kettenis Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.8 1994/10/27 04:15:59 cgd Exp $	*/
 
 /*
@@ -31,8 +31,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _I386_CPUFUNC_H_
-#define	_I386_CPUFUNC_H_
+#ifndef _MACHINE_CPUFUNC_H_
+#define	_MACHINE_CPUFUNC_H_
 
 #ifdef _KERNEL
 
@@ -288,4 +288,4 @@ breakpoint(void)
 void amd64_errata(struct cpu_info *);
 
 #endif /* _KERNEL */
-#endif /* !_I386_CPUFUNC_H_ */
+#endif /* !_MACHINE_CPUFUNC_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.16 2005/11/25 22:14:34 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.17 2007/05/08 15:33:10 deraadt Exp $ */
 /*
  * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -34,8 +34,8 @@
  * Autoconfiguration information.
  */
 
-#ifndef _MVME88K_AUTOCONF_H_
-#define _MVME88K_AUTOCONF_H_
+#ifndef _MACHINE_AUTOCONF_H_
+#define _MACHINE_AUTOCONF_H_
 
 #include <machine/bus.h>
 

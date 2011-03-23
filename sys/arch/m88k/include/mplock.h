@@ -1,4 +1,4 @@
-/*	$OpenBSD: mplock.h,v 1.1 2007/11/26 17:15:29 art Exp $	*/
+/*	$OpenBSD: mplock.h,v 1.1 2007/12/02 21:20:17 miod Exp $	*/
 
 /*
  * Copyright (c) 2004 Niklas Hallqvist.  All rights reserved.
@@ -24,8 +24,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _MACHINE_MPLOCK_H_
-#define _MACHINE_MPLOCK_H_
+#ifndef _M88K_MPLOCK_H_
+#define _M88K_MPLOCK_H_
 
 #ifndef _LOCORE
 

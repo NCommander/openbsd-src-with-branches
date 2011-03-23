@@ -1,4 +1,4 @@
-/*	$OpenBSD: i80321_mutex.h,v 1.1 2007/05/15 05:26:44 miod Exp $	*/
+/*	$OpenBSD: mutex.h,v 1.1 2007/12/05 16:08:04 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -25,8 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef _MACHINE_MUTEX_H_
-#define _MACHINE_MUTEX_H_
+#ifndef _ARM_MUTEX_H_
+#define _ARM_MUTEX_H_
 
 /*
  * Simple non-mp implementation.

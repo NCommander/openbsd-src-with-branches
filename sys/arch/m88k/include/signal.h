@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.3 2006/01/08 14:20:17 millert Exp $ */
+/*	$OpenBSD: signal.h,v 1.4 2006/01/09 23:53:41 millert Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -30,8 +30,8 @@
  *
  */
 
-#ifndef __MACHINE_SIGNAL_H__
-#define __MACHINE_SIGNAL_H__
+#ifndef _M88K_SIGNAL_H_
+#define _M88K_SIGNAL_H_
 
 #include <sys/cdefs.h>
 
@@ -56,4 +56,4 @@ struct  sigcontext {
 	struct reg sc_regs;
 };
 #endif /* __BSD_VISIBLE || __XPG_VISIBLE >= 420 */
-#endif /* __MACHINE_SIGNAL_H__ */
+#endif /* _M88K_SIGNAL_H_ */

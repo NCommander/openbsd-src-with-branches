@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.20 2009/09/18 19:32:41 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.21 2010/04/23 03:50:22 miod Exp $	*/
 /*	$NetBSD: intr.h,v 1.9 1998/08/12 06:58:42 scottr Exp $	*/
 
 /*
@@ -28,8 +28,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _MAC68K_INTR_H_
-#define _MAC68K_INTR_H_
+#ifndef _MACHINE_INTR_H_
+#define _MACHINE_INTR_H_
 
 #include <machine/psl.h>
 
@@ -121,4 +121,4 @@ struct intrhand {
 };
 #endif /* _KERNEL */
 
-#endif /* _MAC68K_INTR_H_ */
+#endif /* _MACHINE_INTR_H_ */

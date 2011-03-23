@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.36 2010/11/30 19:30:16 kettenis Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.37 2010/12/26 15:40:59 miod Exp $	*/
 /*	$NetBSD: pmap.h,v 1.1 2003/04/26 18:39:46 fvdl Exp $	*/
 
 /*
@@ -72,8 +72,8 @@
  * pmap.h: see pmap.c for the history of this pmap module.
  */
 
-#ifndef	_AMD64_PMAP_H_
-#define	_AMD64_PMAP_H_
+#ifndef	_MACHINE_PMAP_H_
+#define	_MACHINE_PMAP_H_
 
 #ifndef _LOCORE
 #include <machine/cpufunc.h>
@@ -570,4 +570,4 @@ kvtopte(vaddr_t va)
 #define __HAVE_PMAP_DIRECT
 
 #endif /* _KERNEL && !_LOCORE */
-#endif	/* _AMD64_PMAP_H_ */
+#endif	/* _MACHINE_PMAP_H_ */

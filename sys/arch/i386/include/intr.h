@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.40 2010/12/21 14:56:23 claudio Exp $	*/
+/*	$OpenBSD: intr.h,v 1.41 2010/12/27 19:51:27 guenther Exp $	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -30,8 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _I386_INTR_H_
-#define _I386_INTR_H_
+#ifndef _MACHINE_INTR_H_
+#define _MACHINE_INTR_H_
 
 #include <machine/intrdefs.h>
 
@@ -194,4 +194,4 @@ do {									\
 } while (/*CONSTCOND*/ 0)
 #endif /* _LOCORE */
 
-#endif /* !_I386_INTR_H_ */
+#endif /* !_MACHINE_INTR_H_ */

@@ -1,4 +1,4 @@
-/*      $OpenBSD: pmap.h,v 1.30 2008/08/30 20:45:31 martin Exp $     */
+/*      $OpenBSD: pmap.h,v 1.31 2010/12/26 15:41:00 miod Exp $     */
 /*	$NetBSD: pmap.h,v 1.37 1999/08/01 13:48:07 ragge Exp $	   */
 
 /* 
@@ -40,8 +40,8 @@
  */
 
 
-#ifndef PMAP_H
-#define PMAP_H
+#ifndef _MACHINE_PMAP_H_
+#define _MACHINE_PMAP_H_
 
 #ifdef _KERNEL
 
@@ -146,4 +146,4 @@ void	pmap_pinit(pmap_t);
 
 #endif	/* _KERNEL */
 
-#endif /* PMAP_H */
+#endif /* _MACHINE_PMAP_H_ */

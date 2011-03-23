@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.h,v 1.2 2005/04/08 07:07:06 jolan Exp $	*/
+/*	$OpenBSD: mutex.h,v 1.3 2005/07/18 02:43:25 fgsch Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -24,8 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
-#ifndef _I386_MUTEX_H_
-#define _I386_MUTEX_H_
+#ifndef _MACHINE_MUTEX_H_
+#define _MACHINE_MUTEX_H_
 
 /*
  * XXX - we don't really need the mtx_lock field, we can use mtx_oldipl

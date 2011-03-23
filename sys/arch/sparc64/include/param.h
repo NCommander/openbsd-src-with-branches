@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.32 2010/06/18 23:49:37 miod Exp $	*/
+/*	$OpenBSD: param.h,v 1.33 2010/11/22 20:28:31 miod Exp $	*/
 /*	$NetBSD: param.h,v 1.25 2001/05/30 12:28:51 mrg Exp $ */
 
 /*
@@ -64,8 +64,8 @@
  *
  */
 
-#ifndef _SPARC64_PARAM_H_
-#define _SPARC64_PARAM_H_
+#ifndef _MACHINE_PARAM_H_
+#define _MACHINE_PARAM_H_
 
 #define	_MACHINE	sparc64
 #define	MACHINE		"sparc64"
@@ -220,4 +220,4 @@ extern int cputyp;
 #endif
 #endif
 
-#endif	/* _SPARC64_PARAM_H_ */
+#endif	/* _MACHINE_PARAM_H_ */

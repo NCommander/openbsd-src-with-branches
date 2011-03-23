@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.17 2006/07/09 19:41:23 miod Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.18 2009/06/10 15:58:51 miod Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.16 1998/08/20 08:33:48 kleink Exp $	*/
 
 /*
@@ -39,8 +39,8 @@
  *	@(#)vmparam.h	8.2 (Berkeley) 4/19/94
  */
 
-#ifndef _HP300_VMPARAM_H_
-#define	_HP300_VMPARAM_H_
+#ifndef _MACHINE_VMPARAM_H_
+#define	_MACHINE_VMPARAM_H_
 
 /*
  * Machine dependent constants for HP300
@@ -61,4 +61,4 @@
 #define	VM_PHYSSEG_MAX		1
 #define	VM_PHYSSEG_STRAT	VM_PSTRAT_RANDOM
 
-#endif /* _HP300_VMPARAM_H_ */
+#endif /* _MACHINE_VMPARAM_H_ */

@@ -1,9 +1,9 @@
-/*	$OpenBSD: atomic.h,v 1.3 2007/04/05 17:33:50 miod Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.4 2010/04/21 03:03:26 deraadt Exp $	*/
 
 /* Public Domain */
 
-#ifndef __VAX_ATOMIC_H__
-#define __VAX_ATOMIC_H__
+#ifndef _MACHINE_ATOMIC_H_
+#define _MACHINE_ATOMIC_H_
 
 #if defined(_KERNEL)
 
@@ -31,4 +31,4 @@ atomic_clearbits_int(__volatile unsigned int *uip, unsigned int v)
 }
 
 #endif /* defined(_KERNEL) */
-#endif /* __VAX_ATOMIC_H__ */
+#endif /* _MACHINE_ATOMIC_H_ */
