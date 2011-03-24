@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.c,v 1.74 2010/05/14 08:30:18 sthen Exp $ */
+/*	$OpenBSD: ospfd.c,v 1.75 2010/09/02 14:03:22 sobrado Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -309,7 +309,8 @@ main(int argc, char *argv[])
 void
 ospfd_shutdown(void)
 {
-	pid_t		 pid;
+	pid_t		 	 pid;
+	struct redistribute	*r;
 
 	if (ospfe_pid)
 		kill(ospfe_pid, SIGTERM);
@@ -318,6 +319,10 @@ ospfd_shutdown(void)
 		kill(rde_pid, SIGTERM);
 
 	control_cleanup(ospfd_conf->csock);
+	while ((r = SIMPLEQ_FIRST(&ospfd_conf->redist_list)) != NULL) {
+		SIMPLEQ_REMOVE_HEAD(&ospfd_conf->redist_list, entry);
+		free(r);
+	}
 	kr_shutdown();
 	carp_demote_shutdown();
 
