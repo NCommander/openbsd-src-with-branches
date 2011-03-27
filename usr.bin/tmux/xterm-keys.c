@@ -1,4 +1,4 @@
-/* $OpenBSD: xterm-keys.c,v 1.7 2010/10/14 00:37:51 nicm Exp $ */
+/* $OpenBSD: xterm-keys.c,v 1.8 2011/01/01 03:43:20 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -174,8 +174,6 @@ xterm_keys_lookup(int key)
 		modifiers += 2;
 	if (key & KEYC_CTRL)
 		modifiers += 4;
-	if (key & KEYC_ESCAPE)
-		modifiers += 8;
 
 	/*
 	 * If the key has no modifiers, return NULL and let it fall through to
