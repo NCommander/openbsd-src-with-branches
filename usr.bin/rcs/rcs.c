@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.71 2010/10/27 08:35:45 tobias Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.72 2010/12/10 09:48:43 jasper Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1195,7 +1195,7 @@ rcs_delta_stats(struct rcs_delta *rdp, int *ladded, int *lremoved)
 {
 	struct rcs_lines *plines;
 	struct rcs_line *lp;
-	int added, i, lineno, nbln, removed;
+	int added, i, nbln, removed;
 	char op, *ep;
 	u_char tmp;
 
@@ -1214,7 +1214,6 @@ rcs_delta_stats(struct rcs_delta *rdp, int *ladded, int *lremoved)
 			/* NUL-terminate line buffer for strtol() safety. */
 			tmp = lp->l_line[lp->l_len - 1];
 			lp->l_line[lp->l_len - 1] = '\0';
-			lineno = (int)strtol((lp->l_line + 1), &ep, 10);
 			ep++;
 			nbln = (int)strtol(ep, &ep, 10);
 			/* Restore the last byte of the buffer */
