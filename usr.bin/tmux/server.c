@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.100 2011/01/08 01:52:36 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.101 2011/01/26 00:11:47 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -143,6 +143,7 @@ server_start(void)
 	log_debug("server started, pid %ld", (long) getpid());
 
 	ARRAY_INIT(&windows);
+	RB_INIT(&all_window_panes);
 	ARRAY_INIT(&clients);
 	ARRAY_INIT(&dead_clients);
 	RB_INIT(&sessions);
