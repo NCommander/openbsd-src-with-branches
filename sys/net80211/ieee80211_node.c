@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.61 2010/07/19 18:53:52 damien Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.62 2010/08/07 03:50:02 krw Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -1118,7 +1118,7 @@ ieee80211_clean_nodes(struct ieee80211com *ic)
 	for (ni = RB_MIN(ieee80211_tree, &ic->ic_tree);
 	    ni != NULL; ni = next_ni) {
 		next_ni = RB_NEXT(ieee80211_tree, &ic->ic_tree, ni);
-		if (ic->ic_nnodes <= ic->ic_max_nnodes)
+		if (ic->ic_nnodes < ic->ic_max_nnodes)
 			break;
 		if (ni->ni_scangen == gen)	/* previously handled */
 			continue;
