@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.274 2011/03/27 20:27:27 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.275 2011/03/27 20:31:25 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1454,7 +1454,7 @@ void	tty_keys_free(struct tty *);
 int	tty_keys_next(struct tty *);
 
 /* paste.c */
-struct paste_buffer *paste_walk_stack(struct paste_stack *, uint *);
+struct paste_buffer *paste_walk_stack(struct paste_stack *, u_int *);
 struct paste_buffer *paste_get_top(struct paste_stack *);
 struct paste_buffer *paste_get_index(struct paste_stack *, u_int);
 int		 paste_free_top(struct paste_stack *);
