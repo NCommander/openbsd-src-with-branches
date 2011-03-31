@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.20 2004/09/03 06:37:14 tedu Exp $	*/
+/*	$OpenBSD: client.c,v 1.21 2007/09/03 14:26:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -274,7 +274,6 @@ send_padr(int bfd, u_int8_t *srv, struct ether_addr *myea,
 	}
 
 	ph->len = htons(ph->len);
-	tag_hton(tl);
 
 	client_state = STATE_EXPECT_PADS;
 	return (writev(bfd, iov, idx));
