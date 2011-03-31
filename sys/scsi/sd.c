@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.220 2011/02/21 20:51:02 krw Exp $	*/
+/*	$OpenBSD: sd.c,v 1.221 2011/03/17 21:30:24 deraadt Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -138,7 +138,7 @@ sdmatch(struct device *parent, void *match, void *aux)
 	int priority;
 
 	(void)scsi_inqmatch(sa->sa_inqbuf,
-	    sd_patterns, sizeof(sd_patterns)/sizeof(sd_patterns[0]),
+	    sd_patterns, nitems(sd_patterns),
 	    sizeof(sd_patterns[0]), &priority);
 
 	return (priority);
