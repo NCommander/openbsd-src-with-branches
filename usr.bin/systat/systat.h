@@ -1,4 +1,4 @@
-/*	$OpenBSD: systat.h,v 1.15 2010/07/22 12:33:29 giovanni Exp $	*/
+/*	$OpenBSD: systat.h,v 1.16 2011/03/02 06:48:17 jasper Exp $	*/
 /*	$NetBSD: systat.h,v 1.2 1995/01/20 08:52:14 jtc Exp $	*/
 
 /*-
@@ -69,6 +69,8 @@ extern size_t	nports;
 extern int	protos;
 extern int	verbose;
 extern int	nflag;
+extern char	uloadbuf[];
+extern char	timebuf[];
 
 struct inpcb;
 
