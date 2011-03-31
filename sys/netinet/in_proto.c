@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.54 2010/08/29 09:24:38 gollo Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.55 2011/01/07 17:50:42 bluhm Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -315,7 +315,7 @@ struct protosw inetsw[] = {
 
 struct domain inetdomain =
     { AF_INET, "internet", 0, 0, 0,
-      inetsw, &inetsw[sizeof(inetsw)/sizeof(inetsw[0])], 0,
+      inetsw, &inetsw[nitems(inetsw)], 0,
 #ifndef SMALL_KERNEL
       rn_mpath_inithead,
 #else
@@ -341,6 +341,6 @@ struct protosw hysw[] = {
 };
 
 struct domain hydomain =
-    { AF_HYLINK, "hy", 0, 0, 0, hysw, &hysw[sizeof (hysw)/sizeof(hysw[0])] };
+    { AF_HYLINK, "hy", 0, 0, 0, hysw, &hysw[nitems(hysw)] };
 #endif
 #endif

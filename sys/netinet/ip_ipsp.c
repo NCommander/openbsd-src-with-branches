@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.180 2010/04/20 22:05:43 tedu Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.181 2010/07/09 16:58:06 reyk Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -138,7 +138,7 @@ struct xformsw xformsw[] = {
 #endif /* TCP_SIGNATURE */
 };
 
-struct xformsw *xformswNXFORMSW = &xformsw[sizeof(xformsw)/sizeof(xformsw[0])];
+struct xformsw *xformswNXFORMSW = &xformsw[nitems(xformsw)];
 
 unsigned char ipseczeroes[IPSEC_ZEROES_SIZE]; /* zeroes! */
 
