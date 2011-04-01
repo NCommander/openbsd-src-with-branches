@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pdaemon.c,v 1.55 2009/10/14 17:53:30 beck Exp $	*/
+/*	$OpenBSD: uvm_pdaemon.c,v 1.56 2010/09/26 12:53:27 thib Exp $	*/
 /*	$NetBSD: uvm_pdaemon.c,v 1.23 2000/08/20 10:24:14 bjh21 Exp $	*/
 
 /* 
@@ -151,7 +151,7 @@ uvm_wait(const char *wmsg)
 /*
  * uvmpd_tune: tune paging parameters
  *
- * => called when ever memory is added (or removed?) to the system
+ * => called whenever memory is added to (or removed from?) the system
  * => caller must call with page queues locked
  */
 
