@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_cardbus.c,v 1.20 2010/09/06 19:20:21 deraadt Exp $	*/
+/*	$OpenBSD: if_re_cardbus.c,v 1.21 2010/09/07 16:21:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -98,8 +98,7 @@ int
 re_cardbus_probe(struct device *parent, void *match, void *aux)
 {
 	return (cardbus_matchbyid((struct cardbus_attach_args *)aux,
-	    re_cardbus_devices,
-	    sizeof(re_cardbus_devices)/sizeof(re_cardbus_devices[0])));
+	    re_cardbus_devices, nitems(re_cardbus_devices)));
 }
 
 /*
