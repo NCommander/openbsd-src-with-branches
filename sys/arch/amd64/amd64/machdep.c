@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.131 2011/03/18 03:10:47 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.132 2011/03/20 21:44:08 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -1179,7 +1179,7 @@ typedef void (vector)(void);
 extern vector IDTVEC(osyscall);
 extern vector *IDTVEC(exceptions)[];
 
-int bigmem = 0;
+int bigmem = 1;
 
 void
 init_x86_64(paddr_t first_avail)
