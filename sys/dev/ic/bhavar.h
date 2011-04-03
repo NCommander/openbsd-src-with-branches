@@ -1,4 +1,4 @@
-/*	$OpenBSD: bhavar.h,v 1.3 2008/06/26 05:42:15 ray Exp $	*/
+/*	$OpenBSD: bhavar.h,v 1.4 2008/11/26 16:38:00 krw Exp $	*/
 /*	$NetBSD: bhavar.h,v 1.12 1998/11/19 21:53:00 thorpej Exp $	*/
 
 /*-
@@ -83,6 +83,9 @@ struct bha_softc {
 	int sc_mbofull;
 	struct scsi_link sc_link;	/* prototype for devs */
 	struct scsi_adapter sc_adapter;
+
+	struct mutex		sc_ccb_mtx;
+	struct scsi_iopool	sc_iopool;
 
 	char sc_model[7];
 	char sc_firmware[6];
