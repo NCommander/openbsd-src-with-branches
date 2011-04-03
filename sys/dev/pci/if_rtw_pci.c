@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rtw_pci.c,v 1.13 2009/06/26 20:40:12 deraadt Exp $	*/
+/*	$OpenBSD: if_rtw_pci.c,v 1.14 2010/08/29 16:47:00 deraadt Exp $	*/
 /*	$NetBSD: if_rtw_pci.c,v 1.1 2004/09/26 02:33:36 dyoung Exp $	*/
 
 /*-
@@ -118,7 +118,7 @@ int
 rtw_pci_match(struct device *parent, void *match, void *aux)
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, rtw_pci_products,
-	    sizeof(rtw_pci_products)/sizeof(rtw_pci_products[0])));
+	    nitems(rtw_pci_products)));
 }
 
 int

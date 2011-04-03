@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sk.c,v 1.157 2010/05/19 15:27:35 oga Exp $	*/
+/*	$OpenBSD: if_sk.c,v 1.158 2010/09/20 07:40:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -935,7 +935,7 @@ skc_probe(struct device *parent, void *match, void *aux)
 		return (1);
 
 	return (pci_matchbyid((struct pci_attach_args *)aux, skc_devices,
-	    sizeof(skc_devices)/sizeof(skc_devices[0])));
+	    nitems(skc_devices)));
 }
 
 /*

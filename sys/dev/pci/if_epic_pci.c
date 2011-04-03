@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_epic_pci.c,v 1.8 2008/05/13 02:24:08 brad Exp $	*/
+/*	$OpenBSD: if_epic_pci.c,v 1.9 2008/06/26 05:42:17 ray Exp $	*/
 /*	$NetBSD: if_epic_pci.c,v 1.28 2005/02/27 00:27:32 perry Exp $	*/
 
 /*-
@@ -131,7 +131,7 @@ int
 epic_pci_match(struct device *parent, void *match, void *aux)
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, epic_pci_devices,
-	    sizeof(epic_pci_devices)/sizeof(epic_pci_devices[0])));
+	    nitems(epic_pci_devices)));
 }
 
 void

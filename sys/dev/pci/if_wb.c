@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.45 2009/08/13 14:24:47 jasper Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.46 2010/05/19 15:27:35 oga Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -694,7 +694,7 @@ wb_probe(parent, match, aux)
 	void *match, *aux;
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, wb_devices,
-	    sizeof(wb_devices)/sizeof(wb_devices[0])));
+	    nitems(wb_devices)));
 }
 
 /*

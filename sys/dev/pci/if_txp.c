@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.101 2009/08/13 14:24:47 jasper Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.102 2010/09/20 07:40:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -151,7 +151,7 @@ int
 txp_probe(struct device *parent, void *match, void *aux)
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, txp_devices,
-	    sizeof(txp_devices)/sizeof(txp_devices[0])));
+	    nitems(txp_devices)));
 }
 
 void

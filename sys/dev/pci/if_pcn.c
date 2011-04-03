@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pcn.c,v 1.22 2009/08/13 14:24:47 jasper Exp $	*/
+/*	$OpenBSD: if_pcn.c,v 1.23 2010/09/20 07:40:38 deraadt Exp $	*/
 /*	$NetBSD: if_pcn.c,v 1.26 2005/05/07 09:15:44 is Exp $	*/
 
 /*
@@ -559,7 +559,7 @@ pcn_match(struct device *parent, void *match, void *aux)
 		return(1);
 
 	return (pci_matchbyid((struct pci_attach_args *)aux, pcn_devices,
-	    sizeof(pcn_devices)/sizeof(pcn_devices[0])));
+	    nitems(pcn_devices)));
 }
 
 void

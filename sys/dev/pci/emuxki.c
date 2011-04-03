@@ -1,4 +1,4 @@
-/*	$OpenBSD: emuxki.c,v 1.36 2010/09/12 02:10:52 jakemsr Exp $	*/
+/*	$OpenBSD: emuxki.c,v 1.37 2010/09/12 03:17:34 jakemsr Exp $	*/
 /*	$NetBSD: emuxki.c,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
@@ -427,7 +427,7 @@ int
 emuxki_match(struct device *parent, void *match, void *aux)
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, emuxki_devices,
-	    sizeof(emuxki_devices)/sizeof(emuxki_devices[0])));
+	    nitems(emuxki_devices)));
 }
 
 void

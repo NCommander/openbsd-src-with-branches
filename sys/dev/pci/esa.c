@@ -1,4 +1,4 @@
-/*	$OpenBSD: esa.c,v 1.21 2010/08/27 18:50:57 deraadt Exp $	*/
+/*	$OpenBSD: esa.c,v 1.22 2010/09/07 16:21:44 deraadt Exp $	*/
 /* $NetBSD: esa.c,v 1.12 2002/03/24 14:17:35 jmcneill Exp $ */
 
 /*
@@ -1015,7 +1015,7 @@ int
 esa_match(struct device *dev, void *match, void *aux)
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, esa_devices,
-	    sizeof(esa_devices)/sizeof(esa_devices[0])));
+	    nitems(esa_devices)));
 }
 
 void

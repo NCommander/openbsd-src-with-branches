@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_an_pci.c,v 1.16 2006/03/10 00:27:56 jsg Exp $	*/
+/*	$OpenBSD: if_an_pci.c,v 1.17 2009/03/29 21:53:52 sthen Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -102,7 +102,7 @@ int
 an_pci_match(struct device *parent, void *match, void *aux)
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, an_pci_devices,
-	    sizeof(an_pci_devices)/sizeof(an_pci_devices[0])));
+	    nitems(an_pci_devices)));
 }
 
 void
