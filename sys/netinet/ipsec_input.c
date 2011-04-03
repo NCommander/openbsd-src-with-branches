@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.99 2010/12/21 19:16:15 markus Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.100 2011/03/05 01:53:16 bluhm Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -49,6 +49,7 @@
 #include <net/if.h>
 #include <net/netisr.h>
 #include <net/bpf.h>
+#include <net/route.h>
 
 #if NPF > 0
 #include <net/pfvar.h>
