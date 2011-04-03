@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.114 2010/11/24 21:05:20 miod Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.115 2011/04/02 17:04:35 guenther Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -468,8 +468,9 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 	p->p_textvp = pack.ep_vp;
 
 	atomic_setbits_int(&p->p_flag, P_EXEC);
-	if (pr->ps_mainproc->p_flag & P_PPWAIT) {
-		atomic_clearbits_int(&pr->ps_mainproc->p_flag, P_PPWAIT);
+	if (pr->ps_flags & PS_PPWAIT) {
+		atomic_clearbits_int(&pr->ps_flags, PS_PPWAIT);
+		atomic_clearbits_int(&pr->ps_pptr->ps_flags, PS_ISPWAIT);
 		wakeup(pr->ps_pptr);
 	}
 
