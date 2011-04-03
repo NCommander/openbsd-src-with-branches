@@ -1,7 +1,7 @@
 /*
  * Public Domain 2003 Dale Rahn
  *
- * $OpenBSD: ac.C,v 1.1 2005/09/17 02:58:54 drahn Exp $
+ * $OpenBSD: ac.C,v 1.2 2005/09/18 19:58:50 drahn Exp $
  */
 
 #include <iostream>
@@ -11,7 +11,7 @@
 extern int a;
 
 extern "C" {
-char *libname = "libac";
+const char *libname = "libac";
 };
 
 extern "C" void
@@ -20,7 +20,7 @@ lib_entry()
 	std::cout << "called into ac " << libname << " libname " << "\n";
 }
 
-AC::AC(char *str)
+AC::AC(const char *str)
 {
 	_name = str;
 }

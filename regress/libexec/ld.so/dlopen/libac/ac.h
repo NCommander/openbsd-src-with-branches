@@ -1,14 +1,14 @@
 /*
  * Public Domain 2003 Dale Rahn
  *
- * $OpenBSD: ab.h,v 1.1.1.1 2005/09/13 20:51:39 drahn Exp $
+ * $OpenBSD: ac.h,v 1.1 2005/09/17 02:58:54 drahn Exp $
  */
 
 class AC {
 public:
-        AC(char *);
+        AC(const char *);
         ~AC();
 private:
-	char *_name;
+	const char *_name;
 };
 
