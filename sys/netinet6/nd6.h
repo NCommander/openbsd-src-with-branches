@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.h,v 1.26 2008/06/11 06:30:36 mcbride Exp $	*/
+/*	$OpenBSD: nd6.h,v 1.27 2010/04/06 14:12:10 stsp Exp $	*/
 /*	$KAME: nd6.h,v 1.95 2002/06/08 11:31:06 itojun Exp $	*/
 
 /*
@@ -267,7 +267,7 @@ struct nd_prefix {
 	/* list of routers that advertise the prefix: */
 	LIST_HEAD(pr_rtrhead, nd_pfxrouter) ndpr_advrtrs;
 	u_char	ndpr_plen;
-	int	ndpr_refcnt;	/* reference couter from addresses */
+	int	ndpr_refcnt;	/* reference counter from addresses */
 };
 
 #define ndpr_next		ndpr_entry.le_next
