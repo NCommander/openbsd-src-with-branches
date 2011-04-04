@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.4 2002/10/06 23:23:18 art Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.5 2005/08/07 16:40:13 espie Exp $	*/
 /*	$NetBSD: cerror.S,v 1.3 1996/10/17 03:08:17 cgd Exp $	*/
 
 /*
@@ -32,10 +32,12 @@
 
 IMPORT(errno, 4)
 
-LEAF(__cerror, 0)
+WEAK_ALIAS(__cerror, ___cerror)
+
+LEAF(___cerror, 0)
 	br	t0, L1
 L1:	LDGP(t0)
 	stl	v0, errno
 	ldiq	v0, -1
 	RET
-END(__cerror)
+END(___cerror)

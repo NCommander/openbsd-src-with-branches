@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.2 2004/02/01 05:40:52 drahn Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.3 2004/02/07 06:02:07 drahn Exp $	*/
 /*	$NetBSD: cerror.S,v 1.5 2003/08/07 16:42:04 agc Exp $	*/
 
 /*-
@@ -34,7 +34,9 @@
 
 #include "SYS.h"
 
-ASENTRY(CERROR)
+WEAK_ALIAS(CERROR, _CERROR)
+
+ASENTRY(_CERROR)
 #ifdef _REENTRANT
 	stmfd	sp!, {r4, lr}
 	mov	r4, r0

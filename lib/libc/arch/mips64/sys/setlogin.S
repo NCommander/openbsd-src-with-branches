@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: setlogin.S,v 1.4 2005/08/07 16:40:15 espie Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -50,7 +50,7 @@ LEAF(setlogin, FRAMESZ)
 	PTR_ADDU sp, FRAMESZ
 	j	ra
 1:
-	LA	t9, _C_LABEL(cerror)
+	LA	t9, CERROR
 	RESTORE_GP64
 	PTR_ADDU sp, FRAMESZ
 	jr	t9

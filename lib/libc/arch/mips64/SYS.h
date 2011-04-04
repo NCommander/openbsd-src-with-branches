@@ -29,11 +29,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *      $OpenBSD: SYS.h,v 1.3 2004/09/09 16:14:02 pefo Exp $ 
+ *      $OpenBSD: SYS.h,v 1.4 2010/10/01 05:02:19 guenther Exp $ 
  */
 
 #include <sys/syscall.h>
 #include <machine/asm.h>
+
+#define CERROR		_C_LABEL(__cerror)
+#define _CERROR		_C_LABEL(___cerror)
 
 #ifdef __STDC__
 # define __ENTRY(p,x)		ENTRY(p ## x)
@@ -78,7 +81,7 @@
 			RESTORE_GP64;			\
 			PTR_ADDU sp,32;			\
 			j	ra;			\
-		err:	LA	t9,_C_LABEL(cerror);	\
+		err:	LA	t9,CERROR;		\
 			RESTORE_GP64;			\
 			PTR_ADDU sp,32;			\
 			jr	t9;			\

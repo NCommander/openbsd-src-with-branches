@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.3 2004/03/01 13:41:23 drahn Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.4 2006/11/07 21:30:36 drahn Exp $	*/
 /*	$NetBSD: SYS.h,v 1.8 2003/08/07 16:42:02 agc Exp $	*/
 
 /*-
@@ -63,6 +63,7 @@
 
 #ifdef __ELF__
 #define	CERROR		_C_LABEL(__cerror)
+#define	_CERROR		_C_LABEL(___cerror)
 #define	CURBRK		_C_LABEL(__curbrk)
 #else
 #define	CERROR		_ASM_LABEL(cerror)
