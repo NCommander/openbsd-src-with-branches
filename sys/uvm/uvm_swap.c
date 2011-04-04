@@ -59,6 +59,8 @@
 
 #include <miscfs/specfs/specdev.h>
 
+#include "vnd.h"
+
 /*
  * uvm_swap.c: manage configuration and i/o to swap space.
  */
@@ -911,6 +913,12 @@ swap_on(struct proc *p, struct swapdev *sdp)
 
 	vp = sdp->swd_vp;
 	dev = sdp->swd_dev;
+
+#if NVND > 0 
+	/* no swapping to vnds. */
+	if (bdevsw[major(dev)].d_strategy == vndstrategy)
+		return (EOPNOTSUPP);
+#endif
 
 	/*
 	 * open the swap file (mostly useful for block device files to
