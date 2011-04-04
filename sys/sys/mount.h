@@ -314,28 +314,6 @@ struct statfs {
 	union mount_info mount_info;	/* per-filesystem mount options */
 };
 
-/* old (pre-4.3) statfs structure with mount options */
-struct o43statfs {
-	u_int32_t  f_flags;		/* copy of mount flags */
-	int32_t    f_bsize;		/* fundamental file system block size */
-	u_int32_t  f_iosize;		/* optimal transfer block size */
-	u_int32_t  f_blocks;		/* total data blocks in file system */
-	u_int32_t  f_bfree;		/* free blocks in fs */
-	int32_t    f_bavail;		/* free blocks avail to non-superuser */
-	u_int32_t  f_files;		/* total file nodes in file system */
-	u_int32_t  f_ffree;		/* free file nodes in fs */
-	fsid_t	   f_fsid;		/* file system id */
-	uid_t	   f_owner;		/* user that mounted the file system */
-	u_int32_t  f_syncwrites;	/* count of sync writes since mount */
-	u_int32_t  f_asyncwrites;	/* count of async writes since mount */
-	u_int32_t  f_ctime;		/* last mount [-u] time */
-	u_int32_t  f_spare[3];		/* spare for later */
-	char	   f_fstypename[MFSNAMELEN]; /* fs type name */
-	char	   f_mntonname[MNAMELEN];    /* directory on which mounted */
-	char	   f_mntfromname[MNAMELEN];  /* mounted file system */
-	union mount_info mount_info;	    /* per-filesystem mount options */
-};
-
 /* old (pre-2.6) statfs structure */
 struct ostatfs {
 	short	f_type;			/* type of file system (unused; zero) */
