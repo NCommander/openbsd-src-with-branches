@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysarch.h,v 1.6 2011/03/12 03:52:26 guenther Exp $	*/
+/*	$OpenBSD: sysarch.h,v 1.7 2011/03/23 16:54:35 pirofti Exp $	*/
 /*	$NetBSD: sysarch.h,v 1.8 1996/01/08 13:51:44 mycroft Exp $	*/
 
 #ifndef _MACHINE_SYSARCH_H_
@@ -53,6 +53,9 @@ int i386_set_fsbase(void *);
 int i386_get_gsbase(void **);
 int i386_set_gsbase(void *);
 int sysarch(int, void *);
+#else
+int i386_get_threadbase(struct proc *, void *, int);
+int i386_set_threadbase(struct proc *, void *, int);
 #endif
 
 #endif /* !_MACHINE_SYSARCH_H_ */
