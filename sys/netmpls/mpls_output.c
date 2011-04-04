@@ -175,10 +175,8 @@ mpls_do_cksum(struct mbuf *m)
 	struct ip *ip;
 	u_int16_t hlen;
 
-	if (m->m_pkthdr.csum_flags & (M_TCPV4_CSUM_OUT | M_UDPV4_CSUM_OUT)) {
-		in_delayed_cksum(m);
-		m->m_pkthdr.csum_flags &= ~(M_UDPV4_CSUM_OUT|M_TCPV4_CSUM_OUT);
-	}
+	in_proto_cksum_out(m, NULL);
+
 	if (m->m_pkthdr.csum_flags & M_IPV4_CSUM_OUT) {
 		ip = mtod(m, struct ip *);
 		hlen = ip->ip_hl << 2;
