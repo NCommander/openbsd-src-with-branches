@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.180 2010/12/21 14:59:14 claudio Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.181 2011/03/08 22:53:28 mpf Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -1580,6 +1580,12 @@ carp_input(struct mbuf *m, u_int8_t *shost, u_int8_t *dhost, u_int16_t etype)
 			if (m0 == NULL)
 				continue;
 			m0->m_pkthdr.rcvif = &vh->sc_if;
+#if NBPFILTER > 0
+			if (vh->sc_if.if_bpf)
+				bpf_mtap_hdr(vh->sc_if.if_bpf, (char *)&eh,
+				    ETHER_HDR_LEN, m0, BPF_DIRECTION_IN);
+#endif
+			vh->sc_if.if_ipackets++;
 			ether_input(&vh->sc_if, &eh, m0);
 		}
 		return (1);
