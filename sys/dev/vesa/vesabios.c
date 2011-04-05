@@ -1,4 +1,4 @@
-/* $OpenBSD: vesabios.c,v 1.3 2007/01/28 20:28:50 gwk Exp $ */
+/* $OpenBSD: vesabios.c,v 1.4 2007/02/18 19:19:02 gwk Exp $ */
 
 /*
  * Copyright (c) 2002, 2004
@@ -160,7 +160,7 @@ mm2txt(unsigned int mm)
 		"YUV"
 	};
 
-	if (mm < sizeof(names)/sizeof(names[0]))
+	if (mm < nitems(names))
 		return (names[mm]);
 	snprintf(buf, sizeof(buf), "unknown memory model %d", mm);
 	return (buf);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac.c,v 1.41 2010/09/20 06:17:49 krw Exp $	*/
+/*	$OpenBSD: cac.c,v 1.42 2010/10/12 00:53:32 krw Exp $	*/
 /*	$NetBSD: cac.c,v 1.15 2000/11/08 19:20:35 ad Exp $	*/
 
 /*
@@ -871,7 +871,7 @@ cac_ioctl_vol(struct cac_softc *sc, struct bioc_vol *bv)
 	bv->bv_status = 0;		/* XXX */
 	bv->bv_percent = -1;
 	bv->bv_seconds = 0;
-	if (dstatus.stat < sizeof(cac_stat)/sizeof(cac_stat[0]))
+	if (dstatus.stat < nitems(cac_stat))
 		bv->bv_status = cac_stat[dstatus.stat];
 	if (bv->bv_status == BIOC_SVREBUILD ||
 	    bv->bv_status == BIOC_SVBUILDING)
