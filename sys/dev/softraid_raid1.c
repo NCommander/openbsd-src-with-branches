@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid1.c,v 1.25 2010/07/02 09:20:26 jsing Exp $ */
+/* $OpenBSD: softraid_raid1.c,v 1.26 2010/11/06 23:01:56 marco Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  *
@@ -615,8 +615,6 @@ sr_raid1_intr(struct buf *bp)
 				wakeup(wu);
 			}
 		} else {
-			/* do not change the order of these 2 functions */
-			sr_wu_put(wu);
 			scsi_done(xs);
 		}
 
@@ -633,8 +631,6 @@ bad:
 		wu->swu_flags |= SR_WUF_REBUILDIOCOMP;
 		wakeup(wu);
 	} else {
-		/* do not change the order of these 2 functions */
-		sr_wu_put(wu);
 		scsi_done(xs);
 	}
 
