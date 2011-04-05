@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vnops.c,v 1.75 2010/09/10 16:34:08 thib Exp $	*/
+/*	$OpenBSD: msdosfs_vnops.c,v 1.76 2010/12/21 20:14:43 thib Exp $	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.63 1997/10/17 11:24:19 ws Exp $	*/
 
 /*-
@@ -1816,7 +1816,6 @@ fileidhash(uint64_t fileid)
 
 /* Global vfs data structures for msdosfs */
 struct vops msdosfs_vops = {
-	.vop_default	= eopnotsupp,
 	.vop_lookup	= msdosfs_lookup,
 	.vop_create	= msdosfs_create,
 	.vop_mknod	= msdosfs_mknod,

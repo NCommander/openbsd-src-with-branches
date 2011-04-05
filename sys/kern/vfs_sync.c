@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.48 2010/09/10 16:34:08 thib Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.49 2010/12/21 20:14:43 thib Exp $  */
 
 /*
  *  Portions of this code are:
@@ -260,7 +260,6 @@ int   sync_inactive(void *);
 int   sync_print(void *);
 
 struct vops sync_vops = {
-	.vop_default	= eopnotsupp,
 	.vop_close	= nullop,
 	.vop_fsync	= sync_fsync,
 	.vop_inactive	= sync_inactive,
