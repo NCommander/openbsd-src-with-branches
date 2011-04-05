@@ -34,7 +34,7 @@
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
 .\"
-.Dd $Mdocdate: April 4 2011 $
+.Dd $Mdocdate: April 5 2011 $
 .Dt OPTIONS 4
 .Os
 .Sh NAME
@@ -293,16 +293,6 @@ Includes support for reading NTFS file systems.
 Experimental and read only.
 See
 .Xr mount_ntfs 8
-for details.
-.It Cd option PORTAL
-Includes the (experimental) portal filesystem.
-This permits interesting tricks like opening TCP sockets by opening files in
-the file system.
-The portal file system is conventionally mounted on
-.Pa /p
-and is partially implemented by a special daemon.
-See
-.Xr mount_portal 8
 for details.
 .It Cd option PROCFS
 Includes code for a special file system (conventionally mounted on

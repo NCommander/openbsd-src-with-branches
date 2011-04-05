@@ -91,10 +91,6 @@ extern	const struct vfsops msdosfs_vfsops;
 extern	const struct vfsops nfs_vfsops;
 #endif
 
-#ifdef PORTAL
-extern	const struct vfsops portal_vfsops;
-#endif
-
 #ifdef PROCFS
 extern	const struct vfsops procfs_vfsops;
 #endif
@@ -160,11 +156,6 @@ static struct vfsconf vfsconflist[] = {
         /* /proc Filesystem */
 #ifdef PROCFS
         { &procfs_vfsops, MOUNT_PROCFS, 12, 0, 0, NULL },
-#endif
-
-        /* Portal Filesystem */
-#ifdef PORTAL
-        { &portal_vfsops, MOUNT_PORTAL, 8, 0, 0, NULL },
 #endif
 
 	/* NTFS Filesystem */

@@ -101,7 +101,6 @@
 /etc/pf.conf
 /etc/pf.os
 /etc/pkg.conf
-/etc/portal.conf
 /etc/printcap
 /etc/profile
 /etc/protocols
