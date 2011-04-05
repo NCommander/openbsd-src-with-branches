@@ -1680,12 +1680,9 @@ EXIT(curcpu)
  * int splraise(int newcpl);
  */
 LEAF_ENTRY(splraise)
-	bv	%r0(%rp)
-	nop
-
 	extrd,u	%arg0, 63, 32, %arg0
 #ifdef DEBUG
-	cmpib,<=,n NIPL, %arg0, splraise_ok
+	cmpib,>,n NIPL, %arg0, splraise_ok
 	copy	%arg0, %arg1
 	ldil	L%splraise_fmt, %arg0
 	b,l	panic, %rp
@@ -1717,12 +1714,9 @@ EXIT(splraise)
  * int spllower(int newcpl);
  */
 LEAF_ENTRY(spllower)
-	bv	%r0(%rp)
-	nop
-
 	extrd,u	%arg0, 63, 32, %arg0
 #ifdef DEBUG
-	cmpib,<=,n NIPL, %arg0, spllower_ok
+	cmpib,>,n NIPL, %arg0, spllower_ok
 	copy	%arg0, %arg1
 	ldil	L%spllower_fmt, %arg0
 	b,l	panic, %rp

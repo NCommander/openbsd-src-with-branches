@@ -20,7 +20,7 @@
 
 #include <machine/intr.h>
 
-volatile u_long imask;
+volatile u_long imask[NIPL];
 
 void *
 softintr_establish(int pri, void (*handler)(void *), void *arg)
