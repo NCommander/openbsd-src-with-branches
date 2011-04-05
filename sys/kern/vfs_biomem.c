@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_biomem.c,v 1.14 2010/04/30 21:56:39 oga Exp $ */
+/*	$OpenBSD: vfs_biomem.c,v 1.15 2011/04/02 16:47:17 beck Exp $ */
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
  *
@@ -231,6 +231,7 @@ buf_shrink_mem(struct buf *bp, vsize_t newsize)
 	if (newsize < bp->b_bufsize) {
 		pmap_kremove(va + newsize, bp->b_bufsize - newsize);
 		pmap_update(pmap_kernel());
+		bcstats.numbufpages -= atop(bp->b_bufsize - newsize);
 		bp->b_bufsize = newsize;
 	}
 }
