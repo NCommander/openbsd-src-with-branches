@@ -31,4 +31,7 @@
 
 #define	mtsp(v,r)	__asm __volatile ("mtsp %0,%1":: "r" (v), "i" (r))
 
+#define	ssm(v,r)	__asm __volatile("ssm %1,%0": "=r" (r): "i" (v))
+#define	rsm(v,r)	__asm __volatile("rsm %1,%0": "=r" (r): "i" (v))
+
 #endif
