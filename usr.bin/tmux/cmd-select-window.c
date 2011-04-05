@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-select-window.c,v 1.5 2011/01/04 00:42:47 nicm Exp $ */
+/* $OpenBSD: cmd-select-window.c,v 1.6 2011/01/04 02:03:41 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -102,7 +102,7 @@ cmd_select_window_exec(struct cmd *self, struct cmd_ctx *ctx)
 		last = 1;
 
 	if (next || previous || last) {
-		s = cmd_find_session(ctx, args_get(args, 't'));
+		s = cmd_find_session(ctx, args_get(args, 't'), 0);
 		if (s == NULL)
 			return (-1);
 
