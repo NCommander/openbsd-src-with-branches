@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.304 2011/02/15 19:49:47 robert Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.305 2011/02/22 18:00:44 robert Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -3038,8 +3038,8 @@ bge_encap(struct bge_softc *sc, struct mbuf *m_head, u_int32_t *txidx)
 	if (m_head->m_pkthdr.csum_flags) {
 		if (m_head->m_pkthdr.csum_flags & M_IPV4_CSUM_OUT)
 			csum_flags |= BGE_TXBDFLAG_IP_CSUM;
-		if (m_head->m_pkthdr.csum_flags & (M_TCPV4_CSUM_OUT |
-		    M_UDPV4_CSUM_OUT)) {
+		if (m_head->m_pkthdr.csum_flags & (M_TCP_CSUM_OUT |
+		    M_UDP_CSUM_OUT)) {
 			csum_flags |= BGE_TXBDFLAG_TCP_UDP_CSUM;
 			if (m_head->m_pkthdr.len < ETHER_MIN_NOPAD &&
 			    bge_cksum_pad(m_head) != 0)

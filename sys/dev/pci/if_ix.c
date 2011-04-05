@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.46 2010/11/10 15:23:25 claudio Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.47 2011/04/03 15:36:02 jasper Exp $	*/
 
 /******************************************************************************
 
@@ -2046,11 +2046,11 @@ ixgbe_tx_ctx_setup(struct tx_ring *txr, struct mbuf *mp)
 
 		switch (ipproto) {
 		case IPPROTO_TCP:
-			if (mp->m_pkthdr.csum_flags & M_TCPV4_CSUM_OUT)
+			if (mp->m_pkthdr.csum_flags & M_TCP_CSUM_OUT)
 				type_tucmd_mlhl |= IXGBE_ADVTXD_TUCMD_L4T_TCP;
 			break;
 		case IPPROTO_UDP:
-			if (mp->m_pkthdr.csum_flags & M_UDPV4_CSUM_OUT)
+			if (mp->m_pkthdr.csum_flags & M_UDP_CSUM_OUT)
 				type_tucmd_mlhl |= IXGBE_ADVTXD_TUCMD_L4T_UDP;
 			break;
 		}
