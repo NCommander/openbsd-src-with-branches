@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_sched.h,v 1.2 2008/06/26 05:42:14 ray Exp $	*/
+/*	$OpenBSD: linux_sched.h,v 1.3 2009/12/28 02:54:24 guenther Exp $	*/
 /*	$NetBSD: linux_sched.h,v 1.1 1999/05/12 19:49:09 thorpej Exp $	*/
 
 /*-
@@ -31,8 +31,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _LINUX_SCHED_H
-#define	_LINUX_SCHED_H
+#ifndef _LINUX_SCHED_H_
+#define	_LINUX_SCHED_H_
 
 /*
  * Flags passed to the Linux __clone(2) system call.
@@ -67,4 +67,4 @@ struct linux_sched_param {
 #define LINUX_SCHED_FIFO	1
 #define LINUX_SCHED_RR		2
 
-#endif /* _LINUX_SCHED_H */
+#endif /* _LINUX_SCHED_H_ */
