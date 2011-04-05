@@ -116,6 +116,8 @@
 #include <sys/sched.h>
 
 struct cpu_info {
+	volatile int	ci_psw;
+
 	struct proc	*ci_curproc;
 	struct pcb	*ci_cpcb;
 	struct cpu_info	*ci_next;
