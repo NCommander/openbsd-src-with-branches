@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.c,v 1.49 2009/05/12 23:25:08 thib Exp $	*/
+/*	$OpenBSD: mount.c,v 1.50 2009/10/27 23:59:33 deraadt Exp $	*/
 /*	$NetBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
 
 /*
@@ -93,7 +93,7 @@ static struct opt {
 	{ MNT_ROOTFS,		1,	"root file system",	"" },
 	{ MNT_SYNCHRONOUS,	0,	"synchronous",		"sync" },
 	{ MNT_SOFTDEP,		0,	"softdep", 		"softdep" },
-	{ NULL,			0,	"",			"" }
+	{ 0,			0,	"",			"" }
 };
 
 int

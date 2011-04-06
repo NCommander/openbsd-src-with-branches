@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.47 2010/07/06 00:31:02 oga Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.48 2011/04/05 15:24:32 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -96,7 +96,7 @@ static struct emulation emulations[] = {
 	{ "native",	syscallnames,		SYS_MAXSYSCALL },
 	{ "linux",	linux_syscallnames,	LINUX_SYS_MAXSYSCALL },
 	{ "svr4",	svr4_syscallnames,	SVR4_SYS_MAXSYSCALL },
-	{ NULL,		NULL,			NULL }
+	{ NULL,		NULL,			0 }
 };
 
 struct emulation *current;

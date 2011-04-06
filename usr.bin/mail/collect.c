@@ -1,4 +1,4 @@
-/*	$OpenBSD: collect.c,v 1.31 2009/07/28 16:05:04 martynas Exp $	*/
+/*	$OpenBSD: collect.c,v 1.32 2009/10/27 23:59:40 deraadt Exp $	*/
 /*	$NetBSD: collect.c,v 1.9 1997/07/09 05:25:45 mikel Exp $	*/
 
 /*
@@ -523,7 +523,7 @@ forward(char *ms, FILE *fp, char *fn, int f)
 			puts("No appropriate messages");
 			return(0);
 		}
-		msgvec[1] = NULL;
+		msgvec[1] = 0;
 	}
 	if (tolower(f) == 'f')
 		tabst = NULL;

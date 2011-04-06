@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.120 2010/10/25 20:34:44 kurt Exp $ */
+/*	$OpenBSD: loader.c,v 1.121 2010/12/07 18:29:28 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -639,7 +639,7 @@ _dl_boot_bind(const long sp, long *dl_data, Elf_Dyn *dynamicp)
 	argv = (char **)stack;
 	envp = &argv[argc + 1];
 	stack = (long *)envp;
-	while (*stack++ != NULL)
+	while (*stack++ != 0L)
 		;
 
 	/*

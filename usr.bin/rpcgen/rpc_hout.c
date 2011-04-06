@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc_hout.c,v 1.18 2009/10/27 23:59:42 deraadt Exp $	*/
+/*	$OpenBSD: rpc_hout.c,v 1.19 2010/09/01 14:43:34 millert Exp $	*/
 /*	$NetBSD: rpc_hout.c,v 1.4 1995/06/11 21:49:55 pk Exp $	*/
 
 /*
@@ -163,7 +163,7 @@ pargdef(def)
 			}
 			fprintf(fout, "};\n");
 			fprintf(fout, "typedef struct %s %s;\n", name, name);
-			pxdrfuncdecl(name, NULL);
+			pxdrfuncdecl(name, 0);
 			fprintf(fout, "\n");
 		}
 	}
