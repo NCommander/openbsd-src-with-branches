@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.94 2009/08/13 15:23:08 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.95 2011/02/26 13:07:48 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -45,8 +45,6 @@
  * secpercyl, secsize and anything required for a block i/o read
  * operation in the driver's strategy/start routines
  * must be filled in before calling us.
- *
- * Returns null on success and an error string on failure.
  */
 int
 readdisklabel(dev_t dev, void (*strat)(struct buf *),
