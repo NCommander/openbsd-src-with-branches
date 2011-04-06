@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.73 2010/12/31 20:54:21 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.74 2011/04/03 14:56:28 guenther Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -1365,7 +1365,7 @@ m88110_syscall(register_t code, struct trapframe *tf)
 		callp += code;
 
 	i = callp->sy_argsize / sizeof(register_t);
-	if (i > sizeof(args) > sizeof(register_t))
+	if (i > sizeof(args) / sizeof(register_t))
 		panic("syscall nargs");
 	if (i > nap) {
 		bcopy((caddr_t)ap, (caddr_t)args, nap * sizeof(register_t));
