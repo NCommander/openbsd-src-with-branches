@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.127 2010/11/13 17:45:44 deraadt Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.128 2011/04/02 16:47:17 beck Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*
@@ -463,9 +463,10 @@ bread_cluster_callback(struct buf *bp)
 		size_t newsize = xbpp[1]->b_bufsize;
 
 		/*
-		 * Shrink this buffer to only cover its part of the total I/O.
+		 * Shrink this buffer's mapping to only cover its part of
+		 * the total I/O.
 		 */
-		buf_shrink_mem(bp, newsize);
+		buf_fix_mapping(bp, newsize);
 		bp->b_bcount = newsize;
 	}
 
