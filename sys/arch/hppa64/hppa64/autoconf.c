@@ -107,7 +107,7 @@ cpu_configure(void)
 	if (config_rootfound("mainbus", &ca) == NULL)
 		panic("no mainbus found");
 
-	mtctl(0xffffffffffffffffULL, CR_EIEM);
+	cpu_intr_init();
 	spl0();
 
 	if (cold_hook)
