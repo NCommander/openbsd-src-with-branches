@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.38 2010/06/29 20:30:32 guenther Exp $	*/
+/*	$OpenBSD: param.h,v 1.39 2010/10/26 17:24:34 deraadt Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -38,7 +38,7 @@
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value for all
- * data types (int, long, ...).   The result is u_int and must be cast to
+ * data types (int, long, ...).   The result is u_long and must be cast to
  * any desired pointer type.
  */
 #define	ALIGNBYTES	7
