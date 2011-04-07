@@ -759,7 +759,6 @@ file kern/vfs_bio.c
 file kern/vfs_biomem.c
 file kern/vfs_cache.c
 file kern/vfs_cluster.c
-file kern/vfs_conf.c
 file kern/vfs_default.c
 file kern/vfs_init.c
 file kern/vfs_lockf.c
