@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_mmc.c,v 1.8 2009/09/03 20:17:25 deraadt Exp $	*/
+/*	$OpenBSD: pxa2x0_mmc.c,v 1.9 2009/09/03 21:40:29 marex Exp $	*/
 
 /*
  * Copyright (c) 2007 Uwe Stuehler <uwe@openbsd.org>
@@ -203,9 +203,9 @@ fail:
 		pxa2x0_gpio_intr_disestablish(sc->sc_card_ih);
 		sc->sc_card_ih = NULL;
 	}
-	if (sc->sc_ioh != NULL) {
+	if (sc->sc_ioh != 0) {
 		bus_space_unmap(sc->sc_iot, sc->sc_ioh, PXA2X0_MMC_SIZE);
-		sc->sc_ioh = NULL;
+		sc->sc_ioh = 0;
 	}
 	pxa2x0_clkman_config(CKEN_MMC, 0);
 }

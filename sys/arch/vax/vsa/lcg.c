@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcg.c,v 1.14 2008/12/21 21:39:50 miod Exp $	*/
+/*	$OpenBSD: lcg.c,v 1.15 2010/12/26 15:41:00 miod Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -235,7 +235,7 @@ lcg_attach(struct device *parent, struct device *self, void *aux)
 	 */
 	if (!console) {
 		tmp = vax_map_physmem(LCG_CONFIG_ADDR, 1);
-		if (tmp == NULL) {
+		if (tmp == 0) {
 			printf("\n%s: can not map configuration register\n",
 			    self->dv_xname);
 			return;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vme.c,v 1.10 2010/12/26 15:40:59 miod Exp $	*/
+/*	$OpenBSD: vme.c,v 1.11 2010/12/31 21:38:08 miod Exp $	*/
 /*
  * Copyright (c) 2006, 2007, 2010 Miodrag Vallat.
  *
@@ -497,7 +497,7 @@ vme_map_r(const struct vme_range *r, paddr_t pa, psize_t len, int flags,
 	u_int pg;
 
 	ova = va = uvm_km_valloc(kernel_map, len);
-	if (va == NULL)
+	if (va == 0)
 		return ENOMEM;
 
 	pa += r->vr_base;

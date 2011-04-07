@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskmap.c,v 1.2 2010/06/14 16:51:55 thib Exp $	*/
+/*	$OpenBSD: diskmap.c,v 1.3 2011/01/12 23:18:56 thib Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Joel Sing <jsing@openbsd.org>
@@ -86,7 +86,7 @@ diskmapioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 		goto bad;
 	}
 
-	if (FILE_IS_USABLE(fp) == NULL) {
+	if (!FILE_IS_USABLE(fp)) {
 		error = EINVAL;
 		goto bad;
 	}

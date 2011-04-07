@@ -1,4 +1,4 @@
-/*	$OpenBSD: viommu.c,v 1.9 2010/04/20 23:26:59 deraadt Exp $	*/
+/*	$OpenBSD: viommu.c,v 1.10 2010/08/07 03:50:01 krw Exp $	*/
 /*	$NetBSD: iommu.c,v 1.47 2002/02/08 20:03:45 eeh Exp $	*/
 
 /*
@@ -614,7 +614,7 @@ viommu_dvmamap_append_range(bus_dma_tag_t t, bus_dmamap_t map, paddr_t pa,
 	sgend = sgstart + length - 1;
 
 #ifdef DIAGNOSTIC
-	if (sgstart == NULL || sgstart > sgend) {
+	if (sgstart == 0 || sgstart > sgend) {
 		printf("append range invalid mapping for %lx "
 		    "(0x%llx - 0x%llx)\n", pa, sgstart, sgend);
 		map->dm_nsegs = 0;

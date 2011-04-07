@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.36 2010/11/24 21:16:28 miod Exp $ */
+/*	$OpenBSD: cpu.c,v 1.37 2011/03/31 20:37:44 miod Exp $ */
 
 /*
  * Copyright (c) 1997-2004 Opsycon AB (www.opsycon.se)
@@ -55,7 +55,7 @@ struct cfattach cpu_ca = {
 	sizeof(struct device), cpumatch, cpuattach
 };
 struct cfdriver cpu_cd = {
-	NULL, "cpu", DV_DULL, NULL, 0
+	NULL, "cpu", DV_DULL,
 };
 
 int

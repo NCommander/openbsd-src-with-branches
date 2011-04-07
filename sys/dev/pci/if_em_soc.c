@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_em_soc.c,v 1.1 2009/11/25 13:28:13 dms Exp $	*/
 
 /*
  * Copyright (c) 2009 Dariusz Swiderski <sfires@sfires.net>
@@ -32,7 +32,7 @@ em_lookup_gcu(struct device *self)
 
 	INIT_DEBUGOUT("em_lookup_gcu");
 	TAILQ_FOREACH(dev, &alldevs, dv_list) {
-		if (strcmp(dev->dv_xname, "gcu0") == NULL) {
+		if (strcmp(dev->dv_xname, "gcu0") == 0) {
 			return dev;
 		}
 	}

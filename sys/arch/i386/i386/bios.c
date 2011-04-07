@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.87 2010/03/28 12:08:49 kettenis Exp $	*/
+/*	$OpenBSD: bios.c,v 1.88 2010/11/22 21:08:07 miod Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -756,7 +756,7 @@ smbios_find_table(u_int8_t type, struct smbtable *st)
 			if (hdr->type == type) {
 				va = (u_int8_t *)hdr + hdr->size;
 				for (; va + 1 < end; va++)
-					if (*va == NULL && *(va + 1) == NULL)
+					if (*va == 0 && *(va + 1) == 0)
 						break;
 				va+= 2;
 				tcount = st->cookie >> 16;
@@ -777,7 +777,7 @@ smbios_find_table(u_int8_t type, struct smbtable *st)
 			break;
 		va+= hdr->size;
 		for (; va + 1 < end; va++)
-			if (*va == NULL && *(va + 1) == NULL)
+			if (*va == 0 && *(va + 1) == 0)
 				break;
 		va+=2;
 	}

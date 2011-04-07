@@ -1,4 +1,4 @@
-/*	$OpenBSD: fhc.c,v 1.16 2008/03/09 13:27:47 kettenis Exp $	*/
+/*	$OpenBSD: fhc.c,v 1.17 2010/11/11 17:58:23 miod Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net)
@@ -121,7 +121,7 @@ fhc_attach(struct fhc_softc *sc)
 			free(fa.fa_name, M_DEVBUF);
 		if (fa.fa_reg != NULL)
 			free(fa.fa_reg, M_DEVBUF);
-		if (fa.fa_nintr != NULL)
+		if (fa.fa_intr != NULL)
 			free(fa.fa_intr, M_DEVBUF);
 		if (fa.fa_promvaddrs != NULL)
 			free(fa.fa_promvaddrs, M_DEVBUF);

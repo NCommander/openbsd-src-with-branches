@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ipw.c,v 1.93 2010/09/07 16:21:45 deraadt Exp $	*/
+/*	$OpenBSD: if_ipw.c,v 1.94 2010/11/15 19:11:57 damien Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -1997,7 +1997,7 @@ ipw_init(struct ifnet *ifp)
 		goto fail1;
 	}
 
-	if ((error = ipw_read_firmware(sc, &fw)) != NULL) {
+	if ((error = ipw_read_firmware(sc, &fw)) != 0) {
 		printf("%s: error %d, could not read firmware\n",
 		    sc->sc_dev.dv_xname, error);
 		goto fail1;
