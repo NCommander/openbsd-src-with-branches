@@ -1,4 +1,4 @@
-/*	$OpenBSD: zlib.c,v 1.12 2003/12/10 07:22:42 itojun Exp $	*/
+/*	$OpenBSD: zlib.c,v 1.13 2007/11/26 09:28:33 martynas Exp $	*/
 /*	$NetBSD: zlib.c,v 1.2 1996/03/16 23:55:40 christos Exp $	*/
 
 /*
@@ -3335,7 +3335,7 @@ int r;
       break;
     case LENS:
       NEEDBITS(32)
-      if (((~b) >> 16) != (b & 0xffff))
+      if ((((~b) >> 16) & 0xffff) != (b & 0xffff))
       {
         s->mode = BADB;
         z->msg = "invalid stored block lengths";
