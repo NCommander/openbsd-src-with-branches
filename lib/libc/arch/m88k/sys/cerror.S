@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.7 2005/08/07 16:40:15 espie Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.8 2011/04/04 12:42:39 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #include "SYS.h"
 
-WEAK_ALIAS(_C_LABEL(_cerror), _C_LABEL(__cerror))
+WEAK_ALIAS(_cerror,__cerror)
 
 	.globl	_errno
 ENTRY(__cerror)
