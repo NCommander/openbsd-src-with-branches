@@ -1,4 +1,4 @@
-/*	$OpenBSD: piixpm.c,v 1.33 2009/11/05 09:37:05 sthen Exp $	*/
+/*	$OpenBSD: piixpm.c,v 1.34 2010/04/08 00:23:53 tedu Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -288,7 +288,7 @@ piixpm_i2c_exec(void *cookie, i2c_op_t op, i2c_addr_t addr,
 		piixpm_intr(sc);
 	} else {
 		/* Wait for interrupt */
-		if (tsleep(sc, PRIBIO, "iicexec", PIIXPM_TIMEOUT * hz))
+		if (tsleep(sc, PRIBIO, "piixpm", PIIXPM_TIMEOUT * hz))
 			goto timeout;
 	}
 
