@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kvm_sh.c,v 1.2 2007/03/03 21:37:27 miod Exp $	*/
 
 /*
  * Copyright (c) 2007 Miodrag Vallat.
@@ -20,6 +20,7 @@
 #include <sys/param.h>
 #include <sys/core.h>
 #include <sys/kcore.h>
+#include <sys/vnode.h>
 
 #include <unistd.h>
 #include <stdlib.h>
