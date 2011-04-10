@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc_compare.c,v 1.10 2005/04/11 07:04:47 deraadt Exp $	*/
+/*	$OpenBSD: proc_compare.c,v 1.11 2009/10/27 23:59:49 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -62,7 +62,7 @@
 #define BOTH    3
 
 int
-proc_compare(const struct kinfo_proc2 *p1, const struct kinfo_proc2 *p2)
+proc_compare(const struct kinfo_proc *p1, const struct kinfo_proc *p2)
 {
 	if (p1 == NULL)
 		return (1);
