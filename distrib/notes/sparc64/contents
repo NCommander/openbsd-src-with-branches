@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.44 2010/03/07 14:07:08 miod Exp $
+dnl	$OpenBSD: contents,v 1.45 2010/10/18 04:24:07 deraadt Exp $
 TopPart
 
 OpenBSDminiroot
@@ -46,7 +46,7 @@ The kernel and boot images are provided for net booting installations.
 
 OpenBSDfloppydesc(two,Each,s)
 
-DistributionDescription(eleven)
+DistributionDescription(ten)
 
 OpenBSDbase(55449822,181758993)
 

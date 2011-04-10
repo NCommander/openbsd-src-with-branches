@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.10 2010/03/07 14:07:08 miod Exp $
+dnl	$OpenBSD: contents,v 1.11 2010/10/18 04:24:07 deraadt Exp $
 TopPart
 
 OpenBSDdistsets
@@ -19,7 +19,7 @@ dnl OpenBSDcd
 
 	Packages	Index file for the Linux package installer.
 
-DistributionDescription(eleven)
+DistributionDescription(ten)
 
 OpenBSDbase(49909242,138382271)
 
