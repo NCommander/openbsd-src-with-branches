@@ -1,4 +1,4 @@
-/*	$OpenBSD: config-data.h,v 1.5 2003/05/14 01:34:35 millert Exp $	*/
+/*	$OpenBSD: config-data.h,v 1.6 2003/06/03 02:56:14 millert Exp $	*/
 
 /*
  * Copyright (c) 1993 Michael A. Cooper
@@ -82,10 +82,10 @@ typedef 	struct dirent		DIRENTRY;
  * Set default write(2) return and amount types.
  */
 #if	!defined(WRITE_RETURN_T)
-#define		WRITE_RETURN_T		int	/* What write() returns */
+#define		WRITE_RETURN_T		ssize_t	/* What write() returns */
 #endif	/* WRITE_RETURN_T */
 #if	!defined(WRITE_AMT_T)
-#define		WRITE_AMT_T		int	/* Amount to write */
+#define		WRITE_AMT_T		size_t	/* Amount to write */
 #endif	/* WRITE_AMT_T */
 
 #endif	/* __configdata_h__ */
