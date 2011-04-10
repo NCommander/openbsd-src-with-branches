@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot1.c,v 1.5 2010/12/06 22:51:46 jasper Exp $	*/
+/*	$OpenBSD: boot1.c,v 1.6 2011/03/13 00:13:53 deraadt Exp $	*/
 /*	$NetBSD: boot1.c,v 1.1 2006/09/01 21:26:19 uwe Exp $	*/
 
 /*-
@@ -66,7 +66,7 @@ const char *
 boot1(uint32_t *sector)
 {
         struct stat sb;
-	int fd;
+	int fd = -1;
 
 	bios_sector = *sector;
 
