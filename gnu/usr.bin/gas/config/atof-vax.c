@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: atof-vax.c,v 1.2 1998/02/15 18:49:11 niklas Exp $	*/
 
 /* atof_vax.c - turn a Flonum into a VAX floating point number
    Copyright (C) 1987, 1992 Free Software Foundation, Inc.
@@ -220,7 +220,7 @@ LITTLENUM_TYPE *words; /* Build the binary here. */
 	f.low = bits + MAX_PRECISION;
 	f.high = NULL;
 	f.leader = NULL;
-	f.exponent = NULL;
+	f.exponent = 0;
 	f.sign = '\0';
 	
 	if (what_kind_of_float (what_kind, & precision, & exponent_bits)) {
