@@ -232,7 +232,9 @@ main(int argc, char * const argv[])
 			mntonname = mntbuf->f_mntonname;
 		} else {
 			if ((fs = getfsfile(mntpath)) == NULL &&
-			    (fs = getfsspec(mntpath)) == NULL)
+			    (fs = getfsspec(mntpath)) == NULL &&
+			    (isduid(*argv, 0) == 0 ||
+			    (fs = getfsspec(*argv)) == NULL))
 				errx(1, "can't find fstab entry for %s.",
 				    *argv);
 			if (BADTYPE(fs->fs_type))
