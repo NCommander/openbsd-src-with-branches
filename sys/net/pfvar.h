@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.325 2011/04/05 13:48:18 mikeb Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.326 2011/04/06 13:18:39 claudio Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1442,6 +1442,7 @@ struct pf_divert {
 		struct in6_addr	ipv6;
 	}		addr;
 	u_int16_t	port;
+	u_int16_t	rdomain;
 };
 
 #define PFFRAG_FRENT_HIWAT	5000	/* Number of fragment entries */
