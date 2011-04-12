@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.140 2010/12/31 21:22:42 guenther Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.141 2011/04/07 13:22:29 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -162,6 +162,7 @@ struct ctl_relay_event {
 	char			*args;
 	char			*version;
 
+	off_t			 splicelen;
 	int			 line;
 	size_t			 toread;
 	int			 chunked;
