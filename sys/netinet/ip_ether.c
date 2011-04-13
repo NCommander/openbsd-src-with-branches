@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.c,v 1.55 2010/07/02 02:40:16 blambert Exp $  */
+/*	$OpenBSD: ip_ether.c,v 1.56 2010/10/28 16:36:16 claudio Exp $  */
 /*
  * The author of this code is Angelos D. Keromytis (kermit@adk.gr)
  *
@@ -27,6 +27,7 @@
  */
 
 #include "bridge.h"
+#include "pf.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
