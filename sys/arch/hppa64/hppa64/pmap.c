@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.12 2010/07/02 22:47:54 jsing Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.14 2011/04/14 13:24:04 jsing Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -1063,7 +1063,6 @@ pmap_activate(struct proc *p)
 	struct pcb *pcb = &p->p_addr->u_pcb;
 
 	pcb->pcb_space = pmap->pm_space;
-	pcb->pcb_uva = (vaddr_t)p->p_addr;
 }
 
 void
