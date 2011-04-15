@@ -1,4 +1,4 @@
-/* $OpenBSD: shared_intr.c,v 1.16 2009/09/30 20:16:22 miod Exp $ */
+/* $OpenBSD: shared_intr.c,v 1.17 2010/09/20 06:33:46 matthew Exp $ */
 /* $NetBSD: shared_intr.c,v 1.13 2000/03/19 01:46:18 thorpej Exp $ */
 
 /*
@@ -104,10 +104,12 @@ alpha_shared_intr_dispatch(intr, num)
 		 *  -1: This interrupt might have been for me, but I can't say
 		 *      for sure.
 		 */
-		if ((rv = (*ih->ih_fn)(ih->ih_arg)))
+		rv = (*ih->ih_fn)(ih->ih_arg);
+		if (rv)
 			ih->ih_count.ec_count++;
-
 		handled = handled || (rv != 0);
+		if (intr_shared_edge == 0 && rv == 1)
+			break;
 	}
 
 	return (handled);
@@ -142,6 +144,8 @@ alpha_shared_intr_establish(intr, num, type, level, fn, arg, basename)
 
 	switch (intr[num].intr_sharetype) {
 	case IST_EDGE:
+		intr_shared_edge = 1;
+		/* FALLTHROUGH */
 	case IST_LEVEL:
 		if (type == intr[num].intr_sharetype)
 			break;
