@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.2 2010/02/17 18:09:49 miod Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 2010/02/23 11:01:06 otto Exp $
 
 kernels: bsd bootblocks
 	cp ${.CURDIR}/../sys/arch/loongson/compile/GENERIC/bsd \
@@ -6,7 +6,7 @@ kernels: bsd bootblocks
 bsd:
 	cd ${.CURDIR}/../sys/arch/loongson/conf && config GENERIC
 	cd ${.CURDIR}/../sys/arch/loongson/compile/GENERIC && \
-	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
+	    ${MAKE} clean && exec ${MAKE}
 
 bootblocks:
 	cp ${DESTDIR}/usr/mdec/boot ${RELEASEDIR}

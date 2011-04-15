@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.9 2009/06/26 03:57:11 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2009/09/05 02:19:09 marex Exp $
 
 kernels: bsd bootblocks
 	cp ${.CURDIR}/../sys/arch/palm/compile/GENERIC/bsd \
@@ -7,7 +7,7 @@ kernels: bsd bootblocks
 bsd:
 	cd ${.CURDIR}/../sys/arch/palm/conf && config GENERIC
 	cd ${.CURDIR}/../sys/arch/palm/compile/GENERIC && \
-	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
+	    ${MAKE} clean && exec ${MAKE}
 
 bootblocks:
 	cp ${DESTDIR}/usr/mdec/zboot ${RELEASEDIR}

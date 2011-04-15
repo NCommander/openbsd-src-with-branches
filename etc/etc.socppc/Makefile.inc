@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.4 2010/02/13 19:39:56 kettenis Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 2010/08/17 19:17:14 deraadt Exp $
 
 kernels: bsd bootblocks
 	cp ${.CURDIR}/../sys/arch/socppc/compile/GENERIC/bsd \
@@ -7,7 +7,7 @@ kernels: bsd bootblocks
 bsd:
 	cd ${.CURDIR}/../sys/arch/socppc/conf && config GENERIC
 	cd ${.CURDIR}/../sys/arch/socppc/compile/GENERIC && \
-	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
+	    ${MAKE} clean && exec ${MAKE}
 
 bootblocks:
 	cp ${DESTDIR}/usr/mdec/boot ${RELEASEDIR}/boot
