@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2009/04/17 03:58:55 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2011/03/14 19:07:46 deraadt Exp $
 
 REV=	${OSrev}
 
@@ -47,7 +47,7 @@ ${IMAGE}: rd_setup do_files rd_teardown
 bsd:
 	cd ${TOP}/../../sys/arch/zaurus/conf && config RAMDISK
 	cd ${TOP}/../../sys/arch/zaurus/compile/RAMDISK && \
-	    ${MAKE} clean && ${MAKE} depend && ${MAKE}
+	    ${MAKE} clean && exec ${MAKE}
 	cp ${TOP}/../../sys/arch/zaurus/compile/RAMDISK/bsd bsd
 
 rd_setup:

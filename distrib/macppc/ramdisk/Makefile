@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2009/04/17 03:58:54 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.24 2011/03/14 19:07:46 deraadt Exp $
 
 REV=	${OSrev}
 
@@ -70,7 +70,7 @@ ${IMAGE}: rd_setup do_files rd_teardown
 bsd:
 	cd ${TOP}/../../sys/arch/macppc/conf && config RAMDISK
 	cd ${TOP}/../../sys/arch/macppc/compile/RAMDISK && \
-	    ${MAKE} clean && ${MAKE} depend && ${MAKE}
+	    ${MAKE} clean && exec ${MAKE}
 	cp ${TOP}/../../sys/arch/macppc/compile/RAMDISK/bsd bsd
 
 rd_setup:
