@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.104 2011/04/02 16:47:17 beck Exp $	*/
+/*	$OpenBSD: uvm_page.c,v 1.105 2011/04/03 12:36:08 beck Exp $	*/
 /*	$NetBSD: uvm_page.c,v 1.44 2000/11/27 08:40:04 chs Exp $	*/
 
 /*
@@ -156,11 +156,13 @@ static void uvm_pageremove(struct vm_page *);
 __inline static void
 uvm_pageinsert(struct vm_page *pg)
 {
+	struct vm_page	*dupe;
 	UVMHIST_FUNC("uvm_pageinsert"); UVMHIST_CALLED(pghist);
 
 	KASSERT((pg->pg_flags & PG_TABLED) == 0);
-	/* XXX should we check duplicates? */
-	RB_INSERT(uvm_objtree, &pg->uobject->memt, pg);
+	dupe = RB_INSERT(uvm_objtree, &pg->uobject->memt, pg);
+	/* not allowed to insert over another page */
+	KASSERT(dupe == NULL);
 	atomic_setbits_int(&pg->pg_flags, PG_TABLED);
 	pg->uobject->uo_npages++;
 }
