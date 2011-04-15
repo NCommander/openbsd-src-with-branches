@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkcsum.c,v 1.26 2008/12/10 23:41:19 krw Exp $	*/
+/*	$OpenBSD: dkcsum.c,v 1.27 2010/12/07 00:44:48 dlg Exp $	*/
 
 /*-
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -113,7 +113,8 @@ dkcsumattach(void)
 		/* Read blocks to cksum.  XXX maybe a d_read should be used. */
 		bp->b_blkno = 0;
 		bp->b_bcount = bios_cksumlen * DEV_BSIZE;
-		bp->b_flags = B_BUSY | B_READ | B_RAW;
+		CLR(bp->b_flags, B_WRITE | B_DONE);
+		SET(bp->b_flags, B_BUSY | B_READ | B_RAW);
 		bp->b_cylinder = 0;
 		(*bdsw->d_strategy)(bp);
 		if ((error = biowait(bp))) {
