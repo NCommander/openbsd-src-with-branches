@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_pty.c,v 1.52 2010/09/24 02:59:39 deraadt Exp $	*/
+/*	$OpenBSD: tty_pty.c,v 1.53 2011/04/03 14:56:28 guenther Exp $	*/
 /*	$NetBSD: tty_pty.c,v 1.33.4.1 1996/06/02 09:08:11 mrg Exp $	*/
 
 /*
@@ -291,7 +291,7 @@ ptsread(dev_t dev, struct uio *uio, int flag)
 again:
 	if (pti->pt_flags & PF_REMOTE) {
 		while (isbackground(pr, tp)) {
-			if ((p->p_sigignore & sigmask(SIGTTIN)) ||
+			if ((p->p_sigacts->ps_sigignore & sigmask(SIGTTIN)) ||
 			    (p->p_sigmask & sigmask(SIGTTIN)) ||
 			    pr->ps_pgrp->pg_jobc == 0 ||
 			    pr->ps_flags & PS_PPWAIT)
