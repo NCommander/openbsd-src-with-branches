@@ -1,11 +1,11 @@
-# $OpenBSD: Makefile,v 1.2 2000/04/25 20:19:21 jakob Exp $
+# $OpenBSD: Makefile,v 1.3 2003/06/08 23:05:10 millert Exp $
 
 PROG=	user
 SRCS=	user.c main.c
 
 CFLAGS+=	-DEXTENSIONS
 
-LDADD+=	-lutil 
+LDADD+=	-lutil
 DPADD+=	${LIBUTIL}
 
 LINKS+=	${BINDIR}/user ${BINDIR}/useradd
