@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.489 2011/03/20 21:44:08 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.490 2011/04/15 04:52:39 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -3778,6 +3778,12 @@ i386_softintunlock(void)
 	__mp_unlock(&kernel_lock);
 }
 #endif
+
+/*
+ * True if the system has any non-level interrupts which are shared
+ * on the same pin.
+ */
+int	intr_shared_edge;
 
 /*
  * Software interrupt registration

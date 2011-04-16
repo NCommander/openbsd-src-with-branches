@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.21 2010/12/27 19:51:27 guenther Exp $	*/
+/*	$OpenBSD: intr.h,v 1.22 2011/03/23 16:54:34 pirofti Exp $	*/
 /*	$NetBSD: intr.h,v 1.2 2003/05/04 22:01:56 fvdl Exp $	*/
 
 /*-
@@ -190,6 +190,8 @@ extern struct intrstub ioapic_edge_stubs[];
 extern struct intrstub ioapic_level_stubs[];
 
 struct cpu_info;
+
+extern int intr_shared_edge;
 
 extern char idt_allocmap[];
 

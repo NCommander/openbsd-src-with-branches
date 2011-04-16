@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.16 2004/06/28 01:41:53 aaron Exp $	*/
+/*	$OpenBSD: psl.h,v 1.17 2011/03/23 16:54:35 pirofti Exp $	*/
 /*	$NetBSD: psl.h,v 1.30 1996/05/13 01:28:05 mycroft Exp $	*/
 
 /*-
@@ -90,6 +90,8 @@ struct intrhand {
 	int		ih_irq;
 	struct evcount	ih_count;
 };
+
+extern int intr_shared_edge;	/* This system has shared edge interrupts */
 
 #endif /* _LOCORE */
 #endif /* _KERNEL */
