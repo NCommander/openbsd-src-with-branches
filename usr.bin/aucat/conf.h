@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.15 2010/04/06 20:07:01 ratchov Exp $	*/
+/*	$OpenBSD: conf.h,v 1.16 2010/10/21 18:57:42 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -33,8 +33,8 @@ extern int debug_level;
 /*
  * socket and option names
  */
-#define DEFAULT_MIDITHRU	"midithru"
-#define DEFAULT_SOFTAUDIO	"softaudio"
+#define MIDICAT_PATH		"midithru"
+#define AUCAT_PATH		"softaudio"
 #define DEFAULT_OPT		"default"
 
 /*
