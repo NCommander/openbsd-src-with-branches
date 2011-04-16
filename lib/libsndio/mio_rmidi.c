@@ -1,4 +1,4 @@
-/*	$OpenBSD: mio_rmidi.c,v 1.7 2010/07/21 23:00:16 ratchov Exp $	*/
+/*	$OpenBSD: mio_rmidi.c,v 1.8 2011/04/12 21:40:22 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -27,6 +27,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "debug.h"
 #include "mio_priv.h"
 
 struct mio_rmidi_hdl {

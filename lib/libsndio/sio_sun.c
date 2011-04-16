@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sio_sun.c,v 1.1 2011/04/08 11:18:07 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -40,6 +40,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "debug.h"
 #include "sio_priv.h"
 
 struct sio_sun_hdl {
