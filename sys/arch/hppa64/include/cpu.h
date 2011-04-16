@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.22 2011/04/06 14:45:23 jsing Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.23 2011/04/07 13:13:01 jsing Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -134,8 +134,8 @@ struct cpu_info {
 	struct proc	*ci_curproc;
 	struct pcb	*ci_cpcb;
 	struct cpu_info	*ci_next;
+	paddr_t		ci_fpu_state;		/* Process FPU state. */
 
-	struct proc	*ci_fpproc;
 	int		ci_number;
 	struct schedstate_percpu ci_schedstate;	/* scheduler state */
 	u_int32_t	ci_randseed;
