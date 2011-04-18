@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: Signature.pm,v 1.11 2010/12/24 09:04:14 espie Exp $
 #
 # Copyright (c) 2010 Marc Espie <espie@openbsd.org>
 #
@@ -121,7 +121,7 @@ sub print_error
 	my ($a, $b) = @_;
 
 	print STDERR "Error: $a->{name} exists in two non-comparable versions\n";
-	print STDERR "Someone forgot to bump a PKGNAME\n";
+	print STDERR "Someone forgot to bump a REVISION\n";
 	print STDERR $a->string, " vs. ", $b->string, "\n";
 }
 
