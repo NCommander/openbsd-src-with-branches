@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2009/04/17 15:59:48 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.37 2010/10/18 04:07:51 deraadt Exp $
 
 REV=		${OSrev}
 
@@ -12,7 +12,7 @@ ARCHDIR=	${.CURDIR}/../${MACHINE}/ramdisk
 .endif
 
 MOUNT_POINT?=	/mnt
-VND?=		svnd0
+VND?=		vnd0
 VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 DISKTYPE=	rdroot

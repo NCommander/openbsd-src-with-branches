@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.31 2009/04/17 03:58:54 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.32 2010/10/18 04:07:48 deraadt Exp $
 
 REV=		${OSrev}
 
@@ -14,7 +14,7 @@ ARCHDIR=	${.CURDIR}/../${MACHINE}/miniroot
 UTILS=		${.CURDIR}
 
 MOUNT_POINT?=	/mnt
-VND?=		svnd0
+VND?=		vnd0
 VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 DISKTYPE=	miniroot

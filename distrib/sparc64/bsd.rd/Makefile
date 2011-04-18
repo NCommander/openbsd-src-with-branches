@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.20 2009/04/17 03:58:55 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.21 2011/04/15 03:11:22 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -10,7 +10,7 @@ UTILS?=		${TOP}/../miniroot
 
 MOUNT_POINT=	/mnt
 
-VND?=		svnd0
+VND?=		vnd0
 VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 VND_CRDEV=	/dev/r${VND}c

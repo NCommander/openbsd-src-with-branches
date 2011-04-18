@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2009/10/12 17:49:14 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.24 2011/04/15 03:11:22 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -17,7 +17,7 @@ FLOPPYSIZE?=	2880
 FLOPPYTYPE?=	floppy
 INSTALLBOOT?=	/usr/mdec/installboot
 
-VND?=		svnd0
+VND?=		vnd0
 VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 VND_CRDEV=	/dev/r${VND}c

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2010/10/18 05:40:47 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 2011/02/17 20:24:11 jasper Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -51,7 +51,7 @@ clean cleandir:
 	/bin/rm -rf cd-dir ${CDROM}
 
 unconfig:
-	-vnconfig -u svnd0
+	-vnconfig -u vnd0
 
 .include <bsd.obj.mk>
 .include <bsd.subdir.mk>

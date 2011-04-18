@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_vnd.c,v 1.9 2010/04/12 01:44:08 tedu Exp $	*/
+/*	$OpenBSD: mount_vnd.c,v 1.10 2011/01/29 03:43:13 tedu Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -58,7 +58,7 @@
 
 #include "pbkdf2.h"
 
-#define DEFAULT_VND	"svnd0"
+#define DEFAULT_VND	"vnd0"
 
 #define VND_CONFIG	1
 #define VND_UNCONFIG	2

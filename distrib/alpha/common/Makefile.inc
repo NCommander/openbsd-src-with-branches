@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.21 2009/04/17 03:58:54 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.22 2011/04/15 03:11:22 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -7,7 +7,7 @@ IMAGE=		ramdisk${REV}.fs
 
 MOUNT_POINT=	/mnt
 
-VND?=		svnd0
+VND?=		vnd0
 VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 VND_CRDEV=	/dev/r${VND}c

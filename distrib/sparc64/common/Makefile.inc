@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.10 2008/12/02 01:01:07 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.11 2009/04/17 03:58:55 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -14,7 +14,7 @@ MTREE=		${UTILS}/mtree.conf
 
 XNAME?=		floppy
 FS?=		${XNAME}${REV}.fs
-VND?=		svnd0
+VND?=		vnd0
 VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 VND_CRDEV=	/dev/r${VND}c
