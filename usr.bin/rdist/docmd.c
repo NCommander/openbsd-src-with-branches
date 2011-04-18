@@ -1,4 +1,4 @@
-/*	$OpenBSD: docmd.c,v 1.21 2009/10/27 23:59:42 deraadt Exp $	*/
+/*	$OpenBSD: docmd.c,v 1.22 2011/04/10 15:47:28 krw Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -94,7 +94,7 @@ static void
 notify(char *rhost, struct namelist *to, time_t lmod)
 {
 	int fd;
-	size_t len;
+	ssize_t len;
 	FILE *pf;
 	struct stat stb;
 	static char buf[BUFSIZ];
