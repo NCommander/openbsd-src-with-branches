@@ -291,7 +291,7 @@ ptsread(dev_t dev, struct uio *uio, int flag)
 again:
 	if (pti->pt_flags & PF_REMOTE) {
 		while (isbackground(pr, tp)) {
-			if ((p->p_sigacts->ps_sigignore & sigmask(SIGTTIN)) ||
+			if ((p->p_sigignore & sigmask(SIGTTIN)) ||
 			    (p->p_sigmask & sigmask(SIGTTIN)) ||
 			    pr->ps_pgrp->pg_jobc == 0 ||
 			    pr->ps_flags & PS_PPWAIT)

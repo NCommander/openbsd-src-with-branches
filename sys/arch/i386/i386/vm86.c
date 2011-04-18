@@ -427,7 +427,7 @@ i386_vm86(struct proc *p, char *args, register_t *retval)
 #undef	DOREG
 
 	/* Going into vm86 mode jumps off the signal stack. */
-	p->p_sigstk.ss_flags &= ~SS_ONSTACK;
+	p->p_sigacts->ps_sigstk.ss_flags &= ~SS_ONSTACK;
 
 	set_vflags(p, vm86s.regs.vmsc.sc_eflags | PSL_VM);
 

@@ -283,7 +283,7 @@ main(void *framep)
 	session0.s_count = 1;
 	session0.s_leader = pr;
 
-	atomic_setbits_int(&p->p_flag, P_SYSTEM);
+	atomic_setbits_int(&p->p_flag, P_SYSTEM | P_NOCLDWAIT);
 	p->p_stat = SONPROC;
 	pr->ps_nice = NZERO;
 	p->p_emul = &emul_native;
@@ -614,9 +614,6 @@ start_init(void *arg)
 		(void) tsleep((void *)&start_init_exec, PWAIT, "initexec", 0);
 
 	check_console(p);
-
-	/* process 0 ignores SIGCHLD, but we can't */
-	p->p_sigacts->ps_flags = 0;
 
 	/*
 	 * Need just enough stack to hold the faked-up "execve()" arguments.

@@ -48,7 +48,6 @@
 #include <sys/vnode.h>
 #include <sys/domain.h>
 #include <sys/protosw.h>
-#include <sys/signalvar.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/syslog.h>
@@ -1234,7 +1233,7 @@ nfs_sigintr(struct nfsmount *nmp, struct nfsreq *rep, struct proc *p)
 	if (!(nmp->nm_flag & NFSMNT_INT))
 		return (0);
 	if (p && p->p_siglist &&
-	    (((p->p_siglist & ~p->p_sigmask) & ~p->p_sigacts->ps_sigignore) &
+	    (((p->p_siglist & ~p->p_sigmask) & ~p->p_sigignore) &
 	    NFSINT_SIGMASK))
 		return (EINTR);
 	return (0);

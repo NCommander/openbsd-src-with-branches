@@ -650,7 +650,7 @@ svr4_sys_context(p, v, retval)
 	case 0:
 		DPRINTF(("getcontext(%p)\n", SCARG(uap, uc)));
 		svr4_getcontext(p, &uc, p->p_sigmask,
-		    p->p_sigstk.ss_flags & SS_ONSTACK);
+		    p->p_sigacts->ps_sigstk.ss_flags & SS_ONSTACK);
 		return copyout(&uc, SCARG(uap, uc), sizeof(uc));
 
 	case 1: 
