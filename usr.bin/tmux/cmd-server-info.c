@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-server-info.c,v 1.23 2011/01/26 00:11:47 nicm Exp $ */
+/* $OpenBSD: cmd-server-info.c,v 1.24 2011/01/26 01:54:56 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -71,7 +71,7 @@ cmd_server_info_exec(unused struct cmd *self, struct cmd_ctx *ctx)
 	ctx->print(ctx, "pid %ld, started %s", (long) getpid(), tim);
 	ctx->print(
 	    ctx, "socket path %s, debug level %d", socket_path, debug_level);
-	if (uname(&un) == 0) {
+	if (uname(&un) >= 0) {
 		ctx->print(ctx, "system is %s %s %s %s",
 		    un.sysname, un.release, un.version, un.machine);
 	}
