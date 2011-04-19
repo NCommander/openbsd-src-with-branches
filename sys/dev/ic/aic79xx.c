@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx.c,v 1.46 2009/12/10 00:18:44 chl Exp $	*/
+/*	$OpenBSD: aic79xx.c,v 1.47 2010/09/22 00:35:19 jsg Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -2394,7 +2394,8 @@ ahd_handle_nonpkt_busfree(struct ahd_softc *ahd)
 	 */
 	if (printerror != 0
 	 && (lastphase == P_MESGIN || lastphase == P_MESGOUT)
-	 && ((ahd->msg_flags & MSG_FLAG_EXPECT_PPR_BUSFREE) != 0)) {
+	 && ((ahd->msg_flags & MSG_FLAG_EXPECT_PPR_BUSFREE) != 0)
+	 && (scb != NULL)) {
 
 		ahd_freeze_devq(ahd, scb);
 		aic_set_transaction_status(scb, CAM_REQUEUE_REQ);
