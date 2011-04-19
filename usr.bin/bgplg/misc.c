@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.2 2006/12/12 11:43:50 reyk Exp $	*/
+/*	$OpenBSD: misc.c,v 1.3 2009/05/01 22:27:23 sthen Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Reyk Floeter <reyk@vantronix.net>
@@ -39,7 +39,7 @@ int
 lg_show_version(struct cmd *cmds, char **argv)
 {
 	struct utsname uts;
-	if (uname(&uts) == 0)
+	if (uname(&uts) >= 0)
 		printf("%s %s (%s)\n\n", uts.sysname, uts.release, uts.machine);
 	printf("%s - %s\n", NAME, BRIEF);
 	return (0);
