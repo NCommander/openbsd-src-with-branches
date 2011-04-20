@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.153 2010/09/23 18:10:16 nicm Exp $	*/
+/*	$OpenBSD: util.c,v 1.154 2010/11/11 21:00:59 nicm Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -33,7 +33,6 @@
 #include <atomicio.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <md5.h>
 #include <stdlib.h>
 #include <string.h>
 #include <paths.h>
