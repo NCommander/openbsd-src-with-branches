@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: err.c,v 8.184 2001/09/04 22:43:03 ca Exp $")
+SM_RCSID("@(#)$Sendmail: err.c,v 8.196 2006/11/10 23:14:08 ca Exp $")
 
 #if LDAPMAP
 # include <lber.h>
@@ -109,7 +109,7 @@ fatal_error(exc)
 */
 
 char		MsgBuf[BUFSIZ*2];	/* text of most recent message */
-static char	HeldMessageBuf[sizeof MsgBuf];	/* for held messages */
+static char	HeldMessageBuf[sizeof(MsgBuf)];	/* for held messages */
 
 #if NAMED_BIND && !defined(NO_DATA)
 # define NO_DATA	NO_ADDRESS
@@ -208,7 +208,7 @@ syserr(fmt, va_alist)
 	else
 	{
 		user = ubuf;
-		(void) sm_snprintf(ubuf, sizeof ubuf, "UID%d", (int) RealUid);
+		(void) sm_snprintf(ubuf, sizeof(ubuf), "UID%d", (int) RealUid);
 	}
 
 	if (LogLevel > 0)
@@ -238,7 +238,7 @@ syserr(fmt, va_alist)
 	  case ESTALE:
 #endif /* ESTALE */
 		printopenfds(true);
-		mci_dump_all(true);
+		mci_dump_all(smioout, true);
 		break;
 	}
 	if (panic)
@@ -255,7 +255,7 @@ syserr(fmt, va_alist)
 	if (QuickAbort)
 		sm_exc_raisenew_x(&EtypeQuickAbort, 2);
 }
-/*
+/*
 **  USRERR -- Signal user error.
 **
 **	This is much like syserr except it is for user errors.
@@ -320,9 +320,9 @@ usrerr(fmt, va_alist)
 		{
 			char buf[MAXLINE];
 
-			(void) sm_snprintf(buf, sizeof buf,
+			(void) sm_snprintf(buf, sizeof(buf),
 					   "Postmaster warning: %.*s",
-					   (int) sizeof buf - 22, errtxt);
+					   (int) sizeof(buf) - 22, errtxt);
 			CurEnv->e_message =
 				sm_rpool_strdup_x(CurEnv->e_rpool, buf);
 		}
@@ -340,7 +340,7 @@ usrerr(fmt, va_alist)
 	if (QuickAbort)
 		sm_exc_raisenew_x(&EtypeQuickAbort, 1);
 }
-/*
+/*
 **  USRERRENH -- Signal user error.
 **
 **	Same as usrerr but with enhanced status code.
@@ -407,9 +407,9 @@ usrerrenh(enhsc, fmt, va_alist)
 		{
 			char buf[MAXLINE];
 
-			(void) sm_snprintf(buf, sizeof buf,
+			(void) sm_snprintf(buf, sizeof(buf),
 					   "Postmaster warning: %.*s",
-					   (int) sizeof buf - 22, errtxt);
+					   (int) sizeof(buf) - 22, errtxt);
 			CurEnv->e_message =
 				sm_rpool_strdup_x(CurEnv->e_rpool, buf);
 		}
@@ -427,7 +427,7 @@ usrerrenh(enhsc, fmt, va_alist)
 	if (QuickAbort)
 		sm_exc_raisenew_x(&EtypeQuickAbort, 1);
 }
-/*
+/*
 **  MESSAGE -- print message (not necessarily an error)
 **
 **	Parameters:
@@ -478,7 +478,7 @@ message(msg, va_alist)
 		break;
 	}
 }
-/*
+/*
 **  NMESSAGE -- print message (not necessarily an error)
 **
 **	Just like "message" except it never puts the to... tag on.
@@ -528,12 +528,11 @@ nmessage(msg, va_alist)
 	  case '5':
 		if (CurEnv->e_rpool == NULL && CurEnv->e_message != NULL)
 			sm_free(CurEnv->e_message);
-		CurEnv->e_message =
-			sm_rpool_strdup_x(CurEnv->e_rpool, errtxt);
+		CurEnv->e_message = sm_rpool_strdup_x(CurEnv->e_rpool, errtxt);
 		break;
 	}
 }
-/*
+/*
 **  PUTOUTMSG -- output error message to transcript and channel
 **
 **	Parameters:
@@ -558,8 +557,9 @@ putoutmsg(msg, holdmsg, heldmsg)
 	bool holdmsg;
 	bool heldmsg;
 {
-	char *errtxt = msg;
 	char msgcode = msg[0];
+	char *errtxt = msg;
+	char *id;
 
 	/* display for debugging */
 	if (tTd(54, 8))
@@ -571,6 +571,7 @@ putoutmsg(msg, holdmsg, heldmsg)
 		msg[0] = '5';
 	else if (msgcode == '8')
 		msg[0] = '4';
+	id = (CurEnv != NULL) ? CurEnv->e_id : NULL;
 
 	/* output to transcript if serious */
 	if (!heldmsg && CurEnv != NULL && CurEnv->e_xfp != NULL &&
@@ -579,7 +580,7 @@ putoutmsg(msg, holdmsg, heldmsg)
 				     msg);
 
 	if (LogLevel > 14 && (OpMode == MD_SMTP || OpMode == MD_DAEMON))
-		sm_syslog(LOG_INFO, CurEnv->e_id,
+		sm_syslog(LOG_INFO, id,
 			  "--- %s%s%s", msg, holdmsg ? " (hold)" : "",
 			  heldmsg ? " (held)" : "");
 
@@ -595,7 +596,7 @@ putoutmsg(msg, holdmsg, heldmsg)
 		msg[0] = msgcode;
 		if (HeldMessageBuf[0] == '5' && msgcode == '4')
 			return;
-		(void) sm_strlcpy(HeldMessageBuf, msg, sizeof HeldMessageBuf);
+		(void) sm_strlcpy(HeldMessageBuf, msg, sizeof(HeldMessageBuf));
 		return;
 	}
 
@@ -650,13 +651,13 @@ putoutmsg(msg, holdmsg, heldmsg)
 	/* can't call syserr, 'cause we are using MsgBuf */
 	HoldErrs = true;
 	if (LogLevel > 0)
-		sm_syslog(LOG_CRIT, CurEnv->e_id,
+		sm_syslog(LOG_CRIT, id,
 			  "SYSERR: putoutmsg (%s): error on output channel sending \"%s\": %s",
 			  CURHOSTNAME,
 			  shortenstring(msg, MAXSHORTSTR), sm_errstring(errno));
 #endif /* !PIPELINING */
 }
-/*
+/*
 **  PUTERRMSG -- like putoutmsg, but does special processing for error messages
 **
 **	Parameters:
@@ -699,7 +700,7 @@ puterrmsg(msg)
 		CurEnv->e_flags |= EF_FATALERRS;
 	}
 }
-/*
+/*
 **  ISENHSC -- check whether a string contains an enhanced status code
 **
 **	Parameters:
@@ -738,7 +739,7 @@ isenhsc(s, delim)
 		return 0;
 	return l + h;
 }
-/*
+/*
 **  EXTENHSC -- check and extract an enhanced status code
 **
 **	Parameters:
@@ -792,7 +793,7 @@ extenhsc(s, delim, e)
 	e[l + h] = '\0';
 	return l + h;
 }
-/*
+/*
 **  FMTMSG -- format a message into buffer.
 **
 **	Parameters:
@@ -823,7 +824,7 @@ fmtmsg(eb, to, num, enhsc, eno, fmt, ap)
 {
 	char del;
 	int l;
-	int spaceleft = sizeof MsgBuf;
+	int spaceleft = sizeof(MsgBuf);
 	char *errtxt;
 
 	/* output the reply code */
@@ -836,15 +837,13 @@ fmtmsg(eb, to, num, enhsc, eno, fmt, ap)
 		del = '-';
 	else
 		del = ' ';
-#if _FFR_SOFT_BOUNCE
 	if (SoftBounce && num[0] == '5')
 	{
 		/* replace 5 by 4 */
 		(void) sm_snprintf(eb, spaceleft, "4%2.2s%c", num + 1, del);
 	}
 	else
-#endif /* _FFR_SOFT_BOUNCE */
-	(void) sm_snprintf(eb, spaceleft, "%3.3s%c", num, del);
+		(void) sm_snprintf(eb, spaceleft, "%3.3s%c", num, del);
 	eb += 4;
 	spaceleft -= 4;
 
@@ -866,13 +865,11 @@ fmtmsg(eb, to, num, enhsc, eno, fmt, ap)
 		eb += l;
 		spaceleft -= l;
 	}
-#if _FFR_SOFT_BOUNCE
 	if (SoftBounce && eb[-l] == '5')
 	{
 		/* replace 5 by 4 */
 		eb[-l] = '4';
 	}
-#endif /* _FFR_SOFT_BOUNCE */
 	errtxt = eb;
 
 	/* output the file name and line number */
@@ -925,7 +922,7 @@ fmtmsg(eb, to, num, enhsc, eno, fmt, ap)
 
 	return errtxt;
 }
-/*
+/*
 **  BUFFER_ERRORS -- arrange to buffer future error messages
 **
 **	Parameters:
@@ -941,7 +938,7 @@ buffer_errors()
 	HeldMessageBuf[0] = '\0';
 	HoldErrs = true;
 }
-/*
+/*
 **  FLUSH_ERRORS -- flush the held error message buffer
 **
 **	Parameters:
@@ -961,7 +958,7 @@ flush_errors(print)
 	HeldMessageBuf[0] = '\0';
 	HoldErrs = false;
 }
-/*
+/*
 **  SM_ERRSTRING -- return string description of error code
 **
 **	Parameters:
@@ -981,6 +978,10 @@ sm_errstring(errnum)
 	char *dnsmsg;
 	char *bp;
 	static char buf[MAXLINE];
+#if HASSTRERROR
+	char *err;
+	char errbuf[30];
+#endif /* HASSTRERROR */
 #if !HASSTRERROR && !defined(ERRLIST_PREDEFINED)
 	extern char *sys_errlist[];
 	extern int sys_nerr;
@@ -999,7 +1000,14 @@ sm_errstring(errnum)
 	  case ECONNRESET:
 		bp = buf;
 #if HASSTRERROR
-		(void) sm_strlcpy(bp, strerror(errnum), SPACELEFT(buf, bp));
+		err = strerror(errnum);
+		if (err == NULL)
+		{
+			(void) sm_snprintf(errbuf, sizeof(errbuf),
+					   "Error %d", errnum);
+			err = errbuf;
+		}
+		(void) sm_strlcpy(bp, err, SPACELEFT(buf, bp));
 #else /* HASSTRERROR */
 		if (errnum >= 0 && errnum < sys_nerr)
 			(void) sm_strlcpy(bp, sys_errlist[errnum],
@@ -1039,14 +1047,14 @@ sm_errstring(errnum)
 	  case EHOSTDOWN:
 		if (CurHostName == NULL)
 			break;
-		(void) sm_snprintf(buf, sizeof buf, "Host %s is down",
+		(void) sm_snprintf(buf, sizeof(buf), "Host %s is down",
 			shortenstring(CurHostName, MAXSHORTSTR));
 		return buf;
 
 	  case ECONNREFUSED:
 		if (CurHostName == NULL)
 			break;
-		(void) sm_strlcpyn(buf, sizeof buf, 2, "Connection refused by ",
+		(void) sm_strlcpyn(buf, sizeof(buf), 2, "Connection refused by ",
 			shortenstring(CurHostName, MAXSHORTSTR));
 		return buf;
 
@@ -1116,7 +1124,7 @@ sm_errstring(errnum)
 	if (dnsmsg != NULL)
 	{
 		bp = buf;
-		bp += sm_strlcpy(bp, "Name server: ", sizeof buf);
+		bp += sm_strlcpy(bp, "Name server: ", sizeof(buf));
 		if (CurHostName != NULL)
 		{
 			(void) sm_strlcpyn(bp, SPACELEFT(buf, bp), 2,
@@ -1133,12 +1141,18 @@ sm_errstring(errnum)
 #endif /* LDAPMAP */
 
 #if HASSTRERROR
-	return strerror(errnum);
+	err = strerror(errnum);
+	if (err == NULL)
+	{
+		(void) sm_snprintf(buf, sizeof(buf), "Error %d", errnum);
+		return buf;
+	}
+	return err;
 #else /* HASSTRERROR */
 	if (errnum > 0 && errnum < sys_nerr)
 		return sys_errlist[errnum];
 
-	(void) sm_snprintf(buf, sizeof buf, "Error %d", errnum);
+	(void) sm_snprintf(buf, sizeof(buf), "Error %d", errnum);
 	return buf;
 #endif /* HASSTRERROR */
 }

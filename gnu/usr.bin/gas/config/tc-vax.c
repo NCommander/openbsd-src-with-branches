@@ -1,3 +1,5 @@
+/*	$OpenBSD: tc-vax.c,v 1.3 2002/08/09 19:07:53 miod Exp $	*/
+
 /* tc-vax.c - vax-specific -
    Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
    
@@ -386,7 +388,7 @@ char *instruction_string;	/* A string: assemble 1 instruction. */
 	 * errors. That is, without changing label values in different passes.
 	 */
 	if (goofed = (*v.vit_error)) {
-		as_warn ("Ignoring statement due to \"%s\"", v.vit_error);
+		as_fatal ("%s", v.vit_error);
 	}
 	/*
 	 * We need to use expression() and friends, which require us to diddle
@@ -402,7 +404,7 @@ char *instruction_string;	/* A string: assemble 1 instruction. */
 	     
 	     operandP++, expP++, floatP++) { /* for each operand */
 		if (*(operandP->vop_error)) {
-			as_warn ("Ignoring statement because \"%s\"", (operandP->vop_error));
+			as_fatal ("%s", (operandP->vop_error));
 			goofed = 1;
 		} else { /* statement has no syntax goofs: lets sniff the expression */
 			int can_be_short = 0;	/* 1 if a bignum can be reduced to a short literal. */
@@ -451,6 +453,7 @@ char *instruction_string;	/* A string: assemble 1 instruction. */
 			case SEG_BIG:
 				/* Preserve the bits. */
 				if (expP->X_add_number > 0) {
+					bzero(floatP->low, SIZE_OF_LARGE_NUMBER);
 					bignum_copy(generic_bignum, expP->X_add_number,
 						     floatP->low, SIZE_OF_LARGE_NUMBER);
 				} else {

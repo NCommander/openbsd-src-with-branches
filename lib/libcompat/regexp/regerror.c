@@ -1,22 +1,22 @@
-#ifndef lint
-static char *rcsid = "$Id: regerror.c,v 1.3 1993/08/26 00:45:33 jtc Exp $";
-#endif /* not lint */
-
+/*	$OpenBSD: regerror.c,v 1.6 2003/07/18 23:05:13 david Exp $	*/
+#include <err.h>
 #include <regexp.h>
 #include <stdio.h>
 
+static void (*_new_regerror)(const char *) = NULL;
+
 void
-regerror(s)
-const char *s;
+v8_regerror(const char *s)
 {
-#ifdef ERRAVAIL
-	error("regexp: %s", s);
-#else
-/*
-	fprintf(stderr, "regexp(3): %s\n", s);
-	exit(1);
-*/
-	return;	  /* let std. egrep handle errors */
-#endif
-	/* NOTREACHED */
+	if (_new_regerror != NULL)
+		_new_regerror(s);
+	else
+		warnx("%s", s);
+	return;
+}
+
+void
+v8_setregerror(void (*f)(const char *))
+{
+	_new_regerror = f;
 }

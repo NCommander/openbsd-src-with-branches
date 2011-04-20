@@ -1116,7 +1116,9 @@ buildfilename(dns_name_t *name, dns_keytag_t id,
 	len = 1 + 3 + 1 + 5 + strlen(suffix) + 1;
 	if (isc_buffer_availablelength(out) < len)
 		return (ISC_R_NOSPACE);
-	sprintf((char *) isc_buffer_used(out), "+%03d+%05d%s", alg, id, suffix);
+	snprintf((char *) isc_buffer_used(out),
+		isc_buffer_availablelength(out),
+		"+%03d+%05d%s", alg, id, suffix);
 	isc_buffer_add(out, len);
 	return (ISC_R_SUCCESS);
 }
@@ -1207,8 +1209,11 @@ addsuffix(char *filename, unsigned int len, const char *ofilename,
 		olen -= 4;
 
 	n = snprintf(filename, len, "%.*s%s", olen, ofilename, suffix);
-	if (n < 0)
+	if (n == -1)
+		return (ISC_R_FAILURE);
+	if ((unsigned int)n >= len)
 		return (ISC_R_NOSPACE);
+
 	return (ISC_R_SUCCESS);
 }
 

@@ -1,15 +1,16 @@
+/*	$OpenBSD: mopa.out.c,v 1.10 2009/10/27 23:59:52 deraadt Exp $ */
 
 /* mopa.out - Convert a Unix format kernel into something that
- * can be transfered via MOP.
+ * can be transferred via MOP.
  *
- * This code was written while refering to the NetBSD/vax boot
+ * This code was written while referring to the NetBSD/vax boot
  * loader. Therefore anything that can be booted by the Vax
  * should be convertable with this program.
  *
  * If necessary, the a.out header is stripped, and the program
  * segments are padded out. The BSS segment is zero filled.
  * A header is prepended that looks like an IHD header. In 
- * particular the Unix mahine ID is placed where mopd expects
+ * particular the Unix machine ID is placed where mopd expects
  * the image type to be (offset is IHD_W_ALIAS). If the machine
  * ID could be mistaken for a DEC image type, then the conversion 
  * is aborted. The original a.out header is copied into the front
@@ -46,10 +47,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINT
-static char rcsid[] = "$Id: mopa.out.c,v 1.5 1996/08/16 22:44:58 moj Exp $";
-#endif
-
 #include "os.h"
 #include "common/common.h"
 #include "common/mopdef.h"
@@ -84,7 +81,7 @@ main (int argc, char **argv)
 #endif	
 
 	if (argc != 3) {
-		fprintf (stderr, "usage: %s kernel-in sys-out\n", argv[0]);
+		fprintf (stderr, "usage: %s infile outfile\n", argv[0]);
 		return (1);
 	}
 	
@@ -100,10 +97,10 @@ main (int argc, char **argv)
 		    &dl.aout,
 		    &dl.a_text,&dl.a_text_fill,
 		    &dl.a_data,&dl.a_data_fill,
-		    &dl.a_bss ,&dl.a_bss_fill );
+		    &dl.a_bss ,&dl.a_bss_fill, 0);
 
 	if (dl.aout == -1) {
-		fprintf(stderr,"s%: not an a.out file\n",argv[1]);
+		fprintf(stderr,"%s: not an a.out file\n",argv[1]);
 		return (3);
         }
 
@@ -151,4 +148,5 @@ main (int argc, char **argv)
 	}
 	
 	fclose (out);
+	exit(0);
 }

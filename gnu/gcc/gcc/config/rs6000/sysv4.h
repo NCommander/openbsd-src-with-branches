@@ -423,6 +423,7 @@ extern int rs6000_pic_labelno;
   asm_fprintf (FILE, "%L%s", PREFIX)
 
 /* Globalizing directive for a label.  */
+#undef GLOBAL_ASM_OP
 #define GLOBAL_ASM_OP "\t.globl "
 
 /* This says how to output assembler code to declare an
@@ -787,7 +788,7 @@ extern int fixuplabelno;
   mcall-linux  : crtsavres.o%s        %(endfile_linux)       ; \
   mcall-gnu    : crtsavres.o%s        %(endfile_gnu)         ; \
   mcall-netbsd : crtsavres.o%s        %(endfile_netbsd)      ; \
-  mcall-openbsd: crtsavres.o%s        %(endfile_openbsd)     ; \
+  mcall-openbsd: %(endfile_openbsd)     		     ; \
                : %(crtsavres_default) %(endfile_default)     }"
 
 #define CRTSAVRES_DEFAULT_SPEC "crtsavres.o%s"

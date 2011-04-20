@@ -9,7 +9,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: assert.c,v 1.23 2001/09/04 22:41:27 ca Exp $")
+SM_RCSID("@(#)$Sendmail: assert.c,v 1.26 2003/12/05 22:45:24 ca Exp $")
 
 /*
 **  Abnormal program termination and assertion checking.
@@ -127,7 +127,7 @@ sm_abort_sethandler(f)
 **		doesn't.
 */
 
-void
+void SM_DEAD_D
 #if SM_VA_STD
 sm_abort(char *fmt, ...)
 #else /* SM_VA_STD */
@@ -163,7 +163,7 @@ sm_abort(fmt, va_alist)
 **		doesn't.
 */
 
-void
+void SM_DEAD_D
 sm_abort_at(filename, lineno, msg)
 	const char *filename;
 	int lineno;

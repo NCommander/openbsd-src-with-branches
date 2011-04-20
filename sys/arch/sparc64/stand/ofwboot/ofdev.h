@@ -1,3 +1,4 @@
+/*	$OpenBSD: ofdev.h,v 1.2 2001/08/20 19:55:33 jason Exp $	*/
 /*	$NetBSD: ofdev.h,v 1.1 2000/08/20 14:58:41 mrg Exp $	*/
 
 /*
@@ -33,6 +34,18 @@
 #ifndef	_STAND_DEV_H_
 #define	_STAND_DEV_H_
 
+/* #define BOOT_DEBUG */
+#ifdef BOOT_DEBUG
+extern u_int32_t boot_debug;
+#define DPRINTF(x...)		do { if (boot_debug) printf(x); } while(0)
+#define DNPRINTF(n,x...)	do { if (boot_debug & n) printf(x); } while(0)
+#define BOOT_D_OFDEV		0x0001
+#define BOOT_D_OFNET		0x0002
+#else
+#define DPRINTF(x...)
+#define DNPRINTF(n,x...)
+#endif
+
 struct of_dev {
 	int handle;
 	int type;
@@ -44,7 +57,7 @@ struct of_dev {
 #define	OFDEV_NET	1
 #define	OFDEV_DISK	2
 
-#define	DEFAULT_KERNEL	"/netbsd"
+#define	DEFAULT_KERNEL	"/bsd"
 
 extern char opened_name[];
 extern int floppyboot;

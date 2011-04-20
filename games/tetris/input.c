@@ -1,4 +1,5 @@
-/*	$NetBSD: input.c,v 1.2 1995/04/22 07:42:34 cgd Exp $	*/
+/*	$OpenBSD: input.c,v 1.11 2004/07/10 07:26:24 deraadt Exp $	*/
+/*    $NetBSD: input.c,v 1.3 1996/02/06 22:47:33 jtc Exp $    */
 
 /*-
  * Copyright (c) 1992, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,6 +44,7 @@
 
 #include <errno.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "input.h"
 #include "tetris.h"
@@ -75,12 +73,11 @@
  * Return 0 => no input, 1 => can read() from stdin
  */
 int
-rwait(tvp)
-	register struct timeval *tvp;
+rwait(struct timeval *tvp)
 {
-	int i;
 	struct timeval starttv, endtv, *s;
-	extern int errno;
+	fd_set fds;
+
 #define	NILTZ ((struct timezone *)0)
 
 	/*
@@ -93,10 +90,11 @@ rwait(tvp)
 		endtv = *tvp;
 		s = &endtv;
 	} else
-		s = 0;
+		s = NULL;
 again:
-	i = 1;
-	switch (select(1, (fd_set *)&i, (fd_set *)0, (fd_set *)0, s)) {
+	FD_ZERO(&fds);
+	FD_SET(STDIN_FILENO, &fds);
+	switch (select(STDIN_FILENO + 1, &fds, (fd_set *)0, (fd_set *)0, s)) {
 
 	case -1:
 		if (tvp == 0)
@@ -125,7 +123,7 @@ again:
  * Eat any input that might be available.
  */
 void
-tsleep()
+tsleep(void)
 {
 	struct timeval tv;
 	char c;
@@ -133,29 +131,15 @@ tsleep()
 	tv.tv_sec = 0;
 	tv.tv_usec = fallrate;
 	while (TV_POS(&tv))
-		if (rwait(&tv) && read(0, &c, 1) != 1)
+		if (rwait(&tv) && read(STDIN_FILENO, &c, 1) != 1)
 			break;
-}
-
-/*
- * Eat up any input (used at end of game).
- */
-void
-eat_input()
-{
-	struct timeval tv;
-	char c;
-
-	do {
-		tv.tv_sec = tv.tv_usec = 0;
-	} while (rwait(&tv) && read(0, &c, 1) == 1);
 }
 
 /*
  * getchar with timeout.
  */
 int
-tgetchar()
+tgetchar(void)
 {
 	static struct timeval timeleft;
 	char c;
@@ -176,7 +160,7 @@ tgetchar()
 	}
 	if (!rwait(&timeleft))
 		return (-1);
-	if (read(0, &c, 1) != 1)
+	if (read(STDIN_FILENO, &c, 1) != 1)
 		stop("end of file, help");
 	return ((int)(unsigned char)c);
 }

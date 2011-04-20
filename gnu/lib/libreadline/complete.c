@@ -559,7 +559,7 @@ print_filename (to_print, full_pathname)
     }
 #else  
   char *s, c, *new_full_pathname;
-  int extension_char, slen, tlen;
+  int extension_char;
 
   for (s = to_print; *s; s++)
     {
@@ -585,16 +585,9 @@ print_filename (to_print, full_pathname)
 	  s = tilde_expand (full_pathname && *full_pathname ? full_pathname : "/");
 	  if (rl_directory_completion_hook)
 	    (*rl_directory_completion_hook) (&s);
-
-	  slen = strlen (s);
-	  tlen = strlen (to_print);
-	  new_full_pathname = (char *)xmalloc (slen + tlen + 2);
-	  strcpy (new_full_pathname, s);
-	  new_full_pathname[slen] = '/';
-	  strcpy (new_full_pathname + slen + 1, to_print);
-
+	  if (asprintf(&new_full_pathname, "%s/%s", s, to_print) == -1)
+		  memory_error_and_abort("asprintf");
 	  extension_char = stat_char (new_full_pathname);
-
 	  free (new_full_pathname);
 	  to_print[-1] = c;
 	}
@@ -622,10 +615,11 @@ rl_quote_filename (s, rtype, qcp)
      char *qcp;
 {
   char *r;
+  int len = strlen(s) + 2;
 
-  r = (char *)xmalloc (strlen (s) + 2);
+  r = (char *)xmalloc (len);
   *r = *rl_completer_quote_characters;
-  strcpy (r + 1, s);
+  strlcpy (r + 1, s, len - 1);
   if (qcp)
     *qcp = *rl_completer_quote_characters;
   return r;
@@ -967,8 +961,9 @@ compute_lcd_of_matches (match_list, matches, text)
      value of matches[0]. */
   if (low == 0 && text && *text)
     {
-      match_list[0] = (char *)xmalloc (strlen (text) + 1);
-      strcpy (match_list[0], text);
+      match_list[0] = strdup(text);
+      if (match_list[0] == NULL)
+	      memory_error_and_abort("strdup");
     }
   else
     {
@@ -1676,11 +1671,12 @@ rl_username_completion_function (text, state)
     }
   else
     {
-      value = (char *)xmalloc (2 + strlen (entry->pw_name));
+      int len = 2 + strlen(entry->pw_name);	    
+      value = (char *)xmalloc (len);
 
       *value = *text;
 
-      strcpy (value + first_char_loc, entry->pw_name);
+      strlcpy (value + first_char_loc, entry->pw_name, len - first_char_loc);
 
       if (first_char == '~')
 	rl_filename_completion_desired = 1;
@@ -1723,6 +1719,7 @@ rl_filename_completion_function (text, state)
       FREE (users_dirname);
 
       filename = savestring (text);
+      filename_len = strlen(filename) + 1;
       if (*text == 0)
 	text = ".";
       dirname = savestring (text);
@@ -1737,14 +1734,15 @@ rl_filename_completion_function (text, state)
 
       if (temp)
 	{
-	  strcpy (filename, ++temp);
+	  strlcpy (filename, ++temp, filename_len);
 	  *temp = '\0';
 	}
 #if defined (__MSDOS__)
       /* searches from current directory on the drive */
       else if (ISALPHA ((unsigned char)dirname[0]) && dirname[1] == ':')
         {
-          strcpy (filename, dirname + 2);
+	  /* XXX DOS strlcpy anyone? */	
+          strlcpy (filename, dirname + 2, filename_len);
           dirname[2] = '\0';
         }
 #endif
@@ -1856,11 +1854,13 @@ rl_filename_completion_function (text, state)
       /* dirname && (strcmp (dirname, ".") != 0) */
       if (dirname && (dirname[0] != '.' || dirname[1]))
 	{
+	  int templen;	
 	  if (rl_complete_with_tilde_expansion && *users_dirname == '~')
 	    {
 	      dirlen = strlen (dirname);
-	      temp = (char *)xmalloc (2 + dirlen + D_NAMLEN (entry));
-	      strcpy (temp, dirname);
+	      templen = 2 + dirlen + D_NAMLEN (entry);
+	      temp = (char *)xmalloc (templen);
+	      strlcpy (temp, dirname, templen);
 	      /* Canonicalization cuts off any final slash present.  We
 		 may need to add it back. */
 	      if (dirname[dirlen - 1] != '/')
@@ -1872,14 +1872,18 @@ rl_filename_completion_function (text, state)
 	  else
 	    {
 	      dirlen = strlen (users_dirname);
-	      temp = (char *)xmalloc (2 + dirlen + D_NAMLEN (entry));
-	      strcpy (temp, users_dirname);
+	      templen = 2 + dirlen + D_NAMLEN (entry);
+	      temp = (char *)xmalloc (templen);
+	      strlcpy (temp, users_dirname, templen);
 	      /* Make sure that temp has a trailing slash here. */
 	      if (users_dirname[dirlen - 1] != '/')
-		temp[dirlen++] = '/';
+	        {
+		  temp[dirlen++] = '/';
+	          temp[dirlen] = '\0';
+	        }
 	    }
 
-	  strcpy (temp + dirlen, entry->d_name);
+	  strlcat (temp, entry->d_name, templen);
 	}
       else
 	temp = savestring (entry->d_name);

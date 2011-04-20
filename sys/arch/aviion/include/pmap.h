@@ -1,13 +1,3 @@
-/* $OpenBSD: pmap.h,v 1.36 2004/07/25 11:06:42 miod Exp $ */
+/* $OpenBSD: pmap.h,v 1.2 2007/12/19 21:51:29 miod Exp $ */
 /* public domain */
-
-#ifndef	_AVIION_PMAP_H_
-#define	_AVIION_PMAP_H_
-
 #include <m88k/pmap.h>
-
-#ifdef	_KERNEL
-vaddr_t	pmap_bootstrap_md(vaddr_t);
-#endif
-
-#endif	_AVIION_PMAP_H_

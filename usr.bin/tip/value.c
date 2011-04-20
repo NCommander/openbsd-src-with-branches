@@ -1,4 +1,5 @@
-/*	$NetBSD: value.c,v 1.3 1994/12/08 09:31:17 jtc Exp $	*/
+/*	$OpenBSD: value.c,v 1.32 2010/07/11 23:16:42 chl Exp $	*/
+/*	$NetBSD: value.c,v 1.6 1997/02/11 09:24:09 mrg Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,262 +30,361 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)value.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: value.c,v 1.3 1994/12/08 09:31:17 jtc Exp $";
-#endif /* not lint */
+#include <paths.h>
 
 #include "tip.h"
 
-#define MIDDLE	35
-
-static value_t *vlookup();
-static int col = 0;
-
 /*
- * Variable manipulation
+ * Variable manipulation.
  */
-vinit()
+
+value_t vtable[] = {
+	{ "beautify",	  V_BOOL,	       "be",     NULL, 0 },
+	{ "baudrate",	  V_NUMBER,	       "ba",     NULL, 0 },
+	{ "connect",      V_STRING|V_READONLY, "cm",     NULL, 0 },
+	{ "device",       V_STRING|V_READONLY, "dv",     NULL, 0 },
+	{ "eofread",	  V_STRING,	       "eofr",   NULL, 0 },
+	{ "eofwrite",	  V_STRING,	       "eofw",   NULL, 0 },
+	{ "eol",	  V_STRING,	       NULL,     NULL, 0 },
+	{ "escape",	  V_CHAR,	       "es",     NULL, 0 },
+	{ "exceptions",	  V_STRING,	       "ex",     NULL, 0 },
+	{ "force",	  V_CHAR,	       "fo",     NULL, 0 },
+	{ "framesize",	  V_NUMBER,	       "fr",     NULL, 0 },
+	{ "host",	  V_STRING|V_READONLY, "ho",     NULL, 0 },
+	{ "log",	  V_STRING,	       NULL,     NULL, 0 },
+	{ "prompt",	  V_CHAR,	       "pr",     NULL, 0 },
+	{ "raise",	  V_BOOL,	       "ra",     NULL, 0 },
+	{ "raisechar",	  V_CHAR,	       "rc",     NULL, 0 },
+	{ "record",	  V_STRING,	       "rec",    NULL, 0 },
+	{ "remote",	  V_STRING|V_READONLY, NULL,     NULL, 0 },
+	{ "script",	  V_BOOL,	       "sc",     NULL, 0 },
+	{ "tabexpand",	  V_BOOL,	       "tab",    NULL, 0 },
+	{ "verbose",	  V_BOOL,	       "verb",   NULL, 0 },
+	{ "SHELL",	  V_STRING,	       NULL,     NULL, 0 },
+	{ "HOME",	  V_STRING,	       NULL,	 NULL, 0 },
+	{ "echocheck",	  V_BOOL,	       "ec",	 NULL, 0 },
+	{ "disconnect",	  V_STRING,	       "di",	 NULL, 0 },
+	{ "tandem",	  V_BOOL,	       "ta",	 NULL, 0 },
+	{ "linedelay",	  V_NUMBER,	       "ldelay", NULL, 0 },
+	{ "chardelay",	  V_NUMBER,	       "cdelay", NULL, 0 },
+	{ "etimeout",	  V_NUMBER,	       "et",	 NULL, 0 },
+	{ "rawftp",	  V_BOOL,	       "raw",	 NULL, 0 },
+	{ "halfduplex",	  V_BOOL,	       "hdx",	 NULL, 0 },
+	{ "localecho",	  V_BOOL,	       "le",	 NULL, 0 },
+	{ "parity",	  V_STRING,	       "par",	 NULL, 0 },
+	{ "hardwareflow", V_BOOL,	       "hf",	 NULL, 0 },
+	{ "linedisc",	  V_NUMBER,	       "ld",	 NULL, 0 },
+	{ "direct",	  V_BOOL,	       "dc",	 NULL, 0 },
+	{ NULL,           0,	                NULL,    NULL, 0 },
+};
+
+static int	vlookup(char *);
+static void	vtoken(char *);
+static size_t	vprint(value_t *);
+static void	vprintall(void);
+static char    *vinterp(char *, int);
+
+/* Get a string value. */
+char *
+vgetstr(int value)
 {
-	register value_t *p;
-	register char *cp;
-	FILE *f;
-	char file[256];
+	value_t	*vp = &vtable[value];
+	int	 type;
 
-	for (p = vtable; p->v_name != NULL; p++) {
-		if (p->v_type&ENVIRON)
-			if (cp = getenv(p->v_name))
-				p->v_value = cp;
-		if (p->v_type&IREMOTE)
-			number(p->v_value) = *address(p->v_value);
-	}
-	/*
-	 * Read the .tiprc file in the HOME directory
-	 *  for sets
-	 */
-	strcpy(file, value(HOME));
-	strcat(file, "/.tiprc");
-	if ((f = fopen(file, "r")) != NULL) {
-		register char *tp;
-
-		while (fgets(file, sizeof(file)-1, f) != NULL) {
-			if (vflag)
-				printf("set %s", file);
-			if (tp = rindex(file, '\n'))
-				*tp = '\0';
-			vlex(file);
-		}
-		fclose(f);
-	}
-	/*
-	 * To allow definition of exception prior to fork
-	 */
-	vtable[EXCEPTIONS].v_access &= ~(WRITE<<PUBLIC);
+	type = vp->v_flags & V_TYPEMASK;
+	if (type != V_STRING)
+		errx(1, "variable %s not a string", vp->v_name);
+	return (vp->v_string);
 }
 
-static int vaccess();
-
-/*VARARGS1*/
-vassign(p, v)
-	register value_t *p;
-	char *v;
+/* Get a number value. */
+int
+vgetnum(int value)
 {
+	value_t	*vp = &vtable[value];
+	int	 type;
 
-	if (!vaccess(p->v_access, WRITE)) {
-		printf("access denied\r\n");
-		return;
-	}
-	switch (p->v_type&TMASK) {
-
-	case STRING:
-		if (p->v_value && equal(p->v_value, v))
-			return;
-		if (!(p->v_type&(ENVIRON|INIT)))
-			free(p->v_value);
-		if ((p->v_value = malloc(size(v)+1)) == NOSTR) {
-			printf("out of core\r\n");
-			return;
-		}
-		p->v_type &= ~(ENVIRON|INIT);
-		strcpy(p->v_value, v);
-		break;
-
-	case NUMBER:
-		if (number(p->v_value) == number(v))
-			return;
-		number(p->v_value) = number(v);
-		break;
-
-	case BOOL:
-		if (boolean(p->v_value) == (*v != '!'))
-			return;
-		boolean(p->v_value) = (*v != '!');
-		break;
-
-	case CHAR:
-		if (character(p->v_value) == *v)
-			return;
-		character(p->v_value) = *v;
-	}
-	p->v_access |= CHANGED;
+	type = vp->v_flags & V_TYPEMASK;
+	if (type != V_NUMBER && type != V_BOOL && type != V_CHAR)
+		errx(1, "variable %s not a number", vp->v_name);
+	return (vp->v_number);
 }
 
-static void vprint();
-
-vlex(s)
-	register char *s;
+/* Set a string value. */
+void
+vsetstr(int value, char *string)
 {
-	register value_t *p;
-	static void vtoken();
+	value_t	*vp = &vtable[value];
+	int	 type;
 
-	if (equal(s, "all")) {
-		for (p = vtable; p->v_name; p++)
-			if (vaccess(p->v_access, READ))
-				vprint(p);
+	type = vp->v_flags & V_TYPEMASK;
+	if (type != V_STRING)
+		errx(1, "variable %s not a string", vp->v_name);
+
+	if (value == RECORD && string != NULL)
+		string = expand(string);
+
+	free(vp->v_string);
+	if (string != NULL) {
+		vp->v_string = strdup(string);
+		if (vp->v_string == NULL)
+			err(1, "strdup");
+	} else
+		vp->v_string = NULL;
+}
+
+/* Set a number value. */
+void
+vsetnum(int value, int number)
+{
+	value_t	*vp = &vtable[value];
+	int	 type;
+
+	type = vp->v_flags & V_TYPEMASK;
+	if (type != V_NUMBER && type != V_BOOL && type != V_CHAR)
+		errx(1, "variable %s not a number", vp->v_name);
+
+	vp->v_number = number;
+}
+
+/* Print a single variable and its value. */
+static size_t
+vprint(value_t *p)
+{
+	char	*cp;
+	size_t	 width;
+
+	width = size(p->v_name);
+	switch (p->v_flags & V_TYPEMASK) {
+	case V_BOOL:
+		if (!p->v_number) {
+			width++;
+			putchar('!');
+		}
+		printf("%s", p->v_name);
+		break;
+	case V_STRING:
+		printf("%s=", p->v_name);
+		width++;
+		if (p->v_string) {
+			cp = interp(p->v_string);
+			width += size(cp);
+			printf("%s", cp);
+		}
+		break;
+	case V_NUMBER:
+		width += 6;
+		printf("%s=%-5d", p->v_name, p->v_number);
+		break;
+	case V_CHAR:
+		printf("%s=", p->v_name);
+		width++;
+		if (p->v_number) {
+			cp = ctrl(p->v_number);
+			width += size(cp);
+			printf("%s", cp);
+		}
+		break;
+	}
+	return (width);
+}
+
+/* Print all variables. */
+static void
+vprintall(void)
+{
+	value_t	*vp;
+	size_t	 width;
+
+#define MIDDLE 35
+	width = 0;
+	for (vp = vtable; vp->v_name; vp++) {
+		if (vp->v_flags & V_READONLY)
+			continue;
+		if (width > 0 && width < MIDDLE) {
+			while (width++ < MIDDLE)
+				putchar(' ');
+		}
+		width += vprint(vp);
+		if (width > MIDDLE) {
+			printf("\r\n");
+			width = 0;
+		}
+	}
+#undef MIDDLE
+}
+
+/* Find index of variable by name or abbreviation. */
+static int
+vlookup(char *s)
+{
+	value_t *vp;
+	u_int	 i;
+
+	for (i = 0; vtable[i].v_name != NULL; i++) {
+		vp = &vtable[i];
+		if (strcmp(vp->v_name, s) == 0 ||
+		    (vp->v_abbrev != NULL && strcmp(vp->v_abbrev, s) == 0))
+			return (i);
+	}
+	return (-1);
+}
+
+void
+vinit(void)
+{
+	struct passwd	*pw;
+	value_t		*vp;
+	char		 file[FILENAME_MAX], *cp;
+	int		 written;
+	FILE		*fp;
+
+	/* Clear the table and set the defaults. */
+	for (vp = vtable; vp->v_name != NULL; vp++) {
+		vp->v_string = NULL;
+		vp->v_number = 0;
+	}
+	vsetnum(BEAUTIFY, 1);
+	vsetnum(ESCAPE, '~');
+	vsetnum(FORCE, CTRL('p'));
+	vsetnum(PROMPT, '\n');
+	vsetnum(TAND, 1);
+	vsetnum(VERBOSE, 1);
+	vsetstr(LOG, _PATH_ACULOG);
+
+	/* Read environment variables. */
+	if ((cp = getenv("HOME")) != NULL)
+		vsetstr(HOME, cp);
+	else {
+		pw = getpwuid(getuid());
+		if (pw != NULL && pw->pw_dir != NULL)
+			vsetstr(HOME, pw->pw_dir);
+		else
+			vsetstr(HOME, "/");
+	}
+	if ((cp = getenv("SHELL")) != NULL)
+		vsetstr(SHELL, cp);
+	else
+		vsetstr(SHELL, _PATH_BSHELL);
+
+	/* Read the .tiprc file in the HOME directory. */
+	written = snprintf(file, sizeof(file), "%s/.tiprc", vgetstr(HOME));
+	if (written < 0 || written >= sizeof(file)) {
+		(void)fprintf(stderr, "Home directory path too long: %s\n",
+		    vgetstr(HOME));
 	} else {
-		register char *cp;
+		if ((fp = fopen(file, "r")) != NULL) {
+			char *tp;
 
+			while (fgets(file, sizeof(file), fp) != NULL) {
+				if (vflag)
+					printf("set %s", file);
+				if ((tp = strrchr(file, '\n')))
+					*tp = '\0';
+				vlex(file);
+			}
+			fclose(fp);
+		}
+	}
+}
+
+void
+vlex(char *s)
+{
+	char *cp;
+
+	if (strcmp(s, "all") == 0)
+		vprintall();
+	else {
 		do {
-			if (cp = vinterp(s, ' '))
+			if ((cp = vinterp(s, ' ')))
 				cp++;
 			vtoken(s);
 			s = cp;
 		} while (s);
 	}
-	if (col > 0) {
-		printf("\r\n");
-		col = 0;
-	}
 }
 
+/* Set a variable from a token. */
 static void
-vtoken(s)
-	register char *s;
+vtoken(char *s)
 {
-	register value_t *p;
-	register char *cp;
-	char *expand();
+	value_t 	*vp;
+	int	 	i, value;
+	char		*cp;
+	const char	*cause;
 
-	if (cp = index(s, '=')) {
+	if ((cp = strchr(s, '='))) {
 		*cp = '\0';
-		if (p = vlookup(s)) {
-			cp++;
-			if (p->v_type&NUMBER)
-				vassign(p, atoi(cp));
-			else {
-				if (strcmp(s, "record") == 0)
-					cp = expand(cp);
-				vassign(p, cp);
+		if ((i = vlookup(s)) != -1) {
+			vp = &vtable[i];
+			if (vp->v_flags & V_READONLY) {
+				printf("access denied\r\n");
+				return;
 			}
+			cp++;
+			switch (vp->v_flags & V_TYPEMASK) {
+			case V_STRING:
+				vsetstr(i, cp);
+				break;
+			case V_BOOL:
+				vsetnum(i, 1);
+				break;
+			case V_NUMBER:
+				value = strtonum(cp, 0, INT_MAX, &cause);
+				if (cause != NULL) {
+					printf("%s: number %s\r\n", s, cause);
+					return;
+				}
+				vsetnum(i, value);
+				break;
+			case V_CHAR:
+				if (cp[0] != '\0' && cp[1] != '\0') {
+					printf("%s: character too big\r\n", s);
+					return;
+				}
+				vsetnum(i, *cp);
+			}
+			vp->v_flags |= V_CHANGED;
 			return;
 		}
-	} else if (cp = index(s, '?')) {
+	} else if ((cp = strchr(s, '?'))) {
 		*cp = '\0';
-		if ((p = vlookup(s)) && vaccess(p->v_access, READ)) {
-			vprint(p);
+		if ((i = vlookup(s)) != -1) {
+			if (vprint(&vtable[i]) > 0)
+				printf("\r\n");
 			return;
 		}
 	} else {
 		if (*s != '!')
-			p = vlookup(s);
+			i = vlookup(s);
 		else
-			p = vlookup(s+1);
-		if (p != NOVAL) {
-			vassign(p, s);
+			i = vlookup(s + 1);
+		if (i != -1) {
+			vp = &vtable[i];
+			if (vp->v_flags & V_READONLY) {
+				printf("%s: access denied\r\n", s);
+				return;
+			}
+			if ((vp->v_flags & V_TYPEMASK) != V_BOOL) {
+				printf("%s: not a boolean\r\n", s);
+				return;
+			}
+			vsetnum(i, *s != '!');
+			vp->v_flags |= V_CHANGED;
 			return;
 		}
 	}
 	printf("%s: unknown variable\r\n", s);
 }
 
-static void
-vprint(p)
-	register value_t *p;
+static char *
+vinterp(char *s, int stop)
 {
-	register char *cp;
-	extern char *interp(), *ctrl();
-
-	if (col > 0 && col < MIDDLE)
-		while (col++ < MIDDLE)
-			putchar(' ');
-	col += size(p->v_name);
-	switch (p->v_type&TMASK) {
-
-	case BOOL:
-		if (boolean(p->v_value) == FALSE) {
-			col++;
-			putchar('!');
-		}
-		printf("%s", p->v_name);
-		break;
-
-	case STRING:
-		printf("%s=", p->v_name);
-		col++;
-		if (p->v_value) {
-			cp = interp(p->v_value, NULL);
-			col += size(cp);
-			printf("%s", cp);
-		}
-		break;
-
-	case NUMBER:
-		col += 6;
-		printf("%s=%-5d", p->v_name, number(p->v_value));
-		break;
-
-	case CHAR:
-		printf("%s=", p->v_name);
-		col++;
-		if (p->v_value) {
-			cp = ctrl(character(p->v_value));
-			col += size(cp);
-			printf("%s", cp);
-		}
-		break;
-	}
-	if (col >= MIDDLE) {
-		col = 0;
-		printf("\r\n");
-		return;
-	}
-}
-
-
-static int
-vaccess(mode, rw)
-	register unsigned mode, rw;
-{
-	if (mode & (rw<<PUBLIC))
-		return (1);
-	if (mode & (rw<<PRIVATE))
-		return (1);
-	return ((mode & (rw<<ROOT)) && getuid() == 0);
-}
-
-static value_t *
-vlookup(s)
-	register char *s;
-{
-	register value_t *p;
-
-	for (p = vtable; p->v_name; p++)
-		if (equal(p->v_name, s) || (p->v_abrev && equal(p->v_abrev, s)))
-			return (p);
-	return (NULL);
-}
-
-char *
-vinterp(s, stop)
-	register char *s;
-	char stop;
-{
-	register char *p = s, c;
+	char *p = s, c;
 	int num;
 
-	while ((c = *s++) && c != stop)
+	while ((c = *s++) && c != stop) {
 		switch (c) {
 
 		case '^':
@@ -304,7 +400,7 @@ vinterp(s, stop)
 			if (c >= '0' && c <= '7')
 				num = (num<<3)+(c-'0');
 			else {
-				register char *q = "n\nr\rt\tb\bf\f";
+				char *q = "n\nr\rt\tb\bf\f";
 
 				for (; *q; q++)
 					if (c == *q++) {
@@ -329,30 +425,7 @@ vinterp(s, stop)
 		default:
 			*p++ = c;
 		}
+	}
 	*p = '\0';
 	return (c == stop ? s-1 : NULL);
-}
-
-/*
- * assign variable s with value v (for NUMBER or STRING or CHAR types)
- */
-
-vstring(s,v)
-	register char *s;
-	register char *v;
-{
-	register value_t *p;
-	char *expand();
-
-	p = vlookup(s); 
-	if (p == 0)
-		return (1);
-	if (p->v_type&NUMBER)
-		vassign(p, atoi(v));
-	else {
-		if (strcmp(s, "record") == 0)
-			v = expand(v);
-		vassign(p, v);
-	}
-	return (0);
 }

@@ -7,10 +7,39 @@ WWW_MACH = djgpp
 # The ASIS repository's name for the machine we are on
 #ASIS_MACH = hardware/os
 
-CFLAGS = -O3 -DUSE_ZLIB -DDOSPATH -DNOUSERS -DDEBUG -I../../../djgpp/tcplib/include -I../../../djgpp/tcplib/include/tcp \
--I../../../src -I../../..
+# Use this option to enable optional and *experimental* color style.
+#ENABLE_COLOR_STYLE = -DUSE_COLOR_STYLE
+
+# comment this line to suppress DIRED support
+DIRED_DEFS = -DDIRED_SUPPORT
+
+CFLAGS= -O2 $(MCFLAGS) $(INTLFLAGS) $(SSLFLAGS) $(SSLINC)
+
+MCFLAGS = \
+ $(DIRED_DEFS) \
+ $(ENABLE_COLOR_STYLE) \
+ -DDISP_PARTIAL \
+ -DDOSPATH \
+ -DUSE_FILE_UPLOAD \
+ -DNOUSERS \
+ -DUSE_SOURCE_CACHE \
+ -DUSE_PRETTYSRC \
+ -DUSE_ZLIB \
+ -I../Implementation \
+ -I../../../src \
+ -I../../.. \
+ -I/djgpp/pdcur26 \
+ -I/djgpp/watt32/inc
+
 LFLAGS =
 CC = gcc
+
+# Uncomment the following to enable Internationalization.
+#INTLFLAGS = -DHAVE_GETTEXT -DHAVE_LIBINTL_H
+
+# Uncomment the following to enable SSL.
+#SSLFLAGS = -DUSE_SSL
+#SSLINC = -I/dev/env/DJDIR/include/openssl
 
 # Directory for installed binary:
 !BINDIR = /usr/local/bin

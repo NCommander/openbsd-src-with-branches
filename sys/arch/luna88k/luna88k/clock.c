@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: clock.c,v 1.5 2005/10/13 19:48:31 miod Exp $ */
 /* $NetBSD: clock.c,v 1.2 2000/01/11 10:29:35 nisimura Exp $ */
 
 /*
@@ -49,25 +49,23 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
+#include <sys/evcount.h>
 
 #include <machine/cpu.h>
 
 #include <dev/clock_subr.h>
 #include <luna88k/luna88k/clockvar.h>
 
-#if 0 /* aoyama */
-#define CLOCK_LEVEL 5
-#include <luna68k/luna68k/isr.h>
-#endif /* aoyama */
-
 struct device *clockdev;
 const struct clockfns *clockfns;
+struct evcount *clockevc;
 int clockinitted;
 
 void
-clockattach(dev, fns)
+clockattach(dev, fns, evc)
 	struct device *dev;
 	const struct clockfns *fns;
+	struct evcount *evc;
 {
 	/*
 	 * Just bookkeeping.
@@ -76,6 +74,7 @@ clockattach(dev, fns)
 		panic("clockattach: multiple clocks");
 	clockdev = dev;
 	clockfns = fns;
+	clockevc = evc;
 }
 
 /*
@@ -91,8 +90,6 @@ clockattach(dev, fns)
  * Resettodr restores the time of day hardware after a time change.
  */
 
-int clock_enable;		/* XXX to be removed XXX */
-
 /*
  * Start the real-time and statistics clocks. Leave stathz 0 since there
  * are no other timers available.
@@ -100,32 +97,13 @@ int clock_enable;		/* XXX to be removed XXX */
 void
 cpu_initclocks()
 {
-	int s;
 
+#ifdef DIAGNOSTIC
 	if (clockfns == NULL)
 		panic("cpu_initclocks: no clock attached");
+#endif
 
 	tick = 1000000 / hz;	/* number of microseconds between interrupts */
-	tickfix = 1000000 - (hz * tick);
-	if (tickfix) {
-		int ftp;
-
-		ftp = min(ffs(tickfix), ffs(hz));
-		tickfix >>= (ftp - 1);
-		tickfixinterval = hz >> (ftp - 1);
-        }
-	/*
-	 * Get the clock started.
-	 */
-	s = splhigh();
-	/*
-	 * XXX 
-	 * I guess it's necessary to program clock source with 
-	 * approprivate mode/value.
-	 * XXX
-	 */
-	clock_enable = 1;
-	splx(s);
 }
 
 /*
@@ -215,4 +193,20 @@ resettodr()
 		return;
 	clock_secs_to_ymdhms(time.tv_sec, &dt);
 	(*clockfns->cf_set)(clockdev, &dt);
+}
+
+/*
+ * Clock interrupt routine
+ */
+int
+clockintr(void *eframe)
+{
+	extern unsigned int *clock_reg[];
+	int cpu = cpu_number();
+
+	clockevc->ec_count++;
+
+	*clock_reg[cpu] = 0xffffffff;
+	hardclock(eframe);
+	return 1;
 }

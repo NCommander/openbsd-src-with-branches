@@ -1,7 +1,7 @@
-/*	$OpenBSD: machdep.c,v 1.76 2009/08/02 16:28:39 beck Exp $ */
+/*	$OpenBSD: machdep.c,v 1.23 2010/08/28 22:29:03 miod Exp $ */
 
 /*
- * Copyright (c) 2009 Miodrag Vallat.
+ * Copyright (c) 2009, 2010 Miodrag Vallat.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -63,7 +63,7 @@
 #include <sys/sem.h>
 #endif
 
-#include <uvm/uvm_extern.h>
+#include <uvm/uvm.h>
 
 #include <machine/db_machdep.h>
 #include <ddb/db_interface.h>
@@ -77,11 +77,10 @@
 
 #include <mips64/archtype.h>
 
-#include <loongson/dev/bonitoreg.h>
-
 /* The following is used externally (sysctl_hw) */
 char	machine[] = MACHINE;		/* Machine "architecture" */
 char	cpu_model[30];
+char	pmon_bootp[80];
 
 /*
  * Declare these as initialized data so we can patch them.
@@ -95,8 +94,22 @@ char	cpu_model[30];
 int	bufpages = BUFPAGES;
 int	bufcachepercent = BUFCACHEPERCENT;
 
+/*
+ * Even though the system is 64bit, the hardware is constrained to up
+ * to 2G of contigous physical memory (direct 2GB DMA area), so there
+ * is no particular constraint. paddr_t is long so: 
+ */
+struct uvm_constraint_range  dma_constraint = { 0x0, 0xffffffffUL };
+struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
+
 vm_map_t exec_map;
 vm_map_t phys_map;
+
+/*
+ * safepri is a safe priority for sleep to set for a spin-wait
+ * during autoconfiguration or after a panic.
+ */
+int   safepri = 0;
 
 caddr_t	msgbufbase;
 vaddr_t	uncached_base;
@@ -106,7 +119,9 @@ int	ncpu = 1;		/* At least one CPU in the system. */
 struct	user *proc0paddr;
 int	kbd_reset;
 
-struct sys_rec sys_config;
+const struct platform *sys_platform;
+struct cpu_hwinfo bootcpu_hwinfo;
+uint loongson_ver;
 
 /* Pointers to the start and end of the symbol table. */
 caddr_t	ssym;
@@ -118,10 +133,10 @@ struct phys_mem_desc mem_layout[MAXMEMSEGS];
 static u_long atoi(const char *, uint);
 static void dobootopts(int);
 
-void	build_trampoline(vaddr_t, vaddr_t);
 void	dumpsys(void);
 void	dumpconf(void);
-vaddr_t	mips_init(int32_t, int32_t, int32_t, int32_t);
+extern	void parsepmonbp(void);
+vaddr_t	mips_init(int32_t, int32_t, int32_t, int32_t, char *);
 
 extern	void loongson2e_setup(u_long, u_long);
 extern	void loongson2f_setup(u_long, u_long);
@@ -140,18 +155,52 @@ struct consdev pmoncons = {
 };
 
 /*
+ * List of supported system types, from the ``Version'' environment
+ * variable.
+ */
+
+struct bonito_flavour {
+	const char *prefix;
+	const struct platform *platform;
+};
+
+extern const struct platform fuloong_platform;
+extern const struct platform gdium_platform;
+extern const struct platform generic2e_platform;
+extern const struct platform lynloong_platform;
+extern const struct platform yeeloong_platform;
+
+const struct bonito_flavour bonito_flavours[] = {
+	/* Lemote Fuloong 2F mini-PC */
+	{ "LM6003",	&fuloong_platform },
+	{ "LM6004",	&fuloong_platform },
+	/* EMTEC Gdium Liberty 1000 */
+	{ "Gdium",	&gdium_platform },
+	/* Lemote Yeeloong 8.9" netbook */
+	{ "LM8089",	&yeeloong_platform },
+	/* supposedly Lemote Yeeloong 10.1" netbook, but those found so far
+	   report themselves as LM8089 */
+	{ "LM8101",	&yeeloong_platform },
+	/* Lemote Lynloong all-in-one computer */
+	{ "LM9001",	&lynloong_platform },
+	{ NULL }
+};
+
+/*
  * Do all the stuff that locore normally does before calling main().
  * Reset mapping and set up mapping to hardware and init "wired" reg.
  */
 
 vaddr_t
-mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
+mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv,
+    char *boot_esym)
 {
-	uint prid, loongson_ver;
+	uint prid;
 	u_long memlo, memhi, cpuspeed;
 	vaddr_t xtlb_handler;
 	const char *envvar;
 	int i;
+	const struct bonito_flavour *f;
 
 	extern char start[], edata[], end[];
 	extern char exception[], e_exception[];
@@ -173,22 +222,31 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 	cn_tab = &pmoncons;
 
 	/*
-	 * Attempt to locate ELF header and symbol table after kernel,
-	 * and reserve space for the symbol table, if it exists.
+	 * Reserve space for the symbol table, if it exists.
 	 */
 
-	ssym = (char *)(vaddr_t)*(int32_t *)end;
-	if (((long)ssym - (long)end) >= 0 &&
-	    ((long)ssym - (long)end) <= 0x1000 &&
-	    ssym[0] == ELFMAG0 && ssym[1] == ELFMAG1 &&
-	    ssym[2] == ELFMAG2 && ssym[3] == ELFMAG3 ) {
-		/* Pointers exist directly after kernel. */
-		esym = (char *)(vaddr_t)*((int32_t *)end + 1);
+	/* Attempt to locate ELF header and symbol table after kernel. */
+	if (end[0] == ELFMAG0 && end[1] == ELFMAG1 &&
+	    end[2] == ELFMAG2 && end[3] == ELFMAG3) {
+		/* ELF header exists directly after kernel. */
+		ssym = end;
+		esym = boot_esym;
 		ekern = esym;
 	} else {
-		/* Pointers aren't setup either... */
-		ssym = esym = NULL;
-		ekern = end;
+		ssym = (char *)(vaddr_t)*(int32_t *)end;
+		if (((long)ssym - (long)end) >= 0 &&
+		    ((long)ssym - (long)end) <= 0x1000 &&
+		    ssym[0] == ELFMAG0 && ssym[1] == ELFMAG1 &&
+		    ssym[2] == ELFMAG2 && ssym[3] == ELFMAG3) {
+			/* Pointers exist directly after kernel. */
+			esym = (char *)(vaddr_t)*((int32_t *)end + 1);
+			ekern = esym;
+		} else {
+			/* Pointers aren't setup either... */
+			ssym = NULL;
+			esym = NULL;
+			ekern = end;
+		}
 	}
 
 	/*
@@ -234,30 +292,33 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 
 	envvar = pmon_getenv("Version");
 	if (envvar == NULL) {
-		pmon_printf("Unable to figure out model!\n");
-		goto unsupported;
+		/*
+		 * If this is a 2E system, use the generic code and hope
+		 * for the best.
+		 */
+		if (loongson_ver == 0x2e) {
+			sys_platform = &generic2e_platform;
+		} else {
+			pmon_printf("Unable to figure out model!\n");
+			goto unsupported;
+		}
+	} else {
+		for (f = bonito_flavours; f->prefix != NULL; f++)
+			if (strncmp(envvar, f->prefix, strlen(f->prefix)) ==
+			    0) {
+				sys_platform = f->platform;
+				break;
+			}
+
+		if (sys_platform == NULL) {
+			pmon_printf("This kernel doesn't support model \"%s\"."
+			    "\n", envvar);
+			goto unsupported;
+		}
 	}
 
-	/* Lemote Yeelong 8089 */
-	if (strncmp(envvar, "LM8089", 6) == 0) {
-		sys_config.system_type = LOONGSON_YEELONG;
-	}
-
-	if (sys_config.system_type == 0) {
-		pmon_printf("This kernel doesn't support model \"%s\".\n",
-		    envvar);
-		goto unsupported;
-	}
-
-	switch (sys_config.system_type) {
-	case LOONGSON_YEELONG:
-		hw_vendor = "Lemote";
-		hw_prod = "Yeelong";
-		break;
-	default:	/* won't happen */
-		goto unsupported;
-	}
-
+	hw_vendor = sys_platform->vendor;
+	hw_prod = sys_platform->product;
 	pmon_printf("Found %s %s, setting up.\n", hw_vendor, hw_prod);
 
 	snprintf(cpu_model, sizeof cpu_model, "Loongson %X", loongson_ver);
@@ -274,7 +335,7 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 		cpuspeed = atoi(envvar, 10);	/* speed in Hz */
 	if (cpuspeed < 100 * 1000000)
 		cpuspeed = 797000000;  /* Reasonable default */
-	sys_config.cpu[0].clock = cpuspeed;
+	bootcpu_hwinfo.clock = cpuspeed;
 
 	/*
 	 * Look at arguments passed to us and compute boothowto.
@@ -314,7 +375,8 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 			/* better expose the problem than limit to 256MB */
 			goto unsupported;
 		}
-	}
+	} else
+		memhi = 0;
 
 	uncached_base = PHYS_TO_XKPHYS(0, CCA_NC);
 
@@ -328,9 +390,11 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 		break;
 	}
 
+	if (sys_platform->setup != NULL)
+		(*(sys_platform->setup))();
+
 	/*
-	 * The above call might have altered address mappings,
-	 * so pmon_printf() should no longer be used from now on.
+	 * PMON functions should no longer be used from now on.
 	 */
 
 	/*
@@ -350,13 +414,11 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 		/* kernel is linked in CKSEG0 */
 		firstkernpa = CKSEG0_TO_PHYS((vaddr_t)start);
 		lastkernpa = CKSEG0_TO_PHYS((vaddr_t)ekern);
-		if (loongson_ver == 0x2f) {
-			firstkernpa |= 0x80000000;
-			lastkernpa |= 0x80000000;
-		}
 
-		firstkernpage = atop(trunc_page(firstkernpa));
-		lastkernpage = atop(round_page(lastkernpa));
+		firstkernpage = atop(trunc_page(firstkernpa)) +
+		    mem_layout[0].mem_first_page - 1;
+		lastkernpage = atop(round_page(lastkernpa)) +
+		    mem_layout[0].mem_first_page - 1;
 
 		fp = mem_layout[i].mem_first_page;
 		lp = mem_layout[i].mem_last_page;
@@ -385,29 +447,23 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 		}
 	}
 
-	sys_config.cpu[0].type = (prid >> 8) & 0xff;
-	sys_config.cpu[0].vers_maj = (prid >> 4) & 0x0f;
-	sys_config.cpu[0].vers_min = prid & 0x0f;
+	bootcpu_hwinfo.c0prid = prid;
+	bootcpu_hwinfo.type = (prid >> 8) & 0xff;
 	/* FPU reports itself as type 5, version 0.1... */
-	sys_config.cpu[0].fptype = sys_config.cpu[0].type;
-	sys_config.cpu[0].fpvers_maj = sys_config.cpu[0].vers_maj;
-	sys_config.cpu[0].fpvers_min = sys_config.cpu[0].vers_min;
-
-	sys_config.cpu[0].tlbsize = 64;
+	bootcpu_hwinfo.c1prid = bootcpu_hwinfo.c0prid;
+	bootcpu_hwinfo.tlbsize = 64;
 
 	/*
 	 * Configure cache.
-	 * Note that the caches being physically tagged, there is no
-	 * need to invalidate or flush it.
 	 */
 
-	Loongson2_ConfigCache();
+	Loongson2_ConfigCache(curcpu());
+	Loongson2_SyncCache(curcpu());
 
-	sys_config.cpu[0].tlbwired = UPAGES / 2;
 	tlb_set_page_mask(TLB_PAGE_MASK);
 	tlb_set_wired(0);
-	tlb_flush(sys_config.cpu[0].tlbsize);
-	tlb_set_wired(sys_config.cpu[0].tlbwired);
+	tlb_flush(bootcpu_hwinfo.tlbsize);
+	tlb_set_wired(UPAGES / 2);
 
 	/*
 	 * Get a console, very early but after initial mapping setup.
@@ -479,73 +535,6 @@ unsupported:
 }
 
 /*
- * Build a tlb trampoline
- */
-void
-build_trampoline(vaddr_t addr, vaddr_t dest)
-{
-	const uint32_t insns[] = {
-		0x3c1a0000,	/* lui k0, imm16 */
-		0x675a0000,	/* daddiu k0, k0, imm16 */
-		0x001ad438,	/* dsll k0, k0, 0x10 */
-		0x675a0000,	/* daddiu k0, k0, imm16 */
-		0x001ad438,	/* dsll k0, k0, 0x10 */
-		0x675a0000,	/* daddiu k0, k0, imm16 */
-		0x03400008,	/* jr k0 */
-		0x00000000	/* nop */
-	};
-	uint32_t *dst = (uint32_t *)addr;
-	const uint32_t *src = insns;
-	uint32_t a, b, c, d;
-
-	/*
-	 * Decompose the handler address in the four components which,
-	 * added with sign extension, will produce the correct address.
-	 */
-	d = dest & 0xffff;
-	dest >>= 16;
-	if (d & 0x8000)
-		dest++;
-	c = dest & 0xffff;
-	dest >>= 16;
-	if (c & 0x8000)
-		dest++;
-	b = dest & 0xffff;
-	dest >>= 16;
-	if (b & 0x8000)
-		dest++;
-	a = dest & 0xffff;
-
-	/*
-	 * Build the trampoline, skipping noop computations.
-	 */
-	*dst++ = *src++ | a;
-	if (b != 0)
-		*dst++ = *src++ | b;
-	else
-		src++;
-	*dst++ = *src++;
-	if (c != 0)
-		*dst++ = *src++ | c;
-	else
-		src++;
-	*dst++ = *src++;
-	if (d != 0)
-		*dst++ = *src++ | d;
-	else
-		src++;
-	*dst++ = *src++;
-	*dst++ = *src++;
-
-	/*
-	 * Note that we keep the delay slot instruction a nop, instead
-	 * of branching to the second instruction of the handler and
-	 * having its first instruction in the delay slot, so that the
-	 * tlb handler is free to use k0 immediately.
-	 */
-}
-
-/*
  * Decode boot options.
  */
 static void
@@ -566,18 +555,31 @@ dobootopts(int argc)
 	 * boot file has been found.
 	 */
 
+	if (argc != 0) {
+		arg = pmon_getarg(0);
+		if (arg == NULL)
+			return;
+		/* if `go', not `boot', then no path and command options */
+		if (*arg == 'g')
+			ignore = 0;
+	}
 	for (i = 1; i < argc; i++) {
 		arg = pmon_getarg(i);
 		if (arg == NULL)
 			continue;
 
-		if (*arg != '-') {
-			/* found filename or non-option argument */
-			ignore = 0;
+		/* device path */
+		if (*arg == '/' || strncmp(arg, "tftp://", 7) == 0) {
+			if (*pmon_bootp == '\0') {
+				strlcpy(pmon_bootp, arg, sizeof pmon_bootp);
+				parsepmonbp();
+			}
+			ignore = 0;	/* further options are for the kernel */
 			continue;
 		}
 
-		if (ignore)
+		/* not an option, or not a kernel option */
+		if (*arg != '-' || ignore)
 			continue;
 
 		for (cp = arg + 1; *cp != '\0'; cp++)
@@ -636,8 +638,8 @@ cpu_startup()
 	 * Good {morning,afternoon,evening,night}.
 	 */
 	printf(version);
-	printf("real mem = %u (%uMB)\n", ptoa(physmem),
-	    ptoa(physmem)/1024/1024);
+	printf("real mem = %u (%uMB)\n", ptoa((psize_t)physmem),
+	    ptoa((psize_t)physmem)/1024/1024);
 
 	/*
 	 * Allocate a submap for exec arguments. This map effectively
@@ -697,38 +699,6 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	}
 }
 
-/*
- * Set registers on exec for native exec format. For o64/64.
- */
-void
-setregs(p, pack, stack, retval)
-	struct proc *p;
-	struct exec_package *pack;
-	u_long stack;
-	register_t *retval;
-{
-	extern struct proc *machFPCurProcPtr;
-
-	bzero((caddr_t)p->p_md.md_regs, sizeof(struct trap_frame));
-	p->p_md.md_regs->sp = stack;
-	p->p_md.md_regs->pc = pack->ep_entry & ~3;
-	p->p_md.md_regs->t9 = pack->ep_entry & ~3; /* abicall req */
-	p->p_md.md_regs->sr = SR_FR_32 | SR_XX | SR_KSU_USER | SR_KX | SR_UX |
-	    SR_EXL | SR_INT_ENAB;
-	p->p_md.md_regs->sr |= idle_mask & SR_INT_MASK;
-	p->p_md.md_regs->ic = (idle_mask << 8) & IC_INT_MASK;
-	p->p_md.md_flags &= ~MDP_FPUSED;
-	if (machFPCurProcPtr == p)
-		machFPCurProcPtr = NULL;
-	p->p_md.md_ss_addr = 0;
-	p->p_md.md_pc_ctrl = 0;
-	p->p_md.md_watch_1 = 0;
-	p->p_md.md_watch_2 = 0;
-
-	retval[1] = 0;
-}
-
-
 int	waittime = -1;
 
 void
@@ -783,14 +753,23 @@ haltsys:
 
 	if (howto & RB_HALT) {
 		if (howto & RB_POWERDOWN) {
-			printf("System Power Down.\n");
-			REGVAL(BONITO_GPIODATA) &= ~0x00000001;
-			REGVAL(BONITO_GPIOIE) &= ~0x00000001;
+			if (sys_platform->powerdown != NULL) {
+				printf("System Power Down.\n");
+				(*(sys_platform->powerdown))();
+			} else {
+				printf("System Power Down not supported,"
+				    " halting system.\n");
+			}
 		} else
 			printf("System Halt.\n");
 	} else {
 		void (*__reset)(void) = (void (*)(void))RESET_EXC_VEC;
 		printf("System restart.\n");
+		if (sys_platform->reset != NULL)
+			(*(sys_platform->reset))();
+		(void)disableintr();
+		tlb_set_wired(0);
+		tlb_flush(bootcpu_hwinfo.tlbsize);
 		__reset();
 	}
 
@@ -909,6 +888,10 @@ pmoncngetc(dev_t dev)
 	 * PMON does not give us a getc routine.  So try to get a whole line
 	 * and return it char by char, trying not to lose the \n.  Kind
 	 * of ugly but should work.
+	 *
+	 * Note that one could theoretically use pmon_read(STDIN, &c, 1)
+	 * but the value of STDIN within PMON is not a constant and there
+	 * does not seem to be a way of letting us know which value to use.
 	 */
 	static char buf[1 + PMON_MAXLN];
 	static char *bufpos = buf;

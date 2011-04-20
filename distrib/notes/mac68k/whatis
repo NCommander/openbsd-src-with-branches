@@ -1,6 +1,4 @@
-NetBSD 1.0 is the first "real" release of NetBSD for the mac68k.
-Previous releases have been alpha or beta quality.  There is still a
-lot of work to be done, but this should be a usable system for a number
-of people.  Quite a few features are available: shared libraries, new
-file systems, binary compatibility with the other m68k ports for most
-binaries, SunOS compatibility, and numerous others.
+dnl	$OpenBSD: whatis,v 1.16 2004/09/10 19:11:52 miod Exp $
+
+OpenBSD/MACHINE runs on some of the old Macintosh (Motorola 680x0-based)
+computers.

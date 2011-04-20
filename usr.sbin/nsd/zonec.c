@@ -935,7 +935,7 @@ zparser_ttl2int(const char *ttlstr, int* error)
 void
 zadd_rdata_wireformat(uint16_t *data)
 {
-	if (parser->current_rr.rdata_count > MAXRDATALEN) {
+	if (parser->current_rr.rdata_count >= MAXRDATALEN) {
 		zc_error_prev_line("too many rdata elements");
 	} else {
 		parser->current_rr.rdatas[parser->current_rr.rdata_count].data
@@ -944,10 +944,62 @@ zadd_rdata_wireformat(uint16_t *data)
 	}
 }
 
+/**
+ * Used for TXT RR's to grow with undefined number of strings.
+ */
+void
+zadd_rdata_txt_wireformat(uint16_t *data, int first)
+{
+	rdata_atom_type *rd;
+	
+	/* First STR in str_seq, allocate 65K in first unused rdata
+	 * else find last used rdata */
+	if (first) {
+		rd = &parser->current_rr.rdatas[parser->current_rr.rdata_count];
+		if ((rd->data = (uint16_t *) region_alloc(parser->rr_region,
+			sizeof(uint16_t) + 65535 * sizeof(uint8_t))) == NULL) {
+			zc_error_prev_line("Could not allocate memory for TXT RR");
+			return;
+		}
+		parser->current_rr.rdata_count++;
+		rd->data[0] = 0;
+	}
+	else
+		rd = &parser->current_rr.rdatas[parser->current_rr.rdata_count-1];
+	
+	if ((size_t)rd->data[0] + (size_t)data[0] > 65535) {
+		zc_error_prev_line("too large rdata element");
+		return;
+	}
+	
+	memcpy((uint8_t *)rd->data + 2 + rd->data[0], data + 1, data[0]);
+	rd->data[0] += data[0];
+}
+
+/**
+ * Clean up after last call of zadd_rdata_txt_wireformat
+ */
+void
+zadd_rdata_txt_clean_wireformat()
+{
+	uint16_t *tmp_data;
+	rdata_atom_type *rd = &parser->current_rr.rdatas[parser->current_rr.rdata_count-1];
+	if ((tmp_data = (uint16_t *) region_alloc(parser->region, 
+		rd->data[0] + 2)) != NULL) {
+		memcpy(tmp_data, rd->data, rd->data[0] + 2);
+		rd->data = tmp_data;
+	}
+	else {
+		/* We could not get memory in non-volatile region */
+		zc_error_prev_line("could not allocate memory for rdata");
+		return;
+	}
+}
+
 void
 zadd_rdata_domain(domain_type *domain)
 {
-	if (parser->current_rr.rdata_count > MAXRDATALEN) {
+	if (parser->current_rr.rdata_count >= MAXRDATALEN) {
 		zc_error_prev_line("too many rdata elements");
 	} else {
 		parser->current_rr.rdatas[parser->current_rr.rdata_count].domain
@@ -1260,10 +1312,10 @@ domain_find_rrset_any(domain_type *domain, uint16_t type)
 	while (result) {
 		if (rrset_rrtype(result) == type) {
 			return result;
-                }
+		}
 		result = result->next;
-        }
-        return NULL;
+	}
+	return NULL;
 }
 
 /*
@@ -1366,9 +1418,9 @@ static void
 usage (void)
 {
 #ifndef NDEBUG
-	fprintf(stderr, "usage: zonec [-v|-h|-C|-F|-L] [-c configfile] [-o origin] [-d directory] [-f database] [-z zonefile]\n\n");
+	fprintf(stderr, "usage: nsd-zonec [-v|-h|-C|-F|-L] [-c configfile] [-o origin] [-d directory] [-f database] [-z zonefile]\n\n");
 #else
-	fprintf(stderr, "usage: zonec [-v|-h|-C] [-c configfile] [-o origin] [-d directory] [-f database] [-z zonefile]\n\n");
+	fprintf(stderr, "usage: nsd-zonec [-v|-h|-C] [-c configfile] [-o origin] [-d directory] [-f database] [-z zonefile]\n\n");
 #endif
 	fprintf(stderr, "\tNSD zone compiler, creates database from zone files.\n");
 	fprintf(stderr, "\tVersion %s. Report bugs to <%s>.\n\n",
@@ -1403,7 +1455,7 @@ main (int argc, char **argv)
 	const char* singlefile = NULL;
 	nsd_options_t* nsd_options = NULL;
 
-	log_init("zonec");
+	log_init("nsd-zonec");
 
 	global_region = region_create(xalloc, free);
 	rr_region = region_create(xalloc, free);
@@ -1464,14 +1516,14 @@ main (int argc, char **argv)
 		nsd_options = nsd_options_create(global_region);
 		if(!parse_options_file(nsd_options, configfile))
 		{
-			fprintf(stderr, "zonec: could not read config: %s\n", configfile);
+			fprintf(stderr, "nsd-zonec: could not read config: %s\n", configfile);
 			exit(1);
 		}
 	}
 	if(nsd_options && zonesdir == 0) zonesdir = nsd_options->zonesdir;
 	if(zonesdir && zonesdir[0]) {
 		if (chdir(zonesdir)) {
-			fprintf(stderr, "zonec: cannot chdir to %s: %s\n", zonesdir, strerror(errno));
+			fprintf(stderr, "nsd-zonec: cannot chdir to %s: %s\n", zonesdir, strerror(errno));
 			exit(1);
 		}
 	}
@@ -1482,14 +1534,14 @@ main (int argc, char **argv)
 
 	/* Create the database */
 	if ((db = namedb_new(dbfile)) == NULL) {
-		fprintf(stderr, "zonec: error creating the database (%s): %s\n",
+		fprintf(stderr, "nsd-zonec: error creating the database (%s): %s\n",
 			dbfile, strerror(errno));
 		exit(1);
 	}
 
 	parser = zparser_create(global_region, rr_region, db);
 	if (!parser) {
-		fprintf(stderr, "zonec: error creating the parser\n");
+		fprintf(stderr, "nsd-zonec: error creating the parser\n");
 		exit(1);
 	}
 
@@ -1502,34 +1554,34 @@ main (int argc, char **argv)
 		 * Read a single zone file with the specified origin
 		 */
 		if(!singlefile) {
-			fprintf(stderr, "zonec: must have -z zonefile when reading single zone.\n");
+			fprintf(stderr, "nsd-zonec: must have -z zonefile when reading single zone.\n");
 			exit(1);
 		}
 		if(!origin) {
-			fprintf(stderr, "zonec: must have -o origin when reading single zone.\n");
+			fprintf(stderr, "nsd-zonec: must have -o origin when reading single zone.\n");
 			exit(1);
 		}
 		if (vflag > 0)
-			fprintf(stdout, "zonec: reading zone \"%s\".\n", origin);
+			fprintf(stdout, "nsd-zonec: reading zone \"%s\".\n", origin);
 		zone_read(origin, singlefile, nsd_options);
 		if (vflag > 0)
-			fprintf(stdout, "zonec: processed %ld RRs in \"%s\".\n", totalrrs, origin);
+			fprintf(stdout, "nsd-zonec: processed %ld RRs in \"%s\".\n", totalrrs, origin);
 	} else {
 		zone_options_t* zone;
 		if(!nsd_options) {
-			fprintf(stderr, "zonec: no zones specified.\n");
+			fprintf(stderr, "nsd-zonec: no zones specified.\n");
 			exit(1);
 		}
 		/* read all zones */
 		RBTREE_FOR(zone, zone_options_t*, nsd_options->zone_options)
 		{
 			if (vflag > 0)
-				fprintf(stdout, "zonec: reading zone \"%s\".\n",
+				fprintf(stdout, "nsd-zonec: reading zone \"%s\".\n",
 					zone->name);
 			zone_read(zone->name, zone->zonefile, nsd_options);
 			if (vflag > 0)
 				fprintf(stdout,
-					"zonec: processed %ld RRs in \"%s\".\n",
+					"nsd-zonec: processed %ld RRs in \"%s\".\n",
 					totalrrs, zone->name);
 			totalrrs = 0;
 		}
@@ -1549,15 +1601,19 @@ main (int argc, char **argv)
 
 	/* Close the database */
 	if (namedb_save(db) != 0) {
-		fprintf(stderr, "zonec: error writing the database (%s): %s\n", db->filename, strerror(errno));
+		fprintf(stderr, "nsd-zonec: error writing the database (%s): %s\n", db->filename, strerror(errno));
 		namedb_discard(db);
 		exit(1);
 	}
 
 	/* Print the total number of errors */
 	if (vflag > 0 || totalerrors > 0) {
-		fprintf(stderr, "\nzonec: done with %ld errors.\n",
+		if (totalerrors > 0) {
+			fprintf(stderr, "\nnsd-zonec: done with %ld errors.\n",
 			totalerrors);
+		} else {
+			fprintf(stdout, "\nnsd-zonec: done with no errors.\n");
+		}
 	}
 
 	/* Disable this to save some time.  */

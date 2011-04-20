@@ -1,4 +1,6 @@
+/*	$OpenBSD: common.h,v 1.7 2003/02/28 18:05:48 deraadt Exp $	*/
 /*	$NetBSD: common.h,v 1.3 1995/06/15 21:41:48 pk Exp $	*/
+
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
  * All rights reserved.
@@ -31,6 +33,7 @@
  */
 
 #include <string.h>
+#include <limits.h>
 
 #ifdef DYNAMIC
 
@@ -44,30 +47,20 @@
 #endif
 
 #include <sys/mman.h>
-#ifdef sun
-#define MAP_COPY	MAP_PRIVATE
-#define MAP_ANON	0
-#endif
 
 #include <link.h>
 #include <dlfcn.h>
 
 extern struct _dynamic	_DYNAMIC;
-static void		__load_rtld __P((struct _dynamic *));
-extern int		__syscall __P((int, ...));
-int			_callmain __P((void));
-static char		*_strrchr __P((char *, char));
+static void		__load_rtld(struct _dynamic *);
+extern int		__syscall(int, ...);
+int			_callmain(void);
 #ifdef DEBUG
-static char		*_getenv __P((char *));
-static int		_strncmp __P((char *, char *, int));
+static char		*_getenv(char *);
+static int		_strncmp(char *, char *, int);
 #endif
 
-#ifdef sun
-#define LDSO	"/usr/lib/ld.so"
-#endif
-#ifdef BSD
 #define LDSO	"/usr/libexec/ld.so"
-#endif
 
 /*
  * We need these system calls, but can't use library stubs
@@ -79,14 +72,9 @@ static int		_strncmp __P((char *, char *, int));
 #define write(fd, s, n)		__syscall(SYS_write, (fd), (s), (n))
 #define dup(fd)			__syscall(SYS_dup, (fd))
 #define dup2(fd, fdnew)		__syscall(SYS_dup2, (fd), (fdnew))
-#ifdef sun
-#define mmap(addr, len, prot, flags, fd, off)	\
-    __syscall(SYS_mmap, (addr), (len), (prot), _MAP_NEW|(flags), (fd), (off))
-#else
 #define mmap(addr, len, prot, flags, fd, off)	\
     __syscall(SYS___syscall, (quad_t)SYS_mmap, (addr), (len), (prot), (flags), \
 	(fd), 0, (off_t)(off))
-#endif
 
 #define _FATAL(str) \
 	write(2, str, sizeof(str)), \
@@ -94,20 +82,18 @@ static int		_strncmp __P((char *, char *, int));
 
 #endif /* DYNAMIC */
 
-extern int		main __P((int, char **, char **));
+static char		*_strrchr(char *, char);
+extern int		main(int, char **, char **);
 #ifdef MCRT0
-extern void		monstartup __P((u_long, u_long));
-extern void		_mcleanup __P((void));
+extern void		monstartup(u_long, u_long);
+extern void		_mcleanup(void);
 #endif
 
 char			**environ;
 int			errno;
 static char		empty[1];
 char			*__progname = empty;
-#ifndef DYNAMIC
-#define _strrchr	strrchr
-#endif
+char			__progname_storage[NAME_MAX+1];
 
 extern unsigned char	etext;
 extern unsigned char	eprol asm ("eprol");
-

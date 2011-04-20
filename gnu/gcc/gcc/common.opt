@@ -97,6 +97,10 @@ Wlarger-than-
 Common RejectNegative Joined UInteger
 -Wlarger-than-<number>	Warn if an object is larger than <number> bytes
 
+Wstack-larger-than-
+Common RejectNegative Joined UInteger
+-Wstack-larger-than-<number> Warn if a function is using more than <number> bytes of stack space for their local variables.
+
 Wunsafe-loop-optimizations
 Common Var(warn_unsafe_loop_optimizations)
 Warn if the loop cannot be optimized due to nontrivial assumptions.
@@ -154,7 +158,7 @@ Common Var(warn_switch_enum)
 Warn about all enumerated switches missing a specific case
 
 Wsystem-headers
-Common Var(warn_system_headers)
+Common Var(warn_system_headers) Init(1)
 Do not suppress warnings from system headers
 
 Wuninitialized
@@ -188,6 +192,10 @@ Warn when an expression value is unused
 Wunused-variable
 Common Var(warn_unused_variable)
 Warn when a variable is unused
+
+Wvariable-decl
+Common Var(warn_variable_decl)
+Warn about variable-sized declarations.
 
 Wvolatile-register-var
 Common Var(warn_register_var)
@@ -486,7 +494,7 @@ Enable guessing of branch probabilities
 ; On SVR4 targets, it also controls whether or not to emit a
 ; string identifying the compiler.
 fident
-Common Report Var(flag_no_ident,0)
+Common Report Var(flag_no_ident,1)
 Process #ident directives
 
 fif-conversion
@@ -855,7 +863,7 @@ Common RejectNegative Joined
 -fstack-limit-symbol=<name>	Trap if the stack goes past symbol <name>
 
 fstack-protector
-Common Report Var(flag_stack_protect, 1)
+Common Report Var(flag_stack_protect, 1) Init(-1)
 Use propolice as a stack protection method
 
 fstack-protector-all
@@ -1088,7 +1096,7 @@ Common Report Var(flag_wrapv)
 Assume signed arithmetic overflow wraps around
 
 fzero-initialized-in-bss
-Common Report Var(flag_zero_initialized_in_bss) Init(1)
+Common Report Var(flag_zero_initialized_in_bss) Init(0)
 Put zero initialized data in the bss section
 
 g

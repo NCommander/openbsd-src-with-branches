@@ -1,3 +1,5 @@
+/*	$OpenBSD: listing.h,v 1.1.1.1 1995/10/18 08:38:59 deraadt Exp $	*/
+
 /* This file is listing.h
    Copyright (C) 1987, 1988, 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
 
@@ -16,10 +18,6 @@
    You should have received a copy of the GNU General Public License
    along with GAS; see the file COPYING.  If not, write to
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-/*
- * $Id: listing.h,v 1.3 1994/08/25 07:36:30 pk Exp $
- */
 
 #ifndef __listing_h__
 #define __listing_h__

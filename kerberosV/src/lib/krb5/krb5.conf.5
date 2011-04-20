@@ -175,7 +175,7 @@ A list of default encryption types to use.
 A list of default encryption types to use when requesting a DES credential.
 .It Li default_keytab_name = Va keytab
 The keytab to use if no other is specified, default is
-.Dq FILE:/etc/krb5.keytab .
+.Dq FILE:/etc/kerberosV/krb5.keytab .
 .It Li dns_lookup_kdc = Va boolean
 Use DNS SRV records to lookup KDC services location.
 .It Li dns_lookup_realm = Va boolean
@@ -467,8 +467,8 @@ and is only left for backwards compatibility.
 .Ev KRB5_CONFIG
 points to the configuration file to read.
 .Sh FILES
-.Bl -tag -width "/etc/krb5.conf"
-.It Pa /etc/krb5.conf
+.Bl -tag -width "/etc/kerberosV/krb5.conf"
+.It Pa /etc/kerberosV/krb5.conf
 configuration file for Kerberos 5.
 .El
 .Sh EXAMPLES

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2008 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,13 +13,16 @@
 
 #include <sendmail.h>
 #if MILTER
+# include <libmilter/mfapi.h>
 # include <libmilter/mfdef.h>
 #endif /* MILTER */
 
-SM_RCSID("@(#)$Sendmail: srvrsmtp.c,v 8.778 2001/09/04 22:43:06 ca Exp $")
+SM_RCSID("@(#)$Sendmail: srvrsmtp.c,v 8.975 2008/03/31 16:32:13 ca Exp $")
+
+#include <sm/time.h>
+#include <sm/fdset.h>
 
 #if SASL || STARTTLS
-# include <sys/time.h>
 # include "sfsasl.h"
 #endif /* SASL || STARTTLS */
 #if SASL
@@ -34,10 +37,13 @@ static SSL	*srv_ssl = NULL;	/* per connection context */
 
 static bool	tls_ok_srv = false;
 
-extern void	tls_set_verify __P((SSL_CTX *, SSL *, bool));
 # define TLS_VERIFY_CLIENT() tls_set_verify(srv_ctx, srv_ssl, \
 				bitset(SRV_VRFY_CLT, features))
 #endif /* STARTTLS */
+
+#if _FFR_DM_ONE
+static bool	NotFirstDelivery = false;
+#endif /* _FFR_DM_ONE */
 
 /* server features */
 #define SRV_NONE	0x0000	/* none... */
@@ -56,21 +62,146 @@ extern void	tls_set_verify __P((SSL_CTX *, SSL *, bool));
 # endif /* _FFR_NO_PIPE */
 #endif /* PIPELINING */
 #define SRV_REQ_AUTH	0x0400	/* require AUTH */
+#define SRV_REQ_SEC	0x0800	/* require security - equiv to AuthOptions=p */
 #define SRV_TMP_FAIL	0x1000	/* ruleset caused a temporary failure */
 
 static unsigned int	srvfeatures __P((ENVELOPE *, char *, unsigned int));
 
-static time_t	checksmtpattack __P((volatile unsigned int *, int, bool,
-				     char *, ENVELOPE *));
-static void	mail_esmtp_args __P((char *, char *, ENVELOPE *));
+#define	STOP_ATTACK	((time_t) -1)
+static time_t	checksmtpattack __P((volatile unsigned int *, unsigned int,
+				     bool, char *, ENVELOPE *));
 static void	printvrfyaddr __P((ADDRESS *, bool, bool));
-static void	rcpt_esmtp_args __P((ADDRESS *, char *, char *, ENVELOPE *));
 static char	*skipword __P((char *volatile, char *));
 static void	setup_smtpd_io __P((void));
+
+#if SASL
+# if SASL >= 20000
+static int reset_saslconn __P((sasl_conn_t **_conn, char *_hostname,
+				char *_remoteip, char *_localip,
+				char *_auth_id, sasl_ssf_t *_ext_ssf));
+
+# define RESET_SASLCONN	\
+	do							\
+	{							\
+		result = reset_saslconn(&conn, AuthRealm, remoteip, \
+					localip, auth_id, &ext_ssf); \
+		if (result != SASL_OK)				\
+			sasl_ok = false;			\
+	} while (0)
+
+# else /* SASL >= 20000 */
+static int reset_saslconn __P((sasl_conn_t **_conn, char *_hostname,
+				struct sockaddr_in *_saddr_r,
+				struct sockaddr_in *_saddr_l,
+				sasl_external_properties_t *_ext_ssf));
+# define RESET_SASLCONN	\
+	do							\
+	{							\
+		result = reset_saslconn(&conn, AuthRealm, &saddr_r, \
+					&saddr_l, &ext_ssf);	\
+		if (result != SASL_OK)				\
+			sasl_ok = false;			\
+	} while (0)
+
+# endif /* SASL >= 20000 */
+#endif /* SASL */
+
 extern ENVELOPE	BlankEnvelope;
+
+#define NBADRCPTS						\
+	do							\
+	{							\
+		char buf[16];					\
+		(void) sm_snprintf(buf, sizeof(buf), "%d",	\
+			BadRcptThrottle > 0 && n_badrcpts > BadRcptThrottle \
+				? n_badrcpts - 1 : n_badrcpts);	\
+		macdefine(&e->e_macro, A_TEMP, macid("{nbadrcpts}"), buf); \
+	} while (0)
 
 #define SKIP_SPACE(s)	while (isascii(*s) && isspace(*s))	\
 				(s)++
+
+/*
+**  PARSE_ESMTP_ARGS -- parse EMSTP arguments (for MAIL, RCPT)
+**
+**	Parameters:
+**		e -- the envelope
+**		addr_st -- address (RCPT only)
+**		p -- read buffer
+**		delimptr -- current position in read buffer
+**		which -- MAIL/RCPT
+**		args -- arguments (output)
+**		esmtp_args -- function to process a single ESMTP argument
+**
+**	Returns:
+**		none
+*/
+
+void
+parse_esmtp_args(e, addr_st, p, delimptr, which, args, esmtp_args)
+	ENVELOPE *e;
+	ADDRESS *addr_st;
+	char *p;
+	char *delimptr;
+	char *which;
+	char *args[];
+	esmtp_args_F esmtp_args;
+{
+	int argno;
+
+	argno = 0;
+	if (args != NULL)
+		args[argno++] = p;
+	p = delimptr;
+	while (p != NULL && *p != '\0')
+	{
+		char *kp;
+		char *vp = NULL;
+		char *equal = NULL;
+
+		/* locate the beginning of the keyword */
+		SKIP_SPACE(p);
+		if (*p == '\0')
+			break;
+		kp = p;
+
+		/* skip to the value portion */
+		while ((isascii(*p) && isalnum(*p)) || *p == '-')
+			p++;
+		if (*p == '=')
+		{
+			equal = p;
+			*p++ = '\0';
+			vp = p;
+
+			/* skip to the end of the value */
+			while (*p != '\0' && *p != ' ' &&
+			       !(isascii(*p) && iscntrl(*p)) &&
+			       *p != '=')
+				p++;
+		}
+
+		if (*p != '\0')
+			*p++ = '\0';
+
+		if (tTd(19, 1))
+			sm_dprintf("%s: got arg %s=\"%s\"\n", which, kp,
+				vp == NULL ? "<null>" : vp);
+
+		esmtp_args(addr_st, kp, vp, e);
+		if (equal != NULL)
+			*equal = '=';
+		if (args != NULL)
+			args[argno] = kp;
+		argno++;
+		if (argno >= MAXSMTPARGS - 1)
+			usrerr("501 5.5.4 Too many parameters");
+		if (Errors > 0)
+			break;
+	}
+	if (args != NULL)
+		args[argno] = NULL;
+}
 
 /*
 **  SMTP -- run the SMTP protocol.
@@ -172,22 +303,44 @@ static char	*CurSmtpClient;		/* who's at the other end of channel */
 
 #ifndef MAXBADCOMMANDS
 # define MAXBADCOMMANDS 25	/* maximum number of bad commands */
-#endif
-#ifndef MAXNOOPCOMMANDS
-# define MAXNOOPCOMMANDS 20	/* max "noise" commands before slowdown */
-#endif
+#endif /* ! MAXBADCOMMANDS */
 #ifndef MAXHELOCOMMANDS
 # define MAXHELOCOMMANDS 3	/* max HELO/EHLO commands before slowdown */
-#endif
+#endif /* ! MAXHELOCOMMANDS */
 #ifndef MAXVRFYCOMMANDS
 # define MAXVRFYCOMMANDS 6	/* max VRFY/EXPN commands before slowdown */
-#endif
+#endif /* ! MAXVRFYCOMMANDS */
 #ifndef MAXETRNCOMMANDS
 # define MAXETRNCOMMANDS 8	/* max ETRN commands before slowdown */
-#endif
+#endif /* ! MAXETRNCOMMANDS */
 #ifndef MAXTIMEOUT
 # define MAXTIMEOUT (4 * 60)	/* max timeout for bad commands */
-#endif
+#endif /* ! MAXTIMEOUT */
+
+/*
+**  Maximum shift value to compute timeout for bad commands.
+**  This introduces an upper limit of 2^MAXSHIFT for the timeout.
+*/
+
+#ifndef MAXSHIFT
+# define MAXSHIFT 8
+#endif /* ! MAXSHIFT */
+#if MAXSHIFT > 31
+ ERROR _MAXSHIFT > 31 is invalid
+#endif /* MAXSHIFT */
+
+
+#if MAXBADCOMMANDS > 0
+# define STOP_IF_ATTACK(r)	do		\
+	{					\
+		if ((r) == STOP_ATTACK)		\
+			goto stopattack;	\
+	} while (0)
+
+#else /* MAXBADCOMMANDS > 0 */
+# define STOP_IF_ATTACK(r)	r
+#endif /* MAXBADCOMMANDS > 0 */
+
 
 #if SM_HEAP_CHECK
 static SM_DEBUG_T DebugLeakSmtp = SM_DEBUG_INITIALIZER("leak_smtp",
@@ -196,30 +349,52 @@ static SM_DEBUG_T DebugLeakSmtp = SM_DEBUG_INITIALIZER("leak_smtp",
 
 typedef struct
 {
-	bool	sm_gotmail;	/* mail command received */
-	unsigned int sm_nrcpts;	/* number of RCPT commands */
-#if _FFR_ADAPTIVE_EOL
-	bool	sm_crlf;	/* input in CRLF form? */
-#endif /* _FFR_ADAPTIVE_EOL */
-	bool	sm_discard;
+	bool		sm_gotmail;	/* mail command received */
+	unsigned int	sm_nrcpts;	/* number of successful RCPT commands */
+	bool		sm_discard;
 #if MILTER
-	bool	sm_milterize;
-	bool	sm_milterlist;	/* any filters in the list? */
+	bool		sm_milterize;
+	bool		sm_milterlist;	/* any filters in the list? */
+	milters_T	sm_milters;
+
+	/* e_nrcpts from envelope before recipient() call */
+	unsigned int	sm_e_nrcpts_orig;
 #endif /* MILTER */
+	char		*sm_quarmsg;	/* carry quarantining across messages */
 } SMTP_T;
 
-static void	smtp_data __P((SMTP_T *, ENVELOPE *));
+static bool	smtp_data __P((SMTP_T *, ENVELOPE *));
 
-#define MSG_TEMPFAIL "451 4.7.1 Please try again later"
+#define MSG_TEMPFAIL "451 4.3.2 Please try again later"
 
 #if MILTER
 # define MILTER_ABORT(e)	milter_abort((e))
+
 # define MILTER_REPLY(str)						\
 	{								\
 		int savelogusrerrs = LogUsrErrs;			\
 									\
+		milter_cmd_fail = true;					\
 		switch (state)						\
 		{							\
+		  case SMFIR_SHUTDOWN:					\
+			if (MilterLogLevel > 3)				\
+			{						\
+				sm_syslog(LOG_INFO, e->e_id,		\
+					  "Milter: %s=%s, reject=421, errormode=4",	\
+					  str, addr);			\
+				LogUsrErrs = false;			\
+			}						\
+			{						\
+				bool tsave = QuickAbort;		\
+									\
+				QuickAbort = false;			\
+				usrerr("421 4.3.0 closing connection");	\
+				QuickAbort = tsave;			\
+				e->e_sendqueue = NULL;			\
+				goto doquit;				\
+			}						\
+			break;						\
 		  case SMFIR_REPLYCODE:					\
 			if (MilterLogLevel > 3)				\
 			{						\
@@ -228,7 +403,19 @@ static void	smtp_data __P((SMTP_T *, ENVELOPE *));
 					  str, addr, response);		\
 				LogUsrErrs = false;			\
 			}						\
-			usrerr(response);				\
+			if (strncmp(response, "421 ", 4) == 0		\
+			    || strncmp(response, "421-", 4) == 0)	\
+			{						\
+				bool tsave = QuickAbort;		\
+									\
+				QuickAbort = false;			\
+				usrerr(response);			\
+				QuickAbort = tsave;			\
+				e->e_sendqueue = NULL;			\
+				goto doquit;				\
+			}						\
+			else						\
+				usrerr(response);			\
 			break;						\
 									\
 		  case SMFIR_REJECT:					\
@@ -248,6 +435,7 @@ static void	smtp_data __P((SMTP_T *, ENVELOPE *));
 					  "Milter: %s=%s, discard",	\
 					  str, addr);			\
 			e->e_flags |= EF_DISCARD;			\
+			milter_cmd_fail = false;			\
 			break;						\
 									\
 		  case SMFIR_TEMPFAIL:					\
@@ -259,6 +447,9 @@ static void	smtp_data __P((SMTP_T *, ENVELOPE *));
 				LogUsrErrs = false;			\
 			}						\
 			usrerr(MSG_TEMPFAIL);				\
+			break;						\
+		  default:						\
+			milter_cmd_fail = false;			\
 			break;						\
 		}							\
 		LogUsrErrs = savelogusrerrs;				\
@@ -272,6 +463,7 @@ static void	smtp_data __P((SMTP_T *, ENVELOPE *));
 
 /* clear all SMTP state (for HELO/EHLO/RSET) */
 #define CLEAR_STATE(cmd)					\
+do								\
 {								\
 	/* abort milter filters */				\
 	MILTER_ABORT(e);					\
@@ -298,7 +490,27 @@ static void	smtp_data __P((SMTP_T *, ENVELOPE *));
 	sm_rpool_free(e->e_rpool);				\
 	e = newenvelope(e, CurEnv, sm_rpool_new_x(NULL));	\
 	CurEnv = e;						\
-}
+	e->e_features = features;				\
+								\
+	/* put back discard bit */				\
+	if (smtp.sm_discard)					\
+		e->e_flags |= EF_DISCARD;			\
+								\
+	/* restore connection quarantining */			\
+	if (smtp.sm_quarmsg == NULL)				\
+	{							\
+		e->e_quarmsg = NULL;				\
+		macdefine(&e->e_macro, A_PERM,			\
+			macid("{quarantine}"), "");		\
+	}							\
+	else							\
+	{							\
+		e->e_quarmsg = sm_rpool_strdup_x(e->e_rpool,	\
+						smtp.sm_quarmsg);	\
+		macdefine(&e->e_macro, A_PERM, macid("{quarantine}"),	\
+			  e->e_quarmsg);			\
+	}							\
+} while (0)
 
 /* sleep to flatten out connection load */
 #define MIN_DELAY_LOG	15	/* wait before logging this again */
@@ -325,6 +537,7 @@ static void	smtp_data __P((SMTP_T *, ENVELOPE *));
 				qid_printname(e), CurSmtpClient, inp);	\
 	}
 
+static bool SevenBitInput_Saved;	/* saved version of SevenBitInput */
 
 void
 smtp(nullserver, d_flags, e)
@@ -350,11 +563,8 @@ smtp(nullserver, d_flags, e)
 	volatile unsigned int n_etrn = 0;	/* count of ETRN */
 	volatile unsigned int n_noop = 0;	/* count of NOOP/VERB/etc */
 	volatile unsigned int n_helo = 0;	/* count of HELO/EHLO */
-	volatile unsigned int delay = 1;	/* timeout for bad commands */
 	bool ok;
-#if _FFR_ADAPTIVE_EOL
 	volatile bool first;
-#endif /* _FFR_ADAPTIVE_EOL */
 	volatile bool tempfail = false;
 	volatile time_t wt;		/* timeout after too many commands */
 	volatile time_t previous;	/* time after checksmtpattack() */
@@ -365,9 +575,11 @@ smtp(nullserver, d_flags, e)
 	char *greetcode = "220";
 	char *hostname;			/* my hostname ($j) */
 	QUEUE_CHAR *new;
-	int argno;
 	char *args[MAXSMTPARGS];
-	char inp[MAXLINE];
+	char inp[MAXINPLINE];
+#if MAXINPLINE < MAXLINE
+ ERROR _MAXINPLINE must NOT be less than _MAXLINE: MAXINPLINE < MAXLINE
+#endif /* MAXINPLINE < MAXLINE */
 	char cmdbuf[MAXLINE];
 #if SASL
 	sasl_conn_t *conn;
@@ -377,25 +589,34 @@ smtp(nullserver, d_flags, e)
 	int result;
 	volatile int authenticating;
 	char *user;
-	char *in, *out, *out2;
+	char *in, *out2;
+# if SASL >= 20000
+	char *auth_id = NULL;
+	const char *out;
+	sasl_ssf_t ext_ssf;
+	char localip[60], remoteip[60];
+# else /* SASL >= 20000 */
+	char *out;
 	const char *errstr;
+	sasl_external_properties_t ext_ssf;
+	struct sockaddr_in saddr_l;
+	struct sockaddr_in saddr_r;
+# endif /* SASL >= 20000 */
+	sasl_security_properties_t ssp;
+	sasl_ssf_t *ssf;
 	unsigned int inlen, out2len;
 	unsigned int outlen;
 	char *volatile auth_type;
 	char *mechlist;
 	volatile unsigned int n_mechs;
 	unsigned int len;
-	sasl_security_properties_t ssp;
-	sasl_external_properties_t ext_ssf;
-	sasl_ssf_t *ssf;
+#else /* SASL */
 #endif /* SASL */
-#if STARTTLS
 	int r;
+#if STARTTLS
 	int rfd, wfd;
 	volatile bool tls_active = false;
-# if _FFR_SMTP_SSL
-	volatile bool smtps = false;
-# endif /* _FFR_SMTP_SSL */
+	volatile bool smtps = bitnset(D_SMTPS, d_flags);
 	bool saveQuickAbort;
 	bool saveSuprErrs;
 	time_t tlsstart;
@@ -407,11 +628,25 @@ smtp(nullserver, d_flags, e)
 # endif /* _FFR_NO_PIPE */
 #endif /* PIPELINING */
 	volatile time_t log_delay = (time_t) 0;
+#if MILTER
+	volatile bool milter_cmd_done, milter_cmd_safe;
+	volatile bool milter_rcpt_added, milter_cmd_fail;
+	ADDRESS addr_st;
+# define p_addr_st	&addr_st
+#else /* MILTER */
+# define p_addr_st	NULL
+#endif /* MILTER */
+	size_t inplen;
+#if _FFR_BADRCPT_SHUTDOWN
+	int n_badrcpts_adj;
+#endif /* _FFR_BADRCPT_SHUTDOWN */
 
+	SevenBitInput_Saved = SevenBitInput;
 	smtp.sm_nrcpts = 0;
 #if MILTER
 	smtp.sm_milterize = (nullserver == NULL);
 	smtp.sm_milterlist = false;
+	addr = NULL;
 #endif /* MILTER */
 
 	/* setup I/O fd correctly for the SMTP server */
@@ -457,10 +692,12 @@ smtp(nullserver, d_flags, e)
 			: (SRV_OFFER_EXPN
 			  | (bitset(PRIV_NOVERB, PrivacyFlags)
 			     ? SRV_NONE : SRV_OFFER_VERB)))
-		| (bitset(PRIV_NORECEIPTS, PrivacyFlags) ? SRV_NONE
-							 : SRV_OFFER_DSN)
+		| ((bitset(PRIV_NORECEIPTS, PrivacyFlags) || !SendMIMEErrors)
+			 ? SRV_NONE : SRV_OFFER_DSN)
 #if SASL
 		| (bitnset(D_NOAUTH, d_flags) ? SRV_NONE : SRV_OFFER_AUTH)
+		| (bitset(SASL_SEC_NOPLAINTEXT, SASLOpts) ? SRV_REQ_SEC
+							  : SRV_NONE)
 #endif /* SASL */
 #if PIPELINING
 		| SRV_OFFER_PIPE
@@ -482,19 +719,36 @@ smtp(nullserver, d_flags, e)
 					  CurSmtpClient);
 			nullserver = "450 4.3.0 Please try again later.";
 		}
+		else
+		{
 #if PIPELINING
 # if _FFR_NO_PIPE
-		else if (bitset(SRV_NO_PIPE, features))
-		{
-			/* for consistency */
-			features &= ~SRV_OFFER_PIPE;
-		}
+			if (bitset(SRV_NO_PIPE, features))
+			{
+				/* for consistency */
+				features &= ~SRV_OFFER_PIPE;
+			}
 # endif /* _FFR_NO_PIPE */
 #endif /* PIPELINING */
+#if SASL
+			if (bitset(SRV_REQ_SEC, features))
+				SASLOpts |= SASL_SEC_NOPLAINTEXT;
+			else
+				SASLOpts &= ~SASL_SEC_NOPLAINTEXT;
+#endif /* SASL */
+		}
+	}
+	else if (strncmp(nullserver, "421 ", 4) == 0)
+	{
+		message(nullserver);
+		goto doquit;
 	}
 
+	e->e_features = features;
 	hostname = macvalue('j', e);
 #if SASL
+	if (AuthRealm == NULL)
+		AuthRealm = hostname;
 	sasl_ok = bitset(SRV_OFFER_AUTH, features);
 	n_mechs = 0;
 	authenticating = SASL_NOT_AUTH;
@@ -502,14 +756,17 @@ smtp(nullserver, d_flags, e)
 	/* SASL server new connection */
 	if (sasl_ok)
 	{
-# if SASL > 10505
+# if SASL >= 20000
+		result = sasl_server_new("smtp", AuthRealm, NULL, NULL, NULL,
+					 NULL, 0, &conn);
+# elif SASL > 10505
 		/* use empty realm: only works in SASL > 1.5.5 */
-		result = sasl_server_new("smtp", hostname, "", NULL, 0, &conn);
-# else /* SASL > 10505 */
+		result = sasl_server_new("smtp", AuthRealm, "", NULL, 0, &conn);
+# else /* SASL >= 20000 */
 		/* use no realm -> realm is set to hostname by SASL lib */
-		result = sasl_server_new("smtp", hostname, NULL, NULL, 0,
+		result = sasl_server_new("smtp", AuthRealm, NULL, NULL, 0,
 					 &conn);
-# endif /* SASL > 10505 */
+# endif /* SASL >= 20000 */
 		sasl_ok = result == SASL_OK;
 		if (!sasl_ok)
 		{
@@ -524,19 +781,63 @@ smtp(nullserver, d_flags, e)
 		/*
 		**  SASL set properties for sasl
 		**  set local/remote IP
-		**  XXX only IPv4: Cyrus SASL doesn't support anything else
+		**  XXX Cyrus SASL v1 only supports IPv4
 		**
 		**  XXX where exactly are these used/required?
 		**  Kerberos_v4
 		*/
 
-#if NETINET
+# if SASL >= 20000
+		localip[0] = remoteip[0] = '\0';
+#  if NETINET || NETINET6
+		in = macvalue(macid("{daemon_family}"), e);
+		if (in != NULL && (
+#   if NETINET6
+		    strcmp(in, "inet6") == 0 ||
+#   endif /* NETINET6 */
+		    strcmp(in, "inet") == 0))
+		{
+			SOCKADDR_LEN_T addrsize;
+			SOCKADDR saddr_l;
+			SOCKADDR saddr_r;
+
+			addrsize = sizeof(saddr_r);
+			if (getpeername(sm_io_getinfo(InChannel, SM_IO_WHAT_FD,
+						      NULL),
+					(struct sockaddr *) &saddr_r,
+					&addrsize) == 0)
+			{
+				if (iptostring(&saddr_r, addrsize,
+					       remoteip, sizeof(remoteip)))
+				{
+					sasl_setprop(conn, SASL_IPREMOTEPORT,
+						     remoteip);
+				}
+				addrsize = sizeof(saddr_l);
+				if (getsockname(sm_io_getinfo(InChannel,
+							      SM_IO_WHAT_FD,
+							      NULL),
+						(struct sockaddr *) &saddr_l,
+						&addrsize) == 0)
+				{
+					if (iptostring(&saddr_l, addrsize,
+						       localip,
+						       sizeof(localip)))
+					{
+						sasl_setprop(conn,
+							     SASL_IPLOCALPORT,
+							     localip);
+					}
+				}
+			}
+		}
+#  endif /* NETINET || NETINET6 */
+# else /* SASL >= 20000 */
+#  if NETINET
 		in = macvalue(macid("{daemon_family}"), e);
 		if (in != NULL && strcmp(in, "inet") == 0)
 		{
 			SOCKADDR_LEN_T addrsize;
-			struct sockaddr_in saddr_l;
-			struct sockaddr_in saddr_r;
 
 			addrsize = sizeof(struct sockaddr_in);
 			if (getpeername(sm_io_getinfo(InChannel, SM_IO_WHAT_FD,
@@ -555,7 +856,8 @@ smtp(nullserver, d_flags, e)
 						     &saddr_l);
 			}
 		}
-#endif /* NETINET */
+#  endif /* NETINET */
+# endif /* SASL >= 20000 */
 
 		auth_type = NULL;
 		mechlist = NULL;
@@ -566,12 +868,10 @@ smtp(nullserver, d_flags, e)
 # endif /* 0 */
 
 		/* set properties */
-		(void) memset(&ssp, '\0', sizeof ssp);
+		(void) memset(&ssp, '\0', sizeof(ssp));
 
 		/* XXX should these be options settable via .cf ? */
 		/* ssp.min_ssf = 0; is default due to memset() */
-#  if STARTTLS
-#  endif /* STARTTLS */
 		{
 			ssp.max_ssf = MaxSLBits;
 			ssp.maxbufsize = MAXOUTLEN;
@@ -586,15 +886,29 @@ smtp(nullserver, d_flags, e)
 			**	currently we have none so zero
 			*/
 
+# if SASL >= 20000
+			ext_ssf = 0;
+			auth_id = NULL;
+			sasl_ok = ((sasl_setprop(conn, SASL_SSF_EXTERNAL,
+						 &ext_ssf) == SASL_OK) &&
+				   (sasl_setprop(conn, SASL_AUTH_EXTERNAL,
+						 auth_id) == SASL_OK));
+# else /* SASL >= 20000 */
 			ext_ssf.ssf = 0;
 			ext_ssf.auth_id = NULL;
 			sasl_ok = sasl_setprop(conn, SASL_SSF_EXTERNAL,
 					       &ext_ssf) == SASL_OK;
+# endif /* SASL >= 20000 */
 		}
 		if (sasl_ok)
 			n_mechs = saslmechs(conn, &mechlist);
 	}
 #endif /* SASL */
+
+#if STARTTLS
+
+	set_tls_rd_tmo(TimeOuts.to_nextcommand);
+#endif /* STARTTLS */
 
 #if MILTER
 	if (smtp.sm_milterize)
@@ -602,19 +916,39 @@ smtp(nullserver, d_flags, e)
 		char state;
 
 		/* initialize mail filter connection */
-		smtp.sm_milterlist = milter_init(e, &state);
+		smtp.sm_milterlist = milter_init(e, &state, &smtp.sm_milters);
 		switch (state)
 		{
 		  case SMFIR_REJECT:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: initialization failed, rejecting commands");
 			greetcode = "554";
 			nullserver = "Command rejected";
 			smtp.sm_milterize = false;
 			break;
 
 		  case SMFIR_TEMPFAIL:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: initialization failed, temp failing commands");
 			tempfail = true;
 			smtp.sm_milterize = false;
 			break;
+
+		  case SMFIR_SHUTDOWN:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: initialization failed, closing connection");
+			tempfail = true;
+			smtp.sm_milterize = false;
+			message("421 4.7.0 %s closing connection",
+					MyHostName);
+
+			/* arrange to ignore send list */
+			e->e_sendqueue = NULL;
+			lognullconnection = false;
+			goto doquit;
 		}
 	}
 
@@ -622,43 +956,148 @@ smtp(nullserver, d_flags, e)
 	    !bitset(EF_DISCARD, e->e_flags))
 	{
 		char state;
+		char *response;
 
-		(void) milter_connect(peerhostname, RealHostAddr, e, &state);
+		q = macvalue(macid("{client_name}"), e);
+		SM_ASSERT(q != NULL || OpMode == MD_SMTP);
+		if (q == NULL)
+			q = "localhost";
+		response = milter_connect(q, RealHostAddr, e, &state);
 		switch (state)
 		{
 		  case SMFIR_REPLYCODE:	/* REPLYCODE shouldn't happen */
 		  case SMFIR_REJECT:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: connect: host=%s, addr=%s, rejecting commands",
+					  peerhostname,
+					  anynet_ntoa(&RealHostAddr));
 			greetcode = "554";
 			nullserver = "Command rejected";
 			smtp.sm_milterize = false;
 			break;
 
 		  case SMFIR_TEMPFAIL:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: connect: host=%s, addr=%s, temp failing commands",
+					  peerhostname,
+					  anynet_ntoa(&RealHostAddr));
 			tempfail = true;
 			smtp.sm_milterize = false;
 			break;
+
+		  case SMFIR_SHUTDOWN:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: connect: host=%s, addr=%s, shutdown",
+					  peerhostname,
+					  anynet_ntoa(&RealHostAddr));
+			tempfail = true;
+			smtp.sm_milterize = false;
+			message("421 4.7.0 %s closing connection",
+					MyHostName);
+
+			/* arrange to ignore send list */
+			e->e_sendqueue = NULL;
+			goto doquit;
 		}
+		if (response != NULL)
+			sm_free(response); /* XXX */
 	}
 #endif /* MILTER */
 
+	/*
+	**  Broken proxies and SMTP slammers
+	**  push data without waiting, catch them
+	*/
+
+	if (
 #if STARTTLS
-# if _FFR_SMTP_SSL
+	    !smtps &&
+#endif /* STARTTLS */
+	    *greetcode == '2' && nullserver == NULL)
+	{
+		time_t msecs = 0;
+		char **pvp;
+		char pvpbuf[PSBUFSIZE];
+
+		/* Ask the rulesets how long to pause */
+		pvp = NULL;
+		r = rscap("greet_pause", peerhostname,
+			  anynet_ntoa(&RealHostAddr), e,
+			  &pvp, pvpbuf, sizeof(pvpbuf));
+		if (r == EX_OK && pvp != NULL && pvp[0] != NULL &&
+		    (pvp[0][0] & 0377) == CANONNET && pvp[1] != NULL)
+		{
+			msecs = strtol(pvp[1], NULL, 10);
+		}
+
+		if (msecs > 0)
+		{
+			int fd;
+			fd_set readfds;
+			struct timeval timeout;
+			struct timeval bp, ep, tp; /* {begin,end,total}pause */
+			int eoftest;
+
+			/* pause for a moment */
+			timeout.tv_sec = msecs / 1000;
+			timeout.tv_usec = (msecs % 1000) * 1000;
+
+			/* Obey RFC 2821: 4.3.5.2: 220 timeout of 5 minutes */
+			if (timeout.tv_sec >= 300)
+			{
+				timeout.tv_sec = 300;
+				timeout.tv_usec = 0;
+			}
+
+			/* check if data is on the socket during the pause */
+			fd = sm_io_getinfo(InChannel, SM_IO_WHAT_FD, NULL);
+			FD_ZERO(&readfds);
+			SM_FD_SET(fd, &readfds);
+			gettimeofday(&bp, NULL);
+			if (select(fd + 1, FDSET_CAST &readfds,
+			    NULL, NULL, &timeout) > 0 &&
+			    FD_ISSET(fd, &readfds) &&
+			    (eoftest = sm_io_getc(InChannel, SM_TIME_DEFAULT))
+			    != SM_IO_EOF)
+			{
+				sm_io_ungetc(InChannel, SM_TIME_DEFAULT,
+					     eoftest);
+				gettimeofday(&ep, NULL);
+				timersub(&ep, &bp, &tp);
+				greetcode = "554";
+				nullserver = "Command rejected";
+				sm_syslog(LOG_INFO, e->e_id,
+					  "rejecting commands from %s [%s] due to pre-greeting traffic after %d seconds",
+					  peerhostname,
+					  anynet_ntoa(&RealHostAddr),
+					  (int) tp.tv_sec +
+						(tp.tv_usec >= 500000 ? 1 : 0)
+					 );
+			}
+		}
+	}
+
+#if STARTTLS
 	/* If this an smtps connection, start TLS now */
-	smtps = bitnset(D_SMTPS, d_flags);
 	if (smtps)
+	{
+		Errors = 0;
 		goto starttls;
+	}
 
   greeting:
 
-# endif /* _FFR_SMTP_SSL */
 #endif /* STARTTLS */
 
 	/* output the first line, inserting "ESMTP" as second word */
 	if (*greetcode == '5')
-		(void) sm_snprintf(inp, sizeof inp, "%s not accepting messages",
-				   hostname);
+		(void) sm_snprintf(inp, sizeof(inp),
+				"%s not accepting messages", hostname);
 	else
-		expand(SmtpGreeting, inp, sizeof inp, e);
+		expand(SmtpGreeting, inp, sizeof(inp), e);
 
 	p = strchr(inp, '\n');
 	if (p != NULL)
@@ -667,10 +1106,10 @@ smtp(nullserver, d_flags, e)
 	if (id == NULL)
 		id = &inp[strlen(inp)];
 	if (p == NULL)
-		(void) sm_snprintf(cmdbuf, sizeof cmdbuf,
+		(void) sm_snprintf(cmdbuf, sizeof(cmdbuf),
 			 "%s %%.*s ESMTP%%s", greetcode);
 	else
-		(void) sm_snprintf(cmdbuf, sizeof cmdbuf,
+		(void) sm_snprintf(cmdbuf, sizeof(cmdbuf),
 			 "%s-%%.*s ESMTP%%s", greetcode);
 	message(cmdbuf, (int) (id - inp), inp, id);
 
@@ -680,26 +1119,30 @@ smtp(nullserver, d_flags, e)
 		*p++ = '\0';
 		if (isascii(*id) && isspace(*id))
 			id++;
-		(void) sm_strlcpyn(cmdbuf, sizeof cmdbuf, 2, greetcode, "-%s");
+		(void) sm_strlcpyn(cmdbuf, sizeof(cmdbuf), 2, greetcode, "-%s");
 		message(cmdbuf, id);
 	}
 	if (id != NULL)
 	{
 		if (isascii(*id) && isspace(*id))
 			id++;
-		(void) sm_strlcpyn(cmdbuf, sizeof cmdbuf, 2, greetcode, " %s");
+		(void) sm_strlcpyn(cmdbuf, sizeof(cmdbuf), 2, greetcode, " %s");
 		message(cmdbuf, id);
 	}
 
 	protocol = NULL;
 	sendinghost = macvalue('s', e);
 
+	/* If quarantining by a connect/ehlo action, save between messages */
+	if (e->e_quarmsg == NULL)
+		smtp.sm_quarmsg = NULL;
+	else
+		smtp.sm_quarmsg = newstr(e->e_quarmsg);
+
 	/* sendinghost's storage must outlive the current envelope */
 	if (sendinghost != NULL)
 		sendinghost = sm_strdup_x(sendinghost);
-#if _FFR_ADAPTIVE_EOL
 	first = true;
-#endif /* _FFR_ADAPTIVE_EOL */
 	gothello = false;
 	smtp.sm_gotmail = false;
 	for (;;)
@@ -712,6 +1155,9 @@ smtp(nullserver, d_flags, e)
 		LogUsrErrs = false;
 		OnlyOneError = true;
 		e->e_flags &= ~(EF_VRFYONLY|EF_GLOBALERRS);
+#if MILTER
+		milter_cmd_fail = false;
+#endif /* MILTER */
 
 		/* setup for the read */
 		e->e_to = NULL;
@@ -722,16 +1168,10 @@ smtp(nullserver, d_flags, e)
 		/* read the input line */
 		SmtpPhase = "server cmd read";
 		sm_setproctitle(true, e, "server %s cmd read", CurSmtpClient);
-#if SASL
-		/*
-		**  XXX SMTP AUTH requires accepting any length,
-		**	at least for challenge/response
-		*/
-#endif /* SASL */
 
 		/* handle errors */
 		if (sm_io_error(OutChannel) ||
-		    (p = sfgets(inp, sizeof inp, InChannel,
+		    (p = sfgets(inp, sizeof(inp), InChannel,
 				TimeOuts.to_nextcommand, SmtpPhase)) == NULL)
 		{
 			char *d;
@@ -751,7 +1191,7 @@ smtp(nullserver, d_flags, e)
 				MyHostName, CurSmtpClient);
 			if (LogLevel > (smtp.sm_gotmail ? 1 : 19))
 				sm_syslog(LOG_NOTICE, e->e_id,
-					  "lost input channel from %.100s to %s after %s",
+					  "lost input channel from %s to %s after %s",
 					  CurSmtpClient, d,
 					  (c == NULL || c->cmd_name == NULL) ? "startup" : c->cmd_name);
 			/*
@@ -764,27 +1204,55 @@ smtp(nullserver, d_flags, e)
 			goto doquit;
 		}
 
-#if _FFR_ADAPTIVE_EOL
+		/* also used by "proxy" check below */
+		inplen = strlen(inp);
+#if SASL
+		/*
+		**  SMTP AUTH requires accepting any length,
+		**  at least for challenge/response. However, not imposing
+		**  a limit is a bad idea (denial of service).
+		*/
+
+		if (authenticating != SASL_PROC_AUTH
+		    && sm_strncasecmp(inp, "AUTH ", 5) != 0
+		    && inplen > MAXLINE)
+		{
+			message("421 4.7.0 %s Command too long, possible attack %s",
+				MyHostName, CurSmtpClient);
+			sm_syslog(LOG_INFO, e->e_id,
+				  "%s: SMTP violation, input too long: %lu",
+				  CurSmtpClient, (unsigned long) inplen);
+			goto doquit;
+		}
+#endif /* SASL */
+
 		if (first)
 		{
-			char *p;
+			size_t cmdlen;
+			int idx;
+			char *http_cmd;
+			static char *http_cmds[] = { "GET", "POST",
+						     "CONNECT", "USER", NULL };
 
-			smtp.sm_crlf = true;
-			p = strchr(inp, '\n');
-			if (p == NULL || p <= inp || p[-1] != '\r')
+			for (idx = 0; (http_cmd = http_cmds[idx]) != NULL;
+			     idx++)
 			{
-				smtp.sm_crlf = false;
-				if (tTd(66, 1) && LogLevel > 8)
+				cmdlen = strlen(http_cmd);
+				if (cmdlen < inplen &&
+				    sm_strncasecmp(inp, http_cmd, cmdlen) == 0 &&
+				    isascii(inp[cmdlen]) && isspace(inp[cmdlen]))
 				{
-					/* how many bad guys are there? */
-					sm_syslog(LOG_INFO, NOQID,
-						  "%.100s did not use CRLF",
-						  CurSmtpClient);
+					/* Open proxy, drop it */
+					message("421 4.7.0 %s Rejecting open proxy %s",
+						MyHostName, CurSmtpClient);
+					sm_syslog(LOG_INFO, e->e_id,
+						  "%s: probable open proxy: command=%.40s",
+						  CurSmtpClient, inp);
+					goto doquit;
 				}
 			}
 			first = false;
 		}
-#endif /* _FFR_ADAPTIVE_EOL */
 
 		/* clean up end of line */
 		fixcrlf(inp, true);
@@ -800,7 +1268,7 @@ smtp(nullserver, d_flags, e)
 		*/
 
 		if (bitset(SRV_NO_PIPE, features) &&
-		    sm_io_getinfo(InChannel, SM_IO_IS_READABLE, NULL))
+		    sm_io_getinfo(InChannel, SM_IO_IS_READABLE, NULL) > 0)
 		{
 			if (++np_log < 3)
 				sm_syslog(LOG_INFO, NOQID,
@@ -819,6 +1287,7 @@ smtp(nullserver, d_flags, e)
 			{
 				authenticating = SASL_NOT_AUTH;
 				message("501 5.5.2 missing input");
+				RESET_SASLCONN;
 				continue;
 			}
 # endif /* 0 */
@@ -826,26 +1295,43 @@ smtp(nullserver, d_flags, e)
 			{
 				authenticating = SASL_NOT_AUTH;
 
-				/* rfc 2254 4. */
+				/* RFC 2554 4. */
 				message("501 5.0.0 AUTH aborted");
+				RESET_SASLCONN;
 				continue;
 			}
 
 			/* could this be shorter? XXX */
+# if SASL >= 20000
+			in = xalloc(strlen(inp) + 1);
+			result = sasl_decode64(inp, strlen(inp), in,
+					       strlen(inp), &inlen);
+# else /* SASL >= 20000 */
 			out = xalloc(strlen(inp));
 			result = sasl_decode64(inp, strlen(inp), out, &outlen);
+# endif /* SASL >= 20000 */
 			if (result != SASL_OK)
 			{
 				authenticating = SASL_NOT_AUTH;
 
-				/* rfc 2254 4. */
+				/* RFC 2554 4. */
 				message("501 5.5.4 cannot decode AUTH parameter %s",
 					inp);
+# if SASL >= 20000
+				sm_free(in);
+# endif /* SASL >= 20000 */
+				RESET_SASLCONN;
 				continue;
 			}
 
+# if SASL >= 20000
+			result = sasl_server_step(conn,	in, inlen,
+						  &out, &outlen);
+			sm_free(in);
+# else /* SASL >= 20000 */
 			result = sasl_server_step(conn,	out, outlen,
 						  &out, &outlen, &errstr);
+# endif /* SASL >= 20000 */
 
 			/* get an OK if we're done */
 			if (result == SASL_OK)
@@ -856,6 +1342,13 @@ smtp(nullserver, d_flags, e)
 				macdefine(&BlankEnvelope.e_macro, A_TEMP,
 					macid("{auth_type}"), auth_type);
 
+# if SASL >= 20000
+				user = macvalue(macid("{auth_authen}"), e);
+
+				/* get security strength (features) */
+				result = sasl_getprop(conn, SASL_SSF,
+						      (const void **) &ssf);
+# else /* SASL >= 20000 */
 				result = sasl_getprop(conn, SASL_USERNAME,
 						      (void **)&user);
 				if (result != SASL_OK)
@@ -869,7 +1362,8 @@ smtp(nullserver, d_flags, e)
 				{
 					macdefine(&BlankEnvelope.e_macro,
 						  A_TEMP,
-						  macid("{auth_authen}"), user);
+						  macid("{auth_authen}"),
+						  xtextify(user, "<>\")"));
 				}
 
 # if 0
@@ -880,6 +1374,7 @@ smtp(nullserver, d_flags, e)
 				/* get security strength (features) */
 				result = sasl_getprop(conn, SASL_SSF,
 						      (void **) &ssf);
+# endif /* SASL >= 20000 */
 				if (result != SASL_OK)
 				{
 					macdefine(&BlankEnvelope.e_macro,
@@ -891,7 +1386,7 @@ smtp(nullserver, d_flags, e)
 				{
 					char pbuf[8];
 
-					(void) sm_snprintf(pbuf, sizeof pbuf,
+					(void) sm_snprintf(pbuf, sizeof(pbuf),
 							   "%u", *ssf);
 					macdefine(&BlankEnvelope.e_macro,
 						  A_TEMP,
@@ -908,21 +1403,24 @@ smtp(nullserver, d_flags, e)
 
 				if (ssf != NULL && *ssf > 0)
 				{
+					int tmo;
+
 					/*
 					**  Convert I/O layer to use SASL.
 					**  If the call fails, the connection
 					**  is aborted.
 					*/
 
+					tmo = TimeOuts.to_datablock * 1000;
 					if (sfdcsasl(&InChannel, &OutChannel,
-						     conn) == 0)
+						     conn, tmo) == 0)
 					{
 						/* restart dialogue */
 						n_helo = 0;
-#if PIPELINING
+# if PIPELINING
 						(void) sm_io_autoflush(InChannel,
 								       OutChannel);
-#endif /* PIPELINING */
+# endif /* PIPELINING */
 					}
 					else
 						syserr("503 5.3.3 SASL TLS failed");
@@ -931,8 +1429,9 @@ smtp(nullserver, d_flags, e)
 				/* NULL pointer ok since it's our function */
 				if (LogLevel > 8)
 					sm_syslog(LOG_INFO, NOQID,
-						  "AUTH=server, relay=%.100s, authid=%.32s, mech=%.16s, bits=%d",
-						  CurSmtpClient, user,
+						  "AUTH=server, relay=%s, authid=%.128s, mech=%.16s, bits=%d",
+						  CurSmtpClient,
+						  shortenstring(user, 128),
 						  auth_type, *ssf);
 			}
 			else if (result == SASL_CONTINUE)
@@ -960,11 +1459,14 @@ smtp(nullserver, d_flags, e)
 						sm_dprintf("AUTH continue: msg='%s' len=%u\n",
 							   out2, out2len);
 				}
+# if SASL >= 20000
+				sm_free(out2);
+# endif /* SASL >= 20000 */
 			}
 			else
 			{
 				/* not SASL_OK or SASL_CONT */
-				message("500 5.7.0 authentication failed");
+				message("535 5.7.0 authentication failed");
 				if (LogLevel > 9)
 					sm_syslog(LOG_WARNING, e->e_id,
 						  "AUTH failure (%s): %s (%d) %s",
@@ -972,7 +1474,12 @@ smtp(nullserver, d_flags, e)
 						  sasl_errstring(result, NULL,
 								 NULL),
 						  result,
+# if SASL >= 20000
+						  sasl_errdetail(conn));
+# else /* SASL >= 20000 */
 						  errstr == NULL ? "" : errstr);
+# endif /* SASL >= 20000 */
+				RESET_SASLCONN;
 				authenticating = SASL_NOT_AUTH;
 			}
 		}
@@ -989,21 +1496,13 @@ smtp(nullserver, d_flags, e)
 		if (LogLevel > 14)
 			sm_syslog(LOG_INFO, e->e_id, "<-- %s", inp);
 
-		if (e->e_id == NULL)
-			sm_setproctitle(true, e, "%s: %.80s",
-					CurSmtpClient, inp);
-		else
-			sm_setproctitle(true, e, "%s %s: %.80s",
-					qid_printname(e),
-					CurSmtpClient, inp);
-
 		/* break off command */
 		for (p = inp; isascii(*p) && isspace(*p); p++)
 			continue;
 		cmd = cmdbuf;
 		while (*p != '\0' &&
 		       !(isascii(*p) && isspace(*p)) &&
-		       cmd < &cmdbuf[sizeof cmdbuf - 2])
+		       cmd < &cmdbuf[sizeof(cmdbuf) - 2])
 			*cmd++ = *p++;
 		*cmd = '\0';
 
@@ -1023,12 +1522,31 @@ smtp(nullserver, d_flags, e)
 		/* check whether a "non-null" command has been used */
 		switch (c->cmd_code)
 		{
+#if SASL
+		  case CMDAUTH:
+			/* avoid information leak; take first two words? */
+			q = "AUTH";
+			break;
+#endif /* SASL */
+
 		  case CMDMAIL:
 		  case CMDEXPN:
 		  case CMDVRFY:
 		  case CMDETRN:
 			lognullconnection = false;
+			/* FALLTHROUGH */
+		  default:
+			q = inp;
+			break;
 		}
+
+		if (e->e_id == NULL)
+			sm_setproctitle(true, e, "%s: %.80s",
+					CurSmtpClient, q);
+		else
+			sm_setproctitle(true, e, "%s %s: %.80s",
+					qid_printname(e),
+					CurSmtpClient, q);
 
 		/*
 		**  Process command.
@@ -1046,6 +1564,7 @@ smtp(nullserver, d_flags, e)
 			  case CMDEHLO:
 			  case CMDNOOP:
 			  case CMDRSET:
+			  case CMDERROR:
 				/* process normally */
 				break;
 
@@ -1059,12 +1578,15 @@ smtp(nullserver, d_flags, e)
 			  default:
 #if MAXBADCOMMANDS > 0
 				/* theoretically this could overflow */
-				if (++n_badcmds > MAXBADCOMMANDS)
+				if (nullserver != NULL &&
+				    ++n_badcmds > MAXBADCOMMANDS)
 				{
-					delay *= 2;
-					if (delay >= MAXTIMEOUT)
-						delay = MAXTIMEOUT;
-					(void) sleep(delay);
+					message("421 4.7.0 %s Too many bad commands; closing connection",
+						MyHostName);
+
+					/* arrange to ignore send list */
+					e->e_sendqueue = NULL;
+					goto doquit;
 				}
 #endif /* MAXBADCOMMANDS > 0 */
 				if (nullserver != NULL)
@@ -1105,17 +1627,17 @@ smtp(nullserver, d_flags, e)
 			{
 				if (LogLevel > 9)
 					sm_syslog(LOG_INFO, e->e_id,
-						  "SMTP AUTH command (%.100s) from %.100s tempfailed (due to previous checks)",
+						  "SMTP AUTH command (%.100s) from %s tempfailed (due to previous checks)",
 						  p, CurSmtpClient);
-				usrerr("454 4.7.1 Please try again later");
+				usrerr("454 4.3.0 Please try again later");
 				break;
 			}
 
 			ismore = false;
 
 			/* crude way to avoid crack attempts */
-			(void) checksmtpattack(&n_auth, n_mechs + 1, true,
-					       "AUTH", e);
+			STOP_IF_ATTACK(checksmtpattack(&n_auth, n_mechs + 1,
+							true, "AUTH", e));
 
 			/* make sure mechanism (p) is a valid string */
 			for (q = p; *q != '\0' && isascii(*q); q++)
@@ -1132,20 +1654,46 @@ smtp(nullserver, d_flags, e)
 				}
 			}
 
+			if (*p == '\0')
+			{
+				message("501 5.5.2 AUTH mechanism must be specified");
+				break;
+			}
+
 			/* check whether mechanism is available */
 			if (iteminlist(p, mechlist, " ") == NULL)
 			{
-				message("503 5.3.3 AUTH mechanism %.32s not available",
+				message("504 5.3.3 AUTH mechanism %.32s not available",
 					p);
 				break;
 			}
 
-			if (ismore)
+			/*
+			**  RFC 2554 4.
+			**  Unlike a zero-length client answer to a
+			**  334 reply, a zero- length initial response
+			**  is sent as a single equals sign ("=").
+			*/
+
+			if (ismore && *q == '=' && *(q + 1) == '\0')
+			{
+				/* will be free()d, don't use in=""; */
+				in = xalloc(1);
+				*in = '\0';
+				inlen = 0;
+			}
+			else if (ismore)
 			{
 				/* could this be shorter? XXX */
+# if SASL >= 20000
+				in = xalloc(strlen(q) + 1);
+				result = sasl_decode64(q, strlen(q), in,
+						       strlen(q), &inlen);
+# else /* SASL >= 20000 */
 				in = sm_rpool_malloc(e->e_rpool, strlen(q));
 				result = sasl_decode64(q, strlen(q), in,
 						       &inlen);
+# endif /* SASL >= 20000 */
 				if (result != SASL_OK)
 				{
 					message("501 5.5.4 cannot BASE64 decode '%s'",
@@ -1156,6 +1704,9 @@ smtp(nullserver, d_flags, e)
 							  result, q);
 					/* start over? */
 					authenticating = SASL_NOT_AUTH;
+# if SASL >= 20000
+					sm_free(in);
+# endif /* SASL >= 20000 */
 					in = NULL;
 					inlen = 0;
 					break;
@@ -1168,12 +1719,19 @@ smtp(nullserver, d_flags, e)
 			}
 
 			/* see if that auth type exists */
+# if SASL >= 20000
+			result = sasl_server_start(conn, p, in, inlen,
+						   &out, &outlen);
+			if (in != NULL)
+				sm_free(in);
+# else /* SASL >= 20000 */
 			result = sasl_server_start(conn, p, in, inlen,
 						   &out, &outlen, &errstr);
+# endif /* SASL >= 20000 */
 
 			if (result != SASL_OK && result != SASL_CONTINUE)
 			{
-				message("500 5.7.0 authentication failed");
+				message("535 5.7.0 authentication failed");
 				if (LogLevel > 9)
 					sm_syslog(LOG_ERR, e->e_id,
 						  "AUTH failure (%s): %s (%d) %s",
@@ -1181,7 +1739,12 @@ smtp(nullserver, d_flags, e)
 						  sasl_errstring(result, NULL,
 								 NULL),
 						  result,
+# if SASL >= 20000
+						  sasl_errdetail(conn));
+# else /* SASL >= 20000 */
 						  errstr);
+# endif /* SASL >= 20000 */
+				RESET_SASLCONN;
 				break;
 			}
 			auth_type = newstr(p);
@@ -1209,12 +1772,16 @@ smtp(nullserver, d_flags, e)
 
 				/* start over? */
 				authenticating = SASL_NOT_AUTH;
+				RESET_SASLCONN;
 			}
 			else
 			{
 				message("334 %s", out2);
 				authenticating = SASL_PROC_AUTH;
 			}
+# if SASL >= 20000
+			sm_free(out2);
+# endif /* SASL >= 20000 */
 			break;
 #endif /* SASL */
 
@@ -1245,14 +1812,12 @@ smtp(nullserver, d_flags, e)
 			{
 				if (LogLevel > 9)
 					sm_syslog(LOG_INFO, e->e_id,
-						  "SMTP STARTTLS command (%.100s) from %.100s tempfailed (due to previous checks)",
+						  "SMTP STARTTLS command (%.100s) from %s tempfailed (due to previous checks)",
 						  p, CurSmtpClient);
-				usrerr("454 4.7.1 Please try again later");
+				usrerr("454 4.7.0 Please try again later");
 				break;
 			}
-# if _FFR_SMTP_SSL
   starttls:
-# endif /* _FFR_SMTP_SSL */
 # if TLS_NO_RSA
 			/*
 			**  XXX do we need a temp key ?
@@ -1275,11 +1840,9 @@ smtp(nullserver, d_flags, e)
 			else if ((srv_ssl = SSL_new(srv_ctx)) == NULL)
 			{
 				message("454 4.3.3 TLS not available: error generating SSL handle");
-# if _FFR_SMTP_SSL
+				if (LogLevel > 8)
+					tlslogerr("server");
 				goto tls_done;
-# else /* _FFR_SMTP_SSL */
-				break;
-# endif /* _FFR_SMTP_SSL */
 			}
 
 # if !TLS_VRFY_PER_CTX
@@ -1302,15 +1865,9 @@ smtp(nullserver, d_flags, e)
 				message("454 4.3.3 TLS not available: error set fd");
 				SSL_free(srv_ssl);
 				srv_ssl = NULL;
-# if _FFR_SMTP_SSL
 				goto tls_done;
-# else /* _FFR_SMTP_SSL */
-				break;
-# endif /* _FFR_SMTP_SSL */
 			}
-# if _FFR_SMTP_SSL
 			if (!smtps)
-# endif /* _FFR_SMTP_SSL */
 				message("220 2.0.0 Ready to start TLS");
 # if PIPELINING
 			(void) sm_io_flush(OutChannel, SM_TIME_DEFAULT);
@@ -1324,71 +1881,20 @@ smtp(nullserver, d_flags, e)
   ssl_retry:
 			if ((r = SSL_ACC(srv_ssl)) <= 0)
 			{
-				int i;
-				bool timedout;
-				time_t left;
-				time_t now = curtime();
-				struct timeval tv;
+				int i, ssl_err;
 
-				/* what to do in this case? */
-				i = SSL_get_error(srv_ssl, r);
+				ssl_err = SSL_get_error(srv_ssl, r);
+				i = tls_retry(srv_ssl, rfd, wfd, tlsstart,
+						TimeOuts.to_starttls, ssl_err,
+						"server");
+				if (i > 0)
+					goto ssl_retry;
 
-				/*
-				**  For SSL_ERROR_WANT_{READ,WRITE}:
-				**  There is no SSL record available yet
-				**  or there is only a partial SSL record
-				**  removed from the network (socket) buffer
-				**  into the SSL buffer. The SSL_accept will
-				**  only succeed when a full SSL record is
-				**  available (assuming a "real" error
-				**  doesn't happen). To handle when a "real"
-				**  error does happen the select is set for
-				**  exceptions too.
-				**  The connection may be re-negotiated
-				**  during this time so both read and write
-				**  "want errors" need to be handled.
-				**  A select() exception loops back so that
-				**  a proper SSL error message can be gotten.
-				*/
-
-				left = TimeOuts.to_starttls - (now - tlsstart);
-				timedout = left <= 0;
-				if (!timedout)
-				{
-					tv.tv_sec = left;
-					tv.tv_usec = 0;
-				}
-
-				/* XXX what about SSL_pending() ? */
-				if (!timedout && i == SSL_ERROR_WANT_READ)
-				{
-					fd_set ssl_maskr, ssl_maskx;
-
-					FD_ZERO(&ssl_maskr);
-					FD_SET(rfd, &ssl_maskr);
-					FD_ZERO(&ssl_maskx);
-					FD_SET(rfd, &ssl_maskx);
-					if (select(rfd + 1, &ssl_maskr, NULL,
-						   &ssl_maskx, &tv) > 0)
-						goto ssl_retry;
-				}
-				if (!timedout && i == SSL_ERROR_WANT_WRITE)
-				{
-					fd_set ssl_maskw, ssl_maskx;
-
-					FD_ZERO(&ssl_maskw);
-					FD_SET(wfd, &ssl_maskw);
-					FD_ZERO(&ssl_maskx);
-					FD_SET(rfd, &ssl_maskx);
-					if (select(wfd + 1, NULL, &ssl_maskw,
-						   &ssl_maskx, &tv) > 0)
-						goto ssl_retry;
-				}
 				if (LogLevel > 5)
 				{
 					sm_syslog(LOG_WARNING, NOQID,
-						  "STARTTLS=server, error: accept failed=%d, SSL_error=%d, timedout=%d",
-						  r, i, (int) timedout);
+						  "STARTTLS=server, error: accept failed=%d, SSL_error=%d, errno=%d, retry=%d",
+						  r, ssl_err, errno, i);
 					if (LogLevel > 8)
 						tlslogerr("server");
 				}
@@ -1423,8 +1929,9 @@ smtp(nullserver, d_flags, e)
 			QuickAbort = false;
 			if (rscheck("tls_client",
 				     macvalue(macid("{verify}"), e),
-				     "STARTTLS", e, true, true, 5,
-				     NULL, NOQID) != EX_OK ||
+				     "STARTTLS", e,
+				     RSF_RMCOMM|RSF_COUNT,
+				     5, NULL, NOQID, NULL) != EX_OK ||
 			    Errors > 0)
 			{
 				extern char MsgBuf[];
@@ -1442,15 +1949,32 @@ smtp(nullserver, d_flags, e)
 # if SASL
 			if (sasl_ok)
 			{
-				char *s;
+				int cipher_bits;
+				bool verified;
+				char *s, *v, *c;
 
 				s = macvalue(macid("{cipher_bits}"), e);
-				if (s != NULL && (ext_ssf.ssf = atoi(s)) > 0)
+				v = macvalue(macid("{verify}"), e);
+				c = macvalue(macid("{cert_subject}"), e);
+				verified = (v != NULL && strcmp(v, "OK") == 0);
+				if (s != NULL && (cipher_bits = atoi(s)) > 0)
 				{
-					ext_ssf.auth_id = macvalue(macid("{cert_subject}"),
-								   e);
-					sasl_ok = sasl_setprop(conn, SASL_SSF_EXTERNAL,
-							       &ext_ssf) == SASL_OK;
+#  if SASL >= 20000
+					ext_ssf = cipher_bits;
+					auth_id = verified ? c : NULL;
+					sasl_ok = ((sasl_setprop(conn,
+							SASL_SSF_EXTERNAL,
+							&ext_ssf) == SASL_OK) &&
+						   (sasl_setprop(conn,
+							SASL_AUTH_EXTERNAL,
+							auth_id) == SASL_OK));
+#  else /* SASL >= 20000 */
+					ext_ssf.ssf = cipher_bits;
+					ext_ssf.auth_id = verified ? c : NULL;
+					sasl_ok = sasl_setprop(conn,
+							SASL_SSF_EXTERNAL,
+							&ext_ssf) == SASL_OK;
+#  endif /* SASL >= 20000 */
 					mechlist = NULL;
 					if (sasl_ok)
 						n_mechs = saslmechs(conn,
@@ -1481,7 +2005,6 @@ smtp(nullserver, d_flags, e)
 				nullserver = "454 4.3.3 TLS not available: can't switch to encrypted layer";
 				syserr("STARTTLS: can't switch to encrypted layer");
 			}
-# if _FFR_SMTP_SSL
 		  tls_done:
 			if (smtps)
 			{
@@ -1490,7 +2013,6 @@ smtp(nullserver, d_flags, e)
 				else
 					goto doquit;
 			}
-# endif /* _FFR_SMTP_SSL */
 			break;
 #endif /* STARTTLS */
 
@@ -1509,8 +2031,8 @@ smtp(nullserver, d_flags, e)
 			}
 
 			/* avoid denial-of-service */
-			(void) checksmtpattack(&n_helo, MAXHELOCOMMANDS, true,
-					       "HELO/EHLO", e);
+			STOP_IF_ATTACK(checksmtpattack(&n_helo, MAXHELOCOMMANDS,
+							true, "HELO/EHLO", e));
 
 #if 0
 			/* RFC2821 4.1.4 allows duplicate HELO/EHLO */
@@ -1537,11 +2059,12 @@ smtp(nullserver, d_flags, e)
 				usrerr("501 Invalid domain name");
 				if (LogLevel > 9)
 					sm_syslog(LOG_INFO, CurEnv->e_id,
-						  "invalid domain name (too long) from %.100s",
+						  "invalid domain name (too long) from %s",
 						  CurSmtpClient);
 				break;
 			}
 
+			ok = true;
 			for (q = p; *q != '\0'; q++)
 			{
 				if (!isascii(*q))
@@ -1551,13 +2074,23 @@ smtp(nullserver, d_flags, e)
 				if (isspace(*q))
 				{
 					*q = '\0';
+
+					/* only complain if strict check */
+					ok = AllowBogusHELO;
+
+					/* allow trailing whitespace */
+					while (!ok && *++q != '\0' &&
+					       isspace(*q))
+						;
+					if (*q == '\0')
+						ok = true;
 					break;
 				}
-				if (strchr("[].-_#", *q) == NULL)
+				if (strchr("[].-_#:", *q) == NULL)
 					break;
 			}
 
-			if (*q == '\0')
+			if (*q == '\0' && ok)
 			{
 				q = "pleased to meet you";
 				sendinghost = sm_strdup_x(p);
@@ -1567,7 +2100,7 @@ smtp(nullserver, d_flags, e)
 				usrerr("501 Invalid domain name");
 				if (LogLevel > 9)
 					sm_syslog(LOG_INFO, CurEnv->e_id,
-						  "invalid domain name (%.100s) from %.100s",
+						  "invalid domain name (%s) from %.100s",
 						  p, CurSmtpClient);
 				break;
 			}
@@ -1576,7 +2109,7 @@ smtp(nullserver, d_flags, e)
 				q = "accepting invalid domain name";
 			}
 
-			if (gothello)
+			if (gothello || smtp.sm_gotmail)
 				CLEAR_STATE(cmdbuf);
 
 #if MILTER
@@ -1589,21 +2122,67 @@ smtp(nullserver, d_flags, e)
 				response = milter_helo(p, e, &state);
 				switch (state)
 				{
-				  case SMFIR_REPLYCODE:
-					nullserver = response;
-					smtp.sm_milterize = false;
-					break;
-
 				  case SMFIR_REJECT:
+					if (MilterLogLevel > 3)
+						sm_syslog(LOG_INFO, e->e_id,
+							  "Milter: helo=%s, reject=Command rejected",
+							  p);
 					nullserver = "Command rejected";
 					smtp.sm_milterize = false;
 					break;
 
 				  case SMFIR_TEMPFAIL:
+					if (MilterLogLevel > 3)
+						sm_syslog(LOG_INFO, e->e_id,
+							  "Milter: helo=%s, reject=%s",
+							  p, MSG_TEMPFAIL);
 					tempfail = true;
 					smtp.sm_milterize = false;
 					break;
+
+				  case SMFIR_REPLYCODE:
+					if (MilterLogLevel > 3)
+						sm_syslog(LOG_INFO, e->e_id,
+							  "Milter: helo=%s, reject=%s",
+							  p, response);
+					if (strncmp(response, "421 ", 4) != 0
+					    && strncmp(response, "421-", 4) != 0)
+					{
+						nullserver = newstr(response);
+						smtp.sm_milterize = false;
+						break;
+					}
+					/* FALLTHROUGH */
+
+				  case SMFIR_SHUTDOWN:
+					if (MilterLogLevel > 3 &&
+					    response == NULL)
+						sm_syslog(LOG_INFO, e->e_id,
+							  "Milter: helo=%s, reject=421 4.7.0 %s closing connection",
+							  p, MyHostName);
+					tempfail = true;
+					smtp.sm_milterize = false;
+					if (response != NULL)
+						usrerr(response);
+					else
+						message("421 4.7.0 %s closing connection",
+							MyHostName);
+					/* arrange to ignore send list */
+					e->e_sendqueue = NULL;
+					lognullconnection = false;
+					goto doquit;
 				}
+				if (response != NULL)
+					sm_free(response);
+
+				/*
+				**  If quarantining by a connect/ehlo action,
+				**  save between messages
+				*/
+
+				if (smtp.sm_quarmsg == NULL &&
+				    e->e_quarmsg != NULL)
+					smtp.sm_quarmsg = newstr(e->e_quarmsg);
 			}
 #endif /* MILTER */
 			gothello = true;
@@ -1632,7 +2211,6 @@ smtp(nullserver, d_flags, e)
 			**  Note: If you change this list,
 			**	  remember to update 'helpfile'
 			*/
-
 
 			message("250-ENHANCEDSTATUSCODES");
 #if PIPELINING
@@ -1663,7 +2241,8 @@ smtp(nullserver, d_flags, e)
 				message("250-AUTH %s", mechlist);
 #endif /* SASL */
 #if STARTTLS
-			if (tls_ok_srv && bitset(SRV_OFFER_TLS, features))
+			if (tls_ok_srv &&
+			    bitset(SRV_OFFER_TLS, features))
 				message("250-STARTTLS");
 #endif /* STARTTLS */
 			if (DeliverByMin > 0)
@@ -1708,7 +2287,7 @@ smtp(nullserver, d_flags, e)
 			{
 				if (LogLevel > 9)
 					sm_syslog(LOG_INFO, e->e_id,
-						  "SMTP MAIL command (%.100s) from %.100s tempfailed (due to previous checks)",
+						  "SMTP MAIL command (%.100s) from %s tempfailed (due to previous checks)",
 						  p, CurSmtpClient);
 				usrerr(MSG_TEMPFAIL);
 				break;
@@ -1756,6 +2335,8 @@ smtp(nullserver, d_flags, e)
 			n_badrcpts = 0;
 			macdefine(&e->e_macro, A_PERM, macid("{ntries}"), "0");
 			macdefine(&e->e_macro, A_PERM, macid("{nrcpts}"), "0");
+			macdefine(&e->e_macro, A_PERM, macid("{nbadrcpts}"),
+				"0");
 			e->e_flags |= EF_CLRQUEUE;
 			sm_setproctitle(true, e, "%s %s: %.80s",
 					qid_printname(e),
@@ -1764,7 +2345,10 @@ smtp(nullserver, d_flags, e)
 			/* do the processing */
 		    SM_TRY
 		    {
+			extern char *FullName;
+
 			QuickAbort = true;
+			SM_FREE_CLR(FullName);
 
 			/* must parse sender first */
 			delimptr = NULL;
@@ -1813,70 +2397,52 @@ smtp(nullserver, d_flags, e)
 					RealUserName);
 			}
 
+			/* reset to default value */
+			SevenBitInput = SevenBitInput_Saved;
+
 			/* now parse ESMTP arguments */
 			e->e_msgsize = 0;
 			addr = p;
-			argno = 0;
-			args[argno++] = p;
-			p = delimptr;
-			while (p != NULL && *p != '\0')
-			{
-				char *kp;
-				char *vp = NULL;
-				char *equal = NULL;
-
-				/* locate the beginning of the keyword */
-				SKIP_SPACE(p);
-				if (*p == '\0')
-					break;
-				kp = p;
-
-				/* skip to the value portion */
-				while ((isascii(*p) && isalnum(*p)) || *p == '-')
-					p++;
-				if (*p == '=')
-				{
-					equal = p;
-					*p++ = '\0';
-					vp = p;
-
-					/* skip to the end of the value */
-					while (*p != '\0' && *p != ' ' &&
-					       !(isascii(*p) && iscntrl(*p)) &&
-					       *p != '=')
-						p++;
-				}
-
-				if (*p != '\0')
-					*p++ = '\0';
-
-				if (tTd(19, 1))
-					sm_dprintf("MAIL: got arg %s=\"%s\"\n", kp,
-						vp == NULL ? "<null>" : vp);
-
-				mail_esmtp_args(kp, vp, e);
-				if (equal != NULL)
-					*equal = '=';
-				args[argno++] = kp;
-				if (argno >= MAXSMTPARGS - 1)
-					usrerr("501 5.5.4 Too many parameters");
-				if (Errors > 0)
-					sm_exc_raisenew_x(&EtypeQuickAbort, 1);
-			}
-			args[argno] = NULL;
+			parse_esmtp_args(e, NULL, p, delimptr, "MAIL", args,
+					mail_esmtp_args);
 			if (Errors > 0)
 				sm_exc_raisenew_x(&EtypeQuickAbort, 1);
+
+#if SASL
+# if _FFR_AUTH_PASSING
+			/* set the default AUTH= if the sender didn't */
+			if (e->e_auth_param == NULL)
+			{
+				/* XXX only do this for an MSA? */
+				e->e_auth_param = macvalue(macid("{auth_authen}"),
+							   e);
+				if (e->e_auth_param == NULL)
+					e->e_auth_param = "<>";
+
+				/*
+				**  XXX should we invoke Strust_auth now?
+				**  authorizing as the client that just
+				**  authenticated, so we'll trust implicitly
+				*/
+			}
+# endif /* _FFR_AUTH_PASSING */
+#endif /* SASL */
 
 			/* do config file checking of the sender */
 			macdefine(&e->e_macro, A_PERM,
 				macid("{addr_type}"), "e s");
+#if _FFR_MAIL_MACRO
+			/* make the "real" sender address available */
+			macdefine(&e->e_macro, A_TEMP, macid("{mail_from}"),
+				  e->e_from.q_paddr);
+#endif /* _FFR_MAIL_MACRO */
 			if (rscheck("check_mail", addr,
-				    NULL, e, true, true, 3, NULL,
-				    e->e_id) != EX_OK ||
+				    NULL, e, RSF_RMCOMM|RSF_COUNT, 3,
+				    NULL, e->e_id, NULL) != EX_OK ||
 			    Errors > 0)
 				sm_exc_raisenew_x(&EtypeQuickAbort, 1);
 			macdefine(&e->e_macro, A_PERM,
-				macid("{addr_type}"), NULL);
+				  macid("{addr_type}"), NULL);
 
 			if (MaxMessageSize > 0 &&
 			    (e->e_msgsize > MaxMessageSize ||
@@ -1951,6 +2517,72 @@ smtp(nullserver, d_flags, e)
 
 		  case CMDRCPT:		/* rcpt -- designate recipient */
 			DELAY_CONN("RCPT");
+			macdefine(&e->e_macro, A_PERM,
+				macid("{rcpt_mailer}"), NULL);
+			macdefine(&e->e_macro, A_PERM,
+				macid("{rcpt_host}"), NULL);
+			macdefine(&e->e_macro, A_PERM,
+				macid("{rcpt_addr}"), NULL);
+#if MILTER
+			(void) memset(&addr_st, '\0', sizeof(addr_st));
+			a = NULL;
+			milter_rcpt_added = false;
+			smtp.sm_e_nrcpts_orig = e->e_nrcpts;
+#endif
+#if _FFR_BADRCPT_SHUTDOWN
+			/*
+			**  hack to deal with hack, see below:
+			**  n_badrcpts is increased is limit is reached.
+			*/
+
+			n_badrcpts_adj = (BadRcptThrottle > 0 &&
+					  n_badrcpts > BadRcptThrottle &&
+					  LogLevel > 5)
+					  ? n_badrcpts - 1 : n_badrcpts;
+			if (BadRcptShutdown > 0 &&
+			    n_badrcpts_adj >= BadRcptShutdown &&
+			    (BadRcptShutdownGood == 0 ||
+			     smtp.sm_nrcpts == 0 ||
+			     (n_badrcpts_adj * 100 /
+			      (smtp.sm_nrcpts + n_badrcpts) >=
+			      BadRcptShutdownGood)))
+			{
+				if (LogLevel > 5)
+					sm_syslog(LOG_INFO, e->e_id,
+						  "%s: Possible SMTP RCPT flood, shutting down connection.",
+						  CurSmtpClient);
+				message("421 4.7.0 %s Too many bad recipients; closing connection",
+				MyHostName);
+
+				/* arrange to ignore any current send list */
+				e->e_sendqueue = NULL;
+				goto doquit;
+			}
+#endif /* _FFR_BADRCPT_SHUTDOWN */
+			if (BadRcptThrottle > 0 &&
+			    n_badrcpts >= BadRcptThrottle)
+			{
+				if (LogLevel > 5 &&
+				    n_badrcpts == BadRcptThrottle)
+				{
+					sm_syslog(LOG_INFO, e->e_id,
+						  "%s: Possible SMTP RCPT flood, throttling.",
+						  CurSmtpClient);
+
+					/* To avoid duplicated message */
+					n_badrcpts++;
+				}
+				NBADRCPTS;
+
+				/*
+				**  Don't use exponential backoff for now.
+				**  Some servers will open more connections
+				**  and actually overload the receiver even
+				**  more.
+				*/
+
+				(void) sleep(1);
+			}
 			if (!smtp.sm_gotmail)
 			{
 				usrerr("503 5.0.0 Need MAIL before RCPT");
@@ -1971,21 +2603,30 @@ smtp(nullserver, d_flags, e)
 				goto rcpt_done;
 			}
 
-			if (e->e_sendmode != SM_DELIVER)
+			if (e->e_sendmode != SM_DELIVER
+#if _FFR_DM_ONE
+			    && (NotFirstDelivery || SM_DM_ONE != e->e_sendmode)
+#endif /* _FFR_DM_ONE */
+			   )
 				e->e_flags |= EF_VRFYONLY;
 
 #if MILTER
 			/*
-			**  If the filter will be deleting recipients,
-			**  don't expand them at RCPT time (in the call
-			**  to recipient()).  If they are expanded, it
-			**  is impossible for removefromlist() to figure
-			**  out the expanded members of the original
-			**  recipient and mark them as QS_DONTSEND.
+			**  Do not expand recipients at RCPT time (in the call
+			**  to recipient()) if a milter can delete or reject
+			**  a RCPT.  If they are expanded, it is impossible
+			**  for removefromlist() to figure out the expanded
+			**  members of the original recipient and mark them
+			**  as QS_DONTSEND.
 			*/
 
-			if (milter_can_delrcpts())
+			if (!(smtp.sm_milterlist && smtp.sm_milterize &&
+			      !bitset(EF_DISCARD, e->e_flags)) &&
+			    (smtp.sm_milters.mis_flags &
+			     (MIS_FL_DEL_RCPT|MIS_FL_REJ_RCPT)) != 0)
 				e->e_flags |= EF_VRFYONLY;
+			milter_cmd_done = false;
+			milter_cmd_safe = false;
 #endif /* MILTER */
 
 			p = skipword(p, "to");
@@ -1997,29 +2638,6 @@ smtp(nullserver, d_flags, e)
 				      e, true);
 			macdefine(&e->e_macro, A_PERM,
 				macid("{addr_type}"), NULL);
-			if (BadRcptThrottle > 0 &&
-			    n_badrcpts >= BadRcptThrottle)
-			{
-				if (LogLevel > 5 &&
-				    n_badrcpts == BadRcptThrottle)
-				{
-					sm_syslog(LOG_INFO, e->e_id,
-						  "%.100s: Possible SMTP RCPT flood, throttling.",
-						  CurSmtpClient);
-
-					/* To avoid duplicated message */
-					n_badrcpts++;
-				}
-
-				/*
-				**  Don't use exponential backoff for now.
-				**  Some servers will open more connections
-				**  and actually overload the receiver even
-				**  more.
-				*/
-
-				(void) sleep(1);
-			}
 			if (Errors > 0)
 				goto rcpt_done;
 			if (a == NULL)
@@ -2056,99 +2674,110 @@ smtp(nullserver, d_flags, e)
 
 			/* now parse ESMTP arguments */
 			addr = p;
-			argno = 0;
-			args[argno++] = p;
-			p = delimptr;
-			while (p != NULL && *p != '\0')
-			{
-				char *kp;
-				char *vp = NULL;
-				char *equal = NULL;
-
-				/* locate the beginning of the keyword */
-				SKIP_SPACE(p);
-				if (*p == '\0')
-					break;
-				kp = p;
-
-				/* skip to the value portion */
-				while ((isascii(*p) && isalnum(*p)) || *p == '-')
-					p++;
-				if (*p == '=')
-				{
-					equal = p;
-					*p++ = '\0';
-					vp = p;
-
-					/* skip to the end of the value */
-					while (*p != '\0' && *p != ' ' &&
-					       !(isascii(*p) && iscntrl(*p)) &&
-					       *p != '=')
-						p++;
-				}
-
-				if (*p != '\0')
-					*p++ = '\0';
-
-				if (tTd(19, 1))
-					sm_dprintf("RCPT: got arg %s=\"%s\"\n", kp,
-						vp == NULL ? "<null>" : vp);
-
-				rcpt_esmtp_args(a, kp, vp, e);
-				if (equal != NULL)
-					*equal = '=';
-				args[argno++] = kp;
-				if (argno >= MAXSMTPARGS - 1)
-					usrerr("501 5.5.4 Too many parameters");
-				if (Errors > 0)
-					break;
-			}
-			args[argno] = NULL;
+			parse_esmtp_args(e, a, p, delimptr, "RCPT", args,
+					rcpt_esmtp_args);
 			if (Errors > 0)
 				goto rcpt_done;
+
+#if MILTER
+			/*
+			**  rscheck() can trigger an "exception"
+			**  in which case the execution continues at
+			**  SM_EXCEPT(exc, "[!F]*")
+			**  This means milter_cmd_safe is not set
+			**  and hence milter is not invoked.
+			**  Would it be "safe" to change that, i.e., use
+			**  milter_cmd_safe = true;
+			**  here so a milter is informed (if requested)
+			**  about RCPTs that are rejected by check_rcpt?
+			*/
+# if _FFR_MILTER_CHECK_REJECTIONS_TOO
+			milter_cmd_safe = true;
+# endif
+#endif
 
 			/* do config file checking of the recipient */
 			macdefine(&e->e_macro, A_PERM,
 				macid("{addr_type}"), "e r");
 			if (rscheck("check_rcpt", addr,
-				    NULL, e, true, true, 3, NULL,
-				    e->e_id) != EX_OK ||
+				    NULL, e, RSF_RMCOMM|RSF_COUNT, 3,
+				    NULL, e->e_id, p_addr_st) != EX_OK ||
 			    Errors > 0)
 				goto rcpt_done;
 			macdefine(&e->e_macro, A_PERM,
 				macid("{addr_type}"), NULL);
 
+			/* If discarding, don't bother to verify user */
+			if (bitset(EF_DISCARD, e->e_flags))
+				a->q_state = QS_VERIFIED;
 #if MILTER
+			milter_cmd_safe = true;
+#endif
+
+			/* save in recipient list after ESMTP mods */
+			a = recipient(a, &e->e_sendqueue, 0, e);
+			/* may trigger exception... */
+
+#if MILTER
+			milter_rcpt_added = true;
+#endif
+
+			if(!(Errors > 0) && QS_IS_BADADDR(a->q_state))
+			{
+				/* punt -- should keep message in ADDRESS.... */
+				usrerr("550 5.1.1 Addressee unknown");
+			}
+
+#if MILTER
+		rcpt_done:
 			if (smtp.sm_milterlist && smtp.sm_milterize &&
 			    !bitset(EF_DISCARD, e->e_flags))
 			{
 				char state;
 				char *response;
 
-				response = milter_envrcpt(args, e, &state);
+				/* how to get the error codes? */
+				if (Errors > 0)
+				{
+					macdefine(&e->e_macro, A_PERM,
+						macid("{rcpt_mailer}"),
+						"error");
+					if (a != NULL &&
+					    a->q_status != NULL &&
+					    a->q_rstatus != NULL)
+					{
+						macdefine(&e->e_macro, A_PERM,
+							macid("{rcpt_host}"),
+							a->q_status);
+						macdefine(&e->e_macro, A_PERM,
+							macid("{rcpt_addr}"),
+							a->q_rstatus);
+					}
+					else
+					{
+						if (addr_st.q_host != NULL)
+							macdefine(&e->e_macro,
+								A_PERM,
+								macid("{rcpt_host}"),
+								addr_st.q_host);
+						if (addr_st.q_user != NULL)
+							macdefine(&e->e_macro,
+								A_PERM,
+								macid("{rcpt_addr}"),
+								addr_st.q_user);
+					}
+				}
+
+				response = milter_envrcpt(args, e, &state,
+							Errors > 0);
+				milter_cmd_done = true;
 				MILTER_REPLY("to");
 			}
 #endif /* MILTER */
 
-			macdefine(&e->e_macro, A_PERM,
-				macid("{rcpt_mailer}"), NULL);
-			macdefine(&e->e_macro, A_PERM,
-				macid("{rcpt_relay}"), NULL);
-			macdefine(&e->e_macro, A_PERM,
-				macid("{rcpt_addr}"), NULL);
-			macdefine(&e->e_macro, A_PERM,
-				macid("{dsn_notify}"), NULL);
-			if (Errors > 0)
-				goto rcpt_done;
-
-			/* save in recipient list after ESMTP mods */
-			a = recipient(a, &e->e_sendqueue, 0, e);
-			if (Errors > 0)
-				goto rcpt_done;
-
 			/* no errors during parsing, but might be a duplicate */
 			e->e_to = a->q_paddr;
-			if (!QS_IS_BADADDR(a->q_state))
+			if (!(Errors > 0) && !QS_IS_BADADDR(a->q_state))
 			{
 				if (smtp.sm_nrcpts == 0)
 					initsys(e);
@@ -2157,27 +2786,91 @@ smtp(nullserver, d_flags, e)
 						" (will queue)" : "");
 				smtp.sm_nrcpts++;
 			}
-			else
-			{
-				/* punt -- should keep message in ADDRESS.... */
-				usrerr("550 5.1.1 Addressee unknown");
-			}
-		    rcpt_done:
+
+			/* Is this needed? */
+#if !MILTER
+		rcpt_done:
+#endif /* !MILTER */
+			macdefine(&e->e_macro, A_PERM,
+				macid("{rcpt_mailer}"), NULL);
+			macdefine(&e->e_macro, A_PERM,
+				macid("{rcpt_host}"), NULL);
+			macdefine(&e->e_macro, A_PERM,
+				macid("{rcpt_addr}"), NULL);
+			macdefine(&e->e_macro, A_PERM,
+				macid("{dsn_notify}"), NULL);
+
 			if (Errors > 0)
+			{
 				++n_badrcpts;
+				NBADRCPTS;
+			}
 		    }
 		    SM_EXCEPT(exc, "[!F]*")
 		    {
 			/* An exception occurred while processing RCPT */
 			e->e_flags &= ~(EF_FATALERRS|EF_PM_NOTIFY);
 			++n_badrcpts;
+			NBADRCPTS;
+#if MILTER
+			if (smtp.sm_milterlist && smtp.sm_milterize &&
+			    !bitset(EF_DISCARD, e->e_flags) &&
+			    !milter_cmd_done && milter_cmd_safe)
+			{
+				char state;
+				char *response;
+
+				macdefine(&e->e_macro, A_PERM,
+					macid("{rcpt_mailer}"), "error");
+
+				/* how to get the error codes? */
+				if (addr_st.q_host != NULL)
+					macdefine(&e->e_macro, A_PERM,
+						macid("{rcpt_host}"),
+						addr_st.q_host);
+				else if (a != NULL && a->q_status != NULL)
+					macdefine(&e->e_macro, A_PERM,
+						macid("{rcpt_host}"),
+						a->q_status);
+
+				if (addr_st.q_user != NULL)
+					macdefine(&e->e_macro, A_PERM,
+						macid("{rcpt_addr}"),
+						addr_st.q_user);
+				else if (a != NULL && a->q_rstatus != NULL)
+					macdefine(&e->e_macro, A_PERM,
+						macid("{rcpt_addr}"),
+						a->q_rstatus);
+
+				response = milter_envrcpt(args, e, &state,
+							true);
+				milter_cmd_done = true;
+				MILTER_REPLY("to");
+				macdefine(&e->e_macro, A_PERM,
+					macid("{rcpt_mailer}"), NULL);
+				macdefine(&e->e_macro, A_PERM,
+					macid("{rcpt_host}"), NULL);
+				macdefine(&e->e_macro, A_PERM,
+					macid("{rcpt_addr}"), NULL);
+			}
+			if (smtp.sm_milterlist && smtp.sm_milterize &&
+			    milter_rcpt_added && milter_cmd_done &&
+			    milter_cmd_fail)
+			{
+				(void) removefromlist(addr, &e->e_sendqueue, e);
+				milter_cmd_fail = false;
+				if (smtp.sm_e_nrcpts_orig < e->e_nrcpts)
+					e->e_nrcpts = smtp.sm_e_nrcpts_orig;
+			}
+#endif /* MILTER */
 		    }
 		    SM_END_TRY
 			break;
 
 		  case CMDDATA:		/* data -- text of mail */
 			DELAY_CONN("DATA");
-			smtp_data(&smtp, e);
+			if (!smtp_data(&smtp, e))
+				goto doquit;
 			break;
 
 		  case CMDRSET:		/* rset -- reset state */
@@ -2196,7 +2889,7 @@ smtp(nullserver, d_flags, e)
 			{
 				if (LogLevel > 9)
 					sm_syslog(LOG_INFO, e->e_id,
-						  "SMTP %s command (%.100s) from %.100s tempfailed (due to previous checks)",
+						  "SMTP %s command (%.100s) from %s tempfailed (due to previous checks)",
 						  vrfy ? "VRFY" : "EXPN",
 						  p, CurSmtpClient);
 
@@ -2206,9 +2899,10 @@ smtp(nullserver, d_flags, e)
 			}
 			wt = checksmtpattack(&n_verifies, MAXVRFYCOMMANDS,
 					     false, vrfy ? "VRFY" : "EXPN", e);
+			STOP_IF_ATTACK(wt);
 			previous = curtime();
-			if (bitset(vrfy ? PRIV_NOVRFY : PRIV_NOEXPN,
-				   PrivacyFlags))
+			if ((vrfy && bitset(PRIV_NOVRFY, PrivacyFlags)) ||
+			    (!vrfy && !bitset(SRV_OFFER_EXPN, features)))
 			{
 				if (vrfy)
 					message("252 2.5.2 Cannot VRFY user; try RCPT to attempt delivery (or try finger)");
@@ -2216,7 +2910,7 @@ smtp(nullserver, d_flags, e)
 					message("502 5.7.0 Sorry, we do not allow this operation");
 				if (LogLevel > 5)
 					sm_syslog(LOG_INFO, e->e_id,
-						  "%.100s: %s [rejected]",
+						  "%s: %s [rejected]",
 						  CurSmtpClient,
 						  shortenstring(inp, MAXSHORTSTR));
 				break;
@@ -2231,7 +2925,7 @@ smtp(nullserver, d_flags, e)
 			if (Errors > 0)
 				break;
 			if (LogLevel > 5)
-				sm_syslog(LOG_INFO, e->e_id, "%.100s: %s",
+				sm_syslog(LOG_INFO, e->e_id, "%s: %s",
 					  CurSmtpClient,
 					  shortenstring(inp, MAXSHORTSTR));
 		    SM_TRY
@@ -2250,8 +2944,8 @@ smtp(nullserver, d_flags, e)
 			{
 				/* do config file checking of the address */
 				if (rscheck(vrfy ? "check_vrfy" : "check_expn",
-					    p, NULL, e, true, false, 3, NULL,
-					    NOQID) != EX_OK ||
+					    p, NULL, e, RSF_RMCOMM,
+					    3, NULL, NOQID, NULL) != EX_OK ||
 				    Errors > 0)
 					sm_exc_raisenew_x(&EtypeQuickAbort, 1);
 				(void) sendtolist(p, NULLADDR, &vrfyqueue, 0, e);
@@ -2301,13 +2995,17 @@ smtp(nullserver, d_flags, e)
 
 		  case CMDETRN:		/* etrn -- force queue flush */
 			DELAY_CONN("ETRN");
-			if (!bitset(SRV_OFFER_ETRN, features) || UseMSP)
+
+			/* Don't leak queue information via debug flags */
+			if (!bitset(SRV_OFFER_ETRN, features) || UseMSP ||
+			    (RealUid != 0 && RealUid != TrustedUid &&
+			     OpMode == MD_SMTP))
 			{
 				/* different message for MSA ? */
 				message("502 5.7.0 Sorry, we do not allow this operation");
 				if (LogLevel > 5)
 					sm_syslog(LOG_INFO, e->e_id,
-						  "%.100s: %s [rejected]",
+						  "%s: %s [rejected]",
 						  CurSmtpClient,
 						  shortenstring(inp, MAXSHORTSTR));
 				break;
@@ -2316,7 +3014,7 @@ smtp(nullserver, d_flags, e)
 			{
 				if (LogLevel > 9)
 					sm_syslog(LOG_INFO, e->e_id,
-						  "SMTP ETRN command (%.100s) from %.100s tempfailed (due to previous checks)",
+						  "SMTP ETRN command (%.100s) from %s tempfailed (due to previous checks)",
 						  p, CurSmtpClient);
 				usrerr(MSG_TEMPFAIL);
 				break;
@@ -2329,8 +3027,8 @@ smtp(nullserver, d_flags, e)
 			}
 
 			/* crude way to avoid denial-of-service attacks */
-			(void) checksmtpattack(&n_etrn, MAXETRNCOMMANDS, true,
-					     "ETRN", e);
+			STOP_IF_ATTACK(checksmtpattack(&n_etrn, MAXETRNCOMMANDS,
+							true, "ETRN", e));
 
 			/*
 			**  Do config file checking of the parameter.
@@ -2342,30 +3040,36 @@ smtp(nullserver, d_flags, e)
 			**  available to make a decision.
 			*/
 
-			if (rscheck("check_etrn", p, NULL, e, true, false, 3,
-				    NULL, NOQID) != EX_OK || Errors > 0)
+			if (rscheck("check_etrn", p, NULL, e,
+				    RSF_RMCOMM, 3, NULL, NOQID, NULL)
+								!= EX_OK ||
+			    Errors > 0)
 				break;
 
 			if (LogLevel > 5)
 				sm_syslog(LOG_INFO, e->e_id,
-					  "%.100s: ETRN %s", CurSmtpClient,
+					  "%s: ETRN %s", CurSmtpClient,
 					  shortenstring(p, MAXSHORTSTR));
 
 			id = p;
 			if (*id == '#')
 			{
-				int wgrp;
+				int i, qgrp;
 
 				id++;
-				wgrp = name2qid(id);
-				if (!ISVALIDQGRP(wgrp))
+				qgrp = name2qid(id);
+				if (!ISVALIDQGRP(qgrp))
 				{
 					usrerr("459 4.5.4 Queue %s unknown",
 					       id);
 					break;
 				}
-				ok = run_work_group(wgrp, true, false,
-						    false, true);
+				for (i = 0; i < NumQueue && Queue[i] != NULL;
+				     i++)
+					Queue[i]->qg_nextrun = (time_t) -1;
+				Queue[qgrp]->qg_nextrun = 0;
+				ok = run_work_group(Queue[qgrp]->qg_wgrp,
+						    RWG_FORK|RWG_FORCE);
 				if (ok && Errors == 0)
 					message("250 2.0.0 Queuing for queue group %s started", id);
 				break;
@@ -2400,8 +3104,8 @@ smtp(nullserver, d_flags, e)
 
 		  case CMDNOOP:		/* noop -- do nothing */
 			DELAY_CONN("NOOP");
-			(void) checksmtpattack(&n_noop, MAXNOOPCOMMANDS, true,
-					       "NOOP", e);
+			STOP_IF_ATTACK(checksmtpattack(&n_noop, MaxNOOPCommands,
+							true, "NOOP", e));
 			message("250 2.0.0 OK");
 			break;
 
@@ -2447,7 +3151,8 @@ doquit:
 				logsender(e, NULL);
 			e->e_flags &= ~EF_LOGSENDER;
 
-			if (lognullconnection && LogLevel > 5)
+			if (lognullconnection && LogLevel > 5 &&
+			    nullserver == NULL)
 			{
 				char *d;
 
@@ -2462,27 +3167,31 @@ doquit:
 				*/
 
 				sm_syslog(LOG_INFO, e->e_id,
-					  "%.100s did not issue MAIL/EXPN/VRFY/ETRN during connection to %s",
+					  "%s did not issue MAIL/EXPN/VRFY/ETRN during connection to %s",
 					  CurSmtpClient, d);
 			}
-#if PROFILING
-			return;
-#endif /* PROFILING */
-			finis(true, ExitStat);
+			if (tTd(93, 100))
+			{
+				/* return to handle next connection */
+				return;
+			}
+			finis(true, true, ExitStat);
 			/* NOTREACHED */
+
+			/* just to avoid bogus warning from some compilers */
+			exit(EX_OSERR);
 
 		  case CMDVERB:		/* set verbose mode */
 			DELAY_CONN("VERB");
-			if (bitset(PRIV_NOEXPN, PrivacyFlags) ||
-			    !bitset(SRV_OFFER_VERB, features) ||
-			    bitset(PRIV_NOVERB, PrivacyFlags))
+			if (!bitset(SRV_OFFER_EXPN, features) ||
+			    !bitset(SRV_OFFER_VERB, features))
 			{
 				/* this would give out the same info */
 				message("502 5.7.0 Verbose unavailable");
 				break;
 			}
-			(void) checksmtpattack(&n_noop, MAXNOOPCOMMANDS, true,
-					       "VERB", e);
+			STOP_IF_ATTACK(checksmtpattack(&n_noop, MaxNOOPCommands,
+							true, "VERB", e));
 			Verbose = 1;
 			set_delivery_mode(SM_DELIVER, e);
 			message("250 2.0.0 Verbose mode");
@@ -2492,11 +3201,11 @@ doquit:
 		  case CMDDBGQSHOW:	/* show queues */
 			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
 					     "Send Queue=");
-			printaddr(e->e_sendqueue, true);
+			printaddr(smioout, e->e_sendqueue, true);
 			break;
 
 		  case CMDDBGDEBUG:	/* set debug mode */
-			tTsetup(tTdvect, sizeof tTdvect, "0-99.1");
+			tTsetup(tTdvect, sizeof(tTdvect), "0-99.1");
 			tTflag(p);
 			message("200 2.0.0 Debug set");
 			break;
@@ -2509,7 +3218,7 @@ doquit:
 			DELAY_CONN("Bogus");
 			if (LogLevel > 0)
 				sm_syslog(LOG_CRIT, e->e_id,
-					  "\"%s\" command from %.100s (%.100s)",
+					  "\"%s\" command from %s (%.100s)",
 					  c->cmd_name, CurSmtpClient,
 					  anynet_ntoa(&RealHostAddr));
 			/* FALLTHROUGH */
@@ -2518,6 +3227,7 @@ doquit:
 #if MAXBADCOMMANDS > 0
 			if (++n_badcmds > MAXBADCOMMANDS)
 			{
+  stopattack:
 				message("421 4.7.0 %s Too many bad commands; closing connection",
 					MyHostName);
 
@@ -2526,6 +3236,29 @@ doquit:
 				goto doquit;
 			}
 #endif /* MAXBADCOMMANDS > 0 */
+
+#if MILTER && SMFI_VERSION > 2
+			if (smtp.sm_milterlist && smtp.sm_milterize &&
+			    !bitset(EF_DISCARD, e->e_flags))
+			{
+				char state;
+				char *response;
+
+				if (MilterLogLevel > 9)
+					sm_syslog(LOG_INFO, e->e_id,
+						"Sending \"%s\" to Milter", inp);
+				response = milter_unknown(inp, e, &state);
+				MILTER_REPLY("unknown");
+				if (state == SMFIR_REPLYCODE ||
+				    state == SMFIR_REJECT ||
+				    state == SMFIR_TEMPFAIL ||
+				    state == SMFIR_SHUTDOWN)
+				{
+					/* MILTER_REPLY already gave an error */
+					break;
+				}
+			}
+#endif /* MILTER && SMFI_VERSION > 2 */
 
 			usrerr("500 5.5.1 Command unrecognized: \"%s\"",
 			       shortenstring(inp, MAXSHORTSTR));
@@ -2557,7 +3290,7 @@ doquit:
 	    SM_END_TRY
 	}
 }
-/*
+/*
 **  SMTP_DATA -- implement the SMTP DATA command.
 **
 **	Parameters:
@@ -2565,13 +3298,13 @@ doquit:
 **		e -- envelope.
 **
 **	Returns:
-**		none.
+**		true iff SMTP session can continue.
 **
 **	Side Effects:
 **		possibly sends message.
 */
 
-static void
+static bool
 smtp_data(smtp, e)
 	SMTP_T *smtp;
 	ENVELOPE *e;
@@ -2581,26 +3314,104 @@ smtp_data(smtp, e)
 #endif /* MILTER */
 	bool aborting;
 	bool doublequeue;
+	bool rv = true;
 	ADDRESS *a;
 	ENVELOPE *ee;
 	char *id;
+	char *oldid;
+	unsigned int features;
 	char buf[32];
 
 	SmtpPhase = "server DATA";
 	if (!smtp->sm_gotmail)
 	{
 		usrerr("503 5.0.0 Need MAIL command");
-		return;
+		return true;
 	}
 	else if (smtp->sm_nrcpts <= 0)
 	{
 		usrerr("503 5.0.0 Need RCPT (recipient)");
-		return;
+		return true;
 	}
-	(void) sm_snprintf(buf, sizeof buf, "%u", smtp->sm_nrcpts);
+	(void) sm_snprintf(buf, sizeof(buf), "%u", smtp->sm_nrcpts);
 	if (rscheck("check_data", buf, NULL, e,
-		    true, false, 3, NULL, e->e_id) != EX_OK)
-		return;
+		    RSF_RMCOMM|RSF_UNSTRUCTURED|RSF_COUNT, 3, NULL,
+		    e->e_id, NULL) != EX_OK)
+		return true;
+
+#if MILTER && SMFI_VERSION > 3
+	if (smtp->sm_milterlist && smtp->sm_milterize &&
+	    !bitset(EF_DISCARD, e->e_flags))
+	{
+		char state;
+		char *response;
+		int savelogusrerrs = LogUsrErrs;
+
+		response = milter_data_cmd(e, &state);
+		switch (state)
+		{
+		  case SMFIR_REPLYCODE:
+			if (MilterLogLevel > 3)
+			{
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: cmd=data, reject=%s",
+					  response);
+				LogUsrErrs = false;
+			}
+			usrerr(response);
+			if (strncmp(response, "421 ", 4) == 0
+			    || strncmp(response, "421-", 4) == 0)
+			{
+				e->e_sendqueue = NULL;
+				return false;
+			}
+			return true;
+
+		  case SMFIR_REJECT:
+			if (MilterLogLevel > 3)
+			{
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: cmd=data, reject=550 5.7.1 Command rejected");
+				LogUsrErrs = false;
+			}
+			usrerr("550 5.7.1 Command rejected");
+			return true;
+
+		  case SMFIR_DISCARD:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: cmd=data, discard");
+			e->e_flags |= EF_DISCARD;
+			break;
+
+		  case SMFIR_TEMPFAIL:
+			if (MilterLogLevel > 3)
+			{
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: cmd=data, reject=%s",
+					  MSG_TEMPFAIL);
+				LogUsrErrs = false;
+			}
+			usrerr(MSG_TEMPFAIL);
+			return true;
+
+		  case SMFIR_SHUTDOWN:
+			if (MilterLogLevel > 3)
+			{
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: cmd=data, reject=421 4.7.0 %s closing connection",
+					  MyHostName);
+				LogUsrErrs = false;
+			}
+			usrerr("421 4.7.0 %s closing connection", MyHostName);
+			e->e_sendqueue = NULL;
+			return false;
+		}
+		LogUsrErrs = savelogusrerrs;
+		if (response != NULL)
+			sm_free(response); /* XXX */
+	}
+#endif /* MILTER && SMFI_VERSION > 3 */
 
 	/* put back discard bit */
 	if (smtp->sm_discard)
@@ -2628,23 +3439,15 @@ smtp_data(smtp, e)
 	SmtpPhase = "collect";
 	buffer_errors();
 
-#if _FFR_ADAPTIVE_EOL
-	/* triggers error in collect, disabled for now */
-	if (smtp->sm_crlf)
-		e->e_flags |= EF_NL_NOT_EOL;
-#endif /* _FFR_ADAPTIVE_EOL */
-
-	collect(InChannel, true, NULL, e);
+	collect(InChannel, true, NULL, e, true);
 
 	/* redefine message size */
-	(void) sm_snprintf(buf, sizeof buf, "%ld", e->e_msgsize);
+	(void) sm_snprintf(buf, sizeof(buf), "%ld", e->e_msgsize);
 	macdefine(&e->e_macro, A_TEMP, macid("{msg_size}"), buf);
 
-#if _FFR_CHECK_EOM
 	/* rscheck() will set Errors or EF_DISCARD if it trips */
-	(void) rscheck("check_eom", buf, NULL, e, false,
-		       true, 3, NULL, e->e_id);
-#endif /* _FFR_CHECK_EOM */
+	(void) rscheck("check_eom", buf, NULL, e, RSF_UNSTRUCTURED|RSF_COUNT,
+		       3, NULL, e->e_id, NULL);
 
 #if MILTER
 	milteraccept = true;
@@ -2659,26 +3462,47 @@ smtp_data(smtp, e)
 		switch (state)
 		{
 		  case SMFIR_REPLYCODE:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: data, reject=%s",
+					  response);
 			milteraccept = false;
 			usrerr(response);
 			break;
 
 		  case SMFIR_REJECT:
 			milteraccept = false;
-			if (MilterLogLevel > 8)
+			if (MilterLogLevel > 3)
 				sm_syslog(LOG_INFO, e->e_id,
-					  "Milter: reject, message data");
+					  "Milter: data, reject=554 5.7.1 Command rejected");
 			usrerr("554 5.7.1 Command rejected");
 			break;
 
 		  case SMFIR_DISCARD:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: data, discard");
 			milteraccept = false;
 			e->e_flags |= EF_DISCARD;
 			break;
 
 		  case SMFIR_TEMPFAIL:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: data, reject=%s",
+					  MSG_TEMPFAIL);
 			milteraccept = false;
 			usrerr(MSG_TEMPFAIL);
+			break;
+
+		  case SMFIR_SHUTDOWN:
+			if (MilterLogLevel > 3)
+				sm_syslog(LOG_INFO, e->e_id,
+					  "Milter: data, reject=421 4.7.0 %s closing connection",
+					  MyHostName);
+			milteraccept = false;
+			usrerr("421 4.7.0 %s closing connection", MyHostName);
+			rv = false;
 			break;
 		}
 		if (response != NULL)
@@ -2686,7 +3510,7 @@ smtp_data(smtp, e)
 	}
 
 	/* Milter may have changed message size */
-	(void) sm_snprintf(buf, sizeof buf, "%ld", e->e_msgsize);
+	(void) sm_snprintf(buf, sizeof(buf), "%ld", e->e_msgsize);
 	macdefine(&e->e_macro, A_TEMP, macid("{msg_size}"), buf);
 
 	/* abort message filters that didn't get the body & log msg is OK */
@@ -2696,7 +3520,86 @@ smtp_data(smtp, e)
 		if (milteraccept && MilterLogLevel > 9)
 			sm_syslog(LOG_INFO, e->e_id, "Milter accept: message");
 	}
+
+	/*
+	**  If SuperSafe is SAFE_REALLY_POSTMILTER, and we don't have milter or
+	**  milter accepted message, sync it now
+	**
+	**  XXX This is almost a copy of the code in collect(): put it into
+	**	a function that is called from both places?
+	*/
+
+	if (milteraccept && SuperSafe == SAFE_REALLY_POSTMILTER)
+	{
+		int afd;
+		SM_FILE_T *volatile df;
+		char *dfname;
+
+		df = e->e_dfp;
+		dfname = queuename(e, DATAFL_LETTER);
+		if (sm_io_setinfo(df, SM_BF_COMMIT, NULL) < 0
+		    && errno != EINVAL)
+		{
+			int save_errno;
+
+			save_errno = errno;
+			if (save_errno == EEXIST)
+			{
+				struct stat st;
+				int dfd;
+
+				if (stat(dfname, &st) < 0)
+					st.st_size = -1;
+				errno = EEXIST;
+				syserr("@collect: bfcommit(%s): already on disk, size=%ld",
+				       dfname, (long) st.st_size);
+				dfd = sm_io_getinfo(df, SM_IO_WHAT_FD, NULL);
+				if (dfd >= 0)
+					dumpfd(dfd, true, true);
+			}
+			errno = save_errno;
+			dferror(df, "bfcommit", e);
+			flush_errors(true);
+			finis(save_errno != EEXIST, true, ExitStat);
+		}
+		else if ((afd = sm_io_getinfo(df, SM_IO_WHAT_FD, NULL)) < 0)
+		{
+			dferror(df, "sm_io_getinfo", e);
+			flush_errors(true);
+			finis(true, true, ExitStat);
+			/* NOTREACHED */
+		}
+		else if (fsync(afd) < 0)
+		{
+			dferror(df, "fsync", e);
+			flush_errors(true);
+			finis(true, true, ExitStat);
+			/* NOTREACHED */
+		}
+		else if (sm_io_close(df, SM_TIME_DEFAULT) < 0)
+		{
+			dferror(df, "sm_io_close", e);
+			flush_errors(true);
+			finis(true, true, ExitStat);
+			/* NOTREACHED */
+		}
+
+		/* Now reopen the df file */
+		e->e_dfp = sm_io_open(SmFtStdio, SM_TIME_DEFAULT, dfname,
+					SM_IO_RDONLY, NULL);
+		if (e->e_dfp == NULL)
+		{
+			/* we haven't acked receipt yet, so just chuck this */
+			syserr("@Cannot reopen %s", dfname);
+			finis(true, true, ExitStat);
+			/* NOTREACHED */
+		}
+	}
 #endif /* MILTER */
+
+	/* Check if quarantining stats should be updated */
+	if (e->e_quarmsg != NULL)
+		markstats(e, NULL, STATS_QUARANTINE);
 
 	/*
 	**  If a header/body check (header checks or milter)
@@ -2709,13 +3612,26 @@ smtp_data(smtp, e)
 		doublequeue = false;
 
 	aborting = Errors > 0;
-	if (!aborting)
-		aborting = !split_by_recipient(e);
+	if (!(aborting || bitset(EF_DISCARD, e->e_flags)) &&
+	    (QueueMode == QM_QUARANTINE || e->e_quarmsg == NULL) &&
+	    !split_by_recipient(e))
+		aborting = bitset(EF_FATALERRS, e->e_flags);
 
 	if (aborting)
 	{
+		ADDRESS *q;
+
 		/* Log who the mail would have gone to */
 		logundelrcpts(e, e->e_message, 8, false);
+
+		/*
+		**  If something above refused the message, we still haven't
+		**  accepted responsibility for it.  Don't send DSNs.
+		*/
+
+		for (q = e->e_sendqueue; q != NULL; q = q->q_next)
+			q->q_flags &= ~Q_PINGFLAGS;
+
 		flush_errors(true);
 		buffer_errors();
 		goto abortmessage;
@@ -2777,14 +3693,47 @@ smtp_data(smtp, e)
 		}
 		else
 		{
+			int mode;
+
 			/* send to all recipients */
-			sendall(ee, SM_DEFAULT);
+			mode = SM_DEFAULT;
+#if _FFR_DM_ONE
+			if (SM_DM_ONE == e->e_sendmode)
+			{
+				if (NotFirstDelivery)
+				{
+					mode = SM_QUEUE;
+					e->e_sendmode = SM_QUEUE;
+				}
+				else
+				{
+					mode = SM_FORK;
+					NotFirstDelivery = true;
+				}
+			}
+#endif /* _FFR_DM_ONE */
+			sendall(ee, mode);
 		}
 		ee->e_to = NULL;
 	}
 
+	/* put back id for SMTP logging in putoutmsg() */
+	oldid = CurEnv->e_id;
+	CurEnv->e_id = id;
+
 	/* issue success message */
+#if _FFR_MSG_ACCEPT
+	if (MessageAccept != NULL && *MessageAccept != '\0')
+	{
+		char msg[MAXLINE];
+
+		expand(MessageAccept, msg, sizeof(msg), e);
+		message("250 2.0.0 %s", msg);
+	}
+	else
+#endif /* _FFR_MSG_ACCEPT */
 	message("250 2.0.0 %s Message accepted for delivery", id);
+	CurEnv->e_id = oldid;
 
 	/* if we just queued, poke it */
 	if (doublequeue)
@@ -2797,6 +3746,12 @@ smtp_data(smtp, e)
 			if (WILL_BE_QUEUED(ee->e_sendmode))
 				continue;
 			if (shouldqueue(ee->e_msgpriority, ee->e_ctime))
+			{
+				ee->e_sendmode = SM_QUEUE;
+				continue;
+			}
+			else if (QueueMode != QM_QUARANTINE &&
+				 ee->e_quarmsg != NULL)
 			{
 				ee->e_sendmode = SM_QUEUE;
 				continue;
@@ -2845,24 +3800,40 @@ smtp_data(smtp, e)
 	{
 		for (ee = e; ee != NULL; ee = ee->e_sibling)
 		{
+			if (!doublequeue &&
+			    QueueMode != QM_QUARANTINE &&
+			    ee->e_quarmsg != NULL)
+			{
+				dropenvelope(ee, true, false);
+				continue;
+			}
 			if (WILL_BE_QUEUED(ee->e_sendmode))
 				dropenvelope(ee, true, false);
 		}
 	}
-	sm_rpool_free(e->e_rpool);
-
-	/*
-	**  At this point, e == &MainEnvelope, but if we did splitting,
-	**  then CurEnv may point to an envelope structure that was just
-	**  freed with the rpool.  So reset CurEnv *before* calling
-	**  newenvelope.
-	*/
 
 	CurEnv = e;
+	features = e->e_features;
+	sm_rpool_free(e->e_rpool);
 	newenvelope(e, e, sm_rpool_new_x(NULL));
 	e->e_flags = BlankEnvelope.e_flags;
+	e->e_features = features;
+
+	/* restore connection quarantining */
+	if (smtp->sm_quarmsg == NULL)
+	{
+		e->e_quarmsg = NULL;
+		macdefine(&e->e_macro, A_PERM, macid("{quarantine}"), "");
+	}
+	else
+	{
+		e->e_quarmsg = sm_rpool_strdup_x(e->e_rpool, smtp->sm_quarmsg);
+		macdefine(&e->e_macro, A_PERM,
+			  macid("{quarantine}"), e->e_quarmsg);
+	}
+	return rv;
 }
-/*
+/*
 **  LOGUNDELRCPTS -- log undelivered (or all) recipients.
 **
 **	Parameters:
@@ -2904,7 +3875,7 @@ logundelrcpts(e, msg, level, all)
 	}
 	e->e_to = NULL;
 }
-/*
+/*
 **  CHECKSMTPATTACK -- check for denial-of-service attack by repetition
 **
 **	Parameters:
@@ -2916,7 +3887,9 @@ logundelrcpts(e, msg, level, all)
 **		e -- the current envelope.
 **
 **	Returns:
-**		time to wait.
+**		time to wait,
+**		STOP_ATTACK if twice as many commands as allowed and
+**			MaxChildren > 0.
 **
 **	Side Effects:
 **		Slows down if we seem to be under attack.
@@ -2925,7 +3898,7 @@ logundelrcpts(e, msg, level, all)
 static time_t
 checksmtpattack(pcounter, maxcount, waitnow, cname, e)
 	volatile unsigned int *pcounter;
-	int maxcount;
+	unsigned int maxcount;
 	bool waitnow;
 	char *cname;
 	ENVELOPE *e;
@@ -2935,31 +3908,38 @@ checksmtpattack(pcounter, maxcount, waitnow, cname, e)
 
 	if (++(*pcounter) >= maxcount)
 	{
+		unsigned int shift;
 		time_t s;
 
 		if (*pcounter == maxcount && LogLevel > 5)
 		{
 			sm_syslog(LOG_INFO, e->e_id,
-				  "%.100s: possible SMTP attack: command=%.40s, count=%u",
+				  "%s: possible SMTP attack: command=%.40s, count=%u",
 				  CurSmtpClient, cname, *pcounter);
 		}
-		s = 1 << (*pcounter - maxcount);
-		if (s >= MAXTIMEOUT || s <= 0)
+		shift = *pcounter - maxcount;
+		s = 1 << shift;
+		if (shift > MAXSHIFT || s >= MAXTIMEOUT || s <= 0)
 			s = MAXTIMEOUT;
+
+#define IS_ATTACK(s)	((MaxChildren > 0 && *pcounter >= maxcount * 2)	\
+				? STOP_ATTACK : (time_t) s)
 
 		/* sleep at least 1 second before returning */
 		(void) sleep(*pcounter / maxcount);
 		s -= *pcounter / maxcount;
-		if (waitnow)
+		if (s >= MAXTIMEOUT || s < 0)
+			s = MAXTIMEOUT;
+		if (waitnow && s > 0)
 		{
 			(void) sleep(s);
-			return 0;
+			return IS_ATTACK(0);
 		}
-		return s;
+		return IS_ATTACK(s);
 	}
 	return (time_t) 0;
 }
-/*
+/*
 **  SETUP_SMTPD_IO -- setup I/O fd correctly for the SMTP server
 **
 **	Parameters:
@@ -3035,7 +4015,7 @@ setup_smtpd_io()
 		(void) fcntl(inchfd, F_SETFL, inmode);
 	}
 }
-/*
+/*
 **  SKIPWORD -- skip a fixed word.
 **
 **	Parameters:
@@ -3086,10 +4066,55 @@ skipword(p, w)
 
 	return p;
 }
-/*
+
+/*
+**  RESET_MAIL_ESMTP_ARGS -- process ESMTP arguments from MAIL line
+**
+**	Parameters:
+**		e -- the envelope.
+**
+**	Returns:
+**		none.
+*/
+
+void
+reset_mail_esmtp_args(e)
+	ENVELOPE *e;
+{
+	/* "size": no reset */
+
+	/* "body" */
+	SevenBitInput = SevenBitInput_Saved;
+	e->e_bodytype = NULL;
+
+	/* "envid" */
+	e->e_envid = NULL;
+	macdefine(&e->e_macro, A_PERM, macid("{dsn_envid}"), NULL);
+
+	/* "ret" */
+	e->e_flags &= ~(EF_RET_PARAM|EF_NO_BODY_RETN);
+	macdefine(&e->e_macro, A_TEMP, macid("{dsn_ret}"), NULL);
+
+#if SASL
+	/* "auth" */
+	macdefine(&e->e_macro, A_TEMP, macid("{auth_author}"), NULL);
+	e->e_auth_param = "";
+# if _FFR_AUTH_PASSING
+	macdefine(&BlankEnvelope.e_macro, A_PERM,
+				  macid("{auth_author}"), NULL);
+# endif /* _FFR_AUTH_PASSING */
+#endif /* SASL */
+
+	/* "by" */
+	e->e_deliver_by = 0;
+	e->e_dlvr_flag = 0;
+}
+
+/*
 **  MAIL_ESMTP_ARGS -- process ESMTP arguments from MAIL line
 **
 **	Parameters:
+**		a -- address (unused, for compatibility with rcpt_esmtp_args)
 **		kp -- the parameter key.
 **		vp -- the value of that parameter.
 **		e -- the envelope.
@@ -3098,8 +4123,9 @@ skipword(p, w)
 **		none.
 */
 
-static void
-mail_esmtp_args(kp, vp, e)
+void
+mail_esmtp_args(a, kp, vp, e)
+	ADDRESS *a;
 	char *kp;
 	char *vp;
 	ENVELOPE *e;
@@ -3112,10 +4138,16 @@ mail_esmtp_args(kp, vp, e)
 			/* NOTREACHED */
 		}
 		macdefine(&e->e_macro, A_TEMP, macid("{msg_size}"), vp);
+		errno = 0;
 		e->e_msgsize = strtol(vp, (char **) NULL, 10);
 		if (e->e_msgsize == LONG_MAX && errno == ERANGE)
 		{
 			usrerr("552 5.2.3 Message size exceeds maximum value");
+			/* NOTREACHED */
+		}
+		if (e->e_msgsize < 0)
+		{
+			usrerr("552 5.2.3 Message size invalid");
 			/* NOTREACHED */
 		}
 	}
@@ -3143,7 +4175,7 @@ mail_esmtp_args(kp, vp, e)
 	}
 	else if (sm_strcasecmp(kp, "envid") == 0)
 	{
-		if (bitset(PRIV_NORECEIPTS, PrivacyFlags))
+		if (!bitset(SRV_OFFER_DSN, e->e_features))
 		{
 			usrerr("504 5.7.0 Sorry, ENVID not supported, we do not allow DSN");
 			/* NOTREACHED */
@@ -3169,7 +4201,7 @@ mail_esmtp_args(kp, vp, e)
 	}
 	else if (sm_strcasecmp(kp, "ret") == 0)
 	{
-		if (bitset(PRIV_NORECEIPTS, PrivacyFlags))
+		if (!bitset(SRV_OFFER_DSN, e->e_features))
 		{
 			usrerr("504 5.7.0 Sorry, RET not supported, we do not allow DSN");
 			/* NOTREACHED */
@@ -3203,7 +4235,6 @@ mail_esmtp_args(kp, vp, e)
 		bool saveQuickAbort = QuickAbort;
 		bool saveSuprErrs = SuprErrs;
 		bool saveExitStat = ExitStat;
-		char pbuf[256];
 
 		if (vp == NULL)
 		{
@@ -3228,12 +4259,9 @@ mail_esmtp_args(kp, vp, e)
 			/* NOTREACHED */
 		}
 
-		/* XXX this might be cut off */
-		(void) sm_strlcpy(pbuf, xuntextify(auth_param), sizeof pbuf);
-		/* xalloc() the buffer instead? */
-
 		/* XXX define this always or only if trusted? */
-		macdefine(&e->e_macro, A_TEMP, macid("{auth_author}"), pbuf);
+		macdefine(&e->e_macro, A_TEMP, macid("{auth_author}"),
+			  auth_param);
 
 		/*
 		**  call Strust_auth to find out whether
@@ -3245,23 +4273,27 @@ mail_esmtp_args(kp, vp, e)
 		SuprErrs = true;
 		QuickAbort = false;
 		if (strcmp(auth_param, "<>") != 0 &&
-		     (rscheck("trust_auth", pbuf, NULL, e, true, false, 9,
-			      NULL, NOQID) != EX_OK || Errors > 0))
+		     (rscheck("trust_auth", auth_param, NULL, e, RSF_RMCOMM,
+			      9, NULL, NOQID, NULL) != EX_OK || Errors > 0))
 		{
 			if (tTd(95, 8))
 			{
 				q = e->e_auth_param;
 				sm_dprintf("auth=\"%.100s\" not trusted user=\"%.100s\"\n",
-					pbuf, (q == NULL) ? "" : q);
+					auth_param, (q == NULL) ? "" : q);
 			}
 
 			/* not trusted */
 			e->e_auth_param = "<>";
+# if _FFR_AUTH_PASSING
+			macdefine(&BlankEnvelope.e_macro, A_PERM,
+				  macid("{auth_author}"), NULL);
+# endif /* _FFR_AUTH_PASSING */
 		}
 		else
 		{
 			if (tTd(95, 8))
-				sm_dprintf("auth=\"%.100s\" trusted\n", pbuf);
+				sm_dprintf("auth=\"%.100s\" trusted\n", auth_param);
 			e->e_auth_param = sm_rpool_strdup_x(e->e_rpool,
 							    auth_param);
 		}
@@ -3290,6 +4322,7 @@ mail_esmtp_args(kp, vp, e)
 			usrerr("501 5.5.2 BY= requires a value");
 			/* NOTREACHED */
 		}
+		errno = 0;
 		e->e_deliver_by = strtol(vp, &s, 10);
 		if (e->e_deliver_by == LONG_MIN ||
 		    e->e_deliver_by == LONG_MAX ||
@@ -3353,7 +4386,8 @@ mail_esmtp_args(kp, vp, e)
 		/* NOTREACHED */
 	}
 }
-/*
+
+/*
 **  RCPT_ESMTP_ARGS -- process ESMTP arguments from RCPT line
 **
 **	Parameters:
@@ -3366,7 +4400,7 @@ mail_esmtp_args(kp, vp, e)
 **		none.
 */
 
-static void
+void
 rcpt_esmtp_args(a, kp, vp, e)
 	ADDRESS *a;
 	char *kp;
@@ -3377,7 +4411,7 @@ rcpt_esmtp_args(a, kp, vp, e)
 	{
 		char *p;
 
-		if (bitset(PRIV_NORECEIPTS, PrivacyFlags))
+		if (!bitset(SRV_OFFER_DSN, e->e_features))
 		{
 			usrerr("504 5.7.0 Sorry, NOTIFY not supported, we do not allow DSN");
 			/* NOTREACHED */
@@ -3395,7 +4429,9 @@ rcpt_esmtp_args(a, kp, vp, e)
 			return;
 		for (p = vp; p != NULL; vp = p)
 		{
-			p = strchr(p, ',');
+			char *s;
+
+			s = p = strchr(p, ',');
 			if (p != NULL)
 				*p++ = '\0';
 			if (sm_strcasecmp(vp, "success") == 0)
@@ -3410,11 +4446,13 @@ rcpt_esmtp_args(a, kp, vp, e)
 					vp);
 				/* NOTREACHED */
 			}
+			if (s != NULL)
+				*s = ',';
 		}
 	}
 	else if (sm_strcasecmp(kp, "orcpt") == 0)
 	{
-		if (bitset(PRIV_NORECEIPTS, PrivacyFlags))
+		if (!bitset(SRV_OFFER_DSN, e->e_features))
 		{
 			usrerr("504 5.7.0 Sorry, ORCPT not supported, we do not allow DSN");
 			/* NOTREACHED */
@@ -3442,7 +4480,7 @@ rcpt_esmtp_args(a, kp, vp, e)
 		/* NOTREACHED */
 	}
 }
-/*
+/*
 **  PRINTVRFYADDR -- print an entry in the verify queue
 **
 **	Parameters:
@@ -3468,11 +4506,11 @@ printvrfyaddr(a, last, vrfy)
 
 	if (vrfy && a->q_mailer != NULL &&
 	    !bitnset(M_VRFY250, a->q_mailer->m_flags))
-		(void) sm_strlcpy(fmtbuf, "252", sizeof fmtbuf);
+		(void) sm_strlcpy(fmtbuf, "252", sizeof(fmtbuf));
 	else
-		(void) sm_strlcpy(fmtbuf, "250", sizeof fmtbuf);
+		(void) sm_strlcpy(fmtbuf, "250", sizeof(fmtbuf));
 	fmtbuf[3] = last ? ' ' : '-';
-	(void) sm_strlcpy(&fmtbuf[4], "2.1.5 ", sizeof fmtbuf - 4);
+	(void) sm_strlcpy(&fmtbuf[4], "2.1.5 ", sizeof(fmtbuf) - 4);
 	if (a->q_fullname == NULL)
 	{
 		if ((a->q_mailer == NULL ||
@@ -3480,10 +4518,10 @@ printvrfyaddr(a, last, vrfy)
 		     sm_strcasecmp(a->q_mailer->m_addrtype, "rfc822") == 0) &&
 		    strchr(a->q_user, '@') == NULL)
 			(void) sm_strlcpy(&fmtbuf[OFFF], "<%s@%s>",
-				       sizeof fmtbuf - OFFF);
+				       sizeof(fmtbuf) - OFFF);
 		else
 			(void) sm_strlcpy(&fmtbuf[OFFF], "<%s>",
-				       sizeof fmtbuf - OFFF);
+				       sizeof(fmtbuf) - OFFF);
 		message(fmtbuf, a->q_user, MyHostName);
 	}
 	else
@@ -3493,16 +4531,16 @@ printvrfyaddr(a, last, vrfy)
 		     sm_strcasecmp(a->q_mailer->m_addrtype, "rfc822") == 0) &&
 		    strchr(a->q_user, '@') == NULL)
 			(void) sm_strlcpy(&fmtbuf[OFFF], "%s <%s@%s>",
-				       sizeof fmtbuf - OFFF);
+				       sizeof(fmtbuf) - OFFF);
 		else
 			(void) sm_strlcpy(&fmtbuf[OFFF], "%s <%s>",
-				       sizeof fmtbuf - OFFF);
+				       sizeof(fmtbuf) - OFFF);
 		message(fmtbuf, a->q_fullname, a->q_user, MyHostName);
 	}
 }
 
 #if SASL
-/*
+/*
 **  SASLMECHS -- get list of possible AUTH mechanisms
 **
 **	Parameters:
@@ -3521,9 +4559,15 @@ saslmechs(conn, mechlist)
 	int len, num, result;
 
 	/* "user" is currently unused */
+# if SASL >= 20000
+	result = sasl_listmech(conn, NULL,
+			       "", " ", "", (const char **) mechlist,
+			       (unsigned int *)&len, &num);
+# else /* SASL >= 20000 */
 	result = sasl_listmech(conn, "user", /* XXX */
 			       "", " ", "", mechlist,
 			       (unsigned int *)&len, (unsigned int *)&num);
+# endif /* SASL >= 20000 */
 	if (result != SASL_OK)
 	{
 		if (LogLevel > 9)
@@ -3541,10 +4585,61 @@ saslmechs(conn, mechlist)
 		*mechlist = intersect(AuthMechanisms, *mechlist, NULL);
 	}
 	else
+	{
 		*mechlist = NULL;	/* be paranoid... */
+		if (result == SASL_OK && LogLevel > 9)
+			sm_syslog(LOG_WARNING, NOQID,
+				  "AUTH warning: no mechanisms");
+	}
 	return num;
 }
-/*
+
+# if SASL >= 20000
+/*
+**  PROXY_POLICY -- define proxy policy for AUTH
+**
+**	Parameters:
+**		conn -- unused.
+**		context -- unused.
+**		requested_user -- authorization identity.
+**		rlen -- authorization identity length.
+**		auth_identity -- authentication identity.
+**		alen -- authentication identity length.
+**		def_realm -- default user realm.
+**		urlen -- user realm length.
+**		propctx -- unused.
+**
+**	Returns:
+**		ok?
+**
+**	Side Effects:
+**		sets {auth_authen} macro.
+*/
+
+int
+proxy_policy(conn, context, requested_user, rlen, auth_identity, alen,
+	     def_realm, urlen, propctx)
+	sasl_conn_t *conn;
+	void *context;
+	const char *requested_user;
+	unsigned rlen;
+	const char *auth_identity;
+	unsigned alen;
+	const char *def_realm;
+	unsigned urlen;
+	struct propctx *propctx;
+{
+	if (auth_identity == NULL)
+		return SASL_FAIL;
+
+	macdefine(&BlankEnvelope.e_macro, A_TEMP,
+		  macid("{auth_authen}"), (char *) auth_identity);
+
+	return SASL_OK;
+}
+# else /* SASL >= 20000 */
+
+/*
 **  PROXY_POLICY -- define proxy policy for AUTH
 **
 **	Parameters:
@@ -3571,10 +4666,11 @@ proxy_policy(context, auth_identity, requested_user, user, errstr)
 	*user = newstr(auth_identity);
 	return SASL_OK;
 }
+# endif /* SASL >= 20000 */
 #endif /* SASL */
 
 #if STARTTLS
-/*
+/*
 **  INITSRVTLS -- initialize server side TLS
 **
 **	Parameters:
@@ -3596,12 +4692,12 @@ initsrvtls(tls_ok)
 		return false;
 
 	/* do NOT remove assignment */
-	tls_ok_srv = inittls(&srv_ctx, TLS_Srv_Opts, true, SrvCERTfile,
-			     Srvkeyfile, CACERTpath, CACERTfile, DHParams);
+	tls_ok_srv = inittls(&srv_ctx, TLS_Srv_Opts, true, SrvCertFile,
+			     SrvKeyFile, CACertPath, CACertFile, DHParams);
 	return tls_ok_srv;
 }
 #endif /* STARTTLS */
-/*
+/*
 **  SRVFEATURES -- get features for SMTP server
 **
 **	Parameters:
@@ -3622,16 +4718,17 @@ static struct
 {
 	{ 'A',	SRV_OFFER_AUTH	},
 	{ 'B',	SRV_OFFER_VERB	},
+	{ 'C',	SRV_REQ_SEC	},
 	{ 'D',	SRV_OFFER_DSN	},
 	{ 'E',	SRV_OFFER_ETRN	},
-	{ 'L',	SRV_REQ_AUTH	},	/* not documented in 8.12 */
+	{ 'L',	SRV_REQ_AUTH	},
 #if PIPELINING
 # if _FFR_NO_PIPE
 	{ 'N',	SRV_NO_PIPE	},
 # endif /* _FFR_NO_PIPE */
 	{ 'P',	SRV_OFFER_PIPE	},
 #endif /* PIPELINING */
-	{ 'R',	SRV_VRFY_CLT	},
+	{ 'R',	SRV_VRFY_CLT	},	/* same as V; not documented */
 	{ 'S',	SRV_OFFER_TLS	},
 /*	{ 'T',	SRV_TMP_FAIL	},	*/
 	{ 'V',	SRV_VRFY_CLT	},
@@ -3698,7 +4795,7 @@ srvfeatures(e, clientname, features)
 	return features;
 }
 
-/*
+/*
 **  HELP -- implement the HELP command.
 **
 **	Parameters:
@@ -3740,8 +4837,7 @@ help(topic, e)
 	{
 		/* no help */
 		errno = 0;
-		message("502 5.3.0 Sendmail %s -- HELP not implemented",
-			Version);
+		message("502 5.3.0 HELP not implemented");
 		return;
 	}
 
@@ -3758,7 +4854,7 @@ help(topic, e)
 
 	len = strlen(topic);
 
-	while (sm_io_fgets(hf, SM_TIME_DEFAULT, buf, sizeof buf) != NULL)
+	while (sm_io_fgets(hf, SM_TIME_DEFAULT, buf, sizeof(buf)) != NULL)
 	{
 		if (buf[0] == '#')
 		{
@@ -3791,8 +4887,13 @@ help(topic, e)
 			fixcrlf(p, true);
 			if (foundvers >= 2)
 			{
-				translate_dollars(p);
-				expand(p, inp, sizeof inp, e);
+				char *lbp;
+				int lbs = sizeof(buf) - (p - buf);
+
+				lbp = translate_dollars(p, p, &lbs);
+				expand(lbp, inp, sizeof(inp), e);
+				if (p != lbp)
+					sm_free(lbp);
 				p = inp;
 			}
 			message("214-2.0.0 %s", p);
@@ -3818,3 +4919,84 @@ help(topic, e)
 
 	(void) sm_io_close(hf, SM_TIME_DEFAULT);
 }
+
+#if SASL
+/*
+**  RESET_SASLCONN -- reset SASL connection data
+**
+**	Parameters:
+**		conn -- SASL connection context
+**		hostname -- host name
+**		various connection data
+**
+**	Returns:
+**		SASL result
+*/
+
+static int
+reset_saslconn(sasl_conn_t **conn, char *hostname,
+# if SASL >= 20000
+	       char *remoteip, char *localip,
+	       char *auth_id, sasl_ssf_t * ext_ssf)
+# else /* SASL >= 20000 */
+	       struct sockaddr_in *saddr_r, struct sockaddr_in *saddr_l,
+	       sasl_external_properties_t * ext_ssf)
+# endif /* SASL >= 20000 */
+{
+	int result;
+
+	sasl_dispose(conn);
+# if SASL >= 20000
+	result = sasl_server_new("smtp", hostname, NULL, NULL, NULL,
+				 NULL, 0, conn);
+# elif SASL > 10505
+	/* use empty realm: only works in SASL > 1.5.5 */
+	result = sasl_server_new("smtp", hostname, "", NULL, 0, conn);
+# else /* SASL >= 20000 */
+	/* use no realm -> realm is set to hostname by SASL lib */
+	result = sasl_server_new("smtp", hostname, NULL, NULL, 0,
+				 conn);
+# endif /* SASL >= 20000 */
+	if (result != SASL_OK)
+		return result;
+
+# if SASL >= 20000
+#  if NETINET || NETINET6
+	if (remoteip != NULL && *remoteip != '\0')
+		result = sasl_setprop(*conn, SASL_IPREMOTEPORT, remoteip);
+	if (result != SASL_OK)
+		return result;
+
+	if (localip != NULL && *localip != '\0')
+		result = sasl_setprop(*conn, SASL_IPLOCALPORT, localip);
+	if (result != SASL_OK)
+		return result;
+#  endif /* NETINET || NETINET6 */
+
+	result = sasl_setprop(*conn, SASL_SSF_EXTERNAL, ext_ssf);
+	if (result != SASL_OK)
+		return result;
+
+	result = sasl_setprop(*conn, SASL_AUTH_EXTERNAL, auth_id);
+	if (result != SASL_OK)
+		return result;
+# else /* SASL >= 20000 */
+#  if NETINET
+	if (saddr_r != NULL)
+		result = sasl_setprop(*conn, SASL_IP_REMOTE, saddr_r);
+	if (result != SASL_OK)
+		return result;
+
+	if (saddr_l != NULL)
+		result = sasl_setprop(*conn, SASL_IP_LOCAL, saddr_l);
+	if (result != SASL_OK)
+		return result;
+#  endif /* NETINET */
+
+	result = sasl_setprop(*conn, SASL_SSF_EXTERNAL, ext_ssf);
+	if (result != SASL_OK)
+		return result;
+# endif /* SASL >= 20000 */
+	return SASL_OK;
+}
+#endif /* SASL */

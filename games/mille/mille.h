@@ -1,3 +1,4 @@
+/*	$OpenBSD: mille.h,v 1.8 2003/04/06 18:50:37 deraadt Exp $	*/
 /*	$NetBSD: mille.h,v 1.5 1995/03/24 05:01:51 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,10 +33,17 @@
  */
 
 # include	<sys/types.h>
+# include	<sys/uio.h>
+# include	<sys/stat.h>
 # include	<ctype.h>
+# include	<err.h>
+# include	<errno.h>
 # include	<curses.h>
-# include	<termios.h>
+# include	<fcntl.h>
+# include	<stdlib.h>
 # include	<string.h>
+# include	<termios.h>
+# include	<unistd.h>
 
 /*
  * @(#)mille.h	1.1 (Berkeley) 4/1/82
@@ -54,7 +58,7 @@
 
 # define	HAND_SZ		7	/* number of cards in a hand	*/
 # define	DECK_SZ		101	/* number of cards in decks	*/
-# define	NUM_SAFE	4	/* number of saftey cards	*/
+# define	NUM_SAFE	4	/* number of safety cards	*/
 # define	NUM_MILES	5	/* number of milestones types	*/
 # define	NUM_CARDS	20	/* number of types of cards	*/
 # define	BOARD_Y		17	/* size of board screen		*/
@@ -153,17 +157,7 @@
 # ifdef	SYSV
 # define	srandom(x)	srand(x)
 # define	random()	rand()
-
-# ifndef	attron
-#	define	erasechar()	_tty.c_cc[VERASE]
-#	define	killchar()	_tty.c_cc[VKILL]
-# endif
-# else
-# ifndef	erasechar
-#	define	erasechar()	_tty.sg_erase
-#	define	killchar()	_tty.sg_kill
-# endif
-# endif	SYSV
+# endif		/* SYSV */
 
 typedef struct {
 	bool	coups[NUM_SAFE];
@@ -202,7 +196,7 @@ typedef struct {
 # define	nextplay()	(Play = other(Play))
 # define	nextwin(x)	(1 - x)
 # define	opposite(x)	(Opposite[x])
-# define	issafety(x)	(x >= C_GAS_SAFE)
+# define	is_safety(x)	(x >= C_GAS_SAFE)
 
 /*
  * externals
@@ -210,13 +204,15 @@ typedef struct {
 
 extern bool	Debug, Finished, Next, On_exit, Order, Saved;
 
-extern char	*C_fmt, **C_name, *Fromfile, Initstr[];
+extern char	Initstr[100], *C_fmt;
+extern const char	*const *C_name, *Fromfile;
 
-extern int	Card_no, End, Handstart, Movetype, Numcards[], Numgos,
-		Numneed[], Numseen[NUM_CARDS], Play, Value[], Window;
+extern int	Card_no, End, Handstart, Movetype, Numgos,
+		Numneed[], Numseen[NUM_CARDS], Play, Window;
+extern const int	Numcards[], Value[];
 
-extern CARD	Deck[DECK_SZ], Discard, Opposite[NUM_CARDS], Sh_discard,
-		*Topcard;
+extern CARD	Deck[DECK_SZ], Discard, Sh_discard, *Topcard;
+extern const CARD	Opposite[NUM_CARDS];
 
 extern FILE	*outf;
 
@@ -228,4 +224,42 @@ extern WINDOW	*Board, *Miles, *Score;
  * functions
  */
 
-CARD	getcard();
+void	account(CARD);
+void	calcmove(void);
+int	canplay(const PLAY *, const PLAY *, CARD);
+int	check_ext(bool);
+void	check_go(void);
+void	check_more(void);
+void	die(int);
+void	domove(void);
+bool	error(char *, ...);
+void	finalscore(PLAY *);
+CARD	getcard(void);
+void	getmove(void);
+int	getyn(int);
+int	haspicked(const PLAY *);
+void	init(void);
+int	is_repair(CARD);
+int	main(int, char **);
+void	newboard(void);
+void	newscore(void);
+int	onecard(const PLAY *);
+int	playcard(PLAY *);
+void	prboard(void);
+void	prompt(int);
+void	prscore(bool);
+int	readch(void);
+bool	rest_f(const char *);
+int	roll(int, int);
+void	rub(int);
+int	safety(CARD);
+bool	save(void);
+void	show_card(int, int, CARD, CARD *);
+void	show_score(int, int, int, int *);
+void	shuffle(void);
+void	sort(CARD *);
+bool	varpush(int, ssize_t(int, const struct iovec *, int));
+#ifdef EXTRAP
+void	extrapolate(PLAY *);
+void	undoex(void);
+#endif

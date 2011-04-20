@@ -289,6 +289,10 @@ int warn_sign_compare;
 
 int warn_format;
 
+/* Warn about potential overruns in static buffers.  */
+
+int warn_bounded;
+
 /* Warn about a subscript that has type char.  */
 
 int warn_char_subscripts;
@@ -750,6 +754,8 @@ lang_decode_option (argc, argv)
 	warn_sign_compare = setting;
       else if (!strcmp (p, "format"))
 	warn_format = setting;
+      else if (!strcmp (p, "bounded"))
+	warn_bounded = setting;
       else if (!strcmp (p, "conversion"))
 	warn_conversion = setting;
       else if (!strcmp (p, "parentheses"))
@@ -797,6 +803,7 @@ lang_decode_option (argc, argv)
 	  warn_implicit = setting;
 	  warn_switch = setting;
 	  warn_format = setting;
+	  warn_bounded = setting;
 	  warn_parentheses = setting;
 	  warn_missing_braces = setting;
 	  warn_sign_compare = setting;
@@ -983,7 +990,7 @@ maybe_retrofit_in_chrg (fn)
 	{
 	  DECL_CONSTRUCTOR_FOR_VBASE (fn) = CONSTRUCTOR_FOR_PVBASE;
 	  if (flag_vtable_thunks_compat && varargs_function_p (fn))
-	    sorry ("-fvtable-thunks=2 for vararg constructor", fn);
+	    sorry ("-fvtable-thunks=2 for vararg constructor");
 	}
       else
 	DECL_CONSTRUCTOR_FOR_VBASE (fn) = CONSTRUCTOR_FOR_VBASE;
@@ -1666,7 +1673,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       && TREE_OPERAND (declarator, 0)
       && (TREE_CODE (TREE_OPERAND (declarator, 0)) == IDENTIFIER_NODE
 	  || TREE_CODE (TREE_OPERAND (declarator, 0)) == SCOPE_REF)
-      && parmlist_is_exprlist (TREE_OPERAND (declarator, 1)))
+      && parmlist_is_exprlist (CALL_DECLARATOR_PARMS (declarator)))
     {
       init = TREE_OPERAND (declarator, 1);
       declarator = TREE_OPERAND (declarator, 0);
@@ -3931,7 +3938,7 @@ reparse_absdcl_as_casts (decl, expr)
   if (TREE_CODE (expr) == CONSTRUCTOR
       && TREE_TYPE (expr) == 0)
     {
-      type = groktypename (TREE_VALUE (TREE_OPERAND (decl, 1)));
+      type = groktypename (TREE_VALUE (CALL_DECLARATOR_PARMS (decl)));
       decl = TREE_OPERAND (decl, 0);
 
       if (IS_SIGNATURE (type))
@@ -3951,7 +3958,7 @@ reparse_absdcl_as_casts (decl, expr)
 
   while (decl)
     {
-      type = groktypename (TREE_VALUE (TREE_OPERAND (decl, 1)));
+      type = groktypename (TREE_VALUE (CALL_DECLARATOR_PARMS (decl)));
       decl = TREE_OPERAND (decl, 0);
       expr = build_c_cast (type, expr);
     }

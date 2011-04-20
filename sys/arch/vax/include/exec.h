@@ -1,3 +1,4 @@
+/*	$OpenBSD: exec.h,v 1.7 2002/07/31 20:33:23 deraadt Exp $	*/
 /*	$NetBSD: exec.h,v 1.4 1995/09/23 14:57:40 ragge Exp $	*/
 
 /*
@@ -30,9 +31,9 @@
 #ifndef _VAX_EXEC_H_
 #define _VAX_EXEC_H_
 
-#define __LDPGSZ	1024
+#define __LDPGSZ	4096
 
-/* Relocation format. */
+/* a.out relocation format. */
 struct relocation_info_vax {
 	int r_address;			/* offset in text or data segment */
 	unsigned int r_symbolnum : 24,	/* ordinal number of add symbol */
@@ -45,5 +46,17 @@ struct relocation_info_vax {
 			  r_copy :  1;	/* run time copy */
 };
 #define relocation_info	relocation_info_vax
+
+#define _NLIST_DO_AOUT
+#define _NLIST_DO_ELF
+
+#define _KERN_DO_AOUT
+#define _KERN_DO_ELF
+
+#define ARCH_ELFSIZE		32
+
+#define ELF_TARG_CLASS		ELFCLASS32
+#define ELF_TARG_DATA		ELFDATA2LSB
+#define ELF_TARG_MACH		EM_VAX
 
 #endif  /* _VAX_EXEC_H_ */

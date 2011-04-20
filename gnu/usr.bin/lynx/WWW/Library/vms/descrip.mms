@@ -18,6 +18,7 @@
 !  03 May 95 (FM)	Include /NoMember for DECC (not the default on AXP,
 !			and the code assumes byte alignment).
 !  07 Jul 95 (FM)	Added GNUC support.
+!  15 Sep 06 (TD)	Cleanup...
 !
 ! Bugs:
 !	The dependencies are anything but complete - they were
@@ -76,112 +77,71 @@
 DEBUGFLAGS = /Debug /NoOptimize
 .endif
 
+INCLUDES = /Include=([-.Implementation],[---.src],[---])
+
 ! defines valid for all compilations
-EXTRADEFINES = DEBUG, ACCESS_AUTH, VC="""$(VC)"""
+EXTRADEFINES = ACCESS_AUTH, VC="""$(VC)"""
+
+.ifdef WIN_TCP
+NETWORK_DEF = WIN_TCP
+.else
+.ifdef CMU_TCP
+NETWORK_DEF = CMU_TCP
+.else
+.ifdef SOCKETSHR_TCP
+NETWORK_DEF = SOCKETSHR_TCP
+.else
+.ifdef UCX
+NETWORK_DEF = UCX
+.else
+.ifdef TCPWARE
+NETWORK_DEF = TCPWARE,UCX
+.else
+.ifdef DECnet
+NETWORK_DEF = DECNET
+.else !  Default to MultiNet
+NETWORK_DEF = MULTINET
+.endif !  DECnet
+.endif !  TCPWARE
+.endif !  UCX
+.endif !  SOCKETSHR_TCP
+.endif !  CMU_TCP
+.endif !  WIN_TCP
 
 ! DECC flags for all compilations
 .ifdef DEC_C
-DCFLAGS = /NoMember /Warning=(disable=implicitfunc)
+MY_CFLAGS = /decc/Prefix=All /NoMember /Warning=(disable=implicitfunc) $(INCLUDES)
+.else
+MY_CFLAGS = $(INCLUDES)
 .endif
 
-.ifdef UCX
-TCP = UCX
-.ifdef DEC_C
-CFLAGS = /decc/Prefix=All $(DEBUGFLAGS) $(DCFLAGS) /Define=($(EXTRADEFINES), UCX)
-.else
-CFLAGS = $(DEBUGFLAGS) /Define=($(EXTRADEFINES), UCX)
-.endif
-.endif
-
-.ifdef TCPWARE
-TCP = TCPWARE
-.ifdef DEC_C
-CFLAGS = /decc/Prefix=All $(DEBUGFLAGS) $(DCFLAGS) /Define=($(EXTRADEFINES), UCX, TCPWARE)
-.else
-CFLAGS = $(DEBUGFLAGS) /Define = ($(EXTRADEFINES), UCX, TCPWARE)
-.endif
-.endif
-
-.ifdef MULTINET
-TCP = MULTINET
-.ifdef DEC_C
-CFLAGS = /decc/Prefix=ANSI $(DEBUGFLAGS) $(DCFLAGS) /Define=(_DECC_V4_SOURCE, __SOCKET_TYPEDEFS, $(EXTRADEFINES), MULTINET)
-.else
-CFLAGS = $(DEBUGFLAGS) /Define = ($(EXTRADEFINES), MULTINET)
-.endif
-.endif
-
-.ifdef WIN_TCP
-TCP = WIN_TCP
-.ifdef DEC_C
-CFLAGS = /decc/Prefix=ANSI $(DEBUGFLAGS) $(DCFLAGS) /Define=($(EXTRADEFINES), WIN_TCP)
-.else
-CFLAGS = $(DEBUGFLAGS) /Define = ($(EXTRADEFINES), WIN_TCP)
-.endif
-.endif
-
-.ifdef CMU_TCP
-TCP = CMU_TCP
-.ifdef DEC_C
-CFLAGS = /decc/Prefix=ANSI $(DEBUGFLAGS) $(DCFLAGS) /Define=($(EXTRADEFINES), CMU_TCP)
-.else
-CFLAGS = $(DEBUGFLAGS) /Define = ($(EXTRADEFINES), CMU_TCP)
-.endif
-.endif
-
-.ifdef SOCKETSHR_TCP
-TCP = SOCKETSHR_TCP
-.ifdef DEC_C
-CFLAGS = /decc/Prefix=ANSI $(DEBUGFLAGS) $(DCFLAGS) /Define=($(EXTRADEFINES), SOCKETSHR_TCP)
-.else
-CFLAGS = $(DEBUGFLAGS) /Define = ($(EXTRADEFINES), SOCKETSHR_TCP)
-.endif
-.endif
-
-.ifdef DECNET
-TCP = DECNET
-.ifdef DEC_C
-CFLAGS = /decc/Prefix=All $(DEBUGFLAGS) $(DCFLAGS) /Define=($(EXTRADEFINES), DECNET)
-.else
-CFLAGS = $(DEBUGFLAGS) /Define = ($(EXTRADEFINES), DECNET)
-.endif
-.endif
-
-.ifdef TCP
-.else
-TCP = MULTINET			! (Default to MULTINET)
-.ifdef DEC_C
-CFLAGS = /decc/Prefix=ANSI $(DEBUGFLAGS) $(DCFLAGS) /Define=(_DECC_V4_SOURCE, __SOCKET_TYPEDEFS, $(EXTRADEFINES), MULTINET)
-.else
-CFLAGS = $(DEBUGFLAGS) /Define = ($(EXTRADEFINES), MULTINET)
-.endif
-.endif
+CFLAGS = $(DEBUGFLAGS) $(MY_CFLAGS) /Define=($(EXTRADEFINES), $(NETWORK_DEF))
 
 .ifdef GNU_C
 CC = gcc
 .endif
 
-!HEADERS = HTUtils.h, HTStream.h, tcp.h, HText.h -
+!HEADERS = HTUtils.h, HTStream.h, www_tcp.h, HText.h -
 !        HTParse.h, HTAccess.h, HTTP.h, HTFile.h, -
 !	HTBTree.h, HTTCP.h, SGML.h, -
 !	HTML.h, HTMLDTD.h, HTChunk.h, HTPlain.h, -
-!	HTWriter.h, HTFwriter.h, HTMLGen.h, -
+!	HTFwriter.h, HTMLGen.h, -
 !	HTAtom.h, HTAnchor.h, HTStyle.h, -
 !	HTList.h, HTString.h, HTAlert.h, -
 !	HTRules.h, HTFormat.h, HTInit.h, -
-!	HTMIME.h, HTHistory.h, HTTelnet.h, -
-!	HTFinger.h, HTAABrow.h, HTAAFile.h, -
-!	HTAAProt.h, HTAAServ.h,  HTAAUtil.h, -
-!	HTAssoc.h, HTPasswd.h, HTAuth.h, HTUU.h, -
-!	HTVMSUtils.h, ufc-crypt.h, patchlevel.h
+!	HTMIME.h, HTTelnet.h, -
+!	HTFinger.h, HTAABrow.h, -
+!	HTAAProt.h, HTAAUtil.h, -
+!	HTAssoc.h, HTUU.h, -
+!	HTVMSUtils.h,
 
 MODULES = HTParse, HTAccess, HTTP, HTFile, HTBTree, HTFTP, HTTCP, HTString, -
-	SGML, HTMLDTD, HTChunk, HTPlain, HTWriter, HTMLGen, -
+	SGML, HTMLDTD, HTChunk, HTPlain, HTMLGen, -
 	HTAtom, HTAnchor, HTStyle, HTList, HTRules, HTFormat, -
-	HTMIME, HTHistory, HTNews, HTGopher, HTTelnet, HTFinger, -
-	HTWSRC, HTAAUtil, HTAABrow, HTAAServ, HTAAFile, HTPasswd, HTGroup, -
-	HTACL, HTAuth, HTAAProt, HTAssoc, HTLex, HTUU, HTVMSUtils, getpass, -
-	getline, crypt, crypt_util, HTWAIS, HTVMS_WaisUI, HTVMS_WaisProt
+	HTMIME, HTNews, HTGopher, HTTelnet, HTFinger, -
+	HTWSRC, HTAAUtil, HTAABrow, HTGroup, -
+	HTAAProt, HTAssoc, HTLex, HTUU, HTVMSUtils, -
+	HTWAIS, HTVMS_WaisUI, HTVMS_WaisProt
 
 !.ifdef DECNET  ! Strip FTP, Gopher, News, WAIS
 !HEADERS = $(COMMON_HEADERS)
@@ -194,12 +154,12 @@ MODULES = HTParse, HTAccess, HTTP, HTFile, HTBTree, HTFTP, HTTCP, HTString, -
 !___________________________________________________________________
 ! WWW Library
 
-!library : $(HEADERS)  wwwlib_$(TCP)($(MODULES))
-library : wwwlib_$(TCP)($(MODULES))
+!library : $(HEADERS)  wwwlib($(MODULES))
+library : wwwlib($(MODULES))
  	@ Continue
 
-build_$(TCP).com : descrip.mms
-	$(MMS) /NoAction /From_Sources /Output = Build_$(TCP).com /Macro = ($(TCP)=1)
+build_www.com : descrip.mms
+	$(MMS) /NoAction /From_Sources /Output = build_www.com /Macro = ($(NETWORK_DEF)=1)
 
 clean :
 	- Set Protection = (Owner:RWED) *.*;-1
@@ -210,14 +170,13 @@ clean :
 ! Simple Dependencies
 
 
-!HTString.obj :	HTString.c HTString.h tcp.h Version.make HTUtils.h
+!HTString.obj :	HTString.c HTString.h www_tcp.h Version.make HTUtils.h
 !HTAtom.obj :	HTAtom.c HTAtom.h HTUtils.h HTString.h
 !HTChunk.obj :	HTChunk.c HTChunk.h HTUtils.h
 !HTList.obj :	HTList.c HTList.h HTUtils.h
 !HTBTree.obj :	HTBTree.c HTBTree.h HTUtils.h
 !HTMLDTD.obj :	HTMLDTD.c HTMLDTD.h SGML.h
 !HTPlain.obj :	HTPlain.c HTPlain.h HTStream.h
-!HTWriter.obj :	HTWriter.c HTWriter.h HTStream.h
 !HTMLGen.obj :	HTMLGen.c HTMLGen.h HTUtils.h HTMLDTD.h
 !HTRules.obj :	HTRules.c HTRules.h HTUtils.h Version.make
 !HTMIME.obj :	HTMIME.c HTMIME.h HTUtils.h HTList.h
@@ -231,25 +190,17 @@ clean :
 !HTFTP.obj :	HTFTP.c HTFTP.h HTUtils.h
 !HTGopher.obj :	HTGopher.c HTGopher.h HTUtils.h HTList.h
 !HTFinger.obj :	HTFinger.c HTFinger.h HTUtils.h HTList.h
-!HTHistory.obj :	HTHistory.c HTHistory.h HTUtils.h HTList.h
 !HTNews.obj :	HTNews.c HTNews.h HTUtils.h HTList.h
 !HTParse.obj :	HTParse.c HTParse.h HTUtils.h
 !HTStyle.obj :	HTStyle.c HTStyle.h HTUtils.h
-!HTTCP.obj :	HTTCP.c HTTCP.h HTUtils.h tcp.h
+!HTTCP.obj :	HTTCP.c HTTCP.h HTUtils.h www_tcp.h
 !HTTP.obj :	HTTP.c HTTP.h HTUtils.h
 !SGML.obj :	SGML.c SGML.h HTUtils.h
 !HTAABrow.obj :	HTAABrow.c HTUtils.h
-!HTAAFile.obj :	HTAAFile.c HTUtils.h
 !HTAAProt.obj :	HTAAProt.c HTUtils.h
-!HTAAServ.obj :	HTAAServ.c HTUtils.h
 !HTAAUtil.obj :	HTAAUtil.c HTUtils.h
-!HTACL.obj :	HTACL.c HTUtils.h
 !HTGroup.obj :	HTGroup.c HTUtils.h
 !HTLex.obj :	HTLex.c HTUtils.h
 !HTAssoc.obj :	HTAssoc.c HTAssoc.h HTAAUtil.h HTString.h
-!HTPasswd.obj :	HTPasswd.c HTPasswd.h HTUtils.h HTAAUtil.h HTFile.h tcp.h
-!HTAuth.obj :	HTAuth.c HTAuth.h HTUtils.h HTPasswd.h HTAssoc.h HTUU.h
 !HTUU.obj :	HTUU.c HTUU.h HTUtils.h
-!crypt.obj :	crypt.c ufc-crypt.h
 !HTVMSUtils.obj :	HTVMSUtils.c HTVMSUtils.h HTUtils.h
-!crypt_util.obj :	crypt_util.c ufc-crypt.h patchlevel.h

@@ -1,4 +1,5 @@
-/*	$NetBSD: resource.h,v 1.13 1995/03/26 20:24:36 jtc Exp $	*/
+/*	$OpenBSD: resource.h,v 1.8 2010/07/26 01:56:27 guenther Exp $	*/
+/*	$NetBSD: resource.h,v 1.14 1996/02/09 18:25:27 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,6 +35,8 @@
 #ifndef _SYS_RESOURCE_H_
 #define	_SYS_RESOURCE_H_
 
+#include <sys/time.h>
+
 /*
  * Process priority specifications to get/setpriority.
  */
@@ -54,13 +53,14 @@
 
 #define	RUSAGE_SELF	0
 #define	RUSAGE_CHILDREN	-1
+#define	RUSAGE_THREAD	1
 
 struct	rusage {
 	struct timeval ru_utime;	/* user time used */
 	struct timeval ru_stime;	/* system time used */
 	long	ru_maxrss;		/* max resident set size */
 #define	ru_first	ru_ixrss
-	long	ru_ixrss;		/* integral shared memory size */
+	long	ru_ixrss;		/* integral shared text memory size */
 	long	ru_idrss;		/* integral unshared data " */
 	long	ru_isrss;		/* integral unshared stack " */
 	long	ru_minflt;		/* page reclaims */
@@ -91,7 +91,9 @@ struct	rusage {
 
 #define	RLIM_NLIMITS	9		/* number of resource limits */
 
-#define	RLIM_INFINITY	(((u_quad_t)1 << 63) - 1)
+#define	RLIM_INFINITY	(((rlim_t)1 << 63) - 1)
+#define	RLIM_SAVED_MAX	RLIM_INFINITY
+#define	RLIM_SAVED_CUR	RLIM_INFINITY
 
 struct orlimit {
 	int32_t	rlim_cur;		/* current (soft) limit */
@@ -111,16 +113,19 @@ struct loadavg {
 
 #ifdef _KERNEL
 extern struct loadavg averunnable;
+struct process;
+int	dosetrlimit(struct proc *, u_int, struct rlimit *);
+int	donice(struct proc *, struct process *, int);
 
 #else
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-int	getpriority __P((int, int));
-int	getrlimit __P((int, struct rlimit *));
-int	getrusage __P((int, struct rusage *));
-int	setpriority __P((int, int, int));
-int	setrlimit __P((int, const struct rlimit *));
+int	getpriority(int, id_t);
+int	getrlimit(int, struct rlimit *);
+int	getrusage(int, struct rusage *);
+int	setpriority(int, id_t, int);
+int	setrlimit(int, const struct rlimit *);
 __END_DECLS
 
 #endif	/* _KERNEL */

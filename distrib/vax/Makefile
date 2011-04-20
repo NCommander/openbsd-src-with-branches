@@ -1,5 +1,9 @@
-#	$NetBSD: Makefile,v 1.1 1995/10/01 21:22:13 ragge Exp $
+#	$OpenBSD: Makefile,v 1.4 2008/02/24 11:53:10 maja Exp $
 
-SUBDIR= inst tk50 rx50 rx33
+SUBDIR=	../ramdisk cdfs
+
+.if	make(obj) || make(cleandir) || make(clean)
+SUBDIR+= iso
+.endif
 
 .include <bsd.subdir.mk>

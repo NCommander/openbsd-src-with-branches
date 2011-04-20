@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_poll.c,v 1.2 2000/01/06 06:55:37 d Exp $	*/
+/*	$OpenBSD: poll.c,v 1.3 2001/09/20 16:43:15 todd Exp $	*/
 /* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 
 #include <pthread.h>
@@ -6,14 +6,14 @@
 #include <poll.h>
 #include <paths.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "test.h"
 
 
 #define POLLALL	(POLLIN|POLLOUT|POLLERR|POLLNVAL)
 
 static void
-print_pollfd(p)
-	struct pollfd *p;
+print_pollfd(struct pollfd *p)
 {
 
 	printf("{fd=%d, events=< %s%s%s> revents=< %s%s%s%s%s>}",
@@ -30,10 +30,9 @@ print_pollfd(p)
 }
 
 static void *
-writer(arg)
-	void *arg;
+writer(void *arg)
 {
-	int fd = (int)arg;
+	int fd = *(int *)arg;
 	const char msg[1] = { '!' };
 
 	ASSERTe(write(fd, &msg, sizeof msg), == sizeof msg);
@@ -41,10 +40,9 @@ writer(arg)
 }
 
 static void *
-reader(arg)
-	void *arg;
+reader(void *arg)
 {
-	int fd = (int)arg;
+	int fd = *(int *)arg;
 	char buf[1];
 
 	ASSERTe(read(fd, &buf, sizeof buf), == sizeof buf);
@@ -52,9 +50,7 @@ reader(arg)
 }
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	pthread_t t;
 	void *result;
@@ -122,14 +118,14 @@ main(argc, argv)
 
 	/* Start a writing thread to the write end [1] */
 	printf("bg writing to wpipe\n");
-	CHECKr(pthread_create(&t, NULL, writer, (void *)tube[1]));
+	CHECKr(pthread_create(&t, NULL, writer, (void *)&tube[1]));
 	/* The read end [0] should soon be ready for read (POLLIN) */
 	p[0].fd = tube[0];
 	p[0].events = POLLIN;
 	ASSERTe(poll(p, 1, INFTIM), == 1);
 	printf("rpipe p[0]="); print_pollfd(&p[0]); putchar('\n');
 	ASSERT(p[0].revents == POLLIN);
-	reader((void *)tube[0]);	/* consume */
+	reader((void *)&tube[0]);	/* consume */
 	CHECKr(pthread_join(t, &result));
 
 	SUCCEED;

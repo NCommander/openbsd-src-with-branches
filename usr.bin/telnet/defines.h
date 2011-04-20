@@ -1,3 +1,6 @@
+/*	$OpenBSD: defines.h,v 1.6 2003/06/03 02:56:18 millert Exp $	*/
+/*	$NetBSD: defines.h,v 1.5 1996/02/28 21:03:55 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,7 +30,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)defines.h	8.1 (Berkeley) 6/6/93
- *	$Id: defines.h,v 1.3 1994/02/25 03:00:24 cgd Exp $
  */
 
 #define	settimer(x)	clocks.x = clocks.system++
@@ -60,3 +58,8 @@
 #define	MODE_COMMAND_LINE(m)	((m)==-1)
 
 #define	CONTROL(x)	((x)&0x1f)		/* CTRL(x) is not portable */
+
+#define MODE_OUT8      0x8000 /* binary mode sans -opost */
+
+void upcase(char *);
+

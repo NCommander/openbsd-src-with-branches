@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.1 2009/06/13 21:48:03 miod Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.5 2010/08/31 10:24:46 pirofti Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -37,7 +37,8 @@ void	mainbus_attach(struct device *, struct device *, void *);
 int	mainbus_print(void *, const char *);
 
 const struct cfattach mainbus_ca = {
-	sizeof(struct device), mainbus_match, mainbus_attach
+	sizeof(struct device), mainbus_match, mainbus_attach,
+	NULL, config_activate_children
 };
 
 struct cfdriver mainbus_cd = {
@@ -58,18 +59,23 @@ mainbus_match(struct device *parent, void *cfdata, void *aux)
 void
 mainbus_attach(struct device *parent, struct device *self, void *aux)
 {
-	struct mainbus_attach_args maa;
+	struct cpu_attach_args caa;
 
-	printf("\n");
+	printf(": %s %s\n", sys_platform->vendor, sys_platform->product);
 
-	bzero(&maa, sizeof maa);
-	maa.maa_name = "cpu";
-	config_found(self, &maa, mainbus_print);
-	maa.maa_name = "clock";
-	config_found(self, &maa, mainbus_print);
+	bzero(&caa, sizeof caa);
+	caa.caa_maa.maa_name = "cpu";
+	caa.caa_hw = &bootcpu_hwinfo;
+	config_found(self, &caa, mainbus_print);
 
-	maa.maa_name = "bonito";
-	config_found(self, &maa, mainbus_print);
+	caa.caa_maa.maa_name = "bonito";
+	config_found(self, &caa.caa_maa, mainbus_print);
+
+	caa.caa_maa.maa_name = "clock";
+	config_found(self, &caa.caa_maa, mainbus_print);
+
+	caa.caa_maa.maa_name = "apm";
+	config_found(self, &caa.caa_maa, mainbus_print);
 }
 
 int

@@ -1,3 +1,5 @@
+.\"	$OpenBSD: groups.1,v 1.11 2009/01/04 11:19:55 sobrado Exp $
+.\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,11 +28,10 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)groups.1	8.1 (Berkeley) 6/6/93
-.\"	$Id: groups.1,v 1.2 1994/05/05 23:24:36 cgd Exp $
 .\"
-.Dd "June 6, 1993"
+.Dd $Mdocdate: January 4 2009 $
 .Dt GROUPS 1
-.UC
+.Os
 .Sh NAME
 .Nm groups
 .Nd show group memberships
@@ -43,22 +40,20 @@
 .Op Ar user
 .Sh DESCRIPTION
 The
-.Nm groups
+.Nm
 utility has been obsoleted by the
 .Xr id 1
 utility, and is equivalent to
-.Dq Nm id Fl Gn Op Ar user .
+.Ic id Fl Gn Op Ar user .
 The command
-.Dq Nm id Fl p
+.Ic id Fl p
 is suggested for normal interactive use.
 .Pp
 The
-.Nm groups
+.Nm
 utility displays the groups to which you (or the optionally specified user)
 belong.
-.Pp
-The
-.Nm groups
-utility exits 0 on success, and >0 if an error occurs.
+.Sh EXIT STATUS
+.Ex -std groups
 .Sh SEE ALSO
 .Xr id 1

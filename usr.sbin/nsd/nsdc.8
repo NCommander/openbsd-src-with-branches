@@ -30,7 +30,7 @@
 .SH "DESCRIPTION"
 .LP
 .B Nsdc
-is the shell script that used to control nsd(8) and zonec(8) from 
+is the shell script that used to control nsd(8) and nsd-zonec(8) from 
 .B NSD
 distribution.
 .B Nsdc
@@ -67,7 +67,7 @@ Initiate nsd(8) name space database reload by sending
 .IR SIGHUP.
 .TP 
 .I rebuild
-Rebuild the nsd(8) database by invoking zonec(8) with appropriate 
+Rebuild the nsd(8) database by invoking nsd-zonec(8) with appropriate 
 arguments.
 .TP 
 .I restart
@@ -111,35 +111,35 @@ ensures that the difffile does not grow infinitely.
 .TP
 .B \-c\fI configfile
 Specify configfile to use instead of the default
-.IR /etc/nsd/nsd.conf .
+.IR /etc/nsd.conf .
 .SH "FILES"
 .TP
-/etc/nsd/nsd.conf
+/etc/nsd.conf
 Configuration file for nsd to change default pathnames and
 .B NSD 
 flags. The zone names, pathnames to zone files and access control 
 lists are also in nsd.conf(5).
 .TP
-/var/db/nsd/nsd.db
+/var/nsd/db/nsd.db
 default
 .B NSD
 database
 .TP
-/var/db/nsd/nsd.db.lock
+/var/nsd/db/nsd.db.lock
 Lockfile for the
 .B NSD
 database access by operator tools.
 .TP
-/var/db/nsd/ixfr.db
+/var/nsd/run/ixfr.db
 Journal of zone transfers, the diff file containing the new zone 
 contents transferred.
 .TP
-/var/db/nsd/xfrd.state
+/var/nsd/run/xfrd.state
 State for the zone transfer process of 
 .BR NSD. 
 Contains timeouts for the zones and whether zones are expired.
 .TP
-/var/run/nsd.pid
+/var/nsd/run/nsd.pid
 the process id of the name server.
 .SH "DIAGNOSTICS"
 .LP
@@ -150,7 +150,7 @@ otherwise.
 .SH "SEE ALSO"
 .LP
 nsd(8), nsd.conf(5), nsd\-checkconf(8), nsd\-notify(8), 
-nsd\-patch(8), nsd\-xfer(8), zonec(8)
+nsd\-patch(8), nsd\-xfer(8), nsd-zonec(8)
 .SH "AUTHORS"
 .LP
 .B NSD

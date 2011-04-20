@@ -1,6 +1,6 @@
 /* Target-dependent code for OpenBSD/sparc64.
 
-   Copyright 2004 Free Software Foundation, Inc.
+   Copyright 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -31,6 +31,7 @@
 
 #include "gdb_assert.h"
 
+#include "obsd-tdep.h"
 #include "sparc64-tdep.h"
 
 /* OpenBSD uses the traditional NetBSD core file format, even for
@@ -41,6 +42,19 @@
    layout used for ptrace(2).  */
 
 /* From <machine/reg.h>.  */
+const struct sparc_gregset sparc64obsd_gregset =
+{
+  0 * 8,			/* "tstate" */
+  1 * 8,			/* %pc */
+  2 * 8,			/* %npc */
+  3 * 8,			/* %y */
+  -1,				/* %fprs */
+  -1,
+  5 * 8,			/* %g1 */
+  20 * 8,			/* %l0 */
+  4				/* sizeof (%y) */
+};
+
 const struct sparc_gregset sparc64obsd_core_gregset =
 {
   0 * 8,			/* "tstate" */
@@ -61,8 +75,22 @@ sparc64obsd_supply_gregset (const struct regset *regset,
 {
   const char *regs = gregs;
 
+  if (len < 832)
+    {
+      sparc64_supply_gregset (&sparc64obsd_gregset, regcache, regnum, regs);
+      return;
+    }
+
   sparc64_supply_gregset (&sparc64obsd_core_gregset, regcache, regnum, regs);
   sparc64_supply_fpregset (regcache, regnum, regs + 288);
+}
+
+static void
+sparc64obsd_supply_fpregset (const struct regset *regset,
+			     struct regcache *regcache,
+			     int regnum, const void *fpregs, size_t len)
+{
+  sparc64_supply_fpregset (regcache, regnum, fpregs);
 }
 
 
@@ -80,7 +108,7 @@ sparc64obsd_supply_gregset (const struct regset *regset,
    OpenBSD 3.5 and earlier releases, we find it at offset 0xe8.  */
 
 static const int sparc64obsd_page_size = 8192;
-static const int sparc64obsd_sigreturn_offset[] = { 0xec, 0xe8, -1 };
+static const int sparc64obsd_sigreturn_offset[] = { 0xf0, 0xec, 0xe8, -1 };
 
 static int
 sparc64obsd_pc_in_sigtramp (CORE_ADDR pc, char *name)
@@ -188,6 +216,87 @@ sparc64obsd_sigtramp_frame_sniffer (struct frame_info *next_frame)
   return NULL;
 }
 
+/* Kernel debugging support.  */
+
+static struct sparc_frame_cache *
+sparc64obsd_trapframe_cache(struct frame_info *next_frame, void **this_cache)
+{
+  struct sparc_frame_cache *cache;
+  CORE_ADDR sp, trapframe_addr;
+  int regnum;
+
+  if (*this_cache)
+    return *this_cache;
+
+  cache = sparc_frame_cache (next_frame, this_cache);
+  gdb_assert (cache == *this_cache);
+
+  sp = frame_unwind_register_unsigned (next_frame, SPARC_SP_REGNUM);
+  trapframe_addr = sp + BIAS + 176;
+
+  cache->saved_regs = trad_frame_alloc_saved_regs (next_frame);
+
+  cache->saved_regs[SPARC64_STATE_REGNUM].addr = trapframe_addr;
+  cache->saved_regs[SPARC64_PC_REGNUM].addr = trapframe_addr + 8;
+  cache->saved_regs[SPARC64_NPC_REGNUM].addr = trapframe_addr + 16;
+
+  for (regnum = SPARC_G0_REGNUM; regnum <= SPARC_I7_REGNUM; regnum++)
+    cache->saved_regs[regnum].addr =
+      trapframe_addr + 48 + (regnum - SPARC_G0_REGNUM) * 8;
+
+  return cache;
+}
+
+static void
+sparc64obsd_trapframe_this_id (struct frame_info *next_frame,
+			       void **this_cache, struct frame_id *this_id)
+{
+  struct sparc_frame_cache *cache =
+    sparc64obsd_trapframe_cache (next_frame, this_cache);
+
+  (*this_id) = frame_id_build (cache->base, cache->pc);
+}
+
+static void
+sparc64obsd_trapframe_prev_register (struct frame_info *next_frame,
+				     void **this_cache,
+				     int regnum, int *optimizedp,
+				     enum lval_type *lvalp, CORE_ADDR *addrp,
+				     int *realnump, void *valuep)
+{
+  struct sparc_frame_cache *cache =
+    sparc64obsd_trapframe_cache (next_frame, this_cache);
+
+  trad_frame_get_prev_register (next_frame, cache->saved_regs, regnum,
+				optimizedp, lvalp, addrp, realnump, valuep);
+}
+
+static const struct frame_unwind sparc64obsd_trapframe_unwind =
+{
+  NORMAL_FRAME,
+  sparc64obsd_trapframe_this_id,
+  sparc64obsd_trapframe_prev_register
+};
+
+static const struct frame_unwind *
+sparc64obsd_trapframe_sniffer (struct frame_info *next_frame)
+{
+  ULONGEST pstate;
+  char *name;
+
+  /* Check whether we are in privileged mode, and bail out if we're not.  */
+  pstate = frame_unwind_register_unsigned (next_frame, SPARC64_PSTATE_REGNUM);
+  if ((pstate & SPARC64_PSTATE_PRIV) == 0)
+    return NULL;
+
+  find_pc_partial_function (frame_pc_unwind (next_frame), &name, NULL, NULL);
+  if (name && ((strcmp (name, "Lslowtrap_reenter") == 0)
+	       || (strcmp (name, "Ldatafault_internal") == 0)))
+    return &sparc64obsd_trapframe_unwind;
+
+  return NULL;
+}
+
 
 static void
 sparc64obsd_init_abi (struct gdbarch_info info, struct gdbarch *gdbarch)
@@ -195,17 +304,21 @@ sparc64obsd_init_abi (struct gdbarch_info info, struct gdbarch *gdbarch)
   struct gdbarch_tdep *tdep = gdbarch_tdep (gdbarch);
 
   tdep->gregset = regset_alloc (gdbarch, sparc64obsd_supply_gregset, NULL);
-  tdep->sizeof_gregset = 832;
+  tdep->sizeof_gregset = 288;
+
+  tdep->fpregset = regset_alloc (gdbarch, sparc64obsd_supply_fpregset, NULL);
+  tdep->sizeof_fpregset = 272;
 
   frame_unwind_append_sniffer (gdbarch, sparc64obsd_sigtramp_frame_sniffer);
+  frame_unwind_append_sniffer (gdbarch, sparc64obsd_trapframe_sniffer);
 
   sparc64_init_abi (info, gdbarch);
 
   /* OpenBSD/sparc64 has SVR4-style shared libraries...  */
   set_gdbarch_in_solib_call_trampoline (gdbarch, in_plt_section);
-  set_gdbarch_skip_trampoline_code (gdbarch, find_solib_trampoline_target);
   set_solib_svr4_fetch_link_map_offsets
     (gdbarch, svr4_lp64_fetch_link_map_offsets);
+  set_gdbarch_skip_solib_resolver (gdbarch, obsd_skip_solib_resolver);
 }
 
 

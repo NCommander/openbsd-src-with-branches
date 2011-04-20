@@ -189,7 +189,8 @@ const char extra_symbol_chars[] = "*%-([";
      || ((defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF))	\
 	 && !defined (TE_LINUX)				\
 	 && !defined (TE_FreeBSD)			\
-	 && !defined (TE_NetBSD)))
+	 && !defined (TE_NetBSD)			\
+	 && !defined (TE_OpenBSD)))
 /* This array holds the chars that always start a comment.  If the
    pre-processor is disabled, these aren't very useful.  */
 const char comment_chars[] = "#/";
@@ -967,6 +968,7 @@ md_begin ()
     identifier_chars['@'] = '@';
 #endif
     digit_chars['-'] = '-';
+    mnemonic_chars['-'] = '-';
     identifier_chars['_'] = '_';
     identifier_chars['.'] = '.';
 
@@ -3154,7 +3156,7 @@ output_insn ()
       /* All opcodes on i386 have either 1 or 2 bytes, PadLock instructions
 	 have 3 bytes.  We may use one more higher byte to specify a prefix
 	 the instruction requires.  */
-      if ((i.tm.cpu_flags & CpuPadLock) != 0
+      if (((i.tm.cpu_flags & (CpuPadLock|CpuSSSE3|CpuAES|CpuPCLMUL)) != 0)
 	  && (i.tm.base_opcode & 0xff000000) != 0)
         {
 	  unsigned int prefix;
@@ -3188,7 +3190,7 @@ output_insn ()
 	}
       else
 	{
-	  if ((i.tm.cpu_flags & CpuPadLock) != 0)
+	  if ((i.tm.cpu_flags & (CpuPadLock|CpuSSSE3|CpuAES|CpuPCLMUL)) != 0)
 	    {
 	      p = frag_more (3);
 	      *p++ = (i.tm.base_opcode >> 16) & 0xff;

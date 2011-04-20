@@ -115,6 +115,7 @@ forw_textlist(tlist, prev)
 	return (s);
 }
 
+#ifndef SMALL_PROGRAM
 	public char *
 back_textlist(tlist, prev)
 	struct textlist *tlist;
@@ -140,6 +141,7 @@ back_textlist(tlist, prev)
 		s--;
 	return (s);
 }
+#endif /* SMALL_PROGRAM */
 
 /*
  * Close the current input file.
@@ -237,14 +239,6 @@ edit_ifile(ifile)
 	{
 		chflags = ch_getflags();
 		close_file();
-		if ((chflags & CH_HELPFILE) && held_ifile(was_curr_ifile) <= 1)
-		{
-			/*
-			 * Don't keep the help file in the ifile list.
-			 */
-			del_ifile(was_curr_ifile);
-			was_curr_ifile = old_ifile;
-		}
 	}
 
 	if (ifile == NULL_IFILE)
@@ -299,10 +293,6 @@ edit_ifile(ifile)
 		 */
 		__djgpp_set_ctrl_c(1);
 #endif
-	} else if (strcmp(open_filename, FAKE_HELPFILE) == 0)
-	{
-		f = -1;
-		chflags |= CH_HELPFILE;
 	} else if ((parg.p_string = bad_file(open_filename)) != NULL)
 	{
 		/*
@@ -371,15 +361,12 @@ edit_ifile(ifile)
 	new_file = TRUE;
 	ch_init(f, chflags);
 
-	if (!(chflags & CH_HELPFILE))
-	{
 #if LOGFILE
-		if (namelogfile != NULL && is_tty)
-			use_logfile(namelogfile);
+	if (namelogfile != NULL && is_tty)
+		use_logfile(namelogfile);
 #endif
-		if (every_first_cmd != NULL)
-			ungetsc(every_first_cmd);
-	}
+	if (every_first_cmd != NULL)
+		ungetsc(every_first_cmd);
 
 	no_display = !any_display;
 	flush();
@@ -416,6 +403,7 @@ edit_ifile(ifile)
 	return (0);
 }
 
+#ifndef SMALL_PROGRAM
 /*
  * Edit a space-separated list of files.
  * For each filename in the list, enter it into the ifile list.
@@ -475,6 +463,7 @@ edit_list(filelist)
 	reedit_ifile(save_ifile);
 	return (edit(good_filename));
 }
+#endif /* SMALL_PROGRAM */
 
 /*
  * Edit the first file in the command line (ifile) list.
@@ -739,7 +728,7 @@ loop:
 		 * Append: open the file and seek to the end.
 		 */
 		logfile = open(filename, OPEN_APPEND);
-		if (lseek(logfile, (off_t)0, 2) == BAD_LSEEK)
+		if (lseek(logfile, (off_t)0, SEEK_END) == BAD_LSEEK)
 		{
 			close(logfile);
 			logfile = -1;

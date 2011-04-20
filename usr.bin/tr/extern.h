@@ -1,4 +1,5 @@
-/*	$NetBSD: extern.h,v 1.3 1994/12/07 08:35:07 jtc Exp $	*/
+/*	$OpenBSD: extern.h,v 1.5 2002/02/16 21:27:55 millert Exp $	*/
+/*	$NetBSD: extern.h,v 1.4 1995/11/01 00:45:22 pk Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,12 +39,11 @@ typedef struct {
 	int	 lastch;		/* last character */
 	int	equiv[2];		/* equivalence set */
 	int	*set;			/* set of characters */
-	char	*str;			/* user's string */
+	unsigned char	*str;		/* user's string */
 } STR;
 
 #include <limits.h>
 #define	NCHARS	(UCHAR_MAX + 1)		/* Number of possible characters. */
 #define	OOBCH	(UCHAR_MAX + 1)		/* Out of band character value. */
 
-void	 err __P((const char *fmt, ...));
-int	 next __P((STR *));
+int	 next(STR *);

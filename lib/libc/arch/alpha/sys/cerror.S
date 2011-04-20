@@ -1,4 +1,5 @@
-/*	$NetBSD: cerror.S,v 1.1 1995/02/10 17:50:31 cgd Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.4 2002/10/06 23:23:18 art Exp $	*/
+/*	$NetBSD: cerror.S,v 1.3 1996/10/17 03:08:17 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -31,10 +32,10 @@
 
 IMPORT(errno, 4)
 
-LEAF(cerror, 0)
-	br	t0, 1f
-1:	SETGP(t0)
+LEAF(__cerror, 0)
+	br	t0, L1
+L1:	LDGP(t0)
 	stl	v0, errno
 	ldiq	v0, -1
 	RET
-END(cerror)
+END(__cerror)

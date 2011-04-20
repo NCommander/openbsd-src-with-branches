@@ -1,3 +1,4 @@
+/*	$OpenBSD: replace.c,v 1.6 2003/06/12 20:58:08 deraadt Exp $	*/
 /*	$NetBSD: replace.c,v 1.6 1995/03/26 03:28:01 glass Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)replace.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: replace.c,v 1.6 1995/03/26 03:28:01 glass Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -66,8 +55,7 @@ static char rcsid[] = "$NetBSD: replace.c,v 1.6 1995/03/26 03:28:01 glass Exp $"
  *	is specified, modification dates select for replacement.
  */
 int
-replace(argv)
-	char **argv;
+replace(char **argv)
 {
 	char *file;
 	int afd, curfd, errflg, exists, mods, sfd, tfd1, tfd2;
@@ -130,13 +118,13 @@ replace(argv)
 				curfd = tfd2;
 			/* Read and write to an archive; pad on both. */
 			SETCF(afd, archive, curfd, tname, RPAD|WPAD);
-			put_arobj(&cf, (struct stat *)NULL);
+			put_arobj(&cf, NULL);
 			if (options & AR_A)
 				curfd = tfd2;
 		} else {
 			/* Read and write to an archive; pad on both. */
 useold:			SETCF(afd, archive, curfd, tname, RPAD|WPAD);
-			put_arobj(&cf, (struct stat *)NULL);
+			put_arobj(&cf, NULL);
 		}
 	}
 
@@ -147,7 +135,7 @@ useold:			SETCF(afd, archive, curfd, tname, RPAD|WPAD);
         }
 
 	/* Append any left-over arguments to the end of the after file. */
-append:	while (file = *argv++) {
+append:	while ((file = *argv++)) {
 		if (options & AR_V)
 			(void)printf("a - %s\n", file);
 		if ((sfd = open(file, O_RDONLY)) < 0) {

@@ -18,6 +18,7 @@ with groff; see the file COPYING.  If not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #ifndef errno
@@ -80,7 +81,7 @@ struct bounding_box *bb;
     return "%s is empty";
   if (strncmp("%!PS-Adobe-", buf, 11) != 0)
     return "%s is not conforming";
-  while (fgets(buf, sizeof(buf), fp) != 0) {
+  while (fgets(buf, sizeof(buf), fp) != NULL) {
     if (buf[0] != '%' || buf[1] != '%'
 	|| strncmp(buf + 2, "EndComments", 11) == 0)
       break;
@@ -108,7 +109,7 @@ struct bounding_box *bb;
 	if (fseek(fp, 0L, 0) == -1)
 	  break;
       }
-      while (fgets(buf, sizeof(buf), fp) != 0) {
+      while (fgets(buf, sizeof(buf), fp) != NULL) {
 	if (buf[0] == '%' && buf[1] == '%') {
 	  if (!had_trailer) {
 	    if (strncmp(buf + 2, "Trailer", 7) == 0)

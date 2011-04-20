@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2001, 2004 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,18 +13,20 @@
  */
 
 #include <sm/gen.h>
-SM_IDSTR(id, "@(#)$Sendmail: ungetc.c,v 1.26 2001/03/05 02:18:16 ca Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: ungetc.c,v 1.30 2005/06/14 23:07:20 ca Exp $")
 
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-#include <sys/time.h>
+#include <sm/time.h>
 #include <errno.h>
 #include <sm/io.h>
 #include <sm/heap.h>
 #include <sm/assert.h>
 #include <sm/conf.h>
 #include "local.h"
+
+static void	sm_submore_x __P((SM_FILE_T *));
 
 /*
 **  SM_SUBMORE_X -- expand ungetc buffer
@@ -46,7 +48,7 @@ SM_IDSTR(id, "@(#)$Sendmail: ungetc.c,v 1.26 2001/03/05 02:18:16 ca Exp $")
 
 static void
 sm_submore_x(fp)
-	register SM_FILE_T *fp;
+	SM_FILE_T *fp;
 {
 	register int i;
 	register unsigned char *p;

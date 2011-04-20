@@ -1,4 +1,5 @@
-/*	$NetBSD: svr4_stat.h,v 1.3 1994/10/29 00:43:27 christos Exp $	 */
+/*	$OpenBSD: svr4_stat.h,v 1.2 1996/02/26 23:32:02 niklas Exp $	 */
+/*	$NetBSD: svr4_stat.h,v 1.4 1996/02/10 17:12:38 christos Exp $	 */
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -63,9 +64,43 @@ struct svr4_xstat {
 	svr4_timestruc_t	st_mtim;
 	svr4_timestruc_t	st_ctim;
 	long			st_blksize;
-	long			st_blocks;
+	svr4_blkcnt_t		st_blocks;
 	char			st_fstype[16];
 	long			st_pad4[8];
 };
+
+struct svr4_stat64 {
+	svr4_dev_t		st_dev;
+	long			st_pad1[3];
+	svr4_ino64_t		st_ino;
+	svr4_mode_t		st_mode;
+	svr4_nlink_t		st_nlink;
+	svr4_uid_t		st_uid;
+	svr4_gid_t		st_gid;
+	svr4_dev_t		st_rdev;
+	long			st_pad2[2];
+	svr4_off64_t		st_size;
+	svr4_timestruc_t	st_atim;
+	svr4_timestruc_t	st_mtim;
+	svr4_timestruc_t	st_ctim;
+	long			st_blksize;
+	svr4_blkcnt64_t		st_blocks;
+	char			st_fstype[16];
+	long			st_pad4[8];
+};
+
+#define	SVR4_PC_LINK_MAX		1
+#define	SVR4_PC_MAX_CANON		2
+#define	SVR4_PC_MAX_INPUT		3
+#define	SVR4_PC_NAME_MAX		4
+#define	SVR4_PC_PATH_MAX		5
+#define	SVR4_PC_PIPE_BUF		6
+#define	SVR4_PC_NO_TRUNC		7
+#define	SVR4_PC_VDISABLE		8
+#define	SVR4_PC_CHOWN_RESTRICTED	9
+#define	SVR4_PC_ASYNC_IO		10
+#define	SVR4_PC_PRIO_IO			11
+#define	SVR4_PC_SYNC_IO			12
+#define	SVR4_PC_FILESIZEBITS		67
 
 #endif /* !_SVR4_STAT_H_ */

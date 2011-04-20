@@ -2437,8 +2437,10 @@ preserve_subexpressions_p ()
 {
   rtx insn;
 
+#ifndef	BROKEN_PRESERVE_SUBEXPRESSIONS_P
   if (flag_expensive_optimizations)
     return 1;
+#endif
 
   if (optimize == 0 || loop_stack == 0)
     return 0;
@@ -3595,6 +3597,9 @@ expand_decl (decl)
     /* Dynamic-size object: must push space on the stack.  */
     {
       rtx address, size;
+
+      if (warn_variable_decl)
+	warning ("variable-sized declaration");
 
       /* Record the stack pointer on entry to block, if have
 	 not already done so.  */

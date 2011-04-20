@@ -1,6 +1,6 @@
+/* *	$OpenBSD: md-static-funcs.c,v 1.3 2002/07/10 17:28:16 marc Exp $*/
 
 /*
- *	$Id: md-static-funcs.c,v 1.2 1993/12/08 10:28:56 pk Exp $
  *
  * Simple SPARC relocations for the benefit of self-relocation of ld.so
  * avoiding the use of global variables (ie. reloc_bitshift[] et. al.).
@@ -9,13 +9,10 @@
  * This *must* be a static function, so it is not called through a jmpslot.
  */
 static void
-md_relocate_simple(r, relocation, addr)
-struct relocation_info	*r;
-long			relocation;
-char			*addr;
+md_relocate_simple(struct relocation_info *r, long relocation, char *addr)
 {
-	register unsigned long	mask;
-	register unsigned long	shift;
+	unsigned long	mask;
+	unsigned long	shift;
 
 	switch (r->r_type) {
 	case RELOC_32:
