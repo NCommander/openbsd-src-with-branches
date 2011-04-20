@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_lrint.c,v 1.4 2011/04/10 20:42:09 martynas Exp $	*/
+/*	$OpenBSD: s_lrint.c,v 1.5 2011/04/17 13:59:54 martynas Exp $	*/
 /* $NetBSD: lrint.c,v 1.3 2004/10/13 15:18:32 drochner Exp $ */
 
 /*-
@@ -67,9 +67,11 @@ LRINTNAME(double x)
 
 	/* >= 2^52 is already an exact integer */
 	if (e < DBL_FRACBITS) {
+		volatile double t = x;	/* clip extra precision */
 		/* round, using current direction */
-		x += TWO52[s];
-		x -= TWO52[s];
+		t += TWO52[s];
+		t -= TWO52[s];
+		x = t;
 	}
 
 	EXTRACT_WORDS(i0, i1, x);
