@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.29 2010/06/11 10:45:36 jsg Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.30 2010/09/20 08:56:16 martinh Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -303,6 +303,7 @@ struct snmpd {
 
 	int			 sc_ncpu;
 	int64_t			*sc_cpustates;
+	int			 sc_rtfilter;
 };
 
 /* control.c */
