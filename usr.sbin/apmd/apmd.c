@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmd.c,v 1.55 2010/03/30 17:42:05 oga Exp $	*/
+/*	$OpenBSD: apmd.c,v 1.56 2010/04/02 04:12:46 deraadt Exp $	*/
 
 /*
  *  Copyright (c) 1995, 1996 John T. Kohl
@@ -568,7 +568,8 @@ main(int argc, char *argv[])
 	if (debug)
 		openlog(__progname, LOG_CONS, LOG_LOCAL1);
 	else {
-		daemon(0, 0);
+		if (daemon(0, 0) < 0)
+			error("failed to daemonize", NULL);
 		openlog(__progname, LOG_CONS, LOG_DAEMON);
 		setlogmask(LOG_UPTO(LOG_NOTICE));
 	}
