@@ -1,4 +1,4 @@
-/*	$OpenBSD: sginode.c,v 1.22 2011/04/07 15:30:16 miod Exp $	*/
+/*	$OpenBSD: sginode.c,v 1.23 2011/04/17 17:44:24 miod Exp $	*/
 /*
  * Copyright (c) 2008, 2009, 2011 Miodrag Vallat.
  *
@@ -518,7 +518,7 @@ kl_add_memory_ip27(int16_t nasid, int16_t *sizes, unsigned int cnt)
 
 	basepa = (paddr_t)nasid << kl_n_shift;
 
-	/* note we know kl_n_shift >> 31, so 2GB windows can not span nodes */
+	/* note we know kl_n_shift > 31, so 2GB windows can not span nodes */
 	twogseg = basepa >> 31;
 	twogcnt = 0;
 
@@ -585,13 +585,13 @@ void
 kl_add_memory_ip35(int16_t nasid, int16_t *sizes, unsigned int cnt)
 {
 	paddr_t basepa;
-	uint32_t fp, lp, np;
+	uint64_t fp, lp, np;
 	paddr_t twogseg;
 	psize_t twogcnt;
 
 	basepa = (paddr_t)nasid << kl_n_shift;
 
-	/* note we know kl_n_shift >> 31, so 2GB windows can not span nodes */
+	/* note we know kl_n_shift > 31, so 2GB windows can not span nodes */
 	twogseg = basepa >> 31;
 	twogcnt = 0;
 
