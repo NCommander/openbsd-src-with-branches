@@ -40,29 +40,29 @@ LEAF_ENTRY(__CONCAT(_thread_sys_,x))		!\
 EXIT(__CONCAT(_thread_sys_,x))
 
 #define	SYSCALL(x)				!\
-	std	rp, HPPA_FRAME_ERP(sr0,sp)	!\
-	ldil	L%SYSCALLGATE, r1		!\
-	ble	4(sr7, r1)			!\
-	ldi	__CONCAT(SYS_,x), r1		!\
+	std	%rp, HPPA_FRAME_RP(%sr0,%sp)	!\
+	ldil	L%SYSCALLGATE, %r1		!\
+	ble	4(%sr7, %r1)			!\
+	ldi	__CONCAT(SYS_,x), %r1		!\
 	.import	__cerror, code			!\
-	comb,<>	r0, t1, __cerror		!\
-	ldd	HPPA_FRAME_ERP(sr0,sp), rp
+	comb,<>	%r0, %t1, __cerror		!\
+	ldd	HPPA_FRAME_RP(%sr0,%sp), %rp
 
 #define	PSEUDO(x,y)				!\
 SYSENTRY(x)					!\
 	SYSCALL(y)				!\
-	bv	r0(rp)				!\
+	bv	%r0(%rp)			!\
 	nop					!\
 SYSEXIT(x)
 
 #define	PSEUDO_NOERROR(x,y)			!\
 SYSENTRY(x)					!\
-	std	rp, HPPA_FRAME_ERP(sr0,sp)	!\
-	ldil	L%SYSCALLGATE, r1		!\
-	ble	4(sr7, r1)			!\
-	ldi	__CONCAT(SYS_,y), r1		!\
-	ldd	HPPA_FRAME_ERP(sr0,sp), rp	!\
-	bv	r0(rp)				!\
+	std	%rp, HPPA_FRAME_RP(%sr0,%sp)	!\
+	ldil	L%SYSCALLGATE, %r1		!\
+	ble	4(%sr7, %r1)			!\
+	ldi	__CONCAT(SYS_,y), %r1		!\
+	ldd	HPPA_FRAME_RP(%sr0,%sp), %rp	!\
+	bv	%r0(%rp)			!\
 	nop					!\
 SYSEXIT(x)
 
