@@ -26,6 +26,7 @@
 #define	HPPA_FRAME_SIZE		(128)
 #define	HPPA_FRAME_PSP		(-8)
 #define	HPPA_FRAME_RP		(-16)
+#define	HPPA_FRAME_ARG(n)       (-(16 + 8 * ((n) + 1)))
 
 /*
  * Macros to decode processor status word.
