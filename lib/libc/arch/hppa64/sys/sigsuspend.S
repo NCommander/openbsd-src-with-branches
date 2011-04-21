@@ -29,8 +29,8 @@
 #include "SYS.h"
 
 SYSENTRY(sigsuspend)
-	ldd	0(arg0), arg0
-	std	arg0, HPPA_FRAME_ARG(0)(sp)
+	ldd	0(%arg0), %arg0
+	std	%arg0, HPPA_FRAME_ARG(0)(%sp)
 
 	SYSCALL(sigsuspend)
 SYSEXIT(sigsuspend)

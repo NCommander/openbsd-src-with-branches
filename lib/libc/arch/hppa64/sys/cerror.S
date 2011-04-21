@@ -33,16 +33,16 @@ WEAK_ALIAS(__cerror, ___cerror)
 	.import errno, data
 ENTRY(___cerror,0)
 #ifdef PIC
-	addil	LT%errno, r19
-	ldd	RT%errno(r1), r1
-	std	t1, 0(r1)
+	addil	LT%errno, %r19
+	ldd	RT%errno(%r1), %r1
+	std	%arg3, 0(%r1)
 #else
-	ldil	L%errno, r1
-	std	t1, R%errno(r1)
+	ldil	L%errno, %r1
+	std	%arg3, R%errno(%r1)
 #endif
-	ldi	-1, ret0
-	bv	r0(rp)
-	ldi	-1, ret1
+	ldi	-1, %ret0
+	bv	%r0(%rp)
+	ldi	-1, %ret1
 EXIT(___cerror)
 
 	.end

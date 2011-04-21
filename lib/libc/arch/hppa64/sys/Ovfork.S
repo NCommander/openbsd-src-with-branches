@@ -30,16 +30,16 @@
 
 SYSENTRY(vfork)
 	.import errno, data
-	copy	rp, t4
-	ldil	L%SYSCALLGATE, r1
-	ble	4(sr7, r1)
-	ldi	__CONCAT(SYS_,vfork), t1
+	copy	%rp, arg7
+	ldil	L%SYSCALLGATE, %r1
+	ble	4(%sr7, %r1)
+	ldi	__CONCAT(SYS_,vfork), arg4
 	.import	__cerror, code
-	comb,<>	r0, t1, __cerror
-	copy	t4, rp
-	addi	-1, ret1, ret1
-	bv	r0(rp)
-	and	ret1, ret0, ret0
+	comb,<>	%r0, arg4, __cerror
+	copy	arg7, %rp
+	addi	-1, %ret1, %ret1
+	bv	%r0(%rp)
+	and	%ret1, %ret0, %ret0
 SYSEXIT(vfork)
 
 	.end

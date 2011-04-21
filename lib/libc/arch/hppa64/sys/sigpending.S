@@ -30,10 +30,10 @@
 
 SYSENTRY(sigpending)
 	SYSCALL(sigpending)
-	ldd	HPPA_FRAME_ARG(0)(sp), t1
-	std	ret0, 0(t1)
-	bv	r0(rp)
-	copy	r0, ret0
+	ldd	HPPA_FRAME_ARG(0)(%sp), %arg3
+	std	%ret0, 0(%arg3)
+	bv	%r0(%rp)
+	copy	%r0, %ret0
 SYSEXIT(sigpending)
 
 	.end
