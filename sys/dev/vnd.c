@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.109 2011/04/18 16:50:22 thib Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.111 2011/04/23 14:57:01 deraadt Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -225,13 +225,6 @@ vndopen(dev_t dev, int flags, int mode, struct proc *p)
 
 	part = DISKPART(dev);
 	pmask = 1 << part;
-
-	/* Allow access to the raw device even if we are open. */
-	if (sc->sc_dk.dk_openmask && !(part == RAW_PART) &&
-	    !(mode == S_IFCHR)) {
-		error = EBUSY;
-		goto bad;
-	}
 
 	/* Check that the partition exists. */
 	if (part != RAW_PART &&
