@@ -226,11 +226,9 @@ vndopen(dev_t dev, int flags, int mode, struct proc *p)
 	part = DISKPART(dev);
 	pmask = 1 << part;
 
-	/*
-	 * If any partition is open, all succeeding openings must be of the
-	 * same type or read-only.
-	 */
-	if (sc->sc_dk.dk_openmask && (flags & FWRITE)) {
+	/* Allow access to the raw device even if we are open. */
+	if (sc->sc_dk.dk_openmask && !(part == RAW_PART) &&
+	    !(mode == S_IFCHR)) {
 		error = EBUSY;
 		goto bad;
 	}
