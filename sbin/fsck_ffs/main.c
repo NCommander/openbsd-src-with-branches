@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.36 2010/08/12 15:26:34 jsing Exp $	*/
+/*	$OpenBSD: main.c,v 1.37 2011/04/16 16:37:21 otto Exp $	*/
 /*	$NetBSD: main.c,v 1.22 1996/10/11 20:15:48 thorpej Exp $	*/
 
 /*
@@ -76,6 +76,9 @@ main(int argc, char *argv[])
 		case 'c':
 			skipclean = 0;
 			cvtlevel = argtoi('c', "conversion level", optarg, 10);
+			if (cvtlevel < 3)
+				errexit("cannot do level %d conversion\n",
+				    cvtlevel);
 			break;
 
 		case 'd':

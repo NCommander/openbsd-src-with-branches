@@ -1,4 +1,4 @@
-/*	$OpenBSD: utilities.c,v 1.37 2009/12/10 16:01:51 deraadt Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.38 2011/04/16 16:37:21 otto Exp $	*/
 /*	$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $	*/
 
 /*
@@ -511,8 +511,7 @@ getpathname(char *namebuf, size_t namebuflen, ino_t curdir, ino_t ino)
 void
 catch(int signo)
 {
-	if (!doinglevel2)
-		ckfini(0);			/* XXX signal race */
+	ckfini(0);			/* XXX signal race */
 	_exit(12);
 }
 
