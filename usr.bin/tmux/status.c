@@ -1,4 +1,4 @@
-/* $OpenBSD: status.c,v 1.72 2011/03/29 19:30:16 nicm Exp $ */
+/* $OpenBSD: status.c,v 1.73 2011/04/18 19:49:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -408,6 +408,13 @@ status_replace1(struct client *c, struct session *s, struct winlink *wl,
 	case 'H':
 		if (gethostname(tmp, sizeof tmp) != 0)
 			fatal("gethostname failed");
+		ptr = tmp;
+		goto do_replace;
+	case 'h':
+		if (gethostname(tmp, sizeof tmp) != 0)
+			fatal("gethostname failed");
+		if ((ptr = strchr(tmp, '.')) != NULL)
+			*ptr = '\0';
 		ptr = tmp;
 		goto do_replace;
 	case 'I':
