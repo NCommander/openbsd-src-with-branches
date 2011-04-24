@@ -1,3 +1,0 @@
-# looks a bit strange but is valid now
-# block return-icmp6 in inet proto icmp all
-block in return-icmp6 in inet proto icmp all

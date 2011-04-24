@@ -1,3 +1,0 @@
-esp from 1.1.1.1 to 2.2.2.2 spi 0xdeadbeef:0xbeefdead auth hmac-sha1 enc aes \
-	authkey 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
-	enckey 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee:0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
