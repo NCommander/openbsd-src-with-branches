@@ -58,7 +58,6 @@ int	__swsetup(FILE *);
 int	__sflags(const char *, int *);
 wint_t __fgetwc_unlock(FILE *);
 int	__vfprintf(FILE *, const char *, __va_list);
-int	__vfwprintf(FILE * __restrict, const wchar_t * __restrict, __va_list);
 
 extern void __atexit_register_cleanup(void (*)(void));
 extern int __sdidinit;
