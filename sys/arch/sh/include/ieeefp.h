@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieeefp.h,v 1.2 2006/10/10 22:02:11 miod Exp $	*/
+/*	$OpenBSD: ieeefp.h,v 1.3 2006/10/11 00:56:35 drahn Exp $	*/
 /*	$NetBSD: ieeefp.h,v 1.3 2002/04/28 17:10:34 uch Exp $ */
 
 /*
@@ -11,7 +11,6 @@
 
 typedef int fp_except;
 #define	FP_X_INV	0x10	/* invalid operation exception */
-#define	FP_X_DNML	0x20	/* denormalization exception */
 #define	FP_X_DZ		0x08	/* divide-by-zero exception */
 #define	FP_X_OFL	0x04	/* overflow exception */
 #define	FP_X_UFL	0x02	/* underflow exception */
