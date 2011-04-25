@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.151 2010/10/11 11:45:00 claudio Exp $	*/
+/*	$OpenBSD: route.c,v 1.152 2010/10/25 19:39:55 deraadt Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -704,7 +704,7 @@ inet_makenetandmask(u_int32_t net, struct sockaddr_in *sin, int bits)
 	char *cp;
 
 	rtm_addrs |= RTA_NETMASK;
-	if (net == 0)
+	if (net == 0 && bits == 0)
 		mask = addr = 0;
 	else if (bits) {
 		addr = net;
