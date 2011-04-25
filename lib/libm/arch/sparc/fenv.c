@@ -33,11 +33,11 @@
 
 /* Load floating-point state register (all 64bits) */
 #define	__ldxfsr(__r)	__asm__	__volatile__		\
-	("ldx %0, %%fsr" : : "m" (__r))
+	("ld %0, %%fsr" : : "m" (__r))
 
 /* Save floating-point state register (all 64bits) */
 #define	__stxfsr(__r)	__asm__	__volatile__		\
-	("stx %%fsr, %0" : "=m" (*(__r)))
+	("st %%fsr, %0" : "=m" (*(__r)))
 
 /*
  * The following constant represents the default floating-point environment

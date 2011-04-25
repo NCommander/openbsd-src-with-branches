@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef	_SPARC64_FENV_H_
-#define	_SPARC64_FENV_H_
+#ifndef	_SPARC_FENV_H_
+#define	_SPARC_FENV_H_
 
 #include <sys/stdint.h>
 
@@ -78,4 +78,4 @@ extern const fenv_t	__fe_dfl_env;
 
 __END_DECLS
 
-#endif	/* !_SPARC64_FENV_H_ */
+#endif	/* !_SPARC_FENV_H_ */
