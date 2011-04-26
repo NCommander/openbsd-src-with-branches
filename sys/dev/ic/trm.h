@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.h,v 1.1 2002/02/18 01:55:30 krw Exp $
+/*	$OpenBSD: trm.h,v 1.2 2010/10/11 14:56:44 krw Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.h
@@ -221,6 +221,9 @@ struct trm_softc
 	struct	SRB_HEAD	freeSRB;
 	struct	SRB_HEAD	goingSRB;
 	struct	SRB_HEAD	waitingSRB;
+
+	struct	mutex		sc_srb_mtx;
+	struct	scsi_iopool	sc_iopool;
 
 	struct	trm_dcb	       *pActiveDCB;
 	struct	trm_dcb        *pDCB[TRM_MAX_TARGETS][TRM_MAX_LUNS];
