@@ -1704,6 +1704,7 @@ getbootinfo(char *bootinfo, int bootinfo_size)
 {
 	bootarg32_t *q;
 	bios_ddb_t *bios_ddb;
+	bios_rootduid_t *bios_rootduid;
 
 #undef BOOTINFO_DEBUG
 #ifdef BOOTINFO_DEBUG
@@ -1788,6 +1789,11 @@ getbootinfo(char *bootinfo, int bootinfo_size)
 #ifdef DDB
 			db_console = bios_ddb->db_console;
 #endif
+			break;
+
+		case BOOTARG_ROOTDUID:
+			bios_rootduid = (bios_rootduid_t *)q->ba_arg;
+			bcopy(bios_rootduid, rootduid, sizeof(rootduid));
 			break;
 
 		default:

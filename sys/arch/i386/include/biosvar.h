@@ -210,6 +210,11 @@ typedef struct _bios_ddb {
 	int	db_console;
 } __packed bios_ddb_t;
 
+#define BOOTARG_ROOTDUID 9
+typedef struct _bios_rootduid {
+	u_char	duid[8];
+} __packed bios_rootduid_t;
+
 #if defined(_KERNEL) || defined (_STANDALONE)
 
 #ifdef _LOCORE

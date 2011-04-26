@@ -43,7 +43,7 @@
 #include <dev/cons.h>
 #include "debug.h"
 
-const char version[] = "3.16";
+const char version[] = "3.17";
 int	debug = 1;
 
 

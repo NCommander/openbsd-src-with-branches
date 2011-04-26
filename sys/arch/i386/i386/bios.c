@@ -455,6 +455,7 @@ bios_getopt()
 {
 	bootarg_t *q;
 	bios_ddb_t *bios_ddb;
+	bios_rootduid_t *bios_rootduid;
 
 #ifdef BIOS_DEBUG
 	printf("bootargv:");
@@ -538,6 +539,12 @@ bios_getopt()
 #ifdef DDB
 			db_console = bios_ddb->db_console;
 #endif
+			break;
+
+		case BOOTARG_ROOTDUID:
+			bios_rootduid = (bios_rootduid_t *)q->ba_arg;
+			bcopy(bios_rootduid, rootduid, sizeof(rootduid));
+			break;
 
 		default:
 #ifdef BIOS_DEBUG
