@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.20 2011/04/27 17:58:43 deraadt Exp $	*/
+/*	$OpenBSD: conf.h,v 1.21 2011/04/27 21:20:36 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -18,6 +18,8 @@
 #define CONF_H
 
 #ifdef DEBUG
+#include <signal.h>
+
 /*
  * Debug trace levels:
  *
