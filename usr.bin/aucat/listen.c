@@ -1,4 +1,4 @@
-/*	$OpenBSD: listen.c,v 1.11 2009/09/27 11:51:20 ratchov Exp $	*/
+/*	$OpenBSD: listen.c,v 1.12 2011/04/19 00:02:29 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -16,6 +16,7 @@
  */
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/signal.h>
 #include <sys/stat.h>
 #include <sys/un.h>
 #include <err.h>
