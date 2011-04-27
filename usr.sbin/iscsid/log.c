@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.2 2010/09/25 16:20:06 sobrado Exp $ */
+/*	$OpenBSD: log.c,v 1.3 2011/01/04 10:36:31 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -37,6 +37,7 @@
 #include "log.h"
 
 int	debug;
+int	verbose;
 
 void	 logit(int, const char *, ...);
 
@@ -46,11 +47,18 @@ log_init(int n_debug)
 	extern char	*__progname;
 
 	debug = n_debug;
+	verbose = n_debug;
 
 	if (!debug)
 		openlog(__progname, LOG_PID | LOG_NDELAY, LOG_DAEMON);
 
 	tzset();
+}
+
+void
+log_verbose(int v)
+{
+	verbose = v;
 }
 
 void
@@ -131,7 +139,7 @@ log_debug(const char *emsg, ...)
 {
 	va_list	 ap;
 
-	if (debug) {
+	if (verbose) {
 		va_start(ap, emsg);
 		vlog(LOG_DEBUG, emsg, ap);
 		va_end(ap);
