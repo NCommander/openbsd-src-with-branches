@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.110 2011/04/19 00:02:28 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.111 2011/04/27 17:58:43 deraadt Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -32,6 +32,7 @@
 #include <unistd.h>
 
 #include "abuf.h"
+#include "amsg.h"
 #include "aparams.h"
 #include "aproc.h"
 #include "conf.h"

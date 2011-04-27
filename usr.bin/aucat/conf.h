@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.19 2011/04/18 23:59:15 ratchov Exp $	*/
+/*	$OpenBSD: conf.h,v 1.20 2011/04/27 17:58:43 deraadt Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -29,13 +29,6 @@
  */
 extern volatile sig_atomic_t debug_level;
 #endif
-
-/*
- * socket and option names
- */
-#define AUCAT_PATH		"aucat"
-#define MIDICAT_PATH		"midicat"
-#define DEFAULT_OPT		"default"
 
 /*
  * MIDI buffer size
