@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: mpath_hds.c,v 1.1 2011/04/27 11:36:20 dlg Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -70,7 +70,6 @@ int		hds_mpath_offline(struct scsi_link *);
 
 struct mpath_ops hds_mpath_ops = {
 	"hds",
-	hds_mpath_start,
 	hds_mpath_checksense,
 	hds_mpath_online,
 	hds_mpath_offline
