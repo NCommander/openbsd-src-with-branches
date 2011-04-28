@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.3 2010/12/06 20:57:16 miod Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.4 2010/12/26 15:40:59 miod Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -67,6 +67,11 @@ pmap_prefer(vaddr_t offs, vaddr_t hint)
 		pmap_prefer_hint += HPPA_PGALIAS;
 	return pmap_prefer_hint;
 }
+
+/* pmap prefer alignment */
+#define PMAP_PREFER_ALIGN()	(HPPA_PGALIAS)
+/* pmap prefer offset within alignment */
+#define PMAP_PREFER_OFFSET(of)	((of) & HPPA_PGAOFF)
 
 #define	PMAP_GROWKERNEL
 #define	PMAP_STEAL_MEMORY
