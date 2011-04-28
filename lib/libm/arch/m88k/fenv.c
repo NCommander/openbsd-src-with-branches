@@ -1,4 +1,4 @@
-/*	$OpenBSD: fenv.c,v 1.1 2011/04/20 22:27:59 martynas Exp $	*/
+/*	$OpenBSD: fenv.c,v 1.1 2011/04/28 17:34:23 martynas Exp $	*/
 
 /*
  * Copyright (c) 2011 Martynas Venckus <martynas@openbsd.org>
@@ -116,8 +116,6 @@ feraiseexcept(int excepts)
 		d = 0x1p-1022;
 		d += 1.0;
 	}
-	__asm__ __volatile__ ("fnop");
-
 	return (0);
 }
 
