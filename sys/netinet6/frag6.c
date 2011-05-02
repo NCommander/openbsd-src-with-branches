@@ -1,4 +1,4 @@
-/*	$OpenBSD: frag6.c,v 1.32 2011/03/06 19:55:54 bluhm Exp $	*/
+/*	$OpenBSD: frag6.c,v 1.33 2011/04/03 13:54:21 stsp Exp $	*/
 /*	$KAME: frag6.c,v 1.40 2002/05/27 21:40:31 itojun Exp $	*/
 
 /*
@@ -202,8 +202,10 @@ frag6_input(struct mbuf **mp, int *offp, int proto)
 
 	if (ro.ro_rt != NULL && ro.ro_rt->rt_ifa != NULL)
 		dstifp = ((struct in6_ifaddr *)ro.ro_rt->rt_ifa)->ia_ifp;
-	RTFREE(ro.ro_rt);
-	ro.ro_rt = NULL;
+	if (ro.ro_rt != NULL) {
+		RTFREE(ro.ro_rt);
+		ro.ro_rt = NULL;
+	}
 #else
 	/* we are violating the spec, this is not the destination interface */
 	if ((m->m_flags & M_PKTHDR) != 0)
