@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.182 2011/04/04 14:25:16 mikeb Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.183 2011/04/29 12:36:31 mpf Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -591,7 +591,7 @@ carp_proto_input(struct mbuf *m, ...)
 		return;
 	}
 
-	if ((m = m_pullup2(m, len)) == NULL) {
+	if ((m = m_pullup(m, len)) == NULL) {
 		carpstats.carps_hdrops++;
 		return;
 	}
