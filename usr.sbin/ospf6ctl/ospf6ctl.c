@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6ctl.c,v 1.34 2010/02/25 16:40:23 claudio Exp $ */
+/*	$OpenBSD: ospf6ctl.c,v 1.35 2010/06/12 09:48:39 bluhm Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -575,8 +575,8 @@ int
 show_database_msg(struct imsg *imsg)
 {
 	static struct in_addr	 area_id;
-	static u_int16_t	 lasttype;
 	static char		 ifname[IF_NAMESIZE];
+	static u_int16_t	 lasttype;
 	struct area		*area;
 	struct iface		*iface;
 	struct lsa_hdr		*lsa;
