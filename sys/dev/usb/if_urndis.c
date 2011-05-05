@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urndis.c,v 1.28 2011/01/16 22:35:29 jakemsr Exp $ */
+/*	$OpenBSD: if_urndis.c,v 1.29 2011/01/25 20:03:35 jakemsr Exp $ */
 
 /*
  * Copyright (c) 2010 Jonathan Armani <armani@openbsd.org>
@@ -135,7 +135,8 @@ struct cfattach urndis_ca = {
  * Supported devices that we can't match by class IDs.
  */
 static const struct usb_devno urndis_devs[] = {
-	{ USB_VENDOR_HTC,	USB_PRODUCT_HTC_ANDROID }
+	{ USB_VENDOR_HTC,	USB_PRODUCT_HTC_ANDROID },
+	{ USB_VENDOR_SAMSUNG2,	USB_PRODUCT_SAMSUNG2_ANDROID }
 };
 
 usbd_status
