@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.50 2010/08/22 20:55:10 bluhm Exp $ */
+/*	$OpenBSD: rde.c,v 1.51 2011/05/02 06:34:29 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -507,7 +507,7 @@ rde_dispatch_imsg(int fd, short event, void *bula)
 				break;
 
 			v = lsa_find(nbr->iface, lsa_hdr.type, lsa_hdr.ls_id,
-				    lsa_hdr.adv_rtr);
+			    lsa_hdr.adv_rtr);
 			if (v == NULL)
 				db_hdr = NULL;
 			else
