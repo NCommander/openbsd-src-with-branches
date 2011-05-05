@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.143 2011/04/12 12:37:22 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.144 2011/04/24 10:07:43 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -273,6 +273,7 @@ struct host_config {
 	char			 name[MAXHOSTNAMELEN];
 	struct sockaddr_storage	 ss;
 	int			 ttl;
+	int			 priority;
 };
 
 struct host {
