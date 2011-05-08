@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.1 2010/09/20 06:32:30 syuu Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.2 2010/10/01 16:13:59 syuu Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -82,7 +82,7 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 	config_found(self, &caa.caa_maa, mainbus_print);
 
 	/* on-board I/O */
-	caa.caa_maa.maa_name = "obio";
+	caa.caa_maa.maa_name = "iobus";
 	config_found(self, &caa.caa_maa, mainbus_print);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.41 2010/01/18 16:59:23 miod Exp $ */
+/*	$OpenBSD: intr.h,v 1.1 2010/09/20 06:32:30 syuu Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -190,6 +190,12 @@ void	dosoftint(void);
 #ifdef MULTIPROCESSOR
 #define ENABLEIPI() updateimask(~CR_INT_1) /* enable IPI interrupt level */
 #endif
+void	octeon_intr_init(void);
+void	octeon_setintrmask(int);
+void   *octeon_intr_establish(int, int, int (*)(void *),
+	    void *, const char *);
+void	octeon_intr_disestablish(void *);
+void	octeon_intr_init(void);
 
 #endif /* _LOCORE */
 
