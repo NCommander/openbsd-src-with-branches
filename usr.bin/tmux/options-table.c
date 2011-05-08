@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.5 2011/04/18 19:49:05 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.6 2011/05/08 19:53:06 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -191,6 +191,11 @@ const struct options_table_entry session_options_table[] = {
 	  .minimum = 0,
 	  .maximum = INT_MAX,
 	  .default_num = 20
+	},
+
+	{ .name = "mouse-resize-pane",
+	  .type = OPTIONS_TABLE_FLAG,
+	  .default_num = 0
 	},
 
 	{ .name = "mouse-select-pane",
