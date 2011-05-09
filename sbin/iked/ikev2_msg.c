@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.10 2011/01/21 11:56:00 reyk Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.11 2011/01/21 12:37:28 reyk Exp $	*/
 /*	$vantronix: ikev2.c,v 1.101 2010/06/03 07:57:33 reyk Exp $	*/
 
 /*
@@ -95,7 +95,7 @@ ikev2_msg_cb(int fd, short event, void *arg)
 		iov[1].iov_base = buf;
 		iov[1].iov_len = len;
 
-		imsg_composev_proc(env, PROC_IKEV1, IMSG_IKE_MESSAGE, -1,
+		proc_composev_imsg(env, PROC_IKEV1, IMSG_IKE_MESSAGE, -1,
 		    iov, 2);
 		goto done;
 	}

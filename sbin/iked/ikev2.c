@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2.c,v 1.53 2011/05/05 12:55:52 reyk Exp $	*/
+/*	$OpenBSD: ikev2.c,v 1.54 2011/05/05 12:59:31 reyk Exp $	*/
 /*	$vantronix: ikev2.c,v 1.101 2010/06/03 07:57:33 reyk Exp $	*/
 
 /*
@@ -109,7 +109,7 @@ static struct privsep_proc procs[] = {
 pid_t
 ikev2(struct privsep *ps, struct privsep_proc *p)
 {
-	return (run_proc(ps, p, procs, nitems(procs), NULL, NULL));
+	return (proc_run(ps, p, procs, nitems(procs), NULL, NULL));
 }
 
 int
