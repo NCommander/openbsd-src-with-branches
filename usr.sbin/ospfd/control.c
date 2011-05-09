@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.33 2010/05/14 11:52:19 claudio Exp $ */
+/*	$OpenBSD: control.c,v 1.34 2010/09/02 14:03:22 sobrado Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -253,6 +253,7 @@ control_dispatch_imsg(int fd, short event, void *bula)
 		case IMSG_CTL_SHOW_DB_SELF:
 		case IMSG_CTL_SHOW_DB_SUM:
 		case IMSG_CTL_SHOW_DB_ASBR:
+		case IMSG_CTL_SHOW_DB_OPAQ:
 		case IMSG_CTL_SHOW_RIB:
 		case IMSG_CTL_SHOW_SUM:
 			c->iev.ibuf.pid = imsg.hdr.pid;

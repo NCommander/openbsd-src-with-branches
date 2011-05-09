@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.h,v 1.42 2010/05/26 13:56:08 nicm Exp $ */
+/*	$OpenBSD: ospfe.h,v 1.43 2011/03/25 08:52:21 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -88,6 +88,7 @@ struct nbr {
 	int			 state;
 	u_int8_t		 priority;
 	u_int8_t		 options;
+	u_int8_t		 capa_options;
 	u_int8_t		 last_rx_options;
 	u_int8_t		 last_rx_bits;
 	u_int8_t		 dd_master;
