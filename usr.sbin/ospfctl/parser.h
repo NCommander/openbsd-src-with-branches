@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.11 2010/02/19 10:35:52 dlg Exp $ */
+/*	$OpenBSD: parser.h,v 1.12 2010/09/04 21:31:04 tedu Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -46,6 +46,7 @@ enum actions {
 	SHOW_DBSELF,
 	SHOW_DBSUM,
 	SHOW_DBASBR,
+	SHOW_DBOPAQ,
 	SHOW_RIB,
 	SHOW_RIB_DTAIL,
 	SHOW_FIB,
