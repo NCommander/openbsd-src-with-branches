@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.112 2011/04/27 21:20:36 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.113 2011/04/28 06:19:57 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -917,7 +917,7 @@ midicat_main(int argc, char **argv)
 	cd->path = NULL;
 
 
-	while ((c = getopt(argc, argv, "di:o:ls:q:U:")) != -1) {
+	while ((c = getopt(argc, argv, "di:o:ls:q:U:L:")) != -1) {
 		switch (c) {
 		case 'd':
 #ifdef DEBUG
