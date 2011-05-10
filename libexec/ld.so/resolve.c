@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.c,v 1.51 2010/08/11 01:14:27 drahn Exp $ */
+/*	$OpenBSD: resolve.c,v 1.52 2010/10/25 20:34:44 kurt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -495,4 +495,10 @@ _dl_find_symbol_obj(elf_object_t *object, const char *name, unsigned long hash,
 		}
 	}
 	return 0;
+}
+
+void
+_dl_debug_state(void)
+{
+        /* Debugger stub */
 }
