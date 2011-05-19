@@ -1,4 +1,4 @@
-/*	$OpenBSD: newsyslog.c,v 1.87 2010/03/20 15:15:45 schwarze Exp $	*/
+/*	$OpenBSD: newsyslog.c,v 1.88 2010/07/24 00:54:46 nicm Exp $	*/
 
 /*
  * Copyright (c) 1999, 2002, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -898,7 +898,7 @@ compress_log(struct conf_entry *ent)
 	}
 }
 
-/* Return size in kilobytes of a file */
+/* Return size in bytes of a file */
 off_t
 sizefile(struct stat *sb)
 {
