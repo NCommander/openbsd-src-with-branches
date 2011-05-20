@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac.c,v 1.43 2011/04/05 19:54:35 jasper Exp $	*/
+/*	$OpenBSD: cac.c,v 1.44 2011/04/21 23:10:08 krw Exp $	*/
 /*	$NetBSD: cac.c,v 1.15 2000/11/08 19:20:35 ad Exp $	*/
 
 /*
@@ -723,7 +723,6 @@ cac_scsi_cmd(xs)
 			printf("%s: out of bounds %u-%u >= %u\n",
 			    sc->sc_dv.dv_xname, blockno, blockcnt, size);
 			xs->error = XS_DRIVER_STUFFUP;
-			scsi_done(xs);
 			break;
 		}
 
