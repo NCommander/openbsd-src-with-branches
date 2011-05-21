@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: md5.pm,v 1.13 2010/12/24 09:04:14 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -131,7 +131,9 @@ sub stringize
 sub unstringize
 {
 	my ($class, $arg) = @_;
-
+	if ($arg =~ /^[0-9a-f]{64}$/i) {
+		return pack('H*', $arg);
+	}
 	return decode_base64($arg);
 }
 
