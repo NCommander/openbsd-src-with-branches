@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivout.c,v 1.7 2010/08/08 20:45:18 kettenis Exp $	*/
+/*	$OpenBSD: acpivout.c,v 1.8 2011/04/06 21:16:13 martynas Exp $	*/
 /*
  * Copyright (c) 2009 Paul Irofti <pirofti@openbsd.org>
  *
@@ -285,10 +285,6 @@ acpivout_get_bcl(struct acpivout_softc *sc)
 
 	sc->sc_bcl = malloc(sc->sc_bcl_len * sizeof(int), M_DEVBUF,
 	    M_WAITOK | M_ZERO);
-	if (sc->sc_bcl == NULL) {
-		sc->sc_bcl_len = 0;
-		goto err;
-	}
 
 	for (i = 0; i < sc->sc_bcl_len; i++) {
 		/* Sort darkest to brightest */
