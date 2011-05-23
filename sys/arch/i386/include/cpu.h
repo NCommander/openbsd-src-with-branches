@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.118 2011/03/23 16:54:35 pirofti Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.119 2011/04/22 15:48:43 kettenis Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -403,6 +403,9 @@ void	k7_powernow_setperf(int);
 /* powernow-k8.c */
 void 	k8_powernow_init(void);
 void 	k8_powernow_setperf(int);
+/* k1x-pstate.c */
+void k1x_init(struct cpu_info *);
+void k1x_setperf(int);
 #endif
 
 /* npx.c */
