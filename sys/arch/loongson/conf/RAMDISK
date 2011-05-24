@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.15 2010/09/26 21:04:32 miod Exp $
+#	$OpenBSD: RAMDISK,v 1.16 2010/09/26 21:44:35 miod Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -101,8 +101,6 @@ ucom*		at ubsa?
 uplcom*		at uhub?	# I/O DATA USB-RSAQ2 serial adapter
 ucom*		at uplcom?
 umass*		at uhub?	# USB Mass Storage devices
-atapiscsi*	at umass?
-scsibus*	at atapiscsi?
 scsibus*	at umass?
 uhidev*		at uhub?	# Human Interface Devices
 ukbd*		at uhidev?	# USB keyboard
