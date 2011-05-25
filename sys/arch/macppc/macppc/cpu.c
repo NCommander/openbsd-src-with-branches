@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.65 2010/03/31 19:46:27 miod Exp $ */
+/*	$OpenBSD: cpu.c,v 1.66 2010/06/26 23:24:43 guenther Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -68,11 +68,6 @@ extern u_int32_t	hid0_idle;
 #define SCOMC_ADDR_MASK		0xffff0000
 #define SCOMC_READ		0x00008000
 
-/* Frequency scaling */
-#define FREQ_FULL	0
-#define FREQ_HALF	1
-#define FREQ_QUARTER	2	/* Not supported on IBM 970FX */
-
 /* Power (Tuning) Status Register */
 #define PSR_CMD_RECEIVED	0x2000000000000000LL
 #define PSR_CMD_COMPLETED	0x1000000000000000LL
@@ -118,8 +113,8 @@ cpumatch(struct device *parent, void *cfdata, void *aux)
 	return (1);
 }
 
-static u_int32_t ppc_curfreq;
-static u_int32_t ppc_maxfreq;
+u_int32_t ppc_curfreq;
+u_int32_t ppc_maxfreq;
 int ppc_altivec;
 
 
