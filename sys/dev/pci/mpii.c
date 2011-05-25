@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpii.c,v 1.40 2011/04/02 14:36:45 dlg Exp $	*/
+/*	$OpenBSD: mpii.c,v 1.41 2011/05/15 12:03:14 jsg Exp $	*/
 /*
  * Copyright (c) 2010 Mike Belopuhov <mkb@crypt.org.ru>
  * Copyright (c) 2009 James Giannoules
@@ -2155,7 +2155,7 @@ mpii_attach(struct device *parent, struct device *self, void *aux)
 	    MPII_INTR_MASK_DOORBELL);
 
 	/* hook up the interrupt */
-	if (pci_intr_map(pa, &ih)) {
+	if (pci_intr_map_msi(pa, &ih) != 0 && pci_intr_map(pa, &ih) != 0) {
 		printf(": unable to map interrupt\n");
 		goto unmap;
 	}
