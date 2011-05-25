@@ -1,4 +1,4 @@
-/*	$OpenBSD: fenv.h,v 1.1 2011/04/24 15:05:12 martynas Exp $	*/
+/*	$OpenBSD: fenv.h,v 1.2 2011/04/28 17:34:23 martynas Exp $	*/
 
 /*
  * Copyright (c) 2011 Martynas Venckus <martynas@openbsd.org>
@@ -72,7 +72,9 @@ typedef	unsigned int		fenv_t;
  * that manage the floating-point environment, namely fesetenv() and
  * feupdateenv().
  */
+__BEGIN_DECLS
 extern	fenv_t			__fe_dfl_env;
+__END_DECLS
 #define	FE_DFL_ENV		((const fenv_t *)&__fe_dfl_env)
 
 /*
