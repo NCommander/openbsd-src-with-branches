@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-if-shell.c,v 1.10 2011/01/04 00:42:46 nicm Exp $ */
+/* $OpenBSD: cmd-if-shell.c,v 1.11 2011/01/26 01:54:56 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -88,11 +88,7 @@ cmd_if_shell_callback(struct job *job)
 		return;
 	}
 
-	if (cmd_list_exec(cmdlist, ctx) < 0) {
-		cmd_list_free(cmdlist);
-		return;
-	}
-
+	cmd_list_exec(cmdlist, ctx);
 	cmd_list_free(cmdlist);
 }
 
