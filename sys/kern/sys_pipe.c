@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.57 2009/11/09 17:53:39 nicm Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.58 2010/01/14 23:12:11 schwarze Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -773,16 +773,17 @@ pipe_kqfilter(struct file *fp, struct knote *kn)
 		SLIST_INSERT_HEAD(&rpipe->pipe_sel.si_note, kn, kn_selnext);
 		break;
 	case EVFILT_WRITE:
-		if (wpipe == NULL)
+		if (wpipe == NULL) {
 			/* other end of pipe has been closed */
-			return (1);
+			return (EPIPE);
+		}
 		kn->kn_fop = &pipe_wfiltops;
 		SLIST_INSERT_HEAD(&wpipe->pipe_sel.si_note, kn, kn_selnext);
 		break;
 	default:
-		return (1);
+		return (EINVAL);
 	}
-	
+
 	return (0);
 }
 
