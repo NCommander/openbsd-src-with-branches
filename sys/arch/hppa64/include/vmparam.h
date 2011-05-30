@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.4 2010/06/29 21:49:20 jsing Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.5 2010/12/15 05:30:19 tedu Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -86,10 +86,6 @@
 #define	VM_PHYSSEG_STRAT	VM_PSTRAT_RANDOM
 
 #define	VM_PHYSSEG_NOADD	/* XXX until uvm code is fixed */
-
-#define	VM_NFREELIST		2
-#define	VM_FREELIST_DEFAULT	0
-#define	VM_FREELIST_ARCH	1
 
 #if defined(_KERNEL) && !defined(_LOCORE)
 

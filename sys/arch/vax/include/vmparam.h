@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.29 2008/06/24 21:24:03 deraadt Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.30 2011/03/23 16:54:37 pirofti Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.32 2000/03/07 00:05:59 matt Exp $	*/
 
 /*-
@@ -87,9 +87,6 @@
 #define VM_PHYSSEG_MAX		1
 #define VM_PHYSSEG_NOADD
 #define VM_PHYSSEG_STRAT	VM_PSTRAT_RANDOM
-
-#define	VM_NFREELIST		1
-#define	VM_FREELIST_DEFAULT	0
 
 /* MD round macros */
 #define	vax_round_page(x) (((vaddr_t)(x) + VAX_PGOFSET) & ~VAX_PGOFSET)

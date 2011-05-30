@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.240 2010/12/31 21:38:08 miod Exp $	*/
+/* $OpenBSD: machdep.c,v 1.241 2011/01/05 22:20:22 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -990,7 +990,7 @@ mvme_bootstrap()
 	 * might want to register ECC memory separately later on...
 	 */
 	uvm_page_physload(atop(avail_start), atop(avail_end),
-	    atop(avail_start), atop(avail_end), VM_FREELIST_DEFAULT);
+	    atop(avail_start), atop(avail_end), 0);
 
 	/*
 	 * Initialize message buffer.

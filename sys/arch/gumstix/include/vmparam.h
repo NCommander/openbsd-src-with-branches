@@ -1,4 +1,4 @@
-/* 	$OpenBSD: vmparam.h,v 1.1 2008/11/26 14:18:11 drahn Exp $	*/
+/* 	$OpenBSD: vmparam.h,v 1.2 2011/03/23 16:54:34 pirofti Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.23 2003/05/22 05:47:07 thorpej Exp $	*/
 
 /*
@@ -78,9 +78,6 @@
 #define	VM_PHYSSEG_NOADD
 
 #endif /* _KERNEL */
-
-#define	VM_NFREELIST		1
-#define	VM_FREELIST_DEFAULT	0
 
 
 #endif	/* _MACHINE_VMPARAM_H_ */

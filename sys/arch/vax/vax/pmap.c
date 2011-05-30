@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.50 2008/09/30 20:00:29 miod Exp $ */
+/*	$OpenBSD: pmap.c,v 1.51 2011/04/26 23:50:21 ariane Exp $ */
 /*	$NetBSD: pmap.c,v 1.74 1999/11/13 21:32:25 matt Exp $	   */
 /*
  * Copyright (c) 1994, 1998, 1999 Ludd, University of Lule}, Sweden.
@@ -257,7 +257,7 @@ pmap_bootstrap()
 	 * Now everything should be complete, start virtual memory.
 	 */
 	uvm_page_physload(atop(avail_start), atop(avail_end),
-	    atop(avail_start), atop(avail_end), VM_FREELIST_DEFAULT);
+	    atop(avail_start), atop(avail_end), 0);
 	mtpr(sysptsize, PR_SLR);
 	rpb.sbr = mfpr(PR_SBR);
 	rpb.slr = mfpr(PR_SLR);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: armish_machdep.c,v 1.15 2010/06/27 03:03:48 thib Exp $ */
+/*	$OpenBSD: armish_machdep.c,v 1.16 2010/06/27 08:05:59 drahn Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -750,8 +750,7 @@ initarm(void *arg)
 #endif
 	uvm_setpagesize();	/* initialize PAGE_SIZE-dependent variables */
 	uvm_page_physload(atop(physical_freestart), atop(physical_freeend),
-	    atop(physical_freestart), atop(physical_freeend),
-	    VM_FREELIST_DEFAULT);
+	    atop(physical_freestart), atop(physical_freeend), 0);
 
 	/* Boot strap pmap telling it where the kernel page table is */
 #ifdef VERBOSE_INIT_ARM

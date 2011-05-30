@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.116 2010/07/16 06:22:31 kettenis Exp $ */
+/*	$OpenBSD: pmap.c,v 1.117 2010/08/07 03:50:01 krw Exp $ */
 
 /*
  * Copyright (c) 2001, 2002, 2007 Dale Rahn.
@@ -1748,8 +1748,7 @@ pmap_bootstrap(u_int kernelstart, u_int kernelend)
 		if (mp->start + mp->size > 0x80000000)
 			mp->size = 0x80000000 - mp->start;
 		uvm_page_physload(atop(mp->start), atop(mp->start+mp->size),
-		    atop(mp->start), atop(mp->start+mp->size),
-		    VM_FREELIST_DEFAULT);
+		    atop(mp->start), atop(mp->start+mp->size), 0);
 	}
 }
 
