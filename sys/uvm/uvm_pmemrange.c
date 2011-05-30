@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pmemrange.c,v 1.22 2011/04/06 12:31:10 mlarkin Exp $	*/
+/*	$OpenBSD: uvm_pmemrange.c,v 1.23 2011/05/30 21:23:36 oga Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Ariane van der Steldt <ariane@stack.nl>
@@ -162,7 +162,8 @@ pow2divide(psize_t num, psize_t denom)
 {
 	int rshift;
 
-	for (rshift = 0; num > denom; rshift++, denom <<= 1);
+	for (rshift = 0; num > denom; rshift++, denom <<= 1)
+		;
 	return (paddr_t)1 << rshift;
 }
 
