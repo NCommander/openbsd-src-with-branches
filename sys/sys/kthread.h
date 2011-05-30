@@ -1,4 +1,4 @@
-/*	$OpenBSD: kthread.h,v 1.3 2002/03/14 03:16:12 millert Exp $	*/
+/*	$OpenBSD: kthread.h,v 1.4 2008/06/26 05:42:20 ray Exp $	*/
 /*	$NetBSD: kthread.h,v 1.2 1998/11/14 00:08:49 thorpej Exp $	*/
 
 /*-
@@ -43,7 +43,7 @@
 
 int	kthread_create(void (*)(void *), void *, struct proc **,
 	    const char *, ...)
-	    __attribute__((__format__(__printf__,4,5)));
+	    __attribute__((__format__(__kprintf__,4,5)));
 void	kthread_create_deferred(void (*)(void *), void *);
 void	kthread_run_deferred_queue(void);
 void	kthread_exit(int) __attribute__((__noreturn__));
