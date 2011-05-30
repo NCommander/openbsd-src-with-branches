@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_fdim.c,v 1.2 2008/12/09 20:00:35 martynas Exp $	*/
+/*	$OpenBSD: n_fdim.c,v 1.3 2008/12/10 01:08:24 martynas Exp $	*/
 /*-
  * Copyright (c) 2004 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
@@ -25,6 +25,8 @@
  * SUCH DAMAGE.
  */
 
+/* LINTLIBRARY */
+
 #include <sys/cdefs.h>
 #include <math.h>
 
@@ -42,4 +44,9 @@ fn(type x, type y)			\
 
 DECL(double, fdim)
 DECL(float, fdimf)
+#ifdef	lint
+/* PROTOLIB1 */
+long double fdiml(long double, long double);
+#else	/* lint */
 __weak_alias(fdiml, fdim);
+#endif	/* lint */
