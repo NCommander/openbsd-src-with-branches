@@ -1,4 +1,4 @@
-/*	$OpenBSD: fscanf.c,v 1.8 2005/08/08 08:05:36 espie Exp $ */
+/*	$OpenBSD: fscanf.c,v 1.9 2005/10/10 17:37:44 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+/* SCANFLIKE2 */
 int
 fscanf(FILE *fp, const char *fmt, ...)
 {

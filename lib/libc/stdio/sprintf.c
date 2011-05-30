@@ -1,4 +1,4 @@
-/*	$OpenBSD: sprintf.c,v 1.15 2009/10/22 01:23:16 guenther Exp $ */
+/*	$OpenBSD: sprintf.c,v 1.16 2009/11/09 00:18:27 kurt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -42,6 +42,7 @@ __warn_references(sprintf,
     "warning: sprintf() is often misused, please use snprintf()");
 #endif
 
+/* PRINTFLIKE2 */
 int
 sprintf(char *str, const char *fmt, ...)
 {

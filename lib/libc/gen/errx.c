@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: errx.c,v 1.8 2005/08/08 08:05:34 espie Exp $ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,6 +32,7 @@
 #include <err.h>
 #include <stdarg.h>
 
+/* PRINTFLIKE2 */
 __dead void
 _errx(int eval, const char *fmt, ...)
 {
@@ -42,5 +43,6 @@ _errx(int eval, const char *fmt, ...)
 	va_end(ap);
 }
 
+/* PRINTFLIKE2 */
 __weak_alias(errx, _errx);
 
