@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.113 2011/04/23 22:00:09 miod Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.114 2011/04/25 19:29:11 deraadt Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -135,7 +135,6 @@ void	vndattach(int);
 
 void	vndclear(struct vnd_softc *);
 int	vndsetcred(struct vnd_softc *, struct ucred *);
-void	vndshutdown(void);
 int	vndgetdisklabel(dev_t, struct vnd_softc *, struct disklabel *, int);
 void	vndencrypt(struct vnd_softc *, caddr_t, size_t, daddr64_t, int);
 size_t	vndbdevsize(struct vnode *, struct proc *);
@@ -783,16 +782,6 @@ vndsetcred(struct vnd_softc *vnd, struct ucred *cred)
 
 	free(tmpbuf, M_TEMP);
 	return (error);
-}
-
-void
-vndshutdown(void)
-{
-	struct vnd_softc *vnd;
-
-	for (vnd = &vnd_softc[0]; vnd < &vnd_softc[numvnd]; vnd++)
-		if (vnd->sc_flags & VNF_INITED)
-			vndclear(vnd);
 }
 
 void
