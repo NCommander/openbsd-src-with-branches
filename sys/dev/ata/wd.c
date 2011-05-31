@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.99 2011/04/15 20:53:28 miod Exp $ */
+/*	$OpenBSD: wd.c,v 1.100 2011/04/18 04:16:13 deraadt Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -873,7 +873,7 @@ wdioctl(dev_t dev, u_long xfer, caddr_t addr, int flag, struct proc *p)
 		wd->sc_flags |= WDF_LABELLING;
 
 		error = setdisklabel(wd->sc_dk.dk_label,
-		    (struct disklabel *)addr, /*wd->sc_dk.dk_openmask : */0);
+		    (struct disklabel *)addr, wd->sc_dk.dk_openmask);
 		if (error == 0) {
 			if (wd->drvp->state > RECAL)
 				wd->drvp->drive_flags |= DRIVE_RESET;

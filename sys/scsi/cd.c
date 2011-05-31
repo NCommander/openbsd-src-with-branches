@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.197 2010/11/22 12:21:46 krw Exp $	*/
+/*	$OpenBSD: cd.c,v 1.198 2011/03/17 21:30:24 deraadt Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -884,7 +884,7 @@ cdioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 		sc->sc_flags |= CDF_LABELLING;
 
 		error = setdisklabel(sc->sc_dk.dk_label,
-		    (struct disklabel *)addr, /*cd->sc_dk.dk_openmask : */0);
+		    (struct disklabel *)addr, sc->sc_dk.dk_openmask);
 		if (error == 0) {
 		}
 

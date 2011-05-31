@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.114 2011/04/25 19:29:11 deraadt Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.115 2011/05/30 21:15:03 oga Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -722,7 +722,7 @@ vndioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 		vnd->sc_flags |= VNF_LABELLING;
 
 		error = setdisklabel(vnd->sc_dk.dk_label,
-		    (struct disklabel *)addr, /*vnd->sc_dk.dk_openmask : */0);
+		    (struct disklabel *)addr, vnd->sc_dk.dk_openmask);
 		if (error == 0) {
 			if (cmd == DIOCWDINFO)
 				error = writedisklabel(VNDLABELDEV(dev),
