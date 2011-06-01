@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: bc.y,v 1.34 2011/03/07 08:09:25 otto Exp $	*/
+/*	$OpenBSD: bc.y,v 1.34 2011/03/07 08:11:15 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -1143,7 +1143,7 @@ main(int argc, char *argv[])
 				history(hist, &he, H_SETSIZE, 100);
 				el_set(el, EL_HIST, history, hist);
 				el_set(el, EL_EDITOR, "emacs");
-				el_set(el, EL_SIGNAL, 1);
+				el_set(el, EL_SIGNAL, 0);
 				el_set(el, EL_PROMPT, dummy_prompt);
 				el_source(el, NULL);
 			}
