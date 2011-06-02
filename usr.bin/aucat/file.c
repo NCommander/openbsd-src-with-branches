@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.23 2010/11/05 16:09:50 ratchov Exp $	*/
+/*	$OpenBSD: file.c,v 1.24 2011/03/15 10:31:31 okan Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -299,7 +299,7 @@ file_poll(void)
 	struct timespec ts;
 	long delta_nsec;
 
-	if (LIST_EMPTY(&file_list)) {
+	if (LIST_EMPTY(&file_list) && timo_queue == NULL) {
 #ifdef DEBUG
 		if (debug_level >= 3)
 			dbg_puts("nothing to do...\n");
@@ -483,7 +483,7 @@ file_poll(void)
 			file_del(f);
 		f = fnext;
 	}
-	if (LIST_EMPTY(&file_list)) {
+	if (LIST_EMPTY(&file_list) && timo_queue == NULL) {
 #ifdef DEBUG
 		if (debug_level >= 3)
 			dbg_puts("no files anymore...\n");
