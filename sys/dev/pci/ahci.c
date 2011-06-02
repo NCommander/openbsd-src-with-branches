@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci.c,v 1.177 2011/04/24 11:09:48 dlg Exp $ */
+/*	$OpenBSD: ahci.c,v 1.178 2011/05/08 19:46:10 matthew Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -762,7 +762,7 @@ ahci_pci_attach(struct device *parent, struct device *self, void *aux)
 		}
 	}
 
-	if (pci_intr_map(pa, &ih) != 0) {
+	if (pci_intr_map_msi(pa, &ih) != 0 && pci_intr_map(pa, &ih) != 0) {
 		printf(": unable to map interrupt\n");
 		return;
 	}
