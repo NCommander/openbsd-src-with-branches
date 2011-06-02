@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.

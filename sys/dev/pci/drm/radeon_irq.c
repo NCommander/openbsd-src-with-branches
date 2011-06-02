@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* radeon_irq.c -- IRQ handling for radeon -*- linux-c -*- */
 /*
  * Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.

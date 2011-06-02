@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.

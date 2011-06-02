@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright 2007-2009 Owain G. Ainsworth <oga@openbsd.org>
  * Copyright © 2008 Intel Corporation
