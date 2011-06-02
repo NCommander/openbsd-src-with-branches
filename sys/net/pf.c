@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.745 2011/05/24 14:01:51 claudio Exp $ */
+/*	$OpenBSD: pf.c,v 1.746 2011/05/25 06:48:12 claudio Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -593,7 +593,7 @@ pf_remove_src_node(struct pf_src_node *sn)
 	if (sn->rule.ptr != NULL) {
 		sn->rule.ptr->src_nodes--;
 		if (sn->rule.ptr->states_cur <= 0 &&
-		    sn->rule.ptr->max_src_nodes <= 0)
+		    sn->rule.ptr->src_nodes <= 0)
 			pf_rm_rule(NULL, sn->rule.ptr);
 		RB_REMOVE(pf_src_tree, &tree_src_tracking, sn);
 		pf_status.scounters[SCNT_SRC_NODE_REMOVALS]++;
