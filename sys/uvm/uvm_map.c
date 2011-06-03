@@ -924,8 +924,7 @@ pmap_prefer_retry:
 				 * a page.
 				 */
 				sel_addr &= ~(align - 1);
-				if (pmap_align != 0)
-					sel_addr &= ~(pmap_align - 1);
+				sel_addr &= ~(pmap_align - 1);
 
 				KDASSERT(sel_addr <= sel_max - sel_min);
 				/*
