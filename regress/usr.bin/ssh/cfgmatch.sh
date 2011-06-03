@@ -1,4 +1,4 @@
-#	$OpenBSD: cfgmatch.sh,v 1.4 2006/12/13 08:36:36 dtucker Exp $
+#	$OpenBSD: cfgmatch.sh,v 1.5 2011/05/23 03:31:31 djm Exp $
 #	Placed in the Public Domain.
 
 tid="sshd_config match"
@@ -7,8 +7,8 @@ pidfile=$OBJ/remote_pid
 fwdport=3301
 fwd="-L $fwdport:127.0.0.1:$PORT"
 
-echo "ExitOnForwardFailure=yes" >> ssh_config
-echo "ExitOnForwardFailure=yes" >> ssh_proxy
+echo "ExitOnForwardFailure=yes" >> $OBJ/ssh_config
+echo "ExitOnForwardFailure=yes" >> $OBJ/ssh_proxy
 
 start_client()
 {
