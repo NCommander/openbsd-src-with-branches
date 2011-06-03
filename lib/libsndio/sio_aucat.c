@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio_aucat.c,v 1.5 2011/04/18 23:57:35 ratchov Exp $	*/
+/*	$OpenBSD: sio_aucat.c,v 1.6 2011/05/02 22:32:29 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -100,6 +100,10 @@ sio_aucat_runmsg(struct sio_aucat_hdl *hdl)
 		DPRINTF("aucat: pos = %d, maxwrite = %d\n",
 		    delta, hdl->maxwrite);
 		hdl->delta = delta;
+		if (hdl->delta >= 0) {
+			sio_onmove_cb(&hdl->sio, hdl->delta);
+			hdl->delta = 0;
+		}
 		break;
 	case AMSG_MOVE:
 		delta = ntohl(hdl->aucat.rmsg.u.ts.delta);
