@@ -1,4 +1,4 @@
-/*	$OpenBSD: xd.c,v 1.52 2010/09/22 06:40:25 krw Exp $	*/
+/*	$OpenBSD: xd.c,v 1.53 2010/11/11 17:46:58 miod Exp $	*/
 /*	$NetBSD: xd.c,v 1.37 1997/07/29 09:58:16 fair Exp $	*/
 
 /*
@@ -1055,8 +1055,7 @@ xdstrategy(bp)
 	 * partition. Adjust transfer if needed, and signal errors or early
 	 * completion. */
 
-	if (bounds_check_with_label(bp, xd->sc_dk.dk_label,
-	    (xd->flags & XD_WLABEL) != 0) <= 0)
+	if (bounds_check_with_label(bp, xd->sc_dk.dk_label) <= 0)
 		goto done;
 
 	/*

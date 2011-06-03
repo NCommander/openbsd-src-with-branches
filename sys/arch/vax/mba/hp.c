@@ -1,4 +1,4 @@
-/*	$OpenBSD: hp.c,v 1.23 2010/09/22 06:40:25 krw Exp $ */
+/*	$OpenBSD: hp.c,v 1.24 2011/04/06 18:12:47 miod Exp $ */
 /*	$NetBSD: hp.c,v 1.22 2000/02/12 16:09:33 ragge Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -185,7 +185,7 @@ hpstrategy(bp)
 	sc = hp_cd.cd_devs[unit];
 	lp = sc->sc_disk.dk_label;
 
-	if (bounds_check_with_label(bp, lp, sc->sc_wlabel) <= 0)
+	if (bounds_check_with_label(bp, lp) <= 0)
 		goto done;
 
 	bp->b_rawblkno =

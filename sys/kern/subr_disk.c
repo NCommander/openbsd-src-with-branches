@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.121 2011/04/28 17:50:17 marco Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.122 2011/06/01 17:57:51 matthew Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -684,7 +684,7 @@ setdisklabel(struct disklabel *olp, struct disklabel *nlp, u_int openmask)
  * early completion.
  */
 int
-bounds_check_with_label(struct buf *bp, struct disklabel *lp, int wlabel)
+bounds_check_with_label(struct buf *bp, struct disklabel *lp)
 {
 	struct partition *p = &lp->d_partitions[DISKPART(bp->b_dev)];
 	daddr64_t sz = howmany(bp->b_bcount, DEV_BSIZE);
