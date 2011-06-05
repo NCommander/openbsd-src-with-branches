@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.125 2011/04/15 20:52:57 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.126 2011/04/18 21:44:55 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -91,20 +91,6 @@
  */
 extern struct user *proc0paddr;
 struct pool ppc_vecpl;
-
-/*
- * Declare these as initialized data so we can patch them.
- */
-#ifndef BUFCACHEPERCENT
-#define BUFCACHEPERCENT 5
-#endif
-
-#ifdef BUFPAGES
-int bufpages = BUFPAGES;
-#else
-int bufpages = 0;
-#endif
-int bufcachepercent = BUFCACHEPERCENT;
 
 struct uvm_constraint_range  dma_constraint = { 0x0, (paddr_t)-1 };
 struct uvm_constraint_range *uvm_md_constraints[] = { NULL };

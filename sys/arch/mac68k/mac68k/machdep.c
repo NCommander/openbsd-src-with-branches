@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.156 2010/11/20 20:29:09 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.157 2011/05/30 22:25:21 oga Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -168,20 +168,6 @@ caddr_t	mac68k_bell_cookie;
 
 struct vm_map *exec_map = NULL;  
 struct vm_map *phys_map = NULL;
-
-/*
- * Declare these as initialized data so we can patch them.
- */
-#ifndef	BUFCACHEPERCENT
-#define	BUFCACHEPERCENT	5
-#endif
-
-#ifdef	BUFPAGES
-int	bufpages = BUFPAGES;
-#else
-int	bufpages = 0;
-#endif
-int	bufcachepercent = BUFCACHEPERCENT;
 
 int	physmem;		/* size of physical memory, in pages */
 

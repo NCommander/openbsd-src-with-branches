@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.h,v 1.75 2011/04/03 13:52:09 beck Exp $	*/
+/*	$OpenBSD: buf.h,v 1.76 2011/04/07 19:07:42 beck Exp $	*/
 /*	$NetBSD: buf.h,v 1.25 1997/04/09 21:12:17 mycroft Exp $	*/
 
 /*
@@ -260,7 +260,7 @@ struct cluster_info {
 
 #ifdef _KERNEL
 __BEGIN_DECLS
-extern int bufpages;		/* Max number of pages for buffers' data */
+extern long bufpages;		/* Max number of pages for buffers' data */
 extern struct pool bufpool;
 extern struct bufhead bufhead;
 

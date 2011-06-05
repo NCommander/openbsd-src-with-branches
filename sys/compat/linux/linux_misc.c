@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_misc.c,v 1.66 2011/02/11 21:40:04 pirofti Exp $	*/
+/*	$OpenBSD: linux_misc.c,v 1.67 2011/04/05 15:36:09 pirofti Exp $	*/
 /*	$NetBSD: linux_misc.c,v 1.27 1996/05/20 01:59:21 fvdl Exp $	*/
 
 /*-
@@ -1451,7 +1451,7 @@ linux_sys_sysinfo(p, v, retval)
 	} */ *uap = v;
 	struct linux_sysinfo si;
 	struct loadavg *la;
-	extern int bufpages;
+	extern long bufpages;
 	struct timeval tv;
 
 	getmicrouptime(&tv);
