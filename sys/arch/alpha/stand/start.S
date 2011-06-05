@@ -1,4 +1,4 @@
-/*	$OpenBSD: start.S,v 1.4 2005/08/10 16:58:42 todd Exp $	*/
+/*	$OpenBSD: start.S,v 1.5 2005/08/29 11:20:55 mickey Exp $	*/
 /*	$NetBSD: start.S,v 1.4 1996/10/17 02:50:40 cgd Exp $	*/
 
 /*  
@@ -56,10 +56,12 @@ Lstartgp:
 	lda	sp,-ENTRY_FRAME(sp)	/* start stack below text */
 #endif
 
+	or	a0,zero,s0
 	lda	a0,_edata
 	lda	a1,_end
 	subq	a1,a0,a1
 	CALL(bzero)
+	or	s0,zero,a0
 
 	CALL(main)			/* transfer to C */
 

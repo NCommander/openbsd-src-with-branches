@@ -1,4 +1,4 @@
-/*	$OpenBSD: getsecs.c,v 1.1 1996/10/30 22:40:55 niklas Exp $	*/
+/*	$OpenBSD: getsecs.c,v 1.2 1996/11/27 19:54:55 niklas Exp $	*/
 
 #include <sys/param.h>
 #include "include/rpb.h"
@@ -9,7 +9,7 @@ getsecs()
 {
 	static long tnsec;
 	static long lastpcc, wrapsecs;
-	long curpcc, pccdiff;
+	long curpcc;
 
 	if (tnsec == 0) {
 		tnsec = 1;
