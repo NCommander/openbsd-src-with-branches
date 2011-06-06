@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.66 2010/11/27 19:41:48 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.67 2011/04/03 14:56:28 guenther Exp $	*/
 /*	$NetBSD: trap.c,v 1.73 2001/08/09 01:03:01 eeh Exp $ */
 
 /*
@@ -606,6 +606,7 @@ badtrap:
 			uvmexp.fpswtch++;
 		}
 		tf->tf_tstate |= (PSTATE_PEF<<TSTATE_PSTATE_SHIFT);
+		sparc_wr(fprs, FPRS_FEF, 0);
 		break;
 	}
 
