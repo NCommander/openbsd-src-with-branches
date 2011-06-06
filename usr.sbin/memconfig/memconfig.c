@@ -1,4 +1,4 @@
-/* $OpenBSD: memconfig.c,v 1.12 2007/09/02 15:19:39 deraadt Exp $ */
+/* $OpenBSD: memconfig.c,v 1.13 2010/04/20 16:10:27 marco Exp $ */
 
 /*-
  * Copyright (c) 1999 Michael Smith <msmith@freebsd.org>
@@ -106,17 +106,18 @@ struct
 int
 main(int argc, char *argv[])
 {
-	int	 i, memfd;
+	int	 i, memfd = -1;
 
 	if (argc < 2) {
 		help(NULL);
 	} else {
-		if ((memfd = open("/dev/mem", O_RDONLY)) == -1)
-			err(1, "can't open /dev/mem");
-
 		for (i = 0; functions[i].cmd != NULL; i++)
 			if (!strcmp(argv[1], functions[i].cmd))
 				break;
+		
+		if ((functions[i].func != helpfunc) &&
+		    (memfd = open("/dev/mem", O_RDONLY)) == -1)
+			err(1, "can't open /dev/mem");
 		functions[i].func(memfd, argc - 1, argv + 1);
 		close(memfd);
 	}
