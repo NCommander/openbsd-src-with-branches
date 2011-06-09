@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi_pci.c,v 1.22 2008/10/28 13:44:33 marco Exp $ */
+/*	$OpenBSD: mpi_pci.c,v 1.24 2011/06/09 04:50:00 deraadt Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -137,7 +137,7 @@ mpi_pci_attach(struct device *parent, struct device *self, void *aux)
 	PWRITE(psc, PCI_ROM_REG, PREAD(psc, PCI_ROM_REG) & ~PCI_ROM_ENABLE);
 
 	/* hook up the interrupt */
-	if (pci_intr_map(pa, &ih)) {
+	if (pci_intr_map_msi(pa, &ih) != 0 && pci_intr_map(pa, &ih) != 0) {
 		printf(": unable to map interrupt\n");
 		goto unmap;
 	}
