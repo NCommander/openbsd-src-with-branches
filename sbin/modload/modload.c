@@ -1,4 +1,4 @@
-/* 	$OpenBSD: modload.c,v 1.42 2007/02/20 14:01:15 jmc Exp $	*/
+/* 	$OpenBSD: modload.c,v 1.43 2007/11/25 19:21:37 mikeb Exp $	*/
 /*	$NetBSD: modload.c,v 1.30 2001/11/08 15:33:15 christos Exp $	*/
 
 /*
@@ -128,12 +128,6 @@ cleanup(void)
 		if (ioctl(devfd, LMUNRESRV, 0) == -1)
 			warn("can't release slot 0x%08x memory", resrv.slot);
 	}
-
-	if (fileopen & DEV_OPEN)
-		close(devfd);
-
-	if (fileopen & MOD_OPEN)
-		close(modfd);
 
 	if (fileopen & OUTFILE_CREAT)
 		unlink(out);
