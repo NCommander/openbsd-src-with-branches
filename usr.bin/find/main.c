@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.26 2009/12/20 16:15:26 schwarze Exp $	*/
+/*	$OpenBSD: main.c,v 1.27 2011/04/21 01:14:21 jacekm Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -99,7 +99,7 @@ main(int argc, char *argv[])
 			break;
 		case '?':
 		default:
-			break;
+			usage();
 		}
 
 	argc -= optind;	
