@@ -78,6 +78,11 @@ The options are as follows:
 For each existing destination pathname, remove it and
 create a new file, without prompting for confirmation,
 regardless of its permissions.
+The
+.Fl f
+option overrides any previous
+.Fl i
+options.
 .It Fl H
 If the
 .Fl R
@@ -89,6 +94,11 @@ that would overwrite an existing file.
 If the response from the standard input begins with the character
 .Sq Li y ,
 the file copy is attempted.
+The
+.Fl i
+option overrides any previous
+.Fl f
+options.
 .It Fl L
 If the
 .Fl R
@@ -136,14 +146,6 @@ or
 .Xr tar 1
 instead.
 .El
-.Pp
-The last of any
-.Fl f
-or
-.Fl i
-options is the one which affects
-.Nm cp Ns 's
-behavior.
 .Pp
 For each destination file that already exists, its contents are
 overwritten if permissions allow, but its mode, user ID, and group
