@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.69 2010/07/03 04:44:51 guenther Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.70 2010/09/23 04:45:15 yasuoka Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -174,9 +174,11 @@ struct inpcbtable {
 #define	INP_RECVIF	0x080	/* receive incoming interface */
 #define	INP_RECVTTL	0x040	/* receive incoming IP TTL */
 #define	INP_RECVDSTPORT	0x200	/* receive IP dst addr before rdr */
+#define	INP_RECVRTABLE	0x400	/* receive routing table */
 
 #define	INP_CONTROLOPTS	(INP_RECVOPTS|INP_RECVRETOPTS|INP_RECVDSTADDR| \
-	    INP_RXSRCRT|INP_HOPLIMIT|INP_RECVIF|INP_RECVTTL|INP_RECVDSTPORT)
+	    INP_RXSRCRT|INP_HOPLIMIT|INP_RECVIF|INP_RECVTTL|INP_RECVDSTPORT| \
+	    INP_RECVRTABLE)
 
 /*
  * These flags' values should be determined by either the transport
