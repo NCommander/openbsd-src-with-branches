@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_rdac.c,v 1.3 2011/04/27 09:09:36 dlg Exp $ */
+/*	$OpenBSD: mpath_rdac.c,v 1.4 2011/04/28 10:43:36 dlg Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -165,7 +165,10 @@ struct rdac_device rdac_devices[] = {
 /*	  " vendor "  "     device     " */
 /*	  "01234567"  "0123456789012345" */
 	{ "SUN     ", "CSM200_" },
-	{ "DELL    ", "MD3000i         " }
+	{ "DELL    ", "MD3000          " },
+	{ "DELL    ", "MD3000i         " },
+	{ "DELL    ", "MD32xx          " },
+	{ "DELL    ", "MD32xxi         " }
 };
 
 int
