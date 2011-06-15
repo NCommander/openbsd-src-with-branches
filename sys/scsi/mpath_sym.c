@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_sym.c,v 1.2 2011/04/27 09:09:36 dlg Exp $ */
+/*	$OpenBSD: mpath_sym.c,v 1.3 2011/04/28 10:43:36 dlg Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -80,7 +80,8 @@ struct sym_device {
 struct sym_device sym_devices[] = {
 /*	  " vendor "  "     device     " */
 /*	  "01234567"  "0123456789012345" */
-	{ "SEAGATE ", "ST" }
+	{ "SEAGATE ", "ST" },
+	{ "FUJITSU ", "MBD" }
 };
 
 int
