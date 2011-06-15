@@ -1,4 +1,4 @@
-/*	$OpenBSD: adb_subr.c,v 1.1 2006/01/18 23:21:17 miod Exp $	*/
+/*	$OpenBSD: adb_subr.c,v 1.2 2006/02/09 06:45:41 miod Exp $	*/
 /*	$NetBSD: adb.c,v 1.6 1999/08/16 06:28:09 tsubai Exp $	*/
 
 /*-
@@ -40,6 +40,8 @@
 struct cfdriver adb_cd = {
 	NULL, "adb", DV_DULL
 };
+
+const char adb_device_name[] = "adb_device";
 
 int
 adbprint(void *args, const char *name)

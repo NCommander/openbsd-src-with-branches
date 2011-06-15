@@ -1,4 +1,4 @@
-/*	$OpenBSD: abtn.c,v 1.12 2009/01/10 18:00:59 robert Exp $	*/
+/*	$OpenBSD: abtn.c,v 1.13 2011/06/07 16:18:00 mpi Exp $	*/
 /*	$NetBSD: abtn.c,v 1.1 1999/07/12 17:48:26 tsubai Exp $	*/
 
 /*-
@@ -76,6 +76,9 @@ int
 abtn_match(struct device *parent, void *cf, void *aux)
 {
 	struct adb_attach_args *aa = aux;
+
+	if (strcmp(aa->name, adb_device_name) != 0)
+		return (0);
 
 	if (aa->origaddr == ADBADDR_MISC &&
 	    aa->handler_id == ABTN_HANDLER_ID)
