@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.h,v 1.11 2010/08/27 08:24:53 deraadt Exp $	*/
+/*	$OpenBSD: if_ix.h,v 1.12 2011/06/10 12:46:35 claudio Exp $	*/
 
 /******************************************************************************
 
@@ -246,6 +246,7 @@ struct ix_softc {
 
 	struct ifmedia		media;
 	struct timeout		timer;
+	struct timeout		rx_refill;
 	int			msix;
 	int			if_flags;
 
