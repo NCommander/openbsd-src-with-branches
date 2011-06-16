@@ -1,4 +1,4 @@
-/*	$OpenBSD: piic.c,v 1.1 2007/04/23 16:27:20 deraadt Exp $	*/
+/*	$OpenBSD: piic.c,v 1.2 2007/05/20 23:38:52 thib Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -55,6 +55,11 @@ int	piic_i2c_exec(void *, i2c_op_t, i2c_addr_t,
 int
 piic_match(struct device *parent, void *cf, void *aux)
 {
+	struct confargs *ca = aux;
+
+	if (strcmp(ca->ca_name, "piic") != 0)
+		return (0);
+
 	return (1);
 }
 
