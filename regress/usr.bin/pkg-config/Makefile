@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2011/06/15 10:48:39 jasper Exp $
+#	$OpenBSD: Makefile,v 1.18 2011/06/15 11:54:32 jasper Exp $
 
 REGRESS_TARGETS=cmp-vers1-1 \
 		cmp-vers1-2 \
@@ -92,7 +92,7 @@ print-req:
 
 print-req-priv:
 	# Test --print-requires-private
-	@echo "print-req-priv2>=0.0.1" > ${WANT}
+	@echo "print-req-priv2>=0.0.0" > ${WANT}
 	@PKG_CONFIG_PATH=${.CURDIR}/pcdir/ ${PKG_CONFIG} \
 		--print-requires-private $@ > ${GOT}
 	@diff -u ${WANT} ${GOT}
