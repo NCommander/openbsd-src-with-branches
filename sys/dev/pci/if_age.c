@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_age.c,v 1.13 2011/04/05 18:01:21 henning Exp $	*/
+/*	$OpenBSD: if_age.c,v 1.14 2011/05/28 08:28:41 kevlo Exp $	*/
 
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
@@ -163,7 +163,7 @@ age_attach(struct device *parent, struct device *self, void *aux)
 		return;
 	}
 
-	if (pci_intr_map(pa, &ih) != 0) {
+	if (pci_intr_map_msi(pa, &ih) != 0 && pci_intr_map(pa, &ih) != 0) {
 		printf(": can't map interrupt\n");
 		goto fail;
 	}
