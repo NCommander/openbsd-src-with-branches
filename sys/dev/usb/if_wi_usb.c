@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_usb.c,v 1.49 2010/10/27 17:51:11 jakemsr Exp $ */
+/*	$OpenBSD: if_wi_usb.c,v 1.50 2011/01/25 20:03:35 jakemsr Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -963,7 +963,7 @@ wi_alloc_nicmem_usb(struct wi_softc *wsc, int len, int *id)
 		return ENOMEM;
 	}
 
-	sc->wi_usb_txmem[nmem] = malloc(len, M_DEVBUF, M_WAITOK);
+	sc->wi_usb_txmem[nmem] = malloc(len, M_DEVBUF, M_WAITOK | M_CANFAIL);
 	if (sc->wi_usb_txmem[nmem] == NULL) {
 		sc->wi_usb_nummem--;
 		return ENOMEM;

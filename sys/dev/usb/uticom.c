@@ -1,4 +1,4 @@
-/*	$OpenBSD: uticom.c,v 1.13 2011/01/25 20:03:36 jakemsr Exp $	*/
+/*	$OpenBSD: uticom.c,v 1.14 2011/04/05 20:42:43 jsg Exp $	*/
 /*
  * Copyright (c) 2005 Dmitry Komissaroff <dxi@mail.ru>.
  *
@@ -925,7 +925,7 @@ uticom_download_fw(struct uticom_softc *sc, int pipeno,
 		return (error);
 
 	buffer_size = UTICOM_FW_BUFSZ + sizeof(struct uticom_fw_header);
-	buffer = malloc(buffer_size, M_USBDEV, M_WAITOK);
+	buffer = malloc(buffer_size, M_USBDEV, M_WAITOK | M_CANFAIL);
 
 	if (!buffer) {
 		printf("%s: uticom_download_fw: out of memory\n",
