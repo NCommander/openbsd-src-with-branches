@@ -1,4 +1,4 @@
-/*	$OpenBSD: printf.c,v 1.16 2009/07/19 15:47:57 martynas Exp $	*/
+/*	$OpenBSD: printf.c,v 1.17 2009/10/27 23:59:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -350,6 +350,11 @@ print_escape(const char *str)
 	case 'v':			/* vertical-tab */
 		putchar('\v');
 		break;
+
+	case '\0':
+		warnx("null escape sequence");
+		rval = 1;
+		return 0;
 
 	default:
 		putchar(*str);
