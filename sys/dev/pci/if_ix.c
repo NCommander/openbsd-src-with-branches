@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.52 2011/06/10 12:46:35 claudio Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.53 2011/06/15 00:03:00 dlg Exp $	*/
 
 /******************************************************************************
 
@@ -1532,7 +1532,7 @@ ixgbe_allocate_legacy(struct ix_softc *sc)
 	pci_intr_handle_t	ih;
 
 	/* We allocate a single interrupt resource */
-	if (/* pci_intr_map_msi(pa, &ih) != 0 && */
+	if (pci_intr_map_msi(pa, &ih) != 0 &&
 	    pci_intr_map(pa, &ih) != 0) {
 		printf(": couldn't map interrupt\n");
 		return (ENXIO);
