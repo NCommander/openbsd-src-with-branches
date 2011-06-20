@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.13 2011/05/02 22:13:27 chl Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.14 2011/06/20 05:19:20 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -57,7 +57,6 @@
 
 #include <dev/pci/if_myxreg.h>
 
-#define MYX_DEBUG
 #ifdef MYX_DEBUG
 #define MYXDBG_INIT	(1<<0)	/* chipset initialization */
 #define MYXDBG_CMD	(2<<0)	/* commands */
