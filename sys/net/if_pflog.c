@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflog.c,v 1.33 2010/12/07 11:39:40 jsg Exp $	*/
+/*	$OpenBSD: if_pflog.c,v 1.34 2011/05/22 13:21:24 claudio Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -334,7 +334,7 @@ pflog_bpfcopy(const void *src_arg, void *dst_arg, size_t len)
 	/* rewrite addresses if needed */
 	memset(&pd, 0, sizeof(pd));
 	pd.hdr.any = &pf_hdrs;
-	if (pf_setup_pdesc(pfloghdr->af, pfloghdr->dir, &pd, mfake, &action,
+	if (pf_setup_pdesc(pfloghdr->af, pfloghdr->dir, &pd, &mfake, &action,
 	    &reason, NULL, NULL, NULL, NULL, &off, &hdrlen) == -1)
 		return;
 
