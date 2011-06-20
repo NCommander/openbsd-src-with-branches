@@ -1,4 +1,4 @@
-/*	$OpenBSD: chk.c,v 1.20 2011/05/31 22:27:54 martynas Exp $	*/
+/*	$OpenBSD: chk.c,v 1.23 2011/06/20 13:29:09 millert Exp $	*/
 /*	$NetBSD: chk.c,v 1.2 1995/07/03 21:24:42 cgd Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: chk.c,v 1.22 2011/06/20 13:27:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: chk.c,v 1.23 2011/06/20 13:29:09 millert Exp $";
 #endif
 
 #include <stdlib.h>
@@ -867,8 +867,10 @@ printflike(hte_t *hte, fcall_t *call, int n, const char *fmt, type_t **ap)
 			} else {
 				goto uint_conv;
 			}
-		} else if (fc == 'f' || fc == 'e' || fc == 'E' ||
-			   fc == 'g' || fc == 'G') {
+		} else if (fc == 'e' || fc == 'E' ||
+			   fc == 'f' || fc == 'F' ||
+			   fc == 'g' || fc == 'G' ||
+			   fc == 'a' || fc == 'A') {
 			if (sz == NOTSPEC)
 				sz = DOUBLE;
 			if (sz != DOUBLE && sz != LDOUBLE)
