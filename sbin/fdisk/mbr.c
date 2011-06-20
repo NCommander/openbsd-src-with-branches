@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbr.c,v 1.25 2010/06/30 22:53:41 krw Exp $	*/
+/*	$OpenBSD: mbr.c,v 1.26 2011/02/21 19:26:13 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -169,7 +169,7 @@ MBR_read(int fd, off_t where, char *buf)
 
 	if (len == -1)
 		return (-1);
-	if (len != secsize) {
+	if (len < DEV_BSIZE) {
 		/* short read */
 		errno = EIO;
 		return (-1);
