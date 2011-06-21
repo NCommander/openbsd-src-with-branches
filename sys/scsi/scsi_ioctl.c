@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_ioctl.c,v 1.46 2010/07/22 05:32:10 matthew Exp $	*/
+/*	$OpenBSD: scsi_ioctl.c,v 1.47 2011/03/17 21:30:24 deraadt Exp $	*/
 /*	$NetBSD: scsi_ioctl.c,v 1.23 1996/10/12 23:23:17 christos Exp $	*/
 
 /*
@@ -314,7 +314,7 @@ scsi_do_ioctl(struct scsi_link *sc_link, u_long cmd, caddr_t addr, int flag)
 		else	
 			/* An 'emulated' SCSI target. */
 			sca->type = TYPE_ATAPI;
-		sca->scbus = sc_link->scsibus;
+		sca->scbus = sc_link->bus->sc_dev.dv_unit;
 		sca->target = sc_link->target;
 		sca->lun = sc_link->lun;
 		return (0);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_debug.h,v 1.8 2004/01/25 00:09:20 krw Exp $	*/
+/*	$OpenBSD: scsi_debug.h,v 1.9 2008/11/10 18:04:41 deraadt Exp $	*/
 /*	$NetBSD: scsi_debug.h,v 1.7 1996/10/12 23:23:16 christos Exp $	*/
 
 /*
@@ -33,7 +33,8 @@
 #endif
 
 
-extern int scsidebug_buses, scsidebug_targets, scsidebug_luns, scsidebug_level;
+extern u_int32_t scsidebug_buses, scsidebug_targets, scsidebug_luns;
+extern int scsidebug_level;
 
 /*
  * This is the usual debug macro for use with the above bits
