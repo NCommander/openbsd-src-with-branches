@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: PkgConfig.pm,v 1.18 2010/12/24 09:04:14 espie Exp $
 #
 # Copyright (c) 2006 Marc Espie <espie@openbsd.org>
 #
@@ -73,7 +73,7 @@ sub add_property
 		if (defined $parse->{$name}) {
 			$v = $parse->{$name}($value);
 		} else {
-			$v = [split /\s+/o, $value] ;
+			$v = [split /(?<!\\)\s+/o, $value];
 		}
 	} else {
 		$v = [];
