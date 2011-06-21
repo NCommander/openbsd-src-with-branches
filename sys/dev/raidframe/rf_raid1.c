@@ -1,4 +1,4 @@
-/*	$OpenBSD: rf_raid1.c,v 1.4 2000/01/11 18:02:23 peter Exp $	*/
+/*	$OpenBSD: rf_raid1.c,v 1.5 2002/12/16 07:01:04 tdeval Exp $	*/
 /*	$NetBSD: rf_raid1.c,v 1.5 2000/01/08 22:57:30 oster Exp $	*/
 
 /*
@@ -395,7 +395,7 @@ rf_VerifyParityRAID1(RF_Raid_t *raidPtr, RF_RaidAddr_t raidAddr,
 	}
 	RF_ASSERT(pda == NULL);
 
-	bzero((char *) &tracerec, sizeof(tracerec));
+	bzero(&tracerec, sizeof(tracerec));
 	rd_dag_h->tracerec = &tracerec;
 
 	if (rf_verifyParityDebug > 1) {
@@ -511,7 +511,7 @@ rf_VerifyParityRAID1(RF_Raid_t *raidPtr, RF_RaidAddr_t raidAddr,
 			    RF_CREATE_PARAM3(RF_IO_NORMAL_PRIORITY, 0, 0,
 			     which_ru);
 		}
-		bzero((char *) &tracerec, sizeof(tracerec));
+		bzero(&tracerec, sizeof(tracerec));
 		wr_dag_h->tracerec = &tracerec;
 		if (rf_verifyParityDebug > 1) {
 			printf("Parity verify write dag:\n");
