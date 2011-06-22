@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.h,v 1.103 2010/01/26 01:28:35 djm Exp $ */
+/* $OpenBSD: channels.h,v 1.104 2010/05/14 23:29:23 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -270,7 +270,7 @@ int	 x11_connect_display(void);
 int	 x11_create_display_inet(int, int, int, u_int *, int **);
 void     x11_input_open(int, u_int32_t, void *);
 void	 x11_request_forwarding_with_spoofing(int, const char *, const char *,
-	     const char *);
+	     const char *, int);
 void	 deny_input_open(int, u_int32_t, void *);
 
 /* agent forwarding */
