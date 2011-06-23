@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.383 2011/06/17 21:44:31 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.384 2011/06/22 21:57:01 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -102,7 +102,7 @@
 #endif
 #include "monitor_wrap.h"
 #include "roaming.h"
-#include "sandbox.h"
+#include "ssh-sandbox.h"
 #include "version.h"
 
 #ifdef LIBWRAP
