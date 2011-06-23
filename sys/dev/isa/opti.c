@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: opti.c,v 1.8 2004/06/13 21:49:24 niklas Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -209,7 +209,7 @@ opti_inb(port)
 }
 
 static int
-opti_present()
+opti_present(void)
 {
 	register u_char	a, b;
 	int s = splhigh();

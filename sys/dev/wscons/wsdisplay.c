@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.102 2010/07/02 17:27:01 nicm Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.103 2010/11/20 20:52:10 miod Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -2167,7 +2167,7 @@ wsdisplay_set_cons_kbd(int (*get)(dev_t), void (*poll)(dev_t, int),
 }
 
 void
-wsdisplay_unset_cons_kbd()
+wsdisplay_unset_cons_kbd(void)
 {
 	wsdisplay_cons.cn_getc = wsdisplay_getc_dummy;
 	wsdisplay_cons.cn_bell = NULL;
@@ -2178,7 +2178,7 @@ wsdisplay_unset_cons_kbd()
  * Switch the console display to its first screen.
  */
 void
-wsdisplay_switchtoconsole()
+wsdisplay_switchtoconsole(void)
 {
 	struct wsdisplay_softc *sc;
 	struct wsscreen *scr;

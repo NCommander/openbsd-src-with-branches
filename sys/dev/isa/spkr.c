@@ -1,4 +1,4 @@
-/*	$OpenBSD: spkr.c,v 1.11 2009/10/31 01:13:00 fgsch Exp $	*/
+/*	$OpenBSD: spkr.c,v 1.12 2009/12/04 09:49:21 jasper Exp $	*/
 /*	$NetBSD: spkr.c,v 1.1 1998/04/15 20:26:18 drochner Exp $	*/
 
 /*
@@ -171,7 +171,7 @@ static int pitchtab[] =
 #define NOCTAVES (sizeof(pitchtab) / sizeof(pitchtab[0]) / OCTAVE_NOTES)
 
 static void
-playinit()
+playinit(void)
 {
 	octave = DFLT_OCTAVE;
 	whole = (hz * SECS_PER_MIN * WHOLE_NOTE) / DFLT_TEMPO;

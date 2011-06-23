@@ -1,4 +1,4 @@
-/*	$OpenBSD: osiop.c,v 1.46 2010/12/08 21:57:47 miod Exp $	*/
+/*	$OpenBSD: osiop.c,v 1.47 2011/01/02 13:38:27 miod Exp $	*/
 /*	$NetBSD: osiop.c,v 1.9 2002/04/05 18:27:54 bouyer Exp $	*/
 
 /*
@@ -1967,7 +1967,7 @@ osiop_timeout(arg)
 
 #if OSIOP_TRACE_SIZE
 void
-osiop_dump_trace()
+osiop_dump_trace(void)
 {
 	int i;
 
