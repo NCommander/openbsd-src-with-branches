@@ -1,4 +1,4 @@
-/*	$OpenBSD: cninit.c,v 1.9 2010/06/09 15:44:17 miod Exp $	*/
+/*	$OpenBSD: cninit.c,v 1.10 2010/06/26 23:24:44 guenther Exp $	*/
 /*	$NetBSD: cninit.c,v 1.2 1995/04/11 22:08:10 pk Exp $	*/
 
 /*
@@ -54,7 +54,7 @@
 struct consdev *cn_tab = NULL;
 
 void
-cninit()
+cninit(void)
 {
 	struct consdev *cp;
 
@@ -82,8 +82,7 @@ cninit()
 }
 
 int
-cnset(dev)
-	dev_t dev;
+cnset(dev_t dev)
 {
 	struct consdev *cp;
 

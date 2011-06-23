@@ -1,4 +1,4 @@
-/*	$OpenBSD: sequencer.c,v 1.19 2009/11/09 17:53:39 nicm Exp $	*/
+/*	$OpenBSD: sequencer.c,v 1.20 2010/11/18 21:15:14 miod Exp $	*/
 /*	$NetBSD: sequencer.c,v 1.13 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*
@@ -1250,7 +1250,7 @@ midiseq_putc(struct midi_dev *md, int data)
  */
 
 int
-midi_unit_count()
+midi_unit_count(void)
 {
 	return (0);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.114 2010/12/06 06:09:08 jakemsr Exp $ */
+/*	$OpenBSD: ehci.c,v 1.115 2010/12/14 16:13:16 jakemsr Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -1304,7 +1304,7 @@ ehci_dump_regs(ehci_softc_t *sc)
  * debugger.
  */
 void
-ehci_dump()
+ehci_dump(void)
 {
 	ehci_dump_regs(theehci);
 }
