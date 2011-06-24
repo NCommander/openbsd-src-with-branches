@@ -3388,11 +3388,12 @@ sr_discipline_free(struct sr_discipline *sd)
 void
 sr_discipline_shutdown(struct sr_discipline *sd)
 {
-	struct sr_softc		*sc = sd->sd_sc;
+	struct sr_softc		*sc;
 	int			s;
 
-	if (!sd || !sc)
+	if (!sd)
 		return;
+	sc = sd->sd_sc;
 
 	DNPRINTF(SR_D_DIS, "%s: sr_discipline_shutdown %s\n", DEVNAME(sc),
 	    sd->sd_meta ? sd->sd_meta->ssd_devname : "nodev");
