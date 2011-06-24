@@ -21,10 +21,9 @@ __cpu_simple_lock_init(__cpu_simple_lock_t *l)
 static __inline__ void
 __cpu_simple_lock(__cpu_simple_lock_t *l)
 {
-	__cpu_simple_lock_t old;
+	volatile u_int old;
 
 	do {
-		old = __SIMPLELOCK_LOCKED;
 		__asm__ __volatile__
 		    ("ldcws 0(%2), %0" : "=&r" (old), "+m" (l) : "r" (l));
 	} while (old != __SIMPLELOCK_UNLOCKED);
@@ -33,7 +32,7 @@ __cpu_simple_lock(__cpu_simple_lock_t *l)
 static __inline__ int
 __cpu_simple_lock_try(__cpu_simple_lock_t *l)
 {
-	__cpu_simple_lock_t old = __SIMPLELOCK_LOCKED;
+	volatile u_int old;
 
 	__asm__ __volatile__
 	    ("ldcws 0(%2), %0" : "=&r" (old), "+m" (l) : "r" (l));
