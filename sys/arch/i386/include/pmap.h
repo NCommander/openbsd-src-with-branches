@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.57 2011/03/23 16:54:35 pirofti Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.58 2011/05/07 15:27:01 oga Exp $	*/
 /*	$NetBSD: pmap.h,v 1.44 2000/04/24 17:18:18 thorpej Exp $	*/
 
 /*
@@ -445,9 +445,7 @@ boolean_t	pmap_zero_page_uncached(paddr_t);
  */
 
 __inline static void
-pmap_page_protect(pg, prot)
-	struct vm_page *pg;
-	vm_prot_t prot;
+pmap_page_protect(struct vm_page *pg, vm_prot_t prot)
 {
 	if ((prot & VM_PROT_WRITE) == 0) {
 		if (prot & (VM_PROT_READ|VM_PROT_EXECUTE)) {
@@ -467,10 +465,7 @@ pmap_page_protect(pg, prot)
  */
 
 __inline static void
-pmap_protect(pmap, sva, eva, prot)
-	struct pmap *pmap;
-	vaddr_t sva, eva;
-	vm_prot_t prot;
+pmap_protect(struct pmap *pmap, vaddr_t sva, vaddr_t eva, vm_prot_t prot)
 {
 	if ((prot & VM_PROT_WRITE) == 0) {
 		if (prot & (VM_PROT_READ|VM_PROT_EXECUTE)) {
