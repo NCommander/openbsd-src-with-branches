@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.30 2011/06/05 19:41:07 deraadt Exp $ */
+/*	$OpenBSD: machdep.c,v 1.31 2011/06/24 19:47:48 naddy Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -63,6 +63,7 @@
 #include <sys/sem.h>
 #endif
 
+#include <net/if.h>
 #include <uvm/uvm.h>
 
 #include <machine/db_machdep.h>
@@ -800,6 +801,7 @@ boot(int howto)
 			printf("WARNING: not updating battery clock\n");
 		}
 	}
+	if_downall();
 
 	uvm_shutdown();
 	(void) splhigh();		/* Extreme priority. */

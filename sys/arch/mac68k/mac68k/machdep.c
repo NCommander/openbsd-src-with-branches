@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.157 2011/05/30 22:25:21 oga Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.158 2011/06/05 19:41:07 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -109,6 +109,7 @@
 #include <machine/bus.h>
 #include <machine/pmap.h>
 
+#include <net/if.h>
 #include <uvm/uvm_extern.h>
 #include <uvm/uvm_swap.h>
 
@@ -502,6 +503,7 @@ boot(howto)
 #endif
 		}
 	}
+	if_downall();
 
 	uvm_shutdown();
 	splhigh();			/* Disable interrupts. */
