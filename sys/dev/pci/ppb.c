@@ -169,9 +169,16 @@ ppbattach(struct device *parent, struct device *self, void *aux)
 	/* Check for PCI Express capabilities and setup hotplug support. */
 	if (pci_get_capability(pc, pa->pa_tag, PCI_CAP_PCIEXPRESS,
 	    &sc->sc_cap_off, &reg) && (reg & PCI_PCIE_XCAP_SI)) {
+#ifdef __i386__
 		if (pci_intr_map(pa, &ih) == 0)
 			sc->sc_intrhand = pci_intr_establish(pc, ih, IPL_BIO,
 			    ppb_intr, sc, self->dv_xname);
+#else
+		if (pci_intr_map_msi(pa, &ih) == 0 ||
+		    pci_intr_map(pa, &ih) == 0)
+			sc->sc_intrhand = pci_intr_establish(pc, ih, IPL_BIO,
+			    ppb_intr, sc, self->dv_xname);
+#endif
 
 		if (sc->sc_intrhand) {
 			printf(": %s", pci_intr_string(pc, ih));
