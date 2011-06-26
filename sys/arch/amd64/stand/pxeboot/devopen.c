@@ -1,4 +1,4 @@
-/*	$OpenBSD: devopen.c,v 1.6 2010/12/06 22:11:01 jasper Exp $	*/
+/*	$OpenBSD: devopen.c,v 1.7 2010/12/06 22:51:45 jasper Exp $	*/
 
 /*
  * Copyright (c) 2004 Tom Cosgrove
@@ -43,7 +43,7 @@ extern char *bootmac;		/* Gets passed to kernel for network boot */
 /* XXX use slot for 'rd' for 'hd' pseudo-device */
 const char bdevs[][4] = {
 	"wd", "", "fd", "", "sd", "st", "cd", "mcd",
-	"", "", "", "", "", "", "", "scd", "", "hd", ""
+	"", "", "", "", "", "", "", "", "", "hd", ""
 };
 const int nbdevs = nitems(bdevs);
 
