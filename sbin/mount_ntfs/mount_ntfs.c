@@ -1,4 +1,4 @@
-/* $OpenBSD: mount_ntfs.c,v 1.11 2007/04/09 20:22:41 pedro Exp $ */
+/* $OpenBSD: mount_ntfs.c,v 1.12 2007/04/14 17:07:28 grunk Exp $ */
 /* $NetBSD: mount_ntfs.c,v 1.9 2003/05/03 15:37:08 christos Exp $ */
 
 /*
@@ -108,6 +108,8 @@ main(int argc, char *argv[])
 			break;
 		}
 	}
+
+	mntflags |= MNT_RDONLY;
 
 	if (optind + 2 != argc)
 		usage();
