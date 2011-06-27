@@ -423,7 +423,6 @@ _dl_boot(const char **argv, char **envp, const long dyn_loff, long *dl_data)
 
 	/* init this in runtime, not statically */
 	TAILQ_INIT(&_dlopened_child_list);
-	TAILQ_INIT(&_dlsym_search_list);
 
 	exe_obj = NULL;
 	_dl_loading_object = NULL;
@@ -511,7 +510,6 @@ _dl_boot(const char **argv, char **envp, const long dyn_loff, long *dl_data)
 	dyn_obj->status |= STAT_RELOC_DONE;
 	_dl_set_sod(dyn_obj->load_name, &dyn_obj->sod);
 
-	_dl_search_list_valid = 0;
 	/*
 	 * Everything should be in place now for doing the relocation
 	 * and binding. Call _dl_rtld to do the job. Fingers crossed.
