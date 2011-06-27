@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_cd9660.c,v 1.18 2007/03/21 13:44:04 pedro Exp $	*/
+/*	$OpenBSD: mount_cd9660.c,v 1.19 2009/10/27 23:59:33 deraadt Exp $	*/
 /*	$NetBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
 
 /*
@@ -108,9 +108,7 @@ main(int argc, char *argv[])
 	args.fspec = dev;
 	args.export_info.ex_root = DEFAULT_ROOTUID;
 
-#if 1
 	mntflags |= MNT_RDONLY;
-#endif
 	if (mntflags & MNT_RDONLY)
 		args.export_info.ex_flags = MNT_EXRDONLY;
 	else
