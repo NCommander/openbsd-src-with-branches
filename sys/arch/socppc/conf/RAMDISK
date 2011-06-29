@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.7 2009/09/12 22:03:11 kettenis Exp $
+#	$OpenBSD: RAMDISK,v 1.8 2010/03/03 22:19:40 kettenis Exp $
 
 machine		socppc powerpc
 
@@ -60,11 +60,11 @@ usb*		at ehci?
 uhub*	at usb?			# USB Hubs
 uhub*	at uhub?		# USB Hubs
 umass*	at uhub?		# USB Mass Storage devices
-scsibus* at umass?
 ural*	at uhub?		# Ralink RT2500USB
 rum*	at uhub?		# Ralink RT2501USB/RT2601USB
 zyd*	at uhub?		# Zydas ZD1211
 
+scsibus*	at scsi?
 sd*		at scsibus?
 
 # On-board TSEC
