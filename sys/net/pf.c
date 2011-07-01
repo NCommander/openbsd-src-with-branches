@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.750 2011/06/21 08:59:47 bluhm Exp $ */
+/*	$OpenBSD: pf.c,v 1.751 2011/06/23 19:10:40 claudio Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -131,6 +131,8 @@ union pf_headers {
 	struct icmp		icmp;
 #ifdef INET6
 	struct icmp6_hdr	icmp6;
+	struct mld_hdr		mld;
+	struct nd_neighbor_solicit nd_ns;
 #endif /* INET6 */
 };
 
