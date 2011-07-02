@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.152 2010/10/25 19:39:55 deraadt Exp $	*/
+/*	$OpenBSD: route.c,v 1.153 2011/04/25 11:14:37 sthen Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -1035,6 +1035,7 @@ monitor(int argc, char *argv[])
 				af = AF_INET6;
 				break;
 			case K_IFACE:
+			case K_INTERFACE:
 				filter = ROUTE_FILTER(RTM_IFINFO) |
 				    ROUTE_FILTER(RTM_IFANNOUNCE);
 				break;
