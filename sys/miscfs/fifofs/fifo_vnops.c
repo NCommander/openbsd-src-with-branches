@@ -1,4 +1,4 @@
-/*	$OpenBSD: fifo_vnops.c,v 1.34 2010/12/21 20:14:43 thib Exp $	*/
+/*	$OpenBSD: fifo_vnops.c,v 1.35 2011/04/05 14:14:07 thib Exp $	*/
 /*	$NetBSD: fifo_vnops.c,v 1.18 1996/03/16 23:52:42 christos Exp $	*/
 
 /*
@@ -477,7 +477,7 @@ fifo_kqfilter(void *v)
 		sb = &so->so_snd;
 		break;
 	default:
-		return (1);
+		return (EINVAL);
 	}
 
 	ap->a_kn->kn_hook = so;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.15 2011/06/15 21:32:04 miod Exp $	*/
+/*	$OpenBSD: apm.c,v 1.16 2011/06/16 10:44:33 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -329,7 +329,7 @@ apmkqfilter(dev_t dev, struct knote *kn)
 		kn->kn_fop = &apmread_filtops;
 		break;
 	default:
-		return (1);
+		return (EINVAL);
 	}
 
 	kn->kn_hook = (caddr_t)sc;

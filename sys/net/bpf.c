@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.76 2010/09/21 04:06:37 henning Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.77 2011/01/04 15:24:11 deraadt Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -1070,7 +1070,7 @@ bpfkqfilter(dev_t dev, struct knote *kn)
 		kn->kn_fop = &bpfread_filtops;
 		break;
 	default:
-		return (1);
+		return (EINVAL);
 	}
 
 	kn->kn_hook = (caddr_t)((u_long)dev);

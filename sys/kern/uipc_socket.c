@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.91 2011/04/19 22:33:08 bluhm Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.92 2011/05/02 13:48:38 mikeb Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -1638,7 +1638,7 @@ soo_kqfilter(struct file *fp, struct knote *kn)
 		sb = &so->so_snd;
 		break;
 	default:
-		return (1);
+		return (EINVAL);
 	}
 
 	s = splnet();
