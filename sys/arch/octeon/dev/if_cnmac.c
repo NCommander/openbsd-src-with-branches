@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnmac.c,v 1.4 2011/06/22 07:29:06 yasuoka Exp $	*/
+/*	$OpenBSD: if_cnmac.c,v 1.5 2011/06/24 02:13:23 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#include <sys/cdefs.h>
+#include "bpfilter.h"
 
 /*
  * XXXSEIL
