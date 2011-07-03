@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfscanf.c,v 1.25 2009/11/09 00:18:27 kurt Exp $ */
+/*	$OpenBSD: vfscanf.c,v 1.26 2011/07/03 05:16:59 martynas Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -239,12 +239,10 @@ literal:
 			break;
 
 #ifdef FLOATING_POINT
-		case 'E':
-		case 'G':
-		case 'e': 
-		case 'f': 
-		case 'F': 
-		case 'g':
+		case 'e': case 'E':
+		case 'f': case 'F':
+		case 'g': case 'G':
+		case 'a': case 'A':
 			c = CT_FLOAT;
 			break;
 #endif
