@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upl.c,v 1.46 2010/12/17 13:48:06 jasper Exp $ */
+/*	$OpenBSD: if_upl.c,v 1.47 2011/01/25 20:03:35 jakemsr Exp $ */
 /*	$NetBSD: if_upl.c,v 1.19 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -346,9 +346,6 @@ upl_activate(struct device *self, int act)
 	DPRINTFN(2,("%s: %s: enter\n", sc->sc_dev.dv_xname, __func__));
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
-
 	case DVACT_DEACTIVATE:
 		sc->sc_dying = 1;
 		break;

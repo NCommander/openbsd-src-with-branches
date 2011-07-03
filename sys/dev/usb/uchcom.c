@@ -1,4 +1,4 @@
-/*	$OpenBSD: uchcom.c,v 1.13 2010/12/17 22:38:54 jasper Exp $	*/
+/*	$OpenBSD: uchcom.c,v 1.14 2011/01/25 20:03:36 jakemsr Exp $	*/
 /*	$NetBSD: uchcom.c,v 1.1 2007/09/03 17:57:37 tshiozak Exp $	*/
 
 /*
@@ -337,8 +337,6 @@ uchcom_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
 	case DVACT_DEACTIVATE:
 		uchcom_close_intr_pipe(sc);
 		sc->sc_dying = 1;

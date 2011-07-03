@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.53 2010/08/02 23:17:34 miod Exp $	*/
+/*	$OpenBSD: ukbd.c,v 1.54 2010/08/29 15:28:11 miod Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -281,9 +281,6 @@ ukbd_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
-
 	case DVACT_DEACTIVATE:
 		if (kbd->sc_wskbddev != NULL)
 			rv = config_deactivate(kbd->sc_wskbddev);

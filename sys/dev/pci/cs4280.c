@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4280.c,v 1.38 2010/09/12 03:17:34 jakemsr Exp $	*/
+/*	$OpenBSD: cs4280.c,v 1.39 2011/04/03 15:36:02 jasper Exp $	*/
 /*	$NetBSD: cs4280.c,v 1.5 2000/06/26 04:56:23 simonb Exp $	*/
 
 /*
@@ -1832,8 +1832,6 @@ cs4280_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
- 	case DVACT_ACTIVATE:
-		break;
 	case DVACT_QUIESCE:
 		rv = config_activate_children(self, act);
 		break;

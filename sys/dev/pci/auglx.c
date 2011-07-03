@@ -1,4 +1,4 @@
-/*      $OpenBSD: auglx.c,v 1.6 2010/09/07 16:21:44 deraadt Exp $	*/
+/*      $OpenBSD: auglx.c,v 1.7 2010/09/21 02:00:13 jakemsr Exp $	*/
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -1337,8 +1337,6 @@ auglx_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
 	case DVACT_QUIESCE:
 		rv = config_activate_children(self, act);
 		break;

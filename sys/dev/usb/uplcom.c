@@ -1,4 +1,4 @@
-/*	$OpenBSD: uplcom.c,v 1.54 2010/11/16 22:28:55 deraadt Exp $	*/
+/*	$OpenBSD: uplcom.c,v 1.55 2011/01/25 20:03:36 jakemsr Exp $	*/
 /*	$NetBSD: uplcom.c,v 1.29 2002/09/23 05:51:23 simonb Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -445,9 +445,6 @@ uplcom_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
-
 	case DVACT_DEACTIVATE:
 		if (sc->sc_subdev != NULL)
 			rv = config_deactivate(sc->sc_subdev);

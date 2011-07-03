@@ -1,4 +1,4 @@
-/*	$OpenBSD: umsm.c,v 1.74 2011/04/24 02:56:11 deraadt Exp $	*/
+/*	$OpenBSD: umsm.c,v 1.75 2011/06/15 14:02:10 jsg Exp $	*/
 
 /*
  * Copyright (c) 2008 Yojiro UO <yuo@nui.org>
@@ -425,9 +425,6 @@ umsm_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
-
 	case DVACT_DEACTIVATE:
 		if (sc->sc_subdev != NULL)
 			rv = config_deactivate(sc->sc_subdev);

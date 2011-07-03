@@ -1,4 +1,4 @@
-/*	$OpenBSD: ulpt.c,v 1.37 2010/09/24 08:33:59 yuo Exp $ */
+/*	$OpenBSD: ulpt.c,v 1.38 2011/01/25 20:03:36 jakemsr Exp $ */
 /*	$NetBSD: ulpt.c,v 1.57 2003/01/05 10:19:42 scw Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/ulpt.c,v 1.24 1999/11/17 22:33:44 n_hibma Exp $	*/
 
@@ -306,9 +306,6 @@ ulpt_activate(struct device *self, int act)
 	struct ulpt_softc *sc = (struct ulpt_softc *)self;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
-
 	case DVACT_DEACTIVATE:
 		sc->sc_dying = 1;
 		break;

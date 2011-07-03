@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcmcia.c,v 1.42 2010/09/01 11:45:42 miod Exp $	*/
+/*	$OpenBSD: pcmcia.c,v 1.43 2010/09/07 16:21:46 deraadt Exp $	*/
 /*	$NetBSD: pcmcia.c,v 1.9 1998/08/13 02:10:55 eeh Exp $	*/
 
 /*
@@ -138,9 +138,6 @@ pcmcia_activate(struct device *self, int act)
 	struct pcmcia_function *pf;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		/* No children yet */
-		break;
 	case DVACT_QUIESCE:
 	case DVACT_SUSPEND:
 	case DVACT_RESUME:

@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.146 2011/03/23 15:51:11 fgsch Exp $	*/
+/*	$OpenBSD: com.c,v 1.147 2011/05/22 22:36:53 drahn Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -236,9 +236,6 @@ com_activate(struct device *self, int act)
 
 	s = spltty();
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
-
 	case DVACT_DEACTIVATE:
 #ifdef KGDB
 		if (sc->sc_hwflags & (COM_HW_CONSOLE|COM_HW_KGDB)) {

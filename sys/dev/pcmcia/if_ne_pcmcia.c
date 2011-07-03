@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ne_pcmcia.c,v 1.93 2009/10/13 19:33:16 pirofti Exp $	*/
+/*	$OpenBSD: if_ne_pcmcia.c,v 1.94 2010/08/30 20:33:18 deraadt Exp $	*/
 /*	$NetBSD: if_ne_pcmcia.c,v 1.17 1998/08/15 19:00:04 thorpej Exp $	*/
 
 /*
@@ -867,14 +867,6 @@ ne_pcmcia_activate(dev, act)
 	struct ifnet *ifp = &esc->sc_arpcom.ac_if;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		pcmcia_function_enable(sc->sc_pf);
-		sc->sc_ih = pcmcia_intr_establish(sc->sc_pf, IPL_NET,
-		    dp8390_intr, sc, esc->sc_dev.dv_xname);
-		/* XXX this is ridiculous */
-		dp8390_init(esc);
-		dp8390_stop(esc);
-		break;
 	case DVACT_SUSPEND:
 		ifp->if_timer = 0;
 		if (ifp->if_flags & IFF_RUNNING) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhub.c,v 1.56 2010/12/06 04:41:40 jakemsr Exp $ */
+/*	$OpenBSD: uhub.c,v 1.57 2011/01/25 20:03:36 jakemsr Exp $ */
 /*	$NetBSD: uhub.c,v 1.64 2003/02/08 03:32:51 ichiro Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/uhub.c,v 1.18 1999/11/17 22:33:43 n_hibma Exp $	*/
 
@@ -523,9 +523,6 @@ uhub_activate(struct device *self, int act)
 	int nports, port, i;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
-
 	case DVACT_DEACTIVATE:
 		if (hub == NULL) /* malfunctioning hub */
 			break;

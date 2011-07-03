@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.49 2011/01/25 20:03:35 jakemsr Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.50 2011/04/07 15:30:16 miod Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -2126,9 +2126,6 @@ uath_activate(struct device *self, int act)
 	struct uath_softc *sc = (struct uath_softc *)self;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
-
 	case DVACT_DEACTIVATE:
 		usbd_deactivate(sc->sc_udev);
 		break;

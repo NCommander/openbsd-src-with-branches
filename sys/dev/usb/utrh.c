@@ -1,4 +1,4 @@
-/*	$OpenBSD: utrh.c,v 1.6 2010/12/19 21:32:58 jasper Exp $   */
+/*	$OpenBSD: utrh.c,v 1.7 2011/01/25 20:03:36 jakemsr Exp $   */
 
 /*
  * Copyright (c) 2009 Yojiro UO <yuo@nui.org>
@@ -199,9 +199,6 @@ utrh_activate(struct device *self, int act)
 	struct utrh_softc *sc = (struct utrh_softc *)self;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
-
 	case DVACT_DEACTIVATE:
 		sc->sc_dying = 1;
 		break;

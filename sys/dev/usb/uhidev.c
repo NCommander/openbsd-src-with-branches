@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhidev.c,v 1.40 2010/09/24 08:33:59 yuo Exp $	*/
+/*	$OpenBSD: uhidev.c,v 1.41 2011/01/25 20:03:36 jakemsr Exp $	*/
 /*	$NetBSD: uhidev.c,v 1.14 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -336,8 +336,6 @@ uhidev_activate(struct device *self, int act)
 	int i, rv = 0, r;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
 	case DVACT_DEACTIVATE:
 		for (i = 0; i < sc->sc_nrepid; i++)
 			if (sc->sc_subdevs[i] != NULL) {

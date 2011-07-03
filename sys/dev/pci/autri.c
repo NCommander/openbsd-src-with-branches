@@ -1,4 +1,4 @@
-/*	$OpenBSD: autri.c,v 1.28 2010/09/21 02:53:14 jakemsr Exp $	*/
+/*	$OpenBSD: autri.c,v 1.29 2011/04/03 15:36:02 jasper Exp $	*/
 
 /*
  * Copyright (c) 2001 SOMEYA Yoshihiko and KUROSAWA Takahiro.
@@ -625,8 +625,6 @@ autri_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
 	case DVACT_QUIESCE:
 		rv = config_activate_children(self, act);
 		break;

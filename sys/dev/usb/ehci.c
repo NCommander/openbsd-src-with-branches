@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.115 2010/12/14 16:13:16 jakemsr Exp $ */
+/*	$OpenBSD: ehci.c,v 1.116 2011/06/23 16:02:33 tedu Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -1063,8 +1063,6 @@ ehci_activate(struct device *self, int act)
 	int i, rv = 0;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		break;
 	case DVACT_QUIESCE:
 		rv = config_activate_children(self, act);
 		break;

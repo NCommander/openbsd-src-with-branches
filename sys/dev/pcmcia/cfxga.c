@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfxga.c,v 1.19 2009/10/13 19:33:16 pirofti Exp $	*/
+/*	$OpenBSD: cfxga.c,v 1.20 2010/08/30 20:33:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, Matthieu Herrb and Miodrag Vallat
@@ -318,10 +318,6 @@ cfxga_activate(struct device *dev, int act)
 	struct cfxga_softc *sc = (void *)dev;
 
 	switch (act) {
-	case DVACT_ACTIVATE:
-		pcmcia_function_enable(sc->sc_pf);
-		cfxga_reset_and_repaint(sc);
-		break;
 	case DVACT_DEACTIVATE:
 		pcmcia_function_disable(sc->sc_pf);
 		break;
