@@ -1,4 +1,4 @@
-#	$OpenBSD: files.octeon,v 1.9 2011/05/15 08:52:48 matthieu Exp $
+#	$OpenBSD: files.octeon,v 1.10 2011/06/16 11:22:30 syuu Exp $
 
 # Standard stanzas config(8) can't run without
 maxpartitions 16
@@ -73,6 +73,7 @@ file	arch/octeon/dev/cn30xxgmx.c			cn30xxgmx
 device	cnmac: ether, ifnet, mii, ifmedia
 attach	cnmac at cn30xxgmx
 file	arch/octeon/dev/if_cnmac.c			cnmac
+
 attach	octcf at iobus
 file	arch/octeon/dev/octcf.c				octcf
 
