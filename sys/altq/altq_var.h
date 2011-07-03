@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_var.h,v 1.14 2004/04/27 02:56:20 kjc Exp $	*/
+/*	$OpenBSD: altq_var.h,v 1.15 2008/04/20 07:05:52 deraadt Exp $	*/
 /*	$KAME: altq_var.h,v 1.8 2001/02/09 09:44:41 kjc Exp $	*/
 
 /*
@@ -97,7 +97,6 @@ struct ifnet; struct mbuf;
 struct pf_altq; struct pf_qstats;
 
 void	*altq_lookup(char *, int);
-u_int8_t read_dsfield(struct mbuf *, struct altq_pktattr *);
 void	write_dsfield(struct mbuf *, struct altq_pktattr *, u_int8_t);
 void	altq_assert(const char *, int, const char *);
 int	tbr_set(struct ifaltq *, struct tb_profile *);
