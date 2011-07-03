@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_hfsc.h,v 1.5 2003/12/06 06:39:51 kjc Exp $	*/
+/*	$OpenBSD: altq_hfsc.h,v 1.6 2004/01/14 08:42:23 kjc Exp $	*/
 /*	$KAME: altq_hfsc.h,v 1.8 2002/11/29 04:36:23 kjc Exp $	*/
 
 /*
@@ -36,7 +36,6 @@
 #include <altq/altq.h>
 #include <altq/altq_classq.h>
 #include <altq/altq_red.h>
-#include <altq/altq_rio.h>
 
 #ifdef __cplusplus
 extern "C" {
