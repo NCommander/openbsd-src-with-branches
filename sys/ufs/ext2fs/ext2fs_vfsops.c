@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.58 2010/09/23 18:40:00 oga Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.60 2011/06/30 15:08:59 jsing Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
@@ -143,11 +143,11 @@ ext2fs_mountroot(void)
 	fs = ump->um_e2fs;
 	bzero(fs->e2fs_fsmnt, sizeof(fs->e2fs_fsmnt));
 	(void)copystr(mp->mnt_stat.f_mntonname, fs->e2fs_fsmnt, 
-	    sizeof(fs->e2fs_fsmnt) - 1, 0);
+	    sizeof(fs->e2fs_fsmnt) - 1, NULL);
 	if (fs->e2fs.e2fs_rev > E2FS_REV0) {
 		bzero(fs->e2fs.e2fs_fsmnt, sizeof(fs->e2fs.e2fs_fsmnt));
 		(void)copystr(mp->mnt_stat.f_mntonname, fs->e2fs.e2fs_fsmnt,
-		    sizeof(fs->e2fs.e2fs_fsmnt) - 1, 0);
+		    sizeof(fs->e2fs.e2fs_fsmnt) - 1, NULL);
 	}
 	(void)ext2fs_statfs(mp, &mp->mnt_stat, p);
 	vfs_unbusy(mp);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vnops.c,v 1.58 2010/12/21 20:14:44 thib Exp $	*/
+/*	$OpenBSD: ext2fs_vnops.c,v 1.59 2011/04/05 14:14:07 thib Exp $	*/
 /*	$NetBSD: ext2fs_vnops.c,v 1.1 1997/06/11 09:34:09 bouyer Exp $	*/
 
 /*
@@ -119,7 +119,7 @@ ext2fs_mknod(void *v)
 	vput(*vpp);
 	(*vpp)->v_type = VNON;
 	vgone(*vpp);
-	*vpp = 0;
+	*vpp = NULL;
 	return (0);
 }
 

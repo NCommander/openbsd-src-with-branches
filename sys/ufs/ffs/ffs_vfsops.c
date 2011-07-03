@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.129 2011/07/02 15:52:25 thib Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.130 2011/07/02 16:23:47 krw Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -149,7 +149,8 @@ ffs_mountroot(void)
 	CIRCLEQ_INSERT_TAIL(&mountlist, mp, mnt_list);
 	ump = VFSTOUFS(mp);
 	fs = ump->um_fs;
-	(void) copystr(mp->mnt_stat.f_mntonname, fs->fs_fsmnt, MNAMELEN - 1, 0);
+	(void)copystr(mp->mnt_stat.f_mntonname, fs->fs_fsmnt, MNAMELEN - 1,
+	    NULL);
 	(void)ffs_statfs(mp, &mp->mnt_stat, p);
 	vfs_unbusy(mp);
 	inittodr(fs->fs_time);
