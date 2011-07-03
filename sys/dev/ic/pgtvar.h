@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgtvar.h,v 1.12 2010/08/27 20:06:39 deraadt Exp $  */
+/*	$OpenBSD: pgtvar.h,v 1.13 2010/09/20 07:40:41 deraadt Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -80,7 +80,7 @@ struct pgt_tx_radiotap_hdr {
  */
 struct pgt_desc {
 	TAILQ_ENTRY(pgt_desc)	pd_link;
-	void		       *pd_mem;
+	caddr_t		        pd_mem;
 	bus_addr_t		pd_dmaaddr;
 	bus_dmamap_t		pd_dmam;
 	bus_dma_segment_t	pd_dmas;
