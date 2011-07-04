@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.3 2011/01/02 13:25:17 jasper Exp $	*/
+/*	$OpenBSD: clock.c,v 1.4 2011/01/09 19:37:51 jasper Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -37,7 +37,7 @@ struct timecounter itmr_timecounter = {
 };
 
 void
-cpu_initclocks()
+cpu_initclocks(void)
 {
 	struct cpu_info *ci = curcpu();
 	u_long __itmr;
@@ -96,7 +96,7 @@ inittodr(time_t t)
  * reset the time of day clock to the value in time
  */
 void
-resettodr()
+resettodr(void)
 {
 	struct timeval tv;
 	int error;
