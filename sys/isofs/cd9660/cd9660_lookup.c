@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_lookup.c,v 1.16 2009/07/09 22:29:55 thib Exp $	*/
+/*	$OpenBSD: cd9660_lookup.c,v 1.17 2010/01/17 20:25:58 chl Exp $	*/
 /*	$NetBSD: cd9660_lookup.c,v 1.18 1997/05/08 16:19:59 mycroft Exp $	*/
 
 /*-
@@ -438,7 +438,7 @@ cd9660_bufatoff(struct iso_node *ip, off_t offset, char **res,
 	lbn = lblkno(imp, offset);
 	bsize = blksize(imp, ip, lbn);
 	
-	if ((error = bread(vp, lbn, bsize, NOCRED, &bp)) != 0) {
+	if ((error = bread(vp, lbn, bsize, &bp)) != 0) {
 		brelse(bp);
 		*bpp = NULL;
 		return (error);

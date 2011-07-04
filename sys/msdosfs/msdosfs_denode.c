@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_denode.c,v 1.41 2010/10/27 19:16:17 deraadt Exp $	*/
+/*	$OpenBSD: msdosfs_denode.c,v 1.42 2010/12/21 20:14:43 thib Exp $	*/
 /*	$NetBSD: msdosfs_denode.c,v 1.23 1997/10/17 11:23:58 ws Exp $	*/
 
 /*-
@@ -430,12 +430,10 @@ detrunc(struct denode *dep, uint32_t length, int flags, struct ucred *cred,
 	if ((boff = length & pmp->pm_crbomask) != 0) {
 		if (isadir) {
 			bn = cntobn(pmp, eofentry);
-			error = bread(pmp->pm_devvp, bn, pmp->pm_bpcluster,
-			    NOCRED, &bp);
+			error = bread(pmp->pm_devvp, bn, pmp->pm_bpcluster, &bp);
 		} else {
 			bn = de_blk(pmp, length);
-			error = bread(DETOV(dep), bn, pmp->pm_bpcluster,
-			    NOCRED, &bp);
+			error = bread(DETOV(dep), bn, pmp->pm_bpcluster, &bp);
 		}
 		if (error) {
 			brelse(bp);

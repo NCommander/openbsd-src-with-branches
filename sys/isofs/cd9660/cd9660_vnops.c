@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vnops.c,v 1.52 2010/12/21 20:14:43 thib Exp $	*/
+/*	$OpenBSD: cd9660_vnops.c,v 1.53 2011/04/05 14:14:07 thib Exp $	*/
 /*	$NetBSD: cd9660_vnops.c,v 1.42 1997/10/16 23:56:57 christos Exp $	*/
 
 /*-
@@ -326,10 +326,10 @@ cd9660_read(v)
 				ra->sizes[i] = blksize(imp, ip, rablock + i);
 			}
 			error = breadn(vp, lbn, size, ra->blks,
-			    ra->sizes, i, NOCRED, &bp);
+			    ra->sizes, i, &bp);
 			free(ra, M_TEMP);
 		} else
-			error = bread(vp, lbn, size, NOCRED, &bp);
+			error = bread(vp, lbn, size, &bp);
 		ci->ci_lastr = lbn;
 		n = min(n, size - bp->b_resid);
 		if (error) {
@@ -700,7 +700,7 @@ cd9660_readlink(v)
 	error = bread(imp->im_devvp,
 		      (ip->i_number >> imp->im_bshift) <<
 		      (imp->im_bshift - DEV_BSHIFT),
-		      imp->logical_block_size, NOCRED, &bp);
+		      imp->logical_block_size, &bp);
 	if (error) {
 		brelse(bp);
 		return (EINVAL);
