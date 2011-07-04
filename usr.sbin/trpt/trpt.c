@@ -61,13 +61,12 @@
 
 #include <sys/param.h>
 #include <sys/queue.h>
+#include <sys/socket.h>
+#define PRUREQUESTS
+#include <sys/protosw.h>
 #define _KERNEL
 #include <sys/timeout.h>		/* to get timeout_pending() and such */
 #undef _KERNEL
-#include <sys/socket.h>
-#include <sys/socketvar.h>
-#define PRUREQUESTS
-#include <sys/protosw.h>
 #include <sys/file.h>
 
 #include <net/route.h>
