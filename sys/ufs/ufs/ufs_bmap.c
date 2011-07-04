@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_bmap.c,v 1.27 2008/06/10 20:14:37 beck Exp $	*/
+/*	$OpenBSD: ufs_bmap.c,v 1.29 2008/06/12 06:58:40 deraadt Exp $	*/
 /*	$NetBSD: ufs_bmap.c,v 1.3 1996/02/09 22:36:00 christos Exp $	*/
 
 /*
@@ -44,8 +44,7 @@
 #include <sys/vnode.h>
 #include <sys/mount.h>
 #include <sys/resourcevar.h>
-
-#include <miscfs/specfs/specdev.h>
+#include <sys/specdev.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_swap.c,v 1.102 2011/04/17 19:19:47 deraadt Exp $	*/
+/*	$OpenBSD: uvm_swap.c,v 1.103 2011/07/03 18:34:14 oga Exp $	*/
 /*	$NetBSD: uvm_swap.c,v 1.40 2000/11/17 11:39:39 mrg Exp $	*/
 
 /*
@@ -57,7 +57,7 @@
 #include <sys/syslog.h>
 #endif
 
-#include <miscfs/specfs/specdev.h>
+#include <sys/specdev.h>
 
 #include "vnd.h"
 

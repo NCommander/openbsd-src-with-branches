@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vfsops.c,v 1.25 2011/04/03 17:17:41 jsing Exp $	*/
+/*	$OpenBSD: ntfs_vfsops.c,v 1.26 2011/07/04 04:30:41 tedu Exp $	*/
 /*	$NetBSD: ntfs_vfsops.c,v 1.7 2003/04/24 07:50:19 christos Exp $	*/
 
 /*-
@@ -43,14 +43,13 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/conf.h>
+#include <sys/specdev.h>
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 #include <uvm/uvm_extern.h>
 #else
 #include <vm/vm.h>
 #endif
-
-#include <miscfs/specfs/specdev.h>
 
 /*#define NTFS_DEBUG 1*/
 #if defined(__FreeBSD__) || defined(__NetBSD__)

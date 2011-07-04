@@ -1,4 +1,4 @@
-/*	$OpenBSD: specdev.h,v 1.28 2010/09/10 16:34:08 thib Exp $	*/
+/*	$OpenBSD: specdev.h,v 1.29 2010/12/21 20:14:43 thib Exp $	*/
 /*	$NetBSD: specdev.h,v 1.12 1996/02/13 13:13:01 mycroft Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vfsops.c,v 1.36 2010/12/21 20:14:43 thib Exp $	*/
+/*	$OpenBSD: udf_vfsops.c,v 1.37 2011/07/04 04:30:41 tedu Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -65,8 +65,7 @@
 #include <sys/queue.h>
 #include <sys/vnode.h>
 #include <sys/endian.h>
-
-#include <miscfs/specfs/specdev.h>
+#include <sys/specdev.h>
 
 #include <isofs/udf/ecma167-udf.h>
 #include <isofs/udf/udf.h>
