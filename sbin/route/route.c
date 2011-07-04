@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.153 2011/04/25 11:14:37 sthen Exp $	*/
+/*	$OpenBSD: route.c,v 1.154 2011/07/02 22:00:54 claudio Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -865,6 +865,7 @@ getaddr(int which, char *s, struct hostent **hpp)
 	    }
 
 	case AF_LINK:
+		su->sa.sa_len = sizeof(struct sockaddr_dl);
 		link_addr(s, &su->sdl);
 		return (1);
 	case AF_MPLS:
