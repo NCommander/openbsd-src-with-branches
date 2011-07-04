@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.72 2011/05/09 12:24:41 claudio Exp $ */
+/*	$OpenBSD: interface.c,v 1.73 2011/06/21 17:31:07 mikeb Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -339,9 +339,7 @@ if_act_start(struct iface *iface)
 	struct timeval		 now;
 
 	if (!((iface->flags & IFF_UP) &&
-	    (LINK_STATE_IS_UP(iface->linkstate) ||
-	    (iface->linkstate == LINK_STATE_UNKNOWN &&
-	    iface->media_type != IFT_CARP))))
+	    LINK_STATE_IS_UP(iface->linkstate)))
 		return (0);
 
 	if (iface->media_type == IFT_CARP && iface->passive == 0) {
