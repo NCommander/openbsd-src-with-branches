@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.186 2011/07/03 17:55:25 dhill Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.187 2011/07/04 00:37:00 mpf Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -1587,6 +1587,8 @@ carp_input(struct mbuf *m, u_int8_t *shost, u_int8_t *dhost, u_int16_t etype)
 		 * for each CARP interface _before_ copying.
 		 */
 		TAILQ_FOREACH(vh, &cif->vhif_vrs, sc_list) {
+			if (!(vh->sc_if.if_flags & IFF_UP))
+				continue;
 			m0 = m_copym2(m, 0, M_COPYALL, M_DONTWAIT);
 			if (m0 == NULL)
 				continue;
