@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.41 2010/12/27 19:51:27 guenther Exp $	*/
+/*	$OpenBSD: intr.h,v 1.42 2011/03/23 16:54:35 pirofti Exp $	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -107,7 +107,7 @@ void splassert_check(int, const char *);
 #define	spltty()	splraise(IPL_TTY)
 #define	splaudio()	splraise(IPL_AUDIO)
 #define	splclock()	splraise(IPL_CLOCK)
-#define	splstatclock()	splhigh()
+#define	splstatclock()	splclock()
 #define splipi()	splraise(IPL_IPI)
 
 /*
