@@ -1,9 +1,5 @@
-/*	$OpenBSD: userret.h,v 1.3 2005/12/13 00:18:19 jsg Exp $	*/
+/*	$OpenBSD: userret.h,v 1.4 2008/06/26 05:42:09 ray Exp $	*/
 /*	$NetBSD: userret.h,v 1.1 2003/04/26 18:39:49 fvdl Exp $	*/
-
-/*
- * XXXfvdl same as i386 counterpart, but should probably be independent.
- */
 
 /*-
  * Copyright (c) 1998, 2000 The NetBSD Foundation, Inc.
