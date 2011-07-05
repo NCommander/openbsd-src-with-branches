@@ -1,4 +1,4 @@
-/*	$OpenBSD: spec_vnops.c,v 1.1 2011/07/04 20:35:35 deraadt Exp $	*/
+/*	$OpenBSD: spec_vnops.c,v 1.66 2011/07/04 20:51:19 deraadt Exp $	*/
 /*	$NetBSD: spec_vnops.c,v 1.29 1996/04/22 01:42:38 christos Exp $	*/
 
 /*
@@ -53,6 +53,9 @@
 #include <sys/specdev.h>
 
 #define v_lastr v_specinfo->si_lastr
+
+int	spec_open_clone(struct vop_open_args *);
+int	spec_close_clone(struct vop_close_args *);
 
 struct vnode *speclisth[SPECHSZ];
 
