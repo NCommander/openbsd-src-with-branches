@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_time.c,v 1.1 2011/02/10 11:58:43 pirofti Exp $	*/
+/*	$OpenBSD: linux_time.c,v 1.2 2011/04/05 22:15:50 pirofti Exp $	*/
 /*
  * Copyright (c) 2010, 2011 Paul Irofti <pirofti@openbsd.org>
  *
@@ -51,6 +51,13 @@ native_to_linux_timespec(struct l_timespec *ltp, struct timespec *ntp)
 {
 	ltp->tv_sec = ntp->tv_sec;
 	ltp->tv_nsec = ntp->tv_nsec;
+}
+
+void
+linux_to_native_timespec(struct timespec *ntp, struct l_timespec *ltp)
+{
+	ntp->tv_sec = ltp->tv_sec;
+	ntp->tv_nsec = ltp->tv_nsec;
 }
 
 int
