@@ -311,7 +311,7 @@ pppread(tp, uio, flag)
 	    splx(s);
 	    return 0;
 	}
-	if (!IFQ_IS_EMPTY(sc->sc_inq))
+	if (sc->sc_inq.ifq_head != NULL)
 	    break;
 	if ((tp->t_state & TS_CARR_ON) == 0 && (tp->t_cflag & CLOCAL) == 0
 	    && (tp->t_state & TS_ISOPEN)) {
