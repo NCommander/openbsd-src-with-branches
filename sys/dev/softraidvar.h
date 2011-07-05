@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.99 2011/04/05 19:52:02 krw Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.101 2011/07/02 17:39:12 jsing Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -381,13 +381,14 @@ struct sr_raid6 {
 };
 
 /* CRYPTO */
+TAILQ_HEAD(sr_crypto_wu_head, sr_crypto_wu);
 #define SR_CRYPTO_NOWU		16
+
 struct sr_crypto {
+	struct mutex		 scr_mutex;
+	struct sr_crypto_wu_head scr_wus;
 	struct sr_meta_crypto	*scr_meta;
 	struct sr_chunk		*key_disk;
-
-	struct pool		sr_uiopl;
-	struct pool		sr_iovpl;
 
 	/* XXX only keep scr_sid over time */
 	u_int8_t		scr_key[SR_CRYPTO_MAXKEYS][SR_CRYPTO_KEYBYTES];
