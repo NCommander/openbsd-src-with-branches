@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.c,v 1.30 2010/05/18 04:41:14 dlg Exp $	*/
+/*	$OpenBSD: disk.c,v 1.31 2010/06/30 22:53:41 krw Exp $	*/
 
 /*
  * Copyright (c) 1997, 2001 Tobias Weingartner
@@ -77,9 +77,8 @@ DISK_getlabelmetrics(char *name)
 		if (lm == NULL)
 			err(1, NULL);
 
-		if (ioctl(fd, DIOCGPDINFO, &dl) == -1 &&
-		    ioctl(fd, DIOCGDINFO, &dl) == -1) {
-			warn("DIOCGDINFO");
+		if (ioctl(fd, DIOCGPDINFO, &dl) == -1) {
+			warn("DIOCGPDINFO");
 			free(lm);
 			lm = NULL;
 		} else {
