@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.20 2009/11/27 19:47:45 guenther Exp $	*/
+/*	$OpenBSD: signal.h,v 1.21 2010/07/02 19:57:15 tedu Exp $	*/
 /*	$NetBSD: signal.h,v 1.21 1996/02/09 18:25:32 christos Exp $	*/
 
 /*
@@ -161,7 +161,7 @@ struct	sigvec {
  * Macro for converting signal number to a mask suitable for
  * sigblock().
  */
-#define sigmask(m)	(1 << ((m)-1))
+#define sigmask(m)	(1U << ((m)-1))
 
 #define	BADSIG		SIG_ERR
 
