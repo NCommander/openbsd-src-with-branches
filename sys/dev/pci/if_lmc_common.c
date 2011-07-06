@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc_common.c,v 1.11 2005/11/07 00:29:21 brad Exp $ */
+/*	$OpenBSD: if_lmc_common.c,v 1.12 2010/04/08 00:23:53 tedu Exp $ */
 /*	$NetBSD: if_lmc_common.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -261,7 +261,7 @@ lmc_dec_reset(lmc_softc_t * const sc)
 		|TULIP_BUSMODE_CACHE_ALIGN8
 		|TULIP_BUSMODE_READMULTIPLE);
 
-	sc->lmc_txq.ifq_maxlen = LMC_TXDESCS;
+	IFQ_SET_MAXLEN(&sc->lmc_txq, LMC_TXDESCS);
 
 	/*
 	 * Free all the mbufs that were on the transmit ring.

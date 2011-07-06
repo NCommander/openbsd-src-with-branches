@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.235 2011/07/04 22:53:53 tedu Exp $	*/
+/*	$OpenBSD: if.c,v 1.236 2011/07/05 00:58:27 henning Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -279,7 +279,7 @@ if_attachsetup(struct ifnet *ifp)
 	ifindex2ifnet[if_index] = ifp;
 
 	if (ifp->if_snd.ifq_maxlen == 0)
-		ifp->if_snd.ifq_maxlen = ifqmaxlen;
+		IFQ_SET_MAXLEN(&ifp->if_snd, ifqmaxlen);
 #ifdef ALTQ
 	ifp->if_snd.altq_type = 0;
 	ifp->if_snd.altq_disc = NULL;
