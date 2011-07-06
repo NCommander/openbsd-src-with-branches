@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.68 2010/07/04 18:30:28 espie Exp $
+# $OpenBSD: Makefile,v 1.69 2011/06/23 22:46:12 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -7,8 +7,7 @@ MAN1=pkg_add.1 pkg_info.1 pkg_create.1 pkg_delete.1 pkg_merge.1 \
 MAN5=package.5 pkg.conf.5
 MAN8=pkg_check.8
 MAN=${MAN1} ${MAN5} ${MAN8}
-NOPROG=
-
+NOPROG= 
 POD2MAN=/usr/bin/pod2man
 
 PACKAGES= \
@@ -35,7 +34,9 @@ PACKAGES= \
     OpenBSD/PackageLocator.pm \
     OpenBSD/PackageName.pm \
     OpenBSD/PackageRepository.pm \
+    OpenBSD/PackageRepository/HTTP.pm \
     OpenBSD/PackageRepository/Installed.pm \
+    OpenBSD/PackageRepository/Persistant.pm \
     OpenBSD/PackageRepository/SCP.pm \
     OpenBSD/PackageRepository/Source.pm \
     OpenBSD/PackageRepositoryList.pm \
