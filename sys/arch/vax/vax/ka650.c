@@ -1,4 +1,4 @@
-/*	$OpenBSD: ka650.c,v 1.17 2008/08/18 23:05:38 miod Exp $	*/
+/*	$OpenBSD: ka650.c,v 1.18 2008/08/18 23:07:26 miod Exp $	*/
 /*	$NetBSD: ka650.c,v 1.25 2001/04/27 15:02:37 ragge Exp $	*/
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -78,7 +78,6 @@ struct	cpu_dep	ka650_calls = {
 	2,	/* SCB pages */
 	cvax_halt,
 	cvax_reboot,
-	NULL,
 	NULL,
 	hardclock
 };
