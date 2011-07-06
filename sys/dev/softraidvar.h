@@ -576,7 +576,7 @@ struct sr_softc {
 	int			sc_hotspare_no; /* Number of hotspares. */
 
 	struct ksensordev	sc_sensordev;
-	int			sc_sensors_running;
+	struct sensor_task	*sc_sensor_task;
 
 	struct scsi_link	sc_link;	/* scsi prototype link */
 	struct scsibus_softc	*sc_scsibus;
