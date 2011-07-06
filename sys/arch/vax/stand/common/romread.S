@@ -1,8 +1,11 @@
-/*	$OpenBSD: vaxstand.h,v 1.2 2011/03/13 00:13:53 deraadt Exp $ */
-/*	$NetBSD: vaxstand.h,v 1.1 1999/03/06 16:36:05 ragge Exp $ */
+/*	$OpenBSD: romread.S,v 1.1 2002/06/11 09:36:23 hugh Exp $ */
+/*	$NetBSD: romread.S,v 1.1 2002/02/24 01:04:25 matt Exp $ */
 /*
- * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
+ * Copyright (c) 1995 Ludd, University of Lule}, Sweden.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to Ludd by
+ * Bertram Barth.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,7 +17,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *     This product includes software developed at Ludd, University of Lule}.
+ *      This product includes software developed at Ludd, University of 
+ *      Lule}, Sweden and its contributors.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
@@ -33,24 +37,38 @@
  /* All bugs are subject to removal without further notice */
 		
 
-#define MAXNUBA 8 /* Unibusadapters */
 
-/* Variables used in autoconf */
-extern int *ubaaddr, *mbaaddr, *udaaddr;
-extern int cpunumber, howto;
-extern dev_t bootdev;
+#include "../include/asm.h"
 
-/* devsw type definitions, used in bootxx and conf */
-#define SADEV(name,strategy,open,close,ioctl) \
-        { (char *)name, \
-         (int(*)(void *, int, daddr32_t, size_t, void *, size_t *))strategy, \
-         (int(*)(struct open_file *, ...))open, \
-         (int(*)(struct open_file *))close, \
-         (int(*)(struct open_file *,u_long, void *))ioctl}
-
-#define	SDELAY(count) {volatile int i; for (i = count; i; i--);}
 /*
- * Easy-to-use definitions
+ * romread_uvax (int lbn, int size, void *buf, struct rpb *rpb)
  */
+ENTRY(romread_uvax, 0xFFE)
+	movl	16(ap),r11	# restore boot-contents of %r11 (rpb)
+	movl    52(r11), r7     # load iovec/bqo into %r7
+	addl3   (r7), r7, r6	# load qio into %r6
+	pushl	r11		# base of rpb
+	pushl	$0		# virtual-flag 
+	pushl	$33		# read-logical-block
+	pushl	4(ap)		# lbn to start reading
+	pushl	8(ap)		# number of bytes to read
+	pushl	12(ap)		# buffer-address 
+	calls	$6, (r6)	# call the qio-routine
+	ret			# %r0 holds the result
 
-char *index();
+/*
+ * romwrite_uvax (int lbn, int size, void *buf, struct rpb *rpb)
+ */
+ENTRY(romwrite_uvax, 0xFFE)
+	movl    16(ap), r11	# restore boot-contents of %r11 (rpb)
+	movl    52(r11), r7     # load iovec/bqo into %r7
+	addl3   (r7), r7, r6    # load qio into %r6
+	pushl   r11             # base of rpb
+	pushl   $0              # virtual-flag 
+	pushl   $32             # write-logical-block
+	pushl   4(ap)           # lbn to start reading
+	pushl   8(ap)           # number of bytes to read
+	pushl   12(ap)          # buffer-address 
+	calls   $6, (r6)        # call the qio-routine
+	ret                     # %r0 holds the result
+
