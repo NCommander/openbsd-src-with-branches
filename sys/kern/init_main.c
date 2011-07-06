@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.177 2011/04/18 21:44:56 guenther Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.178 2011/07/05 04:48:02 guenther Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -368,7 +368,7 @@ main(void *framep)
 	initclocks();
 
 	/* Lock the kernel on behalf of proc0. */
-	KERNEL_PROC_LOCK(p);
+	KERNEL_LOCK();
 
 #ifdef SYSVSHM
 	/* Initialize System V style shared memory. */
@@ -716,7 +716,7 @@ start_init(void *arg)
 		 * other than it doesn't exist, complain.
 		 */
 		if ((error = sys_execve(p, &args, retval)) == 0) {
-			KERNEL_PROC_UNLOCK(p);
+			KERNEL_UNLOCK();
 			return;
 		}
 		if (error != ENOENT)
