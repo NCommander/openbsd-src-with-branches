@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# $OpenBSD$
+
+daemon="/usr/sbin/ypbind"
+
+. /etc/rc.d/rc.subr
+
+rc_bg=YES
+rc_reload=NO
+
+rc_pre() {
+	[ X`domainname` != X"" -a -d /var/yp/binding ] || \
+		return 1
+}
+
+rc_cmd $1
