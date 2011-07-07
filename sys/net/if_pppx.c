@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppx.c,v 1.7 2011/04/14 05:13:45 dlg Exp $ */
+/*	$OpenBSD: if_pppx.c,v 1.8 2011/07/02 22:20:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -553,7 +553,7 @@ filt_pppx_read(struct knote *kn, long hint)
 	s = splnet();
 	if (!IF_IS_EMPTY(&pxd->pxd_svcq)) {
 		event = 1;
-		kn->kn_data = pxd->pxd_svcq.ifq_len;
+		kn->kn_data = IF_LEN(&pxd->pxd_svcq);
 	}
 	splx(s);
 

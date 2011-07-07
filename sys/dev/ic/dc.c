@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.122 2011/03/05 13:39:26 kettenis Exp $	*/
+/*	$OpenBSD: dc.c,v 1.123 2011/06/21 16:52:45 tedu Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2668,7 +2668,7 @@ dc_start(struct ifnet *ifp)
 
 	sc = ifp->if_softc;
 
-	if (!sc->dc_link && ifp->if_snd.ifq_len < 10)
+	if (!sc->dc_link && IFQ_LEN(&ifp->if_snd) < 10)
 		return;
 
 	if (ifp->if_flags & IFF_OACTIVE)

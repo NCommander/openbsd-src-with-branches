@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ppp.c,v 1.61 2011/07/06 02:42:28 henning Exp $	*/
+/*	$OpenBSD: if_ppp.c,v 1.62 2011/07/06 22:08:50 henning Exp $	*/
 /*	$NetBSD: if_ppp.c,v 1.39 1997/05/17 21:11:59 christos Exp $	*/
 
 /*
@@ -420,7 +420,7 @@ pppioctl(sc, cmd, data, flag, p)
 
     switch (cmd) {
     case FIONREAD:
-	*(int *)data = sc->sc_inq.ifq_len;
+	*(int *)data = IFQ_LEN(&sc->sc_inq);
 	break;
 
     case PPPIOCGUNIT:
