@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.50 2011/04/02 17:04:35 guenther Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.51 2011/06/02 16:29:20 deraadt Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -100,6 +100,7 @@ ktrsyscall(struct proc *p, register_t code, size_t argsize, register_t args[])
 	u_int nargs = 0;
 	int i;
 
+	KERNEL_LOCK();
 	if (code == SYS___sysctl && (p->p_emul->e_flags & EMUL_NATIVE)) {
 		/*
 		 * The native sysctl encoding stores the mib[]
@@ -126,6 +127,7 @@ ktrsyscall(struct proc *p, register_t code, size_t argsize, register_t args[])
 	ktrwrite(p, &kth);
 	free(ktp, M_TEMP);
 	p->p_traceflag &= ~KTRFAC_ACTIVE;
+	KERNEL_UNLOCK();
 }
 
 void
@@ -133,6 +135,8 @@ ktrsysret(struct proc *p, register_t code, int error, register_t retval)
 {
 	struct ktr_header kth;
 	struct ktr_sysret ktp;
+
+	KERNEL_LOCK();
 
 	p->p_traceflag |= KTRFAC_ACTIVE;
 	ktrinitheader(&kth, p, KTR_SYSRET);
@@ -145,6 +149,7 @@ ktrsysret(struct proc *p, register_t code, int error, register_t retval)
 
 	ktrwrite(p, &kth);
 	p->p_traceflag &= ~KTRFAC_ACTIVE;
+	KERNEL_UNLOCK();
 }
 
 void
