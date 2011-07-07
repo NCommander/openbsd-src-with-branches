@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.16 2011/03/14 06:53:33 yasuoka Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.17 2011/04/05 18:01:21 henning Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -98,8 +98,8 @@ struct timeout pipex_timer_ch; 		/* callout timer context */
 int pipex_prune = 1;			/* walk list every seconds */
 
 /* pipex traffic queue */
-struct ifqueue pipexinq = { NULL };
-struct ifqueue pipexoutq = { NULL };
+struct ifqueue pipexinq;
+struct ifqueue pipexoutq;
 struct pipex_tag {
 	struct pipex_session *session;
 	int			proto;
