@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.95 2010/06/29 00:28:14 tedu Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.96 2011/01/25 18:42:45 stsp Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*
@@ -57,8 +57,6 @@
 #include <sys/ktrace.h>
 #endif
 
-void updatepri(struct proc *);
-void endtsleep(void *);
 
 /*
  * We're only looking at 7 bits of the address; everything is
