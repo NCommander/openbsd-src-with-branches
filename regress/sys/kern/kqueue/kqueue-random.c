@@ -1,4 +1,4 @@
-/*	$OpenBSD: kqueue-random.c,v 1.5 2011/01/07 06:17:33 deraadt Exp $	*/
+/*	$OpenBSD: kqueue-random.c,v 1.6 2011/07/06 05:32:04 guenther Exp $	*/
 /*	Written by Michael Shalayeff, 2002, Public Domain	*/
 
 #include <stdlib.h>
@@ -58,9 +58,10 @@ do_random(void)
 	}
 
 	n = MIN((ev.data + 7) / 8, sizeof(buf));
-	if (read(fd, buf, n) < 1)
+	if (read(fd, buf, n) < 1) {
 		warnx("read %d", n);
 		return (1);
+	}
 
 	close(kq);
 	close(fd);
