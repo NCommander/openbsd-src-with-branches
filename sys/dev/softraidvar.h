@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.104 2011/07/06 17:32:47 jsing Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.105 2011/07/07 00:18:06 tedu Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -249,8 +249,8 @@ struct sr_crypto_kdfpair {
 struct sr_aoe_config {
 	char		nic[IFNAMSIZ];
 	struct ether_addr dsteaddr;
-	unsigned char	slot;
 	unsigned short	shelf;
+	unsigned char	slot;
 };
 
 
