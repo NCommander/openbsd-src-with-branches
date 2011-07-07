@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# $OpenBSD$
+
+daemon="/usr/sbin/btd"
+
+. /etc/rc.d/rc.subr
+
+pexp="btd: \[priv\]"
+
+no_reload=YES
+
+rc_cmd $1
