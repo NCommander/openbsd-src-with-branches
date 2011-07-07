@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: el.h,v 1.7 2010/06/30 00:05:35 nicm Exp $	*/
 /*	$NetBSD: el.h,v 1.21 2009/12/31 15:58:26 christos Exp $	*/
 
 /*-
@@ -120,6 +120,8 @@ struct editline {
 	FILE		 *el_outfile;	/* Stdio stuff			*/
 	FILE		 *el_errfile;	/* Stdio stuff			*/
 	int		  el_infd;	/* Input file descriptor	*/
+	int		  el_outfd;	/* Output file descriptor	*/
+	int		  el_errfd;	/* Error file descriptor	*/
 	int		  el_flags;	/* Various flags.		*/
 	int		  el_errno;	/* Local copy of errno		*/
 	coord_t		  el_cursor;	/* Cursor location		*/

@@ -1,4 +1,4 @@
-/*	$OpenBSD: chartype.c,v 1.1 2010/06/30 00:05:35 nicm Exp $	*/
+/*	$OpenBSD: chartype.c,v 1.2 2011/04/04 18:48:17 stsp Exp $	*/
 /*	$NetBSD: chartype.c,v 1.4 2010/04/15 00:55:57 christos Exp $	*/
 
 /*-
@@ -38,6 +38,8 @@
  * chartype.c: character classification and meta information
  */
 #include "config.h"
+#include "el.h"
+#include <stdlib.h>
 
 #define CT_BUFSIZ 1024
 

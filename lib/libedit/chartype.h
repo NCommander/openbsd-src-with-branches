@@ -1,4 +1,4 @@
-/*	$OpenBSD: chartype.h,v 1.1 2010/06/30 00:05:35 nicm Exp $	*/
+/*	$OpenBSD: chartype.h,v 1.2 2011/04/04 18:48:17 stsp Exp $	*/
 /*	$NetBSD: chartype.h,v 1.5 2010/04/15 00:55:57 christos Exp $	*/
 
 /*-
@@ -173,11 +173,11 @@ typedef struct ct_buffer_t {
 } ct_buffer_t;
 
 #define ct_encode_string __ct_encode_string
-/* Encode a wide character string and return the UTF-8 encoded result. */
+/* Encode a wide-character string and return the UTF-8 encoded result. */
 public char *ct_encode_string(const Char *, ct_buffer_t *);
 
 #define ct_decode_string __ct_decode_string
-/* Decode a (multi)?byte string and return the wide character string result. */
+/* Decode a (multi)?byte string and return the wide-character string result. */
 public Char *ct_decode_string(const char *, ct_buffer_t *);
 
 /* Decode a (multi)?byte argv string array.
