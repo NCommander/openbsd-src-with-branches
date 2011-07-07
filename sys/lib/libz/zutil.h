@@ -1,4 +1,4 @@
-/*	$OpenBSD: zutil.h,v 1.16 2005/07/20 15:56:46 millert Exp $	*/
+/*	$OpenBSD: zutil.h,v 1.17 2006/11/29 10:37:03 mickey Exp $	*/
 /* zutil.h -- internal interface and configuration of the compression library
  * Copyright (C) 1995-2005 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -15,6 +15,12 @@
 
 #define ZLIB_INTERNAL
 #include "zlib.h"
+
+#ifdef _KERNEL
+#include <sys/param.h>
+#include <sys/systm.h>
+#define MY_ZCALLOC
+#else
 
 #ifdef _STANDALONE
 #include <lib/libsa/stand.h>
@@ -41,6 +47,8 @@
 #    include <errno.h>
 #  endif
 #endif
+#endif
+
 #endif
 
 #ifndef local

@@ -1,4 +1,4 @@
-#	$OpenBSD: files.amd64,v 1.61 2011/04/02 18:16:50 oga Exp $
+#	$OpenBSD: files.amd64,v 1.62 2011/05/23 09:52:24 claudio Exp $
 
 maxpartitions 16
 maxusers 2 16 128
@@ -46,8 +46,7 @@ file	arch/amd64/amd64/apic.c			ioapic | lapic
 file	arch/amd64/amd64/consinit.c
 file	dev/cninit.c
 
-file	arch/amd64/amd64/dkcsum.c
-file	lib/libz/adler32.c			!ppp_deflate & !ipsec & !crypto
+file	arch/amd64/amd64/dkcsum.c		bios
 
 file	arch/amd64/amd64/db_disasm.c		ddb
 file	arch/amd64/amd64/db_interface.c		ddb
