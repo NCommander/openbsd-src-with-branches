@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# $OpenBSD$
+
+daemon="/sbin/mountd"
+
+. /etc/rc.d/rc.subr
+
+rc_cmd $1
