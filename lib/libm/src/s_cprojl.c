@@ -1,6 +1,7 @@
-/*	$OpenBSD: s_cabs.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
+/*	$OpenBSD$	*/
+
 /*
- * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
+ * Copyright (c) 2011 Martynas Venckus <martynas@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,24 +16,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* LINTLIBRARY */
-
-#include <sys/cdefs.h>
 #include <complex.h>
-#include <float.h>
 #include <math.h>
 
-double
-cabs(double complex z)
+long double complex
+cprojl(long double complex z)
 {
-	return hypot(__real__ z, __imag__ z);
-}
+	long double complex res;
 
-#if	LDBL_MANT_DIG == 53
-#ifdef	lint
-/* PROTOLIB1 */
-long double cabsl(long double complex);
-#else	/* lint */
-__weak_alias(cabsl, cabs);
-#endif	/* lint */
-#endif	/* LDBL_MANT_DIG == 53 */
+	if (isinf(__real__ z) || isinf(__imag__ z)) {
+		__real__ res = INFINITY;
+		__imag__ res = copysignl(0.0, __imag__ z);
+	} else {
+		res = z;
+	}
+
+	return res;
+}

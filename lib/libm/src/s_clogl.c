@@ -1,4 +1,5 @@
-/*	$OpenBSD: s_clog.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -15,9 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* LINTLIBRARY */
-
-/*							clog.c
+/*							clogl.c
  *
  *	Complex natural logarithm
  *
@@ -25,10 +24,10 @@
  *
  * SYNOPSIS:
  *
- * double complex clog();
- * double complex z, w;
+ * long double complex clogl();
+ * long double complex z, w;
  *
- * w = clog (z);
+ * w = clogl( z );
  *
  *
  *
@@ -40,7 +39,7 @@
  * If z = x + iy, r = sqrt( x**2 + y**2 ),
  * then
  *       w = log(r) + i arctan(y/x).
- * 
+ *
  * The arctangent ranges from -PI to +PI.
  *
  *
@@ -56,30 +55,19 @@
  * absolute error 1.0e-16.
  */
 
-#include <sys/cdefs.h>
 #include <complex.h>
-#include <float.h>
 #include <math.h>
 
-double complex
-clog(double complex z)
+long double complex
+clogl(long double complex z)
 {
-	double complex w;
-	double p, rr;
+	long double complex w;
+	long double p, rr;
 
-	/*rr = sqrt( z->r * z->r  +  z->i * z->i );*/
-	rr = cabs(z);
-	p = log(rr);
-	rr = atan2 (cimag (z), creal (z));
+	/*rr = sqrt(z->r * z->r  +  z->i * z->i);*/
+	p = cabsl(z);
+	p = logl(p);
+	rr = atan2l(cimag(z), creal(z));
 	w = p + rr * I;
 	return (w);
 }
-
-#if	LDBL_MANT_DIG == 53
-#ifdef	lint
-/* PROTOLIB1 */
-long double complex clogl(long double complex);
-#else	/* lint */
-__weak_alias(clogl, clog);
-#endif	/* lint */
-#endif	/* LDBL_MANT_DIG == 53 */

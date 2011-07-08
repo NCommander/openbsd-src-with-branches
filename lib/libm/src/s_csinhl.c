@@ -1,4 +1,5 @@
-/*	$OpenBSD: s_ctanh.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -15,58 +16,43 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* LINTLIBRARY */
-
-/*							ctanh
+/*							csinhl
  *
- *	Complex hyperbolic tangent
+ *	Complex hyperbolic sine
  *
  *
  *
  * SYNOPSIS:
  *
- * double complex ctanh();
- * double complex z, w;
+ * long double complex csinhl();
+ * long double complex z, w;
  *
- * w = ctanh (z);
- *
- *
+ * w = csinhl (z);
  *
  * DESCRIPTION:
  *
- * tanh z = (sinh 2x  +  i sin 2y) / (cosh 2x + cos 2y) .
+ * csinh z = (cexp(z) - cexp(-z))/2
+ *         = sinh x * cos y  +  i cosh x * sin y .
  *
  * ACCURACY:
  *
  *                      Relative error:
  * arithmetic   domain     # trials      peak         rms
- *    IEEE      -10,+10     30000       1.7e-14     2.4e-16
+ *    IEEE      -10,+10     30000       3.1e-16     8.2e-17
  *
  */
 
-#include <sys/cdefs.h>
 #include <complex.h>
-#include <float.h>
 #include <math.h>
 
-double complex
-ctanh(double complex z)
+long double complex
+csinhl(long double complex z)
 {
-	double complex w;
-	double x, y, d;
+	long double complex w;
+	long double x, y;
 
 	x = creal(z);
 	y = cimag(z);
-	d = cosh (2.0 * x) + cos (2.0 * y);
-	w = sinh (2.0 * x) / d  +  (sin (2.0 * y) / d) * I;
+	w = sinhl(x) * cosl(y) + (coshl(x) * sinl(y)) * I;
 	return (w);
 }
-
-#if	LDBL_MANT_DIG == 53
-#ifdef	lint
-/* PROTOLIB1 */
-long double complex ctanhl(long double complex);
-#else	/* lint */
-__weak_alias(ctanhl, ctanh);
-#endif	/* lint */
-#endif	/* LDBL_MANT_DIG == 53 */
