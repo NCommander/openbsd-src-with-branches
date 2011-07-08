@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.21 2011/04/15 03:11:22 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.22 2011/04/18 16:52:10 thib Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -62,7 +62,9 @@ ${IMAGE}:	do_prep do_mount do_files do_umount
 	mv -f ${REALIMAGE} ${IMAGE}
 
 elfrdsetroot: ${TOP}/../common/elfrdsetroot.c
-	${HOSTCC} ${HOSTCFLAGS} -o elfrdsetroot ${TOP}/../common/elfrdsetroot.c
+	${HOSTCC} ${HOSTCFLAGS} -o elfrdsetroot \
+	    ${TOP}/../common/elfrdsetroot.c ${TOP}/../common/elf32.c \
+	    ${TOP}/../common/elf64.c
 
 do_prep:
 	dd if=/dev/zero of=${REALIMAGE} count=${NBLKS}
