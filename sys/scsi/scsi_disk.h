@@ -494,4 +494,20 @@ struct scsi_vpd_disk_info {
 	u_int8_t		_reserved2[56];
 };
 
+struct scsi_vpd_disk_thin {
+	struct scsi_vpd_hdr	hdr;
+
+	u_int8_t		threshold_exponent;
+	u_int8_t		flags;
+#define VPD_DISK_THIN_DP		(1 << 0) /* descriptor present */
+#define VPD_DISK_THIN_ANC_SUP		(0x7 << 1)
+#define VPD_DISK_THIN_ANC_SUP_NO	(0x0 << 1)
+#define VPD_DISK_THIN_ANC_SUP_YES	(0x1 << 1)
+#define VPD_DISK_THIN_TPWS		(1 << 6) /* WRITE SAME 16 */
+#define VPD_DISK_THIN_TPU		(1 << 7) /* UNMAP */
+	u_int8_t		_reserved1[2];
+
+	/* followed by a designation descriptor if DP is set */
+};
+
 #endif /* _SCSI_SCSI_DISK_H */
