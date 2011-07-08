@@ -1,7 +1,10 @@
-/*	$OpenBSD: frexp.c,v 1.7 2008/12/10 01:15:02 martynas Exp $ */
+/* $OpenBSD: modf.S,v 1.5 2005/08/07 11:30:38 espie Exp $ */
 /*-
- * Copyright (c) 1991, 1993
- *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1990 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Sean Eric Fagan.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,42 +31,38 @@
  * SUCH DAMAGE.
  */
 
-/* LINTLIBRARY */
+#include <machine/asm.h>
 
-#include <sys/cdefs.h>
-#include <sys/types.h>
-#include <math.h>
+/*
+ * modf(value, iptr): return fractional part of value, and stores the
+ * integral part into iptr (a pointer to double).
+ *
+ * Written by Sean Eric Fagan (sef@kithrup.COM)
+ * Sun Mar 11 20:27:30 PST 1990
+ */
 
-double
-frexp(value, eptr)
-	double value;
-	int *eptr;
-{
-	union {
-		double v;
-		struct {
-			u_int u_mant1 :  7;
-			u_int   u_exp :  8;
-			u_int  u_sign :  1;
-			u_int u_mant2 : 16;
-			u_int u_mant3 : 32;
-		} s;
-	} u;
-
-	if (value) {
-		u.v = value;
-		*eptr = u.s.u_exp - 128;
-		u.s.u_exp = 128;
-		return(u.v);
-	} else {
-		*eptr = 0;
-		return((double)0);
-	}
-}
-
-#ifdef	lint
-/* PROTOLIB1 */
-long double frexpl(long double, int *);
-#else	/* lint */
-__weak_alias(frexpl, frexp);
-#endif	/* lint */
+/* With CHOP mode on, frndint behaves as TRUNC does.  Useful. */
+ENTRY(modf)
+	pushl	%ebp
+	movl	%esp,%ebp
+	subl	$16,%esp
+	fnstcw	-12(%ebp)
+	movw	-12(%ebp),%dx
+	orw	$3072,%dx
+	movw	%dx,-16(%ebp)
+	fldcw	-16(%ebp)
+	fldl	8(%ebp)
+	frndint
+	fstpl	-8(%ebp)
+	fldcw	-12(%ebp)
+	movl	16(%ebp),%eax
+	movl	-8(%ebp),%edx
+	movl	-4(%ebp),%ecx
+	movl	%edx,(%eax)
+	movl	%ecx,4(%eax)
+	fldl	8(%ebp)
+	fsubl	-8(%ebp)
+	jmp	L1
+L1:
+	leave
+	ret

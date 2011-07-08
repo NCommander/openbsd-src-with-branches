@@ -1,11 +1,7 @@
-/* $OpenBSD: fabs.S,v 1.5 2008/12/09 20:32:06 martynas Exp $ */
-/*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * the Systems Programming Group of the University of Utah Computer
- * Science Department.
+/* $OpenBSD: fabs.S,v 1.6 2008/12/10 08:26:21 deraadt Exp $ */
+/*
+ * Copyright (c) 1983, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,12 +32,10 @@
 
 #include "DEFS.h"
 
-ENTRY(fabs)
-	fmoved	sp@(4),fp0
-	fjnlt	L1
-	fnegx	fp0
-L1:
-	fmoved	fp0,sp@-
-	movel	sp@+,d0
-	movel	sp@+,d1
-	rts
+WEAK_ALIAS(fabsl,fabs)
+ENTRY(fabs, 0)
+	movd	4(ap),r0
+	bgeq	1f
+	mnegd	r0,r0
+1:
+	ret

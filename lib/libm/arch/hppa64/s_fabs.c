@@ -1,10 +1,8 @@
-/*	$OpenBSD: fabs.c,v 1.4 2008/12/09 20:21:06 martynas Exp $	*/
+/*	$OpenBSD: fabs.c,v 1.1 2005/04/01 10:54:27 mickey Exp $	*/
 
 /*
  * Written by Miodrag Vallat.  Public domain
  */
-
-#include <sys/cdefs.h>
 
 double
 fabs(double val)
@@ -13,5 +11,3 @@ fabs(double val)
 	__asm__ __volatile__("fabs,dbl %0,%0" : "+f" (val));
 	return (val);
 }
-
-__weak_alias(fabsl, fabs);

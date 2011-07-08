@@ -1,10 +1,11 @@
-/* $OpenBSD$ */
-/*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
+/* $OpenBSD: fabs.S,v 1.6 2008/12/09 20:21:07 martynas Exp $ */
+/*
+ * Copyright (c) 1992, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
- * This code is derived from software contributed to Berkeley by
- * Sean Eric Fagan.
+ * This software was developed by the Computer Systems Engineering group
+ * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
+ * contributed to Berkeley.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,38 +32,13 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+/* fabs - floating absolute value */
 
-/*
- * modf(value, iptr): return fractional part of value, and stores the
- * integral part into iptr (a pointer to double).
- *
- * Written by Sean Eric Fagan (sef@kithrup.COM)
- * Sun Mar 11 20:27:30 PST 1990
- */
+#include "DEFS.h"
 
-/* With CHOP mode on, frndint behaves as TRUNC does.  Useful. */
-ENTRY(modf)
-	pushl	%ebp
-	movl	%esp,%ebp
-	subl	$16,%esp
-	fnstcw	-12(%ebp)
-	movw	-12(%ebp),%dx
-	orw	$3072,%dx
-	movw	%dx,-16(%ebp)
-	fldcw	-16(%ebp)
-	fldl	8(%ebp)
-	frndint
-	fstpl	-8(%ebp)
-	fldcw	-12(%ebp)
-	movl	16(%ebp),%eax
-	movl	-8(%ebp),%edx
-	movl	-4(%ebp),%ecx
-	movl	%edx,(%eax)
-	movl	%ecx,4(%eax)
-	fldl	8(%ebp)
-	fsubl	-8(%ebp)
-	jmp	L1
-L1:
-	leave
-	ret
+WEAK_ALIAS(fabsl, fabs)
+ENTRY(fabs)
+	std	%o0, [%sp + 32]		! return value => %f0:f1
+	ldd	[%sp + 32], %f0		! (via kernel %o0/%o1 slot)
+	retl
+	 fabss	%f0, %f0		! return absolute value

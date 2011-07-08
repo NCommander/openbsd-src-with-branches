@@ -1,6 +1,6 @@
-/* $OpenBSD: fabs.S,v 1.5 2008/12/09 20:21:07 martynas Exp $ */
-/*
- * Copyright (c) 1983, 1993
+/*	$OpenBSD: frexp.c,v 1.8 2011/07/02 19:27:34 martynas Exp $ */
+/*-
+ * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,14 +28,42 @@
  * SUCH DAMAGE.
  */
 
-/* fabs - floating absolute value */
+/* LINTLIBRARY */
 
-#include "DEFS.h"
+#include <sys/cdefs.h>
+#include <sys/types.h>
+#include <math.h>
 
-WEAK_ALIAS(fabsl,fabs)
-ENTRY(fabs, 0)
-	movd	4(ap),r0
-	bgeq	1f
-	mnegd	r0,r0
-1:
-	ret
+double
+frexp(value, eptr)
+	double value;
+	int *eptr;
+{
+	union {
+		double v;
+		struct {
+			u_int u_mant1 :  7;
+			u_int   u_exp :  8;
+			u_int  u_sign :  1;
+			u_int u_mant2 : 16;
+			u_int u_mant3 : 32;
+		} s;
+	} u;
+
+	if (value) {
+		u.v = value;
+		*eptr = u.s.u_exp - 128;
+		u.s.u_exp = 128;
+		return(u.v);
+	} else {
+		*eptr = 0;
+		return((double)0);
+	}
+}
+
+#ifdef	lint
+/* PROTOLIB1 */
+long double frexpl(long double, int *);
+#else	/* lint */
+__weak_alias(frexpl, frexp);
+#endif	/* lint */

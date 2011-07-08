@@ -1,11 +1,10 @@
-/* $OpenBSD$ */
+/* $OpenBSD: fabs.S,v 1.5 2008/12/09 20:54:02 martynas Exp $ */
 /*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
- * the Systems Programming Group of the University of Utah Computer
- * Science Department.
+ * Ralph Campbell.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,19 +31,16 @@
  * SUCH DAMAGE.
  */
 
-#include "DEFS.h"
+#include <machine/asm.h>
 
 /*
- * double modf(val, iptr)
- * returns: xxx and n (in *iptr) where val == n.xxx
+ * fabs(x)
+ *	double x;
+ *
+ * Return absolute value of x.
  */
-ENTRY(modf)
-	fmoved	sp@(4),fp0
-	movel	sp@(12),a0
-	fintrzx	fp0,fp1
-	fmoved	fp1,a0@
-	fsubx	fp1,fp0
-	fmoved	fp0,sp@-
-	movel	sp@+,d0
-	movel	sp@+,d1
-	rts
+LEAF(fabs, 0)
+	.set	noreorder
+	j	ra
+	abs.d	$f0, $f12		# compute absolute value of x
+END(fabs)

@@ -1,7 +1,12 @@
-/* $OpenBSD$ */
-/*
- * Copyright (c) 1983, 1993
- *	The Regents of the University of California.  All rights reserved.
+/*	$OpenBSD: modf.S,v 1.2 2004/02/08 17:29:39 deraadt Exp $	*/
+/*	$NetBSD: modf.S,v 1.1 2001/06/19 00:25:03 fvdl Exp $	*/
+
+/*-
+ * Copyright (c) 1990 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Sean Eric Fagan.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,7 +16,11 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed by the University of
+ *	California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -26,29 +35,57 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ *	from: @(#)modf.s	5.5 (Berkeley) 3/18/91
  */
+
+#include <machine/asm.h>
 
 /*
- * double modf (value, iptr)
- * double value, *iptr;
+ * modf(value, iptr): return fractional part of value, and stores the
+ * integral part into iptr (a pointer to double).
  *
- * Modf returns the fractional part of "value",
- * and stores the integer part indirectly through "iptr".
+ * Written by Sean Eric Fagan (sef@kithrup.COM)
+ * Sun Mar 11 20:27:30 PST 1990
  */
 
-#include "DEFS.h"
+/* With CHOP mode on, frndint behaves as TRUNC does.  Useful. */
+ENTRY(modf)
 
-ENTRY(modf, R2)
-	cvtdl	4(ap),r2
-	bvs	0f
-	cvtld	r2,*12(ap)
-	subd3	*12(ap),4(ap),r0
-	ret
-0:
-	emodd	4(ap),$0,$0f1.0,r2,r0
-	bvs	1f			# integer overflow
-	cvtld	r2,*12(ap)
-	ret
-1:
-	subd3	r0,4(ap),*12(ap)
+	/*
+	 * Set chop mode.
+	 */
+	fnstcw	-12(%rsp)
+	movw	-12(%rsp),%dx
+	orw	$3072,%dx
+	movw	%dx,-16(%rsp)
+	fldcw	-16(%rsp)
+
+	/*
+	 * Get integral part.
+	 */
+	movsd	%xmm0,-24(%rsp)
+	fldl	-24(%rsp)
+	frndint
+	fstpl	-8(%rsp)
+
+	/*
+	 * Restore control word.
+	 */
+	fldcw	-12(%rsp)
+
+	/*
+	 * Store integral part.
+	 */
+	movsd	-8(%rsp),%xmm0
+	movsd	%xmm0,(%rdi)
+
+	/*
+	 * Get fractional part and return it.
+	 */
+	fldl	-24(%rsp)
+	fsubl	-8(%rsp)
+	fstpl	-8(%rsp)
+	movsd   -8(%rsp),%xmm0
+
 	ret
