@@ -1,8 +1,10 @@
-# $OpenBSD: Makefile,v 1.1 2007/05/31 18:27:59 reyk Exp $
+# $OpenBSD: Makefile,v 1.2 2011/06/26 20:50:35 deraadt Exp $
 
 NOPROG=
 NOMAN=
 CC=${HOSTCC}
+LDADD=-lz
+DPADD=${LIBZ}
 
 # full-size PCI capable systems only
 .if (${MACHINE} == "macppc") || (${MACHINE} == "alpha") || \
