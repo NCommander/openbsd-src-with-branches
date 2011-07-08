@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue.c,v 1.4 2003/06/25 05:31:11 deraadt Exp $	*/
+/*	$OpenBSD: queue.c,v 1.5 2006/02/09 09:54:47 otto Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -107,7 +107,7 @@ printqueue(void)
 	queue_t *item;
 
 	while ((item = dequeue()) != NULL) {
-		printline(&item->data, '-');
+		printline(&item->data, '-', NULL);
 		free_item(item);
 	}
 }
