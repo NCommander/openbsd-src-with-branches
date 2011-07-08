@@ -36,8 +36,7 @@
 .Os
 .Sh NAME
 .Nm modf ,
-.Nm modff ,
-.Nm modfl
+.Nm modff
 .Nd extract signed integral and fractional values from floating-point number
 .Sh SYNOPSIS
 .Fd #include <math.h>
@@ -45,8 +44,6 @@
 .Fn modf "double value" "double *iptr"
 .Ft float
 .Fn modff "float value" "float *iptr"
-.Ft long double
-.Fn modfl "long double value" "long double *iptr"
 .Sh DESCRIPTION
 The
 .Fn modf
@@ -62,16 +59,11 @@ The
 .Fn modff
 function is a single precision version of
 .Fn modf .
-The
-.Fn modfl
-function is an extended precision version of
-.Fn modf .
 .Sh RETURN VALUES
 The
-.Fn modf ,
-.Fn modff
+.Fn modf
 and
-.Fn modfl
+.Fn modff
 functions return the signed fractional part of
 .Fa value .
 .Sh SEE ALSO
