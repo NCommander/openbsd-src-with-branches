@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciss.c,v 1.63 2010/09/20 06:17:49 krw Exp $	*/
+/*	$OpenBSD: ciss.c,v 1.64 2011/04/05 19:54:35 jasper Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -366,12 +366,12 @@ ciss_attach(struct ciss_softc *sc)
 	sc->sc_link.adapter_softc = sc;
 	sc->sc_link.openings = sc->maxcmd;
 	sc->sc_link.adapter = &ciss_switch;
-	sc->sc_link.luns = 1;
 	sc->sc_link.adapter_target = sc->maxunits;
-	sc->sc_link.adapter_buswidth = sc->maxunits;
 	sc->sc_link.pool = &sc->sc_iopool;
 	bzero(&saa, sizeof(saa));
 	saa.saa_sc_link = &sc->sc_link;
+	saa.saa_targets = sc->maxunits;
+	saa.saa_luns = 1;
 	scsibus = (struct scsibus_softc *)config_found_sm(&sc->sc_dev,
 	    &saa, scsiprint, NULL);
 
