@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.143 2011/05/04 16:05:49 blambert Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.144 2011/05/13 14:31:17 oga Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -692,7 +692,7 @@ udp_input(struct mbuf *m, ...)
 		    IP_RECVDSTPORT, IPPROTO_IP);
 	}
 #ifdef PIPEX
-	if (inp->inp_pipex) {
+	if (pipex_enable && inp->inp_pipex) {
 		struct pipex_session *session;
 		int off = iphlen + sizeof(struct udphdr);
 		if ((session = pipex_l2tp_lookup_session(m, off)) != NULL) {

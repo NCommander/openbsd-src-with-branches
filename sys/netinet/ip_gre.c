@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_gre.c,v 1.41 2011/05/31 13:07:20 sthen Exp $ */
+/*      $OpenBSD: ip_gre.c,v 1.42 2011/07/05 21:40:38 dhill Exp $ */
 /*	$NetBSD: ip_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -249,14 +249,14 @@ gre_input(struct mbuf *m, ...)
 	}
 
 #ifdef PIPEX
-    {
-	struct pipex_session *session;
+	if (pipex_enable) {
+		struct pipex_session *session;
 
-	if ((session = pipex_pptp_lookup_session(m)) != NULL) {
-		if (pipex_pptp_input(m, session) == NULL)
-			return;
+		if ((session = pipex_pptp_lookup_session(m)) != NULL) {
+			if (pipex_pptp_input(m, session) == NULL)
+				return;
+		}
 	}
-    }
 #endif
 
 	ret = gre_input2(m, hlen, IPPROTO_GRE);
