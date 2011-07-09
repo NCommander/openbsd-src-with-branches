@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2007/11/26 10:26:02 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2009/05/14 18:57:43 miod Exp $
 
 .include "${.CURDIR}/../Makefile32.inc"
 LDSCRIPT=	${.CURDIR}/ld.script
@@ -7,7 +7,7 @@ PROG=		boot32
 .PATH:	${.CURDIR}/../boot
 .include "${.CURDIR}/../boot/Makefile"
 
-SRCS+=	ashrdi3.c udivdi3.c umoddi3.c qdivrem.c
+SRCS+=	ashrdi3.c moddi3.c udivdi3.c umoddi3.c qdivrem.c
 
 ${PROG}: $(OBJS) $(LDADD)
 	$(LD) $(LDFLAGS) -o ${PROG} $(OBJS) -L${LIBSADIR} ${LIBSA} \
