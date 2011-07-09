@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2011/04/18 16:52:09 thib Exp $
+#	$OpenBSD: Makefile,v 1.10 2011/07/08 21:39:32 drahn Exp $
 
 REV=	${OSrev}
 
@@ -71,7 +71,7 @@ rd_teardown:
 	-vnconfig -u ${VND}
 
 rdsetroot:	${TOP}/../common/elfrdsetroot.c
-	${HOSTCC} ${HOSTCFLAGS} -o elfrdsetroot \
+	${HOSTCC} ${HOSTCFLAGS} -o rdsetroot \
 	    ${TOP}/../common/elfrdsetroot.c ${TOP}/../common/elf32.c \
 	    ${TOP}/../common/elf64.c
 
