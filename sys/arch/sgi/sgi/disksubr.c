@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.24 2011/07/08 00:08:00 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.25 2011/07/10 04:49:39 krw Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -213,8 +213,7 @@ finished:
 	 * OpenBSD disklabel for this sgi disk. DO NOT proceed to
 	 * readdoslabel(), iso_spooflabel(), etc.
 	 */
-	checkdisklabel(bp->b_data + LABELOFFSET, lp, openbsdstart,
-	    DL_GETDSIZE(lp));
+	checkdisklabel(bp->b_data + offset, lp, fsoffs, fsend);
 	return (0);
 }
 
