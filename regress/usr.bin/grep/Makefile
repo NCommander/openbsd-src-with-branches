@@ -1,7 +1,7 @@
-# $OpenBSD: Makefile,v 1.12 2005/04/03 19:15:17 otto Exp $
+# $OpenBSD: Makefile,v 1.13 2007/02/13 21:48:20 kili Exp $
 
 REGRESS_TARGETS=t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17 \
-	t18 t19 t20 t21 t22 t23
+	t18 t19 t20 t21 t22 t23 t24
 
 t1:
 	grep t.s ${.CURDIR}/in | diff - ${.CURDIR}/t1.out
