@@ -385,7 +385,9 @@ deliver:
 		if (sig != SIGBUS && sig != SIGSEGV)
 #endif
 			sv.sival_ptr = (void *)pc;
+		KERNEL_LOCK();
 		trapsignal(p, sig, 0, fault_type, sv);
+		KERNEL_UNLOCK();
 	}
 }
 

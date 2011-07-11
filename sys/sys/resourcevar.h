@@ -76,12 +76,10 @@ struct plimit {
 /* add user profiling from AST */
 #define	ADDUPROF(p)							\
 do {									\
-	KERNEL_LOCK();							\
 	atomic_clearbits_int(&(p)->p_flag, P_OWEUPC);			\
 	addupc_task((p), (p)->p_stats->p_prof.pr_addr,			\
 	    (p)->p_stats->p_prof.pr_ticks);				\
 	(p)->p_stats->p_prof.pr_ticks = 0;				\
-	KERNEL_UNLOCK();						\
 } while (0)
 
 #ifdef _KERNEL

@@ -578,7 +578,9 @@ npxtrap(struct trapframe *frame)
 	addr->sv_xmm.sv_ex_tw = addr->sv_xmm.sv_env.en_tw;
 	code = x86fpflags_to_siginfo (statbits);
 	sv.sival_int = frame->tf_eip;
+	KERNEL_LOCK();
 	trapsignal(p, SIGFPE, frame->tf_err, code, sv);
+	KERNEL_UNLOCK();
 }
 
 static int

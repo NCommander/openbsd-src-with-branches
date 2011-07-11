@@ -215,7 +215,9 @@ m88110_fpu_exception(struct trapframe *frame)
 
 deliver:
 		sv.sival_ptr = (void *)fault_addr;
+		KERNEL_LOCK();
 		trapsignal(p, sig, 0, fault_type, sv);
+		KERNEL_UNLOCK();
 	}
 }
 
