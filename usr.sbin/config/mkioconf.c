@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkioconf.c,v 1.28 2008/03/24 21:35:03 maja Exp $	*/
+/*	$OpenBSD: mkioconf.c,v 1.29 2011/06/01 04:35:21 matthew Exp $	*/
 /*	$NetBSD: mkioconf.c,v 1.41 1996/11/11 14:18:49 mycroft Exp $	*/
 
 /*
@@ -336,7 +336,7 @@ emitcfdata(FILE *fp)
 {
 	struct devi **p, *i;
 	int unit, v;
-	const char *vs, *state, *basename, *attachment;
+	const char *state, *basename, *attachment;
 	struct nvlist *nv;
 	struct attr *a;
 	char *loc;
