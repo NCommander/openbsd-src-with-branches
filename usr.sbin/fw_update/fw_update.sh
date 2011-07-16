@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# $OpenBSD$
 # Copyright (c) 2011 Alexander Hall <alexander@beard.se>
 #
 # Permission to use, copy, modify, and distribute this software for any
