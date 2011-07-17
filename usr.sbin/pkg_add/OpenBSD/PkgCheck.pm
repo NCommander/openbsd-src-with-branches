@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCheck.pm,v 1.28 2010/12/29 13:03:05 espie Exp $
+# $OpenBSD: PkgCheck.pm,v 1.29 2011/06/27 12:13:56 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -504,6 +504,12 @@ sub sanity_check
 		};
 		if ($@ || !defined $plist) {
 			$state->errsay("#1: bad packing-list", $state->safe($name));
+			$self->may_remove($state, $name);
+			return;
+		}
+		if (!defined $plist->pkgname) {
+			$state->errsay("#1: no pkgname in plist",
+			    $state->safe($name));
 			$self->may_remove($state, $name);
 			return;
 		}
