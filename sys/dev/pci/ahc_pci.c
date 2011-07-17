@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahc_pci.c,v 1.53 2008/05/13 02:24:08 brad Exp $	*/
+/*	$OpenBSD: ahc_pci.c,v 1.54 2011/07/04 22:17:23 matthew Exp $	*/
 /*	$NetBSD: ahc_pci.c,v 1.43 2003/08/18 09:16:22 taca Exp $	*/
 
 /*
@@ -736,6 +736,12 @@ ahc_pci_attach(parent, self, aux)
 	ahc->seqctl = FASTMODE;
 	for (i = 0; i < AHC_NUM_TARGETS; i++)
 		TAILQ_INIT(&ahc->untagged_queues[i]);
+
+	/*
+	 * SCSI_IS_SCSIBUS_B() must returns false until sc_channel_b
+	 * has been properly initialized. XXX Breaks if >254 scsi buses.
+	 */
+	ahc->sc_channel_b.scsibus = 0xff;
 
 	ahc->dev_softc = pa;
 
