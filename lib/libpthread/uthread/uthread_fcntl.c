@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_fcntl.c,v 1.9 2006/09/26 14:18:28 kurt Exp $	*/
+/*	$OpenBSD: uthread_fcntl.c,v 1.10 2010/01/03 23:05:35 fgsch Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -61,6 +61,7 @@ fcntl(int fd, int cmd,...)
 		switch (cmd) {
 		/* Duplicate a file descriptor: */
 		case F_DUPFD:
+		case F_DUPFD_CLOEXEC:
 			/*
 			 * Get the file descriptor that the caller wants to
 			 * use: 
