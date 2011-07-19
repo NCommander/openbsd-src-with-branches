@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Update.pm,v 1.147 2010/12/24 09:04:14 espie Exp $
+# $OpenBSD: Update.pm,v 1.148 2011/06/19 01:28:43 espie Exp $
 #
 # Copyright (c) 2004-2010 Marc Espie <espie@openbsd.org>
 #
@@ -254,6 +254,7 @@ sub process_hint
 	my $r = $state->choose_location($hint_name, $l);
 	if (defined $r) {
 		$self->add_location($set, $hint, $r);
+		OpenBSD::Add::tag_user_packages($set);
 		return 1;
 	} else {
 		return 0;
