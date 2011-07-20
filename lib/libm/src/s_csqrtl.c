@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_csqrtl.c,v 1.1 2011/07/08 19:25:31 martynas Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -67,8 +67,8 @@ csqrtl(long double complex z)
 	long double complex w;
 	long double x, y, r, t, scale;
 
-	x = creal(z);
-	y = cimag(z);
+	x = creall(z);
+	y = cimagl(z);
 
 	if (y == 0.0L) {
 		if (x < 0.0L) {

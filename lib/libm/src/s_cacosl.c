@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_cacosl.c,v 1.1 2011/07/08 19:25:31 martynas Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -58,6 +58,6 @@ cacosl(long double complex z)
 	long double complex w;
 
 	w = casinl(z);
-	w = (PIO2L - creal(w)) - cimag(w) * I;
+	w = (PIO2L - creall(w)) - cimagl(w) * I;
 	return (w);
 }

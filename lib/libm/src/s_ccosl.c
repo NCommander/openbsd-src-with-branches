@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_ccosl.c,v 1.1 2011/07/08 19:25:31 martynas Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -76,7 +76,7 @@ ccosl(long double complex z)
 	long double complex w;
 	long double ch, sh;
 
-	cchshl(cimag(z), &ch, &sh);
-	w = cosl(creal(z)) * ch + (-sinl(creal(z)) * sh) * I;
+	cchshl(cimagl(z), &ch, &sh);
+	w = cosl(creall(z)) * ch + (-sinl(creall(z)) * sh) * I;
 	return (w);
 }
