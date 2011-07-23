@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgAdd.pm,v 1.28 2011/07/14 11:31:20 espie Exp $
+# $OpenBSD: PkgAdd.pm,v 1.29 2011/07/17 13:16:15 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -326,6 +326,11 @@ sub complete
 		      	my $o = $set->{older}->{$pkgname};
 			if (!defined $o) {
 				$o = OpenBSD::Handle->create_old($pkgname, $state);
+				if (!defined $o->pkgname) {
+					$state->{bad}++;
+					$set->cleanup(OpenBSD::Handle::CANT_INSTALL, "Bogus package already installed");
+					return 1;
+				}
 				$set->add_older($o);
 			}
 			$o->{update_found} = $o;
