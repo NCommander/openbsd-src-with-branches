@@ -1,7 +1,7 @@
-# $OpenBSD: Makefile,v 1.1 2009/12/23 23:40:58 schwarze Exp $
+# $OpenBSD: Makefile,v 1.2 2011/01/30 16:05:29 schwarze Exp $
 
 SUBDIR+= space N
 
-groff groff-clean: _SUBDIRUSE
+groff: _SUBDIRUSE
 
 .include <bsd.subdir.mk>

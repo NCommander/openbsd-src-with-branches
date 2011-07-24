@@ -1,7 +1,7 @@
-# $OpenBSD: Makefile,v 1.3 2011/01/17 00:15:19 schwarze Exp $
+# $OpenBSD: Makefile,v 1.4 2011/02/06 13:40:06 schwarze Exp $
 
 SUBDIR= nf BI IP PP TH TP
 
-groff groff-clean: _SUBDIRUSE
+groff: _SUBDIRUSE
 
 .include <bsd.subdir.mk>
