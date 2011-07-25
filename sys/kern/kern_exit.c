@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.101 2011/07/05 04:48:02 guenther Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.102 2011/07/06 21:41:37 art Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -432,7 +432,7 @@ reaper(void)
 	}
 }
 
-pid_t
+int
 sys_wait4(struct proc *q, void *v, register_t *retval)
 {
 	struct sys_wait4_args /* {
