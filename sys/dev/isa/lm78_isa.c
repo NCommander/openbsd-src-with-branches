@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm78_isa.c,v 1.3 2007/12/18 21:17:54 form Exp $	*/
+/*	$OpenBSD: lm78_isa.c,v 1.4 2008/02/17 15:04:08 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Mark Kettenis
@@ -177,7 +177,7 @@ lm_isa_attach(struct device *parent, struct device *self, void *aux)
 			continue;
 		if (lmsc && lmsc->sbusaddr == sbusaddr &&
 		    lmsc->chipid == sc->sc_lmsc.chipid)
-			config_detach(&lmsc->sc_dev, 0);
+			lmsc->flags = LM78_DEAD;
 	}
 }
 
