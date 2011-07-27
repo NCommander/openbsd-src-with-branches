@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vr.4,v 1.24 2011/03/13 21:24:20 jmc Exp $
+.\"	$OpenBSD: vr.4,v 1.25 2011/03/13 21:32:29 jmc Exp $
 .\"
 .\" Copyright (c) 1997, 1998
 .\"	Bill Paul <wpaul@ctr.columbia.edu>. All rights reserved.
@@ -41,6 +41,7 @@
 .Sh SYNOPSIS
 .Cd "vr* at pci?"
 .Cd "amphy* at mii?"
+.Cd "icsphy* at mii?"
 .Cd "sqphy* at mii?"
 .Sh DESCRIPTION
 The
@@ -154,6 +155,7 @@ the card should be configured correctly.
 .Sh SEE ALSO
 .Xr amphy 4 ,
 .Xr arp 4 ,
+.Xr icsphy 4 ,
 .Xr ifmedia 4 ,
 .Xr intro 4 ,
 .Xr netintro 4 ,
