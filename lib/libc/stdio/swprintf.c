@@ -1,4 +1,4 @@
-/*	$OpenBSD */
+/*	$OpenBSD$ */
 /*	$NetBSD: swprintf.c,v 1.1 2005/05/14 23:51:02 christos Exp $	*/
 
 /*-
