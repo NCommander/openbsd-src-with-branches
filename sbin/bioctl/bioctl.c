@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.101 2011/07/08 01:17:58 tedu Exp $       */
+/* $OpenBSD: bioctl.c,v 1.102 2011/07/09 16:53:37 nicm Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -256,13 +256,13 @@ usage(void)
 		"usage: %s [-hiqv] [-a alarm-function] "
 		"[-b channel:target[.lun]]\n"
 		"\t[-H channel:target[.lun]] "
-		"[-R device | channel:target[.lun]\n"
+		"[-R device | channel:target[.lun]]\n"
 		"\t[-u channel:target[.lun]] "
 		"device\n"
 		"       %s [-dhiPqsv] "
 		"[-C flag[,flag,...]] [-c raidlevel] [-k keydisk]\n"
 		"\t[-l special[,special,...]] [-p passfile]\n"
-		"\t[-R device | channel:target[.lun] [-r rounds] "
+		"\t[-R device | channel:target[.lun]] [-r rounds] "
 		"device\n", __progname, __progname);
 
 	exit(1);
