@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.340 2011/07/08 18:50:52 henning Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.341 2011/07/27 00:26:10 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -878,7 +878,8 @@ struct pfsync_state_key {
 	struct pf_addr	 addr[2];
 	u_int16_t	 port[2];
 	u_int16_t	 rdomain;
-	u_int8_t	 pad[2];
+	sa_family_t	 af;
+	u_int8_t	 pad;
 };
 
 struct pfsync_state {

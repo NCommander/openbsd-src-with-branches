@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.164 2011/07/04 20:40:58 dhill Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.165 2011/07/06 02:42:28 henning Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -501,6 +501,9 @@ pfsync_state_import(struct pfsync_state *sp, int flags)
 			return (EINVAL);
 		return (0);	/* skip this state */
 	}
+
+	if (sp->af == 0)
+		return (0);	/* skip this state */
 
 	/*
 	 * If the ruleset checksums match or the state is coming from the ioctl,
