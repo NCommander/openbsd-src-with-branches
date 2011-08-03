@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_machdep.c,v 1.39 2011/04/18 21:44:55 guenther Exp $	*/
+/*	$OpenBSD: linux_machdep.c,v 1.40 2011/07/05 04:48:01 guenther Exp $	*/
 /*	$NetBSD: linux_machdep.c,v 1.29 1996/05/03 19:42:11 christos Exp $	*/
 
 /*
@@ -653,7 +653,7 @@ linux_sys_set_thread_area(struct proc *p, void *v, register_t *retval)
 	} else if (ldesc.entry_number != GUGS_SEL)
 		return EINVAL;
 
-	return i386_set_threadbase(p, &SCARG(uap, desc)->base_addr, TSEG_GS);
+	return i386_set_threadbase(p, SCARG(uap, desc)->base_addr, TSEG_GS);
 }
 
 int
