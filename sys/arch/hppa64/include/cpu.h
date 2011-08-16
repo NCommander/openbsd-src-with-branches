@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.25 2011/04/21 12:42:59 jsing Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.26 2011/07/07 18:44:39 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -234,6 +234,8 @@ void ficacheall(void);
 void fdcacheall(void);
 void pitlb(pa_space_t sp, vaddr_t va);
 void pdtlb(pa_space_t sp, vaddr_t va);
+void pitlbe(pa_space_t sp, vaddr_t va);
+void pdtlbe(pa_space_t sp, vaddr_t va);
 void ptlball(void);
 void mtctl(register_t val, int reg);
 register_t mfctl(int reg);
