@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.35 2011/08/16 17:31:42 kettenis Exp $	*/
+/*	$OpenBSD: locore.S,v 1.32 2011/08/07 20:48:48 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -1517,30 +1517,6 @@ LEAF_ENTRY(pitlb)
 EXIT(pitlb)
 
 /*
- * void  
- * pdtlbe(pa_space_t sp, vaddr_t va)
- */
-LEAF_ENTRY(pdtlbe)
-	mfsp	%sr1, %arg2
-	mtsp	%arg0, %sr1
-	pdtlbe	%r0(%sr1, %arg1)
-	bv	%r0(%rp)
-	mtsp	%arg2, %sr1
-EXIT(pdtlb)
-
-/*
- * void  
- * pitlbe(pa_space_t sp, vaddr_t va)
- */
-LEAF_ENTRY(pitlbe)
-	mfsp	%sr1, %arg2
-	mtsp	%arg0, %sr1
-	pitlbe	%r0(%sr1, %arg1)
-	bv	%r0(%rp)
-	mtsp	%arg2, %sr1
-EXIT(pitlb)
-
-/*
  * register_t
  * mfctl(int reg)
  */
@@ -1843,7 +1819,7 @@ kstack_ok
 	std	%arg1, CI_CURPROC(%r1)
 
 	/* If old process exited, don't bother. */
-	comb,=,n %r0, %arg0, switch_exited
+	comb,=,n %r0, %arg2, switch_exited
 
 	/*
 	 * 2. save old proc context
@@ -1959,7 +1935,7 @@ EXIT(switch_trampoline)
  * Signal "trampoline" code. Invoked from RTE setup by sendsig().
  */
 ENTRY(sigcode,0)
-	ldd	0x18(%arg3), %dp
+	ldd	0x18(%arg3), %r19
 	ldd	0x10(%arg3), %arg3
 	.call
 	ble	0(%sr0, %arg3)

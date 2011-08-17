@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.31 2011/04/06 21:51:31 nicm Exp $ */
+/* $OpenBSD: session.c,v 1.30 2011/01/25 22:31:50 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -119,18 +119,11 @@ session_create(const char *name, const char *cmd, const char *cwd,
 	s->sx = sx;
 	s->sy = sy;
 
-	if (name != NULL) {
+	s->idx = next_session++;
+	if (name != NULL)
 		s->name = xstrdup(name);
-		s->idx = next_session++;
-	} else {
-		s->name = NULL;
-		do {
-			s->idx = next_session++;
-			if (s->name != NULL)
-				xfree (s->name);
-			xasprintf(&s->name, "%u", s->idx);
-		} while (RB_FIND(sessions, &sessions, s) != NULL);
-	}
+	else
+		xasprintf(&s->name, "%u", s->idx);
 	RB_INSERT(sessions, &sessions, s);
 
 	if (cmd != NULL) {

@@ -1,7 +1,7 @@
 /*
  * query.h -- manipulation with the queries
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -56,12 +56,10 @@ struct query {
 	/* EDNS information provided by the client.  */
 	edns_record_type edns;
 
-#ifdef TSIG
 	/* TSIG record information and running hash for query-response */
 	tsig_record_type tsig;
 	/* tsig actions can be overridden, for axfr transfer. */
 	int tsig_prepare_it, tsig_update_it, tsig_sign_it;
-#endif /* TSIG */
 
 	int tcp;
 	uint16_t tcplen;
@@ -157,7 +155,7 @@ void query_clear_dname_offsets(struct query *query, size_t max_offset);
  * Clear the compression tables.
  */
 void query_clear_compression_tables(struct query *query);
-	
+
 /*
  * Enter the specified domain into the compression table starting at
  * the specified offset.

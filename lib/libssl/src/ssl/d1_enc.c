@@ -115,12 +115,16 @@
 
 #include <stdio.h>
 #include "ssl_locl.h"
+#ifndef OPENSSL_NO_COMP
 #include <openssl/comp.h>
+#endif
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/md5.h>
 #include <openssl/rand.h>
-
+#ifdef KSSL_DEBUG
+#include <openssl/des.h>
+#endif
 
 int dtls1_enc(SSL *s, int send)
 	{
@@ -132,8 +136,12 @@ int dtls1_enc(SSL *s, int send)
 
 	if (send)
 		{
-		if (s->write_hash != NULL)
-			n=EVP_MD_size(s->write_hash);
+		if (EVP_MD_CTX_md(s->write_hash))
+			{
+			n=EVP_MD_CTX_size(s->write_hash);
+			if (n < 0)
+				return -1;
+			}
 		ds=s->enc_write_ctx;
 		rec= &(s->s3->wrec);
 		if (s->enc_write_ctx == NULL)
@@ -147,15 +155,19 @@ int dtls1_enc(SSL *s, int send)
 					__FILE__, __LINE__);
 			else if ( EVP_CIPHER_block_size(ds->cipher) > 1)
 				{
-				if (!RAND_bytes(rec->input, EVP_CIPHER_block_size(ds->cipher)))
+				if (RAND_bytes(rec->input, EVP_CIPHER_block_size(ds->cipher)) <= 0)
 					return -1;
 				}
 			}
 		}
 	else
 		{
-		if (s->read_hash != NULL)
-			n=EVP_MD_size(s->read_hash);
+		if (EVP_MD_CTX_md(s->read_hash))
+			{
+			n=EVP_MD_CTX_size(s->read_hash);
+			if (n < 0)
+				return -1;
+			}
 		ds=s->enc_read_ctx;
 		rec= &(s->s3->rrec);
 		if (s->enc_read_ctx == NULL)

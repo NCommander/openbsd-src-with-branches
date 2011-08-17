@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.241 2011/07/30 18:27:57 jmc Exp $
+.\" $OpenBSD: tmux.1,v 1.240 2011/07/30 18:01:26 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
 .\"
@@ -558,9 +558,7 @@ is specified, any other clients attached to the session are detached.
 .Fl r
 signifies the client is read-only (only keys bound to the
 .Ic detach-client
-or
-.Ic switch-client
-commands have any effect)
+command have any effect)
 .Pp
 If no server is started,
 .Ic attach-session
@@ -716,7 +714,7 @@ Suspend a client by sending
 .Dv SIGTSTP
 (tty stop).
 .It Xo Ic switch-client
-.Op Fl lnpr
+.Op Fl lnp
 .Op Fl c Ar target-client
 .Op Fl t Ar target-session
 .Xc
@@ -732,10 +730,6 @@ or
 .Fl p
 is used, the client is moved to the last, next or previous session
 respectively.
-.Fl r
-toggles whether a client is read-only (see the
-.Ic attach-session
-command).
 .El
 .Sh WINDOWS AND PANES
 A

@@ -1,7 +1,7 @@
 /*
  * dbcreate.c -- routines to create an nsd(8) name database
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -25,9 +25,17 @@ struct namedb *
 namedb_new (const char *filename)
 {
 	namedb_type *db;
-	region_type *region = region_create_custom(xalloc, free,
+	region_type *region;
+
+#ifdef USE_MMAP_ALLOC
+	region = region_create_custom(mmap_alloc, mmap_free,
+		MMAP_ALLOC_CHUNK_SIZE, MMAP_ALLOC_LARGE_OBJECT_SIZE,
+		MMAP_ALLOC_INITIAL_CLEANUP_SIZE, 1);
+#else /* !USE_MMAP_ALLOC */
+	region = region_create_custom(xalloc, free,
 		DEFAULT_CHUNK_SIZE, DEFAULT_LARGE_OBJECT_SIZE,
 		DEFAULT_INITIAL_CLEANUP_SIZE, 1);
+#endif /* !USE_MMAP_ALLOC */
 
 	/* Make a new structure... */
 	db = (namedb_type *) region_alloc(region, sizeof(namedb_type));

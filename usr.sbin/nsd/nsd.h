@@ -1,7 +1,7 @@
 /*
  * nsd.h -- nsd(8) definitions and prototypes
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -9,9 +9,6 @@
 
 #ifndef	_NSD_H_
 #define	_NSD_H_
-
-/* disable NSID no matter what, there is no typecode yet */
-#undef NSID
 
 #include <signal.h>
 

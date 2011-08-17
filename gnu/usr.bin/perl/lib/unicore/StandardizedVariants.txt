@@ -1,19 +1,35 @@
-# StandardizedVariants-4.0.0.txt
+# StandardizedVariants-5.2.0.txt
+# Date: 2008-09-18, 17:41:00 PDT [KW]
 #
-# The following file specifies the variant sequences that are defined in the
+# Specification of the variant sequences that are defined in the
 # Unicode Standard.
 #
-# Warning: Only the variation sequences specifically defined in this file
-# are sanctioned for standard use. In all other cases the variation selector
-# cannot change the visual appearance of the preceding base character from 
-# what it would have had in the absence of the variation selector.
+# This file is a normative contributory data file in the
+# Unicode Character Database.
 #
-# For more information, see Section 15.6 Variation Selectors in The Unicode Standard.
+# Copyright (c) 1991-2008 Unicode, Inc.
+# For terms of use, see http://www.unicode.org/terms_of_use.html
+#
+# Standardized variation sequences are defined in this file.
+# Ideographic variation sequences are defined acording to the registration
+# process specified in UTS #37, and are listed in the Ideographic
+# Variation Database. Only those two types of variation sequences
+# are sanctioned for use by conformant implementations.
+# In all other cases, use of a variation selector character does
+# not change the visual appearance of the preceding base character
+# from what it would have had in the absence of the variation selector.
+#
+# For more information on standardized variation sequences, 
+# see Section 16.4, Variation Selectors, 
+# in The Unicode Standard, Version 5.0.
+#
+# For more information on the Ideographic Variation Database
+# see http://www.unicode.org/ivd/
 #
 # Format:
 #   Field 0: the variation sequence
 #   Field 1: the description of the desired appearance
-#   Field 2: where the appearance is only different in in particular shaping environments
+#   Field 2: where the appearance is only different in particular shaping environments
 #	this field lists them. The possible values are: isolate, initial, medial, final.
 #	If more than one is present, there are spaces between them.
 # =============================
@@ -23,9 +39,13 @@
 2229 FE00; with serifs; # INTERSECTION 
 222A FE00; with serifs; # UNION
 2268 FE00; with vertical stroke; # LESS-THAN BUT NOT EQUAL TO
-2269 FE00; with vertical stroke; # GREATER-THAN AND NOT DOUBLE EQUAL
+2269 FE00; with vertical stroke; # GREATER-THAN BUT NOT EQUAL TO
 2272 FE00; following the slant of the lower leg; # LESS-THAN OR EQUIVALENT TO
 2273 FE00; following the slant of the lower leg; # GREATER-THAN OR EQUIVALENT TO
+# The following two entries were originally defined for Unicode 3.2
+# but were determined to be in error and were removed from the list
+# of standardized variation sequences. The entries are left commented
+# in the file for the historical record of changes made to the data.
 #2278 FE00; with vertical stroke; # NEITHER LESS-THAN NOR GREATER-THAN
 #2279 FE00; with vertical stroke; # NEITHER GREATER-THAN NOR LESS-THAN
 228A FE00; with stroke through bottom members; # SUBSET OF WITH NOT EQUAL TO
@@ -46,7 +66,16 @@
 2ACB FE00; with stroke through bottom members; # SUBSET OF ABOVE NOT EQUAL TO
 2ACC FE00; with stroke through bottom members; # SUPERSET OF ABOVE NOT EQUAL TO
 
-#Mongolian
+# Phags-pa
+
+A856 FE00; phags-pa letter reversed shaping small a; # PHAGS-PA LETTER SMALL A
+A85C FE00; phags-pa letter reversed shaping ha; # PHAGS-PA LETTER HA
+A85E FE00; phags-pa letter reversed shaping i; # PHAGS-PA LETTER I
+A85F FE00; phags-pa letter reversed shaping u; # PHAGS-PA LETTER U
+A860 FE00; phags-pa letter reversed shaping e; # PHAGS-PA LETTER E
+A868 FE00; phags-pa letter reversed shaping subjoined ya; # PHAGS-PA SUBJOINED LETTER YA
+
+# Mongolian
 
 1820 180B; second form; isolate medial final # MONGOLIAN LETTER A
 1820 180C; third form; medial # MONGOLIAN LETTER A 

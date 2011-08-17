@@ -1,7 +1,7 @@
 /*
  * namedb.h -- nsd(8) internal namespace database definitions
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -289,6 +289,7 @@ int namedb_lookup (struct namedb    *db,
 /* pass number of children (to alloc in dirty array */
 struct namedb *namedb_open(const char *filename, struct nsd_options* opt,
 	size_t num_children);
+void namedb_fd_close(struct namedb *db);
 void namedb_close(struct namedb *db);
 
 static inline int

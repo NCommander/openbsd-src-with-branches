@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpctl.c,v 1.62 2011/08/16 19:02:03 gilles Exp $	*/
+/*	$OpenBSD: smtpctl.c,v 1.60 2011/05/01 12:57:11 eric Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -39,8 +39,7 @@
 #include "parser.h"
 
 void usage(void);
-static void show_sizes(void);
-static int show_command_output(struct imsg *);
+static int show_command_output(struct imsg*);
 static int show_stats_output(struct imsg *);
 
 int proctype;
@@ -96,9 +95,6 @@ main(int argc, char *argv[])
 			show_queue(PATH_QUEUE, 0);
 			break;
 		case SHOW_RUNQUEUE:
-			break;
-		case SHOW_SIZES:
-			show_sizes();
 			break;
 		default:
 			goto connected;
@@ -262,31 +258,6 @@ show_command_output(struct imsg *imsg)
 	return (1);
 }
 
-void
-show_sizes(void)
-{
-	/*
-	 * size _does_ matter.
-	 *
-	 * small changes to ramqueue and diskqueue structures may cause
-	 * large changes to memory and disk usage on busy/large hosts.
-	 *
-	 * this will help developers optimize memory/disk use, and help
-	 * admins understand how the ramqueue.size / ramqueue.size.max
-	 * stats are computed (smtpctl show stats).
-	 *
-	 * -- gilles@
-	 *
-	 */
-	printf("struct ramqueue: %ld\n", sizeof (struct ramqueue));
-	printf("struct ramqueue_host: %ld\n", sizeof (struct ramqueue_host));
-	printf("struct ramqueue_message: %ld\n", sizeof (struct ramqueue_message));
-	printf("struct ramqueue_envelope: %ld\n", sizeof (struct ramqueue_envelope));
-
-	printf("struct envelope: %ld\n", sizeof (struct envelope));
-	printf("struct delivery: %ld\n", sizeof (struct delivery));
-}
-
 static int
 show_stats_output(struct imsg *imsg)
 {
@@ -336,22 +307,14 @@ show_stats_output(struct imsg *imsg)
 
 	printf("ramqueue.hosts=%zd\n", stats->ramqueue.hosts);
 	printf("ramqueue.batches=%zd\n", stats->ramqueue.batches);
-	printf("ramqueue.messages=%zd\n", stats->ramqueue.messages);
 	printf("ramqueue.envelopes=%zd\n", stats->ramqueue.envelopes);
 	printf("ramqueue.hosts.max=%zd\n", stats->ramqueue.hosts_max);
 	printf("ramqueue.batches.max=%zd\n", stats->ramqueue.batches_max);
-	printf("ramqueue.messages.max=%zd\n", stats->ramqueue.messages_max);
 	printf("ramqueue.envelopes.max=%zd\n", stats->ramqueue.envelopes_max);
 	printf("ramqueue.size=%zd\n",
 	    stats->ramqueue.hosts * sizeof(struct ramqueue_host) +
 	    stats->ramqueue.batches * sizeof(struct ramqueue_batch) +
-	    stats->ramqueue.messages * sizeof(struct ramqueue_message) +
 	    stats->ramqueue.envelopes * sizeof(struct ramqueue_envelope));
-	printf("ramqueue.size.max=%zd\n",
-	    stats->ramqueue.hosts_max * sizeof(struct ramqueue_host) +
-	    stats->ramqueue.batches_max * sizeof(struct ramqueue_batch) +
-	    stats->ramqueue.messages_max * sizeof(struct ramqueue_message) +
-	    stats->ramqueue.envelopes_max * sizeof(struct ramqueue_envelope));
 
 	printf("smtp.errors.delays=%zd\n", stats->smtp.delays);
 	printf("smtp.errors.linetoolong=%zd\n", stats->smtp.linetoolong);

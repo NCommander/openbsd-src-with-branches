@@ -1,7 +1,7 @@
 /*
  * xfrd-notify.h - notify sending routines.
  *
- * Copyright (c) 2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2006-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -32,9 +32,7 @@ struct notify_zone_t {
 	const dname_type* apex;
 	const char* apex_str;
 
-#ifdef TSIG
         tsig_record_type notify_tsig; /* tsig state for notify */
-#endif
 	struct zone_options* options;
 	struct xfrd_soa *current_soa; /* current SOA in NSD */
 
