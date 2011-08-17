@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: AddDelete.pm,v 1.50 2011/07/14 11:31:20 espie Exp $
+# $OpenBSD: AddDelete.pm,v 1.51 2011/07/17 13:16:15 espie Exp $
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -190,8 +190,23 @@ sub init
 	$self->{recorder} = OpenBSD::SharedItemsRecorder->new;
 	$self->{v} = 0;
 	$self->{wantntogo} = $self->config->istrue("ntogo");
+	if ($self->{not}) {
+		$self->{loglevel} = 0;
+	}
+	$self->{loglevel} //= $self->config->value("loglevel") // 1;
+	if ($self->{loglevel}) {
+		require Sys::Syslog;
+		Sys::Syslog::openlog($self->{cmd}, "nofatal");
+	}
 	$self->SUPER::init(@_);
 	$self->{export_level}++;
+}
+
+sub syslog
+{
+	my $self = shift;
+	return unless $self->{loglevel};
+	Sys::Syslog::syslog('info', $self->f(@_));
 }
 
 sub ntogo
