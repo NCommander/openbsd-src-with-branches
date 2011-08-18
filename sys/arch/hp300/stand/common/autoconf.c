@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.6 2005/12/31 17:59:47 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.7 2006/08/17 06:31:10 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.12 1997/01/30 10:32:51 thorpej Exp $	*/
 
 /*
@@ -98,10 +98,7 @@ configure()
 		cpuspeed = MHZ_16;
 		break;
 	case HP_350:
-	case HP_360:
-#if 0	/* bootblocks do not tell 360 apart from 362 at the moment */
-	case HP_362:
-#endif
+	case HP_36X:
 		cpuspeed = MHZ_25;
 		break;
 	case HP_370:
