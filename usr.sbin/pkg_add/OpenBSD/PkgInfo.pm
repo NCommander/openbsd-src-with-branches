@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgInfo.pm,v 1.20 2011/01/03 19:33:46 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -503,7 +503,7 @@ sub parse_and_run
 		}
 		my @l = $s->match_ref(\@ARGV);
 		unless ($state->opt('q')) {
-			$state->say("Pkgspec #1 matched #2", $pattern, 
+			$state->say("Pkgspec #1 matched #2", $pattern,
 			    join(' ', @l));
 		}
 		if (@l != 0) {
@@ -511,7 +511,7 @@ sub parse_and_run
 		} else {
 			return 1;
 		}
-		
+
 	}
 
 	$state->lock;
