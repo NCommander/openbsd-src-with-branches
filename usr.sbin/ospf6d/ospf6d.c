@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.c,v 1.20 2010/07/06 13:24:35 bluhm Exp $ */
+/*	$OpenBSD: ospf6d.c,v 1.21 2010/08/22 21:15:25 bluhm Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -135,6 +135,7 @@ main(int argc, char *argv[])
 	ospfd_process = PROC_MAIN;
 
 	log_init(1);	/* log to stderr until daemonized */
+	log_verbose(1);
 
 	while ((ch = getopt(argc, argv, "cdD:f:nv")) != -1) {
 		switch (ch) {
@@ -210,6 +211,7 @@ main(int argc, char *argv[])
 		errx(1, "unknown user %s", OSPF6D_USER);
 
 	log_init(debug);
+	log_verbose(ospfd_conf->opts & OSPFD_OPT_VERBOSE);
 
 	if (!debug)
 		daemon(1, 0);
