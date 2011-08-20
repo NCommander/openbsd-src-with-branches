@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.86 2011/01/03 11:18:13 reyk Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.87 2011/02/18 17:06:45 reyk Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -251,15 +251,15 @@ vlan_start(struct ifnet *ifp)
 		 * Send it, precisely as ether_output() would have.
 		 * We are already running at splnet.
 		 */
-		p->if_obytes += m->m_pkthdr.len;
-		if (m->m_flags & M_MCAST)
-			p->if_omcasts++;
 		IFQ_ENQUEUE(&p->if_snd, m, NULL, error);
 		if (error) {
 			/* mbuf is already freed */
 			ifp->if_oerrors++;
 			continue;
 		}
+		p->if_obytes += m->m_pkthdr.len;
+		if (m->m_flags & M_MCAST)
+			p->if_omcasts++;
 
 		ifp->if_opackets++;
 		if_start(p);
