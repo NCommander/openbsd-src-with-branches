@@ -37,11 +37,6 @@
 #define PMS_INTELLI_MAGIC3	80
 #define PMS_INTELLI_ID		0x03
 
-#define PMS_ALPS_MAGIC1		0
-#define PMS_ALPS_MAGIC2		0
-#define PMS_ALPS_MAGIC3_1	10
-#define PMS_ALPS_MAGIC3_2	100
-
 /* Synaptics queries */
 #define SYNAPTICS_QUE_IDENTIFY			0x00
 #define SYNAPTICS_QUE_MODES			0x01
