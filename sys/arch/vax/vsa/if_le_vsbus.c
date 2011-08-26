@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_vsbus.c,v 1.11 2008/06/26 05:42:14 ray Exp $	*/
+/*	$OpenBSD: if_le_vsbus.c,v 1.12 2010/09/20 06:33:48 matthew Exp $	*/
 /*	$NetBSD: if_le_vsbus.c,v 1.10 2000/06/29 07:14:18 mrg Exp $	*/
 
 /*-
@@ -180,6 +180,7 @@ le_vsbus_match(parent, cf, aux)
 	for (i = 100; i >= 0; i--) {
 		DELAY(1000);
 		/* Should have interrupted by now */
+		*rap = LE_CSR0;
 		if (*rdp & LE_C0_IDON)
 			rv = 1;
 	} 
