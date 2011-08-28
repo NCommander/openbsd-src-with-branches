@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Proc.pm,v 1.1 2011/01/07 22:06:08 bluhm Exp $
 
 # Copyright (c) 2010 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -35,8 +35,8 @@ BEGIN {
 }
 
 END {
-	$SIG{TERM} = $SIG{INT} = 'DEFAULT';
 	kill TERM => keys %CHILDREN;
+	$SIG{TERM} = $SIG{INT} = 'DEFAULT';
 }
 
 sub new {

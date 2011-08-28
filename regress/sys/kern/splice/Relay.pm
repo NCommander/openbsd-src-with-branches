@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Relay.pm,v 1.1 2011/01/07 22:06:08 bluhm Exp $
 
 # Copyright (c) 2010 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -30,6 +30,8 @@ sub new {
 	my %args = @_;
 	$args{logfile} ||= "relay.log";
 	$args{up} ||= "Connected";
+	$args{forward}
+	    or croak "$class forward not given";
 	my $self = Proc::new($class, %args);
 	$self->{listendomain}
 	    or croak "$class listen domain not given";
