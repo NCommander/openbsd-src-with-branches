@@ -1796,6 +1796,7 @@
 /* Garmin International products */
 #define	USB_PRODUCT_GARMIN_GPSMAP60CSX	0x0003		/* GPSmap 60Csx */
 #define	USB_PRODUCT_GARMIN_IQUE3600	0x0004		/* Ique 3600 */
+#define	USB_PRODUCT_GARMIN_GPSMAP62S	0x2459		/* GPSmap 62s */
 
 /* GCT Semiconductor products */
 #define	USB_PRODUCT_GCTSEMICON_INSTALL	0x7f40		/* GDM720x MASS storage mode */

@@ -3530,6 +3530,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "Ique 3600",
 	},
 	{
+	    USB_VENDOR_GARMIN, USB_PRODUCT_GARMIN_GPSMAP62S,
+	    "GPSmap 62s",
+	},
+	{
 	    USB_VENDOR_GCTSEMICON, USB_PRODUCT_GCTSEMICON_INSTALL,
 	    "GDM720x MASS storage mode",
 	},
