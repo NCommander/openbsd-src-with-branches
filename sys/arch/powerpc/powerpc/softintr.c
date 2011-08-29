@@ -1,4 +1,4 @@
-/*	$OpenBSD: softintr.c,v 1.2 2009/11/08 21:05:18 kettenis Exp $	*/
+/*	$OpenBSD: softintr.c,v 1.3 2010/12/21 14:56:24 claudio Exp $	*/
 /*	$NetBSD: softintr.c,v 1.2 2003/07/15 00:24:39 lukem Exp $	*/
 
 /*
@@ -170,7 +170,7 @@ softintr_schedule(void *arg)
 	if (sih->sih_pending == 0) {
 		TAILQ_INSERT_TAIL(&siq->siq_list, sih, sih_list);
 		sih->sih_pending = 1;
-		atomic_setbits_int(&ci->ci_ipending, SINTMASK(siq->siq_si));
+		atomic_setbits_int(&ci->ci_ipending, SI_TO_IRQBIT(siq->siq_si));
 	}
 	mtx_leave(&siq->siq_mtx);
 }
