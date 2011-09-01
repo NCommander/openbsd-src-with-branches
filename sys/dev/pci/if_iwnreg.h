@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwnreg.h,v 1.41 2010/07/20 19:24:31 damien Exp $	*/
+/*	$OpenBSD: if_iwnreg.h,v 1.42 2011/01/09 15:45:37 damien Exp $	*/
 
 /*-
  * Copyright (c) 2007, 2008
@@ -727,6 +727,8 @@ struct iwn5000_wimax_coex {
 struct iwn5000_calib_elem {
 	uint32_t	enable;
 	uint32_t	start;
+#define IWN5000_CALIB_DC	(1 << 1)
+
 	uint32_t	send;
 	uint32_t	apply;
 	uint32_t	reserved;
