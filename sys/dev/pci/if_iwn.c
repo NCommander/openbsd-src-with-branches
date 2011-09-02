@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwn.c,v 1.110 2011/06/16 19:48:22 oga Exp $	*/
+/*	$OpenBSD: if_iwn.c,v 1.111 2011/09/01 18:49:56 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -2160,6 +2160,14 @@ iwn_rx_statistics(struct iwn_softc *sc, struct iwn_rx_desc *desc,
 		DPRINTF(("received statistics without RSSI\n"));
 		return;
 	}
+
+	/*
+	 * XXX Differential gain calibration makes the 6005 firmware
+	 * crap out, so skip it for now.  This effectively disables
+	 * sensitivity tuning as well.
+	 */
+	if (sc->hw_type == IWN_HW_REV_TYPE_6005)
+		return;
 
 	if (calib->state == IWN_CALIB_STATE_ASSOC)
 		iwn_collect_noise(sc, &stats->rx.general);
