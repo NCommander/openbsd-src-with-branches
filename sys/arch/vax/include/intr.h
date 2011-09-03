@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.13 2010/12/21 14:56:24 claudio Exp $	*/
+/*	$OpenBSD: intr.h,v 1.14 2011/03/23 16:54:37 pirofti Exp $	*/
 /* 	$NetBSD: intr.h,v 1.1 1998/08/18 23:55:00 matt Exp $	*/
 
 /*
@@ -93,6 +93,7 @@
 #define splnet()	_splraise(IPL_NET)
 #define spltty()	_splraise(IPL_TTY)
 #define splvm()		_splraise(IPL_VM)
+#define splaudio()	_splraise(IPL_AUDIO)
 #define splclock()	_splraise(IPL_CLOCK)
 #define splstatclock()	_splraise(IPL_STATCLOCK)
 #define splhigh()	_splset(IPL_HIGH)
