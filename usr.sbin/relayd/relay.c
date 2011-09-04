@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.138 2011/05/20 09:43:53 reyk Exp $	*/
+/*	$OpenBSD: relay.c,v 1.139 2011/09/04 09:55:10 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -1892,7 +1892,8 @@ relay_error(struct bufferevent *bev, short error, void *arg)
 			dst = EVBUFFER_OUTPUT(cre->dst->bev);
 			if (EVBUFFER_LENGTH(dst))
 				return;
-		}
+		} else
+			return;
 
 		relay_close(con, "done");
 		return;
