@@ -1,4 +1,4 @@
-/*	$OpenBSD: getpwent.c,v 1.41 2009/11/12 18:00:18 deraadt Exp $ */
+/*	$OpenBSD: getpwent.c,v 1.42 2009/11/21 10:24:59 chl Exp $ */
 /*
  * Copyright (c) 2008 Theo de Raadt
  * Copyright (c) 1988, 1993
@@ -844,14 +844,17 @@ static int
 __initdb(void)
 {
 	static int warned;
+	int saved_errno = errno;
 
 #ifdef YP
 	__ypmode = YPMODE_NONE;
 	__getpwent_has_yppw = -1;
 #endif
 	if ((_pw_db = dbopen(_PATH_SMP_DB, O_RDONLY, 0, DB_HASH, NULL)) ||
-	    (_pw_db = dbopen(_PATH_MP_DB, O_RDONLY, 0, DB_HASH, NULL)))
+	    (_pw_db = dbopen(_PATH_MP_DB, O_RDONLY, 0, DB_HASH, NULL))) {
+		errno = saved_errno;
 		return (1);
+	}
 	if (!warned)
 		syslog(LOG_ERR, "%s: %m", _PATH_MP_DB);
 	warned = 1;
