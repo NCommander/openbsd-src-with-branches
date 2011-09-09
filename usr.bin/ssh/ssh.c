@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.363 2011/06/22 22:08:42 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.364 2011/08/02 23:15:03 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -348,6 +348,8 @@ main(int ac, char **av)
 				muxclient_command = SSHMUX_COMMAND_TERMINATE;
 			else if (strcmp(optarg, "stop") == 0)
 				muxclient_command = SSHMUX_COMMAND_STOP;
+			else if (strcmp(optarg, "cancel") == 0)
+				muxclient_command = SSHMUX_COMMAND_CANCEL_FWD;
 			else
 				fatal("Invalid multiplex command.");
 			break;
