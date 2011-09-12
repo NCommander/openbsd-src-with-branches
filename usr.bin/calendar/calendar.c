@@ -1,4 +1,4 @@
-/*	$OpenBSD: calendar.c,v 1.25 2005/11/16 16:45:11 deraadt Exp $	*/
+/*	$OpenBSD: calendar.c,v 1.26 2009/10/27 23:59:36 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -246,7 +246,7 @@ usage(void)
 {
 	(void)fprintf(stderr,
 	    "usage: calendar [-ab] [-A num] [-B num] [-f calendarfile] "
-	    "[-t [[[cc]yy][mm]]dd]\n");
+	    "[-t [[[cc]yy]mm]dd]\n");
 	exit(1);
 }
 
