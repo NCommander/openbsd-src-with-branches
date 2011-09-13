@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_kevent.c,v 1.4 2003/10/19 05:27:03 brad Exp $	*/
+/*	$OpenBSD: uthread_kevent.c,v 1.5 2006/10/03 02:59:36 kurt Exp $	*/
 
 /*-
  * Copyright (c) 2000 Jonathan Lemon <jlemon@flugsvamp.com>
@@ -63,7 +63,7 @@ kevent(int kq, const struct kevent *changelist, int nchanges,
 			curthread->closing_fd = 0;
 			curthread->timeout = 0;
 
-			_thread_kern_sched_state(PS_FDR_WAIT,
+			_thread_kern_sched_state(PS_KEVENT_WAIT,
 			    __FILE__, __LINE__);
 
 			if (curthread->interrupted) {
