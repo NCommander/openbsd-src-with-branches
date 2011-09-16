@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensorsd.c,v 1.48 2010/04/20 20:49:36 deraadt Exp $ */
+/*	$OpenBSD: sensorsd.c,v 1.49 2010/04/21 04:07:13 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -623,6 +623,9 @@ print_sensor(enum sensor_type type, int64_t value)
 	case SENSOR_FANRPM:
 		snprintf(fbuf, RFBUFSIZ, "%lld RPM", value);
 		break;
+	case SENSOR_VOLTS_AC:
+		snprintf(fbuf, RFBUFSIZ, "%.2f V AC", value / 1000000.0);
+		break;
 	case SENSOR_VOLTS_DC:
 		snprintf(fbuf, RFBUFSIZ, "%.2f V DC", value / 1000000.0);
 		break;
@@ -661,6 +664,9 @@ print_sensor(enum sensor_type type, int64_t value)
 		break;
 	case SENSOR_ANGLE:
 		snprintf(fbuf, RFBUFSIZ, "%lld", value);
+		break;
+	case SENSOR_FREQ:
+		snprintf(fbuf, RFBUFSIZ, "%.2f Hz", value / 1000000.0);
 		break;
 	default:
 		snprintf(fbuf, RFBUFSIZ, "%lld ???", value);
