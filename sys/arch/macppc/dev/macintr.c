@@ -1,4 +1,4 @@
-/*	$OpenBSD: macintr.c,v 1.42 2011/04/15 20:52:55 deraadt Exp $	*/
+/*	$OpenBSD: macintr.c,v 1.43 2011/08/29 20:21:44 drahn Exp $	*/
 
 /*-
  * Copyright (c) 2008 Dale Rahn <drahn@openbsd.org>
@@ -404,8 +404,9 @@ macintr_calc_mask()
 		if (maxipl == IPL_NONE) {
 			minipl = IPL_NONE; /* Interrupt not enabled */
 		} else {
-			for (i = minipl; i <= maxipl; i++)
-				macintr_pri_share[i] = i;
+			for (i = minipl; i < maxipl; i++)
+				macintr_pri_share[i] =
+				    macintr_pri_share[maxipl];
 		}
 
 		/* Enable interrupts at lower levels */
