@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530reg.h,v 1.1 2002/09/06 13:56:51 drahn Exp $	*/
+/*	$OpenBSD: z8530reg.h,v 1.2 2003/06/02 23:27:49 millert Exp $	*/
 /*	$NetBSD: z8530reg.h,v 1.9 1998/07/31 05:08:38 wrstuden Exp $ */
 
 /*
@@ -330,7 +330,7 @@
  *	2 bps
  *
  * rounded down to an integer.  This can be computed entirely
- * in integer arithemtic as:
+ * in integer arithmetic as:
  *
  *	f + bps
  *	------- - 2
