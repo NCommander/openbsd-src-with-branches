@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.343 2011/08/03 00:01:30 dlg Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.344 2011/08/30 00:40:47 mikeb Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1247,9 +1247,6 @@ struct pf_pdesc {
 
 	u_int32_t	 p_len;		/* total length of payload */
 	u_int32_t	 badopts;	/* v4 options or v6 routing headers */
-
-	u_int16_t	*ip_sum;
-	u_int16_t	*proto_sum;
 
 	u_int16_t	 rdomain;	/* original routing domain */
 	u_int16_t	 virtual_proto;
