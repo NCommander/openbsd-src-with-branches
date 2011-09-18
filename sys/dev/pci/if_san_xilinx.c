@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_san_xilinx.c,v 1.24 2008/11/26 18:01:43 dlg Exp $	*/
+/*	$OpenBSD: if_san_xilinx.c,v 1.25 2011/07/07 19:09:10 henning Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -484,7 +484,7 @@ wan_xilinx_up(struct ifnet *ifp)
 	sc->dma_mtu = xilinx_valid_mtu(ifp->if_mtu+100);
 
 	if (!sc->dma_mtu) {
-		log(LOG_INFO, "%s:%s: Error invalid MTU %lu\n",
+		log(LOG_INFO, "%s:%s: Error invalid MTU %u\n",
 		    card->devname, sc->if_name, ifp->if_mtu);
 		return (EINVAL);
 	}
