@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpp.c,v 1.1 2007/02/28 18:48:35 miod Exp $	*/
+/*	$OpenBSD: bpp.c,v 1.2 2008/06/26 05:42:18 ray Exp $	*/
 /*	$NetBSD: bpp.c,v 1.25 2005/12/11 12:23:44 christos Exp $ */
 
 /*-
@@ -135,12 +135,12 @@ bppattach(struct device *parent, struct device *self, void *aux)
 		if (sbus_bus_map(sa->sa_bustag, 0, sa->sa_promvaddrs[0],
 		    sa->sa_size,		/* ???? */
 		    BUS_SPACE_MAP_PROMADDRESS, 0, &sc->sc_regs) != 0) {
-			printf(": cannot map registers\n", self->dv_xname);
+			printf(": cannot map registers\n");
 			return;
 		}
 	} else if (sbus_bus_map(sa->sa_bustag, sa->sa_slot, sa->sa_offset,
 	    sa->sa_size, 0, 0, &sc->sc_regs) != 0) {
-		printf(": cannot map registers\n", self->dv_xname);
+		printf(": cannot map registers\n");
 		return;
 	}
 
