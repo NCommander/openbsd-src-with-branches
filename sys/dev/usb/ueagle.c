@@ -1,4 +1,4 @@
-/*	$OpenBSD: ueagle.c,v 1.33 2011/03/22 16:31:19 deraadt Exp $	*/
+/*	$OpenBSD: ueagle.c,v 1.34 2011/07/03 15:47:17 matthew Exp $	*/
 
 /*-
  * Copyright (c) 2003-2006
@@ -31,7 +31,7 @@
 #include <sys/socket.h>
 #include <sys/systm.h>
 #include <sys/device.h>
-#include <sys/kthread.h>
+#include <sys/timeout.h>
 
 #include <net/bpf.h>
 #include <net/if.h>
