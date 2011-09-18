@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/lib/libgcc/Makefile,v 1.58.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD: Makefile,v 1.17 2010/10/23 09:46:30 miod Exp $
+# $OpenBSD: Makefile,v 1.18 2011/08/04 14:46:58 kettenis Exp $
 
 .include <bsd.own.mk>
 
@@ -146,6 +146,10 @@ CFLAGS+=	-fPIC -Dpa64=1 -DELF=1
 LIB1ASMFUNCS =	_divI _divU _remI _remU _div_const _mulI
 LIB1ASMSRC =	pa/milli64.S
 LIB2FUNCS_EXTRA = fptr.c
+.endif
+
+.if ${TARGET_ARCH} == "ia64"
+LIB2ADDEH = unwind-ia64.c unwind-sjlj.c unwind-c.c
 .endif
 
 .if ${TARGET_ARCH} == "sh"
