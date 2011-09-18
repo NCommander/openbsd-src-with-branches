@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.7 2011/07/07 18:40:12 kettenis Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.8 2011/08/16 07:59:45 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -27,8 +27,8 @@
 #ifdef _KERNEL
 
 struct pmap {
-	simple_lock_data_t pm_lock;
-	int		pm_refcount;
+	struct uvm_object pm_obj;	/* object (lck by object lock) */
+#define	pm_lock	pm_obj.vmobjlock
 	struct vm_page	*pm_ptphint;
 	struct pglist	pm_pglist;
 	volatile u_int32_t *pm_pdir;	/* page dir (read-only after create) */
