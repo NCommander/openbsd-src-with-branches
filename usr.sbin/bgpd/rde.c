@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.308 2011/07/09 02:51:18 henning Exp $ */
+/*	$OpenBSD: rde.c,v 1.309 2011/09/17 16:29:44 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2086,8 +2086,6 @@ rde_dump_rib_as(struct prefix *p, struct rde_aspath *asp, pid_t pid, int flags)
 	rib.lastchange = p->lastchange;
 	rib.local_pref = asp->lpref;
 	rib.med = asp->med;
-	rib.prefix_cnt = asp->prefix_cnt;
-	rib.active_cnt = asp->active_cnt;
 	strlcpy(rib.descr, asp->peer->conf.descr, sizeof(rib.descr));
 	memcpy(&rib.remote_addr, &asp->peer->remote_addr,
 	    sizeof(rib.remote_addr));
