@@ -1,8 +1,9 @@
 #!/bin/sh
 #
-# $OpenBSD$
+# $OpenBSD: ftpd,v 1.1 2011/07/06 18:55:36 robert Exp $
 
 daemon="/usr/libexec/ftpd"
+daemon_flags="-D"
 
 . /etc/rc.d/rc.subr
 
