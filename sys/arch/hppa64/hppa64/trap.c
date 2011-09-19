@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.21 2011/07/09 02:12:16 kettenis Exp $	*/
+/*	$OpenBSD: trap.c,v 1.22 2011/08/07 15:49:34 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -444,7 +444,6 @@ trap(int type, struct trapframe *frame)
 			break;
 		}
 
-printf("here\n");
 		ret = uvm_fault(map, trunc_page(va), fault, vftype);
 
 		/*
