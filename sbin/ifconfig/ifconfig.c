@@ -526,8 +526,6 @@ void	in6_status(int);
 void	in6_getaddr(const char *, int);
 void	in6_getprefix(const char *, int);
 #endif /* INET6 */
-void    at_status(int);
-void    at_getaddr(const char *, int);
 void	ieee80211_status(void);
 void	ieee80211_listchans(void);
 void	ieee80211_listnodes(void);
