@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.203 2011/06/26 22:39:59 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.204 2011/07/05 04:48:01 guenther Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -878,6 +878,15 @@ int waittime = -1;
 void
 boot(int howto)
 {
+	/*
+	 * On older systems without software power control, prevent mi code
+	 * from spinning disks off, in case the operator changes his mind
+	 * and prefers to reboot - the firmware will not send a spin up
+	 * command to the disks.
+	 */
+	if (cold_hook == NULL)
+		howto &= ~RB_POWERDOWN;
+
 	/* If system is cold, just halt. */
 	if (cold) {
 		/* (Unless the user explicitly asked for reboot.) */
