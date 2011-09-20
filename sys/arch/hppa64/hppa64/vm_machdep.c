@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.14 2011/07/07 18:18:38 kettenis Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.15 2011/08/17 20:54:39 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -153,7 +153,7 @@ cpu_fork(p1, p2, stack, stacksize, func, arg)
 	*(register_t*)(osp + HPPA_FRAME_RP) = switch_tramp_p;
 	*(register_t*)(osp) = (osp - HPPA_FRAME_SIZE);
 
-	sp = osp + HPPA_FRAME_SIZE + 20*8; /* frame + calee-save registers */
+	sp = osp + HPPA_FRAME_SIZE + 20*8; /* frame + callee-saved registers */
 	*(register_t*)(sp - HPPA_FRAME_SIZE + 0) = (register_t)arg;
 	*(register_t*)(sp - HPPA_FRAME_SIZE + 8) = KERNMODE(func);
 	*(register_t*)(sp - HPPA_FRAME_SIZE + 16) = 0;	/* cpl */
