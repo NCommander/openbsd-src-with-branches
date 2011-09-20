@@ -4230,6 +4230,10 @@ i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
 	struct inteldrm_softc *dev_priv = dev->dev_private;
 	int ret;
 
+	/* XXX until we have support for the rings on sandybridge */
+	if (IS_GEN6(dev_priv))
+		return (0);
+
 	if (dev_priv->mm.wedged) {
 		DRM_ERROR("Reenabling wedged hardware, good luck\n");
 		dev_priv->mm.wedged = 0;
