@@ -1,4 +1,4 @@
-/* $OpenBSD: wsconsio.h,v 1.62 2011/04/07 15:06:32 shadchin Exp $ */
+/* $OpenBSD: wsconsio.h,v 1.63 2011/05/05 15:30:31 shadchin Exp $ */
 /* $NetBSD: wsconsio.h,v 1.74 2005/04/28 07:15:44 martin Exp $ */
 
 /*
@@ -209,6 +209,7 @@ struct wskbd_map_data {
 #define		WSMOUSE_TYPE_BLUETOOTH	13	/* Bluetooth mouse */
 #define		WSMOUSE_TYPE_SUN	14	/* SUN serial mouse */
 #define		WSMOUSE_TYPE_SYNAPTICS	15	/* Synaptics touchpad */
+#define		WSMOUSE_TYPE_ALPS	16	/* ALPS touchpad */
 
 /* Set resolution.  Not applicable to all mouse types. */
 #define	WSMOUSEIO_SRES		_IOW('W', 33, u_int)
