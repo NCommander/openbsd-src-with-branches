@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.17 2011/03/23 16:54:34 pirofti Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.18 2011/04/28 20:50:58 ariane Exp $	*/
 /*	$NetBSD: pmap.h,v 1.76 2003/09/06 09:10:46 rearnsha Exp $	*/
 
 /*
@@ -459,11 +459,6 @@ extern void (*pmap_zero_page_func)(struct vm_page *);
 #endif /* !_LOCORE */
 
 /*****************************************************************************/
-
-/*
- * tell MI code that the cache is virtually-indexed *and* virtually-tagged.
- */
-#define PMAP_CACHE_VIVT
 
 /*
  * Definitions for MMU domains

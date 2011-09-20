@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.1 2009/05/08 03:13:26 drahn Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.2 2010/11/28 20:44:20 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.2 2001/09/05 16:17:36 matt Exp $	*/
 
 /*
@@ -49,11 +49,11 @@
 #include <sys/conf.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
+
 #include <machine/bootconfig.h>
 #include <machine/intr.h>
 
 struct device *bootdv = NULL;
-extern char *boot_file;
 
 void dumpconf(void);
 
