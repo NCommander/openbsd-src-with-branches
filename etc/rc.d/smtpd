@@ -1,9 +1,11 @@
 #!/bin/sh
 #
-# $OpenBSD$
+# $OpenBSD: smtpd,v 1.1 2011/07/06 18:55:36 robert Exp $
 
 daemon="/usr/sbin/smtpd"
 
 . /etc/rc.d/rc.subr
+
+pexp="smtpd: \[priv\]"
 
 rc_cmd $1
