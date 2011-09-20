@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.78 2010/12/30 14:26:14 jsing Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.79 2011/01/02 20:41:22 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -205,10 +205,6 @@ extern int cpu_hvers;
 
 #ifndef _LOCORE
 #ifdef _KERNEL
-#define MD_CACHE_FLUSH 0
-#define MD_CACHE_PURGE 1
-#define MD_CACHE_CTL(a,s,t)	\
-	(((t)? pdcache : fdcache) (HPPA_SID_KERNEL,(vaddr_t)(a),(s)))
 
 #define DELAY(x) delay(x)
 
