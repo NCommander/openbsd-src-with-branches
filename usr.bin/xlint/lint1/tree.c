@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.46 2007/10/17 20:10:44 chl Exp $	*/
+/*	$OpenBSD: tree.c,v 1.47 2010/07/24 22:17:03 guenther Exp $	*/
 /*	$NetBSD: tree.c,v 1.12 1995/10/02 17:37:57 jpo Exp $	*/
 
 /*
@@ -31,10 +31,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: tree.c,v 1.46 2007/10/17 20:10:44 chl Exp $";
-#endif
 
 #include <stdlib.h>
 #include <string.h>

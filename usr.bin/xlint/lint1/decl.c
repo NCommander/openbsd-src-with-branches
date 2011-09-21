@@ -1,4 +1,4 @@
-/*	$OpenBSD: decl.c,v 1.28 2011/05/31 22:27:54 martynas Exp $	*/
+/*	$OpenBSD: decl.c,v 1.29 2011/07/11 17:30:10 martynas Exp $	*/
 /*	$NetBSD: decl.c,v 1.11 1995/10/02 17:34:16 jpo Exp $	*/
 
 /*
@@ -31,10 +31,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: decl.c,v 1.28 2011/05/31 22:27:54 martynas Exp $";
-#endif
 
 #include <sys/param.h>
 #include <limits.h>

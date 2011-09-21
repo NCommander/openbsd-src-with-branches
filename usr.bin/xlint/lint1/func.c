@@ -1,4 +1,4 @@
-/*	$OpenBSD: func.c,v 1.20 2007/10/17 20:10:44 chl Exp $	*/
+/*	$OpenBSD: func.c,v 1.21 2011/05/30 15:15:58 martynas Exp $	*/
 /*	$NetBSD: func.c,v 1.7 1995/10/02 17:31:40 jpo Exp $	*/
 
 /*
@@ -31,10 +31,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: func.c,v 1.20 2007/10/17 20:10:44 chl Exp $";
-#endif
 
 #include <stdlib.h>
 #include <string.h>

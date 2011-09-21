@@ -1,4 +1,4 @@
-/*	$OpenBSD: main1.c,v 1.10 2006/05/28 23:50:54 cloder Exp $	*/
+/*	$OpenBSD: main1.c,v 1.11 2006/05/29 20:47:22 cloder Exp $	*/
 /*	$NetBSD: main1.c,v 1.3 1995/10/02 17:29:56 jpo Exp $	*/
 
 /*
@@ -31,10 +31,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: main1.c,v 1.10 2006/05/28 23:50:54 cloder Exp $";
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>

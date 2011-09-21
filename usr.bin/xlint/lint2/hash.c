@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash.c,v 1.4 2002/02/16 21:27:59 millert Exp $	*/
+/*	$OpenBSD: hash.c,v 1.5 2005/11/20 17:09:55 cloder Exp $	*/
 /*	$NetBSD: hash.c,v 1.2 1995/07/03 21:24:47 cgd Exp $	*/
 
 /*
@@ -31,10 +31,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: hash.c,v 1.4 2002/02/16 21:27:59 millert Exp $";
-#endif
 
 #include <stddef.h>
 #include <string.h>

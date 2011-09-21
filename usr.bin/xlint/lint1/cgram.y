@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: cgram.y,v 1.22 2007/09/08 17:49:18 cloder Exp $	*/
+/*	$OpenBSD: cgram.y,v 1.23 2011/05/31 22:00:07 martynas Exp $	*/
 /*	$NetBSD: cgram.y,v 1.8 1995/10/02 17:31:35 jpo Exp $	*/
 
 /*
@@ -32,10 +32,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: cgram.y,v 1.22 2007/09/08 17:49:18 cloder Exp $";
-#endif
 
 #include <stdlib.h>
 #include <limits.h>

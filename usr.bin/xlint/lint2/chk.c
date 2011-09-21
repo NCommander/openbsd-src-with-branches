@@ -1,4 +1,4 @@
-/*	$OpenBSD: chk.c,v 1.24 2011/06/20 13:33:47 martynas Exp $	*/
+/*	$OpenBSD: chk.c,v 1.25 2011/07/03 18:15:10 martynas Exp $	*/
 /*	$NetBSD: chk.c,v 1.2 1995/07/03 21:24:42 cgd Exp $	*/
 
 /*
@@ -31,10 +31,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: chk.c,v 1.24 2011/06/20 13:33:47 martynas Exp $";
-#endif
 
 #include <stdlib.h>
 #include <ctype.h>

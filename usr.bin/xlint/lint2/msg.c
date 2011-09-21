@@ -1,4 +1,4 @@
-/*	$OpenBSD: msg.c,v 1.7 2005/11/20 18:23:59 cloder Exp $	*/
+/*	$OpenBSD: msg.c,v 1.8 2005/12/10 20:26:10 cloder Exp $	*/
 /*	$NetBSD: msg.c,v 1.2 1995/07/03 21:24:56 cgd Exp $	*/
 
 /*
@@ -31,10 +31,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: msg.c,v 1.7 2005/11/20 18:23:59 cloder Exp $";
-#endif
 
 #include <string.h>
 
