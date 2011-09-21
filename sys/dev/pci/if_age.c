@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_age.c,v 1.16 2011/08/26 07:52:22 kevlo Exp $	*/
+/*	$OpenBSD: if_age.c,v 1.17 2011/09/15 01:51:40 kevlo Exp $	*/
 
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
@@ -989,12 +989,12 @@ age_start(struct ifnet *ifp)
 		 * for the NIC to drain the ring.
 		 */
 		if (age_encap(sc, &m_head)) {
-			if (m_head == NULL) {
+			if (m_head == NULL)
 				ifp->if_oerrors++;
-				break;
+			else {
+				IF_PREPEND(&ifp->if_snd, m_head);
+				ifp->if_flags |= IFF_OACTIVE;
 			}
-			IF_PREPEND(&ifp->if_snd, m_head);
-			ifp->if_flags |= IFF_OACTIVE;
 			break;
 		}
 		enq = 1;
