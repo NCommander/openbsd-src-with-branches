@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.10 2007/12/20 17:08:48 henning Exp $
+#	$OpenBSD: Makefile,v 1.11 2010/05/26 16:44:32 nicm Exp $
 
 .PATH:		${.CURDIR}/../bgpd
 
 PROG=	bgpctl
 SRCS=	bgpctl.c parser.c util.c timer.c
 SRCS+=	irrfilter.c whois.c irr_asset.c irr_prefix.c irr_output.c
-SRCS+=	irr_parser.c
+SRCS+=	irr_parser.c mrtparser.c
 CFLAGS+= -Wall
 CFLAGS+= -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+= -Wmissing-declarations
