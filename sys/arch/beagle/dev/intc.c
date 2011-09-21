@@ -1,4 +1,4 @@
-/* $OpenBSD: intc.c,v 1.4 2010/09/20 06:33:48 matthew Exp $ */
+/* $OpenBSD: intc.c,v 1.5 2011/04/23 03:54:42 drahn Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -423,7 +423,7 @@ intc_intr_establish(int irqno, int level, int (*func)(void *),
 	int psw;
 	struct intrhand *ih;
 
-	if (irqno < 0 || irqno > NIRQ)
+	if (irqno < 0 || irqno >= NIRQ)
 		panic("intc_intr_establish: bogus irqnumber %d: %s",
 		     irqno, name);
 	psw = disable_interrupts(I32_bit);
