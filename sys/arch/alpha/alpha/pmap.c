@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.c,v 1.59 2009/01/27 22:14:12 miod Exp $ */
+/* $OpenBSD: pmap.c,v 1.60 2010/11/28 21:01:41 miod Exp $ */
 /* $NetBSD: pmap.c,v 1.154 2000/12/07 22:18:55 thorpej Exp $ */
 
 /*-
@@ -1085,7 +1085,7 @@ pmap_steal_memory(vsize_t size, vaddr_t *vstartp, vaddr_t *vendp)
 /*
  * pmap_init:			[ INTERFACE ]
  *
- *	Initialize the pmap module.  Called by vm_init(), to initialize any
+ *	Initialize the pmap module.  Called by uvm_init(), to initialize any
  *	structures that the pmap system needs to map virtual memory.
  *
  *	Note: no locking is necessary in this function.
