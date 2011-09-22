@@ -187,7 +187,7 @@ malloc(unsigned long size, int type, int flags)
 #ifdef KMEMSTATS
 	struct kmemstats *ksp = &kmemstats[type];
 
-	if (((unsigned long)type) >= M_LAST)
+	if (((unsigned long)type) <= 1 || ((unsigned long)type) >= M_LAST)
 		panic("malloc - bogus type");
 #endif
 
