@@ -1,4 +1,4 @@
-/*	$OpenBSD: error.c,v 1.10 2005/06/08 03:18:59 pvalchev Exp $	*/
+/*	$OpenBSD: error.c,v 1.11 2009/10/27 23:59:50 deraadt Exp $	*/
 /*	$NetBSD: error.c,v 1.4 1996/03/19 03:21:32 jtc Exp $	*/
 
 /*
@@ -57,7 +57,8 @@ no_space(void)
 void
 open_error(char *filename)
 {
-    fprintf(stderr, "%s: cannot open source file\n", input_file_name);
+    fprintf(stderr, "%s: cannot open source file %s\n",
+	input_file_name, filename);
     done(2);
 }
 
