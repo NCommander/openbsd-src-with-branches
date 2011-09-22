@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.43 2011/09/20 13:56:44 jsing Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.44 2011/09/22 13:50:30 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -531,6 +531,8 @@ ptlball(void)
 		sp += pdc_cache.dt_sp_stride;
 	}
 }
+
+int waittime = -1;
 
 void
 boot(int howto)
