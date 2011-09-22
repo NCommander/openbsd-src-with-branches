@@ -1285,7 +1285,7 @@ scsi_devid_pg80(struct scsi_link *link)
 		goto free;
 
 	id = malloc(sizeof(link->inqdata.vendor) +
-	    sizeof(link->inqdata.product) + len, M_WAITOK, M_TEMP);
+	    sizeof(link->inqdata.product) + len, M_TEMP, M_WAITOK);
 	memcpy(id, link->inqdata.vendor, sizeof(link->inqdata.vendor));
 	memcpy(id + sizeof(link->inqdata.vendor), link->inqdata.product,
 	    sizeof(link->inqdata.product));
