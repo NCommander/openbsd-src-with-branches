@@ -13,7 +13,7 @@ machine		hppa64
 include		"../../../conf/GENERIC"
 maxusers	80			# estimated number of users
 
-option		DEBUG
+#option		DEBUG
 option		USER_PCICONF	# user-space PCI configuration
 
 config	bsd swap generic
