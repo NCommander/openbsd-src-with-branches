@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.217 2011/07/07 19:42:55 deraadt Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.218 2011/09/19 08:06:23 okan Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 # .
@@ -1192,6 +1192,8 @@ man3
 loongson
 ..
 sgi
+..
+vax
 ..
 
 # ./usr/share/man/man3
