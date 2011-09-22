@@ -32,7 +32,6 @@
 
 #include <sys/param.h>
 #include <err.h>
-#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,7 +73,6 @@ main(int argc, char *argv[])
 		rewrite(tfs);
 
 	(void)next(argv);
-	(void)setlocale(LC_CTYPE, "");
 	display();
 	exit(exitval);
 }
