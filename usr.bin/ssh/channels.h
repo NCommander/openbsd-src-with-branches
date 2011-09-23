@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.h,v 1.106 2011/09/09 22:46:44 djm Exp $ */
+/* $OpenBSD: channels.h,v 1.107 2011/09/10 22:26:34 markus Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -267,6 +267,7 @@ int	 channel_request_rforward_cancel(const char *host, u_short port);
 int	 channel_setup_remote_fwd_listener(const char *, u_short, int *, int);
 int	 channel_cancel_rport_listener(const char *, u_short);
 int	 channel_cancel_lport_listener(const char *, u_short, int, int);
+int	 permitopen_port(const char *);
 
 /* x11 forwarding */
 
