@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.192 2011/05/06 21:34:32 djm Exp $ */
+/* $OpenBSD: readconf.c,v 1.193 2011/05/24 07:15:47 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -290,6 +290,7 @@ add_remote_forward(Options *options, const Forward *newfwd)
 	fwd->listen_port = newfwd->listen_port;
 	fwd->connect_host = newfwd->connect_host;
 	fwd->connect_port = newfwd->connect_port;
+	fwd->handle = newfwd->handle;
 	fwd->allocated_port = 0;
 }
 
