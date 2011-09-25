@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.c,v 1.103 2011/01/23 11:03:43 nicm Exp $ */
+/* $OpenBSD: tmux.c,v 1.104 2011/03/04 23:26:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -98,7 +98,9 @@ getshell(void)
 int
 checkshell(const char *shell)
 {
-	if (shell == NULL || *shell == '\0' || areshell(shell))
+	if (shell == NULL || *shell == '\0' || *shell != '/')
+		return (0);
+	if (areshell(shell))
 		return (0);
 	if (access(shell, X_OK) != 0)
 		return (0);
