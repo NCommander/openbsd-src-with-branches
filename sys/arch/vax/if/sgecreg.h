@@ -1,4 +1,4 @@
-/*	$OpenBSD: sgecreg.h,v 1.2 2003/06/02 23:27:57 millert Exp $	*/
+/*	$OpenBSD: sgecreg.h,v 1.3 2007/04/10 18:10:31 miod Exp $	*/
 /*	$NetBSD: sgecreg.h,v 1.1 1999/08/08 11:41:29 ragge Exp $	*/
 /*
  * Copyright (c) 1988 Regents of the University of California.
@@ -210,7 +210,7 @@ struct ze_tdes {
 	u_char *ze_bufaddr;		/* address of data buffer */
 };
 
-/* Receive descriptor bits */
+/* Transmit descriptor bits */
 #define ZE_TDR_OW 0x8000		/* SGEC owns this descriptor */
 #define ZE_TDES0_ES 0x8000		/* an error has occurred */
 #define ZE_TDES0_TO 0x4000		/* transmit watchdog timeout */
