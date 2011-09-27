@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.49 2009/10/14 17:19:47 sthen Exp $	*/
+/*	$OpenBSD: extern.h,v 1.50 2010/09/07 19:58:09 marco Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1996/01/13 23:25:24 pk Exp $	*/
 
 /*-
@@ -144,7 +144,6 @@ extern void finish_trace(size_t);
 extern void set_trace_flags(const char *);
 extern FILE *traceout;
 
-extern ndptr hashtab[];		/* hash table for macros etc. */
 extern stae *mstack;		/* stack of m4 machine */
 extern char *sstack;		/* shadow stack, for string space extension */
 extern FILE *active;		/* active output file pointer */

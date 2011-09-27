@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.78 2010/03/22 20:40:44 espie Exp $	*/
+/*	$OpenBSD: main.c,v 1.79 2010/09/07 19:58:09 marco Exp $	*/
 /*	$NetBSD: main.c,v 1.12 1997/02/08 23:54:49 cgd Exp $	*/
 
 /*-
@@ -56,7 +56,6 @@
 #include "extern.h"
 #include "pathnames.h"
 
-ndptr hashtab[HASHSIZE];	/* hash table for macros etc.  */
 stae *mstack;			/* stack of m4 machine         */
 char *sstack;			/* shadow stack, for string space extension */
 static size_t STACKMAX;		/* current maximum size of stack */
