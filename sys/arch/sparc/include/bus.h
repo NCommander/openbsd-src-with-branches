@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.11 2011/03/23 16:54:37 pirofti Exp $	*/
+/*	$OpenBSD: bus.h,v 1.12 2011/04/07 15:30:16 miod Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  *
@@ -45,7 +45,7 @@
 
 #include <machine/pmap.h>
 
-typedef	u_int32_t	bus_space_handle_t;
+typedef	u_long	bus_space_handle_t;
 
 /*
  * bus_space_tag_t are pointer to *modified* rom_reg structures.
@@ -60,8 +60,8 @@ typedef	struct rom_reg 	*bus_space_tag_t;
 
 #define	IS_TAG_LITTLE_ENDIAN(t)		((t)->rr_iospace & TAG_LITTLE_ENDIAN)
 
-typedef	u_int32_t	bus_addr_t;
-typedef	u_int32_t	bus_size_t;
+typedef	u_long	bus_addr_t;
+typedef	u_long	bus_size_t;
 
 /* 
  * General bus_space function set

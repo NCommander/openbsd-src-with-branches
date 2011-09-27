@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.9 2009/07/30 21:39:54 miod Exp $	*/
+/*	$OpenBSD: bus.h,v 1.10 2011/03/23 16:54:36 pirofti Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  *
@@ -38,10 +38,10 @@
 
 #include <machine/asm_macro.h>
 
-typedef	u_int32_t	bus_addr_t;
-typedef	u_int32_t	bus_size_t;
+typedef	u_long	bus_addr_t;
+typedef	u_long	bus_size_t;
 
-typedef	u_int32_t	bus_space_handle_t;
+typedef	u_long	bus_space_handle_t;
 
 struct mvme88k_bus_space_tag {
 	int	(*bs_map)(bus_addr_t, bus_size_t, int, bus_space_handle_t *);
