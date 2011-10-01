@@ -1,4 +1,4 @@
-/*	$OpenBSD: close.c,v 1.4 2003/07/31 21:48:04 deraadt Exp $	*/
+/*	$OpenBSD: close.c,v 1.5 2004/01/08 04:19:19 marc Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -148,7 +148,7 @@ main(int argc, char *argv[])
 	printf("main: connected on fd %d\n", fd);
 
 	CHECKr(pthread_attr_init(&attr));
-	CHECKe(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED));
+	CHECKr(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED));
 	printf("starting child thread\n");
 	CHECKr(pthread_create(&thread, &attr, new_thread, NULL));
 	sleep(1);
