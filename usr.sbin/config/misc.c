@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.7 2007/09/11 16:30:59 gilles Exp $	*/
+/*	$OpenBSD: misc.c,v 1.8 2009/10/27 23:59:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -26,9 +26,10 @@
  */
 
 #include <sys/types.h>
+
+#include <ctype.h>
 #include <err.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pack.c,v 1.14 2003/06/28 04:55:07 deraadt Exp $	*/
+/*	$OpenBSD: pack.c,v 1.15 2004/01/04 00:47:01 deraadt Exp $	*/
 /*	$NetBSD: pack.c,v 1.5 1996/08/31 21:15:11 mycroft Exp $	*/
 
 /*
@@ -42,8 +42,10 @@
  */
 
 #include <sys/param.h>
+
 #include <stdlib.h>
 #include <string.h>
+
 #include "config.h"
 
 /*

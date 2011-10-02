@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukcutil.c,v 1.18 2009/10/27 23:59:51 deraadt Exp $ */
+/*	$OpenBSD: ukcutil.c,v 1.19 2011/04/06 11:36:26 miod Exp $ */
 
 /*
  * Copyright (c) 1999-2001 Mats O Jansson.  All rights reserved.
@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/device.h>
+
 #include <limits.h>
 #include <nlist.h>
 #include <stdio.h>
