@@ -17,8 +17,8 @@ configfile="@nsdconfigfile@"
 # The directory where NSD binaries reside
 sbindir="@sbindir@"
 
-# how verbose is zonec run. Specify Nothing (empty string), -v or -vv.
-ZONEC_VERBOSE=-v
+# how verbose is nsd-zonec run. Specify Nothing (empty string), -v or -vv.
+ZONEC_VERBOSE=
 
 # how patch is done. Specify 1 (with use of textfiles, default) or 0 (without) 
 PATCH_STYLE=1
@@ -335,7 +335,7 @@ do_patch() {
 
 do_rebuild() {
 	lock && \
-	  ${sbindir}/zonec ${ZONEC_VERBOSE} -c ${configfile} -f ${dbfile}.$$ && \
+	  ${sbindir}/nsd-zonec ${ZONEC_VERBOSE} -c ${configfile} -f ${dbfile}.$$ && \
 	  mv ${dbfile}.$$ ${dbfile}
 	result=$?
 	unlock

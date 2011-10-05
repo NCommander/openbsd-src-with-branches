@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# $OpenBSD$
+
+daemon="/usr/sbin/ntpd"
+
+. /etc/rc.d/rc.subr
+
+pexp="ntpd: \[priv\]"
+
+rc_cmd $1

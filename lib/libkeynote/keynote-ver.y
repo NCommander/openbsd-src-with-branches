@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote-ver.y,v 1.9 2004/06/25 05:06:49 msf Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -8,7 +7,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -29,22 +28,20 @@
 %nonassoc EQ
 %start program
 %{
+
 #include <sys/types.h>
+
+#include <regex.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "header.h"
 #include "keynote.h"
-
-void kverror(char *);
-
-extern int kvlex();
-
-extern int sessid;
 %}
 %%
 
-program: /* Nothing */
-       | expr
+program: expr
        | STRING              { if (kn_add_authorizer(sessid, $1) != 0)
 				 return keynote_errno;
                                free($1);
@@ -57,13 +54,13 @@ expr: VSTRING EQ STRING      { int i = kn_add_action(sessid, $1, $3, 0);
 			       free($1);
 			       free($3);
                              }
-    | expr VSTRING EQ STRING { int i = kn_add_action(sessid, $2, $4, 0);
+    | VSTRING EQ STRING      { int i = kn_add_action(sessid, $1, $3, 0);
 
                                if (i != 0)
 				 return i;
-			       free($2);
-			       free($4);
-                             }  
+			       free($1);
+			       free($3);
+                             } expr 
 %%
 void
 kverror(char *s)

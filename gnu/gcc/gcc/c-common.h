@@ -414,7 +414,6 @@ extern int warn_unknown_pragmas; /* Tri state variable.  */
 
 extern int warn_format;
 
-
 /* C/ObjC language option variables.  */
 
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: profile.h,v 1.2 1994/10/26 08:46:41 cgd Exp $	*/
+/*	$OpenBSD: profile.h,v 1.4 1997/11/30 06:12:33 gene Exp $	*/
+/*	$NetBSD: profile.h,v 1.3 1996/05/05 06:17:55 briggs Exp $	*/
 
 #ifndef _MACHINE_PROFILE_H_
 #define _MACHINE_PROFILE_H_

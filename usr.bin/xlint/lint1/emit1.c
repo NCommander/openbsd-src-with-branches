@@ -1,3 +1,4 @@
+/*	$OpenBSD: emit1.c,v 1.7 2007/03/21 03:31:19 tedu Exp $	*/
 /*	$NetBSD: emit1.c,v 1.4 1995/10/02 17:21:28 jpo Exp $	*/
 
 /*
@@ -32,21 +33,22 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: emit1.c,v 1.4 1995/10/02 17:21:28 jpo Exp $";
+static char rcsid[] = "$OpenBSD: emit1.c,v 1.7 2007/03/21 03:31:19 tedu Exp $";
 #endif
 
 #include <ctype.h>
 
 #include "lint1.h"
 
-static	void	outtt __P((sym_t *, sym_t *));
-static	void	outfstrg __P((strg_t *));
+static	void	outtt(sym_t *, sym_t *);
+static	void	outfstrg(strg_t *);
 
 /*
  * Write type into the output buffer.
  * The type is written as a sequence of substrings, each of which describes a
  * node of type type_t
  * a node is coded as follows:
+ *	_Bool			B
  *	char			C
  *	signed char		s C
  *	unsigned char		u C
@@ -61,6 +63,12 @@ static	void	outfstrg __P((strg_t *));
  *	float			s D
  *	double			D
  *	long double		l D
+ *	float _Complex		s X
+ *	double _Complex		X
+ *	long double _Complex	l X
+ *	float _Imaginary	s J
+ *	double _Imaginary	J
+ *	long double _Imaginary	l J
  *	void			V
  *	*			P
  *	[n]			A n
@@ -82,8 +90,7 @@ static	void	outfstrg __P((strg_t *));
  * and 'v' (for volatile)
  */
 void
-outtype(tp)
-	type_t	*tp;
+outtype(type_t *tp)
 {
 	int	t, s, na;
 	sym_t	*arg;
@@ -93,6 +100,7 @@ outtype(tp)
 		if ((ts = tp->t_tspec) == INT && tp->t_isenum)
 			ts = ENUM;
 		switch (ts) {
+		case BOOL:	t = 'B';	s = '\0';	break;
 		case CHAR:	t = 'C';	s = '\0';	break;
 		case SCHAR:	t = 'C';	s = 's';	break;
 		case UCHAR:	t = 'C';	s = 'u';	break;
@@ -107,6 +115,12 @@ outtype(tp)
 		case FLOAT:	t = 'D';	s = 's';	break;
 		case DOUBLE:	t = 'D';	s = '\0';	break;
 		case LDOUBLE:	t = 'D';	s = 'l';	break;
+		case COMPLEX:	t = 'X';	s = 's';	break;
+		case DCOMPLEX:	t = 'X';	s = '\0';	break;
+		case LDCOMPLEX:	t = 'X';	s = 'l';	break;
+		case IMAGINARY:	 t = 'J';	s = 's';	break;
+		case DIMAGINARY: t = 'J';	s = '\0';	break;
+		case LDIMAGINARY:t = 'J';	s = 'l';	break;
 		case VOID:	t = 'V';	s = '\0';	break;
 		case PTR:	t = 'P';	s = '\0';	break;
 		case ARRAY:	t = 'A';	s = '\0';	break;
@@ -153,8 +167,7 @@ outtype(tp)
  * it uses its own output buffer for conversion
  */
 const char *
-ttos(tp)
-	type_t	*tp;
+ttos(type_t *tp)
 {
 	static	ob_t	tob;
 	ob_t	tmp;
@@ -184,8 +197,7 @@ ttos(tp)
  * refers to this tag, this typename is written
  */
 static void
-outtt(tag, tdef)
-	sym_t	*tag, *tdef;
+outtt(sym_t *tag, sym_t *tdef)
 {
 	if (tag->s_name != unnamed) {
 		outint(1);
@@ -206,10 +218,7 @@ outtt(tag, tdef)
  * not here
  */
 void
-outsym(sym, sc, def)
-        sym_t	*sym;
-	scl_t	sc;
-	def_t	def;
+outsym(sym_t *sym, scl_t sc, def_t def)
 {
 	/*
 	 * Static function declarations must also be written to the output
@@ -277,10 +286,7 @@ outsym(sym, sc, def)
  * they are called with proper argument types
  */
 void
-outfdef(fsym, posp, rval, osdef, args)
-	sym_t	*fsym, *args;
-	pos_t	*posp;
-	int	rval, osdef;
+outfdef(sym_t *fsym, pos_t *posp, int rval, int osdef, sym_t *args)
 {
 	int	narg;
 	sym_t	*arg;
@@ -376,9 +382,7 @@ outfdef(fsym, posp, rval, osdef, args)
  * (casted to void)
  */
 void
-outcall(tn, rvused, rvdisc)
-	tnode_t	*tn;
-	int	rvused, rvdisc;
+outcall(tnode_t *tn, int rvused, int rvdisc)
 {
 	tnode_t	*args, *arg;
 	int	narg, n, i;
@@ -416,7 +420,7 @@ outcall(tn, rvused, rvdisc)
 			if (isityp(t = arg->tn_type->t_tspec)) {
 				/*
 				 * XXX it would probably be better to
-				 * explizitly test the sign
+				 * explicitly test the sign
 				 */
 				if ((q = arg->tn_val->v_quad) == 0) {
 					/* zero constant */
@@ -430,13 +434,17 @@ outcall(tn, rvused, rvdisc)
 				}
 				outint(n);
 			}
-		} else if (arg->tn_op == AMPER &&
-			   arg->tn_left->tn_op == STRING &&
-			   arg->tn_left->tn_strg->st_tspec == CHAR) {
-			/* constant string, write all format specifiers */
-			outchar('s');
-			outint(n);
-			outfstrg(arg->tn_left->tn_strg);
+		} else {
+			if (arg->tn_op == CVT && !arg->tn_cast)
+				arg = arg->tn_left;
+			if (arg->tn_op == AMPER &&
+			    arg->tn_left->tn_op == STRING &&
+			    arg->tn_left->tn_strg->st_tspec == CHAR) {
+				/* constant string, write format specifiers */
+				outchar('s');
+				outint(n);
+				outfstrg(arg->tn_left->tn_strg);
+			}
 		}
 
 	}
@@ -460,11 +468,10 @@ outcall(tn, rvused, rvdisc)
 
 /*
  * extracts potential format specifiers for printf() and scanf() and
- * writes them, enclosed in "" and qouted if necessary, to the output buffer
+ * writes them, enclosed in "" and quoted if necessary, to the output buffer
  */
 static void
-outfstrg(strg)
-	strg_t	*strg;
+outfstrg(strg_t *strg)
 {
 	int	c, oc, first;
 	u_char	*cp;
@@ -496,7 +503,7 @@ outfstrg(strg)
 		}
 
 		/* numeric field width */
-		while (c != '\0' && isdigit(c)) {
+		while (isdigit(c)) {
 			outqchar(c);
 			c = *cp++;
 		}
@@ -508,7 +515,7 @@ outfstrg(strg)
 				outqchar(c);
 				c = *cp++;
 			} else {
-				while (c != '\0' && isdigit(c)) {
+				while (isdigit(c)) {
 					outqchar(c);
 					c = *cp++;
 				}
@@ -563,8 +570,7 @@ outfstrg(strg)
  * writes a record if sym was used
  */
 void
-outusg(sym)
-	sym_t	*sym;
+outusg(sym_t *sym)
 {
 	/* reset buffer */
 	outclr();

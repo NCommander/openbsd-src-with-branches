@@ -348,10 +348,6 @@ static int mmap_static_handler(request_rec *r)
 	    return errstatus;
     }
 
-#ifdef CHARSET_EBCDIC
-    /* check Content Type to see if ebcdic conversion is appropriate */
-    ap_checkconv(r);
-#endif 	
     rangestatus = ap_set_byterange(r);
     ap_send_http_header(r);
 
@@ -360,7 +356,7 @@ static int mmap_static_handler(request_rec *r)
 	    ap_send_mmap (match->mm, r, 0, match->finfo.st_size);
 	}
 	else {
-	    long offset, length;
+	    off_t offset, length;
 	    while (ap_each_byterange(r, &offset, &length)) {
 		ap_send_mmap(match->mm, r, offset, length);
 	    }

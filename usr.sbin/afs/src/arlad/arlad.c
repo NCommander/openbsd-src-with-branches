@@ -174,6 +174,13 @@ arla_start (char *device_file, const char *cache_dir)
     if (fork_flag)
 	kill(getppid(), SIGUSR1);
     
+    if (pw) {
+	if (setgroups(1, &pw->pw_gid) == -1 ||
+	    setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) == -1 ||
+	    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) == -1)
+		arla_err (1, ADEBERROR, errno, "revoke");
+    }
+
     LWP_WaitProcess ((char *)arla_start);
     abort ();
 }
@@ -243,7 +250,6 @@ main (int argc, char **argv)
     int optind = 0;
     int ret;
 
-    set_progname (argv[0]);
     tzset();
     srand(time(NULL));
 

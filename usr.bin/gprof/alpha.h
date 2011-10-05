@@ -1,8 +1,13 @@
-/*	$NetBSD: alpha.h,v 1.1 1995/04/19 07:24:21 cgd Exp $	*/
+/*	$OpenBSD: alpha.h,v 1.4 2002/05/08 16:46:35 art Exp $	*/
+/*	$NetBSD: sparc.h,v 1.3 1995/04/19 07:16:25 cgd Exp $	*/
 
 /*-
- * Copyright (c) 1991, 1993
+ * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
+ *
+ * This software was developed by the Computer Systems Engineering group
+ * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
+ * contributed to Berkeley.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,13 +33,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)hp300.h	8.1 (Berkeley) 6/6/93
+ *	@(#)sparc.h	8.1 (Berkeley) 6/6/93
  */
 
-    /*
-     *	offset (in bytes) of the code from the entry address of a routine.
-     *	(see asgnsamples for use and explanation.)
-     */
+/*
+ * offset (in bytes) of the code from the entry address of a routine.
+ * (see asgnsamples for use and explanation.)
+ */
 #define OFFSET_OF_CODE	0
 #define	UNITS_TO_CODE	(OFFSET_OF_CODE / sizeof(UNIT))
 

@@ -1,9 +1,14 @@
-#
-#The MIME name of this charset. 
+# This file has been modified for lynx (see README.tables)
+
+#The MIME name of this charset.
 Mcp866
 
 #Name as a Display Charset (used on Options screen)
-ODosCyrillic (cp866)
+OCyrillic (cp866)
+
+#Codepage number
+C866
+
 #
 #    Name:     cp866_DOSCyrillicRussian to Unicode table
 #    Unicode version: 2.0

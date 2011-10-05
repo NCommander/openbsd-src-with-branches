@@ -1,43 +1,35 @@
 #	from: @(#)Makefile	8.1 (Berkeley) 6/10/93
-#	     $Id: Makefile,v 1.5 1995/05/17 03:49:16 rahn Exp rahn $
-
-RELOC=0x3F0000 
+#	$OpenBSD: Makefile,v 1.15 2006/01/10 07:20:08 deraadt Exp $
 
 S=	${.CURDIR}/../../../..
-DEFS= -DSTANDALONE -DCOMPAT_NOLABEL # -DROMPRF
-INCPATH=-I${.CURDIR} -I${.CURDIR}/../../include -I${S} -I${S}/lib/libsa
-CFLAGS=	-O2 ${INCPATH} ${DEFS} ${COPTS}
-CLEANFILES+=sdboot bootsd bootsd.bug
+DEFS= 
+INCPATH=-I${.CURDIR} -I${.CURDIR}/../libsa -I${.CURDIR}/../libbug \
+	-I${.CURDIR}/../../include -I${S} -I${S}/lib/libsa
+CFLAGS+=-O2 ${INCPATH} ${DEFS} ${COPTS}
+LDFLAGS=-N -T ${STAGE2_RELOC}
+CLEANFILES+=bootsd
 
-#.PATH: ${S}/arch/${MACHINE_ARCH}/${MACHINE_ARCH}
-#.PATH: ${S}/lib/libsa
+.include "${S}/arch/mvme68k/stand/bugcrt/Makefile.inc"
+.include "${S}/arch/mvme68k/stand/libbug/Makefile.inc"
+.include "${S}/arch/mvme68k/stand/libsa/Makefile.inc"
+.include "${S}/arch/mvme68k/stand/libz/Makefile.inc"
 
-.include "${S}/arch/${MACHINE}/stand/libsa/Makefile.inc"
-.include "${S}/arch/${MACHINE}/stand/libbug/Makefile.inc"
-.include "${S}/arch/${MACHINE}/stand/bugcrt/Makefile.inc"
-.include "${S}/arch/${MACHINE}/stand/wrtvid/Makefile.inc"
+SRCS=   boot.c conf.c version.c
 
-SRCS=   boot.c filesystem.c bugdev.c version.c
-
-LIBS=	${LIBSA} ${LIBBUG}
+LIBS=	${LIBSA} ${LIBBUG} ${LIBZ} 
 
 OBJS= ${SRCS:N*.h:R:S/$/.o/g}
 
-BOOTS=	bootsd sdboot
+BOOTS=	bootsd 
 ALL=	${BOOTS} 
 
 all: ${ALL}
 
-devopen.o machdep.o: Makefile
-
-bootsd.bug:	${OBJS} ${BUGCRT} ${LIBS}
-	${LD} -s -N -T ${RELOC} ${BUGCRT} ${OBJS} ${LIBS} -o $@
-	@size bootsd.bug
-
-bootsd sdboot: bootsd.bug ${WRTVID}
-	${WRTVID} bootsd.bug
-
+bootsd: ${OBJS} ${BUGCRT} ${LIBS}
+	${LD} ${LDFLAGS} -o $@ \
+		${BUGCRT} ${OBJS} ${LIBS} `cc -print-libgcc-file-name`
+#${SRTOBJ}
 install:
-	install -c -m 555 -g bin -o bin ${BOOTS} ${DESTDIR}${MDEC_DIR}
+	install ${INSTALL_STRIP} -c -m 555 -g bin -o bin ${BOOTS} ${DESTDIR}${MDEC_DIR}
 
 .include <bsd.prog.mk>

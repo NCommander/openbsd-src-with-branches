@@ -1,4 +1,4 @@
-/*	$NetBSD: exec.h,v 1.5 1995/03/28 18:15:35 jtc Exp $	*/
+/*	$OpenBSD: exec.h,v 1.7 2001/01/22 14:51:04 art Exp $ */
 
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
@@ -26,23 +26,5 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _MACHINE_EXEC_H_
-#define _MACHINE_EXEC_H_
 
-#define __LDPGSZ	8192
-
-/* Relocation format. */
-struct relocation_info_m68k {
-	int r_address;			/* offset in text or data segment */
-	unsigned int r_symbolnum : 24,	/* ordinal number of add symbol */
-			 r_pcrel :  1,	/* 1 if value should be pc-relative */
-			r_length :  2,	/* log base 2 of value's width */
-			r_extern :  1,	/* 1 if need to add symbol to value */
-		       r_baserel :  1,	/* linkage table relative */
-		      r_jmptable :  1,	/* relocate to jump table */
-		      r_relative :  1,	/* load address relative */
-			  r_copy :  1;	/* run time copy */
-};
-#define relocation_info	relocation_info_m68k
-
-#endif  /* _MACHINE_EXEC_H_ */
+#include <m68k/exec.h>

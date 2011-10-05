@@ -1,7 +1,11 @@
-#	$NetBSD: Makefile,v 1.7 1995/03/18 14:56:21 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/5/93
+#	$OpenBSD: Makefile,v 1.10 2009/11/22 22:00:24 claudio Exp $
+
+.PATH:	${.CURDIR}/../bioctl
 
 PROG=	ifconfig
+SRCS=	ifconfig.c brconfig.c pbkdf2.c
 MAN=	ifconfig.8
+
+CPPFLAGS+=-DINET6 -I${.CURDIR}/../bioctl
 
 .include <bsd.prog.mk>

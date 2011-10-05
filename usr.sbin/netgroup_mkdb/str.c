@@ -29,10 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char *rcsid = "$Id: str.c,v 1.2 1995/04/24 13:25:55 cgd Exp $";
-#endif
-
 /*
  * Counted strings
  */
@@ -46,8 +42,7 @@ static char *rcsid = "$Id: str.c,v 1.2 1995/04/24 13:25:55 cgd Exp $";
  * str_init(): Initialize string
  */
 void
-str_init(s)
-	struct string  *s;
+str_init(struct string *s)
 {
 	s->s_str = NULL;
 	s->s_len = 0;
@@ -58,18 +53,15 @@ str_init(s)
  * str_append(): Append string allocating buffer as necessary
  */
 void
-str_append(buf, str, del)
-	struct string  *buf;
-	const char     *str;
-	int             del;
+str_append(struct string *buf, const char *str, int del)
 {
 	size_t          len = strlen(str) + 1;
 
 	if (buf->s_str == NULL)
 		buf->s_str = emalloc(len);
 	else {
-		buf->s_str = erealloc(buf->s_str, buf->s_len + len +
-						  (del ? 2 : 1));
+		buf->s_str = erealloc(buf->s_str, buf->s_len +
+		    len + (del ? 2 : 1));
 		if (del)
 			buf->s_str[buf->s_len++] = del;
 	}
@@ -82,10 +74,7 @@ str_append(buf, str, del)
  * str_prepend(): Prepend string allocating buffer as necessary
  */
 void
-str_prepend(buf, str, del)
-	struct string  *buf;
-	const char     *str;
-	int             del;
+str_prepend(struct string *buf, const char *str, int del)
 {
 	char           *ptr, *sptr;
 	size_t          len = strlen(str) + 1;
@@ -110,8 +99,7 @@ str_prepend(buf, str, del)
  * str_free(): Free a string
  */
 void
-str_free(s)
-	struct string  *s;
+str_free(struct string *s)
 {
 	free(s->s_str);
 	s->s_str = NULL;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: help.c,v 1.4 2004/07/10 07:26:22 deraadt Exp $	*/
 /*	$NetBSD: help.c,v 1.2 1995/03/21 12:14:38 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +33,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)help.c	8.1 (Berkeley) 6/11/93";
-#else
-static char rcsid[] = "$NetBSD: help.c,v 1.2 1995/03/21 12:14:38 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <curses.h>
 #include <stdio.h>
 
@@ -51,7 +40,7 @@ static char rcsid[] = "$NetBSD: help.c,v 1.2 1995/03/21 12:14:38 cgd Exp $";
 #include "extern.h"
 
 int
-help()
+help(void)
 {
 	extern int nlines;
 	int eof, i;
@@ -62,7 +51,7 @@ help()
 	if ((fp = fopen(HELPFILE, "r")) == NULL)
 		return(-1);
 	win = newwin(0, 0, 0, 0);
-	clearok(win, 1);
+	clearok(win, TRUE);
 
 	eof = 0;
 	if (ungetc(getc(fp), fp) == EOF) {
@@ -101,7 +90,8 @@ help()
 		inputch();
 	}
 	delwin(win);
-	clearok(stdscr, 1);
+	clearok(stdscr, TRUE);
+	touchwin(stdscr);
 	refresh();
 	return(0);
 }

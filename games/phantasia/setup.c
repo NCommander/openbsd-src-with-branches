@@ -1,3 +1,4 @@
+/*	$OpenBSD: setup.c,v 1.10 2010/12/15 06:40:39 tedu Exp $	*/
 /*	$NetBSD: setup.c,v 1.4 1995/04/24 12:24:41 cgd Exp $	*/
 
 /*
@@ -5,8 +6,12 @@
  */
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <stdlib.h>
+#include <sys/types.h>
 #include "include.h"
+#include <fcntl.h>
+
+void Error(char *, char *);
+
 /**/
 /************************************************************************
 /
@@ -20,8 +25,8 @@
 /
 / RETURN VALUE: none
 /
-/ MODULES CALLED: time(), exit(), stat(), Error(), creat(), close(), fopen(), 
-/	fgets(), floor(), srandom(), umask(), drandom(), strcpy(), getuid(), 
+/ MODULES CALLED: time(), exit(), stat(), Error(), open(), close(), fopen(), 
+/	fgets(), floor(), srandomdev(), umask(), strlcpy(),
 /	unlink(), fwrite(), fclose(), sscanf(), printf(), strlen(), fprintf()
 /
 / GLOBAL INPUTS: Curmonster, _iob[], Databuf[], *Monstfp, Enrgyvoid
@@ -37,7 +42,7 @@
 /	put in these files.
 /	Also, the monster binary data base is created here.
 /
-/************************************************************************/
+*************************************************************************/
 
 static char *files[] = {		/* all files to create */
 	_PATH_MONST,
@@ -58,14 +63,14 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	register char	**filename;	/* for pointing to file names */
-	register int	fd;		/* file descriptor */
+	char	**filename;	/* for pointing to file names */
+	int	fd;		/* file descriptor */
 	FILE	*fp;			/* for opening files */
 	struct stat	fbuf;		/* for getting files statistics */
 	int ch;
 	char path[MAXPATHLEN], *prefix;
 
-	while ((ch = getopt(argc, argv, "m:")) != EOF)
+	while ((ch = getopt(argc, argv, "m:")) != -1)
 		switch(ch) {
 		case 'm':
 			monsterfile = optarg;
@@ -77,7 +82,7 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-    srandom((unsigned) time(NULL));	/* prime random numbers */
+    srandomdev();	/* prime random numbers */
 
     umask(0117);		/* only owner can read/write created files */
 
@@ -99,12 +104,19 @@ main(argc, argv)
 		continue;
 		}
 
+	    if (!strcmp(*filename, _PATH_SCORE))
+		/* do not reset score file if it already exists */
+		{
+		++filename;
+		continue;
+		}
+
 	    if (unlink(path) < 0)
 		Error("Cannot unlink %s.\n", path);
 		/*NOTREACHED*/
 	    }
 
-	if ((fd = creat(path, 0660)) < 0)
+	if ((fd = open(path, O_CREAT | O_TRUNC | O_WRONLY, 0660)) < 0)
 	    Error("Cannot create %s.\n", path);
 	    /*NOTREACHED*/
 
@@ -155,49 +167,13 @@ main(argc, argv)
 		    &Curmonster.m_experience, &Curmonster.m_treasuretype,
 		    &Curmonster.m_type, &Curmonster.m_flock);
 		Databuf[24] = '\0';
-		strcpy(Curmonster.m_name, Databuf);
-		fwrite((char *) &Curmonster, SZ_MONSTERSTRUCT, 1, Monstfp);
+		strlcpy(Curmonster.m_name, Databuf, sizeof Curmonster.m_name);
+		fwrite(&Curmonster, SZ_MONSTERSTRUCT, 1, Monstfp);
 		}
 	    fclose(fp);
 	    fclose(Monstfp);
 	    }
 	}
-
-#ifdef MAKE_INSTALLS_THIS_AND_DOESNT_WANT_TO_HEAR_ABOUT_IT
-    /* write to motd file */
-    printf("One line 'motd' ? ");
-    if (fgets(Databuf, SZ_DATABUF, stdin) == NULL)
-	Databuf[0] = '\0';
-    snprintf(path, sizeof(path), "%s%s", prefix?prefix:"", _PATH_MOTD);
-    if ((fp = fopen(path, "w")) == NULL)
-	Error("Cannot update %s.\n", path);
-    else
-	{
-	fwrite(Databuf, sizeof(char), strlen(Databuf), fp);
-	fclose(fp);
-	}
-
-    /* report compile-time options */
-    printf("Compiled options:\n\n");
-    printf("Phantasia destination directory:  %s\n", _PATH_PHANTDIR);
-    printf("Wizard: root UID: 0\n");
-
-#ifdef BSD41
-    printf("Compiled for BSD 4.1\n");
-#endif
-
-#ifdef BSD42
-    printf("Compiled for BSD 4.2\n");
-#endif
-
-#ifdef SYS3
-    printf("Compiled for System III\n");
-#endif
-
-#ifdef SYS5
-    printf("Compiled for System V\n");
-#endif
-#endif
 
     exit(0);
     /*NOTREACHED*/
@@ -226,16 +202,17 @@ main(argc, argv)
 / DESCRIPTION:
 /	Print an error message, then exit.
 /
-/************************************************************************/
+*************************************************************************/
 
+void
 Error(str, file)
-char	*str, *file;
+	char	*str, *file;
 {
-    fprintf(stderr, "Error: ");
-    fprintf(stderr, str, file);
-    perror(file);
-    exit(1);
-    /*NOTREACHED*/
+	fprintf(stderr, "Error: ");
+	fprintf(stderr, str, file);
+	perror(file);
+	exit(1);
+	/* NOTREACHED */
 }
 /**/
 /************************************************************************
@@ -258,7 +235,7 @@ char	*str, *file;
 /
 / DESCRIPTION: 
 /
-/************************************************************************/
+*************************************************************************/
 
 double
 drandom()

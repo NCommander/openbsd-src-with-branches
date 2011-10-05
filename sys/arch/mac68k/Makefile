@@ -1,45 +1,44 @@
-#	$NetBSD: Makefile,v 1.2 1994/10/26 08:45:48 cgd Exp $
+#	$OpenBSD: Makefile,v 1.8 2010/11/03 20:08:03 deraadt Exp $
 
-#	@(#)Makefile	7.3 (Berkeley) 6/9/91
-S=${BSDSRCDIR}/sys
-COMM=	$S/vm/*.[ch] $S/ufs/*/*.[ch] $S/sys/*.h $S/compat/sunos/*.[ch] \
-	$S/isofs/*/*.[ch] \
-	$S/nfs/*.[ch] $S/netns/*.[ch] $S/netiso/*.[ch] \
-	$S/netiso/xebec/*.[ch] $S/netinet/*.[ch] $S/netccitt/*.[ch] \
-	$S/net/*.[ch] $S/miscfs/*/*.[ch] $S/kern/*.[ch] $S/dev/*.[ch] \
-	$S/scsi/*.[ch] $S/lib/libkern/arch/m68k/*.[ch] $S/lib/libkern/*.[ch]
+S=	${.CURDIR}/../..
+KFILE=	GENERIC
+.if exists(conf/GENERIC.MP)
+KFILE=	GENERIC.MP
+.endif
+TDIRS=	${_arch} include pci isa eisa
+TAGS=	${.CURDIR}/tags
 
-# Makefile for mac68k tags file
+NOPROG=
+NOMAN=
+SUBDIR=
 
-all:
-	@echo "make tags or links only"
-
-TMAC68K=	$S/arch/mac68k/tags
-SMAC68K=	$S/arch/m68k/m68k/*.c $S/arch/m68k/include/*.h \
-		$S/arch/mac68k/mac68k/*.[ch] $S/arch/mac68k/include/*.h \
-		$S/arch/mac68k/dev/*.[ch]
-AMAC68K=	$S/arch/m68k/m68k/*.s $S/arch/mac68k/mac68k/*.s
-
-# Directories in which to place mac68k tags links
-DMAC68K=	mac68k dev include
-
-TAGS:
-	-etags -dt ${COMM} ${SMAC68K} ${AMAC68K}
-	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${AMAC68K} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
-	    >> ${TMAC68K}/tags
-
-tags:
-	-ctags -dtf ${TMAC68K} ${COMM} ${SMAC68K}
-	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${AMAC68K} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
-	    >> ${TMAC68K}
-	sort -o ${TMAC68K} ${TMAC68K}
+# config the fattest kernel we can find into a temporary dir
+# to create a Makefile.  Then use make to pull some variables
+# out and push them into the sub-shell to expand the paths,
+# and finally run ctags.
+tags::
+	TDIR=`mktemp -d /tmp/_tagXXXXXXXXXX` || exit 1; \
+	eval "S=${S}" && \
+	config -s ${S} -b $${TDIR} ${.CURDIR}/conf/${KFILE} && \
+	eval "_arch=\"`make -V _arch -f $${TDIR}/Makefile`\"" && \
+	eval "_mach=\"`make -V _mach -f $${TDIR}/Makefile`\"" && \
+	eval "_machdir=\$S/arch/$${_mach}" && \
+	eval "_archdir=\$S/arch/$${_arch}" && \
+	eval "HFILES=\"`find $S \( -path $S/'arch' -o -path $S/stand -o -path $S/lib/libsa -o -path $S'/lib/libkern/arch' \) -prune -o -name '*.h'; find $${_machdir} $${_archdir} $S/lib/libkern/arch/$${_mach} \( -name boot -o -name stand \) -prune -o -name '*.h'`\"" && \
+	eval "SFILES=\"`make -V SFILES -f $${TDIR}/Makefile`\"" && \
+	eval "CFILES=\"`make -V CFILES -f $${TDIR}/Makefile`\"" && \
+	eval "AFILES=\"`make -V AFILES -f $${TDIR}/Makefile`\"" && \
+	ctags -wd -f ${TAGS} $${CFILES} $${HFILES} && \
+	egrep "^[_A-Z]*ENTRY[_A-Z]*\(.*\)" $${SFILES} $${AFILES} | \
+	    sed "s;\\([^:]*\\):\\([^(]*\\)(\\([^, )]*\\)\\(.*\\);\\3	\\1	/^\\2(\\3\\4$$/;" \
+	    >> ${TAGS} && \
+	sort -o ${TAGS} ${TAGS} && \
+	rm -rf $${TDIR}
 
 links:
-	-for i in ${DMAC68K}; do \
-	    rm -f $$i/tags; rm -f $$i/TAGS ; \
-	    ln -s ../tags $$i/tags; ln -s ../TAGS $$i/TAGS; done
+	-for i in conf ${TDIRS}; do \
+	    (cd $$i && rm -f tags; ln -s tags tags); done
+
+obj:	_SUBDIRUSE
 
 .include <bsd.prog.mk>
-

@@ -1,8 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: tag.c,v 1.3 2011/03/31 09:19:35 sobrado Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Network Security
- *	Technologies, Inc.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -152,32 +145,7 @@ tag_pkt(struct tag_list *l, u_long pktlen, u_int8_t *pkt)
 }
 
 void
-tag_show(struct tag_list *l)
-{
-	struct tag_node *p;
-	int i;
-
-	for (p = LIST_FIRST(&l->thelist); p; p = LIST_NEXT(p, next)) {
-		printf("\ttag type=0x%04x, length=%d", p->type, p->len);
-		for (i = 0; i < p->len; i++)
-			printf("%c%02x", (i == 0) ? ' ' : ':', p->val[i]);
-		printf("\n");
-	}
-}
-
-void
 tag_hton(struct tag_list *l)
-{
-	struct tag_node *p;
-
-	for (p = LIST_FIRST(&l->thelist); p; p = LIST_NEXT(p, next)) {
-		p->len = htons(p->len);
-		p->type = htons(p->type);
-	}
-}
-
-void
-tag_ntoh(struct tag_list *l)
 {
 	struct tag_node *p;
 

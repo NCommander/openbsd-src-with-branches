@@ -12,9 +12,10 @@ open STDOUT,"| $^X ${dir}perlasm/x86_64-xlate.pl $flavour $output";
 if ($win64)	{ $arg1="%rcx"; $arg2="%rdx"; }
 else		{ $arg1="%rdi"; $arg2="%rsi"; }
 print<<___;
+#include <machine/asm.h>
 .extern		OPENSSL_cpuid_setup
 .section	.init
-	call	OPENSSL_cpuid_setup
+	call	PIC_PLT(OPENSSL_cpuid_setup)
 
 .text
 

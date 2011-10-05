@@ -1,30 +1,45 @@
+/* $OpenBSD$ */
+
+/****************************************************************************
+ * Copyright (c) 1998-2003,2004 Free Software Foundation, Inc.              *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author:  Juergen Pfeifer, 1995,1997                                    *
+ ****************************************************************************/
 
 /***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
-
-/***************************************************************************
-* Module menu_attribs                                                      *
+* Module m_attribs                                                         *
 * Control menus display attributes                                         *
 ***************************************************************************/
 
 #include "menu.priv.h"
+
+MODULE_ID("$Id: m_attribs.c,v 1.14 2004/12/11 23:29:12 tom Exp $")
 
 /* Macro to redraw menu if it is posted and changed */
 #define Refresh_Menu(menu) \
@@ -36,8 +51,9 @@
 
 /* "Template" macro to generate a function to set a menus attribute */
 #define GEN_MENU_ATTR_SET_FCT( name ) \
-int set_menu_ ## name (MENU * menu, chtype attr)\
+NCURSES_IMPEXP int NCURSES_API set_menu_ ## name (MENU * menu, chtype attr)\
 {\
+   T((T_CALLED("set_menu_" #name "(%p,%s)"), menu, _traceattr(attr)));\
    if (!(attr==A_NORMAL || (attr & A_ATTRIBUTES)==attr))\
       RETURN(E_BAD_ARGUMENT);\
    if (menu && ( menu -> name != attr))\
@@ -49,11 +65,12 @@ int set_menu_ ## name (MENU * menu, chtype attr)\
    RETURN(E_OK);\
 }
 
-/* "Template" macro to generate a function to get a menus attribute */
+/* "Template" macro to generate a function to get a menu's attribute */
 #define GEN_MENU_ATTR_GET_FCT( name ) \
-chtype menu_ ## name (const MENU * menu)\
+NCURSES_IMPEXP chtype NCURSES_API menu_ ## name (const MENU * menu)\
 {\
-   return (Normalize_Menu( menu ) -> name);\
+   T((T_CALLED("menu_" #name "(%p)"), menu));\
+   returnAttr(Normalize_Menu( menu ) -> name);\
 }
 
 /*---------------------------------------------------------------------------
@@ -61,14 +78,14 @@ chtype menu_ ## name (const MENU * menu)\
 |   Function      :  int set_menu_fore(MENU *menu, chtype attr)
 |   
 |   Description   :  Set the attribute for selectable items. In single-
-|                    valued menus thiis is used to highlight the current
+|                    valued menus this is used to highlight the current
 |                    item ((i.e. where the cursor is), in multi-valued
 |                    menus this is used to highlight the selected items.
 |
 |   Return Values :  E_OK              - success
 |                    E_BAD_ARGUMENT    - an invalid value has been passed   
 +--------------------------------------------------------------------------*/
-GEN_MENU_ATTR_SET_FCT( fore )
+GEN_MENU_ATTR_SET_FCT(fore)
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -80,7 +97,7 @@ GEN_MENU_ATTR_SET_FCT( fore )
 |
 |   Return Values :  Attribute value
 +--------------------------------------------------------------------------*/
-GEN_MENU_ATTR_GET_FCT( fore )
+GEN_MENU_ATTR_GET_FCT(fore)
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -92,7 +109,7 @@ GEN_MENU_ATTR_GET_FCT( fore )
 |   Return Values :  E_OK             - success  
 |                    E_BAD_ARGUMENT   - an invalid value has been passed
 +--------------------------------------------------------------------------*/
-GEN_MENU_ATTR_SET_FCT( back )
+GEN_MENU_ATTR_SET_FCT(back)
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -103,7 +120,7 @@ GEN_MENU_ATTR_SET_FCT( back )
 |
 |   Return Values :  Attribute value
 +--------------------------------------------------------------------------*/
-GEN_MENU_ATTR_GET_FCT( back )
+GEN_MENU_ATTR_GET_FCT(back)
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -114,7 +131,7 @@ GEN_MENU_ATTR_GET_FCT( back )
 |   Return Values :  E_OK             - success
 |                    E_BAD_ARGUMENT   - an invalid value has been passed    
 +--------------------------------------------------------------------------*/
-GEN_MENU_ATTR_SET_FCT( grey )
+GEN_MENU_ATTR_SET_FCT(grey)
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -124,46 +141,5 @@ GEN_MENU_ATTR_SET_FCT( grey )
 |
 |   Return Values :  Attribute value
 +--------------------------------------------------------------------------*/
-GEN_MENU_ATTR_GET_FCT( grey )
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int set_menu_pad(MENU *menu, int pad)
-|   
-|   Description   :  Set the character to be used to separate the item name
-|                    from its description. This must be a printable 
-|                    character.
-|
-|   Return Values :  E_OK              - success
-|                    E_BAD_ARGUMENT    - an invalid value has been passed
-+--------------------------------------------------------------------------*/
-int set_menu_pad(MENU *menu, int pad)
-{
-  bool do_refresh = !(menu);
-
-  if (!isprint((unsigned char)pad))
-    RETURN(E_BAD_ARGUMENT);
-  
-  Normalize_Menu( menu );
-  menu->pad = pad;
-  
-  if (do_refresh)
-      Refresh_Menu( menu );
-
-  RETURN(E_OK);
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int menu_pad(const MENU *menu)
-|   
-|   Description   :  Return the value of the padding character
-|
-|   Return Values :  The pad character
-+--------------------------------------------------------------------------*/
-int menu_pad(const MENU * menu)
-{
-  return (Normalize_Menu( menu ) -> pad);
-}
-
+GEN_MENU_ATTR_GET_FCT(grey)
 /* m_attribs.c ends here */

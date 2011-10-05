@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,9 +9,14 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: strl.c,v 1.25 2001/08/27 13:08:22 ca Exp $")
+SM_RCSID("@(#)$Sendmail: strl.c,v 1.31 2002/01/20 01:41:25 gshapiro Exp $")
 #include <sm/config.h>
 #include <sm/string.h>
+
+/*
+**  Notice: this file is used by libmilter. Please try to avoid
+**	using libsm specific functions.
+*/
 
 /*
 **  XXX the type of the length parameter has been changed
@@ -115,7 +120,7 @@ sm_strlcat(dst, src, size)
 	else
 		return j + strlen(src + i);
 }
-/*
+/*
 **  SM_STRLCAT2 -- append two strings to dst obeying length and
 **		'\0' terminate it
 **
@@ -181,7 +186,7 @@ sm_strlcat2(dst, src1, src2, len)
 		return j + strlen(src2 + i);
 }
 
-/*
+/*
 **  SM_STRLCPYN -- concatenate n strings and assign the result to dst
 **		while obeying length and '\0' terminate it
 **
@@ -224,6 +229,7 @@ sm_strlcpyn(dst, len, n, va_alist)
 		i = 0;
 		while (n-- > 0)
 			i += strlen(SM_VA_ARG(ap, char *));
+		SM_VA_END(ap);
 		return i;
 	}
 
@@ -246,9 +252,11 @@ sm_strlcpyn(dst, len, n, va_alist)
 			j += strlen(str + i);
 			while (n-- > 0)
 				j += strlen(SM_VA_ARG(ap, char *));
+			SM_VA_END(ap);
 			return j;
 		}
 	}
+	SM_VA_END(ap);
 
 	dst[j] = '\0';	/* terminate dst; there is space since j < len */
 	return j;

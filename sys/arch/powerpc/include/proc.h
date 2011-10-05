@@ -1,3 +1,4 @@
+/*	$OpenBSD: proc.h,v 1.4 2006/04/17 20:44:43 miod Exp $	*/
 /*	$NetBSD: proc.h,v 1.1 1996/09/30 16:34:31 ws Exp $	*/
 
 /*-
@@ -31,9 +32,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef	_POWERPC_PROC_H_
+#define	_POWERPC_PROC_H_
+
 /*
  * Machine-dependent part of the proc structure
  */
 struct mdproc {
-	int dummy;
+	__volatile int md_astpending;
 };
+
+#endif	/* _POWERPC_PROC_H_ */

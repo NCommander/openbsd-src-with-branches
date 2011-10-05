@@ -382,7 +382,7 @@ IOMGR(char *dummy)
 		    if (fcntl(fds, F_GETFD, 0) < 0 && errno == EBADF) 
 			openMask |= (1<<fds);
 		}
-		abort();
+		exit(-1);
 	    }
 
 	    /* force a new gettimeofday call so FT_AGetTimeOfDay calls work */
@@ -501,7 +501,7 @@ SignalSignals (void)
 	sigProc[i] = 0;
     }
 
-    for (i = 1; i <= NSIG; ++i)  /* forall !badsig(i) */
+    for (i = 1; i < NSIG; ++i)  /* forall !badsig(i) */
 	if ((sigsHandled & mysigmask(i)) && sigDelivered[i] == TRUE) {
 	    sigDelivered[i] = FALSE;
 	    LWP_NoYieldSignal (sigEvents[i]);

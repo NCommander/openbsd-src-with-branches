@@ -1,4 +1,5 @@
-/*	$NetBSD: ktrace.h,v 1.11 1995/07/19 15:27:05 christos Exp $	*/
+/*	$OpenBSD: ktrace.h,v 1.10 2011/06/02 16:19:12 deraadt Exp $	*/
+/*	$NetBSD: ktrace.h,v 1.12 1996/02/04 02:12:29 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -51,10 +48,10 @@
  * ktrace record header
  */
 struct ktr_header {
-	int	ktr_len;		/* length of buf */
-	short	ktr_type;		/* trace record type */
+	size_t	ktr_len;		/* length of buf */
 	pid_t	ktr_pid;		/* process id */
 	char	ktr_comm[MAXCOMLEN+1];	/* command name */
+	short	ktr_type;		/* trace record type */
 	struct	timeval ktr_time;	/* timestamp */
 	caddr_t	ktr_buf;
 };
@@ -89,7 +86,7 @@ struct ktr_sysret {
 	short	ktr_code;
 	short	ktr_eosys;
 	int	ktr_error;
-	int	ktr_retval;
+	register_t ktr_retval;
 };
 
 /*
@@ -119,6 +116,7 @@ struct ktr_psig {
 	sig_t	action;
 	int	mask;
 	int	code;
+	siginfo_t si;
 };
 
 /*
@@ -137,6 +135,17 @@ struct ktr_csw {
 	/* record contains emulation name */
 
 /*
+ * KTR_STRUCT - misc. structs
+ */
+#define KTR_STRUCT	8
+	/*
+	 * record contains null-terminated struct name followed by
+	 * struct contents
+	 */
+struct sockaddr;
+struct stat;
+
+/*
  * kernel trace points (in p_traceflag)
  */
 #define KTRFAC_MASK	0x00ffffff
@@ -147,6 +156,8 @@ struct ktr_csw {
 #define	KTRFAC_PSIG	(1<<KTR_PSIG)
 #define KTRFAC_CSW	(1<<KTR_CSW)
 #define KTRFAC_EMUL	(1<<KTR_EMUL)
+#define KTRFAC_STRUCT   (1<<KTR_STRUCT)
+
 /*
  * trace flags (also in p_traceflags)
  */
@@ -159,7 +170,26 @@ struct ktr_csw {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-int	ktrace __P((const char *, int, int, pid_t));
+int	ktrace(const char *, int, int, pid_t);
 __END_DECLS
+
+#else
+
+void ktrcsw(struct proc *, int, int);
+void ktremul(struct proc *, char *);
+void ktrgenio(struct proc *, int, enum uio_rw, struct iovec *, int, int);
+void ktrnamei(struct proc *, char *);
+void ktrpsig(struct proc *, int, sig_t, int, int, siginfo_t *);
+void ktrsyscall(struct proc *, register_t, size_t, register_t []);
+void ktrsysret(struct proc *, register_t, int, register_t);
+
+void ktrsettracevnode(struct proc *, struct vnode *);
+
+void    ktrstruct(struct proc *, const char *, const void *, size_t);
+#define ktrsockaddr(p, s, l) \
+	ktrstruct((p), "sockaddr", (s), (l))
+#define ktrstat(p, s) \
+	ktrstruct((p), "stat", (s), sizeof(struct stat))
+
 
 #endif	/* !_KERNEL */

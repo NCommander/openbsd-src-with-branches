@@ -1,3 +1,4 @@
+/*	$OpenBSD: fdreg.h,v 1.11 2003/06/02 23:28:02 millert Exp $	*/
 /*	$NetBSD: fdreg.h,v 1.8 1995/06/28 04:30:57 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -52,15 +49,21 @@
 #define	fdsts	4	/* NEC 765 Main Status Register (R) */
 #define	fddata	5	/* NEC 765 Data Register (R/W) */
 
-#define	fdctl	7	/* Control Register (W) */
+#define FDCTL_OFFSET	7	/* Offset from the other registers. */
+#define	fdctl	0	/* Control Register (W) */
 #define	FDC_500KBPS	0x00	/* 500KBPS MFM drive transfer rate */
 #define	FDC_300KBPS	0x01	/* 300KBPS MFM drive transfer rate */
 #define	FDC_250KBPS	0x02	/* 250KBPS MFM drive transfer rate */
 #define	FDC_125KBPS	0x03	/* 125KBPS FM drive transfer rate */
 
-#define	fdin	7	/* Digital Input Register (R) */
+#define	fdin	0	/* Digital Input Register (R) */
 #define	FDI_DCHG	0x80	/* diskette has been changed */
 
-#define	FDC_BSIZE	512
-#define	FDC_NPORT	8
+#define	FDC_NPORT	6
+#define FDCTL_NPORT	1
 #define	FDC_MAXIOSIZE	NBPG	/* XXX should be MAXBSIZE */
+#define	FD_BSIZE(fd)	(128 << fd->sc_type->secsize)
+
+#define FDUNIT(dev)	((dev & 0x80) >> 7)	/* XXX two drives max, sorry */
+#define FDTYPE(dev)	((minor(dev) & 0x70) >> 4)
+#define FDPART(dev)	(minor(dev) & 0x0f)

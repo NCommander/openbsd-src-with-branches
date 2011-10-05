@@ -10,9 +10,7 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_tanh.c,v 1.7 1995/05/10 20:48:22 jtc Exp $";
-#endif
+/* LINTLIBRARY */
 
 /* Tanh(x)
  * Return the Hyperbolic Tangent of x
@@ -38,27 +36,22 @@ static char rcsid[] = "$NetBSD: s_tanh.c,v 1.7 1995/05/10 20:48:22 jtc Exp $";
  *	only tanh(0)=0 is exact for finite argument.
  */
 
-#include "math.h"
+#include <sys/cdefs.h>
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
 static const double one=1.0, two=2.0, tiny = 1.0e-300;
-#else
-static double one=1.0, two=2.0, tiny = 1.0e-300;
-#endif
 
-#ifdef __STDC__
-	double tanh(double x)
-#else
-	double tanh(x)
-	double x;
-#endif
+double
+tanh(double x)
 {
 	double t,z;
-	int32_t jx,ix;
+	int32_t jx,ix,lx;
 
     /* High word of |x|. */
-	GET_HIGH_WORD(jx,x);
+	EXTRACT_WORDS(jx,lx,x);
 	ix = jx&0x7fffffff;
 
     /* x is INF or NaN */
@@ -69,6 +62,8 @@ static double one=1.0, two=2.0, tiny = 1.0e-300;
 
     /* |x| < 22 */
 	if (ix < 0x40360000) {		/* |x|<22 */
+	    if ((ix | lx) == 0)
+		return x;		/* x == +-0 */
 	    if (ix<0x3c800000) 		/* |x|<2**-55 */
 		return x*(one+x);    	/* tanh(small) = small */
 	    if (ix>=0x3ff00000) {	/* |x|>=1  */
@@ -84,3 +79,12 @@ static double one=1.0, two=2.0, tiny = 1.0e-300;
 	}
 	return (jx>=0)? z: -z;
 }
+
+#if	LDBL_MANT_DIG == 53
+#ifdef	lint
+/* PROTOLIB1 */
+long double tanhl(long double);
+#else	/* lint */
+__weak_alias(tanhl, tanh);
+#endif	/* lint */
+#endif	/* LDBL_MANT_DIG == 53 */

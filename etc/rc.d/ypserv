@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# $OpenBSD: ypserv,v 1.2 2011/07/07 18:23:17 robert Exp $
+
+daemon="/usr/sbin/ypserv"
+
+. /etc/rc.d/rc.subr
+
+rc_reload=NO
+
+rc_pre() {
+	[ X"`domainname`" != X"" -a -d /var/yp/`domainname` ]
+}
+
+rc_cmd $1

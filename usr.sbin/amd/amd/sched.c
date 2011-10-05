@@ -1,3 +1,5 @@
+/*	$OpenBSD: sched.c,v 1.12 2004/10/04 15:19:04 millert Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +34,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)sched.c	8.1 (Berkeley) 6/6/93
- *	$Id: sched.c,v 1.3 1994/06/13 20:48:00 mycroft Exp $
+ *	$Id: sched.c,v 1.12 2004/10/04 15:19:04 millert Exp $
  */
 
 /*
@@ -44,7 +42,7 @@
  */
 
 #include "am.h"
-#include <sys/signal.h>
+#include <signal.h>
 #include WAIT
 #include <setjmp.h>
 extern jmp_buf select_intr;
@@ -53,11 +51,11 @@ extern int select_intr_valid;
 typedef struct pjob pjob;
 struct pjob {
 	qelem hdr;			/* Linked list */
-	int pid;			/* Process ID of job */
+	pid_t pid;			/* Process ID of job */
 	cb_fun cb_fun;			/* Callback function */
-	voidp cb_closure;		/* Closure for callback */
+	void *cb_closure;		/* Closure for callback */
 	union wait w;			/* Status filled in by sigchld */
-	voidp wchan;			/* Wait channel */
+	void *wchan;			/* Wait channel */
 };
 
 extern qelem proc_list_head;
@@ -67,8 +65,8 @@ qelem proc_wait_list = { &proc_wait_list, &proc_wait_list };
 
 int task_notify_todo;
 
-void ins_que(elem, pred)
-qelem *elem, *pred;
+void
+ins_que(qelem *elem, qelem *pred)
 {
 	qelem *p = pred->q_forw;
 	elem->q_back = pred;
@@ -77,8 +75,8 @@ qelem *elem, *pred;
 	p->q_back = elem;
 }
 
-void rem_que(elem)
-qelem *elem;
+void
+rem_que(qelem *elem)
 {
 	qelem *p = elem->q_forw;
 	qelem *p2 = elem->q_back;
@@ -86,9 +84,8 @@ qelem *elem;
 	p->q_back = p2;
 }
 
-static pjob *sched_job(cf, ca)
-cb_fun cf;
-voidp ca;
+static pjob *
+sched_job(cb_fun cf, void *ca)
 {
 	pjob *p = ALLOC(pjob);
 
@@ -103,21 +100,20 @@ voidp ca;
 	return p;
 }
 
-void run_task(tf, ta, cf, ca)
-task_fun tf;
-voidp ta;
-cb_fun cf;
-voidp ca;
+void
+run_task(task_fun tf, void *ta, cb_fun cf, void *ca)
 {
 	pjob *p = sched_job(cf, ca);
-	int mask;
+	sigset_t mask, omask;
 
-	p->wchan = (voidp) p;
+	p->wchan = (void *)p;
 
-	mask = sigblock(sigmask(SIGCHLD));
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
 
-	if (p->pid = background()) {
-		sigsetmask(mask);
+	if ((p->pid = background())) {
+		sigprocmask(SIG_SETMASK, &omask, NULL);
 		return;
 	}
 
@@ -129,10 +125,8 @@ voidp ca;
 /*
  * Schedule a task to be run when woken up
  */
-void sched_task(cf, ca, wchan)
-cb_fun cf;
-voidp ca;
-voidp wchan;
+void
+sched_task(cb_fun cf, void *ca, void *wchan)
 {
 	/*
 	 * Allocate a new task
@@ -143,19 +137,19 @@ voidp wchan;
 #endif
 	p->wchan = wchan;
 	p->pid = 0;
-	bzero((voidp) &p->w, sizeof(p->w));
+	bzero((void *)&p->w, sizeof(p->w));
 }
 
-static void wakeupjob(p)
-pjob *p;
+static void
+wakeupjob(pjob *p)
 {
 	rem_que(&p->hdr);
 	ins_que(&p->hdr, &proc_list_head);
 	task_notify_todo++;
 }
 
-void wakeup(wchan)
-voidp wchan;
+void
+wakeup(void *wchan)
 {
 	pjob *p, *p2;
 #ifdef DEBUG_SLEEP
@@ -188,21 +182,20 @@ voidp wchan;
 #endif
 }
 
-void wakeup_task(rc, term, cl)
-int rc;
-int term;
-voidp cl;
+void
+wakeup_task(int rc, int term, void *cl)
 {
 	wakeup(cl);
 }
 
 /*ARGSUSED*/
 
-void sigchld(sig)
-int sig;
+void
+sigchld(int sig)
 {
 	union wait w;
-	int pid;
+	int save_errno = errno;
+	pid_t pid;
 
 #ifdef SYS5_SIGNALS
 	if ((pid = wait(&w)) > 0) {
@@ -212,12 +205,12 @@ int sig;
 		pjob *p, *p2;
 
 		if (WIFSIGNALED(w))
-			plog(XLOG_ERROR, "Process %d exited with signal %d",
-				pid, w.w_termsig);
+			plog(XLOG_ERROR, "Process %ld exited with signal %ld",
+				(long)pid, w.w_termsig);
 #ifdef DEBUG
 		else
-			dlog("Process %d exited with status %d",
-				pid, w.w_retcode);
+			dlog("Process %ld exited with status %ld",
+				(long)pid, w.w_retcode);
 #endif /* DEBUG */
 
 		for (p = FIRST(pjob, &proc_wait_list);
@@ -231,7 +224,8 @@ int sig;
 		}
 
 #ifdef DEBUG
-		if (p) ; else dlog("can't locate task block for pid %d", pid);
+		if (p == NULL)
+			dlog("can't locate task block for pid %ld", (long)pid);
 #endif /* DEBUG */
 	}
 
@@ -240,18 +234,20 @@ int sig;
 #endif /* SYS5_SIGNALS */
 	if (select_intr_valid)
 		longjmp(select_intr, sig);
+	errno = save_errno;
 }
 
 /*
  * Run any pending tasks.
  * This must be called with SIGCHLD disabled
  */
-void do_task_notify(P_void)
+void
+do_task_notify(void)
 {
 	/*
 	 * Keep taking the first item off the list and processing it.
 	 *
-	 * Done this way because the the callback can, quite reasonably,
+	 * Done this way because the callback can, quite reasonably,
 	 * queue a new task, so no local reference into the list can be
 	 * held here.
 	 */
@@ -270,54 +266,6 @@ void do_task_notify(P_void)
 			(*p->cb_fun)(p->w.w_retcode,
 				p->w.w_termsig, p->cb_closure);
 
-		free((voidp) p);
+		free((void *)p);
 	}
 }
-
-#ifdef HAS_SVR3_SIGNALS
-/*
- * 4.2 signal library based on svr3 (4.1+ bsd) interface
- * From Stephen C. Pope <scp@acl.lanl.gov).
- */
-
-static int current_mask = 0;
-
-int sigblock(mask)
-int mask;
-{
-    int sig;
-    int m;
-    int oldmask;
-
-    oldmask = current_mask;
-    for ( sig = 1, m = 1; sig <= MAXSIG; sig++, m <<= 1 ) {
-        if (mask & m)  {
-	    sighold(sig);
-            current_mask |= m;
-        }
-    }
-    return oldmask;
-}
-
-int sigsetmask(mask)
-int mask;
-{
-    int sig;
-    int m;
-    int oldmask;
-
-    oldmask = current_mask;
-    for ( sig = 1, m = 1; sig <= MAXSIG; sig++, m <<= 1 ) {
-        if (mask & m)  {
-            sighold(sig);
-            current_mask |= m;
-        }
-        else  {
-            sigrelse(sig);
-            current_mask &= ~m;
-        }
-    }
-    return oldmask;
-}
-
-#endif /* HAS_SVR3_SIGNALS */

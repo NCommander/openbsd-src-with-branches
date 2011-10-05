@@ -1,11 +1,12 @@
-#	$OpenBSD: Makefile,v 1.2 1998/03/26 19:46:45 niklas Exp $
+#	$OpenBSD: Makefile,v 1.6 2006/05/11 22:19:22 deraadt Exp $
 #	$NetBSD: Makefile,v 1.10 1995/03/06 04:24:41 cgd Exp $
 
 PROG=	ldconfig
-SRCS=	ldconfig.c shlib.c etc.c
+SRCS=	ldconfig.c shlib.c etc.c prebind_delete.c debug.c prebind.c library.c sod.c
 LDDIR?= $(.CURDIR)/..
-#CFLAGS+=-I$(.CURDIR) -I$(LDDIR)/$(MACHINE_ARCH)
-LDSTATIC=-static
+#CFLAGS+=-Werror
+CFLAGS+=-I$(.CURDIR) -I$(.CURDIR)/..
+LDSTATIC=${STATIC}
 BINDIR=	/sbin
 MAN=	ldconfig.8
 
