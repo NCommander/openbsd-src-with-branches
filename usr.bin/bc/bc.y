@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: bc.y,v 1.38 2011/07/08 23:29:46 tedu Exp $	*/
+/*	$OpenBSD: bc.y,v 1.39 2011/08/03 08:48:19 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -944,6 +944,10 @@ yyerror(char *s)
 
 	if (yyin != NULL && feof(yyin))
 		n = asprintf(&str, "%s: %s:%d: %s: unexpected EOF",
+		    __progname, filename, lineno, s);
+	else if (yytext[0] == '\n')
+		n = asprintf(&str,
+		    "%s: %s:%d: %s: newline unexpected",
 		    __progname, filename, lineno, s);
 	else if (isspace(yytext[0]) || !isprint(yytext[0]))
 		n = asprintf(&str,
