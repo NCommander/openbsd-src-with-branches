@@ -99,8 +99,6 @@
 /*
  * Global variables
  */
-
-/* state tables */
 struct pf_state_tree	 pf_statetbl;
 
 struct pf_altqqueue	 pf_altqs[2];
