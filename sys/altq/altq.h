@@ -38,7 +38,7 @@
 #define	ALTQT_MAX		12	/* should be max discipline type + 1 */
 
 /* simple token bucket meter profile */
-struct tb_profile {
+struct oldtb_profile {
 	u_int	rate;	/* rate in bit-per-sec */
 	u_int	depth;	/* depth in bytes */
 };

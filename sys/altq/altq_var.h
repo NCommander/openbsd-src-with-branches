@@ -99,8 +99,8 @@ struct pf_altq; struct pf_qstats;
 void	*altq_lookup(char *, int);
 void	write_dsfield(struct mbuf *, struct altq_pktattr *, u_int8_t);
 void	altq_assert(const char *, int, const char *);
-int	tbr_set(struct ifaltq *, struct tb_profile *);
-int	tbr_get(struct ifaltq *, struct tb_profile *);
+int	oldtbr_set(struct ifaltq *, struct oldtb_profile *);
+int	oldtbr_get(struct ifaltq *, struct oldtb_profile *);
 int	altq_pfattach(struct pf_altq *);
 
 int	altq_pfdetach(struct pf_altq *);

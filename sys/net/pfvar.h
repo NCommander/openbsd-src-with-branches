@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.350 2011/09/22 14:57:12 bluhm Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.352 2011/10/07 14:02:48 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1898,9 +1898,6 @@ void		 pf_tag2tagname(u_int16_t, char *);
 void		 pf_tag_ref(u_int16_t);
 void		 pf_tag_unref(u_int16_t);
 void		 pf_tag_packet(struct mbuf *, int, int);
-u_int32_t	 pf_qname2qid(char *);
-void		 pf_qid2qname(u_int32_t, char *);
-void		 pf_qid_unref(u_int32_t);
 int		 pf_addr_compare(struct pf_addr *, struct pf_addr *,
 		    sa_family_t);
 
