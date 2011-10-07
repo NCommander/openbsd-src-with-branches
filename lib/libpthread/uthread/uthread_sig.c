@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_sig.c,v 1.26 2010/07/13 03:10:29 guenther Exp $	*/
+/*	$OpenBSD: uthread_sig.c,v 1.27 2011/09/13 23:56:00 fgsch Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -328,11 +328,12 @@ _thread_signal(pthread_t pthread, int sig)
 	 * other than the scheduling alarm:
 	 */
 	case PS_FDR_WAIT:
+	case PS_FDW_WAIT:
 		if (_thread_sigact[sig - 1].sa_flags & SA_RESTART)
 			interrupted = 0;
 		/* FALLTHROUGH */
 
-	case PS_FDW_WAIT:
+	case PS_CONNECT_WAIT:
 	case PS_KEVENT_WAIT:
 	case PS_POLL_WAIT:
 	case PS_SLEEP_WAIT:
