@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.5 2010/04/24 18:44:27 miod Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.6 2010/04/24 18:46:55 miod Exp $ */
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 2004, Miodrag Vallat.
@@ -141,8 +141,8 @@ mainbus_attach(struct device *parent, struct device *self, void *args)
 
 #ifdef MULTIPROCESSOR
 	/*
-	 * Let secondary processor initialize further and print their
-	 * configuration information now.
+	 * Let secondary processors initialize further and print
+	 * their configuration information now.
 	 */
 	cpu_setup_secondary_processors();
 #endif
