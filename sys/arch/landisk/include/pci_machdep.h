@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.5 2010/12/04 17:06:31 miod Exp $	*/
+/*	$OpenBSD: pci_machdep.h,v 1.6 2011/05/21 21:36:39 kettenis Exp $	*/
 /*	$NetBSD: pci_machdep.h,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*
@@ -82,5 +82,6 @@ void landisk_pci_conf_interrupt(void *v, int bus, int dev, int pin,
 	landisk_pci_intr_establish(v, ih, level, ih_fun, ih_arg, ih_name)
 #define	pci_intr_disestablish(v, cookie) \
 	landisk_pci_intr_disestablish(v, cookie)
+#define	pci_probe_device_hook(c, a)	(0)
 
 #define	pci_dev_postattach(a, b)
