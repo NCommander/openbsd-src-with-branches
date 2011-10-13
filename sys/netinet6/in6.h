@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.h,v 1.52 2010/09/23 04:45:15 yasuoka Exp $	*/
+/*	$OpenBSD: in6.h,v 1.53 2011/05/02 13:48:38 mikeb Exp $	*/
 /*	$KAME: in6.h,v 1.83 2001/03/29 02:55:07 jinmei Exp $	*/
 
 /*
@@ -787,6 +787,7 @@ int	in6_addrscope(struct in6_addr *);
 struct	in6_ifaddr *in6_ifawithscope(struct ifnet *, struct in6_addr *);
 extern void in6_if_up(struct ifnet *);
 void 	in6_get_rand_ifid(struct ifnet *, struct in6_addr *);
+int	in6_mask2len(struct in6_addr *, u_char *);
 
 #define	satosin6(sa)	((struct sockaddr_in6 *)(sa))
 #define	sin6tosa(sin6)	((struct sockaddr *)(sin6))
