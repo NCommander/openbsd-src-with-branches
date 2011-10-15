@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.2 2003/06/04 04:46:13 jason Exp $	*/
+/*	$OpenBSD: session.c,v 1.3 2004/05/06 20:29:04 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -91,7 +91,6 @@ session_new(struct ether_addr *ea)
 
 	s->s_id = id;
 	s->s_fd = -1;
-	s->s_first = 1;
 	memcpy(&s->s_ea, ea, ETHER_ADDR_LEN);
 	LIST_INSERT_HEAD(&session_master.sm_sessions, s, s_next);
 
