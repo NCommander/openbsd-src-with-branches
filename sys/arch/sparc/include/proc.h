@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.3 2003/06/02 23:27:54 millert Exp $	*/
+/*	$OpenBSD: proc.h,v 1.4 2010/11/27 19:41:45 miod Exp $	*/
 /*	$NetBSD: proc.h,v 1.3 1996/09/26 18:51:17 christos Exp $ */
 
 /*
@@ -48,3 +48,5 @@ struct mdproc {
 	struct	trapframe *md_tf;	/* trap/syscall registers */
 	struct	fpstate *md_fpstate;	/* fpu state, if any; always resident */
 };
+
+#define	__HAVE_MD_TCB
