@@ -1,4 +1,4 @@
-/*	$OpenBSD: args.c,v 1.17 2006/11/01 05:46:20 ray Exp $	*/
+/*	$OpenBSD: args.c,v 1.18 2009/10/27 23:59:21 deraadt Exp $	*/
 /*	$NetBSD: args.c,v 1.7 1996/03/01 01:18:58 jtc Exp $	*/
 
 /*-
@@ -341,6 +341,7 @@ get_bsz(char *val)
 		++expr;
 		break;
 	case 'k':
+	case 'K':
 		t = num;
 		num *= 1024;
 		if (t > num)
@@ -348,6 +349,7 @@ get_bsz(char *val)
 		++expr;
 		break;
 	case 'm':
+	case 'M':
 		t = num;
 		num *= 1048576;
 		if (t > num)
@@ -411,6 +413,7 @@ get_off(char *val)
 		++expr;
 		break;
 	case 'k':
+	case 'K':
 		t = num;
 		num *= 1024;
 		if (t > num)
@@ -418,6 +421,7 @@ get_off(char *val)
 		++expr;
 		break;
 	case 'm':
+	case 'M':
 		t = num;
 		num *= 1048576;
 		if (t > num)
