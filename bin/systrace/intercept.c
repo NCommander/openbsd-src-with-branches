@@ -1,4 +1,4 @@
-/*	$OpenBSD: intercept.c,v 1.56 2010/04/20 21:56:52 tedu Exp $	*/
+/*	$OpenBSD: intercept.c,v 1.57 2011/09/18 23:24:14 matthew Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -548,7 +548,7 @@ intercept_replace(int fd, pid_t pid, u_int16_t seqnr,
 char *
 intercept_get_string(int fd, pid_t pid, void *addr)
 {
-	static char name[8192];
+	static char name[ARG_MAX];
 	int off = 0, done = 0, stride;
 
 	if (addr == NULL)
