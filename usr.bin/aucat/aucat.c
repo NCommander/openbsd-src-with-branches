@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.122 2011/10/17 21:09:11 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.123 2011/10/18 18:40:32 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -379,8 +379,10 @@ main(int argc, char **argv)
 	hdr = HDR_AUTO;
 	xrun = XRUN_IGNORE;
 	vol = MIDI_MAXCTL;
-	hold = join = autovol = 1;
+	join = 1;
 	mmc = 0;
+	hold = 0;
+	autovol = 1;
 	bufsz = 0;
 	round = 0;
 	unit = 0;
