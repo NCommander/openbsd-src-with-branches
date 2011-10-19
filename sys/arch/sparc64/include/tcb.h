@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2011 Philip Guenther <guenther@openbsd.org>
  *
