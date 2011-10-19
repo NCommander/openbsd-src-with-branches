@@ -1,4 +1,4 @@
-/*	$OpenBSD: beagle_machdep.c,v 1.6 2010/06/27 08:05:59 drahn Exp $ */
+/*	$OpenBSD: beagle_machdep.c,v 1.7 2011/05/30 22:25:20 oga Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -442,7 +442,7 @@ copy_io_area_map(pd_entry_t *new_pd)
  *   Relocating the kernel to the bottom of physical memory
  */
 u_int
-initarm(void *arg)
+initarm(void *arg0, void *arg1, void *arg2)
 {
 	int loop;
 	int loop1;

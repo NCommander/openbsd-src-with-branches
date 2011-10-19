@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.2 2004/02/01 06:10:33 drahn Exp $	*/
+/*	$OpenBSD: locore.S,v 1.3 2009/09/27 18:14:52 miod Exp $	*/
 /*	$NetBSD: locore.S,v 1.14 2003/04/20 16:21:40 thorpej Exp $	*/
 
 /*
@@ -53,6 +53,8 @@
 ENTRY_NP(kernel_text)
 
 ASENTRY_NP(start)
+	mov	r5, r1
+	mov	r6, r2
 	adr	r1, .Lstart
 	ldmia	r1, {r1, r2, sp}	/* Set initial stack and */
 	sub	r2, r2, r1		/* get zero init data */
@@ -64,6 +66,8 @@ ASENTRY_NP(start)
 	bgt	.L1
 
 	mov	fp, #0x00000000		/* trace back starts here */
+	mov	r1, r5
+	mov	r2, r6
 	bl	_C_LABEL(initarm)	/* Off we go */
 
 	/* init arm will return the new stack pointer. */
