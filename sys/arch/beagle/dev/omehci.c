@@ -1,4 +1,4 @@
-/*	$OpenBSD: omehci.c,v 1.4 2010/09/07 16:21:37 deraadt Exp $ */
+/*	$OpenBSD: omehci.c,v 1.5 2011/03/14 14:20:58 jasper Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -62,6 +62,14 @@ omehci_match(struct device *parent, void *match, void *aux)
 {
 	struct ahb_attach_args	*aa = aux;
 
+	switch (board_id) {
+	case BOARD_ID_OMAP3_BEAGLE:
+		break; /* continue trying */
+	case BOARD_ID_OMAP4_PANDA:
+		return 0; /* not ported yet ??? - different */
+	default:
+		return 0; /* unknown */
+	}
 	if (aa->aa_addr != EHCI_HCPCAPBASE)
 		return 0;
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: intc.c,v 1.5 2011/04/23 03:54:42 drahn Exp $ */
+/* $OpenBSD: intc.c,v 1.6 2011/09/21 10:09:07 miod Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -140,6 +140,14 @@ int intc_attached = 0;
 int
 intc_match(struct device *parent, void *v, void *aux)
 {
+	switch (board_id) {
+	case BOARD_ID_OMAP3_BEAGLE:
+		break; /* continue trying */
+	case BOARD_ID_OMAP4_PANDA:
+		return 0; /* not ported yet ??? - different */
+	default:
+		return 0; /* unknown */
+	}
 	if (intc_attached != 0)
 		return 0;
 
