@@ -1,6 +1,6 @@
 define(MACHINE,vax)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.45 2011/09/03 20:45:17 miod Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.46 2011/10/06 20:49:27 deraadt Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -176,6 +176,7 @@ mt*)
 dnl
 dnl *** vax specific targets
 dnl
+twrget(all, au, audio, 0)
 target(all, ch, 0)dnl
 target(all, nnpfs, 0)dnl
 target(all, vscsi, 0)dnl

@@ -1,6 +1,6 @@
 define(MACHINE,macppc)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.46 2011/04/19 23:07:55 todd Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.47 2011/10/06 20:49:27 deraadt Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -113,6 +113,7 @@ _std(1, 2, 43, 6)
 dnl
 dnl *** macppc specific targets
 dnl
+twrget(all, au, audio, 0, 1, 2)dnl
 twrget(all, s64_tzs, tty, a, b)dnl
 twrget(all, s64_czs, cua, a, b)dnl
 target(all, ch, 0)dnl

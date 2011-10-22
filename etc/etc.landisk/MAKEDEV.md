@@ -1,6 +1,6 @@
 define(MACHINE,landisk)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.23 2010/09/30 15:27:54 claudio Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.24 2011/10/06 20:49:27 deraadt Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2004 Todd T. Fries <todd@OpenBSD.org>
@@ -109,6 +109,7 @@ _std(1, 2, 8, 6)
 dnl
 dnl *** landisk specific targets
 dnl
+twrget(all, au, audio, 0, 1, 2)dnl
 twrget(all, scif, tty, a)dnl
 target(all, ch, 0)dnl
 target(all, nnpfs, 0)dnl
