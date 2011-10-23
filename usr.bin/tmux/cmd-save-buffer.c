@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-save-buffer.c,v 1.9 2010/12/30 23:16:18 nicm Exp $ */
+/* $OpenBSD: cmd-save-buffer.c,v 1.10 2011/01/04 00:42:47 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -25,7 +25,7 @@
 #include "tmux.h"
 
 /*
- * Saves a session paste buffer to a file.
+ * Saves a paste buffer to a file.
  */
 
 int	cmd_save_buffer_exec(struct cmd *, struct cmd_ctx *);
