@@ -1,4 +1,4 @@
-/*	$OpenBSD: ommmc.c,v 1.8 2010/09/06 19:20:19 deraadt Exp $	*/
+/*	$OpenBSD: ommmc.c,v 1.9 2011/10/21 22:55:01 drahn Exp $	*/
 
 /*
  * Copyright (c) 2009 Dale Rahn <drahn@openbsd.org>
@@ -400,7 +400,7 @@ ommmc_attach(struct device *parent, struct device *self, void *args)
 	/* XXX DMA channels? */
 	prcm_enableclock(sc->clockbit);
 
-	sc->sc_ih = intc_intr_establish(sc->sc_irq, IPL_SDMMC, ommmc_intr,
+	sc->sc_ih = arm_intr_establish(sc->sc_irq, IPL_SDMMC, ommmc_intr,
 	    sc, sc->sc_dev.dv_xname);
 
 #if 0

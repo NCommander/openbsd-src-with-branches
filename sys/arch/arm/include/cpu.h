@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.27 2011/06/24 19:47:48 naddy Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.28 2011/09/20 22:02:13 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.34 2003/06/23 11:01:08 martin Exp $	*/
 
 /*
@@ -194,6 +194,9 @@ struct cpu_info {
 	u_int32_t ci_arm_cpurev;	/* CPU revision */
 	u_int32_t ci_ctrl;		/* The CPU control register */
 	u_int32_t ci_randseed;
+
+	uint32_t ci_cpl;
+	uint32_t ci_ipending;
 };
 
 #ifndef MULTIPROCESSOR
