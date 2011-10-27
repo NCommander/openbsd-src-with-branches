@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_ipc.c,v 1.13 2011/09/19 23:28:12 pirofti Exp $	*/
+/*	$OpenBSD: linux_ipc.c,v 1.14 2011/09/19 23:35:22 pirofti Exp $	*/
 /*	$NetBSD: linux_ipc.c,v 1.10 1996/04/05 00:01:44 christos Exp $	*/
 
 /*
@@ -594,8 +594,6 @@ linux_shmget(p, v, retval)
 	SCARG(&bsa, key) = SCARG(uap, a1);
 	SCARG(&bsa, size) = SCARG(uap, a2);
 	SCARG(&bsa, shmflg) = SCARG(uap, a3);
-
-	SCARG(&bsa, shmflg) |= _SHM_RMLINGER;
 
 	return sys_shmget(p, &bsa, retval);
 }
