@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.48 2009/03/26 17:24:33 oga Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.49 2010/07/24 12:18:58 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.45 1997/02/10 22:13:40 scottr Exp $	*/
 
 /*
@@ -69,7 +69,6 @@
  * Get common m68k definitions.
  */
 #include <m68k/cpu.h>
-#define	M68K_MMU_MOTOROLA
 
 #ifdef _KERNEL
 
