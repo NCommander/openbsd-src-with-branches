@@ -1,4 +1,4 @@
-/*	$OpenBSD: mscpvar.h,v 1.5 2002/03/15 01:20:04 millert Exp $	*/
+/*	$OpenBSD: mscpvar.h,v 1.6 2003/06/02 23:27:57 millert Exp $	*/
 /*	$NetBSD: mscpvar.h,v 1.7 1999/06/06 19:16:18 ragge Exp $	*/
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -210,8 +210,6 @@ struct mscp_softc {
  */
 #define MSCP_WAIT	1
 #define MSCP_DONTWAIT	0
-
-	/* get a command packet */
 
 /*
  * Unit flags
