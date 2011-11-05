@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.3 2011/03/23 16:54:34 pirofti Exp $	*/
+/*	$OpenBSD: intr.h,v 1.4 2011/10/24 22:49:07 drahn Exp $	*/
 /*	$NetBSD: intr.h,v 1.12 2003/06/16 20:00:59 thorpej Exp $	*/
 
 /*
@@ -136,6 +136,9 @@ void *arm_intr_establish(int irqno, int level, int (*func)(void *),
     void *cookie, char *name);
 void arm_intr_disestablish(void *cookie);
 const char *arm_intr_string(void *cookie);
+
+/* XXX - this is probably the wrong location for this */
+void arm_clock_register(void (*)(void), void (*)(u_int));
 
 #ifdef DIAGNOSTIC
 /*
