@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.13 2011/08/24 10:29:57 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.14 2011/10/27 22:54:06 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -190,6 +190,21 @@ const struct options_table_entry session_options_table[] = {
 	},
 
 	{ .name = "message-bg",
+	  .type = OPTIONS_TABLE_COLOUR,
+	  .default_num = 3
+	},
+
+	{ .name = "message-command-attr",
+	  .type = OPTIONS_TABLE_ATTRIBUTES,
+	  .default_num = 0
+	},
+
+	{ .name = "message-command-bg",
+	  .type = OPTIONS_TABLE_COLOUR,
+	  .default_num = 0
+	},
+
+	{ .name = "message-command-fg",
 	  .type = OPTIONS_TABLE_COLOUR,
 	  .default_num = 3
 	},
