@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.c,v 1.13 2010/07/01 22:40:10 drahn Exp $	*/
+/*	$OpenBSD: cpufunc.c,v 1.14 2011/09/20 22:02:10 miod Exp $	*/
 /*	$NetBSD: cpufunc.c,v 1.65 2003/11/05 12:53:15 scw Exp $	*/
 
 /*
@@ -761,11 +761,12 @@ arm_get_cachetype_cp15v7(void)
 		arm_pcache_type = 0;
 		break;
 	case 0x40000000:
-		arm_pcache_type = CPU_CT_CTYPE_WT;
-		break;
-	case 0x80000000:
 	case 0xc0000000:
 		arm_pcache_type = CPU_CT_CTYPE_WB1;
+		break;
+	case 0x80000000:
+		arm_pcache_type = CPU_CT_CTYPE_WT;
+		break;
 	}
 
 	/* icache L1 */
