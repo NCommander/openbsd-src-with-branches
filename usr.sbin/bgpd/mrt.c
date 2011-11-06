@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.c,v 1.70 2010/09/02 14:03:21 sobrado Exp $ */
+/*	$OpenBSD: mrt.c,v 1.71 2011/09/17 16:29:44 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -21,6 +21,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
