@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_sync.c,v 1.23 2010/04/12 03:34:31 guenther Exp $ */
+/*	$OpenBSD: rthread_sync.c,v 1.24 2011/09/22 04:54:38 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -20,17 +20,8 @@
  */
 
 
-#include <sys/param.h>
-#include <sys/mman.h>
-#include <sys/wait.h>
-
-#include <machine/spinlock.h>
-
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
-#include <stdio.h>
-#include <string.h>
 #include <errno.h>
 
 #include <pthread.h>

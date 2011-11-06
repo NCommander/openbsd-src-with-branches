@@ -1,4 +1,4 @@
-/* $OpenBSD: rthread_stack.c,v 1.3 2006/10/27 02:41:24 tedu Exp $ */
+/* $OpenBSD: rthread_stack.c,v 1.4 2010/05/26 21:40:05 guenther Exp $ */
 /* $snafu: rthread_stack.c,v 1.12 2005/01/11 02:45:28 marc Exp $ */
 
 /* PUBLIC DOMAIN: No Rights Reserved. Marco S Hyman <marc@snafu.org> */
@@ -7,7 +7,6 @@
 #include <sys/mman.h>
 
 #include <machine/param.h>
-#include <machine/spinlock.h>
 
 #include <errno.h>
 #include <pthread.h>

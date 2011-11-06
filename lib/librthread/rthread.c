@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.c,v 1.42 2009/11/27 19:45:54 guenther Exp $ */
+/*	$OpenBSD: rthread.c,v 1.43 2011/10/17 06:39:20 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -20,20 +20,13 @@
  * threads.
  */
 
-#include <sys/param.h>
-#include <sys/event.h>
-#include <sys/mman.h>
-#include <sys/wait.h>
+#include <sys/types.h>
 
-#include <machine/spinlock.h>
-
-#include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <err.h>
 #include <errno.h>
 #include <dlfcn.h>
 
