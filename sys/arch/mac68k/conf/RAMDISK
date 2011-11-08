@@ -1,6 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.23 2008/06/08 20:37:39 deraadt Exp $
-#
-# RAMDISK - bsd.rd configuration file (non-SBC version)
+#	$OpenBSD: RAMDISK,v 1.25 2011/11/08 19:17:12 deraadt Exp $
 
 machine		mac68k m68k
 
