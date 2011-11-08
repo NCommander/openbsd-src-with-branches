@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee.h,v 1.2 2008/07/24 17:36:52 deraadt Exp $	*/
+/*	$OpenBSD: ieee.h,v 1.3 2008/09/07 20:36:06 martynas Exp $	*/
 /*	$NetBSD: ieee.h,v 1.2 2001/02/21 17:43:50 bjh21 Exp $	*/
 
 /*
@@ -118,17 +118,10 @@ struct ieee_single {
 
 #ifdef __VFP_FP__
 struct ieee_double {
-#ifdef __ARMEB__
-	u_int	dbl_sign:1;
-	u_int	dbl_exp:11;
-	u_int	dbl_frach:20;
-	u_int	dbl_fracl;
-#else /* !__ARMEB__ */
 	u_int	dbl_fracl;
 	u_int	dbl_frach:20;
 	u_int	dbl_exp:11;
 	u_int	dbl_sign:1;
-#endif /* !__ARMEB__ */
 };
 #else /* !__VFP_FP__ */
 struct ieee_double {
