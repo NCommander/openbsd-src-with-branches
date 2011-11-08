@@ -1,4 +1,4 @@
-/*	$OpenBSD: vsscanf.c,v 1.10 2005/08/08 08:05:36 espie Exp $ */
+/*	$OpenBSD: vsscanf.c,v 1.11 2006/01/06 18:53:04 millert Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -55,5 +55,5 @@ vsscanf(const char *str, const char *fmt, __va_list ap)
 	f._bf._size = f._r = strlen(str);
 	f._read = eofread;
 	f._lb._base = NULL;
-	return (vfscanf(&f, fmt, ap));
+	return (__svfscanf(&f, fmt, ap));
 }
