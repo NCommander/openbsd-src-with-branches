@@ -1,4 +1,4 @@
-/* $OpenBSD: uboot_tags.c,v 1.1 2011/10/21 22:55:01 drahn Exp $ */
+/* $OpenBSD: uboot_tags.c,v 1.2 2011/10/24 22:49:07 drahn Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -106,6 +106,8 @@ parse_uboot_tags(void *handle)
 		case ATAG_CMDLINE:
 			printf("atag cmdline [%s]\n",
 			    tag->u.cmdline.cmdline);
+			strncpy(bootconfig.bootstring, tag->u.cmdline.cmdline,
+			    sizeof(bootconfig.bootstring));
 			break;
 		case ATAG_SERIAL:
 			printf("atag serial 0x%08x:%08x\n",
