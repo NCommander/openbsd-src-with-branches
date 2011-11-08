@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2001/03/24 18:40:20 tholo Exp $
+#	$OpenBSD: Makefile,v 1.6 2009/10/27 23:59:58 deraadt Exp $
 #	from: @(#)Makefile	5.5 (Berkeley) 5/21/91
 
 CFLAGS+=	-I${.CURDIR}/..
@@ -26,7 +26,7 @@ scrt0.o: ${SRCS}
 	@rm -f ${.TARGET}.o
 
 realinstall:
-	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
+	${INSTALL} ${INSTALL_COPY} -S -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
 	    ${DESTDIR}/usr/lib
 
 .if make(depend)

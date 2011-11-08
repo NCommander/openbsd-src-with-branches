@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2004/08/06 22:21:16 pefo Exp $
+#	$OpenBSD: Makefile,v 1.2 2009/10/27 23:59:58 deraadt Exp $
 
 #CFLAGS+=	-I${.CURDIR} -mips2
 CFLAGS+=	-I${.CURDIR}
@@ -27,7 +27,7 @@ scrt0.o: crt0.c ${DEPS}
 	@rm -f ${.TARGET}.o
 
 realinstall:
-	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
+	${INSTALL} ${INSTALL_COPY} -S -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
 	    ${DESTDIR}/usr/lib
 
 depend lint tags:
