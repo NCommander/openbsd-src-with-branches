@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.gumstix,v 1.32 2011/07/06 02:08:04 tedu Exp $
+#	$OpenBSD: Makefile.gumstix,v 1.33 2011/07/07 22:28:18 guenther Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -10,7 +10,6 @@
 
 .include <bsd.own.mk>
 
-MKDEP?=	mkdep
 SIZE?=	size
 STRIP?=	strip
 
