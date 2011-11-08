@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgplg.h,v 1.6 2010/04/02 21:20:49 sthen Exp $	*/
+/*	$OpenBSD: bgplg.h,v 1.7 2011/07/04 18:11:53 claudio Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Reyk Floeter <reyk@vantronix.net>
@@ -63,7 +63,7 @@ struct cmd {
 	    { BGPCTL, "show", "nexthop", NULL } },			\
 	{ "show version", 0, 0, NULL, { NULL }, lg_show_version },	\
 	{ "traceroute", 1, 1, "&lt;address&gt;",			\
-	    { TRACEROUTE, "-Sl", NULL } },				\
+	    { TRACEROUTE, "-ASl", NULL } },				\
 	{ "ping", 1, 1, "&lt;address&gt;",				\
 	    { PING, "-c4", "-w2", NULL } },				\
 	{ "traceroute6", 1, 1, "&lt;address&gt;",			\
