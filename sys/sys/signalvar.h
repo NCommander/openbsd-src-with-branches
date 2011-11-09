@@ -1,4 +1,4 @@
-/*	$OpenBSD: signalvar.h,v 1.21 2011/04/18 21:44:56 guenther Exp $	*/
+/*	$OpenBSD: signalvar.h,v 1.22 2011/07/05 04:48:02 guenther Exp $	*/
 /*	$NetBSD: signalvar.h,v 1.17 1996/04/22 01:23:31 christos Exp $	*/
 
 /*
@@ -170,7 +170,7 @@ int	killpg1(struct proc *, int, int, int);
 void	signal_init(void);
 
 struct sigacts *sigactsinit(struct proc *);
-void	sigactsshare(struct proc *, struct proc *);
+struct sigacts *sigactsshare(struct proc *);
 void	sigactsunshare(struct proc *);
 void	sigactsfree(struct proc *);
 
