@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.51 2010/02/22 17:24:20 miod Exp $	*/
+/*	$OpenBSD: hidkbdsc.h,v 1.1 2010/07/31 16:04:50 miod Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -75,13 +75,8 @@ struct hidkbd {
 	struct hidkbd_data sc_data;	/* for quirk handling */
 
 	/* key repeat logic */
-	struct timeout sc_rawrepeat_ch;
 #if defined(WSDISPLAY_COMPAT_RAWKBD)
-#define REP_DELAY1 400
-#define REP_DELAYN 100
 	int sc_rawkbd;
-	int sc_nrep;
-	char sc_rep[MAXKEYS];
 #endif /* defined(WSDISPLAY_COMPAT_RAWKBD) */
 
 	int sc_polling;
