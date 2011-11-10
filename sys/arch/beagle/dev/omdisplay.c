@@ -1,4 +1,4 @@
-/* $OpenBSD: omdisplay.c,v 1.5 2010/09/07 16:21:37 deraadt Exp $ */
+/* $OpenBSD: omdisplay.c,v 1.6 2011/10/24 22:49:07 drahn Exp $ */
 /*
  * Copyright (c) 2007 Dale Rahn <drahn@openbsd.org>
  *
@@ -24,8 +24,8 @@
 #include <sys/conf.h>
 #include <sys/uio.h>
 #include <machine/bus.h>
-#include <arch/beagle/beagle/ahb.h>
-#include <arch/beagle/dev/omgpiovar.h>
+#include <beagle/dev/omapvar.h>
+#include <beagle/dev/omgpiovar.h>
 
 #include <dev/cons.h>
 #include <dev/wscons/wsconsio.h>

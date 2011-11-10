@@ -1,4 +1,4 @@
-/*	$OpenBSD: omohci.c,v 1.4 2010/09/07 16:21:37 deraadt Exp $ */
+/*	$OpenBSD: omohci.c,v 1.5 2011/10/24 22:49:07 drahn Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -32,7 +32,7 @@
 
 #include <dev/usb/ohcireg.h>
 #include <dev/usb/ohcivar.h>
-#include <arch/beagle/beagle/ahb.h>
+#include <beagle/dev/omapvar.h>
 #include <beagle/dev/prcmvar.h>
 
 #define HOSTUEADDR		0x0E0

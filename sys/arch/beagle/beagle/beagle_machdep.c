@@ -1,4 +1,4 @@
-/*	$OpenBSD: beagle_machdep.c,v 1.12 2011/11/08 23:01:11 krw Exp $ */
+/*	$OpenBSD: beagle_machdep.c,v 1.13 2011/11/10 00:19:36 matthieu Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -145,8 +145,7 @@
 #include <arm/armv7/armv7var.h>
 
 #include <machine/machine_reg.h>
-#include "ahb.h"
-
+#include <beagle/dev/omapvar.h>
 
 #include "wsdisplay.h"
 
