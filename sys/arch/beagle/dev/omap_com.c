@@ -1,4 +1,4 @@
-/* $OpenBSD: omap_com.c,v 1.6 2011/10/21 22:55:01 drahn Exp $ */
+/* $OpenBSD: omap_com.c,v 1.7 2011/10/24 22:49:07 drahn Exp $ */
 /*
  * Copyright 2003 Wasabi Systems, Inc.
  * All rights reserved.
@@ -74,6 +74,7 @@ omapuart_match(struct device *parent, void *cf, void *aux)
 	/* XXX */
 	switch (board_id) {
 	case BOARD_ID_OMAP3_BEAGLE:
+	case BOARD_ID_OMAP3_OVERO:
 		if (aa->aa_addr == 0x4806A000 && aa->aa_intr == 72) {
 			rv = 1;
 			break;

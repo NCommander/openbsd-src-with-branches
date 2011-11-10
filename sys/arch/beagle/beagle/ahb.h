@@ -1,4 +1,4 @@
-/* $OpenBSD: ahb.h,v 1.1 2009/05/08 03:13:26 drahn Exp $ */
+/* $OpenBSD: ahb.h,v 1.2 2011/10/21 22:55:01 drahn Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@drahn.com>
  *
@@ -30,5 +30,6 @@ void *avic_intr_establish(int irqno, int level, int (*func)(void *),
 
 /* board identification - from uboot */
 #define BOARD_ID_OMAP3_BEAGLE 1546
+#define BOARD_ID_OMAP3_OVERO 1798
 #define BOARD_ID_OMAP4_PANDA 2791
 extern uint32_t board_id;

@@ -1,4 +1,4 @@
-/* $OpenBSD: prcm.c,v 1.6 2011/09/18 20:02:25 miod Exp $ */
+/* $OpenBSD: prcm.c,v 1.7 2011/10/21 22:55:01 drahn Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -180,6 +180,7 @@ prcm_match(struct device *parent, void *v, void *aux)
 	/* only attach once */
 	switch (board_id) {
 	case BOARD_ID_OMAP3_BEAGLE:
+	case BOARD_ID_OMAP3_OVERO:
 		break; /* continue trying */
 	case BOARD_ID_OMAP4_PANDA:
 		return 0; /* not ported yet */

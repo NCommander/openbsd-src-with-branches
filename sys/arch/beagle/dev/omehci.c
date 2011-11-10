@@ -1,4 +1,4 @@
-/*	$OpenBSD: omehci.c,v 1.7 2011/10/24 22:49:07 drahn Exp $ */
+/*	$OpenBSD: omehci.c,v 1.8 2011/11/09 10:17:57 miod Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -64,6 +64,7 @@ omehci_match(struct device *parent, void *match, void *aux)
 
 	switch (board_id) {
 	case BOARD_ID_OMAP3_BEAGLE:
+	case BOARD_ID_OMAP3_OVERO:
 		break; /* continue trying */
 	case BOARD_ID_OMAP4_PANDA:
 		return 0; /* not ported yet ??? - different */
