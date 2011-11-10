@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.2 2011/04/14 19:34:55 kettenis Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.3 2011/04/16 22:02:32 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -26,9 +26,9 @@
 struct pcb {
 	struct hppa_fpstate *pcb_fpstate;	/* not in the trapframe */
 
-	u_int64_t pcb_ksp;		/* kernel sp for ctxsw */
-	u_int64_t pcb_onfault;		/* SW copy fault handler */
-	pa_space_t pcb_space;		/* copy pmap_space, for asm's sake */
+	u_int64_t	pcb_ksp;		/* kernel sp for ctxsw */
+	u_int64_t	pcb_onfault;		/* SW copy fault handler */
+	pa_space_t	pcb_space;		/* copy pmap_space, for asm's sake */
 };
 
 struct md_coredump {
