@@ -3253,8 +3253,6 @@ sr_ioctl_createraid(struct sr_softc *sc, struct bioc_createraid *bc, int user)
 		if (sr_sensors_create(sd))
 			printf("%s: unable to create sensor for %s\n",
 			    DEVNAME(sc), dev->dv_xname);
-		else
-			sd->sd_vol.sv_sensor_valid = 1;
 #endif /* SMALL_KERNEL */
 	} else {
 		/* we are not an os disk */
