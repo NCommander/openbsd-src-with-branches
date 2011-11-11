@@ -3444,6 +3444,10 @@ sr_ioctl_installboot(struct sr_softc *sc, struct bioc_installboot *bb)
 	for (i = 0; i < sd->sd_meta->ssdi.ssd_chunk_no; i++) {
 
 		chunk = sd->sd_vol.sv_chunks[i];
+		if (chunk->src_meta.scm_status != BIOC_SDONLINE &&
+		    chunk->src_meta.scm_status != BIOC_SDREBUILD)
+			continue;
+
 		if (i < SR_MAX_BOOT_DISKS)
 			bcopy(chunk->src_duid, &sbm->sbm_boot_duid[i],
 			    sizeof(sbm->sbm_boot_duid[i]));
