@@ -786,13 +786,13 @@ sr_installpbr(int devfd, int vol, int disk)
 
 	/* Check disk status. */
 	if (bd.bd_status != BIOC_SDONLINE && bd.bd_status != BIOC_SDREBUILD) {
-		fprintf(stderr, "softraid disk %s not online - skipping...\n",
-		    bd.bd_vendor);
+		fprintf(stderr, "softraid chunk %u not online - skipping...\n",
+		    disk);
 		return;	
 	}
 
 	if (strlen(bd.bd_vendor) < 1)
-		errx(1, "invalid disk name %s", bd.bd_vendor);
+		errx(1, "invalid disk name");
 	part = bd.bd_vendor[strlen(bd.bd_vendor) - 1];
 	if (part < 'a' || part >= 'a' + MAXPARTITIONS)
 		errx(1, "invalid partition %c\n", part);
