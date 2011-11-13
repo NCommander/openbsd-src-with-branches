@@ -1,4 +1,4 @@
-/*	$OpenBSD: hibernate.h,v 1.13 2011/09/21 02:51:23 mlarkin Exp $	*/
+/*	$OpenBSD: hibernate.h,v 1.14 2011/09/22 22:12:43 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -125,6 +125,7 @@ int	hibernate_read_image(union hibernate_info *);
 int	hibernate_read_chunks(union hibernate_info *, paddr_t, paddr_t, size_t);
 void	hibernate_unpack_image(union hibernate_info *);
 void	hibernate_populate_resume_pt(union hibernate_info *, paddr_t, paddr_t);
+void	hibernate_free(void);
 
 int	hibernate_check_overlap(paddr_t, paddr_t, paddr_t, paddr_t);
 
