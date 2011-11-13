@@ -1,4 +1,4 @@
-/*	$OpenBSD: hibernate.h,v 1.14 2011/09/22 22:12:43 deraadt Exp $	*/
+/*	$OpenBSD: hibernate.h,v 1.15 2011/11/13 22:36:27 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -65,6 +65,9 @@ struct hibernate_disk_chunk {
 	short		flags;		/* Flags */
 };
 
+#define HIB_INIT	-1
+#define HIB_R		0
+#define HIB_W		1
 typedef	int (*hibio_fn)(dev_t, daddr_t, vaddr_t, size_t, int, void *);
 
 /*
