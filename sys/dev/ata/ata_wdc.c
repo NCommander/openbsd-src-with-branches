@@ -1,4 +1,4 @@
-/*      $OpenBSD: ata_wdc.c,v 1.41 2011/09/22 22:12:45 deraadt Exp $	*/
+/*      $OpenBSD: ata_wdc.c,v 1.42 2011/11/13 23:13:28 mlarkin Exp $	*/
 /*	$NetBSD: ata_wdc.c,v 1.21 1999/08/09 09:43:11 bouyer Exp $	*/
 
 /*
@@ -127,6 +127,10 @@ wd_hibernate_io(dev_t dev, daddr_t blkno, vaddr_t addr, size_t size, int op, voi
 	struct channel_softc *chp = &my->chp;
 	struct ata_bio *ata_bio;
 	extern struct cfdriver wd_cd;
+
+	/* early call for initialization */
+	if (op == HIB_INIT)
+		return(0);
 
 	real_wd = (struct wd_softc *)disk_lookup(&wd_cd, DISKUNIT(dev));
 	if (real_wd == NULL)
