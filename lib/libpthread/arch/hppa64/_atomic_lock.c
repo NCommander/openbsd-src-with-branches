@@ -5,7 +5,7 @@
 #include "spinlock.h"
 
 int
-_atomic_lock(volatile register_t *lock)
+_atomic_lock(volatile _spinlock_lock_t *lock)
 {
 	register register_t old;
 
