@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.296 2011/10/23 08:34:01 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.297 2011/10/23 10:16:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1931,7 +1931,7 @@ struct window_pane *window_pane_next_by_number(struct window *,
 		        struct window_pane *, u_int);
 struct window_pane *window_pane_previous_by_number(struct window *,
 		        struct window_pane *, u_int);
-u_int		 window_pane_index(struct window *, struct window_pane *);
+int		 window_pane_index(struct window_pane *, u_int *);
 u_int		 window_count_panes(struct window *);
 void		 window_destroy_panes(struct window *);
 struct window_pane *window_pane_find_by_id(u_int);
