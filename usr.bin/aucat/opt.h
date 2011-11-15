@@ -1,4 +1,4 @@
-/*	$OpenBSD: opt.h,v 1.9 2010/10/21 18:57:42 ratchov Exp $	*/
+/*	$OpenBSD: opt.h,v 1.10 2011/10/12 07:20:04 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -40,6 +40,6 @@ extern struct opt *opt_list;
 struct opt *opt_new(char *, struct dev *, struct aparams *, struct aparams *,
     int, int, int, unsigned);
 int opt_bind(struct opt *);
-struct opt *opt_byname(char *);
+struct opt *opt_byname(char *, unsigned);
 
 #endif /* !defined(OPT_H) */
