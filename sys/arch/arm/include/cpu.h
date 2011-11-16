@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.28 2011/09/20 22:02:13 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.29 2011/10/24 22:49:07 drahn Exp $	*/
 /*	$NetBSD: cpu.h,v 1.34 2003/06/23 11:01:08 martin Exp $	*/
 
 /*
@@ -256,9 +256,6 @@ int	cpu_alloc_idlepcb	(struct cpu_info *);
 /* cpuswitch.S */
 struct pcb;
 void	savectx		(struct pcb *pcb);
-
-/* ast.c */
-void userret		(struct proc *p);
 
 /* machdep.h */
 void bootsync		(int);

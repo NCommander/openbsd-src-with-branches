@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.40 2010/11/27 18:04:23 miod Exp $     */
+/*	$OpenBSD: trap.c,v 1.41 2011/04/03 14:56:28 guenther Exp $     */
 /*	$NetBSD: trap.c,v 1.47 1999/08/21 19:26:20 matt Exp $     */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -64,8 +64,6 @@
 volatile int startsysc = 0, faultdebug = 0;
 #endif
 
-static __inline void userret(struct proc *);
-
 void	arithflt(struct trapframe *);
 void	syscall(struct trapframe *);
 
@@ -99,24 +97,6 @@ int no_traps = 18;
 		frame->r0 = EFAULT;				\
 		return;						\
 	} while (0)
-
-/*
- * userret:
- *
- *	Common code used by various exception handlers to
- *	return to usermode.
- */
-static __inline void
-userret(struct proc *p)
-{
-	int sig;
-
-	/* Take pending signals. */
-	while ((sig = CURSIG(p)) !=0)
-		postsig(sig);
-
-	p->p_cpu->ci_schedstate.spc_curpriority = p->p_priority = p->p_usrpri;
-}
 
 void
 arithflt(frame)
