@@ -1,6 +1,5 @@
-# $OpenBSD: Makefile,v 1.2 2009/12/24 23:29:44 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2009/12/25 02:00:46 schwarze Exp $
 
 REGRESS_TARGETS=FILES
-GROFF_TARGETS=FILES
 
 .include <bsd.regress.mk>

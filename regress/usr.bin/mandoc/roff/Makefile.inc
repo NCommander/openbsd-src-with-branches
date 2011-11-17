@@ -1,3 +1,5 @@
-# $OpenBSD: Makefile.inc,v 1.1 2009/10/28 03:20:42 schwarze Exp $
+# $OpenBSD: Makefile.inc,v 1.1 2010/04/25 17:35:31 schwarze Exp $
+
+SKIP_TMAN?=ALL SILENT
 
 .include "../Makefile.inc"
