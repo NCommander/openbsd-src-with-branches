@@ -7670,6 +7670,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "ZTE K3565-Z USB MSM modem",
 	},
 	{
+	    USB_VENDOR_ZTE, USB_PRODUCT_ZTE_UMASS_INSTALLER4,
+	    "ZTE USB MSM installer",
+	},
+	{
 	    USB_VENDOR_ZTE, USB_PRODUCT_ZTE_MSA110UP,
 	    "ONDA MSA110UP USB MSM modem",
 	},
