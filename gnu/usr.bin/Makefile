@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.49 2011/09/22 22:21:13 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.50 2011/10/30 20:57:06 schwarze Exp $
 #	$NetBSD: Makefile,v 1.35 1996/04/03 21:20:52 chuck Exp $
 
 .include <bsd.own.mk>
@@ -10,7 +10,7 @@ SUBDIR+=	cc gcc ../egcs/gcc
 SUBDIR+=	gcc
 .  elif ${COMPILER_VERSION:L} == "gcc4"
 SUBDIR+=	cc
-.  else
+.  elif ${COMPILER_VERSION:L} == "gcc2"
 SUBDIR+=	../egcs/gcc
 .  endif
 .endif
