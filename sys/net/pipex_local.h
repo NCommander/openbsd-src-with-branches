@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex_local.h,v 1.12 2011/07/08 19:34:04 yasuoka Exp $	*/
+/*	$OpenBSD: pipex_local.h,v 1.13 2011/10/15 03:24:11 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -390,7 +390,9 @@ Static void                  pipex_ppp_output (struct mbuf *, struct pipex_sessi
 Static inline int            pipex_ppp_proto (struct mbuf *, struct pipex_session *, int, int *);
 Static void                  pipex_ppp_input (struct mbuf *, struct pipex_session *, int);
 Static void                  pipex_ip_input (struct mbuf *, struct pipex_session *);
+#ifdef INET6
 Static void                  pipex_ip6_input (struct mbuf *, struct pipex_session *);
+#endif
 Static struct mbuf           *pipex_common_input(struct pipex_session *, struct mbuf *, int, int);
 
 #ifdef PIPEX_PPPOE
