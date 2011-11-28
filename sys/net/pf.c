@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.786 2011/11/25 12:52:10 dlg Exp $ */
+/*	$OpenBSD: pf.c,v 1.787 2011/11/26 03:28:46 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1062,8 +1062,6 @@ pf_state_expires(const struct pf_state *state)
 	/* handle all PFTM_* > PFTM_MAX here */
 	if (state->timeout == PFTM_PURGE)
 		return (time_second);
-	if (state->timeout == PFTM_UNTIL_PACKET)
-		return (0);
 	KASSERT(state->timeout != PFTM_UNLINKED);
 	KASSERT(state->timeout < PFTM_MAX);
 	timeout = state->rule.ptr->timeout[state->timeout];
