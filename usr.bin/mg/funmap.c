@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.33 2011/01/17 03:12:06 kjell Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.34 2011/01/18 16:25:40 kjell Exp $	*/
 
 /* This file is in the public domain */
 
@@ -135,7 +135,10 @@ static struct funmap functnames[] = {
 	{prefixregion, "prefix-region",},
 	{backline, "previous-line",},
 	{prevwind, "previous-window",},
+	{poptag, "pop-tag-mark",},
 	{spawncli, "push-shell",},
+	{findtag, "find-tag",},
+	{tagsvisit, "visit-tags-table",},
 	{showcwdir, "pwd",},
 	{queryrepl, "query-replace",},
 #ifdef REGEX

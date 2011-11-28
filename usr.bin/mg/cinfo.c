@@ -1,4 +1,4 @@
-/*	$OpenBSD: cinfo.c,v 1.14 2005/11/18 20:56:52 deraadt Exp $	*/
+/*	$OpenBSD: cinfo.c,v 1.15 2005/12/13 06:01:27 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -19,7 +19,12 @@
  * character set, and lets me ask some questions that the
  * standard "ctype" macros cannot ask.
  */
-const char cinfo[256] = {
+/*
+ * Due to incompatible behaviour between "standard" emacs and
+ * ctags word traversing, '_' character's value is changed on 
+ * the fly in ctags mode, hence non-const.
+ */
+char cinfo[256] = {
 	_MG_C, _MG_C, _MG_C, _MG_C,				      /* 0x0X */
 	_MG_C, _MG_C, _MG_C, _MG_C,
 	_MG_C, _MG_C, _MG_C, _MG_C,
