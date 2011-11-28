@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.28 2011/06/23 04:09:08 dlg Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.29 2011/08/08 01:30:25 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -1752,10 +1752,10 @@ myx_buf_fill(struct myx_softc *sc, int ring)
 
 	return (mb);
 
-mfree:
-	m_freem(m);
 put:
 	myx_buf_put(&sc->sc_rx_buf_free[ring], mb);
+mfree:
+	m_freem(m);
 
 	return (NULL);
 }
