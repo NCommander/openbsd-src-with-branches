@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.355 2011/11/26 03:28:46 mcbride Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.356 2011/11/28 01:04:50 dlg Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -887,7 +887,7 @@ struct pfsync_state_key {
 };
 
 struct pfsync_state {
-	u_int32_t	 id[2];
+	u_int64_t	 id;
 	char		 ifname[IFNAMSIZ];
 	struct pfsync_state_key	key[2];
 	struct pfsync_state_peer src;
