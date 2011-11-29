@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_hibernate.c,v 1.29 2011/11/22 07:59:06 mlarkin Exp $	*/
+/*	$OpenBSD: subr_hibernate.c,v 1.30 2011/11/23 07:11:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -685,7 +685,9 @@ get_hibernate_info(union hibernate_info *hiber_info, int suspend)
 
 	return (0);
 fail:
-	uvm_pmr_free_piglet(hiber_info->piglet_va, HIBERNATE_CHUNK_SIZE*3);
+	if (suspend)
+		uvm_pmr_free_piglet(hiber_info->piglet_va, HIBERNATE_CHUNK_SIZE*3);
+
 	return (1);
 }
 
