@@ -807,7 +807,7 @@ vic_intr(void *arg)
 
 	vic_write(sc, VIC_CMD, VIC_CMD_INTR_ACK);
 
-	return (1);
+	return (-1);
 }
 
 void
