@@ -722,6 +722,46 @@ const struct usb_known_product usb_known_products[] = {
 	    "Speakers",
 	},
 	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPHONE,
+	    "iPhone",
+	},
+	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPOD_TOUCH,
+	    "iPod Touch",
+	},
+	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPHONE_3G,
+	    "iPhone 3G",
+	},
+	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPOD_TOUCH_2G,
+	    "iPod Touch 2G",
+	},
+	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPHONE_3GS,
+	    "iPhone 3GS",
+	},
+	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPHONE_4_GSM,
+	    "iPhone 4 GSM",
+	},
+	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPOD_TOUCH_3G,
+	    "iPod Touch 3G",
+	},
+	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPHONE_4_CDMA,
+	    "iPhone 4 CDMA",
+	},
+	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPOD_TOUCH_4G,
+	    "iPod Touch 4G",
+	},
+	{
+	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPHONE_4S,
+	    "iPhone 4S",
+	},
+	{
 	    USB_VENDOR_APPLE, USB_PRODUCT_APPLE_ETHERNET,
 	    "Ethernet A1277",
 	},
