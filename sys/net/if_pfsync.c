@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.177 2011/11/27 16:06:30 mikeb Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.178 2011/11/29 10:17:52 dlg Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1768,7 +1768,7 @@ pfsync_undefer(struct pfsync_deferral *pd, int drop)
 	if (drop)
 		m_freem(pd->pd_m);
 	else {
-		if (pd->pd_st->rule.ptr->rt) {
+		if (pd->pd_st->rule.ptr->rt == PF_ROUTETO) {
 			switch (pd->pd_st->key[PF_SK_WIRE]->af) {
 #ifdef INET
 			case AF_INET:
