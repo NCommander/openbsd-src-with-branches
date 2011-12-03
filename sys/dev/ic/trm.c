@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.c,v 1.28 2011/04/26 15:46:58 krw Exp $
+/*	$OpenBSD: trm.c,v 1.29 2011/04/27 03:39:32 krw Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.c
@@ -296,7 +296,7 @@ trm_StartWaitingSRB(struct trm_softc *sc)
 	if ((sc->pActiveDCB != NULL) ||
 	    (TAILQ_EMPTY(&sc->waitingSRB)) ||
 	    (sc->sc_Flag & (RESET_DETECT | RESET_DONE | RESET_DEV)) != 0)
-		return;
+		goto out;
 
 	for (pSRB = TAILQ_FIRST(&sc->waitingSRB); pSRB != NULL; pSRB = next) {
 		next = TAILQ_NEXT(pSRB, link);
@@ -309,6 +309,7 @@ trm_StartWaitingSRB(struct trm_softc *sc)
 		}
 	}
 
+out:
 	splx(intflag);
 }
 
