@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.609 2011/09/07 23:40:52 haesbaert Exp $	*/
+/*	$OpenBSD: parse.y,v 1.610 2011/10/13 18:30:54 claudio Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -608,10 +608,7 @@ option		: SET REASSEMBLE yesno optnodf		{
 				yyerror("hostid must be non-zero");
 				YYERROR;
 			}
-			if (pfctl_set_hostid(pf, $3) != 0) {
-				yyerror("error setting hostid %08x", $3);
-				YYERROR;
-			}
+			pfctl_set_hostid(pf, $3);
 		}
 		| SET BLOCKPOLICY DROP	{
 			if (pf->opts & PF_OPT_VERBOSE)
