@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.c,v 1.45 2011/11/09 10:28:01 guenther Exp $ */
+/*	$OpenBSD: rthread.c,v 1.46 2011/12/05 04:02:03 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -99,7 +99,7 @@ _rthread_start(void *v)
 }
 
 static void
-sigthr_handler(int sig)
+sigthr_handler(__unused int sig)
 {
 	pthread_t self = pthread_self();
 
