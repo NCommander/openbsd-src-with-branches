@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2.c,v 1.122 2010/08/31 09:58:37 djm Exp $ */
+/* $OpenBSD: auth2.c,v 1.123 2011/03/10 02:52:57 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -109,7 +109,7 @@ auth2_read_banner(void)
 		close(fd);
 		return (NULL);
 	}
-	if (st.st_size > 1*1024*1024) {
+	if (st.st_size <= 0 || st.st_size > 1*1024*1024) {
 		close(fd);
 		return (NULL);
 	}

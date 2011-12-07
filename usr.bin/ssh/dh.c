@@ -1,4 +1,4 @@
-/* $OpenBSD: dh.c,v 1.47 2008/06/26 09:19:39 djm Exp $ */
+/* $OpenBSD: dh.c,v 1.48 2009/10/01 11:37:33 grunk Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  *
@@ -233,6 +233,8 @@ dh_gen_key(DH *dh, int need)
 {
 	int i, bits_set, tries = 0;
 
+	if (need < 0)
+		fatal("dh_gen_key: need < 0");
 	if (dh->p == NULL)
 		fatal("dh_gen_key: dh->p == NULL");
 	if (need > INT_MAX / 2 || 2 * need >= BN_num_bits(dh->p))
