@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe_type.h,v 1.8 2011/06/10 12:46:35 claudio Exp $	*/
+/*	$OpenBSD: ixgbe_type.h,v 1.9 2011/11/27 16:14:31 mikeb Exp $	*/
 
 /******************************************************************************
 
@@ -1318,7 +1318,6 @@
 #define IXGBE_EIMS_ENABLE_MASK ( \
                                 IXGBE_EIMS_RTX_QUEUE       | \
                                 IXGBE_EIMS_LSC             | \
-                                IXGBE_EIMS_TCP_TIMER       | \
                                 IXGBE_EIMS_OTHER)
 
 /* Immediate Interrupt Rx (A.K.A. Low Latency Interrupt) */
