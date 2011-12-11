@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.16 2008/02/10 16:56:13 kettenis Exp $	*/
+/*	$OpenBSD: nlist.c,v 1.17 2009/10/27 23:59:22 deraadt Exp $	*/
 /*	$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $	*/
 
 /*-
@@ -65,7 +65,6 @@ int	fscale;				/* kernel _fscale variable */
 int	maxslp;
 
 extern kvm_t *kd;
-extern int kvm_sysctl_only;
 
 #define kread(x, v) \
 	kvm_read(kd, psnl[x].n_value, &v, sizeof v) != sizeof(v)
