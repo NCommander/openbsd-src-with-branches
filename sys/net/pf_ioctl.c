@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.246 2011/11/28 01:04:50 dlg Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.247 2011/11/29 10:17:52 dlg Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2519,8 +2519,6 @@ pf_rule_copyin(struct pf_rule *from, struct pf_rule *to,
 	pf_pool_copyin(&from->rdr, &to->rdr);
 	pf_pool_copyin(&from->route, &to->route);
 
-	to->naf = from->naf;
-
 	if (pf_kif_setup(to->ifname, &to->kif))
 		return (EINVAL);
 	if (pf_kif_setup(to->rcv_ifname, &to->rcv_kif))
@@ -2603,6 +2601,7 @@ pf_rule_copyin(struct pf_rule *from, struct pf_rule *to,
 	to->match_tag_not = from->match_tag_not;
 	to->keep_state = from->keep_state;
 	to->af = from->af;
+	to->naf = from->naf;
 	to->proto = from->proto;
 	to->type = from->type;
 	to->code = from->code;
