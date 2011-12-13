@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.16 2009/10/26 20:17:27 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.17 2010/11/18 21:13:19 miod Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -157,7 +157,7 @@ device_register(struct device *dev, void *aux)
 
 		spcsc = dev->dv_parent->dv_parent;
 
-                if (strcmp(autoboot.cont, spcsc->dv_cfdata->cf_driver->cd_name) == 0 &&
+                if (strcmp(spcsc->dv_xname, autoboot.cont) == 0 &&
 		    sa->sa_sc_link->target == autoboot.targ &&
 		    sa->sa_sc_link->lun == 0) {
                         bootdv = dev;
