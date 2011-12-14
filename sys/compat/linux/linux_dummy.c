@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_dummy.c,v 1.17 2011/04/05 15:36:09 pirofti Exp $ */
+/*	$OpenBSD: linux_dummy.c,v 1.18 2011/11/25 10:10:05 robert Exp $ */
 
 /*-
  * Copyright (c) 1994-1995 Søren Schmidt
@@ -99,7 +99,6 @@ DUMMY(sched_rr_get_interval);	/* #161 */
 DUMMY(vm86);			/* #166 */
 DUMMY(query_module);		/* #167 */
 DUMMY(nfsservctl);		/* #169 */
-DUMMY(prctl);			/* #172 */
 DUMMY(rt_sigtimedwait);		/* #177 */
 DUMMY(rt_queueinfo);		/* #178 */
 DUMMY(capget);			/* #184 */
