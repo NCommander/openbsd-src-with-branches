@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_optimize.c,v 1.29 2011/07/27 00:26:10 mcbride Exp $ */
+/*	$OpenBSD: pfctl_optimize.c,v 1.30 2011/11/23 10:24:37 henning Exp $ */
 
 /*
  * Copyright (c) 2004 Mike Frantzen <frantzen@openbsd.org>
@@ -175,6 +175,7 @@ struct pf_rule_field {
     PF_RULE_FIELD(dst.neg,		NOMERGE),
     PF_RULE_FIELD(rtableid,		NOMERGE),
     PF_RULE_FIELD(onrdomain,		NOMERGE),
+    PF_RULE_FIELD(naf,			NOMERGE),
 
     /* These fields can be merged */
     PF_RULE_FIELD(src.addr,		COMBINED),
