@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.150 2010/10/06 22:19:20 mikeb Exp $	*/
+/*	$OpenBSD: parse.y,v 1.151 2011/07/06 22:03:00 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1428,11 +1428,11 @@ atospi(char *s, u_int32_t *spivalp)
 	if (atoul(s, &ulval) == -1)
 		return (-1);
 	if (ulval > UINT_MAX) {
-		yyerror("%lld not a valid spi", ulval);
+		yyerror("%lu not a valid spi", ulval);
 		return (-1);
 	}
 	if (ulval >= SPI_RESERVED_MIN && ulval <= SPI_RESERVED_MAX) {
-		yyerror("%lld within reserved spi range", ulval);
+		yyerror("%lu within reserved spi range", ulval);
 		return (-1);
 	}
 	*spivalp = ulval;
