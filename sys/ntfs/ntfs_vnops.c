@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vnops.c,v 1.23 2011/04/05 14:14:07 thib Exp $	*/
+/*	$OpenBSD: ntfs_vnops.c,v 1.24 2011/07/04 20:35:35 deraadt Exp $	*/
 /*	$NetBSD: ntfs_vnops.c,v 1.6 2003/04/10 21:57:26 jdolecek Exp $	*/
 
 /*
@@ -72,7 +72,7 @@ static int	ntfs_bmap(void *);
 static int	ntfs_fsync(void *);
 static int	ntfs_pathconf(void *);
 
-int	ntfs_prtactive = 1;	/* 1 => print out reclaim of active vnodes */
+int	ntfs_prtactive = 0;	/* 1 => print out reclaim of active vnodes */
 
 /*
  * This is a noop, simply returning what one has been given.

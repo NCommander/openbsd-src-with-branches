@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vfsops.c,v 1.26 2011/07/04 04:30:41 tedu Exp $	*/
+/*	$OpenBSD: ntfs_vfsops.c,v 1.27 2011/07/04 20:35:35 deraadt Exp $	*/
 /*	$NetBSD: ntfs_vfsops.c,v 1.7 2003/04/24 07:50:19 christos Exp $	*/
 
 /*-
@@ -547,10 +547,12 @@ ntfs_unmount(
 		return (error);
 	}
 
-	/* Check if only system vnodes are rest */
-	for(i=0;i<NTFS_SYSNODESNUM;i++)
-		 if((ntmp->ntm_sysvn[i]) && 
-		    (ntmp->ntm_sysvn[i]->v_usecount > 1)) return (EBUSY);
+	/* Check if system vnodes are still referenced */
+	for(i=0;i<NTFS_SYSNODESNUM;i++) {
+		if(((mntflags & MNT_FORCE) == 0) && (ntmp->ntm_sysvn[i] &&
+		    ntmp->ntm_sysvn[i]->v_usecount > 1))
+			return (EBUSY);
+	}
 
 	/* Dereference all system vnodes */
 	for(i=0;i<NTFS_SYSNODESNUM;i++)
