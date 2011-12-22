@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.104 2011/12/19 02:43:19 yasuoka Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.105 2011/12/21 14:53:26 sperreault Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -558,7 +558,7 @@ ipsec_common_input_cb(struct mbuf *m, struct tdb *tdbp, int skip, int protoff,
 
 	/*
 	 * Fix TCP/UDP checksum of UDP encapsulated transport mode ESP packet.
-	 * (RFC3948 3.1.1)
+	 * (RFC3948 3.1.2)
 	 */
 	if ((af == AF_INET || af == AF_INET6) &&
 	    (tdbp->tdb_flags & TDBF_UDPENCAP) &&
