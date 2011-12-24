@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.60 2011/07/08 21:51:40 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.61 2011/08/20 20:37:30 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -320,6 +320,8 @@ server_client_handle_key(int key, struct mouse_event *mouse, void *data)
 		if (c->flags & CLIENT_READONLY)
 			return;
 		if (options_get_number(oo, "mouse-select-pane") &&
+		    (!(options_get_number(oo, "status") &&
+		       mouse->y + 1 == c->tty.sy)) &&
 		    ((!(mouse->b & MOUSE_DRAG) && mouse->b != MOUSE_UP) ||
 		    wp->mode != &window_copy_mode)) {
 			/*
