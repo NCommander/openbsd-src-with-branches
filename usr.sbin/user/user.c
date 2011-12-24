@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.81 2011/04/16 07:41:08 sobrado Exp $ */
+/* $OpenBSD: user.c,v 1.82 2011/12/04 08:28:35 ajacoutot Exp $ */
 /* $NetBSD: user.c,v 1.69 2003/04/14 17:40:07 agc Exp $ */
 
 /*
@@ -1641,7 +1641,8 @@ usermgmt_usage(const char *prog)
 	} else if (strcmp(prog, "userdel") == 0) {
 		(void) fprintf(stderr, "usage: %s -D [-p preserve-value]\n",
 		    prog);
-		(void) fprintf(stderr, "       %s [-prv] user\n", prog);
+		(void) fprintf(stderr, "       %s [-rv] [-p preserve-value] "
+		    "user\n", prog);
 #ifdef EXTENSIONS
 	} else if (strcmp(prog, "userinfo") == 0) {
 		(void) fprintf(stderr, "usage: %s [-e] user\n", prog);
