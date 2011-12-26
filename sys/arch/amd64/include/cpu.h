@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.68 2011/06/16 19:46:40 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.69 2011/09/20 14:32:50 pirofti Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -255,6 +255,7 @@ extern int biosextmem;
 extern int cpu;
 extern int cpu_feature;
 extern int cpu_ecxfeature;
+extern int ecpu_ecxfeature;
 extern int cpu_id;
 extern char cpu_vendor[];
 extern int cpuid_level;
