@@ -659,12 +659,6 @@ void			sr_crypto_discipline_init(struct sr_discipline *);
 void			sr_aoe_discipline_init(struct sr_discipline *);
 void			sr_aoe_server_discipline_init(struct sr_discipline *);
 
-/* raid 1 */
-/* XXX - currently (ab)used by AOE and CRYPTO. */
-void			sr_raid1_set_chunk_state(struct sr_discipline *,
-			    int, int);
-void			sr_raid1_set_vol_state(struct sr_discipline *);
-
 /* Crypto discipline hooks. */
 int			sr_crypto_get_kdf(struct bioc_createraid *,
 			    struct sr_discipline *);
