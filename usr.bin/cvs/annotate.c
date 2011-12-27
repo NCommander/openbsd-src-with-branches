@@ -1,4 +1,4 @@
-/*	$OpenBSD: annotate.c,v 1.61 2010/07/23 21:46:05 ray Exp $	*/
+/*	$OpenBSD: annotate.c,v 1.62 2010/07/30 21:47:18 ray Exp $	*/
 /*
  * Copyright (c) 2007 Tobias Stoeckmann <tobias@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -32,7 +32,6 @@ void	cvs_annotate_local(struct cvs_file *);
 
 extern char	*cvs_specified_tag;
 
-static char	*dateflag;
 static int	 force_head = 0;
 
 struct cvs_cmd cvs_cmd_annotate = {
@@ -60,6 +59,7 @@ cvs_annotate(int argc, char **argv)
 {
 	int ch, flags;
 	char *arg = ".";
+	char *dateflag = NULL;
 	struct cvs_recursion cr;
 
 	flags = CR_RECURSE_DIRS;
