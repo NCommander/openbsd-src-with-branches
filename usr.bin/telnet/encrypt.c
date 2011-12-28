@@ -1,4 +1,4 @@
-/*     $OpenBSD: encrypt.c,v 1.2 2006/02/01 19:04:37 otto Exp $     */
+/*     $OpenBSD: encrypt.c,v 1.3 2006/12/21 02:44:55 krw Exp $     */
 
 /*-
  * Copyright (c) 1991, 1993
@@ -738,6 +738,9 @@ encrypt_keyid(struct key_info *kp, unsigned char *keyid, int len)
     Encryptions *ep;
     int dir = kp->dir;
     int ret = 0;
+
+    if (len > MAXKEYLEN)
+        len = MAXKEYLEN;
 
     if (!(ep = (*kp->getcrypt)(*kp->modep))) {
 	if (len == 0)
