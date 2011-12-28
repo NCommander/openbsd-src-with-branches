@@ -3389,6 +3389,7 @@ sr_ioctl_installboot(struct sr_softc *sc, struct bioc_installboot *bb)
 		if (!strncmp(dk->dk_name, bb->bb_dev, sizeof(bb->bb_dev)))
 			break;
 	if (dk == NULL || dk->dk_label == NULL ||
+	    (dk->dk_flags & DKF_LABELVALID) == 0 ||
 	    bcmp(dk->dk_label->d_uid, &duid, sizeof(duid)) == 0) {
 		printf("%s: failed to get DUID for softraid volume!\n",
 		    DEVNAME(sd->sd_sc));
