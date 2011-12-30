@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.83 2011/12/24 07:17:04 jmc Exp $ */
+/* $OpenBSD: user.c,v 1.84 2011/12/27 08:29:38 ajacoutot Exp $ */
 /* $NetBSD: user.c,v 1.69 2003/04/14 17:40:07 agc Exp $ */
 
 /*
@@ -1524,7 +1524,7 @@ moduser(char *login_name, char *newlogin, user_t *up)
 					(void) close(ptmpfd);
 					pw_abort();
 					errx(EXIT_FAILURE, "can't add `%s', "
-					    "line too long (%d bytes)", buf,
+					    "line too long (%zu bytes)", buf,
 					    len + expand_len(pwp->pw_gecos,
 					    newlogin));
 				}
