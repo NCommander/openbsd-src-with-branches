@@ -396,6 +396,11 @@ bio_inq(char *name)
 				    volname, status, size, bv.bv_dev,
 				    percent, seconds);
 				break;
+			case 'c':
+				printf("%11s %-10s %14s %-7s CONCAT%s%s\n",
+				    volname, status, size, bv.bv_dev,
+				    percent, seconds);
+				break;
 			default:
 				printf("%11s %-10s %14s %-7s RAID%u%s%s\n",
 				    volname, status, size, bv.bv_dev,

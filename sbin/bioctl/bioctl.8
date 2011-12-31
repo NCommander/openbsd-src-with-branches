@@ -203,9 +203,13 @@ A striping discipline with floating parity chunk.
 .It C
 CRYPTO:
 An encrypting discipline.
+.It c
+CONCAT:
+A concatenating discipline.
 .El
 .Pp
-The RAID 0 and RAID 1 disciplines requires a minimum of two devices passed to
+The RAID 0, RAID 1 and CONCAT disciplines require a minimum of two devices to
+be provided via
 .Fl l ,
 RAID 4 and RAID 5 require at least three devices,
 and the CRYPTO discipline requires exactly one.

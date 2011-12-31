@@ -491,6 +491,7 @@ file	dev/softraid_raidp.c		softraid
 file	dev/softraid_crypto.c		softraid & crypto
 file	dev/softraid_aoe.c		softraid & ether & aoe
 file	dev/softraid_raid6.c		softraid
+file	dev/softraid_concat.c		softraid
 
 # SPD Memory EEPROM
 device	spdmem
