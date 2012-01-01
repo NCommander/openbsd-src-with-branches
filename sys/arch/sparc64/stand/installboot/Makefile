@@ -9,6 +9,8 @@ MANSUBDIR=sparc64
 .if ${MACHINE} == "sparc64"
 PROG=	installboot
 SRCS=	installboot.c loadfile.c
+LDADD=	-lutil
+DPADD=	${LIBUTIL}
 .else
 NOPROG=
 .endif
