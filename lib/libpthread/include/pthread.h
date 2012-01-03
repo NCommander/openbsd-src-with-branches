@@ -1,4 +1,4 @@
-/*	$OpenBSD: pthread.h,v 1.29 2008/12/18 09:30:32 guenther Exp $	*/
+/*	$OpenBSD: pthread.h,v 1.30 2010/04/12 01:54:23 tedu Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 by Chris Provenzano, proven@mit.edu
@@ -265,7 +265,6 @@ int		pthread_rwlockattr_setpshared(pthread_rwlockattr_t *, int);
 int		pthread_rwlockattr_destroy(pthread_rwlockattr_t *);
 pthread_t	pthread_self(void);
 int		pthread_setspecific(pthread_key_t, const void *);
-int		pthread_sigmask(int, const sigset_t *, sigset_t *);
 
 int		pthread_cancel(pthread_t);
 int		pthread_setcancelstate(int, int *);
