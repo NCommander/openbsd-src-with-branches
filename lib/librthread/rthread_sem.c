@@ -1,4 +1,4 @@
-/*	$OpenBSD */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
