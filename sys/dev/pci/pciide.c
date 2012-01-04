@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide.c,v 1.334 2011/11/02 23:04:20 jsg Exp $	*/
+/*	$OpenBSD: pciide.c,v 1.335 2011/11/12 18:39:23 guenther Exp $	*/
 /*	$NetBSD: pciide.c,v 1.127 2001/08/03 01:31:08 tsutsui Exp $	*/
 
 /*
@@ -747,6 +747,10 @@ const struct pciide_product_desc pciide_sis_products[] =  {
 	  sata_chip_map
 	},
 	{ PCI_PRODUCT_SIS_182,		/* SIS 182 SATA */
+	  0,
+	  sata_chip_map
+	},
+	{ PCI_PRODUCT_SIS_1183,		/* SIS 1183 SATA */
 	  0,
 	  sata_chip_map
 	}
