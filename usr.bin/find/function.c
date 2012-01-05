@@ -1,4 +1,4 @@
-/*	$OpenBSD: function.c,v 1.36 2010/12/01 01:20:29 millert Exp $	*/
+/*	$OpenBSD: function.c,v 1.37 2012/01/02 23:19:45 pascal Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -504,8 +504,8 @@ c_exec(char *unused, char ***argvp, int isok)
 		new->flags |= F_NEEDOK;
 
 	/*
-	 * Terminate if we encounter an arg exacty equal to ";", or an
-	 * arg exacty equal to "+" following an arg exacty equal to
+	 * Terminate if we encounter an arg exactly equal to ";", or an
+	 * arg exactly equal to "+" following an arg exactly equal to
 	 * "{}".
 	 */
 	for (ap = argv = *argvp, brace = 0;; ++ap) {
