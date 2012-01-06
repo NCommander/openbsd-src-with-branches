@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.318 2011/07/04 04:34:14 claudio Exp $ */
+/*	$OpenBSD: session.c,v 1.319 2011/07/09 02:51:18 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -1965,7 +1965,7 @@ parse_open(struct peer *peer)
 
 	if (capa_neg_calc(peer) == -1) {
 		log_peer_warnx(&peer->conf,
-		    "capabilitiy negotiation calculation failed");
+		    "capability negotiation calculation failed");
 		session_notification(peer, ERR_OPEN, 0, NULL, 0);
 		change_state(peer, STATE_IDLE, EVNT_RCVD_OPEN);
 		return (-1);
