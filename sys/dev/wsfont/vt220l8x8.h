@@ -1,5 +1,5 @@
-/*	$OpenBSD: vt220l8x8.h,v 1.1 2001/03/18 04:30:24 nate Exp $ */
-/* 	$NetBSD: vt220l8x8.h,v 1.3 2000/01/05 18:44:25 ad Exp $	*/
+/*	$OpenBSD: vt220l8x8.h,v 1.2 2009/06/21 20:30:35 jsg Exp $ */
+/*	$NetBSD: vt220l8x8.h,v 1.3 2000/01/05 18:44:25 ad Exp $	*/
 
 /*
  * Copyright (c) 1992, 1995 Hellmuth Michaelis and Joerg Wunsch

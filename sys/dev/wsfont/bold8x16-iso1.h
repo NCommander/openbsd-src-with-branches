@@ -1,4 +1,4 @@
-/*	$OpenBSD: bold8x16-iso1.h,v 1.2 2008/06/26 05:42:19 ray Exp $ */
+/*	$OpenBSD: bold8x16-iso1.h,v 1.3 2009/06/21 20:30:35 jsg Exp $ */
 
 /*-
  * Copyright (c) 1999 The NetBSD Foundation, Inc.
@@ -35,7 +35,7 @@
  */
 static u_char bold8x16_iso1_data[];
 
-struct wsdisplay_font bold8x16_iso1 = { 
+struct wsdisplay_font bold8x16_iso1 = {
 	"Boldface.iso1",		/* typeface name */
 	0,				/* index */
 	' ',				/* firstchar */
