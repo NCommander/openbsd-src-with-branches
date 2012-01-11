@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.123 2011/07/05 21:40:38 dhill Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.124 2011/07/06 01:57:37 dlg Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -471,6 +471,8 @@ in_pcbdetach(void *v)
 	struct inpcb *inp = v;
 	struct socket *so = inp->inp_socket;
 	int s;
+
+	splsoftassert(IPL_SOFTNET);
 
 	so->so_pcb = 0;
 	sofree(so);
