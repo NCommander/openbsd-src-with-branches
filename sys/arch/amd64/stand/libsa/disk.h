@@ -36,6 +36,7 @@
 struct diskinfo {
 	bios_diskinfo_t bios_info;
 	struct disklabel disklabel;
+	struct sr_boot_volume *sr_vol;
 
 	dev_t bsddev, bootdev;
 
@@ -43,10 +44,12 @@ struct diskinfo {
 };
 TAILQ_HEAD(disklist_lh, diskinfo);
 
-/* Head of this list */
+/* Head of this list. */
 extern struct diskinfo *bootdev_dip;
+
+/* List of softraid volumes. */
+extern struct sr_boot_volume_head sr_volumes;
 
 void dump_diskinfo(void);
 
 #endif /* _DISKPROBE_H */
-
