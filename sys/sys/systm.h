@@ -99,6 +99,7 @@ extern dev_t dumpdev;		/* dump device */
 extern long dumplo;		/* offset into dumpdev */
 
 extern dev_t rootdev;		/* root device */
+extern u_char bootduid[8];	/* boot device disklabel uid */
 extern u_char rootduid[8];	/* root device disklabel uid */
 extern struct vnode *rootvp;	/* vnode equivalent to above */
 

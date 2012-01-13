@@ -543,7 +543,7 @@ bios_getopt()
 
 		case BOOTARG_BOOTDUID:
 			bios_bootduid = (bios_bootduid_t *)q->ba_arg;
-			bcopy(bios_bootduid, rootduid, sizeof(rootduid));
+			bcopy(bios_bootduid, bootduid, sizeof(bootduid));
 			break;
 
 		default:
