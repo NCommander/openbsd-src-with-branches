@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfork_thread.S,v 1.1 2005/12/23 18:50:23 miod Exp $	*/
+/*	$OpenBSD: rfork_thread.S,v 1.2 2011/10/17 06:39:20 guenther Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -61,7 +61,7 @@ ENTRY(__tfork_thread)
 	jsr	a1@		/* func */
 	addq	#4, sp
 
-	__DO_SYSCALL(threxit)
+	__DO_SYSCALL(__threxit)
 
 9:
 	/*

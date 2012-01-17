@@ -382,10 +382,10 @@ char *syscallnames[] = {
 #endif
 	"sched_yield",			/* 298 = sched_yield */
 	"getthrid",			/* 299 = getthrid */
-	"thrsleep",			/* 300 = thrsleep */
-	"thrwakeup",			/* 301 = thrwakeup */
-	"threxit",			/* 302 = threxit */
-	"thrsigdivert",			/* 303 = thrsigdivert */
+	"__thrsleep",			/* 300 = __thrsleep */
+	"__thrwakeup",			/* 301 = __thrwakeup */
+	"__threxit",			/* 302 = __threxit */
+	"__thrsigdivert",			/* 303 = __thrsigdivert */
 	"__getcwd",			/* 304 = __getcwd */
 	"adjfreq",			/* 305 = adjfreq */
 	"getfsstat",			/* 306 = getfsstat */

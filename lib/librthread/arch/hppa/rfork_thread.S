@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfork_thread.S,v 1.1 2005/12/28 19:11:25 miod Exp $	*/
+/*	$OpenBSD: rfork_thread.S,v 1.2 2011/10/17 06:39:20 guenther Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -56,7 +56,7 @@ ENTRY(__tfork_thread, 0)
 	copy	r31, rp
 
 	copy	r0, arg0
-	SYSCALL(threxit)
+	SYSCALL(__threxit)
 
 1:
 	bv	r0(rp)

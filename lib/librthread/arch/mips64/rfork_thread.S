@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfork_thread.S,v 1.1 2005/12/24 12:01:26 miod Exp $	*/
+/*	$OpenBSD: rfork_thread.S,v 1.2 2011/10/17 06:39:20 guenther Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -64,7 +64,7 @@ LEAF(__tfork_thread, 32)
 	 move	v0, zero
 
 	move	a0, zero
-	__DO_SYSCALL(threxit)
+	__DO_SYSCALL(__threxit)
 
 9:
 	/*

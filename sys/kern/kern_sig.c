@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.130 2011/11/22 23:20:19 joshe Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.131 2011/12/11 19:42:28 guenther Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1503,9 +1503,9 @@ sys_nosys(struct proc *p, void *v, register_t *retval)
 }
 
 int
-sys_thrsigdivert(struct proc *p, void *v, register_t *retval)
+sys___thrsigdivert(struct proc *p, void *v, register_t *retval)
 {
-	struct sys_thrsigdivert_args /* {
+	struct sys___thrsigdivert_args /* {
 		syscallarg(sigset_t) sigmask;
 		syscallarg(siginfo_t *) info;
 		syscallarg(const struct timespec *) timeout;
