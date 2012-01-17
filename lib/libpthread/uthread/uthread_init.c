@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_init.c,v 1.45 2010/06/27 03:14:28 guenther Exp $	*/
+/*	$OpenBSD: uthread_init.c,v 1.46 2011/09/28 18:52:47 fgsch Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <sys/param.h>
 
+#include <sys/event.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/mount.h>
@@ -109,6 +110,8 @@ static void *references[] __used = {
 	&open,
 	&pipe,
 	&poll,
+	&pread,
+	&pwrite,
 	&read,
 	&readv,
 	&recvfrom,
