@@ -792,7 +792,7 @@ bio_createraid(u_int16_t level, char *dev_list, char *key_disk)
 		min_disks = 1;
 		break;
 	case 'c':
-		min_disks = 1;
+		min_disks = 2;
 		break;
 	case 'a':
 		break;
