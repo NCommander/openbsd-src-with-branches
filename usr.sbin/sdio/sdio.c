@@ -77,7 +77,7 @@ sdio_open(const char *name, struct sdio_hdl **hdl)
 		return -1;
 	}
 
-	(*hdl)->cookie = bl.bl_cookie;
+	(*hdl)->cookie = bl.bl_bio.bio_cookie;
 	return 0;
 }
 
