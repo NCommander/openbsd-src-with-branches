@@ -1,4 +1,4 @@
-/*	$OpenBSD: disassem.h,v 1.1 2004/01/15 01:19:50 drahn Exp $	*/
+/*	$OpenBSD: disassem.h,v 1.1 2004/02/01 05:09:48 drahn Exp $	*/
 /*	$NetBSD: disassem.h,v 1.4 2001/03/04 04:15:58 matt Exp $	*/
 
 /*
@@ -40,7 +40,8 @@
 typedef struct {
 	db_expr_t	(*di_readword)(db_expr_t);
 	void	(*di_printaddr)(db_expr_t);	
-	int	(*di_printf)(const char *, ...);
+	int	(*di_printf)(const char *, ...)
+	    __attribute__((__format__(__kprintf__,1,2)));
 } disasm_interface_t;
 
 /* Prototypes for callable functions */
