@@ -1,7 +1,8 @@
-/* $OpenBSD: privsep.h,v 1.2 2011/07/08 06:14:54 yasuoka Exp $ */
+/*	$OpenBSD$	*/
 
+/* This file is derived from OpenBSD:src/usr.sbin/ikectl/parser.h 1.9 */
 /*
- * Copyright (c) 2010 Yasuoka Masahiko <yasuoka@openbsd.org>
+ * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,28 +16,38 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef PRIVSEP_H
-#define PRIVSEP_H 1
 
-#define PRIVSEP_BUFSIZE		4092
+#ifndef _NPPPCTL_PARSER_H
+#define _NPPPCTL_PARSER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+enum actions {
+	NONE,
+	SESSION_BRIEF,
+	SESSION_PKTS,
+	SESSION_ALL,
+	CLEAR_SESSION
+};
 
-int   privsep_init (void);
-void  privsep_fini (void);
-pid_t privsep_priv_pid (void);
-FILE  *priv_fopen (const char *);
-int   priv_bind (int, const struct sockaddr *, socklen_t);
-int   priv_unlink (const char *);
-int   priv_socket (int, int, int);
-int   priv_open (const char *, int, mode_t);
-int   priv_send (int, const void *, int, int);
-int   priv_sendto (int, const void *, int, int, const struct sockaddr *, socklen_t);
+enum protocol {
+	PROTO_UNSPEC = 0,
+	PPTP,
+	L2TP,
+	PPPOE,
+	SSTP
+};
 
-#ifdef __cplusplus
-}
-#endif
+struct parse_result {
+	enum actions		 action;
+	u_int			 ppp_id;
+	int			 has_ppp_id;
+	struct sockaddr_storage	 address;
+	const char		*interface;
+	enum protocol		 protocol;
+	const char		*realm;
+	const char		*username;
+};
 
-#endif
+struct parse_result	*parse(int, char *[]);
+enum protocol            parse_protocol(const char *);
+
+#endif /* _PPPCTL_PARSER_H */
