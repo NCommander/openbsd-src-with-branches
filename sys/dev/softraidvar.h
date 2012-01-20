@@ -608,8 +608,9 @@ struct sr_softc {
 
 	struct rwlock		sc_lock;
 
+	struct bio_status	sc_status;	/* Status and messages. */
+
 	struct sr_chunk_head	sc_hotspare_list;	/* List of hotspares. */
-	struct sr_chunk		**sc_hotspares;	/* Array to hotspare chunks. */
 	struct rwlock		sc_hs_lock;	/* Lock for hotspares list. */
 	int			sc_hotspare_no; /* Number of hotspares. */
 
@@ -644,6 +645,9 @@ void			*sr_wu_get(void *);
 void			sr_wu_put(void *, void *);
 
 /* misc functions */
+void			sr_info(struct sr_softc *, const char *, ...);
+void			sr_warn(struct sr_softc *, const char *, ...);
+void			sr_error(struct sr_softc *, const char *, ...);
 int32_t			sr_validate_stripsize(u_int32_t);
 int			sr_meta_read(struct sr_discipline *);
 int			sr_meta_native_read(struct sr_discipline *, dev_t,

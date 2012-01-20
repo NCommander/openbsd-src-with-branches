@@ -1837,6 +1837,36 @@ sr_detach(struct device *self, int flags)
 }
 
 void
+sr_info(struct sr_softc *sc, const char *fmt, ...)
+{
+	va_list			ap;
+
+	va_start(ap, fmt);
+	bio_status(&sc->sc_status, 0, BIO_MSG_INFO, fmt, &ap);
+	va_end(ap);
+}
+
+void
+sr_warn(struct sr_softc *sc, const char *fmt, ...)
+{
+	va_list			ap;
+
+	va_start(ap, fmt);
+	bio_status(&sc->sc_status, 1, BIO_MSG_WARN, fmt, &ap);
+	va_end(ap);
+}
+
+void
+sr_error(struct sr_softc *sc, const char *fmt, ...)
+{
+	va_list			ap;
+
+	va_start(ap, fmt);
+	bio_status(&sc->sc_status, 1, BIO_MSG_ERROR, fmt, &ap);
+	va_end(ap);
+}
+
+void
 sr_minphys(struct buf *bp, struct scsi_link *sl)
 {
 	DNPRINTF(SR_D_MISC, "sr_minphys: %d\n", bp->b_bcount);
