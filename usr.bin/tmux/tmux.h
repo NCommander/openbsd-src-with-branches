@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.305 2012/01/21 08:40:09 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.306 2012/01/21 11:12:13 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1168,8 +1168,7 @@ struct client {
 #define CLIENT_DEAD 0x200
 #define CLIENT_BORDERS 0x400
 #define CLIENT_READONLY 0x800
-#define CLIENT_BACKOFF 0x1000
-#define CLIENT_REDRAWWINDOW 0x2000
+#define CLIENT_REDRAWWINDOW 0x1000
 	int		 flags;
 
 	struct event	 identify_timer;
