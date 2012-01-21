@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCreate.pm,v 1.54 2012/01/05 23:03:57 schwarze Exp $
+# $OpenBSD: PkgCreate.pm,v 1.55 2012/01/16 08:42:38 schwarze Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -679,6 +679,8 @@ sub ask_tree
 		chdir $portsdir or exit 2;
 		open STDERR, '>', '/dev/null';
 		$ENV{FULLPATH} = 'Yes';
+		delete $ENV{FLAVOR};
+		delete $ENV{SUBPACKAGE};
 		$ENV{SUBDIR} = $dep->{pkgpath};
 		$ENV{ECHO_MSG} = ':';
 		exec $make ('make', @action);
