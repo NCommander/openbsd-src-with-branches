@@ -827,6 +827,8 @@ sr_crypto_read_key_disk(struct sr_discipline *sd, dev_t dev)
 	 * Load a key disk and load keying material into memory.
 	 */
 
+	SLIST_INIT(&som);
+
 	sr_meta_getdevname(sc, dev, devname, sizeof(devname));
 
 	/* Make sure chunk is not already in use. */
@@ -898,7 +900,6 @@ sr_crypto_read_key_disk(struct sr_discipline *sd, dev_t dev)
 	    sizeof(key_disk->src_meta));
 
 	/* Read mask key from optional metadata. */
-	SLIST_INIT(&som);
 	sr_meta_opt_load(sc, sm, &som);
 	SLIST_FOREACH(omi, &som, omi_link) {
 		omh = omi->omi_som;
