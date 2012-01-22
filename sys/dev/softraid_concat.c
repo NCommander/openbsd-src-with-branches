@@ -66,8 +66,10 @@ sr_concat_create(struct sr_discipline *sd, struct bioc_createraid *bc,
 {
 	int			i;
 
-	if (no_chunk < 2)
+	if (no_chunk < 2) {
+		sr_error(sd->sd_sc, "CONCAT requires two or more chunks");
 		return EINVAL;
+        }
 
 	strlcpy(sd->sd_name, "CONCAT", sizeof(sd->sd_name));
 

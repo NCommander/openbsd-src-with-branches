@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid0.c,v 1.24 2011/12/25 15:28:17 jsing Exp $ */
+/* $OpenBSD: softraid_raid0.c,v 1.25 2011/12/26 14:54:52 jsing Exp $ */
 /*
  * Copyright (c) 2008 Marco Peereboom <marco@peereboom.us>
  *
@@ -75,9 +75,10 @@ int
 sr_raid0_create(struct sr_discipline *sd, struct bioc_createraid *bc,
     int no_chunk, int64_t coerced_size)
 {
-
-	if (no_chunk < 2)
+	if (no_chunk < 2) {
+		sr_error(sd->sd_sc, "RAID 0 requires two or more chunks");
 		return EINVAL;
+        }
 
 	/*
 	 * XXX add variable strip size later even though MAXPHYS is really
