@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.h,v 1.9 2011/07/08 18:30:17 yasuoka Exp $	*/
+/*	$OpenBSD: pipex.h,v 1.10 2011/10/15 03:24:11 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -89,6 +89,7 @@ struct pipex_session_req {
 #define	PIPEX_PPP_MPPE_REQUIRED		0x00000040
 #define	PIPEX_PPP_HAS_ACF		0x00000080
 #define	PIPEX_PPP_ADJUST_TCPMSS		0x00000100
+#define	PIPEX_PPP_INGRESS_FILTER	0x00000200
 	int8_t		pr_ccp_id;		/* CCP current packet id */
 	int		pr_ppp_id;		/* PPP Id. */
 	uint16_t	pr_peer_mru; 		/* Peer's MRU */
