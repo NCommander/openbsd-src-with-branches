@@ -1,4 +1,4 @@
-/* $OpenBSD: authfile.c,v 1.91 2011/05/23 07:24:57 djm Exp $ */
+/* $OpenBSD: authfile.c,v 1.92 2011/06/14 22:49:18 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -329,7 +329,7 @@ key_load_file(int fd, const char *filename, Buffer *blob)
 		    filename == NULL ? "" : " ");
 		return 0;
 	}
-	buffer_init(blob);
+	buffer_clear(blob);
 	for (;;) {
 		if ((len = atomicio(read, fd, buf, sizeof(buf))) == 0) {
 			if (errno == EPIPE)
