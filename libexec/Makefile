@@ -1,5 +1,5 @@
 #	from: @(#)Makefile	5.7 (Berkeley) 4/1/91
-#	$OpenBSD: Makefile,v 1.47 2012/01/05 23:03:57 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.48 2012/01/16 08:42:38 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -9,7 +9,7 @@ SUBDIR=	comsat fingerd ftpd getty identd lockspool \
 	talkd tcpd tftp-proxy tftpd uucpd
 
 SUBDIR+=login_passwd login_skey login_reject login_chpass \
-	login_lchpass login_token login_radius login_tis
+	login_lchpass login_token login_radius login_tis login_yubikey
 
 .if (${YP:L} == "yes")
 SUBDIR+=rpc.yppasswdd
