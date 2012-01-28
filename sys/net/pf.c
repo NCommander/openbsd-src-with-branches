@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.797 2012/01/26 18:19:59 bluhm Exp $ */
+/*	$OpenBSD: pf.c,v 1.798 2012/01/26 20:16:06 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5254,9 +5254,9 @@ pf_test_state_icmp(struct pf_pdesc *pd, struct pf_state **state,
 			    virtual_id, virtual_type, icmp_dir, &iidx,
 			    PF_ICMP_MULTI_NONE, 1);
 			if (ret >= 0) {
-				if (ret == PF_DROP && pd->af == AF_INET6 &&
+				if (ret == PF_DROP && pd2.af == AF_INET6 &&
 				    icmp_dir == PF_OUT) {
-					ret = pf_icmp_state_lookup(pd, &key,
+					ret = pf_icmp_state_lookup(&pd2, &key,
 					    state, virtual_id, virtual_type,
 					    icmp_dir, &iidx, multi, 1);
 					if (ret >= 0)
