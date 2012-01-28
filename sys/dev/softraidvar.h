@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.112 2011/12/28 16:19:52 jsing Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.115 2012/01/20 14:43:05 jsing Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -603,7 +603,6 @@ struct sr_discipline {
 struct sr_softc {
 	struct device		sc_dev;
 
-	int			(*sc_ioctl)(struct device *, u_long, caddr_t);
 	void			(*sc_shutdownhook)(void *);
 
 	struct rwlock		sc_lock;
