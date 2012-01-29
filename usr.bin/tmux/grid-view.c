@@ -1,4 +1,4 @@
-/* $OpenBSD: grid-view.c,v 1.8 2009/12/03 22:50:10 nicm Exp $ */
+/* $OpenBSD: grid-view.c,v 1.9 2011/01/25 23:40:26 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -94,8 +94,10 @@ grid_view_clear_history(struct grid *gd)
 		return;
 
 	/* Scroll the lines into the history. */
-	for (yy = 0; yy < last; yy++)
+	for (yy = 0; yy < last; yy++) {
+		grid_collect_history(gd);
 		grid_scroll_history(gd);
+	}
 }
 
 /* Clear area. */
