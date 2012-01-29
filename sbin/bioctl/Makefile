@@ -7,7 +7,6 @@ LDADD=	-lutil
 DPADD=	${LIBUTIL}
 
 CDIAGFLAGS=     -Wall
-CDIAGFLAGS+=    -Werror
 CDIAGFLAGS+=    -Wpointer-arith
 CDIAGFLAGS+=    -Wno-uninitialized
 CDIAGFLAGS+=    -Wstrict-prototypes
