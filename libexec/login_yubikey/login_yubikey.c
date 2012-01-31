@@ -1,5 +1,4 @@
-/* $OpenBSD: login_yubikey.c,v 1.1 2012/01/18 15:49:46 dhill Exp $ */
-/* $Id: login_yubikey.c,v 1.1 2012/01/18 15:49:46 dhill Exp $ */
+/* $OpenBSD: login_yubikey.c,v 1.2 2012/01/20 01:41:57 dhill Exp $ */
 
 /*
  * Copyright (c) 2010 Daniel Hartmeier <daniel@benzedrine.cx>

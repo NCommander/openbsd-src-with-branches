@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-/* $Id: yubikey.h,v 1.1.1.1 2010/03/16 14:13:08 dhartmei Exp $ */
+/* $OpenBSD: yubikey.h,v 1.1 2012/01/18 15:49:46 dhill Exp $ */
 
 /*
  * Written by Simon Josefsson <simon@josefsson.org>.
