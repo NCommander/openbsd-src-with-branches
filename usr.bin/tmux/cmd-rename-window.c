@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-rename-window.c,v 1.5 2009/11/13 19:53:29 nicm Exp $ */
+/* $OpenBSD: cmd-rename-window.c,v 1.6 2011/01/04 00:42:47 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -48,8 +48,7 @@ cmd_rename_window_exec(struct cmd *self, struct cmd_ctx *ctx)
 	if ((wl = cmd_find_window(ctx, args_get(args, 't'), &s)) == NULL)
 		return (-1);
 
-	xfree(wl->window->name);
-	wl->window->name = xstrdup(args->argv[0]);
+	window_set_name(wl->window, args->argv[0]);
 	options_set_number(&wl->window->options, "automatic-rename", 0);
 
 	server_status_window(wl->window);
