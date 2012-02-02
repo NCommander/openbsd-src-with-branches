@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.65 2012/01/29 02:22:11 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.66 2012/01/29 09:37:02 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -293,6 +293,8 @@ server_client_check_mouse(
 			}
 			return;
 		}
+		memcpy(&c->last_mouse, mouse, sizeof c->last_mouse);
+		return;
 	}
 
 	/*
