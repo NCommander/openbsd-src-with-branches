@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.179 2011/12/01 20:43:03 mcbride Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.180 2012/01/16 10:28:02 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1852,8 +1852,8 @@ pfsync_undefer(struct pfsync_deferral *pd, int drop)
 		                ip6_output(pd->pd_m, NULL, NULL, 0,
 				    NULL, NULL, NULL);
 				break;
-			}
 #endif /* INET6 */
+			}
                 }
 	}
 
