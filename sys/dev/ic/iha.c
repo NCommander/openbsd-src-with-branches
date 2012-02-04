@@ -1,4 +1,4 @@
-/*	$OpenBSD: iha.c,v 1.40 2010/10/03 21:14:40 krw Exp $ */
+/*	$OpenBSD: iha.c,v 1.41 2012/01/11 16:22:33 dhill Exp $ */
 /*-------------------------------------------------------------------------
  *
  * Device driver for the INI-9XXXU/UW or INIC-940/950  PCI SCSI Controller.
@@ -322,8 +322,6 @@ iha_scsi_cmd(struct scsi_xfer *xs)
 	 * But, timeout_add() ONLY if we are not polling.
 	 */
 	timeout_set(&xs->stimeout, iha_timeout, pScb);
-	if ((pScb->SCB_Flags & SCSI_POLL) == 0)
-		timeout_add_msec(&xs->stimeout, xs->timeout);
 
 	iha_exec_scb(sc, pScb);
 }
@@ -2444,11 +2442,15 @@ iha_timeout(void *arg)
 void
 iha_exec_scb(struct iha_softc *sc, struct iha_scb *pScb)
 {
+	struct scsi_xfer *xs = pScb->SCB_Xs;
 	bus_space_handle_t ioh;
 	bus_space_tag_t iot;
 	int s;
 
 	s = splbio();
+
+	if ((pScb->SCB_Flags & SCSI_POLL) == 0)
+		timeout_add_msec(&xs->stimeout, xs->timeout);
 
 	if (((pScb->SCB_Flags & SCSI_RESET) != 0)
 	    || (pScb->SCB_CDB[0] == REQUEST_SENSE))
