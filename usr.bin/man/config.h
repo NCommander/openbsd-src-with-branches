@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.4 2003/06/04 16:08:08 deraadt Exp $	*/
+/*	$OpenBSD: config.h,v 1.5 2004/09/15 22:20:03 deraadt Exp $	*/
 /*	$NetBSD: config.h,v 1.2 1995/09/28 06:05:28 tls Exp $	*/
 
 /*-
@@ -38,13 +38,11 @@ typedef struct _tag {
 
 	TAILQ_HEAD(tqh, _entry) list;	/* Queue of entries. */
 	char *s;			/* Associated string. */
-	size_t len;			/* Length of 's'. */
 } TAG;
 typedef struct _entry {
 	TAILQ_ENTRY(_entry) q;		/* Queue of entries. */
 
 	char *s;			/* Associated string. */
-	size_t len;			/* Length of 's'. */
 } ENTRY;
 
 TAILQ_HEAD(_head, _tag);
