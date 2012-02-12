@@ -172,7 +172,6 @@ static const EVP_PKEY_ASN1_METHOD *pkey_asn1_find(int type)
 const EVP_PKEY_ASN1_METHOD *EVP_PKEY_asn1_find(ENGINE **pe, int type)
 	{
 	const EVP_PKEY_ASN1_METHOD *t;
-	ENGINE *e;
 
 	for (;;)
 		{
@@ -184,6 +183,7 @@ const EVP_PKEY_ASN1_METHOD *EVP_PKEY_asn1_find(ENGINE **pe, int type)
 	if (pe)
 		{
 #ifndef OPENSSL_NO_ENGINE
+		ENGINE *e;
 		/* type will contain the final unaliased type */
 		e = ENGINE_get_pkey_asn1_meth_engine(type);
 		if (e)
@@ -301,6 +301,8 @@ EVP_PKEY_ASN1_METHOD* EVP_PKEY_asn1_new(int id, int flags,
 		if (!ameth->info)
 			goto err;
 		}
+	else
+		ameth->info = NULL;
 
 	if (pem_str)
 		{
@@ -308,6 +310,8 @@ EVP_PKEY_ASN1_METHOD* EVP_PKEY_asn1_new(int id, int flags,
 		if (!ameth->pem_str)
 			goto err;
 		}
+	else
+		ameth->pem_str = NULL;
 
 	ameth->pub_decode = 0;
 	ameth->pub_encode = 0;

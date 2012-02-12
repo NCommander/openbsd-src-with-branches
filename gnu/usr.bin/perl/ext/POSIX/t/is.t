@@ -1,8 +1,6 @@
 #!./perl -w
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
     require Config; import Config;
     if ($^O ne 'VMS' and $Config{'extensions'} !~ /\bPOSIX\b/) {
 	print "1..0\n";
@@ -52,6 +50,10 @@ my %classes =
    " \t"       => [ qw(space) ],
 
    "abcde\001" => [],
+
+   # An empty string. Always true (al least in old days) [bug #24554]
+   ''     => [ qw(print graph alnum alpha lower upper digit xdigit
+                  punct cntrl space) ],
   );
 
 
@@ -68,7 +70,7 @@ foreach my $s (keys %classes) {
 
 # Expected number of tests is one each for every combination of a
 # known is<xxx> function and string listed above.
-require './test.pl';
+require '../../t/test.pl';
 plan(tests => keys(%classes) * keys(%functions));
 
 
