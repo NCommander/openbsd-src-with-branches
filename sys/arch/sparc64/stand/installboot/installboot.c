@@ -127,11 +127,6 @@ main(int argc, char *argv[])
 	if (verbose)
 		printf("device: %s\n", realdev);
 
-	dev = strdup(realdev + 6); /* Skip the "/dev/r" */
-	if (dev == NULL)
-		err(1, "strdup of realdev failed");
-	dev[strlen(dev)-1] = '\0'; /* And chop off the 'c'. */
-
 	if (sr_volume(devfd, &vol, &ndisks)) {
 
 		/* Install boot loader in softraid volume. */
@@ -148,7 +143,6 @@ main(int argc, char *argv[])
 
 	}
 
-	free(dev);
 	close(devfd);
 }
 
