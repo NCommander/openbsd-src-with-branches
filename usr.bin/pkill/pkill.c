@@ -1,4 +1,4 @@
-/*	$OpenBSD: pkill.c,v 1.20 2012/01/17 04:27:20 lum Exp $	*/
+/*	$OpenBSD: pkill.c,v 1.21 2012/02/09 20:04:35 markus Exp $	*/
 /*	$NetBSD: pkill.c,v 1.5 2002/10/27 11:49:34 kleink Exp $	*/
 
 /*-
@@ -442,8 +442,8 @@ usage(void)
 	else
 		ustr = "[-signal] [-flnovx]";
 
-	fprintf(stderr, "usage: %s %s [-G gid] [-g pgrp] [-P ppid] [-s sid] "
-	    "[-T rtable]\n\t[-t tty] [-U uid] [-u euid] [pattern ...]\n",
+	fprintf(stderr, "usage: %s %s [-G gid] [-g pgrp] [-P ppid] [-s sid]"
+	    "\n\t[-T rtable] [-t tty] [-U uid] [-u euid] [pattern ...]\n",
 	    __progname, ustr);
 
 	exit(STATUS_ERROR);
