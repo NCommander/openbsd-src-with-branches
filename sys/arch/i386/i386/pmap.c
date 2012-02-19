@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.154 2011/06/06 17:10:23 ariane Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.155 2011/07/08 03:35:39 kettenis Exp $	*/
 /*	$NetBSD: pmap.c,v 1.91 2000/06/02 17:46:37 thorpej Exp $	*/
 
 /*
@@ -821,7 +821,7 @@ pmap_bootstrap(vaddr_t kva_start)
 		pmap_pg_g = PG_G;		/* enable software */
 
 		/* add PG_G attribute to already mapped kernel pages */
-		for (kva = VM_MIN_KERNEL_ADDRESS ; kva < virtual_avail ;
+		for (kva = VM_MIN_KERNEL_ADDRESS; kva < virtual_avail;
 		     kva += PAGE_SIZE)
 			if (pmap_valid_entry(PTE_BASE[atop(kva)]))
 				PTE_BASE[atop(kva)] |= PG_G;
