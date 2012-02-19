@@ -1,3 +1,7 @@
+/* $OpenBSD$ */
+/* PUBLIC DOMAIN Feb 2012 <guenther@openbsd.org> */
+
+/* Test the handling of the pthread_attr_t stack attributes */
 
 #include <sys/types.h>
 #include <sys/mman.h>
