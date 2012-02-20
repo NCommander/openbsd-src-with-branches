@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_prot.c,v 1.50 2011/07/25 20:32:06 tedu Exp $	*/
+/*	$OpenBSD: kern_prot.c,v 1.51 2011/10/15 23:35:29 guenther Exp $	*/
 /*	$NetBSD: kern_prot.c,v 1.33 1996/02/09 18:59:42 christos Exp $	*/
 
 /*
@@ -884,7 +884,7 @@ int
 proc_cansugid(struct proc *p)
 {
 	/* ptrace(2)d processes shouldn't. */
-	if ((p->p_flag & P_TRACED) != 0)
+	if ((p->p_p->ps_flags & PS_TRACED) != 0)
 		return (0);
 
 	/* processes with shared filedescriptors shouldn't. */

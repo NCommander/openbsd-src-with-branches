@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_vnops.c,v 1.52 2011/04/05 14:14:07 thib Exp $	*/
+/*	$OpenBSD: procfs_vnops.c,v 1.53 2011/12/24 04:34:20 guenther Exp $	*/
 /*	$NetBSD: procfs_vnops.c,v 1.40 1996/03/16 23:52:55 christos Exp $	*/
 
 /*
@@ -198,7 +198,7 @@ procfs_open(void *v)
 		    ((pfs->pfs_flags & O_EXCL) && (ap->a_mode & FWRITE)))
 			return (EBUSY);
 
-		if ((error = process_checkioperm(p1, p2)) != 0)
+		if ((error = process_checkioperm(p1, p2->p_p)) != 0)
 			return (error);
 
 		if (ap->a_mode & FWRITE)
