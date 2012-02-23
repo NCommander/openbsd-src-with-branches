@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.c,v 1.8 2008/09/26 15:19:55 reyk Exp $	*/
+/*	$OpenBSD: snmpd.c,v 1.9 2009/06/06 05:52:01 pyr Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -173,6 +173,9 @@ main(int argc, char *argv[])
 	gettimeofday(&env->sc_starttime, NULL);
 
 	log_info("startup");
+
+	if (pf_init())
+		fatal("cannot open /dev/pf");
 
 	if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC,
 	    pipe_parent2snmpe) == -1)
