@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio_sun.c,v 1.3 2011/05/03 20:15:23 ratchov Exp $	*/
+/*	$OpenBSD: sio_sun.c,v 1.4 2011/11/15 08:05:22 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -48,7 +48,7 @@ struct sio_sun_hdl {
 	int fd;
 	int filling;
 	unsigned ibpf, obpf;		/* bytes per frame */
-	unsigned ibytes, obytes;	/* bytes the hw transfered */
+	unsigned ibytes, obytes;	/* bytes the hw transferred */
 	unsigned ierr, oerr;		/* frames the hw dropped */
 	int offset;			/* frames play is ahead of record */
 	int idelta, odelta;		/* position reported to client */

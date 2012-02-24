@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.20 2007/09/27 17:08:58 sobrado Exp $	*/
+/*	$OpenBSD: main.c,v 1.21 2009/10/27 23:59:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -48,7 +48,7 @@ int	debug;		/* debugging flag */
 int	nflag;		/* NOP flag, just print commands without executing */
 int	qflag;		/* Quiet. Don't print messages */
 int	options;	/* global options */
-int	iamremote;	/* act as remote server for transfering files */
+int	iamremote;	/* act as remote server for transferring files */
 
 FILE	*fin = NULL;	/* input file pointer */
 int	rem = -1;	/* file descriptor to remote source/sink process */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx.c,v 1.47 2010/09/22 00:35:19 jsg Exp $	*/
+/*	$OpenBSD: aic79xx.c,v 1.48 2011/04/19 21:59:51 chl Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -1225,7 +1225,7 @@ ahd_handle_seqint(struct ahd_softc *ahd, u_int intstat)
 		 * that requires host assistance for completion.
 		 * While handling the message phase(s), we will be
 		 * notified by the sequencer after each byte is
-		 * transfered so we can track bus phase changes.
+		 * transferred so we can track bus phase changes.
 		 *
 		 * If this is the first time we've seen a HOST_MSG_LOOP
 		 * interrupt, initialize the state of the host message
