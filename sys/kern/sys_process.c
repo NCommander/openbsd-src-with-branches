@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_process.c,v 1.48 2011/04/02 17:04:35 guenther Exp $	*/
+/*	$OpenBSD: sys_process.c,v 1.49 2012/02/20 22:23:39 guenther Exp $	*/
 /*	$NetBSD: sys_process.c,v 1.55 1996/05/15 06:17:47 tls Exp $	*/
 
 /*-
@@ -139,8 +139,12 @@ sys_ptrace(struct proc *p, void *v, register_t *retval)
 #endif
 	case PT_GETREGS:
 	case PT_SETREGS:
+#ifdef PT_GETFPREGS
 	case PT_GETFPREGS:
+#endif
+#ifdef PT_SETFPREGS
 	case PT_SETFPREGS:
+#endif
 		if (SCARG(uap, pid) > THREAD_PID_OFFSET) {
 			t = pfind(SCARG(uap, pid) - THREAD_PID_OFFSET);
 			if (t == NULL)
