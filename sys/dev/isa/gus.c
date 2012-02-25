@@ -1,4 +1,4 @@
-/*	$OpenBSD: gus.c,v 1.33 2009/08/26 22:29:09 jasper Exp $	*/
+/*	$OpenBSD: gus.c,v 1.34 2010/07/15 03:43:11 jakemsr Exp $	*/
 /*	$NetBSD: gus.c,v 1.51 1998/01/25 23:48:06 mycroft Exp $	*/
 
 /*-
@@ -2075,14 +2075,16 @@ gusreset(sc, voices)
 	delay(500);
 
 	/*
-	 * Reset MIDI port as well
+	 * Reset MIDI port as well, if applicable
 	 */
 
-	bus_space_write_1(iot, ioh4, GUS_MIDI_CONTROL, MIDI_RESET);
+	if (ioh4 != (bus_space_handle_t)NULL) {
+		bus_space_write_1(iot, ioh4, GUS_MIDI_CONTROL, MIDI_RESET);
 
-	delay(500);
+		delay(500);
 
-	bus_space_write_1(iot, ioh4, GUS_MIDI_CONTROL, 0x00);
+		bus_space_write_1(iot, ioh4, GUS_MIDI_CONTROL, 0x00);
+	}
 
 	/*
 	 * Clear interrupts
