@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_hppa.c,v 1.13 2010/12/06 22:11:01 jasper Exp $	*/
+/*	$OpenBSD: dev_hppa.c,v 1.14 2010/12/06 22:51:45 jasper Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -73,7 +73,7 @@ devopen(f, fname, file)
 	else
 		(*file)++;
 
-#ifdef DEBUGBUG
+#ifdef DEBUG
 	if (debug)
 		printf("devopen: ");
 #endif
@@ -84,7 +84,7 @@ devopen(f, fname, file)
 
 	if (dp >= &pdc_devs[nitems(pdc_devs)] || dp->dev_type < 0)
 		return ENODEV;
-#ifdef DEBUGBUG
+#ifdef DEBUG
 	if (debug)
 		printf("%s\n", dp->name);
 #endif
