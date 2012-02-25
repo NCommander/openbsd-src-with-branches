@@ -1,4 +1,4 @@
-/*	$OpenBSD: est.c,v 1.24 2011/01/28 05:03:10 dlg Exp $ */
+/*	$OpenBSD: est.c,v 1.25 2011/04/19 22:14:54 jsg Exp $ */
 /*
  * Copyright (c) 2003 Michael Eriksson.
  * All rights reserved.
@@ -63,9 +63,6 @@
 #include <machine/cpufunc.h>
 #include <machine/specialreg.h>
 #include <machine/bus.h>
-
-#define CPUVENDOR_INTEL 0
-#define CPUVENDOR_VIA 8
 
 #include "acpicpu.h"
 
