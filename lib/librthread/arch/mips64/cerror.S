@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.6 2011/07/08 19:31:41 miod Exp $ */
+/*	$OpenBSD: cerror.S,v 1.1 2012/02/17 18:02:18 miod Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -46,7 +46,7 @@ NON_LEAF(__cerror, FRAMESZ, ra)
 	REG_S	ra, RAOFF(sp)
 	REG_S	s0, S0OFF(sp)
 
-	move	s0, a0
+	move	s0, v0
 	jal	_C_LABEL(__errno)
 
 	sw	s0, 0(v0)
