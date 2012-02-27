@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.4 2011/04/04 12:42:39 guenther Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.1 2011/10/17 06:39:20 guenther Exp $	*/
 /*	$NetBSD: cerror.S,v 1.5 2003/08/07 16:42:04 agc Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 _ENTRY(CERROR)
 	stmfd	sp!, {r4, lr}
 	mov	r4, r0
-	bl	PIC_SYM(_C_LABEL(_errno), PLT)
+	bl	PIC_SYM(_C_LABEL(__errno), PLT)
 	str	r4, [r0]
 	mvn	r0, #0x00000000
 	mvn	r1, #0x00000000
