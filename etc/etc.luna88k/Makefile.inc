@@ -1,4 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.5 2011/04/15 03:11:38 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.6 2011/07/22 09:30:54 espie Exp $
+
+KERNELS += GENERIC.MP bsd.mp
 
 bootblocks:
 	# XXX no bootblocks ?
