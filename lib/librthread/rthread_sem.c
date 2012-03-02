@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_sem.c,v 1.3 2012/01/04 21:01:25 guenther Exp $ */
+/*	$OpenBSD: rthread_sem.c,v 1.4 2012/01/17 02:34:18 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -92,6 +92,7 @@ sem_init(sem_t *semp, int pshared, unsigned int value)
 		errno = ENOSPC;
 		return (-1);
 	}
+	sem->lock = _SPINLOCK_UNLOCKED;
 	sem->value = value;
 	*semp = sem;
 
