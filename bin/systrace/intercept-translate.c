@@ -1,4 +1,4 @@
-/*	$OpenBSD: intercept-translate.c,v 1.13 2006/06/10 07:19:13 sturm Exp $	*/
+/*	$OpenBSD: intercept-translate.c,v 1.14 2011/09/18 23:24:14 matthew Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -89,7 +89,10 @@ intercept_translate(struct intercept_translate *trans,
 		trans->trans_addr2 = addr2;
 	}
 	if (trans->offend) {
-		if (intercept.getarg(argsize + trans->offend,
+		/* XXX: Abstraction violation. */
+		int numargs = argsize / sizeof(register_t);
+
+		if (intercept.getarg(numargs + trans->offend,
 		    args, argsize, &addrend) == -1)
 			return (-1);
 		trans->trans_addrend = addrend;
