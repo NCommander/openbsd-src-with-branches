@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkpar.c,v 1.13 2005/06/10 16:40:45 pvalchev Exp $	*/
+/*	$OpenBSD: mkpar.c,v 1.14 2009/10/27 23:59:50 deraadt Exp $	*/
 /*	$NetBSD: mkpar.c,v 1.4 1996/03/19 03:21:39 jtc Exp $	*/
 
 /*
@@ -213,11 +213,8 @@ unused_rules(void)
     int i;
     action *p;
 
-    rules_used = (short *) MALLOC(nrules*sizeof(short));
-    if (rules_used == 0) no_space();
-
-    for (i = 0; i < nrules; ++i)
-	rules_used[i] = 0;
+    rules_used = CALLOC(nrules, sizeof(short));
+    if (rules_used == NULL) no_space();
 
     for (i = 0; i < nstates; ++i)
     {
