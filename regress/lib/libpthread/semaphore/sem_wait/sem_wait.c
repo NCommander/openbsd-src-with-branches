@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sem_wait.c,v 1.1.1.1 2012/01/04 17:36:40 mpi Exp $	*/
 /*
  * Martin Pieuchot <mpi@openbsd.org>, 2011. Public Domain.
  */
@@ -12,11 +12,12 @@
 
 void *waiter(void *arg);
 
+sem_t sem;
+
 int
 main(int argc, char **argv)
 {
 	pthread_t th;
-	sem_t sem;
 
 	CHECKn(sem_wait(&sem));
 	ASSERT(errno == EINVAL);
