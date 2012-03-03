@@ -1,4 +1,4 @@
-/*	$OpenBSD: semaphore.h,v 1.2 2002/01/18 20:36:25 fgsch Exp $	*/
+/*	$OpenBSD: semaphore.h,v 1.3 2002/02/16 21:27:25 millert Exp $	*/
 
 /* semaphore.h: POSIX 1003.1b semaphores */
 
@@ -58,6 +58,7 @@ sem_t  *sem_open(const char *, int, ...);
 int	sem_close(sem_t *);
 int	sem_unlink(const char *);
 int	sem_wait(sem_t *);
+int	sem_timedwait(sem_t *, const struct timespec *);
 int	sem_trywait(sem_t *);
 int	sem_post(sem_t *);
 int	sem_getvalue(sem_t *, int *);
