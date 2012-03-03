@@ -1,4 +1,4 @@
-/* $OpenBSD: screen-write.c,v 1.51 2011/10/23 10:16:14 nicm Exp $ */
+/* $OpenBSD: screen-write.c,v 1.52 2012/01/21 08:10:21 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -876,6 +876,18 @@ screen_write_mousemode_on(struct screen_write_ctx *ctx, int mode)
 
 	s->mode &= ~ALL_MOUSE_MODES;
 	s->mode |= mode;
+}
+
+/* Set bracketed paste mode. */
+void
+screen_write_bracketpaste(struct screen_write_ctx *ctx, int state)
+{
+	struct screen	*s = ctx->s;
+
+	if (state)
+		s->mode |= MODE_BRACKETPASTE;
+	else
+		s->mode &= ~MODE_BRACKETPASTE;
 }
 
 /* Line feed. */
