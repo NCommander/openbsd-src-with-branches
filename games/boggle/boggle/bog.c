@@ -1,4 +1,4 @@
-/*	$OpenBSD: bog.c,v 1.19 2008/08/12 06:32:14 mbalmer Exp $	*/
+/*	$OpenBSD: bog.c,v 1.20 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $	*/
 
 /*-
@@ -274,7 +274,7 @@ playgame(void)
 	}
 
 	while (1) {
-		if (getline(buf) == NULL) {
+		if (get_line(buf) == NULL) {
 			if (feof(stdin))
 				clearerr(stdin);
 			break;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.5 2002/12/06 21:48:51 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.6 2003/06/03 03:01:39 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1995/04/24 12:22:37 cgd Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@ void	 delay(int);
 long	 dictseek(FILE *, long, int);
 void	 findword(void);
 void	 flushin(FILE *);
-char	*getline(char *);
+char	*get_line(char *);
 void	 getword(char *);
 int	 help(void);
 int	 inputch(void);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: netgroup_mkdb.c,v 1.14 2008/05/17 23:31:52 sobrado Exp $	*/
+/*	$OpenBSD: netgroup_mkdb.c,v 1.15 2009/10/27 23:59:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -212,7 +212,7 @@ ng_load(const char *fname)
 	if (db == NULL)
 		err(1, "dbopen");
 
-	while ((buf = getline(fp, &size)) != NULL) {
+	while ((buf = get_line(fp, &size)) != NULL) {
 		tail = head = NULL;
 		p = buf;
 

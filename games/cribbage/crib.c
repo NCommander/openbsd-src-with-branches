@@ -1,4 +1,4 @@
-/*	$OpenBSD: crib.c,v 1.14 2009/10/27 23:59:24 deraadt Exp $	*/
+/*	$OpenBSD: crib.c,v 1.15 2010/05/10 08:53:12 nicm Exp $	*/
 /*	$NetBSD: crib.c,v 1.7 1997/07/10 06:47:29 mikel Exp $	*/
 
 /*-
@@ -207,7 +207,7 @@ game(void)
 				do {
 					msg(quiet ? "Cut for crib? " :
 				    "Cut to see whose crib it is -- low card wins? ");
-					foo = getline();
+					foo = get_line();
 					if (*foo != '\0' && ((i = atoi(foo)) < 4 || i > 48))
 						msg("Invalid cut");
 					else
@@ -389,7 +389,7 @@ cut(bool mycrib, int pos)
 			do {
 				msg(quiet ? "Cut the deck? " :
 				    "How many cards down do you wish to cut the deck? ");
-				foo = getline();
+				foo = get_line();
 				if (*foo != '\0' && ((i = atoi(foo)) < 4 || i > 36))
 					msg("Invalid cut");
 				else

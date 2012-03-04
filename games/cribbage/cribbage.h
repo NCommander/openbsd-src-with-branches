@@ -1,4 +1,4 @@
-/*	$OpenBSD: cribbage.h,v 1.8 2004/07/10 07:26:23 deraadt Exp $	*/
+/*	$OpenBSD: cribbage.h,v 1.9 2010/05/10 08:53:12 nicm Exp $	*/
 /*	$NetBSD: cribbage.h,v 1.3 1995/03/21 15:08:46 cgd Exp $	*/
 
 /*
@@ -78,7 +78,7 @@ int	 eq(CARD, CARD);
 int	 fifteens(CARD [], int);
 void	 game(void);
 void	 gamescore(void);
-char	*getline(void);
+char	*get_line(void);
 int	 getuchar(void);
 int	 incard(CARD *);
 int	 infrom(CARD [], int, char *);

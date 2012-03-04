@@ -1,4 +1,4 @@
-/*	$OpenBSD: mach.c,v 1.11 2009/05/21 12:57:31 schwarze Exp $	*/
+/*	$OpenBSD: mach.c,v 1.12 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -194,7 +194,7 @@ prwidth(char **base, int indx)
  * - doesn't accept words longer than MAXWORDLEN or containing caps
  */
 char *
-getline(char *q)
+get_line(char *q)
 {
 	int ch, done;
 	char *p;
