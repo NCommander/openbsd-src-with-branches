@@ -1,4 +1,4 @@
-/* $OpenBSD: names.c,v 1.10 2009/11/26 21:37:13 nicm Exp $ */
+/* $OpenBSD: names.c,v 1.11 2009/12/03 22:50:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -78,13 +78,11 @@ window_name_callback(unused int fd, unused short events, void *data)
 		wname = name;
 	}
 
-	if (strcmp(wname, w->name) == 0)
-		xfree(wname);
-	else {
-		xfree(w->name);
-		w->name = wname;
+	if (strcmp(wname, w->name)) {
+		window_set_name(w, wname);
 		server_status_window(w);
 	}
+	xfree(wname);
 }
 
 char *
