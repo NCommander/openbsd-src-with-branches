@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.106 2012/01/17 02:34:18 guenther Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.107 2012/02/20 22:23:39 guenther Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -140,6 +140,7 @@ exit1(struct proc *p, int rv, int flags)
 	}
 
 	if (flags == EXIT_NORMAL) {
+		atomic_setbits_int(&pr->ps_flags, PS_EXITING);
 		pr->ps_mainproc->p_xstat = rv;
 
 		/*
