@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.76 2011/01/21 19:10:13 kjell Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.77 2011/01/23 00:45:03 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -792,10 +792,8 @@ notmodified(int f, int n)
 	return (TRUE);
 }
 
-#ifndef NO_HELP
 /*
- * Popbuf and set all windows to top of buffer.	 Currently only used by
- * help functions.
+ * Popbuf and set all windows to top of buffer.
  */
 int
 popbuftop(struct buffer *bp, int flags)
@@ -814,7 +812,6 @@ popbuftop(struct buffer *bp, int flags)
 	}
 	return (popbuf(bp, flags) != NULL);
 }
-#endif
 
 /*
  * Return the working directory for the current buffer, terminated
