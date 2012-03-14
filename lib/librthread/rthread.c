@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.c,v 1.56 2012/03/02 17:49:58 fgsch Exp $ */
+/*	$OpenBSD: rthread.c,v 1.57 2012/03/03 10:02:26 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -180,6 +180,7 @@ _rthread_init(void)
 	_rthread_dl_lock(1);
 	_rthread_bind_lock(0);
 	_rthread_bind_lock(1);
+	sched_yield();
 	dlctl(NULL, DL_SETTHREADLCK, _rthread_dl_lock);
 	dlctl(NULL, DL_SETBINDLCK, _rthread_bind_lock);
 #endif
