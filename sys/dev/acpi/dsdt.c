@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.c,v 1.191 2011/06/15 08:11:51 pirofti Exp $ */
+/* $OpenBSD: dsdt.c,v 1.192 2012/03/10 21:18:59 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -4085,7 +4085,7 @@ aml_searchname(struct aml_node *root, const void *vname)
 	int   i;
 
 	dnprintf(25,"Searchname: %s:%s = ", aml_nodename(root), vname);
-	if (*name == AMLOP_ROOTCHAR) {
+	while (*name == AMLOP_ROOTCHAR) {
 		root = &aml_root;
 		name++;
 	}
