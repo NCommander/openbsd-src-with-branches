@@ -1,5 +1,5 @@
-/*	$Id: aldap.c,v 1.27 2011/04/06 11:36:26 miod Exp $ */
-/*	$OpenBSD: aldap.c,v 1.27 2011/04/06 11:36:26 miod Exp $ */
+/*	$Id: aldap.c,v 1.28 2011/08/28 16:37:28 aschrijver Exp $ */
+/*	$OpenBSD: aldap.c,v 1.28 2011/08/28 16:37:28 aschrijver Exp $ */
 
 /*
  * Copyright (c) 2008 Alexander Schrijver <aschrijver@openbsd.org>
@@ -400,7 +400,7 @@ aldap_match_attr(struct aldap_message *msg, char *inkey, char ***outvalues)
 	char **ret;
 
 	if (msg->body.search.attrs == NULL)
-		return (-1);
+		goto fail;
 
 	LDAP_DEBUG("attr", msg->body.search.attrs);
 
