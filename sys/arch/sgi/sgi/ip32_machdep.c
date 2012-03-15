@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip32_machdep.c,v 1.15 2010/04/06 19:15:29 miod Exp $ */
+/*	$OpenBSD: ip32_machdep.c,v 1.16 2011/05/30 22:25:22 oga Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -114,8 +114,6 @@ void
 ip32_setup()
 {
 	u_long cpuspeed;
-
-	uncached_base = PHYS_TO_XKPHYS(0, CCA_NC);
 
 	crime_configure_memory();
 
