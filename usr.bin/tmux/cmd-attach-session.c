@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-attach-session.c,v 1.16 2011/04/05 19:37:01 nicm Exp $ */
+/* $OpenBSD: cmd-attach-session.c,v 1.17 2012/01/21 06:13:16 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -74,6 +74,7 @@ cmd_attach_session_exec(struct cmd *self, struct cmd_ctx *ctx)
 		}
 
 		ctx->curclient->session = s;
+		notify_attached_session_changed(ctx->curclient);
 		session_update_activity(s);
 		server_redraw_client(ctx->curclient);
 		s->curw->flags &= ~WINLINK_ALERTFLAGS;
@@ -98,6 +99,7 @@ cmd_attach_session_exec(struct cmd *self, struct cmd_ctx *ctx)
 			server_write_session(s, MSG_DETACH, NULL, 0);
 
 		ctx->cmdclient->session = s;
+		notify_attached_session_changed(ctx->cmdclient);
 		session_update_activity(s);
 		server_write_client(ctx->cmdclient, MSG_READY, NULL, 0);
 
