@@ -1,4 +1,4 @@
-/*	$OpenBSD: lowparse.c,v 1.25 2010/12/26 13:09:22 espie Exp $ */
+/*	$OpenBSD: lowparse.c,v 1.26 2012/03/22 13:47:12 espie Exp $ */
 
 /* low-level parsing functions. */
 
@@ -42,7 +42,9 @@
 #include "error.h"
 #include "lst.h"
 #include "memory.h"
+#ifndef LOCATION_TYPE
 #include "location.h"
+#endif
 
 
 /* XXX check whether we can free filenames at the end, for a proper
