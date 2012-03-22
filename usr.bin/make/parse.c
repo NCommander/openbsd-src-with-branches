@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.99 2010/07/19 19:46:44 espie Exp $	*/
+/*	$OpenBSD: parse.c,v 1.100 2010/12/26 13:09:22 espie Exp $	*/
 /*	$NetBSD: parse.c,v 1.29 1997/03/10 21:20:04 christos Exp $	*/
 
 /*
@@ -1013,10 +1013,8 @@ ParseAddCmd(void *gnp, void *cmd)
 	/* if target already supplied, ignore commands */
 	if (!(gn->type & OP_HAS_COMMANDS)) {
 		Lst_AtEnd(&gn->commands, cmd);
-		if (!gn->lineno) {
-			gn->lineno = Parse_Getlineno();
-			gn->fname = Parse_Getfilename();
-		}
+		if (!gn->origin.lineno)
+			Parse_FillLocation(&gn->origin);
 	}
 }
 
