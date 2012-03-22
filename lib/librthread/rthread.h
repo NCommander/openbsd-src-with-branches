@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.h,v 1.35 2012/02/23 04:43:06 guenther Exp $ */
+/*	$OpenBSD: rthread.h,v 1.36 2012/03/03 10:02:26 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -100,7 +100,6 @@ struct pthread_attr {
 	int sched_policy;
 	struct sched_param sched_param;
 	int sched_inherit;
-	int create_suspended;
 };
 
 #define	PTHREAD_MIN_PRIORITY	0
