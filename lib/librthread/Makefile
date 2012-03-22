@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.26 2012/02/19 04:53:37 guenther Exp $
+#	$OpenBSD: Makefile,v 1.27 2012/02/23 04:43:06 guenther Exp $
 
 # For ``COMPILER_VERSION''
 .include <bsd.own.mk>
@@ -40,7 +40,7 @@ SRCS=	rthread.c \
 	rthread_tls.c \
 	sched_prio.c
 
-OBJS+= _atomic_lock.o rfork_thread.o cerror.o
+OBJS+= _atomic_lock.o cerror.o
 
 MAN+=	__tfork_thread.3
 MLINKS+=__tfork_thread.3 __tfork.2
