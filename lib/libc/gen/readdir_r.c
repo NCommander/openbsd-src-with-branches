@@ -1,4 +1,4 @@
-/*	$OpenBSD: readdir.c,v 1.14 2008/05/01 19:49:18 otto Exp $ */
+/*	$OpenBSD: readdir_r.c,v 1.1 2009/11/18 07:43:22 guenther Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,6 +32,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include "telldir.h"
 #include "thread_private.h"
 
 int
