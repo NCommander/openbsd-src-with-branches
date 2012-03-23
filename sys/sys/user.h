@@ -1,4 +1,4 @@
-/*	$OpenBSD: user.h,v 1.6 2003/06/02 23:28:22 millert Exp $	*/
+/*	$OpenBSD: user.h,v 1.7 2010/06/29 20:48:50 guenther Exp $	*/
 /*	$NetBSD: user.h,v 1.10 1996/04/09 20:55:49 cgd Exp $	*/
 
 /*
@@ -55,6 +55,4 @@
 
 struct	user {
 	struct	pcb u_pcb;
-
-	struct	pstats u_stats;		/* p_stats points here (use it!) */
 };
