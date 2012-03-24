@@ -1,4 +1,4 @@
-/*	$OpenBSD: quotacheck.c,v 1.25 2009/10/27 23:59:34 deraadt Exp $	*/
+/*	$OpenBSD: quotacheck.c,v 1.26 2012/02/08 20:38:50 krw Exp $	*/
 /*	$NetBSD: quotacheck.c,v 1.12 1996/03/30 22:34:25 mark Exp $	*/
 
 /*
@@ -535,6 +535,8 @@ oneof_specname(char *target, char *list[], int cnt)
 		if (strcmp(targetdev, argvdev) == 0)
 			break;
 	}
+
+	free(targetdev);
 
 	if (i < cnt)
 		return (i);
