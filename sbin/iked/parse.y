@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.21 2011/04/18 08:45:43 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.22 2011/05/27 12:01:02 reyk Exp $	*/
 /*	$vantronix: parse.y,v 1.22 2010/06/03 11:08:34 reyk Exp $	*/
 
 /*
@@ -1551,7 +1551,7 @@ int
 parsekeyfile(char *filename, struct iked_auth *auth)
 {
 	struct stat	 sb;
-	int		 fd;
+	int		 fd, ret;
 	unsigned char	*hex;
 
 	if ((fd = open(filename, O_RDONLY)) < 0)
@@ -1566,7 +1566,9 @@ parsekeyfile(char *filename, struct iked_auth *auth)
 	if (read(fd, hex, sb.st_size) < sb.st_size)
 		err(1, "parsekeyfile: read");
 	close(fd);
-	return (parsekey(hex, sb.st_size, auth));
+	ret = parsekey(hex, sb.st_size, auth);
+	free(hex);
+	return (ret);
 }
 
 int
