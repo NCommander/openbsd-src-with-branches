@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.4 2009/12/25 21:02:15 miod Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.5 2010/01/09 23:34:29 miod Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -52,6 +52,7 @@
 
 #include <uvm/uvm.h>
 
+#include <mips64/cache.h>
 #include <mips64/sysarch.h>
 
 #include <machine/autoconf.h>

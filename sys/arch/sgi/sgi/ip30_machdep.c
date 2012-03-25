@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip30_machdep.c,v 1.48 2012/03/15 18:57:22 miod Exp $	*/
+/*	$OpenBSD: ip30_machdep.c,v 1.49 2012/03/16 15:25:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -28,6 +28,7 @@
 #include <sys/tty.h>
 
 #include <mips64/arcbios.h>
+#include <mips64/cache.h>
 
 #include <machine/autoconf.h>
 #include <machine/bus.h>
