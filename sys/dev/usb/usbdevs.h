@@ -1458,6 +1458,7 @@
 #define	USB_PRODUCT_DISPLAYLINK_NBDOCK	0x0215		/* VideoHome NBdock1920 */
 #define	USB_PRODUCT_DISPLAYLINK_LUM70	0x02a9		/* Lilliput UM-70 */
 #define	USB_PRODUCT_DISPLAYLINK_UM7X0	0x401a		/* nanovision MiMo */
+#define	USB_PRODUCT_DISPLAYLINK_POLARIS2	0x0117		/* Polaris2 USB dock */
 
 /* DMI products */
 #define	USB_PRODUCT_DMI_SA2_0	0xb001		/* Storage Adapter */

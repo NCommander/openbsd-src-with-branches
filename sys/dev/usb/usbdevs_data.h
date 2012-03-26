@@ -2418,6 +2418,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "nanovision MiMo",
 	},
 	{
+	    USB_VENDOR_DISPLAYLINK, USB_PRODUCT_DISPLAYLINK_POLARIS2,
+	    "Polaris2 USB dock",
+	},
+	{
 	    USB_VENDOR_DMI, USB_PRODUCT_DMI_SA2_0,
 	    "Storage Adapter",
 	},
