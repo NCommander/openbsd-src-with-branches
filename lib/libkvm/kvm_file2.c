@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_file2.c,v 1.19 2012/01/07 05:38:12 guenther Exp $	*/
+/*	$OpenBSD: kvm_file2.c,v 1.20 2012/03/13 17:28:51 tedu Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -480,7 +480,7 @@ fill_file2(kvm_t *kd, struct kinfo_file2 *kf, struct file *fp, struct vnode *vp,
 			kf->f_rwfer = fp->f_wxfer;
 			kf->f_seek = fp->f_seek;
 			kf->f_rbytes = fp->f_rbytes;
-			kf->f_wbytes = fp->f_rbytes;
+			kf->f_wbytes = fp->f_wbytes;
 		}
 	} else if (vp != NULL) {
 		/* fake it */
