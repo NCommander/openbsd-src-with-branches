@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttykbd.c,v 1.13 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: ttykbd.c,v 1.14 2005/06/14 18:14:40 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -55,6 +55,8 @@ ttykeymapinit(void)
 		dobindkey(fundamental_map, "scroll-up", key_npage);
 	if (key_ppage)
 		dobindkey(fundamental_map, "scroll-down", key_ppage);
+	if (key_dc)
+		dobindkey(fundamental_map, "delete-char", key_dc);
 #endif /* FKEYS */
 
 #ifndef	NO_STARTUP
