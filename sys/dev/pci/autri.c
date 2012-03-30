@@ -1,4 +1,4 @@
-/*	$OpenBSD: autri.c,v 1.29 2011/04/03 15:36:02 jasper Exp $	*/
+/*	$OpenBSD: autri.c,v 1.30 2011/07/03 15:47:16 matthew Exp $	*/
 
 /*
  * Copyright (c) 2001 SOMEYA Yoshihiko and KUROSAWA Takahiro.
@@ -1612,16 +1612,12 @@ int
 autri_midi_output(void *addr, int d)
 {
 	struct autri_softc *sc = addr;
-	int x;
 
-	for (x = 0; x != MIDI_BUSY_WAIT; x++) {
-		if ((TREAD1(sc, AUTRI_MPUR1) & AUTRI_MIDIOUT_READY) == 0) {
-			TWRITE1(sc, AUTRI_MPUR0, d);
-			return (0);
-		}
-		delay(MIDI_BUSY_DELAY);
+	if ((TREAD1(sc, AUTRI_MPUR1) & AUTRI_MIDIOUT_READY) != 0) {
+		TWRITE1(sc, AUTRI_MPUR0, d);
+		return 0;
 	}
-	return (EIO);
+	return 1;
 }
 
 void
