@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axe.c,v 1.107 2011/09/16 17:20:07 miod Exp $	*/
+/*	$OpenBSD: if_axe.c,v 1.108 2012/03/01 04:33:15 jsg Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Jonathan Gray <jsg@openbsd.org>
@@ -1028,13 +1028,13 @@ axe_rxeof(usbd_xfer_handle xfer, usbd_private_handle priv, usbd_status status)
 			memcpy(&hdr, buf, sizeof(hdr));
 			total_len -= sizeof(hdr);
 
-			if (((hdr.len & AXE_RH1M_RXLEN_MASK) ^
-			    (hdr.ilen & AXE_RH1M_RXLEN_MASK)) !=
+			if (((letoh16(hdr.len) & AXE_RH1M_RXLEN_MASK) ^
+			    (letoh16(hdr.ilen) & AXE_RH1M_RXLEN_MASK)) !=
 			    AXE_RH1M_RXLEN_MASK) {
 				ifp->if_ierrors++;
 				goto done;
 			}
-			pktlen = letoh16(hdr.len & AXE_RH1M_RXLEN_MASK);
+			pktlen = letoh16(hdr.len) & AXE_RH1M_RXLEN_MASK;
 			if (pktlen > total_len) {
 				ifp->if_ierrors++;
 				goto done;
