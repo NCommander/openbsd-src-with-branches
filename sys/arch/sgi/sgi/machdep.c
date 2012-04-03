@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.114 2012/03/25 13:52:52 miod Exp $ */
+/*	$OpenBSD: machdep.c,v 1.115 2012/03/28 20:44:23 miod Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -84,8 +84,8 @@ void dump_tlb(void);
 char	machine[] = MACHINE;		/* Machine "architecture" */
 char	cpu_model[30];
 
-/* low 32 bits range. */
-struct uvm_constraint_range  dma_constraint = { 0x0, 0x7fffffff };
+/* will be updated in ipXX_machdep.c whenever necessary */
+struct uvm_constraint_range  dma_constraint = { 0x0, (paddr_t)-1 };
 struct uvm_constraint_range *uvm_md_constraints[] = {
 	&dma_constraint,
 	NULL
