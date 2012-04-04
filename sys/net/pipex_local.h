@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex_local.h,v 1.13 2011/10/15 03:24:11 yasuoka Exp $	*/
+/*	$OpenBSD: pipex_local.h,v 1.14 2011/11/25 13:05:06 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -406,7 +406,6 @@ Static struct pipex_session  *pipex_pptp_userland_lookup_session(struct mbuf *, 
 
 #ifdef PIPEX_L2TP
 Static void                  pipex_l2tp_output (struct mbuf *, struct pipex_session *);
-Static struct pipex_session  *pipex_l2tp_userland_lookup_session(struct mbuf *, struct sockaddr *);
 #endif
 
 #ifdef PIPEX_MPPE
