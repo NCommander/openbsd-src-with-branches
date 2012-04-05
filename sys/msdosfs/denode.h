@@ -1,4 +1,4 @@
-/*	$OpenBSD: denode.h,v 1.22 2010/05/16 20:26:39 nicm Exp $	*/
+/*	$OpenBSD: denode.h,v 1.23 2010/07/17 19:27:07 guenther Exp $	*/
 /*	$NetBSD: denode.h,v 1.24 1997/10/17 11:23:39 ws Exp $	*/
 
 /*-
@@ -116,10 +116,11 @@ struct fatcache {
  * cache is probably pretty worthless if a file is opened by multiple
  * processes.
  */
-#define	FC_SIZE		2	/* number of entries in the cache */
+#define	FC_SIZE		3	/* number of entries in the cache */
 #define	FC_LASTMAP	0	/* entry the last call to pcbmap() resolved
 				 * to */
 #define	FC_LASTFC	1	/* entry for the last cluster in the file */
+#define	FC_OLASTFC	2	/* entry for the previous last cluster */
 
 #define	FCE_EMPTY	0xffffffff	/* doesn't represent an actual cluster # */
 

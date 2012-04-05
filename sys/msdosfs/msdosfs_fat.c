@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_fat.c,v 1.21 2009/08/13 22:34:29 jasper Exp $	*/
+/*	$OpenBSD: msdosfs_fat.c,v 1.22 2011/07/04 04:30:41 tedu Exp $	*/
 /*	$NetBSD: msdosfs_fat.c,v 1.26 1997/10/17 11:24:02 ws Exp $	*/
 
 /*-
@@ -951,6 +951,13 @@ extendfile(struct denode *dep, uint32_t count, struct buf **bpp, uint32_t *ncp,
 		if (error != E2BIG)
 			return (error);
 	}
+
+	/*
+	 * Preserve value for the last cluster before extending the file
+	 * to speed up further lookups.
+	 */
+	fc_setcache(dep, FC_OLASTFC, dep->de_fc[FC_LASTFC].fc_frcn,
+	    dep->de_fc[FC_LASTFC].fc_fsrcn);
 
 	while (count > 0) {
 		/*
