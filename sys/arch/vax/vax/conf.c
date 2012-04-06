@@ -49,8 +49,6 @@ bdev_decl(mt);
 bdev_decl(ra);
 bdev_decl(rx);
 
-#include "raid.h"
-
 #include "vnd.h"
 
 #include "hdc.h"
@@ -90,7 +88,7 @@ struct bdevsw	bdevsw[] =
 	bdev_disk_init(NCD,cd),		/* 22: SCSI CD-ROM */
 	bdev_disk_init(NRD,rd),		/* 23: ram disk driver */
 	bdev_disk_init(NRY,ry),		/* 24: VS3100 floppy */
-	bdev_disk_init(NRAID,raid),	/* 25: RAIDframe disk driver */
+	bdev_notdef(),			/* 25 was: RAIDframe disk driver */
 };
 int	nblkdev = nitems(bdevsw);
 
@@ -258,7 +256,7 @@ struct cdevsw	cdevsw[] =
 	cdev_mouse_init(NWSMOUSE, wsmouse), /* 70: mice */
 	cdev_disk_init(NRY,ry),		/* 71: VS floppy */
 	cdev_bio_init(NBIO,bio),	/* 72: ioctl tunnel */
-	cdev_disk_init(NRAID,raid),	/* 73: RAIDframe disk driver */
+	cdev_notdef(),			/* 73 was: RAIDframe disk driver */
 #ifdef NNPFS
 	cdev_nnpfs_init(NNNPFS,nnpfs_dev),	/* 74: nnpfs communication device */
 #else

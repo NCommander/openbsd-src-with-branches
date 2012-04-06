@@ -207,5 +207,3 @@ owctr*	at onewire?		# Counter device
 pseudo-device	wsmux		2
 pseudo-device	crypto		1
 pseudo-device	hotplug		1	# devices hot plugging
-#pseudo-device	raid		4	# RAIDframe disk driver
-

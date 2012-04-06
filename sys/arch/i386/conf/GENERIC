@@ -780,7 +780,6 @@ pseudo-device	pctr		1
 pseudo-device	mtrr		1	# Memory range attributes control
 pseudo-device	nvram		1
 pseudo-device	sequencer	1
-#pseudo-device	raid		4	# RAIDframe disk driver
 pseudo-device	hotplug		1	# devices hot plugging
 
 # mouse & keyboard multiplexor pseudo-devices

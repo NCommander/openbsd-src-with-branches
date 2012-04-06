@@ -65,7 +65,6 @@
 #include "cd.h"
 #include "uk.h"
 #include "wd.h"
-#include "raid.h"
 
 #ifdef notyet
 #include "fb.h"
@@ -150,7 +149,7 @@ struct bdevsw	bdevsw[] =
 	bdev_lkm_dummy(),		/* 22 */
 	bdev_lkm_dummy(),		/* 23 */
 	bdev_lkm_dummy(),		/* 24 */
-	bdev_disk_init(NRAID,raid),	/* 25: RAIDframe disk driver */
+	bdev_notdef(),			/* 25 was: RAIDframe disk driver */
 };
 int	nblkdev = nitems(bdevsw);
 
@@ -286,7 +285,7 @@ struct cdevsw	cdevsw[] =
 	cdev_lkm_dummy(),		/* 118 */
 	cdev_random_init(1,random),	/* 119: random data source */
 	cdev_bio_init(NBIO,bio),	/* 120: ioctl tunnel */
-	cdev_disk_init(NRAID,raid),	/* 121: RAIDframe disk driver */
+	cdev_notdef(),			/* 121 was: RAIDframe disk driver */
 	cdev_tty_init(NPCONS,pcons),	/* 122: PROM console */
 	cdev_ptm_init(NPTY,ptm),	/* 123: pseudo-tty ptm device */
 	cdev_hotplug_init(NHOTPLUG,hotplug), /* 124: devices hot plugging */

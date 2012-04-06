@@ -123,8 +123,6 @@ pseudo-device	wsmux		2
 #pseudo-device	crypto		1
 #pseudo-device	bio		1       # ioctl multiplexing device
 #pseudo-device	hotplug		1       # devices hot plugging
-#pseudo-device	raid		4       # RAIDframe disk driver
-
 
 option          BOOT_CONFIG             # boot-time kernel config
 

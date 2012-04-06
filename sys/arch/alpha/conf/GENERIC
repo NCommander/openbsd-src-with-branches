@@ -429,7 +429,6 @@ owsbm*	at onewire?			# Smart Battery Monitor
 owtemp* at onewire?			# Temperature
 owctr*	at onewire?			# Counter device
 
-#pseudo-device	raid		4	# RAIDframe disk driver
 pseudo-device	crypto		1
 pseudo-device	sequencer	1
 pseudo-device	hotplug		1	# devices hot plugging
