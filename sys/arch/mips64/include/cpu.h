@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.77 2012/03/25 13:52:52 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.78 2012/03/28 20:44:23 miod Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -546,8 +546,6 @@ void cpu_startclock(struct cpu_info *);
 
 
 #if defined(_KERNEL) && !defined(_LOCORE)
-
-extern vaddr_t CpuCacheAliasMask;
 
 struct exec_package;
 struct tlb_entry;
