@@ -264,16 +264,6 @@ if [ X"$1" = X"shutdown" ]; then
 	exit 0
 fi
 
-# Configure raid devices.
-for dev in 0 1 2 3; do
-	if [ -f /etc/raid$dev.conf ]; then
-		raidctl -c /etc/raid$dev.conf raid$dev
-	fi
-done
-
-# Check parity on raid devices.
-raidctl -P all
-
 swapctl -A -t blk
 
 if [ -e /fastboot ]; then

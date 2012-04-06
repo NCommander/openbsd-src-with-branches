@@ -8,7 +8,7 @@ SUBDIR=	atactl badsect bioctl clri dhclient \
 	mount_nfs mount_ntfs mount_procfs mount_udf \
 	mount_vnd mount_nnpfs mountd ncheck_ffs newfs newfs_ext2fs newfs_msdos \
 	nfsd nologin pdisk pfctl pflogd ping ping6 quotacheck \
-	raidctl reboot restore route rtsol savecore scan_ffs \
+	reboot restore route rtsol savecore scan_ffs \
 	scsi shutdown slattach swapctl sysctl ttyflags tunefs \
 	umount wsconsctl
 
