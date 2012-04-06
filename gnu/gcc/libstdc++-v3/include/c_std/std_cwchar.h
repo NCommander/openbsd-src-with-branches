@@ -151,10 +151,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::fputwc;
   using ::fputws;
   using ::fwide;
-#if !defined(__OpenBSD__)
   using ::fwprintf;
   using ::fwscanf;
-#endif
   using ::getwc;
   using ::getwchar;
   using ::mbrlen;
@@ -163,26 +161,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::mbsrtowcs;
   using ::putwc;
   using ::putwchar;
-#if !defined(__OpenBSD__)
   using ::swprintf;
   using ::swscanf;
-#endif
   using ::ungetwc;
-#if !defined(__OpenBSD__)
   using ::vfwprintf;
-#endif
 #if _GLIBCXX_HAVE_VFWSCANF
   using ::vfwscanf;
 #endif
-#if !defined(__OpenBSD__)
   using ::vswprintf;
-#endif
 #if _GLIBCXX_HAVE_VSWSCANF
   using ::vswscanf;
 #endif
-#if !defined(__OpenBSD__)
   using ::vwprintf;
-#endif
 #if _GLIBCXX_HAVE_VWSCANF
   using ::vwscanf;
 #endif
@@ -192,9 +182,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::wcscoll;
   using ::wcscpy;
   using ::wcscspn;
-#if !defined(__OpenBSD__)
   using ::wcsftime;
-#endif
   using ::wcslen;
   using ::wcsncat;
   using ::wcsncmp;
@@ -214,10 +202,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::wmemcpy;
   using ::wmemmove;
   using ::wmemset;
-#if !defined(__OpenBSD__)
   using ::wprintf;
   using ::wscanf;
-#endif
 
   using ::wcschr;
 
@@ -261,16 +247,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
   extern "C" long double
-    (wcstold)(const wchar_t * restrict, wchar_t ** restrict);
+    (wcstold)(const wchar_t * __restrict, wchar_t ** __restrict);
 #endif
 #if !_GLIBCXX_USE_C99_DYNAMIC
   using ::wcstold;
 #endif
 #if _GLIBCXX_USE_C99_LONG_LONG_CHECK || _GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   extern "C" long long int
-    (wcstoll)(const wchar_t * restrict, wchar_t ** restrict, int);
+    (wcstoll)(const wchar_t * __restrict, wchar_t ** __restrict, int);
   extern "C" unsigned long long int
-    (wcstoull)(const wchar_t * restrict, wchar_t ** restrict, int);
+    (wcstoull)(const wchar_t * __restrict, wchar_t ** __restrict, int);
 #endif
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::wcstoll;

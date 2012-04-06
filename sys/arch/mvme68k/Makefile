@@ -1,31 +1,43 @@
-#	$NetBSD: Makefile,v 1.3 1994/11/20 20:51:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2010/11/03 20:08:03 deraadt Exp $
 
-# from: @(#)Makefile	8.1 (Berkeley) 6/11/93
-#
-# Makefile for mvme68k links, tags file
+S=	${.CURDIR}/../..
+KFILE=	GENERIC
+.if exists(conf/GENERIC.MP)
+KFILE=	GENERIC.MP
+.endif
+TDIRS=	${_arch} include pci isa eisa
+TAGS=	${.CURDIR}/tags
 
-NOPROG=	noprog
-NOMAN=	noman
-NOOBJ=	noobj
+NOPROG=
+NOMAN=
+SUBDIR=	stand
 
-DIRS=	conf dev include mvme68k
+# config the fattest kernel we can find into a temporary dir
+# to create a Makefile.  Then use make to pull some variables
+# out and push them into the sub-shell to expand the paths,
+# and finally run ctags.
+tags::
+	TDIR=`mktemp -d /tmp/_tagXXXXXXXXXX` || exit 1; \
+	eval "S=${S}" && \
+	config -s ${S} -b $${TDIR} ${.CURDIR}/conf/${KFILE} && \
+	eval "_arch=\"`make -V _arch -f $${TDIR}/Makefile`\"" && \
+	eval "_mach=\"`make -V _mach -f $${TDIR}/Makefile`\"" && \
+	eval "_machdir=\$S/arch/$${_mach}" && \
+	eval "_archdir=\$S/arch/$${_arch}" && \
+	eval "HFILES=\"`find $S \( -path $S/'arch' -o -path $S/stand -o -path $S/lib/libsa -o -path $S'/lib/libkern/arch' \) -prune -o -name '*.h'; find $${_machdir} $${_archdir} $S/lib/libkern/arch/$${_mach} \( -name boot -o -name stand \) -prune -o -name '*.h'`\"" && \
+	eval "SFILES=\"`make -V SFILES -f $${TDIR}/Makefile`\"" && \
+	eval "CFILES=\"`make -V CFILES -f $${TDIR}/Makefile`\"" && \
+	eval "AFILES=\"`make -V AFILES -f $${TDIR}/Makefile`\"" && \
+	ctags -wd -f ${TAGS} $${CFILES} $${HFILES} && \
+	egrep "^[_A-Z]*ENTRY[_A-Z]*\(.*\)" $${SFILES} $${AFILES} | \
+	    sed "s;\\([^:]*\\):\\([^(]*\\)(\\([^, )]*\\)\\(.*\\);\\3	\\1	/^\\2(\\3\\4$$/;" \
+	    >> ${TAGS} && \
+	sort -o ${TAGS} ${TAGS} && \
+	rm -rf $${TDIR}
 
-links::
-	-for i in ${DIRS}; do \
-	    (cd $$i && { rm -f tags; ln -s ${SYSTAGS} tags; }) done
-
-MVME68K=/sys/arch/mvme68k/dev/*.[ch] /sys/arch/mvme68k/include/*.[ch] \
-	/sys/arch/mvme68k/rcons/*.[ch] /sys/arch/mvme68k/mvme68k/*.[ch] \
-AMVME68K=/sys/arch/mvme68k/mvme68k/*.s
-
-tags:
-	-ctags -wdt ${COMM} ${MVME68K}
-	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${AMVME68K} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
-		>> tags
-	sort -o tags tags
-
-SUBDIR+=stand
+links:
+	-for i in conf ${TDIRS}; do \
+	    (cd $$i && rm -f tags; ln -s tags tags); done
 
 obj:	_SUBDIRUSE
 

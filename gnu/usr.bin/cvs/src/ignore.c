@@ -34,8 +34,9 @@ static int ign_hold = -1;		/* Index where first "temporary" item
 					 * is held */
 
 const char *ign_default = ". .. core RCSLOG tags TAGS RCS SCCS .make.state\
+ .*.swp\
  .nse_depinfo #* .#* cvslog.* ,* CVS CVS.adm .del-* *.a *.olb *.o *.obj\
- *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$";
+ *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$ *.depend";
 
 #define IGN_GROW 16			/* grow the list by 16 elements at a
 					 * time */

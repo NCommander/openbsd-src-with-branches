@@ -1,3 +1,5 @@
+/*	$OpenBSD: as.c,v 1.3 1999/12/07 20:10:32 espie Exp $	*/
+
 /* as.c - GAS main program.
    Copyright (C) 1987, 1990, 1991, 1992 Free Software Foundation, Inc.
    
@@ -32,7 +34,7 @@
  *
  */
 #ifndef lint
-static char rcsid[] = "$Id: as.c,v 1.3 1993/10/02 20:57:15 pk Exp $";
+static char rcsid[] = "$OpenBSD: as.c,v 1.3 1999/12/07 20:10:32 espie Exp $";
 #endif
 
 #include <stdio.h>
@@ -218,17 +220,14 @@ char **argv;
 					* work_argv = NULL;
 					work_argc--;
 					temp = * ++ work_argv;
+				}
+				if (temp) {
+				    add_include_dir (temp);
+				    arg = "";	/* Finished with this arg. */
 				} else
 				    as_warn("%s: I expected a filename after -I", myname);
-				add_include_dir (temp);
-				arg = "";	/* Finished with this arg. */
 				break;
 			}
-				
-#if 00000
-			case 'k':
-				break;
-#endif
 				
 			case 'L': /* -L means keep L* symbols */
 				break;
@@ -290,6 +289,10 @@ char **argv;
 		 */
 		*work_argv = NULL; /* NULL means 'not a file-name' */
 	}
+#ifdef PIC
+	if (flagseen['K'] || flagseen['k'])
+		picmode = 1;
+#endif
 #ifdef DONTDEF
 	if (gdb_begin(gdb_symbol_file_name) == 0)
 	    flagseen['G'] = 0;	/* Don't do any gdbsym stuff. */
@@ -415,7 +418,7 @@ int sig;
 	
 	as_bad("Interrupted by signal %d", sig);
 	if (here_before++)
-	    exit(1);
+	    _exit(1);
 	return((SIGTY) 0);
 }
 

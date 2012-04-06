@@ -1,3 +1,4 @@
+/*	$OpenBSD: cmdtab.c,v 1.9 2009/12/12 18:14:00 nicm Exp $	*/
 /*	$NetBSD: cmdtab.c,v 1.3 1994/12/08 09:30:46 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,37 +30,25 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)cmdtab.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: cmdtab.c,v 1.3 1994/12/08 09:30:46 jtc Exp $";
-#endif /* not lint */
-
 #include "tip.h"
 
-extern	int shell(), getfl(), sendfile(), chdirectory();
-extern	int finish(), help(), pipefile(), pipeout(), consh(), variable();
-extern	int cu_take(), cu_put(), dollar(), genbrk(), suspend();
-
 esctable_t etable[] = {
-	{ '!',	NORM,	"shell",			 shell },
-	{ '<',	NORM,	"receive file from remote host", getfl },
-	{ '>',	NORM,	"send file to remote host",	 sendfile },
-	{ 't',	NORM,	"take file from remote UNIX",	 cu_take },
-	{ 'p',	NORM,	"put file to remote UNIX",	 cu_put },
-	{ '|',	NORM,	"pipe remote file",		 pipefile },
-	{ '$',	NORM,	"pipe local command to remote host", pipeout },
-#ifdef CONNECT
-	{ 'C',  NORM,	"connect program to remote host",consh },
-#endif
-	{ 'c',	NORM,	"change directory",		 chdirectory },
-	{ '.',	NORM,	"exit from tip",		 finish },
-	{CTRL('d'),NORM,"exit from tip",		 finish },
-	{CTRL('y'),NORM,"suspend tip (local+remote)",	 suspend },
-	{CTRL('z'),NORM,"suspend tip (local only)",	 suspend },
-	{ 's',	NORM,	"set variable",			 variable },
-	{ '?',	NORM,	"get this summary",		 help },
-	{ '#',	NORM,	"send break",			 genbrk },
+	{ '!',		"shell",				shell },
+	{ '<',		"receive file from remote host",	getfl },
+	{ '>',		"send file to remote host",		sendfile },
+	{ 't',		"take file from remote UNIX",		cu_take },
+	{ 'p',		"put file to remote UNIX",		cu_put },
+	{ '|',		"pipe remote file",			pipefile },
+	{ '$',		"pipe local command to remote host",	pipeout },
+	{ 'C',  	"connect program to remote host",	consh },
+	{ 'c',		"change directory",		 	chdirectory },
+	{ '.',		"exit from tip",			finish },
+	{ CTRL('d'),	"exit from tip",			finish },
+	{ CTRL('y'),	"suspend tip (local+remote)",		suspend },
+	{ CTRL('z'),	"suspend tip (local only)",		suspend },
+	{ 's',		"set variable",				variable },
+	{ 'v',		"list variables",			listvariables },
+	{ '?',		"get this summary",			help },
+	{ '#',		"send break",				genbrk },
 	{ 0, 0, 0 }
 };

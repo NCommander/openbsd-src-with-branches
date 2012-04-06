@@ -1,3 +1,4 @@
+/*	$OpenBSD: lint.h,v 1.6 2006/05/29 20:47:22 cloder Exp $	*/
 /*	$NetBSD: lint.h,v 1.2 1995/07/03 21:24:18 cgd Exp $	*/
 
 /*
@@ -38,12 +39,13 @@
 #include "param.h"
 
 /*
- * Type specifiers, used in type structures (type_t) and otherwere.
+ * Type specifiers, used in type structures (type_t) and elsewhere.
  */
 typedef enum {
 	NOTSPEC,
 	SIGNED,		/* keyword "signed", only used in the parser */
 	UNSIGN,		/* keyword "unsigned", only used in the parser */
+	BOOL,		/* _Bool */
 	CHAR,		/* char */
 	SCHAR,		/* signed char */
 	UCHAR,		/* unsigned char */
@@ -56,8 +58,14 @@ typedef enum {
 	QUAD,		/* (signed) long long */
 	UQUAD,		/* unsigned long long */
 	FLOAT,		/* float */
-	DOUBLE,		/* double or, with tflag, long float */
+	DOUBLE,		/* double */
 	LDOUBLE,	/* long double */
+	COMPLEX,	/* float _Complex */
+	DCOMPLEX,	/* double _Complex */
+	LDCOMPLEX,	/* long double _Complex */
+	IMAGINARY,	/* float _Imaginary */
+	DIMAGINARY,	/* double _Imaginary */
+	LDIMAGINARY,	/* long double _Imaginary */
 	VOID,		/* void */
 	STRUCT,		/* structure tag */
 	UNION,		/* union tag */
@@ -75,25 +83,30 @@ typedef	struct {
 	int	tt_sz;			/* size in bits */
 	int	tt_psz;			/* size, different from tt_sz
 					   if pflag is set */
+	int	tt_rank;		/* rank (C99), similar to tt_psz */
 	tspec_t	tt_styp;		/* signed counterpart */
 	tspec_t	tt_utyp;		/* unsigned counterpart */
 	u_int	tt_isityp : 1;		/* 1 if integer type */
 	u_int	tt_isutyp : 1;		/* 1 if unsigned integer type */
 	u_int	tt_isftyp : 1;		/* 1 if floating point type */
 	u_int	tt_isatyp : 1;		/* 1 if arithmetic type */
-	u_int	tt_issclt : 1;		/* 1 if scalar type */
-	char	*tt_name;		/* Bezeichnung des Typs */
+	u_int	tt_domain : 2;		/* 0 if non-scalar, 1 if real,
+					   2 if imaginary, 3 if complex */
+	char	*tt_name;		/* type name */
 } ttab_t;
 
 #define size(t)		(ttab[t].tt_sz)
 #define psize(t)	(ttab[t].tt_psz)
+#define rank(t)		(ttab[t].tt_rank)
 #define styp(t)		(ttab[t].tt_styp)
 #define utyp(t)		(ttab[t].tt_utyp)
 #define isityp(t)	(ttab[t].tt_isityp)
 #define isutyp(t)	(ttab[t].tt_isutyp)
 #define isftyp(t)	(ttab[t].tt_isftyp)
 #define isatyp(t)	(ttab[t].tt_isatyp)
-#define issclt(t)	(ttab[t].tt_issclt)
+#define issclt(t)	(ttab[t].tt_domain != 0)
+#define iscomplex(t)	(ttab[t].tt_domain == 3)
+#define isimag(t)	(ttab[t].tt_domain == 2)
 
 extern	ttab_t	ttab[];
 

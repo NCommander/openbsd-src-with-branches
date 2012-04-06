@@ -1,3 +1,4 @@
+/*	$OpenBSD: lint1.h,v 1.14 2010/07/24 22:17:03 guenther Exp $	*/
 /*	$NetBSD: lint1.h,v 1.6 1995/10/02 17:31:41 jpo Exp $	*/
 
 /*
@@ -65,7 +66,7 @@ typedef	struct strg {
  * qualifiers (only for lex/yacc interface)
  */
 typedef enum {
-	CONST, VOLATILE
+	CONST, VOLATILE, RESTRICT
 } tqual_t;
 
 /*
@@ -75,6 +76,7 @@ typedef struct {
 	tspec_t	v_tspec;
 	int	v_ansiu;		/* set if an integer constant is
 					   unsigned in ANSI C */
+	tspec_t	v_lspec;		/* the underlying type of a literal */
 	union {
 		quad_t	_v_quad;	/* integers */
 		ldbl_t	_v_ldbl;	/* floats */
@@ -88,7 +90,7 @@ typedef struct {
  * Structures of type str_t uniqely identify structures. This can't
  * be done in structures of type type_t, because these are copied
  * if they must be modified. So it would not be possible to check
- * if to structures are identical by comparing the pointers to
+ * if two structures are identical by comparing the pointers to
  * the type structures.
  *
  * The typename is used if the structure is unnamed to identify
@@ -122,6 +124,7 @@ typedef	struct type {
 	u_int	t_aincompl : 1;	/* incomplete array type */
 	u_int	t_const : 1;	/* const modifier */
 	u_int	t_volatile : 1;	/* volatile modifier */
+	u_int	t_restrict : 1;	/* restrict modifier */
 	u_int	t_proto : 1;	/* function prototype (t_args valid) */
 	u_int	t_vararg : 1;	/* protoype with ... */
 	u_int	t_typedef : 1;	/* type defined with typedef */
@@ -202,9 +205,10 @@ typedef	struct sym {
 	u_int	s_reg : 1;	/* symbol is register variable */
 	u_int	s_defarg : 1;	/* undefined symbol in old style function
 				   definition */
-	u_int	s_rimpl : 1;	/* return value of function implizit decl. */
+	u_int	s_rimpl : 1;	/* return value of function implicit decl. */
 	u_int	s_osdef : 1;	/* symbol stems from old style function def. */
 	u_int	s_inline : 1;	/* true if this is a inline function */
+	u_int	s_noreturn : 1;	/* true if this is a NORETURN function */
 	struct	sym *s_xsym;	/* for local declared external symbols pointer
 				   to external symbol with same name */
 	def_t	s_def;		/* declared, tentative defined, defined */
@@ -220,18 +224,20 @@ typedef	struct sym {
 		tqual_t	_s_tqu;	/* qualifier (only for keywords) */
 		struct	sym *_s_args; /* arguments in old style function
 					 definitions */
+		op_t	_s_op;	/* op type (only for operators) */
 	} u;
 	struct	sym *s_link;	/* next symbol with same hash value */
 	struct	sym **s_rlink;	/* pointer to s_link of prev. symbol */
 	struct	sym *s_nxt;	/* next struct/union member, enumerator,
 				   argument */
-	struct	sym *s_dlnxt; 	/* next symbol declared on same level */
+	struct	sym *s_dlnxt;	/* next symbol declared on same level */
 } sym_t;
 
 #define	s_styp	u._s_st
 #define	s_etyp	u._s_et
 #define	s_tspec	u._s_tsp
 #define	s_tqual	u._s_tqu
+#define	s_op	u._s_op
 #define	s_args	u._s_args
 
 /*
@@ -254,7 +260,7 @@ typedef	struct tnode {
 	op_t	tn_op;		/* operator */
 	type_t	*tn_type;	/* type */
 	u_int	tn_lvalue : 1;	/* node is lvalue */
-	u_int	tn_cast : 1;	/* if tn_op == CVT its an explizit cast */
+	u_int	tn_cast : 1;	/* if tn_op == CVT its an explicit cast */
 	u_int	tn_parn : 1;	/* node parenthesized */
 	union {
 		struct {
@@ -290,9 +296,10 @@ typedef	struct tnode {
  *
  */
 typedef	struct dinfo {
-	tspec_t	d_atyp;		/* VOID, CHAR, INT, FLOAT or DOUBLE */
-	tspec_t	d_smod;		/* SIGNED or UNSIGN */
-	tspec_t	d_lmod;		/* SHORT, LONG or QUAD */
+	tspec_t	d_atyp;		/* NOTSPEC, VOID, CHAR, INT, FLOAT or DOUBLE */
+	tspec_t	d_smod;		/* sign: NOTSPEC, SIGNED or UNSIGN */
+	tspec_t	d_lmod;		/* length: NOTSPEC, SHORT, LONG or QUAD */
+	tspec_t	d_dmod;		/* domain: NOTSPEC, COMPLEX or IMAGINARY */
 	scl_t	d_scl;		/* storage class */
 	type_t	*d_type;	/* after deftyp() pointer to the type used
 				   for all declarators */
@@ -302,11 +309,12 @@ typedef	struct dinfo {
 	scl_t	d_ctx;		/* context of declaration */
 	u_int	d_const : 1;	/* const in declaration specifiers */
 	u_int	d_volatile : 1;	/* volatile in declaration specifiers */
+	u_int	d_restrict : 1;	/* restrict in declaration specifiers */
 	u_int	d_inline : 1;	/* inline in declaration specifiers */
 	u_int	d_mscl : 1;	/* multiple storage classes */
 	u_int	d_terr : 1;	/* invalid type combination */
 	u_int	d_nedecl : 1;	/* 1 if at least a tag is declared */
-	u_int	d_vararg : 1;	/* ... in in current function decl. */
+	u_int	d_vararg : 1;	/* ... in current function decl. */
 	u_int	d_proto : 1;	/* current funct. decl. is prototype */
 	u_int	d_notyp : 1;	/* set if no type specifier was present */
 	u_int	d_asm : 1;	/* set if d_ctx == AUTO and asm() present */
@@ -341,6 +349,7 @@ typedef	struct pqinf {
 	int	p_pcnt;			/* number of asterisks */
 	u_int	p_const : 1;
 	u_int	p_volatile : 1;
+	u_int	p_restrict : 1;
 	struct	pqinf *p_nxt;
 } pqinf_t;
 
@@ -376,5 +385,15 @@ typedef struct cstk {
 	pos_t	c_cfpos;	        /* same for csrc_pos */
 	struct	cstk *c_nxt;		/* outer control statement */
 } cstk_t;
+
+/*
+ * Used to keep information about arguments passed to functions with
+ * prototypes.
+ */
+typedef struct farg {
+	int	fa_num;			/* argument number (1-basde) */
+	sym_t	*fa_sym;		/* argument symbol */
+	tnode_t	*fa_func;		/* function name */
+} farg_t;
 
 #include "externs1.h"

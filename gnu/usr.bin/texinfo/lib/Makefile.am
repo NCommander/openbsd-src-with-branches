@@ -14,10 +14,7 @@ noinst_LIBRARIES = libtxi.a
 INCLUDES = -I../intl
 
 # Don't need to list alloca.c, etc., Automake includes them.
-libtxi_a_SOURCES = getopt.c getopt.h getopt1.c getopt_.h getopt_int.h \
-                   gettext.h \
-                   strcase.h strdup.h substring.c system.h \
-		   xalloc.h xexit.c xmalloc.c xstrdup.c
+libtxi_a_SOURCES = gettext.h substring.c system.h xalloc.h xexit.c xmalloc.c xstrdup.c
 libtxi_a_LIBADD = $(LIBOBJS) $(ALLOCA)
 libtxi_a_DEPENDENCIES = $(libtxi_a_LIBADD)
 

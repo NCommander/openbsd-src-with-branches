@@ -43,6 +43,8 @@ static void ngx_http_scgi_finalize_request(ngx_http_request_t *r, ngx_int_t rc);
 static void *ngx_http_scgi_create_loc_conf(ngx_conf_t *cf);
 static char *ngx_http_scgi_merge_loc_conf(ngx_conf_t *cf, void *parent,
     void *child);
+static ngx_int_t ngx_http_scgi_merge_params(ngx_conf_t *cf,
+    ngx_http_scgi_loc_conf_t *conf, ngx_http_scgi_loc_conf_t *prev);
 
 static char *ngx_http_scgi_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_scgi_store(ngx_conf_t *cf, ngx_command_t *cmd,
@@ -94,6 +96,13 @@ static ngx_command_t ngx_http_scgi_commands[] = {
       ngx_conf_set_access_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_http_scgi_loc_conf_t, upstream.store_access),
+      NULL },
+
+    { ngx_string("scgi_buffering"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_FLAG,
+      ngx_conf_set_flag_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_scgi_loc_conf_t, upstream.buffering),
       NULL },
 
     { ngx_string("scgi_ignore_client_abort"),
@@ -412,7 +421,7 @@ ngx_http_scgi_handler(ngx_http_request_t *r)
     u->abort_request = ngx_http_scgi_abort_request;
     u->finalize_request = ngx_http_scgi_finalize_request;
 
-    u->buffering = 1;
+    u->buffering = scf->upstream.buffering;
 
     u->pipe = ngx_pcalloc(r->pool, sizeof(ngx_event_pipe_t));
     if (u->pipe == NULL) {
@@ -549,8 +558,10 @@ ngx_http_scgi_create_request(ngx_http_request_t *r)
 
             while (*(uintptr_t *) le.ip) {
                 lcode = *(ngx_http_script_len_code_pt *) le.ip;
-                len += lcode(&le) + 1;
+                len += lcode(&le);
             }
+            len++;
+
             le.ip += sizeof(uintptr_t);
         }
     }
@@ -1038,6 +1049,8 @@ ngx_http_scgi_create_loc_conf(ngx_conf_t *cf)
     /* "scgi_cyclic_temp_file" is disabled */
     conf->upstream.cyclic_temp_file = 0;
 
+    conf->upstream.change_buffering = 1;
+
     ngx_str_set(&conf->upstream.module, "scgi");
 
     return conf;
@@ -1050,17 +1063,9 @@ ngx_http_scgi_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_http_scgi_loc_conf_t *prev = parent;
     ngx_http_scgi_loc_conf_t *conf = child;
 
-    u_char                       *p;
     size_t                        size;
-    uintptr_t                    *code;
-    ngx_uint_t                    i;
-    ngx_array_t                   headers_names;
-    ngx_keyval_t                 *src;
-    ngx_hash_key_t               *hk;
     ngx_hash_init_t               hash;
     ngx_http_core_loc_conf_t     *clcf;
-    ngx_http_script_compile_t     sc;
-    ngx_http_script_copy_code_t  *copy;
 
     if (conf->upstream.store != 0) {
         ngx_conf_merge_value(conf->upstream.store, prev->upstream.store, 0);
@@ -1298,95 +1303,146 @@ ngx_http_scgi_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
         }
     }
 
-    if (conf->params_source == NULL) {
-        conf->flushes = prev->flushes;
-        conf->params_len = prev->params_len;
-        conf->params = prev->params;
-        conf->params_source = prev->params_source;
-        conf->headers_hash = prev->headers_hash;
+    if (ngx_http_scgi_merge_params(cf, conf, prev) != NGX_OK) {
+        return NGX_CONF_ERROR;
+    }
 
+    return NGX_CONF_OK;
+}
+
+
+static ngx_int_t
+ngx_http_scgi_merge_params(ngx_conf_t *cf, ngx_http_scgi_loc_conf_t *conf,
+    ngx_http_scgi_loc_conf_t *prev)
+{
+    u_char                       *p;
+    size_t                        size;
+    uintptr_t                    *code;
+    ngx_uint_t                    i, nsrc;
+    ngx_array_t                   headers_names;
 #if (NGX_HTTP_CACHE)
-
-        if (conf->params_source == NULL) {
-
-            if ((conf->upstream.cache == NULL)
-                == (prev->upstream.cache == NULL))
-            {
-                return NGX_CONF_OK;
-            }
-
-            /* 6 is a number of ngx_http_scgi_cache_headers entries */
-            conf->params_source = ngx_array_create(cf->pool, 6,
-                                                   sizeof(ngx_keyval_t));
-            if (conf->params_source == NULL) {
-                return NGX_CONF_ERROR;
-            }
-        }
-#else
-
-        if (conf->params_source == NULL) {
-            return NGX_CONF_OK;
-        }
-
+    ngx_array_t                   params_merged;
 #endif
+    ngx_keyval_t                 *src;
+    ngx_hash_key_t               *hk;
+    ngx_hash_init_t               hash;
+    ngx_http_script_compile_t     sc;
+    ngx_http_script_copy_code_t  *copy;
+
+    if (conf->params_source == NULL) {
+        conf->params_source = prev->params_source;
+
+        if (prev->headers_hash.buckets
+#if (NGX_HTTP_CACHE)
+            && ((conf->upstream.cache == NULL) == (prev->upstream.cache == NULL))
+#endif
+           )
+        {
+            conf->flushes = prev->flushes;
+            conf->params_len = prev->params_len;
+            conf->params = prev->params;
+            conf->headers_hash = prev->headers_hash;
+            conf->header_params = prev->header_params;
+
+            return NGX_OK;
+        }
+    }
+
+    if (conf->params_source == NULL
+#if (NGX_HTTP_CACHE)
+        && (conf->upstream.cache == NULL)
+#endif
+       )
+    {
+        conf->headers_hash.buckets = (void *) 1;
+        return NGX_OK;
     }
 
     conf->params_len = ngx_array_create(cf->pool, 64, 1);
     if (conf->params_len == NULL) {
-        return NGX_CONF_ERROR;
+        return NGX_ERROR;
     }
 
     conf->params = ngx_array_create(cf->pool, 512, 1);
     if (conf->params == NULL) {
-        return NGX_CONF_ERROR;
+        return NGX_ERROR;
     }
 
     if (ngx_array_init(&headers_names, cf->temp_pool, 4, sizeof(ngx_hash_key_t))
         != NGX_OK)
     {
-        return NGX_CONF_ERROR;
+        return NGX_ERROR;
     }
 
-    src = conf->params_source->elts;
+    if (conf->params_source) {
+        src = conf->params_source->elts;
+        nsrc = conf->params_source->nelts;
+
+    } else {
+        src = NULL;
+        nsrc = 0;
+    }
 
 #if (NGX_HTTP_CACHE)
 
     if (conf->upstream.cache) {
         ngx_keyval_t  *h, *s;
 
-        for (h = ngx_http_scgi_cache_headers; h->key.len; h++) {
+        if (ngx_array_init(&params_merged, cf->temp_pool, 4, sizeof(ngx_keyval_t))
+            != NGX_OK)
+        {
+            return NGX_ERROR;
+        }
 
-            for (i = 0; i < conf->params_source->nelts; i++) {
+        for (i = 0; i < nsrc; i++) {
+
+            s = ngx_array_push(&params_merged);
+            if (s == NULL) {
+                return NGX_ERROR;
+            }
+
+            *s = src[i];
+        }
+
+        h = ngx_http_scgi_cache_headers;
+
+        while (h->key.len) {
+
+            src = params_merged.elts;
+            nsrc = params_merged.nelts;
+
+            for (i = 0; i < nsrc; i++) {
                 if (ngx_strcasecmp(h->key.data, src[i].key.data) == 0) {
                     goto next;
                 }
             }
 
-            s = ngx_array_push(conf->params_source);
+            s = ngx_array_push(&params_merged);
             if (s == NULL) {
-                return NGX_CONF_ERROR;
+                return NGX_ERROR;
             }
 
             *s = *h;
-
-            src = conf->params_source->elts;
 
         next:
 
             h++;
         }
+
+        src = params_merged.elts;
+        nsrc = params_merged.nelts;
     }
 
 #endif
 
-    for (i = 0; i < conf->params_source->nelts; i++) {
+    for (i = 0; i < nsrc; i++) {
 
         if (src[i].key.len > sizeof("HTTP_") - 1
             && ngx_strncmp(src[i].key.data, "HTTP_", sizeof("HTTP_") - 1) == 0)
         {
             hk = ngx_array_push(&headers_names);
             if (hk == NULL) {
-                return NGX_CONF_ERROR;
+                return NGX_ERROR;
             }
 
             hk->key.len = src[i].key.len - 5;
@@ -1402,7 +1458,7 @@ ngx_http_scgi_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
         copy = ngx_array_push_n(conf->params_len,
                                 sizeof(ngx_http_script_copy_code_t));
         if (copy == NULL) {
-            return NGX_CONF_ERROR;
+            return NGX_ERROR;
         }
 
         copy->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
@@ -1415,7 +1471,7 @@ ngx_http_scgi_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 
         copy = ngx_array_push_n(conf->params, size);
         if (copy == NULL) {
-            return NGX_CONF_ERROR;
+            return NGX_ERROR;
         }
 
         copy->code = ngx_http_script_copy_code;
@@ -1434,12 +1490,12 @@ ngx_http_scgi_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
         sc.values = &conf->params;
 
         if (ngx_http_script_compile(&sc) != NGX_OK) {
-            return NGX_CONF_ERROR;
+            return NGX_ERROR;
         }
 
         code = ngx_array_push_n(conf->params_len, sizeof(uintptr_t));
         if (code == NULL) {
-            return NGX_CONF_ERROR;
+            return NGX_ERROR;
         }
 
         *code = (uintptr_t) NULL;
@@ -1447,7 +1503,7 @@ ngx_http_scgi_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 
         code = ngx_array_push_n(conf->params, sizeof(uintptr_t));
         if (code == NULL) {
-            return NGX_CONF_ERROR;
+            return NGX_ERROR;
         }
 
         *code = (uintptr_t) NULL;
@@ -1455,14 +1511,14 @@ ngx_http_scgi_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 
     code = ngx_array_push_n(conf->params_len, sizeof(uintptr_t));
     if (code == NULL) {
-        return NGX_CONF_ERROR;
+        return NGX_ERROR;
     }
 
     *code = (uintptr_t) NULL;
 
     code = ngx_array_push_n(conf->params, sizeof(uintptr_t));
     if (code == NULL) {
-        return NGX_CONF_ERROR;
+        return NGX_ERROR;
     }
 
     *code = (uintptr_t) NULL;
@@ -1477,12 +1533,7 @@ ngx_http_scgi_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     hash.pool = cf->pool;
     hash.temp_pool = NULL;
 
-    if (ngx_hash_init(&hash, headers_names.elts, headers_names.nelts) != NGX_OK)
-    {
-        return NGX_CONF_ERROR;
-    }
-
-    return NGX_CONF_OK;
+    return ngx_hash_init(&hash, headers_names.elts, headers_names.nelts);
 }
 
 

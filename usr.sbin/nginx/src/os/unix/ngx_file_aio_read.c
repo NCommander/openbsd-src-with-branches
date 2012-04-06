@@ -23,7 +23,7 @@
  *    kqueue EVFILT_AIO filter is level triggered only: an event repeats
  *    until aio_return() will be called;
  *
- *    aio_cancel() can not cancel file AIO: it returns AIO_NOTCANCELED always.
+ *    aio_cancel() cannot cancel file AIO: it returns AIO_NOTCANCELED always.
  */
 
 
@@ -85,6 +85,9 @@ ngx_file_aio_read(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
         if (aio->err == 0) {
             return aio->nbytes;
         }
+
+        ngx_log_error(NGX_LOG_CRIT, file->log, ngx_errno,
+                      "aio read \"%s\" failed", file->name.data);
 
         return NGX_ERROR;
     }

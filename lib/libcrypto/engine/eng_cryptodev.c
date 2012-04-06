@@ -32,7 +32,7 @@
 #include <openssl/bn.h>
 
 #if (defined(__unix__) || defined(unix)) && !defined(USG) && \
-	(defined(OpenBSD) || defined(__FreeBSD__))
+	(defined(__OpenBSD__) || defined(__FreeBSD__))
 #include <sys/param.h>
 # if (OpenBSD >= 200112) || ((__FreeBSD_version >= 470101 && __FreeBSD_version < 500000) || __FreeBSD_version >= 500041)
 #  define HAVE_CRYPTODEV
@@ -151,7 +151,6 @@ static struct {
 	{ CRYPTO_AES_CBC,		NID_aes_256_cbc,	16,	32, },
 	{ CRYPTO_BLF_CBC,		NID_bf_cbc,		8,	16, },
 	{ CRYPTO_CAST_CBC,		NID_cast5_cbc,		8,	16, },
-	{ CRYPTO_SKIPJACK_CBC,		NID_undef,		0,	 0, },
 	{ 0,				NID_undef,		0,	 0, },
 };
 

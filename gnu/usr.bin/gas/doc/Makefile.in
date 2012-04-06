@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Makefile for GNU Assembler documentation
 #  - see pretex.m4 for discussion of preprocessor definitions
 #   Copyright (C) 1987-1992 Free Software Foundation, Inc.

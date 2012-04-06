@@ -138,7 +138,7 @@ lsystem(cmd, donemsg)
 			char *esccmd = shell_quote(cmd);
 			if (esccmd != NULL)
 			{
-				int len = strlen(shell) + strlen(esccmd) + 5;
+				size_t len = strlen(shell) + strlen(esccmd) + 5;
 				p = (char *) ecalloc(len, sizeof(char));
 				SNPRINTF3(p, len, "%s %s %s", shell, shell_coption(), esccmd);
 				free(esccmd);

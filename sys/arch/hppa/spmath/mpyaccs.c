@@ -1,3 +1,4 @@
+/*	$OpenBSD: mpyaccs.c,v 1.5 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,34 +12,29 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/mpyaccs.c,v $
- * $Revision: 1.6.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:06:39 $
- */
+/* @(#)mpyaccs.c: Revision: 1.6.88.1 Date: 93/12/07 15:06:39 */
 
+#include "md.h"
 
-#include "../spmath/md.h"
-
-VOID mpyaccs(opnd1,opnd2,result)
-
-int opnd1, opnd2;
-struct mdsfu_register *result;
+void
+mpyaccs(opnd1,opnd2,result)
+	int opnd1, opnd2;
+	struct mdsfu_register *result;
 {
 	struct mdsfu_register temp;
 	int carry, sign;
 
-	impys(&opnd1,&opnd2,&temp);
+	s_xmpy(&opnd1,&opnd2,&temp);
 
 	/* get result of low word add, and check for carry out */
-	if ((result_lo += (unsigned)temp.rslt_lo) < (unsigned)temp.rslt_lo) 
+	if ((result_lo += (unsigned)temp.rslt_lo) < (unsigned)temp.rslt_lo)
 		carry = 1;
-	else carry = 0;
+	else
+		carry = 0;
 
 	/* get result of high word add, and determine overflow status */
 	sign = result_hi ^ temp.rslt_hi;
 	result_hi += temp.rslt_hi + carry;
-	if (sign >= 0 && (temp.rslt_hi ^ result_hi) < 0) overflow = TRUE;
-
-	return;
+	if (sign >= 0 && (temp.rslt_hi ^ result_hi) < 0)
+		overflow = TRUE;
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: mem2.c,v 1.4 2005/11/20 17:09:55 cloder Exp $	*/
 /*	$NetBSD: mem2.c,v 1.3 1995/10/02 17:27:11 jpo Exp $	*/
 
 /*
@@ -31,10 +32,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: mem2.c,v 1.3 1995/10/02 17:27:11 jpo Exp $";
-#endif
-
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -54,7 +51,7 @@ static size_t	nxtfree;
 static void	*mbuf;
 
 void
-initmem()
+initmem(void)
 {
 	int	pgsz;
 
@@ -70,8 +67,7 @@ initmem()
  * need never to be freed.
  */
 void *
-xalloc(sz)
-	size_t	sz;
+xalloc(size_t sz)
 {
 	void	*ptr;
 	int	prot, flags;
@@ -82,7 +78,7 @@ xalloc(sz)
 		prot = PROT_READ | PROT_WRITE;
 		flags = MAP_ANON | MAP_PRIVATE;
 		mbuf = mmap(NULL, mblklen, prot, flags, -1, (off_t)0);
-		if (mbuf == (void *)-1)
+		if (mbuf == MAP_FAILED)
 			err(1, "can't map memory");
 		if (ALIGN((u_long)mbuf) != (u_long)mbuf)
 			errx(1, "mapped address is not aligned");

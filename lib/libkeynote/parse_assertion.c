@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: parse_assertion.c,v 1.12 2004/06/25 05:06:49 msf Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -8,7 +7,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -21,20 +20,17 @@
  */
 
 #include <sys/types.h>
-#include <stdlib.h>
-#include <stdio.h>
+
 #include <ctype.h>
-#include <string.h>
 #include <limits.h>
+#include <regex.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "keynote.h"
 #include "assertion.h"
-#include "environment.h"
 #include "signature.h"
-
-/* Globals */
-struct assertion *keynote_current_assertion = (struct assertion *) NULL;
-int keynote_errno = 0;
-
-extern int keynote_in_action_authorizers(void *, int);
 
 /*
  * Recurse on graph discovery.
@@ -371,7 +367,7 @@ whichkeyword(char *start, char *end)
 struct assertion *
 keynote_parse_assertion(char *buf, int len, int assertion_flags)
 {
-    int i, j, seen_field = 0, ver = 0, end_of_assertion = 0;
+    int k, i, j, seen_field = 0, ver = 0, end_of_assertion = 0;
     char *ks, *ke, *ts, *te = (char *) NULL;
     struct assertion *as;
 
@@ -396,7 +392,7 @@ keynote_parse_assertion(char *buf, int len, int assertion_flags)
 				       ASSERT_FLAG_SIGVER);
 
     /* Skip any leading whitespace */
-    for (i = 0, j = len; i < j && isspace(as->as_buf[i]); i++)
+    for (i = 0, j = len; i < j && isspace((int) as->as_buf[i]); i++)
      ;
 
     /* Keyword must start at begining of buffer or line */
@@ -415,6 +411,7 @@ keynote_parse_assertion(char *buf, int len, int assertion_flags)
 	if (as->as_startofsignature == (char *) NULL)
 	  as->as_startofsignature = ks;
 
+	/* This catches comments at the begining of an assertion only */
 	if (as->as_buf[i] == '#')	/* Comment */
 	{
 	    seen_field = 1;
@@ -423,6 +420,7 @@ keynote_parse_assertion(char *buf, int len, int assertion_flags)
 	    while ((i< j) && as->as_buf[++i] != '\n')
 	      ;
 
+	    i++;
 	    continue;  /* Loop */
 	}
 
@@ -469,7 +467,8 @@ keynote_parse_assertion(char *buf, int len, int assertion_flags)
 
 	    /* If newline followed by non-whitespace or comment character */
 	    if ((as->as_buf[i] == '\n') && 
-		(!isspace(as->as_buf[i + 1])) && (as->as_buf[i + 1] != '#'))
+		(!isspace((int) as->as_buf[i + 1])) &&
+                (as->as_buf[i + 1] != '#'))
 	    {
 	        te = as->as_buf + i;
 	        break;
@@ -591,7 +590,23 @@ keynote_parse_assertion(char *buf, int len, int assertion_flags)
 
 	seen_field = 1;
 	if (end_of_assertion == 1)
-	  break;
+	{
+	    /* End of buffer, good termination */
+	    if ((te == as->as_buf + len) || (te + 1 == as->as_buf + len) ||
+		(*(te) == '\0') || (*(te + 1) == '\0'))
+	      break;
+
+	    /* Check whether there's something else following */
+	    for (k = 1; te + k < as->as_buf + len && *(te + k) != '\n'; k++)   
+	      if (!isspace((int) *(te + k)))
+	      {
+		  keynote_free_assertion(as);
+		  keynote_errno = ERROR_SYNTAX;
+		  return (struct assertion *) NULL;
+	      }
+
+	    break; /* Assertion is "properly" terminated */
+	}
     }
 
     /* Check that the basic fields are there */

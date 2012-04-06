@@ -29,6 +29,7 @@ public int know_dumb;		/* Don't complain about dumb terminals */
 public int quit_at_eof;		/* Quit after hitting end of file twice */
 public int quit_if_one_screen;	/* Quit if EOF on first screen */
 public int squeeze;		/* Squeeze multiple blank lines into one */
+public int be_helpful;		/* more(1) style -d */
 public int tabstop;		/* Tab settings */
 public int back_scroll;		/* Repaint screen on backwards movement */
 public int forw_scroll;		/* Repaint screen on forward movement */
@@ -62,6 +63,7 @@ public int less_is_more = 0;	/* Make compatible with POSIX more */
 /*
  * Long option names.
  */
+#if GNU_OPTIONS
 static struct optname a_optname      = { "search-skip-screen",   NULL };
 static struct optname b_optname      = { "buffers",              NULL };
 static struct optname B__optname     = { "auto-buffers",         NULL };
@@ -116,6 +118,63 @@ static struct optname pound_optname  = { "shift",                NULL };
 static struct optname keypad_optname = { "no-keypad",            NULL };
 static struct optname oldbot_optname = { "old-bot",              NULL };
 static struct optname follow_optname = { "follow-name",          NULL };
+#else
+static struct optname fake_optname   = { "fake",                 NULL };
+#define a_optname	fake_optname
+#define b_optname	fake_optname
+#define B__optname	fake_optname
+#define c_optname	fake_optname
+#define d_optname	fake_optname
+#if MSDOS_COMPILER
+#define D__optname	fake_optname
+#endif
+#define e_optname	fake_optname
+#define f_optname	fake_optname
+#define F__optname	fake_optname
+#if HILITE_SEARCH
+#define g_optname	fake_optname
+#endif
+#define h_optname	fake_optname
+#define i_optname	fake_optname
+#define j_optname	fake_optname
+#define J__optname	fake_optname
+#if USERFILE
+#define k_optname	fake_optname
+#endif
+#define K__optname	fake_optname
+#define L__optname	fake_optname
+#define m_optname	fake_optname
+#define n_optname	fake_optname
+#if LOGFILE
+#define o_optname	fake_optname
+#define O__optname	fake_optname
+#endif
+#define p_optname	fake_optname
+#define P__optname	fake_optname
+#define q2_optname	fake_optname
+#define q_optname	fake_optname
+#define r_optname	fake_optname
+#define s_optname	fake_optname
+#define S__optname	fake_optname
+#if TAGS
+#define t_optname	fake_optname
+#define T__optname	fake_optname
+#endif
+#define u_optname	fake_optname
+#define V__optname	fake_optname
+#define w_optname	fake_optname
+#define x_optname	fake_optname
+#define X__optname	fake_optname
+#define y_optname	fake_optname
+#define z_optname	fake_optname
+#define quote_optname	fake_optname
+#define tilde_optname	fake_optname
+#define query_optname	fake_optname
+#define pound_optname	fake_optname
+#define keypad_optname	fake_optname
+#define oldbot_optname	fake_optname
+#define follow_optname	fake_optname
+#endif
 
 
 /*
@@ -467,6 +526,21 @@ init_option()
 	for (o = option;  o->oletter != '\0';  o++)
 	{
 		/*
+		 * Replace less's -d option if invoked as more
+		 */
+		if (less_is_more && o->oletter == 'd')
+		{
+			o->onames = NULL;
+			o->otype = BOOL;
+			o->odefault = OPT_OFF;
+			o->ovar = &be_helpful;
+			o->ofunc = NULL;
+			o->odesc[0] = "Be less helpful in prompts";
+			o->odesc[1] = "Be helpful in prompts";
+			o->odesc[2] = NULL;
+		}
+
+		/*
 		 * Set each variable to its default.
 		 */
 		if (o->ovar != NULL)
@@ -511,6 +585,7 @@ is_optchar(c)
 	return 0;
 }
 
+#if GNU_OPTIONS
 /*
  * Find an option in the option table, given its option name.
  * p_optname is the (possibly partial) name to look for, and
@@ -597,3 +672,4 @@ findopt_name(p_optname, p_oname, p_err)
 		*p_oname = maxoname == NULL ? NULL : maxoname->oname;
 	return (maxo);
 }
+#endif

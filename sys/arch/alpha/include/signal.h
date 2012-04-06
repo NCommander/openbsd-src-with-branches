@@ -1,3 +1,4 @@
+/*	$OpenBSD: signal.h,v 1.6 2006/12/11 20:53:23 deraadt Exp $	*/
 /*	$NetBSD: signal.h,v 1.2 1995/02/16 03:08:08 cgd Exp $	*/
 
 /*
@@ -27,12 +28,14 @@
  * rights to redistribute these changes.
  */
 
-#ifndef _ALPHA_SIGNAL_H_
-#define	_ALPHA_SIGNAL_H_
+#ifndef _MACHINE_SIGNAL_H_
+#define	_MACHINE_SIGNAL_H_
 
-typedef long	sig_atomic_t;
+#include <sys/cdefs.h>
 
-#ifndef _ANSI_SOURCE
+typedef int	sig_atomic_t;
+
+#if __BSD_VISIBLE || __XPG_VISIBLE >= 420
 /*
  * Information pushed on stack when a signal is delivered.
  * This is used by the kernel to restore state following
@@ -57,6 +60,5 @@ struct  sigcontext {
 	long	sc_reserved[2];		/* XXX */
 	long	sc_xxx[8];		/* XXX */
 };
-
-#endif /* !_ANSI_SOURCE */
-#endif /* !_ALPHA_SIGNAL_H_*/
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE >= 420 */
+#endif /* !_MACHINE_SIGNAL_H_*/

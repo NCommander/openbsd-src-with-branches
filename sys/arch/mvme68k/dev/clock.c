@@ -1,7 +1,29 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: clock.c,v 1.15 2009/03/01 21:40:49 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1992, 1993
  *      The Regents of the University of California.  All rights reserved.
  *
@@ -22,11 +44,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,29 +64,36 @@
  */
 
 #include <sys/param.h>
-#include <sys/kernel.h>
 #include <sys/device.h>
+#include <sys/kernel.h>
+#include <sys/systm.h>
 
 #include <machine/psl.h>
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
 
-#include "pcc.h"
+#include "lrc.h"
 #include "mc.h"
+#include "ofobio.h"
+#include "pcc.h"
 #include "pcctwo.h"
 
+#if NLRC > 0
+#include <mvme68k/dev/lrcreg.h>
+#endif
+#if NMC > 0
+#include <mvme68k/dev/mcreg.h>
+#endif
+#if NOFOBIO > 0
+#include <mvme68k/dev/ofobioreg.h>
+#endif
 #if NPCC > 0
 #include <mvme68k/dev/pccreg.h>
 #endif
 #if NPCCTWO > 0
 #include <mvme68k/dev/pcctworeg.h>
-#endif
-#if NMC > 0
-#include <mvme68k/dev/mcreg.h>
-#endif
-
-#if defined(GPROF)
-#include <sys/gmon.h>
+#include <mvme68k/dev/vme.h>
+extern struct vme2reg *sys_vme2;
 #endif
 
 /*
@@ -88,16 +113,19 @@ struct clocksoftc {
 	struct intrhand sc_statih;
 };
 
-void	clockattach __P((struct device *, struct device *, void *));
-int	clockmatch __P((struct device *, void *, void *));
+void	clockattach(struct device *, struct device *, void *);
+int	clockmatch(struct device *, void *, void *);
 
-struct cfdriver clockcd = {
-	NULL, "clock", clockmatch, clockattach,
-	DV_DULL, sizeof(struct clocksoftc), 0
+struct cfattach clock_ca = {
+	sizeof(struct clocksoftc), clockmatch, clockattach
 };
 
-int	clockintr __P((void *));
-int	statintr __P((void *));
+struct cfdriver clock_cd = {
+	NULL, "clock", DV_DULL
+};
+
+int	clockintr(void *);
+int	statintr(void *);
 
 int	clockbus;
 u_char	stat_reset, prof_reset;
@@ -134,28 +162,42 @@ clockattach(parent, self, args)
 
 	clockbus = ca->ca_bustype;
 	switch (ca->ca_bustype) {
-#if NPCC > 0
-	case BUS_PCC:
-		prof_reset = ca->ca_ipl | PCC_IRQ_IEN | PCC_TIMERACK;
-		stat_reset = ca->ca_ipl | PCC_IRQ_IEN | PCC_TIMERACK;
-		pccintr_establish(PCCV_TIMER1, &sc->sc_profih);
-		pccintr_establish(PCCV_TIMER2, &sc->sc_statih);
+#if NLRC > 0
+	case BUS_LRC:
+		/*
+		 * XXX once we have dynamic ipl levels, put clock at ipl 6,
+		 * move it to timer1, then use timer2/ipl5 for statclock.
+		 */
+		lrcintr_establish(LRCVEC_TIMER2, &sc->sc_profih, "clock");
 		break;
 #endif
 #if NMC > 0
 	case BUS_MC:
 		prof_reset = ca->ca_ipl | MC_IRQ_IEN | MC_IRQ_ICLR;
 		stat_reset = ca->ca_ipl | MC_IRQ_IEN | MC_IRQ_ICLR;
-		mcintr_establish(MCV_TIMER1, &sc->sc_profih);
-		mcintr_establish(MCV_TIMER2, &sc->sc_statih);
+		mcintr_establish(MCV_TIMER1, &sc->sc_profih, "clock");
+		mcintr_establish(MCV_TIMER2, &sc->sc_statih, "stat");
+		break;
+#endif
+#if NOFOBIO > 0
+	case BUS_OFOBIO:
+		intr_establish(OFOBIOVEC_CLOCK, &sc->sc_profih, "clock");
+		break;
+#endif
+#if NPCC > 0
+	case BUS_PCC:
+		prof_reset = ca->ca_ipl | PCC_IRQ_IEN | PCC_TIMERACK;
+		stat_reset = ca->ca_ipl | PCC_IRQ_IEN | PCC_TIMERACK;
+		pccintr_establish(PCCV_TIMER1, &sc->sc_profih, "clock");
+		pccintr_establish(PCCV_TIMER2, &sc->sc_statih, "stat");
 		break;
 #endif
 #if NPCCTWO > 0
 	case BUS_PCCTWO:
 		prof_reset = ca->ca_ipl | PCC2_IRQ_IEN | PCC2_IRQ_ICLR;
 		stat_reset = ca->ca_ipl | PCC2_IRQ_IEN | PCC2_IRQ_ICLR;
-		pcctwointr_establish(PCC2V_TIMER1, &sc->sc_profih);
-		pcctwointr_establish(PCC2V_TIMER2, &sc->sc_statih);
+		pcctwointr_establish(PCC2V_TIMER1, &sc->sc_profih, "clock");
+		pcctwointr_establish(PCC2V_TIMER2, &sc->sc_statih, "stat");
 		break;
 #endif
 	}
@@ -171,14 +213,24 @@ clockintr(arg)
 	void *arg;
 {
 	switch (clockbus) {
-#if NPCC > 0
-	case BUS_PCC:
-		sys_pcc->pcc_t1irq = prof_reset;
+#if NLRC > 0
+	case BUS_LRC:
+		/* nothing to do */
+		break;
+#endif
+#if NOFOBIO > 0
+	case BUS_OFOBIO:
+		sys_ofobio->csr_c &= ~OFO_CSRC_TIMER_ACK;
 		break;
 #endif
 #if NMC > 0
 	case BUS_MC:
 		sys_mc->mc_t1irq = prof_reset;
+		break;
+#endif
+#if NPCC > 0
+	case BUS_PCC:
+		sys_pcc->pcc_t1irq = prof_reset;
 		break;
 #endif
 #if NPCCTWO > 0
@@ -187,14 +239,15 @@ clockintr(arg)
 		break;
 #endif
 	}
+
 	hardclock(arg);
 	return (1);
 }
 
 /*
- * Set up real-time clock; we don't have a statistics clock at
- * present.
+ * Set up real-time and, if available, statistics clock.
  */
+void
 cpu_initclocks()
 {
 	register int statint, minint;
@@ -217,17 +270,23 @@ cpu_initclocks()
 	while (statvar > minint)
 		statvar >>= 1;
 	switch (clockbus) {
-#if NPCC > 0
-	case BUS_PCC:
-		sys_pcc->pcc_t1pload = pcc_timer_us2lim(tick);
-		sys_pcc->pcc_t1ctl = PCC_TIMERCLEAR;
-		sys_pcc->pcc_t1ctl = PCC_TIMERSTART;
-		sys_pcc->pcc_t1irq = prof_reset;
+#if NLRC > 0
+	case BUS_LRC:
+		profhz = stathz = 0;	/* only one timer available for now */
 
-		sys_pcc->pcc_t2pload = pcc_timer_us2lim(statint);
-		sys_pcc->pcc_t2ctl = PCC_TIMERCLEAR;
-		sys_pcc->pcc_t2ctl = PCC_TIMERSTART;
-		sys_pcc->pcc_t2irq = stat_reset;
+		sys_lrc->lrc_tcr0 = 0;
+		sys_lrc->lrc_tcr1 = 0;
+		/* profclock as timer 2 */
+		sys_lrc->lrc_t2base = tick + 1;
+		sys_lrc->lrc_tcr2 = TCR_TLD2;	/* reset to one */
+		sys_lrc->lrc_tcr2 = TCR_TEN2 | TCR_TCYC2 | TCR_T2IE;
+		break;
+#endif
+#if NOFOBIO > 0
+	case BUS_OFOBIO:
+		profhz = stathz = 0;	/* only one timer available */
+
+		ofobio_clocksetup();
 		break;
 #endif
 #if NMC > 0
@@ -245,6 +304,19 @@ cpu_initclocks()
 		sys_mc->mc_t2count = 0;
 		sys_mc->mc_t2ctl = MC_TCTL_CEN | MC_TCTL_COC | MC_TCTL_COVF;
 		sys_mc->mc_t2irq = stat_reset;
+		break;
+#endif
+#if NPCC > 0
+	case BUS_PCC:
+		sys_pcc->pcc_t1pload = pcc_timer_us2lim(tick);
+		sys_pcc->pcc_t1ctl = PCC_TIMERCLEAR;
+		sys_pcc->pcc_t1ctl = PCC_TIMERSTART;
+		sys_pcc->pcc_t1irq = prof_reset;
+
+		sys_pcc->pcc_t2pload = pcc_timer_us2lim(statint);
+		sys_pcc->pcc_t2ctl = PCC_TIMERCLEAR;
+		sys_pcc->pcc_t2ctl = PCC_TIMERSTART;
+		sys_pcc->pcc_t2irq = stat_reset;
 		break;
 #endif
 #if NPCCTWO > 0
@@ -344,23 +416,34 @@ statintr(cap)
 	return (1);
 }
 
+void
 delay(us)
-	register int us;
+	int us;
 {
+#if NPCC > 0 || NOFOBIO > 0
 	volatile register int c;
+#endif
 
 	switch (clockbus) {
-#if NPCC > 0
-	case BUS_PCC:
-		/*
-		 * XXX MVME147 doesn't have a 3rd free-running timer,
-		 * so we use a stupid loop. Fix the code to watch t1:
-		 * the profiling timer.
-		 */
-		c = 2 * us;
-		while (--c > 0)
+#if NLRC > 0
+	case BUS_LRC:
+	{
+		struct lrcreg *lrc;
+
+		if (sys_lrc != NULL)
+			lrc = sys_lrc;
+		else
+			lrc = (struct lrcreg *)IIOV(0xfff90000);
+
+		/* use timer0 and wait for it to wrap */
+		lrc->lrc_t0base = us + 1;
+		lrc->lrc_tcr0 = TCR_TLD0;	/* reset to one */
+		lrc->lrc_stat = STAT_TMR0;	/* clear latch */
+		lrc->lrc_tcr0 = TCR_TEN0;
+		while ((lrc->lrc_stat & STAT_TMR0) == 0)
 			;
-		return (0);
+	}
+		break;
 #endif
 #if NMC > 0
 	case BUS_MC:
@@ -368,26 +451,63 @@ delay(us)
 		 * Reset and restart a free-running timer 1MHz, watch
 		 * for it to reach the required count.
 		 */
-		sys_mc->mc_t3irq = 0;
-		sys_mc->mc_t3ctl = 0;
-		sys_mc->mc_t3count = 0;
-		sys_mc->mc_t3ctl = MC_TCTL_CEN | MC_TCTL_COVF;
+	{
+		struct mcreg *mc;
 
-		while (sys_mc->mc_t3count < us)
+		if (sys_mc != NULL)
+			mc = sys_mc;
+		else
+			mc = (struct mcreg *)IIOV(0xfff00000);
+
+		mc->mc_t3irq = 0;
+		mc->mc_t3ctl = 0;
+		mc->mc_t3count = 0;
+		mc->mc_t3ctl = MC_TCTL_CEN | MC_TCTL_COVF;
+
+		while (mc->mc_t3count < us)
 			;
-		return (0);
+	}
+		break;
+#endif
+#if NPCC > 0 || NOFOBIO > 0
+	case BUS_PCC:
+	case BUS_OFOBIO:
+		/*
+		 * XXX MVME147 doesn't have a 3rd free-running timer,
+		 * so we use a stupid loop. Fix the code to watch t1:
+		 * the profiling timer.
+		 * MVME141 only has one timer, so there is no hope
+		 * either.
+		 */
+		c = 2 * us;
+		while (--c > 0)
+			;
+		break;
 #endif
 #if NPCCTWO > 0
 	case BUS_PCCTWO:
 		/*
-		 * XXX MVME167 doesn't have a 3rd free-running timer,
-		 * so we use a stupid loop. Fix the code to watch t1:
-		 * the profiling timer.
+		 * Use the first VMEChip2 timer in polling mode whenever
+		 * possible.
 		 */
-		c = 4 * us;
-		while (--c > 0)
+	{
+		struct vme2reg *vme2;
+
+		if (sys_vme2 != NULL)
+			vme2 = sys_vme2;
+		else
+			vme2 = (struct vme2reg *)IIOV(0xfff40000);
+
+		vme2->vme2_t1cmp = 0xffffffff;
+		vme2->vme2_t1count = 0;
+		vme2->vme2_tctl |= VME2_TCTL_CEN;
+
+		while (vme2->vme2_t1count < us)
 			;
-		return (0);
+
+		vme2->vme2_tctl &= ~VME2_TCTL_CEN;
+	}
+		break;
 #endif
 	}
 }

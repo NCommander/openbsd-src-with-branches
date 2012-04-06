@@ -41,6 +41,7 @@ RCSID("$arla: lock.c,v 1.11 2002/06/01 17:47:47 lha Exp $");
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <err.h>
 
 
 #define FALSE	0
@@ -97,8 +98,9 @@ Lock_Obtain(struct Lock *lock, int how)
 				lock->excl_locked = WRITE_LOCK;
 				break;
 
-	default:		printf("Can't happen, bad LOCK type: %d\n", how);
-				abort();
+	default:		
+		errx(-1, "Can't happen, bad LOCK type: %d\n", how);
+		/* NOTREACHED */
     }
 }
 

@@ -1,0 +1,3 @@
+/* $OpenBSD$ */
+
+/* XXX: Stub */

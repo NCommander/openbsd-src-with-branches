@@ -23,7 +23,7 @@ public int need_clr;
 public int final_attr;
 public int at_prompt;
 
-extern int sigs;
+extern volatile sig_atomic_t sigs;
 extern int sc_width;
 extern int so_s_width, so_e_width;
 extern int screen_trashed;
@@ -198,8 +198,9 @@ flush()
 							 * in the buffer.
 							 */
 							int slop = q - anchor;
-							/* {{ strcpy args overlap! }} */
-							strcpy(obuf, anchor);
+							/* {{ strlcpy args overlap! }} */
+							strlcpy(obuf, anchor,
+							    sizeof(obuf));
 							ob = &obuf[slop];
 							return;
 						}
@@ -303,7 +304,7 @@ flush()
 	}
 #endif
 #endif
-	fd = (any_display) ? 1 : 2;
+	fd = (any_display) ? STDOUT_FILENO : STDERR_FILENO;
 	if (write(fd, obuf, n) != n)
 		screen_trashed = 1;
 	ob = obuf;
@@ -379,9 +380,10 @@ putstr(s)
  * Convert an integral type to a string.
  */
 #define TYPE_TO_A_FUNC(funcname, type) \
-void funcname(num, buf) \
+void funcname(num, buf, len) \
 	type num; \
 	char *buf; \
+	size_t len; \
 { \
 	int neg = (num < 0); \
 	char tbuf[INT_STRLEN_BOUND(num)+2]; \
@@ -392,7 +394,7 @@ void funcname(num, buf) \
 		*--s = (num % 10) + '0'; \
 	} while ((num /= 10) != 0); \
 	if (neg) *--s = '-'; \
-	strcpy(buf, s); \
+	strlcpy(buf, s, len); \
 }
 
 TYPE_TO_A_FUNC(postoa, POSITION)
@@ -408,7 +410,7 @@ iprint_int(num)
 {
 	char buf[INT_STRLEN_BOUND(num)];
 
-	inttoa(num, buf);
+	inttoa(num, buf, sizeof(buf));
 	putstr(buf);
 	return (strlen(buf));
 }
@@ -422,7 +424,7 @@ iprint_linenum(num)
 {
 	char buf[INT_STRLEN_BOUND(num)];
 
-	linenumtoa(num, buf);
+	linenumtoa(num, buf, sizeof(buf));
 	putstr(buf);
 	return (strlen(buf));
 }

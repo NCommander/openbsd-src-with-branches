@@ -1,3 +1,4 @@
+/*	$OpenBSD: init.c,v 1.12 2010/09/09 11:31:40 miod Exp $	*/
 /*	$NetBSD: init.c,v 1.4 1995/10/02 17:21:37 jpo Exp $	*/
 
 /*
@@ -31,16 +32,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: init.c,v 1.4 1995/10/02 17:21:37 jpo Exp $";
-#endif
-
 #include <stdlib.h>
 
 #include "lint1.h"
 
 /*
- * initerr is set as soon as a fatal error occured in an initialisation.
+ * initerr is set as soon as a fatal error occurred in an initialisation.
  * The effect is that the rest of the initialisation is ignored (parsed
  * by yacc, expression trees built, but no initialisation takes place).
  */
@@ -53,12 +50,12 @@ sym_t	*initsym;
 istk_t	*initstk;
 
 
-static	void	popi2 __P((void));
-static	void	popinit __P((int));
-static	void	pushinit __P((void));
-static	void	testinit __P((void));
-static	void	nextinit __P((int));
-static	int	strginit __P((tnode_t *));
+static	void	popi2(void);
+static	void	popinit(int);
+static	void	pushinit(void);
+static	void	testinit(void);
+static	void	nextinit(int);
+static	int	strginit(tnode_t *);
 
 
 /*
@@ -66,7 +63,7 @@ static	int	strginit __P((tnode_t *));
  * which is to be initialized on it.
  */
 void
-prepinit()
+prepinit(void)
 {
 	istk_t	*istk;
 
@@ -93,7 +90,7 @@ prepinit()
 }
 
 static void
-popi2()
+popi2(void)
 {
 	istk_t	*istk;
 	sym_t	*m;
@@ -124,8 +121,7 @@ popi2()
 }
 
 static void
-popinit(brace)
-	int	brace;
+popinit(int brace)
 {
 	if (brace) {
 		/*
@@ -150,7 +146,7 @@ popinit(brace)
 }
 
 static void
-pushinit()
+pushinit(void)
 {
 	istk_t	*istk;
 	int	cnt;
@@ -200,9 +196,6 @@ pushinit()
 		istk->i_cnt = istk->i_type->t_dim;
 		break;
 	case UNION:
-		if (tflag)
-			/* initialisation of union is illegal in trad. C */
-			warning(238);
 		/* FALLTHROUGH */
 	case STRUCT:
 		if (incompl(istk->i_type)) {
@@ -235,7 +228,7 @@ pushinit()
 }
 
 static void
-testinit()
+testinit(void)
 {
 	istk_t	*istk;
 
@@ -266,8 +259,7 @@ testinit()
 }
 
 static void
-nextinit(brace)
-	int	brace;
+nextinit(int brace)
 {
 	if (!brace) {
 		if (initstk->i_type == NULL &&
@@ -303,17 +295,10 @@ nextinit(brace)
 }
 
 void
-initlbr()
+initlbr(void)
 {
 	if (initerr)
 		return;
-
-	if ((initsym->s_scl == AUTO || initsym->s_scl == REG) &&
-	    initstk->i_nxt == NULL) {
-		if (tflag && !issclt(initstk->i_subt->t_tspec))
-			/* no automatic aggregate initialization in trad. C*/
-			warning(188);
-	}
 
 	/*
 	 * Remove all entries which cannot be used for further initializers
@@ -325,7 +310,7 @@ initlbr()
 }
 
 void
-initrbr()
+initrbr(void)
 {
 	if (initerr)
 		return;
@@ -334,8 +319,7 @@ initrbr()
 }
 
 void
-mkinit(tn)
-	tnode_t	*tn;
+mkinit(tnode_t *tn)
 {
 	ptrdiff_t offs;
 	sym_t	*sym;
@@ -350,8 +334,8 @@ mkinit(tn)
 	sc = initsym->s_scl;
 
 	/*
-	 * Do not test for automatic aggregat initialisation. If the
-	 * initalizer starts with a brace we have the warning already.
+	 * Do not test for automatic aggregate initialisation. If the
+	 * initializer starts with a brace we have the warning already.
 	 * If not, an error will be printed that the initializer must
 	 * be enclosed by braces.
 	 */
@@ -402,29 +386,19 @@ mkinit(tn)
 	if (!issclt(lt))
 		lerror("mkinit() 1");
 
-	if (!typeok(INIT, 0, ln, tn))
+	if (!typeok(INIT, NULL, ln, tn))
 		goto end;
 
 	/*
-	 * Store the tree memory. This is nessesary because otherwise
+	 * Store the tree memory. This is necessary because otherwise
 	 * expr() would free it.
 	 */
 	tmem = tsave();
 	expr(tn, 1, 0);
 	trestor(tmem);
-	
-	if (isityp(lt) && ln->tn_type->t_isfield && !isityp(rt)) {
-		/*
-		 * Bit-fields can be initialized in trad. C only by integer
-		 * constants.
-		 */
-		if (tflag)
-			/* bit-field initialisation is illegal in trad. C */
-			warning(186);
-	}
 
 	if (lt != rt || (initstk->i_type->t_isfield && tn->tn_op == CON))
-		tn = convert(INIT, 0, initstk->i_type, tn);
+		tn = convert(INIT, NULL, initstk->i_type, tn);
 
 	if (tn != NULL && tn->tn_op != CON) {
 		sym = NULL;
@@ -446,8 +420,7 @@ mkinit(tn)
 
 
 static int
-strginit(tn)
-	tnode_t	*tn;
+strginit(tnode_t *tn)
 {
 	tspec_t	t;
 	istk_t	*istk;
@@ -464,7 +437,7 @@ strginit(tn)
 	 * Check if we have an array type which can be initialized by
 	 * the string.
 	 */
-	if (istk->i_subt->t_tspec == ARRAY) {
+	if (istk->i_subt != NULL && istk->i_subt->t_tspec == ARRAY) {
 		t = istk->i_subt->t_subt->t_tspec;
 		if (!((strg->st_tspec == CHAR &&
 		       (t == CHAR || t == UCHAR || t == SCHAR)) ||

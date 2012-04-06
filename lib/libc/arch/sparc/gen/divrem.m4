@@ -1,3 +1,4 @@
+/*	$OpenBSD: divrem.m4,v 1.6 2009/10/28 06:49:55 deraadt Exp $	*/
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,17 +32,12 @@
  * SUCH DAMAGE.
  *
  * from: Header: divrem.m4,v 1.4 92/06/25 13:23:57 torek Exp
- * $Id: divrem.m4,v 1.2 1995/04/22 09:33:49 pk Exp $
  */
 
 /*
  * Division and remainder, from Appendix E of the Sparc Version 8
  * Architecture Manual, with fixes from Gordon Irlam.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "@(#)divrem.m4	8.1 (Berkeley) 6/4/93"
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * Input: dividend and divisor in %o0 and %o1 respectively.
@@ -93,7 +85,7 @@ define(V, `%o5')
 
 /* m4 reminder: ifelse(a,b,c,d) => if a is b, then c, else d */
 define(T, `%g1')
-define(SC, `%g7')
+define(SC, `%g5')
 ifelse(S, `true', `define(SIGN, `%g6')')
 
 /*
@@ -117,20 +109,25 @@ define(DEVELOP_QUOTIENT_BITS,
 	subcc	R,V,R
 	ifelse($1, N,
 	`	b	9f
-		add	Q, ($2*2+1), Q
+		 add	Q, ($2*2+1), Q
 	', `	DEVELOP_QUOTIENT_BITS(incr($1), `eval(2*$2+1)')')
 L.$1.eval(TWOSUPN+$2):
 	! remainder is negative
 	addcc	R,V,R
 	ifelse($1, N,
 	`	b	9f
-		add	Q, ($2*2-1), Q
+		 add	Q, ($2*2-1), Q
 	', `	DEVELOP_QUOTIENT_BITS(incr($1), `eval(2*$2-1)')')
 	ifelse($1, 1, `9:')')
 
 #include "DEFS.h"
 #include <machine/trap.h>
 
+#ifndef STRONG_SPARC
+.weak NAME
+#else
+FUNC(patsubst(NAME,\.,__))
+#endif
 FUNC(NAME)
 ifelse(S, `true',
 `	! compute sign of result; if neither is negative, no problem
@@ -158,7 +155,7 @@ ifelse(S, `true',
 		! wrong as possible, but that is what SunOS does...).
 		t	ST_DIV0
 		retl
-		clr	%o0
+		 clr	%o0
 
 1:
 	cmp	R, V			! if divisor exceeds dividend, done
@@ -167,7 +164,7 @@ ifelse(S, `true',
 	sethi	%hi(1 << (WORDSIZE - TOPBITS - 1)), T
 	cmp	R, T
 	blu	Lnot_really_big
-	clr	ITER
+	 clr	ITER
 
 	! `Here the dividend is >= 2^(31-N) or so.  We must be careful here,
 	! as our usual N-at-a-shot divide step will cause overflow and havoc.
@@ -177,15 +174,15 @@ ifelse(S, `true',
 	1:
 		cmp	V, T
 		bgeu	3f
-		mov	1, SC
+		 mov	1, SC
 		sll	V, N, V
 		b	1b
-		inc	ITER
+		 inc	ITER
 
 	! Now compute SC.
 	2:	addcc	V, V, V
 		bcc	Lnot_too_big
-		inc	SC
+		 inc	SC
 
 		! We get here if the divisor overflowed while shifting.
 		! This means that R has the high-order bit set.
@@ -194,14 +191,14 @@ ifelse(S, `true',
 		srl	V, 1, V		! rest of V
 		add	V, T, V
 		b	Ldo_single_div
-		dec	SC
+		 dec	SC
 
 	Lnot_too_big:
 	3:	cmp	V, R
 		blu	2b
-		nop
+		 nop
 		be	Ldo_single_div
-		nop
+		 nop
 	/* NB: these are commented out in the V8-Sparc manual as well */
 	/* (I do not understand this) */
 	! V > R: went too far: back up 1 step
@@ -218,19 +215,19 @@ ifelse(S, `true',
 	Ldo_single_div:
 		deccc	SC
 		bl	Lend_regular_divide
-		nop
+		 nop
 		sub	R, V, R
 		mov	1, Q
 		b	Lend_single_divloop
-		nop
+		 nop
 	Lsingle_divloop:
 		sll	Q, 1, Q
 		bl	1f
-		srl	V, 1, V
+		 srl	V, 1, V
 		! R >= 0
 		sub	R, V, R
 		b	2f
-		inc	Q
+		 inc	Q
 	1:	! R < 0
 		add	R, V, R
 		dec	Q
@@ -246,9 +243,9 @@ Lnot_really_big:
 	sll	V, N, V
 	cmp	V, R
 	bleu	1b
-	inccc	ITER
+	 inccc	ITER
 	be	Lgot_result
-	dec	ITER
+	 dec	ITER
 
 	tst	R	! set up for initial iteration
 Ldivloop:
@@ -257,12 +254,12 @@ Ldivloop:
 Lend_regular_divide:
 	deccc	ITER
 	bge	Ldivloop
-	tst	R
+	 tst	R
 	bl,a	Lgot_result
 	! non-restoring fixup here (one instruction only!)
 ifelse(OP, `div',
-`	dec	Q
-', `	add	R, divisor, R
+`	 dec	Q
+', `	 add	R, divisor, R
 ')
 
 Lgot_result:
@@ -270,7 +267,7 @@ ifelse(S, `true',
 `	! check to see if answer should be < 0
 	tst	SIGN
 	bl,a	1f
-	ifelse(OP, `div', `neg Q', `neg R')
+	 ifelse(OP, `div', `neg Q', `neg R')
 1:')
 	retl
-	ifelse(OP, `div', `mov Q, %o0', `mov R, %o0')
+	 ifelse(OP, `div', `mov Q, %o0', `mov R, %o0')

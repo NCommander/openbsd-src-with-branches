@@ -1,3 +1,4 @@
+/*	$OpenBSD: mem.c,v 1.4 2006/03/08 07:18:51 moritz Exp $	*/
 /*	$NetBSD: mem.c,v 1.2 1995/07/03 21:24:24 cgd Exp $	*/
 
 /*
@@ -31,10 +32,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: mem.c,v 1.2 1995/07/03 21:24:24 cgd Exp $";
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include <err.h>
@@ -42,50 +39,39 @@ static char rcsid[] = "$NetBSD: mem.c,v 1.2 1995/07/03 21:24:24 cgd Exp $";
 #include "lint.h"
 
 void *
-xmalloc(s)
-	size_t	s;
+xmalloc(size_t s)
 {
 	void	*p;
 
 	if ((p = malloc(s)) == NULL)
-		nomem();
+		err(1, NULL);
 	return (p);
 }
 
 void *
-xcalloc(n, s)
-	size_t	n, s;
+xcalloc(size_t n, size_t s)
 {
 	void	*p;
 
 	if ((p = calloc(n, s)) == NULL)
-		nomem();
+		err(1, NULL);
 	return (p);
 }
 
 void *
-xrealloc(p, s)
-	void	*p;
-	size_t	s;
+xrealloc(void *p, size_t s)
 {
 	if ((p = realloc(p, s)) == NULL)
-		nomem();
+		err(1, NULL);
 	return (p);
 }
 
 char *
-xstrdup(s)
-	const	char *s;
+xstrdup(const char *s)
 {
 	char	*s2;
 
 	if ((s2 = strdup(s)) == NULL)
-		nomem();
+		err(1, NULL);
 	return (s2);
-}
-
-void
-nomem()
-{
-	errx(1, "virtual memory exhausted");
 }

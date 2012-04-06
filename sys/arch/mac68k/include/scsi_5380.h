@@ -1,3 +1,4 @@
+/*	$OpenBSD: scsi_5380.h,v 1.3 1997/11/30 06:10:34 gene Exp $	*/
 /*	$NetBSD: scsi_5380.h,v 1.3 1994/10/26 08:46:46 cgd Exp $	*/
 
 /*
@@ -32,6 +33,9 @@
  *
  *	Defines for the NCR 5380 (SCSI chip), aka Am5380
  */
+
+#ifndef _MACHINE_SCSI_5380_H_
+#define _MACHINE_SCSI_5380_H_
 
 /*
  * Register map
@@ -140,3 +144,4 @@ typedef struct {
 #define SCI_CSR_DREQ		0x40		/* r:  DMA request */
 #define SCI_CSR_DONE		0x80		/* r:  DMA count is zero */
 
+#endif	/* _MACHINE_SCSI_5380_H_ */

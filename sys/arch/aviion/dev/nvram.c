@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvram.c,v 1.25 2004/04/24 19:51:48 miod Exp $ */
+/*	$OpenBSD: nvram.c,v 1.6 2010/04/21 19:33:47 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -33,6 +33,7 @@
 #include <sys/proc.h>
 #include <sys/ioctl.h>
 #include <sys/uio.h>
+#include <sys/timetc.h>
 
 #include <machine/autoconf.h>
 #include <machine/conf.h>
@@ -96,7 +97,7 @@ nvramattach(parent, self, args)
 	vsize_t maplen;
 
 	sc->sc_len = MK48T02_SIZE;
-	sc->sc_regs = AV400_NVRAM_TOD_OFF;
+	sc->sc_regs = AV_NVRAM_TOD_OFF;
 
 	sc->sc_iot = ca->ca_iot;
 	sc->sc_base = ca->ca_paddr;
@@ -118,46 +119,6 @@ nvramattach(parent, self, args)
 	printf(": MK48T0%d\n", sc->sc_len / 1024);
 }
 
-/*
- * Return the best possible estimate of the time in the timeval
- * to which tvp points.  We do this by returning the current time
- * plus the amount of time since the last clock interrupt (clock.c:clkread).
- *
- * Check that this time is no less than any previously-reported time,
- * which could happen around the time of a clock adjustment.  Just for fun,
- * we guarantee that the time will be greater than the value obtained by a
- * previous call.
- */
-void
-microtime(tvp)
-	struct timeval *tvp;
-{
-	int s = splhigh();
-	static struct timeval lasttime;
-
-	*tvp = time;
-	while (tvp->tv_usec >= 1000000) {
-		tvp->tv_sec++;
-		tvp->tv_usec -= 1000000;
-	}
-	if (tvp->tv_sec == lasttime.tv_sec &&
-	    tvp->tv_usec <= lasttime.tv_usec &&
-	    (tvp->tv_usec = lasttime.tv_usec + 1) >= 1000000) {
-		tvp->tv_sec++;
-		tvp->tv_usec -= 1000000;
-	}
-	lasttime = *tvp;
-	splx(s);
-}
-
-/*
- * BCD to decimal and decimal to BCD.
- */
-#define	FROMBCD(x)	(((x) >> 4) * 10 + ((x) & 0xf))
-#define	TOBCD(x)	(((x) / 10 * 16) + ((x) % 10))
-
-#define	SECDAY		(24 * 60 * 60)
-#define	SECYR		(SECDAY * 365)
 #define	LEAPYEAR(y)	(((y) & 3) == 0)
 
 /*
@@ -220,7 +181,7 @@ void
 timetochip(c)
 	struct chiptime *c;
 {
-	int t, t2, t3, now = time.tv_sec;
+	int t, t2, t3, now = time_second;
 
 	/* January 1 1970 was a Thursday (4 in unix wdays) */
 	/* compute the days since the epoch */
@@ -276,6 +237,9 @@ inittodr(base)
 	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[0];
 	int sec, min, hour, day, mon, year;
 	int badbase = 0, waszero = base == 0;
+	struct timespec ts;
+
+	ts.tv_sec = ts.tv_nsec = 0;
 
 	if (base < 36 * SECYR) { /* this code did not exist until 2006 */
 		/*
@@ -310,7 +274,7 @@ inittodr(base)
 	    bus_space_read_4(sc->sc_iot, sc->sc_ioh,
 	      sc->sc_regs + (CLK_CSR << 2)) & ~CLK_READ);
 
-	if ((time.tv_sec = chiptotime(sec, min, hour, day, mon, year)) == 0) {
+	if ((ts.tv_sec = chiptotime(sec, min, hour, day, mon, year)) == 0) {
 		printf("WARNING: bad date in nvram");
 #ifdef DEBUG
 		printf("\nday = %d, mon = %d, year = %d, hour = %d, min = %d, sec = %d",
@@ -321,20 +285,22 @@ inittodr(base)
 		 * Believe the time in the file system for lack of
 		 * anything better, resetting the clock.
 		 */
-		time.tv_sec = base;
+		ts.tv_sec = base;
 		if (!badbase)
 			resettodr();
 	} else {
-		int deltat = time.tv_sec - base;
+		int deltat = ts.tv_sec - base;
 
 		if (deltat < 0)
 			deltat = -deltat;
 		if (waszero || deltat < 2 * SECDAY)
-			return;
+			goto done;
 		printf("WARNING: clock %s %d days",
-		       time.tv_sec < base ? "lost" : "gained", deltat / SECDAY);
+		       ts.tv_sec < base ? "lost" : "gained", deltat / SECDAY);
 	}
 	printf(" -- CHECK AND RESET THE DATE!\n");
+done:
+	tc_setclock(&ts);
 }
 
 /*
@@ -349,7 +315,7 @@ resettodr()
 	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[0];
 	struct chiptime c;
 
-	if (!time.tv_sec || sc == NULL)
+	if (time_second == 0 || sc == NULL)
 		return;
 	timetochip(&c);
 
@@ -442,11 +408,11 @@ nvrammmap(dev, off, prot)
 		return (-1);
 
 	/* allow access only in RAM */
-	if (off < 0 || off > sc->sc_len)
+	if (off < 0 || off >= round_page(sc->sc_len))
 		return (-1);
-	return (atop(sc->sc_base + off));
+	return (sc->sc_base + off);
 #else
-	/* disallow mmap on AV400 due to non-linear layout */
+	/* disallow mmap due to non-linear layout */
 	return (-1);
 #endif
 }
@@ -566,11 +532,26 @@ nvramwrite(dev_t dev, struct uio *uio, int flags)
 	dest = (u_int32_t *)bus_space_vaddr(sc->sc_iot, sc->sc_ioh);
 	cnt = sc->sc_len;
 	while (cnt-- != 0) {
-		if ((*dest & 0xff) != *src)
+		if ((*dest & 0xff) != *src) {
 			*dest = (u_int32_t)*src;
+			/*
+			 * A jumper on the motherboard may write-protect
+			 * the 0x80 bytes at offset 0x80 (i.e. addresses
+			 * 0x200-0x3ff), so check our write had successed.
+			 * If it failed, discard the remainder of the changes
+			 * and return EROFS.
+			 */
+			if ((*dest & 0xff) != *src)
+				rc = EROFS;
+		}
 		dest++;
 		src++;
 	}
 
-	return (0);
+	if (rc != 0) {
+		/* reset NVRAM copy contents */
+		read_nvram(sc);
+	}
+
+	return (rc);
 }

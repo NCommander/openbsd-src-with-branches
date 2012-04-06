@@ -1,17 +1,17 @@
 # Build wrapper for Nginx
-# $OpenBSD$
+# $OpenBSD: Makefile.bsd-wrapper,v 1.2 2011/09/24 20:13:57 robert Exp $
 
 LNDIR=	/usr/bin/lndir
 
 .include <bsd.own.mk>
 
-CONFIGURE_ARGS=	--prefix=/etc/nginx \
+CONFIGURE_ARGS=	--prefix=/var/www \
 		--conf-path=/etc/nginx/nginx.conf \
 		--sbin-path=/usr/sbin/nginx \
 		--pid-path=/var/run/nginx.pid \
 		--lock-path=/var/run/nginx.lock \
-		--http-log-path=/var/www/logs/access.log \
-		--error-log-path=/var/www/logs/error.log \
+		--http-log-path=logs/access.log \
+		--error-log-path=logs/error.log \
 		--http-client-body-temp-path=/tmp/client_body_temp \
 		--http-proxy-temp-path=/tmp/proxy_temp \
 		--http-fastcgi-temp-path=/tmp/fastcgi_temp \
@@ -27,7 +27,7 @@ CONFIGURE_ARGS=	--prefix=/etc/nginx \
 		--without-mail_imap_module \
 		--without-mail_smtp_module
 
-MAN+=	man/nginx.8
+MAN+=	${.OBJDIR}/objs/nginx.8
 
 .include <bsd.own.mk>
 
@@ -35,6 +35,9 @@ all: 	${.OBJDIR}/objs/ngx_auto_config.h
 	@cd ${.OBJDIR} && ${MAKE}
 
 BEFOREMAN=${.OBJDIR}/objs/ngx_auto_config.h
+
+${.OBJDIR}/objs/nginx.8: ${BEFOREMAN}
+	cd ${.OBJDIR} && ${MAKE} -f objs/Makefile manpage
 
 ${.OBJDIR}/objs/ngx_auto_config.h: ${.OBJDIR}/configure
 	@cd ${.OBJDIR} && CC="${CC}" LD_SHLIB="${CC}" \
