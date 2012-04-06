@@ -67,7 +67,7 @@ must be set to zero.
 The underlying system call used to create the thread is
 .Fn __tfork .
 Because the new thread returns on the same stack as the current thread,
-the sycall cannot be directly used from C and is therefore not
+the syscall cannot be directly used from C and is therefore not
 provided as a function.
 However, the syscall may show up in the output of
 .Xr kdump 1 .
