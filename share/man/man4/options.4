@@ -174,11 +174,6 @@ control and observe another process.
 See
 .Xr ptrace 2
 for details.
-.It Cd option RAIDDEBUG
-Be verbose on what RAIDframe does.
-See
-.Xr raid 4
-for details.
 .It Cd option SMALL_KERNEL
 Removes some features and some optimizations from the kernel to reduce the
 size of the resulting kernel binary.
@@ -430,14 +425,6 @@ Makes the boot process more verbose for PCI peripherals
 (vendor names and other information is printed, etc.).
 .It Cd option PCMCIAVERBOSE
 Makes the boot process more verbose for PCMCIA peripherals.
-.It Cd option RAID_AUTOCONFIG
-Adds support for auto-configuring the RAIDframe devices during the kernel
-initialization.
-See
-.Xr raid 4
-and
-.Xr raidctl 8
-for details.
 .It Cd option USER_LDT
 Enable userland manipulation of per-process
 Local Descriptor Table (LDT) entries;
