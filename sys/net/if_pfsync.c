@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.181 2012/02/03 01:57:50 bluhm Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.182 2012/04/03 15:09:03 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -456,7 +456,7 @@ pfsync_alloc_scrub_memory(struct pfsync_state_peer *s,
 void
 pfsync_state_export(struct pfsync_state *sp, struct pf_state *st)
 {
-	return (pf_state_export(sp, st));
+	pf_state_export(sp, st);
 }
 
 int
