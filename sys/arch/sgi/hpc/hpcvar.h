@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpcvar.h,v 1.1 2012/03/28 20:44:23 miod Exp $	*/
+/*	$OpenBSD: hpcvar.h,v 1.2 2012/04/05 21:45:51 miod Exp $	*/
 /*	$NetBSD: hpcvar.h,v 1.12 2011/01/25 12:21:04 tsutsui Exp $	*/
 
 /*
@@ -103,6 +103,7 @@ struct hpc_attach_args {
 	bus_dma_tag_t		ha_dmat;	/* HPC DMA tag */
 
 	struct hpc_values	*hpc_regs;	/* HPC register definitions */
+	int			ha_giofast;	/* GIO bus speed */
 
 	uint8_t			hpc_eeprom[256];/* HPC eeprom contents */
 };
