@@ -1,4 +1,4 @@
-/*	$OpenBSD: symtab.c,v 1.13 2009/10/27 23:59:50 deraadt Exp $	*/
+/*	$OpenBSD: symtab.c,v 1.14 2012/03/03 19:15:00 nicm Exp $	*/
 /*	$NetBSD: symtab.c,v 1.4 1996/03/19 03:21:48 jtc Exp $	*/
 
 /*
@@ -113,7 +113,6 @@ lookup(char *name)
 void
 create_symbol_table(void)
 {
-    int i;
     bucket *bp;
 
     symbol_table = CALLOC(TABLE_SIZE, sizeof(bucket *));
