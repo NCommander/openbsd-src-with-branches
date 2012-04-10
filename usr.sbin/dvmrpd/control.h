@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.h,v 1.1 2006/06/01 14:12:20 norby Exp $ */
+/*	$OpenBSD: control.h,v 1.2 2009/06/06 07:52:04 pyr Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -25,6 +25,7 @@
 
 struct {
 	struct event	ev;
+	struct event	evt;
 	int		fd;
 } control_state;
 
