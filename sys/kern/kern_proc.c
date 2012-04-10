@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.46 2011/03/07 07:07:13 guenther Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.47 2011/09/18 23:20:54 miod Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -86,9 +86,9 @@ procinit(void)
 	LIST_INIT(&zombproc);
 
 
-	pidhashtbl = hashinit(maxproc / 4, M_PROC, M_NOWAIT, &pidhash);
-	pgrphashtbl = hashinit(maxproc / 4, M_PROC, M_NOWAIT, &pgrphash);
-	uihashtbl = hashinit(maxproc / 16, M_PROC, M_NOWAIT, &uihash);
+	pidhashtbl = hashinit(maxthread / 4, M_PROC, M_NOWAIT, &pidhash);
+	pgrphashtbl = hashinit(maxprocess / 4, M_PROC, M_NOWAIT, &pgrphash);
+	uihashtbl = hashinit(maxprocess / 16, M_PROC, M_NOWAIT, &uihash);
 	if (!pidhashtbl || !pgrphashtbl || !uihashtbl)
 		panic("procinit: malloc");
 

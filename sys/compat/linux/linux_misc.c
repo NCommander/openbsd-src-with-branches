@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_misc.c,v 1.73 2011/12/14 08:33:18 robert Exp $	*/
+/*	$OpenBSD: linux_misc.c,v 1.74 2012/03/23 15:51:26 guenther Exp $	*/
 /*	$NetBSD: linux_misc.c,v 1.27 1996/05/20 01:59:21 fvdl Exp $	*/
 
 /*-
@@ -1437,7 +1437,7 @@ linux_sys_sysinfo(p, v, retval)
 	si.bufferram = bufpages * PAGE_SIZE;
 	si.totalswap = uvmexp.swpages * PAGE_SIZE;
 	si.freeswap = (uvmexp.swpages - uvmexp.swpginuse) * PAGE_SIZE;
-	si.procs = nprocs;
+	si.procs = nthreads;
 	/* The following are only present in newer Linux kernels. */
 	si.totalbig = 0;
 	si.freebig = 0;
