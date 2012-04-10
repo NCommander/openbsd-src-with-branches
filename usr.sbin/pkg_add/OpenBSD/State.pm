@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: State.pm,v 1.20 2010/12/24 09:04:14 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -237,6 +237,7 @@ sub _fatal
 	my $self = shift;
 	# implementation note: to print "fatal errors" elsewhere,
 	# the way is to eval { croak @_}; and decide what to do with $@.
+	delete $SIG{__DIE__};
 	croak "Fatal error: ", @_, "\n";
 }
 

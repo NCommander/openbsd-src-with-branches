@@ -77,6 +77,7 @@ sub getopts($;$)
 			}
 		}
 	} else {
+		delete $SIG{__DIE__};
 		die "Unknown option -$opt";
 	}
     }
