@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.100 2012/03/19 09:05:39 guenther Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.101 2012/03/23 15:51:26 guenther Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*
@@ -455,11 +455,9 @@ sys___thrsleep(struct proc *p, void *v, register_t *retval)
 
 		timespecsub(&ats, &now, &ats);
 		to_ticks = (long long)hz * ats.tv_sec +
-		    ats.tv_nsec / (tick * 1000);
+		    (ats.tv_nsec + tick * 1000 - 1) / (tick * 1000) + 1;
 		if (to_ticks > INT_MAX)
 			to_ticks = INT_MAX;
-		if (to_ticks == 0)
-			to_ticks = 1;
 	}
 
 	p->p_thrslpid = ident;
