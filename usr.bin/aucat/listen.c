@@ -1,4 +1,4 @@
-/*	$OpenBSD: listen.c,v 1.17 2011/10/12 07:20:04 ratchov Exp $	*/
+/*	$OpenBSD: listen.c,v 1.18 2012/03/29 20:08:22 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -96,9 +96,9 @@ listen_new_un(char *path)
 }
 
 void
-listen_new_tcp(char *addr, unsigned port)
+listen_new_tcp(char *addr, unsigned int port)
 {
-	char *host, serv[sizeof(unsigned) * 3 + 1];
+	char *host, serv[sizeof(unsigned int) * 3 + 1];
 	struct addrinfo *ailist, *ai, aihints;
 	struct listen *f;
 	int s, error, opt = 1, n = 0;
