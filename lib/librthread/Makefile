@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.27 2012/02/23 04:43:06 guenther Exp $
+#	$OpenBSD: Makefile,v 1.28 2012/03/22 00:44:55 guenther Exp $
 
 # For ``COMPILER_VERSION''
 .include <bsd.own.mk>
@@ -20,6 +20,8 @@ LDADD = -Wl,-znodelete,-zinitfirst
 .PATH: ${.CURDIR}/arch/${MACHINE_CPU}
 SRCS=	rthread.c \
 	rthread_attr.c \
+	rthread_barrier.c \
+	rthread_barrier_attr.c \
 	rthread_cancel.c \
 	rthread_condattr.c \
 	rthread_debug.c \
