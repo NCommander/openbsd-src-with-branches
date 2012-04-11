@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.46 2011/11/28 04:41:39 lum Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.47 2012/03/14 13:56:35 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -135,7 +135,7 @@ static PF cXcar[] = {
 #endif /* !NO_MACRO */
 	setfillcol,		/* f */
 	gotoline,		/* g */
-	rescan,			/* h */
+	markbuffer,		/* h */
 	fileinsert,		/* i */
 	rescan,			/* j */
 	killbuffer_cmd,		/* k */
@@ -257,7 +257,7 @@ static PF metal[] = {
 	rescan,			/* y */
 	rescan,			/* z */
 	gotobop,		/* { */
-	rescan,			/* | */
+	piperegion,		/* | */
 	gotoeop			/* } */
 };
 
