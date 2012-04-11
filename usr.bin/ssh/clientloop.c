@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.237 2011/09/10 22:26:34 markus Exp $ */
+/* $OpenBSD: clientloop.c,v 1.238 2012/01/18 21:46:43 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -575,10 +575,12 @@ client_wait_until_can_do_something(fd_set **readsetp, fd_set **writesetp,
 {
 	struct timeval tv, *tvp;
 	int timeout_secs;
+	time_t minwait_secs;
 	int ret;
 
 	/* Add any selections by the channel mechanism. */
-	channel_prepare_select(readsetp, writesetp, maxfdp, nallocp, rekeying);
+	channel_prepare_select(readsetp, writesetp, maxfdp, nallocp,
+	    &minwait_secs, rekeying);
 
 	if (!compat20) {
 		/* Read from the connection, unless our buffers are full. */
@@ -631,6 +633,8 @@ client_wait_until_can_do_something(fd_set **readsetp, fd_set **writesetp,
 		if (timeout_secs < 0)
 			timeout_secs = 0;
 	}
+	if (minwait_secs != 0)
+		timeout_secs = MIN(timeout_secs, (int)minwait_secs);
 	if (timeout_secs == INT_MAX)
 		tvp = NULL;
 	else {
