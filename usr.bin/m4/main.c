@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.79 2010/09/07 19:58:09 marco Exp $	*/
+/*	$OpenBSD: main.c,v 1.80 2011/09/27 07:24:02 espie Exp $	*/
 /*	$NetBSD: main.c,v 1.12 1997/02/08 23:54:49 cgd Exp $	*/
 
 /*-
@@ -165,6 +165,8 @@ static void enlarge_stack(void);
 
 int main(int, char *[]);
 
+int exit_code = 0;
+
 int
 main(int argc, char *argv[])
 {
@@ -283,7 +285,7 @@ main(int argc, char *argv[])
 		(void) fclose(outfile[0]);
 	}
 
-	return 0;
+	return exit_code;
 }
 
 /*
