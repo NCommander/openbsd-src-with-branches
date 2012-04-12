@@ -1,4 +1,4 @@
-/*	$OpenBSD: search.c,v 1.37 2009/06/04 02:23:37 kjell Exp $	*/
+/*	$OpenBSD: search.c,v 1.38 2011/01/21 19:10:13 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -15,9 +15,7 @@
 
 #include <ctype.h>
 
-#ifndef NO_MACRO
 #include "macro.h"
-#endif /* !NO_MACRO */
 
 #define SRCH_BEGIN	(0)	/* Search sub-codes.	 */
 #define SRCH_FORW	(-1)
@@ -175,12 +173,10 @@ isearch(int dir)
 	char		 opat[NPAT];
 	int		 cdotline;	/* Saved line number */
 
-#ifndef NO_MACRO
 	if (macrodef) {
 		ewprintf("Can't isearch in macro");
 		return (FALSE);
 	}
-#endif /* !NO_MACRO */
 	for (cip = 0; cip < NSRCH; cip++)
 		cmds[cip].s_code = SRCH_NOPR;
 
@@ -553,12 +549,10 @@ queryrepl(int f, int n)
 	int	plen;			/* length of found string	*/
 	char	news[NPAT], *rep;	/* replacement string		*/
 
-#ifndef NO_MACRO
 	if (macrodef) {
 		ewprintf("Can't query replace in macro");
 		return (FALSE);
 	}
-#endif /* !NO_MACRO */
 
 	if ((s = readpattern("Query replace")) != TRUE)
 		return (s);
