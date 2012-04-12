@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpe.h,v 1.14 2011/01/10 12:28:25 claudio Exp $ */
+/*	$OpenBSD: ldpe.h,v 1.15 2011/03/12 01:57:13 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2008 Esben Norby <norby@openbsd.org>
@@ -72,6 +72,13 @@ struct nbr {
 	u_int8_t		 hello_type;
 
 };
+
+/* accept.c */
+void	accept_init(void);
+int	accept_add(int, void (*)(int, short, void *), void *);
+void	accept_del(int);
+void	accept_pause(void);
+void	accept_unpause(void);
 
 /* hello.c */
 int	 send_hello(struct iface *);
