@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_sched.c,v 1.10 2011/04/05 15:44:40 pirofti Exp $	*/
+/*	$OpenBSD: linux_sched.c,v 1.11 2011/08/03 16:11:31 guenther Exp $	*/
 /*	$NetBSD: linux_sched.c,v 1.6 2000/05/28 05:49:05 thorpej Exp $	*/
 
 /*-
@@ -61,7 +61,7 @@ linux_sys_clone(struct proc *p, void *v, register_t *retval)
 	struct linux_sys_clone_args *uap = v;
 	struct linux_emuldata *emul = p->p_emuldata;
 	int cflags = SCARG(uap, flags);
-	int flags = FORK_RFORK, sig;
+	int flags = FORK_TFORK, sig;
 	int error = 0;
 
 	/*
