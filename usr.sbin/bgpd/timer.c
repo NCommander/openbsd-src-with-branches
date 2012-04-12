@@ -1,4 +1,4 @@
-/*	$OpenBSD: timer.c,v 1.13 2009/01/21 20:32:53 henning Exp $ */
+/*	$OpenBSD: timer.c,v 1.14 2010/10/24 17:20:08 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003-2007 Henning Brauer <henning@openbsd.org>
@@ -22,8 +22,6 @@
 
 #include "bgpd.h"
 #include "session.h"
-
-time_t	getmonotime(void);
 
 time_t
 getmonotime(void)
