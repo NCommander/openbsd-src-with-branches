@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_mutexattr.c,v 1.1 2011/12/21 00:49:47 guenther Exp $ */
+/*	$OpenBSD: rthread_mutexattr.c,v 1.2 2012/02/15 04:58:42 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2011 Philip Guenther <guenther@openbsd.org>
@@ -38,7 +38,7 @@ pthread_mutexattr_init(pthread_mutexattr_t *attrp)
 	attr = calloc(1, sizeof(*attr));
 	if (!attr)
 		return (errno);
-	attr->ma_type = PTHREAD_MUTEX_ERRORCHECK;
+	attr->ma_type = PTHREAD_MUTEX_DEFAULT;
 	*attrp = attr;
 
 	return (0);
