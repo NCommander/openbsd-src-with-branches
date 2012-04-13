@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_icmp.c,v 1.93 2011/04/04 16:33:52 claudio Exp $	*/
+/*	$OpenBSD: ip_icmp.c,v 1.94 2011/07/06 01:57:37 dlg Exp $	*/
 /*	$NetBSD: ip_icmp.c,v 1.19 1996/02/13 23:42:22 christos Exp $	*/
 
 /*
@@ -786,7 +786,7 @@ icmp_reflect(struct mbuf *m, struct mbuf **op, struct in_ifaddr *ia)
 			m->m_pkthdr.len -= optlen;
 		optlen += sizeof(struct ip);
 		bcopy((caddr_t)ip + optlen, (caddr_t)(ip + 1),
-		    (unsigned)(m->m_len - sizeof(struct ip)));
+		    m->m_len - sizeof(struct ip));
 	}
 	m->m_flags &= ~(M_BCAST|M_MCAST);
 	if (op)
