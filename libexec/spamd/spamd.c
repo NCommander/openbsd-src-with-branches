@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.107 2010/01/11 09:57:00 beck Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.108 2010/01/14 00:44:12 beck Exp $	*/
 
 /*
  * Copyright (c) 2002-2007 Bob Beck.  All rights reserved.
@@ -1451,8 +1451,7 @@ jail:
 				close(conffd);
 				conffd = -1;
 			}
-		}
-		if (conffd != -1 && FD_ISSET(conffd, fdsr))
+		} else if (conffd != -1 && FD_ISSET(conffd, fdsr))
 			do_config();
 		if (trapfd != -1 && FD_ISSET(trapfd, fdsr))
 			read_configline(trapcfg);
