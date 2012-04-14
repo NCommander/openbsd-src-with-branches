@@ -1,9 +1,8 @@
-#	$OpenBSD: Makefile.inc,v 1.49 2012/01/17 02:33:20 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2012/04/14 09:24:18 eric Exp $
 
 # asr sources
 .PATH: ${LIBCSRCDIR}/asr
 
-CFLAGS+=-DDEBUG
 SRCS+=	asr.c asr_debug.c asr_utils.c \
 	res_send_async.c res_search_async.c getrrsetbyname_async.c \
 	gethostnamadr_async.c getnetnamadr_async.c \
