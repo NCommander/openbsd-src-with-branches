@@ -1,4 +1,4 @@
-/*	$OpenBSD: sasyncd.c,v 1.19 2009/11/11 23:05:40 deraadt Exp $	*/
+/*	$OpenBSD: sasyncd.c,v 1.20 2010/06/16 17:39:05 reyk Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -159,7 +159,7 @@ main(int argc, char **argv)
 		switch (ch) {
 		case 'c':
 			if (cfgfile)
-				return 2;
+				usage();
 			cfgfile = optarg;
 			break;
 		case 'd':
