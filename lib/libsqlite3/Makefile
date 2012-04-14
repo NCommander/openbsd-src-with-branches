@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2012/04/14 13:20:28 espie Exp $
+# $OpenBSD: Makefile,v 1.2 2012/04/14 13:44:36 espie Exp $
 
 .include <bsd.own.mk>
 
@@ -68,7 +68,7 @@ keywordhash.h: mkkeywordhash
 mkkeywordhash: tool/mkkeywordhash.c
 	${HOSTCC} ${LDSTATIC} -o $@ $< ${LDADD}
 
-CLEANFILES += mkkeywordhash
+CLEANFILES += mkkeywordhash opcodes.c opcodes.h keywordhash.h
 	
 beforeinstall:
 	${INSTALL} ${INSTALL_COPY} -o root -g ${SHAREGRP} \
