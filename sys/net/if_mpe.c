@@ -1,4 +1,4 @@
-/* $OpenBSD: if_mpe.c,v 1.25 2011/01/28 14:58:24 reyk Exp $ */
+/* $OpenBSD: if_mpe.c,v 1.26 2011/08/20 06:21:32 mcbride Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -110,7 +110,7 @@ mpe_clone_create(struct if_clone *ifc, int unit)
 	if_attach(ifp);
 	if_alloc_sadl(ifp);
 #if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_NULL, sizeof(u_int32_t));
+	bpfattach(&ifp->if_bpf, ifp, DLT_LOOP, sizeof(u_int32_t));
 #endif
 
 	s = splnet();
