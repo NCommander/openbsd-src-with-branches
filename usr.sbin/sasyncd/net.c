@@ -1,4 +1,4 @@
-/*	$OpenBSD: net.c,v 1.17 2012/04/14 11:46:09 haesbaert Exp $	*/
+/*	$OpenBSD: net.c,v 1.18 2012/04/14 12:10:04 haesbaert Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -746,6 +746,7 @@ net_read(struct syncpeer *p, u_int32_t *msgtype, u_int32_t *msglen)
 
 	if (memcmp(hash, rhash, sizeof hash) != 0) {
 		free(blob);
+		free(msg);
 		log_msg(0, "net_read: got bad message (typo in shared key?)");
 		return NULL;
 	}
