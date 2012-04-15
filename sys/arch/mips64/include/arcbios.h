@@ -1,4 +1,4 @@
-/*	$OpenBSD: arcbios.h,v 1.19 2012/03/28 20:44:23 miod Exp $	*/
+/*	$OpenBSD: arcbios.h,v 1.20 2012/04/06 19:00:49 miod Exp $	*/
 /*-
  * Copyright (c) 1996 M. Warner Losh.  All rights reserved.
  *
@@ -40,10 +40,15 @@ typedef enum arc_config_class
 	arc_SystemClass,
 	arc_ProcessorClass,
 	arc_CacheClass,
+#ifdef __sgi__
+	arc_MemoryClass,
+#endif
 	arc_AdapterClass,
 	arc_ControllerClass,
 	arc_PeripheralClass,
+#ifdef __arc__
 	arc_MemoryClass
+#endif
 } arc_config_class_t;
 
 typedef enum arc_config_type
