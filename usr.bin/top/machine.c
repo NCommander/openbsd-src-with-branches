@@ -1,4 +1,4 @@
-/* $OpenBSD: machine.c,v 1.69 2011/07/12 14:57:53 tedu Exp $	 */
+/* $OpenBSD: machine.c,v 1.70 2012/04/12 14:59:19 pirofti Exp $	 */
 
 /*-
  * Copyright (c) 1994 Thorsten Lockert <tholo@sigmasoft.com>
@@ -332,8 +332,12 @@ get_process_info(struct system_info *si, struct process_select *sel,
 	int show_idle, show_system, show_threads, show_uid, show_pid, show_cmd;
 	int total_procs, active_procs;
 	struct kinfo_proc **prefp, *pp;
+	int what = KERN_PROC_KTHREAD;
 
-	if ((pbase = getprocs(KERN_PROC_KTHREAD, 0, &nproc)) == NULL) {
+	if (sel->threads)
+		what |= KERN_PROC_SHOW_THREADS;
+
+	if ((pbase = getprocs(what, 0, &nproc)) == NULL) {
 		/* warnx("%s", kvm_geterr(kd)); */
 		quit(23);
 	}
