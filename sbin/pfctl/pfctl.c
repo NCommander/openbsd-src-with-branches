@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.308 2011/12/03 12:46:16 mcbride Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.309 2012/01/15 15:59:33 dhill Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -733,9 +733,9 @@ pfctl_print_rule_counters(struct pf_rule *rule, int opts)
 			    (unsigned long long)(rule->bytes[0] +
 			    rule->bytes[1]), rule->states_cur);
 		if (!(opts & PF_OPT_DEBUG))
-			printf("  [ Inserted: uid %u pid %u "
+			printf("  [ Inserted: uid %lu pid %lu "
 			    "State Creations: %-6u]\n",
-			    (unsigned)rule->cuid, (unsigned)rule->cpid,
+			    (unsigned long)rule->cuid, (unsigned long)rule->cpid,
 			    rule->states_tot);
 	}
 }
