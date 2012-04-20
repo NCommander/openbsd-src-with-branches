@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.102 2012/04/11 18:27:30 espie Exp $	*/
+/*	$OpenBSD: parse.c,v 1.103 2012/04/17 09:34:15 espie Exp $	*/
 /*	$NetBSD: parse.c,v 1.29 1997/03/10 21:20:04 christos Exp $	*/
 
 /*
@@ -328,8 +328,8 @@ ParseDoOp(GNode **gnp, unsigned int op)
 		Parse_Error(PARSE_FATAL, 
 		    "Inconsistent dependency operator for target %s\n"
 		    "\t(was %s%s, now %s%s)",
-		    gn->name, gn->name, operator_string(op), 
-		    gn->name, operator_string(gn->type));
+		    gn->name, gn->name, operator_string(gn->type), 
+		    gn->name, operator_string(op));
 		return 0;
 	}
 
