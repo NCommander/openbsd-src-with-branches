@@ -1,4 +1,4 @@
-/*      $OpenBSD: mips_opcode.h,v 1.5 2010/09/19 23:34:33 miod Exp $	*/
+/*      $OpenBSD: mips_opcode.h,v 1.6 2011/03/23 16:54:36 pirofti Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -274,7 +274,7 @@ typedef union {
 #define	OP_DSRA32	077
 
 /*
- * Values for the 'func' field when 'op' == OP_BCOND.
+ * Values for the 'rt' field when 'op' == OP_BCOND.
  */
 #define	OP_BLTZ		000
 #define	OP_BGEZ		001
