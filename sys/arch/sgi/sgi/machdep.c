@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.119 2012/04/16 22:23:06 miod Exp $ */
+/*	$OpenBSD: machdep.c,v 1.120 2012/04/17 09:23:14 landry Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -695,7 +695,7 @@ cpu_startup()
 	printf("real mem = %lu (%luMB)\n", ptoa((psize_t)physmem),
 	    ptoa((psize_t)physmem)/1024/1024);
 	printf("rsvd mem = %lu (%luMB)\n", ptoa((psize_t)rsvdmem),
-	    ptoa((psize_t)rsvdmem)/1024/1024);
+	    ptoa((psize_t)rsvdmem + 1023 * 1024)/1024/1024);
 
 	/*
 	 * Allocate a submap for exec arguments. This map effectively
