@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.63 2012/03/03 08:31:18 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.64 2012/04/22 05:24:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1325,8 +1325,10 @@ find_home:
 		return (s->cwd);
 
 complete_path:
-	if (root[skip] == '\0')
-		return (root);
+	if (root[skip] == '\0') {
+		strlcpy(path, root, sizeof path);
+		return (path);
+	}
 	n = snprintf(path, sizeof path, "%s/%s", root, cwd + skip);
 	if (n > 0 && (size_t)n < sizeof path)
 		return (path);
