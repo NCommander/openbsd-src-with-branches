@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.26 2012/03/20 11:23:12 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.27 2012/04/01 13:18:38 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -689,6 +689,11 @@ const struct options_table_entry window_options_table[] = {
 	{ .name = "window-status-format",
 	  .type = OPTIONS_TABLE_STRING,
 	  .default_str = "#I:#W#F"
+	},
+
+	{ .name = "window-status-separator",
+	  .type = OPTIONS_TABLE_STRING,
+	  .default_str = " "
 	},
 
 	{ .name = "wrap-search",
