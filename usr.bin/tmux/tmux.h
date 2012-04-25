@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.327 2012/04/01 21:45:48 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.328 2012/04/11 06:16:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -777,6 +777,12 @@ struct input_ctx {
 #define INPUT_DISCARD 0x1
 
 	const struct input_state *state;
+
+	/*
+	 * All input received since we were last in the ground state. Sent to
+	 * control clients on connection.
+	 */
+	struct evbuffer	 	*since_ground;
 };
 
 /*
