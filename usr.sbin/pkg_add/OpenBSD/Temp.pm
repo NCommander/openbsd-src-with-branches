@@ -20,7 +20,7 @@ use warnings;
 
 package OpenBSD::Temp;
 
-use File::Temp;
+use OpenBSD::MkTemp;
 use OpenBSD::Paths;
 use OpenBSD::Error;
 
@@ -94,7 +94,7 @@ sub permanent_file
 	if (defined $dir) {
 		$template = "$dir/$template";
 	}
-	return File::Temp::mkstemp($template);
+	return OpenBSD::MkTemp::mkstemp($template);
 }
 
 sub permanent_dir
@@ -104,7 +104,7 @@ sub permanent_dir
 	if (defined $dir) {
 		$template = "$dir/$template";
 	}
-	return File::Temp::mkdtemp($template);
+	return OpenBSD::MkTemp::mkdtemp($template);
 }
 
 1;
