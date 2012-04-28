@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgAdd.pm,v 1.32 2011/08/23 10:32:27 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -92,7 +92,7 @@ sub tie_files
 		return unless (stat _)[7] == $self->{size};
 		$self->{tieto} = $tied;
 		$tied->{tied} = 1;
-		$state->say("Tieing #1 to #2", $self->stringize, 
+		$state->say("Tieing #1 to #2", $self->stringize,
 		    $tied->stringize) if $state->verbose >= 3;
 	}
 }

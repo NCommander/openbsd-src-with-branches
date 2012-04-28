@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.200 2011/08/23 10:32:27 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -899,8 +899,8 @@ sub new
 	$ftp =~ s/^\"(.*)\"$/$1/;
 	$ftp =~ s/^\'(.*)\'$/$1/;
 	bless { subdir => $subdir,
-		path => OpenBSD::PkgPath->new($subdir), 
-	    cdrom => $cdrom, 
+		path => OpenBSD::PkgPath->new($subdir),
+	    cdrom => $cdrom,
 	    ftp => $ftp}, $class;
 }
 
@@ -1046,7 +1046,7 @@ sub category() { "pkgpath" }
 sub new
 {
 	my ($class, $fullpkgpath) = @_;
-	bless {name => $fullpkgpath, 
+	bless {name => $fullpkgpath,
 	    path => OpenBSD::PkgPath::WithOpts->new($fullpkgpath)}, $class;
 }
 

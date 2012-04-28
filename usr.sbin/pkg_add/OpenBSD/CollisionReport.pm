@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: CollisionReport.pm,v 1.42 2011/12/03 16:15:05 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2006 Marc Espie <espie@openbsd.org>
 #
@@ -91,7 +91,7 @@ sub collision_report
 		for my $pkg (sort keys %$bypkg) {
 		    for my $item (sort @{$bypkg->{$pkg}}) {
 		    	$found++;
-			$state->errsay("\t#1 (#2 and #3)", $item, $pkg, 
+			$state->errsay("\t#1 (#2 and #3)", $item, $pkg,
 			    $extra{$item});
 		    }
 		    if ($pkg =~ m/^(?:partial\-|borked\.\d+$)/o) {
