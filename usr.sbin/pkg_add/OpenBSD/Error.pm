@@ -196,6 +196,18 @@ sub catchall(&)
 	bless $_[0], "OpenBSD::Error::catchall";
 }
 
+sub rmtree
+{
+	my $class = shift;
+	require File::Path;
+	require Cwd;
+
+	# XXX make sure we live somewhere
+	Cwd::getcwd() || chdir('/');
+
+	File::Path::rmtree(@_);
+}
+
 package OpenBSD::Error::catch;
 sub exec
 {
