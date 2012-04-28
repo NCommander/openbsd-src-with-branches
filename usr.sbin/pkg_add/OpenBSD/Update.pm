@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Update.pm,v 1.150 2011/08/26 08:46:10 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2004-2010 Marc Espie <espie@openbsd.org>
 #
@@ -88,14 +88,15 @@ sub process_handle
 		return 0;
 	}
 
-
+	my $base = 0;
 	eval {
-		if ($state->quirks->is_base_system($h, $state)) {
-			$h->{update_found} = 1;
-			$set->{updates}++;
-		}
+		$base = $state->quirks->is_base_system($h, $state);
 	};
-	return 1 if $h->{update_found};
+	if ($base) {
+		$h->{update_found} = OpenBSD::Handle->system;
+		$set->{updates}++;
+		return 1;
+	}
 
 	my $plist = OpenBSD::PackingList->from_installation($pkgname,
 	    \&OpenBSD::PackingList::UpdateInfoOnly);
