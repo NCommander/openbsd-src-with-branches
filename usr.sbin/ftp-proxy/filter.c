@@ -1,4 +1,4 @@
-/*	$OpenBSD: filter.c,v 1.16 2011/06/22 08:44:02 sthen Exp $ */
+/*	$OpenBSD: filter.c,v 1.17 2012/03/06 12:50:20 mikeb Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -71,7 +71,7 @@ add_nat(u_int32_t id, struct sockaddr *src, int s_rd, struct sockaddr *dst,
     u_int16_t nat_range_high)
 {
 	if (!src || !dst || !d_port || !nat || !nat_range_low ||
-	    (src->sa_family != nat->sa_family)) {
+	    !nat_range_high || (src->sa_family != nat->sa_family)) {
 		errno = EINVAL;
 		return (-1);
 	}
