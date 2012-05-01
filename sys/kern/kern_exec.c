@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.129 2012/04/13 16:37:50 kettenis Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.130 2012/04/22 05:43:14 guenther Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -269,7 +269,7 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 
 	/* get other threads to stop */
 	if ((error = single_thread_set(p, SINGLE_UNWIND, 1)))
-		goto bad;
+		return (error);
 
 	/*
 	 * Cheap solution to complicated problems.
