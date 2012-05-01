@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpsubs.c,v 1.13 2007/09/10 14:29:53 tobias Exp $	*/
+/*	$OpenBSD: tftpsubs.c,v 1.14 2009/10/27 23:59:44 deraadt Exp $	*/
 /*	$NetBSD: tftpsubs.c,v 1.3 1994/12/08 09:51:31 jtc Exp $	*/
 
 /*
@@ -258,7 +258,7 @@ synchnet(int f)
 {
 	int			i, j = 0;
 	char			rbuf[SEGSIZE_MIN];
-	struct sockaddr_in	from;
+	struct sockaddr_storage	from;
 	socklen_t		fromlen;
 
 	for (;;) {
