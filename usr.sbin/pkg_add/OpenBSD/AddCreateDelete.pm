@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: AddCreateDelete.pm,v 1.14 2011/03/07 09:26:47 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -33,7 +33,7 @@ sub init
 
 	$self->{progressmeter} = OpenBSD::ProgressMeter->new;
 	$self->{bad} = 0;
-	$self->SUPER::init;
+	$self->SUPER::init(@_);
 	$self->{export_level}++;
 }
 
