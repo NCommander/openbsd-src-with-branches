@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikectl.c,v 1.11 2010/10/08 11:41:56 jsg Exp $	*/
+/*	$OpenBSD: ikectl.c,v 1.12 2011/05/27 12:01:02 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -221,7 +221,7 @@ main(int argc, char *argv[])
 	return (0);
 
  connect:
-	/* connect to snmpd control socket */
+	/* connect to iked control socket */
 	if ((ctl_sock = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
 		err(1, "socket");
 
