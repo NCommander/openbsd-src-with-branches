@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci.c,v 1.186 2012/02/04 21:44:54 krw Exp $ */
+/*	$OpenBSD: ahci.c,v 1.187 2012/04/13 11:33:12 sasano Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -460,10 +460,18 @@ int			ahci_intel_attach(struct ahci_softc *,
 			    struct pci_attach_args *);
 
 static const struct ahci_device ahci_devices[] = {
-	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_HUDSON2_SATA,
+	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_HUDSON2_SATA_1,
 	    NULL,		ahci_amd_hudson2_attach },
-	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_HUDSON_AHCI_1,
+	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_HUDSON2_SATA_2,
 	    NULL,		ahci_ati_sb700_attach },
+	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_HUDSON2_SATA_3,
+	    NULL,		ahci_amd_hudson2_attach },
+	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_HUDSON2_SATA_4,
+	    NULL,		ahci_amd_hudson2_attach },
+	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_HUDSON2_SATA_5,
+	    NULL,		ahci_amd_hudson2_attach },
+	{ PCI_VENDOR_AMD,	PCI_PRODUCT_AMD_HUDSON2_SATA_6,
+	    NULL,		ahci_amd_hudson2_attach },
 
 	{ PCI_VENDOR_ATI,	PCI_PRODUCT_ATI_SB600_SATA,
 	    NULL,		ahci_ati_sb600_attach },
