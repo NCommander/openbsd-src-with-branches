@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.h,v 1.25 2007/05/09 17:42:19 deraadt Exp $	*/
+/*	$OpenBSD: time.h,v 1.26 2009/11/27 19:45:54 guenther Exp $	*/
 /*	$NetBSD: time.h,v 1.18 1996/04/23 10:29:33 mycroft Exp $	*/
 
 /*
@@ -257,15 +257,9 @@ struct clockinfo {
 	int	profhz;		/* profiling clock frequency */
 };
 
-#define CLOCK_REALTIME	0
-#define CLOCK_VIRTUAL	1
-#define CLOCK_PROF	2
-#define	CLOCK_MONOTONIC	3
-
-#define TIMER_RELTIME	0x0	/* relative timer */
-#define TIMER_ABSTIME	0x1	/* absolute timer */
-
 #if defined(_KERNEL) || defined(_STANDALONE)
+#include <sys/_time.h>
+
 extern volatile time_t time_second;	/* Seconds since epoch, wall time. */
 extern volatile time_t time_uptime;	/* Seconds since reboot. */
 
@@ -352,9 +346,6 @@ int	adjtime(const struct timeval *, struct timeval *);
 int	adjfreq(const int64_t *, int64_t *);
 #endif
 #if __XPG_VISIBLE
-int	clock_getres(clockid_t, struct timespec *);
-int	clock_gettime(clockid_t, struct timespec *);
-int	clock_settime(clockid_t, const struct timespec *);
 int	futimes(int, const struct timeval *);
 int	getitimer(int, struct itimerval *);
 int	gettimeofday(struct timeval *, struct timezone *);
