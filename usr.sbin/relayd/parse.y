@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.161 2012/01/21 13:40:48 camield Exp $	*/
+/*	$OpenBSD: parse.y,v 1.162 2012/04/15 03:12:30 jsg Exp $	*/
 
 /*
  * Copyright (c) 2007-2011 Reyk Floeter <reyk@openbsd.org>
@@ -867,6 +867,7 @@ protoptsl	: SSL sslflags
 		}
 		| direction			{
 			node.label = label;
+			node.labelname = NULL;
 			nodedirection = $1;
 		} protonode {
 			if (nodedirection != -1 &&
