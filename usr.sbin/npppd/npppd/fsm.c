@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/*	$OpenBSD: fsm.c,v 1.3 2010/07/02 21:20:57 yasuoka Exp $ */
 
 /**@file
  * This file was adapted from NetBSD:/usr/src/usr.sbin/pppd/pppd/fsm.c

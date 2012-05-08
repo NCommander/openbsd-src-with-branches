@@ -1,4 +1,4 @@
-/* $OpenBSD: npppd_local.h,v 1.7 2011/07/08 06:14:54 yasuoka Exp $ */
+/*	$OpenBSD: npppd_local.h,v 1.8 2012/01/18 03:13:04 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.

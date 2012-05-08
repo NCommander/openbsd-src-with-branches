@@ -1,4 +1,4 @@
-/* $OpenBSD: npppd_iface.h,v 1.3 2010/07/02 21:20:57 yasuoka Exp $ */
+/*	$OpenBSD: npppd_iface.h,v 1.4 2011/04/02 12:04:44 dlg Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.

@@ -1,4 +1,4 @@
-/* $OpenBSD: privsep.c,v 1.3 2011/07/08 06:14:54 yasuoka Exp $ */
+/*	$OpenBSD: privsep.c,v 1.4 2012/01/18 03:13:04 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2010 Yasuoka Masahiko <yasuoka@openbsd.org>

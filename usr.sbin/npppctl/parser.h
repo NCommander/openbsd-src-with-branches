@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: parser.h,v 1.1 2012/01/18 03:13:04 yasuoka Exp $	*/
 
 /* This file is derived from OpenBSD:src/usr.sbin/ikectl/parser.h 1.9 */
 /*
@@ -50,4 +50,4 @@ struct parse_result {
 struct parse_result	*parse(int, char *[]);
 enum protocol            parse_protocol(const char *);
 
-#endif /* _PPPCTL_PARSER_H */
+#endif /* _NPPPCTL_PARSER_H */

@@ -1,4 +1,4 @@
-/* $OpenBSD: npppd_defs.h,v 1.5 2010/07/02 21:20:57 yasuoka Exp $ */
+/*	$OpenBSD: npppd_defs.h,v 1.6 2012/01/18 03:13:04 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.

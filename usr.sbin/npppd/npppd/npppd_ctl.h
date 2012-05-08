@@ -1,4 +1,4 @@
-/* $OpenBSD: npppd_ctl.h,v 1.3 2010/07/02 21:20:57 yasuoka Exp $ */
+/*	$OpenBSD: npppd_ctl.h,v 1.4 2012/01/18 03:13:04 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.

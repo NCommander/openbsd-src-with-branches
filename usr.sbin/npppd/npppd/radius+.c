@@ -1,4 +1,4 @@
-/* $OpenBSD: radius+.c,v 1.4 2011/07/06 20:52:28 yasuoka Exp $ */
+/*	$OpenBSD: radius+.c,v 1.5 2012/01/18 02:53:56 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.

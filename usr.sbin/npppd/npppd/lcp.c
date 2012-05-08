@@ -1,4 +1,4 @@
-/* $OpenBSD: lcp.c,v 1.3 2010/07/02 21:20:57 yasuoka Exp $ */
+/*	$OpenBSD: lcp.c,v 1.4 2011/07/06 20:52:28 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Id: lcp.c,v 1.3 2010/07/02 21:20:57 yasuoka Exp $ */
+/* $Id: lcp.c,v 1.4 2011/07/06 20:52:28 yasuoka Exp $ */
 /**@file
  * This file provides LCP related functions.
  *<pre>
