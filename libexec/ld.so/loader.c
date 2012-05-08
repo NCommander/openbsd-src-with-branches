@@ -486,6 +486,11 @@ _dl_boot(const char **argv, char **envp, const long dyn_loff, long *dl_data)
 				prebind_load_exe(phdp, exe_obj);
 			}
 			break;
+		case PT_TLS:
+			_dl_printf("%s: unsupported TLS program header\n",
+			    _dl_progname);
+			_dl_exit(1);
+			break;
 		}
 		phdp++;
 	}

@@ -184,6 +184,12 @@ _dl_tryload_shlib(const char *libname, int type, int flags)
 		case PT_DYNAMIC:
 			dynp = (Elf_Dyn *)phdp->p_vaddr;
 			break;
+		case PT_TLS:
+			_dl_printf("%s: unsupported TLS program header in %s\n",
+			    _dl_progname, libname);
+			_dl_close(libfile);
+			_dl_errno = DL_CANT_LOAD_OBJ;
+			return(0);
 		default:
 			break;
 		}
