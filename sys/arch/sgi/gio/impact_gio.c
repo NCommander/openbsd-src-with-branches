@@ -1,4 +1,4 @@
-/*	$OpenBSD: impact_gio.c,v 1.3 2012/05/10 21:29:28 miod Exp $	*/
+/*	$OpenBSD: impact_gio.c,v 1.4 2012/05/10 21:36:11 miod Exp $	*/
 
 /*
  * Copyright (c) 2012 Miodrag Vallat.
@@ -72,8 +72,12 @@ impact_gio_attach(struct device *parent, struct device *self, void *aux)
 	int console;
 	extern struct consdev wsdisplay_cons;
 
+	if (ga->ga_descr != NULL && *ga->ga_descr != '\0')
+		printf(": %s", ga->ga_descr);
+
 	if (strncmp(bios_graphics, "alive", 5) != 0) {
-		printf(" device has not been setup by firmware!\n");
+		printf("\n%s: device has not been setup by firmware!\n",
+		    self->dv_xname);
 		return;
 	}
 
