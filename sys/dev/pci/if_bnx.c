@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnx.c,v 1.94 2011/04/18 04:27:31 dlg Exp $	*/
+/*	$OpenBSD: if_bnx.c,v 1.95 2011/06/22 16:44:27 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -748,16 +748,18 @@ bnx_attach(struct device *parent, struct device *self, void *aux)
 	if (val & BNX_PCICFG_MISC_STATUS_32BIT_DET)
 		sc->bnx_flags |= BNX_PCI_32BIT_FLAG;
 
-	printf(": %s\n", intrstr);
-
 	/* Hookup IRQ last. */
 	sc->bnx_intrhand = pci_intr_establish(pc, sc->bnx_ih, IPL_NET,
 	    bnx_intr, sc, sc->bnx_dev.dv_xname);
 	if (sc->bnx_intrhand == NULL) {
-		printf("%s: couldn't establish interrupt\n",
-		    sc->bnx_dev.dv_xname);
+		printf(": couldn't establish interrupt");
+		if (intrstr != NULL)
+			printf(" at %s", intrstr);
+		printf("\n");
 		goto bnx_attach_fail;
 	}
+
+	printf(": %s\n", intrstr);
 
 	mountroothook_establish(bnx_attachhook, sc);
 	return;
