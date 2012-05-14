@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pf.c,v 1.1 2012/02/23 03:54:38 joel Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -73,7 +73,7 @@ pf_get_stats(struct pf_status *s)
 {
 	extern int	 devpf;
 
-	memset(s, 0, sizeof(s));
+	memset(s, 0, sizeof(*s));
 	if (ioctl(devpf, DIOCGETSTATUS, s)) {
 		log_warn("DIOCGETSTATUS");
 		return (-1);
