@@ -1,4 +1,4 @@
-/* $OpenBSD: cfg.c,v 1.12 2010/12/29 21:28:32 nicm Exp $ */
+/* $OpenBSD: cfg.c,v 1.13 2011/08/24 10:46:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -109,7 +109,9 @@ load_cfg(const char *path, struct cmd_ctx *ctxin, struct causelist *causes)
 		len = strlen(line);
 		if (len > 0 && line[len - 1] == '\\') {
 			line[len - 1] = '\0';
-			continue;
+			/* Ignore escaped backslash at EOL. */
+			if (len > 1 && line[len - 2] != '\\')
+				continue;
 		}
 		buf = line;
 		line = NULL;
