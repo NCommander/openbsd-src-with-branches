@@ -1,4 +1,4 @@
-/*	$OpenBSD: pstat.c,v 1.77 2009/10/27 23:59:53 deraadt Exp $	*/
+/*	$OpenBSD: pstat.c,v 1.78 2011/06/28 06:55:30 guenther Exp $	*/
 /*	$NetBSD: pstat.c,v 1.27 1996/10/23 22:50:06 cgd Exp $	*/
 
 /*-
@@ -1041,6 +1041,14 @@ filemode(void)
 			*fbp++ = 'L';
 		if (kf->f_flag & FASYNC)
 			*fbp++ = 'I';
+
+		if (kf->f_iflags & FIF_LARVAL)
+			*fbp++ = 'l';
+		if (kf->f_iflags & FIF_MARK)
+			*fbp++ = 'm';
+		if (kf->f_iflags & FIF_DEFER)
+			*fbp++ = 'd';
+
 		*fbp = '\0';
 		(void)printf("%6s  %3ld", flagbuf, kf->f_count);
 		(void)printf("  %3ld", kf->f_msgcount);
