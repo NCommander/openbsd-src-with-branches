@@ -1,4 +1,4 @@
-/* $OpenBSD: cmode.c,v 1.6 2008/12/17 10:28:27 sobrado Exp $ */
+/* $OpenBSD: cmode.c,v 1.7 2011/01/18 17:35:42 lum Exp $ */
 /*
  * This file is in the public domain.
  *
@@ -243,7 +243,7 @@ getindent(const struct line *lp, int *curi)
 			break;
 		if (c == '\t'
 #ifdef NOTAB
-		    && !(curbp-b_flag & BFNOTAB)
+		    && !(curbp->b_flag & BFNOTAB)
 #endif /* NOTAB */
 		    ) {
 			nicol |= 0x07;
