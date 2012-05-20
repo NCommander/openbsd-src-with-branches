@@ -1,4 +1,4 @@
-/*	$OpenBSD: netif_sun.c,v 1.1 1997/09/17 10:46:18 downsj Exp $	*/
+/*	$OpenBSD: netif_sun.c,v 1.2 2011/04/14 18:27:49 miod Exp $	*/
 /*	$NetBSD: netif_sun.c,v 1.2 1995/09/18 21:31:48 pk Exp $	*/
 
 /*
@@ -40,7 +40,6 @@
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <string.h>
-#include <time.h>
 
 #include <net/if.h>
 
