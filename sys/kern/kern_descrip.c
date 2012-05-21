@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.94 2012/05/01 03:43:23 guenther Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.95 2012/05/14 02:41:13 guenther Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -1233,7 +1233,8 @@ dupfdopen(struct filedesc *fdp, int indx, int dfd, int mode)
 		return (EDEADLK);
 
 	fdp->fd_ofiles[indx] = wfp;
-	fdp->fd_ofileflags[indx] = fdp->fd_ofileflags[dfd];
+	fdp->fd_ofileflags[indx] = (fdp->fd_ofileflags[indx] & UF_EXCLOSE) |
+	    (fdp->fd_ofileflags[dfd] & ~UF_EXCLOSE);
 	wfp->f_count++;
 	fd_used(fdp, indx);
 	return (0);
