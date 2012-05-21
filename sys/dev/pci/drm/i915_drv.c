@@ -1,4 +1,4 @@
-/* $OpenBSD: i915_drv.c,v 1.119 2012/03/09 13:01:28 ariane Exp $ */
+/* $OpenBSD: i915_drv.c,v 1.120 2012/05/19 18:02:53 kettenis Exp $ */
 /*
  * Copyright (c) 2008-2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -3977,6 +3977,9 @@ i915_gem_idle(struct inteldrm_softc *dev_priv)
 
 	DRM_LOCK();
 	if (dev_priv->mm.suspended || dev_priv->ring.ring_obj == NULL) {
+		KASSERT(TAILQ_EMPTY(&dev_priv->mm.flushing_list));
+		KASSERT(TAILQ_EMPTY(&dev_priv->mm.active_list));
+		(void)i915_gem_evict_inactive(dev_priv, 0);
 		DRM_UNLOCK();
 		return (0);
 	}
