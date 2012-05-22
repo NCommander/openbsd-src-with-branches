@@ -1,4 +1,4 @@
-/*	$OpenBSD: diffreg.c,v 1.79 2010/07/16 21:47:02 ray Exp $	*/
+/*	$OpenBSD: diffreg.c,v 1.80 2011/04/01 17:25:26 nicm Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -536,12 +536,16 @@ char *
 splice(char *dir, char *file)
 {
 	char *tail, *buf;
+	size_t dirlen;
 
+	dirlen = strlen(dir);
+	while (dirlen != 0 && dir[dirlen - 1] == '/')
+	    dirlen--;
 	if ((tail = strrchr(file, '/')) == NULL)
 		tail = file;
 	else
 		tail++;
-	xasprintf(&buf, "%s/%s", dir, tail);
+	xasprintf(&buf, "%.*s/%s", (int)dirlen, dir, tail);
 	return (buf);
 }
 
