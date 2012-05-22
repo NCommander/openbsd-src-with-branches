@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.313 2012/04/07 17:25:51 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.314 2012/04/12 17:31:05 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -3074,7 +3074,7 @@ peer_up(u_int32_t id, struct session_up *sup)
 
 	peer = peer_get(id);
 	if (peer == NULL) {
-		log_warnx("peer_up: peer id %d already exists", id);
+		log_warnx("peer_up: unknown peer id %d", id);
 		return;
 	}
 
