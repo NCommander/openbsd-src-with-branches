@@ -582,8 +582,8 @@ struct sysent linux_sysent[] = {
 	    linux_sys_clock_getres },		/* 266 = clock_getres */
 	{ 0, 0, 0,
 	    sys_nosys },			/* 267 = unimplemented linux_sys_clock_nanosleep */
-	{ 0, 0, 0,
-	    sys_nosys },			/* 268 = unimplemented linux_sys_statfs64 */
+	{ 2, s(struct linux_sys_statfs64_args), 0,
+	    linux_sys_statfs64 },		/* 268 = statfs64 */
 	{ 0, 0, 0,
 	    sys_nosys },			/* 269 = unimplemented linux_sys_fstatfs64 */
 	{ 0, 0, 0,

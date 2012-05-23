@@ -742,6 +742,9 @@
 /* syscall: "clock_getres" ret: "int" args: "clockid_t" "struct l_timespec *" */
 #define	LINUX_SYS_clock_getres	266
 
+/* syscall: "statfs64" ret: "int" args: "char *" "struct linux_statfs64 *" */
+#define	LINUX_SYS_statfs64	268
+
 /* syscall: "set_robust_list" ret: "int" args: "struct linux_robust_list_head *" "size_t" */
 #define	LINUX_SYS_set_robust_list	311
 
