@@ -1,4 +1,4 @@
-/* $OpenBSD: key.h,v 1.32 2010/09/09 10:45:45 djm Exp $ */
+/* $OpenBSD: key.h,v 1.33 2010/10/28 11:22:09 djm Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -46,7 +46,8 @@ enum types {
 };
 enum fp_type {
 	SSH_FP_SHA1,
-	SSH_FP_MD5
+	SSH_FP_MD5,
+	SSH_FP_SHA256
 };
 enum fp_rep {
 	SSH_FP_HEX,
