@@ -1,4 +1,4 @@
-/*	$OpenBSD: siofile.c,v 1.9 2011/11/20 22:54:51 ratchov Exp $	*/
+/*	$OpenBSD: siofile.c,v 1.10 2012/04/11 06:05:43 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -209,22 +209,20 @@ siofile_new(struct fileops *ops, char *path, unsigned int *rmode,
     struct aparams *ipar, struct aparams *opar,
     unsigned int *bufsz, unsigned int *round)
 {
-	char *siopath;
 	struct sio_par par;
 	struct sio_hdl *hdl;
 	struct siofile *f;
 	unsigned int mode = *rmode;
 
-	siopath = (strcmp(path, "default") == 0) ? NULL : path;
-	hdl = sio_open(siopath, mode, 1);
+	hdl = sio_open(path, mode, 1);
 	if (hdl == NULL) {
 		if (mode != (SIO_PLAY | SIO_REC))
 			return NULL;
-		hdl = sio_open(siopath, SIO_PLAY, 1);
+		hdl = sio_open(path, SIO_PLAY, 1);
 		if (hdl != NULL)
 			mode = SIO_PLAY;
 		else {
-			hdl = sio_open(siopath, SIO_REC, 1);
+			hdl = sio_open(path, SIO_REC, 1);
 			if (hdl != NULL)
 				mode = SIO_REC;
 			else

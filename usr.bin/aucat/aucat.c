@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.133 2012/02/09 18:33:36 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.134 2012/04/11 06:05:43 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -26,6 +26,7 @@
 #include <limits.h>
 #include <pwd.h>
 #include <signal.h>
+#include <sndio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -349,7 +350,7 @@ mkdev(char *path, int mode, int bufsz, int round, int hold, int autovol)
 	} else {
 		if (dev_list)
 			return dev_list;
-		path = "default";
+		path = SIO_DEVANY;
 	}
 	if (!bufsz && !round) {
 		round = DEFAULT_ROUND;
