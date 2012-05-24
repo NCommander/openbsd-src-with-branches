@@ -1,4 +1,4 @@
-/*	$OpenBSD: timeout.h,v 1.20 2010/05/26 17:50:00 deraadt Exp $	*/
+/*	$OpenBSD: timeout.h,v 1.21 2011/05/10 00:58:42 dlg Exp $	*/
 /*
  * Copyright (c) 2000-2001 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -94,6 +94,7 @@ void timeout_add_nsec(struct timeout *, int);
 int timeout_del(struct timeout *);
 
 void timeout_startup(void);
+void timeout_adjust_ticks(int);
 
 /*
  * called once every hardclock. returns non-zero if we need to schedule a

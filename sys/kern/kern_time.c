@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_time.c,v 1.73 2012/03/19 09:05:39 guenther Exp $	*/
+/*	$OpenBSD: kern_time.c,v 1.74 2012/03/23 15:51:26 guenther Exp $	*/
 /*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
@@ -115,7 +115,7 @@ settime(struct timespec *ts)
 		return (EPERM);
 	}
 
-	tc_setclock(ts);
+	tc_setrealtimeclock(ts);
 	resettodr();
 
 	return (0);
