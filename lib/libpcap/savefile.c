@@ -1,4 +1,4 @@
-/*	$OpenBSD: savefile.c,v 1.8 2004/01/27 06:58:03 tedu Exp $	*/
+/*	$OpenBSD: savefile.c,v 1.9 2006/03/26 20:58:51 djm Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1997
@@ -395,6 +395,7 @@ pcap_dump_ftell(pcap_dumper_t *p)
 	return (ftell((FILE *)p));
 }
 
+int
 pcap_dump_flush(pcap_dumper_t *p)
 {
 
