@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.187 2011/03/07 07:43:02 henning Exp $ */
+/*	$OpenBSD: kroute.c,v 1.188 2011/05/01 12:56:04 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1083,6 +1083,9 @@ kr_net_match(struct ktable *kt, struct kroute *kr)
 			if (kr->flags & F_CONNECTED)
 				return (xn);
 			break;
+		case NETWORK_MRTCLONE:
+			/* can not happen */
+			break;
 		}
 	}
 	return (NULL);
@@ -1111,6 +1114,9 @@ kr_net_match6(struct ktable *kt, struct kroute6 *kr6)
 		case NETWORK_CONNECTED:
 			if (kr6->flags & F_CONNECTED)
 				return (xn);
+			break;
+		case NETWORK_MRTCLONE:
+			/* can not happen */
 			break;
 		}
 	}
