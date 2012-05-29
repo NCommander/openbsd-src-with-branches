@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbr.S,v 1.20 2004/02/10 00:35:15 tom Exp $	*/
+/*	$OpenBSD: mbr.S,v 1.21 2007/06/25 14:10:17 tom Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff and Tobias Weingartner
@@ -66,7 +66,6 @@
 
 #define CHAR_LBA_READ	'.'
 #define CHAR_CHS_READ	';'
-#define CHAR_CHS_FORCE	'!'
 #define CHAR_SHIFT_SEEN	0x07	/* Use BEL */
 
 #define MBR_FLAGS_FORCE_CHS	0x0001
