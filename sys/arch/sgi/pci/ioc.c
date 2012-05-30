@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioc.c,v 1.36 2010/09/20 06:33:47 matthew Exp $	*/
+/*	$OpenBSD: ioc.c,v 1.37 2011/10/10 19:49:16 miod Exp $	*/
 
 /*
  * Copyright (c) 2008 Joel Sing.
@@ -212,7 +212,7 @@ ioc_attach(struct device *parent, struct device *self, void *aux)
 			subdevice_mask = (1 << IOCDEV_EF);
 			has_enet = 1;
 			if (pa->pa_device != 3) {
-				subdevice_mask = (1 << IOCDEV_SERIAL_A) |
+				subdevice_mask |= (1 << IOCDEV_SERIAL_A) |
 				    (1 << IOCDEV_SERIAL_B);
 				has_superio = 1;
 			}
