@@ -1,4 +1,4 @@
-#	$OpenBSD: sftp-cmds.sh,v 1.10 2009/08/13 01:11:55 djm Exp $
+#	$OpenBSD: sftp-cmds.sh,v 1.11 2010/12/04 00:21:19 djm Exp $
 #	Placed in the Public Domain.
 
 # XXX - TODO: 
@@ -20,7 +20,7 @@ SPACECOPY_ARG="${COPY}\ this\ has\ spaces.txt"
 # File with glob metacharacters
 GLOBMETACOPY="${COPY} [metachar].txt"
 
-rm -rf ${COPY} ${COPY}.1 ${COPY}.2 ${COPY}.dd ${COPY}.dd2 ${BATCH}.*
+rm -rf ${COPY} ${COPY}.1 ${COPY}.2 ${COPY}.dd ${COPY}.dd2
 mkdir ${COPY}.dd
 
 verbose "$tid: lls"
@@ -218,7 +218,7 @@ verbose "$tid: lchdir"
 echo "lchdir ${COPY}.dd" | ${SFTP} -D ${SFTPSERVER} >/dev/null 2>&1 \
 	|| fail "lchdir failed"
 
-rm -rf ${COPY} ${COPY}.1 ${COPY}.2 ${COPY}.dd ${COPY}.dd2 ${BATCH}.*
+rm -rf ${COPY} ${COPY}.1 ${COPY}.2 ${COPY}.dd ${COPY}.dd2
 rm -rf ${QUOTECOPY} "$SPACECOPY" "$GLOBMETACOPY"
 
 
