@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.c,v 1.153 2012/04/19 12:42:03 ariane Exp $	*/
+/*	$OpenBSD: uvm_map.c,v 1.154 2012/06/01 05:47:10 guenther Exp $	*/
 /*	$NetBSD: uvm_map.c,v 1.86 2000/11/27 08:40:03 chs Exp $	*/
 
 /*
@@ -3972,7 +3972,8 @@ uvm_map_extract(struct vm_map *srcmap, vaddr_t start, vsize_t len,
 	vm_map_lock(kernel_map);
 
 	if (uvm_map_findspace(kernel_map, &tmp1, &tmp2, &dstaddr, len,
-	    PAGE_SIZE, 0, VM_PROT_NONE, 0) != 0) {
+	    MAX(PAGE_SIZE, PMAP_PREFER_ALIGN()), PMAP_PREFER_OFFSET(start),
+	    VM_PROT_NONE, 0) != 0) {
 		error = ENOMEM;
 		goto fail2;
 	}
