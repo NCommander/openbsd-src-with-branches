@@ -793,7 +793,7 @@ pmap_enter(struct pmap *pmap, vaddr_t va, paddr_t pa, vm_prot_t prot, int flags)
 	volatile pt_entry_t *pde;
 	pt_entry_t pte;
 	struct vm_page *pg, *ptp = NULL;
-	struct pv_entry *pve;
+	struct pv_entry *pve = NULL;
 	boolean_t wired = (flags & PMAP_WIRED) != 0;
 
 	DPRINTF(PDB_FOLLOW|PDB_ENTER,
@@ -843,7 +843,6 @@ pmap_enter(struct pmap *pmap, vaddr_t va, paddr_t pa, vm_prot_t prot, int flags)
 		DPRINTF(PDB_ENTER,
 		    ("pmap_enter: new mapping 0x%lx -> 0x%lx\n", va, pa));
 		pte = PTE_REFTRAP;
-		pve = NULL;
 		pmap->pm_stats.resident_count++;
 		if (wired)
 			pmap->pm_stats.wired_count++;
