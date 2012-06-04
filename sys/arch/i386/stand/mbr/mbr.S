@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbr.S,v 1.21 2007/06/25 14:10:17 tom Exp $	*/
+/*	$OpenBSD: mbr.S,v 1.22 2012/05/29 04:22:57 mglocker Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff and Tobias Weingartner
@@ -170,10 +170,12 @@ reloc:
 #ifdef SERIAL
 	/* Initialize the serial port to 9600 baud, 8N1.
 	 */
+	pushw	%dx
 	xorw	%ax, %ax
 	movb	$0xe3, %ax
 	movw	$SERIAL, %dx
 	int	$0x14
+	popw	%dx
 #endif
 
 	/*
@@ -497,7 +499,7 @@ Lchr:
 #ifdef SERIAL
 	pushw	%dx
 	movb	$0x01, %ah
-	movw	SERIAL, %dx
+	movw	$SERIAL, %dx
 	int	$0x14
 	popw	%dx
 #else
