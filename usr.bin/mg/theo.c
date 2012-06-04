@@ -1,4 +1,4 @@
-/*	$OpenBSD: theo.c,v 1.120 2010/08/03 22:12:27 henning Exp $	*/
+/*	$OpenBSD: theo.c,v 1.121 2011/07/08 00:27:59 djm Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved.
@@ -72,6 +72,8 @@ theo(int f, int n)
 
 	curbp = bp;
 	curwp = wp;
+	onlywind(f, n);
+
 	return (TRUE);
 }
 
