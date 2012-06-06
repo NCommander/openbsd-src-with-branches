@@ -1,4 +1,4 @@
-/*	$OpenBSD: event.h,v 1.14 2010/07/28 21:44:41 nicm Exp $	*/
+/*	$OpenBSD: event.h,v 1.15 2010/08/02 19:54:07 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000,2001 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -147,7 +147,7 @@ struct knote {
 	int			kn_sdata;	/* saved data field */
 	union {
 		struct		file *p_fp;	/* file data pointer */
-		struct		proc *p_proc;	/* proc pointer */
+		struct		process *p_process;	/* process pointer */
 	} kn_ptr;
 	const struct		filterops *kn_fop;
 	void			*kn_hook;
