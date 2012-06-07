@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.16 2010/07/27 16:59:03 stsp Exp $
+#	$OpenBSD: Makefile.inc,v 1.17 2011/04/03 20:21:38 stsp Exp $
 
 # locale sources
 .PATH: ${LIBCSRCDIR}/arch/${MACHINE_CPU}/locale ${LIBCSRCDIR}/locale
@@ -35,6 +35,8 @@ MLINKS+=setlocale.3 localeconv.3 \
 	wcstol.3 wcstoll.3 \
 	wcstol.3 wcstoull.3 \
 	wcstol.3 wcstoimax.3 \
-	wcstol.3 wcstoumax.3
+	wcstol.3 wcstoumax.3 \
+	mbsrtowcs.3 mbsnrtowcs.3 \
+	wcsrtombs.3 wcsnrtombs.3
 
 CFLAGS+=-I${.CURDIR} -I${LIBCSRCDIR}/citrus
