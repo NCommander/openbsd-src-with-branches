@@ -1,4 +1,4 @@
-/*	$OpenBSD: basic.c,v 1.34 2012/06/01 11:22:06 lum Exp $	*/
+/*	$OpenBSD: basic.c,v 1.35 2012/06/08 05:10:50 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -334,6 +334,8 @@ backpage(int f, int n)
 
 	/* Move the dot the slow way, for line nos */
 	while (curwp->w_dotp != lp2) {
+                if (curwp->w_dotline <= curwp->w_ntrows)
+                        return (TRUE);
 		curwp->w_dotp = lback(curwp->w_dotp);
 		curwp->w_dotline--;
 	}
