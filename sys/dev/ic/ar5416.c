@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5416.c,v 1.10 2010/07/15 19:29:00 damien Exp $	*/
+/*	$OpenBSD: ar5416.c,v 1.11 2010/08/12 16:34:53 damien Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -132,7 +132,7 @@ ar5416_attach(struct athn_softc *sc)
 		sc->ini = &ar9160_ini;
 	else
 		sc->ini = &ar5416_ini;
-	sc->serdes = ar5416_serdes;
+	sc->serdes = &ar5416_serdes;
 
 	return (ar5008_attach(sc));
 }

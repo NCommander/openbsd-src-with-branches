@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9285.c,v 1.17 2011/01/06 07:27:15 damien Exp $	*/
+/*	$OpenBSD: ar9285.c,v 1.18 2011/01/15 11:39:28 damien Exp $	*/
 
 /*-
  * Copyright (c) 2009-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -126,7 +126,7 @@ ar9285_attach(struct athn_softc *sc)
 	else
 #endif
 		sc->ini = &ar9285_1_2_ini;
-	sc->serdes = ar9280_2_0_serdes;
+	sc->serdes = &ar9280_2_0_serdes;
 
 	return (ar5008_attach(sc));
 }
