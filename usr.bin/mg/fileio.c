@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.88 2012/05/23 05:29:22 lum Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.89 2012/05/25 04:56:58 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -211,7 +211,7 @@ fbackupfile(const char *fn)
 	}
 
 	if (asprintf(&nname, "%s~", fn) == -1) {
-		ewprintf("Can't allocate temp file name : %s", strerror(errno));
+		ewprintf("Can't allocate backup file name : %s", strerror(errno));
 		return (ABORT);
 	}
 
