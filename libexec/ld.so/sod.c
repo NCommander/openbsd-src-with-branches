@@ -1,4 +1,4 @@
-/*	$OpenBSD: sod.c,v 1.22 2004/10/17 03:56:49 drahn Exp $	*/
+/*	$OpenBSD: sod.c,v 1.23 2008/10/02 20:12:08 kurt Exp $	*/
 
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -130,6 +130,17 @@ _dl_build_sod(const char *name, struct sod *sodp)
 backout:
 	_dl_free((char *)sodp->sod_name);
 	sodp->sod_name = (long)_dl_strdup(name);
+}
+
+void
+_dl_set_sod(const char *path, struct sod *sod)
+{
+	char *fname = _dl_strrchr(path, '/');
+
+	if (fname != NULL)
+		_dl_build_sod(++fname, sod);
+	else
+		_dl_build_sod(path, sod);
 }
 
 static struct hints_header	*hheader = NULL;
