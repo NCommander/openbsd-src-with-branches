@@ -1,4 +1,4 @@
-/*	$OpenBSD: rm.c,v 1.23 2009/10/27 23:59:22 deraadt Exp $	*/
+/*	$OpenBSD: rm.c,v 1.24 2012/06/18 00:33:47 millert Exp $	*/
 /*	$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $	*/
 
 /*-
@@ -198,9 +198,13 @@ rm_tree(char **argv)
 				continue;
 			break;
 
-		default:
+		case FTS_F:
+		case FTS_NSOK:
 			if (Pflag)
-				rm_overwrite(p->fts_accpath, NULL);
+				rm_overwrite(p->fts_accpath, p->fts_info ==
+				    FTS_NSOK ? NULL : p->fts_statp);
+			/* FALLTHROUGH */
+		default:
 			if (!unlink(p->fts_accpath) ||
 			    (fflag && errno == ENOENT))
 				continue;
