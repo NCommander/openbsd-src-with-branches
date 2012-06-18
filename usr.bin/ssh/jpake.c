@@ -1,4 +1,4 @@
-/* $OpenBSD: jpake.c,v 1.5 2010/09/20 04:50:53 djm Exp $ */
+/* $OpenBSD: jpake.c,v 1.6 2010/09/20 04:54:07 djm Exp $ */
 /*
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
  *
@@ -131,7 +131,7 @@ jpake_free(struct jpake_ctx *pctx)
 #undef JPAKE_BN_CLEAR_FREE
 #undef JPAKE_BUF_CLEAR_FREE
 
-	bzero(pctx, sizeof(pctx));
+	bzero(pctx, sizeof(*pctx));
 	xfree(pctx);
 }
 
