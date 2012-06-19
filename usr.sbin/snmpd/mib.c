@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.53 2012/05/26 14:45:55 joel Exp $	*/
+/*	$OpenBSD: mib.c,v 1.54 2012/06/14 17:31:32 matthew Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -3406,10 +3406,11 @@ mib_diskio(struct oid *oid, struct ber_oid *o, struct ber_element **elm)
 	o->bo_id[OIDIDX_diskIOEntry] = idx;
 	ber = ber_add_oid(ber, o);
 
-	len = diskcount * sizeof(*stats);
-	stats = malloc(len);
+	stats = calloc(diskcount, sizeof(*stats));
 	if (stats == NULL)
 		return (-1);
+	/* We know len won't overflow, otherwise calloc() would have failed. */
+	len = diskcount * sizeof(*stats);
 	mib[1] = HW_DISKSTATS;
 	if (sysctl(mib, sizeofa(mib), stats, &len, NULL, 0) == -1) {
 		free(stats);
