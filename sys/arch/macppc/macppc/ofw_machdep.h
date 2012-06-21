@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.h,v 1.2 2002/08/20 02:50:43 drahn Exp $	*/
+/*	$OpenBSD: ofw_machdep.h,v 1.3 2003/06/02 16:16:27 miod Exp $	*/
 
 /*
  * Copyright (c) 2002, Miodrag Vallat.
@@ -29,10 +29,6 @@
 /*
  * Various console variables...
  */
-extern int cons_displaytype;
-extern bus_space_tag_t cons_membus;
-extern bus_space_handle_t cons_display_mem_h;
-extern bus_space_handle_t cons_display_ctl_h;
 extern int cons_height, cons_width, cons_linebytes, cons_depth;
 extern int cons_display_ofh;
 extern u_int32_t cons_addr;
