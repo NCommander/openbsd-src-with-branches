@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.16 2011/09/20 21:46:08 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.17 2011/09/22 13:50:30 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -136,7 +136,7 @@ cpu_fork(struct proc *p1, struct proc *p2, void *stack, size_t stacksize,
 	 * If specified, give the child a different stack.
 	 */
 	if (stack != NULL)
-		tf->tf_sp = (register_t)stack;
+		setstack(tf, (u_long)stack, 0);	/* XXX ignore error? */
 
 	/*
 	 * Build stack frames for the cpu_switchto & co.

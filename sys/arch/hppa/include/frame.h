@@ -1,4 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.17 2011/11/08 15:39:50 kettenis Exp $	*/
+/*	$OpenBSD: frame.h,v 1.18 2011/11/14 14:29:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999-2004 Michael Shalayeff
@@ -135,6 +135,11 @@ struct trapframe {
 
 	unsigned long	tf_pad[3];	/* pad to 256 bytes */
 };
+
+#ifdef _KERNEL
+int	setstack(struct trapframe *, u_long, register_t);
+#endif /* _KERNEL */
+
 #endif /* !_LOCORE */
 
 #endif /* !_MACHINE_FRAME_H_ */
