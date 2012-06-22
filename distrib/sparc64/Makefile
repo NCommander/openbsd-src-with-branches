@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2007/08/14 18:57:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.9 2007/10/18 18:16:20 deraadt Exp $
 
 # preserve order: 'miniroot' depends on 'bsd.rd', 'cdfs' depends on 'miniroot'
 SUBDIR+= ramdisk ramdiskB bsd.rd miniroot cdfs
@@ -8,7 +8,7 @@ SUBDIR+= iso
 .endif
 
 unconfig:
-	cd ramdisk_cd; ${MAKE} unconfig
-	cd ramdiskA; ${MAKE} unconfig
+	cd ramdisk; ${MAKE} unconfig
+	cd ramdiskB; ${MAKE} unconfig
 
 .include <bsd.subdir.mk>
