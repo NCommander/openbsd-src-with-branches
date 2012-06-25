@@ -1,4 +1,4 @@
-/*	$OpenBSD: flt_rounds.c,v 1.2 2003/01/07 21:59:49 miod Exp $	*/
+/*	$OpenBSD: flt_rounds.c,v 1.3 2005/08/07 16:40:14 espie Exp $	*/
 
 /*
  * Written by J.T. Conklin, Apr 10, 1995
@@ -6,7 +6,7 @@
  */
 
 #include <sys/types.h>
-#include <machine/float.h>
+#include <float.h>
 
 /*
  * Ported to 88k (Nivas Madhur)

@@ -1,11 +1,11 @@
-/*	$OpenBSD: flt_rounds.c,v 1.4 2005/08/07 16:40:15 espie Exp $ */
+/*	$OpenBSD: flt_rounds.c,v 1.5 2007/10/27 20:02:59 miod Exp $ */
 /*
  * Written by J.T. Conklin, Apr 10, 1995
  * Public domain.
  */
 
 #include <sys/types.h>
-#include <machine/float.h>
+#include <float.h>
 
 static const int map[] = {
 	1,	/* round to nearest */
