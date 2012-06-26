@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_socket.h,v 1.9 2011/12/03 12:38:30 fgsch Exp $	*/
+/*	$OpenBSD: linux_socket.h,v 1.10 2012/06/19 11:28:20 pirofti Exp $	*/
 /*	$NetBSD: linux_socket.h,v 1.3 1995/05/28 10:16:34 mycroft Exp $	*/
 
 /*
@@ -122,6 +122,8 @@
 
 /* Mask out extra type-related options */
 #define LINUX_SOCKET_TYPE_MASK	0xf
+#define LINUX_SOCK_CLOEXEC	02000000
+#define LINUX_SOCK_NONBLOCK	00004000
 
 struct linux_sockaddr {
 	unsigned short	sa_family;
