@@ -1,3 +1,5 @@
+/*	$OpenBSD: buffer.c,v 1.78 2012/03/14 13:56:35 lum Exp $	*/
+
 /*
  * Copyright (c) 2012 Sunil Nimmagadda <sunil@sunilnimmagadda.com>
  *
