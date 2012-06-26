@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdboot.c,v 1.10 2010/12/06 22:51:45 jasper Exp $	*/
+/*	$OpenBSD: cdboot.c,v 1.11 2011/04/17 09:49:48 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2003 Michael Shalayeff
@@ -34,6 +34,7 @@
 #include <lib/libsa/loadfile.h>
 #include <dev/cons.h>
 #include <machine/pdc.h>
+#include <machine/cpu.h>
 #include <stand/boot/bootarg.h>
 #include "dev_hppa.h"
 #include "cmd.h"
