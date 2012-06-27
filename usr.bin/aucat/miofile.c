@@ -1,4 +1,4 @@
-/*	$OpenBSD: miofile.c,v 1.7 2012/04/11 06:05:43 ratchov Exp $	*/
+/*	$OpenBSD: miofile.c,v 1.8 2012/05/23 19:25:11 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -158,5 +158,5 @@ miofile_revents(struct file *file, struct pollfd *pfd)
 void
 miofile_close(struct file *file)
 {
-	return mio_close(((struct miofile *)file)->hdl);
+	mio_close(((struct miofile *)file)->hdl);
 }

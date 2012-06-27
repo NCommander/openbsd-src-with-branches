@@ -1,4 +1,4 @@
-/*	$OpenBSD: siofile.c,v 1.10 2012/04/11 06:05:43 ratchov Exp $	*/
+/*	$OpenBSD: siofile.c,v 1.11 2012/05/23 19:25:11 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -479,5 +479,5 @@ siofile_close(struct file *file)
 
 	if (f->started)
 		siofile_stop(&f->file);
-	return sio_close(((struct siofile *)file)->hdl);
+	sio_close(((struct siofile *)file)->hdl);
 }
