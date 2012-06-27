@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.18 2006/04/10 14:38:59 jaredy Exp $	*/
+/*	$OpenBSD: tree.c,v 1.19 2008/08/11 21:50:35 jaredy Exp $	*/
 
 /*
  * command tree climbing
@@ -353,16 +353,14 @@ tputS(char *wp, struct shf *shf)
  * variable args with an ANSI compiler
  */
 /* VARARGS */
-int
+void
 fptreef(struct shf *shf, int indent, const char *fmt, ...)
 {
   va_list	va;
 
   va_start(va, fmt);
-
   vfptreef(shf, indent, fmt, va);
   va_end(va);
-  return 0;
 }
 
 /* VARARGS */
