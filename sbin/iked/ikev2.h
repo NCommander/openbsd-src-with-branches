@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2.h,v 1.6 2010/07/03 16:59:35 reyk Exp $	*/
+/*	$OpenBSD: ikev2.h,v 1.7 2012/05/07 10:58:38 mikeb Exp $	*/
 /*	$vantronix: ikev2.h,v 1.27 2010/05/19 12:20:30 reyk Exp $	*/
 
 /*
@@ -51,6 +51,7 @@ extern size_t ikev2_default_nike_transforms;
 	{ IKEV2_XFORMTYPE_ENCR, IKEV2_XFORMENCR_AES_CBC, 128 },	\
 	{ IKEV2_XFORMTYPE_INTEGR, IKEV2_XFORMAUTH_HMAC_SHA2_256_128 },\
 	{ IKEV2_XFORMTYPE_INTEGR, IKEV2_XFORMAUTH_HMAC_SHA1_96 },\
+	{ IKEV2_XFORMTYPE_ESN,	IKEV2_XFORMESN_ESN },		\
 	{ IKEV2_XFORMTYPE_ESN,	IKEV2_XFORMESN_NONE },		\
 }
 
