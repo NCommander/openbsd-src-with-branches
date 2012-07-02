@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.367 2011/10/18 05:15:28 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.368 2011/10/24 02:10:46 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1307,6 +1307,10 @@ ssh_session2_setup(int id, int success, void *arg)
 		channel_request_start(id, "auth-agent-req@openssh.com", 0);
 		packet_send();
 	}
+
+	/* Tell the packet module whether this is an interactive session. */
+	packet_set_interactive(interactive,
+	    options.ip_qos_interactive, options.ip_qos_bulk);
 
 	client_session2_setup(id, tty_flag, subsystem_flag, getenv("TERM"),
 	    NULL, fileno(stdin), &command, environ);
