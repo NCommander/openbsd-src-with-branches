@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.13 2011/07/05 19:59:00 tedu Exp $	*/
+/*	$OpenBSD: config.c,v 1.14 2012/06/22 16:28:20 mikeb Exp $	*/
 /*	$vantronix: config.c,v 1.30 2010/05/28 15:34:35 reyk Exp $	*/
 
 /*
@@ -88,6 +88,8 @@ void
 config_free_sa(struct iked *env, struct iked_sa *sa)
 {
 	(void)RB_REMOVE(iked_sas, &env->sc_sas, sa);
+
+	timer_deregister(env, &sa->sa_timer);
 
 	config_free_proposals(&sa->sa_proposals, 0);
 	config_free_childsas(env, &sa->sa_childsas, NULL, NULL);
