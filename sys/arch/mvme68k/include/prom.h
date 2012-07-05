@@ -1,4 +1,4 @@
-/*	$OpenBSD: prom.h,v 1.10 2002/04/27 23:21:05 miod Exp $ */
+/*	$OpenBSD: prom.h,v 1.11 2003/06/02 05:09:14 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -152,7 +152,7 @@ struct mvmeprom_args {
 #endif
 
 #define MVMEPROM_CALL(x) \
-	__asm__ __volatile__ (__CONCAT("trap #15; .short ", __STRING(x)) )
+	__asm__ __volatile__ ("trap #15; .short " __STRING(x))
 #define MVMEPROM_NOARG() \
 	__asm__ __volatile__ ("clrl sp@-")
 #define MVMEPROM_ARG1(arg) \
