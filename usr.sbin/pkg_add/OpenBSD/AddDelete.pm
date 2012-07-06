@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: AddDelete.pm,v 1.52 2011/08/17 10:48:27 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -171,12 +171,20 @@ sub handle_options
 	}
 	# XXX RequiredBy
 	$main::not = $state->{not};
-	$state->{interactive} = $state->opt('i');
+	if ($state->opt('i') && $state->opt('I')) {
+		$state->usage("-i and -I are reverse options, make up your mind");
+	}
+	if ($state->opt('i')) {
+		$state->{interactive} = 1;
+	} elsif ($state->opt('I')) {
+		$state->{interactive} = 0;
+	} else {
+		$state->{interactive} = -t STDIN;
+	}
 	$state->{localbase} = $state->opt('L') // OpenBSD::Paths->localbase;
 	$state->{size_only} = $state->opt('s');
 	$state->{quick} = $state->opt('q') || $state->config->istrue("nochecksum");
 	$state->{extra} = $state->opt('c');
-	$state->{dont_run_scripts} = $state->opt('I');
 	$state->{automatic} = $state->opt('a') // 0;
 	$ENV{'PKG_DELETE_EXTRA'} = $state->{extra} ? "Yes" : "No";
 	if ($state->{not}) {
