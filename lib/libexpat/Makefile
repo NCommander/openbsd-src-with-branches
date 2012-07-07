@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2007/10/19 16:06:39 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2012/07/07 08:14:43 jasper Exp $
 
 .PATH: ${.CURDIR}/lib
 
@@ -23,5 +23,4 @@ beforeinstall:
 	${INSTALL} ${INSTALL_COPY} -o root -g ${SHAREGRP} \
 	    -m ${SHAREMODE} ${.OBJDIR}/${PC_FILES} ${DESTDIR}/usr/lib/pkgconfig/
 
-.include <bsd.prog.mk>
 .include <bsd.lib.mk>
