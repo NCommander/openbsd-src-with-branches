@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.612 2011/12/12 21:30:27 mikeb Exp $	*/
+/*	$OpenBSD: parse.y,v 1.614 2012/07/07 16:24:32 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -4172,9 +4172,9 @@ rule_consistent(struct pf_rule *r, int anchor_call)
 		problems++;
 	}
 	if (r->af == AF_INET6 && (r->scrub_flags &
-	    (PFSTATE_NODF|PFSTATE_RANDOMID|PFSTATE_SETTOS))) {
+	    (PFSTATE_NODF|PFSTATE_RANDOMID))) {
 		yyerror("address family inet6 does not support scrub options "
-		    "no-df, random-id, set-tos");
+		    "no-df, random-id");
 		problems++;
 	}
 
