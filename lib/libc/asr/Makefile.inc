@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.1 2012/04/14 09:24:18 eric Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 2012/04/14 12:06:13 eric Exp $
 
 # asr sources
 .PATH: ${LIBCSRCDIR}/asr
@@ -29,5 +29,3 @@ MLINKS+ = \
 	async_resolver.3	freenetent.3		\
 	async_resolver.3	getaddrinfo_async.3	\
 	async_resolver.3	getnameinfo_async.3
-
-.include <bsd.lib.mk>
