@@ -1089,11 +1089,11 @@ print_rule(struct pf_rule *r, const char *anchor_call, int opts)
 		printf(" ");
 		print_pool(&r->route, 0, 0, r->af, PF_POOL_ROUTE, verbose);
 	}
-	if (r->prio[0] != PF_PRIO_NOTSET) {
-		if (r->prio[0] == r->prio[1])
-			printf(" prio %u", r->prio[0]);
+	if (r->set_prio[0] != PF_PRIO_NOTSET) {
+		if (r->set_prio[0] == r->set_prio[1])
+			printf(" prio %u", r->set_prio[0]);
 		else
-			printf(" prio(%u, %u)", r->prio[0], r->prio[1]);
+			printf(" prio(%u, %u)", r->set_prio[0], r->set_prio[1]);
 	}
 }
 

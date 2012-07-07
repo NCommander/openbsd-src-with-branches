@@ -531,7 +531,7 @@ struct pf_rule_actions {
 	u_int8_t	log;
 	u_int8_t	set_tos;
 	u_int8_t	min_ttl;
-	u_int8_t	prio[2];
+	u_int8_t	set_prio[2];
 	u_int8_t	pad[3];
 };
 
@@ -649,7 +649,7 @@ struct pf_rule {
 #define PF_FLUSH_GLOBAL		0x02
 	u_int8_t		 flush;
 #define PF_PRIO_NOTSET		0xff
-	u_int8_t		 prio[2];
+	u_int8_t		 set_prio[2];
 	sa_family_t		 naf;
 
 	struct {
@@ -850,8 +850,8 @@ struct pf_state {
 	int			 rtableid[2];	/* rtables stack and wire */
 	u_int8_t		 min_ttl;
 	u_int8_t		 set_tos;
+	u_int8_t		 set_prio[2];
 	u_int16_t		 max_mss;
-	u_int8_t		 prio[2];
 	u_int8_t		 pad2[2];
 };
 

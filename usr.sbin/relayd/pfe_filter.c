@@ -440,7 +440,7 @@ sync_ruleset(struct relayd *env, struct rdr *rdr, int enable)
 		rio.rule.dst.port[1] = address->port.val[1];
 		rio.rule.rtableid = -1; /* stay in the main routing table */
 		rio.rule.onrdomain = getrtable();
-		rio.rule.prio[0] = rio.rule.prio[1] = PF_PRIO_NOTSET;
+		rio.rule.set_prio[0] = rio.rule.set_prio[1] = PF_PRIO_NOTSET;
 
 		if (rio.rule.proto == IPPROTO_TCP)
 			rio.rule.timeout[PFTM_TCP_ESTABLISHED] =

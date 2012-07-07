@@ -207,7 +207,7 @@ prepare_rule(u_int32_t id, struct sockaddr *src,
 	pfr.rule.dst.addr.type = PF_ADDR_ADDRMASK;
 	pfr.rule.nat.addr.type = PF_ADDR_NONE;
 	pfr.rule.rdr.addr.type = PF_ADDR_NONE;
-	pfr.rule.prio[0] = pfr.rule.prio[1] = PF_PRIO_NOTSET;
+	pfr.rule.set_prio[0] = pfr.rule.set_prio[1] = PF_PRIO_NOTSET;
 
 	if (src->sa_family == AF_INET) {
 		memcpy(&pfr.rule.src.addr.v.a.addr.v4,
