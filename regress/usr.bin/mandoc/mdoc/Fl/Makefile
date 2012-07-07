@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2011/01/01 22:08:43 schwarze Exp $
+# $OpenBSD: Makefile,v 1.5 2011/11/17 16:28:45 schwarze Exp $
 
 REGRESS_TARGETS=noarg multiarg parsed punct
 
@@ -7,7 +7,5 @@ REGRESS_TARGETS=noarg multiarg parsed punct
 # the bar differently as a .Fl argument.
 
 SKIP_GROFF ?= punct
-
-SKIP_TMAN ?= noarg parsed
 
 .include <bsd.regress.mk>
