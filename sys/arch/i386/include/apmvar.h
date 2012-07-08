@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmvar.h,v 1.17 2011/03/23 16:54:35 pirofti Exp $	*/
+/*	$OpenBSD: apmvar.h,v 1.18 2012/03/26 16:21:34 deraadt Exp $	*/
 
 /*
  *  Copyright (c) 1995 John T. Kohl
@@ -297,7 +297,6 @@ extern void apm_cpu_busy(void);
 extern void apm_cpu_idle(void);
 extern void apminit(void);
 int apm_set_powstate(u_int devid, u_int powstate);
-int apm_kqfilter(dev_t dev, struct knote *kn);
 #endif /* _KERNEL */
 
 #endif /* _MACHINE_APMVAR_H_ */
