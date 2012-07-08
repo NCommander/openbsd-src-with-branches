@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.5 2002/02/16 21:28:08 millert Exp $	*/
+/*	$OpenBSD: config.h,v 1.6 2003/06/18 02:26:58 itojun Exp $	*/
 /*	$KAME: config.h,v 1.3 2000/05/16 13:34:13 itojun Exp $	*/
 
 /*
@@ -38,7 +38,9 @@ extern void get_prefix __P((struct rainfo *));
 
 
 /*
- * it is highly unlikely to have 100 prefix information options,
+ * it is highly unlikely to have 100 prefix, rdnss or dnssl information options,
  * so it should be okay to limit it
  */
 #define MAXPREFIX	100
+#define MAXRDNSS	100
+#define MAXDNSSL	100
