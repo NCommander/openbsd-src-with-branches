@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.25 2008/04/21 20:40:55 rainer Exp $	*/
+/*	$OpenBSD: config.c,v 1.26 2008/04/23 10:17:50 pyr Exp $	*/
 /*	$KAME: config.c,v 1.62 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -320,7 +320,7 @@ getconfig(intface)
 				now.tv_sec + pfx->preflifetime;
 		}
 	}
-	if (tmp->pfxs == 0)
+	if (tmp->pfxs == 0 && !agetflag("noifprefix"))
 		get_prefix(tmp);
 
 	MAYHAVE(val, "mtu", 0);
