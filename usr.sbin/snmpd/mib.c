@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.54 2012/06/14 17:31:32 matthew Exp $	*/
+/*	$OpenBSD: mib.c,v 1.55 2012/06/19 18:43:27 matthew Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -981,7 +981,7 @@ mib_ifget(u_int idx)
 
 	if ((kif = kr_getif(idx)) == NULL) {
 		/*
-		 * It may happen that a interface with a specific index
+		 * It may happen that an interface with a specific index
 		 * does not exist or has been removed. Jump to the next
 		 * available interface index.
 		 */
