@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikeca.c,v 1.19 2010/10/08 16:15:22 reyk Exp $	*/
+/*	$OpenBSD: ikeca.c,v 1.20 2011/05/27 12:01:02 reyk Exp $	*/
 /*	$vantronix: ikeca.c,v 1.13 2010/06/03 15:52:52 reyk Exp $	*/
 
 /*
@@ -35,6 +35,7 @@
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 
+#include "types.h"
 #include "parser.h"
 
 #define SSL_CNF		"/etc/ssl/openssl.cnf"
