@@ -1,5 +1,5 @@
 /*	$NetBSD: spec.c,v 1.6 1995/03/07 21:12:12 cgd Exp $	*/
-/*	$OpenBSD: spec.c,v 1.24 2008/06/13 20:47:29 espie Exp $	*/
+/*	$OpenBSD: spec.c,v 1.25 2009/10/27 23:59:53 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -233,6 +233,11 @@ set(char *t, NODE *ip)
 		case F_SHA1:
 			ip->sha1digest = strdup(val);
 			if (!ip->sha1digest)
+				error("%s", strerror(errno));
+			break;
+		case F_SHA256:
+			ip->sha256digest = strdup(val);
+			if (!ip->sha256digest)
 				error("%s", strerror(errno));
 			break;
 		case F_SIZE:

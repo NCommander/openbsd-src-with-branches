@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.17 2004/05/02 17:55:53 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.18 2004/08/01 18:32:20 deraadt Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/07 21:26:23 cgd Exp $	*/
 
 /*-
@@ -64,6 +64,7 @@ static KEY keylist[] = {
 	{"optional",	F_OPT,		0},
 	{"rmd160digest",F_RMD160,	NEEDVALUE},
 	{"sha1digest",	F_SHA1,		NEEDVALUE},
+	{"sha256digest",F_SHA256,	NEEDVALUE},
 	{"size",	F_SIZE,		NEEDVALUE},
 	{"time",	F_TIME,		NEEDVALUE},
 	{"type",	F_TYPE,		NEEDVALUE},
