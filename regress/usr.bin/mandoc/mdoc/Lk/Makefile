@@ -1,5 +1,5 @@
-# $OpenBSD: Makefile,v 1.1 2009/10/28 03:20:42 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2012/07/08 22:48:38 schwarze Exp $
 
-REGRESS_TARGETS = link noarg
+REGRESS_TARGETS = link noarg font
 
 .include <bsd.regress.mk>

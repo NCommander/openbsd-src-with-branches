@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.5 2011/11/17 16:28:45 schwarze Exp $
+# $OpenBSD: Makefile,v 1.6 2012/07/07 14:10:55 schwarze Exp $
 
-REGRESS_TARGETS=noarg multiarg parsed punct
+REGRESS_TARGETS = noarg multiarg parsed punct font
 
 # Do not regenerate the punct output file for now,
 # because groff-1.15 and groff-1.20.1 handle

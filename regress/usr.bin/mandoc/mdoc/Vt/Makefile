@@ -1,5 +1,5 @@
-# $OpenBSD: Makefile,v 1.2 2011/11/17 16:28:46 schwarze Exp $
+# $OpenBSD: Makefile,v 1.3 2012/07/08 10:58:44 schwarze Exp $
 
-REGRESS_TARGETS = noarg spacing
+REGRESS_TARGETS = noarg spacing font
 
 .include <bsd.regress.mk>
