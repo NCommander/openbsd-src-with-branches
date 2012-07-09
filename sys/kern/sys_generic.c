@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_generic.c,v 1.75 2012/03/19 09:05:39 guenther Exp $	*/
+/*	$OpenBSD: sys_generic.c,v 1.76 2012/04/22 05:43:14 guenther Exp $	*/
 /*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
@@ -546,7 +546,7 @@ sys_select(struct proc *p, void *v, register_t *retval)
 		nd = p->p_fd->fd_nfiles;
 	}
 	ni = howmany(nd, NFDBITS) * sizeof(fd_mask);
-	if (nd > sizeof(bits[0])) {
+	if (ni > sizeof(bits[0])) {
 		caddr_t mbits;
 
 		mbits = malloc(ni * 6, M_TEMP, M_WAITOK|M_ZERO);
