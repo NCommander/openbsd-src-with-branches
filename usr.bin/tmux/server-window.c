@@ -1,4 +1,4 @@
-/* $OpenBSD: server-window.c,v 1.24 2012/06/18 10:58:44 nicm Exp $ */
+/* $OpenBSD: server-window.c,v 1.25 2012/07/08 07:27:32 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -19,6 +19,7 @@
 #include <sys/types.h>
 
 #include <event.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "tmux.h"
@@ -211,7 +212,7 @@ server_window_check_content(
 		return (0);
 	if ((found = window_pane_search(wp, ptr, NULL)) == NULL)
 		return (0);
-	xfree(found);
+	free(found);
 
 	if (options_get_number(&s->options, "bell-on-alert"))
 		ring_bell(s);

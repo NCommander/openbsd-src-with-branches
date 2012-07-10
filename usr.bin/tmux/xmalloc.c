@@ -1,4 +1,4 @@
-/* $OpenBSD: xmalloc.c,v 1.2 2009/10/26 21:10:24 nicm Exp $ */
+/* $OpenBSD: xmalloc.c,v 1.3 2009/10/26 21:42:04 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -81,14 +81,6 @@ xrealloc(void *oldptr, size_t nmemb, size_t size)
 		fatal("xrealloc failed");
 
 	return (newptr);
-}
-
-void
-xfree(void *ptr)
-{
-	if (ptr == NULL)
-		fatalx("null pointer");
-	free(ptr);
 }
 
 int printflike2

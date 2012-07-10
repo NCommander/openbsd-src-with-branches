@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-list-windows.c,v 1.20 2012/05/28 07:59:08 nicm Exp $ */
+/* $OpenBSD: cmd-list-windows.c,v 1.21 2012/05/28 08:00:46 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -18,6 +18,7 @@
 
 #include <sys/types.h>
 
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "tmux.h"
@@ -103,7 +104,7 @@ cmd_list_windows_session(
 
 		line = format_expand(ft, template);
 		ctx->print(ctx, "%s", line);
-		xfree(line);
+		free(line);
 
 		format_free(ft);
 		n++;
