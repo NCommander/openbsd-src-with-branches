@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.391 2012/05/13 01:42:32 dtucker Exp $ */
+/* $OpenBSD: sshd.c,v 1.392 2012/06/30 14:35:09 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -622,7 +622,7 @@ privsep_preauth(Authctxt *authctxt)
 	/* Store a pointer to the kex for later rekeying */
 	pmonitor->m_pkex = &xxx_kex;
 
-	if (use_privsep == PRIVSEP_SANDBOX)
+	if (use_privsep == PRIVSEP_ON)
 		box = ssh_sandbox_init();
 	pid = fork();
 	if (pid == -1) {
