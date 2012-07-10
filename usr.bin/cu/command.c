@@ -1,4 +1,4 @@
-/* $OpenBSD: command.c,v 1.7 2012/07/10 10:56:12 nicm Exp $ */
+/* $OpenBSD: command.c,v 1.8 2012/07/10 11:42:02 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicm@openbsd.org>
@@ -234,6 +234,7 @@ do_command(char c)
 		    "~>      send file to remote host\r\n"
 		    "~C      connect program to remote host\r\n"
 		    "~S      set speed\r\n"
+		    "~X      send file with XMODEM\r\n"
 		    "~?      get this summary\r\n"
 		);
 		break;
