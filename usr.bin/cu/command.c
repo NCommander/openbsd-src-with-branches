@@ -1,4 +1,4 @@
-/* $OpenBSD: command.c,v 1.5 2012/07/10 09:32:40 nicm Exp $ */
+/* $OpenBSD: command.c,v 1.6 2012/07/10 10:28:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicm@openbsd.org>
@@ -23,6 +23,7 @@
 #include <event.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <paths.h>
 #include <signal.h>
 #include <stdlib.h>
