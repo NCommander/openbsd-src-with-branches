@@ -1,4 +1,4 @@
-# $OpenBSD: LoFile.pm,v 1.3 2012/07/08 12:29:21 jasper Exp $
+# $OpenBSD: LoFile.pm,v 1.4 2012/07/09 17:53:38 espie Exp $
 
 # Copyright (c) 2007-2010 Steven Mestdagh <steven@openbsd.org>
 # Copyright (c) 2012 Marc Espie <espie@openbsd.org>
@@ -53,7 +53,7 @@ sub compile
 	if (defined $self->{picobj}) {
 		my @cmd = @$compiler;
 		push @cmd, @$args if @$args;
-		push @cmd, @main::picflags, '-o';
+		push @cmd, @{$self->{picflags}}, '-o';
 		my $o = ($odir eq '.') ? '' : "$odir/";
 		$o .= $self->{picobj};
 		push @cmd, $o;
@@ -62,7 +62,7 @@ sub compile
 	if (defined $self->{nonpicobj}) {
 		my @cmd = @$compiler;
 		push @cmd, @$args if @$args;
-		push @cmd, '-o';
+		push @cmd, @{$self->{nonpicflags}}, '-o';
 		my $o = ($odir eq '.') ? '' : "$odir/";
 		$o .= $self->{nonpicobj};
 		push @cmd, $o;
