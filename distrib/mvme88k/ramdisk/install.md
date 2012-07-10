@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.39 2011/04/17 20:57:11 krw Exp $
+#       $OpenBSD: install.md,v 1.40 2011/07/06 20:02:16 halex Exp $
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
@@ -44,7 +44,6 @@ md_installboot() {
 md_prep_disklabel() {
 	local _disk=$1 _f _op
 
-	disklabel -W $_disk >/dev/null 2>&1
 	_f=/tmp/fstab.$_disk
 	if [[ $_disk == $ROOTDISK ]]; then
 		while :; do

@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.25 2009/06/11 04:28:50 deraadt Exp $
+#	$OpenBSD: install.md,v 1.26 2011/04/17 20:57:10 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -93,7 +93,6 @@ md_prep_disklabel() {
 
 	md_prep_fdisk $_disk
 
-	disklabel -W $_disk >/dev/null 2>&1
 	_f=/tmp/fstab.$_disk
 	if [[ $_disk == $ROOTDISK ]]; then
 		while :; do
