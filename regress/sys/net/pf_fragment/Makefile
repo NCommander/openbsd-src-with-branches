@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2011/09/21 23:48:23 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.3 2012/07/08 21:47:49 bluhm Exp $
 
 # The following ports must be installed:
 #
@@ -11,7 +11,7 @@
 # SRC is the machine where this makefile is running.
 # PF is running OpenBSD forwarding through pf, it is the test target.
 # RT is a router forwarding packets, maximum MTU is 1300.
-# DST is reflecting the ping and UDP packets.
+# DST is reflecting the ping and UDP echo packets.
 # RDR does not exist, PF redirects the traffic to DST.
 #
 # +---+   1   +--+   2   +--+   3   +---+   4   +---+
