@@ -840,6 +840,7 @@ struct pf_state {
 #define	PFSTATE_SETTOS		0x0040
 #define	PFSTATE_RANDOMID	0x0080
 #define	PFSTATE_SCRUB_TCP	0x0100
+#define	PFSTATE_SCRUBMASK (PFSTATE_NODF|PFSTATE_RANDOMID|PFSTATE_SCRUB_TCP)
 	u_int8_t		 log;
 	u_int8_t		 timeout;
 	u_int8_t		 sync_state; /* PFSYNC_S_x */
