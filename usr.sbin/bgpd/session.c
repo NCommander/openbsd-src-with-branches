@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.321 2012/04/12 17:26:09 claudio Exp $ */
+/*	$OpenBSD: session.c,v 1.322 2012/07/09 11:11:07 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -1211,12 +1211,14 @@ session_setup_socket(struct peer *p)
 	if (p->conf.auth.method != AUTH_NONE) {
 		/* try to increase bufsize. no biggie if it fails */
 		bsize = 65535;
-		while (setsockopt(p->fd, SOL_SOCKET, SO_RCVBUF, &bsize,
-		    sizeof(bsize)) == -1)
+		while (bsize > 8192 &&
+		    setsockopt(p->fd, SOL_SOCKET, SO_RCVBUF, &bsize,
+		    sizeof(bsize)) == -1 && errno != EINVAL)
 			bsize /= 2;
 		bsize = 65535;
-		while (setsockopt(p->fd, SOL_SOCKET, SO_SNDBUF, &bsize,
-		    sizeof(bsize)) == -1)
+		while (bsize > 8192 &&
+		    setsockopt(p->fd, SOL_SOCKET, SO_SNDBUF, &bsize,
+		    sizeof(bsize)) == -1 && errno != EINVAL)
 			bsize /= 2;
 	}
 
