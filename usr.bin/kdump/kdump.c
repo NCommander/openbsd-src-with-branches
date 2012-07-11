@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.73 2012/06/29 05:09:58 guenther Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.74 2012/07/09 17:51:08 claudio Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -421,6 +421,11 @@ ptracedecode(void)
 	case PT_GETREGS:
 		(void)printf("PT_GETREGS");
 		break;
+#ifdef PT_GETXMMREGS
+	case PT_GETXMMREGS:
+		(void)printf("PT_GETXMMREGS");
+		break;
+#endif
 #ifdef PT_SETFPREGS
 	case PT_SETFPREGS:
 		(void)printf("PT_SETFPREGS");
@@ -429,6 +434,11 @@ ptracedecode(void)
 	case PT_SETREGS:
 		(void)printf("PT_SETREGS");
 		break;
+#ifdef PT_SETXMMREGS
+	case PT_SETXMMREGS:
+		(void)printf("PT_SETXMMREGS");
+		break;
+#endif
 #ifdef PT_STEP
 	case PT_STEP:
 		(void)printf("PT_STEP");
