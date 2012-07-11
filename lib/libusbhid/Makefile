@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2004/06/04 00:47:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 2005/11/24 20:49:23 deraadt Exp $
 #	$NetBSD: Makefile,v 1.5 1999/07/23 09:44:38 mrg Exp $
 
 LIB=	usbhid
@@ -10,6 +10,7 @@ MLINKS=	usbhid.3 hid_dispose_report_desc.3 \
 	usbhid.3 hid_get_data.3 \
 	usbhid.3 hid_get_item.3 \
 	usbhid.3 hid_get_report_desc.3 \
+	usbhid.3 hid_get_report_id.3 \
 	usbhid.3 hid_init.3 \
 	usbhid.3 hid_start.3 \
 	usbhid.3 hid_locate.3 \
