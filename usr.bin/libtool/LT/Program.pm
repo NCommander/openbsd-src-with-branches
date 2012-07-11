@@ -1,4 +1,4 @@
-# $OpenBSD: Program.pm,v 1.12 2012/07/10 18:11:36 espie Exp $
+# $OpenBSD: Program.pm,v 1.13 2012/07/11 08:39:23 espie Exp $
 
 # Copyright (c) 2007-2010 Steven Mestdagh <steven@openbsd.org>
 # Copyright (c) 2012 Marc Espie <espie@openbsd.org>
@@ -197,7 +197,6 @@ sub link
 	if ($symbolsfile) {
 		push(@linkeropts, '-retain-symbols-file', $symbolsfile);
 	}
-	push(@linkeropts, @$RPdirs);
 	@cmd = @$ltprog;
 	push @cmd, '-o', $dst;
 	push @cmd, @$args if ($args);
