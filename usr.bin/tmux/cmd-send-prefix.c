@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-send-prefix.c,v 1.8 2011/01/04 00:42:47 nicm Exp $ */
+/* $OpenBSD: cmd-send-prefix.c,v 1.9 2012/01/21 08:40:09 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -24,7 +24,7 @@
  * Send prefix key as a key.
  */
 
-int	cmd_send_prefix_exec(struct cmd *, struct cmd_ctx *);
+enum cmd_retval	 cmd_send_prefix_exec(struct cmd *, struct cmd_ctx *);
 
 const struct cmd_entry cmd_send_prefix_entry = {
 	"send-prefix", NULL,
@@ -36,7 +36,7 @@ const struct cmd_entry cmd_send_prefix_entry = {
 	cmd_send_prefix_exec
 };
 
-int
+enum cmd_retval
 cmd_send_prefix_exec(struct cmd *self, struct cmd_ctx *ctx)
 {
 	struct args		*args = self->args;
@@ -45,7 +45,7 @@ cmd_send_prefix_exec(struct cmd *self, struct cmd_ctx *ctx)
 	int			 key;
 
 	if (cmd_find_pane(ctx, args_get(args, 't'), &s, &wp) == NULL)
-		return (-1);
+		return (CMD_RETURN_ERROR);
 
 	if (args_has(args, '2'))
 		key = options_get_number(&s->options, "prefix2");
@@ -53,5 +53,5 @@ cmd_send_prefix_exec(struct cmd *self, struct cmd_ctx *ctx)
 		key = options_get_number(&s->options, "prefix");
 	window_pane_key(wp, s, key);
 
-	return (0);
+	return (CMD_RETURN_NORMAL);
 }
