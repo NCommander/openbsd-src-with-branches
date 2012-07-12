@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrace.c,v 1.22 2009/10/27 23:59:39 deraadt Exp $	*/
+/*	$OpenBSD: ktrace.c,v 1.23 2012/07/12 16:45:15 guenther Exp $	*/
 /*	$NetBSD: ktrace.c,v 1.4 1995/08/31 23:01:44 jtc Exp $	*/
 
 /*-
@@ -178,7 +178,7 @@ static void
 usage(void)
 {
 	(void)fprintf(stderr,
-	    "usage: ktrace [-aCcdi] [-f trfile] [-g pgid] [-p pid] [-t trstr]\n"
+	    "usage: ktrace [-aBCcdi] [-f trfile] [-g pgid] [-p pid] [-t trstr]\n"
 	    "       ktrace [-adi] [-f trfile] [-t trstr] command\n");
 	exit(1);
 }
