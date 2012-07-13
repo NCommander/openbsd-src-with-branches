@@ -844,10 +844,7 @@ struct pf_state {
 	u_int8_t		 log;
 	u_int8_t		 timeout;
 	u_int8_t		 sync_state; /* PFSYNC_S_x */
-
-	/* XXX */
 	u_int8_t		 sync_updates;
-
 	int			 rtableid[2];	/* rtables stack and wire */
 	u_int8_t		 min_ttl;
 	u_int8_t		 set_tos;
