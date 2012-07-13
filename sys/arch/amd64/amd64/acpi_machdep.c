@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.47 2010/11/13 04:16:42 guenther Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.48 2012/07/13 14:15:12 mlarkin Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -209,8 +209,6 @@ acpi_sleep_machdep(struct acpi_softc *sc, int state)
 	}
 
 	rtcstop();
-
-	/* amd64 does not do lazy pmap_activate */
 
 	/*
 	 * ACPI defines two wakeup vectors. One is used for ACPI 1.0
