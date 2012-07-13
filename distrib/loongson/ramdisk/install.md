@@ -37,8 +37,7 @@ md_installboot() {
 
 	if mount -t ext2fs /dev/${_disk}i /mnt2 &&
 	   mkdir -p /mnt2/boot &&
-	   # Use cat to avoid holes created by cp(1)
-	   cat /usr/mdec/boot > /mnt2/boot &&
+	   cp /usr/mdec/boot /mnt2/boot &&
 	   ( [[ $(sysctl -n hw.product) != Gdium ]] ||
 	     cp /mnt/bsd /mnt2/boot/bsd ); then
 		umount /mnt2
