@@ -109,6 +109,11 @@ struct trapframe {
 
 	unsigned long	tf_pad[5];
 };
+
+#ifdef _KERNEL
+int     setstack(struct trapframe *, u_long, register_t);
+#endif /* _KERNEL */
+
 #endif /* !_LOCORE */
 
 #endif /* !_MACHINE_FRAME_H_ */
