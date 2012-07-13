@@ -1,3 +1,0 @@
-dnl	$OpenBSD: upgrade,v 1.1 2006/11/09 00:45:37 deraadt Exp $
-dnl OpenBSDUpgrade({:-the CD-ROM-:})
-OpenBSDUpgrade({:-bsd.rd on the boot disk-:})

@@ -1,5 +1,0 @@
-/* $OpenBSD$ */
-
-/*
- * Public Domain.
- */

@@ -1,4 +1,0 @@
-dnl	$OpenBSD: whatis,v 1.15 2004/09/10 19:11:52 miod Exp $
-
-OpenBSD/MACHINE runs on 32 bit SPARC-based machines, including most of
-Sun Microsystems workstations and their clones.
