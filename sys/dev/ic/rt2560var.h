@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560var.h,v 1.8 2010/08/27 16:06:25 kettenis Exp $  */
+/*	$OpenBSD: rt2560var.h,v 1.9 2010/09/07 16:21:42 deraadt Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -116,6 +116,8 @@ struct rt2560_softc {
 #define RT2560_ENABLED		(1 << 0)
 #define RT2560_UPDATE_SLOT	(1 << 1)
 #define RT2560_SET_SLOTTIME	(1 << 2)
+#define RT2560_PRIO_OACTIVE	(1 << 3)
+#define RT2560_DATA_OACTIVE	(1 << 4)
 
 	int			sc_tx_timer;
 
