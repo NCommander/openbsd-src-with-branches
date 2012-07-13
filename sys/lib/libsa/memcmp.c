@@ -30,10 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: memcmp.c,v 1.5 2003/06/02 23:28:09 millert Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include "stand.h"
 
 /*
