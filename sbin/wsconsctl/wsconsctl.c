@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsconsctl.c,v 1.25 2010/07/01 16:47:58 maja Exp $	*/
+/*	$OpenBSD: wsconsctl.c,v 1.26 2010/08/20 00:20:55 fgsch Exp $	*/
 /*	$NetBSD: wsconsctl.c,v 1.2 1998/12/29 22:40:20 hannken Exp $ */
 
 /*-
@@ -125,7 +125,7 @@ main(int argc, char *argv[])
 					if (!device || errno != ENXIO) {
 						if (device && errno != ENOENT) {
 							warn("%s", device);
-							error = 1;	
+							error = 1;
 						}
 						break;
 					} else
@@ -319,7 +319,7 @@ tab_by_name(const char *var, int *idx)
 		}
 	} else
 		i = 0;
-	
+
 	*idx = i;
 
 	return (sw);
