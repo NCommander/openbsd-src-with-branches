@@ -78,7 +78,6 @@ typedef struct hid_item {
 #define HID_USAGE(u) ((u) & 0xffff)
 
 /* Obtaining a report descriptor, descr.c: */
-int		hid_get_report_id(int file);
 report_desc_t	hid_get_report_desc(int file);
 report_desc_t	hid_use_report_desc(unsigned char *data, unsigned int size);
 void		hid_dispose_report_desc(report_desc_t);

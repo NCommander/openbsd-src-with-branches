@@ -10,7 +10,6 @@ MLINKS=	usbhid.3 hid_dispose_report_desc.3 \
 	usbhid.3 hid_get_data.3 \
 	usbhid.3 hid_get_item.3 \
 	usbhid.3 hid_get_report_desc.3 \
-	usbhid.3 hid_get_report_id.3 \
 	usbhid.3 hid_init.3 \
 	usbhid.3 hid_start.3 \
 	usbhid.3 hid_locate.3 \
