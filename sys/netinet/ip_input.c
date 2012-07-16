@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.194 2011/07/05 21:40:38 dhill Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.195 2011/07/06 02:42:28 henning Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -479,7 +479,7 @@ ipv4_input(struct mbuf *m)
 		} else
 			tdb = NULL;
 	        ipsp_spd_lookup(m, AF_INET, hlen, &error,
-		    IPSP_DIRECTION_IN, tdb, NULL);
+		    IPSP_DIRECTION_IN, tdb, NULL, 0);
                 splx(s);
 
 		/* Error or otherwise drop-packet indication */
@@ -639,7 +639,7 @@ found:
 	} else
 		tdb = NULL;
 	ipsp_spd_lookup(m, AF_INET, hlen, &error, IPSP_DIRECTION_IN,
-	    tdb, NULL);
+	    tdb, NULL, 0);
         splx(s);
 
 	/* Error or otherwise drop-packet indication. */
