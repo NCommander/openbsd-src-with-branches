@@ -622,6 +622,11 @@ get_hibernate_info(union hibernate_info *hiber_info, int suspend)
 		return (1);
 	}
 
+	/* Make sure we have a swap partition. */
+	if (dl.d_partitions[1].p_fstype != FS_SWAP ||
+	    dl.d_partitions[1].p_size == 0)
+		return (1);
+
 	hiber_info->secsize = dl.d_secsize;
 
 	/* Make sure the signature can fit in one block */
