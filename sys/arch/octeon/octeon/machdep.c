@@ -816,7 +816,7 @@ hw_cpu_hatch(struct cpu_info *ci)
 
 	printf("cpu%d launched\n", cpu_number());
 
-	cpu_startclock(ci);
+	(*md_startclock)(ci);
 	ncpus++;
 	cpuset_add(&cpus_running, ci);
 	octeon_intr_init();
