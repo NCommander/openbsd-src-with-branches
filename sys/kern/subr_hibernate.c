@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_hibernate.c,v 1.44 2012/07/16 12:15:58 jsing Exp $	*/
+/*	$OpenBSD: subr_hibernate.c,v 1.45 2012/07/16 12:31:15 stsp Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -1098,6 +1098,8 @@ hibernate_resume(void)
 		splx(s);
 		return;
 	}
+
+	printf("Unhibernating...\n");
 
 	/* Read the image from disk into the image (pig) area */
 	if (hibernate_read_image(&disk_hiber_info))
