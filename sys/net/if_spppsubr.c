@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.96 2012/01/28 12:14:45 sthen Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.97 2012/07/23 10:54:54 sthen Exp $	*/
 /*
  * Synchronous PPP/Cisco link level subroutines.
  * Keepalive protocol implemented in both Cisco and PPP modes.
@@ -4778,11 +4778,11 @@ sppp_clear_ip_addrs(void *arg1, void *arg2)
 	struct ifaddr *ifa;
 	struct sockaddr_in *si;
 	struct sockaddr_in *dest;
+	u_int32_t remote;
 	int s;
 
 	s = splsoftnet();
 
-	u_int32_t remote;
 	if (sp->ipcp.flags & IPCP_HISADDR_DYN)
 		remote = sp->ipcp.saved_hisaddr;
 	else
