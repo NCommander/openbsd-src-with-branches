@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.362 2012/02/03 01:57:51 bluhm Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.366 2012/07/13 11:14:04 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -906,13 +906,13 @@ struct pfsync_state {
 	u_int8_t	 proto;
 	u_int8_t	 direction;
 	u_int8_t	 log;
-	u_int8_t	 state_flags; /* XXX remove after 5.0 */
+	u_int8_t	 pad0;
 	u_int8_t	 timeout;
 	u_int8_t	 sync_flags;
 	u_int8_t	 updates;
 	u_int8_t	 min_ttl;
 	u_int8_t	 set_tos;
-	u_int16_t	 all_state_flags;
+	u_int16_t	 state_flags;
 	u_int8_t	 pad[2];
 } __packed;
 
