@@ -1,4 +1,4 @@
-/*	$OpenBSD: audioctl.c,v 1.20 2009/11/12 07:32:26 ratchov Exp $	*/
+/*	$OpenBSD: audioctl.c,v 1.21 2010/07/15 03:43:12 jakemsr Exp $	*/
 /*	$NetBSD: audioctl.c,v 1.14 1998/04/27 16:55:23 augustss Exp $	*/
 
 /*
@@ -65,7 +65,6 @@ struct field {
 	const char *name;
 	void *valp;
 	int format;
-	u_int oldval;
 #define STRING 1
 #define INT 2
 #define UINT 3
@@ -78,6 +77,7 @@ struct field {
 #define READONLY 1
 #define ALIAS 2
 #define SET 4
+	u_int oldval;
 } fields[] = {
 	{ "name", 		&adev.name, 		STRING, READONLY },
 	{ "version",		&adev.version,		STRING, READONLY },
