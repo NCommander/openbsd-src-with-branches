@@ -206,8 +206,6 @@ lemediastatus(struct ifnet *ifp, struct ifmediareq *ifmr)
 	/*
 	 * Notify the world which media we're currently using.
 	 */
-	ifmr->ifm_status = IFM_AVALID | IFM_ACTIVE;
-
 	if (L64854_GCSR(dma) & E_TP_AUI)
 		ifmr->ifm_active = IFM_ETHER|IFM_10_T;
 	else

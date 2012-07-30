@@ -278,8 +278,6 @@ lemediastatus(ifp, ifmr)
 	struct am7990_softc *sc = ifp->if_softc;
 	struct le_softc *lesc = (struct le_softc *)sc;
 
-	ifmr->ifm_status = IFM_AVALID | IFM_ACTIVE;
-
 	if (lesc->sc_dma == NULL) {
 		if (lesc->sc_lebufchild)
 			ifmr->ifm_active = IFM_ETHER | IFM_10_T;
@@ -300,7 +298,6 @@ lemediastatus(ifp, ifmr)
 	else
 		ifmr->ifm_active = IFM_ETHER | IFM_10_5;
 #else
-	ifmr->ifm_status = IFM_AVALID | IFM_ACTIVE;
 	ifmr->ifm_active = IFM_ETHER | IFM_10_5;
 #endif
 }
