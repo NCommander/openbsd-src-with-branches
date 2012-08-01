@@ -1,13 +1,13 @@
 /*
  * xfrd.c - XFR (transfer) Daemon source file. Coordinates SOA updates.
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
  */
 
-#include <config.h>
+#include "config.h"
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
@@ -204,6 +204,7 @@ xfrd_shutdown()
 	}
 
 	/* shouldn't we clean up memory used by xfrd process */
+	DEBUG(DEBUG_XFRD,1, (LOG_INFO, "xfrd shutdown complete"));
 
 	exit(0);
 }
@@ -281,9 +282,7 @@ xfrd_init_zones()
 		xzone->tcp_waiting = 0;
 		xzone->udp_waiting = 0;
 
-#ifdef TSIG
 		tsig_create_record_custom(&xzone->tsig, xfrd->region, 0, 0, 4);
-#endif /* TSIG */
 
 		if(dbzone && dbzone->soa_rrset && dbzone->soa_rrset->rrs) {
 			xzone->soa_nsd_acquired = xfrd_time();
@@ -890,7 +889,9 @@ int
 xfrd_bind_local_interface(int sockd, acl_options_t* ifc, acl_options_t* acl,
 	int tcp)
 {
+#ifdef SO_LINGER
 	struct linger linger = {1, 0};
+#endif
 	socklen_t frm_len;
 #ifdef INET6
 	struct sockaddr_storage frm;
@@ -960,7 +961,6 @@ xfrd_bind_local_interface(int sockd, acl_options_t* ifc, acl_options_t* acl,
 	return 0;
 }
 
-#ifdef TSIG
 void
 xfrd_tsig_sign_request(buffer_type* packet, tsig_record_type* tsig,
 	acl_options_t* acl)
@@ -985,7 +985,6 @@ xfrd_tsig_sign_request(buffer_type* packet, tsig_record_type* tsig,
 	/* prepare for validating tsigs */
 	tsig_prepare(tsig);
 }
-#endif
 
 static int
 xfrd_send_ixfr_request_udp(xfrd_zone_t* zone)
@@ -1009,11 +1008,9 @@ xfrd_send_ixfr_request_udp(xfrd_zone_t* zone)
         NSCOUNT_SET(xfrd->packet, 1);
 	xfrd_write_soa_buffer(xfrd->packet, zone->apex, &zone->soa_disk);
 	/* if we have tsig keys, sign the ixfr query */
-#ifdef TSIG
 	if(zone->master->key_options && zone->master->key_options->tsig_key) {
 		xfrd_tsig_sign_request(xfrd->packet, &zone->tsig, zone->master);
 	}
-#endif /* TSIG */
 	buffer_flip(xfrd->packet);
 	xfrd_set_timer(zone, xfrd_time() + XFRD_UDP_TIMEOUT);
 
@@ -1046,6 +1043,7 @@ static int xfrd_parse_soa_info(buffer_type* packet, xfrd_soa_t* soa)
 	{
 		return 0;
 	}
+	soa->rdata_count = 7; /* rdata in SOA */
 	soa->serial = htonl(buffer_read_u32(packet));
 	soa->refresh = htonl(buffer_read_u32(packet));
 	soa->retry = htonl(buffer_read_u32(packet));
@@ -1068,8 +1066,7 @@ xfrd_xfr_check_rrs(xfrd_zone_t* zone, buffer_type* packet, size_t count,
 	int *done, xfrd_soa_t* soa)
 {
 	/* first RR has already been checked */
-	uint16_t type, klass, rrlen;
-	uint32_t ttl;
+	uint16_t type, rrlen;
 	size_t i, soapos;
 	for(i=0; i<count; ++i,++zone->msg_rr_count)
 	{
@@ -1079,8 +1076,8 @@ xfrd_xfr_check_rrs(xfrd_zone_t* zone, buffer_type* packet, size_t count,
 			return 0;
 		soapos = buffer_position(packet);
 		type = buffer_read_u16(packet);
-		klass = buffer_read_u16(packet);
-		ttl = buffer_read_u32(packet);
+		(void)buffer_read_u16(packet); /* class */
+		(void)buffer_read_u32(packet); /* ttl */
 		rrlen = buffer_read_u16(packet);
 		if(!buffer_available(packet, rrlen))
 			return 0;
@@ -1117,7 +1114,6 @@ xfrd_xfr_check_rrs(xfrd_zone_t* zone, buffer_type* packet, size_t count,
 	return 1;
 }
 
-#ifdef TSIG
 static int
 xfrd_xfr_process_tsig(xfrd_zone_t* zone, buffer_type* packet)
 {
@@ -1166,7 +1162,6 @@ xfrd_xfr_process_tsig(xfrd_zone_t* zone, buffer_type* packet)
 	}
 	return 1;
 }
-#endif
 
 /* parse the received packet. returns xfrd packet result code. */
 static enum xfrd_packet_result
@@ -1176,6 +1171,7 @@ xfrd_parse_received_xfr_packet(xfrd_zone_t* zone, buffer_type* packet,
 	size_t rr_count;
 	size_t qdcount = QDCOUNT(packet);
 	size_t ancount = ANCOUNT(packet), ancount_todo;
+	size_t nscount = NSCOUNT(packet);
 	int done = 0;
 
 	/* has to be axfr / ixfr reply */
@@ -1207,16 +1203,14 @@ xfrd_parse_received_xfr_packet(xfrd_zone_t* zone, buffer_type* packet,
 		}
 		return xfrd_packet_bad;
 	}
-#ifdef TSIG
 	/* check TSIG */
 	if(zone->master->key_options) {
 		if(!xfrd_xfr_process_tsig(zone, packet)) {
 			DEBUG(DEBUG_XFRD,1, (LOG_ERR, "dropping xfr reply due "
-										   "to bad TSIG"));
+				"to bad TSIG"));
 			return xfrd_packet_bad;
 		}
 	}
-#endif
 	buffer_skip(packet, QHEADERSZ);
 
 	/* skip question section */
@@ -1235,6 +1229,16 @@ xfrd_parse_received_xfr_packet(xfrd_zone_t* zone, buffer_type* packet,
 		}
 		DEBUG(DEBUG_XFRD,1, (LOG_INFO, "xfrd: too short xfr packet: no "
 					       			   "answer"));
+		/* if IXFR is unknown, fallback to AXFR (if allowed) */
+		if (nscount == 1) {
+			if(!packet_skip_dname(packet) || !xfrd_parse_soa_info(packet, soa)) {
+				DEBUG(DEBUG_XFRD,1, (LOG_ERR, "xfrd: zone %s, from %s: "
+					"no SOA begins authority section",
+					zone->apex_str, zone->master->ip_address_spec));
+				return xfrd_packet_bad;
+			}
+			return xfrd_packet_notimpl;
+		}
 		return xfrd_packet_bad;
 	}
 	ancount_todo = ancount;
@@ -1331,7 +1335,6 @@ xfrd_parse_received_xfr_packet(xfrd_zone_t* zone, buffer_type* packet,
 	}
 	if(done == 0)
 		return xfrd_packet_more;
-#ifdef TSIG
 	if(zone->master->key_options) {
 		if(zone->tsig.updates_since_last_prepare != 0) {
 			log_msg(LOG_INFO, "xfrd: last packet of reply has no "
@@ -1339,7 +1342,6 @@ xfrd_parse_received_xfr_packet(xfrd_zone_t* zone, buffer_type* packet,
 			return xfrd_packet_bad;
 		}
 	}
-#endif /* TSIG */
 	return xfrd_packet_transfer;
 }
 
@@ -1419,12 +1421,10 @@ xfrd_handle_received_xfr_packet(xfrd_zone_t* zone, buffer_type* packet)
 			      "time %u from %s in %u parts",
 		zone->apex_str, (int)zone->msg_new_serial, (int)xfrd_time(),
 		zone->master->ip_address_spec, zone->msg_seq_nr);
-#ifdef TSIG
 	if(zone->master->key_options) {
 		buffer_printf(packet, " TSIG verified with key %s",
 			zone->master->key_options->name);
 	}
-#endif /* TSIG */
 	buffer_flip(packet);
 	diff_write_commit(zone->apex_str, zone->msg_old_serial,
 		zone->msg_new_serial, zone->query_id, zone->msg_seq_nr, 1,

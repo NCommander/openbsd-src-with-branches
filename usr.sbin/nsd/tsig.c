@@ -1,14 +1,14 @@
 /*
  * tsig.h -- TSIG definitions (RFC 2845).
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
  */
 
 
-#include <config.h>
+#include "config.h"
 #include <stdlib.h>
 #include <ctype.h>
 
@@ -103,9 +103,9 @@ tsig_init(region_type *region)
 	tsig_key_table = NULL;
 	tsig_algorithm_table = NULL;
 
-#if defined(TSIG) && defined(HAVE_SSL)
+#if defined(HAVE_SSL)
 	return tsig_openssl_init(region);
-#endif
+#endif /* defined(HAVE_SSL) */
 	return 1;
 }
 
@@ -668,7 +668,7 @@ tsig_error_reply(tsig_record_type *tsig)
 void
 tsig_finalize()
 {
-#if defined(TSIG) && defined(HAVE_SSL)
+#if defined(HAVE_SSL)
 	tsig_openssl_finalize();
-#endif
+#endif /* defined(HAVE_SSL) */
 }

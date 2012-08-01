@@ -1,31 +1,32 @@
 /*
+ * Copyright (C) 2004, 2005  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 1998-2001  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: util.h,v 1.21 2001/01/09 21:57:43 bwelling Exp $ */
+/* $ISC: util.h,v 1.24.18.2 2005/04/29 00:17:04 marka Exp $ */
 
 #ifndef ISC_UTIL_H
 #define ISC_UTIL_H 1
 
-/*
+/*! \file util.h
  * NOTE:
  *
  * This file is not to be included from any <isc/???.h> (or other) library
  * files.
  *
+ * \brief
  * Including this file puts several macros in your name space that are
  * not protected (as all the other ISC functions/macros do) by prepending
  * ISC_ or isc_ to the name.
@@ -35,21 +36,22 @@
  *** General Macros.
  ***/
 
-/*
+/*%
  * Use this to hide unused function arguments.
- *
+ * \code
  * int
  * foo(char *bar)
  * {
  *	UNUSED(bar);
  * }
+ * \endcode
  */
 #define UNUSED(x)      (void)(x)
 
 #define ISC_MAX(a, b)  ((a) > (b) ? (a) : (b))
 #define ISC_MIN(a, b)  ((a) < (b) ? (a) : (b))
 
-/*
+/*%
  * Use this to remove the const qualifier of a variable to assign it to
  * a non-const variable or pass it as a non-const function argument ...
  * but only when you are sure it won't then be changed!
@@ -64,10 +66,15 @@
 		var = _u.v; \
 	} while (0)
 
-/*
+/*%
+ * Use this in translation units that would otherwise be empty, to
+ * suppress compiler warnings.
+ */
+#define EMPTY_TRANSLATION_UNIT static void isc__empty(void) { isc__empty(); }
+
+/*%
  * We use macros instead of calling the routines directly because
  * the capital letters make the locking stand out.
- *
  * We RUNTIME_CHECK for success since in general there's no way
  * for us to continue if they fail.
  */
@@ -166,6 +173,9 @@
 	RUNTIME_CHECK(isc_rwlock_unlock((lp), (t)) == ISC_R_SUCCESS); \
 	} while (0)
 
+#define DESTROYMUTEXBLOCK(bp, n) \
+	RUNTIME_CHECK(isc_mutexblock_destroy((bp), (n)) == ISC_R_SUCCESS)
+
 /*
  * List Macros.
  */
@@ -194,9 +204,13 @@
  */
 #include <isc/assertions.h>	/* Contractual promise. */
 
+/*% Require Assertion */
 #define REQUIRE(e)			ISC_REQUIRE(e)
+/*% Ensure Assertion */
 #define ENSURE(e)			ISC_ENSURE(e)
+/*% Insist Assertion */
 #define INSIST(e)			ISC_INSIST(e)
+/*% Invariant Assertion */
 #define INVARIANT(e)			ISC_INVARIANT(e)
 
 /*
@@ -204,8 +218,16 @@
  */
 #include <isc/error.h>		/* Contractual promise. */
 
+/*% Unexpected Error */
 #define UNEXPECTED_ERROR		isc_error_unexpected
+/*% Fatal Error */
 #define FATAL_ERROR			isc_error_fatal
+/*% Runtime Check */
 #define RUNTIME_CHECK(cond)		ISC_ERROR_RUNTIMECHECK(cond)
+
+/*%
+ * Time
+ */
+#define TIME_NOW(tp) 	RUNTIME_CHECK(isc_time_now((tp)) == ISC_R_SUCCESS)
 
 #endif /* ISC_UTIL_H */

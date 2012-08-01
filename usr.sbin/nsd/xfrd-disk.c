@@ -1,13 +1,13 @@
 /*
  * xfrd-disk.c - XFR (transfer) Daemon TCP system source file. Read/Write state to disk.
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
  */
 
-#include <config.h>
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -281,7 +281,10 @@ xfrd_read_state(struct xfrd_state* xfrd)
 		zone->soa_disk = soa_disk_read;
 		zone->soa_notified = soa_notified_read;
 		zone->soa_nsd_acquired = soa_nsd_acquired_read;
-		zone->soa_disk_acquired = soa_disk_acquired_read;
+		/* we had better use what we got from starting NSD, not
+		 * what we store in this file, because the actual zone
+		 * contents trumps the contents of this cache */
+		/* zone->soa_disk_acquired = soa_disk_acquired_read; */
 		zone->soa_notified_acquired = soa_notified_acquired_read;
 		xfrd_handle_incoming_soa(zone, &incoming_soa, incoming_acquired);
 	}

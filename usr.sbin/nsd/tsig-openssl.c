@@ -1,15 +1,15 @@
 /*
  * tsig-openssl.h -- Interface to OpenSSL for TSIG support.
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
  */
 
-#include <config.h>
+#include "config.h"
 
-#if defined(TSIG) && defined(HAVE_SSL)
+#if defined(HAVE_SSL)
 
 #include "tsig-openssl.h"
 #include "tsig.h"
@@ -124,4 +124,4 @@ tsig_openssl_finalize()
 	EVP_cleanup();
 }
 
-#endif /* defined(TSIG) && defined(HAVE_SSL) */
+#endif /* defined(HAVE_SSL) */

@@ -1,7 +1,7 @@
 /*
  * difffile.c - DIFF file handling source code. Read and write diff files.
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -17,6 +17,7 @@
 #include "util.h"
 #include "packet.h"
 #include "rdata.h"
+#include "nsec3.h"
 
 static int
 write_32(FILE *out, uint32_t val)
@@ -267,7 +268,35 @@ has_data_below(domain_type* top)
 	return 0;
 }
 
-static void
+
+/* this routine makes empty terminals non-existent.
+ * @domain the lowest empty terminal
+ * @ce the closest encloser
+ */
+static domain_type*
+rrset_delete_empty_terminals(domain_type* domain, domain_type* ce)
+{
+	assert(domain);
+	if (domain->rrsets == 0) {
+		/* if there is no data below it, it becomes non existing.
+		   also empty nonterminals above it become nonexisting */
+		/* check for data below this node. */
+		if(!has_data_below(domain)) {
+			/* nonexist this domain and all parent empty nonterminals */
+			domain_type* p = domain;
+			while(p != NULL && p->rrsets == 0) {
+				if(p == ce || has_data_below(p))
+					return p;
+				p->is_existing = 0;
+				p = p->parent;
+			}
+		}
+	}
+	return NULL;
+}
+
+
+static domain_type*
 rrset_delete(namedb_type* db, domain_type* domain, rrset_type* rrset)
 {
 	int i;
@@ -278,7 +307,7 @@ rrset_delete(namedb_type* db, domain_type* domain, rrset_type* rrset)
 	}
 	if(!*pp) {
 		/* rrset does not exist for domain */
-		return;
+		return NULL;
 	}
 	*pp = rrset->next;
 
@@ -290,42 +319,41 @@ rrset_delete(namedb_type* db, domain_type* domain, rrset_type* rrset)
 	if(rrset->zone->soa_rrset == rrset) {
 		rrset->zone->soa_rrset = 0;
 		rrset->zone->updated = 1;
+		domain->has_SOA = 0;
 	}
 	if(rrset->zone->ns_rrset == rrset) {
 		rrset->zone->ns_rrset = 0;
 	}
-#ifdef DNSSEC
 	if(domain == rrset->zone->apex && rrset_rrtype(rrset) == TYPE_RRSIG) {
 		for (i = 0; i < rrset->rr_count; ++i) {
-			if (rr_rrsig_type_covered(&rrset->rrs[i]) == TYPE_SOA) {
+			if (rr_rrsig_type_covered(&rrset->rrs[i]) == TYPE_DNSKEY) {
 				rrset->zone->is_secure = 0;
 				break;
 			}
 		}
 	}
-#endif
+
+#ifdef NSEC3
+#ifndef FULL_PREHASH
+	if (rrset->rrs[0].type == TYPE_NSEC3) {
+		namedb_del_nsec3_domain(db, domain, rrset->zone);
+	}
+#endif /* !FULL_PREHASH */
+#endif /* NSEC3 */
+
 	/* recycle the memory space of the rrset */
 	for (i = 0; i < rrset->rr_count; ++i)
 		add_rdata_to_recyclebin(db, &rrset->rrs[i]);
 	region_recycle(db->region, rrset->rrs,
 		sizeof(rr_type) * rrset->rr_count);
+	rrset->rr_count = 0;
 	region_recycle(db->region, rrset, sizeof(rrset_type));
 
 	/* is the node now an empty node (completely deleted) */
-	if(domain->rrsets == 0) {
-		/* if there is no data below it, it becomes non existing.
-		   also empty nonterminals above it become nonexisting */
-		/* check for data below this node. */
-		if(!has_data_below(domain)) {
-			/* nonexist this domain and all parent empty nonterminals */
-			domain_type* p = domain;
-			while(p != NULL && p->rrsets == 0) {
-				p->is_existing = 0;
-				p = p->parent;
-			}
-		}
+	if (domain->rrsets == 0) {
+		return domain;
 	}
-	rrset->rr_count = 0;
+	return NULL;
 }
 
 static int
@@ -373,8 +401,9 @@ find_rr_num(rrset_type* rrset,
 static int
 delete_RR(namedb_type* db, const dname_type* dname,
 	uint16_t type, uint16_t klass,
+	domain_type* prevdomain,
 	buffer_type* packet, size_t rdatalen, zone_type *zone,
-	region_type* temp_region)
+	region_type* temp_region, int is_axfr)
 {
 	domain_type *domain;
 	rrset_type *rrset;
@@ -414,9 +443,30 @@ delete_RR(namedb_type* db, const dname_type* dname,
 				dname_to_string(dname,0));
 			return 1; /* not fatal error */
 		}
+#ifdef NSEC3
+#ifndef FULL_PREHASH
+		if (is_axfr == 0) {
+			struct domain *parent = domain;
+			do {
+				if (0 != namedb_add_nsec3_mod_domain(db,
+								    parent)) {
+					return 0;
+				}
+				parent = parent->parent;
+			} while (parent != zone->apex->parent);
+		}
+#else
+		(void)is_axfr;
+#endif /* !FULL_PREHASH */
+#endif /* NSEC3 */
+
 		if(rrset->rr_count == 1) {
 			/* delete entire rrset */
-			rrset_delete(db, domain, rrset);
+			domain = rrset_delete(db, domain, rrset);
+			if (domain && domain != prevdomain && !domain->nextdiff) {
+				/* this domain is not yet in the diff chain */
+				prevdomain->nextdiff = domain;
+			}
 		} else {
 			/* swap out the bad RR and decrease the count */
 			rr_type* rrs_orig = rrset->rrs;
@@ -442,7 +492,8 @@ delete_RR(namedb_type* db, const dname_type* dname,
 static int
 add_RR(namedb_type* db, const dname_type* dname,
 	uint16_t type, uint16_t klass, uint32_t ttl,
-	buffer_type* packet, size_t rdatalen, zone_type *zone)
+	buffer_type* packet, size_t rdatalen, zone_type *zone,
+	int is_axfr)
 {
 	domain_type* domain;
 	rrset_type* rrset;
@@ -539,22 +590,43 @@ add_RR(namedb_type* db, const dname_type* dname,
 			if (rrset->rrs->ttl > ntohl(soa_minimum)) {
 				rrset->zone->soa_nx_rrset->rrs[0].ttl = ntohl(soa_minimum);
 			}
+			domain->has_SOA = 1;
 		}
 		if(type == TYPE_NS) {
 			zone->ns_rrset = rrset;
 		}
-#ifdef DNSSEC
 		if(type == TYPE_RRSIG) {
 			int i;
 			for (i = 0; i < rrset->rr_count; ++i) {
-				if (rr_rrsig_type_covered(&rrset->rrs[i]) == TYPE_SOA) {
+				if (rr_rrsig_type_covered(&rrset->rrs[i]) == TYPE_DNSKEY) {
 					zone->is_secure = 1;
 					break;
 				}
 			}
 		}
-#endif
 	}
+
+#ifdef NSEC3
+#ifndef FULL_PREHASH
+	if ((type == TYPE_NSEC3) &&
+	    (rrset->rr_count == 1)) {
+		/* NSEC3 RRset just added */
+		if (0 != namedb_add_nsec3_domain(db, domain, zone))
+			return 0;
+	}
+	if (is_axfr == 0) {
+		struct domain *parent = domain;
+		do {
+			if (0 != namedb_add_nsec3_mod_domain(db, parent))
+				return 0;
+			parent = parent->parent;
+		} while (parent != zone->apex->parent);
+	}
+#else
+	(void)is_axfr;
+#endif /* !FULL_PREHASH */
+#endif /* NSEC3 */
+
 	return 1;
 }
 
@@ -613,6 +685,18 @@ find_zone(namedb_type* db, const dname_type* zone_name, nsd_options_t* opt,
 			dname_to_string(zone_name,0));
 		return 0;
 	}
+#ifdef NSEC3
+#ifndef FULL_PREHASH
+	zone->nsec3_domains = NULL;
+
+	if (0 != zone_nsec3_domains_create(db, zone)) {
+		log_msg(LOG_ERR,
+			"xfr: zone NSEC3 domains "
+			"memory allocation failure");
+		return 0;
+	}
+#endif /* !FULL_PREHASH */
+#endif /* NSEC3 */
 	zone->number = db->zone_count;
 	zone->is_secure = 0;
 	zone->updated = 1;
@@ -625,6 +709,14 @@ delete_zone_rrs(namedb_type* db, zone_type* zone)
 {
 	rrset_type *rrset;
 	domain_type *domain = zone->apex;
+	domain_type *next = NULL;
+	zone->updated = 1;
+#ifdef NSEC3
+#ifndef FULL_PREHASH
+	zone_nsec3_domains_destroy(db, zone);
+#endif /* !FULL_PREHASH */
+#endif /* NSEC3 */
+
 	/* go through entire tree below the zone apex (incl subzones) */
 	while(domain && dname_is_subdomain(
 		domain_dname(domain), domain_dname(zone->apex)))
@@ -633,10 +725,22 @@ delete_zone_rrs(namedb_type* db, zone_type* zone)
 			dname_to_string(domain_dname(domain),0)));
 		/* delete all rrsets of the zone */
 		while((rrset = domain_find_any_rrset(domain, zone))) {
-			rrset_delete(db, domain, rrset);
+			(void)rrset_delete(db, domain, rrset);
 		}
-		domain = domain_next(domain);
+		next = domain_next(domain);
+		domain->nextdiff = next;
+		domain = next;
 	}
+#ifdef NSEC3
+#ifndef FULL_PREHASH
+	if (0 != zone_nsec3_domains_create(db, zone)) {
+		log_msg(LOG_ERR,
+			"Zone %s: unable to create zone NSEC3 prehash table",
+			dname_to_string(domain_dname(zone->apex),
+			NULL));
+	}
+#endif /* !FULL_PREHASH */
+#endif /* NSEC3 */
 
 	DEBUG(DEBUG_XFRD, 1, (LOG_INFO, "axfrdel: recyclebin holds %lu bytes",
 		(unsigned long) region_get_recycle_size(db->region)));
@@ -652,6 +756,20 @@ delete_zone_rrs(namedb_type* db, zone_type* zone)
 	assert(zone->updated == 1);
 }
 
+/* fix empty terminals */
+static void
+fix_empty_terminals(zone_type* zone_db)
+{
+	domain_type* domain = zone_db->apex, *ce = NULL, *next = NULL;
+	while (domain) {
+		ce = rrset_delete_empty_terminals(domain, ce);
+		next = domain->nextdiff;
+		domain->nextdiff = NULL;
+		domain = next;
+	}
+}
+
+/* return value 0: syntaxerror,badIXFR, 1:OK, 2:done_and_skip_it */
 static int
 apply_ixfr(namedb_type* db, FILE *in, const off_t* startpos,
 	const char* zone, uint32_t serialno, nsd_options_t* opt,
@@ -667,6 +785,7 @@ apply_ixfr(namedb_type* db, FILE *in, const off_t* startpos,
 	uint16_t rrlen;
 	const dname_type *dname_zone, *dname;
 	zone_type* zone_db;
+	domain_type* last_in_list;
 	char file_zone_name[3072];
 	uint32_t file_serial, file_seq_nr;
 	uint16_t file_id;
@@ -730,7 +849,8 @@ apply_ixfr(namedb_type* db, FILE *in, const off_t* startpos,
 	if(!zone_db) {
 		log_msg(LOG_ERR, "no zone exists");
 		region_destroy(region);
-		return 0;
+		/* break out and stop the IXFR, ignore it */
+		return 2;
 	}
 
 	if(msglen > QIOBUFSZ) {
@@ -817,6 +937,7 @@ apply_ixfr(namedb_type* db, FILE *in, const off_t* startpos,
 	}
 	else  counter = 0;
 
+	last_in_list = zone_db->apex;
 	for(; counter < ancount; ++counter,++(*rr_count))
 	{
 		uint16_t type, klass;
@@ -873,6 +994,17 @@ apply_ixfr(namedb_type* db, FILE *in, const off_t* startpos,
 				*delete_mode = 0;
 				*is_axfr = 1;
 			}
+			/* must have stuff in memory for a successful IXFR,
+			 * the serial number of the SOA has been checked
+			 * previously (by check_for_bad_serial) if it exists */
+			if(!*is_axfr && !domain_find_rrset(zone_db->apex,
+				zone_db, TYPE_SOA)) {
+				log_msg(LOG_ERR, "%s SOA serial %d is not "
+					"in memory, skip IXFR", zone, serialno);
+				region_destroy(region);
+				/* break out and stop the IXFR, ignore it */
+				return 2;
+			}
 			buffer_set_position(packet, bufpos);
 		}
 		if(type == TYPE_SOA && !*is_axfr) {
@@ -898,22 +1030,26 @@ apply_ixfr(namedb_type* db, FILE *in, const off_t* startpos,
 				&& seq_nr == seq_total-1) {
 				continue; /* do not delete final SOA RR for IXFR */
 			}
-			if(!delete_RR(db, dname, type, klass, packet,
-				rrlen, zone_db, region)) {
+			if(!delete_RR(db, dname, type, klass, last_in_list, packet,
+				rrlen, zone_db, region, *is_axfr)) {
 				region_destroy(region);
 				return 0;
+			}
+			if (!*is_axfr && last_in_list->nextdiff) {
+				last_in_list = last_in_list->nextdiff;
 			}
 		}
 		else
 		{
 			/* add this rr */
 			if(!add_RR(db, dname, type, klass, ttl, packet,
-				rrlen, zone_db)) {
+				rrlen, zone_db, *is_axfr)) {
 				region_destroy(region);
 				return 0;
 			}
 		}
 	}
+	fix_empty_terminals(zone_db);
 	region_destroy(region);
 	return 1;
 }
@@ -1062,7 +1198,7 @@ mark_and_exit(nsd_options_t* opt, FILE* f, off_t commitpos, const char* desc)
 		fclose(f);
 	} else {
 		uint8_t c = 0;
-		fwrite(&c, sizeof(c), 1, f);
+		(void)write_data(f, &c, sizeof(c));
 		fclose(f);
 		log_msg(LOG_ERR, "marked xfr as failed: %s", desc);
 		log_msg(LOG_ERR, "marked xfr so that next reload can succeed");
@@ -1156,6 +1292,40 @@ read_sure_part(namedb_type* db, FILE *in, nsd_options_t* opt,
 		off_t resume_pos;
 
 		DEBUG(DEBUG_XFRD,1, (LOG_INFO, "processing xfr: %s", log_buf));
+
+#ifdef NSEC3
+#ifndef FULL_PREHASH
+		struct region *region;
+		dname_type const *zone_dname;
+		struct zone *zone;
+
+		region = region_create(xalloc, free);
+		if (region == NULL) {
+			log_msg(LOG_ERR, "out of memory");
+			return 0;
+		}
+		zone_dname = dname_parse(region, zone_buf);
+		if (zone_dname == NULL) {
+			log_msg(LOG_ERR, "out of memory");
+		        region_destroy(region);
+			return 0;
+		}
+		zone = find_zone(db, zone_dname, opt, child_count);
+		region_destroy(region);
+		if (zone == NULL) {
+			log_msg(LOG_ERR, "no zone exists");
+			/* just stop trying applying ixfr */
+			return 1;
+		}
+		if (0 != namedb_nsec3_mod_domains_create(db)) {
+			log_msg(LOG_ERR,
+				"unable to allocate space "
+				"for modified NSEC3 domains");
+			return 0;
+		}
+#endif /* !FULL_PREHASH */
+#endif /* NSEC3 */
+
 		resume_pos = ftello(in);
 		if(resume_pos == -1) {
 			log_msg(LOG_INFO, "could not ftello: %s.", strerror(errno));
@@ -1163,15 +1333,28 @@ read_sure_part(namedb_type* db, FILE *in, nsd_options_t* opt,
 		}
 		for(i=0; i<num_parts; i++) {
 			struct diff_xfrpart *xp = diff_read_find_part(zp, i);
+			int ret;
 			DEBUG(DEBUG_XFRD,2, (LOG_INFO, "processing xfr: apply part %d", (int)i));
-			if(!apply_ixfr(db, in, &xp->file_pos, zone_buf, new_serial, opt,
+			ret = apply_ixfr(db, in, &xp->file_pos, zone_buf, new_serial, opt,
 				id, xp->seq_nr, num_parts, &is_axfr, &delete_mode,
-				&rr_count, child_count)) {
+				&rr_count, child_count);
+			if(ret == 0) {
 				log_msg(LOG_ERR, "bad ixfr packet part %d in %s", (int)i,
 					opt->difffile);
 				mark_and_exit(opt, in, commitpos, log_buf);
+			} else if(ret == 2) {
+				break;
 			}
 		}
+#ifdef NSEC3
+#ifndef FULL_PREHASH
+		if (is_axfr != 0)
+			prehash_zone(db, zone);
+		else
+			prehash_zone_incremental(db, zone);
+#endif /* !FULL_PREHASH */
+#endif /* NSEC3 */
+
 		if(fseeko(in, resume_pos, SEEK_SET) == -1) {
 			log_msg(LOG_INFO, "could not fseeko: %s.", strerror(errno));
 			return 0;

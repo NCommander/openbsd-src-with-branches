@@ -1,7 +1,7 @@
 /*
  * xfrd-disk.h - XFR (transfer) Daemon TCP system header file. Save/Load state to disk.
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -10,7 +10,7 @@
 #ifndef XFRD_DISK_H
 #define XFRD_DISK_H
 
-#include <config.h>
+#include "config.h"
 struct xfrd_state;
 
 /* magic string to identify xfrd state file */

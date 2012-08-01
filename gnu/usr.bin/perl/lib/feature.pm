@@ -1,29 +1,37 @@
 package feature;
 
-our $VERSION = '1.11';
+our $VERSION = '1.16';
 
 # (feature name) => (internal name, used in %^H)
 my %feature = (
-    switch => 'feature_switch',
-    say    => "feature_say",
-    state  => "feature_state",
+    switch          => 'feature_switch',
+    say             => "feature_say",
+    state           => "feature_state",
+    unicode_strings => "feature_unicode",
 );
+
+# This gets set (for now) in $^H as well as in %^H,
+# for runtime speed of the uc/lc/ucfirst/lcfirst functions.
+# See HINT_UNI_8_BIT in perl.h.
+our $hint_uni8bit = 0x00000800;
+
+# NB. the latest bundle must be loaded by the -E switch (see toke.c)
 
 my %feature_bundle = (
-    "5.10.0" => [qw(switch say state)],
+    "5.10" => [qw(switch say state)],
+    "5.11" => [qw(switch say state unicode_strings)],
+    "5.12" => [qw(switch say state unicode_strings)],
 );
 
-# latest version here
-$feature_bundle{"5.10"} = $feature_bundle{sprintf("%vd",$^V)};
-
-$feature_bundle{"5.9.5"} = $feature_bundle{"5.10.0"};
+# special case
+$feature_bundle{"5.9.5"} = $feature_bundle{"5.10"};
 
 # TODO:
 # - think about versioned features (use feature switch => 2)
 
 =head1 NAME
 
-feature - Perl pragma to enable new syntactic features
+feature - Perl pragma to enable new features
 
 =head1 SYNOPSIS
 
@@ -42,9 +50,9 @@ feature - Perl pragma to enable new syntactic features
 
 It is usually impossible to add new syntax to Perl without breaking
 some existing programs. This pragma provides a way to minimize that
-risk. New syntactic constructs can be enabled by C<use feature 'foo'>,
-and will be parsed only when the appropriate feature pragma is in
-scope.
+risk. New syntactic constructs, or new semantic meanings to older
+constructs, can be enabled by C<use feature 'foo'>, and will be parsed
+only when the appropriate feature pragma is in scope.
 
 =head2 Lexical effect
 
@@ -94,16 +102,24 @@ variables.
 
 See L<perlsub/"Persistent Private Variables"> for details.
 
+=head2 the 'unicode_strings' feature
+
+C<use feature 'unicode_strings'> tells the compiler to treat
+all strings outside of C<use locale> and C<use bytes> as Unicode. It is
+available starting with Perl 5.11.3.
+
+See L<perlunicode/The "Unicode Bug"> for details.
+
 =head1 FEATURE BUNDLES
 
 It's possible to load a whole slew of features in one go, using
 a I<feature bundle>. The name of a feature bundle is prefixed with
 a colon, to distinguish it from an actual feature. At present, the
-only feature bundles are C<use feature ":5.10"> and C<use feature ":5.10.0">,
-which both are equivalent to C<use feature qw(switch say state)>.
+only feature bundle is C<use feature ":5.10"> which is equivalent
+to C<use feature qw(switch say state)>.
 
-In the forthcoming 5.10.X perl releases, C<use feature ":5.10"> will be
-equivalent to the latest C<use feature ":5.10.X">.
+Specifying sub-versions such as the C<0> in C<5.10.0> in feature bundles has
+no effect: feature bundles are guaranteed to be the same for all sub-versions.
 
 =head1 IMPLICIT LOADING
 
@@ -126,9 +142,10 @@ the C<use VERSION> construct, and when the version is higher than or equal to
 
 will do an implicit
 
-    use feature ':5.10.0';
+    use feature ':5.10';
 
-and so on.
+and so on. Note how the trailing sub-version is automatically stripped from the
+version.
 
 But to avoid portability warnings (see L<perlfunc/use>), you may prefer:
 
@@ -150,7 +167,10 @@ sub import {
 	if (substr($name, 0, 1) eq ":") {
 	    my $v = substr($name, 1);
 	    if (!exists $feature_bundle{$v}) {
-		unknown_feature_bundle($v);
+		$v =~ s/^([0-9]+)\.([0-9]+).[0-9]+$/$1.$2/;
+		if (!exists $feature_bundle{$v}) {
+		    unknown_feature_bundle(substr($name, 1));
+		}
 	    }
 	    unshift @_, @{$feature_bundle{$v}};
 	    next;
@@ -159,6 +179,7 @@ sub import {
 	    unknown_feature($name);
 	}
 	$^H{$feature{$name}} = 1;
+        $^H |= $hint_uni8bit if $name eq 'unicode_strings';
     }
 }
 
@@ -168,6 +189,7 @@ sub unimport {
     # A bare C<no feature> should disable *all* features
     if (!@_) {
 	delete @^H{ values(%feature) };
+        $^H &= ~ $hint_uni8bit;
 	return;
     }
 
@@ -176,7 +198,10 @@ sub unimport {
 	if (substr($name, 0, 1) eq ":") {
 	    my $v = substr($name, 1);
 	    if (!exists $feature_bundle{$v}) {
-		unknown_feature_bundle($v);
+		$v =~ s/^([0-9]+)\.([0-9]+).[0-9]+$/$1.$2/;
+		if (!exists $feature_bundle{$v}) {
+		    unknown_feature_bundle(substr($name, 1));
+		}
 	    }
 	    unshift @_, @{$feature_bundle{$v}};
 	    next;
@@ -186,6 +211,7 @@ sub unimport {
 	}
 	else {
 	    delete $^H{$feature{$name}};
+            $^H &= ~ $hint_uni8bit if $name eq 'unicode_strings';
 	}
     }
 }
