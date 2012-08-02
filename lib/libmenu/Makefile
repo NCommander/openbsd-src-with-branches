@@ -1,7 +1,6 @@
-# $OpenBSD: Makefile,v 1.13 2010/09/06 17:26:17 nicm Exp $
+# $OpenBSD: Makefile,v 1.14 2011/06/23 22:46:12 schwarze Exp $
 
 LIB=	menu
-WANTLINT=
 SRCS=	m_attribs.c m_cursor.c m_driver.c m_format.c \
 	m_global.c m_hook.c m_item_cur.c m_item_nam.c m_item_new.c \
 	m_item_opt.c m_item_top.c m_item_use.c m_item_val.c m_item_vis.c \

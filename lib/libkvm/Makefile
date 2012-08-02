@@ -1,9 +1,8 @@
-#	$OpenBSD: Makefile,v 1.14 2010/02/03 20:49:00 miod Exp $
+#	$OpenBSD: Makefile,v 1.15 2012/01/07 05:38:12 guenther Exp $
 #	$NetBSD: Makefile,v 1.11 1996/03/18 22:33:07 thorpej Exp $
 #	from: @(#)Makefile	8.1 (Berkeley) 6/4/93
 
 LIB=	kvm
-WANTLINT=
 
 # Try most specific name first.
 .if	exists(kvm_${MACHINE}.c)

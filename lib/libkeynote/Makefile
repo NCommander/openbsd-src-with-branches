@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.16 2005/11/24 20:49:18 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.17 2012/07/11 21:30:07 espie Exp $
 
 LIB=	keynote
-WANTLINT=
 MAN=	keynote.3 keynote.4 keynote.5
 MLINKS=	keynote.3 kn_init.3 keynote.3 kn_add_assertion.3 \
         keynote.3 kn_remove_assertion.3 keynote.3 kn_add_action.3 \
