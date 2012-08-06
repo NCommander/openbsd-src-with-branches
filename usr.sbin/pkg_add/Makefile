@@ -1,9 +1,8 @@
-# $OpenBSD: Makefile,v 1.74 2012/07/13 16:45:10 deraadt Exp $
+# $OpenBSD: Makefile,v 1.75 2012/07/13 23:54:24 deraadt Exp $
 
 .include <bsd.own.mk>
 
-MAN1=pkg_add.1 pkg_info.1 pkg_create.1 pkg_delete.1 \
-	pkg.1 pkg_mklocatedb.1
+MAN1=pkg_add.1 pkg_info.1 pkg_create.1 pkg_delete.1 pkg_mklocatedb.1
 MAN5=package.5 pkg.conf.5
 MAN8=pkg_check.8
 MAN=${MAN1} ${MAN5} ${MAN8}
