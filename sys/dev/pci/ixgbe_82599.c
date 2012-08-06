@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe_82599.c,v 1.3 2011/06/10 12:46:35 claudio Exp $	*/
+/*	$OpenBSD: ixgbe_82599.c,v 1.4 2012/07/29 13:49:03 mikeb Exp $	*/
 
 /******************************************************************************
 
@@ -190,7 +190,8 @@ int32_t ixgbe_setup_sfp_modules_82599(struct ixgbe_hw *hw)
 			goto setup_sfp_out;
 
 		/* PHY config will finish before releasing the semaphore */
-		ret_val = ixgbe_acquire_swfw_sync(hw, IXGBE_GSSR_MAC_CSR_SM);
+		ret_val = hw->mac.ops.acquire_swfw_sync(hw,
+							IXGBE_GSSR_MAC_CSR_SM);
 		if (ret_val != IXGBE_SUCCESS) {
 			ret_val = IXGBE_ERR_SWFW_SYNC;
 			goto setup_sfp_out;
@@ -204,7 +205,7 @@ int32_t ixgbe_setup_sfp_modules_82599(struct ixgbe_hw *hw)
 		}
 
 		/* Release the semaphore */
-		ixgbe_release_swfw_sync(hw, IXGBE_GSSR_MAC_CSR_SM);
+		hw->mac.ops.release_swfw_sync(hw, IXGBE_GSSR_MAC_CSR_SM);
 		/* Delay obtaining semaphore again to allow FW access */
 		msec_delay(hw->eeprom.semaphore_delay);
 
