@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.80 2012/04/11 14:38:55 mikeb Exp $	*/
+/*	$OpenBSD: trap.c,v 1.81 2012/08/07 05:16:53 guenther Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -53,7 +53,6 @@
 #include <sys/syscall.h>
 #include <sys/syscall_mi.h>
 #include <sys/systm.h>
-#include <sys/ktrace.h>
 
 #include <uvm/uvm_extern.h>
 
