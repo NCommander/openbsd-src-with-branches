@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_oce.c,v 1.5 2012/08/07 17:16:26 mikeb Exp $	*/
+/*	$OpenBSD: if_oce.c,v 1.6 2012/08/08 09:50:15 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2012 Mike Belopuhov
@@ -985,6 +985,9 @@ oce_rxeof(struct oce_rq *rq, struct oce_nic_rx_cqe *cqe)
 			 goto exit;
 		}
 
+		/* Account for jumbo chains */
+		m_cluncount(m, 1);
+
 		m->m_pkthdr.rcvif = ifp;
 
 #if NVLAN > 0
@@ -1029,9 +1032,8 @@ oce_rxeof(struct oce_rq *rq, struct oce_nic_rx_cqe *cqe)
 #endif /* OCE_LRO */
 
 #if NBPFILTER > 0
-			if (ifp->if_bpf)
-				bpf_mtap_ether(ifp->if_bpf, m,
-				    BPF_DIRECTION_IN);
+		if (ifp->if_bpf)
+			bpf_mtap_ether(ifp->if_bpf, m, BPF_DIRECTION_IN);
 #endif
 
 		ether_input_mbuf(ifp, m);
