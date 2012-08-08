@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.91 2012/08/07 05:16:54 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.92 2012/08/07 17:17:46 guenther Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -397,7 +397,7 @@ printf("isi iar %x lr %x\n", frame->srr0, frame->lr);
 			size_t argsize;
 			register_t code, error;
 			register_t *params, rval[2];
-			int nsys, n, nolock;
+			int nsys, n;
 			register_t args[10];
 			
 			uvmexp.syscalls++;
