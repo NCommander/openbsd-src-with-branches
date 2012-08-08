@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.h,v 1.15 2012/07/05 14:36:22 mikeb Exp $	*/
+/*	$OpenBSD: if_ix.h,v 1.16 2012/07/29 13:49:03 mikeb Exp $	*/
 
 /******************************************************************************
 
@@ -165,7 +165,6 @@ struct ix_queue {
 	void			*tag;
 	struct tx_ring		*txr;
 	struct rx_ring		*rxr;
-	uint64_t		irqs;
 };
 
 /*
@@ -300,7 +299,6 @@ struct ix_softc {
 	struct rx_ring	*rx_rings;
 	uint64_t	que_mask;
 	int		num_rx_desc;
-	uint32_t	rx_process_limit;
 
 	/* Multicast array memory */
 	uint8_t		*mta;
