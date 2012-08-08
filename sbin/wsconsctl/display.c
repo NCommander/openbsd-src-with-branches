@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.15 2010/07/01 16:47:58 maja Exp $	*/
+/*	$OpenBSD: display.c,v 1.16 2010/08/20 00:20:55 fgsch Exp $	*/
 /*	$NetBSD: display.c,v 1.1 1998/12/28 14:01:16 hannken Exp $ */
 
 /*-
@@ -40,7 +40,7 @@
 #include <string.h>
 #include "wsconsctl.h"
 
-int dpytype;
+u_int dpytype;
 u_int width, height, depth;
 int focus;
 struct field_pc brightness, contrast, backlight;

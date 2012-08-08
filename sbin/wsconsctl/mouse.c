@@ -1,4 +1,4 @@
-/*	$OpenBSD: mouse.c,v 1.11 2010/08/20 00:20:55 fgsch Exp $	*/
+/*	$OpenBSD: mouse.c,v 1.12 2012/07/14 08:25:12 shadchin Exp $	*/
 /*	$NetBSD: mouse.c,v 1.3 1999/11/15 13:47:30 ad Exp $ */
 
 /*-
@@ -39,9 +39,9 @@
 #include <stdio.h>
 #include "wsconsctl.h"
 
-static int mstype;
-static int resolution;
-static int samplerate;
+static u_int mstype;
+static u_int resolution;
+static u_int samplerate;
 static int rawmode;
 
 struct wsmouse_calibcoords wmcoords, wmcoords_save;
