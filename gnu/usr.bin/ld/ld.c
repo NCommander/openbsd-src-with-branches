@@ -692,7 +692,8 @@ decode_option(char *swt, char *arg)
 			warnx("-soname %s ignored", arg);
 		return;
 	}
-	if (strcmp(swt + 1, "rpath") == 0) {
+	if (strcmp(swt + 1, "rpath") == 0 ||
+	    strcmp(swt + 1, "rpath-link") == 0) {
 		if (warn_forwards_compatible_inexact)
 			warnx("%s %s ignored", swt, arg);
 		goto do_rpath;
