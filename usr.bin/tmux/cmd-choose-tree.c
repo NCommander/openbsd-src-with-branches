@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-choose-tree.c,v 1.4 2012/07/11 07:10:15 nicm Exp $ */
+/* $OpenBSD: cmd-choose-tree.c,v 1.5 2012/07/12 13:03:42 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Thomas Adam <thomas@xteddy.org>
@@ -34,7 +34,7 @@
  * Enter choice mode to choose a session and/or window.
  */
 
-int	cmd_choose_tree_exec(struct cmd *, struct cmd_ctx *);
+enum cmd_retval	cmd_choose_tree_exec(struct cmd *, struct cmd_ctx *);
 
 void	cmd_choose_tree_callback(struct window_choose_data *);
 void	cmd_choose_tree_free(struct window_choose_data *);
