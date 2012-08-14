@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.28 2012/07/09 17:19:55 krw Exp $	*/
+/*	$OpenBSD: misc.c,v 1.29 2012/07/11 10:27:34 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -91,7 +91,7 @@ ask_cmd(cmd_t *cmd)
 int
 ask_num(const char *str, int dflt, int low, int high)
 {
-	char lbuf[100], *cp;
+	char lbuf[100];
 	const char *errstr;
 	size_t lbuflen;
 	int num;
