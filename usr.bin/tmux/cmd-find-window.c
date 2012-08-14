@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-find-window.c,v 1.16 2012/07/10 11:53:01 nicm Exp $ */
+/* $OpenBSD: cmd-find-window.c,v 1.17 2012/07/11 07:10:15 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -98,7 +98,7 @@ cmd_find_window_exec(struct cmd *self, struct cmd_ctx *ctx)
 		return (CMD_RETURN_ERROR);
 
 	if ((template = args_get(args, 'F')) == NULL)
-		template = DEFAULT_FIND_WINDOW_TEMPLATE;
+		template = FIND_WINDOW_TEMPLATE;
 
 	match_flags = cmd_find_window_match_flags(args);
 	str = args->argv[0];
