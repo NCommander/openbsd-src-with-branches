@@ -1,4 +1,4 @@
-/*	$OpenBSD: multibyte_citrus.c,v 1.1 2010/07/27 16:59:04 stsp Exp $ */
+/*	$OpenBSD: multibyte_citrus.c,v 1.2 2012/06/06 16:58:02 matthew Exp $ */
 /*	$NetBSD: multibyte_amd1.c,v 1.7 2009/01/11 02:46:28 christos Exp $ */
 
 /*-
@@ -69,7 +69,6 @@ size_t
 mbsrtowcs(wchar_t *dst, const char **src, size_t len, mbstate_t *ps)
 {
 	static mbstate_t mbs;
-	struct _citrus_ctype_rec *cc;
 
 	if (ps == NULL)
 		ps = &mbs;
