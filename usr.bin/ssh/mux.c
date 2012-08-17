@@ -1,4 +1,4 @@
-/* $OpenBSD: mux.c,v 1.35 2012/06/01 01:01:22 djm Exp $ */
+/* $OpenBSD: mux.c,v 1.36 2012/07/06 01:37:21 djm Exp $ */
 /*
  * Copyright (c) 2002-2008 Damien Miller <djm@openbsd.org>
  *
@@ -171,7 +171,7 @@ static const struct {
 
 /* Cleanup callback fired on closure of mux slave _session_ channel */
 /* ARGSUSED */
-static void
+void
 mux_master_session_cleanup_cb(int cid, void *unused)
 {
 	Channel *cc, *c = channel_by_id(cid);
