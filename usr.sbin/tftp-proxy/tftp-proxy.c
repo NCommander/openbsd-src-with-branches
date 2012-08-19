@@ -1,4 +1,4 @@
-/* $OpenBSD: tftp-proxy.c,v 1.2 2012/07/11 11:51:35 dlg Exp $
+/* $OpenBSD: tftp-proxy.c,v 1.3 2012/07/11 12:00:21 dlg Exp $
  *
  * Copyright (c) 2005 DLS Internet Services
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -486,8 +486,7 @@ proxy_listen(const char *addr, const char *port, int family)
 
 	struct addrinfo hints, *res, *res0;
 	int error;
-	int s;
-
+	int s, on = 1;
 	int serrno;
 	const char *cause = NULL;
 
@@ -495,8 +494,6 @@ proxy_listen(const char *addr, const char *port, int family)
 	hints.ai_family = family;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_flags = AI_PASSIVE;
-
-	int on = 1;
 
 	TAILQ_INIT(&proxy_listeners);
 
