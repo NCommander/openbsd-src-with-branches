@@ -1,4 +1,4 @@
-/*	$OpenBSD: getnameinfo_async.c,v 1.2 2012/04/25 20:28:25 eric Exp $	*/
+/*	$OpenBSD: getnameinfo_async.c,v 1.3 2012/08/18 11:19:51 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -180,7 +180,7 @@ getnameinfo_async_run(struct async *as, struct async_res *ar)
 				ar->ar_gai_errno = EAI_OVERFLOW;
 			else
 				ar->ar_gai_errno = 0;
-			freehostent(ar->ar_hostent);
+			free(ar->ar_hostent);
 		}
 
 		async_set_state(as, ASR_STATE_HALT);
