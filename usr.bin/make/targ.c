@@ -1,4 +1,4 @@
-/*	$OpenBSD: targ.c,v 1.62 2010/07/19 19:46:44 espie Exp $ */
+/*	$OpenBSD: targ.c,v 1.63 2012/03/22 13:47:12 espie Exp $ */
 /*	$NetBSD: targ.c,v 1.11 1997/02/20 16:51:50 christos Exp $	*/
 
 /*
@@ -460,10 +460,4 @@ struct ohash *
 targets_hash()
 {
 	return &targets;
-}
-
-GNode *
-Targ_FindNodeh(const char *name, size_t n, uint32_t hv, int flags)
-{
-	return Targ_FindNodeih(name, name + n - 1, hv, flags);
 }
