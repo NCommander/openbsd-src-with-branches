@@ -1,6 +1,8 @@
-#	$OpenBSD: Makefile,v 1.3 2006/08/17 06:31:10 miod Exp $
+#	$OpenBSD: Makefile,v 1.4 2007/12/28 18:56:09 miod Exp $
 
 CFLAGS+=-D__INTERNAL_LIBSA_CREAD
+
+NOPIE=
 
 # io routines
 SRCS+=	cread.c

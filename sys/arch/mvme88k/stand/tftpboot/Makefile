@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2006/05/16 22:51:30 miod Exp $
+#	$OpenBSD: Makefile,v 1.4 2008/04/02 21:53:18 miod Exp $
 
 SIZE?=	size
 STRIP?= strip
@@ -20,6 +20,7 @@ SRCS=   boot.c conf.c version.c tftpfs.c netdev.c
 OBJS=  ${SRCS:S/.c/.o/g}
 LIBS= ${LIBSA} ${LIBBUG} ${LIBZ}
 LDFLAGS+= -s -N -T ${STAGE2_RELOC}
+NOPIE=
 
 all:	tftpboot.bin
 

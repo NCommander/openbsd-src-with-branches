@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2008/05/15 21:32:20 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.2 2008/06/09 15:01:56 deraadt Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -8,6 +8,7 @@ MAN=	mkboot.8
 PROG=	mkboot
 DPADD=	${LIBZ}
 LDADD=	-lz
+NOPIE=
 .else
 NOPROG=
 .endif

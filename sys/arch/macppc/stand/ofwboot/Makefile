@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2007/11/25 18:25:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2011/07/08 08:49:53 drahn Exp $
 #	$NetBSD: Makefile,v 1.2 1997/04/17 07:46:24 thorpej Exp $
 
 S=	${.CURDIR}/../../../..
@@ -11,6 +11,7 @@ SRCS+=		boot.c conf.c cmd.c vars.c ctime.c strtol.c
 SRCS+=		ofwmagic.S
 #CFLAGS+=	-DDEBUG -DNETIF_DEBUG
 NOMAN=
+NOPIE=
 STRIPFLAG=
 BINMODE=	444
 OBJCOPY?=	objcopy

@@ -1,9 +1,10 @@
-#	$OpenBSD: Makefile,v 1.13 2000/06/08 00:56:08 mickey Exp $
+#	$OpenBSD: Makefile,v 1.14 2003/04/17 03:43:19 drahn Exp $
 #
 
 PROG=	mbr
 SRCS=	mbr.S
 AFLAGS+=-I${.CURDIR} -I${.CURDIR}/../../.. #-Wa,-a
+AFLAGS+=${NOPIE_FLAGS}
 LD=ld
 LDFLAGS=-nostdlib -Ttext 0 -x -N -s -Bstatic -e start
 

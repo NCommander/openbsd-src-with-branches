@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2006/11/08 20:03:32 drahn Exp $
+#	$OpenBSD: Makefile,v 1.4 2007/11/25 18:25:32 deraadt Exp $
 
 MAN=	xxboot.8
 
@@ -8,6 +8,7 @@ LINKS=	${BINDIR}/xxboot ${BINDIR}/sdboot
 LINKS+=	${BINDIR}/xxboot ${BINDIR}/wdboot 
 SRCS=	pbr.S xxboot.S boot1.c
 LDFLAGS=-nostdlib -Ttext 0x8c201000 -N -x -Bstatic -e start
+NOPIE=
 
 INSTALL_STRIP=
 

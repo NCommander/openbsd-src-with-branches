@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2005/04/01 10:40:48 mickey Exp $
+#	$OpenBSD: Makefile,v 1.2 2007/11/26 08:36:49 deraadt Exp $
 
 NOMAN=	no man
 S	=${.CURDIR}/../../../..
@@ -60,3 +60,5 @@ NOPROG=
 
 CPPFLAGS+=-DRELOC=${LOADADDR} -DHEAP_LIMIT=${HEAP_LIMIT}
 CFLAGS+=$(SACFLAGS) -I../.. -I${.CURDIR}/../libsa -I${S}/stand/boot
+CFLAGS+=${NOPIE_FLAGS}
+AFLAGS+=${NOPIE_FLAGS}

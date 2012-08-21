@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2007/11/27 21:52:30 martin Exp $
+#	$OpenBSD: Makefile,v 1.17 2010/06/29 21:33:54 miod Exp $
 #	$NetBSD: Makefile,v 1.2 1995/09/30 21:43:38 pk Exp $
 
 PROG=	boot
@@ -20,6 +20,7 @@ CFLAGS=	-O2 -I${.CURDIR}/../common -I${.CURDIR}/../../../../arch \
 
 CLEANFILES+=${PROG}.aout ${PROG}.elf elfclean
 LIBS=${LIBSA} ${LIBZ}
+NOPIE=
 
 elfclean: clean-elf.c
 	${HOSTCC} -o elfclean ${.ALLSRC}

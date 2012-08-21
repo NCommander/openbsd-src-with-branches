@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2004/05/17 22:49:46 drahn Exp $
+#	$OpenBSD: Makefile,v 1.3 2004/10/09 21:15:21 mickey Exp $
 
 MAN=	biosboot.8
 
@@ -18,7 +18,9 @@ ${PROG}: $(OBJS) $(DPADD)
 
 CPPFLAGS+=-DLOADADDR=$(LOADADDR) -DLINKADDR=$(LINKADDR) -DBOOTMAGIC=$(BOOTMAGIC)
 CPPFLAGS+=${DEBUGFLAGS}
+CPPFLAGS+=${NOPIE_FLAGS}
 AFLAGS+=-m32 # -Wa,-a
+AFLAGS+=${NOPIE_FLAGS}
 .else
 NOPROG=
 .endif

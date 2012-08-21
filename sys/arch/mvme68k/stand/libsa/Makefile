@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.20 2007/12/28 18:56:09 miod Exp $
+#	$OpenBSD: Makefile,v 1.21 2008/03/11 20:07:53 deraadt Exp $
 
 LIB=sa
 
@@ -6,6 +6,7 @@ CLEANFILES+=SRT0.o
 
 NOPIC=nopic
 NOPROFILE=noprofile
+NOPIE=
 
 # Logically src/sys
 S=${.CURDIR}/../../../..

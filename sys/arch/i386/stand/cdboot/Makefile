@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2010/07/10 16:11:44 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 2010/07/10 17:09:15 deraadt Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -48,5 +48,7 @@ CPPFLAGS+=-DLINKADDR=${LINKADDR}
 CFLAGS+=${SACFLAGS} -D__INTERNAL_LIBSA_CREAD
 CFLAGS+=-DOSREV=\"${OSREV}\" -DMACHINE=\"${MACHINE}\"
 CFLAGS+=-DKERNEL=\"/${OSREV}/${MACHINE}/bsd.rd\"
+CFLAGS+=${NOPIE_FLAGS}
 #AFLAGS+=-Wa,-R
 # AFLAGS+=-Wa,-a
+AFLAGS+=${NOPIE_FLAGS}

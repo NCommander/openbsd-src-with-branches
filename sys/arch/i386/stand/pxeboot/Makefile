@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2007/11/25 18:25:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.5 2010/07/10 17:04:22 deraadt Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -46,5 +46,7 @@ NOPROG=
 CPPFLAGS+=-DBOOTMAGIC=$(BOOTMAGIC) ${DEBUGFLAGS}
 CPPFLAGS+=-DLINKADDR=${LINKADDR}
 CFLAGS+=${SACFLAGS} -D__INTERNAL_LIBSA_CREAD
+CFLAGS+=${NOPIE_FLAGS}
 #AFLAGS+=-Wa,-R
 # AFLAGS+=-Wa,-a
+AFLAGS+=${NOPIE_FLAGS}
