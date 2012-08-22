@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.3 1998/08/29 21:11:38 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.4 1998/11/20 11:18:40 d Exp $
 
 # gmon sources
 .PATH: ${LIBCSRCDIR}/gmon
@@ -8,6 +8,9 @@ MAN+=	moncontrol.3
 
 MLINKS+=moncontrol.3 monstartup.3
 
-# mcount cannot be compiled with profiling
-mcount.po: mcount.o
-	cp mcount.o mcount.po
+# mcount cannot be compiled with profiling or pie
+mcount.po:
+	@echo "${COMPILE.c} ${NOPIE_FLAGS} ${.IMPSRC} -o ${.TARGET}"
+	@${COMPILE.c} ${NOPIE_FLAGS} ${.IMPSRC} -o ${.TARGET}.o
+	@${LD} -X -r ${.TARGET}.o -o ${.TARGET}
+	@rm -f ${.TARGET}.o
