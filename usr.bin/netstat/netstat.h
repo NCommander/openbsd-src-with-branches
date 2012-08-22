@@ -1,4 +1,4 @@
-/*	$OpenBSD: netstat.h,v 1.61 2011/11/01 00:00:01 mikeb Exp $	*/
+/*	$OpenBSD: netstat.h,v 1.62 2011/11/01 17:30:04 mikeb Exp $	*/
 /*	$NetBSD: netstat.h,v 1.6 1996/05/07 02:55:05 thorpej Exp $	*/
 
 /*
@@ -44,6 +44,7 @@ int	bflag;		/* show bytes instead of packets */
 int	dflag;		/* show i/f dropped packets */
 int	Fflag;		/* show routes whose gateways are in specified AF */
 int	gflag;		/* show group (multicast) routing or stats */
+int	hflag;		/* print human numbers */
 int	iflag;		/* show interfaces */
 int	lflag;		/* show routing table with use and ref */
 int	mflag;		/* show memory stats */
