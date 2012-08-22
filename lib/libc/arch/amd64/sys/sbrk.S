@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbrk.S,v 1.2 2004/02/10 00:22:51 drahn Exp $	*/
+/*	$OpenBSD: sbrk.S,v 1.3 2006/05/09 22:52:13 drahn Exp $	*/
 /*	$NetBSD: sbrk.S,v 1.1 2001/06/19 00:25:06 fvdl Exp $	*/
 
 /*-
@@ -55,7 +55,7 @@ __curbrk:	.quad	_end
 	.text
 
 SYSENTRY(_sbrk)
-#ifdef PIC
+#ifdef __PIC__
 	movq	PIC_GOT(__curbrk),%rdx
 	movslq  %edi, %rax
 	movq	(%rdx),%rdi

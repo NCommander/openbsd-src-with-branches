@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: sbrk.S,v 1.8 2005/08/07 11:30:38 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -41,7 +41,7 @@ __curbrk:	.long	_end
 	.text
 
 ENTRY(sbrk)
-#ifdef PIC
+#ifdef __PIC__
 	movl	4(%esp),%ecx
 	PIC_PROLOGUE
 	movl	PIC_GOT(__curbrk),%edx

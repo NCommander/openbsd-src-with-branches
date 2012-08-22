@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: brk.S,v 1.4 2004/10/01 04:08:45 jsg Exp $	*/
 /*	$NetBSD: brk.S,v 1.7 2003/12/26 11:23:44 martin Exp $	*/
 
 /*-
@@ -52,7 +52,7 @@ _C_LABEL(__minbrk):
  * Change the data segment size
  */
 SYSENTRY(_brk)
-#ifdef PIC
+#ifdef __PIC__
 	/* Setup the GOT */
 	ldr	r3, .Lgot
 	ldr	r1, .Lminbrk
@@ -75,7 +75,7 @@ SYSENTRY(_brk)
 	SYSTRAP(break)
 	bcs	PIC_SYM(CERROR, PLT)
 
-#ifdef PIC
+#ifdef __PIC__
 	ldr	r1, .Lcurbrk
 	ldr	r1, [r3, r1]
 #else
@@ -89,7 +89,7 @@ SYSENTRY(_brk)
 	mov	r15, r14
 
 	.align	2
-#ifdef PIC
+#ifdef __PIC__
 .Lgot:
 	.word	_C_LABEL(_GLOBAL_OFFSET_TABLE_) - (.L1+8)
 #endif

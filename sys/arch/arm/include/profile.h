@@ -1,4 +1,4 @@
-/*	$OpenBSD: profile.h,v 1.1 2004/02/01 05:09:49 drahn Exp $	*/
+/*	$OpenBSD: profile.h,v 1.2 2011/09/20 22:02:13 miod Exp $	*/
 /*	$NetBSD: profile.h,v 1.5 2002/03/24 15:49:40 bjh21 Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 
 #ifdef __ELF__
 #define MCOUNT_ASM_NAME "__mcount"
-#ifdef PIC
+#ifdef __PIC__
 #define	PLTSYM		"(PLT)"
 #endif
 #else

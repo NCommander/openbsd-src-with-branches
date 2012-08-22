@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.1.1.1 2006/10/06 21:02:55 miod Exp $	*/
+/*	$OpenBSD: asm.h,v 1.2 2011/07/19 08:08:49 jsg Exp $	*/
 /*	$NetBSD: asm.h,v 1.25 2006/01/20 22:02:40 christos Exp $	*/
 
 /*-
@@ -141,7 +141,7 @@
  * 	CALL_DATUM(function, 2b)
  */
 
-#ifdef PIC
+#ifdef __PIC__
 
 #define	PIC_PLT(x)	x@PLT
 #define	PIC_GOT(x)	x@GOT

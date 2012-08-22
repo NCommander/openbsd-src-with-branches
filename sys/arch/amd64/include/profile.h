@@ -1,4 +1,4 @@
-/*	$OpenBSD: profile.h,v 1.2 2004/05/13 03:27:33 drahn Exp $	*/
+/*	$OpenBSD: profile.h,v 1.3 2006/10/28 16:20:04 kettenis Exp $	*/
 /*	$NetBSD: profile.h,v 1.3 2003/11/28 23:22:45 fvdl Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 
 #define	_MCOUNT_DECL void _mcount
 
-#ifdef PIC
+#ifdef __PIC__
 #define __MCPLT	"@PLT"
 #else
 #define __MCPLT

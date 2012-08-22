@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigsuspend.S,v 1.1 2004/01/28 01:44:45 mickey Exp $	*/
+/*	$OpenBSD: sigsuspend.S,v 1.2 2005/12/13 00:10:48 jsg Exp $	*/
 /*	$NetBSD: sigsuspend.S,v 1.1 2001/06/19 00:25:07 fvdl Exp $	*/
 
 /*-
@@ -46,7 +46,7 @@ SYSENTRY(sigsuspend)
 	xorl	%eax,%eax		# shouldn t happen
 	ret
 err:
-#ifdef PIC
+#ifdef __PIC__
 	movq	PIC_GOT(CERROR), %rcx
 	jmp	*%rcx
 #else

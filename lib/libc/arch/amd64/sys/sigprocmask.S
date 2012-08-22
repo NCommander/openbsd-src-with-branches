@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigprocmask.S,v 1.2 2004/02/09 21:27:21 deraadt Exp $	*/
+/*	$OpenBSD: sigprocmask.S,v 1.3 2005/12/13 00:10:48 jsg Exp $	*/
 /*	$NetBSD: sigprocmask.S,v 1.1 2001/06/19 00:25:06 fvdl Exp $	*/
 
 /*-
@@ -54,7 +54,7 @@ out:
 	xorl	%eax,%eax
 	ret
 err:
-#ifdef PIC
+#ifdef __PIC__
 	movq	PIC_GOT(CERROR), %rcx
 	jmp	*%rcx
 #else

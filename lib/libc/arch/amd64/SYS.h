@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.6 2011/09/05 02:56:44 guenther Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.7 2011/10/11 01:54:41 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -63,7 +63,7 @@
 	SYSENTRY(x);							\
 	SYSTRAP(y)
 
-#ifdef PIC
+#ifdef __PIC__
 #define _SYSCALL(x,y)							\
 	.text; _ALIGN_TEXT;						\
 	2: mov PIC_GOT(CERROR), %rcx;					\

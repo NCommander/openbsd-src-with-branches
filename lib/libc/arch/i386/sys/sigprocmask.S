@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: sigprocmask.S,v 1.8 2005/08/07 11:30:38 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -53,7 +53,7 @@ out:
 	xorl	%eax,%eax
 	ret
 err:
-#ifdef PIC
+#ifdef __PIC__
 	PIC_PROLOGUE             
 	movl	PIC_GOT(CERROR), %ecx
 	PIC_EPILOGUE
