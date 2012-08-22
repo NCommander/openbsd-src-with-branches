@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.13 2011/07/05 04:48:01 guenther Exp $	*/
+/*	$OpenBSD: sig_machdep.c,v 1.14 2012/05/09 21:25:33 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -74,7 +74,7 @@ struct sigframe {
 
 #ifdef DEBUG
 int sigdebug = 0;
-int sigpid = 0;
+pid_t sigpid = 0;
 #define SDB_FOLLOW	0x01
 #define SDB_KSTACK	0x02
 #endif
