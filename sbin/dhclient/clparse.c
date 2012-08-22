@@ -1,4 +1,4 @@
-/*	$OpenBSD: clparse.c,v 1.37 2011/04/04 11:14:52 krw Exp $	*/
+/*	$OpenBSD: clparse.c,v 1.38 2011/12/10 17:15:27 krw Exp $	*/
 
 /* Parser for dhclient config and lease files... */
 
@@ -169,6 +169,11 @@ parse_client_statement(FILE *cfile)
 		code = parse_option_decl(cfile, &config->defaults[0]);
 		if (code != -1)
 			config->default_actions[code] = ACTION_SUPERSEDE;
+		return;
+	case TOK_IGNORE:
+		code = parse_option_decl(cfile, &config->defaults[0]);
+		if (code != -1)
+			config->default_actions[code] = ACTION_IGNORE;
 		return;
 	case TOK_APPEND:
 		code = parse_option_decl(cfile, &config->defaults[0]);
