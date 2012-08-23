@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.1 2010/02/14 22:39:33 miod Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 2011/03/18 06:21:40 matthew Exp $
 
 BINDIR=		/usr/mdec
 
@@ -17,6 +17,8 @@ CFLAGS+=	-fno-builtin-memset
 CFLAGS+=	-fno-builtin-strncpy
 CFLAGS+=	-fno-builtin-strncmp
 CFLAGS+=	-Wa,-mfix-loongson2f-btb
+CFLAGS+=	${NOPIE_FLAGS}
+AFLAGS+=	${NOPIE_FLAGS}
 SAABI=		-mips3 -mno-abicalls -G 0 -fno-pic -fno-common
 AS?=		as
 LD?=		ld
