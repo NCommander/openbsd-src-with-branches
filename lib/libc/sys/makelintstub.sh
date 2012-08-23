@@ -1,5 +1,5 @@
 #!/bin/sh -
-#	$OpenBSD: makelintstub.sh,v 1.8 2009/06/03 14:45:47 jj Exp $
+#	$OpenBSD: makelintstub.sh,v 1.9 2010/07/24 23:32:52 guenther Exp $
 #	$NetBSD: makelintstub,v 1.2 1997/11/05 05:46:18 thorpej Exp $
 #
 # Copyright (c) 1996, 1997 Christopher G. Demetriou.  All rights reserved.
@@ -63,7 +63,6 @@ header()
 	#include <sys/ktrace.h>
 	#include <sys/mman.h>
 	#include <sys/event.h>
-	#include <nnpfs/nnpfs_pioctl.h>
 	#include <sys/wait.h>
 	#include <stdio.h>
 	#undef DIRBLKSIZ
