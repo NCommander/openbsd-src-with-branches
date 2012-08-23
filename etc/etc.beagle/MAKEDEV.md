@@ -1,6 +1,6 @@
 define(MACHINE,beagle)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.22 2011/10/06 20:49:27 deraadt Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.2 2012/04/06 15:18:41 jsing Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2004 Todd T. Fries <todd@OpenBSD.org>
@@ -78,7 +78,6 @@ _DEV(hotplug, 37)
 _DEV(iop, 73)
 _DEV(lkm, 35)
 _DEV(music, 58)
-_DEV(nnpfs, 51)
 _DEV(pci, 88)
 _DEV(pf, 46)
 _DEV(pppx, 103)
@@ -105,7 +104,6 @@ dnl
 dnl *** beagle specific targets
 dnl
 target(all, ch, 0)dnl
-target(all, nnpfs, 0)dnl
 target(all, vscsi, 0)dnl
 target(all, diskmap)dnl
 twrget(all, flo, fd, 0, 0B, 0C, 0D, 0E, 0F, 0G, 0H)dnl

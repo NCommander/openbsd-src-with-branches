@@ -1,6 +1,6 @@
 define(MACHINE,sgi)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.35 2011/10/22 19:31:23 miod Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.36 2012/03/28 20:44:23 miod Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -81,7 +81,6 @@ _DEV(diskmap, 69)
 _DEV(fdesc, 7)
 _DEV(hotplug, 67)
 dnl _DEV(lkm)
-_DEV(nnpfs, 51)
 _DEV(pci, 29)
 _DEV(pf, 31)
 _DEV(pppx, 70)
@@ -101,7 +100,6 @@ dnl *** sgi specific targets
 dnl
 twrget(all, au, audio, 0, 1, 2)dnl
 target(all, ch, 0)dnl
-target(all, nnpfs, 0)dnl
 target(all, vscsi, 0)dnl
 target(all, diskmap)dnl
 target(all, pty, 0, 1, 2)dnl
