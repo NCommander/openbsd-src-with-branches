@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.55 2007/09/02 15:19:08 deraadt Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.56 2007/11/26 09:28:33 martynas Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -762,10 +762,10 @@ main(int argc, char **argv)
 		args[i] = NULL;
 
 		if (setcredentials)
-			trpid = intercept_run(background, trfd,
+			trpid = intercept_run(background, &trfd,
 			    cr_uid, cr_gid, args[0], args);
 		else
-			trpid = intercept_run(background, trfd, 0, 0,
+			trpid = intercept_run(background, &trfd, 0, 0,
 			    args[0], args);
 		if (trpid == -1)
 			err(1, "fork");
