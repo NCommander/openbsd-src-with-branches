@@ -1,4 +1,4 @@
-/* $OpenBSD: client.c,v 1.57 2012/06/18 13:34:56 nicm Exp $ */
+/* $OpenBSD: client.c,v 1.58 2012/07/10 11:53:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -189,7 +189,7 @@ client_main(int argc, char **argv, int flags)
 		 * flag.
 		 */
 		if ((cmdlist = cmd_list_parse(argc, argv, &cause)) == NULL) {
-			log_warnx("%s", cause);
+			fprintf(stderr, "%s\n", cause);
 			return (1);
 		}
 		cmdflags &= ~CMD_STARTSERVER;
