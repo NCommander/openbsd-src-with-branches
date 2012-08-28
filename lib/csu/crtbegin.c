@@ -1,4 +1,4 @@
-/*	$OpenBSD: crtbegin.c,v 1.13 2009/04/13 20:15:24 kurt Exp $	*/
+/*	$OpenBSD: crtbegin.c,v 1.14 2010/05/01 11:32:43 kettenis Exp $	*/
 /*	$NetBSD: crtbegin.c,v 1.1 1996/09/12 16:59:03 cgd Exp $	*/
 
 /*
@@ -82,6 +82,8 @@ extern void _Jv_RegisterClasses (void *)
 #if (__GNUC__ > 2)
 void *__dso_handle = NULL;
 __asm(".hidden  __dso_handle");
+
+long __guard_local __dso_hidden __attribute__((section(".openbsd.randomdata")));
 #endif
 
 static const init_f __CTOR_LIST__[1]
