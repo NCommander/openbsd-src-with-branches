@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.47 2007/05/30 01:25:43 tom Exp $
+#	$OpenBSD: Makefile,v 1.48 2012/08/21 14:46:18 pascal Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -47,7 +47,6 @@ SRCS+=	debug.c
 
 NOPROFILE=noprofile
 NOPIC=nopic
-NOPIE=
 
 .PATH:  $S/lib/libsa
 
@@ -59,7 +58,7 @@ install:
 
 CPPFLAGS+=-DLINKADDR=${LINKADDR} -DHEAP_LIMIT=${HEAP_LIMIT} ${DEBUGFLAGS}
 CPPFLAGS+=-I${S}/stand/boot #-DCOMPAT_UFS
-CFLAGS+=${SACFLAGS} -D__INTERNAL_LIBSA_CREAD
+CFLAGS+=${SACFLAGS} -D__INTERNAL_LIBSA_CREAD -fno-pie
 #AS=cat ; 
 #AS+=	-R
 #AS+=	-a

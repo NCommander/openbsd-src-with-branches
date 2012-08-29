@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2011/11/06 13:39:43 jsing Exp $
+#	$OpenBSD: Makefile,v 1.37 2012/08/21 14:46:18 pascal Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -12,7 +12,7 @@ SADIR=	${.CURDIR}/..
 PROG=	boot
 LD?=	ld
 SIZE?=	size
-LDFLAGS+=-nostdlib -Bstatic
+LDFLAGS+=-nostdlib -Bstatic -nopie
 
 .if defined(DEBUGFLAGS) && !empty(DEBUGFLAGS:M-D_TEST)
 CLEANFILES+=	srt0.o
@@ -66,8 +66,7 @@ NOPROG=
 CPPFLAGS+=-DBOOTMAGIC=$(BOOTMAGIC) ${DEBUGFLAGS} -DLINKADDR=${LINKADDR}
 CPPFLAGS+=-DSLOW -DSMALL -DNOBYFOUR -DNO_GZIP -DDYNAMIC_CRC_TABLE
 CPPFLAGS+=-DHEAP_LIMIT=${HEAP_LIMIT} -I${S}/stand/boot #-DCOMPAT_UFS
-CFLAGS+=-m32 $(SACFLAGS) -D__INTERNAL_LIBSA_CREAD
-CFLAGS+=${NOPIE_FLAGS}
+CFLAGS+=-m32 $(SACFLAGS) -D__INTERNAL_LIBSA_CREAD -fno-pie
 AFLAGS+=-m32 # -Wa,-R
 # AFLAGS+=-Wa,-a
-AFLAGS+=${NOPIE_FLAGS}
+AFLAGS+=-fno-pie
