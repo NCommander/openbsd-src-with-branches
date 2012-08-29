@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.116 2011/04/24 22:04:43 guenther Exp $
+#	$OpenBSD: Makefile,v 1.117 2011/09/17 16:59:53 pirofti Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -49,11 +49,9 @@ SUBDIR+= kerberosV
 SUBDIR+= distrib regress
 .endif
 
-.if exists(regress)
 regression-tests:
 	@echo Running regression tests...
 	@cd ${.CURDIR}/regress && ${MAKE} depend && exec ${MAKE} regress
-.endif
 
 includes:
 	cd ${.CURDIR}/include && ${MAKE} prereq && exec ${SUDO} ${MAKE} includes
