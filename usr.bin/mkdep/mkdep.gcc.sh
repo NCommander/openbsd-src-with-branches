@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	$OpenBSD: mkdep.gcc.sh,v 1.15 2008/08/28 08:39:44 jmc Exp $
+#	$OpenBSD: mkdep.gcc.sh,v 1.16 2012/08/29 16:51:12 guenther Exp $
 #	$NetBSD: mkdep.gcc.sh,v 1.9 1994/12/23 07:34:59 jtc Exp $
 #
 # Copyright (c) 1991, 1993
@@ -117,7 +117,7 @@ if [ $append = 1 ]; then
 		exit 1
 	fi
 else
-	postprocd $TMP > $D
+	postproc $TMP > $D
 	if [ $? != 0 ]; then
 		echo 'mkdep: rename failed.'
 		rm -f $TMP
