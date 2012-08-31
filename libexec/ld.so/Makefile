@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2007/08/08 21:04:13 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.37 2010/02/03 20:49:00 miod Exp $
 
 SUBDIR=ldconfig ldd
 
@@ -25,6 +25,7 @@ SRCS+=	library.c
 .include "${.CURDIR}/${MACHINE_CPU}/Makefile.inc"
 .PATH:	${.CURDIR}/${MACHINE_CPU}
 
+DEBUG?=	-g
 CFLAGS += -Wall -Werror
 CFLAGS += -I${.CURDIR} -I${.CURDIR}/${MACHINE_CPU} \
 	-Dstrsep=_dl_strsep
