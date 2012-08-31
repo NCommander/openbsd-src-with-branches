@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.123 2012/06/07 15:15:04 lum Exp $	*/
+/*	$OpenBSD: def.h,v 1.124 2012/06/14 17:21:22 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -36,6 +36,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define FALSE	0		/* False, no, bad, etc.		 */
 #define TRUE	1		/* True, yes, good, etc.	 */
 #define ABORT	2		/* Death, ^G, abort, etc.	 */
+#define UERROR	3		/* User Error.			 */
 
 #define KCLEAR	2		/* clear echo area		 */
 
