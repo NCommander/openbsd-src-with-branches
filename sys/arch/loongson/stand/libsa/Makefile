@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2010/02/14 22:39:33 miod Exp $
+#	$OpenBSD: Makefile,v 1.2 2012/08/02 13:38:39 okan Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -9,6 +9,7 @@ LIB=	sa
 CLEANFILES += machine mips64
 
 CFLAGS+= ${CEXTRAFLAGS} ${SAABI} -nostdinc -mno-abicalls -D_NO_ABICALLS \
+	-fno-pie \
 	-I${.CURDIR} -I${.CURDIR}/../include -I${.CURDIR}/../.. \
 	-I${.CURDIR}/../../.. -I${.CURDIR}/../../../.. \
 	-I${.CURDIR}/../../../../lib/libsa \
