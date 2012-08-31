@@ -1,12 +1,10 @@
-#	$OpenBSD: Makefile,v 1.2 2003/12/18 02:27:13 millert Exp $
+#	$OpenBSD: Makefile,v 1.3 2012/08/21 14:46:18 pascal Exp $
 
 S=${.CURDIR}/../../../..
 ZDST=${.OBJDIR}
 SADIR=${.CURDIR}/..
 
-NOPIE=
-
 .PATH: ${S}/lib/libz
 
 .include "${S}/lib/libz/Makefile"
-CFLAGS+=${SACFLAGS} -I${S}/lib/libsa
+CFLAGS+=${SACFLAGS} -I${S}/lib/libsa -fno-pie
