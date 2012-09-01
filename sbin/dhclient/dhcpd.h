@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.78 2012/08/22 00:14:42 tedu Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.79 2012/08/26 23:33:30 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -248,7 +248,6 @@ ssize_t receive_packet(struct sockaddr_in *, struct hardware *);
 
 /* dispatch.c */
 void discover_interface(void);
-void reinitialize_interface(void);
 void dispatch(void);
 void got_one(void);
 void set_timeout(time_t, void (*)(void));
