@@ -72,10 +72,10 @@ class ostream; class streambuf;
 
 #if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
 typedef _IO_off64_t streamoff;
-typedef _IO_fpos64_t streampos;
+typedef _IO_off64_t streampos;
 #else
 typedef _IO_off_t streamoff;
-typedef _IO_fpos_t streampos;
+typedef _IO_off_t streampos;
 #endif
 typedef _IO_ssize_t streamsize;
 
@@ -130,7 +130,7 @@ class ios : public _ios_fields {
     typedef __fmtflags fmtflags;
     typedef int iostate;
     typedef int openmode;
-    typedef int streamsize;
+    typedef _IO_ssize_t streamsize;
     enum io_state {
 	goodbit = _IOS_GOOD,
 	eofbit = _IOS_EOF,
@@ -148,6 +148,8 @@ class ios : public _ios_fields {
 	binary = _IOS_BIN };
     enum seek_dir { beg, cur, end};
     typedef enum seek_dir seekdir;
+    typedef streampos pos_type;
+    typedef streamoff off_type;
     // NOTE: If adding flags here, before to update ios::bitalloc().
     enum { skipws=_IO_SKIPWS,
 	   left=_IO_LEFT, right=_IO_RIGHT, internal=_IO_INTERNAL,
