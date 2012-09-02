@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.66 2012/04/26 17:18:17 matthew Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.67 2012/08/23 00:11:56 guenther Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -710,8 +710,6 @@ restart:
 	 */
 	rp = ((struct file **)CMSG_DATA(cm));
 	for (i = 0; i < nfds; i++) {
-		bcopy(rp, &fp, sizeof(fp));
-		rp++;
 		if ((error = fdalloc(p, 0, &fdp[i])) != 0) {
 			/*
 			 * Back out what we've done so far.
@@ -739,7 +737,7 @@ restart:
 		 * fdalloc() works properly.. We finalize it all
 		 * in the loop below.
 		 */
-		p->p_fd->fd_ofiles[fdp[i]] = fp;
+		p->p_fd->fd_ofiles[fdp[i]] = *rp++;
 	}
 
 	/*
