@@ -1,4 +1,4 @@
-/* $OpenBSD: control.c,v 1.1 2012/06/18 13:16:42 nicm Exp $ */
+/* $OpenBSD: control.c,v 1.2 2012/07/10 11:53:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -28,7 +28,6 @@
 void printflike2 control_msg_error(struct cmd_ctx *, const char *, ...);
 void printflike2 control_msg_print(struct cmd_ctx *, const char *, ...);
 void printflike2 control_msg_info(struct cmd_ctx *, const char *, ...);
-void printflike2 control_write(struct client *, const char *, ...);
 
 /* Command error callback. */
 void printflike2
