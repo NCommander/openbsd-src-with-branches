@@ -30,7 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: SYS.h,v 1.13 2003/06/02 20:18:32 millert Exp $
+ *	$OpenBSD: SYS.h,v 1.14 2012/08/22 17:19:35 pascal Exp $
  */
 
 #include <machine/asm.h>
@@ -49,9 +49,17 @@
  * ERROR branches to cerror.
  */
 #ifdef __PIC__
+#if __PIC__ == 1
 #define	ERROR() \
 	PIC_PROLOGUE(%g1,%g2); \
 	ld [%g1+_C_LABEL(__cerror)],%g2; jmp %g2; nop
+#else /* __PIC__ == 2 */
+#define	ERROR() \
+	PIC_PROLOGUE(%g1,%g2); \
+	sethi %hi(_C_LABEL(__cerror)),%g2; \
+	or %g2,%lo(_C_LABEL(__cerror)),%g2; \
+	ld [%g1+%g2],%g2; jmp %g2; nop
+#endif
 #else
 #define	ERROR() \
 	sethi %hi(_C_LABEL(__cerror)),%g1; \
