@@ -67,23 +67,6 @@ char username[_PW_NAME_LEN + 1];
 
 #define version_param  (initcoms[2])
 
-/* modifying argv will modify ps output, so sh -c needs to copy part of it 
- * to be able to parse further options
- */
-static char **
-copy_argv(int argc, char *argv[])
-{
-	int i;
-	char **nargv;
-
-	nargv = alloc(sizeof(char *) * (argc + 1), &aperm);
-	nargv[0] = (char *) kshname;
-	for (i = 1; i < argc; i++)
-		nargv[i] = argv[i];
-	nargv[i] = NULL;
-	return nargv;
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -331,8 +314,9 @@ main(int argc, char *argv[])
 #endif
 
 	l = e->loc;
+	l->argv = &argv[argi - 1];
 	l->argc = argc - argi;
-	l->argv = copy_argv(l->argc, &argv[argi - 1]);
+	l->argv[0] = (char *) kshname;
 	getopts_reset(1);
 
 	/* Disable during .profile/ENV reading */
