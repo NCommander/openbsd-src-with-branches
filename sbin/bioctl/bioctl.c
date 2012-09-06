@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.109 2012/01/22 11:00:39 jsing Exp $       */
+/* $OpenBSD: bioctl.c,v 1.110 2012/04/19 19:13:51 deraadt Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -46,8 +46,6 @@
 #include <ctype.h>
 #include <vis.h>
 #include <readpassphrase.h>
-
-#include "pbkdf2.h"
 
 struct locator {
 	int		channel;

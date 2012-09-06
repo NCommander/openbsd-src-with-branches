@@ -1,4 +1,4 @@
-/*	$OpenBSD: pbkdf2.c,v 1.1 2008/06/14 06:28:27 djm Exp $	*/
+/*	$OpenBSD: pbkdf2.c,v 1.2 2012/06/28 20:42:22 mikeb Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -22,10 +22,10 @@
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <util.h>
 
 #include <sha1.h>
 
-#include "pbkdf2.h"
 
 /* #define PBKDF2_MAIN */
 
