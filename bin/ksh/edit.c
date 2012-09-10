@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.33 2007/08/02 10:50:25 fgsch Exp $	*/
+/*	$OpenBSD: edit.c,v 1.34 2010/05/20 01:13:07 fgsch Exp $	*/
 
 /*
  * Command line editing - common code
@@ -20,7 +20,7 @@
 
 
 static void x_sigwinch(int);
-static volatile sig_atomic_t got_sigwinch;
+volatile sig_atomic_t got_sigwinch;
 static void check_sigwinch(void);
 
 static int	x_file_glob(int, const char *, int, char ***);
