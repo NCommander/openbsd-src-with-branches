@@ -86,8 +86,8 @@ struct	nfsmount {
 /* Prototypes for NFS mount operations: */
 int	nfs_mount(struct mount *, const char *, void *, struct nameidata *,
 	    struct proc *);
-int	mountnfs(struct nfs_args *, struct mount *, struct mbuf *, char *,
-	    char *);
+int	mountnfs(struct nfs_args *, struct mount *, struct mbuf *,
+	    const char *, char *);
 int	nfs_mountroot(void);
 void	nfs_decode_args(struct nfsmount *, struct nfs_args *,
 	    struct nfs_args *);

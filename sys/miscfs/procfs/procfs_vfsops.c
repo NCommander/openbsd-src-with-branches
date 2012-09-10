@@ -71,7 +71,6 @@ int
 procfs_mount(struct mount *mp, const char *path, void *data, struct nameidata *ndp,
     struct proc *p)
 {
-	size_t size;
 	struct procfsmount *pmnt;
 	struct procfs_args args;
 	int error;
@@ -85,7 +84,7 @@ procfs_mount(struct mount *mp, const char *path, void *data, struct nameidata *n
 		return (EOPNOTSUPP);
 
 	if (data != NULL) {
-		error = copyin(data, &args, sizeof args);
+		error = copyin(data, &args, sizeof(args));
 		if (error != 0)
 			return (error);
 
@@ -101,8 +100,8 @@ procfs_mount(struct mount *mp, const char *path, void *data, struct nameidata *n
 	mp->mnt_data = pmnt;
 	vfs_getnewfsid(mp);
 
-	(void) copyinstr(path, mp->mnt_stat.f_mntonname, MNAMELEN - 1, &size);
-	bzero(mp->mnt_stat.f_mntonname + size, MNAMELEN - size);
+	bzero(mp->mnt_stat.f_mntonname, MNAMELEN);
+	strlcpy(mp->mnt_stat.f_mntonname, path, MNAMELEN);
 	bzero(mp->mnt_stat.f_mntfromname, MNAMELEN);
 	bcopy("procfs", mp->mnt_stat.f_mntfromname, sizeof("procfs"));
 	bcopy(&args, &mp->mnt_stat.mount_info.procfs_args, sizeof(args));

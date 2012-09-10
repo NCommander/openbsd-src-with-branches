@@ -91,10 +91,10 @@ mfs_mount(struct mount *mp, const char *path, void *data,
 	struct ufsmount *ump;
 	struct fs *fs;
 	struct mfsnode *mfsp;
-	size_t size;
+	char fspec[MNAMELEN];
 	int flags, error;
 
-	error = copyin(data, (caddr_t)&args, sizeof (struct mfs_args));
+	error = copyin(data, (caddr_t)&args, sizeof(struct mfs_args));
 	if (error)
 		return (error);
 
@@ -116,12 +116,15 @@ mfs_mount(struct mount *mp, const char *path, void *data,
 		if (fs->fs_ronly && (mp->mnt_flag & MNT_WANTRDWR))
 			fs->fs_ronly = 0;
 #ifdef EXPORTMFS
-		if (args.fspec == 0)
+		if (args.fspec == NULL)
 			return (vfs_export(mp, &ump->um_export, 
 			    &args.export_info));
 #endif
 		return (0);
 	}
+	error = copyinstr(args.fspec, fspec, sizeof(fspec), NULL);
+	if (error)
+		return (error);
 	error = getnewvnode(VT_MFS, NULL, &mfs_vops, &devvp);
 	if (error)
 		return (error);
@@ -143,13 +146,14 @@ mfs_mount(struct mount *mp, const char *path, void *data,
 	}
 	ump = VFSTOUFS(mp);
 	fs = ump->um_fs;
-	(void) copyinstr(path, fs->fs_fsmnt, sizeof(fs->fs_fsmnt) - 1, &size);
-	bzero(fs->fs_fsmnt + size, sizeof(fs->fs_fsmnt) - size);
+
+	bzero(fs->fs_fsmnt, sizeof(fs->fs_fsmnt));
+	strlcpy(fs->fs_fsmnt, path, sizeof(fs->fs_fsmnt));
 	bcopy(fs->fs_fsmnt, mp->mnt_stat.f_mntonname, MNAMELEN);
-	(void) copyinstr(args.fspec, mp->mnt_stat.f_mntfromname, MNAMELEN - 1,
-	    &size);
-	bzero(mp->mnt_stat.f_mntfromname + size, MNAMELEN - size);
+	bzero(mp->mnt_stat.f_mntfromname, MNAMELEN);
+	strlcpy(mp->mnt_stat.f_mntfromname, fspec, MNAMELEN);
 	bcopy(&args, &mp->mnt_stat.mount_info.mfs_args, sizeof(args));
+
 	return (0);
 }
 

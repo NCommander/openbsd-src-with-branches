@@ -269,7 +269,7 @@ update:
 	/*
 	 * Mount the filesystem.
 	 */
-	error = VFS_MOUNT(mp, SCARG(uap, path), SCARG(uap, data), &nd, p);
+	error = VFS_MOUNT(mp, fspath, SCARG(uap, data), &nd, p);
 	if (!error) {
 		mp->mnt_stat.f_ctime = time_second;
 	}
