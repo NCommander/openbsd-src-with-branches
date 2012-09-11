@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.9 2003/04/17 03:42:14 drahn Exp $	*/
+/*	$OpenBSD: exec.h,v 1.10 2011/03/23 16:54:35 pirofti Exp $	*/
 /*	$NetBSD: exec.h,v 1.6 1994/10/27 04:16:05 cgd Exp $	*/
 
 /*
@@ -32,8 +32,6 @@
 #define _MACHINE_EXEC_H_
 
 #define __LDPGSZ	4096
-
-#define NATIVE_EXEC_ELF
 
 #define ARCH_ELFSIZE		32
 

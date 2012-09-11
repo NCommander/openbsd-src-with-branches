@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.h,v 1.49 2011/09/20 16:42:01 pirofti Exp $	*/
+/*	$OpenBSD: exec_elf.h,v 1.50 2012/08/20 23:25:07 matthew Exp $	*/
 /*
  * Copyright (c) 1995, 1996 Erik Theisen.  All rights reserved.
  *
@@ -626,7 +626,6 @@ struct elf_args {
         u_long  arg_phaddr;		/* program header address */
         u_long  arg_phentsize;		/* Size of program header */
         u_long  arg_phnum;		/* Number of program headers */
-        u_long  arg_os;			/* OS tag */
 };
 
 #endif

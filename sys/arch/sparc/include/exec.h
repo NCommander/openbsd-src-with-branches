@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.13 2010/07/02 19:57:15 tedu Exp $	*/
+/*	$OpenBSD: exec.h,v 1.14 2011/03/23 16:54:37 pirofti Exp $	*/
 /*	$NetBSD: exec.h,v 1.7 1994/11/20 20:53:02 deraadt Exp $ */
 
 /*
@@ -114,8 +114,6 @@ struct relocation_info_sparc {
 
 #define R_TYPE(name)		__CONCAT(R_SPARC_,name)
 #endif
-
-#define NATIVE_EXEC_ELF
 
 #define ARCH_ELFSIZE		32
 

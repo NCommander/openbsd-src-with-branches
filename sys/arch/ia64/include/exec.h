@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: exec.h,v 1.1 2011/07/04 23:29:08 pirofti Exp $	*/
 
 /*
  * Written by Paul Irofti <pirofti@openbsd.org>. Public Domain.
@@ -6,8 +6,6 @@
 
 #ifndef _IA64_EXEC_H_
 #define _IA64_EXEC_H_
-
-#define NATIVE_EXEC_ELF
 
 #define ARCH_ELFSIZE 64
 
