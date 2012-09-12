@@ -1,9 +1,10 @@
-#	$OpenBSD: Makefile,v 1.1 2008/08/22 15:48:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 2008/09/12 15:59:37 jmc Exp $
 
 .if ${MACHINE} == "sparc64"
 
 PROG=	mksuncd
 CFLAGS+=-Werror -Wall -Wstrict-prototypes -Wmissing-prototypes
+CDIAGFLAGS=
 
 .else
 NOPROG=
