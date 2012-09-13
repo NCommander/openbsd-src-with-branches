@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2012/06/26 21:09:44 claudio Exp $
+#	$OpenBSD: Makefile,v 1.4 2012/09/12 09:19:54 haesbaert Exp $
 
 .PATH:		${.CURDIR}/../iscsid
 
@@ -8,12 +8,11 @@ SRCS+=	util.c
 
 MAN=	iscsictl.8 iscsi.conf.5
 
-CFLAGS+= -Wall -Werror
+CFLAGS+= -Wall
 CFLAGS+= -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+= -Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+= -Wsign-compare
 CFLAGS+= -I${.CURDIR} -I${.CURDIR}/../iscsid
-CDIAGFLAGS=
 YFLAGS=
 
 .include <bsd.prog.mk>
