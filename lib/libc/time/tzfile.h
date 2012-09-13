@@ -1,4 +1,4 @@
-/*	$OpenBSD: tzfile.h,v 1.7 2006/02/18 21:54:17 millert Exp $	*/
+/*	$OpenBSD: tzfile.h,v 1.8 2007/02/06 19:35:16 millert Exp $	*/
 
 #ifndef TZFILE_H
 
@@ -16,18 +16,6 @@
 ** Do NOT copy it to any system include directory.
 ** Thank you!
 */
-
-/*
-** ID
-*/
-
-#if 0
-#ifndef lint
-#ifndef NOID
-static char	tzfilehid[] = "@(#)tzfile.h	8.1";
-#endif /* !defined NOID */
-#endif /* !defined lint */
-#endif
 
 /*
 ** Information about time zone files.
