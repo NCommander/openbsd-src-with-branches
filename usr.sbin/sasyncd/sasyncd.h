@@ -1,4 +1,4 @@
-/*	$OpenBSD: sasyncd.h,v 1.15 2010/06/16 17:39:05 reyk Exp $	*/
+/*	$OpenBSD: sasyncd.h,v 1.16 2012/04/14 12:11:08 haesbaert Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -30,6 +30,7 @@
  */
 
 
+#include <netinet/in.h>		/* in_port_t and sa_family_t */
 #include <sys/queue.h>
 
 enum RUNSTATE		{ INIT = 0, SLAVE, MASTER, FAIL };
