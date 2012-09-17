@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.18 2011/07/04 04:34:14 claudio Exp $ */
+/*	$OpenBSD: interface.c,v 1.19 2011/07/07 17:10:48 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -150,7 +150,7 @@ if_fsm(struct iface *iface, enum iface_event event)
 		ospfe_imsg_compose_rde(IMSG_IFINFO, iface->self->peerid, 0,
 		    &iface->state, sizeof(iface->state));
 	}
-	
+
 	if (old_state & (IF_STA_MULTI | IF_STA_POINTTOPOINT) &&
 	    (iface->state & (IF_STA_MULTI | IF_STA_POINTTOPOINT)) == 0)
 		ospfe_demote_iface(iface, 0);
