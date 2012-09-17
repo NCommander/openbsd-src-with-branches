@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.103 2012/07/10 11:42:53 guenther Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.104 2012/07/22 18:11:54 guenther Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -571,18 +571,18 @@ sbsync(struct sockbuf *sb, struct mbuf *nextrecord)
 	else
 		sb->sb_mb = nextrecord;
 
-        /*
-         * Now update any dependent socket buffer fields to reflect
-         * the new state.  This is an inline of SB_EMPTY_FIXUP, with
-         * the addition of a second clause that takes care of the
-         * case where sb_mb has been updated, but remains the last
-         * record.
-         */
-        if (sb->sb_mb == NULL) {
-                sb->sb_mbtail = NULL;
-                sb->sb_lastrecord = NULL;
-        } else if (sb->sb_mb->m_nextpkt == NULL)
-                sb->sb_lastrecord = sb->sb_mb;
+	/*
+	 * Now update any dependent socket buffer fields to reflect
+	 * the new state.  This is an inline of SB_EMPTY_FIXUP, with
+	 * the addition of a second clause that takes care of the
+	 * case where sb_mb has been updated, but remains the last
+	 * record.
+	 */
+	if (sb->sb_mb == NULL) {
+		sb->sb_mbtail = NULL;
+		sb->sb_lastrecord = NULL;
+	} else if (sb->sb_mb->m_nextpkt == NULL)
+		sb->sb_lastrecord = sb->sb_mb;
 }
 
 /*
