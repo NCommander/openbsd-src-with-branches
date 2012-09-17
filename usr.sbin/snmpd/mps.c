@@ -1,7 +1,7 @@
-/*	$OpenBSD: mps.c,v 1.14 2010/09/20 08:56:16 martinh Exp $	*/
+/*	$OpenBSD: mps.c,v 1.15 2012/09/17 16:30:34 reyk Exp $	*/
 
 /*
- * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

@@ -1,7 +1,7 @@
-/*	$OpenBSD: parser.h,v 1.3 2008/01/16 09:51:15 reyk Exp $	*/
+/*	$OpenBSD: parser.h,v 1.4 2008/01/18 02:09:30 reyk Exp $	*/
 
 /*
- * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
