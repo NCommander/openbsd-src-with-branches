@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.71 2011/06/15 09:11:01 mikeb Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.72 2012/07/16 18:05:36 markus Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -196,6 +196,7 @@ struct inpcbtable {
  */
 #define IN6P_HIGHPORT		INP_HIGHPORT	/* user wants "high" port */
 #define IN6P_LOWPORT		INP_LOWPORT	/* user wants "low" port */
+#define IN6P_RECVDSTPORT	INP_RECVDSTPORT	/* receive IP dst addr before rdr */
 #define IN6P_PKTINFO		0x010000 /* receive IP6 dst and I/F */
 #define IN6P_HOPLIMIT		0x020000 /* receive hoplimit */
 #define IN6P_HOPOPTS		0x040000 /* receive hop-by-hop options */
@@ -215,7 +216,7 @@ struct inpcbtable {
 #define IN6P_CONTROLOPTS	(IN6P_PKTINFO|IN6P_HOPLIMIT|IN6P_HOPOPTS|\
 				 IN6P_DSTOPTS|IN6P_RTHDR|IN6P_RTHDRDSTOPTS|\
 				 IN6P_TCLASS|IN6P_AUTOFLOWLABEL|IN6P_RFC2292|\
-				 IN6P_MTU)
+				 IN6P_MTU|IN6P_RECVDSTPORT)
 #endif
 
 #define	INPLOOKUP_WILDCARD	1
