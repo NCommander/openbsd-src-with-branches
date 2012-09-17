@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.118 2011/04/07 15:30:16 miod Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.119 2012/03/28 18:10:38 claudio Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -681,8 +681,8 @@ route_output(struct mbuf *m, ...)
 		 * also a perfect match.
 		 */
 		if (rtm->rtm_type != RTM_GET && !rt_mask(rt) != !netmask) {
-				error = ESRCH;
-				goto flush;
+			error = ESRCH;
+			goto flush;
 		}
 
 		switch (rtm->rtm_type) {
