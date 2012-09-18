@@ -1,4 +1,4 @@
-/*	$OpenBSD: udl.h,v 1.16 2010/04/12 19:42:02 mglocker Exp $ */
+/*	$OpenBSD: udl.h,v 1.17 2010/06/27 12:05:18 maja Exp $ */
 
 /*
  * Copyright (c) 2009 Marcus Glocker <mglocker@openbsd.org>
@@ -304,7 +304,7 @@ static const struct udl_mode udl_modes[] = {
 	{ 1600, 1200, 60, DL160, 16200, udl_reg_vals_1600x1200_60 },
 	{ 1920, 1080, 60, DL165, 13850, udl_reg_vals_1920x1080_60 }
 };
-#define MAX_DL_MODES (sizeof(udl_modes) / sizeof(struct udl_mode))
+#define MAX_DL_MODES nitems(udl_modes)
 
 /*
  * Encryption.
