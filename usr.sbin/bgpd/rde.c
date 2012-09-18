@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.318 2012/09/12 05:56:22 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.319 2012/09/17 18:03:28 miod Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -882,6 +882,8 @@ rde_dispatch_imsg_parent(struct imsgbuf *ibuf)
 			rules_l = newrules;
 
 			log_info("RDE reconfigured");
+			imsg_compose(ibuf_main, IMSG_RECONF_DONE, 0, 0,
+			    -1, NULL, 0);
 			break;
 		case IMSG_NEXTHOP_UPDATE:
 			nexthop_update(imsg.data);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.323 2012/07/11 09:43:10 sthen Exp $ */
+/*	$OpenBSD: session.c,v 1.324 2012/09/12 05:56:22 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -2718,6 +2718,8 @@ session_dispatch_imsg(struct imsgbuf *ibuf, int idx, u_int *listener_cnt)
 			nconf = NULL;
 			pending_reconf = 0;
 			log_info("SE reconfigured");
+			imsg_compose(ibuf_main, IMSG_RECONF_DONE, 0, 0,
+			    -1, NULL, 0);
 			break;
 		case IMSG_IFINFO:
 			if (idx != PFD_PIPE_MAIN)
