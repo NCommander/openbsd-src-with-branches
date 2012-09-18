@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_spf.c,v 1.22 2010/03/01 08:51:40 claudio Exp $ */
+/*	$OpenBSD: rde_spf.c,v 1.23 2010/07/01 19:47:04 bluhm Exp $ */
 
 /*
  * Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -1072,9 +1072,6 @@ rt_update(struct in6_addr *prefix, u_int8_t prefixlen, struct v_nexthead *vnh,
 					equal = 1;
 				break;
 			}
-
-		if (!better && !equal)
-			return;
 
 		if (better) {
 			TAILQ_FOREACH(rn, &rte->nexthop, entry)
