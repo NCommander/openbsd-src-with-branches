@@ -1,7 +1,7 @@
 #!/bin/sh
-# $OpenBSD: genmap.sh,v 1.1 2010/06/03 16:41:12 reyk Exp $
+# $OpenBSD: genmap.sh,v 1.2 2012/05/07 14:17:02 mikeb Exp $
 
-# Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
+# Copyright (c) 2010 Reyk Floeter <reyk@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above

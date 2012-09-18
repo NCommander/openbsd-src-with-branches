@@ -1,7 +1,7 @@
-/*	$OpenBSD: timer.c,v 1.7 2012/05/30 16:17:20 mikeb Exp $	*/
+/*	$OpenBSD: timer.c,v 1.8 2012/06/22 16:06:31 mikeb Exp $	*/
 
 /*
- * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2010 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

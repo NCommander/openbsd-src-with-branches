@@ -1,8 +1,8 @@
-/*	$OpenBSD: iked.c,v 1.10 2011/05/05 12:55:52 reyk Exp $	*/
+/*	$OpenBSD: iked.c,v 1.11 2011/05/09 11:15:18 reyk Exp $	*/
 /*	$vantronix: iked.c,v 1.22 2010/06/02 14:43:30 reyk Exp $	*/
 
 /*
- * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2010 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

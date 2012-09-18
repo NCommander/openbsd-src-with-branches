@@ -1,8 +1,8 @@
-/*	$OpenBSD: config.c,v 1.14 2012/06/22 16:28:20 mikeb Exp $	*/
+/*	$OpenBSD: config.c,v 1.15 2012/07/02 13:03:24 mikeb Exp $	*/
 /*	$vantronix: config.c,v 1.30 2010/05/28 15:34:35 reyk Exp $	*/
 
 /*
- * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2010 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
