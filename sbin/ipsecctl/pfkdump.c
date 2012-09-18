@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkdump.c,v 1.32 2012/06/30 14:51:31 naddy Exp $	*/
+/*	$OpenBSD: pfkdump.c,v 1.33 2012/07/05 09:02:20 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2003 Markus Friedl.  All rights reserved.
@@ -205,11 +205,8 @@ struct idname xauth_types[] = {
 
 struct idname flag_types[] = {
 	{ SADB_SAFLAGS_PFS,		"pfs",			NULL },
-	{ SADB_X_SAFLAGS_HALFIV,	"halfiv",		NULL },
 	{ SADB_X_SAFLAGS_TUNNEL,	"tunnel",		NULL },
 	{ SADB_X_SAFLAGS_CHAINDEL,	"chaindel",		NULL },
-	{ SADB_X_SAFLAGS_RANDOMPADDING,	"randpad",		NULL },
-	{ SADB_X_SAFLAGS_NOREPLAY,	"noreplay",		NULL },
 	{ SADB_X_SAFLAGS_UDPENCAP,	"udpencap",		NULL },
 	{ SADB_X_SAFLAGS_ESN,		"esn",			NULL },
 	{ 0,				NULL,			NULL }

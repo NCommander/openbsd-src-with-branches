@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_convert.c,v 1.35 2011/04/13 11:28:47 markus Exp $	*/
+/*	$OpenBSD: pfkeyv2_convert.c,v 1.36 2012/06/29 14:48:04 mikeb Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@keromytis.org)
  *
@@ -135,17 +135,8 @@ import_sa(struct tdb *tdb, struct sadb_sa *sadb_sa, struct ipsecinit *ii)
 		if (sadb_sa->sadb_sa_flags & SADB_SAFLAGS_PFS)
 			tdb->tdb_flags |= TDBF_PFS;
 
-		if (sadb_sa->sadb_sa_flags & SADB_X_SAFLAGS_HALFIV)
-			tdb->tdb_flags |= TDBF_HALFIV;
-
 		if (sadb_sa->sadb_sa_flags & SADB_X_SAFLAGS_TUNNEL)
 			tdb->tdb_flags |= TDBF_TUNNELING;
-
-		if (sadb_sa->sadb_sa_flags & SADB_X_SAFLAGS_RANDOMPADDING)
-			tdb->tdb_flags |= TDBF_RANDOMPADDING;
-
-		if (sadb_sa->sadb_sa_flags & SADB_X_SAFLAGS_NOREPLAY)
-			tdb->tdb_flags |= TDBF_NOREPLAY;
 
 		if (sadb_sa->sadb_sa_flags & SADB_X_SAFLAGS_UDPENCAP)
 			tdb->tdb_flags |= TDBF_UDPENCAP;
@@ -279,18 +270,8 @@ export_sa(void **p, struct tdb *tdb)
 	if (tdb->tdb_flags & TDBF_PFS)
 		sadb_sa->sadb_sa_flags |= SADB_SAFLAGS_PFS;
 
-	/* Only relevant for the "old" IPsec transforms. */
-	if (tdb->tdb_flags & TDBF_HALFIV)
-		sadb_sa->sadb_sa_flags |= SADB_X_SAFLAGS_HALFIV;
-
 	if (tdb->tdb_flags & TDBF_TUNNELING)
 		sadb_sa->sadb_sa_flags |= SADB_X_SAFLAGS_TUNNEL;
-
-	if (tdb->tdb_flags & TDBF_RANDOMPADDING)
-		sadb_sa->sadb_sa_flags |= SADB_X_SAFLAGS_RANDOMPADDING;
-
-	if (tdb->tdb_flags & TDBF_NOREPLAY)
-		sadb_sa->sadb_sa_flags |= SADB_X_SAFLAGS_NOREPLAY;
 
 	if (tdb->tdb_flags & TDBF_UDPENCAP)
 		sadb_sa->sadb_sa_flags |= SADB_X_SAFLAGS_UDPENCAP;
