@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_icmp.c,v 1.30 2011/05/05 12:01:43 reyk Exp $	*/
+/*	$OpenBSD: check_icmp.c,v 1.31 2011/05/09 12:08:47 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -279,6 +279,7 @@ recv_icmp(int s, short event, void *arg)
 
 	bzero(&packet, sizeof(packet));
 	bzero(&ss, sizeof(ss));
+	slen = sizeof(ss);
 
 	r = recvfrom(s, packet, sizeof(packet), 0,
 	    (struct sockaddr *)&ss, &slen);
