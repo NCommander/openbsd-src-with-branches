@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.196 2012/07/16 15:20:39 deraadt Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.197 2012/07/16 15:31:17 deraadt Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -95,8 +95,6 @@ struct freelst vnode_free_list;	/* vnode free list */
 struct mntlist mountlist;	/* mounted filesystem list */
 
 void	vclean(struct vnode *, int, struct proc *);
-void	vhold(struct vnode *);
-void	vdrop(struct vnode *);
 
 void insmntque(struct vnode *, struct mount *);
 int getdevvp(dev_t, struct vnode **, enum vtype);
