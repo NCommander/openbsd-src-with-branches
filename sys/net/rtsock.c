@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.119 2012/03/28 18:10:38 claudio Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.120 2012/09/17 19:00:36 blambert Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -644,7 +644,7 @@ route_output(struct mbuf *m, ...)
 			}
 
 			/* if multipath routes */
-			if (rn_mpath_next(rn, 0)) {
+			if (rt_mpath_next(rt, 0)) {
 				if (gate)
 					rt = rt_mpath_matchgate(rt, gate, prio);
 				else if (rtm->rtm_type != RTM_GET)
