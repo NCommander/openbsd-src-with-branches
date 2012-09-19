@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.23 2011/10/10 19:42:36 miod Exp $	*/
+/*	$OpenBSD: pci_machdep.h,v 1.24 2012/09/07 19:23:53 kettenis Exp $	*/
 /*	$NetBSD: pci_machdep.h,v 1.7 1997/06/06 23:29:18 thorpej Exp $	*/
 
 /*
@@ -82,6 +82,7 @@ int		pci_mode_detect(void);
 
 extern struct extent *pciio_ex;
 extern struct extent *pcimem_ex;
+extern struct extent *pcibus_ex;
 void		pci_init_extents(void);
 
 /*
