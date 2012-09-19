@@ -1864,6 +1864,8 @@ carp_set_ifp(struct carp_softc *sc, struct ifnet *ifp)
 		if (ncif != NULL)
 			ifp->if_carp = (caddr_t)ncif;
 		sc->sc_carpdev = ifp;
+		sc->sc_if.if_capabilities = ifp->if_capabilities &
+		    IFCAP_CSUM_MASK;
 		cif = (struct carp_if *)ifp->if_carp;
 		TAILQ_FOREACH(vr, &cif->vhif_vrs, sc_list) {
 			if (vr == sc)
