@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.193 2011/07/04 06:54:49 claudio Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.194 2012/07/16 18:05:36 markus Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -2395,7 +2395,7 @@ bridge_ipsec(struct bridge_softc *sc, struct ifnet *ifp,
 		if (proto == 0)
 			goto skiplookup;
 
-		s = spltdb();
+		s = splsoftnet();
 
 		tdb = gettdb(ifp->if_rdomain, spi, &dst, proto);
 		if (tdb != NULL && (tdb->tdb_flags & TDBF_INVALID) == 0 &&

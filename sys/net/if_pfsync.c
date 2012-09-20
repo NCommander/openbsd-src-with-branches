@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.189 2012/07/26 12:25:31 mikeb Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.190 2012/09/19 13:47:17 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1207,7 +1207,7 @@ pfsync_update_net_tdb(struct pfsync_tdb *pt)
 	     pt->dst.sa.sa_family != AF_INET6))
 		goto bad;
 
-	s = spltdb();
+	s = splsoftnet();
 	tdb = gettdb(ntohs(pt->rdomain), pt->spi, &pt->dst, pt->sproto);
 	if (tdb) {
 		pt->rpl = betoh64(pt->rpl);

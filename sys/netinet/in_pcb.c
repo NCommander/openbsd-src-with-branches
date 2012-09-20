@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.126 2012/03/06 12:44:17 claudio Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.127 2012/07/12 15:59:17 claudio Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -489,7 +489,7 @@ in_pcbdetach(void *v)
 		ip_freemoptions(inp->inp_moptions);
 #ifdef IPSEC
 	/* IPsec cleanup here */
-	s = spltdb();
+	s = splsoftnet();
 	if (inp->inp_tdb_in)
 		TAILQ_REMOVE(&inp->inp_tdb_in->tdb_inp_in,
 			     inp, inp_tdb_in_next);
