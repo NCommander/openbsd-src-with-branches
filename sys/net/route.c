@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.139 2012/09/19 12:35:07 blambert Exp $	*/
+/*	$OpenBSD: route.c,v 1.140 2012/09/19 16:14:01 blambert Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -1538,7 +1538,7 @@ rt_if_linkstate_change(struct radix_node *rn, void *arg, u_int id)
 			}
 		} else {
 			if (rt->rt_flags & RTF_UP) {
-				/* take route done */
+				/* take route down */
 				rt->rt_flags &= ~RTF_UP;
 				rn_mpath_reprio(rn, rt->rt_priority | RTP_DOWN);
 			}
