@@ -1,4 +1,4 @@
-/* $OpenBSD: input.c,v 1.52 2012/04/25 21:12:49 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.53 2012/07/10 11:53:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -752,6 +752,7 @@ input_parse(struct window_pane *wp)
 
 	buf = EVBUFFER_DATA(evb);
 	len = EVBUFFER_LENGTH(evb);
+	notify_input(wp, evb);
 	off = 0;
 
 	/* Parse the input. */
