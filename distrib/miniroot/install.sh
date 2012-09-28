@@ -1,5 +1,5 @@
 #!/bin/ksh
-#	$OpenBSD: install.sh,v 1.229 2012/09/28 16:13:50 rpe Exp $
+#	$OpenBSD: install.sh,v 1.230 2012/09/28 16:19:05 rpe Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1997-2009 Todd Miller, Theo de Raadt, Ken Westerback
@@ -239,7 +239,7 @@ mv /tmp/ttys /mnt/etc/ttys
 echo -n "Saving configuration files..."
 
 # Save any leases obtained during install.
-(cd /var/db; [ -f dhclient.leases ] && mv dhclient.leases /mnt/var/db/. )
+(cd /var/db; [[ -f dhclient.leases ]] && mv dhclient.leases /mnt/var/db/. )
 
 # Move configuration files from /tmp to /mnt/etc.
 hostname >/tmp/myname
