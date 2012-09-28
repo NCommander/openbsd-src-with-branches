@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.33 2012/09/19 17:50:17 yasuoka Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.34 2012/09/19 22:37:23 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -1235,7 +1235,7 @@ pipex_ip6_input(struct mbuf *m0, struct pipex_session *session)
 
 #if NBPFILTER > 0
 	if (ifp->if_bpf)
-		bpf_mtap_af(ifp->if_bpf, AF_INET, m0, BPF_DIRECTION_IN);
+		bpf_mtap_af(ifp->if_bpf, AF_INET6, m0, BPF_DIRECTION_IN);
 #endif
 
 	s = splnet();
