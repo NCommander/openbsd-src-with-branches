@@ -1,4 +1,4 @@
-/*	$OpenBSD: int.c,v 1.6 2012/07/18 19:56:02 miod Exp $	*/
+/*	$OpenBSD: int.c,v 1.7 2012/09/29 18:54:39 miod Exp $	*/
 /*	$NetBSD: int.c,v 1.24 2011/07/01 18:53:46 dyoung Exp $	*/
 
 /*
@@ -241,7 +241,7 @@ void
 int2_splx(int newipl)
 {
 	struct cpu_info *ci = curcpu();
-	uint32_t sr;
+	register_t sr;
 
 	__asm__ (".set noreorder");
 	ci->ci_ipl = newipl;

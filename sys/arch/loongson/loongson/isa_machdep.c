@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.c,v 1.1 2010/05/08 21:59:56 miod Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.2 2012/09/29 18:54:38 miod Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -100,7 +100,7 @@ void
 loongson_isa_setintrmask(int level)
 {
 	uint64_t active;
-	uint32_t sr;
+	register_t sr;
 
 	active = bonito_intem & ~bonito_imask[level];
 
