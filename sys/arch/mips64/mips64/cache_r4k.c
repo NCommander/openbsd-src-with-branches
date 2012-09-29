@@ -1,4 +1,4 @@
-/*	$OpenBSD: cache_r4k.c,v 1.7 2012/06/24 20:25:58 miod Exp $	*/
+/*	$OpenBSD: cache_r4k.c,v 1.8 2012/09/29 18:54:38 miod Exp $	*/
 
 /*
  * Copyright (c) 2012 Miodrag Vallat.
@@ -98,8 +98,8 @@ Mips4k_ConfigCache(struct cpu_info *ci)
 	ci->ci_HitInvalidateDCache = Mips4k_HitInvalidateDCache;
 	ci->ci_IOSyncDCache = Mips4k_IOSyncDCache;
 
-	ncfg = (cfg & ~7) | CCA_CACHED;
-	ncfg &= ~(1 << 4);
+	ncfg = (cfg & ~CFGR_CCA_MASK) | CCA_CACHED;
+	ncfg &= ~CFGR_CU;
 	if (cfg != ncfg) {
 		void (*fn)(uint32_t);
 		vaddr_t va;

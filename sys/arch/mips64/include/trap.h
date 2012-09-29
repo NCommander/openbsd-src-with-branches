@@ -1,4 +1,4 @@
-/*      $OpenBSD: trap.h,v 1.12 2010/01/18 16:57:44 miod Exp $	*/
+/*	$OpenBSD: trap.h,v 1.13 2011/03/23 16:54:36 pirofti Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -118,7 +118,7 @@ do {									\
 extern struct trapdebug trapdebug[MAXCPUS * TRAPSIZE];
 extern uint trppos[MAXCPUS];
 
-void trapDump(char *msg);
+void trapDump(const char *msg);
 
 #else
 #define	trapdebug_enter(ci, frame, code)
