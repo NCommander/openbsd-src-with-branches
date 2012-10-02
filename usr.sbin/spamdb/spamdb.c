@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamdb.c,v 1.23 2007/05/31 20:00:16 cnst Exp $	*/
+/*	$OpenBSD: spamdb.c,v 1.24 2008/05/17 10:48:06 millert Exp $	*/
 
 /*
  * Copyright (c) 2004 Bob Beck.  All rights reserved.
@@ -301,13 +301,8 @@ main(int argc, char **argv)
 	db = dbopen(PATH_SPAMD_DB, O_EXLOCK | (action ? O_RDWR : O_RDONLY),
 	    0600, DB_HASH, &hashinfo);
 	if (db == NULL) {
-		if (errno == EFTYPE)	
-			err(1,
-			    "%s is old, run current spamd to convert it",
-			    PATH_SPAMD_DB);
-		else 
-			err(1, "cannot open %s for %s", PATH_SPAMD_DB,
-			    action ? "writing" : "reading");
+		err(1, "cannot open %s for %s", PATH_SPAMD_DB,
+		    action ? "writing" : "reading");
 	}
 
 	switch (action) {
