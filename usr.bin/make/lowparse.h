@@ -1,7 +1,7 @@
 #ifndef LOWPARSE_H
 #define LOWPARSE_H
 
-/* $OpenBSD: lowparse.h,v 1.9 2012/08/25 08:12:56 espie Exp $ */
+/* $OpenBSD: lowparse.h,v 1.10 2012/09/21 07:55:20 espie Exp $ */
 
 /*
  * Copyright (c) 1999 Marc Espie.
@@ -45,15 +45,6 @@
  * 	}
  * } while (Parse_NextFile());
  */
-
-/* Initialization and cleanup */
-#ifdef CLEANUP
-extern void LowParse_Init(void);
-extern void LowParse_End(void);
-#else
-#define LowParse_Init()
-#define LowParse_End()
-#endif
 
 /* Selection of input stream */
 /* Parse_FromFile(filename, filehandle);

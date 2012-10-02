@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.5 2010/07/19 19:30:37 espie Exp $ */
+/*	$OpenBSD: init.c,v 1.6 2010/07/19 19:46:44 espie Exp $ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -53,17 +53,3 @@ Init(void)
 	Arch_Init();
 	Suff_Init();
 }
-
-#ifdef CLEANUP
-void
-End(void)
-{
-	Suff_End();
-	Targ_End();
-	Arch_End();
-	Var_End();
-	Parse_End();
-	Dir_End();
-	Job_End();
-}
-#endif
