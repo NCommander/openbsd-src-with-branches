@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.153 2012/09/21 09:56:27 benno Exp $	*/
+/*	$OpenBSD: relay.c,v 1.154 2012/10/03 08:33:31 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2012 Reyk Floeter <reyk@openbsd.org>
@@ -1121,7 +1121,7 @@ relay_from_table(struct rsession *con)
 	/* otherwise grep the first active table */
 	TAILQ_FOREACH(rlt, &rlay->rl_tables, rlt_entry) {
 		table = rlt->rlt_table;
-		if ((rlt->rlt_flags & F_USED == 0) ||
+		if ((rlt->rlt_flags & F_USED) == 0 ||
 		    (table->conf.check && !table->up))
 			table = NULL;
 		else

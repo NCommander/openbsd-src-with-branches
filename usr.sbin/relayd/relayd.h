@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.158 2012/09/21 09:56:27 benno Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.159 2012/10/03 08:33:31 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2012 Reyk Floeter <reyk@openbsd.org>
@@ -112,6 +112,7 @@ struct ctl_relaytable {
 	objid_t		 id;
 	objid_t		 relayid;
 	int		 mode;
+	u_int32_t	 flags;
 };
 
 struct ctl_script {
