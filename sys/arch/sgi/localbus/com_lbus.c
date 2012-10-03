@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_lbus.c,v 1.10 2009/10/16 14:38:13 miod Exp $ */
+/*	$OpenBSD: com_lbus.c,v 1.11 2009/10/26 18:00:06 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -31,15 +31,12 @@
 #include <sys/device.h>
 #include <sys/tty.h>
 
-#include <machine/autoconf.h>
 #include <machine/bus.h>
 #include <machine/intr.h>
 
 #include <dev/ic/comreg.h>
 #include <dev/ic/comvar.h>
 #include <dev/ic/ns16550reg.h>
-
-#include <mips64/archtype.h>
 
 #include <sgi/localbus/macebusvar.h>
 

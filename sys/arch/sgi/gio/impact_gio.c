@@ -1,4 +1,4 @@
-/*	$OpenBSD: impact_gio.c,v 1.4 2012/05/10 21:36:11 miod Exp $	*/
+/*	$OpenBSD: impact_gio.c,v 1.5 2012/05/12 16:49:00 miod Exp $	*/
 
 /*
  * Copyright (c) 2012 Miodrag Vallat.
@@ -27,7 +27,6 @@
 #include <sys/types.h>
 
 #include <machine/autoconf.h>
-#include <mips64/archtype.h>
 
 #include <mips64/arcbios.h>
 
