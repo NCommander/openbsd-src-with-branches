@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.36 2012/09/29 19:11:06 miod Exp $ */
+/*	$OpenBSD: machdep.c,v 1.37 2012/10/03 11:18:23 miod Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -81,8 +81,6 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcidevs.h>
-
-#include <mips64/archtype.h>
 
 /* The following is used externally (sysctl_hw) */
 char	machine[] = MACHINE;		/* Machine "architecture" */
