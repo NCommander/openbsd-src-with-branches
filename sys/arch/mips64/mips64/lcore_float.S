@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcore_float.S,v 1.20 2010/09/21 20:29:17 miod Exp $ */
+/*	$OpenBSD: lcore_float.S,v 1.21 2012/09/29 19:02:26 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -31,6 +31,7 @@
 #include <machine/param.h>
 #include <machine/asm.h>
 #include <machine/cpu.h>
+#include <mips64/mips_cpu.h>
 #include <machine/regnum.h>
 #include <machine/cpustate.h>
 

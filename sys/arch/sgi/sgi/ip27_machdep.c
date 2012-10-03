@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip27_machdep.c,v 1.55 2012/04/03 21:17:35 miod Exp $	*/
+/*	$OpenBSD: ip27_machdep.c,v 1.56 2012/09/29 18:54:39 miod Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -35,6 +35,7 @@
 #include <machine/autoconf.h>
 #include <machine/bus.h>
 #include <machine/cpu.h>
+#include <mips64/mips_cpu.h>
 #include <machine/memconf.h>
 #include <machine/mnode.h>
 #include <machine/atomic.h>

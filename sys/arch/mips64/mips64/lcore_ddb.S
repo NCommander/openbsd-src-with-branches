@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcore_ddb.S,v 1.11 2010/01/31 19:39:04 miod Exp $ */
+/*	$OpenBSD: lcore_ddb.S,v 1.12 2012/09/29 19:02:26 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -31,6 +31,7 @@
 #include <machine/param.h>
 #include <machine/asm.h>
 #include <machine/cpu.h>
+#include <mips64/mips_cpu.h>
 #include <machine/regnum.h>
 #include <machine/cpustate.h>
 #include <machine/trap.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: macebus.c,v 1.59 2012/03/15 18:52:56 miod Exp $ */
+/*	$OpenBSD: macebus.c,v 1.60 2012/09/29 18:54:39 miod Exp $ */
 
 /*
  * Copyright (c) 2000-2004 Opsycon AB  (www.opsycon.se)
@@ -40,6 +40,7 @@
 #include <sys/proc.h>
 
 #include <mips64/archtype.h>
+#include <mips64/mips_cpu.h>
 
 #include <machine/autoconf.h>
 #include <machine/intr.h>

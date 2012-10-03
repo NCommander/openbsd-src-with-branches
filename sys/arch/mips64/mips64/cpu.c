@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.47 2012/09/29 19:25:28 miod Exp $ */
+/*	$OpenBSD: cpu.c,v 1.48 2012/09/29 21:37:03 miod Exp $ */
 
 /*
  * Copyright (c) 1997-2004 Opsycon AB (www.opsycon.se)
@@ -35,6 +35,7 @@
 #include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
+#include <mips64/mips_cpu.h>
 #include <machine/autoconf.h>
 
 int	cpumatch(struct device *, void *, void *);

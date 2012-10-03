@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mips64r2.S,v 1.1 2012/03/24 20:06:02 miod Exp $	*/
 
 /*
  * Copyright (c) 2011 Miodrag Vallat.
@@ -21,7 +21,7 @@
  */
 
 #include <machine/asm.h>
-#include <machine/cpu.h>
+#include <mips64/mips_cpu.h>
 
 	.set	noreorder
 	.set	mips64r2

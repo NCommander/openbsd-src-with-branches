@@ -1,4 +1,4 @@
-/*	$OpenBSD: interrupt.c,v 1.61 2012/09/29 18:54:38 miod Exp $ */
+/*	$OpenBSD: interrupt.c,v 1.62 2012/09/29 19:13:15 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -35,6 +35,7 @@
 #include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
+#include <mips64/mips_cpu.h>
 #include <machine/intr.h>
 #include <machine/frame.h>
 
