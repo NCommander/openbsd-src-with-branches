@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.109 2012/09/21 09:56:27 benno Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.110 2012/10/03 08:33:31 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -1240,7 +1240,7 @@ accept_reserve(int sockfd, struct sockaddr *addr, socklen_t *addrlen,
 
 	if ((ret = accept(sockfd, addr, addrlen)) > -1) {
 		(*counter)++;
-		log_debug("%s: inflight incremented, now %d",__func__,
+		DPRINTF("%s: inflight incremented, now %d",__func__,
 		    *counter);
 	}
 	return ret;
