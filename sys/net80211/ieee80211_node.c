@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.73 2012/08/25 11:34:27 kettenis Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.74 2012/09/20 17:21:13 stsp Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -1474,10 +1474,10 @@ ieee80211_node_join(struct ieee80211com *ic, struct ieee80211_node *ni,
 
 #if NBRIDGE > 0
 	/*
-	 * If the parent interface belongs to a bridge, learn
+	 * If the parent interface is a bridgeport, learn
 	 * the node's address dynamically on this interface.
 	 */
-	if (ic->ic_if.if_bridge != NULL)
+	if (ic->ic_if.if_bridgeport != NULL)
 		bridge_update(&ic->ic_if,
 		    (struct ether_addr *)ni->ni_macaddr, 0);
 #endif
@@ -1627,10 +1627,10 @@ ieee80211_node_leave(struct ieee80211com *ic, struct ieee80211_node *ni)
 
 #if NBRIDGE > 0
 	/*
-	 * If the parent interface belongs to a bridge, delete
+	 * If the parent interface is a bridgeport, delete
 	 * any dynamically learned address for this node.
 	 */
-	if (ic->ic_if.if_bridge != NULL)
+	if (ic->ic_if.if_bridgeport != NULL)
 		bridge_update(&ic->ic_if,
 		    (struct ether_addr *)ni->ni_macaddr, 1);
 #endif

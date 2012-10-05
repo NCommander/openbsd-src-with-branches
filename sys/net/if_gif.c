@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.56 2012/04/14 09:39:46 yasuoka Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.57 2012/05/12 12:58:16 mpf Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -176,7 +176,7 @@ gif_start(struct ifnet *ifp)
 		 * the start function and bypasses the if_output function
 		 * so we need to do the encap here.
 		 */
-		if (ifp->if_bridge && (m->m_flags & M_PROTO1)) {
+		if (ifp->if_bridgeport && (m->m_flags & M_PROTO1)) {
 			int error = 0;
 			/*
 			 * Remove multicast and broadcast flags or encapsulated
