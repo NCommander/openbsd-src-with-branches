@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdiic.c,v 1.8 2010/04/08 00:23:53 tedu Exp $	*/
+/*	$OpenBSD: amdiic.c,v 1.9 2011/04/09 04:33:40 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Alexander Yurchenko <grange@openbsd.org>
@@ -320,6 +320,8 @@ amdiic_i2c_exec(void *cookie, i2c_op_t op, i2c_addr_t addr,
 		proto = AMD8111_SMB_PROTO_BDATA;
 	else if (len == 2)
 		proto = AMD8111_SMB_PROTO_WDATA;
+	else
+		panic("%s: unexpected len %zd", __func__, len);
 
 	/* Set direction */
 	if (I2C_OP_READ_P(op))
