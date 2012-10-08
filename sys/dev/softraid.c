@@ -1362,7 +1362,7 @@ sr_boot_assembly(struct sr_softc *sc)
 	 */
 	SLIST_FOREACH(bv, &bvh, sbv_link) {
 
-		bzero(&bc, sizeof(bc));
+		bzero(&bcr, sizeof(bcr));
 
 		/* Check if this is a hotspare "volume". */
 		if (bv->sbv_level == SR_HOTSPARE_LEVEL &&
