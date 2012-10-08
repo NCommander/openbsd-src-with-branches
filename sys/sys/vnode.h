@@ -32,6 +32,9 @@
  *	@(#)vnode.h	8.11 (Berkeley) 11/21/94
  */
 
+#ifndef _SYS_VNODE_H_
+#define _SYS_VNODE_H_
+
 #include <sys/buf.h>
 #include <sys/types.h>
 #include <sys/queue.h>
@@ -666,3 +669,4 @@ int	softdep_fsync(struct vnode *);
 int 	getvnode(struct filedesc *, int, struct file **);
 
 #endif /* _KERNEL */
+#endif /* _SYS_VNODE_H_ */
