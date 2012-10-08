@@ -52,7 +52,7 @@ int	gf_log[256];
 int	sr_raid6_create(struct sr_discipline *, struct bioc_createraid *,
 	    int, int64_t);
 int	sr_raid6_assemble(struct sr_discipline *, struct bioc_createraid *,
-	    int);
+	    int, void *);
 int	sr_raid6_alloc_resources(struct sr_discipline *);
 int	sr_raid6_free_resources(struct sr_discipline *);
 int	sr_raid6_rw(struct sr_workunit *);
@@ -141,7 +141,7 @@ sr_raid6_create(struct sr_discipline *sd, struct bioc_createraid *bc,
 
 int
 sr_raid6_assemble(struct sr_discipline *sd, struct bioc_createraid *bc,
-    int no_chunk)
+    int no_chunk, void *data)
 {
 
 	/* only if stripsize <= MAXPHYS */

@@ -573,7 +573,7 @@ struct sr_discipline {
 	int			(*sd_create)(struct sr_discipline *,
 				    struct bioc_createraid *, int, int64_t);
 	int			(*sd_assemble)(struct sr_discipline *,
-				    struct bioc_createraid *, int);
+				    struct bioc_createraid *, int, void *);
 	int			(*sd_alloc_resources)(struct sr_discipline *);
 	int			(*sd_free_resources)(struct sr_discipline *);
 	int			(*sd_ioctl_handler)(struct sr_discipline *,

@@ -48,7 +48,7 @@
 int	sr_raidp_create(struct sr_discipline *, struct bioc_createraid *,
 	    int, int64_t);
 int	sr_raidp_assemble(struct sr_discipline *, struct bioc_createraid *,
-	    int);
+	    int, void *);
 int	sr_raidp_alloc_resources(struct sr_discipline *);
 int	sr_raidp_free_resources(struct sr_discipline *);
 int	sr_raidp_rw(struct sr_workunit *);
@@ -116,7 +116,7 @@ sr_raidp_create(struct sr_discipline *sd, struct bioc_createraid *bc,
 
 int
 sr_raidp_assemble(struct sr_discipline *sd, struct bioc_createraid *bc,
-    int no_chunk)
+    int no_chunk, void *data)
 {
 
 	return 0;

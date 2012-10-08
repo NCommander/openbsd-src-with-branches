@@ -35,7 +35,7 @@
 int	sr_concat_create(struct sr_discipline *, struct bioc_createraid *,
 	    int, int64_t);
 int	sr_concat_assemble(struct sr_discipline *, struct bioc_createraid *,
-	    int);
+	    int, void *);
 int	sr_concat_alloc_resources(struct sr_discipline *);
 int	sr_concat_free_resources(struct sr_discipline *);
 int	sr_concat_rw(struct sr_workunit *);
@@ -84,7 +84,7 @@ sr_concat_create(struct sr_discipline *sd, struct bioc_createraid *bc,
 
 int
 sr_concat_assemble(struct sr_discipline *sd, struct bioc_createraid *bc,
-    int no_chunk)
+    int no_chunk, void *data)
 {
 
 	sd->sd_max_ccb_per_wu = SR_CONCAT_NOWU * no_chunk;

@@ -47,7 +47,7 @@
 int	sr_raid0_create(struct sr_discipline *, struct bioc_createraid *,
 	    int, int64_t);
 int	sr_raid0_assemble(struct sr_discipline *, struct bioc_createraid *,
-	    int);
+	    int, void *);
 int	sr_raid0_alloc_resources(struct sr_discipline *);
 int	sr_raid0_free_resources(struct sr_discipline *);
 int	sr_raid0_rw(struct sr_workunit *);
@@ -98,7 +98,7 @@ sr_raid0_create(struct sr_discipline *sd, struct bioc_createraid *bc,
 
 int
 sr_raid0_assemble(struct sr_discipline *sd, struct bioc_createraid *bc,
-    int no_chunks)
+    int no_chunks, void *data)
 {
 
 	sd->sd_max_ccb_per_wu =

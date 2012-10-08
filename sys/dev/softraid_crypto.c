@@ -85,7 +85,7 @@ int		sr_crypto_change_maskkey(struct sr_discipline *,
 int		sr_crypto_create(struct sr_discipline *,
 		    struct bioc_createraid *, int, int64_t);
 int		sr_crypto_assemble(struct sr_discipline *,
-		    struct bioc_createraid *, int);
+		    struct bioc_createraid *, int, void *);
 int		sr_crypto_alloc_resources(struct sr_discipline *);
 int		sr_crypto_free_resources(struct sr_discipline *);
 int		sr_crypto_ioctl(struct sr_discipline *,
@@ -194,7 +194,7 @@ done:
 
 int
 sr_crypto_assemble(struct sr_discipline *sd, struct bioc_createraid *bc,
-    int no_chunk)
+    int no_chunk, void *data)
 {
 	int	rv = EINVAL;
 
