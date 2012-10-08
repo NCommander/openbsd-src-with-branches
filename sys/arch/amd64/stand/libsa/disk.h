@@ -44,8 +44,11 @@ struct diskinfo {
 };
 TAILQ_HEAD(disklist_lh, diskinfo);
 
-/* Head of this list. */
+/* Disk info for boot device. */
 extern struct diskinfo *bootdev_dip;
+
+/* List of probed disks. */
+extern struct disklist_lh disklist;
 
 /* List of softraid volumes. */
 extern struct sr_boot_volume_head sr_volumes;
