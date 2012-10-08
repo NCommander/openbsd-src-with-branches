@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.c,v 1.180 2011/07/17 22:46:48 matthew Exp $	*/
+/*	$OpenBSD: scsiconf.c,v 1.182 2011/09/22 21:36:00 jsing Exp $	*/
 /*	$NetBSD: scsiconf.c,v 1.57 1996/05/02 01:09:01 neil Exp $	*/
 
 /*
@@ -251,6 +251,7 @@ scsi_activate_lun(struct scsibus_softc *sc, int target, int lun, int act)
 	case DVACT_QUIESCE:
 	case DVACT_SUSPEND:
 	case DVACT_RESUME:
+	case DVACT_POWERDOWN:
 		config_suspend(dev, act);
 		break;
 	case DVACT_DEACTIVATE:

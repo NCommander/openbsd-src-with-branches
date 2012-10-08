@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdhc.c,v 1.33 2010/09/07 16:21:46 deraadt Exp $	*/
+/*	$OpenBSD: sdhc.c,v 1.34 2011/07/31 16:55:01 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -270,6 +270,10 @@ sdhc_activate(struct device *self, int act)
 				hp->regs[i] = HREAD1(hp, i);
 		}
 		rv = config_activate_children(self, act);
+		break;
+	case DVACT_POWERDOWN:
+		rv = config_activate_children(self, act);
+		sdhc_shutdown(self);
 		break;
 	case DVACT_RESUME:
 		/* Restore the host controller state. */

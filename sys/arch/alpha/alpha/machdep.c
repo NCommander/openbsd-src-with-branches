@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.135 2011/11/25 05:23:40 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.137 2012/10/08 21:45:45 deraadt Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -1027,9 +1027,8 @@ boot(howto)
 		dumpsys();
 
 haltsys:
-
-	/* run any shutdown hooks */
 	doshutdownhooks();
+	config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
 
 #if defined(MULTIPROCESSOR)
 #if 0 /* XXX doesn't work when called from here?! */

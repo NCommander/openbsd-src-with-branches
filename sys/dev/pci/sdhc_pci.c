@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdhc_pci.c,v 1.11 2011/07/31 16:55:01 kettenis Exp $	*/
+/*	$OpenBSD: sdhc_pci.c,v 1.12 2011/12/23 21:58:47 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -172,11 +172,6 @@ sdhc_pci_attach(struct device *parent, struct device *self, void *aux)
 			printf("%s at 0x%x: can't initialize host\n",
 			    sc->sc.sc_dev.dv_xname, reg);
 	}
-
-	/*
-	 * Establish shutdown hooks.
-	 */
-	(void)shutdownhook_establish(sdhc_shutdown, &sc->sc);
 }
 
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcmcia.c,v 1.44 2011/07/03 15:47:17 matthew Exp $	*/
+/*	$OpenBSD: pcmcia.c,v 1.45 2011/09/17 15:38:43 miod Exp $	*/
 /*	$NetBSD: pcmcia.c,v 1.9 1998/08/13 02:10:55 eeh Exp $	*/
 
 /*
@@ -140,6 +140,7 @@ pcmcia_activate(struct device *self, int act)
 	switch (act) {
 	case DVACT_QUIESCE:
 	case DVACT_SUSPEND:
+	case DVACT_POWERDOWN:
 	case DVACT_RESUME:
 		for (pf = SIMPLEQ_FIRST(&sc->card.pf_head); pf != NULL;
 		     pf = SIMPLEQ_NEXT(pf, pf_list)) {

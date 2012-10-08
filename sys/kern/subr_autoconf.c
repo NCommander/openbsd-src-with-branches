@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_autoconf.c,v 1.65 2011/06/20 17:05:46 deraadt Exp $	*/
+/*	$OpenBSD: subr_autoconf.c,v 1.66 2011/07/03 15:47:16 matthew Exp $	*/
 /*	$NetBSD: subr_autoconf.c,v 1.21 1996/04/04 06:06:18 cgd Exp $	*/
 
 /*
@@ -802,6 +802,7 @@ config_activate_children(struct device *parent, int act)
 		case DVACT_SUSPEND:
 		case DVACT_RESUME:
 		case DVACT_QUIESCE:
+		case DVACT_POWERDOWN:
 			rv = config_suspend(d, act);
 			break;
 		case DVACT_DEACTIVATE:
@@ -822,6 +823,8 @@ config_activate_children(struct device *parent, int act)
 #endif
 		if (act == DVACT_RESUME)
 			printf("failing resume cannot be handled\n");
+		if (act == DVACT_POWERDOWN)
+			return (rv);
 		if (act != DVACT_SUSPEND)
 			return (rv);
 

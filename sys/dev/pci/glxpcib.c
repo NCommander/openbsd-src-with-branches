@@ -1,4 +1,4 @@
-/*      $OpenBSD: glxpcib.c,v 1.3 2010/10/23 17:42:57 pirofti Exp $	*/
+/*      $OpenBSD: glxpcib.c,v 1.5 2012/03/06 12:57:36 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -425,6 +425,9 @@ glxpcib_activate(struct device *self, int act)
 			sc->sc_msrsave[i] = rdmsr(glxpcib_msrlist[i]);
 #endif
 
+		break;
+	case DVACT_POWERDOWN:
+		rv = config_activate_children(self, act);
 		break;
 	case DVACT_RESUME:
 #ifndef SMALL_KERNEL

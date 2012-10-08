@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.139 2012/08/21 14:44:24 jsg Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.140 2012/08/22 13:33:32 okan Exp $	*/
 /*	$NetBSD: machdep.c,v 1.85 1997/09/12 08:55:02 pk Exp $ */
 
 /*
@@ -577,8 +577,8 @@ boot(howto)
 		dumpsys();
 
 haltsys:
-	/* Run any shutdown hooks */
 	doshutdownhooks();
+	config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
 
 	if ((howto & RB_HALT) || (howto & RB_POWERDOWN)) {
 #if defined(SUN4M)
