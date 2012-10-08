@@ -3782,6 +3782,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "Ique 3600",
 	},
 	{
+	    USB_VENDOR_GARMIN, USB_PRODUCT_GARMIN_DAKOTA20,
+	    "Dakota 20",
+	},
+	{
 	    USB_VENDOR_GARMIN, USB_PRODUCT_GARMIN_GPSMAP62S,
 	    "GPSmap 62s",
 	},
