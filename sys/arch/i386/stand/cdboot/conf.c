@@ -44,7 +44,7 @@
 #include <dev/cons.h>
 #include "debug.h"
 
-const char version[] = "3.17";
+const char version[] = "3.18";
 int	debug = 1;
 
 #undef _TEST
