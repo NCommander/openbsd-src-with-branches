@@ -1,4 +1,4 @@
-/*	$OpenBSD: generate.c,v 1.12 2010/07/19 19:46:44 espie Exp $ */
+/*	$OpenBSD: generate.c,v 1.13 2012/04/11 18:27:30 espie Exp $ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -118,6 +118,8 @@ char *table_nodes[] = {
 	M(NODE_INTERRUPT),
 	M(NODE_CHEAP),
 	M(NODE_EXPENSIVE),
+	M(NODE_POSIX),
+	M(NODE_SCCS_GET),
 	NULL
 };
 
