@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2012/08/29 22:23:08 pascal Exp $
+#	$OpenBSD: Makefile,v 1.8 2012/09/25 09:01:03 pascal Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -11,7 +11,7 @@ SADIR=	${.CURDIR}/..
 PROG=	pxeboot
 LD?=	ld
 SIZE?=	size
-LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -noinhibit-exec -nopie
+LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -nopie
 INSTALL_STRIP=
 
 CLEANFILES+=	crt0.o ${PROG}.whole

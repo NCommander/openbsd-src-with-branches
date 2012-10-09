@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2012/08/29 17:45:00 pascal Exp $
+#	$OpenBSD: Makefile,v 1.14 2012/09/25 09:01:03 pascal Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -12,7 +12,7 @@ PROG=	cdboot
 SRCS=	srt0.S boot.c conf.c
 LD?=	ld
 SIZE?=	size
-LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -noinhibit-exec -nopie 
+LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -nopie 
 LDFLAGS+=-melf_i386 -L/usr/libdata 
 INSTALL_STRIP=
 
