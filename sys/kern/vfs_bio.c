@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.135 2012/03/23 15:51:26 guenther Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.136 2012/05/30 19:32:19 miod Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*
@@ -626,6 +626,14 @@ bwrite(struct buf *bp)
 	splx(s);
 	SET(bp->b_flags, B_WRITEINPROG);
 	VOP_STRATEGY(bp);
+
+	/*
+	 * If the queue is above the high water mark, wait till
+	 * the number of outstanding write bufs drops below the low
+	 * water mark.
+	 */
+	if (bp->b_bq)
+		bufq_wait(bp->b_bq, bp);
 
 	if (async)
 		return (0);
