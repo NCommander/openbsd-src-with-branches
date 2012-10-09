@@ -76,6 +76,11 @@
 #include <dev/ic/comreg.h>
 #endif
 
+#include "softraid.h"
+#if NSOFTRAID > 0
+#include <dev/softraidvar.h>
+#endif
+
 struct bios_softc {
 	struct	device sc_dev;
 };
@@ -456,6 +461,7 @@ bios_getopt()
 	bootarg_t *q;
 	bios_ddb_t *bios_ddb;
 	bios_bootduid_t *bios_bootduid;
+	bios_bootsr_t *bios_bootsr;
 
 #ifdef BIOS_DEBUG
 	printf("bootargv:");
@@ -552,6 +558,17 @@ bios_getopt()
 		case BOOTARG_BOOTDUID:
 			bios_bootduid = (bios_bootduid_t *)q->ba_arg;
 			bcopy(bios_bootduid, bootduid, sizeof(bootduid));
+			break;
+
+		case BOOTARG_BOOTSR:
+			bios_bootsr = (bios_bootsr_t *)q->ba_arg;
+#if NSOFTRAID > 0
+			bcopy(&bios_bootsr->uuid, &sr_bootuuid,
+			    sizeof(sr_bootuuid));
+			bcopy(&bios_bootsr->maskkey, &sr_bootkey,
+			    sizeof(sr_bootkey));
+#endif
+			explicit_bzero(bios_bootsr, sizeof(bios_bootsr_t));
 			break;
 
 		default:
