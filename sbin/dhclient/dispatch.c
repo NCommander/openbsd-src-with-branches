@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.57 2012/09/17 12:10:46 krw Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.58 2012/09/18 09:34:09 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -121,8 +121,6 @@ dispatch(void)
 another:
 		if (!ifi)
 			error("No interfaces available");
-			
-		ifi->linkstat = interface_status(ifi->name);
 
 		if (ifi->rdomain != get_rdomain(ifi->name))
 			error("Interface %s:"
