@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.39 2012/06/07 15:15:04 lum Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.40 2012/06/14 17:21:22 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -196,7 +196,8 @@ static struct funmap functnames[] = {
 	{csprevmatch, "cscope-prev-symbol",},
 	{csnextfile, "cscope-next-file",},
 	{csprevfile, "cscope-prev-file",},
-	{cscreatelist, "cscope-create-list-of-files-to-index"},
+	{cscreatelist, "cscope-create-list-of-files-to-index",},
+	{revertbuffer, "revert-buffer",},
 	{NULL, NULL,}
 };
 
