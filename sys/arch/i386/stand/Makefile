@@ -3,11 +3,11 @@
 .if ${MACHINE} == "i386"
 SUBDIR=	etc libsa libz mbr cdbr
 .endif
-SUBDIR+= biosboot installboot boot pxeboot cdboot
+SUBDIR+= biosboot boot cdboot fdboot installboot pxeboot
 
 test-fd0:
 	sudo mount /dev/fd0a /mnt
-	sudo cp /usr/mdec/boot /mnt
+	sudo cp /usr/mdec/fdboot /mnt/boot
 	sudo /usr/mdec/installboot -v /mnt/boot /usr/mdec/biosboot fd0
 	sudo umount /mnt
 
