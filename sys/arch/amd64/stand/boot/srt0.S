@@ -40,6 +40,7 @@
 	.globl	Gdtr
 
 	.text
+	.align	16
 	.code16
 	.globl	_start
 _start:
