@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: virtio.c,v 1.3 2011/11/02 23:05:52 njoly Exp $	*/
 
 /*

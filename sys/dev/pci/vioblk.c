@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2012 Stefan Fritsch.
  * Copyright (c) 2010 Minoura Makoto.

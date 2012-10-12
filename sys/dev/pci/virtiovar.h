@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: virtiovar.h,v 1.1 2011/10/30 12:12:21 hannken Exp $	*/
 
 /*
