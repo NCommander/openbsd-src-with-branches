@@ -13,6 +13,8 @@ LINK	instbin					sbin/mount_ext2fs
 LINK	instbin					sbin/mount_msdos
 LINK	instbin					sbin/mount_udf
 
+COPY	${DESTDIR}/usr/mdec/boot		usr/mdec/boot
+
 COPY	${DESTDIR}/etc/firmware/kue		etc/firmware/kue
 
 COPY	${DESTDIR}/etc/firmware/bnx-b06		etc/firmware/bnx-b06

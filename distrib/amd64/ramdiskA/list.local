@@ -1,3 +1,5 @@
 # $OpenBSD: list.local,v 1.17 2010/10/12 23:37:41 deraadt Exp $
 
 TZ
+
+COPY	${DESTDIR}/usr/mdec/fdboot		usr/mdec/boot
