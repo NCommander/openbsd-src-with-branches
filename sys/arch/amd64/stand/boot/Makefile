@@ -50,7 +50,7 @@ CLEANFILES+= ${PROG}.new
 
 ${PROG}: $(OBJS)
 	$(LD) $(LDFLAGS) -o ${PROG}.new $(OBJS)
-	@perl ${.CURDIR}/check-boot.pl ${PROG}.new
+	@perl ${SADIR}/boot/check-boot.pl ${PROG}.new
 	@mv ${PROG}.new ${PROG}
 	@$(SIZE) ${PROG}
 
