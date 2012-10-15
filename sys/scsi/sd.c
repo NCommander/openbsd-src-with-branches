@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.242 2012/07/09 12:58:01 krw Exp $	*/
+/*	$OpenBSD: sd.c,v 1.243 2012/10/08 21:47:51 deraadt Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -271,6 +271,12 @@ sdactivate(struct device *self, int act)
 
 	switch (act) {
 	case DVACT_SUSPEND:
+		/*
+		 * We flush the cache, since we our next step before
+		 * DVACT_POWERDOWN might be a hibernate operation.
+		 */
+		if ((sc->flags & SDF_DIRTY) != 0)
+			sd_flush(sc, SCSI_AUTOCONF);
 		break;
 	case DVACT_POWERDOWN:
 		/*
