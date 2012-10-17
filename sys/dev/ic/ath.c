@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.94 2012/01/28 12:46:32 stsp Exp $  */
+/*      $OpenBSD: ath.c,v 1.95 2012/01/29 12:33:36 stsp Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -2138,7 +2138,7 @@ ath_tx_start(struct ath_softc *sc, struct ieee80211_node *ni,
 		 * NB: Preserve byte order of IV for packet
 		 *     sniffers; it doesn't matter otherwise.
 		 */
-#if AH_BYTE_ORDER == AH_BIG_ENDIAN
+#if _BYTE_ORDER == _BIG_ENDIAN
 		ivp[0] = iv >> 0;
 		ivp[1] = iv >> 8;
 		ivp[2] = iv >> 16;
