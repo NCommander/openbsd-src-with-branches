@@ -110,10 +110,6 @@
 #define IMAP_DEFAULT_DEFAULT "nocontent"
 #define IMAP_BASE_DEFAULT "map"
 
-#ifdef SUNOS4
-double strtod();                /* SunOS needed this */
-#endif
-
 module MODULE_VAR_EXPORT imap_module;
 
 typedef struct {
@@ -371,7 +367,7 @@ static char *imap_url(request_rec *r, const char *base, const char *value)
     if (!strcasecmp(value, "referer")) {
         referer = ap_table_get(r->headers_in, "Referer");
         if (referer && *referer) {
-	    return ap_pstrdup(r->pool, referer);
+	    return ap_escape_html(r->pool, referer);
         }
         else {
 	    /* XXX:  This used to do *value = '\0'; ... which is totally bogus
@@ -505,19 +501,17 @@ static int imap_reply(request_rec *r, char *redirect)
 
 static void menu_header(request_rec *r, char *menu)
 {
-    r->content_type = "text/html";
+    r->content_type = "text/html; charset=ISO-8859-1";
     ap_send_http_header(r);
-#ifdef CHARSET_EBCDIC
-    /* Server-generated response, converted */
-    ap_bsetflag(r->connection->client, B_EBCDIC2ASCII, r->ebcdic.conv_out = 1);
-#endif
     ap_hard_timeout("send menu", r);       /* killed in menu_footer */
 
-    ap_rvputs(r, DOCTYPE_HTML_3_2, "<html><head>\n<title>Menu for ", r->uri,
-           "</title>\n</head><body>\n", NULL);
+    ap_rvputs(r, DOCTYPE_HTML_3_2, "<html><head>\n<title>Menu for ", 
+              ap_escape_html(r->pool, r->uri),
+              "</title>\n</head><body>\n", NULL);
 
     if (!strcasecmp(menu, "formatted")) {
-        ap_rvputs(r, "<h1>Menu for ", r->uri, "</h1>\n<hr>\n\n", NULL);
+        ap_rvputs(r, "<h1>Menu for ", ap_escape_html(r->pool, r->uri),
+                  "</h1>\n<hr>\n\n", NULL);
     }
 
     return;
@@ -707,7 +701,7 @@ static int imap_handler(request_rec *r)
 	if (!*string_pos) {		/* need at least two fields */
 	    goto need_2_fields;
 	}
-	while(*string_pos && ap_isspace(*string_pos)) { /* past whitespace */
+	while(ap_isspace(*string_pos)) { /* past whitespace */
 	    ++string_pos;
 	}
 

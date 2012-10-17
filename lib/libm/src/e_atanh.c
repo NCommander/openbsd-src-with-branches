@@ -10,11 +10,9 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_atanh.c,v 1.8 1995/05/10 20:44:55 jtc Exp $";
-#endif
+/* LINTLIBRARY */
 
-/* __ieee754_atanh(x)
+/* atanh(x)
  * Method :
  *    1.Reduced x to positive by atanh(-x) = -atanh(x)
  *    2.For x>=0.5
@@ -32,27 +30,17 @@ static char rcsid[] = "$NetBSD: e_atanh.c,v 1.8 1995/05/10 20:44:55 jtc Exp $";
  *
  */
 
-#include "math.h"
+#include <sys/cdefs.h>
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
 static const double one = 1.0, huge = 1e300;
-#else
-static double one = 1.0, huge = 1e300;
-#endif
-
-#ifdef __STDC__
 static const double zero = 0.0;
-#else
-static double zero = 0.0;
-#endif
 
-#ifdef __STDC__
-	double __ieee754_atanh(double x)
-#else
-	double __ieee754_atanh(x)
-	double x;
-#endif
+double
+atanh(double x)
 {
 	double t;
 	int32_t hx,ix;
@@ -72,3 +60,12 @@ static double zero = 0.0;
 	    t = 0.5*log1p((x+x)/(one-x));
 	if(hx>=0) return t; else return -t;
 }
+
+#if	LDBL_MANT_DIG == 53
+#ifdef	lint
+/* PROTOLIB1 */
+long double atanhl(long double);
+#else	/* lint */
+__weak_alias(atanhl, atanh);
+#endif	/* lint */
+#endif	/* LDBL_MANT_DIG == 53 */

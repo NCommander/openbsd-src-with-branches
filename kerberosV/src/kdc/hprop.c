@@ -751,8 +751,6 @@ main(int argc, char **argv)
 
     int type = 0;
 
-    setprogname(argv[0]);
-
     if(getarg(args, num_args, argc, argv, &optind))
 	usage(1);
 
@@ -790,8 +788,6 @@ main(int argc, char **argv)
 		  "only one of `--encrypt' and `--decrypt' is meaningful");
 
     if(source_type != NULL) {
-	if(type != 0)
-	    krb5_errx(context, 1, "more than one database type specified");
 	type = parse_source_type(source_type);
 	if(type == 0)
 	    krb5_errx(context, 1, "unknown source type `%s'", source_type);

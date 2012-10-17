@@ -324,9 +324,10 @@ void *CRYPTO_malloc(int num, const char *file, int line)
 	}
 char *CRYPTO_strdup(const char *str, const char *file, int line)
 	{
-	char *ret = CRYPTO_malloc(strlen(str)+1, file, line);
+	size_t len = strlen(str)+1;
+	char *ret = CRYPTO_malloc(len, file, line);
 
-	strcpy(ret, str);
+	memcpy(ret, str, len);
 	return ret;
 	}
 
@@ -360,6 +361,10 @@ void *CRYPTO_realloc_clean(void *str, int old_len, int num, const char *file,
 		return CRYPTO_malloc(num, file, line);
 
 	if (num <= 0) return NULL;
+
+	/* We don't support shrinking the buffer. Note the memcpy that copies
+	 * |old_len| bytes to the new buffer, below. */
+	if (num < old_len) return NULL;
 
 	if (realloc_debug_func != NULL)
 		realloc_debug_func(str, NULL, num, file, line, 0);

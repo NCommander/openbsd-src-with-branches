@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bus.h,v 1.7 2010/04/04 12:49:30 miod Exp $	*/
 /*	$NetBSD: bus.h,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*-
@@ -17,13 +17,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -69,43 +62,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _LANDISK_BUS_H_
-#define	_LANDISK_BUS_H_
+#ifndef _MACHINE_BUS_H_
+#define	_MACHINE_BUS_H_
 
 #include <sys/types.h>
-
-#ifdef _KERNEL
-/*
- * Turn on BUS_SPACE_DEBUG if the global DEBUG option is enabled.
- */
-#if defined(DEBUG) && !defined(BUS_SPACE_DEBUG)
-#define	BUS_SPACE_DEBUG
-#endif
-
-#ifdef BUS_SPACE_DEBUG
-#include <sys/systm.h> /* for printf() prototype */
-/*
- * Macros for checking the aligned-ness of pointers passed to bus
- * space ops.  Strict alignment is required by the SuperH architecture,
- * and a trap will occur if unaligned access is performed.  These
- * may aid in the debugging of a broken device driver by displaying
- * useful information about the problem.
- */
-#define	__BUS_SPACE_ALIGNED_ADDRESS(p, t)				\
-	((((u_long)(p)) & (sizeof(t)-1)) == 0)
-
-#define	__BUS_SPACE_ADDRESS_SANITY(p, t, d)				\
-({									\
-	if (__BUS_SPACE_ALIGNED_ADDRESS((p), t) == 0) {			\
-		printf("%s 0x%lx not aligned to %lu bytes %s:%d\n",	\
-		    d, (u_long)(p), (u_long)sizeof(t), __FILE__, __LINE__);	\
-	}								\
-	(void) 0;							\
-})
-#else
-#define	__BUS_SPACE_ADDRESS_SANITY(p, t, d)	(void) 0
-#endif /* BUS_SPACE_DEBUG */
-#endif /* _KERNEL */
 
 typedef	u_long	bus_addr_t;
 typedef	u_long	bus_size_t;
@@ -136,7 +96,7 @@ struct _bus_space {
 	void *		(*bs_vaddr)(void *, bus_space_handle_t);
 
 	/* read (single) */
-	uint8_t	(*bs_r_1)(void *, bus_space_handle_t,
+	uint8_t		(*bs_r_1)(void *, bus_space_handle_t,
 			    bus_size_t);
 	uint16_t	(*bs_r_2)(void *, bus_space_handle_t,
 			    bus_size_t);
@@ -156,11 +116,11 @@ struct _bus_space {
 			    bus_size_t, uint64_t *, bus_size_t);
 
 	void		(*bs_rrm_2)(void *, bus_space_handle_t,
-			    bus_size_t, uint16_t *, bus_size_t);
+			    bus_size_t, uint8_t *, bus_size_t);
 	void		(*bs_rrm_4)(void *, bus_space_handle_t,
-			    bus_size_t, uint32_t *, bus_size_t);
+			    bus_size_t, uint8_t *, bus_size_t);
 	void		(*bs_rrm_8)(void *, bus_space_handle_t,
-			    bus_size_t, uint64_t *, bus_size_t);
+			    bus_size_t, uint8_t *, bus_size_t);
 
 	/* read region */
 	void		(*bs_rr_1)(void *, bus_space_handle_t,
@@ -262,34 +222,19 @@ struct _bus_space {
 #define	__bs_opname(op,size)	__bs_c(__bs_c(__bs_c(bs_,op),_),size)
 
 #define	__bs_rs(sz, tn, t, h, o)					\
-	(__BUS_SPACE_ADDRESS_SANITY((h) + (o), tn, "bus addr"),		\
-	 (*(t)->__bs_opname(r,sz))((t)->bs_cookie, h, o))
+	(*(t)->__bs_opname(r,sz))((t)->bs_cookie, h, o)
 
 #define	__bs_ws(sz, tn, t, h, o, v)					\
-do {									\
-	__BUS_SPACE_ADDRESS_SANITY((h) + (o), tn, "bus addr");		\
-	(*(t)->__bs_opname(w,sz))((t)->bs_cookie, h, o, v);		\
-} while (0)
+	(*(t)->__bs_opname(w,sz))((t)->bs_cookie, h, o, v)
 
 #define	__bs_nonsingle(type, sz, tn, t, h, o, a, c)			\
-do {									\
-	__BUS_SPACE_ADDRESS_SANITY((a), tn, "buffer");			\
-	__BUS_SPACE_ADDRESS_SANITY((h) + (o), tn, "bus addr");		\
-	(*(t)->__bs_opname(type,sz))((t)->bs_cookie, h, o, a, c);	\
-} while (0)
+	(*(t)->__bs_opname(type,sz))((t)->bs_cookie, h, o, a, c)
 
 #define	__bs_set(type, sz, tn, t, h, o, v, c)				\
-do {									\
-	__BUS_SPACE_ADDRESS_SANITY((h) + (o), tn, "bus addr");		\
-	(*(t)->__bs_opname(type,sz))((t)->bs_cookie, h, o, v, c);	\
-} while (0)
+	(*(t)->__bs_opname(type,sz))((t)->bs_cookie, h, o, v, c)
 
 #define	__bs_copy(sz, tn, t, h1, o1, h2, o2, cnt)			\
-do {									\
-	__BUS_SPACE_ADDRESS_SANITY((h1) + (o1), tn, "bus addr 1");	\
-	__BUS_SPACE_ADDRESS_SANITY((h2) + (o2), tn, "bus addr 2");	\
-	(*(t)->__bs_opname(c,sz))((t)->bs_cookie, h1, o1, h2, o2, cnt); \
-} while (0)
+	(*(t)->__bs_opname(c,sz))((t)->bs_cookie, h1, o1, h2, o2, cnt)
 
 
 /*
@@ -462,13 +407,13 @@ do {									\
 /*
  * Copy region operations.
  */
-#define	bus_space_copy_region_1(t, h1, o1, h2, o2, c)			\
+#define	bus_space_copy_1(t, h1, o1, h2, o2, c)				\
 	__bs_copy(1, uint8_t, (t), (h1), (o1), (h2), (o2), (c))
-#define	bus_space_copy_region_2(t, h1, o1, h2, o2, c)			\
+#define	bus_space_copy_2(t, h1, o1, h2, o2, c)				\
 	__bs_copy(2, uint16_t, (t), (h1), (o1), (h2), (o2), (c))
-#define	bus_space_copy_region_4(t, h1, o1, h2, o2, c)			\
+#define	bus_space_copy_4(t, h1, o1, h2, o2, c)				\
 	__bs_copy(4, uint32_t, (t), (h1), (o1), (h2), (o2), (c))
-#define	bus_space_copy_region_8(t, h1, o1, h2, o2, c)			\
+#define	bus_space_copy_8(t, h1, o1, h2, o2, c)				\
 	__bs_copy(8, uint64_t, (t), (h1), (o1), (h2), (o2), (c))
 
 #endif /* _KERNEL */
@@ -488,6 +433,7 @@ do {									\
 #define	BUS_DMA_READ		0x100	/* mapping is device -> memory only */
 #define	BUS_DMA_WRITE		0x200	/* mapping is memory -> device only */
 #define	BUS_DMA_NOCACHE		0x400	/* hint: map non-cached memory */
+#define	BUS_DMA_ZERO		0x800	/* zero memory in dmamem_alloc */
 
 /* Forwards needed by prototypes below. */
 struct mbuf;
@@ -643,4 +589,4 @@ paddr_t	_bus_dmamem_mmap(bus_dma_tag_t tag, bus_dma_segment_t *segs,
 	    int nsegs, off_t off, int prot, int flags);
 #endif	/* _LANDISK_BUS_DMA_PRIVATE */
 
-#endif	/* _LANDISK_BUS_H_ */
+#endif	/* _MACHINE_BUS_H_ */

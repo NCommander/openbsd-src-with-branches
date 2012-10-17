@@ -1,10 +1,9 @@
-#	$NetBSD: Makefile,v 1.8 1995/03/07 21:12:04 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.7 2004/05/02 17:55:53 millert Exp $
 
 PROG=	mtree
 #CFLAGS+=-DDEBUG
 MAN=	mtree.8
 SRCS=	compare.c crc.c create.c misc.c mtree.c spec.c verify.c
-.PATH:	${.CURDIR}/../../usr.bin/cksum
+LDSTATIC=	${STATIC}
 
 .include <bsd.prog.mk>

@@ -74,17 +74,24 @@ tokey(krb5_context context,
       krb5_salt salt, 
       const char *label)
 {
+    krb5_error_code ret;
     int i;
     krb5_keyblock key;
     char *e;
-    krb5_string_to_key_salt(context, enctype, password, salt, &key);
-    krb5_enctype_to_string(context, enctype, &e);
+
+    ret = krb5_string_to_key_salt(context, enctype, password, salt, &key);
+    if (ret)
+       krb5_err(context, 1, ret, "krb5_string_to_key_salt");
+    ret = krb5_enctype_to_string(context, enctype, &e);
+    if (ret)
+       krb5_err(context, 1, ret, "krb5_enctype_to_string");
     printf(label, e);
     printf(": ");
     for(i = 0; i < key.keyvalue.length; i++)
 	printf("%02x", ((unsigned char*)key.keyvalue.data)[i]);
     printf("\n");
     krb5_free_keyblock_contents(context, &key);
+    free(e);
 }
 
 int
@@ -154,16 +161,14 @@ main(int argc, char **argv)
 	printf("Kerberos v5 principal: ");
 	if(fgets(buf, sizeof(buf), stdin) == NULL)
 	    return 1;
-	if(buf[strlen(buf) - 1] == '\n')
-	    buf[strlen(buf) - 1] = '\0';
+	buf[strcspn(buf, "\r\n")] = '\0';
 	principal = estrdup(buf);
     }
     if(afs && cell == NULL){
 	printf("AFS cell: ");
 	if(fgets(buf, sizeof(buf), stdin) == NULL)
 	    return 1;
-	if(buf[strlen(buf) - 1] == '\n')
-	    buf[strlen(buf) - 1] = '\0';
+	buf[strcspn(buf, "\r\n")] = '\0';
 	cell = estrdup(buf);
     }
     if(argv[0])

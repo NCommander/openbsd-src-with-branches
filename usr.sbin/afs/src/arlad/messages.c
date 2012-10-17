@@ -314,7 +314,10 @@ try_again (int *ret, CredCacheEntry **ce, nnpfs_cred *cred, const VenusFid *fid)
 	cred_expire (*ce);
 	cred_free (*ce);
 	*ce = cred_get (cell, cred->pag, CRED_ANY);
-	assert (*ce != NULL);
+	if (ce == NULL) {
+		arla_warnx (ADEBMISC, "cred_get failed");
+		return FALSE;		
+	}
 	return TRUE;
     }
     case RXKADSEALEDINCON :
@@ -403,7 +406,11 @@ nnpfs_message_getroot (int fd, struct nnpfs_message_getroot *h, u_int size)
     int32_t cell_id = cell_name2num(cell_getthiscell());
 
     ce = cred_get (cell_id, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
     do {
 	ret = getroot (&root_fid, ce);
     } while (try_again (&ret, &ce, &h->cred, &root_fid));
@@ -466,8 +473,11 @@ nnpfs_message_getnode (int fd, struct nnpfs_message_getnode *h, u_int size)
 		(unsigned long)dirfid->fid.Unique, h->name);
 
     ce = cred_get (dirfid->Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
-
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
     ret = fcache_get(&dentry, *dirfid, ce);
     if (ret)
 	goto out;
@@ -541,7 +551,11 @@ nnpfs_message_getattr (int fd, struct nnpfs_message_getattr *h, u_int size)
 		(unsigned long)fid.fid.Vnode,
 		(unsigned long)fid.fid.Unique);
     ce = cred_get (fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
 
     ret = fcache_get(&entry, fid, ce);
     if (ret)
@@ -600,7 +614,11 @@ nnpfs_message_putattr (int fd, struct nnpfs_message_putattr *h, u_int size)
 		(unsigned long)fid.fid.Unique);
     nnpfs_attr2afsstorestatus(&h->attr, &status);
     ce = cred_get (fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
 
     if (connected_mode != CONNECTED) {
 	ret = fcache_find (&entry, fid);
@@ -727,7 +745,11 @@ nnpfs_message_create (int fd, struct nnpfs_message_create *h, u_int size)
 	}
     }
     ce = cred_get (parent_fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
 
     ret = fcache_get(&dir_entry, parent_fid, ce);
     if (ret)
@@ -874,7 +896,11 @@ nnpfs_message_mkdir (int fd, struct nnpfs_message_mkdir *h, u_int size)
 		(unsigned long)parent_fid.fid.Unique, h->name);
 
     ce = cred_get (parent_fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
 
     nnpfs_attr2afsstorestatus(&h->attr, &store_status);
     if (connected_mode != CONNECTED) {
@@ -1035,7 +1061,11 @@ nnpfs_message_link (int fd, struct nnpfs_message_link *h, u_int size)
 		h->name);
 
     ce = cred_get (parent_fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
 
     ret = fcache_get(&dir_entry, parent_fid, ce);
     if (ret)
@@ -1134,7 +1164,11 @@ nnpfs_message_symlink (int fd, struct nnpfs_message_symlink *h, u_int size)
 		(unsigned long)parent_fid.fid.Unique, h->name);
 
     ce = cred_get (parent_fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
 
     nnpfs_attr2afsstorestatus(&h->attr, &store_status);
 
@@ -1153,7 +1187,11 @@ nnpfs_message_symlink (int fd, struct nnpfs_message_symlink *h, u_int size)
      
     cred_free (ce);
     ce = cred_get (dir_entry->fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
 
     if (ret)
 	goto out;
@@ -1248,7 +1286,11 @@ nnpfs_message_remove (int fd, struct nnpfs_message_remove *h, u_int size)
 		(unsigned long)parent_fid.fid.Unique, h->name);
     
     ce = cred_get (parent_fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
     
     ret = fcache_get(&dir_entry, parent_fid, ce);
     if (ret)
@@ -1329,7 +1371,6 @@ nnpfs_message_remove (int fd, struct nnpfs_message_remove *h, u_int size)
      * Set datausedp since we push data to kernel in out:
      */
     
-    assert(dir_entry->flags.attrusedp);
     dir_entry->flags.datausedp = TRUE;
     
     /*
@@ -1414,7 +1455,11 @@ nnpfs_message_rmdir (int fd, struct nnpfs_message_rmdir *h, u_int size)
 		(unsigned long)parent_fid.fid.Unique, h->name);
 
     ce = cred_get (parent_fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
 
     /*
      * Fetch the child-entry fid.
@@ -1845,7 +1890,11 @@ nnpfs_message_open (int fd, struct nnpfs_message_open *h, u_int size)
 		(unsigned long)fid.fid.Unique);
     
     ce = cred_get (fid.Cell, h->cred.pag, CRED_ANY);
-    assert (ce != NULL);
+    if (ce == NULL) {
+	    arla_warnx (ADEBMISC, "cred_get failed");
+	    ret = -1;
+	    goto out;
+    }
     
     ret = fcache_get(&entry, fid, ce);
     if (ret)
@@ -2326,8 +2375,11 @@ viocgetvolstat(int fd, struct nnpfs_message_pioctl *h, u_int size)
     char volumename[AFSNAMEMAX];
     char offlinemsg[AFSOPAQUEMAX];
     char motd[AFSOPAQUEMAX];
-    char out[SYSNAMEMAXLEN];
+    char out[NNPFS_MSG_MAX_DATASIZE];
+    char * outstr;
     int32_t outsize = 0;
+    int32_t os = 0;
+    int32_t osmax = 0;
     int error;
 
     if (!h->handle.a && !h->handle.b && !h->handle.c && !h->handle.d)
@@ -2344,7 +2396,8 @@ viocgetvolstat(int fd, struct nnpfs_message_pioctl *h, u_int size)
     memset (volumename, 0, AFSNAMEMAX);
     memset (offlinemsg, 0, AFSOPAQUEMAX);
     memset (motd, 0, AFSOPAQUEMAX);
-    memset (out, 0, SYSNAMEMAXLEN);
+
+    memset (out, 0, sizeof(out));
 
     do {
 	error = getvolstat (fid, ce, &volstat,
@@ -2360,33 +2413,39 @@ viocgetvolstat(int fd, struct nnpfs_message_pioctl *h, u_int size)
 
     memcpy (out, (char *) &volstat, sizeof (AFSFetchVolumeStatus));
     outsize = sizeof (AFSFetchVolumeStatus);
+    outstr = out + outsize;
+    os = 0;
+    osmax = sizeof(out) - outsize;
 
-    if (volumename[0]) {
-	strncpy (out+outsize, volumename, AFSNAMEMAX);
-	outsize += strlen (volumename);
-    }
+    if (os < osmax && (volumename[0]))
+	os = strlcat(outstr, volumename, osmax);
     else {
-	out[outsize] = 0;
+	*outstr++ = '\0';
 	outsize++;
+	osmax--;
     }
-
-    if (offlinemsg[0]) {
-	strncpy (out+outsize, offlinemsg, AFSOPAQUEMAX);
-	outsize += strlen (offlinemsg);
-    }
+    if (os < osmax && (offlinemsg[0]))
+	os = strlcat(outstr, offlinemsg, osmax);
     else {
-	out[outsize] = 0;
+	*outstr++ = '\0';
 	outsize++;
+	osmax--;
     }
-
-    if (motd[0]) {
-	strncpy (out+outsize, motd, AFSOPAQUEMAX);
-	outsize += strlen (motd);
-    }
+    if (os < osmax && (motd[0]))
+	os = strlcat(outstr, motd, osmax);
     else {
-	out[outsize] = 0;
+	*outstr++ = '\0';
 	outsize++;
+	osmax--;
     }
+    /* this can potentially truncate the motd..  who cares */
+    if (os + outsize >= sizeof(out)) {
+	    /* XXX warn about trucated motd */
+	    arla_warnx(ADEBMSG,
+		"truncated motd by %d bytes", os + outsize - sizeof(out));
+	    outsize = sizeof(out);
+    } else
+	    outsize += os;
 
     nnpfs_send_message_wakeup_data (fd, h->header.sequence_num, error,
 				    out, outsize);
@@ -2846,11 +2905,9 @@ vioc_new_cell(int fd, struct nnpfs_message_pioctl *h, u_int size)
     for (count = 0; *hp != 0; ++hp)
 	++count;
 
-    dbs = malloc (count * sizeof(*dbs));
+    dbs = calloc (count, sizeof(*dbs));
     if (dbs == NULL)
 	return nnpfs_send_message_wakeup (fd, h->header.sequence_num, ENOMEM);
-	
-    memset(dbs, 0, count * sizeof(*dbs));
 
     hp = (uint32_t *)h->msg;
     for (i = 0; i < count; ++i) {
@@ -2915,7 +2972,7 @@ token_for_cell (int fd, struct nnpfs_message_pioctl *h, u_int size,
     tmp = 0;
     memcpy (p, &tmp, sizeof(tmp));
     p += sizeof(tmp);
-    strcpy (p, cell);
+    strlcpy (p, cell, buf + sizeof buf - cell);
     p += strlen(cell) + 1;
 
     len = p - buf;
@@ -3386,7 +3443,7 @@ vioc_fpriostatus (int fd, struct nnpfs_message_pioctl *h, u_int size)
 	    error = EINVAL;
 	    break;
 	}
-	
+
 	prio = fprio_get(fid);
 	nnpfs_send_message_wakeup_data (fd,
 					h->header.sequence_num,

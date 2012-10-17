@@ -1,3 +1,4 @@
+/*	$OpenBSD: linux_exec.h,v 1.6 2010/04/28 21:31:59 kettenis Exp $	*/
 /*	$NetBSD: linux_exec.h,v 1.5 1995/10/07 06:27:01 mycroft Exp $	*/
 
 /*
@@ -32,14 +33,14 @@
  *
  */
 
-#ifndef	_LINUX_EXEC_H
-#define	_LINUX_EXEC_H
+#ifndef	_LINUX_EXEC_H_
+#define	_LINUX_EXEC_H_
 
 #define LINUX_M_I386	100
 /* Sparc? Alpha? */
 
 /* XXX linux_machdep.h ? */
-#ifdef i386
+#ifdef __i386__
 #define LINUX_MID_MACHINE LINUX_M_I386
 #endif
 
@@ -65,10 +66,10 @@
 
 #define LINUX_N_BSSADDR(x,m) (LINUX_N_DATADDR(x,m) + (x).a_data)
 
-int exec_linux_aout_makecmds __P((struct proc *, struct exec_package *));
-int exec_linux_elf_makecmds __P((struct proc *, struct exec_package *));
+int exec_linux_aout_makecmds(struct proc *, struct exec_package *);
+int exec_linux_elf32_makecmds(struct proc *, struct exec_package *);
 
-int linux_elf_probe __P((struct proc *p, struct exec_package *epp, char *itp,
-	 u_long *pos));
+int linux_elf_probe(struct proc *, struct exec_package *, char *,
+    u_long *, u_int8_t *);
 
-#endif /* !_LINUX_EXEC_H */
+#endif /* !_LINUX_EXEC_H_ */

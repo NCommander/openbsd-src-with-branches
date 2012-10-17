@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/usr.bin/cc/cc/Makefile,v 1.33.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1.1.1 2009/10/15 20:50:20 robert Exp $
 
 .include <bsd.own.mk>
 
@@ -22,6 +22,6 @@ beforeinstall:
 .endif
 
 afterinstall:
-	${.CURDIR}/../cc/obj/cc -dumpspecs > ${DESTDIR}${SPECDIR}/specs
+	${.OBJDIR}/cc -dumpspecs > ${DESTDIR}${SPECDIR}/specs
 
 .include <bsd.prog.mk>

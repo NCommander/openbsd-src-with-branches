@@ -1,3 +1,4 @@
+/*	$OpenBSD: end.c,v 1.5 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: end.c,v 1.4 1995/03/24 05:01:30 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,28 +30,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)end.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: end.c,v 1.4 1995/03/24 05:01:30 cgd Exp $";
-#endif
-#endif /* not lint */
-
-# include	"mille.h"
+#include	"mille.h"
 
 /*
  * @(#)end.c	1.1 (Berkeley) 4/1/82
  */
 
 /*
- *	print out the score as if it was final, and add the totals for
+ *	print out the score as if it were final, and add the totals for
  * the end-of-games points to the user who deserves it (if any).
  */
+void
 finalscore(pp)
-reg PLAY	*pp; {
-
-	reg int		temp, tot, num;
+	PLAY	*pp;
+{
+	int	temp, tot, num;
 
 	if (pp->was_finished == Finished)
 		return;
@@ -92,16 +82,17 @@ reg PLAY	*pp; {
 static int	Last_tot[2];	/* last tot used for extrapolate	*/
 
 /*
- *	print out the score as if it was final, and add the totals for
+ *	print out the score as if it were final, and add the totals for
  * the end-of-games points to the user who deserves it (if any).
  */
+void
 extrapolate(pp)
-reg PLAY	*pp; {
-
-	reg int		x, num, tot, count;
+	PLAY	*pp;
+{
+	int		x, num, tot, count;
 
 	num = pp - Player;
-	tot += SC_TRIP + SC_DELAY + SC_EXT;
+	tot += SC_TRIP + SC_DELAY + SC_EXTENSION;
 	x = num * 6 + 21 + 3;
 	for (tot = 5; tot <= 9; tot++)
 		mvaddch(tot, x, '0');
@@ -139,10 +130,11 @@ reg PLAY	*pp; {
 	Last_tot[num] = tot;
 }
 
-undoex() {
-
-	reg PLAY	*pp;
-	reg int		i;
+void
+undoex()
+{
+	PLAY	*pp;
+	int		i;
 
 	i = 0;
 	for (pp = Player; pp < &Player[2]; pp++) {
@@ -150,5 +142,4 @@ undoex() {
 		pp->hand_tot -= Last_tot[i++];
 	}
 }
-# endif
-
+#endif

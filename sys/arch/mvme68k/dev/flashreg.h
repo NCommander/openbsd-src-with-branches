@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: flashreg.h,v 1.5 2000/01/29 04:11:25 smurph Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -41,11 +36,11 @@
 #define FLCMD_WSETUP		0x40
 #define FLCMD_AWSETUP		0x10
 
-#define FLSR_WSMS		0x80
-#define FLSR_ESS		0x40
-#define FLSR_ES			0x20
-#define FLSR_BWS		0x10
-#define FLSR_VPPS		0x08
+#define FLSR_WSMS		0x80	/* write state machine status */
+#define FLSR_ESS		0x40	/* erase suspend status */
+#define FLSR_ES			0x20	/* erase status */
+#define FLSR_BWS		0x10	/* byte write status */
+#define FLSR_VPPS		0x08	/* Vpp status */
 
 /* manufacturers */
 #define FLMANU_INTEL		0x89
@@ -54,6 +49,7 @@
 #define FLII_INTEL_28F020	0xbd
 #define FLII_INTEL_28F008SA	0xa1
 #define FLII_INTEL_28F008SA_L	0xa2
+#define FLII_INTEL_28F016SA	0xa0
 
 struct flashii {
 	char	*name;

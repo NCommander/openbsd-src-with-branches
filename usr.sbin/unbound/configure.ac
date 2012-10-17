@@ -139,7 +139,7 @@ else
 fi
 )
 AC_SUBST(UNBOUND_CHROOT_DIR)
-ACX_ESCAPE_BACKSLASH($UNBOUND_CHOOT_DIR, hdr_chroot)
+ACX_ESCAPE_BACKSLASH($UNBOUND_CHROOT_DIR, hdr_chroot)
 AC_DEFINE_UNQUOTED(CHROOT_DIR, ["$hdr_chroot"], [Directory to chroot to])
 
 AC_ARG_WITH(share-dir,
@@ -207,8 +207,6 @@ AC_DEFINE_UNQUOTED(RSRC_PACKAGE_VERSION, [$wnvs], [version number for resource f
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_LANG_C
-ACX_CHECK_COMPILER_FLAG(g, [CFLAGS="$CFLAGS -g"])
-ACX_CHECK_COMPILER_FLAG(O2, [CFLAGS="$CFLAGS -O2"])
 AC_PROG_CC
 ACX_DEPFLAG
 ACX_DETERMINE_EXT_FLAGS_UNBOUND
@@ -472,6 +470,8 @@ if test x_$ub_test_python != x_no; then
             AC_SUBST(WITH_PYTHONMODULE)
 	    PYTHONMOD_OBJ="pythonmod.lo pythonmod_utils.lo"
 	    AC_SUBST(PYTHONMOD_OBJ)
+	    PYTHONMOD_HEADER="$(srcdir)/pythonmod/pythonmod.h"
+	    AC_SUBST(PYTHONMOD_HEADER)
 	    PYTHONMOD_INSTALL=pythonmod-install
 	    AC_SUBST(PYTHONMOD_INSTALL)
 	    PYTHONMOD_UNINSTALL=pythonmod-uninstall

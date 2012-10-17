@@ -73,8 +73,6 @@ main(int argc, char **argv)
     krb5_kdc_flags flags;
     int optind = 0;
 
-    setprogname (argv[0]);
-
     flags.i = 0;
 
     ret = krb5_init_context (&context);

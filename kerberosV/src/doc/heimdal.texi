@@ -15,7 +15,7 @@
 @c %**end of header
 
 @c @include version.texi
-@set UPDATED $Date: 2005/04/24 09:18:32 $
+@set UPDATED $Date: 2006/03/29 14:07:31 $
 @set EDITION 0.1
 @set VERSION 0.7
 

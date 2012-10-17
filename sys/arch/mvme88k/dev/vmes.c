@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: vmes.c,v 1.22 2010/12/26 15:40:59 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -31,14 +26,18 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+
+#include <machine/bus.h>
 #include <machine/autoconf.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
+
+#include <uvm/uvm_extern.h>
+
 #include <mvme88k/dev/vme.h>
 
 /*
@@ -47,22 +46,21 @@
  * functions will decide how many address bits are relevant.
  */
 
-void vmesattach __P((struct device *, struct device *, void *));
-int  vmesmatch __P((struct device *, void *, void *));
-
-struct vmessoftc {
-	struct device		sc_dev;
-	struct vmesoftc		*sc_vme;
-};
+void	vmesattach(struct device *, struct device *, void *);
+int	vmesmatch(struct device *, void *, void *);
+int	vmesscan(struct device *, void *, void *);
 
 struct cfattach vmes_ca = {
-        sizeof(struct vmessoftc), vmesmatch, vmesattach
-}; 
- 
-struct cfdriver vmes_cd = {
-        NULL, "vmes", DV_DULL, 0
+        sizeof(struct device), vmesmatch, vmesattach
 };
 
+struct cfdriver vmes_cd = {
+        NULL, "vmes", DV_DULL
+};
+
+/*
+ * Configuration glue
+ */
 
 int
 vmesmatch(parent, cf, args)
@@ -85,20 +83,17 @@ vmesattach(parent, self, args)
 	struct device *parent, *self;
 	void *args;
 {
-	struct vmessoftc *sc = (struct vmessoftc *)self;
-
 	printf("\n");
-
-	sc->sc_vme = (struct vmesoftc *)parent;
 
 	config_search(vmesscan, self, args);
 }
 
 /*ARGSUSED*/
 int
-vmesopen(dev, flag, mode)
+vmesopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 	if (minor(dev) >= vmes_cd.cd_ndevs ||
 	    vmes_cd.cd_devs[minor(dev)] == NULL)
@@ -108,9 +103,10 @@ vmesopen(dev, flag, mode)
 
 /*ARGSUSED*/
 int
-vmesclose(dev, flag, mode)
+vmesclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -119,13 +115,12 @@ vmesclose(dev, flag, mode)
 /*ARGSUSED*/
 int
 vmesioctl(dev, cmd, data, flag, p)
-	dev_t   dev;
+	dev_t dev;
+	u_long cmd;
 	caddr_t data;
-	int     cmd, flag;
+	int flag;
 	struct proc *p;
 {
-	int unit = minor(dev);
-	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
 	int error = 0;
 
 	switch (cmd) {
@@ -143,9 +138,9 @@ vmesread(dev, uio, flags)
 	int flags;
 {
 	int unit = minor(dev);
-	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
+	struct device *sc = (struct device *)vmes_cd.cd_devs[unit];
 
-	return (vmerw(sc->sc_vme, uio, flags, BUS_VMES));
+	return (vmerw(sc->dv_parent, uio, flags, BUS_VMES));
 }
 
 int
@@ -155,23 +150,26 @@ vmeswrite(dev, uio, flags)
 	int flags;
 {
 	int unit = minor(dev);
-	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
+	struct device *sc = (struct device *)vmes_cd.cd_devs[unit];
 
-	return (vmerw(sc->sc_vme, uio, flags, BUS_VMES));
+	return (vmerw(sc->dv_parent, uio, flags, BUS_VMES));
 }
 
-int
+paddr_t
 vmesmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	int unit = minor(dev);
-	struct vmessoftc *sc = (struct vmessoftc *) vmes_cd.cd_devs[unit];
-	caddr_t pa;
+	struct device *sc = (struct device *)vmes_cd.cd_devs[unit];
+	paddr_t pa;
 
-	pa = vmepmap(sc->sc_vme, (caddr_t)off, NBPG, BUS_VMES);
-	printf("vmes %x pa %x\n", off, pa);
-	if (pa == NULL)
+	pa = vmepmap(sc->dv_parent, off, BUS_VMES);
+#ifdef DEBUG
+	printf("vmes %llx pa %p\n", off, pa);
+#endif
+	if (pa == 0)
 		return (-1);
-	return (m88k_btop(pa));
+	return (pa);
 }

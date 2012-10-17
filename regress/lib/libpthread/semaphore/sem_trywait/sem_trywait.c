@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sem_trywait.c,v 1.1.1.1 2012/01/04 17:36:40 mpi Exp $	*/
 /*
  * Martin Pieuchot <mpi@openbsd.org>, 2011. Public Domain.
  */
@@ -8,10 +8,11 @@
 #include <semaphore.h>
 #include "test.h"
 
+sem_t sem;
+
 int
 main(int argc, char **argv)
 {
-	sem_t sem;
 	int val;
 
 	CHECKn(sem_trywait(&sem));

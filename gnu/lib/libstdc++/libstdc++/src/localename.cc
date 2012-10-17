@@ -53,7 +53,7 @@ namespace __gnu_cxx
   extern time_get<char> 			time_get_c;
   extern time_put<char> 			time_put_c;
   extern std::messages<char> 			messages_c;
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCPP_USE_TYPE_WCHAR_T)
   extern std::ctype<wchar_t>			ctype_w;
   extern std::collate<wchar_t> 			collate_w;
   extern numpunct<wchar_t> 			numpunct_w;
@@ -71,7 +71,7 @@ namespace __gnu_cxx
 #endif
 
   extern std::__locale_cache<numpunct<char> >	locale_cache_np_c;
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCPP_USE_TYPE_WCHAR_T)
   extern std::__locale_cache<numpunct<wchar_t> >	locale_cache_np_w;
 #endif
 } // namespace __gnu_cxx
@@ -125,8 +125,9 @@ namespace std
 	for (size_t __i = 0; 
 	     __i < _S_categories_size + _S_extra_categories_size; ++__i)
 	  {
-	    char* __new = new char[strlen(__imp._M_names[__i]) + 1];
-	    strcpy(__new, __imp._M_names[__i]);
+	    size_t __len = strlen(__imp._M_names[__i]) + 1;
+	    char* __new = new char[__len];
+	    strlcpy(__new, __imp._M_names[__i], __len);
 	    _M_names[__i] = __new;
 	  }
       }
@@ -166,7 +167,7 @@ namespace std
 		 __i < _S_categories_size + _S_extra_categories_size; ++__i)
 	      {
 		_M_names[__i] = new char[__len + 1];
-		strcpy(_M_names[__i], __s);
+		strlcpy(_M_names[__i], __s, __len + 1);
 	      }
 	  }
 	else
@@ -202,7 +203,7 @@ namespace std
 	_M_init_facet(new time_put<char>);
 	_M_init_facet(new std::messages<char>(__cloc, __s));
 	
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCPP_USE_TYPE_WCHAR_T)
 	_M_init_facet(new std::ctype<wchar_t>(__cloc));
 	_M_init_facet(new codecvt<wchar_t, char, mbstate_t>);
 	_M_init_facet(new numpunct<wchar_t>(__cloc));
@@ -249,7 +250,7 @@ namespace std
 	 __i < _S_categories_size + _S_extra_categories_size; ++__i)
       {
 	_M_names[__i]  = new (&facet_name[__i]) char[2];
-	strcpy(_M_names[__i], locale::facet::_S_c_name);
+	strlcpy(_M_names[__i], locale::facet::_S_c_name, 2);
       }
 
     // This is needed as presently the C++ version of "C" locales
@@ -273,7 +274,7 @@ namespace std
     _M_init_facet(new (&time_get_c) time_get<char>(1));
     _M_init_facet(new (&time_put_c) time_put<char>(1));
     _M_init_facet(new (&messages_c) std::messages<char>(1));	
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCPP_USE_TYPE_WCHAR_T)
     _M_init_facet(new (&ctype_w) std::ctype<wchar_t>(1));
     _M_init_facet(new (&codecvt_w) codecvt<wchar_t, char, mbstate_t>(1));
     _M_init_facet(new (&numpunct_w) numpunct<wchar_t>(1));
@@ -302,7 +303,7 @@ namespace std
     _M_facets[numpunct<char>::id._M_id() + _M_facets_size] =
       reinterpret_cast<locale::facet*>(__lc);
       
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCPP_USE_TYPE_WCHAR_T)
     __locale_cache<numpunct<wchar_t> >* __wlc =
       new (&locale_cache_np_w) __locale_cache<numpunct<wchar_t> >(ltmp, true);
     _M_facets[numpunct<wchar_t>::id._M_id() + _M_facets_size] =
@@ -326,8 +327,9 @@ namespace std
 	    if (strcmp(_M_names[__ix], "*") != 0 
 		&& strcmp(__imp->_M_names[__ix], "*") != 0)
 	      {
-		char* __new = new char[strlen(__imp->_M_names[__ix]) + 1];
-		strcpy(__new, __imp->_M_names[__ix]);
+	        size_t __len = strlen(__imp->_M_names[__ix]) + 1;
+		char* __new = new char[__len];
+		strlcpy(__new, __imp->_M_names[__ix], __len);
 		delete [] _M_names[__ix];
 		_M_names[__ix] = __new;
 	      }

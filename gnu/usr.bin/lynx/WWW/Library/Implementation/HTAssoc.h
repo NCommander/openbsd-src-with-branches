@@ -1,44 +1,35 @@
 /*                       ASSOCIATION LIST FOR STORING NAME-VALUE PAIRS
-                                             
-   Lookups from assosiation list are not case-sensitive.
-   
+
+   Lookups from association list are not case-sensitive.
+
  */
 
 #ifndef HTASSOC_H
 #define HTASSOC_H
 
-#ifndef HTUTILS_H
-#include "HTUtils.h"
-#endif /* HTUTILS_H */
-#include "HTList.h"
+#include <HTList.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+    typedef HTList HTAssocList;
 
-#ifdef SHORT_NAMES
-#define HTAL_new        HTAssocList_new
-#define HTAL_del        HTAssocList_delete
-#define HTAL_add        HTAssocList_add
-#define HTAL_lup        HTAssocList_lookup
-#endif /*SHORT_NAMES*/
+    typedef struct {
+	char *name;
+	char *value;
+    } HTAssoc;
 
-typedef HTList HTAssocList;
+    extern HTAssocList *HTAssocList_new(void);
+    extern void HTAssocList_delete(HTAssocList *alist);
 
-typedef struct {
-    char * name;
-    char * value;
-} HTAssoc;
+    extern void HTAssocList_add(HTAssocList *alist,
+				const char *name,
+				const char *value);
 
+    extern char *HTAssocList_lookup(HTAssocList *alist,
+				    const char *name);
 
-PUBLIC HTAssocList *HTAssocList_new NOPARAMS;
-PUBLIC void HTAssocList_delete PARAMS((HTAssocList * alist));
-
-PUBLIC void HTAssocList_add PARAMS((HTAssocList *       alist,
-                                    CONST char *        name,
-                                    CONST char *        value));
-
-PUBLIC char *HTAssocList_lookup PARAMS((HTAssocList *   alist,
-                                        CONST char *    name));
-
-#endif /* not HTASSOC_H */
-/*
-
-   End of file HTAssoc.h.  */
+#ifdef __cplusplus
+}
+#endif
+#endif				/* not HTASSOC_H */

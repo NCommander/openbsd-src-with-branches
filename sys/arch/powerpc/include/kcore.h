@@ -1,3 +1,4 @@
+/*	$OpenBSD: kcore.h,v 1.3 2001/09/01 15:49:05 drahn Exp $	*/
 /*	$NetBSD: kcore.h,v 1.1 1996/09/30 16:34:26 ws Exp $	*/
 
 /*-
@@ -31,15 +32,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_MACHINE_KCORE_H_
-#define	_MACHINE_KCORE_H_
+#ifndef	_POWERPC_KCORE_H_
+#define	_POWERPC_KCORE_H_
 
 #define	NPHYS_RAM_SEGS	4
 
 typedef struct cpu_kcore_hdr {
-	vm_offset_t	ptable;		/* Phys address of page table */
-	vm_offset_t	potable;	/* Phys address of page overflow table */
+	paddr_t		ptable;		/* Phys address of page table */
+	paddr_t		potable;	/* Phys address of page overflow table */
 	phys_ram_seg_t	ram_segs[NPHYS_RAM_SEGS];
 } cpu_kcore_hdr_t;
 
-#endif	/* _MACHINE_KCORE_H_ */
+#endif	/* _POWERPC_KCORE_H_ */

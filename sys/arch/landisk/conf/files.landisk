@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: files.landisk,v 1.7 2009/05/15 16:20:48 deraadt Exp $
 #	$NetBSD: files.landisk,v 1.2 2006/09/07 01:55:02 uwe Exp $
 
 # maxpartitions must be first item in files.${MACHINE}
@@ -6,7 +6,9 @@ maxpartitions 16
 
 maxusers 2 16 64
 
-major {wd = 0}
+major {wd = 16}
+major {rd = 18}
+major {sd = 24}
 
 #defparam opt_memsize.h	IOM_ROM_BEGIN IOM_ROM_SIZE IOM_RAM_BEGIN IOM_RAM_SIZE
 
@@ -48,10 +50,6 @@ include "dev/atapiscsi/files.atapiscsi"
 #
 include "dev/i2o/files.i2o"
 
-#include "dev/wscons/files.wscons"
-#include "dev/wsfont/files.wsfont"
-#include "dev/rasops/files.rasops"
-
 #
 # PCI bus
 #
@@ -61,10 +59,21 @@ include "arch/sh/conf/files.shpcic"
 
 file	arch/landisk/landisk/shpcic_machdep.c	shpcic
 
+# WSCONS bits for wskbd.h
+#
+include "dev/wscons/files.wscons"
+include "dev/wsfont/files.wsfont"
+include "dev/rasops/files.rasops"
+
 #
 # USB drivers
 #
 include "dev/usb/files.usb"
+
+#
+# Bluetooth
+#
+include "dev/bluetooth/files.bluetooth"
 
 #
 # SH bus
@@ -72,9 +81,9 @@ include "dev/usb/files.usb"
 include	"arch/sh/conf/files.shb"
 
 # Ricoh RS5C313 Real Time Clock
-device	clock
-attach	clock at shb
-file	arch/landisk/dev/rs5c313.c		clock
+device	rsclock
+attach	rsclock at shb
+file	arch/landisk/dev/rs5c313.c		rsclock
 
 #
 # on-board I/O bus
@@ -88,16 +97,9 @@ file	arch/landisk/dev/obio.c		obio needs-flag
 attach	wdc at obio with wdc_obio
 file	arch/landisk/dev/wdc_obio.c	wdc_obio needs-flag
 
-define	button
-file    arch/landisk/dev/button.c	button
-
-device	btn: button
-attach	btn at obio with btn_obio
-file	arch/landisk/dev/btn_obio.c	btn_obio needs-flag
-
-device	pwrsw
-attach	pwrsw at obio with pwrsw_obio
-file	arch/landisk/dev/pwrsw_obio.c	pwrsw_obio needs-flag
+device	power
+attach	power at obio
+file	arch/landisk/dev/power.c	power needs-flag
 
 #device	led
 #attach	led at obio

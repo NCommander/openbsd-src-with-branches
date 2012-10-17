@@ -1,6 +1,6 @@
 .Dd October 21, 2011
 .Dt EV-FONT 1
-.Os
+.Os OpenBSD
 .Sh NAME
 .Nm Ev-font
 .Nd formatting of environment variables
@@ -8,3 +8,6 @@
 The
 .Ev PATH
 variable.
+.Pp
+And with
+.Ev some \\fIembedded\\fP string .

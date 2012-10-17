@@ -1,3 +1,5 @@
+/*	$OpenBSD: mod_auth.c,v 1.12 2004/12/02 19:42:47 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -74,6 +76,7 @@
 #include "http_config.h"
 #include "http_core.h"
 #include "http_log.h"
+#include "http_main.h"
 #include "http_protocol.h"
 
 typedef struct auth_config_struct {
@@ -124,6 +127,8 @@ static char *get_pw(request_rec *r, char *user, char *auth_pwfile)
     char l[MAX_STRING_LEN];
     const char *rpw, *w;
 
+    ap_server_strip_chroot(auth_pwfile, 1);
+
     if (!(f = ap_pcfg_openfile(r->pool, auth_pwfile))) {
 	ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
 		    "Could not open password file: %s", auth_pwfile);
@@ -151,6 +156,8 @@ static table *groups_for_user(pool *p, char *user, char *grpfile)
     pool *sp;
     char l[MAX_STRING_LEN];
     const char *group_name, *ll, *w;
+
+    ap_server_strip_chroot(grpfile, 1);
 
     if (!(f = ap_pcfg_openfile(p, grpfile))) {
 /*add?	aplog_error(APLOG_MARK, APLOG_ERR, NULL,
@@ -239,7 +246,7 @@ static int check_user_access(request_rec *r)
     char *user = r->connection->user;
     int m = r->method_number;
     int method_restricted = 0;
-    register int x;
+    int x;
     const char *t, *w;
     table *grpstatus;
     const array_header *reqs_arr = ap_requires(r);
@@ -278,12 +285,6 @@ static int check_user_access(request_rec *r)
          * owner of the document.
          */
 	if (strcmp(w, "file-owner") == 0) {
-#if defined(WIN32) || defined(NETWARE) || defined(OS2)
-            ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_INFO, r,
-                          "'Require file-owner' not supported "
-                          "on this platform, ignored");
-            continue;
-#else
             struct passwd *pwent;
             ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, r,
                           "checking for 'owner' access for file '%s'",
@@ -311,15 +312,8 @@ static int check_user_access(request_rec *r)
                     continue;
                 }
             }
-#endif
         }
 	if (strcmp(w, "file-group") == 0) {
-#if defined(WIN32) || defined(NETWARE) || defined(OS2)
-            ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_INFO, r,
-                          "'Require file-group' not supported "
-                          "on this platform, ignored");
-            continue;
-#else
             struct group *grent;
             if (sec->auth_grpfile == NULL) {
                 ap_log_rerror(APLOG_MARK, APLOG_NOERRNO|APLOG_INFO, r,
@@ -362,7 +356,6 @@ static int check_user_access(request_rec *r)
                     continue;
                 }
             }
-#endif
         }
 	if (strcmp(w, "user") == 0) {
 	    while (t[0] != '\0') {

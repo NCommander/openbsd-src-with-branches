@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2002, 2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1992 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1992, 1993
@@ -22,7 +22,7 @@ SM_UNUSED(static char copyright[]) =
 #endif /* ! lint */
 
 #ifndef lint
-SM_UNUSED(static char id[]) = "@(#)$Sendmail: editmap.c,v 1.21 2001/08/27 18:09:09 gshapiro Exp $";
+SM_UNUSED(static char id[]) = "@(#)$Sendmail: editmap.c,v 1.25 2007/05/11 18:50:35 ca Exp $";
 #endif /* ! lint */
 
 
@@ -46,7 +46,7 @@ uid_t	RealUid;
 gid_t	RealGid;
 char	*RealUserName;
 uid_t	RunAsUid;
-uid_t	RunAsGid;
+gid_t	RunAsGid;
 char	*RunAsUserName;
 int	Verbose = 2;
 bool	DontInitGroups = false;
@@ -56,6 +56,8 @@ BITMAP256 DontBlameSendmail;
 #define BUFSIZE		1024
 #define ISSEP(c) (isascii(c) && isspace(c))
 
+
+static void usage __P((char *));
 
 static void
 usage(progname)
@@ -130,7 +132,7 @@ main(argc, argv)
 			  SMDB_MAX_USER_NAME_LEN);
 
 #define OPTIONS		"C:fquxvN"
-	while ((opt = getopt(argc, argv, OPTIONS)) != EOF)
+	while ((opt = getopt(argc, argv, OPTIONS)) != -1)
 	{
 		switch (opt)
 		{

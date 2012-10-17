@@ -35,16 +35,22 @@ Boston, MA 02111-1307, USA.  */
 		  %{!m88000:%{!m88100:%{m88110:-D__mc88110__}}} \
 		  %{!m88000:%{!m88110:-D__mc88100__ -D__mc88100}} \
 		  %{posix:-D_POSIX_SOURCE} \
-		  %{pthread:-D_POSIX_THREADS}"
+		  %{pthread:-D_REENTRANT}"
 
 /* Layout of source language data types. */
 
-/* This must agree with <machine/ansi.h> */
+/* This must agree with <machine/_types.h> */
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "long int"
+
+#undef INTMAX_TYPE
+#define INTMAX_TYPE "long long int"
+
+#undef UINTMAX_TYPE
+#define UINTMAX_TYPE "long long unsigned int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"

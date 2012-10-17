@@ -104,6 +104,7 @@ static int overload = FALSE;
 
 struct worker {
     char name[10];
+    char pad[6]; /* make sure we're aligned for the data */
     char data[MAX_XMSG_SIZE];
     PROCESS pid;
     int  msg_length;
@@ -210,8 +211,8 @@ tcp_write (int fd, const void *data, size_t len)
     int32_t slen = htonl(len);
     char out_len[4];
 
-    memcpy (out_len, &slen, sizeof(len));
-    if (send (fd, out_len, sizeof(len), 0) != sizeof(out_len)) {
+    memcpy (out_len, &slen, sizeof(slen));
+    if (send (fd, out_len, sizeof(slen), 0) != sizeof(out_len)) {
 	arla_warn (ADEBWARN, errno, "tcp_write: failed to write length");
 	return -1;
     }

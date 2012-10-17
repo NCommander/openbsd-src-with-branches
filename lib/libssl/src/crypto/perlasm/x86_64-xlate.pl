@@ -66,7 +66,7 @@ if ($flavour =~ /\./) { $output = $flavour; undef $flavour; }
   my ($outdev,$outino,@junk)=stat($output);
 
     open STDOUT,">$output" || die "can't open $output: $!"
-	if ($stddev!=$outdev || $stdino!=$outino);
+	if (1 || $stddev!=$outdev || $stdino!=$outino);
 }
 
 my $gas=1;	$gas=0 if ($output =~ /\.asm$/);
@@ -215,7 +215,8 @@ my %globals;
 	undef	$ret;
 
 	# optional * ---vvv--- appears in indirect jmp/call
-	if ($line =~ /^(\*?)([^\(,]*)\(([%\w,]+)\)/) {
+	if ($line =~ /^(\*?)([^\(,]*)\(([%\w,]+)\)/ &&
+	    !($line =~ /^PIC_(GOT|PLT)/)) {
 	    $self->{asterisk} = $1;
 	    $self->{label} = $2;
 	    ($self->{base},$self->{index},$self->{scale})=split(/,/,$3);
@@ -624,6 +625,8 @@ my %globals;
 	$self->{value};
     }
 }
+
+print "#include <machine/asm.h>\n";
 
 if ($nasm) {
     print <<___;

@@ -1,25 +1,24 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$NetBSD: l64a.c,v 1.4 1995/05/11 23:04:52 jtc Exp $";
-#endif
-
+#include <errno.h>
 #include <stdlib.h>
 
 char *
-l64a (value)
-	long value;
+l64a(long value)
 {
 	static char buf[8];
 	char *s = buf;
 	int digit;
 	int i;
 
-	if (!value) 
-		return NULL;
+	if (value < 0) {
+		errno = EINVAL;
+		return(NULL);
+	}
 
 	for (i = 0; value != 0 && i < 6; i++) {
 		digit = value & 0x3f;
@@ -39,5 +38,5 @@ l64a (value)
 
 	*s = '\0';
 
-	return buf;
+	return(buf);
 }

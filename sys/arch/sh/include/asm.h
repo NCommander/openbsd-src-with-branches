@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: asm.h,v 1.1.1.1 2006/10/06 21:02:55 miod Exp $	*/
 /*	$NetBSD: asm.h,v 1.25 2006/01/20 22:02:40 christos Exp $	*/
 
 /*-
@@ -208,6 +208,10 @@
 #ifdef __ELF__
 #define	WEAK_ALIAS(alias,sym)						\
 	.weak _C_LABEL(alias);						\
+	_C_LABEL(alias) = _C_LABEL(sym)
+
+#define	STRONG_ALIAS(alias,sym)						\
+	.globl _C_LABEL(alias);						\
 	_C_LABEL(alias) = _C_LABEL(sym)
 #endif
 

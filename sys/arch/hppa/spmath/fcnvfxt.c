@@ -1,3 +1,4 @@
+/*	$OpenBSD: fcnvfxt.c,v 1.7 2003/04/10 17:27:58 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,27 +12,23 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/fcnvfxt.c,v $
- * $Revision: 2.8.88.2 $	$Author: runyan $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/08 13:27:34 $
- */
+/* @(#)fcnvfxt.c: Revision: 2.8.88.2 Date: 93/12/08 13:27:34 */
 
-#include "../spmath/float.h"
-#include "../spmath/sgl_float.h"
-#include "../spmath/dbl_float.h"
-#include "../spmath/cnv_float.h"
+#include "float.h"
+#include "sgl_float.h"
+#include "dbl_float.h"
+#include "cnv_float.h"
 
 /*
  *  Convert single floating-point to single fixed-point format
  *  with truncated result
  */
 /*ARGSUSED*/
-sgl_to_sgl_fcnvfxt(srcptr,nullptr,dstptr,status)
-
-sgl_floating_point *srcptr;
-int *dstptr;
-unsigned int *nullptr, *status;
+int
+sgl_to_sgl_fcnvfxt(srcptr, null, dstptr, status)
+	sgl_floating_point *srcptr, *null;
+	int *dstptr;
+	unsigned int *status;
 {
 	register unsigned int src, temp;
 	register int src_exponent, result;
@@ -39,35 +36,22 @@ unsigned int *nullptr, *status;
 	src = *srcptr;
 	src_exponent = Sgl_exponent(src) - SGL_BIAS;
 
-	/* 
+	/*
 	 * Test for overflow
 	 */
 	if (src_exponent > SGL_FX_MAX_EXP) {
 		/* check for MININT */
-		if ((src_exponent > SGL_FX_MAX_EXP + 1) || 
+		if ((src_exponent > SGL_FX_MAX_EXP + 1) ||
 		Sgl_isnotzero_mantissa(src) || Sgl_iszero_sign(src)) {
-		        if( Sgl_isnan(src) )
-			  /* 
-                           * On NaN go unimplemented.
-		 	   */
-			  return(UNIMPLEMENTEDEXCEPTION);
-			else {
-                          if (Sgl_iszero_sign(src)) result = 0x7fffffff;
-                          else result = 0x80000000; 
+			if (Sgl_iszero_sign(src)) result = 0x7fffffff;
+			else result = 0x80000000;
 
-	                  if (Is_overflowtrap_enabled()) {
-			    if (Is_inexacttrap_enabled())
-			      return(OVERFLOWEXCEPTION|INEXACTEXCEPTION);
-			    else Set_inexactflag();
-                            return(OVERFLOWEXCEPTION);
-                            }
-                          Set_overflowflag();
-			  *dstptr = result;
-			  if (Is_inexacttrap_enabled() ) 
-                             return(INEXACTEXCEPTION);
-			  else Set_inexactflag();
-			  return(NOEXCEPTION);
+			if (Is_invalidtrap_enabled()) {
+				return(INVALIDEXCEPTION);
 			}
+			Set_invalidflag();
+			*dstptr = result;
+			return(NOEXCEPTION);
 		}
 	}
 	/*
@@ -100,14 +84,14 @@ unsigned int *nullptr, *status;
 }
 
 /*
- *  Single Floating-point to Double Fixed-point 
+ *  Single Floating-point to Double Fixed-point
  */
 /*ARGSUSED*/
-sgl_to_dbl_fcnvfxt(srcptr,nullptr,dstptr,status)
-
-sgl_floating_point *srcptr;
-dbl_integer *dstptr;
-unsigned int *nullptr, *status;
+int
+sgl_to_dbl_fcnvfxt(srcptr, null, dstptr, status)
+	sgl_floating_point *srcptr, *null;
+	dbl_integer *dstptr;
+	unsigned int *status;
 {
 	register int src_exponent, resultp1;
 	register unsigned int src, temp, resultp2;
@@ -115,40 +99,28 @@ unsigned int *nullptr, *status;
 	src = *srcptr;
 	src_exponent = Sgl_exponent(src) - SGL_BIAS;
 
-	/* 
+	/*
 	 * Test for overflow
 	 */
 	if (src_exponent > DBL_FX_MAX_EXP) {
 		/* check for MININT */
-		if ((src_exponent > DBL_FX_MAX_EXP + 1) || 
+		if ((src_exponent > DBL_FX_MAX_EXP + 1) ||
 		Sgl_isnotzero_mantissa(src) || Sgl_iszero_sign(src)) {
-		        if( Sgl_isnan(src) )
-			  /* 
-                           * On NaN go unimplemented.
-		 	   */
-			  return(UNIMPLEMENTEDEXCEPTION);
-			else {
-                          if (Sgl_iszero_sign(src)) {
-                              resultp1 = 0x7fffffff;
-			      resultp2 = 0xffffffff;
-			  }
-                          else {
-			    resultp1 = 0x80000000; 
-			    resultp2 = 0;
-			  }
-	                  if (Is_overflowtrap_enabled()) {
-			    if (Is_inexacttrap_enabled())
-			      return(OVERFLOWEXCEPTION|INEXACTEXCEPTION);
-			    else Set_inexactflag();
-                            return(OVERFLOWEXCEPTION);
-                            }
-                          Set_overflowflag();
-    		          Dint_copytoptr(resultp1,resultp2,dstptr);
-			  if (Is_inexacttrap_enabled() ) 
-                             return(INEXACTEXCEPTION);
-			  else Set_inexactflag();
-			  return(NOEXCEPTION);
+			if (Sgl_iszero_sign(src)) {
+				resultp1 = 0x7fffffff;
+				resultp2 = 0xffffffff;
 			}
+			else {
+				resultp1 = 0x80000000;
+				resultp2 = 0;
+			}
+
+			if (Is_invalidtrap_enabled()) {
+				return(INVALIDEXCEPTION);
+			}
+			Set_invalidflag();
+			Dint_copytoptr(resultp1,resultp2,dstptr);
+			return(NOEXCEPTION);
 		}
 		Dint_set_minint(resultp1,resultp2);
 		Dint_copytoptr(resultp1,resultp2,dstptr);
@@ -186,14 +158,14 @@ unsigned int *nullptr, *status;
 }
 
 /*
- *  Double Floating-point to Single Fixed-point 
+ *  Double Floating-point to Single Fixed-point
  */
 /*ARGSUSED*/
-dbl_to_sgl_fcnvfxt(srcptr,nullptr,dstptr,status)
-
-dbl_floating_point *srcptr;
-int *dstptr;
-unsigned int *nullptr, *status;
+int
+dbl_to_sgl_fcnvfxt(srcptr, null, dstptr, status)
+	dbl_floating_point *srcptr, *null;
+	int *dstptr;
+	unsigned int *status;
 {
 	register unsigned int srcp1, srcp2, tempp1, tempp2;
 	register int src_exponent, result;
@@ -201,34 +173,21 @@ unsigned int *nullptr, *status;
 	Dbl_copyfromptr(srcptr,srcp1,srcp2);
 	src_exponent = Dbl_exponent(srcp1) - DBL_BIAS;
 
-	/* 
+	/*
 	 * Test for overflow
 	 */
 	if (src_exponent > SGL_FX_MAX_EXP) {
 		/* check for MININT */
 		if (Dbl_isoverflow_to_int(src_exponent,srcp1,srcp2)) {
-		        if( Dbl_isnan(srcp1,srcp2) )
-			  /* 
-                           * On NaN go unimplemented.
-		 	   */
-			  return(UNIMPLEMENTEDEXCEPTION);
-			else {
-                          if (Dbl_iszero_sign(srcp1)) result = 0x7fffffff;
-                          else result = 0x80000000; 
+			if (Dbl_iszero_sign(srcp1)) result = 0x7fffffff;
+			else result = 0x80000000;
 
-	                  if (Is_overflowtrap_enabled()) {
-			    if (Is_inexacttrap_enabled())
-			      return(OVERFLOWEXCEPTION|INEXACTEXCEPTION);
-			    else Set_inexactflag();
-                            return(OVERFLOWEXCEPTION);
-                            }
-                          Set_overflowflag();
-			  *dstptr = result;
-			  if (Is_inexacttrap_enabled() ) 
-                             return(INEXACTEXCEPTION);
-			  else Set_inexactflag();
-			  return(NOEXCEPTION);
+			if (Is_invalidtrap_enabled()) {
+				return(INVALIDEXCEPTION);
 			}
+			Set_invalidflag();
+			*dstptr = result;
+			return(NOEXCEPTION);
 		}
 	}
 	/*
@@ -263,14 +222,14 @@ unsigned int *nullptr, *status;
 }
 
 /*
- *  Double Floating-point to Double Fixed-point 
+ *  Double Floating-point to Double Fixed-point
  */
 /*ARGSUSED*/
-dbl_to_dbl_fcnvfxt(srcptr,nullptr,dstptr,status)
-
-dbl_floating_point *srcptr;
-dbl_integer *dstptr;
-unsigned int *nullptr, *status;
+int
+dbl_to_dbl_fcnvfxt(srcptr, null, dstptr, status)
+	dbl_floating_point *srcptr, *null;
+	dbl_integer *dstptr;
+	unsigned int *status;
 {
 	register int src_exponent, resultp1;
 	register unsigned int srcp1, srcp2, tempp1, tempp2, resultp2;
@@ -278,40 +237,28 @@ unsigned int *nullptr, *status;
 	Dbl_copyfromptr(srcptr,srcp1,srcp2);
 	src_exponent = Dbl_exponent(srcp1) - DBL_BIAS;
 
-	/* 
+	/*
 	 * Test for overflow
 	 */
 	if (src_exponent > DBL_FX_MAX_EXP) {
 		/* check for MININT */
-		if ((src_exponent > DBL_FX_MAX_EXP + 1) || 
+		if ((src_exponent > DBL_FX_MAX_EXP + 1) ||
 		Dbl_isnotzero_mantissa(srcp1,srcp2) || Dbl_iszero_sign(srcp1)) {
-		        if( Dbl_isnan(srcp1,srcp2) )
-			  /* 
-                           * On NaN go unimplemented.
-		 	   */
-			  return(UNIMPLEMENTEDEXCEPTION);
-			else {
-                          if (Dbl_iszero_sign(srcp1)) {
-                              resultp1 = 0x7fffffff;
-			      resultp2 = 0xffffffff;
-			  }
-                          else {
-			    resultp1 = 0x80000000; 
-			    resultp2 = 0;
-			  }
-	                  if (Is_overflowtrap_enabled()) {
-			    if (Is_inexacttrap_enabled())
-			      return(OVERFLOWEXCEPTION|INEXACTEXCEPTION);
-			    else Set_inexactflag();
-                            return(OVERFLOWEXCEPTION);
-                            }
-                          Set_overflowflag();
-    		          Dint_copytoptr(resultp1,resultp2,dstptr);
-			  if (Is_inexacttrap_enabled() ) 
-                             return(INEXACTEXCEPTION);
-			  else Set_inexactflag();
-			  return(NOEXCEPTION);
+			if (Dbl_iszero_sign(srcp1)) {
+				resultp1 = 0x7fffffff;
+				resultp2 = 0xffffffff;
 			}
+			else {
+				resultp1 = 0x80000000;
+				resultp2 = 0;
+			}
+
+			if (Is_invalidtrap_enabled()) {
+				return(INVALIDEXCEPTION);
+			}
+			Set_invalidflag();
+			Dint_copytoptr(resultp1,resultp2,dstptr);
+			return(NOEXCEPTION);
 		}
 	}
 	/*

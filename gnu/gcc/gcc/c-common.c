@@ -624,6 +624,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_deprecated_attribute },
   { "vector_size",	      1, 1, false, true, false,
 			      handle_vector_size_attribute },
+  { "bounded",		      3, 4, false, true, false, 
+			      handle_bounded_attribute },
   { "visibility",	      1, 1, false, false, false,
 			      handle_visibility_attribute },
   { "tls_model",	      1, 1, true,  false, false,
@@ -5703,6 +5705,9 @@ check_function_arguments (tree attrs, tree params, tree typelist)
 
   if (warn_format)
     check_function_sentinel (attrs, params, typelist);
+
+  if (warn_bounded)
+    check_function_bounded (NULL, attrs, params);
 }
 
 /* Generic argument checking recursion routine.  PARAM is the argument to

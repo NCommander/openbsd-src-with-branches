@@ -1,65 +1,37 @@
 #ifndef LYOPTIONS_H
 #define LYOPTIONS_H
 
-extern BOOLEAN term_options;
+#include <LYStructs.h>
+#include <LYStrings.h>
 
-extern void options NOPARAMS;
-extern void edit_bookmarks NOPARAMS;
+#ifdef __cplusplus
+extern "C" {
+#endif
+    extern BOOLEAN term_options;	/* for LYgetstr() */
 
-/*
- *  Values for the options menu. - FM
- *
- *  L_foo values are the Y coordinates for the menu item.
- *  B_foo values are the X coordinates for the item's prompt string.
- *  C_foo values are the X coordinates for the item's value string.
- */
-#define L_EDITOR	 2
-#define L_DISPLAY	 3
+    extern BOOLEAN LYCheckUserAgent(void);
+    extern void edit_bookmarks(void);
+    extern int popup_choice(int cur_choice,
+			    int line,
+			    int column,
+			    const char **choices,
+			    int length,
+			    int disabled,
+			    BOOLEAN mouse);
 
-#define L_HOME		 4
-#define C_MULTI		24
-#define B_BOOK		34
-#define C_DEFAULT	50
+#define LYChoosePopup(cur, line, column, choices, length, disabled, mouse) \
+	popup_choice(cur, line, column, (const char **)choices, length, disabled, mouse)
 
-#define L_FTPSTYPE	 5
-#define L_MAIL_ADDRESS	 6
-#define L_SSEARCH	 7
-#define L_LANGUAGE	 8
-#define L_PREF_CHARSET	 9
-#define L_ASSUME_CHARSET (L_PREF_CHARSET + 1)
-#define L_CHARSET	10
-#define L_RAWMODE	11
+#ifndef NO_OPTION_FORMS
+    extern void LYMenuVisitedLinks(FILE *fp0, int disable_all);
+    extern int postoptions(DocInfo *newdoc);
+#endif				/* !NO_OPTION_FORMS */
 
-#define L_COLOR		L_RAWMODE
-#define B_COLOR		44
-#define C_COLOR		62
+#ifndef NO_OPTION_MENU
+    extern void LYoptions(void);
+#endif				/* !NO_OPTION_MENU */
 
-#define L_BOOL_A	12
-#define B_VIKEYS	5
-#define C_VIKEYS	15
-#define B_EMACSKEYS	22
-#define C_EMACSKEYS	36
-#define B_SHOW_DOTFILES	44
-#define C_SHOW_DOTFILES	62
-
-#define L_BOOL_B	13
-#define B_SELECT_POPUPS	5
-#define C_SELECT_POPUPS	36
-#define B_SHOW_CURSOR	44
-#define C_SHOW_CURSOR	62
-
-#define L_KEYPAD	14 
-#define L_LINEED	15
-
-#ifdef DIRED_SUPPORT
-#define L_DIRED		16
-#define L_USER_MODE	17
-#define L_USER_AGENT	18
-#define L_EXEC		19
-#else
-#define L_USER_MODE	16
-#define L_USER_AGENT	17
-#define L_EXEC		18
-#endif /* DIRED_SUPPORT */
-
-#endif /* LYOPTIONS_H */
+#ifdef __cplusplus
+}
+#endif
+#endif				/* LYOPTIONS_H */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: talk.c,v 1.8 2004/03/02 21:04:42 tedu Exp $	*/
 /*	$NetBSD: talk.c,v 1.3 1994/12/09 02:14:25 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,25 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)talk.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: talk.c,v 1.3 1994/12/09 02:14:25 jtc Exp $";
-#endif /* not lint */
-
 #include "talk.h"
 
 /*
- * talk:	A visual form of write. Using sockets, a two way 
- *		connection is set up between the two people talking. 
- *		With the aid of curses, the screen is split into two 
+ * talk:	A visual form of write. Using sockets, a two way
+ *		connection is set up between the two people talking.
+ *		With the aid of curses, the screen is split into two
  *		windows, and each users text is added to the window,
  *		one character at a time...
  *
@@ -62,9 +46,8 @@ static char rcsid[] = "$NetBSD: talk.c,v 1.3 1994/12/09 02:14:25 jtc Exp $";
  *		Modified to run under 4.1c by Peter Moore 3/17/83
  */
 
-main(argc, argv)
-	int argc;
-	char *argv[];
+int
+main(int argc, char *argv[])
 {
 	get_names(argc, argv);
 	init_display();
@@ -76,4 +59,6 @@ main(argc, argv)
 	end_msgs();
 	set_edit_chars();
 	talk();
+	/* NOTREACHED */
+	return (0);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,7 +9,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: exc.c,v 1.43 2001/09/04 22:41:27 ca Exp $")
+SM_RCSID("@(#)$Sendmail: exc.c,v 1.49 2006/12/19 19:28:09 ca Exp $")
 
 /*
 **  exception handling
@@ -19,6 +19,7 @@ SM_RCSID("@(#)$Sendmail: exc.c,v 1.43 2001/09/04 22:41:27 ca Exp $")
 #include <ctype.h>
 #include <string.h>
 
+#include <sm/errstring.h>
 #include <sm/exc.h>
 #include <sm/heap.h>
 #include <sm/string.h>
@@ -161,10 +162,10 @@ sm_etype_os_print(exc, stream)
 
 	if (sysargs)
 		sm_io_fprintf(stream, SM_TIME_DEFAULT, "%s: %s failed: %s",
-			sysargs, syscall, strerror(err));
+			      sysargs, syscall, sm_errstring(err));
 	else
 		sm_io_fprintf(stream, SM_TIME_DEFAULT, "%s failed: %s", syscall,
-			strerror(err));
+			      sm_errstring(err));
 }
 
 /*
@@ -228,7 +229,9 @@ const SM_EXC_TYPE_T SmEtypeErr =
 **  an out-of-memory exception so that exc is not leaked.
 */
 
-SM_EXC_T *
+static SM_EXC_T *sm_exc_vnew_x __P((const SM_EXC_TYPE_T *, va_list SM_NONVOLATILE));
+
+static SM_EXC_T *
 sm_exc_vnew_x(etype, ap)
 	const SM_EXC_TYPE_T *etype;
 	va_list SM_NONVOLATILE ap;
@@ -418,26 +421,6 @@ sm_exc_new_x(etype, va_alist)
 }
 
 /*
-**  SM_ADDREF -- Add a reference to an exception object.
-**
-**	Parameters:
-**		exc -- exception object.
-**
-**	Returns:
-**		exc itself.
-*/
-
-SM_EXC_T *
-sm_addref(exc)
-	SM_EXC_T *exc;
-{
-	SM_REQUIRE_ISA(exc, SmExcMagic);
-	if (exc->exc_refcount != 0)
-		++exc->exc_refcount;
-	return exc;
-}
-
-/*
 **  SM_EXC_FREE -- Destroy a reference to an exception object.
 **
 **	Parameters:
@@ -586,7 +569,7 @@ sm_exc_newthread(h)
 **		doesn't.
 */
 
-void
+void SM_DEAD_D
 sm_exc_raise_x(exc)
 	SM_EXC_T *exc;
 {
@@ -647,7 +630,7 @@ sm_exc_raise_x(exc)
 **		none.
 */
 
-void
+void SM_DEAD_D
 #if SM_VA_STD
 sm_exc_raisenew_x(
 	const SM_EXC_TYPE_T *etype,

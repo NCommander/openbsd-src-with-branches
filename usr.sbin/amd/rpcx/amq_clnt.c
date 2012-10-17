@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amq_clnt.c	8.1 (Berkeley) 6/6/93
- *	$Id: amq_clnt.c,v 1.2 1994/06/13 20:50:48 mycroft Exp $
+ *	$Id: amq_clnt.c,v 1.4 2002/09/10 05:41:28 deraadt Exp $
  *
  */
 
@@ -45,60 +41,56 @@
 
 static struct timeval TIMEOUT = { ALLOWED_MOUNT_TIME, 0 };
 
-voidp
-amqproc_null_1(argp, clnt)
-	voidp argp;
-	CLIENT *clnt;
+void *
+amqproc_null_1(void *argp, CLIENT *clnt)
 {
 	static char res;
 
 	bzero((char *)&res, sizeof(res));
-	if (clnt_call(clnt, AMQPROC_NULL, xdr_void, argp, xdr_void, &res, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(clnt, AMQPROC_NULL, xdr_void, argp, xdr_void,
+	    &res, TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
-	return ((voidp)&res);
+	return ((void *)&res);
 }
 
 
 amq_mount_tree_p *
-amqproc_mnttree_1(argp, clnt)
-	amq_string *argp;
-	CLIENT *clnt;
+amqproc_mnttree_1(amq_string *argp, CLIENT *clnt)
 {
 	static amq_mount_tree_p res;
 
 	bzero((char *)&res, sizeof(res));
-	if (clnt_call(clnt, AMQPROC_MNTTREE, xdr_amq_string, argp, xdr_amq_mount_tree_p, &res, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(clnt, AMQPROC_MNTTREE, xdr_amq_string, argp,
+	    xdr_amq_mount_tree_p, &res, TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&res);
 }
 
 
-voidp
-amqproc_umnt_1(argp, clnt)
-	amq_string *argp;
-	CLIENT *clnt;
+void *
+amqproc_umnt_1(amq_string *argp, CLIENT *clnt)
 {
 	static char res;
 
 	bzero((char *)&res, sizeof(res));
-	if (clnt_call(clnt, AMQPROC_UMNT, xdr_amq_string, argp, xdr_void, &res, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(clnt, AMQPROC_UMNT, xdr_amq_string, argp,
+	    xdr_void, &res, TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
-	return ((voidp)&res);
+	return ((void *)&res);
 }
 
 
 amq_mount_stats *
-amqproc_stats_1(argp, clnt)
-	voidp argp;
-	CLIENT *clnt;
+amqproc_stats_1(void *argp, CLIENT *clnt)
 {
 	static amq_mount_stats res;
 
 	bzero((char *)&res, sizeof(res));
-	if (clnt_call(clnt, AMQPROC_STATS, xdr_void, argp, xdr_amq_mount_stats, &res, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(clnt, AMQPROC_STATS, xdr_void, argp,
+	    xdr_amq_mount_stats, &res, TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&res);
@@ -106,28 +98,26 @@ amqproc_stats_1(argp, clnt)
 
 
 amq_mount_tree_list *
-amqproc_export_1(argp, clnt)
-	voidp argp;
-	CLIENT *clnt;
+amqproc_export_1(void *argp, CLIENT *clnt)
 {
 	static amq_mount_tree_list res;
 
 	bzero((char *)&res, sizeof(res));
-	if (clnt_call(clnt, AMQPROC_EXPORT, xdr_void, argp, xdr_amq_mount_tree_list, &res, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(clnt, AMQPROC_EXPORT, xdr_void, argp,
+	    xdr_amq_mount_tree_list, &res, TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&res);
 }
 
 int *
-amqproc_setopt_1(argp, clnt)
-	amq_setopt *argp;
-	CLIENT *clnt;
+amqproc_setopt_1(amq_setopt *argp, CLIENT *clnt)
 {
 	static int res;
 
 	bzero((char *)&res, sizeof(res));
-	if (clnt_call(clnt, AMQPROC_SETOPT, xdr_amq_setopt, argp, xdr_int, &res, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(clnt, AMQPROC_SETOPT, xdr_amq_setopt, argp,
+	    xdr_int, &res, TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&res);
@@ -135,14 +125,13 @@ amqproc_setopt_1(argp, clnt)
 
 
 amq_mount_info_list *
-amqproc_getmntfs_1(argp, clnt)
-	voidp argp;
-	CLIENT *clnt;
+amqproc_getmntfs_1(void *argp, CLIENT *clnt)
 {
 	static amq_mount_info_list res;
 
 	bzero((char *)&res, sizeof(res));
-	if (clnt_call(clnt, AMQPROC_GETMNTFS, xdr_void, argp, xdr_amq_mount_info_list, &res, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(clnt, AMQPROC_GETMNTFS, xdr_void, argp,
+	    xdr_amq_mount_info_list, &res, TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&res);
@@ -150,14 +139,13 @@ amqproc_getmntfs_1(argp, clnt)
 
 
 int *
-amqproc_mount_1(argp, clnt)
-	voidp argp;
-	CLIENT *clnt;
+amqproc_mount_1(void *argp, CLIENT *clnt)
 {
 	static int res;
 
 	bzero((char *)&res, sizeof(res));
-	if (clnt_call(clnt, AMQPROC_MOUNT, xdr_amq_string, argp, xdr_int, &res, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(clnt, AMQPROC_MOUNT, xdr_amq_string, argp,
+	    xdr_int, &res, TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&res);
@@ -165,16 +153,14 @@ amqproc_mount_1(argp, clnt)
 
 
 amq_string *
-amqproc_getvers_1(argp, clnt)
-	voidp argp;
-	CLIENT *clnt;
+amqproc_getvers_1(void *argp, CLIENT *clnt)
 {
 	static amq_string res;
 
 	bzero((char *)&res, sizeof(res));
-	if (clnt_call(clnt, AMQPROC_GETVERS, xdr_void, argp, xdr_amq_string, &res, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(clnt, AMQPROC_GETVERS, xdr_void, argp,
+	    xdr_amq_string, &res, TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&res);
 }
-

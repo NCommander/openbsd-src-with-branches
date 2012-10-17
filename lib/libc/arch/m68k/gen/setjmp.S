@@ -1,3 +1,4 @@
+/* $OpenBSD: setjmp.S,v 1.4 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,12 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)setjmp.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: setjmp.S,v 1.4 1994/08/05 22:35:20 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 /*
  * C library -- setjmp, longjmp
  *
@@ -55,7 +46,7 @@
 #include "DEFS.h"
 
 ENTRY(setjmp)
-	subl	#12,sp		/* space for sigstack args/rvals */
+	subl	#12,sp		/* space for sigaltstack args/rvals */
 	clrl	sp@		/* don't change it... */
 	movl	sp,sp@(4)	/* ...but return the current val */
 	jbsr	_sigaltstack	/* note: flags returned in sp@(8) */

@@ -1,9 +1,15 @@
 # $FreeBSD: src/gnu/usr.bin/cc/Makefile.inc,v 1.66.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD$
+# $OpenBSD: Makefile.inc,v 1.3 2010/09/25 17:44:34 drahn Exp $
+
+.include "../Makefile.inc"
 
 # Sometimes this is .include'd several times...
 .if !defined(__CC_MAKEFILE_INC__)
 __CC_MAKEFILE_INC__= ${MFILE}
+
+.if defined(CROSSDIR)
+TOOLS_PREFIX=${CROSSDIR}
+.endif
 
 GCCLIB= ${.CURDIR}/../../../gcc
 GCCDIR=	${GCCLIB}/gcc

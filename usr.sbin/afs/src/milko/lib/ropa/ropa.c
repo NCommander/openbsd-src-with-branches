@@ -391,10 +391,9 @@ create_clients (unsigned n)
     struct ropa_client *c;
     unsigned long i;
 
-    c = malloc (n * sizeof (*c));
+    c = calloc (n, sizeof (*c));
     if (c == NULL)
-	err (1, "create_clients: malloc");
-    memset (c, 0, n * sizeof (*c));
+	err (1, "create_clients: calloc");
 
     for (i = 0 ; i < n; i++) {
 #ifdef DIAGNOSTIC
@@ -806,7 +805,7 @@ client_query (uint32_t host, uint16_t port)
 				 rxnull_NewClientSecurityObject(),
 				 0);
 	if (conn == NULL) {
-	    abort(); /* XXX: free c */
+	    free(c);
 	    return NULL;
 	}
     retry:
@@ -852,7 +851,7 @@ client_query (uint32_t host, uint16_t port)
 	    break;
 	}
 	default:
-	    abort();
+	     exit(-1);
 	}
 	
 	rx_DestroyConnection (conn);
@@ -989,8 +988,6 @@ ropa_getcallback (uint32_t host, uint16_t port, const struct AFSFid *fid,
     }
 
     cc = add_client (cb, c);
-    if (cc == NULL)
-	abort();
 
     callback_deref (cb);
 

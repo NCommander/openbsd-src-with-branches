@@ -133,7 +133,7 @@ password_entry_parseline (cvsroot_canonical, warn, linenumber, linebuf)
 
 	if (isspace(*(linebuf + 1)))
 	    /* special case since strtoul ignores leading white space */
-	    entry_version = 0;
+	    q = linebuf + 1;
 	else
 	    entry_version = strtoul (linebuf + 1, &q, 10);
 
@@ -313,6 +313,8 @@ password_entry_operation (operation, root, newpassword)
 	error (1, 0, "CVSROOT: %s", root->original);
     }
 
+    cvsroot_canonical = normalize_cvsroot (root);
+
     /* Yes, the method below reads the user's password file twice when we have
      * to delete an entry.  It's inefficient, but we're not talking about a gig of
      * data here.
@@ -322,15 +324,14 @@ password_entry_operation (operation, root, newpassword)
     fp = CVS_FOPEN (passfile, "r");
     if (fp == NULL)
     {
-	error (0, errno, "failed to open %s for reading", passfile);
-	goto error_exit;
+	if (operation != password_entry_add )
+	    error (0, errno, "failed to open %s for reading", passfile);
+	goto process;
     }
-
-    cvsroot_canonical = normalize_cvsroot (root);
 
     /* Check each line to see if we have this entry already. */
     line = 0;
-    while ((line_length = getline (&linebuf, &linebuf_len, fp)) >= 0)
+    while ((line_length = get_line (&linebuf, &linebuf_len, fp)) >= 0)
     {
 	line++;
 	password = password_entry_parseline(cvsroot_canonical, 1, line, linebuf);
@@ -360,6 +361,8 @@ password_entry_operation (operation, root, newpassword)
 	    *p = '\0';
 	password = xstrdup (password);
     }
+
+process:
 
     /* might as well return now */
     if (operation == password_entry_lookup)
@@ -397,7 +400,7 @@ password_entry_operation (operation, root, newpassword)
 	    error (1, errno, "unable to open temp file %s", tmp_name);
 
 	line = 0;
-	while ((line_length = getline (&linebuf, &linebuf_len, fp)) >= 0)
+	while ((line_length = get_line (&linebuf, &linebuf_len, fp)) >= 0)
 	{
 	    line++;
 	    if (line < found_at

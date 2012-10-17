@@ -1,3 +1,4 @@
+/*	$OpenBSD: mtree.h,v 1.12 2008/10/08 12:17:02 kili Exp $	*/
 /*	$NetBSD: mtree.h,v 1.7 1995/03/07 21:26:27 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,9 +35,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define	MTREE_O_FLAGS \
+	(O_RDONLY | O_NONBLOCK | O_NOFOLLOW)
+
 #define	KEYDEFAULT \
 	(F_GID | F_MODE | F_NLINK | F_SIZE | F_SLINK | F_TIME | F_UID)
 
+#define	ERROREXIT	1
 #define	MISMATCHEXIT	2
 
 typedef struct _node {
@@ -48,31 +49,42 @@ typedef struct _node {
 	struct _node	*prev, *next;		/* left, right */
 	off_t	st_size;			/* size */
 	struct timespec	st_mtimespec;		/* last modification time */
-	u_long	cksum;				/* check sum */
+	u_int32_t cksum;			/* check sum */
+	char	*md5digest;			/* MD5 digest */
+	char	*rmd160digest;			/* RIPEMD-160 digest */
+	char	*sha1digest;			/* SHA-1 digest */
+	char	*sha256digest;			/* SHA-256 digest */
 	char	*slink;				/* symbolic link reference */
 	uid_t	st_uid;				/* uid */
 	gid_t	st_gid;				/* gid */
 #define	MBITS	(S_ISUID|S_ISGID|S_ISTXT|S_IRWXU|S_IRWXG|S_IRWXO)
 	mode_t	st_mode;			/* mode */
 	nlink_t	st_nlink;			/* link count */
+	u_int32_t file_flags;			/* file flags */
 
-#define	F_CKSUM	0x0001				/* check sum */
-#define	F_DONE	0x0002				/* directory done */
-#define	F_GID	0x0004				/* gid */
-#define	F_GNAME	0x0008				/* group name */
-#define	F_IGN	0x0010				/* ignore */
-#define	F_MAGIC	0x0020				/* name has magic chars */
-#define	F_MODE	0x0040				/* mode */
-#define	F_NLINK	0x0080				/* number of links */
-#define	F_OPT	0x0100				/* existence optional */
-#define	F_SIZE	0x0200				/* size */
-#define	F_SLINK	0x0400				/* link count */
-#define	F_TIME	0x0800				/* modification time */
-#define	F_TYPE	0x1000				/* file type */
-#define	F_UID	0x2000				/* uid */
-#define	F_UNAME	0x4000				/* user name */
-#define	F_VISIT	0x8000				/* file visited */
-	u_short	flags;				/* items set */
+#define	F_CKSUM		0x000001		/* checksum */
+#define	F_DONE		0x000002		/* directory done */
+#define	F_GID		0x000004		/* gid */
+#define	F_GNAME		0x000008		/* group name */
+#define	F_IGN		0x000010		/* ignore */
+#define	F_MAGIC		0x000020		/* name has magic chars */
+#define	F_MD5		0x000040		/* MD5 digest */
+#define	F_MODE		0x000080		/* mode */
+#define	F_NLINK		0x000100		/* number of links */
+#define F_OPT		0x000200		/* existence optional */
+#define	F_RMD160	0x000400		/* RIPEMD-160 digest */
+#define	F_SHA1		0x000800		/* SHA-1 digest */
+#define	F_SIZE		0x001000		/* size */
+#define	F_SLINK		0x002000		/* link count */
+#define	F_TIME		0x004000		/* modification time */
+#define	F_TYPE		0x008000		/* file type */
+#define	F_UID		0x010000		/* uid */
+#define	F_UNAME		0x020000		/* user name */
+#define	F_VISIT		0x040000		/* file visited */
+#define	F_FLAGS		0x080000		/* file flags */
+#define	F_NOCHANGE	0x100000		/* do not change owner/mode */
+#define	F_SHA256	0x200000		/* SHA-256 digest */
+	u_int32_t flags;			/* items set */
 
 #define	F_BLOCK	0x001				/* block special */
 #define	F_CHAR	0x002				/* char special */

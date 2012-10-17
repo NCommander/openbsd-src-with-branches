@@ -53,7 +53,7 @@ struct create_entry {
 #define DYNROOT_ROOTDIR 1
 #define DYNROOT_UNIQUE 1
 
-static Bool dynroot_enable  = 0;		/* is dynroot enabled ? */
+static Bool dynroot_enabled  = 0;		/* is dynroot enabled ? */
 static unsigned long last_celldb_version = 0;	/* last version of celldb */
 
 /*
@@ -188,7 +188,7 @@ dynroot_create_symlink (fbuf *fbuf, int32_t vnode)
 
     len = snprintf (name, sizeof(name), "%c%s:root.cell.", 
 		    rw ? '%' : '#', cell->name);
-    assert (len > 0 && len <= sizeof (name));
+    assert (len > 0 && len < sizeof (name));
 
     ret = fbuf_truncate (fbuf, len);
     if (ret)
@@ -261,7 +261,8 @@ dynroot_update_entry (FCacheEntry *entry, int32_t filetype,
 	entry->status.UnixModeBits = 0644;
 	break;
     default:
-	abort();
+	errx(-1, "dynroot_update_entry: unknowrn file type %d\n", filetype);
+	/* NOTREACHED */
     }
     entry->status.ParentVnode	= DYNROOT_ROOTDIR;
     entry->status.ParentUnique	= DYNROOT_UNIQUE;
@@ -380,7 +381,7 @@ dynroot_is_dynrootp (FCacheEntry *entry)
 {
     assert (entry);
 
-    if (dynroot_enable &&
+    if (dynroot_enabled &&
 	entry->fid.Cell == DYNROOT_CELLID &&
 	entry->fid.fid.Volume == DYNROOT_ROOTVOLUME)
 	return TRUE;
@@ -395,7 +396,7 @@ dynroot_is_dynrootp (FCacheEntry *entry)
 Bool
 dynroot_enablep (void)
 {
-    return dynroot_enable;
+    return dynroot_enabled;
 }
 
 /*
@@ -405,8 +406,8 @@ dynroot_enablep (void)
 Bool
 dynroot_setenable (Bool enable)
 {
-    Bool was = dynroot_enable;
-    dynroot_enable = enable;
+    Bool was = dynroot_enabled;
+    dynroot_enabled = enable;
     return was;
 }
 

@@ -1,29 +1,49 @@
+/*	$OpenBSD: wrtvid.c,v 1.6 2006/05/18 06:11:16 miod Exp $ */
+
+/*
+ * Copyright (c) 1995 Dale Rahn <drahn@openbsd.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/disklabel.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
-#define __DBINTERFACE_PRIVATE
-#include <db.h>
-#include <machine/disklabel.h>
+#include <stdlib.h>
+#include <string.h>
 
+void	copy_exe(int, int);
+void	swabcfg(struct mvmedisklabel *);
+void	swabvid(struct mvmedisklabel *);
+
+int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
-	struct cpu_disklabel *pcpul;
+	struct mvmedisklabel *pcpul;
 	struct stat stat;
 	int exe_file;
 	int tape_vid;
 	int tape_exe;
 	unsigned int exe_addr;
-	unsigned short exe_addr_u;
-	unsigned short exe_addr_l;
 	char *filename;
 	char fileext[256];
-	char filebase[256];
 
-	if (argc == 0)
+	if (argc == 1)
 		filename = "a.out";
 	else
 		filename = argv[1];
@@ -33,16 +53,16 @@ main(argc, argv)
 		perror(filename);
 		exit(2);
 	}
-	sprintf(fileext, "%c%cboot", filename[4], filename[5]);
+	snprintf(fileext, sizeof fileext, "%c%cboot", filename[4], filename[5]);
 	tape_vid = open(fileext, O_WRONLY|O_CREAT|O_TRUNC, 0644);
-	sprintf(fileext, "boot%c%c", filename[4], filename[5]);
+	snprintf(fileext, sizeof fileext, "boot%c%c", filename[4], filename[5]);
 	tape_exe = open(fileext, O_WRONLY|O_CREAT|O_TRUNC,0644);
 
-	pcpul = (struct cpu_disklabel *)malloc(sizeof(struct cpu_disklabel));
-	bzero(pcpul, sizeof(struct cpu_disklabel));
+	pcpul = (struct mvmedisklabel *)malloc(sizeof(struct mvmedisklabel));
+	bzero(pcpul, sizeof(struct mvmedisklabel));
 
 	pcpul->version = 1;
-	strcpy(pcpul->vid_id, "NBSD");
+	memcpy(pcpul->vid_id, "M88K", sizeof pcpul->vid_id);
 
 	fstat(exe_file, &stat);
 	/* size in 256 byte blocks round up after a.out header removed */
@@ -58,6 +78,8 @@ main(argc, argv)
 	read(exe_file, &exe_addr, 4);
 
 	/* check this, it may not work in both endian. */
+	/* No, it doesn't.  Use a big endian machine for now. SPM */
+	
 	{
 		union {
 			struct s {
@@ -85,7 +107,7 @@ main(argc, argv)
 	if (BYTE_ORDER != BIG_ENDIAN)
 		swabcfg(pcpul);
 
-	write(tape_vid, pcpul, sizeof(struct cpu_disklabel));
+	write(tape_vid, pcpul, sizeof(struct mvmedisklabel));
 
 	free(pcpul);
 
@@ -97,6 +119,7 @@ main(argc, argv)
 }
 
 #define BUF_SIZ 512
+void
 copy_exe(exe_file, tape_exe)
 	int exe_file, tape_exe;
 {
@@ -113,34 +136,36 @@ copy_exe(exe_file, tape_exe)
 	write(tape_exe, buf, BUF_SIZ);
 }
 
+void
 swabvid(pcpul)
-	struct cpu_disklabel *pcpul;
+	struct mvmedisklabel *pcpul;
 {
-	M_32_SWAP(pcpul->vid_oss);
-	M_16_SWAP(pcpul->vid_osl);
-	/*
-	M_16_SWAP(pcpul->vid_osa_u);
-	M_16_SWAP(pcpul->vid_osa_l);
-	*/
-	M_32_SWAP(pcpul->vid_cas);
+	swap32(pcpul->vid_oss);
+	swap16(pcpul->vid_osl);
+#if 0
+	swap16(pcpul->vid_osa_u);
+	swap16(pcpul->vid_osa_l);
+#endif
+	swap32(pcpul->vid_cas);
 }
 
+void
 swabcfg(pcpul)
-	struct cpu_disklabel *pcpul;
+	struct mvmedisklabel *pcpul;
 {
-	M_16_SWAP(pcpul->cfg_atm);
-	M_16_SWAP(pcpul->cfg_prm);
-	M_16_SWAP(pcpul->cfg_atm);
-	M_16_SWAP(pcpul->cfg_rec);
-	M_16_SWAP(pcpul->cfg_trk);
-	M_16_SWAP(pcpul->cfg_psm);
-	M_16_SWAP(pcpul->cfg_shd);
-	M_16_SWAP(pcpul->cfg_pcom);
-	M_16_SWAP(pcpul->cfg_rwcc);
-	M_16_SWAP(pcpul->cfg_ecc);
-	M_16_SWAP(pcpul->cfg_eatm);
-	M_16_SWAP(pcpul->cfg_eprm);
-	M_16_SWAP(pcpul->cfg_eatw);
-	M_16_SWAP(pcpul->cfg_rsvc1);
-	M_16_SWAP(pcpul->cfg_rsvc2);
+	swap16(pcpul->cfg_atm);
+	swap16(pcpul->cfg_prm);
+	swap16(pcpul->cfg_atm);
+	swap16(pcpul->cfg_rec);
+	swap16(pcpul->cfg_trk);
+	swap16(pcpul->cfg_psm);
+	swap16(pcpul->cfg_shd);
+	swap16(pcpul->cfg_pcom);
+	swap16(pcpul->cfg_rwcc);
+	swap16(pcpul->cfg_ecc);
+	swap16(pcpul->cfg_eatm);
+	swap16(pcpul->cfg_eprm);
+	swap16(pcpul->cfg_eatw);
+	swap16(pcpul->cfg_rsvc1);
+	swap16(pcpul->cfg_rsvc2);
 }
