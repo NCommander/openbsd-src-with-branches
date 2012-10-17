@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vldcp.c,v 1.1 2012/10/17 11:52:22 kettenis Exp $	*/
 /*
  * Copyright (c) 2009, 2012 Mark Kettenis
  *
@@ -32,7 +32,6 @@
 #include <sparc64/dev/cbusvar.h>
 #include <sparc64/dev/ldcvar.h>
 
-#define VLDCP_DEBUG
 #ifdef VLDCP_DEBUG
 #define DPRINTF(x)	printf x
 #else
