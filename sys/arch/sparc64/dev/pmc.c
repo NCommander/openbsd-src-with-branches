@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmc.c,v 1.1 2007/04/10 19:03:10 kettenis Exp $	*/
+/*	$OpenBSD: pmc.c,v 1.2 2009/11/09 20:45:37 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -99,7 +99,7 @@ pmc_attach(struct device *parent, struct device *self, void *aux)
 
 	printf("\n");
 
-	wdog_register(sc, pmc_wdog_cb);
+	wdog_register(pmc_wdog_cb, sc);
 }
 
 int

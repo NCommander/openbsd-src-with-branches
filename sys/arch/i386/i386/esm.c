@@ -1,4 +1,4 @@
-/*	$OpenBSD: esm.c,v 1.51 2010/06/30 15:22:05 blambert Exp $ */
+/*	$OpenBSD: esm.c,v 1.52 2010/07/02 01:35:13 tedu Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -253,7 +253,7 @@ esm_attach(struct device *parent, struct device *self, void *aux)
 	}
 
 	sc->sc_wdog_period = 0;
-	wdog_register(sc, esm_watchdog);
+	wdog_register(esm_watchdog, sc);
 	printf("\n");
 
 	strlcpy(sc->sc_sensordev.xname, DEVNAME(sc),

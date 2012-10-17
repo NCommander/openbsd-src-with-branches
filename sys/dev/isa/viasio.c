@@ -1,4 +1,4 @@
-/*	$OpenBSD: viasio.c,v 1.11 2008/09/10 14:01:22 blambert Exp $	*/
+/*	$OpenBSD: viasio.c,v 1.12 2009/03/29 21:53:52 sthen Exp $	*/
 /*
  * Copyright (c) 2005 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -478,7 +478,7 @@ viasio_wdg_init(struct viasio_softc *sc)
 	}
 
 	/* Register new watchdog */
-	wdog_register(sc, viasio_wdg_cb);
+	wdog_register(viasio_wdg_cb, sc);
 }
 
 int

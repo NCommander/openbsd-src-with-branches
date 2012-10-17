@@ -1,4 +1,4 @@
-/*	$OpenBSD: elan520.c,v 1.16 2009/01/14 07:58:45 grange Exp $	*/
+/*	$OpenBSD: elan520.c,v 1.17 2010/04/20 22:05:41 tedu Exp $	*/
 /*	$NetBSD: elan520.c,v 1.4 2002/10/02 05:47:15 thorpej Exp $	*/
 
 /*-
@@ -157,7 +157,7 @@ elansc_attach(struct device *parent, struct device *self, void *aux)
 	/* ...and clear it. */
 	elansc_wdogctl_reset(sc);
 
-	wdog_register(sc, elansc_wdogctl_cb);
+	wdog_register(elansc_wdogctl_cb, sc);
 	elansc = sc;
 	cpu_setperf = elansc_setperf;
 	cpu_cpuspeed = elansc_cpuspeed;

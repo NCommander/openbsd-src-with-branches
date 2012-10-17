@@ -1,4 +1,4 @@
-/*	$OpenBSD: imc.c,v 1.11 2012/09/29 21:46:02 miod Exp $	*/
+/*	$OpenBSD: imc.c,v 1.12 2012/10/03 11:18:23 miod Exp $	*/
 /*	$NetBSD: imc.c,v 1.32 2011/07/01 18:53:46 dyoung Exp $	*/
 
 /*
@@ -684,7 +684,7 @@ imc_attach(struct device *parent, struct device *self, void *aux)
 #endif
 
 	/* Register watchdog */
-	wdog_register(self, imc_watchdog_cb);
+	wdog_register(imc_watchdog_cb, self);
 }
 
 int
