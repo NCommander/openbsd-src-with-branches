@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.11 2011/09/20 14:06:26 deraadt Exp $	*/
+/*	$OpenBSD: apm.c,v 1.13 2012/10/17 22:43:50 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -371,6 +371,10 @@ apm_suspend()
 
 	rv = config_suspend(TAILQ_FIRST(&alldevs), DVACT_SUSPEND);
 
+	/* XXX
+	 * Flag to disk drivers that they should "power down" the disk
+	 * when we get to DVACT_POWERDOWN.
+	 */
 	boothowto |= RB_POWERDOWN;
 	(void) config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
 	boothowto &= ~RB_POWERDOWN;

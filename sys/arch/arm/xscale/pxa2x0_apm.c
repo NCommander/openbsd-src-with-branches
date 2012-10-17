@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_apm.c,v 1.37 2011/07/02 22:20:07 nicm Exp $	*/
+/*	$OpenBSD: pxa2x0_apm.c,v 1.39 2012/10/17 22:43:50 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -322,6 +322,10 @@ apm_suspend(struct pxa2x0_apm_softc *sc)
 	s = splhigh();
 	config_suspend(TAILQ_FIRST(&alldevs), DVACT_SUSPEND);
 
+	/* XXX
+	 * Flag to disk drivers that they should "power down" the disk
+	 * when we get to DVACT_POWERDOWN.
+	 */
 	boothowto |= RB_POWERDOWN;
 	config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
 	boothowto &= ~RB_POWERDOWN;
