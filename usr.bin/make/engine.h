@@ -1,6 +1,6 @@
 #ifndef ENGINE_H
 #define ENGINE_H
-/*	$OpenBSD: engine.h,v 1.10 2012/09/21 07:55:20 espie Exp $	*/
+/*	$OpenBSD: engine.h,v 1.11 2012/10/06 09:32:40 espie Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -97,7 +97,6 @@ struct Job_ {
 #define JOB_EXIT_OKAY 0
 #define JOB_EXIT_BAD 1
 #define JOB_SIGNALED 2
-	int 		sent_signal;
 	int 		code;		/* exit status or signal code */
 	LstNode		next_cmd;	/* Next command to run */
 	char		*cmd;		/* Last command run */
