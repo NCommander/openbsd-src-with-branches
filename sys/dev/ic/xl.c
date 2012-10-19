@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.105 2012/02/24 06:19:00 guenther Exp $	*/
+/*	$OpenBSD: xl.c,v 1.106 2012/10/13 17:24:46 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -601,8 +601,7 @@ xl_iff_90x(struct xl_softc *sc)
 	 */
 	rxfilt |= XL_RXFILTER_BROADCAST | XL_RXFILTER_INDIVIDUAL;
 
-	if (ifp->if_flags & IFF_PROMISC || ac->ac_multirangecnt > 0 ||
-	    ac->ac_multicnt > 0) {
+	if (ifp->if_flags & IFF_PROMISC || ac->ac_multicnt > 0) {
 		ifp->if_flags |= IFF_ALLMULTI;
 		if (ifp->if_flags & IFF_PROMISC)
 			rxfilt |= XL_RXFILTER_ALLFRAMES;
