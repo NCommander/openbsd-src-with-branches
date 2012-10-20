@@ -1,4 +1,4 @@
-/*	$OpenBSD: athnvar.h,v 1.31 2012/06/10 21:23:36 kettenis Exp $	*/
+/*	$OpenBSD: athnvar.h,v 1.32 2012/08/25 12:14:31 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -208,6 +208,7 @@ struct athn_addac {
 
 struct athn_serdes {
 	int		nvals;
+	const uint32_t	*regs;
 	const uint32_t	*vals;
 };
 
