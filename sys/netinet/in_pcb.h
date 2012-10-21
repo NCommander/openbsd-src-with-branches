@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.72 2012/07/16 18:05:36 markus Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.73 2012/09/17 20:01:26 yasuoka Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -148,6 +148,7 @@ struct inpcb {
 	void	*inp_pf_sk;
 	u_int	inp_rtableid;
 	int	inp_pipex;		/* pipex indication */
+	int	inp_divertfl;		/* divert flags */
 };
 
 struct inpcbtable {
