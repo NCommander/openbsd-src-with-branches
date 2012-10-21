@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldcvar.h,v 1.3 2009/05/12 21:52:30 kettenis Exp $	*/
+/*	$OpenBSD: ldcvar.h,v 1.4 2009/12/26 21:21:10 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -111,6 +111,7 @@ void	ldc_rx_ctrl(struct ldc_conn *, struct ldc_pkt *);
 void	ldc_rx_data(struct ldc_conn *, struct ldc_pkt *);
 
 void	ldc_send_vers(struct ldc_conn *);
+int	ldc_send_unreliable(struct ldc_conn *, void *, size_t);
 
 void	ldc_reset(struct ldc_conn *);
 
