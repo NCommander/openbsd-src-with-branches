@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.2 2012/10/15 20:28:50 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.3 2012/10/21 12:47:58 kettenis Exp $
 
 PROG=	ldomctl
-SRCS=	ldomctl.c ds.c mdesc.c
+SRCS=	ldomctl.c ds.c mdesc.c util.c
 NOMAN=
 CFLAGS+= -Wall
 DEBUG= -g
