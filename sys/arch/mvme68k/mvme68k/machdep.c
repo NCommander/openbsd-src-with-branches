@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.126 2011/06/26 22:40:00 deraadt Exp $ */
+/*	$OpenBSD: machdep.c,v 1.127 2012/10/08 21:47:48 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -70,6 +70,7 @@
 #include <sys/buf.h>
 #include <sys/reboot.h>
 #include <sys/conf.h>
+#include <sys/device.h>
 #include <sys/file.h>
 #include <sys/timeout.h>
 #include <sys/malloc.h>
