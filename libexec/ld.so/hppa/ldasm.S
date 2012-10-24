@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.5 2010/01/03 22:18:04 kettenis Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.6 2010/02/01 21:36:00 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2004 Michael Shalayeff
@@ -233,12 +233,6 @@ ENTRY(_dl_write,0)
 	bv	r0(rp)
 	nop
 EXIT(_dl_write)
-
-ENTRY(_dl_stat,0)
-	SYSCALL(stat)
-	bv	r0(rp)
-	nop
-EXIT(_dl_stat)
 
 ENTRY(_dl_fstat,0)
 	SYSCALL(fstat)
