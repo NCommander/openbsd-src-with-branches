@@ -1,4 +1,4 @@
-/*	$OpenBSD: ds.c,v 1.3 2012/10/22 20:44:43 kettenis Exp $	*/
+/*	$OpenBSD: ds.c,v 1.4 2012/10/22 21:16:25 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -386,8 +386,6 @@ ldc_send_rdx(struct ldc_conn *lc)
 void
 ldc_reset(struct ldc_conn *lc)
 {
-	abort();
-
 	lc->lc_tx_seqid = 0;
 	lc->lc_state = 0;
 #if 0
