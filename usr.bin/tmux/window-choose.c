@@ -1,4 +1,4 @@
-/* $OpenBSD: window-choose.c,v 1.27 2012/10/02 08:16:28 nicm Exp $ */
+/* $OpenBSD: window-choose.c,v 1.28 2012/10/11 08:53:50 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -623,7 +623,7 @@ window_choose_mouse(
 	struct window_choose_mode_item	*item;
 	u_int				 idx;
 
-	if ((m->b & 3) == 3)
+	if (~m->event & MOUSE_EVENT_CLICK)
 		return;
 	if (m->x >= screen_size_x(s))
 		return;
