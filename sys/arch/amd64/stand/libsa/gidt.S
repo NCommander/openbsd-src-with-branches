@@ -123,7 +123,7 @@
 	.globl	_C_LABEL(_rtt)
 
 ENTRY(_rtt)
-#ifdef BOOT_CRYPTO
+#ifdef SOFTRAID
 	call	_C_LABEL(sr_clear_keys)
 #endif
 #ifdef GIDT_DEBUG
