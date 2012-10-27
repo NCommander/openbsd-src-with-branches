@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio_aucat.c,v 1.10 2012/04/11 06:05:43 ratchov Exp $	*/
+/*	$OpenBSD: sio_aucat.c,v 1.11 2012/09/02 15:57:06 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <netinet/in.h>
 
 #include <errno.h>
 #include <fcntl.h>
