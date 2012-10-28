@@ -204,9 +204,11 @@ load_loop:
 load_notrunc:
 	subb	%dh, %cl		/* Update count */
 	pushl	%eax			/* Save */
-	movw	%bx, %es		/* %bx had the segment (para) number */
-	xorw	%bx, %bx		/* %es:0000  for destination */
+	pushl	%ebx			/* Save */
+	movw	%bx, %es		/* %bx has the segment (para) number */
+	xorw	%bx, %bx		/* %es:0000 for destination */
 	call	read			/* Read it in */
+	popl	%ebx			/* Restore */
 	popl	%eax			/* Restore */
 	addl	$MAX_READ_SEC, %eax	/* Update LBA */
 	addw	$MAX_READ_PARAS, %bx	/* Update dest addr */
