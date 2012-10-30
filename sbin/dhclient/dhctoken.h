@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhctoken.h,v 1.5 2006/05/15 08:10:57 fkr Exp $	*/
+/*	$OpenBSD: dhctoken.h,v 1.6 2012/08/22 00:14:42 tedu Exp $	*/
 
 /* Tokens for config file lexer and parser. */
 
@@ -59,7 +59,6 @@
 #define TOK_TIMEOUT		272
 #define TOK_RETRY		273
 #define TOK_SELECT_TIMEOUT	274
-#define TOK_SCRIPT		275
 #define TOK_INTERFACE		276
 #define TOK_RENEW		277
 #define TOK_REBIND		278
