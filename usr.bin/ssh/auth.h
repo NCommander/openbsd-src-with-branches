@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.h,v 1.68 2011/05/11 04:47:06 djm Exp $ */
+/* $OpenBSD: auth.h,v 1.69 2011/05/23 03:30:07 djm Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -110,6 +110,10 @@ int	 auth_rsa_key_allowed(struct passwd *, BIGNUM *, Key **);
 int	 auth_rhosts_rsa_key_allowed(struct passwd *, char *, char *, Key *);
 int	 hostbased_key_allowed(struct passwd *, const char *, char *, Key *);
 int	 user_key_allowed(struct passwd *, Key *);
+
+struct stat;
+int	 auth_secure_path(const char *, struct stat *, const char *, uid_t,
+    char *, size_t);
 
 #ifdef KRB5
 int	auth_krb5(Authctxt *authctxt, krb5_data *auth, char **client, krb5_data *);
