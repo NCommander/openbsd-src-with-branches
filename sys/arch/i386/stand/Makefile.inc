@@ -32,21 +32,10 @@ SACFLAGS+=-nostdinc -fno-builtin -fpack-struct
 	@([ X$(S) = X -o -h machine ] || ln -s $(S)/arch/i386/include machine)
 .endif
 
-
 .if exists(${SADIR}/etc/assym.h)
 CPPFLAGS+=-I${SADIR}/etc
 .else
 CPPFLAGS+=-I${SADIR}/etc/${__objdir}
-.endif
-.if exists(${SADIR}/libsa/libsa.a)
-LIBSA=${SADIR}/libsa/libsa.a
-.else
-LIBSA=${SADIR}/libsa/${__objdir}/libsa.a
-.endif
-.if exists(${SADIR}/libz/libz.a)
-LIBZ=${SADIR}/libz/libz.a
-.else
-LIBZ=${SADIR}/libz/${__objdir}/libz.a
 .endif
 
 # NO_NET=no_net
