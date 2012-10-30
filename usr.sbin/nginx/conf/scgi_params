@@ -1,3 +1,4 @@
+# $OpenBSD$
 
 scgi_param  REQUEST_METHOD     $request_method;
 scgi_param  REQUEST_URI        $request_uri;
