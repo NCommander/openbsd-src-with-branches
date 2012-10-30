@@ -228,6 +228,6 @@ com_putc(dev_t dev, int c)
 
 	while ((inb(port + com_lsr) & LSR_TXRDY) == 0)
 		;
-         
+
 	outb(port + com_data, c);
 }

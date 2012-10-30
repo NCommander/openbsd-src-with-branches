@@ -158,7 +158,7 @@ Xmemory(void)
 
 			size = strtoll(p + 1, &p, 0);
 			/* Size the size */
-			switch(*p) {
+			switch (*p) {
 				case 'G':
 					size *= 1024;
 				case 'M':
@@ -169,7 +169,7 @@ Xmemory(void)
 			}
 
 			/* Handle (possibly non-existant) address part */
-			switch(*p) {
+			switch (*p) {
 				case '@':
 					addr = strtoll(p + 1, NULL, 0);
 					break;
