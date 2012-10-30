@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.38 2009/10/28 20:41:39 guenther Exp $	*/
+/*	$OpenBSD: sort.c,v 1.39 2009/12/22 19:47:02 schwarze Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -281,7 +281,7 @@ main(int argc, char *argv[])
 		(void)umask(um);
 		if ((outfd = mkstemp(toutpath)) == -1 ||
 		    fchmod(outfd, DEFFILEMODE & ~um) == -1 ||
-		    (outfp = fdopen(outfd, "w")) == 0)
+		    (outfp = fdopen(outfd, "w")) == NULL)
 			err(2, "%s", toutpath);
 		outfile = toutpath;
 
