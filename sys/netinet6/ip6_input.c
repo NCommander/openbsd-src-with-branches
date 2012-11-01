@@ -670,6 +670,9 @@ ip6_input(struct mbuf *m)
 		return;
 	}	
 
+	/* pf might have changed things */
+	in6_proto_cksum_out(m, NULL);
+
 	ip6 = mtod(m, struct ip6_hdr *);
 
 	/*

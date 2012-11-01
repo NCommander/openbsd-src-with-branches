@@ -188,6 +188,9 @@ divert6_packet(struct mbuf *m, int dir)
 			break;
 		}
 	}
+	/* force checksum calculation */
+	if (dir == PF_OUT)
+		in6_proto_cksum_out(m, NULL);
 
 	if (inp != CIRCLEQ_END(&divb6table.inpt_queue)) {
 		sa = inp->inp_socket;

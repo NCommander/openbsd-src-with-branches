@@ -617,6 +617,7 @@ sendit:
 			splx(s);
 			goto done;
 		}
+		in_proto_cksum_out(m, encif);
 		ip = mtod(m, struct ip *);
 		hlen = ip->ip_hl << 2;
 		/*
@@ -697,8 +698,6 @@ sendit:
 	}
 #endif /* IPSEC */
 
-	in_proto_cksum_out(m, ifp);
-
 	/*
 	 * Packet filter
 	 */
@@ -710,6 +709,7 @@ sendit:
 	}
 	if (m == NULL)
 		goto done;
+	in_proto_cksum_out(m, ifp);
 	ip = mtod(m, struct ip *);
 	hlen = ip->ip_hl << 2;
 	if ((m->m_pkthdr.pf.flags & (PF_TAG_REROUTE | PF_TAG_GENERATED)) ==

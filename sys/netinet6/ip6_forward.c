@@ -361,6 +361,7 @@ reroute:
 			splx(s);
 			goto senderr;
 		}
+		in6_proto_cksum_out(m, encif);
 		ip6 = mtod(m, struct ip6_hdr *);
 		/*
 		 * PF_TAG_REROUTE handling or not...
@@ -470,7 +471,7 @@ reroute:
 	}
 	if (m == NULL)
 		goto senderr;
-
+	in6_proto_cksum_out(m, rt->rt_ifp);
 	ip6 = mtod(m, struct ip6_hdr *);
 	if ((m->m_pkthdr.pf.flags & (PF_TAG_REROUTE | PF_TAG_GENERATED)) ==
 	    (PF_TAG_REROUTE | PF_TAG_GENERATED)) {

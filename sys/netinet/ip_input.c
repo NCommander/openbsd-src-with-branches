@@ -500,6 +500,9 @@ ipv4_input(struct mbuf *m)
 	return;
 
 ours:
+	/* pf might have modified stuff, might have to chksum */
+	in_proto_cksum_out(m, NULL);
+
 	/*
 	 * If offset or IP_MF are set, must reassemble.
 	 * Otherwise, nothing need be done.
