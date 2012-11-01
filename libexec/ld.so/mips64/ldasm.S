@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.5 2010/03/27 20:16:15 kettenis Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.6 2010/03/27 20:45:09 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
@@ -89,6 +89,8 @@ LEAF(_dl_start, FRAMESZ)		/* Not really LEAF, but we simplify */
 	RESTORE_GP64
 	PTR_ADDU sp, FRAMESZ		# Restore stack pointer.
 	move	t9, v0			# Entry address from _dl_boot.
+	move	ra, zero		# Mark last stack frame.
+	move	v0, zero		# cleanup
 	j	t9			# Go execute the 'real' program.
 END(_dl_start)
 
