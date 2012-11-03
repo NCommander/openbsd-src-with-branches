@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.51 2012/09/25 19:16:52 lum Exp $	*/
+/*	$OpenBSD: echo.c,v 1.52 2012/10/22 08:31:42 florian Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -268,7 +268,6 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 		case CCHR('D'):
 			if (cpos != epos) {
 				tteeol();
-				y = buf[cpos];
 				epos--;
 				rr = ttrow;
 				cc = ttcol;
