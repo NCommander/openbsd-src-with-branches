@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.126 2012/10/12 21:13:46 jasper Exp $	*/
+/*	$OpenBSD: def.h,v 1.127 2012/10/22 08:31:42 florian Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -416,7 +416,7 @@ int		 popbuftop(struct buffer *, int);
 int		 getbufcwd(char *, size_t);
 int		 checkdirty(struct buffer *);
 int		 revertbuffer(int, int);
-int		 dorevert();
+int		 dorevert(void);
 
 /* display.c */
 int		vtresize(int, int, int);
