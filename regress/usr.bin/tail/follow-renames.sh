@@ -1,17 +1,19 @@
 #!/bin/sh
+#
+# $OpenBSD$
 
 # test if tail follows a file descriptor across renames
 
 #set TMPDIR to a nfs-based dir for nfs testing
-local DIR=$(mktemp -d)
+DIR=$(mktemp -d)
 echo DIR=${DIR}
 
-local NAME=${0##*/}
-local OUT=${DIR}/${NAME%%.sh}.out
+NAME=${0##*/}
+OUT=${DIR}/${NAME%%.sh}.out
 echo bar > ${DIR}/bar
 
 # retry until file appears for nfs
-local RET=1
+RET=1
 while [ ${RET} == 1 ] ; do
 	tail -f ${DIR}/bar > ${OUT} &
 	RET=$?
