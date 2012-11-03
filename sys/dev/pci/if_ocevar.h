@@ -121,9 +121,9 @@ enum {
 
 #define RING_NUM_FREE(_r)	((_r)->nitems - (_r)->nused)
 
-#define OCE_DMAPTR(_o, _t) 	((_t *)(_o)->vaddr)
+#define OCE_MEM_KVA(_m)		((void *)((_m)->vaddr))
 
-#define OCE_RING_FOREACH(_r, _v, _c)		\
+#define OCE_RING_FOREACH(_r, _v, _c)	\
 	for ((_v) = oce_ring_first(_r); _c; (_v) = oce_ring_next(_r))
 
 struct oce_packet_desc {
@@ -194,10 +194,7 @@ enum qtype {
 struct eq_config {
 	enum eq_len		q_len;
 	enum eqe_size		item_size;
-	int			q_vector_num;
-	int			min_eqd;
-	int			max_eqd;
-	int			cur_eqd;
+	int			eqd;
 };
 
 struct oce_eq {
@@ -360,9 +357,6 @@ struct oce_softc {
 
 	uint32_t		port_id;
 	uint32_t		function_mode;
-	uint32_t		function_caps;
-	uint32_t		max_tx_rings;
-	uint32_t		max_rx_rings;
 
 	struct oce_wq *		wq[OCE_MAX_WQ];	/* TX work queues */
 	struct oce_rq *		rq[OCE_MAX_RQ];	/* RX work queues */
