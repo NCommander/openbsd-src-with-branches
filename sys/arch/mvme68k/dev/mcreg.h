@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcreg.h,v 1.8 2003/06/02 05:09:14 deraadt Exp $ */
+/*	$OpenBSD: mcreg.h,v 1.9 2004/07/30 22:29:45 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -137,6 +137,7 @@ extern struct mcreg *sys_mc;
 #define MC_TCTL_COC	0x02
 #define MC_TCTL_COVF	0x04
 #define MC_TCTL_OVF	0xf0
+#define MC_TCTL_OVF_SHIFT	4
 
 #define	MC_ABORT_ABS	0x40
 
