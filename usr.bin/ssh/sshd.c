@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.393 2012/07/10 02:19:15 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.394 2012/10/30 21:29:55 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1489,6 +1489,13 @@ main(int ac, char **av)
 	/* challenge-response is implemented via keyboard interactive */
 	if (options.challenge_response_authentication)
 		options.kbd_interactive_authentication = 1;
+
+	/* Check that options are sensible */
+	if (options.authorized_keys_command_user == NULL &&
+	    (options.authorized_keys_command != NULL &&
+	    strcasecmp(options.authorized_keys_command, "none") != 0))
+		fatal("AuthorizedKeysCommand set without "
+		    "AuthorizedKeysCommandUser");
 
 	/* set default channel AF */
 	channel_set_af(options.address_family);
