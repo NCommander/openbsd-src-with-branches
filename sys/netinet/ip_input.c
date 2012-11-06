@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.197 2012/08/07 17:54:20 mikeb Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.199 2012/11/01 07:55:56 henning Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -500,9 +500,6 @@ ipv4_input(struct mbuf *m)
 	return;
 
 ours:
-	/* pf might have modified stuff, might have to chksum */
-	in_proto_cksum_out(m, NULL);
-
 	/*
 	 * If offset or IP_MF are set, must reassemble.
 	 * Otherwise, nothing need be done.
