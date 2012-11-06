@@ -1,4 +1,4 @@
-/*	$OpenBSD: inout.c,v 1.14 2006/01/15 19:11:59 otto Exp $	*/
+/*	$OpenBSD: inout.c,v 1.15 2009/10/27 23:59:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -317,7 +317,7 @@ printnumber(FILE *f, const struct number *b, u_int base)
 		i++;
 	}
 	sz = i;
-	if (BN_cmp(b->number, &zero) < 0)
+	if (BN_is_negative(b->number))
 		putcharwrap(f, '-');
 	for (i = 0; i < sz; i++) {
 		p = stack_popstring(&stack);
@@ -396,8 +396,8 @@ print_ascii(FILE *f, const struct number *n)
 	v = BN_dup(n->number);
 	bn_checkp(v);
 
-	if (BN_cmp(v, &zero) < 0)
-		bn_check(BN_sub(v, &zero, v));
+	if (BN_is_negative(v))
+		BN_set_negative(v, 0);
 
 	numbits = BN_num_bytes(v) * 8;
 	while (numbits > 0) {
