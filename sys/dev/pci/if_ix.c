@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.71 2012/08/13 13:14:50 mikeb Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.72 2012/10/28 12:21:57 brad Exp $	*/
 
 /******************************************************************************
 
@@ -788,16 +788,7 @@ ixgbe_init(void *arg)
 	}
 #endif
 
-#ifdef IXGBE_FDIR
-	/* Init Flow director */
-	if (sc->hw.mac.type != ixgbe_mac_82598EB)
-		ixgbe_init_fdir_signature_82599(&sc->hw, fdir_pballoc);
-#endif
-
-	/*
-	 * Check on any SFP devices that
-	 * need to be kick-started
-	 */
+	/* Check on any SFP devices that need to be kick-started */
 	if (sc->hw.phy.type == ixgbe_phy_none) {
 		err = sc->hw.phy.ops.identify(&sc->hw);
 		if (err == IXGBE_ERR_SFP_NOT_SUPPORTED) {
