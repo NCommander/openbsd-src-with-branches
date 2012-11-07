@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.106 2012/10/02 10:29:31 espie Exp $	*/
+/*	$OpenBSD: parse.c,v 1.107 2012/10/09 19:45:34 espie Exp $	*/
 /*	$NetBSD: parse.c,v 1.29 1997/03/10 21:20:04 christos Exp $	*/
 
 /*
@@ -1048,7 +1048,6 @@ strip_comments(Buffer copy, const char *line)
 				break;
 		}
 		Buf_Addi(copy, line, p);
-		Buf_KillTrailingSpaces(copy);
 		return Buf_Retrieve(copy);
 	}
 }
