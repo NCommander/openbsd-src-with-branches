@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_oce.c,v 1.45 2012/11/08 17:48:20 mikeb Exp $	*/
+/*	$OpenBSD: if_oce.c,v 1.46 2012/11/08 17:59:08 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2012 Mike Belopuhov
@@ -1544,8 +1544,9 @@ oce_stop(struct oce_softc *sc)
 		oce_drain_eq(eq);
 	for_all_rq_queues(sc, rq, i) {
 		oce_destroy_queue(sc, QTYPE_RQ, rq->id);
-		oce_free_posted_rxbuf(rq);
+		DELAY(1000);
 		oce_drain_rq(rq);
+		oce_free_posted_rxbuf(rq);
 	}
 	for_all_wq_queues(sc, wq, i)
 		oce_drain_wq(wq);
