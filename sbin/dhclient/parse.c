@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.19 2010/06/26 21:14:10 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.20 2011/12/10 17:15:27 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -133,11 +133,9 @@ parse_string(FILE *cfile)
 }
 
 int
-parse_ip_addr(FILE *cfile, struct iaddr *addr)
+parse_ip_addr(FILE *cfile, struct in_addr *addr)
 {
-	addr->len = 4;
-	return (parse_numeric_aggregate(cfile, addr->iabuf, addr->len, '.',
-	    10));
+	return (parse_numeric_aggregate(cfile, (char *)addr, 4, '.', 10));
 }
 
 /*
