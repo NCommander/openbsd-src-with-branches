@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.49 2009/09/27 12:07:15 deraadt Exp $ */
+/*	$OpenBSD: arp.c,v 1.50 2011/01/11 16:34:20 jasper Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -106,6 +106,7 @@ main(int argc, char *argv[])
 
 	pid = getpid();
 	opterr = 0;
+	rdomain = getrtable();
 	while ((ch = getopt(argc, argv, "andsFfV:W")) != -1) {
 		switch (ch) {
 		case 'a':
