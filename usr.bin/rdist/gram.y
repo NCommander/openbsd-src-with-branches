@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: gram.y,v 1.8 2003/06/03 02:56:14 millert Exp $	*/
+/*	$OpenBSD: gram.y,v 1.9 2009/10/27 23:59:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1993 Michael A. Cooper
@@ -413,7 +413,7 @@ insert(char *label, struct namelist *files, struct namelist *hosts,
 	struct cmd *c, *prev, *nc;
 	struct namelist *h, *lasth;
 
-	debugmsg(DM_CALL, "insert(%s, %x, %x, %x) start, files = %s", 
+	debugmsg(DM_CALL, "insert(%s, %p, %p, %p) start, files = %s", 
 		 label == NULL ? "(null)" : label,
 		 files, hosts, subcmds, getnlstr(files));
 
