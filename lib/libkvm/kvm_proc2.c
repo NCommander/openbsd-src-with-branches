@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_proc2.c,v 1.12 2012/04/14 12:15:21 guenther Exp $	*/
+/*	$OpenBSD: kvm_proc2.c,v 1.13 2012/04/17 23:17:53 pirofti Exp $	*/
 /*	$NetBSD: kvm_proc.c,v 1.30 1999/03/24 05:50:50 mrg Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -217,7 +217,7 @@ kvm_proclist(kvm_t *kd, int op, int arg, struct proc *p,
 
 		switch (op) {
 		case KERN_PROC_PID:
-			if (proc.p_pid != (pid_t)arg)
+			if (parent_pid != (pid_t)arg)
 				continue;
 			break;
 
