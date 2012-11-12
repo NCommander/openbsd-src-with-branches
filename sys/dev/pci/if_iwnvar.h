@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwnvar.h,v 1.21 2010/09/07 16:21:45 deraadt Exp $	*/
+/*	$OpenBSD: if_iwnvar.h,v 1.22 2011/01/09 15:45:37 damien Exp $	*/
 
 /*-
  * Copyright (c) 2007, 2008
@@ -201,6 +201,7 @@ struct iwn_softc {
 #define IWN_FLAG_BUSY		(1 << 5)
 #define IWN_FLAG_HAS_11N	(1 << 6)
 #define IWN_FLAG_ENH_SENS	(1 << 7)
+#define IWN_FLAG_NO_BT_COEX	(1 << 8)
 
 	uint8_t 		hw_type;
 
