@@ -1,4 +1,4 @@
-/*	$OpenBSD: pptp.h,v 1.7 2012/05/08 13:15:12 yasuoka Exp $	*/
+/*	$OpenBSD: pptp.h,v 1.8 2012/09/18 13:14:08 yasuoka Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -224,7 +224,6 @@
 struct _pptpd;
 
 typedef struct _pptpd_listener {
-	struct event ev_sock;	/* event context */
 	struct event ev_sock_gre; /* GRE event context */
 	struct _pptpd	*self;
 	uint16_t	index;
