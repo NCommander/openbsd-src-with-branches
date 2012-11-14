@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.90 2012/11/07 17:42:52 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.91 2012/11/08 21:32:55 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -295,7 +295,7 @@ void go_daemon(void);
 
 void routehandler(void);
 
-void priv_new_resolv_conf(char *);
+void priv_resolv_conf(char *);
 
 /* packet.c */
 void assemble_hw_header(unsigned char *, int *, struct hardware *);
@@ -318,12 +318,12 @@ int parse_option_decl(FILE *, struct option_data *);
 void parse_reject_statement(FILE *);
 
 /* kroute.c */
-void delete_old_addresses(char *, int);
-void delete_old_address(char *, int, struct in_addr);
-void priv_delete_old_address(char *, int, struct in_addr);
+void delete_addresses(char *, int);
+void delete_address(char *, int, struct in_addr);
+void priv_delete_address(char *, int, struct in_addr);
 
-void add_new_address(char *, int, struct in_addr, struct in_addr);
-void priv_add_new_address(char *, int, struct in_addr, struct in_addr);
+void add_address(char *, int, struct in_addr, struct in_addr);
+void priv_add_address(char *, int, struct in_addr, struct in_addr);
 
 void flush_routes_and_arp_cache(int);
 void priv_flush_routes_and_arp_cache(int);
