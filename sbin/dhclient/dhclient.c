@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.173 2012/11/14 15:47:41 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.174 2012/11/14 18:09:01 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -725,7 +725,7 @@ state_bound(void)
 	if (client->active->options[DHO_DHCP_SERVER_IDENTIFIER].len == 4) {
 		memcpy(&client->destination.s_addr,
 		    client->active->options[DHO_DHCP_SERVER_IDENTIFIER].data,
-		    client->active->options[DHO_DHCP_SERVER_IDENTIFIER].len));
+		    client->active->options[DHO_DHCP_SERVER_IDENTIFIER].len);
 	} else
 		client->destination.s_addr = INADDR_BROADCAST;
 
