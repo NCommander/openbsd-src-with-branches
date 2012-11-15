@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ruleset.c,v 1.5 2009/11/22 22:34:50 henning Exp $ */
+/*	$OpenBSD: pf_ruleset.c,v 1.6 2010/01/18 23:52:46 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -39,8 +39,8 @@
 #include <sys/socket.h>
 #ifdef _KERNEL
 # include <sys/systm.h>
+# include <sys/mbuf.h>
 #endif /* _KERNEL */
-#include <sys/mbuf.h>
 #include <sys/syslog.h>
 
 #include <netinet/in.h>
