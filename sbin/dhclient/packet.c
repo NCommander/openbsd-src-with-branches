@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.12 2006/12/28 01:10:46 stevesk Exp $	*/
+/*	$OpenBSD: packet.c,v 1.13 2009/06/06 04:02:42 krw Exp $	*/
 
 /* Packet assembly code, originally contributed by Archie Cobbs. */
 
@@ -45,7 +45,6 @@
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
-#include <netinet/if_ether.h>
 
 #define ETHER_HEADER_SIZE (ETHER_ADDR_LEN * 2 + sizeof(u_int16_t))
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.43 2012/11/07 15:20:28 krw Exp $	*/
+/*	$OpenBSD: options.c,v 1.44 2012/11/08 21:32:55 krw Exp $	*/
 
 /* DHCP options parsing and reassembly. */
 
@@ -39,8 +39,6 @@
  * see ``http://www.vix.com/isc''.  To learn more about Vixie
  * Enterprises, see ``http://www.vix.com''.
  */
-
-#include <ctype.h>
 
 #include "dhcpd.h"
 
