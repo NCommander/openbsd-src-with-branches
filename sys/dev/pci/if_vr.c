@@ -1276,7 +1276,10 @@ vr_start(struct ifnet *ifp)
 
 	sc = ifp->if_softc;
 
-	if (ifp->if_flags & IFF_OACTIVE || sc->vr_link == 0)
+	if ((ifp->if_flags & (IFF_RUNNING | IFF_OACTIVE)) != IFF_RUNNING)
+		return;
+
+	if (sc->vr_link == 0)
 		return;
 
 	cur_tx = sc->vr_cdata.vr_tx_prod;
