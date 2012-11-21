@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsk.c,v 1.30 2012/10/26 20:57:08 kettenis Exp $	*/
+/*	$OpenBSD: vdsk.c,v 1.31 2012/11/21 21:20:13 kettenis Exp $	*/
 /*
  * Copyright (c) 2009, 2011 Mark Kettenis
  *
@@ -27,6 +27,7 @@
 #include <uvm/uvm.h>
 
 #include <scsi/scsi_all.h>
+#include <scsi/cd.h>
 #include <scsi/scsi_disk.h>
 #include <scsi/scsiconf.h>
 
@@ -960,6 +961,7 @@ vdsk_scsi_cmd(struct scsi_xfer *xs)
 	case MODE_SENSE:
 	case MODE_SENSE_BIG:
 	case REPORT_LUNS:
+	case READ_TOC:
 		vdsk_scsi_done(xs, XS_DRIVER_STUFFUP);
 		return;
 	}
