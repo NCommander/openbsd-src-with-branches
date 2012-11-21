@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.37 2012/10/09 19:50:44 espie Exp $ */
+/*	$OpenBSD: engine.c,v 1.38 2012/10/18 17:54:43 espie Exp $ */
 /*
  * Copyright (c) 2012 Marc Espie.
  *
@@ -345,6 +345,9 @@ Make_DoAllVar(GNode *gn)
 
 	oodate_count = 0;
 	allsrc_count = 0;
+
+	Var(OODATE_INDEX, gn) = "";
+	Var(ALLSRC_INDEX, gn) = "";
 
 	for (ln = Lst_First(&gn->children); ln != NULL; ln = Lst_Adv(ln)) {
 		child = (GNode *)Lst_Datum(ln);
