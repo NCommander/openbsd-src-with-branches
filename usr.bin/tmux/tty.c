@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.141 2012/09/05 09:59:41 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.142 2012/09/29 06:57:56 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -289,9 +289,6 @@ tty_stop_tty(struct tty *tty)
 		tty_raw(tty, "\033[?1000l");
 
 	tty_raw(tty, tty_term_string(tty->term, TTYC_RMCUP));
-
-	if (tty->xterm_version > 270)
-		tty_raw(tty, "\033[61;1\"p");
 }
 
 void
