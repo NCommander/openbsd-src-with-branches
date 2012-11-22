@@ -1,4 +1,4 @@
-#	$OpenBSD: install.sub,v 1.670 2012/10/21 06:41:14 deraadt Exp $
+#	$OpenBSD: install.sub,v 1.671 2012/11/06 17:49:39 krw Exp $
 #	$NetBSD: install.sub,v 1.5.2.8 1996/09/02 23:25:02 pk Exp $
 #
 # Copyright (c) 1997-2009 Todd Miller, Theo de Raadt, Ken Westerback
@@ -1611,7 +1611,7 @@ install_sets() {
 }
 
 run_sysmerge() {
-	echo "Please run sysmerge(8) after rebooting to repair your /etc configuration."
+	echo "After rebooting, run sysmerge(8) to update your /etc configuration."
 	#if [[ -n "$SM_ARGS" || -n "$SM_ARGSX" ]]; then
 	#	ask_yn "Merge the new etc/xetc install sets using sysmerge(8)?" no
 	#	if [[ $resp == y ]]; then \
