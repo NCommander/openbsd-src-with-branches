@@ -1,4 +1,4 @@
-/*	$OpenBSD: mio.c,v 1.15 2012/05/23 19:25:11 ratchov Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -61,6 +61,8 @@ mio_open(const char *str, unsigned int mode, int nbio)
 		return mio_aucat_open(p, mode, nbio, 0);
 	if ((p = sndio_parsetype(str, "midithru")) != NULL)
 		return mio_aucat_open(p, mode, nbio, 1);
+	if ((p = sndio_parsetype(str, "midi")) != NULL)
+		return mio_aucat_open(p, mode, nbio, 2);
 	if ((p = sndio_parsetype(str, "rmidi")) != NULL) {
 		return mio_rmidi_open(p, mode, nbio);
 	}

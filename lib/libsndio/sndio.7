@@ -1,4 +1,4 @@
-.\" $OpenBSD: sndio.7,v 1.9 2011/12/09 14:38:09 ratchov Exp $
+.\" $OpenBSD$
 .\"
 .\" Copyright (c) 2007 Alexandre Ratchov <alex@caoua.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: December 9 2011 $
+.Dd $Mdocdate$
 .Dt SNDIO 7
 .Os
 .Sh NAME
@@ -92,6 +92,9 @@ Audio device exposed by
 .Xr sndiod 1 .
 .It Pa midithru
 MIDI thru box created with
+.Xr sndiod 1 .
+.It Pa midi
+MIDI port exposed by
 .Xr sndiod 1 .
 .It Pa default
 Any audio device or MIDI port.
