@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.48 2011/06/22 16:44:29 tedu Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.49 2012/10/18 21:44:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -794,7 +794,7 @@ wb_attach(parent, self, aux)
 	ifp->if_ioctl = wb_ioctl;
 	ifp->if_start = wb_start;
 	ifp->if_watchdog = wb_watchdog;
-	ifp->if_baudrate = 10000000;
+	ifp->if_baudrate = IF_Mbps(10);
 	IFQ_SET_MAXLEN(&ifp->if_snd, WB_TX_LIST_CNT - 1);
 	IFQ_SET_READY(&ifp->if_snd);
 

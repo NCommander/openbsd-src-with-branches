@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.116 2012/10/18 21:44:21 deraadt Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.118 2012/11/15 15:50:19 jsing Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -623,7 +623,7 @@ vr_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_ioctl = vr_ioctl;
 	ifp->if_start = vr_start;
 	ifp->if_watchdog = vr_watchdog;
-	ifp->if_baudrate = 10000000;
+	ifp->if_baudrate = IF_Mbps(10);
 	ifp->if_capabilities = 0;
 	IFQ_SET_READY(&ifp->if_snd);
 	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);

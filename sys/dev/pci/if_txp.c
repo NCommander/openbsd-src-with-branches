@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.103 2011/04/03 15:36:03 jasper Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.104 2011/04/05 18:01:21 henning Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -225,7 +225,7 @@ txp_attachhook(void *vsc)
 	ifp->if_ioctl = txp_ioctl;
 	ifp->if_start = txp_start;
 	ifp->if_watchdog = txp_watchdog;
-	ifp->if_baudrate = 10000000;
+	ifp->if_baudrate = IF_Mbps(10);
 	IFQ_SET_MAXLEN(&ifp->if_snd, TX_ENTRIES);
 	IFQ_SET_READY(&ifp->if_snd);
 	ifp->if_capabilities = 0;

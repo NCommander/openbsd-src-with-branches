@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tl.c,v 1.50 2010/05/19 15:27:35 oga Exp $	*/
+/*	$OpenBSD: if_tl.c,v 1.51 2011/06/22 16:44:27 tedu Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -2125,7 +2125,7 @@ tl_attach(parent, self, aux)
 	ifp->if_ioctl = tl_ioctl;
 	ifp->if_start = tl_start;
 	ifp->if_watchdog = tl_watchdog;
-	ifp->if_baudrate = 10000000;
+	ifp->if_baudrate = IF_Mbps(10);
 	IFQ_SET_MAXLEN(&ifp->if_snd, TL_TX_LIST_CNT - 1);
 	IFQ_SET_READY(&ifp->if_snd);
 	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
