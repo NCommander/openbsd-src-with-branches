@@ -1,4 +1,4 @@
-/*	$OpenBSD: delivery_maildir.c,v 1.8 2012/09/16 11:53:57 gilles Exp $	*/
+/*	$OpenBSD: delivery_maildir.c,v 1.9 2012/10/03 17:58:03 gilles Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@openbsd.org>
@@ -58,7 +58,7 @@ delivery_maildir_open(struct deliver *deliver)
 	char	*msg;
 	int	 n;
 
-#define error(m)	{ msg = m; goto err; }	
+#define error(m)	{ msg = m; goto err; }
 #define error2(m)	{ msg = m; goto err2; }
 
 	setproctitle("maildir delivery");
