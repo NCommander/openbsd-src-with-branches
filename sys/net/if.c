@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.246 2012/10/18 00:36:21 deraadt Exp $	*/
+/*	$OpenBSD: if.c,v 1.247 2012/10/23 17:41:00 claudio Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -1266,6 +1266,10 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 
 	case SIOCGIFMTU:
 		ifr->ifr_mtu = ifp->if_mtu;
+		break;
+
+	case SIOCGIFHARDMTU:
+		ifr->ifr_hardmtu = ifp->if_hardmtu;
 		break;
 
 	case SIOCGIFDATA:

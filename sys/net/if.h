@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.135 2012/10/05 17:17:04 camield Exp $	*/
+/*	$OpenBSD: if.h,v 1.136 2012/11/11 04:45:37 deraadt Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -639,6 +639,7 @@ struct	ifreq {
 #define	ifr_flags	ifr_ifru.ifru_flags	/* flags */
 #define	ifr_metric	ifr_ifru.ifru_metric	/* metric */
 #define	ifr_mtu		ifr_ifru.ifru_metric	/* mtu (overload) */
+#define	ifr_hardmtu	ifr_ifru.ifru_metric	/* hardmtu (overload) */
 #define	ifr_media	ifr_ifru.ifru_metric	/* media options (overload) */
 #define	ifr_rdomainid	ifr_ifru.ifru_metric	/* VRF instance (overload) */
 #define	ifr_data	ifr_ifru.ifru_data	/* for use by interface */
