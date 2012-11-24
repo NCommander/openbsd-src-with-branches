@@ -1,4 +1,4 @@
-/*	$OpenBSD: res_mkquery.c,v 1.1 2012/09/08 11:08:21 eric Exp $	*/
+/*	$OpenBSD: res_mkquery.c,v 1.2 2012/11/24 13:59:53 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -17,8 +17,8 @@
 
 #include <sys/types.h>
 #include <netinet/in.h>
-
 #include <arpa/nameser.h> /* for MAXDNAME */
+
 #include <errno.h>
 #include <resolv.h>
 #include <string.h>

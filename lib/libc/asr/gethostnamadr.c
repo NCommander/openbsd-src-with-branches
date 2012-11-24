@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_resolver.c,v 1.10 2012/08/19 17:59:15 eric Exp $	*/
+/*	$OpenBSD: gethostnamadr.c,v 1.1 2012/09/08 11:08:21 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -69,7 +69,7 @@ _fillhostent(const struct hostent *h, struct hostent *r, char *buf, size_t len)
 	r->h_name = pos;
 	pos += n + 1;
 
-	for(i = 0; i < naliases; i++) {
+	for (i = 0; i < naliases; i++) {
 		n = strlcpy(pos, h->h_aliases[i], end - pos);
 		if (n >= end - pos)
 			return;
@@ -77,7 +77,7 @@ _fillhostent(const struct hostent *h, struct hostent *r, char *buf, size_t len)
 		pos += n + 1;
 	}
 
-	for(i = 0; i < naddrs; i++) {
+	for (i = 0; i < naddrs; i++) {
 		if (r->h_length > end - pos)
 			return;
 		memmove(pos, h->h_addr_list[i], r->h_length);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.h,v 1.2 2012/08/19 16:17:40 eric Exp $	*/
+/*	$OpenBSD: asr.h,v 1.3 2012/09/06 08:36:52 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -17,7 +17,6 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-
 #include <netdb.h>
 #include <netinet/in.h>
 
