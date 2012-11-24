@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.178 2012/11/16 16:46:18 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.179 2012/11/23 15:25:47 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -666,6 +666,7 @@ bind_lease(void)
 	lease = apply_defaults(client->new);
 	options = lease->options;
 
+	memset(&mask, 0, sizeof(mask));
 	memcpy(&mask.s_addr, options[DHO_SUBNET_MASK].data,
 	    options[DHO_SUBNET_MASK].len);
 	add_address(ifi->name, ifi->rdomain, client->new->address, mask);
