@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.128 2012/11/03 14:51:41 haesbaert Exp $	*/
+/*	$OpenBSD: def.h,v 1.129 2012/11/06 18:04:10 florian Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -452,6 +452,7 @@ int		 fchecktime(struct buffer *);
 int		 fupdstat(struct buffer *);
 int		 backuptohomedir(int, int);
 int		 toggleleavetmp(int, int);
+char		*expandtilde(const char *);
 
 /* kbd.c X */
 int		 do_meta(int, int);
