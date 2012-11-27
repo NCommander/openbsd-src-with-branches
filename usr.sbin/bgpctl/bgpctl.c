@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.166 2012/09/18 10:11:23 claudio Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.167 2012/11/15 19:55:08 sthen Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -791,7 +791,7 @@ print_neighbor_msgstats(struct peer *p)
 }
 
 void
-print_timer(const char *name, timer_t d)
+print_timer(const char *name, time_t d)
 {
 	printf("  %-20s ", name);
 
