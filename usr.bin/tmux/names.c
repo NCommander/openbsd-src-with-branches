@@ -1,4 +1,4 @@
-/* $OpenBSD: names.c,v 1.16 2012/07/10 11:53:01 nicm Exp $ */
+/* $OpenBSD: names.c,v 1.17 2012/08/21 10:00:33 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -76,7 +76,7 @@ window_name_callback(unused int fd, unused short events, void *data)
 		    name != NULL && name[0] == '-' && name[1] != '\0')
 			wname = parse_window_name(name + 1);
 		else
-				wname = parse_window_name(name);
+			wname = parse_window_name(name);
 		free(name);
 	}
 
