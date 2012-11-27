@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.28 2012/04/23 22:23:14 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.29 2012/04/29 17:20:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -684,6 +684,21 @@ const struct options_table_entry window_options_table[] = {
 	{ .name = "window-status-current-format",
 	  .type = OPTIONS_TABLE_STRING,
 	  .default_str = "#I:#W#F"
+	},
+
+	{ .name = "window-status-last-attr",
+	  .type = OPTIONS_TABLE_ATTRIBUTES,
+	  .default_num = 0
+	},
+
+	{ .name = "window-status-last-bg",
+	  .type = OPTIONS_TABLE_COLOUR,
+	  .default_num = 8
+	},
+
+	{ .name = "window-status-last-fg",
+	  .type = OPTIONS_TABLE_COLOUR,
+	  .default_num = 8
 	},
 
 	{ .name = "window-status-fg",
