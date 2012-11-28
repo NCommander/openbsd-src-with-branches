@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.13 2012/09/18 13:14:08 yasuoka Exp $
+#	$OpenBSD: Makefile,v 1.14 2012/11/13 17:10:40 yasuoka Exp $
 
 NPPPD_COMMON_DIR=	${.CURDIR}/../common
 
+BINDIR=		/usr/sbin
 PROG=		npppd
 MAN=		npppd.8 npppd.conf.5 npppd-users.5
 CPPFLAGS+=	-I${NPPPD_COMMON_DIR} -I${.CURDIR}
