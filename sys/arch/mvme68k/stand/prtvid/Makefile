@@ -1,9 +1,0 @@
-#	$OpenBSD: Makefile,v 1.2 1996/04/28 10:49:28 deraadt Exp $
-
-PROG=	prtvid
-NOMAN=
-NOPIE=
-
-install:
-
-.include <bsd.prog.mk>

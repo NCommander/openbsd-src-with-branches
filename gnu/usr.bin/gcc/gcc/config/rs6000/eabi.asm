@@ -38,7 +38,7 @@
 
 	.file	"eabi.asm"
 	.section ".text"
-	#include "rs6000/ppc-asm.h"
+	#include "ppc-asm.h"
 
 #ifndef __powerpc64__
 

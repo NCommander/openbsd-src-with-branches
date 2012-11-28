@@ -1,3 +1,0 @@
-# $OpenBSD$
-
-BINDIR=/usr/libexec

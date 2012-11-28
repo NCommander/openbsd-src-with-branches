@@ -1,3 +1,5 @@
+parse.c
+parse-scan.c
 gcj.info*
 gcj.1
 gcjh.1

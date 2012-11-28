@@ -685,14 +685,11 @@
 
 (define_expand "cmpsi"
   [(set (reg:SI T_REG)
-	(compare (match_operand:SI 0 "cmpsi_operand" "")
+	(compare (match_operand:SI 0 "arith_operand" "")
 		 (match_operand:SI 1 "arith_operand" "")))]
   "TARGET_SH1"
   "
 {
-  if (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == T_REG
-      && GET_CODE (operands[1]) != CONST_INT)
-    operands[0] = copy_to_mode_reg (SImode, operands[0]);
   sh_compare_op0 = operands[0];
   sh_compare_op1 = operands[1];
   DONE;
@@ -1150,9 +1147,7 @@
 			    (match_operand:SI 2 "arith_reg_operand" "r"))
 		  (reg:SI T_REG)))
    (set (reg:SI T_REG)
-	(gtu:SI (minus:SI (minus:SI (match_dup 1) (match_dup 2))
-			  (reg:SI T_REG))
-		(match_dup 1)))]
+	(gtu:SI (minus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
   "TARGET_SH1"
   "subc	%2,%0"
   [(set_attr "type" "arith")])
@@ -7228,10 +7223,6 @@
 	}
       DONE;
     }
-  if (sh_expand_t_scc (EQ, operands[0]))
-    DONE;
-  if (! rtx_equal_function_value_matters)
-    FAIL;
   operands[1] = prepare_scc_operands (EQ);
 }")
 
@@ -7278,8 +7269,6 @@
 	}
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
-    FAIL;
   operands[1] = prepare_scc_operands (LT);
 }")
 
@@ -7382,8 +7371,6 @@
 	}
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
-    FAIL;
   operands[1] = prepare_scc_operands (GT);
 }")
 
@@ -7436,8 +7423,6 @@
       DONE;
     }
 
-  if (! rtx_equal_function_value_matters)
-    FAIL;
   if (GET_MODE_CLASS (GET_MODE (sh_compare_op0)) == MODE_FLOAT)
     {
       if (TARGET_IEEE)
@@ -7477,8 +7462,6 @@
 				     sh_compare_op0, sh_compare_op1));
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
-    FAIL;
   operands[1] = prepare_scc_operands (GTU);
 }")
 
@@ -7503,8 +7486,6 @@
 				     sh_compare_op1, sh_compare_op0));
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
-    FAIL;
   operands[1] = prepare_scc_operands (LTU);
 }")
 
@@ -7534,8 +7515,6 @@
 
       DONE;
     }
-  if (! rtx_equal_function_value_matters)
-    FAIL;
   operands[1] = prepare_scc_operands (LEU);
 }")
 
@@ -7566,8 +7545,6 @@
       DONE;
     }
 
-  if (! rtx_equal_function_value_matters)
-    FAIL;
   operands[1] = prepare_scc_operands (GEU);
 }")
 
@@ -7615,12 +7592,8 @@
       DONE;
     }
 
-  if (sh_expand_t_scc (NE, operands[0]))
-    DONE;
-  if (! rtx_equal_function_value_matters)
-    FAIL;  
-  operands[1] = prepare_scc_operands (EQ);
-  operands[2] = gen_reg_rtx (SImode);
+   operands[1] = prepare_scc_operands (EQ);
+   operands[2] = gen_reg_rtx (SImode);
 }")
 
 (define_expand "sunordered"

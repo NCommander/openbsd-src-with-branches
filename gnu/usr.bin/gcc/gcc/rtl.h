@@ -440,18 +440,6 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
        			     __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK9(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8, C9)	\
-  __extension__								\
-({ rtx const _rtx = (RTX);						\
-   if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2	 		\
-       && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
-       && GET_CODE(_rtx) != C5 && GET_CODE(_rtx) != C6			\
-       && GET_CODE(_rtx) != C7 && GET_CODE(_rtx) != C8 			\
-       && GET_CODE(_rtx) != C9)						\
-     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
-       			     __FUNCTION__);				\
-   _rtx; })
-
 extern void rtl_check_failed_flag PARAMS ((const char *, rtx, const char *,
       					   int, const char *))
     ATTRIBUTE_NORETURN
@@ -467,7 +455,6 @@ extern void rtl_check_failed_flag PARAMS ((const char *, rtx, const char *,
 #define RTL_FLAG_CHECK6(NAME, RTX, C1, C2, C3, C4, C5, C6)		(RTX)
 #define RTL_FLAG_CHECK7(NAME, RTX, C1, C2, C3, C4, C5, C6, C7)		(RTX)
 #define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	(RTX)
-#define RTL_FLAG_CHECK9(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8, C9)	(RTX)
 #endif
 
 #define CLEAR_RTX_FLAGS(RTX)	\
@@ -562,9 +549,9 @@ do {				\
 #define LOG_LINKS(INSN)	XEXP(INSN, 7)
 
 #define RTX_INTEGRATED_P(RTX)						\
-  (RTL_FLAG_CHECK9("RTX_INTEGRATED_P", (RTX), INSN, CALL_INSN,		\
+  (RTL_FLAG_CHECK8("RTX_INTEGRATED_P", (RTX), INSN, CALL_INSN,		\
 		   JUMP_INSN, INSN_LIST, BARRIER, CODE_LABEL, CONST,	\
-		   NOTE, PLUS)->integrated)
+		   NOTE)->integrated)
 #define RTX_UNCHANGING_P(RTX)						\
   (RTL_FLAG_CHECK3("RTX_UNCHANGING_P", (RTX), REG, MEM, CONCAT)->unchanging)
 #define RTX_FRAME_RELATED_P(RTX)					\
@@ -2133,6 +2120,8 @@ extern void regclass			PARAMS ((rtx, int, FILE *));
 extern void reg_scan			PARAMS ((rtx, unsigned int, int));
 extern void reg_scan_update		PARAMS ((rtx, rtx, unsigned int));
 extern void fix_register		PARAMS ((const char *, int, int));
+extern void init_subregs_of_mode	PARAMS ((void));
+extern void record_subregs_of_mode	PARAMS ((rtx));
 #ifdef HARD_CONST
 extern void cannot_change_mode_set_regs PARAMS ((HARD_REG_SET *,
 						 enum machine_mode,

@@ -150,9 +150,11 @@ extern int flag_pic;				/* -fpic */
    Redefined in sysv3.h, sysv4.h, dgux.h, and luna.h.  */
 #define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -D__CLASSIFY_TYPE__=2"
 
-#define TARGET_VERSION fprintf (stderr, " (%s)", VERSION_INFO)
+#define TARGET_VERSION fprintf (stderr, " (%s)", VERSION_INFO1)
 
-#define VERSION_INFO	"m88k"
+#ifndef VERSION_INFO1
+#define VERSION_INFO1	"m88k"
+#endif
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -180,7 +182,6 @@ extern int flag_pic;				/* -fpic */
 #define MASK_WARN_PASS_STRUCT	0x00002000 /* Warn about passed structs */
 #define MASK_OPTIMIZE_ARG_AREA	0x00004000 /* Save stack space */
 #define MASK_NO_SERIALIZE_VOLATILE 0x00008000 /* Serialize volatile refs */
-#define MASK_MEMCPY		0x00010000 /* Always use memcpy for movstr */
 #define MASK_EITHER_LARGE_SHIFT	(MASK_TRAP_LARGE_SHIFT | \
 				 MASK_HANDLE_LARGE_SHIFT)
 #define MASK_OMIT_LEAF_FRAME_POINTER 0x00020000 /* omit leaf frame pointers */
@@ -204,7 +205,6 @@ extern int flag_pic;				/* -fpic */
 #define TARGET_WARN_PASS_STRUCT   (target_flags & MASK_WARN_PASS_STRUCT)
 #define TARGET_OPTIMIZE_ARG_AREA  (target_flags & MASK_OPTIMIZE_ARG_AREA)
 #define TARGET_SERIALIZE_VOLATILE (!(target_flags & MASK_NO_SERIALIZE_VOLATILE))
-#define TARGET_MEMCPY		  (target_flags & MASK_MEMCPY)
 
 #define TARGET_EITHER_LARGE_SHIFT (target_flags & MASK_EITHER_LARGE_SHIFT)
 #define TARGET_OMIT_LEAF_FRAME_POINTER (target_flags & MASK_OMIT_LEAF_FRAME_POINTER)
@@ -239,8 +239,6 @@ extern int flag_pic;				/* -fpic */
     { "serialize-volatile",		-MASK_NO_SERIALIZE_VOLATILE }, \
     { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER }, \
     { "no-omit-leaf-frame-pointer",     -MASK_OMIT_LEAF_FRAME_POINTER }, \
-    { "memcpy",				 MASK_MEMCPY }, \
-    { "no-memcpy",			-MASK_MEMCPY }, \
     SUBTARGET_SWITCHES \
     /* Default switches */ \
     { "",				 TARGET_DEFAULT }, \
@@ -255,7 +253,61 @@ extern int flag_pic;				/* -fpic */
 			 { "version-", &m88k_version } }
 
 /* Do any checking or such that is needed after processing the -m switches.  */
-#define OVERRIDE_OPTIONS m88k_override_options ()
+
+#define OVERRIDE_OPTIONS						     \
+  do {									     \
+    register int i;							     \
+									     \
+    if ((target_flags & MASK_88000) == 0)				     \
+      target_flags |= CPU_DEFAULT;					     \
+									     \
+    if (TARGET_88110)							     \
+      {									     \
+        target_flags |= MASK_USE_DIV;					     \
+        target_flags &= ~MASK_CHECK_ZERO_DIV;				     \
+      }									     \
+      									     \
+    m88k_cpu = (TARGET_88000 ? PROCESSOR_M88000				     \
+		: (TARGET_88100 ? PROCESSOR_M88100 : PROCESSOR_M88110));		     \
+									     \
+    if (TARGET_BIG_PIC)							     \
+      flag_pic = 2;							     \
+									     \
+    if ((target_flags & MASK_EITHER_LARGE_SHIFT) == MASK_EITHER_LARGE_SHIFT) \
+      error ("-mtrap-large-shift and -mhandle-large-shift are incompatible");\
+									     \
+    if (TARGET_SVR4)						     	     \
+      {									     \
+	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)			     \
+	  reg_names[i]--;						     \
+	m88k_pound_sign = "#";						     \
+      }									     \
+    else								     \
+      {									     \
+	target_flags |= MASK_SVR3;					     \
+	target_flags &= ~MASK_SVR4;					     \
+      }									     \
+									     \
+    if (m88k_short_data)						     \
+      {									     \
+	const char *p = m88k_short_data;				     \
+	while (*p)							     \
+	  if (ISDIGIT (*p))						     \
+	    p++;							     \
+	  else								     \
+	    {								     \
+	      error ("invalid option `-mshort-data-%s'", m88k_short_data);   \
+	      break;							     \
+	    }								     \
+	m88k_gp_threshold = atoi (m88k_short_data);			     \
+	if (m88k_gp_threshold > 0x7fffffff)				     \
+	  error ("-mshort-data-%s is too large ", m88k_short_data);          \
+	if (flag_pic)							     \
+	  error ("-mshort-data-%s and PIC are incompatible", m88k_short_data); \
+      }									     \
+    if (TARGET_OMIT_LEAF_FRAME_POINTER)       /* keep nonleaf frame pointers */    \
+      flag_omit_frame_pointer = 1;                                         \
+  } while (0)
 
 /*** Storage Layout ***/
 
@@ -540,7 +592,7 @@ extern int flag_pic;				/* -fpic */
    registers.  The compiler should be allowed to use these as a fast spill
    area.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  (XRF_REGNO_P (REGNO)							\
+  (XRF_REGNO_P(REGNO)							\
     ? (TARGET_88110 && GET_MODE_CLASS (MODE) == MODE_FLOAT)             \
     : (((MODE) != DImode && (MODE) != DFmode && (MODE) != DCmode)	\
        || ((REGNO) & 1) == 0))
@@ -673,7 +725,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 #define REGNO_REG_CLASS(REGNO) \
-  ((REGNO) ? ((REGNO) < 32 ? GENERAL_REGS : XRF_REGS) : AP_REG)
+  ((REGNO) ? ((REGNO < 32) ? GENERAL_REGS : XRF_REGS) : AP_REG)
 
 /* The class value for index registers, and the one for base regs.  */
 #define BASE_REG_CLASS AGRF_REGS
@@ -704,7 +756,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    in some cases it is preferable to use a more restrictive class.
    Double constants should be in a register iff they can be made cheaply.  */
 #define PREFERRED_RELOAD_CLASS(X,CLASS)	\
-   (CONSTANT_P (X) && ((CLASS) == XRF_REGS) ? NO_REGS : (CLASS))
+   (CONSTANT_P(X) && (CLASS == XRF_REGS) ? NO_REGS : (CLASS))
 
 /* Return the register class of a scratch register needed to load IN
    into a register of class CLASS in MODE.  On the m88k, when PIC, we
@@ -739,16 +791,16 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Quick tests for certain values.  */
 #define SMALL_INT(X) (SMALL_INTVAL (INTVAL (X)))
-#define SMALL_INTVAL(I) ((unsigned HOST_WIDE_INT) (I) < 0x10000)
+#define SMALL_INTVAL(I) ((unsigned) (I) < 0x10000)
 #define ADD_INT(X) (ADD_INTVAL (INTVAL (X)))
-#define ADD_INTVAL(I) ((unsigned HOST_WIDE_INT) (I) + 0xffff < 0x1ffff)
+#define ADD_INTVAL(I) ((unsigned) (I) + 0xffff < 0x1ffff)
 #define POWER_OF_2(I) ((I) && POWER_OF_2_or_0(I))
-#define POWER_OF_2_or_0(I) (((I) & ((unsigned HOST_WIDE_INT)(I) - 1)) == 0)
+#define POWER_OF_2_or_0(I) (((I) & ((unsigned)(I) - 1)) == 0)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)			\
   ((C) == 'I' ? SMALL_INTVAL (VALUE)			\
    : (C) == 'J' ? SMALL_INTVAL (-(VALUE))		\
-   : (C) == 'K' ? (unsigned HOST_WIDE_INT)(VALUE) < 32	\
+   : (C) == 'K' ? (unsigned)(VALUE) < 32		\
    : (C) == 'L' ? ((VALUE) & 0xffff) == 0		\
    : (C) == 'M' ? integer_ok_for_set (VALUE)		\
    : (C) == 'N' ? (VALUE) < 0				\
@@ -819,7 +871,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    This space can either be allocated by the caller or be a part of the
    machine-dependent stack frame: `OUTGOING_REG_PARM_STACK_SPACE'
    says which.  */
-/* #undef REG_PARM_STACK_SPACE(FNDECL) */
+#define REG_PARM_STACK_SPACE(FNDECL) 32
 
 /* Define this macro if REG_PARM_STACK_SPACE is defined but stack
    parameters don't skip the area specified by REG_PARM_STACK_SPACE.
@@ -827,7 +879,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    the stack beyond the REG_PARM_STACK_SPACE area.  Defining this macro
    suppresses this behavior and causes the parameter to be passed on the
    stack in its natural location.  */
-/* #undef STACK_PARMS_IN_REG_PARM_AREA */
+#define STACK_PARMS_IN_REG_PARM_AREA
 
 /* Define this if it is the responsibility of the caller to allocate the
    area reserved for arguments passed in registers.  If
@@ -863,13 +915,14 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* Define this if it differs from FUNCTION_VALUE.  */
 /* #define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC) ... */
 
-/* Disable the promotion of some structures and unions to registers.
-   Note that this matches FUNCTION_ARG behaviour.  */
+/* Disable the promotion of some structures and unions to registers. */
 #define RETURN_IN_MEMORY(TYPE) \
   (TYPE_MODE (TYPE) == BLKmode \
-   || ((TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE) \
-       && (TYPE_ALIGN (TYPE) != BITS_PER_WORD || \
-	   GET_MODE_SIZE (TYPE_MODE (TYPE)) != UNITS_PER_WORD)))
+   || ((TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE(TYPE) == UNION_TYPE) \
+       && !(TYPE_MODE (TYPE) == SImode \
+	    || (TYPE_MODE (TYPE) == BLKmode \
+		&& TYPE_ALIGN (TYPE) == BITS_PER_WORD \
+		&& int_size_in_bytes (TYPE) == UNITS_PER_WORD))))
 
 /* Don't default to pcc-struct-return, because we have already specified
    exactly how to return structures in the RETURN_IN_MEMORY macro.  */
@@ -913,10 +966,23 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    function whose data type is FNTYPE.  For a library call, FNTYPE is 0. */
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) ((CUM) = 0)
 
-/* Update the summarizer variable to advance past an argument in an
-   argument list.  See m88k.c.  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
-  m88k_function_arg_advance (& (CUM), MODE, TYPE, NAMED)
+/* A C statement (sans semicolon) to update the summarizer variable
+   CUM to advance past an argument in the argument list.  The values
+   MODE, TYPE and NAMED describe that argument.  Once this is done,
+   the variable CUM is suitable for analyzing the *following* argument
+   with `FUNCTION_ARG', etc.  (TYPE is null for libcalls where that
+   information may not be available.)  */
+#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
+  do {									\
+    enum machine_mode __mode = (TYPE) ? TYPE_MODE (TYPE) : (MODE);	\
+    if ((CUM & 1)							\
+	&& (__mode == DImode || __mode == DFmode			\
+	    || ((TYPE) && TYPE_ALIGN (TYPE) > BITS_PER_WORD)))		\
+      CUM++;								\
+    CUM += (((__mode != BLKmode)					\
+	     ? GET_MODE_SIZE (MODE) : int_size_in_bytes (TYPE))		\
+	    + 3) / 4;							\
+  } while (0)
 
 /* True if N is a possible register number for function argument passing.
    On the m88000, these are registers 2 through 9.  */
@@ -941,11 +1007,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
   (((TYPE) ? TYPE_ALIGN (TYPE) : GET_MODE_BITSIZE (MODE)) <= PARM_BOUNDARY \
     ? PARM_BOUNDARY : 2 * PARM_BOUNDARY)
-
-/* Perform any actions needed for a function that is receiving a
-   variable number of arguments.  */
-#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL) \
-  m88k_setup_incoming_varargs (& (CUM), MODE, TYPE, & (PRETEND_SIZE), NO_RTL)
 
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */
@@ -986,9 +1047,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 ((TARGET_OMIT_LEAF_FRAME_POINTER && !leaf_function_p ()) 	\
  || (write_symbols != NO_DEBUG && !TARGET_OCS_FRAME_POSITION))
 
-/* Define registers used by the epilogue and return instruction.  */
-#define EPILOGUE_USES(REGNO)	(reload_completed && (REGNO) == 1)
-
 /* Definitions for register eliminations.
 
    We have two registers that can be eliminated on the m88k.  First, the
@@ -1025,10 +1083,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 }
 
 /*** Trampolines for Nested Functions ***/
-
-#ifndef FINALIZE_TRAMPOLINE
-#define FINALIZE_TRAMPOLINE(TRAMP)
-#endif
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
@@ -1088,7 +1142,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 {									\
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 40)), FNADDR); \
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 36)), CXT); \
-  FINALIZE_TRAMPOLINE (TRAMP);						\
 }
 
 /*** Library Subroutine Names ***/
@@ -1185,17 +1238,23 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 	       ? RTX_OK_FOR_BASE_P (_x1)		\
 	       : (GET_CODE (_x1) == SYMBOL_REF		\
 		  || GET_CODE (_x1) == LABEL_REF)))	\
-	  || (RTX_OK_FOR_BASE_P (_x0)			\
-	      && LEGITIMATE_INDEX_P (_x1, MODE))	\
-	  || (RTX_OK_FOR_BASE_P (_x1)			\
-	      && LEGITIMATE_INDEX_P (_x0, MODE)))	\
+	  || (REG_P (_x0)				\
+	      && (REG_OK_FOR_BASE_P (_x0)		\
+		  && LEGITIMATE_INDEX_P (_x1, MODE)))	\
+	  || (REG_P (_x1)				\
+	      && (REG_OK_FOR_BASE_P (_x1)		\
+		  && LEGITIMATE_INDEX_P (_x0, MODE))))	\
 	goto ADDR;					\
     }							\
   else if (GET_CODE (X) == LO_SUM)			\
     {							\
       register rtx _x0 = XEXP (X, 0);			\
       register rtx _x1 = XEXP (X, 1);			\
-      if (RTX_OK_FOR_BASE_P (_x0)			\
+      if (((REG_P (_x0)					\
+	    && REG_OK_FOR_BASE_P (_x0))			\
+	   || (GET_CODE (_x0) == SUBREG			\
+	       && REG_P (SUBREG_REG (_x0))		\
+	       && REG_OK_FOR_BASE_P (SUBREG_REG (_x0)))) \
 	  && CONSTANT_P (_x1))				\
 	goto ADDR;					\
     }							\
@@ -1335,9 +1394,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   {"partial_ccmode_register_operand", { SUBREG, REG}},			\
   {"relop_no_unsigned", {EQ, NE, LT, LE, GE, GT}},			\
   {"equality_op", {EQ, NE}},						\
-  {"pc_or_label_ref", {PC, LABEL_REF}},					\
-  {"label_ref", {LABEL_REF}},
-
+  {"pc_or_label_ref", {PC, LABEL_REF}},
 
 /* A list of predicates that do special things with modes, and so
    should not elicit warnings for VOIDmode match_operand.  */
@@ -1440,13 +1497,13 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 	  && GET_CODE (PATTERN (RTX)) == SET				\
 	  && ((GET_CODE (SET_SRC (PATTERN (RTX))) == MEM		\
 	       && MEM_VOLATILE_P (SET_SRC (PATTERN (RTX)))))))		\
-    (LENGTH) += 1;							\
+    LENGTH += 1;							\
   else if (GET_CODE (RTX) == NOTE					\
 	   && NOTE_LINE_NUMBER (RTX) == NOTE_INSN_PROLOGUE_END)		\
     {									\
       if (current_function_profile)					\
-	(LENGTH) += (FUNCTION_PROFILER_LENGTH + REG_PUSH_LENGTH		\
-		     + REG_POP_LENGTH);					\
+	LENGTH += (FUNCTION_PROFILER_LENGTH + REG_PUSH_LENGTH		\
+		   + REG_POP_LENGTH);					\
     }									\
 
 /* Track the state of the last volatile memory reference.  Clear the

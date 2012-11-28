@@ -3873,17 +3873,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  rtx inner_op0 = XEXP (XEXP (x, 0), 1);
 	  rtx inner_op1 = XEXP (x, 1);
 	  rtx inner;
-	  
-#ifndef FRAME_GROWS_DOWNWARD
-	  if (flag_propolice_protection
-	      && code == PLUS
-	      && other == frame_pointer_rtx
-	      && GET_CODE (inner_op0) == CONST_INT
-	      && GET_CODE (inner_op1) == CONST_INT
-	      && INTVAL (inner_op0) > 0
-	      && INTVAL (inner_op0) + INTVAL (inner_op1) <= 0)
-	    return x;
-#endif
+
 	  /* Make sure we pass the constant operand if any as the second
 	     one if this is a commutative operation.  */
 	  if (CONSTANT_P (inner_op0) && GET_RTX_CLASS (code) == 'c')
@@ -4296,11 +4286,6 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	 they are now checked elsewhere.  */
       if (GET_CODE (XEXP (x, 0)) == PLUS
 	  && CONSTANT_ADDRESS_P (XEXP (XEXP (x, 0), 1)))
-#ifndef FRAME_GROWS_DOWNWARD
-	if (! (flag_propolice_protection
-	       && XEXP (XEXP (x, 0), 0) == frame_pointer_rtx
-	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT))
-#endif
 	return gen_binary (PLUS, mode,
 			   gen_binary (PLUS, mode, XEXP (XEXP (x, 0), 0),
 				       XEXP (x, 1)),
@@ -4429,10 +4414,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 
       /* Canonicalize (minus A (plus B C)) to (minus (minus A B) C) for
 	 integers.  */
-      if (GET_CODE (XEXP (x, 1)) == PLUS && INTEGRAL_MODE_P (mode)
-	  && (! (flag_propolice_protection
-		 && XEXP (XEXP (x, 1), 0) == frame_pointer_rtx
-		 && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT)))
+      if (GET_CODE (XEXP (x, 1)) == PLUS && INTEGRAL_MODE_P (mode))
 	return gen_binary (MINUS, mode,
 			   gen_binary (MINUS, mode, XEXP (x, 0),
 				       XEXP (XEXP (x, 1), 0)),
@@ -9737,18 +9719,17 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 	  /* If we can't do that, try to simplify the shift in each arm of the
 	     logical expression, make a new logical expression, and apply
 	     the inverse distributive law.  */
-	  if (GET_CODE (XEXP (varop, 1)) == CONST_INT)
-	    {
-	      rtx lhs = simplify_shift_const (NULL_RTX, code, shift_mode,
-					      XEXP (varop, 0), count);
-	      rtx rhs = simplify_shift_const (NULL_RTX, code, shift_mode,
-					      XEXP (varop, 1), count);
+	  {
+	    rtx lhs = simplify_shift_const (NULL_RTX, code, shift_mode,
+					    XEXP (varop, 0), count);
+	    rtx rhs = simplify_shift_const (NULL_RTX, code, shift_mode,
+					    XEXP (varop, 1), count);
 
-	      varop = gen_binary (GET_CODE (varop), shift_mode, lhs, rhs);
-	      varop = apply_distributive_law (varop);
+	    varop = gen_binary (GET_CODE (varop), shift_mode, lhs, rhs);
+	    varop = apply_distributive_law (varop);
 
-	      count = 0;
-	    }
+	    count = 0;
+	  }
 	  break;
 
 	case EQ:
@@ -10157,13 +10138,8 @@ gen_lowpart_for_combine (mode, x)
 
   result = gen_lowpart_common (mode, x);
 #ifdef CANNOT_CHANGE_MODE_CLASS
-  if (result != 0
-      && GET_CODE (result) == SUBREG
-      && GET_CODE (SUBREG_REG (result)) == REG
-      && REGNO (SUBREG_REG (result)) >= FIRST_PSEUDO_REGISTER)
-    bitmap_set_bit (&subregs_of_mode, REGNO (SUBREG_REG (result))
-				      * MAX_MACHINE_MODE
-				      + GET_MODE (result));
+  if (result != 0 && GET_CODE (result) == SUBREG)
+    record_subregs_of_mode (result);
 #endif
 
   if (result)
@@ -10837,34 +10813,61 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case SUBREG:
-	  /* Check for the case where we are comparing A - C1 with C2,
-	     both constants are smaller than 1/2 the maximum positive
-	     value in MODE, and the comparison is equality or unsigned.
-	     In that case, if A is either zero-extended to MODE or has
-	     sufficient sign bits so that the high-order bit in MODE
-	     is a copy of the sign in the inner mode, we can prove that it is
-	     safe to do the operation in the wider mode.  This simplifies
-	     many range checks.  */
+	  /* Check for the case where we are comparing A - C1 with C2, that is
+
+	       (subreg:MODE (plus (A) (-C1))) op (C2)
+
+	     with C1 a constant, and try to lift the SUBREG, i.e. to do the
+	     comparison in the wider mode.  One of the following two conditions
+	     must be true in order for this to be valid:
+
+	       1. The mode extension results in the same bit pattern being added
+		  on both sides and the comparison is equality or unsigned.  As
+		  C2 has been truncated to fit in MODE, the pattern can only be
+		  all 0s or all 1s.
+
+	       2. The mode extension results in the sign bit being copied on
+		  each side.
+
+	     The difficulty here is that we have predicates for A but not for
+	     (A - C1) so we need to check that C1 is within proper bounds so
+	     as to perturbate A as little as possible.  */
 
 	  if (mode_width <= HOST_BITS_PER_WIDE_INT
 	      && subreg_lowpart_p (op0)
+	      && GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0))) > mode_width
 	      && GET_CODE (SUBREG_REG (op0)) == PLUS
-	      && GET_CODE (XEXP (SUBREG_REG (op0), 1)) == CONST_INT
-	      && INTVAL (XEXP (SUBREG_REG (op0), 1)) < 0
-	      && (-INTVAL (XEXP (SUBREG_REG (op0), 1))
-		  < (HOST_WIDE_INT) (GET_MODE_MASK (mode) / 2))
-	      && (unsigned HOST_WIDE_INT) const_op < GET_MODE_MASK (mode) / 2
-	      && (0 == (nonzero_bits (XEXP (SUBREG_REG (op0), 0),
-				      GET_MODE (SUBREG_REG (op0)))
-			& ~GET_MODE_MASK (mode))
-		  || (num_sign_bit_copies (XEXP (SUBREG_REG (op0), 0),
-					   GET_MODE (SUBREG_REG (op0)))
-		      > (unsigned int)
-			(GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
-			 - GET_MODE_BITSIZE (mode)))))
+	      && GET_CODE (XEXP (SUBREG_REG (op0), 1)) == CONST_INT)
 	    {
-	      op0 = SUBREG_REG (op0);
-	      continue;
+	      enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
+	      rtx a = XEXP (SUBREG_REG (op0), 0);
+	      HOST_WIDE_INT c1 = -INTVAL (XEXP (SUBREG_REG (op0), 1));
+
+	      if ((c1 > 0
+	           && (unsigned HOST_WIDE_INT) c1
+		       < (unsigned HOST_WIDE_INT) 1 << (mode_width - 1)
+		   && (equality_comparison_p || unsigned_comparison_p)
+		   /* (A - C1) zero-extends if it is positive and sign-extends
+		      if it is negative, C2 both zero- and sign-extends.  */
+		   && ((0 == (nonzero_bits (a, inner_mode)
+			      & ~GET_MODE_MASK (mode))
+			&& const_op >= 0)
+		       /* (A - C1) sign-extends if it is positive and 1-extends
+			  if it is negative, C2 both sign- and 1-extends.  */
+		       || (num_sign_bit_copies (a, inner_mode)
+			   > (unsigned int) (GET_MODE_BITSIZE (inner_mode)
+					     - mode_width)
+			   && const_op < 0)))
+		  || ((unsigned HOST_WIDE_INT) c1
+		       < (unsigned HOST_WIDE_INT) 1 << (mode_width - 2)
+		      /* (A - C1) always sign-extends, like C2.  */
+		      && num_sign_bit_copies (a, inner_mode)
+			 > (unsigned int) (GET_MODE_BITSIZE (inner_mode)
+					   - mode_width - 1)))
+		{
+		  op0 = SUBREG_REG (op0);
+		  continue;
+	        }
 	    }
 
 	  /* If the inner mode is narrower and we are extracting the low part,

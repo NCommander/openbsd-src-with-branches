@@ -639,8 +639,6 @@ proper position among the other output files.  */
 #define LINK_GCC_C_SEQUENCE_SPEC "%G %L %G"
 #endif
 
-#define LINK_PIE_SPEC "%{pie: -pie}"
-
 /* -u* was put back because both BSD and SysV seem to support it.  */
 /* %{static:} simply prevents an error message if the target machine
    doesn't handle -static.  */
@@ -649,12 +647,8 @@ proper position among the other output files.  */
    directories.  */
 #ifndef LINK_COMMAND_SPEC
 #define LINK_COMMAND_SPEC "\
-%{pie:%{static:%e-pie and -static options are incompatible}} \
-%{shared:%{pie:%e-shared and -pie options are incompatible}} \
-%{pie:%{pg|p:%e-pie and -pg|p options are incompatible}} \
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r} %{s} %{t}\
-    " LINK_PIE_SPEC "\
     %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
     %{static:} %{L*} %(link_libgcc) %o %{!nostdlib:%{!nodefaultlibs:%(link_gcc_c_sequence)}}\
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
@@ -979,7 +973,6 @@ static const struct option_map option_map[] =
    {"--output-class-directory", "-foutput-class-dir=", "ja"},
    {"--param", "--param", "a"},
    {"--pedantic", "-pedantic", 0},
-   {"--pie", "-pie", 0},
    {"--pedantic-errors", "-pedantic-errors", 0},
    {"--pipe", "-pipe", 0},
    {"--prefix", "-B", "a"},
@@ -2370,7 +2363,7 @@ find_a_file (pprefix, name, mode, multilib)
     {
       if (access (name, mode) == 0)
 	{
-	  strlcpy (temp, name, len);
+	  strcpy (temp, name);
 	  return temp;
 	}
     }
@@ -2386,10 +2379,10 @@ find_a_file (pprefix, name, mode, multilib)
 	       So try appending that first.  */
 	    if (file_suffix[0] != 0)
 	      {
-		strlcpy (temp, pl->prefix, len);
-		strlcat (temp, machine_suffix, len);
-		strlcat (temp, multilib_name, len);
-		strlcat (temp, file_suffix, len);
+		strcpy (temp, pl->prefix);
+		strcat (temp, machine_suffix);
+		strcat (temp, multilib_name);
+		strcat (temp, file_suffix);
 		if (access_check (temp, mode) == 0)
 		  {
 		    if (pl->used_flag_ptr != 0)
@@ -2399,9 +2392,9 @@ find_a_file (pprefix, name, mode, multilib)
 	      }
 
 	    /* Now try just the multilib_name.  */
-	    strlcpy (temp, pl->prefix, len);
-	    strlcat (temp, machine_suffix, len);
-	    strlcat (temp, multilib_name, len);
+	    strcpy (temp, pl->prefix);
+	    strcat (temp, machine_suffix);
+	    strcat (temp, multilib_name);
 	    if (access_check (temp, mode) == 0)
 	      {
 		if (pl->used_flag_ptr != 0)
@@ -2418,10 +2411,10 @@ find_a_file (pprefix, name, mode, multilib)
 	       So try appending that first.  */
 	    if (file_suffix[0] != 0)
 	      {
-		strlcpy (temp, pl->prefix, len);
-		strlcat (temp, just_machine_suffix, len);
-		strlcat (temp, multilib_name, len);
-		strlcat (temp, file_suffix, len);
+		strcpy (temp, pl->prefix);
+		strcat (temp, just_machine_suffix);
+		strcat (temp, multilib_name);
+		strcat (temp, file_suffix);
 		if (access_check (temp, mode) == 0)
 		  {
 		    if (pl->used_flag_ptr != 0)
@@ -2430,9 +2423,9 @@ find_a_file (pprefix, name, mode, multilib)
 		  }
 	      }
 
-	    strlcpy (temp, pl->prefix, len);
-	    strlcat (temp, just_machine_suffix, len);
-	    strlcat (temp, multilib_name, len);
+	    strcpy (temp, pl->prefix);
+	    strcat (temp, just_machine_suffix);
+	    strcat (temp, multilib_name);
 	    if (access_check (temp, mode) == 0)
 	      {
 		if (pl->used_flag_ptr != 0)
@@ -2449,9 +2442,9 @@ find_a_file (pprefix, name, mode, multilib)
 	       So try appending that first.  */
 	    if (file_suffix[0] != 0)
 	      {
-		strlcpy (temp, pl->prefix, len);
-		strlcat (temp, this_name, len);
-		strlcat (temp, file_suffix, len);
+		strcpy (temp, pl->prefix);
+		strcat (temp, this_name);
+		strcat (temp, file_suffix);
 		if (access_check (temp, mode) == 0)
 		  {
 		    if (pl->used_flag_ptr != 0)
@@ -2460,8 +2453,8 @@ find_a_file (pprefix, name, mode, multilib)
 		  }
 	      }
 
-	    strlcpy (temp, pl->prefix, len);
-	    strlcat (temp, this_name, len);
+	    strcpy (temp, pl->prefix);
+	    strcat (temp, this_name);
 	    if (access_check (temp, mode) == 0)
 	      {
 		if (pl->used_flag_ptr != 0)
@@ -6774,9 +6767,9 @@ used_arg (p, len)
 	 them.  */
       for (i = 0; i < n_mdswitches; i++)
 	{
-	  const char *r, *eq;
+	  const char *r;
 
-	  for (q = multilib_options, eq = q + strlen(q); q < eq; q++)
+	  for (q = multilib_options; *q != '\0'; q++)
 	    {
 	      while (*q == ' ')
 		q++;

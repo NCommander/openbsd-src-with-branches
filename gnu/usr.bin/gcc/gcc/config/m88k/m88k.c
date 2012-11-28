@@ -43,6 +43,8 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
+extern FILE *asm_out_file;
+
 const char *m88k_pound_sign = ""; /* Either # for SVR4 or empty for SVR3 */
 const char *m88k_short_data;
 const char *m88k_version;
@@ -74,7 +76,6 @@ static int m88k_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static void m88k_encode_section_info PARAMS ((tree, int));
 
 /* Initialize the GCC target structure.  */
-#if !defined(OBJECT_FORMAT_ELF)
 #undef TARGET_ASM_BYTE_OP
 #define TARGET_ASM_BYTE_OP "\tbyte\t"
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -85,7 +86,6 @@ static void m88k_encode_section_info PARAMS ((tree, int));
 #define TARGET_ASM_UNALIGNED_HI_OP "\tuahalf\t"
 #undef TARGET_ASM_UNALIGNED_SI_OP
 #define TARGET_ASM_UNALIGNED_SI_OP "\tuaword\t"
-#endif
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE m88k_output_function_prologue
@@ -516,10 +516,8 @@ static const int best_from_align[3][9] = {
    0, 0, 0, MOVSTR_DI_LIMIT_88000}
 };
 
-#if 0
 static void block_move_loop PARAMS ((rtx, rtx, rtx, rtx, int, int));
 static void block_move_no_loop PARAMS ((rtx, rtx, rtx, rtx, int, int));
-#endif
 static void block_move_sequence PARAMS ((rtx, rtx, rtx, rtx, int, int, int));
 static void output_short_branch_defs PARAMS ((FILE *));
 static int output_option PARAMS ((FILE *, const char *, const char *,
@@ -541,9 +539,7 @@ expand_block_move (dest_mem, src_mem, operands)
   int align = INTVAL (operands[3]);
   int constp = (GET_CODE (operands[2]) == CONST_INT);
   int bytes = (constp ? INTVAL (operands[2]) : 0);
-#if 0
   int target = (int) m88k_cpu;
-#endif
 
   if (! (PROCESSOR_M88100 == 0
 	 && PROCESSOR_M88110 == 1
@@ -563,15 +559,13 @@ expand_block_move (dest_mem, src_mem, operands)
     block_move_sequence (operands[0], dest_mem, operands[1], src_mem,
 			 bytes, align, 0);
 
-#if 0
-  else if (constp && bytes <= best_from_align[target][align] && !TARGET_MEMCPY)
+  else if (constp && bytes <= best_from_align[target][align])
     block_move_no_loop (operands[0], dest_mem, operands[1], src_mem,
 			bytes, align);
 
-  else if (constp && align == 4 && TARGET_88100 && !TARGET_MEMCPY)
+  else if (constp && align == 4 && TARGET_88100)
     block_move_loop (operands[0], dest_mem, operands[1], src_mem,
 		     bytes, align);
-#endif
 
   else
     {
@@ -596,7 +590,6 @@ expand_block_move (dest_mem, src_mem, operands)
     }
 }
 
-#if 0
 /* Emit code to perform a block move by calling a looping movstr library
    function.  SIZE and ALIGN are known constants.  DEST and SRC are
    registers.  */
@@ -709,29 +702,18 @@ block_move_no_loop (dest, dest_mem, src, src_mem, size, align)
   MEM_COPY_ATTRIBUTES (value_rtx, src_mem);
 
   value_reg = ((((most - (size - remainder)) / align) & 1) == 0
-	       ? (mode == DImode ? 6 : 5) : 4);
+	       ? (align == 8 ? 6 : 5) : 4);
 
-  if (mode == DImode)
-    {
-      emit_insn (gen_call_block_move_DI
-		 (gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (entry_name)),
-		  dest, src, offset_rtx, value_rtx,
-		  gen_rtx_REG (mode, value_reg)));
-    }
-  else
-    {
-      emit_insn (gen_call_block_move
-		 (gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (entry_name)),
-		  dest, src, offset_rtx, value_rtx,
-		  gen_rtx_REG (mode, value_reg)));
-    }
+  emit_insn (gen_call_block_move
+	     (gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (entry_name)),
+	      dest, src, offset_rtx, value_rtx,
+	      gen_rtx_REG (mode, value_reg)));
 
   if (remainder)
     block_move_sequence (gen_rtx_REG (Pmode, 2), dest_mem,
 			 gen_rtx_REG (Pmode, 3), src_mem,
 			 remainder, align, most);
 }
-#endif
 
 /* Emit code to perform a block move with an offset sequence of ld/st
    instructions (..., ld 0, st 1, ld 1, st 0, ...).  SIZE and ALIGN are
@@ -910,9 +892,7 @@ output_call (operands, addr)
       jump = XVECEXP (final_sequence, 0, 1);
       if (GET_CODE (jump) == JUMP_INSN)
 	{
-#ifndef USE_GAS
 	  rtx low, high;
-#endif
 	  const char *last;
 	  rtx dest = XEXP (SET_SRC (PATTERN (jump)), 0);
 	  int delta = 4 * (INSN_ADDRESSES (INSN_UID (dest))
@@ -1782,6 +1762,8 @@ output_label (label_number)
         |                caller's frame                |
         |==============================================|
         |     [caller's outgoing memory arguments]     |
+        |==============================================|
+        |  caller's outgoing argument area (32 bytes)  |
   sp -> |==============================================| <- ap
         |            [local variable space]            |
         |----------------------------------------------|
@@ -1796,6 +1778,8 @@ output_label (label_number)
         |    [dynamically allocated space (alloca)]    |
         |==============================================|
         |     [callee's outgoing memory arguments]     |
+        |==============================================|
+        | [callee's outgoing argument area (32 bytes)] |
         |==============================================| <- sp
 
   Notes:
@@ -1806,16 +1790,18 @@ output_label (label_number)
   variable space.
   */
 
-static rtx emit_add PARAMS ((rtx, rtx, int));
+static void emit_add PARAMS ((rtx, rtx, int));
 static void preserve_registers PARAMS ((int, int));
-static void emit_ldst PARAMS ((int, int, enum machine_mode, int, int));
+static void emit_ldst PARAMS ((int, int, enum machine_mode, int));
 static void output_tdesc PARAMS ((FILE *, int));
+static int uses_arg_area_p PARAMS ((void));
 
 static int  nregs;
 static int  nxregs;
 static char save_regs[FIRST_PSEUDO_REGISTER];
 static int  frame_laid_out;
 static int  frame_size;
+static int  variable_args_p;
 static int  epilogue_marked;
 static int  prologue_marked;
 
@@ -1838,15 +1824,15 @@ m88k_layout_frame ()
 {
   int regno, sp_size;
 
-  frame_laid_out = 1;
+  frame_laid_out++;
 
   memset ((char *) &save_regs[0], 0, sizeof (save_regs));
   sp_size = nregs = nxregs = 0;
   frame_size = get_frame_size ();
 
-  /* Profiling requires a stack frame.  */
+  /* Since profiling requires a call, make sure r1 is saved.  */
   if (current_function_profile)
-    frame_pointer_needed = 1;
+    save_regs[1] = 1;
 
   /* If we are producing debug information, store r1 and r30 where the
      debugger wants to find them (r30 at r30+0, r1 at r30+4).  Space has
@@ -1854,11 +1840,15 @@ m88k_layout_frame ()
   if (write_symbols != NO_DEBUG && !TARGET_OCS_FRAME_POSITION)
     save_regs[1] = 1;
 
-  /* If there is a call, or we need a debug frame, r1 needs to be
-     saved as well.  */
+  /* If there is a call, alloca is used, __builtin_alloca is used, or
+     a dynamic-sized object is defined, add the 8 additional words
+     for the callee's argument area.  The common denominator is that the
+     FP is required.  may_call_alloca only gets calls to alloca;
+     current_function_calls_alloca gets alloca and __builtin_alloca.  */
   if (regs_ever_live[1] || frame_pointer_needed)
     {
       save_regs[1] = 1;
+      sp_size += REG_PARM_STACK_SPACE (0);
     }
 
   /* If we are producing PIC, save the addressing base register and r1.  */
@@ -1945,6 +1935,35 @@ null_prologue ()
 	  && nxregs == 0
 	  && m88k_stack_size == 0);
 }
+
+/* Determine if the current function has any references to the arg pointer.
+   This is done indirectly by examining the DECL_ARGUMENTS' DECL_RTL.
+   It is OK to return TRUE if there are no references, but FALSE must be
+   correct.  */
+
+static int
+uses_arg_area_p ()
+{
+  register tree parm;
+
+  if (current_function_decl == 0
+      || variable_args_p)
+    return 1;
+
+  for (parm = DECL_ARGUMENTS (current_function_decl);
+       parm;
+       parm = TREE_CHAIN (parm))
+    {
+      if (DECL_RTL (parm) == 0
+	  || GET_CODE (DECL_RTL (parm)) == MEM)
+	return 1;
+
+      if (DECL_INCOMING_RTL (parm) == 0
+	  || GET_CODE (DECL_INCOMING_RTL (parm)) == MEM)
+	return 1;
+    }
+  return 0;
+}
 
 static void
 m88k_output_function_prologue (stream, size)
@@ -1983,27 +2002,26 @@ m88k_output_function_end_prologue (stream)
 void
 m88k_expand_prologue ()
 {
-  rtx insn;
-
   m88k_layout_frame ();
 
-  if (warn_stack_larger_than && m88k_stack_size > stack_larger_than_size)
-    warning ("stack usage is %d bytes", m88k_stack_size);
+  if (TARGET_OPTIMIZE_ARG_AREA
+      && m88k_stack_size
+      && ! uses_arg_area_p ())
+    {
+      /* The incoming argument area is used for stack space if it is not
+	 used (or if -mno-optimize-arg-area is given).  */
+      if ((m88k_stack_size -= REG_PARM_STACK_SPACE (0)) < 0)
+	m88k_stack_size = 0;
+    }
 
   if (m88k_stack_size)
-    {
-      insn = emit_add (stack_pointer_rtx, stack_pointer_rtx, -m88k_stack_size);
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
+    emit_add (stack_pointer_rtx, stack_pointer_rtx, -m88k_stack_size);
 
   if (nregs || nxregs)
     preserve_registers (m88k_fp_offset + 4, 1);
 
   if (frame_pointer_needed)
-    {
-      insn = emit_add (frame_pointer_rtx, stack_pointer_rtx, m88k_fp_offset);
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
+    emit_add (frame_pointer_rtx, stack_pointer_rtx, m88k_fp_offset);
 
   if (flag_pic && save_regs[PIC_OFFSET_TABLE_REGNUM])
     {
@@ -2083,6 +2101,7 @@ m88k_output_function_epilogue (stream, size)
 
   m88k_function_number++;
   m88k_prologue_done	= 0;		/* don't put out ln directives */
+  variable_args_p	= 0;		/* has variable args */
   frame_laid_out	= 0;
   epilogue_marked	= 0;
   prologue_marked	= 0;
@@ -2091,18 +2110,13 @@ m88k_output_function_epilogue (stream, size)
 void
 m88k_expand_epilogue ()
 {
-  rtx insn;
-
 #if (MONITOR_GCC & 0x4) /* What are interesting prologue/epilogue values?  */
   fprintf (stream, "; size = %d, m88k_fp_offset = %d, m88k_stack_size = %d\n",
 	   size, m88k_fp_offset, m88k_stack_size);
 #endif
 
   if (frame_pointer_needed)
-    {
-      insn = emit_add (stack_pointer_rtx, frame_pointer_rtx, -m88k_fp_offset);
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
+    emit_add (stack_pointer_rtx, frame_pointer_rtx, -m88k_fp_offset);
 
   if (nregs || nxregs)
     preserve_registers (m88k_fp_offset + 4, 0);
@@ -2114,7 +2128,7 @@ m88k_expand_epilogue ()
 /* Emit insns to set DSTREG to SRCREG + AMOUNT during the prologue or
    epilogue.  */
 
-static rtx
+static void
 emit_add (dstreg, srcreg, amount)
      rtx dstreg;
      rtx srcreg;
@@ -2128,8 +2142,7 @@ emit_add (dstreg, srcreg, amount)
       emit_move_insn (temp, incr);
       incr = temp;
     }
-  return emit_insn ((amount < 0 ? gen_subsi3 : gen_addsi3) (dstreg, srcreg,
-							    incr));
+  emit_insn ((amount < 0 ? gen_subsi3 : gen_addsi3) (dstreg, srcreg, incr));
 }
 
 /* Save/restore the preserve registers.  base is the highest offset from
@@ -2160,9 +2173,7 @@ preserve_registers (base, store_p)
 	 memory ops.  */
       if (nregs > 2 && !save_regs[FRAME_POINTER_REGNUM])
 	offset -= 4;
-      /* Do not reload r1 in the epilogue unless really necessary */
-      if (store_p || regs_ever_live[1])
-	emit_ldst (store_p, 1, SImode, offset, 1);
+      emit_ldst (store_p, 1, SImode, offset);
       offset -= 4;
       base = offset;
     }
@@ -2229,23 +2240,19 @@ preserve_registers (base, store_p)
       if (mo_ptr->nregs)
 	emit_ldst (store_p, mo_ptr->regno,
 		   (mo_ptr->nregs > 1 ? DImode : SImode),
-		   mo_ptr->offset, 1);
+		   mo_ptr->offset);
     }
 }
 
 static void
-emit_ldst (store_p, regno, mode, offset, frame_related)
+emit_ldst (store_p, regno, mode, offset)
      int store_p;
      int regno;
      enum machine_mode mode;
      int offset;
-     int frame_related;
 {
   rtx reg = gen_rtx_REG (mode, regno);
   rtx mem;
-
-  if (frame_related)
-    start_sequence ();
 
   if (SMALL_INTVAL (offset))
     {
@@ -2267,30 +2274,6 @@ emit_ldst (store_p, regno, mode, offset, frame_related)
     emit_move_insn (mem, reg);
   else
     emit_move_insn (reg, mem);
-
-  if (frame_related)
-    {
-      rtx seq = get_insns();
-      rtx insn;
-
-      end_sequence ();
-
-      if (INSN_P (seq))
-	{
-	  insn = seq;
-	  while (insn != NULL_RTX)
-	    {
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      insn = NEXT_INSN (insn);
-	    }
-	  seq = emit_insn (seq);
-	}
-      else
-	{
-	  seq = emit_insn (seq);
-	  RTX_FRAME_RELATED_P (seq) = 1;
-	}
-    }
 }
 
 /* Convert the address expression REG to a CFA offset.  */
@@ -2442,11 +2425,11 @@ output_function_profiler (file, labelno, name, savep)
 
   if (savep)
     {
-      fprintf (file, "\tsubu\t %s,%s,32\n", reg_names[31], reg_names[31]);
-      fprintf (file, "\tst.d\t %s,%s,0\n", reg_names[2], reg_names[31]);
-      fprintf (file, "\tst.d\t %s,%s,8\n", reg_names[4], reg_names[31]);
-      fprintf (file, "\tst.d\t %s,%s,16\n", reg_names[6], reg_names[31]);
-      fprintf (file, "\tst.d\t %s,%s,24\n", reg_names[8], reg_names[31]);
+      fprintf (file, "\tsubu\t %s,%s,64\n", reg_names[31], reg_names[31]);
+      fprintf (file, "\tst.d\t %s,%s,32\n", reg_names[2], reg_names[31]);
+      fprintf (file, "\tst.d\t %s,%s,40\n", reg_names[4], reg_names[31]);
+      fprintf (file, "\tst.d\t %s,%s,48\n", reg_names[6], reg_names[31]);
+      fprintf (file, "\tst.d\t %s,%s,56\n", reg_names[8], reg_names[31]);
     }
 
   ASM_GENERATE_INTERNAL_LABEL (label, "LP", labelno);
@@ -2480,11 +2463,11 @@ output_function_profiler (file, labelno, name, savep)
 
   if (savep)
     {
-      fprintf (file, "\tld.d\t %s,%s,0\n", reg_names[2], reg_names[31]);
-      fprintf (file, "\tld.d\t %s,%s,8\n", reg_names[4], reg_names[31]);
-      fprintf (file, "\tld.d\t %s,%s,16\n", reg_names[6], reg_names[31]);
-      fprintf (file, "\tld.d\t %s,%s,24\n", reg_names[8], reg_names[31]);
-      fprintf (file, "\taddu\t %s,%s,32\n", reg_names[31], reg_names[31]);
+      fprintf (file, "\tld.d\t %s,%s,32\n", reg_names[2], reg_names[31]);
+      fprintf (file, "\tld.d\t %s,%s,40\n", reg_names[4], reg_names[31]);
+      fprintf (file, "\tld.d\t %s,%s,48\n", reg_names[6], reg_names[31]);
+      fprintf (file, "\tld.d\t %s,%s,56\n", reg_names[8], reg_names[31]);
+      fprintf (file, "\taddu\t %s,%s,64\n", reg_names[31], reg_names[31]);
     }
 }
 
@@ -2526,118 +2509,39 @@ m88k_function_arg (args_so_far, mode, type, named)
 {
   int bytes, words;
 
-  if (type != 0 && AGGREGATE_TYPE_P (type)) /* undo putting struct in register */
+  if (type != 0			/* undo putting struct in register */
+      && (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE))
     mode = BLKmode;
+
+  if (mode == BLKmode && TARGET_WARN_PASS_STRUCT)
+    warning ("argument #%d is a structure", args_so_far + 1);
+
+  if ((args_so_far & 1) != 0
+      && (mode == DImode || mode == DFmode
+	  || (type != 0 && TYPE_ALIGN (type) > 32)))
+    args_so_far++;
+
+#ifdef ESKIT
+  if (no_reg_params)
+    return (rtx) 0;             /* don't put args in registers */
+#endif
 
   if (type == 0 && mode == BLKmode)
     abort ();	/* m88k_function_arg argument `type' is NULL for BLKmode. */
 
   bytes = (mode != BLKmode) ? GET_MODE_SIZE (mode) : int_size_in_bytes (type);
-  words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-
-  if ((args_so_far & 1) != 0
-      && (mode == DImode || mode == DFmode
-	  || (type != 0 && TYPE_ALIGN (type) > BITS_PER_WORD)))
-    args_so_far++;
+  words = (bytes + 3) / 4;
 
   if (args_so_far + words > 8)
     return (rtx) 0;             /* args have exhausted registers */
 
   else if (mode == BLKmode
-	   && (TYPE_ALIGN (type) != BITS_PER_WORD || bytes != UNITS_PER_WORD))
+	   && (TYPE_ALIGN (type) != BITS_PER_WORD
+	       || bytes != UNITS_PER_WORD))
     return (rtx) 0;
 
   return gen_rtx_REG (((mode == BLKmode) ? TYPE_MODE (type) : mode),
 		      2 + args_so_far);
-}
-
-/* Update the summarizer variable CUM to advance past an argument in
-   the argument list.  The values MODE, TYPE and NAMED describe that
-   argument.  Once this is done, the variable CUM is suitable for
-   analyzing the *following* argument with `FUNCTION_ARG', etc.  (TYPE
-   is null for libcalls where that information may not be available.)  */
-void
-m88k_function_arg_advance (args_so_far, mode, type, named)
-     CUMULATIVE_ARGS *args_so_far;
-     enum machine_mode mode;
-     tree type;
-     int named ATTRIBUTE_UNUSED;
-{
-  int bytes, words;
-  int asf;
-
-  if (type != 0 && AGGREGATE_TYPE_P (type))
-    mode = BLKmode;
-
-  bytes = (mode != BLKmode) ? GET_MODE_SIZE (mode) : int_size_in_bytes (type);
-  words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-
-  /* Struct and unions which are not exactly the size of a register are to be
-     passed on stack.  */
-  if (mode == BLKmode
-      && (TYPE_ALIGN (type) != BITS_PER_WORD || bytes != UNITS_PER_WORD))
-    return;
-
-  asf = *args_so_far;
-  /* Align arguments requiring more than word alignment to a double-word
-     boundary (or an even register number if the argument will get passed
-     in registers).  */
-  if ((asf & 1) != 0
-      && (mode == DImode || mode == DFmode
-	  || (type != 0 && TYPE_ALIGN (type) > BITS_PER_WORD)))
-    asf++;
-
-  if (asf + words > 8)
-    return;
-
-  (*args_so_far) = asf + words;
-}
-
-/* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments.
-
-   CUM is as above.
-
-   MODE and TYPE are the mode and type of the current parameter.
-
-   PRETEND_SIZE is a variable that should be set to the amount of stack
-   that must be pushed by the prolog to pretend that our caller pushed
-   it.
-
-   Normally, this macro will push all remaining incoming registers on the
-   stack and set PRETEND_SIZE to the length of the registers pushed.  */
-
-void
-m88k_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
-     CUMULATIVE_ARGS *cum;
-     enum machine_mode mode;
-     tree type;
-     int *pretend_size;
-     int no_rtl;
-{
-  CUMULATIVE_ARGS next_cum;
-  tree fntype;
-  int stdarg_p;
-  int regcnt;
-
-  if (no_rtl)
-    return;
-
-  fntype = TREE_TYPE (current_function_decl);
-  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
-	     && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		 != void_type_node));
-
-  /* For varargs, we do not want to skip the dummy va_dcl argument.
-     For stdargs, we do want to skip the last named argument.  */
-  next_cum = *cum;
-  if (stdarg_p)
-    m88k_function_arg_advance(&next_cum, mode, type, 1);
-
-  regcnt = next_cum < 8 ? 8 - next_cum : 0;
-  if (regcnt & 1)
-    regcnt++;
-  *pretend_size = regcnt * UNITS_PER_WORD;
 }
 
 /* Do what is necessary for `va_start'.  We look at the current function
@@ -2648,60 +2552,36 @@ struct rtx_def *
 m88k_builtin_saveregs ()
 {
   rtx addr;
-  int regcnt, delta;
+  tree fntype = TREE_TYPE (current_function_decl);
+  int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
+		   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		       != void_type_node)))
+		? -UNITS_PER_WORD : 0) + UNITS_PER_WORD - 1;
+  int fixed;
 
-  if (! CONSTANT_P (current_function_arg_offset_rtx))
-    abort ();
+  variable_args_p = 1;
 
-  regcnt = current_function_args_info < 8 ? 8 - current_function_args_info : 0;
-  delta = regcnt & 1;
+  fixed = 0;
+  if (GET_CODE (current_function_arg_offset_rtx) == CONST_INT)
+    fixed = ((INTVAL (current_function_arg_offset_rtx) + argadj)
+	     / UNITS_PER_WORD);
 
-  /* Allocate the register space, which will be returned as the __va_reg
-     member. If the number of registers to copy is odd, we add an extra
-     word to align even-numbered registers to a doubleword boundary.  */
-  addr = assign_stack_local (BLKmode, (regcnt + delta) * UNITS_PER_WORD, -1);
+  /* Allocate the register space, and store it as the __va_reg member.  */
+  addr = assign_stack_local (BLKmode, 8 * UNITS_PER_WORD, -1);
   set_mem_alias_set (addr, get_varargs_alias_set ());
   RTX_UNCHANGING_P (addr) = 1;
   RTX_UNCHANGING_P (XEXP (addr, 0)) = 1;
 
   /* Now store the incoming registers.  */
-  if (regcnt != 0)
-    {
-      /* The following is equivalent to
-	 move_block_from_reg (2 + current_function_args_info,
-			      adjust_address (addr, Pmode,
-					      delta * UNITS_PER_WORD),
-			      regcnt, UNITS_PER_WORD * regcnt);
-	 but using double store instruction since the stack is properly
-	 aligned.  */
-      rtx dst = addr;
-      int regno = 2 + current_function_args_info;
-      int offs;
+  if (fixed < 8)
+    move_block_from_reg (2 + fixed,
+			 adjust_address (addr, Pmode, fixed * UNITS_PER_WORD),
+			 8 - fixed,
+			 UNITS_PER_WORD * (8 - fixed));
 
-      if (delta != 0)
-	{
-	  dst = adjust_address (dst, Pmode, UNITS_PER_WORD);
-	  emit_move_insn (operand_subword (dst, 0, 1, BLKmode),
-			  gen_rtx_REG (SImode, regno));
-	  regno++;
-	}
-
-      offs = delta;
-      while (regno < 10)
-	{
-	  emit_move_insn (adjust_address (dst, DImode, offs * UNITS_PER_WORD),
-			  gen_rtx_REG (DImode, regno));
-	  offs += 2;
-	  regno += 2;
-        }
-    }
-
-  /* Return the address of the hypothetical save area containing all the
-     argument registers (to help va_arg() computations), but don't put it in a
+  /* Return the address of the save area, but don't put it in a
      register.  This fails when not optimizing and produces worse code
      when optimizing.  */
-  addr = adjust_address (addr, Pmode,
-			 -(current_function_args_info - delta) * UNITS_PER_WORD);
   return XEXP (addr, 0);
 }
 
@@ -2744,12 +2624,6 @@ m88k_va_start (valist, nextarg)
 {
   tree field_reg, field_stk, field_arg;
   tree reg, stk, arg, t;
-  tree fntype;
-  int stdarg_p;
-  int offset;
-
-  if (! CONSTANT_P (current_function_arg_offset_rtx))
-    abort ();
 
   field_arg = TYPE_FIELDS (va_list_type_node);
   field_stk = TREE_CHAIN (field_arg);
@@ -2759,23 +2633,39 @@ m88k_va_start (valist, nextarg)
   stk = build (COMPONENT_REF, TREE_TYPE (field_stk), valist, field_stk);
   reg = build (COMPONENT_REF, TREE_TYPE (field_reg), valist, field_reg);
 
-  fntype = TREE_TYPE (current_function_decl);
-  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
-	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		  != void_type_node));
+  /* Fill in the ARG member.  */
+  {
+    tree fntype = TREE_TYPE (current_function_decl);
+    int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
+		     && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+			 != void_type_node)))
+		  ? -UNITS_PER_WORD : 0) + UNITS_PER_WORD - 1;
+    tree argsize;
 
-  /* Fill in the __va_arg member.  */
-  t = build (MODIFY_EXPR, TREE_TYPE (arg), arg,
-	     build_int_2 (current_function_args_info, 0));
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    if (CONSTANT_P (current_function_arg_offset_rtx))
+      {
+	int fixed = (INTVAL (current_function_arg_offset_rtx)
+		     + argadj) / UNITS_PER_WORD;
+
+	argsize = build_int_2 (fixed, 0);
+      }
+    else
+      {
+	argsize = make_tree (integer_type_node,
+			     current_function_arg_offset_rtx);
+	argsize = fold (build (PLUS_EXPR, integer_type_node, argsize,
+			       build_int_2 (argadj, 0)));
+	argsize = fold (build (RSHIFT_EXPR, integer_type_node, argsize,
+			       build_int_2 (2, 0)));
+      }
+
+    t = build (MODIFY_EXPR, TREE_TYPE (arg), arg, argsize);
+    TREE_SIDE_EFFECTS (t) = 1;
+    expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  }
 
   /* Store the arg pointer in the __va_stk member.  */
-  offset = XINT (current_function_arg_offset_rtx, 0);
-  if (current_function_args_info >= 8 && ! stdarg_p)
-    offset -= UNITS_PER_WORD;
   t = make_tree (TREE_TYPE (stk), virtual_incoming_args_rtx);
-  t = build (PLUS_EXPR, TREE_TYPE (stk), t, build_int_2 (offset, 0));
   t = build (MODIFY_EXPR, TREE_TYPE (stk), stk, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -2794,110 +2684,44 @@ m88k_va_arg (valist, type)
      tree valist, type;
 {
   tree field_reg, field_stk, field_arg;
+  tree reg, stk, arg, arg_align, base, t;
   int size, wsize, align, reg_p;
   rtx addr_rtx;
-  rtx lab_done;
 
   field_arg = TYPE_FIELDS (va_list_type_node);
   field_stk = TREE_CHAIN (field_arg);
   field_reg = TREE_CHAIN (field_stk);
 
+  arg = build (COMPONENT_REF, TREE_TYPE (field_arg), valist, field_arg);
+  stk = build (COMPONENT_REF, TREE_TYPE (field_stk), valist, field_stk);
+  reg = build (COMPONENT_REF, TREE_TYPE (field_reg), valist, field_reg);
+
   size = int_size_in_bytes (type);
   wsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  align = 1 << ((TYPE_ALIGN (type) / BITS_PER_UNIT) >> 3);
   reg_p = (AGGREGATE_TYPE_P (type)
 	   ? size == UNITS_PER_WORD && TYPE_ALIGN (type) == BITS_PER_WORD
 	   : size <= 2*UNITS_PER_WORD);
 
-  addr_rtx = gen_reg_rtx (Pmode);
-  lab_done = gen_label_rtx ();
+  /* Align __va_arg to the (doubleword?) boundary above.  */
+  t = build (PLUS_EXPR, TREE_TYPE (arg), arg, build_int_2 (align - 1, 0));
+  arg_align = build (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-align, -1));
+  arg_align = save_expr (arg_align);
 
-  /* Decide if we should read from stack or regs if the argument could have
-     been passed in registers.  */
-  if (reg_p) {
-    tree arg, arg_align, reg;
-    rtx lab_stack;
-    tree t;
-    rtx r;
+  /* Decide if we should read from stack or regs.  */
+  t = build (LT_EXPR, integer_type_node, arg_align, build_int_2 (8, 0));
+  base = build (COND_EXPR, TREE_TYPE (reg), t, reg, stk);
 
-    lab_stack = gen_label_rtx ();
+  /* Find the final address.  */
+  t = build (PLUS_EXPR, TREE_TYPE (base), base, arg_align);
+  addr_rtx = expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+  addr_rtx = copy_to_reg (addr_rtx);
 
-    /* Align __va_arg to a doubleword boundary if necessary.  */
-    arg = build (COMPONENT_REF, TREE_TYPE (field_arg), valist, field_arg);
-    align = TYPE_ALIGN (type) / BITS_PER_WORD;
-    if (align > 1)
-      {
-	t = build (PLUS_EXPR, TREE_TYPE (arg), arg, build_int_2 (align - 1, 0));
-	arg_align = build (BIT_AND_EXPR, TREE_TYPE (t), t,
-			   build_int_2 (-align, -1));
-	arg_align = save_expr (arg_align);
-      }
-    else
-      arg_align = arg;
-
-    /* Make sure the argument fits within the remainder of the saved
-       register area, and branch to the stack logic if not.  */
-    r = expand_expr (arg_align, NULL_RTX, TYPE_MODE (TREE_TYPE (arg_align)),
-		     EXPAND_NORMAL);
-    /* if (arg_align > 8 - wsize) goto lab_stack */
-    emit_cmp_and_jump_insns (r, GEN_INT (8 - wsize), GTU,
-			     GEN_INT (UNITS_PER_WORD), GET_MODE (r), 1,
-			     lab_stack);
-
-    /* Compute the argument address.  */
-    reg = build (COMPONENT_REF, TREE_TYPE (field_reg), valist, field_reg);
-    t = build (MULT_EXPR, TREE_TYPE (reg), arg_align,
-	       build_int_2 (UNITS_PER_WORD, 0));
-    t = build (PLUS_EXPR, TREE_TYPE (reg), reg, t);
-    TREE_SIDE_EFFECTS (t) = 1;
-
-    r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-    if (r != addr_rtx)
-      emit_move_insn (addr_rtx, r);
-
-    /* Increment __va_arg.  */
-    t = build (PLUS_EXPR, TREE_TYPE (arg), arg_align, build_int_2 (wsize, 0));
-    t = build (MODIFY_EXPR, TREE_TYPE (arg), arg, t);
-    TREE_SIDE_EFFECTS (t) = 1;
-    expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-    emit_jump_insn (gen_jump (lab_done));
-    emit_barrier ();
-
-    emit_label (lab_stack);
-  }
-
-  {
-    tree stk;
-    tree t;
-    rtx r;
-
-    stk = build (COMPONENT_REF, TREE_TYPE (field_stk), valist, field_stk);
-
-    /* Align __va_stk to the type boundary if necessary.  */
-    align = TYPE_ALIGN (type) / BITS_PER_UNIT;
-    if (align > UNITS_PER_WORD)
-      {
-        t = build (PLUS_EXPR, TREE_TYPE (stk), stk, build_int_2 (align - 1, 0));
-        t = build (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-align, -1));
-	TREE_SIDE_EFFECTS (t) = 1;
-      }
-    else
-      t = stk;
-
-    /* Compute the argument address.  */
-    r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-    if (r != addr_rtx)
-      emit_move_insn (addr_rtx, r);
-
-    /* Increment __va_stk.  */
-    t = build (PLUS_EXPR, TREE_TYPE (t), t,
-	       build_int_2 (wsize * UNITS_PER_WORD, 0));
-    t = build (MODIFY_EXPR, TREE_TYPE (stk), stk, t);
-    TREE_SIDE_EFFECTS (t) = 1;
-    expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-  }
-
-  emit_label (lab_done);
+  /* Increment __va_arg.  */
+  t = build (PLUS_EXPR, TREE_TYPE (arg), arg_align, build_int_2 (wsize, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (arg), arg, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   return addr_rtx;
 }
@@ -3514,60 +3338,4 @@ m88k_encode_section_info (decl, first)
 	       && TREE_STRING_LENGTH (decl) <= m88k_gp_threshold)
 	SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 1;
     }
-}
-
-void
-m88k_override_options ()
-{
-  register int i;
-
-  if ((target_flags & MASK_88000) == 0)
-    target_flags |= CPU_DEFAULT;
-
-  if (TARGET_88110)
-    {
-      target_flags |= MASK_USE_DIV;
-      target_flags &= ~MASK_CHECK_ZERO_DIV;
-    }
-
-  m88k_cpu = (TARGET_88000 ? PROCESSOR_M88000
-	      : (TARGET_88100 ? PROCESSOR_M88100 : PROCESSOR_M88110));
-
-  if (TARGET_BIG_PIC)
-    flag_pic = 2;
-
-  if ((target_flags & MASK_EITHER_LARGE_SHIFT) == MASK_EITHER_LARGE_SHIFT)
-    error ("-mtrap-large-shift and -mhandle-large-shift are incompatible");
-
-  if (TARGET_SVR4)
-    {
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	reg_names[i]--;
-      m88k_pound_sign = "#";
-    }
-  else
-    {
-      target_flags |= MASK_SVR3;
-      target_flags &= ~MASK_SVR4;
-    }
-
-  if (m88k_short_data)
-    {
-      const char *p = m88k_short_data;
-      while (*p)
-	if (ISDIGIT (*p))
-	  p++;
-	else
-	  {
-	    error ("invalid option `-mshort-data-%s'", m88k_short_data);
-	    break;
-	  }
-      m88k_gp_threshold = atoi (m88k_short_data);
-      if (m88k_gp_threshold > 0x7fffffff)
-	error ("-mshort-data-%s is too large ", m88k_short_data);
-      if (flag_pic)
-	error ("-mshort-data-%s and PIC are incompatible", m88k_short_data);
-    }
-  if (TARGET_OMIT_LEAF_FRAME_POINTER)	/* keep nonleaf frame pointers */
-    flag_omit_frame_pointer = 1;
 }

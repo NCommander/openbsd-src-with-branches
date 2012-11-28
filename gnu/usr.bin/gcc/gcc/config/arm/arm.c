@@ -8313,7 +8313,6 @@ arm_get_frame_size ()
 void
 arm_expand_prologue ()
 {
-  int size;
   int reg;
   rtx amount;
   rtx insn;
@@ -8545,12 +8544,8 @@ arm_expand_prologue ()
 	}
     }
 
-  size = arm_get_frame_size ();
-
-  if (warn_stack_larger_than && size > stack_larger_than_size)
-    warning ("stack usage is %d bytes", size);
-
-  amount = GEN_INT (-(size + current_function_outgoing_args_size));
+  amount = GEN_INT (-(arm_get_frame_size ()
+		      + current_function_outgoing_args_size));
 
   if (amount != const0_rtx)
     {

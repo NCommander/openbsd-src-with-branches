@@ -45,7 +45,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "intl.h"
 #include "tm_p.h"
-#include "protector.h"
 
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
@@ -1561,8 +1560,6 @@ move_by_pieces (to, from, len, align)
 
       if (USE_LOAD_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_from)
 	{
-	  if (flag_propolice_protection)
-	    len -= GET_MODE_SIZE (mode);
 	  data.from_addr = copy_addr_to_reg (plus_constant (from_addr, len));
 	  data.autinc_from = 1;
 	  data.explicit_inc_from = -1;
@@ -1577,8 +1574,6 @@ move_by_pieces (to, from, len, align)
 	data.from_addr = copy_addr_to_reg (from_addr);
       if (USE_STORE_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_to)
 	{
-	  if (flag_propolice_protection)
-	    len -= GET_MODE_SIZE (mode);
 	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len));
 	  data.autinc_to = 1;
 	  data.explicit_inc_to = -1;
@@ -1696,13 +1691,11 @@ move_by_pieces_1 (genfun, mode, data)
 	from1 = adjust_address (data->from, mode, data->offset);
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
-	if (!flag_propolice_protection || data->explicit_inc_to-- < -1)
-	  emit_insn (gen_add2_insn (data->to_addr,
-				    GEN_INT (-(HOST_WIDE_INT)size)));
+	emit_insn (gen_add2_insn (data->to_addr,
+				  GEN_INT (-(HOST_WIDE_INT)size)));
       if (HAVE_PRE_DECREMENT && data->explicit_inc_from < 0)
-	if (!flag_propolice_protection || data->explicit_inc_from-- < -1)
-	  emit_insn (gen_add2_insn (data->from_addr,
-				    GEN_INT (-(HOST_WIDE_INT)size)));
+	emit_insn (gen_add2_insn (data->from_addr,
+				  GEN_INT (-(HOST_WIDE_INT)size)));
 
       if (data->to)
 	emit_insn ((*genfun) (to1, from1));
@@ -2875,11 +2868,7 @@ store_by_pieces_1 (data, align)
 
       if (USE_STORE_PRE_DECREMENT (mode) && data->reverse && ! data->autinc_to)
 	{
-	  int len = data->len;
-
-	  if (flag_propolice_protection)
-	    len -= GET_MODE_SIZE (mode);
-	  data->to_addr = copy_addr_to_reg (plus_constant (to_addr, len));
+	  data->to_addr = copy_addr_to_reg (plus_constant (to_addr, data->len));
 	  data->autinc_to = 1;
 	  data->explicit_inc_to = -1;
 	}
@@ -2950,9 +2939,8 @@ store_by_pieces_2 (genfun, mode, data)
 	to1 = adjust_address (data->to, mode, data->offset);
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
-	if (!flag_propolice_protection || data->explicit_inc_to-- < -1)
-	  emit_insn (gen_add2_insn (data->to_addr,
-				    GEN_INT (-(HOST_WIDE_INT) size)));
+	emit_insn (gen_add2_insn (data->to_addr,
+				  GEN_INT (-(HOST_WIDE_INT) size)));
 
       cst = (*data->constfun) (data->constfundata, data->offset, mode);
       emit_insn ((*genfun) (to1, cst));
@@ -5962,9 +5950,7 @@ force_operand (value, target)
 	  && GET_CODE (XEXP (value, 0)) == PLUS
 	  && GET_CODE (XEXP (XEXP (value, 0), 0)) == REG
 	  && REGNO (XEXP (XEXP (value, 0), 0)) >= FIRST_VIRTUAL_REGISTER
-	  && REGNO (XEXP (XEXP (value, 0), 0)) <= LAST_VIRTUAL_REGISTER
-	  && (!flag_propolice_protection
-	      || XEXP (XEXP (value, 0), 0) != virtual_stack_vars_rtx))
+	  && REGNO (XEXP (XEXP (value, 0), 0)) <= LAST_VIRTUAL_REGISTER)
 	{
 	  rtx temp = expand_simple_binop (GET_MODE (value), code,
 					  XEXP (XEXP (value, 0), 0), op2,
@@ -6508,9 +6494,6 @@ find_placeholder (exp, plist)
 
   return 0;
 }
-extern int flag_trampolines;
-extern int warn_trampolines;
-
 
 /* expand_expr: generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
@@ -8143,8 +8126,7 @@ expand_expr (exp, target, tmode, modifier)
       /* If adding to a sum including a constant,
 	 associate it to put the constant outside.  */
       if (GET_CODE (op1) == PLUS
-	  && CONSTANT_P (XEXP (op1, 1))
-	  && !(flag_propolice_protection && (contains_fp (op0) || contains_fp (op1))))
+	  && CONSTANT_P (XEXP (op1, 1)))
 	{
 	  rtx constant_term = const0_rtx;
 
@@ -8480,8 +8462,13 @@ expand_expr (exp, target, tmode, modifier)
       /* At this point, a MEM target is no longer useful; we will get better
 	 code without it.  */
 
-      if (GET_CODE (target) == MEM)
+      if (! REG_P (target))
 	target = gen_reg_rtx (mode);
+
+      /* We generate better code and avoid problems with op1 mentioning
+	 target by forcing op1 into a pseudo if it isn't a constant.  */
+      if (! CONSTANT_P (op1))
+	op1 = force_reg (mode, op1);
 
       if (target != op0)
 	emit_move_insn (target, op0);
@@ -9151,15 +9138,6 @@ expand_expr (exp, target, tmode, modifier)
 	  && ! DECL_NO_STATIC_CHAIN (TREE_OPERAND (exp, 0))
 	  && ! TREE_STATIC (exp))
 	{
-	  if (!flag_trampolines)
-	    {
-	      error_with_decl(exp, "trampoline code generation is not allowed without -ftrampolines");
-	      return const0_rtx;
-	    }
-	  if (warn_trampolines)
-	    {
-	      warning_with_decl(exp, "local function address taken, needing trampoline generation");
-	    }
 	  op0 = trampoline_address (TREE_OPERAND (exp, 0));
 	  op0 = force_operand (op0, target);
 	}

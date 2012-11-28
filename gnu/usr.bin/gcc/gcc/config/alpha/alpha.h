@@ -294,8 +294,6 @@ extern int alpha_tls_size;
      N_("Request IEEE-conformant math library routines (OSF/1)")},	\
     {"ieee", MASK_IEEE|MASK_IEEE_CONFORMANT,				\
      N_("Emit IEEE-conformant code, without inexact exceptions")},	\
-    {"no-ieee", - (MASK_IEEE|MASK_IEEE_WITH_INEXACT|MASK_IEEE_CONFORMANT), \
-     N_("Emit non-IEEE-conformant code")},				\
     {"ieee-with-inexact", MASK_IEEE_WITH_INEXACT|MASK_IEEE_CONFORMANT,	\
      N_("Emit IEEE-conformant code, with inexact exceptions")},		\
     {"build-constants", MASK_BUILD_CONSTANTS,				\
@@ -1301,6 +1299,7 @@ do {						\
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 26)
 #define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (26)
 #define DWARF_ALT_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (64)
+#define DWARF_ZERO_REG 31
 
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N)	((N) < 4 ? (N) + 16 : INVALID_REGNUM)

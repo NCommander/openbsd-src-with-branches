@@ -647,8 +647,6 @@ struct ix86_frame
   HOST_WIDE_INT frame_pointer_offset;
   HOST_WIDE_INT hard_frame_pointer_offset;
   HOST_WIDE_INT stack_pointer_offset;
-
-  HOST_WIDE_INT local_size;
 };
 
 /* Used to enable/disable debugging features.  */
@@ -1727,10 +1725,6 @@ classify_argument (mode, type, classes, bit_offset)
   if (bytes < 0)
     return 0;
 
-  if (mode != VOIDmode
-      && MUST_PASS_IN_STACK (mode, type))
-    return 0;
-
   if (type && AGGREGATE_TYPE_P (type))
     {
       int i;
@@ -1760,11 +1754,11 @@ classify_argument (mode, type, classes, bit_offset)
 	    {
 	      tree bases = TYPE_BINFO_BASETYPES (type);
 	      int n_bases = TREE_VEC_LENGTH (bases);
-	      int basenum;
+	      int i;
 
-	      for (basenum = 0; basenum < n_bases; ++basenum)
+	      for (i = 0; i < n_bases; ++i)
 		{
-		   tree binfo = TREE_VEC_ELT (bases, basenum);
+		   tree binfo = TREE_VEC_ELT (bases, i);
 		   int num;
 		   int offset = tree_low_cst (BINFO_OFFSET (binfo), 0) * 8;
 		   tree type = BINFO_TYPE (binfo);
@@ -1848,11 +1842,11 @@ classify_argument (mode, type, classes, bit_offset)
 	    {
 	      tree bases = TYPE_BINFO_BASETYPES (type);
 	      int n_bases = TREE_VEC_LENGTH (bases);
-	      int basenum;
+	      int i;
 
-	      for (basenum = 0; basenum < n_bases; ++basenum)
+	      for (i = 0; i < n_bases; ++i)
 		{
-		   tree binfo = TREE_VEC_ELT (bases, basenum);
+		   tree binfo = TREE_VEC_ELT (bases, i);
 		   int num;
 		   int offset = tree_low_cst (BINFO_OFFSET (binfo), 0) * 8;
 		   tree type = BINFO_TYPE (binfo);
@@ -3615,6 +3609,20 @@ q_regs_operand (op, mode)
   return ANY_QI_REG_P (op);
 }
 
+/* Return true if op is an flags register.  */
+
+int
+flags_reg_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) != mode)
+    return 0;
+  return (GET_CODE (op) == REG
+	  && REGNO (op) == FLAGS_REG
+	  && GET_MODE (op) != VOIDmode);
+}
+
 /* Return true if op is a NON_Q_REGS class register.  */
 
 int
@@ -3974,6 +3982,14 @@ aligned_operand (op, mode)
 
   /* Didn't find one -- this must be an aligned address.  */
   return 1;
+}
+
+int
+compare_operator (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return GET_CODE (op) == COMPARE;
 }
 
 /* Return true if the constant is something that can be loaded with
@@ -4547,7 +4563,6 @@ ix86_compute_frame_layout (frame)
   int preferred_alignment = cfun->preferred_stack_boundary / BITS_PER_UNIT;
   HOST_WIDE_INT size = get_frame_size ();
 
-  frame->local_size = size;
   frame->nregs = ix86_nsaved_regs ();
   total_size = size;
 
@@ -4710,9 +4725,6 @@ ix86_expand_prologue ()
         use_mov = use_fast_prologue_epilogue;
     }
   ix86_compute_frame_layout (&frame);
-
-  if (warn_stack_larger_than && frame.local_size > stack_larger_than_size)
-    warning ("stack usage is %d bytes", frame.local_size);
 
   /* Note: AT&T enter does NOT have reversed args.  Enter is probably
      slower on all targets.  Also sdb doesn't like it.  */
@@ -7504,14 +7516,14 @@ output_387_binary_op (insn, operands)
 
   if (is_sse)
    {
-      strlcpy (buf, ssep, sizeof buf);
+      strcpy (buf, ssep);
       if (GET_MODE (operands[0]) == SFmode)
-	strlcat (buf, "ss\t{%2, %0|%0, %2}", sizeof buf);
+	strcat (buf, "ss\t{%2, %0|%0, %2}");
       else
-	strlcat (buf, "sd\t{%2, %0|%0, %2}", sizeof buf);
+	strcat (buf, "sd\t{%2, %0|%0, %2}");
       return buf;
    }
-  strlcpy (buf, p, sizeof buf);
+  strcpy (buf, p);
 
   switch (GET_CODE (operands[3]))
     {
@@ -14814,17 +14826,6 @@ x86_machine_dependent_reorg (first)
     if (insert)
       emit_insn_before (gen_nop (), ret);
   }
-}
-
-/* Return if we do not know how to pass TYPE solely in registers.  */
-bool
-ix86_must_pass_in_stack (mode, type)
-	enum machine_mode mode;
-	tree type;
-{
-   if (default_must_pass_in_stack (mode, type))
-     return true;
-   return (!TARGET_64BIT && type && mode == TImode);
 }
 
 #include "gt-i386.h"

@@ -1,2 +1,0 @@
-dnl	$OpenBSD$
-OpenBSDUpgrade({:-bsd.rd on the boot disk-:})

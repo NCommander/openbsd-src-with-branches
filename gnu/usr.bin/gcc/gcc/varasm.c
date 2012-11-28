@@ -4843,7 +4843,6 @@ enum symbol_visibility
 decl_visibility (decl)
      tree decl;
 {
-#ifdef HAVE_GAS_HIDDEN
   tree attr = lookup_attribute ("visibility", DECL_ATTRIBUTES (decl));
 
   if (attr)
@@ -4861,7 +4860,6 @@ decl_visibility (decl)
 
       abort ();
     }
-#endif
 
   return VISIBILITY_DEFAULT;
 }
@@ -5460,7 +5458,7 @@ bool
 default_binds_local_p (exp)
      tree exp;
 {
-  return default_binds_local_p_1 (exp, flag_shlib);
+  return default_binds_local_p_1 (exp, flag_pic);
 }
 
 bool

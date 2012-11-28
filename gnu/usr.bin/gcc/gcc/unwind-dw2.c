@@ -1,5 +1,5 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -160,40 +160,18 @@ read_8u (const void *p) { const union unaligned *up = p; return up->u8; }
 static inline unsigned long
 read_8s (const void *p) { const union unaligned *up = p; return up->s8; }
 
-
-#ifdef __sparc64__
-
-/* Figure out StackGhost cookie.  */
-_Unwind_Word uw_get_wcookie(void);
-
-asm(".text\n"
-    "uw_get_wcookie:\n"
-    "	add  %o7, %g0, %g4\n"
-    "	save %sp, -176, %sp\n"
-    "	save %sp, -176, %sp\n"
-    "	flushw\n"
-    "	restore\n"
-    "	ldx [%sp + 2047 + 120], %g5\n"
-    "	xor %g4, %g5, %i0\n"
-    "	ret\n"
-    "	 restore\n");
-#endif
-
-
 /* Get the value of register REG as saved in CONTEXT.  */
 
 inline _Unwind_Word
 _Unwind_GetGR (struct _Unwind_Context *context, int index)
 {
-  /* This will segfault if the register hasn't been saved.  */
-  _Unwind_Word reg = * (_Unwind_Word *) context->reg[index];
-
-#ifdef __sparc64__
-  if (index == 15 || index == 31)
-    reg ^= uw_get_wcookie ();
+#ifdef DWARF_ZERO_REG
+  if (index == DWARF_ZERO_REG)
+    return 0;
 #endif
 
-  return reg;
+  /* This will segfault if the register hasn't been saved.  */
+  return * (_Unwind_Word *) context->reg[index];
 }
 
 /* Get the value of the CFA as saved in CONTEXT.  */
@@ -631,6 +609,10 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	case DW_OP_mul:
 	case DW_OP_or:
 	case DW_OP_plus:
+	case DW_OP_shl:
+	case DW_OP_shr:
+	case DW_OP_shra:
+	case DW_OP_xor:
 	case DW_OP_le:
 	case DW_OP_ge:
 	case DW_OP_eq:

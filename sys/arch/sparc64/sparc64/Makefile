@@ -1,9 +1,0 @@
-#	$OpenBSD: $
-
-DEP=	busop.awk busop_h.in busop_c.in
-OBJS=	busop.h busop.c
-
-${OBJS}: ${DEP}
-	awk -f busop.awk < busop_h.in > busop.h
-	awk -f busop.awk < busop_c.in > busop.c
-

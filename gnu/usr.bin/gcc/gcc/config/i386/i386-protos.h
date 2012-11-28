@@ -88,6 +88,8 @@ extern int memory_displacement_operand PARAMS ((rtx, enum machine_mode));
 extern int cmpsi_operand PARAMS ((rtx, enum machine_mode));
 extern int long_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int aligned_operand PARAMS ((rtx, enum machine_mode));
+extern int compare_operator PARAMS ((rtx, enum machine_mode));
+extern int flags_reg_operand PARAMS ((rtx, enum machine_mode));
 extern enum machine_mode ix86_cc_mode PARAMS ((enum rtx_code, rtx, rtx));
 
 extern int ix86_expand_movstr PARAMS ((rtx, rtx, rtx, rtx));
@@ -221,7 +223,6 @@ extern int x86_field_alignment PARAMS ((tree, int));
 
 extern rtx ix86_tls_get_addr PARAMS ((void));
 extern void x86_machine_dependent_reorg PARAMS ((rtx));
-extern bool ix86_must_pass_in_stack PARAMS ((enum machine_mode mode, tree));
 
 /* In winnt.c  */
 extern int i386_pe_dllexport_name_p PARAMS ((const char *));

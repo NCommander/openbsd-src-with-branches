@@ -1127,11 +1127,6 @@ main (argc, argv)
 		  ld1--;
 		  ld2--;
 		}
-	      if (!strcmp (arg, "-dynamic-linker") && argv[1])
-	        {
-		  ++argv;
-		  *ld1++ = *ld2++ = *argv;
-		}
 	      break;
 
 	    case 'l':
@@ -1577,7 +1572,7 @@ collect_execute (prog, argv, redir)
   if (redir)
     {
       /* Open response file.  */
-      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT, 0666);
+      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT);
 
       /* Duplicate the stdout and stderr file handles
 	 so they can be restored later.  */

@@ -562,9 +562,6 @@ loop_optimize (f, dumpfile, flags)
   end_alias_analysis ();
 
   /* Clean up.  */
-  for (i = 0; i < (int) loops->num; i++)
-    free (loops_info[i].mems);
-
   free (uid_luid);
   free (uid_loop);
   free (loops_info);
@@ -1133,7 +1130,6 @@ scan_loop (loop, flags)
      Generally this increases code size, so do not move moveables when
      optimizing for code size.  */
 
-#if 0 /* verified to cause bad code generation on OpenBSD/powerpc */
   if (! optimize_size)
     {
       move_movables (loop, movables, threshold, insn_count);
@@ -1154,7 +1150,6 @@ scan_loop (loop, flags)
 	  loop_max_reg = max_reg_num ();
 	}
     }
-#endif
 
   /* Now candidates that still are negative are those not moved.
      Change regs->array[I].set_in_loop to indicate that those are not actually
@@ -6558,14 +6553,6 @@ general_induction_var (loop, x, src_reg, add_val, mult_val, ext_val,
     *add_val = XEXP (*add_val, 0);
   if (GET_CODE (*mult_val) == USE)
     *mult_val = XEXP (*mult_val, 0);
-
-#ifndef FRAME_GROWS_DOWNWARD
-  if (flag_propolice_protection
-      && GET_CODE (*add_val) == PLUS
-      && (XEXP (*add_val, 0) == frame_pointer_rtx
-	  || XEXP (*add_val, 1) == frame_pointer_rtx))
-    return 0;
-#endif
 
   if (is_addr)
     *pbenefit += address_cost (orig_x, addr_mode) - reg_address_cost;
