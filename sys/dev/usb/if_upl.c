@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upl.c,v 1.47 2011/01/25 20:03:35 jakemsr Exp $ */
+/*	$OpenBSD: if_upl.c,v 1.48 2011/07/03 15:47:17 matthew Exp $ */
 /*	$NetBSD: if_upl.c,v 1.19 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -292,7 +292,7 @@ upl_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_addrlen = 0;
 	ifp->if_hdrlen = 0;
 	ifp->if_output = upl_output;
-	ifp->if_baudrate = 12000000;
+	ifp->if_baudrate = IF_Mbps(12);
 	IFQ_SET_READY(&ifp->if_snd);
 
 	/* Attach the interface. */
