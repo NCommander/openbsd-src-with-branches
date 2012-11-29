@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.15 2012/04/11 08:33:53 deraadt Exp $	*/
+/*	$OpenBSD: control.c,v 1.16 2012/09/18 08:29:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -173,6 +173,7 @@ control_accept(int listenfd, short event, void *arg)
 	imsg_init(&c->iev.ibuf, connfd);
 	c->iev.handler = control_dispatch_imsg;
 	c->iev.events = EV_READ;
+	c->iev.data = cs;
 	event_set(&c->iev.ev, c->iev.ibuf.fd, c->iev.events,
 	    c->iev.handler, cs);
 	event_add(&c->iev.ev, NULL);
