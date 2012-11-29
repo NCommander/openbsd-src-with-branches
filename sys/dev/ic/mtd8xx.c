@@ -1,4 +1,4 @@
-/*	$OpenBSD: mtd8xx.c,v 1.17 2010/05/19 15:27:35 oga Exp $	*/
+/*	$OpenBSD: mtd8xx.c,v 1.18 2011/06/21 16:52:45 tedu Exp $	*/
 
 /*
  * Copyright (c) 2003 Oleg Safiullin <form@pdp11.org.ru>
@@ -163,7 +163,6 @@ mtd_attach(struct mtd_softc *sc)
 	ifp->if_ioctl = mtd_ioctl;
 	ifp->if_start = mtd_start;
 	ifp->if_watchdog = mtd_watchdog;
-	ifp->if_baudrate = 10000000;
 	IFQ_SET_READY(&ifp->if_snd);
 	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
 

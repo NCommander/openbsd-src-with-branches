@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sk.c,v 1.161 2012/02/24 06:19:00 guenther Exp $	*/
+/*	$OpenBSD: if_sk.c,v 1.162 2012/10/18 21:44:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -1167,7 +1167,6 @@ sk_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_ioctl = sk_ioctl;
 	ifp->if_start = sk_start;
 	ifp->if_watchdog = sk_watchdog;
-	ifp->if_baudrate = 1000000000;
 	ifp->if_hardmtu = SK_JUMBO_MTU;
 	IFQ_SET_MAXLEN(&ifp->if_snd, SK_TX_RING_CNT - 1);
 	IFQ_SET_READY(&ifp->if_snd);
