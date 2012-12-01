@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.h,v 1.7 2012/11/23 15:25:47 krw Exp $ */
+/*	$OpenBSD: privsep.h,v 1.8 2012/11/29 00:31:57 krw Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -34,11 +34,11 @@ enum imsg_code {
 struct imsg_delete_address {
 	char	ifname[IFNAMSIZ];
 	int	rdomain;
-	struct in_addr addr;
+	struct	in_addr addr;
 };
 
 struct imsg_add_address {
-	char 	ifname[IFNAMSIZ];
+	char	ifname[IFNAMSIZ];
 	int	rdomain;
 	struct	in_addr	addr;
 	struct	in_addr mask;
