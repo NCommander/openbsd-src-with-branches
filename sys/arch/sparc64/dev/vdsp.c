@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsp.c,v 1.12 2012/10/21 19:30:56 kettenis Exp $	*/
+/*	$OpenBSD: vdsp.c,v 1.13 2012/10/26 20:57:08 kettenis Exp $	*/
 /*
  * Copyright (c) 2009, 2011 Mark Kettenis
  *
@@ -749,6 +749,15 @@ vdsp_rx_vio_dring_data(struct vdsp_softc *sc, struct vio_msg_tag *tag)
 			break;
 		case VD_OP_GET_DISKGEOM:
 			workq_add_task(NULL, 0, vdsp_get_diskgeom, sc, vd);
+			break;
+		case VD_OP_GET_DEVID:
+			/*
+			 * Solaris issues VD_OP_GET_DEVID despite the
+			 * fact that we don't advertise it.  It seems
+			 * to be able to handle failure just fine, so
+			 * we silently ignore it.
+			 */
+			workq_add_task(NULL, 0, vdsp_unimp, sc, vd);
 			break;
 		default:
 			printf("%s: unsupported operation 0x%02x\n",
