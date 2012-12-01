@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dsp.c,v 1.1 2012/11/23 07:03:28 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -570,7 +570,7 @@ cmap_add(struct cmap *p, void *in, void *out, int vol, int todo)
 	istart = p->istart;
 	inext = p->inext;
 	nch = p->nch;
-	v = vol; /* XXX */
+	v = vol;
 
 	/*
 	 * map/mix input on the output
