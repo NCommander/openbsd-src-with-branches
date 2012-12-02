@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.h,v 1.70 2012/10/30 21:29:54 djm Exp $ */
+/* $OpenBSD: auth.h,v 1.71 2012/11/04 11:09:15 djm Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -127,9 +127,10 @@ void	krb5_cleanup_proc(Authctxt *authctxt);
 void	do_authentication(Authctxt *);
 void	do_authentication2(Authctxt *);
 
-void	auth_log(Authctxt *, int, char *, char *);
-void	userauth_finish(Authctxt *, int, char *);
-int	auth_root_allowed(char *);
+void	auth_log(Authctxt *, int, int, const char *, const char *,
+    const char *);
+void	userauth_finish(Authctxt *, int, const char *, const char *);
+int	auth_root_allowed(const char *);
 
 char	*auth2_read_banner(void);
 int	 auth2_methods_valid(const char *, int);
