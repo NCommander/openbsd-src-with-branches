@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.45 2009/08/24 21:44:21 dms Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.46 2010/09/28 20:27:55 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -150,6 +150,7 @@ extern struct cpu_info cpu_info[PPC_MAXPROCS];
  * This is used during profiling to integrate system time.
  */
 #define	PROC_PC(p)		(trapframe(p)->srr0)
+#define	PROC_STACK(p)		(trapframe(p)->fixreg[1])
 
 void	delay(unsigned);
 #define	DELAY(n)		delay(n)

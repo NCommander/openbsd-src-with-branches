@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.89 2012/09/29 21:37:03 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.90 2012/10/03 11:18:23 miod Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -268,6 +268,7 @@ void	cp0_calibrate(struct cpu_info *);
  * This is used during profiling to integrate system time.
  */
 #define	PROC_PC(p)	((p)->p_md.md_regs->pc)
+#define	PROC_STACK(p)	((p)->p_md.md_regs->sp)
 
 /*
  * Preempt the current process if in interrupt from user mode,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.6 2006/12/11 20:53:23 deraadt Exp $	*/
+/*	$OpenBSD: signal.h,v 1.7 2011/03/23 16:54:34 pirofti Exp $	*/
 /*	$NetBSD: signal.h,v 1.2 1995/02/16 03:08:08 cgd Exp $	*/
 
 /*
@@ -47,7 +47,7 @@ typedef int	sig_atomic_t;
  * representations of 'struct reg' and 'struct fpreg', respectively.
  */
 struct  sigcontext {
-	long	sc_onstack;             /* sigstack state to restore */
+	long	__sc_ununsed;
 	long	sc_mask;                /* signal mask to restore */
 	long	sc_pc;                  /* pc to restore */
 	long	sc_ps;			/* ps to restore */

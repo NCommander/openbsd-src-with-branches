@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.26 2011/07/07 18:44:39 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.27 2011/08/16 17:36:37 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -162,6 +162,9 @@ extern int cpu_hvers;
 #define	need_resched(ci)	(want_resched = 1, setsoftast())
 #define clear_resched(ci) 	want_resched = 0
 #define	need_proftick(p)	setsoftast()
+
+#define	PROC_PC(p)		((p)->p_md.md_regs->tf_iioq[0])
+#define	PROC_STACK(p)		((p)->p_md.md_regs->tf_sp)
 
 #ifndef _LOCORE
 #ifdef _KERNEL

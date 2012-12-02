@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.79 2011/01/02 20:41:22 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.80 2011/09/20 21:44:09 miod Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -202,6 +202,7 @@ extern int cpu_hvers;
 
 #define	need_proftick(p)	setsoftast(p)
 #define	PROC_PC(p)		((p)->p_md.md_regs->tf_iioq_head)
+#define	PROC_STACK(p)		((p)->p_md.md_regs->tf_sp)
 
 #ifndef _LOCORE
 #ifdef _KERNEL
