@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.138 2012/10/16 02:30:54 beck Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.139 2012/11/07 17:50:48 beck Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*
@@ -319,8 +319,8 @@ bufadjust(int newbufpages)
 	 * Wake up the cleaner if we have lots of dirty pages,
 	 * or if we are getting low on buffer cache kva.
 	 */
-	if (UNCLEAN_PAGES >= hidirtypages ||
-	    bcstats.kvaslots_avail <= 2 * RESERVE_SLOTS)
+	if (!growing && (UNCLEAN_PAGES >= hidirtypages ||
+	    bcstats.kvaslots_avail <= 2 * RESERVE_SLOTS))
 		wakeup(&bd_req);
 
 	splx(s);
