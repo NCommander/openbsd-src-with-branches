@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.218 2012/10/02 07:07:45 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.219 2012/11/14 02:32:15 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -99,7 +99,7 @@ char *identity_comment = NULL;
 char *ca_key_path = NULL;
 
 /* Certificate serial number */
-long long cert_serial = 0;
+unsigned long long cert_serial = 0;
 
 /* Key type when certifying */
 u_int cert_key_type = SSH2_CERT_TYPE_USER;
