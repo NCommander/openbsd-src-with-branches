@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_subs.c,v 1.32 2008/05/06 06:54:28 henning Exp $	*/
+/*	$OpenBSD: ar_subs.c,v 1.33 2009/10/27 23:59:22 deraadt Exp $	*/
 /*	$NetBSD: ar_subs.c,v 1.5 1995/03/21 09:07:06 cgd Exp $	*/
 
 /*-
@@ -37,7 +37,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#include <sys/param.h>
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>

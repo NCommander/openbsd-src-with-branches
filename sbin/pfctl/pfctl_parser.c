@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.288 2012/07/10 09:23:56 henning Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.290 2012/09/18 10:11:53 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -34,8 +34,6 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#include <sys/param.h>
-#include <sys/proc.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>

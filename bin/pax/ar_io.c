@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_io.c,v 1.38 2008/06/11 00:49:08 pvalchev Exp $	*/
+/*	$OpenBSD: ar_io.c,v 1.39 2009/10/27 23:59:22 deraadt Exp $	*/
 /*	$NetBSD: ar_io.c,v 1.5 1996/03/26 23:54:13 mrg Exp $	*/
 
 /*-
@@ -39,7 +39,6 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
-#include <sys/param.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <string.h>

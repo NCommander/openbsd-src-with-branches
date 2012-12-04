@@ -1,4 +1,4 @@
-/*	$OpenBSD: chio.c,v 1.22 2007/11/27 16:22:12 martynas Exp $	*/
+/*	$OpenBSD: chio.c,v 1.23 2011/04/24 01:13:55 krw Exp $	*/
 /*	$NetBSD: chio.c,v 1.1.1.1 1996/04/03 00:34:38 thorpej Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
 #include <sys/chio.h>

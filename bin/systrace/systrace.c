@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.56 2007/11/26 09:28:33 martynas Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.57 2012/08/23 00:08:36 guenther Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -30,7 +30,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/wait.h>
 #include <sys/tree.h>
 #include <sys/socket.h>

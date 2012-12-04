@@ -1,4 +1,4 @@
-/*	$OpenBSD: fingerd.c,v 1.34 2008/08/11 17:17:53 tobias Exp $	*/
+/*	$OpenBSD: fingerd.c,v 1.35 2009/10/27 23:59:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -29,7 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

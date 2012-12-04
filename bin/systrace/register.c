@@ -1,4 +1,4 @@
-/*	$OpenBSD: register.c,v 1.22 2006/08/14 07:24:55 ray Exp $	*/
+/*	$OpenBSD: register.c,v 1.23 2011/09/18 23:24:14 matthew Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -30,7 +30,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/tree.h>
 #include <stdlib.h>
 #include <unistd.h>

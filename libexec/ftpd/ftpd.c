@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.194 2011/12/14 18:01:55 ajacoutot Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.195 2012/03/04 04:05:15 fgsch Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -62,7 +62,6 @@
 /*
  * FTP server.
  */
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>

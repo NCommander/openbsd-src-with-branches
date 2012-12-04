@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd-setup.c,v 1.36 2009/06/02 22:38:45 ray Exp $ */
+/*	$OpenBSD: spamd-setup.c,v 1.37 2009/09/09 16:05:55 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Bob Beck.  All rights reserved.
@@ -24,7 +24,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

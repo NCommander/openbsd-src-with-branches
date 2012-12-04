@@ -1,4 +1,4 @@
-/*	$OpenBSD: chmod.c,v 1.26 2010/01/12 19:30:53 jasper Exp $	*/
+/*	$OpenBSD: chmod.c,v 1.27 2011/03/09 12:32:02 okan Exp $	*/
 /*	$NetBSD: chmod.c,v 1.12 1995/03/21 09:02:09 cgd Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <err.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.31 2006/07/02 12:34:15 sturm Exp $	*/
+/*	$OpenBSD: policy.c,v 1.32 2006/09/19 10:48:41 otto Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -30,7 +30,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/tree.h>
 #include <dirent.h>

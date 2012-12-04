@@ -1,4 +1,4 @@
-/*	$OpenBSD: pat_rep.c,v 1.30 2005/08/05 08:30:10 djm Exp $	*/
+/*	$OpenBSD: pat_rep.c,v 1.31 2009/10/27 23:59:22 deraadt Exp $	*/
 /*	$NetBSD: pat_rep.c,v 1.4 1995/03/21 09:07:33 cgd Exp $	*/
 
 /*-
@@ -37,7 +37,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#include <sys/param.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>

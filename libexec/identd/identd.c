@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.48 2009/05/20 20:37:43 thib Exp $	*/
+/*	$OpenBSD: identd.c,v 1.49 2010/06/06 07:05:40 jmc Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -8,7 +8,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/file.h>

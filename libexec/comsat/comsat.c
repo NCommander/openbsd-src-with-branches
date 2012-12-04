@@ -1,4 +1,4 @@
-/*	$OpenBSD: comsat.c,v 1.35 2006/08/17 23:52:06 ray Exp $	*/
+/*	$OpenBSD: comsat.c,v 1.36 2009/10/27 23:59:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -30,7 +30,6 @@
  */
 
 #include <sys/limits.h>
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>

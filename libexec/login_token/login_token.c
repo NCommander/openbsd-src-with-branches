@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_token.c,v 1.7 2002/09/06 18:19:14 deraadt Exp $	*/
+/*	$OpenBSD: login_token.c,v 1.8 2004/03/10 21:30:27 millert Exp $	*/
 
 /*-
  * Copyright (c) 1995, 1996 Berkeley Software Design, Inc. All rights reserved.
@@ -35,7 +35,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
