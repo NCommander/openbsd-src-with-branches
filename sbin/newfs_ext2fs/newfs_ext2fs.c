@@ -1,4 +1,4 @@
-/* $OpenBSD: newfs_ext2fs.c,v 1.5 2010/02/18 07:58:14 otto Exp $ */
+/* $OpenBSD: newfs_ext2fs.c,v 1.6 2010/05/18 04:41:14 dlg Exp $ */
 /*	$NetBSD: newfs_ext2fs.c,v 1.8 2009/03/02 10:38:13 tsutsui Exp $	*/
 
 /*
@@ -29,8 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 /*
  * newfs: friendly front end to mke2fs
