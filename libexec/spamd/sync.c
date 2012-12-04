@@ -1,4 +1,4 @@
-/*	$OpenBSD: sync.c,v 1.7 2008/05/22 19:54:11 deraadt Exp $	*/
+/*	$OpenBSD: sync.c,v 1.8 2009/04/20 17:42:21 beck Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -16,8 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
-#include <sys/stdint.h>
 #include <sys/file.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
@@ -40,6 +38,7 @@
 #include <unistd.h>
 #include <sha1.h>
 #include <syslog.h>
+#include <stdint.h>
 
 #include <netdb.h>
 
