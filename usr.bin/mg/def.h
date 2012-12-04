@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.130 2012/11/27 19:45:01 jasper Exp $	*/
+/*	$OpenBSD: def.h,v 1.131 2012/11/27 19:46:46 jasper Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -424,6 +424,7 @@ void		vtinit(void);
 void		vttidy(void);
 void		update(void);
 int		linenotoggle(int, int);
+int		colnotoggle(int, int);
 
 /* echo.c X */
 void		 eerase(void);
