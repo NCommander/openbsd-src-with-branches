@@ -1,4 +1,4 @@
-/*	$OpenBSD: rusers_proc.c,v 1.21 2004/11/04 20:09:18 deraadt Exp $	*/
+/*	$OpenBSD: rusers_proc.c,v 1.22 2009/10/27 23:59:31 deraadt Exp $	*/
 
 /*-
  *  Copyright (c) 1993 John Brezak
@@ -28,7 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -39,6 +38,7 @@
 #include <stdlib.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <limits.h>
 #include <string.h>
 #include <rpc/rpc.h>
 #include <rpcsvc/rusers.h>	/* New version */
