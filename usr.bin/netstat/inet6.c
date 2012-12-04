@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet6.c,v 1.41 2010/10/21 10:51:05 bluhm Exp $	*/
+/*	$OpenBSD: inet6.c,v 1.42 2010/12/21 13:12:13 claudio Exp $	*/
 /*	BSDI inet.c,v 2.3 1995/10/24 02:19:29 prb Exp	*/
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -33,7 +33,6 @@
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/ioctl.h>
-#include <sys/mbuf.h>
 #include <sys/protosw.h>
 #include <sys/sysctl.h>
 
