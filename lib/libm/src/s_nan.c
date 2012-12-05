@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_nan.c,v 1.6 2008/12/10 01:08:25 martynas Exp $	*/
+/*	$OpenBSD: s_nan.c,v 1.7 2011/05/30 18:34:38 martynas Exp $	*/
 /*-
  * Copyright (c) 2007 David Schultz
  * All rights reserved.
@@ -29,7 +29,6 @@
 
 /* LINTLIBRARY */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/endian.h>
 #include <ctype.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc_util.c,v 1.14 2009/10/27 23:59:42 deraadt Exp $	*/
+/*	$OpenBSD: rpc_util.c,v 1.15 2010/09/01 14:43:34 millert Exp $	*/
 /*	$NetBSD: rpc_util.c,v 1.6 1995/08/29 23:05:57 cgd Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
 /*
  * rpc_util.c, Utility routines for the RPC protocol compiler
  */
-#include <sys/cdefs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

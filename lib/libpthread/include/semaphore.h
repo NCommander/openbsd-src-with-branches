@@ -1,4 +1,4 @@
-/*	$OpenBSD: semaphore.h,v 1.4 2012/03/03 10:02:26 guenther Exp $	*/
+/*	$OpenBSD: semaphore.h,v 1.5 2012/07/11 09:08:50 guenther Exp $	*/
 
 /* semaphore.h: POSIX 1003.1b semaphores */
 
@@ -50,7 +50,6 @@ struct timespec;
 #define SEM_VALUE_MAX   UINT_MAX
 
 #ifndef _KERNEL
-#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 int	sem_init(sem_t *, int, unsigned int);

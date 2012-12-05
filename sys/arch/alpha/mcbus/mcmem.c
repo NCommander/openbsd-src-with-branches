@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mcmem.c,v 1.1 2007/03/16 21:22:27 robert Exp $ */
 /* $NetBSD: mcmem.c,v 1.4 2002/10/02 04:06:38 thorpej Exp $ */
 
 /*
@@ -37,7 +37,6 @@
  * the MCBUS main system bus found on AlphaServer 4100 systems.
  */
 
-#include <sys/cdefs.h>			/* RCS ID & Copyright macro defns */
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

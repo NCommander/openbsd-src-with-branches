@@ -1,4 +1,4 @@
-/*	$OpenBSD: des_locl.h,v 1.2 2002/10/27 13:24:26 miod Exp $	*/
+/*	$OpenBSD: des_locl.h,v 1.3 2005/06/13 10:56:44 hshoexer Exp $	*/
 
 /* lib/des/des_locl.h */
 /* Copyright (C) 1995 Eric Young (eay@mincom.oz.au)
@@ -50,7 +50,6 @@
 #ifndef HEADER_DES_LOCL_H
 #define HEADER_DES_LOCL_H
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/systm.h>
 

@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mcpcia_bus_io.c,v 1.1 2007/03/16 21:22:27 robert Exp $ */
 /* $NetBSD: mcpcia_bus_io.c,v 1.3 2000/06/29 08:58:47 mrg Exp $ */
 
 /*
@@ -31,7 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>			/* RCS ID & Copyright macro defns */
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>

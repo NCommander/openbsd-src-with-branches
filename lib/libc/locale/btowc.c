@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: btowc.c,v 1.1 2010/07/27 16:59:03 stsp Exp $ */
 
 /*-
  * Copyright (c) 2002, 2003 Tim J. Robbins.
@@ -25,8 +25,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 #include <stdio.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axe.c,v 1.113 2012/11/21 05:26:18 kirby Exp $	*/
+/*	$OpenBSD: if_axe.c,v 1.114 2012/11/28 01:15:33 brad Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Jonathan Gray <jsg@openbsd.org>
@@ -47,8 +47,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 /*
  * ASIX Electronics AX88172 USB 2.0 ethernet driver. Used in the

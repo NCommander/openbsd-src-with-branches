@@ -1,4 +1,4 @@
-/* $OpenBSD: kvm86.c,v 1.4 2010/04/23 21:34:40 deraadt Exp $ */
+/* $OpenBSD: kvm86.c,v 1.5 2010/06/27 13:28:46 miod Exp $ */
 /* $NetBSD: kvm86.c,v 1.10 2005/12/26 19:23:59 perry Exp $ */
 /*
  * Copyright (c) 2002
@@ -25,7 +25,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#include <sys/cdefs.h>
 
 #include <sys/param.h>
 #include <sys/systm.h>

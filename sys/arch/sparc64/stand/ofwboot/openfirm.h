@@ -1,4 +1,4 @@
-/*	$OpenBSD: openfirm.h,v 1.3 2002/03/14 01:26:46 millert Exp $	*/
+/*	$OpenBSD: openfirm.h,v 1.4 2002/03/14 03:16:01 millert Exp $	*/
 /*	$NetBSD: openfirm.h,v 1.1 2000/08/20 14:58:42 mrg Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
  * Prototypes for Openfirmware Interface Routines
  */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <machine/openfirm.h>
 

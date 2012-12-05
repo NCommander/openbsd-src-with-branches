@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.23 2007/11/25 08:26:59 deraadt Exp $	*/
+/*	$OpenBSD: config.h,v 1.24 2012/09/17 17:36:13 espie Exp $	*/
 /*	$NetBSD: config.h,v 1.30 1997/02/02 21:12:30 thorpej Exp $	*/
 
 /*
@@ -49,7 +49,6 @@
 #include <sys/param.h>
 
 #if !defined(MAKE_BOOTSTRAP) && defined(BSD)
-#include <sys/cdefs.h>
 #include <paths.h>
 #endif /* ...BSD */
 

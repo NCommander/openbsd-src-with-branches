@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc_hout.c,v 1.19 2010/09/01 14:43:34 millert Exp $	*/
+/*	$OpenBSD: rpc_hout.c,v 1.20 2011/04/06 11:36:26 miod Exp $	*/
 /*	$NetBSD: rpc_hout.c,v 1.4 1995/06/11 21:49:55 pk Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
 /*
  * rpc_hout.c, Header file outputter for the RPC protocol compiler
  */
-#include <sys/cdefs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>

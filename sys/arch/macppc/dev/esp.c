@@ -1,4 +1,4 @@
-/* $OpenBSD: esp.c,v 1.6 2010/06/26 23:24:43 guenther Exp $ */
+/* $OpenBSD: esp.c,v 1.7 2010/06/28 18:31:01 krw Exp $ */
 
 /*-
  * Copyright (c) 1997, 1998 The NetBSD Foundation, Inc.
@@ -68,8 +68,6 @@
  * inspired by the work of Julian Elischer (julian@tfs.com) and
  * Charles Hannum (mycroft@duality.gnu.ai.mit.edu).  Thanks a million!
  */
-
-#include <sys/cdefs.h>
 
 #include <sys/types.h>
 #include <sys/param.h>

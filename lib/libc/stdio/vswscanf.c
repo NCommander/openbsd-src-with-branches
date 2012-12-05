@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: vswscanf.c,v 1.1 2011/10/16 13:20:51 stsp Exp $ */
 
 /*-
  * Copyright (c) 1990, 1993
@@ -32,7 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>

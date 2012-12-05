@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: fenv.c,v 1.1 2011/03/21 21:51:28 martynas Exp $	*/
 
 /*-
  * Copyright (c) 2004 David Schultz <das@FreeBSD.org>
@@ -30,7 +30,6 @@
  * Test the correctness and C99-compliance of various fenv.h features.
  */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <assert.h>

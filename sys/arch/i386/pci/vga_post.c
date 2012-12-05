@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_post.c,v 1.3 2009/06/06 03:20:58 deraadt Exp $ */
+/* $OpenBSD: vga_post.c,v 1.4 2009/06/14 20:27:25 miod Exp $ */
 /* $NetBSD: vga_post.c,v 1.12 2009/03/15 21:32:36 cegger Exp $ */
 
 /*-
@@ -29,8 +29,6 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 #include <sys/param.h>
 #include <sys/device.h>

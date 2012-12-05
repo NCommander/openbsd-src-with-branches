@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnx.c,v 1.96 2012/05/14 14:17:30 mikeb Exp $	*/
+/*	$OpenBSD: if_bnx.c,v 1.97 2012/07/05 13:50:15 phessler Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -29,11 +29,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#if 0
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD: src/sys/dev/bce/if_bce.c,v 1.3 2006/04/13 14:12:26 ru Exp $");
-#endif
 
 /*
  * The following controllers are supported by this driver:

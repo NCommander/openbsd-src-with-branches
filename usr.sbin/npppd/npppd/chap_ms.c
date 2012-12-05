@@ -1,4 +1,4 @@
-/*	$OpenBSD: chap_ms.c,v 1.1 2010/06/03 16:41:12 reyk Exp $	*/
+/*	$OpenBSD: chap_ms.c,v 1.4 2010/09/22 11:48:38 yasuoka Exp $	*/
 /*	$vantronix: chap_ms.c,v 1.7 2010/06/02 12:22:58 reyk Exp $	*/
 
 /*
@@ -32,7 +32,6 @@
   */
 
 #include <sys/types.h>
-#include <sys/cdefs.h>
 
 #include <ctype.h>
 #include <string.h>

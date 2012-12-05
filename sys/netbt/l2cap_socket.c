@@ -1,4 +1,4 @@
-/*	$OpenBSD: l2cap_socket.c,v 1.3 2008/11/22 04:42:58 uwe Exp $	*/
+/*	$OpenBSD: l2cap_socket.c,v 1.4 2009/11/21 13:05:32 guenther Exp $	*/
 /*	$NetBSD: l2cap_socket.c,v 1.9 2008/08/06 15:01:24 plunky Exp $	*/
 
 /*-
@@ -30,8 +30,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 /* load symbolic names */
 #ifdef BLUETOOTH_DEBUG

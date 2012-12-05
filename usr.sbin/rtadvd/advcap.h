@@ -1,4 +1,4 @@
-/*	$OpenBSD: advcap.h,v 1.5 2002/02/16 21:28:08 millert Exp $	*/
+/*	$OpenBSD: advcap.h,v 1.6 2002/05/29 14:34:05 itojun Exp $	*/
 /*	$KAME: advcap.h,v 1.4 2001/06/08 04:46:19 jinmei Exp $	*/
 
 /*
@@ -31,8 +31,6 @@
 
 #ifndef _ADVCAP_H_
 #define _ADVCAP_H_
-
-#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 

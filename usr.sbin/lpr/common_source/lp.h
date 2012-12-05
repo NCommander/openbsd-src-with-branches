@@ -1,4 +1,4 @@
-/*	$OpenBSD: lp.h,v 1.15 2012/03/04 04:05:15 fgsch Exp $	*/
+/*	$OpenBSD: lp.h,v 1.16 2012/11/29 02:15:44 guenther Exp $	*/
 /*	$NetBSD: lp.h,v 1.14 2000/04/16 14:43:58 mrg Exp $	*/
 
 /*
@@ -118,7 +118,6 @@ struct queue {
 	errno = save_errno;			\
 } while (0)
 
-#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 struct dirent;

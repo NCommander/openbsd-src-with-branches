@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc_scan.c,v 1.14 2009/10/27 23:59:42 deraadt Exp $	*/
+/*	$OpenBSD: rpc_scan.c,v 1.15 2010/09/01 14:43:34 millert Exp $	*/
 /*	$NetBSD: rpc_scan.c,v 1.4 1995/06/11 21:50:02 pk Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
 /*
  * rpc_scan.c, Scanner for the RPC protocol compiler
  */
-#include <sys/cdefs.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>

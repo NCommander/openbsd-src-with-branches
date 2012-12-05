@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpclassify.c,v 1.4 2008/12/10 01:15:02 martynas Exp $	*/
+/*	$OpenBSD: fpclassify.c,v 1.5 2011/05/30 17:28:15 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -18,7 +18,6 @@
 /* LINTLIBRARY */
 
 #include <sys/types.h>
-#include <sys/cdefs.h>
 #include <machine/ieee.h>
 #include <float.h>
 #include <math.h>

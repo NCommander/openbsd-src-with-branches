@@ -1,4 +1,4 @@
-/*	$OpenBSD: pthread.h,v 1.37 2012/05/14 23:21:35 matthew Exp $	*/
+/*	$OpenBSD: pthread.h,v 1.38 2012/11/05 08:58:39 landry Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 by Chris Provenzano, proven@mit.edu
@@ -40,7 +40,6 @@
 /*
  * Header files.
  */
-#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/signal.h>

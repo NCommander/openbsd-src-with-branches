@@ -1,7 +1,7 @@
-/*	$OpenBSD: speed.h,v 1.2 2001/01/29 02:05:54 niklas Exp $	*/
+/*	$OpenBSD: speed.h,v 1.3 2002/02/16 21:27:32 millert Exp $	*/
 /*	$NetBSD: speed.h,v 1.2 1998/01/09 08:03:57 perry Exp $	*/
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 
 void illegal(int);
 void mul32smem(int);

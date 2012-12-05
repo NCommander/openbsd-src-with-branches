@@ -1,4 +1,4 @@
-/*	$OpenBSD: setrunelocale.c,v 1.5 2010/07/27 16:59:04 stsp Exp $ */
+/*	$OpenBSD: setrunelocale.c,v 1.6 2011/03/15 22:27:48 stsp Exp $ */
 /*	$NetBSD: setrunelocale.c,v 1.14 2003/08/07 16:43:07 agc Exp $	*/
 
 /*-
@@ -87,8 +87,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 #include "rune.h"
 #include <assert.h>

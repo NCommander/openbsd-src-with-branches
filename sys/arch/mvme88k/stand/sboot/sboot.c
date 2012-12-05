@@ -1,4 +1,4 @@
-/*	$OpenBSD: sboot.c,v 1.3 2003/06/04 16:36:15 deraadt Exp $	*/
+/*	$OpenBSD: sboot.c,v 1.4 2006/05/16 22:52:26 miod Exp $	*/
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -54,7 +54,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 #include "sboot.h"
 
 void

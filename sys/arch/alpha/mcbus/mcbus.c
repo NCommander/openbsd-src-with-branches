@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mcbus.c,v 1.1 2007/03/16 21:22:27 robert Exp $ */
 /* $NetBSD: mcbus.c,v 1.19 2007/03/04 05:59:11 christos Exp $ */
 
 /*
@@ -36,7 +36,6 @@
  * bus found on AlphaServer 4100 systems.
  */
 
-#include <sys/cdefs.h>			/* RCS ID & Copyright macro defns */
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: midiio.h,v 1.3 2005/12/13 00:35:23 millert Exp $	*/
+/*	$OpenBSD: midiio.h,v 1.4 2008/06/26 05:42:20 ray Exp $	*/
 /*	$NetBSD: midiio.h,v 1.7 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*-
@@ -38,7 +38,6 @@
  * for naming.
  */
 
-#include <sys/cdefs.h>
 #include <machine/endian.h>	/* for _QUAD_LOWWORD */
 
 /*

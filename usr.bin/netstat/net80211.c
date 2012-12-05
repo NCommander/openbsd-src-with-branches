@@ -1,4 +1,4 @@
-/*	$OpenBSD: net80211.c,v 1.7 2011/03/04 23:48:15 fgsch Exp $	*/
+/*	$OpenBSD: net80211.c,v 1.8 2012/07/13 20:20:49 stsp Exp $	*/
 
 /*
  * Copyright (c) 2005 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/cdefs.h>
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/socket.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahd_pci.c,v 1.19 2012/09/28 02:59:29 brad Exp $	*/
+/*	$OpenBSD: ahd_pci.c,v 1.20 2012/09/30 21:46:09 brad Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -68,11 +68,6 @@
  * POSSIBILITY OF SUCH DAMAGES.
  *
  */
-
-#include <sys/cdefs.h>
-/*
-__FBSDID("$FreeBSD: src/sys/dev/aic7xxx/aic79xx_pci.c,v 1.18 2004/02/04 16:38:38 gibbs Exp $");
-*/
 
 #include <dev/ic/aic79xx_openbsd.h>
 #include <dev/ic/aic79xx_inline.h>

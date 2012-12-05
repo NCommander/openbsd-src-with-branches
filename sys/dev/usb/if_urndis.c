@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urndis.c,v 1.33 2012/03/24 08:33:08 fgsch Exp $ */
+/*	$OpenBSD: if_urndis.c,v 1.34 2012/06/20 10:51:27 fgsch Exp $ */
 
 /*
  * Copyright (c) 2010 Jonathan Armani <armani@openbsd.org>
@@ -18,8 +18,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#include <sys/cdefs.h>
 
 #include "bpfilter.h"
 

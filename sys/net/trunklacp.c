@@ -1,4 +1,4 @@
-/*	$OpenBSD: trunklacp.c,v 1.12 2009/09/17 13:17:55 claudio Exp $ */
+/*	$OpenBSD: trunklacp.c,v 1.13 2011/07/09 04:38:03 henning Exp $ */
 /*	$NetBSD: ieee8023ad_lacp.c,v 1.3 2005/12/11 12:24:54 christos Exp $ */
 /*	$FreeBSD:ieee8023ad_lacp.c,v 1.15 2008/03/16 19:25:30 thompsa Exp $ */
 
@@ -28,8 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 #include <sys/param.h>
 #include <sys/mbuf.h>

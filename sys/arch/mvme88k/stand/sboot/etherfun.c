@@ -1,4 +1,4 @@
-/*	$OpenBSD: etherfun.c,v 1.2 2001/07/04 08:09:30 niklas Exp $	*/
+/*	$OpenBSD: etherfun.c,v 1.3 2001/09/20 17:02:31 mpech Exp $	*/
 
 /*
  *
@@ -33,7 +33,7 @@
  */
 /* etherfun.c */
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 #include "sboot.h"
 #include "etherfun.h"
 

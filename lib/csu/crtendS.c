@@ -1,7 +1,7 @@
-/*	$OpenBSD: crtendS.c,v 1.6 2009/04/13 20:15:24 kurt Exp $	*/
+/*	$OpenBSD: crtendS.c,v 1.7 2010/05/01 11:32:43 kettenis Exp $	*/
 /*	$NetBSD: crtend.c,v 1.1 1997/04/16 19:38:24 thorpej Exp $	*/
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 #include "md_init.h"
 #include "extern.h"
 

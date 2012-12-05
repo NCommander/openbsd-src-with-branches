@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched.h,v 1.7 2012/03/22 03:43:19 guenther Exp $	*/
+/*	$OpenBSD: sched.h,v 1.8 2012/03/22 04:26:31 guenther Exp $	*/
 
 /* sched.h: POSIX 1003.1b Process Scheduling header */
 
@@ -52,8 +52,6 @@ struct sched_param
 {
 	int sched_priority;
 };
-
-#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 #if 0	/* not yet */

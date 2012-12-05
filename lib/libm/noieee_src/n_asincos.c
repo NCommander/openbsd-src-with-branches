@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_asincos.c,v 1.10 2009/10/27 23:59:29 deraadt Exp $	*/
+/*	$OpenBSD: n_asincos.c,v 1.11 2011/05/30 18:34:38 martynas Exp $	*/
 /*	$NetBSD: n_asincos.c,v 1.1 1995/10/10 23:36:34 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -83,7 +83,6 @@
 
 /* LINTLIBRARY */
 
-#include <sys/cdefs.h>
 #include <math.h>
 
 #include "mathimpl.h"

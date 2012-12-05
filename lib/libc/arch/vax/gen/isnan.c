@@ -1,4 +1,4 @@
-/*	$OpenBSD: isnan.c,v 1.5 2008/12/12 23:44:37 martynas Exp $	*/
+/*	$OpenBSD: isnan.c,v 1.6 2011/07/02 19:27:34 martynas Exp $	*/
 /*
  * Copyright (c) Martynas Venckus <martynas@openbsd.org>
  *
@@ -17,7 +17,7 @@
 
 /* LINTLIBRARY */
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 
 /* ARGSUSED */
 int

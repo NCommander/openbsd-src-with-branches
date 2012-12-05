@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_fdim.c,v 1.3 2008/12/10 01:08:24 martynas Exp $	*/
+/*	$OpenBSD: n_fdim.c,v 1.4 2011/05/30 18:34:38 martynas Exp $	*/
 /*-
  * Copyright (c) 2004 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
@@ -27,7 +27,6 @@
 
 /* LINTLIBRARY */
 
-#include <sys/cdefs.h>
 #include <math.h>
 
 #define	DECL(type, fn)			\

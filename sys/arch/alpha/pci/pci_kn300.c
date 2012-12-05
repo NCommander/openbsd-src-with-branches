@@ -1,4 +1,4 @@
-/* $OpenBSD: pci_kn300.c,v 1.3 2009/08/22 02:54:50 mk Exp $ */
+/* $OpenBSD: pci_kn300.c,v 1.4 2009/09/30 20:18:06 miod Exp $ */
 /* $NetBSD: pci_kn300.c,v 1.28 2005/12/11 12:16:17 christos Exp $ */
 
 /*
@@ -31,7 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>			/* RCS ID & Copyright macro defns */
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/time.h>

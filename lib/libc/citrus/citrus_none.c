@@ -1,4 +1,4 @@
-/*	$OpenBSD: citrus_none.c,v 1.2 2010/08/03 11:23:37 stsp Exp $ */
+/*	$OpenBSD: citrus_none.c,v 1.3 2012/06/06 16:58:02 matthew Exp $ */
 /*	$NetBSD: citrus_none.c,v 1.18 2008/06/14 16:01:07 tnozaki Exp $	*/
 
 /*-
@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #include <errno.h>

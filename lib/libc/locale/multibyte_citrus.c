@@ -1,4 +1,4 @@
-/*	$OpenBSD: multibyte_citrus.c,v 1.2 2012/06/06 16:58:02 matthew Exp $ */
+/*	$OpenBSD: multibyte_citrus.c,v 1.3 2012/08/14 08:47:58 chl Exp $ */
 /*	$NetBSD: multibyte_amd1.c,v 1.7 2009/01/11 02:46:28 christos Exp $ */
 
 /*-
@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <limits.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: swprintf.c,v 1.4 2011/07/29 09:19:22 sthen Exp $ */
 /*	$NetBSD: swprintf.c,v 1.1 2005/05/14 23:51:02 christos Exp $	*/
 
 /*-
@@ -26,8 +26,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 #include <stdarg.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtw.c,v 1.80 2010/08/29 16:46:58 deraadt Exp $	*/
+/*	$OpenBSD: rtw.c,v 1.81 2010/09/07 16:21:43 deraadt Exp $	*/
 /*	$NetBSD: rtw.c,v 1.29 2004/12/27 19:49:16 dyoung Exp $ */
 
 /*-
@@ -35,7 +35,6 @@
  * Device driver for the Realtek RTL8180 802.11 MAC/BBP.
  */
 
-#include <sys/cdefs.h>
 #include "bpfilter.h"
 
 #include <sys/param.h>

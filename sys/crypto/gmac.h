@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: gmac.h,v 1.1 2010/09/22 11:54:23 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010 Mike Belopuhov <mike@vantronix.net>
@@ -36,8 +36,6 @@ typedef struct _AES_GMAC_CTX {
 	uint8_t		J[GMAC_BLOCK_LEN];		/* counter block */
 	int		rounds;
 } AES_GMAC_CTX;
-
-#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 void	AES_GMAC_Init(AES_GMAC_CTX *);

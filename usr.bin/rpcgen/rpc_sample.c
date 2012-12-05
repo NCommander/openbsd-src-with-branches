@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc_sample.c,v 1.16 2009/10/27 23:59:42 deraadt Exp $	*/
+/*	$OpenBSD: rpc_sample.c,v 1.17 2010/09/01 14:43:34 millert Exp $	*/
 /*	$NetBSD: rpc_sample.c,v 1.2 1995/06/11 21:50:01 pk Exp $	*/
 
 /*
@@ -36,7 +36,6 @@
  * rpc_sample.c, Sample client-server code outputter for the RPC protocol compiler
  */
 
-#include <sys/cdefs.h>
 #include <stdio.h>
 #include <string.h>
 #include "rpc_parse.h"

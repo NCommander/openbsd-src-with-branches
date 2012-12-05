@@ -1,4 +1,4 @@
-/* $OpenBSD: dec_kn300.c,v 1.5 2009/09/30 19:28:55 miod Exp $ */
+/* $OpenBSD: dec_kn300.c,v 1.6 2010/11/23 04:07:55 shadchin Exp $ */
 /* $NetBSD: dec_kn300.c,v 1.34 2007/03/04 15:18:10 yamt Exp $ */
 
 /*
@@ -31,7 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>			/* RCS ID & Copyright macro defns */
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

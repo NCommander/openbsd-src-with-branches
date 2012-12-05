@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_lebuffer.c,v 1.8 2007/05/31 17:23:14 sobrado Exp $	*/
+/*	$OpenBSD: if_le_lebuffer.c,v 1.9 2008/06/26 05:42:18 ray Exp $	*/
 /*	$NetBSD: if_le_lebuffer.c,v 1.10 2002/03/11 16:00:56 pk Exp $	*/
 
 /*-
@@ -33,7 +33,6 @@
 
 #include "bpfilter.h"
 
-#include <sys/cdefs.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>

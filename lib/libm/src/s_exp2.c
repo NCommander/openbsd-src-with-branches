@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_exp2.c,v 1.2 2008/12/09 20:00:35 martynas Exp $	*/
+/*	$OpenBSD: s_exp2.c,v 1.3 2011/05/30 18:34:38 martynas Exp $	*/
 /*-
  * Copyright (c) 2005 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
@@ -27,7 +27,6 @@
 
 /* LINTLIBRARY */
 
-#include <sys/cdefs.h>
 #include <float.h>
 #include <math.h>
 

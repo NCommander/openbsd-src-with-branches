@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_get_ioperm.c,v 1.5 2008/06/26 05:42:04 ray Exp $	*/
+/*	$OpenBSD: amd64_get_fsbase.c,v 1.1 2011/04/05 21:14:00 guenther Exp $	*/
 /*	$NetBSD: i386_get_ioperm.c,v 1.2 1996/02/27 22:57:22 jtc Exp $	*/
 
 /*-
@@ -30,7 +30,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #include <machine/segments.h>

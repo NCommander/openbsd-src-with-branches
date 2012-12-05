@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcopy.c,v 1.5 2003/10/15 02:43:09 drahn Exp $	*/
+/*	$OpenBSD: bcopy.c,v 1.6 2012/10/25 04:07:50 deraadt Exp $	*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -32,10 +32,6 @@
  */
 
 
-#include <sys/cdefs.h>
-/*
-#include <string.h>
-*/
 #include <sys/types.h>
 #include <sys/systm.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mos.c,v 1.16 2012/02/28 08:58:30 jsg Exp $	*/
+/*	$OpenBSD: if_mos.c,v 1.17 2012/10/22 03:23:19 brad Exp $	*/
 
 /*
  * Copyright (c) 2008 Johann Christian Rode <jcrode@gmx.net>
@@ -63,8 +63,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 /*
  * Moschip MCS7730/MCS7830/MCS7832 USB to Ethernet controller 

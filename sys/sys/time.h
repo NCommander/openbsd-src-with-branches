@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.h,v 1.27 2012/05/07 22:34:01 kettenis Exp $	*/
+/*	$OpenBSD: time.h,v 1.28 2012/05/10 19:13:12 kettenis Exp $	*/
 /*	$NetBSD: time.h,v 1.18 1996/04/23 10:29:33 mycroft Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
 #ifndef _SYS_TIME_H_
 #define _SYS_TIME_H_
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #if __XPG_VISIBLE >= 420 && __XPG_VISIBLE < 600

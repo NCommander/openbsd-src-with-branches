@@ -1,4 +1,4 @@
-/* $OpenBSD: mcpcia.c,v 1.4 2009/03/30 21:43:13 kettenis Exp $ */
+/* $OpenBSD: mcpcia.c,v 1.5 2010/02/18 20:48:15 sobrado Exp $ */
 /* $NetBSD: mcpcia.c,v 1.20 2007/03/04 05:59:11 christos Exp $ */
 
 /*-
@@ -66,7 +66,6 @@
  * found on AlphaServer 4100 systems.
  */
 
-#include <sys/cdefs.h>			/* RCS ID & Copyright macro defns */
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

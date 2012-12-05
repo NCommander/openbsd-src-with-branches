@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.94 2010/08/07 03:50:01 krw Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.95 2010/08/27 17:08:00 jsg Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -38,7 +38,6 @@
 
 #include "bpfilter.h"
 
-#include <sys/cdefs.h>
 #include <sys/param.h>
 #include <sys/types.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vio.c,v 1.7 2012/12/01 04:16:03 brad Exp $	*/
+/*	$OpenBSD: if_vio.c,v 1.8 2012/12/03 21:04:49 sf Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch, Alexander Fiveg.
@@ -26,7 +26,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include "bpfilter.h"
 
 #include <sys/param.h>

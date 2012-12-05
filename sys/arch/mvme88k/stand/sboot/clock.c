@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.3 2003/06/02 23:27:53 millert Exp $ */
+/*	$OpenBSD: clock.c,v 1.4 2006/05/16 22:52:26 miod Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -46,7 +46,7 @@
  * Clock driver.
  */
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 #include "sboot.h"
 #include "clockreg.h"
 

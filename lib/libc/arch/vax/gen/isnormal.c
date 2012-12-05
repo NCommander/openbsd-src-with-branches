@@ -1,4 +1,4 @@
-/*	$OpenBSD: isnormal.c,v 1.3 2008/12/10 01:15:02 martynas Exp $	*/
+/*	$OpenBSD: isnormal.c,v 1.4 2011/07/02 19:27:34 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -17,7 +17,7 @@
 
 /* LINTLIBRARY */
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 #include <machine/vaxfp.h>
 #include <math.h>
 

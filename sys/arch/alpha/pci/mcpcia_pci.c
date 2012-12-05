@@ -1,4 +1,4 @@
-/* $OpenBSD: mcpcia_pci.c,v 1.1 2007/03/16 21:22:27 robert Exp $ */
+/* $OpenBSD: mcpcia_pci.c,v 1.2 2010/12/04 17:06:31 miod Exp $ */
 /* $NetBSD: mcpcia_pci.c,v 1.5 2007/03/04 05:59:11 christos Exp $ */
 
 /*
@@ -31,7 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>			/* RCS ID & Copyright macro defns */
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

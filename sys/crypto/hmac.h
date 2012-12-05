@@ -1,4 +1,4 @@
-/*	$OpenBSD: hmac.h,v 1.1 2008/08/12 15:43:00 damien Exp $	*/
+/*	$OpenBSD: hmac.h,v 1.2 2008/09/06 22:23:20 djm Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -36,8 +36,6 @@ typedef struct _HMAC_SHA256_CTX {
 	u_int8_t	key[SHA256_BLOCK_LENGTH];
 	u_int		key_len;
 } HMAC_SHA256_CTX;
-
-#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 

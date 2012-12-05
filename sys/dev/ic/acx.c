@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.97 2010/08/27 17:08:00 jsg Exp $ */
+/*	$OpenBSD: acx.c,v 1.98 2012/10/27 16:13:28 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -86,7 +86,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include "bpfilter.h"
 
 #include <sys/param.h>

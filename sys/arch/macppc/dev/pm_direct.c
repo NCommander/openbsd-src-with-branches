@@ -1,4 +1,4 @@
-/*	$OpenBSD: pm_direct.c,v 1.22 2007/02/18 19:33:48 gwk Exp $	*/
+/*	$OpenBSD: pm_direct.c,v 1.23 2011/05/14 12:01:16 mpi Exp $	*/
 /*	$NetBSD: pm_direct.c,v 1.9 2000/06/08 22:10:46 tsubai Exp $	*/
 
 /*
@@ -40,7 +40,6 @@
 /* #define	PM_GRAB_SI	1 */
 
 #include <sys/param.h>
-#include <sys/cdefs.h>
 #include <sys/device.h>
 #include <sys/systm.h>
 

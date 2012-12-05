@@ -1,4 +1,4 @@
-/*	$OpenBSD: safe.c,v 1.33 2011/04/05 11:48:28 blambert Exp $	*/
+/*	$OpenBSD: safe.c,v 1.34 2012/01/13 09:53:24 mikeb Exp $	*/
 
 /*-
  * Copyright (c) 2003 Sam Leffler, Errno Consulting
@@ -28,8 +28,6 @@
  *
  * $FreeBSD: /repoman/r/ncvs/src/sys/dev/safe/safe.c,v 1.1 2003/07/21 21:46:07 sam Exp $
  */
-
-#include <sys/cdefs.h>
 
 /*
  * SafeNet SafeXcel-1141 hardware crypto accelerator

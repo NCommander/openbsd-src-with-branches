@@ -1,4 +1,4 @@
-/*	$OpenBSD: b_tgamma.c,v 1.3 2009/10/27 23:59:29 deraadt Exp $	*/
+/*	$OpenBSD: b_tgamma.c,v 1.4 2011/07/06 00:02:42 martynas Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,7 +37,6 @@
  * acknowledged.
  */
 
-#include <sys/cdefs.h>
 #include <float.h>
 #include <math.h>
 

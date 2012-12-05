@@ -1,4 +1,4 @@
-/*	$OpenBSD: amd64_set_ioperm.c,v 1.1 2004/02/27 23:44:56 deraadt Exp $	*/
+/*	$OpenBSD: amd64_set_ioperm.c,v 1.2 2008/06/26 05:42:04 ray Exp $	*/
 /*	$NetBSD: amd64_set_ioperm.c,v 1.2 1996/02/27 22:57:31 jtc Exp $	*/
 
 /*-
@@ -30,7 +30,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #include <machine/segments.h>

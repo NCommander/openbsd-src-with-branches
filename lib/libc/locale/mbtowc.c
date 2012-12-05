@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: mbtowc.c,v 1.1 2010/07/27 16:59:04 stsp Exp $ */
 
 /*-
  * Copyright (c) 2002-2004 Tim J. Robbins.
@@ -26,7 +26,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 
 #include <stdlib.h>
 #include <string.h>

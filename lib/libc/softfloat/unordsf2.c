@@ -1,4 +1,4 @@
-/*	$OpenBSD: unordsf2.c,v 1.2 2004/02/01 05:40:52 drahn Exp $	*/
+/*	$OpenBSD: unordsf2.c,v 1.1 2006/11/06 15:11:37 drahn Exp $	*/
 /* $NetBSD: unordsf2.c,v 1.1 2003/05/06 08:58:20 rearnsha Exp $ */
 
 /*
@@ -8,8 +8,6 @@
 #include "softfloat-for-gcc.h"
 #include "milieu.h"
 #include "softfloat.h"
-
-#include <sys/cdefs.h>
 
 flag __unordsf2(float32, float32);
 

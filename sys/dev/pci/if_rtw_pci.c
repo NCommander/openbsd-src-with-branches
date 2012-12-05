@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rtw_pci.c,v 1.15 2011/04/03 15:36:02 jasper Exp $	*/
+/*	$OpenBSD: if_rtw_pci.c,v 1.16 2012/10/18 21:44:21 deraadt Exp $	*/
 /*	$NetBSD: if_rtw_pci.c,v 1.1 2004/09/26 02:33:36 dyoung Exp $	*/
 
 /*-
@@ -39,7 +39,6 @@
  * Derived from the ``Tulip'' PCI bus front-end.
  */
 
-#include <sys/cdefs.h>
 #include <sys/param.h>
 #include <sys/systm.h> 
 #include <sys/mbuf.h>   

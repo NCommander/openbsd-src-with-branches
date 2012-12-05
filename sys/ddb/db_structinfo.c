@@ -1,4 +1,4 @@
-/* $OpenBSD: db_structinfo.c,v 1.3 2010/06/28 23:00:30 guenther Exp $ */
+/* $OpenBSD: db_structinfo.c,v 1.4 2010/11/18 21:13:19 miod Exp $ */
 /* public domain */
 /*
  * This file is intended to be compiled with debug information,
@@ -8,7 +8,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/cdefs.h>
 
 #include <sys/device.h>
 #include <sys/proc.h>

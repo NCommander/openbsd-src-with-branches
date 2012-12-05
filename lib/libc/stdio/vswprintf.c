@@ -1,4 +1,4 @@
-/*	$OpenBSD: vswprintf.c,v 1.1 2011/04/24 07:46:58 stsp Exp $	*/
+/*	$OpenBSD: vswprintf.c,v 1.3 2011/04/28 17:38:46 stsp Exp $	*/
 /*	$NetBSD: vswprintf.c,v 1.1 2005/05/14 23:51:02 christos Exp $	*/
 
 /*
@@ -28,7 +28,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>

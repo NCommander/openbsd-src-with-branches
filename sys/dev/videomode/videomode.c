@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: videomode.c,v 1.1 2009/10/08 20:35:44 matthieu Exp $	*/
 
 /*
  * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.
@@ -7,7 +7,6 @@
  *	NetBSD: modelines,v 1.7 2009/01/21 14:40:25 jnemeth Exp 
  */
 
-#include <sys/cdefs.h>
 #include <dev/videomode/videomode.h>
 
 /*

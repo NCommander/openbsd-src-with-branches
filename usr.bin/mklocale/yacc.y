@@ -1,4 +1,4 @@
-/*	$OpenBSD: yacc.y,v 1.3 2009/08/08 19:37:14 sobrado Exp $	*/
+/*	$OpenBSD: yacc.y,v 1.4 2011/01/14 23:15:40 nicm Exp $	*/
 /*	$NetBSD: yacc.y,v 1.24 2004/01/05 23:23:36 jmmv Exp $	*/
 
 %{
@@ -33,8 +33,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
 
 #include <sys/types.h>
 #include <netinet/in.h>	/* Needed by <arpa/inet.h> on NetBSD 1.5. */

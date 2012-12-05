@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipi.c,v 1.9 2010/12/27 19:51:27 guenther Exp $	*/
+/*	$OpenBSD: ipi.c,v 1.10 2010/12/27 20:22:23 guenther Exp $	*/
 /*	$NetBSD: ipi.c,v 1.2 2003/03/01 13:05:37 fvdl Exp $	*/
 
 /*-
@@ -31,8 +31,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>                  /* RCS ID & Copyright macro defns */
 
 #include <sys/param.h> 
 #include <sys/device.h>

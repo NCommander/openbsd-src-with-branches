@@ -1,4 +1,4 @@
-/*	$OpenBSD: errx.c,v 1.8 2005/08/08 08:05:34 espie Exp $ */
+/*	$OpenBSD: errx.c,v 1.9 2011/05/30 18:48:33 martynas Exp $ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,7 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include <err.h>
 #include <stdarg.h>
 

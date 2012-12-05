@@ -1,4 +1,4 @@
-/* $OpenBSD: pciide_machdep.c,v 1.3 2001/06/25 22:53:19 art Exp $ */
+/* $OpenBSD: pciide_machdep.c,v 1.4 2002/03/14 01:26:27 millert Exp $ */
 /* $NetBSD: pciide_machdep.c,v 1.2 1998/04/18 01:09:20 thorpej Exp $ */
 
 /*
@@ -40,8 +40,6 @@
  * See "PCI IDE Controller Specification, Revision 1.0 3/4/94" from the
  * PCI SIG.
  */
-
-#include <sys/cdefs.h>			/* RCS ID & Copyright macro defns */
 
 #include <sys/param.h>
 #include <sys/systm.h>

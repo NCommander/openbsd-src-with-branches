@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.23 2011/04/06 11:36:25 miod Exp $	*/
+/*	$OpenBSD: rtld_machine.c,v 1.24 2012/06/20 13:47:20 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Michael Shalayeff
@@ -32,7 +32,6 @@
 #define _DYN_LOADER
 
 #include <sys/types.h>
-#include <sys/cdefs.h>
 #include <sys/mman.h>
 #include <sys/tree.h>
 

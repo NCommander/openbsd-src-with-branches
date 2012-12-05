@@ -1,4 +1,4 @@
-/*	$OpenBSD: isfinite.c,v 1.3 2008/12/10 01:15:02 martynas Exp $	*/
+/*	$OpenBSD: isfinite.c,v 1.4 2011/07/02 19:27:34 martynas Exp $	*/
 /*
  * Copyright (c) Martynas Venckus <martynas@openbsd.org>
  *
@@ -17,7 +17,6 @@
 
 /* LINTLIBRARY */
 
-#include <sys/cdefs.h>
 #include <math.h>
 
 /* ARGSUSED */

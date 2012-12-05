@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.67 2011/06/21 16:52:45 tedu Exp $  */
+/*	$OpenBSD: pgt.c,v 1.68 2011/12/01 23:34:08 miod Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -44,7 +44,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
 #include "bpfilter.h"
 
 #include <sys/param.h>
