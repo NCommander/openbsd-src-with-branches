@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.74 2012/07/09 17:51:08 claudio Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.75 2012/07/11 11:18:40 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -37,6 +37,7 @@
 #include <sys/malloc.h>
 #include <sys/namei.h>
 #include <sys/ptrace.h>
+#include <sys/resource.h>
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include <sys/socket.h>
