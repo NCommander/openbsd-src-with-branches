@@ -1,4 +1,4 @@
-/* $OpenBSD: drm_agpsupport.c,v 1.22 2012/09/08 16:42:20 mpi Exp $ */
+/* $OpenBSD: drm_agpsupport.c,v 1.23 2012/12/06 14:46:17 mpi Exp $ */
 /*-
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -353,7 +353,7 @@ drm_agp_free_ioctl(struct drm_device *dev, void *data,
 struct drm_agp_head *
 drm_agp_init(void)
 {
-	struct device		*agpdev;
+	struct agp_softc	*agpdev;
 	struct drm_agp_head	*head = NULL;
 	int		 	 agp_available = 1;
 
