@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: abuf.c,v 1.1 2012/11/23 07:03:28 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -27,7 +27,6 @@
 #include <string.h>
 
 #include "abuf.h"
-#include "defs.h"
 #include "utils.h"
 
 #ifdef DEBUG
