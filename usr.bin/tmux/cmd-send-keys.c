@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-send-keys.c,v 1.11 2012/02/02 00:15:28 nicm Exp $ */
+/* $OpenBSD: cmd-send-keys.c,v 1.12 2012/07/11 07:10:15 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -32,7 +32,7 @@ enum cmd_retval	 cmd_send_keys_exec(struct cmd *, struct cmd_ctx *);
 const struct cmd_entry cmd_send_keys_entry = {
 	"send-keys", "send",
 	"lRt:", 0, -1,
-	"[-lR] [-t target-pane] key ...",
+	"[-lR] " CMD_TARGET_PANE_USAGE " key ...",
 	0,
 	NULL,
 	NULL,
