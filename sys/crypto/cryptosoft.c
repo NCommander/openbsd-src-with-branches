@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptosoft.c,v 1.66 2012/12/07 17:03:22 mikeb Exp $	*/
+/*	$OpenBSD: cryptosoft.c,v 1.67 2012/12/07 20:55:51 mikeb Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -603,7 +603,8 @@ swcr_authenc(struct cryptop *crp)
 	for (i = iskip; i < crda->crd_len; i += blksz) {
 		len = MIN(crda->crd_len - i, blksz - oskip);
 		COPYDATA(outtype, buf, crda->crd_skip + i, len, blk + oskip);
-		axf->Update(&ctx, blk, len + oskip);
+		bzero(blk + len + oskip, blksz - len - oskip);
+		axf->Update(&ctx, blk, blksz);
 		oskip = 0; /* reset initial output offset */
 	}
 
