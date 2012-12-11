@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.41 2011/07/11 20:43:21 tedu Exp $	*/
+/*	$OpenBSD: util.c,v 1.42 2011/07/17 19:39:21 aschrijver Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -194,7 +194,7 @@ redo:
 			pmatch.rm_eo += offset;
 		} else {
 			pmatch.rm_so = offset;
-			pmatch.rm_eo = l->len - offset;
+			pmatch.rm_eo = l->len;
 			r = regexec(&r_pattern[i], l->dat, 1, &pmatch, eflags);
 		}
 		if (r == 0 && xflag) {
