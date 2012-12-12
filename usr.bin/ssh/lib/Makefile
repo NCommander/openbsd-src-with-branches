@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.64 2012/08/02 13:38:39 okan Exp $
+#	$OpenBSD: Makefile,v 1.65 2012/10/04 13:21:50 markus Exp $
 
 .PATH:		${.CURDIR}/..
 .include "${.CURDIR}/../Makefile.inc"
 
 LIB=	ssh
 SRCS=	authfd.c authfile.c bufaux.c bufec.c bufbn.c buffer.c canohost.c \
-	channels.c cipher.c cipher-3des1.c cipher-bf1.c cipher-ctr.c \
+	channels.c cipher.c cipher-3des1.c cipher-bf1.c \
 	cleanup.c compat.c compress.c crc32.c deattack.c fatal.c \
 	hostfile.c log.c match.c nchan.c packet.c readpass.c \
 	rsa.c ttymodes.c xmalloc.c atomicio.c \
