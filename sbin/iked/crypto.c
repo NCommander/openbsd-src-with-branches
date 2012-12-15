@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto.c,v 1.6 2011/08/27 16:29:20 mikeb Exp $	*/
+/*	$OpenBSD: crypto.c,v 1.7 2012/09/18 12:07:59 reyk Exp $	*/
 /*	$vantronix: crypto.c,v 1.18 2010/05/28 15:34:35 reyk Exp $	*/
 
 /*
@@ -534,6 +534,7 @@ dsa_free(struct iked_dsa *dsa)
 	}
 
 	ibuf_release(dsa->dsa_keydata);
+	free(dsa);
 }
 
 struct ibuf *
