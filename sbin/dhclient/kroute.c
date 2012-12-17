@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.22 2012/12/03 22:36:16 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.23 2012/12/04 19:24:03 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -302,7 +302,7 @@ priv_add_default_route(struct imsg_add_default_route *imsg)
 	for (i = 0; i < 5; i++) {
 		if (writev(s, iov, iovcnt) != -1)
 			break;
-		if (errno != EEXIST)
+		if (errno != EEXIST && errno != ENETUNREACH)
 			error("failed to add default route: %s",
 			    strerror(errno));
 		sleep(1);
