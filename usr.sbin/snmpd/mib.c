@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.61 2012/10/01 11:36:55 reyk Exp $	*/
+/*	$OpenBSD: mib.c,v 1.62 2012/11/29 13:16:30 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -19,6 +19,7 @@
 
 #include <sys/queue.h>
 #include <sys/param.h>
+#include <sys/proc.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>

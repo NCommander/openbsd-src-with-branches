@@ -1,4 +1,4 @@
-/* $OpenBSD: procname.c,v 1.8 2011/12/09 16:28:18 nicm Exp $ */
+/* $OpenBSD: procname.c,v 1.9 2012/09/24 13:05:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -17,6 +17,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <sys/stat.h>
 
