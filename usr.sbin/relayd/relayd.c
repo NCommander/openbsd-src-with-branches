@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.112 2012/11/27 05:00:28 guenther Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.113 2012/12/18 15:39:42 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -183,7 +183,6 @@ main(int argc, char *argv[])
 	log_init(debug ? debug : 1);	/* log to stderr until daemonized */
 
 	argc -= optind;
-	argv += optind;
 	if (argc > 0)
 		usage();
 
