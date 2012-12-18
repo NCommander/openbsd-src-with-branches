@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_udp.c,v 1.24 2011/05/09 12:08:47 reyk Exp $	*/
+/*	$OpenBSD: relay_udp.c,v 1.25 2012/10/03 08:33:31 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -310,7 +310,7 @@ relay_udp_server(int fd, short sig, void *arg)
 		return;
 	}
 
-	if (rlay->rl_conf.flags & F_NATLOOK && cnl != NULL) {
+	if (cnl != NULL) {
 		con->se_cnl = cnl;
 		bzero(cnl, sizeof(*cnl));
 		cnl->in = -1;
