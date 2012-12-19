@@ -25,6 +25,10 @@ Austria:
     http://ftp2.eu.openbsd.org/pub/OpenBSD (Vienna)
     ftp://ftp2.eu.openbsd.org/pub/OpenBSD (Vienna)
 
+Belgium:
+    http://ftp.belnet.be/pub/OpenBSD (Brussels)
+    ftp://ftp.belnet.be/pub/OpenBSD (Brussels)
+
 Brazil:
     http://openbsd.locaweb.com.br/pub/OpenBSD (Sao Paulo)
     ftp://openbsd.locaweb.com.br/pub/OpenBSD (Sao Paulo)
@@ -113,6 +117,8 @@ Poland:
 Russia:
     http://mirror.corbina.net/pub/OpenBSD (Moscow)
     ftp://mirror.corbina.net/pub/OpenBSD (Moscow)
+    http://mirror.yandex.ru/pub/OpenBSD (Moscow)
+    ftp://mirror.yandex.ru/pub/OpenBSD (Moscow)
 
 Saudi Arabia:
     http://mirrors.isu.net.sa/pub/ftp.openbsd.org (Riyadh)
