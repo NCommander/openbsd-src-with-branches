@@ -1,4 +1,4 @@
-/* $OpenBSD: bwx.c,v 1.4 2003/10/06 22:29:45 miod Exp $ */
+/* $OpenBSD: bwx.c,v 1.5 2012/12/05 23:19:58 deraadt Exp $ */
 /*-
  * Copyright (c) 1998 Doug Rabson
  * All rights reserved.
@@ -33,6 +33,7 @@
 #include <err.h>
 #include <paths.h>
 #include <machine/bwx.h>
+#include <machine/cpu.h>
 #include <machine/sysarch.h>
 #include <stdlib.h>
 #include <unistd.h>
