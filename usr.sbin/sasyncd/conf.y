@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.y,v 1.15 2010/06/16 17:39:05 reyk Exp $	*/
+/*	$OpenBSD: conf.y,v 1.16 2012/04/14 11:46:09 haesbaert Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -205,8 +205,7 @@ setting		: INTERFACE STRING
 			cfgstate.listen_on = $3;
 			cfgstate.listen_family = $4;
 			cfgstate.listen_port = $5;
-			if (cfgstate.listen_port < 1 ||
-			    cfgstate.listen_port > 65534) {
+			if ($5 < 1 || $5 > IPPORT_HILASTAUTO) {
 				cfgstate.listen_port = SASYNCD_DEFAULT_PORT;
 				log_msg(0, "config: bad port, listen-port "
 				    "reset to %u", SASYNCD_DEFAULT_PORT);
