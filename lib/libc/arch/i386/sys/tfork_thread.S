@@ -1,4 +1,4 @@
-/*	$OpenBSD: tfork_thread.S,v 1.3 2012/06/21 00:56:59 guenther Exp $ */
+/*	$OpenBSD: tfork_thread.S,v 1.4 2012/08/22 17:19:34 pascal Exp $ */
 /*-
  * Copyright (c) 2000 Peter Wemm <peter@FreeBSD.org>
  * All rights reserved.
@@ -88,6 +88,9 @@ ENTRY(__tfork_thread)
 	 */
 1:
 	xorl	%ebp, %ebp	# mark outermost frame
+	subl	$4, %esp	# align stack
+	andl	$~15, %esp
+	addl	$4, %esp
 	pushl	%edi		# push start argument
 	call	*%esi
 	addl	$4, %esp
