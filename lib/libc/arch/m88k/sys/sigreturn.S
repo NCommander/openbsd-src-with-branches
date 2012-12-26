@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigreturn.S,v 1.5 2003/06/02 20:18:31 millert Exp $	*/
+/*	$OpenBSD: sigreturn.S,v 1.6 2005/08/07 16:40:15 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -37,8 +37,7 @@
 
 /*
  * We must preserve the state of the registers as the user has set them up.
- * Not sure what should be done XXX nivas
  */
 
-SYSENTRY(sigreturn)
-	jmp	r1	/* XXX gross */
+SYSCALL(sigreturn)
+	jmp	r1
