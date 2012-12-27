@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.43 2012/11/27 19:46:46 jasper Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.44 2012/12/04 10:54:20 florian Exp $	*/
 
 /* This file is in the public domain */
 
@@ -74,6 +74,7 @@ static struct funmap functnames[] = {
 	{delwind, "delete-window",},
 	{wallchart, "describe-bindings",},
 	{desckey, "describe-key-briefly",},
+	{diffbuffer, "diff-buffer-with-file",},
 	{digit_argument, "digit-argument",},
 	{lowerregion, "downcase-region",},
 	{lowerword, "downcase-word",},
