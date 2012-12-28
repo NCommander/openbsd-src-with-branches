@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_if.c,v 1.62 2011/05/20 22:50:44 sthen Exp $ */
+/*	$OpenBSD: pf_if.c,v 1.63 2011/07/28 11:03:49 henning Exp $ */
 
 /*
  * Copyright 2005 Henning Brauer <henning@openbsd.org>
@@ -112,7 +112,7 @@ pfi_kif_get(const char *kif_name)
 		return (kif);
 
 	/* create new one */
-	if ((kif = malloc(sizeof(*kif), PFI_MTYPE, M_DONTWAIT|M_ZERO)) == NULL)
+	if ((kif = malloc(sizeof(*kif), PFI_MTYPE, M_NOWAIT|M_ZERO)) == NULL)
 		return (NULL);
 
 	strlcpy(kif->pfik_name, kif_name, sizeof(kif->pfik_name));
