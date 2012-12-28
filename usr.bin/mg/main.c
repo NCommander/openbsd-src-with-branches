@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.68 2012/08/30 06:09:12 lum Exp $	*/
+/*	$OpenBSD: main.c,v 1.69 2012/08/31 18:06:42 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -12,6 +12,7 @@
 #include "macro.h"
 
 #include <err.h>
+#include <locale.h>
 
 int		 thisflag;			/* flags, this command	*/
 int		 lastflag;			/* flags, last command	*/
@@ -62,6 +63,8 @@ main(int argc, char **argv)
 		}
 	argc -= optind;
 	argv += optind;
+
+	setlocale(LC_CTYPE, "");
 
 	maps_init();		/* Keymaps and modes.		*/
 	funmap_init();		/* Functions.			*/
