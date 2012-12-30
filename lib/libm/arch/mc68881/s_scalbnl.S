@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_scalbn.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
+/*	$OpenBSD: s_scalbnl.S,v 1.1 2011/05/28 22:13:52 martynas Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -37,6 +37,7 @@
 | scalbnl(x, N)
 | returns  x * (2**N), for integer values N.
 .lcomm	_ASM_LABEL(__rv),12
+ALTENTRY(ldexpl,scalbnl)
 ENTRY(scalbnl)
 	fmovex	sp@(4),fp0
 	fbeq	Ldone
