@@ -1,4 +1,4 @@
-/* $OpenBSD: trap.c,v 1.62 2012/11/01 21:09:17 miod Exp $ */
+/* $OpenBSD: trap.c,v 1.63 2012/11/02 19:10:51 miod Exp $ */
 /* $NetBSD: trap.c,v 1.52 2000/05/24 16:48:33 thorpej Exp $ */
 
 /*-
@@ -601,8 +601,6 @@ syscall(code, framep)
 		break;
 	default:
 	bad:
-		if (p->p_emul->e_errno)
-			error = p->p_emul->e_errno[error];
 		framep->tf_regs[FRAME_V0] = error;
 		framep->tf_regs[FRAME_A3] = 1;
 		break;
