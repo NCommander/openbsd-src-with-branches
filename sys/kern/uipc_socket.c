@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.108 2012/09/20 12:34:18 bluhm Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.109 2012/10/05 01:30:28 yasuoka Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -1230,9 +1230,7 @@ somove(struct socket *so, int wait)
 	SBLASTRECORDCHK(&so->so_rcv, "somove");
 	SBLASTMBUFCHK(&so->so_rcv, "somove");
 	KASSERT(so->so_rcv.sb_mb == so->so_rcv.sb_lastrecord);
-#ifdef SOCKBUF_DEBUG
-	sbcheck(&so->so_rcv);
-#endif
+	SBCHECK(&so->so_rcv);
 
 	/* m might be NULL if the loop did break during the first iteration. */
 	if (m == NULL)
