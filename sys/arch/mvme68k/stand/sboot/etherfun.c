@@ -1,4 +1,4 @@
-/*	$OpenBSD: etherfun.c,v 1.7 2012/11/04 13:36:47 miod Exp $ */
+/*	$OpenBSD: etherfun.c,v 1.8 2012/12/05 23:20:13 deraadt Exp $ */
 
 /*
  *
@@ -104,7 +104,7 @@ do_send_tftp(int mesgtype)
 
 	if (mesgtype == 0) {
 		tot = tftp_r + (sizeof(MSG) - 1);
-		myport = (u_short) ttime();
+		myport = (u_short)ttime();
 		if (myport < 1000)
 			myport += 1000;
 		servport = FTP_PORT;	/* to start */

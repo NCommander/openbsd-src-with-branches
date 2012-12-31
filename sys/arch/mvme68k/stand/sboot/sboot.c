@@ -1,4 +1,4 @@
-/*	$OpenBSD: sboot.c,v 1.10 2012/11/04 13:36:47 miod Exp $ */
+/*	$OpenBSD: sboot.c,v 1.11 2012/12/05 23:20:13 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -55,6 +55,7 @@
  */
 
 #include <sys/types.h>
+#include "stand.h"
 #include "sboot.h"
 
 int

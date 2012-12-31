@@ -1,8 +1,13 @@
-#	$OpenBSD: Makefile.inc,v 1.7 2006/01/10 07:36:29 miod Exp $
+#	$OpenBSD: Makefile.inc,v 1.8 2012/11/04 13:36:47 miod Exp $
 
 MDEC_DIR?=/usr/mdec
-CFLAGS+=	-fno-stack-protector
+CFLAGS+=-Wall -Werror -fno-stack-protector
+#CFLAGS+=-fno-builtin-printf -fno-builtin-putchar -fno-builtin-vprintf
+CFLAGS+=-DHEAP_START=${HEAP_START}
 
 # Load addresses for first and second stage bootstraps
-STAGE1_RELOC=0x100000 
-STAGE2_RELOC=0x6F0000 
+STAGE1_RELOC=	0x00100000 
+STAGE2_RELOC=	0x006f0000 
+
+# Base of the heap (ethernet buffers will be allocated below it)
+HEAP_START=    0x00800000
