@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.14 2006/08/17 06:31:10 miod Exp $
+#	$OpenBSD: Makefile,v 1.15 2007/12/28 18:56:08 miod Exp $
 
 LIB=	sa
 
-.include "${.CURDIR}/../Makefile.inc"
+CPPFLAGS+=	${SA_CPPFLAGS}
 
 CFLAGS+=-I${.CURDIR} -I${.CURDIR}/../include -I${.CURDIR}/../.. \
 	-I${.CURDIR}/../../.. -I${.CURDIR}/../../../.. \

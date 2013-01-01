@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.5 2007/11/26 10:01:42 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2012/08/21 14:46:18 pascal Exp $
 
 PROG=	cdboot
 
 NOMAN=
 NOPIE=
 
-.include "${.CURDIR}/../Makefile.inc"
+CPPFLAGS+=	${SA_CPPFLAGS}
 
 .PATH:	${.CURDIR}/../uboot
 

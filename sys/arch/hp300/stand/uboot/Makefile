@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.6 2007/11/26 10:01:42 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2012/08/21 14:46:18 pascal Exp $
 
 PROG=	uboot
 
 NOMAN=
 NOPIE=
 
-.include "${.CURDIR}/../Makefile.inc"
+CPPFLAGS+=	${SA_CPPFLAGS}
 
 CFLAGS+=-I${.CURDIR}/../include \
 	-I${.CURDIR}/../libsa -I${.CURDIR}/../.. -I${.CURDIR}/../../.. \
