@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.246 2012/09/07 01:10:21 dtucker Exp $ */
+/* $OpenBSD: clientloop.c,v 1.247 2012/09/07 06:34:21 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -959,9 +959,9 @@ process_cmdline(void)
 			goto out;
 		}
 		if (local || dynamic) {
-			if (channel_setup_local_fwd_listener(fwd.listen_host,
+			if (!channel_setup_local_fwd_listener(fwd.listen_host,
 			    fwd.listen_port, fwd.connect_host,
-			    fwd.connect_port, options.gateway_ports) < 0) {
+			    fwd.connect_port, options.gateway_ports)) {
 				logit("Port forwarding failed.");
 				goto out;
 			}
