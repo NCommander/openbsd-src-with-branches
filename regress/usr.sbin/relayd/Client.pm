@@ -1,6 +1,6 @@
-#	$OpenBSD: Client.pm,v 1.2 2011/09/02 21:05:41 bluhm Exp $
+#	$OpenBSD: Client.pm,v 1.3 2012/12/28 20:36:25 bluhm Exp $
 
-# Copyright (c) 2010,2011 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2012 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
