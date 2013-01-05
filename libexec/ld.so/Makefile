@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.38 2012/08/31 20:09:27 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.39 2012/09/12 09:19:54 haesbaert Exp $
 
 SUBDIR=ldconfig ldd
 
@@ -9,7 +9,6 @@ MAN=	ld.so.1
 NOPROG=
 .else
 PROG=	ld.so
-.endif
 
 VPATH=${.CURDIR}/../../lib/libc/string
 
@@ -36,5 +35,6 @@ ELF_LDFLAGS+=--shared -Bsymbolic --no-undefined
 
 $(PROG):
 	$(LD) -x -e _dl_start $(ELF_LDFLAGS) -o $(PROG) $(OBJS) $(LDADD)
+.endif
 
 .include <bsd.prog.mk>
