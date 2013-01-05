@@ -1,4 +1,4 @@
-/*	$OpenBSD: inchr.c,v 1.1 1998/08/22 07:39:55 smurph Exp $ */
+/*	$OpenBSD: inchr.c,v 1.2 2003/09/07 21:35:35 miod Exp $ */
 
 /*
  * bug routines -- assumes that the necessary sections of memory
@@ -17,6 +17,6 @@ getchar()
 	int ret;
 
 	MVMEPROM_CALL(MVMEPROM_INCHR);
-	asm volatile ("or %0,r0,r2" :  "=r" (ret));
+	asm volatile ("or %0,%%r0,%%r2" :  "=r" (ret));
 	return ret;
 }

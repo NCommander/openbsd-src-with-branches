@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.3 2003/06/02 23:27:52 millert Exp $ */
+/*	$OpenBSD: boot.c,v 1.4 2006/05/16 22:52:09 miod Exp $ */
 /*-
  * Changes Copyright (c) 1998 steve Murphree, Jr.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -38,7 +38,7 @@
 #include "stand.h"
 #include "libsa.h"
 
-extern char *version;
+extern const char *version;
 extern int errno;
 
 int main()

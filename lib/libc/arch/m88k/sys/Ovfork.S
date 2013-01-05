@@ -1,4 +1,4 @@
-/*	$OpenBSD: Ovfork.S,v 1.6 2003/06/02 20:18:31 millert Exp $	*/
+/*	$OpenBSD: Ovfork.S,v 1.7 2005/08/07 16:40:15 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -38,8 +38,8 @@
 /* r2 = pid. r3 = 0 in parent, 1 in child */
 
 SYSCALL(vfork)
-	bcnd	eq0,r3,parent
-	or	r2,r0,0
-	or	r3,r0,0
+	bcnd	eq0,%r3,parent
+	or	%r2,%r0,0
+	or	%r3,%r0,0
 parent:
-	jmp	r1		/* pid = vfork() */
+	jmp	%r1		/* pid = vfork() */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpgetsticky.c,v 1.2 2003/01/07 22:01:29 miod Exp $	*/
+/*	$OpenBSD: fpgetsticky.c,v 1.3 2005/08/07 16:40:14 espie Exp $	*/
 
 /*
  * Written by J.T. Conklin, Apr 10, 1995
@@ -13,6 +13,6 @@ fpgetsticky()
 {
 	int x;
 
-	__asm__ volatile("fldcr %0,fcr62" : "=r" (x));
+	__asm__ volatile("fldcr %0, %%fcr62" : "=r" (x));
 	return x & 0x1f;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: exect.S,v 1.5 2003/06/02 20:18:31 millert Exp $	*/
+/*	$OpenBSD: exect.S,v 1.6 2005/08/07 16:40:15 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -36,6 +36,6 @@
 #include "SYS.h"
 
 ENTRY(exect)
-	or	r13,r0,SYS_execve
-	tb0	0,r0,128 		/* exect(file, argv, env) */
+	or	%r13,%r0,SYS_execve
+	tb0	0,%r0,128 		/* exect(file, argv, env) */
 	br	__cerror

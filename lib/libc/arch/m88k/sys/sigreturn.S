@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigreturn.S,v 1.6 2005/08/07 16:40:15 espie Exp $	*/
+/*	$OpenBSD: sigreturn.S,v 1.7 2012/12/26 19:22:48 miod Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -40,4 +40,4 @@
  */
 
 SYSCALL(sigreturn)
-	jmp	r1
+	jmp	%r1

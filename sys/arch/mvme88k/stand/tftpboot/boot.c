@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.3 2008/04/02 21:53:18 miod Exp $ */
+/*	$OpenBSD: boot.c,v 1.4 2008/09/19 20:18:03 miod Exp $ */
 /*	$NetBSD: boot.c,v 1.2 1995/09/23 03:42:52 gwr Exp $ */
 
 /*-
@@ -40,7 +40,7 @@
 #include "stand.h"
 #include "libsa.h"
 
-extern char *version;
+extern const char *version;
 char line[80];
 
 int
