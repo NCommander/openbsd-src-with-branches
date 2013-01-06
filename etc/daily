@@ -143,15 +143,6 @@ while [ "X$ROOTBACKUP" = X1 ]; do
 done
 
 next_part "Checking subsystem status:"
-for d in $(sysctl -n hw.disknames | grep -Eo '[sw]d[0-9]+'); do
-	if atactl ${d} 2>&1 | sed -n '/Device has enabled/,$p' | grep -q 'SMART feature set'; then
-		SMARTSTATUS=$(atactl ${d} smartstatus 2>&1 >/dev/null)
-		if [ "X${SMARTSTATUS}" != X"" ]; then
-			echo ""
-			echo "${d}: ${SMARTSTATUS}"
-		fi
-	fi
-done
 if [ "X$VERBOSESTATUS" != X0 ]; then
 	echo ""
 	echo "disks:"
