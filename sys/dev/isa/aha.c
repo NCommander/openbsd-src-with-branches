@@ -1,4 +1,4 @@
-/*	$OpenBSD: aha.c,v 1.73 2010/08/07 03:50:01 krw Exp $	*/
+/*	$OpenBSD: aha.c,v 1.74 2011/04/07 13:27:48 krw Exp $	*/
 /*	$NetBSD: aha.c,v 1.11 1996/05/12 23:51:23 mycroft Exp $	*/
 
 #undef AHADIAG
@@ -518,7 +518,7 @@ ahaintr(arg)
 #endif /*AHADEBUG */
 
 	/*
-	 * First acknowlege the interrupt, Then if it's not telling about
+	 * First acknowledge the interrupt, Then if it's not telling about
 	 * a completed operation just return.
 	 */
 	sts = inb(iobase + AHA_INTR_PORT);
