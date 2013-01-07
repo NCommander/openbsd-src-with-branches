@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.1 2003/09/01 19:45:28 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.1 2004/04/24 13:19:15 miod Exp $	*/
 
 /*
  * Simple test program to check what happens when userland tries to trap.
@@ -9,7 +9,7 @@
 
 #define	TRAP(num) \
 	case num: \
-		__asm__ __volatile__ ("tb0 0, r0, " __STRING(num) ); \
+		__asm__ __volatile__ ("tb0 0, %r0, " __STRING(num) ); \
 		break;
 
 int
