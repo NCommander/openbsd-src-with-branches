@@ -1,4 +1,4 @@
-/*	$OpenBSD: getpwent.c,v 1.42 2009/11/21 10:24:59 chl Exp $ */
+/*	$OpenBSD: getpwent.c,v 1.43 2011/09/05 03:52:24 guenther Exp $ */
 /*
  * Copyright (c) 2008 Theo de Raadt
  * Copyright (c) 1988, 1993
@@ -668,8 +668,9 @@ _pwhashbyname(const char *name, char *buf, size_t buflen, struct passwd *pw,
     int *flagsp)
 {
 	char bf[1 + _PW_NAME_LEN];
-	int len, r;
+	size_t len;
 	DBT key;
+	int r;
 
 	len = strlen(name);
 	if (len > _PW_NAME_LEN)
