@@ -1,4 +1,4 @@
-/*	$OpenBSD: samachdep.h,v 1.6 2008/02/13 21:20:32 miod Exp $	*/
+/*	$OpenBSD: samachdep.h,v 1.7 2011/08/18 20:02:58 miod Exp $	*/
 /*	$NetBSD: samachdep.h,v 1.3 1997/05/12 07:54:45 thorpej Exp $	*/
 
 /*
@@ -61,6 +61,7 @@ extern	int userom;
 
 int	badaddr(char *);
 void	call_req_reboot(void);
+void	exec(char *, void *, int);
 char	*getmachineid(void);
 void	hpibinit(void);
 void	romout(int, char *);

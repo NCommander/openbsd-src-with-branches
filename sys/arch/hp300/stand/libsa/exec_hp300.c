@@ -34,6 +34,7 @@
 #include <sys/reboot.h>
 
 #include "stand.h"
+#include "samachdep.h"
 
 #include <lib/libsa/loadfile.h>
 
