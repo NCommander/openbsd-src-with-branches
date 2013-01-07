@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgDelete.pm,v 1.28 2011/12/02 16:01:17 jmc Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -20,6 +20,7 @@ use strict;
 use warnings;
 
 use OpenBSD::AddDelete;
+
 
 package OpenBSD::PkgDelete::Tracker;
 
@@ -227,7 +228,9 @@ sub process_parameters
 			}
 			if (!defined $l) {
 				$state->say("Problem finding #1", $pkgname);
-				$state->{bad}++;
+				unless ($state->{exclude}) {
+					$state->{bad}++;
+				}
 			} else {
 				$self->add_location($state, $l);
 			}
