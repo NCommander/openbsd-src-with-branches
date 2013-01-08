@@ -1,8 +1,7 @@
-/*	$OpenBSD: pfkey.c,v 1.20 2012/10/23 14:40:14 reyk Exp $	*/
-/*	$vantronix: pfkey.c,v 1.11 2010/06/03 07:57:33 reyk Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.21 2012/11/29 15:08:08 reyk Exp $	*/
 
 /*
- * Copyright (c) 2010 Reyk Floeter <reyk@openbsd.org>
+ * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
  * Copyright (c) 2004, 2005 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  * Copyright (c) 2003, 2004 Markus Friedl <markus@openbsd.org>

@@ -1,5 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2010/12/22 17:43:10 reyk Exp $
-# $vantronix: Makefile,v 1.22 2010/06/02 12:22:58 reyk Exp $
+# $OpenBSD: Makefile,v 1.7 2012/09/25 21:50:41 brad Exp $
 
 PROG=		iked
 SRCS=		ca.c chap_ms.c config.c control.c crypto.c dh.c \
