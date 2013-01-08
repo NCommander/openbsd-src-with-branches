@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_subr.c,v 1.35 2008/03/24 16:10:59 deraadt Exp $	*/
+/*	$OpenBSD: auth_subr.c,v 1.36 2009/01/15 13:14:30 millert Exp $	*/
 
 /*
  * Copyright (c) 2000-2002,2004 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -556,7 +556,7 @@ void
 auth_clroption(auth_session_t *as, char *option)
 {
 	struct authopts *opt, *oopt;
-	int len;
+	size_t len;
 
 	len = strlen(option);
 
@@ -1061,7 +1061,9 @@ static void
 _add_rmlist(auth_session_t *as, char *file)
 {
 	struct rmfiles *rm;
-	int i = strlen(file) + 1;
+	size_t i = strlen(file) + 1;
+
+	// XXX should rangecheck i since we are about to add?
 
 	if ((rm = malloc(sizeof(struct rmfiles) + i)) == NULL) {
 		syslog(LOG_ERR, "Failed to allocate rmfiles: %m");
