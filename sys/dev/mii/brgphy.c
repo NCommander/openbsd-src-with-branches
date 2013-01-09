@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphy.c,v 1.95 2012/07/05 15:23:55 sthen Exp $	*/
+/*	$OpenBSD: brgphy.c,v 1.96 2012/08/09 10:18:45 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -32,11 +32,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  *
  * $FreeBSD: brgphy.c,v 1.8 2002/03/22 06:38:52 wpaul Exp $
- */
-
-/*
- * Driver for the Broadcom BCR5400 1000baseTX PHY. Speed is always
- * 1000mbps; all we need to negotiate here is full or half duplex.
  */
 
 #include <sys/param.h>
