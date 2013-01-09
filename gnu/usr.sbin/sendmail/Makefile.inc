@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.17 2006/02/04 09:46:23 mbalmer Exp $
+#	$OpenBSD: Makefile.inc,v 1.18 2012/08/21 14:05:59 jsg Exp $
 
 .include <bsd.own.mk>
 .include <bsd.obj.mk>
@@ -54,7 +54,7 @@ LDADD+= -lwrap
 .if defined(WANT_LDAP)
 .if !defined(LIB) || (${LIB} != "milter")
 ENVDEF+= -DLDAPMAP
-LDADD+=-lldap -llber
+LDADD+=-lldap -llber -lsasl2
 CFLAGS+=-I/usr/local/include
 LDFLAGS+=-L/usr/local/lib
 .endif
