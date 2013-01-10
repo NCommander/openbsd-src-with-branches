@@ -781,6 +781,14 @@ brgphy_reset(struct mii_softc *sc)
 			break;
 		}
 		break;
+	case MII_OUI_xxBROADCOM3:
+		switch (sc->mii_model) {
+		case MII_MODEL_xxBROADCOM3_BCM5717C:
+		case MII_MODEL_xxBROADCOM3_BCM5719C:
+		case MII_MODEL_xxBROADCOM3_BCM5720C:
+		case MII_MODEL_xxBROADCOM3_BCM57765:
+			return;
+		}
 	}
 
 	/* Handle any bge (NetXtreme/NetLink) workarounds. */
