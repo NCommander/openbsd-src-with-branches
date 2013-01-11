@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.10 2011/08/18 20:02:58 miod Exp $	*/
+/*	$OpenBSD: version.c,v 1.11 2013/01/01 17:18:49 miod Exp $	*/
 
 /*
  * Record major changes in the boot code here, and increment the version
@@ -21,6 +21,9 @@
  * 2.11	sti@dio frame buffer support (for models 362 and 382), and various
  *	cleanups.
  * 2.12	Switch to MI loadfile code.
+ * 2.13	Allow kernels with uppercase characters in their names to be loaded
+ *	from the default boot device without an explicit device or a leading
+ *	`/'.
  */
 
-const char version[] = "2.12";
+const char version[] = "2.13";
