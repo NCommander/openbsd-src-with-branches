@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_cproj.c,v 1.3 2011/07/08 19:25:31 martynas Exp $	*/
+/*	$OpenBSD: s_cproj.c,v 1.4 2012/12/05 23:20:04 deraadt Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -14,8 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-/* LINTLIBRARY */
 
 #include <complex.h>
 #include <float.h>
@@ -37,10 +35,5 @@ cproj(double complex z)
 }
 
 #if	LDBL_MANT_DIG == 53
-#ifdef	lint
-/* PROTOLIB1 */
-long double complex cprojl(long double complex);
-#else	/* lint */
 __weak_alias(cprojl, cproj);
-#endif	/* lint */
 #endif	/* LDBL_MANT_DIG == 53 */
