@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.140 2012/12/02 19:34:14 beck Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.142 2012/12/28 14:05:39 jsing Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*
@@ -234,7 +234,6 @@ bufinit(void)
 
 	pool_init(&bufpool, sizeof(struct buf), 0, 0, 0, "bufpl", NULL);
 	pool_setipl(&bufpool, IPL_BIO);
-	pool_sethiwat(&bufpool, buflowpages / 4);
 
 	for (dp = bufqueues; dp < &bufqueues[BQUEUES]; dp++)
 		TAILQ_INIT(dp);
