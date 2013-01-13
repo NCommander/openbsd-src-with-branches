@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.45 2012/11/15 14:54:18 krw Exp $	*/
+/*	$OpenBSD: options.c,v 1.46 2013/01/13 22:09:38 krw Exp $	*/
 
 /* DHCP options parsing and reassembly. */
 
@@ -298,8 +298,8 @@ pretty_print_option(unsigned int code, struct option_data *option,
 	}
 	/* Check for too many bytes... */
 	if (numhunk == -1 && hunksize < len) {
-		warning("%s: %d extra bytes",
-		    dhcp_options[code].name, len - hunksize);
+		warning("%s: expecting only %d bytes: got %d",
+		    dhcp_options[code].name, hunksize, len);
 		goto done;
 	}
 
