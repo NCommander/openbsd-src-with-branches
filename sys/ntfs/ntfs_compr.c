@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_compr.c,v 1.4 2009/08/13 16:00:53 jasper Exp $	*/
+/*	$OpenBSD: ntfs_compr.c,v 1.5 2010/08/12 04:26:56 tedu Exp $	*/
 /*	$NetBSD: ntfs_compr.c,v 1.1 2002/12/23 17:38:31 jdolecek Exp $	*/
 
 /*-
@@ -39,7 +39,7 @@
 #define GET_UINT16(addr)	(*((u_int16_t *)(addr)))
 
 int
-ntfs_uncompblock(u_int8_t * buf, u_int8_t * cbuf)
+ntfs_uncompblock(u_int8_t *buf, u_int8_t *cbuf)
 {
 	u_int32_t ctag;
 	int len, dshift, lmask;
@@ -89,7 +89,7 @@ ntfs_uncompblock(u_int8_t * buf, u_int8_t * cbuf)
 }
 
 int
-ntfs_uncompunit(struct ntfsmount * ntmp, u_int8_t * uup, u_int8_t * cup)
+ntfs_uncompunit(struct ntfsmount *ntmp, u_int8_t *uup, u_int8_t *cup)
 {
 	int i;
 	int off = 0;
