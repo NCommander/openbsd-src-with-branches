@@ -1112,7 +1112,7 @@ athn_usb_node_leave(struct ieee80211com *ic, struct ieee80211_node *ni)
 
 	/* Do it in a process context. */
 	sta_index = ((struct athn_node *)ni)->sta_index;
-	athn_usb_do_async(usc, athn_usb_newassoc_cb,
+	athn_usb_do_async(usc, athn_usb_node_leave_cb,
 	    &sta_index, sizeof(sta_index));
 }
 
