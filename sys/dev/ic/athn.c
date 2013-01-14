@@ -2443,7 +2443,7 @@ athn_newstate(struct ieee80211com *ic, enum ieee80211_state nstate, int arg)
 #ifndef IEEE80211_STA_ONLY
 		if (ic->ic_opmode == IEEE80211_M_HOSTAP) {
 			athn_set_hostap_timers(sc);
-			/* Enable sotfware beacon alert interrupts. */
+			/* Enable software beacon alert interrupts. */
 			sc->imask |= AR_IMR_SWBA;
 		} else
 #endif
