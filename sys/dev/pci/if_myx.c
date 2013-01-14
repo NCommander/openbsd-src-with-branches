@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.30 2011/11/28 10:25:22 blambert Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.31 2012/11/29 21:10:32 brad Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -1375,7 +1375,7 @@ myx_start(struct ifnet *ifp)
 	struct myx_tx_desc		txd;
 	struct myx_softc		*sc = ifp->if_softc;
 	bus_dmamap_t			map;
-	bus_dmamap_t			zmap = sc->sc_zerodma.mxm_map;;
+	bus_dmamap_t			zmap = sc->sc_zerodma.mxm_map;
 	struct myx_buf			*mb;
 	struct mbuf			*m;
 	u_int32_t			offset = sc->sc_tx_ring_offset;
