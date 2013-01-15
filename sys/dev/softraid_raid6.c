@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid6.c,v 1.26 2012/10/08 14:22:41 jsing Exp $ */
+/* $OpenBSD: softraid_raid6.c,v 1.27 2012/12/31 10:07:51 miod Exp $ */
 /*
  * Copyright (c) 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2009 Jordan Hargrave <jordan@openbsd.org>
@@ -110,6 +110,7 @@ sr_raid6_discipline_init(struct sr_discipline *sd)
 	sd->sd_free_resources = sr_raid6_free_resources;
 	sd->sd_openings = sr_raid6_openings;
 	sd->sd_scsi_rw = sr_raid6_rw;
+	sd->sd_scsi_intr = sr_raid6_intr;
 	sd->sd_set_chunk_state = sr_raid6_set_chunk_state;
 	sd->sd_set_vol_state = sr_raid6_set_vol_state;
 }

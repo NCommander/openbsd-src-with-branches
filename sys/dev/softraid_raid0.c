@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid0.c,v 1.25 2011/12/26 14:54:52 jsing Exp $ */
+/* $OpenBSD: softraid_raid0.c,v 1.27 2012/10/08 14:22:41 jsing Exp $ */
 /*
  * Copyright (c) 2008 Marco Peereboom <marco@peereboom.us>
  *
@@ -69,6 +69,7 @@ sr_raid0_discipline_init(struct sr_discipline *sd)
 	sd->sd_create = sr_raid0_create;
 	sd->sd_free_resources = sr_raid0_free_resources;
 	sd->sd_scsi_rw = sr_raid0_rw;
+	sd->sd_scsi_intr = sr_raid0_intr;
 }
 
 int
