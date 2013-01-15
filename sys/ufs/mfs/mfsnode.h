@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfsnode.h,v 1.12 2008/04/24 17:39:45 thib Exp $	*/
+/*	$OpenBSD: mfsnode.h,v 1.13 2012/12/29 14:54:11 beck Exp $	*/
 /*	$NetBSD: mfsnode.h,v 1.3 1996/02/09 22:31:31 christos Exp $	*/
 
 /*
@@ -37,13 +37,13 @@
  */
 
 struct mfsnode {
-	struct	vnode *mfs_vnode;	/* vnode associated with this mfsnode */
+	struct vnode *mfs_vnode;	/* vnode associated with this mfsnode */
+	struct bufq mfs_bufq;		/* bufq for MFS I/O */
 	caddr_t	mfs_baseoff;		/* base of file system in memory */
 	long	mfs_size;		/* size of memory file system */
 	pid_t	mfs_pid;		/* supporting process pid */
 	struct	buf *mfs_buflist;	/* list of I/O requests */
-	long	mfs_numbufs;		/* # of bufs on I/O request list */
-	long	mfs_spare[3];
+	int	mfs_shutdown;		/* shutdown request */
 };
 
 /*
