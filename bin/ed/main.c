@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.33 2009/10/27 23:59:21 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.34 2010/08/12 02:00:28 kevlo Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/03/21 09:04:44 cgd Exp $	*/
 
 /* main.c: This file contains the main control and user-interface routines
@@ -160,9 +160,10 @@ top:
 
 	/* assert: reliable signals! */
 #ifdef SIGWINCH
-	handle_winch(SIGWINCH);
-	if (isatty(0))
+	if (isatty(STDIN_FILENO)) {
+		handle_winch(SIGWINCH);
 		signal(SIGWINCH, handle_winch);
+	}
 #endif
 	signal(SIGHUP, signal_hup);
 	signal(SIGQUIT, SIG_IGN);
