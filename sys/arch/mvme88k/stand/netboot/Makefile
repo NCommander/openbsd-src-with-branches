@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2012/12/01 21:08:50 miod Exp $
+#	$OpenBSD: Makefile,v 1.18 2013/01/05 11:20:56 miod Exp $
 
 SIZE?=	size
 STRIP?= strip
@@ -22,6 +22,7 @@ SRCS+=	if_ie.c
 OBJS=  ${SRCS:S/.c/.o/g}
 LIBS= ${LIBSA} ${LIBBUG} ${LIBZ}
 LDFLAGS=-N -T ${S}/arch/mvme88k/stand/ld.script -Ttext ${STAGE2_RELOC}
+LDFLAGS+= -warn-common
 NOPIE=
 
 all:	netboot.bin
