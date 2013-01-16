@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.158 2012/10/19 16:38:30 mlarkin Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.159 2012/12/02 07:03:31 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -1827,6 +1827,7 @@ getbootinfo(char *bootinfo, int bootinfo_size)
 					comconsunit = unit;
 					comconsaddr = consaddr;
 					comconsrate = cdp->conspeed;
+					comconsiot = X86_BUS_SPACE_IO;
 
 					/* Probe the serial port this time. */
 					cninit();
