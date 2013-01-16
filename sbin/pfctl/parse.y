@@ -2372,6 +2372,13 @@ filter_set	: prio {
 			filter_opts.set_prio[0] = $1.b1;
 			filter_opts.set_prio[1] = $1.b2;
 		}
+		| QUEUE qname	{
+			if (filter_opts.queues.qname) {
+				yyerror("queue cannot be redefined");
+				YYERROR;
+			}
+			filter_opts.queues = $2;
+		}
 		| TOS tos {
 			if (filter_opts.marker & FOM_SETTOS) {
 				yyerror("tos cannot be respecified");
