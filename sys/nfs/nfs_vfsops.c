@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vfsops.c,v 1.92 2009/10/19 22:24:18 jsg Exp $	*/
+/*	$OpenBSD: nfs_vfsops.c,v 1.94 2012/09/10 11:10:59 jsing Exp $	*/
 /*	$NetBSD: nfs_vfsops.c,v 1.46.4.1 1996/05/25 22:40:35 fvdl Exp $	*/
 
 /*
@@ -44,6 +44,7 @@
 #include <sys/vnode.h>
 #include <sys/kernel.h>
 #include <sys/mount.h>
+#include <sys/swap.h>
 #include <sys/buf.h>
 #include <sys/mbuf.h>
 #include <sys/dirent.h>
