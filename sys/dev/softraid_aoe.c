@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_aoe.c,v 1.27 2013/01/15 04:03:01 jsing Exp $ */
+/* $OpenBSD: softraid_aoe.c,v 1.28 2013/01/15 09:28:29 jsing Exp $ */
 /*
  * Copyright (c) 2008 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2008 Marco Peereboom <marco@openbsd.org>
@@ -503,8 +503,6 @@ sr_aoe_request_done(struct aoe_req *ar, struct aoe_packet *ap)
 			xs->error = XS_DRIVER_STUFFUP;
 		else
 			xs->error = XS_NOERROR;
-
-		xs->resid = 0;
 
 		sr_scsi_done(sd, xs);
 	}
