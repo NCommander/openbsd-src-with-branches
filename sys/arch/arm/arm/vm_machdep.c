@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.11 2011/09/21 15:34:47 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.12 2011/11/08 17:07:20 deraadt Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.31 2004/01/04 11:33:29 jdolecek Exp $	*/
 
 /*
@@ -210,14 +210,13 @@ cpu_coredump(struct proc *p, struct vnode *vp, struct ucred *cred,
 	cseg.c_size = chdr->c_cpusize;
 
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&cseg, chdr->c_seghdrsize,
-	    (off_t)chdr->c_hdrsize, UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
+	    (off_t)chdr->c_hdrsize, UIO_SYSSPACE, IO_UNIT, cred, NULL, p);
 	if (error)
 		return error;
 
 	error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&cpustate, sizeof(cpustate),
 	    (off_t)(chdr->c_hdrsize + chdr->c_seghdrsize), UIO_SYSSPACE,
-	    IO_NODELOCKED|IO_UNIT, cred, NULL, p);
+	    IO_UNIT, cred, NULL, p);
 	if (error)
 		return error;
 
