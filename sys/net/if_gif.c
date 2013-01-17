@@ -171,7 +171,7 @@ gif_start(struct ifnet *ifp)
 		family = sc->gif_psrc->sa_family;
 
 		/*
-		 * Check if the packet is comming via bridge and needs
+		 * Check if the packet is coming via bridge and needs
 		 * etherip encapsulation or not. bridge(4) directly calls
 		 * the start function and bypasses the if_output function
 		 * so we need to do the encap here.

@@ -176,7 +176,7 @@ do { \
  * Macro to compute ACK transmission behavior.  Delay the ACK unless
  * we have already delayed an ACK (must send an ACK every two segments).
  * We also ACK immediately if we received a PUSH and the ACK-on-PUSH
- * option is enabled or when the packet is comming from a loopback
+ * option is enabled or when the packet is coming from a loopback
  * interface.
  */
 #define	TCP_SETUP_ACK(tp, tiflags, m) \

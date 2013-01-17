@@ -1237,7 +1237,7 @@ struct pf_pdesc {
 	struct pf_addr	 nsaddr;	/* src address after NAT */
 	struct pf_addr	 ndaddr;	/* dst address after NAT */
 
-	struct pfi_kif	*kif;		/* incomming interface */
+	struct pfi_kif	*kif;		/* incoming interface */
 	struct mbuf	*m;		/* mbuf containing the packet */
 	struct ether_header
 			*eh;
