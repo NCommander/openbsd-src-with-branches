@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-choose-tree.c,v 1.11 2012/09/24 12:53:55 nicm Exp $ */
+/* $OpenBSD: cmd-choose-tree.c,v 1.12 2012/12/24 12:25:52 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Thomas Adam <thomas@xteddy.org>
@@ -219,6 +219,7 @@ windows_only:
 
 			free(final_win_action);
 		}
+
 		/*
 		 * If we're just drawing windows, don't consider moving on to
 		 * other sessions as we only list windows in this session.
@@ -260,5 +261,4 @@ cmd_choose_tree_free(struct window_choose_data *cdata)
 	free(cdata->command);
 	format_free(cdata->ft);
 	free(cdata);
-
 }
