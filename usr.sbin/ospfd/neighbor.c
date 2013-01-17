@@ -429,8 +429,8 @@ nbr_adj_timer(int fd, short event, void *arg)
 {
 	struct nbr *nbr = arg;
 
-	if (nbr->state == NBR_STA_2_WAY)
-		return ;
+	if (!(nbr->state & NBR_STA_ADJFORM))
+		return;
 
 	if (nbr->state & NBR_STA_ACTIVE && nbr->state != NBR_STA_FULL) {
 		log_warnx("nbr_adj_timer: failed to form adjacency with %s "
