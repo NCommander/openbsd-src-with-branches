@@ -27,15 +27,18 @@
  */
 
 #include <sys/types.h>
+
 #include <machine/biosvar.h>
 #include <machine/pio.h>
-#include <dev/isa/isareg.h>
+
+#include <dev/cons.h>
 #include <dev/ic/mc146818reg.h>
 #include <dev/ic/comreg.h>
 #include <dev/ic/ns16450reg.h>
-/* #include <i386/isa/nvram.h> */
-#include <dev/cons.h>
+#include <dev/isa/isareg.h>
+
 #include <lib/libsa/stand.h>
+
 #include "biosdev.h"
 
 /* XXX cannot trust NVRAM on this.  Maybe later we make a real probe.  */
