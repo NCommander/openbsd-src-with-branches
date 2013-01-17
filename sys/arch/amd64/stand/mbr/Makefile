@@ -1,6 +1,9 @@
 #	$OpenBSD: Makefile,v 1.5 2012/08/29 17:45:00 pascal Exp $
 #
 
+S=	${.CURDIR}/../../../..
+SADIR=	${.CURDIR}/..
+
 PROG=	mbr
 SRCS=	mbr.S
 AFLAGS+=-m32
@@ -14,14 +17,12 @@ NOMAN=
 #MAN+=	mbr.8
 
 INSTALL_STRIP=
-SADIR=${.CURDIR}/..
-S=	${.CURDIR}/../../../..
 
 # Uncomment this to make mbr talk to a serial port.
 #CPPFLAGS+=-DSERIAL=0
 
-${PROG}: $(OBJS) $(DPADD)
-	$(LD) $(LDFLAGS) -o $(PROG) $(OBJS) $(LDADD)
+${PROG}: $(OBJS)
+	$(LD) $(LDFLAGS) -o $(PROG) $(OBJS)
 	@size $(PROG)
 	@if [ -x ${.OBJDIR}/${PROG} ]; then \
 		objcopy -O binary ${PROG} ${.OBJDIR}/.tmp;\
