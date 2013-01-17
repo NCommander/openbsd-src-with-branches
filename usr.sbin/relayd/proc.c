@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.3 2011/09/04 20:26:58 bluhm Exp $	*/
+/*	$OpenBSD: proc.c,v 1.4 2012/10/04 20:53:30 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010,2011 Reyk Floeter <reyk@openbsd.org>
@@ -408,7 +408,7 @@ proc_run(struct privsep *ps, struct privsep_proc *p,
 void
 proc_dispatch(int fd, short event, void *arg)
 {
-	struct imsgev		*iev = (struct imsgev *)arg;
+	struct imsgev		*iev = arg;
 	struct privsep_proc	*p = iev->proc;
 	struct privsep		*ps = p->p_ps;
 	struct imsgbuf		*ibuf;
