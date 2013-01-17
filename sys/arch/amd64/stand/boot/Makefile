@@ -54,6 +54,9 @@ boot.bin: boot
 
 CLEANFILES+= ${PROG}.new
 
+${.CURDIR}/srt0.S: assym.h
+${SADIR}/libsa/gidt.S: assym.h
+
 ${PROG}: $(OBJS)
 	$(LD) $(LDFLAGS) -o ${PROG}.new $(OBJS)
 	@perl ${SADIR}/boot/check-boot.pl ${PROG}.new

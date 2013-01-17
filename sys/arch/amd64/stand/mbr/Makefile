@@ -21,6 +21,8 @@ INSTALL_STRIP=
 # Uncomment this to make mbr talk to a serial port.
 #CPPFLAGS+=-DSERIAL=0
 
+${.CURDIR}/mbr.S: assym.h
+
 ${PROG}: $(OBJS)
 	$(LD) $(LDFLAGS) -o $(PROG) $(OBJS)
 	@size $(PROG)

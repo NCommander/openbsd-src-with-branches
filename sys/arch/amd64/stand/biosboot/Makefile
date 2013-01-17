@@ -13,6 +13,8 @@ LDFLAGS=-nostdlib -Ttext 0 -N -x -Bstatic -nopie
 LDFLAGS+=-melf_i386 -L/usr/libdata 
 INSTALL_STRIP=
 
+${.CURDIR}/biosboot.S: assym.h
+
 ${PROG}: $(OBJS)
 	@rm -f $(PROG)
 	$(LD) $(LDFLAGS) -o $(PROG) $(OBJS)

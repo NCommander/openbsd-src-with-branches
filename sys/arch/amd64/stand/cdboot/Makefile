@@ -39,6 +39,9 @@ SRCS+=	divdi3.c moddi3.c qdivrem.c
 .PATH:	${S}/lib/libz
 SRCS+=	adler32.c crc32.c inflate.c inftrees.c
 
+${.CURDIR}/srt0.S: assym.h
+${SADIR}/libsa/gidt.S: assym.h
+
 ${PROG}: $(OBJS)
 	$(LD) $(LDFLAGS) -o ${PROG} $(OBJS)
 	@$(SIZE) $(PROG)
