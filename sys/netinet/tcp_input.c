@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.252 2012/03/10 12:03:29 claudio Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.254 2013/01/17 00:48:04 henning Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -899,6 +899,8 @@ findpcb:
 		((struct pf_state_key *)m->m_pkthdr.pf.statekey)->inp = inp;
 		inp->inp_pf_sk = m->m_pkthdr.pf.statekey;
 	}
+	/* The statekey has finished finding the inp, it is no longer needed. */
+	m->m_pkthdr.pf.statekey = NULL;
 #endif
 
 #ifdef IPSEC
