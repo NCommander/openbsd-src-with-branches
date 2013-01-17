@@ -1,4 +1,4 @@
-/* $OpenBSD: cu.c,v 1.11 2012/07/13 14:45:24 halex Exp $ */
+/* $OpenBSD: cu.c,v 1.12 2013/01/17 11:15:22 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicm@openbsd.org>
@@ -154,7 +154,7 @@ main(int argc, char **argv)
 	    NULL);
 	bufferevent_enable(line_ev, EV_READ|EV_WRITE);
 
-	printf("Connected (speed %u)\r\n", speed);
+	printf("Connected (speed %d)\r\n", speed);
 	event_dispatch();
 
 	restore_termios();
