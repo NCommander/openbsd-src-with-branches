@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.h,v 1.43 2011/03/25 08:52:21 claudio Exp $ */
+/*	$OpenBSD: ospfe.h,v 1.44 2011/05/09 12:24:41 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -93,6 +93,7 @@ struct nbr {
 	u_int8_t		 last_rx_bits;
 	u_int8_t		 dd_master;
 	u_int8_t		 dd_more;
+	u_int8_t		 dd_snapshot;	/* snapshot running */
 };
 
 /* auth.c */
