@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.72 2012/11/27 09:20:03 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.73 2012/12/24 12:38:57 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -378,14 +378,14 @@ cmd_session_better(struct session *s, struct session *best,
     int prefer_unattached)
 {
 	if (best == NULL)
-		return 1;
+		return (1);
 	if (prefer_unattached) {
 		if (!(best->flags & SESSION_UNATTACHED) &&
 		    (s->flags & SESSION_UNATTACHED))
-			return 1;
+			return (1);
 		else if ((best->flags & SESSION_UNATTACHED) &&
 		    !(s->flags & SESSION_UNATTACHED))
-			return 0;
+			return (0);
 	}
 	return (timercmp(&s->activity_time, &best->activity_time, >));
 }
