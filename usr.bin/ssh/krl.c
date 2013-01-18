@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* $OpenBSD$ */
+
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/tree.h>
