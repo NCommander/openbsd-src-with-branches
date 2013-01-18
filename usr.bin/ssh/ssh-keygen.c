@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.222 2013/01/09 05:40:17 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.223 2013/01/17 23:00:01 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2148,8 +2148,8 @@ usage(void)
 	fprintf(stderr, "  -s ca_key   Certify keys with CA key.\n");
 	fprintf(stderr, "  -T file     Screen candidates for DH-GEX moduli.\n");
 	fprintf(stderr, "  -t type     Specify type of key to create.\n");
-	fprintf(stderr, "  -V from:to  Specify certificate validity interval.\n");
 	fprintf(stderr, "  -u          Update KRL rather than creating a new one.\n");
+	fprintf(stderr, "  -V from:to  Specify certificate validity interval.\n");
 	fprintf(stderr, "  -v          Verbose.\n");
 	fprintf(stderr, "  -W gen      Generator to use for generating DH-GEX moduli.\n");
 	fprintf(stderr, "  -y          Read private key file and print public key.\n");
