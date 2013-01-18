@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.142 2012/12/28 14:05:39 jsing Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.143 2013/01/13 03:58:09 beck Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*
@@ -1035,7 +1035,7 @@ buf_get(struct vnode *vp, daddr64_t blkno, size_t size)
 	LIST_INIT(&bp->b_dep);
 	bp->b_bcount = size;
 
-	buf_acquire_unmapped(bp);
+	buf_acquire_nomap(bp);
 
 	if (vp != NULL) {
 		/*
