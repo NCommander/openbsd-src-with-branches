@@ -1,17 +1,17 @@
-#	$OpenBSD: Makefile,v 1.17 2012/10/27 15:43:42 jsing Exp $
+#	$OpenBSD: Makefile,v 1.19 2013/01/17 12:37:44 jsing Exp $
 
 MAN?=	boot.8
 MLINKS?=boot.8 boot.conf.5
 
+.if !empty(CFLAGS:M-DFDBOOT)
+SOFTRAID?=no
+.else
+SOFTRAID?=yes
+.endif
+
 .if ${MACHINE} == "amd64"
 S=	${.CURDIR}/../../../..
 SADIR=	${.CURDIR}/..
-
-.if !empty(CFLAGS:M-DFDBOOT)
-SOFTRAID=no
-.else
-SOFTRAID=yes
-.endif
 
 PROG?=	boot
 SRCS=	srt0.S conf.c
