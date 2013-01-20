@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.h,v 1.10 2005/09/11 18:02:27 otto Exp $	*/
+/*	$OpenBSD: lex.h,v 1.11 2006/05/29 18:22:24 otto Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -113,6 +113,7 @@ typedef union {
 #define CMDWORD BIT(8)		/* parsing simple command (alias related) */
 #define HEREDELIM BIT(9)	/* parsing <<,<<- delimiter */
 #define HEREDOC BIT(10)		/* parsing heredoc */
+#define UNESCAPE BIT(11)	/* remove backslashes */
 
 #define	HERES	10		/* max << in line */
 
