@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: wcsftime.c,v 1.1 2011/10/10 14:40:25 espie Exp $ */
 #include "private.h"
 
 /*
@@ -505,6 +505,8 @@ label:
 		** character itself as printf(3) also does.
 		*/
 		default:
+			if (pt != ptlim)
+				*pt++ = *format;
 			break;
 		}
 	}
