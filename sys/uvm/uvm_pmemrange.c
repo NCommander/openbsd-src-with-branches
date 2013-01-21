@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pmemrange.c,v 1.33 2011/12/03 20:07:06 miod Exp $	*/
+/*	$OpenBSD: uvm_pmemrange.c,v 1.34 2012/01/05 17:49:45 ariane Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Ariane van der Steldt <ariane@stack.nl>
@@ -1881,11 +1881,17 @@ uvm_wait_pla(paddr_t low, paddr_t high, paddr_t size, int failok)
 	struct uvm_pmalloc pma;
 	const char *wmsg = "pmrwait";
 
-	/*
-	 * Prevent deadlock.
-	 */
 	if (curproc == uvm.pagedaemon_proc) {
+		/*
+		 * XXX detect pagedaemon deadlock - see comment in
+		 * uvm_wait(), as this is exactly the same issue.
+		 */
+		printf("pagedaemon: wait_pla deadlock detected!\n");
 		msleep(&uvmexp.free, &uvm.fpageqlock, PVM, wmsg, hz >> 3);
+#if defined(DEBUG)
+		/* DEBUG: panic so we can debug it */
+		panic("wait_pla pagedaemon deadlock");
+#endif
 		return 0;
 	}
 
