@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus_machdep.c,v 1.10 2010/04/21 03:03:26 deraadt Exp $ */
+/*	$OpenBSD: rbus_machdep.c,v 1.11 2010/09/22 02:28:37 jsg Exp $ */
 /*	$NetBSD: rbus_machdep.c,v 1.2 1999/10/15 06:43:06 haya Exp $	*/
 
 /*
@@ -38,8 +38,9 @@
 #include <machine/bus.h>
 #include <dev/cardbus/rbus.h>
 
+#include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
-#include <arch/macppc/pci/pcibrvar.h>
+#include <dev/pci/pcidevs.h>
 
 void macppc_cardbus_init(pci_chipset_tag_t pc, pcitag_t tag);
 
