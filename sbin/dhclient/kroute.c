@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.26 2012/12/29 14:40:00 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.27 2013/01/17 23:41:07 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -86,14 +86,14 @@ priv_flush_routes_and_arp_cache(struct imsg_flush_routes *imsg)
 	if (sysctl(mib, 7, NULL, &needed, NULL, 0) == -1) {
 		if (imsg->rdomain != 0 && errno == EINVAL)
 			return;
-		error("could not get routes");
+		error("sysctl size of routes: %s", strerror(errno));
 	}
 
 	if (needed == 0)
 		return;
 
 	if ((buf = malloc(needed)) == NULL)
-		error("malloc");
+		error("no memory for sysctl routes");
 
 	if (sysctl(mib, 7, buf, &needed, NULL, 0) == -1)
 		error("sysctl retrieval of routes: %s", strerror(errno));
