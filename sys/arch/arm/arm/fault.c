@@ -1,4 +1,4 @@
-/*	$OpenBSD: fault.c,v 1.10 2007/05/15 16:02:18 drahn Exp $	*/
+/*	$OpenBSD: fault.c,v 1.11 2011/09/20 22:02:11 miod Exp $	*/
 /*	$NetBSD: fault.c,v 1.46 2004/01/21 15:39:21 skrll Exp $	*/
 
 /*
@@ -174,8 +174,8 @@ data_abort_handler(trapframe_t *tf)
 	struct sigdata sd;
 
 	/* Grab FAR/FSR before enabling interrupts */
-	far = cpu_faultaddress();
-	fsr = cpu_faultstatus();
+	far = cpu_dfar();
+	fsr = cpu_dfsr();
 
 	/* Update vmmeter statistics */
 	uvmexp.traps++;
