@@ -1,6 +1,7 @@
 
-/*	$OpenBSD: spinlock.h,v 1.1 2009/05/08 03:13:27 drahn Exp $	*/
+/*	$OpenBSD: spinlock.h,v 1.2 2011/03/23 16:54:34 pirofti Exp $	*/
 #ifndef _MACHINE_SPINLOCK_H_
 #define _MACHINE_SPINLOCK_H_
+#define ARM_V7PLUS_LOCKS
 #include <arm/spinlock.h>
 #endif /* _MACHINE_SPINLOCK_H_ */
