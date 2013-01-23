@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.h,v 1.4 2012/10/24 03:26:56 guenther Exp $ */
+/*	$OpenBSD: syscall.h,v 1.1 2013/01/20 23:01:44 miod Exp $ */
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist
@@ -67,5 +67,7 @@ _dl_mmap(void *addr, unsigned int len, unsigned int prot,
 	return((void *)(long)_dl__syscall((quad_t)SYS_mmap, addr, len, prot,
 		flags, fd, 0, offset));
 }
+
+int	_dl_cacheflush(unsigned long, size_t);
 
 #endif /*__DL_SYSCALL_H__*/
