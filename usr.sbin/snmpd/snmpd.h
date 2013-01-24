@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.38 2012/09/18 08:29:09 reyk Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.39 2012/10/01 11:36:55 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -376,6 +376,7 @@ enum usmpriv {
 
 struct usmuser {
 	char			*uu_name;
+	int			 uu_seclevel;
 
 	enum usmauth		 uu_auth;
 	char			*uu_authkey;
