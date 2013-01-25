@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $OpenBSD: krl.c,v 1.6 2013/01/24 22:08:56 djm Exp $ */
+/* $OpenBSD: krl.c,v 1.7 2013/01/25 05:00:27 krw Exp $ */
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -1146,8 +1146,11 @@ is_key_revoked(struct ssh_krl *krl, const Key *key)
 		return -1;
 	}
 
-	/* Legacy cert formats lack serial numbers */
-	if (key_cert_is_legacy(key))
+	/*
+	 * Legacy cert formats lack serial numbers. Zero serials numbers
+	 * are ignored (it's the default when the CA doesn't specify one).
+	 */
+	if (key_cert_is_legacy(key) || key->cert->serial == 0)
 		return 0;
 
 	bzero(&rs, sizeof(rs));
