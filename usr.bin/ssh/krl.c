@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $OpenBSD: krl.c,v 1.7 2013/01/25 05:00:27 krw Exp $ */
+/* $OpenBSD: krl.c,v 1.8 2013/01/25 10:22:19 djm Exp $ */
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -979,7 +979,7 @@ ssh_krl_from_blob(Buffer *buf, struct ssh_krl **krlp,
 			}
 		}
 		/* Record keys used to sign the KRL */
-		xrealloc(ca_used, nca_used + 1, sizeof(*ca_used));
+		ca_used = xrealloc(ca_used, nca_used + 1, sizeof(*ca_used));
 		ca_used[nca_used++] = key;
 		key = NULL;
 		break;
