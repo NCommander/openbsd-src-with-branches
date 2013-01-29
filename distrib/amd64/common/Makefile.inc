@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.19 2012/10/12 14:07:46 jsing Exp $
+#	$OpenBSD: Makefile.inc,v 1.20 2012/10/15 06:31:14 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -66,8 +66,7 @@ bsd.rd:	${IMAGE} bsd rdsetroot
 bsd:
 	cd ${.CURDIR}/../../../sys/arch/amd64/conf && config ${RAMDISK}
 	cd ${.CURDIR}/../../../sys/arch/amd64/compile/${RAMDISK} && \
-	    COPTS=-Os exec ${MAKE}
-#	    ${MAKE} clean && COPTS=-Os exec ${MAKE}
+	    ${MAKE} clean && COPTS=-Os exec ${MAKE}
 	cp ${.CURDIR}/../../../sys/arch/amd64/compile/${RAMDISK}/bsd bsd
 
 ${IMAGE}: ${CBIN} rd_setup do_files rd_teardown
