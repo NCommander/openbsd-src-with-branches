@@ -22,11 +22,26 @@ package OpenBSD::Makewhatis::SubjectHandler;
 sub new
 {
 	my ($class, $p) = @_;
-	return bless { p => $p}, $class;
+	return bless { p => $p, subjects => []}, $class;
 }
 
 sub add
 {
+	my ($h, $s) = @_;
+	push(@{$h->{subjects}}, $s);
+	$h->{has_subjects} = 1;
+}
+
+sub no_subjects
+{
+	my $h = shift;
+	return !$h->{has_subjects};
+}
+
+sub subjects
+{
+	my $h = shift;
+	return @{$h->{subjects}};
 }
 
 sub p

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2008/09/01 17:18:19 drahn Exp $
+#	$OpenBSD: Makefile,v 1.9 2011/01/26 15:10:59 espie Exp $
 
 MAN=makewhatis.8
 NOPROG=
@@ -23,9 +23,7 @@ realinstall:
 	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
 		${.CURDIR}/$i ${DESTDIR}${LIBBASE}/$i
 .endfor
-.for i in ${SCRIPTS}
 	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-		${.CURDIR}/$i ${DESTDIR}${BINDIR}/$i
-.endfor
+		${.CURDIR}/makewhatis ${DESTDIR}${BINDIR}/makewhatis
 
 .include <bsd.prog.mk>
