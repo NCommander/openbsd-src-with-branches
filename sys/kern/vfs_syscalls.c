@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.187 2012/07/11 23:07:19 guenther Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.189 2012/09/10 11:10:59 jsing Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -1843,9 +1843,9 @@ doreadlinkat(struct proc *p, int fd, const char *path, char *buf,
 		auio.uio_procp = p;
 		auio.uio_resid = count;
 		error = VOP_READLINK(vp, &auio, p->p_ucred);
+		*retval = count - auio.uio_resid;
 	}
 	vput(vp);
-	*retval = count - auio.uio_resid;
 	return (error);
 }
 
