@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfa_session.c,v 1.11 2012/10/11 21:51:37 gilles Exp $	*/
+/*	$OpenBSD: mfa_session.c,v 1.13 2013/01/26 09:37:23 gilles Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@poolp.org>
@@ -394,6 +394,7 @@ mfa_drain_query(struct mfa_query *q)
 		free(q->smtp.response);
 	}
 
+	TAILQ_REMOVE(&q->session->queries, q, entry);
 	/* If the query was a disconnect event, the session can be freed */
 	if (q->type == HOOK_DISCONNECT) {
 		/* XXX assert prev == NULL */
@@ -401,8 +402,6 @@ mfa_drain_query(struct mfa_query *q)
 	}
 
 	log_trace(TRACE_MFA, "mfa: freeing query %016" PRIx64, q->qid);
-
-	TAILQ_REMOVE(&q->session->queries, q, entry);
 	free(q);
 }
 

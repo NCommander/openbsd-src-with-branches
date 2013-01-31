@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_fsqueue.c,v 1.53 2012/08/30 18:19:50 eric Exp $	*/
+/*	$OpenBSD: queue_ram.c,v 1.1 2013/01/26 09:37:23 gilles Exp $	*/
 
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
@@ -240,6 +240,7 @@ queue_ram_envelope(enum queue_op qop, uint64_t *evpid, char *buf, size_t len)
 		evp->buf = malloc(len);
 		if (evp->buf == NULL) {
 			log_warn("warn: queue_ram_envelope: malloc");
+			free(evp);
 			return (0);
 		}
 		memmove(evp->buf, buf, len);

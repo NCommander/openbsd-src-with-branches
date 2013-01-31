@@ -1,4 +1,4 @@
-/*	$OpenBSD: aliases.c,v 1.58 2012/11/12 14:58:53 eric Exp $	*/
+/*	$OpenBSD: aliases.c,v 1.59 2013/01/26 09:37:23 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -185,7 +185,7 @@ aliases_expand_include(struct expand *expand, const char *filename)
 	FILE *fp;
 	char *line;
 	size_t len, lineno = 0;
-	char delim[] = { '\\', '#' };
+	char delim[3] = { '\\', '#', '\0' };
 
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
