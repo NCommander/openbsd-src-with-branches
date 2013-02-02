@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_expm1.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
+/*	$OpenBSD: s_expm1f.S,v 1.1 2011/05/28 21:55:04 martynas Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -35,7 +35,5 @@
 #include <machine/asm.h>
 
 ENTRY(expm1f)
-	fetoxm1s	sp@(4),fp0
-	fmoves	fp0,sp@-
-	movel	sp@+,d0
+	fetoxm1s	%sp@(4),%fp0
 	rts

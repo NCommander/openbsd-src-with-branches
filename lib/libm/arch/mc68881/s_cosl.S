@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_cos.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
+/*	$OpenBSD: s_cosl.S,v 1.1 2011/05/28 22:13:52 martynas Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -34,9 +34,6 @@
 
 #include <machine/asm.h>
 
-.lcomm	_ASM_LABEL(__rv),12
 ENTRY(cosl)
-	fcosx	sp@(4),fp0
-	fmovex	fp0,_ASM_LABEL(__rv)
-	movel	#_ASM_LABEL(__rv),d0
+	fcosx	%sp@(4),%fp0
 	rts

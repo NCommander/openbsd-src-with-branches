@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: fixdfsi.S,v 1.4 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -36,6 +36,6 @@
 
 /* (int) double */
 ENTRY(__fixdfsi)
-	fintrzd	sp@(4),fp0
-	fmovel	fp0,d0
+	fintrzd	%sp@(4),%fp0
+	fmovel	%fp0,%d0
 	rts

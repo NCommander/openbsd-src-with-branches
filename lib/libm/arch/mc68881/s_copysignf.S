@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_copysign.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
+/*	$OpenBSD: s_copysignf.S,v 1.1 2011/05/28 21:55:04 martynas Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -37,11 +37,12 @@
 | copysignf(x,y)
 | returns x with the sign of y.
 ENTRY(copysignf)
-	movl	sp@(4),d0
-	tstw	sp@(8)
+	tstw	%sp@(8)
 	jmi	Lneg
-	bclr	#31,d0
+	bclr	#31,%sp@(4)
+	fmoves	%sp@(4),%fp0
 	rts
 Lneg:
-	bset	#31,d0
+	bset	#31,%sp@(4)
+	fmoves	%sp@(4),%fp0
 	rts

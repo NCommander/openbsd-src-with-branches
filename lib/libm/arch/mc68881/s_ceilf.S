@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_ceil.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
+/*	$OpenBSD: s_ceilf.S,v 1.1 2011/05/28 21:55:04 martynas Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -37,18 +37,16 @@
 | ceilf(x)
 | -floorf(-x), for all real x
 ENTRY(ceilf)
-	fmovel	fpcr,d0		| save old FPCR
-	fmoves	sp@(4),fp0	| get argument
+	fmovel	%fpcr,%d0	| save old FPCR
+	fmoves	%sp@(4),%fp0	| get argument
 	fbun	Lret		| if NaN, return NaN
 	fbolt	Lrtz		| <0, round to zero
-	fmovel	#0x30,fpcr	| >=0, round to inf
+	fmovel	#0x30,%fpcr	| >=0, round to inf
 	jra	Ldoit
 Lrtz:
-	fmovel	#0x10,fpcr
+	fmovel	#0x10,%fpcr
 Ldoit:
-	fints	sp@(4),fp0	| truncate
-	fmovel	d0,fpcr		| restore old FPCR
+	fints	%sp@(4),%fp0	| truncate
+	fmovel	%d0,%fpcr	| restore old FPCR
 Lret:
-	fmoves	fp0,sp@-
-	movel	sp@+,d0
 	rts

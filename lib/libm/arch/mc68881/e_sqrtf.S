@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_sqrt.S,v 1.4 2008/09/07 20:36:08 martynas Exp $ */
+/*	$OpenBSD: e_sqrtf.S,v 1.1 2011/05/28 21:55:04 martynas Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -41,7 +41,5 @@
  */
 
 ENTRY(sqrtf)
-	fsqrts	sp@(4),fp0
-	fmoves	fp0,sp@-
-	movel	sp@+,d0
+	fsqrts	%sp@(4),%fp0
 	rts

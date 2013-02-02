@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_sqrt.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
+/*	$OpenBSD: e_sqrt.S,v 1.4 2008/09/07 20:36:08 martynas Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -41,8 +41,5 @@
  */
 
 ENTRY(sqrt)
-	fsqrtd	sp@(4),fp0
-	fmoved	fp0,sp@-
-	movel	sp@+,d0
-	movel	sp@+,d1
+	fsqrtd	%sp@(4),%fp0
 	rts

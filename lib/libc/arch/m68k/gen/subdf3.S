@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: subdf3.S,v 1.4 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -36,9 +36,6 @@
 
 /* double - double */
 ENTRY(__subdf3)
-	fmoved	sp@(4),fp0
-	fsubd	sp@(12),fp0
-	fmoved	fp0,sp@-
-	movel	sp@+,d0
-	movel	sp@+,d1
+	fmoved	%sp@(4),%fp0
+	fsubd	%sp@(12),%fp0
 	rts

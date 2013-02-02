@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_cosh.S,v 1.4 2008/09/07 20:36:08 martynas Exp $ */
+/*	$OpenBSD: e_coshf.S,v 1.1 2011/05/28 21:55:04 martynas Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -35,7 +35,5 @@
 #include <machine/asm.h>
 
 ENTRY(coshf)
-	fcoshs	sp@(4),fp0
-	fmoves	fp0,sp@-
-	movel	sp@+,d0
+	fcoshs	%sp@(4),%fp0
 	rts

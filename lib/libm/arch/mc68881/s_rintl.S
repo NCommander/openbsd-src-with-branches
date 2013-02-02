@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_rint.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
+/*	$OpenBSD: s_rintl.S,v 1.1 2011/05/28 22:13:52 martynas Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -36,9 +36,6 @@
 
 | rintl(x)
 | delivers integer nearest x in direction of prevailing rounding mode
-.lcomm	_ASM_LABEL(__rv),12
 ENTRY(rintl)
-	fintx	sp@(4),fp0	| use prevailing rounding mode
-	fmovex	fp0,_ASM_LABEL(__rv)
-	movel	#_ASM_LABEL(__rv),d0
+	fintx	%sp@(4),%fp0	| use prevailing rounding mode
 	rts

@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: udivsi3.S,v 1.4 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -36,6 +36,6 @@
 
 /* unsigned / unsigned */
 ENTRY(__udivsi3)
-	movel	sp@(4),d0
-	divul	sp@(8),d0
+	movel	%sp@(4),%d0
+	divul	%sp@(8),%d0
 	rts
