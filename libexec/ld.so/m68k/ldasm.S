@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.9 2012/11/01 10:25:33 kettenis Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.1 2013/01/23 19:15:58 miod Exp $ */
 
 /*
  * Copyright (c) 2006 Dale Rahn
@@ -93,6 +93,8 @@ ENTRY(_dl_start)
 
 	addl	#DL_DATA_SIZE, %sp	| restore sp
 	moveal	%d0, %a0
+	clrl	%d1
+	moveal	%d1, %a1		| cleanup as expected by CSU
 	jmp	(%a0)
 
 	rts
