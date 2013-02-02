@@ -1,4 +1,4 @@
-/*	$OpenBSD: strlen.S,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
+
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -36,10 +36,10 @@
 #include "DEFS.h"
 
 ENTRY(strlen)
-	moveq	#-1,d0
-	movl	sp@(4),a0		| string
+	moveq	#-1,%d0
+	movl	%sp@(4),%a0		| string
 slloop:
-	addql	#1,d0			| increment count
-	tstb	a0@+			| null?
+	addql	#1,%d0			| increment count
+	tstb	%a0@+			| null?
 	bne	slloop			| no, keep going
 	rts

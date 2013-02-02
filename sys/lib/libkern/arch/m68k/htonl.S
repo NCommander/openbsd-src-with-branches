@@ -1,4 +1,4 @@
-/*	$OpenBSD: htonl.S,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
+/*	$OpenBSD: htonl.S,v 1.4 2007/11/25 18:25:35 deraadt Exp $	*/
 /*	$NetBSD: htonl.S,v 1.2 1994/10/26 06:39:27 cgd Exp $	*/
 
 /*-
@@ -41,5 +41,5 @@
 ALTENTRY(ntohl, _htonl)
 ALTENTRY(bswap32, _htonl)
 ENTRY(htonl)
-	movl	sp@(4),d0
+	movl	%sp@(4),%d0
 	rts
