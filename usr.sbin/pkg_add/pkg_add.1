@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pkg_add.1,v 1.113 2012/07/06 12:02:50 espie Exp $
+.\"	$OpenBSD: pkg_add.1,v 1.114 2012/07/06 12:11:51 espie Exp $
 .\"
 .\" Documentation and design originally from FreeBSD. All the code has
 .\" been rewritten since. We keep the documentation's notice:
@@ -225,6 +225,8 @@ Assume
 as current machine architecture for any package tests.
 .It Fl a
 Automated package installation; do not record packages as installed manually.
+.It Fl aa
+Force already installed packages to be tagged as installed automatically.
 .It Fl B Ar pkg-destdir
 Set
 .Ar pkg-destdir
