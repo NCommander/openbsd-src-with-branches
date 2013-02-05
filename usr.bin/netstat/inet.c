@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.119 2011/11/01 00:00:01 mikeb Exp $	*/
+/*	$OpenBSD: inet.c,v 1.120 2012/12/04 02:30:34 deraadt Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -1229,6 +1229,7 @@ sockbuf_dump(struct sockbuf *sb, const char *name)
 	p("%lu", sb_mbmax, ", ");
 	p("%ld", sb_lowat, "\n ");
 	printf("%s ", name);
+	p("%#0.8x", sb_flagsintr, ", ");
 	p("%#0.4x", sb_flags, ", ");
 	p("%u", sb_timeo, "\n ");
 #undef	p
