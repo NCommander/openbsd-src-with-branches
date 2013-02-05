@@ -1,5 +1,5 @@
-#	$OpenBSD: Makefile,v 1.1 2004/02/21 19:07:29 espie Exp $
+#	$OpenBSD: Makefile,v 1.2 2008/06/13 21:33:00 espie Exp $
 
-SUBDIR+= mtree pkg_add
+SUBDIR+= mtree pkg_add relayd
 
 .include <bsd.subdir.mk>
