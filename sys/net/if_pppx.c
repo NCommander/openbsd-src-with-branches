@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppx.c,v 1.14 2012/04/14 09:39:47 yasuoka Exp $ */
+/*	$OpenBSD: if_pppx.c,v 1.15 2012/09/19 17:50:17 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -874,6 +874,7 @@ pppx_add_session(struct pppx_dev *pxd, struct pipex_session_req *req)
 		pipex_timer_start();
 
 	if_attach(ifp);
+	if_addgroup(ifp, "pppx");
 	if_alloc_sadl(ifp);
 
 #if NBPFILTER > 0
