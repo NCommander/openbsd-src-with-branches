@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.99 2012/12/14 05:26:43 dtucker Exp $ */
+/* $OpenBSD: auth.c,v 1.100 2013/01/17 23:00:01 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -331,7 +331,7 @@ check_key_in_hostfiles(struct passwd *pw, Key *key, const char *host,
  *
  * XXX Should any specific check be done for sym links ?
  *
- * Takes an the file name, its stat information (preferably from fstat() to
+ * Takes a file name, its stat information (preferably from fstat() to
  * avoid races), the uid of the expected owner, their home directory and an
  * error buffer plus max size as arguments.
  *
