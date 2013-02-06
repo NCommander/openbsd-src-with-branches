@@ -1,4 +1,4 @@
-/*	$OpenBSD: pathnames.h,v 1.4 2012/01/18 03:13:04 yasuoka Exp $ */
+/*	$OpenBSD: pathnames.h,v 1.5 2012/05/08 13:15:12 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -30,10 +30,6 @@
 
 #ifndef	DEFAULT_NPPPD_CONF
 #define	DEFAULT_NPPPD_CONF		"/etc/npppd/npppd.conf"
-#endif
-
-#ifndef	DEFAULT_NPPPD_USERSFILE
-#define	DEFAULT_NPPPD_USERSFILE		"/etc/npppd/npppd-users.csv"
 #endif
 
 #ifndef DEFAULT_NPPPD_PIDFILE
