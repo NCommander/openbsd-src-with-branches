@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.3 2012/11/13 17:10:40 yasuoka Exp $ */
+/*	$OpenBSD: parse.y,v 1.4 2013/01/31 09:44:21 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -259,6 +259,11 @@ tunnopt		: LISTEN ON addressport {
 				curr_tunnconf->proto.l2tp.address = $3;
 				break;
 			case NPPPD_TUNNEL_PPTP:
+				if ($3.ss_family == AF_INET6) {
+					yyerror("listen on IPv6 address is not "
+					    "supported by pptp tunnel");
+					YYERROR;
+				}
 				curr_tunnconf->proto.pptp.address = $3;
 				break;
 			default:
