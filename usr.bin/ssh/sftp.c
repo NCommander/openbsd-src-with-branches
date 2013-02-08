@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.140 2012/09/21 10:55:04 dtucker Exp $ */
+/* $OpenBSD: sftp.c,v 1.141 2012/10/05 12:34:39 markus Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -1122,7 +1122,7 @@ parse_args(const char **cpp, int *pflag, int *rflag, int *lflag, int *iflag,
 
 	/* Figure out which command we have */
 	for (i = 0; cmds[i].c != NULL; i++) {
-		if (strcasecmp(cmds[i].c, argv[0]) == 0)
+		if (argv[0] != NULL && strcasecmp(cmds[i].c, argv[0]) == 0)
 			break;
 	}
 	cmdnum = cmds[i].n;
