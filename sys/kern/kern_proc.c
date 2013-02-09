@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.47 2011/09/18 23:20:54 miod Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.48 2012/04/10 15:50:52 guenther Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -380,7 +380,8 @@ orphanpg(struct pgrp *pg)
 
 #ifdef DDB
 void 
-proc_printit(struct proc *p, const char *modif, int (*pr)(const char *, ...))
+proc_printit(struct proc *p, const char *modif,
+    int (*pr)(const char *, ...) __attribute__((__format__(__kprintf__,1,2))))
 {
 	static const char *const pstat[] = {
 		"idle", "run", "sleep", "stop", "zombie", "dead", "onproc"
