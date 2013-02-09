@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vrreg.h,v 1.33 2013/01/16 05:25:57 dtucker Exp $	*/
+/*	$OpenBSD: if_vrreg.h,v 1.34 2013/01/28 02:57:02 dtucker Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -437,6 +437,8 @@ struct vr_desc {
 #define VR_TX_LIST_CNT		128
 #define VR_MIN_FRAMELEN		60
 #define VR_RXLEN		1524
+/* determined experimentally; seems intermittent with higher values */
+#define VR_RXLEN_BABYJUMBO	1758
 #define VR_TX_INTR_THRESH	8
 
 struct vr_list_data {
