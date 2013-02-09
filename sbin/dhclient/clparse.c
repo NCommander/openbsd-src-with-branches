@@ -1,4 +1,4 @@
-/*	$OpenBSD: clparse.c,v 1.51 2013/01/02 01:06:57 krw Exp $	*/
+/*	$OpenBSD: clparse.c,v 1.52 2013/02/01 20:44:00 florian Exp $	*/
 
 /* Parser for dhclient config and lease files... */
 
@@ -341,13 +341,10 @@ parse_option_list(FILE *cfile, u_int8_t *list, size_t sz)
 			goto syntaxerror;
 		}
 		/* Avoid storing duplicate options in the list. */
-		for (j = 0; j < ix; j++) {
-			if (list[j] == i) {
-				parse_warn("option in list more than once.");
-				goto syntaxerror;
-			}
-		}
-		list[ix++] = i;
+		for (j = 0; j < ix && list[j] != i; j++)
+			;
+		if (j == ix)
+			list[ix++] = i;
 		token = next_token(&val, cfile);
 	} while (token == ',');
 	if (token != ';') {
