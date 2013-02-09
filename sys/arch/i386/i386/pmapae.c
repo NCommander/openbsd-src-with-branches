@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmapae.c,v 1.20 2009/08/06 15:28:14 oga Exp $	*/
+/*	$OpenBSD: pmapae.c,v 1.21 2010/04/22 19:02:44 oga Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -1030,7 +1030,7 @@ pmap_pinit_pd_pae(struct pmap *pmap)
 	/* allocate PDP */
 	pmap->pm_pdir = uvm_km_alloc(kernel_map, 4 * NBPG);
 	if (pmap->pm_pdir == NULL)
-		panic("pmap_pinit: kernel_map out of virtual space!");
+		panic("pmap_pinit_pd_pae: kernel_map out of virtual space!");
 	/* page index is in the pmap! */
 	pmap_extract(pmap_kernel(), (vaddr_t)pmap, &pmap->pm_pdirpa);
 	/* fill out the PDPT entries */
