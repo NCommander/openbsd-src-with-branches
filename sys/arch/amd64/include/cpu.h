@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.75 2012/11/10 09:45:05 mglocker Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.76 2012/12/02 07:03:31 guenther Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -128,6 +128,9 @@ struct cpu_info {
 
 	struct ksensordev	ci_sensordev;
 	struct ksensor		ci_sensor;
+#ifdef GPROF
+	struct gmonparam	*ci_gmon;
+#endif
 };
 
 #define CPUF_BSP	0x0001		/* CPU is the original BSP */
