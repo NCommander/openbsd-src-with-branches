@@ -47,9 +47,6 @@ static int	s_scale;
 /* see profil(2) where this is describe (incorrectly) */
 #define		SCALE_1_TO_1	0x10000L
 
-#define ROUNDDOWN(x,y)(((x)/(y))*(y))
-#define ROUNDUP(x,y)((((x)+(y)-1)/(y))*(y))
-
 #define ERR(s) write(STDERR_FILENO, s, sizeof(s))
 
 void	moncontrol(int);
