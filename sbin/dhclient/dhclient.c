@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.225 2013/02/02 20:20:42 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.226 2013/02/09 23:37:21 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -1844,7 +1844,12 @@ fork_privchld(int fd, int fd2)
 	imsg.rdomain = ifi->rdomain;
 	imsg.addr = active_addr;
 
-	priv_cleanup(&imsg);
+	/*
+	 * SIGTERM is used by system at shut down. Be nice and don't cleanup
+	 * routes, possibly preventing NFS from properly shutting down.
+	 */
+	if (quit != SIGTERM)
+		priv_cleanup(&imsg);
 
 	if (quit == SIGHUP) {
 		warning("Received SIGHUP; restarting.");
