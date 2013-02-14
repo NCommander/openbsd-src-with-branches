@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.49 2013/01/16 11:02:10 krw Exp $	*/
+/*	$OpenBSD: options.c,v 1.50 2013/01/16 21:35:41 krw Exp $	*/
 
 /* DHCP options parsing and reassembly. */
 
@@ -146,7 +146,7 @@ parse_option_buffer(struct option_data *options, unsigned char *buffer,
 int
 cons_options(struct option_data *options)
 {
-	unsigned char *buf = client->packet.options;
+	unsigned char *buf = client->bootrequest_packet.options;
 	int buflen = 576 - DHCP_FIXED_LEN;
 	int ix, incr, length, bufix, code, lastopt = -1;
 
