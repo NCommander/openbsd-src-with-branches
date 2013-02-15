@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.228 2013/02/14 20:39:46 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.229 2013/02/14 22:18:12 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -620,7 +620,7 @@ state_init(void)
 	/* Make a DHCPDISCOVER packet, and set appropriate per-interface
 	   flags. */
 	make_discover(client->active);
-	client->xid = client->packet.xid;
+	client->xid = client->bootrequest_packet.xid;
 	client->destination.s_addr = INADDR_BROADCAST;
 	client->state = S_SELECTING;
 	client->first_sending = time(NULL);
