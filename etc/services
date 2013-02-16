@@ -1,4 +1,4 @@
-#	$OpenBSD: services,v 1.78 2012/03/23 15:32:31 gsoares Exp $
+#	$OpenBSD: services,v 1.79 2012/06/02 11:44:46 sthen Exp $
 #
 # Network services, Internet style
 #
@@ -273,6 +273,7 @@ afs3-rmtsys		7009/udp	# AFS remote cache manager service
 #
 # Unofficial services
 #
+pop3pw		106/tcp	poppassd	# Eudora compatible PW changer
 smtps		465/tcp			# SSL-wrapped SMTP
 conserver	782/tcp			# console server
 supfilesrv	871/tcp			# SUP server
