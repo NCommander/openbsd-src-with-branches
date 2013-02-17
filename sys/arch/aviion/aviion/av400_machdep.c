@@ -1,4 +1,4 @@
-/*	$OpenBSD: av400_machdep.c,v 1.19 2010/12/31 21:38:07 miod Exp $	*/
+/*	$OpenBSD: av400_machdep.c,v 1.20 2011/01/02 13:40:05 miod Exp $	*/
 /*
  * Copyright (c) 2006, 2007, Miodrag Vallat.
  *
@@ -262,7 +262,7 @@ av400_startup()
 void
 av400_bootstrap()
 {
-	extern struct cmmu_p cmmu8820x;
+	extern const struct cmmu_p cmmu8820x;
 	extern u_char hostaddr[6];
 
 	/*

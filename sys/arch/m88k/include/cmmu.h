@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmmu.h,v 1.26 2011/01/05 22:14:28 miod Exp $ */
+/*	$OpenBSD: cmmu.h,v 1.27 2011/10/25 18:38:06 miod Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1992 Carnegie Mellon University
@@ -60,7 +60,7 @@ struct cmmu_p {
 #endif
 };
 
-extern struct cmmu_p *cmmu;
+extern const struct cmmu_p *cmmu;
 
 #ifdef MULTIPROCESSOR
 /*

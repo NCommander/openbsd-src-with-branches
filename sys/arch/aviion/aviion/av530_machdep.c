@@ -1,4 +1,4 @@
-/*	$OpenBSD: av530_machdep.c,v 1.5 2010/12/31 21:38:07 miod Exp $	*/
+/*	$OpenBSD: av530_machdep.c,v 1.6 2011/01/02 13:40:05 miod Exp $	*/
 /*
  * Copyright (c) 2006, 2007, 2010 Miodrag Vallat.
  *
@@ -151,7 +151,7 @@ av530_startup()
 void
 av530_bootstrap()
 {
-	extern struct cmmu_p cmmu8820x;
+	extern const struct cmmu_p cmmu8820x;
 #if 0
 	extern u_char hostaddr[6];
 #endif
