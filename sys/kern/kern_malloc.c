@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc.c,v 1.92 2012/03/30 23:03:42 pirofti Exp $	*/
+/*	$OpenBSD: kern_malloc.c,v 1.93 2013/02/09 20:56:35 miod Exp $	*/
 /*	$NetBSD: kern_malloc.c,v 1.15.4.2 1996/06/13 17:10:56 cgd Exp $	*/
 
 /*
@@ -711,7 +711,7 @@ malloc_roundup(size_t sz)
 
 void
 malloc_printit(
-    int (*pr)(const char *, ...) __attribute__((__format__(__kprintf__,1,2))))
+    int (*pr)(const char *, ...) /* __attribute__((__format__(__kprintf__,1,2))) */)
 {
 #ifdef KMEMSTATS
 	struct kmemstats *km;
