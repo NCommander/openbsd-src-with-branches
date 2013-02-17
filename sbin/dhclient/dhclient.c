@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.234 2013/02/16 13:50:17 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.235 2013/02/17 00:02:44 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -267,6 +267,7 @@ routehandler(void)
 		memcpy(&hw, &ifi->hw_address, sizeof(hw));
 		discover_interface();
 		if (memcmp(&hw, &ifi->hw_address, sizeof(hw))) {
+			warning("LLADDR changed; restarting");
 			quit = SIGHUP;
 			return;
 		}
