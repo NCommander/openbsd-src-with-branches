@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.33 2013/02/17 15:48:03 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.34 2013/02/17 17:04:41 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -533,7 +533,7 @@ priv_add_address(struct imsg_add_address *imsg)
 	if (imsg->addr.s_addr == INADDR_ANY) {
 		/* Notification that the active_addr has been deleted. */
 		active_addr.s_addr = INADDR_ANY;
-		quit = INT_MAX;
+		quit = INTERNALSIG;
 		return;
 	}
 
