@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $OpenBSD: krl.c,v 1.8 2013/01/25 10:22:19 djm Exp $ */
+/* $OpenBSD: krl.c,v 1.9 2013/01/27 10:06:12 djm Exp $ */
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -31,7 +31,6 @@
 #include "buffer.h"
 #include "key.h"
 #include "authfile.h"
-#include "err.h"
 #include "misc.h"
 #include "log.h"
 #include "xmalloc.h"
