@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pf.conf.5,v 1.524 2013/01/16 01:49:20 henning Exp $
+.\"	$OpenBSD: pf.conf.5,v 1.525 2013/01/16 02:43:24 henning Exp $
 .\"
 .\" Copyright (c) 2002, Daniel Hartmeier
 .\" All rights reserved.
@@ -116,7 +116,7 @@ and
 .Ar pass ,
 the last matching rule decides what action is taken;
 if no rule matches the packet, the default action is to pass
-the packet.
+the packet without creating a state.
 For
 .Ar match ,
 rules are evaluated every time they match;
