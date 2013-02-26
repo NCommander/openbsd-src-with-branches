@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.127 2012/09/26 14:53:23 markus Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.128 2012/12/28 17:52:06 gsoares Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -532,11 +532,8 @@ pfkeyv2_get(struct tdb *sa, void **headers, void **buffer, int *lenp)
 	if (sa->tdb_last_used)
 		i += sizeof(struct sadb_lifetime);
 
-	if (sa->tdb_src.sa.sa_family)
-		i += sizeof(struct sadb_address) + PADUP(SA_LEN(&sa->tdb_src.sa));
-
-	if (sa->tdb_dst.sa.sa_family)
-		i += sizeof(struct sadb_address) + PADUP(SA_LEN(&sa->tdb_dst.sa));
+	i += sizeof(struct sadb_address) + PADUP(SA_LEN(&sa->tdb_src.sa));
+	i += sizeof(struct sadb_address) + PADUP(SA_LEN(&sa->tdb_dst.sa));
 
 	if (sa->tdb_proxy.sa.sa_family)
 		i += sizeof(struct sadb_address) + PADUP(SA_LEN(&sa->tdb_proxy.sa));
