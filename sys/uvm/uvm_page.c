@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.114 2011/07/08 00:10:59 tedu Exp $	*/
+/*	$OpenBSD: uvm_page.c,v 1.115 2013/02/07 17:38:12 beck Exp $	*/
 /*	$NetBSD: uvm_page.c,v 1.44 2000/11/27 08:40:04 chs Exp $	*/
 
 /*
@@ -989,9 +989,10 @@ uvm_pagealloc(struct uvm_object *obj, voff_t off, struct vm_anon *anon,
 
 	uvm_pagealloc_pg(pg, obj, off, anon);
 	KASSERT((pg->pg_flags & PG_DEV) == 0);
-	atomic_setbits_int(&pg->pg_flags, PG_BUSY|PG_CLEAN|PG_FAKE);
 	if (flags & UVM_PGA_ZERO)
 		atomic_clearbits_int(&pg->pg_flags, PG_CLEAN);
+	else
+		atomic_setbits_int(&pg->pg_flags, PG_CLEAN);
 
 	return(pg);
 
