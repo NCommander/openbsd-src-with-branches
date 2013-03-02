@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.18 2011/04/28 20:40:36 ariane Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.19 2011/08/09 20:21:44 miod Exp $	*/
 /*	$NetBSD: pmap.c,v 1.55 2006/08/07 23:19:36 tsutsui Exp $	*/
 
 /*-
@@ -1091,7 +1091,7 @@ __pmap_asid_alloc()
 			pmap->pm_asid = -1;
 			__pmap_asid.hint = asid;
 			/* Invalidate all old ASID entry */
-			sh_tlb_invalidate_asid(pmap->pm_asid);
+			sh_tlb_invalidate_asid(asid);
 
 			return (__pmap_asid.hint);
 		}
