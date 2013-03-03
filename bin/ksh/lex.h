@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.h,v 1.11 2006/05/29 18:22:24 otto Exp $	*/
+/*	$OpenBSD: lex.h,v 1.12 2013/01/20 14:47:46 stsp Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -64,6 +64,7 @@ struct source {
 #define SHEREDQUOTE 10		/* parsing " in <<,<<- delimiter */
 #define SPATTERN 11		/* parsing *(...|...) pattern (*+?@!) */
 #define STBRACE 12		/* parsing ${..[#%]..} */
+#define	SBRACEQ	13		/* inside "${}" */
 
 typedef union {
 	int	i;
