@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.14 2012/12/08 18:45:26 kettenis Exp $	*/
+/*	$OpenBSD: config.c,v 1.15 2013/02/26 23:03:39 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -2267,7 +2267,8 @@ build_config(const char *filename)
 	uint64_t memory;
 
 	SIMPLEQ_INIT(&conf.domain_list);
-	parse_config(filename, &conf);
+	if (parse_config(filename, &conf) < 0)
+		exit(1);
 
 	pri = md_read("pri");
 	if (pri == NULL)
