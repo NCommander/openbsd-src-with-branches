@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcrelay.c,v 1.36 2012/06/22 11:28:36 krw Exp $ */
+/*	$OpenBSD: dhcrelay.c,v 1.37 2013/01/15 23:45:03 dlg Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -380,7 +380,7 @@ got_response(struct protocol *l)
 	if ((result = recv(l->fd, u.packbuf, sizeof(u), 0)) == -1 &&
 	    errno != ECONNREFUSED) {
 		/*
-		 * Ignore ECONNREFUSED as to many dhcp server send a bogus
+		 * Ignore ECONNREFUSED as too many dhcp servers send a bogus
 		 * icmp unreach for every request.
 		 */
 		warning("recv failed for %s: %m",
