@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.318 2013/02/09 23:39:37 brad Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.319 2013/02/22 01:26:55 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -532,7 +532,7 @@ bge_ape_lock_init(struct bge_softc *sc)
 		break;
 	default:
 		printf("%s: PHY lock not supported on function %d\n",
-		    sc->bge_dev.dv_xname);
+		    sc->bge_dev.dv_xname, pa->pa_function);
 		break;
 	}
 }
