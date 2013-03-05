@@ -1,4 +1,4 @@
-.\"	$OpenBSD: restore.8,v 1.34 2011/12/23 17:00:47 jmc Exp $
+.\"	$OpenBSD: restore.8,v 1.35 2013/01/17 21:22:43 jmc Exp $
 .\"	$NetBSD: restore.8,v 1.15 1997/07/01 05:37:53 lukem Exp $
 .\"
 .\" Copyright (c) 1985, 1991, 1993
@@ -30,7 +30,7 @@
 .\"
 .\"     @(#)restore.8	8.3 (Berkeley) 6/1/94
 .\"
-.Dd $Mdocdate: December 23 2011 $
+.Dd $Mdocdate: January 17 2013 $
 .Dt RESTORE 8
 .Os
 .Sh NAME
@@ -175,7 +175,7 @@ The
 .Fl r
 flag precludes an interactive file extraction and can be
 detrimental to one's health (not to mention the disk) if not used carefully.
-An example:
+An example of correct usage:
 .Bd -literal -offset indent
 # newfs /dev/rsd0g
 # mount /dev/sd0g /mnt
