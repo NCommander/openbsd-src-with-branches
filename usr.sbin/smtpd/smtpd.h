@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.406 2013/02/14 13:11:40 gilles Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.407 2013/02/15 22:43:21 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1128,6 +1128,10 @@ void imsgproc_reset_callback(struct imsgproc *, void (*)(struct imsg *, void *),
 
 /* lka.c */
 pid_t lka(void);
+
+
+/* log.c */
+void vlog(int, const char *, va_list);
 
 
 /* lka_session.c */
