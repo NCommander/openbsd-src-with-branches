@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.95 2012/10/05 17:17:04 camield Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.96 2012/10/18 00:36:22 deraadt Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -297,7 +297,7 @@ arp_rtrequest(int req, struct rtentry *rt, struct rt_addrinfo *info)
 			 */
 			ifa = &ia->ia_ifa;
 			if (ifa != rt->rt_ifa) {
-				IFAFREE(rt->rt_ifa);
+				ifafree(rt->rt_ifa);
 				ifa->ifa_refcnt++;
 				rt->rt_ifa = ifa;
 			}
