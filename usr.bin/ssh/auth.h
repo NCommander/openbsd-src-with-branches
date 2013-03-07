@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.h,v 1.71 2012/11/04 11:09:15 djm Exp $ */
+/* $OpenBSD: auth.h,v 1.72 2012/12/02 20:34:09 djm Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -134,8 +134,9 @@ int	auth_root_allowed(const char *);
 
 char	*auth2_read_banner(void);
 int	 auth2_methods_valid(const char *, int);
-int	 auth2_update_methods_lists(Authctxt *, const char *);
+int	 auth2_update_methods_lists(Authctxt *, const char *, const char *);
 int	 auth2_setup_methods_lists(Authctxt *);
+int	 auth2_method_allowed(Authctxt *, const char *, const char *);
 
 void	privsep_challenge_enable(void);
 
