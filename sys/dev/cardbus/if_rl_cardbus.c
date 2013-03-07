@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rl_cardbus.c,v 1.21 2010/03/27 21:40:13 jsg Exp $ */
+/*	$OpenBSD: if_rl_cardbus.c,v 1.22 2011/04/02 17:47:04 jasper Exp $ */
 /*	$NetBSD: if_rl_cardbus.c,v 1.3.8.3 2001/11/14 19:14:02 nathanw Exp $	*/
 
 /*
@@ -203,7 +203,6 @@ rl_cardbus_attach(struct device *parent, struct device *self, void *aux)
 	}
 	printf(": irq %d", csc->sc_intrline);
 
-	/* XXX - hardcode this, for now */
 	sc->rl_type = RL_8139;
 
 	rl_attach(sc);
