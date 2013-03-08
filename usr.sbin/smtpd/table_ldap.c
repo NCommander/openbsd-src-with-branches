@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2010-2012 Gilles Chehade <gilles@poolp.org>
  *
