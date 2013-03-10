@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.17 2011/04/12 12:37:22 reyk Exp $	*/
+/*	$OpenBSD: log.c,v 1.18 2012/11/27 05:00:28 guenther Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -454,4 +454,15 @@ printb_flags(const u_int32_t v, const char *bits)
 	}
 
 	return (r);
+}
+
+void
+getmonotime(struct timeval *tv)
+{
+	struct timespec	 ts;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts))
+		fatal("clock_gettime");
+
+	TIMESPEC_TO_TIMEVAL(tv, &ts);
 }
