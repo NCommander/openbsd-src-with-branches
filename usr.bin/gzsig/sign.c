@@ -1,4 +1,4 @@
-/* $OpenBSD: sign.c,v 1.11 2013/03/09 22:36:44 jmc Exp $ */
+/* $OpenBSD: sign.c,v 1.12 2013/03/10 10:34:33 tobias Exp $ */
 
 /*
  * sign.c
@@ -114,12 +114,12 @@ embed_signature(struct key *key, FILE *fin, FILE *fout)
 	offset = ftell(fin);
 
 	if (gh.flags & GZIP_FNAME) {
-		while (getc(fin) != '\0')
-			;
+		if (skip_string(fin))
+			return (-1);
 	}
 	if (gh.flags & GZIP_FCOMMENT) {
-		while (getc(fin) != '\0')
-			;
+		if (skip_string(fin))
+			return (-1);
 	}
 	if (gh.flags & GZIP_FENCRYPT) {
 		if (fread(buf, 1, GZIP_FENCRYPT_LEN, fin) != GZIP_FENCRYPT_LEN)
