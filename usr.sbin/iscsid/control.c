@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.2 2010/09/24 10:32:57 claudio Exp $ */
+/*	$OpenBSD: control.c,v 1.3 2012/04/11 08:16:37 claudio Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -165,7 +165,8 @@ control_accept(int listenfd, short event, void *bula)
 
 			event_del(&control_state->ev);
 			evtimer_add(&control_state->evt, &evtpause);
-		} else if (errno != EWOULDBLOCK && errno != EINTR)
+		} else if (errno != EWOULDBLOCK && errno != EINTR &&
+		    errno != ECONNABORTED)
 			log_warn("control_accept");
 		return;
 	}

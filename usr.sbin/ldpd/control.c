@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.9 2010/09/01 13:54:54 claudio Exp $ */
+/*	$OpenBSD: control.c,v 1.10 2012/04/12 17:33:43 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -120,7 +120,8 @@ control_accept(int listenfd, short event, void *bula)
 		 */
 		if (errno == ENFILE || errno == EMFILE)
 			accept_pause();
-		else if (errno != EWOULDBLOCK && errno != EINTR)
+		else if (errno != EWOULDBLOCK && errno != EINTR &&
+		    errno != ECONNABORTED)
 			log_warn("control_accept: accept");
 		return;
 	}

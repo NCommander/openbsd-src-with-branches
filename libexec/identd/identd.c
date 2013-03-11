@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.50 2012/12/04 02:24:47 deraadt Exp $	*/
+/*	$OpenBSD: identd.c,v 1.51 2013/03/09 17:40:57 deraadt Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -426,8 +426,13 @@ main(int argc, char *argv[])
 				 * Accept the new client
 				 */
 				fd = accept(pfds[i].fd, NULL, NULL);
-				if (fd == -1)
+				if (fd == -1) {
+					if (errno == EWOULDBLOCK ||
+					    errno == EINTR ||
+					    errno == ECONNABORTED)
+						continue;
 					error("main: accept. errno = %d", errno);
+				}
 
 				/*
 				 * Fork a child, parent continues
