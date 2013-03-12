@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.115 2013/02/07 17:38:12 beck Exp $	*/
+/*	$OpenBSD: uvm_page.c,v 1.119 2013/03/12 20:47:16 beck Exp $	*/
 /*	$NetBSD: uvm_page.c,v 1.44 2000/11/27 08:40:04 chs Exp $	*/
 
 /*
@@ -819,7 +819,7 @@ uvm_pglistalloc(psize_t size, paddr_t low, paddr_t high, paddr_t alignment,
 	if ((uvmexp.free <= uvmexp.reserve_pagedaemon &&
 	    !((curproc == uvm.pagedaemon_proc) ||
 		(curproc == syncerproc)))) {
-		if (UVM_PLA_WAITOK) {
+		if (flags & UVM_PLA_WAITOK) {
 			uvm_wait("uvm_pglistalloc");
 			goto again;
 		}
