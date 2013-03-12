@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.4 2012/05/28 20:55:40 joel Exp $	*/
+/*	$OpenBSD: pf.c,v 1.3 2012/05/26 14:45:55 joel Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -144,7 +144,7 @@ pfr_buf_grow(struct pfr_buffer *b, int minsize)
 	} else {
 		if (minsize == 0)
 			minsize = b->pfrb_msize * 2;
-		if (minsize < 0 || (size_t)minsize >= SIZE_T_MAX / bs) {
+		if (minsize < 0 || minsize >= SIZE_T_MAX / bs) {
 			/* msize overflow */
 			return (-1);
 		}
@@ -158,7 +158,7 @@ pfr_buf_grow(struct pfr_buffer *b, int minsize)
 	return (0);
 }
 
-const void *
+void *
 pfr_buf_next(struct pfr_buffer *b, const void *prev)
 {
 	size_t	 bs;
@@ -170,11 +170,10 @@ pfr_buf_next(struct pfr_buffer *b, const void *prev)
 	if (prev == NULL) 
 		return (b->pfrb_caddr);
 	bs = buf_esize[b->pfrb_type];
-	if ((((const char *)prev)-((char *)b->pfrb_caddr)) / bs >=
-	    (size_t)b->pfrb_size-1)
+	if ((((caddr_t)prev)-((caddr_t)b->pfrb_caddr)) / bs >= b->pfrb_size-1)
 		return (NULL);
 
-	return (((const char *)prev) + bs);
+	return (((caddr_t)prev) + bs);
 }
 
 int
@@ -224,7 +223,7 @@ int
 pfi_count(void)
 {
 	struct pfr_buffer 	 b;
-	const struct pfi_kif 	*p;
+	struct pfi_kif 		*p;
 	int			 c = 0;
 
 	if (pfi_get(&b, NULL)) {
@@ -243,7 +242,7 @@ int
 pfi_get_if(struct pfi_kif *rp, int idx)
 {
 	struct pfr_buffer	 b;
-	const struct pfi_kif	*p;
+	struct pfi_kif		*p;
 	int			 i = 1;
 
 	if (pfi_get(&b, NULL)) {
@@ -290,7 +289,7 @@ int
 pft_get_table(struct pfr_tstats *rts, int idx)
 {
 	struct pfr_buffer	 b;
-	const struct pfr_tstats	*ts;
+	struct pfr_tstats	*ts;
 	int			 i = 1;
 
 	if (pft_get(&b, NULL)) {
@@ -321,7 +320,7 @@ int
 pft_count(void)
 {
 	struct pfr_buffer	 b;
-	const struct pfr_tstats	*ts;
+	struct pfr_tstats	*ts;
 	int			 c = 0;
 
 	if (pft_get(&b, NULL)) {
@@ -364,7 +363,7 @@ pfta_get_addr(struct pfr_astats *ras, int tblidx)
 	struct pfr_buffer	 ba;
 	struct pfr_tstats	 ts;
 	struct pfr_table	 filter;
-	const struct pfr_astats	*as;
+	struct pfr_astats	*as;
 
 	if (pft_get_table(&ts, tblidx))
 		return (-1);
@@ -406,7 +405,7 @@ pfta_get_nextaddr(struct pfr_astats *ras, int *tblidx)
 	struct pfr_buffer	 ba;
 	struct pfr_tstats	 ts;
 	struct pfr_table	 filter;
-	const struct pfr_astats	*as;
+	struct pfr_astats	*as;
 	int			 i, found = 0;
 
 	ba.pfrb_caddr = NULL;
@@ -454,7 +453,7 @@ pfta_get_first(struct pfr_astats *ras)
 	struct pfr_buffer	 ba;
 	struct pfr_tstats	 ts;
 	struct pfr_table	 filter;
-	const struct pfr_astats	*as;
+	struct pfr_astats	*as;
 
 	if (pft_get_table(&ts, 1))
 		return (-1);

@@ -1,4 +1,3 @@
-/* $OpenBSD: util.h,v 1.3 2013/03/10 10:34:33 tobias Exp $ */
 /*
  * util.h
  *
@@ -34,8 +33,7 @@
 
 #ifndef UTIL_H
 
-int		copy_permissions(int srcfd, int dstfd);
-int		skip_string(FILE *fin);
+int		copy_permissions(char *srcfile, char *dstfile);
 void		fatal(int status, const char *fmt, ...);
 
 #endif /* UTIL_H */

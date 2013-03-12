@@ -1,4 +1,4 @@
-/* $OpenBSD: sign.c,v 1.12 2013/03/10 10:34:33 tobias Exp $ */
+/* $OpenBSD: sign.c,v 1.8 2007/09/11 15:47:17 gilles Exp $ */
 
 /*
  * sign.c
@@ -114,12 +114,12 @@ embed_signature(struct key *key, FILE *fin, FILE *fout)
 	offset = ftell(fin);
 
 	if (gh.flags & GZIP_FNAME) {
-		if (skip_string(fin))
-			return (-1);
+		while (getc(fin) != '\0')
+			;
 	}
 	if (gh.flags & GZIP_FCOMMENT) {
-		if (skip_string(fin))
-			return (-1);
+		while (getc(fin) != '\0')
+			;
 	}
 	if (gh.flags & GZIP_FENCRYPT) {
 		if (fread(buf, 1, GZIP_FENCRYPT_LEN, fin) != GZIP_FENCRYPT_LEN)
@@ -185,8 +185,8 @@ embed_signature(struct key *key, FILE *fin, FILE *fout)
 void
 sign_usage(void)
 {
-	fprintf(stderr, "usage: %s sign [-q | -v] [-f secret_file] privkey "
-	    "[file ...]\n", __progname);
+	fprintf(stderr, "Usage: %s sign [-q] [-f secret_file] privkey [file ...]\n",
+	    __progname);
 }
 
 int
@@ -285,7 +285,7 @@ sign(int argc, char *argv[])
 			close(fd);
 			continue;
 		}
-		if (copy_permissions(fileno(fin), fd) < 0) {
+		if (copy_permissions(gzipfile, tmppath) < 0) {
 			fprintf(stderr, "Error initializing %s: %s\n",
 			    tmppath, strerror(errno));
 			fclose(fin);

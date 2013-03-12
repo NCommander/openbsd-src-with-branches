@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1999 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: inet_ntop.c,v 1.4 2000/07/27 16:24:00 assar Exp $");
+RCSID("$KTH: inet_ntop.c,v 1.6 2005/04/12 11:28:52 lha Exp $");
 #endif
 
 #include <roken.h>
@@ -92,7 +92,7 @@ inet_ntop_v6 (const void *src, char *dst, size_t size)
 	return NULL;
     }
     for (i = 0; i < 8; ++i) {
-	int non_zerop = 1;
+	int non_zerop = 0;
 
 	if (non_zerop || (ptr[0] >> 4)) {
 	    *dst++ = xdigits[ptr[0] >> 4];
@@ -106,10 +106,7 @@ inet_ntop_v6 (const void *src, char *dst, size_t size)
 	    *dst++ = xdigits[ptr[1] >> 4];
 	    non_zerop = 1;
 	}
-	if (non_zerop || (ptr[1] & 0x0F)) {
-	    *dst++ = xdigits[ptr[1] & 0x0F];
-	    non_zerop = 1;
-	}
+	*dst++ = xdigits[ptr[1] & 0x0F];
 	if (i != 7)
 	    *dst++ = ':';
 	ptr += 2;
@@ -119,7 +116,7 @@ inet_ntop_v6 (const void *src, char *dst, size_t size)
 }
 #endif /* HAVE_IPV6 */
 
-const char *
+const char * ROKEN_LIB_FUNCTION
 inet_ntop(int af, const void *src, char *dst, size_t size)
 {
     switch (af) {

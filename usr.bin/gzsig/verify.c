@@ -1,4 +1,4 @@
-/* $OpenBSD: verify.c,v 1.9 2013/03/09 22:36:44 jmc Exp $ */
+/* $OpenBSD: verify.c,v 1.6 2006/04/17 09:36:56 moritz Exp $ */
 
 /*
  * verify.c
@@ -105,12 +105,12 @@ verify_signature(struct key *key, FILE *fin)
 	}
 	/* Skip over any options. */
 	if (gh.flags & GZIP_FNAME) {
-		if (skip_string(fin))
-			return (-1);
+		while (getc(fin) != '\0')
+			;
 	}
 	if (gh.flags & GZIP_FCOMMENT) {
-		if (skip_string(fin))
-			return (-1);
+		while (getc(fin) != '\0')
+			;
 	}
 	if (gh.flags & GZIP_FENCRYPT &&
 	    fread(buf, 1, GZIP_FENCRYPT_LEN, fin) != GZIP_FENCRYPT_LEN)
@@ -144,8 +144,8 @@ verify_signature(struct key *key, FILE *fin)
 void
 verify_usage(void)
 {
-	fprintf(stderr, "usage: %s verify [-q | -v] [-f secret_file] pubkey "
-	    "[file ...]\n", __progname);
+	fprintf(stderr, "Usage: %s verify [-q] [-f secret_file] pubkey [file ...]\n",
+	    __progname);
 }
 
 void

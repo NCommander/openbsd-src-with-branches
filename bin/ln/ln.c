@@ -1,4 +1,4 @@
-/*	$OpenBSD: ln.c,v 1.18 2009/10/27 23:59:21 deraadt Exp $	*/
+/*	$OpenBSD: ln.c,v 1.17 2008/05/28 19:31:38 millert Exp $	*/
 /*	$NetBSD: ln.c,v 1.10 1995/03/21 09:06:10 cgd Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
 
 #include <err.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,8 +44,9 @@
 int	dirflag;			/* Undocumented directory flag. */
 int	fflag;				/* Unlink existing files. */
 int	hflag;				/* Check new name for symlink first. */
-int	Pflag;				/* Hard link to symlink. */
 int	sflag;				/* Symbolic, not hard, link. */
+					/* System link call. */
+int (*linkf)(const char *, const char *);
 
 int	linkit(char *, char *, int);
 void	usage(void) __dead;
@@ -58,7 +58,7 @@ main(int argc, char *argv[])
 	int ch, exitval;
 	char *sourcedir;
 
-	while ((ch = getopt(argc, argv, "FfhLnPs")) != -1)
+	while ((ch = getopt(argc, argv, "Ffhns")) != -1)
 		switch (ch) {
 		case 'F':
 			dirflag = 1;	/* XXX: deliberately undocumented. */
@@ -70,12 +70,6 @@ main(int argc, char *argv[])
 		case 'n':
 			hflag = 1;
 			break;
-		case 'L':
-			Pflag = 0;
-			break;
-		case 'P':
-			Pflag = 1;
-			break;
 		case 's':
 			sflag = 1;
 			break;
@@ -85,6 +79,8 @@ main(int argc, char *argv[])
 
 	argv += optind;
 	argc -= optind;
+
+	linkf = sflag ? symlink : link;
 
 	switch(argc) {
 	case 0:
@@ -122,7 +118,7 @@ linkit(char *target, char *source, int isdir)
 
 	if (!sflag) {
 		/* If target doesn't exist, quit now. */
-		if ((Pflag ? lstat : stat)(target, &sb)) {
+		if (stat(target, &sb)) {
 			warn("%s", target);
 			return (1);
 		}
@@ -161,7 +157,7 @@ linkit(char *target, char *source, int isdir)
 	if (exists && !sflag) {
 		struct stat tsb;
 
-		if ((Pflag ? lstat : stat)(target, &tsb)) {
+		if (stat(target, &tsb) != 0) {
 			warn("%s: disappeared", target);
 			return (1);
 		}
@@ -181,9 +177,7 @@ linkit(char *target, char *source, int isdir)
 	 * Attempt the link.
 	 */
 	if ((fflag && unlink(source) < 0 && errno != ENOENT) ||
-	    sflag ? symlink(target, source) :
-	    linkat(AT_FDCWD, target, AT_FDCWD, source,
-	    Pflag ? 0 : AT_SYMLINK_FOLLOW)) {
+	    (*linkf)(target, source)) {
 		warn("%s", source);
 		return (1);
 	}
@@ -197,8 +191,8 @@ usage(void)
 	extern char *__progname;
 
 	(void)fprintf(stderr,
-	    "usage: %s [-fhLnPs] source [target]\n"
-	    "       %s [-fLPs] source ... [directory]\n",
+	    "usage: %s [-fhns] source [target]\n"
+	    "       %s [-fs] source ... [directory]\n",
 	    __progname, __progname);
 	exit(1);
 }

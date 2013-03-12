@@ -1,7 +1,7 @@
 /*
  * xfrd-tcp.h - XFR (transfer) Daemon TCP system header file. Manages tcp conn.
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -10,7 +10,7 @@
 #ifndef XFRD_TCP_H
 #define XFRD_TCP_H
 
-#include <config.h>
+#include "config.h"
 #include "xfrd.h"
 
 struct buffer;

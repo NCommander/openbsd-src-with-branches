@@ -689,8 +689,7 @@ tcp_server_accept(int fd, short event, void *arg)
 
 			event_del(&ts->ev);
 			evtimer_add(&ts->evt, &evtpause);
-		} else if (errno != EWOULDBLOCK && errno != EINTR &&
-		    errno != ECONNABORTED)
+		} else if (errno != EWOULDBLOCK && errno != EINTR)
 			warn("accept");
 		return;
 	}

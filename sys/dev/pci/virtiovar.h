@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtiovar.h,v 1.3 2013/03/10 21:56:11 sf Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: virtiovar.h,v 1.1 2011/10/30 12:12:21 hannken Exp $	*/
 
 /*
@@ -146,7 +146,7 @@ struct virtio_ops {
 	void		(*write_dev_cfg_4)(struct virtio_softc *, int, uint32_t);
 	void		(*write_dev_cfg_8)(struct virtio_softc *, int, uint64_t);
 	uint16_t	(*read_queue_size)(struct virtio_softc *, uint16_t);
-	void		(*setup_queue)(struct virtio_softc *, uint16_t, uint32_t);
+	void		(*write_queue_addr)(struct virtio_softc *, uint16_t, uint32_t);
 	void		(*set_status)(struct virtio_softc *, int);
 	uint32_t	(*neg_features)(struct virtio_softc *, uint32_t, const struct virtio_feature_name *);
 	int		(*intr)(void *);
@@ -160,6 +160,7 @@ struct virtio_softc {
 	struct virtio_ops	*sc_ops;	/* set by transport */
 
 	int			 sc_ipl;		/* set by child */
+	void			*sc_ih;		/* set by transport */
 
 	uint32_t		 sc_features;
 	int			 sc_indirect;
@@ -187,7 +188,7 @@ struct virtio_softc {
 #define	virtio_write_device_config_4(sc, o, v)	(sc)->sc_ops->write_dev_cfg_4(sc, o, v)
 #define	virtio_write_device_config_8(sc, o, v)	(sc)->sc_ops->write_dev_cfg_8(sc, o, v)
 #define	virtio_read_queue_size(sc, i)		(sc)->sc_ops->read_queue_size(sc, i)
-#define	virtio_setup_queue(sc, i, v)		(sc)->sc_ops->setup_queue(sc, i, v)
+#define	virtio_write_queue_address(sc, i, v)	(sc)->sc_ops->write_queue_addr(sc, i, v)
 #define	virtio_negotiate_features(sc, f, n)	(sc)->sc_ops->neg_features(sc, f, n)
 
 int virtio_alloc_vq(struct virtio_softc*, struct virtqueue*, int, int, int,

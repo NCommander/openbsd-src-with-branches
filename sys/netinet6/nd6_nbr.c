@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_nbr.c,v 1.65 2013/03/04 14:42:25 bluhm Exp $	*/
+/*	$OpenBSD: nd6_nbr.c,v 1.62 2012/01/11 19:12:23 bluhm Exp $	*/
 /*	$KAME: nd6_nbr.c,v 1.61 2001/02/10 16:06:14 jinmei Exp $	*/
 
 /*
@@ -184,7 +184,7 @@ nd6_ns_input(struct mbuf *m, int off, int icmp6len)
 	 */
 #if 0 /* too much! */
 	ifa = &in6ifa_ifpwithaddr(ifp, &daddr6)->ia_ifa;
-	if (ifa && (ifatoia6(ifa)->ia6_flags & IN6_IFF_ANYCAST))
+	if (ifa && (((struct in6_ifaddr *)ifa)->ia6_flags & IN6_IFF_ANYCAST))
 		tlladdr = 0;
 	else
 #endif
@@ -244,9 +244,9 @@ nd6_ns_input(struct mbuf *m, int off, int icmp6len)
 		goto freeit;
 	}
 	myaddr6 = *IFA_IN6(ifa);
-	anycast = ifatoia6(ifa)->ia6_flags & IN6_IFF_ANYCAST;
-	tentative = ifatoia6(ifa)->ia6_flags & IN6_IFF_TENTATIVE;
-	if (ifatoia6(ifa)->ia6_flags & IN6_IFF_DUPLICATED)
+	anycast = ((struct in6_ifaddr *)ifa)->ia6_flags & IN6_IFF_ANYCAST;
+	tentative = ((struct in6_ifaddr *)ifa)->ia6_flags & IN6_IFF_TENTATIVE;
+	if (((struct in6_ifaddr *)ifa)->ia6_flags & IN6_IFF_DUPLICATED)
 		goto freeit;
 
 	if (lladdr && ((ifp->if_addrlen + 2 + 7) & ~7) != lladdrlen) {
@@ -561,9 +561,6 @@ nd6_na_input(struct mbuf *m, int off, int icmp6len)
 	struct rtentry *rt;
 	struct sockaddr_dl *sdl;
 	union nd_opts ndopts;
-#if NCARP > 0
-	struct sockaddr_dl *proxydl = NULL;
-#endif
 
 	if (ip6->ip6_hlim != 255) {
 		nd6log((LOG_ERR,
@@ -620,11 +617,6 @@ nd6_na_input(struct mbuf *m, int off, int icmp6len)
 	}
 
 	ifa = &in6ifa_ifpwithaddr(ifp, &taddr6)->ia_ifa;
-#if NCARP > 0
-	if (ifp->if_type == IFT_CARP && ifa &&
-	    !carp_iamatch6(ifp, lladdr, &proxydl))
-		ifa = NULL;
-#endif
 
 	/*
 	 * Target address matches one of my interface address.
@@ -635,7 +627,8 @@ nd6_na_input(struct mbuf *m, int off, int icmp6len)
 	 *
 	 * Otherwise, process as defined in RFC 2461.
 	 */
-	if (ifa && (ifatoia6(ifa)->ia6_flags & IN6_IFF_TENTATIVE)) {
+	if (ifa
+	 && (((struct in6_ifaddr *)ifa)->ia6_flags & IN6_IFF_TENTATIVE)) {
 		nd6_dad_na_input(ifa);
 		goto freeit;
 	}
@@ -1104,7 +1097,7 @@ nd6_dad_stoptimer(struct dadq *dp)
 void
 nd6_dad_start(struct ifaddr *ifa, int *tick)
 {
-	struct in6_ifaddr *ia = ifatoia6(ifa);
+	struct in6_ifaddr *ia = (struct in6_ifaddr *)ifa;
 	struct dadq *dp;
 
 	if (!dad_init) {
@@ -1207,7 +1200,7 @@ nd6_dad_stop(struct ifaddr *ifa)
 	TAILQ_REMOVE(&dadq, (struct dadq *)dp, dad_list);
 	free(dp, M_IP6NDP);
 	dp = NULL;
-	ifafree(ifa);
+	IFAFREE(ifa);
 	ip6_dad_pending--;
 }
 
@@ -1215,7 +1208,7 @@ void
 nd6_dad_timer(struct ifaddr *ifa)
 {
 	int s;
-	struct in6_ifaddr *ia = ifatoia6(ifa);
+	struct in6_ifaddr *ia = (struct in6_ifaddr *)ifa;
 	struct dadq *dp;
 
 	s = splsoftnet();		/* XXX */
@@ -1253,7 +1246,7 @@ nd6_dad_timer(struct ifaddr *ifa)
 		TAILQ_REMOVE(&dadq, (struct dadq *)dp, dad_list);
 		free(dp, M_IP6NDP);
 		dp = NULL;
-		ifafree(ifa);
+		IFAFREE(ifa);
 		ip6_dad_pending--;
 		goto done;
 	}
@@ -1307,7 +1300,7 @@ nd6_dad_timer(struct ifaddr *ifa)
 			TAILQ_REMOVE(&dadq, (struct dadq *)dp, dad_list);
 			free(dp, M_IP6NDP);
 			dp = NULL;
-			ifafree(ifa);
+			IFAFREE(ifa);
 			ip6_dad_pending--;
 		}
 	}
@@ -1319,7 +1312,7 @@ done:
 void
 nd6_dad_duplicated(struct ifaddr *ifa)
 {
-	struct in6_ifaddr *ia = ifatoia6(ifa);
+	struct in6_ifaddr *ia = (struct in6_ifaddr *)ifa;
 	struct dadq *dp;
 
 	dp = nd6_dad_find(ifa);
@@ -1347,14 +1340,14 @@ nd6_dad_duplicated(struct ifaddr *ifa)
 	TAILQ_REMOVE(&dadq, (struct dadq *)dp, dad_list);
 	free(dp, M_IP6NDP);
 	dp = NULL;
-	ifafree(ifa);
+	IFAFREE(ifa);
 	ip6_dad_pending--;
 }
 
 void
 nd6_dad_ns_output(struct dadq *dp, struct ifaddr *ifa)
 {
-	struct in6_ifaddr *ia = ifatoia6(ifa);
+	struct in6_ifaddr *ia = (struct in6_ifaddr *)ifa;
 	struct ifnet *ifp = ifa->ifa_ifp;
 
 	dp->dad_ns_tcount++;
@@ -1386,7 +1379,7 @@ nd6_dad_ns_input(struct ifaddr *ifa)
 	if (!ifa)
 		panic("ifa == NULL in nd6_dad_ns_input");
 
-	ia = ifatoia6(ifa);
+	ia = (struct in6_ifaddr *)ifa;
 	taddr6 = &ia->ia_addr.sin6_addr;
 	duplicate = 0;
 	dp = nd6_dad_find(ifa);

@@ -1,4 +1,4 @@
-.\"	$OpenBSD: printf.3,v 1.60 2013/01/30 00:08:13 brad Exp $
+.\"	$OpenBSD: printf.3,v 1.59 2011/09/03 22:59:07 jmc Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -33,7 +33,7 @@
 .\"
 .\"     @(#)printf.3	8.1 (Berkeley) 6/4/93
 .\"
-.Dd $Mdocdate: January 30 2013 $
+.Dd $Mdocdate: September 3 2011 $
 .Dt PRINTF 3
 .Os
 .Sh NAME
@@ -757,15 +757,13 @@ newfmt(const char *fmt, ...)
 The
 .Fn fprintf ,
 .Fn printf ,
-.Fn snprintf ,
 .Fn sprintf ,
-.Fn vfprintf ,
 .Fn vprintf ,
-.Fn vsnprintf ,
+.Fn vfprintf ,
 and
 .Fn vsprintf
 functions conform to
-.St -isoC-99 .
+.St -ansiC .
 The
 .Fn dprintf
 and

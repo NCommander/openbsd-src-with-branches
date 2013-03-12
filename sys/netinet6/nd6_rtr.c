@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_rtr.c,v 1.67 2013/03/07 09:40:19 mpi Exp $	*/
+/*	$OpenBSD: nd6_rtr.c,v 1.64 2012/09/07 09:55:18 stsp Exp $	*/
 /*	$KAME: nd6_rtr.c,v 1.97 2001/02/07 11:09:13 itojun Exp $	*/
 
 /*
@@ -80,6 +80,9 @@ int rt6_deleteroute(struct radix_node *, void *, u_int);
 void nd6_addr_add(void *, void *);
 
 extern int nd6_recalc_reachtm_interval;
+
+static struct ifnet *nd6_defifp;
+int nd6_defifindex;
 
 /*
  * Receive Router Solicitation Message - just for routers.
@@ -910,7 +913,7 @@ purge_detached(struct ifnet *ifp)
 			ifa_next = ifa->ifa_list.tqe_next;
 			if (ifa->ifa_addr->sa_family != AF_INET6)
 				continue;
-			ia = ifatoia6(ifa);
+			ia = (struct in6_ifaddr *)ifa;
 			if ((ia->ia6_flags & IN6_IFF_AUTOCONF) ==
 			    IN6_IFF_AUTOCONF && ia->ia6_ndpr == pr) {
 				in6_purgeaddr(ifa);
@@ -1163,7 +1166,7 @@ prelist_update(struct nd_prefix *new, struct nd_defrouter *dr, struct mbuf *m)
 		if (ifa->ifa_addr->sa_family != AF_INET6)
 			continue;
 
-		ifa6 = ifatoia6(ifa);
+		ifa6 = (struct in6_ifaddr *)ifa;
 
 		/*
 		 * Spec is not clear here, but I believe we should concentrate
@@ -1312,7 +1315,7 @@ nd6_addr_add(void *prptr, void *arg2)
 		if (ifa->ifa_addr->sa_family != AF_INET6)
 			continue;
 
-		ia6 = ifatoia6(ifa);
+		ia6 = (struct in6_ifaddr *)ifa;
 
 		/*
 		 * Spec is not clear here, but I believe we should concentrate
@@ -1595,6 +1598,7 @@ nd6_prefix_onlink(struct nd_prefix *pr)
 	ifa = &in6ifa_ifpforlinklocal(ifp,
 	    IN6_IFF_NOTREADY | IN6_IFF_ANYCAST)->ia_ifa;
 	if (ifa == NULL) {
+		/* XXX: freebsd does not have ifa_ifwithaf */
 		TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
 			if (ifa->ifa_addr->sa_family == AF_INET6)
 				break;
@@ -1793,13 +1797,13 @@ in6_ifadd(struct nd_prefix *pr, int privacy)
 	 */
 	ifa = &in6ifa_ifpforlinklocal(ifp, 0)->ia_ifa; /* 0 is OK? */
 	if (ifa)
-		ib = ifatoia6(ifa);
+		ib = (struct in6_ifaddr *)ifa;
 	else
 		return NULL;
 
 #if 0 /* don't care link local addr state, and always do DAD */
 	/* if link-local address is not eligible, do not autoconfigure. */
-	if (ifatoia6(ifa)->ia6_flags & IN6_IFF_NOTREADY) {
+	if (((struct in6_ifaddr *)ifa)->ia6_flags & IN6_IFF_NOTREADY) {
 		printf("in6_ifadd: link-local address not ready\n");
 		return NULL;
 	}
@@ -2005,4 +2009,25 @@ rt6_deleteroute(struct radix_node *rn, void *arg, u_int id)
 	info.rti_info[RTAX_NETMASK] = rt_mask(rt);
 	return (rtrequest1(RTM_DELETE, &info, RTP_ANY, NULL, id));
 #undef SIN6
+}
+
+int
+nd6_setdefaultiface(int ifindex)
+{
+	int error = 0;
+
+	if (ifindex < 0 || if_indexlim <= ifindex)
+		return (EINVAL);
+	if (ifindex != 0 && !ifindex2ifnet[ifindex])
+		return (EINVAL);
+
+	if (nd6_defifindex != ifindex) {
+		nd6_defifindex = ifindex;
+		if (nd6_defifindex > 0) {
+			nd6_defifp = ifindex2ifnet[nd6_defifindex];
+		} else
+			nd6_defifp = NULL;
+	}
+
+	return (error);
 }

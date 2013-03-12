@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.16 2012/04/11 08:34:41 deraadt Exp $ */
+/*	$OpenBSD: control.c,v 1.15 2012/04/10 07:56:54 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -134,8 +134,7 @@ control_accept(int listenfd, short event, void *bula)
 
 			event_del(&control_state.ev);
 			evtimer_add(&control_state.evt, &evtpause);
-		} else if (errno != EWOULDBLOCK && errno != EINTR &&
-		    errno != ECONNABORTED)
+		} else if (errno != EWOULDBLOCK && errno != EINTR)
 			log_warn("control_accept: accept");
 		return;
 	}

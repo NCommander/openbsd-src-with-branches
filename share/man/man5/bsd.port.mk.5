@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.369 2013/03/09 09:03:48 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.363 2013/02/03 16:04:24 jmc Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -24,7 +24,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: March 9 2013 $
+.Dd $Mdocdate: February 3 2013 $
 .Dt BSD.PORT.MK 5
 .Os
 .Sh NAME
@@ -77,7 +77,7 @@ instead.
 provides an overview of the result.
 .Sh TARGETS
 .Bl -tag -width do-configure
-.It Ar {build,run,all,test}-dir-depends
+.It Ar {build,run,all,regress}-dir-depends
 Print all dependencies for a port in order to build it, run it, build and
 run it, or to run regression tests.
 The output is formatted as package specification pairs, in a form suitable
@@ -86,9 +86,9 @@ for
 .It Ar full-{build,run,all}-depends
 Print all dependencies a package depends upon for building, running,
 or both, as a list of package names.
-.It Ar {build,lib,test,run}-depends-list
+.It Ar {build,lib,regress,run}-depends-list
 Print a list of first level package specifications a port depends as
-build dependencies, library dependencies, test dependencies or
+build dependencies, library dependencies, regress dependencies or
 run dependencies.
 .It Ar print-{build,run}-depends
 User convenience target that displays the result of
@@ -114,14 +114,14 @@ Specialization hooks exist for
 .Ar fake ,
 .Ar install ,
 .Ar patch ,
-.Ar test .
+.Ar regress .
 See individual targets for exceptions.
 .It Ar addsum
 Complete the ${CHECKSUM_FILE} record of checksums with files that have been
 added since
 .Ar makesum .
 Complain if anything does not match.
-.It Ar all-lib-depends-args
+.It Ar all-lib-depends
 Process the full
 .Ev LIB_DEPENDS
 list into a form suitable for
@@ -231,7 +231,7 @@ Check all the port's dependencies, that is:
 .Ar build-depends ,
 .Ar lib-depends ,
 .Ar run-depends ,
-.Ar test-depends .
+.Ar regress-depends .
 .It Ar describe
 Prints a one-line index entry of the port, suitable for
 .Pa ${PORTSDIR}/INDEX .
@@ -398,7 +398,7 @@ Seldom used, see
 for details.
 .It Ar makesum
 Create the ${CHECKSUM_FILE} list of recorded checksums by running the
-cryptographic fingerprint sha256 on ${MAKESUMFILES}.
+cryptographic fingerprints sha256, sha1, md5 and rmd160 on ${MAKESUMFILES}.
 That normally includes ${DISTFILES}, ${SUPDISTFILES} and ${PATCHFILES}.
 .Ev NO_CHECKSUM
 can be used to avoid all checksumming steps.
@@ -644,22 +644,22 @@ and
 so that the packing-list is complete.
 .It Ar rebuild
 Force rebuild of the port.
-.It Ar test
+.It Ar regress
 Run regression tests for the port.
 Essentially depend on a correct build and invoke
 .Bd -literal
-env -i ${MAKE_ENV} ${MAKE_PROGRAM} ${ALL_TEST_FLAGS} \e
-	-f ${MAKE_FILE} ${TEST_TARGET} ${TEST_LOG}
+env -i ${MAKE_ENV} ${MAKE_PROGRAM} ${ALL_REGRESS_FLAGS} \e
+	-f ${MAKE_FILE} ${REGRESS_TARGET} ${REGRESS_LOG}
 .Ed
 .Pp
 If a port needs some other ports installed to run regression tests,
 use
-.Ev TEST_DEPENDS .
+.Ev REGRESS_DEPENDS .
 If a port needs special configuration or build options to enable regression
 testing, define a
-.Sq test
+.Sq regress
 .Ev FLAVOR .
-.It Ar test-depends
+.It Ar regress-depends
 Verify packages needed for regression tests, using the same scheme as
 .Ar build-depends .
 Only invoked when regression tests are run, or explicitly through
@@ -859,10 +859,10 @@ Flags passed to ${MAKE} invocations during the fake process.
 Equals
 .Li ${MAKE_FLAGS} ${DESTDIRNAME}=${WRKINST} ${FAKE_FLAGS} .
 Read-only.
-.It Ev ALL_TEST_FLAGS
-Flags passed to ${MAKE} invocations during test.
+.It Ev ALL_REGRESS_FLAGS
+Flags passed to ${MAKE} invocations during regress.
 Equals
-.Li ${MAKE_FLAGS} ${TEST_FLAGS} .
+.Li ${MAKE_FLAGS} ${REGRESS_FLAGS} .
 Read-only.
 .It Ev ALL_TARGET
 Target used to build software.
@@ -1768,10 +1768,10 @@ stage, which adds
 .Ev FAKE_FLAGS
 (see
 .Ev ALL_FAKE_FLAGS )
-and for the test stage, which adds
-.Ev TEST_FLAGS
+and for the regress stage, which adds
+.Ev REGRESS_FLAGS
 (see
-.Ev ALL_TEST_FLAGS ) .
+.Ev ALL_REGRESS_FLAGS ) .
 .It Ev MAKE_FILE
 Name of the Makefile used for ports building.
 Defaults to Makefile.
@@ -1866,9 +1866,9 @@ for its own reasons.
 .It Ev MODPERL_INSTALL_TARGET
 Likewise for
 .Ar do-install .
-.It Ev MODPERL_TEST_TARGET
+.It Ev MODPERL_REGRESS_TARGET
 Likewise for
-.Ar do-test .
+.Ar do-regress .
 .It Ev MODULES
 External modules mechanism, documented separately.
 Modules such as
@@ -1885,7 +1885,7 @@ to just get the effects of
 and
 .Ev MODGNU_CONFIG_GUESS_DIRS
 along with the default
-.Ev TEST_TARGET ,
+.Ev REGRESS_TARGET ,
 in case the normal GNU configure script was wrapped in a separate script that
 takes different arguments.
 See
@@ -1955,12 +1955,12 @@ See also
 .Ev IGNORE
 and
 .Ev TRY_BROKEN .
-.It Ev NO_TEST
-Port does not have any regression tests.
+.It Ev NO_REGRESS
+Port does not have any regression targets.
 Only set to
 .Sq Yes
-for ports with no regression test.
-It should be left alone for ports with empty regression tests, and for
+for ports with no regression targets.
+It should be left alone for ports with empty regression targets, and for
 ports with failing tests.
 That way, if a subsequent update of a port acquires actual regression tests,
 they will be picked up automatically.
@@ -2112,7 +2112,7 @@ PATCH_LIST=${PORTSDIR}/x11/kde/libs2/patches/p-* patch-*
 .It Ev PATCH_STRIP
 Patch option used to strip directory levels while applying port's patches.
 Defaults to -p0 .
-.It Ev PERMIT_DISTFILES_FTP , PERMIT_PACKAGE_CDROM , PERMIT_PACKAGE_FTP
+.It Ev PERMIT_{DISTFILES,PACKAGE}_{CDROM,FTP}
 Set to
 .Sq Yes
 if package or distribution files can be allowed on FTP sites or CD-ROM without
@@ -2122,24 +2122,6 @@ PERMIT_* lines in the Makefile should be preceded with a comment explaining
 details about licensing and patents issues the port may have.
 Porters must be very thorough in their checks.
 In case of doubt, ask.
-.Pp
-If
-.Ev PERMIT_PACKAGE_CDROM
-is set to
-.Sq Yes ,
-.Ev PERMIT_PACKAGE_FTP
-and
-.Ev PERMIT_DISTFILES_FTP
-will default to
-.Sq Yes .
-.Pp
-If
-.Ev PERMIT_PACKAGE_FTP
-is set to
-.Sq Yes ,
-.Ev PERMIT_DISTFILES_FTP
-will default to
-.Sq Yes .
 .It Ev PKG_ADD
 User settings.
 Path to
@@ -2288,7 +2270,7 @@ This is highly experimental and not recommended.
 .It Ev PREFERRED_CIPHERS
 List of cryptographic ciphers to use, in order of preference.
 Default is
-.Sq sha256 .
+.Sq sha256 sha1 rmd160 md5 .
 The first cipher that matches in ${CHECKSUM_FILE} is verified.
 .It Ev PREFIX
 Base directory for the current port installation.
@@ -2428,25 +2410,25 @@ checksum off
 .Pa ftp.openbsd.org ,
 in the directory
 .Pa /pub/OpenBSD/distfiles/$cipher/$value/$file .
-.It Ev TEST_DEPENDS
+.It Ev REGRESS_DEPENDS
 See
 .Ev BUILD_DEPENDS
 for specification.
-Test dependencies are only checked if the test stage is invoked.
-.It Ev TEST_FLAGS
+Regress dependencies are only checked if the regress stage is invoked.
+.It Ev REGRESS_FLAGS
 Extra flags passed to ${MAKE_PROGRAM} to run the regression tests.
 Empty by default.
-.It Ev TEST_IS_INTERACTIVE
+.It Ev REGRESS_IS_INTERACTIVE
 Set to
 .Sq Yes
 if port needs human interaction to run its tests, or set to
 .Sq X11
 if the tests need an active X11 display to work.
-.It Ev TEST_LOG
-Command used to log the results of regression tests to TEST_LOGFILE.
-.It Ev TEST_LOGFILE
+.It Ev REGRESS_LOG
+Command used to log the results of regression tests to REGRESS_LOGFILE.
+.It Ev REGRESS_LOGFILE
 Log file containing the results of regression tests.
-.It Ev TEST_TARGET
+.It Ev REGRESS_TARGET
 Target to run regression tests.
 Defaults to
 .Sq regress ,
@@ -3748,6 +3730,8 @@ instead.
 .It Ev MIRROR_DISTFILE
 Use
 .Ev PERMIT_DISTFILES_FTP
+and
+.Ev PERMIT_DISTFILES_CDROM
 to determine which files can be mirrored instead.
 See
 .Xr mirroring-ports 7 .
@@ -3845,13 +3829,6 @@ becomes
 PATCHFILES=foo.diff.gz:0
 MASTER_SITES0=ftp://ftp.zoinx.org/pub/
 .Ed
-.It Ev PERMIT_DISTFILES_CDROM
-The
-.Ox
-project does not ship distfiles on cdrom.
-Concentrate on real questions instead, make sure
-.Ev PERMIT_PACKAGE_CDROM
-is set correctly.
 .It Ev PKG_CMD
 replaced by
 .Ev PKG_CREATE .

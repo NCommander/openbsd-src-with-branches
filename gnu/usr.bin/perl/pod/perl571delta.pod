@@ -88,7 +88,7 @@ The built-in layers are: unix (low level read/write), stdio (as in
 previous Perls), perlio (re-implementation of stdio buffering in a
 portable manner), crlf (does CRLF <=> "\n" translation as on Win32,
 but available on any platform).  A mmap layer may be available if
-platform supports it (mostly UNIXes).
+platform supports it (mostly Unixes).
 
 Layers to be applied by default may be specified via the 'open' pragma.
 
@@ -130,7 +130,7 @@ That is a literal undef, not an undefined value.
 
 =item *
 
-The list form of C<open> is now implemented for pipes (at least on UNIX):
+The list form of C<open> is now implemented for pipes (at least on Unix):
 
    open($fh,"-|", 'cat', '/etc/motd')
 
@@ -771,17 +771,17 @@ SOCKS support is now much more robust.
 If your file system supports symbolic links you can build Perl outside
 of the source directory by
 
-	mkdir /tmp/perl/build/directory
-	cd /tmp/perl/build/directory
+	mkdir perl/build/directory
+	cd perl/build/directory
 	sh /path/to/perl/source/Configure -Dmksymlinks ...
 
-This will create in /tmp/perl/build/directory a tree of symbolic links
+This will create in perl/build/directory a tree of symbolic links
 pointing to files in /path/to/perl/source.  The original files are left
 unaffected.  After Configure has finished you can just say
 
 	make all test
 
-and Perl will be built and tested, all in /tmp/perl/build/directory.
+and Perl will be built and tested, all in perl/build/directory.
 
 =back
 
@@ -901,7 +901,7 @@ is made, a warning is given.
 =item *
 
 C<push @a;> and C<unshift @a;> (with no values to push or unshift)
-now give a warning.  This may be a problem for generated and evaled
+now give a warning.  This may be a problem for generated and eval'ed
 code.
 
 =back
@@ -935,7 +935,7 @@ machines (Perl's malloc is mostly tuned for space).
 
 Many new tests have been added.  The most notable is probably the
 lib/1_compile: it is very notable because running it takes quite a
-long time -- it test compiles all the Perl modules in the distribution.
+long time. It test compiles all the Perl modules in the distribution.
 Please be patient.
 
 =head1 Known Problems

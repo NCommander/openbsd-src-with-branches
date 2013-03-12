@@ -334,7 +334,7 @@ just die when assigned to in the default engine.
 Get the C<length> of a capture variable. There's a special callback
 for this so that perl doesn't have to do a FETCH and run C<length> on
 the result, since the length is (in perl's case) known from an offset
-stored in C<<rx->offs> this is much more efficient:
+stored in C<< rx->offs >> this is much more efficient:
 
     I32 s1  = rx->offs[paren].start;
     I32 s2  = rx->offs[paren].end;
@@ -410,7 +410,7 @@ name for identification regardless of whether they implement methods
 on the object.
 
 The package this method returns should also have the internal
-C<Regexp> package in its C<@ISA>. C<qr//->isa("Regexp")> should always
+C<Regexp> package in its C<@ISA>. C<< qr//->isa("Regexp") >> should always
 be true regardless of what engine is being used.
 
 Example implementation might be:
@@ -598,7 +598,7 @@ engine should use something else.
 
 =head2 C<swap>
 
-TODO: document
+Unused. Left in for compatibility with perl 5.10.0.
 
 =head2 C<offs>
 

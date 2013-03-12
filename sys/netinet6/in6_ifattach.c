@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_ifattach.c,v 1.57 2013/03/04 14:42:25 bluhm Exp $	*/
+/*	$OpenBSD: in6_ifattach.c,v 1.55 2012/08/21 19:50:39 bluhm Exp $	*/
 /*	$KAME: in6_ifattach.c,v 1.124 2001/07/18 08:32:51 jinmei Exp $	*/
 
 /*
@@ -681,7 +681,7 @@ in6_ifdetach(struct ifnet *ifp)
 			continue;
 		}
 
-		ia = ifatoia6(ifa);
+		ia = (struct in6_ifaddr *)ifa;
 
 		/*
 		 * leave from multicast groups we have joined for the interface
@@ -715,7 +715,7 @@ in6_ifdetach(struct ifnet *ifp)
 
 		/* remove from the linked list */
 		ifa_del(ifp, &ia->ia_ifa);
-		ifafree(&ia->ia_ifa);
+		IFAFREE(&ia->ia_ifa);
 
 		/* also remove from the IPv6 address chain(itojun&jinmei) */
 		oia = ia;
@@ -733,7 +733,7 @@ in6_ifdetach(struct ifnet *ifp)
 			}
 		}
 
-		ifafree(&oia->ia_ifa);
+		IFAFREE(&oia->ia_ifa);
 	}
 
 	/* cleanup multicast address kludge table, if there is any */

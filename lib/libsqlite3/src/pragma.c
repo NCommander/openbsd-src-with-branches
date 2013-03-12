@@ -118,7 +118,7 @@ static int invalidateTempStorage(Parse *pParse){
     }
     sqlite3BtreeClose(db->aDb[1].pBt);
     db->aDb[1].pBt = 0;
-    sqlite3ResetInternalSchema(db, -1);
+    sqlite3ResetAllSchemasOfConnection(db);
   }
   return SQLITE_OK;
 }
@@ -804,6 +804,50 @@ void sqlite3Pragma(
     }
   }else
 
+#if SQLITE_OS_WIN
+  /*
+  **   PRAGMA data_store_directory
+  **   PRAGMA data_store_directory = ""|"directory_name"
+  **
+  ** Return or set the local value of the data_store_directory flag.  Changing
+  ** the value sets a specific directory to be used for database files that
+  ** were specified with a relative pathname.  Setting to a null string reverts
+  ** to the default database directory, which for database files specified with
+  ** a relative path will probably be based on the current directory for the
+  ** process.  Database file specified with an absolute path are not impacted
+  ** by this setting, regardless of its value.
+  **
+  */
+  if( sqlite3StrICmp(zLeft, "data_store_directory")==0 ){
+    if( !zRight ){
+      if( sqlite3_data_directory ){
+        sqlite3VdbeSetNumCols(v, 1);
+        sqlite3VdbeSetColName(v, 0, COLNAME_NAME, 
+            "data_store_directory", SQLITE_STATIC);
+        sqlite3VdbeAddOp4(v, OP_String8, 0, 1, 0, sqlite3_data_directory, 0);
+        sqlite3VdbeAddOp2(v, OP_ResultRow, 1, 1);
+      }
+    }else{
+#ifndef SQLITE_OMIT_WSD
+      if( zRight[0] ){
+        int res;
+        rc = sqlite3OsAccess(db->pVfs, zRight, SQLITE_ACCESS_READWRITE, &res);
+        if( rc!=SQLITE_OK || res==0 ){
+          sqlite3ErrorMsg(pParse, "not a writable directory");
+          goto pragma_out;
+        }
+      }
+      sqlite3_free(sqlite3_data_directory);
+      if( zRight[0] ){
+        sqlite3_data_directory = sqlite3_mprintf("%s", zRight);
+      }else{
+        sqlite3_data_directory = 0;
+      }
+#endif /* SQLITE_OMIT_WSD */
+    }
+  }else
+#endif
+
 #if !defined(SQLITE_ENABLE_LOCKING_STYLE)
 #  if defined(__APPLE__)
 #    define SQLITE_ENABLE_LOCKING_STYLE 1
@@ -1116,6 +1160,19 @@ void sqlite3Pragma(
 
     int isQuick = (sqlite3Tolower(zLeft[0])=='q');
 
+    /* If the PRAGMA command was of the form "PRAGMA <db>.integrity_check",
+    ** then iDb is set to the index of the database identified by <db>.
+    ** In this case, the integrity of database iDb only is verified by
+    ** the VDBE created below.
+    **
+    ** Otherwise, if the command was simply "PRAGMA integrity_check" (or
+    ** "PRAGMA quick_check"), then iDb is set to 0. In this case, set iDb
+    ** to -1 here, to indicate that the VDBE should verify the integrity
+    ** of all attached databases.  */
+    assert( iDb>=0 );
+    assert( iDb==0 || pId2->z );
+    if( pId2->z==0 ) iDb = -1;
+
     /* Initialize the VDBE program */
     if( sqlite3ReadSchema(pParse) ) goto pragma_out;
     pParse->nMem = 6;
@@ -1139,6 +1196,7 @@ void sqlite3Pragma(
       int cnt = 0;
 
       if( OMIT_TEMPDB && i==1 ) continue;
+      if( iDb>=0 && i!=iDb ) continue;
 
       sqlite3CodeVerifySchema(pParse, i);
       addr = sqlite3VdbeAddOp1(v, OP_IfPos, 1); /* Halt if out of errors */
@@ -1150,7 +1208,7 @@ void sqlite3Pragma(
       ** Begin by filling registers 2, 3, ... with the root pages numbers
       ** for all tables and indices in the database.
       */
-      assert( sqlite3SchemaMutexHeld(db, iDb, 0) );
+      assert( sqlite3SchemaMutexHeld(db, i, 0) );
       pTbls = &db->aDb[i].pSchema->tblHash;
       for(x=sqliteHashFirst(pTbls); x; x=sqliteHashNext(x)){
         Table *pTab = sqliteHashData(x);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.105 2013/03/07 09:03:16 mpi Exp $	*/
+/*	$OpenBSD: in6.c,v 1.100 2012/10/05 17:17:04 camield Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -97,9 +97,6 @@
 #include <netinet6/ip6_mroute.h>
 #endif
 #include <netinet6/in6_ifattach.h>
-#if NCARP > 0
-#include <netinet/ip_carp.h>
-#endif
 
 /* backward compatibility for a while... */
 #define COMPAT_IN6IFIOCTL
@@ -194,7 +191,7 @@ in6_ifloop_request(int cmd, struct ifaddr *ifa)
 	 * of the loopback address.
 	 */
 	if (cmd == RTM_ADD && nrt && ifa != nrt->rt_ifa) {
-		ifafree(nrt->rt_ifa);
+		IFAFREE(nrt->rt_ifa);
 		ifa->ifa_refcnt++;
 		nrt->rt_ifa = ifa;
 	}
@@ -358,6 +355,7 @@ in6_control(struct socket *so, u_long cmd, caddr_t data, struct ifnet *ifp,
 	case SIOCSNDFLUSH_IN6:
 	case SIOCSPFXFLUSH_IN6:
 	case SIOCSRTRFLUSH_IN6:
+	case SIOCSDEFIFACE_IN6:
 	case SIOCSIFINFO_FLAGS:
 		if (!privileged)
 			return (EPERM);
@@ -367,6 +365,7 @@ in6_control(struct socket *so, u_long cmd, caddr_t data, struct ifnet *ifp,
 	case SIOCGDRLST_IN6:
 	case SIOCGPRLST_IN6:
 	case SIOCGNBRINFO_IN6:
+	case SIOCGDEFIFACE_IN6:
 		return (nd6_ioctl(cmd, data, ifp));
 	}
 
@@ -1258,23 +1257,27 @@ in6_unlink_ifa(struct in6_ifaddr *ia, struct ifnet *ifp)
 		in6_savemkludge(oia);
 	}
 
-	/* Release the reference to the base prefix. */
-	if (oia->ia6_ndpr == NULL) {
-		if (!IN6_IS_ADDR_LINKLOCAL(IA6_IN6(oia)))
-			log(LOG_NOTICE, "in6_unlink_ifa: interface address "
+	/*
+	 * When an autoconfigured address is being removed, release the
+	 * reference to the base prefix.
+	 */
+	if ((oia->ia6_flags & IN6_IFF_AUTOCONF) != 0) {
+		if (oia->ia6_ndpr == NULL) {
+			log(LOG_NOTICE, "in6_unlink_ifa: autoconf'ed address "
 			    "%p has no prefix\n", oia);
-	} else {
-		oia->ia6_flags &= ~IN6_IFF_AUTOCONF;
-		if (--oia->ia6_ndpr->ndpr_refcnt == 0)
-			prelist_remove(oia->ia6_ndpr);
-		oia->ia6_ndpr = NULL;
+		} else {
+			oia->ia6_flags &= ~IN6_IFF_AUTOCONF;
+			if (--oia->ia6_ndpr->ndpr_refcnt == 0)
+				prelist_remove(oia->ia6_ndpr);
+			oia->ia6_ndpr = NULL;
+		}
 	}
 
 	/*
 	 * release another refcnt for the link from in6_ifaddr.
 	 * Note that we should decrement the refcnt at least once for all *BSD.
 	 */
-	ifafree(&oia->ia_ifa);
+	IFAFREE(&oia->ia_ifa);
 
 	splx(s);
 }
@@ -1594,7 +1597,7 @@ in6_savemkludge(struct in6_ifaddr *oia)
 		for (in6m = LIST_FIRST(&oia->ia6_multiaddrs);
 		    in6m != LIST_END(&oia->ia6_multiaddrs); in6m = next) {
 			next = LIST_NEXT(in6m, in6m_entry);
-			ifafree(&in6m->in6m_ia->ia_ifa);
+			IFAFREE(&in6m->in6m_ia->ia_ifa);
 			ia->ia_ifa.ifa_refcnt++;
 			in6m->in6m_ia = ia;
 			LIST_INSERT_HEAD(&ia->ia6_multiaddrs, in6m, in6m_entry);
@@ -1612,7 +1615,7 @@ in6_savemkludge(struct in6_ifaddr *oia)
 		for (in6m = LIST_FIRST(&oia->ia6_multiaddrs);
 		    in6m != LIST_END(&oia->ia6_multiaddrs); in6m = next) {
 			next = LIST_NEXT(in6m, in6m_entry);
-			ifafree(&in6m->in6m_ia->ia_ifa); /* release reference */
+			IFAFREE(&in6m->in6m_ia->ia_ifa); /* release reference */
 			in6m->in6m_ia = NULL;
 			LIST_INSERT_HEAD(&mk->mk_head, in6m, in6m_entry);
 		}
@@ -1760,7 +1763,7 @@ in6_addmulti(struct in6_addr *maddr6, struct ifnet *ifp, int *errorp)
 		if (*errorp) {
 			LIST_REMOVE(in6m, in6m_entry);
 			free(in6m, M_IPMADDR);
-			ifafree(&ia->ia_ifa);
+			IFAFREE(&ia->ia_ifa);
 			splx(s);
 			return (NULL);
 		}
@@ -1795,7 +1798,7 @@ in6_delmulti(struct in6_multi *in6m)
 		 */
 		LIST_REMOVE(in6m, in6m_entry);
 		if (in6m->in6m_ia) {
-			ifafree(&in6m->in6m_ia->ia_ifa); /* release reference */
+			IFAFREE(&in6m->in6m_ia->ia_ifa); /* release reference */
 		}
 
 		/*
@@ -1862,7 +1865,7 @@ in6ifa_ifpforlinklocal(struct ifnet *ifp, int ignoreflags)
 		}
 	}
 
-	return (ifatoia6(ifa));
+	return ((struct in6_ifaddr *)ifa);
 }
 
 
@@ -1883,7 +1886,7 @@ in6ifa_ifpwithaddr(struct ifnet *ifp, struct in6_addr *addr)
 			break;
 	}
 
-	return (ifatoia6(ifa));
+	return ((struct in6_ifaddr *)ifa);
 }
 
 /*
@@ -2142,9 +2145,6 @@ in6_ifawithscope(struct ifnet *oifp, struct in6_addr *dst, u_int rdomain)
 	struct ifaddr *ifa;
 	struct ifnet *ifp;
 	struct in6_ifaddr *ifa_best = NULL;
-#if NCARP > 0
-	struct sockaddr_dl *proxydl = NULL;
-#endif
 
 	if (oifp == NULL) {
 		printf("in6_ifawithscope: output interface is not specified\n");
@@ -2159,15 +2159,6 @@ in6_ifawithscope(struct ifnet *oifp, struct in6_addr *dst, u_int rdomain)
 	TAILQ_FOREACH(ifp, &ifnet, if_list) {
 		if (ifp->if_rdomain != rdomain)
 			continue;
-#if NCARP > 0
-		/*
-		 * Never use a carp address of an interface which is not
-		 * the master.
-		 */
-		if (ifp->if_type == IFT_CARP &&
-		    !carp_iamatch6(ifp, NULL, &proxydl))
-			continue;
-#endif
 
 		/*
 		 * We can never take an address that breaks the scope zone
@@ -2195,7 +2186,7 @@ in6_ifawithscope(struct ifnet *oifp, struct in6_addr *dst, u_int rdomain)
 			       dscopecmp,
 			       ifa_best ? IN6_ARE_SCOPE_CMP(src_scope, best_scope) : -1,
 			       in6_matchlen(IFA_IN6(ifa), dst),
-			       ifatoia6(ifa)->ia6_flags);
+			       ((struct in6_ifaddr *)ifa)->ia6_flags);
 #endif
 
 			/*
@@ -2376,7 +2367,7 @@ in6_ifawithscope(struct ifnet *oifp, struct in6_addr *dst, u_int rdomain)
 			continue; /* (b) */
 
 		  replace:
-			ifa_best = ifatoia6(ifa);
+			ifa_best = (struct in6_ifaddr *)ifa;
 			blen = tlen >= 0 ? tlen :
 				in6_matchlen(IFA_IN6(ifa), dst);
 			best_scope = in6_addrscope(&ifa_best->ia_addr.sin6_addr);
@@ -2444,14 +2435,6 @@ in6if_do_dad(struct ifnet *ifp)
 		 * NS would confuse the DAD procedure.
 		 */
 		return (0);
-#if NCARP > 0
-	case IFT_CARP:
-		/*
-		 * XXX: DAD does not work currently on carp(4)
-		 * so disable it for now.
-		 */
-		return (0);
-#endif
 	default:
 		/*
 		 * Our DAD routine requires the interface up and running.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.249 2013/03/07 09:03:16 mpi Exp $	*/
+/*	$OpenBSD: if.c,v 1.247 2012/10/23 17:41:00 claudio Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -617,7 +617,7 @@ do { \
 			continue;
 
 		ifa->ifa_ifp = NULL;
-		ifafree(ifa);
+		IFAFREE(ifa);
 	}
 
 	for (ifg = TAILQ_FIRST(&ifp->if_groups); ifg;
@@ -627,7 +627,7 @@ do { \
 	if_free_sadl(ifp);
 
 	ifnet_addrs[ifp->if_index]->ifa_ifp = NULL;
-	ifafree(ifnet_addrs[ifp->if_index]);
+	IFAFREE(ifnet_addrs[ifp->if_index]);
 	ifnet_addrs[ifp->if_index] = NULL;
 
 	free(ifp->if_addrhooks, M_TEMP);
@@ -964,6 +964,27 @@ ifa_ifwithnet(struct sockaddr *addr, u_int rdomain)
 }
 
 /*
+ * Find an interface using a specific address family
+ */
+struct ifaddr *
+ifa_ifwithaf(int af, u_int rdomain)
+{
+	struct ifnet *ifp;
+	struct ifaddr *ifa;
+
+	rdomain = rtable_l2(rdomain);
+	TAILQ_FOREACH(ifp, &ifnet, if_list) {
+		if (ifp->if_rdomain != rdomain)
+			continue;
+		TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
+			if (ifa->ifa_addr->sa_family == af)
+				return (ifa);
+		}
+	}
+	return (NULL);
+}
+
+/*
  * Find an interface address specific to an interface best matching
  * a given address.
  */
@@ -1019,7 +1040,7 @@ link_rtrequest(int cmd, struct rtentry *rt, struct rt_addrinfo *info)
 		return;
 	if ((ifa = ifaof_ifpforaddr(dst, ifp)) != NULL) {
 		ifa->ifa_refcnt++;
-		ifafree(rt->rt_ifa);
+		IFAFREE(rt->rt_ifa);
 		rt->rt_ifa = ifa;
 		if (ifa->ifa_rtrequest && ifa->ifa_rtrequest != link_rtrequest)
 			ifa->ifa_rtrequest(cmd, rt, info);
@@ -1502,7 +1523,7 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 				    (struct in_ifaddr *)ifa, ia_list);
 				ifa_del(ifp, ifa);
 				ifa->ifa_ifp = NULL;
-				ifafree(ifa);
+				IFAFREE(ifa);
 			}
 #endif
 			splx(s);

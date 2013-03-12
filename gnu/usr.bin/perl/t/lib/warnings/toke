@@ -125,7 +125,6 @@ toke.c	AOK
 
 __END__
 # toke.c 
-use warnings 'deprecated' ;
 format STDOUT =
 @<<<  @|||  @>>>  @>>>
 $a    $b    "abc" 'def'
@@ -136,19 +135,18 @@ format STDOUT =
 $a    $b    "abc" 'def'
 .
 EXPECT
-Use of comma-less variable list is deprecated at - line 5.
-Use of comma-less variable list is deprecated at - line 5.
-Use of comma-less variable list is deprecated at - line 5.
+Use of comma-less variable list is deprecated at - line 4.
+Use of comma-less variable list is deprecated at - line 4.
+Use of comma-less variable list is deprecated at - line 4.
 ########
 # toke.c
-use warnings 'deprecated' ;
 $a = <<;
 
 no warnings 'deprecated' ;
 $a = <<;
 
 EXPECT
-Use of bare << to mean <<"" is deprecated at - line 3.
+Use of bare << to mean <<"" is deprecated at - line 2.
 ########
 # toke.c
 use warnings 'syntax' ;
@@ -279,9 +277,14 @@ Possible attempt to put comments in qw() list at - line 3.
 ########
 # toke.c
 use warnings 'syntax' ;
-print ("")
+print ("");
+print ("") and $x = 1;
+print ("") or die;
+print ("") // die;
+print (1+2) * 3 if 0; # only this one should warn
+print (1+2) if 0;
 EXPECT
-print (...) interpreted as function at - line 3.
+print (...) interpreted as function at - line 7.
 ########
 # toke.c
 no warnings 'syntax' ;
@@ -291,9 +294,10 @@ EXPECT
 ########
 # toke.c
 use warnings 'syntax' ;
-printf ("")
+printf ("");
+printf ("") . '';
 EXPECT
-printf (...) interpreted as function at - line 3.
+printf (...) interpreted as function at - line 4.
 ########
 # toke.c
 no warnings 'syntax' ;
@@ -303,9 +307,10 @@ EXPECT
 ########
 # toke.c
 use warnings 'syntax' ;
-sort ("")
+sort ("");
+sort ("") . '';
 EXPECT
-sort (...) interpreted as function at - line 3.
+sort (...) interpreted as function at - line 4.
 ########
 # toke.c
 no warnings 'syntax' ;
@@ -570,7 +575,7 @@ yelp at foo line 30.
 # toke.c
 my $a = rand + 4 ;
 EXPECT
-Warning: Use of "rand" without parens is ambiguous at - line 2.
+Warning: Use of "rand" without parentheses is ambiguous at - line 2.
 ########
 # toke.c
 $^W = 0 ;
@@ -583,9 +588,14 @@ my $a = rand + 4 ;
 }
 $a = rand + 4 ;
 EXPECT
-Warning: Use of "rand" without parens is ambiguous at - line 3.
-Warning: Use of "rand" without parens is ambiguous at - line 8.
-Warning: Use of "rand" without parens is ambiguous at - line 10.
+Warning: Use of "rand" without parentheses is ambiguous at - line 3.
+Warning: Use of "rand" without parentheses is ambiguous at - line 8.
+Warning: Use of "rand" without parentheses is ambiguous at - line 10.
+########
+# toke.c
+use warnings "ambiguous";
+print for keys %+; # should not warn
+EXPECT
 ########
 # toke.c
 sub fred {};
@@ -613,6 +623,10 @@ Ambiguous use of -fred resolved as -&fred() at - line 11.
 open FOO || time;
 EXPECT
 Precedence problem: open FOO should be open(FOO) at - line 2.
+########
+# toke.c (and [perl #16184])
+open FOO => "<&0"; close FOO;
+EXPECT
 ########
 # toke.c
 $^W = 0 ;
@@ -733,17 +747,6 @@ EXPECT
 Possible unintended interpolation of @mjd_previously_unused_array in string at - line 3.
 ########
 # toke.c
-# The \q should warn, the \_ should NOT warn.
-use warnings 'misc';
-"foo" =~ /\q/;
-"bar" =~ /\_/;
-no warnings 'misc';
-"foo" =~ /\q/;
-"bar" =~ /\_/;
-EXPECT
-Unrecognized escape \q passed through at - line 4.
-########
-# toke.c
 # 20020328 mjd-perl-patch+@plover.com at behest of jfriedl@yahoo.com
 use warnings 'regexp';
 "foo" =~ /foo/c;
@@ -795,4 +798,165 @@ use warnings 'ambiguous';
 $s = "(@-)(@+)";
 EXPECT
 
-
+########
+# toke.c
+# mandatory warning
+eval q/if ($a) { } elseif ($b) { }/;
+no warnings "syntax";
+eval q/if ($a) { } elseif ($b) { }/;
+EXPECT
+elseif should be elsif at (eval 1) line 1.
+########
+# toke.c
+# mandatory warning
+eval q/5 6/;
+no warnings "syntax";
+eval q/5 6/;
+EXPECT
+Number found where operator expected at (eval 1) line 1, near "5 6"
+	(Missing operator before  6?)
+########
+# toke.c
+use warnings "syntax";
+$_ = $a = 1;
+$a !=~  /1/;
+$a !=~ m#1#;
+$a !=~/1/;
+$a !=~ ?/?;
+$a !=~ y/1//;
+$a !=~ tr/1//;
+$a !=~ s/1//;
+$a != ~/1/;
+no warnings "syntax";
+$a !=~  /1/;
+$a !=~ m#1#;
+$a !=~/1/;
+$a !=~ ?/?;
+$a !=~ y/1//;
+$a !=~ tr/1//;
+$a !=~ s/1//;
+EXPECT
+!=~ should be !~ at - line 4.
+!=~ should be !~ at - line 5.
+!=~ should be !~ at - line 6.
+!=~ should be !~ at - line 7.
+!=~ should be !~ at - line 8.
+!=~ should be !~ at - line 9.
+!=~ should be !~ at - line 10.
+########
+# toke.c
+our $foo :unique;
+sub pam :locked;
+sub glipp :locked {
+}
+sub whack_eth ($) : locked {
+}
+no warnings 'deprecated';
+our $bar :unique;
+sub zapeth :locked;
+sub ker_plop :locked {
+}
+sub swa_a_p ($) : locked {
+}
+EXPECT
+Use of :unique is deprecated at - line 2.
+Use of :locked is deprecated at - line 3.
+Use of :locked is deprecated at - line 4.
+Use of :locked is deprecated at - line 6.
+########
+# toke.c
+use warnings "syntax";
+sub proto_after_array(@$);
+sub proto_after_arref(\@$);
+sub proto_after_arref2(\[@$]);
+sub proto_after_arref3(\[@$]_);
+sub proto_after_hash(%$);
+sub proto_after_hashref(\%$);
+sub proto_after_hashref2(\[%$]);
+sub underscore_last_pos($_);
+sub underscore2($_;$);
+sub underscore_fail($_$);
+sub underscore_after_at(@_);
+no warnings "syntax";
+sub proto_after_array(@$);
+sub proto_after_hash(%$);
+sub underscore_fail($_$);
+EXPECT
+Prototype after '@' for main::proto_after_array : @$ at - line 3.
+Prototype after '%' for main::proto_after_hash : %$ at - line 7.
+Illegal character after '_' in prototype for main::underscore_fail : $_$ at - line 12.
+Prototype after '@' for main::underscore_after_at : @_ at - line 13.
+########
+# toke.c
+use warnings "ambiguous";
+"foo\nn" =~ /^foo$\n/;
+"foo\nn" =~ /^foo${\}n/;
+my $foo = qr/^foo$\n/;
+my $bar = qr/^foo${\}n/;
+no warnings "ambiguous";
+"foo\nn" =~ /^foo$\n/;
+"foo\nn" =~ /^foo${\}n/;
+my $foo = qr/^foo$\n/;
+my $bar = qr/^foo${\}n/;
+EXPECT
+Possible unintended interpolation of $\ in regex at - line 3.
+Possible unintended interpolation of $\ in regex at - line 5.
+########
+# toke.c
+use feature 'state';
+# This one is fine as an empty attribute list
+my $holy_Einstein : = '';
+# This one is deprecated
+my $krunch := 4;
+our $FWISK_FWISK_FWIZZACH_FWACH_ZACHITTY_ZICH_SHAZZATZ_FWISK := '';
+state $thump := 'Trumpets';
+# Lather rinse repeat in my usual obsessive style
+my @holy_perfect_pitch : = ();
+my @zok := ();
+our @GUKGUK := ();
+# state @widget_mark := ();
+my %holy_seditives : = ();
+my %bang := ();
+our %GIGAZING := ();
+# state %hex := ();
+no warnings 'deprecated';
+my $holy_giveaways : = '';
+my $eee_yow := [];
+our $TWOYYOYYOING_THUK_UGH := 1 == 1;
+state $octothorn := 'Tinky Winky';
+my @holy_Taj_Mahal : = ();
+my @touche := ();
+our @PLAK_DAK_THUK_FRIT := ();
+# state @hash_mark := ();
+my %holy_priceless_collection_of_Etruscan_snoods : = ();
+my %wham_eth := ();
+our %THWUK := ();
+# state %octalthorpe := ();
+use warnings;
+my $holy_sewer_pipe : = '';
+my $thunk := undef;
+our $BLIT := time;
+state $crunch := 'Laa Laa';
+my @glurpp := ();
+my @holy_harem : = ();
+our @FABADAP := ();
+# state @square := ();
+my %holy_pin_cushions : = ();
+my %swoosh := ();
+our %RRRRR := ();
+# state %scratchmark := ();
+EXPECT
+Use of := for an empty attribute list is deprecated at - line 6.
+Use of := for an empty attribute list is deprecated at - line 7.
+Use of := for an empty attribute list is deprecated at - line 8.
+Use of := for an empty attribute list is deprecated at - line 11.
+Use of := for an empty attribute list is deprecated at - line 12.
+Use of := for an empty attribute list is deprecated at - line 15.
+Use of := for an empty attribute list is deprecated at - line 16.
+Use of := for an empty attribute list is deprecated at - line 33.
+Use of := for an empty attribute list is deprecated at - line 34.
+Use of := for an empty attribute list is deprecated at - line 35.
+Use of := for an empty attribute list is deprecated at - line 36.
+Use of := for an empty attribute list is deprecated at - line 38.
+Use of := for an empty attribute list is deprecated at - line 41.
+Use of := for an empty attribute list is deprecated at - line 42.

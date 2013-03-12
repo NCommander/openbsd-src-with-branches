@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997, 1998, 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,9 +33,9 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: net_read.c,v 1.5 1999/12/02 17:05:11 joda Exp $");
+RCSID("$KTH: net_read.c,v 1.7 2004/05/25 21:35:50 lha Exp $");
 
-ssize_t
+krb5_ssize_t KRB5_LIB_FUNCTION
 krb5_net_read (krb5_context context,
 	       void *p_fd,
 	       void *buf,

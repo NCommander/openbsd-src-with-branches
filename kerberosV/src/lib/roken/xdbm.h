@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -31,49 +31,22 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: xdbm.h,v 1.12 2000/08/16 03:57:21 assar Exp $ */
+/* $KTH: xdbm.h,v 1.15 2002/05/17 16:02:22 joda Exp $ */
 
 /* Generic *dbm include file */
 
 #ifndef __XDBM_H__
 #define __XDBM_H__
 
-#if defined(HAVE_DB_H)
+#if HAVE_DB_NDBM
 #define DB_DBM_HSEARCH 1
 #include <db.h>
-#endif
-
-#ifndef DBM_INSERT
-#if defined(HAVE_NDBM_H)
-#include <ndbm.h>
-#elif defined(HAVE_GDBM_NDBM_H)
+#elif HAVE_NDBM
+#if defined(HAVE_GDBM_NDBM_H)
 #include <gdbm/ndbm.h>
-#elif defined(HAVE_DBM_H)
-#include <dbm.h>
-#elif defined(HAVE_RPCSVC_DBM_H)
-#include <rpcsvc/dbm.h>
+#elif defined(HAVE_NDBM_H)
+#include <ndbm.h>
 #endif
-#endif
-
-/* Macros to convert ndbm names to dbm names.
- * Note that dbm_nextkey() cannot be simply converted using a macro, since
- * it is invoked giving the database, and nextkey() needs the previous key.
- *
- * Instead, all routines call "dbm_next" instead.
- */
-
-#if !defined(NDBM) && !defined(HAVE_DB_H)
-typedef char DBM;
-
-#define dbm_open(file, flags, mode) ((dbminit(file) == 0)?"":((char *)0))
-#define dbm_fetch(db, key) fetch(key)
-#define dbm_store(db, key, content, flag) store(key, content)
-#define dbm_delete(db, key) delete(key)
-#define dbm_firstkey(db) firstkey()
-#define dbm_next(db,key) nextkey(key)
-#define dbm_close(db) dbmclose()
-#else
-#define dbm_next(db,key) dbm_nextkey(db)
-#endif
+#endif /* HAVE_NDBM */
 
 #endif /* __XDBM_H__ */

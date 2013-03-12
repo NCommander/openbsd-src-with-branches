@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2001, 2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,23 +33,31 @@
 
 #include "gssapi_locl.h"
 
-RCSID("$KTH: indicate_mechs.c,v 1.3 1999/12/02 17:05:04 joda Exp $");
+RCSID("$KTH: indicate_mechs.c,v 1.7 2003/09/12 21:15:42 lha Exp $");
 
 OM_uint32 gss_indicate_mechs
            (OM_uint32 * minor_status,
             gss_OID_set * mech_set
            )
 {
-  *mech_set = malloc(sizeof(**mech_set));
-  if (*mech_set == NULL) {
-    return GSS_S_FAILURE;
+  OM_uint32 ret;
+
+  ret = gss_create_empty_oid_set(minor_status, mech_set);
+  if (ret)
+      return ret;
+
+  ret = gss_add_oid_set_member(minor_status, GSS_KRB5_MECHANISM, mech_set);
+  if (ret) {
+      gss_release_oid_set(NULL, mech_set);
+      return ret;
   }
-  (*mech_set)->count = 1;
-  (*mech_set)->elements = malloc((*mech_set)->count * sizeof(gss_OID_desc));
-  if ((*mech_set)->elements == NULL) {
-    free (*mech_set);
-    return GSS_S_FAILURE;
+
+  ret = gss_add_oid_set_member(minor_status, GSS_SPNEGO_MECHANISM, mech_set);
+  if (ret) {
+      gss_release_oid_set(NULL, mech_set);
+      return ret;
   }
-  (*mech_set)->elements[0] = *GSS_KRB5_MECHANISM;
+
+  *minor_status = 0;
   return GSS_S_COMPLETE;
 }

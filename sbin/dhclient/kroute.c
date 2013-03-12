@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.42 2013/03/08 12:25:15 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.39 2013/02/24 01:23:19 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -26,20 +26,8 @@
 #include <net/if_types.h>
 
 #include <ifaddrs.h>
-#include <signal.h>
 
 struct in_addr active_addr;
-
-int	create_route_label(struct sockaddr_rtlabel *);
-int	check_route_label(struct sockaddr_rtlabel *);
-void	populate_rti_info(struct sockaddr **, struct rt_msghdr *);
-
-#define	ROUTE_LABEL_NONE		1
-#define	ROUTE_LABEL_NOT_DHCLIENT	2
-#define	ROUTE_LABEL_DHCLIENT_OURS	3
-#define	ROUTE_LABEL_DHCLIENT_UNKNOWN	4
-#define	ROUTE_LABEL_DHCLIENT_LIVE	5
-#define	ROUTE_LABEL_DHCLIENT_DEAD	6
 
 /*
  * Do equivalent of 
@@ -57,7 +45,6 @@ flush_routes_and_arp_cache(char *ifname, int rdomain)
 
 	strlcpy(imsg.ifname, ifname, sizeof(imsg.ifname));
 	imsg.rdomain = rdomain;
-	imsg.zapzombies = 1;
 
 	rslt = imsg_compose(unpriv_ibuf, IMSG_FLUSH_ROUTES, 0, 0, -1,
 	    &imsg, sizeof(imsg));
@@ -79,13 +66,14 @@ priv_flush_routes_and_arp_cache(struct imsg_flush_routes *imsg)
 	struct sockaddr *rti_info[RTAX_MAX];
 	int mib[7];
 	size_t needed;
-	char *lim, *buf, *next, *errmsg;
+	char *lim, *buf, *next, *routelabel, *errmsg;
 	struct rt_msghdr *rtm;
 	struct sockaddr *sa;
 	struct sockaddr_dl *sdl;
 	struct sockaddr_in *sa_in;
+	struct sockaddr_inarp *sin;
 	struct sockaddr_rtlabel *sa_rl;
-	int s, seqno = 0, rlen, retry;
+	int s, seqno = 0, rlen, retry, i;
 
 	mib[0] = CTL_NET;
 	mib[1] = PF_ROUTE;
@@ -126,6 +114,12 @@ priv_flush_routes_and_arp_cache(struct imsg_flush_routes *imsg)
 	if ((s = socket(AF_ROUTE, SOCK_RAW, 0)) == -1)
 		error("opening socket to flush routes: %s", strerror(errno));
 
+	if (asprintf(&routelabel, "DHCLIENT %d", (int)getpid()) == -1)
+		error("recreating route label: %s", strerror(errno));
+
+#define ROUNDUP(a) \
+    ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
+
 	lim = buf + needed;
 	for (next = buf; next < lim; next += rtm->rtm_msglen) {
 		rtm = (struct rt_msghdr *)next;
@@ -136,23 +130,27 @@ priv_flush_routes_and_arp_cache(struct imsg_flush_routes *imsg)
 		if (sa->sa_family == AF_KEY)
 			continue;  /* Don't flush SPD */
 
-		populate_rti_info(rti_info, rtm);
+		memset(rti_info, 0, sizeof(rti_info));
+		for (i = 0; i < RTAX_MAX; i++) {
+			if (rtm->rtm_addrs & (1 << i)) {
+				rti_info[i] = sa;
+				sa = (struct sockaddr *)((char *)(sa) +
+				    ROUNDUP(sa->sa_len));
+			}
+		}
+
+		sa = (struct sockaddr *)(next + rtm->rtm_hdrlen);
 
 		sa_rl = (struct sockaddr_rtlabel *)rti_info[RTAX_LABEL];
-		switch (check_route_label(sa_rl)) {
-		case ROUTE_LABEL_DHCLIENT_OURS:
+		if (sa_rl) {
 			/* Always delete routes we labeled. */
-			goto delete;
-		case ROUTE_LABEL_DHCLIENT_DEAD:
-			if (imsg->zapzombies)
+			if (strcmp(routelabel, sa_rl->sr_label) == 0)
 				goto delete;
-			continue;
-		case ROUTE_LABEL_DHCLIENT_LIVE:
-		case ROUTE_LABEL_DHCLIENT_UNKNOWN:
+
 			/* Never delete routes labelled by another dhclient. */
-			continue;
-		default:
-			break;
+			if (strlen(sa_rl->sr_label) > 8 &&
+			    strncmp("DHCLIENT ", sa_rl->sr_label, 9) == 0)
+				continue;
 		}
 
 		if (rtm->rtm_flags & RTF_LLINFO) {
@@ -160,12 +158,13 @@ priv_flush_routes_and_arp_cache(struct imsg_flush_routes *imsg)
 				continue;
 			if (rtm->rtm_flags & RTF_PERMANENT_ARP)
 				continue;
-			sdl = (struct sockaddr_dl *)rti_info[RTAX_GATEWAY];
-			if (sdl == NULL)
-				continue;
 
 			/* XXXX Check for AF_INET too? (arp ask for them) */
 			/* XXXX Need 'retry' for proxy entries? (arp does) */
+
+			sin = (struct sockaddr_inarp *)(sa);
+			sdl = (struct sockaddr_dl *)(ROUNDUP(sin->sin_len) +
+			   (char *)sin);
 
 			if (sdl->sdl_family == AF_LINK) {
 				switch (sdl->sdl_type) {
@@ -215,6 +214,7 @@ delete:
 
 	close(s);
 	free(buf);
+	free(routelabel);
 }
 
 /*
@@ -255,7 +255,7 @@ priv_add_default_route(struct imsg_add_default_route *imsg)
 	struct sockaddr_in dest, gateway, mask;
 	struct sockaddr_rtlabel label;
 	struct iovec iov[5];
-	int s, i, iovcnt = 0;
+	int s, len, i, iovcnt = 0;
 
 	/*
 	 * Add a default route via the specified address.
@@ -322,12 +322,22 @@ priv_add_default_route(struct imsg_add_default_route *imsg)
 	iov[iovcnt++].iov_len = sizeof(mask);
 
 	/* Add our label so we can identify the route as our creation. */
-	if (create_route_label(&label) == 0) {
-		rtm.rtm_addrs |= RTA_LABEL;
-		rtm.rtm_msglen += sizeof(label);
-		iov[iovcnt].iov_base = &label;
-		iov[iovcnt++].iov_len = sizeof(label);
-	}
+	memset(&label, 0, sizeof(label));
+	label.sr_len = sizeof(label);
+	label.sr_family = AF_UNSPEC;
+	len = snprintf(label.sr_label, sizeof(label.sr_label), "DHCLIENT %d",
+	    getpid());
+	if (len == -1)
+		error("writing label for default route: %s", strerror(errno));
+	if (len >= sizeof(label.sr_label))
+		error("label for default route too long (%zd)",
+		    sizeof(label.sr_label));
+
+	rtm.rtm_addrs |= RTA_LABEL;
+	rtm.rtm_msglen += sizeof(label);
+
+	iov[iovcnt].iov_base = &label;
+	iov[iovcnt++].iov_len = sizeof(label);
 
 	/* Check for EEXIST since other dhclient may not be done. */
 	for (i = 0; i < 5; i++) {
@@ -377,6 +387,7 @@ delete_addresses(char *ifname, int rdomain)
  * [priv_]delete_address is the equivalent of
  *
  *	ifconfig <ifname> inet <addr> delete
+ *	route -q <rdomain> delete <addr> 127.0.0.1
  */
 void
 delete_address(char *ifname, int rdomain, struct in_addr addr)
@@ -408,8 +419,11 @@ void
 priv_delete_address(struct imsg_delete_address *imsg)
 {
 	struct ifaliasreq ifaliasreq;
+	struct rt_msghdr rtm;
+	struct sockaddr_in dest, gateway;
+	struct iovec iov[3];
 	struct sockaddr_in *in;
-	int s;
+	int s, iovcnt = 0;
 
 	/*
 	 * Delete specified address on specified interface.
@@ -435,6 +449,61 @@ priv_delete_address(struct imsg_delete_address *imsg)
 		close(s);
 		return;
 	}
+
+	close(s);
+
+	/*
+	 * Delete the 127.0.0.1 route for the specified address.
+	 */
+
+	if ((s = socket(AF_ROUTE, SOCK_RAW, 0)) == -1)
+		error("Routing Socket open failed: %s", strerror(errno));
+
+	/* Build RTM header */
+
+	memset(&rtm, 0, sizeof(rtm));
+
+	rtm.rtm_version = RTM_VERSION;
+	rtm.rtm_type = RTM_DELETE;
+	rtm.rtm_tableid = imsg->rdomain;
+	rtm.rtm_priority = RTP_NONE;
+	rtm.rtm_msglen = sizeof(rtm);
+
+	iov[iovcnt].iov_base = &rtm;
+	iov[iovcnt++].iov_len = sizeof(rtm);
+	
+	/* Set destination address */
+
+	memset(&dest, 0, sizeof(dest));
+
+	dest.sin_len = sizeof(dest);
+	dest.sin_family = AF_INET;
+	dest.sin_addr.s_addr = imsg->addr.s_addr;
+
+	rtm.rtm_addrs |= RTA_DST;
+	rtm.rtm_msglen += sizeof(dest);
+
+	iov[iovcnt].iov_base = &dest;
+	iov[iovcnt++].iov_len = sizeof(dest);
+	
+	/* Set gateway address */
+
+	memset(&gateway, 0, sizeof(gateway));
+
+	gateway.sin_len = sizeof(gateway);
+	gateway.sin_family = AF_INET;
+	gateway.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+	rtm.rtm_flags |= RTF_GATEWAY;
+	rtm.rtm_addrs |= RTA_GATEWAY;
+	rtm.rtm_msglen += sizeof(gateway);
+
+	iov[iovcnt].iov_base = &gateway;
+	iov[iovcnt++].iov_len = sizeof(gateway);
+
+	/* ESRCH means the route does not exist to delete. */
+	if ((writev(s, iov, iovcnt) == -1) && (errno != ESRCH))
+		error("failed to delete 127.0.0.1: %s", strerror(errno));
 
 	close(s);
 }
@@ -478,7 +547,7 @@ priv_add_address(struct imsg_add_address *imsg)
 	struct sockaddr_rtlabel label;
 	struct iovec iov[4];
 	struct sockaddr_in *in;
-	int s, i, iovcnt = 0;
+	int s, len, i, iovcnt = 0;
 
 	if (imsg->addr.s_addr == INADDR_ANY) {
 		/* Notification that the active_addr has been deleted. */
@@ -568,12 +637,23 @@ priv_add_address(struct imsg_add_address *imsg)
 	iov[iovcnt++].iov_len = sizeof(gateway);
 
 	/* Add our label so we can identify the route as our creation. */
-	if (create_route_label(&label) == 0) {
-		rtm.rtm_addrs |= RTA_LABEL;
-		rtm.rtm_msglen += sizeof(label);
-		iov[iovcnt].iov_base = &label;
-		iov[iovcnt++].iov_len = sizeof(label);
-	}
+	memset(&label, 0, sizeof(label));
+
+	label.sr_len = sizeof(label);
+	label.sr_family = AF_UNSPEC;
+	len = snprintf(label.sr_label, sizeof(label.sr_label), "DHCLIENT %d",
+	    getpid());
+	if (len == -1)
+		error("writing label for host route: %s", strerror(errno));
+	if (len >= sizeof(label.sr_label))
+		error("label for host route too long (%zd)",
+		    sizeof(label.sr_label));
+
+	rtm.rtm_addrs |= RTA_LABEL;
+	rtm.rtm_msglen += sizeof(label);
+
+	iov[iovcnt].iov_base = &label;
+	iov[iovcnt++].iov_len = sizeof(label);
 
 	/* Check for EEXIST since other dhclient may not be done. */
 	for (i = 0; i < 5; i++) {
@@ -631,7 +711,6 @@ priv_cleanup(struct imsg_hup *imsg)
 
 	memset(&fimsg, 0, sizeof(fimsg));
 	fimsg.rdomain = imsg->rdomain;
-	fimsg.zapzombies = 0;	/* Only zapzombies when binding a lease. */
 	priv_flush_routes_and_arp_cache(&fimsg);
 
 	if (imsg->addr.s_addr == INADDR_ANY)
@@ -653,12 +732,14 @@ resolv_conf_priority(int domain)
 		char			m_space[512];
 	} m_rtmsg;
 	struct sockaddr *rti_info[RTAX_MAX];
+	char *routelabel;
+	struct sockaddr *sa;
 	struct sockaddr_in sin;
 	struct sockaddr_rtlabel *sa_rl;
 	pid_t pid;
 	ssize_t len;
 	u_int32_t seq;
-	int s, rslt, iovcnt = 0;
+	int i, s, rslt, iovcnt = 0;
 
 	rslt = 0;
 
@@ -729,89 +810,26 @@ resolv_conf_priority(int domain)
 		}
 	} while (1);
 
-	populate_rti_info(rti_info, &m_rtmsg.m_rtm);
+	sa = (struct sockaddr *)((char *)&m_rtmsg + m_rtmsg.m_rtm.rtm_hdrlen);
+	memset(rti_info, 0, sizeof(rti_info));
+	for (i = 0; i < RTAX_MAX; i++) {
+		if (m_rtmsg.m_rtm.rtm_addrs & (1 << i)) {
+			rti_info[i] = sa;
+			sa = (struct sockaddr *)((char *)(sa) +
+			    ROUNDUP(sa->sa_len));
+		}
+	}
 
 	sa_rl = (struct sockaddr_rtlabel *)rti_info[RTAX_LABEL];
-	if (check_route_label(sa_rl) == ROUTE_LABEL_DHCLIENT_OURS)
-		rslt = 1;
+	if (sa_rl) {
+		if (asprintf(&routelabel, "DHCLIENT %d", (int)getpid()) == -1)
+			error("recreating route label: %s", strerror(errno));
+		if (strcmp(routelabel, sa_rl->sr_label) == 0)
+			rslt = 1;
+		free(routelabel);
+	}
 
 done:
 	close(s);
 	return (rslt);
-}
-
-int
-create_route_label(struct sockaddr_rtlabel *label)
-{
-	int len;
-
-	memset(label, 0, sizeof(*label));
-
-	label->sr_len = sizeof(label);
-	label->sr_family = AF_UNSPEC;
-
-	len = snprintf(label->sr_label, sizeof(label->sr_label), "DHCLIENT %d",
-	    (int)getpid());
-
-	if (len == -1) {
-		warning("creating route label: %s", strerror(errno));
-		return (1);
-	}
-
-	if (len >= sizeof(label->sr_label)) {
-		warning("creating route label: label too long (%d vs %zd)", len,
-		    sizeof(label->sr_label));
-		return (1);
-	}
-
-	return (0);
-}
-
-int
-check_route_label(struct sockaddr_rtlabel *label)
-{
-	pid_t pid;
-
-	if (!label)
-		return (ROUTE_LABEL_NONE);
-
-	if (strncmp("DHCLIENT ", label->sr_label, 9))
-		return (ROUTE_LABEL_NOT_DHCLIENT);
-
-	pid = (pid_t)strtonum(label->sr_label + 9, 1, INT_MAX, NULL);
-	if (pid <= 0)
-		return (ROUTE_LABEL_DHCLIENT_UNKNOWN);
-
-	if (pid == getpid())
-		return (ROUTE_LABEL_DHCLIENT_OURS);
-
-	if (kill(pid, 0) == -1) {
-		if (errno == ESRCH)
-			return (ROUTE_LABEL_DHCLIENT_DEAD);
-		else
-			return (ROUTE_LABEL_DHCLIENT_UNKNOWN);
-	}
-
-	return (ROUTE_LABEL_DHCLIENT_LIVE);
-}
-
-void
-populate_rti_info(struct sockaddr **rti_info, struct rt_msghdr *rtm)
-{
-	struct sockaddr *sa;
-	int i;
-
-#define ROUNDUP(a) \
-    ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
-
-	sa = (struct sockaddr *)((char *)(rtm) + rtm->rtm_hdrlen);
-
-	for (i = 0; i < RTAX_MAX; i++) {
-		if (rtm->rtm_addrs & (1 << i)) {
-			rti_info[i] = sa;
-			sa = (struct sockaddr *)((char *)(sa) +
-			    ROUNDUP(sa->sa_len));
-		} else
-			rti_info[i] = NULL;
-	}
 }

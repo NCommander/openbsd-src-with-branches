@@ -360,6 +360,7 @@ int tube_read_msg(struct tube* tube, uint8_t** buf, uint32_t* len,
 		}
 		d += r;
 	}
+	log_assert(*len < 65536*2);
 	*buf = (uint8_t*)malloc(*len);
 	if(!*buf) {
 		log_err("tube read out of memory");
@@ -712,7 +713,7 @@ void tube_handle_signal(int ATTR_UNUSED(fd), short ATTR_UNUSED(events),
 {
 	struct tube* tube = (struct tube*)arg;
 	uint8_t* buf;
-	uint32_t len;
+	uint32_t len = 0;
 	verbose(VERB_ALGO, "tube handle_signal");
 	while(tube_poll(tube)) {
 		if(tube_read_msg(tube, &buf, &len, 1)) {

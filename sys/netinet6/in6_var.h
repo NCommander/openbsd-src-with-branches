@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_var.h,v 1.36 2013/03/04 14:23:35 bluhm Exp $	*/
+/*	$OpenBSD: in6_var.h,v 1.34 2011/10/13 18:23:40 claudio Exp $	*/
 /*	$KAME: in6_var.h,v 1.55 2001/02/16 12:49:45 itojun Exp $	*/
 
 /*
@@ -115,7 +115,7 @@ struct	in6_ifaddr {
 				 */
 	time_t	ia6_updatetime;
 
-	/* back pointer to the prefix (for all addresses, not just autoconf) */
+	/* back pointer to the ND prefix (for autoconfigured addresses only) */
 	struct nd_prefix *ia6_ndpr;
 
 	/* multicast addresses joined from the kernel */
@@ -415,6 +415,9 @@ struct	in6_rrenumreq {
 #define SIOCSIFALIFETIME_IN6	_IOWR('i', 82, struct in6_ifreq)
 #define SIOCGIFSTAT_IN6		_IOWR('i', 83, struct in6_ifreq)
 #define SIOCGIFSTAT_ICMP6	_IOWR('i', 84, struct in6_ifreq)
+
+#define SIOCSDEFIFACE_IN6	_IOWR('i', 85, struct in6_ndifreq)
+#define SIOCGDEFIFACE_IN6	_IOWR('i', 86, struct in6_ndifreq)
 
 #define SIOCSIFINFO_FLAGS	_IOWR('i', 87, struct in6_ndireq) /* XXX */
 

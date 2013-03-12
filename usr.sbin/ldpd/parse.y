@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.7 2010/09/01 13:54:54 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.6 2010/08/03 18:42:40 henning Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2008 Esben Norby <norby@openbsd.org>
@@ -36,7 +36,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <syslog.h>
 
 #include "ldp.h"
 #include "ldpd.h"
@@ -324,16 +323,14 @@ struct keywords {
 int
 yyerror(const char *fmt, ...)
 {
-	va_list		 ap;
-	char		*nfmt;
+	va_list	ap;
 
 	file->errors++;
 	va_start(ap, fmt);
-	if (asprintf(&nfmt, "%s:%d: %s", file->name, yylval.lineno, fmt) == -1)
-		fatalx("yyerror asprintf");
-	vlog(LOG_CRIT, nfmt, ap);
+	fprintf(stderr, "%s:%d: ", file->name, yylval.lineno);
+	vfprintf(stderr, fmt, ap);
+	fprintf(stderr, "\n");
 	va_end(ap);
-	free(nfmt);
 	return (0);
 }
 

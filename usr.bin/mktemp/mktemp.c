@@ -1,8 +1,7 @@
-/*	$OpenBSD: mktemp.c,v 1.16 2013/03/12 15:07:12 millert Exp $	*/
+/*	$OpenBSD: mktemp.c,v 1.14 2008/05/26 09:22:30 sobrado Exp $	*/
 
 /*
- * Copyright (c) 1996, 1997, 2001-2003, 2013
- *	Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1996, 1997, 2001 Todd C. Miller <Todd.Miller@courtesan.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,7 +30,7 @@ main(int argc, char *argv[])
 {
 	int ch, fd, uflag = 0, quiet = 0, tflag = 0, makedir = 0;
 	char *cp, *template, *tempfile, *prefix = _PATH_TMP;
-	size_t len;
+	int plen;
 
 	while ((ch = getopt(argc, argv, "dp:qtu")) != -1)
 		switch(ch) {
@@ -79,23 +78,14 @@ main(int argc, char *argv[])
 		cp = getenv("TMPDIR");
 		if (cp != NULL && *cp != '\0')
 			prefix = cp;
-		len = strlen(prefix);
-		while (len != 0 && prefix[len - 1] == '/')
-			len--;
+		plen = strlen(prefix);
+		while (plen != 0 && prefix[plen - 1] == '/')
+			plen--;
 
-		if (asprintf(&tempfile, "%.*s/%s", (int)len, prefix, template) < 0)
+		if (asprintf(&tempfile, "%.*s/%s", plen, prefix, template) < 0)
 			tempfile = NULL;
-	} else {
-		len = strlen(template);
-		if (len < 6 || strcmp(&template[len - 6], "XXXXXX")) {
-		    if (!quiet) {
-			warnx("insufficient number of Xs in template `%s'",
-			    template);
-		    }
-		    exit(1);
-		}
+	} else
 		tempfile = strdup(template);
-	}
 	if (tempfile == NULL) {
 		if (!quiet)
 			warnx("cannot allocate memory");

@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.121 2013/03/07 00:19:59 djm Exp $ */
+/* $OpenBSD: monitor.c,v 1.119 2012/12/02 20:34:10 djm Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -312,7 +312,7 @@ monitor_child_preauth(Authctxt *_authctxt, struct monitor *pmonitor)
 				    "with SSH protocol 1");
 			if (authenticated &&
 			    !auth2_update_methods_lists(authctxt,
-			    auth_method, auth_submethod)) {
+			    auth_method)) {
 				debug3("%s: method %s: partial", __func__,
 				    auth_method);
 				authenticated = 0;
@@ -848,10 +848,9 @@ mm_answer_bsdauthrespond(int sock, Buffer *m)
 	debug3("%s: sending authenticated: %d", __func__, authok);
 	mm_request_send(sock, MONITOR_ANS_BSDAUTHRESPOND, m);
 
-	if (compat20) {
-		auth_method = "keyboard-interactive";
-		auth_submethod = "bsdauth";
-	} else
+	if (compat20)
+		auth_method = "keyboard-interactive"; /* XXX auth_submethod */
+	else
 		auth_method = "bsdauth";
 
 	return (authok != 0);
@@ -952,7 +951,7 @@ static int
 monitor_valid_userblob(u_char *data, u_int datalen)
 {
 	Buffer b;
-	char *p, *userstyle;
+	char *p;
 	u_int len;
 	int fail = 0;
 
@@ -977,23 +976,19 @@ monitor_valid_userblob(u_char *data, u_int datalen)
 	}
 	if (buffer_get_char(&b) != SSH2_MSG_USERAUTH_REQUEST)
 		fail++;
-	p = buffer_get_cstring(&b, NULL);
-	xasprintf(&userstyle, "%s%s%s", authctxt->user,
-	    authctxt->style ? ":" : "",
-	    authctxt->style ? authctxt->style : "");
-	if (strcmp(userstyle, p) != 0) {
+	p = buffer_get_string(&b, NULL);
+	if (strcmp(authctxt->user, p) != 0) {
 		logit("wrong user name passed to monitor: expected %s != %.100s",
-		    userstyle, p);
+		    authctxt->user, p);
 		fail++;
 	}
-	xfree(userstyle);
 	xfree(p);
 	buffer_skip_string(&b);
 	if (datafellows & SSH_BUG_PKAUTH) {
 		if (!buffer_get_char(&b))
 			fail++;
 	} else {
-		p = buffer_get_cstring(&b, NULL);
+		p = buffer_get_string(&b, NULL);
 		if (strcmp("publickey", p) != 0)
 			fail++;
 		xfree(p);
@@ -1013,7 +1008,7 @@ monitor_valid_hostbasedblob(u_char *data, u_int datalen, char *cuser,
     char *chost)
 {
 	Buffer b;
-	char *p, *userstyle;
+	char *p;
 	u_int len;
 	int fail = 0;
 
@@ -1029,19 +1024,15 @@ monitor_valid_hostbasedblob(u_char *data, u_int datalen, char *cuser,
 
 	if (buffer_get_char(&b) != SSH2_MSG_USERAUTH_REQUEST)
 		fail++;
-	p = buffer_get_cstring(&b, NULL);
-	xasprintf(&userstyle, "%s%s%s", authctxt->user,
-	    authctxt->style ? ":" : "",
-	    authctxt->style ? authctxt->style : "");
-	if (strcmp(userstyle, p) != 0) {
+	p = buffer_get_string(&b, NULL);
+	if (strcmp(authctxt->user, p) != 0) {
 		logit("wrong user name passed to monitor: expected %s != %.100s",
-		    userstyle, p);
+		    authctxt->user, p);
 		fail++;
 	}
-	free(userstyle);
 	xfree(p);
 	buffer_skip_string(&b);	/* service */
-	p = buffer_get_cstring(&b, NULL);
+	p = buffer_get_string(&b, NULL);
 	if (strcmp(p, "hostbased") != 0)
 		fail++;
 	xfree(p);

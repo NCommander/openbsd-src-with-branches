@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2004 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,9 +33,9 @@
 
 #include <krb5_locl.h>
 
-RCSID("$KTH: mk_req.c,v 1.22 2000/11/15 06:50:53 assar Exp $");
+RCSID("$KTH: mk_req.c,v 1.26 2004/05/25 21:34:11 lha Exp $");
 
-krb5_error_code
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_mk_req_exact(krb5_context context,
 		  krb5_auth_context *auth_context,
 		  const krb5_flags ap_req_options,
@@ -56,7 +56,7 @@ krb5_mk_req_exact(krb5_context context,
 
     ret = krb5_copy_principal (context, server, &this_cred.server);
     if (ret) {
-	krb5_free_creds_contents (context, &this_cred);
+	krb5_free_cred_contents (context, &this_cred);
 	return ret;
     }
 
@@ -65,19 +65,21 @@ krb5_mk_req_exact(krb5_context context,
 	this_cred.session.keytype = (*auth_context)->keytype;
 
     ret = krb5_get_credentials (context, 0, ccache, &this_cred, &cred);
-    krb5_free_creds_contents(context, &this_cred);
+    krb5_free_cred_contents(context, &this_cred);
     if (ret)
 	return ret;
 
-    return krb5_mk_req_extended (context,
-				 auth_context,
-				 ap_req_options,
-				 in_data,
-				 cred,
-				 outbuf);
+    ret = krb5_mk_req_extended (context,
+				auth_context,
+				ap_req_options,
+				in_data,
+				cred,
+				outbuf);
+    krb5_free_creds(context, cred);
+    return ret;
 }
 
-krb5_error_code
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_mk_req(krb5_context context,
 	    krb5_auth_context *auth_context,
 	    const krb5_flags ap_req_options,

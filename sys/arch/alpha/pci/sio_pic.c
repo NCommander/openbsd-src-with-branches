@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio_pic.c,v 1.34 2013/03/02 22:54:29 miod Exp $	*/
+/*	$OpenBSD: sio_pic.c,v 1.32 2011/04/15 20:40:05 deraadt Exp $	*/
 /* $NetBSD: sio_pic.c,v 1.28 2000/06/06 03:10:13 thorpej Exp $ */
 
 /*-
@@ -118,7 +118,6 @@ u_int8_t initial_elcr[2];
 
 void		sio_setirqstat(int, int, int);
 int		sio_intr_alloc(void *, int, int, int *);
-int		sio_intr_check(void *, int, int);
 
 u_int8_t	(*sio_read_elcr)(int);
 void		(*sio_write_elcr)(int, u_int8_t);
@@ -568,20 +567,19 @@ sio_intr_alloc(v, mask, type, irq)
 	count = -1;
 
 	/* some interrupts should never be dynamically allocated */
-	mask &= 0xffff;
-	mask &= ~((1 << 13) | (1 << 8) | (1 << 2) | (1 << 1) | (1 << 0));
+	mask &= 0xdef8;
 
 	/*
 	 * XXX some interrupts will be used later (6 for fdc, 12 for pms).
 	 * the right answer is to do "breadth-first" searching of devices.
 	 */
-	mask &= ~((1 << 12) | (1 << 6));
+	mask &= 0xefbf;
 
 	for (i = 0; i < ICU_LEN; i++) {
 		if (LEGAL_IRQ(i) == 0 || (mask & (1<<i)) == 0)
 			continue;
 
-		switch (sio_intr[i].intr_sharetype) {
+		switch(sio_intr[i].intr_sharetype) {
 		case IST_NONE:
 			/*
 			 * if nothing's using the irq, just return it
@@ -625,32 +623,6 @@ sio_intr_alloc(v, mask, type, irq)
 	*irq = bestirq;
 
 	return (0);
-}
-
-/*
- * Just check to see if an IRQ is available/can be shared.
- * 0 = interrupt not available
- * 1 = interrupt shareable
- * 2 = interrupt all to ourself
- */
-int
-sio_intr_check(void *v, int irq, int type)
-{
-	if (type == IST_NONE)
-		return (0);
-
-	switch (sio_intr[irq].intr_sharetype) {
-	case IST_NONE:
-		return (2);
-	case IST_EDGE:
-	case IST_LEVEL:
-		if (type == sio_intr[irq].intr_sharetype)
-			return (1);
-		/* FALLTHROUGH */
-	default:
-	case IST_PULSE:
-		return (0);
-	}
 }
 
 static void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rl_cardbus.c,v 1.22 2011/04/02 17:47:04 jasper Exp $ */
+/*	$OpenBSD: if_rl_cardbus.c,v 1.21 2010/03/27 21:40:13 jsg Exp $ */
 /*	$NetBSD: if_rl_cardbus.c,v 1.3.8.3 2001/11/14 19:14:02 nathanw Exp $	*/
 
 /*
@@ -95,15 +95,15 @@
  * Various supported device vendors/types and their names.
  */
 const struct pci_matchid rl_cardbus_devices[] = {
-	{ PCI_VENDOR_ABOCOM, PCI_PRODUCT_ABOCOM_FE2000VX },
 	{ PCI_VENDOR_ACCTON, PCI_PRODUCT_ACCTON_5030 },
-	{ PCI_VENDOR_COREGA, PCI_PRODUCT_COREGA_2CB_TXD },
+	{ PCI_VENDOR_ABOCOM, PCI_PRODUCT_ABOCOM_FE2000VX },
+	{ PCI_VENDOR_REALTEK, PCI_PRODUCT_REALTEK_RT8138 },
+	{ PCI_VENDOR_REALTEK, PCI_PRODUCT_REALTEK_RT8139 },
 	{ PCI_VENDOR_COREGA, PCI_PRODUCT_COREGA_CB_TXD },
+	{ PCI_VENDOR_COREGA, PCI_PRODUCT_COREGA_2CB_TXD },
 	{ PCI_VENDOR_DLINK, PCI_PRODUCT_DLINK_DFE690TXD },
 	{ PCI_VENDOR_PLANEX, PCI_PRODUCT_PLANEX_FNW_3603_TX },
 	{ PCI_VENDOR_PLANEX, PCI_PRODUCT_PLANEX_FNW_3800_TX },
-	{ PCI_VENDOR_REALTEK, PCI_PRODUCT_REALTEK_RT8138 },
-	{ PCI_VENDOR_REALTEK, PCI_PRODUCT_REALTEK_RT8139 },
 };
 
 struct rl_cardbus_softc {
@@ -203,6 +203,7 @@ rl_cardbus_attach(struct device *parent, struct device *self, void *aux)
 	}
 	printf(": irq %d", csc->sc_intrline);
 
+	/* XXX - hardcode this, for now */
 	sc->rl_type = RL_8139;
 
 	rl_attach(sc);

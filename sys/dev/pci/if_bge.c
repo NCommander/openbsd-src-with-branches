@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.322 2013/03/07 21:35:19 brad Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.318 2013/02/09 23:39:37 brad Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -301,9 +301,7 @@ const struct pci_matchid bge_devices[] = {
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM5906M },
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM57760 },
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM57761 },
-	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM57762 },
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM57765 },
-	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM57766 },
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM57780 },
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM57781 },
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM57785 },
@@ -534,7 +532,7 @@ bge_ape_lock_init(struct bge_softc *sc)
 		break;
 	default:
 		printf("%s: PHY lock not supported on function %d\n",
-		    sc->bge_dev.dv_xname, pa->pa_function);
+		    sc->bge_dev.dv_xname);
 		break;
 	}
 }
@@ -961,7 +959,6 @@ bge_miibus_readreg(struct device *dev, int phy, int reg)
 
 	CSR_WRITE_4(sc, BGE_MI_COMM, BGE_MICMD_READ|BGE_MICOMM_BUSY|
 	    BGE_MIPHY(phy)|BGE_MIREG(reg));
-	CSR_READ_4(sc, BGE_MI_COMM); /* force write */
 
 	for (i = 0; i < 200; i++) {
 		delay(1);
@@ -1019,7 +1016,6 @@ bge_miibus_writereg(struct device *dev, int phy, int reg, int val)
 
 	CSR_WRITE_4(sc, BGE_MI_COMM, BGE_MICMD_WRITE|BGE_MICOMM_BUSY|
 	    BGE_MIPHY(phy)|BGE_MIREG(reg)|val);
-	CSR_READ_4(sc, BGE_MI_COMM); /* force write */
 
 	for (i = 0; i < 200; i++) {
 		delay(1);
@@ -4025,6 +4021,7 @@ bge_ifmedia_upd(struct ifnet *ifp)
 					CSR_WRITE_4(sc, BGE_SGDIG_CFG, sgdig);
 				}
 			}
+			DELAY(40);
 			break;
 		case IFM_1000_SX:
 			if ((ifm->ifm_media & IFM_GMASK) == IFM_FDX) {
@@ -4034,7 +4031,6 @@ bge_ifmedia_upd(struct ifnet *ifp)
 				BGE_SETBIT(sc, BGE_MAC_MODE,
 				    BGE_MACMODE_HALF_DUPLEX);
 			}
-			DELAY(40);
 			break;
 		default:
 			return (EINVAL);

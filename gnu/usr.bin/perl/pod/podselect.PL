@@ -15,9 +15,8 @@ use Cwd;
 # This is so that make depend always knows where to find PL derivatives.
 $origdir = cwd;
 chdir(dirname($0));
-($file = basename($0)) =~ s/\.PL$//;
-$file =~ s/\.pl$// if ($^O eq 'os2' or $^O eq 'dos');  # "case-forgiving"
-$file =~ s/\.pl$/.com/ if ($^O eq 'VMS');              # "case-forgiving"
+$file = basename($0, '.PL');
+$file .= '.com' if $^O eq 'VMS';
 
 open OUT,">$file" or die "Can't create $file: $!";
 
@@ -39,14 +38,14 @@ print OUT <<'!NO!SUBS!';
 #############################################################################
 # podselect -- command to invoke the podselect function in Pod::Select
 #
-# Copyright (c) 1996-1999 by Bradford Appleton. All rights reserved.
+# Copyright (c) 1996-2000 by Bradford Appleton. All rights reserved.
 # This file is part of "PodParser". PodParser is free software;
 # you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 #############################################################################
 
 use strict;
-use diagnostics;
+#use diagnostics;
 
 =head1 NAME
 
@@ -99,6 +98,8 @@ L<Pod::Parser> and L<Pod::Select>
 
 =head1 AUTHOR
 
+Please report bugs using L<http://rt.cpan.org>.
+
 Brad Appleton E<lt>bradapp@enteract.comE<gt>
 
 Based on code for B<Pod::Text::pod2text(1)> written by
@@ -112,13 +113,13 @@ use Getopt::Long;
 
 ## Define options
 my %options = (
-        "help"     => 0,
-        "man"      => 0,
-        "sections" => [],
+        'help'     => 0,
+        'man'      => 0,
+        'sections' => [],
 );
 
 ## Parse options
-GetOptions(\%options, "help", "man", "sections|select=s@")  ||  pod2usage(2);
+GetOptions(\%options, 'help', 'man', 'sections|select=s@')  ||  pod2usage(2);
 pod2usage(1)  if ($options{help});
 pod2usage(-verbose => 2)  if ($options{man});
 
@@ -126,8 +127,8 @@ pod2usage(-verbose => 2)  if ($options{man});
 pod2usage(2) if ((@ARGV == 0) && (-t STDIN));
 
 ## Invoke podselect().
-if (@{ $options{"sections"} } > 0) {
-    podselect({ -sections => $options{"sections"} }, @ARGV);
+if (@{ $options{'sections'} } > 0) {
+    podselect({ -sections => $options{'sections'} }, @ARGV);
 }
 else {
     podselect(@ARGV);

@@ -53,7 +53,7 @@ struct objc_method_description_list {
 
 - (BOOL) conformsTo: (Protocol *)aProtocolObject
 {
-  int i;
+  size_t i;
   struct objc_protocol_list* proto_list;
 
   if (!strcmp(aProtocolObject->protocol_name, self->protocol_name))
@@ -80,17 +80,19 @@ struct objc_method_description_list {
   const char* name = sel_get_name (aSel);
   struct objc_method_description *result;
 
-  for (i = 0; i < instance_methods->count; i++)
-    {
-      if (!strcmp ((char*)instance_methods->list[i].name, name))
-	return &(instance_methods->list[i]);
-    }
+  if (instance_methods)
+    for (i = 0; i < instance_methods->count; i++)
+      {
+	if (!strcmp ((char*)instance_methods->list[i].name, name))
+	  return &(instance_methods->list[i]);
+      }
 
   for (proto_list = protocol_list; proto_list; proto_list = proto_list->next)
     {
-      for (i=0; i < proto_list->count; i++)
+      size_t j;
+      for (j=0; j < proto_list->count; j++)
 	{
-	  if ((result = [proto_list->list[i]
+	  if ((result = [proto_list->list[j]
 			 descriptionForInstanceMethod: aSel]))
 	    return result;
 	}
@@ -106,17 +108,19 @@ struct objc_method_description_list {
   const char* name = sel_get_name (aSel);
   struct objc_method_description *result;
 
-  for (i = 0; i < class_methods->count; i++)
-    {
-      if (!strcmp ((char*)class_methods->list[i].name, name))
-	return &(class_methods->list[i]);
-    }
+  if (class_methods)
+    for (i = 0; i < class_methods->count; i++)
+      {
+	if (!strcmp ((char*)class_methods->list[i].name, name))
+	  return &(class_methods->list[i]);
+      }
 
   for (proto_list = protocol_list; proto_list; proto_list = proto_list->next)
     {
-      for (i=0; i < proto_list->count; i++)
+      size_t j;
+      for (j=0; j < proto_list->count; j++)
 	{
-	  if ((result = [proto_list->list[i]
+	  if ((result = [proto_list->list[j]
 			 descriptionForClassMethod: aSel]))
 	    return result;
 	}

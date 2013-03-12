@@ -5,11 +5,20 @@ BEGIN {
     @INC = '../lib';
 }
 
-use Test;
-
-BEGIN { plan tests => 6 }
+use Test::More tests => 23;
 
 use strict;
+
+BEGIN {
+# Cwd::cwd does an implicit "require Win32", but
+# the ../lib directory in @INC will no longer work once
+# we chdir() out of the "t" directory.
+    if ($^O eq 'MSWin32') {
+	require Win32;
+	Win32->import();
+    }
+    require overload;
+}
 
 use File::CheckTree;
 use File::Spec;          # used to get absolute paths
@@ -39,16 +48,14 @@ chdir(File::Spec->updir) or die "cannot change to parent of t/ directory: $!";
             # indented comment, followed blank line (w/o whitespace):
 
             README -f
-            $path_to_README -e || warn
+            '$path_to_README' -e || warn
         };
     };
 
-    if ( !$@ && !@warnings && defined($num_warnings) && $num_warnings == 0 ) {
-        ok(1);
-    }
-    else {
-        ok(0);
-    }
+    diag($_) for @warnings;
+    is( $@, '' );
+    is( scalar @warnings, 0 );
+    is( $num_warnings, 0 );
 }
 
 
@@ -66,16 +73,10 @@ chdir(File::Spec->updir) or die "cannot change to parent of t/ directory: $!";
         };
     };
 
-    if ( !$@ && @warnings == 1
-             && $warnings[0] =~ /lib is not a plain file/
-             && defined($num_warnings)
-             && $num_warnings == 1 )
-    {
-        ok(1);
-    }
-    else {
-        ok(0);
-    }
+    is( $@, '' );
+    is( scalar @warnings, 1 );
+    like( $warnings[0], qr/lib is not a plain file/);
+    is( $num_warnings, 1 );
 }
 
 
@@ -97,18 +98,12 @@ chdir(File::Spec->updir) or die "cannot change to parent of t/ directory: $!";
         };
     };
 
-    if ( !$@ && @warnings == 3
-             && $warnings[0] =~ /lib is not a plain file/
-             && $warnings[1] =~ /README is not a directory/
-             && $warnings[2] =~ /my warning: lib/
-             && defined($num_warnings)
-             && $num_warnings == 3 )
-    {
-        ok(1);
-    }
-    else {
-        ok(0);
-    }
+    is( $@, '' );
+    is( scalar @warnings, 3 );
+    like( $warnings[0], qr/lib is not a plain file/);
+    like( $warnings[1], qr/README is not a directory/);
+    like( $warnings[2], qr/my warning: lib/);
+    is( $num_warnings, 3 );
 }
 
 
@@ -124,27 +119,21 @@ chdir(File::Spec->updir) or die "cannot change to parent of t/ directory: $!";
     eval {
         $num_warnings = validate qq{
             lib                -d || die
-            $path_to_libFile   cd
+            '$path_to_libFile' cd
             Spec               -e
             Spec               -f
-            $path_to_dist      cd
+            '$path_to_dist'    cd
             README             -ef
             INSTALL            -d || warn
-            $path_to_libFile   -d || die
+            '$path_to_libFile' -d || die
         };
     };
 
-    if ( !$@ && @warnings == 2
-             && $warnings[0] =~ /Spec is not a plain file/
-             && $warnings[1] =~ /INSTALL is not a directory/
-             && defined($num_warnings)
-             && $num_warnings == 2 )
-    {
-        ok(1);
-    }
-    else {
-        ok(0);
-    }
+    is( $@, '' );
+    is( scalar @warnings, 2 );
+    like( $warnings[0], qr/Spec is not a plain file/);
+    like( $warnings[1], qr/INSTALL is not a directory/);
+    is( $num_warnings, 2 );
 }
 
 
@@ -160,14 +149,7 @@ chdir(File::Spec->updir) or die "cannot change to parent of t/ directory: $!";
         };
     };
 
-    if ( $@ && $@ =~ /lib is not a plain file/
-            && not defined $num_warnings )
-    {
-        ok(1);
-    }
-    else {
-        ok(0);
-    }
+    like($@, qr/lib is not a plain file/);
 }
 
 
@@ -183,12 +165,32 @@ chdir(File::Spec->updir) or die "cannot change to parent of t/ directory: $!";
         };
     };
 
-    if ( $@ && $@ =~ /yadda lib yadda/
-            && not defined $num_warnings )
-    {
-        ok(1);
-    }
-    else {
-        ok(0);
-    }
+    like($@, qr/yadda lib yadda/);
+    is( $num_warnings, undef );
+}
+
+#### TEST 7 -- Quoted file names ####
+{
+    my $num_warnings;
+    eval {
+        $num_warnings = validate q{
+            "a file with whitespace" !-ef
+            'a file with whitespace' !-ef
+        };
+    };
+
+    is ( $@, '', 'No errors mean we compile correctly');
+}
+
+#### TEST 8 -- Malformed query ####
+{
+    my $num_warnings;
+    eval {
+        $num_warnings = validate q{
+            a file with whitespace !-ef
+        };
+    };
+
+    like( $@, qr/syntax error/, 
+	  'We got a syntax error for a malformed file query' );
 }

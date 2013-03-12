@@ -1,4 +1,4 @@
-/* $OpenBSD: util.c,v 1.3 2013/03/10 10:34:33 tobias Exp $ */
+/* $OpenBSD: util.c,v 1.1.1.1 2005/05/28 01:57:30 marius Exp $ */
 
 /*
  * util.c
@@ -46,30 +46,19 @@
 #include "util.h"
 
 int
-copy_permissions(int srcfd, int dstfd)
+copy_permissions(char *srcfile, char *dstfile)
 {
 	struct stat st;
 
-	if (fstat(srcfd, &st) < 0)
+	if (stat(srcfile, &st) < 0)
 		return (-1);
 
-	if (fchown(dstfd, st.st_uid, st.st_gid) < 0)
+	if (chmod(dstfile, st.st_mode) < 0)
 		return (-1);
 
-	if (fchmod(dstfd, st.st_mode) < 0)
+	if (chown(dstfile, st.st_uid, st.st_gid) < 0)
 		return (-1);
 
-	return (0);
-}
-
-int
-skip_string(FILE *fin)
-{
-	int c;
-
-	while ((c = getc(fin)) != '\0')
-		if (c == EOF)
-			return (-1);
 	return (0);
 }
 

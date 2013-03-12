@@ -1,4 +1,4 @@
-/*	$OpenBSD: cradle.c,v 1.5 2010/05/29 10:29:11 deraadt Exp $	*/
+/*	$OpenBSD: cradle.c,v 1.4 2006/07/02 12:34:15 sturm Exp $	*/
 
 /*
  * Copyright (c) 2003 Marius Aamodt Eriksen <marius@monkey.org>
@@ -259,9 +259,7 @@ listen_cb(int fd, short which, void *arg)
 
 	s = accept(fd, &sa, &salen);
 	if (s == -1) {
-		if (errno != EINTR && errno != EWOULDBLOCK &&
-		    errno != ECONNABORTED)
-			warn("accept()");
+		warn("accept()");
 		goto out;
 	}
 

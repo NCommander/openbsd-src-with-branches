@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.94 2013/03/07 09:03:16 mpi Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.92 2012/09/19 09:47:25 bluhm Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -623,6 +623,10 @@ nd6_purge(struct ifnet *ifp)
 		}
 	}
 
+	/* cancel default outgoing interface setting */
+	if (nd6_defifindex == ifp->if_index)
+		nd6_setdefaultiface(0);
+
 	if (!ip6_forwarding && ip6_accept_rtadv) { /* XXX: too restrictive? */
 		/* refresh default router list */
 		defrouter_select();
@@ -786,6 +790,17 @@ nd6_is_addr_neighbor(struct sockaddr_in6 *addr, struct ifnet *ifp)
 		if (IN6_ARE_MASKED_ADDR_EQUAL(&pr->ndpr_prefix.sin6_addr,
 		    &addr->sin6_addr, &pr->ndpr_mask))
 			return (1);
+	}
+
+	/*
+	 * If the default router list is empty, all addresses are regarded
+	 * as on-link, and thus, as a neighbor.
+	 * XXX: we restrict the condition to hosts, because routers usually do
+	 * not have the "default router list".
+	 */
+	if (!ip6_forwarding && TAILQ_EMPTY(&nd_defrouter) &&
+	    nd6_defifindex == ifp->if_index) {
+		return (1);
 	}
 
 	/*
@@ -1182,7 +1197,7 @@ nd6_rtrequest(int req, struct rtentry *rt, struct rt_addrinfo *info)
 				 * of the loopback address.
 				 */
 				if (ifa != rt->rt_ifa) {
-					ifafree(rt->rt_ifa);
+					IFAFREE(rt->rt_ifa);
 					ifa->ifa_refcnt++;
 					rt->rt_ifa = ifa;
 				}
@@ -1253,6 +1268,7 @@ nd6_ioctl(u_long cmd, caddr_t data, struct ifnet *ifp)
 	struct in6_oprlist *oprl = (struct in6_oprlist *)data;
 	struct in6_ndireq *ndi = (struct in6_ndireq *)data;
 	struct in6_nbrinfo *nbi = (struct in6_nbrinfo *)data;
+	struct in6_ndifreq *ndif = (struct in6_ndifreq *)data;
 	struct nd_defrouter *dr;
 	struct nd_prefix *pr;
 	struct rtentry *rt;
@@ -1455,6 +1471,12 @@ nd6_ioctl(u_long cmd, caddr_t data, struct ifnet *ifp)
 
 		break;
 	}
+	case SIOCGDEFIFACE_IN6:	/* XXX: should be implemented as a sysctl? */
+		ndif->ifindex = nd6_defifindex;
+		break;
+	case SIOCSDEFIFACE_IN6:	/* XXX: should be implemented as a sysctl? */
+		return (nd6_setdefaultiface(ndif->ifindex));
+		break;
 	}
 	return (error);
 }

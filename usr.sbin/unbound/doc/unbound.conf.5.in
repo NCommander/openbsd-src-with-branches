@@ -1,4 +1,4 @@
-.TH "unbound.conf" "5" "Feb  2, 2012" "NLnet Labs" "unbound 1.4.16"
+.TH "unbound.conf" "5" "Aug  2, 2012" "NLnet Labs" "unbound 1.4.18"
 .\"
 .\" unbound.conf.5 -- unbound.conf manual
 .\"
@@ -176,7 +176,7 @@ to 0, or if do_tcp is "no", no TCP queries from clients are accepted.
 Number of bytes size to advertise as the EDNS reassembly buffer size.
 This is the value put into datagrams over UDP towards peers.  The actual
 buffer size is determined by msg\-buffer\-size (both for TCP and UDP).  Do
-not set lower than that value.  Default is 4096 which is RFC recommended.
+not set higher than that value.  Default is 4096 which is RFC recommended.
 If you have fragmentation reassembly problems, usually seen as timeouts,
 then a value of 1480 can fix it.  Setting to 512 bypasses even the most
 stringent path MTU problems, but is seen as extreme, since the amount
@@ -569,6 +569,18 @@ not expire from the cache.
 If yes, fetch the DNSKEYs earlier in the validation process, when a DS
 record is encountered.  This lowers the latency of requests.  It does use
 a little more CPU.  Also if the cache is set to 0, it is no use. Default is no.
+.TP
+.B rrset-roundrobin: \fI<yes or no>
+If yes, Unbound rotates RRSet order in response (the random number is taken
+from the query ID, for speed and thread safety).  Default is no.
+.TP
+.B minimal-responses: \fI<yes or no>
+If yes, Unbound doesn't insert authority/additional sections into response
+messages when those sections are not required.  This reduces response
+size significantly, and may avoid TCP fallback for some responses.
+This may cause a slight speedup.  The default is no, because the DNS
+protocol RFCs mandate these sections, and the additional content could
+be of use and save roundtrips for clients.
 .TP
 .B module\-config: \fI<"module names">
 Module configuration, a list of module names separated by spaces, surround
@@ -979,6 +991,10 @@ This option is by default off.  If enabled it performs NS set priming,
 which is similar to root hints, where it starts using the list of nameservers 
 currently published by the zone.  Thus, if the hint list is slightly outdated,
 the resolver picks up a correct list online.
+.TP
+.B stub\-first: \fI<yes or no>
+If enabled, a query is attempted without the stub clause if it fails.
+The default is no.
 .SS "Forward Zone Options"
 .LP
 There may be multiple
@@ -1003,6 +1019,10 @@ Name of server to forward to. Is itself resolved before it is used.
 .B forward\-addr: \fI<IP address>
 IP address of server to forward to. Can be IP 4 or IP 6.
 To use a nondefault port for DNS communication append '@' with the port number.
+.TP
+.B forward\-first: \fI<yes or no>
+If enabled, a query is attempted without the forward clause if it fails.
+The default is no.
 .SS "Python Module Options"
 .LP
 The

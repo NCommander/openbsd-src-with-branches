@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.106 2012/07/13 12:37:08 deraadt Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.105 2011/07/03 18:11:21 nicm Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -783,6 +783,7 @@ wsdisplay_cnattach(const struct wsscreen_descr *type, void *cookie, int ccol,
 	const struct wsemul_ops *wsemul;
 	const struct wsdisplay_emulops *emulops;
 
+	KASSERT(!wsdisplay_console_initted);
 	KASSERT(type->nrows > 0);
 	KASSERT(type->ncols > 0);
 	KASSERT(crow < type->nrows);
@@ -807,8 +808,7 @@ wsdisplay_cnattach(const struct wsscreen_descr *type, void *cookie, int ccol,
 	wsdisplay_console_conf.wsemulcookie =
 	    (*wsemul->cnattach)(type, cookie, ccol, crow, defattr);
 
-	if (!wsdisplay_console_initted)
-		cn_tab = &wsdisplay_cons;
+	cn_tab = &wsdisplay_cons;
 
 	wsdisplay_console_initted = 1;
 }

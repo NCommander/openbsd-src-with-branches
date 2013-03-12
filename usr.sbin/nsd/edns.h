@@ -1,7 +1,7 @@
 /*
  * edns.h -- EDNS definitions (RFC 2671).
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -32,6 +32,7 @@ enum edns_status
 {
 	EDNS_NOT_PRESENT,
 	EDNS_OK,
+	/* EDNS states may be extended in the future */
 	EDNS_ERROR
 };
 typedef enum edns_status edns_status_type;

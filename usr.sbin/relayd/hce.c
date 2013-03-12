@@ -1,4 +1,4 @@
-/*	$OpenBSD: hce.c,v 1.63 2012/05/09 12:54:13 giovanni Exp $	*/
+/*	$OpenBSD: hce.c,v 1.62 2012/01/21 13:40:48 camield Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -156,7 +156,8 @@ hce_launch_checks(int fd, short event, void *arg)
 		}
 	}
 
-	getmonotime(&tv);
+	if (gettimeofday(&tv, NULL) == -1)
+		fatal("hce_launch_checks: gettimeofday");
 
 	TAILQ_FOREACH(table, env->sc_tables, entry) {
 		if (table->conf.flags & F_DISABLE)
@@ -259,7 +260,8 @@ hce_notify_done(struct host *host, enum host_error he)
 	else
 		logopt = RELAYD_OPT_LOGNOTIFY;
 
-	getmonotime(&tv_now);
+	if (gettimeofday(&tv_now, NULL) == -1)
+		fatal("hce_notify_done: gettimeofday");
 	timersub(&tv_now, &host->cte.tv_start, &tv_dur);
 	if (timercmp(&host->cte.tv_start, &tv_dur, >))
 		duration = (tv_dur.tv_sec * 1000) + (tv_dur.tv_usec / 1000.0);

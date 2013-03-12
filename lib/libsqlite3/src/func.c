@@ -863,8 +863,19 @@ static void quoteFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
   assert( argc==1 );
   UNUSED_PARAMETER(argc);
   switch( sqlite3_value_type(argv[0]) ){
-    case SQLITE_INTEGER:
     case SQLITE_FLOAT: {
+      double r1, r2;
+      char zBuf[50];
+      r1 = sqlite3_value_double(argv[0]);
+      sqlite3_snprintf(sizeof(zBuf), zBuf, "%!.15g", r1);
+      sqlite3AtoF(zBuf, &r2, 20, SQLITE_UTF8);
+      if( r1!=r2 ){
+        sqlite3_snprintf(sizeof(zBuf), zBuf, "%!.20e", r1);
+      }
+      sqlite3_result_text(context, zBuf, -1, SQLITE_TRANSIENT);
+      break;
+    }
+    case SQLITE_INTEGER: {
       sqlite3_result_value(context, argv[0]);
       break;
     }
@@ -1542,8 +1553,8 @@ void sqlite3RegisterGlobalFunctions(void){
     FUNCTION(max,               -1, 1, 1, minmaxFunc       ),
     FUNCTION(max,                0, 1, 1, 0                ),
     AGGREGATE(max,               1, 1, 1, minmaxStep,      minMaxFinalize ),
-    FUNCTION(typeof,             1, 0, 0, typeofFunc       ),
-    FUNCTION(length,             1, 0, 0, lengthFunc       ),
+    FUNCTION2(typeof,            1, 0, 0, typeofFunc,  SQLITE_FUNC_TYPEOF),
+    FUNCTION2(length,            1, 0, 0, lengthFunc,  SQLITE_FUNC_LENGTH),
     FUNCTION(substr,             2, 0, 0, substrFunc       ),
     FUNCTION(substr,             3, 0, 0, substrFunc       ),
     FUNCTION(abs,                1, 0, 0, absFunc          ),
@@ -1555,11 +1566,9 @@ void sqlite3RegisterGlobalFunctions(void){
     FUNCTION(lower,              1, 0, 0, lowerFunc        ),
     FUNCTION(coalesce,           1, 0, 0, 0                ),
     FUNCTION(coalesce,           0, 0, 0, 0                ),
-/*  FUNCTION(coalesce,          -1, 0, 0, ifnullFunc       ), */
-    {-1,SQLITE_UTF8,SQLITE_FUNC_COALESCE,0,0,ifnullFunc,0,0,"coalesce",0,0},
+    FUNCTION2(coalesce,         -1, 0, 0, ifnullFunc,  SQLITE_FUNC_COALESCE),
     FUNCTION(hex,                1, 0, 0, hexFunc          ),
-/*  FUNCTION(ifnull,             2, 0, 0, ifnullFunc       ), */
-    {2,SQLITE_UTF8,SQLITE_FUNC_COALESCE,0,0,ifnullFunc,0,0,"ifnull",0,0},
+    FUNCTION2(ifnull,            2, 0, 0, ifnullFunc,  SQLITE_FUNC_COALESCE),
     FUNCTION(random,             0, 0, 0, randomFunc       ),
     FUNCTION(randomblob,         1, 0, 0, randomBlob       ),
     FUNCTION(nullif,             2, 0, 1, nullifFunc       ),

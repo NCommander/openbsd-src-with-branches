@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.73 2013/03/07 21:26:28 claudio Exp $ */
+/*	$OpenBSD: control.c,v 1.71 2012/04/12 17:26:09 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -125,8 +125,7 @@ control_accept(int listenfd, int restricted)
 		if (errno == ENFILE || errno == EMFILE) {
 			pauseaccept = getmonotime();
 			return (0);
-		} else if (errno != EWOULDBLOCK && errno != EINTR &&
-		    errno != ECONNABORTED)
+		} else if (errno != EWOULDBLOCK && errno != EINTR)
 			log_warn("control_accept: accept");
 		return (0);
 	}
@@ -317,7 +316,6 @@ control_dispatch_msg(struct pollfd *pfd, u_int *ctl_cnt)
 		case IMSG_CTL_NEIGHBOR_DOWN:
 		case IMSG_CTL_NEIGHBOR_CLEAR:
 		case IMSG_CTL_NEIGHBOR_RREFRESH:
-		case IMSG_CTL_NEIGHBOR_DESTROY:
 			if (imsg.hdr.len == IMSG_HEADER_SIZE +
 			    sizeof(struct ctl_neighbor)) {
 				neighbor = imsg.data;
@@ -356,23 +354,6 @@ control_dispatch_msg(struct pollfd *pfd, u_int *ctl_cnt)
 						    CTL_RES_NOCAP);
 					else
 						control_result(c, CTL_RES_OK);
-					break;
-				case IMSG_CTL_NEIGHBOR_DESTROY:
-					if (!p->template)
-						control_result(c,
-						    CTL_RES_BADPEER);
-					else if (p->state != STATE_IDLE)
-						control_result(c,
-						    CTL_RES_BADSTATE);
-					else {
-						/*
-					 	 * Mark as deleted, will be
-						 * collected on next poll loop.
-						 */
-						p->conf.reconf_action =
-						    RECONF_DELETE;
-						control_result(c, CTL_RES_OK);
-					}
 					break;
 				default:
 					fatal("king bula wants more humppa");
