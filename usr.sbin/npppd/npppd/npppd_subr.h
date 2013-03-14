@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppd_subr.h,v 1.2 2010/07/02 21:20:57 yasuoka Exp $ */
+/*	$OpenBSD: npppd_subr.h,v 1.3 2012/05/08 13:15:12 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -41,7 +41,6 @@ int   ip_is_idle_packet (const struct ip *, int);
 void  in_addr_range_add_route (struct in_addr_range *);
 void  in_addr_range_delete_route (struct in_addr_range *);
 int   adjust_tcp_mss(u_char *, int, int);
-void  set_faith(int, int);
 
 #ifdef __cplusplus
 }
