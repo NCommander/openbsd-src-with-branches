@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_proto.c,v 1.63 2012/03/15 14:11:57 mikeb Exp $	*/
+/*	$OpenBSD: in6_proto.c,v 1.64 2013/01/17 16:30:10 bluhm Exp $	*/
 /*	$KAME: in6_proto.c,v 1.66 2000/10/10 15:35:47 itojun Exp $	*/
 
 /*
@@ -294,7 +294,6 @@ int	ip6_neighborgcthresh = 2048; /* Threshold # of NDP entries for GC */
 int	ip6_maxifprefixes = 16; /* Max acceptable prefixes via RA per IF */
 int	ip6_maxifdefrouters = 16; /* Max acceptable def routers via RA */
 int	ip6_maxdynroutes = 4096; /* Max # of routes created via redirect */
-int	ip6_keepfaith = 0;
 time_t	ip6_log_time = (time_t)0L;
 
 /* icmp6 */

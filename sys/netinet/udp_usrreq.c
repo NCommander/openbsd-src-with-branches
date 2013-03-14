@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.152 2013/01/17 11:43:06 bluhm Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.153 2013/02/16 14:34:52 bluhm Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -104,11 +104,6 @@
 extern int ip6_defhlim;
 #endif /* INET6 */
 
-#include "faith.h"
-#if NFAITH > 0
-#include <net/if_types.h>
-#endif
-
 #include "pf.h"
 #if NPF > 0
 #include <net/pfvar.h>
@@ -156,16 +151,6 @@ int
 udp6_input(struct mbuf **mp, int *offp, int proto)
 {
 	struct mbuf *m = *mp;
-
-#if NFAITH > 0
-	if (m->m_pkthdr.rcvif) {
-		if (m->m_pkthdr.rcvif->if_type == IFT_FAITH) {
-			/* XXX send icmp6 host/port unreach? */
-			m_freem(m);
-			return IPPROTO_DONE;
-		}
-	}
-#endif
 
 	udp_input(m, *offp, proto);
 	return IPPROTO_DONE;
