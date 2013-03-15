@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.20 2011/06/25 19:00:41 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.21 2011/10/06 20:49:28 deraadt Exp $
 
 LDSTATIC=${STATIC}
 PROG=	kdump
@@ -31,7 +31,6 @@ ioctl.c: ${.CURDIR}/Makefile ${.CURDIR}/mkioctls
 	    /usr/include/sys/dkio.h \
 	    /usr/include/sys/filio.h \
 	    /usr/include/sys/gpio.h \
-	    /usr/include/sys/midiio.h \
 	    /usr/include/sys/mtio.h \
 	    /usr/include/sys/pciio.h \
 	    /usr/include/sys/radioio.h \
