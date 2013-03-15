@@ -82,8 +82,6 @@
 #include <octeon/dev/octeonreg.h>
 #include <machine/octeonvar.h>
 
-#define BOARD_TYPE_SIM 1
-
 /* The following is used externally (sysctl_hw) */
 char	machine[] = MACHINE;		/* Machine "architecture" */
 char	cpu_model[30];
