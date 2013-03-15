@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.152 2012/10/05 17:17:04 camield Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.153 2013/01/18 12:10:11 sthen Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -815,7 +815,7 @@ ether_ifdetach(ifp)
 	struct ether_multi *enm;
 
 	for (enm = LIST_FIRST(&ac->ac_multiaddrs);
-	    enm != LIST_END(&ac->ac_multiaddrs);
+	    enm != NULL;
 	    enm = LIST_FIRST(&ac->ac_multiaddrs)) {
 		LIST_REMOVE(enm, enm_list);
 		free(enm, M_IFMADDR);
