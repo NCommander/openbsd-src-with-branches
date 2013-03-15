@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.23 2012/10/08 21:47:50 deraadt Exp $ */
+/*	$OpenBSD: machdep.c,v 1.26 2013/03/15 09:19:01 jasper Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -374,6 +374,7 @@ mips_init(__register_t a0, __register_t a1, __register_t a2 __unused,
 	consinit();
 	printf("Initial setup done, switching console.\n");
 
+#define DEBUG
 #ifdef DEBUG
 #define DUMP_BOOT_DESC(field, format) \
 	printf("boot_desc->" #field ":" #format "\n", boot_desc->field)
