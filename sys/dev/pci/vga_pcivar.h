@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_pcivar.h,v 1.14 2010/08/08 17:21:07 miod Exp $ */
+/* $OpenBSD: vga_pcivar.h,v 1.15 2012/08/22 20:58:30 mpi Exp $ */
 /* $NetBSD: vga_pcivar.h,v 1.1 1998/03/22 15:16:19 drochner Exp $ */
 
 /*
@@ -55,6 +55,7 @@ struct vga_pci_bar {
 struct vga_pci_softc {
 	struct device sc_dev;
 	struct vga_config *sc_vc;
+	int sc_type;
 
 	struct pci_attach_args pa;
 	struct vga_pci_bar *bars[VGA_PCI_MAX_BARS];
@@ -79,7 +80,6 @@ struct vga_pci_softc {
 	u_char sc_cmap_red[256];	/* saved color map */
 	u_char sc_cmap_green[256];
 	u_char sc_cmap_blue[256];
-
 #endif
 };
 
