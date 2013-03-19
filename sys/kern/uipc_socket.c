@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.113 2013/01/17 16:30:10 bluhm Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.114 2013/02/16 14:34:52 bluhm Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -1443,8 +1443,10 @@ soidle(void *arg)
 	int s;
 
 	s = splsoftnet();
-	so->so_error = ETIMEDOUT;
-	sounsplice(so, so->so_splice, 1);
+	if (so->so_splice) {
+		so->so_error = ETIMEDOUT;
+		sounsplice(so, so->so_splice, 1);
+	}
 	splx(s);
 }
 #endif /* SOCKET_SPLICE */
