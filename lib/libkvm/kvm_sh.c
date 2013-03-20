@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_sh.c,v 1.3 2011/04/10 11:51:57 miod Exp $	*/
+/*	$OpenBSD: kvm_sh.c,v 1.4 2012/07/09 08:43:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007 Miodrag Vallat.
@@ -157,7 +157,7 @@ _kvm_pa2off(kvm_t *kd, paddr_t pa)
 			return (off + (pa - seg->start));
 		off += seg->size;
 	}
-	
+
 	_kvm_err(kd, 0, "physical address out of the image (%lx)", pa);
 	return (0);
 }
