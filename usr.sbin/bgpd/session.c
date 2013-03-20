@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.327 2013/03/07 21:26:28 claudio Exp $ */
+/*	$OpenBSD: session.c,v 1.328 2013/03/11 17:40:11 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 
 #include <sys/mman.h>
@@ -30,6 +29,7 @@
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+#include <limits.h>
 
 #include <err.h>
 #include <errno.h>
