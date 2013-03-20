@@ -1,4 +1,4 @@
-/* $OpenBSD: i915_drv.h,v 1.73 2012/09/25 10:19:46 jsg Exp $ */
+/* $OpenBSD: i915_drv.h,v 1.1 2013/03/18 12:36:52 jsg Exp $ */
 /* i915_drv.h -- Private header for the I915 driver -*- linux-c -*-
  */
 /*
@@ -560,7 +560,6 @@ struct inteldrm_softc {
 
 	u_int32_t		 hotplug_supported_mask;
 	struct workq_task	 hotplug_task;
-	bool			 enable_hotplug_processing;
 
 	int			 num_pipe;
 	int			 num_pch_pll;
