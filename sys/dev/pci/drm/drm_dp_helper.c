@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: drm_dp_helper.c,v 1.1 2013/03/18 12:36:51 jsg Exp $	*/
 /*
  * Copyright © 2009 Keith Packard
  *
@@ -172,8 +172,11 @@ i2c_algo_dp_aux_exec(void *cookie, i2c_op_t op, i2c_addr_t addr,
 	}
 
 out:
+	if (ret > 0)
+		ret = 0;
+
 	i2c_algo_dp_aux_stop(adapter, reading);
-	DRM_DEBUG_KMS("dp_aux_xfer return %d\n", ret);
+	DRM_DEBUG_KMS("dp_aux_exec return %d\n", ret);
 	return ret;
 }
 
