@@ -1,4 +1,4 @@
-/* $OpenBSD: cert.c,v 1.31 2005/04/08 22:32:09 cloder Exp $	 */
+/* $OpenBSD: cert.c,v 1.32 2007/08/05 09:43:09 tom Exp $	 */
 /* $EOM: cert.c,v 1.18 2000/09/28 12:53:27 niklas Exp $	 */
 
 /*
@@ -30,7 +30,7 @@
  * This code was written under funding by Ericsson Radio Systems.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

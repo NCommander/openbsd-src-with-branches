@@ -1,4 +1,4 @@
-/* $OpenBSD: isakmpd.c,v 1.97 2008/05/12 19:15:02 pyr Exp $	 */
+/* $OpenBSD: isakmpd.c,v 1.98 2010/04/15 07:51:17 lum Exp $	 */
 /* $EOM: isakmpd.c,v 1.54 2000/10/05 09:28:22 niklas Exp $	 */
 
 /*
@@ -32,7 +32,6 @@
  */
 
 #include <errno.h>
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>

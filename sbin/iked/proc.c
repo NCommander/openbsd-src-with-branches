@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.7 2011/05/09 11:27:08 reyk Exp $	*/
+/*	$OpenBSD: proc.c,v 1.8 2013/01/08 10:38:19 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -17,10 +17,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/tree.h>
-#include <sys/param.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
 
