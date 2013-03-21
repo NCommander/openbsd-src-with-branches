@@ -1,4 +1,4 @@
-/* $OpenBSD: format.c,v 1.12 2013/02/05 11:01:45 nicm Exp $ */
+/* $OpenBSD: format.c,v 1.13 2013/03/21 16:13:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -321,6 +321,8 @@ format_client(struct format_tree *ft, struct client *c)
 	tim = ctime(&t);
 	*strchr(tim, '\n') = '\0';
 	format_add(ft, "client_activity_string", "%s", tim);
+
+	format_add(ft, "client_prefix", "%d", !!(c->flags & CLIENT_PREFIX));
 
 	if (c->tty.flags & TTY_UTF8)
 		format_add(ft, "client_utf8", "%d", 1);
