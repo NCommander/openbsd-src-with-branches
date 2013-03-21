@@ -1,4 +1,4 @@
-/* $OpenBSD: cfg.c,v 1.20 2012/12/06 13:06:05 nicm Exp $ */
+/* $OpenBSD: cfg.c,v 1.21 2012/12/13 15:36:16 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -131,8 +131,10 @@ load_cfg(const char *path, struct cmd_ctx *ctxin, struct causelist *causes)
 		buf = copy;
 		while (isspace((u_char)*buf))
 			buf++;
-		if (*buf == '\0')
+		if (*buf == '\0') {
+			free(copy);
 			continue;
+		}
 
 		if (cmd_string_parse(buf, &cmdlist, &cause) != 0) {
 			free(copy);
