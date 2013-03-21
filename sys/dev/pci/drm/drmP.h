@@ -1,4 +1,4 @@
-/* $OpenBSD: drmP.h,v 1.133 2012/12/06 15:05:21 mpi Exp $ */
+/* $OpenBSD: drmP.h,v 1.134 2013/03/18 12:36:51 jsg Exp $ */
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  */
@@ -67,7 +67,6 @@
 #include <dev/pci/pcivar.h>
 #include <dev/pci/agpvar.h>
 #include <dev/pci/vga_pcivar.h>
-#include <machine/param.h>
 #include <machine/bus.h>
 
 #include "drm_linux_list.h"
