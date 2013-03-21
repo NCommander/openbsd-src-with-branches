@@ -1,4 +1,5 @@
-/*	$OpenBSD: kap.h,v 1.2 2006/04/15 17:35:48 miod Exp $	*/
+/*	$OpenBSD: kap.h,v 1.3 2011/03/23 16:54:37 pirofti Exp $	*/
+
 /*
  * Copyright (c) 2005, Miodrag Vallat
  *

@@ -1,4 +1,3 @@
-/* $OpenBSD: cdefs.h,v 1.1 2005/04/19 21:30:17 miod Exp $ */
-/* public domain */
+/*	$OpenBSD: cdefs.h,v 1.2 2005/11/24 20:46:48 deraadt Exp $ */
 
 #include <sparc/cdefs.h>

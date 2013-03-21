@@ -1,4 +1,5 @@
-/*	$OpenBSD: idt.h,v 1.1 2005/04/19 21:30:17 miod Exp $	*/
+/*	$OpenBSD: idt.h,v 1.2 2011/03/23 16:54:37 pirofti Exp $	*/
+
 /*
  * Copyright (c) 2005, Miodrag Vallat
  *

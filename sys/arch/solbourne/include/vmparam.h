@@ -1,4 +1,4 @@
-/* $OpenBSD: vmparam.h,v 1.2 2006/06/04 17:21:24 miod Exp $ */
+/*	$OpenBSD: vmparam.h,v 1.3 2011/03/23 16:54:37 pirofti Exp $ */
 /* public domain */
 
 #ifndef _MACHINE_VMPARAM_H_
