@@ -1,4 +1,4 @@
-/*	$OpenBSD: part.c,v 1.51 2012/07/11 10:27:34 krw Exp $	*/
+/*	$OpenBSD: part.c,v 1.52 2012/07/25 19:49:11 otto Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -25,16 +25,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/types.h>
+#include <sys/fcntl.h>
+#include <sys/stat.h>
+#include <sys/disklabel.h>
 #include <err.h>
 #include <util.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/disklabel.h>
-#include <machine/param.h>
 #include "disk.h"
 #include "misc.h"
 #include "mbr.h"

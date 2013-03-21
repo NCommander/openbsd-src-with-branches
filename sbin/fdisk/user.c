@@ -1,4 +1,4 @@
-/*	$OpenBSD: user.c,v 1.24 2009/02/08 18:03:18 krw Exp $	*/
+/*	$OpenBSD: user.c,v 1.25 2011/02/21 19:26:13 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -25,17 +25,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/types.h>
+#include <sys/fcntl.h>
+#include <sys/stat.h>
+#include <sys/disklabel.h>
 #include <err.h>
 #include <errno.h>
 #include <util.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/disklabel.h>
-#include <machine/param.h>
 #include "user.h"
 #include "disk.h"
 #include "misc.h"
