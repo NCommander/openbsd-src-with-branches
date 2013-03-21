@@ -1,4 +1,4 @@
-/*	$OpenBSD: getpwent.c,v 1.43 2011/09/05 03:52:24 guenther Exp $ */
+/*	$OpenBSD: getpwent.c,v 1.44 2013/01/07 01:01:11 deraadt Exp $ */
 /*
  * Copyright (c) 2008 Theo de Raadt
  * Copyright (c) 1988, 1993
@@ -42,7 +42,6 @@
 #include <limits.h>
 #include <netgroup.h>
 #ifdef YP
-#include <machine/param.h>
 #include <stdio.h>
 #include <rpc/rpc.h>
 #include <rpcsvc/yp.h>
