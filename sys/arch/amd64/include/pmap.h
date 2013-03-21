@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.38 2011/03/23 16:54:34 pirofti Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.39 2011/06/30 22:18:01 jsg Exp $	*/
 /*	$NetBSD: pmap.h,v 1.1 2003/04/26 18:39:46 fvdl Exp $	*/
 
 /*
@@ -201,7 +201,7 @@
 
 #define NKL4_KIMG_ENTRIES	1
 #define NKL3_KIMG_ENTRIES	1
-#define NKL2_KIMG_ENTRIES	8
+#define NKL2_KIMG_ENTRIES	16
 
 #define NDML4_ENTRIES		1
 #define NDML3_ENTRIES		1
