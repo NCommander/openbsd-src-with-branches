@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.40 2012/10/21 21:30:44 bluhm Exp $ */
+/*	$OpenBSD: kroute.c,v 1.41 2013/01/14 14:39:38 florian Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -400,20 +400,21 @@ kr_redist_eval(struct kroute *kr, struct rroute *rr)
 	    !(kr->flags & (F_BLACKHOLE|F_REJECT)))
 		goto dont_redistribute;
 
-	/* Should we redistrubute this route? */
+	/* Should we redistribute this route? */
 	if (!ospf_redistribute(kr, &metric))
 		goto dont_redistribute;
 
 	/* prefix should be redistributed */
 	kr->flags |= F_REDISTRIBUTED;
 	/*
-	 * only on of all multipath routes can be redistributed so
+	 * only one of all multipath routes can be redistributed so
 	 * redistribute the best one.
 	 */
 	if (rr->metric > metric) {
 		rr->kr = *kr;
 		rr->metric = metric;
 	}
+
 	return (1);
 
 dont_redistribute:
