@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioccom.h,v 1.3 2003/06/02 23:28:21 millert Exp $	*/
+/*	$OpenBSD: ioccom.h,v 1.4 2006/05/18 21:27:25 miod Exp $	*/
 /*	$NetBSD: ioccom.h,v 1.4 1994/10/30 21:49:56 cgd Exp $	*/
 
 /*-
@@ -45,7 +45,7 @@
 #define	IOCBASECMD(x)	((x) & ~(IOCPARM_MASK << 16))
 #define	IOCGROUP(x)	(((x) >> 8) & 0xff)
 
-#define	IOCPARM_MAX	NBPG	/* max size of ioctl args, mult. of NBPG */
+#define	IOCPARM_MAX	PAGE_SIZE	/* max size of ioctl args */
 				/* no parameters */
 #define	IOC_VOID	(unsigned long)0x20000000
 				/* copy parameters out */
