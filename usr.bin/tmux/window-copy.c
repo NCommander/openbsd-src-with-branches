@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.86 2013/01/18 02:16:21 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.87 2013/02/05 11:08:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -814,7 +814,6 @@ window_copy_key_numeric_prefix(struct window_pane *wp, int key)
 	return (0);
 }
 
-/* ARGSUSED */
 void
 window_copy_mouse(
     struct window_pane *wp, struct session *sess, struct mouse_event *m)

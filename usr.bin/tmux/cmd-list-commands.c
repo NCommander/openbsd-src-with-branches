@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-list-commands.c,v 1.7 2012/07/11 07:10:15 nicm Exp $ */
+/* $OpenBSD: cmd-list-commands.c,v 1.8 2013/03/21 16:12:50 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -36,7 +36,6 @@ const struct cmd_entry cmd_list_commands_entry = {
 	cmd_list_commands_exec
 };
 
-/* ARGSUSED */
 enum cmd_retval
 cmd_list_commands_exec(unused struct cmd *self, struct cmd_ctx *ctx)
 {
