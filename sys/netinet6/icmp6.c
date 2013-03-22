@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.119 2013/03/04 14:42:25 bluhm Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.120 2013/03/14 11:18:37 mpi Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -1738,7 +1738,7 @@ ni6_store_addrs(struct icmp6_nodeinfo *ni6, struct icmp6_nodeinfo *nni6,
 
   again:
 
-	for (; ifp != TAILQ_END(&ifnet); ifp = TAILQ_NEXT(ifp, if_list)) {
+	for (; ifp != NULL; ifp = TAILQ_NEXT(ifp, if_list)) {
 		TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
 			if (ifa->ifa_addr->sa_family != AF_INET6)
 				continue;
