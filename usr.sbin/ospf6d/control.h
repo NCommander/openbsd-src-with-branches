@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.h,v 1.2 2009/06/06 09:02:46 eric Exp $ */
+/*	$OpenBSD: control.h,v 1.3 2012/04/10 07:56:50 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -39,12 +39,12 @@ struct ctl_conn {
 	struct imsgev		iev;
 };
 
-int	control_init(void);
+int	control_init(char *);
 int	control_listen(void);
 void	control_accept(int, short, void *);
 void	control_dispatch_imsg(int, short, void *);
 int	control_imsg_relay(struct imsg *);
-void	control_cleanup(void);
+void	control_cleanup(char *);
 
 void	session_socket_blockmode(int, enum blockmodes);
 
