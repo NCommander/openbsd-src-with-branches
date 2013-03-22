@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipe.h,v 1.12 2004/06/24 19:35:26 tholo Exp $	*/
+/*	$OpenBSD: pipe.h,v 1.13 2005/11/21 18:16:46 millert Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -28,7 +28,6 @@
 #include <sys/time.h>			/* for struct timeval */
 #include <sys/selinfo.h>			/* for struct selinfo */
 #include <uvm/uvm_extern.h>		/* for vm_page_t */
-#include <machine/param.h>		/* for PAGE_SIZE */
 #endif /* _KERNEL */
 
 /*
