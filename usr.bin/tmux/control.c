@@ -1,4 +1,4 @@
-/* $OpenBSD: control.c,v 1.4 2012/09/24 13:39:10 nicm Exp $ */
+/* $OpenBSD: control.c,v 1.5 2013/03/22 15:49:55 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -109,10 +109,7 @@ control_callback(struct client *c, int closed, unused void *data)
 		}
 
 		ctx = cmd_get_ctx();
-		ctx->msgdata = NULL;
-		ctx->cmdclient = NULL;
 		ctx->curclient = c;
-
 		ctx->error = control_msg_error;
 		ctx->print = control_msg_print;
 		ctx->info = control_msg_info;
