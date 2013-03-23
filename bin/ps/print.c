@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.52 2011/12/29 17:13:55 guenther Exp $	*/
+/*	$OpenBSD: print.c,v 1.53 2012/07/10 17:24:45 deraadt Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -447,7 +447,7 @@ wchan(const struct kinfo_proc *kp, VARENT *ve)
 	VAR *v;
 
 	v = ve->var;
-	if (kp->p_wchan) {
+	if (kp->p_wmesg[0]) {
 		(void)printf("%-*s", (int)v->width, kp->p_wmesg);
 	} else
 		(void)printf("%-*s", v->width, "-");
