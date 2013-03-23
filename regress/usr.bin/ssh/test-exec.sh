@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.36 2009/10/08 18:04:27 markus Exp $
+#	$OpenBSD: test-exec.sh,v 1.37 2010/02/24 06:21:56 djm Exp $
 #	Placed in the Public Domain.
 
 USER=`id -un`
@@ -223,9 +223,11 @@ rm -f $OBJ/known_hosts $OBJ/authorized_keys_$USER
 trace "generate keys"
 for t in rsa rsa1; do
 	# generate user key
-	rm -f $OBJ/$t
-	${SSHKEYGEN} -q -N '' -t $t  -f $OBJ/$t ||\
-		fail "ssh-keygen for $t failed"
+	if [ ! -f $OBJ/$t ] || [ ${SSHKEYGEN} -nt $OBJ/$t ]; then
+		rm -f $OBJ/$t
+		${SSHKEYGEN} -q -N '' -t $t  -f $OBJ/$t ||\
+			fail "ssh-keygen for $t failed"
+	fi
 
 	# known hosts file for client
 	(
