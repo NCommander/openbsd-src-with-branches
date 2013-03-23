@@ -1,5 +1,4 @@
-/*	$OpenBSD: param.h,v 1.2 2010/02/07 18:49:42 drahn Exp $	*/
-/*	$NetBSD: param.h,v 1.4 2002/02/12 06:58:19 thorpej Exp $	*/
+/*	$OpenBSD: param.h,v 1.3 2011/03/23 16:54:34 pirofti Exp $	*/
 
 /*
  * Copyright (c) 1994,1995 Mark Brinicombe.
@@ -36,16 +35,13 @@
 #ifndef	_MACHINE_PARAM_H_
 #define	_MACHINE_PARAM_H_
 
-/*
- * 1 page should be enough
- */
-#ifndef MSGBUFSIZE
-#define MSGBUFSIZE	(1*NBPG)
-#endif
-
 #include <arm/param.h>
 
 #define	_MACHINE	beagle
 #define	MACHINE		"beagle"
 
-#endif	/* _MACHINE_PARAM_H_ */
+#ifndef	MSGBUFSIZE
+#define	MSGBUFSIZE	PAGE_SIZE
+#endif
+
+#endif /* _MACHINE_PARAM_H_ */
