@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_udf.c,v 1.3 2009/10/27 23:59:28 deraadt Exp $	*/
+/*	$OpenBSD: kvm_udf.c,v 1.4 2011/07/04 20:35:35 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -37,7 +37,6 @@
 
 #include <isofs/udf/ecma167-udf.h>
 #include <isofs/udf/udf.h>
-#include <isofs/udf/udf_extern.h>
 
 #include <stdint.h>
 #include <limits.h>
