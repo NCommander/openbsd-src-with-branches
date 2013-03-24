@@ -1,4 +1,4 @@
-/* $OpenBSD: client.c,v 1.60 2012/09/03 08:48:57 nicm Exp $ */
+/* $OpenBSD: client.c,v 1.61 2013/03/22 10:31:22 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -188,7 +188,8 @@ client_main(int argc, char **argv, int flags)
 		 * later in server) but it is necessary to get the start server
 		 * flag.
 		 */
-		if ((cmdlist = cmd_list_parse(argc, argv, &cause)) == NULL) {
+		cmdlist = cmd_list_parse(argc, argv, NULL, 0, &cause);
+		if (cmdlist == NULL) {
 			fprintf(stderr, "%s\n", cause);
 			return (1);
 		}
