@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-detach-client.c,v 1.10 2012/06/18 09:15:22 nicm Exp $ */
+/* $OpenBSD: cmd-detach-client.c,v 1.11 2012/07/11 07:10:15 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -61,7 +61,7 @@ cmd_detach_client_exec(struct cmd *self, struct cmd_ctx *ctx)
 				server_write_client(c, msgtype, NULL, 0);
 		}
 	} else {
-		c = cmd_find_client(ctx, args_get(args, 't'));
+		c = cmd_find_client(ctx, args_get(args, 't'), 0);
 		if (c == NULL)
 			return (CMD_RETURN_ERROR);
 

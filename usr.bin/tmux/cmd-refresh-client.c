@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-refresh-client.c,v 1.7 2012/07/11 07:10:15 nicm Exp $ */
+/* $OpenBSD: cmd-refresh-client.c,v 1.8 2013/03/21 16:49:37 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -44,7 +44,7 @@ cmd_refresh_client_exec(struct cmd *self, struct cmd_ctx *ctx)
 	const char	*size;
 	u_int		 w, h;
 
-	if ((c = cmd_find_client(ctx, args_get(args, 't'))) == NULL)
+	if ((c = cmd_find_client(ctx, args_get(args, 't'), 0)) == NULL)
 		return (CMD_RETURN_ERROR);
 
 	if (args_has(args, 'C')) {
