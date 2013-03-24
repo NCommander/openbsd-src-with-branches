@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.23 2011/11/22 21:13:30 guenther Exp $	*/
+/*	$OpenBSD: signal.h,v 1.24 2012/12/05 23:20:24 deraadt Exp $	*/
 /*	$NetBSD: signal.h,v 1.21 1996/02/09 18:25:32 christos Exp $	*/
 
 /*
@@ -183,6 +183,7 @@ typedef struct sigaltstack {
 typedef struct sigcontext ucontext_t;
 #endif /* __BSD_VISIBLE || __XPG_VISIBLE >= 420 */
 
+#ifndef _KERNEL
 /*
  * For historical reasons; programs expect signal's return value to be
  * defined by <sys/signal.h>.
@@ -190,4 +191,5 @@ typedef struct sigcontext ucontext_t;
 __BEGIN_DECLS
 void	(*signal(int, void (*)(int)))(int);
 __END_DECLS
+#endif /* !_KERNEL */
 #endif	/* !_SYS_SIGNAL_H_ */
