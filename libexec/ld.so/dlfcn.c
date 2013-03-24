@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.86 2012/06/12 20:32:16 matthew Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.87 2012/08/31 19:44:03 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -313,10 +313,10 @@ _dl_real_close(void *handle)
 /*
  * Return a character string describing the last dl... error occurred.
  */
-const char *
+char *
 dlerror(void)
 {
-	const char *errmsg;
+	char *errmsg;
 
 	switch (_dl_errno) {
 	case 0:	/* NO ERROR */
