@@ -1,4 +1,4 @@
-/*	$OpenBSD: lf.c,v 1.7 2004/04/07 18:24:20 mickey Exp $	*/
+/*	$OpenBSD: lf.c,v 1.1 2005/04/01 10:40:48 mickey Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -17,10 +17,10 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/param.h>
 #include "libsa.h"
 #include <machine/pdc.h>
 #include <machine/iomod.h>
-#include <machine/param.h>
 
 #include "dev_hppa64.h"
 
