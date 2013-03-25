@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.38 2012/11/11 20:40:49 deraadt Exp $	*/
+/*	$OpenBSD: display.c,v 1.39 2012/12/04 10:54:20 florian Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -851,11 +851,11 @@ modeline(struct mgwin *wp)
 
 	if (linenos && colnos)
 		len = snprintf(sl, sizeof(sl), "--L%d--C%d", wp->w_dotline,
-		    getcolpos());
+		    getcolpos(wp));
 	else if (linenos)
 		len = snprintf(sl, sizeof(sl), "--L%d", wp->w_dotline);
 	else if (colnos)
-		len = snprintf(sl, sizeof(sl), "--C%d", getcolpos());
+		len = snprintf(sl, sizeof(sl), "--C%d", getcolpos(wp));
 	if ((linenos || colnos) && len < sizeof(sl) && len != -1)
 		n += vtputs(sl);
 

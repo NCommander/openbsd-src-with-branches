@@ -1,4 +1,4 @@
-/*	$OpenBSD: basic.c,v 1.37 2012/06/18 09:26:03 lum Exp $	*/
+/*	$OpenBSD: basic.c,v 1.38 2012/10/12 21:13:46 jasper Exp $	*/
 
 /* This file is in the public domain */
 
@@ -219,7 +219,7 @@ backline(int f, int n)
 void
 setgoal(void)
 {
-	curgoal = getcolpos();		/* Get the position. */
+	curgoal = getcolpos(curwp);	/* Get the position. */
 	/* we can now display past end of display, don't chop! */
 }
 
