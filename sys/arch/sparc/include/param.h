@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.46 2011/09/08 03:40:32 guenther Exp $	*/
+/*	$OpenBSD: param.h,v 1.47 2013/03/23 16:12:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -57,10 +57,6 @@
 #define	_MACHINE_ARCH	sparc
 #define	MACHINE_ARCH	"sparc"
 #define	MID_MACHINE	MID_SPARC
-
-#define	ALIGNBYTES		_ALIGNBYTES
-#define	ALIGN(p)		_ALIGN(p)
-#define	ALIGNED_POINTER(p,t)	_ALIGNED_POINTER(p,t)
 
 /*
  * The original SUN4 machines have 8K page size while the newer ones have a

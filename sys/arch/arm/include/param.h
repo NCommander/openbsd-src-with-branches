@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.17 2011/09/20 22:02:13 miod Exp $	*/
+/*	$OpenBSD: param.h,v 1.18 2013/03/23 16:12:20 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994,1995 Mark Brinicombe.
@@ -38,10 +38,6 @@
 #define	MACHINE_ARCH	"arm"
 #define	_MACHINE_ARCH	arm
 #define	MID_MACHINE	MID_ARM6
-
-#define	ALIGNBYTES		_ALIGNBYTES
-#define	ALIGN(p)		_ALIGN(p)
-#define	ALIGNED_POINTER(p,t)	_ALIGNED_POINTER(p,t)
 
 #define	PAGE_SHIFT	12
 #define	PAGE_SIZE	(1 << PAGE_SHIFT)
