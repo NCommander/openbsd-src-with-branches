@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-if-shell.c,v 1.20 2013/03/24 09:54:10 nicm Exp $ */
+/* $OpenBSD: cmd-if-shell.c,v 1.21 2013/03/25 11:36:42 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -89,7 +89,7 @@ cmd_if_shell_exec(struct cmd *self, struct cmd_q *cmdq)
 	cdata->cmdq = cmdq;
 	cmdq->references++;
 
-	job_run(shellcmd, cmd_if_shell_callback, cmd_if_shell_free, cdata);
+	job_run(shellcmd, s, cmd_if_shell_callback, cmd_if_shell_free, cdata);
 	free(shellcmd);
 
 	if (cdata->bflag)
