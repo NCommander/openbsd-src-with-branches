@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.h,v 1.16 2010/05/26 13:56:08 nicm Exp $ */
+/*	$OpenBSD: ospfe.h,v 1.17 2010/08/22 20:27:52 bluhm Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -93,6 +93,7 @@ struct nbr {
 	u_int8_t		 last_rx_bits;
 	u_int8_t		 dd_master;
 	u_int8_t		 dd_more;
+	u_int8_t		 dd_snapshot;	/* snapshot running */
 };
 
 /* database.c */
