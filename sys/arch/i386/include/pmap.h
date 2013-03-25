@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.59 2011/06/25 19:20:41 jsg Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.60 2013/03/23 16:12:23 deraadt Exp $	*/
 /*	$NetBSD: pmap.h,v 1.44 2000/04/24 17:18:18 thorpej Exp $	*/
 
 /*
@@ -203,7 +203,7 @@
  * pdei/ptei: generate index into PDP/PTP from a VA
  */
 #define	pdei(VA)	(((VA) & PD_MASK) >> PDSHIFT)
-#define	ptei(VA)	(((VA) & PT_MASK) >> PGSHIFT)
+#define	ptei(VA)	(((VA) & PT_MASK) >> PAGE_SHIFT)
 
 /*
  * PTP macros:
