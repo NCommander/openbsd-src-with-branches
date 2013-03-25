@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.16 2009/09/09 12:10:35 marex Exp $
+# $OpenBSD: Makefile,v 1.17 2010/01/30 20:48:19 miod Exp $
 
 NOPROG=
 NOMAN=
@@ -10,7 +10,7 @@ CC=${HOSTCC}
     ${MACHINE} == "armish" || ${MACHINE} == "hppa" || \
     ${MACHINE} == "hppa64" || ${MACHINE} == "i386" || \
     ${MACHINE} == "landisk" || ${MACHINE} == "loongson" || \
-    ${MACHINE} == "palm" || ${MACHINE} == "sgi" || \
+    ${MACHINE} == "sgi" || \
     ${MACHINE} == "sparc64" || ${MACHINE} == "zaurus")
 
 FIRM= 	atu-intersil-int atu-intersil-ext \
