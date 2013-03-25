@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.96 2013/03/25 10:03:24 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.97 2013/03/25 11:36:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -21,10 +21,10 @@
 
 #include <event.h>
 #include <fcntl.h>
-#include <string.h>
-#include <time.h>
 #include <paths.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "tmux.h"
