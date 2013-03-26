@@ -1,4 +1,4 @@
-/* $OpenBSD: if_vether.c,v 1.15 2010/04/02 21:45:49 deraadt Exp $ */
+/* $OpenBSD: if_vether.c,v 1.16 2011/07/22 15:59:40 deraadt Exp $ */
 
 /*
  * Copyright (c) 2009 Theo de Raadt
@@ -86,7 +86,7 @@ vether_clone_create(struct if_clone *ifc, int unit)
 	ifp->if_softc = sc;
 	ifp->if_ioctl = vetherioctl;
 	ifp->if_start = vetherstart;
-	IFQ_SET_MAXLEN(&ifp->if_snd, ifqmaxlen);
+	IFQ_SET_MAXLEN(&ifp->if_snd, IFQ_MAXLEN);
 	IFQ_SET_READY(&ifp->if_snd);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU;

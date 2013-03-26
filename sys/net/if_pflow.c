@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflow.c,v 1.23 2013/01/16 09:53:19 dlg Exp $	*/
+/*	$OpenBSD: if_pflow.c,v 1.24 2013/02/05 11:58:39 florian Exp $	*/
 
 /*
  * Copyright (c) 2011 Florian Obser <florian@narrans.de>
@@ -231,7 +231,7 @@ pflow_clone_create(struct if_clone *ifc, int unit)
 	ifp->if_output = pflowoutput;
 	ifp->if_start = pflowstart;
 	ifp->if_type = IFT_PFLOW;
-	IFQ_SET_MAXLEN(&ifp->if_snd, ifqmaxlen);
+	IFQ_SET_MAXLEN(&ifp->if_snd, IFQ_MAXLEN);
 	ifp->if_hdrlen = PFLOW_HDRLEN;
 	ifp->if_flags = IFF_UP;
 	ifp->if_flags &= ~IFF_RUNNING;	/* not running, need receiver */

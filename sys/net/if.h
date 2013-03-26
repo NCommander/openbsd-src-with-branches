@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.139 2013/03/07 09:40:19 mpi Exp $	*/
+/*	$OpenBSD: if.h,v 1.140 2013/03/20 10:34:12 mpi Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -796,7 +796,6 @@ do {									\
 #define IF_WIRED_DEFAULT_PRIORITY 0
 #define IF_WIRELESS_DEFAULT_PRIORITY 4
 
-extern int ifqmaxlen;
 extern struct ifnet_head ifnet;
 extern struct ifnet *lo0ifp;
 
