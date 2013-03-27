@@ -1,4 +1,4 @@
-/*	$OpenBSD: tar.c,v 1.43 2010/12/02 04:08:27 tedu Exp $	*/
+/*	$OpenBSD: tar.c,v 1.44 2012/12/04 02:24:45 deraadt Exp $	*/
 /*	$NetBSD: tar.c,v 1.5 1995/03/21 09:07:49 cgd Exp $	*/
 
 /*-
@@ -912,6 +912,12 @@ ustar_wr(ARCHD *arcn)
 		paxwarn(1, "Ustar cannot archive a socket %s", arcn->org_name);
 		return(1);
 	}
+
+	/*
+	 * user asked that dirs not be written to the archive
+	 */
+	if (arcn->type == PAX_DIR && tar_nodir)
+		return (1);
 
 	/*
 	 * check the length of the linkname
