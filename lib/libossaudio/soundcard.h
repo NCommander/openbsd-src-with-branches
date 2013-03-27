@@ -1,4 +1,4 @@
-/*	$OpenBSD: soundcard.h,v 1.12 2007/11/12 05:11:16 jakemsr Exp $	*/
+/*	$OpenBSD: soundcard.h,v 1.13 2008/06/26 05:42:05 ray Exp $	*/
 /*	$NetBSD: soundcard.h,v 1.11 2001/05/09 21:49:58 augustss Exp $	*/
 
 /*-
@@ -33,7 +33,7 @@
 /*
  * WARNING!  WARNING!
  * This is an OSS (Linux) audio emulator.
- * Use the Native NetBSD API for developing new code, and this
+ * Use the sndio(7) API for developing new code, and this
  * only for compiling Linux programs.
  */
 
