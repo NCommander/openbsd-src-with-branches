@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_shim.c,v 1.5 2009/01/08 12:47:45 michele Exp $	*/
+/*	$OpenBSD: mpls_shim.c,v 1.6 2009/01/28 22:18:44 michele Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -31,14 +31,12 @@
  */
 
 #include <sys/param.h>
-#include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/errno.h>
 #include <sys/socket.h>
 #include <sys/systm.h>
 
 #include <net/if.h>
-#include <net/route.h>
 
 #include <netmpls/mpls.h>
 

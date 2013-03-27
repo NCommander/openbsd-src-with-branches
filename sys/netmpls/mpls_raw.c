@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_raw.c,v 1.7 2010/07/15 13:30:45 claudio Exp $	*/
+/*	$OpenBSD: mpls_raw.c,v 1.8 2010/09/03 13:12:31 claudio Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -31,7 +31,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/errno.h>
 #include <sys/protosw.h>
@@ -39,12 +38,10 @@
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 #include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
-#include <net/route.h>
 
 #include <netmpls/mpls.h>
 

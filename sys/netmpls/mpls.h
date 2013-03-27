@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls.h,v 1.25 2010/09/08 08:00:56 claudio Exp $	*/
+/*	$OpenBSD: mpls.h,v 1.26 2013/03/26 13:19:26 mpi Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -35,7 +35,6 @@
 
 #include <sys/param.h>
 #include <sys/time.h>
-#include <sys/proc.h>
 #include <sys/queue.h>
 
 #include <net/if.h>
