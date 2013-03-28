@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.46 2013/03/04 14:42:25 bluhm Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.47 2013/03/14 11:18:37 mpi Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -121,7 +121,6 @@
 #define in6_rtchange	in_rtchange
 
 struct	inpcbtable rawin6pcbtable;
-#define ifatoia6(ifa)	((struct in6_ifaddr *)(ifa))
 
 struct rip6stat rip6stat;
 
