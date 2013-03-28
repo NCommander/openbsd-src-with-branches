@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vnops.c,v 1.28 2013/01/13 04:07:49 jsing Exp $	*/
+/*	$OpenBSD: ntfs_vnops.c,v 1.29 2013/01/14 09:44:57 jsing Exp $	*/
 /*	$NetBSD: ntfs_vnops.c,v 1.6 2003/04/10 21:57:26 jdolecek Exp $	*/
 
 /*
@@ -733,9 +733,6 @@ ntfs_pathconf(void *v)
 		break;
 	case _PC_NAME_MAX:
 		*ap->a_retval = NTFS_MAXFILENAME;
-		break;
-	case _PC_PATH_MAX:
-		*ap->a_retval = PATH_MAX;
 		break;
 	case _PC_CHOWN_RESTRICTED:
 		*ap->a_retval = 1;

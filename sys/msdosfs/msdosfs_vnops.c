@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vnops.c,v 1.82 2012/07/11 12:39:20 guenther Exp $	*/
+/*	$OpenBSD: msdosfs_vnops.c,v 1.83 2013/01/15 06:05:47 martynas Exp $	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.63 1997/10/17 11:24:19 ws Exp $	*/
 
 /*-
@@ -1881,9 +1881,6 @@ msdosfs_pathconf(void *v)
 		break;
 	case _PC_NAME_MAX:
 		*ap->a_retval = pmp->pm_flags & MSDOSFSMNT_LONGNAME ? WIN_MAXLEN : 12;
-		break;
-	case _PC_PATH_MAX:
-		*ap->a_retval = PATH_MAX;
 		break;
 	case _PC_CHOWN_RESTRICTED:
 		*ap->a_retval = 1;

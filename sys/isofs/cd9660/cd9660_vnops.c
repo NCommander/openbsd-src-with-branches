@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vnops.c,v 1.56 2011/07/09 16:51:08 matthew Exp $	*/
+/*	$OpenBSD: cd9660_vnops.c,v 1.57 2012/09/26 04:32:40 brad Exp $	*/
 /*	$NetBSD: cd9660_vnops.c,v 1.42 1997/10/16 23:56:57 christos Exp $	*/
 
 /*-
@@ -875,12 +875,6 @@ cd9660_pathconf(void *v)
 			*ap->a_retval = NAME_MAX;
 		else
 			*ap->a_retval = 37;
-		break;
-	case _PC_PATH_MAX:
-		*ap->a_retval = PATH_MAX;
-		break;
-	case _PC_PIPE_BUF:
-		*ap->a_retval = PIPE_BUF;
 		break;
 	case _PC_CHOWN_RESTRICTED:
 		*ap->a_retval = 1;
