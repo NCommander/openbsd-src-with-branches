@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhts.c,v 1.3 2011/04/07 15:30:16 miod Exp $ */
+/*	$OpenBSD: uhts.c,v 1.4 2011/07/03 15:47:17 matthew Exp $ */
 /*
  * Copyright (c) 2009 Matthieu Herrb <matthieu@herrb.eu>
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -54,7 +54,6 @@
 #include <sys/file.h>
 #include <sys/selinfo.h>
 #include <sys/proc.h>
-#include <sys/vnode.h>
 #include <sys/poll.h>
 
 #include <dev/usb/usb.h>
