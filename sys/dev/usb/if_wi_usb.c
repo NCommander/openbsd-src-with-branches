@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_usb.c,v 1.54 2011/09/18 23:24:12 krw Exp $ */
+/*	$OpenBSD: if_wi_usb.c,v 1.55 2011/12/03 03:34:40 krw Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -35,7 +35,6 @@
 #include <sys/mbuf.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
 #include <sys/socket.h>
 #include <sys/device.h>
 #include <sys/timeout.h>

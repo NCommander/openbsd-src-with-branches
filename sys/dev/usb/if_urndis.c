@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urndis.c,v 1.35 2012/12/05 23:20:21 deraadt Exp $ */
+/*	$OpenBSD: if_urndis.c,v 1.36 2013/02/02 15:03:58 fgsch Exp $ */
 
 /*
  * Copyright (c) 2010 Jonathan Armani <armani@openbsd.org>
@@ -27,7 +27,6 @@
 #include <sys/rwlock.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
 #include <sys/socket.h>
 
 #include <sys/device.h>

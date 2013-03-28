@@ -1,4 +1,4 @@
-/*	$OpenBSD: uow.c,v 1.29 2011/01/25 20:03:36 jakemsr Exp $	*/
+/*	$OpenBSD: uow.c,v 1.30 2011/07/03 15:47:17 matthew Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -24,7 +24,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
 
 #include <dev/onewire/onewirereg.h>
 #include <dev/onewire/onewirevar.h>

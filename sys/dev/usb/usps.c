@@ -1,4 +1,4 @@
-/*	$OpenBSD:$   */
+/*	$OpenBSD: usps.c,v 1.1 2011/09/16 15:48:19 yuo Exp $   */
 
 /*
  * Copyright (c) 2011 Yojiro UO <yuo@nui.org>
@@ -19,7 +19,6 @@
 /* Driver for usb smart power strip FX-5204PS */
 
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>

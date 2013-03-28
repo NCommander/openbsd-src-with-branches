@@ -1,4 +1,4 @@
-/*	$OpenBSD: urio.c,v 1.38 2011/01/25 20:03:36 jakemsr Exp $	*/
+/*	$OpenBSD: urio.c,v 1.39 2011/07/03 15:47:17 matthew Exp $	*/
 /*	$NetBSD: urio.c,v 1.15 2002/10/23 09:14:02 jdolecek Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 #include <sys/conf.h>
 #include <sys/file.h>
 #include <sys/selinfo.h>
-#include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/poll.h>
 

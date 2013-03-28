@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoakv.c,v 1.1 2012/09/20 13:52:11 yuo Exp $   */
+/*	$OpenBSD: uoakv.c,v 1.2 2012/10/19 14:52:38 deraadt Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -20,7 +20,6 @@
 /* http://developer.toradex.com/files/toradex-dev/uploads/media/Oak/Oak_ProgrammingGuide.pdf */
 
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>

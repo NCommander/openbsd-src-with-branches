@@ -1,4 +1,4 @@
-/*	$OpenBSD: utwitch.c,v 1.4 2011/03/02 07:15:45 jasper Exp $ */
+/*	$OpenBSD: utwitch.c,v 1.5 2011/07/03 15:47:17 matthew Exp $ */
 
 /*
  * Copyright (c) 2010 Yojiro UO <yuo@nui.org>
@@ -20,7 +20,6 @@
 /* this driver was previously known as uyurex(4). */
 
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
