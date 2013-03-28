@@ -1,4 +1,4 @@
-/*	$OpenBSD: getconf.c,v 1.14 2013/03/02 07:18:17 jmc Exp $	*/
+/*	$OpenBSD: getconf.c,v 1.15 2013/03/07 08:54:53 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -287,7 +287,7 @@ const struct conf_variable uposix_conf_table[] =
   pathconf_row(ASYNC_IO)
   pathconf_row(PRIO_IO)
   pathconf_row(SYNC_IO)
-  /*pathconf_row(TIMESTAMP_RESOLUTION)*/
+  pathconf_row(TIMESTAMP_RESOLUTION)
 
   { NULL }
 };

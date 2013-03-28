@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vnops.c,v 1.57 2012/09/26 04:32:40 brad Exp $	*/
+/*	$OpenBSD: cd9660_vnops.c,v 1.58 2013/03/28 02:08:39 guenther Exp $	*/
 /*	$NetBSD: cd9660_vnops.c,v 1.42 1997/10/16 23:56:57 christos Exp $	*/
 
 /*-
@@ -881,6 +881,9 @@ cd9660_pathconf(void *v)
 		break;
 	case _PC_NO_TRUNC:
 		*ap->a_retval = 1;
+		break;
+	case _PC_TIMESTAMP_RESOLUTION:
+		*ap->a_retval = 1000000000;	/* one billion nanoseconds */
 		break;
 	default:
 		error = EINVAL;
