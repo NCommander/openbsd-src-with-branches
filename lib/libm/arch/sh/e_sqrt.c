@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_sqrt.c,v 1.3 2012/12/05 23:20:03 deraadt Exp $	*/
+/*	$OpenBSD: e_sqrt.c,v 1.4 2013/01/13 03:44:59 martynas Exp $	*/
 
 /*
  * Written by Martynas Venckus.  Public domain
@@ -32,4 +32,4 @@ sqrt(double d)
 	return (d);
 }
 
-__weak_alias(sqrtl,sqrt);
+__strong_alias(sqrtl,sqrt);

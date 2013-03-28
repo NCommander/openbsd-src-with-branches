@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_round.c,v 1.3 2012/12/05 23:20:04 deraadt Exp $	*/
+/*	$OpenBSD: s_round.c,v 1.4 2013/01/13 03:45:00 martynas Exp $	*/
 
 /*-
  * Copyright (c) 2003, Steven G. Kargl
@@ -53,5 +53,5 @@ round(double x)
 }
 
 #if	LDBL_MANT_DIG == 53
-__weak_alias(roundl, round);
+__strong_alias(roundl, round);
 #endif	/* LDBL_MANT_DIG == 53 */

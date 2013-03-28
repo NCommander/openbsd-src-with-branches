@@ -1,4 +1,4 @@
-/*	$OpenBSD: b_tgamma.c,v 1.5 2012/12/05 23:20:03 deraadt Exp $	*/
+/*	$OpenBSD: b_tgamma.c,v 1.6 2013/01/13 03:45:00 martynas Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -334,5 +334,5 @@ neg_gam(double x)
 }
 
 #if	LDBL_MANT_DIG == 53
-__weak_alias(tgammal, tgamma);
+__strong_alias(tgammal, tgamma);
 #endif	/* LDBL_MANT_DIG == 53 */

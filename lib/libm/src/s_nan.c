@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_nan.c,v 1.8 2012/12/05 23:20:04 deraadt Exp $	*/
+/*	$OpenBSD: s_nan.c,v 1.9 2013/01/13 03:45:00 martynas Exp $	*/
 /*-
  * Copyright (c) 2007 David Schultz
  * All rights reserved.
@@ -123,5 +123,5 @@ nanf(const char *s)
 }
 
 #if	LDBL_MANT_DIG == 53
-__weak_alias(nanl, nan);
+__strong_alias(nanl, nan);
 #endif	/* LDBL_MANT_DIG == 53 */

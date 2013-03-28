@@ -1,4 +1,4 @@
-/*	$OpenBSD: fabs.c,v 1.6 2011/07/08 22:28:33 martynas Exp $	*/
+/*	$OpenBSD: fabs.c,v 1.7 2012/12/05 23:19:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002 Theo de Raadt
@@ -34,4 +34,4 @@ fabs(double x)
 	return (x);
 }
 
-__weak_alias(fabsl, fabs);
+__strong_alias(fabsl, fabs);

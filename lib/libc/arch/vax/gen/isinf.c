@@ -1,4 +1,4 @@
-/*	$OpenBSD: isinf.c,v 1.12 2011/07/02 19:27:34 martynas Exp $	*/
+/*	$OpenBSD: isinf.c,v 1.13 2012/12/05 23:19:59 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -29,33 +29,24 @@
  * SUCH DAMAGE.
  */
 
-/* LINTLIBRARY */
-
 #include <sys/types.h>
 
-/* ARGSUSED */
 int
 __isinf(double d)
 {
 	return(0);
 }
 
-/* ARGSUSED */
 int
 __isinff(float f)
 {
 	return(0);
 }
 
-#ifdef	lint
-/* PROTOLIB1 */
-int __isinfl(long double);
-#else	/* lint */
-__weak_alias(__isinfl, __isinf);
-#endif	/* lint */
+__strong_alias(__isinfl, __isinf);
 
 /*
  * 3BSD compatibility aliases.
  */
-__weak_alias(isinf, __isinf);
-__weak_alias(isinff, __isinff);
+__strong_alias(isinf, __isinf);
+__strong_alias(isinff, __isinff);

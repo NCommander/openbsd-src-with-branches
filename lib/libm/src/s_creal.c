@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_creal.c,v 1.3 2012/12/05 23:20:04 deraadt Exp $	*/
+/*	$OpenBSD: s_creal.c,v 1.4 2013/01/13 03:45:00 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -26,5 +26,5 @@ creal(double complex z)
 }
 
 #if	LDBL_MANT_DIG == 53
-__weak_alias(creall, creal);
+__strong_alias(creall, creal);
 #endif	/* LDBL_MANT_DIG == 53 */

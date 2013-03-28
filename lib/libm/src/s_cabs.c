@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_cabs.c,v 1.3 2012/12/05 23:20:04 deraadt Exp $	*/
+/*	$OpenBSD: s_cabs.c,v 1.4 2013/01/13 03:45:00 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -26,5 +26,5 @@ cabs(double complex z)
 }
 
 #if	LDBL_MANT_DIG == 53
-__weak_alias(cabsl, cabs);
+__strong_alias(cabsl, cabs);
 #endif	/* LDBL_MANT_DIG == 53 */
