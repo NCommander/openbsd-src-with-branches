@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.8 2010/10/01 05:02:19 guenther Exp $	*/
+/*	$OpenBSD: asm.h,v 1.9 2012/08/22 17:19:35 pascal Exp $	*/
 /*	$NetBSD: asm.h,v 1.1 1996/09/30 16:34:20 ws Exp $	*/
 
 /*
@@ -103,6 +103,8 @@ _TMP_LABEL(y):; \
 
 #define RCSID(x)	.text; .asciz x
 
+#define STRONG_ALIAS(alias,sym) \
+	.global alias; .set alias,sym
 #define WEAK_ALIAS(alias,sym) \
 	.weak alias; .set alias,sym
 
