@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_loop.c,v 1.47 2012/04/14 09:39:47 yasuoka Exp $	*/
+/*	$OpenBSD: if_loop.c,v 1.48 2013/03/10 13:15:48 claudio Exp $	*/
 /*	$NetBSD: if_loop.c,v 1.15 1996/05/07 02:40:33 thorpej Exp $	*/
 
 /*
@@ -116,7 +116,6 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 
-#include <machine/cpu.h>
 
 #include <net/if.h>
 #include <net/if_types.h>

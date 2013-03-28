@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_kthread.c,v 1.30 2008/06/26 05:42:20 ray Exp $	*/
+/*	$OpenBSD: kern_kthread.c,v 1.31 2011/11/09 20:57:38 guenther Exp $	*/
 /*	$NetBSD: kern_kthread.c,v 1.3 1998/12/22 21:21:36 kleink Exp $	*/
 
 /*-
@@ -40,7 +40,6 @@
 #include <sys/malloc.h>
 #include <sys/queue.h>
 
-#include <machine/cpu.h>
 
 /*
  * note that stdarg.h and the ansi style va_start macro is used for both

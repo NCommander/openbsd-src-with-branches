@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.118 2012/08/02 03:18:48 guenther Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.119 2012/09/08 14:52:00 kettenis Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -70,7 +70,6 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
-#include <machine/cpu.h>
 
 #include <uvm/uvm_extern.h>
 

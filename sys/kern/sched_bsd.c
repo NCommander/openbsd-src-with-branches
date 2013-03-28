@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched_bsd.c,v 1.29 2012/03/23 15:51:26 guenther Exp $	*/
+/*	$OpenBSD: sched_bsd.c,v 1.30 2012/07/09 17:27:32 haesbaert Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -52,7 +52,6 @@
 #include <sys/ktrace.h>
 #endif
 
-#include <machine/cpu.h>
 
 int	lbolt;			/* once a second sleep address */
 int	rrticks_init;		/* # of hardclock ticks per roundrobin() */

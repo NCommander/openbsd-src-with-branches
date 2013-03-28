@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.112 2011/07/09 00:47:18 henning Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.113 2013/03/26 13:19:26 mpi Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -56,7 +56,6 @@
 #include <sys/poll.h>
 #include <sys/conf.h>
 
-#include <machine/cpu.h>
 
 #include <net/if.h>
 #include <net/if_types.h>

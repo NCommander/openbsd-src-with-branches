@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fddisubr.c,v 1.59 2010/05/07 13:33:16 claudio Exp $	*/
+/*	$OpenBSD: if_fddisubr.c,v 1.60 2010/08/24 14:43:56 blambert Exp $	*/
 /*	$NetBSD: if_fddisubr.c,v 1.5 1996/05/07 23:20:21 christos Exp $	*/
 
 /*
@@ -85,7 +85,6 @@
 #include <sys/errno.h>
 #include <sys/syslog.h>
 
-#include <machine/cpu.h>
 
 #include <net/if.h>
 #include <net/netisr.h>

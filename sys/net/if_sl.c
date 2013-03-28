@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sl.c,v 1.45 2013/01/17 21:22:54 deraadt Exp $	*/
+/*	$OpenBSD: if_sl.c,v 1.46 2013/03/28 16:45:16 tedu Exp $	*/
 /*	$NetBSD: if_sl.c,v 1.39.4.1 1996/06/02 16:26:31 thorpej Exp $	*/
 
 /*
@@ -75,7 +75,6 @@
 #include <sys/systm.h>
 #endif
 
-#include <machine/cpu.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
