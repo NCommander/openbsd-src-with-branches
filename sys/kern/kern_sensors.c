@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sensors.c,v 1.23 2009/08/03 07:08:33 blambert Exp $	*/
+/*	$OpenBSD: kern_sensors.c,v 1.24 2010/04/20 20:49:33 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -23,7 +23,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/queue.h>
-#include <sys/types.h>
 #include <sys/device.h>
 #include <sys/hotplug.h>
 #include <sys/timeout.h>

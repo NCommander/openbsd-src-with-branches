@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_hibernate.c,v 1.51 2013/03/06 08:34:05 mlarkin Exp $	*/
+/*	$OpenBSD: subr_hibernate.c,v 1.52 2013/03/07 01:26:54 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -21,7 +21,6 @@
 #include <sys/malloc.h>
 #include <sys/param.h>
 #include <sys/tree.h>
-#include <sys/types.h>
 #include <sys/systm.h>
 #include <sys/disklabel.h>
 #include <sys/disk.h>
