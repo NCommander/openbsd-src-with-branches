@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.45 2012/09/18 09:24:45 markus Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.46 2012/09/20 10:25:03 blambert Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -27,6 +27,7 @@
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/kernel.h>
+#include <sys/timeout.h>
 
 #include <net/if.h>
 #include <net/route.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.99 2013/03/28 00:32:11 bluhm Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.100 2013/03/28 16:45:16 tedu Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -47,6 +47,7 @@
 #include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
+#include <sys/timeout.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
 

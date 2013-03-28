@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.202 2013/03/28 16:45:16 tedu Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.203 2013/03/28 16:55:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -41,6 +41,7 @@
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/timeout.h>
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/device.h>
