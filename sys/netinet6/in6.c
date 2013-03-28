@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.108 2013/03/22 01:41:12 tedu Exp $	*/
+/*	$OpenBSD: in6.c,v 1.109 2013/03/25 14:40:57 mpi Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -72,7 +72,6 @@
 #include <sys/socketvar.h>
 #include <sys/sockio.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 #include <sys/time.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>

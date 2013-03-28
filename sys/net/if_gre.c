@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.59 2012/11/23 20:12:03 sthen Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.60 2013/03/28 00:32:11 bluhm Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -45,7 +45,6 @@
 #include "pf.h"
 
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>

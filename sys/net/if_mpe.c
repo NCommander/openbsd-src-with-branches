@@ -1,4 +1,4 @@
-/* $OpenBSD: if_mpe.c,v 1.27 2012/04/14 09:39:47 yasuoka Exp $ */
+/* $OpenBSD: if_mpe.c,v 1.28 2013/03/26 13:19:25 mpi Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -20,7 +20,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
-#include <sys/proc.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/ioctl.h>

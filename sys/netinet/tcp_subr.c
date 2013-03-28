@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.113 2012/03/10 12:03:29 claudio Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.114 2012/12/28 17:52:06 gsoares Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -70,7 +70,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>

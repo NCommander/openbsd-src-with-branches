@@ -1,4 +1,4 @@
-/* $OpenBSD: if_pppoe.c,v 1.34 2012/01/19 01:13:20 sthen Exp $ */
+/* $OpenBSD: if_pppoe.c,v 1.35 2012/04/11 17:42:53 mikeb Exp $ */
 /* $NetBSD: if_pppoe.c,v 1.51 2003/11/28 08:56:48 keihan Exp $ */
 
 /*
@@ -42,7 +42,6 @@
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/syslog.h>
-#include <sys/proc.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <net/if_types.h>

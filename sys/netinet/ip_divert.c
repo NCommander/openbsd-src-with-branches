@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_divert.c,v 1.9 2012/07/13 16:27:30 claudio Exp $ */
+/*      $OpenBSD: ip_divert.c,v 1.10 2012/10/21 13:06:03 benno Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
-#include <sys/proc.h>
 #include <sys/sysctl.h>
 
 #include <net/if.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: if_vether.c,v 1.16 2011/07/22 15:59:40 deraadt Exp $ */
+/* $OpenBSD: if_vether.c,v 1.17 2013/03/26 13:19:26 mpi Exp $ */
 
 /*
  * Copyright (c) 2009 Theo de Raadt
@@ -19,7 +19,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
-#include <sys/proc.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/ioctl.h>

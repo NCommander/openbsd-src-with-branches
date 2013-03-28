@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_src.c,v 1.29 2013/03/20 10:34:12 mpi Exp $	*/
+/*	$OpenBSD: in6_src.c,v 1.30 2013/03/28 00:32:11 bluhm Exp $	*/
 /*	$KAME: in6_src.c,v 1.36 2001/02/06 04:08:17 itojun Exp $	*/
 
 /*
@@ -71,7 +71,6 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/time.h>
-#include <sys/proc.h>
 
 #include <net/if.h>
 #include <net/route.h>

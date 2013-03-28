@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppx.c,v 1.15 2012/09/19 17:50:17 yasuoka Exp $ */
+/*	$OpenBSD: if_pppx.c,v 1.16 2013/02/06 22:58:18 sthen Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -48,7 +48,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/queue.h>
 #include <sys/rwlock.h>

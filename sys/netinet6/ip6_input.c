@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.108 2013/03/25 14:40:57 mpi Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.109 2013/03/26 13:19:26 mpi Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -76,7 +76,6 @@
 #include <sys/time.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
-#include <sys/proc.h>
 
 #include <net/if.h>
 #include <net/if_types.h>

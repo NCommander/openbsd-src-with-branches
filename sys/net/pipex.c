@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.37 2012/12/14 01:19:26 dlg Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.38 2013/02/13 22:10:38 yasuoka Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -27,7 +27,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_pcb.c,v 1.51 2013/03/04 14:42:25 bluhm Exp $	*/
+/*	$OpenBSD: in6_pcb.c,v 1.52 2013/03/25 14:40:57 mpi Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -109,7 +109,6 @@
 #include <sys/socketvar.h>
 #include <sys/errno.h>
 #include <sys/time.h>
-#include <sys/proc.h>
 
 #include <net/if.h>
 #include <net/route.h>
