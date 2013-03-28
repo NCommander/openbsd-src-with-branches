@@ -1,4 +1,4 @@
-/* $OpenBSD: i915_drv.h,v 1.7 2013/03/28 05:13:07 jsg Exp $ */
+/* $OpenBSD: i915_drv.h,v 1.8 2013/03/28 11:51:05 jsg Exp $ */
 /* i915_drv.h -- Private header for the I915 driver -*- linux-c -*-
  */
 /*
@@ -1542,6 +1542,7 @@ extern int i915_semaphores;
 extern int i915_vbt_sdvo_panel_type;
 extern int i915_enable_rc6;
 extern int i915_enable_fbc;
+extern bool i915_enable_hangcheck;
 
 /* Inlines */
 
