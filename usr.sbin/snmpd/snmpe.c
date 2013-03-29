@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpe.c,v 1.31 2012/09/18 08:29:09 reyk Exp $	*/
+/*	$OpenBSD: snmpe.c,v 1.32 2012/11/29 14:53:24 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -697,7 +697,8 @@ snmpe_parse(struct sockaddr_storage *ss,
 					ber_free_elements(c);
 					goto varfail;
 				case SNMP_C_SETREQ:
-					if (mps_setreq(b, &o) == 0)
+					if (env->sc_readonly == 0
+					    && mps_setreq(b, &o) == 0)
 						break;
 					msg->sm_error = SNMP_ERROR_READONLY;
 					goto varfail;
