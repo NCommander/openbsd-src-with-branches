@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid1.c,v 1.42 2013/03/25 16:01:49 jsing Exp $ */
+/* $OpenBSD: softraid_raid1.c,v 1.43 2013/03/27 14:30:11 jsing Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  *
@@ -540,9 +540,6 @@ sr_raid1_intr(struct buf *bp)
 	} else {
 		sr_scsi_done(sd, xs);
 	}
-
-	if (sd->sd_sync && sd->sd_wu_pending == 0)
-		wakeup(sd);
 
 done:
 	splx(s);
