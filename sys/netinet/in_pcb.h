@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.75 2013/01/16 00:07:22 bluhm Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.76 2013/03/14 11:18:37 mpi Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -69,6 +69,8 @@
 #include <netinet6/ip6_var.h>
 #include <netinet/icmp6.h>
 #include <netinet/ip_ipsp.h>
+
+struct pf_state_key;
 
 union inpaddru {
 	struct in6_addr iau_addr6;
@@ -145,7 +147,7 @@ struct inpcb {
 #define inp_csumoffset	in6p_cksum
 #endif
 	struct	icmp6_filter *inp_icmp6filt;
-	void	*inp_pf_sk;
+	struct	pf_state_key *inp_pf_sk;
 	u_int	inp_rtableid;
 	int	inp_pipex;		/* pipex indication */
 	int	inp_divertfl;		/* divert flags */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.132 2013/03/28 00:32:11 bluhm Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.133 2013/03/28 12:06:55 mpi Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -500,7 +500,7 @@ in_pcbdetach(struct inpcb *inp)
 #endif
 #if NPF > 0
 	if (inp->inp_pf_sk)
-		((struct pf_state_key *)inp->inp_pf_sk)->inp = NULL;
+		inp->inp_pf_sk->inp = NULL;
 #endif
 	s = splnet();
 	LIST_REMOVE(inp, inp_lhash);
