@@ -1,4 +1,4 @@
-/* $OpenBSD: cpufunc_asm_armv7.S,v 1.4 2013/01/25 20:23:48 bmercer Exp $ */
+/* $OpenBSD: cpufunc_asm_armv7.S,v 1.5 2013/03/27 00:20:00 patrick Exp $ */
 /*
  * Copyright (c) 2008 Dale Rahn <drahn@openbsd.org>
  *
@@ -29,6 +29,13 @@ ENTRY(armv7_cpu_sleep)
 ENTRY(armv7_drain_writebuf)
 	DSB
 	ISB
+	mov	pc, lr
+
+/*
+ * Function to read the MPCore base address
+ */
+ENTRY(armv7_periphbase)
+	mrc	p15, 4, r0, c15, c0, 0
 	mov	pc, lr
 
 /*
