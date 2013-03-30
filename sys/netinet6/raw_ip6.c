@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.48 2013/03/28 00:32:11 bluhm Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.49 2013/03/28 16:45:16 tedu Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -611,6 +611,10 @@ rip6_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 			panic("rip6_attach");
 		if (!priv) {
 			error = EACCES;
+			break;
+		}
+		if ((long)nam < 0 || (long)nam >= IPPROTO_MAX) {
+			error = EPROTONOSUPPORT;
 			break;
 		}
 		s = splsoftnet();
