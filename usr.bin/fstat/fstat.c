@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.73 2012/11/30 14:40:03 mikeb Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.74 2013/03/24 15:09:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -489,7 +489,7 @@ pipetrans(struct kinfo_file2 *kf)
 
 	printf("pipe ");
 	hide(maxaddr);
-	printf("state: %s%s%s",
+	printf(" state: %s%s%s",
 	    (kf->pipe_state & PIPE_WANTR) ? "R" : "",
 	    (kf->pipe_state & PIPE_WANTW) ? "W" : "",
 	    (kf->pipe_state & PIPE_EOF) ? "E" : "");
