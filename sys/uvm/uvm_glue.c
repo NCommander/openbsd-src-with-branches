@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_glue.c,v 1.58 2011/04/15 21:47:24 oga Exp $	*/
+/*	$OpenBSD: uvm_glue.c,v 1.59 2012/03/23 15:51:26 guenther Exp $	*/
 /*	$NetBSD: uvm_glue.c,v 1.44 2001/02/06 19:54:44 eeh Exp $	*/
 
 /* 
@@ -83,8 +83,6 @@
 #include <sys/sched.h>
 
 #include <uvm/uvm.h>
-
-#include <machine/cpu.h>
 
 /*
  * uvm_kernacc: can the kernel access a region of memory
