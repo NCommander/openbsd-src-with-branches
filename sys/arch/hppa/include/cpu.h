@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.84 2013/03/12 09:37:16 mpi Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.85 2013/03/23 16:12:22 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -51,8 +51,10 @@
 #ifndef	_MACHINE_CPU_H_
 #define	_MACHINE_CPU_H_
 
+#ifdef _KERNEL
 #include <machine/trap.h>
 #include <machine/frame.h>
+#endif /* _KERNEL */
 
 /*
  * CPU types and features
