@@ -1,4 +1,4 @@
-/*	$OpenBSD: hd.c,v 1.7 2011/03/13 00:13:52 deraadt Exp $	*/
+/*	$OpenBSD: hd.c,v 1.8 2013/02/02 13:34:29 miod Exp $	*/
 /*	$NetBSD: rd.c,v 1.11 1996/12/21 21:34:40 thorpej Exp $	*/
 
 /*
@@ -49,6 +49,7 @@
 
 #include "samachdep.h"
 
+#define	DEV_BSHIFT _DEV_BSHIFT
 #include <hp300/dev/hdreg.h>
 #include "hpibvar.h"
 
