@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.4 2011/03/23 16:54:35 pirofti Exp $	*/
+/*	$OpenBSD: signal.h,v 1.5 2012/12/02 07:03:31 guenther Exp $	*/
 
 /* 
  * Copyright (c) 1994, The University of Utah and
@@ -34,7 +34,7 @@
 
 typedef int sig_atomic_t;
 
-#if __BSD_VISIBLE
+#ifdef _KERNEL
 #include <machine/trap.h>
 #endif
 
