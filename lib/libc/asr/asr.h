@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.h,v 1.3 2012/09/06 08:36:52 eric Exp $	*/
+/*	$OpenBSD: asr.h,v 1.4 2012/11/24 15:12:48 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -75,8 +75,8 @@ void async_abort(struct async *);
 /* This opaque structure holds an async resolver context. */
 struct asr;
 
-struct asr *async_resolver(const char*);
-void	    async_resolver_done(struct asr*);
+struct asr *async_resolver(const char *);
+void	    async_resolver_done(struct asr *);
 
 /* Async version of the resolver API */
 

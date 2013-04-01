@@ -1,4 +1,4 @@
-/*	$OpenBSD: getnetnamadr.c,v 1.1 2012/09/08 11:08:21 eric Exp $	*/
+/*	$OpenBSD: getnetnamadr.c,v 1.2 2012/11/24 15:12:48 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -41,7 +41,7 @@ _fillnetent(const struct netent *e, struct netent *r, char *buf, size_t len)
 	int	naliases;
 
 	end = buf + len;
-	ptr = (char**)buf; /* XXX align */
+	ptr = (char **)buf; /* XXX align */
 
 	for (naliases = 0; e->n_aliases[naliases]; naliases++)
 		;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: gethostnamadr.c,v 1.2 2012/11/24 15:12:48 eric Exp $	*/
+/*	$OpenBSD: gethostnamadr.c,v 1.3 2013/04/01 07:47:26 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -27,7 +27,7 @@
 #include "asr.h"
 
 #define PALIGN(p, l) \
-	((char*)(p) + (((uintptr_t)(p) % (l)) ? \
+	((char *)(p) + (((uintptr_t)(p) % (l)) ? \
                 (l) - (uintptr_t)(p) % (l) : 0))
 
 static struct hostent *_gethostbyname(const char *, int);
@@ -52,9 +52,9 @@ _fillhostent(const struct hostent *h, struct hostent *r, char *buf, size_t len)
 	r->h_addr_list = _empty;
 
 	end = buf + len;
-	ptr = (char**)PALIGN(buf, sizeof(char*));
+	ptr = (char **)PALIGN(buf, sizeof(char *));
 
-	if ((char*)ptr >= end)
+	if ((char *)ptr >= end)
 		return;
 
 	for (naliases = 0; h->h_aliases[naliases]; naliases++)
@@ -62,7 +62,7 @@ _fillhostent(const struct hostent *h, struct hostent *r, char *buf, size_t len)
 	for (naddrs = 0; h->h_addr_list[naddrs]; naddrs++)
 		;
 
-	pos = (char*)(ptr + (naliases + 1) + (naddrs + 1));
+	pos = (char *)(ptr + (naliases + 1) + (naddrs + 1));
 	if (pos >= end)
 		return;
 
