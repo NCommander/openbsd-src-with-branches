@@ -1,4 +1,4 @@
-/*	$OpenBSD: res_search_async.c,v 1.4 2013/03/27 07:40:41 eric Exp $	*/
+/*	$OpenBSD: res_search_async.c,v 1.5 2013/04/01 15:49:54 deraadt Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -121,7 +121,7 @@ res_search_async_run(struct async *as, struct async_res *ar)
 			async_set_state(as, ASR_STATE_NOT_FOUND);
 			break;
 		}
-		if (r > sizeof(fqdn)) {
+		if (r == 0) {
 			ar->ar_errno = EINVAL;
 			ar->ar_h_errno = NO_RECOVERY;
 			ar->ar_datalen = -1;
