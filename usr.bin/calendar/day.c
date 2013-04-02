@@ -1,4 +1,4 @@
-/*	$OpenBSD: day.c,v 1.22 2009/10/27 23:59:36 deraadt Exp $	*/
+/*	$OpenBSD: day.c,v 1.23 2010/04/28 18:20:15 jsg Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -225,7 +225,7 @@ Mktime(char *date)
 	}
 
 #if DEBUG
-	printf("Mktime: %d %d %d %s\n", (int)mktime(&tm), (int)t, len,
+	printf("Mktime: %d %lld %d %s\n", (int)mktime(&tm), (long long)t, len,
 	    asctime(&tm));
 #endif
 	return(mktime(&tm));
