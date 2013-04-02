@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.93 2012/09/30 12:11:50 claudio Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.94 2013/03/28 16:45:16 tedu Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -74,7 +74,6 @@
 
 #include <net/if_vlan_var.h>
 
-extern struct	ifaddr	**ifnet_addrs;
 u_long vlan_tagmask, svlan_tagmask;
 
 #define TAG_HASH_SIZE		32
@@ -434,8 +433,8 @@ vlan_config(struct ifvlan *ifv, struct ifnet *p, u_int16_t tag)
 	 * Set up our ``Ethernet address'' to reflect the underlying
 	 * physical interface's.
 	 */
-	ifa1 = ifnet_addrs[ifv->ifv_if.if_index];
-	ifa2 = ifnet_addrs[p->if_index];
+	ifa1 = ifv->ifv_if.if_lladdr;
+	ifa2 = p->if_lladdr;
 	sdl1 = (struct sockaddr_dl *)ifa1->ifa_addr;
 	sdl2 = (struct sockaddr_dl *)ifa2->ifa_addr;
 	sdl1->sdl_type = IFT_ETHER;
@@ -510,7 +509,7 @@ vlan_unconfig(struct ifnet *ifp, struct ifnet *newp)
 	ifv->ifv_flags = 0;
 
 	/* Clear our MAC address. */
-	ifa = ifnet_addrs[ifv->ifv_if.if_index];
+	ifa = ifv->ifv_if.if_lladdr;
 	sdl = (struct sockaddr_dl *)ifa->ifa_addr;
 	sdl->sdl_type = IFT_ETHER;
 	sdl->sdl_alen = ETHER_ADDR_LEN;
