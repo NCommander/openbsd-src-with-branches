@@ -1,4 +1,4 @@
-/* $OpenBSD: connection.c,v 1.34 2006/09/01 00:24:06 mpf Exp $	 */
+/* $OpenBSD: connection.c,v 1.35 2007/04/16 13:01:39 moritz Exp $	 */
 /* $EOM: connection.c,v 1.28 2000/11/23 12:21:18 niklas Exp $	 */
 
 /*
@@ -407,9 +407,9 @@ connection_report(void)
 	for (conn = TAILQ_FIRST(&connections); conn;
 	    conn = TAILQ_NEXT(conn, link))
 		LOG_DBG((LOG_REPORT, 0,
-		    "connection_report: connection %s next check %ld seconds",
+		    "connection_report: connection %s next check %lld seconds",
 		    (conn->name ? conn->name : "<unnamed>"),
-		    conn->ev->expiration.tv_sec - now.tv_sec));
+		    (long long)(conn->ev->expiration.tv_sec - now.tv_sec)));
 	for (pconn = TAILQ_FIRST(&connections_passive); pconn;
 	    pconn = TAILQ_NEXT(pconn, link))
 		LOG_DBG((LOG_REPORT, 0,
