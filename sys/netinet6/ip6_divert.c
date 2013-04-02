@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip6_divert.c,v 1.8 2012/11/06 12:32:42 henning Exp $ */
+/*      $OpenBSD: ip6_divert.c,v 1.9 2013/03/28 16:45:16 tedu Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -243,7 +243,7 @@ divert6_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *addr,
 		error = soreserve(so, divert6_sendspace, divert6_recvspace);
 		if (error)
 			break;
-		((struct inpcb *) so->so_pcb)->inp_flags |= INP_HDRINCL;
+		sotoinpcb(so)->inp_flags |= INP_HDRINCL;
 		break;
 
 	case PRU_DETACH:
