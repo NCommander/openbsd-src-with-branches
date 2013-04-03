@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio_priv.h,v 1.3 2011/05/09 17:34:14 ratchov Exp $	*/
+/*	$OpenBSD: sio_priv.h,v 1.4 2012/10/27 12:06:40 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -40,7 +40,7 @@ struct sio_hdl {
 	unsigned long long wcnt;	/* bytes written with sio_write() */
 	unsigned long long rcnt;	/* bytes read with sio_read() */
 	long long realpos;
-	struct timeval tv;
+	struct timespec ts;
 	struct sio_par par;
 #endif
 };
