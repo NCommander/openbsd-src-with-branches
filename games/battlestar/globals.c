@@ -1,4 +1,4 @@
-/*	$OpenBSD: globals.c,v 1.12 2004/02/03 20:22:37 drahn Exp $	*/
+/*	$OpenBSD: globals.c,v 1.13 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: globals.c,v 1.3 1995/03/21 15:07:32 cgd Exp $	*/
 
 /*
@@ -242,7 +242,7 @@ int     wordcount, wordnumber;
 int     stop_cypher;	/* continue parsing the current line? */
 
  /* state of the game */
-time_t  ourtime;
+int     ourtime;
 int     position;
 int     direction;
 int     left, right, ahead, back;
