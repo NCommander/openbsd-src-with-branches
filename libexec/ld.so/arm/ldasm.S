@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.7 2012/10/24 03:26:56 guenther Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.8 2012/12/22 11:46:16 kettenis Exp $ */
 
 /*
  * Copyright (c) 2004 Dale Rahn
@@ -114,6 +114,9 @@ DL_SYSCALL(write)
 DL_SYSCALL(fstat)
 DL_SYSCALL(fcntl)
 DL_SYSCALL(gettimeofday)
+DL_SYSCALL(readlink)
+DL_SYSCALL(lstat)
+DL_SYSCALL2(getcwd,__getcwd)
 DL_SYSCALL2(sysctl,__sysctl)
 
 DL_SYSCALL(getdirentries)
