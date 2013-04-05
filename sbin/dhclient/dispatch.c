@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.75 2013/02/18 15:57:08 krw Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.76 2013/03/22 23:58:51 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -255,7 +255,7 @@ got_one(void)
 
 	memcpy(&ifrom, &from.sin_addr, sizeof(ifrom));
 
-	do_packet(result, from.sin_port, ifrom, &hfrom);
+	do_packet(from.sin_port, ifrom, &hfrom);
 }
 
 void
