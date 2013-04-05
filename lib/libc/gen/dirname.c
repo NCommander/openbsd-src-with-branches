@@ -1,4 +1,4 @@
-/*	$OpenBSD: dirname.c,v 1.12 2005/03/02 12:27:26 millert Exp $	*/
+/*	$OpenBSD: dirname.c,v 1.13 2005/08/08 08:05:33 espie Exp $	*/
 
 /*
  * Copyright (c) 1997, 2004 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -20,6 +20,8 @@
 #include <libgen.h>
 #include <string.h>
 #include <sys/param.h>
+
+/* A slightly modified copy of this file exists in libexec/ld.so */
 
 char *
 dirname(const char *path)

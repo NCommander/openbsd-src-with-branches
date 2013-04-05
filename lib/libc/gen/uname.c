@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: uname.c,v 1.8 2005/08/08 08:05:34 espie Exp $ */
 /*-
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -31,6 +31,8 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/utsname.h>
+
+/* A slightly modified copy of this file exists in libexec/ld.so */
 
 int
 uname(struct utsname *name)
