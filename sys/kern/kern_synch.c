@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.103 2012/07/10 16:56:28 haesbaert Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.104 2012/08/21 19:51:58 haesbaert Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*
@@ -409,10 +409,6 @@ sys___thrsleep(struct proc *p, void *v, register_t *retval)
 	long long to_ticks = 0;
 	int abort, error;
 
-	if (!rthreads_enabled) {
-		*retval = ENOTSUP;
-		return (0);
-	}
 	if (ident == 0) {
 		*retval = EINVAL;
 		return (0);
@@ -496,9 +492,7 @@ sys___thrwakeup(struct proc *p, void *v, register_t *retval)
 	struct proc *q;
 	int found = 0;
 
-	if (!rthreads_enabled)
-		*retval = ENOTSUP;
-	else if (ident == 0)
+	if (ident == 0)
 		*retval = EINVAL;
 	else {
 		TAILQ_FOREACH(q, &p->p_p->ps_threads, p_thr_link) {
