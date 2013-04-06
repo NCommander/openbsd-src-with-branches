@@ -1,4 +1,4 @@
-#	$OpenBSD: cfgmatch.sh,v 1.5 2011/05/23 03:31:31 djm Exp $
+#	$OpenBSD: cfgmatch.sh,v 1.6 2011/06/03 05:35:10 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="sshd_config match"
@@ -15,7 +15,7 @@ start_client()
 	rm -f $pidfile
 	${SSH} -q -$p $fwd "$@" somehost \
 	    exec sh -c \'"echo \$\$ > $pidfile; exec sleep 100"\' \
-	    >>$TEST_SSH_LOGFILE 2>&1 &
+	    >>$TEST_REGRESS_LOGFILE 2>&1 &
 	client_pid=$!
 	# Wait for remote end
 	n=0
