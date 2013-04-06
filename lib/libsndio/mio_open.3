@@ -1,4 +1,4 @@
-.\" $OpenBSD: mio_open.3,v 1.9 2012/09/14 20:16:24 stsp Exp $
+.\" $OpenBSD$
 .\"
 .\" Copyright (c) 2007 Alexandre Ratchov <alex@caoua.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 14 2012 $
+.Dd $Mdocdate$
 .Dt MIO_OPEN 3
 .Os
 .Sh NAME
@@ -60,13 +60,6 @@ function to obtain a handle representing the newly created stream;
 later it will be passed as the
 .Ar hdl
 argument of most other functions.
-The
-.Fn mio_open
-function tries to connect to the
-.Xr sndiod 1
-MIDI thru box or to use the
-.Xr midi 4
-hardware port.
 The
 .Ar name
 parameter gives the device string discussed in
