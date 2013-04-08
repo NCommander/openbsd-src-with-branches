@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo_async.c,v 1.13 2013/03/30 20:11:19 eric Exp $	*/
+/*	$OpenBSD: getaddrinfo_async.c,v 1.14 2013/04/01 15:49:54 deraadt Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -253,7 +253,7 @@ getaddrinfo_async_run(struct async *as, struct async_res *ar)
 		}
 
 		if (ai->ai_flags & AI_NUMERICHOST) {
-			ar->ar_gai_errno = EAI_FAIL;
+			ar->ar_gai_errno = EAI_NONAME;
 			async_set_state(as, ASR_STATE_HALT);
 			break;
 		}
