@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_debug.c,v 1.10 2012/11/24 15:12:48 eric Exp $	*/
+/*	$OpenBSD: asr_debug.c,v 1.11 2013/04/01 15:49:54 deraadt Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -293,7 +293,7 @@ asr_dump_config(FILE *f, struct asr *a)
 	fprintf(f, " ndots: %i\n", ac->ac_ndots);
 	fprintf(f, " family:");
 	for (i = 0; ac->ac_family[i] != -1; i++)
-		fprintf(f, " %s", (ac->ac_family[i] == AF_INET)?"inet":"inet6");
+		fprintf(f, " %s", (ac->ac_family[i] == AF_INET)?"inet4":"inet6");
 	fprintf(f, "\n");
 	fprintf(f, "NAMESERVERS timeout=%i retry=%i\n",
 		    ac->ac_nstimeout,
