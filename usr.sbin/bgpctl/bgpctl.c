@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.168 2012/11/27 05:38:08 guenther Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.169 2013/03/07 21:28:34 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -824,7 +824,8 @@ fmt_timeframe_core(time_t t)
 	char		*buf;
 	static char	 tfbuf[TF_BUFS][TF_LEN];	/* ring buffer */
 	static int	 idx = 0;
-	unsigned int	 sec, min, hrs, day, week;
+	unsigned int	 sec, min, hrs, day;
+	unsigned long long	week;
 
 	buf = tfbuf[idx++];
 	if (idx == TF_BUFS)
@@ -842,7 +843,7 @@ fmt_timeframe_core(time_t t)
 	week /= 7;
 
 	if (week > 0)
-		snprintf(buf, TF_LEN, "%02uw%01ud%02uh", week, day, hrs);
+		snprintf(buf, TF_LEN, "%02lluw%01ud%02uh", week, day, hrs);
 	else if (day > 0)
 		snprintf(buf, TF_LEN, "%01ud%02uh%02um", day, hrs, min);
 	else
