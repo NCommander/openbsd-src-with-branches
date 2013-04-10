@@ -1,4 +1,4 @@
-/* $OpenBSD: linux_futex.c,v 1.10 2012/11/19 15:03:55 pirofti Exp $ */
+/* $OpenBSD: linux_futex.c,v 1.11 2013/01/15 10:47:35 guenther Exp $ */
 /*	$NetBSD: linux_futex.c,v 1.26 2010/07/07 01:30:35 chs Exp $ */
 
 /*-
@@ -474,6 +474,7 @@ void
 futex_put(struct futex *f)
 {
 	MUTEX_ASSERT_LOCKED(&futex_lock);
+	KASSERT(f->f_refcount > 0);
 	f->f_refcount--;
 	if (f->f_refcount == 0) {
 		KASSERT(TAILQ_EMPTY(&f->f_waiting_proc));
