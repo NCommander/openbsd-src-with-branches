@@ -1,4 +1,4 @@
-/*	$OpenBSD: igmp.c,v 1.30 2010/01/13 01:26:28 henning Exp $	*/
+/*	$OpenBSD: igmp.c,v 1.31 2010/04/20 22:05:43 tedu Exp $	*/
 /*	$NetBSD: igmp.c,v 1.15 1996/02/13 23:41:25 christos Exp $	*/
 
 /*
@@ -563,9 +563,6 @@ igmp_sendpkt(struct in_multi *inm, int type, in_addr_t addr)
 	struct igmp *igmp;
 	struct ip *ip;
 	struct ip_moptions imo;
-#ifdef MROUTING
-	extern struct socket *ip_mrouter;
-#endif /* MROUTING */
 
 	MGETHDR(m, M_DONTWAIT, MT_HEADER);
 	if (m == NULL)
