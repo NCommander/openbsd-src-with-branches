@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_spd.c,v 1.64 2012/07/16 18:05:36 markus Exp $ */
+/* $OpenBSD: ip_spd.c,v 1.65 2013/03/28 23:10:06 tedu Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -51,6 +51,13 @@
 
 #include <netinet/ip_ipsp.h>
 #include <net/pfkeyv2.h>
+
+int	ipsp_acquire_sa(struct ipsec_policy *, union sockaddr_union *,
+	    union sockaddr_union *, struct sockaddr_encap *, struct mbuf *);
+void	ipsec_update_policy(struct inpcb *, struct ipsec_policy *, int, int);
+struct	ipsec_acquire *ipsp_pending_acquire(struct ipsec_policy *,
+	    union sockaddr_union *);
+void	ipsp_delete_acquire(void *);
 
 #ifdef ENCDEBUG
 #define	DPRINTF(x)	if (encdebug) printf x

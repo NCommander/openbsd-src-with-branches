@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.c,v 1.104 2012/10/18 10:49:48 markus Exp $ */
+/*	$OpenBSD: ip_ah.c,v 1.105 2013/02/14 16:22:34 mikeb Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -81,7 +81,14 @@
 #define DPRINTF(x)
 #endif
 
+int	ah_output_cb(void *);
+int	ah_input_cb(void *);
+int	ah_massage_headers(struct mbuf **, int, int, int, int);
+
 struct ahstat ahstat;
+
+unsigned char ipseczeroes[IPSEC_ZEROES_SIZE]; /* zeroes! */
+
 
 /*
  * ah_attach() is called from the transformation initialization code.
