@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.c,v 1.180 2013/01/08 18:49:04 markus Exp $ */
+/* $OpenBSD: packet.c,v 1.181 2013/02/10 23:35:24 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1448,7 +1448,11 @@ packet_read_poll_seqnr(u_int32_t *seqnr_p)
 			case SSH2_MSG_DISCONNECT:
 				reason = packet_get_int();
 				msg = packet_get_string(NULL);
-				error("Received disconnect from %s: %u: %.400s",
+				/* Ignore normal client exit notifications */
+				do_log2(active_state->server_side &&
+				    reason == SSH2_DISCONNECT_BY_APPLICATION ?
+				    SYSLOG_LEVEL_INFO : SYSLOG_LEVEL_ERROR,
+				    "Received disconnect from %s: %u: %.400s",
 				    get_remote_ipaddr(), reason, msg);
 				xfree(msg);
 				cleanup_exit(255);
