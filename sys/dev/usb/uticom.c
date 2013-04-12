@@ -1,4 +1,4 @@
-/*	$OpenBSD: uticom.c,v 1.17 2011/07/03 15:47:17 matthew Exp $	*/
+/*	$OpenBSD: uticom.c,v 1.18 2011/08/17 18:58:45 jasper Exp $	*/
 /*
  * Copyright (c) 2005 Dmitry Komissaroff <dxi@mail.ru>.
  *
@@ -971,7 +971,7 @@ uticom_download_fw(struct uticom_softc *sc, int pipeno,
 
 	usbd_setup_xfer(oxfer, pipe, (usbd_private_handle)sc, obuf, buffer_size,
 	    USBD_NO_COPY | USBD_SYNCHRONOUS, USBD_NO_TIMEOUT, 0);
-	err = usbd_sync_transfer(oxfer);
+	err = usbd_transfer(oxfer);
 
 	if (err != USBD_NORMAL_COMPLETION)
 		printf("%s: uticom_download_fw: error: %s\n",

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uow.c,v 1.30 2011/07/03 15:47:17 matthew Exp $	*/
+/*	$OpenBSD: uow.c,v 1.31 2013/03/28 03:58:03 tedu Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -462,8 +462,8 @@ uow_read(struct uow_softc *sc, void *buf, int len)
 		return (-1);
 	}
 	usbd_setup_xfer(sc->sc_xfer, sc->sc_ph_ibulk, sc, buf, len,
-	    USBD_SHORT_XFER_OK, UOW_TIMEOUT, NULL);
-	error = usbd_sync_transfer(sc->sc_xfer);
+	    USBD_SHORT_XFER_OK | USBD_SYNCHRONOUS, UOW_TIMEOUT, NULL);
+	error = usbd_transfer(sc->sc_xfer);
 	usbd_free_xfer(sc->sc_xfer);
 	if (error != 0) {
 		printf("%s: read failed, len %d: %s\n",
@@ -492,9 +492,9 @@ uow_write(struct uow_softc *sc, const void *buf, int len)
 		printf("%s: failed to alloc xfer\n", sc->sc_dev.dv_xname);
 		return (-1);
 	}
-	usbd_setup_xfer(sc->sc_xfer, sc->sc_ph_obulk, sc, (void *)buf, len, 0,
-	    UOW_TIMEOUT, NULL);
-	error = usbd_sync_transfer(sc->sc_xfer);
+	usbd_setup_xfer(sc->sc_xfer, sc->sc_ph_obulk, sc, (void *)buf, len,
+	    USBD_SYNCHRONOUS, UOW_TIMEOUT, NULL);
+	error = usbd_transfer(sc->sc_xfer);
 	usbd_free_xfer(sc->sc_xfer);
 	if (error != 0) {
 		printf("%s: write failed, len %d: %s\n",
