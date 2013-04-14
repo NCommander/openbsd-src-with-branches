@@ -1,7 +1,8 @@
-/*	$OpenBSD: version.c,v 1.3 1997/04/22 16:13:40 gvf Exp $ */
+/*	$OpenBSD: version.c,v 1.4 2012/12/31 21:35:32 miod Exp $ */
 
 /*
+ *	1.5	do not load kernel symbols to avoid seeking backwards
  *	1.4	kernel loaded with loadfile, a.out and ELF formats
  */
 
-char *version = "1.4";
+char *version = "1.5";
