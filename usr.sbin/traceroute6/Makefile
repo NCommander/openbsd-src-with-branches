@@ -1,11 +1,10 @@
-#	$OpenBSD: Makefile,v 1.5 2004/11/10 22:07:46 drahn Exp $
+#	$OpenBSD: Makefile,v 1.6 2006/12/19 14:47:45 itojun Exp $
 
 PROG=	traceroute6
 
 BINOWN=	root
 BINGRP=	bin
 BINMODE=4555
-LDSTATIC=${STATIC}
 
 CPPFLAGS+=-DINET6
 
