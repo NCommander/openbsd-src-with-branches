@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoaklux.c,v 1.2 2012/10/19 14:52:38 deraadt Exp $   */
+/*	$OpenBSD: uoaklux.c,v 1.3 2013/03/28 03:58:03 tedu Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -128,7 +128,7 @@ uoaklux_attach(struct device *parent, struct device *self, void *aux)
 	struct uoaklux_softc *sc = (struct uoaklux_softc *)self;
 	struct usb_attach_arg *uaa = aux;
 	struct uhidev_attach_arg *uha = (struct uhidev_attach_arg *)uaa;
-	usbd_device_handle dev = uha->parent->sc_udev;
+	struct usbd_device *dev = uha->parent->sc_udev;
 
 	struct uoak_softc *scc = &sc->sc_uoak_softc;
 	int err, size, repid;

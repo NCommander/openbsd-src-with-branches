@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.57 2012/01/29 11:04:19 mpi Exp $	*/
+/*	$OpenBSD: ukbd.c,v 1.58 2012/07/13 12:33:08 shadchin Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -211,7 +211,7 @@ ukbd_attach(struct device *parent, struct device *self, void *aux)
 	struct hidkbd *kbd = &sc->sc_kbd;
 	struct usb_attach_arg *uaa = aux;
 	struct uhidev_attach_arg *uha = (struct uhidev_attach_arg *)uaa;
-	usb_hid_descriptor_t *hid;
+	struct usb_hid_descriptor *hid;
 	u_int32_t qflags;
 	int dlen, repid;
 	void *desc;
@@ -421,7 +421,7 @@ void
 ukbd_cnpollc(void *v, int on)
 {
 	struct ukbd_softc *sc = v;
-	usbd_device_handle dev;
+	struct usbd_device *dev;
 
 	DPRINTFN(2,("ukbd_cnpollc: sc=%p on=%d\n", v, on));
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: udl.h,v 1.19 2012/09/18 17:03:31 jasper Exp $ */
+/*	$OpenBSD: udl.h,v 1.20 2012/12/05 08:35:56 jasper Exp $ */
 
 /*
  * Copyright (c) 2009 Marcus Glocker <mglocker@openbsd.org>
@@ -30,7 +30,7 @@
 
 struct udl_cmd_xfer {
 	struct udl_softc	*sc;
-	usbd_xfer_handle	 xfer;
+	struct usbd_xfer	*xfer;
 	uint8_t			 busy;
 	uint8_t			*buf;
 };
@@ -51,9 +51,9 @@ struct udl_cmd_buf {
  */
 struct udl_softc {
 	struct device		 sc_dev;
-	usbd_device_handle	 sc_udev;
-	usbd_interface_handle	 sc_iface;
-	usbd_pipe_handle	 sc_tx_pipeh;
+	struct usbd_device	*sc_udev;
+	struct usbd_interface	*sc_iface;
+	struct usbd_pipe	*sc_tx_pipeh;
 
 	/* wsdisplay glue */
 	struct device		*sc_wsdisplay;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ohci_pci.c,v 1.37 2010/10/20 20:34:19 mk Exp $	*/
+/*	$OpenBSD: ohci_pci.c,v 1.38 2010/12/14 16:13:16 jakemsr Exp $	*/
 /*	$NetBSD: ohci_pci.c,v 1.23 2002/10/02 16:51:47 thorpej Exp $	*/
 
 /*
@@ -63,7 +63,7 @@ void	ohci_pci_attach_deferred(struct device *);
 int	ohci_pci_detach(struct device *, int);
 
 struct ohci_pci_softc {
-	ohci_softc_t		sc;
+	struct ohci_softc	sc;
 	pci_chipset_tag_t	sc_pc;
 	void 			*sc_ih;		/* interrupt vectoring */
 };
