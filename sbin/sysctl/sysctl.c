@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.187 2013/03/29 01:35:37 tedu Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.188 2013/04/15 16:47:14 guenther Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -800,7 +800,7 @@ parse(char *string, int flags)
 			boottime = btp->tv_sec;
 			(void)printf("%s%s%s", string, equ, ctime(&boottime));
 		} else
-			(void)printf("%ld\n", btp->tv_sec);
+			(void)printf("%lld\n", (long long)btp->tv_sec);
 		return;
 	}
 	if (special & BLKDEV) {
