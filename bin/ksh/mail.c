@@ -1,4 +1,4 @@
-/*	$OpenBSD: mail.c,v 1.14 2004/12/22 17:14:34 millert Exp $	*/
+/*	$OpenBSD: mail.c,v 1.15 2005/03/30 17:16:37 deraadt Exp $	*/
 
 /*
  * Mailbox checking code by Robert J. Gibson, adapted for PD ksh by
@@ -43,7 +43,7 @@ mcheck(void)
 	struct tbl	*vp;
 	struct stat	 stbuf;
 
-	now = time((time_t *) 0);
+	now = time(NULL);
 	if (mlastchkd == 0)
 		mlastchkd = now;
 	if (now - mlastchkd >= mailcheck_interval) {
