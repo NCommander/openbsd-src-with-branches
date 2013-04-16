@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.31 2007/10/17 20:10:44 chl Exp $	*/
+/*	$OpenBSD: server.c,v 1.32 2009/10/27 23:59:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -947,7 +947,7 @@ differ:			buf[0] = '\0';
 	/*
 	 * Set last modified time
 	 */
-	tvp[0].tv_sec = time(0);
+	tvp[0].tv_sec = time(NULL);
 	tvp[0].tv_usec = 0;
 	tvp[1].tv_sec = mtime;
 	tvp[1].tv_usec = 0;
