@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.115 2010/10/20 19:53:53 tobias Exp $	*/
+/*	$OpenBSD: co.c,v 1.116 2010/12/03 19:44:58 chl Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -485,7 +485,7 @@ checkout_rev(RCSFILE *file, RCSNUM *frev, const char *dst, int flags,
 		if (flags & CO_REVDATE) {
 			struct timeval tv[2];
 			memset(&tv, 0, sizeof(tv));
-			tv[0].tv_sec = (long)rcs_rev_getdate(file, rev);
+			tv[0].tv_sec = rcs_rev_getdate(file, rev);
 			tv[1].tv_sec = tv[0].tv_sec;
 			if (futimes(fd, (const struct timeval *)&tv) < 0)
 				warn("utimes");
