@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2004/11/10 22:07:46 drahn Exp $
+#	$OpenBSD: Makefile,v 1.9 2006/12/19 14:48:45 itojun Exp $
 
 PROG=	ping6
 MAN=	ping6.8
@@ -9,6 +9,5 @@ DPADD=	${LIBM}
 BINOWN=	root
 BINGRP=	bin
 BINMODE=4555
-LDSTATIC=${STATIC}
 
 .include <bsd.prog.mk>
