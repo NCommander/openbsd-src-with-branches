@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_ohci.c,v 1.23 2010/08/30 21:30:15 deraadt Exp $ */
+/*	$OpenBSD: pxa2x0_ohci.c,v 1.24 2010/09/07 16:21:35 deraadt Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -43,8 +43,8 @@ int	pxaohci_detach(struct device *, int);
 int	pxaohci_activate(struct device *, int);
 
 struct pxaohci_softc {
-	ohci_softc_t	sc;
-	void		*sc_ih;
+	struct ohci_softc	sc;
+	void			*sc_ih;
 };
 
 void	pxaohci_enable(struct pxaohci_softc *);
