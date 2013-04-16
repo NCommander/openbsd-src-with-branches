@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.105 2013/02/10 10:47:08 markus Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.106 2013/03/11 17:40:11 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -1686,7 +1686,7 @@ markit(void)
 {
 	struct filed *f;
 
-	now = time((time_t *)NULL);
+	now = time(NULL);
 	MarkSeq += TIMERINTVL;
 	if (MarkSeq >= MarkInterval) {
 		logmsg(LOG_INFO, "-- MARK --",

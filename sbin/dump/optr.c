@@ -1,4 +1,4 @@
-/*	$OpenBSD: optr.c,v 1.30 2007/06/03 20:16:08 millert Exp $	*/
+/*	$OpenBSD: optr.c,v 1.31 2009/10/27 23:59:32 deraadt Exp $	*/
 /*	$NetBSD: optr.c,v 1.11 1997/05/27 08:34:36 mrg Exp $	*/
 
 /*-
@@ -201,7 +201,7 @@ timeest(void)
 {
 	time_t	tnow, deltat;
 
-	(void) time((time_t *) &tnow);
+	(void) time(&tnow);
 	if (tnow >= tschedule) {
 		tschedule = tnow + 300;
 		if (blockswritten < 500)

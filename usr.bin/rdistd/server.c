@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.22 2011/04/10 15:47:28 krw Exp $	*/
+/*	$OpenBSD: server.c,v 1.23 2012/11/12 01:14:41 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -902,7 +902,7 @@ recvfile(char *new, opt_t opts, int mode, char *owner, char *group,
 	 * Perform utimes() after file is closed to make
 	 * certain OS's, such as NeXT 2.1, happy.
 	 */
-	if (setfiletime(new, time((time_t *) 0), mtime) < 0)
+	if (setfiletime(new, time(NULL), mtime) < 0)
 		message(MT_NOTICE, "%s: utimes failed: %s", new, SYSERR);
 
 	/*
