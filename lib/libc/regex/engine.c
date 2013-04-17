@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.14 2005/01/03 19:51:14 otto Exp $	*/
+/*	$OpenBSD: engine.c,v 1.15 2005/08/05 13:03:00 espie Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
@@ -662,6 +662,7 @@ backref(struct match *m, char *start, char *stop, sopno startst, sopno stopst,
 	/* "can't happen" */
 	assert(nope);
 	/* NOTREACHED */
+	return NULL;
 }
 
 /*
