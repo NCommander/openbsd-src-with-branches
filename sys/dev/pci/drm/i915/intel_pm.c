@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_pm.c,v 1.2 2013/03/19 03:58:10 jsg Exp $	*/
+/*	$OpenBSD: intel_pm.c,v 1.3 2013/03/22 01:00:39 jsg Exp $	*/
 /*
  * Copyright © 2012 Intel Corporation
  *
@@ -2968,7 +2968,7 @@ void
 ironlake_enable_rc6(struct drm_device *dev)
 {
 	struct inteldrm_softc *dev_priv = dev->dev_private;
-	struct intel_ring_buffer *ring = &dev_priv->rings[RCS];
+	struct intel_ring_buffer *ring = &dev_priv->ring[RCS];
 	bool was_interruptible;
 	int ret;
 
