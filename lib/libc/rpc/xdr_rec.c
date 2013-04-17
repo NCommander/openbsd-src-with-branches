@@ -1,4 +1,4 @@
-/*	$OpenBSD: xdr_rec.c,v 1.14 2010/07/17 19:23:10 guenther Exp $ */
+/*	$OpenBSD: xdr_rec.c,v 1.15 2010/09/01 14:43:34 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -409,6 +409,7 @@ xdrrec_destroy(XDR *xdrs)
 	mem_free(rstrm, sizeof(RECSTREAM));
 }
 
+bool_t __xdrrec_getrec(XDR *xdrs, enum xprt_stat *statp, bool_t expectdata);
 
 /*
  * Exported routines to manage xdr records
