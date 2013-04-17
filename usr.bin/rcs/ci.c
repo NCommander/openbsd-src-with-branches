@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.213 2011/07/14 16:31:34 sobrado Exp $	*/
+/*	$OpenBSD: ci.c,v 1.214 2013/01/18 11:21:09 guenther Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -829,7 +829,7 @@ checkin_mtimedate(struct checkin_params *pb)
 	if (fstat(workfile_fd, &sb) == -1)
 		err(1, "%s", pb->filename);
 
-	pb->date = (time_t)sb.st_mtimespec.tv_sec;
+	pb->date = sb.st_mtimespec.tv_sec;
 }
 
 /*
