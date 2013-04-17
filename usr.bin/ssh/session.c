@@ -1216,10 +1216,7 @@ do_setusercontext(struct passwd *pw)
 			perror("unable to set user context (setuser)");
 			exit(1);
 		}
-	} else if (options.chroot_directory != NULL &&
-	    strcasecmp(options.chroot_directory, "none") != 0)
-		fatal("server lacks privileges to chroot to ChrootDirectory");
-
+	}
 	if (getuid() != pw->pw_uid || geteuid() != pw->pw_uid)
 		fatal("Failed to set uids to %u.", (u_int) pw->pw_uid);
 }
