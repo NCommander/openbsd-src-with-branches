@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdiumiic.c,v 1.4 2010/02/24 22:16:18 miod Exp $	*/
+/*	$OpenBSD: gdiumiic.c,v 1.5 2012/10/03 21:44:51 miod Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -330,9 +330,16 @@ u_int32_t
 gdiumiic_bb_read_bits(void *cookie)
 {
 	struct gdiumiic_softc *sc = cookie;
+	u_int32_t bits = 0;
 
-	return (gpio_pin_read(sc->sc_gpio, &sc->sc_map,
-	    GPIOIIC_PIN_SDA) == GPIO_PIN_HIGH ? GPIOIIC_SDA : 0);
+	if (gpio_pin_read(sc->sc_gpio, &sc->sc_map, GPIOIIC_PIN_SDA) ==
+	    GPIO_PIN_HIGH)
+		bits |= GPIOIIC_SDA;
+	if (gpio_pin_read(sc->sc_gpio, &sc->sc_map, GPIOIIC_PIN_SCL) ==
+	    GPIO_PIN_HIGH)
+		bits |= GPIOIIC_SCL;
+
+	return bits;
 }
 
 /*
