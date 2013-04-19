@@ -1,4 +1,4 @@
-/*	$OpenBSD: inetd.c,v 1.133 2012/04/19 14:33:24 gsoares Exp $	*/
+/*	$OpenBSD: inetd.c,v 1.134 2013/03/11 17:40:11 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983,1991 The Regents of the University of California.
@@ -566,8 +566,8 @@ dg_badinput(struct sockaddr *sa)
 		}
 		break;
 	default:
-		/* XXX unsupported af, is it safe to assume it to be safe? */
-		return 0;
+		/* Unsupported AF */
+		goto bad;
 	}
 
 	if (port < IPPORT_RESERVED || port == NFS_PORT)
