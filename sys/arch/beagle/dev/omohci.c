@@ -1,4 +1,4 @@
-/*	$OpenBSD: omohci.c,v 1.5 2011/10/24 22:49:07 drahn Exp $ */
+/*	$OpenBSD: omohci.c,v 1.6 2011/11/10 19:37:01 uwe Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -98,13 +98,13 @@ int	omohci_detach(struct device *, int);
 int	omohci_activate(struct device *, int);
 
 struct omohci_softc {
-	ohci_softc_t	sc;
-	void		*sc_ihc0;
-	void		*sc_ihc1;
-	void		*sc_ihc2;
-	void		*sc_ih0;
-	void		*sc_ih1;
-	void		*sc_ihotg;
+	struct ohci_softc	sc;
+	void			*sc_ihc0;
+	void			*sc_ihc1;
+	void			*sc_ihc2;
+	void			*sc_ih0;
+	void			*sc_ih1;
+	void			*sc_ihotg;
 };
 
 void	omohci_enable(struct omohci_softc *);
