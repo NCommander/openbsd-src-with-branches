@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.6 2003/06/02 23:36:54 millert Exp $	*/
+/*	$OpenBSD: defs.h,v 1.7 2005/09/22 14:24:51 jmc Exp $	*/
 /*	$NetBSD: defs.h,v 1.5 1995/10/06 05:12:14 thorpej Exp $	*/
 
 /*
@@ -77,7 +77,7 @@
 /*
  *  Configuration file limitations.
  */
-#define	C_MAXFILE	10		/* max number of bootable files */
+#define	C_MAXFILE	100		/* max number of bootable files */
 #define	C_LINELEN	1024		/* max length of line */
 
 /*
