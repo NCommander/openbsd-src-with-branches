@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530kbd.c,v 1.23 2009/01/12 21:11:58 miod Exp $	*/
+/*	$OpenBSD: z8530kbd.c,v 1.24 2011/03/18 21:01:17 miod Exp $	*/
 /*	$NetBSD: z8530tty.c,v 1.77 2001/05/30 15:24:24 lukem Exp $	*/
 
 /*-
@@ -116,7 +116,7 @@
 #include <dev/sun/sunkbdreg.h>
 #include <dev/sun/sunkbdvar.h>
 
-#include <sparc64/dev/z8530reg.h>
+#include <dev/ic/z8530reg.h>
 #include <machine/z8530var.h>
 
 #include <dev/cons.h>
