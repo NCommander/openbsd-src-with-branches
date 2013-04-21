@@ -1,4 +1,4 @@
-/*	$OpenBSD: pstat.c,v 1.82 2012/12/18 21:28:45 millert Exp $	*/
+/*	$OpenBSD: pstat.c,v 1.83 2013/03/24 15:09:12 deraadt Exp $	*/
 /*	$NetBSD: pstat.c,v 1.27 1996/10/23 22:50:06 cgd Exp $	*/
 
 /*-
@@ -36,13 +36,13 @@
 #include <sys/buf.h>
 #include <sys/vnode.h>
 #include <sys/ucred.h>
+#include <sys/stat.h>
 #define _KERNEL
 #include <sys/file.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <sys/mount.h>
 #undef _KERNEL
-#include <sys/stat.h>
 #include <nfs/nfsproto.h>
 #include <nfs/rpcv2.h>
 #include <nfs/nfsnode.h>
