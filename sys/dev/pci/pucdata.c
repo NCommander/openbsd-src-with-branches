@@ -1,4 +1,4 @@
-/*	$OpenBSD: pucdata.c,v 1.85 2012/10/12 21:56:03 sasano Exp $	*/
+/*	$OpenBSD: pucdata.c,v 1.86 2013/01/08 02:30:25 deraadt Exp $	*/
 /*	$NetBSD: pucdata.c,v 1.6 1999/07/03 05:55:23 cgd Exp $	*/
 
 /*
@@ -1764,6 +1764,22 @@ const struct puc_device_description puc_devs[] = {
 	/* Digi International Digi Neo 8 Serial */
 	{
 	    {	PCI_VENDOR_DIGI, PCI_PRODUCT_DIGI_NEO8,		0, 0  },
+	    {	0xffff, 0xffff,					0, 0  },
+	    {
+		{ PUC_COM_POW2(3), 0x10, 0x0000 },
+		{ PUC_COM_POW2(3), 0x10, 0x0200 },
+		{ PUC_COM_POW2(3), 0x10, 0x0400 },
+		{ PUC_COM_POW2(3), 0x10, 0x0600 },
+		{ PUC_COM_POW2(3), 0x10, 0x0800 },
+		{ PUC_COM_POW2(3), 0x10, 0x0a00 },
+		{ PUC_COM_POW2(3), 0x10, 0x0c00 },
+		{ PUC_COM_POW2(3), 0x10, 0x0e00 },
+	    },
+	},
+
+	/* Digi International Digi Neo 8 PCIe Serial */
+	{
+	    {	PCI_VENDOR_DIGI, PCI_PRODUCT_DIGI_NEO8_PCIE,	0, 0  },
 	    {	0xffff, 0xffff,					0, 0  },
 	    {
 		{ PUC_COM_POW2(3), 0x10, 0x0000 },
