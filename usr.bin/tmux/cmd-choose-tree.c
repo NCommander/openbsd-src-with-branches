@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-choose-tree.c,v 1.21 2013/03/24 09:54:10 nicm Exp $ */
+/* $OpenBSD: cmd-choose-tree.c,v 1.22 2013/04/22 16:34:53 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Thomas Adam <thomas@xteddy.org>
@@ -228,9 +228,12 @@ windows_only:
 	free(final_win_template_last);
 
 	window_choose_ready(wl->window->active, cur_win, NULL);
+	window_choose_collapse_all(wl->window->active);
 
-	if (args_has(args, 'u'))
+	if (args_has(args, 'u')) {
 		window_choose_expand_all(wl->window->active);
+		window_choose_set_current(wl->window->active, cur_win);
+	}
 
 	return (CMD_RETURN_NORMAL);
 }
