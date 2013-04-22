@@ -1,4 +1,4 @@
-/* $OpenBSD: server-fn.c,v 1.67 2013/03/25 10:11:45 nicm Exp $ */
+/* $OpenBSD: server-fn.c,v 1.68 2013/03/25 11:36:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -283,6 +283,7 @@ server_kill_window(struct window *w)
 		if (options_get_number(&s->options, "renumber-windows"))
 			session_renumber_windows(s);
 	}
+	recalculate_sizes();
 }
 
 int
