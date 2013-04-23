@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.32 2012/08/22 05:20:51 halex Exp $	*/
+/*	$OpenBSD: tape.c,v 1.33 2013/04/16 18:17:39 deraadt Exp $	*/
 /*	$NetBSD: tape.c,v 1.11 1997/06/05 11:13:26 lukem Exp $	*/
 
 /*-
@@ -682,8 +682,8 @@ restore_check_point:
 			spcl.c_flags &=~ DR_NEWHEADER;
 		msg("Volume %d started at: %s", tapeno, ctime(&tstart_volume));
 		if (tapeno > 1)
-			msg("Volume %d begins with blocks from inode %d\n",
-				tapeno, slp->inode);
+			msg("Volume %d begins with blocks from inode %llu\n",
+			    tapeno, (unsigned long long)slp->inode);
 	}
 }
 
