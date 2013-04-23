@@ -1,4 +1,4 @@
-/*	$OpenBSD: flt_rounds.S,v 1.1 2004/01/28 01:44:45 mickey Exp $	*/
+/*	$OpenBSD: flt_rounds.S,v 1.2 2012/08/22 17:19:34 pascal Exp $	*/
 /*	$NetBSD: flt_rounds.S,v 1.2 2002/06/06 23:04:35 fvdl Exp $	*/
 
 /*
@@ -22,7 +22,7 @@ ENTRY(__flt_rounds)
 	shrl $10,%eax
 	andl $3,%eax
 #ifdef __PIC__
-	leaq PIC_GOT(_map),%rcx
+	leaq _map(%rip),%rcx
 	movb (%rcx,%rax,1),%al
 #else
 	movb _map(,%rax,1),%al
