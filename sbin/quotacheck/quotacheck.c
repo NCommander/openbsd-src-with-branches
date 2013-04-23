@@ -1,4 +1,4 @@
-/*	$OpenBSD: quotacheck.c,v 1.28 2012/04/12 18:30:43 deraadt Exp $	*/
+/*	$OpenBSD: quotacheck.c,v 1.29 2012/05/31 13:55:54 krw Exp $	*/
 /*	$NetBSD: quotacheck.c,v 1.12 1996/03/30 22:34:25 mark Exp $	*/
 
 /*
@@ -659,7 +659,8 @@ getnextinode(ino_t inumber)
 	static caddr_t nextinop;
 
 	if (inumber != nextino++ || inumber > lastvalidinum)
-		err(1, "bad inode number %u to nextinode", inumber);
+		err(1, "bad inode number %llu to nextinode",
+		    (unsigned long long)inumber);
 	if (inumber >= lastinum) {
 		readcnt++;
 		dblk = fsbtodb(&sblock, ino_to_fsba(&sblock, lastinum));
@@ -693,7 +694,8 @@ setinodebuf(ino_t inum)
 {
 
 	if (inum % sblock.fs_ipg != 0)
-		errx(1, "bad inode number %d to setinodebuf", inum);
+		errx(1, "bad inode number %llu to setinodebuf",
+		    (unsigned long long)inum);
 	lastvalidinum = inum + sblock.fs_ipg - 1;
 	nextino = inum;
 	lastinum = inum;
