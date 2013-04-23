@@ -1,9 +1,10 @@
-#	$OpenBSD: Makefile,v 1.20 2013/01/18 11:35:24 jsing Exp $
+#	$OpenBSD: Makefile,v 1.21 2013/01/18 21:09:04 espie Exp $
 
+COPTS?=
 MAN?=	boot.8
 MLINKS?=boot.8 boot.conf.5
 
-.if !empty(CFLAGS:M-DFDBOOT)
+.if !empty(COPTS:M-DFDBOOT)
 SOFTRAID?=no
 .else
 SOFTRAID?=yes
