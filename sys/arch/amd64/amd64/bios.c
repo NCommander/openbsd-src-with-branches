@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.22 2012/08/10 18:50:04 krw Exp $	*/
+/*	$OpenBSD: bios.c,v 1.23 2013/03/12 16:31:50 deraadt Exp $	*/
 /*
  * Copyright (c) 2006 Gordon Willem Klok <gklok@cogeco.ca>
  *
@@ -37,6 +37,8 @@
 
 #include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
+
+#include <dev/rndvar.h>
 
 #include "acpi.h"
 #include "mpbios.h"
@@ -421,6 +423,8 @@ smbios_info(char * str)
 		sminfop = fixstring(p);
 	if (sminfop) {
 		infolen = strlen(sminfop) + 1;
+		for (i = 0; i < infolen - 1; i++)
+			add_timer_randomness(sminfop[i]);
 		hw_serial = malloc(infolen, M_DEVBUF, M_NOWAIT);
 		if (hw_serial)
 			strlcpy(hw_serial, sminfop, infolen);
@@ -444,6 +448,8 @@ smbios_info(char * str)
 		else if (uuidf & SMBIOS_UUID_NSET)
 			hw_uuid = "Not Set";
 		else {
+			for (i = 0; i < sizeof(sys->uuid); i++)
+				add_timer_randomness(sys->uuid[i]);
 			hw_uuid = malloc(SMBIOS_UUID_REPLEN, M_DEVBUF,
 			    M_NOWAIT);
 			if (hw_uuid) {
