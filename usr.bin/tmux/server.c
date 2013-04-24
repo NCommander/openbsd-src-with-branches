@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.108 2013/03/22 10:31:22 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.109 2013/03/24 09:54:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -169,13 +169,13 @@ server_start(int lockfd, char *lockfile)
 	cfg_references = 1;
 	ARRAY_INIT(&cfg_causes);
 
-	if (access(SYSTEM_CFG, R_OK) == 0) {
-		if (load_cfg(SYSTEM_CFG, cfg_cmd_q, &cause) == -1) {
-			xasprintf(&cause, "%s: %s", SYSTEM_CFG, cause);
+	if (access(TMUX_CONF, R_OK) == 0) {
+		if (load_cfg(TMUX_CONF, cfg_cmd_q, &cause) == -1) {
+			xasprintf(&cause, "%s: %s", TMUX_CONF, cause);
 			ARRAY_ADD(&cfg_causes, cause);
 		}
 	} else if (errno != ENOENT) {
-		xasprintf(&cause, "%s: %s", SYSTEM_CFG, strerror(errno));
+		xasprintf(&cause, "%s: %s", TMUX_CONF, strerror(errno));
 		ARRAY_ADD(&cfg_causes, cause);
 	}
 	if (cfg_file != NULL) {
