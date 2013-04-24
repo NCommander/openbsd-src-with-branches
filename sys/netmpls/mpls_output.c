@@ -1,4 +1,4 @@
-/* $OpenBSD: mpls_output.c,v 1.13 2011/01/21 17:42:57 mikeb Exp $ */
+/* $OpenBSD: mpls_output.c,v 1.15 2011/04/04 17:44:43 henning Exp $ */
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -36,8 +36,6 @@
 #ifdef INET6
 #include <netinet/ip6.h>
 #endif
-
-extern int	mpls_inkloop;
 
 #ifdef MPLS_DEBUG
 #define MPLS_LABEL_GET(l)	((ntohl((l) & MPLS_LABEL_MASK)) >> MPLS_LABEL_OFFSET)
