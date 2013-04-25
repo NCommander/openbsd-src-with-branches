@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.261 2013/04/03 16:28:10 deraadt Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.262 2013/04/19 18:11:13 deraadt Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -4718,7 +4718,7 @@ printifhwfeatures(const char *unused, int show)
 
 	if (ioctl(s, SIOCGIFHARDMTU, (caddr_t)&ifr) != -1) {
 		if (ifr.ifr_hardmtu)
-			printf(" hardmtu %lu", ifr.ifr_hardmtu);
+			printf(" hardmtu %u", ifr.ifr_hardmtu);
 	}
 	putchar('\n');
 }
