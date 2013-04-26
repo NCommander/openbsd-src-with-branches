@@ -130,7 +130,6 @@ usb_config_descriptor_t *usbd_get_config_descriptor(struct usbd_device *dev);
 usb_device_descriptor_t *usbd_get_device_descriptor(struct usbd_device *dev);
 usbd_status usbd_set_interface(struct usbd_interface *, int);
 int usbd_get_no_alts(usb_config_descriptor_t *, int);
-usbd_status  usbd_get_interface(struct usbd_interface *iface, u_int8_t *aiface);
 void usbd_fill_deviceinfo(struct usbd_device *, struct usb_device_info *, int);
 usb_config_descriptor_t *usbd_get_cdesc(struct usbd_device *, int, int *);
 int usbd_get_interface_altindex(struct usbd_interface *iface);
