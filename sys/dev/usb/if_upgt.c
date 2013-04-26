@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.56 2011/07/03 15:47:17 matthew Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.57 2013/04/15 09:23:01 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -2320,9 +2320,9 @@ upgt_bulk_xmit(struct upgt_softc *sc, struct upgt_data *data,
 {
         usbd_status status;
 
-	status = usbd_bulk_transfer(data->xfer, pipeh,
-	    USBD_NO_COPY | flags, UPGT_USB_TIMEOUT, data->buf, size,
-	    "upgt_bulk_xmit");
+	usbd_setup_xfer(data->xfer, pipeh, 0, data->buf, *size,
+	    USBD_NO_COPY | USBD_SYNCHRONOUS | flags, UPGT_USB_TIMEOUT, NULL);
+	status = usbd_transfer(data->xfer);
 	if (status != USBD_NORMAL_COMPLETION) {
 		printf("%s: %s: error %s!\n",
 		    sc->sc_dev.dv_xname, __func__, usbd_errstr(status));
