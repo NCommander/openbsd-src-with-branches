@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbdivar.h,v 1.47 2013/04/15 09:23:02 mglocker Exp $ */
+/*	$OpenBSD: usbdivar.h,v 1.48 2013/04/19 08:58:53 mpi Exp $ */
 /*	$NetBSD: usbdivar.h,v 1.70 2002/07/11 21:14:36 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usbdivar.h,v 1.11 1999/11/17 22:33:51 n_hibma Exp $	*/
 
@@ -213,11 +213,6 @@ struct usbd_xfer {
 
 	struct timeout		timeout_handle;
 };
-
-void usbd_init(void);
-void usbd_finish(void);
-void usb_begin_tasks(void);
-void usb_end_tasks(void);
 
 #ifdef USB_DEBUG
 void usbd_dump_iface(struct usbd_interface *iface);
