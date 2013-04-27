@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.168 2012/10/19 16:49:50 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.169 2013/03/04 08:41:32 sthen Exp $	*/
 
 /*
  * Copyright (c) 2007-2011 Reyk Floeter <reyk@openbsd.org>
@@ -532,7 +532,11 @@ rdroptsl	: forwardmode TO tablespec interface	{
 		}
 		| SESSION TIMEOUT NUMBER		{
 			if ((rdr->conf.timeout.tv_sec = $3) < 0) {
-				yyerror("invalid timeout: %d", $3);
+				yyerror("invalid timeout: %lld", $3);
+				YYERROR;
+			}
+			if (rdr->conf.timeout.tv_sec > INT_MAX) {
+				yyerror("timeout too large: %lld", $3);
 				YYERROR;
 			}
 		}
@@ -1367,7 +1371,11 @@ relayoptsl	: LISTEN ON STRING port optssl {
 		}
 		| SESSION TIMEOUT NUMBER		{
 			if ((rlay->rl_conf.timeout.tv_sec = $3) < 0) {
-				yyerror("invalid timeout: %d", $3);
+				yyerror("invalid timeout: %lld", $3);
+				YYERROR;
+			}
+			if (rlay->rl_conf.timeout.tv_sec > INT_MAX) {
+				yyerror("timeout too large: %lld", $3);
 				YYERROR;
 			}
 		}
