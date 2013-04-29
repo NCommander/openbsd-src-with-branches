@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: command.c,v 1.91 2005/09/21 16:28:47 brad Exp $
+ * $OpenBSD: command.c,v 1.92 2008/03/02 18:46:32 miod Exp $
  */
 
 #include <sys/param.h>
@@ -663,7 +663,7 @@ ShellCommand(struct cmdargs const *arg, int bg)
     dup2(fd, STDERR_FILENO);
 /* fwalk */
     for (i = getdtablesize(); i > STDERR_FILENO; i--)
-      fcntl(i, F_SETFD, 1);
+      fcntl(i, F_SETFD, FD_CLOEXEC);
 
 #ifndef NOSUID
     setuid(ID0realuid());

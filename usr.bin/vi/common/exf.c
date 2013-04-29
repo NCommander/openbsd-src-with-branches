@@ -1,4 +1,4 @@
-/*	$OpenBSD: exf.c,v 1.25 2009/10/27 23:59:47 deraadt Exp $	*/
+/*	$OpenBSD: exf.c,v 1.26 2011/07/10 13:20:25 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -1457,7 +1457,7 @@ file_lock(sp, name, fdp, fd, iswrite)
 		return (LOCK_SUCCESS);
 	
 	/* Set close-on-exec flag so locks are not inherited by shell cmd. */
-	if (fcntl(fd, F_SETFD, 1) == -1)
+	if (fcntl(fd, F_SETFD, FD_CLOEXEC) == -1)
 		msgq_str(sp, M_SYSERR, name, "%s");
 
 #ifdef HAVE_LOCK_FLOCK			/* Hurrah!  We've got flock(2). */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: openbsd-syscalls.c,v 1.41 2011/09/18 23:24:14 matthew Exp $	*/
+/*	$OpenBSD: openbsd-syscalls.c,v 1.42 2013/04/03 03:36:25 guenther Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -164,7 +164,7 @@ obsd_open(void)
 		goto out;
 	}
 
-	if (fcntl(cfd, F_SETFD, 1) == -1)
+	if (fcntl(cfd, F_SETFD, FD_CLOEXEC) == -1)
 		warn("fcntl(F_SETFD)");
 
  out:
