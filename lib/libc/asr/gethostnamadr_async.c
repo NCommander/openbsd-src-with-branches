@@ -1,4 +1,4 @@
-/*	$OpenBSD: gethostnamadr_async.c,v 1.17 2013/04/03 21:13:50 eric Exp $	*/
+/*	$OpenBSD: gethostnamadr_async.c,v 1.18 2013/04/14 22:23:08 deraadt Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -216,13 +216,13 @@ gethostnamadr_async_run(struct async *as, struct async_res *ar)
 				    T_A : T_AAAA;
 				as->as.hostnamadr.subq = res_search_async_ctx(
 				    as->as.hostnamadr.name,
-				    C_IN, type, NULL, 0, as->as_ctx);
+				    C_IN, type, as->as_ctx);
 			} else {
 				addr_as_fqdn(as->as.hostnamadr.addr,
 				    as->as.hostnamadr.family,
 				    dname, sizeof(dname));
 				as->as.hostnamadr.subq = res_query_async_ctx(
-				    dname, C_IN, T_PTR, NULL, 0, as->as_ctx);
+				    dname, C_IN, T_PTR, as->as_ctx);
 			}
 
 			if (as->as.hostnamadr.subq == NULL) {
