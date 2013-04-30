@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.31 2013/03/17 00:38:29 brad Exp $	*/
+/*	$OpenBSD: config.c,v 1.32 2013/04/30 12:29:04 florian Exp $	*/
 /*	$KAME: config.c,v 1.62 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -52,7 +52,6 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <search.h>
 #include <unistd.h>
 #include <ifaddrs.h>
 #include <stdint.h>
