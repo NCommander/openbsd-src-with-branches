@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.30 2012/09/05 05:52:10 deraadt Exp $	*/
+/*	$OpenBSD: config.c,v 1.31 2013/03/17 00:38:29 brad Exp $	*/
 /*	$KAME: config.c,v 1.62 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -803,13 +803,13 @@ make_packet(struct rainfo *rainfo)
 		if (pfx->vltimeexpire == 0)
 			vltime = pfx->validlifetime;
 		else
-			vltime = (pfx->vltimeexpire > now.tv_sec) ?
-				pfx->vltimeexpire - now.tv_sec : 0;
+			vltime = (u_int32_t)(pfx->vltimeexpire > now.tv_sec ?
+				pfx->vltimeexpire - now.tv_sec : 0);
 		if (pfx->pltimeexpire == 0)
 			pltime = pfx->preflifetime;
 		else
-			pltime = (pfx->pltimeexpire > now.tv_sec) ? 
-				pfx->pltimeexpire - now.tv_sec : 0;
+			pltime = (u_int32_t)(pfx->pltimeexpire > now.tv_sec ? 
+				pfx->pltimeexpire - now.tv_sec : 0);
 		if (vltime < pltime) {
 			/*
 			 * this can happen if vltime is decrement but pltime
