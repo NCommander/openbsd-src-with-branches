@@ -173,8 +173,6 @@ main(int argc, char **argv)
     int optind = 0;
     int exit_status = 0;
 
-    setprogname(argv[0]);
-
     ret = krb5_init_context(&context);
     if (ret)
 	errx (1, "krb5_init_context failed: %d", ret);

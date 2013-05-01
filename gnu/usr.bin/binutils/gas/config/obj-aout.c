@@ -486,6 +486,8 @@ obj_crawl_symbol_chain (headers)
 
 	 * symbols with no name (stabd's?)
 	 * symbols with debug info in their N_TYPE
+	 * symbols marked "forceout" (to force out local `L' symbols in Net-
+				      or OpenBSD PIC code)
 
 	 Symbols that don't are:
 	 * symbols that are registers
@@ -502,7 +504,15 @@ obj_crawl_symbol_chain (headers)
 	      || !S_IS_DEFINED (symbolP)
 	      || S_IS_EXTERNAL (symbolP)
 	      || (S_GET_NAME (symbolP)[0] != '\001'
-		  && (flag_keep_locals || !S_LOCAL_NAME (symbolP)))))
+		  && (flag_keep_locals || !S_LOCAL_NAME (symbolP))
+#if defined(TE_NetBSD) || defined(TE_OpenBSD)
+		 || (flag_pic && symbolP->sy_forceout)
+#endif
+		 ))
+#if defined(TE_NetBSD) || defined(TE_OpenBSD)
+	 && (!flag_pic || symbolP != GOT_symbol || got_referenced != 0)
+#endif
+         )
 	{
 	  symbolP->sy_number = symbol_number++;
 
@@ -520,6 +530,11 @@ obj_crawl_symbol_chain (headers)
 	}
       else
 	{
+	  if (S_IS_EXTERNAL (symbolP) || !S_IS_DEFINED (symbolP)
+#if defined(TE_NetBSD) || defined(TE_OpenBSD)
+	     && (!flag_pic || symbolP != GOT_symbol || got_referenced != 0)
+#endif
+	     )
 	  if (S_IS_EXTERNAL (symbolP) || !S_IS_DEFINED (symbolP))
 	    /* This warning should never get triggered any more.
 	       Well, maybe if you're doing twisted things with

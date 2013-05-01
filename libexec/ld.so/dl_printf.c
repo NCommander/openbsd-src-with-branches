@@ -1,4 +1,4 @@
-/*	$OpenBSD: printf.c,v 1.13 1998/06/12 12:09:12 d Exp $	*/
+/*	$OpenBSD: dl_printf.c,v 1.16 2010/01/02 00:59:01 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -58,189 +54,180 @@
  *	reg=3<BITTWO,BITONE>
  */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
-#ifdef __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "syscall.h"
+#include "util.h"
 
-static void kprintn __P((void (*)(int), u_long, int));
-static void kdoprnt __P((void (*)(int), const char *, va_list));
+int lastfd = -1;
+#define OUTBUFSIZE 128
+static char outbuf[OUTBUFSIZE];
+static char *outptr = outbuf;
 
-static void putchar __P((int));
-static void sputchar __P((int));
-static char *sbuf;
+static void kprintn(int, u_long, int);
+static void kdoprnt(int, const char *, va_list);
+static void _dl_flushbuf(void);
+
+static void putcharfd(int, int );
 
 static void
-putchar(c)
-	int c;
+putcharfd(int c, int fd)
 {
-	char b;
-	b = c;
-	_dl_write(2, &b, 1);
+	char b = c;
+	int len;
+
+	if (fd != lastfd) {
+		_dl_flushbuf();
+		lastfd = fd;
+	}
+	*outptr++ = b;
+	len = outptr - outbuf;
+	if ((len >= OUTBUFSIZE) || (b == '\n') || (b == '\r')) {
+		_dl_flushbuf();
+	}
 }
 
 static void
-sputchar(c)
-	int c;
+_dl_flushbuf()
 {
-	*sbuf++ = c;
+	int len = outptr - outbuf;
+	if (len != 0) {
+		_dl_write(lastfd, outbuf, len);
+		outptr = outbuf;
+	}
 }
 
 void
-#ifdef __STDC__
-_dl_sprintf(char *buf, const char *fmt, ...)
-#else
-_dl_sprintf(buf, fmt, va_alist)
-	char *buf, *fmt;
-#endif
-{
-	va_list ap;
-
-	sbuf = buf;
-#ifdef __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	kdoprnt(sputchar, fmt, ap);
-	va_end(ap);
-	*sbuf = '\0';
-}
-
-void
-#ifdef __STDC__
 _dl_printf(const char *fmt, ...)
-#else
-_dl_printf(fmt, va_alist)
-	char *fmt;
-#endif
 {
 	va_list ap;
 
-#ifdef __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	kdoprnt(putchar, fmt, ap);
+	kdoprnt(2, fmt, ap);
+	va_end(ap);
+}
+
+void
+_dl_fdprintf(int fd, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	kdoprnt(fd, fmt, ap);
 	va_end(ap);
 }
 
 void
 _dl_vprintf(const char *fmt, va_list ap)
 {
-	kdoprnt(putchar, fmt, ap);
+	kdoprnt(2, fmt, ap);
 }
 
 static void
-kdoprnt(put, fmt, ap)
-	void (*put)__P((int));
-	const char *fmt;
-	va_list ap;
+kdoprnt(int fd, const char *fmt, va_list ap)
 {
-	char *p;
-	int ch;
 	unsigned long ul;
-	int lflag;
+	int lflag, ch;
+	char *p;
 
 	for (;;) {
 		while ((ch = *fmt++) != '%') {
 			if (ch == '\0')
 				return;
-			put(ch);
+			putcharfd(ch, fd);
 		}
 		lflag = 0;
-reswitch:	switch (ch = *fmt++) {
+reswitch:
+		switch (ch = *fmt++) {
 		case 'l':
 			lflag = 1;
 			goto reswitch;
 		case 'b':
 		{
 			int set, n;
+
 			ul = va_arg(ap, int);
 			p = va_arg(ap, char *);
-			kprintn(put, ul, *p++);
+			kprintn(fd, ul, *p++);
 
 			if (!ul)
 				break;
 
 			for (set = 0; (n = *p++);) {
 				if (ul & (1 << (n - 1))) {
-					put(set ? ',' : '<');
+					putcharfd(set ? ',' : '<', fd);
 					for (; (n = *p) > ' '; ++p)
-						put(n);
+						putcharfd(n, fd);
 					set = 1;
 				} else
 					for (; *p > ' '; ++p);
 			}
 			if (set)
-				put('>');
+				putcharfd('>', fd);
 		}
 			break;
 		case 'c':
 			ch = va_arg(ap, int);
-				put(ch & 0x7f);
+			putcharfd(ch & 0x7f, fd);
 			break;
 		case 's':
 			p = va_arg(ap, char *);
 			while ((ch = *p++))
-				put(ch);
+				putcharfd(ch, fd);
 			break;
 		case 'd':
 			ul = lflag ? va_arg(ap, long) : va_arg(ap, int);
 			if ((long)ul < 0) {
-				put('-');
+				putcharfd('-', fd);
 				ul = -(long)ul;
 			}
-			kprintn(put, ul, 10);
+			kprintn(fd, ul, 10);
 			break;
 		case 'o':
 			ul = lflag ? va_arg(ap, u_long) : va_arg(ap, u_int);
-			kprintn(put, ul, 8);
+			kprintn(fd, ul, 8);
 			break;
 		case 'u':
 			ul = lflag ? va_arg(ap, u_long) : va_arg(ap, u_int);
-			kprintn(put, ul, 10);
+			kprintn(fd, ul, 10);
 			break;
 		case 'p':
-			put('0');
-			put('x');
+			putcharfd('0', fd);
+			putcharfd('x', fd);
 			lflag += sizeof(void *)==sizeof(u_long)? 1 : 0;
 		case 'x':
 			ul = lflag ? va_arg(ap, u_long) : va_arg(ap, u_int);
-			kprintn(put, ul, 16);
+			kprintn(fd, ul, 16);
 			break;
 		case 'X':
 		{
-			int l = 28;
+			int l;
+
 			ul = lflag ? va_arg(ap, u_long) : va_arg(ap, u_int);
-			while(l >= 0) {
-				put("0123456789abcdef"[(ul >> l) & 0xf]);
+			if (lflag)
+				l = (sizeof(ulong) * 8) - 4;
+			else
+				l = (sizeof(u_int) * 8) - 4;
+			while (l >= 0) {
+				putcharfd("0123456789abcdef"[(ul >> l) & 0xf], fd);
 				l -= 4;
 			}
 			break;
 		}
 		default:
-			put('%');
+			putcharfd('%', fd);
 			if (lflag)
-				put('l');
-			put(ch);
+				putcharfd('l', fd);
+			putcharfd(ch, fd);
 		}
 	}
-	va_end(ap);
+	_dl_flushbuf();
 }
 
 static void
-kprintn(put, ul, base)
-	void (*put)__P((int));
-	unsigned long ul;
-	int base;
+kprintn(int fd, unsigned long ul, int base)
 {
-					/* hold a long in base 8 */
+	/* hold a long in base 8 */
 	char *p, buf[(sizeof(long) * NBBY / 3) + 1];
 
 	p = buf;
@@ -248,6 +235,6 @@ kprintn(put, ul, base)
 		*p++ = "0123456789abcdef"[ul % base];
 	} while (ul /= base);
 	do {
-		put(*--p);
+		putcharfd(*--p, fd);
 	} while (p > buf);
 }

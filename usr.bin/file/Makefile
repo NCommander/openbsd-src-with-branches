@@ -1,28 +1,36 @@
-#	$Id: Makefile,v 1.6 1994/12/22 12:29:47 cgd Exp $
+#	$OpenBSD: Makefile,v 1.11 2008/11/09 23:00:42 espie Exp $
 
 MAGIC=		/etc/magic
-MAGICOWN=	bin
+MAGICOWN=	root
 MAGICGRP=	bin
 MAGICMODE=	444
 
 PROG=		file
 SRCS=		file.c apprentice.c fsmagic.c softmagic.c ascmagic.c is_tar.c \
-		print.c compress.c
-CFLAGS+=	-DMAGIC='"$(MAGIC)"'
+		print.c compress.c readelf.c magic.c funcs.c
+CFLAGS+=	-DMAGIC='"$(MAGIC)"' -DUSE_UTIMES -DHAVE_CONFIG_H
 MAN=		file.1 magic.5
 
-CLEANFILES+=	magic
+CLEANFILES+=	magic post-magic
 all:		file magic
 
-MAGFILES=	$(.CURDIR)/magdir/Header\
+MAG1=		$(.CURDIR)/magdir/Header\
 		$(.CURDIR)/magdir/Localstuff\
-		$(.CURDIR)/magdir/NetBSD\
-		$(.CURDIR)/magdir/[a-z]*
-magic:		$(MAGFILES)
-	cat $(MAGFILES) > $(.TARGET)
+		$(.CURDIR)/magdir/OpenBSD
+MAGFILES=	$(.CURDIR)/magdir/[0-9a-z]*
+
+post-magic:	$(MAGFILES)
+	for i in ${.ALLSRC:N*.orig}; \
+	do \
+		echo $$i; \
+	done|sort|xargs -n 1024 cat > $(.TARGET)
+
+magic:		$(MAG1) post-magic
+	cat ${MAG1} post-magic > $(.TARGET)
+
 
 afterinstall:
-	install ${COPY} -o $(MAGICOWN) -g $(MAGICGRP) -m $(MAGICMODE) magic \
+	${INSTALL} ${INSTALL_COPY} -o $(MAGICOWN) -g $(MAGICGRP) -m $(MAGICMODE) magic \
 		$(DESTDIR)$(MAGIC)
 
 .include <bsd.prog.mk>

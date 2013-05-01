@@ -1,5 +1,4 @@
-#	$NetBSD: Makefile,v 1.6 1995/03/21 09:05:45 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.2 1996/06/23 14:20:10 deraadt Exp $
 
 PROG=	hostname
 

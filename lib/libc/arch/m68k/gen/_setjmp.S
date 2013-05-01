@@ -1,3 +1,4 @@
+/* $OpenBSD: _setjmp.S,v 1.4 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,12 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)_setjmp.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: _setjmp.S,v 1.1 1993/11/25 23:36:47 paulus Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 /*
  * C library -- _setjmp, _longjmp
  *
@@ -55,34 +46,34 @@
 #include "DEFS.h"
 
 ENTRY(_setjmp)
-	movl	sp@(4),a0	/* save area pointer */
-	clrl	a0@+		/* no old onstack */
-	clrl	a0@+		/* no old sigmask */
-	movl	sp,a0@+		/* save old SP */
-	movl	a6,a0@+		/* save old FP */
-	clrl	a0@+		/* no old AP */
-	movl	sp@,a0@+	/* save old PC */
-	clrl	a0@+		/* clear PS */
-	moveml	#0x3CFC,a0@	/* save other non-scratch regs */
-	clrl	d0		/* return zero */
+	movl	%sp@(4),%a0	/* save area pointer */
+	clrl	%a0@+		/* no old onstack */
+	clrl	%a0@+		/* no old sigmask */
+	movl	%sp,%a0@+	/* save old SP */
+	movl	%a6,%a0@+	/* save old FP */
+	clrl	%a0@+		/* no old AP */
+	movl	%sp@,%a0@+	/* save old PC */
+	clrl	%a0@+		/* clear PS */
+	moveml	#0x3CFC,%a0@	/* save other non-scratch regs */
+	clrl	%d0		/* return zero */
 	rts
 
 ENTRY(_longjmp)
-	movl	sp@(4),a0	/* save area pointer */
-	addql	#8,a0		/* skip onstack/sigmask */
-	tstl	a0@		/* ensure non-zero SP */
+	movl	%sp@(4),%a0	/* save area pointer */
+	addql	#8,%a0		/* skip onstack/sigmask */
+	tstl	%a0@		/* ensure non-zero SP */
 	jeq	botch		/* oops! */
-	movl	sp@(8),d0	/* grab return value */
+	movl	%sp@(8),%d0	/* grab return value */
 	jne	ok		/* non-zero ok */
-	moveq	#1,d0		/* else make non-zero */
+	moveq	#1,%d0		/* else make non-zero */
 ok:
-	movl	a0@+,sp		/* restore SP */
-	movl	a0@+,a6		/* restore FP */
-	addql	#4,a0		/* skip AP */
-	movl	a0@+,sp@	/* restore PC */
-	moveml	a0@(4),#0x3CFC	/* restore non-scratch regs */
+	movl	%a0@+,%sp	/* restore SP */
+	movl	%a0@+,%a6	/* restore FP */
+	addql	#4,%a0		/* skip AP */
+	movl	%a0@+,%sp@	/* restore PC */
+	moveml	%a0@(4),#0x3CFC	/* restore non-scratch regs */
 	rts
 
 botch:
-	jbsr	_longjmperror
+	jbsr	PIC_PLT(_C_LABEL(longjmperror))
 	stop	#0

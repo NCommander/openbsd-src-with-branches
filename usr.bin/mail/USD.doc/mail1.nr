@@ -1,3 +1,5 @@
+.\"	$OpenBSD: mail1.nr,v 1.3 2003/06/03 02:56:11 millert Exp $
+.\"
 .\" Copyright (c) 1980, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -63,18 +61,37 @@ and
 .q "Text Editing with Ex and Vi"
 can be consulted for more information on these topics.
 .pp
+A word of explanation is in order here concerning the name
+.i Mail :
+the original UNIX mail program was known as
+.i /bin/mail .
+The BSD mail program was called
+.i Mail
+to differentiate it from the older mail program.
+.i /bin/mail
+is not included in OpenBSD so there is no ambiguity and the BSD
+mail program is installed as
+.i /usr/bin/mail ;
+.i /usr/bin/Mail
+is simply a link for backwards compatibility.
+To further confuse the issue, a second link was retained for
+compatibility with SystemV systems,
+.i mailx .
+In this document, we use the original name, `Mail',
+to refer to any of these.
+.pp
 Here is how messages are handled:
 the mail system accepts incoming
 .i messages
 for you from other people
 and collects them in a file, called your
 .i "system mailbox" .
-When you login, the system notifies you if there are any messages
+When you log in, the system notifies you if there are any messages
 waiting in your system mailbox.  If you are a
 .i csh
 user, you will be notified when new mail arrives if you inform
-the shell of the location of your mailbox.  On version 7 systems,
-your system mailbox is located in the directory /usr/spool/mail
+the shell of the location of your mailbox.  On OpenBSD,
+your system mailbox is located in the directory /var/mail
 in a file with your login name.  If your login name is
 .q sam,
 then you can make
@@ -82,7 +99,7 @@ then you can make
 notify you of new mail by including the following line in your .cshrc
 file:
 .(l
-set mail=/usr/spool/mail/sam
+set mail=/var/mail/sam
 .)l
 When you read your mail using
 .i Mail ,

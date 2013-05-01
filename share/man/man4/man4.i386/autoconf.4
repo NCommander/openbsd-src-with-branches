@@ -1,3 +1,4 @@
+.\"	$OpenBSD: autoconf.4,v 1.6 2002/09/26 22:11:49 miod Exp $
 .\"
 .\" Copyright (c) 1994 Christopher G. Demetriou
 .\" All rights reserved.
@@ -27,9 +28,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: autoconf.4,v 1.1 1994/02/20 09:41:42 cgd Exp $
-.\"
-.Dd
+.Dd $Mdocdate$
 .Dt AUTOCONF 4 i386
 .Os
 .Sh NAME
@@ -37,29 +36,17 @@
 .Nd diagnostics from the autoconfiguration code
 .Sh DESCRIPTION
 When
-.Tn NetBSD
+.Ox
 bootstraps it probes the innards of the machine
 on which it is running
 and locates controllers, drives, and other devices, printing out
-what it finds on the console.  This procedure is driven by a system
-configuration table which is processed by
+what it finds on the console.
+This procedure is driven by a system configuration table which is processed by
 .Xr config 8
 and compiled into each kernel.
 Devices which exist in the machine but are not configured into the
-kernel are not detected.
-.Sh DIAGNOSTICS
-.Bl -diag
-.It CPU class not configured.
-You tried to boot
-.Tn NetBSD
-on a class of
-.Tn CPU
-type which it doesn't
-(or at least this compiled version of
-.Tn NetBSD
-doesn't) understand.
-.El
+kernel are usually not detected.
 .Sh SEE ALSO
 .Xr intro 4 ,
-.Xr boot 8 ,
+.Xr boot_i386 8 ,
 .Xr config 8

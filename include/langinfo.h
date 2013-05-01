@@ -1,3 +1,4 @@
+/*	$OpenBSD: langinfo.h,v 1.6 2011/07/07 14:25:15 sobrado Exp $	*/
 /*	$NetBSD: langinfo.h,v 1.3 1995/04/28 23:30:54 jtc Exp $	*/
 
 /*
@@ -7,7 +8,8 @@
 
 #ifndef _LANGINFO_H_
 #define _LANGINFO_H_
-#include <sys/cdefs.h>
+
+#include <nl_types.h>
 
 #define D_T_FMT		0	/* String for formatting date and time */
 #define D_FMT		1	/* Date format string */
@@ -60,14 +62,16 @@
 
 #define RADIXCHAR	44	/* Radix character */
 #define THOUSEP		45	/* Separator for thousands */
-#define YESSTR		46	/* Affirmitive response for yes/no queries */
-#define YESEXPR		47	/* Affirmitive response for yes/no queries */
+#define YESSTR		46	/* Affirmative response for yes/no queries */
+#define YESEXPR		47	/* Affirmative response for yes/no queries */
 #define NOSTR		48	/* Negative response for yes/no queries */
 #define NOEXPR		49	/* Negative response for yes/no queries */
 #define CRNCYSTR	50	/* Currency symbol */
 
+#define CODESET		51	/* Codeset name */
+
 __BEGIN_DECLS
-char *nl_langinfo __P((nl_item));
+char *nl_langinfo(nl_item);
 __END_DECLS
 
 #endif	/* _LANGINFO_H_ */

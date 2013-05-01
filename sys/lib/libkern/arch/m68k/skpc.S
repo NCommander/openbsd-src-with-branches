@@ -1,3 +1,4 @@
+/*	$OpenBSD: skpc.S,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
 /*	$NetBSD: skpc.S,v 1.2 1994/10/26 06:39:32 cgd Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -48,14 +45,14 @@
  *	skpc(mask, count, startc)
  */
 ENTRY(skpc)
-	movl	sp@(8),d0	| get length
+	movl	%sp@(8),%d0	| get length
 	jeq	Lskdone		| nothing to do, return
-	movb	sp@(7),d1	| mask to use
-	movl	sp@(12),a0	| where to start
-	subqw	#1,d0		| adjust for dbcc
+	movb	%sp@(7),%d1	| mask to use
+	movl	%sp@(12),%a0	| where to start
+	subqw	#1,%d0		| adjust for dbcc
 Lskloop:
-	cmpb	a0@+,d1		| compate with mask
-	dbne	d0,Lskloop	| keep going til no more or zero
-	addqw	#1,d0		| overshot by one
+	cmpb	%a0@+,%d1	| compare with mask
+	dbne	%d0,Lskloop	| keep going til no more or zero
+	addqw	#1,%d0		| overshot by one
 Lskdone:
 	rts

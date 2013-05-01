@@ -1,21 +1,13 @@
-#    $Id: Makefile,v 1.6 1995/04/06 04:35:27 rahn Exp $
+#	$OpenBSD: Makefile,v 1.9 2012/08/21 14:46:19 pascal Exp $
+S=${.CURDIR}/../../../..
+CFLAGS=-I${.CURDIR}/../../include -I${.CURDIR}/../libbug -I${S}/lib/libsa \
+	-fomit-frame-pointer
+AFLAGS+=-D_LOCORE
+NOPIE=
 
-CFLAGS+=-I${.CURDIR}/../../include
-
-.include "${MACHINE_ARCH}/Makefile.inc"
-
-.PATH:  ${.CURDIR}/${MACHINE_ARCH}
-
-OBJS=bugcrt.o
-
-CLEANFILES+=a.out
+OBJS=bugcrt.o bugcrtS.o
 
 all:	${OBJS}
-
-bugcrt.o: bugcrt.c
-	${CC} ${CFLAGS} -c -O ${.ALLSRC}
-	${LD} -x -r ${.TARGET}
-	mv a.out ${.TARGET}
 
 install:
 

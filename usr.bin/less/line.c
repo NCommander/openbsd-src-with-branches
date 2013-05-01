@@ -18,6 +18,8 @@
 #include "less.h"
 #include "charset.h"
 
+#include <err.h>
+
 static char *linebuf = NULL;	/* Buffer which holds the current output line */
 static char *attr = NULL;	/* Extension of linebuf to hold attributes */
 public int size_linebuf = 0;	/* Size of line buffer (and attr buffer) */
@@ -44,7 +46,7 @@ static int attr_swidth();
 static int attr_ewidth();
 static int do_append();
 
-extern int sigs;
+extern volatile sig_atomic_t sigs;
 extern int bs_mode;
 extern int linenums;
 extern int ctldisp;
@@ -95,38 +97,25 @@ expand_linebuf()
 	int new_size = size_linebuf * 2;
 
 	/* Just realloc to expand the buffer, if we can. */
-#if HAVE_REALLOC
-	char *new_buf = (char *) realloc(linebuf, new_size);
-	char *new_attr = (char *) realloc(attr, new_size);
-#else
-	char *new_buf = (char *) calloc(new_size, sizeof(char));
-	char *new_attr = (char *) calloc(new_size, sizeof(char));
-#endif
-	if (new_buf == NULL || new_attr == NULL)
-	{
-		if (new_attr != NULL)
-			free(new_attr);
-		if (new_buf != NULL)
-			free(new_buf);
+	char *new_buf;
+	char *new_attr;
+
+	new_buf = realloc(linebuf, new_size);
+	if (new_buf == NULL)
+		return 1;
+	new_attr = realloc(attr, new_size);
+	if (new_attr == NULL) {
+		/* realloc linebuf back to original size */
+		linebuf = realloc(new_buf, size_linebuf);
+		if (linebuf == NULL)
+			err(1, NULL);
 		return 1;
 	}
-#if HAVE_REALLOC
 	/*
 	 * We realloc'd the buffers; they already have the old contents.
 	 */
-	#if 0
 	memset(new_buf + size_linebuf, 0, new_size - size_linebuf);
 	memset(new_attr + size_linebuf, 0, new_size - size_linebuf);
-	#endif
-#else
-	/*
-	 * We just calloc'd the buffers; copy the old contents.
-	 */
-	memcpy(new_buf, linebuf, size_linebuf * sizeof(char));
-	memcpy(new_attr, attr, size_linebuf * sizeof(char));
-	free(attr);
-	free(linebuf);
-#endif
 	linebuf = new_buf;
 	attr = new_attr;
 	size_linebuf = new_size;
@@ -208,11 +197,11 @@ plinenum(pos)
 		char buf[INT_STRLEN_BOUND(pos) + 2];
 		int n;
 
-		linenumtoa(linenum, buf);
+		linenumtoa(linenum, buf, sizeof(buf));
 		n = strlen(buf);
 		if (n < MIN_LINENUM_WIDTH)
 			n = MIN_LINENUM_WIDTH;
-		sprintf(linebuf+curr, "%*s ", n, buf);
+		snprintf(linebuf+curr, size_linebuf-curr, "%*s ", n, buf);
 		n++;  /* One space after the line number. */
 		for (i = 0; i < n; i++)
 			attr[curr+i] = AT_NORMAL;
@@ -280,6 +269,7 @@ pshift(shift)
 
 		width = 0;
 
+#if !SMALL
 		if (!IS_ASCII_OCTET(c) && utf_mode)
 		{
 			/* Assumes well-formedness validation already done.  */
@@ -293,11 +283,16 @@ pshift(shift)
 				width = is_wide_char(ch) ? 2 : 1;
 			prev_ch = ch;
 		} else
+#endif /* !SMALL */
 		{
 			len = 1;
 			if (c == '\b')
 				/* XXX - Incorrect if several '\b' in a row.  */
+#if !SMALL
 				width = (utf_mode && is_wide_char(prev_ch)) ? -2 : -1;
+#else
+				width = -1;
+#endif /* !SMALL */
 			else if (!control_char(c))
 				width = 1;
 			prev_ch = 0;
@@ -427,7 +422,11 @@ pwidth(ch, a, prev_ch)
 		 * Backspace moves backwards one or two positions.
 		 * XXX - Incorrect if several '\b' in a row.
 		 */
+#if !SMALL
 		return (utf_mode && is_wide_char(prev_ch)) ? -2 : -1;
+#else
+		return -1;
+#endif /* !SMALL */
 
 	if (!utf_mode || is_ascii_char(ch))
 	{
@@ -440,7 +439,9 @@ pwidth(ch, a, prev_ch)
 			 */
 			return (0);
 		}
-	} else
+	}
+#if !SMALL
+	else
 	{
 		if (is_composing_char(ch) || is_combining_char(prev_ch, ch))
 		{
@@ -458,14 +459,17 @@ pwidth(ch, a, prev_ch)
 			return (0);
 		}
 	}
+#endif /* !SMALL */
 
 	/*
 	 * Other characters take one or two columns,
 	 * plus the width of any attribute enter/exit sequence.
 	 */
 	w = 1;
+#if !SMALL
 	if (is_wide_char(ch))
 		w++;
+#endif /* !SMALL */
 	if (curr > 0 && !is_at_equiv(attr[curr-1], a))
 		w += attr_ewidth(attr[curr-1]);
 	if ((apply_at_specials(a) != AT_NORMAL) &&
@@ -630,7 +634,11 @@ store_char(ch, a, rep, pos)
 		replen = 1;
 	} else
 	{
+#if !SMALL
 		replen = utf_len(rep[0]);
+#else
+		replen = 1;
+#endif
 	}
 	if (curr + replen >= size_linebuf-6)
 	{
@@ -716,6 +724,7 @@ store_prchar(c, pos)
 	return 0;
 }
 
+#if !SMALL
 	static int
 flush_mbc_buf(pos)
 	POSITION pos;
@@ -728,6 +737,7 @@ flush_mbc_buf(pos)
 
 	return 0;
 }
+#endif /* !SMALL */
 
 /*
  * Append a character to the line buffer.
@@ -754,6 +764,7 @@ pappend(c, pos)
 
 	if (c == '\r' && bs_mode == BS_SPECIAL)
 	{
+#if !SMALL
 		if (mbc_buf_len > 0)  /* utf_mode must be on. */
 		{
 			/* Flush incomplete (truncated) sequence. */
@@ -763,6 +774,7 @@ pappend(c, pos)
 			if (r)
 				return (mbc_buf_index);
 		}
+#endif /* !SMALL */
 
 		/*
 		 * Don't put the CR into the buffer until we see 
@@ -777,7 +789,9 @@ pappend(c, pos)
 	if (!utf_mode)
 	{
 		r = do_append((LWCHAR) c, NULL, pos);
-	} else
+	}
+#if !SMALL
+	else
 	{
 		/* Perform strict validation in all possible cases. */
 		if (mbc_buf_len == 0)
@@ -817,6 +831,7 @@ pappend(c, pos)
 				goto retry;
  		}
 	}
+#endif /* !SMALL */
 
 	/*
 	 * If we need to shift the line, do it.
@@ -881,7 +896,11 @@ do_append(ch, rep, pos)
 		 */
 		overstrike = utf_mode ? -1 : 0;
 		/* To be correct, this must be a base character.  */
+#if !SMALL
 		prev_ch = get_wchar(linebuf + curr);
+#else
+		prev_ch = (LWCHAR)((char)(linebuf + curr)[0] & 0xFF);
+#endif /* !SMALL */
 		a = attr[curr];
 		if (ch == prev_ch)
 		{
@@ -914,11 +933,13 @@ do_append(ch, rep, pos)
 		/* Else we replace prev_ch, but we keep its attributes.  */
 	} else if (overstrike < 0)
 	{
+#if !SMALL
 		if (   is_composing_char(ch)
 		    || is_combining_char(get_wchar(linebuf + curr), ch))
 			/* Continuation of the same overstrike.  */
 			a = last_overstrike;
 		else
+#endif /* !SMALL */
 			overstrike = 0;
 	}
 
@@ -949,7 +970,9 @@ do_append(ch, rep, pos)
 		{
 			STORE_PRCHAR((char) ch, pos);
 		}
-	} else if (utf_mode && ctldisp != OPT_ON && is_ubin_char(ch))
+	}
+#if !SMALL
+	else if (utf_mode && ctldisp != OPT_ON && is_ubin_char(ch))
 	{
 		char *s;
 
@@ -961,7 +984,9 @@ do_append(ch, rep, pos)
 
 		for ( ;  *s != 0;  s++)
 			STORE_CHAR(*s, AT_BINARY, NULL, pos);
- 	} else
+ 	}
+#endif /* !SMALL */
+	else
 	{
 		STORE_CHAR(ch, a, rep, pos);
 	}
@@ -976,12 +1001,14 @@ pflushmbc()
 {
 	int r = 0;
 
+#if !SMALL
 	if (mbc_buf_len > 0)
 	{
 		/* Flush incomplete (truncated) sequence.  */
 		r = flush_mbc_buf(mbc_pos);
 		mbc_buf_len = 0;
 	}
+#endif /* !SMALL */
 	return r;
 }
 
@@ -1214,8 +1241,6 @@ back_raw_line(curr_pos, linep, line_lenp)
 		if (n <= 0)
 		{
 			int old_size_linebuf = size_linebuf;
-			char *fm;
-			char *to;
 			if (expand_linebuf())
 			{
 				/*
@@ -1228,11 +1253,8 @@ back_raw_line(curr_pos, linep, line_lenp)
 			/*
 			 * Shift the data to the end of the new linebuf.
 			 */
-			for (fm = linebuf + old_size_linebuf - 1,
-			      to = linebuf + size_linebuf - 1;
-			     fm >= linebuf;  fm--, to--)
-				*to = *fm;
 			n = size_linebuf - old_size_linebuf;
+			memmove(linebuf + n, linebuf, old_size_linebuf);
 		}
 		linebuf[--n] = c;
 	}

@@ -110,12 +110,13 @@ print STDERR "Added OID $Cname\n";
 	}
 close IN;
 
-open (NUMOUT,">$ARGV[1]") || die "Can't open output file $ARGV[1]";
-foreach (sort { $a <=> $b } keys %nidn)
-	{
-	print NUMOUT $nidn{$_},"\t\t",$_,"\n";
-	}
-close NUMOUT;
+#XXX don't modify input files
+#open (NUMOUT,">$ARGV[1]") || die "Can't open output file $ARGV[1]";
+#foreach (sort { $a <=> $b } keys %nidn)
+#	{
+#	print NUMOUT $nidn{$_},"\t\t",$_,"\n";
+#	}
+#close NUMOUT;
 
 open (OUT,">$ARGV[2]") || die "Can't open output file $ARGV[2]";
 print OUT <<'EOF';

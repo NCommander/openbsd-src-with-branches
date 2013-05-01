@@ -1,3 +1,4 @@
+/*	$OpenBSD: s_rint.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,16 +34,8 @@
 
 #include <machine/asm.h>
 
-;_sccsid:
-;.asciz	"from: @(#)floor.s	5.1 (Berkeley) 5/17/90"
-
-RCSID("$NetBSD: s_rint.S,v 1.3 1995/05/09 02:48:48 jtc Exp $")
-
 | rint(x)
 | delivers integer nearest x in direction of prevailing rounding mode
 ENTRY(rint)
-	fintd	sp@(4),fp0	| use prevailing rounding mode
-	fmoved	fp0,sp@-
-	movel	sp@+,d0
-	movel	sp@+,d1
+	fintd	%sp@(4),%fp0	| use prevailing rounding mode
 	rts

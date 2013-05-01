@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.9 2009/05/22 20:37:54 miod Exp $ */
+/*	$OpenBSD: locore.S,v 1.2 2010/02/14 22:39:33 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -31,6 +31,7 @@
 #include <machine/param.h>
 #include <machine/asm.h>
 #include <machine/cpu.h>
+#include <mips64/mips_cpu.h>
 #include <machine/regnum.h>
 #include <machine/cpustate.h>
 
@@ -57,8 +58,8 @@ start:
 	PTR_S	ra, CF_RA_OFFS(t0)		# save pmon return address
 	PTR_S	sp, 0(t0)			# and stack
 	move	sp, t0
-	jal	mips_init			# mips_init(argc, argv, envp, callvec)
-	nop
+	jal	mips_init			# mips_init(argc, argv, envp,
+	nop					#    callvec, esym)
 
 	beqz	v0, 1f				# upon failure, return to pmon
 	nop

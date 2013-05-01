@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_llc.h,v 1.6 2001/06/09 06:16:38 angelos Exp $	*/
 /*	$NetBSD: if_llc.h,v 1.6 1995/03/08 02:56:57 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,11 +32,14 @@
  *	@(#)if_llc.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NET_IF_LLC_H_
+#define _NET_IF_LLC_H_
+
 /*
  * IEEE 802.2 Link Level Control headers, for use in conjunction with
  * 802.{3,4,5} media access control methods.
  *
- * Headers here do not use bit fields due to shortcommings in many
+ * Headers here do not use bit fields due to shortcomings in many
  * compilers.
  */
 
@@ -62,7 +62,7 @@ struct llc {
 		u_int8_t num_rcv_x2;
 	    } type_s;
 	    struct {
-	        u_int8_t control;
+		u_int8_t control;
 		struct frmrinfo {
 			u_int8_t rej_pdu_0;
 			u_int8_t rej_pdu_1;
@@ -72,8 +72,8 @@ struct llc {
 		} frmrinfo;
 	    } type_frmr;
 	    struct {
-		u_int8_t  control;
-		u_int8_t  org_code[3];
+		u_int8_t control;
+		u_int8_t org_code[3];
 		u_int16_t ether_type;
 	    } type_snap;
 	    struct {
@@ -82,44 +82,46 @@ struct llc {
 	    } type_raw;
 	} llc_un;
 };
-#define llc_control            llc_un.type_u.control
-#define	llc_control_ext        llc_un.type_raw.control_ext
-#define llc_fid                llc_un.type_u.format_id
-#define llc_class              llc_un.type_u.class
-#define llc_window             llc_un.type_u.window_x2
-#define llc_frmrinfo           llc_un.type_frmr.frmrinfo
-#define llc_frmr_pdu0          llc_un.type_frmr.frmrinfo.rej_pdu0
-#define llc_frmr_pdu1          llc_un.type_frmr.frmrinfo.rej_pdu1
-#define llc_frmr_control       llc_un.type_frmr.frmrinfo.frmr_control
-#define llc_frmr_control_ext   llc_un.type_frmr.frmrinfo.frmr_control_ext
-#define llc_frmr_cause         llc_un.type_frmr.frmrinfo.frmr_control_ext
+#define	llc_control		llc_un.type_u.control
+#define	llc_control_ext		llc_un.type_raw.control_ext
+#define	llc_fid			llc_un.type_u.format_id
+#define	llc_class		llc_un.type_u.class
+#define	llc_window		llc_un.type_u.window_x2
+#define	llc_frmrinfo		llc_un.type_frmr.frmrinfo
+#define	llc_frmr_pdu0		llc_un.type_frmr.frmrinfo.rej_pdu0
+#define	llc_frmr_pdu1		llc_un.type_frmr.frmrinfo.rej_pdu1
+#define	llc_frmr_control	llc_un.type_frmr.frmrinfo.frmr_control
+#define	llc_frmr_control_ext	llc_un.type_frmr.frmrinfo.frmr_control_ext
+#define	llc_frmr_cause		llc_un.type_frmr.frmrinfo.frmr_control_ext
+#define	llc_snap		llc_un.type_snap
 
 /*
  * Don't use sizeof(struct llc_un) for LLC header sizes
  */
-#define LLC_ISFRAMELEN 4
-#define LLC_UFRAMELEN  3
-#define LLC_FRMRLEN    7
+#define	LLC_UFRAMELEN		3
+#define	LLC_ISFRAMELEN		4
+#define	LLC_FRMRLEN		7
+#define	LLC_SNAPFRAMELEN	8
 
 /*
  * Unnumbered LLC format commands
  */
-#define LLC_UI		0x3
-#define LLC_UI_P	0x13
-#define LLC_DISC	0x43
+#define	LLC_UI		0x3
+#define	LLC_UI_P	0x13
+#define	LLC_DISC	0x43
 #define	LLC_DISC_P	0x53
-#define LLC_UA		0x63
-#define LLC_UA_P	0x73
-#define LLC_TEST	0xe3
-#define LLC_TEST_P	0xf3
-#define LLC_FRMR	0x87
+#define	LLC_UA		0x63
+#define	LLC_UA_P	0x73
+#define	LLC_TEST	0xe3
+#define	LLC_TEST_P	0xf3
+#define	LLC_FRMR	0x87
 #define	LLC_FRMR_P	0x97
-#define LLC_DM		0x0f
+#define	LLC_DM		0x0f
 #define	LLC_DM_P	0x1f
-#define LLC_XID		0xaf
-#define LLC_XID_P	0xbf
-#define LLC_SABME	0x6f
-#define LLC_SABME_P	0x7f
+#define	LLC_XID		0xaf
+#define	LLC_XID_P	0xbf
+#define	LLC_SABME	0x6f
+#define	LLC_SABME_P	0x7f
 
 /*
  * Supervisory LLC commands
@@ -136,6 +138,8 @@ struct llc {
 /*
  * ISO PDTR 10178 contains among others
  */
-#define LLC_X25_LSAP	0x7e
-#define LLC_SNAP_LSAP	0xaa
-#define LLC_ISO_LSAP	0xfe
+#define	LLC_8021D_LSAP	0x42
+#define	LLC_X25_LSAP	0x7e
+#define	LLC_SNAP_LSAP	0xaa
+#define	LLC_ISO_LSAP	0xfe
+#endif /* _NET_IF_LLC_H_ */

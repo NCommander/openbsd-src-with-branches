@@ -88,6 +88,7 @@
 #include "elf/m32r.h"
 #include "elf/m68k.h"
 #include "elf/m68hc11.h"
+#include "elf/m88k.h"
 #include "elf/mcore.h"
 #include "elf/mips.h"
 #include "elf/mmix.h"
@@ -668,6 +669,7 @@ guess_is_rela (unsigned long e_machine)
     case EM_XTENSA:
     case EM_XTENSA_OLD:
     case EM_M32R:
+    case EM_88K:
       return TRUE;
 
     case EM_MMA:
@@ -1165,6 +1167,10 @@ dump_relocations (FILE *file,
 	case EM_XTENSA_OLD:
 	case EM_XTENSA:
 	  rtype = elf_xtensa_reloc_type (type);
+	  break;
+
+	case EM_88K:
+	  rtype = elf_m88k_reloc_type (type);
 	  break;
 	}
 
@@ -2027,6 +2033,13 @@ get_machine_flags (unsigned e_flags, unsigned e_machine)
 	  if ((e_flags & EF_VAX_GFLOAT))
 	    strcat (buf, ", G-Float");
 	  break;
+
+	case EM_88K:
+	  if ((e_flags & EF_NABI))
+	    strcat (buf, ", not 88Open ABI compliant");
+	  if ((e_flags & EF_M88110))
+	    strcat (buf, ", m88110");
+	  break;
 	}
     }
 
@@ -2144,6 +2157,7 @@ get_segment_type (unsigned long p_type)
     case PT_GNU_EH_FRAME:
 			return "GNU_EH_FRAME";
     case PT_GNU_STACK:	return "STACK";
+    case PT_OPENBSD_RANDOMIZE: return "OPENBSD_RANDOMIZE";
 
     default:
       if ((p_type >= PT_LOPROC) && (p_type <= PT_HIPROC))

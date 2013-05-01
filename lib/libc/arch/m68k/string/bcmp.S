@@ -1,3 +1,4 @@
+/*	$OpenBSD: bcmp.S,v 1.5 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,15 +32,9 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)bcmp.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: bcmp.S,v 1.2 1995/02/08 18:33:12 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
+#include "DEFS.h"
 
 /* bcmp(s1, s2, n) */
-
-#include "DEFS.h"
 
 /*
  * This is probably not the best we can do, but it is still 2-10 times
@@ -54,38 +45,38 @@
  *	- use nested DBcc instructions or use one and limit size to 64K
  */
 ENTRY(bcmp)
-	movl	sp@(4),a0		| string 1
-	movl	sp@(8),a1		| string 2
-	movl	sp@(12),d0		| length
+	movl	%sp@(4),%a0		| string 1
+	movl	%sp@(8),%a1		| string 2
+	movl	%sp@(12),%d0		| length
 	beq	bcdone			| if zero, nothing to do
-	movl	a0,d1
-	btst	#0,d1			| string 1 address odd?
+	movl	%a0,%d1
+	btst	#0,%d1			| string 1 address odd?
 	beq	bceven			| no, skip alignment
-	cmpmb	a0@+,a1@+		| yes, compare a byte
+	cmpmb	%a0@+,%a1@+		| yes, compare a byte
 	bne	bcnoteq			| not equal, return non-zero
-	subql	#1,d0			| adjust count
+	subql	#1,%d0			| adjust count
 	beq	bcdone			| count 0, reutrn zero
 bceven:
-	movl	a1,d1
-	btst	#0,d1			| string 2 address odd?
+	movl	%a1,%d1
+	btst	#0,%d1			| string 2 address odd?
 	bne	bcbloop			| yes, no hope for alignment, compare bytes
-	movl	d0,d1			| no, both even
-	lsrl	#2,d1			| convert count to longword count
+	movl	%d0,%d1			| no, both even
+	lsrl	#2,%d1			| convert count to longword count
 	beq	bcbloop			| count 0, skip longword loop
 bclloop:
-	cmpml	a0@+,a1@+		| compare a longword
+	cmpml	%a0@+,%a1@+		| compare a longword
 	bne	bcnoteq			| not equal, return non-zero
-	subql	#1,d1			| adjust count
+	subql	#1,%d1			| adjust count
 	bne	bclloop			| still more, keep comparing
-	andl	#3,d0			| what remains
+	andl	#3,%d0			| what remains
 	beq	bcdone			| nothing, all done
 bcbloop:
-	cmpmb	a0@+,a1@+		| compare a byte
+	cmpmb	%a0@+,%a1@+		| compare a byte
 	bne	bcnoteq			| not equal, return non-zero
-	subql	#1,d0			| adjust count
+	subql	#1,%d0			| adjust count
 	bne	bcbloop			| still more, keep going
 	rts
 bcnoteq:
-	moveq	#1,d0
+	moveq	#1,%d0
 bcdone:
 	rts

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.15 2009/10/14 21:26:54 miod Exp $ */
+/*	$OpenBSD: bus_dma.c,v 1.10 2012/04/21 12:20:30 miod Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -60,11 +60,10 @@
 #include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
-#include <sys/user.h>
 
 #include <uvm/uvm_extern.h>
 
-#include <mips64/archtype.h>
+#include <mips64/cache.h>
 #include <machine/cpu.h>
 #include <machine/autoconf.h>
 
@@ -307,12 +306,10 @@ void
 _dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t addr,
     bus_size_t size, int op)
 {
-#define SYNC_R 0	/* WB invalidate, WT invalidate */
-#define SYNC_W 1	/* WB writeback, WT unaffected */
-#define SYNC_X 2	/* WB writeback + invalidate, WT invalidate */
 	int nsegs;
 	int curseg;
 	int cacheop;
+	struct cpu_info *ci = curcpu();
 
 	nsegs = map->dm_nsegs;
 	curseg = 0;
@@ -354,24 +351,20 @@ _dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t addr,
 			 */
 			if (op & BUS_DMASYNC_PREWRITE) {
 				if (op & BUS_DMASYNC_PREREAD)
-					cacheop = SYNC_X;
+					cacheop = CACHE_SYNC_X;
 				else
-					cacheop = SYNC_W;
-			} else
-#if 0
-			if (op & (BUS_DMASYNC_PREREAD | BUS_DMASYNC_POSTREAD))
-				cacheop = SYNC_R;
-#else
-			if (op & BUS_DMASYNC_PREREAD)
-				cacheop = SYNC_X;
-			else if (op & BUS_DMASYNC_POSTREAD)
-				cacheop = SYNC_R;
-#endif
-			else
-				cacheop = -1;
-			if (cacheop >= 0) {
-				Mips_IOSyncDCache(vaddr, paddr, ssize, cacheop);
+					cacheop = CACHE_SYNC_W;
+			} else {
+				if (op & BUS_DMASYNC_PREREAD)
+					cacheop = CACHE_SYNC_R;
+				else if (op & BUS_DMASYNC_POSTREAD)
+					cacheop = CACHE_SYNC_R;
+				else
+					cacheop = -1;
 			}
+
+			if (cacheop >= 0)
+				Mips_IOSyncDCache(ci, vaddr, ssize, cacheop);
 			size -= ssize;
 		}
 		curseg++;
@@ -434,15 +427,16 @@ int
 _dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, size_t size,
     caddr_t *kvap, int flags)
 {
-	vaddr_t va;
+	vaddr_t va, sva;
+	size_t ssize;
 	paddr_t pa;
 	bus_addr_t addr;
-	int curseg;
+	int curseg, error;
 
 	if (nsegs == 1) {
 		pa = (*t->_device_to_pa)(segs[0].ds_addr);
 		if (flags & BUS_DMA_COHERENT)
-			*kvap = (caddr_t)PHYS_TO_UNCACHED(pa);
+			*kvap = (caddr_t)PHYS_TO_XKPHYS(pa, CCA_NC);
 		else
 			*kvap = (caddr_t)PHYS_TO_XKPHYS(pa, CCA_CACHED);
 		return (0);
@@ -455,6 +449,8 @@ _dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, size_t size,
 
 	*kvap = (caddr_t)va;
 
+	sva = va;
+	ssize = size;
 	for (curseg = 0; curseg < nsegs; curseg++) {
 		for (addr = segs[curseg].ds_addr;
 		    addr < (segs[curseg].ds_addr + segs[curseg].ds_len);
@@ -462,9 +458,14 @@ _dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, size_t size,
 			if (size == 0)
 				panic("_dmamem_map: size botch");
 			pa = (*t->_device_to_pa)(addr);
-			pmap_enter(pmap_kernel(), va, pa,
-			    VM_PROT_READ | VM_PROT_WRITE,
-			    VM_PROT_READ | VM_PROT_WRITE | PMAP_WIRED);
+			error = pmap_enter(pmap_kernel(), va, pa,
+			    VM_PROT_READ | VM_PROT_WRITE, VM_PROT_READ |
+			    VM_PROT_WRITE | PMAP_WIRED | PMAP_CANFAIL);
+			if (error) {
+				pmap_update(pmap_kernel());
+				uvm_km_free(kernel_map, sva, ssize);
+				return (error);
+			}
 
 			if (flags & BUS_DMA_COHERENT)
 				pmap_page_cache(PHYS_TO_VM_PAGE(pa),
@@ -487,8 +488,6 @@ _dmamem_unmap(bus_dma_tag_t t, caddr_t kva, size_t size)
 		return;
 
 	size = round_page(size);
-	pmap_remove(pmap_kernel(), (vaddr_t)kva, (vaddr_t)kva + size);
-	pmap_update(pmap_kernel());
 	uvm_km_free(kernel_map, (vaddr_t)kva, size);
 }
 
@@ -517,7 +516,7 @@ _dmamem_mmap(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, off_t off,
 			continue;
 		}
 
-		return (atop((*t->_device_to_pa)(segs[i].ds_addr) + off));
+		return ((*t->_device_to_pa)(segs[i].ds_addr) + off);
 	}
 
 	/* Page not found. */

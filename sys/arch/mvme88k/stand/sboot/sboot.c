@@ -1,6 +1,8 @@
+/*	$OpenBSD: sboot.c,v 1.4 2006/05/16 22:52:26 miod Exp $	*/
+
 /*
  * Copyright (c) 1995 Theo de Raadt
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -9,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed under OpenBSD by
- *	Theo de Raadt for Willowglen Singapore.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -58,7 +54,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 #include "sboot.h"
 
 void
@@ -79,7 +75,7 @@ main()
 /*
  * exit to rom
  */
-void 
+void
 callrom()
 {
 	asm("trap #15; .word 0x0063");
@@ -88,7 +84,7 @@ callrom()
 /*
  * do_cmd: do a command
  */
-void 
+void
 do_cmd(buf)
 	char   *buf;
 {

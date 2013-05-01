@@ -27,7 +27,7 @@ TARGETS =
 @BIND9_MAKE_RULES@
 
 distclean::
-	@if [ "X@LIBBIND@" = "X" ] ; then \
+	@if [ "X@LIBBIND@" != "X" ] ; then \
 		i=lib/bind; \
 		echo "making $@ in `pwd`/$$i"; \
 		(cd $$i; ${MAKE} ${MAKEDEFS} $@) || exit 1; \
@@ -53,11 +53,6 @@ install:: isc-config.sh installdirs
 tags:
 	rm -f TAGS
 	find lib bin -name "*.[ch]" -print | @ETAGS@ -
-
-check: test
-
-test:
-	(cd bin/tests && ${MAKE} ${MAKEDEFS} test)
 
 FAQ: FAQ.xml
 	${XSLTPROC} doc/xsl/isc-docbook-text.xsl FAQ.xml | \

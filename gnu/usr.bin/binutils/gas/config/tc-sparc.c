@@ -309,7 +309,7 @@ sparc_target_format ()
     init_default_arch ();
 
 #ifdef OBJ_AOUT
-#ifdef TE_NetBSD
+#if defined(TE_NetBSD) || defined(TE_OpenBSD)
   return "a.out-sparc-netbsd";
 #else
 #ifdef TE_SPARCAOUT
@@ -753,6 +753,7 @@ struct priv_reg_entry priv_reg_table[] =
   {"otherwin", 13},
   {"wstate", 14},
   {"fq", 15},
+  {"gl", 16},
   {"ver", 31},
   {"", -1},			/* End marker.  */
 };
@@ -2146,12 +2147,14 @@ sparc_ip (str, pinsn)
 		      {
 			if (SPARC_OPCODE_ARCH_V9_P (max_architecture))
 			  {
+#if !defined(TE_OpenBSD)
 			    if (*args == 'e' || *args == 'f' || *args == 'g')
 			      {
 				error_message
 				  = _(": There are only 32 single precision f registers; [0-31]");
 				goto error;
 			      }
+#endif
 			    v9_arg_p = 1;
 			    mask -= 31;	/* wrap high bit */
 			  }

@@ -1,3 +1,6 @@
+/*	$OpenBSD: terminal.c,v 1.5 2002/12/07 20:41:21 millert Exp $	*/
+/*	$NetBSD: terminal.c,v 1.5 1996/02/28 21:04:17 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,18 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)terminal.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: terminal.c,v 1.3 1994/02/25 03:00:47 cgd Exp $";
-#endif /* not lint */
-
-#include <arpa/telnet.h>
-#include <sys/types.h>
-
-#include "ring.h"
-
-#include "externs.h"
-#include "types.h"
+#include "telnet_locl.h"
 
 Ring		ttyoring, ttyiring;
 unsigned char	ttyobuf[2*BUFSIZ], ttyibuf[BUFSIZ];
@@ -117,7 +105,7 @@ init_terminal()
 ttyflush(drop)
     int drop;
 {
-    register int n, n0, n1;
+    int n, n0, n1;
 
     n0 = ring_full_count(&ttyoring);
     if ((n1 = n = ring_full_consecutive(&ttyoring)) > 0) {
@@ -125,7 +113,7 @@ ttyflush(drop)
 	    TerminalFlushOutput();
 	    /* we leave 'n' alone! */
 	} else {
-	    n = TerminalWrite(ttyoring.consume, n);
+	    n = TerminalWrite((char *)ttyoring.consume, n);
 	}
     }
     if (n > 0) {
@@ -141,12 +129,16 @@ ttyflush(drop)
 		n1 = n0 - n;
 		if (!drop)
 			n1 = TerminalWrite(ttyoring.bottom, n1);
-		n += n1;
+		if (n1 > 0)
+			n += n1;
 	}
 	ring_consumed(&ttyoring, n);
     }
-    if (n < 0)
+    if (n < 0) {
+	if (errno == EPIPE)
+		kill(0, SIGQUIT);
 	return -1;
+    }
     if (n == n0) {
 	if (n0)
 	    return -1;
@@ -180,9 +172,11 @@ getconnmode()
     if (localflow)
 	mode |= MODE_FLOW;
 
-    if (my_want_state_is_will(TELOPT_BINARY))
+    if ((eight & 1) || my_want_state_is_will(TELOPT_BINARY))
 	mode |= MODE_INBIN;
 
+    if (eight & 2)
+	mode |= MODE_OUT8;
     if (his_want_state_is_will(TELOPT_BINARY))
 	mode |= MODE_OUTBIN;
 
@@ -206,12 +200,29 @@ getconnmode()
 setconnmode(force)
     int force;
 {
-    register int newmode;
+    int newmode;
+#ifdef ENCRYPTION
+    static int enc_passwd = 0;
+#endif
 
     newmode = getconnmode()|(force?MODE_FORCE:0);
 
     TerminalNewMode(newmode);
 
+#ifdef  ENCRYPTION
+    if ((newmode & (MODE_ECHO|MODE_EDIT)) == MODE_EDIT) {
+	if (my_want_state_is_will(TELOPT_ENCRYPT)
+	    && (enc_passwd == 0) && !encrypt_output) {
+	    encrypt_request_start(0, 0);
+	    enc_passwd = 1;
+	}
+    } else {
+	if (enc_passwd) {
+	    encrypt_request_end();
+	    enc_passwd = 0;
+	}
+    }
+#endif
 
 }
 

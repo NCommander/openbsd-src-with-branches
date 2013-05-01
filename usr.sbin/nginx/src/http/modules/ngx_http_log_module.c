@@ -9,6 +9,11 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 
+#if (NGX_ENABLE_SYSLOG)
+#include <syslog.h>
+
+#define HTTP_SYSLOG_PRIORITY LOG_NOTICE
+#endif
 
 typedef struct ngx_http_log_op_s  ngx_http_log_op_t;
 
@@ -52,6 +57,11 @@ typedef struct {
     time_t                      disk_full_time;
     time_t                      error_log_time;
     ngx_http_log_fmt_t         *format;
+
+#if (NGX_ENABLE_SYSLOG)
+    ngx_int_t                   priority;
+    unsigned                    syslog_on:1;      /* unsigned :1 syslog_on */
+#endif
 } ngx_http_log_t;
 
 
@@ -78,8 +88,6 @@ static void ngx_http_log_write(ngx_http_request_t *r, ngx_http_log_t *log,
 static ssize_t ngx_http_log_script_write(ngx_http_request_t *r,
     ngx_http_log_script_t *script, u_char **name, u_char *buf, size_t len);
 
-static u_char *ngx_http_log_connection(ngx_http_request_t *r, u_char *buf,
-    ngx_http_log_op_t *op);
 static u_char *ngx_http_log_pipe(ngx_http_request_t *r, u_char *buf,
     ngx_http_log_op_t *op);
 static u_char *ngx_http_log_time(ngx_http_request_t *r, u_char *buf,
@@ -192,7 +200,6 @@ static ngx_str_t  ngx_http_combined_fmt =
 
 
 static ngx_http_log_var_t  ngx_http_log_vars[] = {
-    { ngx_string("connection"), NGX_ATOMIC_T_LEN, ngx_http_log_connection },
     { ngx_string("pipe"), 1, ngx_http_log_pipe },
     { ngx_string("time_local"), sizeof("28/Sep/1970:12:00:00 +0600") - 1,
                           ngx_http_log_time },
@@ -201,11 +208,9 @@ static ngx_http_log_var_t  ngx_http_log_vars[] = {
     { ngx_string("msec"), NGX_TIME_T_LEN + 4, ngx_http_log_msec },
     { ngx_string("request_time"), NGX_TIME_T_LEN + 4,
                           ngx_http_log_request_time },
-    { ngx_string("status"), 3, ngx_http_log_status },
+    { ngx_string("status"), NGX_INT_T_LEN, ngx_http_log_status },
     { ngx_string("bytes_sent"), NGX_OFF_T_LEN, ngx_http_log_bytes_sent },
     { ngx_string("body_bytes_sent"), NGX_OFF_T_LEN,
-                          ngx_http_log_body_bytes_sent },
-    { ngx_string("apache_bytes_sent"), NGX_OFF_T_LEN,
                           ngx_http_log_body_bytes_sent },
     { ngx_string("request_length"), NGX_SIZE_T_LEN,
                           ngx_http_log_request_length },
@@ -214,7 +219,7 @@ static ngx_http_log_var_t  ngx_http_log_vars[] = {
 };
 
 
-ngx_int_t
+static ngx_int_t
 ngx_http_log_handler(ngx_http_request_t *r)
 {
     u_char                   *line, *p;
@@ -319,11 +324,27 @@ ngx_http_log_write(ngx_http_request_t *r, ngx_http_log_t *log, u_char *buf,
     time_t      now;
     ssize_t     n;
     ngx_err_t   err;
-
+    
+#if (NGX_ENABLE_SYSLOG)
+    n = 0;
+    if (log->syslog_on) {
+        syslog(log->priority, "%.*s", (int)len, buf);
+    }
+#endif
+     
     if (log->script == NULL) {
         name = log->file->name.data;
+#if (NGX_ENABLE_SYSLOG)
+        if (name != NULL) {
+            n = ngx_write_fd(log->file->fd, buf, len);
+        }
+        else {
+            n = len;
+        }
+#else
         n = ngx_write_fd(log->file->fd, buf, len);
 
+#endif
     } else {
         name = NULL;
         n = ngx_http_log_script_write(r, log->script, &name, buf, len);
@@ -373,6 +394,8 @@ ngx_http_log_script_write(ngx_http_request_t *r, ngx_http_log_script_t *script,
     ngx_http_log_loc_conf_t   *llcf;
     ngx_http_core_loc_conf_t  *clcf;
 
+    clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
     if (!r->root_tested) {
 
         /* test root directory existence */
@@ -384,8 +407,6 @@ ngx_http_log_script_write(ngx_http_request_t *r, ngx_http_log_script_t *script,
 
         path.data[root] = '\0';
 
-        clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
-
         ngx_memzero(&of, sizeof(ngx_open_file_info_t));
 
         of.valid = clcf->open_file_cache_valid;
@@ -394,6 +415,11 @@ ngx_http_log_script_write(ngx_http_request_t *r, ngx_http_log_script_t *script,
         of.test_only = 1;
         of.errors = clcf->open_file_cache_errors;
         of.events = clcf->open_file_cache_events;
+
+        if (ngx_http_set_disable_symlinks(r, clcf, &path, &of) != NGX_OK) {
+            /* simulate successful logging */
+            return len;
+        }
 
         if (ngx_open_cached_file(clcf->open_file_cache, &path, &of, r->pool)
             != NGX_OK)
@@ -442,6 +468,11 @@ ngx_http_log_script_write(ngx_http_request_t *r, ngx_http_log_script_t *script,
     of.min_uses = llcf->open_file_cache_min_uses;
     of.directio = NGX_OPEN_FILE_DIRECTIO_OFF;
 
+    if (ngx_http_set_disable_symlinks(r, clcf, &log, &of) != NGX_OK) {
+        /* simulate successful logging */
+        return len;
+    }
+
     if (ngx_open_cached_file(llcf->open_file_cache, &log, &of, r->pool)
         != NGX_OK)
     {
@@ -484,14 +515,6 @@ ngx_http_log_copy_long(ngx_http_request_t *r, u_char *buf,
     ngx_http_log_op_t *op)
 {
     return ngx_cpymem(buf, (u_char *) op->data, op->len);
-}
-
-
-static u_char *
-ngx_http_log_connection(ngx_http_request_t *r, u_char *buf,
-    ngx_http_log_op_t *op)
-{
-    return ngx_sprintf(buf, "%ui", r->connection->number);
 }
 
 
@@ -562,16 +585,13 @@ ngx_http_log_status(ngx_http_request_t *r, u_char *buf, ngx_http_log_op_t *op)
         status = r->headers_out.status;
 
     } else if (r->http_version == NGX_HTTP_VERSION_9) {
-        *buf++ = '0';
-        *buf++ = '0';
-        *buf++ = '9';
-        return buf;
+        status = 9;
 
     } else {
         status = 0;
     }
 
-    return ngx_sprintf(buf, "%ui", status);
+    return ngx_sprintf(buf, "%03ui", status);
 }
 
 
@@ -837,6 +857,10 @@ ngx_http_log_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     log->script = NULL;
     log->disk_full_time = 0;
     log->error_log_time = 0;
+#if (NGX_ENABLE_SYSLOG)
+    log->priority = HTTP_SYSLOG_PRIORITY;
+    log->syslog_on = 0;
+#endif
 
     lmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_log_module);
     fmt = lmcf->formats.elts;
@@ -862,6 +886,13 @@ ngx_http_log_set_log(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     ngx_http_log_main_conf_t   *lmcf;
     ngx_http_script_compile_t   sc;
 
+#if (NGX_ENABLE_SYSLOG)
+    u_char                     *off;
+    ngx_str_t                   priority;
+    ngx_uint_t                  syslog_on = 0;
+    name = priority = (ngx_str_t)ngx_null_string;
+#endif
+
     value = cf->args->elts;
 
     if (ngx_strcmp(value[1].data, "off") == 0) {
@@ -874,6 +905,38 @@ ngx_http_log_set_log(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
                            "invalid parameter \"%V\"", &value[2]);
         return NGX_CONF_ERROR;
     }
+#if (NGX_ENABLE_SYSLOG)
+    else if (ngx_strncmp(value[1].data, "syslog", sizeof("syslog") - 1) == 0) {
+        if (!cf->cycle->new_log.syslog_set) {
+            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                               "You must set the syslog directive and enable it first.");
+            return NGX_CONF_ERROR;
+        }
+
+        syslog_on = 1;
+        if (value[1].data[sizeof("syslog") - 1] == ':') {
+            priority.len = value[1].len - sizeof("syslog");
+            priority.data = value[1].data + sizeof("syslog");
+
+            off = (u_char*) ngx_strchr(priority.data, '|'); 
+            if (off != NULL) {
+                priority.len = off - priority.data;
+                
+                off++;
+                name.len = value[1].data + value[1].len - off;
+                name.data = off;
+            }
+        }
+        else {
+            if (value[1].len > sizeof("syslog")) {
+                name.len = value[1].len - sizeof("syslog");
+                name.data = value[1].data + sizeof("syslog");
+            }
+        }
+    } else {
+        name = value[1];
+    }
+#endif
 
     if (llcf->logs == NULL) {
         llcf->logs = ngx_array_create(cf->pool, 2, sizeof(ngx_http_log_t));
@@ -891,6 +954,52 @@ ngx_http_log_set_log(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     ngx_memzero(log, sizeof(ngx_http_log_t));
 
+#if (NGX_ENABLE_SYSLOG)
+    log->syslog_on = syslog_on;
+
+    if (priority.len == 0) {
+        log->priority = HTTP_SYSLOG_PRIORITY;
+    }
+    else {
+        log->priority = ngx_log_get_priority(cf, &priority);
+    }
+
+    if (name.len != 0) {
+        n = ngx_http_script_variables_count(&name);
+
+        if (n == 0) {
+            log->file = ngx_conf_open_file(cf->cycle, &name);
+            if (log->file == NULL) {
+                return NGX_CONF_ERROR;
+            }
+        } else {
+            if (ngx_conf_full_name(cf->cycle, &name, 0) != NGX_OK) {
+                return NGX_CONF_ERROR;
+            }
+            log->script = ngx_pcalloc(cf->pool, sizeof(ngx_http_log_script_t));
+            if (log->script == NULL) {
+                return NGX_CONF_ERROR;
+            }
+            ngx_memzero(&sc, sizeof(ngx_http_script_compile_t));
+            sc.cf = cf;
+            sc.source = &name;
+            sc.lengths = &log->script->lengths;
+            sc.values = &log->script->values;
+            sc.variables = n;
+            sc.complete_lengths = 1;
+            sc.complete_values = 1;
+            if (ngx_http_script_compile(&sc) != NGX_OK) {
+                return NGX_CONF_ERROR;
+            }
+        }
+    }
+    else {
+        log->file = ngx_conf_open_file(cf->cycle, &name);
+        if (log->file == NULL) {
+            return NGX_CONF_ERROR;
+        }
+    }
+#else
     n = ngx_http_script_variables_count(&value[1]);
 
     if (n == 0) {
@@ -898,7 +1007,7 @@ ngx_http_log_set_log(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         if (log->file == NULL) {
             return NGX_CONF_ERROR;
         }
-
+        
     } else {
         if (ngx_conf_full_name(cf->cycle, &value[1], 0) != NGX_OK) {
             return NGX_CONF_ERROR;
@@ -923,6 +1032,7 @@ ngx_http_log_set_log(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             return NGX_CONF_ERROR;
         }
     }
+#endif
 
     if (cf->args->nelts >= 3) {
         name = value[2];
@@ -972,7 +1082,7 @@ buffer:
 
         if (buf == NGX_ERROR) {
             ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                               "invalid parameter \"%V\"", &value[3]);
+                               "invalid buffer value \"%V\"", &name);
             return NGX_CONF_ERROR;
         }
 
@@ -1004,6 +1114,12 @@ ngx_http_log_set_format(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     ngx_str_t           *value;
     ngx_uint_t           i;
     ngx_http_log_fmt_t  *fmt;
+
+    if (cf->cmd_type != NGX_HTTP_MAIN_CONF) {
+        ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
+                           "the \"log_format\" directive may be used "
+                           "only on \"http\" level");
+    }
 
     value = cf->args->elts;
 
@@ -1116,12 +1232,6 @@ ngx_http_log_compile_format(ngx_conf_t *cf, ngx_array_t *flushes,
 
                 if (var.len == 0) {
                     goto invalid;
-                }
-
-                if (ngx_strncmp(var.data, "apache_bytes_sent", 17) == 0) {
-                    ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
-                        "use \"$body_bytes_sent\" instead of "
-                        "\"$apache_bytes_sent\"");
                 }
 
                 for (v = ngx_http_log_vars; v->name.len; v++) {
@@ -1243,7 +1353,7 @@ ngx_http_log_open_file_cache(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             s.data = value[i].data + 9;
 
             inactive = ngx_parse_time(&s, 1);
-            if (inactive < 0) {
+            if (inactive == (time_t) NGX_ERROR) {
                 goto failed;
             }
 
@@ -1266,7 +1376,7 @@ ngx_http_log_open_file_cache(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             s.data = value[i].data + 6;
 
             valid = ngx_parse_time(&s, 1);
-            if (valid < 0) {
+            if (valid == (time_t) NGX_ERROR) {
                 goto failed;
             }
 

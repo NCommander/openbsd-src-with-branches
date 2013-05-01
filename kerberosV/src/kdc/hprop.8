@@ -38,7 +38,7 @@
 .Nm hprop
 .Nd propagate the KDC database
 .Sh SYNOPSIS
-.Nm
+.Nm hprop
 .Bk -words
 .Oo Fl m Ar file \*(Ba Xo
 .Fl -master-key= Ns Pa file
@@ -185,7 +185,7 @@ Deprecated, identical to
 .Sh EXAMPLES
 The following will propagate a database to another machine (which
 should run
-.Xr hpropd 8 ):
+.Xr hpropd 8 ) :
 .Bd -literal -offset indent
 $ hprop slave-1 slave-2
 .Ed

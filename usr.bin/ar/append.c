@@ -1,3 +1,4 @@
+/*	$OpenBSD: append.c,v 1.5 2003/06/12 20:58:08 deraadt Exp $	*/
 /*	$NetBSD: append.c,v 1.5 1995/03/26 03:27:37 glass Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)append.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: append.c,v 1.5 1995/03/26 03:27:37 glass Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -63,8 +52,7 @@ static char rcsid[] = "$NetBSD: append.c,v 1.5 1995/03/26 03:27:37 glass Exp $";
  *	a new archive if named archive does not exist.
  */
 int
-append(argv)
-	char **argv;
+append(char **argv)
 {
 	int afd, fd, eval;
 	char *file;
@@ -77,7 +65,7 @@ append(argv)
 
 	/* Read from disk, write to an archive; pad on write. */
 	SETCF(0, 0, afd, archive, WPAD);
-	for (eval = 0; file = *argv++;) {
+	for (eval = 0; (file = *argv++);) {
 		if ((fd = open(file, O_RDONLY)) < 0) {
 			warn("%s", file);
 			eval = 1;

@@ -147,23 +147,7 @@ while (defined (my $file = next_file())) {
 		    s/^\s+//;
 		    expr();
 		    $new =~ s/(["\\])/\\$1/g;       #"]);
-		  EMIT:
-		    $new = reindent($new);
-		    $args = reindent($args);
-		    if ($t ne '') {
-			$new =~ s/(['\\])/\\$1/g;   #']);
-			if ($opt_h) {
-			    print OUT $t,
-                            "eval \"\\n#line $eval_index $outfile\\n\" . 'sub $name $proto\{\n$t    ${args}eval q($new);\n$t}' unless defined(\&$name);\n";
-                            $eval_index++;
-			} else {
-			    print OUT $t,
-                            "eval 'sub $name $proto\{\n$t    ${args}eval q($new);\n$t}' unless defined(\&$name);\n";
-			}
-		    } else {
-                      print OUT "unless(defined(\&$name)) {\n    sub $name $proto\{\n\t${args}eval q($new);\n    }\n}\n";
-		    }
-		    %curargs = ();
+		    EMIT($proto);
 		} else {
 		    s/^\s+//;
 		    expr();
@@ -380,7 +364,7 @@ while (defined (my $file = next_file())) {
 	    $new =~ s/&$_\b/\$$_/g for @local_variables;
 	    $new =~ s/(["\\])/\\$1/g;       #"]);
 	    # now that's almost like a macro (we hope)
-	    goto EMIT;
+	    EMIT($proto);
 	}
     }
     $Is_converted{$file} = 1;
@@ -399,6 +383,28 @@ if ($opt_e && (scalar(keys %bad_file) > 0)) {
 }
 
 exit $Exit;
+
+sub EMIT {
+    my $proto = shift;
+
+    $new = reindent($new);
+    $args = reindent($args);
+    if ($t ne '') {
+    $new =~ s/(['\\])/\\$1/g;   #']);
+    if ($opt_h) {
+        print OUT $t,
+                    "eval \"\\n#line $eval_index $outfile\\n\" . 'sub $name $proto\{\n$t    ${args}eval q($new);\n$t}' unless defined(\&$name);\n";
+                    $eval_index++;
+    } else {
+        print OUT $t,
+                    "eval 'sub $name $proto\{\n$t    ${args}eval q($new);\n$t}' unless defined(\&$name);\n";
+    }
+    } else {
+              print OUT "unless(defined(\&$name)) {\n    sub $name $proto\{\n\t${args}eval q($new);\n    }\n}\n";
+    }
+    %curargs = ();
+    return;
+}
 
 sub expr {
     $new = '"(assembly code)"' and return if /\b__asm__\b/; # freak out.
@@ -564,7 +570,7 @@ sub next_line
                 $in =~ s/\?\?</{/g;                         # | ??<|  {|
                 $in =~ s/\?\?>/}/g;                         # | ??>|  }|
             }
-	    if ($in =~ /^\#ifdef __LANGUAGE_PASCAL__/) {
+	    if ($in =~ s/^\#ifdef __LANGUAGE_PASCAL__//) {
 		# Tru64 disassembler.h evilness: mixed C and Pascal.
 		while (<IN>) {
 		    last if /^\#endif/;
@@ -572,8 +578,8 @@ sub next_line
 		$in = "";
 		next READ;
 	    }
-	    if ($in =~ /^extern inline / && # Inlined assembler.
-		$^O eq 'linux' && $file =~ m!(?:^|/)asm/[^/]+\.h$!) {
+	    # Skip inlined functions in headers
+	    if ($in =~ s/^(extern|static) (__inline__|inline) .*[^;]\s*$//) {
 		while (<IN>) {
 		    last if /^}/;
 		}

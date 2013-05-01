@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: crt0.c,v 1.4 2012/04/12 11:28:32 jsg Exp $	*/
 /*	$NetBSD: crt0.c,v 1.10 2004/08/26 21:16:41 thorpej Exp $ */
 
 /*
@@ -36,10 +36,10 @@
  * <<Id: LICENSE,v 1.2 2000/06/14 15:57:33 cgd Exp>>
  */
 
-#include <sys/cdefs.h>
 #include <sys/param.h>
 
 #include <machine/asm.h>
+#include <machine/fpu.h>
 #include <stdlib.h>
 
 static char     *_strrchr(const char *, char);
@@ -49,6 +49,10 @@ char    **environ;
 char * __progname = "";
 
 char __progname_storage[NAME_MAX+1];
+
+#if defined(__SH4__) && !defined(__SH4_NOFPU__)
+unsigned int __fpscr_values[2];
+#endif
 
 #ifdef MCRT0
 extern void     monstartup(u_long, u_long);
@@ -75,6 +79,15 @@ ___start(int argc, char **argv, char **envp, void *ps_strings,
 	const void *obj, void (*cleanup)(void))
 {
 	char *s;
+
+#if defined(__SH4__) && !defined(__SH4_NOFPU__)
+	extern void __set_fpscr(unsigned int);
+
+	__set_fpscr(0);
+	__fpscr_values[0] |= FPSCR_DN;
+	__fpscr_values[1] |= FPSCR_DN;
+	__asm__ __volatile__ ("lds %0, fpscr" : : "r" (__fpscr_values[1]));
+#endif
 
  	environ = envp;
 

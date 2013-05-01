@@ -1,3 +1,4 @@
+/*	$OpenBSD: tss.h,v 1.7 2006/04/27 15:37:53 mickey Exp $	*/
 /*	$NetBSD: tss.h,v 1.6 1995/10/11 04:20:28 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,6 +35,9 @@
  *	@(#)tss.h	5.4 (Berkeley) 1/18/91
  */
 
+#ifndef _MACHINE_TSS_H_
+#define _MACHINE_TSS_H_
+
 /*
  * Intel 386 Context Data Type
  */
@@ -50,7 +50,7 @@ struct i386tss {
 	int	__tss_ss1;
 	int	__tss_esp2;
 	int	__tss_ss2;
-	int	tss_cr3;	/* page directory paddr */
+	int	tss_cr3;	/* page directory [pointer] paddr */
 	int	__tss_eip;
 	int	__tss_eflags;
 	int	__tss_eax; 
@@ -62,7 +62,7 @@ struct i386tss {
 	int	__tss_esi; 
 	int	__tss_edi; 
 	int	__tss_es;
-	int	__tss_cs;
+	int	tss_cs;
 	int	__tss_ss;
 	int	__tss_ds;
 	int	tss_fs;		/* saved segment register */
@@ -70,3 +70,5 @@ struct i386tss {
 	int	tss_ldt;	/* LDT selector */
 	int	tss_ioopt;	/* options and I/O permission map offset */
 };
+
+#endif /* _MACHINE_TSS_H_ */

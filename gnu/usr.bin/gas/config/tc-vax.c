@@ -1,3 +1,5 @@
+/*	$OpenBSD: tc-vax.c,v 1.4 2005/04/28 23:57:49 miod Exp $	*/
+
 /* tc-vax.c - vax-specific -
    Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
    
@@ -386,7 +388,7 @@ char *instruction_string;	/* A string: assemble 1 instruction. */
 	 * errors. That is, without changing label values in different passes.
 	 */
 	if (goofed = (*v.vit_error)) {
-		as_warn ("Ignoring statement due to \"%s\"", v.vit_error);
+		as_fatal ("%s", v.vit_error);
 	}
 	/*
 	 * We need to use expression() and friends, which require us to diddle
@@ -402,7 +404,7 @@ char *instruction_string;	/* A string: assemble 1 instruction. */
 	     
 	     operandP++, expP++, floatP++) { /* for each operand */
 		if (*(operandP->vop_error)) {
-			as_warn ("Ignoring statement because \"%s\"", (operandP->vop_error));
+			as_fatal ("%s", (operandP->vop_error));
 			goofed = 1;
 		} else { /* statement has no syntax goofs: lets sniff the expression */
 			int can_be_short = 0;	/* 1 if a bignum can be reduced to a short literal. */
@@ -451,6 +453,7 @@ char *instruction_string;	/* A string: assemble 1 instruction. */
 			case SEG_BIG:
 				/* Preserve the bits. */
 				if (expP->X_add_number > 0) {
+					bzero(floatP->low, SIZE_OF_LARGE_NUMBER);
 					bignum_copy(generic_bignum, expP->X_add_number,
 						     floatP->low, SIZE_OF_LARGE_NUMBER);
 				} else {
@@ -737,7 +740,7 @@ char *instruction_string;	/* A string: assemble 1 instruction. */
 									p[1] = VAX_BRB;
 									p[2] = 6;
 									p[3] = VAX_JMP;
-									p[4] = VAX_PC_RELATIVE_MODE + 1;	/* @#... */
+									p[4] = VAX_ABSOLUTE_MODE;	/* @#... */
 									md_number_to_chars(p + 5, this_add_number, 4);
 									/*
 									 * Now (eg)	xOBxxx	1f
@@ -1214,7 +1217,7 @@ register fragS *fragP;
 	    addressP[0] = 6;
 	    addressP[1] = VAX_JMP;
 	    addressP[2] = VAX_PC_RELATIVE_MODE;
-	    md_number_to_chars(addressP + 3, target_address, 4);
+	    md_number_to_chars(addressP + 3, target_address - (address_of_var + 7), 4);
 	    extension = 7;
 	    break;
 	    
@@ -1248,7 +1251,7 @@ register fragS *fragP;
 	    addressP[3] = 6;
 	    addressP[4] = VAX_JMP;
 	    addressP[5] = VAX_PC_RELATIVE_MODE;
-	    md_number_to_chars(addressP + 6, target_address, 4);
+	    md_number_to_chars(addressP + 6, target_address - (address_of_var + 10), 4);
 	    extension = 10;
 	    break;
 	    
@@ -1272,7 +1275,7 @@ register fragS *fragP;
 	    addressP[2] = 6;
 	    addressP[3] = VAX_JMP;
 	    addressP[4] = VAX_PC_RELATIVE_MODE;
-	    md_number_to_chars(addressP + 5, target_address, 4);
+	    md_number_to_chars(addressP + 5, target_address - (address_of_var + 9), 4);
 	    extension = 9;
 	    break;
 	    
@@ -2930,8 +2933,12 @@ symbolS *to_symbol;
 {
 	long offset;
 	
-	offset = to_addr - (from_addr + 1);
-	*ptr++ = 0x31;
+	/* This former calculation was off by two:
+	    offset = to_addr - (from_addr + 1);
+	   We need to account for the one byte instruction and also its
+	   two byte operand.  */
+	offset = to_addr - (from_addr + 1 + 2);
+	*ptr++ = VAX_BRW;	/* Branch with word (16 bit) offset.  */
 	md_number_to_chars(ptr, offset, 2);
 }
 
@@ -2945,8 +2952,8 @@ symbolS *to_symbol;
 	long offset;
 	
 	offset = to_addr - S_GET_VALUE(to_symbol);
-	*ptr++ = 0x17;
-	*ptr++ = 0x9F;
+	*ptr++ = VAX_JMP;	/* Arbitrary jump.  */
+	*ptr++ = VAX_ABSOLUTE_MODE;
 	md_number_to_chars(ptr, offset, 4);
 	fix_new(frag, ptr - frag->fr_literal, 4, to_symbol, (symbolS *) 0, (long) 0, 0, NO_RELOC);
 }

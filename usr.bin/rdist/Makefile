@@ -1,15 +1,17 @@
-#	from: @(#)Makefile	5.11 (Berkeley) 3/12/91
-#	$Id: Makefile,v 1.3 1994/03/07 05:05:16 cgd Exp $
+#	$OpenBSD: Makefile,v 1.15 2004/01/05 02:55:28 espie Exp $
+
 
 PROG=	rdist
-CFLAGS+=-I${.CURDIR}
-SRCS=	docmd.c expand.c lookup.c main.c server.c
-OBJS+=	gram.o
-BINOWN=	root
-BINMODE=4555
-CLEANFILES=y.tab.h
-
-LDADD=	-lcompat
-DPADD=	${LIBCOMPAT}
+CFLAGS+=-I. -I${.CURDIR} -DOS_H=\"os-openbsd.h\"
+SRCS=	gram.y child.c client.c common.c distopt.c docmd.c expand.c \
+	isexec.c lookup.c message.c rdist.c
+CLEANFILES+=gram.c y.tab.h
+WARNINGS=yes
 
 .include <bsd.prog.mk>
+
+.if ${ELF_TOOLCHAIN:L} == "yes"
+CFLAGS+=-DEXE_TYPE=EXE_ELF
+.endif
+
+.depend: gram.c

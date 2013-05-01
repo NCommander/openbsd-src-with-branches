@@ -1,36 +1,39 @@
 #	from: @(#)Makefile	8.1 (Berkeley) 6/10/93
-#	     $Id: Makefile,v 1.2 1995/10/23 03:38:29 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.16 2013/01/05 11:20:56 miod Exp $
 
-RELOC=0x3F0000 
+SIZE?=	size
 
 S=	${.CURDIR}/../../../..
-DEFS= -DSTANDALONE -DCOMPAT_NOLABEL # -DROMPRF
-INCPATH=-I${.CURDIR} -I${.CURDIR}/../../include -I${S} -I${S}/lib/libsa
-CFLAGS=	-O2 ${INCPATH} ${DEFS} ${COPTS}
-CLEANFILES+=sdboot bootst bootst.bug
+DEFS= -DSTANDALONE -DCOMPAT_NOLABEL
+INCPATH=-I${.CURDIR} -I${.CURDIR}/../libsa -I${.CURDIR}/../libbug \
+	-I${.CURDIR}/../../include -I${S} -I${S}/lib/libsa
+CFLAGS+=${INCPATH} ${DEFS} ${COPTS}
+LDFLAGS=-N -T ${S}/arch/mvme88k/stand/ld.script -Ttext ${STAGE2_RELOC}
+LDFLAGS+= -warn-common
+NOPIE=
+CLEANFILES+=stboot bootst bootst.bug
 
-#.PATH: ${S}/arch/${MACHINE_ARCH}/${MACHINE_ARCH}
-#.PATH: ${S}/lib/libsa
+.include "${S}/arch/mvme88k/stand/wrtvid/Makefile.inc"
+.include "${S}/arch/mvme88k/stand/bugcrt/Makefile.inc"
+.include "${S}/arch/mvme88k/stand/libbug/Makefile.inc"
+.include "${S}/arch/mvme88k/stand/libsa/Makefile.inc"
+.include "${S}/arch/mvme88k/stand/libz/Makefile.inc"
 
-.include "${S}/arch/${MACHINE}/stand/libsa/Makefile.inc"
-.include "${S}/arch/${MACHINE}/stand/libbug/Makefile.inc"
-.include "${S}/arch/${MACHINE}/stand/bugcrt/Makefile.inc"
-.include "${S}/arch/${MACHINE}/stand/wrtvid/Makefile.inc"
+SRCS=   boot.c conf.c dev_tape.c rawfs.c version.c
 
-SRCS=   bootst.c
-
-LIBS=	${LIBSA} ${LIBBUG}
+LIBS=	${LIBSA} ${LIBBUG} ${LIBZ}
 
 OBJS= ${SRCS:N*.h:R:S/$/.o/g}
 
 BOOTS=	bootst stboot
-ALL=	${BOOTS} 
+ALL=	${BOOTS}
 
 all: ${ALL}
 
-bootst.bug:	${OBJS} ${BUGCRT} ${LIBS}
-	${LD} -s -N -T ${RELOC} ${BUGCRT} ${OBJS} ${LIBS} -o $@
-	@size bootst.bug
+bootst.bug: ${STAGE1_CRT} ${OBJS} ${LIBS}
+	${LD} ${LDFLAGS} -o $@ \
+	    ${STAGE1_CRT} ${OBJS} ${LIBS} `${CC} -print-libgcc-file-name`
+	@${SIZE} bootst.bug
 
 bootst stboot: bootst.bug ${WRTVID}
 	${WRTVID} bootst.bug

@@ -72,7 +72,7 @@ LINTFLAGS+="-Dsigset_t=long"
 # FreeBSD8
 LINTFLAGS+="-D__uint16_t=uint16_t"
 
-INSTALL=$(srcdir)/install-sh
+INSTALL=sh $(srcdir)/install-sh
 
 #pythonmod.c is not here, it is mentioned by itself in its own rules,
 #makedepend fails on missing interface.h otherwise.
@@ -447,7 +447,9 @@ pyunbound-install:
 	$(LIBTOOL) --mode=install cp _unbound.la $(DESTDIR)$(PYTHON_SITE_PKG)
 	$(LIBTOOL) --mode=finish $(DESTDIR)$(PYTHON_SITE_PKG)
 
-install:	all $(PYTHONMOD_INSTALL) $(PYUNBOUND_INSTALL)
+install:
+
+orig-install:	all $(PYTHONMOD_INSTALL) $(PYUNBOUND_INSTALL)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(sbindir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(mandir)/man8

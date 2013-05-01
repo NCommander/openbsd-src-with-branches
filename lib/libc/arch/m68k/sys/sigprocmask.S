@@ -1,3 +1,4 @@
+/*	$OpenBSD: sigprocmask.S,v 1.6 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,33 +32,27 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)sigprocmask.s	5.2 (Berkeley) 6/6/90"*/
-	.asciz "$Id: sigprocmask.S,v 1.3 1994/08/04 05:02:47 chopps Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "SYS.h"
 
-ENTRY(sigprocmask)
-	tstl	sp@(8)			/* check new sigset pointer */
+SYSENTRY(sigprocmask)
+	tstl	%sp@(8)			/* check new sigset pointer */
 	jne	gotptr			/* if not null, indirect */
-/*	movl	#0,sp@(8)		/* null mask pointer: block empty set */
-	movl	#1,sp@(4)		/* SIG_BLOCK */
+/*	movl	#0,%sp@(8)	*/	/* null mask pointer: block empty set */
+	movl	#1,%sp@(4)		/* SIG_BLOCK */
 	jra	doit
 gotptr:
-	movl	sp@(8),a0
-	movl	a0@,sp@(8)		/* indirect to new mask arg */
+	movl	%sp@(8),%a0
+	movl	%a0@,%sp@(8)		/* indirect to new mask arg */
 doit:
-	movl	#SYS_sigprocmask,d0
+	movl	#SYS_sigprocmask,%d0
 	trap	#0
 	jcs	err
-	tstl	sp@(12)			/* test if old mask requested */
+	tstl	%sp@(12)		/* test if old mask requested */
 	jeq	out
-	movl	sp@(12),a0
-	movl	d0,a0@			/* store old mask */
+	movl	%sp@(12),%a0
+	movl	%d0,%a0@		/* store old mask */
 out:
-	clrl	d0
+	clrl	%d0
 	rts
 err:
-	jra	cerror
+	jra	PIC_PLT(__cerror)

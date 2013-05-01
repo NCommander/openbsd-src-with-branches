@@ -21,7 +21,7 @@
 #define	MINPOS(a,b)	(((a) < (b)) ? (a) : (b))
 #define	MAXPOS(a,b)	(((a) > (b)) ? (a) : (b))
 
-extern int sigs;
+extern volatile sig_atomic_t sigs;
 extern int how_search;
 extern int caseless;
 extern int linenums;
@@ -107,10 +107,7 @@ set_pattern(info, pattern, search_type)
 		free(info->text);
 	info->text = NULL;
 	if (pattern != NULL)
-	{
-		info->text = (char *) ecalloc(1, strlen(pattern)+1);
-		strcpy(info->text, pattern);
-	}
+		info->text = save(pattern);
 	info->search_type = search_type;
 
 	/*

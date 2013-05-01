@@ -1702,7 +1702,7 @@ S_Internals_V(pTHX_ CV *cv)
     PUSHs(Perl_newSVpvn_flags(aTHX_ non_bincompat_options,
 			      sizeof(non_bincompat_options) - 1, SVs_TEMP));
 
-#ifdef __DATE__
+#if defined(__DATE__) && !defined(__OpenBSD__)
 #  ifdef __TIME__
     PUSHs(Perl_newSVpvn_flags(aTHX_
 			      STR_WITH_LEN("Compiled at " __DATE__ " " __TIME__),

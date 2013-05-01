@@ -1417,7 +1417,7 @@ ngx_http_optimize_servers(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
 
         /*
          * check whether all name-based servers have the same
-         * configuraiton as a default server for given address:port
+         * configuration as a default server for given address:port
          */
 
         addr = port[p].addrs.elts;
@@ -1613,6 +1613,11 @@ ngx_http_cmp_conf_addrs(const void *one, const void *two)
         return 1;
     }
 
+    if (second->opt.wildcard) {
+        /* a wildcard address must be the last resort, shift it to the end */
+        return -1;
+    }
+
     if (first->opt.bind && !second->opt.bind) {
         /* shift explicit bind()ed addresses to the start */
         return -1;
@@ -1762,6 +1767,13 @@ ngx_http_add_listening(ngx_conf_t *cf, ngx_http_conf_addr_t *addr)
     ls->backlog = addr->opt.backlog;
     ls->rcvbuf = addr->opt.rcvbuf;
     ls->sndbuf = addr->opt.sndbuf;
+
+    ls->keepalive = addr->opt.so_keepalive;
+#if (NGX_HAVE_KEEPALIVE_TUNABLE)
+    ls->keepidle = addr->opt.tcp_keepidle;
+    ls->keepintvl = addr->opt.tcp_keepintvl;
+    ls->keepcnt = addr->opt.tcp_keepcnt;
+#endif
 
 #if (NGX_HAVE_DEFERRED_ACCEPT && defined SO_ACCEPTFILTER)
     ls->accept_filter = addr->opt.accept_filter;

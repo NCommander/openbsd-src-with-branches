@@ -1,3 +1,4 @@
+/*	$OpenBSD: log.c,v 1.12 2010/06/29 16:44:38 nicm Exp $	*/
 /*	$NetBSD: log.c,v 1.4 1994/12/24 17:56:28 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,24 +30,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)log.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: log.c,v 1.4 1994/12/24 17:56:28 cgd Exp $";
-#endif /* not lint */
-
 #include "tip.h"
 
-#ifdef ACULOG
 static	FILE *flog = NULL;
 
 /*
  * Log file maintenance routines
  */
-
-logent(group, num, acu, message)
-	char *group, *num, *acu, *message;
+void
+logent(char *group, char *acu, char *message)
 {
 	char *user, *timestamp;
 	struct passwd *pwd;
@@ -59,33 +47,29 @@ logent(group, num, acu, message)
 	if (flog == NULL)
 		return;
 	if (flock(fileno(flog), LOCK_EX) < 0) {
-		perror("tip: flock");
+		perror("flock");
 		return;
 	}
-	if ((user = getlogin()) == NOSTR)
-		if ((pwd = getpwuid(getuid())) == NOPWD)
+	if ((user = getlogin()) == NULL) {
+		if ((pwd = getpwuid(getuid())) == NULL)
 			user = "???";
 		else
 			user = pwd->pw_name;
+	}
 	t = time(0);
 	timestamp = ctime(&t);
 	timestamp[24] = '\0';
-	fprintf(flog, "%s (%s) <%s, %s, %s> %s\n",
+	fprintf(flog, "%s (%s) <%s, %s> %s\n",
 		user, timestamp, group,
-#ifdef PRISTINE
-		"",
-#else
-		num,
-#endif
 		acu, message);
 	(void) fflush(flog);
 	(void) flock(fileno(flog), LOCK_UN);
 }
 
-loginit()
+void
+loginit(void)
 {
-	flog = fopen(value(LOG), "a");
+	flog = fopen(vgetstr(LOG), "a");
 	if (flog == NULL)
-		fprintf(stderr, "can't open log file %s.\r\n", value(LOG));
+		fprintf(stderr, "can't open log file %s.\r\n", vgetstr(LOG));
 }
-#endif

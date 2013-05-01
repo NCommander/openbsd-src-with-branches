@@ -402,7 +402,6 @@ struct evp_cipher_st
 /* Length of tag for TLS */
 #define EVP_GCM_TLS_TAG_LEN				16
 
-
 typedef struct evp_cipher_info_st
 	{
 	const EVP_CIPHER *cipher;

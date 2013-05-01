@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: pcctworeg.h,v 1.6 2004/07/30 22:29:45 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -118,6 +113,7 @@ extern struct pcctworeg *sys_pcc2;
 #define PCC2_TCTL_COC		0x02
 #define PCC2_TCTL_COVF		0x04
 #define PCC2_TCTL_OVF		0xf0
+#define PCC2_TCTL_OVF_SHIFT	4
 
 #define PCC2_GPIO_PLTY		0x80
 #define PCC2_GPIO_EL		0x40
@@ -148,3 +144,5 @@ extern struct pcctworeg *sys_pcc2;
 #define PCC2_SC_SNOOP		(1 << 6)
 #define PCC2_SC_INVAL		(2 << 6)
 #define PCC2_SC_RESV		(3 << 6)
+
+int  pcctwointr_establish(int, struct intrhand *, const char *);

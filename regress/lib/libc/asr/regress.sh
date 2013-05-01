@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.117 2011/09/17 16:59:53 pirofti Exp $
+#	$OpenBSD: regress.sh,v 1.3 2012/09/05 21:23:36 eric Exp $
 
 . regress.subr
 
@@ -40,7 +40,7 @@ test_gethostbyname()
 test_gethostbyaddr()
 {
 	for i in $@; do
-		regress gethostnamadr $i
+		regress gethostnamadr -a $i
 	done
 }
 
@@ -89,7 +89,7 @@ EXTRA="undeadly.org www.openbsd.org cvs.openbsd.org"
 
 ADDRS="0.0.0.0 :: 127.0.0.1 ::1 212.227.193.194"
 
-for e in file bind; do
+for e in file bind local; do
 	regress_setenv $e
 
 	test_res_mkquery $WEIRD $BASIC
@@ -99,6 +99,7 @@ for e in file bind; do
 	test_gethostbyaddr $ADDRS
 	test_getaddrinfo NULL $WEIRD $BASIC $EXTRA
 	test_getnameinfo $ADDRS
+ 	test_gethostbyname $ADDRS
 done
 
 regress_digest
