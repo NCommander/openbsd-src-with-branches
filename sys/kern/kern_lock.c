@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lock.c,v 1.39 2013/03/28 16:55:25 deraadt Exp $	*/
+/*	$OpenBSD: kern_lock.c,v 1.40 2013/05/01 17:13:05 tedu Exp $	*/
 
 /* 
  * Copyright (c) 1995
@@ -42,7 +42,7 @@
 #include <sys/sched.h>
 
 #ifdef MP_LOCKDEBUG
-/* CPU-dependent timing, needs this to be settable from ddb. */
+/* CPU-dependent timing, this needs to be settable from ddb. */
 int __mp_lock_spinout = 200000000;
 #endif
 
