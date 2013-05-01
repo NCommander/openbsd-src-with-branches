@@ -1,4 +1,4 @@
-/* $OpenBSD: omap.c,v 1.3 2011/11/15 23:01:11 drahn Exp $ */
+/* $OpenBSD: omap.c,v 1.4 2013/04/25 23:07:17 patrick Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  *
@@ -84,8 +84,6 @@ struct board_dev overo_devs[] = {
 };
 
 struct board_dev pandaboard_devs[] = {
-	{ "ampintc",	0 },
-	{ "amptimer",	0 },
 	{ "omdog",	0 },
 	{ "omgpio",	0 },
 	{ "omgpio",	1 },
