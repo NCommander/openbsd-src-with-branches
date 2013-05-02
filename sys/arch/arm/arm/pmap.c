@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.38 2012/12/05 23:20:11 deraadt Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.39 2013/05/01 11:54:59 patrick Exp $	*/
 /*	$NetBSD: pmap.c,v 1.147 2004/01/18 13:03:50 scw Exp $	*/
 
 /*
@@ -366,7 +366,7 @@ struct l1_ttable {
  *    the userland pmaps which owns this L1) are moved to the TAIL.
  */
 static TAILQ_HEAD(, l1_ttable) l1_lru_list;
-static struct simplelock l1_lru_lock;
+struct simplelock l1_lru_lock;
 
 /*
  * A list of all L1 tables
