@@ -1,4 +1,4 @@
-/* $OpenBSD: omrasops.c,v 1.6 2009/09/05 14:09:35 miod Exp $ */
+/* $OpenBSD: omrasops.c,v 1.7 2013/04/28 23:33:12 aoyama Exp $ */
 /* $NetBSD: omrasops.c,v 1.1 2000/01/05 08:48:56 nisimura Exp $ */
 
 /*-
@@ -31,11 +31,11 @@
  */
 
 /*
- * Designed speficically for 'm68k bitorder';
+ * Designed specifically for 'm68k bitorder';
  *	- most significant byte is stored at lower address,
  *	- most significant bit is displayed at left most on screen.
  * Implementation relies on;
- *	- every memory references is done in aligned 32bit chunk,
+ *	- every memory reference is done in aligned 32bit chunks,
  *	- font glyphs are stored in 32bit padded.
  */
 
