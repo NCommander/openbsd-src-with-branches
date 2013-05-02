@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.16 2013/02/03 21:04:19 krw Exp $	*/
+/*	$OpenBSD: packet.c,v 1.17 2013/04/24 01:26:30 krw Exp $	*/
 
 /* Packet assembly code, originally contributed by Archie Cobbs. */
 
@@ -56,7 +56,7 @@ checksum(unsigned char *buf, unsigned nbytes, u_int32_t sum)
 {
 	int i;
 
-	/* Checksum all the pairs of bytes first... */
+	/* Checksum all the pairs of bytes first. */
 	for (i = 0; i < (nbytes & ~1U); i += 2) {
 		sum += (u_int16_t)ntohs(*((u_int16_t *)(buf + i)));
 		if (sum > 0xFFFF)

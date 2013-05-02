@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.22 2013/04/02 02:37:41 guenther Exp $	*/
+/*	$OpenBSD: parse.c,v 1.23 2013/04/27 17:54:24 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -265,7 +265,7 @@ convert_num(unsigned char *buf, char *str, int base, int size)
 
 	do {
 		tval = *ptr++;
-		/* XXX assumes ASCII... */
+		/* XXX assumes ASCII. */
 		if (tval >= 'a')
 			tval = tval - 'a' + 10;
 		else if (tval >= 'A')

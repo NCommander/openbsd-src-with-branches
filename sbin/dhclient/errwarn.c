@@ -1,6 +1,6 @@
-/*	$OpenBSD: errwarn.c,v 1.18 2012/11/15 14:54:18 krw Exp $	*/
+/*	$OpenBSD: errwarn.c,v 1.19 2012/12/04 19:24:03 krw Exp $	*/
 
-/* Errors and warnings... */
+/* Errors and warnings. */
 
 /*
  * Copyright (c) 1996 The Internet Software Consortium.
@@ -78,7 +78,7 @@ error(char *fmt, ...)
 }
 
 /*
- * Log a warning message...
+ * Log a warning message.
  */
 int
 warning(char *fmt, ...)
@@ -102,7 +102,7 @@ warning(char *fmt, ...)
 }
 
 /*
- * Log a note...
+ * Log a note.
  */
 int
 note(char *fmt, ...)
@@ -127,7 +127,7 @@ note(char *fmt, ...)
 
 #ifdef DEBUG
 /*
- * Log a debug message...
+ * Log a debug message.
  */
 int
 debug(char *fmt, ...)
