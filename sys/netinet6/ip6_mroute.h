@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_mroute.h,v 1.7 2006/07/06 02:56:58 brad Exp $	*/
+/*	$OpenBSD: ip6_mroute.h,v 1.8 2012/09/19 22:37:23 jsg Exp $	*/
 /*	$KAME: ip6_mroute.h,v 1.17 2001/02/10 02:05:52 itojun Exp $	*/
 
 /*
@@ -219,10 +219,6 @@ struct mif6 {
 	u_int64_t	m6_bytes_in;	/* # bytes in on interface	     */
 	u_int64_t	m6_bytes_out;	/* # bytes out on interface	     */
 	struct route_in6 m6_route;/* cached route if this is a tunnel */
-#ifdef notyet
-	u_int		m6_rsvp_on;	/* RSVP listening on this vif */
-	struct socket   *m6_rsvpd;	/* RSVP daemon socket */
-#endif
 };
 
 /*
