@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.376 2013/01/17 00:48:04 henning Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.377 2013/03/11 19:48:40 sthen Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -851,6 +851,8 @@ struct pf_state {
 	u_int8_t		 set_tos;
 	u_int8_t		 set_prio[2];
 	u_int16_t		 max_mss;
+	u_int16_t		 if_index_in;
+	u_int16_t		 if_index_out;
 	u_int8_t		 pad2[2];
 };
 
