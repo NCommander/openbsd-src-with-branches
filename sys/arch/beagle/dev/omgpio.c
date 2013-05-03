@@ -1,4 +1,4 @@
-/* $OpenBSD: omgpio.c,v 1.8 2011/11/10 19:37:01 uwe Exp $ */
+/* $OpenBSD: omgpio.c,v 1.9 2013/04/25 23:12:34 patrick Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -367,17 +367,19 @@ unsigned int
 omgpio_v4_get_dir(struct omgpio_softc *sc, unsigned int gpio)
 {
 	int s;
-	u_int32_t reg;
+	u_int32_t dir, reg;
 
 	s = splhigh();
 
 	reg = bus_space_read_4(sc->sc_iot, sc->sc_ioh, GPIO4_OE);
 	if (reg & (1 << GPIO_PIN_TO_OFFSET(gpio)))
-		return OMGPIO_DIR_IN;
+		dir = OMGPIO_DIR_IN;
 	else
-		return OMGPIO_DIR_OUT;
+		dir = OMGPIO_DIR_OUT;
 
 	splx(s);
+
+	return dir;
 }
 
 #if 0
