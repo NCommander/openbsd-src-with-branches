@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_overlay.c,v 1.2 2013/03/25 06:22:28 jsg Exp $	*/
+/*	$OpenBSD: intel_overlay.c,v 1.3 2013/04/17 20:04:04 kettenis Exp $	*/
 /*
  * Copyright © 2009
  *
@@ -1439,8 +1439,7 @@ intel_setup_overlay(struct drm_device *dev)
 		}
 		overlay->flip_addr = reg_bo->phys_obj->handle->segs[0].ds_addr;
 	} else {
-//		ret = i915_gem_object_pin(reg_bo, PAGE_SIZE, true, false);
-		ret = i915_gem_object_pin(reg_bo, PAGE_SIZE, true);
+		ret = i915_gem_object_pin(reg_bo, PAGE_SIZE, true, false);
 		if (ret) {
 			DRM_ERROR("failed to pin overlay register bo\n");
 			goto out_free_bo;
