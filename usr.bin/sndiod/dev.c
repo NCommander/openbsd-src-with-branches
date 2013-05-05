@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.c,v 1.3 2012/11/30 20:44:31 ratchov Exp $	*/
+/*	$OpenBSD: dev.c,v 1.4 2013/02/26 22:52:08 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -1573,6 +1573,7 @@ found:
 	s->dup = 0;
 	s->appbufsz = d->bufsz;
 	s->round = d->round;
+	s->rate = d->rate;
 	dev_midi_slotdesc(d, s);
 	dev_midi_vol(d, s);
 	return s;
