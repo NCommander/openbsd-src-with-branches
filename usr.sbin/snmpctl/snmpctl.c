@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpctl.c,v 1.13 2011/03/16 15:30:35 reyk Exp $	*/
+/*	$OpenBSD: snmpctl.c,v 1.14 2012/09/17 16:43:59 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -89,7 +89,7 @@ main(int argc, char *argv[])
 	int			 ch;
 	const char		*sock = SNMPD_SOCKET;
 
-	if ((env = calloc(1, sizeof(struct snmpd *))) == NULL)
+	if ((env = calloc(1, sizeof(struct snmpd))) == NULL)
 		err(1, "calloc");
 	gettimeofday(&env->sc_starttime, NULL);
 
