@@ -1,4 +1,4 @@
-/*	$OpenBSD: token.c,v 1.13 2012/12/04 02:24:47 deraadt Exp $	*/
+/*	$OpenBSD: token.c,v 1.14 2013/01/13 21:21:17 fgsch Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -63,7 +63,7 @@
 typedef	union {
 	DES_cblock	cb;
 	char		ct[9];
-	unsigned long	ul[2];
+	uint32_t	ul[2];
 } TOKEN_CBlock;
 
 /*
