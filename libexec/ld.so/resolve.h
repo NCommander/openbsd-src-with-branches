@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.66 2013/03/20 21:49:59 kurt Exp $ */
+/*	$OpenBSD: resolve.h,v 1.67 2013/04/05 12:58:03 kurt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -97,6 +97,9 @@ struct elf_object {
 		} u;
 	} Dyn;
 #define dyn Dyn.u
+
+	Elf_Addr	relacount;	/* DT_RELACOUNT */
+	Elf_Addr	relcount;	/* DT_RELCOUNT */
 
 	int		status;
 #define	STAT_RELOC_DONE	0x01
