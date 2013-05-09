@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_mutex.c,v 1.1 2007/05/15 05:26:44 miod Exp $	*/
+/*	$OpenBSD: armv7_mutex.c,v 1.1 2009/05/08 02:57:32 drahn Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -58,6 +58,27 @@ mtx_enter(struct mutex *mtx)
 
 	MUTEX_ASSERT_UNLOCKED(mtx);
 	mtx->mtx_lock = 1;
+#ifdef DIAGNOSTIC
+	curcpu()->ci_mutex_level++;
+#endif
+}
+
+int
+mtx_enter_try(struct mutex *mtx)
+{
+	if (mtx->mtx_wantipl != IPL_NONE)
+		mtx->mtx_oldipl = _splraise(mtx->mtx_wantipl);
+
+	if (mtx->mtx_lock) {
+		splx(mtx->mtx_oldipl);
+		return 0;
+	}
+	mtx->mtx_lock = 1;
+#ifdef DIAGNOSTIC
+	curcpu()->ci_mutex_level++;
+#endif
+
+	return 1;
 }
 
 void
@@ -65,6 +86,9 @@ mtx_leave(struct mutex *mtx)
 {
 	MUTEX_ASSERT_LOCKED(mtx);
 	mtx->mtx_lock = 0;
+#ifdef DIAGNOSTIC
+	curcpu()->ci_mutex_level--;
+#endif
 	if (mtx->mtx_wantipl != IPL_NONE)
 		splx(mtx->mtx_oldipl);
 }
