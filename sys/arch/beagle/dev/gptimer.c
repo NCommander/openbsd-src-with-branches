@@ -1,4 +1,4 @@
-/* $OpenBSD: gptimer.c,v 1.11 2011/11/10 00:19:36 matthieu Exp $ */
+/* $OpenBSD: gptimer.c,v 1.12 2011/11/10 19:37:01 uwe Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -175,7 +175,7 @@ gptimer_attach(struct device *parent, struct device *self, void *args)
 		    oa->oa_dev->mem[0].addr);
 
 	arm_clock_register(gptimer_cpu_initclocks, gptimer_delay,
-	    gptimer_setstatclockrate);
+	    gptimer_setstatclockrate, NULL);
 }
 
 /* 
