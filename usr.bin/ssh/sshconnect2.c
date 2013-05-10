@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.193 2013/03/05 20:16:09 markus Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.194 2013/04/05 00:14:00 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -1403,7 +1403,7 @@ pubkey_prepare(Authctxt *authctxt)
 		/* If IdentitiesOnly set and key not found then don't use it */
 		if (!found && options.identities_only) {
 			TAILQ_REMOVE(&files, id, next);
-			bzero(id, sizeof(id));
+			bzero(id, sizeof(*id));
 			free(id);
 		}
 	}
