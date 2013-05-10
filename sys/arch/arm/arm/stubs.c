@@ -1,4 +1,4 @@
-/*	$OpenBSD: stubs.c,v 1.5 2007/06/06 17:15:11 deraadt Exp $	*/
+/*	$OpenBSD: stubs.c,v 1.6 2008/06/27 17:22:14 miod Exp $	*/
 /*	$NetBSD: stubs.c,v 1.14 2003/07/15 00:24:42 lukem Exp $	*/
 
 /*
@@ -140,6 +140,7 @@ dumpsys()
 	savectx(&dumppcb);
 	/* flush everything out of caches */
 	cpu_dcache_wbinv_all();
+	cpu_sdcache_wbinv_all();
 
 	if (dumpdev == NODEV)
 		return;
