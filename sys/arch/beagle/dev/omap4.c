@@ -1,4 +1,4 @@
-/* $OpenBSD: omap4.c,v 1.7 2013/05/01 00:16:26 patrick Exp $ */
+/* $OpenBSD: omap4.c,v 1.8 2013/05/09 15:16:53 patrick Exp $ */
 
 /*
  * Copyright (c) 2011 Uwe Stuehler <uwe@openbsd.org>
@@ -65,7 +65,7 @@ struct omap_dev omap4_devs[] = {
 	/*
 	 * OMAP identification registers/fuses
 	 */
- 
+
 	{ .name = "omapid",
 	  .unit = 0,
 	  .mem = { { OMAPID_ADDR, OMAPID_SIZE } },
