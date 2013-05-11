@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.275 2013/01/09 08:04:25 phessler Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.276 2013/03/07 21:26:28 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -916,7 +916,7 @@ struct mrt_config {
 	char			name[MRT_FILE_LEN];	/* base file name */
 	char			file[MRT_FILE_LEN];	/* actual file name */
 	time_t			ReopenTimer;
-	time_t			ReopenTimerInterval;
+	int			ReopenTimerInterval;
 };
 
 /* prototypes */
