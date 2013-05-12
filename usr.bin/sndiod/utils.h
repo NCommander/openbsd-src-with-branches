@@ -1,4 +1,4 @@
-/*	$OpenBSD: utils.h,v 1.1 2012/11/23 07:03:28 ratchov Exp $	*/
+/*	$OpenBSD: utils.h,v 1.2 2012/12/07 08:04:58 ratchov Exp $	*/
 /*
  * Copyright (c) 2003-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -18,7 +18,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <sys/types.h>
+#include <stddef.h>
 
 void log_puts(char *);
 void log_putx(unsigned long);
