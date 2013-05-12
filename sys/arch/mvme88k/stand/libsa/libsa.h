@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.5 2008/09/19 20:18:03 miod Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.6 2011/03/13 00:13:53 deraadt Exp $	*/
 
 /*
  * libsa prototypes
@@ -7,7 +7,7 @@
 #include "libbug.h"
 
 /* board.c */
-void board_setup();
+void board_setup(void);
 
 /* bugdev.c */
 int bugscopen(struct open_file *, ...);
@@ -17,6 +17,9 @@ int bugscstrategy(void *, int, daddr32_t, size_t, void *, size_t *);
 
 /* exec_mvme.c */
 void exec_mvme(char *, int);
+
+/* fault.c */
+int badaddr(void *, int);
 
 /* parse_args.c */
 int parse_args(char **, int *);
