@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_stat.c,v 1.24 2011/07/03 18:34:14 oga Exp $	 */
+/*	$OpenBSD: uvm_stat.c,v 1.25 2011/07/03 18:36:51 oga Exp $	 */
 /*	$NetBSD: uvm_stat.c,v 1.18 2001/03/09 01:02:13 chs Exp $	 */
 
 /*
@@ -72,9 +72,8 @@ uvmexp_print(int (*pr)(const char *, ...))
 	(*pr)("  faults=%d, traps=%d, intrs=%d, ctxswitch=%d fpuswitch=%d\n",
 	    uvmexp.faults, uvmexp.traps, uvmexp.intrs, uvmexp.swtch,
 	    uvmexp.fpswtch);
-	(*pr)("  softint=%d, syscalls=%d, swapins=%d, swapouts=%d, "
-	    "kmapent=%d\n", uvmexp.softs, uvmexp.syscalls, uvmexp.swapins,
-	    uvmexp.swapouts, uvmexp.kmapent);
+	(*pr)("  softint=%d, syscalls=%d, kmapent=%d\n",
+	    uvmexp.softs, uvmexp.syscalls, uvmexp.kmapent);
 
 	(*pr)("  fault counts:\n");
 	(*pr)("    noram=%d, noanon=%d, pgwait=%d, pgrele=%d\n",
