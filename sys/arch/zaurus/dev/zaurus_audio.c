@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_audio.c,v 1.14 2010/09/07 16:21:41 deraadt Exp $	*/
+/*	$OpenBSD: zaurus_audio.c,v 1.15 2012/03/01 08:17:26 ratchov Exp $	*/
 
 /*
  * Copyright (c) 2005 Christopher Pascoe <pascoe@openbsd.org>
@@ -766,8 +766,10 @@ zaudio_halt_output(void *hdl)
 
 	/* XXX forcibly stop output DMA? */
 
+	mtx_enter(&audio_lock);
 	zaudio_standby(sc);
 	sc->sc_playing = 0;
+	mtx_leave(&audio_lock);
 
 	return 0;
 }
@@ -977,6 +979,9 @@ zaudio_get_props(void *hdl)
 	return AUDIO_PROP_MMAP | AUDIO_PROP_INDEPENDENT | AUDIO_PROP_FULLDUPLEX;
 }
 
+/*
+ * called by interrupt code-path, don't lock
+ */
 int
 zaudio_start_output(void *hdl, void *block, int bsize, void (*intr)(void *),
     void *intrarg)
@@ -999,6 +1004,9 @@ zaudio_start_output(void *hdl, void *block, int bsize, void (*intr)(void *),
 	return err;
 }
 
+/*
+ * called by interrupt code-path, don't lock
+ */
 int
 zaudio_start_input(void *hdl, void *block, int bsize, void (*intr)(void *),
     void *intrarg)
