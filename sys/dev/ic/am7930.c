@@ -1,4 +1,4 @@
-/*	$OpenBSD: am7930.c,v 1.3 2011/09/04 20:08:37 miod Exp $	*/
+/*	$OpenBSD: am7930.c,v 1.4 2013/05/15 08:29:24 ratchov Exp $	*/
 /*	$NetBSD: am7930.c,v 1.44 2001/11/13 13:14:34 lukem Exp $	*/
 
 /*
@@ -339,7 +339,7 @@ am7930_commit_settings(void *addr)
 	struct am7930_softc *sc = addr;
 	uint16_t ger, gr, gx, stgr;
 	uint8_t mmr2, mmr3;
-	int s, level;
+	int level;
 
 	DPRINTF(("sa_commit.\n"));
 	gx = gx_coeff[sc->sc_rlevel];
