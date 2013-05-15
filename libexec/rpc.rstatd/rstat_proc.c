@@ -1,4 +1,4 @@
-*	$OpenBSD: rstat_proc.c,v 1.28 2010/09/01 14:43:34 millert Exp $	*/
+/*	$OpenBSD: rstat_proc.c,v 1.29 2013/05/14 20:39:24 miod Exp $	*/
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
