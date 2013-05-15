@@ -1,4 +1,4 @@
-/* $OpenBSD: screen.c,v 1.24 2013/02/05 11:08:59 nicm Exp $ */
+/* $OpenBSD: screen.c,v 1.25 2013/03/21 16:12:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -365,7 +365,13 @@ void
 screen_reflow(struct screen *s, u_int new_x)
 {
 	struct grid	*old = s->grid;
+	u_int		 change;
 
 	s->grid = grid_create(old->sx, old->sy, old->hlimit);
-	s->cy -= grid_reflow(s->grid, old, new_x);
+
+	change = grid_reflow(s->grid, old, new_x);
+	if (change < s->cy)
+		s->cy -= change;
+	else
+		s->cy = 0;
 }
