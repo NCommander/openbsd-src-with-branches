@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.93 2013/02/22 04:45:09 dtucker Exp $ */
+/* $OpenBSD: readconf.h,v 1.94 2013/05/16 02:00:34 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -137,6 +137,8 @@ typedef struct {
 	int	use_roaming;
 
 	int	request_tty;
+
+	char	*ignored_unknown; /* Pattern list of unknown tokens to ignore */
 }       Options;
 
 #define SSHCTL_MASTER_NO	0
