@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.26 2011/04/16 00:40:58 deraadt Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.27 2012/07/09 16:09:47 deraadt Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.7 2003/07/14 22:32:40 lukem Exp $	*/
 
 /*-
@@ -672,6 +672,10 @@ apic_intr_establish(int irq, int type, int level, int (*ih_fun)(void *),
 	extern int cold;
 	int minlevel, maxlevel;
 	extern void intr_calculatemasks(void); /* XXX */
+	int flags;
+
+	flags = level & IPL_MPSAFE;
+	level &= ~IPL_MPSAFE;
 
 	if (sc == NULL)
 		panic("apic_intr_establish: unknown ioapic %d", ioapic);
