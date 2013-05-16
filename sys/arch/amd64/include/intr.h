@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.23 2011/04/16 00:40:58 deraadt Exp $	*/
+/*	$OpenBSD: intr.h,v 1.24 2013/05/12 14:15:31 ratchov Exp $	*/
 /*	$NetBSD: intr.h,v 1.2 2003/05/04 22:01:56 fvdl Exp $	*/
 
 /*-
@@ -92,6 +92,7 @@ struct intrhand {
 	int	(*ih_fun)(void *);
 	void	*ih_arg;
 	int	ih_level;
+	int	ih_flags;
 	struct	intrhand *ih_next;
 	int	ih_pin;
 	int	ih_slot;
