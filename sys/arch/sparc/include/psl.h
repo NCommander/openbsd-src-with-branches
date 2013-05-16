@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.24 2009/03/15 19:40:40 miod Exp $	*/
+/*	$OpenBSD: psl.h,v 1.25 2009/04/10 20:53:54 miod Exp $	*/
 /*	$NetBSD: psl.h,v 1.12 1997/03/10 21:49:11 pk Exp $ */
 
 /*
@@ -95,6 +95,7 @@
  * with how MI audio code handles this. Stay tuned for a change in the future
  */
 #define IPL_AUHARD	13		/* hard audio interrupts */
+#define IPL_AUDIO	IPL_AUHARD
 #define IPL_STATCLOCK	14		/* statclock() */
 #define IPL_SCHED	IPL_STATCLOCK
 #define IPL_HIGH	15		/* splhigh() */
