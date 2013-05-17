@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.19 2008/06/13 20:07:40 kjell Exp $	*/
+/*	$OpenBSD: dir.c,v 1.20 2012/11/27 19:46:46 jasper Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -116,7 +116,11 @@ makedir(int f, int n)
 		*slash = '\0';
 
 		ishere = !stat(path, &sb);
-		if (!finished && ishere && S_ISDIR(sb.st_mode)) {
+		if (finished && ishere) {
+			ewprintf("Cannot create directory %s: file exists",
+			     path);
+			return(FALSE);
+		} else if (!finished && ishere && S_ISDIR(sb.st_mode)) {
 			*slash = '/';
 			continue;
 		}
