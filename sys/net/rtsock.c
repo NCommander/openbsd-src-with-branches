@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.124 2013/03/07 09:03:16 mpi Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.125 2013/03/15 20:45:34 tedu Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -621,6 +621,7 @@ route_output(struct mbuf *m, ...)
 		rn = (struct radix_node *)rt;
 		if (rn == NULL || (rn->rn_flags & RNF_ROOT) != 0) {
 			error = ESRCH;
+			rt = NULL;
 			goto flush;
 		}
 #ifndef SMALL_KERNEL
