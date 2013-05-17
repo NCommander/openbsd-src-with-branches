@@ -1,11 +1,7 @@
-#	$OpenBSD: stderr-data.sh,v 1.1 2002/03/23 16:38:09 markus Exp $
+#	$OpenBSD: stderr-data.sh,v 1.2 2002/03/27 22:39:52 markus Exp $
 #	Placed in the Public Domain.
 
 tid="stderr data transfer"
-
-DATA=/bin/ls
-COPY=${OBJ}/copy
-rm -f ${COPY}
 
 for n in '' -n; do
 for p in 1 2; do

@@ -1,4 +1,4 @@
-#	$OpenBSD: ssh-com-client.sh,v 1.5 2003/05/14 22:08:27 markus Exp $
+#	$OpenBSD: ssh-com-client.sh,v 1.6 2004/02/24 17:06:52 markus Exp $
 #	Placed in the Public Domain.
 
 tid="connect with ssh.com client"
@@ -66,10 +66,6 @@ EOF
 
 # we need a real server (no ProxyConnect option)
 start_sshd
-
-DATA=/bin/ls
-COPY=${OBJ}/copy
-rm -f ${COPY}
 
 # go for it
 for v in ${VERSIONS}; do

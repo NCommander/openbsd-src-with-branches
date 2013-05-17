@@ -1,10 +1,7 @@
-#	$OpenBSD: conch-ciphers.sh,v 1.1 2008/06/28 13:57:25 djm Exp $
+#	$OpenBSD: conch-ciphers.sh,v 1.2 2008/06/30 10:43:03 djm Exp $
 #	Placed in the Public Domain.
 
 tid="conch ciphers"
-
-DATA=/bin/ls
-COPY=${OBJ}/copy
 
 if test "x$REGRESS_INTEROP_CONCH" != "xyes" ; then
 	fatal "conch interop tests not enabled"

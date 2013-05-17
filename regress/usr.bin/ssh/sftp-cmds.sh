@@ -1,4 +1,4 @@
-#	$OpenBSD: sftp-cmds.sh,v 1.11 2010/12/04 00:21:19 djm Exp $
+#	$OpenBSD: sftp-cmds.sh,v 1.12 2012/06/01 00:52:52 djm Exp $
 #	Placed in the Public Domain.
 
 # XXX - TODO: 
@@ -7,8 +7,6 @@
 
 tid="sftp commands"
 
-DATA=/bin/ls
-COPY=${OBJ}/copy
 GLOBFILES=`(cd /bin;echo l*)`
 
 # Path with embedded quote

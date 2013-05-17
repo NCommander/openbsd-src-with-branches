@@ -1,12 +1,10 @@
-#	$OpenBSD: scp.sh,v 1.6 2006/01/31 10:23:23 djm Exp $
+#	$OpenBSD: scp.sh,v 1.7 2006/01/31 10:36:33 djm Exp $
 #	Placed in the Public Domain.
 
 tid="scp"
 
 #set -x
 
-DATA=/bin/ls
-COPY=${OBJ}/copy
 COPY2=${OBJ}/copy2
 DIR=${COPY}.dd
 DIR2=${COPY}.dd2

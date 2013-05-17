@@ -1,10 +1,7 @@
-#	$OpenBSD: sftp.sh,v 1.2 2002/03/27 22:39:52 markus Exp $
+#	$OpenBSD: sftp.sh,v 1.3 2009/08/13 01:11:55 djm Exp $
 #	Placed in the Public Domain.
 
 tid="basic sftp put/get"
-
-DATA=/bin/ls
-COPY=${OBJ}/copy
 
 BUFFERSIZE="5 1000 32000 64000"
 REQUESTS="1 2 10"

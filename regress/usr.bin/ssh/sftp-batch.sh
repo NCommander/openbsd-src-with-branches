@@ -1,10 +1,8 @@
-#	$OpenBSD: sftp-batch.sh,v 1.3 2004/01/13 09:49:06 djm Exp $
+#	$OpenBSD: sftp-batch.sh,v 1.4 2009/08/13 01:11:55 djm Exp $
 #	Placed in the Public Domain.
 
 tid="sftp batchfile"
 
-DATA=/bin/ls
-COPY=${OBJ}/copy
 BATCH=${OBJ}/sftp.bb
 
 rm -rf ${COPY} ${COPY}.1 ${COPY}.2 ${COPY}.dd ${BATCH}.*

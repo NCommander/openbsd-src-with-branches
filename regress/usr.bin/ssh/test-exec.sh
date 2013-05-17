@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.40 2013/04/07 02:16:03 dtucker Exp $
+#	$OpenBSD: test-exec.sh,v 1.41 2013/05/17 00:37:40 dtucker Exp $
 #	Placed in the Public Domain.
 
 USER=`id -un`
@@ -123,6 +123,15 @@ echo "exec ${SSH} -E${TEST_SSH_LOGFILE} "'"$@"' >>$SSHLOGWRAP
 
 chmod a+rx $OBJ/ssh-log-wrapper.sh
 SSH="$SSHLOGWRAP"
+
+# Some test data.  We make a copy because some tests will overwrite it.
+# The tests may assume that $DATA exists and is writable and $COPY does
+# not exist.
+DATA=$OBJ/data
+cp /bin/ls ${DATA}
+chmod u+w ${DATA}
+COPY=$OBJ/copy
+rm -f ${COPY}
 
 # these should be used in tests
 export SSH SSHD SSHAGENT SSHADD SSHKEYGEN SSHKEYSCAN SFTP SFTPSERVER SCP

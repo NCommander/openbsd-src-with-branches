@@ -1,12 +1,10 @@
-#	$OpenBSD: sftp-badcmds.sh,v 1.3 2008/03/24 21:46:54 djm Exp $
+#	$OpenBSD: sftp-badcmds.sh,v 1.4 2009/08/13 01:11:55 djm Exp $
 #	Placed in the Public Domain.
 
 tid="sftp invalid commands"
 
-DATA=/bin/ls
 DATA2=/bin/cat
 NONEXIST=/NONEXIST.$$
-COPY=${OBJ}/copy
 GLOBFILES=`(cd /bin;echo l*)`
 
 rm -rf ${COPY} ${COPY}.1 ${COPY}.2 ${COPY}.dd ${BATCH}.*

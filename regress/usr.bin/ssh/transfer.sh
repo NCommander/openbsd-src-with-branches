@@ -1,10 +1,7 @@
-#	$OpenBSD: connect.sh,v 1.3 2002/02/16 01:09:47 markus Exp $
+#	$OpenBSD: transfer.sh,v 1.1 2002/03/27 00:03:37 markus Exp $
 #	Placed in the Public Domain.
 
 tid="transfer data"
-
-DATA=/bin/ls
-COPY=${OBJ}/copy
 
 for p in 1 2; do
 	verbose "$tid: proto $p"
