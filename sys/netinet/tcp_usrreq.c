@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.110 2012/02/24 06:19:00 guenther Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.111 2013/04/10 08:50:59 mpi Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -99,9 +99,6 @@
 #include <netinet/tcp_var.h>
 #include <netinet/tcpip.h>
 #include <netinet/tcp_debug.h>
-
-/* from in_pcb.c */
-extern	struct baddynamicports baddynamicports;
 
 #ifndef TCP_SENDSPACE
 #define	TCP_SENDSPACE	1024*16
