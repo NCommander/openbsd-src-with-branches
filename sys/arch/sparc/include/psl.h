@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.25 2009/04/10 20:53:54 miod Exp $	*/
+/*	$OpenBSD: psl.h,v 1.26 2013/05/16 06:38:13 ratchov Exp $	*/
 /*	$NetBSD: psl.h,v 1.12 1997/03/10 21:49:11 pk Exp $ */
 
 /*
@@ -99,6 +99,8 @@
 #define IPL_STATCLOCK	14		/* statclock() */
 #define IPL_SCHED	IPL_STATCLOCK
 #define IPL_HIGH	15		/* splhigh() */
+
+#define	IPL_MPSAFE	0	/* no "mpsafe" interrupts */
 
 #if defined(_KERNEL) && !defined(_LOCORE)
 

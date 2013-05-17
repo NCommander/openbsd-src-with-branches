@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.6 2010/04/23 03:50:22 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.7 2011/03/23 16:54:34 pirofti Exp $	*/
 /*	$NetBSD: intr.h,v 1.12 2003/06/16 20:00:59 thorpej Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 
 #ifdef _KERNEL
 
-
 /* Interrupt priority "levels". */
 #define	IPL_NONE	0	/* nothing */
 #define	IPL_SOFT	1	/* generic software interrupts */
@@ -59,6 +58,9 @@
 #define	IPL_HIGH	12	/* everything */
 
 #define	NIPL		13
+
+/* Interrupt priority "flags". */
+#define	IPL_MPSAFE	0	/* no "mpsafe" interrupts */
 
 /* Interrupt sharing types. */
 #define	IST_NONE	0	/* none */
