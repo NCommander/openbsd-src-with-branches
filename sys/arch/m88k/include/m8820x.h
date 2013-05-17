@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x.h,v 1.8 2010/04/18 22:04:39 miod Exp $ */
+/*	$OpenBSD: m8820x.h,v 1.9 2011/03/23 16:54:35 pirofti Exp $ */
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  *
@@ -188,6 +188,7 @@
  */
 struct m8820x_cmmu {
 	volatile u_int32_t *cmmu_regs;	/* CMMU "base" area */
+	u_int32_t	cmmu_idr;
 #ifdef M88200_HAS_SPLIT_ADDRESS
 	vaddr_t		cmmu_addr;	/* address range */
 	vaddr_t		cmmu_addr_mask;	/* address mask */
@@ -209,6 +210,8 @@ extern u_int max_cmmus;
 
 void	m8820x_setup_board_config(void);
 cpuid_t	m8820x_cpu_number(void);
+
+extern const struct cmmu_p cmmu8820x;
 
 #endif	/* _LOCORE */
 #endif	/* _M88K_M8820X_H_ */
