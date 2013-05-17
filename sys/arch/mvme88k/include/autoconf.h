@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.17 2007/05/08 15:33:10 deraadt Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.18 2011/03/23 16:54:36 pirofti Exp $ */
 /*
  * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -50,12 +50,13 @@ struct confargs {
 	const char	*ca_name;	/* device name */
 };
 
-#define BUS_MAIN      0
-#define BUS_PCCTWO    3
-#define BUS_VMES      4
-#define BUS_VMEL      5
-#define BUS_SYSCON    6
-#define BUS_BUSSWITCH 7
+#define BUS_MAIN	0
+#define BUS_ANGELFIRE	1
+#define BUS_SYSCON	2
+#define BUS_PCCTWO	3
+#define BUS_VMES	4
+#define BUS_VMEL	5
+#define BUS_BUSSWITCH	6
 
 /* the following are from the prom/bootblocks */
 extern paddr_t	bootaddr;	/* PA of boot device */

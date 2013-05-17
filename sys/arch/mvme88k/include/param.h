@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.40 2008/09/19 20:18:01 miod Exp $ */
+/*	$OpenBSD: param.h,v 1.41 2013/03/23 16:12:25 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -58,6 +58,8 @@ extern int brdtyp;
 /*
  * Values for the brdtyp variable.
  */
+#define BRD_180		0x180
+#define BRD_181		0x181
 #define BRD_187		0x187
 #define BRD_188		0x188
 #define BRD_197		0x197
