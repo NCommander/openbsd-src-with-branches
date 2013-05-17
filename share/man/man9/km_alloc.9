@@ -1,4 +1,4 @@
-.\"	$OpenBSD: km_alloc.9,v 1.2 2011/04/04 11:51:20 art Exp $
+.\"	$OpenBSD: km_alloc.9,v 1.3 2011/04/04 14:43:56 jmc Exp $
 .\" Copyright (c) 2011 Artur Grabowski <art@openbsd.org>
 .\" All rights reserved.
 .\"
@@ -23,7 +23,7 @@
 .Nd kernel memory allocator
 .Sh SYNOPSIS
 .Fd #include <sys/types.h>
-.Fd #include <sys/uvm_extern.h>
+.Fd #include <uvm/uvm_extern.h>
 .Ft void *
 .Fn km_alloc "size_t size" "struct kmem_va_mode *kv" "struct kmem_pa_mode *kp" "struct kmem_dyn_mode *kd"
 .Ft void
