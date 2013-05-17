@@ -1,4 +1,4 @@
-#	$OpenBSD: integrity.sh,v 1.8 2013/04/06 06:00:22 dtucker Exp $
+#	$OpenBSD: integrity.sh,v 1.9 2013/04/07 02:16:03 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="integrity"
@@ -39,7 +39,7 @@ for m in $macs; do
 			aes*gcm*)	macopt="-c $m";;
 			*)		macopt="-m $m";;
 		esac
-		verbose "test $tid: $m @$off $output"
+		verbose "test $tid: $m @$off"
 		${SSH} $macopt -2F $OBJ/ssh_proxy -o "$pxy" \
 		    999.999.999.999 'printf "%4096s" " "' >/dev/null
 		if [ $? -eq 0 ]; then
