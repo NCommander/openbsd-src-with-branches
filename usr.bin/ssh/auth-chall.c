@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-chall.c,v 1.11 2006/03/25 13:17:01 djm Exp $ */
+/* $OpenBSD: auth-chall.c,v 1.12 2006/08/03 03:34:41 deraadt Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -58,11 +58,11 @@ get_challenge(Authctxt *authctxt)
 		fatal("get_challenge: numprompts < 1");
 	challenge = xstrdup(prompts[0]);
 	for (i = 0; i < numprompts; i++)
-		xfree(prompts[i]);
-	xfree(prompts);
-	xfree(name);
-	xfree(echo_on);
-	xfree(info);
+		free(prompts[i]);
+	free(prompts);
+	free(name);
+	free(echo_on);
+	free(info);
 
 	return (challenge);
 }

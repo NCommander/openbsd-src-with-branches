@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa.c,v 1.28 2006/08/03 03:34:42 deraadt Exp $ */
+/* $OpenBSD: rsa.c,v 1.29 2006/11/06 21:25:28 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -93,8 +93,8 @@ rsa_public_encrypt(BIGNUM *out, BIGNUM *in, RSA *key)
 
 	memset(outbuf, 0, olen);
 	memset(inbuf, 0, ilen);
-	xfree(outbuf);
-	xfree(inbuf);
+	free(outbuf);
+	free(inbuf);
 }
 
 int
@@ -119,8 +119,8 @@ rsa_private_decrypt(BIGNUM *out, BIGNUM *in, RSA *key)
 	}
 	memset(outbuf, 0, olen);
 	memset(inbuf, 0, ilen);
-	xfree(outbuf);
-	xfree(inbuf);
+	free(outbuf);
+	free(inbuf);
 	return len;
 }
 

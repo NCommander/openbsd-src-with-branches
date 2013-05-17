@@ -1,4 +1,4 @@
-/* $OpenBSD: readpass.c,v 1.47 2006/08/03 03:34:42 deraadt Exp $ */
+/* $OpenBSD: readpass.c,v 1.48 2010/12/15 00:49:27 djm Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -183,7 +183,7 @@ ask_permission(const char *fmt, ...)
 		if (*p == '\0' || *p == '\n' ||
 		    strcasecmp(p, "yes") == 0)
 			allowed = 1;
-		xfree(p);
+		free(p);
 	}
 
 	return (allowed);

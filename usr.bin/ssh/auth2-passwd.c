@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-passwd.c,v 1.8 2006/07/22 20:48:22 stevesk Exp $ */
+/* $OpenBSD: auth2-passwd.c,v 1.9 2006/08/03 03:34:41 deraadt Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -58,7 +58,7 @@ userauth_passwd(Authctxt *authctxt)
 		/* discard new password from packet */
 		newpass = packet_get_string(&newlen);
 		memset(newpass, 0, newlen);
-		xfree(newpass);
+		free(newpass);
 	}
 	packet_check_eom();
 
@@ -67,7 +67,7 @@ userauth_passwd(Authctxt *authctxt)
 	else if (PRIVSEP(auth_password(authctxt, password)) == 1)
 		authenticated = 1;
 	memset(password, 0, len);
-	xfree(password);
+	free(password);
 	return authenticated;
 }
 
