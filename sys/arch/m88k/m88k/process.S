@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.S,v 1.24 2009/05/02 14:32:29 miod Exp $	*/
+/*	$OpenBSD: process.S,v 1.25 2013/01/05 11:20:56 miod Exp $	*/
 /*
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
@@ -33,7 +33,6 @@
 #include "assym.h"
 #include <machine/asm.h>
 #include <machine/psl.h>
-#include <machine/intr.h>
 
 /*
  * void cpu_switchto(struct proc *oldproc, struct proc *newproc)
