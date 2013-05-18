@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdsc.c,v 1.2 2012/04/15 20:40:39 miod Exp $	*/
+/*	$OpenBSD: wdsc.c,v 1.3 2012/10/03 22:46:09 miod Exp $	*/
 /*	$NetBSD: wdsc.c,v 1.32 2011/07/01 18:53:47 dyoung Exp $	*/
 
 /*
@@ -147,7 +147,7 @@ wdsc_attach(struct device *parent, struct device *self, void *aux)
 
 	if ((err = bus_space_subregion(haa->ha_st, haa->ha_sh,
 	    haa->ha_devoff + 3 + 4,  1, &sc->sc_data_regh)) != 0) {
-		printf(": unable to map asr reg, err=%d\n", err);
+		printf(": unable to map data reg, err=%d\n", err);
 		return;
 	}
 
