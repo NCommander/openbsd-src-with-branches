@@ -1,6 +1,6 @@
-.\"	$OpenBSD: lrc.4,v 1.2 2009/03/02 07:54:53 jmc Exp $
+.\"	$OpenBSD: cl.4,v 1.2 2013/05/18 12:13:13 jmc Exp $
 .\"
-.\" Copyright (c) 2009 Miodrag Vallat.
+.\" Copyright (c) 2013 Miodrag Vallat.
 .\"
 .\" Permission to use, copy, modify, and distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -14,24 +14,33 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: March 2 2009 $
-.Dt LRC 4 mvme68k
+.Dd $Mdocdate: May 18 2013 $
+.Dt CL 4 mvme68k
 .Os
 .Sh NAME
-.Nm lrc
-.Nd Local Resource Controller
+.Nm cl
+.Nd Cirrus Logic CD2401 serial controller
 .Sh SYNOPSIS
-.Cd "lrc0 at mainbus0 addr 0xfff90000"
+.Cd "cl0 at pcctwo0 offset 0x45000 ipl 3"
 .Sh DESCRIPTION
 The
 .Nm
-ASIC provides address decoding for the local peripherals,
-as well as timers and interrupt handling facilities,
-and is found on the MVME165 Single-Board Computers.
+driver provides support for the CD2401 serial controller found on
+MVME167 and MVME177 systems.
+.Pp
+Each CD2401 controller supports four serial ports with a 16-character buffer.
+.Pp
+The following link speeds are supported by the
+.Nm
+driver:
+50, 110, 150, 300, 600, 1200, 2401, 3600, 4800, 7200, 9600, 19200, 38400,
+56000 and 64000 bps,
+with an error margin smaller than 0.25%
+(except for 56000 bps, where the error margin is 0.80%).
+.Sh FILES
+.Bl -tag -width Pa -compact
+.It Pa /dev/tty[0-3]
+.El
 .Sh SEE ALSO
-.\" .Xr clock 4 ,
-.Xr dart 4 ,
 .Xr intro 4 ,
-.\" .Xr nvram 4
-.\" .Xr vsb 4
-.Xr vme 4
+.Xr tty 4

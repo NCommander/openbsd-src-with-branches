@@ -1,6 +1,6 @@
-.\"	$OpenBSD: lrc.4,v 1.2 2009/03/02 07:54:53 jmc Exp $
+.\"	$OpenBSD: memc.4,v 1.1 2013/05/18 17:20:45 miod Exp $
 .\"
-.\" Copyright (c) 2009 Miodrag Vallat.
+.\" Copyright (c) 2013 Miodrag Vallat.
 .\"
 .\" Permission to use, copy, modify, and distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -14,24 +14,36 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: March 2 2009 $
-.Dt LRC 4 mvme68k
+.Dd $Mdocdate: May 18 2013 $
+.Dt MEMC 4 mvme68k
 .Os
 .Sh NAME
-.Nm lrc
-.Nd Local Resource Controller
+.Nm memc
+.Nd MVME1[67]x memory controller
 .Sh SYNOPSIS
-.Cd "lrc0 at mainbus0 addr 0xfff90000"
+.Cd "memc0 at mc0 offset 0x43000    " Pq MVME162/172
+.Cd "memc1 at mc0 offset 0x43100    " Pq MVME162/172
+.Cd "memc0 at pcctwo0 offset 0x43000" Pq MVME166/167/176/177
+.Cd "memc1 at pcctwo0 offset 0x43100" Pq MVME166/167/176/177
 .Sh DESCRIPTION
+MVME16x and MVME17x boards support up to two memory mezzanine boards.
+Each board contains its own memory controller, of which two flavours exist:
+.Pp
+.Bl -tag -compact -width 8n
+.It MEMC040
+Memory Controller with parity memory
+.It MCECC
+Memory Controller with ECC memory
+.El
+.Pp
 The
 .Nm
-ASIC provides address decoding for the local peripherals,
-as well as timers and interrupt handling facilities,
-and is found on the MVME165 Single-Board Computers.
+driver recognizes both.
 .Sh SEE ALSO
-.\" .Xr clock 4 ,
-.Xr dart 4 ,
 .Xr intro 4 ,
-.\" .Xr nvram 4
-.\" .Xr vsb 4
-.Xr vme 4
+.\" Xr mc 4 ,
+.Xr pcctwo 4
+.Sh BUGS
+The
+.Nm
+driver does not report corrected ECC memory errors.
