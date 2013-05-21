@@ -1,4 +1,4 @@
-/*	$OpenBSD: am7990.c,v 1.43 2008/11/28 02:44:17 brad Exp $	*/
+/*	$OpenBSD: am7990.c,v 1.44 2009/08/10 20:29:54 deraadt Exp $	*/
 /*	$NetBSD: am7990.c,v 1.22 1996/10/13 01:37:19 christos Exp $	*/
 
 /*-
@@ -840,44 +840,27 @@ am7990_ioctl(ifp, cmd, data)
 	switch (cmd) {
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
-
-		switch (ifa->ifa_addr->sa_family) {
+		if (!(ifp->if_flags & IFF_RUNNING))
+			am7990_init(sc);
 #ifdef INET
-		case AF_INET:
-			am7990_init(sc);
+		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&sc->sc_arpcom, ifa);
-			break;
 #endif
-		default:
-			am7990_init(sc);
-			break;
-		}
 		break;
 
 	case SIOCSIFFLAGS:
-		if ((ifp->if_flags & IFF_UP) == 0 &&
-		    (ifp->if_flags & IFF_RUNNING) != 0) {
-			/*
-			 * If interface is marked down and it is running, then
-			 * stop it.
-			 */
-			am7990_stop(sc);
-			ifp->if_flags &= ~IFF_RUNNING;
-		} else if ((ifp->if_flags & IFF_UP) != 0 &&
-		    	   (ifp->if_flags & IFF_RUNNING) == 0) {
-			/*
-			 * If interface is marked up and it is stopped, then
-			 * start it.
-			 */
-			am7990_init(sc);
+		if (ifp->if_flags & IFF_UP) {
+			if (ifp->if_flags & IFF_RUNNING)
+				error = ENETRESET;
+			else
+				am7990_init(sc);
 		} else {
-			/*
-			 * Reset the interface to pick up changes in any other
-			 * flags that affect hardware registers.
-			 */
-			/*am7990_stop(sc);*/
-			am7990_init(sc);
+			if (ifp->if_flags & IFF_RUNNING) {
+				am7990_stop(sc);
+				ifp->if_flags &= ~IFF_RUNNING;
+			}
 		}
+
 #ifdef LEDEBUG
 		if (ifp->if_flags & IFF_DEBUG)
 			sc->sc_debug = 1;
