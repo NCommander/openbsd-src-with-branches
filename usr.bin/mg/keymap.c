@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.49 2012/04/12 04:47:59 lum Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.50 2012/06/07 15:15:04 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -217,8 +217,9 @@ static PF metacV[] = {
 	pagenext		/* ^V */
 };
 
-static PF metasp[] = {
-	justone			/* space */
+static PF metaspex[] = {
+	justone,		/* space */
+	shellcommand		/* ! */
 };
 
 static PF metapct[] = {
@@ -317,7 +318,7 @@ struct KEYMAPE (8 + IMAPEXT) metamap = {
 			CCHR('V'), CCHR('V'), metacV, NULL
 		},
 		{
-			' ', ' ', metasp, NULL
+			' ', '!', metaspex, NULL
 		},
 		{
 			'%', '%', metapct, NULL

@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.44 2012/12/04 10:54:20 florian Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.45 2012/12/27 18:51:52 florian Exp $	*/
 
 /* This file is in the public domain */
 
@@ -179,6 +179,7 @@ static struct funmap functnames[] = {
 	{setfillcol, "set-fill-column",},
 	{setmark, "set-mark-command",},
 	{setprefix, "set-prefix-string",},
+	{shellcommand, "shell-command",},
 	{piperegion, "shell-command-on-region",},
 	{shrinkwind, "shrink-window",},
 #ifdef NOTAB
