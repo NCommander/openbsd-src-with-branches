@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2013/01/26 09:37:24 gilles Exp $
+#	$OpenBSD: Makefile,v 1.16 2012/10/14 11:58:23 gilles Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -25,10 +25,11 @@ SRCS+=	table_static.c
 SRCS+=	table_db.c
 SRCS+=	table_getpwnam.c
 SRCS+=	table_ldap.c
-SRCS+=	ber.c
-SRCS+=	aldap.c
 SRCS+=	table_sqlite.c
 
-DPADD+= ${LIBUTIL} ${LIBCRYPTO} ${LIBSQLITE3}
-LDADD+= -lutil -lcrypto -lsqlite3
+SRCS+=	ber.c
+SRCS+=	aldap.c
+
+DPADD+= ${LIBUTIL} ${LIBCRYPTO} ${LIBSQLITE3} ${LIBZ}
+LDADD+= -lutil -lcrypto -lsqlite3 -lz
 .include <bsd.prog.mk>

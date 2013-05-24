@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp.c,v 1.123 2013/01/26 09:37:23 gilles Exp $	*/
+/*	$OpenBSD: smtp.c,v 1.124 2013/03/11 17:40:11 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -21,7 +21,6 @@
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/tree.h>
-#include <sys/param.h>
 #include <sys/socket.h>
 
 #include <err.h>
@@ -354,7 +353,7 @@ static int
 smtp_enqueue(uid_t *euid)
 {
 	static struct listener	 local, *listener = NULL;
-	char			 buf[MAXHOSTNAMELEN], *hostname;
+	char			 buf[SMTPD_MAXHOSTNAMELEN], *hostname;
 	int			 fd[2];
 
 	if (listener == NULL) {
@@ -429,6 +428,7 @@ smtp_accept(int fd, short event, void *p)
 		close(sock);
 		return;
 	}
+	io_set_blocking(sock, 0);
 
 	sessions++;
 	stat_increment("smtp.session", 1);

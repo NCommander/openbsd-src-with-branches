@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_fsqueue.c,v 1.53 2012/08/30 18:19:50 eric Exp $	*/
+/*	$OpenBSD: queue_null.c,v 1.1 2013/01/26 09:37:23 gilles Exp $	*/
 
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
@@ -19,7 +19,6 @@
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/tree.h>
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 

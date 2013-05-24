@@ -1,4 +1,4 @@
-/*	$OpenBSD: enqueue.c,v 1.66 2013/01/26 09:37:23 gilles Exp $	*/
+/*	$OpenBSD: enqueue.c,v 1.67 2013/01/31 18:34:43 eric Exp $	*/
 
 /*
  * Copyright (c) 2005 Henning Brauer <henning@bulabula.org>
@@ -18,11 +18,10 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/tree.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <ctype.h>
@@ -96,7 +95,7 @@ struct {
 #define WSP(c)			(c == ' ' || c == '\t')
 
 int	  verbose = 0;
-char	  host[MAXHOSTNAMELEN];
+char	  host[SMTPD_MAXHOSTNAMELEN];
 char	 *user = NULL;
 time_t	  timestamp;
 
@@ -694,7 +693,7 @@ open_connection(void)
 	int		fd;
 	int		n;
 
-	imsg_compose(ibuf, IMSG_SMTP_ENQUEUE_FD, 0, 0, -1, NULL, 0);
+	imsg_compose(ibuf, IMSG_SMTP_ENQUEUE_FD, IMSG_VERSION, 0, -1, NULL, 0);
 
 	while (ibuf->w.queued)
 		if (msgbuf_write(&ibuf->w) < 0)
@@ -732,7 +731,7 @@ open_connection(void)
 int
 enqueue_offline(int argc, char *argv[])
 {
-	char	 path[MAXPATHLEN];
+	char	 path[SMTPD_MAXPATHLEN];
 	FILE	*fp;
 	int	 i, fd, ch;
 	mode_t	 omode;
@@ -752,6 +751,11 @@ enqueue_offline(int argc, char *argv[])
 		exit(1);
 	}
 	umask(omode);
+
+	if (fchmod(fd, 0600) == -1) {
+		unlink(path);
+		exit(1);
+	}
 
 	for (i = 1; i < argc; i++) {
 		if (strchr(argv[i], '|') != NULL) {
