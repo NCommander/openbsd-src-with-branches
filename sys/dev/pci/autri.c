@@ -1,4 +1,4 @@
-/*	$OpenBSD: autri.c,v 1.31 2012/03/30 08:18:19 ratchov Exp $	*/
+/*	$OpenBSD: autri.c,v 1.32 2013/05/15 08:29:24 ratchov Exp $	*/
 
 /*
  * Copyright (c) 2001 SOMEYA Yoshihiko and KUROSAWA Takahiro.
@@ -536,8 +536,8 @@ autri_attach(parent, self, aux)
 		return;
 	}
 	intrstr = pci_intr_string(pc, ih);
-	sc->sc_ih = pci_intr_establish(pc, ih, IPL_AUDIO, autri_intr, sc,
-	    sc->sc_dev.dv_xname);
+	sc->sc_ih = pci_intr_establish(pc, ih, IPL_AUDIO | IPL_MPSAFE,
+	    autri_intr, sc, sc->sc_dev.dv_xname);
 	if (sc->sc_ih == NULL) {
 		printf("%s: couldn't establish interrupt",
 		    sc->sc_dev.dv_xname);

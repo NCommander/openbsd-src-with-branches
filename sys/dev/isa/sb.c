@@ -1,4 +1,4 @@
-/*	$OpenBSD: sb.c,v 1.24 2006/04/07 22:41:33 jsg Exp $	*/
+/*	$OpenBSD: sb.c,v 1.25 2008/04/21 00:32:42 jakemsr Exp $	*/
 /*	$NetBSD: sb.c,v 1.57 1998/01/12 09:43:46 thorpej Exp $	*/
 
 /*
@@ -262,8 +262,9 @@ sbattach(sc)
 	struct midi_hw_if *mhw = &sb_midi_hw_if;
 #endif
 
-	sc->sc_ih = isa_intr_establish(sc->sc_ic, sc->sc_irq, IST_EDGE,
-	    IPL_AUDIO, sbdsp_intr, sc, sc->sc_dev.dv_xname);
+	sc->sc_ih = isa_intr_establish(sc->sc_ic, sc->sc_irq,
+	    IST_EDGE, IPL_AUDIO | IPL_MPSAFE,
+	    sbdsp_intr, sc, sc->sc_dev.dv_xname);
 
 	sbdsp_attach(sc);
 
