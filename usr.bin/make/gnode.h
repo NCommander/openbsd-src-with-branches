@@ -1,6 +1,6 @@
 #ifndef GNODE_H
 #define GNODE_H
-/*	$OpenBSD: gnode.h,v 1.25 2013/05/14 18:47:40 espie Exp $ */
+/*	$OpenBSD: gnode.h,v 1.26 2013/05/22 12:14:08 espie Exp $ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -144,6 +144,8 @@ struct GNode_ {
     int unmade;		/* The number of unmade children */
 
     struct timespec mtime;	/* Its modification time */
+    struct timespec cmtime;	/* The modification time of its youngest
+			 	 * child */
     GNode *youngest;		/* Its youngest child */
 
     GNode *impliedsrc;
