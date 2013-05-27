@@ -1,4 +1,4 @@
-/* $OpenBSD: timekeeper.c,v 1.4 2008/06/26 05:42:11 ray Exp $ */
+/* $OpenBSD: timekeeper.c,v 1.5 2010/09/20 06:33:47 matthew Exp $ */
 /* $NetBSD: timekeeper.c,v 1.1 2000/01/05 08:48:56 nisimura Exp $ */
 
 /*-
@@ -196,14 +196,14 @@ mkclock_set(dev, dt)
 }
 
 #define _DS_GET(off, data) \
-	do { *chiptime = (off); (u_int8_t)(data) = (*chipdata); } while (0)
+	do { *chiptime = (off); (data) = (*chipdata); } while (0)
 #define _DS_SET(off, data) \
 	do { *chiptime = (off); *chipdata = (u_int8_t)(data); } while (0)
 #define _DS_GET_BCD(off, data) \
 	do { \
 		u_int8_t c; \
 		*chiptime = (off); \
-		c = *chipdata; (u_int8_t)(data) = FROMBCD(c); \
+		c = *chipdata; (data) = FROMBCD(c); \
 	} while (0)
 #define _DS_SET_BCD(off, data) \
 	do { \
