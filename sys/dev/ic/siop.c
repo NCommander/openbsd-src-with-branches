@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop.c,v 1.64 2011/04/05 22:37:39 dlg Exp $ */
+/*	$OpenBSD: siop.c,v 1.65 2011/06/23 16:31:16 deraadt Exp $ */
 /*	$NetBSD: siop.c,v 1.79 2005/11/18 23:10:32 bouyer Exp $	*/
 
 /*
@@ -634,6 +634,8 @@ siop_intr(v)
 			goto end;
 		}
 		need_reset = 1;
+	} else {
+		sist = sstat1 = 0;
 	}
 	if (need_reset) {
 reset:
@@ -1049,7 +1051,8 @@ scintr:
 			goto reset;
 		}
 		return 1;
-	}
+	} else
+		irqcode = 0;
 	/* We can get here if ISTAT_DIP and DSTAT_DFE are the only bits set. */
 	/* But that *SHOULDN'T* happen. It does on powerpc (at least).	     */
 	printf("%s: siop_intr() - we should not be here!\n"
