@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_resolver.c,v 1.10 2012/08/19 17:59:15 eric Exp $	*/
+/*	$OpenBSD: getaddrinfo.c,v 1.1 2012/09/08 11:08:21 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -30,6 +30,8 @@ getaddrinfo(const char *hostname, const char *servname,
 	struct async	*as;
 	struct async_res ar;
 	int		 saved_errno = errno;
+
+	res_init();
 
 	as = getaddrinfo_async(hostname, servname, hints, NULL);
 	if (as == NULL) {
