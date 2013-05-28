@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.22 2008/10/02 20:21:14 brad Exp $	*/
+/*	$OpenBSD: be.c,v 1.23 2008/11/28 02:44:18 brad Exp $	*/
 /*	$NetBSD: be.c,v 1.26 2001/03/20 15:39:20 pk Exp $	*/
 
 /*-
@@ -1531,6 +1531,7 @@ be_intphy_service(struct be_softc *sc, struct mii_data *mii, int cmd)
 				    sc->sc_dev.dv_xname,
 				    (bmcr & BMCR_S100) ? "100" : "10");
 			}
+			sc->sc_mii_ticks = 0;
 			return (0);
 		}
 
