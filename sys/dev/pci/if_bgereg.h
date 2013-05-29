@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bgereg.h,v 1.112 2013/02/09 23:39:38 brad Exp $	*/
+/*	$OpenBSD: if_bgereg.h,v 1.113 2013/02/22 01:26:55 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -963,6 +963,7 @@
 #define	BGE_MIMODE_CLKCNT		0x001F0000
 #define	BGE_MIMODE_500KHZ_CONST		0x00008000
 #define	BGE_MIMODE_BASE			0x000C0000
+#define	BGE_MIMODE_PHYADDR(x)		((x & 0x1F) << 5)
 
 /*
  * Send data initiator control registers.
