@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_subr.c,v 1.29 2013/01/14 02:41:03 jsing Exp $	*/
+/*	$OpenBSD: ntfs_subr.c,v 1.30 2013/01/18 05:09:21 jsing Exp $	*/
 /*	$NetBSD: ntfs_subr.c,v 1.4 2003/04/10 21:37:32 jdolecek Exp $	*/
 
 /*-
@@ -388,7 +388,7 @@ ntfs_ntget(struct ntnode *ip, struct proc *p)
  * ntnode returned locked
  */
 int
-ntfs_ntlookup(struct ntfsmount *ntmp, ino_t ino, struct ntnode **ipp,
+ntfs_ntlookup(struct ntfsmount *ntmp, ntfsino_t ino, struct ntnode **ipp,
     struct proc *p)
 {
 	struct ntnode  *ip;
