@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_autoconf.c,v 1.66 2011/07/03 15:47:16 matthew Exp $	*/
+/*	$OpenBSD: subr_autoconf.c,v 1.67 2012/10/08 21:47:50 deraadt Exp $	*/
 /*	$NetBSD: subr_autoconf.c,v 1.21 1996/04/04 06:06:18 cgd Exp $	*/
 
 /*
@@ -774,13 +774,10 @@ config_suspend(struct device *dev, int act)
 {
 	struct cfattach *ca = dev->dv_cfdata->cf_attach;
 
-	if (ca->ca_activate) {
-#if 0
-		printf("activate: %s %d\n", dev->dv_xname, act);
-#endif
+	if (ca->ca_activate)
 		return (*ca->ca_activate)(dev, act);
-	}
-	return (0);
+	else
+		return config_activate_children(dev, act);
 }
 
 /*

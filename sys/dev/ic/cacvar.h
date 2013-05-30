@@ -1,4 +1,4 @@
-/*	$OpenBSD: cacvar.h,v 1.5 2008/10/29 21:17:15 brad Exp $	*/
+/*	$OpenBSD: cacvar.h,v 1.6 2011/04/21 23:10:08 krw Exp $	*/
 /*	$NetBSD: cacvar.h,v 1.7 2000/10/19 14:28:47 ad Exp $	*/
 
 /*-
@@ -122,6 +122,7 @@ typedef	int cac_lock_t;
 
 int	cac_init(struct cac_softc *, int);
 int	cac_intr(void *);
+int	cac_flush(struct cac_softc *);
 
 extern const struct	cac_linkage cac_l0;
 

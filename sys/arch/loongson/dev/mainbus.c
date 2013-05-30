@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.6 2010/09/23 14:12:05 pirofti Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.7 2013/01/14 21:18:47 pirofti Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -37,8 +37,7 @@ void	mainbus_attach(struct device *, struct device *, void *);
 int	mainbus_print(void *, const char *);
 
 const struct cfattach mainbus_ca = {
-	sizeof(struct device), mainbus_match, mainbus_attach,
-	NULL, config_activate_children
+	sizeof(struct device), mainbus_match, mainbus_attach
 };
 
 struct cfdriver mainbus_cd = {

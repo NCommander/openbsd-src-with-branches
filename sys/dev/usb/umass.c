@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass.c,v 1.62 2011/07/03 15:47:17 matthew Exp $ */
+/*	$OpenBSD: umass.c,v 1.63 2013/04/15 09:23:02 mglocker Exp $ */
 /*	$NetBSD: umass.c,v 1.116 2004/06/30 05:53:46 mycroft Exp $	*/
 
 /*
@@ -686,6 +686,9 @@ umass_activate(struct device *dev, int act)
 		rv = config_deactivate(scbus->sc_child);
 		DPRINTF(UDMASS_USB, ("%s: umass_activate: child "
 		    "returned %d\n", sc->sc_dev.dv_xname, rv));
+		break;
+	default:
+		rv = config_activate_children(dev, act);
 		break;
 	}
 	return (rv);

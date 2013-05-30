@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx.c,v 1.49 2012/02/24 06:19:00 guenther Exp $	*/
+/*	$OpenBSD: aic79xx.c,v 1.50 2012/12/05 23:20:16 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -6343,9 +6343,6 @@ init_done:
 	ahd_restart(ahd);
 	aic_timer_reset(&ahd->stat_timer, AHD_STAT_UPDATE_MS,
 			ahd_stat_timer, ahd);
-
-	/* We have to wait until after any system dumps... */
-        ahd->shutdown_hook = shutdownhook_establish(ahd_shutdown, ahd);
 	return (0);
 }
 
