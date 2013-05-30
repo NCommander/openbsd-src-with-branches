@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2012/12/10 10:23:27 jasper Exp $
+#	$OpenBSD: Makefile,v 1.37 2013/03/27 09:46:55 jasper Exp $
 
 REGRESS_TARGETS=cmp-vers1-1 \
 		cmp-vers1-2 \
@@ -84,7 +84,7 @@ corrupt2:
 
 corrupt3:
 	# Test for empty file
-	@echo "Package file '$@.pc' appears to be empty" > ${WANT}
+	@echo "Package file '${.CURDIR}/pcdir//$@.pc' appears to be empty" > ${WANT}
 	@echo "Package '$@' has no Name: field" >> ${WANT}
 	@if ${VPCONFIG} --libs $@; then false; fi
 	@diff -u ${WANT} ${GOT}
