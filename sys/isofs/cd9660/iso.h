@@ -1,4 +1,4 @@
-/*	$OpenBSD: iso.h,v 1.13 2003/06/02 23:28:05 millert Exp $	*/
+/*	$OpenBSD: iso.h,v 1.14 2005/09/28 20:53:54 miod Exp $	*/
 /*	$NetBSD: iso.h,v 1.20 1997/07/07 22:45:34 cgd Exp $	*/
 
 /*-
@@ -42,6 +42,8 @@
  * the functions necessary to access fields of ISO9660 file system
  * structures.
  */
+
+typedef uint32_t cdino_t;
 
 #define ISODCL(from, to) (to - from + 1)
 

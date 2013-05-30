@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_rrip.c,v 1.9 2007/02/14 00:53:48 jsg Exp $	*/
+/*	$OpenBSD: cd9660_rrip.c,v 1.10 2011/07/04 04:30:41 tedu Exp $	*/
 /*	$NetBSD: cd9660_rrip.c,v 1.17 1997/01/24 00:27:32 cgd Exp $	*/
 
 /*-
@@ -675,7 +675,7 @@ cd9660_rrip_getname(isodir, outbuf, outlen, inump, imp)
 	struct iso_directory_record *isodir;
 	char *outbuf;
 	u_short *outlen;
-	ino_t *inump;
+	cdino_t *inump;
 	struct iso_mnt *imp;
 {
 	ISO_RRIP_ANALYZE analyze;
