@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.2 2008/06/09 15:01:56 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2010/02/12 17:30:41 mk Exp $
 
 MAN=	mkuboot.8
 
+BINDIR=	/usr/sbin
 PROG=	mkuboot
 DPADD=	${LIBZ}
 LDADD=	-lz
