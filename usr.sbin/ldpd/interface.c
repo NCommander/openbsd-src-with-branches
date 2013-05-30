@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.8 2011/07/04 04:34:14 claudio Exp $ */
+/*	$OpenBSD: interface.c,v 1.9 2012/05/14 10:17:21 sthen Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -259,6 +259,8 @@ int
 if_act_reset(struct iface *iface)
 {
 	struct in_addr		 addr;
+
+	if_stop_hello_timer(iface);
 
 	inet_aton(AllRouters, &addr);
 	if (if_leave_group(iface, &addr)) {
