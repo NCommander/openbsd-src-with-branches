@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep_stub.c,v 1.15 2007/06/01 20:23:26 pedro Exp $	*/
+/*	$OpenBSD: ffs_softdep_stub.c,v 1.16 2008/01/05 19:49:26 otto Exp $	*/
 
 /*
  * Copyright 1998 Marshall Kirk McKusick. All Rights Reserved.
@@ -68,7 +68,7 @@ softdep_initialize(void)
 #ifndef __OPTIMIZE__
 
 void
-softdep_setup_inomapdep(struct buf *bp, struct inode *ip, ino_t newinum)
+softdep_setup_inomapdep(struct buf *bp, struct inode *ip, ufsino_t newinum)
 {
 	panic("softdep_setup_inomapdep called");
 }
@@ -107,7 +107,7 @@ softdep_setup_freeblocks(struct inode *ip, off_t length)
 }
 
 void
-softdep_freefile(struct vnode *pvp, ino_t ino, mode_t mode)
+softdep_freefile(struct vnode *pvp, ufsino_t ino, mode_t mode)
 {
 	panic("softdep_freefile called");
 }

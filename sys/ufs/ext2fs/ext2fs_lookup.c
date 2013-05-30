@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_lookup.c,v 1.26 2010/09/23 18:49:39 oga Exp $	*/
+/*	$OpenBSD: ext2fs_lookup.c,v 1.27 2010/11/18 21:18:10 miod Exp $	*/
 /*	$NetBSD: ext2fs_lookup.c,v 1.16 2000/08/03 20:29:26 thorpej Exp $	*/
 
 /* 
@@ -957,7 +957,7 @@ ext2fs_dirrewrite(struct inode *dp, struct inode *ip,
  * NB: does not handle corrupted directories.
  */
 int
-ext2fs_dirempty(struct inode *ip, ino_t parentino, struct ucred *cred)
+ext2fs_dirempty(struct inode *ip, ufsino_t parentino, struct ucred *cred)
 {
 	off_t off;
 	struct ext2fs_dirtemplate dbuf;
