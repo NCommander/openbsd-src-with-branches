@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_object.h,v 1.17 2010/04/30 21:56:39 oga Exp $	*/
+/*	$OpenBSD: uvm_object.h,v 1.18 2011/07/07 14:25:15 sobrado Exp $	*/
 /*	$NetBSD: uvm_object.h,v 1.11 2001/03/09 01:02:12 chs Exp $	*/
 
 /*
@@ -47,7 +47,6 @@
  */
 
 struct uvm_object {
-	simple_lock_data_t		 vmobjlock;	/* lock on memt */
 	struct uvm_pagerops		*pgops;		/* pager ops */
 	RB_HEAD(uvm_objtree, vm_page)	 memt;		/* pages in object */
 	int				 uo_npages;	/* # of pages in memt */
