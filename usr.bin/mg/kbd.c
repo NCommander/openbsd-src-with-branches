@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.c,v 1.24 2008/06/14 07:38:53 kjell Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.25 2012/04/12 04:47:59 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -81,7 +81,7 @@ getkey(int flag)
 			/* avoid problems with % */
 			ewprintf("%s", prompt);
 			/* put the cursor back */
-			update();
+			update(CMODE);
 			epresf = KCLEAR;
 		}
 		if (promptp > prompt)
