@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.320 2012/09/18 09:45:51 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.321 2012/09/18 10:10:00 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -3438,6 +3438,13 @@ network_add(struct network_config *nc, int flagstatic)
 				filterset_free(&nc->attrset);
 				return;
 			}
+			break;
+		}
+		if (rd == NULL) {
+			log_warnx("network_add: "
+			    "prefix %s/%u in non-existing rdomain %u",
+			    log_addr(&nc->prefix), nc->prefixlen, nc->rtableid);
+			return;
 		}
 	}
 
