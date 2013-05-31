@@ -1,4 +1,4 @@
-/*	$OpenBSD: mman.h,v 1.21 2010/07/04 20:16:41 guenther Exp $	*/
+/*	$OpenBSD: mman.h,v 1.22 2012/07/21 06:46:58 matthew Exp $	*/
 /*	$NetBSD: mman.h,v 1.11 1995/03/26 20:24:23 jtc Exp $	*/
 
 /*-
@@ -152,6 +152,9 @@ int	minherit(void *, size_t, int);
 void *	mquery(void *, size_t, int, int, int, off_t);
 #endif
 int	posix_madvise(void *, size_t, int);
+int	shm_open(const char *, int, __mode_t);
+int	shm_unlink(const char *);
+int	shm_mkstemp(char *);
 __END_DECLS
 
 #endif /* !_KERNEL */
