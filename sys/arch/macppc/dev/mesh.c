@@ -1,4 +1,4 @@
-/*	$OpenBSD: mesh.c,v 1.29 2011/04/03 12:42:36 krw Exp $	*/
+/*	$OpenBSD: mesh.c,v 1.30 2013/05/30 16:15:01 deraadt Exp $	*/
 /*	$NetBSD: mesh.c,v 1.1 1999/02/19 13:06:03 tsubai Exp $	*/
 
 /*-
@@ -383,7 +383,7 @@ mesh_activate(struct device *self, int act)
 	struct mesh_softc *sc = (struct mesh_softc *)self;
 	int ret = 0;
 
-	reg = config_activate_children(self, act);
+	ret = config_activate_children(self, act);
 
 	switch (act) {
 	case DVACT_POWERDOWN:
