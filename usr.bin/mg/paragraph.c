@@ -1,4 +1,4 @@
-/*	$OpenBSD: paragraph.c,v 1.26 2013/06/01 09:50:47 lum Exp $	*/
+/*	$OpenBSD: paragraph.c,v 1.27 2013/06/01 10:23:40 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -257,9 +257,6 @@ killpara(int f, int n)
 		/* and delete it */
 		if ((status = killregion(FFRAND, 1)) != TRUE)
 			return (status);
-
-		/* and clean up the 2 extra lines */
-		(void)ldelete((RSIZE) 1, KFORW);
 	}
 	return (TRUE);
 }
