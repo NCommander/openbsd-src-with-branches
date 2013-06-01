@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.29 2012/10/24 03:26:56 guenther Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.30 2013/04/05 12:58:03 kurt Exp $	*/
 /*	$NetBSD: rtld_start.S,v 1.5 2001/08/14 22:17:48 eeh Exp $	*/
 
 /*
@@ -336,3 +336,9 @@ _ENTRY(_dl_getcwd)
 	retl
 	 sub %g0, %o0, %o0			! error: result = -errno
 
+_ENTRY(_dl_utrace)
+	mov SYS_utrace | SYSCALL_G2RFLAG, %g1	! calling sys_utrace
+	add %o7, 8, %g2				! just return on success
+	t ST_SYSCALL				! off to wonderland
+	retl
+	 sub %g0, %o0, %o0			! error: result = -errno
