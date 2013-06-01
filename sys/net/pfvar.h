@@ -1970,12 +1970,6 @@ struct pf_os_fingerprint *
 #ifdef _KERNEL
 void			 pf_print_host(struct pf_addr *, u_int16_t, u_int8_t);
 
-void			 pf_step_into_anchor(int *, struct pf_ruleset **,
-			    struct pf_rule **, struct pf_rule **, int *);
-int			 pf_step_out_of_anchor(int *, struct pf_ruleset **,
-			     struct pf_rule **, struct pf_rule **,
-			     int *);
-
 int			 pf_get_transaddr(struct pf_rule *, struct pf_pdesc *,
 			    struct pf_src_node **, struct pf_rule **);
 
