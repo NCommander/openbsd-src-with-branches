@@ -1,4 +1,4 @@
-/*	$OpenBSD: failedlogin.c,v 1.14 2003/06/17 21:56:25 millert Exp $	*/
+/*	$OpenBSD: failedlogin.c,v 1.15 2009/10/27 23:59:40 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -56,7 +56,7 @@ log_failedlogin(uid_t uid, char *host, char *name, char *tty)
 	int fd;
 
 	/* Add O_CREAT if you want to create failedlogin if it doesn't exist */
-	if ((fd = open(_PATH_FAILEDLOGIN, O_RDWR, S_IREAD|S_IWRITE)) >= 0) {
+	if ((fd = open(_PATH_FAILEDLOGIN, O_RDWR, S_IRUSR|S_IWUSR)) >= 0) {
 		(void)lseek(fd, (off_t)uid * sizeof(failedlogin), SEEK_SET);
 
 		/* Read in last bad login so can get the count */
