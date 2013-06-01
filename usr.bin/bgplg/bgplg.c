@@ -1,7 +1,7 @@
-/*	$OpenBSD: bgplg.c,v 1.8 2010/01/09 02:37:32 claudio Exp $	*/
+/*	$OpenBSD: bgplg.c,v 1.9 2010/04/02 21:20:49 sthen Exp $	*/
 
 /*
- * Copyright (c) 2005, 2006 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2005, 2006 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
