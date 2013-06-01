@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.2 2010/02/18 15:27:31 claudio Exp $ */
+/*	$OpenBSD: printconf.c,v 1.3 2010/05/25 13:29:45 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2008 Esben Norby <norby@openbsd.org>
@@ -58,8 +58,6 @@ print_iface(struct iface *iface)
 	printf("\ninterface %s {\n", iface->name);
 	printf("\tholdtime %d\n", iface->holdtime);
 	printf("\thello-interval %d\n", iface->hello_interval);
-	if (iface->passive)
-		printf("\tpassive\n");
 	printf("}\n");
 }
 

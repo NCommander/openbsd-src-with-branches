@@ -1,4 +1,4 @@
-/*	$OpenBSD: hello.c,v 1.14 2013/05/31 14:10:10 claudio Exp $ */
+/*	$OpenBSD: hello.c,v 1.15 2013/06/01 01:34:56 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -53,9 +53,6 @@ send_hello(struct iface *iface)
 	dst.sin_family = AF_INET;
 	dst.sin_len = sizeof(struct sockaddr_in);
 	inet_aton(AllRouters, &dst.sin_addr);
-
-	if (iface->passive)
-		return (0);
 
 	if ((buf = ibuf_open(LDP_MAX_LEN)) == NULL)
 		fatal("send_hello");
