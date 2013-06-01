@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.18 2013/05/30 15:49:33 claudio Exp $ */
+/*	$OpenBSD: packet.c,v 1.19 2013/06/01 01:39:04 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -293,7 +293,7 @@ session_accept(int fd, short event, void *bula)
 	}
 
 	nbr->fd = newfd;
-	nbr_fsm(nbr, NBR_EVT_SESSION_UP);
+	nbr_fsm(nbr, NBR_EVT_CONNECT_UP);
 }
 
 void
