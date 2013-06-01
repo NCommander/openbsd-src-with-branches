@@ -1,4 +1,4 @@
-.\" $OpenBSD: getprogname.3,v 1.1 2013/05/31 20:59:23 ajacoutot Exp $
+.\" $OpenBSD: getprogname.3,v 1.2 2013/05/31 21:18:04 tedu Exp $
 .\"
 .\" Copyright (c) 2001 Christopher G. Demetriou
 .\" All rights reserved.
@@ -74,7 +74,7 @@ running
 .Fn setprogname
 is not necessary.
 Programs that desire maximum portability should still call it;
-on another operating system,
+on other operating systems,
 these functions may be implemented in a portability library.
 Calling
 .Fn setprogname
@@ -88,9 +88,9 @@ The
 .Nm getprogname
 and
 .Nm setprogname
-function calls appeared in
+functions first appeared in
 .Ox 5.4 .
-.Sh CAVEAT
+.Sh CAVEATS
 The string returned by
 .Fn getprogname
 is supplied by the invoking process and should not be trusted by
