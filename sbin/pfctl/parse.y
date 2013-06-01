@@ -461,7 +461,7 @@ int	parseport(char *, struct range *r, int);
 %token	LOAD RULESET_OPTIMIZATION RTABLE RDOMAIN PRIO ONCE
 %token	STICKYADDRESS MAXSRCSTATES MAXSRCNODES SOURCETRACK GLOBAL RULE
 %token	MAXSRCCONN MAXSRCCONNRATE OVERLOAD FLUSH SLOPPY PFLOW
-%token	TAGGED TAG IFBOUND FLOATING STATEPOLICY STATEDEFAULTS ROUTE SETTOS
+%token	TAGGED TAG IFBOUND FLOATING STATEPOLICY STATEDEFAULTS ROUTE
 %token	DIVERTTO DIVERTREPLY DIVERTPACKET NATTO AFTO RDRTO RECEIVEDON NE LE GE
 %token	<v.string>		STRING
 %token	<v.number>		NUMBER
@@ -979,14 +979,6 @@ scrub_opt	: NODF	{
 			}
 			scrub_opts.marker |= FOM_MAXMSS;
 			scrub_opts.maxmss = $2;
-		}
-		| SETTOS tos {	/* XXX remove in 5.3-current */
-			if (scrub_opts.marker & FOM_SETTOS) {
-				yyerror("set-tos cannot be respecified");
-				YYERROR;
-			}
-			scrub_opts.marker |= FOM_SETTOS;
-			scrub_opts.settos = $2;
 		}
 		| REASSEMBLE STRING {
 			if (strcasecmp($2, "tcp") != 0) {
@@ -5294,7 +5286,6 @@ lookup(char *s)
 		{ "ruleset-optimization",	RULESET_OPTIMIZATION},
 		{ "scrub",		SCRUB},
 		{ "set",		SET},
-		{ "set-tos",		SETTOS},
 		{ "skip",		SKIP},
 		{ "sloppy",		SLOPPY},
 		{ "source-hash",	SOURCEHASH},
