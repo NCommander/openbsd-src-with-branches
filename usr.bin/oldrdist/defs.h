@@ -1,4 +1,4 @@
-/* *	$OpenBSD: defs.h,v 1.11 2003/06/03 02:56:14 millert Exp $*/
+/* *	$OpenBSD: defs.h,v 1.12 2004/01/16 01:12:35 espie Exp $*/
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,13 +31,13 @@
  */
 
 #include <sys/param.h>
-#include <sys/dir.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 
 #include <netinet/in.h>
 
 #include <errno.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
