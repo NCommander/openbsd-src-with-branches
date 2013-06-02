@@ -1,4 +1,4 @@
-/*	$OpenBSD: _atomic_lock.c,v 1.3 2013/01/23 20:49:55 patrick Exp $	*/
+/*	$OpenBSD: _atomic_lock.c,v 1.4 2013/06/01 20:47:40 tedu Exp $	*/
 
 /*
  * Copyright (c) 2004 Dale Rahn. All rights reserved.
@@ -28,6 +28,7 @@
  * Atomic lock for arm
  */
 
+#include <sys/types.h>
 #include <machine/spinlock.h>
 
 int
