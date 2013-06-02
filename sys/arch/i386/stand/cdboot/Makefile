@@ -35,7 +35,7 @@ SRCS+=	cd9660.c ufs.c
 SRCS+=	aes_xts.c explicit_bzero.c hmac_sha1.c pbkdf2.c rijndael.c sha1.c
 
 .PATH:	${S}/lib/libkern/arch/i386
-SRCS+=	divdi3.c moddi3.c qdivrem.c udivdi3.c umoddi3.c
+SRCS+=	moddi3.c divdi3.c qdivrem.c
 
 .PATH:	${S}/lib/libkern
 SRCS+=	strlcpy.c
