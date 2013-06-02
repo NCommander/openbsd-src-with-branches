@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.174 2013/05/31 12:28:10 dtucker Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.175 2013/06/01 13:15:52 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -108,7 +108,7 @@ int max_fd = 0;
 
 /* pid of shell == parent of agent */
 pid_t parent_pid = -1;
-u_int parent_alive_interval = 0;
+time_t parent_alive_interval = 0;
 
 /* pathname and directory for AUTH_SOCKET */
 char socket_name[MAXPATHLEN];
