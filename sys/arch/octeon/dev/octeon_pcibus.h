@@ -1,4 +1,4 @@
-/*	$OpenBSD: octeon_pcibus.h,v 1.15 2009/10/26 18:00:06 miod Exp $	*/
+/*	$OpenBSD: octeon_pcibus.h,v 1.1 2010/10/28 22:52:10 syuu Exp $	*/
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB (www.opsycon.com).
@@ -30,7 +30,7 @@
 #ifndef ___OCTEON_PCIBUS_H__
 #define ___OCTEON_PCIBUS_H__
 
-#include "octeonreg.h"
+#include <machine/octeonreg.h>
 
 #define OCTEON_PCIBUS_PCIIO_BASE	0x11A0000000000ULL
 
