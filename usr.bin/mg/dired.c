@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.59 2013/05/30 17:43:43 lum Exp $	*/
+/*	$OpenBSD: dired.c,v 1.60 2013/06/02 09:53:42 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -650,7 +650,7 @@ refreshbuffer(struct buffer *bp)
 	tmp = strdup(bp->b_fname);
 	if (tmp == NULL) {
 		ewprintf("Out of memory");
-		return (FALSE);
+		return (NULL);
 	}
 
 	killbuffer(bp);
