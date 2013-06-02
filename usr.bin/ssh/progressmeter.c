@@ -1,4 +1,4 @@
-/* $OpenBSD: progressmeter.c,v 1.37 2006/08/03 03:34:42 deraadt Exp $ */
+/* $OpenBSD: progressmeter.c,v 1.38 2013/06/01 13:15:52 dtucker Exp $ */
 /*
  * Copyright (c) 2003 Nils Nordman.  All rights reserved.
  *
@@ -36,6 +36,7 @@
 
 #include "progressmeter.h"
 #include "atomicio.h"
+#include "misc.h"
 
 #define DEFAULT_WINSIZE 80
 #define MAX_WINSIZE 512
