@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.62 2011/04/15 15:16:57 chl Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.63 2011/05/17 18:06:13 ariane Exp $	*/
 /*	$NetBSD: pmap.c,v 1.3 2003/05/08 18:13:13 thorpej Exp $	*/
 
 /*
@@ -124,7 +124,6 @@
 #include <machine/lock.h>
 #include <machine/cpu.h>
 #include <machine/specialreg.h>
-#include <machine/gdt.h>
 
 #include <dev/isa/isareg.h>
 #include <machine/isa_machdep.h>

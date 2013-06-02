@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.12 2011/04/13 02:49:12 guenther Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.13 2013/05/05 19:25:57 tedu Exp $	*/
 /*	$NetBSD: sys_machdep.c,v 1.1 2003/04/26 18:39:32 fvdl Exp $	*/
 
 /*-
@@ -49,7 +49,6 @@
 
 #include <machine/cpu.h>
 #include <machine/cpufunc.h>
-#include <machine/gdt.h>
 #include <machine/psl.h>
 #include <machine/reg.h>
 #include <machine/sysarch.h>
