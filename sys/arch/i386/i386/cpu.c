@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.48 2012/11/02 15:10:28 jsg Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.49 2013/05/30 15:58:06 mlarkin Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -597,7 +597,7 @@ cpu_hatch(void *v)
 	if (mp_verbose)
 		printf("%s: CPU at apid %ld running\n",
 		    ci->ci_dev.dv_xname, ci->ci_cpuid);
-	microuptime(&ci->ci_schedstate.spc_runtime);
+	nanouptime(&ci->ci_schedstate.spc_runtime);
 	splx(s);
 
 	SCHED_LOCK(s);
