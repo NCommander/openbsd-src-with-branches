@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.60 2012/04/06 15:10:40 jsing Exp $	*/
+/*	$OpenBSD: conf.c,v 1.61 2012/08/23 06:12:49 deraadt Exp $	*/
 /*	$NetBSD: conf.c,v 1.40 1996/04/11 19:20:03 thorpej Exp $ */
 
 /*
@@ -124,6 +124,7 @@ int	nblkdev = nitems(bdevsw);
 #include "vscsi.h"
 #include "pppx.h"
 #include "hotplug.h"
+#include "fuse.h"
 
 struct cdevsw	cdevsw[] =
 {
@@ -214,7 +215,7 @@ struct cdevsw	cdevsw[] =
 	cdev_mouse_init(NWSKBD, wskbd),	/* 79: keyboards */
 	cdev_mouse_init(NWSMOUSE, wsmouse), /* 80: mice */
 	cdev_mouse_init(NWSMUX, wsmux),	/* 81: ws multiplexer */
-	cdev_notdef(),			/* 82 */
+	cdev_fuse_init(NFUSE, fuse),	/* 82: fuse */
 	cdev_notdef(),			/* 83 */
 	cdev_notdef(),			/* 84 */
 	cdev_notdef(),			/* 85 */

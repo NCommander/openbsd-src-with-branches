@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.23 2012/08/23 06:12:49 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.24 2013/03/15 09:10:52 ratchov Exp $	*/
 
 /*
  * Copyright (c) 1994-1998 Mark Brinicombe.
@@ -255,6 +255,7 @@ struct bdevsw bdevsw[] = {
 #include "scif.h"
 #include "vscsi.h"
 #include "pppx.h"
+#include "fuse.h"
 
 struct cdevsw cdevsw[] = {
 	cdev_cn_init(1,cn),			/*  0: virtual console */
@@ -364,6 +365,7 @@ struct cdevsw cdevsw[] = {
 	cdev_bthub_init(NBTHUB,bthub),		/* 100: bthub */
 	cdev_disk_init(1,diskmap),		/* 101: disk mapper */
 	cdev_pppx_init(NPPPX,pppx),		/* 102: pppx */
+	cdev_fuse_init(NFUSE,fuse),		/* 103: fuse */
 };
 
 int nblkdev = nitems(bdevsw);
