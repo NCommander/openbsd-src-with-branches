@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.14 2013/05/04 09:26:24 jsg Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.15 2013/06/01 20:13:04 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -254,6 +254,9 @@ main(int argc, char *argv[])
 	event_set(&iev_lde->ev, iev_lde->ibuf.fd, iev_lde->events,
 	    iev_lde->handler, iev_lde);
 	event_add(&iev_lde->ev, NULL);
+
+	/* notify ldpe about existing interfaces and addresses */
+	kif_redistribute();
 
 	if (kr_init(!(ldpd_conf->flags & LDPD_FLAG_NO_FIB_UPDATE)) == -1)
 		fatalx("kr_init failed");
