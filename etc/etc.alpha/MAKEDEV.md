@@ -1,6 +1,6 @@
 define(MACHINE,alpha)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.55 2012/08/23 06:15:28 deraadt Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.56 2013/03/15 09:10:52 ratchov Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -69,6 +69,7 @@ _DEV(bthub, 62)
 _DEV(cry, 57)
 _DEV(diskmap, 63)
 _DEV(fdesc, 10)
+_DEV(fuse, 67)
 _DEV(hotplug, 56)
 _DEV(iop, 54)
 _DEV(lkm, 16)
