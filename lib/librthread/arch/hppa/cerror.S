@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.5 2011/04/04 12:42:39 guenther Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.1 2011/11/08 15:56:52 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2011 Mark Kettenis
@@ -18,7 +18,7 @@
 
 #include "SYS.h"
 
-#define ERRNOPTR_OFFSET	16
+#define ERRNOPTR_OFFSET	32
 
 ENTRY(__cerror,0)
 	mfctl	cr27, r1
