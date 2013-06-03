@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: mount_tmpfs.h,v 1.1 2008/08/05 20:57:45 pooka Exp $	*/
 
 /*

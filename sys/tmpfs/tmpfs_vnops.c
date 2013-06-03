@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: tmpfs_vnops.c,v 1.100 2012/11/05 17:27:39 dholland Exp $	*/
 
 /*

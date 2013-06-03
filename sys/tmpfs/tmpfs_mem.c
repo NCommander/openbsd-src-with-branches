@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: tmpfs_mem.c,v 1.4 2011/05/24 01:09:47 rmind Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: tmpfs_specops.c,v 1.10 2011/05/24 20:17:49 rmind Exp $	*/
 
 /*

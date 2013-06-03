@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: tmpfs.h,v 1.45 2011/09/27 01:10:43 christos Exp $	*/
 
 /*
