@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axe.c,v 1.118 2013/04/15 09:23:01 mglocker Exp $	*/
+/*	$OpenBSD: if_axe.c,v 1.119 2013/05/31 15:20:49 yuo Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Jonathan Gray <jsg@openbsd.org>
@@ -360,11 +360,6 @@ axe_miibus_statchg(struct device *dev)
 	struct mii_data		*mii = GET_MII(sc);
 	struct ifnet		*ifp;
 	int			val, err;
-
-	if ((mii->mii_media_active & IFM_GMASK) == IFM_FDX)
-		val = AXE_MEDIA_FULL_DUPLEX;
-	else
-		val = 0;
 
 	ifp = GET_IFP(sc);
 	if (mii == NULL || ifp == NULL ||
