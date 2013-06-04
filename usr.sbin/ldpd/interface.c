@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.17 2013/06/04 02:25:28 claudio Exp $ */
+/*	$OpenBSD: interface.c,v 1.18 2013/06/04 02:28:27 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -224,6 +224,8 @@ void
 if_start_hello_timer(struct iface *iface)
 {
 	struct timeval tv;
+
+	send_hello(HELLO_LINK, iface, NULL);
 
 	timerclear(&tv);
 	tv.tv_sec = iface->hello_interval;
