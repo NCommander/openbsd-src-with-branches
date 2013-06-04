@@ -210,12 +210,12 @@ header(void)
 	if (ISSET(todo, SHOW_STATS_1))
 	for (i = 0; i < dk_ndrive; i++)
 		if (cur.dk_select[i])
-			(void)printf(" %14.14s ", cur.dk_name[i]);
+			(void)printf(" %16.16s ", cur.dk_name[i]);
 
 	if (ISSET(todo, SHOW_STATS_2))
 	for (i = 0; i < dk_ndrive; i++)
 		if (cur.dk_select[i])
-			(void)printf(" %13.13s ", cur.dk_name[i]);
+			(void)printf(" %16.16s ", cur.dk_name[i]);
 
 	if (ISSET(todo, SHOW_CPU))
 		(void)printf("            cpu");
