@@ -1,4 +1,4 @@
-/*	$OpenBSD: spinlock.h,v 1.3 2008/06/26 05:42:13 ray Exp $	*/
+/*	$OpenBSD: spinlock.h,v 1.4 2013/06/01 20:47:40 tedu Exp $	*/
 /*	$NetBSD: lock.h,v 1.10 2006/01/03 01:29:46 uwe Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 #ifndef _SH_SPINLOCK_H_
 #define	_SH_SPINLOCK_H_
 
-typedef u_int8_t _atomic_lock_t;
+typedef unsigned char _atomic_lock_t;
 
 #ifndef _KERNEL
 int _atomic_lock(volatile _atomic_lock_t *);
