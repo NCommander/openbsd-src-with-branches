@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.60 2013/03/28 00:32:11 bluhm Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.61 2013/03/28 16:45:16 tedu Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -50,6 +50,7 @@
 #include <sys/sockio.h>
 #include <sys/kernel.h>
 #include <sys/systm.h>
+#include <sys/timeout.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
