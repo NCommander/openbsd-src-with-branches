@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.149 2013/06/03 22:35:15 guenther Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.150 2013/06/05 00:53:26 tedu Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -495,11 +495,14 @@ fork1(struct proc *curp, int exitsig, int flags, void *stack, pid_t *tidptr,
 	/*
 	 * Make child runnable and add to run queue.
 	 */
-	SCHED_LOCK(s);
-	p->p_stat = SRUN;
-	p->p_cpu = sched_choosecpu_fork(curp, flags);
-	setrunqueue(p);
-	SCHED_UNLOCK(s);
+	if ((flags & FORK_IDLE) == 0) {
+		SCHED_LOCK(s);
+		p->p_stat = SRUN;
+		p->p_cpu = sched_choosecpu_fork(curp, flags);
+		setrunqueue(p);
+		SCHED_UNLOCK(s);
+	} else
+		p->p_cpu = arg;
 
 	if (newptstat)
 		free(newptstat, M_SUBPROC);
