@@ -1,4 +1,4 @@
-/* $OpenBSD: drm.h,v 1.9 2013/03/22 05:19:21 jsg Exp $ */
+/* $OpenBSD: drm.h,v 1.10 2013/06/01 11:21:36 matthieu Exp $ */
 /**
  * \file drm.h
  * Header for the Direct Rendering Manager
@@ -175,6 +175,7 @@ enum drm_map_type {
 	_DRM_AGP = 3,		  /**< AGP/GART */
 	_DRM_SCATTER_GATHER = 4,  /**< Scatter/gather memory for PCI DMA */
 	_DRM_CONSISTENT = 5,	  /**< Consistent memory for PCI DMA */
+	_DRM_GEM = 6,		  /**< GEM object */
 };
 
 /**
