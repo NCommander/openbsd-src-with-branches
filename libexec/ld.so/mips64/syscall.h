@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.h,v 1.9 2013/04/05 12:58:03 kurt Exp $ */
+/*	$OpenBSD: syscall.h,v 1.10 2013/06/01 09:57:58 miod Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
@@ -297,8 +297,8 @@ _dl_sigprocmask(int how, const sigset_t *set, sigset_t *oset)
 }
 
 static inline int
-_dl_sysctl(int *name, u_int namelen, void *oldp, size_t *oldplen, void *newp,
-    size_t newlen)
+_dl_sysctl(const int *name, u_int namelen, void *oldp, size_t *oldplen,
+    void *newp, size_t newlen)
 {
 	register int status __asm__ ("$2");
 
