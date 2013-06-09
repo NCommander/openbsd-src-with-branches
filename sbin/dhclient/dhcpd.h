@@ -343,4 +343,4 @@ void add_address(char *, int, struct in_addr, struct in_addr);
 
 void flush_routes(char *, int);
 
-void add_route(int, struct in_addr, struct in_addr, struct in_addr, int);
+void add_default_route(int, struct in_addr, struct in_addr);
