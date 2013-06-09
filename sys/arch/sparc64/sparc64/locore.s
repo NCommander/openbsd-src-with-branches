@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.169 2013/02/05 09:33:29 mpi Exp $	*/
+/*	$OpenBSD: locore.s,v 1.170 2013/05/12 18:48:53 kettenis Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -8548,6 +8548,13 @@ Lkcerr:
 	 mov	EFAULT, %o0
 	NOTREACHED
 
+ENTRY(memmove) /* dest, src, size */
+	/*
+	 * Swap args and continue to ovbcopy.
+	 */
+	mov	%o0, %o3
+	mov	%o1, %o0
+	mov	%o3, %o1
 /*
  * ovbcopy(src, dst, len): like bcopy, but regions may overlap.
  */
