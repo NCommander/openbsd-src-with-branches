@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.48 2007/09/05 19:02:01 otto Exp $	*/
+/*	$OpenBSD: exec.c,v 1.49 2009/01/29 23:27:26 jaredy Exp $	*/
 
 /*
  * execute command tree
@@ -228,10 +228,12 @@ execute(struct op *volatile t,
 	case TAND:
 		rv = execute(t->left, XERROK, xerrok);
 		if ((rv == 0) == (t->type == TAND))
-			rv = execute(t->right, XERROK, xerrok);
-		flags |= XERROK;
-		if (xerrok)
-			*xerrok = 1;
+			rv = execute(t->right, flags & XERROK, xerrok);
+		else {
+			flags |= XERROK;
+			if (xerrok)
+				*xerrok = 1;
+		}
 		break;
 
 	case TBANG:
