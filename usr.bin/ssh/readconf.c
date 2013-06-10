@@ -814,8 +814,6 @@ parse_int:
 			else if (opcode == oRemoteForward)
 				add_remote_forward(options, &fwd);
 		}
-		free(fwd.connect_host);
-		free(fwd.listen_host);
 		break;
 
 	case oClearAllForwardings:
