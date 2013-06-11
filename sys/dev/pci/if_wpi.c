@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpi.c,v 1.109 2010/09/07 16:21:45 deraadt Exp $	*/
+/*	$OpenBSD: if_wpi.c,v 1.110 2011/06/02 18:36:53 mk Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -1155,7 +1155,7 @@ wpi_ccmp_decap(struct wpi_softc *sc, struct mbuf *m, struct ieee80211_key *k)
 
 	/* Clear Protected bit and strip IV. */
 	wh->i_fc[1] &= ~IEEE80211_FC1_PROTECTED;
-	ovbcopy(wh, mtod(m, caddr_t) + IEEE80211_CCMP_HDRLEN, hdrlen);
+	memmove(mtod(m, caddr_t) + IEEE80211_CCMP_HDRLEN, wh, hdrlen);
 	m_adj(m, IEEE80211_CCMP_HDRLEN);
 	/* Strip MIC. */
 	m_adj(m, -IEEE80211_CCMP_MICLEN);

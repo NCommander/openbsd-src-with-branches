@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5008.c,v 1.20 2011/06/19 00:27:34 matthew Exp $	*/
+/*	$OpenBSD: ar5008.c,v 1.21 2012/08/25 12:14:31 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -907,7 +907,7 @@ ar5008_rx_process(struct athn_softc *sc)
 	if (!(wh->i_fc[0] & IEEE80211_FC0_TYPE_CTL)) {
 		u_int hdrlen = ieee80211_get_hdrlen(wh);
 		if (hdrlen & 3) {
-			ovbcopy(wh, (caddr_t)wh + 2, hdrlen);
+			memmove((caddr_t)wh + 2, wh, hdrlen);
 			m_adj(m, 2);
 		}
 	}

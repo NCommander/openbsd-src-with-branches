@@ -1,4 +1,4 @@
-/*	$OpenBSD: frag6.c,v 1.45 2013/03/22 01:41:12 tedu Exp $	*/
+/*	$OpenBSD: frag6.c,v 1.46 2013/05/31 15:04:23 bluhm Exp $	*/
 /*	$KAME: frag6.c,v 1.40 2002/05/27 21:40:31 itojun Exp $	*/
 
 /*
@@ -572,8 +572,8 @@ frag6_deletefraghdr(struct mbuf *m, int offset)
 	struct mbuf *t;
 
 	if (m->m_len >= offset + sizeof(struct ip6_frag)) {
-		ovbcopy(mtod(m, caddr_t), mtod(m, caddr_t) +
-		    sizeof(struct ip6_frag), offset);
+		memmove(mtod(m, caddr_t) + sizeof(struct ip6_frag),
+		    mtod(m, caddr_t), offset);
 		m->m_data += sizeof(struct ip6_frag);
 		m->m_len -= sizeof(struct ip6_frag);
 	} else {

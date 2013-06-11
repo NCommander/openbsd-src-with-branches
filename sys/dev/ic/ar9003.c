@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9003.c,v 1.24 2012/10/04 11:36:27 haesbaert Exp $	*/
+/*	$OpenBSD: ar9003.c,v 1.25 2012/10/20 09:53:32 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1024,7 +1024,7 @@ ar9003_rx_process(struct athn_softc *sc, int qid)
 	if (!(wh->i_fc[0] & IEEE80211_FC0_TYPE_CTL)) {
 		u_int hdrlen = ieee80211_get_hdrlen(wh);
 		if (hdrlen & 3) {
-			ovbcopy(wh, (caddr_t)wh + 2, hdrlen);
+			memmove((caddr_t)wh + 2, wh, hdrlen);
 			m_adj(m, 2);
 		}
 	}

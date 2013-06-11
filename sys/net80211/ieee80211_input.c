@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_input.c,v 1.121 2012/07/16 14:51:31 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_input.c,v 1.122 2012/10/12 19:53:24 haesbaert Exp $	*/
 
 /*-
  * Copyright (c) 2001 Atsushi Onoe
@@ -1047,7 +1047,7 @@ ieee80211_amsdu_decap(struct ieee80211com *ic, struct mbuf *m,
 			/* convert to Ethernet II header */
 			eh->ether_type = llc->llc_snap.ether_type;
 			/* strip LLC+SNAP headers */
-			ovbcopy(eh, (u_int8_t *)eh + LLC_SNAPFRAMELEN,
+			memmove((u_int8_t *)eh + LLC_SNAPFRAMELEN, eh,
 			    ETHER_HDR_LEN);
 			m_adj(m, LLC_SNAPFRAMELEN);
 			len -= LLC_SNAPFRAMELEN;
