@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*	$NetBSD: sitara_cmreg.h,v 1.1 2013/04/17 15:04:39 bouyer Exp $	*/
 
 /*
