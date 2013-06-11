@@ -1,4 +1,4 @@
-/*	$OpenBSD: spec_vnops.c,v 1.71 2013/03/28 03:29:44 guenther Exp $	*/
+/*	$OpenBSD: spec_vnops.c,v 1.72 2013/06/11 16:42:16 deraadt Exp $	*/
 /*	$NetBSD: spec_vnops.c,v 1.29 1996/04/22 01:42:38 christos Exp $	*/
 
 /*
@@ -457,7 +457,9 @@ spec_strategy(void *v)
 	struct vop_strategy_args *ap = v;
 	struct buf *bp = ap->a_bp;
 	int maj = major(bp->b_dev);
-	
+
+	if (!ISSET(bp->b_flags, B_DMA) && ISSET(bp->b_flags, B_BC))
+		panic("bogus buf %p passed to spec_strategy", bp);
 	if (LIST_FIRST(&bp->b_dep) != NULL)
 		buf_start(bp);
 
