@@ -1,4 +1,4 @@
-/*	$OpenBSD: specdev.h,v 1.30 2011/07/04 20:35:35 deraadt Exp $	*/
+/*	$OpenBSD: specdev.h,v 1.31 2011/07/05 05:37:07 deraadt Exp $	*/
 /*	$NetBSD: specdev.h,v 1.12 1996/02/13 13:13:01 mycroft Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ struct specinfo {
 	struct  mount *si_mountpoint;
 	dev_t	si_rdev;
 	struct	lockf *si_lockf;
-	daddr64_t si_lastr;
+	daddr_t si_lastr;
 	union {
 		struct vnode *ci_parent; /* pointer back to parent device */
 		u_int8_t ci_bitmap[8]; /* bitmap of devices cloned off us */

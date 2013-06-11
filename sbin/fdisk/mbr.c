@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbr.c,v 1.28 2012/04/04 13:14:44 krw Exp $	*/
+/*	$OpenBSD: mbr.c,v 1.29 2013/03/21 18:45:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -47,7 +47,7 @@
 void
 MBR_init(disk_t *disk, mbr_t *mbr)
 {
-	daddr64_t i;
+	daddr_t i;
 	int adj;
 
 	/* Fix up given mbr for this disk */

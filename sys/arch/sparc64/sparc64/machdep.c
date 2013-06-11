@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.145 2013/01/22 23:56:31 dlg Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.146 2013/02/15 22:58:17 kettenis Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -755,8 +755,8 @@ void
 dumpsys()
 {
 	int psize;
-	daddr64_t blkno;
-	int (*dump)(dev_t, daddr64_t, caddr_t, size_t);
+	daddr_t blkno;
+	int (*dump)(dev_t, daddr_t, caddr_t, size_t);
 	int error = 0;
 	struct mem_region *mp;
 	extern struct mem_region *mem;

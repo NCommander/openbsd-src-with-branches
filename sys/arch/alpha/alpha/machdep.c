@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.139 2012/11/01 21:09:17 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.140 2012/12/02 07:03:30 guenther Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -1112,7 +1112,7 @@ cpu_dump_mempagecnt()
 int
 cpu_dump()
 {
-	int (*dump)(dev_t, daddr64_t, caddr_t, size_t);
+	int (*dump)(dev_t, daddr_t, caddr_t, size_t);
 	char buf[dbtob(1)];
 	kcore_seg_t *segp;
 	cpu_kcore_hdr_t *cpuhdrp;
@@ -1196,8 +1196,8 @@ dumpsys()
 	u_long totalbytesleft, bytes, i, n, memcl;
 	u_long maddr;
 	int psize;
-	daddr64_t blkno;
-	int (*dump)(dev_t, daddr64_t, caddr_t, size_t);
+	daddr_t blkno;
+	int (*dump)(dev_t, daddr_t, caddr_t, size_t);
 	int error;
 	extern int msgbufmapped;
 

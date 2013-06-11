@@ -1,4 +1,4 @@
-/*	$OpenBSD: mt.c,v 1.24 2010/07/10 03:06:51 matthew Exp $	*/
+/*	$OpenBSD: mt.c,v 1.25 2010/09/22 01:18:57 matthew Exp $	*/
 /*	$NetBSD: mt.c,v 1.8 1997/03/31 07:37:29 scottr Exp $	*/
 
 /*
@@ -973,7 +973,7 @@ mtioctl(dev, cmd, data, flag, p)
 int
 mtdump(dev, blkno, va, size)
 	dev_t dev;
-	daddr64_t blkno;
+	daddr_t blkno;
 	caddr_t va;
 	size_t size;
 {

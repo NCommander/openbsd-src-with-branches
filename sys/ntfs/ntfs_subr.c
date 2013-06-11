@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_subr.c,v 1.30 2013/01/18 05:09:21 jsing Exp $	*/
+/*	$OpenBSD: ntfs_subr.c,v 1.31 2013/05/30 20:11:06 guenther Exp $	*/
 /*	$NetBSD: ntfs_subr.c,v 1.4 2003/04/10 21:37:32 jdolecek Exp $	*/
 
 /*-
@@ -261,7 +261,7 @@ ntfs_loadntnode(struct ntfsmount *ntmp, struct ntnode *ip)
 	struct ntvattr	*vap;
 	struct filerec	*mfrp;
 	struct attr	*ap;
-	daddr64_t	bn;
+	daddr_t		bn;
  	int		error,off;
  
  	dprintf(("ntfs_loadntnode: loading ino: %d\n",ip->i_number));
