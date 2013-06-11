@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_athn_usb.c,v 1.15 2013/04/12 12:58:39 mpi Exp $	*/
+/*	$OpenBSD: if_athn_usb.c,v 1.16 2013/04/15 09:23:01 mglocker Exp $	*/
 
 /*-
  * Copyright (c) 2011 Damien Bergamini <damien.bergamini@free.fr>
@@ -1708,7 +1708,7 @@ athn_usb_rx_frame(struct athn_usb_softc *usc, struct mbuf *m)
 	if (!(wh->i_fc[0] & IEEE80211_FC0_TYPE_CTL)) {
 		u_int hdrlen = ieee80211_get_hdrlen(wh);
 		if (hdrlen & 3) {
-			ovbcopy(wh, (caddr_t)wh + 2, hdrlen);
+			memmove((caddr_t)wh + 2, wh, hdrlen);
 			m_adj(m, 2);
 		}
 	}
