@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.39 2013/03/25 17:46:24 deraadt Exp $ */
+/*	$OpenBSD: param.h,v 1.40 2013/03/26 05:04:10 deraadt Exp $ */
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -78,8 +78,6 @@
 /* MD conversion macros */
 #define	vax_atop(x)	(((unsigned)(x) + VAX_PGOFSET) >> VAX_PGSHIFT)
 #define	vax_btop(x)	(((unsigned)(x)) >> VAX_PGSHIFT)
-
-#define	ovbcopy(x,y,z)	bcopy(x, y, z)
 
 #include <machine/intr.h>
 
