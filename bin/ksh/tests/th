@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#	$OpenBSD: th,v 1.12 2005/05/28 04:53:47 millert Exp $
+#	$OpenBSD: th,v 1.13 2006/05/18 21:27:23 miod Exp $
 
 
 #
@@ -295,7 +295,7 @@ if ($tot_failed || $tot_passed) {
     print "\n";
 }
 
-&cleanup_exit('ok');
+&cleanup_exit($nxfailed ? '' : 'ok');
 
 sub
 cleanup_exit
