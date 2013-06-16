@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.22 2013/05/17 22:40:01 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.23 2013/05/17 22:51:59 miod Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -88,6 +88,8 @@
 #define IPL_ABORT	7
 
 #define	NIPLS		8
+
+#define	IPL_MPSAFE	0	/* no "mpsafe" interrupts */
 
 #if defined(_KERNEL) && !defined(_LOCORE)
 
