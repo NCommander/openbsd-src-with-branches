@@ -1,0 +1,24 @@
+#$OpenBSD$
+
+.include <bsd.own.mk>
+
+LIB=	heimipcs
+
+SRCS=	\
+	server.c \
+	common.c
+
+.if !defined(NOPIC)
+CFLAGS+=	-DPIC ${PICFLAG}
+.endif
+
+CFLAGS+=	-I${KRB5DIR}/lib/roken \
+		-I${KRB5DIR}/base \
+		-I${KRB5DIR}/lib/ipc -I.
+
+# skip installation
+install:
+
+.include <bsd.lib.mk>
+
+.PATH: ${KRB5DIR}/lib/ipc
