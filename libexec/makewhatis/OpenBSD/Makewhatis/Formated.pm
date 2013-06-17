@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Formated.pm,v 1.5 2010/07/09 08:12:49 espie Exp $
+# $OpenBSD: Formated.pm,v 1.7 2013/01/29 11:08:56 espie Exp $
 # Copyright (c) 2000-2004 Marc Espie <espie@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
@@ -117,7 +117,7 @@ sub handle
 		    s/^\s*//;
 		}
 		# more troff hyphenation
-		if (defined $subject and $subject =~ m/\S(?:\-\cH)*\-$/) {
+		if (defined $subject and $subject =~ m/[^\s-](?:\-\cH)*\-$/) {
 		    $subject =~ s/(?:\-\cH)*\-$//;
 		    s/^\s*//;
 		}
