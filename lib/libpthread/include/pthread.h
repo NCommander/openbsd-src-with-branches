@@ -1,4 +1,4 @@
-/*	$OpenBSD: pthread.h,v 1.38 2012/11/05 08:58:39 landry Exp $	*/
+/*	$OpenBSD: pthread.h,v 1.39 2012/12/05 23:20:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 by Chris Provenzano, proven@mit.edu
@@ -309,6 +309,10 @@ int		pthread_spin_destroy(pthread_spinlock_t *);
 int		pthread_spin_trylock(pthread_spinlock_t *);
 int		pthread_spin_lock(pthread_spinlock_t *);
 int		pthread_spin_unlock(pthread_spinlock_t *);
+
+#if __POSIX_VISIBLE >= 200112
+int		pthread_getcpuclockid(pthread_t, clockid_t *);
+#endif
 __END_DECLS
 
 #endif /* _PTHREAD_H_ */

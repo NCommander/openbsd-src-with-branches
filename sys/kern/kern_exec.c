@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.133 2013/03/28 16:55:25 deraadt Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.134 2013/03/30 06:32:25 tedu Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -608,6 +608,10 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 		}
 		splx(s);
 	}
+
+	/* reset CPU time usage for the thread, but not the process */
+	timespecclear(&p->p_tu.tu_runtime);
+	p->p_tu.tu_uticks = p->p_tu.tu_sticks = p->p_tu.tu_iticks = 0;
 
 	uvm_km_free_wakeup(exec_map, (vaddr_t) argp, NCARGS);
 
