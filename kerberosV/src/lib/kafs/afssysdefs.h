@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2003 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: afssysdefs.h,v 1.24 2000/11/17 01:07:47 assar Exp $ */
+/* $Id$ */
 
 /*
  * This section is for machines using single entry point AFS syscalls!
@@ -82,7 +82,25 @@
 #define AFS_SYSCALL	31
 #endif
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__)
+#if __FreeBSD_version >= 500000
+#define AFS_SYSCALL 339
+#else
+#define AFS_SYSCALL 210
+#endif
+#endif /* __FreeBSD__ */
+
+#ifdef __DragonFly__
+#ifndef AFS_SYSCALL
+#define AFS_SYSCALL 339
+#endif
+#endif
+
+#ifdef __OpenBSD__
+#define AFS_SYSCALL 208
+#endif
+
+#if defined(__NetBSD__)
 #define AFS_SYSCALL 210
 #endif
 

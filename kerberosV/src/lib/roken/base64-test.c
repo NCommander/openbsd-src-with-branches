@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1999 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1999 - 2001 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,12 +31,9 @@
  * SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: base64-test.c,v 1.2 2001/05/29 13:12:21 assar Exp $");
-#endif
 
-#include <roken.h>
+#include "roken.h"
 #include <base64.h>
 
 int
@@ -63,7 +60,7 @@ main(int argc, char **argv)
 	int len;
 	len = base64_encode(t->data, t->len, &str);
 	if(strcmp(str, t->result) != 0) {
-	    fprintf(stderr, "failed test %d: %s != %s\n", numtest, 
+	    fprintf(stderr, "failed test %d: %s != %s\n", numtest,
 		    str, t->result);
 	    numerr++;
 	}
@@ -71,8 +68,8 @@ main(int argc, char **argv)
 	str = strdup(t->result);
 	len = base64_decode(t->result, str);
 	if(len != t->len) {
-	    fprintf(stderr, "failed test %d: len %d != %d\n", numtest,
-		    len, t->len);
+	    fprintf(stderr, "failed test %d: len %lu != %lu\n", numtest,
+		    (unsigned long)len, (unsigned long)t->len);
 	    numerr++;
 	} else if(memcmp(str, t->data, t->len) != 0) {
 	    fprintf(stderr, "failed test %d: data\n", numtest);
@@ -85,12 +82,12 @@ main(int argc, char **argv)
     {
 	char str[32];
 	if(base64_decode("M=M=", str) != -1) {
-	    fprintf(stderr, "failed test %d: successful decode of `M=M='\n", 
+	    fprintf(stderr, "failed test %d: successful decode of `M=M='\n",
 		    numtest++);
 	    numerr++;
 	}
 	if(base64_decode("MQ===", str) != -1) {
-	    fprintf(stderr, "failed test %d: successful decode of `MQ==='\n", 
+	    fprintf(stderr, "failed test %d: successful decode of `MQ==='\n",
 		    numtest++);
 	    numerr++;
 	}

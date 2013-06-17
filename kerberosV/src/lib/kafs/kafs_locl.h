@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995, 1996, 1997, 1998, 1999 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: kafs_locl.h,v 1.15 1999/12/02 16:58:40 joda Exp $ */
+/* $Id$ */
 
 #ifndef __KAFS_LOCL_H__
 #define __KAFS_LOCL_H__
@@ -58,6 +58,9 @@
 #endif
 #ifdef HAVE_SYS_FILIO_H
 #include <sys/filio.h>
+#endif
+#ifdef HAVE_SYS_SYSCTL_H
+#include <sys/sysctl.h>
 #endif
 
 #ifdef HAVE_SYS_SYSCALL_H
@@ -91,9 +94,11 @@
 #ifdef KRB5
 #include <krb5.h>
 #endif
-#ifdef KRB4
-#include <krb.h>
-#endif
+#ifdef KRB5
+#include "crypto-headers.h"
+#include <krb5-v4compat.h>
+typedef struct credentials CREDENTIALS;
+#endif /* KRB5 */
 #include <kafs.h>
 
 #include <resolve.h>
@@ -101,31 +106,49 @@
 #include "afssysdefs.h"
 
 struct kafs_data;
+struct kafs_token;
 typedef int (*afslog_uid_func_t)(struct kafs_data *,
-				 const char *cell,
-				 const char *realm_hint,
+				 const char *,
+				 const char *,
 				 uid_t,
-				 const char *homedir);
+				 const char *);
 
-typedef int (*get_cred_func_t)(struct kafs_data*, const char*, const char*, 
-				    const char*, CREDENTIALS*);
+typedef int (*get_cred_func_t)(struct kafs_data*, const char*, const char*,
+			       const char*, uid_t, struct kafs_token *);
 
 typedef char* (*get_realm_func_t)(struct kafs_data*, const char*);
 
-typedef struct kafs_data {
+struct kafs_data {
+    const char *name;
     afslog_uid_func_t afslog_uid;
     get_cred_func_t get_cred;
     get_realm_func_t get_realm;
+    const char *(*get_error)(struct kafs_data *, int);
+    void (*free_error)(struct kafs_data *, const char *);
     void *data;
-} kafs_data;
+};
 
-int _kafs_afslog_all_local_cells(kafs_data*, uid_t, const char*);
+struct kafs_token {
+    struct ClearToken ct;
+    void *ticket;
+    size_t ticket_len;
+};
 
-int _kafs_get_cred(kafs_data*, const char*, const char*, const char *, 
-		  CREDENTIALS*);
+void _kafs_foldup(char *, const char *);
+
+int _kafs_afslog_all_local_cells(struct kafs_data*, uid_t, const char*);
+
+int _kafs_get_cred(struct kafs_data*, const char*, const char*, const char *,
+		   uid_t, struct kafs_token *);
 
 int
-_kafs_realm_of_cell(kafs_data *data, const char *cell, char **realm);
+_kafs_realm_of_cell(struct kafs_data *, const char *, char **);
+
+int
+_kafs_v4_to_kt(CREDENTIALS *, uid_t, struct kafs_token *);
+
+void
+_kafs_fixup_viceid(struct ClearToken *, uid_t);
 
 #ifdef _AIX
 int aix_pioctl(char*, int, struct ViceIoctl*, int);

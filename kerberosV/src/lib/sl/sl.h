@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2004 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: sl.h,v 1.9 2001/01/26 14:58:41 joda Exp $ */
+/* $Id$ */
 
 #ifndef _SL_H
 #define _SL_H
@@ -41,13 +41,17 @@
 typedef int (*cmd_func)(int, char **);
 
 struct sl_cmd {
-  char *name;
+  const char *name;
   cmd_func func;
-  char *usage;
-  char *help;
+  const char *usage;
+  const char *help;
 };
 
 typedef struct sl_cmd SL_cmd;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void sl_help (SL_cmd *, int argc, char **argv);
 int  sl_loop (SL_cmd *, const char *prompt);
@@ -55,6 +59,11 @@ int  sl_command_loop (SL_cmd *cmds, const char *prompt, void **data);
 int  sl_command (SL_cmd *cmds, int argc, char **argv);
 int sl_make_argv(char*, int*, char***);
 void sl_apropos (SL_cmd *cmd, const char *topic);
+SL_cmd *sl_match (SL_cmd *cmds, char *cmd, int exactp);
+void sl_slc_help (SL_cmd *cmds, int argc, char **argv);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _SL_H */

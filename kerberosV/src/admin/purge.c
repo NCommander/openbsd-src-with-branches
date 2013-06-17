@@ -1,39 +1,39 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
- * (Royal Institute of Technology, Stockholm, Sweden). 
- * All rights reserved. 
+ * Copyright (c) 1997-2004 Kungliga Tekniska HÃ¶gskolan
+ * (Royal Institute of Technology, Stockholm, Sweden).
+ * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions 
- * are met: 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * 1. Redistributions of source code must retain the above copyright 
- *    notice, this list of conditions and the following disclaimer. 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright 
- *    notice, this list of conditions and the following disclaimer in the 
- *    documentation and/or other materials provided with the distribution. 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors 
- *    may be used to endorse or promote products derived from this software 
- *    without specific prior written permission. 
+ * 3. Neither the name of the Institute nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE 
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS 
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY 
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
- * SUCH DAMAGE. 
+ * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
 #include "ktutil_locl.h"
 
-RCSID("$KTH: purge.c,v 1.3 2000/06/29 08:31:47 joda Exp $");
+RCSID("$Id$");
 
 /*
  * keep track of the highest version for every principal.
@@ -42,6 +42,7 @@ RCSID("$KTH: purge.c,v 1.3 2000/06/29 08:31:47 joda Exp $");
 struct e {
     krb5_principal principal;
     int max_vno;
+    time_t timestamp;
     struct e *next;
 };
 
@@ -57,14 +58,17 @@ get_entry (krb5_principal princ, struct e *head)
 }
 
 static void
-add_entry (krb5_principal princ, int vno, struct e **head)
+add_entry (krb5_principal princ, int vno, time_t timestamp, struct e **head)
 {
     krb5_error_code ret;
     struct e *e;
 
     e = get_entry (princ, *head);
     if (e != NULL) {
-	e->max_vno = max (e->max_vno, vno);
+	if(e->max_vno < vno) {
+	    e->max_vno = vno;
+	    e->timestamp = timestamp;
+	}
 	return;
     }
     e = malloc (sizeof (*e));
@@ -74,6 +78,7 @@ add_entry (krb5_principal princ, int vno, struct e **head)
     if (ret)
 	krb5_err (context, 1, ret, "krb5_copy_principal");
     e->max_vno = vno;
+    e->timestamp = timestamp;
     e->next    = *head;
     *head      = e;
 }
@@ -95,63 +100,46 @@ delete_list (struct e *head)
  */
 
 int
-kt_purge(int argc, char **argv)
+kt_purge(struct purge_options *opt, int argc, char **argv)
 {
-    krb5_error_code ret;
+    krb5_error_code ret = 0;
     krb5_kt_cursor cursor;
+    krb5_keytab keytab;
     krb5_keytab_entry entry;
-    int help_flag = 0;
-    char *age_str = "1 week";
     int age;
-    struct getargs args[] = {
-	{ "age",   0,  arg_string, NULL, "age to retire" },
-	{ "help", 'h', arg_flag, NULL }
-    };
-    int num_args = sizeof(args) / sizeof(args[0]);
-    int optind = 0;
-    int i = 0;
     struct e *head = NULL;
     time_t judgement_day;
 
-    args[i++].value = &age_str;
-    args[i++].value = &help_flag;
-
-    if(getarg(args, num_args, argc, argv, &optind)) {
-	arg_printusage(args, num_args, "ktutil remove", "");
-	return 0;
-    }
-    if(help_flag) {
-	arg_printusage(args, num_args, "ktutil remove", "");
-	return 0;
-    }
-
-    age = parse_time(age_str, "s");
+    age = parse_time(opt->age_string, "s");
     if(age < 0) {
-	krb5_warnx(context, "unparasable time `%s'", age_str);
-	return 0;
-    }
-
-    ret = krb5_kt_start_seq_get(context, keytab, &cursor);
-    if(ret){
-	krb5_warn(context, ret, "krb5_kt_start_seq_get %s", keytab_string);
+	krb5_warnx(context, "unparasable time `%s'", opt->age_string);
 	return 1;
     }
 
-    while((ret = krb5_kt_next_entry(context, keytab, &entry, &cursor)) == 0) {
-	add_entry (entry.principal, entry.vno, &head);
+    if((keytab = ktutil_open_keytab()) == NULL)
+	return 1;
+
+    ret = krb5_kt_start_seq_get(context, keytab, &cursor);
+    if(ret){
+	krb5_warn(context, ret, "%s", keytab_string);
+	goto out;
+    }
+
+    while(krb5_kt_next_entry(context, keytab, &entry, &cursor) == 0) {
+	add_entry (entry.principal, entry.vno, entry.timestamp, &head);
 	krb5_kt_free_entry(context, &entry);
     }
-    ret = krb5_kt_end_seq_get(context, keytab, &cursor);
+    krb5_kt_end_seq_get(context, keytab, &cursor);
 
     judgement_day = time (NULL);
 
     ret = krb5_kt_start_seq_get(context, keytab, &cursor);
     if(ret){
-	krb5_warn(context, ret, "krb5_kt_start_seq_get, %s", keytab_string);
-	return 1;
+	krb5_warn(context, ret, "%s", keytab_string);
+	goto out;
     }
 
-    while((ret = krb5_kt_next_entry(context, keytab, &entry, &cursor)) == 0) {
+    while(krb5_kt_next_entry(context, keytab, &entry, &cursor) == 0) {
 	struct e *e = get_entry (entry.principal, head);
 
 	if (e == NULL) {
@@ -160,7 +148,7 @@ kt_purge(int argc, char **argv)
 	}
 
 	if (entry.vno < e->max_vno
-	    && judgement_day - entry.timestamp > age) {
+	    && judgement_day - e->timestamp > age) {
 	    if (verbose_flag) {
 		char *name_str;
 
@@ -178,5 +166,7 @@ kt_purge(int argc, char **argv)
 
     delete_list (head);
 
-    return 0;
+ out:
+    krb5_kt_close (context, keytab);
+    return ret != 0;
 }

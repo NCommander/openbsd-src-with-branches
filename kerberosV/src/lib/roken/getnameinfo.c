@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1999 - 2001 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,10 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: getnameinfo.c,v 1.2 1999/12/03 04:10:07 assar Exp $");
-#endif
 
 #include "roken.h"
 
@@ -56,7 +53,7 @@ doit (int af,
 						addrlen,
 						af);
 	    if (he != NULL) {
-		strlcpy (host, he->h_name, hostlen);
+		strlcpy (host, hostent_find_fqdn(he), hostlen);
 		if (flags & NI_NOFQDN) {
 		    char *dot = strchr (host, '.');
 		    if (dot != NULL)
@@ -64,7 +61,7 @@ doit (int af,
 		}
 	    } else if (flags & NI_NAMEREQD) {
 		return EAI_NONAME;
-	    } else if (inet_ntop (AF_INET, addr, host, hostlen) == NULL)
+	    } else if (inet_ntop (af, addr, host, hostlen) == NULL)
 		return EAI_SYSTEM;
 	}
     }
@@ -94,7 +91,7 @@ doit (int af,
  *
  */
 
-int
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
 getnameinfo(const struct sockaddr *sa, socklen_t salen,
 	    char *host, size_t hostlen,
 	    char *serv, size_t servlen,
@@ -113,10 +110,10 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
     }
 #endif
     case AF_INET : {
-	const struct sockaddr_in *sin = (const struct sockaddr_in *)sa;
+	const struct sockaddr_in *sin4 = (const struct sockaddr_in *)sa;
 
-	return doit (AF_INET, &sin->sin_addr, sizeof(sin->sin_addr),
-		     sin->sin_port,
+	return doit (AF_INET, &sin4->sin_addr, sizeof(sin4->sin_addr),
+		     sin4->sin_port,
 		     host, hostlen,
 		     serv, servlen,
 		     flags);

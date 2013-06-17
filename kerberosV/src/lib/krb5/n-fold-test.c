@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 1999 Kungliga Tekniska Högskolan
- * (Royal Institute of Technology, Stockholm, Sweden). 
- * All rights reserved. 
+ * Copyright (c) 1999 - 2001 Kungliga Tekniska HÃ¶gskolan
+ * (Royal Institute of Technology, Stockholm, Sweden).
+ * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions 
- * are met: 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * 1. Redistributions of source code must retain the above copyright 
- *    notice, this list of conditions and the following disclaimer. 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright 
- *    notice, this list of conditions and the following disclaimer in the 
- *    documentation and/or other materials provided with the distribution. 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
  * 3. Neither the name of KTH nor the names of its contributors may be
  *    used to endorse or promote products derived from this software without
@@ -31,8 +31,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "krb5_locl.h"
-
-RCSID("$KTH: n-fold-test.c,v 1.3 1999/07/22 11:45:33 assar Exp $");
 
 enum { MAXSIZE = 24 };
 
@@ -74,6 +72,21 @@ static struct testcase {
       0xbd, 0x22, 0x28, 0x91, 0x56, 0xc0, 0x06, 0xa0, 0xdc, 0xf5, 0xb6,
       0xc2, 0xda, 0x6c}
     },
+    {"password", 7,
+     {0x78, 0xa0, 0x7b, 0x6c, 0xaf, 0x85, 0xfa}
+    },
+    {"Rough Consensus, and Running Code", 8,
+     {0xbb, 0x6e, 0xd3, 0x08, 0x70, 0xb7, 0xf0, 0xe0},
+    },
+    {"password", 21,
+     {0x59, 0xe4, 0xa8, 0xca, 0x7c, 0x03, 0x85, 0xc3, 0xc3, 0x7b, 0x3f,
+      0x6d, 0x20, 0x00, 0x24, 0x7c, 0xb6, 0xe6, 0xbd, 0x5b, 0x3e},
+    },
+    {"MASSACHVSETTS INSTITVTE OF TECHNOLOGY", 24,
+     {0xdb, 0x3b, 0x0d, 0x8f, 0x0b, 0x06, 0x1e, 0x60, 0x32, 0x82, 0xb3,
+      0x08, 0xa5, 0x08, 0x41, 0x22, 0x9a, 0xd7, 0x98, 0xfa, 0xb9, 0x54,
+      0x0c, 0x1b}
+    },
     {NULL, 0}
 };
 
@@ -87,7 +100,9 @@ main(int argc, char **argv)
     for (t = tests; t->str; ++t) {
 	int i;
 
-	_krb5_n_fold (t->str, strlen(t->str), data, t->n);
+	ret = _krb5_n_fold (t->str, strlen(t->str), data, t->n);
+	if (ret)
+	    errx(1, "out of memory");
 	if (memcmp (data, t->res, t->n) != 0) {
 	    printf ("n-fold(\"%s\", %d) failed\n", t->str, t->n);
 	    printf ("should be: ");

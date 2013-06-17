@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 2000, 2005 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,72 +32,122 @@
  */
 
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: environment.c,v 1.1 2000/06/21 02:05:03 assar Exp $");
-#endif
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "roken.h"
 
-/*
- * return count of environment assignments from `file' and 
- * list of malloced strings in `env'
+/* find assignment in env list; len is length of variable including
+ * equal
  */
 
-int
-read_environment(const char *file, char ***env)
+static int
+find_var(char **env, char *assignment, size_t len)
 {
-    int i, k;
-    FILE *F;
+    int i;
+    for(i = 0; env != NULL && env[i] != NULL; i++)
+	if(strncmp(env[i], assignment, len) == 0)
+	    return i;
+    return -1;
+}
+
+/*
+ * return count of environment assignments from open file F in
+ * assigned and list of malloced strings in env, return 0 or errno
+ * number
+ */
+
+static int
+read_env_file(FILE *F, char ***env, int *assigned)
+{
+    int idx = 0;
+    int i;
     char **l;
     char buf[BUFSIZ], *p, *r;
+    char **tmp;
+    int ret = 0;
 
-    if ((F = fopen(file, "r")) == NULL) {
-	return 0;
-    }
+    *assigned = 0;
 
-    i = 0;
-    if (*env) {
-	l = *env;
-	while (*l != NULL) {
-	    i++;
-	    l++;
-	}
-    }
+    for(idx = 0; *env != NULL && (*env)[idx] != NULL; idx++);
     l = *env;
+
     /* This is somewhat more relaxed on what it accepts then
      * Wietses sysv_environ from K4 was...
      */
     while (fgets(buf, BUFSIZ, F) != NULL) {
-	if (buf[0] == '#')
-	    continue;
+	buf[strcspn(buf, "#\n")] = '\0';
 
-	p = strchr(buf, '#');
-	if (p != NULL)
-	    *p = '\0';
-
-	p = buf;
-	while (*p == ' ' || *p == '\t' || *p == '\n') p++;
+	for(p = buf; isspace((unsigned char)*p); p++);
 	if (*p == '\0')
 	    continue;
 
-	k = strlen(p);
-	if (p[k-1] == '\n')
-	    p[k-1] = '\0';
-
-	/* Here one should check that is is a 'valid' env string... */
+	/* Here one should check that it's a 'valid' env string... */
 	r = strchr(p, '=');
 	if (r == NULL)
 	    continue;
 
-	l = realloc(l, (i+1) * sizeof (char *));
-	l[i++] = strdup(p);
+	if((i = find_var(l, p, r - p + 1)) >= 0) {
+	    char *val = strdup(p);
+	    if(val == NULL) {
+		ret = ENOMEM;
+		break;
+	    }
+	    free(l[i]);
+	    l[i] = val;
+	    (*assigned)++;
+	    continue;
+	}
+
+	tmp = realloc(l, (idx+2) * sizeof (char *));
+	if(tmp == NULL) {
+	    ret = ENOMEM;
+	    break;
+	}
+
+	l = tmp;
+	l[idx] = strdup(p);
+	if(l[idx] == NULL) {
+	    ret = ENOMEM;
+	    break;
+	}
+	l[++idx] = NULL;
+	(*assigned)++;
     }
-    fclose(F);
-    l = realloc(l, (i+1) * sizeof (char *));
-    l[i] = NULL;
+    if(ferror(F))
+	ret = errno;
     *env = l;
-    return i;
+    return ret;
+}
+
+/*
+ * return count of environment assignments from file and
+ * list of malloced strings in `env'
+ */
+
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+read_environment(const char *file, char ***env)
+{
+    int assigned;
+    FILE *F;
+
+    if ((F = fopen(file, "r")) == NULL)
+	return 0;
+
+    read_env_file(F, env, &assigned);
+    fclose(F);
+    return assigned;
+}
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+free_environment(char **env)
+{
+    int i;
+    if (env == NULL)
+	return;
+    for (i = 0; env[i]; i++)
+	free(env[i]);
+    free(env);
 }

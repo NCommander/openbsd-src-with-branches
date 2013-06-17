@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2005 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,10 +31,20 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: roken-common.h,v 1.42 2001/01/29 02:09:09 assar Exp $ */
+/* $Id$ */
 
 #ifndef __ROKEN_COMMON_H__
 #define __ROKEN_COMMON_H__
+
+#ifndef ROKEN_LIB_FUNCTION
+#ifdef _WIN32
+#define ROKEN_LIB_FUNCTION
+#define ROKEN_LIB_CALL     __cdecl
+#else
+#define ROKEN_LIB_FUNCTION
+#define ROKEN_LIB_CALL
+#endif
+#endif
 
 #ifdef __cplusplus
 #define ROKEN_CPP_START	extern "C" {
@@ -112,6 +122,8 @@
 #define O_ACCMODE	003
 #endif
 
+#ifndef _WIN32
+
 #ifndef _PATH_DEV
 #define _PATH_DEV "/dev/"
 #endif
@@ -134,6 +146,16 @@
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN (1024+4)
+#endif
+
+#endif	/* !_WIN32 */
+
+#ifndef PATH_MAX
+#define PATH_MAX MAX_PATH
+#endif
+
+#ifndef RETSIGTYPE
+#define RETSIGTYPE void
 #endif
 
 #ifndef SIG_ERR
@@ -172,7 +194,7 @@
 #define EAI_NOERROR	0	/* no error */
 #endif
 
-#ifndef EAI_ADDRFAMILY
+#ifndef EAI_NONAME
 
 #define EAI_ADDRFAMILY	1	/* address family for nodename not supported */
 #define EAI_AGAIN	2	/* temporary failure in name resolution */
@@ -186,17 +208,22 @@
 #define EAI_SOCKTYPE   10	/* ai_socktype not supported */
 #define EAI_SYSTEM     11	/* system error returned in errno */
 
-#endif /* EAI_ADDRFAMILY */
+#endif /* EAI_NONAME */
 
 /* flags for getaddrinfo() */
 
 #ifndef AI_PASSIVE
-
 #define AI_PASSIVE	0x01
 #define AI_CANONNAME	0x02
-#define AI_NUMERICHOST	0x04
-
 #endif /* AI_PASSIVE */
+
+#ifndef AI_NUMERICHOST
+#define AI_NUMERICHOST	0x04
+#endif
+
+#ifndef AI_NUMERICSERV
+#define AI_NUMERICSERV  0x08
+#endif
 
 /* flags for getnameinfo() */
 
@@ -251,79 +278,220 @@
 
 ROKEN_CPP_START
 
-#if IRIX != 4 /* fix for compiler bug */
+#ifndef IRIX4 /* fix for compiler bug */
+#ifndef _WIN32
 #ifdef RETSIGTYPE
 typedef RETSIGTYPE (*SigAction)(int);
 SigAction signal(int iSig, SigAction pAction); /* BSD compatible */
 #endif
 #endif
+#endif
 
-int ROKEN_LIB_FUNCTION simple_execve(const char*, char*const[], char*const[]);
-int ROKEN_LIB_FUNCTION simple_execvp(const char*, char *const[]);
-int ROKEN_LIB_FUNCTION simple_execlp(const char*, ...);
-int ROKEN_LIB_FUNCTION simple_execle(const char*, ...);
-int ROKEN_LIB_FUNCTION simple_execl(const char *file, ...);
+#define SE_E_UNSPECIFIED (-1)
+#define SE_E_FORKFAILED  (-2)
+#define SE_E_WAITPIDFAILED (-3)
+#define SE_E_EXECTIMEOUT (-4)
+#define SE_E_NOEXEC   126
+#define SE_E_NOTFOUND 127
 
-void ROKEN_LIB_FUNCTION print_version(const char *);
+#define SE_PROCSTATUS(st) (((st) >= 0 && (st) < 126)? st: -1)
+#define SE_PROCSIGNAL(st) (((st) >= 128)? (st) - 128: -1)
+#define SE_IS_ERROR(st) ((st) < 0 || (st) >= 126)
 
-void *ROKEN_LIB_FUNCTION emalloc (size_t);
-void *ROKEN_LIB_FUNCTION erealloc (void *, size_t);
-char *ROKEN_LIB_FUNCTION estrdup (const char *);
 
-ssize_t ROKEN_LIB_FUNCTION eread (int fd, void *buf, size_t nbytes);
-ssize_t ROKEN_LIB_FUNCTION ewrite (int fd, const void *buf, size_t nbytes);
+#define simple_execve rk_simple_execve
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+simple_execve(const char*, char*const[], char*const[]);
 
-void
-esetenv(const char *var, const char *val, int rewrite);
+#define simple_execve_timed rk_simple_execve_timed
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+simple_execve_timed(const char *, char *const[],
+		    char *const [], time_t (*)(void *),
+		    void *, time_t);
 
-void
-socket_set_address_and_port (struct sockaddr *sa, const void *ptr, int port);
+#define simple_execvp rk_simple_execvp
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+simple_execvp(const char*, char *const[]);
 
-size_t
-socket_addr_size (const struct sockaddr *sa);
+#define simple_execvp_timed rk_simple_execvp_timed
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+simple_execvp_timed(const char *, char *const[],
+		    time_t (*)(void *), void *, time_t);
 
-void
-socket_set_any (struct sockaddr *sa, int af);
+#define simple_execlp rk_simple_execlp
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+simple_execlp(const char*, ...);
 
-size_t
-socket_sockaddr_size (const struct sockaddr *sa);
+#define simple_execle rk_simple_execle
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+simple_execle(const char*, ...);
 
-void *
-socket_get_address (struct sockaddr *sa);
+#define wait_for_process rk_wait_for_process
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+wait_for_process(pid_t);
 
-int
-socket_get_port (const struct sockaddr *sa);
+#define wait_for_process_timed rk_wait_for_process_timed
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+wait_for_process_timed(pid_t, time_t (*)(void *),
+		       void *, time_t);
 
-void
-socket_set_port (struct sockaddr *sa, int port);
+#define pipe_execv rk_pipe_execv
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+pipe_execv(FILE**, FILE**, FILE**, const char*, ...);
 
-void
-socket_set_debug (int sock);
+#define print_version rk_print_version
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+print_version(const char *);
 
-void
-socket_set_tos (int sock, int tos);
+#define eread rk_eread
+ROKEN_LIB_FUNCTION ssize_t ROKEN_LIB_CALL
+eread (int fd, void *buf, size_t nbytes);
 
-void
-socket_set_reuseaddr (int sock, int val);
+#define ewrite rk_ewrite
+ROKEN_LIB_FUNCTION ssize_t ROKEN_LIB_CALL
+ewrite (int fd, const void *buf, size_t nbytes);
 
-char **
+struct hostent;
+
+#define hostent_find_fqdn rk_hostent_find_fqdn
+ROKEN_LIB_FUNCTION const char * ROKEN_LIB_CALL
+hostent_find_fqdn (const struct hostent *);
+
+#define esetenv rk_esetenv
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+esetenv(const char *, const char *, int);
+
+#define socket_set_address_and_port rk_socket_set_address_and_port
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+socket_set_address_and_port (struct sockaddr *, const void *, int);
+
+#define socket_addr_size rk_socket_addr_size
+ROKEN_LIB_FUNCTION size_t ROKEN_LIB_CALL
+socket_addr_size (const struct sockaddr *);
+
+#define socket_set_any rk_socket_set_any
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+socket_set_any (struct sockaddr *, int);
+
+#define socket_sockaddr_size rk_socket_sockaddr_size
+ROKEN_LIB_FUNCTION size_t ROKEN_LIB_CALL
+socket_sockaddr_size (const struct sockaddr *);
+
+#define socket_get_address rk_socket_get_address
+ROKEN_LIB_FUNCTION void * ROKEN_LIB_CALL
+socket_get_address (const struct sockaddr *);
+
+#define socket_get_port rk_socket_get_port
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+socket_get_port (const struct sockaddr *);
+
+#define socket_set_port rk_socket_set_port
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+socket_set_port (struct sockaddr *, int);
+
+#define socket_set_portrange rk_socket_set_portrange
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+socket_set_portrange (rk_socket_t, int, int);
+
+#define socket_set_debug rk_socket_set_debug
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+socket_set_debug (rk_socket_t);
+
+#define socket_set_tos rk_socket_set_tos
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+socket_set_tos (rk_socket_t, int);
+
+#define socket_set_reuseaddr rk_socket_set_reuseaddr
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+socket_set_reuseaddr (rk_socket_t, int);
+
+#define socket_set_ipv6only rk_socket_set_ipv6only
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+socket_set_ipv6only (rk_socket_t, int);
+
+#define socket_to_fd rk_socket_to_fd
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+socket_to_fd(rk_socket_t, int);
+
+#define vstrcollect rk_vstrcollect
+ROKEN_LIB_FUNCTION char ** ROKEN_LIB_CALL
 vstrcollect(va_list *ap);
 
-char **
+#define strcollect rk_strcollect
+ROKEN_LIB_FUNCTION char ** ROKEN_LIB_CALL
 strcollect(char *first, ...);
 
-void timevalfix(struct timeval *t1);
-void timevaladd(struct timeval *t1, const struct timeval *t2);
-void timevalsub(struct timeval *t1, const struct timeval *t2);
+#define timevalfix rk_timevalfix
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+timevalfix(struct timeval *t1);
 
-char *pid_file_write (const char *progname);
-void pid_file_delete (char **);
+#define timevaladd rk_timevaladd
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+timevaladd(struct timeval *t1, const struct timeval *t2);
 
-int
+#define timevalsub rk_timevalsub
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+timevalsub(struct timeval *t1, const struct timeval *t2);
+
+#define pid_file_write rk_pid_file_write
+ROKEN_LIB_FUNCTION char * ROKEN_LIB_CALL
+pid_file_write (const char *progname);
+
+#define pid_file_delete rk_pid_file_delete
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+pid_file_delete (char **);
+
+#define read_environment rk_read_environment
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
 read_environment(const char *file, char ***env);
 
-void warnerr(int doerrno, const char *fmt, va_list ap)
+#define free_environment rk_free_environment
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+free_environment(char **);
+
+#define warnerr rk_warnerr
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+rk_warnerr(int doerrno, const char *fmt, va_list ap)
     __attribute__ ((format (printf, 2, 0)));
+
+ROKEN_LIB_FUNCTION void * ROKEN_LIB_CALL
+rk_realloc(void *, size_t);
+
+struct rk_strpool;
+
+ROKEN_LIB_FUNCTION char * ROKEN_LIB_CALL
+rk_strpoolcollect(struct rk_strpool *);
+
+ROKEN_LIB_FUNCTION struct rk_strpool * ROKEN_LIB_CALL
+rk_strpoolprintf(struct rk_strpool *, const char *, ...)
+    __attribute__ ((format (printf, 2, 3)));
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+rk_strpoolfree(struct rk_strpool *);
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+rk_dumpdata (const char *, const void *, size_t);
+
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+rk_undumpdata (const char *, void **, size_t *);
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+rk_xfree (void *);
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+rk_cloexec(int);
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+rk_cloexec_file(FILE *);
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+rk_cloexec_dir(DIR *);
+
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+ct_memcmp(const void *, const void *, size_t);
+
+void ROKEN_LIB_FUNCTION
+rk_random_init(void);
 
 ROKEN_CPP_END
 

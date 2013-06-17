@@ -1,23 +1,14 @@
-# $OpenBSD: Makefile,v 1.8 2009/08/17 09:40:37 jsg Exp $
-
-KRBDEPTH=../..
-.include <${.CURDIR}/../../Makefile.inc>
+# $OpenBSD$
 
 PROG=	kstash
-MAN=	${PROG}.8
-
-SRCS=	kstash.c \
-	sl.c
-SRCS+=	${PRINTVER}
-
-.PATH:	${KRB5SRC}/kdc
-.PATH:	${KRB5SRC}/lib/sl
-
-CFLAGS+=-I${KRB5SRC}/lib/krb5
-
-DPADD+= ${LIBEDIT} ${LIBCURSES} ${LIBKRB5} \
-	${LIBCRYPTO}
-LDADD+=	-ledit -lcurses -lkrb5 \
-	-lcrypto
+MAN=	kstash.8
+CFLAGS+=-I${KRB5DIR}/lib/asn1 -I${KRB5DIR}/lib/krb5 -I${KRB5DIR}/lib/roken \
+	-I${KRB5DIR}/kdc ${LDAPCFLAGS}
+DPADD=	${LIBHDB} ${LIBKRB5} ${LIBROKEN} ${LIBVERS} \
+	${LIBASN1} ${LIBCRYPTO} ${LIBCRYPT} ${LDAPDPADD}
+LDADD=	-lhdb -lkrb5 -lroken ${LIBVERS} -lpthread \
+	-lasn1 -lcrypto -lhx509 -lcom_err -lheimbase -lwind
 
 .include <bsd.prog.mk>
+
+.PATH: ${KRB5DIR}/kdc

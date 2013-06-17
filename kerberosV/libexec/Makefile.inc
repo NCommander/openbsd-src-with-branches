@@ -1,3 +1,5 @@
 # $OpenBSD$
 
-BINDIR=/usr/libexec
+BINDIR=	/usr/libexec
+
+.include "../Makefile.inc"

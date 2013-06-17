@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 1999 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,10 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: hstrerror.c,v 1.23 1999/12/05 13:18:55 assar Exp $");
-#endif
 
 #ifndef HAVE_HSTRERROR
 
@@ -44,10 +41,6 @@ RCSID("$KTH: hstrerror.c,v 1.23 1999/12/05 13:18:55 assar Exp $");
 #include "roken.h"
 #if (defined(SunOS) && (SunOS >= 50))
 #undef hstrerror
-#endif
-
-#ifndef HAVE_H_ERRNO
-int h_errno = -17; /* Some magic number */
 #endif
 
 #if !(defined(HAVE_H_ERRLIST) && defined(HAVE_H_NERR))
@@ -64,14 +57,14 @@ const
 int h_nerr = { sizeof h_errlist / sizeof h_errlist[0] };
 #else
 
-#ifndef HAVE_H_ERRLIST_DECLARATION
+#if !HAVE_DECL_H_ERRLIST
 extern const char *h_errlist[];
 extern int h_nerr;
 #endif
 
 #endif
 
-const char *
+ROKEN_LIB_FUNCTION const char * ROKEN_LIB_CALL
 hstrerror(int herr)
 {
     if (0 <= herr && herr < h_nerr)

@@ -1,7 +1,6 @@
-# $OpenBSD: Makefile,v 1.4 2002/09/23 01:45:06 miod Exp $
+# $OpenBSD$
 
-# kfd - not imported?
-
-SUBDIR=	kdc kadmind hprop hpropd ipropd-master ipropd-slave kpasswdd
+SUBDIR=	digest-service ipropd-master ipropd-slave hprop hpropd kadmind kdc \
+	kdigest kfd kimpersonate kpasswdd kcm
 
 .include <bsd.subdir.mk>

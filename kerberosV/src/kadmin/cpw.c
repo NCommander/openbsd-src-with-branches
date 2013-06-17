@@ -1,39 +1,38 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
- * (Royal Institute of Technology, Stockholm, Sweden). 
- * All rights reserved. 
+ * Copyright (c) 1997 - 2004 Kungliga Tekniska HÃ¶gskolan
+ * (Royal Institute of Technology, Stockholm, Sweden).
+ * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions 
- * are met: 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * 1. Redistributions of source code must retain the above copyright 
- *    notice, this list of conditions and the following disclaimer. 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright 
- *    notice, this list of conditions and the following disclaimer in the 
- *    documentation and/or other materials provided with the distribution. 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors 
- *    may be used to endorse or promote products derived from this software 
- *    without specific prior written permission. 
+ * 3. Neither the name of the Institute nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE 
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS 
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY 
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
- * SUCH DAMAGE. 
+ * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
 #include "kadmin_locl.h"
-
-RCSID("$KTH: cpw.c,v 1.11 2000/04/12 10:45:54 assar Exp $");
+#include "kadmin-commands.h"
 
 struct cpw_entry_data {
     int random_key;
@@ -41,21 +40,6 @@ struct cpw_entry_data {
     char *password;
     krb5_key_data *key_data;
 };
-
-static struct getargs args[] = {
-    { "random-key",	'r',	arg_flag,	NULL, "set random key" },
-    { "random-password", 0,	arg_flag,	NULL, "set random password" },
-    { "password",	'p',	arg_string,	NULL, "princial's password" },
-    { "key",		 0,	arg_string,	NULL, "DES key in hex" }
-};
-
-static int num_args = sizeof(args) / sizeof(args[0]);
-
-static void
-usage(void)
-{
-    arg_printusage(args, num_args, "cpw", "principal...");
-}
 
 static int
 set_random_key (krb5_principal principal)
@@ -87,7 +71,7 @@ set_random_password (krb5_principal principal)
 
 	krb5_unparse_name(context, principal, &princ_name);
 
-	printf ("%s's password set to `%s'\n", princ_name, pw);
+	printf ("%s's password set to \"%s\"\n", princ_name, pw);
 	free (princ_name);
     }
     memset (pw, 0, sizeof(pw));
@@ -107,7 +91,7 @@ set_password (krb5_principal principal, char *password)
 	krb5_unparse_name(context, principal, &princ_name);
 	asprintf(&prompt, "%s's Password: ", princ_name);
 	free (princ_name);
-	ret = des_read_pw_string(pwbuf, sizeof(pwbuf), prompt, 1);
+	ret = UI_UTIL_read_pw_string(pwbuf, sizeof(pwbuf), prompt, 1);
 	free (prompt);
 	if(ret){
 	    return 0; /* XXX error code? */
@@ -134,7 +118,7 @@ static int
 do_cpw_entry(krb5_principal principal, void *data)
 {
     struct cpw_entry_data *e = data;
-    
+
     if (e->random_key)
 	return set_random_key (principal);
     else if (e->random_password)
@@ -146,31 +130,18 @@ do_cpw_entry(krb5_principal principal, void *data)
 }
 
 int
-cpw_entry(int argc, char **argv)
+cpw_entry(struct passwd_options *opt, int argc, char **argv)
 {
-    krb5_error_code ret;
+    krb5_error_code ret = 0;
     int i;
-    int optind = 0;
     struct cpw_entry_data data;
     int num;
-    char *key_string;
     krb5_key_data key_data[3];
 
-    data.random_key      = 0;
-    data.random_password = 0;
-    data.password        = NULL;
+    data.random_key = opt->random_key_flag;
+    data.random_password = opt->random_password_flag;
+    data.password = opt->password_string;
     data.key_data	 = NULL;
-
-    key_string = NULL;
-
-    args[0].value = &data.random_key;
-    args[1].value = &data.random_password;
-    args[2].value = &data.password;
-    args[3].value = &key_string;
-    if(getarg(args, num_args, argc, argv, &optind)){
-	usage();
-	return 0;
-    }
 
     num = 0;
     if (data.random_key)
@@ -179,35 +150,33 @@ cpw_entry(int argc, char **argv)
 	++num;
     if (data.password)
 	++num;
-    if (key_string)
+    if (opt->key_string)
 	++num;
 
     if (num > 1) {
-	printf ("give only one of "
+	fprintf (stderr, "give only one of "
 		"--random-key, --random-password, --password, --key\n");
-	return 0;
+	return 1;
     }
-	
-    if (key_string) {
+
+    if (opt->key_string) {
 	const char *error;
 
-	if (parse_des_key (key_string, key_data, &error)) {
-	    printf ("failed parsing key `%s': %s\n", key_string, error);
-	    return 0;
+	if (parse_des_key (opt->key_string, key_data, &error)) {
+	    fprintf (stderr, "failed parsing key \"%s\": %s\n",
+		     opt->key_string, error);
+	    return 1;
 	}
 	data.key_data = key_data;
     }
 
-    argc -= optind;
-    argv += optind;
-
     for(i = 0; i < argc; i++)
-	ret = foreach_principal(argv[i], do_cpw_entry, &data);
+	ret = foreach_principal(argv[i], do_cpw_entry, "cpw", &data);
 
     if (data.key_data) {
 	int16_t dummy;
 	kadm5_free_key_data (kadm_handle, &dummy, key_data);
     }
 
-    return 0;
+    return ret != 0;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan 
+ * Copyright (c) 1995 - 2004 Kungliga Tekniska HÃ¶gskolan 
  * (Royal Institute of Technology, Stockholm, Sweden).  
  * All rights reserved.
  * 
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: err.hin,v 1.16 2000/12/11 04:40:59 assar Exp $ */
+/* $Id$ */
 
 #ifndef __ERR_H__
 #define __ERR_H__
@@ -42,27 +42,49 @@
 #include <string.h>
 #include <stdarg.h>
 
-extern const char *__progname;
-
 #if !defined(__GNUC__) && !defined(__attribute__)
 #define __attribute__(x)
 #endif
 
-void verr(int eval, const char *fmt, va_list ap)
+#ifndef ROKEN_LIB_FUNCTION
+#ifdef _WIN32
+#define ROKEN_LIB_FUNCTION
+#define ROKEN_LIB_CALL     __cdecl
+#else
+#define ROKEN_LIB_FUNCTION
+#define ROKEN_LIB_CALL
+#endif
+#endif
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+verr(int eval, const char *fmt, va_list ap)
      __attribute__ ((noreturn, format (printf, 2, 0)));
-void err(int eval, const char *fmt, ...)
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+err(int eval, const char *fmt, ...)
      __attribute__ ((noreturn, format (printf, 2, 3)));
-void verrx(int eval, const char *fmt, va_list ap)
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+verrx(int eval, const char *fmt, va_list ap)
      __attribute__ ((noreturn, format (printf, 2, 0)));
-void errx(int eval, const char *fmt, ...)
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+errx(int eval, const char *fmt, ...)
      __attribute__ ((noreturn, format (printf, 2, 3)));
-void vwarn(const char *fmt, va_list ap)
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+vwarn(const char *fmt, va_list ap)
      __attribute__ ((format (printf, 1, 0)));
-void warn(const char *fmt, ...)
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+warn(const char *fmt, ...)
      __attribute__ ((format (printf, 1, 2)));
-void vwarnx(const char *fmt, va_list ap)
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+vwarnx(const char *fmt, va_list ap)
      __attribute__ ((format (printf, 1, 0)));
-void warnx(const char *fmt, ...)
+
+ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL
+warnx(const char *fmt, ...)
      __attribute__ ((format (printf, 1, 2)));
 
 #endif /* __ERR_H__ */

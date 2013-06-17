@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1999 - 2001 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,12 +31,9 @@
  * SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: inet_ntop.c,v 1.4 2000/07/27 16:24:00 assar Exp $");
-#endif
 
-#include <roken.h>
+#include "roken.h"
 
 /*
  *
@@ -86,13 +83,34 @@ inet_ntop_v6 (const void *src, char *dst, size_t size)
     const struct in6_addr *addr = (struct in6_addr *)src;
     const u_char *ptr = addr->s6_addr;
     const char *orig_dst = dst;
+    int compressed = 0;
 
     if (size < INET6_ADDRSTRLEN) {
 	errno = ENOSPC;
 	return NULL;
     }
     for (i = 0; i < 8; ++i) {
-	int non_zerop = 1;
+	int non_zerop = 0;
+
+        if (compressed == 0 &&
+            ptr[0] == 0 && ptr[1] == 0 &&
+            i <= 5 &&
+            ptr[2] == 0 && ptr[3] == 0 &&
+            ptr[4] == 0 && ptr[5] == 0) {
+
+            compressed = 1;
+
+            if (i == 0)
+                *dst++ = ':';
+            *dst++ = ':';
+
+            for (ptr += 6, i += 3;
+                 i < 8 && ptr[0] == 0 && ptr[1] == 0;
+                 ++i, ptr += 2);
+
+            if (i >= 8)
+                break;
+        }
 
 	if (non_zerop || (ptr[0] >> 4)) {
 	    *dst++ = xdigits[ptr[0] >> 4];
@@ -106,10 +124,7 @@ inet_ntop_v6 (const void *src, char *dst, size_t size)
 	    *dst++ = xdigits[ptr[1] >> 4];
 	    non_zerop = 1;
 	}
-	if (non_zerop || (ptr[1] & 0x0F)) {
-	    *dst++ = xdigits[ptr[1] & 0x0F];
-	    non_zerop = 1;
-	}
+	*dst++ = xdigits[ptr[1] & 0x0F];
 	if (i != 7)
 	    *dst++ = ':';
 	ptr += 2;
@@ -119,7 +134,7 @@ inet_ntop_v6 (const void *src, char *dst, size_t size)
 }
 #endif /* HAVE_IPV6 */
 
-const char *
+ROKEN_LIB_FUNCTION const char * ROKEN_LIB_CALL
 inet_ntop(int af, const void *src, char *dst, size_t size)
 {
     switch (af) {
