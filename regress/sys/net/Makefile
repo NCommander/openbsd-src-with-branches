@@ -1,3 +1,7 @@
+#	$OpenBSD$
+
+SUBDIR +=	pf_divert
+
 PROG=		pf_print_test
 CLEANFILES=	pf_print_host.c
 CFLAGS=		-Wall
