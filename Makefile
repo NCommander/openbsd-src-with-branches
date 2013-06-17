@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.117 2011/09/17 16:59:53 pirofti Exp $
+#	$OpenBSD: Makefile,v 1.118 2012/08/29 22:10:32 espie Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -42,7 +42,10 @@ SUBDIR+= gnu
 SUBDIR+= sys
 
 .if (${KERBEROS5:L} == "yes")
-SUBDIR+= kerberosV
+SUBDIR+=kerberosV/tools
+SUBDIR+=kerberosV/libexec
+SUBDIR+=kerberosV/usr.bin
+SUBDIR+=kerberosV/usr.sbin
 .endif
 
 .if   make(clean) || make(cleandir) || make(obj)
