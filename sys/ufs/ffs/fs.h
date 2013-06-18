@@ -1,4 +1,4 @@
-/*	$OpenBSD: fs.h,v 1.36 2013/04/23 20:42:38 tedu Exp $	*/
+/*	$OpenBSD: fs.h,v 1.37 2013/06/11 16:42:18 deraadt Exp $	*/
 /*	$NetBSD: fs.h,v 1.6 1995/04/12 21:21:02 mycroft Exp $	*/
 
 /*
@@ -154,7 +154,7 @@
  * the following parameters which tell the system the average file size
  * and the average number of files per directory. These defaults are well
  * selected for typical filesystems, but may need to be tuned for odd
- * cases like filesystems being used for sqiud caches or news spools.
+ * cases like filesystems being used for squid caches or news spools.
  */
 #define AVFILESIZ	16384	/* expected average file size */
 #define AFPDIR		64	/* expected number of files per directory */
