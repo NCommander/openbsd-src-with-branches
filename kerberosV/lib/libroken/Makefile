@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2013/06/17 19:11:35 robert Exp $
 
 LIB=	roken
 DPADD=	${LIBCRYPT}
@@ -60,7 +60,6 @@ SRCS=	base64.c \
 	roken_gethostby.c \
 	rtbl.c \
 	setprogname.c \
-	signal.c \
 	simple_exec.c \
 	snprintf.c \
 	socket.c \
