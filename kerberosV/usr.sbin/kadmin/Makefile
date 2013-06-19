@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2013/06/17 19:11:46 robert Exp $
 
 PROG=	kadmin
 MAN=	kadmin.8

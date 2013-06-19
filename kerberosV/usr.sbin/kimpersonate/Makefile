@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2013/06/17 19:11:35 robert Exp $
 
 PROG=	kimpersonate
 MAN=	kimpersonate.8
