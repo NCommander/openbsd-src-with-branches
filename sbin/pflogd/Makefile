@@ -1,6 +1,10 @@
-#	$OpenBSD: Makefile,v 1.7 2006/11/26 11:31:08 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 2009/11/16 16:56:50 otto Exp $
 
 CFLAGS+=-Wall -Wmissing-prototypes -Wshadow
+
+# for pcap-int.h
+CFLAGS+=-I${.CURDIR}/../../lib/libpcap
+
 LDADD+= -lpcap
 DPADD+=	${LIBPCAP}
 
