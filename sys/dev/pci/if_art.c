@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_art.c,v 1.17 2009/03/29 21:53:52 sthen Exp $ */
+/*	$OpenBSD: if_art.c,v 1.18 2010/06/29 07:12:31 matthew Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland
@@ -174,7 +174,7 @@ art_softc_attach(struct device *parent, struct device *self, void *aux)
 
 	/* Set linkstate hook to track link state changes done by sppp. */
 	sc->art_linkstatehook = hook_establish(
-	    sc->art_channel->cc_ifp->if_linkstatehooks, 0, art_linkstate, sc);
+	    &sc->art_channel->cc_ifp->if_linkstatehooks, 0, art_linkstate, sc);
 
 	/* Schedule the timeout one second from now. */
 	timeout_add_sec(&sc->art_onesec, 1);
