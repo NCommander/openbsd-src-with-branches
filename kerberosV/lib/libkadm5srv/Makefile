@@ -1,7 +1,6 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2013/06/17 19:11:35 robert Exp $
 
 LIB=	kadm5srv
-LDFLAGS=	-Wl,--no-undefined
 MAN=	kadm5_pwcheck.3
 
 SRCS=	acl.c \

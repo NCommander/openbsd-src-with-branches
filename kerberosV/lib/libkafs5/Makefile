@@ -1,7 +1,6 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2013/06/17 19:11:35 robert Exp $
 
 LIB=	kafs5
-LDFLAGS=	-Wl,--no-undefined
 INCS=	kafs.h
 MAN=	kafs5.3
 

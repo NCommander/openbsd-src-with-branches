@@ -1,7 +1,6 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2013/06/17 19:11:35 robert Exp $
 
 LIB=	kadm5clnt
-LDFLAGS=	-Wl,--no-undefined
 
 INCS=	admin.h \
 	kadm5-private.h \

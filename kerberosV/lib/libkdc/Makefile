@@ -1,6 +1,7 @@
-#$OpenBSD: Makefile,v 1.1 2013/06/17 19:11:35 robert Exp $
+#$OpenBSD: Makefile,v 1.2 2013/06/19 19:36:44 robert Exp $
 
 LIB=	kdc
+LDFLAGS=	-Wl,--no-undefined
 
 INCS=	kdc.h \
 	kdc-protos.h

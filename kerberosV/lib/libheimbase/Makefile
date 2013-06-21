@@ -1,8 +1,6 @@
-#$OpenBSD$
+#$OpenBSD: Makefile,v 1.1 2013/06/17 19:11:35 robert Exp $
 
 LIB=	heimbase
-LDFLAGS=	-Wl,--no-undefined
-VERSION_MAP= ${KRB5DIR}/base/version-script.map
 
 INCS=	heimbase.h
 

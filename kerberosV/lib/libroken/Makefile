@@ -1,8 +1,7 @@
-# $OpenBSD: Makefile,v 1.1 2013/06/17 19:11:35 robert Exp $
+# $OpenBSD: Makefile,v 1.2 2013/06/18 19:21:52 miod Exp $
 
 LIB=	roken
 DPADD=	${LIBCRYPT}
-VERSION_MAP=	${KRB5DIR}/lib/roken/version-script.map
 INCS=	roken.h \
 	roken-common.h \
 	base64.h \

@@ -1,9 +1,7 @@
-# $OpenBSD: Makefile,v 1.1 2013/06/17 19:11:35 robert Exp $
+# $OpenBSD: Makefile,v 1.2 2013/06/19 19:36:42 robert Exp $
 
 LIB=	asn1
 INCS=	asn1_err.h asn1-common.h heim_asn1.h der.h der-protos.h der-private.h
-
-VERSION_MAP=	${.CURDIR}/version.map
 
 SRCS=	asn1_err.c \
 	asn1_err.h \
