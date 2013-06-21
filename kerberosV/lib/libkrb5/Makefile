@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2013/06/19 19:36:45 robert Exp $
+# $OpenBSD: Makefile,v 1.3 2013/06/21 10:59:40 ajacoutot Exp $
 
 LIB=	krb5
 
@@ -522,6 +522,7 @@ SRCS=	acache.c \
 	crypto.c \
 	data.c \
 	deprecated.c \
+	digest.c \
 	doxygen.c \
 	eai_to_heim_errno.c \
 	error_string.c \
