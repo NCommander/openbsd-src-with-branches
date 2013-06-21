@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.44 2013/05/17 10:30:07 dtucker Exp $
+#	$OpenBSD: test-exec.sh,v 1.45 2013/05/30 20:12:32 dtucker Exp $
 #	Placed in the Public Domain.
 
 USER=`id -un`
@@ -128,7 +128,8 @@ SSH="$SSHLOGWRAP"
 # Some test data.  We make a copy because some tests will overwrite it.
 # The tests may assume that $DATA exists and is writable and $COPY does
 # not exist.
-DATA=$OBJ/data
+DATANAME=data
+DATA=$OBJ/${DATANAME}
 cat ${SSH} ${SSHD} >${DATA}
 COPY=$OBJ/copy
 rm -f ${COPY}
