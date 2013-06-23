@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.36 2013/03/27 11:17:12 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.37 2013/06/02 07:52:15 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -72,6 +72,11 @@ const struct options_table_entry server_options_table[] = {
 	},
 
 	{ .name = "exit-unattached",
+	  .type = OPTIONS_TABLE_FLAG,
+	  .default_num = 0
+	},
+
+	{ .name = "focus-events",
 	  .type = OPTIONS_TABLE_FLAG,
 	  .default_num = 0
 	},
