@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.411 2013/06/02 07:52:15 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.412 2013/06/23 12:41:55 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -941,6 +941,7 @@ struct window_pane {
 #define PANE_DROP 0x2
 #define PANE_FOCUSED 0x4
 #define PANE_RESIZE 0x8
+#define PANE_FOCUSPUSH 0x10
 
 	char		*cmd;
 	char		*shell;
