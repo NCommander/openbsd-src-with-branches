@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_fork.c,v 1.7 2013/06/01 20:47:40 tedu Exp $ */
+/*	$OpenBSD: rthread_fork.c,v 1.8 2013/06/21 06:50:49 guenther Exp $ */
 
 /*
  * Copyright (c) 2008 Kurt Miller <kurt@openbsd.org>
@@ -68,7 +68,9 @@ _dofork(int is_vfork)
 	pthread_t me;
 	pid_t (*sys_fork)(void);
 	pid_t newid;
+#if defined(__ELF__)
 	sigset_t nmask, omask;
+#endif
 
 	sys_fork = is_vfork ? &_thread_sys_vfork : &_thread_sys_fork;
 
