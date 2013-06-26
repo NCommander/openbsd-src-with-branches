@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip6_divert.c,v 1.11 2013/04/08 15:32:23 lteo Exp $ */
+/*      $OpenBSD: ip6_divert.c,v 1.12 2013/05/31 15:04:24 bluhm Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -246,6 +246,9 @@ divert6_packet(struct mbuf *m, int dir)
 			break;
 		}
 	}
+	/* force checksum calculation */
+	if (dir == PF_OUT)
+		in6_proto_cksum_out(m, NULL);
 
 	if (inp != CIRCLEQ_END(&divb6table.inpt_queue)) {
 		sa = inp->inp_socket;

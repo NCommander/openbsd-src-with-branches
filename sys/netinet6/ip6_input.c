@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.112 2013/04/24 10:17:08 mpi Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.113 2013/06/13 12:17:23 mpi Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -644,6 +644,9 @@ ip6_input(struct mbuf *m)
 		ip6_forward(m, srcrt);
 		return;
 	}	
+
+	/* pf might have changed things */
+	in6_proto_cksum_out(m, NULL);
 
 	ip6 = mtod(m, struct ip6_hdr *);
 
