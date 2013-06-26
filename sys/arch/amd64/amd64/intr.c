@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.33 2013/05/12 14:15:31 ratchov Exp $	*/
+/*	$OpenBSD: intr.c,v 1.34 2013/05/16 16:20:00 kettenis Exp $	*/
 /*	$NetBSD: intr.c,v 1.3 2003/03/03 22:16:20 fvdl Exp $	*/
 
 /*
@@ -355,6 +355,8 @@ intr_establish(int legacy_irq, struct pic *pic, int pin, int type, int level,
 
 	flags = level & IPL_MPSAFE;
 	level &= ~IPL_MPSAFE;
+
+	KASSERT(level <= IPL_TTY || level >= IPL_CLOCK || flags & IPL_MPSAFE);
 
 	error = intr_allocate_slot(pic, legacy_irq, pin, level, &ci, &slot,
 	    &idt_vec);
