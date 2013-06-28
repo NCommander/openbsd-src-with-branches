@@ -1,4 +1,4 @@
-/*	$OpenBSD: hd.c,v 1.69 2011/07/06 04:49:35 matthew Exp $	*/
+/*	$OpenBSD: hd.c,v 1.70 2013/06/11 16:42:07 deraadt Exp $	*/
 /*	$NetBSD: rd.c,v 1.33 1997/07/10 18:14:08 kleink Exp $	*/
 
 /*
@@ -541,7 +541,7 @@ hdopen(dev, flags, mode, p)
 	 */
 	if (!ISSET(rs->sc_dkdev.dk_flags, DKF_CONSTRUCTED)) {
 		device_unref(&rs->sc_dev);
-		return (error);
+		return (ENXIO);
 	}
 
 	if ((error = disk_lock(&rs->sc_dkdev)) != 0) {
