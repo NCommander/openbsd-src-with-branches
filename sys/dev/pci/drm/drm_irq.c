@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_irq.c,v 1.44 2013/03/18 12:36:51 jsg Exp $	*/
+/*	$OpenBSD: drm_irq.c,v 1.45 2013/04/22 15:10:55 deraadt Exp $	*/
 /**
  * \file drm_irq.c
  * IRQ support
@@ -141,7 +141,7 @@ struct timeval
 ns_to_timeval(const int64_t nsec)
 {
 	struct timeval tv;
-	uint32_t rem;
+	int32_t rem;
 
 	if (nsec == 0) {
 		tv.tv_sec = 0;
