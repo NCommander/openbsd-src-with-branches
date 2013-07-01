@@ -1,7 +1,8 @@
-# $OpenBSD: Makefile,v 1.2 2013/06/19 19:36:56 robert Exp $
+# $OpenBSD: Makefile,v 1.3 2013/06/20 08:41:22 ajacoutot Exp $
 
 SCRIPTS=krb5-config
-MAN=	krb5-config.1
+MPAGES=	krb5-config.1
+MSRC=	${KRB5DIR}/tools
 
 CLEANFILES= krb5-config
 

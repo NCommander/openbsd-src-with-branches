@@ -1,7 +1,8 @@
-# $OpenBSD: Makefile,v 1.23 2013/06/19 19:36:58 robert Exp $
+# $OpenBSD: Makefile,v 1.24 2013/06/21 17:02:20 robert Exp $
 
 PROG=	kadmin
-MAN=	kadmin.8
+MPAGES=	kadmin.8
+MSRC=	${KRB5DIR}/kadmin
 
 SRCS=	add_enctype.c \
 	ank.c \

@@ -1,7 +1,9 @@
-# $OpenBSD: Makefile,v 1.7 2013/06/17 18:57:39 robert Exp $
+# $OpenBSD: Makefile,v 1.8 2013/06/19 19:36:49 robert Exp $
 
 PROG=	kfd
-MAN=	kfd.8
+MPAGES=	kfd.8
+MSRC=	${KRB5DIR}/appl/kf
+
 CFLAGS+=	-I${KRB5DIR}/lib/asn1 \
 		-I${KRB5DIR}/lib/roken
 DPADD=	${LIBKRB5} ${LIBROKEN} ${LIBASN1} ${LIBCRYPTO} \

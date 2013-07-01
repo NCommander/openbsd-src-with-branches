@@ -1,7 +1,8 @@
-# $OpenBSD: Makefile,v 1.6 2013/06/17 18:57:46 robert Exp $
+# $OpenBSD: Makefile,v 1.7 2013/06/19 19:36:56 robert Exp $
 
 PROG=	string2key
-MAN=	string2key.8
+MPAGES=	string2key.8
+MSRC=	${KRB5DIR}/kdc
 CFLAGS+=	-I${KRB5DIR}/kdc \
 		-I${KRB5DIR}/lib/asn1 \
 		-I${KRB5DIR}/lib/krb5 \

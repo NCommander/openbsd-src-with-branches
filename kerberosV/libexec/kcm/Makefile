@@ -1,7 +1,8 @@
-# $OpenBSD: Makefile,v 1.2 2013/06/19 19:36:48 robert Exp $
+# $OpenBSD: Makefile,v 1.3 2013/06/20 07:16:22 robert Exp $
 
 PROG=	kcm
-MAN=	kcm.8
+MPAGES=	kcm.8
+MSRC=	${KRB5DIR}/kcm
 
 SRCS=	acl.c \
 	acquire.c \

@@ -1,6 +1,7 @@
-# $OpenBSD: Makefile.inc,v 1.16 2013/06/21 14:12:26 ajacoutot Exp $
+# $OpenBSD: Makefile.inc,v 1.17 2013/06/21 17:02:20 robert Exp $
 
 KRB5DIR=	${.CURDIR}/../../../kerberosV/src
+KRB5SUBST=	${KRB5DIR}/../varsub
 
 CFLAGS+=	-DHAVE_CONFIG_H -DNO_NTLM -I${.CURDIR}/../../include -I/usr/include/kerberosV
 
@@ -35,6 +36,22 @@ CLEANFILES+=	${_ET}.h ${_ET}.c
 .endfor
 
 .endif # defined(SRCS)
+
+.if defined(MPAGES)
+
+MAN += ${MPAGES:S@^@${.OBJDIR}/@}
+CLEANFILES += ${MAN}
+
+.  for PAGE in ${MPAGES}
+.    for dir in ${MSRC}
+.      if exists(${dir}/${PAGE:T})
+${PAGE}: ${dir}/${PAGE:T}
+	sed -f ${KRB5SUBST} ${dir}/${PAGE:T} >$@.tmp && mv $@.tmp $@
+.      endif
+.    endfor
+.  endfor
+
+.endif # defined(MPAGES)
 
 ASN1_COMPILE=	asn1_compile
 SLC=		slc

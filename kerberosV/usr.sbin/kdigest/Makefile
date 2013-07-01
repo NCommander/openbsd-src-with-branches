@@ -1,7 +1,9 @@
-# $OpenBSD: Makefile,v 1.1 2013/06/19 07:06:22 ajacoutot Exp $
+# $OpenBSD: Makefile,v 1.2 2013/06/19 19:36:58 robert Exp $
 
 PROG=	kdigest
-MAN=	kdigest.8
+MPAGES=	kdigest.8
+MSRC=	${KRB5DIR}/kuser
+
 CFLAGS+=	-I${KRB5DIR}/lib/asn1 \
 		-I${KRB5DIR}/lib/roken \
 		-I${KRB5DIR}/lib/sl -I.

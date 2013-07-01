@@ -1,7 +1,8 @@
-# $OpenBSD: Makefile,v 1.19 2013/06/19 19:37:00 robert Exp $
+# $OpenBSD: Makefile,v 1.20 2013/06/21 17:02:20 robert Exp $
 
 PROG=	ktutil
-MAN=	ktutil.8
+MPAGES=	ktutil.8
+MSRC=	${KRB5DIR}/admin
 
 SRCS=	add.c \
 	change.c \

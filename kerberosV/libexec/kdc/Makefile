@@ -1,7 +1,8 @@
-# $OpenBSD: Makefile,v 1.14 2013/06/17 18:57:39 robert Exp $
+# $OpenBSD: Makefile,v 1.15 2013/06/19 19:36:48 robert Exp $
 
 PROG=	kdc
-MAN=	kdc.8
+MPAGES=	kdc.8
+MSRC=	${KRB5DIR}/kdc
 
 SRCS=	config.c \
 	connect.c \

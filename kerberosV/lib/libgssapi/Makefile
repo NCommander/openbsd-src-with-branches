@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2013/06/19 19:36:43 robert Exp $
+# $OpenBSD: Makefile,v 1.6 2013/06/21 09:39:50 ajacoutot Exp $
 
 LIB=	gssapi
 
@@ -183,9 +183,12 @@ INCSGROUPS=	INCS OIDINCS KRB5INCS #SPNEGOINCS
 GEN+=		gssapi_asn1.hx \
 		gssapi_asn1-priv.hx
 
-MAN=		gssapi.3 \
+MPAGES=		gssapi.3 \
 		gss_acquire_cred.3 \
 		mech.5
+
+MSRC=		${KRB5DIR}/lib/gssapi \
+		${KRB5DIR}/lib/gssapi/mech
 
 MLINKS= \
 		gss_acquire_cred.3	gss_accept_sec_context.3	\
