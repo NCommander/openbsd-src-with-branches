@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhts.c,v 1.5 2013/03/28 03:31:55 tedu Exp $ */
+/*	$OpenBSD: uhts.c,v 1.6 2013/03/28 03:58:03 tedu Exp $ */
 /*
  * Copyright (c) 2009 Matthieu Herrb <matthieu@herrb.eu>
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -357,10 +357,14 @@ uhts_ioctl(void *v, u_long cmd, caddr_t data, int flag, struct proc *p)
 {
 	struct uhts_softc *sc = v;
 	struct wsmouse_calibcoords *wsmc = (struct wsmouse_calibcoords *)data;
-	int error = 0;
+	int rc, error = 0;
 
 	DPRINTF(("uhts_ioctl(%d, '%c', %d)\n",
 	    IOCPARM_LEN(cmd), IOCGROUP(cmd), cmd & 0xff));
+
+	rc = uhidev_ioctl(&sc->sc_hdev, cmd, data, flag, p);
+	if (rc != -1)
+		return rc;
 
 	switch (cmd) {
 	case WSMOUSEIO_GTYPE:
