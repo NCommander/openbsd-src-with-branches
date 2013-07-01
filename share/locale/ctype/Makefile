@@ -1,3 +1,4 @@
+# $OpenBSD$
 # $NetBSD: Makefile,v 1.20 2005/02/10 18:03:02 tnozaki Exp $
 
 NOMAN=	# defined
