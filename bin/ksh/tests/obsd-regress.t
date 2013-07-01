@@ -1,4 +1,4 @@
-#	$OpenBSD: obsd-regress.t,v 1.3 2013/06/16 12:17:20 millert Exp $
+#	$OpenBSD: obsd-regress.t,v 1.4 2013/06/19 14:04:42 millert Exp $
 
 #
 # ksh regression tests from OpenBSD
@@ -256,6 +256,16 @@ expected-stdout:
 	
 ---
 
+name: input-comsub
+description:
+	A command substitution using input redirection should exit with
+	failure if the input file does not exist.
+stdin:
+	var=$(< non-existent)
+expected-exit: e != 0
+expected-stderr-pattern: /non-existent/
+
+---
 name: empty-for-list
 description:
 	A for list which expands to zero items should not execute the body.
