@@ -1,4 +1,4 @@
-#$OpenBSD: Makefile,v 1.4 2013/06/21 11:01:17 ajacoutot Exp $
+#$OpenBSD: Makefile,v 1.5 2013/06/21 12:26:04 ajacoutot Exp $
 
 LIB=	kdc
 
@@ -20,7 +20,7 @@ SRCS=	\
 	process.c \
 	windc.c
 
-CFLAGS+=	-I${KRB5DIR}/lib/roken \
+CPPFLAGS=	-I${KRB5DIR}/lib/roken \
 		-I${KRB5DIR}/lib/krb5 \
 		-I${KRB5DIR}/lib/hdb \
 		-I${KRB5DIR}/kdc

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2013/06/21 12:26:04 ajacoutot Exp $
+# $OpenBSD: Makefile,v 1.5 2013/07/01 05:15:24 ajacoutot Exp $
 
 LIB=	krb5
 
@@ -617,7 +617,7 @@ SRCS+=	heim_err.c \
 	krb_err.c \
 	krb_err.h
 
-CFLAGS+=	-I${KRB5DIR}/lib/krb5 \
+CPPFLAGS=	-I${KRB5DIR}/lib/krb5 \
 		-I${KRB5DIR}/lib/asn1 \
 		-I${KRB5DIR}/lib/roken \
 		-I${KRB5DIR}/lib/ipc \

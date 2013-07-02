@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.20 2013/06/21 17:02:20 robert Exp $
+# $OpenBSD: Makefile,v 1.21 2013/07/01 05:15:24 ajacoutot Exp $
 
 PROG=	ktutil
 MPAGES=	ktutil.8
@@ -16,7 +16,7 @@ SRCS=	add.c \
 	remove.c \
 	rename.c
 
-CFLAGS+=-I${KRB5DIR}/lib/roken -I${KRB5DIR}/lib/sl -I.
+CPPFLAGS=	-I${KRB5DIR}/lib/roken -I${KRB5DIR}/lib/sl -I.
 DPADD=	${LIBKADM5CLNT} ${LIBKRB5} ${LIBSL} ${LIBROKEN} ${LIBVERS} \
 	${LIBASN1} ${LIBCRYPTO} ${LIBCRYPT} ${LIBEDIT}
 LDADD=	-lkadm5clnt -lkrb5 ${LIBSL} -lroken ${LIBVERS} \
