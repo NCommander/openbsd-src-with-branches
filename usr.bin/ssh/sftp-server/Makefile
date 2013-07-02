@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2008/02/04 21:53:00 markus Exp $
+#	$OpenBSD: Makefile,v 1.8 2010/01/13 01:40:16 djm Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -13,5 +13,6 @@ MAN=	sftp-server.8
 SRCS=	sftp-server.c sftp-common.c sftp-server-main.c
 
 LDADD+=	-lutil
+DPADD+= ${LIBUTIL}
 
 .include <bsd.prog.mk>
