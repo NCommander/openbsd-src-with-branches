@@ -1,4 +1,4 @@
-/*	$OpenBSD: signbit.c,v 1.5 2012/12/05 23:20:00 deraadt Exp $	*/
+/*	$OpenBSD: signbit.c,v 1.6 2013/03/28 18:09:38 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -36,6 +36,6 @@ __signbitf(float f)
 	return p->sng_sign;
 }
 
-#if	LDBL_MANT_DIG == 53
+#if	LDBL_MANT_DIG == DBL_MANT_DIG
 __strong_alias(__signbitl, __signbit);
-#endif	/* LDBL_MANT_DIG == 53 */
+#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
