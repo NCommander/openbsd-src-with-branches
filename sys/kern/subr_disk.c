@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.148 2013/04/24 08:31:06 blambert Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.149 2013/06/11 16:42:16 deraadt Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -761,8 +761,7 @@ diskerr(struct buf *bp, char *dname, char *what, int pri, int blkdone,
 	daddr_t sn;
 
 	if (pri != LOG_PRINTF) {
-		static const char fmt[] = "";
-		log(pri, fmt);
+		log(pri, "%s", "");
 		pr = addlog;
 	} else
 		pr = printf;
