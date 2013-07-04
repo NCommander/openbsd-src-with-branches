@@ -240,6 +240,10 @@ struct cpp_options
   const char *include_prefix;
   unsigned int include_prefix_len;
 
+  /* Directory prefix for system include directories in the standard search
+     path.  */
+  const char *sysroot;
+
   /* The language we're preprocessing.  */
   enum c_lang lang;
 
@@ -626,6 +630,7 @@ struct cpp_num
 #define CPP_N_DECIMAL	0x0100
 #define CPP_N_HEX	0x0200
 #define CPP_N_OCTAL	0x0400
+#define CPP_N_BINARY	0x0800
 
 #define CPP_N_UNSIGNED	0x1000	/* Properties.  */
 #define CPP_N_IMAGINARY	0x2000
