@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump_subr.h,v 1.9 2013/06/17 19:11:54 guenther Exp $	*/
+/*	$OpenBSD: kdump_subr.h,v 1.10 2013/07/03 23:04:34 guenther Exp $	*/
 /*
  * Copyright(c) 2006 2006 David Kirchner <dpk@dpk.net>
  *
@@ -79,5 +79,12 @@ void lio_listioname(int);
 void minheritname(int);
 void quotactlname(int);
 void ptraceopname(int);
+void sigill_name(int);
+void sigtrap_name(int);
+void sigemt_name(int);
+void sigfpe_name(int);
+void sigbus_name(int);
+void sigsegv_name(int);
+void sigchld_name(int);
 
 extern int decimal, resolv, fancy;
