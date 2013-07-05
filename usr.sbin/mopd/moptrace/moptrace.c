@@ -1,4 +1,4 @@
-/*	$OpenBSD: moptrace.c,v 1.10 2009/07/11 13:42:32 sobrado Exp $ */
+/*	$OpenBSD: moptrace.c,v 1.11 2009/10/27 23:59:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -46,7 +46,6 @@
  */
 struct if_info *iflist;
 
-void   Loop(void) __dead;
 void   Usage(void);
 void   mopProcess(struct if_info *, u_char *);
 

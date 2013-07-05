@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopd.c,v 1.16 2009/07/11 13:42:32 sobrado Exp $ */
+/*	$OpenBSD: mopd.c,v 1.17 2009/10/27 23:59:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
@@ -50,7 +50,6 @@
  */
 struct if_info	*iflist;
 
-__dead void	Loop(void);
 void		Usage(void);
 void		mopProcess(struct if_info *, u_char *);
 
