@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.prog.mk,v 1.56 2012/08/28 16:45:03 pascal Exp $
+#	$OpenBSD: bsd.prog.mk,v 1.57 2013/03/18 10:51:35 mpi Exp $
 #	$NetBSD: bsd.prog.mk,v 1.55 1996/04/08 21:19:26 jtc Exp $
 #	@(#)bsd.prog.mk	5.26 (Berkeley) 6/25/91
 
@@ -23,10 +23,8 @@ CXXFLAGS+=     ${CXXDIAGFLAGS}
 CFLAGS+=	${COPTS}
 CXXFLAGS+=     ${CXXOPTS}
 
-.if ${ELF_TOOLCHAIN:L} == "yes"
 CRTBEGIN?=       ${DESTDIR}/usr/lib/crtbegin.o
 CRTEND?=         ${DESTDIR}/usr/lib/crtend.o
-.endif
 
 LIBCRT0?=	${DESTDIR}/usr/lib/crt0.o
 LIBASN1?=	${DESTDIR}/usr/lib/libasn1.a
