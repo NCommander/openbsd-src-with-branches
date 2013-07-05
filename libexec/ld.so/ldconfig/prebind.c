@@ -1,4 +1,4 @@
-/* $OpenBSD: prebind.c,v 1.19 2013/03/20 21:49:59 kurt Exp $ */
+/* $OpenBSD: prebind.c,v 1.20 2013/05/04 09:23:33 jsg Exp $ */
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
  *
@@ -72,6 +72,9 @@ char *shstrtab;
 #endif
 #ifdef __m88k__
 #define RELOC_JMP_SLOT	RELOC_GOTP_ENT
+#endif
+#ifdef __vax__
+#define	RELOC_JMP_SLOT	R_VAX_JMP_SLOT
 #endif
 /* powerpc uses RELOC_JMP_SLOT */
 /* sparc uses RELOC_JMP_SLOT */

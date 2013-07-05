@@ -1,4 +1,4 @@
-/*	$OpenBSD: brk.S,v 1.7 2005/08/07 16:40:16 espie Exp $ */
+/*	$OpenBSD: brk.S,v 1.8 2008/05/21 20:39:32 miod Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,14 +33,14 @@
 	.globl	__curbrk
 	.globl	_C_LABEL(minbrk)
 ENTRY(brk, 0)
-	cmpl	_C_LABEL(minbrk),4(ap)
+	cmpl	_C_LABEL(minbrk),4(%ap)
 	blequ	ok
-	movl	_C_LABEL(minbrk),4(ap)
+	movl	_C_LABEL(minbrk),4(%ap)
 ok:
 	chmk	$ SYS_break
 	jcs	err
-	movl	4(ap),__curbrk
-	clrl	r0
+	movl	4(%ap),__curbrk
+	clrl	%r0
 	ret
 err:
-	jmp	_C_LABEL(_cerror)
+	jmp	_C_LABEL(__cerror)
