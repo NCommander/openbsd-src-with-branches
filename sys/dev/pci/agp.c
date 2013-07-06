@@ -1,4 +1,4 @@
-/* $OpenBSD: agp.c,v 1.35 2012/11/13 13:37:24 mpi Exp $ */
+/* $OpenBSD: agp.c,v 1.36 2012/12/06 15:05:21 mpi Exp $ */
 /*-
  * Copyright (c) 2000 Doug Rabson
  * All rights reserved.
@@ -487,7 +487,7 @@ agp_generic_bind_memory(struct agp_softc *sc, struct agp_memory *mem,
 		return (EINVAL);
 	}
 
-	if (offset < 0 || (offset & (AGP_PAGE_SIZE - 1)) != 0 ||
+	if ((offset & (AGP_PAGE_SIZE - 1)) != 0 ||
 	    offset + mem->am_size > sc->sc_apsize) {
 		printf("AGP: binding memory at bad offset %#lx\n",
 		    (unsigned long) offset);
