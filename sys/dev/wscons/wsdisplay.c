@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.110 2013/06/15 21:35:15 kettenis Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.111 2013/07/05 21:18:32 kettenis Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -670,7 +670,7 @@ wsemuldisplaydevprint(void *aux, const char *pnp)
 
 /* Submatch function (for parent devices). */
 int
-wsemuldisplaysubmatch(struct device *parent, void *match, void *aux)
+wsemuldisplaydevsubmatch(struct device *parent, void *match, void *aux)
 {
 	extern struct cfdriver wsdisplay_cd;
 	struct cfdata *cf = match;
