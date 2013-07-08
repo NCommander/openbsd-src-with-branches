@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Vstat.pm,v 1.65 2011/06/16 10:58:12 espie Exp $
+# $OpenBSD: Vstat.pm,v 1.66 2013/04/16 09:33:20 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -265,9 +265,9 @@ sub run
 	}
 	if (!close($cmd)) {
 		if ($!) {
-			$state->errsay("Error running #1: #2", join(' ', @_), $!);
+			$state->errsay("Error running #1: #2", $!, join(' ', @_));
 		} else {
-			$state->errsay("Exit status #1 from #2", join(' ', @_), $?);
+			$state->errsay("Exit status #1 from #2", $?, join(' ', @_));
 		}
 	}
 }
