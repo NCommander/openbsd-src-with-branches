@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2013/06/21 17:04:01 robert Exp $
+# $OpenBSD: Makefile,v 1.11 2013/07/01 13:50:39 ajacoutot Exp $
 
 KINFOSRC =	${.CURDIR}/../src/doc
 KINFODIR =	${DESTDIR}${SHAREDIR}/info
@@ -10,7 +10,7 @@ INFO =	heimdal.info
 
 SRCS =	heimdal.texi intro.texi whatis.texi install.texi setup.texi apps.texi \
 	misc.texi kerberos4.texi win2k.texi programming.texi migration.texi \
-	ack.texi copyright.texi
+	ack.texi copyright.texi vars.texi
 
 all: ${INFO}
 
