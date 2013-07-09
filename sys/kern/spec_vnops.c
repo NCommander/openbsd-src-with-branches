@@ -457,9 +457,7 @@ spec_strategy(void *v)
 	struct vop_strategy_args *ap = v;
 	struct buf *bp = ap->a_bp;
 	int maj = major(bp->b_dev);
-
-	if (!ISSET(bp->b_flags, B_DMA) && ISSET(bp->b_flags, B_BC))
-		panic("bogus buf %p passed to spec_strategy", bp);
+	
 	if (LIST_FIRST(&bp->b_dep) != NULL)
 		buf_start(bp);
 

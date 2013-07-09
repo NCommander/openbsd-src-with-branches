@@ -633,11 +633,6 @@ VOP_STRATEGY(struct buf *bp)
 
 	if (bp->b_vp->v_op->vop_strategy == NULL)
 		return (EOPNOTSUPP);
-	/*
-	 * Flip buffer to dma reachable memory if necessary.
-	 */
-	if (ISSET(bp->b_flags, B_BC))
-		buf_dma(bp);
 
 	return ((bp->b_vp->v_op->vop_strategy)(&a));
 }

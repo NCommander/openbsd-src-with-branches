@@ -222,10 +222,6 @@ showbcache(void)
 	print_fld_ssize(FLD_IO_SVAL, bccur.numbufpages);
 	end_line();
 
-	print_fld_str(FLD_IO_SSTR, "dma pages");
-	print_fld_ssize(FLD_IO_SVAL, bccur.dmapages);
-	end_line();
-
 	print_fld_str(FLD_IO_SSTR, "dirty pages");
 	print_fld_ssize(FLD_IO_SVAL, bccur.numdirtypages);
 	end_line();
