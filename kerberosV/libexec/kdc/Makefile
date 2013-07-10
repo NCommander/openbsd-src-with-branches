@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.16 2013/07/01 05:15:24 ajacoutot Exp $
+# $OpenBSD: Makefile,v 1.17 2013/07/02 19:00:10 ajacoutot Exp $
 
 PROG=	kdc
 MPAGES=	kdc.8
@@ -12,7 +12,7 @@ SRCS=	config.c \
 CPPFLAGS=	-I${KRB5DIR}/lib/krb5 -I${KRB5DIR}/lib/asn1 -I${KRB5DIR}/lib/roken \
 		-I${KRB5DIR}/kdc
 DPADD=	${LIBKDC} ${LIBHDB} ${LIBKRB5} ${LIBROKEN} ${LIBASN1} \
-	${LIBCRYPTO} ${LIBCRYPT} ${LIBVERS}
+	${LIBCRYPTO} ${LIBVERS}
 LDADD=	-lkdc -lhdb -lkrb5 -lroken -lasn1 -lcrypto ${LIBVERS} -lheimbase \
 	-lwind -lcom_err -lutil
 

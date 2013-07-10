@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2013/07/01 05:15:24 ajacoutot Exp $
+# $OpenBSD: Makefile,v 1.4 2013/07/02 19:00:10 ajacoutot Exp $
 
 PROG=	kimpersonate
 MPAGES=	kimpersonate.8
@@ -8,7 +8,7 @@ CPPFLAGS=	-I${KRB5DIR}/lib/asn1 \
 		-I${KRB5DIR}/lib/roken \
 		-I${KRB5DIR}/lib/sl -I.
 DPADD=	${LIBKAFS5} ${LIBKRB5} ${LIBHEIMNTLM} ${LIBROKEN} ${LIBASN1} ${LIBCRYPTO} \
-	${LIBCRYPT} ${LIBVERS}
+	${LIBVERS}
 LDADD=	-lkafs5 -lkrb5 -lroken -lasn1 -lcrypto \
 	${LIBVERS} -lcom_err -lheimbase -lwind
 

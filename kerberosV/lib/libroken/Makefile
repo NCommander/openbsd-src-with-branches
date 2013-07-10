@@ -1,7 +1,6 @@
-# $OpenBSD: Makefile,v 1.3 2013/06/21 10:59:40 ajacoutot Exp $
+# $OpenBSD: Makefile,v 1.4 2013/07/02 19:00:10 ajacoutot Exp $
 
 LIB=	roken
-DPADD=	${LIBCRYPT}
 INCS=	roken.h \
 	roken-common.h \
 	base64.h \
