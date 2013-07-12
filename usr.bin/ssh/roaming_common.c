@@ -1,4 +1,4 @@
-/* $OpenBSD: roaming_common.c,v 1.8 2010/01/12 00:59:29 djm Exp $ */
+/* $OpenBSD: roaming_common.c,v 1.9 2011/12/07 05:44:38 djm Exp $ */
 /*
  * Copyright (c) 2004-2009 AppGate Network Security AB
  *
@@ -223,7 +223,7 @@ calculate_new_key(u_int64_t *key, u_int64_t cookie, u_int64_t challenge)
 {
 	const EVP_MD *md = EVP_sha1();
 	EVP_MD_CTX ctx;
-	char hash[EVP_MAX_MD_SIZE];
+	u_char hash[EVP_MAX_MD_SIZE];
 	Buffer b;
 
 	buffer_init(&b);

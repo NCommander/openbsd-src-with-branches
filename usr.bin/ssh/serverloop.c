@@ -1,4 +1,4 @@
-/* $OpenBSD: serverloop.c,v 1.166 2013/05/16 09:08:41 dtucker Exp $ */
+/* $OpenBSD: serverloop.c,v 1.167 2013/05/17 00:13:14 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -791,7 +791,8 @@ void
 server_loop2(Authctxt *authctxt)
 {
 	fd_set *readset = NULL, *writeset = NULL;
-	int rekeying = 0, max_fd, nalloc = 0;
+	int rekeying = 0, max_fd;
+	u_int nalloc = 0;
 	u_int64_t rekey_timeout_ms = 0;
 
 	debug("Entering interactive session for SSH2.");

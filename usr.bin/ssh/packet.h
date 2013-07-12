@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.h,v 1.57 2012/01/25 19:40:09 markus Exp $ */
+/* $OpenBSD: packet.h,v 1.58 2013/05/16 02:00:34 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -65,7 +65,7 @@ void	*packet_get_raw(u_int *length_ptr);
 void	*packet_get_string(u_int *length_ptr);
 char	*packet_get_cstring(u_int *length_ptr);
 void	*packet_get_string_ptr(u_int *length_ptr);
-void     packet_disconnect(const char *fmt,...) __attribute__((format(printf, 1, 2)));
+void     packet_disconnect(const char *fmt,...) __attribute__((noreturn)) __attribute__((format(printf, 1, 2)));
 void     packet_send_debug(const char *fmt,...) __attribute__((format(printf, 1, 2)));
 
 void	 set_newkeys(int mode);

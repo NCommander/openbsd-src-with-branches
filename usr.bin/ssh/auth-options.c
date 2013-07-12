@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-options.c,v 1.57 2012/12/02 20:46:11 djm Exp $ */
+/* $OpenBSD: auth-options.c,v 1.58 2013/05/17 00:13:13 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -430,7 +430,8 @@ parse_option_list(u_char *optblob, size_t optblob_len, struct passwd *pw,
 {
 	char *command, *allowed;
 	const char *remote_ip;
-	u_char *name = NULL, *data_blob = NULL;
+	char *name = NULL;
+	u_char *data_blob = NULL;
 	u_int nlen, dlen, clen;
 	Buffer c, data;
 	int ret = -1, found;
@@ -548,7 +549,8 @@ parse_option_list(u_char *optblob, size_t optblob_len, struct passwd *pw,
 		buffer_clear(&data);
 		free(name);
 		free(data_blob);
-		name = data_blob = NULL;
+		name = NULL;
+		data_blob = NULL;
 	}
 	/* successfully parsed all options */
 	ret = 0;

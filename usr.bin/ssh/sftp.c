@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.145 2013/05/17 00:13:14 djm Exp $ */
+/* $OpenBSD: sftp.c,v 1.146 2013/06/04 20:42:36 dtucker Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -1808,7 +1808,8 @@ static unsigned char
 complete(EditLine *el, int ch)
 {
 	char **argv, *line, quote; 
-	u_int argc, carg, cursor, len, terminated, ret = CC_ERROR;
+	int argc, carg;
+	u_int cursor, len, terminated, ret = CC_ERROR;
 	const LineInfo *lf;
 	struct complete_ctx *complete_ctx;
 

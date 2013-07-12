@@ -1,4 +1,4 @@
-/* $OpenBSD: hostfile.h,v 1.18 2010/03/04 10:36:03 djm Exp $ */
+/* $OpenBSD: hostfile.h,v 1.19 2010/11/29 23:45:51 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -40,7 +40,7 @@ HostStatus check_key_in_hostkeys(struct hostkeys *, Key *,
 int	 lookup_key_in_hostkeys_by_type(struct hostkeys *, int,
     const struct hostkey_entry **);
 
-int	 hostfile_read_key(char **, u_int *, Key *);
+int	 hostfile_read_key(char **, int *, Key *);
 int	 add_host_to_hostfile(const char *, const char *, const Key *, int);
 
 #define HASH_MAGIC	"|1|"
