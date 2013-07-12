@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.c,v 1.89 2013/05/17 00:13:13 djm Exp $ */
+/* $OpenBSD: misc.c,v 1.90 2013/06/01 13:15:52 dtucker Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2005,2006 Damien Miller.  All rights reserved.
@@ -119,7 +119,7 @@ unset_nonblock(int fd)
 const char *
 ssh_gai_strerror(int gaierr)
 {
-	if (gaierr == EAI_SYSTEM)
+	if (gaierr == EAI_SYSTEM && errno != 0)
 		return strerror(errno);
 	return gai_strerror(gaierr);
 }
