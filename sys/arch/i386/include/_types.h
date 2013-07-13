@@ -1,4 +1,4 @@
-/*	$OpenBSD: _types.h,v 1.17 2013/07/04 13:57:41 otto Exp $	*/
+/*	$OpenBSD: _types.h,v 1.18 2013/07/05 19:46:27 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -108,7 +108,7 @@ typedef	__int64_t		__intmax_t;
 typedef	__uint64_t		__uintmax_t;
 
 /* Register size */
-typedef __int32_t		__register_t;
+typedef long			__register_t;
 
 /* VM system types */
 typedef unsigned long		__vaddr_t;

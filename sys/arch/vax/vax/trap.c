@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.45 2012/08/07 05:16:54 guenther Exp $     */
+/*	$OpenBSD: trap.c,v 1.46 2012/08/08 04:11:09 miod Exp $     */
 /*	$NetBSD: trap.c,v 1.47 1999/08/21 19:26:20 matt Exp $     */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -331,8 +331,8 @@ syscall(frame)
 	struct	trapframe *frame;
 {
 	struct sysent *callp;
-	int nsys;
-	int err, rval[2], args[8];
+	int nsys, err;
+	long rval[2], args[8];
 	struct trapframe *exptr;
 	struct proc *p = curproc;
 
