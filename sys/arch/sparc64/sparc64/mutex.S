@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.S,v 1.6 2009/08/13 13:24:55 weingart Exp $	*/
+/*	$OpenBSD: mutex.S,v 1.7 2010/09/28 20:27:55 miod Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -38,7 +38,7 @@
 #endif
 
 
-ENTRY(mtx_init)
+ENTRY(__mtx_init)
 	stx	%g0, [%o0 + MTX_OWNER]
 	stw	%o1, [%o0 + MTX_WANTIPL]
 	retl
