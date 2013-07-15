@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_support.c,v 1.21 2013/01/13 03:44:59 martynas Exp $	*/
+/*	$OpenBSD: n_support.c,v 1.22 2013/03/28 18:09:38 martynas Exp $	*/
 /*	$NetBSD: n_support.c,v 1.1 1995/10/10 23:37:06 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -237,6 +237,12 @@ double
 drem(double x, double p)
 {
 	return remainder(x, p);
+}
+
+float
+sqrtf(float x)
+{
+	return (float)sqrt((double) x);
 }
 
 double
