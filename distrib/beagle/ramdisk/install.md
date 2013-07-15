@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.5 2013/06/11 16:04:43 florian Exp $
+#	$OpenBSD: install.md,v 1.6 2013/07/09 10:35:41 rapha Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -45,7 +45,7 @@ md_installboot() {
 	if [[ -n $BEAGLE ]]; then
 		cp /mnt/usr/mdec/beagle/{mlo,u-boot.bin} /mnt/mnt/
 	elif [[ -n $BEAGLEBONE ]]; then
-		cp /mnt/usr/mdec/am335x/{mlo,u-boot.bin} /mnt/mnt/
+		cp /mnt/usr/mdec/am335x/{mlo,u-boot.img} /mnt/mnt/
 	elif [[ -n $PANDA ]]; then
 		cp /mnt/usr/mdec/panda/{mlo,u-boot.bin} /mnt/mnt/
 	fi
