@@ -1,4 +1,4 @@
-/*	$OpenBSD: cbus.c,v 1.9 2012/10/26 20:57:07 kettenis Exp $	*/
+/*	$OpenBSD: cbus.c,v 1.10 2012/11/23 21:55:43 kettenis Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -185,6 +185,9 @@ cbus_intr_establish(bus_space_tag_t t, bus_space_tag_t t0, int ihandle,
 		printf("hv_vintr_setenabled: %d\n", err);
 		return (NULL);
 	}
+
+	if (flags & BUS_INTR_ESTABLISH_MPSAFE)
+		ih->ih_mpsafe = 1;
 
 	intr_establish(ih->ih_pil, ih);
 	ih->ih_ack = cbus_intr_ack;
