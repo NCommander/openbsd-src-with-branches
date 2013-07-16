@@ -1,4 +1,4 @@
-/* $OpenBSD: */
+/* $OpenBSD$ */
 OUTPUT_ARCH(powerpc)
 SECTIONS
 {
