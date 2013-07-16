@@ -1,4 +1,4 @@
-/*	$OpenBSD: vbus.c,v 1.4 2008/12/30 21:23:33 kettenis Exp $	*/
+/*	$OpenBSD: vbus.c,v 1.5 2010/11/11 17:58:23 miod Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -200,6 +200,9 @@ vbus_intr_establish(bus_space_tag_t t, bus_space_tag_t t0, int ihandle,
 	    NULL, NULL, what);
 	if (ih == NULL)
 		return (NULL);
+
+	if (flags & BUS_INTR_ESTABLISH_MPSAFE)
+		ih->ih_mpsafe = 1;
 
 	intr_establish(ih->ih_pil, ih);
 	ih->ih_ack = vbus_intr_ack;
