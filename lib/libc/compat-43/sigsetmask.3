@@ -25,9 +25,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$OpenBSD: sigsetmask.3,v 1.13 2007/05/31 19:19:27 jmc Exp $
+.\"	$OpenBSD: sigsetmask.3,v 1.14 2013/06/05 03:39:22 tedu Exp $
 .\"
-.Dd $Mdocdate: May 31 2007 $
+.Dd $Mdocdate: June 5 2013 $
 .Dt SIGSETMASK 3
 .Os
 .Sh NAME
@@ -130,8 +130,13 @@ sigemptyset(&eset);
 .Xr sigsetops 3 ,
 .Xr sigvec 3
 .Sh HISTORY
-The
+A
 .Fn sigsetmask
-function call appeared in
-.Bx 4.2
-and has been deprecated.
+system call first appeared in
+.Bx 4.2 .
+In
+.Bx 4.3 Reno ,
+it was reimplemented as a wrapper around
+.Xr sigprocmask 2 .
+The old system call was kept for compatibility until
+.Ox 4.9 .
