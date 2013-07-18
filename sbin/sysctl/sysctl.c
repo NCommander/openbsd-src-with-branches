@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.191 2013/06/09 12:37:43 tedu Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.192 2013/06/09 12:54:38 tedu Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -1200,7 +1200,7 @@ sysctl_vfsgen(char *string, char **bufpp, int mib[], int flags, int *typep)
 
 	mib[1] = VFS_GENERIC;
 	mib[2] = VFS_CONF;
-	mib[3] = indx;
+	mib[3] = indx + 1;
 	size = sizeof vfc;
 	if (sysctl(mib, 4, &vfc, &size, (void *)0, (size_t)0) < 0) {
 		if (errno != EOPNOTSUPP)
