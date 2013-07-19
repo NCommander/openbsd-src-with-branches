@@ -1,4 +1,4 @@
-/*	$OpenBSD: to.c,v 1.4 2013/02/15 22:43:21 eric Exp $	*/
+/*	$OpenBSD: to.c,v 1.7 2013/05/24 17:03:14 eric Exp $	*/
 
 /*
  * Copyright (c) 2009 Jacek Masiulaniec <jacekm@dobremiasto.net>
@@ -455,18 +455,6 @@ relayhost_to_text(const struct relayhost *relay)
 		strlcat(buf, port, sizeof buf);
 	}
 	return buf;
-}
-
-uint32_t
-evpid_to_msgid(uint64_t evpid)
-{
-	return (evpid >> 32);
-}
-
-uint64_t
-msgid_to_evpid(uint32_t msgid)
-{
-	return ((uint64_t)msgid << 32);
 }
 
 uint64_t
