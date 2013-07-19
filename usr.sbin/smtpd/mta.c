@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta.c,v 1.158 2013/06/03 16:04:03 eric Exp $	*/
+/*	$OpenBSD: mta.c,v 1.159 2013/06/04 08:16:10 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -423,7 +423,6 @@ mta(void)
 	case -1:
 		fatal("mta: cannot fork");
 	case 0:
-		env->sc_pid = getpid();
 		break;
 	default:
 		return (pid);
