@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.309 2013/06/11 16:42:13 deraadt Exp $ */
+/* $OpenBSD: softraid.c,v 1.310 2013/07/01 11:33:21 jsing Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -1858,7 +1858,7 @@ sr_detach(struct device *self, int flags)
 		sc->sc_scsibus = NULL;
 	}
 
-	return (rv);
+	return (0);
 }
 
 void
