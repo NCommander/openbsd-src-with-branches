@@ -1,4 +1,4 @@
-.\"	$OpenBSD: aliases.5,v 1.4 2012/09/14 17:35:27 jmc Exp $
+.\"	$OpenBSD$
 .\"
 .\" Copyright (c) 2012 Gilles Chehade <gilles@poolp.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 14 2012 $
+.Dd $Mdocdate: January 26 2013 $
 .Dt ALIASES 5
 .Os
 .Sh NAME
@@ -80,6 +80,10 @@ will only use the part that precedes
 .Sq +
 as a
 .Em key .
+.It Ar error : Ns Ar code Ar message
+A status code and message to return.
+The code must be in either 400 (TempFail) or 500 (PermFail) ranges.
+The message must be present and can be freely chosen.
 .El
 .Sh FILES
 .Bl -tag -width "/etc/mail/aliasesXXX"
