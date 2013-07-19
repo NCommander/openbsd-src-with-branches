@@ -67,6 +67,9 @@ inet_socket (char *address)
 	 struct addrinfo *result0, *result;
 
 	 servname = strchr(address, ':');
+	 if (servname == NULL)
+		 errx(1, "invalid address: %s", address);
+
 	 *servname++ = '\0';
 	 hostname = address;
 	 s = -1;
@@ -213,8 +216,8 @@ delivery_lmtp_open(struct deliver *deliver)
 			 state = LMTP_BYE;
 			 break;
 
-		 case LMTP_BYE:
-			 break;
+		 default:
+			errx(1, "Bogus state %i", state);
 		 }
 	 }
 
