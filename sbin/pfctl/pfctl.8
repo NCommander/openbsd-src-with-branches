@@ -75,6 +75,18 @@ supported.
 Translation rules are described in
 .Xr pf.conf 5 .
 .Pp
+When the variable
+.Va pf
+is set to
+.Dv YES
+in
+.Xr rc.conf.local 8 ,
+the rule file specified with the variable
+.Va pf_rules
+is loaded automatically by the
+.Xr rc 8
+scripts and the packet filter is enabled.
+.Pp
 The packet filter does not itself forward packets between interfaces.
 Forwarding can be enabled by setting the
 .Xr sysctl 8
