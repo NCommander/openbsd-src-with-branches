@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.228 2013/07/12 00:20:00 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.229 2013/07/12 05:42:03 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2195,7 +2195,7 @@ main(int argc, char **argv)
 	/* we need this for the home * directory.  */
 	pw = getpwuid(getuid());
 	if (!pw) {
-		printf("You don't exist, go away!\n");
+		printf("No user exists for uid %lu\n", (u_long)getuid());
 		exit(1);
 	}
 	if (gethostname(hostname, sizeof(hostname)) < 0) {
