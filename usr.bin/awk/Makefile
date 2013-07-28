@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2010/08/25 19:21:04 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2012/12/21 08:50:27 espie Exp $
 
 PROG=	awk
 SRCS=	ytab.c lex.c b.c main.c parse.c proctab.c tran.c lib.c run.c
@@ -18,5 +18,9 @@ proctab.c: maketab
 
 maketab: ytab.h maketab.c
 	${HOSTCC} ${HOSTCFLAGS} ${.CURDIR}/maketab.c -o $@
+
+.if ${MACHINE_ARCH} == "m88k"
+COPTS+=	-O1
+.endif
 
 .include <bsd.prog.mk>
