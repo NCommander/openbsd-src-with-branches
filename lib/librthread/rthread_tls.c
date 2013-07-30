@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_tls.c,v 1.13 2011/11/06 11:48:59 guenther Exp $ */
+/*	$OpenBSD: rthread_tls.c,v 1.14 2013/06/01 20:47:40 tedu Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -175,6 +175,10 @@ _rthread_tls_destructors(pthread_t thread)
 				_spinlock(&rkeyslock);
 			}
 		}
+	}
+	for (rs = thread->local_storage; rs; rs = thread->local_storage) {
+		thread->local_storage = rs->next;
+		free(rs);
 	}
 	_spinunlock(&rkeyslock);
 }
