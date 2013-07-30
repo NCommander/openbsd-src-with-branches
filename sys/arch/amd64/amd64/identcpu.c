@@ -1,4 +1,4 @@
-/*	$OpenBSD: identcpu.c,v 1.47 2013/05/06 04:32:12 dlg Exp $	*/
+/*	$OpenBSD: identcpu.c,v 1.48 2013/06/04 15:29:16 haesbaert Exp $	*/
 /*	$NetBSD: identcpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*
@@ -395,6 +395,8 @@ identifycpu(struct cpu_info *ci)
 
 		CPUID(0x80000001, dummy, dummy,
 		    ecx, ci->ci_feature_eflags);
+		/* Other bits may clash */
+		ci->ci_feature_flags |= (ci->ci_feature_eflags & CPUID_NXE);
 		if (ci->ci_flags & CPUF_PRIMARY)
 			ecpu_ecxfeature = ecx;
 		/* Let cpu_fature be the common bits */
