@@ -1,6 +1,10 @@
-# $OpenBSD: Makefile,v 1.4 2004/07/20 06:24:05 david Exp $
+# $OpenBSD: Makefile,v 1.5 2004/12/29 06:16:45 david Exp $
 
-SUBDIR+= gcc gcc-bounds libiberty libf2c
+SUBDIR+= gcc libiberty
+
+.if defined(REGRESS_FULL)
+SUBDIR += gcc-bounds
+.endif
 
 install:
 
