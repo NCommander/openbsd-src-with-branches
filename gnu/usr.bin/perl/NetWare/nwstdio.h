@@ -1,5 +1,5 @@
 /*
- * Copyright © 2001 Novell, Inc. All Rights Reserved.
+ * Copyright Â© 2001 Novell, Inc. All Rights Reserved.
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Artistic License, as specified in the README file.
@@ -52,7 +52,7 @@
 #ifdef HAS_SETLINEBUF
 #define PerlIO_setlinebuf(f)		(*PL_StdIO->pSetlinebuf)(PL_StdIO, (f))
 #else
-#define PerlIO_setlinebuf(f)		setvbuf(f, Nullch, _IOLBF, 0)
+#define PerlIO_setlinebuf(f)		setvbuf(f, NULL, _IOLBF, 0)
 #endif
 
 #define PerlIO_isutf8(f)		0

@@ -3,6 +3,11 @@
 BEGIN {
         chdir 't' if -d 't';
         @INC = '../lib';
+	require Config;
+	if (($Config::Config{'extensions'} !~ m!\bList/Util\b!) ){
+		print "1..0 # Skip -- Perl configured without List::Util module\n";
+		exit 0;
+	}
 }
 
 # symbolic references used later
@@ -81,7 +86,7 @@ BEGIN {
 # test DB::_clientname()
 is( DB::_clientname('foo=A(1)'), 'foo',
     'DB::_clientname should return refname');
-cmp_ok( DB::_clientname('bar'), 'eq', '',
+is( DB::_clientname('bar'), undef,
         'DB::_clientname should not return non refname');
 
 # test DB::next() and DB::step()

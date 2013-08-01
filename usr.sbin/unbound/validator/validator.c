@@ -1881,7 +1881,8 @@ processFinished(struct module_qstate* qstate, struct val_qstate* vq,
 	/* store overall validation result in orig_msg */
 	if(vq->rrset_skip == 0)
 		vq->orig_msg->rep->security = vq->chase_reply->security;
-	else if(vq->rrset_skip < vq->orig_msg->rep->an_numrrsets + 
+	else if(subtype != VAL_CLASS_REFERRAL ||
+		vq->rrset_skip < vq->orig_msg->rep->an_numrrsets + 
 		vq->orig_msg->rep->ns_numrrsets) {
 		/* ignore sec status of additional section if a referral 
 		 * type message skips there and
@@ -1977,15 +1978,17 @@ processFinished(struct module_qstate* qstate, struct val_qstate* vq,
 
 	/* store results in cache */
 	if(qstate->query_flags&BIT_RD) {
+		/* if secure, this will override cache anyway, no need
+		 * to check if from parentNS */
 		if(!dns_cache_store(qstate->env, &vq->orig_msg->qinfo, 
-			vq->orig_msg->rep, 0, qstate->prefetch_leeway, NULL)) {
+			vq->orig_msg->rep, 0, qstate->prefetch_leeway, 0, NULL)) {
 			log_err("out of memory caching validator results");
 		}
 	} else {
 		/* for a referral, store the verified RRsets */
 		/* and this does not get prefetched, so no leeway */
 		if(!dns_cache_store(qstate->env, &vq->orig_msg->qinfo, 
-			vq->orig_msg->rep, 1, 0, NULL)) {
+			vq->orig_msg->rep, 1, 0, 0, NULL)) {
 			log_err("out of memory caching validator results");
 		}
 	}
@@ -2923,7 +2926,6 @@ val_get_mem(struct module_env* env, int id)
 		return 0;
 	return sizeof(*ve) + key_cache_get_mem(ve->kcache) + 
 		val_neg_get_mem(ve->neg_cache) +
-		anchors_get_mem(env->anchors) + 
 		sizeof(size_t)*2*ve->nsec3_keyiter_count;
 }
 

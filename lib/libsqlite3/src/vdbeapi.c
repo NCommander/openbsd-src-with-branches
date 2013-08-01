@@ -71,17 +71,11 @@ int sqlite3_finalize(sqlite3_stmt *pStmt){
   }else{
     Vdbe *v = (Vdbe*)pStmt;
     sqlite3 *db = v->db;
-#if SQLITE_THREADSAFE
-    sqlite3_mutex *mutex;
-#endif
     if( vdbeSafety(v) ) return SQLITE_MISUSE_BKPT;
-#if SQLITE_THREADSAFE
-    mutex = v->db->mutex;
-#endif
-    sqlite3_mutex_enter(mutex);
+    sqlite3_mutex_enter(db->mutex);
     rc = sqlite3VdbeFinalize(v);
     rc = sqlite3ApiExit(db, rc);
-    sqlite3_mutex_leave(mutex);
+    sqlite3LeaveMutexAndCloseZombie(db);
   }
   return rc;
 }
@@ -451,21 +445,13 @@ end_of_step:
   assert( p->rc!=SQLITE_ROW && p->rc!=SQLITE_DONE );
   if( p->isPrepareV2 && rc!=SQLITE_ROW && rc!=SQLITE_DONE ){
     /* If this statement was prepared using sqlite3_prepare_v2(), and an
-    ** error has occured, then return the error code in p->rc to the
+    ** error has occurred, then return the error code in p->rc to the
     ** caller. Set the error code in the database handle to the same value.
     */ 
     rc = sqlite3VdbeTransferError(p);
   }
   return (rc&db->errMask);
 }
-
-/*
-** The maximum number of times that a statement will try to reparse
-** itself before giving up and returning SQLITE_SCHEMA.
-*/
-#ifndef SQLITE_MAX_SCHEMA_RETRY
-# define SQLITE_MAX_SCHEMA_RETRY 5
-#endif
 
 /*
 ** This is the top-level implementation of sqlite3_step().  Call
@@ -484,10 +470,12 @@ int sqlite3_step(sqlite3_stmt *pStmt){
   }
   db = v->db;
   sqlite3_mutex_enter(db->mutex);
+  v->doingRerun = 0;
   while( (rc = sqlite3Step(v))==SQLITE_SCHEMA
          && cnt++ < SQLITE_MAX_SCHEMA_RETRY
          && (rc2 = rc = sqlite3Reprepare(v))==SQLITE_OK ){
     sqlite3_reset(pStmt);
+    v->doingRerun = 1;
     assert( v->expired==0 );
   }
   if( rc2!=SQLITE_OK && ALWAYS(v->isPrepareV2) && ALWAYS(db->pErr) ){
@@ -1202,7 +1190,7 @@ int sqlite3VdbeParameterIndex(Vdbe *p, const char *zName, int nName){
   if( zName ){
     for(i=0; i<p->nzVar; i++){
       const char *z = p->azVar[i];
-      if( z && memcmp(z,zName,nName)==0 && z[nName]==0 ){
+      if( z && strncmp(z,zName,nName)==0 && z[nName]==0 ){
         return i+1;
       }
     }

@@ -411,6 +411,7 @@ struct BtShared {
 #ifndef SQLITE_OMIT_AUTOVACUUM
   u8 autoVacuum;        /* True if auto-vacuum is enabled */
   u8 incrVacuum;        /* True if incr-vacuum is enabled */
+  u8 bDoTruncate;       /* True to truncate db on commit */
 #endif
   u8 inTransaction;     /* Transaction state */
   u8 max1bytePayload;   /* Maximum first byte of cell for a 1-byte payload */
@@ -510,6 +511,7 @@ struct BtCursor {
 #ifndef SQLITE_OMIT_INCRBLOB
   u8 isIncrblobHandle;      /* True if this cursor is an incr. io handle */
 #endif
+  u8 hints;                             /* As configured by CursorSetHints() */
   i16 iPage;                            /* Index of current page in apPage */
   u16 aiIdx[BTCURSOR_MAX_DEPTH];        /* Current index in apPage[i] */
   MemPage *apPage[BTCURSOR_MAX_DEPTH];  /* Pages from root to current page */
@@ -631,12 +633,18 @@ struct BtCursor {
 /*
 ** This structure is passed around through all the sanity checking routines
 ** in order to keep track of some global state information.
+**
+** The aRef[] array is allocated so that there is 1 bit for each page in
+** the database. As the integrity-check proceeds, for each page used in
+** the database the corresponding bit is set. This allows integrity-check to 
+** detect pages that are used twice and orphaned pages (both of which 
+** indicate corruption).
 */
 typedef struct IntegrityCk IntegrityCk;
 struct IntegrityCk {
   BtShared *pBt;    /* The tree being checked out */
   Pager *pPager;    /* The associated pager.  Also accessible by pBt->pPager */
-  int *anRef;       /* Number of times each page is referenced */
+  u8 *aPgRef;       /* 1 bit per page in the db (see above) */
   Pgno nPage;       /* Number of pages in the database */
   int mxErr;        /* Stop accumulating errors when this reaches zero */
   int nErr;         /* Number of messages written to zErrMsg so far */

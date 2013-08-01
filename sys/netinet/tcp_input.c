@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.265 2013/07/01 10:53:52 bluhm Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.264 2013/06/20 20:21:20 mikeb Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -378,7 +378,7 @@ tcp_input(struct mbuf *m, ...)
 	struct m_tag *mtag;
 	struct tdb_ident *tdbi;
 	struct tdb *tdb;
-	int error;
+	int error, s;
 #endif /* IPSEC */
 	int af;
 #ifdef TCP_ECN
@@ -886,6 +886,7 @@ findpcb:
 #ifdef IPSEC
 	/* Find most recent IPsec tag */
 	mtag = m_tag_find(m, PACKET_TAG_IPSEC_IN_DONE, NULL);
+        s = splnet();
 	if (mtag != NULL) {
 		tdbi = (struct tdb_ident *)(mtag + 1);
 	        tdb = gettdb(tdbi->rdomain, tdbi->spi,
@@ -896,6 +897,7 @@ findpcb:
 	    tdb, inp, 0);
 	if (error) {
 		tcpstat.tcps_rcvnosec++;
+		splx(s);
 		goto drop;
 	}
 
@@ -907,6 +909,7 @@ findpcb:
 				inp->inp_ipo = ipsec_add_policy(inp, af,
 				    IPSP_DIRECTION_OUT);
 				if (inp->inp_ipo == NULL) {
+					splx(s);
 					goto drop;
 				}
 			}
@@ -933,6 +936,7 @@ findpcb:
 			inp->inp_tdb_in = NULL;
 		}
 	}
+        splx(s);
 #endif /* IPSEC */
 
 	/*
@@ -965,7 +969,7 @@ findpcb:
 
 		/* subtract out the tcp timestamp modulator */
 		opti.ts_ecr -= tp->ts_modulate;
-
+                                                     
 		/* make sure ts_ecr is sensible */
 		rtt_test = tcp_now - opti.ts_ecr;
 		if (rtt_test < 0 || rtt_test > TCP_RTT_MAX)

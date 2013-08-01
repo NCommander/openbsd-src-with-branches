@@ -1,14 +1,14 @@
 /*
  * edns.c -- EDNS definitions (RFC 2671).
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
  */
 
 
-#include <config.h>
+#include "config.h"
 
 #include <string.h>
 
@@ -64,7 +64,6 @@ edns_parse_record(edns_record_type *edns, buffer_type *packet)
 	uint8_t  opt_owner;
 	uint16_t opt_type;
 	uint16_t opt_class;
-	uint8_t  opt_extended_rcode;
 	uint8_t  opt_version;
 	uint16_t opt_flags;
 	uint16_t opt_rdlen;
@@ -84,12 +83,13 @@ edns_parse_record(edns_record_type *edns, buffer_type *packet)
 	}
 
 	opt_class = buffer_read_u16(packet);
-	opt_extended_rcode = buffer_read_u8(packet);
+	(void)buffer_read_u8(packet); /* opt_extended_rcode */
 	opt_version = buffer_read_u8(packet);
 	opt_flags = buffer_read_u16(packet);
 	opt_rdlen = buffer_read_u16(packet);
 
 	if (opt_version != 0) {
+		/* The only error is VERSION not implemented */
 		edns->status = EDNS_ERROR;
 		return 1;
 	}

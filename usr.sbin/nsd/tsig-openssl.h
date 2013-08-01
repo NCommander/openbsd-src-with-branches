@@ -1,7 +1,7 @@
 /*
  * tsig-openssl.h -- Interface to OpenSSL for TSIG support.
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -10,7 +10,7 @@
 #ifndef _TSIG_OPENSSL_H_
 #define _TSIG_OPENSSL_H_
 
-#if defined(TSIG) && defined(HAVE_SSL)
+#if defined(HAVE_SSL)
 
 #include "region-allocator.h"
 
@@ -24,6 +24,6 @@ int tsig_openssl_init(region_type *region);
 
 void tsig_openssl_finalize();
 
-#endif /* defined(TSIG) && defined(HAVE_SSL) */
+#endif /* defined(HAVE_SSL) */
 
 #endif /* _TSIG_H_ */

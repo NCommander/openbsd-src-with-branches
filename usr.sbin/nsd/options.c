@@ -1,22 +1,21 @@
 /*
  * options.c -- options functions.
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
  */
-#include <config.h>
+#include "config.h"
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
 #include "options.h"
 #include "query.h"
 #include "tsig.h"
-#include "difffile.h"
+#include "rrl.h"
 
 #include "configyyrename.h"
-#include "configparser.h"
 nsd_options_t* nsd_options = 0;
 config_parser_state_t* cfg_parser = 0;
 extern FILE* c_in, *c_out;
@@ -42,6 +41,7 @@ nsd_options_t* nsd_options_create(region_type* region)
 	opt->ip6_only = 0;
 	opt->database = DBFILE;
 	opt->identity = 0;
+	opt->nsid = 0;
 	opt->logfile = 0;
 	opt->server_count = 1;
 	opt->tcp_count = 10;
@@ -53,12 +53,22 @@ nsd_options_t* nsd_options_create(region_type* region)
 	opt->port = UDP_PORT;
 /* deprecated?	opt->port = TCP_PORT; */
 	opt->statistics = 0;
+#ifdef USE_ZONE_STATS
+	opt->zonestatsfile = ZONESTATSFILE;
+#else
+	opt->zonestatsfile = 0;
+#endif
 	opt->chroot = 0;
 	opt->username = USER;
 	opt->zonesdir = ZONESDIR;
 	opt->difffile = DIFFFILE;
 	opt->xfrdfile = XFRDFILE;
 	opt->xfrd_reload_timeout = 10;
+#ifdef RATELIMIT
+	opt->rrl_size = RRL_BUCKETS;
+	opt->rrl_ratelimit = RRL_LIMIT/2;
+	opt->rrl_whitelist_ratelimit = RRL_WLIST_LIMIT/2;
+#endif
 	nsd_options = opt;
 	return opt;
 }
@@ -227,6 +237,9 @@ zone_options_t* zone_options_create(region_type* region)
 	zone->provide_xfr = 0;
 	zone->outgoing_interface = 0;
 	zone->allow_axfr_fallback = 1;
+#ifdef RATELIMIT
+	zone->rrl_whitelist = 0;
+#endif
 	return zone;
 }
 
@@ -238,9 +251,7 @@ key_options_t* key_options_create(region_type* region)
 	key->next = 0;
 	key->algorithm = 0;
 	key->secret = 0;
-#ifdef TSIG
 	key->tsig_key = 0;
-#endif
 	return key;
 }
 
@@ -295,37 +306,92 @@ int acl_check_incoming(acl_options_t* acl, struct query* q,
 	return found_match;
 }
 
+#ifdef INET6
+int acl_addr_matches_ipv6host(acl_options_t* acl, struct sockaddr_storage* addr_storage, unsigned int port)
+{
+	struct sockaddr_in6* addr = (struct sockaddr_in6*)addr_storage;
+	if(acl->port != 0 && acl->port != port)
+		return 0;
+	switch(acl->rangetype) {
+	case acl_range_mask:
+	case acl_range_subnet:
+		if(!acl_addr_match_mask((uint32_t*)&acl->addr.addr6, (uint32_t*)&addr->sin6_addr,
+			(uint32_t*)&acl->range_mask.addr6, sizeof(struct in6_addr)))
+			return 0;
+		break;
+	case acl_range_minmax:
+		if(!acl_addr_match_range((uint32_t*)&acl->addr.addr6, (uint32_t*)&addr->sin6_addr,
+			(uint32_t*)&acl->range_mask.addr6, sizeof(struct in6_addr)))
+			return 0;
+		break;
+	case acl_range_single:
+	default:
+		if(memcmp(&addr->sin6_addr, &acl->addr.addr6,
+			sizeof(struct in6_addr)) != 0)
+			return 0;
+		break;
+	}
+	return 1;
+}
+#endif
+
+int acl_addr_matches_ipv4host(acl_options_t* acl, struct sockaddr_in* addr, unsigned int port)
+{
+	if(acl->port != 0 && acl->port != port)
+		return 0;
+	switch(acl->rangetype) {
+	case acl_range_mask:
+	case acl_range_subnet:
+		if(!acl_addr_match_mask((uint32_t*)&acl->addr.addr, (uint32_t*)&addr->sin_addr,
+			(uint32_t*)&acl->range_mask.addr, sizeof(struct in_addr)))
+			return 0;
+		break;
+	case acl_range_minmax:
+		if(!acl_addr_match_range((uint32_t*)&acl->addr.addr, (uint32_t*)&addr->sin_addr,
+			(uint32_t*)&acl->range_mask.addr, sizeof(struct in_addr)))
+			return 0;
+		break;
+	case acl_range_single:
+	default:
+		if(memcmp(&addr->sin_addr, &acl->addr.addr,
+			sizeof(struct in_addr)) != 0)
+			return 0;
+		break;
+	}
+	return 1;
+}
+
+int acl_addr_matches_host(acl_options_t* acl, acl_options_t* host)
+{
+	if(acl->is_ipv6)
+	{
+#ifdef INET6
+		struct sockaddr_storage* addr = (struct sockaddr_storage*)&host->addr;
+		if(!host->is_ipv6) return 0;
+		return acl_addr_matches_ipv6host(acl, addr, host->port);
+#else
+		return 0; /* no inet6, no match */
+#endif
+	}
+	else
+	{
+		struct sockaddr_in* addr = (struct sockaddr_in*)&host->addr;
+		if(host->is_ipv6) return 0;
+		return acl_addr_matches_ipv4host(acl, addr, host->port);
+	}
+	/* ENOTREACH */
+	return 0;
+}
+
 int acl_addr_matches(acl_options_t* acl, struct query* q)
 {
 	if(acl->is_ipv6)
 	{
 #ifdef INET6
-		struct sockaddr_storage* addr_storage = (struct sockaddr_storage*)&q->addr;
-		struct sockaddr_in6* addr = (struct sockaddr_in6*)&q->addr;
-		if(addr_storage->ss_family != AF_INET6)
+		struct sockaddr_storage* addr = (struct sockaddr_storage*)&q->addr;
+		if(addr->ss_family != AF_INET6)
 			return 0;
-		if(acl->port != 0 && acl->port != ntohs(addr->sin6_port))
-			return 0;
-		switch(acl->rangetype) {
-		case acl_range_mask:
-		case acl_range_subnet:
-			if(!acl_addr_match_mask((uint32_t*)&acl->addr.addr6, (uint32_t*)&addr->sin6_addr,
-				(uint32_t*)&acl->range_mask.addr6, sizeof(struct in6_addr)))
-				return 0;
-			break;
-		case acl_range_minmax:
-			if(!acl_addr_match_range((uint32_t*)&acl->addr.addr6, (uint32_t*)&addr->sin6_addr,
-				(uint32_t*)&acl->range_mask.addr6, sizeof(struct in6_addr)))
-				return 0;
-			break;
-		case acl_range_single:
-		default:
-			if(memcmp(&addr->sin6_addr, &acl->addr.addr6,
-				sizeof(struct in6_addr)) != 0)
-				return 0;
-			break;
-		}
-		return 1;
+		return acl_addr_matches_ipv6host(acl, addr, ntohs(((struct sockaddr_in6*)addr)->sin6_port));
 #else
 		return 0; /* no inet6, no match */
 #endif
@@ -335,28 +401,7 @@ int acl_addr_matches(acl_options_t* acl, struct query* q)
 		struct sockaddr_in* addr = (struct sockaddr_in*)&q->addr;
 		if(addr->sin_family != AF_INET)
 			return 0;
-		if(acl->port != 0 && acl->port != ntohs(addr->sin_port))
-			return 0;
-		switch(acl->rangetype) {
-		case acl_range_mask:
-		case acl_range_subnet:
-			if(!acl_addr_match_mask((uint32_t*)&acl->addr.addr, (uint32_t*)&addr->sin_addr,
-				(uint32_t*)&acl->range_mask.addr, sizeof(struct in_addr)))
-				return 0;
-			break;
-		case acl_range_minmax:
-			if(!acl_addr_match_range((uint32_t*)&acl->addr.addr, (uint32_t*)&addr->sin_addr,
-				(uint32_t*)&acl->range_mask.addr, sizeof(struct in_addr)))
-				return 0;
-			break;
-		case acl_range_single:
-		default:
-			if(memcmp(&addr->sin_addr, &acl->addr.addr,
-				sizeof(struct in_addr)) != 0)
-				return 0;
-			break;
-		}
-		return 1;
+		return acl_addr_matches_ipv4host(acl, addr, ntohs(addr->sin_port));
 	}
 	/* ENOTREACH */
 	return 0;
@@ -411,7 +456,6 @@ int acl_key_matches(acl_options_t* acl, struct query* q)
 {
 	if(acl->blocked)
 		return 1;
-#ifdef TSIG
 	if(acl->nokey) {
 		if(q->tsig.status == TSIG_NOT_PRESENT)
 			return 1;
@@ -441,11 +485,6 @@ int acl_key_matches(acl_options_t* acl, struct query* q)
 		return 0; /* no such algo */
 	}
 	return 1;
-#else
-	if(acl->nokey)
-		return 1;
-	return 0;
-#endif
 }
 
 int
@@ -483,9 +522,9 @@ acl_same_host(acl_options_t* a, acl_options_t* b)
 	return 1;
 }
 
+#if defined(HAVE_SSL)
 void key_options_tsig_add(nsd_options_t* opt)
 {
-#if defined(TSIG) && defined(HAVE_SSL)
 	key_options_t* optkey;
 	uint8_t data[4000];
 	tsig_key_type* tsigkey;
@@ -511,8 +550,8 @@ void key_options_tsig_add(nsd_options_t* opt)
 		tsig_add_key(tsigkey);
 		optkey->tsig_key = tsigkey;
 	}
-#endif
 }
+#endif
 
 int zone_is_slave(zone_options_t* opt)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.102 2013/07/04 08:22:19 mpi Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.101 2013/03/28 23:10:05 tedu Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -822,9 +822,8 @@ struct llinfo_arp *
 arplookup(u_int32_t addr, int create, int proxy, u_int tableid)
 {
 	struct rtentry *rt;
-	struct sockaddr_inarp sin;
+	static struct sockaddr_inarp sin;
 
-	bzero(&sin, sizeof(sin));
 	sin.sin_len = sizeof(sin);
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = addr;

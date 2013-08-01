@@ -45,13 +45,23 @@
 #include "util/module.h"
 #include "util/regional.h"
 #include <fcntl.h>
+#ifdef HAVE_OPENSSL_SSL_H
 #include <openssl/ssl.h>
+#endif
+#ifdef HAVE_OPENSSL_ERR_H
 #include <openssl/err.h>
+#endif
 
 /** max length of an IP address (the address portion) that we allow */
 #define MAX_ADDR_STRLEN 128 /* characters */
 /** default value for EDNS ADVERTISED size */
 uint16_t EDNS_ADVERTISED_SIZE = 4096;
+
+/** minimal responses when positive answer: default is no */
+int MINIMAL_RESPONSES = 0;
+
+/** rrset order roundrobin: default is no */
+int RRSET_ROUNDROBIN = 0;
 
 /* returns true is string addr is an ip6 specced address */
 int
@@ -559,6 +569,7 @@ void sock_list_merge(struct sock_list** list, struct regional* region,
 void
 log_crypto_err(const char* str)
 {
+#ifdef HAVE_SSL
 	/* error:[error code]:[library name]:[function name]:[reason string] */
 	char buf[128];
 	unsigned long e;
@@ -568,10 +579,14 @@ log_crypto_err(const char* str)
 		ERR_error_string_n(e, buf, sizeof(buf));
 		log_err("and additionally crypto %s", buf);
 	}
+#else
+	(void)str;
+#endif /* HAVE_SSL */
 }
 
 void* listen_sslctx_create(char* key, char* pem, char* verifypem)
 {
+#ifdef HAVE_SSL
 	SSL_CTX* ctx = SSL_CTX_new(SSLv23_server_method());
 	if(!ctx) {
 		log_crypto_err("could not SSL_CTX_new");
@@ -613,10 +628,15 @@ void* listen_sslctx_create(char* key, char* pem, char* verifypem)
 		SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
 	}
 	return ctx;
+#else
+	(void)key; (void)pem; (void)verifypem;
+	return NULL;
+#endif
 }
 
 void* connect_sslctx_create(char* key, char* pem, char* verifypem)
 {
+#ifdef HAVE_SSL
 	SSL_CTX* ctx = SSL_CTX_new(SSLv23_client_method());
 	if(!ctx) {
 		log_crypto_err("could not allocate SSL_CTX pointer");
@@ -656,10 +676,15 @@ void* connect_sslctx_create(char* key, char* pem, char* verifypem)
 		SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
 	}
 	return ctx;
+#else
+	(void)key; (void)pem; (void)verifypem;
+	return NULL;
+#endif
 }
 
 void* incoming_ssl_fd(void* sslctx, int fd)
 {
+#ifdef HAVE_SSL
 	SSL* ssl = SSL_new((SSL_CTX*)sslctx);
 	if(!ssl) {
 		log_crypto_err("could not SSL_new");
@@ -673,10 +698,15 @@ void* incoming_ssl_fd(void* sslctx, int fd)
 		return NULL;
 	}
 	return ssl;
+#else
+	(void)sslctx; (void)fd;
+	return NULL;
+#endif
 }
 
 void* outgoing_ssl_fd(void* sslctx, int fd)
 {
+#ifdef HAVE_SSL
 	SSL* ssl = SSL_new((SSL_CTX*)sslctx);
 	if(!ssl) {
 		log_crypto_err("could not SSL_new");
@@ -690,4 +720,8 @@ void* outgoing_ssl_fd(void* sslctx, int fd)
 		return NULL;
 	}
 	return ssl;
+#else
+	(void)sslctx; (void)fd;
+	return NULL;
+#endif
 }

@@ -1,7 +1,7 @@
 /*
  * configyyrename.h -- renames for config file yy values to avoid conflicts.
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -9,7 +9,7 @@
 
 #ifndef CONFIGYYRENAME_H
 #define CONFIGYYRENAME_H
-#include <config.h>
+#include "config.h"
 
 /* defines to change symbols so that no yacc/lex symbols clash */
 #define yymaxdepth c_maxdepth

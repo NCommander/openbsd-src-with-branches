@@ -93,6 +93,7 @@ usage()
 	printf("  flush_type <name> <type>	flush name, type from cache\n");
 	printf("  flush_zone <name>		flush everything at or under name\n");
 	printf("  				from rr and dnssec caches\n");
+	printf("  flush_bogus			flush all bogus data\n");
 	printf("  flush_stats 			flush statistics, make zero\n");
 	printf("  flush_requestlist 		drop queries that are worked on\n");
 	printf("  dump_requestlist		show what is worked on\n");
@@ -104,6 +105,12 @@ usage()
 	printf("  list_forwards			list forward-zones in use\n");
 	printf("  list_local_zones		list local-zones in use\n");
 	printf("  list_local_data		list local-data RRs in use\n");
+	printf("  forward_add [+i] zone addr..	add forward-zone with servers\n");
+	printf("  forward_remove [+i] zone	remove forward zone\n");
+	printf("  stub_add [+ip] zone addr..	add stub-zone with servers\n");
+	printf("  stub_remove [+i] zone		remove stub zone\n");
+	printf("		+i		also do dnssec insecure point\n");
+	printf("		+p		set stub to use priming\n");
 	printf("  forward [off | addr ...]	without arg show forward setup\n");
 	printf("				or off to turn off root forwarding\n");
 	printf("				or give list of ip addresses\n");
@@ -360,6 +367,9 @@ int main(int argc, char* argv[])
 #ifdef USE_WINSOCK
 	if((r = WSAStartup(MAKEWORD(2,2), &wsa_data)) != 0)
 		fatal_exit("WSAStartup failed: %s", wsa_strerror(r));
+	/* use registry config file in preference to compiletime location */
+	if(!(cfgfile=w_lookup_reg_str("Software\\Unbound", "ConfigFile")))
+		cfgfile = CONFIGFILE;
 #endif
 
 	ERR_load_crypto_strings();
@@ -370,7 +380,8 @@ int main(int argc, char* argv[])
 	if(!RAND_status()) {
                 /* try to seed it */
                 unsigned char buf[256];
-                unsigned int v, seed=(unsigned)time(NULL) ^ (unsigned)getpid();
+                unsigned int seed=(unsigned)time(NULL) ^ (unsigned)getpid();
+		unsigned int v = seed;
                 size_t i;
                 for(i=0; i<256/sizeof(v); i++) {
                         memmove(buf+i*sizeof(v), &v, sizeof(v));

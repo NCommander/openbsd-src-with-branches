@@ -134,7 +134,9 @@ int sqlite3InitCallback(void *pInit, int argc, char **argv, char **NotUsed){
 static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   int rc;
   int i;
+#ifndef SQLITE_OMIT_DEPRECATED
   int size;
+#endif
   Table *pTab;
   Db *pDb;
   char const *azArg[4];
@@ -177,7 +179,7 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
 
   /* zMasterSchema and zInitScript are set to point at the master schema
   ** and initialisation script appropriate for the database being
-  ** initialised. zMasterName is the name of the master table.
+  ** initialized. zMasterName is the name of the master table.
   */
   if( !OMIT_TEMPDB && iDb==1 ){
     zMasterSchema = temp_master_schema;
@@ -257,12 +259,15 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   */
   if( meta[BTREE_TEXT_ENCODING-1] ){  /* text encoding */
     if( iDb==0 ){
+#ifndef SQLITE_OMIT_UTF16
       u8 encoding;
       /* If opening the main database, set ENC(db). */
       encoding = (u8)meta[BTREE_TEXT_ENCODING-1] & 3;
       if( encoding==0 ) encoding = SQLITE_UTF8;
       ENC(db) = encoding;
-      db->pDfltColl = sqlite3FindCollSeq(db, SQLITE_UTF8, "BINARY", 0);
+#else
+      ENC(db) = SQLITE_UTF8;
+#endif
     }else{
       /* If opening an attached database, the encoding much match ENC(db) */
       if( meta[BTREE_TEXT_ENCODING-1]!=ENC(db) ){
@@ -342,7 +347,7 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   }
   if( db->mallocFailed ){
     rc = SQLITE_NOMEM;
-    sqlite3ResetInternalSchema(db, -1);
+    sqlite3ResetAllSchemasOfConnection(db);
   }
   if( rc==SQLITE_OK || (db->flags&SQLITE_RecoveryMode)){
     /* Black magic: If the SQLITE_RecoveryMode flag is set, then consider
@@ -395,11 +400,11 @@ int sqlite3Init(sqlite3 *db, char **pzErrMsg){
     if( DbHasProperty(db, i, DB_SchemaLoaded) || i==1 ) continue;
     rc = sqlite3InitOne(db, i, pzErrMsg);
     if( rc ){
-      sqlite3ResetInternalSchema(db, i);
+      sqlite3ResetOneSchema(db, i);
     }
   }
 
-  /* Once all the other databases have been initialised, load the schema
+  /* Once all the other databases have been initialized, load the schema
   ** for the TEMP database. This is loaded last, as the TEMP database
   ** schema may contain references to objects in other databases.
   */
@@ -408,7 +413,7 @@ int sqlite3Init(sqlite3 *db, char **pzErrMsg){
                     && !DbHasProperty(db, 1, DB_SchemaLoaded) ){
     rc = sqlite3InitOne(db, 1, pzErrMsg);
     if( rc ){
-      sqlite3ResetInternalSchema(db, 1);
+      sqlite3ResetOneSchema(db, 1);
     }
   }
 #endif
@@ -422,7 +427,7 @@ int sqlite3Init(sqlite3 *db, char **pzErrMsg){
 }
 
 /*
-** This routine is a no-op if the database schema is already initialised.
+** This routine is a no-op if the database schema is already initialized.
 ** Otherwise, the schema is loaded. An error code is returned.
 */
 int sqlite3ReadSchema(Parse *pParse){
@@ -476,7 +481,7 @@ static void schemaIsValid(Parse *pParse){
     sqlite3BtreeGetMeta(pBt, BTREE_SCHEMA_VERSION, (u32 *)&cookie);
     assert( sqlite3SchemaMutexHeld(db, iDb, 0) );
     if( cookie!=db->aDb[iDb].pSchema->schema_cookie ){
-      sqlite3ResetInternalSchema(db, iDb);
+      sqlite3ResetOneSchema(db, iDb);
       pParse->rc = SQLITE_SCHEMA;
     }
 
@@ -649,7 +654,6 @@ static int sqlite3Prepare(
   }
 #endif
 
-  assert( db->init.busy==0 || saveSqlFlag==0 );
   if( db->init.busy==0 ){
     Vdbe *pVdbe = pParse->pVdbe;
     sqlite3VdbeSetSql(pVdbe, zSql, (int)(pParse->zTail-zSql), saveSqlFlag);
@@ -706,6 +710,7 @@ static int sqlite3LockAndPrepare(
   }
   sqlite3BtreeLeaveAll(db);
   sqlite3_mutex_leave(db->mutex);
+  assert( rc==SQLITE_OK || *ppStmt==0 );
   return rc;
 }
 

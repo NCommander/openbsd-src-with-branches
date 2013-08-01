@@ -1,7 +1,7 @@
 /*
  * tsig.h -- TSIG definitions (RFC 2845).
  *
- * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+ * Copyright (c) 2001-2011, NLnet Labs. All rights reserved.
  *
  * See LICENSE for the license.
  *
@@ -154,11 +154,6 @@ void tsig_add_algorithm(tsig_algorithm_type *algorithm);
  * Find an HMAC algorithm based on its short name.
  */
 tsig_algorithm_type *tsig_get_algorithm_by_name(const char *name);
-
-/*
- * Find an HMAC algorithm based on its identifier.
- */
-tsig_algorithm_type *tsig_get_algorithm_by_id(uint8_t alg);
 
 /*
  * Return a descriptive error message based on the TSIG error code.

@@ -104,8 +104,12 @@
 # if (defined(__GNUC__) && (defined(__i386__) || defined(__i386))) || \
      (defined(_MSC_VER) && defined(_M_IX86))
 #  define COMPILE_HW_PADLOCK
-static ENGINE *ENGINE_padlock (void);
 # endif
+#endif
+
+#ifdef OPENSSL_NO_DYNAMIC_ENGINE
+#ifdef COMPILE_HW_PADLOCK
+static ENGINE *ENGINE_padlock (void);
 #endif
 
 void ENGINE_load_padlock (void)
@@ -119,6 +123,8 @@ void ENGINE_load_padlock (void)
 	ERR_clear_error ();
 #endif
 }
+
+#endif
 
 #ifdef COMPILE_HW_PADLOCK
 /* We do these includes here to avoid header problems on platforms that
@@ -193,6 +199,8 @@ padlock_bind_helper(ENGINE *e)
 	return 1;
 }
 
+#ifdef OPENSSL_NO_DYNAMIC_ENGINE
+
 /* Constructor */
 static ENGINE *
 ENGINE_padlock(void)
@@ -210,6 +218,8 @@ ENGINE_padlock(void)
 
 	return eng;
 }
+
+#endif
 
 /* Check availability of the engine */
 static int
@@ -1217,6 +1227,8 @@ static RAND_METHOD padlock_rand = {
 
 #else  /* !COMPILE_HW_PADLOCK */
 #ifndef OPENSSL_NO_DYNAMIC_ENGINE
+OPENSSL_EXPORT
+int bind_engine(ENGINE *e, const char *id, const dynamic_fns *fns);
 OPENSSL_EXPORT
 int bind_engine(ENGINE *e, const char *id, const dynamic_fns *fns) { return 0; }
 IMPLEMENT_DYNAMIC_CHECK_FN()
