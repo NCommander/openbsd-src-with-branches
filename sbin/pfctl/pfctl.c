@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.314 2012/09/19 15:52:17 camield Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.315 2013/03/21 00:54:33 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -800,7 +800,6 @@ pfctl_show_rules(int dev, char *path, int opts, enum pfctl_show format,
 		}
 		mnr = prs.nr;
 
-		pfctl_print_rule_counters(&pr.rule, opts);
 		for (nr = 0; nr < mnr; ++nr) {
 			prs.nr = nr;
 			if (ioctl(dev, DIOCGETRULESET, &prs))
