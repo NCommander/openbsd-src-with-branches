@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.136 2012/10/08 21:47:47 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.137 2013/06/11 16:42:08 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.121 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -986,9 +986,6 @@ parityerrorfind()
 	int i;
 	int found;
 
-#ifdef lint
-	i = o = pg = 0; if (i) return(0);
-#endif
 	/*
 	 * If looking is true we are searching for a known parity error
 	 * and it has just occurred.  All we do is return to the higher

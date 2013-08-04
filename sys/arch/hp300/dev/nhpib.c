@@ -1,4 +1,4 @@
-/*	$OpenBSD: nhpib.c,v 1.16 2005/11/13 18:52:15 miod Exp $	*/
+/*	$OpenBSD: nhpib.c,v 1.17 2009/07/26 13:43:38 blambert Exp $	*/
 /*	$NetBSD: nhpib.c,v 1.17 1997/05/05 21:06:41 thorpej Exp $	*/
 
 /*
@@ -459,9 +459,6 @@ nhpibintr(arg)
 	int stat0;
 	int stat1;
 
-#ifdef lint
-	if (stat1 = unit) return(1);
-#endif
 	if ((hd->hpib_ids & IDS_IR) == 0)
 		return(0);
 	stat0 = hd->hpib_mis;

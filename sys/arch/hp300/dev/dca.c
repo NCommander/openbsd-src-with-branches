@@ -1,4 +1,4 @@
-/*	$OpenBSD: dca.c,v 1.41 2010/06/30 18:10:47 miod Exp $	*/
+/*	$OpenBSD: dca.c,v 1.42 2010/07/02 17:27:01 nicm Exp $	*/
 /*	$NetBSD: dca.c,v 1.35 1997/05/05 20:58:18 thorpej Exp $	*/
 
 /*
@@ -1072,10 +1072,6 @@ dcacngetc(dev)
 {
 	u_char stat;
 	int c, s;
-
-#ifdef lint
-	stat = dev; if (stat) return (0);
-#endif
 
 	s = splhigh();
 	while (((stat = dca_cn->dca_lsr) & LSR_RXRDY) == 0)
