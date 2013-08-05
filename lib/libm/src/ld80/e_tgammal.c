@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_tgammal.c,v 1.1 2011/07/06 00:02:42 martynas Exp $	*/
+/*	$OpenBSD: e_tgammal.c,v 1.2 2011/07/20 21:02:51 martynas Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -229,6 +229,8 @@ if(x == INFINITY)
 	return(INFINITY);
 if(x == -INFINITY)
 	return(x - x);
+if( x == 0.0L )
+	return( 1.0L / x );
 q = fabsl(x);
 
 if( q > 13.0L )
