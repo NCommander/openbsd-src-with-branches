@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2010/09/03 09:39:17 martinh Exp $
+#	$OpenBSD: Makefile,v 1.9 2010/11/03 14:17:01 martinh Exp $
 
 PROG=		ldapd
 MAN=		ldapd.8 ldapd.conf.5
@@ -16,6 +16,10 @@ CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+=	-Wsign-compare
 CLEANFILES+=	y.tab.h parse.c
+
+.if ${MACHINE} == "vax"
+LDFLAGS+=-Wl,--no-keep-memory
+.endif
 
 SCHEMA_FILES=	core.schema \
 		inetorgperson.schema \
