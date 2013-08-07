@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxp.c,v 1.110 2012/04/03 23:39:09 deraadt Exp $	*/
+/*	$OpenBSD: fxp.c,v 1.111 2012/10/10 08:22:38 blambert Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -57,7 +57,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #endif
 

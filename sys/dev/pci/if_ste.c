@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ste.c,v 1.52 2013/03/09 09:34:15 brad Exp $ */
+/*	$OpenBSD: if_ste.c,v 1.53 2013/03/14 01:25:38 brad Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -53,7 +53,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

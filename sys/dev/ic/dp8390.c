@@ -1,4 +1,4 @@
-/*	$OpenBSD: dp8390.c,v 1.43 2010/08/29 18:01:21 deraadt Exp $	*/
+/*	$OpenBSD: dp8390.c,v 1.44 2013/05/21 21:14:59 brad Exp $	*/
 /*	$NetBSD: dp8390.c,v 1.13 1998/07/05 06:49:11 jonathan Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

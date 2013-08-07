@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9.c,v 1.76 2012/11/29 21:10:32 brad Exp $ */
+/*	$OpenBSD: rtl81x9.c,v 1.77 2013/03/07 01:03:57 brad Exp $ */
 
 /*
  * Copyright (c) 1997, 1998
@@ -102,7 +102,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

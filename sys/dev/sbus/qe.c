@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.22 2008/10/02 20:21:14 brad Exp $	*/
+/*	$OpenBSD: qe.c,v 1.23 2008/11/28 02:44:18 brad Exp $	*/
 /*	$NetBSD: qe.c,v 1.16 2001/03/30 17:30:18 christos Exp $	*/
 
 /*-
@@ -88,7 +88,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

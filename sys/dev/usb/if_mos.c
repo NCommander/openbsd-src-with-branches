@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mos.c,v 1.19 2013/03/28 03:58:03 tedu Exp $	*/
+/*	$OpenBSD: if_mos.c,v 1.20 2013/04/15 09:23:01 mglocker Exp $	*/
 
 /*
  * Copyright (c) 2008 Johann Christian Rode <jcrode@gmx.net>
@@ -95,7 +95,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

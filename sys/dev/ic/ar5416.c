@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5416.c,v 1.11 2010/08/12 16:34:53 damien Exp $	*/
+/*	$OpenBSD: ar5416.c,v 1.12 2012/06/10 21:23:36 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -51,7 +51,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 

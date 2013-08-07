@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ray.c,v 1.49 2013/02/18 23:29:21 jsg Exp $	*/
+/*	$OpenBSD: if_ray.c,v 1.50 2013/04/22 03:31:39 deraadt Exp $	*/
 /*	$NetBSD: if_ray.c,v 1.21 2000/07/05 02:35:54 onoe Exp $	*/
 
 /*
@@ -82,7 +82,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnxreg.h,v 1.39 2012/12/10 10:38:56 mikeb Exp $	*/
+/*	$OpenBSD: if_bnxreg.h,v 1.40 2013/02/08 21:30:11 jasper Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -58,7 +58,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

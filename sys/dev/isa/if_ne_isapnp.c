@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ne_isapnp.c,v 1.11 2006/10/20 17:02:24 brad Exp $	*/
+/*	$OpenBSD: if_ne_isapnp.c,v 1.12 2008/06/26 05:42:16 ray Exp $	*/
 /*	$NetBSD: if_ne_isapnp.c,v 1.7 1998/07/23 19:30:45 christos Exp $	*/
 
 /*-
@@ -50,7 +50,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfe.c,v 1.100 2012/11/29 21:10:32 brad Exp $	*/
+/*	$OpenBSD: if_nfe.c,v 1.101 2013/04/01 06:40:40 brad Exp $	*/
 
 /*-
  * Copyright (c) 2006, 2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -43,7 +43,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

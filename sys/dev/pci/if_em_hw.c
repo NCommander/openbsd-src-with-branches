@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: if_em_hw.c,v 1.71 2012/12/05 23:20:20 deraadt Exp $ */
+/* $OpenBSD: if_em_hw.c,v 1.72 2013/04/30 07:07:50 jsg Exp $ */
 /*
  * if_em_hw.c Shared functions for accessing and configuring the MAC
  */
@@ -52,7 +52,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

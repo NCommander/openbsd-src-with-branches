@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.54 2013/04/15 09:23:01 mglocker Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.55 2013/06/11 18:45:25 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -53,7 +53,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 

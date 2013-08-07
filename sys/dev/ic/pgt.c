@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.68 2011/12/01 23:34:08 miod Exp $  */
+/*	$OpenBSD: pgt.c,v 1.69 2012/12/05 23:20:18 deraadt Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -78,7 +78,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 #endif

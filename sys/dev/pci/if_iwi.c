@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwi.c,v 1.110 2010/09/07 16:21:45 deraadt Exp $	*/
+/*	$OpenBSD: if_iwi.c,v 1.111 2010/11/15 19:11:57 damien Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -52,7 +52,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 

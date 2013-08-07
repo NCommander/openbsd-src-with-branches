@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_et.c,v 1.20 2010/05/19 15:27:35 oga Exp $	*/
+/*	$OpenBSD: if_et.c,v 1.21 2010/08/27 17:08:00 jsg Exp $	*/
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
  * 
@@ -59,7 +59,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

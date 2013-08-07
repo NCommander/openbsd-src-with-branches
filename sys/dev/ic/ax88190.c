@@ -1,4 +1,4 @@
-/*	$OpenBSD: ax88190.c,v 1.2 2003/06/25 17:35:36 miod Exp $	*/
+/*	$OpenBSD: ax88190.c,v 1.3 2008/06/26 05:42:15 ray Exp $	*/
 /*	$NetBSD$	*/
 
 /*-
@@ -43,7 +43,6 @@
 #ifdef INET
 #include <netinet/in.h>   
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

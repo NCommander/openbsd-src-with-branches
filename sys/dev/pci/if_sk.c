@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sk.c,v 1.163 2012/11/29 21:10:32 brad Exp $	*/
+/*	$OpenBSD: if_sk.c,v 1.164 2013/03/07 06:13:31 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -106,7 +106,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <netinet/tcp.h>

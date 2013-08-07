@@ -1,4 +1,4 @@
-/*	$OpenBSD: athn.c,v 1.73 2012/08/25 12:14:31 kettenis Exp $	*/
+/*	$OpenBSD: athn.c,v 1.75 2013/01/14 09:50:31 jsing Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -52,7 +52,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ti.c,v 1.3 2010/09/20 07:40:41 deraadt Exp $	*/
+/*	$OpenBSD: ti.c,v 1.4 2011/06/21 16:52:45 tedu Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -91,7 +91,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

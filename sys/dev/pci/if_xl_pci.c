@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xl_pci.c,v 1.39 2012/10/13 17:24:03 deraadt Exp $	*/
+/*	$OpenBSD: if_xl_pci.c,v 1.40 2012/10/18 21:44:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -55,7 +55,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

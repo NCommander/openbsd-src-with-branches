@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_cardbus.c,v 1.21 2010/09/07 16:21:41 deraadt Exp $	*/
+/*	$OpenBSD: if_re_cardbus.c,v 1.22 2011/04/02 17:47:04 jasper Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -38,7 +38,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

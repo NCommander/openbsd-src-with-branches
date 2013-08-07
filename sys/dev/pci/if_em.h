@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
 
 /* $FreeBSD: if_em.h,v 1.26 2004/09/01 23:22:41 pdeuskar Exp $ */
-/* $OpenBSD: if_em.h,v 1.48 2010/09/07 16:21:44 deraadt Exp $ */
+/* $OpenBSD: if_em.h,v 1.49 2013/04/16 22:21:32 deraadt Exp $ */
 
 #ifndef _EM_H_DEFINED_
 #define _EM_H_DEFINED_
@@ -57,7 +57,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #include <netinet/tcp.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc91cxx.c,v 1.32 2009/10/13 19:33:16 pirofti Exp $	*/
+/*	$OpenBSD: smc91cxx.c,v 1.33 2011/07/03 15:47:16 matthew Exp $	*/
 /*	$NetBSD: smc91cxx.c,v 1.11 1998/08/08 23:51:41 mycroft Exp $	*/
 
 /*-
@@ -96,7 +96,6 @@
 #include <netinet/in.h> 
 #include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #endif
 

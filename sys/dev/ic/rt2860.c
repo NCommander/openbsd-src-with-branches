@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2860.c,v 1.68 2013/06/11 18:15:53 deraadt Exp $	*/
+/*	$OpenBSD: rt2860.c,v 1.69 2013/08/01 09:17:02 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -50,7 +50,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_jme.c,v 1.28 2012/10/22 09:19:17 brad Exp $	*/
+/*	$OpenBSD: if_jme.c,v 1.29 2012/11/29 21:10:32 brad Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -53,7 +53,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

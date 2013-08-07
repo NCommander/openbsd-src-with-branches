@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9287.c,v 1.16 2010/12/31 17:50:48 damien Exp $	*/
+/*	$OpenBSD: ar9287.c,v 1.17 2012/06/10 21:23:36 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -51,7 +51,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 

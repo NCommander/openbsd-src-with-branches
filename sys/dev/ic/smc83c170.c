@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc83c170.c,v 1.13 2008/11/28 02:44:17 brad Exp $	*/
+/*	$OpenBSD: smc83c170.c,v 1.14 2009/08/10 20:29:54 deraadt Exp $	*/
 /*	$NetBSD: smc83c170.c,v 1.59 2005/02/27 00:27:02 perry Exp $	*/
 
 /*-
@@ -55,7 +55,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

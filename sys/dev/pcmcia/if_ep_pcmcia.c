@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_pcmcia.c,v 1.40 2011/03/31 13:05:27 jasper Exp $	*/
+/*	$OpenBSD: if_ep_pcmcia.c,v 1.41 2011/07/03 15:47:17 matthew Exp $	*/
 /*	$NetBSD: if_ep_pcmcia.c,v 1.16 1998/08/17 23:20:40 thorpej Exp $  */
 
 /*-
@@ -82,7 +82,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

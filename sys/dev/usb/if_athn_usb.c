@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_athn_usb.c,v 1.16 2013/04/15 09:23:01 mglocker Exp $	*/
+/*	$OpenBSD: if_athn_usb.c,v 1.17 2013/06/11 18:45:25 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2011 Damien Bergamini <damien.bergamini@free.fr>
@@ -47,7 +47,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 
