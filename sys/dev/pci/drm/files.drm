@@ -1,5 +1,5 @@
 # $NetBSD: files.drm,v 1.2 2007/03/28 11:29:37 jmcneill Exp $
-# $OpenBSD: files.drm,v 1.24 2013/03/18 12:36:51 jsg Exp $
+# $OpenBSD: files.drm,v 1.25 2013/03/31 13:30:25 kettenis Exp $
 
 # direct rendering modules
 define drmbase {}
@@ -26,6 +26,7 @@ attach	inteldrm at drmdev
 file	dev/pci/drm/i915/i915_dma.c		inteldrm
 file	dev/pci/drm/i915/i915_drv.c		inteldrm
 file	dev/pci/drm/i915/i915_gem.c		inteldrm
+file	dev/pci/drm/i915/i915_gem_context.c	inteldrm
 file	dev/pci/drm/i915/i915_gem_evict.c	inteldrm
 file	dev/pci/drm/i915/i915_gem_execbuffer.c	inteldrm
 file	dev/pci/drm/i915/i915_gem_gtt.c		inteldrm
