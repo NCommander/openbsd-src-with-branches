@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.77 2013/03/28 16:55:25 deraadt Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.78 2013/07/03 15:17:24 sf Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -184,6 +184,9 @@ panic(const char *fmt, ...)
 	static char panicbuf[512];
 	int bootopt;
 	va_list ap;
+
+	/* do not trigger assertions, we know that we are inconsistent */
+	splassert_ctl = 0;
 
 	bootopt = RB_AUTOBOOT | RB_DUMP;
 	va_start(ap, fmt);
