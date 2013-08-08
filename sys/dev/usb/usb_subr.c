@@ -71,6 +71,9 @@ void		usbd_free_iface_data(struct usbd_device *, int);
 usbd_status	usbd_probe_and_attach(struct device *,
 		    struct usbd_device *, int, int);
 
+int		usbd_printBCD(char *cp, size_t len, int bcd);
+void		usb_free_device(struct usbd_device *, struct usbd_port *);
+
 #ifdef USBVERBOSE
 #include <dev/usb/usbdevs_data.h>
 #endif /* USBVERBOSE */
