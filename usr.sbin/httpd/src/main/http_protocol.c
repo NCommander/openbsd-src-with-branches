@@ -1,4 +1,4 @@
-/*	$OpenBSD: http_protocol.c,v 1.36 2010/02/23 08:15:27 pyr Exp $ */
+/*	$OpenBSD: http_protocol.c,v 1.37 2010/02/25 07:49:53 pyr Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -681,8 +681,8 @@ API_EXPORT(char *) ap_make_etag_orig(request_rec *r, int force_weak)
         components = ap_make_array(r->pool, 4, sizeof(char *));
         if (etag_bits & ETAG_INODE) {
             ent = (char **) ap_push_array(components);
-            *ent = ap_psprintf(r->pool, "%lx",
-                               (unsigned long) r->finfo.st_ino);
+            *ent = ap_psprintf(r->pool, "%qx",
+                               (unsigned long long) r->finfo.st_ino);
         }
         if (etag_bits & ETAG_SIZE) {
             ent = (char **) ap_push_array(components);

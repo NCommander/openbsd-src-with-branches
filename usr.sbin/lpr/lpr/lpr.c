@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpr.c,v 1.42 2009/10/27 23:59:52 deraadt Exp $ */
+/*	$OpenBSD: lpr.c,v 1.43 2013/02/15 08:28:08 mpi Exp $ */
 /*	$NetBSD: lpr.c,v 1.19 2000/10/11 20:23:52 is Exp $	*/
 
 /*
@@ -328,8 +328,8 @@ main(int argc, char **argv)
 			continue;	/* file unreasonable */
 
 		if (sflag && (cp = linked(arg)) != NULL) {
-			(void)snprintf(buf, sizeof(buf), "%d %d",
-			    statb.st_dev, statb.st_ino);
+			(void)snprintf(buf, sizeof(buf), "%d %llu",
+			    statb.st_dev, (unsigned long long)statb.st_ino);
 			card('S', buf);
 			if (format == 'p')
 				card('T', title ? title : arg);
