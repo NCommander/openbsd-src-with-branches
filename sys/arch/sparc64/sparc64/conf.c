@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.66 2012/12/08 20:38:10 kettenis Exp $	*/
+/*	$OpenBSD: conf.c,v 1.67 2013/06/03 15:54:47 tedu Exp $	*/
 /*	$NetBSD: conf.c,v 1.17 2001/03/26 12:33:26 lukem Exp $ */
 
 /*
@@ -85,6 +85,9 @@
 #include "vdsp.h"
 
 #include "fdc.h"		/* has NFDC and NFD; see files.sparc */
+
+#include "drm.h"
+cdev_decl(drm);
 
 #include "wsdisplay.h"
 #include "wskbd.h"
@@ -244,7 +247,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 84 */
 	cdev_notdef(),			/* 85 */
 	cdev_notdef(),			/* 86 */
-	cdev_notdef(),			/* 87 */
+	cdev_drm_init(NDRM,drm),	/* 87: drm */
 	cdev_notdef(),			/* 88 */
 	cdev_notdef(),			/* 89 */
 	cdev_usb_init(NUSB,usb),	/* 90: USB controller */
