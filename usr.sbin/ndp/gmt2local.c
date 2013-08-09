@@ -1,4 +1,4 @@
-/*	$OpenBSD: gmt2local.c,v 1.2 2007/10/07 15:46:17 deraadt Exp $	*/
+/*	$OpenBSD: gmt2local.c,v 1.3 2008/10/02 23:55:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997
@@ -25,14 +25,7 @@
 #include <sys/time.h>
 
 #include <stdio.h>
-#ifdef TIME_WITH_SYS_TIME
 #include <time.h>
-#endif
-
-#include "gnuc.h"
-#ifdef HAVE_OS_PROTO_H
-#include "os-proto.h"
-#endif
 
 #include "gmt2local.h"
 
