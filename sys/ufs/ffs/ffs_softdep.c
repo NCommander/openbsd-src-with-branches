@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.118 2013/05/30 19:19:09 guenther Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.119 2013/06/11 16:42:18 deraadt Exp $	*/
 
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
@@ -5612,7 +5612,7 @@ softdep_error(char *func, int error)
 
 void
 softdep_print(struct buf *bp, int full,
-    int (*pr)(const char *, ...) /* __attribute__((__format__(__kprintf__,1,2))) */)
+    int (*pr)(const char *, ...) __attribute__((__format__(__kprintf__,1,2))))
 {
 	struct worklist *wk;
 
@@ -5623,7 +5623,7 @@ softdep_print(struct buf *bp, int full,
 
 void
 worklist_print(struct worklist *wk, int full,
-    int (*pr)(const char *, ...) /* __attribute__((__format__(__kprintf__,1,2))) */)
+    int (*pr)(const char *, ...) __attribute__((__format__(__kprintf__,1,2))))
 {
 	struct pagedep *pagedep;
 	struct inodedep *inodedep;
