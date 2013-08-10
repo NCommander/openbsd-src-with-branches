@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse.c,v 1.8 2013/07/05 11:08:15 syl Exp $ */
+/* $OpenBSD: fuse.c,v 1.9 2013/08/10 00:30:43 syl Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -111,7 +111,7 @@ fuse_mount(const char *dir, unused struct fuse_args *args)
 	if (fc->dir == NULL)
 		goto bad;
 
-	if ((fc->fd = open("/dev/fuse0", O_RDWR)) < 0) {
+	if ((fc->fd = open("/dev/fuse0", O_RDWR)) == -1) {
 		perror(__func__);
 		goto bad;
 	}
@@ -135,10 +135,10 @@ fuse_mount(const char *dir, unused struct fuse_args *args)
 
 	return (fc);
 bad:
-	if (fc->fd > 0)
+	if (fc->fd != -1)
 		close(fc->fd);
-	if (fc->dir != NULL)
-		free(fc->dir);
+	free(fc->dir);
+	free(fc);
 	return (NULL);
 }
 
