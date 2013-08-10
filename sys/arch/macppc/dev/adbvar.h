@@ -1,4 +1,4 @@
-/*	$OpenBSD: adbvar.h,v 1.8 2006/01/18 23:21:17 miod Exp $	*/
+/*	$OpenBSD: adbvar.h,v 1.9 2013/03/09 11:33:25 mpi Exp $	*/
 /*	$NetBSD: adbvar.h,v 1.3 2000/06/08 22:10:46 tsubai Exp $	*/
 
 /*-
@@ -26,9 +26,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+struct adb_device {
+	int	handler_id;
+	int	orig_addr;
+	int	curr_addr;
+
+	void	(*handler)(void);
+	void	*data;
+};
+
 struct adb_softc {
 	struct device sc_dev;
 	char *sc_regbase;
+
+	struct adb_device	sc_devtable[16];
 };
 
 extern int adbHardware;
