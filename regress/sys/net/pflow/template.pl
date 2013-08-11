@@ -35,7 +35,7 @@ sub usage
 	my $id2name = {
 		  1 => 'octetDeltaCount',
 		  2 => 'packetDeltaCount',
-		  4 => 'protocolIdentifier ',
+		  4 => 'protocolIdentifier',
 		  5 => 'ipClassOfService',
 		  7 => 'sourceTransportPort',
 		  8 => 'sourceIPv4Address',
