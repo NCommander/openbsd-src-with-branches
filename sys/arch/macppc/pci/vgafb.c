@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.47 2013/06/04 02:29:32 mpi Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.48 2013/07/06 18:08:47 mpi Exp $	*/
 /*	$NetBSD: vga.c,v 1.3 1996/12/02 22:24:54 cgd Exp $	*/
 
 /*
@@ -295,6 +295,14 @@ vgafb_mmap(void *v, off_t off, int prot)
 	}
 
 	return (-1);
+}
+
+int
+vgafb_is_console(int node)
+{
+	extern int fbnode;
+
+	return (fbnode == node);
 }
 
 int

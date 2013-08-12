@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb_pcivar.h,v 1.6 2012/06/21 10:08:16 mpi Exp $	*/
+/*	$OpenBSD: vgafb_pcivar.h,v 1.7 2012/12/13 13:55:18 mpi Exp $	*/
 /*	$NetBSD: vga_pcivar.h,v 1.1 1996/11/19 04:38:36 cgd Exp $	*/
 
 /*
@@ -27,8 +27,6 @@
  * any improvements or extensions that they make and grant Carnegie the
  * rights to redistribute these changes.
  */
-
-extern pcitag_t vgafb_pci_console_tag;
 
 /* XXX */
 int	vgafb_cnattach(bus_space_tag_t, bus_space_tag_t, int, int);
