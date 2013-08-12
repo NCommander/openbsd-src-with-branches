@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp.h,v 1.18 2010/10/23 22:50:07 guenther Exp $	*/
+/*	$OpenBSD: tcp.h,v 1.19 2013/06/02 23:12:23 henning Exp $	*/
 /*	$NetBSD: tcp.h,v 1.8 1995/04/17 05:32:58 cgd Exp $	*/
 
 /*
@@ -127,5 +127,6 @@ struct tcphdr {
 #define	TCP_MAXSEG		0x02   /* set maximum segment size */
 #define	TCP_MD5SIG		0x04   /* enable TCP MD5 signature option */
 #define	TCP_SACK_ENABLE		0x08   /* enable SACKs (if disabled by def.) */
+#define	TCP_NOPUSH		0x10   /* don't push last block of write */
 
 #endif /* _NETINET_TCP_H_ */
