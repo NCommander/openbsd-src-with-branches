@@ -1,4 +1,4 @@
-#	$OpenBSD: files.macppc,v 1.70 2013/05/31 19:32:30 mpi Exp $
+#	$OpenBSD: files.macppc,v 1.71 2013/08/07 07:29:18 mpi Exp $
 
 #
 # macppc-specific configuration info
@@ -99,6 +99,7 @@ file	arch/macppc/pci/pchb.c				pchb
 
 # AGP bridge support. attach at pchb
 include "dev/pci/files.agp"
+include "dev/pci/drm/files.drm"
 file	arch/macppc/pci/agp_machdep.c			agp
 
 #

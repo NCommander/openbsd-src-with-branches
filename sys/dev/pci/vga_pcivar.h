@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_pcivar.h,v 1.15 2012/08/22 20:58:30 mpi Exp $ */
+/* $OpenBSD: vga_pcivar.h,v 1.16 2013/03/18 10:12:40 kettenis Exp $ */
 /* $NetBSD: vga_pcivar.h,v 1.1 1998/03/22 15:16:19 drochner Exp $ */
 
 /*
@@ -92,7 +92,7 @@ struct	vga_pci_bar *vga_pci_bar_map(struct vga_pci_softc *, int,
 void	vga_pci_bar_unmap(struct vga_pci_bar*);
 
 #if NDRM > 0
-int	drmsubmatch(struct device *, void *, void *);
+int	vga_drmsubmatch(struct device *, void *, void *);
 #endif
 
 #ifdef VESAFB
