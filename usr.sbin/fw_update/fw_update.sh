@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $OpenBSD: fw_update.sh,v 1.12 2012/09/17 18:28:43 rpe Exp $
+# $OpenBSD: fw_update.sh,v 1.13 2013/08/13 20:11:21 halex Exp $
 # Copyright (c) 2011 Alexander Hall <alexander@beard.se>
 #
 # Permission to use, copy, modify, and distribute this software for any
@@ -16,8 +16,8 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 # This is the list of drivers we should look for
-DRIVERS="acx athn bwi ipw iwi iwn malo otus pgt rsu uath ueagle upgt urtwn
-	uvideo wpi"
+DRIVERS="acx athn bwi ipw iwi iwn malo otus pgt radeondrm rsu uath ueagle
+	upgt urtwn uvideo wpi"
 
 PKG_ADD="pkg_add -I -D repair"
 
