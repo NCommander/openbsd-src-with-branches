@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.14 2013/05/07 00:26:34 dlg Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.15 2013/06/01 21:06:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 David Gwynne <dlg@uq.edu.au>
@@ -1274,6 +1274,8 @@ tftp_wrq(int fd, short events, void *arg)
 
 	if (n < client->packet_size) {
 		tftp_wrq_ack_packet(client);
+		fclose(client->file);
+		client->file = NULL;
 		event_set(&client->sev, client->sock, EV_READ,
 		    tftp_wrq_end, client);
 		event_add(&client->sev, &client->tv);
