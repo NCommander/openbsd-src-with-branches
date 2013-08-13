@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.30 2013/04/05 12:58:03 kurt Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.31 2013/06/01 09:57:58 miod Exp $	*/
 /*	$NetBSD: rtld_start.S,v 1.5 2001/08/14 22:17:48 eeh Exp $	*/
 
 /*
@@ -281,8 +281,8 @@ _ENTRY(_dl_fcntl)
 	retl
 	 sub %g0, %o0, %o0			! error: result = -errno
 
-_ENTRY(_dl_getdirentries)
-	mov  SYS_getdirentries | SYSCALL_G2RFLAG, %g1	! call sys_getdirentries
+_ENTRY(_dl_getdents)
+	mov  SYS_getdents | SYSCALL_G2RFLAG, %g1	! call sys_getdents
 	add %o7, 8, %g2					! just return on success
 	t ST_SYSCALL					! off to wonderland
 	retl

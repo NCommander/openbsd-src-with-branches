@@ -1,4 +1,4 @@
-/*	$OpenBSD: closedir.c,v 1.7 2006/04/01 18:06:59 otto Exp $ */
+/*	$OpenBSD: closedir.c,v 1.8 2007/06/05 18:11:48 kurt Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	Regents of the University of California.  All rights reserved.
@@ -46,8 +46,6 @@ closedir(DIR *dirp)
 	_MUTEX_LOCK(&dirp->dd_lock);
 	fd = dirp->dd_fd;
 	dirp->dd_fd = -1;
-	dirp->dd_loc = 0;
-	free(dirp->dd_td->td_locs);
 	free(dirp->dd_buf);
 	_MUTEX_UNLOCK(&dirp->dd_lock);
 	_MUTEX_DESTROY(&dirp->dd_lock);

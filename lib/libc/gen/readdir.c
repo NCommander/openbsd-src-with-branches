@@ -1,4 +1,4 @@
-/*	$OpenBSD: readdir.c,v 1.16 2012/02/04 23:02:40 guenther Exp $ */
+/*	$OpenBSD: readdir.c,v 1.17 2012/03/22 04:11:53 matthew Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -46,8 +46,8 @@ _readdir_unlocked(DIR *dirp, struct dirent **result, int skipdeleted)
 		if (dirp->dd_loc >= dirp->dd_size)
 			dirp->dd_loc = 0;
 		if (dirp->dd_loc == 0) {
-			dirp->dd_size = getdirentries(dirp->dd_fd,
-			    dirp->dd_buf, dirp->dd_len, &dirp->dd_seek);
+			dirp->dd_size = getdents(dirp->dd_fd,
+			    (void *)dirp->dd_buf, dirp->dd_len);
 			if (dirp->dd_size == 0)
 				return (0);
 			if (dirp->dd_size < 0)
@@ -70,6 +70,7 @@ _readdir_unlocked(DIR *dirp, struct dirent **result, int skipdeleted)
 		 */
 		if (dp->d_ino == 0 && skipdeleted)
 			continue;
+		dirp->dd_curpos = dp->d_off;
 		*result = dp;
 		return (0);
 	}

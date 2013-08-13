@@ -1,4 +1,4 @@
-/*	$OpenBSD: _time.h,v 1.2 2012/05/10 19:13:12 kettenis Exp $	*/
+/*	$OpenBSD: _time.h,v 1.3 2013/06/17 19:11:54 guenther Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -56,6 +56,12 @@ struct  itimerspec {
 	struct  timespec it_interval;	/* timer interval */
 	struct  timespec it_value;	/* timer expiration */
 };
+#ifdef _KERNEL
+struct  itimerspec32 {
+	struct  timespec32 it_interval;	/* timer interval */
+	struct  timespec32 it_value;	/* timer expiration */
+};
+#endif
 
 #define TIMER_RELTIME	0x0	/* relative timer */
 #define TIMER_ABSTIME	0x1	/* absolute timer */

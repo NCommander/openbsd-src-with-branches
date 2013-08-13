@@ -1,4 +1,4 @@
-/*	$OpenBSD: siginfo.h,v 1.8 2003/06/02 04:04:54 deraadt Exp $	*/
+/*	$OpenBSD: siginfo.h,v 1.9 2005/12/13 00:35:23 millert Exp $	*/
 
 /*
  * Copyright (c) 1997 Theo de Raadt
@@ -144,8 +144,8 @@ typedef struct {
 				} _kill;
 				struct {
 					clock_t	_utime;
-					int	_status;
 					clock_t	_stime;
+					int	_status;
 				} _cld;
 			} _pdata;
 		} _proc;
