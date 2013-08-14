@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.276 2013/03/07 21:26:28 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.277 2013/05/11 14:42:28 benno Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -103,6 +103,7 @@ enum reconf_action {
 	RECONF_NONE,
 	RECONF_KEEP,
 	RECONF_REINIT,
+	RECONF_RELOAD,
 	RECONF_DELETE
 };
 
