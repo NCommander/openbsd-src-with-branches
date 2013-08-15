@@ -1,4 +1,4 @@
-#	$OpenBSD: files.octeon,v 1.12 2013/02/03 22:35:52 bcallah Exp $
+#	$OpenBSD: files.octeon,v 1.13 2013/03/26 18:46:55 jasper Exp $
 
 # Standard stanzas config(8) can't run without
 maxpartitions 16
@@ -30,7 +30,6 @@ include	"dev/isa/files.isa"
 include	"dev/isa/files.isapnp"
 include	"dev/mii/files.mii"
 include	"dev/pci/files.pci"
-include	"dev/pci/files.agp"
 include	"dev/pckbc/files.pckbc"
 include	"dev/usb/files.usb"
 include "dev/bluetooth/files.bluetooth"
