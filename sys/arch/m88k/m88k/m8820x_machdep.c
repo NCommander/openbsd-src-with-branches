@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x_machdep.c,v 1.55 2013/05/25 17:49:54 miod Exp $	*/
+/*	$OpenBSD: m8820x_machdep.c,v 1.56 2013/06/30 10:04:40 aoyama Exp $	*/
 /*
  * Copyright (c) 2004, 2007, 2010, 2011, Miodrag Vallat.
  *
@@ -951,6 +951,7 @@ m8820x_dma_cachectl(paddr_t _pa, psize_t _size, int op)
 #endif
 	}
 	if (sz2 != 0) {
+		pa2 = trunc_cache_line(pa2);
 #ifdef MULTIPROCESSOR
 		m8820x_cmmu_wbinv_locked(ci->ci_cpuid, pa2, MC88200_CACHE_LINE);
 #else
