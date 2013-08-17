@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iec.c,v 1.7 2010/03/15 18:59:09 miod Exp $	*/
+/*	$OpenBSD: if_iec.c,v 1.8 2012/05/22 19:24:59 miod Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -101,7 +101,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #endif
 
