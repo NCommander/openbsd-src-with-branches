@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb_pci.c,v 1.33 2013/08/12 08:38:03 mpi Exp $	*/
+/*	$OpenBSD: vgafb_pci.c,v 1.34 2013/08/17 09:11:22 mpi Exp $	*/
 /*	$NetBSD: vga_pci.c,v 1.4 1996/12/05 01:39:38 cgd Exp $	*/
 
 /*
@@ -189,5 +189,5 @@ vgafb_pci_attach(struct device *parent, struct device  *self, void *aux)
 	}
 	printf("\n");
 
-	vgafb_wsdisplay_attach(self, vc, 1);
+	vgafb_wsdisplay_attach(self, vc);
 }
