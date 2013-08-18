@@ -1,4 +1,4 @@
-/*	$OpenBSD: mknetid.c,v 1.17 2009/10/27 23:59:58 deraadt Exp $ */
+/*	$OpenBSD: mknetid.c,v 1.18 2009/12/20 12:33:59 schwarze Exp $ */
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -522,15 +522,15 @@ main(int argc, char *argv[])
 	if (pfile == NULL)
 		pfile = fopen(MasterPasswdFile, "r");
 	if (pfile == NULL)
-		err(1, MasterPasswdFile);
+		err(1, "%s", MasterPasswdFile);
 
 	gfile = fopen(GroupFile, "r");
 	if (gfile == NULL)
-		err(1, GroupFile);
+		err(1, "%s", GroupFile);
 
 	hfile = fopen(HostFile, "r");
 	if (hfile == NULL)
-		err(1, HostFile);
+		err(1, "%s", HostFile);
 
 	mfile = fopen(NetidFile, "r");
 
