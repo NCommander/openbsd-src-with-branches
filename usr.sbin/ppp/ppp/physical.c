@@ -16,7 +16,7 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- *  $OpenBSD: physical.c,v 1.41 2009/06/05 23:03:07 deraadt Exp $
+ *  $OpenBSD: physical.c,v 1.42 2012/01/23 09:13:16 nicm Exp $
  *
  */
 
@@ -101,9 +101,6 @@
 #include "ether.h"
 #include "netgraph.h"
 #endif
-#ifndef NOATM
-#include "atm.h"
-#endif
 #include "tcpmss.h"
 
 #define PPPOTCPLINE "ppp"
@@ -140,10 +137,6 @@ struct {
 #ifdef EXPERIMENTAL_NETGRAPH
   { ng_Create, ng_iov2device, ng_DeviceSize },
 #endif
-#endif
-#ifndef NOATM
-  /* Ditto for ATM devices */
-  { atm_Create, atm_iov2device, atm_DeviceSize },
 #endif
   { tcp_Create, tcp_iov2device, tcp_DeviceSize },
   { udp_Create, udp_iov2device, udp_DeviceSize },

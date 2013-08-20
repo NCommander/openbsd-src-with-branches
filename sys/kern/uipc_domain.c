@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_domain.c,v 1.31 2011/07/08 18:30:16 yasuoka Exp $	*/
+/*	$OpenBSD: uipc_domain.c,v 1.32 2011/07/09 00:47:18 henning Exp $	*/
 /*	$NetBSD: uipc_domain.c,v 1.14 1996/02/09 19:00:44 christos Exp $	*/
 
 /*
@@ -91,9 +91,6 @@ domaininit(void)
 #endif /* KEY || IPSEC */
 #ifdef MPLS
        ADDDOMAIN(mpls);
-#endif
-#ifdef NATM
-	ADDDOMAIN(natm);
 #endif
 #ifdef IPSEC
 #ifdef __KAME__
