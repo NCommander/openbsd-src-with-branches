@@ -1,4 +1,4 @@
-# $OpenBSD: RAMDISK,v 1.24 2012/04/06 15:10:39 jsing Exp $ 
+# $OpenBSD: RAMDISK,v 1.25 2012/09/27 14:01:35 jsg Exp $ 
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -136,7 +136,6 @@ udav*	at uhub?		# Davicom DM9601 based Ethernet
 url*	at uhub?		# Realtek RTL8150L based adapters
 wi*	at uhub?		# WaveLAN IEEE 802.11DS
 #urio*	at uhub?		# Diamond Multimedia Rio 500
-#uscanner* at uhub?		# USB Scanners
 #uyap*	at uhub?		# Y@P firmware loader
 #udsbr*	at uhub?		# D-Link DSB-R100 radio
 #radio*	at udsbr?		# USB radio

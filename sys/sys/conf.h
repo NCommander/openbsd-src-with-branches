@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.123 2013/06/11 16:42:17 deraadt Exp $	*/
+/*	$OpenBSD: conf.h,v 1.124 2013/06/21 21:30:38 syl Exp $	*/
 /*	$NetBSD: conf.h,v 1.33 1996/05/03 20:03:32 christos Exp $	*/
 
 /*-
@@ -656,7 +656,6 @@ cdev_decl(ugen);
 cdev_decl(uhid);
 cdev_decl(ucom);
 cdev_decl(ulpt);
-cdev_decl(uscanner);
 cdev_decl(urio);
 
 cdev_decl(hotplug);

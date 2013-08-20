@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.34 2013/03/15 09:10:52 ratchov Exp $	*/
+/*	$OpenBSD: conf.c,v 1.35 2013/06/03 17:33:58 tedu Exp $	*/
 /*	$NetBSD: conf.c,v 1.10 2002/04/19 01:04:38 wiz Exp $	*/
 
 /*
@@ -127,7 +127,6 @@ cdev_decl(pci);
 #include "uhid.h"
 #include "ulpt.h"
 #include "urio.h"
-#include "uscanner.h"
 
 /*
  * Bluetooth devices
@@ -351,7 +350,7 @@ struct cdevsw cdevsw[] = {
 	cdev_ulpt_init(NULPT,ulpt),		/* 66: USB printer */
 	cdev_urio_init(NURIO,urio),		/* 67: Diamond Rio 500 */
 	cdev_tty_init(NUCOM,ucom),		/* 68: USB tty */
-	cdev_usbdev_init(NUSCANNER,uscanner),	/* 69: USB scanner */
+	cdev_notdef(),				/* 69: was USB scanners */
 	cdev_usbdev_init(NUGEN,ugen),		/* 70: USB generic driver */
 	cdev_notdef(),    			/* 71 was: RAIDframe disk driver */
 	cdev_lkm_dummy(),			/* 72: reserved */
