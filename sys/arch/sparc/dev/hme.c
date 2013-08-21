@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.61 2009/07/16 07:18:47 sthen Exp $	*/
+/*	$OpenBSD: hme.c,v 1.62 2009/08/13 17:01:31 phessler Exp $	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -938,7 +938,7 @@ hme_read(sc, idx, len, flags)
 
 	/* Pull packet off interface. */
 	m = m_devget(sc->sc_bufs->rx_buf[idx] + HME_RX_OFFSET, len,
-	    HME_RX_OFFSET, &sc->sc_arpcom.ac_if, NULL);
+	    HME_RX_OFFSET, &sc->sc_arpcom.ac_if);
 	if (m == NULL) {
 		ifp->if_ierrors++;
 		return;
