@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.5 2006/11/26 11:31:14 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2007/03/04 03:19:41 beck Exp $
 
 PROG=	spamlogd
-SRCS=	spamlogd.c sync.c
+SRCS=	spamlogd.c sync.c gdcopy.c
 MAN=	spamlogd.8
 
 CFLAGS+= -Wall -Wstrict-prototypes -I${.CURDIR}/../spamd
