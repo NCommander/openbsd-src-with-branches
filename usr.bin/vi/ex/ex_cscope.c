@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_cscope.c,v 1.15 2008/08/29 13:07:13 oga Exp $	*/
+/*	$OpenBSD: ex_cscope.c,v 1.16 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1994, 1996
@@ -495,7 +495,8 @@ cscope_find(sp, cmdp, pattern)
 		 * search cscope command character and a leading space
 		 * there.)
 		 */
-		(void)fprintf(csc->to_fp, "%d%s\n", search, tqp->tag + 2);
+		(void)fprintf(csc->to_fp, "%lu%s\n", (unsigned long)search,
+		    tqp->tag + 2);
 		(void)fflush(csc->to_fp);
 
 		/* Read the output. */

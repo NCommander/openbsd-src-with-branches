@@ -1,4 +1,4 @@
-/*	$OpenBSD: who.c,v 1.18 2009/10/27 23:59:50 deraadt Exp $	*/
+/*	$OpenBSD: who.c,v 1.19 2010/11/15 10:57:49 otto Exp $	*/
 /*	$NetBSD: who.c,v 1.4 1994/12/07 04:28:49 jtc Exp $	*/
 
 /*
@@ -245,8 +245,8 @@ output(struct utmp *up)
 			(void)printf("  .   ");
 		else if (idle < (24 * 60 * 60))
 			(void)printf("%02d:%02d ", 
-				     (idle / (60 * 60)),
-				     (idle % (60 * 60)) / 60);
+				     ((int)idle / (60 * 60)),
+				     ((int)idle % (60 * 60)) / 60);
 		else
 			(void)printf(" old  ");
 	}

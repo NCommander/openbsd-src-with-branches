@@ -1,4 +1,4 @@
-/*	$OpenBSD: strfile.c,v 1.16 2007/09/04 22:39:31 hshoexer Exp $	*/
+/*	$OpenBSD: strfile.c,v 1.17 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: strfile.c,v 1.4 1995/04/24 12:23:09 cgd Exp $	*/
 
 /*-
@@ -207,7 +207,7 @@ main(int ac, char *av[])
 		if (Tbl.str_numstr == 1)
 			puts("There was 1 string");
 		else
-			printf("There were %ld strings\n", Tbl.str_numstr);
+			printf("There were %u strings\n", Tbl.str_numstr);
 		printf("Longest string: %lu byte%s\n",
 			  (unsigned long) Tbl.str_longlen,
 		       Tbl.str_longlen == 1 ? "" : "s");
