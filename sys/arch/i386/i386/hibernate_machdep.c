@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: hibernate_machdep.c,v 1.25 2013/06/04 01:20:23 pirofti Exp $	*/
 
 /*
  * Copyright (c) 2011 Mike Larkin <mlarkin@openbsd.org>
@@ -343,7 +343,6 @@ hibernate_quiesce_cpus(void)
 {
 	/* Start the hatched (but idling) APs */
 	cpu_boot_secondary_processors();
-	sched_start_secondary_cpus();
 
 	/* Now shut them down */
 	acpi_sleep_mp();
