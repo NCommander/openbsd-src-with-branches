@@ -824,7 +824,15 @@ swcr_newsession(u_int32_t *sid, struct cryptoini *cri)
 			txf = &enc_xform_null;
 			goto enccommon;
 		enccommon:
-			if (txf->setkey(&((*swd)->sw_kschedule), cri->cri_key,
+			if (txf->ctxsize > 0) {
+				(*swd)->sw_kschedule = malloc(txf->ctxsize,
+				    M_CRYPTO_DATA, M_NOWAIT | M_ZERO);
+				if ((*swd)->sw_kschedule == NULL) {
+					swcr_freesession(i);
+					return EINVAL;
+				}
+			}
+			if (txf->setkey((*swd)->sw_kschedule, cri->cri_key,
 			    cri->cri_klen / 8) < 0) {
 				swcr_freesession(i);
 				return EINVAL;
@@ -1013,8 +1021,10 @@ swcr_freesession(u_int64_t tid)
 		case CRYPTO_NULL:
 			txf = swd->sw_exf;
 
-			if (swd->sw_kschedule)
-				txf->zerokey(&(swd->sw_kschedule));
+			if (swd->sw_kschedule) {
+				explicit_bzero(swd->sw_kschedule, txf->ctxsize);
+				free(swd->sw_kschedule, M_CRYPTO_DATA);
+			}
 			break;
 
 		case CRYPTO_MD5_HMAC:
