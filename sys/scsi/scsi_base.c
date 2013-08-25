@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.201 2012/07/01 19:32:55 miod Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.202 2013/06/11 16:42:17 deraadt Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -86,9 +86,6 @@ void			scsi_xsh_ioh(void *, void *);
 
 int			scsi_link_open(struct scsi_link *);
 void			scsi_link_close(struct scsi_link *);
-
-int			scsi_sem_enter(struct mutex *, u_int *);
-int			scsi_sem_leave(struct mutex *, u_int *);
 
 /* ioh/xsh queue state */
 #define RUNQ_IDLE	0
