@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_rdac.c,v 1.7 2011/07/11 01:02:48 dlg Exp $ */
+/*	$OpenBSD: mpath_rdac.c,v 1.9 2013/08/26 07:29:45 dlg Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -263,7 +263,7 @@ rdac_mpath_start(struct scsi_xfer *xs)
 int
 rdac_mpath_checksense(struct scsi_xfer *xs)
 {
-	return (0);
+	return (MPATH_SENSE_DECLINED);
 }
 
 int
