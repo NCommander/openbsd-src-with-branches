@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_sym.c,v 1.13 2013/08/26 10:48:58 dlg Exp $ */
+/*	$OpenBSD: mpath_sym.c,v 1.9 2013/06/10 03:56:43 dlg Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -184,7 +184,7 @@ sym_activate(struct device *self, int act)
 	case DVACT_RESUME:
 		break;
 	case DVACT_DEACTIVATE:
-		if (sc->sc_path.p_dev != NULL)
+		if (sc->sc_path.p_group != NULL)
 			mpath_path_detach(&sc->sc_path);
 		break;
 	}
