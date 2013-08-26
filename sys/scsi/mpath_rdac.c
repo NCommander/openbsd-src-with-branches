@@ -263,6 +263,22 @@ rdac_mpath_start(struct scsi_xfer *xs)
 int
 rdac_mpath_checksense(struct scsi_xfer *xs)
 {
+	struct scsi_sense_data *sense = &xs->sense;
+	u_int8_t skey;
+
+	if ((sense->error_code & SSD_ERRCODE) != SSD_ERRCODE_CURRENT)
+		return (MPATH_SENSE_DECLINED);
+
+	skey = sense->flags & SSD_KEY;
+
+	/* i wish i knew what the magic numbers meant */
+
+	if (skey == SKEY_ILLEGAL_REQUEST && ASC_ASCQ(sense) == 0x9401)
+		return (MPATH_SENSE_FAILOVER);
+
+	if (skey == SKEY_UNIT_ATTENTION && ASC_ASCQ(sense) == 0x8b02)
+		return (MPATH_SENSE_FAILOVER);
+
 	return (MPATH_SENSE_DECLINED);
 }
 
