@@ -1,4 +1,4 @@
-dnl $KTH: krb-func-getcwd-broken.m4,v 1.5 2004/08/26 10:02:57 joda Exp $
+dnl $Id$
 dnl
 dnl
 dnl test for broken getcwd in (SunOS braindamage)
@@ -20,7 +20,7 @@ void *popen(char *cmd, char *mode)
 	return 0;
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	char *ret;
 	ret = getcwd(0, 1024);

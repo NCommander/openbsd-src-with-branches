@@ -1,18 +1,18 @@
 
-RXTERM(1)                    UNIX Reference Manual                   RXTERM(1)
+RXTERM(1)                 BSD General Commands Manual                RXTERM(1)
 
 NNAAMMEE
-     rrxxtteerrmm - start a secure remote xterm
+     rrxxtteerrmm -- start a secure remote xterm
 
 SSYYNNOOPPSSIISS
-     rrxxtteerrmm [--ll _u_s_e_r_n_a_m_e] [--kk] [--rr _r_s_h___a_r_g_s] [--xx _x_t_e_r_m___a_r_g_s] [--KK _k_x___a_r_g_s] [--ww
-            _t_e_r_m___e_m_u_l_a_t_o_r] [--bb _r_s_h___p_r_o_g_r_a_m] _h_o_s_t [_p_o_r_t]
+     rrxxtteerrmm [--ll _u_s_e_r_n_a_m_e] [--kk] [--rr _r_s_h___a_r_g_s] [--xx _x_t_e_r_m___a_r_g_s] [--KK _k_x___a_r_g_s]
+            [--ww _t_e_r_m___e_m_u_l_a_t_o_r] [--bb _r_s_h___p_r_o_g_r_a_m] _h_o_s_t [_p_o_r_t]
 
 DDEESSCCRRIIPPTTIIOONN
-     The rrxxtteerrmm program starts an xxtteerrmm window on host _h_o_s_t. From this window
-     you will also be able to run X clients that will be able to connect se-
-     curely to your X server. If _p_o_r_t is given, that port will be used instead
-     of the default.
+     The rrxxtteerrmm program starts an xxtteerrmm window on host _h_o_s_t.  From this window
+     you will also be able to run X clients that will be able to connect
+     securely to your X server. If _p_o_r_t is given, that port will be used
+     instead of the default.
 
      The supported options are:
 
@@ -38,10 +38,10 @@ EEXXAAMMPPLLEE
 
      1.   On foo: rrxxtteerrmm _b_a_r
 
-     2.   You will get a new window running an xxtteerrmm on host _b_a_r. In this win-
-          dow you will be able to start X clients.
+     2.   You will get a new window running an xxtteerrmm on host _b_a_r.  In this
+          window you will be able to start X clients.
 
 SSEEEE AALLSSOO
-     kx(1),  rsh(1),  rxtelnet(1),  tenletxr(1),  kxd(8)
+     kx(1), rsh(1), rxtelnet(1), tenletxr(1), kxd(8)
 
- KTH_KRB                        April 11, 2003                               1
+KTH_KRB                         April 11, 2003                         KTH_KRB

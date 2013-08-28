@@ -1,3 +1,6 @@
+/*	$OpenBSD: tn3270.c,v 1.6 2003/06/03 02:56:18 millert Exp $	*/
+/*	$NetBSD: tn3270.c,v 1.5 1996/02/28 21:04:18 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,20 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)tn3270.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: tn3270.c,v 1.3 1994/02/25 03:00:48 cgd Exp $";
-#endif /* not lint */
-
-#include <sys/types.h>
-#include <arpa/telnet.h>
-
-#include "general.h"
-
-#include "defines.h"
-#include "ring.h"
-#include "externs.h"
-#include "fdset.h"
+#include "telnet_locl.h"
 
 #if	defined(TN3270)
 
@@ -109,11 +95,11 @@ init_3270()
 
     int
 DataToNetwork(buffer, count, done)
-    register char *buffer;	/* where the data is */
-    register int  count;	/* how much to send */
+    char *buffer;	/* where the data is */
+    int  count;	/* how much to send */
     int		  done;		/* is this the last of a logical block */
 {
-    register int loop, c;
+    int loop, c;
     int origCount;
 
     origCount = count;
@@ -121,14 +107,13 @@ DataToNetwork(buffer, count, done)
     while (count) {
 	/* If not enough room for EORs, IACs, etc., wait */
 	if (NETROOM() < 6) {
-	    fd_set o;
+	    struct pollfd pfd[1];
 
-	    FD_ZERO(&o);
 	    netflush();
 	    while (NETROOM() < 6) {
-		FD_SET(net, &o);
-		(void) select(net+1, (fd_set *) 0, &o, (fd_set *) 0,
-						(struct timeval *) 0);
+		pfd[0].fd = net;
+		pfd[0].events = POLLOUT;
+		(void) poll(pfd, 1, -1);
 		netflush();
 	    }
 	}
@@ -189,33 +174,28 @@ outputPurge()
  * DataToTerminal - queue up some data to go to terminal.
  *
  * Note: there are people who call us and depend on our processing
- * *all* the data at one time (thus the select).
+ * *all* the data at one time (thus the poll).
  */
 
     int
 DataToTerminal(buffer, count)
-    register char	*buffer;		/* where the data is */
-    register int	count;			/* how much to send */
+    char	*buffer;		/* where the data is */
+    int		count;			/* how much to send */
 {
-    register int c;
+    int c;
     int origCount;
 
     origCount = count;
 
     while (count) {
 	if (TTYROOM() == 0) {
-#if	defined(unix)
-	    fd_set o;
+	    struct pollfd pfd[1];
 
-	    FD_ZERO(&o);
-#endif	/* defined(unix) */
 	    (void) ttyflush(0);
 	    while (TTYROOM() == 0) {
-#if	defined(unix)
-		FD_SET(tout, &o);
-		(void) select(tout+1, (fd_set *) 0, &o, (fd_set *) 0,
-						(struct timeval *) 0);
-#endif	/* defined(unix) */
+		pfd[0].fd = tout;
+		pfd[0].events = POLLOUT;
+		(void) poll(pfd, 1, -1);
 		(void) ttyflush(0);
 	    }
 	}
@@ -243,7 +223,7 @@ Push3270()
     if (save) {
 	if (Ifrontp+save > Ibuf+sizeof Ibuf) {
 	    if (Ibackp != Ibuf) {
-		memcpy(Ibuf, Ibackp, Ifrontp-Ibackp);
+		memmove(Ibuf, Ibackp, Ifrontp-Ibackp);
 		Ifrontp -= (Ibackp-Ibuf);
 		Ibackp = Ibuf;
 	    }
@@ -399,12 +379,12 @@ settranscom(argc, argv)
 	if (argc == 1) {
 	   return 1;
 	}
-	transcom = tline;
-	(void) strcpy(transcom, argv[1]);
+	strlcpy(tline, argv[1], sizeof(tline));
 	for (i = 2; i < argc; ++i) {
-	    (void) strcat(transcom, " ");
-	    (void) strcat(transcom, argv[i]);
+		strlcat(tline, " ", sizeof(tline));
+		strlcat(tline, argv[i], sizeof(tline));
 	}
+	transcom = tline;
 	return 1;
 }
 #endif	/* defined(unix) */

@@ -1,8 +1,8 @@
-# $KTH: Makefile.am,v 1.19 2004/08/26 11:55:21 joda Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
 
-AM_CPPFLAGS += -I$(srcdir)/.. $(INCLUDE_krb4) $(INCLUDE_des)
+AM_CPPFLAGS += -I$(srcdir)/.. $(INCLUDE_hcrypto)
 
 libexec_PROGRAMS = telnetd
 
@@ -16,11 +16,12 @@ man_MANS = telnetd.8
 LDADD = \
 	../libtelnet/libtelnet.a \
 	$(LIB_krb5) \
-	$(LIB_krb4) \
-	$(LIB_des) \
+	$(LIB_hcrypto) \
 	$(LIB_tgetent) \
 	$(LIB_logwtmp) \
 	$(LIB_logout) \
 	$(LIB_openpty) \
 	$(LIB_kdfs) \
 	$(LIB_roken)
+
+EXTRA_DIST = NTMakefile $(man_MANS)

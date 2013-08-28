@@ -1,3 +1,4 @@
+.\"	$OpenBSD: comm.1,v 1.14 2009/02/08 17:15:09 jmc Exp $
 .\"	$NetBSD: comm.1,v 1.4 1995/03/26 09:25:50 glass Exp $
 .\"
 .\" Copyright (c) 1989, 1990, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,19 +33,19 @@
 .\"
 .\"     @(#)comm.1	8.1 (Berkeley) 6/6/93
 .\"
-.Dd June 6, 1993
-.Os
+.Dd $Mdocdate: February 8 2009 $
 .Dt COMM 1
+.Os
 .Sh NAME
 .Nm comm
 .Nd select or reject lines common to two files
 .Sh SYNOPSIS
 .Nm comm
-.Op Fl 123
+.Op Fl 123f
 .Ar file1 file2
 .Sh DESCRIPTION
 The
-.Nm comm
+.Nm
 utility reads
 .Ar file1
 and
@@ -61,9 +58,11 @@ lines only in
 .Ar file2 ;
 and lines in both files.
 .Pp
-The filename ``-'' means the standard input.
+The filename
+.Sq -
+means the standard input.
 .Pp
-The following options are available:
+The options are as follows:
 .Bl -tag -width Ds
 .It Fl 1
 Suppress printing of column 1.
@@ -71,6 +70,8 @@ Suppress printing of column 1.
 Suppress printing of column 2.
 .It Fl 3
 Suppress printing of column 3.
+.It Fl f
+Fold case in line comparisons.
 .El
 .Pp
 Each column will have a number of tab characters prepended to it
@@ -79,7 +80,7 @@ For example, if column number two is being suppressed, lines printed
 in column number one will not have any tabs preceding them, and lines
 printed in column number three will have one.
 .Pp
-.Nm Comm
+.Nm
 assumes that the files are lexically sorted; all characters
 participate in line comparisons.
 .\" .Sh ENVIRONMENT
@@ -90,9 +91,8 @@ participate in line comparisons.
 .\" .It Ev LC_COLLATE
 .\" .It Ev LC_MESSAGES
 .\" .El
-.Sh DIAGNOSTICS
-.Nm Comm
-exits 0 on success, >0 if an error occurred.
+.Sh EXIT STATUS
+.Ex -std comm
 .Sh SEE ALSO
 .Xr cmp 1 ,
 .Xr diff 1 ,
@@ -100,6 +100,15 @@ exits 0 on success, >0 if an error occurred.
 .Xr uniq 1
 .Sh STANDARDS
 The
-.Nm comm
-utility conforms to 
-.St -p1003.2-92 .
+.Nm
+utility conforms to
+.St -p1003.1-2008 .
+.Pp
+The flag
+.Op Fl f
+is an extension to that specification.
+.Sh HISTORY
+A
+.Nm
+command appeared in
+.At v4 .

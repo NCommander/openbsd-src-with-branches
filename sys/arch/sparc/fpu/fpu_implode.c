@@ -1,4 +1,5 @@
-/*	$NetBSD: fpu_implode.c,v 1.2 1994/11/20 20:52:42 deraadt Exp $ */
+/*	$OpenBSD: fpu_implode.c,v 1.6 2010/05/09 20:47:49 kettenis Exp $	*/
+/*	$NetBSD: fpu_implode.c,v 1.3 1996/03/14 19:41:59 christos Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -50,6 +47,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/systm.h>
 
 #include <machine/ieee.h>
 #include <machine/instr.h>
@@ -57,6 +55,10 @@
 
 #include <sparc/fpu/fpu_arith.h>
 #include <sparc/fpu/fpu_emu.h>
+#include <sparc/fpu/fpu_extern.h>
+
+static int fpu_round(register struct fpemu *, register struct fpn *);
+static int toinf(struct fpemu *, int);
 
 /*
  * Round a number (algorithm from Motorola MC68882 manual, modified for
@@ -71,10 +73,10 @@
  * responsibility to fix this if necessary.
  */
 static int
-round(register struct fpemu *fe, register struct fpn *fp)
+fpu_round(register struct fpemu *fe, register struct fpn *fp)
 {
 	register u_int m0, m1, m2, m3;
-	register int gr, s, ret;
+	register int gr, s;
 
 	m0 = fp->fp_mant[0];
 	m1 = fp->fp_mant[1];
@@ -128,7 +130,7 @@ round(register struct fpemu *fe, register struct fpn *fp)
 	}
 
 	/* Bump low bit of mantissa, with carry. */
-#ifdef sparc /* ``cheating'' (left out FPU_DECL_CARRY; know this is faster) */
+#ifdef __sparc__ /* ``cheating'' (left out FPU_DECL_CARRY; know this is faster) */
 	FPU_ADDS(m3, m3, 1);
 	FPU_ADDCS(m2, m2, 0);
 	FPU_ADDCS(m1, m1, 0);
@@ -210,7 +212,7 @@ fpu_ftoi(fe, fp)
 		 * into last mantissa word (this will not exceed 0xffffffff),
 		 * shifting any guard and round bits out into the sticky
 		 * bit.  Then ``round'' towards zero, i.e., just set an
-		 * inexact exception if sticky is set (see round()).
+		 * inexact exception if sticky is set (see fpu_round()).
 		 * If the result is > 0x80000000, or is positive and equals
 		 * 0x80000000, overflow; otherwise the last fraction word
 		 * is the result.
@@ -288,7 +290,7 @@ fpu_ftos(fe, fp)
 	if ((exp = fp->fp_exp + SNG_EXP_BIAS) <= 0) {	/* subnormal */
 		/* -NG for g,r; -SNG_FRACBITS-exp for fraction */
 		(void) fpu_shr(fp, FP_NMANT - FP_NG - SNG_FRACBITS - exp);
-		if (round(fe, fp) && fp->fp_mant[3] == SNG_EXP(1))
+		if (fpu_round(fe, fp) && fp->fp_mant[3] == SNG_EXP(1))
 			return (sign | SNG_EXP(1) | 0);
 		if ((fe->fe_cx & FSR_NX) ||
 		    (fe->fe_fsr & (FSR_UF << FSR_TEM_SHIFT)))
@@ -301,7 +303,7 @@ fpu_ftos(fe, fp)
 	if ((fp->fp_mant[3] & SNG_EXP(1 << FP_NG)) == 0)
 		panic("fpu_ftos");
 #endif
-	if (round(fe, fp) && fp->fp_mant[3] == SNG_EXP(2))
+	if (fpu_round(fe, fp) && fp->fp_mant[3] == SNG_EXP(2))
 		exp++;
 	if (exp >= SNG_EXP_INFNAN) {
 		/* overflow to inf or to max single */
@@ -349,7 +351,7 @@ zero:		res[1] = 0;
 
 	if ((exp = fp->fp_exp + DBL_EXP_BIAS) <= 0) {
 		(void) fpu_shr(fp, FP_NMANT - FP_NG - DBL_FRACBITS - exp);
-		if (round(fe, fp) && fp->fp_mant[2] == DBL_EXP(1)) {
+		if (fpu_round(fe, fp) && fp->fp_mant[2] == DBL_EXP(1)) {
 			res[1] = 0;
 			return (sign | DBL_EXP(1) | 0);
 		}
@@ -360,7 +362,7 @@ zero:		res[1] = 0;
 		goto done;
 	}
 	(void) fpu_shr(fp, FP_NMANT - FP_NG - 1 - DBL_FRACBITS);
-	if (round(fe, fp) && fp->fp_mant[2] == DBL_EXP(2))
+	if (fpu_round(fe, fp) && fp->fp_mant[2] == DBL_EXP(2))
 		exp++;
 	if (exp >= DBL_EXP_INFNAN) {
 		fe->fe_cx |= FSR_OF | FSR_NX;
@@ -410,7 +412,7 @@ zero:		res[1] = res[2] = res[3] = 0;
 
 	if ((exp = fp->fp_exp + EXT_EXP_BIAS) <= 0) {
 		(void) fpu_shr(fp, FP_NMANT - FP_NG - EXT_FRACBITS - exp);
-		if (round(fe, fp) && fp->fp_mant[0] == EXT_EXP(1)) {
+		if (fpu_round(fe, fp) && fp->fp_mant[0] == EXT_EXP(1)) {
 			res[1] = res[2] = res[3] = 0;
 			return (sign | EXT_EXP(1) | 0);
 		}
@@ -421,7 +423,7 @@ zero:		res[1] = res[2] = res[3] = 0;
 		goto done;
 	}
 	/* Since internal == extended, no need to shift here. */
-	if (round(fe, fp) && fp->fp_mant[0] == EXT_EXP(2))
+	if (fpu_round(fe, fp) && fp->fp_mant[0] == EXT_EXP(2))
 		exp++;
 	if (exp >= EXT_EXP_INFNAN) {
 		fe->fe_cx |= FSR_OF | FSR_NX;

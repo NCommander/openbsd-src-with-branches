@@ -1,5 +1,5 @@
 dnl
-dnl $KTH: check-netinet-ip-and-tcp.m4,v 1.5 2004/08/26 11:27:32 joda Exp $
+dnl $Id$
 dnl
 
 dnl extra magic check for netinet/{ip.h,tcp.h} because on irix 6.5.3

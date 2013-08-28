@@ -43,7 +43,7 @@ static const char rcsid[] =
 
 #include "rcp_locl.h"
 
-RCSID("$KTH: util.c,v 1.7 2005/04/18 07:52:58 lha Exp $");
+RCSID("$Id$");
 
 char *
 colon(cp)
@@ -59,6 +59,21 @@ colon(cp)
 			return (0);
 	}
 	return (0);
+}
+
+char *
+unbracket(char *cp)
+{
+	char *ep;
+
+	if (*cp == '[') {
+		ep = cp + (strlen(cp) - 1);
+		if (*ep == ']') {
+			*ep = '\0';
+			++cp;
+		}
+	}
+	return (cp);
 }
 
 void
@@ -83,7 +98,7 @@ okname(cp0)
 	int c;
 	unsigned char *cp;
 
-	cp = cp0;
+	cp = (unsigned char *)cp0;
 	do {
 		c = *cp;
 		if (c & 0200)
@@ -98,8 +113,7 @@ bad:	warnx("%s: invalid user name", cp0);
 }
 
 int
-susystem(s, userid)
-	int userid;
+susystem(s)
 	char *s;
 {
 	void (*istat)(int), (*qstat)(int);
@@ -112,7 +126,6 @@ susystem(s, userid)
 		return (127);
 
 	case 0:
-		(void)setuid(userid);
 		execl(_PATH_BSHELL, "sh", "-c", s, NULL);
 		_exit(127);
 	}

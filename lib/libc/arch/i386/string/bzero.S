@@ -1,13 +1,10 @@
+/*	$OpenBSD: bzero.S,v 1.3 2005/08/07 11:30:38 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: bzero.S,v 1.8 1995/04/28 22:57:58 jtc Exp $")
-#endif
 
 ENTRY(bzero)
 	pushl	%edi
@@ -19,7 +16,7 @@ ENTRY(bzero)
 
 	/*
 	 * if the string is too short, it's really not worth the overhead
-	 * of aligning to word boundries, etc.  So we jump to a plain
+	 * of aligning to word boundaries, etc.  So we jump to a plain
 	 * unaligned set.
 	 */
 	cmpl	$16,%edx

@@ -18,7 +18,7 @@ SM_IDSTR(copyright,
      Copyright (c) 1988, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n")
 
-SM_IDSTR(id, "@(#)$Sendmail: rmail.c,v 8.58 2001/09/04 22:44:31 ca Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: rmail.c,v 8.62 2013/03/12 15:24:52 ca Exp $")
 
 /*
  * RMAIL -- UUCP mail server.
@@ -134,7 +134,7 @@ main(argc, argv)
 	{
 		/* Get and nul-terminate the line. */
 		if (sm_io_fgets(smioin, SM_TIME_DEFAULT, lbuf,
-				sizeof(lbuf)) == NULL)
+				sizeof(lbuf)) < 0)
 			err(EX_DATAERR, "no data");
 		if ((p = strchr(lbuf, '\n')) == NULL)
 			err(EX_DATAERR, "line too long");
@@ -369,7 +369,7 @@ main(argc, argv)
 		/* NOTREACHED */
 	}
 
-	if ((fp = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT, (void *)pdes[1],
+	if ((fp = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT, (void *) &(pdes[1]),
 			     SM_IO_WRONLY, NULL)) == NULL)
 		err(EX_OSERR, "sm_io_open failed");
 	(void) close(pdes[0]);
@@ -379,7 +379,7 @@ main(argc, argv)
 	{
 		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "%s", lbuf);
 	} while (sm_io_fgets(smioin, SM_TIME_DEFAULT, lbuf,
-			     sizeof(lbuf)) != NULL);
+			     sizeof(lbuf)) >= 0);
 
 	if (sm_io_error(smioin))
 		err(EX_TEMPFAIL, "stdin: %s", sm_errstring(errno));

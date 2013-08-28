@@ -1,8 +1,8 @@
-# $KTH: Makefile.am,v 1.24 2004/08/26 11:55:28 joda Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
 
-AM_CPPFLAGS += $(INCLUDE_des) $(ROKEN_RENAME)
+AM_CPPFLAGS += $(INCLUDE_hcrypto) $(ROKEN_RENAME)
 
 noinst_PROGRAMS = otptest
 
@@ -13,16 +13,23 @@ otptest_LDADD = libotp.la
 include_HEADERS = otp.h
 
 lib_LTLIBRARIES = libotp.la
-libotp_la_LDFLAGS = -version-info 1:3:1
-libotp_la_LIBADD  = $(LIB_des) $(LIB_roken) $(LIB_NDBM)
+libotp_la_LDFLAGS = -version-info 1:5:1
+libotp_la_LIBADD  = $(LIB_hcrypto) $(LIB_roken)
 
+if HAVE_DB1
+ndbm_wrap = ndbm_wrap.c ndbm_wrap.h
+libotp_la_LIBADD += $(LIB_db_create)
+else
 if HAVE_DB3
 ndbm_wrap = ndbm_wrap.c ndbm_wrap.h
+libotp_la_LIBADD += $(LIB_db_create)
 else
 ndbm_wrap =
+libotp_la_LIBADD += $(LIB_NDBM)
+endif
 endif
 
-libotp_la_SOURCES = \
+dist_libotp_la_SOURCES = \
 	otp.c \
 	otp_challenge.c \
 	otp_db.c \
@@ -32,12 +39,18 @@ libotp_la_SOURCES = \
 	otp_verify.c \
 	otp_locl.h \
 	otp_md.h \
-	roken_rename.h \
-	$(ndbm_wrap) \
-	$(ROKEN_SRCS)
+	roken_rename.h
+
+nodist_libotp_la_SOURCES = $(ndbm_wrap) $(ROKEN_SRCS)
+
+libotp_la_DEPENDENCIES = version-script.map
 
 if do_roken_rename
 ROKEN_SRCS = snprintf.c strcasecmp.c strncasecmp.c strlwr.c strlcpy.c strlcat.c
+endif
+
+if versionscript
+libotp_la_LDFLAGS += $(LDFLAGS_VERSION_SCRIPT)$(srcdir)/version-script.map
 endif
 
 $(libotp_la_OBJECTS): $(ndbm_wrap)
@@ -60,3 +73,15 @@ strlcpy.c:
 	$(LN_S) $(srcdir)/../roken/strlcpy.c .
 strlcat.c:
 	$(LN_S) $(srcdir)/../roken/strlcat.c .
+
+CLEANFILES = \
+	ndbm_wrap.c \
+	ndbm_wrap.h \
+	snprintf.c \
+	strcasecmp.c \
+	strlcat.c \
+	strlcpy.c \
+	strlwr.c \
+	strncasecmp.c
+
+EXTRA_DIST = NTMakefile version-script.map

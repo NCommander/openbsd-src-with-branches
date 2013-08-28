@@ -1,0 +1,5 @@
+# $OpenBSD$
+#
+diff -uNp
+update -P
+checkout -P

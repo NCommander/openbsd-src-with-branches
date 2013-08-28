@@ -1,3 +1,6 @@
+/*	$OpenBSD: advcap.c,v 1.12 2008/04/20 11:36:48 rainer Exp $	*/
+/*	$KAME: advcap.c,v 1.9 2002/05/29 14:28:35 itojun Exp $	*/
+
 /*
  * Copyright (c) 1983 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,10 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)remcap.c	5.5 (Berkeley) 2/2/91";
-#endif /* not lint */
-
 /*
  * remcap - routines for dealing with the remote host data base
  *
@@ -47,10 +42,10 @@ static char sccsid[] = "@(#)remcap.c	5.5 (Berkeley) 2/2/91";
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <syslog.h>
 #include <errno.h>
 #include <string.h>
 #include "pathnames.h"
+#include "log.h"
 
 #ifndef BUFSIZ
 #define	BUFSIZ		1024
@@ -69,7 +64,6 @@ static char sccsid[] = "@(#)remcap.c	5.5 (Berkeley) 2/2/91";
 #define V_TERM		"HOST"
 #endif
 
-char	*RM;
 
 /*
  * termcap - routines for dealing with the terminal capability data base
@@ -92,15 +86,15 @@ static	char *remotefile;
 
 extern char *conffile;
 
-int tgetent __P((char *, char *));
-int getent __P((char *, char *, char *));
-int tnchktc __P((void));
-int tnamatch __P((char *));
-static char *tskip __P((char *));
-int tgetnum __P((char *));
-int tgetflag __P((char *));
-char *tgetstr __P((char *, char **));
-static char *tdecode __P((char *, char **));
+int tgetent(char *, char *);
+int getent(char *, char *, char *);
+int tnchktc(void);
+int tnamatch(char *);
+static char *tskip(char *);
+int64_t tgetnum(char *);
+int tgetflag(char *);
+char *tgetstr(char *, char **);
+static char *tdecode(char *, char **);
 
 /*
  * Get an entry for terminal name in buffer bp,
@@ -121,8 +115,8 @@ int
 getent(bp, name, cp)
 	char *bp, *name, *cp;
 {
-	register int c;
-	register int i = 0, cnt = 0;
+	int c;
+	int i = 0, cnt = 0;
 	char ibuf[BUFSIZ];
 	int tf;
 
@@ -136,11 +130,10 @@ getent(bp, name, cp)
 	 * has to already have the newlines crunched out.
 	 */
 	if (cp && *cp) {
-		tf = open(RM = cp, O_RDONLY);
+		tf = open(cp, O_RDONLY);
 	}
 	if (tf < 0) {
-		syslog(LOG_WARNING,
-		       "<%s> open: %s", __FUNCTION__, strerror(errno));
+		log_warn("open");
 		return (-2);
 	}
 	for (;;) {
@@ -162,8 +155,8 @@ getent(bp, name, cp)
 				}
 				break;
 			}
-			if (cp >= bp+BUFSIZ) {
-				write(2,"Remcap entry too long\n", 23);
+			if (cp >= bp + BUFSIZ) {
+				write(STDERR_FILENO, "Remcap entry too long\n", 23);
 				break;
 			} else
 				*cp++ = c;
@@ -190,7 +183,7 @@ getent(bp, name, cp)
 int
 tnchktc()
 {
-	register char *p, *q;
+	char *p, *q;
 	char tcname[16];	/* name of similar terminal */
 	char tcbuf[BUFSIZ];
 	char *holdtbuf = tbuf;
@@ -198,34 +191,36 @@ tnchktc()
 
 	p = tbuf + strlen(tbuf) - 2;	/* before the last colon */
 	while (*--p != ':')
-		if (p<tbuf) {
-			write(2, "Bad remcap entry\n", 18);
+		if (p < tbuf) {
+			write(STDERR_FILENO, "Bad remcap entry\n", 18);
 			return (0);
 		}
 	p++;
 	/* p now points to beginning of last field */
 	if (p[0] != 't' || p[1] != 'c')
 		return (1);
-	strcpy(tcname, p+3);
+	strlcpy(tcname, p + 3, sizeof tcname);
 	q = tcname;
 	while (*q && *q != ':')
 		q++;
 	*q = 0;
 	if (++hopcount > MAXHOP) {
-		write(2, "Infinite tc= loop\n", 18);
+		write(STDERR_FILENO, "Infinite tc= loop\n", 18);
 		return (0);
 	}
 	if (getent(tcbuf, tcname, remotefile) != 1) {
+		log_warnx("Could not parse %s: "
+		    "Unresolvable reference to %s.", remotefile, tcname);
 		return (0);
 	}
 	for (q = tcbuf; *q++ != ':'; )
 		;
 	l = p - holdtbuf + strlen(q);
 	if (l > BUFSIZ) {
-		write(2, "Remcap entry too long\n", 23);
+		write(STDERR_FILENO, "Remcap entry too long\n", 23);
 		q[BUFSIZ - (p-holdtbuf)] = 0;
 	}
-	strcpy(p, q);
+	strlcpy(p, q, holdtbuf + BUFSIZ - p);
 	tbuf = holdtbuf;
 	return (1);
 }
@@ -240,7 +235,7 @@ int
 tnamatch(np)
 	char *np;
 {
-	register char *Np, *Bp;
+	char *Np, *Bp;
 
 	Bp = tbuf;
 	if (*Bp == '#')
@@ -265,7 +260,7 @@ tnamatch(np)
  */
 static char *
 tskip(bp)
-	register char *bp;
+	char *bp;
 {
 	int dquote;
 
@@ -308,13 +303,13 @@ breakbreak:
  * a # character.  If the option is not found we return -1.
  * Note that we handle octal numbers beginning with 0.
  */
-int
+int64_t
 tgetnum(id)
 	char *id;
 {
-	register long int i;
-	register int base;
-	register char *bp = tbuf;
+	int64_t i;
+	int base;
+	char *bp = tbuf;
 
 	for (;;) {
 		bp = tskip(bp);
@@ -348,7 +343,7 @@ int
 tgetflag(id)
 	char *id;
 {
-	register char *bp = tbuf;
+	char *bp = tbuf;
 
 	for (;;) {
 		bp = tskip(bp);
@@ -376,7 +371,7 @@ char *
 tgetstr(id, area)
 	char *id, **area;
 {
-	register char *bp = tbuf;
+	char *bp = tbuf;
 
 	for (;;) {
 		bp = tskip(bp);
@@ -400,12 +395,12 @@ tgetstr(id, area)
  */
 static char *
 tdecode(str, area)
-	register char *str;
+	char *str;
 	char **area;
 {
-	register char *cp;
-	register int c;
-	register char *dp;
+	char *cp;
+	int c;
+	char *dp;
 	int i;
 	char term;
 

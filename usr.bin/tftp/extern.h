@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.4 2003/06/03 02:56:18 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1994/12/08 09:51:24 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,5 +32,9 @@
  *	@(#)extern.h	8.1 (Berkeley) 6/6/93
  */
 
-void	recvfile __P((int, char *, char *));
-void	sendfile __P((int, char *, char *));
+void	recvfile(int, char *, char *);
+void	sendfile(int, char *, char *);
+
+#define TIMEOUT		5		/* packet rexmt timeout */
+#define TIMEOUT_MIN	1		/* minimal packet rexmt timeout */
+#define TIMEOUT_MAX	255		/* maximal packet rexmt timeout */

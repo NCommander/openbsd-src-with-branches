@@ -1,8 +1,8 @@
-# $KTH: Makefile.am,v 1.10 2004/08/26 11:55:19 joda Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
 
-AM_CPPFLAGS += -I$(srcdir)/.. $(INCLUDE_krb4) $(INCLUDE_des)
+AM_CPPFLAGS += -I$(srcdir)/.. $(INCLUDE_hcrypto)
 
 noinst_LIBRARIES = libtelnet.a
 
@@ -15,10 +15,9 @@ libtelnet_a_SOURCES = \
 	encrypt.c	\
 	encrypt.h	\
 	genget.c	\
-	kerberos.c	\
 	kerberos5.c	\
 	misc-proto.h	\
 	misc.c		\
 	misc.h
 
-EXTRA_DIST = krb4encpwd.c rsaencpwd.c spx.c
+EXTRA_DIST = NTMakefile rsaencpwd.c spx.c

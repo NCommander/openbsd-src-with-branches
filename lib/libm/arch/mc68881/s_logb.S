@@ -1,3 +1,4 @@
+/*	$OpenBSD: s_logb.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,33 +34,25 @@
 
 #include <machine/asm.h>
 
-;_sccsid:
-;.asciz	"from: @(#)support.s	5.2 (Berkeley) 5/17/90"
-
-RCSID("$NetBSD: s_logb.S,v 1.4 1995/05/09 02:37:09 jtc Exp $")
-
 | logb(x)
 | returns the unbiased exponent of x, a signed integer in double precision,
 | except that logb(0) is -INF, logb(INF) is +INF, and logb(NAN) is that NAN.
 ENTRY(logb)
-	movw	sp@(4),d0
-	movw	#0x7FF0,d1	| exponent bits
-	andw	d1,d0		| mask off all else
-	cmpw	d1,d0		| max exponent?
+	movw	%sp@(4),%d0
+	movw	#0x7FF0,%d1	| exponent bits
+	andw	%d1,%d0		| mask off all else
+	cmpw	%d1,%d0		| max exponent?
 	bne	Lfinite		| no, is finite
-	fmoved	sp@(4),fp0	| yes, infinite or NaN
+	fmoved	%sp@(4),%fp0	| yes, infinite or NaN
 	fbun	Ldone		| NaN returns NaN
-	fabsx	fp0		| +-inf returns inf
+	fabsx	%fp0		| +-inf returns inf
 	jra	Ldone
 Lfinite:
-	fmoved	sp@(4),fp0	| get entire number
+	fmoved	%sp@(4),%fp0	| get entire number
 	fbne	Lnonz		| zero?
-	flog2x	fp0		| yes, log(0) a convenient source of -inf
+	flog2x	%fp0		| yes, log(0) a convenient source of -inf
 	jra	Ldone
 Lnonz:
-	fgetexpx	fp0	| get exponent
+	fgetexpx	%fp0	| get exponent
 Ldone:
-	fmoved	fp0,sp@-
-	movel	sp@+,d0
-	movel	sp@+,d1
 	rts

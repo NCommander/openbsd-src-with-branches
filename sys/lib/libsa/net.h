@@ -1,7 +1,8 @@
-/*	$NetBSD: net.h,v 1.9 1995/09/23 17:14:41 thorpej Exp $	*/
+/*	$OpenBSD: net.h,v 1.6 2003/06/01 17:00:33 deraadt Exp $	*/
+/*	$NetBSD: net.h,v 1.10 1995/10/20 00:46:30 cgd Exp $	*/
 
 /*
- * Copyright (c) 1993 Adam Glass 
+ * Copyright (c) 1993 Adam Glass
  * Copyright (c) 1992 Regents of the University of California.
  * All rights reserved.
  *
@@ -61,7 +62,7 @@
 
 /*
  * How much room to leave for headers:
- *	14: struct ether_header
+ *  14: struct ether_header
  *  20: struct ip
  *   8: struct udphdr
  * That's 42 but let's pad it out to 48 bytes.
@@ -91,30 +92,30 @@ extern	int debug;			/* defined in the machdep sources */
 extern struct iodesc sockets[SOPEN_MAX];
 
 /* ARP/RevARP functions: */
-u_char	*arpwhohas __P((struct iodesc *, struct in_addr));
-void	arp_reply __P((struct iodesc *, void *));
-int	rarp_getipaddress __P((int));
+u_char	*arpwhohas(struct iodesc *, struct in_addr);
+void	arp_reply(struct iodesc *, void *);
+int	rarp_getipaddress(int);
+n_long	ip_convertaddr(char *);
 
 /* Link functions: */
-ssize_t sendether __P((struct iodesc *d, void *pkt, size_t len,
-			u_char *dea, int etype));
-ssize_t readether __P((struct iodesc *d, void *pkt, size_t len,
-			time_t tleft, u_int16_t *etype));
+ssize_t sendether(struct iodesc *d, void *pkt, size_t len,
+	    u_char *dea, int etype);
+ssize_t readether(struct iodesc *d, void *pkt, size_t len,
+	    time_t tleft, u_int16_t *etype);
 
-ssize_t	sendudp __P((struct iodesc *, void *, size_t));
-ssize_t	readudp __P((struct iodesc *, void *, size_t, time_t));
-ssize_t	sendrecv __P((struct iodesc *,
-		      ssize_t (*)(struct iodesc *, void *, size_t),
-			void *, size_t,
-		        ssize_t (*)(struct iodesc *, void *, size_t, time_t),
-			void *, size_t));
+ssize_t	sendudp(struct iodesc *, void *, size_t);
+ssize_t	readudp(struct iodesc *, void *, size_t, time_t);
+ssize_t	sendrecv(struct iodesc *,
+	    ssize_t (*)(struct iodesc *, void *, size_t), void *, size_t,
+	    ssize_t (*)(struct iodesc *, void *, size_t, time_t),
+	    void *, size_t);
 
 /* Utilities: */
-char	*ether_sprintf __P((u_char *));
-int	in_cksum __P((void *, int));
-char	*inet_ntoa __P((struct in_addr));
-char	*intoa __P((n_long));		/* similar to inet_ntoa */
-n_long	inet_addr __P((char *));
+char	*ether_sprintf(u_char *);
+int	in_cksum(void *, int);
+char	*inet_ntoa(struct in_addr);
+char	*intoa(n_long);		/* similar to inet_ntoa */
+n_long	inet_addr(char *);
 
 /* Machine-dependent functions: */
-time_t	getsecs __P((void));
+time_t	getsecs(void);

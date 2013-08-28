@@ -53,8 +53,6 @@ Boston, MA 02111-1307, USA.  */
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-extern char *make_temp_file PROTO ((char *));
 
 /* On certain systems, we have code that works by scanning the object file
    directly.  But this code uses system-specific header files and library
@@ -197,6 +195,7 @@ int debug;				/* true if -debug */
 
 static int shared_obj;		        /* true if -shared */
 
+static int trace_ctors_dtors;
 static char *c_file;			/* <xxx>.c for constructor/destructor list.  */
 static char *o_file;			/* <xxx>.o for constructor/destructor list.  */
 #ifdef COLLECT_EXPORT_LIST
@@ -1040,9 +1039,12 @@ main (argc, argv)
   {
     int i;
     
-    for (i = 1; argv[i] != NULL; i ++)
+    for (i = 1; argv[i] != NULL; i ++) {
       if (! strcmp (argv[i], "-debug"))
 	debug = 1;
+      if (! strcmp (argv[i], "-trace-ctors-dtors"))
+      	trace_ctors_dtors = 1;
+    }
     vflag = debug;
   }
 
@@ -1312,6 +1314,11 @@ main (argc, argv)
 		  ld1--;
 		  ld2--;
 		}
+	      if (!strcmp (arg, "-dynamic-linker") && argv[1])
+	        {
+		  ++argv;
+		  *ld1++ = *ld2++ = *argv;
+		}
 	      break;
 
 	    case 'l':
@@ -1370,6 +1377,20 @@ main (argc, argv)
 		  strip_flag = 1;
 		  ld1--;
 		}
+	      else if (!strcmp (arg, "-soname"))
+	        {
+		  /* soname is special, pass it out */
+		  arg = *++argv;
+		  *ld1++ = *ld2++ = arg;
+		}
+	      break;
+	    case 't':
+	      if (!strcmp(arg, "-trace-ctors-dtors"))
+	        {
+		  /* Already parsed.  */
+		  ld1--;
+		  ld2--;
+		}
 	      break;
 
 	    case 'v':
@@ -1380,7 +1401,7 @@ main (argc, argv)
 	}
       else if ((p = rindex (arg, '.')) != (char *) 0
 	       && (strcmp (p, ".o") == 0 || strcmp (p, ".a") == 0
-		   || strcmp (p, ".so") == 0))
+		   || strcmp (p, ".so") == 0 || strcmp (p, ".lo") == 0))
 	{
 	  if (first_file)
 	    {
@@ -1395,7 +1416,7 @@ main (argc, argv)
 		  *ld2++ = arg;
 		}
 	    }
-	  if (p[1] == 'o')
+	  if (p[1] == 'o' || p[1] == 'l')
 	    *object++ = arg;
 #ifdef COLLECT_EXPORT_LIST
 	  /* libraries can be specified directly, i.e. without -l flag.  */
@@ -1759,7 +1780,7 @@ collect_execute (prog, argv, redir)
   if (redir)
     {
       /* Open response file.  */
-      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT);
+      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT, 0666);
 
       /* Duplicate the stdout and stderr file handles
 	 so they can be restored later.  */
@@ -2083,6 +2104,8 @@ write_c_file_stat (stream, name)
       fprintf (stream, "\t}\n");
     }
 
+  if (trace_ctors_dtors)
+ 	fprintf (stream, "#include <syslog.h>\n");
   fprintf (stream, "void %s() {\n", initname);
   if (constructors.number > 0 || frames)
     {
@@ -2091,10 +2114,26 @@ write_c_file_stat (stream, name)
       if (frames)
 	fprintf (stream, "\treg_frame,\n");
       fprintf (stream, "\t};\n");
+      if (trace_ctors_dtors) {
+        struct id *list;
+        fprintf(stream, "\tstatic const char *names[] = {\n");
+	for (list = constructors.first; list; list = list->next)
+		fprintf (stream, "\t\t\"%s\",\n", list->name);
+	fprintf(stream, "\t};\n");
+	fprintf(stream, "\tconst char **n;\n");
+	fprintf(stream, "\tstruct syslog_data data = SYSLOG_DATA_INIT;\n");
+      }
       fprintf (stream, "\tentry_pt **p;\n");
       fprintf (stream, "\tif (count++ != 0) return;\n");
       fprintf (stream, "\tp = ctors + %d;\n", constructors.number + frames);
-      fprintf (stream, "\twhile (p > ctors) (*--p)();\n");
+      if (trace_ctors_dtors) {
+      	fprintf(stream, "\tn = names + %d;\n", constructors.number + frames);
+	fprintf(stream, "\twhile (p > ctors) {\n");
+	fprintf(stream, "\t  syslog_r(LOG_DEBUG, &data, \"%%s\", *(--n));\n");
+	fprintf(stream, "\t  (*--p)();\n");
+	fprintf(stream, "\t}\n");
+      } else
+	fprintf (stream, "\twhile (p > ctors) (*--p)();\n");
     }
   else
     fprintf (stream, "\t++count;\n");
@@ -2108,10 +2147,27 @@ write_c_file_stat (stream, name)
       if (frames)
 	fprintf (stream, "\tdereg_frame,\n");
       fprintf (stream, "\t};\n");
+      if (trace_ctors_dtors) {
+        struct id *list;
+        fprintf(stream, "\tstatic const char *names[] = {\n");
+	for (list = destructors.first; list; list = list->next)
+		fprintf (stream, "\t\t\"%s\",\n", list->name);
+	fprintf(stream, "\t};\n");
+	fprintf(stream, "\tconst char **n;\n");
+	fprintf(stream, "\tstruct syslog_data data = SYSLOG_DATA_INIT;\n");
+      }
       fprintf (stream, "\tentry_pt **p;\n");
       fprintf (stream, "\tif (--count != 0) return;\n");
       fprintf (stream, "\tp = dtors;\n");
-      fprintf (stream, "\twhile (p < dtors + %d) (*p++)();\n",
+      if (trace_ctors_dtors) {
+      	fprintf(stream, "\tn = names;\n");
+	fprintf(stream, "\twhile (p < dtors + %d) {\n", 
+		destructors.number + frames);
+	fprintf(stream, "\t  syslog_r(LOG_DEBUG, &data, \"%%s\", *(n++));\n");
+	fprintf(stream, "\t  (*p++)();\n");
+	fprintf(stream, "\t}\n");
+      } else
+        fprintf (stream, "\twhile (p < dtors + %d) (*p++)();\n",
 	       destructors.number + frames);
     }
   fprintf (stream, "}\n");

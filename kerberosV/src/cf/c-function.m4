@@ -1,5 +1,5 @@
 dnl
-dnl $KTH: c-function.m4,v 1.4 2004/08/26 10:02:57 joda Exp $
+dnl $Id$
 dnl
 
 dnl
@@ -12,12 +12,12 @@ AC_CACHE_VAL(ac_cv___function__, [
 AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <string.h>
 
-static char *foo()
+static char *foo(void)
 {
   return __FUNCTION__;
 }
 
-int main()
+int main(int argc, char **argc)
 {
   return strcmp(foo(), "foo") != 0;
 }

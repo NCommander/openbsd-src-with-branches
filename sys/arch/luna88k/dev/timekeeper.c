@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: timekeeper.c,v 1.5 2010/09/20 06:33:47 matthew Exp $ */
 /* $NetBSD: timekeeper.c,v 1.1 2000/01/05 08:48:56 nisimura Exp $ */
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -41,23 +34,25 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
+#include <sys/evcount.h>
 
+#include <machine/autoconf.h>
 #include <machine/board.h>	/* machtype value */
 #include <machine/cpu.h>
 
 #include <dev/clock_subr.h>
+
 #include <luna88k/luna88k/clockvar.h>
 #include <luna88k/dev/timekeeper.h>
-#include <machine/autoconf.h>
 
-#define	MK_YEAR0	1970	/* year offset of MK*/
-#define	DS_YEAR0	1990	/* year offset of DS*/
+#define	MK_YEAR0	1970	/* year offset of MK */
+#define	DS_YEAR0	1990	/* year offset of DS */
 
 struct timekeeper_softc {
 	struct device sc_dev;
 	void *sc_clock, *sc_nvram;
 	int sc_nvramsize;
-	u_int8_t sc_image[2040];
+	struct evcount sc_count;
 };
 
 /*
@@ -130,8 +125,10 @@ clock_attach(parent, self, aux)
 		printf(": DS1397\n");
 		break;
 	}
-	clockattach(&sc->sc_dev, clockwork);
-	memcpy(sc->sc_image, sc->sc_nvram, sc->sc_nvramsize);
+
+	evcount_attach(&sc->sc_count, self->dv_xname, &ma->ma_ilvl);
+
+	clockattach(&sc->sc_dev, clockwork, &sc->sc_count);
 }
 
 /*
@@ -160,8 +157,8 @@ mkclock_get(dev, base, dt)
 	splx(s);
 #ifdef TIMEKEEPER_DEBUG
 	printf("get %d/%d/%d %d:%d:%d\n",
-	dt->dt_year, dt->dt_mon, dt->dt_day,
-	dt->dt_hour, dt->dt_min, dt->dt_sec);
+	    dt->dt_year, dt->dt_mon, dt->dt_day,
+	    dt->dt_hour, dt->dt_min, dt->dt_sec);
 #endif
 }
 
@@ -191,22 +188,22 @@ mkclock_set(dev, dt)
 	splx(s);
 #ifdef TIMEKEEPER_DEBUG
 	printf("set %d/%d/%d %d:%d:%d\n",
-	dt->dt_year, dt->dt_mon, dt->dt_day,
-	dt->dt_hour, dt->dt_min, dt->dt_sec);
+	    dt->dt_year, dt->dt_mon, dt->dt_day,
+	    dt->dt_hour, dt->dt_min, dt->dt_sec);
 #endif
 
 	stamp[0] = 'R'; stamp[1] = 'T'; stamp[2] = 'C'; stamp[3] = '\0';
 }
 
 #define _DS_GET(off, data) \
-	do { *chiptime = (off); (u_int8_t)(data) = (*chipdata); } while (0)
+	do { *chiptime = (off); (data) = (*chipdata); } while (0)
 #define _DS_SET(off, data) \
 	do { *chiptime = (off); *chipdata = (u_int8_t)(data); } while (0)
 #define _DS_GET_BCD(off, data) \
 	do { \
 		u_int8_t c; \
 		*chiptime = (off); \
-		c = *chipdata; (u_int8_t)(data) = FROMBCD(c); \
+		c = *chipdata; (data) = FROMBCD(c); \
 	} while (0)
 #define _DS_SET_BCD(off, data) \
 	do { \
@@ -255,8 +252,8 @@ dsclock_get(dev, base, dt)
 
 #ifdef TIMEKEEPER_DEBUG
 	printf("get %d/%d/%d %d:%d:%d\n",
-	dt->dt_year, dt->dt_mon, dt->dt_day,
-	dt->dt_hour, dt->dt_min, dt->dt_sec);
+	    dt->dt_year, dt->dt_mon, dt->dt_day,
+	    dt->dt_hour, dt->dt_min, dt->dt_sec);
 #endif
 }
 
@@ -297,7 +294,7 @@ dsclock_set(dev, dt)
 
 #ifdef TIMEKEEPER_DEBUG
 	printf("set %d/%d/%d %d:%d:%d\n",
-	dt->dt_year, dt->dt_mon, dt->dt_day,
-	dt->dt_hour, dt->dt_min, dt->dt_sec);
+	    dt->dt_year, dt->dt_mon, dt->dt_day,
+	    dt->dt_hour, dt->dt_min, dt->dt_sec);
 #endif
 }

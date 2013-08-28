@@ -5,9 +5,9 @@
  */
 
 #include <popper.h>
-RCSID("$KTH: pop_quit.c,v 1.7 1996/11/19 22:48:30 assar Exp $");
+RCSID("$Id$");
 
-/* 
+/*
  *  quit:   Terminate a POP session
  */
 

@@ -6,19 +6,23 @@
 #ifndef HTTELNET_H
 #define HTTELNET_H
 
-#include "HTAccess.h"
+#include <HTAccess.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifdef GLOBALREF_IS_MACRO
-extern GLOBALREF(HTProtocol,HTTelnet);
-extern GLOBALREF(HTProtocol,HTRlogin);
-extern GLOBALREF(HTProtocol,HTTn3270);
+    extern GLOBALREF (HTProtocol, HTTelnet);
+    extern GLOBALREF (HTProtocol, HTRlogin);
+    extern GLOBALREF (HTProtocol, HTTn3270);
+
 #else
-GLOBALREF HTProtocol HTTelnet;
-GLOBALREF HTProtocol HTRlogin;
-GLOBALREF HTProtocol HTTn3270;
-#endif /* GLOBALREF_IS_MACRO */
-#endif /* HTTELNET_H */
+    GLOBALREF HTProtocol HTTelnet;
+    GLOBALREF HTProtocol HTRlogin;
+    GLOBALREF HTProtocol HTTn3270;
+#endif				/* GLOBALREF_IS_MACRO */
 
-/*
-
-   end */
+#ifdef __cplusplus
+}
+#endif
+#endif				/* HTTELNET_H */

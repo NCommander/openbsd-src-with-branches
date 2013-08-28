@@ -1,5 +1,5 @@
 dnl
-dnl $KTH: telnet.m4,v 1.2 2004/08/26 10:02:57 joda Exp $
+dnl $Id$
 dnl
 dnl stuff used by telnet
 
@@ -35,7 +35,7 @@ case "$host" in
 			#include <stdio.h>
 			#include <errno.h>
 
-			int main()
+			int main(int argc, char **argv)
 			{
 			  int ret;
 			  ret = getmsg(open("/dev/null", 0), NULL, NULL, NULL);
@@ -57,9 +57,6 @@ case "$host" in
 esac
 
 AH_BOTTOM([
-#if defined(ENCRYPTION) && !defined(AUTHENTICATION)
-#define AUTHENTICATION 1
-#endif
 
 /* Set this to the default system lead string for telnetd 
  * can contain %-escapes: %s=sysname, %m=machine, %r=os-release

@@ -154,13 +154,16 @@ cmd_putstr(s)
 		{
 			cmd_col++;
 			prompt_col++;
-		} else if (!is_composing_char(ch) &&
+		}
+#if !SMALL
+		else if (!is_composing_char(ch) &&
 		           !is_combining_char(prev_ch, ch))
 		{
 			int width = is_wide_char(ch) ? 2 : 1;
 			cmd_col += width;
 			prompt_col += width;
 		}
+#endif /* !SMALL */
 		prev_ch = ch;
 	}
 }
@@ -207,7 +210,9 @@ cmd_step_common(p, ch, len, pwidth, bswidth)
 			if (bswidth != NULL)
 				*bswidth = len;
 		}
-	} else
+	}
+#if !SMALL
+	else
 	{
 		pr = prutfchar(ch);
 		if (pwidth != NULL || bswidth != NULL)
@@ -246,6 +251,7 @@ cmd_step_common(p, ch, len, pwidth, bswidth)
 			}
 		}
 	}
+#endif /* !SMALL */
 
 	return (pr);
 }
@@ -705,7 +711,7 @@ cmd_updown(action)
 	s = curr_mlist->curr_mp->string;
 	if (s == NULL)
 		s = "";
-	strcpy(cmdbuf, s);
+	strlcpy(cmdbuf, s, sizeof(cmdbuf));
 	for (cp = cmdbuf;  *cp != '\0';  )
 		cmd_right();
 	return (CC_OK);
@@ -1202,7 +1208,9 @@ cmd_char(c)
 	{
 		cmd_mbc_buf[0] = c;
 		len = 1;
-	} else
+	}
+#if !SMALL
+	else
 	{
 		/* Perform strict validation in all possible cases.  */
 		if (cmd_mbc_buf_len == 0)
@@ -1246,6 +1254,7 @@ cmd_char(c)
 		len = cmd_mbc_buf_len;
 		cmd_mbc_buf_len = 0;
 	}
+#endif /* !SMALL */
 
 	if (literal)
 	{
@@ -1343,7 +1352,9 @@ histfile_name()
 		return (save(name));
 	}
 
-	/* Otherwise, file is in $HOME. */
+	/* Otherwise, file is in $HOME if enabled. */
+	if (strcmp (LESSHISTFILE, "-") == 0)
+		return (NULL);
 	home = lgetenv("HOME");
 	if (home == NULL || *home == '\0')
 	{

@@ -1,8 +1,8 @@
-# $KTH: Makefile.am,v 1.17 2004/08/26 11:55:23 joda Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
 
-AM_CPPFLAGS += $(INCLUDE_des)
+AM_CPPFLAGS += $(INCLUDE_hcrypto)
 
 man_MANS = kpasswd.1 kpasswdd.8
 
@@ -19,13 +19,14 @@ kpasswdd_SOURCES = kpasswdd.c kpasswd_locl.h
 kpasswdd_LDADD = \
 	$(top_builddir)/lib/kadm5/libkadm5srv.la \
 	$(top_builddir)/lib/hdb/libhdb.la \
-	$(LIB_openldap) \
 	$(LDADD) \
 	$(LIB_pidfile) \
 	$(LIB_dlopen) \
 	$(DBLIB)
 
 LDADD = $(top_builddir)/lib/krb5/libkrb5.la \
-	$(LIB_des) \
+	$(LIB_hcrypto) \
 	$(top_builddir)/lib/asn1/libasn1.la \
 	$(LIB_roken)
+
+EXTRA_DIST = NTMakefile $(man_MANS)

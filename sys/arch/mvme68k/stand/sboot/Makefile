@@ -1,39 +1,48 @@
-#	$NetBSD: Makefile,v 1.2 1995/07/03 02:53:55 gwr Exp $
+#	$OpenBSD: Makefile,v 1.12 2012/12/31 21:35:32 miod Exp $
 
 S=	${.CURDIR}/../../../..
 INCL?= -I${.CURDIR} -I${.CURDIR}/../libsa -I${S}/lib/libsa -I${S}
+HOSTCFLAGS?= ${CFLAGS}
+CFLAGS+=-D_STANDALONE
+CFLAGS+=-DSTAGE2_RELOC=${STAGE2_RELOC}
 COPTS?= ${DEFS} ${INCL}
 
-.include "${S}/arch/${MACHINE}/stand/libsa/Makefile.inc"
+.include "${S}/arch/mvme68k/stand/libbug/Makefile.inc"
+.include "${S}/arch/mvme68k/stand/libsa/Makefile.inc"
+.include "${S}/arch/mvme68k/stand/libz/Makefile.inc"
 
 SRCS=   sboot.c clock.c etherfun.c if_le.c
 
 OBJS=	${SRCS:S/.c/.o/g}
+LIBS=	${LIBSA} ${LIBBUG} ${LIBZ}
+LDFLAGS= -static -s -N -T ${S}/arch/mvme68k/stand/ld.script
 CLEANFILES+=XBUG.o XSRT0.o oc_cksum.o sboot.tmp rboot.tmp srec sboot rboot
 MDEC_DIR?=/usr/mdec
+NOPIE=
 
 all:	sboot rboot
 
-sboot.tmp:	XSRT0.o oc_cksum.o ${OBJS} ${LIBSA}
-	ld -N -s -static -T 0x4000 XSRT0.o ${OBJS} oc_cksum.o -o sboot.tmp ${LIBSA}
+sboot.tmp:	XSRT0.o oc_cksum.o ${OBJS} ${LIBS}
+	${LD} ${LDFLAGS} -Ttext ${STAGE1_RELOC} XSRT0.o ${OBJS} oc_cksum.o -o $@ \
+	    ${LIBS} `${CC} -print-libgcc-file-name`
 
-rboot.tmp:	XBUG.o XSRT0.o oc_cksum.o ${OBJS} ${LIBSA}
-	ld -N -s -static -Ttext 0xffa00000 -Tdata 0x4000 XBUG.o XSRT0.o \
-	    ${OBJS} oc_cksum.o -o rboot.tmp ${LIBSA}
+rboot.tmp:	XBUG.o XSRT0.o oc_cksum.o ${OBJS} ${LIBS}
+	${LD} ${LDFLAGS} -Ttext 0xffa00000 -Tdata 0x4000 XBUG.o XSRT0.o \
+	    ${OBJS} oc_cksum.o -o $@ ${LIBS} `${CC} -print-libgcc-file-name`
 
 srec:	srec.c
-	${CC} ${.CURDIR}/srec.c -o srec
+	${HOSTCC} ${HOSTCFLAGS} -o $@ ${.CURDIR}/srec.c 
 
 sboot: sboot.tmp srec
-	dd ibs=32 skip=1 if=sboot.tmp | ${.OBJDIR}/srec 4 0x4000 sboot > sboot
+	dd ibs=32 skip=1 if=sboot.tmp | ${.OBJDIR}/srec 4 ${STAGE1_RELOC} sboot > sboot
 
 rboot: rboot.tmp srec
 	dd ibs=32 skip=1 if=rboot.tmp | ${.OBJDIR}/srec 4 0x4000 rboot > rboot
 
 install:
-	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
 	    sboot ${DESTDIR}${MDEC_DIR}/sboot
-	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
 	    rboot ${DESTDIR}${MDEC_DIR}/rboot
 
 .include <bsd.prog.mk>

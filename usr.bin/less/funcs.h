@@ -225,7 +225,6 @@
 	public struct loption * findopt ();
 	public struct loption * findopt_name ();
 	public int iread ();
-	public void intread ();
 	public long get_time ();
 	public char * errno_message ();
 	public int percentage ();
@@ -289,3 +288,4 @@
 	public void open_getchr ();
 	public void close_getchr ();
 	public int getchr ();
+	public void (*lsignal()) ();

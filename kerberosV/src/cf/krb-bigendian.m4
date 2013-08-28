@@ -1,5 +1,5 @@
 dnl
-dnl $KTH: krb-bigendian.m4,v 1.13 2004/08/26 12:35:42 joda Exp $
+dnl $Id$
 dnl
 
 dnl check if this computer is little or big-endian
@@ -31,7 +31,7 @@ AC_CACHE_CHECK(whether byte ordering is bigendian, krb_cv_c_bigendian,[
   not big endian
 #endif]])],[krb_cv_c_bigendian=yes],[krb_cv_c_bigendian=no])
   else
-    AC_RUN_IFELSE([AC_LANG_SOURCE([[main () {
+    AC_RUN_IFELSE([AC_LANG_SOURCE([[main (int argc, char **argv) {
       /* Are we little or big endian?  From Harbison&Steele.  */
       union
       {
@@ -51,7 +51,7 @@ if test "$krb_cv_c_bigendian_compile" = "yes"; then
   AC_DEFINE(ENDIANESS_IN_SYS_PARAM_H, 1, [define if sys/param.h defines the endiness])dnl
 fi
 AH_BOTTOM([
-#if ENDIANESS_IN_SYS_PARAM_H
+#ifdef ENDIANESS_IN_SYS_PARAM_H
 #  include <sys/types.h>
 #  include <sys/param.h>
 #  if BYTE_ORDER == BIG_ENDIAN

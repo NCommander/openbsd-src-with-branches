@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 2004 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2005 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,7 +33,7 @@
 
 #include "kx.h"
 
-RCSID("$KTH: krb5.c,v 1.13 2005/04/20 10:39:33 lha Exp $");
+RCSID("$Id$");
 
 #ifdef KRB5
 
@@ -43,13 +43,40 @@ struct krb5_kx_context {
     krb5_crypto crypto;
     krb5_principal client;
     krb5_log_facility *log;
-    
+
 };
 
 typedef struct krb5_kx_context krb5_kx_context;
 
 #define K5DATA(kc) ((krb5_kx_context*)kc->data)
 #define CONTEXT(kc) (K5DATA(kc)->context)
+
+/*
+ *
+ */
+
+static void
+ksyslog(krb5_context context, krb5_error_code ret, const char *fmt, ...)
+	__attribute__((__format__(__printf__, 3, 0)));
+
+static void
+ksyslog(krb5_context context, krb5_error_code ret, const char *fmt, ...)
+{
+    const char *msg;
+    char *str = NULL;
+    va_list va;
+
+    msg = krb5_get_error_message(context, ret);
+
+    va_start(va, fmt);
+    vasprintf(&str, fmt, va);
+    va_end(va);
+
+    syslog(LOG_ERR, "%s: %s", str, msg);
+
+    krb5_free_error_message(context, msg);
+    free(str);
+}
 
 /*
  * Destroy the krb5 context in `c'.
@@ -109,15 +136,15 @@ krb5_authenticate (kx_context *kc, int s)
 	return 1;
     }
 
-    ret = krb5_auth_con_getkey (CONTEXT(kc), auth_context, 
+    ret = krb5_auth_con_getkey (CONTEXT(kc), auth_context,
 				&K5DATA(kc)->keyblock);
     if (ret) {
 	krb5_warn (CONTEXT(kc), ret, "krb5_auth_con_getkey: %s", host);
 	krb5_auth_con_free (CONTEXT(kc), auth_context);
 	return 1;
     }
-    
-    ret = krb5_crypto_init (CONTEXT(kc), K5DATA(kc)->keyblock, 
+
+    ret = krb5_crypto_init (CONTEXT(kc), K5DATA(kc)->keyblock,
 			    0, &K5DATA(kc)->crypto);
     if (ret) {
 	krb5_warn (CONTEXT(kc), ret, "krb5_crypto_init");
@@ -149,14 +176,14 @@ krb5_read (kx_context *kc,
     if (l != 4)
 	return -1;
     data_len  = (tmp[0] << 24) | (tmp[1] << 16) | (tmp[2] << 8) | tmp[3];
-    outer_len = krb5_get_wrapped_length (CONTEXT(kc), 
+    outer_len = krb5_get_wrapped_length (CONTEXT(kc),
 					 K5DATA(kc)->crypto, data_len);
     if (outer_len > len)
 	return -1;
     if (krb5_net_read (CONTEXT(kc), &fd, buf, outer_len) != outer_len)
 	return -1;
 
-    ret = krb5_decrypt (CONTEXT(kc), K5DATA(kc)->crypto, 
+    ret = krb5_decrypt (CONTEXT(kc), K5DATA(kc)->crypto,
 			KRB5_KU_OTHER_ENCRYPTED,
 			buf, outer_len, &data);
     if (ret) {
@@ -186,9 +213,9 @@ krb5_write(kx_context *kc,
     unsigned char tmp[4];
     size_t outlen;
 
-    ret = krb5_encrypt (CONTEXT(kc), K5DATA(kc)->crypto, 
+    ret = krb5_encrypt (CONTEXT(kc), K5DATA(kc)->crypto,
 			KRB5_KU_OTHER_ENCRYPTED,
-			(void *)buf, len, &data);
+			buf, len, &data);
     if (ret){
 	krb5_warn (CONTEXT(kc), ret, "krb5_write");
 	return -1;
@@ -229,7 +256,7 @@ copy_out (kx_context *kc, int from_fd, int to_fd)
     }
     return krb5_write (kc, to_fd, buf, len);
 }
-	
+
 /*
  * Copy from the socket `from_fd' decrypting to `to_fd'.
  * Return 0, -1 or len.
@@ -331,7 +358,7 @@ krb5_make_context (kx_context *kc)
     kc->data		= malloc(sizeof(krb5_kx_context));
 
     if (kc->data == NULL) {
-	syslog (LOG_ERR, "failed to malloc %lu bytes", 
+	syslog (LOG_ERR, "failed to malloc %lu bytes",
 		(unsigned long)sizeof(krb5_kx_context));
 	exit(1);
     }
@@ -352,7 +379,7 @@ krb5_make_context (kx_context *kc)
 int
 recv_v5_auth (kx_context *kc, int sock, u_char *buf)
 {
-    u_int32_t len;
+    uint32_t len;
     krb5_error_code ret;
     krb5_principal server;
     krb5_auth_context auth_context = NULL;
@@ -378,8 +405,7 @@ recv_v5_auth (kx_context *kc, int sock, u_char *buf)
     ret = krb5_sock_to_principal (CONTEXT(kc), sock, "host",
 				  KRB5_NT_SRV_HST, &server);
     if (ret) {
-	syslog (LOG_ERR, "krb5_sock_to_principal: %s",
-		krb5_get_err_text (CONTEXT(kc), ret));
+	ksyslog (CONTEXT(kc), ret, "krb5_sock_to_principal");
 	exit (1);
     }
 
@@ -393,28 +419,27 @@ recv_v5_auth (kx_context *kc, int sock, u_char *buf)
 			 &ticket);
     krb5_free_principal (CONTEXT(kc), server);
     if (ret) {
-	syslog (LOG_ERR, "krb5_sock_to_principal: %s",
-		krb5_get_err_text (CONTEXT(kc), ret));
+	ksyslog (CONTEXT(kc), ret, "krb5_recvauth");
 	exit (1);
     }
 
     ret = krb5_auth_con_getkey (CONTEXT(kc), auth_context, &K5DATA(kc)->keyblock);
     if (ret) {
-	syslog (LOG_ERR, "krb5_auth_con_getkey: %s",
-		krb5_get_err_text (CONTEXT(kc), ret));
+	ksyslog (CONTEXT(kc), ret, "krb5_auth_con_getkey");
 	exit (1);
     }
 
     ret = krb5_crypto_init (CONTEXT(kc), K5DATA(kc)->keyblock, 0, &K5DATA(kc)->crypto);
     if (ret) {
-	syslog (LOG_ERR, "krb5_crypto_init: %s",
-		krb5_get_err_text (CONTEXT(kc), ret));
+	ksyslog (CONTEXT(kc), ret, "krb5_crypto_init");
 	exit (1);
     }
 
     K5DATA(kc)->client = ticket->client;
     ticket->client = NULL;
     krb5_free_ticket (CONTEXT(kc), ticket);
+
+    krb5_auth_con_free(CONTEXT(kc), auth_context);
 
     return 0;
 }

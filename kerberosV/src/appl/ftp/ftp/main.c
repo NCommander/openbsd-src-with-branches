@@ -38,7 +38,7 @@
 #include "ftp_locl.h"
 #include <getarg.h>
 
-RCSID("$KTH: main.c,v 1.37 2004/08/16 18:10:35 joda Exp $");
+RCSID("$Id$");
 
 static int help_flag;
 static int version_flag;
@@ -69,6 +69,8 @@ struct getargs getargs[] = {
       "verbosity", NULL},
     { NULL,	'K', arg_negative_flag, &use_kerberos,
       "Disable kerberos authentication", NULL},
+    { "encrypt", 'x', arg_flag, &doencrypt,
+      "Encrypt command and data channel if possible" },
     { "version", 0,  arg_flag, &version_flag },
     { "help",	'h', arg_flag, &help_flag },
 };
@@ -140,7 +142,7 @@ main(int argc, char **argv)
 	}
 	if (argc > 0) {
 	    char *xargv[5];
-	    
+
 	    if (setjmp(toplevel))
 		exit(0);
 	    signal(SIGINT, intr);
@@ -215,7 +217,7 @@ tail(filename)
 	char *filename;
 {
 	char *s;
-	
+
 	while (*filename) {
 		s = strrchr(filename, '/');
 		if (s == NULL)
@@ -553,10 +555,9 @@ help(int argc, char **argv)
 		for (i = 0; i < lines; i++) {
 			for (j = 0; j < columns; j++) {
 				c = cmdtab + j * lines + i;
-				if (c->c_name && (!proxy || c->c_proxy)) {
+				if ((!proxy || c->c_proxy)) {
 					printf("%s", c->c_name);
-				}
-				else if (c->c_name) {
+				} else {
 					for (k=0; k < strlen(c->c_name); k++) {
 						putchar(' ');
 					}

@@ -1,5 +1,4 @@
-NetBSD 1.0 is the first release for the sparc, although numerous
-people have been running "snapshots" for some time.  It has all the
-standard NetBSD features, plus you can also enable SunOS binary
-compatibility in the kernel which will run more than 95% of SunOS
-executables.
+dnl	$OpenBSD: whatis,v 1.15 2004/09/10 19:11:52 miod Exp $
+
+OpenBSD/MACHINE runs on 32 bit SPARC-based machines, including most of
+Sun Microsystems workstations and their clones.

@@ -1,3 +1,4 @@
+/*	$OpenBSD: newsyscall.c,v 1.3 2008/08/03 21:31:53 kettenis Exp $	*/
 /*
  * Makefile for newsyscall
  *
@@ -34,7 +35,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: newsyscall.c,v 1.3 1994/12/24 13:26:51 cgd Exp $
  */
 #include <sys/param.h>
 #include <sys/ioctl.h>
@@ -54,7 +54,7 @@ extern int	mycall();
  * have 0 arguments to our system call.
  */
 static struct sysent newent = {
-	0, 0,	mycall			/* # of args, args size, fn. pointer */
+	0, 0, 0, mycall		/* # of args, args size, flags, fn. pointer */
 };
 
 MOD_SYSCALL( "newsyscall", -1, &newent)
@@ -105,7 +105,7 @@ struct lkm_table	*lkmtp;
 int			cmd;
 int			ver;
 {
-	DISPATCH(lkmtp,cmd,ver,newsyscall_load,lkm_nofunc,lkm_nofunc)
+	DISPATCH(lkmtp,cmd,ver,newsyscall_load,lkm_nofunc,lkm_nofunc);
 }
 
 

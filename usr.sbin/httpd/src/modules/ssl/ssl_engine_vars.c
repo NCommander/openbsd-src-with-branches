@@ -413,11 +413,7 @@ static const struct {
     { "G",     NID_givenName              },
     { "S",     NID_surname                },
     { "D",     NID_description            },
-#if SSL_LIBRARY_VERSION >= 0x00907000
     { "UID",   NID_x500UniqueIdentifier   },
-#else
-    { "UID",   NID_uniqueIdentifier       },
-#endif
     { "Email", NID_pkcs9_emailAddress     },
     { NULL,    0                          }
 };
@@ -438,9 +434,6 @@ static char *ssl_var_lookup_ssl_cert_dn(pool *p, X509_NAME *xsname, char *var)
                 if (n == ssl_var_lookup_ssl_cert_dn_rec[i].nid) {
                     result = ap_palloc(p, xsne->value->length+1);
                     ap_cpystrn(result, (char *)xsne->value->data, xsne->value->length+1);
-#ifdef CHARSET_EBCDIC
-                    ascii2ebcdic(result, result, xsne->value->length);
-#endif /* CHARSET_EBCDIC */
                     result[xsne->value->length] = NUL;
                     break;
                 }

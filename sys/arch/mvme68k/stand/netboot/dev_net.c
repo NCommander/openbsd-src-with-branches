@@ -1,4 +1,4 @@
-/*	$NetBSD: dev_net.c,v 1.1.1.1 1995/06/09 22:02:40 gwr Exp $	*/
+/*	$OpenBSD: dev_net.c,v 1.10 2012/12/31 21:35:32 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Gordon W. Ross
@@ -55,28 +55,31 @@
 #include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
 
+#include <machine/prom.h>
+
 #include "stand.h"
+#include "libsa.h"
 #include "net.h"
 #include "netif.h"
 #include "config.h"
 #include "bootparam.h"
+#include "nfs.h"
 
 extern int nfs_root_node[];	/* XXX - get from nfs_mount() */
 
-u_int32_t myip, rootip, gateip, mask;
-char rootpath[FNAME_SIZE];
+struct in_addr myip, rootip, gateip, mask;
 
 int netdev_sock = -1;
 static int open_count;
+
+int	net_mountroot(struct open_file *, char *);
 
 /*
  * Called by devopen after it sets f->f_dev to our devsw entry.
  * This opens the low-level device and sets f->f_devdata.
  */
 int
-net_open(f, devname)
-	struct open_file *f;
-	char *devname;		/* Device part of file name (or NULL). */
+net_open(struct open_file *f, char *devname)
 {
 	int error = 0;
 
@@ -94,32 +97,32 @@ net_open(f, devname)
 }
 
 int
-net_close(f)
-	struct open_file *f;
+net_close(struct open_file *f)
 {
 	/* On last close, do netif close, etc. */
 	if (open_count > 0)
 		if (--open_count == 0)
 			netif_close(netdev_sock);
 	f->f_devdata = NULL;
+	return (0);
 }
 
 int
-net_ioctl()
+net_ioctl(struct open_file *f, u_long cmd, void *data)
 {
 	return EIO;
 }
 
 int
-net_strategy()
+net_strategy(void *devdata, int rw, daddr32_t blk, size_t size, void *buf,
+    size_t *rsize)
 {
 	return EIO;
 }
 
+
 int
-net_mountroot(f, devname)
-	struct open_file *f;
-	char *devname;		/* Device part of file name (or NULL). */
+net_mountroot(struct open_file *f, char *devname)
 {
 	int error;
 
@@ -138,9 +141,9 @@ net_mountroot(f, devname)
 	/* Get boot info using RARP and Sun bootparams. */
 
 	/* Get our IP address.  (rarp.c) */
-	if ((myip = rarp_getipaddress(netdev_sock)) == 0)
+	if (rarp_getipaddress(netdev_sock) == -1)
 		return (EIO);
-	printf("boot: client IP address: %s\n", intoa(myip));
+	printf("boot: client IP address: %s\n", intoa(myip.s_addr));
 
 	/* Get our hostname, server IP address. */
 	if (bp_whoami(netdev_sock))
@@ -156,7 +159,7 @@ net_mountroot(f, devname)
 	/* Get boot info using BOOTP way. (RFC951, RFC1048) */
 	bootp(netdev_sock);
 
-	printf("Using IP address: %s\n", intoa(myip));
+	printf("Using IP address: %s\n", intoa(myip.s_addr));
 
 	printf("myip: %s (%s)", hostname, intoa(myip));
 	if (gateip)
@@ -167,7 +170,7 @@ net_mountroot(f, devname)
 
 #endif
 
-	printf("root addr=%s path=%s\n", intoa(rootip), rootpath);
+	printf("root addr=%s path=%s\n", intoa(rootip.s_addr), rootpath);
 
 	/* Get the NFS file handle (mount). */
 	error = nfs_mount(netdev_sock, rootip, rootpath);
@@ -179,17 +182,15 @@ net_mountroot(f, devname)
  * machdep_common_ether: get ethernet address
  */
 void
-machdep_common_ether(ether)
-	u_char *ether;
+machdep_common_ether(u_char *ether)
 {
 	u_char *ea;
-	extern int cputyp;
 
-	if (cputyp == CPU_147) {
+	if (bugargs.cputyp == CPU_147) {
 		ea = (u_char *) ETHER_ADDR_147;
 
 		if ((*(int *) ea & 0x2fffff00) == 0x2fffff00)
-			panic("ERROR: ethernet address not set!\r\n");
+			panic("ERROR: ethernet address not set!");
 		ether[0] = 0x08;
 		ether[1] = 0x00;
 		ether[2] = 0x3e;
@@ -200,7 +201,7 @@ machdep_common_ether(ether)
 		ea = (u_char *) ETHER_ADDR_16X;
 
 		if (ea[0] + ea[1] + ea[2] + ea[3] + ea[4] + ea[5] == 0)
-			panic("ERROR: ethernet address not set!\r\n");
+			panic("ERROR: ethernet address not set!");
 		ether[0] = ea[0];
 		ether[1] = ea[1];
 		ether[2] = ea[2];

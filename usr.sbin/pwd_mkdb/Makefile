@@ -1,13 +1,11 @@
-#	from: @(#)Makefile	8.1 (Berkeley) 6/6/93
-#	$Id: Makefile,v 1.5 1994/12/22 11:38:49 cgd Exp $
+#	$OpenBSD: Makefile,v 1.8 2002/06/27 20:01:59 art Exp $
 
+# static because it's used by the boot floppy through a chroot.
+
+LDSTATIC=	${STATIC}
 PROG=	pwd_mkdb
-SRCS=	pw_scan.c pwd_mkdb.c getpwent.c
 MAN=	pwd_mkdb.8
-
-.PATH:	${.CURDIR}/../../lib/libc/gen
+LDADD+=	-lutil
+DPADD+=	${LIBUTIL}
 
 .include <bsd.prog.mk>
-
-getpwent.o: getpwent.c
-	${CC} ${CFLAGS} ${CPPFLAGS} -UYP -c ${.IMPSRC}

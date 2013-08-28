@@ -1,10 +1,18 @@
-#	$NetBSD: Makefile,v 1.6 1995/03/27 08:46:11 glass Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.8 2004/01/16 18:43:28 mickey Exp $
 
 PROG=	calendar
+SRCS=   calendar.c io.c day.c pesach.c ostern.c paskha.c
+INTER=	de_DE.ISO_8859-1 hr_HR.ISO_8859-2 ru_RU.KOI8-R fr_FR.ISO8859-1
 
 beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 \
 	    ${.CURDIR}/calendars/calendar.* ${DESTDIR}/usr/share/calendar
+.for lang in ${INTER}
+	@test -d ${DESTDIR}/usr/share/calendar/${lang} || \
+		mkdir ${DESTDIR}/usr/share/calendar/${lang}
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 \
+    		${.CURDIR}/calendars/${lang}/calendar.* \
+		${DESTDIR}/usr/share/calendar/${lang}; 
+.endfor
 
 .include <bsd.prog.mk>

@@ -1,3 +1,4 @@
+/*	$OpenBSD: memset.S,v 1.5 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,12 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)bzero.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: memset.S,v 1.4 1995/02/08 18:33:19 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "DEFS.h"
 
 /*
@@ -53,59 +44,43 @@
  *	- use nested DBcc instructions or use one and limit size to 64K
  */
 ENTRY(memset)
-	movl	d2,sp@-
-	movl	sp@(8),a0		| destination
-	movl	sp@(16),d0		| count
+	movl	%d2,%sp@-
+	movl	%sp@(8),%a0		| destination
+	movl	%sp@(16),%d0		| count
 	beq	bzdone			| nothing to do
-	movb	sp@(15),d2		| character
-	movl	a0,d1
-	btst	#0,d1			| address odd?
+	movb	%sp@(15),%d2		| character
+	movl	%a0,%d1
+	btst	#0,%d1			| address odd?
 	beq	bzeven			| no, skip alignment
-	movb	d2,a0@+			| set one byte
-	subql	#1,d0			| adjust count
+	movb	%d2,%a0@+		| set one byte
+	subql	#1,%d0			| adjust count
 	beq	bzdone			| if zero, all done
 bzeven:
-	cmpl	#15,d0
+	cmpl	#15,%d0
 	ble	bzbloop			| too small to be worthwhile
-	clrl	d1			| replicate byte to fill longword
-	movb	d2,d1
-	movl	d1,d2
-	lsll	#8,d1
-	orl	d1,d2
-	lsll	#8,d1
-	orl	d1,d2
-	lsll	#8,d1
-	orl	d1,d2
-	movl	d0,d1			| convert to longword count
-	lsrl	#2,d1
-#ifdef DEBUG
-	moveml	#0xffff,sp@-
-	movl	d2,sp@-
-	movl	d1,sp@-
-	movl	d0,sp@-
-	movl	a0,sp@-
-	movl	#foo,sp@-
-	jsr	_printf
-	addl	#20,sp
-	moveml	sp@+,#0xffff
-#endif
+	clrl	%d1			| replicate byte to fill longword
+	movb	%d2,%d1
+	movl	%d1,%d2
+	lsll	#8,%d1
+	orl	%d1,%d2
+	lsll	#8,%d1
+	orl	%d1,%d2
+	lsll	#8,%d1
+	orl	%d1,%d2
+	movl	%d0,%d1			| convert to longword count
+	lsrl	#2,%d1
 bzlloop:
-	movl	d2,a0@+			| set one longword
-	subql	#1,d1			| adjust count
+	movl	%d2,%a0@+		| set one longword
+	subql	#1,%d1			| adjust count
 	bne	bzlloop			| still more, keep going
-	andl	#3,d0			| what remains
+	andl	#3,%d0			| what remains
 	beq	bzdone			| nothing, all done
 bzbloop:
-	movb	d2,a0@+			| set one byte
-	subql	#1,d0			| adjust count
+	movb	%d2,%a0@+		| set one byte
+	subql	#1,%d0			| adjust count
 	bne	bzbloop			| still more, keep going
 bzdone:
-	movl	sp@(8),d0		| return destination
-	movl	sp@+,d2
+	movl	%sp@(8),%d0		| return destination
+	moveal	%d0,%a0
+	movl	%sp@+,%d2
 	rts
-
-#ifdef DEBUG
-	.globl	_printf
-foo:
-	.asciz	"a0=%08x d0=%08x d1=%08x d2=%08x\n"
-#endif

@@ -33,7 +33,7 @@
 
 #include "telnetd.h"
 
-RCSID("$KTH: telnetd.c,v 1.75.2.2 2005/12/01 15:29:02 lha Exp $");
+RCSID("$Id$");
 
 #ifdef _SC_CRAY_SECURE_SYS
 #include <sys/sysv.h>
@@ -59,18 +59,11 @@ int	auth_level = 0;
 
 extern	int utmp_len;
 int	registerd_host_only = 0;
-
-#undef NOERROR
-
-#ifdef	STREAMSPTY
-# include <stropts.h>
-# include <termios.h>
-#ifdef HAVE_SYS_UIO_H
-#include <sys/uio.h>
-#endif /* HAVE_SYS_UIO_H */
-#ifdef HAVE_SYS_STREAM_H
-#include <sys/stream.h>
+#ifdef ENCRYPTION
+int	require_encryption = 0;
 #endif
+
+#ifdef STREAMSPTY
 
 #ifdef _AIX
 #include <sys/termio.h>
@@ -126,7 +119,7 @@ int debug = 0;
 int keepalive = 1;
 char *progname;
 
-static void usage (void);
+static void usage (int error_code);
 
 /*
  * The string to pass to getopt().  We do it this way so
@@ -136,6 +129,9 @@ static void usage (void);
 char valid_opts[] = "Bd:hklnS:u:UL:y"
 #ifdef AUTHENTICATION
 		    "a:X:z"
+#endif
+#ifdef ENCRYPTION
+                     "e"
 #endif
 #ifdef DIAGNOSTICS
 		    "D:"
@@ -181,6 +177,8 @@ main(int argc, char **argv)
 	print_version(NULL);
 	exit(0);
     }
+    if (argc == 2 && strcmp(argv[1], "--help") == 0)
+	usage(0);
 
     while ((ch = getopt(argc, argv, valid_opts)) != -1) {
 	switch(ch) {
@@ -222,7 +220,7 @@ main(int argc, char **argv)
 		debug++;
 		break;
 	    }
-	    usage();
+	    usage(1);
 	    /* NOTREACHED */
 	    break;
 
@@ -242,12 +240,17 @@ main(int argc, char **argv)
 	    } else if (!strcmp(optarg, "options")) {
 		diagnostic |= TD_OPTIONS;
 	    } else {
-		usage();
+		usage(1);
 		/* NOT REACHED */
 	    }
 	    break;
 #endif /* DIAGNOSTICS */
 
+#ifdef ENCRYPTION
+	case 'e':
+	    require_encryption = 1;
+	    break;
+#endif
 
 	case 'h':
 	    hostinfo = 0;
@@ -282,7 +285,7 @@ main(int argc, char **argv)
 		    lowpty = atoi(optarg);
 		if ((lowpty > highpty) || (lowpty < 0) ||
 		    (highpty > 32767)) {
-		    usage();
+		    usage(1);
 		    /* NOT REACHED */
 		}
 		break;
@@ -335,12 +338,12 @@ main(int argc, char **argv)
 	case 'L':
 	    new_login = optarg;
 	    break;
-			
+
 	default:
 	    fprintf(stderr, "telnetd: %c: unknown option\n", ch);
 	    /* FALLTHROUGH */
 	case '?':
-	    usage();
+	    usage(0);
 	    /* NOTREACHED */
 	}
     }
@@ -353,7 +356,7 @@ main(int argc, char **argv)
 	struct servent *sp;
 
 	if (argc > 1) {
-	    usage ();
+	    usage (1);
 	} else if (argc == 1) {
 	    sp = roken_getservbyname (*argv, "tcp");
 	    if (sp)
@@ -367,9 +370,9 @@ main(int argc, char **argv)
 	    port = k_getportbyname("telnet", "tcp", htons(23));
 #endif
 	}
-	mini_inetd (port);
+	mini_inetd (port, NULL);
     } else if (argc > 0) {
-	usage();
+	usage(1);
 	/* NOT REACHED */
     }
 
@@ -386,7 +389,7 @@ main(int argc, char **argv)
 
 	memset(&dv, 0, sizeof(dv));
 
-	if (getsysv(&sysv, sizeof(struct sysv)) != 0) 
+	if (getsysv(&sysv, sizeof(struct sysv)) != 0)
 	    fatalperror(net, "getsysv");
 
 	/*
@@ -397,7 +400,7 @@ main(int argc, char **argv)
 	if ((getsockopt(0, SOL_SOCKET, SO_SECURITY,
 			(void *)&ss, &szss) < 0) ||
 	    (getsockopt(0, SOL_SOCKET, SO_SEC_MULTI,
-			(void *)&sock_multi, &szi) < 0)) 
+			(void *)&sock_multi, &szi) < 0))
 	    fatalperror(net, "getsockopt");
 	else {
 	    dv.dv_actlvl = ss.ss_actlabel.lt_level;
@@ -462,9 +465,11 @@ main(int argc, char **argv)
 }  /* end of main */
 
 static void
-usage(void)
+usage(int exit_code)
 {
     fprintf(stderr, "Usage: telnetd");
+    fprintf(stderr, " [--help]");
+    fprintf(stderr, " [--version]");
 #ifdef	AUTHENTICATION
     fprintf(stderr, " [-a (debug|other|otp|user|valid|off|none)]\n\t");
 #endif
@@ -490,7 +495,7 @@ usage(void)
 #endif
     fprintf(stderr, " [-u utmp_hostname_length] [-U]");
     fprintf(stderr, " [port]\n");
-    exit(1);
+    exit(exit_code);
 }
 
 /*
@@ -548,6 +553,15 @@ getterminaltype(char *name, size_t name_sz)
      */
     if (his_state_is_will(TELOPT_ENCRYPT)) {
 	encrypt_wait();
+    }
+    if (require_encryption) {
+
+	while (encrypt_delay())
+	    if (telnet_spin())
+		fatal(net, "Failed while waiting for encryption");
+
+	if (!encrypt_is_encrypting())
+	    fatal(net, "Encryption required but not turned on by client");
     }
 #endif
     if (his_state_is_will(TELOPT_TSPEED)) {
@@ -710,7 +724,7 @@ doit(struct sockaddr *who, int who_len)
     error = getnameinfo_verified (who, who_len,
 				  remote_host_name,
 				  sizeof(remote_host_name),
-				  NULL, 0, 
+				  NULL, 0,
 				  registerd_host_only ? NI_NAMEREQD : 0);
     if (error)
 	fatal(net, "Couldn't resolve your address into a host name.\r\n\
@@ -790,12 +804,12 @@ show_issue(void)
 	    size_t len = strcspn(buf, "\r\n");
 	    if(len == strlen(buf)) {
 		/* there's no newline */
-		writenet((unsigned char*)buf, len);
+		writenet(buf, len);
 	    } else {
 		/* replace newline with \r\n */
 		buf[len] = '\0';
-		writenet((unsigned char*)buf, len);
-		writenet((unsigned char*)"\r\n", 2);
+		writenet(buf, len);
+		writenet("\r\n", 2);
 	    }
 	}
 	fclose(f);

@@ -13,10 +13,10 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: lockfile.c,v 8.16 2001/01/24 00:34:54 ca Exp $")
+SM_RCSID("@(#)$Sendmail: lockfile.c,v 8.21 2003/11/10 22:57:38 ca Exp $")
 
 
-/*
+/*
 **  LOCKFILE -- lock a file using flock or (shudder) fcntl locking
 **
 **	Parameters:
@@ -43,7 +43,6 @@ lockfile(fd, filename, ext, type)
 #if !HASFLOCK
 	int action;
 	struct flock lfd;
-	extern int errno;
 
 	memset(&lfd, '\0', sizeof lfd);
 	if (bitset(LOCK_UN, type))

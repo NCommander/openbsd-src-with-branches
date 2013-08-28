@@ -1,4 +1,4 @@
-dnl $KTH: krb-struct-spwd.m4,v 1.6 2004/08/26 12:35:42 joda Exp $
+dnl $Id$
 dnl
 dnl Test for `struct spwd'
 

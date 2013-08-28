@@ -5,9 +5,9 @@
  */
 
 #include <popper.h>
-RCSID("$KTH: pop_get_command.c,v 1.17 2004/06/14 08:18:18 joda Exp $");
+RCSID("$Id$");
 
-/* 
+/*
  *  get_command:    Extract the command from an input line form a POP client
  */
 
@@ -133,7 +133,7 @@ pop_get_command(POP *p, char *mp)
 		return NULL;
 	   }
 
-            /*  Return a pointer to the entry for this command in 
+            /*  Return a pointer to the entry for this command in
                 the command/state table */
             return (s);
         }

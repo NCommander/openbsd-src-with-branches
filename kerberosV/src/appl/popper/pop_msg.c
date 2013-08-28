@@ -5,21 +5,21 @@
  */
 
 #include <popper.h>
-RCSID("$KTH: pop_msg.c,v 1.16 1999/09/16 20:38:50 assar Exp $");
+RCSID("$Id$");
 
-/* 
+/*
  *  msg:    Send a formatted line to the POP client
  */
 
 int
-pop_msg(POP *p, int stat, char *format, ...)
+pop_msg(POP *p, int stat, const char *format, ...)
 {
     char	       *mp;
     char                message[MAXLINELEN];
     va_list             ap;
 
     va_start(ap, format);
-    
+
     /*  Point to the message buffer */
     mp = message;
 
@@ -31,10 +31,10 @@ pop_msg(POP *p, int stat, char *format, ...)
     mp += strlen(mp);
 
     /*  Append the message (formatted, if necessary) */
-    if (format) 
+    if (format)
 	vsnprintf (mp, sizeof(message) - strlen(message),
 		   format, ap);
-    
+
     /*  Log the message if debugging is turned on */
 #ifdef DEBUG
     if (p->debug && stat == POP_SUCCESS)
@@ -42,12 +42,12 @@ pop_msg(POP *p, int stat, char *format, ...)
 #endif /* DEBUG */
 
     /*  Log the message if a failure occurred */
-    if (stat != POP_SUCCESS) 
+    if (stat != POP_SUCCESS)
         pop_log(p,POP_PRIORITY,"%s",message);
 
     /*  Append the <CR><LF> */
     strlcat(message, "\r\n", sizeof(message));
-        
+
     /*  Send the message to the client */
     fputs(message, p->output);
     fflush(p->output);

@@ -5,10 +5,10 @@
  */
 
 #include <popper.h>
-RCSID("$KTH: pop_parse.c,v 1.9 1999/03/13 21:17:27 assar Exp $");
+RCSID("$Id$");
 
-/* 
- *  parse:  Parse a raw input line from a POP client 
+/*
+ *  parse:  Parse a raw input line from a POP client
  *  into null-delimited tokens
  */
 
@@ -17,10 +17,10 @@ pop_parse(POP *p, char *buf)
 {
     char            *   mp;
     int        i;
-    
+
     /*  Loop through the POP command array */
     for (mp = buf, i = 0; ; i++) {
-    
+
         /*  Skip leading spaces and tabs in the message */
         while (isspace((unsigned char)*mp))mp++;
 
@@ -51,5 +51,5 @@ pop_parse(POP *p, char *buf)
 
     /*  Return the number of tokens extracted minus the command itself */
     return (i-1);
-    
+
 }

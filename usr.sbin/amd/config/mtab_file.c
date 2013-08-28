@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mtab_file.c	8.1 (Berkeley) 6/6/93
- *	$Id: mtab_file.c,v 1.3 1994/06/13 20:49:11 mycroft Exp $
+ *	$Id: mtab_file.c,v 1.3 2002/08/05 07:24:26 pvalchev Exp $
  */
 
 #include "am.h"
@@ -229,7 +225,7 @@ eacces:
 			tv.tv_sec = 0;
 			tv.tv_usec = (mypid & 0x07) << 17;
 			if (tv.tv_usec)
-				if (select(0, (voidp) 0, (voidp) 0, (voidp) 0, &tv) < 0)
+				if (select(0, (void *)0, (void *)0, (void *)0, &tv) < 0)
 					plog(XLOG_WARNING, "mtab nap failed: %m");
 
 			goto again;
@@ -282,7 +278,7 @@ mntlist *mp;
 		plog(XLOG_WARNING, "No '/' in mtab (%s), using \".\" as tmp directory", mtab);
 		tmpname[0] = '.'; tmpname[1] = '\0';
 	}
-	strcat(tmpname, "/mtabXXXXXX");
+	strlcat(tmpname, "/mtabXXXXXX", sizeof(tmpname));
 	mktemp(tmpname);
 	retries = 0;
 enfile1:

@@ -1,4 +1,5 @@
-/*	$NetBSD: fpu_add.c,v 1.2 1994/11/20 20:52:34 deraadt Exp $ */
+/*	$OpenBSD: fpu_add.c,v 1.3 1997/08/08 08:25:47 downsj Exp $	*/
+/*	$NetBSD: fpu_add.c,v 1.3 1996/03/14 19:41:52 christos Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -51,11 +48,16 @@
  */
 
 #include <sys/types.h>
+#ifdef DIAGNOSTIC
+#include <sys/systm.h>
+#endif
 
 #include <machine/reg.h>
+#include <machine/instr.h>
 
 #include <sparc/fpu/fpu_arith.h>
 #include <sparc/fpu/fpu_emu.h>
+#include <sparc/fpu/fpu_extern.h>
 
 struct fpn *
 fpu_add(fe)

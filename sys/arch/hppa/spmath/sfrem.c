@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,28 +12,22 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/sfrem.c,v $
- * $Revision: 1.7.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:07:10 $
- */
+/* @(#)sfrem.c: Revision: 1.7.88.1 Date: 93/12/07 15:07:10 */
 
-
-#include "../spmath/float.h"
-#include "../spmath/sgl_float.h"
+#include "float.h"
+#include "sgl_float.h"
 
 /*
  *  Single Precision Floating-point Remainder
  */
-
+int
 sgl_frem(srcptr1,srcptr2,dstptr,status)
-
-sgl_floating_point *srcptr1, *srcptr2, *dstptr;
-unsigned int *status;
+	sgl_floating_point *srcptr1, *srcptr2, *dstptr;
+	unsigned int *status;
 {
 	register unsigned int opnd1, opnd2, result;
 	register int opnd1_exponent, opnd2_exponent, dest_exponent, stepcount;
-	register boolean roundup = FALSE;
+	register int roundup = FALSE;
 
 	opnd1 = *srcptr1;
 	opnd2 = *srcptr2;
@@ -43,46 +38,46 @@ unsigned int *status;
 		if (Sgl_iszero_mantissa(opnd1)) {
 			if (Sgl_isnotnan(opnd2)) {
 				/* invalid since first operand is infinity */
-				if (Is_invalidtrap_enabled()) 
-                                	return(INVALIDEXCEPTION);
-                                Set_invalidflag();
-                                Sgl_makequietnan(result);
+				if (Is_invalidtrap_enabled())
+					return(INVALIDEXCEPTION);
+				Set_invalidflag();
+				Sgl_makequietnan(result);
 				*dstptr = result;
 				return(NOEXCEPTION);
 			}
 		}
 		else {
-                	/*
-                 	 * is NaN; signaling or quiet?
-                 	 */
-                	if (Sgl_isone_signaling(opnd1)) {
-                        	/* trap if INVALIDTRAP enabled */
-                        	if (Is_invalidtrap_enabled()) 
-                            		return(INVALIDEXCEPTION);
-                        	/* make NaN quiet */
-                        	Set_invalidflag();
-                        	Sgl_set_quiet(opnd1);
-                	}
-			/* 
-			 * is second operand a signaling NaN? 
+			/*
+			 * is NaN; signaling or quiet?
+			 */
+			if (Sgl_isone_signaling(opnd1)) {
+				/* trap if INVALIDTRAP enabled */
+				if (Is_invalidtrap_enabled())
+					return(INVALIDEXCEPTION);
+				/* make NaN quiet */
+				Set_invalidflag();
+				Sgl_set_quiet(opnd1);
+			}
+			/*
+			 * is second operand a signaling NaN?
 			 */
 			else if (Sgl_is_signalingnan(opnd2)) {
-                        	/* trap if INVALIDTRAP enabled */
-                        	if (Is_invalidtrap_enabled()) 
-                            		return(INVALIDEXCEPTION);
-                        	/* make NaN quiet */
-                        	Set_invalidflag();
-                        	Sgl_set_quiet(opnd2);
-                		*dstptr = opnd2;
-                		return(NOEXCEPTION);
+				/* trap if INVALIDTRAP enabled */
+				if (Is_invalidtrap_enabled())
+					return(INVALIDEXCEPTION);
+				/* make NaN quiet */
+				Set_invalidflag();
+				Sgl_set_quiet(opnd2);
+				*dstptr = opnd2;
+				return(NOEXCEPTION);
 			}
-                	/*
-                 	 * return quiet NaN
-                 	 */
-                	*dstptr = opnd1;
-                	return(NOEXCEPTION);
+			/*
+			 * return quiet NaN
+			 */
+			*dstptr = opnd1;
+			return(NOEXCEPTION);
 		}
-	} 
+	}
 	/*
 	 * check second operand for NaN's or infinity
 	 */
@@ -91,24 +86,24 @@ unsigned int *status;
 			/*
 			 * return first operand
 			 */
-                	*dstptr = opnd1;
+			*dstptr = opnd1;
 			return(NOEXCEPTION);
 		}
-                /*
-                 * is NaN; signaling or quiet?
-                 */
-                if (Sgl_isone_signaling(opnd2)) {
-                        /* trap if INVALIDTRAP enabled */
-                        if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
-                        /* make NaN quiet */
-                        Set_invalidflag();
-                        Sgl_set_quiet(opnd2);
-                }
-                /*
-                 * return quiet NaN
-                 */
-                *dstptr = opnd2;
-                return(NOEXCEPTION);
+		/*
+		 * is NaN; signaling or quiet?
+		 */
+		if (Sgl_isone_signaling(opnd2)) {
+			/* trap if INVALIDTRAP enabled */
+			if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
+			/* make NaN quiet */
+			Set_invalidflag();
+			Sgl_set_quiet(opnd2);
+		}
+		/*
+		 * return quiet NaN
+		 */
+		*dstptr = opnd2;
+		return(NOEXCEPTION);
 	}
 	/*
 	 * check second operand for zero
@@ -116,18 +111,18 @@ unsigned int *status;
 	if (Sgl_iszero_exponentmantissa(opnd2)) {
 		/* invalid since second operand is zero */
 		if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
-                Set_invalidflag();
-                Sgl_makequietnan(result);
+		Set_invalidflag();
+		Sgl_makequietnan(result);
 		*dstptr = result;
 		return(NOEXCEPTION);
 	}
 
-	/* 
+	/*
 	 * get sign of result
 	 */
-	result = opnd1;  
+	result = opnd1;
 
-	/* 
+	/*
 	 * check for denormalized operands
 	 */
 	if (opnd1_exponent == 0) {
@@ -163,18 +158,18 @@ unsigned int *status;
 		/*
 		 * check for opnd1/opnd2 > 1/2
 		 *
-		 * In this case n will round to 1, so 
-		 *    r = opnd1 - opnd2 
+		 * In this case n will round to 1, so
+		 *    r = opnd1 - opnd2
 		 */
 		if (stepcount == -1 && Sgl_isgreaterthan(opnd1,opnd2)) {
 			Sgl_all(result) = ~Sgl_all(result);   /* set sign */
 			/* align opnd2 with opnd1 */
-			Sgl_leftshiftby1(opnd2); 
+			Sgl_leftshiftby1(opnd2);
 			Sgl_subtract(opnd2,opnd1,opnd2);
 			/* now normalize */
-                	while (Sgl_iszero_hidden(opnd2)) {
-                        	Sgl_leftshiftby1(opnd2);
-                        	dest_exponent--;
+			while (Sgl_iszero_hidden(opnd2)) {
+				Sgl_leftshiftby1(opnd2);
+				dest_exponent--;
 			}
 			Sgl_set_exponentmantissa(result,opnd2);
 			goto testforunderflow;
@@ -182,7 +177,7 @@ unsigned int *status;
 		/*
 		 * opnd1/opnd2 <= 1/2
 		 *
-		 * In this case n will round to zero, so 
+		 * In this case n will round to zero, so
 		 *    r = opnd1
 		 */
 		Sgl_set_exponentmantissa(result,opnd1);
@@ -201,8 +196,8 @@ unsigned int *status;
 		Sgl_leftshiftby1(opnd1);
 	}
 	/*
-	 * Do last subtract, then determine which way to round if remainder 
-	 * is exactly 1/2 of opnd2 
+	 * Do last subtract, then determine which way to round if remainder
+	 * is exactly 1/2 of opnd2
 	 */
 	if (Sgl_isnotlessthan(opnd1,opnd2)) {
 		Sgl_subtract(opnd1,opnd2,opnd1);
@@ -215,8 +210,8 @@ unsigned int *status;
 		return(NOEXCEPTION);
 	}
 
-	/* 
-	 * Check for cases where opnd1/opnd2 < n 
+	/*
+	 * Check for cases where opnd1/opnd2 < n
 	 *
 	 * In this case the result's sign will be opposite that of
 	 * opnd1.  The mantissa also needs some correction.
@@ -227,39 +222,38 @@ unsigned int *status;
 		Sgl_subtract((opnd2<<1),opnd1,opnd1);
 	}
 	/* check for remainder being exactly 1/2 of opnd2 */
-	else if (Sgl_isequal(opnd1,opnd2) && roundup) { 
+	else if (Sgl_isequal(opnd1,opnd2) && roundup) {
 		Sgl_invert_sign(result);
 	}
 
 	/* normalize result's mantissa */
-        while (Sgl_iszero_hidden(opnd1)) {
-                dest_exponent--;
-                Sgl_leftshiftby1(opnd1);
-        }
+	while (Sgl_iszero_hidden(opnd1)) {
+		dest_exponent--;
+		Sgl_leftshiftby1(opnd1);
+	}
 	Sgl_set_exponentmantissa(result,opnd1);
 
-        /* 
-         * Test for underflow
-         */
+	/*
+	 * Test for underflow
+	 */
     testforunderflow:
 	if (dest_exponent <= 0) {
-                /* trap if UNDERFLOWTRAP enabled */
-                if (Is_underflowtrap_enabled()) {
-                        /*
-                         * Adjust bias of result
-                         */
-                        Sgl_setwrapped_exponent(result,dest_exponent,unfl);
+		/* trap if UNDERFLOWTRAP enabled */
+		if (Is_underflowtrap_enabled()) {
+			/*
+			 * Adjust bias of result
+			 */
+			Sgl_setwrapped_exponent(result,dest_exponent,unfl);
 			*dstptr = result;
 			/* frem is always exact */
 			return(UNDERFLOWEXCEPTION);
-                }
-                /*
-                 * denormalize result or set to signed zero
-                 */
-                if (dest_exponent >= (1 - SGL_P)) {
+		}
+		/*
+		 * denormalize result or set to signed zero
+		 */
+		if (dest_exponent >= (1 - SGL_P)) {
 			Sgl_rightshift_exponentmantissa(result,1-dest_exponent);
-                }
-                else {
+		} else {
 			Sgl_setzero_exponentmantissa(result);
 		}
 	}

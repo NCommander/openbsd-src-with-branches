@@ -36,7 +36,7 @@
  */
 
 #include "ftp_locl.h"
-RCSID("$KTH: cmds.c,v 1.47 2005/04/18 07:45:12 lha Exp $");
+RCSID("$Id$");
 
 typedef void (*sighand)(int);
 
@@ -189,7 +189,7 @@ setpeer(int argc, char **argv)
 				unix_proxy = 0;
 			else
 				unix_server = 0;
-			if (overbose && 
+			if (overbose &&
 			    !strncmp(reply_string, "215 TOPS20", 10))
 				printf(
 "Remember to set tenex mode when transfering binary files from this machine.\n");
@@ -574,28 +574,28 @@ reget(int argc, char **argv)
 void
 get(int argc, char **argv)
 {
-    char *mode;
+    char *filemode;
 
     if (restart_point) {
 	if (curtype == TYPE_I)
-	    mode = "r+wb";
+	    filemode = "r+wb";
 	else
-	    mode = "r+w";
+	    filemode = "r+w";
     } else {
 	if (curtype == TYPE_I)
-	    mode = "wb";
+	    filemode = "wb";
 	else
-	    mode = "w";
+	    filemode = "w";
     }
 
-    getit(argc, argv, 0, mode);
+    getit(argc, argv, 0, filemode);
 }
 
 /*
  * Receive one file.
  */
 int
-getit(int argc, char **argv, int restartit, char *mode)
+getit(int argc, char **argv, int restartit, char *filemode)
 {
 	int loc = 0;
 	int local_given = 1;
@@ -682,21 +682,21 @@ getit(int argc, char **argv, int restartit, char *mode)
 			tm->tm_year += 1900;
 
 			if ((tm->tm_year > yy) ||
-			    (tm->tm_year == yy && 
+			    (tm->tm_year == yy &&
 			     tm->tm_mon > mo) ||
-			    (tm->tm_mon == mo && 
+			    (tm->tm_mon == mo &&
 			     tm->tm_mday > day) ||
-			    (tm->tm_mday == day && 
+			    (tm->tm_mday == day &&
 			     tm->tm_hour > hour) ||
-			    (tm->tm_hour == hour && 
+			    (tm->tm_hour == hour &&
 			     tm->tm_min > min) ||
-			    (tm->tm_min == min && 
+			    (tm->tm_min == min &&
 			     tm->tm_sec > sec))
 				return (1);
 		}
 	}
 
-	recvrequest("RETR", argv[2], argv[1], mode,
+	recvrequest("RETR", argv[2], argv[1], filemode,
 		    argv[1] != oldargv1 || argv[2] != oldargv2, local_given);
 	restart_point = 0;
 	return (0);
@@ -773,7 +773,7 @@ remglob(char **argv, int doswitch)
     static FILE *ftemp = NULL;
     static char **args;
     int oldverbose, oldhash;
-    char *cp, *mode;
+    char *cp, *filemode;
 
     if (!mflag) {
 	if (!doglob) {
@@ -808,8 +808,8 @@ remglob(char **argv, int doswitch)
 	if (doswitch) {
 	    pswitch(!proxy);
 	}
-	for (mode = "w"; *++argv != NULL; mode = "a")
-	    recvrequest ("NLST", temp, *argv, mode, 0, 0);
+	for (filemode = "w"; *++argv != NULL; filemode = "a")
+	    recvrequest ("NLST", temp, *argv, filemode, 0, 0);
 	if (doswitch) {
 	    pswitch(!proxy);
 	}
@@ -868,7 +868,7 @@ status(int argc, char **argv)
 	sec_status();
 	printf("Mode: %s; Type: %s; Form: %s; Structure: %s\n",
 		modename, typename, formname, structname);
-	printf("Verbose: %s; Bell: %s; Prompting: %s; Globbing: %s\n", 
+	printf("Verbose: %s; Bell: %s; Prompting: %s; Globbing: %s\n",
 		onoff(verbose), onoff(bell), onoff(interactive),
 		onoff(doglob));
 	printf("Store unique: %s; Receive unique: %s\n", onoff(sunique),
@@ -987,7 +987,7 @@ setprompt(int argc, char **argv)
 void
 setglob(int argc, char **argv)
 {
-	
+
 	doglob = !doglob;
 	printf("Globbing %s.\n", onoff(doglob));
 	code = doglob;
@@ -1171,7 +1171,7 @@ ls(int argc, char **argv)
 		return;
 	}
 	if (strcmp(argv[2], "-") && *argv[2] != '|')
-	    if (!globulize(&argv[2]) || !confirm("output to local-file:", 
+	    if (!globulize(&argv[2]) || !confirm("output to local-file:",
 						 argv[2])) {
 		code = -1;
 		return;
@@ -1188,7 +1188,7 @@ mls(int argc, char **argv)
 {
 	sighand oldintr;
 	int ointer, i;
-	char *cmd, mode[1], *dest;
+	char *cmd, filemode[2], *dest;
 
 	if (argc < 2 && !another(&argc, &argv, "remote-files"))
 		goto usage;
@@ -1211,9 +1211,10 @@ usage:
 	mflag = 1;
 	oldintr = signal(SIGINT, mabort);
 	setjmp(jabort);
+	filemode[1] = '\0';
 	for (i = 1; mflag && i < argc-1; ++i) {
-		*mode = (i == 1) ? 'w' : 'a';
-		recvrequest(cmd, dest, argv[i], mode, 0, 1);
+		*filemode = (i == 1) ? 'w' : 'a';
+		recvrequest(cmd, dest, argv[i], filemode, 0, 1);
 		if (!mflag && fromatty) {
 			ointer = interactive;
 			interactive = 1;
@@ -1236,8 +1237,8 @@ shell(int argc, char **argv)
 {
 	pid_t pid;
 	RETSIGTYPE (*old1)(int), (*old2)(int);
-	char shellnam[40], *shell, *namep; 
-	int status;
+	char shellnam[40], *shellpath, *namep;
+	int waitstatus;
 
 	old1 = signal (SIGINT, SIG_IGN);
 	old2 = signal (SIGQUIT, SIG_IGN);
@@ -1246,32 +1247,32 @@ shell(int argc, char **argv)
 			close(pid);
 		signal(SIGINT, SIG_DFL);
 		signal(SIGQUIT, SIG_DFL);
-		shell = getenv("SHELL");
-		if (shell == NULL)
-			shell = _PATH_BSHELL;
-		namep = strrchr(shell,'/');
+		shellpath = getenv("SHELL");
+		if (shellpath == NULL)
+			shellpath = _PATH_BSHELL;
+		namep = strrchr(shellpath, '/');
 		if (namep == NULL)
-			namep = shell;
+			namep = shellpath;
 		snprintf (shellnam, sizeof(shellnam),
 			  "-%s", ++namep);
 		if (strcmp(namep, "sh") != 0)
 			shellnam[0] = '+';
 		if (debug) {
-			printf ("%s\n", shell);
+			printf ("%s\n", shellpath);
 			fflush (stdout);
 		}
 		if (argc > 1) {
-			execl(shell,shellnam,"-c",altarg,(char *)0);
+			execl(shellpath,shellnam,"-c",altarg,(char *)0);
 		}
 		else {
-			execl(shell,shellnam,(char *)0);
+			execl(shellpath,shellnam,(char *)0);
 		}
-		warn("%s", shell);
+		warn("%s", shellpath);
 		code = -1;
 		exit(1);
 	}
 	if (pid > 0)
-		while (waitpid(-1, &status, 0) != pid)
+		while (waitpid(-1, &waitstatus, 0) != pid)
 			;
 	signal(SIGINT, old1);
 	signal(SIGQUIT, old2);
@@ -1290,7 +1291,7 @@ shell(int argc, char **argv)
 void
 user(int argc, char **argv)
 {
-	char acct[80];
+	char acctstr[80];
 	int n, aflag = 0;
 	char tmp[256];
 
@@ -1315,9 +1316,9 @@ user(int argc, char **argv)
 	if (n == CONTINUE) {
 		if (argc < 4) {
 			printf("Account: "); fflush(stdout);
-			fgets(acct, sizeof(acct) - 1, stdin);
-			acct[strlen(acct) - 1] = '\0';
-			argv[3] = acct; argc++;
+			fgets(acctstr, sizeof(acctstr) - 1, stdin);
+			acctstr[strcspn(acctstr, "\r\n")] = '\0';
+			argv[3] = acctstr; argc++;
 		}
 		n = command("ACCT %s", argv[3]);
 		aflag++;
@@ -1533,15 +1534,15 @@ disconnect(int argc, char **argv)
 int
 confirm(char *cmd, char *file)
 {
-	char line[BUFSIZ];
+	char buf[BUFSIZ];
 
 	if (!interactive)
 		return (1);
 	printf("%s %s? ", cmd, file);
 	fflush(stdout);
-	if (fgets(line, sizeof line, stdin) == NULL)
+	if (fgets(buf, sizeof buf, stdin) == NULL)
 		return (0);
-	return (*line == 'y' || *line == 'Y');
+	return (*buf == 'y' || *buf == 'Y');
 }
 
 void
@@ -1582,22 +1583,22 @@ globulize(char **cpp)
 void
 account(int argc, char **argv)
 {
-	char acct[50];
+	char acctstr[50];
 
 	if (argc > 1) {
 		++argv;
 		--argc;
-		strlcpy (acct, *argv, sizeof(acct));
+		strlcpy (acctstr, *argv, sizeof(acctstr));
 		while (argc > 1) {
 			--argc;
 			++argv;
-			strlcat(acct, *argv, sizeof(acct));
+			strlcat(acctstr, *argv, sizeof(acctstr));
 		}
 	}
 	else {
-	    UI_UTIL_read_pw_string(acct, sizeof(acct), "Account:", 0);
+	    UI_UTIL_read_pw_string(acctstr, sizeof(acctstr), "Account:", 0);
 	}
-	command("ACCT %s", acct);
+	command("ACCT %s", acctstr);
 }
 
 jmp_buf abortprox;
@@ -1758,6 +1759,11 @@ setnmap(int argc, char **argv)
 	mapflag = 1;
 	code = 1;
 	cp = strchr(altarg, ' ');
+	if (cp == NULL) {
+		printf("Usage: %s missing space\n",argv[0]);
+		code = -1;
+		return;
+	}
 	if (proxy) {
 		while(*++cp == ' ')
 			continue;
@@ -1832,7 +1838,7 @@ domap(char *name)
 				break;
 			case '[':
 LOOP:
-				if (*++cp2 == '$' && isdigit((unsigned char)*(cp2+1))) { 
+				if (*++cp2 == '$' && isdigit((unsigned char)*(cp2+1))) {
 					if (*++cp2 == '0') {
 						char *cp3 = name;
 
@@ -1851,7 +1857,7 @@ LOOP:
 					}
 				}
 				else {
-					while (*cp2 && *cp2 != ',' && 
+					while (*cp2 && *cp2 != ',' &&
 					    *cp2 != ']') {
 						if (*cp2 == '\\') {
 							cp2++;
@@ -2125,4 +2131,18 @@ newer(int argc, char **argv)
 	if (getit(argc, argv, -1, curtype == TYPE_I ? "wb" : "w"))
 		printf("Local file \"%s\" is newer than remote file \"%s\"\n",
 			argv[2], argv[1]);
+}
+
+void
+klist(int argc, char **argv)
+{
+    int ret;
+    if(argc != 1){
+	printf("usage: %s\n", argv[0]);
+	code = -1;
+	return;
+    }
+
+    ret = command("SITE KLIST");
+    code = (ret == COMPLETE);
 }

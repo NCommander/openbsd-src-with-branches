@@ -1,8 +1,8 @@
 
-KX(1)                        UNIX Reference Manual                       KX(1)
+KX(1)                     BSD General Commands Manual                    KX(1)
 
 NNAAMMEE
-     kkxx - securely forward X conections
+     kkxx -- securely forward X conections
 
 SSYYNNOOPPSSIISS
      _k_x [--ll _u_s_e_r_n_a_m_e] [--kk] [--dd] [--tt] [--pp _p_o_r_t] [--PP] _h_o_s_t
@@ -34,6 +34,6 @@ DDEESSCCRRIIPPTTIIOONN
      the background, waiting for connections from the remote kkxxdd.
 
 SSEEEE AALLSSOO
-     rxtelnet(1),  rxterm(1),  kxd(8)
+     rxtelnet(1), rxterm(1), kxd(8)
 
- KTH-KRB                      September 27, 1996                             1
+KTH-KRB                       September 27, 1996                       KTH-KRB

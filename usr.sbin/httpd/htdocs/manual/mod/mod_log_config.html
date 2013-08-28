@@ -1,3 +1,5 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -71,22 +73,22 @@
 
     <p>The format argument to the <code>LogFormat</code> and
     <code>CustomLog</code> directives is a string. This string is
-    logged to the log file for each request. It can contain literal
-    characters copied into the log files and the c-type control
+    used to log each request to the log file. It can contain literal
+    characters copied into the log files and the C-style control
     characters "\n" and "\t" to represent new-lines and tabs.
     Literal quotes and back-slashes should be escaped with
     back-slashes.</p>
 
     <p>The characteristics of the request itself are logged by
-    placing "%" directives in the format string, which are replaced
-    in the log file by the values as follows:</p>
+    placing "<code>%</code>" directives in the format string, which are
+    replaced in the log entry by the values as follows:</p>
 <pre>
 %...a:          Remote IP-address
 %...A:          Local IP-address
 %...B:          Bytes sent, excluding HTTP headers.
 %...b:          Bytes sent, excluding HTTP headers. In CLF format
         i.e. a '-' rather than a 0 when no bytes are sent.
-%...c:          Connection status when response is completed.
+%...c:          Connection status when response was completed.
                 'X' = connection aborted before the response completed.
                 '+' = connection may be kept alive after the response is sent.
                 '-' = connection will be closed after the response is sent.
@@ -127,11 +129,20 @@
     "%!200,304,302{Referer}i" logs Referer: on all requests which
     did <strong>not</strong> return some sort of normal status.</p>
 
-    <p>Note that there is no escaping performed on the strings from
-    %...r, %...i and %...o. This is mainly to comply with the
-    requirements of the Common Log Format. This implies that
-    clients can insert control characters into the log, so care
-    should be taken when dealing with raw log files.</p>
+    <p>Note that in versions previous to 1.3.25 no escaping was performed
+    on the strings from <code>%...r</code>, <code>%...i</code> and
+    <code>%...o</code>. This was mainly to comply with the requirements of
+    the Common Log Format. This implied that clients could insert control
+    characters into the log, so you had to be quite careful when dealing
+    with raw log files.</p>
+
+    <p>For security reasons starting with 1.3.25 non-printable and
+    other special characters are escaped mostly by using
+    <code>\x<var>hh</var></code> sequences, where <var>hh</var> stands for
+    the hexadecimal representation of the raw byte. Exceptions from this
+    rule are <code>"</code> and <code>\</code> which are escaped by prepending
+    a backslash, and all whitespace characters that are written in their
+    C-style notation (<code>\n</code>, <code>\t</code>, etc).</p>
 
     <p>Some commonly used log format strings are:</p>
 
@@ -181,7 +192,7 @@
     <ul>
       <li>This module is based on mod_log_config distributed with
       previous Apache releases, now updated to handle multiple
-      logs. There is now no need to re-configure Apache to use
+      logs. There is now no need to rebuild Apache to change
       configuration log formats.</li>
 
       <li>The module also implements the <code>CookieLog</code>
@@ -196,7 +207,7 @@
       href="../env.html">environment variables</a>. That is, you
       can control whether a request should be logged or not based
       upon whether an arbitrary environment variable is defined or
-      not. This is configurable on a <em>per</em>-logfile
+      not. This is configurable on a per-logfile
       basis.</li>
 
       <li>Beginning with Apache 1.3.5, the mod_log_config module
@@ -228,8 +239,7 @@
     <p>The CookieLog directive sets the filename for logging of
     cookies. The filename is relative to the <a
     href="core.html#serverroot">ServerRoot</a>. This directive is
-    included only for compatibility with <a
-    href="mod_cookies.html">mod_cookies</a>, and is deprecated.</p>
+    included only for compatibility with mod_cookies, and is deprecated.</p>
     <hr />
 
     <h2><a id="customlog" name="customlog">CustomLog</a> <a
@@ -258,7 +268,7 @@
     environment variables.</p>
 
     <p>The first argument, which specifies the location to which
-    the logs will be written, can take on one of the following two
+    the logs will be written, can take one of the following two
     types of values:</p>
 
     <dl>
@@ -272,7 +282,7 @@
       <dd>The pipe character "<code>|</code>", followed by the path
       to a program to receive the log information on its standard
       input. <strong>Security:</strong> if a program is used, then
-      it will be run under the user who started httpd. This will be
+      it will be run as the user who started httpd. This will be
       root if the server was started by root; be sure that the
       program is secure.</dd>
     </dl>
@@ -294,15 +304,15 @@
      CustomLog logs/access_log "%h %l %u %t \"%r\" %&gt;s %b"
 </pre>
 
-    <p>The third argument is optional and allows the decision on
-    whether or not to log a particular request to be based on the
+    <p>The third argument is optional and controls
+    whether or not to log a particular request based on the
     presence or absence of a particular variable in the server
     environment. If the specified <a href="../env.html">environment
     variable</a> is set for the request (or is not set, in the case
     of a '<code>env=!<em>name</em></code>' clause), then the
     request will be logged.</p>
 
-    <p>Environment variables can be set on a <em>per</em>-request
+    <p>Environment variables can be set on a per-request
     basis using the <a href="mod_setenvif.html">mod_setenvif</a>
     and/or <a href="mod_rewrite.html">mod_rewrite</a> modules. For
     example, if you want to record requests for all GIF
@@ -343,7 +353,7 @@
     this directive sets the log format which will be used by logs
     specified in subsequent <a href="#transferlog">TransferLog</a>
     directives. The single argument can specify an explicit
-    <em>format</em> as discussed in <a href="#formats">custom log
+    <em>format</em> as discussed in the <a href="#formats">custom log
     formats</a> section above. Alternatively, it can use a
     <em>nickname</em> to refer to a log format defined in a
     previous <code>LogFormat</code> directive as described
@@ -388,8 +398,8 @@
     exception that it does not allow the log format to be specified
     explicitly or for conditional logging of requests. Instead, the
     log format is determined by the most recently specified <a
-    href="#logformat">LogFormat</a> directive (that does not define
-    a nickname). Common Log Format is used if no other format has
+    href="#logformat">LogFormat</a> directive that does not define
+    a nickname. Common Log Format is used if no other format has
     been specified.</p>
 
     <p>Example:</p>
@@ -405,4 +415,6 @@
 
   </body>
 </html>
+
+
 

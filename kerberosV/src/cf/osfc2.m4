@@ -1,4 +1,4 @@
-dnl $KTH: osfc2.m4,v 1.5 2004/08/25 14:14:00 joda Exp $
+dnl $Id$
 dnl
 dnl enable OSF C2 stuff
 

@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -105,7 +101,7 @@ main(int argc, char **argv)
 	    print_version (NULL);
 	    return 0;
 	}
-	    
+
 	iamremote = (fflag || tflag);
 
 	argc -= optind;
@@ -118,14 +114,12 @@ main(int argc, char **argv)
 	remout = STDOUT_FILENO;
 
 	if (fflag) {			/* Follow "protocol", send data. */
-		response();
-		setuid(userid);
+		(void)response();
 		source(argc, argv);
 		exit(errs);
 	}
 
 	if (tflag) {			/* Receive data. */
-		setuid(userid);
 		sink(argc, argv);
 		exit(errs);
 	}
@@ -138,7 +132,7 @@ main(int argc, char **argv)
 	remin = remout = -1;
 	/* Command to be executed on remote system using "rsh". */
 	snprintf(cmd, sizeof(cmd),
-		 "rcp%s%s%s", iamrecursive ? " -r" : "", 
+		 "rcp%s%s%s", iamrecursive ? " -r" : "",
 		 pflag ? " -p" : "", targetshouldbedirectory ? " -d" : "");
 
 	signal(SIGPIPE, lostconn);
@@ -163,7 +157,7 @@ toremote(char *targ, int argc, char **argv)
 	if (*targ == 0)
 		targ = ".";
 
-	if ((thost = strchr(argv[argc - 1], '@'))) {
+	if ((thost = strchr(argv[argc - 1], '@')) != NULL) {
 		/* user@host */
 		*thost++ = 0;
 		tuser = argv[argc - 1];
@@ -175,43 +169,46 @@ toremote(char *targ, int argc, char **argv)
 		thost = argv[argc - 1];
 		tuser = NULL;
 	}
+	thost = unbracket(thost);
 
 	for (i = 0; i < argc - 1; i++) {
 		src = colon(argv[i]);
 		if (src) {			/* remote to remote */
+			int ret;
 			*src++ = 0;
 			if (*src == 0)
 				src = ".";
 			host = strchr(argv[i], '@');
 			if (host) {
 				*host++ = '\0';
+				host = unbracket(host);
 				suser = argv[i];
 				if (*suser == '\0')
 					suser = pwd->pw_name;
 				else if (!okname(suser))
 					continue;
-				asprintf(&bp,
+				ret = asprintf(&bp,
 				    "%s%s %s -l %s -n %s %s '%s%s%s:%s'",
-					 _PATH_RSH, eflag ? " -e" : "", 
+					 _PATH_RSH, eflag ? " -e" : "",
 					 host, suser, cmd, src,
 				    tuser ? tuser : "", tuser ? "@" : "",
 				    thost, targ);
 			} else {
-				asprintf(&bp,
+				host = unbracket(argv[i]);
+				ret = asprintf(&bp,
 					 "exec %s%s %s -n %s %s '%s%s%s:%s'",
-					 _PATH_RSH, eflag ? " -e" : "", 
-					 argv[i], cmd, src,
+					 _PATH_RSH, eflag ? " -e" : "",
+					 host, cmd, src,
 					 tuser ? tuser : "", tuser ? "@" : "",
 					 thost, targ);
 			}
-			if (bp == NULL)
+			if (ret == -1)
 				err (1, "malloc");
-			susystem(bp, userid);
+			susystem(bp);
 			free(bp);
 		} else {			/* local to remote */
 			if (remin == -1) {
-				asprintf(&bp, "%s -t %s", cmd, targ);
-				if (bp == NULL)
+				if (asprintf(&bp, "%s -t %s", cmd, targ) == -1)
 					err (1, "malloc");
 				host = thost;
 
@@ -221,7 +218,6 @@ toremote(char *targ, int argc, char **argv)
 				if (response() < 0)
 					exit(1);
 				free(bp);
-				setuid(userid);
 			}
 			source(1, argv+i);
 		}
@@ -235,13 +231,15 @@ tolocal(int argc, char **argv)
 	char *bp, *host, *src, *suser;
 
 	for (i = 0; i < argc - 1; i++) {
+		int ret;
+
 		if (!(src = colon(argv[i]))) {		/* Local to local. */
-			asprintf(&bp, "exec %s%s%s %s %s", _PATH_CP,
+			ret = asprintf(&bp, "exec %s%s%s %s %s", _PATH_CP,
 			    iamrecursive ? " -PR" : "", pflag ? " -p" : "",
 			    argv[i], argv[argc - 1]);
-			if (bp == NULL)
+			if (ret == -1)
 				err (1, "malloc");
-			if (susystem(bp, userid))
+			if (susystem(bp))
 				++errs;
 			free(bp);
 			continue;
@@ -260,8 +258,8 @@ tolocal(int argc, char **argv)
 			else if (!okname(suser))
 				continue;
 		}
-		asprintf(&bp, "%s -f %s", cmd, src);
-		if (bp == NULL)
+		ret = asprintf(&bp, "%s -f %s", cmd, src);
+		if (ret == -1)
 			err (1, "malloc");
 		if (do_cmd(host, suser, bp, &remin, &remout) < 0) {
 			free(bp);
@@ -270,7 +268,6 @@ tolocal(int argc, char **argv)
 		}
 		free(bp);
 		sink(1, argv + argc - 1);
-		seteuid(0);
 		close(remin);
 		remin = remout = -1;
 	}
@@ -283,7 +280,8 @@ source(int argc, char **argv)
 	static BUF buffer;
 	BUF *bp;
 	off_t i;
-	int amt, fd, haderr, indx, result;
+	off_t amt;
+	int fd, haderr, indx, result;
 	char *last, *name, buf[BUFSIZ];
 
 	for (indx = 0; indx < argc; ++indx) {
@@ -294,16 +292,10 @@ source(int argc, char **argv)
 syserr:			run_err("%s: %s", name, strerror(errno));
 			goto next;
 		}
-		switch (stb.st_mode & S_IFMT) {
-		case S_IFREG:
-			break;
-		case S_IFDIR:
-			if (iamrecursive) {
-				rsource(name, &stb);
-				goto next;
-			}
-			/* FALLTHROUGH */
-		default:
+		if (S_ISDIR(stb.st_mode) && iamrecursive) {
+			rsource(name, &stb);
+			goto next;
+		} else if (!S_ISREG(stb.st_mode)) {
 			run_err("%s: not a regular file", name);
 			goto next;
 		}
@@ -326,7 +318,7 @@ syserr:			run_err("%s: %s", name, strerror(errno));
 #undef MODEMASK
 #define	MODEMASK	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO)
 		snprintf(buf, sizeof(buf), "C%04o %lu %s\n",
-			 stb.st_mode & MODEMASK,
+			 (unsigned int)(stb.st_mode & MODEMASK),
 			 (unsigned long)stb.st_size,
 			 last);
 		write(remout, buf, strlen(buf));
@@ -343,14 +335,14 @@ next:			close(fd);
 			if (i + amt > stb.st_size)
 				amt = stb.st_size - i;
 			if (!haderr) {
-				result = read(fd, bp->buf, amt);
+			        result = read(fd, bp->buf, (size_t)amt);
 				if (result != amt)
 					haderr = result >= 0 ? EIO : errno;
 			}
 			if (haderr)
 				write(remout, bp->buf, amt);
 			else {
-				result = write(remout, bp->buf, amt);
+			        result = write(remout, bp->buf, (size_t)amt);
 				if (result != amt)
 					haderr = result >= 0 ? EIO : errno;
 			}
@@ -392,13 +384,14 @@ rsource(char *name, struct stat *statp)
 		}
 	}
 	snprintf(path, sizeof(path),
-	    "D%04o %d %s\n", statp->st_mode & MODEMASK, 0, last);
+		 "D%04o %d %s\n",
+		 (unsigned int)(statp->st_mode & MODEMASK), 0, last);
 	write(remout, path, strlen(path));
 	if (response() < 0) {
 		closedir(dirp);
 		return;
 	}
-	while ((dp = readdir(dirp))) {
+	while ((dp = readdir(dirp)) != NULL) {
 		if (dp->d_ino == 0)
 			continue;
 		if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, ".."))
@@ -594,7 +587,7 @@ bad:			run_err("%s: %s", np, strerror(errno));
 			if (count == bp->cnt) {
 				/* Keep reading so we stay sync'd up. */
 				if (wrerr == NO) {
-					j = write(ofd, bp->buf, count);
+					j = write(ofd, bp->buf, (size_t)count);
 					if (j != count) {
 						wrerr = YES;
 						wrerrno = j >= 0 ? EIO : errno;
@@ -605,7 +598,7 @@ bad:			run_err("%s: %s", np, strerror(errno));
 			}
 		}
 		if (count != 0 && wrerr == NO &&
-		    (j = write(ofd, bp->buf, count)) != count) {
+		    (j = write(ofd, bp->buf, (size_t)count)) != count) {
 			wrerr = YES;
 			wrerrno = j >= 0 ? EIO : errno;
 		}
@@ -717,7 +710,7 @@ run_err(const char *fmt, ...)
  * If it cannot create necessary pipes it exits with error message.
  */
 
-int 
+int
 do_cmd(char *host, char *remuser, char *cmd, int *fdin, int *fdout)
 {
 	int pin[2], pout[2], reserved[2];

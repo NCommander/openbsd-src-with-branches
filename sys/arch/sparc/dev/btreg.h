@@ -1,4 +1,5 @@
-/*	$NetBSD: btreg.h,v 1.2 1994/11/20 20:51:55 deraadt Exp $ */
+/*	$OpenBSD: btreg.h,v 1.5 2007/05/29 09:54:05 sobrado Exp $	*/
+/*	$NetBSD: btreg.h,v 1.4 1996/02/27 22:09:21 thorpej Exp $ */
 
 /*
  * Copyright (c) 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -78,3 +75,41 @@ struct bt_regs {
 	u_int	bt_ctrl;		/* control register */
 	u_int	bt_omap;		/* overlay (cursor) map register */
 };
+#define BT_INIT(bt, shift) do { /* whatever this means.. */ \
+	(bt)->bt_addr = 0x06 << (shift);	/* command reg */ \
+	(bt)->bt_ctrl = 0x73 << (shift);	/* overlay plane */ \
+	(bt)->bt_addr = 0x04 << (shift);	/* read mask */ \
+	(bt)->bt_ctrl = 0xff << (shift);	/* color planes */ \
+} while(0)
+
+/*
+ * SBus framebuffer control look like this (usually at offset 0x400000).
+ */
+struct fbcontrol {
+	struct	bt_regs fbc_dac;
+	u_char	fbc_ctrl;
+	u_char	fbc_status;
+	u_char	fbc_cursor_start;
+	u_char	fbc_cursor_end;
+	u_char	fbc_vcontrol[12];	/* 12 bytes of video timing goo */
+};
+/* fbc_ctrl bits: */
+#define FBC_IENAB	0x80		/* Interrupt enable */
+#define FBC_VENAB	0x40		/* Video enable */
+#define FBC_TIMING	0x20		/* Master timing enable */
+#define FBC_CURSOR	0x10		/* Cursor compare enable */
+#define FBC_XTALMSK	0x0c		/* Xtal select (0,1,2,test) */
+#define FBC_DIVMSK	0x03		/* Divisor (1,2,3,4) */
+
+/* fbc_status bits: */
+#define FBS_INTR	0x80		/* Interrupt pending */
+#define FBS_MSENSE	0x70		/* Monitor sense mask */
+#define		FBS_1024X768	0x10
+#define		FBS_1152X900	0x30
+#define		FBS_1280X1024	0x40
+#define		FBS_1600X1280	0x50
+#define FBS_ID_MASK	0x0f		/* ID mask */
+#define		FBS_ID_COLOR	0x01
+#define		FBS_ID_MONO	0x02
+#define		FBS_ID_MONO_ECL	0x03	/* ? */
+

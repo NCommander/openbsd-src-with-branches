@@ -1,4 +1,5 @@
-/*      $NetBSD: psl.h,v 1.4 1994/11/25 19:08:58 ragge Exp $      */
+/*      $OpenBSD: psl.h,v 1.6 2002/06/07 21:33:43 nordin Exp $      */
+/*      $NetBSD: psl.h,v 1.6 1997/06/07 12:15:28 ragge Exp $      */
 
 /*
  * Rewritten for the VAX port. Based on Berkeley code. /IC
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,7 +44,6 @@
 #define	PSL_V		0x00000002	/* overflow bit */
 #define	PSL_Z		0x00000004     	/* zero bit */
 #define	PSL_N		0x00000008     	/* negative bit */
-/* #define	PSL_ALLCC	0x0000000F	/* all cc bits - unlikely */
 #define	PSL_T		0x00000010      /* trace enable bit */
 #define	PSL_IPL00	0x00000000	/* interrupt priority level 0 */
 #define	PSL_IPL01	0x00010000	/* interrupt priority level 1 */
@@ -84,10 +80,10 @@
 #define	PSL_PREVU	0x00c00000	/* Previous user mode */
 #define	PSL_K		0x00000000	/* kernel mode */
 #define	PSL_E		0x01000000     	/* executive mode */
-#define	PSL_S		0x02000000     	/* executive mode */
+#define	PSL_S		0x02000000     	/* supervisor mode */
 #define	PSL_U		0x03000000	/* user mode */
 #define	PSL_IS		0x04000000	/* interrupt stack select */
-#define	PSL_FPD	        0x04000000	/* first part done flag */
+#define	PSL_FPD	        0x08000000	/* first part done flag */
 #define PSL_TP          0x40000000      /* trace pending */
 #define	PSL_CM		0x80000000	/* compatibility mode */
 
@@ -105,9 +101,8 @@
  * Macros to decode processor status word.
  */
 #define	CLKF_USERMODE(framep)	((((framep)->ps) & (PSL_U)) == PSL_U)
-#define	CLKF_BASEPRI(framep)	((((framep)->ps) & (PSL_IPL1F)) == 0)
 #define	CLKF_PC(framep)		((framep)->pc)
-#define	CLKF_INTR(framep)	0
+#define	CLKF_INTR(framep)	((((framep)->ps) & (PSL_IS)) == PSL_IS)
 #define PSL2IPL(ps)             ((ps) >> 16)
 
 #endif

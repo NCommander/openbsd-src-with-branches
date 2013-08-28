@@ -1,4 +1,4 @@
-dnl $KTH: krb-prog-yacc.m4,v 1.4 2004/02/12 14:20:59 lha Exp $
+dnl $Id$
 dnl
 dnl
 dnl We prefer byacc or yacc because they do not use `alloca'

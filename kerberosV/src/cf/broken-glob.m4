@@ -1,4 +1,4 @@
-dnl $KTH: broken-glob.m4,v 1.7 2004/08/26 12:35:41 joda Exp $
+dnl $Id$
 dnl
 dnl check for glob(3)
 dnl

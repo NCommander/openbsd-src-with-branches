@@ -1,4 +1,4 @@
-dnl $KTH: broken.m4,v 1.6 2002/05/19 19:36:52 joda Exp $
+dnl $Id$
 dnl
 dnl
 dnl Same as AC _REPLACE_FUNCS, just define HAVE_func if found in normal

@@ -1,3 +1,4 @@
+/*      $OpenBSD: signal.h,v 1.7 2011/03/23 16:54:37 pirofti Exp $   */
 /*      $NetBSD: signal.h,v 1.4 1995/01/10 19:01:52 jtc Exp $   */
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,12 +34,14 @@
 
  /* All bugs are subject to removal without further notice */
 
-#ifndef _VAX_SIGNAL_H_
-#define _VAX_SIGNAL_H_
+#ifndef _MACHINE_SIGNAL_H_
+#define _MACHINE_SIGNAL_H_
+
+#include <sys/cdefs.h>
 
 typedef int sig_atomic_t;
 
-#ifndef _ANSI_SOURCE
+#if __BSD_VISIBLE || __XPG_VISIBLE >= 420
 /*
  * Information pushed on stack when a signal is delivered.
  * This is used by the kernel to restore state following
@@ -51,14 +50,14 @@ typedef int sig_atomic_t;
  * a non-standard exit is performed.
  */
 struct	sigcontext {
-	int	sc_onstack;		/* sigstack state to restore */
+	int	__sc_unused;
 	int	sc_mask;		/* signal mask to restore */
 	int	sc_sp;			/* sp to restore */
 	int	sc_fp;			/* fp to restore */
 	int	sc_ap;			/* ap to restore */
 	int	sc_pc;			/* pc to restore */
 	int	sc_ps;			/* psl to restore */
+	int	sc_r[12];		/* registers to restore */
 };
-
-#endif	/* !_ANSI_SOURCE */
-#endif	/* !_VAX_SIGNAL_H_ */
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE >= 420 */
+#endif	/* !_MACHINE_SIGNAL_H_ */

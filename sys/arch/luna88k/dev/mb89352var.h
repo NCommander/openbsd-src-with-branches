@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mb89352var.h,v 1.3 2011/04/03 12:42:36 krw Exp $	*/
 /*	$NetBSD: mb89352var.h,v 1.6 2003/08/02 12:48:09 tsutsui Exp $	*/
 /*	NecBSD: mb89352var.h,v 1.4 1998/03/14 07:31:22 kmatsuda Exp 	*/
 
@@ -83,7 +83,6 @@ struct spc_acb {
 	TAILQ_ENTRY(spc_acb) chain;
 	struct scsi_xfer *xs;	/* SCSI xfer ctrl block from above */
 	int flags;
-#define ACB_ALLOC	0x01
 #define ACB_NEXUS	0x02
 #define ACB_SENSE	0x04
 #define ACB_ABORT	0x40
@@ -123,6 +122,8 @@ struct spc_softc {
 	struct spc_acb *sc_nexus;	/* current command */
 	struct spc_acb sc_acb[8];
 	struct spc_tinfo sc_tinfo[8];
+	struct mutex sc_acb_mtx;
+	struct scsi_iopool sc_iopool;
 
 	/* Data about the current nexus (updated for every cmd switch) */
 	u_char	*sc_dp;		/* Current data pointer */
@@ -209,6 +210,6 @@ int	spc_intr(void *);
 int	spc_find(bus_space_tag_t, bus_space_handle_t, int);
 void	spc_init(struct spc_softc *);
 void	spc_sched(struct spc_softc *);
-int	spc_scsi_cmd(struct scsi_xfer *);
+void	spc_scsi_cmd(struct scsi_xfer *);
 void	spc_minphys(struct buf *);
 #endif	/* _MB89352VAR_H_ */

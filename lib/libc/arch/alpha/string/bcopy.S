@@ -1,4 +1,5 @@
-/*	$NetBSD: bcopy.S,v 1.2 1995/09/26 03:37:10 cgd Exp $	*/
+/*	$OpenBSD: bcopy.S,v 1.5 2005/08/07 16:40:13 espie Exp $	*/
+/*	$NetBSD: bcopy.S,v 1.3 1996/10/17 03:08:11 cgd Exp $	*/
 
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
@@ -28,7 +29,7 @@
  * rights to redistribute these changes.
  */
 
-#include "DEFS.h"
+#include <machine/asm.h>
 
 #if defined(MEMCOPY) || defined(MEMMOVE)
 #ifdef MEMCOPY
@@ -66,8 +67,8 @@ LEAF(FUNCTION,3)
 	mov	DSTREG,v0
 #endif
 
-	/* Check for negative length */
-	ble	SIZEREG,bcopy_done
+	/* Check for zero length */
+	beq	SIZEREG,bcopy_done
 
 	/* Check for overlap */
 	subq	DSTREG,SRCREG,t5

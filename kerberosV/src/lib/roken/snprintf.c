@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995-2003 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995-2003 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,19 +31,13 @@
  * SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: snprintf.c,v 1.40 2005/05/03 16:49:34 lha Exp $");
-#endif
-#if defined(TEST_SNPRINTF)
-#include "snprintf-test.h"
-#endif /* TEST_SNPRINTF */
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <roken.h>
+#include "roken.h"
 #include <assert.h>
 
 enum format_flags {
@@ -125,10 +119,10 @@ typedef long longest;
 
 
 
-static int
+static size_t
 pad(struct snprintf_state *state, int width, char c)
 {
-    int len = 0;
+    size_t len = 0;
     while(width-- > 0){
 	(*state->append_char)(state,  c);
 	++len;
@@ -186,9 +180,9 @@ append_number(struct snprintf_state *state,
 	signchar = ' ';
     else
 	signchar = '\0';
-    
+
     if((flags & alternate_flag) && base == 8) {
-	/* if necessary, increase the precision to 
+	/* if necessary, increase the precision to
 	   make first digit a zero */
 
 	/* XXX C99 claims (regarding # and %o) that "if the value and
@@ -196,7 +190,7 @@ append_number(struct snprintf_state *state,
            no such wording for %x. This would mean that %#.o would
            output "0", but %#.x "". This does not make sense, and is
            also not what other printf implementations are doing. */
-	
+
 	if(prec <= nlen && nstr[nstart] != '0' && nstr[nstart] != '\0')
 	    prec = nlen + 1;
     }
@@ -214,13 +208,13 @@ append_number(struct snprintf_state *state,
 	    width -= prec;
 	else
 	    width -= nlen;
-	
+
 	if(use_alternative(flags, num, base))
 	    width -= 2;
-	
+
 	if(signchar != '\0')
 	    width--;
-	
+
 	/* pad to width */
 	len += pad(state, width, ' ');
     }
@@ -242,12 +236,12 @@ append_number(struct snprintf_state *state,
     } else
 	/* pad to prec with zeros */
 	len += pad(state, prec - nlen, '0');
-	
+
     while(nstr[nstart] != '\0') {
 	(*state->append_char)(state, nstr[nstart++]);
 	++len;
     }
-	
+
     if(flags & minus_flag)
 	len += pad(state, width - len, ' ');
 
@@ -258,14 +252,14 @@ append_number(struct snprintf_state *state,
  * return length
  */
 
-static int
+static size_t
 append_string (struct snprintf_state *state,
 	       const unsigned char *arg,
 	       int width,
 	       int prec,
 	       int flags)
 {
-    int len = 0;
+    size_t len = 0;
 
     if(arg == NULL)
 	arg = (const unsigned char*)"(null)";
@@ -325,6 +319,8 @@ if (long_long_flag) \
      res = (unsig long long)va_arg(arg, unsig long long); \
 else if (long_flag) \
      res = (unsig long)va_arg(arg, unsig long); \
+else if (size_t_flag) \
+     res = (unsig long)va_arg(arg, size_t); \
 else if (short_flag) \
      res = (unsig short)va_arg(arg, unsig int); \
 else \
@@ -335,6 +331,8 @@ else \
 #define PARSE_INT_FORMAT(res, arg, unsig) \
 if (long_flag) \
      res = (unsig long)va_arg(arg, unsig long); \
+else if (size_t_flag) \
+     res = (unsig long)va_arg(arg, size_t); \
 else if (short_flag) \
      res = (unsig short)va_arg(arg, unsig int); \
 else \
@@ -346,18 +344,19 @@ else \
  * zyxprintf - return length, as snprintf
  */
 
-static int
+static size_t
 xyzprintf (struct snprintf_state *state, const char *char_format, va_list ap)
 {
     const unsigned char *format = (const unsigned char *)char_format;
     unsigned char c;
-    int len = 0;
+    size_t len = 0;
 
     while((c = *format++)) {
 	if (c == '%') {
 	    int flags          = 0;
 	    int width          = 0;
 	    int prec           = -1;
+	    int size_t_flag    = 0;
 	    int long_long_flag = 0;
 	    int long_flag      = 0;
 	    int short_flag     = 0;
@@ -379,7 +378,7 @@ xyzprintf (struct snprintf_state *state, const char *char_format, va_list ap)
 		else
 		    break;
 	    }
-      
+
 	    if((flags & space_flag) && (flags & plus_flag))
 		flags ^= space_flag;
 
@@ -417,6 +416,9 @@ xyzprintf (struct snprintf_state *state, const char *char_format, va_list ap)
 	    if (c == 'h') {
 		short_flag = 1;
 		c = *format++;
+	    } else if (c == 'z') {
+		size_t_flag = 1;
+		c = *format++;
 	    } else if (c == 'l') {
 		long_flag = 1;
 		c = *format++;
@@ -438,7 +440,7 @@ xyzprintf (struct snprintf_state *state, const char *char_format, va_list ap)
 		len += append_string(state,
 				     va_arg(ap, unsigned char*),
 				     width,
-				     prec, 
+				     prec,
 				     flags);
 		break;
 	    case 'd' :
@@ -496,7 +498,7 @@ xyzprintf (struct snprintf_state *state, const char *char_format, va_list ap)
 		break;
 	    }
 	    case 'p' : {
-		unsigned long arg = (unsigned long)va_arg(ap, void*);
+		u_longest arg = (u_longest)va_arg(ap, void*);
 
 		len += append_number (state, arg, 0x10, "0123456789ABCDEF",
 				      width, prec, flags, 0);
@@ -529,8 +531,8 @@ xyzprintf (struct snprintf_state *state, const char *char_format, va_list ap)
 }
 
 #if !defined(HAVE_SNPRINTF) || defined(TEST_SNPRINTF)
-int ROKEN_LIB_FUNCTION
-snprintf (char *str, size_t sz, const char *format, ...)
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+rk_snprintf (char *str, size_t sz, const char *format, ...)
 {
     va_list args;
     int ret;
@@ -562,8 +564,8 @@ snprintf (char *str, size_t sz, const char *format, ...)
 #endif
 
 #if !defined(HAVE_ASPRINTF) || defined(TEST_SNPRINTF)
-int ROKEN_LIB_FUNCTION
-asprintf (char **ret, const char *format, ...)
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+rk_asprintf (char **ret, const char *format, ...)
 {
     va_list args;
     int val;
@@ -594,8 +596,8 @@ asprintf (char **ret, const char *format, ...)
 #endif
 
 #if !defined(HAVE_ASNPRINTF) || defined(TEST_SNPRINTF)
-int ROKEN_LIB_FUNCTION
-asnprintf (char **ret, size_t max_sz, const char *format, ...)
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+rk_asnprintf (char **ret, size_t max_sz, const char *format, ...)
 {
     va_list args;
     int val;
@@ -624,8 +626,8 @@ asnprintf (char **ret, size_t max_sz, const char *format, ...)
 #endif
 
 #if !defined(HAVE_VASPRINTF) || defined(TEST_SNPRINTF)
-int ROKEN_LIB_FUNCTION
-vasprintf (char **ret, const char *format, va_list args)
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+rk_vasprintf (char **ret, const char *format, va_list args)
 {
     return vasnprintf (ret, 0, format, args);
 }
@@ -633,10 +635,10 @@ vasprintf (char **ret, const char *format, va_list args)
 
 
 #if !defined(HAVE_VASNPRINTF) || defined(TEST_SNPRINTF)
-int ROKEN_LIB_FUNCTION
-vasnprintf (char **ret, size_t max_sz, const char *format, va_list args)
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+rk_vasnprintf (char **ret, size_t max_sz, const char *format, va_list args)
 {
-    int st;
+    size_t st;
     struct snprintf_state state;
 
     state.max_sz = max_sz;
@@ -672,8 +674,8 @@ vasnprintf (char **ret, size_t max_sz, const char *format, va_list args)
 #endif
 
 #if !defined(HAVE_VSNPRINTF) || defined(TEST_SNPRINTF)
-int ROKEN_LIB_FUNCTION
-vsnprintf (char *str, size_t sz, const char *format, va_list args)
+ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
+rk_vsnprintf (char *str, size_t sz, const char *format, va_list args)
 {
     struct snprintf_state state;
     int ret;

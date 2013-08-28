@@ -1,4 +1,4 @@
-/*	$NetBSD: disklabel.h,v 1.4 1995/09/01 17:20:31 pk Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.3 2007/06/17 00:27:28 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -35,11 +35,6 @@
 
 #define	LABELSECTOR	0			/* sector containing label */
 #define	LABELOFFSET	64			/* offset of label in sector */
-#define	MAXPARTITIONS	8			/* number of partitions */
-#define	RAW_PART	2			/* raw partition: xx?c */
-
-struct cpu_disklabel {
-	char	cd_block[512];
-};
+#define	MAXPARTITIONS	16			/* number of partitions */
 
 #endif /* _MACHINE_DISKLABEL_H_ */

@@ -18,7 +18,7 @@
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
+  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
@@ -105,11 +105,7 @@ X509 *SSL_read_X509(FILE *fp, X509 **x509, int (*cb)())
     BIO *bioF;
 
     /* 1. try PEM (= DER+Base64+headers) */
-#if SSL_LIBRARY_VERSION < 0x00904000
-    rc = PEM_read_X509(fp, x509, cb);
-#else
     rc = PEM_read_X509(fp, x509, cb, NULL);
-#endif
     if (rc == NULL) {
         /* 2. try DER+Base64 */
         fseek(fp, 0L, SEEK_SET);
@@ -141,16 +137,6 @@ X509 *SSL_read_X509(FILE *fp, X509 **x509, int (*cb)())
     return rc;
 }
 
-#if SSL_LIBRARY_VERSION <= 0x00904100
-static EVP_PKEY *d2i_PrivateKey_bio(BIO *bio, EVP_PKEY **key)
-{
-     return ((EVP_PKEY *)ASN1_d2i_bio(
-             (char *(*)())EVP_PKEY_new, 
-             (char *(*)())d2i_PrivateKey, 
-             (bio), (unsigned char **)(key)));
-}
-#endif
-
 EVP_PKEY *SSL_read_PrivateKey(FILE *fp, EVP_PKEY **key, int (*cb)())
 {
     EVP_PKEY *rc;
@@ -158,11 +144,7 @@ EVP_PKEY *SSL_read_PrivateKey(FILE *fp, EVP_PKEY **key, int (*cb)())
     BIO *bioF;
 
     /* 1. try PEM (= DER+Base64+headers) */
-#if SSL_LIBRARY_VERSION < 0x00904000
-    rc = PEM_read_PrivateKey(fp, key, cb);
-#else
     rc = PEM_read_PrivateKey(fp, key, cb, NULL);
-#endif
     if (rc == NULL) {
         /* 2. try DER+Base64 */
         fseek(fp, 0L, SEEK_SET);
@@ -316,7 +298,7 @@ BOOL SSL_X509_isSGC(X509 *cert)
 {
     X509_EXTENSION *ext;
     int ext_nid;
-    STACK *sk;
+    STACK_OF(ASN1_OBJECT) *sk;
     BOOL is_sgc;
     int idx;
     int i;
@@ -325,9 +307,9 @@ BOOL SSL_X509_isSGC(X509 *cert)
     idx = X509_get_ext_by_NID(cert, NID_ext_key_usage, -1);
     if (idx >= 0) {
         ext = X509_get_ext(cert, idx);
-        if ((sk = (STACK *)X509V3_EXT_d2i(ext)) != NULL) {
-            for (i = 0; i < sk_num(sk); i++) {
-                ext_nid = OBJ_obj2nid((ASN1_OBJECT *)sk_value(sk, i));
+        if ((sk = (STACK_OF(ASN1_OBJECT)*) X509V3_EXT_d2i(ext)) != NULL) {
+            for (i = 0; i < sk_ASN1_OBJECT_num(sk); i++) {
+                ext_nid = OBJ_obj2nid(sk_ASN1_OBJECT_value(sk, i));
                 if (ext_nid == NID_ms_sgc || ext_nid == NID_ns_sgc) {
                     is_sgc = TRUE;
                     break;
@@ -384,9 +366,6 @@ BOOL SSL_X509_getCN(pool *p, X509 *xs, char **cppCN)
             *cppCN = ap_palloc(p, xsne->value->length+1);
             ap_cpystrn(*cppCN, (char *)xsne->value->data, xsne->value->length+1);
             (*cppCN)[xsne->value->length] = NUL;
-#ifdef CHARSET_EBCDIC
-            ascii2ebcdic(*cppCN, *cppCN, strlen(*cppCN));
-#endif
             return TRUE;
         }
     }
@@ -412,11 +391,7 @@ BOOL SSL_load_CrtAndKeyInfo_file(pool *p, STACK_OF(X509_INFO) *sk, char *filenam
         return FALSE;
     }
     ERR_clear_error();
-#if SSL_LIBRARY_VERSION < 0x00904000
-    PEM_X509_INFO_read_bio(in, sk, NULL);
-#else
     PEM_X509_INFO_read_bio(in, sk, NULL, NULL);
-#endif
     BIO_free(in);
     return TRUE;
 }
@@ -479,11 +454,7 @@ int SSL_CTX_use_certificate_chain(
     }
     /* optionally skip a leading server certificate */
     if (skipfirst) {
-#if SSL_LIBRARY_VERSION < 0x00904000
-        if ((x509 = PEM_read_bio_X509(bio, NULL, cb)) == NULL) {
-#else
         if ((x509 = PEM_read_bio_X509(bio, NULL, cb, NULL)) == NULL) {
-#endif
             BIO_free(bio);
             return -1;
         }
@@ -496,11 +467,7 @@ int SSL_CTX_use_certificate_chain(
     }
     /* create new extra chain by loading the certs */
     n = 0;
-#if SSL_LIBRARY_VERSION < 0x00904000
-    while ((x509 = PEM_read_bio_X509(bio, NULL, cb)) != NULL) {
-#else
     while ((x509 = PEM_read_bio_X509(bio, NULL, cb, NULL)) != NULL) {
-#endif
         if (!SSL_CTX_add_extra_chain_cert(ctx, x509)) { 
             X509_free(x509);
             BIO_free(bio);
@@ -536,7 +503,7 @@ char *SSL_SESSION_id2sz(unsigned char *id, int idlen)
     cp = str;
     for (n = 0; n < idlen && n < SSL_MAX_SSL_SESSION_ID_LENGTH; n++) {
         ap_snprintf(cp, sizeof(str)-(cp-str), "%02X", id[n]);
-        cp += 2;
+        cp += strlen(cp);
     }
     *cp = NUL;
     return str;

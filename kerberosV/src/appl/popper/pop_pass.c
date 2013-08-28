@@ -9,32 +9,7 @@
 #include <crypt.h>
 #endif
 
-RCSID("$KTH: pop_pass.c,v 1.46 2005/05/11 07:33:38 lha Exp $");
-
-#ifdef KRB4
-static int
-krb4_verify_password (POP *p)
-{
-    int status;
-    char lrealm[REALM_SZ];
-    char tkt[MaxPathLen];
-
-    status = krb_get_lrealm(lrealm,1);
-    if (status == KFAILURE) {
-        pop_log(p, POP_PRIORITY, "%s: (%s.%s@%s) %s", p->client,
-		p->kdata.pname, p->kdata.pinst, p->kdata.prealm,
-		krb_get_err_text(status));
-	return 1;
-    }
-    snprintf(tkt, sizeof(tkt), "%s_popper.%u", TKT_ROOT, (unsigned)getpid());
-    krb_set_tkt_string (tkt);
-
-    status = krb_verify_user(p->user, "", lrealm,
-			     p->pop_parm[1], KRB_VERIFY_SECURE, "pop");
-    dest_tkt(); /* no point in keeping the tickets */
-    return status;
-}
-#endif /* KRB4 */
+RCSID("$Id$");
 
 #ifdef KRB5
 static int
@@ -49,7 +24,7 @@ krb5_verify_password (POP *p)
 
     ret = krb5_get_init_creds_opt_alloc (p->context, &get_options);
     if (ret) {
-	pop_log(p, POP_PRIORITY, "krb5_get_init_creds_opt_init: %s",
+	pop_log(p, POP_PRIORITY, "krb5_get_init_creds_opt_alloc: %s",
 		krb5_get_err_text (p->context, ret));
 	return 1;
     }
@@ -59,9 +34,10 @@ krb5_verify_password (POP *p)
 					      1);
 
     krb5_verify_init_creds_opt_init (&verify_options);
-    
+
     ret = krb5_parse_name (p->context, p->user, &client);
     if (ret) {
+	krb5_get_init_creds_opt_free(p->context, get_options);
 	pop_log(p, POP_PRIORITY, "krb5_parse_name: %s",
 		krb5_get_err_text (p->context, ret));
 	return 1;
@@ -76,7 +52,7 @@ krb5_verify_password (POP *p)
 					0,
 					NULL,
 					get_options);
-    krb5_get_init_creds_opt_free(get_options);
+    krb5_get_init_creds_opt_free(p->context, get_options);
     if (ret) {
 	pop_log(p, POP_PRIORITY,
 		"krb5_get_init_creds_password: %s",
@@ -108,7 +84,7 @@ krb5_verify_password (POP *p)
     return ret;
 }
 #endif
-/* 
+/*
  *  pass:   Obtain the user password from a POP client
  */
 
@@ -126,14 +102,14 @@ login_user(POP *p)
     }
 
     pop_log(p, POP_INFO, "login from %s as %s", p->ipaddr, p->user);
-    
+
     /*  Build the name of the user's maildrop */
     snprintf(p->drop_name, sizeof(p->drop_name), "%s/%s", POP_MAILDIR, p->user);
     if(stat(p->drop_name, &st) < 0 || !S_ISDIR(st.st_mode)){
 	/*  Make a temporary copy of the user's maildrop */
 	/*    and set the group and user id */
 	if (pop_dropcopy(p, pw) != POP_SUCCESS) return (POP_FAILURE);
-	
+
 	/*  Get information about the maildrop */
 	if (pop_dropinfo(p) != POP_SUCCESS) return(POP_FAILURE);
     } else {
@@ -153,7 +129,7 @@ pop_pass (POP *p)
     int status;
 
     /* Make one string of all these parameters */
-    
+
     for (i = 1; i < p->parm_count; ++i)
 	p->pop_parm[i][strlen(p->pop_parm[i])] = ' ';
 
@@ -164,26 +140,10 @@ pop_pass (POP *p)
 			p->user));
 
     if (p->kerberosp) {
-#ifdef KRB4
-	if (p->version == 4) {
-	    if(kuserok (&p->kdata, p->user)) {
-		pop_log(p, POP_PRIORITY,
-			"%s: (%s.%s@%s) tried to retrieve mail for %s.",
-			p->client, p->kdata.pname, p->kdata.pinst,
-			p->kdata.prealm, p->user);
-		return(pop_msg(p,POP_FAILURE,
-			       "Popping not authorized"));
-	    }
-	    pop_log(p, POP_INFO, "%s: %s.%s@%s -> %s",
-		    p->ipaddr,
-		    p->kdata.pname, p->kdata.pinst, p->kdata.prealm,
-		    p->user);
-	} else
-#endif /* KRB4 */
 #ifdef KRB5
 	if (p->version == 5) {
 	    char *name;
-	    
+
 	    if (!krb5_kuserok (p->context, p->principal, p->user)) {
 		pop_log (p, POP_PRIORITY,
 			 "krb5 permission denied");
@@ -224,9 +184,6 @@ pop_pass (POP *p)
 	     /* pass OK */;
 	 else {
 	     int ret = -1;
-#ifdef KRB4
-	     ret = krb4_verify_password (p);
-#endif
 #ifdef KRB5
 	     if(ret)
 		 ret = krb5_verify_password (p);

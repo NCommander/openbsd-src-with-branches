@@ -1,4 +1,4 @@
-dnl $KTH: otp.m4,v 1.3 2004/08/25 14:14:00 joda Exp $
+dnl $Id$
 dnl
 dnl check requirements for OTP library
 dnl

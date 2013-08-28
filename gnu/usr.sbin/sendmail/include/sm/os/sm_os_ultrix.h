@@ -6,7 +6,7 @@
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: sm_os_ultrix.h,v 1.1 2001/01/29 21:07:31 gshapiro Exp $
+ *	$Sendmail: sm_os_ultrix.h,v 1.3 2001/10/09 23:12:13 ca Exp $
  */
 
 /*

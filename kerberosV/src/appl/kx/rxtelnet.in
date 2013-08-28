@@ -1,5 +1,5 @@
 #!/bin/sh
-# $KTH: rxtelnet.in,v 1.31 2004/03/07 17:22:06 lha Exp $
+# $Id$
 #
 usage="Usage: $0 [-l username] [-k] [-fF] [-t args_to_telnet] [-x args_to_xterm] [-K args_to_kx] [-w term_emulator] [-b telnet_binary] [-n] [-v] [-h | --help] [--version] host [port]"
 binary=telnet

@@ -1,4 +1,4 @@
-dnl $KTH: broken-getaddrinfo.m4,v 1.5.4.1 2005/06/16 16:23:03 lha Exp $
+dnl $Id$
 dnl
 dnl test if getaddrinfo can handle numeric services
 
@@ -23,4 +23,4 @@ main(int argc, char **argv)
 		return 1;
 	return 0;
 }
-]])],[ac_cv_func_getaddrinfo_numserv=yes],[ac_cv_func_getaddrinfo_numserv=no]))])
+]])],[ac_cv_func_getaddrinfo_numserv=yes],[ac_cv_func_getaddrinfo_numserv=no],[ac_cv_func_getaddrinfo_numserv=yes]))])

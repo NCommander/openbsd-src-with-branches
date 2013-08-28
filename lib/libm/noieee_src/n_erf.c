@@ -1,3 +1,4 @@
+/*	$OpenBSD: n_erf.c,v 1.6 2008/06/21 08:26:19 martynas Exp $	*/
 /*	$NetBSD: n_erf.c,v 1.1 1995/10/10 23:36:43 ragge Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,10 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)erf.c	8.1 (Berkeley) 6/4/93";
-#endif /* not lint */
-
+#include "math.h"
 #include "mathimpl.h"
 
 /* Modified Nov 30, 1992 P. McILROY:
@@ -71,13 +65,13 @@ static char sccsid[] = "@(#)erf.c	8.1 (Berkeley) 6/4/93";
  *          erfc(x) = 1 - erf(x)           if x<=0.25
  *                  = 0.5 + ((0.5-x)-x*P)  if x in [0.25,0.84375]
  *	   where
- *			2		 2	  4		  20  
+ *			2		 2	  4		  20
  *              P =  P(x ) = (p0 + p1 * x + p2 * x + ... + p10 * x  )
  * 	   is an approximation to (erf(x)-x)/x with precision
  *
  *						 -56.45
  *			| P - (erf(x)-x)/x | <= 2
- *	
+ *
  *
  *	   Remark. The formula is derived by noting
  *          erf(x) = (2/sqrt(pi))*(x - x^3/3 + x^5/10 - x^7/42 + ....)
@@ -99,7 +93,7 @@ static char sccsid[] = "@(#)erf.c	8.1 (Berkeley) 6/4/93";
  *	   That is, we use rational approximation to approximate
  *			erf(1+s) - (c = (single)0.84506291151)
  *	   Note that |P1/Q1|< 0.078 for x in [0.84375,1.25]
- *	   where 
+ *	   where
  *		P1(s) = degree 6 poly in s
  *		Q1(s) = degree 6 poly in s
  *
@@ -108,7 +102,7 @@ static char sccsid[] = "@(#)erf.c	8.1 (Berkeley) 6/4/93";
  *		erfc(x)	= (1/x)exp(-x*x-(.5*log(pi) -.5z + R(z)/S(z))
  *
  *	Where z = 1/(x*x), R is degree 9, and S is degree 3;
- *	
+ *
  *      5. For x in [4,28]
  *         	erf(x)  = 1.0 - tiny
  *		erfc(x)	= (1/x)exp(-x*x-(.5*log(pi)+eps + zP(z))
@@ -142,24 +136,17 @@ static char sccsid[] = "@(#)erf.c	8.1 (Berkeley) 6/4/93";
  *
  *      7. Special cases:
  *         	erf(0)  = 0, erf(inf)  = 1, erf(-inf) = -1,
- *         	erfc(0) = 1, erfc(inf) = 0, erfc(-inf) = 2, 
+ *         	erfc(0) = 1, erfc(inf) = 0, erfc(-inf) = 2,
  *	   	erfc/erf(NaN) is NaN
  */
 
-#if defined(vax) || defined(tahoe)
+#if defined(__vax__)
 #define _IEEE	0
 #define TRUNC(x) (double) (float) (x)
 #else
 #define _IEEE	1
 #define TRUNC(x) *(((int *) &x) + 1) &= 0xf8000000
 #define infnan(x) 0.0
-#endif
-
-#ifdef _IEEE_LIBM
-/*
- * redefining "___function" to "function" in _IEEE_LIBM mode
- */
-#include "ieee_libm.h"
 #endif
 
 static double
@@ -184,7 +171,7 @@ p8 =   1.640186161764254363152286358441771740838e-0006,
 p9 =  -1.571599331700515057841960987689515895479e-0007,
 p10=   1.073087585213621540635426191486561494058e-0008;
 /*
- * Coefficients for approximation to erf in [0.84375,1.25] 
+ * Coefficients for approximation to erf in [0.84375,1.25]
  */
 static double
 pa0 =  -2.362118560752659485957248365514511540287e-0003,
@@ -264,10 +251,10 @@ rd11 =	-2.06466642800404317677021026611e+006,
 rd12 =	 7.78293889471135381609201431274e+006,
 rd13 =	-1.42821001129434127360582351685e+007;
 
-double erf(x)
-	double x;
+double
+erf(double x)
 {
-	double R,S,P,Q,ax,s,y,z,r,fabs(),exp();
+	double R, S, P, Q, ax, s, y, z, r;
 	if(!finite(x)) {		/* erf(nan)=nan */
 	    if (isnan(x))
 		return(x);
@@ -322,10 +309,10 @@ double erf(x)
 		return (z-one);
 }
 
-double erfc(x) 
-	double x;
+double
+erfc(double x)
 {
-	double R,S,P,Q,s,ax,y,z,r,fabs(),__exp__D();
+	double R, S, P, Q, s, ax, y, z, r;
 	if (!finite(x)) {
 		if (isnan(x))		/* erfc(NaN) = NaN */
 			return(x);
@@ -355,7 +342,7 @@ double erfc(x)
 	    P = pa0+s*(pa1+s*(pa2+s*(pa3+s*(pa4+s*(pa5+s*pa6)))));
 	    Q = one+s*(qa1+s*(qa2+s*(qa3+s*(qa4+s*(qa5+s*qa6)))));
 	    if (x>=0) {
-	        z  = one-c; return z - P/Q; 
+	        z  = one-c; return z - P/Q;
 	    } else {
 		z = c+P/Q; return one+z;
 	    }

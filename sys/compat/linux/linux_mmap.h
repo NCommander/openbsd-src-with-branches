@@ -1,3 +1,4 @@
+/*	$OpenBSD: linux_mmap.h,v 1.2 1996/04/17 05:23:56 mickey Exp $	*/
 /*	$NetBSD: linux_mmap.h,v 1.1 1995/02/28 23:25:52 fvdl Exp $	*/
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -30,8 +31,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _LINUX_MMAP_H
-#define _LINUX_MMAP_H
+#ifndef _LINUX_MMAP_H_
+#define _LINUX_MMAP_H_
 
 #define LINUX_PROT_NONE		0x00
 #define LINUX_PROT_READ		0x01
@@ -50,4 +51,4 @@
 #define LINUX_MAP_DENYWRITE	0x0800
 #define LINUX_MAP_EXECUTABLE	0x1000
 
-#endif /* !_LINUX_MMAP_H */
+#endif /* !_LINUX_MMAP_H_ */

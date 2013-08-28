@@ -1,4 +1,4 @@
-dnl $KTH: krb-sys-aix.m4,v 1.2 2004/02/12 14:21:03 lha Exp $
+dnl $Id$
 dnl
 dnl
 dnl AIX have a very different syscall convention

@@ -33,7 +33,7 @@
 
 #include "telnetd.h"
 
-RCSID("$KTH: sys_term.c,v 1.112 2005/05/27 13:42:04 lha Exp $");
+RCSID("$Id$");
 
 #if defined(_CRAY) || (defined(__hpux) && !defined(HAVE_UTMPX_H))
 # define PARENT_DOES_UTMP
@@ -67,6 +67,11 @@ int	utmp_len = MaxHostNameLen;
 #endif
 #endif
 
+/* really, mac os uses wtmpx (or asl) */
+#ifdef __APPLE__
+#undef _PATH_WTMP
+#endif
+
 #if !defined(WTMP_FILE) && defined(_PATH_WTMP)
 #define WTMP_FILE _PATH_WTMP
 #endif
@@ -90,29 +95,6 @@ char	wtmpf[]	= "/etc/wtmp";
 #include <tmpdir.h>
 #endif	/* CRAY */
 
-#ifdef	STREAMSPTY
-
-#ifdef HAVE_SAC_H
-#include <sac.h>
-#endif
-
-#ifdef HAVE_SYS_STROPTS_H
-#include <sys/stropts.h>
-#endif
-
-#endif /* STREAMSPTY */
-
-#undef NOERROR
-
-#ifdef	HAVE_SYS_STREAM_H
-#ifdef  HAVE_SYS_UIO_H
-#include <sys/uio.h>
-#endif
-#ifdef __hpux
-#undef SE
-#endif
-#include <sys/stream.h>
-#endif
 #if !(defined(__sgi) || defined(__linux) || defined(_AIX)) && defined(HAVE_SYS_TTY)
 #include <sys/tty.h>
 #endif
@@ -182,6 +164,8 @@ char	wtmpf[]	= "/etc/wtmp";
 # ifdef  STREAMSPTY
      static int ttyfd = -1;
      int really_stream = 0;
+# else
+#define really_stream 0
 # endif
 
      const char *new_login = _PATH_LOGIN;
@@ -402,12 +386,12 @@ int getpty(int *ptynum)
 	return master;
     }
 #endif
-    
+
 #ifdef	STREAMSPTY
     {
-	char *clone[] = { "/dev/ptc", "/dev/ptmx", "/dev/ptm", 
+	char *clone[] = { "/dev/ptc", "/dev/ptmx", "/dev/ptm",
 			  "/dev/ptym/clone", 0 };
-	
+
 	char **q;
 	int p;
 	for(q=clone; *q; q++){
@@ -431,7 +415,7 @@ int getpty(int *ptynum)
 	int p;
 	char *cp, *p1, *p2;
 	int i;
-	
+
 #ifndef	__hpux
 	snprintf(line, sizeof(Xline), "/dev/ptyXX");
 	p1 = &line[8];
@@ -441,11 +425,11 @@ int getpty(int *ptynum)
 	p1 = &line[13];
 	p2 = &line[14];
 #endif
-	
-	
+
+
 	for (cp = "pqrstuvwxyzPQRST"; *cp; cp++) {
 	    struct stat stb;
-	    
+
 	    *p1 = *cp;
 	    *p2 = '0';
 	    /*
@@ -462,7 +446,7 @@ int getpty(int *ptynum)
 #if SunOS == 40
 		    int dummy;
 #endif
-		    
+
 #ifndef	__hpux
 		    line[5] = 't';
 #else
@@ -490,7 +474,7 @@ int getpty(int *ptynum)
 	extern lowpty, highpty;
 	struct stat sb;
 	int p;
-	
+
 	for (*ptynum = lowpty; *ptynum <= highpty; (*ptynum)++) {
 	    snprintf(myline, sizeof(myline), "/dev/pty/%03d", *ptynum);
 	    p = open(myline, 2);
@@ -771,7 +755,7 @@ static int my_find(int fd, char *module)
     static struct str_list sl;
     int n;
     int i;
-  
+
     if(!flag){
 	n = ioctl(fd, I_LIST, 0);
 	if(n < 0){
@@ -787,7 +771,7 @@ static int my_find(int fd, char *module)
 	}
 	flag = 1;
     }
-  
+
     for(i=0; i<sl.sl_nmods; i++)
 	if(!strcmp(sl.sl_modlist[i].l_name, module))
 	    return 1;
@@ -810,7 +794,7 @@ static void maybe_push_modules(int fd, char **modules)
     }
     /* p points to null or to an already pushed module, now push all
        modules before this one */
-  
+
     for(p--; p >= modules; p--){
 	err = ioctl(fd, I_PUSH, *p);
 	if(err < 0 && errno != EINVAL)
@@ -872,7 +856,7 @@ void getptyslave(void)
 
 #ifdef  STREAMSPTY
     ttyfd = t;
-	  
+
 
     /*
      * Not all systems have (or need) modules ttcompat and pckt so
@@ -892,7 +876,7 @@ void getptyslave(void)
 	       pushed (via autopush, for instance).
 
 	       */
-	     
+
 	    char *ttymodules[] = { "ttcompat", "ldterm", "ptem", NULL };
 	    char *ptymodules[] = { "pckt", NULL };
 
@@ -1031,8 +1015,10 @@ int cleanopen(char *line)
 
 int login_tty(int t)
 {
+    /* Dont need to set this as the controlling PTY on steams sockets,
+     * don't abort on failure. */
 # if defined(TIOCSCTTY) && !defined(__hpux)
-    if (ioctl(t, TIOCSCTTY, (char *)0) < 0)
+    if (ioctl(t, TIOCSCTTY, (char *)0) < 0 && !really_stream)
 	fatalperror(net, "ioctl(sctty)");
 #  ifdef _CRAY
     /*
@@ -1104,7 +1090,7 @@ static char *
 make_id (char *tty)
 {
   char *res = tty;
-  
+
   if (strncmp (res, "pts/", 4) == 0)
     res += 4;
   if (strncmp (res, "tty", 3) == 0)
@@ -1144,7 +1130,7 @@ startslave(const char *host, const char *utmp_host,
 #ifdef ENCRYPTION
 	if (!no_warn && (encrypt_output == 0 || decrypt_input == 0))
 #endif
-	    writenet((unsigned char*)tbuf, strlen(tbuf));
+	    writenet(tbuf, strlen(tbuf));
     }
 # ifdef	PARENT_DOES_UTMP
     utmp_sig_init();
@@ -1200,7 +1186,9 @@ startslave(const char *host, const char *utmp_host,
 }
 
 char	*envinit[3];
+#if !HAVE_DECL_ENVIRON
 extern char **environ;
+#endif
 
 void
 init_env(void)
@@ -1246,7 +1234,7 @@ scrub_env(void)
 
     char **cpp, **cpp2;
     const char **p;
-  
+
     for (cpp2 = cpp = environ; *cpp; cpp++) {
 	int reject_it = 0;
 
@@ -1294,17 +1282,18 @@ start_login(const char *host, int autologin, char *name)
     encrypt_output = NULL;
     decrypt_input = NULL;
 #endif
-    
+
 #ifdef HAVE_UTMPX_H
     {
 	int pid = getpid();
 	struct utmpx utmpx;
+	struct timeval tv;
 	char *clean_tty;
-	
+
 	/*
 	 * Create utmp entry for child
 	 */
-	
+
 	clean_tty = clean_ttyname(line);
 	memset(&utmpx, 0, sizeof(utmpx));
 	strncpy(utmpx.ut_user,  ".telnet", sizeof(utmpx.ut_user));
@@ -1313,17 +1302,20 @@ start_login(const char *host, int autologin, char *name)
 	strncpy(utmpx.ut_id, make_id(clean_tty), sizeof(utmpx.ut_id));
 #endif
 	utmpx.ut_pid = pid;
-	
+
 	utmpx.ut_type = LOGIN_PROCESS;
-	
-	gettimeofday (&utmpx.ut_tv, NULL);
+
+	gettimeofday (&tv, NULL);
+	utmpx.ut_tv.tv_sec = tv.tv_sec;
+	utmpx.ut_tv.tv_usec = tv.tv_usec;
+
 	if (pututxline(&utmpx) == NULL)
 	    fatal(net, "pututxline failed");
     }
 #endif
 
     scrub_env();
-	
+
     /*
      * -h : pass on name of host.
      *		WARNING:  -h is accepted by login if and only if
@@ -1333,7 +1325,7 @@ start_login(const char *host, int autologin, char *name)
      * -f : force this login, he has already been authenticated
      */
 
-    /* init argv structure */ 
+    /* init argv structure */
     argv.size=0;
     argv.argc=0;
     argv.argv=malloc(0); /*so we can call realloc later */
@@ -1341,7 +1333,7 @@ start_login(const char *host, int autologin, char *name)
     addarg(&argv, "-h");
     addarg(&argv, host);
     addarg(&argv, "-p");
-    if(name[0])
+    if(name && name[0])
 	user = name;
     else
 	user = getenv("USER");
@@ -1358,8 +1350,8 @@ start_login(const char *host, int autologin, char *name)
 	    addarg(&argv, "-a");
 	    addarg(&argv, "otp");
 	}
-	if(log_unauth) 
-	    syslog(LOG_INFO, "unauthenticated access from %s (%s)", 
+	if(log_unauth)
+	    syslog(LOG_INFO, "unauthenticated access from %s (%s)",
 		   host, user ? user : "unknown user");
     }
     if (auth_level >= 0 && autologin == AUTH_VALID)
@@ -1392,7 +1384,7 @@ start_login(const char *host, int autologin, char *name)
 
     execv(new_login, argv.argv);
     save_errno = errno;
-    syslog(LOG_ERR, "%s: %m\n", new_login);
+    syslog(LOG_ERR, "%s: %m", new_login);
     fatalperror_errno(net, new_login, save_errno);
     /*NOTREACHED*/
 }
@@ -1437,6 +1429,7 @@ rmut(void)
     non_save_utxp = getutxline(&utmpx);
     if (non_save_utxp) {
 	struct utmpx *utxp;
+	struct timeval tv;
 	char user0;
 
 	utxp = malloc(sizeof(struct utmpx));
@@ -1451,12 +1444,15 @@ rmut(void)
 #elif defined(__osf__) /* XXX */
 	utxp->ut_exit.ut_termination = 0;
 	utxp->ut_exit.ut_exit = 0;
-#else	
+#else
 	utxp->ut_exit.e_termination = 0;
 	utxp->ut_exit.e_exit = 0;
 #endif
 #endif
-	gettimeofday(&utxp->ut_tv, NULL);
+	gettimeofday (&tv, NULL);
+	utxp->ut_tv.tv_sec = tv.tv_sec;
+	utxp->ut_tv.tv_usec = tv.tv_usec;
+
 	pututxline(utxp);
 #ifdef WTMPX_FILE
 	utxp->ut_user[0] = user0;
@@ -1600,7 +1596,7 @@ cleanup(int sig)
     int t;
     int child_status; /* status of child process as returned by waitpid */
     int flags = WNOHANG|WUNTRACED;
-    
+
     /*
      * 1: Pick up the zombie, if we are being called
      *    as the signal handler.
@@ -1628,7 +1624,7 @@ cleanup(int sig)
     }
     incleanup = 1;
     sigsetmask(t);
-    
+
     t = cleantmp(&wtmp);
     setutent();	/* just to make sure */
 #endif /* CRAY */
@@ -1656,7 +1652,7 @@ cleanup(int sig)
 #endif
 #else
     char *p;
-    
+
     p = line + sizeof("/dev/") - 1;
     if (logout(p))
 	logwtmp(p, "", "");
@@ -1855,10 +1851,8 @@ jobend(jid, path, user)
     }
 
     if (path) {
-	strncpy(saved_path, path, sizeof(wtmp.ut_tpath));
-	strncpy(saved_user, user, sizeof(wtmp.ut_user));
-	saved_path[sizeof(saved_path)] = '\0';
-	saved_user[sizeof(saved_user)] = '\0';
+	strlcpy(saved_path, path, sizeof(saved_path));
+	strlcpy(saved_user, user, sizeof(saved_user));
     }
     if (saved_jid == 0) {
 	saved_jid = jid;

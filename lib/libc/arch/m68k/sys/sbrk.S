@@ -1,3 +1,4 @@
+/*	$OpenBSD: sbrk.S,v 1.6 2012/08/22 17:19:35 pascal Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,41 +32,35 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)sbrk.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: sbrk.S,v 1.4 1994/08/04 05:02:46 chopps Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "SYS.h"
 
 	.globl	_end
-	.globl	curbrk
+	.globl	_C_LABEL(__curbrk)
 
 	.data
-curbrk:	.long	_end
+_C_LABEL(__curbrk):
+	.long	_end
 	.text
 
 ENTRY(sbrk)
-#ifdef	PIC
-	movl	#__GLOBAL_OFFSET_TABLE_,a1
-	lea	pc@(0,a1:l),a1
-	movl	a1@(curbrk:w),a1
-	movl	a1@,d0
+#ifdef	__PIC__
+	lea	%pc@(_GLOBAL_OFFSET_TABLE_@GOTPC),%a1
+	movl	%a1@(_C_LABEL(__curbrk)@GOT:w),%a1
+	movl	%a1@,%d0
 #else
-	movl	curbrk,d0
+	movl	_C_LABEL(__curbrk),%d0
 #endif
-	addl	d0,sp@(4)
-	movl	#SYS_break,d0
+	addl	%d0,%sp@(4)
+	movl	#SYS_break,%d0
 	trap	#0
 	jcs 	err
-#ifdef	PIC
-	movl	a1@,d0
-	movl	sp@(4),a1@
+#ifdef	__PIC__
+	movl	%a1@,%d0
+	movl	%sp@(4),%a1@
 #else
-	movl	curbrk,d0
-	movl	sp@(4),curbrk
+	movl	_C_LABEL(__curbrk),%d0
+	movl	%sp@(4),_C_LABEL(__curbrk)
 #endif
 	rts
 err:
-	jra	cerror
+	jra	PIC_PLT(__cerror)

@@ -1,5 +1,5 @@
 dnl
-dnl $KTH: with-all.m4,v 1.2 2004/08/25 14:14:01 joda Exp $
+dnl $Id$
 dnl
 
 dnl AC_WITH_ALL(name)

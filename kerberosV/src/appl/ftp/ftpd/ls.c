@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 1999 - 2002 Kungliga Tekniska Högskolan
- * (Royal Institute of Technology, Stockholm, Sweden). 
- * All rights reserved. 
+ * Copyright (c) 1999 - 2002 Kungliga Tekniska HÃ¶gskolan
+ * (Royal Institute of Technology, Stockholm, Sweden).
+ * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions 
- * are met: 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * 1. Redistributions of source code must retain the above copyright 
- *    notice, this list of conditions and the following disclaimer. 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright 
- *    notice, this list of conditions and the following disclaimer in the 
- *    documentation and/or other materials provided with the distribution. 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
  * 3. Neither the name of KTH nor the names of its contributors may be
  *    used to endorse or promote products derived from this software without
@@ -33,7 +33,7 @@
 #ifndef TEST
 #include "ftpd_locl.h"
 
-RCSID("$KTH: ls.c,v 1.27 2005/04/21 18:52:28 lha Exp $");
+RCSID("$Id$");
 
 #else
 #include <stdio.h>
@@ -146,7 +146,7 @@ block_convert(size_t blocks)
 #endif
 }
 
-static void
+static int
 make_fileinfo(FILE *out, const char *filename, struct fileinfo *file, int flags)
 {
     char buf[128];
@@ -187,10 +187,10 @@ make_fileinfo(FILE *out, const char *filename, struct fileinfo *file, int flags)
 	file_type = '%';
     }
 #endif
-    else 
+    else
 	file->mode[0] = '?';
     {
-	char *x[] = { "---", "--x", "-w-", "-wx", 
+	char *x[] = { "---", "--x", "-w-", "-wx",
 		      "r--", "r-x", "rw-", "rwx" };
 	strcpy(file->mode + 1, x[(st->st_mode & S_IRWXU) >> 6]);
 	strcpy(file->mode + 4, x[(st->st_mode & S_IRWXG) >> 3]);
@@ -218,31 +218,51 @@ make_fileinfo(FILE *out, const char *filename, struct fileinfo *file, int flags)
     {
 	struct passwd *pwd;
 	pwd = getpwuid(st->st_uid);
-	if(pwd == NULL)
-	    asprintf(&file->user, "%u", (unsigned)st->st_uid);
-	else
+	if(pwd == NULL) {
+	    if (asprintf(&file->user, "%u", (unsigned)st->st_uid) == -1)
+		file->user = NULL;
+	} else
 	    file->user = strdup(pwd->pw_name);
+	if (file->user == NULL) {
+	    syslog(LOG_ERR, "out of memory");
+	    return -1;
+	}
     }
     {
 	struct group *grp;
 	grp = getgrgid(st->st_gid);
-	if(grp == NULL)
-	    asprintf(&file->group, "%u", (unsigned)st->st_gid);
-	else
+	if(grp == NULL) {
+	    if (asprintf(&file->group, "%u", (unsigned)st->st_gid) == -1)
+		file->group = NULL;
+	} else
 	    file->group = strdup(grp->gr_name);
+	if (file->group == NULL) {
+	    syslog(LOG_ERR, "out of memory");
+	    return -1;
+	}
     }
-    
+
     if(S_ISCHR(st->st_mode) || S_ISBLK(st->st_mode)) {
 #if defined(major) && defined(minor)
-	asprintf(&file->major, "%u", (unsigned)major(st->st_rdev));
-	asprintf(&file->minor, "%u", (unsigned)minor(st->st_rdev));
+	if (asprintf(&file->major, "%u", (unsigned)major(st->st_rdev)) == -1)
+	    file->major = NULL;
+	if (asprintf(&file->minor, "%u", (unsigned)minor(st->st_rdev)) == -1)
+	    file->minor = NULL;
 #else
 	/* Don't want to use the DDI/DKI crap. */
-	asprintf(&file->major, "%u", (unsigned)st->st_rdev);
-	asprintf(&file->minor, "%u", 0);
+	if (asprintf(&file->major, "%u", (unsigned)st->st_rdev) == -1)
+	    file->major = NULL;
+	if (asprintf(&file->minor, "%u", 0) == -1)
+	    file->minor = NULL;
 #endif
-    } else
-	asprintf(&file->size, "%lu", (unsigned long)st->st_size);
+	if (file->major == NULL || file->minor == NULL) {
+	    syslog(LOG_ERR, "out of memory");
+	    return -1;
+	}
+    } else {
+	if (asprintf(&file->size, "%lu", (unsigned long)st->st_size) == -1)
+	    file->size = NULL;
+    }
 
     {
 	time_t t = time(NULL);
@@ -254,6 +274,10 @@ make_fileinfo(FILE *out, const char *filename, struct fileinfo *file, int flags)
 	else
 	    strftime(buf, sizeof(buf), "%b %e %H:%M", tm);
 	file->date = strdup(buf);
+	if (file->date == NULL) {
+	    syslog(LOG_ERR, "out of memory");
+	    return -1;
+	}
     }
     {
 	const char *p = strrchr(filename, '/');
@@ -261,10 +285,15 @@ make_fileinfo(FILE *out, const char *filename, struct fileinfo *file, int flags)
 	    p++;
 	else
 	    p = filename;
-	if((flags & LS_TYPE) && file_type != 0)
-	    asprintf(&file->filename, "%s%c", p, file_type);
-	else
+	if((flags & LS_TYPE) && file_type != 0) {
+	    if (asprintf(&file->filename, "%s%c", p, file_type) == -1)
+		file->filename = NULL;
+	} else
 	    file->filename = strdup(p);
+	if (file->filename == NULL) {
+	    syslog(LOG_ERR, "out of memory");
+	    return -1;
+	}
     }
     if(S_ISLNK(st->st_mode)) {
 	int n;
@@ -272,9 +301,14 @@ make_fileinfo(FILE *out, const char *filename, struct fileinfo *file, int flags)
 	if(n >= 0) {
 	    buf[n] = '\0';
 	    file->link = strdup(buf);
+	    if (file->link == NULL) {
+		syslog(LOG_ERR, "out of memory");
+		return -1;
+	    }
 	} else
 	    sec_fprintf2(out, "readlink(%s): %s", filename, strerror(errno));
     }
+    return 0;
 }
 
 static void
@@ -371,16 +405,16 @@ find_log10(int num)
  * have to fetch them.
  */
 
-#ifdef KRB4
+#ifdef KRB5
 static int do_the_afs_dance = 1;
 #endif
 
 static int
 lstat_file (const char *file, struct stat *sb)
 {
-#ifdef KRB4
+#ifdef KRB5
     if (do_the_afs_dance &&
-	k_hasafs() 
+	k_hasafs()
 	&& strcmp(file, ".")
 	&& strcmp(file, "..")
 	&& strcmp(file, "/"))
@@ -391,19 +425,19 @@ lstat_file (const char *file, struct stat *sb)
 	static ino_t	   ino_counter = 0, ino_last = 0;
 	int		   ret;
 	const int	   maxsize = 2048;
-	
+
 	path_bkp = strdup (file);
 	if (path_bkp == NULL)
 	    return -1;
-	
+
 	a_params.out = malloc (maxsize);
-	if (a_params.out == NULL) { 
+	if (a_params.out == NULL) {
 	    free (path_bkp);
 	    return -1;
 	}
-	
+
 	/* If path contains more than the filename alone - split it */
-	
+
 	last = strrchr (path_bkp, '/');
 	if (last != NULL) {
 	    if(last[1] == '\0')
@@ -423,10 +457,10 @@ lstat_file (const char *file, struct stat *sb)
 	    dir = ".";
 	    a_params.in = path_bkp;
 	}
-	
+
 	a_params.in_size  = strlen (a_params.in) + 1;
 	a_params.out_size = maxsize;
-	
+
 	ret = k_pioctl (dir, VIOC_AFS_STAT_MT_PT, &a_params, 0);
 	free (a_params.out);
 	if (ret < 0) {
@@ -439,7 +473,7 @@ lstat_file (const char *file, struct stat *sb)
 		return lstat (file, sb);
 	}
 
-	/* 
+	/*
 	 * wow this was a mountpoint, lets cook the struct stat
 	 * use . as a prototype
 	 */
@@ -460,7 +494,7 @@ lstat_file (const char *file, struct stat *sb)
 
 	return 0;
     }
-#endif /* KRB4 */
+#endif /* KRB5 */
     return lstat (file, sb);
 }
 
@@ -508,22 +542,24 @@ list_files(FILE *out, const char **files, int n_files, int flags)
 		    include_in_list = 0;
 	    }
 	    if(include_in_list) {
-		make_fileinfo(out, files[i], &fi[i], flags);
+		ret = make_fileinfo(out, files[i], &fi[i], flags);
+		if (ret)
+		    goto out;
 		n_print++;
 	    }
 	}
     }
     switch(SORT_MODE(flags)) {
     case LS_SORT_NAME:
-	qsort(fi, n_files, sizeof(*fi), 
+	qsort(fi, n_files, sizeof(*fi),
 	      (int (*)(const void*, const void*))compare_filename);
 	break;
     case LS_SORT_MTIME:
-	qsort(fi, n_files, sizeof(*fi), 
+	qsort(fi, n_files, sizeof(*fi),
 	      (int (*)(const void*, const void*))compare_mtime);
 	break;
     case LS_SORT_SIZE:
-	qsort(fi, n_files, sizeof(*fi), 
+	qsort(fi, n_files, sizeof(*fi),
 	      (int (*)(const void*, const void*))compare_size);
 	break;
     }
@@ -566,7 +602,7 @@ list_files(FILE *out, const char **files, int n_files, int flags)
 	max_inode = find_log10(max_inode);
 	max_bsize = find_log10(max_bsize);
 	max_n_link = find_log10(max_n_link);
-	
+
 	if(n_print > 0)
 	    sec_fprintf2(out, "total %lu\r\n", (unsigned long)total_blocks);
 	if(flags & LS_SORT_REVERSE)
@@ -597,7 +633,7 @@ list_files(FILE *out, const char **files, int n_files, int flags)
 			   max_major,
 			   max_minor,
 			   max_date);
-    } else if(DISP_MODE(flags) == LS_DISP_COLUMN || 
+    } else if(DISP_MODE(flags) == LS_DISP_COLUMN ||
 	      DISP_MODE(flags) == LS_DISP_CROSS) {
 	int max_len = 0;
 	int size_len = 0;
@@ -624,14 +660,14 @@ list_files(FILE *out, const char **files, int n_files, int flags)
 	    max_len = 80 / columns;
 	}
 	if(flags & LS_SIZE)
-	    sec_fprintf2(out, "total %lu\r\n", 
+	    sec_fprintf2(out, "total %lu\r\n",
 			 (unsigned long)total_blocks);
 	if(DISP_MODE(flags) == LS_DISP_CROSS) {
 	    for(i = 0, j = 0; i < n_files; i++) {
 		if(fi[i].filename == NULL)
 		    continue;
 		if(flags & LS_SIZE)
-		    sec_fprintf2(out, "%*u %-*s", size_len, fi[i].bsize, 
+		    sec_fprintf2(out, "%*u %-*s", size_len, fi[i].bsize,
 				 max_len, fi[i].filename);
 		else
 		    sec_fprintf2(out, "%-*s", max_len, fi[i].filename);
@@ -645,13 +681,13 @@ list_files(FILE *out, const char **files, int n_files, int flags)
 		sec_fprintf2(out, "\r\n");
 	} else {
 	    int skip = (num_files + columns - 1) / columns;
-	    j = 0;
+
 	    for(i = 0; i < skip; i++) {
 		for(j = i; j < n_files;) {
 		    while(j < n_files && fi[j].filename == NULL)
 			j++;
 		    if(flags & LS_SIZE)
-			sec_fprintf2(out, "%*u %-*s", size_len, fi[j].bsize, 
+			sec_fprintf2(out, "%*u %-*s", size_len, fi[j].bsize,
 				     max_len, fi[j].filename);
 		    else
 			sec_fprintf2(out, "%-*s", max_len, fi[j].filename);
@@ -674,7 +710,7 @@ list_files(FILE *out, const char **files, int n_files, int flags)
 		const char *p = strrchr(files[i], '/');
 		if(p == NULL)
 		    p = files[i];
-		else 
+		else
 		    p++;
 		if(!(flags & LS_DIR_FLAG) || !IS_DOT_DOTDOT(p)) {
 		    if((flags & LS_SHOW_DIRNAME)) {
@@ -729,6 +765,7 @@ list_dir(FILE *out, const char *directory, int flags)
     struct dirent *ent;
     char **files = NULL;
     int n_files = 0;
+    int ret;
 
     if(d == NULL) {
 	syslog(LOG_ERR, "%s: %m", directory);
@@ -747,8 +784,8 @@ list_dir(FILE *out, const char *directory, int flags)
 	    return -1;
 	}
 	files = tmp;
-	asprintf(&files[n_files], "%s/%s", directory, ent->d_name);
-	if (files[n_files] == NULL) {
+	ret = asprintf(&files[n_files], "%s/%s", directory, ent->d_name);
+	if (ret == -1) {
 	    syslog(LOG_ERR, "%s: out of memory", directory);
 	    free_files (files, n_files);
 	    closedir (d);

@@ -1,4 +1,4 @@
-dnl $KTH: broken2.m4,v 1.7 2004/08/31 12:53:36 joda Exp $
+dnl $Id$
 dnl
 dnl AC_BROKEN but with more arguments
 

@@ -1,8 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: session.c,v 1.4 2011/10/15 02:05:07 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Network Security
- *	Technologies, Inc.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -32,36 +25,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
 #include <sys/types.h>
-#include <sys/uio.h>
-#include <sys/time.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <net/bpf.h>
-#include <errno.h>
 #include <string.h>
-#include <err.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <sysexits.h>
 #include <stdlib.h>
 
 #include "pppoe.h"
 
 struct pppoe_session_master session_master;
-
-void
-session_init(void)
-{
-	LIST_INIT(&session_master.sm_sessions);
-	session_master.sm_nsessions = 0;
-}
 
 void
 session_destroy(struct pppoe_session *s)
@@ -105,7 +82,6 @@ session_new(struct ether_addr *ea)
 
 	s->s_id = id;
 	s->s_fd = -1;
-	s->s_first = 1;
 	memcpy(&s->s_ea, ea, ETHER_ADDR_LEN);
 	LIST_INSERT_HEAD(&session_master.sm_sessions, s, s_next);
 
@@ -120,19 +96,6 @@ session_find_eaid(struct ether_addr *ea, u_int16_t id)
 	s = LIST_FIRST(&session_master.sm_sessions);
 	while (s) {
 		if (memcmp(ea, &s->s_ea, ETHER_ADDR_LEN) == 0 && s->s_id == id)
-			return (s);
-		s = LIST_NEXT(s, s_next);
-	}
-	return (NULL);
-}
-
-struct pppoe_session *
-session_find_fd(int fd)
-{
-	struct pppoe_session *s;
-	s = LIST_FIRST(&session_master.sm_sessions);
-	while (s) {
-		if (s->s_fd == fd)
 			return (s);
 		s = LIST_NEXT(s, s_next);
 	}

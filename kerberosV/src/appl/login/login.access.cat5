@@ -1,16 +1,16 @@
 
-LOGIN.ACCESS(5)            UNIX Programmer's Manual            LOGIN.ACCESS(5)
+LOGIN.ACCESS(5)             BSD File Formats Manual            LOGIN.ACCESS(5)
 
 NNAAMMEE
-     llooggiinn..aacccceessss - login access control table
+     llooggiinn..aacccceessss -- login access control table
 
 DDEESSCCRRIIPPTTIIOONN
      The llooggiinn..aacccceessss file specifies on which ttys or from which hosts certain
      users are allowed to login.
 
      At login, the _/_e_t_c_/_l_o_g_i_n_._a_c_c_e_s_s file is checked for the first entry that
-     matches a specific user/host or user/tty combination. That entry can ei-
-     ther allow or deny login access to that user.
+     matches a specific user/host or user/tty combination. That entry can
+     either allow or deny login access to that user.
 
      Each entry have three fields separated by colon:
 
@@ -42,4 +42,4 @@ AAUUTTHHOORRSS
      The llooggiinn__aacccceessss() function was written by Wietse Venema. This manual
      page was written for Heimdal.
 
- HEIMDAL                        March 21, 2003                               1
+HEIMDAL                         March 21, 2003                         HEIMDAL

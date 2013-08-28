@@ -1,3 +1,5 @@
+/*	$OpenBSD: stty.c,v 1.2 2000/03/02 00:29:48 todd Exp $	*/
+
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
  * All rights reserved.
@@ -27,10 +29,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$Id: stty.c,v 1.1 1994/05/21 05:20:41 cgd Exp $";
-#endif /* not lint */
 
 #include <sgtty.h>
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: linux_fcntl.h,v 1.3 2002/02/04 20:04:52 provos Exp $	*/
 /*	$NetBSD: linux_fcntl.h,v 1.1 1995/02/28 23:25:40 fvdl Exp $	*/
 
 /*
@@ -35,8 +36,8 @@
  * Various flag values used in Linux for open(2) and fcntl(2).
  */
 
-#ifndef _LINUX_FCNTL_H
-#define _LINUX_FCNTL_H
+#ifndef _LINUX_FCNTL_H_
+#define _LINUX_FCNTL_H_
 
 /* read/write mode for open(2) (as usual) */
 #define LINUX_O_RDONLY		0x0000
@@ -67,6 +68,10 @@
 #define LINUX_F_SETOWN		8
 #define LINUX_F_GETOWN		9
 
+#define	LINUX_F_GETLK64		12
+#define	LINUX_F_SETLK64		13
+#define	LINUX_F_SETLKW64	14
+
 #define LINUX_F_RDLCK		0
 #define LINUX_F_WRLCK		1
 #define LINUX_F_UNLCK		2
@@ -87,4 +92,12 @@ struct linux_flock {
 	linux_pid_t l_pid;
 };
 
-#endif /* _LINUX_FCNTL_H */
+struct linux_flock64 {
+        short  l_type;
+        short  l_whence;
+        linux_loff_t l_start;
+        linux_loff_t l_len;
+        linux_pid_t  l_pid;
+};
+
+#endif /* _LINUX_FCNTL_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: divrem.m4,v 1.7 2007/11/24 19:47:05 deraadt Exp $	*/
 /*	$NetBSD: divrem.m4,v 1.3 1995/04/22 09:37:39 pk Exp $	*/
 
 /*
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,18 +41,12 @@
  * Architecture Manual, with fixes from Gordon Irlam.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#ifdef notdef
-	.asciz "@(#)divrem.m4	8.1 (Berkeley) 6/4/93"
-#endif
-	.asciz "$NetBSD: divrem.m4,v 1.3 1995/04/22 09:37:39 pk Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 /*
  * Input: dividend and divisor in %o0 and %o1 respectively.
  *
  * m4 parameters:
  *  NAME	name of function to generate
+ *  NAME2	secondary name of function to generate
  *  OP		OP=div => %o0 / %o1; OP=rem => %o0 % %o1
  *  S		S=true => signed; S=false => unsigned
  *
@@ -97,7 +88,7 @@ define(V, `%o5')
 
 /* m4 reminder: ifelse(a,b,c,d) => if a is b, then c, else d */
 define(T, `%g1')
-define(SC, `%g7')
+define(SC, `%g5')
 ifelse(S, `true', `define(SIGN, `%g6')')
 
 /*
@@ -134,7 +125,10 @@ L.$1.eval(TWOSUPN+$2):
 
 #include "DEFS.h"
 #include <machine/trap.h>
+#include <machine/asm.h>
 
+	.globl NAME2
+NAME2:
 FUNC(NAME)
 ifelse(S, `true',
 `	! compute sign of result; if neither is negative, no problem

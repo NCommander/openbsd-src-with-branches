@@ -1,9 +1,8 @@
-/*	$NetBSD$	 */
+/*	$OpenBSD: version.c,v 1.9 2012/12/31 21:35:32 miod Exp $ */
 
 /*
- *	NOTE ANY CHANGES YOU MAKE TO THE BOOTBLOCKS HERE.
- *
- *	1.1
+ *	1.10	lower load address and heap location by 1MB to fit 8MB boards
+ *	1.9	kernel loaded with loadfile, a.out and ELF formats
  */
 
-char *version = "$Revision: 1.1x $";
+char *version = "1.10";

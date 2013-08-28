@@ -1,4 +1,4 @@
-dnl $KTH: check-man.m4,v 1.4 2004/02/12 14:20:40 lha Exp $
+dnl $Id$
 dnl check how to format manual pages
 dnl
 
@@ -11,8 +11,7 @@ AC_CACHE_CHECK(how to format man pages,ac_cv_sys_man_format,
 .Dt CONFTEST 1
 .Sh NAME
 .Nm conftest
-.Nd
-foobar
+.Nd foobar
 END
 
 if test "$NROFF" ; then

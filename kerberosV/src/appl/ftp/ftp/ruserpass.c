@@ -32,7 +32,7 @@
  */
 
 #include "ftp_locl.h"
-RCSID("$KTH: ruserpass.c,v 1.19 2000/01/08 07:45:11 assar Exp $");
+RCSID("$Id$");
 
 static	int token (void);
 static	FILE *cfile;
@@ -59,7 +59,7 @@ static struct toktab {
 	{ "account",	ACCOUNT },
 	{ "machine",	MACH },
 	{ "macdef",	MACDEF },
-	{ "prot", 	PROT }, 
+	{ "prot", 	PROT },
 	{ NULL,		0 }
 };
 
@@ -69,43 +69,43 @@ static struct toktab {
  */
 
 static char *
-guess_domain (char *hostname, size_t sz)
+guess_domain (char *hostname_str, size_t sz)
 {
     struct addrinfo *ai, *a;
     struct addrinfo hints;
     int error;
     char *dot;
 
-    if (gethostname (hostname, sz) < 0) {
-	strlcpy (hostname, "", sz);
+    if (gethostname (hostname_str, sz) < 0) {
+	strlcpy (hostname_str, "", sz);
 	return "";
     }
-    dot = strchr (hostname, '.');
+    dot = strchr (hostname_str, '.');
     if (dot != NULL)
 	return dot + 1;
 
     memset (&hints, 0, sizeof(hints));
     hints.ai_flags = AI_CANONNAME;
 
-    error = getaddrinfo (hostname, NULL, &hints, &ai);
+    error = getaddrinfo (hostname_str, NULL, &hints, &ai);
     if (error)
-	return hostname;
+	return hostname_str;
 
     for (a = ai; a != NULL; a = a->ai_next)
 	if (a->ai_canonname != NULL) {
-	    strlcpy (hostname, ai->ai_canonname, sz);
+	    strlcpy (hostname_str, ai->ai_canonname, sz);
 	    break;
 	}
     freeaddrinfo (ai);
-    dot = strchr (hostname, '.');
+    dot = strchr (hostname_str, '.');
     if (dot != NULL)
 	return dot + 1;
     else
-	return hostname;
+	return hostname_str;
 }
 
 int
-ruserpass(char *host, char **aname, char **apass, char **aacct)
+ruserpassword(char *host, char **aname, char **apass, char **aacct)
 {
     char *hdir, buf[BUFSIZ], *tmp;
     int t, i, c, usedefault = 0;
@@ -137,7 +137,7 @@ next:
 		continue;
 	    /*
 	     * Allow match either for user's input host name
-	     * or official hostname.  Also allow match of 
+	     * or official hostname.  Also allow match of
 	     * incompletely-specified host in local domain.
 	     */
 	    if (strcasecmp(host, tokval) == 0)
@@ -163,7 +163,7 @@ next:
 
 	case LOGIN:
 	    if (token()) {
-		if (*aname == 0) { 
+		if (*aname == 0) {
 		    *aname = strdup(tokval);
 		} else {
 		    if (strcmp(*aname, tokval))
@@ -199,7 +199,7 @@ next:
 		fclose(cfile);
 		return (0);
 	    }
-	    while ((c=getc(cfile)) != EOF && 
+	    while ((c=getc(cfile)) != EOF &&
 		   (c == ' ' || c == '\t'));
 	    if (c == EOF || c == '\n') {
 		printf("Missing macdef name argument.\n");
@@ -256,7 +256,7 @@ next:
 	    break;
 	case PROT:
 	    token();
-	    if(sec_request_prot(tokval) < 0)
+	    if(doencrypt == 0 && sec_request_prot(tokval) < 0)
 		warnx("Unknown protection level \"%s\"", tokval);
 	    break;
 	default:

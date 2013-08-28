@@ -1021,8 +1021,9 @@ operand (expressionS *expressionP)
       break;
 
     case '+':
-      /* Do not accept ++e as +(+e) */
-      if (*input_line_pointer == '+')
+      /* Do not accept ++e as +(+e).
+	 Disabled, since the preprocessor removes whitespace.  */
+      if (0 && *input_line_pointer == '+')
 	goto target_op;
       (void) operand (expressionP);
       break;
@@ -1041,8 +1042,9 @@ operand (expressionS *expressionP)
     case '!':
     case '-':
       {
-        /* Do not accept --e as -(-e) */
-	if (c == '-' && *input_line_pointer == '-')
+        /* Do not accept --e as -(-e)
+	   Disabled, since the preprocessor removes whitespace.  */
+	if (0 && c == '-' && *input_line_pointer == '-')
 	  goto target_op;
 	
 	operand (expressionP);
@@ -1073,6 +1075,35 @@ operand (expressionS *expressionP)
 	      generic_floating_point_number.sign = '-';
 	    else
 	      generic_floating_point_number.sign = 'N';
+	  }
+	else if (expressionP->X_op == O_big
+		 && expressionP->X_add_number > 0)
+	  {
+	    int i;
+
+	    if (c == '~' || c == '-')
+	      {
+		for (i = 0; i < expressionP->X_add_number; ++i)
+		  generic_bignum[i] = ~generic_bignum[i];
+		if (c == '-')
+		  for (i = 0; i < expressionP->X_add_number; ++i)
+		    {
+		      generic_bignum[i] += 1;
+		      if (generic_bignum[i])
+			break;
+		    }
+	      }
+	    else if (c == '!')
+	      {
+		int nonzero = 0;
+		for (i = 0; i < expressionP->X_add_number; ++i)
+		  {
+		    if (generic_bignum[i])
+		      nonzero = 1;
+		    generic_bignum[i] = 0;
+		  }
+		generic_bignum[0] = nonzero;
+	      }
 	  }
 	else if (expressionP->X_op != O_illegal
 		 && expressionP->X_op != O_absent)
@@ -1551,8 +1582,9 @@ operator (int *num_chars)
 
     case '+':
     case '-':
-      /* Do not allow a++b and a--b to be a + (+b) and a - (-b) */
-      if (input_line_pointer[1] != c)
+      /* Do not allow a++b and a--b to be a + (+b) and a - (-b)
+	 Disabled, since the preprocessor removes whitespace.  */
+      if (1 || input_line_pointer[1] != c)
 	return op_encoding[c];
       return O_illegal;
 
