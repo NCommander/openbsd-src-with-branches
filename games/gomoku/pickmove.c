@@ -1,4 +1,4 @@
-/*	$OpenBSD: pickmove.c,v 1.10 2006/12/14 10:15:09 martin Exp $	*/
+/*	$OpenBSD: pickmove.c,v 1.11 2009/10/27 23:59:24 deraadt Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -206,7 +206,7 @@ better(sp, sp1, us)
 #ifdef SVR4
 	return (rand() & 1);
 #else
-	return ((int)random() & 1);
+	return (arc4random() & 1);
 #endif
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: driver.c,v 1.18 2008/10/02 16:44:43 millert Exp $	*/
+/*	$OpenBSD: driver.c,v 1.19 2009/12/10 23:53:06 beck Exp $	*/
 /*	$NetBSD: driver.c,v 1.5 1997/10/20 00:37:16 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -466,9 +466,6 @@ init(int background)
 	if (Server_socket + 1 > Num_fds)
 		Num_fds = Server_socket + 1;
 
-	/* Initialise the random seed: */
-	srandomdev();
-
 	/* Dig the maze: */
 	makemaze();
 
@@ -916,9 +913,7 @@ int
 rand_num(range)
 	int	range;
 {
-	if (range == 0)
-		return 0;
-	return (random() % range);
+	return (arc4random_uniform(range));
 }
 
 /*

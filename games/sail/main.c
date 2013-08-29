@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.6 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/04/22 10:37:01 cgd Exp $	*/
 
 /*
@@ -56,7 +56,6 @@ main(argc, argv)
 		exit(1);
 	close(fd);
 
-	srandomdev();
 	if ((p = strrchr(*argv, '/')))
 		p++;
 	else

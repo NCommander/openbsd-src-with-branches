@@ -1,4 +1,4 @@
-/*	$OpenBSD: monop.c,v 1.9 2007/09/11 15:21:05 gilles Exp $	*/
+/*	$OpenBSD: monop.c,v 1.10 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: monop.c,v 1.3 1995/03/23 08:34:52 cgd Exp $	*/
 
 /*
@@ -47,7 +47,6 @@ main(ac, av)
 	int	ac;
 	char	*av[];
 {
-	srandomdev();
 	num_luck = sizeof lucky_mes / sizeof (char *);
 	init_decks();
 		init_monops();

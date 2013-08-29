@@ -1,4 +1,4 @@
-/*	$OpenBSD: otto.c,v 1.8 2003/08/07 20:19:10 jolan Exp $	*/
+/*	$OpenBSD: otto.c,v 1.9 2006/03/27 00:10:15 tedu Exp $	*/
 /*	$NetBSD: otto.c,v 1.2 1997/10/10 16:32:39 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -544,15 +544,15 @@ wander()
 			break;
 		}
 		if (j == FRONT
-		&& num_turns > 4 + (random() %
-				((flbr[FRONT].flags & BEEN) ? 7 : HEIGHT)))
+		&& num_turns > 4 + (arc4random_uniform(
+				((flbr[FRONT].flags & BEEN) ? 7 : HEIGHT))))
 			continue;
 		dir_mask |= 1 << j;
 		dir_count = 1;
 		break;
 	}
 	if (dir_count == 0) {
-		duck(random() % NUMDIRECTIONS);
+		duck(arc4random_uniform(NUMDIRECTIONS));
 		num_turns = 0;
 		return;
 	} else {

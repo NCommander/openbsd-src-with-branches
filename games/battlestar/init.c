@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.12 2004/07/10 07:26:22 deraadt Exp $	*/
+/*	$OpenBSD: init.c,v 1.13 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: init.c,v 1.4 1995/03/21 15:07:35 cgd Exp $	*/
 
 /*
@@ -46,7 +46,6 @@ initialize(const char *filename)
 	puts("First Adventure game written by His Lordship, the honorable");
 	puts("Admiral D.W. Riggle\n");
 	location = dayfile;
-	srandomdev();
 	username = getutmp();
 	if (username == NULL)
 		errx(1, "Don't know who you are.");

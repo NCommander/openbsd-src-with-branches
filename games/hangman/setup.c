@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.9 2008/04/01 21:05:50 miod Exp $	*/
+/*	$OpenBSD: setup.c,v 1.10 2009/10/27 23:59:25 deraadt Exp $	*/
 /*	$NetBSD: setup.c,v 1.3 1995/03/23 08:32:59 cgd Exp $	*/
 
 /*-
@@ -58,7 +58,6 @@ setup(void)
 		addstr(*sp);
 	}
 
-	srandomdev();
 	if (ksyms) {
 		if (ksetup() != 0) {
 			endwin();

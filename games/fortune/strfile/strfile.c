@@ -1,4 +1,4 @@
-/*	$OpenBSD: strfile.c,v 1.17 2009/10/27 23:59:24 deraadt Exp $	*/
+/*	$OpenBSD: strfile.c,v 1.18 2013/08/22 04:43:41 guenther Exp $	*/
 /*	$NetBSD: strfile.c,v 1.4 1995/04/24 12:23:09 cgd Exp $	*/
 
 /*-
@@ -427,8 +427,6 @@ randomize(void)
 	int32_t	tmp;
 	int32_t	*sp;
 
-	srandomdev();
-
 	Tbl.str_flags |= STR_RANDOM;
 	cnt = Tbl.str_numstr;
 
@@ -437,7 +435,7 @@ randomize(void)
 	 */
 
 	for (sp = Seekpts; cnt > 0; cnt--, sp++) {
-		i = random() % cnt;
+		i = arc4random_uniform(cnt);
 		tmp = sp[0];
 		sp[0] = sp[i];
 		sp[i] = tmp;
