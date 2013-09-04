@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.51 2012/09/10 01:25:30 tedu Exp $	*/
+/*	$OpenBSD: main.c,v 1.52 2013/06/15 17:25:19 millert Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -41,7 +41,6 @@ static const char *initcoms [] = {
 	  "type=whence -v",
 #ifdef JOBS
 	  "stop=kill -STOP",
-	  "suspend=kill -STOP $$",
 #endif
 	  "autoload=typeset -fu",
 	  "functions=typeset -f",
