@@ -6762,6 +6762,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "CAM_1",
 	},
 	{
+	    USB_VENDOR_MICRODIA, USB_PRODUCT_MICRODIA_TEMPER,
+	    "TEMPer sensor",
+	},
+	{
 	    USB_VENDOR_MICRONET, USB_PRODUCT_MICRONET_SP128AR,
 	    "SP128AR EtherFast",
 	},

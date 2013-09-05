@@ -2840,6 +2840,7 @@
 /* Microdia / Sonix Techonology Co., Ltd. products */
 #define	USB_PRODUCT_MICRODIA_YUREX	0x1010		/* YUREX */
 #define	USB_PRODUCT_MICRODIA_CAM_1	0x62c0		/* CAM_1 */
+#define	USB_PRODUCT_MICRODIA_TEMPER	0x7401		/* TEMPer sensor */
 
 /* Micronet Communications products */
 #define	USB_PRODUCT_MICRONET_SP128AR	0x0003		/* SP128AR EtherFast */
