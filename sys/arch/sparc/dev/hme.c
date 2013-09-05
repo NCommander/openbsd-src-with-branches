@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.62 2009/08/13 17:01:31 phessler Exp $	*/
+/*	$OpenBSD: hme.c,v 1.63 2013/08/21 05:21:42 dlg Exp $	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -59,7 +59,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #include <netinet/tcp.h>

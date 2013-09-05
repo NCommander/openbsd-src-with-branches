@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.44 2009/10/31 14:31:11 deraadt Exp $ */
+/*	$OpenBSD: if_ie.c,v 1.45 2012/10/10 04:52:16 camield Exp $ */
 
 /*-
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -119,7 +119,6 @@ Mode of operation:
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

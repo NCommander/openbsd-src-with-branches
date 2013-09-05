@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.32 2008/11/28 02:44:17 brad Exp $	*/
+/*	$OpenBSD: qe.c,v 1.33 2010/11/11 17:46:58 miod Exp $	*/
 
 /*
  * Copyright (c) 1998, 2000 Jason L. Wright.
@@ -54,7 +54,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif
