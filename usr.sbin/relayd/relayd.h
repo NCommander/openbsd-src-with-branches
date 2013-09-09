@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.169 2013/05/30 20:17:12 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.170 2013/09/07 10:46:31 fgsch Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2012 Reyk Floeter <reyk@openbsd.org>
@@ -569,6 +569,7 @@ enum prototype {
 	"\10\01sslv2\02sslv3\03tlsv1\04version"
 
 #define SSLCIPHERS_DEFAULT	"HIGH:!aNULL"
+#define SSLECDHCURVE_DEFAULT	NID_X9_62_prime256v1
 
 struct protocol {
 	objid_t			 id;
@@ -580,6 +581,7 @@ struct protocol {
 	u_int8_t		 tcpipminttl;
 	u_int8_t		 sslflags;
 	char			 sslciphers[768];
+	int			 sslecdhcurve;
 	char			 sslca[MAXPATHLEN];
 	char			 sslcacert[MAXPATHLEN];
 	char			 sslcakey[MAXPATHLEN];
