@@ -1,4 +1,4 @@
-/* $OpenBSD: if_cpsw.c,v 1.5 2013/07/15 17:30:22 rapha Exp $ */
+/* $OpenBSD: if_cpsw.c,v 1.1 2013/09/04 14:38:30 patrick Exp $ */
 /*	$NetBSD: if_cpsw.c,v 1.3 2013/04/17 14:36:34 bouyer Exp $	*/
 
 /*
@@ -136,7 +136,6 @@ struct cpsw_ring_data {
 
 struct cpsw_softc {
 	struct device  sc_dev;
-	const char sc_name;
 	bus_space_tag_t sc_bst;
 	bus_space_handle_t sc_bsh;
 	bus_dma_tag_t sc_bdt;
