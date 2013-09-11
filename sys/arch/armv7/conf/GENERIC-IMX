@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.14 2012/09/27 14:01:35 jsg Exp $
+# $OpenBSD: GENERIC-IMX,v 1.1 2013/09/06 20:45:53 patrick Exp $
 #
 # GENERIC machine description file
 #
@@ -40,7 +40,6 @@ maxusers	32
 
 # CPU options
 options	CPU_ARMv7	# Support the ARMv7
-makeoptions	CPUFLAGS="-mcpu=armv5"	# dont have gcc v7 support yet.
 
 #option WSDISPLAY_COMPAT_USL		# VT handling
 #option WSDISPLAY_COMPAT_RAWKBD		# can get raw scancodes
