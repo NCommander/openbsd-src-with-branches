@@ -1,4 +1,4 @@
-/*	$OpenBSD: timer.c,v 1.9 2008/03/26 20:12:59 millert Exp $	*/
+/*	$OpenBSD: timer.c,v 1.10 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: timer.c,v 1.3 1995/04/24 12:22:45 cgd Exp $	*/
 
 /*-
@@ -109,6 +109,6 @@ delay(int tenths)
 	struct timeval duration;
 
 	duration.tv_usec = (tenths % 10 ) * 100000L;
-	duration.tv_sec = (long) (tenths / 10);
+	duration.tv_sec = tenths / 10;
 	select(0, 0, 0, 0, &duration);
 }
