@@ -1,4 +1,4 @@
-/* $OpenBSD: if_cpswreg.h,v 1.1 2013/09/04 14:38:30 patrick Exp $ */
+/* $OpenBSD: if_cpswreg.h,v 1.2 2013/09/12 00:19:11 dlg Exp $ */
 
 /*-
  * Copyright (c) 2012 Damjan Marion <dmarion@Freebsd.org>
@@ -126,11 +126,11 @@
 
 struct cpsw_cpdma_bd {
 	uint32_t word[4];
-}; 
+};
 
 /* Interrupt offsets */
 #define CPSW_INTROFF_RXTH	0
-#define CPSW_INTROFF_RX		1 
+#define CPSW_INTROFF_RX		1
 #define CPSW_INTROFF_TX		2
 #define CPSW_INTROFF_MISC	3
 
