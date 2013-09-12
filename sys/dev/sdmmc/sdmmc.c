@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc.c,v 1.26 2011/11/14 14:13:45 deraadt Exp $	*/
+/*	$OpenBSD: sdmmc.c,v 1.27 2013/05/31 21:28:32 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -105,6 +105,7 @@ sdmmc_attach(struct device *parent, struct device *self, void *aux)
 	sc->sct = saa->sct;
 	sc->sch = saa->sch;
 	sc->sc_flags = saa->flags;
+	sc->sc_caps = saa->caps;
 	sc->sc_max_xfer = saa->max_xfer;
 
 	SIMPLEQ_INIT(&sc->sf_head);
@@ -571,6 +572,9 @@ sdmmc_app_command(struct sdmmc_softc *sc, struct sdmmc_command *cmd)
 	bzero(&acmd, sizeof acmd);
 	acmd.c_opcode = MMC_APP_CMD;
 	acmd.c_arg = 0;
+	if (sc->sc_card != NULL) {
+		acmd.c_arg = sc->sc_card->rca << 16;
+	}
 	acmd.c_flags = SCF_CMD_AC | SCF_RSP_R1;
 
 	error = sdmmc_mmc_command(sc, &acmd);

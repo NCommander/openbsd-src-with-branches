@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmcchip.h,v 1.3 2007/05/31 10:09:01 uwe Exp $	*/
+/*	$OpenBSD: sdmmcchip.h,v 1.4 2009/02/20 19:16:35 miod Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -78,6 +78,7 @@ struct sdmmcbus_attach_args {
 	sdmmc_chipset_tag_t sct;
 	sdmmc_chipset_handle_t sch;
 	int	flags;
+	int	caps;
 	long	max_xfer;
 };
 
