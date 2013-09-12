@@ -165,6 +165,8 @@ struct cpsw_softc {
 	struct timeout sc_tick;
 };
 
+#define DEVNAME(_sc) ((_sc)->sc_dev.dv_xname)
+
 void	cpsw_get_mac_addr(struct cpsw_softc *);
 void cpsw_attach(struct device *, struct device *, void *);
 
@@ -352,13 +354,13 @@ cpsw_attach(struct device *parent, struct device *self, void *aux)
 	cpsw_get_mac_addr(sc);
 
 	sc->sc_rxthih = arm_intr_establish(oa->oa_dev->irq[0] + CPSW_INTROFF_RXTH,
-	    IPL_NET, cpsw_rxthintr, sc, sc->sc_dev.dv_xname);
+	    IPL_NET, cpsw_rxthintr, sc, DEVNAME(sc));
 	sc->sc_rxih = arm_intr_establish(oa->oa_dev->irq[0] + CPSW_INTROFF_RX,
-	    IPL_NET, cpsw_rxintr, sc, sc->sc_dev.dv_xname);
+	    IPL_NET, cpsw_rxintr, sc, DEVNAME(sc));
 	sc->sc_txih = arm_intr_establish(oa->oa_dev->irq[0] + CPSW_INTROFF_TX,
-	    IPL_NET, cpsw_txintr, sc, sc->sc_dev.dv_xname);
+	    IPL_NET, cpsw_txintr, sc, DEVNAME(sc));
 	sc->sc_miscih = arm_intr_establish(oa->oa_dev->irq[0] + CPSW_INTROFF_MISC,
-	    IPL_NET, cpsw_miscintr, sc, sc->sc_dev.dv_xname);
+	    IPL_NET, cpsw_miscintr, sc, DEVNAME(sc));
 
 	sc->sc_bst = oa->oa_iot;
 	sc->sc_bdt = oa->oa_dmat;
@@ -432,7 +434,7 @@ cpsw_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_watchdog = cpsw_watchdog;
 	IFQ_SET_MAXLEN(&ifp->if_snd, CPSW_NTXDESCS - 1);
 	IFQ_SET_READY(&ifp->if_snd);
-	memcpy(ifp->if_xname, sc->sc_dev.dv_xname, IFNAMSIZ);
+	memcpy(ifp->if_xname, DEVNAME(sc), IFNAMSIZ);
 
 	cpsw_stop(ifp);
 
