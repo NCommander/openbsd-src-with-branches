@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.38 2013/06/19 12:19:02 millert Exp $	*/
+/*	$OpenBSD: eval.c,v 1.37 2011/10/11 14:32:43 otto Exp $	*/
 
 /*
  * Expansion - quoting, separation, substitution, globbing
@@ -869,7 +869,7 @@ comsub(Expand *xp, char *cp)
 			    "%s: cannot open $(<) input", name);
 		xp->split = 0;	/* no waitlast() */
 	} else {
-		int errexit, ofd1, pv[2];
+		int ofd1, pv[2];
 		openpipe(pv);
 		shf = shf_fdopen(pv[0], SHF_RD, (struct shf *) 0);
 		ofd1 = savefd(1);
@@ -877,15 +877,7 @@ comsub(Expand *xp, char *cp)
 			ksh_dup2(pv[1], 1, false);
 			close(pv[1]);
 		}
-		/*
-		 * Clear FERREXIT temporarily while we execute the command.
-		 * We cannot simply pass XERROK since the tree might include
-		 * its own "set -e".
-		 */
-		errexit = Flag(FERREXIT);
-		Flag(FERREXIT) = 0;
 		execute(t, XFORK|XXCOM|XPIPEO, NULL);
-		Flag(FERREXIT) = errexit;
 		restfd(1, ofd1);
 		startlast();
 		xp->split = 1;	/* waitlast() */

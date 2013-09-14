@@ -1,4 +1,4 @@
-#	$OpenBSD: regress.t,v 1.14 2013/06/19 12:19:03 millert Exp $
+#	$OpenBSD: regress.t,v 1.15 2013/07/01 17:25:27 jca Exp $
 
 #
 # The first 39 of these tests are from the old Bugs script.
@@ -607,7 +607,7 @@ arguments: !-e!
 stdin:
 	echo `false; echo hi` $(< this-file-does-not-exist)
 expected-stdout:
-	hi
+	
 expected-stderr-pattern: /this-file-does-not-exist/
 ---
 
