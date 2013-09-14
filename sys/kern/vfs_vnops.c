@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.72 2013/03/30 06:32:25 tedu Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.73 2013/06/05 01:26:00 guenther Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -232,7 +232,7 @@ vn_writechk(struct vnode *vp)
  * via the 'overrun' argument.
  */
 int
-vn_fsizechk(struct vnode *vp, struct uio *uio, int ioflag, int *overrun)
+vn_fsizechk(struct vnode *vp, struct uio *uio, int ioflag, ssize_t *overrun)
 {
 	struct proc *p = uio->uio_procp;
 
