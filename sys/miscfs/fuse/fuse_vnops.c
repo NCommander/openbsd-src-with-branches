@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vnops.c,v 1.3 2013/06/12 22:55:02 tedu Exp $ */
+/* $OpenBSD: fuse_vnops.c,v 1.4 2013/08/10 00:12:45 syl Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -898,7 +898,7 @@ fusefs_write(void *v)
 			break;
 
 		diff = len - fbuf->fb_io_len;
-		if (diff < 0) {
+		if (fbuf->fb_io_len > len) {
 			error = EINVAL;
 			break;
 		}
