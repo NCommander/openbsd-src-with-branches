@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: bc.y,v 1.40 2011/10/06 14:37:56 otto Exp $	*/
+/*	$OpenBSD: bc.y,v 1.41 2012/03/08 08:20:08 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -41,9 +41,7 @@
 #include <search.h>
 #include <signal.h>
 #include <stdarg.h>
-#include <stdbool.h>
 #include <string.h>
-#include <termios.h>
 #include <unistd.h>
 
 #include "extern.h"
