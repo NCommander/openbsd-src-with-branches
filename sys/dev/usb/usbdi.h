@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbdi.h,v 1.51 2013/04/26 13:46:40 mglocker Exp $ */
+/*	$OpenBSD: usbdi.h,v 1.53 2013/04/26 14:19:25 mpi Exp $ */
 /*	$NetBSD: usbdi.h,v 1.62 2002/07/11 21:14:35 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usbdi.h,v 1.18 1999/11/17 22:33:49 n_hibma Exp $	*/
 
@@ -76,6 +76,7 @@ typedef void (*usbd_callback)(struct usbd_xfer *, void *, usbd_status);
 #define USBD_SYNCHRONOUS	0x02	/* wait for completion */
 /* in usb.h #define USBD_SHORT_XFER_OK	0x04*/	/* allow short reads */
 #define USBD_FORCE_SHORT_XFER	0x08	/* force last short packet on write */
+#define USBD_CATCH		0x10	/* catch signals while sleeping */
 
 #define USBD_NO_TIMEOUT 0
 #define USBD_DEFAULT_TIMEOUT 5000 /* ms = 5 s */
