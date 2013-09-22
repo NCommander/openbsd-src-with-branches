@@ -1,4 +1,4 @@
-/*	$OpenBSD: ps.c,v 1.54 2012/04/17 23:17:53 pirofti Exp $	*/
+/*	$OpenBSD: ps.c,v 1.55 2012/04/21 03:14:50 guenther Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -339,7 +339,7 @@ main(int argc, char *argv[])
 		if (showthreads == 0 && (kinfo[i]->p_flag & P_THREAD) != 0)
 			continue;
 		if (xflg == 0 && ((int)kinfo[i]->p_tdev == NODEV ||
-		    (kinfo[i]->p_flag & P_CONTROLT ) == 0))
+		    (kinfo[i]->p_psflags & PS_CONTROLT ) == 0))
 			continue;
 		if (showthreads && kinfo[i]->p_tid == -1)
 			continue;

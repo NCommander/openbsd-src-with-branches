@@ -1,4 +1,4 @@
-/*	$OpenBSD: keyword.c,v 1.36 2012/04/04 16:13:11 jsing Exp $	*/
+/*	$OpenBSD: keyword.c,v 1.37 2012/04/11 17:33:26 guenther Exp $	*/
 /*	$NetBSD: keyword.c,v 1.12.6.1 1996/05/30 21:25:13 cgd Exp $	*/
 
 /*-
@@ -84,6 +84,7 @@ int	utime(), stime(), ixrss(), idrss(), isrss();
 #define	CWDLEN	40
 
 /* Bit types must match their respective entries in struct kinfo_proc */
+/* Entries must be sorted in lexical ascending order! */
 VAR var[] = {
 	{"%cpu", "%CPU", NULL, NLIST, pcpu, 4},
 	{"%mem", "%MEM", NULL, NLIST, pmem, 4},
@@ -144,6 +145,7 @@ VAR var[] = {
 	{"pmem", "", "%mem"},
 	PID("ppid", "PPID", pvar, POFF(p_ppid)),
 	{"pri", "PRI", NULL, 0, pri, 3},
+	{"procflags", "PROCF", NULL, 0, pvar, 7, 0, POFF(p_psflags), INT32, "x"},
 	{"re", "RE", NULL, INF127, pvar, 3, 0, POFF(p_swtime), UINT32, "u"},
 	GID("rgid", "RGID", pvar, POFF(p_rgid)),
 	/* XXX */
