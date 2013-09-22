@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.13 2011/04/17 20:57:10 krw Exp $
+#       $OpenBSD: install.md,v 1.14 2012/07/10 14:25:00 halex Exp $
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
@@ -33,6 +33,9 @@
 
 MDTERM=vt100
 MDROOTFSOPT="-f 1024 -b 8192"
+NCPU=$(sysctl -n hw.ncpufound)
+
+((NCPU > 1)) && { DEFAULTSETS="bsd bsd.rd bsd.mp" ; SANESETS="bsd bsd.mp" ; }
 
 md_installboot() {
 }
