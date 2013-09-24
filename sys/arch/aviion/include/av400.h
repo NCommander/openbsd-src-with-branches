@@ -1,4 +1,4 @@
-/*	$OpenBSD: av400.h,v 1.7 2010/04/21 19:33:47 miod Exp $	*/
+/*	$OpenBSD: av400.h,v 1.8 2011/03/23 16:54:34 pirofti Exp $	*/
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * All rights reserved.
@@ -125,6 +125,12 @@
 	"\30IRQ7\27KBD\26CIOI\25SF\24IRQ6\23PPI\22DI1\21DI2" \
 	"\20ECI\17IRQ5\16DTC\15IRQ4\14DWP\13IRQ3\12DVB" \
 	"\7IRQ2\6SCI\5IRQ1\2SWI1\1SWI0"
+
+/*
+ * Onboard device addresses
+ */
+
+#define	AV400_LAN	0xfff8c000
 
 /*
  * CMMU addresses

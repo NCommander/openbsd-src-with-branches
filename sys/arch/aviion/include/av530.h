@@ -1,4 +1,4 @@
-/*	$OpenBSD: av530.h,v 1.3 2010/04/24 18:46:55 miod Exp $	*/
+/*	$OpenBSD: av530.h,v 1.4 2011/03/23 16:54:34 pirofti Exp $	*/
 /*
  * Copyright (c) 2006, 2010 Miodrag Vallat
  *
@@ -217,7 +217,7 @@
 
 #define	AV530_SCSI1	0xfffb0000
 #define	AV530_SCSI2	0xfffb0080
-#define	AV530_LAN1	0xfffb00c0
+#define	AV530_LAN1	0xfffb0100
 #define	AV530_LAN2	0xfffb0140
 
 /*
