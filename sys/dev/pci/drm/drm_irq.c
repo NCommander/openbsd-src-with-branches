@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_irq.c,v 1.48 2013/09/02 06:25:28 jsg Exp $	*/
+/*	$OpenBSD: drm_irq.c,v 1.49 2013/09/02 07:14:22 jsg Exp $	*/
 /**
  * \file drm_irq.c
  * IRQ support
@@ -271,7 +271,7 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	timeout_set(&dev->vblank_disable_timer, vblank_disable_fn,
 	    dev);
 	mtx_init(&dev->vbl_lock, IPL_TTY);
-	mtx_init(&dev->vblank_time_lock, IPL_NONE);
+	mtx_init(&dev->vblank_time_lock, IPL_TTY);
 
 	dev->num_crtcs = num_crtcs;
 
