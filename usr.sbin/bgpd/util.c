@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.13 2010/11/18 12:18:31 claudio Exp $ */
+/*	$OpenBSD: util.c,v 1.14 2011/09/20 21:19:07 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -147,7 +147,7 @@ log_ext_subtype(u_int8_t subtype)
 	switch (subtype) {
 	case EXT_COMMUNITY_ROUTE_TGT:
 		return ("rt");	/* route target */
-	case EXT_CUMMUNITY_ROUTE_ORIG:
+	case EXT_COMMUNITY_ROUTE_ORIG:
 		return ("soo");	/* source of origin */
 	case EXT_COMMUNITY_OSPF_DOM_ID:
 		return ("odi");	/* ospf domain id */
