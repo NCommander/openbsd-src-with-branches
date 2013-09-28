@@ -1,4 +1,4 @@
-/*	$OpenBSD: beagle_machdep.c,v 1.15 2012/08/30 15:51:13 deraadt Exp $ */
+/*	$OpenBSD: imx_machdep.c,v 1.1 2013/09/06 20:45:53 patrick Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -336,7 +336,8 @@ boot(int howto)
 	
 	/* Run any shutdown hooks */
 	doshutdownhooks();
-	config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
+	if (!TAILQ_EMPTY(&alldevs))
+		config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
 
 	/* Make sure IRQ's are disabled */
 	IRQdisable;

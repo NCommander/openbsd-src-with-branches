@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.210 2012/12/02 07:03:31 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.211 2013/06/11 16:42:08 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -920,7 +920,8 @@ boot(int howto)
 			dumpsys();
 
 		doshutdownhooks();
-		config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
+		if (!TAILQ_EMPTY(&alldevs))
+			config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
 
 #ifdef MULTIPROCESSOR
 		hppa_ipi_broadcast(HPPA_IPI_HALT);

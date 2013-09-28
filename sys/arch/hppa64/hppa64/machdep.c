@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.50 2012/12/02 07:03:31 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.51 2013/06/11 16:42:08 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -570,7 +570,8 @@ boot(int howto)
 			dumpsys();
 
 		doshutdownhooks();
-		config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
+		if (!TAILQ_EMPTY(&alldevs))
+			config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
 	}
 
 	/* in case we came on powerfail interrupt */
