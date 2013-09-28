@@ -1,4 +1,4 @@
-/*	$OpenBSD: siofile.h,v 1.1 2012/11/23 07:03:28 ratchov Exp $	*/
+/*	$OpenBSD: siofile.h,v 1.2 2013/02/01 09:06:27 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -21,7 +21,7 @@
 
 struct dev;
 
-struct siofile_ {
+struct dev_sio {
 	struct sio_hdl *hdl;
 	unsigned int todo;
 #ifdef DEBUG
