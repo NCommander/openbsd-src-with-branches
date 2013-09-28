@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_socket.c,v 1.15 2013/01/15 11:12:57 bluhm Exp $	*/
+/*	$OpenBSD: sys_socket.c,v 1.16 2013/04/05 08:25:30 tedu Exp $	*/
 /*	$NetBSD: sys_socket.c,v 1.13 1995/08/12 23:59:09 mycroft Exp $	*/
 
 /*
@@ -139,7 +139,10 @@ soo_poll(struct file *fp, int events, struct proc *p)
 		if (soreadable(so))
 			revents |= events & (POLLIN | POLLRDNORM);
 	}
-	if (events & (POLLOUT | POLLWRNORM)) {
+	/* NOTE: POLLHUP and POLLOUT/POLLWRNORM are mutually exclusive */
+	if (so->so_state & SS_ISDISCONNECTED) {
+		revents |= POLLHUP;
+	} else if (events & (POLLOUT | POLLWRNORM)) {
 		if (sowriteable(so))
 			revents |= events & (POLLOUT | POLLWRNORM);
 	}
