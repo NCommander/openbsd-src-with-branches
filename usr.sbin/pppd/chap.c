@@ -1,4 +1,4 @@
-/*	$OpenBSD: chap.c,v 1.12 2003/04/04 20:25:07 deraadt Exp $	*/
+/*	$OpenBSD: chap.c,v 1.13 2009/10/27 23:59:53 deraadt Exp $	*/
 
 /*
  * chap.c - Challenge Handshake Authentication Protocol.
@@ -110,9 +110,6 @@ static void ChapSendStatus(chap_state *, int);
 static void ChapSendChallenge(chap_state *);
 static void ChapSendResponse(chap_state *);
 static void ChapGenChallenge(chap_state *);
-
-extern double drand48(void);
-extern void srand48(long);
 
 /*
  * ChapInit - Initialize a CHAP unit.
