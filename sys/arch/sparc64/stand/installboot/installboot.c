@@ -1,4 +1,4 @@
-/*	$OpenBSD: installboot.c,v 1.14 2012/01/11 16:15:02 jsing Exp $	*/
+/*	$OpenBSD: installboot.c,v 1.16 2012/02/12 00:53:10 deraadt Exp $	*/
 /*	$NetBSD: installboot.c,v 1.8 2001/02/19 22:48:59 cgd Exp $ */
 
 /*-
@@ -68,7 +68,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "Usage: %s [-nv] <bootblk> <device>\n", __progname);
+	fprintf(stderr, "usage: %s [-nv] bootblk device\n", __progname);
 	exit(1);
 }
 
