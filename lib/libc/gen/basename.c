@@ -1,4 +1,4 @@
-/*	$OpenBSD: basename.c,v 1.13 2005/03/02 12:27:26 millert Exp $	*/
+/*	$OpenBSD: basename.c,v 1.14 2005/08/08 08:05:33 espie Exp $	*/
 
 /*
  * Copyright (c) 1997, 2004 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -18,13 +18,13 @@
 
 #include <errno.h>
 #include <libgen.h>
+#include <limits.h>
 #include <string.h>
-#include <sys/param.h>
 
 char *
 basename(const char *path)
 {
-	static char bname[MAXPATHLEN];
+	static char bname[PATH_MAX];
 	size_t len;
 	const char *endp, *startp;
 

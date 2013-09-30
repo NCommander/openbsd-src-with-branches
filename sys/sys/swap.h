@@ -1,4 +1,4 @@
-/*	$OpenBSD: swap.h,v 1.5 2013/01/16 04:05:22 deraadt Exp $	*/
+/*	$OpenBSD: swap.h,v 1.6 2013/03/28 03:37:10 tedu Exp $	*/
 /*	$NetBSD: swap.h,v 1.2 1998/09/13 14:46:24 christos Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ struct swapent {
 	int	se_nblks;		/* total blocks */
 	int	se_inuse;		/* blocks in use */
 	int	se_priority;		/* priority of this device */
-	char	se_path[MAXPATHLEN];	/* path name */
+	char	se_path[PATH_MAX];	/* path name */
 };
 
 #ifdef _KERNEL

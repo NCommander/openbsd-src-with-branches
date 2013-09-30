@@ -1,4 +1,4 @@
-/*	$OpenBSD: dirname.c,v 1.13 2005/08/08 08:05:33 espie Exp $	*/
+/*	$OpenBSD: dirname.c,v 1.14 2013/04/05 12:59:54 kurt Exp $	*/
 
 /*
  * Copyright (c) 1997, 2004 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -18,15 +18,15 @@
 
 #include <errno.h>
 #include <libgen.h>
+#include <limits.h>
 #include <string.h>
-#include <sys/param.h>
 
 /* A slightly modified copy of this file exists in libexec/ld.so */
 
 char *
 dirname(const char *path)
 {
-	static char dname[MAXPATHLEN];
+	static char dname[PATH_MAX];
 	size_t len;
 	const char *endp;
 
