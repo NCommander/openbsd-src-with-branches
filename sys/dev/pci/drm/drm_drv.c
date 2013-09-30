@@ -1,4 +1,4 @@
-/* $OpenBSD: drm_drv.c,v 1.112 2013/08/27 03:06:03 jsg Exp $ */
+/* $OpenBSD: drm_drv.c,v 1.113 2013/08/27 03:18:45 jsg Exp $ */
 /*-
  * Copyright 2007-2009 Owain G. Ainsworth <oga@openbsd.org>
  * Copyright © 2008 Intel Corporation
@@ -578,8 +578,10 @@ drmclose(dev_t kdev, int flags, int fmt, struct proc *p)
 		mtx_enter(&file_priv->table_lock);
 		while ((han = SPLAY_ROOT(&file_priv->obj_tree)) != NULL) {
 			SPLAY_REMOVE(drm_obj_tree, &file_priv->obj_tree, han);
+			mtx_leave(&file_priv->table_lock);
 			drm_handle_unref(han->obj);
 			drm_free(han);
+			mtx_enter(&file_priv->table_lock);
 		}
 		mtx_leave(&file_priv->table_lock);
 	}
