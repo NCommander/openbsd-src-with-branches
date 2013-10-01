@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.10 2012/09/17 16:43:59 reyk Exp $	*/
+/*	$OpenBSD: parser.c,v 1.11 2013/10/01 12:41:48 reyk Exp $	*/
 
 /*
  * Copyright (c) 2008 Reyk Floeter <reyk@openbsd.org>
@@ -90,6 +90,7 @@ static const struct token t_main[] = {
 	{KEYWORD,	"show",		NONE,		t_show},
 	{KEYWORD,	"snmp",		NONE,		t_snmp},
 	{KEYWORD,	"trap",		NONE,		t_trap},
+	{KEYWORD,	"walk",		WALK,		t_snmphost},
 	{ENDTOKEN,	"",		NONE,		NULL}
 };
 
