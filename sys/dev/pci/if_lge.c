@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.58 2013/08/07 01:06:36 bluhm Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.59 2013/08/21 05:21:44 dlg Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -482,7 +482,7 @@ lge_attach(struct device *parent, struct device *self, void *aux)
 	if (bus_dmamem_map(sc->sc_dmatag, &seg, rseg,
 			   sizeof(struct lge_list_data), &kva,
 			   BUS_DMA_NOWAIT)) {
-		printf("%s: can't map dma buffers (%d bytes)\n",
+		printf("%s: can't map dma buffers (%zd bytes)\n",
 		       sc->sc_dv.dv_xname, sizeof(struct lge_list_data));
 		goto fail_3;
 	}
@@ -725,7 +725,7 @@ lge_alloc_jumbo_mem(struct lge_softc *sc)
 	state = 1;
 	if (bus_dmamem_map(sc->sc_dmatag, &seg, rseg, LGE_JMEM, &kva,
 			   BUS_DMA_NOWAIT)) {
-		printf("%s: can't map dma buffers (%d bytes)\n",
+		printf("%s: can't map dma buffers (%zd bytes)\n",
 		       sc->sc_dv.dv_xname, LGE_JMEM);
 		error = ENOBUFS;
 		goto out;

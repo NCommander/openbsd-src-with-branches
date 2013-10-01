@@ -1,4 +1,4 @@
-/*	$OpenBSD: yds.c,v 1.42 2013/05/15 08:29:24 ratchov Exp $	*/
+/*	$OpenBSD: yds.c,v 1.43 2013/05/24 07:58:47 ratchov Exp $	*/
 /*	$NetBSD: yds.c,v 1.5 2001/05/21 23:55:04 minoura Exp $	*/
 
 /*
@@ -1345,7 +1345,7 @@ yds_trigger_output(void *addr, void *start, void *end, int blksize,
 		u_int32_t ctrlsize;
 		if ((ctrlsize = YREAD4(sc, YDS_PLAY_CTRLSIZE)) !=
 		    sizeof(struct play_slot_ctrl_bank) / sizeof(u_int32_t))
-			panic("%s: invalid play slot ctrldata %d %d",
+			panic("%s: invalid play slot ctrldata %d %zd",
 			      sc->sc_dev.dv_xname, ctrlsize,
 			      sizeof(struct play_slot_ctrl_bank));
 	}
