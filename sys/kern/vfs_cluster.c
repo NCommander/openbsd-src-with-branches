@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cluster.c,v 1.38 2011/07/04 04:30:41 tedu Exp $	*/
+/*	$OpenBSD: vfs_cluster.c,v 1.39 2013/06/11 16:42:16 deraadt Exp $	*/
 /*	$NetBSD: vfs_cluster.c,v 1.12 1996/04/22 01:39:05 christos Exp $	*/
 
 /*
@@ -175,7 +175,7 @@ cluster_wbuild(struct vnode *vp, struct buf *last_bp, long size,
 
 #ifdef DIAGNOSTIC
 	if (size != vp->v_mount->mnt_stat.f_iosize)
-		panic("cluster_wbuild: size %ld != filesize %ld",
+		panic("cluster_wbuild: size %ld != filesize %u",
 			size, vp->v_mount->mnt_stat.f_iosize);
 #endif
 redo:

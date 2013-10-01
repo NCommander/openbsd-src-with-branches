@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_conv.c,v 1.14 2009/08/13 22:34:29 jasper Exp $	*/
+/*	$OpenBSD: msdosfs_conv.c,v 1.15 2012/09/06 19:06:04 krw Exp $	*/
 /*	$NetBSD: msdosfs_conv.c,v 1.24 1997/10/17 11:23:54 ws Exp $	*/
 
 /*-
@@ -209,7 +209,7 @@ dos2unixtime(u_int dd, u_int dt, u_int dh, struct timespec *tsp)
 		 */
 		month = (dd & DD_MONTH_MASK) >> DD_MONTH_SHIFT;
 		if (month == 0) {
-			printf("dos2unixtime(): month value out of range (%ld)\n",
+			printf("dos2unixtime(): month value out of range (%u)\n",
 			    month);
 			month = 1;
 		}
