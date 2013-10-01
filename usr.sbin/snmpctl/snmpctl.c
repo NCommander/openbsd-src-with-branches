@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpctl.c,v 1.15 2013/05/07 09:32:58 jsg Exp $	*/
+/*	$OpenBSD: snmpctl.c,v 1.16 2013/08/16 19:47:43 guenther Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -122,6 +122,10 @@ main(int argc, char *argv[])
 	case SHOW_MIB:
 		show_mib();
 		break;
+	case WALK:
+	case GET:
+		snmpclient(res);
+		break;
 	default:
 		goto connect;
 	}
@@ -165,6 +169,8 @@ main(int argc, char *argv[])
 		break;
 	case NONE:
 	case SHOW_MIB:
+	case WALK:
+	case GET:
 		break;
 	case TRAP:
 		imsg_compose(ibuf, IMSG_SNMP_END, 0, 0, -1, NULL, 0);
@@ -195,6 +201,8 @@ main(int argc, char *argv[])
 				break;
 			case NONE:
 			case SHOW_MIB:
+			case WALK:
+			case GET:
 				break;
 			}
 			imsg_free(&imsg);
@@ -222,7 +230,7 @@ show_mib(void)
 
 	for (oid = NULL; (oid = smi_foreach(oid, 0)) != NULL;) {
 		char	 buf[BUFSIZ];
-		smi_oidstring(&oid->o_id, buf, sizeof(buf));
+		smi_oid2string(&oid->o_id, buf, sizeof(buf), 0);
 		printf("%s\n", buf);
 	}
 }
