@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.52 2013/08/12 20:43:28 bluhm Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.53 2013/09/22 17:28:34 guenther Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -407,7 +407,7 @@ proc_printit(struct proc *p, const char *modif,
 	(*pr)("    estcpu=%u, cpticks=%d, pctcpu=%u.%u, swtime=%u\n",
 	    p->p_estcpu, p->p_cpticks, p->p_pctcpu / 100, p->p_pctcpu % 100,
 	    p->p_swtime);
-	(*pr)("    user=%llu, sys=%llu, intr=%llu\n",
+	(*pr)("    user=%u, sys=%u, intr=%u\n",
 	    p->p_uticks, p->p_sticks, p->p_iticks);
 }
 #include <machine/db_machdep.h>
