@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.187 2013/06/18 18:24:15 krw Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.188 2013/09/10 15:17:46 krw Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -1320,7 +1320,7 @@ checklabel(struct disklabel *lp)
 		part = 'a' + i;
 		pp = &lp->d_partitions[i];
 		if (DL_GETPSIZE(pp) == 0 && DL_GETPOFFSET(pp) != 0)
-			warnx("warning, partition %c: size 0, but offset %lld",
+			warnx("warning, partition %c: size 0, but offset %llu",
 			    part, DL_GETPOFFSET(pp));
 #ifdef SUN_CYLCHECK
 		if (lp->d_flags & D_VENDOR) {
@@ -1360,8 +1360,8 @@ checklabel(struct disklabel *lp)
 		part = 'a' + i;
 		pp = &lp->d_partitions[i];
 		if (DL_GETPSIZE(pp) || DL_GETPOFFSET(pp))
-			warnx("warning, unused partition %c: size %lld "
-			    "offset %lld", part, DL_GETPSIZE(pp),
+			warnx("warning, unused partition %c: size %llu "
+			    "offset %llu", part, DL_GETPSIZE(pp),
 			    DL_GETPOFFSET(pp));
 	}
 	return (errors > 0);
