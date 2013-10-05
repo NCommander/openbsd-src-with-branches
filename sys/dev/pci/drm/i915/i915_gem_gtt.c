@@ -1,4 +1,4 @@
-/*	$OpenBSD: i915_gem_gtt.c,v 1.2 2013/08/09 07:55:42 jsg Exp $	*/
+/*	$OpenBSD: i915_gem_gtt.c,v 1.3 2013/08/13 10:23:49 jsg Exp $	*/
 /*
  * Copyright © 2010 Daniel Vetter
  *
@@ -736,4 +736,6 @@ i915_gem_gtt_rebind_object(struct drm_i915_gem_object *obj,
 	}
 
 	agp_bus_dma_rebind(dev_priv->agpdmat, obj->dmamap, flags);
+
+	obj->has_global_gtt_mapping = 1;
 }
