@@ -1,4 +1,4 @@
-/*	$OpenBSD: k1x-pstate.c,v 1.3 2012/01/07 05:55:08 jsg Exp $ */
+/*	$OpenBSD: k1x-pstate.c,v 1.4 2012/01/31 01:59:20 jsg Exp $ */
 /*
  * Copyright (c) 2011 Bryan Steele <brynet@gmail.com>
  *
@@ -110,7 +110,7 @@ k1x_transition(struct k1x_cpu_state *cstate, int level)
 		wrmsr(MSR_K1X_CONTROL, fid);
 		for (i = 0; i < 100; i++) {
 			msr = rdmsr(MSR_K1X_STATUS);
-			if (msr == fid)
+			if (K1X_FID(msr) == fid)
 				break;
 			DELAY(100);
 		}
