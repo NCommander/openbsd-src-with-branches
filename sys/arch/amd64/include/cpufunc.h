@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.7 2011/03/23 16:54:34 pirofti Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.8 2012/12/05 23:20:10 deraadt Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.3 2003/05/08 10:27:43 fvdl Exp $	*/
 
 /*-
@@ -292,6 +292,21 @@ rdpmc(u_int pmc)
 
 	__asm __volatile("rdpmc" : "=d" (hi), "=a" (lo) : "c" (pmc));
 	return (((uint64_t)hi << 32) | (uint64_t) lo);
+}
+
+static __inline void
+monitor(const volatile void *addr, u_long extensions, u_int hints)
+{
+
+	__asm __volatile("monitor"
+	    : : "a" (addr), "c" (extensions), "d" (hints));
+}
+
+static __inline void
+mwait(u_long extensions, u_int hints)
+{
+
+	__asm __volatile("mwait" : : "a" (hints), "c" (extensions));
 }
 
 /* Break into DDB/KGDB. */
