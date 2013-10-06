@@ -1065,10 +1065,7 @@ ttpoll(dev_t device, int events, struct proc *p)
 		    !ISSET(tp->t_state, TS_CARR_ON)))
 			revents |= events & (POLLIN | POLLRDNORM);
 	}
-	/* NOTE: POLLHUP and POLLOUT/POLLWRNORM are mutually exclusive */
-	if (!ISSET(tp->t_cflag, CLOCAL) && !ISSET(tp->t_state, TS_CARR_ON)) {
-		revents |= POLLHUP;
-	} else if (events & (POLLOUT | POLLWRNORM)) {
+	if (events & (POLLOUT | POLLWRNORM)) {
 		if (tp->t_outq.c_cc <= tp->t_lowat)
 			revents |= events & (POLLOUT | POLLWRNORM);
 	}
