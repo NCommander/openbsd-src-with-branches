@@ -4,7 +4,7 @@ PROG=		main-thread-exited
 
 LIBPTHREAD=	/usr/lib/libpthread.a
 
-LDADD+=		-pthread
+LDADD+=		-lpthread
 DPADD+=		${LIBPTHREAD}
 
 .include <bsd.regress.mk>
