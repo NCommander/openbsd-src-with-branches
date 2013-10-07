@@ -1,4 +1,4 @@
-/* $OpenBSD: fusebuf.h,v 1.3 2013/06/04 18:25:09 tedu Exp $ */
+/* $OpenBSD: fusebuf.h,v 1.4 2013/10/07 18:04:53 syl Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon
  * Copyright (c) 2013 Martin Pieuchot
@@ -136,6 +136,7 @@ struct fusebuf {
 /* fusebuf(9) prototypes */
 struct	fusebuf *fb_setup(size_t, ino_t, int, struct proc *);
 int	fb_queue(dev_t, struct fusebuf *);
+void	fb_delete(struct fusebuf *);
 
 #endif /* _KERNEL */
 #endif /* _SYS_FUSEBUF_H_ */
