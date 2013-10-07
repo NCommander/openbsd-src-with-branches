@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.59 2013/01/02 17:54:46 millert Exp $
+#	$OpenBSD: Makefile,v 1.60 2013/01/03 17:43:34 bluhm Exp $
 
 SUBDIR+= __syscall accept dup2 dup2_self exec_self execve exit extent
 SUBDIR+= fchdir
@@ -10,7 +10,7 @@ SUBDIR+= main-thread-exited
 SUBDIR+= mmap mmap2 mmap3 mmap-fail
 #SUBDIR+= mquery
 SUBDIR+= nanosleep noexec pread preadv ptmget pty pwrite pwritev rcvtimeo
-SUBDIR+= rlimit-file signal signal-stress sigsuspend
+SUBDIR+= rlimit-file signal signal-stress sigprof sigsuspend
 SUBDIR+= sosplice
 SUBDIR+= syscall sysvmsg sysvsem
 SUBDIR+= sysvshm unalign unfdpass wait
