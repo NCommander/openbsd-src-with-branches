@@ -1,4 +1,4 @@
-/*	$OpenBSD: mc68681.c,v 1.1 2013/06/11 21:03:39 miod Exp $	*/
+/*	$OpenBSD: mc68681.c,v 1.2 2013/09/21 20:05:01 miod Exp $	*/
 
 /*
  * Copyright (c) 2013 Miodrag Vallat.
@@ -111,7 +111,9 @@ mc68681_common_attach(struct mc68681_softc *sc)
 }
 
 /*
- * Update the ACR register. This requires both ports to be disabled. Restart timer if necessary.  */
+ * Update the ACR register. This requires both ports to be disabled.
+ * Restart timer if necessary.
+ */
 void
 mc68681_set_acr(struct mc68681_softc *sc)
 {
@@ -611,7 +613,7 @@ mc68681_dcdint(struct mc68681_softc *sc)
 			line = &sc->sc_line[port];
 			tp = line->tty;
 			if (tp != NULL)
-				ttymodem(tp, dcdstate);
+				(*linesw[tp->t_line].l_modem)(tp, dcdstate);
 		}
 	}
 }
