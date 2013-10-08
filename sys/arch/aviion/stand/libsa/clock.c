@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.3 2001/07/04 08:09:29 niklas Exp $	*/
+/*	$OpenBSD: clock.c,v 1.1 2006/05/16 22:48:18 miod Exp $	*/
 
 
 #include <sys/types.h>
@@ -15,8 +15,6 @@
 #define FROMBCD(x)      (((x) >> 4) * 10 + ((x) & 0xf))
 #define TOBCD(x)        (((x) / 10 * 16) + ((x) % 10))
 
-#define SECDAY          (24 * 60 * 60)
-#define SECYR           (SECDAY * 365)
 #define LEAPYEAR(y)     (((y) & 3) == 0)
 
 /*

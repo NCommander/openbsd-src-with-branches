@@ -66,27 +66,30 @@ extern	const char version[];
 char	line[80];
 
 void
-netboot(const char *args, int bootdev, int bootunit, int bootpart)
+boot(const char *args, int bootdev, int bootunit, int bootpart)
 {
 	char *file;
 	int ask = 0;
 	int ret;
 
-	printf(">> OpenBSD/" MACHINE " netboot %s\n", version);
+	printf(">> OpenBSD/" MACHINE " boot %s\n", version);
 
-	ret = parse_args((char *)args, &file, 1);
+	ret = parse_args(args, &file, 1);
 	for (;;) {
 		if (ask) {
 			printf("boot: ");
 			gets(line);
 			if (line[0])
 				ret = parse_args(line, &file, 0);
+			args = file;
 		}
-		if (ret != 0)
-			return;
+		if (ret != 0) {
+			printf("boot: returning to SCM\n");
+			break;
+		}
 
 		exec(file, args, bootdev, bootunit, bootpart);
-		printf("netboot: %s: %s\n", file, strerror(errno));
+		printf("boot: %s: %s\n", file, strerror(errno));
 		ask = 1;
 	}
 }
