@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1.1.1 2006/05/09 19:32:43 miod Exp $
+#	$OpenBSD: Makefile,v 1.2 2012/08/21 14:46:18 pascal Exp $
 
 MAN=	a2coff.8
 MANSUBDIR=aviion
@@ -6,8 +6,10 @@ MANSUBDIR=aviion
 PROG=	a2coff
 BINDIR=/usr/mdec
 NOPIE=
+HOSTCFLAGS?=	-O2 ${PIPE} ${DEBUG}
 .else
 NOPROG=
 .endif
 
 .include <bsd.prog.mk>
+CFLAGS=	${HOSTCFLAGS}

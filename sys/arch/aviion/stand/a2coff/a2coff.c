@@ -1,4 +1,4 @@
-/*	$OpenBSD: a2coff.c,v 1.4 2011/10/09 17:10:39 miod Exp $	*/
+/*	$OpenBSD: a2coff.c,v 1.5 2013/09/21 21:00:02 miod Exp $	*/
 /*
  * Copyright (c) 2006, 2013, Miodrag Vallat
  *
@@ -47,6 +47,8 @@
 #undef	__LDPGSZ
 #define	__LDPGSZ	0x1000
 #endif	/* m88k */
+
+#define	ELFSIZE		32
 #include <sys/exec_elf.h>
 
 #define	ECOFF_ALIGN	0x200
