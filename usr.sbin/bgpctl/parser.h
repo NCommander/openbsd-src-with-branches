@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.24 2012/05/27 18:53:50 claudio Exp $ */
+/*	$OpenBSD: parser.h,v 1.25 2013/03/07 21:28:34 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -52,7 +52,9 @@ enum actions {
 	NETWORK_FLUSH,
 	NETWORK_SHOW,
 	NETWORK_MRT,
-	IRRFILTER
+	IRRFILTER,
+	NETWORK_BULK_ADD,
+	NETWORK_BULK_REMOVE
 };
 
 struct parse_result {
