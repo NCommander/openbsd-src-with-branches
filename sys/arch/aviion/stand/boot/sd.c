@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.1 2013/10/08 21:55:21 miod Exp $	*/
+/*	$OpenBSD: sd.c,v 1.2 2013/10/09 20:03:05 miod Exp $	*/
 
 /*
  * Copyright (c) 2013 Miodrag Vallat.
@@ -20,8 +20,6 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <stand.h>
-
-#include <sys/disklabel.h>
 
 #include "scsi.h"
 #include <scsi/scsi_disk.h>
