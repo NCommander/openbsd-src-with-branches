@@ -1,4 +1,4 @@
-/*	$OpenBSD: kiicvar.h,v 1.1 2007/04/23 16:27:20 deraadt Exp $	*/
+/*	$OpenBSD: kiicvar.h,v 1.2 2007/05/20 23:38:52 thib Exp $	*/
 
 /*-
  * Copyright (c) 2001 Tsubai Masanari.  All rights reserved.
@@ -83,24 +83,20 @@
 #define I2C_READING	0x02
 #define I2C_ERROR	0x04
 
-#define KIIC_MAX_BUSSES	2
-
 struct kiic_softc {
 	struct device sc_dev;
 	paddr_t sc_paddr;
 	u_char *sc_reg;
 	int sc_regstep;
 
+	int sc_busnode;
+	uint32_t sc_busport;
 	struct rwlock sc_buslock;
-	struct kiic_bus {
-		struct kiic_softc *sc;
-		struct i2c_controller i2c_tag;
-		u_int32_t reg;
-	} sc_bus[KIIC_MAX_BUSSES];
+	struct i2c_controller sc_i2c_tag;
 
 	int sc_flags;
 	u_char *sc_data;
-	int sc_resid;
+	u_int sc_resid;
 };
 
 #endif
