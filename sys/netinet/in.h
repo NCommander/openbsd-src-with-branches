@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.h,v 1.95 2012/10/21 13:06:03 benno Exp $	*/
+/*	$OpenBSD: in.h,v 1.96 2013/03/28 15:05:32 bluhm Exp $	*/
 /*	$NetBSD: in.h,v 1.20 1996/02/13 23:41:47 christos Exp $	*/
 
 /*
@@ -840,6 +840,7 @@ int	   in_localaddr(struct in_addr, u_int);
 void	   in_socktrim(struct sockaddr_in *);
 char	  *inet_ntoa(struct in_addr);
 void	   in_proto_cksum_out(struct mbuf *, struct ifnet *);
+void	   in_ifdetach(struct ifnet *);
 
 #define	in_hosteq(s,t)	((s).s_addr == (t).s_addr)
 #define	in_nullhost(x)	((x).s_addr == INADDR_ANY)
