@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi.h,v 1.1 2013/10/09 20:03:05 miod Exp $	*/
+/*	$OpenBSD: scsi.h,v 1.2 2013/10/09 20:08:20 miod Exp $	*/
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
@@ -87,5 +87,8 @@ struct scsi_private {
 	struct disklabel label;
 	int	part;
 };
+
+int	scsi_tur(struct scsi_private *);
+int	scsi_read(struct scsi_private *, daddr32_t, size_t, void *, size_t *);
 
 #include "oosiop.h"
