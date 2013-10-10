@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.1.1.1 2006/05/09 18:19:19 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.2 2011/03/23 16:54:34 pirofti Exp $ */
 /*
  * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -49,7 +49,6 @@ struct confargs {
 void	cmdline_parse(void);
 void	myetheraddr(u_char *);
 
-extern u_int bootdev, bootunit, bootpart;
 extern char bootargs[256];
 
 #endif
