@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.40 2013/10/10 11:50:20 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.41 2013/10/10 11:56:50 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -124,11 +124,6 @@ const struct options_table_entry session_options_table[] = {
 	{ .name = "default-command",
 	  .type = OPTIONS_TABLE_STRING,
 	  .default_str = ""
-	},
-
-	{ .name = "default-path",
-	  .type = OPTIONS_TABLE_STRING,
-	  .default_str = "~"
 	},
 
 	{ .name = "default-shell",
