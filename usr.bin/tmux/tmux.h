@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.418 2013/10/10 11:59:23 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.419 2013/10/10 12:00:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -151,7 +151,7 @@ extern char   **environ;
 	"[layout #{window_layout}] #{window_id}"		\
 	"#{?window_active, (active),}";
 #define LIST_WINDOWS_WITH_SESSION_TEMPLATE			\
-	"#{session_name}: "					\
+	"#{session_name}:"					\
 	"#{window_index}: #{window_name}#{window_flags} "	\
 	"(#{window_panes} panes) "				\
 	"[#{window_width}x#{window_height}] "
