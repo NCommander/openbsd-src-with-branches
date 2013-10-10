@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-suspend-client.c,v 1.8 2013/03/24 09:27:20 nicm Exp $ */
+/* $OpenBSD: cmd-suspend-client.c,v 1.9 2013/03/24 09:54:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -34,7 +34,6 @@ const struct cmd_entry cmd_suspend_client_entry = {
 	"t:", 0, 0,
 	CMD_TARGET_CLIENT_USAGE,
 	0,
-	NULL,
 	NULL,
 	cmd_suspend_client_exec
 };

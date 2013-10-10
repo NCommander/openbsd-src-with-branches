@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-rotate-window.c,v 1.12 2012/07/11 07:10:15 nicm Exp $ */
+/* $OpenBSD: cmd-rotate-window.c,v 1.13 2013/03/24 09:54:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -33,7 +33,6 @@ const struct cmd_entry cmd_rotate_window_entry = {
 	"[-DU] " CMD_TARGET_WINDOW_USAGE,
 	0,
 	cmd_rotate_window_key_binding,
-	NULL,
 	cmd_rotate_window_exec
 };
 

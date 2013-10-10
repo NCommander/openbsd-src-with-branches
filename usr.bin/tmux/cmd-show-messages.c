@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-show-messages.c,v 1.5 2013/03/24 09:27:20 nicm Exp $ */
+/* $OpenBSD: cmd-show-messages.c,v 1.6 2013/03/24 09:54:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -34,7 +34,6 @@ const struct cmd_entry cmd_show_messages_entry = {
 	"t:", 0, 0,
 	CMD_TARGET_CLIENT_USAGE,
 	0,
-	NULL,
 	NULL,
 	cmd_show_messages_exec
 };

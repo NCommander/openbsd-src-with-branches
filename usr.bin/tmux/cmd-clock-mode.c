@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-clock-mode.c,v 1.7 2012/07/11 07:10:15 nicm Exp $ */
+/* $OpenBSD: cmd-clock-mode.c,v 1.8 2013/03/24 09:54:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -31,7 +31,6 @@ const struct cmd_entry cmd_clock_mode_entry = {
 	"t:", 0, 0,
 	CMD_TARGET_PANE_USAGE,
 	0,
-	NULL,
 	NULL,
 	cmd_clock_mode_exec
 };

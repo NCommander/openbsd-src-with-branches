@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-load-buffer.c,v 1.22 2012/07/11 07:10:15 nicm Exp $ */
+/* $OpenBSD: cmd-load-buffer.c,v 1.23 2013/03/24 09:54:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -38,7 +38,6 @@ const struct cmd_entry cmd_load_buffer_entry = {
 	"b:", 1, 1,
 	CMD_BUFFER_USAGE " path",
 	0,
-	NULL,
 	NULL,
 	cmd_load_buffer_exec
 };

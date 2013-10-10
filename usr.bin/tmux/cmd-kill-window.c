@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-kill-window.c,v 1.12 2012/07/11 07:10:15 nicm Exp $ */
+/* $OpenBSD: cmd-kill-window.c,v 1.13 2013/03/24 09:54:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -31,7 +31,6 @@ const struct cmd_entry cmd_kill_window_entry = {
 	"at:", 0, 0,
 	"[-a] " CMD_TARGET_WINDOW_USAGE,
 	0,
-	NULL,
 	NULL,
 	cmd_kill_window_exec
 };

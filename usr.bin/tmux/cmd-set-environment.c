@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-set-environment.c,v 1.7 2012/10/31 19:11:18 okan Exp $ */
+/* $OpenBSD: cmd-set-environment.c,v 1.8 2013/03/24 09:54:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -34,7 +34,6 @@ const struct cmd_entry cmd_set_environment_entry = {
 	"grt:u", 1, 2,
 	"[-gru] " CMD_TARGET_SESSION_USAGE " name [value]",
 	0,
-	NULL,
 	NULL,
 	cmd_set_environment_exec
 };
