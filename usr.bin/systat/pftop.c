@@ -1,4 +1,4 @@
-/* $OpenBSD: pftop.c,v 1.19 2011/04/05 15:07:46 sthen Exp $	 */
+/* $OpenBSD: pftop.c,v 1.20 2011/10/13 18:32:30 claudio Exp $	 */
 /*
  * Copyright (c) 2001, 2007 Can Erkin Acar
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1574,7 +1574,7 @@ pfctl_update_qstats(struct pf_altq_node **root, int *inserts)
 {
 	struct pf_altq_node	*node;
 	struct pfioc_altq	 pa;
-	struct pfioc_qstats	 pq;
+	struct pfioc_altqstats	 pq;
 	u_int32_t		 nr;
 	struct queue_stats	 qstats;
 	u_int32_t		 nr_queues;
