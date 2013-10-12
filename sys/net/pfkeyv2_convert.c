@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_convert.c,v 1.39 2013/03/28 23:10:05 tedu Exp $	*/
+/*	$OpenBSD: pfkeyv2_convert.c,v 1.40 2013/06/05 02:03:15 reyk Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@keromytis.org)
  *
@@ -994,7 +994,7 @@ import_tag(struct tdb *tdb, struct sadb_x_tag *stag)
 
 	if (stag) {
 		s = (char *)(stag + 1);
-		tdb->tdb_tag = pf_tagname2tag(s);
+		tdb->tdb_tag = pf_tagname2tag(s, 1);
 	}
 }
 
