@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2006/10/30 20:25:48 otto Exp $
+#	$OpenBSD: Makefile,v 1.15 2013/07/05 21:29:51 miod Exp $
 
 .include <bsd.own.mk>
 
@@ -6,7 +6,6 @@ PROG=	config
 SRCS=	files.c gram.y hash.c main.c mkheaders.c mkioconf.c mkmakefile.c \
 	mkswap.c pack.c scan.l sem.c util.c \
 	ukc.c misc.c ukcutil.c cmd.c exec.c
-CFLAGS+=-DELF_SUPPORT
 SRCS+=  exec_elf.c
 
 CFLAGS+=-I${.CURDIR} -I.
