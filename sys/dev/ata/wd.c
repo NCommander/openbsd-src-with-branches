@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.111 2013/09/15 13:44:53 krw Exp $ */
+/*	$OpenBSD: wd.c,v 1.112 2013/09/27 12:12:16 krw Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -879,7 +879,7 @@ wdsize(dev_t dev)
 {
 	struct wd_softc *wd;
 	int part, omask;
-	int64_t size;
+	daddr_t size;
 
 	WDCDEBUG_PRINT(("wdsize\n"), DEBUG_FUNCS);
 
