@@ -1,4 +1,4 @@
-/*	$OpenBSD: headersize.c,v 1.8 2005/08/10 16:58:42 todd Exp $	*/
+/*	$OpenBSD: headersize.c,v 1.9 2008/01/29 13:02:31 krw Exp $	*/
 /*	$NetBSD: headersize.c,v 1.5 1996/09/23 04:32:59 cgd Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
 #include <sys/types.h>
 #include <sys/fcntl.h>
 #include <sys/exec.h>
-#include <sys/exec_ecoff.h>
 #include <sys/exec_elf.h>
 
 #include <unistd.h>
