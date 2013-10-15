@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2007/11/26 08:36:49 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 2012/08/21 14:46:18 pascal Exp $
 
 NOMAN=	no man
 S	=${.CURDIR}/../../../..
@@ -37,7 +37,7 @@ LDADD+=	$(SALIB)
 all:	${PROG}
 
 clean::
-	rm -f a.out [Ee]rrs mklog core *.core \
+	rm -f a.out [Ee]rrs mklog *.core \
 	    ${PROG} ${OBJS} ${LOBJS} ${CLEANFILES}
 
 realinstall:
