@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.16 2013/06/03 16:53:49 claudio Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.17 2013/06/04 02:25:28 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -263,7 +263,6 @@ main(int argc, char *argv[])
 
 	/* remove unneded stuff from config */
 		/* ... */
-
 
 	event_dispatch();
 

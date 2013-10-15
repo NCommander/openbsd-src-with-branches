@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde.c,v 1.23 2013/06/03 17:01:59 claudio Exp $ */
+/*	$OpenBSD: lde.c,v 1.24 2013/06/04 00:45:00 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -703,7 +703,7 @@ lde_map_del(struct lde_nbr *ln, struct lde_map *me, int sent)
 		fec_remove(&ln->sent_map, &me->fec);
 	else
 		fec_remove(&ln->recv_map, &me->fec);
-	
+
 	lde_map_free(me);
 }
 
@@ -747,7 +747,7 @@ lde_req_del(struct lde_nbr *ln, struct lde_req *lre, int sent)
 		fec_remove(&ln->sent_req, &lre->fec);
 	else
 		fec_remove(&ln->recv_req, &lre->fec);
-	
+
 	free(lre);
 }
 
