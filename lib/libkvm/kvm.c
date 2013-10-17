@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm.c,v 1.48 2009/10/27 23:59:28 deraadt Exp $ */
+/*	$OpenBSD: kvm.c,v 1.49 2011/03/12 04:54:28 guenther Exp $ */
 /*	$NetBSD: kvm.c,v 1.43 1996/05/05 04:31:59 gwr Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #include <sys/sysctl.h>
 
 #include <sys/core.h>
-#include <sys/exec_aout.h>
+#include <sys/exec.h>
 #include <sys/kcore.h>
 
 #include <ctype.h>

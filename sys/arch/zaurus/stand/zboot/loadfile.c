@@ -1,5 +1,5 @@
 /* $NetBSD: loadfile.c,v 1.10 2000/12/03 02:53:04 tsutsui Exp $ */
-/* $OpenBSD: loadfile.c,v 1.3 2005/05/24 20:38:20 uwe Exp $ */
+/* $OpenBSD: loadfile.c,v 1.4 2008/06/26 05:42:14 ray Exp $ */
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -97,7 +97,7 @@ static int coff_exec(int, struct ecoff_exechdr *, u_long *, int);
 static int elf_exec(int, Elf_Ehdr *, u_long *, int);
 #endif
 #ifdef BOOT_AOUT
-#include <sys/exec_aout.h>
+#include <sys/exec.h>
 static int aout_exec(int, struct exec *, u_long *, int);
 #endif
 #ifdef BOOT_ZBOOT

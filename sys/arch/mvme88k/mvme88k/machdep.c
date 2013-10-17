@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.255 2013/06/11 16:42:10 deraadt Exp $	*/
+/* $OpenBSD: machdep.c,v 1.256 2013/09/28 12:40:31 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -712,15 +712,6 @@ nmihand(void *frame)
 		m88k_db_trap(T_KDB_ENTRY, (struct trapframe *)frame);
 	}
 #endif
-}
-
-int
-cpu_exec_aout_makecmds(p, epp)
-	struct proc *p;
-	struct exec_package *epp;
-{
-
-	return (ENOEXEC);
 }
 
 int

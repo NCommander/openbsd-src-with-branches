@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_sym.c,v 1.31 2005/09/29 05:57:14 deraadt Exp $	*/
+/*	$OpenBSD: db_sym.c,v 1.32 2006/03/13 06:23:20 jsg Exp $	*/
 /*	$NetBSD: db_sym.c,v 1.24 2000/08/11 22:50:47 tv Exp $	*/
 
 /* 
@@ -64,9 +64,6 @@ extern char end[];
 const db_symformat_t *db_symformats[] = {
 #ifdef DB_ELF_SYMBOLS
 	&db_symformat_elf,
-#endif
-#ifdef DB_AOUT_SYMBOLS
-	&db_symformat_aout,
 #endif
 	NULL,
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.13 2009/10/27 23:59:52 deraadt Exp $ */
+/*	$OpenBSD: file.c,v 1.14 2013/07/05 21:02:07 miod Exp $ */
 
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
@@ -31,8 +31,8 @@
 #include <stddef.h>
 
 #ifndef NOAOUT
-#if defined(__NetBSD__) || defined(__OpenBSD__)
-#include <sys/exec_aout.h>
+#if defined(__OpenBSD__)
+#include <sys/exec.h>
 #endif
 #if defined(__bsdi__)
 #define NOAOUT
@@ -52,7 +52,7 @@
 #endif
 
 #ifndef NOELF
-#if defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__OpenBSD__)
 #include <sys/exec_elf.h>
 #else
 #define NOELF

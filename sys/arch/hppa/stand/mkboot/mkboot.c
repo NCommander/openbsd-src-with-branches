@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkboot.c,v 1.15 2004/11/22 18:41:42 mickey Exp $	*/
+/*	$OpenBSD: mkboot.c,v 1.16 2009/10/27 23:59:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -42,7 +42,7 @@
 #include <err.h>
 #endif
 
-#include <sys/exec_aout.h>
+#include <sys/exec.h>
 #include <sys/exec_elf.h>
 
 #ifndef hppa

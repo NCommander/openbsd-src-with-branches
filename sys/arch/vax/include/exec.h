@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.8 2008/03/30 18:24:30 miod Exp $	*/
+/*	$OpenBSD: exec.h,v 1.9 2011/03/23 16:54:37 pirofti Exp $	*/
 /*	$NetBSD: exec.h,v 1.4 1995/09/23 14:57:40 ragge Exp $	*/
 
 /*
@@ -47,10 +47,7 @@ struct relocation_info_vax {
 };
 #define relocation_info	relocation_info_vax
 
-#define _NLIST_DO_AOUT
 #define _NLIST_DO_ELF
-
-#define _KERN_DO_AOUT
 #define _KERN_DO_ELF
 
 #define ARCH_ELFSIZE		32

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.15 2011/03/23 16:54:35 pirofti Exp $ */
+/*	$OpenBSD: db_machdep.h,v 1.16 2013/01/05 11:20:56 miod Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -92,12 +92,8 @@ void	m88k_print_instruction(int, u_int, u_int32_t);	/* db_disasm.c */
 /* machine specific commands have been added to ddb */
 #define DB_MACHINE_COMMANDS
 
-#ifdef __ELF__
 #define	DB_ELF_SYMBOLS
 #define	DB_ELFSIZE	32
-#else
-#define	DB_AOUT_SYMBOLS
-#endif
 
 #ifdef MULTIPROCESSOR
 extern cpuid_t ddb_mp_nextcpu;

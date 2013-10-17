@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopa.out.c,v 1.11 2010/11/19 21:09:20 miod Exp $ */
+/*	$OpenBSD: mopa.out.c,v 1.12 2013/07/05 21:02:07 miod Exp $ */
 
 /* mopa.out - Convert a Unix format kernel into something that
  * can be transferred via MOP.
@@ -51,8 +51,8 @@
 #include "common/common.h"
 #include "common/mopdef.h"
 #include "common/file.h"
-#if defined(__NetBSD__) || defined(__OpenBSD__)
-#include <sys/exec_aout.h>
+#if defined(__OpenBSD__)
+#include <sys/exec.h>
 #endif
 #if defined(__FreeBSD__)
 #include <sys/imgact_aout.h>
