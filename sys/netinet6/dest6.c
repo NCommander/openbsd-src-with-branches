@@ -1,4 +1,4 @@
-/*	$OpenBSD: dest6.c,v 1.10 2003/05/14 14:24:44 itojun Exp $	*/
+/*	$OpenBSD: dest6.c,v 1.11 2008/06/11 19:00:50 mcbride Exp $	*/
 /*	$KAME: dest6.c,v 1.25 2001/02/22 01:39:16 itojun Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 #include <net/route.h>
 
 #include <netinet/in.h>
-#include <netinet/in_var.h>
 #include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>
 #include <netinet/icmp6.h>

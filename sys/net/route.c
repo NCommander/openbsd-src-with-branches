@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.144 2013/03/28 23:10:05 tedu Exp $	*/
+/*	$OpenBSD: route.c,v 1.145 2013/08/28 06:58:57 mpi Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -119,7 +119,6 @@
 #include <net/raw_cb.h>
 
 #include <netinet/in.h>
-#include <netinet/in_var.h>
 
 #ifdef MPLS
 #include <netmpls/mpls.h>

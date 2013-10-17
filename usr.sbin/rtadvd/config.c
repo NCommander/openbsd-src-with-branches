@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.38 2013/06/01 01:30:53 brad Exp $	*/
+/*	$OpenBSD: config.c,v 1.39 2013/06/01 21:57:12 brad Exp $	*/
 /*	$KAME: config.c,v 1.62 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #include <net/if_dl.h>
 
 #include <netinet/in.h>
-#include <netinet/in_var.h>
+#include <netinet6/in6_var.h>
 #include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>
 #include <netinet/icmp6.h>

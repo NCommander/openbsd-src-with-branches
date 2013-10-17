@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.34 2013/04/24 10:20:15 mpi Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.35 2013/07/10 07:30:39 mpi Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -38,6 +38,7 @@
 #endif
 
 #ifdef INET6
+#include <netinet6/in6_var.h>
 #include <netinet/ip6.h>
 #ifndef INET
 #include <netinet/in.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_forward.c,v 1.60 2013/07/04 19:10:41 sf Exp $	*/
+/*	$OpenBSD: ip6_forward.c,v 1.61 2013/07/31 15:41:52 mikeb Exp $	*/
 /*	$KAME: ip6_forward.c,v 1.75 2001/06/29 12:42:13 jinmei Exp $	*/
 
 /*
@@ -49,8 +49,8 @@
 #include <net/route.h>
 
 #include <netinet/in.h>
-#include <netinet/in_var.h>
 #include <netinet/ip_var.h>
+#include <netinet6/in6_var.h>
 #include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>
 #include <netinet/icmp6.h>

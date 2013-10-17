@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_var.h,v 1.21 2013/08/28 21:19:16 bluhm Exp $	*/
+/*	$OpenBSD: in_var.h,v 1.22 2013/10/14 11:07:42 mpi Exp $	*/
 /*	$NetBSD: in_var.h,v 1.16 1996/02/13 23:42:15 christos Exp $	*/
 
 /*
@@ -187,9 +187,5 @@ int	inet_nat64(int, const void *, void *, const void *, u_int8_t);
 int	inet_nat46(int, const void *, void *, const void *, u_int8_t);
 int	in_mask2len(struct in_addr *);
 #endif
-
-
-/* INET6 stuff */
-#include <netinet6/in6_var.h>
 
 #endif /* _NETINET_IN_VAR_H_ */

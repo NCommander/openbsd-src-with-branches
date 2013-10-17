@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.160 2013/07/23 22:47:10 bluhm Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.161 2013/10/01 20:15:57 sf Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -48,7 +48,6 @@
 #include <net/if_pflog.h>
 
 #include <netinet/in.h>
-#include <netinet/in_var.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>

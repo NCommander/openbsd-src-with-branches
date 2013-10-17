@@ -1,4 +1,4 @@
-/*	$OpenBSD: frag6.c,v 1.47 2013/06/11 18:15:54 deraadt Exp $	*/
+/*	$OpenBSD: frag6.c,v 1.48 2013/08/27 08:20:32 mpi Exp $	*/
 /*	$KAME: frag6.c,v 1.40 2002/05/27 21:40:31 itojun Exp $	*/
 
 /*
@@ -46,7 +46,7 @@
 #include <net/route.h>
 
 #include <netinet/in.h>
-#include <netinet/in_var.h>
+#include <netinet6/in6_var.h>
 #include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>
 #include <netinet/icmp6.h>

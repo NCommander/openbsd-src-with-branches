@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgestp.c,v 1.43 2013/06/20 09:38:24 mpi Exp $	*/
+/*	$OpenBSD: bridgestp.c,v 1.44 2013/06/20 12:03:40 mpi Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -60,7 +60,6 @@ __FBSDID("$FreeBSD: /repoman/r/ncvs/src/sys/net/bridgestp.c,v 1.25 2006/11/03 03
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif

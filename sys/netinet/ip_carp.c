@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.209 2013/06/20 12:03:40 mpi Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.210 2013/08/12 06:24:28 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -78,6 +78,7 @@
 #endif
 
 #ifdef INET6
+#include <netinet6/in6_var.h>
 #include <netinet/icmp6.h>
 #include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>

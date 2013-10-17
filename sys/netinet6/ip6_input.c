@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.113 2013/06/13 12:17:23 mpi Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.114 2013/06/26 09:12:40 henning Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -113,7 +113,6 @@
 #endif
 
 #if NCARP > 0
-#include <netinet/in_var.h>
 #include <netinet/ip_carp.h>
 #endif
 

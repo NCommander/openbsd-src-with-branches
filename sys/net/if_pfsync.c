@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.200 2013/06/20 12:03:40 mpi Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.201 2013/08/07 05:39:05 dlg Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -73,6 +73,7 @@
 #endif
 
 #ifdef INET6
+#include <netinet6/in6_var.h>
 #include <netinet/ip6.h>
 #include <netinet/in_pcb.h>
 #include <netinet/icmp6.h>
