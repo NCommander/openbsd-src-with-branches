@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.9 2012/08/22 17:19:35 pascal Exp $	*/
+/*	$OpenBSD: asm.h,v 1.10 2013/03/28 17:41:04 martynas Exp $	*/
 /*	$NetBSD: asm.h,v 1.1 1996/09/30 16:34:20 ws Exp $	*/
 
 /*
@@ -56,14 +56,6 @@
 #define PIC_PLT(x)	x
 #define PIC_GOT(x)	x
 #define PIC_GOTOFF(x)	x
-#endif
-
-#ifdef TARGET_AOUT
-#ifdef __STDC__
-# define _C_LABEL(x)	_ ## x
-#else
-# define _C_LABEL(x)	_/**/x
-#endif
 #endif
 
 #ifdef TARGET_ELF
