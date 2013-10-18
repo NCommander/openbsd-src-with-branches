@@ -1,4 +1,4 @@
-/*	$OpenBSD: sti.c,v 1.64 2011/09/19 11:15:18 miod Exp $	*/
+/*	$OpenBSD: sti.c,v 1.65 2012/05/06 13:23:54 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2000-2003 Michael Shalayeff
@@ -1181,7 +1181,7 @@ sti_mapchar(void *v, int uni, u_int *index)
 	}
 
 	if (c == -1 || c < fp->first || c > fp->last) {
-		*index = ' ';
+		*index = '?';
 		return (0);
 	}
 
