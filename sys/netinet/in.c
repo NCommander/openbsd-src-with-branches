@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.c,v 1.85 2013/09/26 08:53:17 mpi Exp $	*/
+/*	$OpenBSD: in.c,v 1.86 2013/10/09 09:33:43 mpi Exp $	*/
 /*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
@@ -999,7 +999,7 @@ in_delmulti(struct in_multi *inm)
 		 * Unlink from list.
 		 */
 		LIST_REMOVE(inm, inm_list);
-		ifp = inm->inm_ia->ia_ifp;
+		ifp = inm->inm_ifp;
 		ifafree(&inm->inm_ia->ia_ifa);
 
 		if (ifp) {
