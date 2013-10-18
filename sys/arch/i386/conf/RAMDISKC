@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISKC,v 1.104 2013/08/13 16:26:25 mikeb Exp $
+#	$OpenBSD: RAMDISKC,v 1.105 2013/08/18 19:16:46 deraadt Exp $
 
 machine		i386		# architecture, used by config; REQUIRED
 
@@ -188,7 +188,7 @@ com2	at isa? port 0x3e8 irq 5
 scsibus* at scsi?
 sd*	at scsibus?		# SCSI disk drives
 #st*	at scsibus?		# SCSI tape drives
-cd*	at scsibus?		# SCSI CD-ROM drives
+#cd*	at scsibus?		# SCSI CD-ROM drives
 #ch*	at scsibus?		# SCSI autochangers
 #uk*	at scsibus?		# SCSI unknown devices
 
