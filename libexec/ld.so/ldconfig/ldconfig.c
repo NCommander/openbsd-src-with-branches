@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldconfig.c,v 1.28 2010/12/13 20:51:33 espie Exp $	*/
+/*	$OpenBSD: ldconfig.c,v 1.29 2012/09/11 21:20:14 espie Exp $	*/
 
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
@@ -45,7 +45,6 @@
 #include <ar.h>
 #include <ranlib.h>
 #include <a.out.h>
-#include <stab.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
