@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.30 2013/04/19 21:25:39 sthen Exp $ */
+/*	$OpenBSD: dispatch.c,v 1.31 2013/05/16 19:24:12 gerhard Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -147,7 +147,7 @@ discover_interfaces(int *rdomain)
 			struct iaddr addr;
 
 			/* Get a pointer to the address... */
-			bcopy(ifa->ifa_addr, &foo, sizeof(foo));
+			memcpy(&foo, ifa->ifa_addr, sizeof(foo));
 
 			/* We don't want the loopback interface. */
 			if (foo.sin_addr.s_addr == htonl (INADDR_LOOPBACK))
