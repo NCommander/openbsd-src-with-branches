@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC-OMAP,v 1.1 2013/09/04 14:38:25 patrick Exp $
+# $OpenBSD: GENERIC-OMAP,v 1.2 2013/09/05 11:48:42 patrick Exp $
 #
 # GENERIC machine description file
 #
@@ -64,6 +64,7 @@ amptimer*	at cortex?
 
 # OMAP3 only
 intc*		at omap?			# interrupt controller
+edma*		at omap?			# dma controller
 
 # OMAP on-chip devices
 prcm*		at omap?			# power/clock controller
