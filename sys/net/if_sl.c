@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sl.c,v 1.47 2013/03/28 16:55:27 deraadt Exp $	*/
+/*	$OpenBSD: if_sl.c,v 1.48 2013/04/16 12:05:04 mpi Exp $	*/
 /*	$NetBSD: if_sl.c,v 1.39.4.1 1996/06/02 16:26:31 thorpej Exp $	*/
 
 /*
@@ -894,7 +894,6 @@ slioctl(ifp, cmd, data)
 {
 	struct sl_softc *sc = ifp->if_softc;
 	struct ifaddr *ifa = (struct ifaddr *)data;
-	struct ifreq *ifr;
 	int s = splnet(), error = 0;
 	struct sl_stats *slsp;
 
@@ -914,22 +913,6 @@ slioctl(ifp, cmd, data)
 
 	case SIOCADDMULTI:
 	case SIOCDELMULTI:
-		ifr = (struct ifreq *)data;
-		if (ifr == 0) {
-			error = EAFNOSUPPORT;		/* XXX */
-			break;
-		}
-		switch (ifr->ifr_addr.sa_family) {
-
-#ifdef INET
-		case AF_INET:
-			break;
-#endif
-
-		default:
-			error = EAFNOSUPPORT;
-			break;
-		}
 		break;
 
 	case SIOCGSLSTATS:
