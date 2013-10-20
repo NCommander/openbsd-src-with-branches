@@ -2121,7 +2121,6 @@ in_proto_cksum_out(struct mbuf *m, struct ifnet *ifp)
 
 		hlen = ip->ip_hl << 2;
 		icp = (struct icmp *)(mtod(m, caddr_t) + hlen);
-		icp->icmp_cksum = 0;
 		icp->icmp_cksum = in4_cksum(m, 0, hlen,
 		    ntohs(ip->ip_len) - hlen);
 		m->m_pkthdr.csum_flags &= ~M_ICMP_CSUM_OUT; /* Clear */
