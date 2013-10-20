@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.261 2013/10/12 12:13:11 henning Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.262 2013/10/17 16:27:42 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -780,13 +780,14 @@ int
 pf_commit_queues(char *anchor)
 {
 	struct pf_queuehead	*qswap;
+	int error;
 
 	/* queue defs only in the main ruleset */
 	if (anchor[0])
 		return (0);
 
-	if (pf_remove_queues() != 0)
-		return (-1);
+	if ((error = pf_remove_queues()) != 0)
+		return (error);
 
 	/* swap */
 	qswap = pf_queues_active;
