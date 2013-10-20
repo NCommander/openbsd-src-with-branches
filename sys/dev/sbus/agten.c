@@ -1,4 +1,4 @@
-/*	$OpenBSD: agten.c,v 1.8 2008/12/25 23:56:31 miod Exp $	*/
+/*	$OpenBSD: agten.c,v 1.9 2008/12/27 17:23:03 miod Exp $	*/
 /*
  * Copyright (c) 2002, 2003, Miodrag Vallat.
  * All rights reserved.
@@ -115,15 +115,8 @@ int agten_putcmap(struct agten_cmap *, struct wsdisplay_cmap *);
 void agten_loadcmap(struct agten_softc *, u_int, u_int);
 
 struct wsdisplay_accessops agten_accessops = {
-	agten_ioctl,
-	agten_mmap,
-	NULL,	/* alloc_screen */
-	NULL,	/* free_screen */
-	NULL,	/* show_screen */
-	NULL,   /* load_font */
-	NULL,   /* scrollback */
-	NULL,   /* getchar */
-	NULL,	/* burner */
+	.ioctl = agten_ioctl,
+	.mmap = agten_mmap
 };
 
 int agtenmatch(struct device *, void *, void *);

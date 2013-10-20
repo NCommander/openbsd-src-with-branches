@@ -1,4 +1,4 @@
-/*	$OpenBSD: tvtwo.c,v 1.16 2008/12/25 23:56:29 miod Exp $	*/
+/*	$OpenBSD: tvtwo.c,v 1.17 2008/12/26 22:30:21 miod Exp $	*/
 
 /*
  * Copyright (c) 2003, 2006, 2008, Miodrag Vallat.
@@ -125,16 +125,9 @@ paddr_t	tvtwo_mmap(void *, off_t, int);
 void	tvtwo_burner(void *, u_int, u_int);
 
 struct wsdisplay_accessops tvtwo_accessops = {
-	tvtwo_ioctl,
-	tvtwo_mmap,
-	NULL,	/* alloc_screen */
-	NULL,	/* free_screen */
-	NULL,	/* show_screen */
-	NULL,	/* load_font */
-	NULL,	/* scrollback */
-	NULL,	/* getchar */
-	tvtwo_burner,
-	NULL	/* pollc */
+	.ioctl = tvtwo_ioctl,
+	.mmap = tvtwo_mmap,
+	.burn_screen = tvtwo_burner
 };
 
 void	tvtwo_directcmap(struct tvtwo_softc *);

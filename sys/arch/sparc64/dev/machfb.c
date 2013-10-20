@@ -1,4 +1,4 @@
-/*	$OpenBSD: machfb.c,v 1.6 2009/09/05 14:09:35 miod Exp $	*/
+/*	$OpenBSD: machfb.c,v 1.7 2011/02/21 07:55:27 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2009 Mark Kettenis.
@@ -194,16 +194,8 @@ int	machfb_ioctl(void *, u_long, caddr_t, int, struct proc *);
 paddr_t	machfb_mmap(void *, off_t, int);
 
 struct wsdisplay_accessops machfb_accessops = {
-	machfb_ioctl,
-	machfb_mmap,
-	NULL,	/* alloc_screen */
-	NULL,	/* free_screen */
-	NULL,	/* show_screen */
-	NULL,	/* load_font */
-	NULL,	/* scrollback */
-	NULL,	/* getchar */
-	NULL,	/* burner */
-	NULL	/* pollc */
+	.ioctl = machfb_ioctl,
+	.mmap = machfb_mmap
 };
 
 int	machfb_match(struct device *, void *, void *);
