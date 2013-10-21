@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsol.c,v 1.17 2009/02/05 09:57:12 chl Exp $	*/
+/*	$OpenBSD: rtsol.c,v 1.18 2013/10/21 08:46:07 phessler Exp $	*/
 /*	$KAME: rtsol.c,v 1.15 2002/05/31 10:10:03 itojun Exp $	*/
 
 /*
@@ -71,7 +71,6 @@ static struct iovec sndiov[2];
 static struct sockaddr_in6 from;
 
 int rssock;
-extern u_int rdomain;
 
 static struct sockaddr_in6 sin6_allrouters = {sizeof(sin6_allrouters), AF_INET6};
 
