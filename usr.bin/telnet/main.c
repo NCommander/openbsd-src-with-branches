@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.19 2009/10/27 23:59:44 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.20 2010/07/03 04:44:51 guenther Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1996/02/28 21:04:05 thorpej Exp $	*/
 
 /*
@@ -173,6 +173,7 @@ main(argc, argv)
 	 * passed 
 	 */
 	autologin = -1;
+	rtableid = getrtable();
 
 	while ((ch = getopt(argc, argv, "4678DEKLS:X:ab:cde:fFk:l:n:rt:V:x"))
 	    != -1) {
