@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_var.h,v 1.45 2013/04/10 08:50:59 mpi Exp $	*/
+/*	$OpenBSD: ip_var.h,v 1.46 2013/08/13 09:52:53 mpi Exp $	*/
 /*	$NetBSD: ip_var.h,v 1.16 1996/02/13 23:43:20 christos Exp $	*/
 
 /*
@@ -151,6 +151,8 @@ extern int ip_defttl;			/* default IP ttl */
 #ifdef MROUTING
 extern struct socket *ip_mrouter;	/* multicast routing daemon */
 #endif
+
+#define IPMTUDISCTIMEOUT (10 * 60)	/* as per RFC 1191 */
 
 extern int ip_mtudisc;			/* mtu discovery */
 extern u_int ip_mtudisc_timeout;	/* seconds to timeout mtu discovery */
