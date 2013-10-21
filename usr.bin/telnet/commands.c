@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.52 2010/07/03 04:44:51 guenther Exp $	*/
+/*	$OpenBSD: commands.c,v 1.53 2011/06/21 17:31:07 mikeb Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -2396,11 +2396,9 @@ tn(argc, argv)
 	if (net < 0)
 	    continue;
 
-	if (rtableid) {
-		if (setsockopt(net, SOL_SOCKET, SO_RTABLE, &rtableid,
-		    sizeof(rtableid)) == -1)
-			perror("setsockopt (SO_RTABLE)");
-	}
+	if (setsockopt(net, SOL_SOCKET, SO_RTABLE, &rtableid,
+	    sizeof(rtableid)) == -1)
+		perror("setsockopt (SO_RTABLE)");
 
 	if (aliasp) {
 	    struct addrinfo ahints, *ares;
