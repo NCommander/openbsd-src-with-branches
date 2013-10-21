@@ -1,4 +1,4 @@
-/*	$OpenBSD: slowcgi.c,v 1.19 2013/10/20 09:36:29 benno Exp $ */
+/*	$OpenBSD: slowcgi.c,v 1.20 2013/10/20 16:47:24 deraadt Exp $ */
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
  * Copyright (c) 2013 Florian Obser <florian@openbsd.org>
@@ -70,7 +70,7 @@
 
 #define FD_RESERVE		5
 #define FD_NEEDED		6
-volatile int cgi_inflight = 0;
+int cgi_inflight = 0;
 
 struct listener {
 	struct event	ev, pause;
