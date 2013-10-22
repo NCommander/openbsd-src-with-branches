@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_cd9660.c,v 1.2 2009/06/20 20:20:43 millert Exp $	*/
+/*	$OpenBSD: kvm_cd9660.c,v 1.3 2009/10/27 23:59:28 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -35,7 +35,7 @@
 #include "kvm_private.h"
 
 int
-_kvm_stat_cd9660(kvm_t *kd, struct kinfo_file2 *kf, struct vnode *vp)
+_kvm_stat_cd9660(kvm_t *kd, struct kinfo_file *kf, struct vnode *vp)
 {
 	struct iso_node inode;
 
