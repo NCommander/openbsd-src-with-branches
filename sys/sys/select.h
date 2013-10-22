@@ -1,4 +1,4 @@
-/*	$OpenBSD: select.h,v 1.10 2012/12/05 23:20:24 deraadt Exp $	*/
+/*	$OpenBSD: select.h,v 1.11 2013/04/29 17:06:20 matthew Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -76,13 +76,8 @@ typedef	struct fd_set {
 	((p)->fds_bits[(n) / __NFDBITS] &= ~(1 << ((n) % __NFDBITS)))
 #define	FD_ISSET(n, p) \
 	((p)->fds_bits[(n) / __NFDBITS] & (1 << ((n) % __NFDBITS)))
-#ifdef _KERNEL
-#define	FD_COPY(f, t)	bcopy(f, t, sizeof(*(f)))
-#define	FD_ZERO(p)	bzero(p, sizeof(*(p)))
-#else
 #define	FD_COPY(f, t)	memcpy(t, f, sizeof(*(f)))
 #define	FD_ZERO(p)	memset(p, 0, sizeof(*(p)))
-#endif
 
 #if __BSD_VISIBLE
 #define	NBBY	__NBBY
