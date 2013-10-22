@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.8 2013/10/19 14:46:31 mpi Exp $	*/
+/*	$OpenBSD: if_vxlan.c,v 1.9 2013/10/19 18:22:37 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -224,7 +224,7 @@ vxlan_multicast_join(struct ifnet *ifp, struct sockaddr_in *src,
 	    (mifp->if_flags & IFF_MULTICAST) == 0)
 		return (EADDRNOTAVAIL);
 
- 	if ((imo->imo_membership[0] =
+	if ((imo->imo_membership[0] =
 	    in_addmulti(&dst->sin_addr, mifp)) == NULL)
 		return (ENOBUFS);
 
