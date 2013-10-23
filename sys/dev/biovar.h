@@ -1,4 +1,4 @@
-/*	$OpenBSD: biovar.h,v 1.39 2011/04/14 02:41:40 marco Exp $	*/
+/*	$OpenBSD: biovar.h,v 1.42 2012/01/20 12:38:19 jsing Exp $	*/
 
 /*
  * Copyright (c) 2002 Niklas Hallqvist.  All rights reserved.
@@ -139,6 +139,13 @@ struct bioc_vol {
 	u_quad_t	bv_size;	/* size of the disk */
 	int		bv_level;	/* raid level */
 	int		bv_nodisk;	/* nr of drives */
+	int		bv_cache;	/* cache mode */
+#define BIOC_CVUNKNOWN		0x00
+#define BIOC_CVUNKNOWN_S	""
+#define BIOC_CVWRITEBACK	0x01
+#define BIOC_CVWRITEBACK_S	"WB"
+#define BIOC_CVWRITETHROUGH	0x02
+#define BIOC_CVWRITETHROUGH_S	"WT"
 
 	char		bv_dev[16];	/* device */
 	char		bv_vendor[32];	/* scsi string */
