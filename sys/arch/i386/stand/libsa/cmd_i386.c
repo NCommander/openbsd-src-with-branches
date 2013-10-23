@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd_i386.c,v 1.30 2010/07/02 00:36:52 weingart Exp $	*/
+/*	$OpenBSD: cmd_i386.c,v 1.32 2012/10/30 14:06:29 jsing Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -160,10 +160,13 @@ Xmemory(void)
 			/* Size the size */
 			switch (*p) {
 				case 'G':
+				case 'g':
 					size *= 1024;
 				case 'M':
+				case 'm':
 					size *= 1024;
 				case 'K':
+				case 'k':
 					size *= 1024;
 					p++;
 			}
