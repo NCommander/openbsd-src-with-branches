@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflog.c,v 1.54 2013/06/26 09:12:39 henning Exp $	*/
+/*	$OpenBSD: if_pflog.c,v 1.55 2013/10/17 16:27:41 bluhm Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -51,7 +51,6 @@
 
 #ifdef	INET
 #include <netinet/in.h>
-#include <netinet/in_var.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>

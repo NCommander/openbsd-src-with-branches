@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.115 2013/06/01 16:29:00 bluhm Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.116 2013/10/17 16:27:44 bluhm Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -59,7 +59,6 @@
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
-#include <netinet/in_var.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>

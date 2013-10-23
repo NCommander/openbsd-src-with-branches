@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.850 2013/10/22 15:35:57 lteo Exp $ */
+/*	$OpenBSD: pf.c,v 1.851 2013/10/23 11:06:56 mikeb Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -62,7 +62,6 @@
 #include <net/radix_mpath.h>
 
 #include <netinet/in.h>
-#include <netinet/in_var.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.117 2013/10/17 16:27:41 bluhm Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.118 2013/10/19 14:46:31 mpi Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -65,7 +65,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
-#include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif
