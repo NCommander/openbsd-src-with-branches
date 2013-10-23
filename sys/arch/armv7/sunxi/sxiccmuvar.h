@@ -1,4 +1,4 @@
-/*	$OpenBSD: intc.h,v 1.3 2013/05/21 15:43:40 rapha Exp $ */
+/*	$OpenBSD: sxiccmuvar.h,v 1.1 2013/10/22 13:22:19 jasper Exp $	*/
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -15,33 +15,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _A1XINTC_H_
-#define _A1XINTC_H_
+void sxiccmu_enablemodule(int);
 
-#ifndef _LOCORE
-
-#include <arm/armreg.h>
-#include <arm/cpufunc.h>
-#include <machine/intr.h>
-#include <arm/softintr.h>
-
-extern __volatile int current_spl_level;
-extern __volatile int softint_pending;
-void intc_do_pending(void);
-
-#define SI_TO_IRQBIT(si)  (1U<<(si))
-void intc_setipl(int);
-void intc_splx(int);
-int intc_splraise(int);
-int intc_spllower(int);
-void intc_setsoftintr(int);
-
-void intc_irq_handler(void *);
-void *intc_intr_establish(int, int, int (*)(void *), void *, char *);
-void intc_intr_disestablish(void *);
-const char *intc_intr_string(void *);
-
-#endif /* ! _LOCORE */
-
-#endif /* _A1XINTC_H_ */
-
+enum CCMU_MODULES {
+	CCMU_EHCI0,
+	CCMU_EHCI1,
+	CCMU_OHCI,
+	CCMU_AHCI,
+	CCMU_EMAC,
+	CCMU_DMA,
+	CCMU_UART0,
+	CCMU_UART1,
+	CCMU_UART2,
+	CCMU_UART3,
+	CCMU_UART4,
+	CCMU_UART5,
+	CCMU_UART6,
+	CCMU_UART7,
+	CCMU_TWI0,
+	CCMU_TWI1,
+	CCMU_TWI2,
+	CCMU_TWI3
+};
