@@ -1,4 +1,4 @@
-/* $OpenBSD: sxia20.c,v 1.1 2013/10/22 13:22:19 jasper Exp $ */
+/* $OpenBSD: sun7i.c,v 1.1 2013/10/23 17:08:47 jasper Exp $ */
 
 /*
  * Copyright (c) 2011 Uwe Stuehler <uwe@openbsd.org>
@@ -117,7 +117,7 @@ struct sxi_dev sxia20_devs[] = {
 	{ .name = "sxie",
 	  .unit = 0,
 	  .mem = {	{ EMAC_ADDR, EMAC_SIZE },
-			{ AWESRAM_ADDR, AWESRAM_SIZE } },
+			{ SXIESRAM_ADDR, SXIESRAM_SIZE } },
 	  .irq = { EMAC_IRQ}
 	},
 
