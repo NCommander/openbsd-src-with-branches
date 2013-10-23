@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.233 2013/08/28 12:34:27 mikeb Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.234 2013/09/02 22:00:34 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1726,7 +1726,7 @@ parse_cert_times(char *timespec)
 		cert_valid_from = parse_absolute_time(from);
 
 	if (*to == '-' || *to == '+')
-		cert_valid_to = parse_relative_time(to, cert_valid_from);
+		cert_valid_to = parse_relative_time(to, now);
 	else
 		cert_valid_to = parse_absolute_time(to);
 
