@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.c,v 1.16 2013/01/08 10:38:19 reyk Exp $	*/
+/*	$OpenBSD: iked.c,v 1.17 2013/03/21 04:30:14 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -21,13 +21,6 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <sys/uio.h>
-
-#include <net/if.h>
-#include <netinet/in_systm.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/tcp.h>
-#include <arpa/inet.h>
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.19 2013/04/29 06:32:11 jmc Exp $ */
+/*	$OpenBSD: identd.c,v 1.20 2013/07/17 15:38:48 okan Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -25,7 +25,6 @@
 #include <sys/uio.h>
 
 #include <netinet/in.h>
-#include <netinet/ip_var.h>
 #include <netinet/tcp.h>
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>

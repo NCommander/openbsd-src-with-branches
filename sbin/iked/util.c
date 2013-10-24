@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.17 2012/12/04 02:24:47 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.18 2013/01/08 10:38:19 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -21,14 +21,7 @@
 #include <sys/socket.h>
 #include <sys/uio.h>
 
-#include <net/if.h>
-#include <netinet/in_systm.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/tcp.h>
-#include <arpa/inet.h>
 #include <netdb.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

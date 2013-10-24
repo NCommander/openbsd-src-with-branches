@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg_util.c,v 1.6 2013/01/08 10:38:19 reyk Exp $	*/
+/*	$OpenBSD: imsg_util.c,v 1.7 2013/03/21 04:30:14 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -20,14 +20,7 @@
 #include <sys/socket.h>
 #include <sys/uio.h>
 
-#include <net/if.h>
-#include <netinet/in_systm.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/tcp.h>
-#include <arpa/inet.h>
 #include <netdb.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
