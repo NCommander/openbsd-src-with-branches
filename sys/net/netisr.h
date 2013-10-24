@@ -1,4 +1,4 @@
-/*	$OpenBSD: netisr.h,v 1.37 2012/10/07 23:56:21 mikeb Exp $	*/
+/*	$OpenBSD: netisr.h,v 1.38 2013/08/20 09:14:24 mpi Exp $	*/
 /*	$NetBSD: netisr.h,v 1.12 1995/08/12 23:59:24 mycroft Exp $	*/
 
 /*
@@ -34,6 +34,7 @@
 
 #ifndef _NET_NETISR_H_
 #define _NET_NETISR_H_
+
 /*
  * The networking code runs off software interrupts.
  *
@@ -90,7 +91,7 @@ do {									\
 
 void	netisr_init(void);
 
-#endif
-#endif
+#endif /* _KERNEL */
+#endif /*_LOCORE */
 
 #endif /* _NET_NETISR_H_ */

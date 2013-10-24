@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.h,v 1.62 2012/09/18 09:24:45 markus Exp $ */
+/* $OpenBSD: pfkeyv2.h,v 1.63 2013/03/09 02:27:07 deraadt Exp $ */
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) January 1998
  * 
@@ -478,4 +478,5 @@ void import_udpencap(struct tdb *, struct sadb_x_udpencap *);
 void import_tag(struct tdb *, struct sadb_x_tag *);
 void import_tap(struct tdb *, struct sadb_x_tap *);
 #endif /* _KERNEL */
+
 #endif /* _NET_PFKEY_V2_H_ */
