@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.h,v 1.45 2012/06/29 14:48:04 mikeb Exp $	*/
+/*	$OpenBSD: if_pfsync.h,v 1.46 2012/06/29 15:12:21 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -310,6 +310,6 @@ int			pfsync_defer(struct pf_state *, struct mbuf *);
 
 int			pfsync_up(void);
 int			pfsync_state_in_use(struct pf_state *);
-#endif
+#endif /* _KERNEL */
 
 #endif /* _NET_IF_PFSYNC_H_ */
