@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.189 2013/04/11 12:06:25 mpi Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.190 2013/07/04 09:48:48 mpi Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -71,7 +71,6 @@
 #ifndef INET
 #include <netinet/in.h>
 #endif
-#include <netinet6/in6_var.h>
 #endif /* INET6 */
 
 #include <netinet/ip_ipsp.h>

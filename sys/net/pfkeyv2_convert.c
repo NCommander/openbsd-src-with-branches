@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_convert.c,v 1.40 2013/06/05 02:03:15 reyk Exp $	*/
+/*	$OpenBSD: pfkeyv2_convert.c,v 1.41 2013/10/12 11:55:46 henning Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@keromytis.org)
  *
@@ -108,9 +108,6 @@
 #endif
 
 #include <netinet/ip_ipsp.h>
-#ifdef INET6
-#include <netinet6/in6_var.h>
-#endif
 #include <net/pfkeyv2.h>
 #include <crypto/cryptodev.h>
 #include <crypto/xform.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_osfp.c,v 1.25 2011/09/22 14:57:12 bluhm Exp $ */
+/*	$OpenBSD: pf_osfp.c,v 1.26 2011/09/28 17:15:45 bluhm Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@w4g.org>
@@ -35,9 +35,6 @@
 #include <net/pfvar.h>
 
 #include <netinet/ip6.h>
-#ifdef _KERNEL
-#include <netinet6/in6_var.h>
-#endif
 
 
 #ifdef _KERNEL
