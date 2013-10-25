@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip6_divert.h,v 1.1 2009/11/05 20:50:14 michele Exp $ */
+/*      $OpenBSD: ip6_divert.h,v 1.2 2012/10/21 13:06:03 benno Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -60,6 +60,6 @@ int	 divert6_output(struct mbuf *, ...);
 int	 divert6_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 int	 divert6_usrreq(struct socket *,
 	    int, struct mbuf *, struct mbuf *, struct mbuf *, struct proc *);
-
 #endif /* _KERNEL */
+
 #endif /* _IP6_DIVERT_H_ */
