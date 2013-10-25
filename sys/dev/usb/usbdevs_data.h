@@ -6858,6 +6858,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "Wireless Optical Mouse 3000 (Model 1056)",
 	},
 	{
+	    USB_VENDOR_MICROSOFT, USB_PRODUCT_MICROSOFT_XBOX360_CONTROLLER,
+	    "XBOX 360 Controller",
+	},
+	{
 	    USB_VENDOR_MICROSOFT, USB_PRODUCT_MICROSOFT_XBOX360,
 	    "XBOX 360 WLAN",
 	},

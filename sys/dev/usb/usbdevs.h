@@ -2868,6 +2868,7 @@
 #define	USB_PRODUCT_MICROSOFT_WLNOTEBOOK	0x00b9		/* Wireless Optical Mouse (Model 1023) */
 #define	USB_PRODUCT_MICROSOFT_WLNOTEBOOK3	0x00d2		/* Wireless Optical Mouse 3000 (Model 1049) */
 #define	USB_PRODUCT_MICROSOFT_WLNOTEBOOK2	0x00e1		/* Wireless Optical Mouse 3000 (Model 1056) */
+#define	USB_PRODUCT_MICROSOFT_XBOX360_CONTROLLER	0x028e		/* XBOX 360 Controller */
 #define	USB_PRODUCT_MICROSOFT_XBOX360	0x0292		/* XBOX 360 WLAN */
 #define	USB_PRODUCT_MICROSOFT_LIFECAM	0x074a		/* Microsoft LifeCam */
 
