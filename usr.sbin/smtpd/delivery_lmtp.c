@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: delivery_lmtp.c,v 1.2 2013/07/19 08:45:38 eric Exp $ */
 
 /*
  * Copyright (c) 2013 Ashish SHUKLA <ashish.is@lostca.se>
@@ -217,7 +217,7 @@ delivery_lmtp_open(struct deliver *deliver)
 			 break;
 
 		 default:
-			errx(1, "Bogus state %i", state);
+			errx(1, "Bogus state %d", state);
 		 }
 	 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dns.c,v 1.66 2013/05/24 17:03:14 eric Exp $	*/
+/*	$OpenBSD: dns.c,v 1.67 2013/07/12 14:38:34 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -155,7 +155,7 @@ dns_imsg(struct mproc *p, struct imsg *imsg)
 		return;
 
 	default:
-		log_warnx("warn: bad dns request %i", s->type);
+		log_warnx("warn: bad dns request %d", s->type);
 		fatal(NULL);
 	}
 }

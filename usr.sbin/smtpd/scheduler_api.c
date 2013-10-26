@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: scheduler_api.c,v 1.1 2013/07/19 21:34:31 eric Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -271,7 +271,7 @@ scheduler_msg_dispatch(void)
 		break;
 
 	default:
-		log_warnx("warn: scheduler-api: bad message %i", imsg.hdr.type);
+		log_warnx("warn: scheduler-api: bad message %d", imsg.hdr.type);
 		fatalx("scheduler-api: exiting");
 	}
 }
