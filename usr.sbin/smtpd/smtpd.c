@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.199 2013/10/26 12:27:59 eric Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.200 2013/10/27 07:56:25 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1507,7 +1507,6 @@ imsg_to_str(int type)
 	CASE(IMSG_MFA_EVENT_COMMIT);
 	CASE(IMSG_MFA_EVENT_ROLLBACK);
 	CASE(IMSG_MFA_EVENT_DISCONNECT);
-	CASE(IMSG_MFA_SMTP_DATA);
 	CASE(IMSG_MFA_SMTP_RESPONSE);
 
 	CASE(IMSG_MTA_TRANSFER);
