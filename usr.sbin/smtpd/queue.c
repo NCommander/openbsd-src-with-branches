@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue.c,v 1.153 2013/07/19 21:14:52 eric Exp $	*/
+/*	$OpenBSD: queue.c,v 1.154 2013/10/27 07:56:25 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -414,6 +414,8 @@ queue_imsg(struct mproc *p, struct imsg *imsg)
 			m_close(p_scheduler);
 			return;
 
+		case IMSG_DELIVERY_HOLD:
+		case IMSG_DELIVERY_RELEASE:
 		case IMSG_MTA_SCHEDULE:
 			m_forward(p_scheduler, imsg);
 			return;
