@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.h,v 1.15 2009/07/13 19:14:29 michele Exp $	*/
+/*	$OpenBSD: ip_mroute.h,v 1.16 2013/05/02 11:54:10 mpi Exp $	*/
 /*	$NetBSD: ip_mroute.h,v 1.23 2004/04/21 17:49:46 itojun Exp $	*/
 
 #ifndef _NETINET_IP_MROUTE_H_
@@ -279,9 +279,6 @@ struct igmpmsg {
 struct rtdetq {
 	struct	mbuf *m;		/* a copy of the packet */
 	struct	ifnet *ifp;		/* interface pkt came in on */
-#ifdef UPCALL_TIMING
-	struct	timeval t;		/* timestamp */
-#endif /* UPCALL_TIMING */
 	struct	rtdetq *next;
 };
 
