@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda.c,v 1.95 2013/10/26 12:27:59 eric Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -313,6 +313,7 @@ mda_imsg(struct mproc *p, struct imsg *imsg)
 
 			/* request parent to fork a helper process */
 			userinfo = &s->user->userinfo;
+			bzero(&deliver, sizeof deliver);
 			switch (e->method) {
 			case A_MDA:
 				deliver.mode = A_MDA;
