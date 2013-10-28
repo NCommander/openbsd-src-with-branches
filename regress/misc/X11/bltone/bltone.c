@@ -1,4 +1,4 @@
-/*	$OpenBSD: bltone.c,v 1.2 2005/08/25 19:41:23 kettenis Exp $	*/
+/*	$OpenBSD: bltone.c,v 1.4 2005/08/27 14:00:57 kettenis Exp $	*/
 /*
  *	Written by Mark Kettenis <kettenis@openbsd.org> 2004 Public Domain
  */
@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <string.h>
 
 typedef unsigned FbStip;
 typedef unsigned FbBits;
