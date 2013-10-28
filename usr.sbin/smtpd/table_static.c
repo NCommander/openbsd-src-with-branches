@@ -1,4 +1,4 @@
-/*	$OpenBSD: table_static.c,v 1.3 2013/02/13 14:34:43 gilles Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -135,6 +135,10 @@ table_static_parse(struct table *t, const char *config, enum table_type type)
 		else
 			goto end;
 	}
+	/* Accept empty alias files; treat them as hashes */
+	if (t->t_type == T_NONE && t->t_backend->services & K_ALIAS)
+	    t->t_type = T_HASH;
+
 	ret = 1;
 end:
 	free(lbuf);
