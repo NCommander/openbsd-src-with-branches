@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.266 2013/07/19 07:37:48 markus Exp $ */
+/* $OpenBSD: session.c,v 1.267 2013/10/14 21:20:52 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1700,7 +1700,7 @@ session_pty_req(Session *s)
 	u_int len;
 	int n_bytes;
 
-	if (no_pty_flag) {
+	if (no_pty_flag || !options.permit_tty) {
 		debug("Allocating a pty not permitted for this authentication.");
 		return 0;
 	}
