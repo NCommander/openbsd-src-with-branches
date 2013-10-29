@@ -1,4 +1,4 @@
-/*	$OpenBSD: i915_gem_evict.c,v 1.3 2013/04/17 20:04:04 kettenis Exp $	*/
+/*	$OpenBSD: i915_gem_evict.c,v 1.4 2013/08/07 19:49:06 kettenis Exp $	*/
 /*
  * Copyright (c) 2008-2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -50,7 +50,7 @@
 #include <machine/pmap.h>
 
 #include <sys/queue.h>
-#include <sys/workq.h>
+#include <sys/task.h>
 
 struct drm_obj *i915_gem_find_inactive_object(struct inteldrm_softc *, size_t);
 

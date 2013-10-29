@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_irq.c,v 1.50 2013/09/24 21:16:24 kettenis Exp $	*/
+/*	$OpenBSD: drm_irq.c,v 1.51 2013/09/24 21:18:58 kettenis Exp $	*/
 /**
  * \file drm_irq.c
  * IRQ support
@@ -34,7 +34,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <sys/workq.h>
+#include <sys/task.h>
 
 #include "drmP.h"
 #include "drm.h"

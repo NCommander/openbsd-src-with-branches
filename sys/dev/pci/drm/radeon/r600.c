@@ -1,4 +1,4 @@
-/*	$OpenBSD: r600.c,v 1.3 2013/08/26 05:15:21 jsg Exp $	*/
+/*	$OpenBSD: r600.c,v 1.4 2013/10/20 15:45:08 kettenis Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  * Copyright 2008 Red Hat Inc.
@@ -4041,11 +4041,9 @@ restart_ih:
 		rptr &= rdev->ih.ptr_mask;
 	}
 	if (queue_hotplug)
-		workq_queue_task(NULL, &rdev->hotplug_task, 0,
-		    radeon_hotplug_work_func, rdev, NULL);
+		task_add(taskq_systq(), &rdev->hotplug_task);
 	if (queue_hdmi)
-		workq_queue_task(NULL, &rdev->audio_task, 0,
-		    r600_audio_update_hdmi, rdev, NULL);
+		task_add(taskq_systq(), &rdev->audio_task);
 	rdev->ih.rptr = rptr;
 	WREG32(IH_RB_RPTR, rdev->ih.rptr);
 	atomic_set(&rdev->ih.lock, 0);
