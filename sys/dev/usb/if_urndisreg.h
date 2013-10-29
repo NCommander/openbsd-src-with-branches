@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urndisreg.h,v 1.15 2012/06/20 10:51:27 fgsch Exp $ */
+/*	$OpenBSD: if_urndisreg.h,v 1.16 2013/04/15 09:23:01 mglocker Exp $ */
 
 /*
  * Copyright (c) 2010 Jonathan Armani <armani@openbsd.org>
@@ -41,7 +41,6 @@ struct urndis_cdata {
 struct urndis_softc {
 	struct device			sc_dev;
 
-	char				sc_attached;
 	int				sc_dying;
 	struct arpcom			sc_arpcom;
 

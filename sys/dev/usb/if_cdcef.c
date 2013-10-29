@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdcef.c,v 1.28 2013/04/15 09:23:01 mglocker Exp $	*/
+/*	$OpenBSD: if_cdcef.c,v 1.29 2013/08/07 01:06:41 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2007 Dale Rahn <drahn@openbsd.org>
@@ -80,7 +80,6 @@ struct cdcef_softc {
 
 	int			sc_rxeof_errors;
 	int			sc_unit;
-	int			sc_attached;
 	int			sc_listening;
 };
 
@@ -261,7 +260,6 @@ cdcef_attach(struct device *parent, struct device *self, void *aux)
 	if_attach(ifp);
 	ether_ifattach(ifp);
 
-	sc->sc_attached = 1;
 	splx(s);
 }
 
