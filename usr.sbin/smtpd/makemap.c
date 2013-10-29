@@ -1,4 +1,4 @@
-/*	$OpenBSD: makemap.c,v 1.43 2013/01/31 18:34:43 eric Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -23,8 +23,8 @@
 #include <sys/queue.h>
 #include <sys/socket.h>
 
-#include <db.h>
 #include <ctype.h>
+#include <db.h>
 #include <err.h>
 #include <errno.h>
 #include <event.h>
