@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: task.h,v 1.1 2013/10/29 04:23:16 dlg Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -28,11 +28,11 @@ struct task {
 	void		(*t_func)(void *, void *);
 	void		*t_arg1;
 	void		*t_arg2;
-	u_int		t_flags;
+	unsigned int	t_flags;
 };
 
 struct taskq	*taskq_systq(void);
-struct taskq	*taskq_create(const char *, u_int, int);
+struct taskq	*taskq_create(const char *, unsigned int, int);
 void		 taskq_destroy(struct taskq *);
 
 void		 task_set(struct task *, void (*)(void *, void *),
