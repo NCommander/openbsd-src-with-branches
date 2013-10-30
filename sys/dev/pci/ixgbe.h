@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe.h,v 1.12 2012/12/05 14:41:28 mikeb Exp $	*/
+/*	$OpenBSD: ixgbe.h,v 1.13 2013/08/05 19:58:05 mikeb Exp $	*/
 
 /******************************************************************************
 
@@ -52,7 +52,6 @@
 #include <sys/timeout.h>
 #include <sys/pool.h>
 #include <sys/rwlock.h>
-#include <sys/workq.h>
 
 #include <net/if.h>
 #include <net/if_arp.h>
