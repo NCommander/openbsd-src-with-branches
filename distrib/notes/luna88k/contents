@@ -1,11 +1,15 @@
-dnl	$OpenBSD: contents,v 1.10 2013/02/25 20:07:38 miod Exp $
+dnl	$OpenBSD: contents,v 1.11 2013/07/26 20:07:29 miod Exp $
 TopPart
 
 OpenBSDdistsets
 
 OpenBSDbsd
 
+OpenBSDbsdmp
+
 OpenBSDrd
+
+	boot		The OpenBSD/MACHINE boot block.
 
 These files can be used to make a bootable tape suitable for installation.
 They can also be used to configure an NFS server to support installation
