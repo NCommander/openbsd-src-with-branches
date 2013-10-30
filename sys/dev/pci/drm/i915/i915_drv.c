@@ -1,4 +1,4 @@
-/* $OpenBSD: i915_drv.c,v 1.42 2013/10/21 10:36:24 miod Exp $ */
+/* $OpenBSD: i915_drv.c,v 1.43 2013/10/29 06:30:57 jsg Exp $ */
 /*
  * Copyright (c) 2008-2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -497,7 +497,7 @@ i915_drm_freeze(struct drm_device *dev)
 		}
 
 		timeout_del(&dev_priv->rps.delayed_resume_to);
-		task_del(taskq_systq(), &dev_priv->rps.delayed_resume_task);
+		task_del(systq, &dev_priv->rps.delayed_resume_task);
 
 		intel_modeset_disable(dev);
 
