@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.91 2011/09/16 18:24:57 sthen Exp $ */
+/*	$OpenBSD: kroute.c,v 1.92 2013/06/01 16:00:21 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -1054,7 +1054,7 @@ if_newaddr(u_short ifindex, struct sockaddr_in *ifa, struct sockaddr_in *mask,
 	if (ifa == NULL || ifa->sin_family != AF_INET)
 		return;
 	if ((kif = kif_find(ifindex)) == NULL) {
-		log_warnx("if_newaddr: corresponding if %i not found", ifindex);
+		log_warnx("if_newaddr: corresponding if %d not found", ifindex);
 		return;
 	}
 	if ((ka = calloc(1, sizeof(struct kif_addr))) == NULL)
@@ -1083,7 +1083,7 @@ if_deladdr(u_short ifindex, struct sockaddr_in *ifa, struct sockaddr_in *mask,
 	if (ifa == NULL || ifa->sin_family != AF_INET)
 		return;
 	if ((kif = kif_find(ifindex)) == NULL) {
-		log_warnx("if_deladdr: corresponding if %i not found", ifindex);
+		log_warnx("if_deladdr: corresponding if %d not found", ifindex);
 		return;
 	}
 
