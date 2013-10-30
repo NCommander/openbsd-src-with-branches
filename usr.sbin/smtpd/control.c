@@ -121,6 +121,8 @@ control_imsg(struct mproc *p, struct imsg *imsg)
 	}
 	if (p->proc == PROC_MTA) {
 		switch (imsg->hdr.type) {
+		case IMSG_CTL_MTA_SHOW_HOSTS:
+		case IMSG_CTL_MTA_SHOW_RELAYS:
 		case IMSG_CTL_MTA_SHOW_ROUTES:
 		case IMSG_CTL_MTA_SHOW_HOSTSTATS:
 			c = tree_get(&ctl_conns, imsg->hdr.peerid);
@@ -705,6 +707,8 @@ control_dispatch_ext(struct mproc *p, struct imsg *imsg)
 		    imsg->data, imsg->hdr.len - sizeof(imsg->hdr));
 		return;
 
+	case IMSG_CTL_MTA_SHOW_HOSTS:
+	case IMSG_CTL_MTA_SHOW_RELAYS:
 	case IMSG_CTL_MTA_SHOW_ROUTES:
 	case IMSG_CTL_MTA_SHOW_HOSTSTATS:
 		if (c->euid)
