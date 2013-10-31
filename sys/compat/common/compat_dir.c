@@ -1,4 +1,4 @@
-/* 	$OpenBSD: compat_dir.c,v 1.5 2008/08/19 09:49:50 pedro Exp $	*/
+/* 	$OpenBSD: compat_dir.c,v 1.6 2013/08/13 05:52:21 guenther Exp $	*/
 
 /*
  * Copyright (c) 2000 Constantine Sapuntzakis
@@ -91,6 +91,7 @@ again:
 	auio.uio_offset = newoff;
 
 	error = VOP_READDIR(vp, &auio, fp->f_cred, &eofflag);
+	*off = auio.uio_offset;
 	if (error)
 		goto out;
 
@@ -126,9 +127,6 @@ again:
 
 eof:
 out:
-	if (error == 0)
-		*off = newoff;
-
 	VOP_UNLOCK(vp, 0, curproc);
 	free(buf, M_TEMP);
 	return (error);
