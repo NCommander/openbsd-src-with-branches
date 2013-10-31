@@ -3539,7 +3539,7 @@ pmap_l1pt_ctor(pt_entry_t *l1pt)
  *
  *	Page allocator for L1 PT pages.
  */
-void
+void *
 pmap_l1pt_alloc(struct pool *pp, int flags, int *slowdown)
 {
 	paddr_t ptpa;
