@@ -1,4 +1,4 @@
-/*	$OpenBSD: fmt.c,v 1.8 2006/04/25 15:41:07 deraadt Exp $	*/
+/*	$OpenBSD: fmt.c,v 1.9 2008/03/24 20:32:04 jasper Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -30,7 +30,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/user.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/proc.h>

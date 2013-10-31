@@ -1,4 +1,4 @@
-/*	$OpenBSD: ps.c,v 1.56 2013/09/22 17:28:34 guenther Exp $	*/
+/*	$OpenBSD: ps.c,v 1.57 2013/10/28 13:05:53 okan Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -31,6 +31,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/sysctl.h>
 #include <sys/user.h>
 #include <sys/time.h>
 #include <sys/resource.h>
