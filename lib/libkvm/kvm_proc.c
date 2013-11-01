@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_proc.c,v 1.47 2012/04/14 12:11:47 guenther Exp $	*/
+/*	$OpenBSD: kvm_proc.c,v 1.48 2013/01/14 06:32:37 guenther Exp $	*/
 /*	$NetBSD: kvm_proc.c,v 1.30 1999/03/24 05:50:50 mrg Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -70,7 +70,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/user.h>
 #include <sys/proc.h>
 #include <sys/exec.h>
 #include <sys/stat.h>
@@ -81,6 +80,7 @@
 #include <unistd.h>
 #include <nlist.h>
 #include <kvm.h>
+#include <errno.h>
 
 #include <uvm/uvm_extern.h>
 #include <uvm/uvm_amap.h>

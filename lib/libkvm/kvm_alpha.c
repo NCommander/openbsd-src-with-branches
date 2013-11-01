@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_alpha.c,v 1.13 2004/09/15 19:31:31 miod Exp $	*/
+/*	$OpenBSD: kvm_alpha.c,v 1.14 2006/03/20 15:11:48 mickey Exp $	*/
 /*	$NetBSD: kvm_alpha.c,v 1.5 1996/10/01 21:12:05 cgd Exp $	*/
 
 /*
@@ -31,7 +31,6 @@
 #define __KVM_ALPHA_PRIVATE	     /* see <machine/pte.h> */
 
 #include <sys/param.h>
-#include <sys/user.h>
 #include <sys/proc.h>
 #include <sys/stat.h>
 #include <sys/kcore.h>

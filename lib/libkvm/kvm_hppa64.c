@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_hppa64.c,v 1.1 2011/07/09 00:29:59 kettenis Exp $	*/
+/*	$OpenBSD: kvm_hppa64.c,v 1.2 2013/03/28 16:27:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002, Miodrag Vallat.
@@ -26,7 +26,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/user.h>
 #include <sys/proc.h>
 #include <sys/stat.h>
 

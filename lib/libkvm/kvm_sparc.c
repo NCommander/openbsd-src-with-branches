@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_sparc.c,v 1.11 2006/03/20 15:11:48 mickey Exp $ */
+/*	$OpenBSD: kvm_sparc.c,v 1.12 2009/10/27 23:59:28 deraadt Exp $ */
 /*	$NetBSD: kvm_sparc.c,v 1.9 1996/04/01 19:23:03 cgd Exp $	*/
 
 /*-
@@ -40,7 +40,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/user.h>
 #include <sys/proc.h>
 #include <sys/stat.h>
 #include <sys/core.h>
