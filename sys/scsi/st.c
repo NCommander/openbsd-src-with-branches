@@ -1,4 +1,4 @@
-/*	$OpenBSD: st.c,v 1.124 2013/07/05 01:22:25 krw Exp $	*/
+/*	$OpenBSD: st.c,v 1.125 2013/10/03 14:07:42 krw Exp $	*/
 /*	$NetBSD: st.c,v 1.71 1997/02/21 23:03:49 thorpej Exp $	*/
 
 /*
@@ -842,7 +842,7 @@ ststrategy(struct buf *bp)
 	sc_link = st->sc_link;
 
 	SC_DEBUG(sc_link, SDEV_DB2, ("ststrategy: %ld bytes @ blk %lld\n",
-	    bp->b_bcount, bp->b_blkno));
+	    bp->b_bcount, (long long)bp->b_blkno));
 
 	/*
 	 * If it's a null transfer, return immediately.
