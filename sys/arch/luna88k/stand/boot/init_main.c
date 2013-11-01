@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.3 2013/10/29 21:49:07 miod Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.4 2013/10/29 22:13:28 miod Exp $	*/
 /*	$NetBSD: init_main.c,v 1.6 2013/03/05 15:34:53 tsutsui Exp $	*/
 
 /*
@@ -171,17 +171,17 @@ main(void)
 	 * Initialize the console before we print anything out.
 	 */
 	if (machtype == LUNA_88K) {
-		machstr  = "luna88k";
+		machstr  = "LUNA-88K";
 		cpuspeed = MHZ_25;
 	} else {
-		machstr  = "luna88k-2";
+		machstr  = "LUNA-88K2";
 		cpuspeed = MHZ_33;
 	}
 
 	nplane = get_plane_numbers();
 	cninit();
 
-	printf("\nOpenBSD/%s boot 0.3\n\n", machstr);
+	printf("\nOpenBSD/" MACHINE " (%s) boot 0.3\n\n", machstr);
 
 #ifdef SUPPORT_ETHERNET
 	try_bootp = 1;
