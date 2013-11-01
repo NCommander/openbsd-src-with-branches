@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.149 2013/10/19 14:05:14 reyk Exp $	*/
+/*	$OpenBSD: if.h,v 1.150 2013/10/21 15:10:29 benno Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -63,7 +63,9 @@ __END_DECLS
 #include <sys/queue.h>
 #include <sys/tree.h>
 #include <altq/if_altq.h>
+#ifdef _KERNEL
 #include <net/hfsc.h>
+#endif
 
 /*
  * Structures defining a network interface, providing a packet
