@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.57 2013/10/10 21:24:59 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.58 2013/10/17 08:02:15 deraadt Exp $	*/
 /*
  * Copyright (c) 2007 Miodrag Vallat.
  *
@@ -677,7 +677,7 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 void
 aviion_bootstrap()
 {
-	vaddr_t avail_start;
+	extern vaddr_t avail_start;
 	extern vaddr_t avail_end;
 	extern char *end;
 #ifndef MULTIPROCESSOR
