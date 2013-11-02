@@ -1,3 +1,4 @@
+/* $OpenBSD: myproposal.h,v 1.33 2013/11/02 21:59:15 markus Exp $ */
 /*
 version 20081011
 Matthew Dempsky

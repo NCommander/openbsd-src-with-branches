@@ -1,3 +1,4 @@
+/* $OpenBSD: myproposal.h,v 1.33 2013/11/02 21:59:15 markus Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2010 Damien Miller.  All rights reserved.
