@@ -1,4 +1,4 @@
-/*	$OpenBSD: conn.c,v 1.9 2012/04/11 08:31:37 deraadt Exp $ */
+/*	$OpenBSD: conn.c,v 1.10 2012/06/16 00:08:32 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -237,11 +237,11 @@ conn_err(struct bufferevent *bev, short why, void *data)
 	struct conn	*conn = data;
 
 	if ((why & EVBUFFER_EOF) == EVBUFFER_EOF)
-		log_debug("end-of-file on connection %i", conn->fd);
+		log_debug("end-of-file on connection %d", conn->fd);
 	else if ((why & EVBUFFER_TIMEOUT) == EVBUFFER_TIMEOUT)
-		log_debug("timeout on connection %i", conn->fd);
+		log_debug("timeout on connection %d", conn->fd);
 	else
-		log_warnx("error 0x%02X on connection %i", why, conn->fd);
+		log_warnx("error 0x%02X on connection %d", why, conn->fd);
 
 	conn_close(conn);
 }
