@@ -1,4 +1,4 @@
-/*	$OpenBSD: uftdi.c,v 1.63 2012/09/11 16:04:44 deraadt Exp $ 	*/
+/*	$OpenBSD: uftdi.c,v 1.64 2013/04/15 09:23:02 mglocker Exp $ 	*/
 /*	$NetBSD: uftdi.c,v 1.14 2003/02/23 04:20:07 simonb Exp $	*/
 
 /*
@@ -748,7 +748,7 @@ int
 uftdi_match(struct device *parent, void *match, void *aux)
 {
 	struct usb_attach_arg *uaa = aux;
-	usbd_status err;
+	int err;
 	u_int8_t nifaces;
 
 	if (usb_lookup(uftdi_devs, uaa->vendor, uaa->product) == NULL)
