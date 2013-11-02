@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.76 2012/08/07 05:16:54 guenther Exp $ */
+/*	$OpenBSD: trap.c,v 1.77 2012/12/31 06:46:13 guenther Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -255,16 +255,8 @@ copyfault:
 		 */
 		printf("pid %d: kernel %s exception\n", p->p_pid,
 				 type==T_COPERR ? "coprocessor" : "format");
-		type |= T_USER;
-		p->p_sigacts->ps_sigact[SIGILL] = SIG_DFL;
-		i = sigmask(SIGILL);
-		p->p_sigacts->ps_sigignore &= ~i;
-		p->p_sigacts->ps_sigcatch &= ~i;
-		p->p_sigmask &= ~i;
-		i = SIGILL;
-		ucode = frame.f_format;	/* XXX was ILL_RESAD_FAULT */
-		typ = ILL_COPROC;
-		v = frame.f_pc;
+		sigexit(p, SIGILL);
+		/* NOTREACHED */
 		break;
 
 	case T_COPERR|T_USER:	/* user coprocessor violation */
