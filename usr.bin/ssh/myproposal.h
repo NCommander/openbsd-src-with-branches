@@ -1,4 +1,4 @@
-/* $OpenBSD: myproposal.h,v 1.31 2012/12/11 22:31:18 markus Exp $ */
+/* $OpenBSD: myproposal.h,v 1.32 2013/01/08 18:49:04 markus Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -25,6 +25,7 @@
  */
 
 #define KEX_DEFAULT_KEX		\
+	"curve25519-sha256@libssh.org," \
 	"ecdh-sha2-nistp256," \
 	"ecdh-sha2-nistp384," \
 	"ecdh-sha2-nistp521," \
