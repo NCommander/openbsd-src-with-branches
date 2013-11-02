@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pager.c,v 1.62 2013/05/30 16:29:46 tedu Exp $	*/
+/*	$OpenBSD: uvm_pager.c,v 1.63 2013/06/11 16:42:19 deraadt Exp $	*/
 /*	$NetBSD: uvm_pager.c,v 1.36 2000/11/27 18:26:41 chs Exp $	*/
 
 /*
@@ -517,7 +517,7 @@ uvm_pager_put(struct uvm_object *uobj, struct vm_page *pg,
 		 * interested in (in which case the whole cluster gets dropped
 		 * in the event of an error or a sync "done").
 		 */
-		swblk = (daddr_t) start;
+		swblk = start;
 		/* ppsp and npages should be ok */
 	}
 

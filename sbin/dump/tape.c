@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.35 2013/04/25 06:43:20 otto Exp $	*/
+/*	$OpenBSD: tape.c,v 1.36 2013/06/11 16:42:04 deraadt Exp $	*/
 /*	$NetBSD: tape.c,v 1.11 1997/06/05 11:13:26 lukem Exp $	*/
 
 /*-
@@ -152,7 +152,7 @@ void
 writerec(char *dp, int isspcl)
 {
 
-	slp->req[trecno].dblk = (daddr_t)0;
+	slp->req[trecno].dblk = 0;
 	slp->req[trecno].count = 1;
 	*(union u_spcl *)(*(nextblock)++) = *(union u_spcl *)dp;
 	if (isspcl)

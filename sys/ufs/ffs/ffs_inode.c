@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_inode.c,v 1.63 2013/04/22 02:07:46 tedu Exp $	*/
+/*	$OpenBSD: ffs_inode.c,v 1.64 2013/06/11 16:42:18 deraadt Exp $	*/
 /*	$NetBSD: ffs_inode.c,v 1.10 1996/05/11 18:27:19 mycroft Exp $	*/
 
 /*
@@ -565,8 +565,7 @@ ffs_indirtrunc(struct inode *ip, daddr_t lbn, daddr_t dbn,
 			continue;
 		if (level > SINGLE) {
 			error = ffs_indirtrunc(ip, nlbn, fsbtodb(fs, nb),
-					       (daddr_t)-1, level - 1,
-					       &blkcount);
+					       -1, level - 1, &blkcount);
 			if (error)
 				allerror = error;
 			blocksreleased += blkcount;
