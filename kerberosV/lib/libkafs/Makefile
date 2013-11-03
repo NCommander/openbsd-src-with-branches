@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2013/07/02 19:00:10 ajacoutot Exp $
+# $OpenBSD: Makefile,v 1.1 2013/08/10 09:07:39 ajacoutot Exp $
 
 LIB=	kafs
 INCS=	kafs.h
@@ -7,6 +7,7 @@ MSRC=	${KRB5DIR}/lib/kafs
 
 MLINKS=	kafs.3 k_afs_cell_of_file.3 \
 	kafs.3 k_hasafs.3 \
+	kafs.3 k_hasafs_recheck.3 \
 	kafs.3 k_pioctl.3 \
 	kafs.3 k_setpag.3 \
 	kafs.3 k_unlog.3 \
