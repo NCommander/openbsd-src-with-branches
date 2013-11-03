@@ -233,10 +233,6 @@ struct linux_sys_readlink_args {
 	syscallarg(int) count;
 };
 
-struct linux_sys_uselib_args {
-	syscallarg(char *) path;
-};
-
 struct linux_sys_swapon_args {
 	syscallarg(char *) name;
 };
@@ -761,7 +757,6 @@ int	linux_sys_oldselect(struct proc *, void *, register_t *);
 int	linux_sys_symlink(struct proc *, void *, register_t *);
 int	linux_sys_lstat(struct proc *, void *, register_t *);
 int	linux_sys_readlink(struct proc *, void *, register_t *);
-int	linux_sys_uselib(struct proc *, void *, register_t *);
 int	linux_sys_swapon(struct proc *, void *, register_t *);
 int	sys_reboot(struct proc *, void *, register_t *);
 int	linux_sys_readdir(struct proc *, void *, register_t *);

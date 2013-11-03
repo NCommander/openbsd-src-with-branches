@@ -203,8 +203,8 @@ struct sysent linux_sysent[] = {
 	    linux_sys_lstat },			/* 84 = olstat */
 	{ 3, s(struct linux_sys_readlink_args), 0,
 	    linux_sys_readlink },		/* 85 = readlink */
-	{ 1, s(struct linux_sys_uselib_args), 0,
-	    linux_sys_uselib },			/* 86 = uselib */
+	{ 0, 0, 0,
+	    sys_nosys },			/* 86 = unimplemented linux_sys_uselib */
 	{ 1, s(struct linux_sys_swapon_args), 0,
 	    linux_sys_swapon },			/* 87 = swapon */
 	{ 1, s(struct sys_reboot_args), 0,

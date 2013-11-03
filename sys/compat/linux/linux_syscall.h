@@ -259,9 +259,6 @@
 /* syscall: "readlink" ret: "int" args: "char *" "char *" "int" */
 #define	LINUX_SYS_readlink	85
 
-/* syscall: "uselib" ret: "int" args: "char *" */
-#define	LINUX_SYS_uselib	86
-
 /* syscall: "swapon" ret: "int" args: "char *" */
 #define	LINUX_SYS_swapon	87
 
