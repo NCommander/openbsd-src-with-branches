@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_exec.h,v 1.7 2011/04/05 22:54:30 pirofti Exp $	*/
+/*	$OpenBSD: linux_exec.h,v 1.8 2012/09/11 15:44:19 deraadt Exp $	*/
 /*	$NetBSD: linux_exec.h,v 1.5 1995/10/07 06:27:01 mycroft Exp $	*/
 
 /*
@@ -44,8 +44,6 @@
 #define LINUX_MID_MACHINE LINUX_M_I386
 #endif
 
-#define LINUX_AOUT_HDR_SIZE (sizeof (struct exec))
-
 #define LINUX_N_MAGIC(ep)    ((ep)->a_midmag & 0xffff)
 #define LINUX_N_MACHTYPE(ep) (((ep)->a_midmag >> 16) & 0xff)
 
@@ -66,7 +64,6 @@
 
 #define LINUX_N_BSSADDR(x,m) (LINUX_N_DATADDR(x,m) + (x).a_data)
 
-int exec_linux_aout_makecmds(struct proc *, struct exec_package *);
 int exec_linux_elf32_makecmds(struct proc *, struct exec_package *);
 
 int linux_elf_probe(struct proc *, struct exec_package *, char *,
