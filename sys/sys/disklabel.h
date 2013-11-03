@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.56 2013/09/11 01:42:21 krw Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.57 2013/10/19 09:32:15 krw Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
  * disk geometry, filesystem partitions, and drive specific information.
  * The location of the label, as well as the number of partitions the
  * label can describe and the number of the "whole disk" (raw)
- * paritition are machine dependent.
+ * partition are machine dependent.
  */
 #include <machine/disklabel.h>
 
