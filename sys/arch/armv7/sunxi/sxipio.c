@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxipio.c,v 1.2 2013/10/23 18:01:52 jasper Exp $	*/
+/*	$OpenBSD: sxipio.c,v 1.3 2013/10/31 17:15:19 jasper Exp $	*/
 /*
  * Copyright (c) 2010 Miodrag Vallat.
  * Copyright (c) 2013 Artturi Alm
@@ -29,6 +29,8 @@
 
 #include <armv7/sunxi/sunxivar.h>
 #include <armv7/sunxi/sxipiovar.h>
+
+#include "gpio.h"
 
 #define	SXIPIO_NPORT		9
 #define	SXIPIO_PA_NPIN		18
