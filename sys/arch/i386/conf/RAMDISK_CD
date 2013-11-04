@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK_CD,v 1.203 2013/10/21 05:52:15 dlg Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.204 2013/10/28 12:33:32 mpi Exp $
 
 machine		i386		# architecture, used by config; REQUIRED
 
@@ -232,11 +232,6 @@ uha*	at eisa?		# UltraStor 24f SCSI controllers
 #wds1	at isa? port 0x358 irq 11 drq 5
 vmwpvs*	at pci?			# VMware ParaVirtual SCSI
 softraid0	at root		# Software RAID
-
-# I2O
-iop*	at pci?			# I2O processor
-ioprbs*	at iop?			# I2O arrays
-iopsp*	at iop?			# I2O SCSI pass-through
 
 scsibus* at scsi?
 sd*	at scsibus?		# SCSI disk drives
