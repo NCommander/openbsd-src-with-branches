@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_opt.c,v 1.5 2013/07/11 11:41:12 syl Exp $ */
+/* $OpenBSD: fuse_opt.c,v 1.6 2013/11/02 09:00:49 syl Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  * Copyright (c) 2013 Stefan Sperling <stsp@openbsd.org>
@@ -314,7 +314,7 @@ fuse_opt_insert_arg(struct fuse_args *args, int p, const char *name)
 	char *this_arg, *next_arg;
 	int i;
 
-	if (name == NULL || name[0] == '\0')
+	if (name == NULL)
 		return (-1);
 
 	if (!args->allocated && alloc_argv(args))
