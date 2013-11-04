@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_crypto.c,v 1.94 2013/05/21 15:01:53 jsing Exp $ */
+/* $OpenBSD: softraid_crypto.c,v 1.95 2013/06/11 16:42:13 deraadt Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Hans-Joerg Hoexer <hshoexer@openbsd.org>
@@ -34,6 +34,7 @@
 #include <sys/queue.h>
 #include <sys/fcntl.h>
 #include <sys/disklabel.h>
+#include <sys/vnode.h>
 #include <sys/mount.h>
 #include <sys/sensors.h>
 #include <sys/stat.h>
