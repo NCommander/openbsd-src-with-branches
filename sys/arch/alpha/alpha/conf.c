@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.72 2013/08/20 14:27:24 ajacoutot Exp $	*/
+/*	$OpenBSD: conf.c,v 1.73 2013/11/04 14:11:27 deraadt Exp $	*/
 /*	$NetBSD: conf.c,v 1.16 1996/10/18 21:26:57 cgd Exp $	*/
 
 /*-
@@ -83,7 +83,6 @@ cdev_decl(mm);
 #include "pty.h"
 #include "tun.h"
 #include "bpfilter.h"
-#include "iop.h"
 #include "ch.h"
 #include "scc.h"
 cdev_decl(scc);
