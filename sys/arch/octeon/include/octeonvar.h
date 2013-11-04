@@ -1,4 +1,4 @@
-/*	$OpenBSD$							*/
+/*	$OpenBSD: octeonvar.h,v 1.14 2013/11/04 17:49:37 bcallah Exp $	*/
 /*	$NetBSD: maltavar.h,v 1.3 2002/03/18 10:10:16 simonb Exp $	*/
 
 /*-
