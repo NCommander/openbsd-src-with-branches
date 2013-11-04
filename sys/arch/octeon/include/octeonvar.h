@@ -1,3 +1,4 @@
+/*	$OpenBSD$							*/
 /*	$NetBSD: maltavar.h,v 1.3 2002/03/18 10:10:16 simonb Exp $	*/
 
 /*-
