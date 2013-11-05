@@ -1,6 +1,6 @@
 define(MACHINE,i386)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.66 2013/08/08 10:39:29 jsg Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.67 2013/08/21 15:12:48 ajacoutot Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -83,7 +83,6 @@ _DEV(fuse, 93)
 _DEV(gpio, 83)
 _DEV(gpr, 80)
 _DEV(hotplug, 82)
-_DEV(iop, 75)
 _DEV(joy, 26)
 _DEV(lkm, 28)
 _DEV(nvram, 84)
