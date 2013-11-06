@@ -1,4 +1,4 @@
-/*	$OpenBSD: hibernate.h,v 1.25 2013/09/29 16:28:35 mlarkin Exp $	*/
+/*	$OpenBSD: hibernate.h,v 1.26 2013/11/06 12:06:56 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -86,7 +86,6 @@ union hibernate_info {
 		struct hibernate_memory_range	ranges[VM_PHYSSEG_MAX];
 		size_t				image_size;
 		size_t				chunk_ctr;
-		u_int32_t			secsize;
 		dev_t				device;
 		daddr_t				sig_offset;
 		daddr_t				image_offset;
