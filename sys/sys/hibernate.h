@@ -86,7 +86,7 @@ union hibernate_info {
 		struct hibernate_memory_range	ranges[VM_PHYSSEG_MAX];
 		size_t				image_size;
 		size_t				chunk_ctr;
-		dev_t				device;
+		dev_t				dev;
 		daddr_t				sig_offset;
 		daddr_t				image_offset;
 		paddr_t				piglet_pa;
