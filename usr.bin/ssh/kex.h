@@ -1,4 +1,4 @@
-/* $OpenBSD: kex.h,v 1.56 2013/07/19 07:37:48 markus Exp $ */
+/* $OpenBSD: kex.h,v 1.57 2013/11/02 21:59:15 markus Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -143,7 +143,7 @@ struct Kex {
 };
 
 int	 kex_names_valid(const char *);
-char	*kex_alg_list(void);
+char	*kex_alg_list(char);
 
 Kex	*kex_setup(char *[PROPOSAL_MAX]);
 void	 kex_finish(Kex *);
