@@ -1,4 +1,4 @@
-/*	$OpenBSD: radeon_object.c,v 1.1 2013/08/12 04:11:53 jsg Exp $	*/
+/*	$OpenBSD: radeon_object.c,v 1.2 2013/08/13 19:43:10 kettenis Exp $	*/
 /*
  * Copyright 2009 Jerome Glisse.
  * All Rights Reserved.
@@ -233,10 +233,8 @@ int radeon_bo_pin_restricted(struct radeon_bo *bo, u32 domain, u64 max_offset,
 				domain_start = bo->rdev->mc.vram_start;
 			else
 				domain_start = bo->rdev->mc.gtt_start;
-#ifdef notyet
 			WARN_ON_ONCE(max_offset <
 				     (radeon_bo_gpu_offset(bo) - domain_start));
-#endif
 		}
 
 		return 0;
