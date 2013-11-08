@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-chall.c,v 1.37 2013/03/07 19:27:25 markus Exp $ */
+/* $OpenBSD: auth2-chall.c,v 1.38 2013/05/17 00:13:13 djm Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2001 Per Allansson.  All rights reserved.
@@ -66,7 +66,7 @@ kbdint_alloc(const char *devs)
 	Buffer b;
 	int i;
 
-	kbdintctxt = xmalloc(sizeof(KbdintAuthctxt));
+	kbdintctxt = xcalloc(1, sizeof(KbdintAuthctxt));
 	if (strcmp(devs, "") == 0) {
 		buffer_init(&b);
 		for (i = 0; devices[i]; i++) {
