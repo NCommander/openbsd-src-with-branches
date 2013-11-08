@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_wrap.c,v 1.75 2013/01/08 18:49:04 markus Exp $ */
+/* $OpenBSD: monitor_wrap.c,v 1.76 2013/05/17 00:13:13 djm Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -469,7 +469,7 @@ mm_newkeys_from_blob(u_char *blob, int blen)
 	buffer_init(&b);
 	buffer_append(&b, blob, blen);
 
-	newkey = xmalloc(sizeof(*newkey));
+	newkey = xcalloc(1, sizeof(*newkey));
 	enc = &newkey->enc;
 	mac = &newkey->mac;
 	comp = &newkey->comp;
