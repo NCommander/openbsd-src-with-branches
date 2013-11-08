@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.3 2009/10/05 22:05:28 dms Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.4 2009/11/08 22:00:34 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -54,7 +54,7 @@ machdep(void)
 	consfreq = NS16550_FREQ;
 	consaddr = (uint8_t *)CONADDR;
 
-	/* lookup FTD for informations about conole */
+	/* lookup FTD for informations about console */
 	node = fdt_find_node("/chosen");
 	if (node) {
 		char *console;
