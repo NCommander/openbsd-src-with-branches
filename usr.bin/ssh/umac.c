@@ -1,4 +1,4 @@
-/* $OpenBSD: umac.c,v 1.3 2008/05/12 20:52:20 pvalchev Exp $ */
+/* $OpenBSD: umac.c,v 1.7.2.1 2013/11/08 01:33:56 djm Exp $ */
 /* -----------------------------------------------------------------------
  * 
  * umac.c -- C Implementation UMAC Message Authentication
@@ -1213,7 +1213,7 @@ struct umac_ctx *umac_new(u_char key[])
     size_t bytes_to_add;
     aes_int_key prf_key;
     
-    octx = ctx = xmalloc(sizeof(*ctx) + ALLOC_BOUNDARY);
+    octx = ctx = xcalloc(1, sizeof(*ctx) + ALLOC_BOUNDARY);
     if (ctx) {
         if (ALLOC_BOUNDARY) {
             bytes_to_add = ALLOC_BOUNDARY -

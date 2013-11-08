@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.c,v 1.180 2013/01/08 18:49:04 markus Exp $ */
+/* $OpenBSD: packet.c,v 1.188.2.1 2013/11/08 01:33:56 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -979,7 +979,7 @@ packet_send2(void)
 		    (type == SSH2_MSG_SERVICE_REQUEST) ||
 		    (type == SSH2_MSG_SERVICE_ACCEPT)) {
 			debug("enqueue packet: %u", type);
-			p = xmalloc(sizeof(*p));
+			p = xcalloc(1, sizeof(*p));
 			p->type = type;
 			memcpy(&p->payload, &active_state->outgoing_packet,
 			    sizeof(Buffer));

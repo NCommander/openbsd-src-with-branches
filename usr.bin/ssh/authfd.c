@@ -1,4 +1,4 @@
-/* $OpenBSD: authfd.c,v 1.85 2011/05/15 08:09:01 djm Exp $ */
+/* $OpenBSD: authfd.c,v 1.87.2.1 2013/11/08 01:33:56 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -204,7 +204,7 @@ ssh_get_authentication_connection(void)
 	if (sock < 0)
 		return NULL;
 
-	auth = xmalloc(sizeof(*auth));
+	auth = xcalloc(1, sizeof(*auth));
 	auth->fd = sock;
 	buffer_init(&auth->identities);
 	auth->howmany = 0;

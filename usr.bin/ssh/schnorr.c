@@ -1,4 +1,4 @@
-/* $OpenBSD: schnorr.c,v 1.4 2010/09/20 04:50:53 djm Exp $ */
+/* $OpenBSD: schnorr.c,v 1.7.2.1 2013/11/08 01:33:56 djm Exp $ */
 /*
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
  *
@@ -543,7 +543,7 @@ modp_group_from_g_and_safe_p(const char *grp_g, const char *grp_p)
 {
 	struct modp_group *ret;
 
-	ret = xmalloc(sizeof(*ret));
+	ret = xcalloc(1, sizeof(*ret));
 	ret->p = ret->q = ret->g = NULL;
 	if (BN_hex2bn(&ret->p, grp_p) == 0 ||
 	    BN_hex2bn(&ret->g, grp_g) == 0)
