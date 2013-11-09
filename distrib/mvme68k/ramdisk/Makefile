@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.30 2013/10/14 00:00:10 guenther Exp $
+#	$OpenBSD: Makefile,v 1.31 2013/10/15 22:46:52 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -78,7 +78,10 @@ ${CBIN}.mk ${CBIN}.cache ${CBIN}.c: ${CBIN}.conf
 	crunchgen -E -D ${.CURDIR}/../../.. -L ${DESTDIR}/usr/lib ${CBIN}.conf
 
 ${CBIN}: ${CBIN}.mk ${CBIN}.cache ${CBIN}.c
-	${MAKE} -f ${CBIN}.mk SRCLIBDIR=${.CURDIR}/../../../lib all
+	${MAKE} -f ${CBIN}.mk all
+
+#${CBIN}: ${CBIN}.mk ${CBIN}.cache ${CBIN}.c
+#	${MAKE} -f ${CBIN}.mk SRCLIBDIR=${.CURDIR}/../../../lib all
 
 do_files:
 	mtree -def ${MTREE} -p ${MOUNT_POINT}/ -u
