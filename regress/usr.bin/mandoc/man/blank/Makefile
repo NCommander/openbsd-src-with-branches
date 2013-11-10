@@ -1,5 +1,5 @@
-# $OpenBSD: Makefile,v 1.4 2012/07/10 17:05:16 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2012/07/14 10:43:48 schwarze Exp $
 
-REGRESS_TARGETS = line
+REGRESS_TARGETS = line afterSH afterSS
 
 .include <bsd.regress.mk>
