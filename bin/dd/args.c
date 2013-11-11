@@ -1,4 +1,4 @@
-/*	$OpenBSD: args.c,v 1.19 2011/10/18 09:37:35 nicm Exp $	*/
+/*	$OpenBSD: args.c,v 1.20 2013/06/01 18:57:59 tedu Exp $	*/
 /*	$NetBSD: args.c,v 1.7 1996/03/01 01:18:58 jtc Exp $	*/
 
 /*-
@@ -48,7 +48,6 @@
 #include "extern.h"
 
 static int	c_arg(const void *, const void *);
-static int	c_conv(const void *, const void *);
 static void	f_bs(char *);
 static void	f_cbs(char *);
 static void	f_conv(char *);
