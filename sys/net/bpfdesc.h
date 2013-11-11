@@ -67,8 +67,8 @@ struct bpf_d {
 	int		bd_bufsize;	/* absolute length of buffers */
 
 	struct bpf_if *	bd_bif;		/* interface descriptor */
-	int		bd_rtout;	/* Read timeout in 'ticks' */
-	int		bd_rdStart;	/* when the read started */
+	u_long		bd_rtout;	/* Read timeout in 'ticks' */
+	u_long		bd_rdStart;	/* when the read started */
 	struct bpf_insn *bd_rfilter; 	/* read filter code */
 	struct bpf_insn *bd_wfilter; 	/* write filter code */
 	u_long		bd_rcount;	/* number of packets received */
