@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.13 2013/09/08 02:18:00 reyk Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.14 2013/11/08 22:36:22 dlg Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -51,9 +51,9 @@
 #define NRXQUEUE 1
 #define NTXQUEUE 1
 
-#define NTXDESC 64 /* tx ring size */
+#define NTXDESC 128 /* tx ring size */
 #define NTXSEGS 8 /* tx descriptors per packet */
-#define NRXDESC 64
+#define NRXDESC 128
 #define NTXCOMPDESC NTXDESC
 #define NRXCOMPDESC (NRXDESC * 2)	/* ring1 + ring2 */
 
