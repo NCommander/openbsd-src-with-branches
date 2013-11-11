@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.54 2013/03/23 21:12:31 tedu Exp $	*/
+/*	$OpenBSD: print.c,v 1.55 2013/09/22 17:28:34 guenther Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -31,14 +31,10 @@
  */
 
 #include <sys/param.h>
-#include <sys/time.h>
-#include <sys/resource.h>
 #include <sys/proc.h>
 #include <sys/stat.h>
 
-#include <sys/ucred.h>
 #include <sys/sysctl.h>
-#include <uvm/uvm_extern.h>
 
 #include <err.h>
 #include <grp.h>
