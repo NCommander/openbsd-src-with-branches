@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.262 2013/09/09 20:30:05 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.263 2013/10/22 18:15:58 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -1359,7 +1359,8 @@ send_request(void)
 	destination.sin_family = AF_INET;
 	destination.sin_len = sizeof(destination);
 
-	if (client->state != S_REQUESTING)
+	if ((client->state != S_REQUESTING) &&
+	    (interval <= config->reboot_timeout))
 		from.s_addr = client->active->address.s_addr;
 	else
 		from.s_addr = INADDR_ANY;
