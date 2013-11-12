@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmc.c,v 1.27 2009/12/04 07:43:26 claudio Exp $	*/
+/*	$OpenBSD: mmc.c,v 1.28 2010/03/01 02:09:44 krw Exp $	*/
 /*
  * Copyright (c) 2006 Michael Coulter <mjc@openbsd.org>
  *
@@ -278,7 +278,7 @@ get_media_capabilities(u_int8_t *cap, int rt)
 	return (0);
 }
 
-int
+static int
 set_speed(int wspeed)
 {
 	scsireq_t scr;
