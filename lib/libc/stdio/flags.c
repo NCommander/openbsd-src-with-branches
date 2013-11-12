@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: flags.c,v 1.6 2005/08/08 08:05:36 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,6 +35,7 @@
 #include <sys/file.h>
 #include <stdio.h>
 #include <errno.h>
+#include "local.h"
 
 /*
  * Return the (stdio) flags for a given mode.  Store the flags
