@@ -1,4 +1,4 @@
-/*	$OpenBSD: quot.c,v 1.22 2013/06/11 16:42:19 deraadt Exp $	*/
+/*	$OpenBSD: quot.c,v 1.23 2013/08/22 04:43:41 guenther Exp $	*/
 
 /*
  * Copyright (C) 1991, 1994 Wolfgang Solfrank.
@@ -53,6 +53,7 @@ static char count;
 static char unused;
 static void (*func)(int, struct fs *, char *);
 static int cmpusers(const void *, const void *);
+void	quot(char *, char *);
 static long blocksize;
 static char *header;
 static int headerlen;

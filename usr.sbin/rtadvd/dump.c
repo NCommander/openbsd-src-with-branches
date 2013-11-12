@@ -1,4 +1,4 @@
-/*	$OpenBSD: dump.c,v 1.12 2013/04/02 03:21:20 deraadt Exp $	*/
+/*	$OpenBSD: dump.c,v 1.13 2013/04/30 12:29:04 florian Exp $	*/
 /*	$KAME: dump.c,v 1.27 2002/05/29 14:23:55 itojun Exp $	*/
 
 /*
@@ -61,6 +61,7 @@
 extern struct ralist ralist;
 
 static char *ether_str(struct sockaddr_dl *);
+char *lifetime(int);
 
 static char *rtpref_str[] = {
 	"medium",		/* 00 */
@@ -86,7 +87,7 @@ ether_str(sdl)
 	return(hbuf);
 }
 
-char*
+char *
 lifetime(int lt)
 {
 	char *str;
@@ -99,7 +100,7 @@ lifetime(int lt)
 }
 
 void
-rtadvd_dump()
+rtadvd_dump(void)
 {
 	struct rainfo *rai;
 	struct prefix *pfx;
