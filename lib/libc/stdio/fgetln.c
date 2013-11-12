@@ -1,4 +1,4 @@
-/*	$OpenBSD: fgetln.c,v 1.10 2009/11/09 00:18:27 kurt Exp $ */
+/*	$OpenBSD: fgetln.c,v 1.11 2009/11/21 09:53:44 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -43,7 +43,7 @@
  * so we add 1 here.
 #endif
  */
-int
+static int
 __slbexpand(FILE *fp, size_t newsize)
 {
 	void *p;
