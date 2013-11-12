@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_file2.c,v 1.27 2013/03/20 14:46:45 deraadt Exp $	*/
+/*	$OpenBSD: kvm_file2.c,v 1.28 2013/10/22 16:40:26 guenther Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -122,6 +122,8 @@ static struct kinfo_file *kvm_deadfile_byid(kvm_t *, int, int,
 static int fill_file(kvm_t *, struct kinfo_file *, struct file *, u_long,
     struct vnode *, struct proc *, int, pid_t);
 static int filestat(kvm_t *, struct kinfo_file *, struct vnode *);
+
+mode_t	_kvm_getftype(enum vtype v_type);
 
 LIST_HEAD(proclist, proc);
 
@@ -899,6 +901,9 @@ filestat(kvm_t *kd, struct kinfo_file *kf, struct vnode *vp)
 		case VT_NON:
 			if (vp->v_flag & VCLONE)
 				ret = spec_filestat(kd, kf, vp);
+			break;
+		default:
+			ret = -1;
 			break;
 		}
 	}
