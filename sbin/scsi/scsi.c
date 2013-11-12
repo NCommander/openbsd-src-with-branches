@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi.c,v 1.26 2012/03/24 15:39:54 jsg Exp $	*/
+/*	$OpenBSD: scsi.c,v 1.27 2012/09/03 20:46:44 okan Exp $	*/
 /*	$FreeBSD: scsi.c,v 1.11 1996/04/06 11:00:28 joerg Exp $	*/
 
 /*
@@ -78,6 +78,7 @@ char	*cget(void *hook, char *name);
 void	arg_put(void *hook, int letter, void *arg, int count, char *name);
 void	mode_sense(int fd, u_char *data, int len, int pc, int page);
 void	mode_select(int fd, u_char *data, int len, int perm);
+int	editit(const char *pathname);
 
 static void
 usage(void)

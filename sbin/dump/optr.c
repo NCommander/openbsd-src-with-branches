@@ -1,4 +1,4 @@
-/*	$OpenBSD: optr.c,v 1.32 2013/04/16 19:25:59 deraadt Exp $	*/
+/*	$OpenBSD: optr.c,v 1.33 2013/04/25 06:43:20 otto Exp $	*/
 /*	$NetBSD: optr.c,v 1.11 1997/05/27 08:34:36 mrg Exp $	*/
 
 /*-
@@ -67,6 +67,8 @@ int	datesort(const void *, const void *);
  */
 static	int timeout;
 static	char *attnmessage;		/* attention message */
+
+struct fstab *allocfsent(struct fstab *fs);
 
 int
 query(char *question)

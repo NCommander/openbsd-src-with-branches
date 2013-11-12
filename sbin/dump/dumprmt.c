@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumprmt.c,v 1.25 2008/01/02 12:59:35 chl Exp $	*/
+/*	$OpenBSD: dumprmt.c,v 1.26 2009/10/27 23:59:32 deraadt Exp $	*/
 /*	$NetBSD: dumprmt.c,v 1.17 1997/06/05 16:10:47 mrg Exp $	*/
 
 /*-
@@ -70,6 +70,14 @@ static	int rmtgetb(void);
 static	void rmtgetconn(void);
 static	void rmtgets(char *, int);
 static	int rmtreply(char *);
+
+int	rmthost(char *host);
+int	rmtopen(char *tape, int mode);
+int	rmtread(char *buf, int count);
+int	rmtwrite(char *buf, int count);
+int	rmtseek(int offset, int pos);
+int	rmtioctl(int cmd, int count);
+void	rmtclose(void);
 
 extern	int ntrec;		/* blocking factor on tape */
 

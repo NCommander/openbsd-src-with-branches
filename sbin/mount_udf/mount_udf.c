@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_udf.c,v 1.4 2006/12/15 12:59:11 jmc Exp $	*/
+/*	$OpenBSD: mount_udf.c,v 1.5 2007/12/09 20:54:01 jmc Exp $	*/
 
 /*
  * Copyright (c) 2005 Pedro Martelletto <pedro@ambientworks.net>
@@ -31,6 +31,10 @@
 #include "mntopts.h"
 
 const struct mntopt opts[] = { MOPT_STDOPTS, { NULL } };
+
+u_int32_t lastblock(char *dev);
+__dead void usage(void);
+
 
 __dead void
 usage(void)
