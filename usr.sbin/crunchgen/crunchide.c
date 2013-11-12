@@ -1,4 +1,4 @@
-/* $OpenBSD: crunchide.c,v 1.5 2013/10/13 17:23:41 guenther Exp $	 */
+/* $OpenBSD: crunchide.c,v 1.6 2013/10/14 16:58:05 deraadt Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -79,6 +79,8 @@ void            hide_syms(char *);
 #ifdef _NLIST_DO_ELF
 void            elf_hide(int, char *);
 #endif
+int	in_keep_list(char *symbol);
+int	crunchide_main(int argc, char *argv[]);
 
 extern char	*__progname;
 extern int elf_mangle;
