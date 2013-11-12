@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.c,v 1.81 2012/08/30 07:48:01 ratchov Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -75,7 +75,6 @@
 #include "miofile.h"
 #include "siofile.h"
 #include "midi.h"
-#include "opt.h"
 #ifdef DEBUG
 #include "dbg.h"
 #endif
