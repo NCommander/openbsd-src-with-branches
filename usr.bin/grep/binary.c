@@ -1,4 +1,4 @@
-/*	$OpenBSD: binary.c,v 1.16 2010/07/02 20:48:48 nicm Exp $	*/
+/*	$OpenBSD: binary.c,v 1.17 2011/06/20 18:14:01 stsp Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -34,7 +34,7 @@
 
 #include "grep.h"
 
-int
+static int
 isbinary(const char *buf, size_t n)
 {
 	return (memchr(buf, '\0', n) != NULL);
