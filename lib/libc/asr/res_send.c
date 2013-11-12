@@ -1,4 +1,4 @@
-/*	$OpenBSD: res_send.c,v 1.4 2013/05/27 17:31:01 eric Exp $	*/
+/*	$OpenBSD: res_send.c,v 1.5 2013/07/12 14:36:22 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <resolv.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "asr.h"
 

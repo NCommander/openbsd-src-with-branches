@@ -1,4 +1,4 @@
-/*	$OpenBSD: isnan.c,v 1.7 2013/03/28 18:09:38 martynas Exp $	*/
+/*	$OpenBSD: isnan.c,v 1.8 2013/07/03 04:46:36 espie Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <machine/ieee.h>
 #include <float.h>
+#include <math.h>
 
 int
 __isnan(double d)

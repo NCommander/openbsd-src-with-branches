@@ -1,4 +1,4 @@
-/*	$OpenBSD: get_myaddress.c,v 1.12 2005/08/08 08:05:35 espie Exp $ */
+/*	$OpenBSD: get_myaddress.c,v 1.13 2010/09/01 14:43:34 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -40,6 +40,7 @@
 #include <rpc/types.h>
 #include <rpc/xdr.h>
 #include <rpc/pmap_prot.h>
+#include <rpc/rpc.h>
 #include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
