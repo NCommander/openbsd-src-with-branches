@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_fminf.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
+/*	$OpenBSD: s_fminf.c,v 1.2 2008/09/11 19:18:12 martynas Exp $	*/
 /*-
  * Copyright (c) 2004 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
@@ -37,11 +37,12 @@ fminf(float x, float y)
 		return (x);
 
 	/* Handle comparisons of signed zeroes. */
-	if (signbit(x) != signbit(y))
+	if (signbit(x) != signbit(y)) {
 		if (signbit(y))
 			return (y);
 		else
 			return (x);
+	}
 
 	return (x < y ? x : y);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_fmaxl.c,v 1.1 2008/12/09 20:00:35 martynas Exp $	*/
 /*-
  * Copyright (c) 2004 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
@@ -37,11 +37,12 @@ fmaxl(long double x, long double y)
 		return (x);
 
 	/* Handle comparisons of signed zeroes. */
-	if (signbit(x) != signbit(y))
+	if (signbit(x) != signbit(y)) {
 		if (signbit(x))
 			return (y);
 		else
 			return (x);
+	}
 
 	return (x > y ? x : y);
 }
