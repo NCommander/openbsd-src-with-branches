@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcp.c,v 1.51 2013/06/01 20:59:25 dtucker Exp $	*/
+/*	$OpenBSD: rcp.c,v 1.52 2013/06/17 04:48:42 guenther Exp $	*/
 /*	$NetBSD: rcp.c,v 1.9 1995/03/21 08:19:06 cgd Exp $	*/
 
 /*
@@ -93,6 +93,7 @@ void	 sink(int, char *[]);
 void	 source(int, char *[]);
 void	 tolocal(int, char *[]);
 void	 toremote(char *, int, char *[]);
+int	 do_times(int fd, const struct stat *sb);
 void	 usage(void);
 
 int
