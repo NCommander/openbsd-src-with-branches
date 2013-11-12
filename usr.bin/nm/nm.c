@@ -1,4 +1,4 @@
-/*	$OpenBSD: nm.c,v 1.35 2013/10/21 02:59:52 deraadt Exp $	*/
+/*	$OpenBSD: nm.c,v 1.37 2013/10/24 19:53:43 miod Exp $	*/
 /*	$NetBSD: nm.c,v 1.7 1996/01/14 23:04:03 pk Exp $	*/
 
 /*
@@ -51,9 +51,6 @@
 #include <getopt.h>
 #include "elfuncs.h"
 #include "util.h"
-
-/* XXX get shared code to handle a.out byte-order swaps */
-#include "byte.c"
 
 #define	SYMTABMAG	"/ "
 #define	STRTABMAG	"//"
