@@ -1,4 +1,4 @@
-/*	$OpenBSD: kgmon.c,v 1.17 2013/02/12 08:06:22 mpi Exp $	*/
+/*	$OpenBSD: kgmon.c,v 1.18 2013/03/12 09:37:16 mpi Exp $	*/
 
 /*
  * Copyright (c) 1983, 1992, 1993
@@ -75,7 +75,7 @@ int	getncpu(void);
 int
 main(int argc, char **argv)
 {
-	int ch, err, ncpu, cpuid = -1;
+	int ch, ncpu, cpuid = -1;
 	struct kvmvars kvmvars;
 	char *sys, *kmemf;
 	const char *p;
