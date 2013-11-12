@@ -1,4 +1,4 @@
-/*	$OpenBSD: pkill.c,v 1.32 2013/06/03 04:17:37 tedu Exp $	*/
+/*	$OpenBSD: pkill.c,v 1.33 2013/09/22 17:28:34 guenther Exp $	*/
 /*	$NetBSD: pkill.c,v 1.5 2002/10/27 11:49:34 kleink Exp $	*/
 
 /*-
@@ -106,6 +106,8 @@ void	usage(void);
 int	killact(struct kinfo_proc *, int);
 int	grepact(struct kinfo_proc *, int);
 void	makelist(struct listhead *, enum listtype, char *);
+char	*getargv(struct kinfo_proc *);
+int	askyn(struct kinfo_proc *);
 
 extern char *__progname;
 

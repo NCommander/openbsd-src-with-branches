@@ -1,4 +1,4 @@
-/*      $OpenBSD: scan.l,v 1.27 2011/08/03 08:48:19 otto Exp $	*/
+/*      $OpenBSD: tty.c,v 1.1 2013/09/19 16:12:01 otto Exp $	*/
 
 /*
  * Copyright (c) 2013, Otto Moerbeek <otto@drijf.net>
@@ -24,7 +24,7 @@
 
 struct termios ttysaved, ttyedit;
 
-int
+static int
 settty(struct termios *t)
 {
 	int ret;

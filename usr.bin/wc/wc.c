@@ -1,4 +1,4 @@
-/*	$OpenBSD: wc.c,v 1.12 2008/06/19 18:29:06 otto Exp $	*/
+/*	$OpenBSD: wc.c,v 1.13 2009/10/27 23:59:49 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1987, 1991, 1993
@@ -47,6 +47,7 @@ int 	rval;
 extern char *__progname;
 
 void	print_counts(int64_t, int64_t, int64_t, char *);
+void	format_and_print(long long);
 void	cnt(char *);
 
 int
