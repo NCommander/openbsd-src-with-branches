@@ -1,4 +1,4 @@
-/*	$OpenBSD: msort.c,v 1.22 2009/10/27 23:59:43 deraadt Exp $	*/
+/*	$OpenBSD: msort.c,v 1.23 2009/12/22 19:47:02 schwarze Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -50,7 +50,7 @@ typedef struct mfile {
 } MFILE;
 static u_char *wts, *wts1;
 static struct mfile *cfilebuf;
-static void *buffer;
+static char *buffer;
 static size_t bufsize;
 
 static int cmp(RECHEADER *, RECHEADER *);
