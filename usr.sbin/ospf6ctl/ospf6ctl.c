@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6ctl.c,v 1.36 2011/05/05 15:58:53 claudio Exp $ */
+/*	$OpenBSD: ospf6ctl.c,v 1.37 2013/03/22 14:25:31 sthen Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -27,6 +27,7 @@
 #include <net/if_types.h>
 
 #include <err.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -235,7 +236,7 @@ main(int argc, char *argv[])
 	}
 
 	while (ibuf->w.queued)
-		if (msgbuf_write(&ibuf->w) < 0)
+		if (msgbuf_write(&ibuf->w) <= 0 && errno != EAGAIN)
 			err(1, "write error");
 
 	while (!done) {
