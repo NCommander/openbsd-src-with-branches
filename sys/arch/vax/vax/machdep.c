@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.126 2013/07/05 21:11:57 miod Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: machdep.c,v 1.108 2000/09/13 15:00:23 thorpej Exp $	 */
 
 /*
@@ -526,7 +526,11 @@ boot(howto)
 		 * If we've been adjusting the clock, the todr will be out of
 		 * synch; adjust it now.
 		 */
-		resettodr();
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
 	}
 	if_downall();
 
