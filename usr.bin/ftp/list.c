@@ -1,4 +1,4 @@
-/*	$OpenBSD: list.c,v 1.5 2010/07/03 00:21:14 halex Exp $	*/
+/*	$OpenBSD: list.c,v 1.6 2013/11/12 22:50:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
@@ -22,7 +22,7 @@
 
 void	parse_list(char **, char *);
 
-void
+static void
 parse_unix(char **line, char *type)
 {
 	char *tok;
@@ -47,7 +47,7 @@ parse_unix(char **line, char *type)
 	}
 }
 
-void
+static void
 parse_windows(char **line, char *type)
 {
 	char *tok;
