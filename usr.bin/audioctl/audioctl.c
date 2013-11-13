@@ -1,4 +1,4 @@
-/*	$OpenBSD: audioctl.c,v 1.21 2010/07/15 03:43:12 jakemsr Exp $	*/
+/*	$OpenBSD: audioctl.c,v 1.22 2012/07/27 00:21:17 krw Exp $	*/
 /*	$NetBSD: audioctl.c,v 1.14 1998/04/27 16:55:23 augustss Exp $	*/
 
 /*
@@ -186,7 +186,7 @@ findfield(char *name)
 	return (0);
 }
 
-void
+static void
 prval(u_int format, void *valp)
 {
 	u_int v;
