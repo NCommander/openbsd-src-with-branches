@@ -1,4 +1,4 @@
-/*	$OpenBSD: percent_m.c,v 1.3 2004/05/31 10:39:08 otto Exp $	*/
+/*	$OpenBSD: percent_m.c,v 1.4 2009/10/27 23:59:30 deraadt Exp $	*/
 
  /*
   * Replace %m by system error message.
@@ -10,15 +10,15 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <string.h>
+#include "tcpd.h"
 
 #ifndef SYS_ERRLIST_DEFINED
 extern char *sys_errlist[];
 extern int sys_nerr;
 #endif
 
-char   *percent_m(obuf, ibuf)
-char   *obuf;
-char   *ibuf;
+char *
+percent_m(char*obuf, char*ibuf)
 {
     char   *bp = obuf;
     char   *cp = ibuf;
