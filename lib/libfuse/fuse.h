@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse.h,v 1.8 2013/11/01 18:16:22 syl Exp $ */
+/* $OpenBSD: fuse.h,v 1.9 2013/11/07 18:15:09 syl Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -100,6 +100,11 @@ typedef struct fuse_dirhandle {
 
 typedef int (*fuse_dirfil_t)(fuse_dirh_t, const char *, int, ino_t);
 
+/* 
+ * Fuse operations work in the same way as their UNIX file system
+ * counterparts. A major exception is that these routines return
+ * a negated errno value (-errno) on failure.
+ */
 struct fuse_operations {
 	int	(*getattr)(const char *, struct stat *);
 	int	(*readlink)(const char *, char *, size_t);
