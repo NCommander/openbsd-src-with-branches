@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.263 2013/10/20 16:35:31 deraadt Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.264 2013/11/12 20:14:22 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2575,6 +2575,7 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 				break;
 
 			bcopy(n, pstore, sizeof(*pstore));
+			bzero(&pstore->entry, sizeof(pstore->entry));
 			pstore->rule.ptr = NULL;
 			pstore->kif = NULL;
 			if (n->rule.ptr != NULL)
