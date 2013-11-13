@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.172 2013/05/31 23:10:13 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.173 2013/11/13 09:14:48 florian Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -264,13 +264,14 @@ main(int argc, char *argv[])
 			}
 
 		if (nfds > 0 && pfd[PFD_PIPE_SESSION].revents & POLLOUT)
-			if (msgbuf_write(&ibuf_se->w) < 0) {
+			if (msgbuf_write(&ibuf_se->w) <= 0 && errno != EAGAIN) {
 				log_warn("pipe write error (to SE)");
 				quit = 1;
 			}
 
 		if (nfds > 0 && pfd[PFD_PIPE_ROUTE].revents & POLLOUT)
-			if (msgbuf_write(&ibuf_rde->w) < 0) {
+			if (msgbuf_write(&ibuf_rde->w) <= 0 &&
+			    errno != EAGAIN) {
 				log_warn("pipe write error (to RDE)");
 				quit = 1;
 			}
