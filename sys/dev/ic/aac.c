@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.54 2011/07/17 22:46:48 matthew Exp $	*/
+/*	$OpenBSD: aac.c,v 1.55 2013/05/30 16:15:02 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -1186,7 +1186,7 @@ aac_alloc_commands(struct aac_softc *sc)
 {
 	struct aac_command *cm;
 	struct aac_fibmap *fm;
-	int i, error;
+	int i, error = 0;
 
 	if (sc->total_fibs + AAC_FIB_COUNT > sc->aac_max_fibs)
 		return (ENOMEM);
