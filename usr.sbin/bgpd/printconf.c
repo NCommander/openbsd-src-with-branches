@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.91 2013/10/19 15:04:25 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.92 2013/10/30 17:28:33 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -270,6 +270,7 @@ print_mainconf(struct bgpd_config *conf)
 		printf("nexthop qualify via bgp\n");
 	if (conf->flags & BGPD_FLAG_NEXTHOP_DEFAULT)
 		printf("nexthop qualify via default\n");
+	printf("fib-priority %hhu", conf->fib_priority);
 }
 
 void
