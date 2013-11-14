@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxpvar.h,v 1.34 2010/09/07 16:21:42 deraadt Exp $	*/
+/*	$OpenBSD: fxpvar.h,v 1.35 2012/04/03 23:39:09 deraadt Exp $	*/
 /*	$NetBSD: if_fxpvar.h,v 1.1 1997/06/05 02:01:58 thorpej Exp $	*/
 
 /*                  
@@ -142,7 +142,7 @@ struct fxp_softc {
 	u_int16_t sc_bundle_max;	/* max # frames per interrupt (ucode) */
 	u_int16_t sc_min_size_mask;	/* bit-mask describing the minimum
 					 * size of frame that will be bundled */
-	struct workq_task	sc_resume_wqt;
+	struct task		sc_resume_t;
 
 	u_int32_t		*sc_ucodebuf;
 	size_t			sc_ucodelen;
