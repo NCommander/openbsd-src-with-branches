@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ipw.c,v 1.95 2011/04/07 15:30:16 miod Exp $	*/
+/*	$OpenBSD: if_ipw.c,v 1.96 2013/08/07 01:06:35 bluhm Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -25,6 +25,7 @@
 
 #include <sys/param.h>
 #include <sys/sockio.h>
+#include <sys/task.h>
 #include <sys/workq.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
@@ -170,6 +171,8 @@ ipw_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_pct = pa->pa_pc;
 	sc->sc_pcitag = pa->pa_tag,
 
+	task_set(&sc->sc_resume_t, ipw_resume, sc, NULL);
+
 	/* clear device specific PCI configuration register 0x41 */
 	data = pci_conf_read(sc->sc_pct, sc->sc_pcitag, 0x40);
 	data &= ~0x0000ff00;
@@ -301,8 +304,7 @@ ipw_activate(struct device *self, int act)
 			ipw_stop(ifp, 0);
 		break;
 	case DVACT_RESUME:
-		workq_queue_task(NULL, &sc->sc_resume_wqt, 0,
-		    ipw_resume, sc, NULL);
+		task_add(systq, &sc->sc_resume_t);
 		break;
 	}
 
