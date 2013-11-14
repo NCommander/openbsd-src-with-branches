@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwivar.h,v 1.25 2009/01/07 01:01:41 jsg Exp $	*/
+/*	$OpenBSD: bwivar.h,v 1.26 2010/08/06 05:26:24 mglocker Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -620,7 +620,7 @@ struct bwi_softc {
 #define sc_txtap                 sc_txtapu.th
         int                      sc_txtap_len;
 #endif
-	struct workq_task	 sc_resume_wqt;
+	struct task		 sc_resume_t;
 };
 
 #define BWI_F_BUS_INITED	0x1
