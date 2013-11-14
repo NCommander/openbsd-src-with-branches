@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_malovar.h,v 1.27 2007/10/09 20:37:32 mglocker Exp $ */
+/*	$OpenBSD: if_malovar.h,v 1.28 2010/08/30 20:33:18 deraadt Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -365,5 +365,5 @@ struct malo_softc {
 	int			 sc_net_cur;
 	struct malo_networks	 sc_net[12];
 	struct timeout		 sc_scan_to;
-	struct workq_task	 sc_resume_wqt;
+	struct task		 sc_resume_t;
 };
