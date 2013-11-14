@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgtvar.h,v 1.13 2010/09/20 07:40:41 deraadt Exp $  */
+/*	$OpenBSD: pgtvar.h,v 1.14 2011/07/03 21:11:33 dhill Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -209,7 +209,7 @@ struct pgt_softc {
 	int			sc_txtap_len;
 #endif
 
-	struct workq_task	sc_resume_wqt;
+	struct task		sc_resume_t;
 };
 
 int	pgt_intr(void *);
