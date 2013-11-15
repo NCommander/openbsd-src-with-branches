@@ -1,4 +1,4 @@
-/*	$OpenBSD: lam.c,v 1.13 2007/06/26 05:14:52 ray Exp $	*/
+/*	$OpenBSD: lam.c,v 1.14 2009/10/27 23:59:39 deraadt Exp $	*/
 /*	$NetBSD: lam.c,v 1.2 1994/11/14 20:27:42 jtc Exp $	*/
 
 /*-
@@ -42,6 +42,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define	BIGBUFSIZ	5 * BUFSIZ
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.18 2007/09/02 15:19:25 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.19 2009/10/27 23:59:34 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.13 1997/07/01 05:37:51 lukem Exp $	*/
 
 /*
@@ -44,6 +44,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "restore.h"
 #include "extern.h"

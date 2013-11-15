@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.27 2011/04/21 01:14:21 jacekm Exp $	*/
+/*	$OpenBSD: main.c,v 1.28 2011/06/14 21:04:05 naddy Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -41,6 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "find.h"
 

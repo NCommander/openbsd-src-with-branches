@@ -1,4 +1,4 @@
-/*	$OpenBSD: renice.c,v 1.14 2009/04/20 13:58:20 millert Exp $	*/
+/*	$OpenBSD: renice.c,v 1.15 2009/10/27 23:59:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 struct renice_param {
 	int pri;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: getcap.c,v 1.2 2006/01/28 22:35:54 millert Exp $	*/
+/*	$OpenBSD: getcap.c,v 1.3 2009/10/27 23:59:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 enum captype {
 	boolean,

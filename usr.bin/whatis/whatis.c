@@ -1,4 +1,4 @@
-/*	$OpenBSD: whatis.c,v 1.12 2007/03/20 03:56:13 tedu Exp $	*/
+/*	$OpenBSD: whatis.c,v 1.13 2009/10/27 23:59:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "../man/config.h"
 #include "../man/pathnames.h"

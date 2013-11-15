@@ -1,4 +1,4 @@
-/*	$OpenBSD: locale.c,v 1.6 2013/07/01 00:39:14 fgsch Exp $	*/
+/*	$OpenBSD: locale.c,v 1.7 2013/11/13 20:44:21 deraadt Exp $	*/
 /*
  * Copyright (c) 2013 Stefan Sperling <stsp@openbsd.org>
  *
@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#include <unistd.h>
 
 extern char		*__progname;
 
