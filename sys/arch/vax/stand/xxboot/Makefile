@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2013/07/05 21:13:07 miod Exp $
+#	$OpenBSD$
 #	$NetBSD: Makefile,v 1.12 2002/02/24 01:04:25 matt Exp $
 
 S=	${.CURDIR}/../../../../
@@ -30,6 +30,9 @@ SA_AS=	library
 .include "${S}/lib/libsa/Makefile.inc"
 LIBSA=	${SALIB}
 
+STRIP?=strip
+OBJCOPY?=objcopy
+
 .if ${MACHINE} == "vax"
 .PHONY: machine-links
 beforedepend: machine-links
@@ -48,9 +51,9 @@ assym.h: $S/kern/genassym.sh Makefile ${.CURDIR}/genassym.cf
 
 ${PROG}: ${OBJS} ${LIBSA}
 	${LD} -N -Ttext 100000 -o ${PROG}.out ${OBJS} ${LIBSA}
-	/usr/bin/strip ${PROG}.out
+	${STRIP} ${PROG}.out
 	/usr/bin/size ${PROG}.out
-	/usr/bin/objcopy -O binary ${PROG}.out ${PROG}
+	${OBJCOPY} -O binary ${PROG}.out ${PROG}
 
 clean::
 	rm -f a.out [Ee]rrs mklog *.core ${PROG} ${OBJS} ${LOBJS} \
