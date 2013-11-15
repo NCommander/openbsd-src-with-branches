@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucycom.c,v 1.22 2013/04/15 09:23:02 mglocker Exp $	*/
+/*	$OpenBSD: ucycom.c,v 1.23 2013/11/07 12:52:15 pirofti Exp $	*/
 /*	$NetBSD: ucycom.c,v 1.3 2005/08/05 07:27:47 skrll Exp $	*/
 
 /*
@@ -587,16 +587,13 @@ int
 ucycom_activate(struct device *self, int act)
 {
 	struct ucycom_softc *sc = (struct ucycom_softc *)self;
-	int rv = 0;
 
 	DPRINTFN(5,("ucycom_activate: %d\n", act));
 
 	switch (act) {
 	case DVACT_DEACTIVATE:
-		if (sc->sc_subdev != NULL)
-			rv = config_deactivate(sc->sc_subdev);
 		usbd_deactivate(sc->sc_udev);
 		break;
 	}
-	return (rv);
+	return (0);
 }

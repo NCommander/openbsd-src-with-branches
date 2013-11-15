@@ -1,4 +1,4 @@
-/*	$OpenBSD: umsm.c,v 1.92 2013/09/20 15:34:51 mpi Exp $	*/
+/*	$OpenBSD: umsm.c,v 1.93 2013/11/07 10:34:20 pirofti Exp $	*/
 
 /*
  * Copyright (c) 2008 Yojiro UO <yuo@nui.org>
@@ -436,16 +436,13 @@ int
 umsm_activate(struct device *self, int act)
 {
 	struct umsm_softc *sc = (struct umsm_softc *)self;
-	int rv = 0;
 
 	switch (act) {
 	case DVACT_DEACTIVATE:
-		if (sc->sc_subdev != NULL)
-			rv = config_deactivate(sc->sc_subdev);
 		usbd_deactivate(sc->sc_udev);
 		break;
 	}
-	return (rv);
+	return (0);
 }
 
 int
