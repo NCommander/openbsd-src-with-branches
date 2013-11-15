@@ -1,4 +1,4 @@
-/*	$OpenBSD: rs.c,v 1.21 2012/03/04 04:05:15 fgsch Exp $	*/
+/*	$OpenBSD: rs.c,v 1.22 2012/12/03 19:26:24 otto Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -42,6 +42,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 long	flags;
 #define	TRANSPOSE	000001
