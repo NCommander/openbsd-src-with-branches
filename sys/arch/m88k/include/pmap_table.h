@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_table.h,v 1.3 2011/01/02 13:40:07 miod Exp $	*/
+/*	$OpenBSD: pmap_table.h,v 1.4 2011/03/23 16:54:35 pirofti Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1992 Carnegie Mellon University
@@ -38,6 +38,7 @@ struct pmap_table {
 	psize_t		size;
 	vm_prot_t	prot;
 	unsigned int	cacheability;
+	boolean_t	may_use_batc;
 };
 
 const struct pmap_table *pmap_table_build(void);
