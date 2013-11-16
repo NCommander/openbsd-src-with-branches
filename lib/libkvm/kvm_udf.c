@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_udf.c,v 1.5 2013/03/23 17:11:08 deraadt Exp $	*/
+/*	$OpenBSD: kvm_udf.c,v 1.6 2013/10/22 16:40:27 guenther Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -44,6 +44,7 @@
 #include <db.h>
 
 #include "kvm_private.h"
+#include "kvm_file.h"
 
 /* Convert file entry permission (5 bits per owner/group/user) to a mode_t */
 static mode_t
