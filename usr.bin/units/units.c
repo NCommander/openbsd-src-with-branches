@@ -1,4 +1,4 @@
-/*	$OpenBSD: units.c,v 1.17 2011/10/07 20:07:25 jmc Exp $	*/
+/*	$OpenBSD: units.c,v 1.18 2013/01/04 19:31:28 jmc Exp $	*/
 /*	$NetBSD: units.c,v 1.6 1996/04/06 06:01:03 thorpej Exp $	*/
 
 /*
@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define UNITSFILE "/usr/share/misc/units.lib"
 
