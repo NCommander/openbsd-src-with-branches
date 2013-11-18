@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_san_obsd.c,v 1.12 2006/05/13 19:04:30 brad Exp $	*/
+/*	$OpenBSD: if_san_obsd.c,v 1.13 2012/04/11 17:42:53 mikeb Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -83,10 +83,6 @@ static void wanpipe_generic_watchdog(struct ifnet*);
 static void wanpipe_generic_start(struct ifnet *);
 
 
-static char *san_ifname_format = "san%d";
-
-
-
 static sdla_t *
 wanpipe_generic_getcard(struct ifnet *ifp)
 {
@@ -111,7 +107,7 @@ wanpipe_generic_name(sdla_t *card, char *ifname, int len)
 {
 	static int	ifunit = 0;
 
-	snprintf(ifname, len, san_ifname_format, ifunit++);
+	snprintf(ifname, len, "san%d", ifunit++);
 	return (0);
 }
 
