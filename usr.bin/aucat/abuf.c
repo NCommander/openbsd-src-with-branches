@@ -1,4 +1,4 @@
-/*	$OpenBSD: abuf.c,v 1.23 2011/10/12 07:20:03 ratchov Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -44,6 +44,12 @@
 #ifdef DEBUG
 #include "dbg.h"
 #endif
+
+void abuf_dump(struct abuf *);
+int abuf_flush_do(struct abuf *);
+int abuf_fill_do(struct abuf *);
+void abuf_eof_do(struct abuf *);
+void abuf_hup_do(struct abuf *);
 
 #ifdef DEBUG
 void

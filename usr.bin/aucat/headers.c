@@ -1,4 +1,4 @@
-/*	$OpenBSD: headers.c,v 1.21 2011/10/14 10:54:12 ratchov Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -74,6 +74,8 @@ char wav_guid[14] = {
 	0x00, 0xAA, 0x00, 0x38,
 	0x9B, 0x71
 };
+
+int wav_readfmt(int, unsigned int, struct aparams *, short **);
 
 int
 wav_readfmt(int fd, unsigned int csize, struct aparams *par, short **map)

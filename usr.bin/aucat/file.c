@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.29 2012/03/29 20:08:22 ratchov Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -68,6 +68,11 @@
 
 #define MAXFDS 100
 #define TIMER_USEC 10000
+
+void timo_update(unsigned int);
+void timo_init(void);
+void timo_done(void);
+void file_sigalrm(int);
 
 struct timespec file_ts;
 struct filelist file_list;
