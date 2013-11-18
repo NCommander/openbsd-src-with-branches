@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.156 2013/10/20 13:15:35 krw Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.157 2013/11/01 17:36:19 krw Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -1057,7 +1057,7 @@ dk_mountroot(void)
 
 	error = disk_readlabel(&dl, rootdev, errbuf, sizeof(errbuf));
 	if (error)
-		panic(error);
+		panic("%s", error);
 
 	if (DL_GETPSIZE(&dl.d_partitions[part]) == 0)
 		panic("root filesystem has size 0");
