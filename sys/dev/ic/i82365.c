@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365.c,v 1.28 2009/08/02 17:20:08 blambert Exp $	*/
+/*	$OpenBSD: i82365.c,v 1.29 2010/09/06 19:20:21 deraadt Exp $	*/
 /*	$NetBSD: i82365.c,v 1.10 1998/06/09 07:36:55 thorpej Exp $	*/
 
 /*
@@ -386,6 +386,7 @@ pcic_create_event_thread(arg)
 	void *arg;
 {
 	struct pcic_handle *h = arg;
+	char name[MAXCOMLEN+1];
 	const char *cs;
 
 	switch (h->sock) {
@@ -405,8 +406,8 @@ pcic_create_event_thread(arg)
 		panic("pcic_create_event_thread: unknown pcic socket");
 	}
 
-	if (kthread_create(pcic_event_thread, h, &h->event_thread,
-	    "%s,%s", h->ph_parent->dv_xname, cs)) {
+	snprintf(name, sizeof name, "%s,%s", h->ph_parent->dv_xname, cs);
+	if (kthread_create(pcic_event_thread, h, &h->event_thread, name)) {
 		printf("%s: unable to create event thread for sock 0x%02x\n",
 		    h->ph_parent->dv_xname, h->sock);
 		panic("pcic_create_event_thread");

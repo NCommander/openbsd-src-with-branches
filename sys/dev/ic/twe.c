@@ -1,4 +1,4 @@
-/*	$OpenBSD: twe.c,v 1.40 2011/07/08 22:09:27 matthew Exp $	*/
+/*	$OpenBSD: twe.c,v 1.41 2011/07/17 22:46:48 matthew Exp $	*/
 
 /*
  * Copyright (c) 2000-2002 Michael Shalayeff.  All rights reserved.
@@ -419,7 +419,7 @@ twe_thread_create(void *v)
 	struct twe_softc *sc = v;
 
 	if (kthread_create(twe_thread, sc, &sc->sc_thread,
-	    "%s", sc->sc_dev.dv_xname)) {
+	    sc->sc_dev.dv_xname)) {
 		/* TODO disable twe */
 		printf("%s: failed to create kernel thread, disabled\n",
 		    sc->sc_dev.dv_xname);
