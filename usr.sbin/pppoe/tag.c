@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.4 2011/07/04 16:29:35 sthen Exp $	*/
+/*	$OpenBSD: tag.c,v 1.5 2011/11/05 09:20:36 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -27,6 +27,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/queue.h>
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>

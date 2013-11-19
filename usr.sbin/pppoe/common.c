@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.12 2004/05/06 20:29:04 deraadt Exp $	*/
+/*	$OpenBSD: common.c,v 1.13 2011/11/05 09:20:36 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <sys/socket.h>
+#include <sys/queue.h>
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>

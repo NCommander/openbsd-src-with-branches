@@ -1,4 +1,4 @@
-/*	$OpenBSD: pppoe.c,v 1.18 2011/04/30 18:47:48 nicm Exp $	*/
+/*	$OpenBSD: pppoe.c,v 1.19 2011/11/05 09:20:36 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
@@ -30,6 +30,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
+#include <sys/queue.h>
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>
