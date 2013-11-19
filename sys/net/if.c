@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.275 2013/11/11 09:15:34 mpi Exp $	*/
+/*	$OpenBSD: if.c,v 1.276 2013/11/18 09:16:30 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -1564,7 +1564,6 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 		switch (ifp->if_type) {
 		case IFT_ETHER:
 		case IFT_CARP:
-		case IFT_FDDI:
 		case IFT_XETHER:
 		case IFT_ISO88025:
 		case IFT_L2VLAN:
