@@ -1,4 +1,4 @@
-/*	$OpenBSD: sync.c,v 1.8 2009/04/20 17:42:21 beck Exp $	*/
+/*	$OpenBSD: sync.c,v 1.9 2012/12/04 02:36:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -256,7 +256,7 @@ sync_recv(void)
 	socklen_t addr_len;
 	ssize_t len;
 	u_int hmac_len;
-	time_t expire;
+	u_int32_t expire;
 
 	bzero(&addr, sizeof(addr));
 	bzero(buf, sizeof(buf));
