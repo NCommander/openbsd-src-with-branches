@@ -1,4 +1,4 @@
-/*	$OpenBSD: agp_i810.c,v 1.77 2013/05/15 10:24:36 jsg Exp $	*/
+/*	$OpenBSD: agp_i810.c,v 1.78 2013/06/06 16:14:26 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2000 Doug Rabson
@@ -569,6 +569,9 @@ agp_i810_attach(struct device *parent, struct device *self, void *aux)
 		} else
 			printf(": no preallocated video memory\n");
 #endif
+
+		/* XXX */
+		isc->stolen = 0;
 
 		/* GATT address is already in there, make sure it's enabled */
 		gatt->ag_physical = READ4(AGP_I810_PGTBL_CTL) & ~1;
