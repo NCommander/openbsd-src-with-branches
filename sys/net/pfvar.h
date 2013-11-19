@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.390 2013/10/12 11:55:46 henning Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.391 2013/10/12 12:13:11 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1191,6 +1191,9 @@ extern struct pf_state_tree	 pf_statetbl;
 struct pfi_kif_cmp {
 	char				 pfik_name[IFNAMSIZ];
 };
+
+struct ifnet;
+struct ifg_group;
 
 struct pfi_kif {
 	char				 pfik_name[IFNAMSIZ];
