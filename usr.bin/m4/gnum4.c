@@ -1,4 +1,4 @@
-/* $OpenBSD: gnum4.c,v 1.41 2010/09/07 19:58:09 marco Exp $ */
+/* $OpenBSD: gnum4.c,v 1.42 2011/11/06 12:25:43 espie Exp $ */
 
 /*
  * Copyright (c) 1999 Marc Espie
@@ -294,7 +294,7 @@ add_replace(const char *string, regex_t *re, const char *replace, regmatch_t *pm
 				p++;
 				continue;
 			}
-			if (isdigit(p[1])) {
+			if (isdigit((unsigned char)p[1])) {
 				add_sub(*(++p) - '0', string, re, pm);
 				continue;
 			}
