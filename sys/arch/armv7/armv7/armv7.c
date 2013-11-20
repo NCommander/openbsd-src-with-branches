@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: armv7.c,v 1.1 2013/11/06 19:08:06 syl Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
@@ -134,6 +134,10 @@ struct board_dev beaglebone_devs[] = {
 	{ "dmtimer",	0 },
 	{ "dmtimer",	1 },
 	{ "omdog",	0 },
+	{ "omgpio",	0 },
+	{ "omgpio",	1 },
+	{ "omgpio",	2 },
+	{ "omgpio",	3 },
 	{ "ommmc",	0 },		/* HSMMC0 */
 	{ "ommmc",	1 },		/* HSMMC1 */
 	{ "com",	0 },		/* UART0 */
