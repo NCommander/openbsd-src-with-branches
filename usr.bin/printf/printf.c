@@ -1,4 +1,4 @@
-/*	$OpenBSD: printf.c,v 1.17 2009/10/27 23:59:41 deraadt Exp $	*/
+/*	$OpenBSD: printf.c,v 1.18 2011/06/18 02:36:22 guenther Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -291,7 +291,7 @@ print_escape(const char *str)
 
 	case 'x':
 		str++;
-		for (value = 0; isxdigit(*str); str++) {
+		for (value = 0; isxdigit((unsigned char)*str); str++) {
 			value <<= 4;
 			value += hextobin(*str);
 		}
