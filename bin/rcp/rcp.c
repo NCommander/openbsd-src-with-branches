@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcp.c,v 1.52 2013/06/17 04:48:42 guenther Exp $	*/
+/*	$OpenBSD: rcp.c,v 1.53 2013/11/12 04:36:02 deraadt Exp $	*/
 /*	$NetBSD: rcp.c,v 1.9 1995/03/21 08:19:06 cgd Exp $	*/
 
 /*
@@ -652,7 +652,7 @@ sink(int argc, char *argv[])
 		if (*cp++ != ' ')
 			SCREWUP("mode not delimited");
 
-		for (size = 0; isdigit(*cp);)
+		for (size = 0; isdigit((unsigned char)*cp);)
 			size = size * 10 + (*cp++ - '0');
 		if (*cp++ != ' ')
 			SCREWUP("size not delimited");

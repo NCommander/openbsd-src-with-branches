@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.18 2007/11/29 07:39:09 chl Exp $	*/
+/*	$OpenBSD: util.c,v 1.19 2009/10/27 23:59:22 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $	*/
 
 /*-
@@ -86,7 +86,8 @@ okname(char *cp0)
 		c = *cp;
 		if (c & 0200)
 			goto bad;
-		if (!isalpha(c) && !isdigit(c) && c != '_' && c != '-')
+		if (!isalpha((unsigned char)c) &&
+		    !isdigit((unsigned char)c) && c != '_' && c != '-')
 			goto bad;
 	} while (*++cp);
 	return (1);
