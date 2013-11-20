@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.12 2013/03/25 17:46:24 deraadt Exp $	*/
+/*	$OpenBSD: param.h,v 1.13 2013/03/26 05:04:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -87,7 +87,7 @@
 /*
  * dvmamap manages a range of DVMA addresses intended to create double
  * mappings of physical memory. In a way, `dvmamap' is a submap of the
- * VM map `phys_map'. The difference is the use of the `resource map'
+ * VM map `phys_map'. The difference is the use of the `extent'
  * routines to manage page allocation, allowing DVMA addresses to be
  * allocated and freed from within interrupt routines.
  *
