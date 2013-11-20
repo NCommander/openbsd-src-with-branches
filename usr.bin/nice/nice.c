@@ -1,4 +1,4 @@
-/*	$OpenBSD: nice.c,v 1.10 2009/06/17 09:51:51 sobrado Exp $	*/
+/*	$OpenBSD: nice.c,v 1.11 2009/10/27 23:59:41 deraadt Exp $	*/
 /*	$NetBSD: nice.c,v 1.9 1995/08/31 23:30:58 jtc Exp $	*/
 
 /*
@@ -54,7 +54,7 @@ main(int argc, char *argv[])
 	setlocale(LC_ALL, "");
 
 	/* handle obsolete -number syntax */
-	if (argc > 1 && argv[1][0] == '-' && isdigit(argv[1][1])) {
+	if (argc > 1 && argv[1][0] == '-' && isdigit((unsigned char)argv[1][1])) {
 		niceness = atoi(argv[1] + 1);
 		argc--;
 		argv++;
