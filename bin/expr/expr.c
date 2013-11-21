@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.17 2006/06/21 18:28:24 deraadt Exp $	*/
+/*	$OpenBSD: expr.c,v 1.18 2013/03/28 08:40:31 nicm Exp $	*/
 /*	$NetBSD: expr.c,v 1.3.6.1 1996/06/04 20:41:47 cgd Exp $	*/
 
 /*
@@ -116,7 +116,7 @@ is_integer(struct val *vp, int *r)
 		s++;
 
 	while (*s) {
-		if (!isdigit(*s))
+		if (!isdigit((unsigned char)*s))
 			return 0;
 
 		i *= 10;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: stty.c,v 1.13 2009/10/27 23:59:22 deraadt Exp $	*/
+/*	$OpenBSD: stty.c,v 1.14 2009/10/28 20:58:38 deraadt Exp $	*/
 /*	$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $	*/
 
 /*-
@@ -111,7 +111,7 @@ args:	argc -= optind;
 		if (msearch(&argv, &i))
 			continue;
 
-		if (isdigit(**argv)) {
+		if (isdigit((unsigned char)**argv)) {
 			const char *error;
 			int speed;
 

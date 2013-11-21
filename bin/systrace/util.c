@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.10 2003/06/16 06:36:40 itojun Exp $	*/
+/*	$OpenBSD: util.c,v 1.11 2006/04/26 20:19:25 sturm Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -81,7 +81,7 @@ strrpl(char *str, size_t size, char *match, char *value)
 
 	/* Try to match against the variable */
 	while ((p = strchr(p, match[0])) != NULL) {
-		if (!strncmp(p, match, len) && !isalnum(p[len]))
+		if (!strncmp(p, match, len) && !isalnum((unsigned char)p[len]))
 			break;
 		p += len;
 
