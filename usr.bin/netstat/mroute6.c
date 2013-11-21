@@ -1,4 +1,4 @@
-/*	$OpenBSD: mroute6.c,v 1.10 2007/12/14 18:35:46 deraadt Exp $	*/
+/*	$OpenBSD: mroute6.c,v 1.11 2009/02/07 15:06:04 chl Exp $	*/
 
 /*
  * Copyright (C) 1998 WIDE Project.
@@ -72,6 +72,7 @@
 #include <sys/sysctl.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 
 #include <netinet/in.h>
 

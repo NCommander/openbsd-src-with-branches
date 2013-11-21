@@ -1,4 +1,4 @@
-/*	$OpenBSD: net80211.c,v 1.8 2012/07/13 20:20:49 stsp Exp $	*/
+/*	$OpenBSD: net80211.c,v 1.9 2012/12/05 23:20:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Reyk Floeter <reyk@openbsd.org>
@@ -23,6 +23,7 @@
 #include <sys/ioctl.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
