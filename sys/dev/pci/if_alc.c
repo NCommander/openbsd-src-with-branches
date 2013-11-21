@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_alc.c,v 1.22 2012/11/29 21:10:32 brad Exp $	*/
+/*	$OpenBSD: if_alc.c,v 1.23 2013/08/07 01:06:33 bluhm Exp $	*/
 /*-
  * Copyright (c) 2009, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -47,7 +47,6 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
-#include <net/if_llc.h>
 #include <net/if_media.h>
 
 #ifdef INET

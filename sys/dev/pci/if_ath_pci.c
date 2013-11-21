@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_ath_pci.c,v 1.21 2010/07/02 06:08:38 reyk Exp $   */
+/*      $OpenBSD: if_ath_pci.c,v 1.22 2010/08/27 19:44:44 deraadt Exp $   */
 /*	$NetBSD: if_ath_pci.c,v 1.7 2004/06/30 05:58:17 mycroft Exp $	*/
 
 /*-
@@ -54,7 +54,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_llc.h>
 #include <net/if_arp.h>
 #ifdef INET
 #include <netinet/in.h>
