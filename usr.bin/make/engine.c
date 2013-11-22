@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.45 2013/05/30 08:58:38 espie Exp $ */
+/*	$OpenBSD: engine.c,v 1.46 2013/08/26 14:15:07 naddy Exp $ */
 /*
  * Copyright (c) 2012 Marc Espie.
  *
@@ -763,7 +763,7 @@ do_run_command(Job *job)
 		else
 			break;
 	}
-	while (isspace(*cmd))
+	while (ISSPACE(*cmd))
 		cmd++;
 	/* Print the command before fork if make -n or !silent*/
 	if ( noExecute || !silent)
