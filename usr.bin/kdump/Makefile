@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2013/07/16 00:41:03 guenther Exp $
+#	$OpenBSD: Makefile,v 1.24 2013/08/22 02:02:33 guenther Exp $
 
 LDSTATIC=${STATIC}
 PROG=	kdump
@@ -16,6 +16,8 @@ ioctl.c: ${.CURDIR}/Makefile ${.CURDIR}/mkioctls
 	    /usr/include/dev/systrace.h \
 	    /usr/include/dev/wscons/wsconsio.h \
 	    /usr/include/dev/vndioctl.h \
+	    /usr/include/dev/pci/drm/drm.h \
+	    /usr/include/dev/usb/usb.h \
 	    /usr/include/net/bpf.h \
 	    /usr/include/net/if_ppp.h \
 	    /usr/include/net/if_pppoe.h \
@@ -37,7 +39,8 @@ ioctl.c: ${.CURDIR}/Makefile ${.CURDIR}/mkioctls
 	    /usr/include/sys/radioio.h \
 	    /usr/include/sys/scanio.h \
 	    /usr/include/sys/scsiio.h \
-	    /usr/include/sys/sockio.h > ioctl.c
+	    /usr/include/sys/sockio.h \
+	    /usr/include/sys/videoio.h > ioctl.c
 
 kdump_subr.c: ${.CURDIR}/mksubr
 	sh ${.CURDIR}/mksubr /usr/include > ${.TARGET}
