@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.30 2012/08/14 08:48:42 chl Exp $	*/
+/*	$OpenBSD: misc.c,v 1.31 2013/03/21 18:45:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -266,7 +266,7 @@ getuint(disk_t *disk, char *prompt, u_int32_t oval, u_int32_t maxval)
 		}
 
 		/* deal with units */
-		switch (tolower(buf[n-1])) {
+		switch (tolower((unsigned char)buf[n-1])) {
 		case 'c':
 			unit = 'c';
 			mult = secpercyl;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumprmt.c,v 1.26 2009/10/27 23:59:32 deraadt Exp $	*/
+/*	$OpenBSD: dumprmt.c,v 1.27 2013/11/12 04:59:02 deraadt Exp $	*/
 /*	$NetBSD: dumprmt.c,v 1.17 1997/06/05 16:10:47 mrg Exp $	*/
 
 /*-
@@ -162,7 +162,7 @@ static int
 okname(char *cp0)
 {
 	char *cp;
-	int c;
+	unsigned char c;
 
 	for (cp = cp0; *cp; cp++) {
 		c = *cp;
