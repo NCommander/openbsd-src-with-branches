@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.115 2013/10/17 16:27:44 bluhm Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.116 2013/10/20 11:03:01 phessler Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -144,7 +144,7 @@ tcp_usrreq(so, req, m, nam, control, p)
 #ifdef INET6
 		if (sotopf(so) == PF_INET6)
 			return in6_control(so, (u_long)m, (caddr_t)nam,
-			    (struct ifnet *)control, 0);
+			    (struct ifnet *)control);
 		else
 #endif /* INET6 */
 			return (in_control(so, (u_long)m, (caddr_t)nam,
