@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.18 2009/12/10 22:07:19 kettenis Exp $ */
+/*	$OpenBSD: cmd.c,v 1.19 2011/10/02 22:20:49 edd Exp $ */
 
 /*
  * Copyright (c) 1999-2001 Mats O Jansson.  All rights reserved.
@@ -264,9 +264,9 @@ Xtimezone(cmd_t *cmd)
 		if (number(cmd->args, &num) == 0) {
 			tz->tz_minuteswest = num;
 			c = cmd->args;
-			while ((*c != '\0') && !isspace(*c))
+			while ((*c != '\0') && !isspace((unsigned char)*c))
 				c++;
-			while (isspace(*c))
+			while (isspace((unsigned char)*c))
 				c++;
 			if (strlen(c) != 0 && number(c, &num) == 0)
 				tz->tz_dsttime = num;

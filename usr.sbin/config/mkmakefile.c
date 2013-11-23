@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkmakefile.c,v 1.37 2012/09/17 17:36:13 espie Exp $	*/
+/*	$OpenBSD: mkmakefile.c,v 1.38 2013/10/29 15:37:56 espie Exp $	*/
 /*	$NetBSD: mkmakefile.c,v 1.34 1997/02/02 21:12:36 thorpej Exp $	*/
 
 /*
@@ -375,7 +375,7 @@ emitfiles(FILE *fp, int suffix)
 	struct files *fi;
 	int lpos, len, sp;
 	const char *fpath;
-	int uppersuffix = toupper(suffix);
+	char uppersuffix = toupper((unsigned char)suffix);
 
 	if (fprintf(fp, "%cFILES=", uppersuffix) < 0)
 		return (1);
