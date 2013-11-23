@@ -1,4 +1,4 @@
-/*	$OpenBSD: do_command.c,v 1.36 2011/08/22 19:32:42 millert Exp $	*/
+/*	$OpenBSD: do_command.c,v 1.37 2013/03/07 11:13:54 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -511,7 +511,7 @@ safe_p(const char *usernm, const char *s) {
 	const char *t;
 	int ch, first;
 
-	for (t = s, first = 1; (ch = *t++) != '\0'; first = 0) {
+	for (t = s, first = 1; (ch = (unsigned char)*t++) != '\0'; first = 0) {
 		if (isascii(ch) && isprint(ch) &&
 		    (isalnum(ch) || ch == '_' ||
 		    (!first && strchr(safe_delim, ch))))
