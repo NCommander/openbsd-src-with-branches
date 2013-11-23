@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.3 2012/06/16 00:08:32 jmatthew Exp $ */
+/*	$OpenBSD: util.c,v 1.4 2013/11/02 13:31:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 2009 Martin Hedenfalk <martin@bzero.se>
@@ -67,7 +67,7 @@ normalize_dn(char *dn)
 			if (s[n] == '\0' || s[n] == ',')
 				continue;
 		}
-		*p++ = tolower(*s);
+		*p++ = tolower((unsigned char)*s);
 	}
 	*p = '\0';
 }
