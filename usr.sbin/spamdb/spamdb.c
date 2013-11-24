@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamdb.c,v 1.27 2013/08/21 16:13:29 millert Exp $	*/
+/*	$OpenBSD: spamdb.c,v 1.28 2013/11/15 22:20:04 millert Exp $	*/
 
 /*
  * Copyright (c) 2004 Bob Beck.  All rights reserved.
@@ -112,8 +112,8 @@ dbupdate(DB *db, char *ip, int add, int type)
 					errx(-1, "not an email address: %s", ip);
 				/* ensure address is lower case*/
 				for (i = 0; ip[i] != '\0'; i++)
-					if (isupper(ip[i]))
-						ip[i] = (char)tolower(ip[i]);
+					if (isupper((unsigned char)ip[i]))
+						ip[i] = tolower((unsigned char)ip[i]);
 				break;
 			default:
 				errx(-1, "unknown type %d", type);
