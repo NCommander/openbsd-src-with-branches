@@ -1,4 +1,4 @@
-/*	$OpenBSD: printjob.c,v 1.46 2010/03/22 16:50:38 deraadt Exp $	*/
+/*	$OpenBSD: printjob.c,v 1.47 2012/03/04 04:05:15 fgsch Exp $	*/
 /*	$NetBSD: printjob.c,v 1.31 2002/01/21 14:42:30 wiz Exp $	*/
 
 /*
@@ -1093,7 +1093,7 @@ sendmail(char *user, int bombed)
 	struct stat stb;
 	FILE *fp;
 
-	if (user[0] == '-' || user[0] == '/' || !isprint(user[0]))
+	if (user[0] == '-' || user[0] == '/' || !isprint((unsigned char)user[0]))
 		return;
 	pipe(p);
 	if ((s = dofork(DORETURN)) == 0) {		/* child */

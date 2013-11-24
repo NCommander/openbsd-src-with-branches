@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpr.c,v 1.43 2013/02/15 08:28:08 mpi Exp $ */
+/*	$OpenBSD: lpr.c,v 1.44 2013/08/08 03:16:14 guenther Exp $ */
 /*	$NetBSD: lpr.c,v 1.19 2000/10/11 20:23:52 is Exp $	*/
 
 /*
@@ -145,7 +145,7 @@ main(int argc, char **argv)
 		switch (ch) {
 
 		case '#':		/* n copies */
-			if (isdigit(*optarg)) {
+			if (isdigit((unsigned char)*optarg)) {
 				i = atoi(optarg);
 				if (i > 0)
 					ncopies = i;

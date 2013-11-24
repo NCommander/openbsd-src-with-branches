@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmjob.c,v 1.19 2012/03/04 04:05:15 fgsch Exp $	*/
+/*	$OpenBSD: rmjob.c,v 1.20 2012/11/29 02:15:44 guenther Exp $	*/
 /*	$NetBSD: rmjob.c,v 1.16 2000/04/16 14:43:58 mrg Exp $	*/
 
 /*
@@ -279,7 +279,7 @@ chk(char *file)
 	/*
 	 * Check the request list
 	 */
-	for (n = 0, cp = file+3; isdigit(*cp); )
+	for (n = 0, cp = file+3; isdigit((unsigned char)*cp); )
 		n = n * 10 + (*cp++ - '0');
 	for (r = requ; r < &requ[requests]; r++)
 		if (*r == n && isowner(line+1, file))
