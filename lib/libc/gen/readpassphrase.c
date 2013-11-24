@@ -1,4 +1,4 @@
-/*	$OpenBSD: readpassphrase.c,v 1.22 2010/01/13 10:20:54 dtucker Exp $	*/
+/*	$OpenBSD: readpassphrase.c,v 1.23 2010/05/14 13:30:34 millert Exp $	*/
 
 /*
  * Copyright (c) 2000-2002, 2007, 2010
@@ -117,11 +117,11 @@ restart:
 		if (p < end) {
 			if ((flags & RPP_SEVENBIT))
 				ch &= 0x7f;
-			if (isalpha(ch)) {
+			if (isalpha((unsigned char)ch)) {
 				if ((flags & RPP_FORCELOWER))
-					ch = (char)tolower(ch);
+					ch = (char)tolower((unsigned char)ch);
 				if ((flags & RPP_FORCEUPPER))
-					ch = (char)toupper(ch);
+					ch = (char)toupper((unsigned char)ch);
 			}
 			*p++ = ch;
 		}
