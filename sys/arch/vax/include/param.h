@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.40 2013/03/26 05:04:10 deraadt Exp $ */
+/*	$OpenBSD: param.h,v 1.41 2013/06/13 05:12:51 deraadt Exp $ */
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -63,7 +63,7 @@
 #define	USPACE_ALIGN	(0)			/* u-area alignment 0-none */
 #define	REDZONEADDR	(VAX_NBPG*3)		/* Must be > sizeof(struct user) */
 
-#define	NMBCLUSTERS	768			/* map size, max cluster allocation */
+#define	NMBCLUSTERS	1024			/* map size, max cluster allocation */
 
 #ifndef	MSGBUFSIZE
 #define	MSGBUFSIZE	(2 * PAGE_SIZE)		/* default message buffer size */
