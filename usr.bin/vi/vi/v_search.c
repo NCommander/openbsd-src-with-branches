@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_search.c,v 1.10 2006/04/22 03:09:15 ray Exp $	*/
+/*	$OpenBSD: v_search.c,v 1.11 2009/10/27 23:59:48 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -91,7 +91,7 @@ v_exaddr(sp, vp, dir)
 	    (O_ISSET(sp, O_SEARCHINCR) ? TXT_SEARCHINCR : 0)))
 		return (1);
 
-	tp = CIRCLEQ_FIRST(&sp->tiq);
+	tp = TAILQ_FIRST(&sp->tiq);
 
 	/* If the user backspaced over the prompt, do nothing. */
 	if (tp->term == TERM_BS)

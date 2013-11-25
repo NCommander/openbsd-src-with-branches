@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.18 2009/02/01 21:57:21 miod Exp $	*/
+/*	$OpenBSD: main.c,v 1.19 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -86,7 +86,7 @@ editor(gp, argc, argv)
 
 	/* Structures shared by screens so stored in the GS structure. */
 	CIRCLEQ_INIT(&gp->frefq);
-	CIRCLEQ_INIT(&gp->dcb_store.textq);
+	TAILQ_INIT(&gp->dcb_store.textq);
 	LIST_INIT(&gp->cutq);
 	LIST_INIT(&gp->seqq);
 
