@@ -1,4 +1,4 @@
-/*	$OpenBSD: bdes.c,v 1.16 2009/10/27 23:59:36 deraadt Exp $	*/
+/*	$OpenBSD: bdes.c,v 1.17 2011/01/20 22:12:42 jasper Exp $	*/
 /*	$NetBSD: bdes.c,v 1.2 1995/03/26 03:33:19 glass Exp $	*/
 
 /*-
@@ -430,13 +430,13 @@ setbits(char *s, int mult)
 	/*
 	 * skip white space
 	 */
-	while (isspace(*s))
+	while (isspace((unsigned char)*s))
 		s++;
 	/*
 	 * get the integer
 	 */
 	for (p = s; *p; p++) {
-		if (isdigit(*p))
+		if (isdigit((unsigned char)*p))
 			n = n * 10 + *p - '0';
 		else {
 			err(1, "bad decimal digit in MAC length");

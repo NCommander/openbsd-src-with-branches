@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.4 2011/04/19 23:54:00 matthew Exp $	*/
+/*	$OpenBSD: misc.c,v 1.5 2013/06/01 18:47:55 reyk Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Reyk Floeter <reyk@openbsd.org>
@@ -165,7 +165,7 @@ lg_strip(char *str)
 	if ((len = strlen(str)) < 1)
 		return (0); /* XXX EINVAL? */
 
-	if (isspace(str[len - 1])) {
+	if (isspace((unsigned char)str[len - 1])) {
 		str[len - 1] = '\0';
 		return (lg_strip(str));
 	}
