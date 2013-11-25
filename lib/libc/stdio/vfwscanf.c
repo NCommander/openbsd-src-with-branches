@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfwscanf.c,v 1.1 2011/10/16 13:20:51 stsp Exp $ */
+/*	$OpenBSD: vfwscanf.c,v 1.2 2012/01/18 17:23:11 chl Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#include <ctype.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <locale.h>
@@ -324,7 +323,7 @@ literal:
 			return (EOF);
 
 		default:	/* compat */
-			if (isupper(c))
+			if (iswupper(c))
 				flags |= LONG;
 			c = CT_INT;
 			base = 10;
