@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.336 2013/10/10 00:59:18 dtucker Exp $
+#	$OpenBSD: Makefile,v 1.337 2013/11/03 18:28:34 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -130,7 +130,7 @@ distribution-etc-root-var: distrib-dirs
 	${INSTALL} -c -o root -g wheel -m 600 snmpd.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 ldapd.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 ypldap.conf ${DESTDIR}/etc
-	${INSTALL} -c -o root -g _nsd -m 640 nsd.conf ${DESTDIR}/etc
+	${INSTALL} -c -o root -g _nsd -m 640 nsd.conf ${DESTDIR}/var/nsd/etc
 	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 555 \
 	    etc.${MACHINE}/MAKEDEV ${DESTDIR}/dev
 	cd root; \
