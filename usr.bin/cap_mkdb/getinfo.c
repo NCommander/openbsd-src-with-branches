@@ -1,4 +1,4 @@
-/*	$OpenBSD: getinfo.c,v 1.17 2011/07/04 21:34:54 nicm Exp $	*/
+/*	$OpenBSD: getinfo.c,v 1.18 2011/07/22 01:11:05 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -235,7 +235,7 @@ getent(char **cap, u_int *len, char **db_array, FILE *fp, char *name, int depth)
 					bp = buf;
 				}
 
-				c = *bp++;
+				c = (unsigned char)*bp++;
 				if (c == '\n') {
 					if (bp >= b_end) {
 						size_t n;
@@ -598,7 +598,7 @@ igetnext(char **cap, char **db_array)
 				bp = buf;
 			}
 
-			c = *bp++;
+			c = (unsigned char)*bp++;
 			if (c == '\n') {
 				if (bp >= b_end) {
 					size_t n;
