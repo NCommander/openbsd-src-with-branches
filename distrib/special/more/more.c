@@ -1,4 +1,4 @@
-/*	$OpenBSD: more.c,v 1.31 2010/04/28 18:15:49 jsg Exp $	*/
+/*	$OpenBSD: more.c,v 1.32 2012/03/04 04:05:15 fgsch Exp $	*/
 
 /*
  * Copyright (c) 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -236,7 +236,7 @@ main(int argc, char **argv)
 			} else {
 				initopt++;
 				for (initline = 0; *s != '\0'; s++) {
-					if (isdigit(*s))
+					if (isdigit((unsigned char)*s))
 						initline =
 						    initline * 10 + *s - '0';
 				}
