@@ -1,4 +1,4 @@
-/*	$OpenBSD: put.c,v 1.10 2009/10/27 23:59:47 deraadt Exp $	*/
+/*	$OpenBSD: put.c,v 1.11 2013/11/25 23:27:11 krw Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -160,7 +160,7 @@ put(sp, cbp, namep, cp, rp, append)
 	 * the intermediate lines, because the line changes will lose
 	 * the cached line.
 	 */
-	if (TAILQ_EMPTY(&cbp->textq)) {
+	if (TAILQ_NEXT(tp, q) == NULL) {
 		if (clen > 0) {
 			memcpy(t, p, clen);
 			t += clen;
