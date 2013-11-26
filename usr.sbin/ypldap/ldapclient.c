@@ -174,7 +174,7 @@ client_dispatch_dns(int fd, short event, void *p)
 			shut = 1;
 		break;
 	case EV_WRITE:
-		if (msgbuf_write(&ibuf->w) == -1)
+		if (msgbuf_write(&ibuf->w) == -1 && errno != EAGAIN)
 			fatal("msgbuf_write");
 		imsg_event_add(iev);
 		return;
@@ -276,7 +276,7 @@ client_dispatch_parent(int fd, short event, void *p)
 			shut = 1;
 		break;
 	case EV_WRITE:
-		if (msgbuf_write(&ibuf->w) == -1)
+		if (msgbuf_write(&ibuf->w) == -1 && errno != EAGAIN)
 			fatal("msgbuf_write");
 		imsg_event_add(iev);
 		return;
