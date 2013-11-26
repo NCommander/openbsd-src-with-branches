@@ -1,4 +1,4 @@
-/*	$OpenBSD: xdr_rec.c,v 1.15 2010/09/01 14:43:34 millert Exp $ */
+/*	$OpenBSD: xdr_rec.c,v 1.16 2013/04/17 17:40:35 tedu Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -95,7 +95,7 @@ static struct  xdr_ops xdrrec_ops = {
  * meet the needs of xdr and rpc based on tcp.
  */
 
-#define LAST_FRAG ((u_int32_t)(1 << 31))
+#define LAST_FRAG ((u_int32_t)(1U << 31))
 
 typedef struct rec_strm {
 	caddr_t tcp_handle;

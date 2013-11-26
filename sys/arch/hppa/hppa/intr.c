@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.40 2011/05/12 12:54:38 kettenis Exp $	*/
+/*	$OpenBSD: intr.c,v 1.41 2013/07/12 04:08:26 jsg Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -126,7 +126,7 @@ cpu_intr_init(void)
 	mtctl(ci->ci_mask, CR_EIEM);
 	/* ack the unwanted interrupts */
 	mfctl(CR_EIRR, mask);
-	mtctl(mask & (1 << 31), CR_EIRR);
+	mtctl(mask & (1U << 31), CR_EIRR);
 
 	/* in spl*() we trust, clock is started in initclocks() */
 	ci->ci_psw |= PSL_I;

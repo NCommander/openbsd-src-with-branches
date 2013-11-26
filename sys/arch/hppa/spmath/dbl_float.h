@@ -1,4 +1,4 @@
-/*	$OpenBSD: dbl_float.h,v 1.10 2004/01/02 14:39:01 mickey Exp $	*/
+/*	$OpenBSD: dbl_float.h,v 1.11 2006/11/29 10:40:44 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -305,8 +305,8 @@
 #define Dbl_setzerop1(dbl_value) Dallp1(dbl_value) = 0
 #define Dbl_setzerop2(dbl_value) Dallp2(dbl_value) = 0
 #define Dbl_setnegativezero(dbl_value) \
-    Dallp1(dbl_value) = 1 << 31; Dallp2(dbl_value) = 0
-#define Dbl_setnegativezerop1(dbl_value) Dallp1(dbl_value) = 1 << 31
+    Dallp1(dbl_value) = 1U << 31; Dallp2(dbl_value) = 0
+#define Dbl_setnegativezerop1(dbl_value) Dallp1(dbl_value) = 1U << 31
 
 /* Use the following macro for both overflow & underflow conditions */
 #define ovfl -
