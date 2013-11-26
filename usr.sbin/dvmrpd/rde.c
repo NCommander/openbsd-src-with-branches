@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.21 2009/09/06 09:52:14 michele Exp $ */
+/*	$OpenBSD: rde.c,v 1.22 2009/11/02 20:31:50 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -209,7 +209,7 @@ rde_dispatch_imsg(int fd, short event, void *bula)
 			fatalx("pipe closed");
 	}
 	if (event & EV_WRITE) {
-		if (msgbuf_write(&ibuf->w) == -1)
+		if (msgbuf_write(&ibuf->w) == -1 && errno != EAGAIN)
 			fatal("msgbuf_write");
 	}
 

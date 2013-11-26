@@ -366,7 +366,7 @@ main_dispatch_dvmrpe(int fd, short event, void *bula)
 			fatalx("pipe closed");
 	}
 	if (event & EV_WRITE) {
-		if (msgbuf_write(&ibuf->w) == -1)
+		if (msgbuf_write(&ibuf->w) == -1 && errno != EAGAIN)
 			fatal("msgbuf_write");
 	}
 
@@ -419,7 +419,7 @@ main_dispatch_rde(int fd, short event, void *bula)
 			fatalx("pipe closed");
 	}
 	if (event & EV_WRITE) {
-		if (msgbuf_write(&ibuf->w) == -1)
+		if (msgbuf_write(&ibuf->w) == -1 && errno != EAGAIN)
 			fatal("msgbuf_write");
 	}
 
