@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_txt.c,v 1.23 2013/05/14 11:51:41 millert Exp $	*/
+/*	$OpenBSD: v_txt.c,v 1.24 2013/11/25 23:27:11 krw Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -1844,7 +1844,7 @@ txt_backup(sp, tiqh, tp, flagsp)
 	TEXT *ntp;
 
 	/* Get a handle on the previous TEXT structure. */
-	if ((ntp = TAILQ_PREV(tp, _texth, q))) {
+	if ((ntp = TAILQ_PREV(tp, _texth, q)) == NULL) {
 		if (!FL_ISSET(*flagsp, TXT_REPLAY))
 			msgq(sp, M_BERR,
 			    "193|Already at the beginning of the insert");
