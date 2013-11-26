@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.32 2012/05/02 13:41:15 gsoares Exp $	*/
+/*	$OpenBSD: main.c,v 1.33 2012/05/21 13:14:30 gsoares Exp $	*/
 /*	$NetBSD: main.c,v 1.6 1995/05/21 16:54:10 mycroft Exp $	*/
 
 /*
@@ -669,13 +669,13 @@ makeargv(void)
 			ret = 1;
 			break;
 		}
-		while (isspace(*cp))
+		while (isspace((unsigned char)*cp))
 			cp++;
 		if (*cp == '\0')
 			break;
 		*argp++ = cp;
 		margc += 1;
-		while (*cp != '\0' && !isspace(*cp))
+		while (*cp != '\0' && !isspace((unsigned char)*cp))
 			cp++;
 		if (*cp == '\0')
 			break;
