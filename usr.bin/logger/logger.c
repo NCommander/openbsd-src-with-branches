@@ -1,4 +1,4 @@
-/*	$OpenBSD: logger.c,v 1.10 2007/04/09 13:54:12 jmc Exp $	*/
+/*	$OpenBSD: logger.c,v 1.11 2009/10/27 23:59:40 deraadt Exp $	*/
 /*	$NetBSD: logger.c,v 1.4 1994/12/22 06:27:00 jtc Exp $	*/
 
 /*
@@ -157,7 +157,7 @@ decode(char *name, CODE *codetab)
 {
 	CODE *c;
 
-	if (isdigit(*name))
+	if (isdigit((unsigned char)*name))
 		return (atoi(name));
 
 	for (c = codetab; c->c_name; c++)

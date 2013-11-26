@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.22 2005/08/23 13:43:53 espie Exp $	*/
+/*	$OpenBSD: util.c,v 1.23 2009/10/27 23:59:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -182,7 +182,7 @@ expandusername(char *gecos, char *login, char *buf, int buflen)
 		if (*p == '&') {
 			/* interpolate full name */
 			strlcpy(bp, login, buflen - (bp - buf));
-			*bp = toupper(*bp);
+			*bp = toupper((unsigned char)*bp);
 			bp += strlen(bp);
 		}
 		else
@@ -342,7 +342,7 @@ prphone(char *num)
 
 	/* don't touch anything if the user has their own formatting */
 	for (p = num; *p; ++p)
-		if (!isdigit(*p))
+		if (!isdigit((unsigned char)*p))
 			return (num);
 	len = p - num;
 	p = pbuf;

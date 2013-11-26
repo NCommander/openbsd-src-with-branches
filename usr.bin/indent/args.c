@@ -1,4 +1,4 @@
-/*	$OpenBSD: args.c,v 1.15 2009/10/27 23:59:39 deraadt Exp $	*/
+/*	$OpenBSD: args.c,v 1.16 2013/06/20 06:28:15 jsg Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -293,7 +293,7 @@ found:
 	break;
 
     case PRO_INT:
-	if (!isdigit(*param_start)) {
+	if (!isdigit((unsigned char)*param_start)) {
     need_param:
 	    errx(1, "%s: ``%s'' requires a parameter", option_source, arg - 1);
 	}

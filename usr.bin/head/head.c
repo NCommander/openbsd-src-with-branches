@@ -1,4 +1,4 @@
-/*	$OpenBSD: head.c,v 1.14 2007/10/31 16:29:50 jmc Exp $	*/
+/*	$OpenBSD: head.c,v 1.15 2009/10/27 23:59:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1987 Regents of the University of California.
@@ -54,7 +54,8 @@ main(int argc, char *argv[])
 	char	*p = NULL;
 
 	/* handle obsolete -number syntax */
-	if (argc > 1 && argv[1][0] == '-' && isdigit(argv[1][1])) {
+	if (argc > 1 && argv[1][0] == '-' &&
+	    isdigit((unsigned char)argv[1][1])) {
 		p = argv[1] + 1;
 		argc--;
 		argv++;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsplit.c,v 1.18 2009/10/27 23:59:38 deraadt Exp $	*/
+/*	$OpenBSD: fsplit.c,v 1.19 2012/03/04 04:05:15 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -328,7 +328,7 @@ lname(char *s, size_t len)
 	/* copy to buffer and converting to lower case */
 	p = ptr;
 	while (*p && p <= &buf[71]) {
-		*iptr = tolower(*p);
+		*iptr = tolower((unsigned char)*p);
 		iptr++;
 		p++;
 	}
