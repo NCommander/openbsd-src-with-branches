@@ -817,8 +817,7 @@ icmp_reflect(struct mbuf *m, struct mbuf **op, struct in_ifaddr *ia)
 }
 
 /*
- * Send an icmp packet back to the ip level,
- * after supplying a checksum.
+ * Send an icmp packet back to the ip level
  */
 void
 icmp_send(struct mbuf *m, struct mbuf *opts)
@@ -830,7 +829,7 @@ icmp_send(struct mbuf *m, struct mbuf *opts)
 	hlen = ip->ip_hl << 2;
 	icp = (struct icmp *)(mtod(m, caddr_t) + hlen);
 	icp->icmp_cksum = 0;
-	icp->icmp_cksum = in4_cksum(m, 0, hlen, ntohs(ip->ip_len) - hlen);
+	m->m_pkthdr.csum_flags |= M_ICMP_CSUM_OUT;
 #ifdef ICMPPRINTFS
 	if (icmpprintfs) {
 		char dst[INET_ADDRSTRLEN], src[INET_ADDRSTRLEN];
