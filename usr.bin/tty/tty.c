@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.5 2003/06/10 22:20:53 deraadt Exp $	*/
+/*	$OpenBSD: tty.c,v 1.6 2009/10/27 23:59:46 deraadt Exp $	*/
 /*	$NetBSD: tty.c,v 1.4 1994/12/07 00:46:57 jtc Exp $	*/
 
 /*
@@ -44,7 +44,7 @@ main(int argc, char *argv[])
 
 	sflag = 0;
 	while ((ch = getopt(argc, argv, "s")) != -1) {
-		switch((char)ch) {
+		switch(ch) {
 		case 's':
 			sflag = 1;
 			break;

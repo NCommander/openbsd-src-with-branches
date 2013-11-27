@@ -1,4 +1,4 @@
-/*	$OpenBSD: morse.c,v 1.13 2005/11/07 19:09:33 jmc Exp $	*/
+/*	$OpenBSD: morse.c,v 1.14 2009/10/27 23:59:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -113,7 +113,7 @@ main(int argc, char *argv[])
 	char *p;
 
 	while ((ch = getopt(argc, argv, "dsh")) != -1)
-		switch((char)ch) {
+		switch(ch) {
 		case 'd':
 			dflag = 1;
 			break;

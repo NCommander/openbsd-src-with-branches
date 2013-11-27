@@ -1,4 +1,4 @@
-/*	$OpenBSD: kgmon.c,v 1.18 2013/03/12 09:37:16 mpi Exp $	*/
+/*	$OpenBSD: kgmon.c,v 1.19 2013/11/12 13:09:22 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1992, 1993
@@ -84,7 +84,7 @@ main(int argc, char **argv)
 	kmemf = NULL;
 	sys = NULL;
 	while ((ch = getopt(argc, argv, "M:N:bc:hpr")) != -1) {
-		switch((char)ch) {
+		switch(ch) {
 
 		case 'M':
 			kmemf = optarg;

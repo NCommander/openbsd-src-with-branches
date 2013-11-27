@@ -1,4 +1,4 @@
-/*	$OpenBSD: ruptime.c,v 1.15 2009/10/15 08:20:43 sobrado Exp $	*/
+/*	$OpenBSD: ruptime.c,v 1.16 2009/10/27 23:59:43 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 The Regents of the University of California.
@@ -75,7 +75,7 @@ main(int argc, char *argv[])
 
 	aflg = 0;
 	while ((ch = getopt(argc, argv, "alrut")) != -1)
-		switch((char)ch) {
+		switch(ch) {
 		case 'a':
 			aflg = 1;
 			break;

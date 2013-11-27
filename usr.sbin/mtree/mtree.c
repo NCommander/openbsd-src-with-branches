@@ -1,4 +1,4 @@
-/*	$OpenBSD: mtree.c,v 1.19 2008/05/17 23:31:52 sobrado Exp $	*/
+/*	$OpenBSD: mtree.c,v 1.20 2009/10/27 23:59:53 deraadt Exp $	*/
 /*	$NetBSD: mtree.c,v 1.7 1996/09/05 23:29:22 thorpej Exp $	*/
 
 /*-
@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 	dir = NULL;
 	keys = KEYDEFAULT;
 	while ((ch = getopt(argc, argv, "cdef:iK:k:lnp:qrs:tUux")) != -1)
-		switch((char)ch) {
+		switch(ch) {
 		case 'c':
 			cflag = 1;
 			break;

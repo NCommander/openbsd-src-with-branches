@@ -1,4 +1,4 @@
-/*	$OpenBSD: xinstall.c,v 1.54 2013/06/02 01:41:23 naddy Exp $	*/
+/*	$OpenBSD: xinstall.c,v 1.55 2013/11/26 21:08:10 deraadt Exp $	*/
 /*	$NetBSD: xinstall.c,v 1.9 1995/12/20 10:25:17 jonathan Exp $	*/
 
 /*
@@ -88,7 +88,7 @@ main(int argc, char *argv[])
 
 	iflags = 0;
 	while ((ch = getopt(argc, argv, "B:bCcdf:g:m:o:pSs")) != -1)
-		switch((char)ch) {
+		switch(ch) {
 		case 'C':
 			docompare = 1;
 			break;

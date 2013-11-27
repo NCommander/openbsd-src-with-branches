@@ -1,4 +1,4 @@
-/*	$OpenBSD: unvis.c,v 1.9 2009/10/27 23:59:46 deraadt Exp $	*/
+/*	$OpenBSD: unvis.c,v 1.10 2013/11/15 22:20:04 millert Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -44,7 +44,7 @@ main(int argc, char *argv[])
 	int ch;
 
 	while ((ch = getopt(argc, argv, "")) != -1)
-		switch((char)ch) {
+		switch(ch) {
 		case '?':
 		default:
 			(void) fprintf(stderr, "usage: unvis [file ...]\n");

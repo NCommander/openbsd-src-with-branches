@@ -1,4 +1,4 @@
-/*	$OpenBSD: rwho.c,v 1.16 2009/10/27 23:59:43 deraadt Exp $	*/
+/*	$OpenBSD: rwho.c,v 1.17 2013/04/16 18:57:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 The Regents of the University of California.
@@ -83,7 +83,7 @@ main(int argc, char **argv)
 	int nhosts = 0;
 
 	while ((ch = getopt(argc, argv, "a")) != -1)
-		switch((char)ch) {
+		switch(ch) {
 		case 'a':
 			aflg = 1;
 			break;
