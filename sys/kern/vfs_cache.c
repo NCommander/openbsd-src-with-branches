@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cache.c,v 1.34 2012/01/04 18:11:51 beck Exp $	*/
+/*	$OpenBSD: vfs_cache.c,v 1.35 2013/03/27 01:56:50 tedu Exp $	*/
 /*	$NetBSD: vfs_cache.c,v 1.13 1996/02/04 02:18:09 christos Exp $	*/
 
 /*
@@ -429,6 +429,9 @@ void
 cache_purge(struct vnode *vp)
 {
 	struct namecache *ncp;
+
+	/* We should never have destinations cached for a non-VDIR vnode. */
+	KASSERT(vp->v_type == VDIR || TAILQ_EMPTY(&vp->v_cache_dst));
 
 	while ((ncp = TAILQ_FIRST(&vp->v_cache_dst)))
 		cache_zap(ncp);
