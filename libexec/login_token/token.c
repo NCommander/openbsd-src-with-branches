@@ -1,4 +1,4 @@
-/*	$OpenBSD: token.c,v 1.15 2013/05/07 12:17:20 tedu Exp $	*/
+/*	$OpenBSD: token.c,v 1.16 2013/08/22 04:43:40 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -383,8 +383,8 @@ static	void
 lcase(char *cp)
 {
 	while (*cp) {
-		if (isupper(*cp))
-			*cp = tolower(*cp);
+		if (isupper((unsigned char)*cp))
+			*cp = tolower((unsigned char)*cp);
 		cp++;
 	}
 }

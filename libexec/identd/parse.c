@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.45 2007/09/26 02:50:36 ray Exp $	*/
+/*	$OpenBSD: parse.c,v 1.46 2008/04/13 00:22:17 djm Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -214,7 +214,7 @@ parse(int fd, struct in_addr *laddr, struct in_addr *faddr)
 
 	/* Pull out local and remote ports */
 	p = buf;
-	while (isspace(*p))
+	while (isspace((unsigned char)*p))
 		p++;
 	if ((p = strtok(p, " \t,"))) {
 		lport = atoi(p);
@@ -412,7 +412,7 @@ parse6(int fd, struct sockaddr_in6 *laddr, struct sockaddr_in6 *faddr)
 
 	/* Pull out local and remote ports */
 	p = buf;
-	while (isspace(*p))
+	while (isspace((unsigned char)*p))
 		p++;
 	if ((p = strtok(p, " \t,"))) {
 		lport = atoi(p);
