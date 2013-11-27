@@ -1,4 +1,4 @@
-/*	$OpenBSD: more.c,v 1.32 2012/03/04 04:05:15 fgsch Exp $	*/
+/*	$OpenBSD: more.c,v 1.33 2013/11/26 21:13:04 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -1610,23 +1610,25 @@ handle_signal(void)
 int
 readch(void)
 {
-	int ch;
+	unsigned char ch;
+	int r;
 
-	errno = 0;
 	/* We know stderr is hooked up to /dev/tty so this is safe. */
 again:
-	if (read(STDERR_FILENO, &ch, 1) <= 0) {
-		if (signo != 0) {
-			if ((ch = handle_signal()) == -1)
-				goto again;
-		} else {
-			if (errno != EINTR)
-				end_it();
-			else
-				ch = otty.c_cc[VKILL];
-		}
+	switch (read(STDERR_FILENO, &ch, 1)) {
+	case 1:
+		return (ch);
+	case -1:
+		if (errno != EINTR)
+			end_it();
+
+		r = handle_signal();
+		if (r == -1)
+			goto again;
+		return (r);		/* redraw, continue, etc */
+	case 0:
+		end_it();
 	}
-	return (ch);
 }
 
 static char BS1 = '\b';
