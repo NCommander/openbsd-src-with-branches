@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.22 2012/08/07 17:47:06 matthew Exp $	*/
+/*	$OpenBSD: util.h,v 1.23 2013/04/05 12:58:03 kurt Exp $	*/
 
 /*
  * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -186,7 +186,7 @@ _dl_strstr(const char *s, const char *find)
 }
 
 static inline int
-_dl_isalnum(const char c)
+_dl_isalnum(int c)
 {
 	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9');
 }
