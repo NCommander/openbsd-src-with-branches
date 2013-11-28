@@ -1,4 +1,4 @@
-/* $OpenBSD: rpc_main.c,v 1.25 2010/09/01 14:43:34 millert Exp $	 */
+/* $OpenBSD: rpc_main.c,v 1.26 2013/10/27 18:31:24 guenther Exp $	 */
 /* $NetBSD: rpc_main.c,v 1.9 1996/02/19 11:12:43 pk Exp $	 */
 
 /*
@@ -445,8 +445,8 @@ generate_guard(char *pathname)
 	/* convert to upper case */
 	tmp = guard;
 	while (*tmp) {
-		if (islower(*tmp))
-			*tmp = toupper(*tmp);
+		if (islower((unsigned char)*tmp))
+			*tmp = toupper((unsigned char)*tmp);
 		tmp++;
 	}
 

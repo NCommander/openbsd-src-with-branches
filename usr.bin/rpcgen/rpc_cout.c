@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc_cout.c,v 1.22 2012/12/05 23:20:26 deraadt Exp $	*/
+/*	$OpenBSD: rpc_cout.c,v 1.23 2013/10/27 18:31:24 guenther Exp $	*/
 /*	$NetBSD: rpc_cout.c,v 1.6 1996/10/01 04:13:53 cgd Exp $	*/
 
 /*
@@ -739,7 +739,7 @@ upcase(str)
 
 	hptr = ptr;
 	while (*str != '\0')
-		*ptr++ = toupper(*str++);
+		*ptr++ = toupper((unsigned char)*str++);
 
 	*ptr = '\0';
 	return (hptr);
