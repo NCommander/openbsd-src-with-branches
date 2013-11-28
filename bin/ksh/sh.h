@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.30 2010/01/04 18:07:11 deraadt Exp $	*/
+/*	$OpenBSD: sh.h,v 1.31 2012/09/10 01:25:30 tedu Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -361,7 +361,7 @@ struct coproc {
 	int	write;		/* pipe to co-process's stdin */
 	Coproc_id id;		/* id of current output pipe */
 	int	njobs;		/* number of live jobs using output pipe */
-	void    *job;           /* 0 or job of co-process using input pipe */
+	void	*job;		/* 0 or job of co-process using input pipe */
 };
 EXTERN struct coproc coproc;
 

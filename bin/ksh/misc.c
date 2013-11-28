@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.36 2009/03/03 20:01:01 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.37 2009/04/19 20:34:05 sthen Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -711,7 +711,7 @@ posix_cclass(const unsigned char *pattern, int test, const unsigned char **ep)
 	const unsigned char *colon;
 	size_t len;
 	int rval = 0;
-	 
+
 	if ((colon = strchr(pattern, ':')) == NULL || colon[1] != MAGIC) {
 		*ep = pattern - 2;
 		return -1;

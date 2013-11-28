@@ -1,4 +1,4 @@
-/*	$OpenBSD: mail.c,v 1.15 2005/03/30 17:16:37 deraadt Exp $	*/
+/*	$OpenBSD: mail.c,v 1.16 2013/04/16 22:13:14 deraadt Exp $	*/
 
 /*
  * Mailbox checking code by Robert J. Gibson, adapted for PD ksh by
@@ -31,9 +31,9 @@ static mbox_t	mbox;
 static time_t	mlastchkd;	/* when mail was last checked */
 static time_t	mailcheck_interval;
 
-static void     munset(mbox_t *); /* free mlist and mval */
+static void	munset(mbox_t *); /* free mlist and mval */
 static mbox_t * mballoc(char *, char *); /* allocate a new mbox */
-static void     mprintit(mbox_t *);
+static void	mprintit(mbox_t *);
 
 void
 mcheck(void)
