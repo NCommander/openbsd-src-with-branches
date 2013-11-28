@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_screen.c,v 1.18 2006/04/22 03:09:15 ray Exp $	*/
+/*	$OpenBSD: cl_screen.c,v 1.19 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -89,7 +89,7 @@ cl_screen(sp, flags)
 	if (F_ISSET(sp, SC_SCR_VI)) {
 		F_CLR(sp, SC_SCR_VI);
 
-		if (CIRCLEQ_NEXT(sp, q) != CIRCLEQ_END(&gp->dq)) {
+		if (TAILQ_NEXT(sp, q)) {
 			(void)move(RLNO(sp, sp->rows), 0);
 			clrtobot();
 		}

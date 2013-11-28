@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: screen.h,v 1.5 2001/01/29 01:58:31 niklas Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -34,7 +34,7 @@
  */
 struct _scr {
 /* INITIALIZED AT SCREEN CREATE. */
-	CIRCLEQ_ENTRY(_scr) q;		/* Screens. */
+	TAILQ_ENTRY(_scr) q;		/* Screens. */
 
 	int	 id;			/* Screen id #. */
 	int	 refcnt;		/* Reference count. */

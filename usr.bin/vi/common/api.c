@@ -1,4 +1,4 @@
-/*	$OpenBSD: api.c,v 1.13 2007/05/14 12:32:29 pyr Exp $	*/
+/*	$OpenBSD: api.c,v 1.14 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -47,7 +47,7 @@ api_fscreen(id, name)
 	gp = __global_list;
 
 	/* Search the displayed list. */
-	CIRCLEQ_FOREACH(tsp, &gp->dq, q)
+	TAILQ_FOREACH(tsp, &gp->dq, q)
 		if (name == NULL) {
 			if (id == tsp->id)
 				return (tsp);
@@ -55,7 +55,7 @@ api_fscreen(id, name)
 			return (tsp);
 
 	/* Search the hidden list. */
-	CIRCLEQ_FOREACH(tsp, &gp->hq, q)
+	TAILQ_FOREACH(tsp, &gp->hq, q)
 		if (name == NULL) {
 			if (id == tsp->id)
 				return (tsp);
