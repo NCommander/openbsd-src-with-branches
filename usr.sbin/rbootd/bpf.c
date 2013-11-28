@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.17 2009/10/27 23:59:54 deraadt Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.18 2013/04/20 20:12:10 miod Exp $	*/
 /*	$NetBSD: bpf.c,v 1.5.2.1 1995/11/14 08:45:42 thorpej Exp $	*/
 
 /*
@@ -287,7 +287,7 @@ BpfGetIntfName(char **errmsg)
 #endif
 			continue;
 
-		for (cp = ifa->ifa_name; !isdigit(*cp); ++cp)
+		for (cp = ifa->ifa_name; !isdigit((unsigned char)*cp); ++cp)
 			;
 		n = atoi(cp);
 		if (n < minunit) {
