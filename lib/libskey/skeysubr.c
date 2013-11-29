@@ -9,7 +9,7 @@
  *
  * S/Key misc routines.
  *
- * $OpenBSD: skeysubr.c,v 1.29 2006/04/10 08:06:08 deraadt Exp $
+ * $OpenBSD: skeysubr.c,v 1.30 2007/05/17 04:34:50 ray Exp $
  */
 
 #include <stdio.h>
@@ -481,7 +481,7 @@ lowcase(char *s)
 	char *p;
 
 	for (p = s; *p; p++) {
-		if (isupper(*p))
-			*p = (char)tolower(*p);
+		if (isupper((unsigned char)*p))
+			*p = (char)tolower((unsigned char)*p);
 	}
 }
