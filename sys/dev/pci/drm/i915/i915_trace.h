@@ -31,16 +31,6 @@ trace_i915_gem_request_retire(struct intel_ring_buffer *ring, u32 seqno)
 }
 
 static inline void
-trace_i915_gem_request_wait_begin(struct intel_ring_buffer *ring, u32 seqno)
-{
-}
-
-static inline void
-trace_i915_gem_request_wait_end(struct intel_ring_buffer *ring, u32 seqno)
-{
-}
-
-static inline void
 trace_i915_gem_object_change_domain(struct drm_i915_gem_object *obj,
 				    u32 old_read, u32 old_write)
 {

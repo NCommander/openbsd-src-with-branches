@@ -1143,7 +1143,6 @@ int	i915_gem_get_caching_ioctl(struct drm_device *, void *,
 	    struct drm_file *);
 int	i915_gem_set_caching_ioctl(struct drm_device *, void *,
 	    struct drm_file *);
-int	i915_gem_wait_ioctl(struct drm_device *, void *, struct drm_file *);
 
 /* GEM memory manager functions */
 int	i915_gem_init_object(struct drm_obj *);

@@ -1188,8 +1188,6 @@ inteldrm_doioctl(struct drm_device *dev, u_long cmd, caddr_t data,
 		case DRM_IOCTL_I915_GEM_GET_CACHING:
 			return (i915_gem_get_caching_ioctl(dev, data,
 			    file_priv));
-		case DRM_IOCTL_I915_GEM_WAIT:
-			return (i915_gem_wait_ioctl(dev, data, file_priv));
 		case DRM_IOCTL_I915_GEM_CONTEXT_CREATE:
 			return (i915_gem_context_create_ioctl(dev, data,
 			    file_priv));
