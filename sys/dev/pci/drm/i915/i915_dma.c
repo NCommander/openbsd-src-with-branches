@@ -1,4 +1,4 @@
-/*	$OpenBSD: i915_dma.c,v 1.11 2013/11/19 19:14:09 kettenis Exp $	*/
+/*	$OpenBSD: i915_dma.c,v 1.12 2013/11/26 03:48:52 jsg Exp $	*/
 /* i915_dma.c -- DMA support for the I915 -*- linux-c -*-
  */
 /*
@@ -89,13 +89,14 @@ i915_getparam(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	case I915_PARAM_NUM_FENCES_AVAIL:
 		value = dev_priv->num_fence_regs - dev_priv->fence_reg_start;
 		break;
-	case I915_PARAM_HAS_EXECBUF2:
-		value = 1;
-		break;
 	case I915_PARAM_HAS_OVERLAY:
 		value = dev_priv->overlay ? 1 : 0;
 		break;
 	case I915_PARAM_HAS_PAGEFLIPPING:
+		value = 1;
+		break;
+	case I915_PARAM_HAS_EXECBUF2:
+		/* depends on GEM */
 		value = 1;
 		break;
 	case I915_PARAM_HAS_BSD:
