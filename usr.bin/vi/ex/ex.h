@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex.h,v 1.6 2006/01/08 21:05:40 miod Exp $	*/
+/*	$OpenBSD: ex.h,v 1.7 2013/12/01 13:42:42 krw Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -159,7 +159,7 @@ struct _excmd {
 
 /* Ex private, per-screen memory. */
 typedef struct _ex_private {
-	CIRCLEQ_HEAD(_tqh, _tagq) tq;	/* Tag queue. */
+	TAILQ_HEAD(_tqh, _tagq) tq;	/* Tag queue. */
 	TAILQ_HEAD(_tagfh, _tagf) tagfq;/* Tag file list. */
 	LIST_HEAD(_csch, _csc) cscq;    /* Cscope connection list. */
 	char	*tag_last;		/* Saved last tag string. */
