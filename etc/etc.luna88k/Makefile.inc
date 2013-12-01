@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile.inc,v 1.6 2011/07/22 09:30:54 espie Exp $
+#	$OpenBSD: Makefile.inc,v 1.7 2012/03/01 14:04:03 aoyama Exp $
 
 KERNELS += GENERIC.MP bsd.mp
 
 bootblocks:
-	# XXX no bootblocks ?
+	cp ${DESTDIR}/usr/mdec/* ${RELEASEDIR}/
 
-MDEXT=	bsd.rd
+MDEXT=	bsd.rd \
+	boot
