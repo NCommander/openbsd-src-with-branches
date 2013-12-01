@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.121 2013/11/01 17:36:19 krw Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.122 2013/11/03 02:22:07 krw Exp $	*/
 
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
@@ -5398,7 +5398,7 @@ clear_inodedeps(struct proc *p)
 	 * Ugly code to find mount point given pointer to superblock.
 	 */
 	fs = inodedep->id_fs;
-	CIRCLEQ_FOREACH(mp, &mountlist, mnt_list)
+	TAILQ_FOREACH(mp, &mountlist, mnt_list)
 		if ((mp->mnt_flag & MNT_SOFTDEP) && fs == VFSTOUFS(mp)->um_fs)
 			break;
 	/*
