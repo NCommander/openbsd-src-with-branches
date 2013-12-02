@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_exec.c,v 1.37 2012/09/11 15:44:19 deraadt Exp $	*/
+/*	$OpenBSD: linux_exec.c,v 1.38 2013/11/03 13:52:44 pirofti Exp $	*/
 /*	$NetBSD: linux_exec.c,v 1.13 1996/04/05 00:01:10 christos Exp $	*/
 
 /*-
@@ -227,9 +227,10 @@ recognized:
 	if (itp) {
 		if ((error = emul_find(p, NULL, linux_emul_path, itp, &bp, 0)))
 			return (error);
-		if ((error = copystr(bp, itp, MAXPATHLEN, &len)))
-			return (error);
+		error = copystr(bp, itp, MAXPATHLEN, &len);
 		free(bp, M_TEMP);
+		if (error)
+			return (error);
 	}
 	epp->ep_emul = &emul_linux_elf;
 	*pos = ELF32_NO_ADDR;
