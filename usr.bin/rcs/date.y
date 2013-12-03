@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: date.y,v 1.10 2010/07/31 08:54:42 ray Exp $	*/
+/*	$OpenBSD: date.y,v 1.11 2013/04/19 17:28:07 deraadt Exp $	*/
 
 /*
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
@@ -13,8 +13,6 @@
 */
 /* SUPPRESS 287 on yaccpar_sccsid *//* Unused static variable */
 /* SUPPRESS 288 on yyerrlab *//* Label unused */
-
-#include <sys/timeb.h>
 
 #include <ctype.h>
 #include <err.h>

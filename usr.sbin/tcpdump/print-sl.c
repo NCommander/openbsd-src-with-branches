@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-sl.c,v 1.13 2007/10/07 16:41:05 deraadt Exp $	*/
+/*	$OpenBSD: print-sl.c,v 1.14 2009/10/27 23:59:55 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -24,7 +24,6 @@
 #ifdef HAVE_NET_SLIP_H
 #include <sys/param.h>
 #include <sys/time.h>
-#include <sys/timeb.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/mbuf.h>
