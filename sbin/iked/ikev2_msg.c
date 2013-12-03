@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.25 2013/03/21 04:30:14 deraadt Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.26 2013/09/26 13:09:38 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -75,7 +75,8 @@ ikev2_msg_cb(int fd, short event, void *arg)
 	    (ssize_t)sizeof(natt))
 		return;
 
-	if (socket_getport(&msg.msg_local) == IKED_NATT_PORT) {
+	if (socket_getport((struct sockaddr *)&msg.msg_local) ==
+	    IKED_NATT_PORT) {
 		if (bcmp(&natt, buf, sizeof(natt)) != 0)
 			return;
 		msg.msg_natt = 1;
@@ -270,8 +271,8 @@ ikev2_msg_send(struct iked *env, struct iked_message *msg)
 	flags = hdr->ike_flags;
 	log_info("%s: %s from %s to %s, %ld bytes%s", __func__,
 	    print_map(exchange, ikev2_exchange_map),
-	    print_host(&msg->msg_local, NULL, 0),
-	    print_host(&msg->msg_peer, NULL, 0),
+	    print_host((struct sockaddr *)&msg->msg_local, NULL, 0),
+	    print_host((struct sockaddr *)&msg->msg_peer, NULL, 0),
 	    ibuf_length(buf), isnatt ? ", NAT-T" : "");
 
 	if (isnatt) {

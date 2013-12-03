@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.21 2013/10/24 02:55:50 deraadt Exp $	*/
+/*	$OpenBSD: config.c,v 1.22 2013/11/28 20:28:34 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -524,7 +524,8 @@ config_getsocket(struct iked *env, struct imsg *imsg,
 	if (*sptr == NULL)
 		*sptr = sock;
 	if (*nptr == NULL &&
-	    socket_getport(&sock->sock_addr) == IKED_NATT_PORT)
+	    socket_getport((struct sockaddr *)&sock->sock_addr) ==
+	    IKED_NATT_PORT)
 		*nptr = sock;
 
 	event_set(&sock->sock_ev, sock->sock_fd,
