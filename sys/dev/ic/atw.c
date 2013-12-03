@@ -1,4 +1,4 @@
-/*	$OpenBSD: atw.c,v 1.77 2013/11/14 12:30:39 dlg Exp $	*/
+/*	$OpenBSD: atw.c,v 1.78 2013/11/26 09:50:32 mpi Exp $	*/
 /*	$NetBSD: atw.c,v 1.69 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -3017,6 +3017,7 @@ atw_linkintr(struct atw_softc *sc, u_int32_t linkstatus)
 	}
 }
 
+#if 0
 static __inline int
 atw_hw_decrypted(struct atw_softc *sc, struct ieee80211_frame *wh)
 {
@@ -3026,6 +3027,7 @@ atw_hw_decrypted(struct atw_softc *sc, struct ieee80211_frame *wh)
 		return 0;
 	return (sc->sc_wepctl & ATW_WEPCTL_WEPRXBYP) == 0;
 }
+#endif
 
 /*
  * atw_rxintr:
