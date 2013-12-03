@@ -1,4 +1,4 @@
-/*	$OpenBSD: library_subr.c,v 1.37 2013/03/20 21:49:59 kurt Exp $ */
+/*	$OpenBSD: library_subr.c,v 1.38 2013/11/13 05:41:41 deraadt Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -30,9 +30,9 @@
 #define _DYN_LOADER
 
 #include <sys/types.h>
-#include <sys/syslimits.h>
 #include <sys/param.h>
 #include <sys/queue.h>
+#include <limits.h>
 #include <dirent.h>
 #include <string.h>
 
