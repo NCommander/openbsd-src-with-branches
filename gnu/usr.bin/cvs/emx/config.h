@@ -211,9 +211,6 @@
 /* Define if you have the <sys/time.h> header file.  */
 #define HAVE_SYS_TIME_H 1
 
-/* Define if you have the <sys/timeb.h> header file.  */
-#define HAVE_SYS_TIMEB_H 1
-
 /* Define if you have the <unistd.h> header file.  */
 #define HAVE_UNISTD_H 1
 
@@ -256,18 +253,6 @@ extern int fncmp (const char *n1, const char *n2);
    If FOLD_FN_CHAR is not #defined, the system provides a default
    definition for this.  */
 extern void fnfold (char *FILENAME);
-
-/* #define this if your system terminates lines in text files with
-   CRLF instead of plain LF, and your I/O functions automatically
-   translate between using LF in memory and CRLF on disk, unless you
-   specifically tell them not to.  */
-#define LINES_CRLF_TERMINATED 1
-
-/* Read data from INFILE, and copy it to OUTFILE.
-   Open INFILE using INFLAGS, and OUTFILE using OUTFLAGS.
-   This is useful for converting between CRLF and LF line formats.  */
-extern void convert_file (char *INFILE,  int INFLAGS,
-			  char *OUTFILE, int OUTFLAGS);
 
 /* This is where old bits go to die under OS/2 as well as WinNT.  */
 #define DEVNULL "nul"
@@ -323,3 +308,6 @@ extern int os2_fnmatch(const char *pattern, const char *name, int flags);
 
 /* See above; we can't use rsh without -b.  */
 #define RSH_NOT_TRANSPARENT 1
+
+/* See discussion at xchmod in filesubr.c.  */
+#define CHMOD_BROKEN 1
