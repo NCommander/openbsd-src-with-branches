@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap-bpf.c,v 1.20 2006/03/26 20:58:51 djm Exp $	*/
+/*	$OpenBSD: pcap-bpf.c,v 1.21 2012/05/25 01:58:08 lteo Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1998
@@ -23,7 +23,6 @@
 
 #include <sys/param.h>			/* optionally get BSD define */
 #include <sys/time.h>
-#include <sys/timeb.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
