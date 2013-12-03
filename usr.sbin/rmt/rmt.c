@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmt.c,v 1.12 2005/03/07 16:08:19 henning Exp $	*/
+/*	$OpenBSD: rmt.c,v 1.13 2009/10/27 23:59:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -32,15 +32,15 @@
 /*
  * rmt
  */
-#include <stdio.h>
-#include <sgtty.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include <sys/mtio.h>
 #include <sys/param.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
