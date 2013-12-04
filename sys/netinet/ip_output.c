@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.250 2013/10/25 18:44:36 lteo Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.251 2013/11/27 08:37:08 mpi Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -1704,7 +1704,7 @@ ip_setmoptions(int optname, struct ip_moptions **imop, struct mbuf *m,
 	struct in_addr addr;
 	struct in_ifaddr *ia;
 	struct ip_mreq *mreq;
-	struct ifnet *ifp;
+	struct ifnet *ifp = NULL;
 	struct ip_moptions *imo = *imop;
 	struct in_multi **immp;
 	struct route ro;
