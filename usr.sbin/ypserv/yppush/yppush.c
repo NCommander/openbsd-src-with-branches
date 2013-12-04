@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppush.c,v 1.26 2008/06/01 21:45:08 sobrado Exp $ */
+/*	$OpenBSD: yppush.c,v 1.27 2009/10/27 23:59:58 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Mats O Jansson <moj@stacken.kth.se>
@@ -290,7 +290,7 @@ main(int argc, char *argv[])
 		} else {
 			OrderNum=0;
 			for (i=0; i<o.dsize-1; i++) {
-				if (!isdigit(o.dptr[i]))
+				if (!isdigit((unsigned char)o.dptr[i]))
 					OrderNum=0xffffffff;
 			}
 			if (OrderNum != 0) {

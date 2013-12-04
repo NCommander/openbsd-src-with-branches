@@ -1,4 +1,4 @@
-/*	$OpenBSD: makedbm.c,v 1.29 2009/10/27 23:59:57 deraadt Exp $ */
+/*	$OpenBSD: makedbm.c,v 1.30 2013/08/22 04:43:41 guenther Exp $ */
 
 /*
  * Copyright (c) 1994-97 Mats O Jansson <moj@stacken.kth.se>
@@ -231,13 +231,13 @@ create_database(char *infile, char *database, char *yp_input_file,
 
 		p = (char *) &data_line;
 
-		k = p;				    /* save start of key */
-		while (!isspace(*p)) {		    /* find first "space" */
-			if (lflag && isupper(*p))   /* if force lower case */
-				*p = (char)tolower(*p);   /* fix it */
+		k = p;				   	 /* save start of key */
+		while (!isspace((unsigned char)*p)) {	    	/* find first "space" */
+			if (lflag && isupper((unsigned char)*p))   	/* if force lower case */
+				*p = (char)tolower((unsigned char)*p);   /* fix it */
 			p++;
 		}
-		while (isspace(*p)) {		/* replace space with <NUL> */
+		while (isspace((unsigned char)*p)) {		/* replace space with <NUL> */
 			*p = '\0';
 			p++;
 		}
