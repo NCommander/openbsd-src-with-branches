@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.267 2013/11/11 21:00:01 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.268 2013/11/20 17:22:46 deraadt Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -862,8 +862,10 @@ bind_lease(void)
 	flush_routes(ifi->name, ifi->rdomain);
 
 	memset(&mask, 0, sizeof(mask));
-	memcpy(&mask.s_addr, options[DHO_SUBNET_MASK].data,
-	    options[DHO_SUBNET_MASK].len);
+	if (options[DHO_SUBNET_MASK].len == sizeof(mask.s_addr)) {
+		memcpy(&mask.s_addr, options[DHO_SUBNET_MASK].data,
+		    sizeof(mask.s_addr));
+	}
 
         /*
 	 * Add address and default route last, so we know when the binding
@@ -874,11 +876,11 @@ bind_lease(void)
 		add_classless_static_routes(ifi->rdomain,
 		    &options[DHO_CLASSLESS_STATIC_ROUTES]);
 	} else {
-		if (options[DHO_ROUTERS].len) {
+		if (options[DHO_ROUTERS].len >= sizeof(gateway.s_addr)) {
 			memset(&gateway, 0, sizeof(gateway));
 			/* XXX Only use FIRST router address for now. */
 			memcpy(&gateway.s_addr, options[DHO_ROUTERS].data,
-			    options[DHO_ROUTERS].len);
+			    sizeof(gateway.s_addr));
 			add_default_route(ifi->rdomain, client->new->address,
 			    gateway);
 		}
