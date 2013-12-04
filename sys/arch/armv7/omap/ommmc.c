@@ -1,4 +1,4 @@
-/*	$OpenBSD: ommmc.c,v 1.10 2013/11/06 19:03:07 syl Exp $	*/
+/*	$OpenBSD: ommmc.c,v 1.11 2013/11/12 17:51:52 fgsch Exp $	*/
 
 /*
  * Copyright (c) 2009 Dale Rahn <drahn@openbsd.org>
@@ -381,6 +381,10 @@ ommmc_attach(struct device *parent, struct device *self, void *args)
 		printf("invalid capability blocksize in capa %08x,"
 		    " trying 512\n", HREAD4(sc, MMCHS_CAPA));
 	}
+	/*
+	 * MMC does not support blksize > 512 yet
+	 */
+	sc->maxblklen = 512;
 	/*
 	 * Attach the generic SD/MMC bus driver.  (The bus driver must
 	 * not invoke any chipset functions before it is attached.)
