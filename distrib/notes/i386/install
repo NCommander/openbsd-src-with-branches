@@ -1,4 +1,4 @@
-dnl	$OpenBSD: install,v 1.46 2010/03/16 17:23:09 miod Exp $
+dnl	$OpenBSD: install,v 1.47 2010/05/02 19:09:35 espie Exp $
 OpenBSDInstallPrelude
 
 If OpenBSD will be sharing the disk with DOS or another operating
@@ -73,3 +73,7 @@ OpenBSDTAPEInstall
 OpenBSDInstallWrapup
 
 OpenBSDCongratulations
+
+
+
+OpenBSDUnattendedInstallation

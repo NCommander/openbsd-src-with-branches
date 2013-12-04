@@ -1,4 +1,4 @@
-dnl	$OpenBSD: install,v 1.11 2010/03/06 20:11:40 otto Exp $
+dnl	$OpenBSD: install,v 1.12 2010/03/16 17:23:09 miod Exp $
 OpenBSDInstallPrelude
 
 Booting the installation media:
@@ -190,3 +190,7 @@ Gdium systems final steps:
 	    PMON> unset al
 
 OpenBSDCongratulations
+
+
+
+OpenBSDUnattendedInstallation

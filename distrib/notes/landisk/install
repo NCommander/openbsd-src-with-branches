@@ -1,4 +1,4 @@
-dnl	$OpenBSD: install,v 1.7 2009/05/13 18:38:29 miod Exp $
+dnl	$OpenBSD: install,v 1.8 2010/03/16 17:23:09 miod Exp $
 OpenBSDInstallPrelude
 
 OpenBSDInstallPart2
@@ -29,3 +29,7 @@ OpenBSDCommonInstall
 OpenBSDInstallWrapup
 
 OpenBSDCongratulations
+
+
+
+OpenBSDUnattendedInstallation
