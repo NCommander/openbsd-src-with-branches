@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcp.h,v 1.14 2013/06/09 00:30:06 krw Exp $	*/
+/*	$OpenBSD: dhcp.h,v 1.15 2013/06/09 16:21:50 krw Exp $	*/
 
 /* Protocol structures. */
 
@@ -81,8 +81,6 @@ struct dhcp_packet {
 
 /* Possible values for hardware type (htype) field. */
 #define HTYPE_ETHER		1	/* Ethernet			*/
-#define HTYPE_IEEE802		6	/* IEEE 802.2 Token Ring	*/
-#define HTYPE_FDDI		8	/* FDDI				*/
 #define HTYPE_IPSEC_TUNNEL	31	/* IPsec Tunnel (RFC3456)	*/
 
 /* Magic cookie validating dhcp options field (and bootp vendor
