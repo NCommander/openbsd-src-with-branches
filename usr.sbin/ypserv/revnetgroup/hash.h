@@ -1,4 +1,4 @@
-/* $OpenBSD: hash.h,v 1.1 1997/04/15 22:06:12 maja Exp $ */
+/* $OpenBSD: hash.h,v 1.2 2002/02/16 21:28:11 millert Exp $ */
 /*
  * Copyright (c) 1995
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -62,6 +62,7 @@ struct group_entry {
 
 extern void store( struct group_entry ** , char *, char * );
 extern void mstore( struct member_entry ** , char *, char *, char * );
+extern void ngstore( struct group_entry **, char *, char * );
 extern char *lookup( struct group_entry **, char * );
 extern void __endnetgrent( void );
 extern void __setnetgrent( char * );
