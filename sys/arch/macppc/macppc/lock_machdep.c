@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock_machdep.c,v 1.1 2007/11/27 23:29:57 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
@@ -54,7 +54,7 @@ __mp_lock_spin(struct __mp_lock *mpl)
 #else
 	int ticks = __mp_lock_spinout;
 
-	while (mpl->mpl_count != 0 && ticks-- > 0)
+	while (mpl->mpl_count != 0 && --ticks > 0)
 		SPINLOCK_SPIN_HOOK;
 
 	if (ticks == 0) {
