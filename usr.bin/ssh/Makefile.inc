@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.38 2010/10/01 23:06:06 djm Exp $
+#	$OpenBSD: Makefile.inc,v 1.39 2010/10/01 23:10:48 djm Exp $
 
 CFLAGS+=	-I${.CURDIR}/..
 
@@ -32,3 +32,5 @@ DPADD+=         ${.CURDIR}/../lib/${__objdir}/libssh.a
 LDADD+=         -L${.CURDIR}/../lib -lssh
 DPADD+=         ${.CURDIR}/../lib/libssh.a
 .endif
+
+LDADD+=		-lutil
