@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpt_pci.c,v 1.6 2008/05/13 02:24:08 brad Exp $	*/
+/*	$OpenBSD: dpt_pci.c,v 1.7 2013/05/30 16:15:02 deraadt Exp $	*/
 /*	$NetBSD: dpt_pci.c,v 1.2 1999/09/29 17:33:02 ad Exp $	*/
 
 /*
@@ -158,17 +158,11 @@ dpt_activate(struct device *self, int act)
 	int ret = 0;
 
 	switch (act) {
-	case DVACT_QUIESCE:
-		ret = config_activate_children(self, act);
-		break;
-	case DVACT_SUSPEND:
-		ret = config_activate_children(self, act);
-		break;
 	case DVACT_POWERDOWN:
 		ret = config_activate_children(self, act);
 		dpt_shutdown(self);
 		break;
-	case DVACT_RESUME:
+	default:
 		ret = config_activate_children(self, act);
 		break;
 	}

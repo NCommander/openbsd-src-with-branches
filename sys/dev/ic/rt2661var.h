@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661var.h,v 1.16 2012/07/17 14:43:12 stsp Exp $	*/
+/*	$OpenBSD: rt2661var.h,v 1.17 2012/08/23 10:34:25 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -196,5 +196,5 @@ struct rt2661_softc {
 int	rt2661_attach(void *, int);
 int	rt2661_detach(void *);
 void	rt2661_suspend(void *);
-void	rt2661_resume(void *);
+void	rt2661_wakeup(void *);
 int	rt2661_intr(void *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560.c,v 1.60 2012/07/13 10:08:15 stsp Exp $  */
+/*	$OpenBSD: rt2560.c,v 1.61 2013/08/07 01:06:30 bluhm Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -333,7 +333,7 @@ rt2560_suspend(void *xsc)
 }
 
 void
-rt2560_resume(void *xsc)
+rt2560_wakeup(void *xsc)
 {
 	struct rt2560_softc *sc = xsc;
 	struct ifnet *ifp = &sc->sc_ic.ic_if;

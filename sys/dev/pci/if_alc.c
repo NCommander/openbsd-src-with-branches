@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_alc.c,v 1.23 2013/08/07 01:06:33 bluhm Exp $	*/
+/*	$OpenBSD: if_alc.c,v 1.24 2013/11/21 16:16:08 mpi Exp $	*/
 /*-
  * Copyright (c) 2009, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -933,9 +933,6 @@ alc_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_QUIESCE:
-		rv = config_activate_children(self, act);
-		break;
 	case DVACT_SUSPEND:
 		if (ifp->if_flags & IFF_RUNNING)
 			alc_stop(sc);
@@ -945,6 +942,9 @@ alc_activate(struct device *self, int act)
 		rv = config_activate_children(self, act);
 		if (ifp->if_flags & IFF_UP)
 			alc_init(ifp);
+		break;
+	default:
+		rv = config_activate_children(self, act);
 		break;
 	}
 	return (rv);

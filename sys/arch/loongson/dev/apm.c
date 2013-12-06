@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.15 2013/06/04 22:39:27 pirofti Exp $	*/
+/*	$OpenBSD: apm.c,v 1.16 2013/06/05 00:44:24 pirofti Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -411,6 +411,9 @@ apm_suspend(int state)
 	splx(s);
 
 	bufq_restart();
+
+	config_suspend(TAILQ_FIRST(&alldevs), DVACT_WAKEUP);
+
 #if NWSDISPLAY > 0
 	wsdisplay_resume();
 #endif

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwivar.h,v 1.27 2013/11/14 12:10:05 dlg Exp $	*/
+/*	$OpenBSD: bwivar.h,v 1.28 2013/11/26 20:33:15 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -620,7 +620,6 @@ struct bwi_softc {
 #define sc_txtap                 sc_txtapu.th
         int                      sc_txtap_len;
 #endif
-	struct task		 sc_resume_t;
 };
 
 #define BWI_F_BUS_INITED	0x1

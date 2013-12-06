@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia.c,v 1.206 2013/05/30 16:15:02 deraadt Exp $	*/
+/*	$OpenBSD: azalia.c,v 1.207 2013/11/09 05:51:11 jsg Exp $	*/
 /*	$NetBSD: azalia.c,v 1.20 2006/05/07 08:31:44 kent Exp $	*/
 
 /*-
@@ -565,9 +565,6 @@ azalia_pci_activate(struct device *self, int act)
 	int rv = 0; 
 
 	switch (act) {
-	case DVACT_QUIESCE:
-		rv = config_activate_children(self, act);
-		break;
 	case DVACT_SUSPEND:
 		azalia_suspend(sc);
 		break;
@@ -581,6 +578,9 @@ azalia_pci_activate(struct device *self, int act)
 	case DVACT_DEACTIVATE:
 		if (sc->audiodev != NULL)
 			rv = config_deactivate(sc->audiodev);
+		break;
+	default:
+		rv = config_activate_children(self, act);
 		break;
 	}
 	return (rv);

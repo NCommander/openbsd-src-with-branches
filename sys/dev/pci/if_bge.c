@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.341 2013/10/23 20:38:23 brad Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.342 2013/11/26 20:35:36 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -3041,9 +3041,6 @@ bge_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_QUIESCE:
-		rv = config_activate_children(self, act);
-		break;
 	case DVACT_SUSPEND:
 		rv = config_activate_children(self, act);
 		if (ifp->if_flags & IFF_RUNNING)
@@ -3052,6 +3049,9 @@ bge_activate(struct device *self, int act)
 	case DVACT_RESUME:
 		if (ifp->if_flags & IFF_UP)
 			bge_init(sc);
+		rv = config_activate_children(self, act);
+		break;
+	default:
 		rv = config_activate_children(self, act);
 		break;
 	}

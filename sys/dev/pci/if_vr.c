@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.129 2013/08/07 01:06:38 bluhm Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.130 2013/08/21 05:21:44 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -699,9 +699,6 @@ vr_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_QUIESCE:
-		rv = config_activate_children(self, act);
-		break;
 	case DVACT_SUSPEND:
 		if (ifp->if_flags & IFF_RUNNING)
 			vr_stop(sc);
@@ -711,6 +708,9 @@ vr_activate(struct device *self, int act)
 		rv = config_activate_children(self, act);
 		if (ifp->if_flags & IFF_UP)
 			vr_init(sc);
+		break;
+	default:
+		rv = config_activate_children(self, act);
 		break;
 	}
 	return (rv);

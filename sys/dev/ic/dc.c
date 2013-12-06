@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.128 2013/11/20 08:36:36 mpi Exp $	*/
+/*	$OpenBSD: dc.c,v 1.129 2013/12/02 23:40:41 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -3104,9 +3104,6 @@ dc_activate(struct device *self, int act)
 	int rv = 0;
 
 	switch (act) {
-	case DVACT_QUIESCE:
-		rv = config_activate_children(self, act);
-		break;
 	case DVACT_SUSPEND:
 		if (ifp->if_flags & IFF_RUNNING)
 			dc_stop(sc, 0);
@@ -3116,6 +3113,9 @@ dc_activate(struct device *self, int act)
 		rv = config_activate_children(self, act);
 		if (ifp->if_flags & IFF_UP)
 			dc_init(sc);
+		break;
+	default:
+		rv = config_activate_children(self, act);
 		break;
 	}
 	return (rv);
