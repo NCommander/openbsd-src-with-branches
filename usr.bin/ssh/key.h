@@ -1,4 +1,4 @@
-/* $OpenBSD: key.h,v 1.37 2013/05/19 02:42:42 djm Exp $ */
+/* $OpenBSD: key.h,v 1.38 2013/10/29 09:42:11 djm Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -142,5 +142,8 @@ int	 ssh_rsa_verify(const Key *, const u_char *, u_int, const u_char *, u_int);
 void	key_dump_ec_point(const EC_GROUP *, const EC_POINT *);
 void	key_dump_ec_key(const EC_KEY *);
 #endif
+
+void     key_private_serialize(const Key *, Buffer *);
+Key	*key_private_deserialize(Buffer *);
 
 #endif
