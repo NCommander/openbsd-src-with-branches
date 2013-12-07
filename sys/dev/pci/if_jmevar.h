@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_jmevar.h,v 1.4 2008/12/01 09:12:59 jsg Exp $	*/
+/*	$OpenBSD: if_jmevar.h,v 1.5 2009/01/10 15:33:05 kevlo Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -208,8 +208,6 @@ struct jme_softc {
 	struct jme_ring_data	jme_rdata;
 	uint32_t		jme_txcsr;
 	uint32_t		jme_rxcsr;
-
-	int			jme_txd_spare;
 
 	/*
 	 * Sysctl variables
