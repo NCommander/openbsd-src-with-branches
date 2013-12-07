@@ -1,4 +1,4 @@
-/* $OpenBSD: */
+/* $OpenBSD$ */
 
 /* Public Domain, from supercop-20130419/crypto_verify/32/ref/verify.c */
 

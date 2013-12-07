@@ -1,4 +1,4 @@
-/* $OpenBSD: */
+/* $OpenBSD$ */
 
 /* Public Domain, from supercop-20130419/crypto_sign/ed25519/ref/fe25519.c */
 
