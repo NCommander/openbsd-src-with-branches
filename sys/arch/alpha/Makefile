@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2010/11/12 17:11:43 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.11 2013/03/26 19:43:00 jasper Exp $
 
 S=	${.CURDIR}/../..
 KFILE=	GENERIC
@@ -10,6 +10,7 @@ TAGS=	${.CURDIR}/tags
 
 NOPROG=
 NOMAN=
+NOOBJ=
 SUBDIR=	stand
 
 # config the fattest kernel we can find into a temporary dir
