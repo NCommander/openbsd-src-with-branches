@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpt.c,v 1.9 2012/01/11 16:22:33 dhill Exp $ */
+/*	$OpenBSD: lpt.c,v 1.10 2013/06/12 19:07:40 deraadt Exp $ */
 /*	$NetBSD: lpt.c,v 1.42 1996/10/21 22:41:14 thorpej Exp $	*/
 
 /*
@@ -433,8 +433,7 @@ lpt_activate(struct device *self, int act)
 
 	switch (act) {
 	case DVACT_SUSPEND:
-		if (timeout_pending(&sc->sc_wakeup_tmo))
-			timeout_del(&sc->sc_wakeup_tmo);
+		timeout_del(&sc->sc_wakeup_tmo);
 		break;
 	case DVACT_RESUME:
 		bus_space_write_1(sc->sc_iot, sc->sc_ioh, lpt_control, LPC_NINIT);
