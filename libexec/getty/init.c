@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.7 2009/10/27 23:59:31 deraadt Exp $	*/
+/*	$OpenBSD: init.c,v 1.8 2010/06/07 02:01:45 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -80,9 +80,6 @@ struct	gettynums gettynums[] = {
 	{ "fd" },			/* form-feed delay */
 	{ "bd" },			/* backspace delay */
 	{ "to" },			/* timeout */
-	{ "f0" },			/* output flags */
-	{ "f1" },			/* input flags */
-	{ "f2" },			/* user mode flags */
 	{ "pf" },			/* delay before flush at 1st prompt */
 	{ "c0" },			/* output c_flags */
 	{ "c1" },			/* input c_flags */
