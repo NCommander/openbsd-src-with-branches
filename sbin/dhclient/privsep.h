@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.h,v 1.21 2013/06/09 15:06:34 krw Exp $ */
+/*	$OpenBSD: privsep.h,v 1.22 2013/06/09 22:39:51 krw Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -72,7 +72,6 @@ struct imsg_write_file {
 	size_t	len;
 	uid_t	uid;
 	gid_t	gid;
-	char	contents[1];
 };
 
 void	dispatch_imsg(struct imsgbuf *);
