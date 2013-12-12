@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_quota.c,v 1.30 2008/01/05 19:49:26 otto Exp $	*/
+/*	$OpenBSD: ufs_quota.c,v 1.31 2013/06/11 16:42:19 deraadt Exp $	*/
 /*	$NetBSD: ufs_quota.c,v 1.8 1996/02/09 22:36:09 christos Exp $	*/
 
 /*
@@ -873,7 +873,7 @@ dqget(struct vnode *vp, u_long id, struct ufsmount *ump, int type,
 	auio.uio_procp = (struct proc *)0;
 	error = VOP_READ(dqvp, &auio, 0, dq->dq_cred);
 	if (auio.uio_resid == sizeof(struct dqblk) && error == 0)
-		bzero((caddr_t)&dq->dq_dqb, sizeof(struct dqblk));
+		memset(&dq->dq_dqb, 0, sizeof(struct dqblk));
 	if (vp != dqvp)
 		VOP_UNLOCK(dqvp, 0, p);
 	if (dq->dq_flags & DQ_WANT)
