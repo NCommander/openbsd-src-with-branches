@@ -1,4 +1,4 @@
-/*	$OpenBSD: crt0.c,v 1.9 2012/12/23 12:24:13 kettenis Exp $	*/
+/*	$OpenBSD: crt0.c,v 1.1 2013/12/03 06:21:40 guenther Exp $	*/
 
 /*
  * Copyright (c) 1995 Christopher G. Demetriou
@@ -49,6 +49,8 @@ static void		___start(MD_START_ARGS) __used;
 #define	MD_EPROL_LABEL	__asm("  .text\n_eprol:")
 #endif
 
+void	__init_tcb(char **_envp);
+#pragma weak __init_tcb
 
 static char	*_strrchr(char *, char);
 
@@ -91,7 +93,10 @@ MD_START(MD_START_ARGS)
 #ifndef MD_NO_CLEANUP
 	if (cleanup != NULL)
 		atexit(cleanup);
+	else
 #endif
+	if (__init_tcb != NULL)
+		__init_tcb(envp);
 
 #ifdef MCRT0
 	atexit(_mcleanup);
