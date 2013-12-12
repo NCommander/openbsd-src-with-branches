@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_lookup.c,v 1.42 2013/05/30 19:19:09 guenther Exp $	*/
+/*	$OpenBSD: ufs_lookup.c,v 1.43 2013/12/12 19:00:10 tedu Exp $	*/
 /*	$NetBSD: ufs_lookup.c,v 1.7 1996/02/09 22:36:06 christos Exp $	*/
 
 /*
@@ -335,8 +335,7 @@ searchloop:
 				namlen = ep->d_namlen;
 #			endif
 			if (namlen == cnp->cn_namelen &&
-			    !bcmp(cnp->cn_nameptr, ep->d_name,
-				(unsigned)namlen)) {
+			    !memcmp(cnp->cn_nameptr, ep->d_name, namlen)) {
 #ifdef UFS_DIRHASH
 foundentry:
 #endif
