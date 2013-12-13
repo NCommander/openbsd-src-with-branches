@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_conf.c,v 1.15 2010/04/12 12:57:52 tedu Exp $	*/
+/*	$OpenBSD: tty_conf.c,v 1.16 2010/06/29 19:09:12 tedu Exp $	*/
 /*	$NetBSD: tty_conf.c,v 1.18 1996/05/19 17:17:55 jonathan Exp $	*/
 
 /*-
@@ -103,8 +103,9 @@ struct	linesw linesw[] =
 	{ ttynodisc, ttyerrclose, ttyerrio, ttyerrio, nullioctl,
 	  ttyerrinput, ttyerrstart, nullmodem },	/* 1- defunct */
 
-	{ ttyopen, ttylclose, ttread, ttwrite, nullioctl,
-	  ttyinput, ttstart, ttymodem },		/* 2- old NTTYDISC */
+	/* 2- old NTTYDISC (defunct) */
+	{ ttynodisc, ttyerrclose, ttyerrio, ttyerrio, nullioctl,
+	  ttyerrinput, ttyerrstart, nullmodem },
 
 	/* 3- TABLDISC (defunct) */
 	{ ttynodisc, ttyerrclose, ttyerrio, ttyerrio, nullioctl,
