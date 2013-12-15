@@ -1,4 +1,4 @@
-/* $OpenBSD: drmP.h,v 1.155 2013/12/01 09:13:46 kettenis Exp $ */
+/* $OpenBSD: drmP.h,v 1.156 2013/12/05 13:29:56 kettenis Exp $ */
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  */
@@ -196,6 +196,12 @@ static inline void *
 ERR_PTR(long error)
 {
 	return (void *) error;
+}
+
+static inline long
+PTR_ERR(const void *ptr)
+{
+	return (long) ptr;
 }
 
 static inline long
