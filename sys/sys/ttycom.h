@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttycom.h,v 1.10 2008/05/08 01:17:54 fgsch Exp $	*/
+/*	$OpenBSD: ttycom.h,v 1.11 2009/05/06 18:21:23 stevesk Exp $	*/
 /*	$NetBSD: ttycom.h,v 1.4 1996/05/19 17:17:53 jonathan Exp $	*/
 
 /*-
@@ -42,10 +42,7 @@
 
 #include <sys/ioccom.h>
 
-/*
- * Tty ioctl's except for those supported only for backwards compatibility
- * with the old tty driver.
- */
+/* Tty ioctl's. */
 
 /*
  * Window/terminal size structure.  This information is stored by the kernel
