@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse.h,v 1.9 2013/11/07 18:15:09 syl Exp $ */
+/* $OpenBSD: fuse.h,v 1.10 2013/11/13 17:54:36 stsp Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -160,6 +160,8 @@ struct fuse_operations {
 #error "Fuse version < 26 not supported"
 #endif
 
+#define	FUSE_MAJOR_VERSION 2
+#define	FUSE_MINOR_VERSION 6
 
 /*
  * API prototypes
