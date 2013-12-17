@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.58 2013/01/17 16:30:10 bluhm Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.59 2013/04/24 10:17:08 mpi Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -180,7 +180,7 @@ u_char ip_protox[IPPROTO_MAX];
 
 struct protosw inetsw[] = {
 { 0,		&inetdomain,	0,		0,
-  0,		ip_output,	0,		0,
+  0,		0,		0,		0,
   0,
   ip_init,	0,		ip_slowtimo,	ip_drain,	ip_sysctl
 },
