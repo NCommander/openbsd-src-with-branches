@@ -1,4 +1,4 @@
-/* $OpenBSD: acpipwrres.c,v 1.4 2010/07/21 19:35:15 deraadt Exp $ */
+/* $OpenBSD: acpipwrres.c,v 1.5 2013/11/06 10:40:36 mpi Exp $ */
 
 /*
  * Copyright (c) 2013 Martin Pieuchot <mpi@openbsd.org>
@@ -135,7 +135,7 @@ acpipwrres_attach(struct device *parent, struct device *self, void *aux)
 
 	DPRINTF(("%s", DEVNAME(sc)));
 	if (!SIMPLEQ_EMPTY(&sc->sc_cons)) {
-		printf(": resource for");
+		printf(", resource for");
 		SIMPLEQ_FOREACH(cons, &sc->sc_cons, cs_next)
 			printf(" %s%s", cons->cs_node->name,
 			   (SIMPLEQ_NEXT(cons, cs_next) == NULL) ? "" : ",");
