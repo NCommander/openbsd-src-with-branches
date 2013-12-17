@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.47 2013/03/03 19:11:34 guenther Exp $	*/
+/*	$OpenBSD: lex.c,v 1.48 2013/11/12 04:36:02 deraadt Exp $	*/
 
 /*
  * lexical analysis and source input
@@ -986,7 +986,7 @@ getsc__(void)
 				source->flags |= s->flags & SF_ALIAS;
 				s = source;
 			} else if (*s->u.tblp->val.s &&
-			    isspace(strchr(s->u.tblp->val.s, 0)[-1])) {
+			    isspace((unsigned char)strchr(s->u.tblp->val.s, 0)[-1])) {
 				source = s = s->next;	/* pop source stack */
 				/* Note that this alias ended with a space,
 				 * enabling alias expansion on the following

@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.37 2013/01/21 10:13:24 halex Exp $	*/
+/*	$OpenBSD: edit.c,v 1.38 2013/06/03 15:41:59 tedu Exp $	*/
 
 /*
  * Command line editing - common code
@@ -549,7 +549,8 @@ x_locate_word(const char *buf, int buflen, int pos, int *startp,
 		int iscmd;
 
 		/* Figure out if this is a command */
-		for (p = start - 1; p >= 0 && isspace(buf[p]); p--)
+		for (p = start - 1; p >= 0 && isspace((unsigned char)buf[p]);
+		    p--)
 			;
 		iscmd = p < 0 || strchr(";|&()`", buf[p]);
 		if (iscmd) {

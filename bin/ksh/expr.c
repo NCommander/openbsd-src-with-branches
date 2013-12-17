@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.21 2009/06/01 19:00:57 deraadt Exp $	*/
+/*	$OpenBSD: expr.c,v 1.22 2013/03/28 08:39:28 nicm Exp $	*/
 
 /*
  * Korn expression evaluation
@@ -463,7 +463,7 @@ token(Expr_state *es)
 	char *tvar;
 
 	/* skip white space */
-	for (cp = es->tokp; (c = *cp), isspace(c); cp++)
+	for (cp = es->tokp; (c = *cp), isspace((unsigned char)c); cp++)
 		;
 	es->tokp = cp;
 
