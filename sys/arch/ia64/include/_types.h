@@ -1,4 +1,4 @@
-/*	$OpenBSD: _types.h,v 1.6 2013/07/04 13:57:41 otto Exp $	*/
+/*	$OpenBSD: _types.h,v 1.7 2013/07/05 19:46:27 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -51,8 +51,9 @@ typedef struct label_t {
  * This does not reflect the optimal alignment, just the possibility
  * (within reasonable limits).
  */
-#define	_ALIGNBYTES	15	/* XXX guess/assumption */
-#define	_ALIGN(p)	(((unsigned long)(p) + _ALIGNBYTES) & ~_ALIGNBYTES)
+#define	_ALIGNBYTES		15	/* XXX guess/assumption */	
+#define	_STACKALIGNBYTES	_ALIGNBYTES
+#define	_ALIGN(p)		(((unsigned long)(p) + _ALIGNBYTES) & ~_ALIGNBYTES)
 #define	_ALIGNED_POINTER(p,t)	1
 
 
