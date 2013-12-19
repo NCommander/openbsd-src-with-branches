@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.49 2012/10/03 11:18:23 miod Exp $ */
+/*	$OpenBSD: cpu.c,v 1.50 2013/05/09 19:45:19 miod Exp $ */
 
 /*
  * Copyright (c) 1997-2004 Opsycon AB (www.opsycon.se)
@@ -198,6 +198,10 @@ cpuattach(struct device *parent, struct device *dev, void *aux)
 		break;
 	case MIPS_OCTEON:
 		printf("Cavium OCTEON CPU");
+		fptype = MIPS_SOFT;
+		break;
+	case MIPS_OCTEON2:
+		printf("Cavium OCTEON II CPU");
 		fptype = MIPS_SOFT;
 		break;
 	default:
