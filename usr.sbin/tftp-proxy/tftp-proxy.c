@@ -1,4 +1,4 @@
-/* $OpenBSD: tftp-proxy.c,v 1.4 2012/08/19 23:21:24 deraadt Exp $
+/* $OpenBSD: tftp-proxy.c,v 1.5 2012/10/06 16:29:51 jmc Exp $
  *
  * Copyright (c) 2005 DLS Internet Services
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -546,6 +546,7 @@ proxy_listen(const char *addr, const char *port, int family)
 
 		TAILQ_INSERT_TAIL(&proxy_listeners, l, entry);
 	}
+	freeaddrinfo(res0);
 
 	if (TAILQ_EMPTY(&proxy_listeners))
 		err(1, "%s", cause);
