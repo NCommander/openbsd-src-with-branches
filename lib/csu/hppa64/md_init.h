@@ -1,4 +1,4 @@
-/* $OpenBSD: md_init.h,v 1.3 2011/09/19 21:05:29 kettenis Exp $ */
+/* $OpenBSD: md_init.h,v 1.4 2013/12/03 06:21:41 guenther Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -77,7 +77,7 @@
 	"	.label _start					\n" \
 	"	.label __start					\n" \
 	"	.proc						\n" \
-	"	.callin_fo frame=0, calls			\n" \
+	"	.callinfo frame=0, calls			\n" \
 	"	.entry						\n" \
 	"	ldil	L%__gp, %r27				\n" \
 	"	.call						\n" \
