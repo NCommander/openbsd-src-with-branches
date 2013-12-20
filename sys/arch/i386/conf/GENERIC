@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.761 2013/11/15 19:42:20 sasano Exp $
+#	$OpenBSD: GENERIC,v 1.762 2013/12/19 21:30:02 deraadt Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -791,3 +791,4 @@ virtio*		at pci? 	# Virtio PCI device
 vioblk*		at virtio?	# Virtio block device
 vio*		at virtio?	# Virtio network device
 viomb*		at virtio?	# Virtio memory ballooning device
+vioscsi*	at virtio?	# Virtio SCSI device
