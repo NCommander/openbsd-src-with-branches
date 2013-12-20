@@ -1,4 +1,4 @@
-/*	$OpenBSD: netstat.c,v 1.35 2012/01/30 14:35:50 okan Exp $	*/
+/*	$OpenBSD: netstat.c,v 1.36 2013/03/20 06:55:24 deraadt Exp $	*/
 /*	$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $	*/
 
 /*-
@@ -263,16 +263,16 @@ again:
 	KREAD(off, &pcbtable, sizeof (struct inpcbtable));
 
 	prev = head = (struct inpcb *)&((struct inpcbtable *)off)->inpt_queue;
-	next = CIRCLEQ_FIRST(&pcbtable.inpt_queue);
+	next = TAILQ_FIRST(&pcbtable.inpt_queue);
 
 	while (next != head) {
 		KREAD(next, &inpcb, sizeof (inpcb));
-		if (CIRCLEQ_PREV(&inpcb, inp_queue) != prev) {
+		if (TAILQ_PREV(&inpcb, inpthead, inp_queue) != prev) {
 			error("Kernel state in transition");
 			return 0;
 		}
 		prev = next;
-		next = CIRCLEQ_NEXT(&inpcb, inp_queue);
+		next = TAILQ_NEXT(&inpcb, inp_queue);
 
 		if (!aflag) {
 			if (!(inpcb.inp_flags & INP_IPV6) &&
