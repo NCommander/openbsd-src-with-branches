@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.82 2012/04/30 13:41:26 haesbaert Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.83 2013/11/13 20:41:14 deraadt Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -1090,8 +1090,10 @@ recvrequest(const char *cmd, const char * volatile local, const char *remote,
 			d = 0;
 			do {
 				wr = write(fileno(fout), buf + d, rd);
-				if (wr == -1 && errno == EPIPE)
+				if (wr == -1) {
+					d = -1;
 					break;
+				}
 				d += wr;
 				rd -= wr;
 			} while (d < c);
