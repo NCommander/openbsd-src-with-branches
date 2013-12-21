@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump_subr.h,v 1.10 2013/07/03 23:04:34 guenther Exp $	*/
+/*	$OpenBSD: kdump_subr.h,v 1.11 2013/07/04 08:29:34 otto Exp $	*/
 /*
  * Copyright(c) 2006 2006 David Kirchner <dpk@dpk.net>
  *
@@ -86,5 +86,7 @@ void sigfpe_name(int);
 void sigbus_name(int);
 void sigsegv_name(int);
 void sigchld_name(int);
+void ktracefacname(int);
+void itimername(int);
 
 extern int decimal, resolv, fancy;

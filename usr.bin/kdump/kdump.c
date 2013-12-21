@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.84 2013/08/22 02:02:33 guenther Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.85 2013/09/09 05:08:26 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -889,6 +889,16 @@ ktrsyscall(struct ktr_syscall *ktr)
 	case SYS_fpathconf: 
 		pn(NULL);
 		pn(pathconfname);
+		break;
+	case SYS_ktrace:
+		pn(NULL);
+		pn(NULL);
+		pn(ktracefacname);
+		pn(pgid);
+		break;
+	case SYS_setitimer:
+	case SYS_getitimer:
+		pn(itimername);
 		break;
 	}
 
