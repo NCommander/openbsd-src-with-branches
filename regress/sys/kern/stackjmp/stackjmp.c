@@ -1,4 +1,4 @@
-/*	$OpenBSD: stackjmp.c,v 1.1 2012/06/23 05:54:49 matthew Exp $	*/
+/*	$OpenBSD: stackjmp.c,v 1.2 2012/06/29 00:21:55 matthew Exp $	*/
 /*
  * Written by Matthew Dempsky, 2012.
  * Public domain.
@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
-static jmp_buf jb;
+static sigjmp_buf jb;
 static char buf[SIGSTKSZ];
 static volatile int handled;
 
