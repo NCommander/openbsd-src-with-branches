@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.14 2012/12/31 10:07:51 miod Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.15 2013/12/23 21:49:27 kettenis Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -116,8 +116,10 @@ ENTRY(_dl_start)
 	mr	4, 21
 	mr	5, 22
 	mr	6, 23
-	li	7, 0
 
+	bl	_GLOBAL_OFFSET_TABLE_@local-4
+	mflr	31
+	lwz	7, _dl_dtors@got(31)
 
 	mtlr	27
 	lwz	1, 0(1)		# Restore stack pointer.
