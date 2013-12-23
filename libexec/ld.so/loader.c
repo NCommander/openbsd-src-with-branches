@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.132 2013/04/05 12:58:03 kurt Exp $ */
+/*	$OpenBSD: loader.c,v 1.133 2013/06/01 09:57:55 miod Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -604,6 +604,7 @@ _dl_boot(const char **argv, char **envp, const long dyn_loff, long *dl_data)
 		_dl_call_init(_dl_objects);
 	}
 
+#if !defined(__i386__)
 	/*
 	 * Schedule a routine to be run at shutdown, by using atexit.
 	 * Cannot call atexit directly from ld.so?
@@ -628,6 +629,7 @@ _dl_boot(const char **argv, char **envp, const long dyn_loff, long *dl_data)
 			    ((Elf_Addr)_dl_dtors);
 #endif
 	}
+#endif
 
 	DL_DEB(("entry point: 0x%lx\n", dl_data[AUX_entry]));
 
