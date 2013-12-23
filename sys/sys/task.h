@@ -1,4 +1,4 @@
-/*	$OpenBSD: task.h,v 1.3 2013/10/30 02:11:32 dlg Exp $ */
+/*	$OpenBSD: task.h,v 1.4 2013/10/31 04:33:32 deraadt Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -41,6 +41,10 @@ void		 task_set(struct task *, void (*)(void *, void *),
 		     void *, void *);
 int		 task_add(struct taskq *, struct task *);
 int		 task_del(struct taskq *, struct task *);
+
+#define TASK_INITIALIZER(_f, _a1, _a2) \
+	{ { NULL, NULL }, (_f), (_a1), (_a2), 0 }
+
 #endif /* _KERNEL */
 
 #endif /* _SYS_TASKQ_H_ */
