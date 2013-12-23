@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.12 2013/06/01 09:57:58 miod Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.13 2013/08/13 05:52:18 guenther Exp $	*/
 
 /*
  * Copyright (c) 2002,2004 Dale Rahn
@@ -63,9 +63,7 @@ _dl_start:
 
 	addq	$DL_DATA_SIZE,%rsp	# return dl_data
 
-#	popq	%rbx			# %rbx = ps_strings - XXXDSR
-#	popq	%rcx			# %rcx = obj_main - XXXDSR
-	movq	$0, %rdx		# %rdx = cleanup - XXXDSR
+	leaq	_dl_dtors(%rip), %rdx	# %rdx = cleanup
 	movq	%r12, %rsp
 	jmp	*%rax
 
