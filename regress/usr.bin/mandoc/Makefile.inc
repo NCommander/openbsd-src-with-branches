@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.8 2013/11/10 14:58:44 schwarze Exp $
+# $OpenBSD: Makefile.inc,v 1.9 2013/11/10 17:43:11 schwarze Exp $
 
 # --- programs ---
 
@@ -87,7 +87,7 @@ ${t}.diff_man:
 .      endif
 .    endif
 
-${t}: ${t}.diff_ascii
+${t}: ${t}.diff_ascii ${t}.diff_man
 .  else
 ${t}:
 	@echo "TODO: -Tascii disabled for: ${.TARGET}"
