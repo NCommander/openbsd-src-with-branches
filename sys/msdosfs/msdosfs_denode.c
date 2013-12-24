@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_denode.c,v 1.45 2013/06/11 16:42:16 deraadt Exp $	*/
+/*	$OpenBSD: msdosfs_denode.c,v 1.46 2013/10/01 20:22:13 sf Exp $	*/
 /*	$NetBSD: msdosfs_denode.c,v 1.23 1997/10/17 11:23:58 ws Exp $	*/
 
 /*-
@@ -312,7 +312,7 @@ retry:
 			if (error == E2BIG) {
 				ldep->de_FileSize = de_cn2off(pmp, size);
 				error = 0;
-			} else {
+			} else if (error) {
 				printf("deget(): pcbmap returned %d\n", error);
 				return (error);
 			}
