@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp_var.h,v 1.31 2010/07/02 22:01:10 deraadt Exp $	*/
+/*	$OpenBSD: ftp_var.h,v 1.32 2012/04/30 13:41:26 haesbaert Exp $	*/
 /*	$NetBSD: ftp_var.h,v 1.18 1997/08/18 10:20:25 lukem Exp $	*/
 
 /*
@@ -229,3 +229,14 @@ char macbuf[4096];
 FILE	*ttyout;		/* stdout or stderr, depending on interactive */
 
 extern struct cmd cmdtab[];
+
+#ifndef SMALL
+extern char	*ssl_ciphers;
+extern char	*ssl_ca_file;
+extern char	*ssl_ca_path;
+extern int	 ssl_verify;
+extern int	 ssl_verify_depth;
+# ifndef	_PATH_SSL_CAFILE
+#  define	_PATH_SSL_CAFILE "/etc/ssl/cert.pem"
+# endif
+#endif /* !SMALL */
