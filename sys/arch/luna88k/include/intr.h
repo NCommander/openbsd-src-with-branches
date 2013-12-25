@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.6 2009/03/15 20:39:53 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.7 2011/03/23 16:54:35 pirofti Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -45,6 +45,8 @@
 #define IPL_HIGH	7
 #define IPL_NMI		7
 #define IPL_ABORT	7
+
+#define IPL_MPSAFE	0	/* no "mpsafe" interrupts */
 
 #include <m88k/intr.h>
 
