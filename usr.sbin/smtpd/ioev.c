@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioev.c,v 1.13 2013/06/03 15:57:40 eric Exp $	*/
+/*	$OpenBSD$	*/
 /*      
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -152,7 +152,7 @@ io_set_linger(int fd, int linger)
 {
 	struct linger    l;
 
-	bzero(&l, sizeof(l));
+	memset(&l, 0, sizeof(l));
 	l.l_onoff = linger ? 1 : 0;
 	l.l_linger = linger;
 	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &l, sizeof(l)) == -1)

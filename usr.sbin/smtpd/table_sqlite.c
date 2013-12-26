@@ -1,4 +1,4 @@
-/*	$OpenBSD: table_sqlite.c,v 1.9 2013/11/18 11:47:16 eric Exp $	*/
+/*	$OpenBSD: table_sqlite.c,v 1.10 2013/11/28 10:43:37 eric Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -175,8 +175,8 @@ table_sqlite_update(void)
 
 	dbpath = NULL;
 	_db = NULL;
-	bzero(queries, sizeof(queries));
-	bzero(_statements, sizeof(_statements));
+	memset(queries, 0, sizeof(queries));
+	memset(_statements, 0, sizeof(_statements));
 	_query_fetch_source = NULL;
 	_stmt_fetch_source = NULL;
 

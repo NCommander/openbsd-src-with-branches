@@ -1,4 +1,4 @@
-/* $OpenBSD: delivery_lmtp.c,v 1.2 2013/07/19 08:45:38 eric Exp $ */
+/* $OpenBSD$ */
 
 /*
  * Copyright (c) 2013 Ashish SHUKLA <ashish.is@lostca.se>
@@ -74,7 +74,7 @@ inet_socket (char *address)
 	 hostname = address;
 	 s = -1;
 
-	 bzero(&hints, sizeof(hints));
+	 memset(&hints, 0, sizeof(hints));
 	 hints.ai_family = PF_UNSPEC;
 	 hints.ai_socktype = SOCK_STREAM;
 	 hints.ai_flags = AI_NUMERICSERV;
@@ -108,7 +108,7 @@ unix_socket(char *path) {
 	 struct sockaddr_un addr;
 	 int s;
 
-	 bzero(&addr, sizeof(addr));
+	 memset(&addr, 0, sizeof(addr));
 
 	 if ((s = socket(PF_LOCAL, SOCK_STREAM, 0)) == -1) {
 		 warn("socket");
