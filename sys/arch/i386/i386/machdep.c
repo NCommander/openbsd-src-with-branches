@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.527 2013/10/17 08:02:15 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.528 2013/11/01 17:36:19 krw Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -3220,7 +3220,7 @@ init386(paddr_t first_avail)
 				e = 0xfffff000;
 			}
 
-			/* skip first 16 pages for tramps and hibernate */
+			/* skip first 16 pages for due to SMI corruption */
 			if (a < 16 * NBPG)
 				a = 16 * NBPG;
 
