@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile,v 1.3 2013/12/27 14:23:49 jsing Exp $
+#	$OpenBSD: Makefile,v 1.4 2013/12/28 11:00:33 jsing Exp $
 
 NOMAN=
 
-.if (${MACHINE} == "amd64" || ${MACHINE} == "hppa" || ${MACHINE} == "i386")
+.if (${MACHINE} == "amd64" || ${MACHINE} == "hppa" || ${MACHINE} == "i386" || \
+     ${MACHINE} == "vax")
 
 PROG=		installboot
 
