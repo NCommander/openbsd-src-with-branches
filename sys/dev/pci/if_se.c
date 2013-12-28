@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_se.c,v 1.7 2012/09/26 19:18:00 brad Exp $	*/
+/*	$OpenBSD: if_se.c,v 1.8 2013/12/06 21:03:04 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2009, 2010 Christopher Zimmermann <madroach@zakweb.de>
@@ -748,7 +748,6 @@ se_activate(struct device *self, int act)
 		rv = config_activate_children(self, act);
 		break;
 	case DVACT_RESUME:
-		rv = config_activate_children(self, act);
 		if (ifp->if_flags & IFF_UP)
 			(void)se_init(ifp);
 		break;
