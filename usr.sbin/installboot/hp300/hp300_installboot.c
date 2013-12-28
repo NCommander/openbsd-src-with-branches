@@ -22,7 +22,7 @@ void
 md_init(void)
 {
 	stages = 1;
-	stage1 = "/usr/mdec/boot.lif";
+	stage1 = "/usr/mdec/uboot.lif";
 }
 
 void

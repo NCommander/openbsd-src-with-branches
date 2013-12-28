@@ -21,8 +21,9 @@
 void
 md_init(void)
 {
-	stages = 1;
-	stage1 = "/usr/mdec/boot.lif";
+	stages = 2;
+	stage1 = "/usr/mdec/xxboot";
+	stage2 = "/boot";
 }
 
 void
