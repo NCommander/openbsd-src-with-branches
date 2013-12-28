@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2013/04/23 16:41:13 jsing Exp $
+#	$OpenBSD: Makefile,v 1.24 2013/06/02 21:01:48 guenther Exp $
 
 COPTS?=
 MAN?=	boot.8
@@ -22,7 +22,7 @@ LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -nopie
 LDFLAGS+=-melf_i386 -L/usr/libdata 
 
 .PATH:	${SADIR}/libsa
-SRCS+=	alloca.S gidt.S
+SRCS+=	alloca.S gidt.S random_i386.S
 SRCS+=	cmd_i386.c dev_i386.c exec_i386.c gateA20.c machdep.c
 SRCS+=	bioscons.c biosdev.c diskprobe.c memprobe.c time.c
 .if ${SOFTRAID:L} == "yes"

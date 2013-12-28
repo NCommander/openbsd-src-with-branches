@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.21 2012/05/25 11:31:04 miod Exp $ */
+/*	$OpenBSD: boot.c,v 1.22 2012/09/29 21:40:48 miod Exp $ */
 
 /*
  * Copyright (c) 2004 Opsycon AB, www.opsycon.se.
@@ -53,6 +53,8 @@ char *OSLoadPartition = NULL;
 char *OSLoadFilename = NULL;
 
 int	IP;
+
+char   rnddata[BOOTRANDOM_MAX];		/* XXX dummy */
 
 #include "version"
 
