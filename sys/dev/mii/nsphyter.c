@@ -1,4 +1,4 @@
-/*	$OpenBSD: nsphyter.c,v 1.15 2008/06/26 05:42:16 ray Exp $	*/
+/*	$OpenBSD: nsphyter.c,v 1.16 2010/07/23 07:47:13 jsg Exp $	*/
 /*	$NetBSD: nsphyter.c,v 1.5 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -81,7 +81,7 @@ void	nsphyterattach(struct device *, struct device *, void *);
 
 struct cfattach nsphyter_ca = {
 	sizeof(struct mii_softc), nsphytermatch, nsphyterattach,
-	    mii_phy_detach, mii_phy_activate
+	mii_phy_detach
 };
 
 struct cfdriver nsphyter_cd = {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lxtphy.c,v 1.16 2008/06/26 05:42:16 ray Exp $	*/
+/*	$OpenBSD: lxtphy.c,v 1.17 2010/07/23 07:47:13 jsg Exp $	*/
 /*	$NetBSD: lxtphy.c,v 1.19 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -80,8 +80,7 @@ int	lxtphymatch(struct device *, void *, void *);
 void	lxtphyattach(struct device *, struct device *, void *);
 
 struct cfattach lxtphy_ca = {
-	sizeof(struct mii_softc), lxtphymatch, lxtphyattach, mii_phy_detach,
-	    mii_phy_activate
+	sizeof(struct mii_softc), lxtphymatch, lxtphyattach, mii_phy_detach
 };
 
 struct cfdriver lxtphy_cd = {

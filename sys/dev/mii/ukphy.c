@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukphy.c,v 1.19 2008/06/26 05:42:17 ray Exp $	*/
+/*	$OpenBSD: ukphy.c,v 1.20 2010/07/23 07:47:13 jsg Exp $	*/
 /*	$NetBSD: ukphy.c,v 1.9 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -76,8 +76,7 @@ int	ukphymatch(struct device *, void *, void *);
 void	ukphyattach(struct device *, struct device *, void *);
 
 struct cfattach ukphy_ca = {
-	sizeof(struct mii_softc), ukphymatch, ukphyattach, mii_phy_detach,
-	    mii_phy_activate
+	sizeof(struct mii_softc), ukphymatch, ukphyattach, mii_phy_detach
 };
 
 struct cfdriver ukphy_cd = {

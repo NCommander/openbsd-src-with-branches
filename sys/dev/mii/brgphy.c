@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphy.c,v 1.101 2013/03/17 00:23:44 brad Exp $	*/
+/*	$OpenBSD: brgphy.c,v 1.102 2013/05/28 09:46:06 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -64,8 +64,7 @@ int brgphy_probe(struct device *, void *, void *);
 void brgphy_attach(struct device *, struct device *, void *);
 
 struct cfattach brgphy_ca = {
-	sizeof(struct mii_softc), brgphy_probe, brgphy_attach, mii_phy_detach,
-	    mii_phy_activate
+	sizeof(struct mii_softc), brgphy_probe, brgphy_attach, mii_phy_detach
 };
 
 struct cfdriver brgphy_cd = {

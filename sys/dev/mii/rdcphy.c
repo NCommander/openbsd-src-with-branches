@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rdcphy.c,v 1.1 2011/01/15 04:35:34 kevlo Exp $	*/
 /*-
  * Copyright (c) 2010, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -107,7 +107,7 @@ static const struct mii_phydesc rdcphys[] = {
 
 struct cfattach rdcphy_ca = {
 	sizeof(struct rdcphy_softc), rdcphy_match, rdcphy_attach,
-	mii_phy_detach, mii_phy_activate
+	mii_phy_detach
 };
 
 struct cfdriver rdcphy_cd = {

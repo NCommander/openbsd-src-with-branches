@@ -1,4 +1,4 @@
-/*	$OpenBSD: txphy.c,v 1.9 2005/01/28 18:27:55 brad Exp $	*/
+/*	$OpenBSD: txphy.c,v 1.10 2005/02/19 06:00:04 brad Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -48,8 +48,7 @@ int	txphymatch(struct device *, void *, void *);
 void	txphyattach(struct device *, struct device *, void *);
 
 struct cfattach txphy_ca = {
-	sizeof(struct mii_softc), txphymatch, txphyattach, mii_phy_detach,
-	    mii_phy_activate
+	sizeof(struct mii_softc), txphymatch, txphyattach, mii_phy_detach
 };
 
 struct cfdriver txphy_cd = {
