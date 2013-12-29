@@ -1,4 +1,4 @@
-/* $OpenBSD: authfile.c,v 1.99 2013/12/06 13:34:54 markus Exp $ */
+/* $OpenBSD: authfile.c,v 1.100 2013/12/06 13:39:49 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1195,6 +1195,7 @@ key_load_private_cert(int type, const char *filename, const char *passphrase,
 	case KEY_RSA:
 	case KEY_DSA:
 	case KEY_ECDSA:
+	case KEY_ED25519:
 		break;
 	default:
 		error("%s: unsupported key type", __func__);
