@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.40 2008/06/10 18:38:59 drahn Exp $	*/
+/*	$OpenBSD: locore.S,v 1.41 2008/07/28 19:08:46 miod Exp $	*/
 /*	$NetBSD: locore.S,v 1.2 1996/10/16 19:33:09 ws Exp $	*/
 
 /*
@@ -676,7 +676,7 @@ _C_LABEL(tlbdsmiss):
 	mfsrin	%r1,%r3			/* get the segment register */
 	mfsrr1	%r3
 	rlwinm	%r3,%r3,18,31,31	/* get PR-bit */
-	rlwnm.	%r2,%r2,3,1,1		/* get the key */
+	rlwnm.	%r1,%r1,%r3,1,1		/* get the key */
 	bne-	9b			/* protection violation */
 8:	/* found, set reference/change bits */
 	lwz	%r1,4(%r2)		/* reload tlb entry */
