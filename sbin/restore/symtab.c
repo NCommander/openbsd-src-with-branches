@@ -1,4 +1,4 @@
-/*	$OpenBSD: symtab.c,v 1.19 2011/06/27 23:40:57 tedu Exp $	*/
+/*	$OpenBSD: symtab.c,v 1.20 2013/04/24 13:46:29 deraadt Exp $	*/
 /*	$NetBSD: symtab.c,v 1.10 1997/03/19 08:42:54 lukem Exp $	*/
 
 /*
@@ -553,6 +553,7 @@ initsymtable(char *filename)
 		warn("read");
 		panic("cannot read symbol table file %s\n", filename);
 	}
+	close(fd);
 	switch (command) {
 	case 'r':
 		/*
