@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_gre.c,v 1.46 2013/10/23 15:12:42 mpi Exp $ */
+/*      $OpenBSD: ip_gre.c,v 1.47 2013/10/24 11:31:43 mpi Exp $ */
 /*	$NetBSD: ip_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -327,7 +327,7 @@ gre_mobile_input(struct mbuf *m, ...)
 		return;
 	}
 
-	bcopy(ip + (ip->ip_hl << 2) + msiz, ip + (ip->ip_hl << 2),
+	memmove(ip + (ip->ip_hl << 2), ip + (ip->ip_hl << 2) + msiz, 
 	      m->m_len - msiz - (ip->ip_hl << 2));
 
 	m->m_len -= msiz;
