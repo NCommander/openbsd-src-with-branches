@@ -1,4 +1,4 @@
-/*      $OpenBSD: copy_elf.c,v 1.2 2013/11/01 14:47:47 syl Exp $       */
+/*      $OpenBSD: copy_elf.c,v 1.3 2013/11/11 07:56:02 patrick Exp $       */
 
 /*
  * Copyright (c) 2013 Miodrag Vallat.
@@ -157,7 +157,7 @@ ELFNAME(copy_elf)(int ifd, const char *iname, int ofd, const char *oname,
 		if (elfoff2h(phdr.p_filesz) != 0) {
 #ifdef DEBUG
 			fprintf(stderr, "copying %p from infile %p\n",
-			   elfoff2h(hphdr.p_filesz), elfoff2h(phdr.p_offset));
+			   elfoff2h(phdr.p_filesz), elfoff2h(phdr.p_offset));
 #endif
 			/* esym will be in the data portion of a region */
 			if (esym >= elfoff2h(phdr.p_vaddr) &&
