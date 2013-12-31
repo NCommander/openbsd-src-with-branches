@@ -1,4 +1,4 @@
-/*	$OpenBSD: ztsscale.c,v 1.14 2007/06/17 10:07:30 robert Exp $	*/
+/*	$OpenBSD: ztsscale.c,v 1.15 2009/11/10 04:34:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Matthieu Herrb
@@ -103,7 +103,7 @@ wait_event(int mfd, int *x, int *y)
 	*x = *y = -1;
 	while (down || *x == -1 || *y == -1) {
 		len = read(mfd, &evbuf, sizeof(evbuf));
-		if (len != 16)
+		if (len != sizeof(evbuf))
 			break;
 		switch (evbuf.type) {
 		case WSCONS_EVENT_MOUSE_DOWN:
