@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahcivar.h,v 1.1 2013/01/21 11:17:48 patrick Exp $ */
+/*	$OpenBSD: ahcivar.h,v 1.2 2013/07/09 11:55:55 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -176,6 +176,7 @@ struct ahci_softc {
 #define AHCI_F_NO_NCQ			(1<<0)
 #define AHCI_F_IPMS_PROBE		(1<<1)	/* IPMS on failed PMP probe */
 #define AHCI_F_NO_PMP			(1<<2)	/* ignore PMP capability */
+#define AHCI_F_NO_MSI			(1<<3)	/* disable MSI */
 
 	u_int			sc_ncmds;
 
