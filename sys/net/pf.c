@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.861 2013/11/16 00:36:01 chl Exp $ */
+/*	$OpenBSD: pf.c,v 1.862 2013/11/18 20:30:04 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -144,6 +144,7 @@ union pf_headers {
 struct pool		 pf_src_tree_pl, pf_rule_pl, pf_queue_pl;
 struct pool		 pf_state_pl, pf_state_key_pl, pf_state_item_pl;
 struct pool		 pf_altq_pl, pf_rule_item_pl, pf_sn_item_pl;
+struct pool		 hfsc_class_pl, hfsc_classq_pl, hfsc_internal_sc_pl;
 
 void			 pf_init_threshold(struct pf_threshold *, u_int32_t,
 			    u_int32_t);
