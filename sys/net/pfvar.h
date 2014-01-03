@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.392 2013/11/19 17:30:08 mikeb Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.393 2013/12/22 16:49:29 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1792,6 +1792,9 @@ extern int			 altqs_inactive_open;
 extern u_int32_t		 ticket_pabuf;
 extern struct pf_altqqueue	*pf_altqs_active;
 extern struct pf_altqqueue	*pf_altqs_inactive;
+extern int			 pf_free_queues(struct pf_queuehead *,
+				    struct ifnet *);
+extern int			 pf_remove_queues(struct ifnet *);
 extern int			 pf_tbladdr_setup(struct pf_ruleset *,
 				    struct pf_addr_wrap *);
 extern void			 pf_tbladdr_remove(struct pf_addr_wrap *);
