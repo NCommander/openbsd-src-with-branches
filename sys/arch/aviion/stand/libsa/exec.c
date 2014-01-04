@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.1 2013/10/08 21:55:21 miod Exp $	*/
+/*	$OpenBSD: exec.c,v 1.2 2013/10/10 21:22:07 miod Exp $	*/
 
 
 /*-
@@ -40,6 +40,8 @@
 #include "libsa.h"
 
 #include <lib/libsa/loadfile.h>
+
+char   rnddata[BOOTRANDOM_MAX];		/* XXX dummy */
 
 #define	BOOT_MAGIC	0x6274ef2e	/* need to match locore.S */
 

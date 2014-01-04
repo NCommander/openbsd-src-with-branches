@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_hp300.c,v 1.2 2013/01/07 20:02:11 miod Exp $	*/
+/*	$OpenBSD: exec_hp300.c,v 1.3 2013/02/02 13:34:29 miod Exp $	*/
 /*	$NetBSD: exec.c,v 1.15 1996/10/13 02:29:01 christos Exp $	*/
 
 /*-
@@ -37,6 +37,8 @@
 #include "samachdep.h"
 
 #include <lib/libsa/loadfile.h>
+
+char   rnddata[BOOTRANDOM_MAX];		/* XXX dummy */
 
 void
 exec(char *path, void *loadaddr, int howto)
