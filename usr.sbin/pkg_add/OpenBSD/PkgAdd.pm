@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgAdd.pm,v 1.41 2013/12/31 11:24:55 espie Exp $
+# $OpenBSD: PkgAdd.pm,v 1.42 2014/01/02 16:05:42 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -809,9 +809,7 @@ sub really_add
 			$plist->get(DISPLAY)->prepare($state);
 		}
 	}
-	for my $handle ($set->newer) {
-		$set->{solver}->register_dependencies($state);
-	}
+	$set->{solver}->register_dependencies($state);
 	if ($replacing) {
 		$set->{forward}->adjust($state);
 	}
