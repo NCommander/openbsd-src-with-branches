@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_mm.h,v 1.4 2006/08/03 03:34:42 deraadt Exp $ */
+/* $OpenBSD: monitor_mm.h,v 1.5 2008/04/29 11:20:31 otto Exp $ */
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -47,7 +47,7 @@ RB_PROTOTYPE(mmtree, mm_share, next, mm_compare)
 
 #define MM_MINSIZE		128
 
-#define MM_ADDRESS_END(x)	(void *)((u_char *)(x)->address + (x)->size)
+#define MM_ADDRESS_END(x)	(void *)((char *)(x)->address + (x)->size)
 
 struct mm_master *mm_create(struct mm_master *, size_t);
 void mm_destroy(struct mm_master *);
