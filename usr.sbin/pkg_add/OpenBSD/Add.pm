@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Add.pm,v 1.133 2013/02/18 20:24:11 okan Exp $
+# $OpenBSD: Add.pm,v 1.134 2013/12/30 09:02:37 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -145,6 +145,10 @@ sub tweak_plist_status
 	my ($plist, $state) = @_;
 
 	my $pkgname = $plist->pkgname;
+	if ($state->defines('FW_UPDATE')) {
+		$plist->has('firmware') or
+			OpenBSD::PackingElement::Firmware->add($plist);
+	}
 	return 0 unless $user_tagged->{$pkgname};
 	if (!$plist->has('manual-installation') && !$state->{automatic}) {
 		OpenBSD::PackingElement::ManualInstallation->add($plist);
