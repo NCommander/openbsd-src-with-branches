@@ -1038,8 +1038,18 @@ boot(int howto)
 {
 	static int syncing;
 
+	if (cold) {
+		/*
+		 * If the system is cold, just halt, unless the user
+		 * explicitly asked for reboot.
+		 */
+		if ((howto & RB_USERREQ) == 0)
+			howto |= RB_HALT;
+		goto haltsys;
+	}
+
 	boothowto = howto;
-	if (!cold && !(howto & RB_NOSYNC) && !syncing) {
+	if (!(howto & RB_NOSYNC) && !syncing) {
 		syncing = 1;
 		vfs_shutdown();		/* sync */
 
@@ -1059,8 +1069,10 @@ boot(int howto)
 	uvm_shutdown();
 	splhigh();
 
-	if (!cold && (howto & RB_DUMP))
+	if ((howto & RB_DUMP))
 		dumpsys();
+
+haltsys:
 	doshutdownhooks();
 	if (!TAILQ_EMPTY(&alldevs))
 		config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
