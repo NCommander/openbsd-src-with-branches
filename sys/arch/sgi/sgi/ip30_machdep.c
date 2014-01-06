@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip30_machdep.c,v 1.56 2012/09/29 19:11:08 miod Exp $	*/
+/*	$OpenBSD: ip30_machdep.c,v 1.57 2012/10/03 11:18:23 miod Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -134,7 +134,7 @@ ip30_setup()
 		 */
 		if (start < IP30_MEMORY_BASE + IP30_MEMORY_ARCBIOS_LIMIT)
 			start = IP30_MEMORY_BASE + IP30_MEMORY_ARCBIOS_LIMIT;
-#if 1
+#if 0
 		/*
 		 * XXX Temporarily restrict memory to 1.5GB, until the bug
 		 * XXX causing low memory corruption is found.
