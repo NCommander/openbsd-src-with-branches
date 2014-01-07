@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.125 2013/11/22 07:59:09 mpi Exp $	*/
+/*	$OpenBSD: in6.c,v 1.126 2013/11/28 10:16:44 mpi Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -2220,7 +2220,7 @@ in6_if_up(struct ifnet *ifp)
 	/*
 	 * special cases, like 6to4, are handled in in6_ifattach
 	 */
-	in6_ifattach(ifp, NULL);
+	in6_ifattach(ifp);
 
 	dad_delay = 0;
 	TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
