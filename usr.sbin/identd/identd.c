@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.22 2013/11/12 19:47:52 deraadt Exp $ */
+/*	$OpenBSD: identd.c,v 1.23 2013/11/21 03:09:07 dlg Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -395,7 +395,7 @@ parent_rd(int fd, short events, void *arg)
 		goto done;
 	}
 
-	r->buflen = n;
+	r->buflen = n + 1;
 
 done:
 	SIMPLEQ_INSERT_TAIL(&sc.parent.replies, r, entry);
