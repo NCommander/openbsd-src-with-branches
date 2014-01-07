@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_src.c,v 1.35 2013/10/23 19:57:50 deraadt Exp $	*/
+/*	$OpenBSD: in6_src.c,v 1.36 2013/11/11 09:15:35 mpi Exp $	*/
 /*	$KAME: in6_src.c,v 1.36 2001/02/06 04:08:17 itojun Exp $	*/
 
 /*
@@ -228,7 +228,8 @@ in6_selectsrc(struct sockaddr_in6 *dstsock, struct ip6_pktopts *opts,
 
 		if (opts && opts->ip6po_nexthop) {
 			sin6_next = satosin6(opts->ip6po_nexthop);
-			rt = nd6_lookup(&sin6_next->sin6_addr, 1, NULL);
+			rt = nd6_lookup(&sin6_next->sin6_addr, 1, NULL,
+			    rtableid);
 			if (rt) {
 				ia6 = in6_ifawithscope(rt->rt_ifp, dst,
 				    rtableid);
