@@ -307,6 +307,11 @@ main(int argc, char **argv)
 		case 'c':
 			cflag = 1;
 			break;
+		case 'h':
+			ofile = fopen(optarg, "w");
+			if (ofile == NULL)
+				err(1, "%s", optarg);
+			break;
 #if !defined(SMALL)
 		case 'o':
 			if (strcmp(optarg, "1") == 0)
@@ -326,11 +331,6 @@ main(int argc, char **argv)
 				hash_insert(&hl, hf, 0);
 			break;
 #endif /* !defined(SMALL) */
-		case 'h':
-			ofile = fopen(optarg, "w");
-			if (ofile == NULL)
-				errx(1, "%s", optarg);
-			break;
 		case 'p':
 			pflag = 1;
 			break;
