@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_subs.c,v 1.34 2012/12/04 02:24:45 deraadt Exp $	*/
+/*	$OpenBSD: ar_subs.c,v 1.35 2014/01/08 04:43:48 guenther Exp $	*/
 /*	$NetBSD: ar_subs.c,v 1.5 1995/03/21 09:07:06 cgd Exp $	*/
 
 /*-
@@ -389,7 +389,7 @@ wr_archive(ARCHD *arcn, int is_app)
 		return;
 
 	/*
-	 * if this is not append, and there are no files, we do not write a 
+	 * if this is not append, and there are no files, we do not write a
 	 * trailer
 	 */
 	wr_one = is_app;

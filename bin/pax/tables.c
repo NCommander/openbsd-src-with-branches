@@ -1,4 +1,4 @@
-/*	$OpenBSD: tables.c,v 1.27 2012/12/04 02:24:45 deraadt Exp $	*/
+/*	$OpenBSD: tables.c,v 1.28 2014/01/08 04:43:48 guenther Exp $	*/
 /*	$NetBSD: tables.c,v 1.4 1995/03/21 09:07:45 cgd Exp $	*/
 
 /*-
@@ -309,7 +309,7 @@ lnk_end(void)
  * hash table is indexed by hashing the file path. The nodes in the table store
  * the length of the filename and the lseek offset within the scratch file
  * where the actual name is stored. Since there are never any deletions from
- * this table, fragmentation of the scratch file is never a issue. Lookups 
+ * this table, fragmentation of the scratch file is never a issue. Lookups
  * seem to not exhibit any locality at all (files in the database are rarely
  * looked up more than once...), so caching is just a waste of memory. The
  * only limitation is the amount of scratch file space available to store the
