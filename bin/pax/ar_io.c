@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_io.c,v 1.39 2009/10/27 23:59:22 deraadt Exp $	*/
+/*	$OpenBSD: ar_io.c,v 1.40 2012/12/04 02:24:45 deraadt Exp $	*/
 /*	$NetBSD: ar_io.c,v 1.5 1996/03/26 23:54:13 mrg Exp $	*/
 
 /*-
@@ -1243,7 +1243,7 @@ ar_next(void)
  * to keep the fd the same in the calling function (parent).
  */
 void
-ar_start_gzip(int fd, const char *gzip_program, int wr)
+ar_start_gzip(int fd, const char *path, int wr)
 {
 	int fds[2];
 	const char *gzip_flags;
@@ -1274,8 +1274,8 @@ ar_start_gzip(int fd, const char *gzip_program, int wr)
 		}
 		close(fds[0]);
 		close(fds[1]);
-		if (execlp(gzip_program, gzip_program, gzip_flags, (char *)NULL) < 0)
-			err(1, "could not exec %s", gzip_program);
+		if (execlp(path, path, gzip_flags, (char *)NULL) < 0)
+			err(1, "could not exec %s", path);
 		/* NOTREACHED */
 	}
 }
