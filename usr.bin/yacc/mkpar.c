@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkpar.c,v 1.14 2009/10/27 23:59:50 deraadt Exp $	*/
+/*	$OpenBSD: mkpar.c,v 1.15 2012/03/03 19:15:00 nicm Exp $	*/
 /*	$NetBSD: mkpar.c,v 1.4 1996/03/19 03:21:39 jtc Exp $	*/
 
 /*
@@ -213,7 +213,7 @@ unused_rules(void)
     int i;
     action *p;
 
-    rules_used = CALLOC(nrules, sizeof(short));
+    rules_used = calloc(nrules, sizeof(short));
     if (rules_used == NULL) no_space();
 
     for (i = 0; i < nstates; ++i)
@@ -384,7 +384,7 @@ free_action_row(action *p)
   while (p)
     {
       q = p->next;
-      FREE(p);
+      free(p);
       p = q;
     }
 }
@@ -397,5 +397,5 @@ free_parser(void)
   for (i = 0; i < nstates; i++)
     free_action_row(parser[i]);
 
-  FREE(parser);
+  free(parser);
 }
