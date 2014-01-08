@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.151 2010/07/23 08:31:19 ray Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.152 2011/09/20 12:43:45 nicm Exp $	*/
 /*
  * Copyright (c) 2006, 2007 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -543,7 +543,7 @@ cvs_var_set(const char *var, const char *val)
 
 	/* sanity check on the name */
 	for (cp = var; *cp != '\0'; cp++)
-		if (!isalnum(*cp) && (*cp != '_')) {
+		if (!isalnum((unsigned char)*cp) && (*cp != '_')) {
 			cvs_log(LP_ERR,
 			    "variable name `%s' contains invalid characters",
 			    var);

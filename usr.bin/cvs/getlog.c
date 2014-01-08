@@ -1,4 +1,4 @@
-/*	$OpenBSD: getlog.c,v 1.95 2010/07/30 21:47:18 ray Exp $	*/
+/*	$OpenBSD: getlog.c,v 1.96 2013/06/03 17:04:35 jcs Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
@@ -464,7 +464,7 @@ date_select(RCSFILE *file, char *date)
 			delim = '\0';
 			last = "\0";
 		} else {
-			while (*last && isspace(*last))
+			while (*last && isspace((unsigned char)*last))
 				last++;
 		}
 
