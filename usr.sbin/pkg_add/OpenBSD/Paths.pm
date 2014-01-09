@@ -1,7 +1,7 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Paths.pm,v 1.24 2014/01/04 00:14:08 espie Exp $
+# $OpenBSD: Paths.pm,v 1.25 2014/01/09 10:36:52 espie Exp $
 #
-# Copyright (c) 2007 Marc Espie <espie@openbsd.org>
+# Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above

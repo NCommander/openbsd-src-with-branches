@@ -1,7 +1,7 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Delete.pm,v 1.124 2014/01/05 10:24:30 espie Exp $
+# $OpenBSD: Delete.pm,v 1.125 2014/01/07 13:31:36 espie Exp $
 #
-# Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
+# Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above

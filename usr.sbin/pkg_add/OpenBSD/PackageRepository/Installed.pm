@@ -1,7 +1,7 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Installed.pm,v 1.26 2010/07/02 11:17:46 espie Exp $
+# $OpenBSD: Installed.pm,v 1.27 2014/01/07 01:29:17 espie Exp $
 #
-# Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
+# Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above

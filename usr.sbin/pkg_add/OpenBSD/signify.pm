@@ -1,7 +1,7 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: signify.pm,v 1.5 2014/01/08 06:40:56 espie Exp $
+# $OpenBSD: signify.pm,v 1.6 2014/01/09 10:36:52 espie Exp $
 #
-# Copyright (c) 2013 Marc Espie <espie@openbsd.org>
+# Copyright (c) 2013-2014 Marc Espie <espie@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above

@@ -1,7 +1,7 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Ustar.pm,v 1.73 2014/01/05 23:11:24 espie Exp $
+# $OpenBSD: Ustar.pm,v 1.74 2014/01/07 00:48:24 espie Exp $
 #
-# Copyright (c) 2002-2007 Marc Espie <espie@openbsd.org>
+# Copyright (c) 2002-2014 Marc Espie <espie@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
