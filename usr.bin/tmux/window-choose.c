@@ -1,4 +1,4 @@
-/* $OpenBSD: window-choose.c,v 1.47 2013/04/22 22:17:29 nicm Exp $ */
+/* $OpenBSD: window-choose.c,v 1.48 2013/10/10 11:58:52 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -345,8 +345,7 @@ window_choose_collapse(struct window_pane *wp, struct session *s)
 	 * assign the actual result we want to render and copy the new one over
 	 * the top of it.
 	 */
-	for (i = 0; i < ARRAY_LENGTH(&data->list); i++)
-	{
+	for (i = 0; i < ARRAY_LENGTH(&data->list); i++) {
 		item = &ARRAY_ITEM(&data->list, i);
 		wcd = item->wcd;
 
