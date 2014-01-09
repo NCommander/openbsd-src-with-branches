@@ -1,4 +1,4 @@
-/* $OpenBSD: kexgexs.c,v 1.15 2013/05/17 00:13:13 djm Exp $ */
+/* $OpenBSD: kexgexs.c,v 1.16 2013/07/19 07:37:48 markus Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -157,7 +157,7 @@ kexgex_server(Kex *kex)
 
 	/* calc H */
 	kexgex_hash(
-	    kex->evp_md,
+	    kex->hash_alg,
 	    kex->client_version_string,
 	    kex->server_version_string,
 	    buffer_ptr(&kex->peer), buffer_len(&kex->peer),

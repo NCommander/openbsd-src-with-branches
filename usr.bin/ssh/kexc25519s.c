@@ -1,4 +1,4 @@
-/* $OpenBSD: myproposal.h,v 1.33 2013/11/02 21:59:15 markus Exp $ */
+/* $OpenBSD: kexc25519s.c,v 1.2 2013/11/02 22:02:14 markus Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2010 Damien Miller.  All rights reserved.
@@ -79,7 +79,7 @@ kexc25519_server(Kex *kex)
 	/* calc H */
 	key_to_blob(server_host_public, &server_host_key_blob, &sbloblen);
 	kex_c25519_hash(
-	    kex->evp_md,
+	    kex->hash_alg,
 	    kex->client_version_string,
 	    kex->server_version_string,
 	    buffer_ptr(&kex->peer), buffer_len(&kex->peer),
