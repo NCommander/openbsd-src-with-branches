@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.105 2013/11/11 09:15:35 mpi Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.106 2014/01/07 17:07:46 mikeb Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -1155,7 +1155,7 @@ nd6_rtrequest(int req, struct rtentry *rt)
 			ln->ln_state = ND6_LLINFO_REACHABLE;
 			ln->ln_byhint = 0;
 			if (macp) {
-				Bcopy(macp, LLADDR(SDL(gate)), ifp->if_addrlen);
+				memcpy(LLADDR(SDL(gate)), macp, ifp->if_addrlen);
 				SDL(gate)->sdl_alen = ifp->if_addrlen;
 			}
 			if (nd6_useloopback) {

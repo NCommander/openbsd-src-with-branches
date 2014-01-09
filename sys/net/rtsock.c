@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.130 2013/10/31 18:10:21 bluhm Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.131 2013/11/01 20:09:14 bluhm Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -767,7 +767,7 @@ report:
 					error = ENOBUFS;
 					goto flush;
 				}
-				Bcopy(rtm, new_rtm, rtm->rtm_msglen);
+				memcpy(new_rtm, rtm, rtm->rtm_msglen);
 				Free(rtm); rtm = new_rtm;
 			}
 			rt_msg2(rtm->rtm_type, RTM_VERSION, &info, (caddr_t)rtm,
