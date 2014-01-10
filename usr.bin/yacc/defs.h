@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.14 2014/01/08 22:30:32 millert Exp $	*/
+/*	$OpenBSD: defs.h,v 1.15 2014/01/08 23:12:57 millert Exp $	*/
 /*	$NetBSD: defs.h,v 1.6 1996/03/19 03:21:30 jtc Exp $	*/
 
 /*
@@ -125,7 +125,6 @@
 /*  character macros  */
 
 #define IS_IDENT(c)	(isalnum(c) || (c) == '_' || (c) == '.' || (c) == '$')
-#define	IS_OCTAL(c)	((c) >= '0' && (c) <= '7')
 #define	NUMERIC_VALUE(c)	((c) - '0')
 
 
