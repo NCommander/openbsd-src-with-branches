@@ -1,6 +1,11 @@
-#	$OpenBSD: Makefile,v 1.1 2005/04/07 07:24:27 otto Exp $
+#	$OpenBSD: Makefile,v 1.1 2014/01/09 16:13:44 tedu Exp $
 
-regress:
+CLEANFILES += test.sig
+REGRESS_TARGETS = t1
+
+t1:
 	@sh ${.CURDIR}/signify.sh ${.CURDIR}
+
+.PHONY: t1
 
 .include <bsd.regress.mk>
