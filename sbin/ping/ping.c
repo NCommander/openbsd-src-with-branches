@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.96 2013/10/28 15:05:35 deraadt Exp $	*/
+/*	$OpenBSD: ping.c,v 1.97 2013/11/22 04:12:48 deraadt Exp $	*/
 /*	$NetBSD: ping.c,v 1.20 1995/08/11 22:37:58 cgd Exp $	*/
 
 /*
@@ -190,7 +190,7 @@ main(int argc, char *argv[])
 	fd_set *fdmaskp;
 	size_t fdmasks;
 	uid_t uid;
-	u_int rtableid;
+	int rtableid = -1;
 
 	if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0)
 		err(1, "socket");
