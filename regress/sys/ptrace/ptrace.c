@@ -72,8 +72,8 @@ main(void)
 #elif defined(__m68k__)
 		regs.r_pc |= 0x03;
 #elif defined(__hppa__)
-		regs.r_pc |= 0x03;
-		regs.r_npc |= 0x03;
+		regs.r_pcoqh |= 0x03;
+		regs.r_pcoqt |= 0x03;
 #elif defined(__i386__)
 		regs.r_eip |= 0x03;
 #elif defined(__mips64__)
