@@ -629,10 +629,12 @@ traverse(int i)
   unsigned *fp3;
   int j;
   short *rp;
+
+  int height;
   unsigned *base;
 
   VERTICES[++top] = i;
-  INDEX[i] = top;
+  INDEX[i] = height = top;
 
   base = F + i * tokensetsize;
   fp3 = base + tokensetsize;
@@ -656,7 +658,7 @@ traverse(int i)
 	}
     }
 
-  if (INDEX[i] == top)
+  if (INDEX[i] == height)
     {
       for (;;)
 	{
