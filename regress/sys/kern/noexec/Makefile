@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2004/03/01 22:42:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2004/03/04 07:24:01 david Exp $
 
 .if ${MACHINE} == "sparc64" || ${MACHINE} == "sparc" || \
     ${MACHINE} == "alpha" || \
@@ -6,6 +6,7 @@
     ${MACHINE} == "hppa"
 
 PROG=	noexec
+SRCS=	noexec.c testfly.S
 CFLAGS+=-Wall
 LDSTATIC= ${STATIC}
 REGRESS_TARGETS=	nxtext-mmap	nxtext-mprotect \
