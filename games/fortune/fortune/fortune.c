@@ -1,4 +1,4 @@
-/*	$OpenBSD: fortune.c,v 1.29 2010/07/02 23:43:42 tedu Exp $	*/
+/*	$OpenBSD: fortune.c,v 1.30 2011/01/03 17:38:24 jasper Exp $	*/
 /*	$NetBSD: fortune.c,v 1.8 1995/03/23 08:28:40 cgd Exp $	*/
 
 /*-
@@ -265,8 +265,6 @@ getargs(int argc, char *argv[])
 # ifndef NO_REGEX
 	char	*pat = NULL;
 # endif	/* NO_REGEX */
-	extern char *optarg;
-	extern int optind;
 	int ch;
 
 	ignore_case = FALSE;
