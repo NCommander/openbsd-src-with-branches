@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2011/04/18 16:52:10 thib Exp $
+#	$OpenBSD: Makefile,v 1.9 2011/06/08 19:16:19 krw Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -31,6 +31,10 @@ ${CDROM}: ${BASE} ${XBASE}
 	ln -f ${.OBJDIR}/cd-dir/bsd.rd ${.OBJDIR}/cd-dir/vmunix # for kicks
 
 	cp ${RELDIR}/boot ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
+
+	cat ${RELDIR}/SHA256 ${RELXDIR}/SHA256 > \
+		${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}/SHA256
+
 	cp ${RELDIR}/bootxx ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
 
 	(mkhybrid -a -R -v -v -T -L -d -D -N -o ${.OBJDIR}/${CDROM} \

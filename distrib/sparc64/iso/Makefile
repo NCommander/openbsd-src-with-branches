@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2011/04/10 20:00:43 krw Exp $
+#	$OpenBSD: Makefile,v 1.11 2011/06/08 19:16:19 krw Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -27,6 +27,9 @@ ${CDROM}: ${BASE} ${XBASE}
 	cp -p ${XBASE} ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
 
 	cp -p ${RELDIR}/ofwboot ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
+
+	cat ${RELDIR}/SHA256 ${RELXDIR}/SHA256 > \
+		${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}/SHA256
 
 	echo 'm 1	sun4' > ${.OBJDIR}/cd-dir/.slicemapfile
 	echo 'm 2	sun4c' >> ${.OBJDIR}/cd-dir/.slicemapfile

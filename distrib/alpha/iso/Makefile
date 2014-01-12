@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2010/10/18 05:40:47 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.9 2011/04/18 16:52:09 thib Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -32,6 +32,9 @@ ${CDROM}: ${BASE} ${XBASE}
 
 	cp -p ${RELDIR}/boot ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
 	cp -p ${RELDIR}/bootxx ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
+
+	cat ${RELDIR}/SHA256 ${RELXDIR}/SHA256 > \
+		${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}/SHA256
 
 	(mkhybrid -a -R -v -v -T -L -d -D -N -o ${.OBJDIR}/${CDROM} \
 	    -A "OpenBSD ${OSREV} ${MACHINE} Install CD" \
