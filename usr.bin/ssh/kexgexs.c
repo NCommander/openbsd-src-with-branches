@@ -1,4 +1,4 @@
-/* $OpenBSD: kexgexs.c,v 1.16 2013/07/19 07:37:48 markus Exp $ */
+/* $OpenBSD: kexgexs.c,v 1.17 2014/01/09 23:20:00 djm Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -198,7 +198,7 @@ kexgex_server(Kex *kex)
 	/* have keys, free DH */
 	DH_free(dh);
 
-	kex_derive_keys(kex, hash, hashlen, shared_secret);
+	kex_derive_keys_bn(kex, hash, hashlen, shared_secret);
 	BN_clear_free(shared_secret);
 
 	kex_finish(kex);
