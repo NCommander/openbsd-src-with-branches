@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_var.h,v 1.30 2013/11/28 10:16:44 mpi Exp $	*/
+/*	$OpenBSD: in_var.h,v 1.31 2013/11/29 00:19:33 deraadt Exp $	*/
 /*	$NetBSD: in_var.h,v 1.16 1996/02/13 23:42:15 christos Exp $	*/
 
 /*
@@ -88,9 +88,12 @@ extern	struct	in_ifaddrhead in_ifaddr;
 	/* struct ifnet *ifp; */					\
 	/* struct in_ifaddr *ia; */					\
 do {									\
-	TAILQ_FOREACH((ia), &in_ifaddr, ia_list)			\
-		if ((ia)->ia_ifp == (ifp))				\
+	struct ifaddr *ifa;						\
+	TAILQ_FOREACH(ifa, &(ifp)->if_addrlist, ifa_list) {		\
+		if (ifa->ifa_addr->sa_family == AF_INET)		\
 			break;						\
+	}								\
+	(ia) = ifatoia(ifa);						\
 } while (/* CONSTCOND */ 0)
 #endif
 
