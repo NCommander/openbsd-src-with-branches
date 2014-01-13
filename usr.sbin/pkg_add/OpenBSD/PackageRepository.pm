@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageRepository.pm,v 1.97 2013/12/23 16:55:00 jca Exp $
+# $OpenBSD: PackageRepository.pm,v 1.101 2014/01/12 20:23:29 phessler Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -473,7 +473,7 @@ sub pkg_copy
 	my $dir = $object->{cache_dir};
 
 	my ($copy, $filename) = OpenBSD::Temp::permanent_file($dir, $name) or die "Can't write copy to cache";
-	chmod 0644, $filename;
+	chmod((0666 & ~umask), $filename);
 	$object->{tempname} = $filename;
 	my $handler = sub {
 		my ($sig) = @_;
