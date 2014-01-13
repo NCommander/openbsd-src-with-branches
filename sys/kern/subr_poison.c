@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_poison.c,v 1.4 2013/05/30 18:20:17 tedu Exp $ */
+/*	$OpenBSD: subr_poison.c,v 1.5 2013/05/31 18:29:32 deraadt Exp $ */
 /*
  * Copyright (c) 2013 Ted Unangst <tedu@openbsd.org>
  *
@@ -77,7 +77,7 @@ poison_check(void *v, size_t len, size_t *pidx, int *pval)
 	for (i = 0; i < len; i++) {
 		if (ip[i] != poison) {
 			*pidx = i;
-			*pval = ip[i];
+			*pval = poison;
 			return 1;
 		}
 	}
