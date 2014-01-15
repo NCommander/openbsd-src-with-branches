@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.69 2014/01/12 04:37:51 deraadt Exp $	*/
+/*	$OpenBSD: md5.c,v 1.70 2014/01/15 04:43:36 lteo Exp $	*/
 
 /*
  * Copyright (c) 2001,2003,2005-2007,2010,2013,2014
@@ -836,9 +836,9 @@ usage(void)
 {
 #if !defined(SHA2_ONLY)
 	if (strcmp(__progname, "cksum") == 0 || strcmp(__progname, "sum") == 0)
-		fprintf(stderr, "usage: %s [-bcpqrtx] [-C checklist] [-a algorithms] "
-		    "[-h hashfile] [-o 1 | 2] [-s string]\n"
-		    "	[file ...]\n",
+		fprintf(stderr, "usage: %s [-bcpqrtx] [-a algorithms] [-C checklist] "
+		    "[-h hashfile] [-o 1 | 2]\n"
+		    "	[-s string] [file ...]\n",
 		    __progname);
 	else
 #endif /* !defined(SHA2_ONLY) */
