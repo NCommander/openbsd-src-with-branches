@@ -1,4 +1,4 @@
-/* $OpenBSD: fusefs.h,v 1.4 2013/10/07 18:07:04 syl Exp $ */
+/* $OpenBSD: fusefs.h,v 1.5 2013/12/10 13:43:05 pelikan Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -65,6 +65,7 @@ struct fusefs_mnt {
 #define UNDEF_SETATTR	1<<7
 #define UNDEF_RENAME	1<<8
 #define UNDEF_SYMLINK	1<<9
+#define UNDEF_MKNOD	1<<10
 
 extern struct vops fusefs_vops;
 extern struct pool fusefs_fbuf_pool;
