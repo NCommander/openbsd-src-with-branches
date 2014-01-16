@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-client.c,v 1.110 2013/12/04 04:20:01 djm Exp $ */
+/* $OpenBSD: sftp-client.c,v 1.111 2013/12/05 22:59:45 djm Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -1097,7 +1097,7 @@ do_download(struct sftp_conn *conn, char *remote_path, char *local_path,
 			    local_path, strerror(errno));
 			goto fail;
 		}
-		if ((size_t)st.st_size > size) {
+		if (st.st_size > size) {
 			error("Unable to resume download of \"%s\": "
 			    "local file is larger than remote", local_path);
  fail:
