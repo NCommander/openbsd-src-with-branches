@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.18 2005/07/11 14:08:23 millert Exp $	*/
+/*	$OpenBSD: tty.c,v 1.19 2009/10/27 23:59:40 deraadt Exp $	*/
 /*	$NetBSD: tty.c,v 1.7 1997/07/09 05:25:46 mikel Exp $	*/
 
 /*
@@ -196,7 +196,7 @@ readtty(char *pr, char *src)
 	fflush(stdout);
 #else
 	cp = src == NULL ? "" : src;
-	while ((c = *cp++) != '\0') {
+	while ((c = (unsigned char)*cp++) != '\0') {
 		if ((c_erase != _POSIX_VDISABLE && c == c_erase) ||
 		    (c_kill != _POSIX_VDISABLE && c == c_kill)) {
 			ch = '\\';
@@ -262,7 +262,7 @@ redo:
 	if (!ttyset)
 		return(strlen(canonb) > 0 ? savestr(canonb) : NULL);
 	while (*cp != '\0') {
-		c = *cp++;
+		c = (unsigned char)*cp++;
 		if (c_erase != _POSIX_VDISABLE && c == c_erase) {
 			if (cp2 == canonb)
 				continue;
