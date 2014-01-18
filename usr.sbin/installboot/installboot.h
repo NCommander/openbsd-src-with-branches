@@ -27,6 +27,7 @@ extern char *stage2;
 void	bootstrap(int, char *, char *);
 #endif
 
+void	filecopy(const char *, const char *);
 char	*fileprefix(const char *, const char *);
 
 void	md_init(void);
