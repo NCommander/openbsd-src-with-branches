@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.82 2010/11/18 21:13:19 miod Exp $	*/
+/*	$OpenBSD: vs.c,v 1.83 2010/12/23 20:25:18 miod Exp $	*/
 
 /*
  * Copyright (c) 2004, 2009, Miodrag Vallat.
@@ -422,7 +422,7 @@ vs_scsicmd(struct scsi_xfer *xs)
 		if (cb->cb_xs != NULL) {
 			printf("%s: master command not idle\n",
 			    sc->sc_dev.dv_xname);
-			xs->error = XS_NO_CCB;
+			xs->error = XS_BUSY;
 			scsi_done(xs);
 			return;
 		}
