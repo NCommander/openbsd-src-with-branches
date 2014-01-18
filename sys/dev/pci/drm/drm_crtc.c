@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_crtc.c,v 1.4 2013/12/15 22:09:37 kettenis Exp $	*/
+/*	$OpenBSD: drm_crtc.c,v 1.5 2013/12/16 19:57:08 kettenis Exp $	*/
 /*
  * Copyright (c) 2006-2008 Intel Corporation
  * Copyright (c) 2007 Dave Airlie <airlied@linux.ie>
@@ -3632,6 +3632,10 @@ int drm_mode_page_flip_ioctl(struct drm_device *dev,
 
 	if (page_flip->flags & ~DRM_MODE_PAGE_FLIP_FLAGS ||
 	    page_flip->reserved != 0)
+		return -EINVAL;
+
+	/* XXX always reject async until we have a newer drm version */
+	if (page_flip->flags & DRM_MODE_PAGE_FLIP_ASYNC)
 		return -EINVAL;
 
 	rw_enter_write(&dev->mode_config.rwl);
