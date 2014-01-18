@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 2011/05/19 08:56:49 reyk Exp $
+#	$OpenBSD: Makefile,v 1.23 2012/09/20 12:30:20 reyk Exp $
 
 PROG=		relayd
 SRCS=		parse.y log.c control.c ssl.c ssl_privsep.c \
@@ -13,7 +13,7 @@ CFLAGS+=	-Wall -I${.CURDIR} -I${.CURDIR}/../snmpd
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
-CFLAGS+=	-Wsign-compare -Wbounded
+CFLAGS+=	-Wsign-compare
 CLEANFILES+=	y.tab.h
 
 .include <bsd.prog.mk>

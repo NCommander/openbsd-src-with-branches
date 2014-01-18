@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2010/06/03 16:41:12 reyk Exp $
+# $OpenBSD: Makefile,v 1.2 2013/01/08 10:38:19 reyk Exp $
 
 .PATH:		${.CURDIR}/../../sbin/iked
 
@@ -13,7 +13,7 @@ CFLAGS+=	-Wall -I${.CURDIR} -I${.CURDIR}/../../sbin/iked
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
-CFLAGS+=	-Wsign-compare -Wbounded
+CFLAGS+=	-Wsign-compare
 
 #distribution:
 #	${INSTALL} -C -g wheel -m 0644 ${.CURDIR}/ikeca.cnf \

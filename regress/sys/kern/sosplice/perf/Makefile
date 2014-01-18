@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.1 2013/01/08 21:42:19 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.2 2014/01/08 23:32:17 bluhm Exp $
 
 PROG ?=		relay
 CFLAGS +=	-Wall -Werror
 CFLAGS +=	-Wstrict-prototypes -Wmissing-prototypes
 CFLAGS +=	-Wmissing-declarations
 CFLAGS +=	-Wshadow -Wpointer-arith -Wcast-qual
-CFLAGS +=	-Wsign-compare -Wbounded
+CFLAGS +=	-Wsign-compare
 NOMAN =		yes
 
 TARGETS =	tcp-copy tcp-splice udp-copy udp-splice

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2008/10/28 13:47:22 aschrijver Exp $
+# $OpenBSD: Makefile,v 1.6 2010/05/26 16:44:33 nicm Exp $
 
 PROG=		ypldap
 SRCS=		parse.y ypldap.c log.c	\
@@ -15,6 +15,6 @@ CFLAGS+=	-Wall
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
-CFLAGS+=	-Wsign-compare -Wbounded
+CFLAGS+=	-Wsign-compare
 
 .include <bsd.prog.mk>

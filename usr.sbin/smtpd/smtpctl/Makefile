@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.33 2013/07/19 20:37:08 eric Exp $
+#	$OpenBSD: Makefile,v 1.34 2013/10/26 20:32:48 eric Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -14,7 +14,7 @@ CFLAGS+=	-g3 -ggdb -I${.CURDIR}/..
 CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
-CFLAGS+=	-Wsign-compare -Wbounded
+CFLAGS+=	-Wsign-compare
 CFLAGS+=	-DNO_IO
 
 SRCS=	enqueue.c parser.c log.c envelope.c crypto.c

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.30 2013/07/10 15:56:56 jmc Exp $
+#	$OpenBSD: Makefile,v 1.31 2013/08/20 09:14:32 mpi Exp $
 
 PROG=	ppp
 SRCS=	alias.c alias_cuseeme.c alias_db.c alias_ftp.c alias_irc.c \
@@ -35,7 +35,6 @@ CDIAGFLAGS+=	-Wstrict-prototypes
 CDIAGFLAGS+=	-Wmissing-prototypes
 CDIAGFLAGS+=	-Wunused
 #CDIAGFLAGS+=	-Wsign-compare
-CDIAGFLAGS+=	-Wbounded
 #CDIAGFLAGS+=	-Wshadow
 
 .include <bsd.prog.mk>

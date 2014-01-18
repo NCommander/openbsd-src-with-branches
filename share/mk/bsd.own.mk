@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.141 2013/08/06 19:05:57 miod Exp $
+#	$OpenBSD: bsd.own.mk,v 1.142 2013/12/28 17:08:48 deraadt Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -107,7 +107,7 @@ LOCALEMODE?=	${NONBINMODE}
 
 .if !defined(CDIAGFLAGS)
 CDIAGFLAGS=	-Wall -Wpointer-arith -Wuninitialized -Wstrict-prototypes
-CDIAGFLAGS+=	-Wmissing-prototypes -Wunused -Wsign-compare -Wbounded
+CDIAGFLAGS+=	-Wmissing-prototypes -Wunused -Wsign-compare
 CDIAGFLAGS+=	-Wshadow
 .  if ${COMPILER_VERSION} == "gcc4"
 CDIAGFLAGS+=	-Wdeclaration-after-statement
