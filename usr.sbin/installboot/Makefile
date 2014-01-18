@@ -1,9 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2013/12/28 14:45:57 jsing Exp $
-
-.if (${MACHINE} == "amd64" || ${MACHINE} == "hp300" || \
-     ${MACHINE} == "hppa" || ${MACHINE} == "hppa64" || \
-     ${MACHINE} == "i386" || ${MACHINE} == "landisk" || \
-     ${MACHINE} == "sparc64" || ${MACHINE} == "vax")
+#	$OpenBSD: Makefile,v 1.8 2014/01/05 16:02:40 jsing Exp $
 
 PROG=		installboot
 SRCS=		installboot.c
@@ -23,11 +18,6 @@ SRCS += bootstrap.c
 
 .if !empty(CFLAGS:M-DSOFTRAID)
 SRCS += softraid.c
-.endif
-
-.else
-NOPROG=
-NOMAN=
 .endif
 
 .include <bsd.prog.mk>
