@@ -1,4 +1,4 @@
-#	$OpenBSD: list,v 1.44 2014/01/10 07:57:29 deraadt Exp $
+#	$OpenBSD: list,v 1.45 2014/01/11 05:38:13 deraadt Exp $
 #	$NetBSD: list,v 1.4.4.1 1996/06/20 20:30:26 pk Exp $
 
 SRCDIRS distrib/special
@@ -97,5 +97,4 @@ COPY	${DESTDIR}/etc/firmware/rum-rt2573	etc/firmware/rum-rt2573
 COPY	${DESTDIR}/etc/firmware/run-rt2870	etc/firmware/run-rt2870
 COPY	${DESTDIR}/etc/firmware/run-rt3071	etc/firmware/run-rt3071
 
-HASH	var/hash
 TZ
