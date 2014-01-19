@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.100 2012/08/08 02:32:11 matthew Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.101 2014/01/18 20:50:24 dlg Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -344,6 +344,7 @@ wdc_atapi_send_cmd(struct scsi_xfer *sc_xfer)
 	}
 
 	xfer = sc_xfer->io;
+	wdc_scrub_xfer(xfer);
 	if (sc_xfer->flags & SCSI_POLL)
 		xfer->c_flags |= C_POLL;
 	xfer->drive = as->drive;
