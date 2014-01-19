@@ -1,4 +1,4 @@
-/*	$OpenBSD: hppa_installboot.c,v 1.1 2013/12/27 14:23:49 jsing Exp $	*/
+/*	$OpenBSD: vax_installboot.c,v 1.1 2013/12/28 12:03:57 jsing Exp $	*/
 
 /*
  * Copyright (c) 2013 Joel Sing <jsing@openbsd.org>
@@ -21,8 +21,9 @@
 void
 md_init(void)
 {
-	stages = 1;
-	stage1 = "/usr/mdec/boot.lif";
+	stages = 2;
+	stage1 = "/usr/mdec/xxboot";
+	stage2 = "/boot";
 }
 
 void

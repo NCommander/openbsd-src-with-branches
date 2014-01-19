@@ -1,4 +1,4 @@
-/*	$OpenBSD: hppa_installboot.c,v 1.1 2013/12/27 14:23:49 jsing Exp $	*/
+/*	$OpenBSD: sparc64_installboot.h,v 1.1 2013/12/28 14:45:57 jsing Exp $	*/
 
 /*
  * Copyright (c) 2013 Joel Sing <jsing@openbsd.org>
@@ -16,23 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "installboot.h"
-
-void
-md_init(void)
-{
-	stages = 2;
-	stage1 = "/usr/mdec/xxboot";
-	stage2 = "/boot";
-}
-
-void
-md_loadboot(void)
-{
-}
-
-void
-md_installboot(int devfd, char *dev)
-{
-	bootstrap(devfd, dev, stage1);
-}
+extern char	*blkstore;
+extern char	*ldrstore;
+extern size_t	blksize;
+extern size_t	ldrsize;
