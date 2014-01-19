@@ -1,4 +1,4 @@
-/* $OpenBSD: canohost.c,v 1.68 2013/10/14 23:28:22 djm Exp $ */
+/* $OpenBSD: canohost.c,v 1.69 2013/11/20 20:54:10 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -145,8 +145,7 @@ check_ip_options(int sock, char *ipaddr)
 {
 	u_char options[200];
 	char text[sizeof(options) * 3 + 1];
-	socklen_t option_size;
-	u_int i;
+	socklen_t option_size, i;
 	int ipproto;
 	struct protoent *ip;
 
