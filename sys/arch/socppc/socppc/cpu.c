@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.4 2009/09/02 20:29:39 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.5 2013/10/31 08:26:12 mpi Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -19,6 +19,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
+#include <dev/rndvar.h>
 
 #include <machine/autoconf.h>
 #include <powerpc/hid.h>
@@ -68,7 +69,6 @@ cpu_attach(struct device *parent, struct device *self, void *aux)
 	ci = &cpu_info[0];
 	ci->ci_cpuid = 0;
 	ci->ci_intrdepth = -1;
-	ci->ci_randseed = 1;
 	ci->ci_dev = self;
 
 	printf(": %s\n", cpu_model);
