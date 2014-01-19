@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.132 2014/01/09 21:57:52 tedu Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.133 2014/01/10 14:29:08 tedu Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -568,7 +568,7 @@ route_output(struct mbuf *m, ...)
 
 	/* make sure that kernel-only bits are not set */
 	rtm->rtm_priority &= RTP_MASK;
-	rtm->rtm_flags &= ~(RTF_DONE|RTF_CLONED|RTF_MPATH);
+	rtm->rtm_flags &= ~(RTF_DONE|RTF_CLONED);
 	rtm->rtm_fmask &= RTF_FMASK;
 
 	if (rtm->rtm_priority != 0) {
