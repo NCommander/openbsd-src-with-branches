@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.1 2014/01/18 02:47:27 jsing Exp $	*/
+/*	$OpenBSD: util.c,v 1.2 2014/01/18 03:07:05 jsing Exp $	*/
 
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
@@ -27,7 +27,7 @@
 
 #include "installboot.h"
 
-#define BUFSIZE 2048
+#define BUFSIZE 512
 
 void
 filecopy(const char *srcfile, const char *dstfile)
