@@ -1,4 +1,4 @@
-/*	$OpenBSD: convert.c,v 1.4 2004/02/04 12:16:56 henning Exp $	*/
+/*	$OpenBSD: convert.c,v 1.5 2004/02/07 11:35:59 henning Exp $	*/
 
 /*
  * Safe copying of option values into and out of the option buffer,
@@ -85,30 +85,6 @@ void
 putULong(unsigned char *obuf, u_int32_t val)
 {
 	u_int32_t tmp = htonl(val);
-
-	memcpy(obuf, &tmp, sizeof(tmp));
-}
-
-void
-putLong(unsigned char *obuf, int32_t val)
-{
-	int32_t tmp = htonl(val);
-
-	memcpy(obuf, &tmp, sizeof(tmp));
-}
-
-void
-putUShort(unsigned char *obuf, unsigned int val)
-{
-	u_int16_t tmp = htons(val);
-
-	memcpy(obuf, &tmp, sizeof(tmp));
-}
-
-void
-putShort(unsigned char *obuf, int val)
-{
-	int16_t tmp = htons(val);
 
 	memcpy(obuf, &tmp, sizeof(tmp));
 }
