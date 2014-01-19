@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.170 2014/01/10 00:47:17 bluhm Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.171 2014/01/11 04:46:15 lteo Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -412,7 +412,6 @@ extern	int mcllowat;			/* mbuf cluster low water mark */
 extern	int max_linkhdr;		/* largest link-level header */
 extern	int max_protohdr;		/* largest protocol header */
 extern	int max_hdr;			/* largest link+protocol header */
-extern	int max_datalen;		/* MHLEN - max_hdr */
 
 void	mbinit(void);
 struct	mbuf *m_copym2(struct mbuf *, int, int, int);
