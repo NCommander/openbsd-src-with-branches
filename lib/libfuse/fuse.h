@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse.h,v 1.10 2013/11/13 17:54:36 stsp Exp $ */
+/* $OpenBSD: fuse.h,v 1.11 2013/12/17 07:17:23 jasper Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -24,6 +24,8 @@
 
 #include <fcntl.h>
 #include <utime.h>
+
+#include <fuse_opt.h>
 
 #ifdef __cplusplus
 extern "C" {
