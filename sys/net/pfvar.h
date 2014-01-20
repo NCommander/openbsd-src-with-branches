@@ -650,6 +650,8 @@ struct pf_rule {
 	u_int8_t		 flush;
 	u_int8_t		 set_prio[2];
 	sa_family_t		 naf;
+	u_int8_t		 rcvifnot;
+	u_int8_t		 pad[3];
 
 	struct {
 		struct pf_addr		addr;

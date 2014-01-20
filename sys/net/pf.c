@@ -3293,7 +3293,8 @@ pf_test_rule(struct pf_pdesc *pd, struct pf_rule **rm, struct pf_state **sm,
 			TAILQ_NEXT(r, entries));
 		PF_TEST_ATTRIB((r->match_tag && !pf_match_tag(pd->m, r, &tag)),
 			TAILQ_NEXT(r, entries));
-		PF_TEST_ATTRIB((r->rcv_kif && !pf_match_rcvif(pd->m, r)),
+		PF_TEST_ATTRIB((r->rcv_kif && pf_match_rcvif(pd->m, r) ==
+		    r->rcvifnot),
 			TAILQ_NEXT(r, entries));
 
 		/* FALLTHROUGH */
