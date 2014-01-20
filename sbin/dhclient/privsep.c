@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.33 2013/06/09 00:30:06 krw Exp $ */
+/*	$OpenBSD: privsep.c,v 1.34 2013/06/09 15:06:34 krw Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -99,7 +99,7 @@ dispatch_imsg(struct imsgbuf *ibuf)
  			break;
 
 		default:
-			warning("received unknown message, code %d",
+			warning("received unknown message, code %u",
 			    imsg.hdr.type);
 		}
 
