@@ -1,4 +1,4 @@
-.\"     $OpenBSD: route.9,v 1.5 2012/09/19 19:30:42 blambert Exp $
+.\"     $OpenBSD: route.9,v 1.6 2013/06/04 19:27:12 schwarze Exp $
 .\"
 .\" Copyright (c) 2011 Bret S. Lambert <blambert@openbsd.org>
 .\" All rights reserved.
@@ -15,7 +15,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 19 2012 $
+.Dd $Mdocdate: June 4 2013 $
 .Dt ROUTE 9
 .Os
 .Sh NAME
@@ -242,7 +242,7 @@ from all routing timer queues.
 .El
 .Ss Route Labels
 Route labels are arbitrary data appended to routes and can be acted upon by
-.Xr pf .
+.Xr pf 4 .
 .Bl -tag -width Ds
 .It Fn rtlabel_name2id "char *name"
 Return numerical ID of the route label named
