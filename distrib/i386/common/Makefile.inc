@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.33 2013/10/14 00:00:09 guenther Exp $
+#	$OpenBSD: Makefile.inc,v 1.34 2013/10/15 22:46:50 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -35,10 +35,9 @@ ${FS}:	bsd.gz
 	cp ${BOOT} ${.OBJDIR}/boot
 	strip ${.OBJDIR}/boot
 	strip -R .comment ${.OBJDIR}/boot
-	dd if=${.OBJDIR}/boot of=${MOUNT_POINT}/boot bs=512
 	dd if=bsd.gz of=${MOUNT_POINT}/bsd bs=512
-	/usr/mdec/installboot -v ${MOUNT_POINT}/boot \
-	    ${DESTDIR}/usr/mdec/biosboot ${VND_CRDEV}
+	installboot -v -r ${MOUNT_POINT} ${VND_CRDEV} \
+	    ${DESTDIR}/usr/mdec/biosboot ${.OBJDIR}/boot
 	@echo ""
 	@df -i ${MOUNT_POINT}
 	@echo ""
