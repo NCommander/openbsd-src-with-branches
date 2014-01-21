@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvo_ns2501.c,v 1.4 2013/07/05 07:20:27 jsg Exp $	*/
+/*	$OpenBSD: dvo_ns2501.c,v 1.5 2013/08/13 10:23:49 jsg Exp $	*/
 /*
  *
  * Copyright (c) 2012 Gilles Dartiguelongue, Thomas Richter
@@ -216,7 +216,7 @@ static bool ns2501_init(struct intel_dvo_device *dvo,
 	struct ns2501_priv *ns;
 	unsigned char ch;
 
-	ns = malloc(sizeof(struct ns2501_priv), M_DRM, M_WAITOK | M_ZERO);
+	ns = kzalloc(sizeof(struct ns2501_priv), GFP_KERNEL);
 	if (ns == NULL)
 		return false;
 
@@ -250,7 +250,7 @@ static bool ns2501_init(struct intel_dvo_device *dvo,
 	return true;
 
 out:
-	free(ns, M_DRM);
+	kfree(ns);
 	return false;
 }
 
@@ -565,7 +565,7 @@ static void ns2501_destroy(struct intel_dvo_device *dvo)
 	struct ns2501_priv *ns = dvo->dev_priv;
 
 	if (ns) {
-		free(ns, M_DRM);
+		kfree(ns);
 		dvo->dev_priv = NULL;
 	}
 }
