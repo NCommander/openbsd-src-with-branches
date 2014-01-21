@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.394 2014/01/03 12:43:09 pelikan Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.396 2014/01/20 02:57:50 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1222,6 +1222,7 @@ enum pfi_kif_refs {
 };
 
 #define PFI_IFLAG_SKIP		0x0100	/* skip filtering on interface */
+#define PFI_IFLAG_ANY		0x0200	/* match any non-loopback interface */
 
 struct pf_pdesc {
 	struct {

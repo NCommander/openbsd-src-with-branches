@@ -118,6 +118,12 @@ pfi_kif_get(const char *kif_name)
 	kif->pfik_tzero = time_second;
 	TAILQ_INIT(&kif->pfik_dynaddrs);
 
+	if (!strcmp(kif->pfik_name, "any")) {
+		/* both so it works in the ioctl and the regular case */
+		kif->pfik_flags |= PFI_IFLAG_ANY;
+		kif->pfik_flags_new |= PFI_IFLAG_ANY;
+	}
+
 	RB_INSERT(pfi_ifhead, &pfi_ifs, kif);
 	return (kif);
 }
@@ -199,6 +205,10 @@ pfi_kif_match(struct pfi_kif *rule_kif, struct pfi_kif *packet_kif)
 		TAILQ_FOREACH(p, &packet_kif->pfik_ifp->if_groups, ifgl_next)
 			if (p->ifgl_group == rule_kif->pfik_group)
 				return (1);
+
+	if (rule_kif->pfik_flags & PFI_IFLAG_ANY && packet_kif->pfik_ifp &&
+	    !(packet_kif->pfik_ifp->if_flags & IFF_LOOPBACK))
+		return (1); 
 
 	return (0);
 }
