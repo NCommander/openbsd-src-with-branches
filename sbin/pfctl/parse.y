@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.627 2013/11/22 04:12:48 deraadt Exp $	*/
+/*	$OpenBSD: parse.y,v 1.629 2014/01/20 02:59:13 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -2762,6 +2762,15 @@ if_item		: STRING			{
 				$$->ifa_flags = n->ifa_flags;
 
 			free($1);
+			$$->not = 0;
+			$$->next = NULL;
+			$$->tail = $$;
+		}
+		| ANY				{
+			$$ = calloc(1, sizeof(struct node_if));
+			if ($$ == NULL)
+				err(1, "if_item: calloc");
+			strlcpy($$->ifname, "any", sizeof($$->ifname));
 			$$->not = 0;
 			$$->next = NULL;
 			$$->tail = $$;
