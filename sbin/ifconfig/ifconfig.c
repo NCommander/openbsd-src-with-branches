@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.279 2013/11/22 04:12:47 deraadt Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.280 2013/12/01 10:05:29 stsp Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -3879,8 +3879,9 @@ pflow_status(void)
 	if (ioctl(s, SIOCGETPFLOW, (caddr_t)&ifr) == -1)
 		 return;
 
-	printf("\tpflow: sender: %s ", preq.sender_ip.s_addr != INADDR_ANY ?
-	    inet_ntoa(preq.sender_ip) : "INVALID");
+	printf("\tpflow: ");
+	if (preq.sender_ip.s_addr != INADDR_ANY)
+		printf("sender: %s ", inet_ntoa(preq.sender_ip));
 	printf("receiver: %s:", preq.receiver_ip.s_addr != INADDR_ANY ?
 	    inet_ntoa(preq.receiver_ip) : "INVALID");
 	if (preq.receiver_port == 0)
