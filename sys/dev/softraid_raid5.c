@@ -284,6 +284,17 @@ sr_raid5_set_vol_state(struct sr_discipline *sd)
 		/* XXX this might be a little too much */
 		goto die;
 
+	case BIOC_SVDEGRADED:
+		switch (new_state) {
+		case BIOC_SVOFFLINE:
+		case BIOC_SVREBUILD:
+		case BIOC_SVDEGRADED: /* can go to the same state */
+			break;
+		default:
+			goto die;
+		}
+		break;
+
 	case BIOC_SVBUILDING:
 		switch (new_state) {
 		case BIOC_SVONLINE:
@@ -313,17 +324,6 @@ sr_raid5_set_vol_state(struct sr_discipline *sd)
 		case BIOC_SVOFFLINE:
 		case BIOC_SVDEGRADED:
 		case BIOC_SVREBUILD: /* can go to the same state */
-			break;
-		default:
-			goto die;
-		}
-		break;
-
-	case BIOC_SVDEGRADED:
-		switch (new_state) {
-		case BIOC_SVOFFLINE:
-		case BIOC_SVREBUILD:
-		case BIOC_SVDEGRADED: /* can go to the same state */
 			break;
 		default:
 			goto die;
