@@ -171,7 +171,8 @@ static const char *talk[] = {
 	"this change comes down to: This year, next year, 5 years from now, 10 years from now, or Oh fuck.",
 	"backwards compatibility is king, and will remain king, until 2038.",
 	"I don't know if the Internet's safe yet.",
-	"Those who don't understand Unix are condemned to reinvent Multics in a browser"
+	"Those who don't understand Unix are condemned to reinvent Multics in a browser",
+	"Don't tell anybody I said that."
 };
 
 static const int ntalk = sizeof(talk)/sizeof(talk[0]);
