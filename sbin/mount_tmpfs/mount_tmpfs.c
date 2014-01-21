@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mount_tmpfs.c,v 1.3 2013/06/03 10:37:02 espie Exp $	*/
 /*	$NetBSD: mount_tmpfs.c,v 1.24 2008/08/05 20:57:45 pooka Exp $	*/
 
 /*
@@ -50,6 +50,7 @@ __RCSID("$NetBSD: mount_tmpfs.c,v 1.24 2008/08/05 20:57:45 pooka Exp $");
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <util.h>
 
 #include "mount_tmpfs.h"
 
