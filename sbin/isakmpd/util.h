@@ -1,4 +1,4 @@
-/* $OpenBSD: util.h,v 1.29 2006/11/24 13:52:14 reyk Exp $	 */
+/* $OpenBSD: util.h,v 1.30 2014/01/22 03:09:31 deraadt Exp $	 */
 /* $EOM: util.h,v 1.10 2000/10/24 13:33:39 niklas Exp $	 */
 
 /*
@@ -37,7 +37,6 @@
 #include <sys/time.h>
 
 extern int      allow_name_lookups;
-extern int      regrand;
 
 extern int      sysdep_cleartext(int, int);
 
