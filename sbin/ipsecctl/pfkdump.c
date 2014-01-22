@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkdump.c,v 1.33 2012/07/05 09:02:20 mikeb Exp $	*/
+/*	$OpenBSD: pfkdump.c,v 1.34 2012/09/18 09:24:45 markus Exp $	*/
 
 /*
  * Copyright (c) 2003 Markus Friedl.  All rights reserved.
@@ -702,10 +702,10 @@ pfkey_print_sa(struct sadb_msg *msg, int opts)
 			r.xfs = &xfs;
 			switch (sa->sadb_sa_encrypt) {
 			case SADB_X_CALG_DEFLATE:
-				xfs.encxf = &compxfs[COMPXF_DEFLATE];
+				xfs.compxf = &compxfs[COMPXF_DEFLATE];
 				break;
 			case SADB_X_CALG_LZS:
-				xfs.encxf = &compxfs[COMPXF_LZS];
+				xfs.compxf = &compxfs[COMPXF_LZS];
 				break;
 			}
 		}
