@@ -1,5 +1,6 @@
-/* $OpenBSD: softraid_raid5.c,v 1.12 2014/01/22 09:37:11 jsing Exp $ */
+/* $OpenBSD: softraid_raid5.c,v 1.13 2014/01/22 12:31:09 jsing Exp $ */
 /*
+ * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2009 Jordan Hargrave <jordan@openbsd.org>
  *
