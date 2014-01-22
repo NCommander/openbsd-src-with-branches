@@ -1,4 +1,4 @@
-/*	$OpenBSD: radix.h,v 1.22 2014/01/10 14:29:08 tedu Exp $	*/
+/*	$OpenBSD: radix.h,v 1.23 2014/01/19 09:52:25 claudio Exp $	*/
 /*	$NetBSD: radix.h,v 1.8 1996/02/13 22:00:37 christos Exp $	*/
 
 /*
@@ -60,11 +60,6 @@ struct radix_node {
 			struct	radix_node *rn_R;/* progeny */
 		} rn_node;
 	} rn_u;
-#ifdef RN_DEBUG
-	int rn_info;
-	struct radix_node *rn_twin;
-	struct radix_node *rn_ybro;
-#endif
 };
 
 #define rn_dupedkey rn_u.rn_leaf.rn_Dupedkey
