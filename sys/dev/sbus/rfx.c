@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfx.c,v 1.10 2013/10/20 20:07:31 miod Exp $	*/
+/*	$OpenBSD: rfx.c,v 1.11 2013/11/26 20:33:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004, Miodrag Vallat.
@@ -528,7 +528,8 @@ rfx_initialize(struct rfx_softc *sc, struct sbus_attach_args *sa,
 
 #ifdef DEBUG
 	if (cnt != 0)
-		printf("%s: incoherent initialization data!\n");
+		printf("%s: incoherent initialization data!\n",
+		    sc->sc_sunfb.sf_dev.dv_xname);
 #endif
 
 	bus_space_unmap(sa->sa_bustag, bh, RFX_INIT_SIZE);
