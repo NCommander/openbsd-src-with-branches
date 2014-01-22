@@ -1417,7 +1417,7 @@ pf_normalize_mss(struct pf_pdesc *pd, u_int16_t maxmss)
 		}
 		switch (opt) {
 		case TCPOPT_MAXSEG:
-			bcopy((caddr_t)(optp + 2), (caddr_t)&mss, 2);
+			memcpy(&mss, (optp + 2), 2);
 			if (ntohs(mss) > maxmss) {
 				mss = htons(maxmss);
 				m_copyback(pd->m,
