@@ -1,4 +1,4 @@
-/*	$OpenBSD: sem_wait.c,v 1.3 2012/03/03 09:51:00 guenther Exp $	*/
+/*	$OpenBSD: sem_timedwait.c,v 1.1 2012/03/03 11:08:12 guenther Exp $	*/
 /*
  * Martin Pieuchot <mpi@openbsd.org>, 2011. Public Domain.
  */
@@ -81,6 +81,7 @@ main(int argc, char **argv)
 	else
 		timespecsub(&ts, &ts2, &ts);
 	CHECKr(clock_getres(CLOCK_REALTIME, &ts2));
+	timespecadd(&ts2, &ts2, &ts2);	/* 2 * resolution slop */
 	ASSERT(timespeccmp(&ts, &ts2, < ));
 
 	CHECKe(sem_destroy(&sem));
