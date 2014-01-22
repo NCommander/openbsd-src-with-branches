@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.97 2013/11/09 00:48:57 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.98 2013/11/20 17:01:23 deraadt Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -853,8 +853,12 @@ window_copy_mouse(
 		} else if (m->wheel == MOUSE_WHEEL_DOWN) {
 			for (i = 0; i < 5; i++)
 				window_copy_cursor_down(wp, 1);
-			if (data->oy == 0)
-				goto reset_mode;
+			/*
+			 * We reached the bottom, leave copy mode,
+			 * but only if no selection is in progress.
+			 */
+			if (data->oy == 0 && !s->sel.flag)
+			    goto reset_mode;
 		}
 		return;
 	}
