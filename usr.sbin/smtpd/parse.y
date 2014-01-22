@@ -1451,8 +1451,8 @@ check_file_secrecy(int fd, const char *fname)
 		log_warnx("warn: %s: owner not root or current user", fname);
 		return (-1);
 	}
-	if (st.st_mode & (S_IRWXG | S_IRWXO)) {
-		log_warnx("warn: %s: group/world readable/writeable", fname);
+	if (st.st_mode & (S_IWGRP | S_IXGRP | S_IRWXO)) {
+		log_warnx("%s: group writable or world read/writable", fname);
 		return (-1);
 	}
 	return (0);
