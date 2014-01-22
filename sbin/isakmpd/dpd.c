@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpd.c,v 1.15 2006/06/02 19:35:55 hshoexer Exp $	*/
+/*	$OpenBSD: dpd.c,v 1.16 2006/07/24 11:45:44 ho Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -27,8 +27,6 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "sysdep.h"
 
 #include "conf.h"
 #include "dpd.h"

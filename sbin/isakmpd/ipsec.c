@@ -1,4 +1,4 @@
-/* $OpenBSD: ipsec.c,v 1.138 2012/06/30 14:51:31 naddy Exp $	 */
+/* $OpenBSD: ipsec.c,v 1.139 2013/11/21 22:25:01 yasuoka Exp $	 */
 /* $EOM: ipsec.c,v 1.143 2000/12/11 23:57:42 niklas Exp $	 */
 
 /*
@@ -41,8 +41,6 @@
 
 #include <net/if.h>
 #include <net/pfvar.h>
-
-#include "sysdep.h"
 
 #include "attribute.h"
 #include "conf.h"

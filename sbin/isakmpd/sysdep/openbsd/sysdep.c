@@ -1,4 +1,4 @@
-/* $OpenBSD: sysdep.c,v 1.34 2005/05/04 10:05:02 hshoexer Exp $	 */
+/* $OpenBSD: sysdep.c,v 1.35 2005/12/21 01:40:23 millert Exp $	 */
 /* $EOM: sysdep.c,v 1.9 2000/12/04 04:46:35 angelos Exp $	 */
 
 /*
@@ -36,8 +36,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-
-#include "sysdep.h"
 
 #include "app.h"
 #include "log.h"

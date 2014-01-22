@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_encap.c,v 1.20 2007/04/15 19:37:46 hshoexer Exp $	*/
+/*	$OpenBSD: udp_encap.c,v 1.21 2007/04/16 13:01:39 moritz Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999, 2001 Niklas Hallqvist.  All rights reserved.
@@ -39,8 +39,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "sysdep.h"
 
 #include "conf.h"
 #include "if.h"
