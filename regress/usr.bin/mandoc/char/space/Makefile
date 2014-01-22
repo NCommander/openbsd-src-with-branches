@@ -1,6 +1,7 @@
-# $OpenBSD: Makefile,v 1.7 2013/06/20 22:29:38 schwarze Exp $
+# $OpenBSD: Makefile,v 1.8 2013/12/22 13:24:00 schwarze Exp $
 
 REGRESS_TARGETS  = leading-mdoc leading-man multiple zerowidth
-REGRESS_TARGETS += eos eos-man nobreak tab tab-man esct-mdoc esct-man
+REGRESS_TARGETS += eos eos-man break nobreak
+REGRESS_TARGETS += tab tab-man esct-mdoc esct-man
 
 .include <bsd.regress.mk>
