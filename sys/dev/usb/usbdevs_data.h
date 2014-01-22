@@ -10506,6 +10506,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "DM9601",
 	},
 	{
+	    USB_VENDOR_UNKNOWN4, USB_PRODUCT_UNKNOWN4_RD9700,
+	    "RD9700",
+	},
+	{
 	    USB_VENDOR_UNKNOWN5, USB_PRODUCT_UNKNOWN5_NF_RIC,
 	    "NF RIC",
 	},
