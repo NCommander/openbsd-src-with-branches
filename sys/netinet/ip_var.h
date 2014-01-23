@@ -84,8 +84,8 @@ struct	ipstat {
 	u_long	ips_toolong;		/* ip length > max ip packet size */
 	u_long	ips_nogif;		/* no match gif found */
 	u_long	ips_badaddr;		/* invalid address on header */
-	u_long	ips_inhwcsum;		/* hardware checksummed on input */
-	u_long	ips_outhwcsum;		/* hardware checksummed on output */
+	u_long	ips_inswcsum;		/* software checksummed on input */
+	u_long	ips_outswcsum;		/* software checksummed on output */
 	u_long	ips_notmember;		/* multicasts for unregistered groups */
 };
 

@@ -64,10 +64,10 @@ struct	udpstat {
 	u_long	udps_nosec;		/* dropped for lack of ipsec */
 	u_long	udps_fullsock;		/* not delivered, input socket full */
 	u_long	udps_pcbhashmiss;	/* input packets missing pcb hash */
-	u_long	udps_inhwcsum;		/* input hardware-csummed packets */
+	u_long	udps_inswcsum;		/* input software-csummed packets */
 				/* output statistics: */
 	u_long	udps_opackets;		/* total output packets */
-	u_long	udps_outhwcsum;		/* output hardware-csummed packets */
+	u_long	udps_outswcsum;		/* output software-csummed packets */
 };
 
 /*

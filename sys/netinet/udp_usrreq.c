@@ -292,9 +292,9 @@ udp_input(struct mbuf *m, ...)
 		if ((m->m_pkthdr.csum_flags & M_UDP_CSUM_IN_OK) == 0) {
 			if (m->m_pkthdr.csum_flags & M_UDP_CSUM_IN_BAD) {
 				udpstat.udps_badsum++;
-				udpstat.udps_inhwcsum++;
 				goto bad;
 			}
+			udpstat.udps_inswcsum++;
 
 			if (ip)
 				uh->uh_sum = in4_cksum(m, IPPROTO_UDP,
@@ -308,10 +308,9 @@ udp_input(struct mbuf *m, ...)
 				udpstat.udps_badsum++;
 				goto bad;
 			}
-		} else {
+		} else
+			/* XXXHB20140123 */
 			m->m_pkthdr.csum_flags &= ~M_UDP_CSUM_IN_OK;
-			udpstat.udps_inhwcsum++;
-		}
 	}
 
 #ifdef IPSEC

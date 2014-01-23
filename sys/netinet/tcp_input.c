@@ -514,10 +514,10 @@ tcp_input(struct mbuf *m, ...)
 		int sum;
 
 		if (m->m_pkthdr.csum_flags & M_TCP_CSUM_IN_BAD) {
-			tcpstat.tcps_inhwcsum++;
 			tcpstat.tcps_rcvbadsum++;
 			goto drop;
 		}
+		tcpstat.tcps_inswcsum++;
 		switch (af) {
 		case AF_INET:
 			sum = in4_cksum(m, IPPROTO_TCP, iphlen, tlen);
@@ -533,10 +533,9 @@ tcp_input(struct mbuf *m, ...)
 			tcpstat.tcps_rcvbadsum++;
 			goto drop;
 		}
-	} else {
+	} else
+		/* XXXHB20140123 */
 		m->m_pkthdr.csum_flags &= ~M_TCP_CSUM_IN_OK;
-		tcpstat.tcps_inhwcsum++;
-	}
 
 	/*
 	 * Check that TCP offset makes sense,

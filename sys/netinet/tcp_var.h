@@ -409,8 +409,8 @@ struct	tcpstat {
 
 	u_int32_t tcps_rcvbadsig;	/* rcvd bad/missing TCP signatures */
 	u_int64_t tcps_rcvgoodsig;	/* rcvd good TCP signatures */
-	u_int32_t tcps_inhwcsum;	/* input hardware-checksummed packets */
-	u_int32_t tcps_outhwcsum;	/* output hardware-checksummed packets */
+	u_int32_t tcps_inswcsum;	/* input software-checksummed packets */
+	u_int32_t tcps_outswcsum;	/* output software-checksummed packets */
 
 	/* ECN stats */
 	u_int32_t tcps_ecn_accepts;	/* ecn connections accepted */

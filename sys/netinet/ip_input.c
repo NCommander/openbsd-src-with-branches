@@ -274,19 +274,18 @@ ipv4_input(struct mbuf *m)
 
 	if ((m->m_pkthdr.csum_flags & M_IPV4_CSUM_IN_OK) == 0) {
 		if (m->m_pkthdr.csum_flags & M_IPV4_CSUM_IN_BAD) {
-			ipstat.ips_inhwcsum++;
 			ipstat.ips_badsum++;
 			goto bad;
 		}
 
+		ipstat.ips_inswcsum++;
 		if (in_cksum(m, hlen) != 0) {
 			ipstat.ips_badsum++;
 			goto bad;
 		}
-	} else {
+	} else
+		/* XXXHB20140123 */
 		m->m_pkthdr.csum_flags &= ~M_IPV4_CSUM_IN_OK;
-		ipstat.ips_inhwcsum++;
-	}
 
 	/* Retrieve the packet length. */
 	len = ntohs(ip->ip_len);
