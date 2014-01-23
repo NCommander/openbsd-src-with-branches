@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.7 2008/08/22 10:41:37 kurt Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.8 2010/12/15 05:30:19 tedu Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.17 2006/03/04 01:55:03 uwe Exp $	*/
 
 /*-
@@ -86,7 +86,6 @@
 #define	VM_PHYS_SIZE		(USRIOSIZE * PAGE_SIZE)
 
 /* pmap-specific data store in the vm_page structure. */
-#define	__HAVE_VM_PAGE_MD
 #define	PVH_REFERENCED		1
 #define	PVH_MODIFIED		2
 

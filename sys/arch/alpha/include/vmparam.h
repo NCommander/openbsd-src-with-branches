@@ -1,4 +1,4 @@
-/* $OpenBSD: vmparam.h,v 1.22 2013/03/23 16:12:18 deraadt Exp $ */
+/* $OpenBSD: vmparam.h,v 1.23 2014/01/01 22:13:52 miod Exp $ */
 /* $NetBSD: vmparam.h,v 1.18 2000/05/22 17:13:54 thorpej Exp $ */
 
 /*
@@ -128,7 +128,6 @@
 /*
  * pmap-specific data stored in the vm_page structure.
  */
-#define __HAVE_VM_PAGE_MD
 struct vm_page_md {
 	struct pv_entry *pvh_list;	/* pv entry list */
 	int pvh_attrs;			/* page attributes */

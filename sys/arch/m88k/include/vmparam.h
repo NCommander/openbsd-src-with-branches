@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.11 2011/05/30 22:25:21 oga Exp $ */
+/*	$OpenBSD: vmparam.h,v 1.12 2013/02/20 05:08:41 miod Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1992 Carnegie Mellon University
@@ -99,7 +99,6 @@ struct pv_entry {
 	int		pv_flags;
 };
 
-#define	__HAVE_VM_PAGE_MD
 struct vm_page_md {
 	struct pv_entry pvent;
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.125 2013/05/30 16:29:46 tedu Exp $	*/
+/*	$OpenBSD: uvm_page.c,v 1.128 2013/07/09 15:37:43 beck Exp $	*/
 /*	$NetBSD: uvm_page.c,v 1.44 2000/11/27 08:40:04 chs Exp $	*/
 
 /*
@@ -271,9 +271,7 @@ uvm_page_init(vaddr_t *kvm_startp, vaddr_t *kvm_endp)
 		for (i = 0, curpg = seg->pgs; i < n;
 		    i++, curpg++, pgno++, paddr += PAGE_SIZE) {
 			curpg->phys_addr = paddr;
-#ifdef __HAVE_VM_PAGE_MD
 			VM_MDPAGE_INIT(curpg);
-#endif
 			if (pgno >= seg->avail_start &&
 			    pgno <= seg->avail_end) {
 				uvmexp.npages++;
@@ -607,9 +605,7 @@ uvm_page_physload(paddr_t start, paddr_t end, paddr_t avail_start,
 		for (lcv = 0, paddr = ptoa(start); lcv < npages;
 		    lcv++, paddr += PAGE_SIZE) {
 			pgs[lcv].phys_addr = paddr;
-#ifdef __HAVE_VM_PAGE_MD
 			VM_MDPAGE_INIT(&pgs[lcv]);
-#endif
 			if (atop(paddr) >= avail_start &&
 			    atop(paddr) <= avail_end) {
 				if (flags & PHYSLOAD_DEVICE) {

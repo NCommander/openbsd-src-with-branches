@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.23 2011/03/23 16:54:36 pirofti Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.24 2011/05/30 22:25:21 oga Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.5 1994/10/26 21:10:10 cgd Exp $	*/
 
 /*
@@ -121,7 +121,6 @@ typedef struct pv_entry {
 	vaddr_t		pv_va;		/* virtual address for mapping */
 } *pv_entry_t;
 
-#define __HAVE_VM_PAGE_MD
 struct vm_page_md {
 	struct pv_entry pv_ent;		/* pv list of this seg */
 };

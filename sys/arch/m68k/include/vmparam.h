@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.10 2011/05/30 22:25:21 oga Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.11 2013/03/23 16:12:24 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -137,7 +137,6 @@ struct pv_entry {
 /* header: entry maps a page table page */
 #define PV_PTPAGE	(0x02 << PG_SHIFT)
 
-#define	__HAVE_VM_PAGE_MD
 struct vm_page_md {
 	struct pv_entry pvent;
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.22 2011/03/03 21:38:49 ajacoutot Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.23 2011/05/30 22:25:21 oga Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.1 1996/09/30 16:34:38 ws Exp $	*/
 
 /*-
@@ -103,7 +103,6 @@ extern vaddr_t ppc_kvm_stolen;
 
 #ifdef _KERNEL
 
-#define __HAVE_VM_PAGE_MD
 struct pv_entry;
 struct vm_page_md {
 	LIST_HEAD(,pte_desc) pv_list;

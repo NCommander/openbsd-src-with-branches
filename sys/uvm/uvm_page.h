@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.h,v 1.50 2013/05/30 16:29:46 tedu Exp $	*/
+/*	$OpenBSD: uvm_page.h,v 1.51 2014/01/01 22:15:18 miod Exp $	*/
 /*	$NetBSD: uvm_page.h,v 1.19 2000/12/28 08:24:55 chs Exp $	*/
 
 /* 
@@ -118,9 +118,8 @@ struct vm_page {
 	paddr_t			phys_addr;	/* physical address of page */
 	psize_t			fpgsz;		/* free page range size */
 
-#ifdef __HAVE_VM_PAGE_MD
 	struct vm_page_md	mdpage;		/* pmap-specific data */
-#endif
+
 #if defined(UVM_PAGE_TRKOWN)
 	/* debugging fields to track page ownership */
 	pid_t			owner;		/* proc that set PG_BUSY */

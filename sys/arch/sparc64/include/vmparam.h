@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.22 2010/12/15 05:30:19 tedu Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.23 2011/05/30 22:25:22 oga Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.18 2001/05/01 02:19:19 thorpej Exp $ */
 
 /*
@@ -115,7 +115,6 @@
 #define VM_PHYSSEG_STRAT        VM_PSTRAT_BSEARCH
 #define VM_PHYSSEG_NOADD                /* can't add RAM after vm_mem_init */
 
-#define __HAVE_VM_PAGE_MD
 /*
  * For each struct vm_page, there is a list of all currently valid virtual
  * mappings of that page.  An entry is a pv_entry_t, the list is pv_table.
