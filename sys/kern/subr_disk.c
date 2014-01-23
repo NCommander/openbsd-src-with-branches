@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.160 2014/01/21 01:48:44 tedu Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.161 2014/01/22 03:46:48 krw Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -235,9 +235,6 @@ checkdisklabel(void *rlp, struct disklabel *lp, u_int64_t boundstart,
 	}
 
 	/* XXX should verify lots of other fields and whine a lot */
-
-	if (error)
-		return (error);
 
 	/* Initial passed in lp contains the real disk size. */
 	disksize = DL_GETDSIZE(lp);
