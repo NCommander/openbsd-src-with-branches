@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpd.c,v 1.16 2006/07/24 11:45:44 ho Exp $	*/
+/*	$OpenBSD: dpd.c,v 1.17 2014/01/22 03:09:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -323,7 +323,7 @@ dpd_event(void *v_sa)
 		 * RFC 3706: first seq# should be random, with MSB zero,
 		 * otherwise we just increment it.
 		 */
-		getrandom((u_int8_t *)&isakmp_sa->dpd_seq,
+		arc4random_buf((u_int8_t *)&isakmp_sa->dpd_seq,
 		    sizeof isakmp_sa->dpd_seq);
 		isakmp_sa->dpd_seq &= 0x7FFF;
 	} else
