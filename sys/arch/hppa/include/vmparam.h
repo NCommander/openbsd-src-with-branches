@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.39 2011/11/10 22:48:13 deraadt Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.40 2014/01/23 22:06:29 miod Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -92,7 +92,7 @@
 
 #define	VM_PHYSSEG_NOADD	/* XXX until uvm code is fixed */
 
-#if defined(_KERNEL) && !defined(_LOCORE)
+#if !defined(_LOCORE)
 
 #include <sys/lock.h>
 
