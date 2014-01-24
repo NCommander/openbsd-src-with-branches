@@ -283,9 +283,7 @@ ipv4_input(struct mbuf *m)
 			ipstat.ips_badsum++;
 			goto bad;
 		}
-	} else
-		/* XXXHB20140123 */
-		m->m_pkthdr.csum_flags &= ~M_IPV4_CSUM_IN_OK;
+	}
 
 	/* Retrieve the packet length. */
 	len = ntohs(ip->ip_len);

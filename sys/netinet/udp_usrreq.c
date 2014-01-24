@@ -308,9 +308,7 @@ udp_input(struct mbuf *m, ...)
 				udpstat.udps_badsum++;
 				goto bad;
 			}
-		} else
-			/* XXXHB20140123 */
-			m->m_pkthdr.csum_flags &= ~M_UDP_CSUM_IN_OK;
+		}
 	}
 
 #ifdef IPSEC

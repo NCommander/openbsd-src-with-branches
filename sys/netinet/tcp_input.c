@@ -533,9 +533,7 @@ tcp_input(struct mbuf *m, ...)
 			tcpstat.tcps_rcvbadsum++;
 			goto drop;
 		}
-	} else
-		/* XXXHB20140123 */
-		m->m_pkthdr.csum_flags &= ~M_TCP_CSUM_IN_OK;
+	}
 
 	/*
 	 * Check that TCP offset makes sense,

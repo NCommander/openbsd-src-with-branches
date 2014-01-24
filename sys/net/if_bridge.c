@@ -2490,9 +2490,7 @@ bridge_ip(struct bridge_softc *sc, int dir, struct ifnet *ifp,
 				ipstat.ips_badsum++;
 				goto dropit;
 			}
-		} else
-			/* XXXHB20140123 */
-			m->m_pkthdr.csum_flags &= ~M_IPV4_CSUM_IN_OK;
+		}
 
 		if (ntohs(ip->ip_len) < hlen)
 			goto dropit;
