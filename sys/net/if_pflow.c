@@ -1544,10 +1544,8 @@ pflow_sendout_mbuf(struct pflow_softc *sc, struct mbuf *m)
 	ip->ip_len = htons(sizeof(struct udpiphdr) + len);
 
 #if NBPFILTER > 0
-	if (ifp->if_bpf) {
-		ip->ip_sum = in_cksum(m, ip->ip_hl << 2);
+	if (ifp->if_bpf)
 		bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_OUT);
-	}
 #endif
 
 	sc->sc_if.if_opackets++;
