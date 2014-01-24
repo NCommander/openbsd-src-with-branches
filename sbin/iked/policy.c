@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.26 2013/11/28 20:24:48 markus Exp $	*/
+/*	$OpenBSD: policy.c,v 1.27 2013/12/03 13:55:40 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -450,8 +450,10 @@ sa_lookup(struct iked *env, u_int64_t ispi, u_int64_t rspi,
 static __inline int
 sa_cmp(struct iked_sa *a, struct iked_sa *b)
 {
-	if (a->sa_hdr.sh_initiator != b->sa_hdr.sh_initiator)
-		return (-2);
+	if (a->sa_hdr.sh_initiator > b->sa_hdr.sh_initiator)
+		return (-1);
+	if (a->sa_hdr.sh_initiator < b->sa_hdr.sh_initiator)
+		return (1);
 
 	if (a->sa_hdr.sh_ispi > b->sa_hdr.sh_ispi)
 		return (-1);
