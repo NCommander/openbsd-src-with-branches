@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto.c,v 1.10 2013/11/14 12:38:20 markus Exp $	*/
+/*	$OpenBSD: crypto.c,v 1.11 2013/12/04 16:33:30 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -571,6 +571,7 @@ dsa_setkey(struct iked_dsa *dsa, void *key, size_t keylen, u_int8_t type)
 		if (!EVP_PKEY_set1_RSA(pkey, rsa))
 			goto sslerr;
 
+		RSA_free(rsa);	/* pkey now has the reference */
 		dsa->dsa_cert = NULL;
 		dsa->dsa_key = pkey;
 		break;
