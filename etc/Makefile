@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.342 2014/01/10 03:53:44 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.343 2014/01/10 14:06:18 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -310,7 +310,8 @@ release-sets:
 
 sha:
 	-cd ${RELEASEDIR}; \
-	    sum -a sha256 INSTALL.`arch -ks` ${ALL_KERNELS} ${MDEXT} ${MISETS} > SHA256
+	    sum -a sha256 INSTALL.`arch -ks` \
+	    ${ALL_KERNELS} ${MDEXT} ${MISETS} | sort > SHA256
 
 release: sha
 sha: distrib
