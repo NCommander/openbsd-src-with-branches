@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_extern.h,v 1.38 2013/05/30 19:19:09 guenther Exp $	*/
+/*	$OpenBSD: ffs_extern.h,v 1.39 2013/06/11 16:42:18 deraadt Exp $	*/
 /*	$NetBSD: ffs_extern.h,v 1.4 1996/02/09 22:22:22 christos Exp $	*/
 
 /*
@@ -120,7 +120,7 @@ int ffs_balloc(struct inode *, off_t, int, struct ucred *, int, struct buf **);
 
 /* ffs_inode.c */
 int ffs_init(struct vfsconf *);
-int ffs_update(struct inode *, struct timespec *, struct timespec *, int);
+int ffs_update(struct inode *, int);
 int ffs_truncate(struct inode *, off_t, int, struct ucred *);
 
 /* ffs_subr.c */
