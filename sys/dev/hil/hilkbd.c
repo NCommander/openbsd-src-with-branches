@@ -1,4 +1,4 @@
-/*	$OpenBSD: hilkbd.c,v 1.14 2009/01/21 21:53:59 grange Exp $	*/
+/*	$OpenBSD: hilkbd.c,v 1.15 2011/11/09 14:22:37 shadchin Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -104,7 +104,7 @@ struct wskbd_mapdata hilkbd_keymapdata = {
 #ifdef HILKBD_LAYOUT
 	HILKBD_LAYOUT,
 #else
-	KB_US,
+	KB_US | KB_DEFAULT,
 #endif
 };
 
@@ -113,7 +113,7 @@ struct wskbd_mapdata hilkbd_keymapdata_ps2 = {
 #ifdef HILKBD_LAYOUT
 	HILKBD_LAYOUT,
 #else
-	KB_US,
+	KB_US | KB_DEFAULT,
 #endif
 };
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: pckbd.c,v 1.32 2012/08/10 17:49:31 shadchin Exp $ */
+/* $OpenBSD: pckbd.c,v 1.34 2013/02/15 10:20:07 ratchov Exp $ */
 /* $NetBSD: pckbd.c,v 1.24 2000/06/05 22:20:57 sommerfeld Exp $ */
 
 /*-
@@ -157,7 +157,7 @@ const struct wskbd_mapdata pckbd_keymapdata = {
 #ifdef PCKBD_LAYOUT
 	PCKBD_LAYOUT,
 #else
-	KB_US,
+	KB_US | KB_DEFAULT,
 #endif
 };
 

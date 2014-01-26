@@ -1,4 +1,4 @@
-/*	$OpenBSD: dnkbd.c,v 1.17 2009/07/23 21:05:56 blambert Exp $	*/
+/*	$OpenBSD: dnkbd.c,v 1.18 2011/11/09 14:22:37 shadchin Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -201,7 +201,7 @@ struct wskbd_mapdata dnkbd_keymapdata = {
 #ifdef DNKBD_LAYOUT
 	DNKBD_LAYOUT
 #else
-	KB_US
+	KB_US | KB_DEFAULT
 #endif
 };
 

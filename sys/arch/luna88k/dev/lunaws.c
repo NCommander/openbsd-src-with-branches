@@ -1,4 +1,4 @@
-/*	$OpenBSD: lunaws.c,v 1.8 2013/04/28 23:33:12 aoyama Exp $	*/
+/*	$OpenBSD: lunaws.c,v 1.9 2013/05/22 11:35:02 aoyama Exp $	*/
 /* $NetBSD: lunaws.c,v 1.6 2002/03/17 19:40:42 atatat Exp $ */
 
 /*-
@@ -87,7 +87,7 @@ const struct wskbd_mapdata omkbd_keymapdata = {
 #ifdef	OMKBD_LAYOUT
 	OMKBD_LAYOUT,
 #else
-	KB_JP,
+	KB_JP | KB_DEFAULT,
 #endif
 };
 
