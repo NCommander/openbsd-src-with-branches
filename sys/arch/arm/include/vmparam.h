@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.10 2014/01/24 05:21:19 miod Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.11 2014/01/24 22:32:29 miod Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.18 2003/05/21 18:04:44 thorpej Exp $	*/
 
 /*
@@ -44,9 +44,6 @@
  */
 
 #include <sys/lock.h>		/* struct simplelock */ 
-#ifdef _KERNEL
-#include <arm/pte.h>	/* pt_entry_t */
-#endif /* _KERNEL */
 
 #define	USRTEXT		VM_MIN_ADDRESS
 #define	USRSTACK	VM_MAXUSER_ADDRESS
