@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.h,v 1.157 2013/09/27 11:43:19 krw Exp $	*/
+/*	$OpenBSD: scsiconf.h,v 1.158 2014/01/18 02:42:31 dlg Exp $	*/
 /*	$NetBSD: scsiconf.h,v 1.35 1997/04/02 02:29:38 mycroft Exp $	*/
 
 /*
@@ -551,6 +551,7 @@ void	scsi_io_put(struct scsi_iopool *, void *);
 /*
  * default io allocator.
  */
+#define SCSI_IOPOOL_POISON ((void *)0x5c5)
 void *	scsi_default_get(void *);
 void	scsi_default_put(void *, void *);
 
