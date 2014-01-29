@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.414 2014/01/09 23:26:48 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.415 2014/01/27 19:18:54 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -351,7 +351,7 @@ grace_alarm_handler(int sig)
 	 */
 	if (getpgid(0) == getpid()) {
 		signal(SIGTERM, SIG_IGN);
-		killpg(0, SIGTERM);
+		kill(0, SIGTERM);
 	}
 
 	/* Log error and exit. */
