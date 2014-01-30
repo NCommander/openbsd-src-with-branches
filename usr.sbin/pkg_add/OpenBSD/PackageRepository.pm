@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageRepository.pm,v 1.102 2014/01/13 18:44:41 espie Exp $
+# $OpenBSD: PackageRepository.pm,v 1.103 2014/01/17 13:41:47 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -158,9 +158,8 @@ sub wipe_info
 
 	my $dir = $pkg->{dir};
 	if (defined $dir) {
-
-	    OpenBSD::Error->rmtree($dir);
-	    delete $pkg->{dir};
+		OpenBSD::Error->rmtree($dir);
+		delete $pkg->{dir};
 	}
 }
 
