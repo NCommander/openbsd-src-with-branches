@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_fb.c,v 1.8 2014/01/21 08:57:22 kettenis Exp $	*/
+/*	$OpenBSD: intel_fb.c,v 1.9 2014/01/24 04:05:06 jsg Exp $	*/
 /*
  * Copyright © 2007 David Airlie
  *
@@ -237,7 +237,7 @@ static void intel_fbdev_destroy(struct drm_device *dev,
 
 	drm_framebuffer_cleanup(&ifb->base);
 	if (ifb->obj) {
-		drm_gem_object_unreference(&ifb->obj->base);
+		drm_gem_object_unreference_unlocked(&ifb->obj->base);
 		ifb->obj = NULL;
 	}
 }
