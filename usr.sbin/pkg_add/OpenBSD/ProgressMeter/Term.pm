@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Term.pm,v 1.18 2013/12/23 14:03:58 espie Exp $
+# $OpenBSD: Term.pm,v 1.19 2013/12/23 15:04:37 espie Exp $
 #
 # Copyright (c) 2004-2007 Marc Espie <espie@openbsd.org>
 #
@@ -293,7 +293,7 @@ sub clear
 		print "\r", ' 'x length($self->{lastdisplay}), "\r";
 	}
 	$self->{lastdisplay} = '';
-	undef $self->{stars};
+	delete $self->{stars};
 }
 
 sub next
