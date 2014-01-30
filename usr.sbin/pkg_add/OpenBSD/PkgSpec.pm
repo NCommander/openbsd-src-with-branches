@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgSpec.pm,v 1.38 2011/08/31 10:11:58 espie Exp $
+# $OpenBSD: PkgSpec.pm,v 1.39 2011/08/31 22:50:21 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -308,8 +308,10 @@ sub new
 			exactstem => qr{^$stemspec$},
 			fuzzystem => qr{^$stemspec\-\d.*$},
 			libstem => qr{^\.libs\d*\-$stemspec\-\d.*$},
-			constraints => $constraints,
 		    }, $class;
+		if (@$constraints != 0) {
+			$o->{constraints} = $constraints;
+		}
 		if (defined $r->{e}) {
 			$o->{e} = 1;
 		}
@@ -328,8 +330,10 @@ LOOP1:
 	for my $s (grep(/$o->{fuzzystem}/, @$list)) {
 		my $name = OpenBSD::PackageName->from_string($s);
 		next unless $name->{stem} =~ m/^$o->{exactstem}$/;
-		for my $c (@{$o->{constraints}}) {
-			next LOOP1 unless $c->match($name);
+		if (defined $o->{constraints}) {
+			for my $c (@{$o->{constraints}}) {
+				next LOOP1 unless $c->match($name);
+			}
 		}
 		if (wantarray) {
 			push(@result, $s);
@@ -357,8 +361,10 @@ LOOP2:
 	for my $s (grep { $_->name =~ m/$o->{fuzzystem}/} @$list) {
 		my $name = $s->pkgname;
 		next unless $name->{stem} =~ m/^$o->{exactstem}$/;
-		for my $c (@{$o->{constraints}}) {
-			next LOOP2 unless $c->match($name);
+		if (defined $o->{constraints}) {
+			for my $c (@{$o->{constraints}}) {
+				next LOOP2 unless $c->match($name);
+			}
 		}
 		push(@$result, $s);
 	}
