@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tl.c,v 1.57 2013/11/26 09:50:33 mpi Exp $	*/
+/*	$OpenBSD: if_tl.c,v 1.58 2014/01/31 06:05:40 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1986,6 +1986,8 @@ tl_attach(struct device *parent, struct device *self, void *aux)
 	IFQ_SET_MAXLEN(&ifp->if_snd, TL_TX_LIST_CNT - 1);
 	IFQ_SET_READY(&ifp->if_snd);
 	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+
+	ifp->if_capabilities = IFCAP_VLAN_MTU;
 
 	/*
 	 * Reset adapter (again).
