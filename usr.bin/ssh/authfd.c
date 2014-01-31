@@ -1,4 +1,4 @@
-/* $OpenBSD: authfd.c,v 1.90 2013/12/06 13:39:49 markus Exp $ */
+/* $OpenBSD: authfd.c,v 1.91 2013/12/29 04:29:25 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -100,7 +100,7 @@ ssh_get_authentication_socket(void)
 	if (!authsocket)
 		return -1;
 
-	bzero(&sunaddr, sizeof(sunaddr));
+	memset(&sunaddr, 0, sizeof(sunaddr));
 	sunaddr.sun_family = AF_UNIX;
 	strlcpy(sunaddr.sun_path, authsocket, sizeof(sunaddr.sun_path));
 
