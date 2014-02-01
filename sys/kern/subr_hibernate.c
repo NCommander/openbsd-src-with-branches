@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_hibernate.c,v 1.82 2014/01/14 09:57:51 mlarkin Exp $	*/
+/*	$OpenBSD: subr_hibernate.c,v 1.83 2014/01/21 01:48:44 tedu Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -825,9 +825,6 @@ hibernate_inflate_region(union hibernate_info *hib, paddr_t dest,
 	hibernate_state->hib_stream.avail_in = size;
 
 	do {
-		/* Flush cache and TLB */
-		hibernate_flush();
-
 		/*
 		 * Is this a special page? If yes, redirect the
 		 * inflate output to a scratch page (eg, discard it)
@@ -1269,7 +1266,6 @@ hibernate_copy_chunk_to_piglet(paddr_t img_cur, vaddr_t piglet, size_t size)
 		src += ct;
 		dest += ct;
 	}
-	wbinvd();
 
 	/* Copy remaining pages */	
 	while (src < size + img_cur) {
@@ -1281,9 +1277,6 @@ hibernate_copy_chunk_to_piglet(paddr_t img_cur, vaddr_t piglet, size_t size)
 		src += ct;
 		dest += ct;
 	}
-
-	hibernate_flush();
-	wbinvd();
 }
 
 /*
