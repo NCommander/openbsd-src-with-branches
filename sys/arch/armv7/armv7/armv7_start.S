@@ -1,4 +1,4 @@
-/*	$OpenBSD: beagle_start.S,v 1.5 2013/05/01 13:49:18 patrick Exp $	*/
+/*	$OpenBSD: armv7_start.S,v 1.1 2013/09/04 14:38:25 patrick Exp $	*/
 /*	$NetBSD: lubbock_start.S,v 1.1 2003/06/18 10:51:15 bsh Exp $ */
 
 /*
@@ -33,7 +33,9 @@
 #include <machine/asm.h>
 #include <arm/armreg.h>
 #include <arm/pte.h>
-#include <arm/pmap.h>		/* for PMAP_DOMAIN_KERNEL */
+
+#undef	DOMAIN_CLIENT	/* XXX */
+#include "assym.h"
 
 #ifndef SDRAM_START
 #define SDRAM_START	0x80000000
