@@ -1,4 +1,4 @@
-/*	$OpenBSD: pucdata.c,v 1.90 2013/11/09 04:05:58 jsg Exp $	*/
+/*	$OpenBSD: pucdata.c,v 1.91 2014/01/21 03:23:36 deraadt Exp $	*/
 /*	$NetBSD: pucdata.c,v 1.6 1999/07/03 05:55:23 cgd Exp $	*/
 
 /*
@@ -1133,6 +1133,20 @@ const struct puc_device_description puc_devs[] = {
 	    {   0xffff, 0xffff,						0, 0 },
 	    {
 		{ PUC_COM_POW2(0), 0x10, 0x0000 },
+	    },
+	},
+
+	/*
+	 * Brainboxes BB16PCI958.
+	 * Apparently based on an Oxford Semiconductor OX16PCI958 chip.
+	 */
+	{    /* "Brainboxes BB16PCI958 UARTs", */
+	    {	PCI_VENDOR_BRAINBOXES, PCI_PRODUCT_BRAINBOXES_IS200_BB16PCI958,
+		    							0, 0 },
+	    {	0xffff, 0xffff,						0, 0 },
+	    {
+		{ PUC_COM_POW2(0), 0x18, 0x0000 },
+		{ PUC_COM_POW2(0), 0x18, 0x0008 },
 	    },
 	},
 
