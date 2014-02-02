@@ -1,4 +1,4 @@
-/* $OpenBSD: drmP.h,v 1.162 2014/01/22 22:17:34 jsg Exp $ */
+/* $OpenBSD: drmP.h,v 1.163 2014/01/30 15:10:47 kettenis Exp $ */
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  */
@@ -327,6 +327,12 @@ static __inline void
 udelay(unsigned long usecs)
 {
 	DELAY(usecs);
+}
+
+static __inline void
+usleep_range(unsigned long min, unsigned long max)
+{
+	DELAY(min);
 }
 
 static __inline void
