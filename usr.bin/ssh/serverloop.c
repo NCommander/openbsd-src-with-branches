@@ -1,4 +1,4 @@
-/* $OpenBSD: serverloop.c,v 1.168 2013/07/12 00:19:59 djm Exp $ */
+/* $OpenBSD: serverloop.c,v 1.169 2013/12/19 00:19:12 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -888,7 +888,7 @@ server_input_stdin_data(int type, u_int32_t seq, void *ctxt)
 	data = packet_get_string(&data_len);
 	packet_check_eom();
 	buffer_append(&stdin_buffer, data, data_len);
-	memset(data, 0, data_len);
+	explicit_bzero(data, data_len);
 	free(data);
 }
 

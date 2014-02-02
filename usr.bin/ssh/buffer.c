@@ -1,4 +1,4 @@
-/* $OpenBSD: buffer.c,v 1.33 2013/05/17 00:13:13 djm Exp $ */
+/* $OpenBSD: buffer.c,v 1.34 2013/11/08 11:15:19 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -47,7 +47,7 @@ void
 buffer_free(Buffer *buffer)
 {
 	if (buffer->alloc > 0) {
-		memset(buffer->buf, 0, buffer->alloc);
+		explicit_bzero(buffer->buf, buffer->alloc);
 		buffer->alloc = 0;
 		free(buffer->buf);
 	}
