@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlavar.h,v 1.1 2014/01/19 06:04:03 jmatthew Exp $ */
+/*	$OpenBSD: qlavar.h,v 1.2 2014/02/01 09:11:30 kettenis Exp $ */
 
 /*
  * Copyright (c) 2013, 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -144,6 +144,8 @@ struct qla_softc {
 	int			sc_topology;
 	int			sc_loop_id;
 	int			sc_port_id;
+	int			sc_loop_max_id;
+	u_int64_t		sc_sns_port_name;
 
 	struct mutex		sc_port_mtx;
 	TAILQ_HEAD(, qla_fc_port) sc_ports;
