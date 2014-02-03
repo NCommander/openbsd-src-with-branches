@@ -1,4 +1,4 @@
-/*	$OpenBSD: uftdi.c,v 1.68 2013/12/13 12:32:24 yuo Exp $ 	*/
+/*	$OpenBSD: uftdi.c,v 1.69 2014/01/07 14:00:50 deraadt Exp $ 	*/
 /*	$NetBSD: uftdi.c,v 1.14 2003/02/23 04:20:07 simonb Exp $	*/
 
 /*
@@ -891,7 +891,7 @@ uftdi_attach(struct device *parent, struct device *self, void *aux)
 
 bad:
 	DPRINTF(("uftdi_attach: ATTACH ERROR\n"));
-	usbd_deactivate(sc->sc_udev);
+	usbd_deactivate(dev);
 }
 
 int
