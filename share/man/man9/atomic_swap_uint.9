@@ -1,4 +1,4 @@
-.\" $OpenBSD$
+.\" $OpenBSD: atomic_swap.9,v 1.1 2014/01/30 00:44:20 dlg Exp $
 .\"
 .\" Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
 .\" All rights reserved.
@@ -15,55 +15,38 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
-.Dt ATOMIC_ADD 9
+.Dd $Mdocdate: January 30 2014 $
+.Dt ATOMIC_SWAP 9
 .Os
 .Sh NAME
-.Nm atomic_add_int ,
-.Nm atomic_add_int_nv ,
-.Nm atomic_add_long ,
-.Nm atomic_add_long_nv
-.Nd atomic addition operations
+.Nm atomic_swap_uint ,
+.Nm atomic_swap_ulong ,
+.Nm atomic_swap_ptr
+.Nd atomic swap operations
 .Sh SYNOPSIS
 .In sys/atomic.h
-.Ft void
-.Fn atomic_add_int "volatile unsigned int *p" "unsigned int v"
 .Ft unsigned int
-.Fn atomic_add_int_nv "volatile unsigned int *p" "unsigned int v"
-.Ft void
-.Fn atomic_add_long "volatile unsigned long *p" "unsigned long v"
+.Fn atomic_swap_uint "volatile unsigned int *p" "unsigned int new"
 .Ft unsigned long
-.Fn atomic_add_long_nv "volatile unsigned long *p" "unsigned long v"
+.Fn atomic_swap_ulong "volatile unsigned long *p" "unsigned long new"
+.Ft void *
+.Fn atomic_swap_ptr "volatile void **p" "void *new"
 .Sh DESCRIPTION
-The
-.Nm atomic_add
-set of functions provide an interface for atomically performing add
-and add-and-fetch operations with respect to interrupts and multiple
+The atomic_swap set of functions provide an interface for atomically
+performing swap operations with respect to interrupts and multiple
 processors in the system.
 .Pp
 The value referenced by the pointer
 .Fa p
-is incremented by the value
-.Fa v .
+is replaced by the value
+.Fa new .
 .Sh RETURN VALUES
-.Nm atomic_add_int
-and
-.Nm atomic_add_long
-perform the addition without returning any knowledge of the value at the
-.Fa p .
-.Pp
-.Nm atomic_add_int_nv
-and
-.Nm atomic_add_long_nv
-return the value at
+These functions return the value at
 .Fa p
-after the addition was performed.
+as it was before the swap operation.
 .Sh SEE ALSO
 .Xr atomic 9 ,
-.Xr atomic_inc 9 ,
-.Xr atomic_sub 9
+.Xr atomic_cas_uint 9
 .Sh HISTORY
-The
-.Nm atomic_add
-functions first appeared in
+The atomic_swap functions first appeared in
 .Ox 5.5 .

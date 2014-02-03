@@ -1,4 +1,4 @@
-.\" $OpenBSD$
+.\" $OpenBSD: atomic_dec.9,v 1.1 2014/01/30 00:44:20 dlg Exp $
 .\"
 .\" Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
 .\" All rights reserved.
@@ -15,7 +15,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: January 30 2014 $
 .Dt ATOMIC_DEC 9
 .Os
 .Sh NAME
@@ -35,11 +35,9 @@
 .Ft unsigned long
 .Fn atomic_dec_long_nv "volatile unsigned long *p"
 .Sh DESCRIPTION
-The
-.Nm atomic_dec
-set of functions provide an interface for atomically performing
-decrement and decrement-and-fetch operations with respect to
-interrupts and multiple processors in the system.
+The atomic_dec set of functions provide an interface for atomically
+performing decrement and decrement-and-fetch operations with respect
+to interrupts and multiple processors in the system.
 .Pp
 The value referenced by the pointer
 .Fa p
@@ -59,10 +57,8 @@ return the value at
 after the decrement was performed.
 .Sh SEE ALSO
 .Xr atomic 9 ,
-.Xr atomic_add 9 ,
-.Xr atomic_inc 9
+.Xr atomic_add_int 9 ,
+.Xr atomic_inc_int 9
 .Sh HISTORY
-The
-.Nm atomic_add
-functions first appeared in
+The atomic_add functions first appeared in
 .Ox 5.5 .
