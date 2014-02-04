@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: UpdateSet.pm,v 1.73 2014/02/01 18:54:01 espie Exp $
+# $OpenBSD: UpdateSet.pm,v 1.74 2014/02/02 15:22:36 espie Exp $
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -370,7 +370,12 @@ sub print
 
 sub todo_names
 {
-	&newer_names;
+	my $self = shift;
+	if ($self->newer > 0) {
+		return $self->newer_names;
+	} else {
+		return $self->kept_names;
+	}
 }
 
 sub validate_plists
