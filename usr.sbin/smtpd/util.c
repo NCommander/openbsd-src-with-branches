@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.105 2014/01/08 15:30:49 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.106 2014/02/04 09:05:06 eric Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Markus Friedl.  All rights reserved.
@@ -39,6 +39,7 @@
 #include <libgen.h>
 #include <netdb.h>
 #include <pwd.h>
+#include <resolv.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -798,4 +799,17 @@ end:
 	if (fp)
 		fclose(fp);
 	return ret;
+}
+
+int
+base64_encode(unsigned char const *src, size_t srclen,
+	      char *dest, size_t destsize)
+{
+	return __b64_ntop(src, srclen, dest, destsize);
+}
+
+int
+base64_decode(char const *src, unsigned char *dest, size_t destsize)
+{
+	return __b64_pton(src, dest, destsize);
 }
