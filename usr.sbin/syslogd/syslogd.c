@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.108 2013/10/09 16:33:05 millert Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.109 2013/11/24 01:06:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -907,6 +907,7 @@ fprintlog(struct filed *f, int flags, char *msg)
 			case EHOSTDOWN:
 			case EHOSTUNREACH:
 			case ENETDOWN:
+			case ENETUNREACH:
 			case ENOBUFS:
 				/* silently dropped */
 				break;
