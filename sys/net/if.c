@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.278 2013/11/27 08:34:40 mpi Exp $	*/
+/*	$OpenBSD: if.c,v 1.279 2013/11/28 10:16:44 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -180,7 +180,7 @@ ifinit()
 	static struct timeout if_slowtim;
 
 	pool_init(&ifaddr_item_pl, sizeof(struct ifaddr_item), 0, 0, 0,
-	    "ifaddritempl", NULL);
+	    "ifaddritem", NULL);
 
 	timeout_set(&if_slowtim, if_slowtimo, &if_slowtim);
 
