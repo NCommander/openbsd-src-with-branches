@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbr.c,v 1.30 2013/06/11 16:42:04 deraadt Exp $	*/
+/*	$OpenBSD: mbr.c,v 1.31 2013/10/08 15:45:43 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -127,7 +127,7 @@ MBR_make(mbr_t *mbr, char *mbr_buf)
 	int i;
 
 	memcpy(mbr_buf, mbr->code, MBR_CODE_SIZE);
-	putshort(&mbr_buf[MBR_SIG_OFF], mbr->signature);
+	putshort(&mbr_buf[MBR_SIG_OFF], DOSMBR_SIGNATURE);
 
 	for (i = 0; i < NDOSPART; i++)
 		PRT_make(&mbr->part[i], mbr->offset, mbr->reloffset,
