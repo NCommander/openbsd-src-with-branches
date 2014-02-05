@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse.c,v 1.17 2013/11/11 14:23:01 stsp Exp $ */
+/* $OpenBSD: fuse.c,v 1.18 2013/12/10 10:07:48 syl Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -110,7 +110,7 @@ fuse_loop(struct fuse *fuse)
 			ret = ifuse_exec_opcode(fuse, &fbuf);
 			if (ret) {
 				ictx = NULL;
-				return (ret);
+				return (-1);
 			}
 
 			n = write(fuse->fc->fd, &fbuf, sizeof(fbuf));
