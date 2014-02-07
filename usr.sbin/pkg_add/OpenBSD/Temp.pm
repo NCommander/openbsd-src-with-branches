@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Temp.pm,v 1.24 2012/04/27 12:52:57 espie Exp $
+# $OpenBSD: Temp.pm,v 1.25 2012/04/28 15:22:49 espie Exp $
 #
 # Copyright (c) 2003-2005 Marc Espie <espie@openbsd.org>
 #
@@ -83,6 +83,13 @@ sub file
 		kill $caught, $$;
 	}
 	return $file;
+}
+
+sub reclaim
+{
+	my ($class, $name) = @_;
+	delete $files->{$name};
+	delete $dirs->{$name};
 }
 
 sub permanent_file
