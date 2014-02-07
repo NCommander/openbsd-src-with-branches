@@ -1,4 +1,4 @@
-/* $OpenBSD: cipher.c,v 1.95 2014/01/27 19:18:54 markus Exp $ */
+/* $OpenBSD: cipher.c,v 1.96 2014/02/02 03:44:31 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -222,8 +222,6 @@ ciphers_valid(const char *names)
 			debug("bad cipher %s [%s]", p, names);
 			free(cipher_list);
 			return 0;
-		} else {
-			debug3("cipher ok: %s [%s]", p, names);
 		}
 	}
 	debug3("ciphers ok: [%s]", names);
