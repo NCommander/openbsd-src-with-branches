@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageRepository.pm,v 1.106 2014/02/06 22:58:26 espie Exp $
+# $OpenBSD: PackageRepository.pm,v 1.107 2014/02/07 14:06:43 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -372,6 +372,18 @@ sub may_exist
 {
 	my ($self, $name) = @_;
 	return -r $self->relative_url($name);
+}
+
+my $local = [];
+
+sub opened
+{
+	return $local;
+}
+
+sub maxcount
+{
+	return 3;
 }
 
 sub list
