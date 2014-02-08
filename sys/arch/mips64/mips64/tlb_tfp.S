@@ -1,4 +1,4 @@
-/*	$OpenBSD: tlb_tfp.S,v 1.1 2012/09/29 21:37:03 miod Exp $	*/
+/*	$OpenBSD: tlb_tfp.S,v 1.2 2012/10/03 11:18:23 miod Exp $	*/
 
 /*
  * Copyright (c) 2012 Miodrag Vallat.
@@ -21,6 +21,10 @@
 #include <machine/cpu.h>
 #include <mips64/mips_cpu.h>
 #include <machine/pte.h>
+
+#ifdef MIPS_PTE64
+#error "R8000 doesn't need 64-bit PTE"
+#endif
 
 #include "assym.h"
 
