@@ -1,4 +1,4 @@
-/*	$OpenBSD: radeon_prime.c,v 1.1 2013/08/12 04:11:53 jsg Exp $	*/
+/*	$OpenBSD: radeon_prime.c,v 1.2 2013/12/05 13:29:56 kettenis Exp $	*/
 /*
  * Copyright 2012 Advanced Micro Devices, Inc.
  *
@@ -50,7 +50,7 @@ static void radeon_gem_unmap_dma_buf(struct dma_buf_attachment *attachment,
 {
 	dma_unmap_sg(attachment->dev, sg->sgl, sg->nents, dir);
 	sg_free_table(sg);
-	free(sg, M_DRM);
+	kfree(sg);
 }
 
 static void radeon_gem_dmabuf_release(struct dma_buf *dma_buf)

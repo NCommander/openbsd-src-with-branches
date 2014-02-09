@@ -1,4 +1,4 @@
-/*	$OpenBSD: si.c,v 1.7 2014/01/24 05:43:46 jsg Exp $	*/
+/*	$OpenBSD: si.c,v 1.8 2014/01/24 05:52:01 jsg Exp $	*/
 /*
  * Copyright 2011 Advanced Micro Devices, Inc.
  *
@@ -4408,8 +4408,7 @@ void si_fini(struct radeon_device *rdev)
 	radeon_fence_driver_fini(rdev);
 	radeon_bo_fini(rdev);
 	radeon_atombios_fini(rdev);
-	if (rdev->bios)
-		free(rdev->bios, M_DRM);
+	kfree(rdev->bios);
 	rdev->bios = NULL;
 }
 
