@@ -1,4 +1,4 @@
-/*	$OpenBSD: radeon_test.c,v 1.1 2013/08/12 04:11:53 jsg Exp $	*/
+/*	$OpenBSD: radeon_test.c,v 1.2 2014/02/09 11:03:31 jsg Exp $	*/
 /*
  * Copyright 2009 VMware, Inc.
  *
@@ -38,8 +38,8 @@ static void radeon_do_test_moves(struct radeon_device *rdev, int flag)
 	struct radeon_bo **gtt_obj = NULL;
 	struct radeon_fence *fence = NULL;
 	uint64_t gtt_addr, vram_addr;
-	unsigned i, n, size;
-	int r, ring;
+	unsigned n, size;
+	int i, r, ring;
 
 	switch (flag) {
 	case RADEON_TEST_COPY_DMA:
