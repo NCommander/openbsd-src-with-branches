@@ -1,4 +1,4 @@
-/*	$OpenBSD: isp_sbus.c,v 1.30 2010/11/11 17:46:58 miod Exp $	*/
+/*	$OpenBSD: isp_sbus.c,v 1.31 2011/04/22 23:29:18 deraadt Exp $	*/
 /*
  * SBus specific probe and attach routines for Qlogic ISP SCSI adapters.
  *
@@ -56,8 +56,8 @@
 #endif
 
 #if	defined(ISP_FIRMWARE_2200)
+extern const u_int16_t isp_2200_risc_code[];
 #define	ISP_2200_RISC_CODE	(u_int16_t *) isp_2200_risc_code
-#include <dev/microcode/isp/asm_2200.h>
 #else
 #define	ISP_2200_RISC_CODE	NULL
 #endif
