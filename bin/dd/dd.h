@@ -1,4 +1,4 @@
-/*	$OpenBSD: dd.h,v 1.4 2001/08/07 14:39:27 hugh Exp $	*/
+/*	$OpenBSD: dd.h,v 1.5 2003/06/02 23:32:07 millert Exp $	*/
 /*	$NetBSD: dd.h,v 1.4 1995/03/21 09:04:08 cgd Exp $	*/
 
 /*-
@@ -93,3 +93,6 @@ typedef struct {
 #define	C_UCASE		0x40000
 #define	C_UNBLOCK	0x80000
 #define	C_OSYNC		0x100000
+#define	C_STATUS	0x200000
+#define	C_NOXFER	0x400000
+#define	C_NOINFO	0x800000
