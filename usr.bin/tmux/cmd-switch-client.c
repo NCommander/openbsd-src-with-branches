@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-switch-client.c,v 1.18 2013/10/10 12:00:24 nicm Exp $ */
+/* $OpenBSD: cmd-switch-client.c,v 1.19 2014/01/09 14:28:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -61,7 +61,7 @@ cmd_switch_client_exec(struct cmd *self, struct cmd_q *cmdq)
 {
 	struct args		*args = self->args;
 	struct client		*c;
-	struct session		*s;
+	struct session		*s = NULL;
 	struct winlink		*wl = NULL;
 	struct window 		*w = NULL;
 	struct window_pane	*wp = NULL;
