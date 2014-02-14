@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-load-buffer.c,v 1.24 2013/10/10 12:00:21 nicm Exp $ */
+/* $OpenBSD: cmd-load-buffer.c,v 1.25 2013/10/10 12:26:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -72,7 +72,7 @@ cmd_load_buffer_exec(struct cmd *self, struct cmd_q *cmdq)
 		buffer_ptr = xmalloc(sizeof *buffer_ptr);
 		*buffer_ptr = buffer;
 
-		error = server_set_stdin_callback (c, cmd_load_buffer_callback,
+		error = server_set_stdin_callback(c, cmd_load_buffer_callback,
 		    buffer_ptr, &cause);
 		if (error != 0) {
 			cmdq_error(cmdq, "%s: %s", path, cause);
