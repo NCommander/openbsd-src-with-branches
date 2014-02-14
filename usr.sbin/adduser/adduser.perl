@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-#	$OpenBSD: adduser.perl,v 1.57 2011/05/12 13:56:23 lum Exp $
+#	$OpenBSD: adduser.perl,v 1.58 2011/09/22 10:59:23 deraadt Exp $
 #
 # Copyright (c) 1995-1996 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
 # All rights reserved.
@@ -750,7 +750,7 @@ sub new_users_password {
 	    last if $password eq $newpass;
 	    print "They didn't match, please try again\n";
 	}
-	elsif (!&confirm_yn("Set the password so that user cannot logon?", "no")) {
+	elsif (!&confirm_yn("Disable password logins for the user?", "no")) {
 	    last;
 	}
     }
