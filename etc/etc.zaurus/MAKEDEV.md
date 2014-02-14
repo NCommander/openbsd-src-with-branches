@@ -1,6 +1,6 @@
 define(MACHINE,zaurus)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.34 2013/08/21 15:12:50 ajacoutot Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.35 2014/01/05 01:16:52 deraadt Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2004 Todd T. Fries <todd@OpenBSD.org>
@@ -100,6 +100,7 @@ _std(1, 2, 8, 6)
 dnl
 dnl *** zaurus specific targets
 dnl
+twrget(all, au, audio, 0, 1, 2)dnl
 target(all, ch, 0)dnl
 target(all, vscsi, 0)dnl
 target(all, diskmap)dnl
