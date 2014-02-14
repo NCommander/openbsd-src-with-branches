@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.1 2013/10/17 08:42:44 reyk Exp $	*/
+/*	$OpenBSD: proc.c,v 1.2 2013/11/13 20:45:19 benno Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -434,10 +434,4 @@ proc_forward_imsg(struct privsep *ps, struct imsg *imsg,
 {
 	return (proc_compose_imsg(ps, id, imsg->hdr.type,
 	    imsg->fd, imsg->data, IMSG_DATA_SIZE(imsg)));
-}
-
-void
-proc_flush_imsg(struct privsep *ps, enum privsep_procid id)
-{
-	imsg_flush(&ps->ps_ievs[id].ibuf);
 }
