@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.22 2013/11/28 20:21:55 markus Exp $	*/
+/*	$OpenBSD: util.c,v 1.23 2013/12/03 13:55:40 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -361,6 +361,9 @@ print_spi(u_int64_t spi, int size)
 	ptr = buf[i];
 
 	switch (size) {
+	case 2:
+		snprintf(ptr, 32, "0x%04x", (u_int16_t)spi);
+		break;
 	case 4:
 		snprintf(ptr, 32, "0x%08x", (u_int32_t)spi);
 		break;
