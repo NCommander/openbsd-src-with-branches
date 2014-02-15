@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.c,v 1.328 2013/12/19 01:04:36 djm Exp $ */
+/* $OpenBSD: channels.c,v 1.329 2014/01/31 16:39:19 tedu Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1378,7 +1378,7 @@ port_open_helper(Channel *c, char *rtype)
 	int direct;
 	char buf[1024];
 	char *local_ipaddr = get_local_ipaddr(c->sock);
-	int local_port = get_sock_port(c->sock, 1);
+	int local_port = c->sock == -1 ? 65536 : get_sock_port(c->sock, 1);
 	char *remote_ipaddr = get_peer_ipaddr(c->sock);
 	int remote_port = get_peer_port(c->sock);
 
