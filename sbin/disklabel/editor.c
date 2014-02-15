@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.278 2013/11/22 04:12:47 deraadt Exp $	*/
+/*	$OpenBSD: editor.c,v 1.279 2014/02/15 00:10:17 krw Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -1901,6 +1901,9 @@ void
 mpfree(char **mp)
 {
 	int part;
+
+	if (mp == NULL)
+		return;
 
 	for (part == 0; part < MAXPARTITIONS; part++) {
 		free(mp[part]);
