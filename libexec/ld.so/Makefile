@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.45 2013/07/05 21:29:51 miod Exp $
+#	$OpenBSD: Makefile,v 1.46 2013/12/31 04:07:34 guenther Exp $
 
 SUBDIR=ldconfig ldd
 MAN=	ld.so.1
@@ -12,8 +12,8 @@ PROG=	ld.so
 
 VPATH=${.CURDIR}/../../lib/libc/string
 
-SRCS=	ldasm.S loader.c resolve.c dlfcn.c dl_printf.c rtld_machine.c path.c
-SRCS+=	util.c sod.c strsep.c strtol.c dir.c library_subr.c dl_prebind.c
+SRCS=	ldasm.S boot.c loader.c resolve.c dlfcn.c dl_printf.c rtld_machine.c
+SRCS+=	path.c util.c sod.c strsep.c strtol.c dir.c library_subr.c dl_prebind.c
 SRCS+=	dl_realpath.c dl_uname.c dl_dirname.c strlcat.c strlen.c trace.c
 .if (${MACHINE_ARCH} == "i386")
 SRCS+=	library_mquery.c
@@ -48,3 +48,6 @@ $(PROG): $(test_prog)
 .endif
 
 .include <bsd.prog.mk>
+
+boot.o: boot.c
+	${COMPILE.c} -fno-stack-protector ${.IMPSRC}
