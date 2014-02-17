@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.320 2013/10/17 19:59:54 henning Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.321 2013/11/01 22:55:39 pelikan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1955,7 +1955,6 @@ pfctl_debug(int dev, u_int32_t level, int opts)
 
 	memset(&t, 0, sizeof(t));
 	t.pfrb_type = PFRB_TRANS;
-printf("pfctl_debug DIOCXCOMMIT\n");
 	if (pfctl_trans(dev, &t, DIOCXBEGIN, 0) ||
 	    ioctl(dev, DIOCSETDEBUG, &level) ||
 	    pfctl_trans(dev, &t, DIOCXCOMMIT, 0))
