@@ -1,4 +1,4 @@
-/* $OpenBSD: i915_drv.h,v 1.47 2014/01/24 03:21:17 jsg Exp $ */
+/* $OpenBSD: i915_drv.h,v 1.48 2014/01/24 04:05:06 jsg Exp $ */
 /* i915_drv.h -- Private header for the I915 driver -*- linux-c -*-
  */
 /*
@@ -1111,7 +1111,7 @@ void	i915_handle_error(struct drm_device *dev, bool wedged);
 void	intel_enable_asle(struct drm_device *);
 
 extern void intel_gt_init(struct drm_device *dev);
-extern void intel_gt_reset(struct drm_device *dev);
+extern void intel_gt_sanitize(struct drm_device *dev);
 
 /* gem */
 /* Ioctls */
