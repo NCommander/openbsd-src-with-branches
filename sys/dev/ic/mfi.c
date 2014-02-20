@@ -1330,11 +1330,9 @@ mfi_do_mgmt(struct mfi_softc *sc, struct mfi_ccb *ccb, uint32_t opc,
 
 	DNPRINTF(MFI_D_MISC, "%s: mfi_do_mgmt %#x\n", DEVNAME(sc), opc);
 
-	if (len > 0) {
-		dma_buf = dma_alloc(len, cold ? PR_NOWAIT : PR_WAITOK);
-		if (dma_buf == NULL)
-			goto done;
-	}
+	dma_buf = dma_alloc(len, PR_WAITOK);
+	if (dma_buf == NULL)
+		goto done;
 
 	dcmd = &ccb->ccb_frame->mfr_dcmd;
 	memset(dcmd->mdf_mbox, 0, MFI_MBOX_SIZE);
