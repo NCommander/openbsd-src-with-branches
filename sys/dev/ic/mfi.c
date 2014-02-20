@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi.c,v 1.148 2013/10/23 13:05:38 kettenis Exp $ */
+/* $OpenBSD: mfi.c,v 1.149 2013/12/04 05:21:57 dlg Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -1330,9 +1330,11 @@ mfi_do_mgmt(struct mfi_softc *sc, struct mfi_ccb *ccb, uint32_t opc,
 
 	DNPRINTF(MFI_D_MISC, "%s: mfi_do_mgmt %#x\n", DEVNAME(sc), opc);
 
-	dma_buf = dma_alloc(len, PR_WAITOK);
-	if (dma_buf == NULL)
-		goto done;
+	if (len > 0) {
+		dma_buf = dma_alloc(len, cold ? PR_NOWAIT : PR_WAITOK);
+		if (dma_buf == NULL)
+			goto done;
+	}
 
 	dcmd = &ccb->ccb_frame->mfr_dcmd;
 	memset(dcmd->mdf_mbox, 0, MFI_MBOX_SIZE);
