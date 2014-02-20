@@ -1,4 +1,4 @@
-/*	$OpenBSD: qle.c,v 1.10 2014/02/19 08:01:20 dlg Exp $ */
+/*	$OpenBSD: qle.c,v 1.11 2014/02/19 15:13:14 kettenis Exp $ */
 
 /*
  * Copyright (c) 2013, 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -491,8 +491,8 @@ qle_attach(struct device *parent, struct device *self, void *aux)
 		    sc->sc_mbox[0]);
 		goto deintr;
 	}
-	printf("firmware v%d.%d.%d, attrs %x\n", sc->sc_mbox[1], sc->sc_mbox[2],
-	    sc->sc_mbox[3], sc->sc_mbox[6]);
+	printf("%s: firmware rev %d.%d.%d, attrs 0x%x\n", DEVNAME(sc),
+	    sc->sc_mbox[1], sc->sc_mbox[2], sc->sc_mbox[3], sc->sc_mbox[6]);
 
 	sc->sc_maxcmds = 4096;
 
