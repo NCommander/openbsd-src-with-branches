@@ -43,8 +43,10 @@ enum qla_isp_type {
 	QLA_ISP2322
 };
 
-struct qla_queue_regs {
+struct qla_regs {
 	u_int16_t	(*read)(struct qla_softc *, bus_size_t);
+	int		(*read_isr)(struct qla_softc *,
+			    u_int16_t *, u_int16_t *);
 
 	bus_size_t	req_in;
 	bus_size_t	req_out;
@@ -139,7 +141,7 @@ struct qla_softc {
 	int			sc_fabric;
 	int			sc_2k_logins;
 
-	const struct qla_queue_regs *sc_q;
+	const struct qla_regs	*sc_regs;
 
 	int			sc_mbox_base;
 	u_int16_t		sc_mbox[12];
