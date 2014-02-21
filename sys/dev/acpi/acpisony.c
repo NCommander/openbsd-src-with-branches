@@ -1,4 +1,4 @@
-/* $OpenBSD: acpisony.c,v 1.3 2010/08/07 16:21:20 deraadt Exp $ */
+/* $OpenBSD: acpisony.c,v 1.4 2011/01/02 04:56:57 jordan Exp $ */
 /*
  * Copyright (c) 2010 Paul Irofti <pirofti@openbsd.org>
  *
@@ -123,7 +123,7 @@ acpisony_activate(struct device *self, int act)
 	struct acpisony_softc *sc = (struct acpisony_softc *)self;
 
 	switch (act) {
-	case DVACT_RESUME:
+	case DVACT_WAKEUP:
 		acpisony_notify_setup(sc);
 		break;
 	}

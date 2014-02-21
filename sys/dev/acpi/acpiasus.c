@@ -1,4 +1,4 @@
-/* $OpenBSD: acpiasus.c,v 1.15 2013/12/06 21:03:02 deraadt Exp $ */
+/* $OpenBSD: acpiasus.c,v 1.16 2014/01/30 11:51:51 pirofti Exp $ */
 /* $NetBSD: asus_acpi.c,v 1.2.2.2 2008/04/03 12:42:37 mjf Exp $ */
 /*
  * Copyright (c) 2007, 2008 Jared D. McNeill <jmcneill@invisible.ca>
@@ -210,7 +210,7 @@ acpiasus_activate(struct device *self, int act)
 	struct aml_value ret;
 
 	switch (act) {
-	case DVACT_RESUME:
+	case DVACT_WAKEUP:
 		acpiasus_init(self);
 
 		bzero(&cmd, sizeof(cmd));
