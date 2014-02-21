@@ -1,4 +1,4 @@
-/*	$OpenBSD: umount.c,v 1.23 2013/04/21 11:56:09 jsing Exp $	*/
+/*	$OpenBSD: umount.c,v 1.24 2013/07/21 21:07:10 millert Exp $	*/
 /*	$NetBSD: umount.c,v 1.16 1996/05/11 14:13:55 mycroft Exp $	*/
 
 /*-
@@ -144,7 +144,6 @@ umountall(void)
 int
 umountfs(char *oname)
 {
-	enum clnt_stat clnt_stat;
 	struct hostent *hp;
 	struct sockaddr_in saddr;
 	struct stat sb;
@@ -219,8 +218,11 @@ umountfs(char *oname)
 		return (1);
 	}
 
+#ifndef NO_NFS
 	if (!strncmp(type, MOUNT_NFS, MFSNAMELEN) &&
 	    (hp != NULL) && !(fflag & MNT_FORCE)) {
+		enum clnt_stat clnt_stat;
+
 		*delimp = '\0';
 		memset(&saddr, 0, sizeof(saddr));
 		saddr.sin_family = AF_INET;
@@ -246,6 +248,7 @@ umountfs(char *oname)
 		auth_destroy(clp->cl_auth);
 		clnt_destroy(clp);
 	}
+#endif
 	return (0);
 }
 
@@ -359,6 +362,7 @@ namematch(struct hostent *hp)
 	return (0);
 }
 
+#ifndef NO_NFS
 /*
  * xdr routines for mount rpc's
  */
@@ -367,6 +371,7 @@ xdr_dir(XDR *xdrsp, char *dirp)
 {
 	return (xdr_string(xdrsp, &dirp, RPCMNT_PATHLEN));
 }
+#endif
 
 void
 usage(void)
