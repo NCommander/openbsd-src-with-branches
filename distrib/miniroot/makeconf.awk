@@ -1,5 +1,4 @@
-#	$OpenBSD: makeconf.awk,v 1.17 2010/10/17 21:33:53 deraadt Exp $
-#	$NetBSD: makeconf.awk,v 1.3 1996/05/04 15:45:32 pk Exp $
+#	$OpenBSD: makeconf.awk,v 1.18 2013/10/13 23:38:30 guenther Exp $
 
 #
 # generate crunchgen(1) configuration file from `list' spec.
