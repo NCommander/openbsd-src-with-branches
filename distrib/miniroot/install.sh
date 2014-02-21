@@ -1,5 +1,5 @@
 #!/bin/ksh
-#	$OpenBSD: install.sh,v 1.242 2014/02/04 00:47:27 rpe Exp $
+#	$OpenBSD: install.sh,v 1.244 2014/02/21 16:30:14 deraadt Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1997-2009 Todd Miller, Theo de Raadt, Ken Westerback
@@ -54,8 +54,6 @@
 #
 
 #	OpenBSD installation script.
-#	In a perfect world, this would be a nice C program, with a reasonable
-#	user interface.
 
 # install.sub needs to know the MODE
 MODE=install
