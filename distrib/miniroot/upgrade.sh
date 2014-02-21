@@ -1,5 +1,6 @@
 #!/bin/ksh
 #	$OpenBSD: upgrade.sh,v 1.73 2014/01/05 01:53:35 deraadt Exp $
+#	$NetBSD: upgrade.sh,v 1.2.4.5 1996/08/27 18:15:08 gwr Exp $
 #
 # Copyright (c) 1997-2009 Todd Miller, Theo de Raadt, Ken Westerback
 # All rights reserved.
@@ -33,6 +34,8 @@
 #
 
 #	OpenBSD installation script.
+#	In a perfect world, this would be a nice C program, with a reasonable
+#	user interface.
 
 # install.sub needs to know the MODE
 MODE=upgrade
