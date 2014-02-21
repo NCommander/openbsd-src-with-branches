@@ -1,5 +1,4 @@
-/*	$OpenBSD: mbrtowc_sb.c,v 1.4 2005/11/27 20:03:06 cloder Exp $	*/
-/*	$NetBSD: multibyte_sb.c,v 1.4 2003/08/07 16:43:04 agc Exp $	*/
+/*	$OpenBSD: mbrtowc_sb.c,v 1.1 2010/07/27 16:59:03 stsp Exp $	*/
 
 /*
  * Copyright (c) 1991 The Regents of the University of California.
