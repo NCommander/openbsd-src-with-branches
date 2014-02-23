@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.6 2008/05/25 16:55:31 miod Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.7 2013/03/21 21:51:00 deraadt Exp $	*/
 /*	$NetBSD: alloc.c,v 1.1 1997/04/16 20:29:16 thorpej Exp $	*/
 
 /*
@@ -202,7 +202,7 @@ freeall()
 	}
 
 	/* ...and allocated list. */
-	while ((m = LIST_FIRST(&allocated)) != NULL)) {
+	while ((m = LIST_FIRST(&allocated)) != NULL) {
 		LIST_REMOVE(m, list);
 		OF_release(m, m->size);
 	}
