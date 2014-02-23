@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-attach-session.c,v 1.28 2013/10/10 12:28:08 nicm Exp $ */
+/* $OpenBSD: cmd-attach-session.c,v 1.29 2014/01/09 14:20:55 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -132,7 +132,7 @@ cmd_attach_session(struct cmd_q *cmdq, const char *tflag, int dflag, int rflag,
 		server_redraw_client(cmdq->client);
 		s->curw->flags &= ~WINLINK_ALERTFLAGS;
 	} else {
-		if (server_client_open(cmdq->client, s, &cause) != 0) {
+		if (server_client_open(cmdq->client, &cause) != 0) {
 			cmdq_error(cmdq, "open terminal failed: %s", cause);
 			free(cause);
 			return (CMD_RETURN_ERROR);
