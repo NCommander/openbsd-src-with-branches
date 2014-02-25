@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.6 2010/07/06 20:41:06 miod Exp $	*/
+/*	$OpenBSD: version.c,v 1.7 2010/08/16 14:41:29 miod Exp $	*/
 /*	$NetBSD: version.c,v 1.4 1995/09/16 23:20:39 pk Exp $ */
 
 /*
@@ -47,6 +47,7 @@
  *	2.5	sun4e support
  *	2.6	Support for larger kernels when booting from tape, and avoid
  *		stomping on PROM data below 4MB on sun4c
+ *	2.7	/etc/random.seed support
  */
 
-char *version = "2.6";
+char *version = "2.7";
