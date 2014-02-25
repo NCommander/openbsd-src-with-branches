@@ -1,5 +1,5 @@
 /* $NetBSD: loadfile.c,v 1.10 2000/12/03 02:53:04 tsutsui Exp $ */
-/* $OpenBSD: loadfile_elf.c,v 1.6 2009/11/30 05:18:08 miod Exp $ */
+/* $OpenBSD: loadfile_elf.c,v 1.7 2013/12/28 02:51:07 deraadt Exp $ */
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -98,10 +98,15 @@ ELFNAME(exec)(int fd, Elf_Ehdr *elf, u_long *marks, int flags)
 		if (phdr[i].p_type == PT_OPENBSD_RANDOMIZE) {
 			int m;
 
-			/* Fill segment. */
-			for (pos = 0; pos < phdr[i].p_filesz; pos += m) {
-				m = MIN(phdr[i].p_filesz - pos, sizeof(rnddata));
-				BCOPY(rnddata, phdr[i].p_paddr + pos, m);
+			/* Fill segment if asked for. */
+			if (flags & LOAD_DATA) {
+				for (pos = 0; pos < phdr[i].p_filesz;
+				    pos += m) {
+					m = MIN(phdr[i].p_filesz - pos,
+					    sizeof(rnddata));
+					BCOPY(rnddata, phdr[i].p_paddr + pos,
+					    m);
+				}
 			}
 			continue;
 		}
