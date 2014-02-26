@@ -1,7 +1,7 @@
-.\" $OpenBSD: mount_udf.8,v 1.10 2007/12/09 20:54:01 jmc Exp $
+.\" $OpenBSD: mount_udf.8,v 1.11 2013/07/16 09:45:28 schwarze Exp $
 .\" Written by Pedro Martelletto <pedro@ambientworks.net> in March 2005.
 .\" Public domain.
-.Dd $Mdocdate: December 9 2007 $
+.Dd $Mdocdate: July 16 2013 $
 .Dt MOUNT_UDF 8
 .Os
 .Sh NAME
@@ -19,6 +19,7 @@ device
 .Ar special
 to the global filesystem namespace at the location indicated by
 .Ar node .
+The filesystem is always mounted readonly.
 This command is invoked by
 .Xr mount 8
 when using the syntax
