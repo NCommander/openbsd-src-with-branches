@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo_async.c,v 1.20 2014/02/17 11:04:23 eric Exp $	*/
+/*	$OpenBSD: getaddrinfo_async.c,v 1.21 2014/02/26 20:00:08 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -17,6 +17,8 @@
 
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/nameser.h>
 #ifdef YP
 #include <rpc/rpc.h>
