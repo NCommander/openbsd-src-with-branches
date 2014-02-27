@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #	Placed in the Public Domain.
 
 tid="expand %h and %n"
