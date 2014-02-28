@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.42 2014/01/29 06:18:35 djm Exp $
+#	$OpenBSD: Makefile.inc,v 1.43 2014/02/07 21:14:24 miod Exp $
 
 .include <bsd.own.mk>
 
@@ -37,7 +37,6 @@ CDIAGFLAGS+=	-Wno-unused-parameter # Not clean for this yet
 #DEBUG=-g
 
 WARNINGS=yes
-INSTALL_STRIP=
 
 CFLAGS+=	-DENABLE_PKCS11
 .ifndef NOPIC
