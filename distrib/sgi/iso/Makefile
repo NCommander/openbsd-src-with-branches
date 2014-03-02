@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.20 2014/01/12 21:58:00 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.21 2014/01/24 00:34:22 deraadt Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -90,8 +90,10 @@ ${CDROM}:
 
 	cp -p ${BASE} ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
 	cp -p ${XBASE} ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
-	cp -p ${RELDIR}/.i-SHA256 ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}/SHA256
-	cp -p ${RELDIR}/.i-SHA256.sig ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}/SHA256.sig
+
+	cat ${RELDIR}/SHA256 ${RELXDIR}/SHA256 > \
+	    ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}/SHA256
+	# XXX no SHA256.sig
 
 .for IP in ${ALLIP}
 	ln -f ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}/bsd.rd.IP${IP} \
