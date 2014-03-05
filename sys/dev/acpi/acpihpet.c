@@ -1,4 +1,4 @@
-/* $OpenBSD: acpihpet.c,v 1.15 2013/12/19 03:27:10 deraadt Exp $ */
+/* $OpenBSD: acpihpet.c,v 1.16 2013/12/21 16:41:01 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -73,11 +73,8 @@ struct acpihpet_softc {
 };
 
 struct cfattach acpihpet_ca = {
-	sizeof(struct acpihpet_softc),
-	acpihpet_match,
-	acpihpet_attach,
-	NULL,
-	acpihpet_activate
+	sizeof(struct acpihpet_softc), acpihpet_match, acpihpet_attach,
+	NULL, acpihpet_activate
 };
 
 struct cfdriver acpihpet_cd = {
