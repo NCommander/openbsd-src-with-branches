@@ -93,6 +93,12 @@ extern uint16_t EDNS_ADVERTISED_SIZE;
 /** DNSKEY secure entry point, KSK flag */
 #define DNSKEY_BIT_SEP 0x0001
 
+/** minimal responses when positive answer */
+extern int MINIMAL_RESPONSES;
+
+/** rrset order roundrobin */
+extern int RRSET_ROUNDROBIN;
+
 /**
  * See if string is ip4 or ip6.
  * @param str: IP specification.
@@ -362,5 +368,16 @@ void* incoming_ssl_fd(void* sslctx, int fd);
  * @return SSL or NULL on alloc failure
  */
 void* outgoing_ssl_fd(void* sslctx, int fd);
+
+/**
+ * Initialize openssl locking for thread safety
+ * @return false on failure (alloc failure).
+ */
+int ub_openssl_lock_init(void);
+
+/**
+ * De-init the allocated openssl locks
+ */
+void ub_openssl_lock_delete(void);
 
 #endif /* NET_HELP_H */

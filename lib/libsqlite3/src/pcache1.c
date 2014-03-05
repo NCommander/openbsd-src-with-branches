@@ -212,12 +212,14 @@ static void *pcache1Alloc(int nByte){
     ** it from sqlite3Malloc instead.
     */
     p = sqlite3Malloc(nByte);
+#ifndef SQLITE_DISABLE_PAGECACHE_OVERFLOW_STATS
     if( p ){
       int sz = sqlite3MallocSize(p);
       sqlite3_mutex_enter(pcache1.mutex);
       sqlite3StatusAdd(SQLITE_STATUS_PAGECACHE_OVERFLOW, sz);
       sqlite3_mutex_leave(pcache1.mutex);
     }
+#endif
     sqlite3MemdebugSetType(p, MEMTYPE_PCACHE);
   }
   return p;
@@ -244,9 +246,11 @@ static int pcache1Free(void *p){
     assert( sqlite3MemdebugHasType(p, MEMTYPE_PCACHE) );
     sqlite3MemdebugSetType(p, MEMTYPE_HEAP);
     nFreed = sqlite3MallocSize(p);
+#ifndef SQLITE_DISABLE_PAGECACHE_OVERFLOW_STATS
     sqlite3_mutex_enter(pcache1.mutex);
     sqlite3StatusAdd(SQLITE_STATUS_PAGECACHE_OVERFLOW, -nFreed);
     sqlite3_mutex_leave(pcache1.mutex);
+#endif
     sqlite3_free(p);
   }
   return nFreed;
@@ -392,11 +396,10 @@ static int pcache1ResizeHash(PCache1 *p){
 
   pcache1LeaveMutex(p->pGroup);
   if( p->nHash ){ sqlite3BeginBenignMalloc(); }
-  apNew = (PgHdr1 **)sqlite3_malloc(sizeof(PgHdr1 *)*nNew);
+  apNew = (PgHdr1 **)sqlite3MallocZero(sizeof(PgHdr1 *)*nNew);
   if( p->nHash ){ sqlite3EndBenignMalloc(); }
   pcache1EnterMutex(p->pGroup);
   if( apNew ){
-    memset(apNew, 0, sizeof(PgHdr1 *)*nNew);
     for(i=0; i<p->nHash; i++){
       PgHdr1 *pPage;
       PgHdr1 *pNext = p->apHash[i];
@@ -559,7 +562,7 @@ static sqlite3_pcache *pcache1Create(int szPage, int szExtra, int bPurgeable){
   int sz;               /* Bytes of memory required to allocate the new cache */
 
   /*
-  ** The seperateCache variable is true if each PCache has its own private
+  ** The separateCache variable is true if each PCache has its own private
   ** PGroup.  In other words, separateCache is true for mode (1) where no
   ** mutexing is required.
   **
@@ -580,9 +583,8 @@ static sqlite3_pcache *pcache1Create(int szPage, int szExtra, int bPurgeable){
   assert( szExtra < 300 );
 
   sz = sizeof(PCache1) + sizeof(PGroup)*separateCache;
-  pCache = (PCache1 *)sqlite3_malloc(sz);
+  pCache = (PCache1 *)sqlite3MallocZero(sz);
   if( pCache ){
-    memset(pCache, 0, sz);
     if( separateCache ){
       pGroup = (PGroup*)&pCache[1];
       pGroup->mxPinned = 10;
@@ -763,6 +765,7 @@ static sqlite3_pcache_page *pcache1Fetch(
   if( pCache->nPage>=pCache->nHash && pcache1ResizeHash(pCache) ){
     goto fetch_out;
   }
+  assert( pCache->nHash>0 && pCache->apHash );
 
   /* Step 4. Try to recycle a page. */
   if( pCache->bPurgeable && pGroup->pLruTail && (

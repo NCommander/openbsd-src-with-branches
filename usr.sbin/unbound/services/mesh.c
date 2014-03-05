@@ -321,6 +321,8 @@ void mesh_new_client(struct mesh_area* mesh, struct query_info* qinfo,
 		}
 #ifdef UNBOUND_DEBUG
 		n =
+#else
+		(void)
 #endif
 		rbtree_insert(&mesh->all, &s->node);
 		log_assert(n != NULL);
@@ -390,6 +392,8 @@ mesh_new_callback(struct mesh_area* mesh, struct query_info* qinfo,
 		}
 #ifdef UNBOUND_DEBUG
 		n =
+#else
+		(void)
 #endif
 		rbtree_insert(&mesh->all, &s->node);
 		log_assert(n != NULL);
@@ -422,7 +426,7 @@ mesh_new_callback(struct mesh_area* mesh, struct query_info* qinfo,
 }
 
 void mesh_new_prefetch(struct mesh_area* mesh, struct query_info* qinfo,
-        uint16_t qflags, uint32_t leeway)
+        uint16_t qflags, time_t leeway)
 {
 	struct mesh_state* s = mesh_area_find(mesh, qinfo, qflags&BIT_RD, 0);
 #ifdef UNBOUND_DEBUG
@@ -450,6 +454,8 @@ void mesh_new_prefetch(struct mesh_area* mesh, struct query_info* qinfo,
 	}
 #ifdef UNBOUND_DEBUG
 	n =
+#else
+	(void)
 #endif
 	rbtree_insert(&mesh->all, &s->node);
 	log_assert(n != NULL);
@@ -657,6 +663,8 @@ void mesh_detach_subs(struct module_qstate* qstate)
 	RBTREE_FOR(ref, struct mesh_state_ref*, &qstate->mesh_info->sub_set) {
 #ifdef UNBOUND_DEBUG
 		n =
+#else
+		(void)
 #endif
 		rbtree_delete(&ref->s->super_set, &lookup);
 		log_assert(n != NULL); /* must have been present */
@@ -676,6 +684,7 @@ int mesh_attach_sub(struct module_qstate* qstate, struct query_info* qinfo,
 	/* find it, if not, create it */
 	struct mesh_area* mesh = qstate->env->mesh;
 	struct mesh_state* sub = mesh_area_find(mesh, qinfo, qflags, prime);
+	int was_detached;
 	if(mesh_detect_cycle_found(qstate, sub)) {
 		verbose(VERB_ALGO, "attach failed, cycle detected");
 		return 0;
@@ -692,6 +701,8 @@ int mesh_attach_sub(struct module_qstate* qstate, struct query_info* qinfo,
 		}
 #ifdef UNBOUND_DEBUG
 		n =
+#else
+		(void)
 #endif
 		rbtree_insert(&mesh->all, &sub->node);
 		log_assert(n != NULL);
@@ -700,15 +711,20 @@ int mesh_attach_sub(struct module_qstate* qstate, struct query_info* qinfo,
 		/* set new query state to run */
 #ifdef UNBOUND_DEBUG
 		n =
+#else
+		(void)
 #endif
 		rbtree_insert(&mesh->run, &sub->run_node);
 		log_assert(n != NULL);
 		*newq = &sub->s;
 	} else
 		*newq = NULL;
+	was_detached = (sub->super_set.count == 0);
 	if(!mesh_state_attachment(qstate->mesh_info, sub))
 		return 0;
-	if(!sub->reply_list && !sub->cb_list && sub->super_set.count == 1) {
+	/* if it was a duplicate  attachment, the count was not zero before */
+	if(!sub->reply_list && !sub->cb_list && was_detached && 
+		sub->super_set.count == 1) {
 		/* it used to be detached, before this one got added */
 		log_assert(mesh->num_detached_states > 0);
 		mesh->num_detached_states--;
@@ -735,16 +751,22 @@ int mesh_state_attachment(struct mesh_state* super, struct mesh_state* sub)
 	superref->s = super;
 	subref->node.key = subref;
 	subref->s = sub;
+	if(!rbtree_insert(&sub->super_set, &superref->node)) {
+		/* this should not happen, iterator and validator do not
+		 * attach subqueries that are identical. */
+		/* already attached, we are done, nothing todo.
+		 * since superref and subref already allocated in region,
+		 * we cannot free them */
+		return 1;
+	}
 #ifdef UNBOUND_DEBUG
 	n =
-#endif
-	rbtree_insert(&sub->super_set, &superref->node);
-	log_assert(n != NULL);
-#ifdef UNBOUND_DEBUG
-	n =
+#else
+	(void)
 #endif
 	rbtree_insert(&super->sub_set, &subref->node);
-	log_assert(n != NULL);
+	log_assert(n != NULL); /* we checked above if statement, the reverse
+	  administration should not fail now, unless they are out of sync */
 	return 1;
 }
 
@@ -870,8 +892,8 @@ mesh_send_reply(struct mesh_state* m, int rcode, struct reply_info* rep,
 	m->s.env->mesh->num_reply_addrs--;
 	end_time = *m->s.env->now_tv;
 	timeval_subtract(&duration, &end_time, &r->start_time);
-	verbose(VERB_ALGO, "query took %d.%6.6d sec",
-		(int)duration.tv_sec, (int)duration.tv_usec);
+	verbose(VERB_ALGO, "query took %lld.%6.6d sec",
+		(long long)duration.tv_sec, (int)duration.tv_usec);
 	m->s.env->mesh->replies_sent++;
 	timeval_add(&m->s.env->mesh->replies_sum_wait, &duration);
 	timehist_insert(m->s.env->mesh->histogram, &duration);
@@ -1116,7 +1138,7 @@ mesh_stats(struct mesh_area* mesh, const char* str)
 		timeval_divide(&avg, &mesh->replies_sum_wait, 
 			mesh->replies_sent);
 		log_info("average recursion processing time "
-			"%d.%6.6d sec", (int)avg.tv_sec, (int)avg.tv_usec);
+			"%lld.%6.6d sec", (long long)avg.tv_sec, (int)avg.tv_usec);
 		log_info("histogram of recursion processing times");
 		timehist_log(mesh->histogram, "recursions");
 	}

@@ -2,10 +2,8 @@
 
 BEGIN {
     if ($ENV{PERL_CORE}) {
-	chdir 't' if -d 't';
-	@INC = '../lib';
 	require Config; import Config;
-	keys %Config; # Silence warning
+	no warnings 'once';
 	if ($Config{extensions} !~ /\bHash\/Util\b/) {
 	    print "1..0 # Skip: Hash::Util was not built\n";
 	    exit 0;
@@ -157,7 +155,7 @@ is( $hash{locked}, 42,  'unlock_value' );
     my %hash = (foo => 42, bar => undef);
     eval { lock_keys(%hash, qw(foo baz)); };
     is( $@, sprintf("Hash has key 'bar' which is not in the new key ".
-                    "set at %s line %d\n", __FILE__, __LINE__ - 2),
+                    "set at %s line %d.\n", __FILE__, __LINE__ - 2),
                     'carp test' );
 }
 

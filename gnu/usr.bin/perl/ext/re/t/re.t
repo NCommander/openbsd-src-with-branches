@@ -1,13 +1,16 @@
 #!./perl
 
 BEGIN {
-	chdir 't' if -d 't';
-	@INC = '../lib';
+	require Config;
+	if (($Config::Config{'extensions'} !~ /\bre\b/) ){
+        	print "1..0 # Skip -- Perl configured without re module\n";
+		exit 0;
+	}
 }
 
 use strict;
 
-use Test::More tests => 13;
+use Test::More tests => 15;
 require_ok( 're' );
 
 # setcolor
@@ -26,8 +29,8 @@ my $warn;
 local $SIG{__WARN__} = sub {
 	$warn = shift;
 };
-eval { re::bits(1) };
-like( $warn, qr/Useless use/, 'bits() should warn with no args' );
+#eval { re::bits(1) };
+#like( $warn, qr/Useless use/, 'bits() should warn with no args' );
 
 delete $ENV{PERL_RE_COLORS};
 re::bits(0, 'debug');
@@ -53,6 +56,17 @@ re->unimport('taint');
 ok( !( $^H & 0x00100000 ), 'unimport should clear bits in $^H when requested' );
 re->unimport('eval');
 ok( !( $^H & 0x00200000 ), '... and again' );
+my $reg=qr/(foo|bar|baz|blah)/;
+close STDERR;
+eval"use re Debug=>'ALL'";
+my $ok='foo'=~/$reg/;
+eval"no re Debug=>'ALL'";
+ok( $ok, 'No segv!' );
+
+my $message = "Don't tread on me";
+$_ = $message;
+re->import("/aa");
+is($_, $message, "re doesn't clobber \$_");
 
 package Term::Cap;
 
@@ -62,4 +76,13 @@ sub Tgetent {
 
 sub Tputs {
 	return $_[1];
+}
+
+package main;
+
+{
+  my $w;
+  local $SIG{__WARN__} = sub { warn shift; ++$w };
+  re->import();
+  is $w, undef, 'no warning for "use re;" (which is not useless)';
 }

@@ -8,7 +8,6 @@
 #ifndef LDNS_DNSSEC_ZONE_H
 #define LDNS_DNSSEC_ZONE_H
  
-#include <ldns/ldns.h>
 #include <ldns/rbtree.h>
 #include <ldns/host2str.h>
 
@@ -94,6 +93,13 @@ struct ldns_struct_dnssec_zone {
 	ldns_dnssec_name *soa;
 	/** tree of ldns_dnssec_names */
 	ldns_rbtree_t *names;
+	/** tree of ldns_dnssec_names by nsec3 hashes (when applicible) */
+	ldns_rbtree_t *hashed_names;
+	/** points to the first added NSEC3 rr whose parameters will be 
+	 *  assumed for all subsequent NSEC3 rr's and which will be used
+	 *  to calculate hashed names
+	 */
+	ldns_rr *_nsec3params;
 };
 typedef struct ldns_struct_dnssec_zone ldns_dnssec_zone;
 
@@ -101,7 +107,7 @@ typedef struct ldns_struct_dnssec_zone ldns_dnssec_zone;
  * Creates a new entry for 1 pointer to an rr and 1 pointer to the next rrs
  * \return the allocated data
  */
-ldns_dnssec_rrs *ldns_dnssec_rrs_new();
+ldns_dnssec_rrs *ldns_dnssec_rrs_new(void);
 
 /**
  * Frees the list of rrs, but *not* the individual ldns_rr records
@@ -120,7 +126,8 @@ void ldns_dnssec_rrs_free(ldns_dnssec_rrs *rrs);
 void ldns_dnssec_rrs_deep_free(ldns_dnssec_rrs *rrs);
 
 /**
- * Adds an RR to the list of RRs. The list will remain ordered
+ * Adds an RR to the list of RRs. The list will remain ordered.
+ * If an equal RR already exists, this RR will not be added.
  *
  * \param[in] rrs the list to add to
  * \param[in] rr the RR to add
@@ -150,7 +157,7 @@ void ldns_dnssec_rrs_print_fmt(FILE *out,
  * Creates a new list (entry) of RRsets
  * \return the newly allocated structure
  */
-ldns_dnssec_rrsets *ldns_dnssec_rrsets_new();
+ldns_dnssec_rrsets *ldns_dnssec_rrsets_new(void);
 
 /**
  * Frees the list of rrsets and their rrs, but *not* the ldns_rr
@@ -225,7 +232,7 @@ void ldns_dnssec_rrsets_print_fmt(FILE *out,
  * Create a new data structure for a dnssec name
  * \return the allocated structure
  */
-ldns_dnssec_name *ldns_dnssec_name_new();
+ldns_dnssec_name *ldns_dnssec_name_new(void);
 
 /**
  * Create a new data structure for a dnssec name for the given RR
@@ -357,7 +364,34 @@ void ldns_dnssec_name_print_fmt(FILE *out,
  * Creates a new dnssec_zone structure
  * \return the allocated structure
  */
-ldns_dnssec_zone *ldns_dnssec_zone_new();
+ldns_dnssec_zone *ldns_dnssec_zone_new(void);
+
+/**
+ * Create a new dnssec zone from a file.
+ * \param[out] z the new zone
+ * \param[in] *fp the filepointer to use
+ * \param[in] *origin the zones' origin
+ * \param[in] c default class to use (IN)
+ * \param[in] ttl default ttl to use
+ *
+ * \return ldns_status mesg with an error or LDNS_STATUS_OK
+ */
+ldns_status ldns_dnssec_zone_new_frm_fp(ldns_dnssec_zone** z, FILE* fp,
+		ldns_rdf* origin, uint32_t ttl, ldns_rr_class c);
+
+/**
+ * Create a new dnssec zone from a file, keep track of the line numbering
+ * \param[out] z the new zone
+ * \param[in] *fp the filepointer to use
+ * \param[in] *origin the zones' origin
+ * \param[in] ttl default ttl to use
+ * \param[in] c default class to use (IN)
+ * \param[out] line_nr used for error msg, to get to the line number
+ *
+ * \return ldns_status mesg with an error or LDNS_STATUS_OK
+ */
+ldns_status ldns_dnssec_zone_new_frm_fp_l(ldns_dnssec_zone** z, FILE* fp,
+		ldns_rdf* origin, uint32_t ttl, ldns_rr_class c, int* line_nr);
 
 /**
  * Frees the given zone structure, and its rbtree of dnssec_names
@@ -432,6 +466,15 @@ void ldns_dnssec_zone_print_fmt(FILE *out,
  * return LDNS_STATUS_OK on success.
  */
 ldns_status ldns_dnssec_zone_add_empty_nonterminals(ldns_dnssec_zone *zone);
+
+/**
+ * If a NSEC3PARAM is available in the apex, walks the zone and returns true
+ * on the first optout nsec3.
+ *
+ * \param[in] zone the zone to check for nsec3 optout records
+ * return true when the zone has at least one nsec3 optout record.
+ */
+bool ldns_dnssec_zone_is_nsec3_optout(ldns_dnssec_zone* zone);
 
 #ifdef __cplusplus
 }

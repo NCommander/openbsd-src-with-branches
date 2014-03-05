@@ -60,6 +60,7 @@ struct mesh_state;
 struct val_anchors;
 struct val_neg_cache;
 struct iter_forwards;
+struct iter_hints;
 
 /** Maximum number of modules in operation */
 #define MAX_MODULE 5
@@ -185,7 +186,7 @@ struct module_env {
 	/** random table to generate random numbers */
 	struct ub_randstate* rnd;
 	/** time in seconds, converted to integer */
-	uint32_t* now;
+	time_t* now;
 	/** time in microseconds. Relatively recent. */
 	struct timeval* now_tv;
 	/** is validation required for messages, controls client-facing
@@ -204,6 +205,14 @@ struct module_env {
 	/** Mapping of forwarding zones to targets.
 	 * iterator forwarder information. per-thread, created by worker */
 	struct iter_forwards* fwds;
+	/** 
+	 * iterator forwarder information. per-thread, created by worker.
+	 * The hints -- these aren't stored in the cache because they don't 
+	 * expire. The hints are always used to "prime" the cache. Note 
+	 * that both root hints and stub zone "hints" are stored in this 
+	 * data structure. 
+	 */
+	struct iter_hints* hints;
 	/** module specific data. indexed by module id. */
 	void* modinfo[MAX_MODULE];
 };
@@ -300,7 +309,7 @@ struct module_qstate {
 	/** mesh related information for this query */
 	struct mesh_state* mesh_info;
 	/** how many seconds before expiry is this prefetched (0 if not) */
-	uint32_t prefetch_leeway;
+	time_t prefetch_leeway;
 };
 
 /** 

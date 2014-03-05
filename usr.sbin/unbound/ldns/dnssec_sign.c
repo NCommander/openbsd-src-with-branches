@@ -260,6 +260,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 				ldns_buffer_free(sign_buf);
 				/* ERROR */
 				ldns_rr_list_deep_free(rrset_clone);
+				ldns_rr_free(current_sig);
+				ldns_rr_list_deep_free(signatures);
 				return NULL;
 			}
 
@@ -268,6 +270,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			    != LDNS_STATUS_OK) {
 				ldns_buffer_free(sign_buf);
 				ldns_rr_list_deep_free(rrset_clone);
+				ldns_rr_free(current_sig);
+				ldns_rr_list_deep_free(signatures);
 				return NULL;
 			}
 
@@ -276,6 +280,8 @@ ldns_sign_public(ldns_rr_list *rrset, ldns_key_list *keys)
 			if (!b64rdf) {
 				/* signing went wrong */
 				ldns_rr_list_deep_free(rrset_clone);
+				ldns_rr_free(current_sig);
+				ldns_rr_list_deep_free(signatures);
 				return NULL;
 			}
 
@@ -481,10 +487,7 @@ ldns_sign_public_rsasha1(ldns_buffer *to_sign, RSA *key)
 				   (unsigned char*)ldns_buffer_begin(b64sig),
 				   &siglen, key);
 	if (result != 1) {
-		return NULL;
-	}
-
-	if (result != 1) {
+		ldns_buffer_free(b64sig);
 		return NULL;
 	}
 
@@ -563,7 +566,7 @@ ldns_dnssec_addresses_on_glue_list(
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
  * function. But watch out! Names that are partially occluded (like glue with
  * the same name as the delegation) will not be marked and should specifically 
- * be taken into account seperately.
+ * be taken into account separately.
  *
  * When glue_list is given (not NULL), in the process of marking the names, all
  * glue resource records will be pushed to that list, even glue at delegation names.
@@ -656,7 +659,7 @@ ldns_dnssec_zone_mark_and_get_glue(ldns_dnssec_zone *zone,
  * when walking the tree with the ldns_dnssec_name_node_next_nonglue()
  * function. But watch out! Names that are partially occluded (like glue with
  * the same name as the delegation) will not be marked and should specifically 
- * be taken into account seperately.
+ * be taken into account separately.
  *
  * \param[in] zone the zone in which to mark the names
  * \return LDNS_STATUS_OK on success, an error code otherwise
@@ -768,10 +771,13 @@ ldns_dnssec_zone_create_nsecs(ldns_dnssec_zone *zone,
 }
 
 #ifdef HAVE_SSL
-/* in dnssec_zone.c */
-extern int ldns_dname_compare_v(const void *a, const void *b);
+static void
+ldns_hashed_names_node_free(ldns_rbnode_t *node, void *arg) {
+	(void) arg;
+	LDNS_FREE(node);
+}
 
-ldns_status
+static ldns_status
 ldns_dnssec_zone_create_nsec3s_mkmap(ldns_dnssec_zone *zone,
 		ldns_rr_list *new_rrs,
 		uint8_t algorithm,
@@ -810,21 +816,24 @@ ldns_dnssec_zone_create_nsec3s_mkmap(ldns_dnssec_zone *zone,
 		nsec_ttl = LDNS_DEFAULT_TTL;
 	}
 
-	if (map) {
-		if ((*map = ldns_rbtree_create(ldns_dname_compare_v)) 
-				== NULL) {
-			map = NULL;
-		};
+	if (zone->hashed_names) {
+		ldns_traverse_postorder(zone->hashed_names,
+				ldns_hashed_names_node_free, NULL);
+		LDNS_FREE(zone->hashed_names);
 	}
-	nsec3_list = ldns_rr_list_new();
+	zone->hashed_names = ldns_rbtree_create(ldns_dname_compare_v);
+	if (zone->hashed_names && map) {
+		*map = zone->hashed_names;
+	}
 
 	first_name_node = ldns_dnssec_name_node_next_nonglue(
 					  ldns_rbtree_first(zone->names));
 
 	current_name_node = first_name_node;
 
-	while (current_name_node &&
-	       current_name_node != LDNS_RBTREE_NULL) {
+	while (current_name_node && current_name_node != LDNS_RBTREE_NULL &&
+			result == LDNS_STATUS_OK) {
+
 		current_name = (ldns_dnssec_name *) current_name_node->data;
 		nsec_rr = ldns_dnssec_create_nsec3(current_name,
 		                                   NULL,
@@ -842,17 +851,24 @@ ldns_dnssec_zone_create_nsec3s_mkmap(ldns_dnssec_zone *zone,
 		ldns_rr_set_ttl(nsec_rr, nsec_ttl);
 		result = ldns_dnssec_name_add_rr(current_name, nsec_rr);
 		ldns_rr_list_push_rr(new_rrs, nsec_rr);
-		ldns_rr_list_push_rr(nsec3_list, nsec_rr);
-		if (map) {
+		if (ldns_rr_owner(nsec_rr)) {
 			hashmap_node = LDNS_MALLOC(ldns_rbnode_t);
-			if (hashmap_node && ldns_rr_owner(nsec_rr)) {
-				hashmap_node->key = ldns_dname_label(
-					ldns_rr_owner(nsec_rr), 0);
-				if (hashmap_node->key) {
-					hashmap_node->data = current_name->name;
-					(void) ldns_rbtree_insert(
-							*map, hashmap_node);
-				}
+			if (hashmap_node == NULL) {
+				return LDNS_STATUS_MEM_ERR;
+			}
+			current_name->hashed_name = 
+				ldns_dname_label(ldns_rr_owner(nsec_rr), 0);
+
+			if (current_name->hashed_name == NULL) {
+				LDNS_FREE(hashmap_node);
+				return LDNS_STATUS_MEM_ERR;
+			}
+			hashmap_node->key  = current_name->hashed_name;
+			hashmap_node->data = current_name;
+
+			if (! ldns_rbtree_insert(zone->hashed_names
+						, hashmap_node)) {
+				LDNS_FREE(hashmap_node);
 			}
 		}
 		current_name_node = ldns_dnssec_name_node_next_nonglue(
@@ -862,13 +878,25 @@ ldns_dnssec_zone_create_nsec3s_mkmap(ldns_dnssec_zone *zone,
 		return result;
 	}
 
-	ldns_rr_list_sort_nsec3(nsec3_list);
-	result = ldns_dnssec_chain_nsec3_list(nsec3_list);
-	if (result != LDNS_STATUS_OK) {
-		return result;
+	/* Make sorted list of nsec3s (via zone->hashed_names)
+	 */
+	nsec3_list = ldns_rr_list_new();
+	if (nsec3_list == NULL) {
+		return LDNS_STATUS_MEM_ERR;
 	}
-
+	for ( hashmap_node  = ldns_rbtree_first(zone->hashed_names)
+	    ; hashmap_node != LDNS_RBTREE_NULL
+	    ; hashmap_node  = ldns_rbtree_next(hashmap_node)
+	    ) {
+		current_name = (ldns_dnssec_name *) hashmap_node->data;
+		nsec_rr = ((ldns_dnssec_name *) hashmap_node->data)->nsec;
+		if (nsec_rr) {
+			ldns_rr_list_push_rr(nsec3_list, nsec_rr);
+		}
+	}
+	result = ldns_dnssec_chain_nsec3_list(nsec3_list);
 	ldns_rr_list_free(nsec3_list);
+
 	return result;
 }
 
@@ -888,10 +916,11 @@ ldns_dnssec_zone_create_nsec3s(ldns_dnssec_zone *zone,
 #endif /* HAVE_SSL */
 
 ldns_dnssec_rrs *
-ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
-						ldns_key_list *key_list,
-						int (*func)(ldns_rr *, void *),
-						void *arg)
+ldns_dnssec_remove_signatures( ldns_dnssec_rrs *signatures
+			     , ATTR_UNUSED(ldns_key_list *key_list)
+			     , int (*func)(ldns_rr *, void *)
+			     , void *arg
+			     )
 {
 	ldns_dnssec_rrs *base_rrs = signatures;
 	ldns_dnssec_rrs *cur_rr = base_rrs;
@@ -900,8 +929,6 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 
 	uint16_t keytag;
 	size_t i;
-
-	key_list = key_list;
 
 	if (!cur_rr) {
 		switch(func(NULL, arg)) {
@@ -913,7 +940,9 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 		ldns_key_list_set_use(key_list, false);
 		break;
 		default:
+#ifdef STDERR_MSGS
 			fprintf(stderr, "[XX] unknown return value from callback\n");
+#endif
 			break;
 		}
 		return NULL;
@@ -965,7 +994,9 @@ ldns_dnssec_remove_signatures(ldns_dnssec_rrs *signatures,
 			LDNS_FREE(cur_rr);
 			break;
 		default:
+#ifdef STDERR_MSGS
 			fprintf(stderr, "[XX] unknown return value from callback\n");
+#endif
 			break;
 		}
 		cur_rr = next_rr;
@@ -1024,12 +1055,13 @@ ldns_key_list_filter_for_non_dnskey(ldns_key_list *key_list)
 }
 
 ldns_status
-ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
-                               ldns_rr_list *new_rrs,
-                               ldns_key_list *key_list,
-                               int (*func)(ldns_rr *, void*),
-                               void *arg,
-			       int flags)
+ldns_dnssec_zone_create_rrsigs_flg( ldns_dnssec_zone *zone
+				  , ldns_rr_list *new_rrs
+				  , ldns_key_list *key_list
+				  , int (*func)(ldns_rr *, void*)
+				  , void *arg
+				  , int flags
+				  )
 {
 	ldns_status result = LDNS_STATUS_OK;
 
@@ -1047,12 +1079,11 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 	int on_delegation_point = 0; /* handle partially occluded names */
 
 	ldns_rr_list *pubkey_list = ldns_rr_list_new();
-	zone = zone;
-	new_rrs = new_rrs;
-	key_list = key_list;
 	for (i = 0; i<ldns_key_list_key_count(key_list); i++) {
-		ldns_rr_list_push_rr(pubkey_list,
-						 ldns_key2rr(ldns_key_list_key(key_list, i)));
+		ldns_rr_list_push_rr( pubkey_list
+				    , ldns_key2rr(ldns_key_list_key(
+							key_list, i))
+				    );
 	}
 	/* TODO: callback to see is list should be signed */
 	/* TODO: remove 'old' signatures from signature list */
@@ -1113,9 +1144,11 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 							cur_rrset->signatures = ldns_dnssec_rrs_new();
 							cur_rrset->signatures->rr =
 								ldns_rr_list_rr(siglist, i);
+						}
+						if (new_rrs) {
 							ldns_rr_list_push_rr(new_rrs,
-											 ldns_rr_list_rr(siglist,
-														  i));
+												 ldns_rr_list_rr(siglist,
+															  i));
 						}
 					}
 					ldns_rr_list_free(siglist);
@@ -1147,8 +1180,10 @@ ldns_dnssec_zone_create_rrsigs_flg(ldns_dnssec_zone *zone,
 					cur_name->nsec_signatures = ldns_dnssec_rrs_new();
 					cur_name->nsec_signatures->rr =
 						ldns_rr_list_rr(siglist, i);
+				}
+				if (new_rrs) {
 					ldns_rr_list_push_rr(new_rrs,
-									 ldns_rr_list_rr(siglist, i));
+								 ldns_rr_list_rr(siglist, i));
 				}
 			}
 
@@ -1279,8 +1314,9 @@ ldns_dnssec_zone_sign_nsec3_flg_mkmap(ldns_dnssec_zone *zone,
 									 salt_length,
 									 salt);
 				/* always set bit 7 of the flags to zero, according to
-				 * rfc5155 section 11 */
-				ldns_set_bit(ldns_rdf_data(ldns_rr_rdf(nsec3param, 1)), 7, 0);
+				 * rfc5155 section 11. The bits are counted from right to left,
+				 * so bit 7 in rfc5155 is bit 0 in ldns */
+				ldns_set_bit(ldns_rdf_data(ldns_rr_rdf(nsec3param, 1)), 0, 0);
 				result = ldns_dnssec_zone_add_rr(zone, nsec3param);
 				if (result != LDNS_STATUS_OK) {
 					return result;

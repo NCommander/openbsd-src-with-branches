@@ -129,11 +129,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 {
 	ldns_resolver *res;
 	ldns_pkt *p, *local_p;
-	ldns_rr_list *new_nss_a;
-	ldns_rr_list *new_nss_aaaa;
 	ldns_rr_list *new_nss;
 	ldns_rr_list *ns_addr;
-	uint16_t loop_count;
 	ldns_rdf *pop;
 	ldns_rdf **labels = NULL;
 	ldns_status status, st;
@@ -141,8 +138,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	size_t j;
 	size_t k;
 	size_t l;
-	uint8_t labels_count;
-	ldns_pkt_type pt;
+	uint8_t labels_count = 0;
 
 	/* dnssec */
 	ldns_rr_list *key_list;
@@ -160,6 +156,9 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 	/* empty non-terminal check */
 	bool ent;
+	ldns_rr  *nsecrr;      /* The nsec that proofs the non-terminal */
+	ldns_rdf *hashed_name; /* The query hashed with nsec3 params */
+	ldns_rdf *label0;      /* The first label of an nsec3 owner name */
 
 	/* glue handling */
 	ldns_rr_list *new_ns_addr;
@@ -173,14 +172,10 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 
 	descriptor = ldns_rr_descript(t);
 
-	loop_count = 0;
-	new_nss_a = NULL;
-	new_nss_aaaa = NULL;
 	new_nss = NULL;
 	ns_addr = NULL;
 	key_list = NULL;
 	ds_list = NULL;
-	pt = LDNS_PACKET_UNKNOWN;
 
 	p = NULL;
 	local_p = NULL;
@@ -228,6 +223,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_resolver_usevc(local_res));
 	ldns_resolver_set_random(res,
 			ldns_resolver_random(local_res));
+	ldns_resolver_set_source(res,
+			ldns_resolver_source(local_res));
 	ldns_resolver_set_recursive(local_res, true);
 
 	ldns_resolver_set_recursive(res, false);
@@ -239,7 +236,8 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 	if (status != LDNS_STATUS_OK) {
 		printf("ERRRRR: %s\n", ldns_get_errorstr_by_id(status));
 		ldns_rr_list_print(stdout, global_dns_root);
-		return status;
+		result = status;
+		goto done;
 	}
 	labels_count = ldns_dname_label_count(name);
 	if (start_name) {
@@ -387,8 +385,27 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 				/* there might be an empty non-terminal, in which case we need to continue */
 				ent = false;
 				for (j = 0; j < ldns_rr_list_rr_count(nsec_rrs); j++) {
-					if (ldns_dname_is_subdomain(ldns_rr_rdf(ldns_rr_list_rr(nsec_rrs, j), 0), labels[i])) {
+					nsecrr = ldns_rr_list_rr(nsec_rrs, j);
+					/* For NSEC when the next name is a subdomain of the question */
+					if (ldns_rr_get_type(nsecrr) == LDNS_RR_TYPE_NSEC &&
+							ldns_dname_is_subdomain(ldns_rr_rdf(nsecrr, 0), labels[i])) {
 						ent = true;
+
+					/* For NSEC3, the hash matches the name and the type bitmap is empty*/
+					} else if (ldns_rr_get_type(nsecrr) == LDNS_RR_TYPE_NSEC3) {
+						hashed_name = ldns_nsec3_hash_name_frm_nsec3(nsecrr, labels[i]);
+						label0 = ldns_dname_label(ldns_rr_owner(nsecrr), 0);
+						if (hashed_name && label0 &&
+								ldns_dname_compare(hashed_name, label0) == 0 &&
+								ldns_nsec3_bitmap(nsecrr) == NULL) {
+							ent = true;
+						}
+						if (label0) {
+							LDNS_FREE(label0);
+						}
+						if (hashed_name) {
+							LDNS_FREE(hashed_name);
+						}
 					}
 				}
 				if (!ent) {
@@ -400,7 +417,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					printf(";; There is an empty non-terminal here, continue\n");
 					continue;
 				}
-				goto done;
 			}
 
 			if (ldns_resolver_nameserver_count(res) == 0) {
@@ -419,7 +435,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		   keys used to sign these is trusted, add the keys to
 		   the trusted list */
 		p = get_dnssec_pkt(res, labels[i], LDNS_RR_TYPE_DNSKEY);
-		pt = get_key(p, labels[i], &key_list, &key_sig_list);
+		(void) get_key(p, labels[i], &key_list, &key_sig_list);
 		if (key_sig_list) {
 			if (key_list) {
 				current_correct_keys = ldns_rr_list_new();
@@ -490,14 +506,14 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		/* check the DS records for the next child domain */
 		if (i > 1) {
 			p = get_dnssec_pkt(res, labels[i-1], LDNS_RR_TYPE_DS);
-			pt = get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
+			(void) get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
 			if (!ds_list) {
 				ldns_pkt_free(p);
 				if (ds_sig_list) {
 					ldns_rr_list_deep_free(ds_sig_list);
 				}
 				p = get_dnssec_pkt(res, name, LDNS_RR_TYPE_DNSKEY);
-				pt = get_ds(p, NULL, &ds_list, &ds_sig_list); 
+				(void) get_ds(p, NULL, &ds_list, &ds_sig_list); 
 			}
 			if (ds_sig_list) {
 				if (ds_list) {
@@ -560,7 +576,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 					ldns_pkt_free(p);
 					ldns_rr_list_deep_free(ds_sig_list);
 					p = get_dnssec_pkt(res, labels[i-1], LDNS_RR_TYPE_DS);
-					pt = get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
+					(void) get_ds(p, labels[i-1], &ds_list, &ds_sig_list);
 					
 					status = ldns_verify_denial(p, labels[i-1], LDNS_RR_TYPE_DS, &nsec_rrs, &nsec_rr_sigs);
 
@@ -616,7 +632,7 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 		} else {
 			/* if this is the last label, just verify the data and stop */
 			p = get_dnssec_pkt(res, labels[i], t);
-			pt = get_dnssec_rr(p, labels[i], t, &dataset, &key_sig_list);
+			(void) get_dnssec_rr(p, labels[i], t, &dataset, &key_sig_list);
 			if (dataset && ldns_rr_list_rr_count(dataset) > 0) {
 				if (key_sig_list && ldns_rr_list_rr_count(key_sig_list) > 0) {
 
@@ -721,8 +737,6 @@ do_secure_trace(ldns_resolver *local_res, ldns_rdf *name, ldns_rr_type t,
 			ldns_pkt_free(p);
 		}
 
-		new_nss_aaaa = NULL;
-		new_nss_a = NULL;
 		new_nss = NULL;
 		ns_addr = NULL;
 		ldns_rr_list_deep_free(key_list);

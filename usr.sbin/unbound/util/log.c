@@ -73,7 +73,7 @@ static const char* ident="unbound";
 static int logging_to_syslog = 0;
 #endif /* HAVE_SYSLOG_H */
 /** time to print in log, if NULL, use time(2) */
-static uint32_t* log_now = NULL;
+static time_t* log_now = NULL;
 /** print time in UTC or in secondsfrom1970 */
 static int log_time_asc = 0;
 
@@ -151,7 +151,7 @@ void log_ident_set(const char* id)
 	ident = id;
 }
 
-void log_set_time(uint32_t* t)
+void log_set_time(time_t* t)
 {
 	log_now = t;
 }
@@ -171,6 +171,8 @@ log_vmsg(int pri, const char* type,
 #if defined(HAVE_STRFTIME) && defined(HAVE_LOCALTIME_R) 
 	char tmbuf[32];
 	struct tm tm;
+#elif defined(UB_ON_WINDOWS)
+	char tmbuf[128], dtbuf[128];
 #endif
 	(void)pri;
 	vsnprintf(message, sizeof(message), format, args);
@@ -218,8 +220,15 @@ log_vmsg(int pri, const char* type,
 		fprintf(logfile, "%s %s[%d:%x] %s: %s\n", tmbuf, 
 			ident, (int)getpid(), tid?*tid:0, type, message);
 	} else
+#elif defined(UB_ON_WINDOWS)
+	if(log_time_asc && GetTimeFormat(LOCALE_USER_DEFAULT, 0, NULL, NULL,
+		tmbuf, sizeof(tmbuf)) && GetDateFormat(LOCALE_USER_DEFAULT, 0,
+		NULL, NULL, dtbuf, sizeof(dtbuf))) {
+		fprintf(logfile, "%s %s %s[%d:%x] %s: %s\n", dtbuf, tmbuf, 
+			ident, (int)getpid(), tid?*tid:0, type, message);
+	} else
 #endif
-	fprintf(logfile, "[%u] %s[%d:%x] %s: %s\n", (unsigned)now, 
+	fprintf(logfile, "[%lld] %s[%d:%x] %s: %s\n", (long long)now, 
 		ident, (int)getpid(), tid?*tid:0, type, message);
 #ifdef UB_ON_WINDOWS
 	/* line buffering does not work on windows */

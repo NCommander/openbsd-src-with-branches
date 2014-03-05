@@ -111,7 +111,7 @@ void sqlite3BeginTrigger(
     iDb = 1;
     pName = pName1;
   }else{
-    /* Figure out the db that the the trigger will be created in */
+    /* Figure out the db that the trigger will be created in */
     iDb = sqlite3TwoPartName(pParse, pName1, pName2, &pName);
     if( iDb<0 ){
       goto trigger_cleanup;
@@ -729,6 +729,15 @@ static int codeTriggerProgram(
     */
     pParse->eOrconf = (orconf==OE_Default)?pStep->orconf:(u8)orconf;
 
+    /* Clear the cookieGoto flag. When coding triggers, the cookieGoto 
+    ** variable is used as a flag to indicate to sqlite3ExprCodeConstants()
+    ** that it is not safe to refactor constants (this happens after the
+    ** start of the first loop in the SQL statement is coded - at that 
+    ** point code may be conditionally executed, so it is no longer safe to 
+    ** initialize constant register values).  */
+    assert( pParse->cookieGoto==0 || pParse->cookieGoto==-1 );
+    pParse->cookieGoto = 0;
+
     switch( pStep->op ){
       case TK_UPDATE: {
         sqlite3Update(pParse, 
@@ -993,7 +1002,7 @@ void sqlite3CodeRowTriggerDirect(
 /*
 ** This is called to code the required FOR EACH ROW triggers for an operation
 ** on table pTab. The operation to code triggers for (INSERT, UPDATE or DELETE)
-** is given by the op paramater. The tr_tm parameter determines whether the
+** is given by the op parameter. The tr_tm parameter determines whether the
 ** BEFORE or AFTER triggers are coded. If the operation is an UPDATE, then
 ** parameter pChanges is passed the list of columns being modified.
 **

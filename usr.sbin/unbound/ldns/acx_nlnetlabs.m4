@@ -2,7 +2,14 @@
 # Copyright 2009, Wouter Wijngaards, NLnet Labs.   
 # BSD licensed.
 #
-# Version 19
+# Version 26
+# 2013-09-19 FLTO help text improved.
+# 2013-07-18 Enable ACX_CHECK_COMPILER_FLAG to test for -Wstrict-prototypes
+# 2013-06-25 FLTO has --disable-flto option.
+# 2013-05-03 Update W32_SLEEP for newer mingw that links but not defines it.
+# 2013-03-22 Fix ACX_RSRC_VERSION for long version numbers.
+# 2012-02-09 Fix AHX_MEMCMP_BROKEN with undef in compat/memcmp.h.
+# 2012-01-20 Fix COMPILER_FLAGS_UNBOUND for gcc 4.6.2 assigned-not-used-warns.
 # 2011-12-05 Fix getaddrinfowithincludes on windows with fedora16 mingw32-gcc.
 # 	     Fix ACX_MALLOC for redefined malloc error.
 # 	     Fix GETADDRINFO_WITH_INCLUDES to add -lws2_32
@@ -15,7 +22,7 @@
 # 2010-07-02 Add check for ss_family (for minix).
 # 2010-04-26 Fix to use CPPFLAGS for CHECK_COMPILER_FLAGS.
 # 2010-03-01 Fix RPATH using CONFIG_COMMANDS to run at the very end.
-# 2010-02-18 WITH_SSL outputs the LIBSSL_LDFLAGS, LIBS, CPPFLAGS seperate, -ldl
+# 2010-02-18 WITH_SSL outputs the LIBSSL_LDFLAGS, LIBS, CPPFLAGS separate, -ldl
 # 2010-02-01 added ACX_CHECK_MEMCMP_SIGNED, AHX_MEMCMP_BROKEN
 # 2010-01-20 added AHX_COONFIG_STRLCAT
 # 2009-07-14 U_CHAR detection improved for windows crosscompile.
@@ -99,7 +106,7 @@ dnl Calculate comma separated windows-resource numbers from package version.
 dnl Picks the first three(,0) or four numbers out of the name.
 dnl $1: variable for the result
 AC_DEFUN([ACX_RSRC_VERSION], 
-[$1=[`echo $PACKAGE_VERSION | sed -e 's/^[^0-9]*\([0-9]\)[^0-9]*\([0-9]\)[^0-9]*\([0-9]\)[^0-9]*\([0-9]\).*$/\1,\2,\3,\4/' -e 's/^[^0-9]*\([0-9]\)[^0-9]*\([0-9]\)[^0-9]*\([0-9]\)[^0-9]*$/\1,\2,\3,0/' `]
+[$1=[`echo $PACKAGE_VERSION | sed -e 's/^[^0-9]*\([0-9][0-9]*\)[^0-9][^0-9]*\([0-9][0-9]*\)[^0-9][^0-9]*\([0-9][0-9]*\)[^0-9][^0-9]*\([0-9][0-9]*\).*$/\1,\2,\3,\4/' -e 's/^[^0-9]*\([0-9][0-9]*\)[^0-9][^0-9]*\([0-9][0-9]*\)[^0-9][^0-9]*\([0-9][0-9]*\)[^0-9]*$/\1,\2,\3,0/' `]
 ])
 
 dnl Routine to help check for compiler flags.
@@ -114,7 +121,7 @@ AC_MSG_CHECKING(whether $CC supports -$1)
 cache=`echo $1 | sed 'y%.=/+-%___p_%'`
 AC_CACHE_VAL(cv_prog_cc_flag_$cache,
 [
-echo 'void f(){}' >conftest.c
+echo 'void f(void){}' >conftest.c
 if test -z "`$CC $CPPFLAGS $CFLAGS -$1 -c conftest.c 2>&1`"; then
 eval "cv_prog_cc_flag_$cache=yes"
 else
@@ -259,6 +266,8 @@ int test() {
 	a = getopt(2, opts, "a");
 	a = isascii(32);
 	str = gai_strerror(0);
+	if(str && t && tv.tv_usec && msg.msg_control)
+		a = 0;
 	return a;
 }
 ], [CFLAGS="$CFLAGS $C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D_XOPEN_SOURCE_EXTENDED=1 -D_ALL_SOURCE"])
@@ -294,6 +303,8 @@ int test() {
 	a = getopt(2, opts, "a");
 	a = isascii(32);
 	str = gai_strerror(0);
+	if(str && t && tv.tv_usec && msg.msg_control)
+		a = 0;
 	return a;
 }
 ], [CFLAGS="$CFLAGS $C99FLAG -D__EXTENSIONS__ -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -D_ALL_SOURCE"])
@@ -360,6 +371,8 @@ int test() {
 	const char* str = NULL;
         t = ctime_r(&time, buf);
 	str = gai_strerror(0);
+	if(t && str)
+		a = 0;
         return a;
 }
 ], [CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200112"])
@@ -386,6 +399,8 @@ int test() {
         srandom(32);
         a = getopt(2, opts, "a");
         a = isascii(32);
+	if(tv.tv_usec)
+		a = 0;
         return a;
 }
 ], [CFLAGS="$CFLAGS -D__EXTENSIONS__"])
@@ -395,19 +410,22 @@ int test() {
 dnl Check if CC supports -flto.
 dnl in a way that supports clang and suncc (that flag does something else,
 dnl but fails to link).  It sets it in CFLAGS if it works.
-AC_DEFUN([ACX_CHECK_FLTO],
-[AC_MSG_CHECKING([if $CC supports -flto])
-BAKCFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS -flto"
-AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])], [
-    if $CC $CFLAGS -o conftest conftest.c 2>&1 | grep "warning: no debug symbols in executable" >/dev/null; then
-	CFLAGS="$BAKCFLAGS"
-	AC_MSG_RESULT(no)
-    else
-	AC_MSG_RESULT(yes)
-    fi
-    rm -f conftest conftest.c conftest.o
-], [CFLAGS="$BAKCFLAGS" ; AC_MSG_RESULT(no)])
+AC_DEFUN([ACX_CHECK_FLTO], [
+    AC_ARG_ENABLE([flto], AS_HELP_STRING([--disable-flto], [Disable link-time optimization (gcc specific option)]))
+    AS_IF([test "x$enable_flto" != "xno"], [
+        AC_MSG_CHECKING([if $CC supports -flto])
+        BAKCFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS -flto"
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])], [
+            if $CC $CFLAGS -o conftest conftest.c 2>&1 | grep "warning: no debug symbols in executable" >/dev/null; then
+                CFLAGS="$BAKCFLAGS"
+                AC_MSG_RESULT(no)
+            else
+                AC_MSG_RESULT(yes)
+            fi
+            rm -f conftest conftest.c conftest.o
+        ], [CFLAGS="$BAKCFLAGS" ; AC_MSG_RESULT(no)])
+    ])
 ])
 
 dnl Check the printf-format attribute (if any)
@@ -1198,7 +1216,7 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result);
 dnl provide w32 compat definition for sleep
 AC_DEFUN([AHX_CONFIG_W32_SLEEP],
 [
-#ifndef HAVE_SLEEP
+#if !defined(HAVE_SLEEP) || defined(HAVE_WINDOWS_H)
 #define sleep(x) Sleep((x)*1000) /* on win32 */
 #endif /* HAVE_SLEEP */
 ])
@@ -1317,9 +1335,7 @@ int main(void)
 dnl define memcmp to its replacement, pass unique id for program as arg
 AC_DEFUN([AHX_MEMCMP_BROKEN], [
 #ifdef MEMCMP_IS_BROKEN
-#  ifdef memcmp
-#  undef memcmp
-#  endif
+#include "compat/memcmp.h"
 #define memcmp memcmp_$1
 int memcmp(const void *x, const void *y, size_t n);
 #endif

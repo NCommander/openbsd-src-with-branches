@@ -23,7 +23,7 @@
 #
 
 # Begin by reading the "sqlite3.h" header file.  Extract the version number
-# from in this file.  The versioon number is needed to generate the header
+# from in this file.  The version number is needed to generate the header
 # comment of the amalgamation.
 #
 if {[lsearch $argv --nostatic]>=0} {
@@ -104,7 +104,6 @@ foreach hdr {
    opcodes.h
    os_common.h
    os.h
-   os_os2.h
    pager.h
    parse.h
    pcache.h
@@ -238,7 +237,6 @@ foreach file {
    mem5.c
    mutex.c
    mutex_noop.c
-   mutex_os2.c
    mutex_unix.c
    mutex_w32.c
    malloc.c
@@ -249,7 +247,6 @@ foreach file {
    hash.c
    opcodes.c
 
-   os_os2.c
    os_unix.c
    os_win.c
 
@@ -314,8 +311,11 @@ foreach file {
    fts3_porter.c
    fts3_tokenizer.c
    fts3_tokenizer1.c
+   fts3_tokenize_vtab.c
    fts3_write.c
    fts3_snippet.c
+   fts3_unicode.c
+   fts3_unicode2.c
 
    rtree.c
    icu.c

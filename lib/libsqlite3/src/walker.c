@@ -113,7 +113,9 @@ int sqlite3WalkSelectFrom(Walker *pWalker, Select *p){
 /*
 ** Call sqlite3WalkExpr() for every expression in Select statement p.
 ** Invoke sqlite3WalkSelect() for subqueries in the FROM clause and
-** on the compound select chain, p->pPrior.
+** on the compound select chain, p->pPrior.  Invoke the xSelectCallback()
+** either before or after the walk of expressions and FROM clause, depending
+** on whether pWalker->bSelectDepthFirst is false or true, respectively.
 **
 ** Return WRC_Continue under normal conditions.  Return WRC_Abort if
 ** there is an abort request.
@@ -125,12 +127,27 @@ int sqlite3WalkSelect(Walker *pWalker, Select *p){
   int rc;
   if( p==0 || pWalker->xSelectCallback==0 ) return WRC_Continue;
   rc = WRC_Continue;
-  while( p  ){
-    rc = pWalker->xSelectCallback(pWalker, p);
-    if( rc ) break;
-    if( sqlite3WalkSelectExpr(pWalker, p) ) return WRC_Abort;
-    if( sqlite3WalkSelectFrom(pWalker, p) ) return WRC_Abort;
+  pWalker->walkerDepth++;
+  while( p ){
+    if( !pWalker->bSelectDepthFirst ){
+       rc = pWalker->xSelectCallback(pWalker, p);
+       if( rc ) break;
+    }
+    if( sqlite3WalkSelectExpr(pWalker, p)
+     || sqlite3WalkSelectFrom(pWalker, p)
+    ){
+      pWalker->walkerDepth--;
+      return WRC_Abort;
+    }
+    if( pWalker->bSelectDepthFirst ){
+      rc = pWalker->xSelectCallback(pWalker, p);
+      /* Depth-first search is currently only used for
+      ** selectAddSubqueryTypeInfo() and that routine always returns
+      ** WRC_Continue (0).  So the following branch is never taken. */
+      if( NEVER(rc) ) break;
+    }
     p = p->pPrior;
   }
+  pWalker->walkerDepth--;
   return rc & WRC_Abort;
 }

@@ -1,4 +1,4 @@
-.TH "unbound.conf" "5" "Feb  2, 2012" "NLnet Labs" "unbound 1.4.16"
+.TH "unbound.conf" "5" "Sep 19, 2013" "NLnet Labs" "unbound 1.4.21"
 .\"
 .\" unbound.conf.5 -- unbound.conf manual
 .\"
@@ -71,12 +71,12 @@ is followed by its containing attributes, or a value.
 .P
 Files can be included using the
 .B include:
-directive. It can appear anywhere, and takes a single filename as an argument.
+directive. It can appear anywhere, it accepts a single file name as argument.
 Processing continues as if the text from the included file was copied into
 the config file at that point.  If also using chroot, using full path names
 for the included files works, relative pathnames for the included names work
 if the directory where the daemon is started equals its chroot/working 
-directory.
+directory.  Wildcards can be used to include multiple files, see \fIglob\fR(7).
 .SS "Server Options"
 These options are part of the
 .B server:
@@ -176,12 +176,17 @@ to 0, or if do_tcp is "no", no TCP queries from clients are accepted.
 Number of bytes size to advertise as the EDNS reassembly buffer size.
 This is the value put into datagrams over UDP towards peers.  The actual
 buffer size is determined by msg\-buffer\-size (both for TCP and UDP).  Do
-not set lower than that value.  Default is 4096 which is RFC recommended.
+not set higher than that value.  Default is 4096 which is RFC recommended.
 If you have fragmentation reassembly problems, usually seen as timeouts,
 then a value of 1480 can fix it.  Setting to 512 bypasses even the most
 stringent path MTU problems, but is seen as extreme, since the amount
 of TCP fallback generated is excessive (probably also for this resolver,
 consider tuning the outgoing tcp number).
+.TP
+.B max\-udp\-size: \fI<number>
+Maximum UDP response size (not applied to TCP response).  65536 disables the
+udp response size maximum, and uses the choice from the client, always.
+Suggested values are 512 to 4096. Default is 4096. 
 .TP
 .B msg\-buffer\-size: \fI<number>
 Number of bytes size of the message buffers. Default is 65552 bytes, enough
@@ -492,7 +497,7 @@ unsigned to badly signed often. If turned off you run the risk of a
 downgrade attack that disables security for a zone. Default is on.
 .TP
 .B harden\-below\-nxdomain: \fI<yes or no>
-From draft-vixie-dnsext-resimprove, returns nxdomain to queries for a name
+From draft\-vixie\-dnsext\-resimprove, returns nxdomain to queries for a name
 below another name that is already known to be nxdomain.  DNSSEC mandates
 noerror for empty nonterminals, hence this is possible.  Very old software
 might return nxdomain for empty nonterminals (that usually happen for reverse
@@ -569,6 +574,18 @@ not expire from the cache.
 If yes, fetch the DNSKEYs earlier in the validation process, when a DS
 record is encountered.  This lowers the latency of requests.  It does use
 a little more CPU.  Also if the cache is set to 0, it is no use. Default is no.
+.TP
+.B rrset-roundrobin: \fI<yes or no>
+If yes, Unbound rotates RRSet order in response (the random number is taken
+from the query ID, for speed and thread safety).  Default is no.
+.TP
+.B minimal-responses: \fI<yes or no>
+If yes, Unbound doesn't insert authority/additional sections into response
+messages when those sections are not required.  This reduces response
+size significantly, and may avoid TCP fallback for some responses.
+This may cause a slight speedup.  The default is no, because the DNS
+protocol RFCs mandate these sections, and the additional content could
+be of use and save roundtrips for clients.
 .TP
 .B module\-config: \fI<"module names">
 Module configuration, a list of module names separated by spaces, surround
@@ -979,6 +996,12 @@ This option is by default off.  If enabled it performs NS set priming,
 which is similar to root hints, where it starts using the list of nameservers 
 currently published by the zone.  Thus, if the hint list is slightly outdated,
 the resolver picks up a correct list online.
+.TP
+.B stub\-first: \fI<yes or no>
+If enabled, a query is attempted without the stub clause if it fails.
+The data could not be retrieved and would have caused SERVFAIL because
+the servers are unreachable, instead it is tried without this clause.
+The default is no.
 .SS "Forward Zone Options"
 .LP
 There may be multiple
@@ -1003,6 +1026,12 @@ Name of server to forward to. Is itself resolved before it is used.
 .B forward\-addr: \fI<IP address>
 IP address of server to forward to. Can be IP 4 or IP 6.
 To use a nondefault port for DNS communication append '@' with the port number.
+.TP
+.B forward\-first: \fI<yes or no>
+If enabled, a query is attempted without the forward clause if it fails.
+The data could not be retrieved and would have caused SERVFAIL because
+the servers are unreachable, instead it is tried without this clause.
+The default is no.
 .SS "Python Module Options"
 .LP
 The

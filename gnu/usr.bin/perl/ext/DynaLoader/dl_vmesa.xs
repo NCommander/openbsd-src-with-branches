@@ -2,7 +2,7 @@
  *
  * Platform:	VM/ESA, possibly others which use dllload etc.
  * Author:	Neale Ferguson (neale@mailbox.tabnsw.com.au)
- * Created:	23rd Septemer, 1998
+ * Created:	23rd September, 1998
  *
  *
  */
@@ -156,20 +156,37 @@ void
 dl_install_xsub(perl_name, symref, filename="$Package")
     char *		perl_name
     void *		symref
-    char *		filename
+    const char *	filename
     CODE:
     DLDEBUG(2,PerlIO_printf(Perl_debug_log, "dl_install_xsub(name=%s, symref=%lx)\n",
 		perl_name, (unsigned long) symref));
-    ST(0) = sv_2mortal(newRV((SV*)newXS(perl_name,
-					(void(*)(pTHX_ CV *))symref,
-					filename)));
+    ST(0) = sv_2mortal(newRV((SV*)newXS_flags(perl_name,
+					      (void(*)(pTHX_ CV *))symref,
+					      filename, NULL,
+					      XS_DYNAMIC_FILENAME)));
  
  
 char *
 dl_error()
     CODE:
-    RETVAL = LastError ;
+    dMY_CXT;
+    RETVAL = dl_last_error ;
     OUTPUT:
     RETVAL
  
+#if defined(USE_ITHREADS)
+
+void
+CLONE(...)
+    CODE:
+    MY_CXT_CLONE;
+
+    /* MY_CXT_CLONE just does a memcpy on the whole structure, so to avoid
+     * using Perl variables that belong to another thread, we create our 
+     * own for this thread.
+     */
+    MY_CXT.x_dl_last_error = newSVpvn("", 0);
+
+#endif
+
 # end.

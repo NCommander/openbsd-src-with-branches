@@ -1,30 +1,38 @@
 /*
- * Copyright (C) 1999-2001  Internet Software Consortium.
+ * Copyright (C) 2004, 2005  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 1999-2002  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: zt.c,v 1.33 2001/06/04 19:33:19 tale Exp $ */
+/* $ISC: zt.c,v 1.38.18.5 2005/11/30 03:44:39 marka Exp $ */
+
+/*! \file */
 
 #include <config.h>
 
+#include <isc/file.h>
 #include <isc/magic.h>
 #include <isc/mem.h>
+#include <isc/string.h>
 #include <isc/util.h>
 
+#include <dns/log.h>
+#include <dns/name.h>
 #include <dns/rbt.h>
+#include <dns/rdataclass.h>
 #include <dns/result.h>
+#include <dns/view.h>
 #include <dns/zone.h>
 #include <dns/zt.h>
 
@@ -51,6 +59,9 @@ load(dns_zone_t *zone, void *uap);
 static isc_result_t
 loadnew(dns_zone_t *zone, void *uap);
 
+static isc_result_t
+freezezones(dns_zone_t *zone, void *uap);
+
 isc_result_t
 dns_zt_create(isc_mem_t *mctx, dns_rdataclass_t rdclass, dns_zt_t **ztp) {
 	dns_zt_t *zt;
@@ -58,7 +69,7 @@ dns_zt_create(isc_mem_t *mctx, dns_rdataclass_t rdclass, dns_zt_t **ztp) {
 
 	REQUIRE(ztp != NULL && *ztp == NULL);
 
-	zt = isc_mem_get(mctx, sizeof *zt);
+	zt = isc_mem_get(mctx, sizeof(*zt));
 	if (zt == NULL)
 		return (ISC_R_NOMEMORY);
 
@@ -68,13 +79,8 @@ dns_zt_create(isc_mem_t *mctx, dns_rdataclass_t rdclass, dns_zt_t **ztp) {
 		goto cleanup_zt;
 
 	result = isc_rwlock_init(&zt->rwlock, 0, 0);
-	if (result != ISC_R_SUCCESS) {
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "isc_rwlock_init() failed: %s",
-				 isc_result_totext(result));
-		result = ISC_R_UNEXPECTED;
+	if (result != ISC_R_SUCCESS)
 		goto cleanup_rbt;
-	}
 
 	zt->mctx = mctx;
 	zt->references = 1;
@@ -88,7 +94,7 @@ dns_zt_create(isc_mem_t *mctx, dns_rdataclass_t rdclass, dns_zt_t **ztp) {
 	dns_rbt_destroy(&zt->table);
 
    cleanup_zt:
-	isc_mem_put(mctx, zt, sizeof *zt);
+	isc_mem_put(mctx, zt, sizeof(*zt));
 
 	return (result);
 }
@@ -148,7 +154,7 @@ dns_zt_find(dns_zt_t *zt, dns_name_t *name, unsigned int options,
 	RWLOCK(&zt->rwlock, isc_rwlocktype_read);
 
 	result = dns_rbt_findname(zt->table, name, rbtoptions, foundname,
-				  (void **)&dummy);
+				  (void **) (void*)&dummy);
 	if (result == ISC_R_SUCCESS || result == DNS_R_PARTIALMATCH)
 		dns_zone_attach(dummy, zonep);
 
@@ -204,7 +210,7 @@ zt_flushanddetach(dns_zt_t **ztp, isc_boolean_t need_flush) {
 		dns_rbt_destroy(&zt->table);
 		isc_rwlock_destroy(&zt->rwlock);
 		zt->magic = 0;
-		isc_mem_put(zt->mctx, zt, sizeof *zt);
+		isc_mem_put(zt->mctx, zt, sizeof(*zt));
 	}
 
 	*ztp = NULL;
@@ -234,8 +240,12 @@ dns_zt_load(dns_zt_t *zt, isc_boolean_t stop) {
 
 static isc_result_t
 load(dns_zone_t *zone, void *uap) {
+	isc_result_t result;
 	UNUSED(uap);
-	return (dns_zone_load(zone));
+	result = dns_zone_load(zone);
+	if (result == DNS_R_CONTINUE || result == DNS_R_UPTODATE)
+		result = ISC_R_SUCCESS;
+	return (result);
 }
 
 isc_result_t
@@ -252,17 +262,100 @@ dns_zt_loadnew(dns_zt_t *zt, isc_boolean_t stop) {
 
 static isc_result_t
 loadnew(dns_zone_t *zone, void *uap) {
+	isc_result_t result;
 	UNUSED(uap);
-	return (dns_zone_loadnew(zone));
+	result = dns_zone_loadnew(zone);
+	if (result == DNS_R_CONTINUE || result == DNS_R_UPTODATE ||
+	    result == DNS_R_DYNAMIC)
+		result = ISC_R_SUCCESS;
+	return (result);
+}
+
+isc_result_t
+dns_zt_freezezones(dns_zt_t *zt, isc_boolean_t freeze) {
+	isc_result_t result, tresult;
+
+	REQUIRE(VALID_ZT(zt));
+
+	RWLOCK(&zt->rwlock, isc_rwlocktype_read);
+	result = dns_zt_apply2(zt, ISC_FALSE, &tresult, freezezones, &freeze);
+	RWUNLOCK(&zt->rwlock, isc_rwlocktype_read);
+	return ((result == ISC_R_SUCCESS) ? tresult : result);
+}
+
+static isc_result_t
+freezezones(dns_zone_t *zone, void *uap) {
+	isc_boolean_t freeze = *(isc_boolean_t *)uap;
+	isc_boolean_t frozen;
+	isc_result_t result = ISC_R_SUCCESS;
+	char classstr[DNS_RDATACLASS_FORMATSIZE];
+	char zonename[DNS_NAME_FORMATSIZE];
+	dns_view_t *view;
+	char *journal;
+	const char *vname;
+	const char *sep;
+	int level;
+
+	if (dns_zone_gettype(zone) != dns_zone_master)
+		return (ISC_R_SUCCESS);
+
+	frozen = dns_zone_getupdatedisabled(zone);
+	if (freeze) {
+		if (frozen)
+			result = DNS_R_FROZEN;
+		if (result == ISC_R_SUCCESS)
+			result = dns_zone_flush(zone);
+		if (result == ISC_R_SUCCESS) {
+			journal = dns_zone_getjournal(zone);
+			if (journal != NULL)
+				(void)isc_file_remove(journal);
+		}
+	} else {
+		if (frozen) {
+			result = dns_zone_load(zone);
+			if (result == DNS_R_CONTINUE ||
+			    result == DNS_R_UPTODATE)
+				result = ISC_R_SUCCESS;
+		}
+	}
+	if (result == ISC_R_SUCCESS)
+		dns_zone_setupdatedisabled(zone, freeze);
+	view = dns_zone_getview(zone);
+	if (strcmp(view->name, "_bind") == 0 ||
+	    strcmp(view->name, "_default") == 0)
+	{
+		vname = "";
+		sep = "";
+	} else {
+		vname = view->name;
+		sep = " ";
+	}
+	dns_rdataclass_format(dns_zone_getclass(zone), classstr,
+			      sizeof(classstr));
+	dns_name_format(dns_zone_getorigin(zone), zonename, sizeof(zonename));
+	level = (result != ISC_R_SUCCESS) ? ISC_LOG_ERROR : ISC_LOG_DEBUG(1);
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_GENERAL, DNS_LOGMODULE_ZONE,
+		      level, "%s zone '%s/%s'%s%s: %s",
+		      freeze ? "freezing" : "thawing",
+		      zonename, classstr, sep, vname,
+		      isc_result_totext(result));
+	return (result);
 }
 
 isc_result_t
 dns_zt_apply(dns_zt_t *zt, isc_boolean_t stop,
 	     isc_result_t (*action)(dns_zone_t *, void *), void *uap)
 {
+	return (dns_zt_apply2(zt, stop, NULL, action, uap));
+}
+
+isc_result_t
+dns_zt_apply2(dns_zt_t *zt, isc_boolean_t stop, isc_result_t *sub,
+	      isc_result_t (*action)(dns_zone_t *, void *), void *uap)
+{
 	dns_rbtnode_t *node;
 	dns_rbtnodechain_t chain;
-	isc_result_t result;
+	isc_result_t result, tresult = ISC_R_SUCCESS;
 	dns_zone_t *zone;
 
 	REQUIRE(VALID_ZT(zt));
@@ -283,8 +376,12 @@ dns_zt_apply(dns_zt_t *zt, isc_boolean_t stop,
 			zone = node->data;
 			if (zone != NULL)
 				result = (action)(zone, uap);
-			if (result != ISC_R_SUCCESS && stop)
+			if (result != ISC_R_SUCCESS && stop) {
+				tresult = result;
 				goto cleanup;	/* don't break */
+			} else if (result != ISC_R_SUCCESS &&
+				   tresult == ISC_R_SUCCESS)
+				tresult = result;
 		}
 		result = dns_rbtnodechain_next(&chain, NULL, NULL);
 	}
@@ -293,6 +390,8 @@ dns_zt_apply(dns_zt_t *zt, isc_boolean_t stop,
 
  cleanup:
 	dns_rbtnodechain_invalidate(&chain);
+	if (sub != NULL)
+		*sub = tresult;
 
 	return (result);
 }

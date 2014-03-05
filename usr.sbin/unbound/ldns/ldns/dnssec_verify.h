@@ -32,7 +32,7 @@ struct ldns_dnssec_data_chain_struct
  * Creates a new dnssec_chain structure
  * \return ldns_dnssec_data_chain *
  */
-ldns_dnssec_data_chain *ldns_dnssec_data_chain_new();
+ldns_dnssec_data_chain *ldns_dnssec_data_chain_new(void);
 
 /**
  * Frees a dnssec_data_chain structure
@@ -137,7 +137,7 @@ struct ldns_dnssec_trust_tree_struct
  *
  * \return ldns_dnssec_trust_tree *
  */
-ldns_dnssec_trust_tree *ldns_dnssec_trust_tree_new();
+ldns_dnssec_trust_tree *ldns_dnssec_trust_tree_new(void);
 
 /**
  * Frees the dnssec_trust_tree recursively
@@ -209,7 +209,7 @@ ldns_status ldns_dnssec_trust_tree_add_parent(ldns_dnssec_trust_tree *tree,
 									 const ldns_status parent_status);
 
 /**
- * Generates a dnssec_trust_ttree for the given rr from the
+ * Generates a dnssec_trust_tree for the given rr from the
  * given data_chain
  *
  * This does not clone the actual data; Don't free the
@@ -224,7 +224,7 @@ ldns_dnssec_trust_tree *ldns_dnssec_derive_trust_tree(
 					   ldns_rr *rr);
 
 /**
- * Generates a dnssec_trust_ttree for the given rr from the
+ * Generates a dnssec_trust_tree for the given rr from the
  * given data_chain
  *
  * This does not clone the actual data; Don't free the
@@ -367,6 +367,7 @@ void ldns_dnssec_derive_trust_tree_no_sig_time(
  *
  * \param *tree The trust tree so search
  * \param *keys A ldns_rr_list of DNSKEY and DS rrs to look for
+ *
  * \return LDNS_STATUS_OK if there is a trusted path to one of
  *                        the keys, or the *first* error encountered
  *                        if there were no paths

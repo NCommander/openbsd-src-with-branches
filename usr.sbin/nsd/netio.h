@@ -59,7 +59,7 @@ enum netio_event_types {
 	NETIO_EVENT_READ    = 1,
 	NETIO_EVENT_WRITE   = 2,
 	NETIO_EVENT_EXCEPT  = 4,
-	NETIO_EVENT_TIMEOUT = 8
+	NETIO_EVENT_TIMEOUT = 8,
 };
 typedef enum netio_event_types netio_event_types_type;
 
@@ -131,6 +131,13 @@ struct netio_handler
 	 * The event handler SHOULD NOT block.
 	 */
 	netio_event_handler_type event_handler;
+};
+
+
+struct netio_handler_list
+{
+	netio_handler_list_type *next;
+	netio_handler_type      *handler;
 };
 
 

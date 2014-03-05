@@ -33,6 +33,7 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-T\t\ttrace from the root down to <name>\n");
 	fprintf(stream, "\t-S\t\tchase signature(s) from <name> to a know key [*]\n");
 #endif /*HAVE_SSL*/
+	fprintf(stream, "\t-I <address>\tsource address to query from\n");
 	fprintf(stream, "\t-V <number>\tverbosity (0-5)\n");
 	fprintf(stream, "\t-Q\t\tquiet mode (overrules -V)\n");
 	fprintf(stream, "\n");
@@ -47,19 +48,25 @@ usage(FILE *stream, const char *progname)
 	fprintf(stream, "\t-6\t\tstay on ip6\n");
 	fprintf(stream, "\t-a\t\tfallback to EDNS0 and TCP if the answer is truncated\n");
 	fprintf(stream, "\t-b <bufsize>\tuse <bufsize> as the buffer size (defaults to 512 b)\n");
-	fprintf(stream, "\t-c <file>\t\tuse file for rescursive nameserver configuration (/etc/resolv.conf)\n");
-	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key (DNSKEY|DS) [**]\n");
-	fprintf(stream, "\t\t\tused to verify any signatures in the current answer\n");
-	fprintf(stream, "\t-o <mnemonic>\tset flags to: [QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
+	fprintf(stream, "\t-c <file>\tuse file for rescursive nameserver configuration"
+			"\n\t\t\t(/etc/resolv.conf)\n");
+	fprintf(stream, "\t-k <file>\tspecify a file that contains a trusted DNSSEC key [**]\n");
+	fprintf(stream, "\t\t\tUsed to verify any signatures in the current answer.\n");
+	fprintf(stream, "\t\t\tWhen DNSSEC enabled tracing (-TD) or signature\n"
+			"\t\t\tchasing (-S) and no key files are given, keys are read\n"
+			"\t\t\tfrom: %s\n",
+			LDNS_TRUST_ANCHOR_FILE);
+	fprintf(stream, "\t-o <mnemonic>\tset flags to:"
+			"\n\t\t\t[QR|qr][AA|aa][TC|tc][RD|rd][CD|cd][RA|ra][AD|ad]\n");
 	fprintf(stream, "\t\t\tlowercase: unset bit, uppercase: set bit\n");
 	fprintf(stream, "\t-p <port>\tuse <port> as remote port number\n");
 	fprintf(stream, "\t-s\t\tshow the DS RR for each key in a packet\n");
 	fprintf(stream, "\t-u\t\tsend the query with udp (the default)\n");
 	fprintf(stream, "\t-x\t\tdo a reverse lookup\n");
 	fprintf(stream, "\twhen doing a secure trace:\n");
-	fprintf(stream, "\t-r <file>\t\tuse file as root servers hint file\n");
+	fprintf(stream, "\t-r <file>\tuse file as root servers hint file\n");
 	fprintf(stream, "\t-t\t\tsend the query with tcp (connected)\n");
-	fprintf(stream, "\t-d <domain>\t\tuse domain as the start point for the trace\n");
+	fprintf(stream, "\t-d <domain>\tuse domain as the start point for the trace\n");
     fprintf(stream, "\t-y <name:key[:algo]>\tspecify named base64 tsig key, and optional an\n\t\t\talgorithm (defaults to hmac-md5.sig-alg.reg.int)\n");
 	fprintf(stream, "\t-z\t\tdon't randomize the nameservers before use\n");
 	fprintf(stream, "\n  [*] = enables/implies DNSSEC\n");
@@ -97,13 +104,15 @@ main(int argc, char *argv[])
         ldns_pkt	*pkt;
         ldns_pkt	*qpkt;
         char 		*serv;
-        char 		*name;
+        char 		*src = NULL;
+        const char 	*name;
         char 		*name2;
 	char		*progname;
 	char 		*query_file = NULL;
 	char		*answer_file = NULL;
 	ldns_buffer	*query_buffer = NULL;
 	ldns_rdf 	*serv_rdf;
+	ldns_rdf 	*src_rdf = NULL;
         ldns_rr_type 	type;
         ldns_rr_class	clas;
 #if 0
@@ -151,7 +160,7 @@ main(int argc, char *argv[])
 
 	int_type = -1; serv = NULL; type = 0; 
 	int_clas = -1; name = NULL; clas = 0;
-	qname = NULL; 
+	qname = NULL; src = NULL;
 	progname = strdup(argv[0]);
 
 #ifdef USE_WINSOCK
@@ -189,7 +198,7 @@ main(int argc, char *argv[])
 	/* global first, query opt next, option with parm's last
 	 * and sorted */ /*  "46DITSVQf:i:w:q:achuvxzy:so:p:b:k:" */
 	                               
-	while ((c = getopt(argc, argv, "46ab:c:d:Df:hi:Ik:o:p:q:Qr:sStTuvV:w:xy:z")) != -1) {
+	while ((c = getopt(argc, argv, "46ab:c:d:Df:hi:I:k:o:p:q:Qr:sStTuvV:w:xy:z")) != -1) {
 		switch(c) {
 			/* global options */
 			case '4':
@@ -202,7 +211,7 @@ main(int argc, char *argv[])
 				qdnssec = true;
 				break;
 			case 'I':
-				/* reserved for backward compatibility */
+				src = optarg;
 				break;
 			case 'T':
 				if (PURPOSE == DRILL_CHASE) {
@@ -272,7 +281,8 @@ main(int argc, char *argv[])
 				qusevc = true;
 				break;
 			case 'k':
-				status = read_key_file(optarg, key_list);
+				status = read_key_file(optarg,
+						key_list, false);
 				if (status != LDNS_STATUS_OK) {
 					error("Could not parse the key file %s: %s", optarg, ldns_get_errorstr_by_id(status));
 				}
@@ -397,6 +407,15 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
+	if ((PURPOSE == DRILL_CHASE || (PURPOSE == DRILL_TRACE && qdnssec)) &&
+			ldns_rr_list_rr_count(key_list) == 0) {
+
+		(void) read_key_file(LDNS_TRUST_ANCHOR_FILE, key_list, true);
+	}
+	if (ldns_rr_list_rr_count(key_list) > 0) {
+		printf(";; Number of trusted keys: %d\n",
+				(int) ldns_rr_list_rr_count(key_list));
+	}
 	/* do a secure trace when requested */
 	if (PURPOSE == DRILL_TRACE && qdnssec) {
 #ifdef HAVE_SSL
@@ -466,6 +485,14 @@ main(int argc, char *argv[])
 		}
 	}
 
+	if (src) {
+		src_rdf = ldns_rdf_new_addr_frm_str(src);
+		if(!src_rdf) {
+			fprintf(stderr, "-I must be (or resolve) to a valid IP[v6] address.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	/* set the nameserver to use */
 	if (!serv) {
 		/* no server given make a resolver from /etc/resolv.conf */
@@ -497,6 +524,7 @@ main(int argc, char *argv[])
 			ldns_resolver_set_ip6(cmdline_res, qfamily);
 			ldns_resolver_set_fallback(cmdline_res, qfallback);
 			ldns_resolver_set_usevc(cmdline_res, qusevc);
+			ldns_resolver_set_source(cmdline_res, src_rdf);
 
 			cmdline_dname = ldns_dname_new_frm_str(serv);
 
@@ -527,6 +555,7 @@ main(int argc, char *argv[])
 	}
 	/* set the resolver options */
 	ldns_resolver_set_port(res, qport);
+	ldns_resolver_set_source(res, src_rdf);
 	if (verbosity >= 5) {
 		ldns_resolver_set_debug(res, true);
 	} else {
@@ -597,10 +626,17 @@ main(int argc, char *argv[])
 			ldns_resolver_set_dnssec_cd(res, true);
 			/* set dnssec implies udp_size of 4096 */
 			ldns_resolver_set_edns_udp_size(res, 4096);
-			pkt = ldns_resolver_query(res, qname, type, clas, qflags);
-			
+			pkt = NULL;
+			status = ldns_resolver_query_status(
+					&pkt, res, qname, type, clas, qflags);
+			if (status != LDNS_STATUS_OK) {
+				error("error sending query: %s",
+					ldns_get_errorstr_by_id(status));
+			}
 			if (!pkt) {
-				error("%s", "error pkt sending");
+				if (status == LDNS_STATUS_OK) {
+					error("%s", "error pkt sending");
+				}
 				result = EXIT_FAILURE;
 			} else {
 				if (verbosity >= 3) {
@@ -726,9 +762,17 @@ main(int argc, char *argv[])
 			}
 			
 			/* create a packet and set the RD flag on it */
-			pkt = ldns_resolver_query(res, qname, type, clas, qflags);
+			pkt = NULL;
+			status = ldns_resolver_query_status(
+					&pkt, res, qname, type, clas, qflags);
+			if (status != LDNS_STATUS_OK) {
+				error("error sending query: %s",
+					ldns_get_errorstr_by_id(status));
+			}
 			if (!pkt)  {
-				error("%s", "pkt sending");
+				if (status == LDNS_STATUS_OK) {
+					error("%s", "pkt sending");
+				}
 				result = EXIT_FAILURE;
 			} else {
 				if (verbosity != -1) {
@@ -799,7 +843,15 @@ main(int argc, char *argv[])
 					goto exit;
 				} else {
 					/* create a packet and set the RD flag on it */
-					pkt = ldns_resolver_query(res, qname, type, clas, qflags);
+					pkt = NULL;
+					status = ldns_resolver_query_status(
+							&pkt, res, qname,
+							type, clas, qflags);
+					if (status != LDNS_STATUS_OK) {
+						error("error sending query: %s"
+						     , ldns_get_errorstr_by_id(
+							     status));
+					}
 				}
 			}
 			
@@ -910,6 +962,7 @@ main(int argc, char *argv[])
 
 	exit:
 	ldns_rdf_deep_free(qname);
+	ldns_rdf_deep_free(src_rdf);
 	ldns_resolver_deep_free(res);
 	ldns_resolver_deep_free(cmdline_res);
 	ldns_rr_list_deep_free(key_list);

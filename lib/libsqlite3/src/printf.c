@@ -124,7 +124,8 @@ static const et_info fmtinfo[] = {
 static char et_getdigit(LONGDOUBLE_TYPE *val, int *cnt){
   int digit;
   LONGDOUBLE_TYPE d;
-  if( (*cnt)++ >= 16 ) return '0';
+  if( (*cnt)<=0 ) return '0';
+  (*cnt)--;
   digit = (int)*val;
   d = digit;
   digit += '0';
@@ -358,7 +359,7 @@ void sqlite3VXPrintf(
           nOut = precision + 10;
           zOut = zExtra = sqlite3Malloc( nOut );
           if( zOut==0 ){
-            pAccum->mallocFailed = 1;
+            pAccum->accError = STRACCUM_NOMEM;
             return;
           }
         }
@@ -412,13 +413,7 @@ void sqlite3VXPrintf(
           else                         prefix = 0;
         }
         if( xtype==etGENERIC && precision>0 ) precision--;
-#if 0
-        /* Rounding works like BSD when the constant 0.4999 is used.  Wierd! */
-        for(idx=precision, rounder=0.4999; idx>0; idx--, rounder*=0.1);
-#else
-        /* It makes more sense to use 0.5 */
         for(idx=precision, rounder=0.5; idx>0; idx--, rounder*=0.1){}
-#endif
         if( xtype==etFLOAT ) realvalue += rounder;
         /* Normalize realvalue to within 10.0 > realvalue >= 1.0 */
         exp = 0;
@@ -428,9 +423,12 @@ void sqlite3VXPrintf(
           break;
         }
         if( realvalue>0.0 ){
-          while( realvalue>=1e32 && exp<=350 ){ realvalue *= 1e-32; exp+=32; }
-          while( realvalue>=1e8 && exp<=350 ){ realvalue *= 1e-8; exp+=8; }
-          while( realvalue>=10.0 && exp<=350 ){ realvalue *= 0.1; exp++; }
+          LONGDOUBLE_TYPE scale = 1.0;
+          while( realvalue>=1e100*scale && exp<=350 ){ scale *= 1e100;exp+=100;}
+          while( realvalue>=1e64*scale && exp<=350 ){ scale *= 1e64; exp+=64; }
+          while( realvalue>=1e8*scale && exp<=350 ){ scale *= 1e8; exp+=8; }
+          while( realvalue>=10.0*scale && exp<=350 ){ scale *= 10.0; exp++; }
+          realvalue /= scale;
           while( realvalue<1e-8 ){ realvalue *= 1e8; exp-=8; }
           while( realvalue<1.0 ){ realvalue *= 10.0; exp--; }
           if( exp>350 ){
@@ -463,22 +461,22 @@ void sqlite3VXPrintf(
             xtype = etFLOAT;
           }
         }else{
-          flag_rtz = 0;
+          flag_rtz = flag_altform2;
         }
         if( xtype==etEXP ){
           e2 = 0;
         }else{
           e2 = exp;
         }
-        if( e2+precision+width > etBUFSIZE - 15 ){
-          bufpt = zExtra = sqlite3Malloc( e2+precision+width+15 );
+        if( MAX(e2,0)+precision+width > etBUFSIZE - 15 ){
+          bufpt = zExtra = sqlite3Malloc( MAX(e2,0)+precision+width+15 );
           if( bufpt==0 ){
-            pAccum->mallocFailed = 1;
+            pAccum->accError = STRACCUM_NOMEM;
             return;
           }
         }
         zOut = bufpt;
-        nsd = 0;
+        nsd = 16 + flag_altform2*10;
         flag_dp = (precision>0 ?1:0) | flag_alternateform | flag_altform2;
         /* The sign in front of the number */
         if( prefix ){
@@ -608,7 +606,7 @@ void sqlite3VXPrintf(
         if( n>etBUFSIZE ){
           bufpt = zExtra = sqlite3Malloc( n );
           if( bufpt==0 ){
-            pAccum->mallocFailed = 1;
+            pAccum->accError = STRACCUM_NOMEM;
             return;
           }
         }else{
@@ -686,22 +684,20 @@ void sqlite3VXPrintf(
 */
 void sqlite3StrAccumAppend(StrAccum *p, const char *z, int N){
   assert( z!=0 || N==0 );
-  if( p->tooBig | p->mallocFailed ){
-    testcase(p->tooBig);
-    testcase(p->mallocFailed);
+  if( p->accError ){
+    testcase(p->accError==STRACCUM_TOOBIG);
+    testcase(p->accError==STRACCUM_NOMEM);
     return;
   }
   assert( p->zText!=0 || p->nChar==0 );
-  if( N<0 ){
+  if( N<=0 ){
+    if( N==0 || z[0]==0 ) return;
     N = sqlite3Strlen30(z);
-  }
-  if( N==0 || NEVER(z==0) ){
-    return;
   }
   if( p->nChar+N >= p->nAlloc ){
     char *zNew;
     if( !p->useMalloc ){
-      p->tooBig = 1;
+      p->accError = STRACCUM_TOOBIG;
       N = p->nAlloc - p->nChar - 1;
       if( N<=0 ){
         return;
@@ -712,7 +708,7 @@ void sqlite3StrAccumAppend(StrAccum *p, const char *z, int N){
       szNew += N + 1;
       if( szNew > p->mxAlloc ){
         sqlite3StrAccumReset(p);
-        p->tooBig = 1;
+        p->accError = STRACCUM_TOOBIG;
         return;
       }else{
         p->nAlloc = (int)szNew;
@@ -726,7 +722,7 @@ void sqlite3StrAccumAppend(StrAccum *p, const char *z, int N){
         if( zOld==0 && p->nChar>0 ) memcpy(zNew, p->zText, p->nChar);
         p->zText = zNew;
       }else{
-        p->mallocFailed = 1;
+        p->accError = STRACCUM_NOMEM;
         sqlite3StrAccumReset(p);
         return;
       }
@@ -754,7 +750,7 @@ char *sqlite3StrAccumFinish(StrAccum *p){
       if( p->zText ){
         memcpy(p->zText, p->zBase, p->nChar+1);
       }else{
-        p->mallocFailed = 1;
+        p->accError = STRACCUM_NOMEM;
       }
     }
   }
@@ -785,8 +781,7 @@ void sqlite3StrAccumInit(StrAccum *p, char *zBase, int n, int mx){
   p->nAlloc = n;
   p->mxAlloc = mx;
   p->useMalloc = 1;
-  p->tooBig = 0;
-  p->mallocFailed = 0;
+  p->accError = 0;
 }
 
 /*
@@ -803,7 +798,7 @@ char *sqlite3VMPrintf(sqlite3 *db, const char *zFormat, va_list ap){
   acc.db = db;
   sqlite3VXPrintf(&acc, 1, zFormat, ap);
   z = sqlite3StrAccumFinish(&acc);
-  if( acc.mallocFailed ){
+  if( acc.accError==STRACCUM_NOMEM ){
     db->mallocFailed = 1;
   }
   return z;

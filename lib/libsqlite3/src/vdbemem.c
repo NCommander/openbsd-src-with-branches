@@ -32,7 +32,9 @@
 ** between formats.
 */
 int sqlite3VdbeChangeEncoding(Mem *pMem, int desiredEnc){
+#ifndef SQLITE_OMIT_UTF16
   int rc;
+#endif
   assert( (pMem->flags&MEM_RowSet)==0 );
   assert( desiredEnc==SQLITE_UTF8 || desiredEnc==SQLITE_UTF16LE
            || desiredEnc==SQLITE_UTF16BE );
@@ -59,10 +61,10 @@ int sqlite3VdbeChangeEncoding(Mem *pMem, int desiredEnc){
 ** Make sure pMem->z points to a writable allocation of at least 
 ** n bytes.
 **
-** If the memory cell currently contains string or blob data
-** and the third argument passed to this function is true, the 
-** current content of the cell is preserved. Otherwise, it may
-** be discarded.  
+** If the third argument passed to this function is true, then memory
+** cell pMem must contain a string or blob. In this case the content is
+** preserved. Otherwise, if the third parameter to this function is false,
+** any current string or blob value may be discarded.
 **
 ** This function sets the MEM_Dyn flag and clears any xDel callback.
 ** It also clears MEM_Ephem and MEM_Static. If the preserve flag is 
@@ -76,6 +78,10 @@ int sqlite3VdbeMemGrow(Mem *pMem, int n, int preserve){
     ((pMem->flags&MEM_Static) ? 1 : 0)
   );
   assert( (pMem->flags&MEM_RowSet)==0 );
+
+  /* If the preserve flag is set to true, then the memory cell must already
+  ** contain a valid string or blob value.  */
+  assert( preserve==0 || pMem->flags&(MEM_Blob|MEM_Str) );
 
   if( n<32 ) n = 32;
   if( sqlite3DbMallocSize(pMem->db, pMem->zMalloc)<n ){
@@ -793,34 +799,29 @@ int sqlite3MemCompare(const Mem *pMem1, const Mem *pMem2, const CollSeq *pColl){
   ** if both values are integers.
   */
   if( combined_flags&(MEM_Int|MEM_Real) ){
-    if( !(f1&(MEM_Int|MEM_Real)) ){
-      return 1;
-    }
-    if( !(f2&(MEM_Int|MEM_Real)) ){
-      return -1;
-    }
-    if( (f1 & f2 & MEM_Int)==0 ){
-      double r1, r2;
-      if( (f1&MEM_Real)==0 ){
-        r1 = (double)pMem1->u.i;
-      }else{
-        r1 = pMem1->r;
-      }
-      if( (f2&MEM_Real)==0 ){
-        r2 = (double)pMem2->u.i;
-      }else{
-        r2 = pMem2->r;
-      }
-      if( r1<r2 ) return -1;
-      if( r1>r2 ) return 1;
-      return 0;
-    }else{
-      assert( f1&MEM_Int );
-      assert( f2&MEM_Int );
+    double r1, r2;
+    if( (f1 & f2 & MEM_Int)!=0 ){
       if( pMem1->u.i < pMem2->u.i ) return -1;
       if( pMem1->u.i > pMem2->u.i ) return 1;
       return 0;
     }
+    if( (f1&MEM_Real)!=0 ){
+      r1 = pMem1->r;
+    }else if( (f1&MEM_Int)!=0 ){
+      r1 = (double)pMem1->u.i;
+    }else{
+      return 1;
+    }
+    if( (f2&MEM_Real)!=0 ){
+      r2 = pMem2->r;
+    }else if( (f2&MEM_Int)!=0 ){
+      r2 = (double)pMem2->u.i;
+    }else{
+      return -1;
+    }
+    if( r1<r2 ) return -1;
+    if( r1>r2 ) return 1;
+    return 0;
   }
 
   /* If one value is a string and the other is a blob, the string is less.

@@ -441,11 +441,11 @@ rrset_belongs_in_reply(ldns_pkt_section s, uint16_t rrtype, uint16_t qtype,
 /** store rrset in buffer in wireformat, return RETVAL_* */
 static int
 packed_rrset_encode(struct ub_packed_rrset_key* key, ldns_buffer* pkt, 
-	uint16_t* num_rrs, uint32_t timenow, struct regional* region,
+	uint16_t* num_rrs, time_t timenow, struct regional* region,
 	int do_data, int do_sig, struct compress_tree_node** tree,
-	ldns_pkt_section s, uint16_t qtype, int dnssec)
+	ldns_pkt_section s, uint16_t qtype, int dnssec, size_t rr_offset)
 {
-	size_t i, owner_pos;
+	size_t i, j, owner_pos;
 	int r, owner_labs;
 	uint16_t owner_ptr = 0;
 	struct packed_rrset_data* data = (struct packed_rrset_data*)
@@ -461,26 +461,28 @@ packed_rrset_encode(struct ub_packed_rrset_key* key, ldns_buffer* pkt,
 	if(do_data) {
 		const ldns_rr_descriptor* c = type_rdata_compressable(key);
 		for(i=0; i<data->count; i++) {
+			/* rrset roundrobin */
+			j = (i + rr_offset) % data->count;
 			if((r=compress_owner(key, pkt, region, tree, 
 				owner_pos, &owner_ptr, owner_labs))
 				!= RETVAL_OK)
 				return r;
 			ldns_buffer_write(pkt, &key->rk.type, 2);
 			ldns_buffer_write(pkt, &key->rk.rrset_class, 2);
-			if(data->rr_ttl[i] < timenow)
+			if(data->rr_ttl[j] < timenow)
 				ldns_buffer_write_u32(pkt, 0);
 			else 	ldns_buffer_write_u32(pkt, 
-					data->rr_ttl[i]-timenow);
+					data->rr_ttl[j]-timenow);
 			if(c) {
-				if((r=compress_rdata(pkt, data->rr_data[i],
-					data->rr_len[i], region, tree, c))
+				if((r=compress_rdata(pkt, data->rr_data[j],
+					data->rr_len[j], region, tree, c))
 					!= RETVAL_OK)
 					return r;
 			} else {
-				if(ldns_buffer_remaining(pkt) < data->rr_len[i])
+				if(ldns_buffer_remaining(pkt) < data->rr_len[j])
 					return RETVAL_TRUNC;
-				ldns_buffer_write(pkt, data->rr_data[i], 
-					data->rr_len[i]);
+				ldns_buffer_write(pkt, data->rr_data[j],
+					data->rr_len[j]);
 			}
 		}
 	}
@@ -526,9 +528,9 @@ packed_rrset_encode(struct ub_packed_rrset_key* key, ldns_buffer* pkt,
 /** store msg section in wireformat buffer, return RETVAL_* */
 static int
 insert_section(struct reply_info* rep, size_t num_rrsets, uint16_t* num_rrs,
-	ldns_buffer* pkt, size_t rrsets_before, uint32_t timenow, 
+	ldns_buffer* pkt, size_t rrsets_before, time_t timenow, 
 	struct regional* region, struct compress_tree_node** tree,
-	ldns_pkt_section s, uint16_t qtype, int dnssec)
+	ldns_pkt_section s, uint16_t qtype, int dnssec, size_t rr_offset)
 {
 	int r;
 	size_t i, setstart;
@@ -540,7 +542,7 @@ insert_section(struct reply_info* rep, size_t num_rrsets, uint16_t* num_rrs,
 			setstart = ldns_buffer_position(pkt);
 			if((r=packed_rrset_encode(rep->rrsets[rrsets_before+i], 
 				pkt, num_rrs, timenow, region, 1, 1, tree,
-				s, qtype, dnssec))
+				s, qtype, dnssec, rr_offset))
 				!= RETVAL_OK) {
 				/* Bad, but if due to size must set TC bit */
 				/* trim off the rrset neatly. */
@@ -553,7 +555,7 @@ insert_section(struct reply_info* rep, size_t num_rrsets, uint16_t* num_rrs,
 			setstart = ldns_buffer_position(pkt);
 			if((r=packed_rrset_encode(rep->rrsets[rrsets_before+i], 
 				pkt, num_rrs, timenow, region, 1, 0, tree,
-				s, qtype, dnssec))
+				s, qtype, dnssec, rr_offset))
 				!= RETVAL_OK) {
 				ldns_buffer_set_position(pkt, setstart);
 				return r;
@@ -564,7 +566,7 @@ insert_section(struct reply_info* rep, size_t num_rrsets, uint16_t* num_rrs,
 			setstart = ldns_buffer_position(pkt);
 			if((r=packed_rrset_encode(rep->rrsets[rrsets_before+i], 
 				pkt, num_rrs, timenow, region, 0, 1, tree,
-				s, qtype, dnssec))
+				s, qtype, dnssec, rr_offset))
 				!= RETVAL_OK) {
 				ldns_buffer_set_position(pkt, setstart);
 				return r;
@@ -595,14 +597,40 @@ insert_query(struct query_info* qinfo, struct compress_tree_node** tree,
 	return RETVAL_OK;
 }
 
+static int
+positive_answer(struct reply_info* rep, uint16_t qtype) {
+	size_t i;
+	if (FLAGS_GET_RCODE(rep->flags) != LDNS_RCODE_NOERROR)
+		return 0;
+
+	for(i=0;i<rep->an_numrrsets; i++) {
+		if(ntohs(rep->rrsets[i]->rk.type) == qtype) {
+			/* in case it is a wildcard with DNSSEC, there will
+			 * be NSEC/NSEC3 records in the authority section
+			 * that we cannot remove */
+			for(i=rep->an_numrrsets; i<rep->an_numrrsets+
+				rep->ns_numrrsets; i++) {
+				if(ntohs(rep->rrsets[i]->rk.type) ==
+					LDNS_RR_TYPE_NSEC ||
+				   ntohs(rep->rrsets[i]->rk.type) ==
+				   	LDNS_RR_TYPE_NSEC3)
+					return 0;
+			}
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int 
 reply_info_encode(struct query_info* qinfo, struct reply_info* rep, 
-	uint16_t id, uint16_t flags, ldns_buffer* buffer, uint32_t timenow, 
+	uint16_t id, uint16_t flags, ldns_buffer* buffer, time_t timenow, 
 	struct regional* region, uint16_t udpsize, int dnssec)
 {
 	uint16_t ancount=0, nscount=0, arcount=0;
 	struct compress_tree_node* tree = 0;
 	int r;
+	size_t rr_offset; 
 
 	ldns_buffer_clear(buffer);
 	if(udpsize < ldns_buffer_limit(buffer))
@@ -630,11 +658,14 @@ reply_info_encode(struct query_info* qinfo, struct reply_info* rep,
 			return 0;
 		}
 	}
+	/* roundrobin offset. using query id for random number.  With ntohs
+	 * for different roundrobins for sequential id client senders. */
+	rr_offset = RRSET_ROUNDROBIN?ntohs(id):0;
 
 	/* insert answer section */
 	if((r=insert_section(rep, rep->an_numrrsets, &ancount, buffer, 
 		0, timenow, region, &tree, LDNS_SECTION_ANSWER, qinfo->qtype, 
-		dnssec)) != RETVAL_OK) {
+		dnssec, rr_offset)) != RETVAL_OK) {
 		if(r == RETVAL_TRUNC) {
 			/* create truncated message */
 			ldns_buffer_write_u16_at(buffer, 6, ancount);
@@ -646,35 +677,39 @@ reply_info_encode(struct query_info* qinfo, struct reply_info* rep,
 	}
 	ldns_buffer_write_u16_at(buffer, 6, ancount);
 
-	/* insert auth section */
-	if((r=insert_section(rep, rep->ns_numrrsets, &nscount, buffer, 
-		rep->an_numrrsets, timenow, region, &tree,
-		LDNS_SECTION_AUTHORITY, qinfo->qtype, dnssec)) != RETVAL_OK) {
-		if(r == RETVAL_TRUNC) {
-			/* create truncated message */
-			ldns_buffer_write_u16_at(buffer, 8, nscount);
-			LDNS_TC_SET(ldns_buffer_begin(buffer));
-			ldns_buffer_flip(buffer);
-			return 1;
+	/* if response is positive answer, auth/add sections are not required */
+	if( ! (MINIMAL_RESPONSES && positive_answer(rep, qinfo->qtype)) ) {
+		/* insert auth section */
+		if((r=insert_section(rep, rep->ns_numrrsets, &nscount, buffer, 
+			rep->an_numrrsets, timenow, region, &tree,
+			LDNS_SECTION_AUTHORITY, qinfo->qtype,
+			dnssec, rr_offset)) != RETVAL_OK) {
+			if(r == RETVAL_TRUNC) {
+				/* create truncated message */
+				ldns_buffer_write_u16_at(buffer, 8, nscount);
+				LDNS_TC_SET(ldns_buffer_begin(buffer));
+				ldns_buffer_flip(buffer);
+				return 1;
+			}
+			return 0;
 		}
-		return 0;
-	}
-	ldns_buffer_write_u16_at(buffer, 8, nscount);
+		ldns_buffer_write_u16_at(buffer, 8, nscount);
 
-	/* insert add section */
-	if((r=insert_section(rep, rep->ar_numrrsets, &arcount, buffer, 
-		rep->an_numrrsets + rep->ns_numrrsets, timenow, region, 
-		&tree, LDNS_SECTION_ADDITIONAL, qinfo->qtype, 
-		dnssec)) != RETVAL_OK) {
-		if(r == RETVAL_TRUNC) {
-			/* no need to set TC bit, this is the additional */
-			ldns_buffer_write_u16_at(buffer, 10, arcount);
-			ldns_buffer_flip(buffer);
-			return 1;
+		/* insert add section */
+		if((r=insert_section(rep, rep->ar_numrrsets, &arcount, buffer, 
+			rep->an_numrrsets + rep->ns_numrrsets, timenow, region, 
+			&tree, LDNS_SECTION_ADDITIONAL, qinfo->qtype, 
+			dnssec, rr_offset)) != RETVAL_OK) {
+			if(r == RETVAL_TRUNC) {
+				/* no need to set TC bit, this is the additional */
+				ldns_buffer_write_u16_at(buffer, 10, arcount);
+				ldns_buffer_flip(buffer);
+				return 1;
+			}
+			return 0;
 		}
-		return 0;
+		ldns_buffer_write_u16_at(buffer, 10, arcount);
 	}
-	ldns_buffer_write_u16_at(buffer, 10, arcount);
 	ldns_buffer_flip(buffer);
 	return 1;
 }
@@ -713,7 +748,7 @@ attach_edns_record(ldns_buffer* pkt, struct edns_data* edns)
 
 int 
 reply_info_answer_encode(struct query_info* qinf, struct reply_info* rep, 
-	uint16_t id, uint16_t qflags, ldns_buffer* pkt, uint32_t timenow,
+	uint16_t id, uint16_t qflags, ldns_buffer* pkt, time_t timenow,
 	int cached, struct regional* region, uint16_t udpsize, 
 	struct edns_data* edns, int dnssec, int secure)
 {

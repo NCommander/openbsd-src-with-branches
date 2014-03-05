@@ -197,7 +197,7 @@ nsec_verify_rrset(struct module_env* env, struct val_env* ve,
 enum sec_status 
 val_nsec_prove_nodata_dsreply(struct module_env* env, struct val_env* ve, 
 	struct query_info* qinfo, struct reply_info* rep, 
-	struct key_entry_key* kkey, uint32_t* proof_ttl, char** reason)
+	struct key_entry_key* kkey, time_t* proof_ttl, char** reason)
 {
 	struct ub_packed_rrset_key* nsec = reply_find_rrset_section_ns(
 		rep, qinfo->qname, qinfo->qname_len, LDNS_RR_TYPE_NSEC, 
@@ -368,8 +368,8 @@ int nsec_proves_nodata(struct ub_packed_rrset_key* nsec,
 		!nsec_has_type(nsec, LDNS_RR_TYPE_SOA)) {
 		return 0;
 	} else if(qinfo->qtype == LDNS_RR_TYPE_DS &&
-		nsec_has_type(nsec, LDNS_RR_TYPE_SOA &&
-		!dname_is_root(qinfo->qname))) {
+		nsec_has_type(nsec, LDNS_RR_TYPE_SOA) &&
+		!dname_is_root(qinfo->qname)) {
 		return 0;
 	}
 
