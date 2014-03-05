@@ -1,4 +1,4 @@
-/*	$OpenBSD: dsp.c,v 1.3 2012/12/07 08:04:58 ratchov Exp $	*/
+/*	$OpenBSD: dsp.c,v 1.4 2014/02/08 15:16:17 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -684,25 +684,4 @@ cmap_init(struct cmap *p,
 		log_puts("\n");
 	}
 #endif
-}
-
-/*
- * produce a square tone, for instance with:
- *
- *	period = round / (220 * round / rate)
- */
-int
-sqrtone(int ctx, adata_t *out, int period, int vol, int todo)
-{
-	int i;
-
-	for (i = todo; i > 0; i--) {
-		if (ctx == 0) {
-			vol = -vol;
-			ctx = period / 2;
-		}
-		ctx--;
-		*(out++) += vol;
-	}
-	return ctx;
 }
