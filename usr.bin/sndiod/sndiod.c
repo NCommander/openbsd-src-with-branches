@@ -1,4 +1,4 @@
-/*	$OpenBSD: sndiod.c,v 1.4 2012/12/01 12:06:14 ratchov Exp $	*/
+/*	$OpenBSD: sndiod.c,v 1.5 2013/11/18 17:37:45 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -479,8 +479,6 @@ main(int argc, char **argv)
 	for (d = dev_list; d != NULL; d = d->next) {
 		if (!dev_init(d))
 			return 1;
-		if (d->autostart && (d->mode & MODE_AUDIOMASK))
-			dev_mmcstart(d);
 	}
 	for (l = listen_list; l != NULL; l = l->next) {
 		if (!listen_init(l))

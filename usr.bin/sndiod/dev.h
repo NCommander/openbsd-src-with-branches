@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.h,v 1.2 2012/11/30 20:38:24 ratchov Exp $	*/
+/*	$OpenBSD: dev.h,v 1.3 2013/09/28 18:49:32 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -139,7 +139,6 @@ struct dev {
 	unsigned int reqrate;			/* sample rate */
 	unsigned int hold;			/* hold the device open ? */
 	unsigned int autovol;			/* auto adjust playvol ? */
-	unsigned int autostart;			/* don't wait for MMC start */
 	unsigned int refcnt;			/* number of openers */
 #define DEV_NMAX	16			/* max number of devices */
 	unsigned int num;			/* device serial number */
