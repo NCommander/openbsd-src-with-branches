@@ -1,4 +1,4 @@
-/*	$OpenBSD: open_wmemstream.c,v 1.1 2013/03/27 15:06:25 mpi Exp $	*/
+/*	$OpenBSD: open_wmemstream.c,v 1.2 2013/04/03 03:11:53 guenther Exp $	*/
 
 /*
  * Copyright (c) 2011 Martin Pieuchot <mpi@openbsd.org>
@@ -62,8 +62,8 @@ wmemstream_write(void *v, const char *b, int l)
 
 	nmc = (st->size - st->pos) * sizeof(wchar_t);
 	len = mbsnrtowcs(st->string + st->pos, &b, nmc, l, &st->mbs);
-	if (len < 0)
-		return (len);
+	if (len == (size_t)-1)
+		return (-1);
 	st->pos += len;
 
 	if (st->pos > st->len) {
