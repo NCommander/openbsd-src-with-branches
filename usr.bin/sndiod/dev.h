@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.h,v 1.5 2014/03/05 20:31:22 ratchov Exp $	*/
+/*	$OpenBSD: dev.h,v 1.6 2014/03/07 10:15:39 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -27,7 +27,7 @@
 
 struct slotops
 {
-	void (*onmove)(void *, int);		/* clock tick */
+	void (*onmove)(void *);			/* clock tick */
 	void (*onvol)(void *, unsigned int);	/* tell client vol changed */
 	void (*fill)(void *);			/* request to fill a play block */
 	void (*flush)(void *);			/* request to flush a rec block */
