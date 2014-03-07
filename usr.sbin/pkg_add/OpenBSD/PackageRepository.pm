@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageRepository.pm,v 1.107 2014/02/07 14:06:43 espie Exp $
+# $OpenBSD: PackageRepository.pm,v 1.108 2014/02/08 11:07:33 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -301,8 +301,8 @@ sub did_it_fork
 sub uncompress
 {
 	my $self = shift;
-	require IO::Uncompress::Gunzip;
-	return IO::Uncompress::Gunzip->new(@_, MultiStream => 1);
+	require IO::Uncompress::AnyUncompress;
+	return IO::Uncompress::AnyUncompress->new(@_, MultiStream => 1);
 }
 
 package OpenBSD::PackageRepository::Local;
