@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.55 2013/06/11 18:45:25 deraadt Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.56 2013/08/07 01:06:42 bluhm Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -70,10 +70,6 @@
 
 #include <dev/usb/if_uathreg.h>
 #include <dev/usb/if_uathvar.h>
-
-#ifdef USB_DEBUG
-#define UATH_DEBUG
-#endif
 
 #ifdef UATH_DEBUG
 #define DPRINTF(x)	do { if (uath_debug) printf x; } while (0)

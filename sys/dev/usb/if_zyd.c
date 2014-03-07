@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_zyd.c,v 1.94 2013/11/26 20:33:19 deraadt Exp $	*/
+/*	$OpenBSD: if_zyd.c,v 1.95 2014/02/15 02:20:29 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2006 by Damien Bergamini <damien.bergamini@free.fr>
@@ -63,10 +63,6 @@
 #include <dev/usb/usbdevs.h>
 
 #include <dev/usb/if_zydreg.h>
-
-#ifdef USB_DEBUG
-#define ZYD_DEBUG
-#endif
 
 #ifdef ZYD_DEBUG
 #define DPRINTF(x)	do { if (zyddebug > 0) printf x; } while (0)

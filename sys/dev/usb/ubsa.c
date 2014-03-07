@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsa.c,v 1.59 2013/11/15 08:25:31 pirofti Exp $ 	*/
+/*	$OpenBSD: ubsa.c,v 1.60 2013/11/15 10:17:39 pirofti Exp $ 	*/
 /*	$NetBSD: ubsa.c,v 1.5 2002/11/25 00:51:33 fvdl Exp $	*/
 /*-
  * Copyright (c) 2002, Alexander Kabaev <kan.FreeBSD.org>.
@@ -76,10 +76,6 @@
 #include <dev/usb/usb_quirks.h>
 
 #include <dev/usb/ucomvar.h>
-
-#ifdef USB_DEBUG
-#define UBSA_DEBUG
-#endif
 
 #ifdef UBSA_DEBUG
 int	ubsadebug = 0;

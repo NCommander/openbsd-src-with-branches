@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urtw.c,v 1.42 2013/07/10 05:59:02 brad Exp $	*/
+/*	$OpenBSD: if_urtw.c,v 1.43 2013/08/07 01:06:43 bluhm Exp $	*/
 
 /*-
  * Copyright (c) 2009 Martynas Venckus <martynas@openbsd.org>
@@ -55,10 +55,6 @@
 #include <dev/usb/usbdevs.h>
 
 #include <dev/usb/if_urtwreg.h>
-
-#ifdef USB_DEBUG
-#define	URTW_DEBUG
-#endif
 
 #ifdef URTW_DEBUG
 #define	DPRINTF(x)	do { if (urtw_debug) printf x; } while (0)

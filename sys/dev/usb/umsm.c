@@ -1,4 +1,4 @@
-/*	$OpenBSD: umsm.c,v 1.95 2013/11/15 10:17:39 pirofti Exp $	*/
+/*	$OpenBSD: umsm.c,v 1.96 2013/12/13 17:43:07 yuo Exp $	*/
 
 /*
  * Copyright (c) 2008 Yojiro UO <yuo@nui.org>
@@ -35,10 +35,6 @@
 #include <dev/usb/usbcdc.h>
 #include <dev/usb/umassvar.h>
 #undef DPRINTF	/* undef DPRINTF for umass */
-
-#ifdef USB_DEBUG
-#define UMSM_DEBUG
-#endif
 
 #ifdef UMSM_DEBUG
 int     umsmdebug = 0;

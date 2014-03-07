@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_smsc.c,v 1.9 2013/08/07 01:06:42 bluhm Exp $	*/
+/*	$OpenBSD: if_smsc.c,v 1.10 2013/11/15 10:17:39 pirofti Exp $	*/
 /* $FreeBSD: src/sys/dev/usb/net/if_smsc.c,v 1.1 2012/08/15 04:03:55 gonzo Exp $ */
 /*-
  * Copyright (c) 2012
@@ -99,10 +99,6 @@
 
 #include "if_smscreg.h"
 
-#ifdef USB_DEBUG
-static int smsc_debug = 0;
-#endif
-
 /*
  * Various supported device vendors/products.
  */
@@ -127,7 +123,8 @@ static const struct usb_devno smsc_devs[] = {
 	{ USB_VENDOR_SMC2,	USB_PRODUCT_SMC2_SMSC9512_14_SAL10 }
 };
 
-#ifdef USB_DEBUG
+#ifdef SMSC_DEBUG
+static int smsc_debug = 0;
 #define smsc_dbg_printf(sc, fmt, args...) \
 	do { \
 		if (smsc_debug > 0) \
