@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlw.c,v 1.5 2014/03/08 15:13:12 kettenis Exp $ */
+/*	$OpenBSD: qlw.c,v 1.6 2014/03/08 16:04:02 kettenis Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -1274,6 +1274,9 @@ qlw_put_cmd(struct qlw_softc *sc, void *buf, struct scsi_xfer *xs,
 			    ccb->ccb_dmamap, seg);
 		}
 	}
+
+	if (sc->sc_running && (xs->sc_link->quirks & SDEV_NOTAGS) == 0)
+		dir |= QLW_IOCB_CMD_SIMPLE_QUEUE;
 
 	req->req_flags = htole16(dir);
 
