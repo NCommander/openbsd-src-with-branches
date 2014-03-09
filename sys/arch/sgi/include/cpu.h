@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.13 2012/04/21 12:20:30 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.14 2012/06/24 16:26:04 miod Exp $ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -55,7 +55,6 @@ void hw_cpu_spinup_trampoline(struct cpu_info *);
 int  hw_ipi_intr_establish(int (*)(void *), u_long);
 void hw_ipi_intr_set(u_long);
 void hw_ipi_intr_clear(u_long);
-void hw_cpu_init_secondary(struct cpu_info *);
 #endif	/* MULTIPROCESSOR && !_LOCORE */
 
 
