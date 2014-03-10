@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.h,v 1.18 2013/03/21 18:45:58 deraadt Exp $	*/
+/*	$OpenBSD: misc.h,v 1.19 2014/03/07 21:56:13 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -47,7 +47,7 @@ extern struct unit_type unit_types[];
 
 /* Prototypes */
 int unit_lookup(char *);
-int ask_cmd(struct cmd *);
+int ask_cmd(char **, char **);
 int ask_num(const char *, int, int, int);
 int ask_pid(int);
 int ask_yn(const char *);
