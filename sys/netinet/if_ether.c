@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.117 2014/01/10 14:29:08 tedu Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.118 2014/01/22 06:28:09 claudio Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -849,7 +849,7 @@ arpproxy(struct in_addr in, u_int rdomain)
 			continue;
 
 		if (!memcmp(LLADDR((struct sockaddr_dl *)la->la_rt->rt_gateway),
-		    LLADDR((struct sockaddr_dl *)ifp->if_lladdr->ifa_addr),
+		    LLADDR(ifp->if_sadl),
 		    ETHER_ADDR_LEN)) {
 		    	found = 1;
 		    	break;
