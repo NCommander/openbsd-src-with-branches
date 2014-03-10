@@ -1,4 +1,4 @@
-/*      $OpenBSD: pmap.h,v 1.30 2014/01/30 18:16:41 miod Exp $ */
+/*      $OpenBSD: pmap.h,v 1.31 2014/02/08 09:34:04 miod Exp $ */
 
 /*
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -132,6 +132,8 @@ typedef struct pmap {
 #define	PV_ATTR_MOD	PG_PMAP2
 #define	PV_ATTR_REF	PG_PMAP3
 #define	PV_PRESERVE	(PV_ATTR_MOD | PV_ATTR_REF)
+
+#define	PMAP_NOCACHE	PMAP_MD0
 
 extern	struct pmap *const kernel_pmap_ptr;
 
