@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi_wakecode.S,v 1.26 2014/01/22 03:09:39 kettenis Exp $ */
+/* $OpenBSD: acpi_wakecode.S,v 1.27 2014/02/01 07:10:33 mlarkin Exp $ */
 /*
  * Copyright (c) 2001 Takanori Watanabe <takawata@jp.freebsd.org>
  * Copyright (c) 2001 Mitsuru IWASAKI <iwasaki@jp.freebsd.org>
@@ -641,8 +641,6 @@ _ACPI_TRMP_LABEL(acpi_saved_rbp)
 _ACPI_TRMP_LABEL(acpi_saved_rsi)
 	.quad 0
 _ACPI_TRMP_LABEL(acpi_saved_rdi)
-	.quad 0
-_ACPI_TRMP_LABEL(acpi_saved_rsp)
 	.quad 0
 _ACPI_TRMP_LABEL(acpi_saved_rsp)
 	.quad 0
