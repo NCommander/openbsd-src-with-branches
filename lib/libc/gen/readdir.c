@@ -1,4 +1,4 @@
-/*	$OpenBSD: readdir.c,v 1.19 2013/10/06 17:57:54 guenther Exp $ */
+/*	$OpenBSD: readdir.c,v 1.20 2013/11/06 22:26:14 schwarze Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -43,9 +43,8 @@ _readdir_unlocked(DIR *dirp, struct dirent **result)
 
 	*result = NULL;
 	for (;;) {
-		if (dirp->dd_loc >= dirp->dd_size)
+		if (dirp->dd_loc >= dirp->dd_size) {
 			dirp->dd_loc = 0;
-		if (dirp->dd_loc == 0) {
 			dirp->dd_size = getdents(dirp->dd_fd, dirp->dd_buf,
 			    dirp->dd_len);
 			if (dirp->dd_size == 0)
