@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.shk.c,v 1.10 2003/07/06 02:07:45 avsm Exp $	*/
+/*	$OpenBSD: hack.shk.c,v 1.11 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -73,7 +73,7 @@ struct obj *billobjs = 0;
 void
 obfree(struct obj *obj, struct obj *merge)
 {
-	free((char *) obj);
+	free(obj);
 }
 
 int
@@ -240,7 +240,7 @@ setpaid()
 			obj->unpaid = 0;
 	while ((obj = billobjs)) {
 		billobjs = obj->nobj;
-		free((char *) obj);
+		free(obj);
 	}
 	ESHK(shopkeeper)->billct = 0;
 }
@@ -422,7 +422,7 @@ obfree(struct obj *obj, struct obj *merge)
 			*bp = bill[ESHK(shopkeeper)->billct];
 		}
 	}
-	free((char *) obj);
+	free(obj);
 }
 
 static void
@@ -598,7 +598,7 @@ dopayobj(struct bill_x *bp)
 			if(otmp) otmp->nobj = obj->nobj;
 			else pline("Error in shopkeeper administration.");
 		}
-		free((char *) obj);
+		free(obj);
 	}
 	return(1);
 }

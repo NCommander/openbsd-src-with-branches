@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.worm.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: hack.worm.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -263,6 +263,6 @@ remseg(struct wseg *wtmp)
 {
 	if(wtmp->wdispl)
 		newsym(wtmp->wx, wtmp->wy);
-	free((char *) wtmp);
+	free(wtmp);
 }
 #endif /* NOWORM */
