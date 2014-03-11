@@ -1,4 +1,4 @@
-/*	$OpenBSD: dca.c,v 1.42 2010/07/02 17:27:01 nicm Exp $	*/
+/*	$OpenBSD: dca.c,v 1.43 2013/08/04 07:21:12 martin Exp $	*/
 /*	$NetBSD: dca.c,v 1.35 1997/05/05 20:58:18 thorpej Exp $	*/
 
 /*
@@ -1094,10 +1094,6 @@ dcacnputc(dev, c)
 	int timo;
 	u_char stat;
 	int s = splhigh();
-
-#ifdef lint
-	stat = dev; if (stat) return;
-#endif
 
 	if (dcaconsinit == 0) {
 		dcainit(dca_cn, dcadefaultrate);
