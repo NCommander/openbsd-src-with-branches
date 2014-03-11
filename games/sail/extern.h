@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.8 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.9 2013/08/29 20:22:19 naddy Exp $	*/
 /*	$NetBSD: extern.h,v 1.8 1998/09/13 15:27:30 hubertf Exp $ */
 
 /*
@@ -373,7 +373,7 @@ void choke(int) __attribute__((__noreturn__));
 void child(int);
 
 /* pl_2.c */
-void play(void);
+__dead void play(void);
 
 /* pl_3.c */
 void acceptcombat(void);
@@ -424,7 +424,7 @@ void rightview(void);
 void adjustview(void);
 
 /* pl_main.c */
-int pl_main(void);
+__dead void pl_main(void);
 void initialize(void);
 
 /* sync.c */
