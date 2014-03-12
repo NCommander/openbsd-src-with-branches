@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-bsdauth.c,v 1.10 2006/08/03 03:34:41 deraadt Exp $ */
+/* $OpenBSD: auth-bsdauth.c,v 1.11 2007/09/21 08:15:29 djm Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -48,6 +48,11 @@ bsdauth_query(void *ctx, char **name, char **infotxt,
 {
 	Authctxt *authctxt = ctx;
 	char *challenge = NULL;
+
+	*infotxt = NULL;
+	*numprompts = 0;
+	*prompts = NULL;
+	*echo_on = NULL;
 
 	if (authctxt->as != NULL) {
 		debug2("bsdauth_query: try reuse session");
