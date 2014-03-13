@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlwvar.h,v 1.7 2014/03/08 16:56:29 kettenis Exp $ */
+/*	$OpenBSD: qlwvar.h,v 1.8 2014/03/08 18:30:54 kettenis Exp $ */
 
 /*
  * Copyright (c) 2013, 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -104,8 +104,9 @@ struct qlw_softc {
 	u_int16_t		sc_mbox[8];
 	int			sc_mbox_pending;
 
-	int			sc_maxcmds;
+	int			sc_maxrequests;
 	struct qlw_dmamem	*sc_requests;
+	int			sc_maxresponses;
 	struct qlw_dmamem	*sc_responses;
 	int			sc_maxccbs;
 	struct qlw_ccb		*sc_ccbs;
