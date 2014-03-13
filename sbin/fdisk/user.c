@@ -1,4 +1,4 @@
-/*	$OpenBSD: user.c,v 1.28 2014/03/09 22:25:06 krw Exp $	*/
+/*	$OpenBSD: user.c,v 1.29 2014/03/10 21:40:58 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -169,7 +169,7 @@ USER_print_disk(struct disk *disk)
 	fd = DISK_open(disk->name, O_RDONLY);
 	offset = firstoff = 0;
 
-	DISK_printmetrics(disk, NULL);
+	DISK_printgeometry(disk, NULL);
 
 	do {
 		error = MBR_read(fd, offset, &dos_mbr);
