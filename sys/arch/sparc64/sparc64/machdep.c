@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.148 2013/09/28 12:40:32 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.149 2013/11/01 17:36:19 krw Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -610,6 +610,7 @@ boot(howto)
 {
 	int i;
 	static char str[128];
+	struct device *mainbus;
 
 	/* If system is cold, just halt. */
 	if (cold) {
@@ -655,8 +656,9 @@ boot(howto)
 
 haltsys:
 	doshutdownhooks();
-	if (!TAILQ_EMPTY(&alldevs))
-		config_suspend(TAILQ_FIRST(&alldevs), DVACT_POWERDOWN);
+	mainbus = device_mainbus();
+	if (mainbus != NULL)
+		config_suspend(mainbus, DVACT_POWERDOWN);
 
 	/* If powerdown was requested, do it. */
 	if ((howto & RB_POWERDOWN) == RB_POWERDOWN) {

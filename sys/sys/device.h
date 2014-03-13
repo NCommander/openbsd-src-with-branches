@@ -1,4 +1,4 @@
-/*	$OpenBSD: device.h,v 1.46 2013/11/27 00:00:53 dlg Exp $	*/
+/*	$OpenBSD: device.h,v 1.47 2013/12/06 21:03:01 deraadt Exp $	*/
 /*	$NetBSD: device.h,v 1.15 1996/04/09 20:55:24 cgd Exp $	*/
 
 /*
@@ -188,6 +188,7 @@ void config_defer(struct device *, void (*)(struct device *));
 void config_pending_incr(void);
 void config_pending_decr(void);
 
+struct device *device_mainbus(void);
 struct device *device_lookup(struct cfdriver *, int unit);
 void device_ref(struct device *);
 void device_unref(struct device *);
