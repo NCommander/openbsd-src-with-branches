@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo_async.c,v 1.22 2014/02/26 20:50:24 deraadt Exp $	*/
+/*	$OpenBSD: getaddrinfo_async.c,v 1.23 2014/03/03 08:37:37 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -745,11 +745,11 @@ addrinfo_from_file(struct async *as, int family, FILE *f)
 static int
 addrinfo_from_pkt(struct async *as, char *pkt, size_t pktlen)
 {
-	struct unpack	 p;
-	struct header	 h;
-	struct query	 q;
-	struct rr	 rr;
-	int		 i;
+	struct asr_unpack	 p;
+	struct asr_dns_header	 h;
+	struct asr_dns_query	 q;
+	struct asr_dns_rr	 rr;
+	int			 i;
 	union {
 		struct sockaddr		sa;
 		struct sockaddr_in	sain;
