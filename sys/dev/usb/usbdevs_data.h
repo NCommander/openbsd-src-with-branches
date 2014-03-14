@@ -1554,6 +1554,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "F7D2102",
 	},
 	{
+	    USB_VENDOR_BELKIN, USB_PRODUCT_BELKIN_RTL8192CU_1,
+	    "RTL8192CU",
+	},
+	{
 	    USB_VENDOR_BELKIN, USB_PRODUCT_BELKIN_F9L1004V1,
 	    "F9L1004V1",
 	},
