@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlw.c,v 1.11 2014/03/13 10:31:53 kettenis Exp $ */
+/*	$OpenBSD: qlw.c,v 1.12 2014/03/13 23:04:14 kettenis Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -256,7 +256,7 @@ qlw_attach(struct qlw_softc *sc)
 	sc->sc_mbox[0] = QLW_MBOX_SET_CLOCK_RATE;
 	sc->sc_mbox[1] = sc->sc_clock;
 	if (qlw_mbox(sc, 0x0003, 0x0001)) {
-		printf("couldn't set retry count: %x\n", sc->sc_mbox[0]);
+		printf("couldn't set clock rate: %x\n", sc->sc_mbox[0]);
 		return (ENXIO);
 	}
 	
