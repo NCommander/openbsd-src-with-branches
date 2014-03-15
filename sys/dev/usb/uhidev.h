@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhidev.h,v 1.15 2013/11/15 08:17:44 pirofti Exp $	*/
+/*	$OpenBSD: uhidev.h,v 1.16 2013/11/19 14:04:07 pirofti Exp $	*/
 /*	$NetBSD: uhidev.h,v 1.3 2002/10/08 09:56:17 dan Exp $	*/
 
 /*
@@ -68,7 +68,6 @@ struct uhidev {
 	struct uhidev_softc *sc_parent;
 	uByte sc_report_id;
 	u_int8_t sc_state;
-	int sc_in_rep_size;
 #define	UHIDEV_OPEN	0x01	/* device is open */
 	void (*sc_intr)(struct uhidev *, void *, u_int);
 
