@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.11 2010/11/27 19:57:23 miod Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.12 2013/02/02 13:32:06 miod Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.20 1997/06/26 01:26:58 thorpej Exp $	*/
 
 /* 
@@ -101,8 +101,5 @@ void	kdb_kintr(db_regs_t *);
 int 	kdb_trap(int, db_regs_t *);
 
 #endif /* _KERNEL */
-
-#define	DB_ELF_SYMBOLS
-#define	DB_ELFSIZE	32
 
 #endif	/* _M68K_DB_MACHDEP_H_ */

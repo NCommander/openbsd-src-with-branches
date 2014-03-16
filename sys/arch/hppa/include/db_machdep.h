@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.16 2010/11/27 19:57:23 miod Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.17 2011/11/14 14:29:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998-2005 Michael Shalayeff
@@ -21,9 +21,6 @@
 #define	_MACHINE_DB_MACHDEP_H_
 
 #include <uvm/uvm_extern.h>
-
-#define	DB_ELF_SYMBOLS
-#define	DB_ELFSIZE	32
 
 /* types the generic ddb module needs */
 typedef	vaddr_t db_addr_t;

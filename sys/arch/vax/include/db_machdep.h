@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.15 2013/07/05 21:10:50 miod Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.16 2013/10/17 08:02:17 deraadt Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.6 1998/08/10 14:33:33 ragge Exp $	*/
 
 /* 
@@ -72,8 +72,5 @@ extern db_regs_t	ddb_regs;	/* register state */
 
 /* Prototypes */
 void	kdb_trap(struct trapframe *);
-
-#define	DB_ELF_SYMBOLS
-#define	DB_ELFSIZE	32
 
 #endif	/* _MACHINE_DB_MACHDEP_H_ */
