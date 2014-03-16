@@ -1,4 +1,4 @@
-/*	$OpenBSD: chmod.c,v 1.27 2011/03/09 12:32:02 okan Exp $	*/
+/*	$OpenBSD: chmod.c,v 1.28 2012/12/04 02:24:46 deraadt Exp $	*/
 /*	$NetBSD: chmod.c,v 1.12 1995/03/21 09:02:09 cgd Exp $	*/
 
 /*
@@ -66,10 +66,6 @@ main(int argc, char *argv[])
 	gid_t gid;
 	u_int32_t fclear, fset;
 	char *ep, *mode, *cp, *flags;
-#ifdef lint
-	set = NULL;
-	oct = omode = 0;
-#endif
 
 	setlocale(LC_ALL, "");
 

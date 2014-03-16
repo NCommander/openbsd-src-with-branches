@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd2.c,v 1.19 2012/11/14 13:22:37 gsoares Exp $	*/
+/*	$OpenBSD: cmd2.c,v 1.20 2014/01/17 18:42:30 okan Exp $	*/
 /*	$NetBSD: cmd2.c,v 1.7 1997/05/17 19:55:10 pk Exp $	*/
 
 /*
@@ -313,7 +313,7 @@ delm(int *msgvec)
 	}
 
 	/*
-	 * Following can't happen -- it keeps lint happy
+	 * Following can't happen
 	 */
 	return(-1);
 }

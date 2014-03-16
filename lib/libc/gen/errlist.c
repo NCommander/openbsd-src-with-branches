@@ -1,4 +1,4 @@
-/*	$OpenBSD: errlist.c,v 1.13 2009/10/26 21:09:33 jasper Exp $ */
+/*	$OpenBSD: errlist.c,v 1.14 2009/11/24 09:22:22 guenther Exp $ */
 /*
  * Copyright (c) 1982, 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,12 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#ifdef lint
-char *
-#else
-const char *const
-#endif
-	_sys_errlist[] = {
+const char *const _sys_errlist[] = {
 	"Undefined error: 0",			/*  0 - ENOERROR */
 	"Operation not permitted",		/*  1 - EPERM */
 	"No such file or directory",		/*  2 - ENOENT */

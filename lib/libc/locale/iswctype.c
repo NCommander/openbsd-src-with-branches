@@ -1,4 +1,4 @@
-/*	$OpenBSD: iswctype.c,v 1.2 2011/04/15 16:11:23 stsp Exp $ */
+/*	$OpenBSD: iswctype.c,v 1.3 2012/12/05 23:20:00 deraadt Exp $ */
 /*	$NetBSD: iswctype.c,v 1.15 2005/02/09 21:35:46 kleink Exp $	*/
 
 /*
@@ -44,10 +44,6 @@
 #include "runetype.h"
 #include "rune_local.h"
 #include "_wctrans_local.h"
-
-#ifdef lint
-#define __inline
-#endif
 
 static __inline _RuneType __runetype_w(wint_t);
 static __inline int __isctype_w(wint_t, _RuneType);

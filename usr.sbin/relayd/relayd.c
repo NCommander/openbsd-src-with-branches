@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.117 2013/05/30 20:17:12 reyk Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.118 2013/11/26 13:27:20 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -133,7 +133,6 @@ parent_sig_handler(int sig, short event, void *arg)
 	}
 }
 
-/* __dead is for lint */
 __dead void
 usage(void)
 {
