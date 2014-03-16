@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axen.c,v 1.4 2013/11/15 10:17:39 pirofti Exp $	*/
+/*	$OpenBSD: if_axen.c,v 1.5 2013/11/20 08:53:27 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Yojiro UO <yuo@openbsd.org>
@@ -79,7 +79,11 @@ const struct axen_type axen_devs[] = {
 #if 0 /* not tested */
 	{ { USB_VENDOR_ASIX, USB_PRODUCT_ASIX_AX88178A}, AX178A },
 #endif
-	{ { USB_VENDOR_ASIX, USB_PRODUCT_ASIX_AX88179}, AX179 }
+	{ { USB_VENDOR_ASIX, USB_PRODUCT_ASIX_AX88179}, AX179 },
+	{ { USB_VENDOR_DLINK, USB_PRODUCT_DLINK_DUB1312}, AX179 },
+	{ { USB_VENDOR_LENOVO, USB_PRODUCT_LENOVO_AX88179}, AX179 },
+	{ { USB_VENDOR_SAMSUNG2, USB_PRODUCT_SAMSUNG2_AX88179}, AX179 },
+	{ { USB_VENDOR_SITECOMEU, USB_PRODUCT_SITECOMEU_LN032}, AX179 }
 };
 
 #define axen_lookup(v, p) ((struct axen_type *)usb_lookup(axen_devs, v, p))
