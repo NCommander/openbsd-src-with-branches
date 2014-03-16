@@ -1,4 +1,4 @@
-/* $OpenBSD: i915_drv.c,v 1.63 2014/02/23 09:36:52 kettenis Exp $ */
+/* $OpenBSD: i915_drv.c,v 1.64 2014/03/13 12:45:04 kettenis Exp $ */
 /*
  * Copyright (c) 2008-2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -554,6 +554,7 @@ __i915_drm_thaw(struct drm_device *dev)
 		DRM_UNLOCK();
 
 		intel_modeset_init_hw(dev);
+		drm_mode_config_reset(dev);
 		intel_modeset_setup_hw_state(dev, false);
 		drm_irq_install(dev);
 	}
