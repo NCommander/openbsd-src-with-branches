@@ -1,4 +1,4 @@
-/*	$OpenBSD: agp_via.c,v 1.16 2010/08/07 19:31:23 oga Exp $	*/
+/*	$OpenBSD: agp_via.c,v 1.17 2011/10/16 01:11:31 dhill Exp $	*/
 /*	$NetBSD: agp_via.c,v 1.2 2001/09/15 00:25:00 thorpej Exp $	*/
 
 /*-
@@ -36,7 +36,6 @@
 #include <sys/lock.h>
 #include <sys/conf.h>
 #include <sys/device.h>
-#include <sys/agpio.h>
 
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcireg.h>

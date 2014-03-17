@@ -1,4 +1,4 @@
-/*	$OpenBSD: agp_sis.c,v 1.14 2010/04/08 00:23:53 tedu Exp $	*/
+/*	$OpenBSD: agp_sis.c,v 1.15 2010/08/07 18:09:09 oga Exp $	*/
 /*	$NetBSD: agp_sis.c,v 1.2 2001/09/15 00:25:00 thorpej Exp $	*/
 
 /*-
@@ -36,7 +36,6 @@
 #include <sys/lock.h>
 #include <sys/conf.h>
 #include <sys/device.h>
-#include <sys/agpio.h>
 
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcireg.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: agp_apple.c,v 1.1 2012/12/04 10:42:04 mpi Exp $	*/
+/*	$OpenBSD: agp_apple.c,v 1.2 2012/12/22 19:17:36 mpi Exp $	*/
 
 /*
  * Copyright (c) 2012 Martin Pieuchot <mpi@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/systm.h>
 #include <sys/conf.h>
 #include <sys/device.h>
-#include <sys/agpio.h>
 
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcireg.h>
