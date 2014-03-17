@@ -1,4 +1,4 @@
-/* $OpenBSD: signify.c,v 1.66 2014/03/17 03:33:57 tedu Exp $ */
+/* $OpenBSD: signify.c,v 1.67 2014/03/17 04:09:39 tedu Exp $ */
 /*
  * Copyright (c) 2013 Ted Unangst <tedu@openbsd.org>
  *
@@ -514,6 +514,7 @@ verify(const char *pubkeyfile, const char *msgfile, const char *sigfile,
 		msg = verifyembedded(pubkeyfile, sigfile, quiet, &msglen);
 		fd = xopen(msgfile, O_CREAT|O_TRUNC|O_NOFOLLOW|O_WRONLY, 0666);
 		writeall(fd, msg, msglen, msgfile);
+		free(msg);
 		close(fd);
 	} else {
 		verifysimple(pubkeyfile, msgfile, sigfile, quiet);
