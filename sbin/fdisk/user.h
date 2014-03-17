@@ -1,4 +1,4 @@
-/*	$OpenBSD: user.h,v 1.7 2003/06/03 01:13:19 weingart Exp $	*/
+/*	$OpenBSD: user.h,v 1.8 2014/03/07 21:56:13 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -27,9 +27,6 @@
 
 #ifndef _USER_H
 #define _USER_H
-
-#include "disk.h"
-#include "mbr.h"
 
 /* Prototypes */
 int USER_init(struct disk *, struct mbr *, int);
