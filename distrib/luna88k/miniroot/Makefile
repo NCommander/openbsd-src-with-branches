@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2014/02/27 18:55:39 miod Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -33,7 +33,7 @@ install_files: bsd.rd boot
 
 bsd.rd:
 	install -c -m 555 -o root -g wheel \
-	    ${.OBJDIR}/../../ramdisk/bsd.rd /mnt/bsd
+	    ${.OBJDIR}/../ramdisk/bsd.rd /mnt/bsd
 
 boot:
 	install -c -m 555 -o root -g wheel \
