@@ -1,6 +1,6 @@
 define(MACHINE,aviion)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.17 2013/10/15 17:39:09 miod Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.18 2014/01/05 01:16:52 deraadt Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -18,7 +18,7 @@ dnl ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 dnl OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 dnl
 dnl
-dnl *** mvme88k-specific devices
+dnl *** aviion-specific devices
 dnl
 __devitem(dart, ttya-c, on-board serial and mouse ports)dnl
 _mkdev(dart, {-tty[a-c]-}, {-u=${i#tty*}
