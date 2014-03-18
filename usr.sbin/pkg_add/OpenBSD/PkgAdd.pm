@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgAdd.pm,v 1.62 2014/02/13 16:58:08 espie Exp $
+# $OpenBSD: PkgAdd.pm,v 1.63 2014/02/13 19:35:00 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -1063,7 +1063,6 @@ sub process_parameters
 	if ($state->{pkglist}) {
 		open my $f, '<', $state->{pkglist} or
 		    $state->fatal("bad list #1: #2", $state->{pkglist}, $!);
-		my $_;
 		while (<$f>) {
 			chomp;
 			s/\s.*//;

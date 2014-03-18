@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: AddDelete.pm,v 1.59 2013/12/30 09:01:30 espie Exp $
+# $OpenBSD: AddDelete.pm,v 1.60 2014/01/30 13:23:51 espie Exp $
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -432,7 +432,6 @@ sub init
 	}
 	open my $fh, "-|", @{$self->{ldconfig}}, "-r";
 	if (defined $fh) {
-		my $_;
 		while (<$fh>) {
 			if (m/^\s*search directories:\s*(.*?)\s*$/o) {
 				for my $d (split(/\:/o, $1)) {
