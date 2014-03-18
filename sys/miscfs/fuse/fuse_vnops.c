@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vnops.c,v 1.14 2014/01/29 20:37:18 syl Exp $ */
+/* $OpenBSD: fuse_vnops.c,v 1.15 2014/02/01 09:30:38 syl Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -16,6 +16,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/dirent.h>
 #include <sys/fcntl.h>
 #include <sys/lockf.h>
