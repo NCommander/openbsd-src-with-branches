@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_sem.c,v 1.44 2012/10/21 19:00:48 beck Exp $	*/
+/*	$OpenBSD: sysv_sem.c,v 1.45 2013/11/25 23:15:58 matthew Exp $	*/
 /*	$NetBSD: sysv_sem.c,v 1.26 1996/02/09 19:00:25 christos Exp $	*/
 
 /*
@@ -738,7 +738,7 @@ done:
 	for (i = 0; i < nsops; i++) {
 		sopptr = &sops[i];
 		semptr = &semaptr->sem_base[sopptr->sem_num];
-		semptr->sempid = p->p_p->ps_mainproc->p_pid;
+		semptr->sempid = p->p_p->ps_pid;
 	}
 
 	semaptr->sem_otime = time_second;
