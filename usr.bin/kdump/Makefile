@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 2013/11/22 07:50:36 mpi Exp $
+#	$OpenBSD: Makefile,v 1.26 2013/12/21 07:30:00 guenther Exp $
 
 LDSTATIC=${STATIC}
 PROG=	kdump
@@ -27,7 +27,6 @@ ioctl.c: ${.CURDIR}/Makefile ${.CURDIR}/mkioctls
 	    ${SYS_DIR}/net80211/ieee80211_ioctl.h \
 	    ${SYS_DIR}/netinet6/in6_var.h \
 	    ${SYS_DIR}/sys/tty.h \
-	    ${SYS_DIR}/sys/agpio.h \
 	    ${SYS_DIR}/sys/ataio.h \
 	    ${SYS_DIR}/sys/audioio.h \
 	    ${SYS_DIR}/sys/cdio.h \
