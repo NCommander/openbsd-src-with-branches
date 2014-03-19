@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.4 2001/09/11 19:02:49 millert Exp $
+#	$OpenBSD: Makefile,v 1.5 2009/03/16 14:26:24 jacekm Exp $
 
 PROG=	makemap
-MAN=	makemap.8
+NOMAN=1
 ENVDEF=	-DNOT_SENDMAIL
 
 WANT_LIBSM=1
