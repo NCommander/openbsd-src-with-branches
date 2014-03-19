@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfwscanf.c,v 1.2 2012/01/18 17:23:11 chl Exp $ */
+/*	$OpenBSD: vfwscanf.c,v 1.3 2013/11/25 12:15:19 stsp Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -299,7 +299,7 @@ literal:
 			if (flags & SUPPRESS)
 				continue;
 			if (flags & SHORTSHORT)
-				*va_arg(ap, __signed char *) = nread;
+				*va_arg(ap, signed char *) = nread;
 			else if (flags & SHORT)
 				*va_arg(ap, short *) = nread;
 			else if (flags & LONG)
@@ -671,7 +671,7 @@ literal:
 				else if (flags & SHORT)
 					*va_arg(ap, short *) = res;
 				else if (flags & SHORTSHORT)
-					*va_arg(ap, __signed char *) = res;
+					*va_arg(ap, signed char *) = res;
 				else
 					*va_arg(ap, int *) = res;
 				nassigned++;
