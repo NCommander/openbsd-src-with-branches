@@ -1,4 +1,4 @@
-/*	$OpenBSD: atw.c,v 1.79 2013/12/03 22:47:28 brad Exp $	*/
+/*	$OpenBSD: atw.c,v 1.80 2013/12/06 21:03:02 deraadt Exp $	*/
 /*	$NetBSD: atw.c,v 1.69 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -3605,8 +3605,7 @@ atw_start(struct ifnet *ifp)
 		 */
 		IF_DEQUEUE(&ic->ic_mgtq, m0);
 		if (m0 != NULL) {
-			ni = (struct ieee80211_node *)m0->m_pkthdr.rcvif;
-			m0->m_pkthdr.rcvif = NULL;
+			ni = m0->m_pkthdr.ph_cookie;
 		} else {
 			/* send no data packets until we are associated */
 			if (ic->ic_state != IEEE80211_S_RUN)

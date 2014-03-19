@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.99 2013/11/14 12:10:04 dlg Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.100 2013/12/06 21:03:02 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -7202,8 +7202,7 @@ bwi_start(struct ifnet *ifp)
 		if (m != NULL) {
 			IF_DEQUEUE(&ic->ic_mgtq, m);
 
-			ni = (struct ieee80211_node *)m->m_pkthdr.rcvif;
-			m->m_pkthdr.rcvif = NULL;
+			ni = m->m_pkthdr.ph_cookie;
 
 			mgt_pkt = 1;
 		} else {

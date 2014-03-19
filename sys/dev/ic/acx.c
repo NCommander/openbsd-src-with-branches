@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.100 2013/03/24 17:02:09 claudio Exp $ */
+/*	$OpenBSD: acx.c,v 1.101 2013/08/07 01:06:27 bluhm Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -948,8 +948,7 @@ acx_start(struct ifnet *ifp)
 		IF_DEQUEUE(&ic->ic_mgtq, m);
 		/* first dequeue management frames */
 		if (m != NULL) {
-			ni = (struct ieee80211_node *)m->m_pkthdr.rcvif;
-			m->m_pkthdr.rcvif = NULL;
+			ni = m->m_pkthdr.ph_cookie;
 
 			/*
 			 * probe response mgmt frames are handled by the
@@ -976,8 +975,7 @@ acx_start(struct ifnet *ifp)
 			/* then dequeue packets on the powersave queue */
 			IF_DEQUEUE(&ic->ic_pwrsaveq, m);
 			if (m != NULL) {
-				ni = (struct ieee80211_node *)m->m_pkthdr.rcvif;
-				m->m_pkthdr.rcvif = NULL;
+				ni = m->m_pkthdr.ph_cookie;
 				goto encapped;
 			} else {
 				IFQ_DEQUEUE(&ifp->if_snd, m);
