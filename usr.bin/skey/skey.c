@@ -1,4 +1,4 @@
-/*	$OpenBSD: skey.c,v 1.25 2010/02/28 13:07:26 millert Exp $	*/
+/*	$OpenBSD: skey.c,v 1.26 2010/04/11 20:20:29 millert Exp $	*/
 /*
  * OpenBSD S/Key (skey.c)
  *
@@ -150,7 +150,7 @@ void
 usage(char *s)
 {
 	fprintf(stderr,
-	    "usage: %s [-x] [-md4 | -md5 | -rmd160 | -sha1] [-n count]\n\t"
+	    "usage: %s [-x] [-md5 | -rmd160 | -sha1] [-n count]\n\t"
 	    "[-p passphrase] <sequence#>[/] key\n", s);
 	exit(1);
 }
