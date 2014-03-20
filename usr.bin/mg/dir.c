@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.23 2013/05/30 04:17:25 lum Exp $	*/
+/*	$OpenBSD: dir.c,v 1.24 2013/10/21 19:04:56 florian Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -47,6 +47,7 @@ changedir(int f, int n)
 		return (FALSE);
 	/* Append trailing slash */
 	if (chdir(bufc) == -1) {
+		dobeep();
 		ewprintf("Can't change dir to %s", bufc);
 		return (FALSE);
 	}
@@ -125,6 +126,7 @@ do_makedir(void)
 
 		ishere = !stat(path, &sb);
 		if (finished && ishere) {
+			dobeep();
 			ewprintf("Cannot create directory %s: file exists",
 			     path);
 			return(FALSE);
@@ -140,10 +142,11 @@ do_makedir(void)
 			}
 		} else {
 			if (!ishere || !S_ISDIR(sb.st_mode)) {
-				if (!ishere)
+				if (!ishere) {
+					dobeep();
 					ewprintf("Creating directory: "
 					    "permission denied, %s", path);
-				else
+				} else
 					eerase();
 
 				umask(oumask);

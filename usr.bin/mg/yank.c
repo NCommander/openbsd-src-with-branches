@@ -1,4 +1,4 @@
-/*	$OpenBSD: yank.c,v 1.9 2009/06/05 18:02:06 kjell Exp $	*/
+/*	$OpenBSD: yank.c,v 1.10 2011/07/15 16:50:52 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -74,10 +74,12 @@ kgrow(int dir)
 
 	if ((unsigned)(ksize + KBLOCK) <= (unsigned)ksize) {
 		/* probably 16 bit unsigned */
+		dobeep();
 		ewprintf("Kill buffer size at maximum");
 		return (FALSE);
 	}
 	if ((nbufp = malloc((unsigned)(ksize + KBLOCK))) == NULL) {
+		dobeep();
 		ewprintf("Can't get %ld bytes", (long)(ksize + KBLOCK));
 		return (FALSE);
 	}

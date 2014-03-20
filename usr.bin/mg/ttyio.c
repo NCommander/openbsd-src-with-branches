@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttyio.c,v 1.33 2013/01/19 21:22:28 florian Exp $	*/
+/*	$OpenBSD: ttyio.c,v 1.34 2013/04/20 17:39:50 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -59,6 +59,7 @@ int
 ttraw(void)
 {
 	if (tcgetattr(0, &oldtty) < 0) {
+		dobeep();
 		ewprintf("ttopen can't get terminal attributes");
 		return (FALSE);
 	}
@@ -81,6 +82,7 @@ ttraw(void)
 	newtty.c_cflag |= CS8;
 #endif
 	if (tcsetattr(0, TCSASOFT | TCSADRAIN, &newtty) < 0) {
+		dobeep();
 		ewprintf("ttopen can't tcsetattr");
 		return (FALSE);
 	}
@@ -114,6 +116,7 @@ ttcooked(void)
 {
 	ttflush();
 	if (tcsetattr(0, TCSASOFT | TCSADRAIN, &oldtty) < 0) {
+		dobeep();
 		ewprintf("ttclose can't tcsetattr");
 		return (FALSE);
 	}
