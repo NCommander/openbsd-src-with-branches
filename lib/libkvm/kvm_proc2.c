@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_proc2.c,v 1.18 2014/01/20 21:19:28 guenther Exp $	*/
+/*	$OpenBSD: kvm_proc2.c,v 1.19 2014/02/05 03:49:00 guenther Exp $	*/
 /*	$NetBSD: kvm_proc.c,v 1.30 1999/03/24 05:50:50 mrg Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -203,11 +203,11 @@ kvm_proclist(kvm_t *kd, int op, int arg, struct process *pr,
 		}
 		else
 			leader_pid = 0;
-		if (proc.p_sigacts) {
-			if (KREAD(kd, (u_long)proc.p_sigacts, &sa)) {
+		if (process.ps_sigacts) {
+			if (KREAD(kd, (u_long)process.ps_sigacts, &sa)) {
 				_kvm_err(kd, kd->program,
 				    "can't read sigacts at %lx",
-				    (u_long)proc.p_sigacts);
+				    (u_long)process.ps_sigacts);
 				return (-1);
 			}
 			sap = &sa;
