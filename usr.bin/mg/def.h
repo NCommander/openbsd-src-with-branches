@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.138 2013/05/31 18:03:43 lum Exp $	*/
+/*	$OpenBSD: def.h,v 1.139 2013/12/23 14:58:16 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -712,7 +712,6 @@ extern int		 defb_nmodes;
 extern int		 defb_flag;
 extern int		 doaudiblebell;
 extern int		 dovisiblebell;
-extern int		 donebell;
 extern char	 	 cinfo[];
 extern char		*keystrings[];
 extern char		 pat[NPAT];
