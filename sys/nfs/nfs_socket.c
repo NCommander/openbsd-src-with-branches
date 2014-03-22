@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_socket.c,v 1.102 2013/07/04 20:05:55 sf Exp $	*/
+/*	$OpenBSD: nfs_socket.c,v 1.103 2014/01/19 03:04:54 claudio Exp $	*/
 /*	$NetBSD: nfs_socket.c,v 1.27 1996/04/15 20:20:00 thorpej Exp $	*/
 
 /*
@@ -1234,8 +1234,8 @@ nfs_sigintr(struct nfsmount *nmp, struct nfsreq *rep, struct proc *p)
 	if (!(nmp->nm_flag & NFSMNT_INT))
 		return (0);
 	if (p && p->p_siglist &&
-	    (((p->p_siglist & ~p->p_sigmask) & ~p->p_sigacts->ps_sigignore) &
-	    NFSINT_SIGMASK))
+	    (((p->p_siglist & ~p->p_sigmask) &
+	    ~p->p_p->ps_sigacts->ps_sigignore) & NFSINT_SIGMASK))
 		return (EINTR);
 	return (0);
 }

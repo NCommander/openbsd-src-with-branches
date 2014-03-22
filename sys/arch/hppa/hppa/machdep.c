@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.213 2013/11/23 07:20:52 uebayasi Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.214 2014/03/13 03:52:55 dlg Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -1216,7 +1216,7 @@ sendsig(sig_t catcher, int sig, int mask, u_long code, int type,
 	struct proc *p = curproc;
 	struct trapframe *tf = p->p_md.md_regs;
 	struct pcb *pcb = &p->p_addr->u_pcb;
-	struct sigacts *psp = p->p_sigacts;
+	struct sigacts *psp = p->p_p->ps_sigacts;
 	struct sigcontext ksc;
 	siginfo_t ksi;
 	register_t scp, sip;

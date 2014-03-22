@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.243 2014/01/20 21:19:28 guenther Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.244 2014/01/21 01:48:44 tedu Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1502,7 +1502,7 @@ fill_kproc(struct proc *p, struct kinfo_proc *ki, int isthread,
 	struct timespec ut, st;
 
 	FILL_KPROC(ki, strlcpy, p, pr, p->p_cred, p->p_ucred, pr->ps_pgrp,
-	    p, pr, s, p->p_vmspace, pr->ps_limit, p->p_sigacts, isthread,
+	    p, pr, s, p->p_vmspace, pr->ps_limit, pr->ps_sigacts, isthread,
 	    show_pointers);
 
 	/* stuff that's too painful to generalize into the macros */

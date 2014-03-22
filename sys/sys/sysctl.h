@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.h,v 1.140 2014/02/08 00:51:13 tedu Exp $	*/
+/*	$OpenBSD: sysctl.h,v 1.141 2014/02/12 05:47:36 guenther Exp $	*/
 /*	$NetBSD: sysctl.h,v 1.16 1996/04/09 20:55:36 cgd Exp $	*/
 
 /*
@@ -473,7 +473,7 @@ do {									\
 		(kp)->p_fd = PTRTOINT64((p)->p_fd);			\
 		(kp)->p_limit = PTRTOINT64((pr)->ps_limit);		\
 		(kp)->p_vmspace = PTRTOINT64((p)->p_vmspace);		\
-		(kp)->p_sigacts = PTRTOINT64((p)->p_sigacts);		\
+		(kp)->p_sigacts = PTRTOINT64((pr)->ps_sigacts);		\
 		(kp)->p_sess = PTRTOINT64((pg)->pg_session);		\
 		(kp)->p_ru = PTRTOINT64((pr)->ps_ru);			\
 	}								\
