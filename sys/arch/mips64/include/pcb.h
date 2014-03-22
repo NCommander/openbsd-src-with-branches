@@ -1,4 +1,4 @@
-/*      $OpenBSD: pcb.h,v 1.4 2010/02/13 14:04:45 miod Exp $	*/
+/*      $OpenBSD: pcb.h,v 1.5 2011/03/23 16:54:36 pirofti Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -52,6 +52,9 @@ struct pcb {
 	} pcb_context;			/* kernel context for resume */
 	int	pcb_onfault;		/* for copyin/copyout faults */
 	void	*pcb_segtab;		/* copy of pmap pm_segtab */
+	uint	pcb_nwired;		/* number of extra wired TLB entries */
+	vaddr_t	pcb_wiredva;		/* va of above */
+	vaddr_t	pcb_wiredpc;		/* last tracked pc value within above */
 };
 
 /*
