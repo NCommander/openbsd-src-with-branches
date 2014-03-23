@@ -911,7 +911,12 @@ pckbd_input(void *vsc, int data)
 			    sc->sc_rawcnt);
 			sc->sc_rawcnt = 0;
 		}
-		return;
+
+		/*
+		 * Pass audio keys to wskbd_input anyway.
+		 */
+		if (rc == 0 || (key != 160 && key != 174 && key != 176))
+			return;
 	}
 #endif
 	if (rc != 0)
