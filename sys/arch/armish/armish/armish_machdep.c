@@ -1,4 +1,4 @@
-/*	$OpenBSD: armish_machdep.c,v 1.21 2013/11/13 18:30:48 jasper Exp $ */
+/*	$OpenBSD: armish_machdep.c,v 1.22 2014/03/13 03:52:55 dlg Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -249,6 +249,8 @@ void	board_powerdown(void);
 void
 boot(int howto)
 {
+	struct device *mainbus;
+
 	if (cold) {
 		/*
 		 * If the system is cold, just halt, unless the user
