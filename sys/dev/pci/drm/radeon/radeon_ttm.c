@@ -1,4 +1,4 @@
-/*	$OpenBSD: radeon_ttm.c,v 1.2 2014/01/24 05:43:46 jsg Exp $	*/
+/*	$OpenBSD: radeon_ttm.c,v 1.3 2014/02/09 11:03:31 jsg Exp $	*/
 /*
  * Copyright 2009 Jerome Glisse.
  * All Rights Reserved.
@@ -294,9 +294,7 @@ static int radeon_move_blit(struct ttm_buffer_object *bo,
 		return -EINVAL;
 	}
 
-#ifdef notyet
 	BUILD_BUG_ON((PAGE_SIZE % RADEON_GPU_PAGE_SIZE) != 0);
-#endif
 
 	/* sync other rings */
 	fence = bo->sync_obj;
