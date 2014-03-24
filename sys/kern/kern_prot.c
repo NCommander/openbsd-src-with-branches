@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_prot.c,v 1.56 2013/04/06 03:44:34 tedu Exp $	*/
+/*	$OpenBSD: kern_prot.c,v 1.57 2014/03/24 00:19:48 guenther Exp $	*/
 /*	$NetBSD: kern_prot.c,v 1.33 1996/02/09 18:59:42 christos Exp $	*/
 
 /*
@@ -46,7 +46,6 @@
 #include <sys/systm.h>
 #include <sys/ucred.h>
 #include <sys/proc.h>
-#include <sys/times.h>
 #include <sys/malloc.h>
 #include <sys/filedesc.h>
 #include <sys/pool.h>
