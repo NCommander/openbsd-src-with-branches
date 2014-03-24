@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.31 2012/10/18 16:57:31 deraadt Exp $
+#	$OpenBSD: install.md,v 1.32 2013/11/16 18:37:27 rpe Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -109,7 +109,7 @@ __EOT
 					/usr/mdec/sgivol -qi $_disk
 					;;
 				n*|N*)
-					exit 1
+					return 1
 					;;
 				esac
 				;;
@@ -125,7 +125,7 @@ __EOT
 		y*|Y*)
 			;;
 		n*|N*)
-			exit 1 ;;
+			return 1 ;;
 		esac
 		;;
 	2)	echo
@@ -137,7 +137,7 @@ __EOT
 			/usr/mdec/sgivol -qi $_disk
 			;;
 		n*|N*)
-			exit 1
+			return 1
 			;;
 		esac
 		;;
