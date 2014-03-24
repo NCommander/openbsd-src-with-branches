@@ -1,4 +1,4 @@
-#	$OpenBSD: changelist,v 1.82 2014/03/16 11:57:10 sthen Exp $
+#	$OpenBSD: changelist,v 1.83 2014/03/24 10:41:40 ajacoutot Exp $
 #
 # List of files which the security script backs up and checks
 # for modifications.
@@ -39,8 +39,6 @@
 /etc/hostapd.conf
 +/etc/hostname.*
 /etc/hosts
-/etc/hosts.allow
-/etc/hosts.deny
 /etc/hosts.equiv
 /etc/hosts.lpd
 /etc/ifstated.conf
