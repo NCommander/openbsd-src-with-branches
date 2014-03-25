@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_debug.c,v 1.14 2013/07/12 14:36:21 eric Exp $	*/
+/*	$OpenBSD: asr_debug.c,v 1.15 2014/03/14 11:07:33 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -354,7 +354,6 @@ asr_transitionstr(int type)
 {
 	switch (type) {
 	CASE(ASYNC_COND);
-	CASE(ASYNC_YIELD);
 	CASE(ASYNC_DONE);
 	default:
 		return "?";
