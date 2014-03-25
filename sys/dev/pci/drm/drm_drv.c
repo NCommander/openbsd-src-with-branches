@@ -1,4 +1,4 @@
-/* $OpenBSD: drm_drv.c,v 1.124 2014/03/09 07:42:29 jsg Exp $ */
+/* $OpenBSD: drm_drv.c,v 1.125 2014/03/13 12:45:04 kettenis Exp $ */
 /*-
  * Copyright 2007-2009 Owain G. Ainsworth <oga@openbsd.org>
  * Copyright © 2008 Intel Corporation
@@ -41,13 +41,17 @@
  */
 
 #include <sys/param.h>
+#include <sys/fcntl.h>
+#include <sys/filio.h>
 #include <sys/limits.h>
+#include <sys/poll.h>
 #include <sys/specdev.h>
 #include <sys/systm.h>
+#include <sys/ttycom.h> /* for TIOCSGRP */
+#include <sys/vnode.h>
+
 #include <uvm/uvm.h>
 #include <uvm/uvm_device.h>
-
-#include <sys/ttycom.h> /* for TIOCSGRP */
 
 #include "drmP.h"
 #include "drm.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttm_page_alloc.c,v 1.3 2014/02/09 10:57:26 jsg Exp $	*/
+/*	$OpenBSD: ttm_page_alloc.c,v 1.4 2014/02/24 21:36:49 kettenis Exp $	*/
 /*
  * Copyright (c) Red Hat Inc.
 
@@ -43,7 +43,7 @@
 #include <dev/pci/agpvar.h>
 #endif
 
-#include <uvm/uvm_extern.h>
+#include <uvm/uvm.h>
 
 #define NUM_PAGES_TO_ALLOC		(PAGE_SIZE/sizeof(struct vm_page *))
 #define SMALL_ALLOCATION		16
