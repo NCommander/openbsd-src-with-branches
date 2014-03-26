@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.126 2012/12/31 06:46:13 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.127 2013/04/10 20:55:34 miod Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -798,8 +798,8 @@ syscall(struct trapframe *frame)
 		panic("syscall");
 
 	p->p_md.md_regs = frame;
-	nsys = p->p_emul->e_nsysent;
-	callp = p->p_emul->e_sysent;
+	nsys = p->p_p->ps_emul->e_nsysent;
+	callp = p->p_p->ps_emul->e_sysent;
 
 	argoff = 4; retq = 0;
 	switch (code = frame->tf_t1) {
@@ -833,7 +833,7 @@ syscall(struct trapframe *frame)
 	}
 
 	if (code < 0 || code >= nsys)
-		callp += p->p_emul->e_nosys;	/* bad syscall # */
+		callp += p->p_p->ps_emul->e_nosys;	/* bad syscall # */
 	else
 		callp += code;
 

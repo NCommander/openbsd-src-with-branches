@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh_machdep.c,v 1.34 2013/06/11 16:42:10 deraadt Exp $	*/
+/*	$OpenBSD: sh_machdep.c,v 1.35 2014/03/22 06:05:45 guenther Exp $	*/
 /*	$NetBSD: sh3_machdep.c,v 1.59 2006/03/04 01:13:36 uwe Exp $	*/
 
 /*
@@ -506,7 +506,7 @@ sendsig(sig_t catcher, int sig, int mask, u_long code, int type,
 	tf->tf_r6 = (int)&fp->sf_uc;	/* "ucp" argument for handler */
  	tf->tf_spc = (int)catcher;
 	tf->tf_r15 = (int)fp;
-	tf->tf_pr = (int)p->p_sigcode;
+	tf->tf_pr = (int)p->p_p->ps_sigcode;
 }
 
 /*

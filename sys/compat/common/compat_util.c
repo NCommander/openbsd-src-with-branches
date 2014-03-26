@@ -1,4 +1,4 @@
-/* 	$OpenBSD: compat_util.c,v 1.10 2004/08/01 06:22:28 mickey Exp $	*/
+/* 	$OpenBSD: compat_util.c,v 1.11 2014/01/15 05:31:51 deraadt Exp $	*/
 /* 	$NetBSD: compat_util.c,v 1.4 1996/03/14 19:31:45 christos Exp $	*/
 
 /*
@@ -172,7 +172,7 @@ bad:
 }
 
 caddr_t  
-stackgap_init(struct emul *e)
+stackgap_init(struct proc *p)
 {
         return STACKGAPBASE;
 }

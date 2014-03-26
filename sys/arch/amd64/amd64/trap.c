@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.32 2012/12/31 06:46:13 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.33 2014/02/13 23:11:06 kettenis Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -507,8 +507,8 @@ syscall(struct trapframe *frame)
 	p = curproc;
 
 	code = frame->tf_rax;
-	callp = p->p_emul->e_sysent;
-	nsys = p->p_emul->e_nsysent;
+	callp = p->p_p->ps_emul->e_sysent;
+	nsys = p->p_p->ps_emul->e_nsysent;
 	argp = &args[0];
 	argoff = 0;
 
@@ -527,7 +527,7 @@ syscall(struct trapframe *frame)
 	}
 
 	if (code < 0 || code >= nsys)
-		callp += p->p_emul->e_nosys;
+		callp += p->p_p->ps_emul->e_nosys;
 	else
 		callp += code;
 
