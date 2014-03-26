@@ -1,4 +1,4 @@
-/*	$OpenBSD: res_mkquery.c,v 1.6 2013/07/12 14:36:22 eric Exp $	*/
+/*	$OpenBSD: res_mkquery.c,v 1.7 2014/03/14 11:07:33 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -16,14 +16,16 @@
  */
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h> /* for MAXDNAME */
+#include <netdb.h>
 
+#include <asr.h>
 #include <errno.h>
 #include <resolv.h>
 #include <string.h>
 
-#include "asr.h"
 #include "asr_private.h"
 
 /* This function is apparently needed by some ports. */

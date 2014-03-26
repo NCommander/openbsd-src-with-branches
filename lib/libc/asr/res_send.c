@@ -1,4 +1,4 @@
-/*	$OpenBSD: res_send.c,v 1.6 2013/11/12 06:09:50 deraadt Exp $	*/
+/*	$OpenBSD: res_send.c,v 1.7 2014/03/25 19:48:11 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -16,14 +16,15 @@
  */
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 
+#include <asr.h>
 #include <errno.h>
 #include <resolv.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include "asr.h"
 
 int
 res_send(const u_char *buf, int buflen, u_char *ans, int anslen)

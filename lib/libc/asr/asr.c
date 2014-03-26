@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.c,v 1.31 2013/07/12 14:36:21 eric Exp $	*/
+/*	$OpenBSD: asr.c,v 1.32 2014/03/25 19:48:11 eric Exp $	*/
 /*
  * Copyright (c) 2010-2012 Eric Faurot <eric@openbsd.org>
  *
@@ -16,15 +16,17 @@
  */
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <arpa/nameser.h>
+#include <netdb.h>
 
+#include <asr.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <netdb.h>
 #include <resolv.h>
 #include <poll.h>
 #include <stdio.h>
@@ -32,7 +34,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "asr.h"
 #include "asr_private.h"
 
 #ifndef ASR_OPT_THREADSAFE

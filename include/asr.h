@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.h,v 1.7 2013/07/12 14:36:21 eric Exp $	*/
+/*	$OpenBSD: asr.h,v 1.8 2014/03/25 19:48:11 eric Exp $	*/
 /*
  * Copyright (c) 2012-2014 Eric Faurot <eric@openbsd.org>
  *
@@ -14,10 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
 /*
  * Expected fd conditions

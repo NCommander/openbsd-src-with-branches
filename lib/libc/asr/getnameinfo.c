@@ -1,4 +1,4 @@
-/*	$OpenBSD: getnameinfo.c,v 1.3 2013/07/12 14:36:21 eric Exp $	*/
+/*	$OpenBSD: getnameinfo.c,v 1.4 2014/03/25 19:48:11 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -16,12 +16,13 @@
  */
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 
+#include <asr.h>
 #include <errno.h>
 #include <resolv.h>
-
-#include "asr.h"
 
 int
 getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host,

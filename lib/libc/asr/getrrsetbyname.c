@@ -1,4 +1,4 @@
-/*	$OpenBSD: getrrsetbyname.c,v 1.3 2013/07/12 14:36:22 eric Exp $	*/
+/*	$OpenBSD: getrrsetbyname.c,v 1.4 2014/03/25 19:48:11 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -16,13 +16,14 @@
  */
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 
+#include <asr.h>
 #include <errno.h>
 #include <resolv.h>
 #include <stdlib.h>
-
-#include "asr.h"
 
 int
 getrrsetbyname(const char *name, unsigned int class, unsigned int type,

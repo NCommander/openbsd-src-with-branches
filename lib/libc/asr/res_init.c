@@ -1,4 +1,4 @@
-/*	$OpenBSD: res_init.c,v 1.2 2013/05/27 17:31:01 eric Exp $	*/
+/*	$OpenBSD: res_init.c,v 1.3 2014/01/15 02:25:34 sthen Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -16,13 +16,15 @@
  */
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <arpa/nameser.h>
 #include <netinet/in.h>
+#include <netdb.h>
 
+#include <asr.h>
 #include <resolv.h>
 #include <string.h>
 
-#include "asr.h"
 #include "asr_private.h"
 #include "thread_private.h"
 
