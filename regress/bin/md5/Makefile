@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.4 2002/09/02 20:01:43 avsm Exp $
+# $OpenBSD: Makefile,v 1.5 2010/08/08 20:15:32 david Exp $
 
-REGRESS_TARGETS=cksum md5 sha1 sha256 sum md5_string_vs_files md5_pipe
+REGRESS_TARGETS=cksum md5 sha1 sha256 sha512 md5_string_vs_files md5_pipe
 REGRESS_TARGETS+=md5_pipe_vs_file md5_multiple_files
 
 cksum:
@@ -15,8 +15,8 @@ sha1:
 sha256:
 	sha256 -x | cmp -s ${.CURDIR}/testsuite.sha256 /dev/stdin
 
-sum:
-	sum -x | cmp -s ${.CURDIR}/testsuite.sum /dev/stdin
+sha512:
+	sha512 -x | cmp -s ${.CURDIR}/testsuite.sha512 /dev/stdin
 
 #	shouldn't allow files on the command line along with '-s'
 md5_string_vs_files:
