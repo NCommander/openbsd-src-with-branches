@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.112 2012/06/19 17:43:40 deraadt Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.113 2013/11/19 18:33:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002-2007 Bob Beck.  All rights reserved.
@@ -669,6 +669,8 @@ initcon(struct con *cp, int fd, struct sockaddr *sa)
 		if (greylist && blackcount > maxblack)
 			cp->stutter = 0;
 		cp->lists = strdup(loglists(cp));
+		if (cp->lists == NULL)
+			err(1, "malloc");
 	}
 	else
 		cp->lists = NULL;
