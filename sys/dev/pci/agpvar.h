@@ -1,4 +1,4 @@
-/*	$OpenBSD: agpvar.h,v 1.28 2013/12/07 10:57:06 kettenis Exp $	*/
+/*	$OpenBSD: agpvar.h,v 1.29 2013/12/09 19:52:11 kettenis Exp $	*/
 /*	$NetBSD: agpvar.h,v 1.4 2001/10/01 21:54:48 fvdl Exp $	*/
 
 /*-
@@ -31,8 +31,6 @@
 
 #ifndef _PCI_AGPVAR_H_
 #define _PCI_AGPVAR_H_
-
-#include <sys/rwlock.h>
 
 /* #define	AGP_DEBUG */
 #ifdef AGP_DEBUG

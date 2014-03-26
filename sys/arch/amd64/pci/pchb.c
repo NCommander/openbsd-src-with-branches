@@ -1,4 +1,4 @@
-/*	$OpenBSD: pchb.c,v 1.39 2012/10/08 21:47:47 deraadt Exp $	*/
+/*	$OpenBSD: pchb.c,v 1.40 2013/12/06 21:03:05 deraadt Exp $	*/
 /*	$NetBSD: pchb.c,v 1.1 2003/04/26 18:39:50 fvdl Exp $	*/
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -58,6 +58,7 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/timeout.h>
+#include <sys/rwlock.h>
 
 #include <machine/bus.h>
 
