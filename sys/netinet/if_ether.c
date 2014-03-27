@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.121 2014/03/18 10:47:34 mpi Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.122 2014/03/18 14:55:49 mikeb Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -867,7 +867,6 @@ arp_ifinit(struct arpcom *ac, struct ifaddr *ifa)
 	    &satosin(ifa->ifa_addr)->sin_addr.s_addr,
 	    ac->ac_enaddr);
 	ifa->ifa_rtrequest = arp_rtrequest;
-	ifa->ifa_flags |= RTF_CLONING;
 }
 
 /*
