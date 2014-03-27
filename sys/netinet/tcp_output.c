@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.100 2013/10/19 10:38:55 henning Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.101 2013/10/24 11:31:43 mpi Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -1076,9 +1076,7 @@ send:
 		}
 		error = ip_output(m, tp->t_inpcb->inp_options,
 			&tp->t_inpcb->inp_route,
-			(ip_mtudisc ? IP_MTUDISC : 0) |
-				  (so->so_options & SO_DONTROUTE),
-			(void *)NULL, tp->t_inpcb);
+			(ip_mtudisc ? IP_MTUDISC : 0), NULL, tp->t_inpcb);
 		break;
 #endif /* INET */
 #ifdef INET6
@@ -1099,8 +1097,7 @@ send:
 		}
 		error = ip6_output(m, tp->t_inpcb->inp_outputopts6,
 			  &tp->t_inpcb->inp_route6,
-			  (so->so_options & SO_DONTROUTE), NULL, NULL,
-			  tp->t_inpcb);
+			  0, NULL, NULL, tp->t_inpcb);
 		break;
 #endif /* INET6 */
 	}
