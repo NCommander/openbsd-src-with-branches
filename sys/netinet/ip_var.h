@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_var.h,v 1.49 2013/11/17 10:07:32 bluhm Exp $	*/
+/*	$OpenBSD: ip_var.h,v 1.51 2014/01/23 23:51:29 henning Exp $	*/
 /*	$NetBSD: ip_var.h,v 1.16 1996/02/13 23:43:20 christos Exp $	*/
 
 /*
@@ -176,10 +176,8 @@ struct route;
 struct inpcb;
 
 int	 ip_ctloutput(int, struct socket *, int, int, struct mbuf **);
-int	 ip_dooptions(struct mbuf *);
 void	 ip_drain(void);
 void	 ip_flush(void);
-void	 ip_forward(struct mbuf *, int);
 int	 ip_fragment(struct mbuf *, struct ifnet *, u_long);
 void	 ip_freef(struct ipq *);
 void	 ip_freemoptions(struct ip_moptions *);
