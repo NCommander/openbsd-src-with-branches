@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keyscan.c,v 1.89 2013/12/06 13:39:49 markus Exp $ */
+/* $OpenBSD: ssh-keyscan.c,v 1.90 2014/03/12 04:44:58 djm Exp $ */
 /*
  * Copyright 1995, 1996 by David Mazieres <dm@lcs.mit.edu>.
  *
@@ -227,6 +227,7 @@ ssh2_capable(int remote_major, int remote_minor)
 static Key *
 keygrab_ssh2(con *c)
 {
+	char *myproposal[PROPOSAL_MAX] = { KEX_CLIENT };
 	int j;
 
 	packet_set_connection(c->c_fd, c->c_fd);

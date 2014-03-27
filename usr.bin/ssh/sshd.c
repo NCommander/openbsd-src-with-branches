@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.420 2014/02/26 21:53:37 markus Exp $ */
+/* $OpenBSD: sshd.c,v 1.421 2014/03/26 19:58:37 tedu Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2266,6 +2266,7 @@ sshd_hostkey_sign(Key *privkey, Key *pubkey, u_char **signature, u_int *slen,
 static void
 do_ssh2_kex(void)
 {
+	char *myproposal[PROPOSAL_MAX] = { KEX_SERVER };
 	Kex *kex;
 
 	if (options.ciphers != NULL) {
