@@ -1076,7 +1076,9 @@ send:
 		}
 		error = ip_output(m, tp->t_inpcb->inp_options,
 			&tp->t_inpcb->inp_route,
-			(ip_mtudisc ? IP_MTUDISC : 0), NULL, tp->t_inpcb);
+			(ip_mtudisc ? IP_MTUDISC : 0) |
+				  (so->so_options & SO_DONTROUTE),
+			(void *)NULL, tp->t_inpcb);
 		break;
 #endif /* INET */
 #ifdef INET6
@@ -1097,7 +1099,8 @@ send:
 		}
 		error = ip6_output(m, tp->t_inpcb->inp_outputopts6,
 			  &tp->t_inpcb->inp_route6,
-			  0, NULL, NULL, tp->t_inpcb);
+			  (so->so_options & SO_DONTROUTE), NULL, NULL,
+			  tp->t_inpcb);
 		break;
 #endif /* INET6 */
 	}

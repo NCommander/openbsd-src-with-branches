@@ -1090,8 +1090,8 @@ udp_output(struct mbuf *m, ...)
 	m->m_pkthdr.rdomain = inp->inp_rtableid;
 
 	error = ip_output(m, inp->inp_options, &inp->inp_route,
-	    (inp->inp_socket->so_options & SO_BROADCAST) | IP_IPSECFLOW,
-	    inp->inp_moptions, inp, ipsecflowinfo);
+	    (inp->inp_socket->so_options & (SO_DONTROUTE | SO_BROADCAST))
+	    |IP_IPSECFLOW, inp->inp_moptions, inp, ipsecflowinfo);
 	if (error == EACCES)	/* translate pf(4) error for userland */
 		error = EHOSTUNREACH;
 

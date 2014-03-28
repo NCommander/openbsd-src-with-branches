@@ -180,7 +180,8 @@ divert6_output(struct mbuf *m, ...)
 		splx(s);
 	} else {
 		error = ip6_output(m, NULL, &inp->inp_route6,
-		    IP_ALLOWBROADCAST | IP_RAWOUTPUT, NULL, NULL, NULL);
+		    ((so->so_options & SO_DONTROUTE) ? IP_ROUTETOIF : 0)
+		    | IP_ALLOWBROADCAST | IP_RAWOUTPUT, NULL, NULL, NULL);
 	}
 
 	div6stat.divs_opackets++;

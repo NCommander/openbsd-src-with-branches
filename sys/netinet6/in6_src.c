@@ -286,6 +286,25 @@ in6_selectsrc(struct sockaddr_in6 *dstsock, struct ip6_pktopts *opts,
 			if (ia6 == 0) /* xxx scope error ?*/
 				ia6 = ifatoia6(ro->ro_rt->rt_ifa);
 		}
+#if 0
+		/*
+		 * xxx The followings are necessary? (kazu)
+		 * I don't think so.
+		 * It's for SO_DONTROUTE option in IPv4.(jinmei)
+		 */
+		if (ia6 == 0) {
+			struct sockaddr_in6 sin6 = {sizeof(sin6), AF_INET6, 0};
+
+			sin6->sin6_addr = *dst;
+
+			ia6 = ifatoia6(ifa_ifwithdstaddr(sin6tosa(&sin6)));
+			if (ia6 == 0)
+				ia6 = ifatoia6(ifa_ifwithnet(sin6tosa(&sin6)));
+			if (ia6 == 0)
+				return (0);
+			return (&ia6->ia_addr.sin6_addr);
+		}
+#endif /* 0 */
 		if (ia6 == 0) {
 			*errorp = EHOSTUNREACH;	/* no route */
 			return (0);

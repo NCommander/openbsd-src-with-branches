@@ -215,6 +215,8 @@ linux_to_bsd_msg_flags(int lflags)
 		flags |= MSG_OOB;
 	if (lflags & LINUX_MSG_PEEK)
 		flags |= MSG_PEEK;
+	if (lflags & LINUX_MSG_DONTROUTE)
+		flags |= MSG_DONTROUTE;
 	if (lflags & LINUX_MSG_DONTWAIT)
 		flags |= MSG_DONTWAIT;
 	if (lflags & LINUX_MSG_WAITALL)
