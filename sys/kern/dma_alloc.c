@@ -1,4 +1,5 @@
-/*	$OpenBSD: dma_alloc.c,v 1.8 2011/04/18 19:23:46 art Exp $	 */
+/*	$OpenBSD: dma_alloc.c,v 1.9 2011/06/23 21:42:05 ariane Exp $	 */
+
 /*
  * Copyright (c) 2010 Theo de Raadt <deraadt@openbsd.org>
  *
@@ -17,7 +18,8 @@
 
 #include <sys/param.h>
 #include <sys/pool.h>
-#include <uvm/uvm.h>
+
+#include <uvm/uvm_extern.h>
 
 static __inline int	 dma_alloc_index(size_t size);
 

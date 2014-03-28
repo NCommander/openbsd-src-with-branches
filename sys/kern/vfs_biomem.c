@@ -1,4 +1,5 @@
-/*	$OpenBSD: vfs_biomem.c,v 1.23 2013/01/18 10:07:37 beck Exp $ */
+/*	$OpenBSD: vfs_biomem.c,v 1.28 2013/07/09 15:37:43 beck Exp $ */
+
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
  *
@@ -24,7 +25,6 @@
 #include <sys/mount.h>
 
 #include <uvm/uvm_extern.h>
-#include <uvm/uvm.h>
 
 vaddr_t buf_kva_start, buf_kva_end;
 int buf_needva;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.159 2014/03/22 06:05:45 guenther Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.160 2014/03/26 05:23:42 guenther Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -62,8 +62,7 @@
 #include "systrace.h"
 #include <dev/systrace.h>
 
-#include <uvm/uvm_extern.h>
-#include <uvm/uvm_map.h>
+#include <uvm/uvm.h>
 
 #ifdef __HAVE_MD_TCB
 # include <machine/tcb.h>

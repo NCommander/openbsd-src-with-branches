@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc_debug.c,v 1.31 2013/06/25 19:45:15 syl Exp $	*/
+/*	$OpenBSD: kern_malloc_debug.c,v 1.32 2013/08/08 23:25:06 syl Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Artur Grabowski <art@openbsd.org>
@@ -57,7 +57,7 @@
 #include <sys/systm.h>
 #include <sys/pool.h>
 
-#include <uvm/uvm.h>
+#include <uvm/uvm_extern.h>
 
 /*
  * debug_malloc_type and debug_malloc_size define the type and size of

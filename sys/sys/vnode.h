@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnode.h,v 1.121 2013/09/24 09:20:12 espie Exp $	*/
+/*	$OpenBSD: vnode.h,v 1.122 2013/11/01 17:17:25 deraadt Exp $	*/
 /*	$NetBSD: vnode.h,v 1.38 1996/02/29 20:59:05 cgd Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #include <sys/selinfo.h>
 #include <sys/tree.h>
 
-#include <uvm/uvm.h>
+#include <uvm/uvm_extern.h>
 #include <uvm/uvm_vnode.h>
 
 /*

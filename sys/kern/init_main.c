@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.205 2014/03/22 06:05:45 guenther Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.206 2014/03/26 05:23:42 guenther Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -85,7 +85,7 @@
 #include <ufs/ufs/quota.h>
 
 
-#include <uvm/uvm.h>
+#include <uvm/uvm_extern.h>
 
 #include <net/if.h>
 #include <net/raw_cb.h>
