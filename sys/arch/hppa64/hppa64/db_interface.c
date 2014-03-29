@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: db_interface.c,v 1.2 2011/09/22 21:51:24 jsing Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -113,7 +113,7 @@ int db_active = 0;
 void
 Debugger(void)
 {
-	__asm __volatile ("break %0, %1"
+	__asm volatile ("break %0, %1"
 	    :: "i" (HPPA_BREAK_KERNEL), "i" (HPPA_BREAK_KGDB));
 }
 

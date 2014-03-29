@@ -1,4 +1,4 @@
-/* $OpenBSD: lock.h,v 1.5 2013/12/22 18:32:40 miod Exp $	*/
+/* $OpenBSD: lock.h,v 1.6 2014/02/01 21:18:24 miod Exp $	*/
 /* $NetBSD: lock.h,v 1.16 2001/12/17 23:34:57 thorpej Exp $ */
 
 /*-
@@ -67,7 +67,7 @@ __cpu_cas(volatile unsigned long *addr, unsigned long old, unsigned long new)
 {
 	unsigned long t0, v0;
 
-	__asm __volatile(
+	__asm volatile(
 		"1:	ldq_l	%1, 0(%2)	\n"	/* v0 = *addr */
 		"	cmpeq	%1, %3, %0	\n"	/* t0 = v0 == old */
 		"	beq	%0, 2f		\n"

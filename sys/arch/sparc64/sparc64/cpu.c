@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.60 2013/06/03 16:55:22 guenther Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.61 2014/01/19 12:45:36 deraadt Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -794,7 +794,7 @@ cpu_idle_cycle(void)
 	 * just as well as using the suspend instruction and makes the
 	 * code a little bit less complicated.
 	 */
-	__asm __volatile(
+	__asm volatile(
 		"999:	nop					\n"
 		"	.section .sun4u_mtp_patch, \"ax\"	\n"
 		"	.word	999b				\n"

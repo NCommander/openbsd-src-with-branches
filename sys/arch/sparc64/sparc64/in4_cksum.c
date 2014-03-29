@@ -1,4 +1,4 @@
-/*	$OpenBSD: in4_cksum.c,v 1.2 2007/04/10 17:47:55 miod Exp $	*/
+/*	$OpenBSD: in4_cksum.c,v 1.3 2008/05/15 22:17:08 brad Exp $	*/
 /*	$NetBSD: in4_cksum.c,v 1.5 2003/10/13 14:22:20 agc Exp $ */
 
 /*
@@ -113,7 +113,7 @@ in4_cksum(struct mbuf *m, u_int8_t nxt, int off, int len)
 		ipov.ih_dst = mtod(m, struct ip *)->ip_dst;
 		w = (u_char *)&ipov;
 		/* assumes sizeof(ipov) == 20 */
-		__asm __volatile(" lduw [%5 + 0], %1; "
+		__asm volatile(" lduw [%5 + 0], %1; "
 			" lduw [%5 + 4], %2; "
 			" lduw [%5 + 8], %3; add %0, %1, %0; "
 			" lduw [%5 + 12], %1; add %0, %2, %0; "

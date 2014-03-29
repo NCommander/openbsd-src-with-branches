@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.4 2011/03/23 16:54:36 pirofti Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.5 2013/08/06 08:19:52 kettenis Exp $	*/
 
 /* Public Domain */
 
@@ -8,7 +8,7 @@
 #if defined(_KERNEL)
 
 static __inline void
-atomic_setbits_int(__volatile unsigned int *uip, unsigned int v)
+atomic_setbits_int(volatile unsigned int *uip, unsigned int v)
 {
 	unsigned int tmp;
 
@@ -21,7 +21,7 @@ atomic_setbits_int(__volatile unsigned int *uip, unsigned int v)
 }
 
 static __inline void
-atomic_clearbits_int(__volatile unsigned int *uip, unsigned int v)
+atomic_clearbits_int(volatile unsigned int *uip, unsigned int v)
 {
 	unsigned int tmp;
 

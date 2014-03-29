@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.h,v 1.2 2007/05/05 12:06:19 miod Exp $	*/
+/*	$OpenBSD: mutex.h,v 1.3 2014/01/22 11:01:15 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -30,7 +30,7 @@
 struct mutex {
 	int mtx_wantipl;
 	int mtx_oldcpl;
-	__volatile void *mtx_owner;
+	volatile void *mtx_owner;
 };
 
 /*

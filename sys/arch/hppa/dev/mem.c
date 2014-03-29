@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.31 2009/02/04 17:21:23 miod Exp $	*/
+/*	$OpenBSD: mem.c,v 1.32 2010/12/26 15:40:59 miod Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -236,7 +236,7 @@ memattach(parent, self, aux)
 
 			sc->sc_vp->vi_control = vic;
 
-			__asm __volatile("stwas %1, 0(%0)"
+			__asm volatile("stwas %1, 0(%0)"
 			    :: "r" (&VI_CTRL), "r" (vic) : "memory");
 			splx(s);
 #ifdef DEBUG
@@ -300,7 +300,7 @@ viper_eisa_en()
 		vic = VI_CTRL;
 		vic &= ~VI_CTRL_EISA_DEN;
 		sc->sc_vp->vi_control = vic;
-		__asm __volatile("stwas %1, 0(%0)"
+		__asm volatile("stwas %1, 0(%0)"
 		    :: "r" (&VI_CTRL), "r" (vic) : "memory");
 		splx(s);
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.50 2014/01/30 00:51:13 dlg Exp $	*/
+/*	$OpenBSD: clock.c,v 1.51 2014/02/08 11:04:50 kettenis Exp $	*/
 /*	$NetBSD: clock.c,v 1.41 2001/07/24 19:29:25 eeh Exp $ */
 
 /*
@@ -1037,7 +1037,7 @@ tick_get_timecount(struct timecounter *tc)
 {
 	u_int64_t tick;
 
-	__asm __volatile("rd %%tick, %0" : "=r" (tick) :);
+	__asm volatile("rd %%tick, %0" : "=r" (tick) :);
 
 	return (tick & ~0u);
 }
@@ -1047,7 +1047,7 @@ sys_tick_get_timecount(struct timecounter *tc)
 {
 	u_int64_t tick;
 
-	__asm __volatile("rd %%sys_tick, %0" : "=r" (tick) :);
+	__asm volatile("rd %%sys_tick, %0" : "=r" (tick) :);
 
 	return (tick & ~0u);
 }

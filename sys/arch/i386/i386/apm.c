@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.102 2013/12/06 21:03:05 deraadt Exp $	*/
+/*	$OpenBSD: apm.c,v 1.103 2014/03/13 03:52:55 dlg Exp $	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -611,11 +611,11 @@ apm_cpu_idle(void)
 
 		/* If BIOS did not halt, halt now! */
 		if (apm_flags & APM_IDLE_SLOWS) {
-			__asm __volatile("sti;hlt");
+			__asm volatile("sti;hlt");
 		}
 		call_apm_idle = curcpu()->ci_schedstate.spc_cp_time[CP_IDLE];
 	} else {
-		__asm __volatile("sti;hlt");
+		__asm volatile("sti;hlt");
 	}
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.206 2014/03/26 05:23:42 guenther Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.207 2014/03/28 17:57:11 mpi Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -129,7 +129,7 @@ int	boothowto;
 struct	timespec boottime;
 int	ncpus =  1;
 int	ncpusfound = 1;			/* number of cpus we find */
-__volatile int start_init_exec;		/* semaphore for start_init() */
+volatile int start_init_exec;		/* semaphore for start_init() */
 
 #if !defined(NO_PROPOLICE)
 long	__guard_local __attribute__((section(".openbsd.randomdata")));

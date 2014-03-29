@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.26 2009/03/15 19:40:40 miod Exp $	*/
+/*	$OpenBSD: psl.h,v 1.27 2010/05/31 21:39:56 deraadt Exp $	*/
 /*	$NetBSD: psl.h,v 1.20 2001/04/13 23:30:05 thorpej Exp $ */
 
 /*
@@ -356,12 +356,12 @@ extern __inline int name(void);						\
 extern __inline int name()						\
 {									\
 	int oldpil;							\
-	__asm __volatile("    rdpr %%pil, %0		\n"		\
+	__asm volatile("    rdpr %%pil, %0		\n"		\
 			 "    wrpr %%g0, %1, %%pil	\n"		\
 	    : "=&r" (oldpil)						\
 	    : "n" (newpil)						\
 	    : "%g0");							\
-	__asm __volatile("" : : : "memory");				\
+	__asm volatile("" : : : "memory");				\
 	return (oldpil);						\
 }
 /* A non-priority-decreasing version of SPL */
@@ -372,7 +372,7 @@ extern __inline int name()						\
 	int oldpil;							\
 									\
 	if (newpil <= 1) {						\
-		__asm __volatile("    rdpr	%%pil, %0	\n"	\
+		__asm volatile("    rdpr	%%pil, %0	\n"	\
 				 "    brnz,pn	%0, 1f		\n"	\
 				 "     nop			\n"	\
 				 "    wrpr	%%g0, %1, %%pil	\n"	\
@@ -381,7 +381,7 @@ extern __inline int name()						\
 	    : "I" (newpil)						\
 	    : "%g0");							\
 	} else {							\
-		__asm __volatile("    rdpr	%%pil, %0	\n"	\
+		__asm volatile("    rdpr	%%pil, %0	\n"	\
 				 "    cmp	%0, %1 - 1	\n"	\
 				 "    bgu,pn	%%xcc, 1f	\n"	\
 				 "     nop			\n"	\
@@ -391,7 +391,7 @@ extern __inline int name()						\
 	    : "I" (newpil)						\
 	    : "cc");							\
 	}								\
-	__asm __volatile("" : : : "memory");				\
+	__asm volatile("" : : : "memory");				\
 	return (oldpil);						\
 }
 #endif

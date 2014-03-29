@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_autoconf.c,v 1.73 2013/12/12 20:56:01 guenther Exp $	*/
+/*	$OpenBSD: subr_autoconf.c,v 1.74 2014/03/13 03:52:56 dlg Exp $	*/
 /*	$NetBSD: subr_autoconf.c,v 1.21 1996/04/04 06:06:18 cgd Exp $	*/
 
 /*
@@ -93,7 +93,7 @@ void config_process_deferred_children(struct device *);
 
 struct devicelist alldevs;		/* list of all devices */
 
-__volatile int config_pending;		/* semaphore for mountroot */
+volatile int config_pending;		/* semaphore for mountroot */
 
 struct mutex autoconf_attdet_mtx = MUTEX_INITIALIZER(IPL_HIGH);
 /*

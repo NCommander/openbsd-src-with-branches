@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.59 2013/03/12 09:37:16 mpi Exp $ */
+/*	$OpenBSD: cpu.h,v 1.60 2013/05/31 17:00:58 tedu Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -192,7 +192,7 @@ curcpu(void)
 {
 	struct cpu_info *cpuptr;
 
-	__asm__ __volatile__ ("ldcr %0, %%cr17" : "=r" (cpuptr));
+	__asm__ volatile ("ldcr %0, %%cr17" : "=r" (cpuptr));
 	return cpuptr;
 }
 

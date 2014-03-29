@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcb.h,v 1.1 2011/10/27 04:01:17 guenther Exp $	*/
+/*	$OpenBSD: tcb.h,v 1.2 2011/11/09 15:35:01 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2011 Philip Guenther <guenther@openbsd.org>
@@ -63,7 +63,7 @@ __powerpc_read_tcb(int offset)
 #define TCB_GET_MEMBER(member) \
 	__powerpc_read_tcb(offsetof(struct thread_control_block, member))
 
-#define TCB_SET(tcb)	__asm __volatile("mr %%r2, %0" : : "r" (tcb))
+#define TCB_SET(tcb)	__asm volatile("mr %%r2, %0" : : "r" (tcb))
 
 #endif /* 0 */
 

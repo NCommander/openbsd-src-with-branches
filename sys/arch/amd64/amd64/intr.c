@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.34 2013/05/16 16:20:00 kettenis Exp $	*/
+/*	$OpenBSD: intr.c,v 1.35 2013/06/26 19:53:50 kettenis Exp $	*/
 /*	$NetBSD: intr.c,v 1.3 2003/03/03 22:16:20 fvdl Exp $	*/
 
 /*
@@ -737,6 +737,6 @@ softintr(int sir)
 {
 	struct cpu_info *ci = curcpu();
 
-	__asm __volatile("lock; orq %1, %0" :
+	__asm volatile("lock; orq %1, %0" :
 	    "=m"(ci->ci_ipending) : "ir" (1UL << sir));
 }

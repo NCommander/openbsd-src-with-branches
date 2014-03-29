@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock_machdep.c,v 1.5 2014/01/30 00:51:13 dlg Exp $	*/
+/*	$OpenBSD: lock_machdep.c,v 1.6 2014/03/14 01:20:44 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
@@ -59,7 +59,7 @@ extern int __mp_lock_spinout;
 static __inline void
 __mp_lock_spin_hook(void)
 {
-	__asm __volatile(
+	__asm volatile(
 		"999:	rd	%%ccr, %%g0			\n"
 		"	rd	%%ccr, %%g0			\n"
 		"	rd	%%ccr, %%g0			\n"

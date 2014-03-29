@@ -1,4 +1,4 @@
-/*	$OpenBSD: octeonvar.h,v 1.14 2013/11/04 17:49:37 bcallah Exp $	*/
+/*	$OpenBSD: octeonvar.h,v 1.15 2013/11/04 17:51:03 bcallah Exp $	*/
 /*	$NetBSD: maltavar.h,v 1.3 2002/03/18 10:10:16 simonb Exp $	*/
 
 /*-
@@ -297,7 +297,7 @@ ffs64(uint64_t val)
 {
 	int ret;
 
-	__asm __volatile ( \
+	__asm volatile ( \
 		_ASM_PROLOGUE_MIPS64
 		"	dclz	%0, %1			\n"
 		_ASM_EPILOGUE
@@ -367,7 +367,7 @@ octeon_disable_interrupt(uint32_t *new)
 {
 	uint32_t s, tmp;
 
-	__asm __volatile (
+	__asm volatile (
 		_ASM_PROLOGUE
 		"	mfc0	%[s], $12		\n"
 		"	and	%[tmp], %[s], ~1	\n"
@@ -383,7 +383,7 @@ octeon_disable_interrupt(uint32_t *new)
 static inline void
 octeon_restore_status(uint32_t s)
 {
-	__asm __volatile (
+	__asm volatile (
 		_ASM_PROLOGUE
 		"	mtc0	%[s], $12		\n"
 		_ASM_EPILOGUE
@@ -395,7 +395,7 @@ octeon_get_cycles(void)
 {
 	uint64_t tmp;
 
-	__asm __volatile (
+	__asm volatile (
 		_ASM_PROLOGUE_MIPS64
 		"	dmfc0	%[tmp], $9, 6		\n"
 		_ASM_EPILOGUE

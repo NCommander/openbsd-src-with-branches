@@ -1,4 +1,4 @@
-/* $OpenBSD: db_interface.c,v 1.18 2014/01/26 17:40:09 miod Exp $ */
+/* $OpenBSD: db_interface.c,v 1.19 2014/01/30 20:10:24 miod Exp $ */
 /* $NetBSD: db_interface.c,v 1.8 1999/10/12 17:08:57 jdolecek Exp $ */
 
 /* 
@@ -223,7 +223,7 @@ void
 Debugger()
 {
 
-	__asm __volatile("call_pal 0x81");		/* bugchk */
+	__asm volatile("call_pal 0x81");		/* bugchk */
 }
 
 /*
