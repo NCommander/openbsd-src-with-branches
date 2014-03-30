@@ -1,4 +1,4 @@
-dnl $KTH: have-type.m4,v 1.9 2004/08/26 12:35:42 joda Exp $
+dnl $Id$
 dnl
 dnl check for existance of a type
 

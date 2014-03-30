@@ -296,6 +296,13 @@ my $TEST = 'TEST';
     is($res, 1,        "$desc: res value");
     is($one, 'a',      "$desc: \$1 value");
 
+    SKIP: {
+    if (
+        !$Config::Config{d_setlocale}
+    || $Config::Config{ccflags} =~ /\bD?NO_LOCALE(_|\b)/
+    ) {
+        skip "no locale support", 10
+    }
     $desc = "match with pattern tainted via locale";
 
     $s = 'abcd';
@@ -315,6 +322,7 @@ my $TEST = 'TEST';
     is_tainted($one,   "$desc: \$1 tainted");
     is($res, 1,        "$desc: res value");
     is($one, 'a',      "$desc: \$1 value");
+    }
 
     $desc = "match with pattern tainted, list cxt";
 
@@ -339,6 +347,13 @@ my $TEST = 'TEST';
     is($res2,'b',      "$desc: res2 value");
     is($one, 'd',      "$desc: \$1 value");
 
+    SKIP: {
+    if (
+        !$Config::Config{d_setlocale}
+    || $Config::Config{ccflags} =~ /\bD?NO_LOCALE(_|\b)/
+    ) {
+        skip "no locale support", 12
+    }
     $desc = "match with pattern tainted via locale, list cxt";
 
     $s = 'abcd';
@@ -360,6 +375,7 @@ my $TEST = 'TEST';
     is($res, 'a',      "$desc: res value");
     is($res2,'b',      "$desc: res2 value");
     is($one, 'd',      "$desc: \$1 value");
+    }
 
     $desc = "substitution with string tainted";
 
@@ -481,6 +497,13 @@ my $TEST = 'TEST';
     is($res, 'xyz',    "$desc: res value");
     is($one, 'abcd',   "$desc: \$1 value");
 
+    SKIP: {
+    if (
+        !$Config::Config{d_setlocale}
+    || $Config::Config{ccflags} =~ /\bD?NO_LOCALE(_|\b)/
+    ) {
+        skip "no locale support", 18
+    }
     $desc = "substitution with pattern tainted via locale";
 
     $s = 'abcd';
@@ -513,6 +536,7 @@ my $TEST = 'TEST';
     is($s,  'abcd',    "$desc: s value");
     is($res, 'xyz',    "$desc: res value");
     is($one, 'abcd',   "$desc: \$1 value");
+    }
 
     $desc = "substitution with replacement tainted";
 
@@ -652,6 +676,13 @@ my $TEST = 'TEST';
 	is($res, 1,        "$desc: res value");
 	is($one, 'a',      "$desc: \$1 value");
 
+    SKIP: {
+    if (
+        !$Config::Config{d_setlocale}
+    || $Config::Config{ccflags} =~ /\bD?NO_LOCALE(_|\b)/
+    ) {
+        skip "no locale support", 10
+    }
 	$desc = "use re 'taint': match with pattern tainted via locale";
 
 	$s = 'abcd';
@@ -671,6 +702,7 @@ my $TEST = 'TEST';
 	is_tainted($one,   "$desc: \$1 tainted");
 	is($res, 1,        "$desc: res value");
 	is($one, 'a',      "$desc: \$1 value");
+    }
 
 	$desc = "use re 'taint': match with pattern tainted, list cxt";
 
@@ -695,6 +727,13 @@ my $TEST = 'TEST';
 	is($res2,'b',      "$desc: res2 value");
 	is($one, 'd',      "$desc: \$1 value");
 
+    SKIP: {
+    if (
+        !$Config::Config{d_setlocale}
+    || $Config::Config{ccflags} =~ /\bD?NO_LOCALE(_|\b)/
+    ) {
+        skip "no locale support", 12
+    }
 	$desc = "use re 'taint': match with pattern tainted via locale, list cxt";
 
 	$s = 'abcd';
@@ -716,6 +755,7 @@ my $TEST = 'TEST';
 	is($res, 'a',      "$desc: res value");
 	is($res2,'b',      "$desc: res2 value");
 	is($one, 'd',      "$desc: \$1 value");
+    }
 
 	$desc = "use re 'taint': substitution with string tainted";
 
@@ -838,6 +878,13 @@ my $TEST = 'TEST';
 	is($res, 'xyz',    "$desc: res value");
 	is($one, 'abcd',   "$desc: \$1 value");
 
+    SKIP: {
+    if (
+        !$Config::Config{d_setlocale}
+    || $Config::Config{ccflags} =~ /\bD?NO_LOCALE(_|\b)/
+    ) {
+        skip "no locale support", 18
+    }
 	$desc = "use re 'taint': substitution with pattern tainted via locale";
 
 	$s = 'abcd';
@@ -870,6 +917,7 @@ my $TEST = 'TEST';
 	is($s,  'abcd',    "$desc: s value");
 	is($res, 'xyz',    "$desc: res value");
 	is($one, 'abcd',   "$desc: \$1 value");
+    }
 
 	$desc = "use re 'taint': substitution with replacement tainted";
 
@@ -2183,7 +2231,13 @@ pass("no death when TARG of ref is tainted");
     isnt_tainted $$, "PID not tainted when read in tainted expression";
 }
 
-{
+SKIP: {
+    if (
+        !$Config::Config{d_setlocale}
+    || $Config::Config{ccflags} =~ /\bD?NO_LOCALE(_|\b)/
+    ) {
+        skip "no locale support", 4
+    }
     use feature 'fc';
     use locale;
     my ($latin1, $utf8) = ("\xDF") x 2;

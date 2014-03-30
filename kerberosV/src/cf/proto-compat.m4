@@ -1,4 +1,4 @@
-dnl $KTH: proto-compat.m4,v 1.6 2004/08/26 12:35:42 joda Exp $
+dnl $Id$
 dnl
 dnl
 dnl Check if the prototype of a function is compatible with another one

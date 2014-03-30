@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2002 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -10,7 +10,7 @@
  * the sendmail distribution.
  *
  *
- *	$Sendmail: conf.h,v 8.555 2001/09/03 17:21:30 gshapiro Exp $
+ *	$Sendmail: conf.h,v 8.577 2013/11/22 20:51:55 ca Exp $
  */
 
 /*
@@ -59,29 +59,41 @@ struct rusage;	/* forward declaration to get gcc to shut up in wait.h */
 **	If you do, be careful, none should be set anywhere near INT_MAX
 **********************************************************************/
 
-#define MAXLINE		2048		/* max line length */
-#define MAXNAME		256		/* max length of a name */
-#define MAXPV		256		/* max # of parms to mailers */
-#define MAXATOM		1000		/* max atoms per address */
-#define MAXRWSETS	200		/* max # of sets of rewriting rules */
-#define MAXPRIORITIES	25		/* max values for Precedence: field */
-#define MAXMXHOSTS	100		/* max # of MX records for one host */
-#define SMTPLINELIM	990		/* maximum SMTP line length */
-#define MAXKEY		128		/* maximum size of a database key */
-#define MEMCHUNKSIZE	1024		/* chunk size for memory allocation */
-#define MAXUSERENVIRON	100		/* max envars saved, must be >= 3 */
-#define MAXALIASDB	12		/* max # of alias databases */
-#define MAXMAPSTACK	12		/* max # of stacked or sequenced maps */
+#define MAXLINE		2048	/* max line length */
+#if SASL
+# define MAXINPLINE	12288	/* max input line length (for AUTH) */
+#else /* SASL */
+# define MAXINPLINE	MAXLINE	/* max input line length */
+#endif /* SASL */
+#define MAXNAME		256	/* max length of a name */
+#ifndef MAXAUTHINFO
+# define MAXAUTHINFO	100	/* max length of authinfo token */
+#endif /* ! MAXAUTHINFO */
+#define MAXPV		256	/* max # of parms to mailers */
+#define MAXATOM		1000	/* max atoms per address */
+#define MAXRWSETS	200	/* max # of sets of rewriting rules */
+#define MAXPRIORITIES	25	/* max values for Precedence: field */
+#define MAXMXHOSTS	100	/* max # of MX records for one host */
+#define SMTPLINELIM	990	/* max SMTP line length */
+#define MAXUDBKEY	128	/* max size of a database key (udb only) */
+#define MAXKEY		1024	/* max size of a database key */
+#define MEMCHUNKSIZE	1024	/* chunk size for memory allocation */
+#define MAXUSERENVIRON	100	/* max envars saved, must be >= 3 */
+#define MAXMAPSTACK	12	/* max # of stacked or sequenced maps */
 #if MILTER
-# define MAXFILTERS	25		/* max # of milter filters */
-# define MAXFILTERMACROS 50		/* max # of macros per milter cmd */
+# define MAXFILTERS	25	/* max # of milter filters */
+# define MAXFILTERMACROS 50	/* max # of macros per milter cmd */
 #endif /* MILTER */
-#define MAXSMTPARGS	20		/* max # of ESMTP args for MAIL/RCPT */
-#define MAXTOCLASS	8		/* max # of message timeout classes */
-#define MAXRESTOTYPES	3		/* max # of resolver timeout types */
-#define MAXMIMEARGS	20		/* max args in Content-Type: */
-#define MAXMIMENESTING	20		/* max MIME multipart nesting */
-#define QUEUESEGSIZE	1000		/* increment for queue size */
+#define MAXSMTPARGS	20	/* max # of ESMTP args for MAIL/RCPT */
+#define MAXTOCLASS	8	/* max # of message timeout classes */
+#define MAXRESTOTYPES	3	/* max # of resolver timeout types */
+#define MAXMIMEARGS	20	/* max args in Content-Type: */
+#define MAXMIMENESTING	20	/* max MIME multipart nesting */
+#define QUEUESEGSIZE	1000	/* increment for queue size */
+
+#ifndef MAXNOOPCOMMANDS
+# define MAXNOOPCOMMANDS 20	/* max "noise" commands before slowdown */
+#endif /* ! MAXNOOPCOMMANDS */
 
 /*
 **  MAXQFNAME == 2 (size of "qf", "df" prefix)
@@ -100,7 +112,9 @@ struct rusage;	/* forward declaration to get gcc to shut up in wait.h */
 #ifndef MAXHDRSLEN
 # define MAXHDRSLEN	(32 * 1024)	/* max size of message headers */
 #endif /* ! MAXHDRSLEN */
-#define MAXDAEMONS	10		/* max number of ports to listen to */
+#ifndef MAXDAEMONS
+# define MAXDAEMONS	10		/* max number of ports to listen to */
+#endif /* MAXDAEMONS */
 #ifndef MAXINTERFACES
 # define MAXINTERFACES	512		/* number of interfaces to probe */
 #endif /* MAXINTERFACES */
@@ -111,9 +125,18 @@ struct rusage;	/* forward declaration to get gcc to shut up in wait.h */
 #define DATA_PROGRESS_TIMEOUT	300	/* how often to check DATA progress */
 #define ENHSCLEN	10		/* max len of enhanced status code */
 #define DEFAULT_MAX_RCPT	100	/* max number of RCPTs per envelope */
-#define MAXQUEUEGROUPS	50		/* max # of queue groups */
+#ifndef MAXQUEUEGROUPS
+# define MAXQUEUEGROUPS	50		/* max # of queue groups */
 	/* must be less than BITMAPBITS for DoQueueRun */
-#define MAXWORKGROUPS	50		/* max # of work groups */
+#endif /* MAXQUEUEGROUPS */
+#if MAXQUEUEGROUPS >= BITMAPBITS
+  ERROR _MAXQUEUEGROUPS must be less than _BITMAPBITS
+#endif /* MAXQUEUEGROUPS >= BITMAPBITS */
+
+#ifndef MAXWORKGROUPS
+# define MAXWORKGROUPS	50		/* max # of work groups */
+#endif /* MAXWORKGROUPS */
+
 #define MAXFILESYS	BITMAPBITS	/* max # of queue file systems
 					 * must be <= BITMAPBITS */
 #ifndef FILESYS_UPDATE_INTERVAL
@@ -133,6 +156,26 @@ struct rusage;	/* forward declaration to get gcc to shut up in wait.h */
 #  endif /* STARTTLS */
 # endif /* ! AUTH_MECHANISMS */
 #endif /* SASL */
+
+/*
+**  Default database permissions (alias, maps, etc.)
+**	Used by sendmail and libsmdb
+*/
+
+#ifndef DBMMODE
+# define DBMMODE	0640
+#endif /* ! DBMMODE */
+
+/*
+**  Value which means a uid or gid value should not change
+*/
+
+#ifndef NO_UID
+# define NO_UID		-1
+#endif /* ! NO_UID */
+#ifndef NO_GID
+# define NO_GID		-1
+#endif /* ! NO_GID */
 
 /**********************************************************************
 **  Compilation options.
@@ -188,7 +231,11 @@ struct rusage;	/* forward declaration to get gcc to shut up in wait.h */
 #endif /* NAMED_BIND */
 
 #ifndef PIPELINING
-# define PIPELINING	1	/* SMTP PIPELINING */
+# ifdef __vax__
+#  define PIPELINING	0	/* SMTP PIPELINING */
+# else
+#  define PIPELINING	1	/* SMTP PIPELINING */
+# endif /* __vax__ */
 #endif /* PIPELINING */
 
 /**********************************************************************

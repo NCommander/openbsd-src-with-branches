@@ -1,5 +1,4 @@
-/*	$NetBSD: lshldi3.c,v 1.2 1995/02/27 17:30:23 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -16,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,14 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)lshldi3.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: lshldi3.c,v 1.2 1995/02/27 17:30:23 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include "quad.h"
 
 /*
@@ -52,20 +39,19 @@ static char rcsid[] = "$NetBSD: lshldi3.c,v 1.2 1995/02/27 17:30:23 cgd Exp $";
  * This is the same as arithmetic shift left!
  */
 quad_t
-__lshldi3(a, shift)
-	quad_t a;
-	qshift_t shift;
+__lshldi3(quad_t a, qshift_t shift)
 {
 	union uu aa;
 
+	if (shift == 0)
+		return(a);
 	aa.q = a;
-	if (shift >= LONG_BITS) {
-		aa.ul[H] = shift >= QUAD_BITS ? 0 :
-		    aa.ul[L] << (shift - LONG_BITS);
+	if (shift >= INT_BITS) {
+		aa.ul[H] = aa.ul[L] << (shift - INT_BITS);
 		aa.ul[L] = 0;
-	} else if (shift > 0) {
+	} else {
 		aa.ul[H] = (aa.ul[H] << shift) |
-		    (aa.ul[L] >> (LONG_BITS - shift));
+		    (aa.ul[L] >> (INT_BITS - shift));
 		aa.ul[L] <<= shift;
 	}
 	return (aa.q);

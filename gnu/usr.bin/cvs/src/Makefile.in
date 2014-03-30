@@ -104,7 +104,7 @@ SHELL = /bin/sh
 # some namespace hackery going on that maybe shouldn't be.  Long term fix is to
 # try and remove naming ocnflicts and fix Automake to allow particular includes
 # to be attached only to particular object files.  Short term fix is either or.
-INCLUDES = -I$(top_srcdir)/lib -I$(top_srcdir)/diff -I$(top_srcdir)/zlib $(includeopt)
+INCLUDES = -I$(top_srcdir)/lib -I$(top_srcdir)/diff $(includeopt)
 
 bin_PROGRAMS = cvs
 bin_SCRIPTS = cvsbug
@@ -180,7 +180,7 @@ cvs_SOURCES = \
 cvs_LDADD = \
 	../diff/libdiff.a \
 	../lib/libcvs.a \
-	../zlib/libz.a \
+	@ZLIB@ \
 	version.o
 
 cvs_EXTRA_DIST = version.c
@@ -229,7 +229,7 @@ am_cvs_OBJECTS = add.$(OBJEXT) admin.$(OBJEXT) annotate.$(OBJEXT) \
 	update.$(OBJEXT) vers_ts.$(OBJEXT) watch.$(OBJEXT) \
 	wrapper.$(OBJEXT) zlib.$(OBJEXT)
 cvs_OBJECTS = $(am_cvs_OBJECTS)
-cvs_DEPENDENCIES = ../diff/libdiff.a ../lib/libcvs.a ../zlib/libz.a \
+cvs_DEPENDENCIES = ../diff/libdiff.a ../lib/libcvs.a @ZLIB_DEPEND@ \
 	version.o
 cvs_LDFLAGS =
 SCRIPTS = $(bin_SCRIPTS)
@@ -294,7 +294,7 @@ Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
 
-options.h: stamp-h2
+options.h: #stamp-h2
 	@if test ! -f $@; then \
 		rm -f stamp-h2; \
 		$(MAKE) stamp-h2; \
@@ -321,7 +321,7 @@ distclean-hdr:
 	-rm -f options.h
 cvsbug: $(top_builddir)/config.status cvsbug.in
 	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
-install-binPROGRAMS: $(bin_PROGRAMS)
+install-binPROGRAMS:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	@list='$(bin_PROGRAMS)'; for p in $$list; do \
@@ -508,7 +508,7 @@ install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
 
-install-am: all-am
+install-am:
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
 installcheck: installcheck-am
@@ -594,11 +594,11 @@ remotecheck: all
 #   is changed, acversion.m4 is built only after the new version number is
 #   propagated to the Makefile.  (Libtool uses the same guarantee.)
 # - need the explicit version.o dependency or else make won't match
-#   $(srcdir)/version.c when looking for a dependency for version.c
-version.o: $(srcdir)/version.c
-$(srcdir)/version.c: $(srcdir)/version.c.in $(top_srcdir)/configure.in
-	sed 's,@VERSION\@,$(VERSION),g' $(srcdir)/version.c.in >$(srcdir)/version.tc
-	mv $(srcdir)/version.tc $(srcdir)/version.c
+#   $(top_srcdir)/version.c when looking for a dependency for version.c
+version.o: version.c
+version.c: $(srcdir)/version.c.in $(top_srcdir)/configure.in
+	sed 's,@VERSION\@,$(VERSION),g' $(srcdir)/version.c.in > version.tc
+	mv version.tc version.c
 
 # for backwards compatibility with the old makefiles
 .PHONY: realclean

@@ -33,7 +33,7 @@
 
 #include <config.h>
 
-RCSID("$KTH: spx.c,v 1.17 1999/09/16 20:41:34 assar Exp $");
+RCSID("$Id$");
 
 #ifdef	SPX
 /*
@@ -237,7 +237,9 @@ spx_send(ap)
 					&output_name_buffer,
 					&output_name_type);
 
-	printf("target is '%s'\n", output_name_buffer.value); fflush(stdout);
+	printf("target is '%.*s'\n", (int)output_name_buffer.length,
+					(char*)output_name_buffer.value);
+	fflush(stdout);
 
 	major_status = gss_release_buffer(&status, &output_name_buffer);
 
@@ -290,7 +292,8 @@ spx_send(ap)
 				GSS_C_NULL_OID,
 				&msg_ctx,
 				&status_string);
-	  printf("%s\n", status_string.value);
+	  printf("%.*s\n", (int)status_string.length,
+				(char*)status_string.value);
 	  return(0);
 	}
 
@@ -457,8 +460,9 @@ spx_reply(ap, data, cnt)
 					GSS_C_NULL_OID,
 					&msg_ctx,
 					&status_string);
-		    printf("[ SPX mutual response fails ... '%s' ]\r\n",
-			 status_string.value);
+		    printf("[ SPX mutual response fails ... '%.*s' ]\r\n",
+			 (int)status_string.length,
+			 (char*)status_string.value);
 		    auth_send_retry();
 		    return;
 		  }
@@ -526,13 +530,12 @@ spx_status(ap, name, name_sz, level)
 #define	ADDC(buf, len, c)	if ((len) > 0) {*(buf)++ = (c); --(len);}
 
 	void
-spx_printsub(data, cnt, buf, buflen)
-	unsigned char *data, *buf;
-	int cnt, buflen;
+spx_printsub(unsigned char *data, size_t cnt,
+	     unsigned char *buf, size_t buflen)
 {
-	int i;
+	size_t i;
 
-	buf[buflen-1] = '\0';		/* make sure its NULL terminated */
+	buf[buflen-1] = '\0';		/* make sure it's NULL terminated */
 	buflen -= 1;
 
 	switch(data[3]) {

@@ -91,7 +91,6 @@ OBJS=\
  ssl_expr_eval.o\
  ssl_util.o\
  ssl_util_ssl.o\
- ssl_util_sdbm.o\
  ssl_util_table.o\
  $(SSL_VENDOR_OBJS)
 
@@ -120,7 +119,6 @@ OBJS_PIC=\
  ssl_expr_eval.lo\
  ssl_util.lo\
  ssl_util_ssl.lo\
- ssl_util_sdbm.lo\
  ssl_util_table.lo\
  $(SSL_VENDOR_OBJS_PIC)
 
@@ -156,6 +154,7 @@ clean:
 realclean: clean
 	rm -f ssl_expr_parse.c ssl_expr_parse.h
 	rm -f ssl_expr_scan.c
+	rm -f stamp_parse
 
 distclean: clean
 	-rm -f Makefile
@@ -169,7 +168,16 @@ ssl_expr_scan.c: ssl_expr_scan.l ssl_expr_parse.h
 	flex -Pssl_expr_yy -s -B ssl_expr_scan.l
 	sed -e '/$$Header:/d' <lex.ssl_expr_yy.c >ssl_expr_scan.c && rm -f lex.ssl_expr_yy.c
 
-ssl_expr_parse.c ssl_expr_parse.h: ssl_expr_parse.y
+stamp_parse: ssl_expr_parse.y
+	yacc -d ssl_expr_parse.y
+	touch $@
+	sed -e 's;yy;ssl_expr_yy;g' \
+	    -e '/#if defined(c_plusplus) || defined(__cplusplus)/,/#endif/d' \
+	    <y.tab.c >ssl_expr_parse.c && rm -f y.tab.c
+	sed -e 's;yy;ssl_expr_yy;g' \
+	    <y.tab.h >ssl_expr_parse.h && rm -f y.tab.h
+
+ssl_expr_parse.c ssl_expr_parse.h: stamp_parse
 	yacc -d ssl_expr_parse.y
 	sed -e 's;yy;ssl_expr_yy;g' \
 	    -e '/#if defined(c_plusplus) || defined(__cplusplus)/,/#endif/d' \

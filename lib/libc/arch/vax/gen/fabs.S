@@ -1,3 +1,4 @@
+/* $OpenBSD: fabs.S,v 1.9 2013/03/28 18:09:38 martynas Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,18 +28,14 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)fabs.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: fabs.S,v 1.1 1995/04/17 12:23:39 ragge Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 /* fabs - floating absolute value */
 
 #include "DEFS.h"
 
+STRONG_ALIAS(fabsl,fabs)
 ENTRY(fabs, 0)
-	movd	4(ap),r0
+	movd	4(%ap),%r0
 	bgeq	1f
-	mnegd	r0,r0
+	mnegd	%r0,%r0
 1:
 	ret

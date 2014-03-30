@@ -22,7 +22,7 @@
 #include "cmd.h"
 
 extern int erase_char, erase2_char, kill_char;
-extern int sigs;
+extern volatile sig_atomic_t sigs;
 extern int quit_if_one_screen;
 extern int squished;
 extern int sc_width;
@@ -54,6 +54,9 @@ extern int screen_trashed;	/* The screen has been overwritten */
 extern int shift_count;
 extern int oldbot;
 extern int forw_prompt;
+extern int be_helpful;
+extern int less_is_more;
+extern int quit_at_eof;
 
 #if SHELL_ESCAPE
 static char *shellcmd = NULL;	/* For holding last shell command for "!!" */
@@ -68,6 +71,7 @@ static int optflag;
 static int optgetname;
 static POSITION bottompos;
 static int save_hshift;
+static char *help_prompt;
 #if PIPEC
 static char pipec;
 #endif
@@ -179,8 +183,10 @@ mca_opt_toggle()
 	clear_bot();
 	clear_cmd();
 	cmd_putstr(dash);
+#if GNU_OPTIONS
 	if (optgetname)
 		cmd_putstr(dash);
+#endif
 	if (no_prompt)
 		cmd_putstr("(P)");
 	switch (flag)
@@ -303,6 +309,7 @@ mca_opt_first_char(c)
     int c;
 {
 	int flag = (optflag & ~OPT_NO_PROMPT);
+#if GNU_OPTIONS
 	if (flag == OPT_NO_TOGGLE)
 	{
 		switch (c)
@@ -314,6 +321,7 @@ mca_opt_first_char(c)
 			return (MCA_MORE);
 		}
 	} else
+#endif
 	{
 		switch (c)
 		{
@@ -333,17 +341,20 @@ mca_opt_first_char(c)
 			optflag ^= OPT_NO_PROMPT;
 			mca_opt_toggle();
 			return (MCA_MORE);
+#if GNU_OPTIONS
 		case '-':
 			/* "--" = long option name. */
 			optgetname = TRUE;
 			mca_opt_toggle();
 			return (MCA_MORE);
+#endif
 		}
 	}
 	/* Char was not handled here. */
 	return (NO_MCA);
 }
 
+#if GNU_OPTIONS
 /*
  * Add a char to a long option name.
  * See if we've got a match for an option name yet.
@@ -396,6 +407,7 @@ mca_opt_nonfirst_char(c)
 	}
 	return (MCA_MORE);
 }
+#endif
 
 /*
  * Handle a char of an option toggle command.
@@ -417,6 +429,7 @@ mca_opt_char(c)
 		if (ret != NO_MCA)
 			return (ret);
 	}
+#if GNU_OPTIONS
 	if (optgetname)
 	{
 		/* We're getting a long option name.  */
@@ -431,6 +444,7 @@ mca_opt_char(c)
 		optgetname = FALSE;
 		cmd_reset();
 	} else
+#endif
 	{
 		if (is_erase_char(c))
 			return (NO_MCA);
@@ -737,7 +751,7 @@ prompt()
 		clear_bot();
 	clear_cmd();
 	forw_prompt = 0;
-	p = pr_string();
+	p = help_prompt ? help_prompt : pr_string();
 	if (is_filtering())
 		putstr("& ");
 	if (p == NULL || *p == '\0')
@@ -746,8 +760,11 @@ prompt()
 	{
 		at_enter(AT_STANDOUT);
 		putstr(p);
+		if (be_helpful && !help_prompt && strlen(p) + 40 < sc_width)
+			putstr(" [Press space to continue, 'q' to quit.]");
 		at_exit();
 	}
+	help_prompt = NULL;
 	clear_eol();
 }
 
@@ -1217,6 +1234,8 @@ commands()
 			 */
 			if (sigs && !ABORT_SIGS())
 				newaction = A_F_FOREVER;
+			if (less_is_more)
+				quit_at_eof = OPT_ON;
 			break;
 
 		case A_F_SCROLL:
@@ -1330,6 +1349,7 @@ commands()
 			/*
 			 * Exit.
 			 */
+#if !SMALL
 			if (curr_ifile != NULL_IFILE && 
 			    ch_getflags() & CH_HELPFILE)
 			{
@@ -1342,6 +1362,7 @@ commands()
 				if (edit_prev(1) == 0)
 					break;
 			}
+#endif /* !SMALL */
 			if (extra != NULL)
 				quit(*extra);
 			quit(QUIT_OK);
@@ -1434,6 +1455,7 @@ commands()
 			break;
 
 		case A_HELP:
+#if !SMALL
 			/*
 			 * Help.
 			 */
@@ -1442,7 +1464,8 @@ commands()
 			cmd_exec();
 			save_hshift = hshift;
 			hshift = 0;
-			(void) edit(FAKE_HELPFILE);
+			(void) edit(HELPFILE);
+#endif /* !SMALL */
 			break;
 
 		case A_EXAMINE:
@@ -1756,7 +1779,10 @@ commands()
 			break;
 
 		default:
-			bell();
+			if (be_helpful)
+				help_prompt = "[Press 'h' for instructions.]";
+			else
+				bell();
 			break;
 		}
 	}

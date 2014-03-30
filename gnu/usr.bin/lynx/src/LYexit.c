@@ -1,87 +1,131 @@
 /*
+ * $LynxId: LYexit.c,v 1.35 2009/03/10 00:12:52 tom Exp $
+ *
  *	Copyright (c) 1994, University of Kansas, All Rights Reserved
+ *	(most of this file was rewritten in 1996 and 2004).
  */
-#include "HTUtils.h"
-#include "tcp.h"
-#include "LYexit.h"
+#include <HTUtils.h>
+#include <LYexit.h>
+#include <HTAlert.h>
 #ifndef VMS
-#include "LYGlobalDefs.h"
-#include "LYUtils.h"
-#include "LYSignal.h"
-#include "LYClean.h"
-#ifdef SYSLOG_REQUESTED_URLS
-#include <syslog.h>
-#endif /* SYSLOG_REQUESTED_URLS */
+#include <LYGlobalDefs.h>
+#include <LYUtils.h>
+#include <LYSignal.h>
+#include <LYMainLoop.h>
 #endif /* !VMS */
-
-#define FREE(x) if (x) {free(x); x = NULL;}
+#include <LYStrings.h>
+#include <LYClean.h>
 
 /*
- *  Stack of functions to call upon exit.
+ * Flag for outofmem macro.  - FM
  */
-PRIVATE void (*callstack[ATEXITSIZE]) NOPARAMS;
-PRIVATE int topOfStack = 0;
+BOOL LYOutOfMemory = FALSE;
 
 /*
- *  Flag for outofmem macro. - FM
+ * Stack of functions to call upon exit.
  */
-PUBLIC BOOL LYOutOfMemory = FALSE;
+static void (*callstack[ATEXITSIZE]) (void);
+static int topOfStack = 0;
 
 /*
- *  Forward declarations.
- */
-PRIVATE void LYCompleteExit NOPARAMS;
-
-/*
- *  Purpose:		Terminates program.
- *  Arguments:		status	Exit code.
- *  Return Value:	void
- *  Remarks/Portability/Dependencies/Restrictions:
- *	Function calls stdlib.h exit
- *  Revision History:
+ * Purpose:		Registers termination function.
+ * Arguments:		function	The function to register.
+ * Return Value:	int	0	registered
+ *				!0	no more space to register
+ * Remarks/Portability/Dependencies/Restrictions:
+ * Revision History:
  *	06-15-94	created Lynx 2-3-1 Garrett Arch Blythe
  */
-PUBLIC void LYexit ARGS1(
-	int,		status)
+
+int LYatexit(void (*function) (void))
 {
-#ifndef VMS	/*  On VMS, the VMSexit() handler does these. - FM */
+    /*
+     * Check for available space.
+     */
+    if (topOfStack == ATEXITSIZE) {
+	CTRACE((tfp, "(LY)atexit: Too many functions, ignoring one!\n"));
+	return (-1);
+    }
+
+    /*
+     * Register the function.
+     */
+    callstack[topOfStack] = function;
+    topOfStack++;
+    return (0);
+}
+
+/*
+ * Purpose:		Call the functions registered with LYatexit
+ * Arguments:		void
+ * Return Value:	void
+ * Remarks/Portability/Dependencies/Restrictions:
+ * Revision History:
+ *	06-15-94	created Lynx 2-3-1 Garrett Arch Blythe
+ */
+static void LYCompleteExit(void)
+{
+    /*
+     * Just loop through registered functions.  This is reentrant if more exits
+     * occur in the registered functions.
+     */
+    while (--topOfStack >= 0) {
+	callstack[topOfStack] ();
+    }
+}
+
+/*
+ * Purpose:		Terminates program, reports memory not freed.
+ * Arguments:		status	Exit code.
+ * Return Value:	void
+ * Remarks/Portability/Dependencies/Restrictions:
+ *	Function calls stdlib.h exit
+ * Revision History:
+ *	06-15-94	created Lynx 2-3-1 Garrett Arch Blythe
+ */
+void LYexit(int status)
+{
+#ifndef VMS			/*  On VMS, the VMSexit() handler does these. - FM */
 #ifdef _WINDOWS
+    DeleteCriticalSection(&critSec_DNS);
+    DeleteCriticalSection(&critSec_READ);
+
     WSACleanup();
 #endif
     if (LYOutOfMemory == TRUE) {
 	/*
-	 *  Ignore further interrupts. - FM
+	 * Ignore further interrupts.  - FM
 	 */
 #ifndef NOSIGHUP
 	(void) signal(SIGHUP, SIG_IGN);
 #endif /* NOSIGHUP */
-	(void) signal (SIGTERM, SIG_IGN);
-	(void) signal (SIGINT, SIG_IGN);
+	(void) signal(SIGTERM, SIG_IGN);
+	(void) signal(SIGINT, SIG_IGN);
 #ifndef __linux__
-#ifndef DOSPATH
+#ifdef SIGBUS
 	(void) signal(SIGBUS, SIG_IGN);
-#endif /* DOSPATH */
+#endif /* SIGBUS */
 #endif /* !__linux__ */
 	(void) signal(SIGSEGV, SIG_IGN);
 	(void) signal(SIGILL, SIG_IGN);
 
-	 /*
-	  *  Flush all messages. - FM
-	  */
-	 fflush(stderr);
-	 fflush(stdout);
+	/*
+	 * Flush all messages.  - FM
+	 */
+	fflush(stderr);
+	fflush(stdout);
 
 	/*
-	 *  Deal with curses, if on, and clean up. - FM
+	 * Deal with curses, if on, and clean up.  - FM
 	 */
 	if (LYCursesON) {
-	    sleep(AlertSecs);
+	    LYSleepAlert();
 	}
 	cleanup_sig(0);
 #ifndef __linux__
-#ifndef DOSPATH
+#ifdef SIGBUS
 	signal(SIGBUS, SIG_DFL);
-#endif /* DOSPATH */
+#endif /* SIGBUS */
 #endif /* !__linux__ */
 	signal(SIGSEGV, SIG_DFL);
 	signal(SIGILL, SIG_DFL);
@@ -89,16 +133,19 @@ PUBLIC void LYexit ARGS1(
 #endif /* !VMS */
 
     /*
-     *	Do functions registered with LYatexit. - GAB
+     * Close syslog before doing atexit-cleanup, since it may use a string
+     * that would be freed there.
+     */
+#ifdef SYSLOG_REQUESTED_URLS
+    LYCloselog();
+#endif
+
+    /*
+     * Do functions registered with LYatexit.  - GAB
      */
     LYCompleteExit();
 
-#ifndef VMS
-#ifdef SYSLOG_REQUESTED_URLS
-    syslog(LOG_INFO, "Session over");
-    closelog();
-#endif /* SYSLOG_REQUESTED_URLS */
-#endif /* !VMS */
+    LYCloseCmdLogfile();
 
 #ifdef exit
 /*  Make sure we use stdlib exit and not LYexit. - GAB
@@ -106,72 +153,33 @@ PUBLIC void LYexit ARGS1(
 #undef exit
 #endif /* exit */
 
-#ifndef VMS	/*  On VMS, the VMSexit() handler does these. - FM */
+    cleanup_files();		/* if someone starts with LYNXfoo: page */
+#ifndef VMS			/*  On VMS, the VMSexit() handler does these. - FM */
     fflush(stderr);
     if (LYOutOfMemory == TRUE) {
 	LYOutOfMemory = FALSE;
 	printf("\r\n%s\r\n\r\n", MEMORY_EXHAUSTED_ABORT);
 	fflush(stdout);
     }
-    if (LYTraceLogFP != NULL) {
-	fflush(stdout);
-	fflush(stderr);
-	fclose(LYTraceLogFP);
-	LYTraceLogFP = NULL;
-	*stderr = LYOrigStderr;
-    }
+    LYCloseTracelog();
 #endif /* !VMS */
+    show_alloc();
+
+#if defined(NCURSES_VERSION) && defined(LY_FIND_LEAKS)
+#if defined(HAVE__NC_FREE_AND_EXIT)
+    _nc_free_and_exit(status);
+#elif defined(HAVE__NC_FREEALL)
+    _nc_freeall();
+#endif
+#endif /* NCURSES_VERSION */
+
     exit(status);
 }
 
-/*
- *  Purpose:		Registers termination function.
- *  Arguments:		function	The function to register.
- *  Return Value:	int	0	registered
- *				!0	no more space to register
- *  Remarks/Portability/Dependencies/Restrictions:
- *  Revision History:
- *	06-15-94	created Lynx 2-3-1 Garrett Arch Blythe
- */
-#ifdef __STDC__
-PUBLIC int LYatexit(void (*function)(void))
-#else /* Not ANSI, ugh! */
-PUBLIC int LYatexit(function)
-void (*function)();
-#endif /* __STDC__ */
+void outofmem(const char *fname,
+	      const char *func)
 {
-    /*
-     *  Check for available space.
-     */
-    if (topOfStack == ATEXITSIZE) {
-	if (TRACE)
-	    fprintf(stderr, "(LY)atexit: Too many functions, ignoring one!\n");
-	return(-1);
-    }
-
-    /*
-     *  Register the function.
-     */
-    callstack[topOfStack] = function;
-    topOfStack++;
-    return(0);
-}
-
-/*
- *  Purpose:		Call the functions registered with LYatexit
- *  Arguments:		void
- *  Return Value:	void
- *  Remarks/Portability/Dependencies/Restrictions:
- *  Revision History:
- *	06-15-94	created Lynx 2-3-1 Garrett Arch Blythe
- */
-PRIVATE void LYCompleteExit NOPARAMS
-{
-    /*
-     *  Just loop through registered functions.
-     *  This is reentrant if more exits occur in the registered functions.
-     */
-    while (--topOfStack >= 0) {
-	callstack[topOfStack]();
-    }
+    fprintf(stderr, "\n\n\n%s %s: %s\n", fname, func, MEMORY_EXHAUSTED_ABORTING);
+    LYOutOfMemory = TRUE;
+    LYexit(-1);
 }

@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: pccreg.h,v 1.7 2004/07/30 22:29:45 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -129,9 +124,12 @@ extern struct pccreg *sys_pcc;
 #define PCC_TIMERACK	0x80	/* ack intr */
 #define PCC_TIMERCLEAR	0x00	/* reset and clear timer */
 #define PCC_TIMERSTART	0x03	/* start timer */
+#define PCC_TIMER_COVF	0x04	/* clear overflow */
+#define PCC_TIMER_OVF_SHIFT	4
 
-#define	pcc_timer_hz2lim(hz)	(65536 - (160000/(hz)))
-#define	pcc_timer_us2lim(us)	(65536 - (160000/(1000000/(us))))
+#define	PCC_TIMERFREQ	160000	/* 1000000 /6.25 */
+#define	pcc_timer_hz2lim(hz)	(65536 - (PCC_TIMERFREQ/(hz)))
+#define	pcc_timer_us2lim(us)	(65536 - (PCC_TIMERFREQ/(1000000/(us))))
 
 /*
  * serial control
@@ -152,6 +150,7 @@ extern struct pccreg *sys_pcc;
 #define ZS1_PHYS_147	(INTIOBASE_147 + 0x3800)
 
 /* XXX */
-int	pccintr_establish __P((int vec, struct intrhand *ih));
+int	pccintr_establish(int, struct intrhand *, const char *);
+int	pccspeed(struct pccreg *);
 
 #define PCC_GENCTL_IEN	0x10

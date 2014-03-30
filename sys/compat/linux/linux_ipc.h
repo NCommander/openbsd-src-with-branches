@@ -1,3 +1,4 @@
+/*	$OpenBSD: linux_ipc.h,v 1.3 2000/07/23 22:35:38 jasoni Exp $	*/
 /*	$NetBSD: linux_ipc.h,v 1.1 1995/02/28 23:25:47 fvdl Exp $	*/
 
 /*
@@ -31,12 +32,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _LINUX_IPC_H
-#define _LINUX_IPC_H
+#ifndef _LINUX_IPC_H_
+#define _LINUX_IPC_H_
 
 /*
  * Structs and values to handle the SYSV ipc/shm/msg calls implemented
- * in Linux. Most values match the NetBSD values (as they are both derived
+ * in Linux. Most values match the OpenBSD values (as they are both derived
  * from SysV values). Values that are the same may not be defined here.
  */
 
@@ -61,4 +62,4 @@ struct linux_ipc_perm {
 #define LINUX_IPC_STAT	2
 #define LINUX_IPC_INFO	3
 
-#endif /* _LINUX_IPC_H */
+#endif /* _LINUX_IPC_H_ */

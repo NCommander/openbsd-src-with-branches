@@ -1,4 +1,4 @@
-dnl $KTH: find-if-not-broken.m4,v 1.5 2004/02/12 14:20:48 lha Exp $
+dnl $Id$
 dnl
 dnl
 dnl Mix between AC_FIND_FUNC and AC_BROKEN

@@ -33,7 +33,7 @@
 
 #include "telnet_locl.h"
 
-RCSID("$KTH: commands.c,v 1.74 2005/04/06 11:20:32 lha Exp $");
+RCSID("$Id$");
 
 #if	defined(IPPROTO_IP) && defined(IP_TOS)
 int tos = -1;
@@ -453,20 +453,6 @@ togdebug()
     return 1;
 }
 
-#if defined(KRB4) && defined(HAVE_KRB_DISABLE_DEBUG)
-#include <krb.h>
-
-static int
-togkrbdebug(void)
-{
-    if(krb_debug)
-	krb_enable_debug();
-    else
-	krb_disable_debug();
-    return 1;
-}
-#endif
-
 static int
 togcrlf()
 {
@@ -688,13 +674,6 @@ static struct togglelist Togglelist[] = {
 	    togdebug,
 		&debug,
 		    "turn on socket level debugging" },
-#if defined(KRB4) && defined(HAVE_KRB_DISABLE_DEBUG)
-    { "krb_debug",
-      "kerberos 4 debugging",
-      togkrbdebug,
-      &krb_debug,
-      "turn on kerberos 4 debugging" },
-#endif
     { "netdata",
 	"printing of hexadecimal network data (debugging)",
 	    0,
@@ -1351,7 +1330,7 @@ bye(int argc, char **argv)
 	/* reset options */
 	tninit();
     }
-    if ((argc != 2) || (strcmp(argv[1], "fromquit") != 0)) 
+    if ((argc != 2) || (strcmp(argv[1], "fromquit") != 0))
 	longjmp(toplevel, 1);
     return 0;	/* NOTREACHED */
 }
@@ -1553,8 +1532,8 @@ env_find(unsigned char *var)
 	return(NULL);
 }
 
-#ifdef IRIX4
-#define environ _environ
+#if !HAVE_DECL_ENVIRON
+extern char **environ;
 #endif
 
 void
@@ -1582,6 +1561,7 @@ env_init(void)
 	    || strncmp((char *)ep->value, "unix:", 5) == 0)) {
 		char hbuf[256+1];
 		char *cp2 = strchr((char *)ep->value, ':');
+		int error;
 
 		/* XXX - should be k_gethostname? */
 		gethostname(hbuf, 256);
@@ -1590,7 +1570,6 @@ env_init(void)
 		/* If this is not the full name, try to get it via DNS */
 		if (strchr(hbuf, '.') == 0) {
 			struct addrinfo hints, *ai, *a;
-			int error;
 
 			memset (&hints, 0, sizeof(hints));
 			hints.ai_flags = AI_CANONNAME;
@@ -1608,16 +1587,18 @@ env_init(void)
 			}
 		}
 
-		asprintf (&cp, "%s%s", hbuf, cp2);
-		free (ep->value);
-		ep->value = (unsigned char *)cp;
+		error = asprintf (&cp, "%s%s", hbuf, cp2);
+		if (error != -1) {
+		    free (ep->value);
+		    ep->value = (unsigned char *)cp;
+		}
 	}
 	/*
 	 * If USER is not defined, but LOGNAME is, then add
 	 * USER with the value from LOGNAME.  By default, we
 	 * don't export the USER variable.
 	 */
-	if ((env_find((unsigned char*)"USER") == NULL) && 
+	if ((env_find((unsigned char*)"USER") == NULL) &&
 	    (ep = env_find((unsigned char*)"LOGNAME"))) {
 		env_define((unsigned char *)"USER", ep->value);
 		env_unexport((unsigned char *)"USER");
@@ -2200,7 +2181,7 @@ tn(int argc, char **argv)
 			     addrstr, sizeof(addrstr),
 			     NULL, 0, NI_NUMERICHOST) != 0)
 		strlcpy (addrstr, "unknown address", sizeof(addrstr));
-			     
+
 	    printf("Trying %s...\r\n", addrstr);
 
 	    net = socket (a->ai_family, a->ai_socktype, a->ai_protocol);

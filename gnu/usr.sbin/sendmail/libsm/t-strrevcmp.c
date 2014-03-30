@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -8,7 +8,7 @@
  */
 
 #include <sm/gen.h>
-SM_IDSTR(id, "@(#)$Sendmail: t-strrevcmp.c,v 1.1 2001/07/16 21:35:28 ca Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: t-strrevcmp.c,v 1.4 2013/11/22 20:51:44 ca Exp $")
 
 #include <sm/exc.h>
 #include <sm/io.h>

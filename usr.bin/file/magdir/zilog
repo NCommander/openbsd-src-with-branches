@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 #------------------------------------------------------------------------------
 # zilog:  file(1) magic for Zilog Z8000.
@@ -9,4 +10,3 @@
 0	long		0xe808		pure object file (z8000 a.out)
 0	long		0xe809		separate object file (z8000 a.out)
 0	long		0xe805		overlay object file (z8000 a.out)
-

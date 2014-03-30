@@ -83,6 +83,7 @@
 #if HAVE_STRING_H
 #include <string.h>
 #endif
+#include <signal.h>
 
 /* OS-specific includes */
 #ifdef _OSK
@@ -450,7 +451,7 @@ struct textlist
 #if _OSK_MWC32
 #define	LSIGNAL(sig,func)	os9_signal(sig,func)
 #else
-#define	LSIGNAL(sig,func)	signal(sig,func)
+#define	LSIGNAL(sig,func)	lsignal(sig,func)
 #endif
 
 #if HAVE_SIGPROCMASK
@@ -487,8 +488,6 @@ struct textlist
 #define	CH_HELPFILE	010
 
 #define	ch_zero()	((POSITION)0)
-
-#define	FAKE_HELPFILE	"@/\\less/\\help/\\file/\\@"
 
 /* Flags for cvt_text */
 #define	CVT_TO_LC	01	/* Convert upper-case to lower-case */

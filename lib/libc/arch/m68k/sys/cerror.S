@@ -1,3 +1,4 @@
+/*	$OpenBSD: cerror.S,v 1.8 2012/08/22 17:19:35 pascal Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,25 +32,21 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)cerror.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: cerror.S,v 1.3 1994/08/04 05:02:42 chopps Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "SYS.h"
 
+WEAK_ALIAS(_cerror,__cerror)
+
 	.even
-	.globl	_errno
-cerror:
-#ifdef	PIC
-	movl	#__GLOBAL_OFFSET_TABLE_,a0
-	lea	pc@(0,a0:l),a0
-	movl	a0@(_errno:w),a0
-	movl	d0,a0@
+	.globl	_C_LABEL(errno)
+__cerror:
+#ifdef	__PIC__
+	lea	%pc@(_GLOBAL_OFFSET_TABLE_@GOTPC),%a0
+	movl	%a0@(_C_LABEL(errno)@GOT:w),%a0
+	movl	%d0,%a0@
 #else
-	movl	d0,_errno
+	movl	%d0,_C_LABEL(errno)
 #endif
-	movl	#-1,d0
-	movl	#-1,d1
+	movl	#-1,%d0
+	movl	#-1,%d1
+	moveal	%d0,%a0
 	rts

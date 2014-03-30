@@ -1,8 +1,8 @@
 
-KERBEROS(8)              UNIX System Manager's Manual              KERBEROS(8)
+KERBEROS(8)               BSD System Manager's Manual              KERBEROS(8)
 
 NNAAMMEE
-     kkeerrbbeerrooss - introduction to the Kerberos system
+     kkeerrbbeerrooss -- introduction to the Kerberos system
 
 DDEESSCCRRIIPPTTIIOONN
      Kerberos is a network authentication system. Its purpose is to securely
@@ -32,7 +32,7 @@ DDEESSCCRRIIPPTTIIOONN
      For setup instructions see the Heimdal Texinfo manual.
 
 SSEEEE AALLSSOO
-     ftp(1),  kdestroy(1),  kinit(1),  klist(1),  kpasswd(1),  telnet(1)
+     ftp(1), kdestroy(1), kinit(1), klist(1), kpasswd(1), telnet(1)
 
 HHIISSTTOORRYY
      The Kerberos authentication system was developed in the late 1980's as
@@ -44,12 +44,14 @@ HHIISSTTOORRYY
      The problems with version 4 are that it has many limitations, the code
      was not too well written (since it had been developed over a long time),
      and it has a number of known security problems. To resolve many of these
-     issues work on version five started, and resulted in IETF RFC1510 in
-     1993. Since then much work has been put into the further development, and
-     a new RFC will hopefully appear soon.
+     issues work on version five started, and resulted in IETF RFC 1510 in
+     1993. IETF RFC 1510 was obsoleted in 2005 with IETF RFC 4120, also known
+     as Kerberos clarifications. With the arrival of IETF RFC 4120, the work
+     on adding extensibility and internationalization have started (Kerberos
+     extensions), and a new RFC will hopefully appear soon.
 
-     This manual manual page is part of the HHeeiimmddaall Kerberos 5 distribution,
-     which has been in development at the Royal Institute of Technology in
-     Stockholm, Sweden, since about 1997.
+     This manual page is part of the HHeeiimmddaall Kerberos 5 distribution, which
+     has been in development at the Royal Institute of Technology in Stock-
+     holm, Sweden, since about 1997.
 
- HEIMDAL                       September 1, 2000                             1
+HEIMDAL                        September 1, 2000                       HEIMDAL

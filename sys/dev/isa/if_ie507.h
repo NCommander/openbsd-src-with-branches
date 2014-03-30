@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_ie507.h,v 1.5 1995/01/23 04:50:10 mycroft Exp $	*/
 /*	$NetBSD: if_ie507.h,v 1.5 1995/01/23 04:50:10 mycroft Exp $	*/
 
 /*

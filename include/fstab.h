@@ -1,3 +1,4 @@
+/*	$OpenBSD: fstab.h,v 1.4 2002/02/16 21:27:17 millert Exp $	*/
 /*	$NetBSD: fstab.h,v 1.3 1994/10/26 00:55:53 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -65,17 +62,17 @@ struct fstab {
 	char	*fs_mntops;		/* Mount options ala -o */
 	char	*fs_type;		/* FSTAB_* from fs_mntops */
 	int	fs_freq;		/* dump frequency, in days */
-	int	fs_passno;		/* pass number on parallel dump */
+	int	fs_passno;		/* pass number on parallel fsck */
 };
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-struct fstab *getfsent __P((void));
-struct fstab *getfsspec __P((const char *));
-struct fstab *getfsfile __P((const char *));
-int setfsent __P((void));
-void endfsent __P((void));
+struct fstab *getfsent(void);
+struct fstab *getfsspec(const char *);
+struct fstab *getfsfile(const char *);
+int setfsent(void);
+void endfsent(void);
 __END_DECLS
 
 #endif /* !_FSTAB_H_ */

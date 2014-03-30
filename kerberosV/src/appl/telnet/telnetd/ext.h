@@ -33,7 +33,7 @@
  *	@(#)ext.h	8.2 (Berkeley) 12/15/93
  */
 
-/* $KTH: ext.h,v 1.24 2005/04/24 20:58:54 lha Exp $ */
+/* $Id$ */
 
 #ifndef __EXT_H__
 #define __EXT_H__
@@ -115,7 +115,7 @@ int tty_iscrnl (void);
 void tty_tspeed (int val);
 void tty_rspeed (int val);
 void getptyslave (void);
-int cleanopen (char *line);
+int cleanopen (char *);
 void startslave (const char *host, const char *, int autologin, char *autoname);
 void init_env (void);
 void start_login (const char *host, int autologin, char *name);
@@ -138,7 +138,7 @@ void ptyflush (void);
 char *nextitem (char *current);
 void netclear (void);
 void netflush (void);
-void writenet (unsigned char *ptr, int len);
+void writenet (const void *, size_t);
 void fatal (int f, char *msg);
 void fatalperror (int f, const char *msg);
 void fatalperror_errno (int f, const char *msg, int error);
@@ -147,8 +147,8 @@ void putstr (char *s);
 void putchr (int cc);
 void putf (char *cp, char *where);
 void printoption (char *fmt, int option);
-void printsub (int direction, unsigned char *pointer, int length);
-void printdata (char *tag, char *ptr, int cnt);
+void printsub (int direction, unsigned char *pointer, size_t length);
+void printdata (char *tag, char *ptr, size_t cnt);
 int login_tty(int t);
 
 #ifdef ENCRYPTION

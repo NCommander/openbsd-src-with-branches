@@ -398,8 +398,8 @@ static int read_till_nl(FILE *in)
 	char buf[SIZE+1];
 
 	do	{
-		if (!fgets(buf,SIZE,in))
-			return 0;
+		if (fgets(buf,sizeof(buf),in) == NULL)
+			break;
 		} while (strchr(buf,'\n') == NULL);
 	return 1;
 	}

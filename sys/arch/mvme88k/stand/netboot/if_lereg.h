@@ -1,4 +1,4 @@
-/*	$Id: if_lereg.h,v 1.2 1995/11/07 08:51:03 deraadt Exp $ */
+/*	$OpenBSD: if_lereg.h,v 1.5 2009/01/18 21:49:11 miod Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,11 +40,14 @@
 #define	LETBUFLOG2	0
 #define	LE_TLEN		(LETBUFLOG2 << 13)
 
+#define	LEMEMSIZE	0x4000	/* memory needed to fulfill above settings */
+
 /* Local Area Network Controller for Ethernet (LANCE) registers */
 struct lereg1 {
-	volatile u_short ler1_rdp;	/* register data port */
-	volatile u_short ler1_rap;	/* register address port */
+	volatile u_int16_t ler1_rdp;	/* data port */
+	volatile u_int16_t ler1_rap;	/* address port */
 };
+
 /* register addresses */
 #define	LE_CSR0		0	/* Control and status register */
 #define	LE_CSR1		1	/* low address of init block */
@@ -63,7 +62,7 @@ struct lereg1 {
 #define	LE_C0_MERR	0x0800	/* memory error */
 #define	LE_C0_RINT	0x0400	/* receiver interrupt */
 #define	LE_C0_TINT	0x0200	/* transmitter interrupt */
-#define	LE_C0_IDON	0x0100	/* initalization done */
+#define	LE_C0_IDON	0x0100	/* initialization done */
 #define	LE_C0_INTR	0x0080	/* interrupt condition */
 #define	LE_C0_INEA	0x0040	/* interrupt enable */
 #define	LE_C0_RXON	0x0020	/* receiver on */
@@ -71,7 +70,7 @@ struct lereg1 {
 #define	LE_C0_TDMD	0x0008	/* transmit demand */
 #define	LE_C0_STOP	0x0004	/* disable all external activity */
 #define	LE_C0_STRT	0x0002	/* enable external activity */
-#define	LE_C0_INIT	0x0001	/* begin initalization */
+#define	LE_C0_INIT	0x0001	/* begin initialization */
 
 #define LE_C0_BITS \
     "\20\20ERR\17BABL\16CERR\15MISS\14MERR\13RINT\
@@ -169,5 +168,39 @@ struct lereg2 {
 #define LE_T3_BITS \
     "\20\20BUFF\17UFLO\16RES\15LCOL\14LCAR\13RTRY"
 
+#define	LE_ADDR_LOW(x)	((x) & 0xffff)
+#define	LE_ADDR_HIGH(x)	(((x) >> 16) & 0x00ff)
 
-#define LE_ADDR_LOW_MASK (0xffff)
+#define	VLEMEMSIZE	0x00040000
+#define	VLEMEMBASE	0xfd6c0000
+
+/*
+ * LANCE registers for MVME376
+ */
+struct vlereg1 {
+	volatile u_int16_t	ler1_csr;	/* board control/status register */
+	volatile u_int16_t	ler1_vec;	/* interrupt vector register */
+	volatile u_int16_t	ler1_rdp;	/* data port */
+	volatile u_int16_t	ler1_rap;	/* register select port */
+	volatile u_int16_t	ler1_ear;	/* ethernet address register */
+};
+
+#define	NVRAM_EN	0x0008	/* NVRAM enable bit (active low) */
+#define	INTR_EN		0x0010	/* interrupt enable bit (active low) */
+#define	PARITYB		0x0020	/* parity error clear bit */
+#define	HW_RS		0x0040	/* hardware reset bit (active low) */
+#define	SYSFAILB	0x0080	/* SYSFAIL bit */
+
+#define	NVRAM_RWEL	0xe0	/* Reset write enable latch      */
+#define	NVRAM_STO	0x60	/* Store ram to eeprom           */
+#define	NVRAM_SLP	0xa0	/* Novram into low power mode    */
+#define	NVRAM_WRITE	0x20	/* Writes word from location x   */
+#define	NVRAM_SWEL	0xc0	/* Set write enable latch        */
+#define	NVRAM_RCL	0x40	/* Recall eeprom data into ram   */
+#define	NVRAM_READ	0x00	/* Reads word from location x    */
+
+#define	CDELAY		mvmeprom_delay(10)
+#define	ENABLE_NVRAM(csr)	(csr) = (HW_RS | 0x0f) & ~(NVRAM_EN)
+#define	DISABLE_NVRAM(csr)	(csr) = (HW_RS | 0x0f) | (NVRAM_EN)
+
+void	le_read_etheraddr(u_int, u_char *);

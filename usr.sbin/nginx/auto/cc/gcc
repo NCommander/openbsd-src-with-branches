@@ -31,9 +31,9 @@ ngx_feature_test=
 
 CC_TEST_FLAGS=
 
-if [ $ngx_found = yes ]; then
-    PIPE="-pipe"
-fi
+#if [ $ngx_found = yes ]; then
+#    PIPE="-pipe"
+#fi
 
 
 case "$NGX_MACHINE" in
@@ -50,7 +50,7 @@ esac
 
 #NGX_GCC_OPT="-O2"
 #NGX_GCC_OPT="-Os"
-NGX_GCC_OPT="-O"
+NGX_GCC_OPT="$OPTIM"
 
 #CFLAGS="$CFLAGS -fomit-frame-pointer"
 
@@ -149,15 +149,13 @@ CFLAGS="$CFLAGS ${NGX_GCC_OPT:--O} -W"
 CFLAGS="$CFLAGS -Wall -Wpointer-arith"
 #CFLAGS="$CFLAGS -Wconversion"
 #CFLAGS="$CFLAGS -Winline"
+#CFLAGS="$CFLAGS -Wmissing-prototypes"
 
 
 case "$NGX_GCC_VER" in
     3.* | 4.* )
         # we have a lot of the unused function arguments
         CFLAGS="$CFLAGS -Wno-unused-parameter"
-        CFLAGS="$CFLAGS -Wunused-function"
-        CFLAGS="$CFLAGS -Wunused-variable"
-        CFLAGS="$CFLAGS -Wunused-value"
         # 4.2.1 shows the warning in wrong places
         #CFLAGS="$CFLAGS -Wunreachable-code"
     ;;

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mmu.c,v 1.3 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: mmu.c,v 1.15 2006/02/12 02:30:55 uwe Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -80,6 +73,7 @@ sh_mmu_init(void)
 void
 sh_mmu_information(void)
 {
+#ifdef DEBUG
 	uint32_t r;
 #ifdef SH3
 	if (CPU_IS_SH3) {
@@ -92,15 +86,18 @@ sh_mmu_information(void)
 #endif
 #ifdef SH4
 	if (CPU_IS_SH4) {
-		printf("cpu0: full-associative 4 ITLB, 64 UTLB entries\n");
+		unsigned int urb;
+		printf("cpu0: fully-associative 4 ITLB, 64 UTLB entries\n");
 		r = _reg_read_4(SH4_MMUCR);
+		urb = (r & SH4_MMUCR_URB_MASK) >> SH4_MMUCR_URB_SHIFT;
 		printf("cpu0: %s virtual storage mode, SQ access: kernel%s, ",
 		    r & SH3_MMUCR_SV ? "single" : "multiple",
 		    r & SH4_MMUCR_SQMD ? "" : "/user");
 		printf("wired %d\n",
-		    (r & SH4_MMUCR_URB_MASK) >> SH4_MMUCR_URB_SHIFT);
+		    urb ? 64 - urb : 0);
 	}
 #endif
+#endif /* DEBUG */
 }
 
 void

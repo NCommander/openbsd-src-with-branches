@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2001 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,11 +33,11 @@
 
 #include "kx.h"
 
-RCSID("$KTH: common.c,v 1.68 2003/04/16 16:45:39 joda Exp $");
+RCSID("$Id$");
 
 char x_socket[MaxPathLen];
 
-u_int32_t display_num;
+uint32_t display_num;
 char display[MaxPathLen];
 int display_size = sizeof(display);
 char xauthfile[MaxPathLen];
@@ -111,7 +111,7 @@ try_pipe (struct x_socket *s, int dpy, const char *pattern)
     int ret;
     int fd;
     int pipefd[2];
-    
+
     snprintf (path, sizeof(path), pattern, dpy);
     fd = open (path, O_WRONLY | O_CREAT | O_EXCL, 0600);
     if (fd < 0) {
@@ -270,7 +270,7 @@ get_xsockets (int *number, struct x_socket **sockets, int tcp_socket)
 	     tmp = try_socket (&s[n], dpy, *path);
 	     if (tmp == -1) {
 		 if (errno != ENOTDIR && errno != ENOENT)
-		     return -1;
+		     err(1, "failed to open '%s'", *path);
 	     } else if (tmp == 1) {
 		 while(--n >= 0) {
 		     close (s[n].fd);
@@ -288,7 +288,7 @@ get_xsockets (int *number, struct x_socket **sockets, int tcp_socket)
 	     tmp = try_pipe (&s[n], dpy, *path);
 	     if (tmp == -1) {
 		 if (errno != ENOTDIR && errno != ENOENT && errno != ENOSYS)
-		     return -1;
+		     err(1, "failed to open '%s'", *path);
 	     } else if (tmp == 1) {
 		 while (--n >= 0) {
 		     close (s[n].fd);
@@ -306,7 +306,7 @@ get_xsockets (int *number, struct x_socket **sockets, int tcp_socket)
 	 if (tcp_socket) {
 	     tmp = try_tcp (&s[n], dpy);
 	     if (tmp == -1)
-		 return -1;
+		 err(1, "failed to open tcp stocket");
 	     else if (tmp == 1) {
 		 while (--n >= 0) {
 		     close (s[n].fd);
@@ -395,9 +395,9 @@ connect_local_xsocket (unsigned dnr)
  */
 
 int
-create_and_write_cookie (char *xauthfile,
-			 size_t xauthfile_size,
-			 u_char *cookie,
+create_and_write_cookie (char *file,
+			 size_t file_size,
+			 u_char *cookie_buf,
 			 size_t cookie_sz)
 {
      Xauth auth;
@@ -408,7 +408,7 @@ create_and_write_cookie (char *xauthfile,
      int saved_errno;
 
      gethostname (hostname, sizeof(hostname));
-     
+
      auth.family = FamilyLocal;
      auth.address = hostname;
      auth.address_length = strlen(auth.address);
@@ -418,15 +418,15 @@ create_and_write_cookie (char *xauthfile,
      auth.name = COOKIE_TYPE;
      auth.name_length = strlen(auth.name);
      auth.data_length = cookie_sz;
-     auth.data = (char*)cookie;
+     auth.data = (char*)cookie_buf;
 #ifdef KRB5
-     krb5_generate_random_block (cookie, cookie_sz);
+     krb5_generate_random_block (cookie_buf, cookie_sz);
 #else
-     krb_generate_random_block (cookie, cookie_sz);
+     krb_generate_random_block (cookie_buf, cookie_sz);
 #endif
 
-     strlcpy(xauthfile, "/tmp/AXXXXXX", xauthfile_size);
-     fd = mkstemp(xauthfile);
+     strlcpy(file, "/tmp/AXXXXXX", file_size);
+     fd = mkstemp(file);
      if(fd < 0) {
 	 saved_errno = errno;
 	 syslog(LOG_ERR, "create_and_write_cookie: mkstemp: %m");
@@ -504,7 +504,7 @@ verify_and_remove_cookies (int fd, int sock, int cookiesp)
      unsigned n, d, npad, dpad;
      char *protocol_name, *protocol_data;
      u_char zeros[6] = {0, 0, 0, 0, 0, 0};
-     u_char refused[20] = {0, 10, 
+     u_char refused[20] = {0, 10,
 			   0, 0, /* protocol major version  */
 			   0, 0, /* protocol minor version */
 			   0, 0, /* length of additional data / 4 */
@@ -566,7 +566,7 @@ fail:
      return 1;
 }
 
-/* 
+/*
  * Return 0 iff `cookie' is compatible with the cookie for the
  * localhost with name given in `ai' (or `hostname') and display
  * number in `disp_nr'.
@@ -579,7 +579,7 @@ match_local_auth (Xauth* auth,
     int auth_disp;
     char *tmp_disp;
     struct addrinfo *a;
-    
+
     tmp_disp = malloc(auth->number_length + 1);
     if (tmp_disp == NULL)
 	return -1;
@@ -615,7 +615,7 @@ find_auth_cookie (FILE *f)
 {
     Xauth *ret = NULL;
     char local_hostname[MaxHostNameLen];
-    char *display = getenv("DISPLAY");
+    char *display_str = getenv("DISPLAY");
     char d[MaxHostNameLen + 4];
     char *colon;
     struct addrinfo *ai;
@@ -623,34 +623,34 @@ find_auth_cookie (FILE *f)
     int disp;
     int error;
 
-    if(display == NULL)
-	display = ":0";
-    strlcpy(d, display, sizeof(d));
-    display = d;
-    colon = strchr (display, ':');
+    if(display_str == NULL)
+	display_str = ":0";
+    strlcpy(d, display_str, sizeof(d));
+    display_str = d;
+    colon = strchr (display_str, ':');
     if (colon == NULL)
 	disp = 0;
     else {
 	*colon = '\0';
 	disp = atoi (colon + 1);
     }
-    if (strcmp (display, "") == 0
-	|| strncmp (display, "unix", 4) == 0
-	|| strncmp (display, "localhost", 9) == 0) {
+    if (strcmp (display_str, "") == 0
+	|| strncmp (display_str, "unix", 4) == 0
+	|| strncmp (display_str, "localhost", 9) == 0) {
 	gethostname (local_hostname, sizeof(local_hostname));
-	display = local_hostname;
+	display_str = local_hostname;
     }
     memset (&hints, 0, sizeof(hints));
     hints.ai_flags    = AI_CANONNAME;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
-    error = getaddrinfo (display, NULL, &hints, &ai);
+    error = getaddrinfo (display_str, NULL, &hints, &ai);
     if (error)
 	ai = NULL;
 
     for (; (ret = XauReadAuth (f)) != NULL; XauDisposeAuth(ret)) {
-	if (match_local_auth (ret, ai, display, disp) == 0) {
+	if (match_local_auth (ret, ai, display_str, disp) == 0) {
 	    if (ai != NULL)
 		freeaddrinfo (ai);
 	    return ret;
@@ -693,7 +693,7 @@ replace_cookie(int xserver, int fd, char *filename, int cookiesp) /* XXX */
      if (f != NULL) {
 	 Xauth *auth = find_auth_cookie (f);
 	 u_char len[6] = {0, 0, 0, 0, 0, 0};
-	 
+
 	 fclose (f);
 
 	 if (auth != NULL) {
@@ -754,7 +754,7 @@ suspicious_address (int sock, struct sockaddr *addr)
 
     switch (addr->sa_family) {
     case AF_INET:
-	return ((struct sockaddr_in *)addr)->sin_addr.s_addr != 
+	return ((struct sockaddr_in *)addr)->sin_addr.s_addr !=
 	    htonl(INADDR_LOOPBACK)
 #if defined(IP_OPTIONS) && defined(HAVE_GETSOCKOPT)
 	    || getsockopt (sock, IPPROTO_IP, IP_OPTIONS, data, &len) < 0
@@ -779,10 +779,8 @@ suspicious_address (int sock, struct sockaddr *addr)
  * libkrb5 either.
  */
 
-#ifndef KRB4
-
 int
-krb_get_int(void *f, u_int32_t *to, int size, int lsb)
+kx_get_int(void *f, uint32_t *to, int size, int lsb)
 {
     int i;
     unsigned char *from = (unsigned char *)f;
@@ -799,7 +797,7 @@ krb_get_int(void *f, u_int32_t *to, int size, int lsb)
 }
 
 int
-krb_put_int(u_int32_t from, void *to, size_t rem, int size)
+kx_put_int(uint32_t from, void *to, size_t rem, int size)
 {
     int i;
     unsigned char *p = (unsigned char *)to;
@@ -813,5 +811,3 @@ krb_put_int(u_int32_t from, void *to, size_t rem, int size)
     }
     return size;
 }
-
-#endif /* !KRB4 */

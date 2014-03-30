@@ -361,6 +361,7 @@ ngx_http_ssi_header_filter(ngx_http_request_t *r)
         ngx_http_clear_content_length(r);
         ngx_http_clear_last_modified(r);
         ngx_http_clear_accept_ranges(r);
+        ngx_http_clear_etag(r);
     }
 
     return ngx_http_next_header_filter(r);
@@ -714,7 +715,7 @@ ngx_http_ssi_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
 
                 if (ctx->params.nelts > NGX_HTTP_SSI_MAX_PARAMS) {
                     ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                                  "too many SSI command paramters: \"%V\"",
+                                  "too many SSI command parameters: \"%V\"",
                                   &ctx->command);
                     goto ssi_error;
                 }
@@ -1024,6 +1025,7 @@ ngx_http_ssi_parse(ngx_http_request_t *r, ngx_http_ssi_ctx_t *ctx)
         switch (state) {
 
         case ssi_start_state:
+            /* not reached */
             break;
 
         case ssi_tag_state:
@@ -1204,7 +1206,7 @@ ngx_http_ssi_parse(ngx_http_request_t *r, ngx_http_ssi_ctx_t *ctx)
 
                 if (ctx->value_buf == NULL) {
                     ctx->param->value.data = ngx_pnalloc(r->pool,
-                                                         ctx->value_len);
+                                                         ctx->value_len + 1);
                     if (ctx->param->value.data == NULL) {
                         return NGX_ERROR;
                     }
@@ -1374,6 +1376,16 @@ ngx_http_ssi_parse(ngx_http_request_t *r, ngx_http_ssi_ctx_t *ctx)
 
         case ssi_quoted_symbol_state:
             state = ctx->saved_state;
+
+            if (ctx->param->value.len == ctx->value_len) {
+                ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                              "too long \"%V%c...\" value of \"%V\" "
+                              "parameter in \"%V\" SSI command",
+                              &ctx->param->value, ch, &ctx->param->key,
+                              &ctx->command);
+                state = ssi_error_state;
+                break;
+            }
 
             ctx->param->value.data[ctx->param->value.len++] = ch;
 
@@ -1993,7 +2005,7 @@ ngx_http_ssi_include(ngx_http_request_t *r, ngx_http_ssi_ctx_t *ctx,
 
     if (set && stub) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                      "\"set\" and \"stub\" may not be used together "
+                      "\"set\" and \"stub\" cannot be used together "
                       "in \"include\" SSI command");
         return NGX_HTTP_SSI_ERROR;
     }
@@ -2001,7 +2013,7 @@ ngx_http_ssi_include(ngx_http_request_t *r, ngx_http_ssi_ctx_t *ctx,
     if (wait) {
         if (uri == NULL) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                          "\"wait\" may not be used with file=\"%V\"", file);
+                          "\"wait\" cannot be used with file=\"%V\"", file);
             return NGX_HTTP_SSI_ERROR;
         }
 
@@ -2178,7 +2190,7 @@ ngx_http_ssi_include(ngx_http_request_t *r, ngx_http_ssi_ctx_t *ctx,
 
     } else {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                      "only one subrequest may be waited at the same time");
+                      "can only wait for one subrequest at a time");
     }
 
     return NGX_OK;
@@ -2886,7 +2898,7 @@ ngx_http_ssi_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
                          prev->ignore_recycled_buffers, 0);
 
     ngx_conf_merge_size_value(conf->min_file_chunk, prev->min_file_chunk, 1024);
-    ngx_conf_merge_size_value(conf->value_len, prev->value_len, 256);
+    ngx_conf_merge_size_value(conf->value_len, prev->value_len, 255);
 
     if (ngx_http_merge_types(cf, &conf->types_keys, &conf->types,
                              &prev->types_keys, &prev->types,

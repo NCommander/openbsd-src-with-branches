@@ -1,3 +1,4 @@
+/*	$OpenBSD: ndbm.h,v 1.5 2003/06/02 19:34:12 millert Exp $	*/
 /*	$NetBSD: ndbm.h,v 1.6 1995/07/20 23:31:11 jtc Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -57,25 +54,25 @@
 #define	DBM_SUFFIX	".db"
 
 typedef struct {
-	char *dptr;
-	int dsize;
+	void *dptr;
+	size_t dsize;
 } datum;
 
 typedef DB DBM;
 #define	dbm_pagfno(a)	DBM_PAGFNO_NOT_AVAILABLE
 
 __BEGIN_DECLS
-void	 dbm_close __P((DBM *));
-int	 dbm_delete __P((DBM *, datum));
-datum	 dbm_fetch __P((DBM *, datum));
-datum	 dbm_firstkey __P((DBM *));
-long	 dbm_forder __P((DBM *, datum));
-datum	 dbm_nextkey __P((DBM *));
-DBM	*dbm_open __P((const char *, int, int));
-int	 dbm_store __P((DBM *, datum, datum, int));
-int	 dbm_dirfno __P((DBM *));
-int	 dbm_error __P((DBM *));
-int	 dbm_clearerr __P((DBM *));
+int	 dbm_clearerr(DBM *);
+void	 dbm_close(DBM *);
+int	 dbm_delete(DBM *, datum);
+int	 dbm_error(DBM *);
+datum	 dbm_fetch(DBM *, datum);
+datum	 dbm_firstkey(DBM *);
+datum	 dbm_nextkey(DBM *);
+DBM	*dbm_open(const char *, int, mode_t);
+int	 dbm_store(DBM *, datum, datum, int);
+int	 dbm_dirfno(DBM *);
+int	 dbm_rdonly(DBM *);
 __END_DECLS
 
 #endif /* !_NDBM_H_ */

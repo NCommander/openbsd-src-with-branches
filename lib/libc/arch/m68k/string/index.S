@@ -1,3 +1,4 @@
+/*	$OpenBSD: index.S,v 1.5 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,12 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)index.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: index.S,v 1.3 1995/02/08 18:33:16 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "DEFS.h"
 
 #ifdef STRCHR
@@ -48,15 +39,16 @@ ENTRY(strchr)
 #else
 ENTRY(index)
 #endif
-	movl	sp@(4),a0		| string
-	movb	sp@(11),d0		| char to look for
+	movl	%sp@(4),%a0		| string
+	movb	%sp@(11),%d0		| char to look for
 ixloop:
-	cmpb	a0@,d0			| found our char?
+	cmpb	%a0@,%d0		| found our char?
 	beq	ixfound			| yes, break out
-	tstb	a0@+			| null?
+	tstb	%a0@+			| null?
 	bne	ixloop			| no, keep going
-	moveq	#0,d0			| not found, return null
+	moveq	#0,%d0			| not found, return null
+	moveal	%d0,%a0
 	rts
 ixfound:
-	movl	a0,d0			| found, return pointer
+	movl	%a0,%d0			| found, return pointer
 	rts

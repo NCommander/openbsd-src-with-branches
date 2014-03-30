@@ -1675,7 +1675,7 @@ kssl_ctx_setstring(KSSL_CTX *kssl_ctx, int which, char *text)
 	if ((*string = kssl_calloc(1, strlen(text) + 1)) == NULL)
 		return KSSL_CTX_ERR;
 	else
-		strcpy(*string, text);
+		memcpy(*string, text, strlen(text) + 1);
 
 	return KSSL_CTX_OK;
         }

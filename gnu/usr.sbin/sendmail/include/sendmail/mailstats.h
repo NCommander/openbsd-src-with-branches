@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 1999 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998, 1999 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -10,10 +10,10 @@
  * the sendmail distribution.
  *
  *
- *	$Sendmail: mailstats.h,v 8.17 2001/09/04 22:42:40 ca Exp $
+ *	$Sendmail: mailstats.h,v 8.20 2013/11/22 20:51:30 ca Exp $
  */
 
-#define STAT_VERSION	3
+#define STAT_VERSION	4
 #define STAT_MAGIC	0x1B1DE
 
 /*
@@ -35,4 +35,5 @@ struct statistics
 	long	stat_bt[MAXMAILERS];	/* kbytes to each mailer */
 	long	stat_nr[MAXMAILERS];	/* # rejects by each mailer */
 	long	stat_nd[MAXMAILERS];	/* # discards by each mailer */
+	long	stat_nq[MAXMAILERS];	/* # quarantines by each mailer */
 };

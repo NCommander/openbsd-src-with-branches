@@ -1,8 +1,8 @@
 
-RXTELNET(1)                  UNIX Reference Manual                 RXTELNET(1)
+RXTELNET(1)               BSD General Commands Manual              RXTELNET(1)
 
 NNAAMMEE
-     rrxxtteellnneett - start a telnet and forward X-connections.
+     rrxxtteellnneett -- start a telnet and forward X-connections.
 
 SSYYNNOOPPSSIISS
      rrxxtteellnneett [--ll _u_s_e_r_n_a_m_e] [--kk] [--tt _t_e_l_n_e_t___a_r_g_s] [--xx _x_t_e_r_m___a_r_g_s] [--KK _k_x___a_r_g_s]
@@ -13,6 +13,9 @@ DDEESSCCRRIIPPTTIIOONN
      From this window you will also be able to run X clients that will be able
      to connect securely to your X server. If _p_o_r_t is given, that port will be
      used instead of the default.
+
+     If setting up the X forwarding failes, rrxxtteellnneett will still telnet in to
+     the remote host, but without X forwarding.
 
      The supported options are:
 
@@ -40,10 +43,10 @@ EEXXAAMMPPLLEE
 
      1.   On foo: rrxxtteellnneett _b_a_r
 
-     2.   You will get a new window with a tteellnneett to _b_a_r. In this window you
+     2.   You will get a new window with a tteellnneett to _b_a_r.  In this window you
           will be able to start X clients.
 
 SSEEEE AALLSSOO
-     kx(1),  rxterm(1),  telnet(1),  tenletxr(1),  kxd(8)
+     kx(1), rxterm(1), telnet(1), tenletxr(1), kxd(8)
 
- KTH_KRB                      September 27, 1996                             1
+KTH_KRB                          March 7, 2004                         KTH_KRB

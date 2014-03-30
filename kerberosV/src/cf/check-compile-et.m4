@@ -1,4 +1,4 @@
-dnl $KTH: check-compile-et.m4,v 1.13 2005/04/30 13:13:53 lha Exp $
+dnl $Id$
 dnl
 dnl CHECK_COMPILE_ET
 AC_DEFUN([CHECK_COMPILE_ET], [
@@ -32,7 +32,7 @@ if ${COMPILE_ET} conftest_et.et >/dev/null 2>&1; then
 #include <com_err.h>
 #include <string.h>
 #include "conftest_et.h"
-int main(){
+int main(int argc, char **argv){
 #ifndef ERROR_TABLE_BASE_conf
 #error compile_et does not handle error_table N M
 #endif
@@ -43,7 +43,8 @@ fi
 AC_MSG_RESULT(${krb_cv_compile_et})
 if test "${krb_cv_compile_et}" = "yes" -a "${krb_cv_compile_et_cross}" = no; then
   AC_MSG_CHECKING([for if com_err generates a initialize_conf_error_table_r])
-  AC_EGREP_CPP(initialize_conf_error_table_r,[#include "conftest_et.h"],
+  AC_EGREP_CPP([initialize_conf_error_table_r.*struct et_list],
+     [#include "conftest_et.h"],
      [krb_cv_com_err_need_r="ok"])
   if test X"$krb_cv_com_err_need_r" = X ; then
     AC_MSG_RESULT(no)
@@ -66,6 +67,7 @@ elif test "${krb_cv_compile_et}" = "yes"; then
     const char *p;
     p = error_message(0);
     initialize_error_table_r(0,0,0,0);
+    com_right_r(0, 0, 0, 0);
   ]])],[krb_cv_com_err="yes"],[krb_cv_com_err="no"; CPPFLAGS="${save_CPPFLAGS}"])
   AC_MSG_RESULT(${krb_cv_com_err})
   LIBS="${krb_cv_save_LIBS}"
@@ -82,12 +84,16 @@ if test "${krb_cv_com_err}" = "yes"; then
     LIB_com_err_a=""
     LIB_com_err_so=""
     AC_MSG_NOTICE(Using the already-installed com_err)
+    COMPILE_ET="${ac_cv_prog_COMPILE_ET}"
+    localcomerr=no
 elif test "${krb_cv_com_err}" = "cross"; then
     DIR_com_err="com_err"
     LIB_com_err="\$(top_builddir)/lib/com_err/libcom_err.la"
     LIB_com_err_a="\$(top_builddir)/lib/com_err/.libs/libcom_err.a"
     LIB_com_err_so="\$(top_builddir)/lib/com_err/.libs/libcom_err.so"
     AC_MSG_NOTICE(Using our own com_err with toolchain compile_et)
+    COMPILE_ET="${ac_cv_prog_COMPILE_ET}"
+    localcomerr=yes
 else
     COMPILE_ET="\$(top_builddir)/lib/com_err/compile_et"
     DIR_com_err="com_err"
@@ -95,7 +101,10 @@ else
     LIB_com_err_a="\$(top_builddir)/lib/com_err/.libs/libcom_err.a"
     LIB_com_err_so="\$(top_builddir)/lib/com_err/.libs/libcom_err.so"
     AC_MSG_NOTICE(Using our own com_err)
+    localcomerr=yes
 fi
+AM_CONDITIONAL(COM_ERR, test "$localcomerr" = yes)dnl
+AC_SUBST(COMPILE_ET)
 AC_SUBST(DIR_com_err)
 AC_SUBST(LIB_com_err)
 AC_SUBST(LIB_com_err_a)

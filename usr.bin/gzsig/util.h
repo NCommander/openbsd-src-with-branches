@@ -1,3 +1,4 @@
+/* $OpenBSD: util.h,v 1.3 2013/03/10 10:34:33 tobias Exp $ */
 /*
  * util.h
  *
@@ -28,12 +29,13 @@
  *   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  *   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: util.h,v 1.2 2005/04/01 16:47:31 dugsong Exp $
+ * $Vendor: util.h,v 1.2 2005/04/01 16:47:31 dugsong Exp $
  */
 
 #ifndef UTIL_H
 
-int		copy_permissions(char *srcfile, char *dstfile);
+int		copy_permissions(int srcfd, int dstfd);
+int		skip_string(FILE *fin);
 void		fatal(int status, const char *fmt, ...);
 
 #endif /* UTIL_H */

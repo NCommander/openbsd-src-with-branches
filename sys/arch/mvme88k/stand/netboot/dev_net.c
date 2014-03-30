@@ -1,4 +1,4 @@
-/*	$Id: dev_net.c,v 1.4 1995/11/17 22:13:11 deraadt Exp $ */
+/*	$OpenBSD: dev_net.c,v 1.5 2013/01/16 20:45:09 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Gordon W. Ross
@@ -55,19 +55,22 @@
 #include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
 
+#include <machine/prom.h>
+
 #include "stand.h"
+#include "libsa.h"
 #include "net.h"
 #include "netif.h"
 #include "config.h"
 #include "bootparam.h"
+#include "nfs.h"
 
 extern int nfs_root_node[];	/* XXX - get from nfs_mount() */
 
-struct in_addr myip, rootip, gateip, mask;
-char rootpath[FNAME_SIZE];
-
 int netdev_sock = -1;
 static int open_count;
+
+int	net_mountroot(struct open_file *, char *);
 
 /*
  * Called by devopen after it sets f->f_dev to our devsw entry.
@@ -102,6 +105,7 @@ net_close(f)
 		if (--open_count == 0)
 			netif_close(netdev_sock);
 	f->f_devdata = NULL;
+	return (0);
 }
 
 int
@@ -161,8 +165,10 @@ net_mountroot(f, devname)
 	printf("myip: %s (%s)", hostname, intoa(myip));
 	if (gateip)
 		printf(", gateip: %s", intoa(gateip));
+#if 0
 	if (mask)
 		printf(", mask: %s", intoa(mask));
+#endif
 	printf("\n");
 
 #endif
@@ -173,39 +179,4 @@ net_mountroot(f, devname)
 	error = nfs_mount(netdev_sock, rootip, rootpath);
 
 	return (error);
-}
-
-/*
- * machdep_common_ether: get ethernet address
- */
-void
-machdep_common_ether(ether)
-	u_char *ether;
-{
-	u_char *ea;
-	extern int cputyp;
-
-	if (cputyp == CPU_147) {
-		ea = (u_char *) ETHER_ADDR_147;
-
-		if ((*(int *) ea & 0x2fffff00) == 0x2fffff00)
-			panic("ERROR: ethernet address not set!\r\n");
-		ether[0] = 0x08;
-		ether[1] = 0x00;
-		ether[2] = 0x3e;
-		ether[3] = ea[0];
-		ether[4] = ea[1];
-		ether[5] = ea[2];
-	} else {
-		ea = (u_char *) ETHER_ADDR_16X;
-
-		if (ea[0] + ea[1] + ea[2] + ea[3] + ea[4] + ea[5] == 0)
-			panic("ERROR: ethernet address not set!\r\n");
-		ether[0] = ea[0];
-		ether[1] = ea[1];
-		ether[2] = ea[2];
-		ether[3] = ea[3];
-		ether[4] = ea[4];
-		ether[5] = ea[5];
-	}
 }

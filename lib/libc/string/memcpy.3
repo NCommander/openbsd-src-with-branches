@@ -1,3 +1,5 @@
+.\"	$OpenBSD: memcpy.3,v 1.9 2013/06/04 03:02:09 deraadt Exp $
+.\"
 .\" Copyright (c) 1990, 1991 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -13,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,52 +31,49 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)memcpy.3	5.5 (Berkeley) 6/29/91
-.\"	$Id: memcpy.3,v 1.2 1993/08/01 07:43:59 mycroft Exp $
-.\"
-.Dd June 29, 1991
+.Dd $Mdocdate: June 4 2013 $
 .Dt MEMCPY 3
 .Os
 .Sh NAME
 .Nm memcpy
-.Nd copy byte string
+.Nd copy bytes
 .Sh SYNOPSIS
-.Fd #include <string.h>
+.In string.h
 .Ft void *
 .Fn memcpy "void *dst" "const void *src" "size_t len"
 .Sh DESCRIPTION
 The
 .Fn memcpy
-function
-copies
+function copies
 .Fa len
-bytes from string
+bytes from buffer
 .Fa src
-to string
+to buffer
 .Fa dst .
+If the two buffers may overlap,
+.Xr memmove 3
+must be used instead.
 .Sh RETURN VALUES
 The
 .Fn memcpy
-function
-returns the original value of
+function returns the original value of
 .Fa dst .
 .Sh SEE ALSO
 .Xr bcopy 3 ,
 .Xr memccpy 3 ,
 .Xr memmove 3 ,
-.Xr strcpy 3
+.Xr strcpy 3 ,
+.Xr strlcpy 3 ,
+.Xr wmemcpy 3
 .Sh STANDARDS
 The
 .Fn memcpy
-function
-conforms to
+function conforms to
 .St -ansiC .
-.Sh BUGS
-In this implementation
+.Sh HISTORY
+The
 .Fn memcpy
-is implemented using
-.Xr bcopy 3 ,
-and therefore the strings may overlap.
-On other systems, copying overlapping strings may produce surprises.
-A simpler solution is to not use
-.Fn memcpy .
+function first appeared in
+.At V
+and was reimplemented for
+.Bx 4.3 Tahoe .

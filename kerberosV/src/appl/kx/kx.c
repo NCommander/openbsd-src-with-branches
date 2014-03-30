@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995-2003 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995-2003 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,7 +33,7 @@
 
 #include "kx.h"
 
-RCSID("$KTH: kx.c,v 1.73 2005/04/30 14:11:47 lha Exp $");
+RCSID("$Id$");
 
 static int nchild;
 static int donep;
@@ -48,7 +48,7 @@ childhandler (int sig)
      pid_t pid;
      int status;
 
-     do { 
+     do {
 	 pid = waitpid (-1, &status, WNOHANG|WUNTRACED);
 	 if (pid > 0 && (WIFEXITED(status) || WIFSIGNALED(status)))
 	     if (--nchild == 0 && donep)
@@ -114,7 +114,7 @@ connect_host (kx_context *kc)
 	warnx ("%s: %s", kc->host, gai_strerror(error));
 	return -1;
     }
-    
+
     for (a = ai; a != NULL; a = a->ai_next) {
 	s = socket (a->ai_family, a->ai_socktype, a->ai_protocol);
 	if (s < 0)
@@ -182,7 +182,7 @@ status_output (int debugp)
 	printf ("%u\t%s\t%s\n", (unsigned)getpid(), display, xauthfile);
     else {
 	pid_t pid;
-	
+
 	pid = fork();
 	if (pid < 0) {
 	    err(1, "fork");
@@ -208,7 +208,7 @@ doit_passive (kx_context *kc)
      int otherside;
      u_char msg[1024], *p;
      int len;
-     u_int32_t tmp;
+     uint32_t tmp;
      const char *host = kc->host;
 
      otherside = connect_host (kc);
@@ -227,7 +227,7 @@ doit_passive (kx_context *kc)
      p = msg;
      *p++ = INIT;
      len = strlen(kc->user);
-     p += KRB_PUT_INT (len, p, sizeof(msg) - 1, 4);
+     p += kx_put_int (len, p, sizeof(msg) - 1, 4);
      memcpy(p, kc->user, len);
      p += len;
      *p++ = PASSIVE | (kc->keepalive_flag ? KEEP_ALIVE : 0);
@@ -242,18 +242,18 @@ doit_passive (kx_context *kc)
      p = (u_char *)msg;
      if (*p == ERROR) {
 	 p++;
-	 p += krb_get_int (p, &tmp, 4, 0);
+	 p += kx_get_int (p, &tmp, 4, 0);
 	 errx (1, "%s: %.*s", host, (int)tmp, p);
      } else if (*p != ACK) {
 	 errx (1, "%s: strange msg %d", host, *p);
      } else
 	 p++;
-     p += krb_get_int (p, &tmp, 4, 0);
+     p += kx_get_int (p, &tmp, 4, 0);
      memcpy(display, p, tmp);
      display[tmp] = '\0';
      p += tmp;
 
-     p += krb_get_int (p, &tmp, 4, 0);
+     p += kx_get_int (p, &tmp, 4, 0);
      memcpy(xauthfile, p, tmp);
      xauthfile[tmp] = '\0';
      p += tmp;
@@ -271,15 +271,15 @@ doit_passive (kx_context *kc)
 	 p = (u_char *)msg;
 	 if (*p == ERROR) {
 	     p++;
-	     p += krb_get_int (p, &tmp, 4, 0);
+	     p += kx_get_int (p, &tmp, 4, 0);
 	     errx (1, "%s: %.*s", host, (int)tmp, p);
 	 } else if(*p != NEW_CONN) {
 	     errx (1, "%s: strange msg %d", host, *p);
 	 } else {
 	     p++;
-	     p += krb_get_int (p, &tmp, 4, 0);
+	     p += kx_get_int (p, &tmp, 4, 0);
 	 }
-	 
+
 	 ++nchild;
 	 child = fork ();
 	 if (child < 0) {
@@ -292,7 +292,7 @@ doit_passive (kx_context *kc)
 	     close (otherside);
 
 	     socket_set_port(kc->thataddr, htons(tmp));
-		 
+
 	     fd = socket (kc->thataddr->sa_family, SOCK_STREAM, 0);
 	     if (fd < 0)
 		 err(1, "socket");
@@ -337,7 +337,7 @@ doit_passive (kx_context *kc)
 }
 
 /*
- * Allocate a local pseudo-xserver and wait for connections 
+ * Allocate a local pseudo-xserver and wait for connections
  */
 
 static int
@@ -347,12 +347,12 @@ doit_active (kx_context *kc)
     int nsockets;
     struct x_socket *sockets;
     u_char msg[1024], *p;
-    int len = strlen(kc->user);
+    int len;
     int tmp, tmp2;
-    char *s;
+    char *str;
     int i;
     size_t rem;
-    u_int32_t other_port;
+    uint32_t other_port;
     int error;
     const char *host = kc->host;
 
@@ -372,7 +372,7 @@ doit_active (kx_context *kc)
     *p++ = INIT;
     --rem;
     len = strlen(kc->user);
-    tmp = KRB_PUT_INT (len, p, rem, 4);
+    tmp = kx_put_int (len, p, rem, 4);
     if (tmp < 0)
 	return 1;
     p += tmp;
@@ -383,29 +383,29 @@ doit_active (kx_context *kc)
     *p++ = (kc->keepalive_flag ? KEEP_ALIVE : 0);
     --rem;
 
-    s = getenv("DISPLAY");
-    if (s == NULL || (s = strchr(s, ':')) == NULL) 
-	s = ":0";
-    len = strlen (s);
-    tmp = KRB_PUT_INT (len, p, rem, 4);
+    str = getenv("DISPLAY");
+    if (str == NULL || (str = strchr(str, ':')) == NULL)
+	str = ":0";
+    len = strlen (str);
+    tmp = kx_put_int (len, p, rem, 4);
     if (tmp < 0)
 	return 1;
     rem -= tmp;
     p += tmp;
-    memcpy (p, s, len);
+    memcpy (p, str, len);
     p += len;
     rem -= len;
 
-    s = getenv("XAUTHORITY");
-    if (s == NULL)
-	s = "";
-    len = strlen (s);
-    tmp = KRB_PUT_INT (len, p, rem, 4);
+    str = getenv("XAUTHORITY");
+    if (str == NULL)
+	str = "";
+    len = strlen (str);
+    tmp = kx_put_int (len, p, rem, 4);
     if (tmp < 0)
 	return 1;
     p += len;
     rem -= len;
-    memcpy (p, s, len);
+    memcpy (p, str, len);
     p += len;
     rem -= len;
 
@@ -417,19 +417,18 @@ doit_active (kx_context *kc)
 	err (1, "read from %s", host);
     p = (u_char *)msg;
     if (*p == ERROR) {
-	u_int32_t u32;
+	uint32_t u32;
 
 	p++;
-	p += krb_get_int (p, &u32, 4, 0);
+	p += kx_get_int (p, &u32, 4, 0);
 	errx (1, "%s: %.*s", host, (int)u32, p);
     } else if (*p != ACK) {
 	errx (1, "%s: strange msg %d", host, *p);
-    } else
-	p++;
+    }
 
     tmp2 = get_xsockets (&nsockets, &sockets, kc->tcp_flag);
     if (tmp2 < 0)
-	return 1;
+	errx(1, "Failed to open sockets");
     display_num = tmp2;
     if (kc->tcp_flag)
 	snprintf (display, display_size, "localhost:%u", display_num);
@@ -437,10 +436,9 @@ doit_active (kx_context *kc)
 	snprintf (display, display_size, ":%u", display_num);
     error = create_and_write_cookie (xauthfile, xauthfile_size,
 				     cookie, cookie_len);
-    if (error) {
-	warnx ("failed creating cookie file: %s", strerror(error));
-	return 1;
-    }
+    if (error)
+	errx(1, "failed creating cookie file: %s", strerror(error));
+
     status_output (kc->debug_flag);
     for (;;) {
 	fd_set fdset;
@@ -450,7 +448,7 @@ doit_active (kx_context *kc)
 
 	FD_ZERO(&fdset);
 	for (i = 0; i < nsockets; ++i) {
-	    if (sockets[i].fd >= FD_SETSIZE) 
+	    if (sockets[i].fd >= FD_SETSIZE)
 		errx (1, "fd too large");
 	    FD_SET(sockets[i].fd, &fdset);
 	}
@@ -478,16 +476,16 @@ doit_active (kx_context *kc)
 	    err (1, "read from %s", host);
 	p = (u_char *)msg;
 	if (*p == ERROR) {
-	    u_int32_t val;
+	    uint32_t val;
 
 	    p++;
-	    p += krb_get_int (p, &val, 4, 0);
+	    p += kx_get_int (p, &val, 4, 0);
 	    errx (1, "%s: %.*s", host, (int)val, p);
 	} else if (*p != NEW_CONN) {
 	    errx (1, "%s: strange msg %d", host, *p);
 	} else {
 	    p++;
-	    p += krb_get_int (p, &other_port, 4, 0);
+	    p += kx_get_int (p, &other_port, 4, 0);
 	}
 
 	++nchild;
@@ -569,29 +567,6 @@ doit (kx_context *kc, int passive_flag)
 	return doit_active  (kc);
 }
 
-#ifdef KRB4
-
-/*
- * Start a v4-authenticatated kx connection.
- */
-
-static int
-doit_v4 (const char *host, int port, const char *user, 
-	 int passive_flag, int debug_flag, int keepalive_flag, int tcp_flag)
-{
-    int ret;
-    kx_context context;
-
-    krb4_make_context (&context);
-    context_set (&context,
-		 host, user, port, debug_flag, keepalive_flag, tcp_flag);
-
-    ret = doit (&context, passive_flag);
-    context_destroy (&context);
-    return ret;
-}
-#endif /* KRB4 */
-
 #ifdef KRB5
 
 /*
@@ -619,12 +594,6 @@ doit_v5 (const char *host, int port, const char *user,
  * Variables set from the arguments
  */
 
-#ifdef KRB4
-static int use_v4		= -1;
-#ifdef HAVE_KRB_ENABLE_DEBUG
-static int krb_debug_flag	= 0;
-#endif /* HAVE_KRB_ENABLE_DEBUG */
-#endif /* KRB4 */
 #ifdef KRB5
 static int use_v5		= -1;
 #endif
@@ -638,14 +607,6 @@ static int version_flag		= 0;
 static int help_flag		= 0;
 
 struct getargs args[] = {
-#ifdef KRB4
-    { "krb4",	'4', arg_flag,		&use_v4,	"Use Kerberos V4",
-      NULL },
-#ifdef HAVE_KRB_ENABLE_DEBUG
-    { "krb4-debug", 'D', arg_flag,	&krb_debug_flag,
-      "enable krb4 debugging" },
-#endif /* HAVE_KRB_ENABLE_DEBUG */
-#endif /* KRB4 */
 #ifdef KRB5
     { "krb5",	'5', arg_flag,		&use_v5,	"Use Kerberos V5",
       NULL },
@@ -686,14 +647,14 @@ int
 main(int argc, char **argv)
 {
     int port	= 0;
-    int optind	= 0;
+    int optidx	= 0;
     int ret	= 1;
     char *host	= NULL;
 
     setprogname (argv[0]);
 
     if (getarg (args, sizeof(args) / sizeof(args[0]), argc, argv,
-		&optind))
+		&optidx))
 	usage (1);
 
     if (help_flag)
@@ -704,10 +665,10 @@ main(int argc, char **argv)
 	return 0;
     }
 
-    if (optind != argc - 1)
+    if (optidx != argc - 1)
 	usage (1);
 
-    host = argv[optind];
+    host = argv[optidx];
 
     if (port_str) {
 	struct servent *s = roken_getservbyname (port_str, "tcp");
@@ -738,26 +699,11 @@ main(int argc, char **argv)
 	krb_enable_debug ();
 #endif
 
-#if defined(KRB4) && defined(KRB5)
-    if(use_v4 == -1 && use_v5 == 1)
-	use_v4 = 0;
-    if(use_v5 == -1 && use_v4 == 1)
-	use_v5 = 0;
-#endif    
-
 #ifdef KRB5
     if (ret && use_v5) {
 	if (port == 0)
 	    port = krb5_getportbyname(NULL, "kx", "tcp", KX_PORT);
 	ret = doit_v5 (host, port, user,
-		       passive_flag, debug_flag, keepalive_flag, tcp_flag);
-    }
-#endif
-#ifdef KRB4
-    if (ret && use_v4) {
-	if (port == 0)
-	    port = k_getportbyname("kx", "tcp", htons(KX_PORT));
-	ret = doit_v4 (host, port, user, 
 		       passive_flag, debug_flag, keepalive_flag, tcp_flag);
     }
 #endif

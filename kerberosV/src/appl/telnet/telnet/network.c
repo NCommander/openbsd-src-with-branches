@@ -33,7 +33,7 @@
 
 #include "telnet_locl.h"
 
-RCSID("$KTH: network.c,v 1.12 2004/06/20 17:01:28 lha Exp $");
+RCSID("$Id$");
 
 Ring		netoring, netiring;
 size_t		netobufsize = 64*1024;
@@ -47,7 +47,7 @@ void
 init_network(void)
 {
     void *obuf, *ibuf;
-    
+
     if ((obuf = malloc(netobufsize)) == NULL)
 	exit(1);
     if ((ibuf = malloc(netibufsize)) == NULL)

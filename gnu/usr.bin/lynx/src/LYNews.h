@@ -2,12 +2,17 @@
 #define LYNEWSPOST_H
 
 #ifndef LYSTRUCTS_H
-#include "LYStructs.h"
+#include <LYStructs.h>
 #endif /* LYSTRUCTS_H */
 
-extern BOOLEAN term_message;
+#ifdef __cplusplus
+extern "C" {
+#endif
+    extern BOOLEAN term_message;
 
-extern char *LYNewsPost PARAMS((char *newsgroups, BOOLEAN followup));
+    extern char *LYNewsPost(char *newsgroups, BOOLEAN followup);
 
-#endif /* LYNEWSPOST_H */
-
+#ifdef __cplusplus
+}
+#endif
+#endif				/* LYNEWSPOST_H */

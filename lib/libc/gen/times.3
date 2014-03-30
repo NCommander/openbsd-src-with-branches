@@ -1,4 +1,4 @@
-.\"	$NetBSD: times.3,v 1.4 1995/02/27 05:54:02 cgd Exp $
+.\"	$OpenBSD: times.3,v 1.13 2013/06/05 03:39:22 tedu Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,46 +27,46 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)times.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: June 5 2013 $
 .Dt TIMES 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm times
 .Nd process times
 .Sh SYNOPSIS
-.Fd #include <sys/times.h>
-.Ft clock_t 
+.In sys/times.h
+.Ft clock_t
 .Fn times "struct tms *tp"
 .Sh DESCRIPTION
 .Bf -symbolic
-This interface is obsoleted by getrusage(2)
-and gettimeofday(3).
+This interface is obsoleted by
+.Xr getrusage 2
+and
+.Xr gettimeofday 2 .
 .Ef
 .Pp
 The
 .Fn times
 function returns the value of time in
-.Dv CLK_TCK Ns 's
+.Dv CLK_TCK Ns s
 of a second since
 0 hours, 0 minutes, 0 seconds, January 1, 1970, Coordinated Universal
-Time.
+Time (UTC).
 .Pp
 It also fills in the structure pointed to by
 .Fa tp
 with time-accounting information.
 .Pp
 The
-.Fa tms
+.Li tms
 structure is defined as follows:
 .Bd -literal -offset indent
-typedef struct {
+struct tms {
 	clock_t tms_utime;
 	clock_t tms_stime;
 	clock_t tms_cutime;
 	clock_t tms_cstime;
-}
+};
 .Ed
 .Pp
 The elements of this structure are defined as follows:
@@ -85,21 +81,21 @@ The
 time charged for execution by the system on behalf of
 the process.
 .It Fa tms_cutime
-The sum of the
-.Fa tms_utime  s
+The sum of
+.Fa tms_utime
 and
-.Fa tms_cutime  s
-of the child processes.
+.Fa tms_cutime
+for all of the child processes.
 .It Fa tms_cstime
-The sum of the
-.Fa tms_stime Ns s
+The sum of
+.Fa tms_stime
 and
-.Fa tms_cstime Ns s
-of the child processes.
+.Fa tms_cstime
+for all of the child processes.
 .El
 .Pp
 All times are in
-.Dv CLK_TCK Ns 's
+.Dv CLK_TCK Ns s
 of a second.
 .Pp
 The times of a terminated child process are included in the
@@ -112,15 +108,14 @@ functions returns the process ID of the terminated child to the parent.
 If an error occurs,
 .Fn times
 returns the value
-.Pq (clock_t)\-1 ,
-and sets 
+.Li "(clock_t)-1" ,
+and sets
 .Va errno
 to indicate the error.
 .Sh ERRORS
 The
 .Fn times
-function
-may fail and set the global variable
+function may fail and set the global variable
 .Va errno
 for any of the errors specified for the library
 routines
@@ -135,6 +130,18 @@ and
 .Sh STANDARDS
 The
 .Fn times
-function
-conforms to
+function conforms to
 .St -p1003.1-88 .
+.Sh HISTORY
+A
+.Fn times
+function first appeared in
+.At v3 .
+The tms structure first appeared in
+.Bx 4.0
+and was changed to use
+.Vt clock_t
+instead of
+.Vt time_t
+for its members in
+.Bx 4.3 Net/2 .

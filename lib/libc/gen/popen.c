@@ -1,5 +1,4 @@
-/*	$NetBSD: popen.c,v 1.11 1995/06/16 07:05:33 jtc Exp $	*/
-
+/*	$OpenBSD: popen.c,v 1.17 2005/08/08 08:05:34 espie Exp $ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)popen.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: popen.c,v 1.11 1995/06/16 07:05:33 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/param.h>
 #include <sys/wait.h>
 
@@ -54,23 +41,25 @@ static char rcsid[] = "$NetBSD: popen.c,v 1.11 1995/06/16 07:05:33 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <paths.h>
+#include "thread_private.h"
 
 static struct pid {
 	struct pid *next;
 	FILE *fp;
 	pid_t pid;
-} *pidlist; 
-	
-FILE *
-popen(program, type)
-	const char *program;
-	const char *type;
-{
-	struct pid *cur;
-	FILE *iop;
-	int pdes[2], pid;
+} *pidlist;
 
-	if (*type != 'r' && *type != 'w' || type[1]) {
+static void *pidlist_lock = NULL;
+
+FILE *
+popen(const char *program, const char *type)
+{
+	struct pid * volatile cur;
+	FILE *iop;
+	int pdes[2];
+	pid_t pid;
+
+	if ((*type != 'r' && *type != 'w') || type[1] != '\0') {
 		errno = EINVAL;
 		return (NULL);
 	}
@@ -83,31 +72,51 @@ popen(program, type)
 		return (NULL);
 	}
 
+	_MUTEX_LOCK(&pidlist_lock);
 	switch (pid = vfork()) {
 	case -1:			/* Error. */
+		_MUTEX_UNLOCK(&pidlist_lock);
 		(void)close(pdes[0]);
 		(void)close(pdes[1]);
 		free(cur);
 		return (NULL);
 		/* NOTREACHED */
 	case 0:				/* Child. */
+	    {
+		struct pid *pcur;
+		/*
+		 * because vfork() instead of fork(), must leak FILE *,
+		 * but luckily we are terminally headed for an execl()
+		 */
+		for (pcur = pidlist; pcur; pcur = pcur->next)
+			close(fileno(pcur->fp));
+
 		if (*type == 'r') {
-			if (pdes[1] != STDOUT_FILENO) {
-				(void)dup2(pdes[1], STDOUT_FILENO);
-				(void)close(pdes[1]);
-			}
+			int tpdes1 = pdes[1];
+
 			(void) close(pdes[0]);
+			/*
+			 * We must NOT modify pdes, due to the
+			 * semantics of vfork.
+			 */
+			if (tpdes1 != STDOUT_FILENO) {
+				(void)dup2(tpdes1, STDOUT_FILENO);
+				(void)close(tpdes1);
+				tpdes1 = STDOUT_FILENO;
+			}
 		} else {
+			(void)close(pdes[1]);
 			if (pdes[0] != STDIN_FILENO) {
 				(void)dup2(pdes[0], STDIN_FILENO);
 				(void)close(pdes[0]);
 			}
-			(void)close(pdes[1]);
 		}
-		execl(_PATH_BSHELL, "sh", "-c", program, NULL);
+		execl(_PATH_BSHELL, "sh", "-c", program, (char *)NULL);
 		_exit(127);
 		/* NOTREACHED */
+	    }
 	}
+	_MUTEX_UNLOCK(&pidlist_lock);
 
 	/* Parent; assume fdopen can't fail. */
 	if (*type == 'r') {
@@ -121,8 +130,10 @@ popen(program, type)
 	/* Link into list of file descriptors. */
 	cur->fp = iop;
 	cur->pid =  pid;
+	_MUTEX_LOCK(&pidlist_lock);
 	cur->next = pidlist;
 	pidlist = cur;
+	_MUTEX_UNLOCK(&pidlist_lock);
 
 	return (iop);
 }
@@ -133,32 +144,37 @@ popen(program, type)
  *	if already `pclosed', or waitpid returns an error.
  */
 int
-pclose(iop)
-	FILE *iop;
+pclose(FILE *iop)
 {
-	register struct pid *cur, *last;
+	struct pid *cur, *last;
 	int pstat;
 	pid_t pid;
 
-	(void)fclose(iop);
-
 	/* Find the appropriate file pointer. */
+	_MUTEX_LOCK(&pidlist_lock);
 	for (last = NULL, cur = pidlist; cur; last = cur, cur = cur->next)
 		if (cur->fp == iop)
 			break;
-	if (cur == NULL)
-		return (-1);
 
-	do {
-		pid = waitpid(cur->pid, &pstat, 0);
-	} while (pid == -1 && errno == EINTR);
+	if (cur == NULL) {
+		_MUTEX_UNLOCK(&pidlist_lock);
+		return (-1);
+	}
 
 	/* Remove the entry from the linked list. */
 	if (last == NULL)
 		pidlist = cur->next;
 	else
 		last->next = cur->next;
+	_MUTEX_UNLOCK(&pidlist_lock);
+
+	(void)fclose(iop);
+
+	do {
+		pid = waitpid(cur->pid, &pstat, 0);
+	} while (pid == -1 && errno == EINTR);
+
 	free(cur);
-		
+
 	return (pid == -1 ? -1 : pstat);
 }

@@ -1,4 +1,5 @@
 /*	$NetBSD: spec.c,v 1.6 1995/03/07 21:12:12 cgd Exp $	*/
+/*	$OpenBSD: spec.c,v 1.25 2009/10/27 23:59:53 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,68 +30,65 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)spec.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$NetBSD: spec.c,v 1.6 1995/03/07 21:12:12 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fts.h>
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <vis.h>
 #include "mtree.h"
 #include "extern.h"
 
 int lineno;				/* Current spec line number. */
 
-static void	 set __P((char *, NODE *));
-static void	 unset __P((char *, NODE *));
+static void	 set(char *, NODE *);
+static void	 unset(char *, NODE *);
 
 NODE *
-spec()
+spec(void)
 {
-	register NODE *centry, *last;
-	register char *p;
+	NODE *centry, *last;
+	char *p;
 	NODE ginfo, *root;
 	int c_cur, c_next;
-	char buf[2048];
+	char *buf, *tbuf = NULL;
+	size_t len;
 
-	root = NULL;
+	last = root = NULL;
 	bzero(&ginfo, sizeof(ginfo));
+	centry = &ginfo;
 	c_cur = c_next = 0;
-	for (lineno = 1; fgets(buf, sizeof(buf), stdin);
+	for (lineno = 1; (buf = fgetln(stdin, &len));
 	    ++lineno, c_cur = c_next, c_next = 0) {
-		/* Skip empty lines. */
-		if (buf[0] == '\n')
-			continue;
-
-		/* Find end of line. */
-		if ((p = index(buf, '\n')) == NULL)
-			err("line %d too long", lineno);
-
-		/* See if next line is continuation line. */
-		if (p[-1] == '\\') {
-			--p;
-			c_next = 1;
+		/* Null-terminate the line. */
+		if (buf[len - 1] == '\n') {
+			buf[--len] = '\0';
+		} else {
+			/* EOF with no newline. */
+			tbuf = malloc(len + 1);
+			memcpy(tbuf, buf, len);
+			tbuf[len] = '\0';
+			buf = tbuf;
 		}
 
-		/* Null-terminate the line. */
-		*p = '\0';
-
 		/* Skip leading whitespace. */
-		for (p = buf; *p && isspace(*p); ++p);
+		for (p = buf; isspace((unsigned char)*p); p++)
+			;
 
 		/* If nothing but whitespace or comment char, continue. */
-		if (!*p || *p == '#')
+		if (*p == '\0' || *p == '#')
 			continue;
+
+		/* See if next line is continuation line. */
+		if (buf[len - 1] == '\\') {
+			c_next = 1;
+			if (--len == 0)
+				continue;
+			buf[len] = '\0';
+		}
 
 #ifdef DEBUG
 		(void)fprintf(stderr, "line %d: {%s}\n", lineno, p);
@@ -106,7 +100,7 @@ spec()
 			
 		/* Grab file name, "$", "set", or "unset". */
 		if ((p = strtok(p, "\n\t ")) == NULL)
-			err("missing field");
+			error("missing field");
 
 		if (p[0] == '/')
 			switch(p[1]) {
@@ -122,8 +116,8 @@ spec()
 				continue;
 			}
 
-		if (index(p, '/'))
-			err("slash character in file name");
+		if (strchr(p, '/'))
+			error("slash character in file name");
 
 		if (!strcmp(p, "..")) {
 			/* Don't go up, if haven't gone down. */
@@ -137,16 +131,21 @@ spec()
 			last->flags |= F_DONE;
 			continue;
 
-noparent:		err("no parent node");
+noparent:		error("no parent node");
 		}
 
-		if ((centry = calloc(1, sizeof(NODE) + strlen(p))) == NULL)
-			err("%s", strerror(errno));
+		len = strlen(p) + 1;	/* NUL in struct _node */
+		if ((centry = calloc(1, sizeof(NODE) + len - 1)) == NULL)
+			error("%s", strerror(errno));
 		*centry = ginfo;
-		(void)strcpy(centry->name, p);
 #define	MAGIC	"?*["
 		if (strpbrk(p, MAGIC))
 			centry->flags |= F_MAGIC;
+		if (strunvis(centry->name, p) == -1) {
+			fprintf(stderr,
+			    "mtree: filename (%s) encoded incorrectly\n", p);
+			strlcpy(centry->name, p, len);
+		}
 		set(NULL, centry);
 
 		if (!root) {
@@ -161,40 +160,55 @@ noparent:		err("no parent node");
 			last = last->next = centry;
 		}
 	}
+	free(tbuf);
 	return (root);
 }
 
 static void
-set(t, ip)
-	char *t;
-	register NODE *ip;
+set(char *t, NODE *ip)
 {
-	register int type;
-	register char *kw, *val;
+	int type;
+	char *kw, *val = NULL;
 	struct group *gr;
 	struct passwd *pw;
-	mode_t *m;
+	void *m;
 	int value;
+	u_int32_t fset, fclr;
 	char *ep;
+	size_t len;
 
-	for (; kw = strtok(t, "= \t\n"); t = NULL) {
+	for (; (kw = strtok(t, "= \t\n")); t = NULL) {
 		ip->flags |= type = parsekey(kw, &value);
 		if (value && (val = strtok(NULL, " \t\n")) == NULL)
-			err("missing value");
+			error("missing value");
 		switch(type) {
 		case F_CKSUM:
 			ip->cksum = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid checksum %s", val);
+				error("invalid checksum %s", val);
 			break;
+		case F_MD5:
+			ip->md5digest = strdup(val);
+			if (!ip->md5digest)
+				error("%s", strerror(errno));
+			break;
+		case F_FLAGS:
+			if (!strcmp(val, "none")) {
+				ip->file_flags = 0;
+				break;
+			}
+			if (strtofflags(&val, &fset, &fclr))
+				error("%s", strerror(errno));
+			ip->file_flags = fset;
+			break; 
 		case F_GID:
 			ip->st_gid = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid gid %s", val);
+				error("invalid gid %s", val);
 			break;
 		case F_GNAME:
 			if ((gr = getgrnam(val)) == NULL)
-			    err("unknown group %s", val);
+			    error("unknown group %s", val);
 			ip->st_gid = gr->gr_gid;
 			break;
 		case F_IGN:
@@ -202,31 +216,53 @@ set(t, ip)
 			break;
 		case F_MODE:
 			if ((m = setmode(val)) == NULL)
-				err("invalid file mode %s", val);
+				error("invalid file mode %s", val);
 			ip->st_mode = getmode(m, 0);
+			free(m);
 			break;
 		case F_NLINK:
 			ip->st_nlink = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid link count %s", val);
+				error("invalid link count %s", val);
+			break;
+		case F_RMD160:
+			ip->rmd160digest = strdup(val);
+			if (!ip->rmd160digest)
+				error("%s", strerror(errno));
+			break;
+		case F_SHA1:
+			ip->sha1digest = strdup(val);
+			if (!ip->sha1digest)
+				error("%s", strerror(errno));
+			break;
+		case F_SHA256:
+			ip->sha256digest = strdup(val);
+			if (!ip->sha256digest)
+				error("%s", strerror(errno));
 			break;
 		case F_SIZE:
 			ip->st_size = strtouq(val, &ep, 10);
 			if (*ep)
-				err("invalid size %s", val);
+				error("invalid size %s", val);
 			break;
 		case F_SLINK:
-			if ((ip->slink = strdup(val)) == NULL)
-				err("%s", strerror(errno));
+			len = strlen(val) + 1;
+			if ((ip->slink = malloc(len)) == NULL)
+				error("%s", strerror(errno));
+			if (strunvis(ip->slink, val) == -1) {
+				fprintf(stderr,
+				    "mtree: filename (%s) encoded incorrectly\n", val);
+				strlcpy(ip->slink, val, len);
+			}
 			break;
 		case F_TIME:
-			ip->st_mtimespec.ts_sec = strtoul(val, &ep, 10);
+			ip->st_mtimespec.tv_sec = strtoul(val, &ep, 10);
 			if (*ep != '.')
-				err("invalid time %s", val);
+				error("invalid time %s", val);
 			val = ep + 1;
-			ip->st_mtimespec.ts_nsec = strtoul(val, &ep, 10);
+			ip->st_mtimespec.tv_nsec = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid time %s", val);
+				error("invalid time %s", val);
 			break;
 		case F_TYPE:
 			switch(*val) {
@@ -257,17 +293,17 @@ set(t, ip)
 					ip->type = F_SOCK;
 				break;
 			default:
-				err("unknown file type %s", val);
+				error("unknown file type %s", val);
 			}
 			break;
 		case F_UID:
 			ip->st_uid = strtoul(val, &ep, 10);
 			if (*ep)
-				err("invalid uid %s", val);
+				error("invalid uid %s", val);
 			break;
 		case F_UNAME:
 			if ((pw = getpwnam(val)) == NULL)
-			    err("unknown user %s", val);
+			    error("unknown user %s", val);
 			ip->st_uid = pw->pw_uid;
 			break;
 		}
@@ -275,12 +311,10 @@ set(t, ip)
 }
 
 static void
-unset(t, ip)
-	char *t;
-	register NODE *ip;
+unset(char *t, NODE *ip)
 {
-	register char *p;
+	char *p;
 
-	while (p = strtok(t, "\n\t "))
+	while ((p = strtok(t, "\n\t ")))
 		ip->flags &= ~parsekey(p, NULL);
 }

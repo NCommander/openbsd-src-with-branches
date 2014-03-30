@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -15,7 +15,7 @@
 #include <sm/debug.h>
 #include <sm/string.h>
 
-SM_RCSID("@(#)$Sendmail: trace.c,v 8.35 2001/08/17 16:02:27 ca Exp $")
+SM_RCSID("@(#)$Sendmail: trace.c,v 8.39 2013/11/22 20:51:57 ca Exp $")
 
 static char	*tTnewflag __P((char *));
 static char	*tToldflag __P((char *));
@@ -204,7 +204,7 @@ void
 tTflag(s)
 	register char *s;
 {
-	if (*s == '\0')
+	if (s == NULL || *s == '\0')
 		s = DefFlags;
 
 	for (;;)

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: false.1,v 1.10 2009/02/08 17:15:09 jmc Exp $
 .\" Copyright (c) 1983, 1990 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -12,11 +13,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,26 +30,33 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)false.1	6.6 (Berkeley) 7/24/91
-.\"	$Id: false.1,v 1.3 1993/08/28 03:45:02 jtc Exp $
 .\"
-.Dd July 24, 1991
+.Dd $Mdocdate: February 8 2009 $
 .Dt FALSE 1
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm false
-.Nd Return false value.
+.Nd return false value
 .Sh SYNOPSIS
 .Nm false
 .Sh DESCRIPTION
 The
-.Nm false
-utility always exits with a nonzero exit code.
+.Nm
+utility always exits with a non-zero exit code.
+.Sh EXIT STATUS
+The
+.Nm
+utility always exits with a non-zero exit code.
 .Sh SEE ALSO
-.Xr csh 1 ,
-.Xr sh 1 ,
+.Xr ksh 1 ,
 .Xr true 1
 .Sh STANDARDS
 The
-.Nm false
-utility conforms to 
-.St -p1003.2-92 .
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+.Nm
+also exists as a built-in to
+.Xr ksh 1 .

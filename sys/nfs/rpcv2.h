@@ -1,4 +1,5 @@
-/*	$NetBSD: rpcv2.h,v 1.6 1994/06/29 06:42:43 cgd Exp $	*/
+/*	$OpenBSD: rpcv2.h,v 1.7 2008/06/08 18:23:03 thib Exp $	*/
+/*	$NetBSD: rpcv2.h,v 1.8 1996/02/18 11:54:11 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,8 +32,12 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)rpcv2.h	8.1 (Berkeley) 6/10/93
+ *	@(#)rpcv2.h	8.2 (Berkeley) 3/30/95
  */
+
+
+#ifndef _NFS_RPCV2_H_
+#define _NFS_RPCV2_H_
 
 /*
  * Definitions for Sun RPC Version 2, from
@@ -50,9 +51,16 @@
 #define	RPCAUTH_NULL	0
 #define	RPCAUTH_UNIX	1
 #define	RPCAUTH_SHORT	2
-#define	RPCAUTH_NQNFS	300000
+#define RPCAUTH_KERB4	4
 #define	RPCAUTH_MAXSIZ	400
+#define	RPCVERF_MAXSIZ	12	/* For Kerb, can actually be 400 */
 #define	RPCAUTH_UNIXGIDS 16
+
+/*
+ * Constants associated with authentication flavours.
+ */
+#define RPCAKN_FULLNAME	0
+#define RPCAKN_NICKNAME	1
 
 /* Rpc Constants */
 #define	RPC_CALL	0
@@ -80,6 +88,7 @@
 /* RPC Prog definitions */
 #define	RPCPROG_MNT	100005
 #define	RPCMNT_VER1	1
+#define	RPCMNT_VER3	3
 #define	RPCMNT_MOUNT	1
 #define	RPCMNT_DUMP	2
 #define	RPCMNT_UMOUNT	3
@@ -88,3 +97,5 @@
 #define	RPCMNT_NAMELEN	255
 #define	RPCMNT_PATHLEN	1024
 #define	RPCPROG_NFS	100003
+
+#endif	/* _NFS_RPCV2_H_ */

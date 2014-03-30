@@ -8,7 +8,7 @@
  *
  */
 
-/* $KTH: version.h,v 1.5 1997/08/08 22:50:13 assar Exp $ */
+/* $Id$ */
 
 /*
  *  Current version of this POP implementation

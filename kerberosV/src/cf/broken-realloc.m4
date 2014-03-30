@@ -1,5 +1,5 @@
 dnl
-dnl $KTH: broken-realloc.m4,v 1.4 2005/04/27 12:09:45 lha Exp $
+dnl $Id$
 dnl
 dnl Test for realloc that doesn't handle NULL as first parameter
 dnl
@@ -10,7 +10,7 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <stddef.h>
 #include <stdlib.h>
 
-int main()
+int main(int argc, char **argv)
 {
 	return realloc(NULL, 17) == NULL;
 }

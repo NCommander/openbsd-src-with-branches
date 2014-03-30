@@ -1,41 +1,39 @@
 %{
 /*
- * Copyright (c) 1998 - 2000 Kungliga Tekniska Högskolan
- * (Royal Institute of Technology, Stockholm, Sweden). 
- * All rights reserved. 
+ * Copyright (c) 1998 - 2000 Kungliga Tekniska HÃ¶gskolan
+ * (Royal Institute of Technology, Stockholm, Sweden).
+ * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions 
- * are met: 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * 1. Redistributions of source code must retain the above copyright 
- *    notice, this list of conditions and the following disclaimer. 
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright 
- *    notice, this list of conditions and the following disclaimer in the 
- *    documentation and/or other materials provided with the distribution. 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the Institute nor the names of its contributors 
- *    may be used to endorse or promote products derived from this software 
- *    without specific prior written permission. 
+ * 3. Neither the name of the Institute nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE 
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS 
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY 
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
- * SUCH DAMAGE. 
+ * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
 #include "compile_et.h"
 #include "lex.h"
-
-RCSID("$KTH: parse.y,v 1.13 2005/05/16 08:53:34 lha Exp $");
 
 void yyerror (char *s);
 static long name2number(const char *str);
@@ -47,6 +45,9 @@ extern char *yytext;
 #if !defined(alloca) && !defined(HAVE_ALLOCA)
 #define alloca(x) malloc(x)
 #endif
+
+#define YYMALLOC malloc
+#define YYFREE free
 
 %}
 
@@ -61,7 +62,7 @@ extern char *yytext;
 
 %%
 
-file		: /* */ 
+file		: /* */
 		| header statements
 		;
 
@@ -77,13 +78,13 @@ id		: ID STRING
 
 et		: ET STRING
 		{
-		    base = name2number($2);
+		    base_id = name2number($2);
 		    strlcpy(name, $2, sizeof(name));
 		    free($2);
 		}
 		| ET STRING STRING
 		{
-		    base = name2number($2);
+		    base_id = name2number($2);
 		    strlcpy(name, $3, sizeof(name));
 		    free($2);
 		    free($3);
@@ -94,7 +95,7 @@ statements	: statement
 		| statements statement
 		;
 
-statement	: INDEX NUMBER 
+statement	: INDEX NUMBER
 		{
 			number = $2;
 		}
@@ -116,7 +117,7 @@ statement	: INDEX NUMBER
 		| EC STRING ',' STRING
 		{
 		    struct error_code *ec = malloc(sizeof(*ec));
-		    
+
 		    if (ec == NULL)
 			errx(1, "malloc");
 
@@ -145,7 +146,7 @@ static long
 name2number(const char *str)
 {
     const char *p;
-    long base = 0;
+    long num = 0;
     const char *x = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	"abcdefghijklmnopqrstuvwxyz0123456789_";
     if(strlen(str) > 4) {
@@ -158,16 +159,16 @@ name2number(const char *str)
 	    yyerror("invalid character in table name");
 	    return 0;
 	}
-	base = (base << 6) + (q - x) + 1;
+	num = (num << 6) + (q - x) + 1;
     }
-    base <<= 8;
-    if(base > 0x7fffffff)
-	base = -(0xffffffff - base + 1);
-    return base;
+    num <<= 8;
+    if(num > 0x7fffffff)
+	num = -(0xffffffff - num + 1);
+    return num;
 }
 
 void
 yyerror (char *s)
 {
-     error_message ("%s\n", s);
+     _lex_error_message ("%s\n", s);
 }

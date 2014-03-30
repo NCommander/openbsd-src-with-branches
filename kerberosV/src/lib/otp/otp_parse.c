@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995-2000, 2005-2007 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,13 +33,13 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-RCSID("$KTH: otp_parse.c,v 1.21 2005/01/08 23:05:07 lha Exp $");
+RCSID("$Id$");
 #endif
 
 #include "otp_locl.h"
 
 struct e {
-  char *s;
+  const char *s;
   unsigned n;
 };
 
@@ -48,10 +48,10 @@ extern const struct e inv_std_dict[2048];
 static int
 cmp(const void *a, const void *b)
 {
-  struct e *e1, *e2;
-  
-  e1 = (struct e *)a;
-  e2 = (struct e *)b;
+  const struct e *e1, *e2;
+
+  e1 = (const struct e *)a;
+  e2 = (const struct e *)b;
   return strcasecmp (e1->s, e2->s);
 }
 
@@ -60,7 +60,7 @@ get_stdword (const char *s, void *v)
 {
   struct e e, *r;
 
-  e.s = (char *)s;
+  e.s = s;
   e.n = -1;
   r = (struct e *) bsearch (&e, inv_std_dict,
 			    sizeof(inv_std_dict)/sizeof(*inv_std_dict),
@@ -94,7 +94,7 @@ get_altword (const char *s, void *a)
   if (res == NULL)
     return -1;
   alg->hash (s, strlen(s), res);
-  ret = (unsigned)(res[alg->hashsize - 1]) | 
+  ret = (unsigned)(res[alg->hashsize - 1]) |
       ((res[alg->hashsize - 2] & 0x03) << 8);
   free (res);
   return ret;
@@ -106,21 +106,28 @@ parse_words(unsigned wn[],
 	    int (*convert)(const char *, void *),
 	    void *arg)
 {
-  unsigned char *w, *wend, c;
+  const unsigned char *w, *wend;
+  char *wcopy;
   int i;
   int tmp;
 
-  w = (unsigned char *)str;
+  w = (const unsigned char *)str;
   for (i = 0; i < 6; ++i) {
     while (isspace(*w))
       ++w;
     wend = w;
     while (isalpha (*wend))
       ++wend;
-    c = *wend;
-    *wend = '\0';
-    tmp = (*convert)((char *)w, arg);
-    *wend = c;
+
+    tmp = wend - w;
+    wcopy = malloc(tmp + 1);
+    if (wcopy == NULL)
+	return -1;
+    memcpy(wcopy, w, tmp);
+    wcopy[tmp] = '\0';
+
+    tmp = (*convert)(wcopy, arg);
+    free(wcopy);
     w = wend;
     if (tmp < 0)
       return -1;
@@ -249,7 +256,7 @@ const char *const std_dict[2048] =
 "MOB",   "MOD",  "MOE",   "MOO",   "MOP",   "MOS",   "MOT",   "MOW",
 "MUD",   "MUG",  "MUM",   "MY",    "NAB",   "NAG",   "NAN",   "NAP",
 "NAT",   "NAY",  "NE",    "NED",   "NEE",   "NET",   "NEW",   "NIB",
-"NIIL",  "NIP",  "NIT",   "NO",    "NOB",   "NOD",   "NON",   "NOR",
+"NIL",   "NIP",  "NIT",   "NO",    "NOB",   "NOD",   "NON",   "NOR",
 "NOT",   "NOV",  "NOW",   "NU",    "NUN",   "NUT",   "O",     "OAF",
 "OAK",   "OAR",  "OAT",   "ODD",   "ODE",   "OF",    "OFF",   "OFT",
 "OH",    "OIL",  "OK",    "OLD",   "ON",    "ONE",   "OR",    "ORB",
@@ -1815,7 +1822,7 @@ const struct e inv_std_dict[2048] = {
 {"NIBS", 1568},
 {"NICE", 1569},
 {"NICK", 1570},
-{"NIIL", 351},
+{"NIL", 351},
 {"NILE", 1571},
 {"NINA", 1572},
 {"NINE", 1573},

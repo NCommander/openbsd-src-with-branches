@@ -32,7 +32,7 @@
  */
 
 #include "ftp_locl.h"
-RCSID ("$KTH: ftp.c,v 1.79 2005/04/07 18:57:29 lha Exp $");
+RCSID ("$Id$");
 
 struct sockaddr_storage hisctladdr_ss;
 struct sockaddr *hisctladdr = (struct sockaddr *)&hisctladdr_ss;
@@ -89,7 +89,7 @@ hookup (const char *host, int port)
 	    strlcpy (hostnamebuf, a->ai_canonname, sizeof(hostnamebuf));
 
 	memcpy (hisctladdr, a->ai_addr, a->ai_addrlen);
-	
+
 	error = connect (s, a->ai_addr, a->ai_addrlen);
 	if (error < 0) {
 	    char addrstr[256];
@@ -98,7 +98,7 @@ hookup (const char *host, int port)
 			     addrstr, sizeof(addrstr),
 			     NULL, 0, NI_NUMERICHOST) != 0)
 		strlcpy (addrstr, "unknown address", sizeof(addrstr));
-			     
+
 	    warn ("connect %s", addrstr);
 	    close (s);
 	    s = -1;
@@ -166,7 +166,8 @@ login (char *host)
 {
     char tmp[80];
     char defaultpass[128];
-    char *user, *pass, *acct;
+    char *userstr, *pass, *acctstr;
+    char *ruserstr, *rpass, *racctstr;
     int n, aflag = 0;
 
     char *myname = NULL;
@@ -175,7 +176,7 @@ login (char *host)
     if (pw != NULL)
 	myname = pw->pw_name;
 
-    user = pass = acct = 0;
+    ruserstr = rpass = racctstr = NULL;
 
     if(sec_login(host))
 	printf("\n*** Using plaintext user and password ***\n\n");
@@ -183,11 +184,15 @@ login (char *host)
 	printf("Authentication successful.\n\n");
     }
 
-    if (ruserpass (host, &user, &pass, &acct) < 0) {
+    if (ruserpassword (host, &ruserstr, &rpass, &racctstr) < 0) {
 	code = -1;
 	return (0);
     }
-    while (user == NULL) {
+    userstr = ruserstr;
+    pass = rpass;
+    acctstr = racctstr;
+
+    while (userstr == NULL) {
 	if (myname)
 	    printf ("Name (%s:%s): ", host, myname);
 	else
@@ -196,22 +201,25 @@ login (char *host)
 	if (fgets (tmp, sizeof (tmp) - 1, stdin) != NULL)
 	    tmp[strlen (tmp) - 1] = '\0';
 	if (*tmp == '\0')
-	    user = myname;
+	    userstr = myname;
 	else
-	    user = tmp;
+	    userstr = tmp;
     }
-    strlcpy(username, user, sizeof(username));
-    n = command("USER %s", user);
-    if (n == COMPLETE) 
+    strlcpy(username, userstr, sizeof(username));
+    if (ruserstr)
+	free(ruserstr);
+
+    n = command("USER %s", userstr);
+    if (n == COMPLETE)
        n = command("PASS dummy"); /* DK: Compatibility with gssftp daemon */
     else if(n == CONTINUE) {
 	if (pass == NULL) {
 	    char prompt[128];
-	    if(myname && 
-	       (!strcmp(user, "ftp") || !strcmp(user, "anonymous"))) {
-		snprintf(defaultpass, sizeof(defaultpass), 
+	    if(myname &&
+	       (!strcmp(userstr, "ftp") || !strcmp(userstr, "anonymous"))) {
+		snprintf(defaultpass, sizeof(defaultpass),
 			 "%s@%s", myname, mydomain);
-		snprintf(prompt, sizeof(prompt), 
+		snprintf(prompt, sizeof(prompt),
 			 "Password (%s): ", defaultpass);
 	    } else if (sec_complete) {
 		pass = myname;
@@ -227,19 +235,25 @@ login (char *host)
 	    }
 	}
 	n = command ("PASS %s", pass);
+	if (rpass)
+	    free(rpass);
     }
     if (n == CONTINUE) {
 	aflag++;
-	acct = tmp;
-	UI_UTIL_read_pw_string (acct, 128, "Account:", 0);
-	n = command ("ACCT %s", acct);
+	UI_UTIL_read_pw_string (tmp, sizeof(tmp), "Account:", 0);
+	acctstr = tmp;
+	n = command ("ACCT %s", acctstr);
     }
     if (n != COMPLETE) {
+	if (racctstr)
+	    free(racctstr);
 	warnx ("Login failed.");
 	return (0);
     }
-    if (!aflag && acct != NULL)
-	command ("ACCT %s", acct);
+    if (!aflag && acctstr != NULL)
+	command ("ACCT %s", acctstr);
+    if (racctstr)
+	free(racctstr);
     if (proxy)
 	return (1);
     for (n = 0; n < macnum; ++n) {
@@ -392,15 +406,15 @@ getreply (int expecteof)
 			osa.sa_handler (SIGINT);
 #endif
 		    if (code == 227 || code == 229) {
-			char *p;
+			char *q;
 
-			p = strchr (reply_string, '(');
-			if (p) {
-			    p++;
-			    strlcpy(pasv, p, sizeof(pasv));
-			    p = strrchr(pasv, ')');
-			    if (p)
-				*p = '\0';
+			q = strchr (reply_string, '(');
+			if (q) {
+			    q++;
+			    strlcpy(pasv, q, sizeof(pasv));
+			    q = strrchr(pasv, ')');
+			    if (q)
+				*q = '\0';
 			}
 		    }
 		    return code / 100;
@@ -417,7 +431,7 @@ getreply (int expecteof)
 	    continue;
 	default:
 	    if(p < buf + sizeof(buf) - 1)
-		*p++ = c; 
+		*p++ = c;
 	    else if(long_warn == 0) {
 		fprintf(stderr, "WARNING: incredibly long line received\n");
 		long_warn = 1;
@@ -579,6 +593,9 @@ copy_stream (FILE * from, FILE * to)
 
 #if defined(HAVE_MMAP) && !defined(NO_MMAP)
     void *chunk;
+    size_t off;
+
+#define BLOCKSIZE (1024 * 1024 * 10)
 
 #ifndef MAP_FAILED
 #define MAP_FAILED (-1)
@@ -590,17 +607,35 @@ copy_stream (FILE * from, FILE * to)
 	 */
 	if (st.st_size == 0)
 	    return 0;
-	chunk = mmap (0, st.st_size, PROT_READ, MAP_SHARED, fileno (from), 0);
-	if (chunk != (void *) MAP_FAILED) {
-	    int res;
+	off = 0;
+	while (off != st.st_size) {
+	    size_t len;
+	    ssize_t res;
 
-	    res = sec_write (fileno (to), chunk, st.st_size);
-	    if (munmap (chunk, st.st_size) < 0)
+	    len = st.st_size - off;
+	    if (len > BLOCKSIZE)
+		len = BLOCKSIZE;
+
+	    chunk = mmap (0, len, PROT_READ, MAP_SHARED, fileno (from), off);
+	    if (chunk == (void *) MAP_FAILED) {
+		if (off == 0) /* try read if mmap doesn't work */
+		    goto try_read;
+		break;
+	    }
+
+	    res = sec_write (fileno (to), chunk, len);
+	    if (msync (chunk, len, MS_ASYNC))
+		warn ("msync");
+	    if (munmap (chunk, len) < 0)
 		warn ("munmap");
 	    sec_fflush (to);
-	    return res;
+	    if (res != len)
+		return off;
+	    off += len;
 	}
+	return off;
     }
+try_read:
 #endif
 
     buf = alloc_buffer (buf, &bufsize,
@@ -643,7 +678,7 @@ sendrequest (char *cmd, char *local, char *remote, char *lmode, int printnames)
     char *rmode = "w";
 
     if (verbose && printnames) {
-	if (local && strcmp (local, "-") != 0)
+	if (strcmp (local, "-") != 0)
 	    printf ("local: %s ", local);
 	if (remote)
 	    printf ("remote: %s\n", remote);
@@ -696,8 +731,7 @@ sendrequest (char *cmd, char *local, char *remote, char *lmode, int printnames)
 	    return;
 	}
 	closefunc = fclose;
-	if (fstat (fileno (fin), &st) < 0 ||
-	    (st.st_mode & S_IFMT) != S_IFREG) {
+	if (fstat (fileno (fin), &st) < 0 || !S_ISREG(st.st_mode)) {
 	    fprintf (stdout, "%s: not a plain file.\n", local);
 	    signal (SIGINT, oldintr);
 	    fclose (fin);
@@ -875,7 +909,7 @@ recvrequest (char *cmd, char *local, char *remote,
 
     is_retr = strcmp (cmd, "RETR") == 0;
     if (is_retr && verbose && printnames) {
-	if (local && strcmp (local, "-") != 0)
+	if (strcmp (local, "-") != 0)
 	    printf ("local: %s ", local);
 	if (remote)
 	    printf ("remote: %s\n", remote);
@@ -902,7 +936,7 @@ recvrequest (char *cmd, char *local, char *remote,
 	return;
     }
     oldintr = signal (SIGINT, abortrecv);
-    if (!local_given || (strcmp (local, "-") && *local != '|')) {
+    if (!local_given || (strcmp(local, "-") && *local != '|')) {
 	if (access (local, 2) < 0) {
 	    char *dir = strrchr (local, '/');
 
@@ -1170,7 +1204,7 @@ parse_epsv (const char *str)
 }
 
 static int
-parse_pasv (struct sockaddr_in *sin, const char *str)
+parse_pasv (struct sockaddr_in *sin4, const char *str)
 {
     int a0, a1, a2, a3, p0, p1;
 
@@ -1196,11 +1230,11 @@ parse_pasv (struct sockaddr_in *sin, const char *str)
 	printf ("Can't parse passive mode string.\n");
 	return -1;
     }
-    memset (sin, 0, sizeof(*sin));
-    sin->sin_family      = AF_INET;
-    sin->sin_addr.s_addr = htonl ((a0 << 24) | (a1 << 16) |
+    memset (sin4, 0, sizeof(*sin4));
+    sin4->sin_family      = AF_INET;
+    sin4->sin_addr.s_addr = htonl ((a0 << 24) | (a1 << 16) |
 				  (a2 << 8) | a3);
-    sin->sin_port = htons ((p0 << 8) | p1);
+    sin4->sin_port = htons ((p0 << 8) | p1);
     return 0;
 }
 
@@ -1317,22 +1351,22 @@ noport:
 	    verbose  = -1;
 
 	result = command ("EPRT |%d|%s|%d|",
-			  inet_af, addr_str, 
+			  inet_af, addr_str,
 			  ntohs(socket_get_port (data_addr)));
 	verbose = overbose;
 
 	if (result == ERROR) {
-	    struct sockaddr_in *sin = (struct sockaddr_in *)data_addr;
+	    struct sockaddr_in *sin4 = (struct sockaddr_in *)data_addr;
 
-	    unsigned int a = ntohl(sin->sin_addr.s_addr);
-	    unsigned int p = ntohs(sin->sin_port);
+	    unsigned int a = ntohl(sin4->sin_addr.s_addr);
+	    unsigned int p = ntohs(sin4->sin_port);
 
 	    if (data_addr->sa_family != AF_INET) {
 		warnx ("remote server doesn't support EPRT");
 		goto bad;
 	    }
 
-	    result = command("PORT %d,%d,%d,%d,%d,%d", 
+	    result = command("PORT %d,%d,%d,%d,%d,%d",
 			     (a >> 24) & 0xff,
 			     (a >> 16) & 0xff,
 			     (a >> 8) & 0xff,
@@ -1371,7 +1405,7 @@ bad:
 int
 initconn (void)
 {
-    if (passivemode) 
+    if (passivemode)
 	return passive_mode ();
     else
 	return active_mode ();
@@ -1756,8 +1790,8 @@ abort_remote (FILE * din)
 	errx (1, "fd too large");
     FD_SET (fileno (cin), &mask);
     if (din) {
-    if (fileno (din) >= FD_SETSIZE)
-	errx (1, "fd too large");
+	if (fileno (din) >= FD_SETSIZE)
+	    errx (1, "fd too large");
 	FD_SET (fileno (din), &mask);
     }
     if ((nfnd = empty (&mask, 10)) <= 0) {

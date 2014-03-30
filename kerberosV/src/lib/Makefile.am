@@ -1,9 +1,9 @@
-# $KTH: Makefile.am,v 1.22 2001/08/28 18:44:41 nectar Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
 
-if KRB4
-dir_45 = 45
+if LIBEDIT
+dir_editline = libedit
 endif
 if OTP
 dir_otp = otp
@@ -11,6 +11,35 @@ endif
 if DCE
 dir_dce = kdfs
 endif
+if COM_ERR
+dir_com_err = com_err
+endif
+if !HAVE_OPENSSL
+dir_hcrypto = hcrypto
+endif
+if !SQLITE3
+dir_sqlite = sqlite
+endif
 
-SUBDIRS = @DIR_roken@ vers editline @DIR_com_err@ sl asn1 @DIR_des@ krb5 \
-	kafs hdb kadm5 gssapi auth $(dir_45) $(dir_otp) $(dir_dce)
+SUBDIRS = \
+	roken \
+	vers \
+	$(dir_editline) \
+	$(dir_com_err) \
+	sl \
+	wind \
+	asn1 \
+	$(dir_sqlite) \
+	$(dir_hcrypto) \
+	ipc \
+	hx509 \
+	krb5 \
+	ntlm \
+	kafs \
+	gssapi \
+	hdb \
+	kadm5 \
+	$(dir_otp) \
+	$(dir_dce)
+
+EXTRA_DIST = NTMakefile heimdal

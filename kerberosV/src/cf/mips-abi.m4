@@ -1,4 +1,4 @@
-dnl $KTH: mips-abi.m4,v 1.10 2004/08/26 12:35:42 joda Exp $
+dnl $Id$
 dnl
 dnl
 dnl Check for MIPS/IRIX ABI flags. Sets $abi and $abilibdirext to some

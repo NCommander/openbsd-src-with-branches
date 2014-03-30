@@ -5,9 +5,9 @@
  */
 
 #include <popper.h>
-RCSID("$KTH: pop_last.c,v 1.6 1996/10/28 16:25:28 assar Exp $");
+RCSID("$Id$");
 
-/* 
+/*
  *  last:   Display the last message touched in a POP session
  */
 

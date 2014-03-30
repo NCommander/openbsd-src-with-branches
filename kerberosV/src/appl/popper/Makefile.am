@@ -1,8 +1,6 @@
-# $KTH: Makefile.am,v 1.16 2004/08/26 11:55:18 joda Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
-
-AM_CPPFLAGS += $(INCLUDE_krb4)
 
 noinst_PROGRAMS = pop_debug
 
@@ -33,20 +31,19 @@ popper_SOURCES =				\
 	popper.c				\
 	maildir.c				\
 	auth_gssapi.c				\
-	auth_krb4.c				\
 	popper.h				\
 	version.h
-
-EXTRA_DIST = pop3.rfc1081 pop3e.rfc1082 \
-	popper.README.release README-FIRST README-KRB4
 
 LDADD = \
 	$(LIB_otp) \
 	$(top_builddir)/lib/gssapi/libgssapi.la \
 	$(LIB_krb5) \
-	$(LIB_krb4) \
-	$(LIB_des) \
+	$(LIB_hcrypto) \
 	$(LIB_roken) \
 	$(DBLIB)
 
 man_MANS = popper.8
+
+EXTRA_DIST = NTMakefile pop3.rfc1081 pop3e.rfc1082 \
+	popper.README.release README-FIRST \
+	$(man_MANS)

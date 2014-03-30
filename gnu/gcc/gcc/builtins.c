@@ -3060,10 +3060,19 @@ expand_builtin_memmove (tree arglist, tree type, rtx target,
 	 it is ok to use memcpy as well.  */
       if (integer_onep (len))
 	{
-	  rtx ret = expand_builtin_mempcpy (arglist, type, target, mode,
-					    /*endp=*/0);
-	  if (ret)
-	    return ret;
+#if defined(SUBWORD_ACCESS_P)
+	  if (SUBWORD_ACCESS_P
+	      || (src_align >= BIGGEST_ALIGNMENT
+		  && dest_align >= BIGGEST_ALIGNMENT))
+	    {
+#endif
+	      rtx ret = expand_builtin_mempcpy (arglist, type, target, mode,
+						/*endp=*/0);
+	      if (ret)
+		return ret;
+#if defined(SUBWORD_ACCESS_P)
+	    }
+#endif
 	}
 
       /* Otherwise, call the normal function.  */
@@ -3210,7 +3219,9 @@ expand_builtin_stpcpy (tree exp, rtx target, enum machine_mode mode)
   if (target == const0_rtx)
     {
       tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
+#ifndef NO_UNSAFE_BUILTINS
       if (!fn)
+#endif
 	return 0;
 
       return expand_expr (build_function_call_expr (fn, arglist),
@@ -5124,7 +5135,9 @@ expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
       tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
       tree exp;
 
+#ifndef NO_UNSAFE_BUILTINS
       if (arglist || ! fn)
+#endif
 	return 0;
       expand_expr (build_function_call_expr (fn, orig_arglist),
 		   const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -5139,7 +5152,9 @@ expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
       tree fn, arg, len;
       fn = implicit_built_in_decls[BUILT_IN_STRCPY];
 
+#ifndef NO_UNSAFE_BUILTINS
       if (! fn)
+#endif
 	return 0;
 
       if (! arglist || TREE_CHAIN (arglist))
@@ -5923,11 +5938,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+#ifndef NO_UNSAFE_BUILTINS
     case BUILT_IN_STRCPY:
       target = expand_builtin_strcpy (fndecl, arglist, target, mode);
       if (target)
 	return target;
       break;
+#endif
 
     case BUILT_IN_STRNCPY:
       target = expand_builtin_strncpy (exp, target, mode);
@@ -5935,17 +5952,21 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+#ifndef NO_UNSAFE_BUILTINS
     case BUILT_IN_STPCPY:
       target = expand_builtin_stpcpy (exp, target, mode);
       if (target)
 	return target;
       break;
+#endif
 
+#ifndef NO_UNSAFE_BUILTINS
     case BUILT_IN_STRCAT:
       target = expand_builtin_strcat (fndecl, arglist, target, mode);
       if (target)
 	return target;
       break;
+#endif
 
     case BUILT_IN_STRNCAT:
       target = expand_builtin_strncat (arglist, target, mode);
@@ -6179,11 +6200,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+#ifndef NO_UNSAFE_BUILTINS
     case BUILT_IN_SPRINTF:
       target = expand_builtin_sprintf (arglist, target, mode);
       if (target)
 	return target;
       break;
+#endif
 
     CASE_FLT_FN (BUILT_IN_SIGNBIT):
       target = expand_builtin_signbit (exp, target);
@@ -8870,8 +8893,10 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     case BUILT_IN_STRSTR:
       return fold_builtin_strstr (arglist, type);
 
+#ifndef NO_UNSAFE_BUILTINS
     case BUILT_IN_STRCAT:
       return fold_builtin_strcat (arglist);
+#endif
 
     case BUILT_IN_STRNCAT:
       return fold_builtin_strncat (arglist);
@@ -8890,8 +8915,10 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     case BUILT_IN_RINDEX:
       return fold_builtin_strrchr (arglist, type);
 
+#ifndef NO_UNSAFE_BUILTINS
     case BUILT_IN_STRCPY:
       return fold_builtin_strcpy (fndecl, arglist, NULL_TREE);
+#endif
 
     case BUILT_IN_STRNCPY:
       return fold_builtin_strncpy (fndecl, arglist, NULL_TREE);
@@ -8909,8 +8936,10 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     case BUILT_IN_MEMCMP:
       return fold_builtin_memcmp (arglist);
 
+#ifndef NO_UNSAFE_BUILTINS
     case BUILT_IN_SPRINTF:
       return fold_builtin_sprintf (arglist, ignore);
+#endif
 
     case BUILT_IN_CONSTANT_P:
       {
@@ -9636,7 +9665,9 @@ fold_builtin_strncat (tree arglist)
 
 	  /* If the replacement _DECL isn't initialized, don't do the
 	     transformation.  */
+#ifndef NO_UNSAFE_BUILTINS
 	  if (!fn)
+#endif
 	    return 0;
 
 	  return build_function_call_expr (fn, newarglist);
@@ -9948,7 +9979,9 @@ fold_builtin_sprintf (tree arglist, int ignored)
     {
       tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
 
+#ifndef NO_UNSAFE_BUILTINS
       if (!fn)
+#endif
 	return NULL_TREE;
 
       /* Don't optimize sprintf (buf, "abc", ptr++).  */
@@ -9970,7 +10003,9 @@ fold_builtin_sprintf (tree arglist, int ignored)
       tree fn, orig;
       fn = implicit_built_in_decls[BUILT_IN_STRCPY];
 
+#ifndef NO_UNSAFE_BUILTINS
       if (!fn)
+#endif
 	return NULL_TREE;
 
       /* Don't crash on sprintf (str1, "%s").  */

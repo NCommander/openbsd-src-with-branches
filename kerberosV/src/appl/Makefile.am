@@ -1,4 +1,4 @@
-# $KTH: Makefile.am,v 1.24 2001/01/27 18:34:39 assar Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -13,6 +13,7 @@ SUBDIRS = 					\
 	  ftp					\
 	  login					\
 	  $(dir_otp)				\
+	  gssmask				\
 	  popper				\
 	  push					\
 	  rsh					\
@@ -24,3 +25,5 @@ SUBDIRS = 					\
 	  kx					\
 	  kf					\
 	  $(dir_dce)
+
+EXTRA_DIST = NTMakefile

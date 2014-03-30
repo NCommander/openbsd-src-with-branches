@@ -5311,6 +5311,7 @@ typedef struct am_table_short AMTS;
 #define RESTORE_NUMERIC_STANDARD()	/**/
 #define Atof				my_atof
 #define IN_LOCALE_RUNTIME		0
+#define IN_LOCALE_COMPILETIME		0
 
 #endif /* !USE_LOCALE_NUMERIC */
 

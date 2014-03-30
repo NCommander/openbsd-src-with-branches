@@ -43,7 +43,7 @@
 %{
 
 #include "ftpd_locl.h"
-RCSID("$KTH: ftpcmd.y,v 1.65 2004/08/20 13:31:19 lha Exp $");
+RCSID("$Id$");
 
 off_t	restart_point;
 
@@ -137,30 +137,46 @@ cmd_list
 	;
 
 cmd
-	: USER SP username CRLF
+	: USER SP username CRLF check_secure
 		{
+		    if ($5)
 			user($3);
-			free($3);
+		    free($3);
 		}
-	| PASS SP password CRLF
+	| PASS SP password CRLF check_secure
 		{
+		    if ($5)
 			pass($3);
-			memset ($3, 0, strlen($3));
-			free($3);
+		    memset ($3, 0, strlen($3));
+		    free($3);
 		}
-	| PORT SP host_port CRLF
+
+	| PORT SP host_port CRLF check_secure
 		{
-			usedefault = 0;
-			if (pdata >= 0) {
+		    if ($5) {
+			if (paranoid &&
+			    (data_dest->sa_family != his_addr->sa_family ||
+			     (socket_get_port(data_dest) < IPPORT_RESERVED) ||
+			     memcmp(socket_get_address(data_dest),
+				    socket_get_address(his_addr),
+				    socket_addr_size(his_addr)) != 0)) {
+			    usedefault = 1;
+			    reply(500, "Illegal PORT range rejected.");
+			} else {
+			    usedefault = 0;
+			    if (pdata >= 0) {
 				close(pdata);
 				pdata = -1;
+			    }
+			    reply(200, "PORT command successful.");
 			}
-			reply(200, "PORT command successful.");
+		    }
 		}
-	| EPRT SP STRING CRLF
+	| EPRT SP STRING CRLF check_secure
 		{
+		    if ($5)
 			eprt ($3);
-			free ($3);
+		    free ($3);
 		}
 	| PASV CRLF check_login
 		{
@@ -178,8 +194,9 @@ cmd
 			epsv ($3);
 		    free ($3);
 		}
-	| TYPE SP type_code CRLF
+	| TYPE SP type_code CRLF check_secure
 		{
+		    if ($5) {
 			switch (cmd_type) {
 
 			case TYPE_A:
@@ -212,9 +229,11 @@ cmd
 				UNIMPLEMENTED for NBBY != 8
 #endif /* NBBY == 8 */
 			}
+		    }
 		}
-	| STRU SP struct_code CRLF
+	| STRU SP struct_code CRLF check_secure
 		{
+		    if ($5) {
 			switch ($3) {
 
 			case STRU_F:
@@ -224,9 +243,11 @@ cmd
 			default:
 				reply(504, "Unimplemented STRU type.");
 			}
+		    }
 		}
-	| MODE SP mode_code CRLF
+	| MODE SP mode_code CRLF check_secure
 		{
+		    if ($5) {
 			switch ($3) {
 
 			case MODE_S:
@@ -236,14 +257,19 @@ cmd
 			default:
 				reply(502, "Unimplemented MODE type.");
 			}
+		    }
 		}
-	| ALLO SP NUMBER CRLF
+	| ALLO SP NUMBER CRLF check_secure
 		{
+		    if ($5) {
 			reply(202, "ALLO command ignored.");
+		    }
 		}
-	| ALLO SP NUMBER SP R SP NUMBER CRLF
+	| ALLO SP NUMBER SP R SP NUMBER CRLF check_secure
 		{
+		    if ($9) {
 			reply(202, "ALLO command ignored.");
+		    }
 		}
 	| RETR SP pathname CRLF check_login
 		{
@@ -304,10 +330,11 @@ cmd
 			if ($3 != NULL)
 				free($3);
 		}
-	| sTAT CRLF
+	| sTAT CRLF check_secure
 		{
+		    if ($3)
 			statcmd();
-	}
+		}
 	| DELE SP pathname CRLF check_login_no_guest
 		{
 			if ($5 && $3 != NULL)
@@ -329,14 +356,19 @@ cmd
 			if ($3 != NULL)
 				free($3);
 		}
-	| ABOR CRLF
+	| ABOR CRLF check_secure
 		{
+		    if ($3)
 			reply(225, "ABOR command successful.");
 		}
 	| CWD CRLF check_login
 		{
-			if ($3)
-				cwd(pw->pw_dir);
+			if ($3) {
+				const char *path = pw->pw_dir;
+				if (dochroot || guest)
+					path = "/";
+				cwd(path);
+			}
 		}
 	| CWD SP pathname CRLF check_login
 		{
@@ -345,12 +377,14 @@ cmd
 			if ($3 != NULL)
 				free($3);
 		}
-	| HELP CRLF
+	| HELP CRLF check_secure
 		{
+		    if ($3)
 			help(cmdtab, (char *) 0);
 		}
-	| HELP SP STRING CRLF
+	| HELP SP STRING CRLF check_secure
 		{
+		    if ($5) {
 			char *cp = $3;
 
 			if (strncasecmp(cp, "SITE", 4) == 0) {
@@ -363,9 +397,11 @@ cmd
 					help(sitetab, (char *) 0);
 			} else
 				help(cmdtab, $3);
+		    }
 		}
-	| NOOP CRLF
+	| NOOP CRLF check_secure
 		{
+		    if ($3)
 			reply(200, "NOOP command successful.");
 		}
 	| MKD SP pathname CRLF check_login
@@ -392,26 +428,31 @@ cmd
 			if ($3)
 				cwd("..");
 		}
-	| FEAT CRLF
+	| FEAT CRLF check_secure
 		{
+		    if ($3) {
 			lreply(211, "Supported features:");
 			lreply(0, " MDTM");
 			lreply(0, " REST STREAM");
 			lreply(0, " SIZE");
 			reply(211, "End");
+		    }
 		}
-	| OPTS SP STRING CRLF
+	| OPTS SP STRING CRLF check_secure
 		{
-			free ($3);
+		    if ($5)
 			reply(501, "Bad options");
+		    free ($3);
 		}
 
-	| SITE SP HELP CRLF
+	| SITE SP HELP CRLF check_secure
 		{
+		    if ($5)
 			help(sitetab, (char *) 0);
 		}
-	| SITE SP HELP SP STRING CRLF
+	| SITE SP HELP SP STRING CRLF check_secure
 		{
+		    if ($7)
 			help(sitetab, $5);
 		}
 	| SITE SP UMASK CRLF check_login
@@ -449,14 +490,16 @@ cmd
 			if ($7 != NULL)
 				free($7);
 		}
-	| SITE SP IDLE CRLF
+	| SITE SP IDLE CRLF check_secure
 		{
+		    if ($5)
 			reply(200,
 			    "Current IDLE time limit is %d seconds; max %d",
 				ftpd_timeout, maxtimeout);
 		}
-	| SITE SP IDLE SP NUMBER CRLF
+	| SITE SP IDLE SP NUMBER CRLF check_secure
 		{
+		    if ($7) {
 			if ($5 < 30 || $5 > maxtimeout) {
 				reply(501,
 			"Maximum IDLE time must be between 30 and %d seconds",
@@ -468,80 +511,44 @@ cmd
 				    "Maximum IDLE time set to %d seconds",
 				    ftpd_timeout);
 			}
+		    }
 		}
 
 	| SITE SP KAUTH SP STRING CRLF check_login
 		{
-#ifdef KRB4
-			char *p;
-			
-			if(guest)
-				reply(500, "Can't be done as guest.");
-			else{
-				if($7 && $5 != NULL){
-				    p = strpbrk($5, " \t");
-				    if(p){
-					*p++ = 0;
-					kauth($5, p + strspn(p, " \t"));
-				    }else
-					kauth($5, NULL);
-				}
-			}
-			if($5 != NULL)
-			    free($5);
-#else
 			reply(500, "Command not implemented.");
-#endif
 		}
 	| SITE SP KLIST CRLF check_login
 		{
-#ifdef KRB4
 		    if($5)
 			klist();
-#else
-		    reply(500, "Command not implemented.");
-#endif
 		}
 	| SITE SP KDESTROY CRLF check_login
 		{
-#ifdef KRB4
-		    if($5)
-			kdestroy();
-#else
 		    reply(500, "Command not implemented.");
-#endif
 		}
 	| SITE SP KRBTKFILE SP STRING CRLF check_login
 		{
-#ifdef KRB4
-		    if(guest)
-			reply(500, "Can't be done as guest.");
-		    else if($7 && $5)
-			krbtkfile($5);
-		    if($5)
-			free($5);
-#else
 		    reply(500, "Command not implemented.");
-#endif
 		}
 	| SITE SP AFSLOG CRLF check_login
 		{
-#if defined(KRB4) || defined(KRB5)
+#if defined(KRB5)
 		    if(guest)
 			reply(500, "Can't be done as guest.");
 		    else if($5)
-			afslog(NULL);
+			afslog(NULL, 0);
 #else
 		    reply(500, "Command not implemented.");
 #endif
 		}
 	| SITE SP AFSLOG SP STRING CRLF check_login
 		{
-#if defined(KRB4) || defined(KRB5)
+#if defined(KRB5)
 		    if(guest)
 			reply(500, "Can't be done as guest.");
 		    else if($7)
-			afslog($5);
+			afslog($5, 0);
 		    if($5)
 			free($5);
 #else
@@ -555,9 +562,10 @@ cmd
 		    if($5 != NULL)
 			free($5);
 		}
-	| SITE SP URL CRLF
+	| SITE SP URL CRLF check_secure
 		{
-			reply(200, "http://www.pdc.kth.se/kth-krb/");
+		    if ($5)
+			reply(200, "http://www.pdc.kth.se/heimdal/");
 		}
 	| STOU SP pathname CRLF check_login
 		{
@@ -566,13 +574,15 @@ cmd
 			if ($3 != NULL)
 				free($3);
 		}
-	| SYST CRLF
+	| SYST CRLF check_secure
 		{
+		    if ($3) {
 #if !defined(WIN32) && !defined(__EMX__) && !defined(__OS2__) && !defined(__CYGWIN32__)
-		    reply(215, "UNIX Type: L%d", NBBY);
+			reply(215, "UNIX Type: L%d", NBBY);
 #else
-		    reply(215, "UNKNOWN Type: L%d", NBBY);
+			reply(215, "UNKNOWN Type: L%d", NBBY);
 #endif
+		    }
 		}
 
 		/*
@@ -627,10 +637,12 @@ cmd
 			if ($3 != NULL)
 				free($3);
 		}
-	| QUIT CRLF
+	| QUIT CRLF check_secure
 		{
+		    if ($3) {
 			reply(221, "Goodbye.");
 			dologout(0);
+		    }
 		}
 	| error CRLF
 		{
@@ -648,13 +660,15 @@ rcmd
 				}
 			}
 		}
-	| REST SP byte_size CRLF
+	| REST SP byte_size CRLF check_secure
 		{
+		    if ($5) {
 			fromname = (char *) 0;
 			restart_point = $3;	/* XXX $3 is only "int" */
 			reply(350, "Restarting at %ld. %s",
 			      (long)restart_point,
 			      "Send STORE or RETRIEVE to initiate transfer.");
+		    }
 		}
 	| AUTH SP STRING CRLF
 		{
@@ -666,16 +680,19 @@ rcmd
 			adat($3);
 			free($3);
 		}
-	| PBSZ SP NUMBER CRLF
+	| PBSZ SP NUMBER CRLF check_secure
 		{
+		    if ($5)
 			pbsz($3);
 		}
-	| PROT SP STRING CRLF
+	| PROT SP STRING CRLF check_secure
 		{
+		    if ($5)
 			prot($3);
 		}
-	| CCC CRLF
+	| CCC CRLF check_secure
 		{
+		    if ($3)
 			ccc();
 		}
 	| MIC SP STRING CRLF
@@ -715,11 +732,11 @@ host_port
 	: NUMBER COMMA NUMBER COMMA NUMBER COMMA NUMBER COMMA
 		NUMBER COMMA NUMBER
 		{
-			struct sockaddr_in *sin = (struct sockaddr_in *)data_dest;
+			struct sockaddr_in *sin4 = (struct sockaddr_in *)data_dest;
 
-			sin->sin_family = AF_INET;
-			sin->sin_port = htons($9 * 256 + $11);
-			sin->sin_addr.s_addr = 
+			sin4->sin_family = AF_INET;
+			sin4->sin_port = htons($9 * 256 + $11);
+			sin4->sin_addr.s_addr =
 			    htonl(($1 << 24) | ($3 << 16) | ($5 << 8) | $7);
 		}
 	;
@@ -892,7 +909,7 @@ check_login : check_secure
 check_secure : /* empty */
 		{
 		    $$ = 1;
-		    if(sec_complete && !secure_command()) {
+		    if(sec_complete && !ccc_passed && !secure_command()) {
 			$$ = 0;
 			reply(533, "Command protection level denied "
 			      "for paranoid reasons.");
@@ -996,7 +1013,7 @@ struct tab sitetab[] = {
 	{ "FIND", LOCATE, STR1, 1,	"<sp> globexpr" },
 
 	{ "URL",  URL,  ARGS, 1,	"?" },
-	
+
 	{ NULL,   0,    0,    0,	0 }
 };
 
@@ -1352,13 +1369,13 @@ help(struct tab *ctab, char *s)
 {
 	struct tab *c;
 	int width, NCMDS;
-	char *type;
+	char *t;
 	char buf[1024];
 
 	if (ctab == sitetab)
-		type = "SITE ";
+		t = "SITE ";
 	else
-		type = "";
+		t = "";
 	width = 0, NCMDS = 0;
 	for (c = ctab; c->name != NULL; c++) {
 		int len = strlen(c->name);
@@ -1373,7 +1390,7 @@ help(struct tab *ctab, char *s)
 		int columns, lines;
 
 		lreply(214, "The following %scommands are recognized %s.",
-		    type, "(* =>'s unimplemented)");
+		    t, "(* =>'s unimplemented)");
 		columns = 76 / width;
 		if (columns == 0)
 			columns = 1;
@@ -1409,9 +1426,9 @@ help(struct tab *ctab, char *s)
 		return;
 	}
 	if (c->implemented)
-		reply(214, "Syntax: %s%s %s", type, c->name, c->help);
+		reply(214, "Syntax: %s%s %s", t, c->name, c->help);
 	else
-		reply(214, "%s%-*s\t%s; unimplemented.", type, width,
+		reply(214, "%s%-*s\t%s; unimplemented.", t, width,
 		    c->name, c->help);
 }
 

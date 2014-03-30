@@ -1,3 +1,4 @@
+/*	$OpenBSD: strncpy.S,v 1.5 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,29 +32,24 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)strncpy.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: strncpy.S,v 1.2 1995/02/08 18:33:28 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "DEFS.h"
 
 ENTRY(strncpy)
-	movl	sp@(4),d0		| return value is toaddr
-	movl	sp@(12),d1		| count
+	movl	%sp@(4),%d0		| return value is toaddr
+	movl	%sp@(12),%d1		| count
 	beq	scdone			| nothing to do
-	movl	sp@(8),a0		| a0 = fromaddr
-	movl	d0,a1			| a1 = toaddr
+	movl	%sp@(8),%a0		| a0 = fromaddr
+	movl	%d0,%a1			| a1 = toaddr
 scloop:
-	movb	a0@+,a1@+		| copy a byte
+	movb	%a0@+,%a1@+		| copy a byte
 	beq	scploop			| copied null, go pad if necessary
-	subql	#1,d1			| adjust count
+	subql	#1,%d1			| adjust count
 	bne	scloop			| more room, keep going
 scdone:
+	moveal	%d0,%a0
 	rts
 scploop:
-	subql	#1,d1			| adjust count
+	subql	#1,%d1			| adjust count
 	beq	scdone			| no more room, all done
-	clrb	a1@+			| clear a byte
+	clrb	%a1@+			| clear a byte
 	jra	scploop			| keep going

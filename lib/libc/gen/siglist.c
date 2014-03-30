@@ -1,5 +1,4 @@
-/*	$NetBSD: siglist.c,v 1.8 1995/03/04 01:56:02 cgd Exp $	*/
-
+/*	$OpenBSD: siglist.c,v 1.5 2009/11/27 19:47:45 guenther Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)siglist.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: siglist.c,v 1.8 1995/03/04 01:56:02 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/cdefs.h>
 #include <signal.h>
 
 const char *const _sys_siglist[NSIG] = {
@@ -76,5 +62,6 @@ const char *const _sys_siglist[NSIG] = {
 	"Window size changes",		/* SIGWINCH */
 	"Information request",		/* SIGINFO */
 	"User defined signal 1",	/* SIGUSR1 */
-	"User defined signal 2"		/* SIGUSR2 */
+	"User defined signal 2",	/* SIGUSR2 */
+	"Thread AST",			/* SIGTHR */
 };

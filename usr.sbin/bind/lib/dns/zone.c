@@ -808,7 +808,7 @@ zone_freedbargs(dns_zone_t *zone) {
 
 isc_result_t
 dns_zone_getdbtype(dns_zone_t *zone, char ***argv, isc_mem_t *mctx) {
-	size_t size = 0;
+	size_t size = 0, remaining_size, l;
 	unsigned int i;
 	isc_result_t result = ISC_R_SUCCESS;
 	void *mem;
@@ -826,10 +826,13 @@ dns_zone_getdbtype(dns_zone_t *zone, char ***argv, isc_mem_t *mctx) {
 		tmp = mem;
 		tmp2 = mem;
 		tmp2 += (zone->db_argc + 1) * sizeof(char *);
+		remaining_size = size - (zone->db_argc + 1) * sizeof(char *);
 		for (i = 0; i < zone->db_argc; i++) {
 			*tmp++ = tmp2;
-			strcpy(tmp2, zone->db_argv[i]);
-			tmp2 += strlen(tmp2) + 1;
+			strlcpy(tmp2, zone->db_argv[i], remaining_size);
+			l = strlen(tmp2) + 1;
+			tmp2 += l;
+			remaining_size -= l;
 		}
 		*tmp = NULL;
 	} else
@@ -1016,8 +1019,8 @@ default_journal(dns_zone_t *zone) {
 		journal = isc_mem_allocate(zone->mctx, len);
 		if (journal == NULL)
 			return (ISC_R_NOMEMORY);
-		strcpy(journal, zone->masterfile);
-		strcat(journal, ".jnl");
+		strlcpy(journal, zone->masterfile, len);
+		strlcat(journal, ".jnl", len);
 	} else {
 		journal = NULL;
 	}
@@ -3104,7 +3107,7 @@ dns_zone_refresh(dns_zone_t *zone) {
 	isc_interval_set(&i, isc_random_jitter(zone->retry, zone->retry / 4),
 			 0);
 	result = isc_time_nowplusinterval(&zone->refreshtime, &i);
-	if (result |= ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS)
 		dns_zone_log(zone, ISC_LOG_WARNING,
 			     "isc_time_nowplusinterval() failed: %s",
 			     dns_result_totext(result));
@@ -6566,7 +6569,7 @@ zone_xfrdone(dns_zone_t *zone, isc_result_t result) {
 		}
 
 		/*
-		 * This is not neccessary if we just performed a AXFR
+		 * This is not necessary if we just performed a AXFR
 		 * however it is necessary for an IXFR / UPTODATE and
 		 * won't hurt with an AXFR.
 		 */

@@ -176,7 +176,7 @@ opt_j(type, s)
 		} else
 		{
 
-			sprintf(buf, ".%06d", jump_sline_fraction);
+			snprintf(buf, sizeof(buf), ".%06d", jump_sline_fraction);
 			len = strlen(buf);
 			while (len > 2 && buf[len-1] == '0')
 				len--;
@@ -241,7 +241,7 @@ opt_shift(type, s)
 		} else
 		{
 
-			sprintf(buf, ".%06d", shift_count_fraction);
+			snprintf(buf, sizeof(buf), ".%06d", shift_count_fraction);
 			len = strlen(buf);
 			while (len > 2 && buf[len-1] == '0')
 				len--;
@@ -612,19 +612,21 @@ opt_x(type, s)
 		tabdefault = tabstops[ntabstops-1] - tabstops[ntabstops-2];
 		break;
 	case QUERY:
-		strcpy(msg, "Tab stops ");
+		strlcpy(msg, "Tab stops ", sizeof(msg));
 		if (ntabstops > 2)
 		{
 			for (i = 1;  i < ntabstops;  i++)
 			{
 				if (i > 1)
-					strcat(msg, ",");
-				sprintf(msg+strlen(msg), "%d", tabstops[i]);
+					strlcat(msg, ",", sizeof(msg));
+				snprintf(msg+strlen(msg),
+				    sizeof(msg)-strlen(msg), "%d", tabstops[i]);
 			}
-			sprintf(msg+strlen(msg), " and then ");
+			snprintf(msg+strlen(msg), sizeof(msg)-strlen(msg),
+			    " and then ");
 		}
-		sprintf(msg+strlen(msg), "every %d spaces",
-			tabdefault);
+		snprintf(msg+strlen(msg), sizeof(msg)-strlen(msg),
+		    "every %d spaces", tabdefault);
 		p.p_string = msg;
 		error("%s", &p);
 		break;

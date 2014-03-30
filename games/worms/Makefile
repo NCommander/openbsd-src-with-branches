@@ -1,9 +1,8 @@
-#	$NetBSD: Makefile,v 1.5 1995/04/22 08:00:54 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.4 1998/02/26 07:58:11 deraadt Exp $
 
 PROG=	worms
 MAN=	worms.6
-DPADD=	${LIBCURSES} ${LIBTERM}
-LDADD=	-lcurses -ltermcap
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
 
 .include <bsd.prog.mk>

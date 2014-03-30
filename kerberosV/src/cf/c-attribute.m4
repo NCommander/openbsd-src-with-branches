@@ -1,5 +1,5 @@
 dnl
-dnl $KTH: c-attribute.m4,v 1.5 2004/08/26 12:35:41 joda Exp $
+dnl $Id$
 dnl
 
 dnl

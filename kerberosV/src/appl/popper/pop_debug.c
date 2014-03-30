@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 2002 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2002 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,7 +34,7 @@
 /* Tiny program to help debug popper */
 
 #include "popper.h"
-RCSID("$KTH: pop_debug.c,v 1.23 2002/05/02 16:27:16 joda Exp $");
+RCSID("$Id$");
 
 static void
 loop(int s)
@@ -70,7 +70,7 @@ get_socket (const char *hostname, int port)
     struct addrinfo *ai, *a;
     struct addrinfo hints;
     char portstr[NI_MAXSERV];
-    
+
     memset (&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
     snprintf (portstr, sizeof(portstr), "%d", ntohs(port));
@@ -94,39 +94,6 @@ get_socket (const char *hostname, int port)
     err (1, "failed to connect to %s", hostname);
 }
 
-#ifdef KRB4
-static int
-doit_v4 (char *host, int port)
-{
-    KTEXT_ST ticket;
-    MSG_DAT msg_data;
-    CREDENTIALS cred;
-    des_key_schedule sched;
-    int ret;
-    int s = get_socket (host, port);
-
-    ret = krb_sendauth(0,
-		       s,
-		       &ticket, 
-		       "pop",
-		       host,
-		       krb_realmofhost(host),
-		       getpid(),
-		       &msg_data,
-		       &cred,
-		       sched,
-		       NULL,
-		       NULL,
-		       "KPOPV0.1");
-    if(ret) {
-	warnx("krb_sendauth: %s", krb_get_err_text(ret));
-	return 1;
-    }
-    loop(s);
-    return 0;
-}
-#endif
-
 #ifdef KRB5
 static int
 doit_v5 (char *host, int port)
@@ -140,7 +107,7 @@ doit_v5 (char *host, int port)
     ret = krb5_init_context (&context);
     if (ret)
 	errx (1, "krb5_init_context failed: %d", ret);
-    
+
     ret = krb5_sname_to_principal (context,
 				   host,
 				   "pop",
@@ -175,9 +142,6 @@ doit_v5 (char *host, int port)
 #endif
 
 
-#ifdef KRB4
-static int use_v4 = -1;
-#endif
 #ifdef KRB5
 static int use_v5 = -1;
 #endif
@@ -186,10 +150,6 @@ static int do_version;
 static int do_help;
 
 struct getargs args[] = {
-#ifdef KRB4
-    { "krb4",	'4', arg_flag,		&use_v4,	"Use Kerberos V4",
-      NULL },
-#endif
 #ifdef KRB5
     { "krb5",	'5', arg_flag,		&use_v5,	"Use Kerberos V5",
       NULL },
@@ -235,7 +195,7 @@ main(int argc, char **argv)
 	print_version (NULL);
 	return 0;
     }
-	
+
     if (argc < 1)
 	usage (1);
 
@@ -256,28 +216,14 @@ main(int argc, char **argv)
     if (port == 0) {
 #ifdef KRB5
 	port = krb5_getportbyname (NULL, "kpop", "tcp", 1109);
-#elif defined(KRB4)
-	port = k_getportbyname ("kpop", "tcp", 1109);
 #else
-#error must define KRB4 or KRB5
+#error must define KRB5
 #endif
     }
-
-#if defined(KRB4) && defined(KRB5)
-    if(use_v4 == -1 && use_v5 == 1)
-	use_v4 = 0;
-    if(use_v5 == -1 && use_v4 == 1)
-	use_v5 = 0;
-#endif    
 
 #ifdef KRB5
     if (ret && use_v5) {
 	ret = doit_v5 (argv[0], port);
-    }
-#endif
-#ifdef KRB4
-    if (ret && use_v4) {
-	ret = doit_v4 (argv[0], port);
     }
 #endif
     return ret;

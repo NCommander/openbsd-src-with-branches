@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 2003 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2003 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,7 +33,7 @@
 
 #include "kx.h"
 
-RCSID("$KTH: kxd.c,v 1.76.2.1 2005/07/13 20:47:19 lha Exp $");
+RCSID("$Id$");
 
 static pid_t wait_on_pid = -1;
 static int   done        = 0;
@@ -48,7 +48,7 @@ childhandler (int sig)
      pid_t pid;
      int status;
 
-     do { 
+     do {
        pid = waitpid (-1, &status, WNOHANG|WUNTRACED);
        if (pid > 0 && pid == wait_on_pid)
 	   done = 1;
@@ -75,7 +75,7 @@ fatal (kx_context *kc, int fd, char *format, ...)
     vsnprintf ((char *)p + 4, sizeof(msg) - 5, format, args);
     syslog (LOG_ERR, "%s", (char *)p + 4);
     len = strlen ((char *)p + 4);
-    p += KRB_PUT_INT (len, p, 4, 4);
+    p += kx_put_int (len, p, 4, 4);
     p += len;
     kx_write (kc, fd, msg, p - msg);
     va_end(args);
@@ -99,6 +99,7 @@ cleanup(int nsockets, struct x_socket *sockets)
 	    free (sockets[i].pathname);
 	}
     }
+    free(sockets);
 }
 
 /*
@@ -119,7 +120,7 @@ recv_conn (int sock, kx_context *kc,
      int ret = 1;
      int flags;
      int len;
-     u_int32_t tmp32;
+     uint32_t tmp32;
 
      memset(kc, 0, sizeof(*kc));
      *nsockets = 0;
@@ -141,7 +142,7 @@ recv_conn (int sock, kx_context *kc,
      }
      kc->thataddr_len = addrlen;
 
-     getnameinfo_verified (kc->thataddr, 
+     getnameinfo_verified (kc->thataddr,
 			   kc->thataddr_len,
 			   remotehost, sizeof(remotehost),
 			   NULL, 0, 0);
@@ -153,10 +154,6 @@ recv_conn (int sock, kx_context *kc,
 
 #ifdef KRB5
      if (ret && recv_v5_auth (kc, sock, msg) == 0)
-	 ret = 0;
-#endif
-#ifdef KRB4
-     if (ret && recv_v4_auth (kc, sock, msg) == 0)
 	 ret = 0;
 #endif
      if (ret) {
@@ -174,11 +171,17 @@ recv_conn (int sock, kx_context *kc,
      if (*p != INIT)
 	 fatal(kc, sock, "Bad message");
      p++;
-     p += krb_get_int (p, &tmp32, 4, 0);
-     len = min(sizeof(user), tmp32);
-     memcpy (user, p, len);
+     if ((p - msg) < sizeof(msg))
+	 fatal(kc, sock, "user");
+
+     p += kx_get_int (p, &tmp32, 4, 0);
+     if (tmp32 >= sizeof(user) - 1)
+	 fatal(kc, sock, "user name too long");
+     if ((p - msg) + tmp32 >= sizeof(msg))
+	 fatal(kc, sock, "user too long");
+     memcpy (user, p, tmp32);
      p += tmp32;
-     user[len] = '\0';
+     user[tmp32] = '\0';
 
      passwd = k_getpwnam (user);
      if (passwd == NULL)
@@ -187,6 +190,9 @@ recv_conn (int sock, kx_context *kc,
      if (context_userok (kc, user) != 0)
 	 fatal (kc, sock, "%s not allowed to login as %s",
 		kc->user, user);
+
+     if ((p - msg) >= sizeof(msg))
+	 fatal(kc, sock, "user too long");
 
      flags = *p++;
 
@@ -232,7 +238,7 @@ recv_conn (int sock, kx_context *kc,
      }
 
      ret = getnameinfo(kc->thataddr, kc->thataddr_len,
-		       remoteaddr, sizeof(remoteaddr), 
+		       remoteaddr, sizeof(remoteaddr),
 		       NULL, 0, NI_NUMERICHOST);
      if (ret != 0)
 	 fatal (kc, sock, "getnameinfo failed: %s", gai_strerror(ret));
@@ -242,16 +248,18 @@ recv_conn (int sock, kx_context *kc,
 	     kc->user, user);
      umask(077);
      if (!(flags & PASSIVE)) {
-	 p += krb_get_int (p, &tmp32, 4, 0);
-	 len = min(tmp32, display_size);
-	 memcpy (display, p, len);
-	 display[len] = '\0';
+	 p += kx_get_int (p, &tmp32, 4, 0);
+	 if (tmp32 > display_size)
+	     fatal(kc, sock, "display too large");
+	 if ((p - msg) + tmp32 + 8 >= sizeof(msg))
+	     fatal(kc, sock, "user too long");
+	 memcpy (display, p, tmp32);
+	 display[tmp32] = '\0';
 	 p += tmp32;
-	 p += krb_get_int (p, &tmp32, 4, 0);
+	 p += kx_get_int (p, &tmp32, 4, 0);
 	 len = min(tmp32, xauthfile_size);
 	 memcpy (xauthfile, p, len);
 	 xauthfile[len] = '\0';
-	 p += tmp32;
      }
 #if defined(SO_KEEPALIVE) && defined(HAVE_SETSOCKOPT)
      if (flags & KEEP_ALIVE) {
@@ -350,7 +358,7 @@ doit_conn (kx_context *kc,
 
     p = msg;
     *p++ = NEW_CONN;
-    p += KRB_PUT_INT (ntohs(port), p, 4, 4);
+    p += kx_put_int (ntohs(port), p, 4, 4);
 
     if (kx_write (kc, meta_sock, msg, p - msg) < 0) {
 	syslog (LOG_ERR, "write: %m");
@@ -399,7 +407,7 @@ close_connection(int fd, const char *message)
     mlen = strlen(message);
     if(mlen > 255)
 	mlen = 255;
-    
+
     /* read first part of connection packet, to get byte order */
     if(read(fd, buf, 6) != 6) {
 	close(fd);
@@ -416,9 +424,9 @@ close_connection(int fd, const char *message)
     p += mlen;
     while((p - buf) % 4)		/* pad to multiple of 4 bytes */
 	*p++ = 0;
-	
+
     /* now fill in length of additional data */
-    if(lsb) { 
+    if(lsb) {
 	buf[6] = (p - buf - 8) / 4;
 	buf[7] = 0;
     }else{
@@ -454,7 +462,7 @@ doit_passive (kx_context *kc,
 	snprintf (display, display_size, "localhost:%u", display_num);
     else
 	snprintf (display, display_size, ":%u", display_num);
-    error = create_and_write_cookie (xauthfile, xauthfile_size, 
+    error = create_and_write_cookie (xauthfile, xauthfile_size,
 				     cookie, cookie_len);
     if (error) {
 	cleanup(nsockets, sockets);
@@ -468,7 +476,7 @@ doit_passive (kx_context *kc,
     --rem;
 
     len = strlen (display);
-    tmp = KRB_PUT_INT (len, p, rem, 4);
+    tmp = kx_put_int (len, p, rem, 4);
     if (tmp < 0 || rem < len + 4) {
 	syslog (LOG_ERR, "doit: buffer too small");
 	cleanup(nsockets, sockets);
@@ -482,7 +490,7 @@ doit_passive (kx_context *kc,
     rem -= len;
 
     len = strlen (xauthfile);
-    tmp = KRB_PUT_INT (len, p, rem, 4);
+    tmp = kx_put_int (len, p, rem, 4);
     if (tmp < 0 || rem < len + 4) {
 	syslog (LOG_ERR, "doit: buffer too small");
 	cleanup(nsockets, sockets);
@@ -494,7 +502,7 @@ doit_passive (kx_context *kc,
     memcpy (p, xauthfile, len);
     p += len;
     rem -= len;
-	  
+
     if(kx_write (kc, sock, msg, p - msg) < 0) {
 	syslog (LOG_ERR, "write: %m");
 	cleanup(nsockets, sockets);
@@ -507,7 +515,7 @@ doit_passive (kx_context *kc,
 	int i;
 	int ret;
 	int cookiesp = TRUE;
-	       
+
 	FD_ZERO(&fds);
 	if (sock >= FD_SETSIZE) {
 	    syslog (LOG_ERR, "fd too large");
@@ -538,11 +546,11 @@ doit_passive (kx_context *kc,
 		    if (sockets[i].flags == TCP) {
 			struct sockaddr_storage __ss_peer;
 			struct sockaddr *peer = (struct sockaddr*)&__ss_peer;
-			socklen_t len = sizeof(__ss_peer);
+			socklen_t slen = sizeof(__ss_peer);
 
 			fd = accept (sockets[i].fd,
 				     peer,
-				     &len);
+				     &slen);
 			if (fd < 0 && errno != EINTR)
 			    syslog (LOG_ERR, "accept: %m");
 
@@ -632,7 +640,7 @@ doit_active (kx_context *kc,
 
     p = msg;
     *p++ = ACK;
-	  
+
     if(kx_write (kc, sock, msg, p - msg) < 0) {
 	syslog (LOG_ERR, "write: %m");
 	return 1;
@@ -640,7 +648,7 @@ doit_active (kx_context *kc,
     for (;;) {
 	pid_t child;
 	int len;
-	      
+
 	len = kx_read (kc, sock, msg, sizeof(msg));
 	if (len < 0) {
 	    syslog (LOG_ERR, "read: %m");
@@ -725,13 +733,13 @@ int
 main (int argc, char **argv)
 {
     int port;
-    int optind = 0;
+    int optidx = 0;
 
     setprogname (argv[0]);
     roken_openlog ("kxd", LOG_ODELAY | LOG_PID, LOG_DAEMON);
 
     if (getarg (args, sizeof(args) / sizeof(args[0]), argc, argv,
-		&optind))
+		&optidx))
 	usage (1);
 
     if (help_flag)
@@ -758,15 +766,13 @@ main (int argc, char **argv)
     } else {
 #if defined(KRB5)
 	port = krb5_getportbyname(NULL, "kx", "tcp", KX_PORT);
-#elif defined(KRB4)
-	port = k_getportbyname ("kx", "tcp", htons(KX_PORT));
 #else
-#error define KRB4 or KRB5
+#error define KRB5
 #endif
     }
 
     if (!inetd_flag)
-	mini_inetd (port);
+	mini_inetd (port, NULL);
 
      signal (SIGCHLD, childhandler);
      return doit(STDIN_FILENO, tcp_flag);

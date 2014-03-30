@@ -1,3 +1,4 @@
+/*	$OpenBSD: n_cbrt.c,v 1.7 2012/12/05 23:20:03 deraadt Exp $	*/
 /*	$NetBSD: n_cbrt.c,v 1.1 1995/10/10 23:36:40 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,11 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)cbrt.c	8.1 (Berkeley) 6/4/93";
-#endif /* not lint */
-
-#include <sys/cdefs.h>
+#include <sys/types.h>
 
 /* kahan's cube root (53 bits IEEE double precision)
  * for IEEE machines only
@@ -51,10 +44,10 @@ static char sccsid[] = "@(#)cbrt.c	8.1 (Berkeley) 6/4/93";
  * long interger at the address of a floating point number will be the
  * leading 32 bits of that floating point number (i.e., sign, exponent,
  * and the 20 most significant bits).
- * On a National machine, it has different ordering; therefore, this code 
- * must be compiled with flag -DNATIONAL. 
+ * On a National machine, it has different ordering; therefore, this code
+ * must be compiled with flag -DNATIONAL.
  */
-#if !defined(vax)&&!defined(tahoe)
+#if !defined(__vax__)
 
 static const unsigned long
 		     B1 = 715094163, /* B1 = (682-0.03306235651)*2**20 */
@@ -66,19 +59,20 @@ static const double
 	    F= 45./28.,
 	    G= 5./14.;
 
-double cbrt(x) 
-double x;
+float
+cbrtf(float x)
+{
+	return (float)cbrt((double) x);
+}
+
+double
+cbrt(double x)
 {
 	double r,s,t=0.0,w;
 	unsigned long *px = (unsigned long *) &x,
 	              *pt = (unsigned long *) &t,
 		      mexp,sign;
-
-#ifdef national /* ordering of words in a floating points number */
-	const int n0=1,n1=0;
-#else	/* national */
 	const int n0=0,n1=1;
-#endif	/* national */
 
 	mexp=px[n0]&0x7ff00000;
 	if(mexp==0x7ff00000) return(x); /* cbrt(NaN,INF) is itself */
@@ -94,15 +88,15 @@ double x;
 	   t*=x; pt[n0]=pt[n0]/3+B2;
 	  }
 	else
-	  pt[n0]=px[n0]/3+B1;	
+	  pt[n0]=px[n0]/3+B1;
 
 
     /* new cbrt to 23 bits, may be implemented in single precision */
 	r=t*t/x;
 	s=C+r*t;
-	t*=G+F/(s+E+D/s);	
+	t*=G+F/(s+E+D/s);
 
-    /* chopped to 20 bits and make it larger than cbrt(x) */ 
+    /* chopped to 20 bits and make it larger than cbrt(x) */
 	pt[n1]=0; pt[n0]+=0x00000001;
 
 

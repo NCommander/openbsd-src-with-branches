@@ -32,11 +32,14 @@
  */
 
 #include <config.h>
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <ctype.h>
 #include "misc-proto.h"
 
-RCSID("$KTH: genget.c,v 1.7 2001/09/03 05:54:14 assar Exp $");
+RCSID("$Id$");
 
-#include <ctype.h>
 
 #define	LOWER(x) (isupper(x) ? tolower(x) : (x))
 /*
@@ -72,7 +75,7 @@ char **
 genget(char *name, char **table, int stlen)
      /* name to match */
      /* name entry in table */
-	   	      
+
 {
     char **c, **found;
     int n;

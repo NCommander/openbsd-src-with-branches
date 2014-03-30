@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 1997/09/17 10:46:23 downsj Exp $
+#	$OpenBSD: Makefile,v 1.8 2012/08/30 19:29:14 pascal Exp $
 
 LIB=	sa
 
@@ -7,14 +7,17 @@ LIB=	sa
 CLEANFILES += machine
 
 CFLAGS= ${CEXTRAFLAGS} ${AFLAGS} -O2 -D__INTERNAL_LIBSA_CREAD -nostdinc \
+	-fno-pie \
 	-I${.CURDIR} -I${.CURDIR}/../include -I${.CURDIR}/../.. \
 	-I${.CURDIR}/../../.. -I${.CURDIR}/../../../.. \
 	-I${.CURDIR}/../../../../lib/libsa \
 	-I${.OBJDIR}
 
+CPPFLAGS+= -D__INTERNAL_LIBSA_CREAD
+
 # stand routines
-SRCS=	alloc.c exit.c exec.c getfile.c gets.c globals.c \
-	memcmp.c memcpy.c memset.c printf.c strerror.c strncpy.c
+SRCS=	alloc.c exit.c getfile.c gets.c globals.c \
+	memcmp.c memcpy.c memset.c printf.c snprintf.c strerror.c strncpy.c
 
 # io routines
 SRCS+=	close.c closeall.c dev.c disklabel.c dkcksum.c fstat.c ioctl.c lseek.c \
@@ -34,13 +37,11 @@ ${OBJS}:	${.CURDIR}/../Makefile.inc
 NOPROFILE=
 NOPIC=
 
-.NOPATH: machine
-${SRCS}: machine
+.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(obj)
+.BEGIN:
+	@([ -h machine ] || ln -s ${.CURDIR}/../../include machine)
+.endif
 
 install:
 
 .include <bsd.lib.mk>
-
-machine:
-	rm -f machine
-	ln -s ${.CURDIR}/../../include machine

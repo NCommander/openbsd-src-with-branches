@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2007  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 2004-2008  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 2001-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
@@ -15,7 +15,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: config.c,v 1.47.18.32 2007/09/13 05:04:01 each Exp $ */
+/* $ISC: config.c,v 1.47.18.32.10.3 2008/07/23 23:48:17 tbox Exp $ */
 
 /*! \file */
 
@@ -52,26 +52,26 @@ options {\n\
 #ifndef WIN32
 "	coresize default;\n\
 	datasize default;\n\
-	files default;\n\
+	files unlimited;\n\
 	stacksize default;\n"
 #endif
 "	deallocate-on-exit true;\n\
 #	directory <none>\n\
-	dump-file \"named_dump.db\";\n\
+	dump-file \"tmp/named_dump.db\";\n\
 	fake-iquery no;\n\
 	has-old-clients false;\n\
 	heartbeat-interval 60;\n\
 	host-statistics no;\n\
 	interface-interval 60;\n\
 	listen-on {any;};\n\
-	listen-on-v6 {none;};\n\
+	listen-on-v6 {any;};\n\
 	match-mapped-addresses no;\n\
-	memstatistics-file \"named.memstats\";\n\
+	memstatistics-file \"tmp/named.memstats\";\n\
 	multiple-cnames no;\n\
 #	named-xfer <obsolete>;\n\
 #	pid-file \"" NS_LOCALSTATEDIR "/named.pid\"; /* or /lwresd.pid */\n\
 	port 53;\n\
-	recursing-file \"named.recursing\";\n\
+	recursing-file \"tmp/named.recursing\";\n\
 "
 #ifdef PATH_RANDOMDEV
 "\
@@ -84,7 +84,7 @@ options {\n\
 	serial-queries 20;\n\
 	serial-query-rate 20;\n\
 	server-id none;\n\
-	statistics-file \"named.stats\";\n\
+	statistics-file \"tmp/named.stats\";\n\
 	statistics-interval 60;\n\
 	tcp-clients 100;\n\
 	tcp-listen-queue 3;\n\
@@ -99,6 +99,7 @@ options {\n\
 	use-ixfr true;\n\
 	edns-udp-size 4096;\n\
 	max-udp-size 4096;\n\
+	reserved-sockets 512;\n\
 \n\
 	/* view */\n\
 	allow-notify {none;};\n\

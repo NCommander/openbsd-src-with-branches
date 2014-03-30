@@ -1,3 +1,4 @@
+/*	$OpenBSD: s_copysign.S,v 1.3 2005/08/02 11:17:32 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,20 +34,15 @@
 
 #include <machine/asm.h>
 
-;_sccsid:
-;.asciz	"from: @(#)support.s	5.2 (Berkeley) 5/17/90"
-
-RCSID("$NetBSD: s_copysign.S,v 1.3 1995/05/09 01:46:33 jtc Exp $")
-
 | copysign(x,y)
 | returns x with the sign of y.
 ENTRY(copysign)
-	movl	sp@(4),d0
-	movl	sp@(8),d1
-	tstw	sp@(12)
+	tstw	%sp@(12)
 	jmi	Lneg
-	bclr	#31,d0
+	bclr	#31,%sp@(4)
+	fmoved	%sp@(4),%fp0
 	rts
 Lneg:
-	bset	#31,d0
+	bset	#31,%sp@(4)
+	fmoved	%sp@(4),%fp0
 	rts

@@ -38,7 +38,7 @@ static char *copyright[] = {
 };
 
 #include "telnet_locl.h"
-RCSID("$KTH: main.c,v 1.40 2004/04/02 21:28:48 lha Exp $");
+RCSID("$Id$");
 
 #if KRB5
 #define FORWARD
@@ -59,8 +59,8 @@ tninit(void)
     init_sys();
 }
 
-void
-usage(void)
+static void
+usage(int exit_code)
 {
   fprintf(stderr, "Usage: %s %s%s%s%s\n", prompt,
 #ifdef	AUTHENTICATION
@@ -77,7 +77,7 @@ usage(void)
 	  "[host-name [port]]"
 #endif
     );
-  exit(1);
+  exit(exit_code);
 }
 
 /*
@@ -138,12 +138,12 @@ krb5_init(void)
 	    kerberos5_set_forwardable(1);
 #endif
 #ifdef  ENCRYPTION
-    krb5_appdefault_boolean(context, NULL, 
+    krb5_appdefault_boolean(context, NULL,
 			    NULL, "encrypt",
 			    0, &ret_val);
     if (ret_val) {
           encrypt_auto(1);
-          decrypt_auto(1); 
+          decrypt_auto(1);
 	  wantencryption = 1;
           EncryptVerbose(1);
         }
@@ -151,11 +151,6 @@ krb5_init(void)
 
     krb5_free_context(context);
 }
-#endif
-
-#if defined(AUTHENTICATION) && defined(KRB4)
-extern char *dest_realm, dst_realm_buf[];
-extern int dst_realm_sz;
 #endif
 
 int
@@ -169,7 +164,7 @@ main(int argc, char **argv)
 #ifdef KRB5
 	krb5_init();
 #endif
-	
+
 	tninit();		/* Clear out things */
 
 	TerminalSaveState();
@@ -183,10 +178,10 @@ main(int argc, char **argv)
 
 	rlogin = (strncmp(prompt, "rlog", 4) == 0) ? '~' : _POSIX_VDISABLE;
 
-	/* 
+	/*
 	 * if AUTHENTICATION and ENCRYPTION is set autologin will be
 	 * se to true after the getopt switch; unless the -K option is
-	 * passed 
+	 * passed
 	 */
 	autologin = -1;
 
@@ -194,6 +189,9 @@ main(int argc, char **argv)
 	    print_version(NULL);
 	    exit(0);
 	}
+	if (argc == 2 && strcmp(argv[1], "--help") == 0)
+	    usage(0);
+
 
 	while((ch = getopt(argc, argv,
 			   "78DEKLS:X:abcde:fFk:l:n:rxG")) != -1) {
@@ -267,7 +265,7 @@ main(int argc, char **argv)
 			    fprintf(stderr,
 				    "%s: Only one of -f, -F and -G allowed.\n",
 				    prompt);
-			    usage();
+			    usage(1);
 			}
 			forward_option = ch;
 #else
@@ -277,17 +275,10 @@ main(int argc, char **argv)
 #endif
 			break;
 		case 'k':
-#if defined(AUTHENTICATION) && defined(KRB4)
-		    {
-			dest_realm = dst_realm_buf;
-			strlcpy(dest_realm, optarg, dst_realm_sz);
-		    }
-#else
-			fprintf(stderr,
-			   "%s: Warning: -k ignored, no Kerberos V4 support.\n",
-								prompt);
-#endif
-			break;
+		    fprintf(stderr,
+			    "%s: Warning: -k ignored, no Kerberos V4 support.\n",
+			    prompt);
+		    break;
 		case 'l':
 		  if(autologin == 0){
 		    fprintf(stderr, "%s: Warning: -K ignored\n", prompt);
@@ -316,7 +307,7 @@ main(int argc, char **argv)
 
 		case '?':
 		default:
-			usage();
+			usage(1);
 			/* NOTREACHED */
 		}
 	}
@@ -342,7 +333,7 @@ main(int argc, char **argv)
 		char *args[7], **argp = args;
 
 		if (argc > 2)
-			usage();
+			usage(1);
 		*argp++ = prompt;
 		if (user) {
 			*argp++ = "-l";

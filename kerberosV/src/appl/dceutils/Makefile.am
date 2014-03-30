@@ -1,4 +1,4 @@
-# $KTH: Makefile.am,v 1.8 2002/08/12 15:03:43 joda Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -22,6 +22,13 @@ LIB_dce = -ldce
 k5dcecon_SOURCES  = k5dcecon.c k5dce.h
 
 dpagaix_SOURCES = dpagaix.c
+
+EXTRA_DIST = \
+	NTMakefile \
+	dfspag.exp \
+	README.dcedfs \
+	README.original \
+	testpag.c
 
 if IRIX
 LDADD = $(LIB_dce)

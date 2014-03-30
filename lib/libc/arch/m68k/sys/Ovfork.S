@@ -1,3 +1,4 @@
+/*	$OpenBSD: Ovfork.S,v 1.6 2012/08/22 17:19:34 pascal Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,12 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)Ovfork.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: Ovfork.S,v 1.4 1994/01/27 15:00:49 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
 
 #include "SYS.h"
 
@@ -59,23 +50,22 @@
  * with a ret off this stack... we do the ret before we vfork!
  */
 
-ENTRY(vfork)
-	movl	sp@+,a0
-	movl	#SYS_vfork,d0
+SYSENTRY(vfork)
+	movl	%sp@+,%a0
+	movl	#SYS_vfork,%d0
 	trap	#0
 	jcs	err
-	subql	#1,d1	/* from 1 to 0 in child, 0 to -1 in parent */
-	andl	d1,d0
-	jmp	a0@
+	subql	#1,%d1	/* from 1 to 0 in child, 0 to -1 in parent */
+	andl	%d1,%d0
+	jmp	%a0@
 err:
-	.globl	_errno
-#ifdef	PIC
-	movel	#__GLOBAL_OFFSET_TABLE_,a1
-	lea	pc@(0,a1:l),a1
-	movl	a1@(_errno:w),a1
-	movl	d0,a1@
+	.globl	_C_LABEL(errno)
+#ifdef	__PIC__
+	lea	%pc@(_GLOBAL_OFFSET_TABLE_@GOTPC),%a1
+	movl	%a1@(_C_LABEL(errno)@GOT:w),%a1
+	movl	%d0,%a1@
 #else
-	movl	d0,_errno
+	movl	%d0,_C_LABEL(errno)
 #endif
-	moveq	#-1,d0
-	jmp	a0@
+	moveq	#-1,%d0
+	jmp	%a0@

@@ -126,12 +126,10 @@ static int ch_ungotchar = -1;
 static int maxbufs = -1;
 
 extern int autobuf;
-extern int sigs;
+extern volatile sig_atomic_t sigs;
 extern int secure;
 extern int screen_trashed;
 extern int follow_mode;
-extern constant char helpdata[];
-extern constant int size_helpdata;
 extern IFILE curr_ifile;
 #if LOGFILE
 extern int logfile;
@@ -258,10 +256,6 @@ ch_get()
 		bp->data[bp->datasize] = ch_ungotchar;
 		n = 1;
 		ch_ungotchar = -1;
-	} else if (ch_flags & CH_HELPFILE)
-	{
-		bp->data[bp->datasize] = helpdata[ch_fpos];
-		n = 1;
 	} else
 	{
 		n = iread(ch_file, &bp->data[bp->datasize], 
@@ -580,8 +574,6 @@ ch_length()
 		return (NULL_POSITION);
 	if (ignore_eoi)
 		return (NULL_POSITION);
-	if (ch_flags & CH_HELPFILE)
-		return (size_helpdata);
 	return (ch_fsize);
 }
 
@@ -873,7 +865,7 @@ ch_close()
 		 * But don't really close it if it was opened via popen(),
 		 * because pclose() wants to close it.
 		 */
-		if (!(ch_flags & (CH_POPENED|CH_HELPFILE)))
+		if (!(ch_flags & CH_POPENED))
 			close(ch_file);
 		ch_file = -1;
 	} else

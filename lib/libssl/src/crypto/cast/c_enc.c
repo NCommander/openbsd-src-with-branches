@@ -59,6 +59,7 @@
 #include <openssl/cast.h>
 #include "cast_lcl.h"
 
+#ifndef OPENBSD_CAST_ASM
 void CAST_encrypt(CAST_LONG *data, const CAST_KEY *key)
 	{
 	register CAST_LONG l,r,t;
@@ -124,6 +125,7 @@ void CAST_decrypt(CAST_LONG *data, const CAST_KEY *key)
 	data[1]=l&0xffffffffL;
 	data[0]=r&0xffffffffL;
 	}
+#endif
 
 void CAST_cbc_encrypt(const unsigned char *in, unsigned char *out, long length,
 	     const CAST_KEY *ks, unsigned char *iv, int enc)

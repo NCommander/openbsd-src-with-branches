@@ -1,4 +1,4 @@
-dnl $KTH: broken-snprintf.m4,v 1.7 2005/04/30 13:36:47 lha Exp $
+dnl $Id$
 dnl
 AC_DEFUN([AC_BROKEN_SNPRINTF], [
 AC_CACHE_CHECK(for working snprintf,ac_cv_func_snprintf_working,
@@ -6,7 +6,7 @@ ac_cv_func_snprintf_working=yes
 AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <stdio.h>
 #include <string.h>
-int main()
+int main(int argc, char **argv)
 {
 	char foo[[3]];
 	snprintf(foo, 2, "12");
@@ -49,7 +49,7 @@ int bar(int num, int len, ...)
 	return r != len;
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	return foo(0, "12") || bar(0, 2, "12");
 }]])],[:],[ac_cv_func_vsnprintf_working=no],[:]))

@@ -122,6 +122,30 @@
 #include <pty.h>
 #endif
 
+#ifdef	STREAMSPTY
+#ifdef HAVE_SAC_H
+#include <sac.h>
+#endif
+#ifdef HAVE_SYS_STROPTS_H
+#include <sys/stropts.h>
+#endif
+
+# include <stropts.h>
+
+#ifdef  HAVE_SYS_UIO_H
+#include <sys/uio.h>
+#ifdef __hpux
+#undef SE
+#endif
+#endif
+#ifdef	HAVE_SYS_STREAM_H
+#include <sys/stream.h>
+#endif
+
+#endif /* STREAMSPTY */
+
+#undef NOERROR
+
 #include "defs.h"
 
 #ifndef _POSIX_VDISABLE
@@ -163,10 +187,6 @@
 /* This doesn't belong here. */
 struct tm *localtime(const time_t *);
 struct hostent  *gethostbyname(const char *);
-#endif
-
-#ifdef KRB4
-#include <krb.h>
 #endif
 
 #ifdef AUTHENTICATION
@@ -221,3 +241,7 @@ int output_data (const char *format, ...)
 __attribute__ ((format (printf, 1, 2)))
 #endif
 ;
+
+#ifdef ENCRYPTION
+extern int require_encryption;
+#endif

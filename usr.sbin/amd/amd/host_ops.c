@@ -1,3 +1,5 @@
+/*	$OpenBSD: host_ops.c,v 1.12 2003/04/07 23:45:45 tedu Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +34,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)host_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: host_ops.c,v 1.3 1994/06/13 20:47:12 mycroft Exp $
  */
 
 #include "am.h"
@@ -71,17 +68,16 @@
  */
 #define MAKE_MNTPT(mntpt, ex, mf) { \
 			if (strcmp((ex)->ex_dir, "/") == 0) \
-				strcpy((mntpt), (mf)->mf_mount); \
+				strlcpy((mntpt), (mf)->mf_mount, sizeof((mntpt))); \
 			else \
-				sprintf((mntpt), "%s%s", (mf)->mf_mount, (ex)->ex_dir); \
+				snprintf((mntpt), sizeof(mntpt), "%s%s", (mf)->mf_mount, (ex)->ex_dir); \
 }
 
 /*
  * Execute needs the same as NFS plus a helper command
  */
-static char *host_match P((am_opts *fo));
-static char *host_match(fo)
-am_opts *fo;
+static char *
+host_match(am_opts *fo)
 {
 #ifdef HOST_EXEC
 	if (!host_helper) {
@@ -96,12 +92,11 @@ am_opts *fo;
 	if (!fo->opt_rfs)
 		fo->opt_rfs = "/";
 
-	
 	return (*nfs_ops.fs_match)(fo);
 }
 
-static int host_init(mf)
-mntfs *mf;
+static int
+host_init(mntfs *mf)
 {
 	if (strchr(mf->mf_info, ':') == 0)
 		return ENOENT;
@@ -121,24 +116,19 @@ mntfs *mf;
 #ifndef HOST_EXEC
 
 static bool_t
-xdr_pri_free(xdr_args, args_ptr)
-xdrproc_t xdr_args;
-caddr_t args_ptr;
+xdr_pri_free(xdrproc_t xdr_args, void *args_ptr)
 {
 	XDR xdr;
+
 	xdr.x_op = XDR_FREE;
 	return ((*xdr_args)(&xdr, args_ptr));
 }
 
-static int do_mount P((fhstatus *fhp, char *dir, char *fs_name, char *opts, mntfs *mf));
-static int do_mount(fhp, dir, fs_name, opts, mf)
-fhstatus *fhp;
-char *dir;
-char *fs_name;
-char *opts;
-mntfs *mf;
+static int
+do_mount(fhstatus *fhp, char *dir, char *fs_name, char *opts, mntfs *mf)
 {
 	struct stat stb;
+
 #ifdef DEBUG
 	dlog("host: mounting fs %s on %s\n", fs_name, dir);
 #endif /* DEBUG */
@@ -153,21 +143,18 @@ mntfs *mf;
 	return mount_nfs_fh(fhp, dir, fs_name, opts, mf);
 }
 
-static int sortfun P((exports *a, exports *b));
-static int sortfun(a, b)
-exports *a,*b;
+static int
+sortfun(const void *arg1, const void *arg2)
 {
+	const exports *a = arg1, *b = arg2;
 	return strcmp((*a)->ex_dir, (*b)->ex_dir);
 }
 
 /*
  * Get filehandle
  */
-static int fetch_fhandle P((CLIENT *client, char *dir, fhstatus *fhp));
-static int fetch_fhandle(client, dir, fhp)
-CLIENT *client;
-char *dir;
-fhstatus *fhp;
+static int
+fetch_fhandle(CLIENT *client, char *dir, fhstatus *fhp)
 {
 	struct timeval tv;
 	enum clnt_stat clnt_stat;
@@ -185,6 +172,9 @@ fhstatus *fhp;
 	 * Call the mount daemon on the remote host to
 	 * get the filehandle.
 	 */
+#if NFS_PROTOCOL_VERSION >= 3
+	fhp->fhs_vers = MOUNTVERS;
+#endif
 	clnt_stat = clnt_call(client, MOUNTPROC_MNT, xdr_dirpath, &dir, xdr_fhstatus, fhp, tv);
 	if (clnt_stat != RPC_SUCCESS) {
 		extern char *clnt_sperrno();
@@ -195,12 +185,12 @@ fhstatus *fhp;
 	/*
 	 * Check status of filehandle
 	 */
-	if (fhp->fhs_status) {
+	if (fhp->fhs_stat) {
 #ifdef DEBUG
-		errno = fhp->fhs_status;
+		errno = fhp->fhs_stat;
 		dlog("fhandle fetch failed: %m");
 #endif /* DEBUG */
-		return fhp->fhs_status;
+		return fhp->fhs_stat;
 	}
 	return 0;
 }
@@ -208,10 +198,8 @@ fhstatus *fhp;
 /*
  * Scan mount table to see if something already mounted
  */
-static int already_mounted P((mntlist *mlist, char*dir));
-static int already_mounted(mlist, dir)
-mntlist *mlist;
-char *dir;
+static int
+already_mounted(mntlist *mlist, char *dir)
 {
 	mntlist *ml;
 
@@ -224,9 +212,8 @@ char *dir;
 /*
  * Mount the export tree from a host
  */
-static int host_fmount P((mntfs *mf));
-static int host_fmount(mf)
-mntfs *mf;
+static int
+host_fmount(mntfs *mf)
 {
 	struct timeval tv2;
 	CLIENT *client;
@@ -351,7 +338,7 @@ mntfs *mf;
 			ep[j] = 0;
 		} else {
 			k = j;
-			if (error = fetch_fhandle(client, ep[j]->ex_dir, &fp[j]))
+			if ((error = fetch_fhandle(client, ep[j]->ex_dir, &fp[j])))
 				ep[j] = 0;
 		}
 	}
@@ -362,7 +349,7 @@ mntfs *mf;
 	 * error code 0 at the end.  If they all fail then return
 	 * the last error code.
 	 */
-	strncpy(fs_name, mf->mf_info, sizeof(fs_name));
+	strlcpy(fs_name, mf->mf_info, sizeof(fs_name));
 	if ((rfs_dir = strchr(fs_name, ':')) == (char *) 0) {
 		plog(XLOG_FATAL, "host_fmount: mf_info has no colon");
 		error = EINVAL;
@@ -372,7 +359,7 @@ mntfs *mf;
 	for (j = 0; j < n_export; j++) {
 		ex = ep[j];
 		if (ex) {
-			strcpy(rfs_dir, ex->ex_dir);
+			strlcpy(rfs_dir, ex->ex_dir, fs_name + sizeof fs_name - rfs_dir);
 			MAKE_MNTPT(mntpt, ex, mf);
 			if (do_mount(&fp[j], mntpt, fs_name, mf->mf_mopts, mf) == 0)
 				ok = TRUE;
@@ -403,10 +390,8 @@ out:
  * TODO:
  * Does not work if pref is "/".
  */
-static int directory_prefix P((char *pref, char *dir));
-static int directory_prefix(pref, dir)
-char *pref;
-char *dir;
+static int
+directory_prefix(char *pref, char *dir)
 {
 	int len = strlen(pref);
 	if (strncmp(pref, dir, len) != 0)
@@ -419,9 +404,8 @@ char *dir;
 /*
  * Unmount a mount tree
  */
-static int host_fumount P((mntfs *mf));
-static int host_fumount(mf)
-mntfs *mf;
+static int
+host_fumount(mntfs *mf)
 {
 	mntlist *ml, *mprev;
 	int xerror = 0;
@@ -471,7 +455,7 @@ mntfs *mf;
 					xerror = error;
 				if (error != EBUSY) {
 					errno = error;
-					plog("Tree unmount of %s failed: %m", ml->mnt->mnt_dir);
+					plog(XLOG_ERROR, "Tree unmount of %s failed: %m", ml->mnt->mnt_dir);
 				}
 			} else {
 #ifdef HOST_MKDIRS
@@ -508,8 +492,7 @@ mntfs *mf;
  * have other filesystems mounted, but the existing
  * mountd protocol is badly broken anyway.
  */
-static void host_umounted(mp)
-am_node *mp;
+static void host_umounted(am_node *mp)
 {
 #ifdef INFORM_MOUNTD
 	mntfs *mf = mp->am_mnt;
@@ -571,12 +554,8 @@ out:
 
 #else /* HOST_EXEC */
 
-static int host_exec P((char*op, char*host, char*fs, char*opts));
-static int host_exec(op, host, fs, opts)
-char *op;
-char *host;
-char *fs;
-char *opts;
+static int
+host_exec(char *op, char *host, char *fs, char *opts)
 {
 	int error;
 	char *argv[7];
@@ -609,7 +588,7 @@ char *opts;
 		char **cp = argv;
 		plog(XLOG_DEBUG, "executing (un)mount command...");
 		while (*cp) {
-	  		plog(XLOG_DEBUG, "arg[%d] = '%s'", cp-argv, *cp);
+			plog(XLOG_DEBUG, "arg[%d] = '%s'", cp-argv, *cp);
 			cp++;
 		}
 	}
@@ -632,18 +611,16 @@ char *opts;
 	return error;
 }
 
-static int host_mount P((am_node *mp));
-static int host_mount(mp)
-am_node *mp;
+static int
+host_mount(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 
 	return host_exec("mount", mf->mf_server->fs_host, mf->mf_mount, mf->mf_opts);
 }
 
-static int host_umount P((am_node *mp));
-static int host_umount(mp)
-am_node *mp;
+static int
+host_umount(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 

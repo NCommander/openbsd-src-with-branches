@@ -13,38 +13,27 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_rintf.c,v 1.4 1995/05/10 20:48:06 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const float
-#else
-static float 
-#endif
 TWO23[2]={
   8.3886080000e+06, /* 0x4b000000 */
  -8.3886080000e+06, /* 0xcb000000 */
 };
 
-#ifdef __STDC__
-	float rintf(float x)
-#else
-	float rintf(x)
-	float x;
-#endif
+float
+rintf(float x)
 {
-	int32_t i0,j0,sx;
+	int32_t i0,jj0,sx;
 	u_int32_t i,i1;
-	float w,t;
+	float t;
+	volatile float w;	/* clip extra precision */
 	GET_FLOAT_WORD(i0,x);
 	sx = (i0>>31)&1;
-	j0 = ((i0>>23)&0xff)-0x7f;
-	if(j0<23) {
-	    if(j0<0) { 	
+	jj0 = ((i0>>23)&0xff)-0x7f;
+	if(jj0<23) {
+	    if(jj0<0) { 	
 		if((i0&0x7fffffff)==0) return x;
 		i1 = (i0&0x07fffff);
 		i0 &= 0xfff00000;
@@ -56,13 +45,13 @@ TWO23[2]={
 		SET_FLOAT_WORD(t,(i0&0x7fffffff)|(sx<<31));
 	        return t;
 	    } else {
-		i = (0x007fffff)>>j0;
+		i = (0x007fffff)>>jj0;
 		if((i0&i)==0) return x; /* x is integral */
 		i>>=1;
-		if((i0&i)!=0) i0 = (i0&(~i))|((0x100000)>>j0);
+		if((i0&i)!=0) i0 = (i0&(~i))|((0x100000)>>jj0);
 	    }
 	} else {
-	    if(j0==0x80) return x+x;	/* inf or NaN */
+	    if(jj0==0x80) return x+x;	/* inf or NaN */
 	    else return x;		/* x is integral */
 	}
 	SET_FLOAT_WORD(x,i0);

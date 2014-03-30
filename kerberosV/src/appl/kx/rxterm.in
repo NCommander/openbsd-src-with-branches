@@ -1,5 +1,5 @@
 #!/bin/sh
-# $KTH: rxterm.in,v 1.23 2002/03/18 17:37:34 joda Exp $
+# $Id$
 #
 usage="Usage: $0 [-l username] [-k] [-f] [-r rsh_args] [-x xterm_args] [-K kx_args] [-w term_emulator] [-b rsh_binary][-v] [-h | --help] [--version] host"
 binary=rsh

@@ -53,7 +53,7 @@
  * or implied warranty.
  */
 
-/* $KTH: misc-proto.h,v 1.9 2000/11/15 23:00:21 assar Exp $ */
+/* $Id$ */
 
 #ifndef	__MISC_PROTO__
 #define	__MISC_PROTO__
@@ -75,5 +75,5 @@ void net_encrypt (void);
 int telnet_spin (void);
 char *telnet_getenv (const char *);
 char *telnet_gets (char *, char *, int, int);
-void printsub(int direction, unsigned char *pointer, int length);
+void printsub(int direction, unsigned char *pointer, size_t);
 #endif

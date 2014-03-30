@@ -109,7 +109,7 @@ static time_t last_register_time;
 static const char *const update_usage[] =
 {
     "Usage: %s %s [-APCdflRp] [-k kopt] [-r rev] [-D date] [-j rev]\n",
-    "    [-I ign] [-W spec] [files...]\n",
+    "    [-I ign] [-W spec] [-t id] [files...]\n",
     "\t-A\tReset any sticky tags/date/kopts.\n",
     "\t-P\tPrune empty directories.\n",
     "\t-C\tOverwrite locally modified files with clean repository copies.\n",
@@ -124,6 +124,7 @@ static const char *const update_usage[] =
     "\t-j rev\tMerge in changes made between current revision and rev.\n",
     "\t-I ign\tMore files to ignore (! to reset).\n",
     "\t-W spec\tWrappers specification line.\n",
+    "\t-t id\tRCS identifier to expand on update.\n",
     "(Specify the --help global option for a list of other help options)\n",
     NULL
 };
@@ -148,7 +149,7 @@ update (argc, argv)
 
     /* parse the args */
     optind = 0;
-    while ((c = getopt (argc, argv, "+ApCPflRQqduk:r:D:j:I:W:")) != -1)
+    while ((c = getopt (argc, argv, "+ApCPflRQqduk:r:t:D:j:I:W:")) != -1)
     {
 	switch (c)
 	{
@@ -194,6 +195,11 @@ update (argc, argv)
 		break;
 	    case 'r':
 		tag = optarg;
+		break;
+	    case 't':
+		if (RCS_citag)
+		    free(RCS_citag);
+		RCS_citag = strdup(optarg);
 		break;
 	    case 'D':
 		date = Make_Date (optarg);
@@ -1089,7 +1095,7 @@ update_dirleave_proc (callerdat, dir, err, update_dir, entries)
 	size_t line_allocated = 0;
 
 	repository = Name_Repository ((char *) NULL, update_dir);
-	if (getline (&line, &line_allocated, fp) >= 0)
+	if (get_line (&line, &line_allocated, fp) >= 0)
 	{
 	    if ((cp = strrchr (line, '\n')) != NULL)
 		*cp = '\0';
@@ -1611,6 +1617,7 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
     int retval = 0;
     int retcode = 0;
     int fail;
+    long file_size;
     FILE *e;
     struct patch_file_data data;
 
@@ -1727,6 +1734,9 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
 				vers_ts->options, RUN_TTY,
 				patch_file_write, (void *) &data);
 
+	fseek(e, 0L, SEEK_END);
+	file_size = ftell(e);
+
 	if (fclose (e) < 0)
 	    error (1, errno, "cannot close %s", file2);
 
@@ -1809,6 +1819,16 @@ patch_file (finfo, vers_ts, docheckout, file_info, checksum)
 		   patch can't handle that.  */
 		fail = 1;
 	    }
+	    else {
+		/*
+		 * Don't send a diff if just sending the entire file
+		 * would be smaller
+		 */
+		fseek(e, 0L, SEEK_END);
+		if (file_size < ftell(e))
+		    fail = 1;
+	    }
+
 	    fclose (e);
 	}
     }
@@ -1924,7 +1944,7 @@ write_letter (finfo, letter)
 
 	if (tag != NULL)
 	{
-	    sprintf (buf, "+%s", tag);
+	    snprintf (buf, sizeof buf, "+%s", tag);
 	    cvs_output_tagged (buf, NULL);
 	}
 	buf[0] = letter;
@@ -1935,7 +1955,7 @@ write_letter (finfo, letter)
 	cvs_output_tagged ("newline", NULL);
 	if (tag != NULL)
 	{
-	    sprintf (buf, "-%s", tag);
+	    snprintf (buf, sizeof buf, "-%s", tag);
 	    cvs_output_tagged (buf, NULL);
 	}
     }
@@ -2725,7 +2745,7 @@ special_file_mismatch (finfo, rev1, rev2)
 	    else
 	    {
 		/* If the size of `ftype' changes, fix the sscanf call also */
-		char ftype[16];
+		char ftype[16+1];
 		if (sscanf (n->data, "%16s %lu", ftype,
 			    &dev_long) < 2)
 		    error (1, 0, "%s:%s has bad `special' newphrase %s",
@@ -2803,7 +2823,7 @@ special_file_mismatch (finfo, rev1, rev2)
 	    else
 	    {
 		/* If the size of `ftype' changes, fix the sscanf call also */
-		char ftype[16];
+		char ftype[16+1];
 		if (sscanf (n->data, "%16s %lu", ftype,
 			    &dev_long) < 2)
 		    error (1, 0, "%s:%s has bad `special' newphrase %s",

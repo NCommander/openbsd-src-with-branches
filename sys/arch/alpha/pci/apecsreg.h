@@ -1,4 +1,5 @@
-/*	$NetBSD: apecsreg.h,v 1.2 1995/08/03 01:17:04 cgd Exp $	*/
+/* $OpenBSD: apecsreg.h,v 1.5 2001/02/16 05:17:31 jason Exp $ */
+/* $NetBSD: apecsreg.h,v 1.5.2.2 1997/06/06 20:26:53 thorpej Exp $ */
 
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
@@ -33,6 +34,8 @@
  * Taken from ``DECchip 21071 and DECchip 21072 Core Logic Chipsets Data
  * Sheet'' (DEC order number EC-QAEMA-TE), pages 4-1 - 4-27, 10-21 - 10-38.
  */
+
+#define	REGVAL(r)	(*(volatile int32_t *)ALPHA_PHYS_TO_K0SEG(r))
 
 /*
  * Base addresses
@@ -258,6 +261,7 @@
 #define	EPIC_TBASE_2	(EPIC_BASE + 0x00e0)		/* Trans. Base 2 */
 #define		EPIC_TBASE_RSVD		0x000001ff
 #define		EPIC_TBASE_T_BASE	0xfffffe00
+#define		EPIC_TBASE_SHIFT	1
 
 #define	EPIC_PCI_BASE_1	(EPIC_BASE + 0x0100)		/* PCI Base 1 */
 #define	EPIC_PCI_BASE_2	(EPIC_BASE + 0x0120)		/* PCI Base 2 */
@@ -267,9 +271,22 @@
 #define		EPIC_PCI_BASE_PCI_BASE	0xfff00000
 
 #define	EPIC_PCI_MASK_1	(EPIC_BASE + 0x0140)		/* PCI Mask 1 */
-#define	EPIC_PCI_MASK_2	(EPIC_BASE + 0x0160)		/* PCI Maxk 2 */
+#define	EPIC_PCI_MASK_2	(EPIC_BASE + 0x0160)		/* PCI Mask 2 */
 #define		EPIC_PCI_MASK_RSVD	0x000fffff
 #define		EPIC_PCI_MASK_PCI_MASK	0xfff00000
+#define		EPIC_PCI_MASK_1M	0x00000000
+#define		EPIC_PCI_MASK_2M	0x00100000
+#define		EPIC_PCI_MASK_4M	0x00300000
+#define		EPIC_PCI_MASK_8M	0x00700000
+#define		EPIC_PCI_MASK_16M	0x00f00000
+#define		EPIC_PCI_MASK_32M	0x01f00000
+#define		EPIC_PCI_MASK_64M	0x03f00000
+#define		EPIC_PCI_MASK_128M	0x07f00000
+#define		EPIC_PCI_MASK_256M	0x0ff00000
+#define		EPIC_PCI_MASK_512M	0x1ff00000
+#define		EPIC_PCI_MASK_1G	0x3ff00000
+#define		EPIC_PCI_MASK_2G	0x7ff00000
+#define		EPIC_PCI_MASK_4G	0xfff00000
 
 #define	EPIC_HAXR0	(EPIC_BASE + 0x0180)		/* Host Addr Extn 0 */
 
@@ -278,7 +295,9 @@
 #define		EPIC_HAXR1_EADDR	0xf8000000
 
 #define	EPIC_HAXR2	(EPIC_BASE + 0x01c0)		/* Host Addr Extn 2 */
-#define		EPIC_HAXR2_CONF_ADDR	0x00000003
+#define		EPIC_HAXR2_CONF_TYPE	0x00000003
+#define		EPIC_HAXR2_CONF_TYPO0	0x00000000
+#define		EPIC_HAXR2_CONF_TYPE1	0x00000001
 #define		EPIC_HAXR2_RSVD		0x00fffffc
 #define		EPIC_HAXR2_EADDR	0xff000000
 

@@ -1,7 +1,7 @@
 dnl 
 dnl See if there is any X11 present
 dnl
-dnl $KTH: check-x.m4,v 1.4 2004/04/14 12:47:37 lha Exp $
+dnl $Id$
 
 AC_DEFUN([KRB_CHECK_X],[
 AC_PATH_XTRA
@@ -34,11 +34,11 @@ if test "$no_x" != yes; then
 		LIBS="$ac_save_libs $foo $X_PRE_LIBS -lX11 $X_EXTRA_LIBS"
 		AC_RUN_IFELSE([
 		#include <X11/Xlib.h>
-		foo()
+		foo(void)
 		{
 		XOpenDisplay(NULL);
 		}
-		main()
+		main(int argc, char **argv)
 		{
 		return 0;
 		}

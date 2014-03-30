@@ -1,29 +1,25 @@
+/*	$OpenBSD: clock.c,v 1.4 2003/08/20 00:26:00 deraadt Exp $ */
+
 #include <sys/types.h>
+#include <sys/time.h>
+#include <machine/prom.h>
 
-#include "clockreg.h"
-#include "config.h"
-#include "clock.h"
+#include "stand.h"
+#include "libsa.h"
 
-/*
- * BCD to decimal and decimal to BCD.
- */
-#define FROMBCD(x)      (((x) >> 4) * 10 + ((x) & 0xf))
-#define TOBCD(x)        (((x) / 10 * 16) + ((x) % 10))
-
-#define SECDAY          (24 * 60 * 60)
-#define SECYR           (SECDAY * 365)
 #define LEAPYEAR(y)     (((y) & 3) == 0)
+#define YEAR0		68
+
 
 /*
  * This code is defunct after 2068.
  * Will Unix still be here then??
  */
 const short dayyr[12] =
-{0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+	{0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
-static  u_long
-chiptotime(sec, min, hour, day, mon, year)
-	register int sec, min, hour, day, mon, year;
+static u_long
+chiptotime(int sec, int min, int hour, int day, int mon, int year)
 {
 	register int days, yr;
 
@@ -50,30 +46,11 @@ chiptotime(sec, min, hour, day, mon, year)
 }
 
 time_t
-getsecs()
+getsecs(void)
 {
-	extern int cputyp;
-	register struct clockreg *cl;
-	int     sec, min, hour, day, mon, year;
+	struct mvmeprom_time m;
 
-	if (cputyp == CPU_147)
-		cl = (struct clockreg *) CLOCK_ADDR_147;
-	else
-		cl = (struct clockreg *) CLOCK_ADDR_16x;
-
-	cl->cl_csr |= CLK_READ; /* enable read (stop time) */
-	sec = cl->cl_sec;
-	min = cl->cl_min;
-	hour = cl->cl_hour;
-	day = cl->cl_mday;
-	mon = cl->cl_month;
-	year = cl->cl_year;
-	cl->cl_csr &= ~CLK_READ;/* time wears on */
-	return (chiptotime(sec, min, hour, day, mon, year));
-}
-
-int
-getticks()
-{
-	return getsecs() * 100;
+	mvmeprom_rtc_rd(&m);
+	return (chiptotime(m.sec_BCD, m.min_BCD, m.hour_BCD, m.day_BCD,
+	    m.month_BCD, m.year_BCD));
 }

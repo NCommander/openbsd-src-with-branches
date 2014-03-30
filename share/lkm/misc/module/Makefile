@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.2 1997/03/03 05:10:52 flipk Exp $
 #
 # Makefile for miscmod
 #
@@ -33,7 +34,6 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 #
-#	$Id: Makefile,v 1.4 1995/04/27 19:15:11 jtc Exp $
 #
 
 SRCS=miscmod.c
@@ -45,7 +45,7 @@ KOBJS=misccall.o
 MODOBJ=combined.o
 
 KMOD=miscmod
-CFLAGS= -D_KERNEL -I/sys
+CFLAGS+= -D_KERNEL -I/sys
 
 all:	$(MODOBJ)
 

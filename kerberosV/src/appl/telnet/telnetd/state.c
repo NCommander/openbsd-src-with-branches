@@ -33,7 +33,7 @@
 
 #include "telnetd.h"
 
-RCSID("$KTH: state.c,v 1.16 2005/04/24 20:59:21 lha Exp $");
+RCSID("$Id$");
 
 unsigned char	doopt[] = { IAC, DO, '%', 'c', 0 };
 unsigned char	dont[] = { IAC, DONT, '%', 'c', 0 };
@@ -427,14 +427,14 @@ send_do(int option, int init)
 extern void auth_request(void);
 #endif
 #ifdef	ENCRYPTION
-extern void encrypt_send_support();
+extern void encrypt_send_support(void);
 #endif
 
 void
 willoption(int option)
 {
     int changeok = 0;
-    void (*func)() = 0;
+    void (*func)(void) = NULL;
 
     /*
      * process input from peer.
@@ -506,7 +506,7 @@ willoption(int option)
 		changeok++;
 		break;
 #endif
-			
+
 	    default:
 		break;
 	    }
@@ -1245,6 +1245,8 @@ suboption(void)
 	    encrypt_start(subpointer, SB_LEN());
 	    break;
 	case ENCRYPT_END:
+	    if (require_encryption)
+		fatal(net, "Output encryption is not possible to turn off");
 	    encrypt_end();
 	    break;
 	case ENCRYPT_REQSTART:
@@ -1257,6 +1259,8 @@ suboption(void)
 	     * if we have been able to get in the correct mode
 	     * anyhow.
 	     */
+	    if (require_encryption)
+		fatal(net, "Input encryption is not possible to turn off");
 	    encrypt_request_end();
 	    break;
 	case ENCRYPT_ENC_KEYID:

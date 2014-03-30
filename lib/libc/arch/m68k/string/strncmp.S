@@ -1,3 +1,4 @@
+/*	$OpenBSD: strncmp.S,v 1.5 2005/08/07 16:40:14 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,12 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)strncmp.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: strncmp.S,v 1.2 1995/02/08 18:33:27 mycroft Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "DEFS.h"
 
 /*
@@ -50,22 +41,22 @@
  * right??
  */
 ENTRY(strncmp)
-	movl	sp@(12),d1		| count
+	movl	%sp@(12),%d1		| count
 	beq	scdone			| nothing to do
-	movl	sp@(4),a0		| a0 = string1
-	movl	sp@(8),a1		| a1 = string2
+	movl	%sp@(4),%a0		| a0 = string1
+	movl	%sp@(8),%a1		| a1 = string2
 scloop:
-	movb	a0@+,d0			| get *string1
-	cmpb	a1@+,d0			| compare a byte
+	movb	%a0@+,%d0		| get *string1
+	cmpb	%a1@+,%d0		| compare a byte
 	bne	scexit			| not equal, break out
-	tstb	d0			| at end of string1?
+	tstb	%d0			| at end of string1?
 	beq	scdone			| yes, all done
-	subql	#1,d1			| no, adjust count
+	subql	#1,%d1			| no, adjust count
 	bne	scloop			| more to do, keep going
 scdone:
-	moveq	#0,d0			| strings are equal
+	moveq	#0,%d0			| strings are equal
 	rts
 scexit:
-	subb	a1@-,d0			| *string1 - *string2
-	extbl	d0
+	subb	%a1@-,%d0		| *string1 - *string2
+	extbl	%d0
 	rts

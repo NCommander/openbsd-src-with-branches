@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2001 Proofpoint, Inc. and its suppliers.
  *      All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,7 +13,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: put.c,v 1.24 2001/03/05 03:22:41 ca Exp $")
+SM_RCSID("@(#)$Sendmail: put.c,v 1.28 2013/11/22 20:51:43 ca Exp $")
 #include <string.h>
 #include <errno.h>
 #include <sm/io.h>
@@ -71,8 +71,10 @@ void
 sm_perror(s)
 	const char *s;
 {
+	int save_errno = errno;
+
 	if (s != NULL && *s != '\0')
 		(void) sm_io_fprintf(smioerr, SM_TIME_DEFAULT, "%s: ", s);
 	(void) sm_io_fprintf(smioerr, SM_TIME_DEFAULT, "%s\n",
-			     sm_errstring(errno));
+			     sm_errstring(save_errno));
 }

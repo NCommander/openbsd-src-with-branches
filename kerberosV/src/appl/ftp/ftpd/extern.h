@@ -63,7 +63,7 @@
 void	abor(void);
 void	blkfree(char **);
 char  **copyblk(char **);
-void	cwd(char *);
+void	cwd(const char *);
 void	do_delete(char *);
 void	dologout(int);
 void	eprt(char *);
@@ -107,8 +107,11 @@ void	klist(void);
 void	cond_kdestroy(void);
 void	kdestroy(void);
 void	krbtkfile(const char *tkfile);
-void	afslog(const char *cell);
+void	afslog(const char *, int);
 void	afsunlog(void);
+
+extern int do_destroy_tickets;
+extern char *k5ccname;
 
 int	find(char *);
 
@@ -126,10 +129,12 @@ extern	struct sockaddr *data_dest;
 extern	int logged_in;
 extern	struct passwd *pw;
 extern	int guest;
+extern  int dochroot;
 extern	int logging;
 extern	int type;
 extern off_t file_size;
 extern off_t byte_count;
+extern	int ccc_passed;
 
 extern	int form;
 extern	int debug;
@@ -140,5 +145,6 @@ extern	char hostname[], remotehost[];
 extern	char proctitle[];
 extern	int usedefault;
 extern  char tmpline[];
+extern  int paranoid;
 
 #endif /* _EXTERN_H_ */

@@ -1,3 +1,9 @@
+/*	$OpenBSD: scsi_message.h,v 1.8 2006/05/11 00:45:59 krw Exp $	*/
+
+#define IS1BYTEMSG(m)	(((m) != 0x01 && (m) < 0x20) || (m) >= 0x80)
+#define IS2BYTEMSG(m)	(((m) & 0xf0) == 0x20)
+#define ISEXTMSG(m)	((m) == 0x01)
+
 /* Messages (1 byte) */		     /* I/T (M)andatory or (O)ptional */
 #define MSG_CMDCOMPLETE		0x00 /* M/M */
 #define MSG_EXTENDED		0x01 /* O/O */
@@ -17,6 +23,7 @@
 #define MSG_INIT_RECOVERY	0x0f /* O/O */
 #define MSG_REL_RECOVERY	0x10 /* O/O */
 #define MSG_TERM_IO_PROC	0x11 /* O/O */
+#define MSG_QAS_REQUEST		0x55 /* O/O */ /* SPI3 */
 
 /* Messages (2 byte) */
 #define MSG_SIMPLE_Q_TAG	0x20 /* O/O */
@@ -24,10 +31,32 @@
 #define MSG_ORDERED_Q_TAG	0x22 /* O/O */
 #define MSG_IGN_WIDE_RESIDUE	0x23 /* O/O */
 
-/* Identify message */
-#define MSG_IDENTIFY(lun, disc)	(((disc) ? 0xc0 : 0x80) | (lun))
-#define MSG_ISIDENTIFY(m)	((m) & 0x80)
+/* Identify message */		     /* M/M */
+#define MSG_IDENTIFYFLAG	0x80
+#define MSG_IDENTIFY_DISCFLAG	0x40
+#define MSG_IDENTIFY(lun, disc)	(((disc) ? 0xc0 : MSG_IDENTIFYFLAG) | (lun))
+#define MSG_ISIDENTIFY(m)	((m) & MSG_IDENTIFYFLAG)
+#define MSG_IDENTIFY_LUNMASK	0x01F
 
-/* Extended messages (opcode) */
+/* Extended messages (opcode and length) */
 #define MSG_EXT_SDTR		0x01
-#define	MSG_EXT_WDTR		0x03
+#define MSG_EXT_SDTR_LEN	0x03
+
+#define MSG_EXT_WDTR		0x03
+#define MSG_EXT_WDTR_LEN	0x02
+
+#define MSG_EXT_WDTR_BUS_8_BIT  0x00
+#define MSG_EXT_WDTR_BUS_16_BIT 0x01
+#define MSG_EXT_WDTR_BUS_32_BIT 0x02
+
+#define MSG_EXT_PPR		0x04
+#define MSG_EXT_PPR_LEN		0x06
+
+#define	MSG_EXT_PPR_PCOMP_EN	0x80
+#define	MSG_EXT_PPR_RTI		0x40
+#define	MSG_EXT_PPR_RD_STRM	0x20
+#define	MSG_EXT_PPR_WR_FLOW	0x10
+#define	MSG_EXT_PPR_HOLD_MCS	0x08
+#define MSG_EXT_PPR_PROT_QAS	0x04
+#define MSG_EXT_PPR_PROT_DT	0x02
+#define MSG_EXT_PPR_PROT_IUS	0x01

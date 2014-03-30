@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: arpadate.c,v 8.28 2001/02/14 14:45:47 ca Exp $")
+SM_RCSID("@(#)$Sendmail: arpadate.c,v 8.32 2013/11/22 20:51:55 ca Exp $")
 
 /*
 **  ARPADATE -- Create date in ARPANET format
@@ -192,7 +192,7 @@ arpadate(ud)
 		{
 			*q++ = ' ';
 			*q++ = '(';
-			while (*tz != '\0' && q < &b[sizeof b - 3])
+			while (*tz != '\0' && q < &b[sizeof(b) - 3])
 				*q++ = *tz++;
 			*q++ = ')';
 		}

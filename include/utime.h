@@ -1,3 +1,4 @@
+/*	$OpenBSD: utime.h,v 1.6 2006/01/06 18:53:04 millert Exp $	*/
 /*	$NetBSD: utime.h,v 1.3 1994/10/26 00:56:39 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,15 +35,21 @@
 #ifndef	_UTIME_H_
 #define	_UTIME_H_
 
+#include <sys/cdefs.h>
+#include <sys/_types.h>
+
+#ifndef	_TIME_T_DEFINED_
+#define	_TIME_T_DEFINED_
+typedef	__time_t	time_t;
+#endif
+
 struct utimbuf {
 	time_t actime;		/* Access time */
 	time_t modtime;		/* Modification time */
 };
 
-#include <sys/cdefs.h>
-
 __BEGIN_DECLS
-int utime __P((const char *, const struct utimbuf *));
+int utime(const char *, const struct utimbuf *);
 __END_DECLS
 
 #endif /* !_UTIME_H_ */

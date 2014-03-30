@@ -1,3 +1,4 @@
+.\"	$OpenBSD: mopd.8,v 1.17 2013/08/14 08:39:32 jmc Exp $
 .\"
 .\" Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
 .\"
@@ -9,11 +10,6 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by Mats O Jansson.
-.\" 4. The name of the author may not be used to endorse or promote products
-.\"    derived from this software without specific prior written permission.
 .\"
 .\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 .\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -26,88 +22,100 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" @(#) $Id: mopd.8,v 1.3 1996/08/14 11:55:33 moj Exp $
+.\" @(#) $OpenBSD: mopd.8,v 1.17 2013/08/14 08:39:32 jmc Exp $
 .\"
-.Dd September 24, 1995
+.Dd $Mdocdate: August 14 2013 $
 .Dt MOPD 8
+.Os
 .Sh NAME
 .Nm mopd
-.Nd MOP Loader Daemon
+.Nd MOP loader daemon
 .Sh SYNOPSIS
 .Nm mopd
-.Op Fl adf
-.Op Ar interface
+.Op Fl 3 | 4
+.Op Fl adfv
+.Ar interface
 .Sh DESCRIPTION
-.Nm Mopd
+.Nm
 services MOP Load requests on the Ethernet connected to
 .Ar interface
 or all interfaces if
-.Sq Fl a
+.Fl a
 is given.
 In a load request received by
-.Nm mopd
-a filename can be given. This is the normal case for e.g. terminal servers.
+.Nm
+a filename can be given.
+This is the normal case for, e.g., terminal servers.
 If a filename isn't given
-.Nm mopd
+.Nm
 must know what image to load.
 .Pp
-Upon receiving a request, 
-.Nm mopd
+Upon receiving a request,
+.Nm
 checks if the requested file exists in
-.Pa /tftpboot/mop , 
-the filename is normaly uppercase and with an extension of
+.Pa /tftpboot/mop .
+The filename is normally all uppercase and with an extension of
 .Pa .SYS .
-If the filename isn't given, the ethernet address of the target is used as
-filename, e.g.
-.Pa 08002b09f4de.SYS
+If the filename isn't given, the Ethernet address of the target is used as
+filename (e.g.,
+.Pa 08002b09f4de.SYS ) ,
 and it might be a soft link to another file.
 .Pp
-.Nm Mopd
-supports two kinds of files. The first type that is check is if the file is
-in
-.Xr a.out 5
-format. If not, a couple of Digital's formats are checked.
+.Nm
+supports two kinds of files.
+The file is first checked to see if it is in a.out format.
+If not, a few of Digital's formats are checked.
 .Pp
-In normal operation, 
-.Nm mopd
+In normal operation,
+.Nm
 forks a copy of itself and runs in
-the background.  Anomalies and errors are reported via 
+the background.
+Anomalies and errors are reported via
 .Xr syslog 3 .
-.Sh OPTIONS
-.Bl -tag -width indent
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl 3
+Ignore MOP V3 messages (Ethernet II).
+.It Fl 4
+Ignore MOP V4 messages (Ethernet 802.3).
 .It Fl a
 Listen on all the Ethernets attached to the system.
-If 
-.Sq Fl a 
+If
+.Fl a
 is omitted, an interface must be specified.
 .It Fl d
-Run in debug mode, with all the output to stdout. The process will run in
-the foreground.
+Run in debug mode, with all the output to stdout.
+The process will run in the foreground.
 .It Fl f
-Run in the foreground. 
+Run in the foreground.
+.It Fl v
+Show version of
+.Nm .
 .El
-.Sh BUGS
-.Xr a.out 5
-isn't supported yet non bsd implementations (otherOS).
 .Sh FILES
 .Bl -tag -width Pa -compact
 .It Pa /tftpboot/mop
 .El
 .Sh SEE ALSO
-.Xr bpf 4 ,
 .Xr mopa.out 1 ,
 .Xr mopchk 1 ,
 .Xr mopprobe 1 ,
-.Xr moptrace 1 
-.Rs 
-DECnet Digital Network Architecture Phase IV, 
+.Xr moptrace 1 ,
+.Xr bpf 4
+.Rs
+.%B DECnet Digital Network Architecture Phase IV
 .%R Maintenance Operations Functional Specification V3.0.0
 .%N AA-X436A-TK
 .Re
-.Rs 
-DECnet Digital Network Architecture, 
+.Rs
+.%B DECnet Digital Network Architecture
 .%R Maintenance Operations Protocol Functional Specification V4.0.0
 .%N EK-DNA11-FS-001
 .Re
 .Sh AUTHORS
-Mats O Jansson (moj@stacken.kth.se).
+.An Mats O Jansson Aq Mt moj@stacken.kth.se
+.Sh BUGS
+a.out isn't supported yet on
+.Pf non- Bx
+implementations (otherOS).

@@ -161,6 +161,8 @@ int ssl3_send_finished(SSL *s, int a, int b, const char *sender, int slen)
 
 		i=s->method->ssl3_enc->final_finish_mac(s,
 			sender,slen,s->s3->tmp.finish_md);
+		if (i == 0)
+			return 0;
 		s->s3->tmp.finish_md_len = i;
 		memcpy(p, s->s3->tmp.finish_md, i);
 		p+=i;
@@ -208,6 +210,11 @@ static void ssl3_take_mac(SSL *s) {
 	const char *sender;
 	int slen;
 
+	/* If no new cipher setup return immediately: other functions will
+	 * set the appropriate error.
+	 */
+	if (s->s3->tmp.new_cipher == NULL)
+		return;
 	if (s->state & SSL_ST_CONNECT)
 		{
 		sender=s->method->ssl3_enc->server_finished_label;
@@ -263,7 +270,7 @@ int ssl3_get_finished(SSL *s, int a, int b)
 		goto f_err;
 		}
 
-	if (memcmp(p, s->s3->tmp.peer_finish_md, i) != 0)
+	if (timingsafe_bcmp(p, s->s3->tmp.peer_finish_md, i) != 0)
 		{
 		al=SSL_AD_DECRYPT_ERROR;
 		SSLerr(SSL_F_SSL3_GET_FINISHED,SSL_R_DIGEST_CHECK_FAILED);

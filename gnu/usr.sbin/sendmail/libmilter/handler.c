@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 1999-2000 Sendmail, Inc. and its suppliers.
+ *  Copyright (c) 1999-2003, 2006 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,11 +9,11 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: handler.c,v 8.24 2000/12/29 19:45:55 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: handler.c,v 8.40 2013/11/22 20:51:36 ca Exp $")
 
 #include "libmilter.h"
 
-
+#if !_FFR_WORKERS_POOL
 /*
 **  HANDLE_SESSION -- Handle a connected session in its own context
 **
@@ -35,30 +35,16 @@ mi_handle_session(ctx)
 	ctx->ctx_id = (sthread_t) sthread_get_id();
 
 	/*
-	**  detach so resources are free when the thread returns
-	**  if we ever "wait" for threads, this call must be removed
+	**  Detach so resources are free when the thread returns.
+	**  If we ever "wait" for threads, this call must be removed.
 	*/
+
 	if (pthread_detach(ctx->ctx_id) != 0)
-		return MI_FAILURE;
-	ret = mi_engine(ctx);
-	if (ValidSocket(ctx->ctx_sd))
-	{
-		(void) close(ctx->ctx_sd);
-		ctx->ctx_sd = INVALID_SOCKET;
-	}
-	if (ctx->ctx_reply != NULL)
-	{
-		free(ctx->ctx_reply);
-		ctx->ctx_reply = NULL;
-	}
-	if (ctx->ctx_privdata != NULL)
-	{
-		smi_log(SMI_LOG_WARN,
-			"%s: private data not NULL",
-			ctx->ctx_smfi->xxfi_name);
-	}
-	mi_clr_macros(ctx, 0);
-	free(ctx);
+		ret = MI_FAILURE;
+	else
+		ret = mi_engine(ctx);
+	mi_clr_ctx(ctx);
 	ctx = NULL;
 	return ret;
 }
+#endif /* !_FFR_WORKERS_POOL */

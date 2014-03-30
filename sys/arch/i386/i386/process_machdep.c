@@ -1,7 +1,8 @@
-/*	$NetBSD: process_machdep.c,v 1.19 1995/10/11 04:19:47 mycroft Exp $	*/
+/*	$OpenBSD: process_machdep.c,v 1.27 2011/03/20 21:44:08 guenther Exp $	*/
+/*	$NetBSD: process_machdep.c,v 1.22 1996/05/03 19:42:25 christos Exp $	*/
 
 /*
- * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
+ * Copyright (c) 1995, 1996 Charles M. Hannum.  All rights reserved.
  * Copyright (c) 1993 The Regents of the University of California.
  * Copyright (c) 1993 Jan-Simon Pendry
  * All rights reserved.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -76,169 +73,299 @@
 #include <machine/reg.h>
 #include <machine/segments.h>
 
-static inline struct trapframe *
-process_frame(p)
-	struct proc *p;
+#ifdef VM86
+#include <machine/vm86.h>
+#endif
+
+#include "npx.h"
+
+static __inline struct trapframe *process_frame(struct proc *);
+static __inline union savefpu *process_fpframe(struct proc *);
+void process_fninit_xmm(struct savexmm *);
+
+static __inline struct trapframe *
+process_frame(struct proc *p)
 {
 
 	return (p->p_md.md_regs);
 }
 
-static inline struct save87 *
-process_fpframe(p)
-	struct proc *p;
+static __inline union savefpu *
+process_fpframe(struct proc *p)
 {
 
 	return (&p->p_addr->u_pcb.pcb_savefpu);
 }
 
+void
+process_xmm_to_s87(const struct savexmm *sxmm, struct save87 *s87)
+{
+	int i;
+
+	/* FPU control/status */
+	s87->sv_env.en_cw = sxmm->sv_env.en_cw;
+	s87->sv_env.en_sw = sxmm->sv_env.en_sw;
+	/* tag word handled below */
+	s87->sv_env.en_fip = sxmm->sv_env.en_fip;
+	s87->sv_env.en_fcs = sxmm->sv_env.en_fcs;
+	s87->sv_env.en_opcode = sxmm->sv_env.en_opcode;
+	s87->sv_env.en_foo = sxmm->sv_env.en_foo;
+	s87->sv_env.en_fos = sxmm->sv_env.en_fos;
+
+	/* Tag word and registers. */
+	for (i = 0; i < 8; i++) {
+		if (sxmm->sv_env.en_tw & (1U << i))
+			s87->sv_env.en_tw &= ~(3U << (i * 2));
+		else
+			s87->sv_env.en_tw |= (3U << (i * 2));
+
+		if (sxmm->sv_ex_tw & (1U << i))
+			s87->sv_ex_tw &= ~(3U << (i * 2));
+		else
+			s87->sv_ex_tw |= (3U << (i * 2));
+
+		memcpy(&s87->sv_ac[i].fp_bytes, &sxmm->sv_ac[i].fp_bytes,
+		    sizeof(s87->sv_ac[i].fp_bytes));
+	}
+
+	s87->sv_ex_sw = sxmm->sv_ex_sw;
+}
+
+void
+process_fninit_xmm(struct savexmm *sxmm)
+{
+	memset(sxmm, 0, sizeof(*sxmm));
+	sxmm->sv_env.en_cw = __INITIAL_NPXCW__;
+	sxmm->sv_env.en_mxcsr = __INITIAL_MXCSR__;
+	sxmm->sv_env.en_mxcsr_mask = fpu_mxcsr_mask;
+	sxmm->sv_env.en_sw = 0x0000;
+	sxmm->sv_env.en_tw = 0x00;
+}
+
 int
-process_read_regs(p, regs)
-	struct proc *p;
-	struct reg *regs;
+process_read_regs(struct proc *p, struct reg *regs)
 {
 	struct trapframe *tf = process_frame(p);
-	struct pcb *pcb = &p->p_addr->u_pcb;
 
 #ifdef VM86
 	if (tf->tf_eflags & PSL_VM) {
-		regs->r_gs = tf->tf_vm86_gs;
-		regs->r_fs = tf->tf_vm86_fs;
-		regs->r_es = tf->tf_vm86_es;
-		regs->r_ds = tf->tf_vm86_ds;
+		regs->r_gs = tf->tf_vm86_gs & 0xffff;
+		regs->r_fs = tf->tf_vm86_fs & 0xffff;
+		regs->r_es = tf->tf_vm86_es & 0xffff;
+		regs->r_ds = tf->tf_vm86_ds & 0xffff;
+		regs->r_eflags = get_vflags(p);
 	} else
 #endif
 	{
-		regs->r_gs = pcb->pcb_gs;
-		regs->r_fs = pcb->pcb_fs;
-		regs->r_es = tf->tf_es;
-		regs->r_ds = tf->tf_ds;
+		regs->r_gs = tf->tf_gs & 0xffff;
+		regs->r_fs = tf->tf_fs & 0xffff;
+		regs->r_es = tf->tf_es & 0xffff;
+		regs->r_ds = tf->tf_ds & 0xffff;
+		regs->r_eflags = tf->tf_eflags;
 	}
-	regs->r_edi    = tf->tf_edi;
-	regs->r_esi    = tf->tf_esi;
-	regs->r_ebp    = tf->tf_ebp;
-	regs->r_ebx    = tf->tf_ebx;
-	regs->r_edx    = tf->tf_edx;
-	regs->r_ecx    = tf->tf_ecx;
-	regs->r_eax    = tf->tf_eax;
-	regs->r_eip    = tf->tf_eip;
-	regs->r_cs     = tf->tf_cs;
-	regs->r_eflags = tf->tf_eflags;
-	regs->r_esp    = tf->tf_esp;
-	regs->r_ss     = tf->tf_ss;
+	regs->r_edi = tf->tf_edi;
+	regs->r_esi = tf->tf_esi;
+	regs->r_ebp = tf->tf_ebp;
+	regs->r_ebx = tf->tf_ebx;
+	regs->r_edx = tf->tf_edx;
+	regs->r_ecx = tf->tf_ecx;
+	regs->r_eax = tf->tf_eax;
+	regs->r_eip = tf->tf_eip;
+	regs->r_cs = tf->tf_cs & 0xffff;
+	regs->r_esp = tf->tf_esp;
+	regs->r_ss = tf->tf_ss & 0xffff;
 
 	return (0);
 }
 
 int
-process_read_fpregs(p, regs)
-	struct proc *p;
-	struct fpreg *regs;
+process_read_fpregs(struct proc *p, struct fpreg *regs)
 {
+	union savefpu *frame = process_fpframe(p);
 
 	if (p->p_md.md_flags & MDP_USEDFPU) {
-		struct save87 *frame = process_fpframe(p);
-
 #if NNPX > 0
-		if (npxproc == p)
-			npxsave();
+		npxsave_proc(p, 1);
 #endif
+	} else {
+		/* Fake a FNINIT. */
+		if (i386_use_fxsave) {
+			process_fninit_xmm(&frame->sv_xmm);
+		} else {
+			memset(&frame->sv_87, 0, sizeof(frame->sv_87));
+			frame->sv_87.sv_env.en_cw = __INITIAL_NPXCW__;
+			frame->sv_87.sv_env.en_sw = 0x0000;
+			frame->sv_87.sv_env.en_tw = 0xffff;
+		}
+		p->p_md.md_flags |= MDP_USEDFPU;
+	}
 
-		bcopy(frame, regs, sizeof(frame));
+	if (i386_use_fxsave) {
+		struct save87 s87;
+
+		/* XXX Yuck */
+		process_xmm_to_s87(&frame->sv_xmm, &s87);
+		memcpy(regs, &s87, sizeof(*regs));
 	} else
-		bzero(regs, sizeof(regs));
+		memcpy(regs, &frame->sv_87, sizeof(*regs));
 
 	return (0);
 }
 
+#ifdef PTRACE
+
+void
+process_s87_to_xmm(const struct save87 *s87, struct savexmm *sxmm)
+{
+	int i;
+
+	/* FPU control/status */
+	sxmm->sv_env.en_cw = s87->sv_env.en_cw;
+	sxmm->sv_env.en_sw = s87->sv_env.en_sw;
+	/* tag word handled below */
+	sxmm->sv_env.en_fip = s87->sv_env.en_fip;
+	sxmm->sv_env.en_fcs = s87->sv_env.en_fcs;
+	sxmm->sv_env.en_opcode = s87->sv_env.en_opcode;
+	sxmm->sv_env.en_foo = s87->sv_env.en_foo;
+	sxmm->sv_env.en_fos = s87->sv_env.en_fos;
+
+	/* Tag word and registers. */
+	for (i = 0; i < 8; i++) {
+		if (((s87->sv_env.en_tw >> (i * 2)) & 3) == 3)
+			sxmm->sv_env.en_tw &= ~(1U << i);
+		else
+			sxmm->sv_env.en_tw |= (1U << i);
+
+		if (((s87->sv_ex_tw >> (i * 2)) & 3) == 3)
+			sxmm->sv_ex_tw &= ~(1U << i);
+		else
+			sxmm->sv_ex_tw |= (1U << i);
+
+		memcpy(&sxmm->sv_ac[i].fp_bytes, &s87->sv_ac[i].fp_bytes,
+		    sizeof(sxmm->sv_ac[i].fp_bytes));
+	}
+
+	sxmm->sv_ex_sw = s87->sv_ex_sw;
+}
+
 int
-process_write_regs(p, regs)
-	struct proc *p;
-	struct reg *regs;
+process_write_regs(struct proc *p, struct reg *regs)
 {
 	struct trapframe *tf = process_frame(p);
-	struct pcb *pcb = &p->p_addr->u_pcb;
-
-	/*
-	 * Check for security violations.
-	 */
-	if (((regs->r_eflags ^ tf->tf_eflags) & PSL_USERSTATIC) != 0 ||
-	    !USERMODE(regs->r_cs, regs->r_eflags))
-		return (EINVAL);
 
 #ifdef VM86
 	if (tf->tf_eflags & PSL_VM) {
-		tf->tf_vm86_gs = regs->r_gs;
-		tf->tf_vm86_fs = regs->r_fs;
-		tf->tf_vm86_es = regs->r_es;
-		tf->tf_vm86_ds = regs->r_ds;
+		tf->tf_vm86_gs = regs->r_gs & 0xffff;
+		tf->tf_vm86_fs = regs->r_fs & 0xffff;
+		tf->tf_vm86_es = regs->r_es & 0xffff;
+		tf->tf_vm86_ds = regs->r_ds & 0xffff;
+		set_vflags(p, regs->r_eflags);
 	} else
 #endif
 	{
-		extern int gdt_size;
-		extern union descriptor *dynamic_gdt;
-
-#define	verr_ldt(slot)	(slot < pcb->pcb_ldt_len && \
-			 (pcb->pcb_ldt[slot].sd.sd_type & SDT_MEMRO) != 0 && \
-			 pcb->pcb_ldt[slot].sd.sd_dpl == SEL_UPL && \
-			 pcb->pcb_ldt[slot].sd.sd_p == 1)
-#define	verr_gdt(slot)	(slot < gdt_size && \
-			 (dynamic_gdt[slot].sd.sd_type & SDT_MEMRO) != 0 && \
-			 dynamic_gdt[slot].sd.sd_dpl == SEL_UPL && \
-			 dynamic_gdt[slot].sd.sd_p == 1)
-#define	verr(sel)	(ISLDT(sel) ? verr_ldt(IDXSEL(sel)) : \
-				      verr_gdt(IDXSEL(sel)))
-#define	valid_sel(sel)	(ISPL(sel) == SEL_UPL && verr(sel))
-#define	null_sel(sel)	(!ISLDT(sel) && IDXSEL(sel) == 0)
-
-		if ((regs->r_gs != pcb->pcb_gs && \
-		     !valid_sel(regs->r_gs) && !null_sel(regs->r_gs)) ||
-		    (regs->r_fs != pcb->pcb_fs && \
-		     !valid_sel(regs->r_fs) && !null_sel(regs->r_fs)))
+		/*
+		 * Check for security violations.
+		 */
+		if (((regs->r_eflags ^ tf->tf_eflags) & PSL_USERSTATIC) != 0 ||
+		    !USERMODE(regs->r_cs, regs->r_eflags))
 			return (EINVAL);
 
-		pcb->pcb_gs = regs->r_gs;
-		pcb->pcb_fs = regs->r_fs;
-		tf->tf_es   = regs->r_es;
-		tf->tf_ds   = regs->r_ds;
+		tf->tf_gs = regs->r_gs & 0xffff;
+		tf->tf_fs = regs->r_fs & 0xffff;
+		tf->tf_es = regs->r_es & 0xffff;
+		tf->tf_ds = regs->r_ds & 0xffff;
+		tf->tf_eflags = regs->r_eflags;
 	}
-	tf->tf_edi    = regs->r_edi;
-	tf->tf_esi    = regs->r_esi;
-	tf->tf_ebp    = regs->r_ebp;
-	tf->tf_ebx    = regs->r_ebx;
-	tf->tf_edx    = regs->r_edx;
-	tf->tf_ecx    = regs->r_ecx;
-	tf->tf_eax    = regs->r_eax;
-	tf->tf_eip    = regs->r_eip;
-	tf->tf_cs     = regs->r_cs;
-	tf->tf_eflags = regs->r_eflags;
-	tf->tf_esp    = regs->r_esp;
-	tf->tf_ss     = regs->r_ss;
+	tf->tf_edi = regs->r_edi;
+	tf->tf_esi = regs->r_esi;
+	tf->tf_ebp = regs->r_ebp;
+	tf->tf_ebx = regs->r_ebx;
+	tf->tf_edx = regs->r_edx;
+	tf->tf_ecx = regs->r_ecx;
+	tf->tf_eax = regs->r_eax;
+	tf->tf_eip = regs->r_eip;
+	tf->tf_cs = regs->r_cs & 0xffff;
+	tf->tf_esp = regs->r_esp;
+	tf->tf_ss = regs->r_ss & 0xffff;
 
 	return (0);
 }
 
 int
-process_write_fpregs(p, regs)
-	struct proc *p;
-	struct fpreg *regs;
+process_write_fpregs(struct proc *p, struct fpreg *regs)
 {
-	struct save87 *frame = process_fpframe(p);
+	union savefpu *frame = process_fpframe(p);
 
+	if (p->p_md.md_flags & MDP_USEDFPU) {
 #if NNPX > 0
-	if (npxproc == p)
-		npxdrop();
+		npxsave_proc(p, 0);
 #endif
+	} else {
+		/*
+		 * Make sure MXCSR and the XMM registers are
+		 * initialized to sane defaults.
+		 */
+		if (i386_use_fxsave)
+			process_fninit_xmm(&frame->sv_xmm);
+		p->p_md.md_flags |= MDP_USEDFPU;
+	}
 
-	p->p_md.md_flags |= MDP_USEDFPU;
-	bcopy(regs, frame, sizeof(frame));
+	if (i386_use_fxsave) {
+		struct save87 s87;
+
+		/* XXX Yuck. */
+		memcpy(&s87, regs, sizeof(*regs));
+		process_s87_to_xmm(&s87, &frame->sv_xmm);
+	} else
+		memcpy(&frame->sv_87, regs, sizeof(*regs));
 
 	return (0);
 }
 
 int
-process_sstep(p, sstep)
-	struct proc *p;
+process_read_xmmregs(struct proc *p, struct xmmregs *regs)
+{
+	union savefpu *frame = process_fpframe(p);
+
+	if (!i386_use_fxsave)
+		return (EINVAL);
+
+	if (p->p_md.md_flags & MDP_USEDFPU) {
+#if NNPX > 0
+		npxsave_proc(p, 1);
+#endif
+	} else {
+		/* Fake a FNINIT. */
+		process_fninit_xmm(&frame->sv_xmm);
+		p->p_md.md_flags |= MDP_USEDFPU;
+	}
+
+	memcpy(regs, &frame->sv_xmm, sizeof(*regs));
+	return (0);
+}
+
+int
+process_write_xmmregs(struct proc *p, const struct xmmregs *regs)
+{
+	union savefpu *frame = process_fpframe(p);
+
+	if (!i386_use_fxsave)
+		return (EINVAL);
+
+	if (p->p_md.md_flags & MDP_USEDFPU) {
+#if NNPX > 0
+		npxsave_proc(p, 0);
+#endif
+	} else
+		p->p_md.md_flags |= MDP_USEDFPU;
+
+	memcpy(&frame->sv_xmm, regs, sizeof(*regs));
+	frame->sv_xmm.sv_env.en_mxcsr &= fpu_mxcsr_mask;
+	return (0);
+}
+
+int
+process_sstep(struct proc *p, int sstep)
 {
 	struct trapframe *tf = process_frame(p);
 
@@ -251,9 +378,7 @@ process_sstep(p, sstep)
 }
 
 int
-process_set_pc(p, addr)
-	struct proc *p;
-	caddr_t addr;
+process_set_pc(struct proc *p, caddr_t addr)
 {
 	struct trapframe *tf = process_frame(p);
 
@@ -261,3 +386,5 @@ process_set_pc(p, addr)
 
 	return (0);
 }
+
+#endif	/* PTRACE */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvramreg.h,v 1.7 2004/04/24 19:51:48 miod Exp $ */
+/*	$OpenBSD: nvramreg.h,v 1.2 2006/05/21 12:22:02 miod Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -49,7 +49,7 @@
  *
  * This chip is 8k in size.
  * The first TOD clock starts at offset 0x1FF8. The following structure
- * describes last 2K of it's 8K address space. The first 6K of the NVRAM
+ * describes last 2K of its 8K address space. The first 6K of the NVRAM
  * space is used for various things as follows:
  * 	0000-0fff	User Area
  *	1000-10ff	Networking Area
@@ -60,7 +60,7 @@
  */
 
 /*
- * On AV400, these offsets need shifting two bits, as they are 32 bit
+ * On the AViiON, these offsets need shifting two bits, as they are 32 bit
  * registers.
  */
 #define	CLK_CSR		0		/* control register */
@@ -83,5 +83,5 @@
  */
 #define	YEAR0	00
 
-#define AV400_NVRAM_TOD_OFF	0x1fe0 /* offset of tod in NVRAM space */
+#define AV_NVRAM_TOD_OFF	0x1fe0 /* offset of tod in NVRAM space */
 #define MK48T02_SIZE	2 * 1024

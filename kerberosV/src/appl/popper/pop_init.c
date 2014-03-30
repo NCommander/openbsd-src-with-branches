@@ -5,18 +5,18 @@
  */
 
 #include <popper.h>
-RCSID("$KTH: pop_init.c,v 1.61 2004/07/14 09:04:34 joda Exp $");
+RCSID("$Id$");
 
 
-#if defined(KRB4) || defined(KRB5)
+#if defined(KRB5)
 
 static int
 pop_net_read(POP *p, int fd, void *buf, size_t len)
 {
 #ifdef KRB5
     return krb5_net_read(p->context, &fd, buf, len);
-#elif defined(KRB4)
-    return krb_net_read(fd, buf, len);
+#else
+#error must define KRB5
 #endif
 }
 #endif
@@ -34,12 +34,12 @@ pop_write_addr(POP *p, struct sockaddr *addr)
 	return;
     t = time(NULL);
     strftime(ts, sizeof(ts), "%Y%m%d%H%M%S", localtime(&t));
-    if(inet_ntop (addr->sa_family, socket_get_address(addr), 
+    if(inet_ntop (addr->sa_family, socket_get_address(addr),
 		  as, sizeof(as)) == NULL) {
         pop_log(p, POP_PRIORITY, "failed to print address");
 	return;
     }
-    
+
     f = fopen(addr_log, "a");
     if(f == NULL) {
         pop_log(p, POP_PRIORITY, "failed to open address log (%s)", addr_log);
@@ -49,68 +49,20 @@ pop_write_addr(POP *p, struct sockaddr *addr)
     fclose(f);
 }
 
-#ifdef KRB4
-static int
-krb4_authenticate (POP *p, int s, u_char *buf, struct sockaddr *addr)
-{
-    Key_schedule schedule;
-    KTEXT_ST ticket;
-    char instance[INST_SZ];  
-    char version[9];
-    int auth;
-  
-    if (memcmp (buf, KRB_SENDAUTH_VERS, 4) != 0)
-	return -1;
-    if (pop_net_read (p, s, buf + 4,
-		      KRB_SENDAUTH_VLEN - 4) != KRB_SENDAUTH_VLEN - 4)
-	return -1;
-    if (memcmp (buf, KRB_SENDAUTH_VERS, KRB_SENDAUTH_VLEN) != 0)
-	return -1;
-
-    k_getsockinst (0, instance, sizeof(instance));
-    auth = krb_recvauth(KOPT_IGNORE_PROTOCOL,
-			s,
-			&ticket,
-			"pop",
-			instance,
-                        (struct sockaddr_in *)addr,
-			(struct sockaddr_in *) NULL,
-                        &p->kdata,
-			"",
-			schedule,
-			version);
-    
-    if (auth != KSUCCESS) {
-        pop_msg(p, POP_FAILURE, "Kerberos authentication failure: %s", 
-                krb_get_err_text(auth));
-        pop_log(p, POP_PRIORITY, "%s: (%s.%s@%s) %s", p->client, 
-                p->kdata.pname, p->kdata.pinst, p->kdata.prealm,
-		krb_get_err_text(auth));
-	return -1;
-    }
-
-#ifdef DEBUG
-    pop_log(p, POP_DEBUG, "%s.%s@%s (%s): ok", p->kdata.pname, 
-            p->kdata.pinst, p->kdata.prealm, p->ipaddr);
-#endif /* DEBUG */
-    return 0;
-}
-#endif /* KRB4 */
-
 #ifdef KRB5
 static int
 krb5_authenticate (POP *p, int s, u_char *buf, struct sockaddr *addr)
 {
     krb5_error_code ret;
     krb5_auth_context auth_context = NULL;
-    u_int32_t len;
+    uint32_t len;
     krb5_ticket *ticket;
     char *server;
 
     if (memcmp (buf, "\x00\x00\x00\x13", 4) != 0)
 	return -1;
     len = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | (buf[3]);
-	
+
     if (krb5_net_read(p->context, &s, buf, len) != len)
 	return -1;
     if (len != sizeof(KRB5_SENDAUTH_VERSION)
@@ -134,7 +86,7 @@ krb5_authenticate (POP *p, int s, u_char *buf, struct sockaddr *addr)
 
     ret = krb5_unparse_name(p->context, ticket->server, &server);
     if(ret) {
-	pop_log(p, POP_PRIORITY, "krb5_unparse_name: %s", 
+	pop_log(p, POP_PRIORITY, "krb5_unparse_name: %s",
 		krb5_get_err_text(p->context, ret));
 	ret = -1;
 	goto out;
@@ -146,7 +98,7 @@ krb5_authenticate (POP *p, int s, u_char *buf, struct sockaddr *addr)
 	ret = -1;
 	goto out;
     } else if(p->debug)
-	pop_log(p, POP_DEBUG, 
+	pop_log(p, POP_DEBUG,
 		"Accepted ticket for service `%s'", server);
     free(server);
  out:
@@ -161,7 +113,7 @@ krb5_authenticate (POP *p, int s, u_char *buf, struct sockaddr *addr)
 static int
 krb_authenticate(POP *p, struct sockaddr *addr)
 {
-#if defined(KRB4) || defined(KRB5)
+#if defined(KRB5)
     u_char buf[BUFSIZ];
 
     if (pop_net_read (p, 0, buf, 4) != 4) {
@@ -169,14 +121,6 @@ krb_authenticate(POP *p, struct sockaddr *addr)
 		strerror(errno));
 	exit (1);
     }
-#ifdef KRB4
-    if (krb4_authenticate (p, 0, buf, addr) == 0){
-	pop_write_addr(p, addr);
-	p->version = 4;
-	return POP_SUCCESS;
-    }
-#endif
-#ifdef KRB5
     if (krb5_authenticate (p, 0, buf, addr) == 0){
 	pop_write_addr(p, addr);
 	p->version = 5;
@@ -184,8 +128,6 @@ krb_authenticate(POP *p, struct sockaddr *addr)
     }
 #endif
     exit (1);
-	
-#endif /* defined(KRB4) || defined(KRB5) */
 
     return(POP_SUCCESS);
 }
@@ -207,10 +149,10 @@ static int help_flag;
 static int version_flag;
 
 static struct getargs args[] = {
-#if defined(KRB4) || defined(KRB5)
+#if defined(KRB5)
     { "kerberos", 'k', arg_flag, &kerberos_flag, "use kerberos" },
 #endif
-    { "auth-mode", 'a', arg_string, &auth_str, "required authentication", 
+    { "auth-mode", 'a', arg_string, &auth_str, "required authentication",
       "plaintext"
 #ifdef OTP
       "|otp"
@@ -231,18 +173,16 @@ static struct getargs args[] = {
 
 static int num_args = sizeof(args) / sizeof(args[0]);
 
-/* 
+/*
  *  init:   Start a Post Office Protocol session
  */
 
 static int
-pop_getportbyname(POP *p, const char *service, 
+pop_getportbyname(POP *p, const char *service,
 		  const char *proto, short def)
 {
 #ifdef KRB5
     return krb5_getportbyname(p->context, service, proto, def);
-#elif defined(KRB4)
-    return k_getportbyname(service, proto, htons(def));
 #else
     return htons(default);
 #endif
@@ -310,7 +250,7 @@ pop_init(POP *p,int argcount,char **argmessage)
     }
 
     if(auth_str){
-	if (strcasecmp (auth_str, "plaintext") == 0 || 
+	if (strcasecmp (auth_str, "plaintext") == 0 ||
 	    strcasecmp (auth_str, "none") == 0)
 	    p->auth_level = AUTH_NONE;
 	else if(strcasecmp(auth_str, "otp") == 0) {
@@ -348,20 +288,20 @@ pop_init(POP *p,int argcount,char **argmessage)
 	trace_file_name = trace_file;
     }
 
-#if defined(KRB4) || defined(KRB5)
+#if defined(KRB5)
     p->kerberosp = kerberos_flag;
 #endif
 
     if(timeout)
 	pop_timeout = timeout;
-    
+
     /* Fake inetd */
     if (interactive_flag) {
 	if (portnum == 0)
 	    portnum = p->kerberosp ?
 		pop_getportbyname(p, "kpop", "tcp", 1109) :
 	    pop_getportbyname(p, "pop", "tcp", 110);
-	mini_inetd (portnum);
+	mini_inetd (portnum, NULL);
     }
 
     /*  Get the address and socket of the client to whom I am speaking */
@@ -372,7 +312,7 @@ pop_init(POP *p,int argcount,char **argmessage)
         exit (1);
     }
 
-    /*  Save the dotted decimal form of the client's IP address 
+    /*  Save the dotted decimal form of the client's IP address
         in the POP parameter block */
     inet_ntop (cs->sa_family, socket_get_address (cs),
 	       p->ipaddr, sizeof(p->ipaddr));

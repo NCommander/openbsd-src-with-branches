@@ -1,4 +1,4 @@
-dnl $KTH: need-proto.m4,v 1.7 2004/08/26 12:35:42 joda Exp $
+dnl $Id$
 dnl
 dnl
 dnl Check if we need the prototype for a function

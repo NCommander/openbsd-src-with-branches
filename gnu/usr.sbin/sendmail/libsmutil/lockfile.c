@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,10 +13,10 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: lockfile.c,v 8.16 2001/01/24 00:34:54 ca Exp $")
+SM_RCSID("@(#)$Sendmail: lockfile.c,v 8.22 2013/11/22 20:51:50 ca Exp $")
 
 
-/*
+/*
 **  LOCKFILE -- lock a file using flock or (shudder) fcntl locking
 **
 **	Parameters:
@@ -43,7 +43,6 @@ lockfile(fd, filename, ext, type)
 #if !HASFLOCK
 	int action;
 	struct flock lfd;
-	extern int errno;
 
 	memset(&lfd, '\0', sizeof lfd);
 	if (bitset(LOCK_UN, type))

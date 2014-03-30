@@ -1,3 +1,4 @@
+/*	$OpenBSD: nvram.h,v 1.6 2003/06/02 23:27:47 millert Exp $	*/
 /*	$NetBSD: nvram.h,v 1.5 1995/05/05 22:08:43 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -53,6 +50,7 @@
 
 #define	NVRAM_RESET_RST		0x00		/* normal reset */
 #define	NVRAM_RESET_LOAD 	0x04		/* load system */
+#define	NVRAM_RESET_JUMP	0x0a		/* jump through 40:67 */
 
 /* NVRAM byte 2: diskette drive type in upper/lower nibble */
 #define NVRAM_DISKETTE	(MC_NVRAM_START + 2)	/* RTC offset 0x10 */
@@ -68,11 +66,16 @@
 /* NVRAM byte 6: equipment type */
 #define	NVRAM_EQUIPMENT	(MC_NVRAM_START + 6)
 
+#define	NVRAM_EQUIPMENT_FLOPPY	0x01		/* floppy installed */
+#define	NVRAM_EQUIPMENT_FPU	0x02		/* FPU installed */
+#define	NVRAM_EQUIPMENT_KBD	0x04		/* keyboard installed */
+#define	NVRAM_EQUIPMENT_DISPLAY	0x08		/* display installed */
 #define	NVRAM_EQUIPMENT_EGAVGA	0x00		/* EGA or VGA */
 #define	NVRAM_EQUIPMENT_COLOR40	0x10		/* 40 column color */
 #define	NVRAM_EQUIPMENT_COLOR80	0x20		/* 80 column color */
 #define	NVRAM_EQUIPMENT_MONO80	0x30		/* 80 column mono */
 #define	NVRAM_EQUIPMENT_MONITOR	0x30		/* mask for monitor type */
+#define	MVRAM_EQUIPMENT_NFDS	0xC0		/* mask for # of floppies */
 
 /* NVRAM bytes 7 & 8: base memory size */
 #define NVRAM_BASELO	(MC_NVRAM_START + 7)	/* low byte; RTC off. 0x15 */
@@ -81,6 +84,10 @@
 /* NVRAM bytes 9 & 10: extended memory size */
 #define NVRAM_EXTLO	(MC_NVRAM_START + 9)	/* low byte; RTC off. 0x17 */
 #define NVRAM_EXTHI	(MC_NVRAM_START + 10)	/* high byte; RTC off. 0x18 */
+
+/* NVRAM bytes 34 and 35: extended memory POSTed size */
+#define NVRAM_PEXTLO	(MC_NVRAM_START + 34)	/* low byte; RTC off. 0x30 */
+#define NVRAM_PEXTHI	(MC_NVRAM_START + 35)	/* high byte; RTC off. 0x31 */
 
 /* NVRAM byte 36: current century.  (please increment in Dec99!) */
 #define NVRAM_CENTURY	(MC_NVRAM_START + 36)	/* RTC offset 0x32 */

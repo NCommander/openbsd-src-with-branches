@@ -1,4 +1,4 @@
-dnl $KTH: roken.m4,v 1.6 2004/08/26 11:27:32 joda Exp $
+dnl $Id$
 dnl
 dnl try to look for an installed roken library with sufficient stuff
 dnl

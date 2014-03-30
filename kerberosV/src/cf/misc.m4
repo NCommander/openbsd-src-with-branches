@@ -1,5 +1,5 @@
 
-dnl $KTH: misc.m4,v 1.5 2002/05/24 15:35:32 joda Exp $
+dnl $Id$
 dnl
 AC_DEFUN([upcase],[`echo $1 | tr abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ`])dnl
 AC_DEFUN([rk_LIBOBJ],[AC_LIBOBJ([$1])])dnl

@@ -1,4 +1,4 @@
-/*      $NetBSD: n_lgamma.c,v 1.1 1995/10/10 23:36:56 ragge Exp $ */
+/*	$OpenBSD: n_lgamma.c,v 1.8 2008/07/18 13:08:58 martynas Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,10 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char sccsid[] = "@(#)lgamma.c	8.2 (Berkeley) 11/30/93";
-#endif /* not lint */
 
 /*
  * Coded by Peter McIlroy, Nov 1992;
@@ -57,7 +49,7 @@ static char sccsid[] = "@(#)lgamma.c	8.2 (Berkeley) 11/30/93";
  *	x > 6:
  *		Use the asymptotic expansion (Stirling's Formula)
  *	0 < x < 6:
- *		Use gamma(x+1) = x*gamma(x) for argument reduction.
+ *		Use tgamma(x+1) = x*tgamma(x) for argument reduction.
  *		Use rational approximation in
  *		the range 1.2, 2.5
  *		Two approximations are used, one centered at the
@@ -70,12 +62,12 @@ static char sccsid[] = "@(#)lgamma.c	8.2 (Berkeley) 11/30/93";
  *	non-positive integer	returns +Inf.
  *	NaN			returns NaN
 */
-static int endian;
-#if defined(vax) || defined(tahoe)
+#if defined(__vax__)
 #define _IEEE		0
 /* double and float have same size exponent field */
 #define TRUNC(x)	x = (double) (float) (x)
 #else
+static int endian;
 #define _IEEE		1
 #define TRUNC(x)	*(((int *) &x) + endian) &= 0xf8000000
 #define infnan(x)	0.0
@@ -84,16 +76,16 @@ static int endian;
 static double small_lgam(double);
 static double large_lgam(double);
 static double neg_lgam(double);
-static double zero = 0.0, one = 1.0;
-int signgam;
+static const double one = 1.0;
+extern int signgam;
 
 #define UNDERFL (1e-1020 * 1e-1020)
 
 #define LEFT	(1.0 - (x0 + .25))
 #define RIGHT	(x0 - .218)
 /*
-/* Constants for approximation in [1.244,1.712]
-*/
+ * Constants for approximation in [1.244,1.712]
+ */
 #define x0	0.461632144968362356785
 #define x0_lo	-.000000000000000015522348162858676890521
 #define a0_hi	-0.12148629128932952880859
@@ -144,8 +136,10 @@ lgamma(double x)
 {
 	double r;
 
-	signgam = 1;
+	int signgam = 1;
+#if _IEEE
 	endian = ((*(int *) &one)) ? 1 : 0;
+#endif
 
 	if (!finite(x))
 		if (_IEEE)
@@ -158,18 +152,42 @@ lgamma(double x)
 	} else if (x > 1e-16)
 		return (small_lgam(x));
 	else if (x > -1e-16) {
-		if (x < 0)
-			signgam = -1, x = -x;
+		if (x < 0) {
+			signgam = -1;
+			x = -x;
+		}
 		return (-log(x));
 	} else
 		return (neg_lgam(x));
+}
+
+float
+lgammaf(float x)
+{
+	return lgamma(x);
+}
+
+/*
+ * The gamma() function performs identically to lgamma(), including
+ * the use of signgam.
+ */
+
+double
+gamma(double x)
+{
+	return lgamma(x);
+}
+
+float
+gammaf(float x)
+{
+	return lgammaf(x);
 }
 
 static double
 large_lgam(double x)
 {
 	double z, p, x1;
-	int i;
 	struct Double t, u, v;
 	u = __log__D(x);
 	u.a -= 1.0;
@@ -221,15 +239,15 @@ CONTINUE:
 		t = .5*t*t;
 		z = 1.0;
 		switch (x_int) {
-		case 6:	z  = (y + 5);
-		case 5:	z *= (y + 4);
-		case 4:	z *= (y + 3);
+		case 6:	z  = (y + 5);		/* FALLTHROUGH */
+		case 5:	z *= (y + 4);		/* FALLTHROUGH */
+		case 4:	z *= (y + 3);		/* FALLTHROUGH */
 		case 3:	z *= (y + 2);
 			rr = __log__D(z);
 			rr.b += a0_lo; rr.a += a0_hi;
 			return(((r+rr.b)+t+rr.a));
 		case 2: return(((r+a0_lo)+t)+a0_hi);
-		case 0: r -= log1p(x);
+		case 0: r -= log1p(x);	/* FALLTHROUGH */
 		default: rr = __log__D(x);
 			rr.a -= a0_hi; rr.b -= a0_lo;
 			return(((r - rr.b) + t) - rr.a);
@@ -246,10 +264,10 @@ CONTINUE:
 		q = hi*t;
 		z = 1.0;
 		switch (x_int) {
-		case 6:	z  = (y + 5);
-		case 5:	z *= (y + 4);
-		case 4:	z *= (y + 3);
-		case 3:	z *= (y + 2);
+		case 6:	z  = (y + 5);		/* FALLTHROUGH */
+		case 5:	z *= (y + 4);		/* FALLTHROUGH */
+		case 4:	z *= (y + 3);		/* FALLTHROUGH */
+		case 3:	z *= (y + 2);		/* FALLTHROUGH */
 			rr = __log__D(z);
 			r += rr.b; r += q;
 			return(rr.a + r);
@@ -270,8 +288,7 @@ static double
 neg_lgam(double x)
 {
 	int xi;
-	double y, z, one = 1.0, zero = 0.0;
-	extern double gamma();
+	double y, z, zero = 0.0;
 
 	/* avoid destructive cancellation as much as possible */
 	if (x > -170) {
@@ -281,9 +298,11 @@ neg_lgam(double x)
 				return(one/zero);
 			else
 				return(infnan(ERANGE));
-		y = gamma(x);
-		if (y < 0)
-			y = -y, signgam = -1;
+		y = tgamma(x);
+		if (y < 0) {
+			y = -y;
+			signgam = -1;
+		}
 		return (log(y));
 	}
 	z = floor(x + .5);

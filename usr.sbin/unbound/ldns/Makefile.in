@@ -63,7 +63,7 @@ LINTFLAGS       += -D"__BEGIN_DECLS=" -D"__ssize_t=ssize_t" -D"__intptr_t=intptr
 LINTFLAGS       += -D"_RuneLocale=int"
 DEPFLAG		= @DEPFLAG@
 
-INSTALL		= $(srcdir)/install-sh 
+INSTALL		= sh $(srcdir)/install-sh 
 
 LIBLOBJS	= $(LIBOBJS:.o=.lo)
 LDNS_LOBJS	= buffer.lo dane.lo dname.lo dnssec.lo dnssec_sign.lo dnssec_verify.lo dnssec_zone.lo duration.lo error.lo higher.lo host2str.lo host2wire.lo keys.lo net.lo packet.lo parse.lo radix.lo rbtree.lo rdata.lo resolver.lo rr.lo rr_functions.lo sha1.lo sha2.lo str2host.lo tsig.lo update.lo util.lo wire2host.lo zone.lo 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -10,6 +10,6 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: debug.c,v 8.7 2001/06/27 21:46:54 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: debug.c,v 8.10 2013/11/22 20:51:50 ca Exp $")
 
 unsigned char	tTdvect[100];	/* trace vector */

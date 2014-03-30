@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,7 +9,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: strrevcmp.c,v 1.2 2001/08/27 22:21:51 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: strrevcmp.c,v 1.6 2013/11/22 20:51:43 ca Exp $")
 
 #include <sm/config.h>
 #include <sm/string.h>
@@ -60,7 +60,7 @@ sm_strrevcasecmp(s1, s2)
 				charmap[(unsigned char) s2[i2]]);
 	}
 }
-/*
+/*
 **  SM_STRREVCMP -- compare two strings starting at the end
 **
 **	Parameters:

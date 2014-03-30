@@ -33,7 +33,7 @@
  *	@(#)externs.h	8.3 (Berkeley) 5/30/95
  */
 
-/* $KTH: externs.h,v 1.26 2003/09/25 15:47:24 lha Exp $ */
+/* $Id$ */
 
 #ifndef	BSD
 # define BSD 43
@@ -240,7 +240,6 @@ void command(int top, char *tbuf, int cnt);
 /* main.c */
 
 void tninit(void);
-void usage(void);
 void set_forward_options(void);
 
 /* network.c */
@@ -292,7 +291,6 @@ void xmitEC(void);
 
 void     Dump (char, unsigned char *, int);
 void     printoption (char *, int, int);
-void     printsub (int, unsigned char *, int);
 void     sendnaws (void);
 void     setconnmode (int);
 void     setcommandmode (void);
@@ -361,7 +359,7 @@ void SetNetTrace(char *file);
 void Dump(char direction, unsigned char *buffer, int length);
 void printoption(char *direction, int cmd, int option);
 void optionstatus(void);
-void printsub(int direction, unsigned char *pointer, int length);
+void printsub(int direction, unsigned char *pointer, size_t length);
 void EmptyTerminal(void);
 void SetForExit(void);
 void Exit(int returnCode);

@@ -207,6 +207,8 @@ do_editor (dir, messagep, repository, changes)
 	    (*messagep)[strlen (*messagep) - 1] != '\n')
 	    (void) fprintf (fp, "\n");
     }
+    else
+	(void) fprintf (fp, "\n");
 
     if (repository != NULL)
 	/* tack templates on if necessary */
@@ -317,7 +319,7 @@ do_editor (dir, messagep, repository, changes)
 	size_t offset = 0;
 	while (1)
 	{
-	    line_length = getline (&line, &line_chars_allocated, fp);
+	    line_length = get_line (&line, &line_chars_allocated, fp);
 	    if (line_length == -1)
 	    {
 		if (ferror (fp))
@@ -346,7 +348,7 @@ do_editor (dir, messagep, repository, changes)
 	    (void) printf ("a)bort, c)ontinue, e)dit, !)reuse this message unchanged for remaining dirs\n");
 	    (void) printf ("Action: (continue) ");
 	    (void) fflush (stdout);
-	    line_length = getline (&line, &line_chars_allocated, stdin);
+	    line_length = get_line (&line, &line_chars_allocated, stdin);
 	    if (line_length < 0)
 	    {
 		error (0, errno, "cannot read from stdin");
@@ -487,7 +489,7 @@ rcsinfo_proc (repository, template)
 	char *line = NULL;
 	size_t line_chars_allocated = 0;
 
-	while (getline (&line, &line_chars_allocated, tfp) >= 0)
+	while (get_line (&line, &line_chars_allocated, tfp) >= 0)
 	    (void) fputs (line, fp);
 	if (ferror (tfp))
 	    error (0, errno, "warning: cannot read %s", template);
@@ -588,6 +590,15 @@ title_proc (p, closure)
 				  strlen (str_list) + strlen (p->key) + 5);
 		    (void) strcat (str_list, p->key);
 		    break;
+		case 't':
+		    str_list =
+			xrealloc (str_list,
+				  (strlen (str_list)
+				   + (li->tag ? strlen (li->tag) : 0)
+				   + 10)
+				  );
+		    (void) strcat (str_list, (li->tag ? li->tag : ""));
+		    break;
 		case 'V':
 		    str_list =
 			xrealloc (str_list,
@@ -667,6 +678,7 @@ logfile_write (repository, filter, message, logfp, changes)
        `}' as separators.  The format characters are:
 
          s = file name
+         t = tag name
 	 V = old version number (pre-checkin)
 	 v = new version number (post-checkin)
 
@@ -676,6 +688,7 @@ logfile_write (repository, filter, message, logfp, changes)
 	 %s
 	 %{s}
 	 %{sVv}
+	 %{Vvts}
 
        There's no reason that more items couldn't be added (like
        modification date or file status [added, modified, updated,

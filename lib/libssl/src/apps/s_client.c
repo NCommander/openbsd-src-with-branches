@@ -135,6 +135,8 @@
  * OTHERWISE.
  */
 
+#include <sys/types.h>
+#include <netinet/in.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -285,6 +287,8 @@ static void sc_usage(void)
 	{
 	BIO_printf(bio_err,"usage: s_client args\n");
 	BIO_printf(bio_err,"\n");
+	BIO_printf(bio_err," -4            - Force IPv4\n");
+	BIO_printf(bio_err," -6            - Force IPv6\n");
 	BIO_printf(bio_err," -host host     - use -connect instead\n");
 	BIO_printf(bio_err," -port port     - use -connect instead\n");
 	BIO_printf(bio_err," -connect host:port - who to connect to (default is %s:%s)\n",SSL_HOST_NAME,PORT_STR);
@@ -329,7 +333,9 @@ static void sc_usage(void)
 	BIO_printf(bio_err," -srp_moregroups   - Tolerate other than the known g N values.\n");
 	BIO_printf(bio_err," -srp_strength int - minimal mength in bits for N (default %d).\n",SRP_MINIMAL_N);
 #endif
+#ifndef OPENSSL_NO_SSL2
 	BIO_printf(bio_err," -ssl2         - just use SSLv2\n");
+#endif
 	BIO_printf(bio_err," -ssl3         - just use SSLv3\n");
 	BIO_printf(bio_err," -tls1_2       - just use TLSv1.2\n");
 	BIO_printf(bio_err," -tls1_1       - just use TLSv1.1\n");
@@ -338,7 +344,9 @@ static void sc_usage(void)
 	BIO_printf(bio_err," -mtu          - set the link layer MTU\n");
 	BIO_printf(bio_err," -no_tls1_2/-no_tls1_1/-no_tls1/-no_ssl3/-no_ssl2 - turn off that protocol\n");
 	BIO_printf(bio_err," -bugs         - Switch on all SSL implementation bug workarounds\n");
+#ifndef OPENSSL_NO_SSL2
 	BIO_printf(bio_err," -serverpref   - Use server's cipher preferences (only SSLv2)\n");
+#endif
 	BIO_printf(bio_err," -cipher       - preferred cipher to use, use the 'openssl ciphers'\n");
 	BIO_printf(bio_err,"                 command to see what is available\n");
 	BIO_printf(bio_err," -starttls prot - use the STARTTLS command before starting TLS\n");
@@ -558,12 +566,12 @@ int MAIN(int argc, char **argv)
 #ifndef OPENSSL_NO_KRB5
 	KSSL_CTX *kctx;
 #endif
-	int s,k,width,state=0;
+	int s,k,width,state=0, af=AF_UNSPEC;
 	char *cbuf=NULL,*sbuf=NULL,*mbuf=NULL;
 	int cbuf_len,cbuf_off;
 	int sbuf_len,sbuf_off;
 	fd_set readfds,writefds;
-	short port=PORT;
+	char *port=PORT_STR;
 	int full_log=1;
 	char *host=SSL_HOST_NAME;
 	char *cert_file=NULL,*key_file=NULL;
@@ -640,7 +648,7 @@ int MAIN(int argc, char **argv)
 
 	if (	((cbuf=OPENSSL_malloc(BUFSIZZ)) == NULL) ||
 		((sbuf=OPENSSL_malloc(BUFSIZZ)) == NULL) ||
-		((mbuf=OPENSSL_malloc(BUFSIZZ)) == NULL))
+		((mbuf=OPENSSL_malloc(BUFSIZZ + 1)) == NULL))	/* NUL byte */
 		{
 		BIO_printf(bio_err,"out of memory\n");
 		goto end;
@@ -664,8 +672,8 @@ int MAIN(int argc, char **argv)
 		else if	(strcmp(*argv,"-port") == 0)
 			{
 			if (--argc < 1) goto bad;
-			port=atoi(*(++argv));
-			if (port == 0) goto bad;
+			port= *(++argv);
+			if (port == NULL || *port == '\0') goto bad;
 			}
 		else if (strcmp(*argv,"-connect") == 0)
 			{
@@ -930,6 +938,8 @@ int MAIN(int argc, char **argv)
 			if (--argc < 1) goto bad;
 			inrand= *(++argv);
 			}
+		else if (strcmp(*argv,"-4") == 0) { af = AF_INET;}
+		else if (strcmp(*argv,"-6") == 0) { af = AF_INET6;}
 #ifndef OPENSSL_NO_TLSEXT
 		else if (strcmp(*argv,"-servername") == 0)
 			{
@@ -1252,7 +1262,7 @@ bad:
 
 re_start:
 
-	if (init_client(&s,host,port,socket_type) == 0)
+	if (init_client(&s,host,port,socket_type,af) == 0)
 		{
 		BIO_printf(bio_err,"connect:errno=%d\n",get_last_socket_error());
 		SHUTDOWN(s);
@@ -1417,7 +1427,12 @@ SSL_set_tlsext_status_ids(con, ids);
 		}
 	else if (starttls_proto == PROTO_POP3)
 		{
-		BIO_read(sbio,mbuf,BUFSIZZ);
+		mbuf_len = BIO_read(sbio,mbuf,BUFSIZZ);
+		if (mbuf_len == -1)
+			{
+			BIO_printf(bio_err,"BIO_read failed\n");
+			goto end;
+			}
 		BIO_printf(sbio,"STLS\r\n");
 		BIO_read(sbio,sbuf,BUFSIZZ);
 		}
@@ -1533,7 +1548,7 @@ SSL_set_tlsext_status_ids(con, ids);
 
 				if (starttls_proto)
 					{
-					BIO_printf(bio_err,"%s",mbuf);
+					BIO_write(bio_err, mbuf, mbuf_len);
 					/* We don't need to know any more */
 					starttls_proto = PROTO_OFF;
 					}
@@ -1739,7 +1754,7 @@ SSL_set_tlsext_status_ids(con, ids);
 				/* goto end; */
 				}
 
-			sbuf_len-=i;;
+			sbuf_len-=i;
 			sbuf_off+=i;
 			if (sbuf_len <= 0)
 				{

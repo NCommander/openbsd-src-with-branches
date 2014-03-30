@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 1995 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995 - 2001 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-/* $KTH: kx.h,v 1.41 2003/04/16 16:45:43 joda Exp $ */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -123,10 +123,6 @@ struct tm *localtime(const time_t *);
 struct hostent  *gethostbyname(const char *);
 #endif
 
-#ifdef KRB4
-#include <krb.h>
-#include <prot.h>
-#endif
 #ifdef KRB5
 #include <krb5.h>
 #endif
@@ -147,7 +143,7 @@ struct x_socket {
 };
 
 extern char x_socket[];
-extern u_int32_t display_num;
+extern uint32_t display_num;
 extern char display[];
 extern int display_size;
 extern char xauthfile[];
@@ -159,9 +155,9 @@ int get_xsockets (int *number, struct x_socket **sockets, int tcpp);
 int chown_xsockets (int n, struct x_socket *sockets, uid_t uid, gid_t gid);
 
 int connect_local_xsocket (unsigned dnr);
-int create_and_write_cookie (char *xauthfile,
-			     size_t size,
-			     u_char *cookie,
+int create_and_write_cookie (char *file,
+			     size_t file_size,
+			     u_char *cookie_buf,
 			     size_t sz);
 int verify_and_remove_cookies (int fd, int sock, int cookiesp);
 int replace_cookie(int xserver, int fd, char *filename, int cookiesp);
@@ -229,16 +225,6 @@ kx_write (kx_context *kc, int fd, const void *buf, size_t len);
 int
 copy_encrypted (kx_context *kc, int fd1, int fd2);
 
-#ifdef KRB4
-
-void
-krb4_make_context (kx_context *c);
-
-int
-recv_v4_auth (kx_context *kc, int sock, u_char *buf);
-
-#endif
-
 #ifdef KRB5
 
 void
@@ -256,12 +242,8 @@ __attribute__ ((format (printf, 3, 4)))
 #endif
 ;
 
-#ifndef KRB4
+int
+kx_get_int(void *f, uint32_t *to, int size, int lsb);
 
 int
-krb_get_int(void *f, u_int32_t *to, int size, int lsb);
-
-int
-krb_put_int(u_int32_t from, void *to, size_t rem, int size);
-
-#endif
+kx_put_int(uint32_t from, void *to, size_t rem, int size);

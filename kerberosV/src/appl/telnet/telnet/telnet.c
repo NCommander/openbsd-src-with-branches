@@ -33,7 +33,7 @@
 
 #include "telnet_locl.h"
 
-RCSID("$KTH: telnet.c,v 1.40 2005/05/19 11:22:53 lha Exp $");
+RCSID("$Id$");
 
 #define	strip(x) (eight ? (x) : ((x) & 0x7f))
 
@@ -500,7 +500,7 @@ dontoption(int option)
 
 /*
  * Given a buffer returned by tgetent(), this routine will turn
- * the pipe seperated list of names in the buffer into an array
+ * the pipe separated list of names in the buffer into an array
  * of pointers to null terminated names.  We toss out any bad,
  * duplicate, or verbose names (names with spaces).
  */
@@ -1631,7 +1631,7 @@ telrcv(void)
 		telrcv_state = TS_IAC;
 		break;
 	    }
-		    /* 
+		    /*
 		     * The 'crmod' hack (see following) is needed
 		     * since we can't set CRMOD on output only.
 		     * Machines like MULTICS like to send \r without
@@ -1775,12 +1775,12 @@ process_iac:
 		    /*
 		     * This is an error.  We only expect to get
 		     * "IAC IAC" or "IAC SE".  Several things may
-		     * have happend.  An IAC was not doubled, the
+		     * have happened.  An IAC was not doubled, the
 		     * IAC SE was left off, or another option got
 		     * inserted into the suboption are all possibilities.
 		     * If we assume that the IAC was not doubled,
 		     * and really the IAC SE was left off, we could
-		     * get into an infinate loop here.  So, instead,
+		     * get into an infinite loop here.  So, instead,
 		     * we terminate the suboption, and process the
 		     * partial suboption if we can.
 		     */
@@ -2036,7 +2036,7 @@ void
 my_telnet(char *user)
 {
     int printed_encrypt = 0;
-    
+
     sys_telnet_init();
 
 #if	defined(AUTHENTICATION) || defined(ENCRYPTION)
@@ -2079,7 +2079,7 @@ my_telnet(char *user)
     /*
      * Note: we assume a tie to the authentication option here.  This
      * is necessary so that authentication fails, we don't spin
-     * forever. 
+     * forever.
      */
     if (telnetport && wantencryption) {
 	time_t timeout = time(0) + 60;
@@ -2097,7 +2097,7 @@ my_telnet(char *user)
 		}
 	    }
 	    if (auth_has_failed) {
-		printf("\nAuthentication negotation has failed,\n");
+		printf("\nAuthentication negotiation has failed,\n");
 		printf("which is required for encryption.\n");
 		Exit(1);
 	    }
@@ -2116,7 +2116,7 @@ my_telnet(char *user)
 		    printed_encrypt = 1;
 		    printf("Waiting for encryption to be negotiated...\n");
 		    /*
-		     * Turn on MODE_TRAPSIG and then turn off localchars 
+		     * Turn on MODE_TRAPSIG and then turn off localchars
 		     * so that ^C will cause telnet to exit.
 		     */
 		    TerminalNewMode(getconnmode()|MODE_TRAPSIG);
@@ -2130,7 +2130,7 @@ my_telnet(char *user)
 		    printf("\nServer disconnected.\n");
 		    Exit(1);
 	    }
-		
+
 	}
 	if (printed_encrypt) {
 		printf("Encryption negotiated.\n");

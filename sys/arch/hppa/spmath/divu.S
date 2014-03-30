@@ -1,3 +1,4 @@
+/*	$OpenBSD: divu.S,v 1.10 2005/01/23 18:01:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,15 +12,13 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/divu.s,v $
- * $Revision: 1.11.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:06:01 $
- */
+/* @(#)divu.s: Revision: 1.11.88.1 Date: 93/12/07 15:06:01 */
 
+#include <machine/asm.h>
+#include <machine/frame.h>
 
 ;************************************************************************
-; Implement an integer divide routine for 32-bit operands and 32-bit quotient 
+; Implement an integer divide routine for 32-bit operands and 32-bit quotient
 ; and remainder with operand values of zero (divisor only) treated specially.
 ;
 ;****************************************************************************
@@ -28,22 +27,16 @@
 ;
 ;	General registers
 ;
-gr0	.equ		0		; General register zero
-rem	.equ		3		; remainder and upper part of dividend
-quo	.equ		4		; quotient and lower part of dividend
-dvr	.equ		5		; divisor
-tp	.equ		6		; temp. reg.
+gr0	.reg		%r0		; General register zero
+rem	.reg		%r3		; remainder and upper part of dividend
+quo	.reg		%r4		; quotient and lower part of dividend
+dvr	.reg		%r5		; divisor
+tp	.reg		%r6		; temp. reg.
 
 ;******************************************************************************
-	.export divu,entry
-	.space $TEXT$
-	.subspa $CODE$
-	.align 4
-	.proc
-	.callinfo
-;
-;******************************************************************************
-divu	stws,ma		rem,4(sp)		; save registers on stack
+	.text
+LEAF_ENTRY(divu)
+	stws,ma		rem,4(sp)		; save registers on stack
 	stws,ma		quo,4(sp)		; save registers on stack
 	stws,ma		dvr,4(sp)		; save registers on stack
 	stws,ma		tp,4(sp)		; save registers on stack
@@ -128,9 +121,9 @@ divu	stws,ma		rem,4(sp)		; save registers on stack
 ;
 ;	end of divide routine
 ;
-finish	stws		rem,(arg3)		; save remainder in high part 
+finish	stws		rem,0(arg3)		; save remainder in high part
 						;   of result
-	stws		quo,4(arg3)		; save quotient in low part 
+	stws		quo,4(arg3)		; save quotient in low part
 						;   of result
 	ldws,mb		-4(sp),tp		; restore registers
 	ldws,mb		-4(sp),dvr		; restore registers
@@ -150,8 +143,8 @@ nosub	addi		0,0,0			; otherwise clear carry
 	addib,>		-1,tp,loop		; inc. counter; finished?
 	addc		quo,quo,quo		; shift bit of result into dvdl
 	b		finish+4		; finish up
-	stws		rem,(arg3)		; save remainder in high part 
+	stws		rem,0(arg3)		; save remainder in high part
 						;   of result
+EXIT(divu)
 
-	.procend
 	.end

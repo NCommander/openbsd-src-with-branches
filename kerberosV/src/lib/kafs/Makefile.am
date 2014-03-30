@@ -1,21 +1,12 @@
-# $KTH: Makefile.am,v 1.46 2005/02/24 15:48:47 lha Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
 
 AM_CPPFLAGS += $(AFS_EXTRA_DEFS) $(ROKEN_RENAME)
 
-if KRB4
-DEPLIB_krb4 = $(LIB_krb4) $(LIB_des)
-krb4_am_workaround = $(INCLUDE_krb4)
-else
-DEPLIB_krb4  =
-krb4_am_workaround = 
-endif # KRB4
-AM_CPPFLAGS += $(krb4_am_workaround)
-
 if KRB5
 DEPLIB_krb5 = ../krb5/libkrb5.la 
-krb5_am_workaround = $(INCLUDE_des) -I$(top_srcdir)/lib/krb5
+krb5_am_workaround = $(INCLUDE_hcrypto) -I$(top_srcdir)/lib/krb5
 else
 DEPLIB_krb5  =
 krb5_am_workaround = 
@@ -33,11 +24,7 @@ AFS_EXTRA_LD = -e _nostart
 endif
 
 if AIX_DYNAMIC_AFS
-if HAVE_DLOPEN
 AIX_SRC = 
-else
-AIX_SRC = dlfcn.c
-endif
 AFS_EXTRA_LIBS = afslib.so
 AFS_EXTRA_DEFS =
 else
@@ -51,10 +38,10 @@ AFSL_EXP =
 AIX_SRC =
 endif # AIX
 
-libkafs_la_LIBADD = $(DEPLIB_krb5) ../roken/libroken.la $(DEPLIB_krb4)
+libkafs_la_LIBADD = $(DEPLIB_krb5) $(LIBADD_roken)
 
 lib_LTLIBRARIES = libkafs.la
-libkafs_la_LDFLAGS = -version-info 4:1:4
+libkafs_la_LDFLAGS = -version-info 5:1:5
 foodir = $(libdir)
 foo_DATA = $(AFS_EXTRA_LIBS)
 # EXTRA_DATA = afslib.so
@@ -64,28 +51,27 @@ CLEANFILES= $(AFS_EXTRA_LIBS) $(ROKEN_SRCS)
 include_HEADERS = kafs.h
 
 if KRB5
-afskrb5_c = afskrb5.c
+afskrb5_c = 
 endif
 
 if do_roken_rename
 ROKEN_SRCS = resolve.c strtok_r.c strlcpy.c strsep.c
 endif
 
-libkafs_la_SOURCES =				\
+dist_libkafs_la_SOURCES =			\
 	afssys.c				\
-	afskrb.c				\
-	$(afskrb5_c)				\
+	afskrb5.c				\
 	common.c				\
 	$(AIX_SRC)				\
 	kafs_locl.h				\
 	afssysdefs.h				\
-	$(ROKEN_SRCS)
+	roken_rename.h
 
-#afslib_so_SOURCES = afslib.c
+nodist_libkafs_la_SOURCES = $(ROKEN_SRCS)
 
-EXTRA_libkafs_la_SOURCES = afskrb.c afskrb5.c dlfcn.c afslib.c dlfcn.h
+EXTRA_libkafs_la_SOURCES = afskrb5.c afslib.c
 
-EXTRA_DIST = README.dlfcn afsl.exp afslib.exp
+EXTRA_DIST = NTMakefile afsl.exp afslib.exp $(man_MANS)
 
 man_MANS = kafs.3
 
@@ -93,8 +79,6 @@ man_MANS = kafs.3
 # correct ld, use ld instead
 afslib.so: afslib.o
 	ld -o $@ -bM:SRE -bI:$(srcdir)/afsl.exp -bE:$(srcdir)/afslib.exp $(AFS_EXTRA_LD) afslib.o -lc
-
-$(OBJECTS): ../../include/config.h
 
 resolve.c:
 	$(LN_S) $(srcdir)/../roken/resolve.c .

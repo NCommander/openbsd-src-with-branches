@@ -1,9 +1,10 @@
+#	$OpenBSD: Makequest,v 1.2 1995/03/23 08:29:08 cgd Exp $
 #	$NetBSD: Makequest,v 1.2 1995/03/23 08:29:08 cgd Exp $
 #
 # Hack or Quest Makefile.
 
-# on some systems the termcap library is in -ltermcap
-TERMLIB = -ltermlib
+# on some systems the termcap library is in -ltermcap or -lcurses
+TERMLIB = -lcurses
 
 
 # make hack

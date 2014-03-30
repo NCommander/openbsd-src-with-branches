@@ -112,7 +112,7 @@ static ngx_str_t ngx_http_status_lines[] = {
 #define NGX_HTTP_OFF_5XX   (NGX_HTTP_LAST_4XX - 400 + NGX_HTTP_OFF_4XX)
 
     ngx_string("500 Internal Server Error"),
-    ngx_string("501 Method Not Implemented"),
+    ngx_string("501 Not Implemented"),
     ngx_string("502 Bad Gateway"),
     ngx_string("503 Service Temporarily Unavailable"),
     ngx_string("504 Gateway Time-out"),
@@ -379,7 +379,10 @@ ngx_http_header_filter(ngx_http_request_t *r)
         len += sizeof("Transfer-Encoding: chunked" CRLF) - 1;
     }
 
-    if (r->keepalive) {
+    if (r->headers_out.status == NGX_HTTP_SWITCHING_PROTOCOLS) {
+        len += sizeof("Connection: upgrade" CRLF) - 1;
+
+    } else if (r->keepalive) {
         len += sizeof("Connection: keep-alive" CRLF) - 1;
 
         /*
@@ -395,7 +398,7 @@ ngx_http_header_filter(ngx_http_request_t *r)
         }
 
     } else {
-        len += sizeof("Connection: closed" CRLF) - 1;
+        len += sizeof("Connection: close" CRLF) - 1;
     }
 
 #if (NGX_HTTP_GZIP)
@@ -445,7 +448,7 @@ ngx_http_header_filter(ngx_http_request_t *r)
         b->last = ngx_copy(b->last, status_line->data, status_line->len);
 
     } else {
-        b->last = ngx_sprintf(b->last, "%ui", status);
+        b->last = ngx_sprintf(b->last, "%03ui", status);
     }
     *b->last++ = CR; *b->last++ = LF;
 
@@ -548,7 +551,11 @@ ngx_http_header_filter(ngx_http_request_t *r)
                              sizeof("Transfer-Encoding: chunked" CRLF) - 1);
     }
 
-    if (r->keepalive) {
+    if (r->headers_out.status == NGX_HTTP_SWITCHING_PROTOCOLS) {
+        b->last = ngx_cpymem(b->last, "Connection: upgrade" CRLF,
+                             sizeof("Connection: upgrade" CRLF) - 1);
+
+    } else if (r->keepalive) {
         b->last = ngx_cpymem(b->last, "Connection: keep-alive" CRLF,
                              sizeof("Connection: keep-alive" CRLF) - 1);
 

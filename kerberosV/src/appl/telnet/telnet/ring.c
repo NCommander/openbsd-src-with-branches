@@ -33,7 +33,7 @@
 
 #include "telnet_locl.h"
 
-RCSID("$KTH: ring.c,v 1.11 2000/02/06 05:15:21 assar Exp $");
+RCSID("$Id$");
 
 /*
  * This defines a structure for a ring buffer.

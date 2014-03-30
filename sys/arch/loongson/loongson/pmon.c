@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pmon.c,v 1.3 2010/02/14 22:39:33 miod Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -20,6 +20,7 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 
+#include <machine/cpu.h>
 #include <machine/pmon.h>
 
 int	pmon_argc;
@@ -60,7 +61,7 @@ pmon_getenv(const char *var)
 	while (*envptr != 0) {
 		envstr = (const char *)(vaddr_t)*envptr;
 		/*
-		 * There is a PMON2000 bug, at least on Lemote Yeelong,
+		 * There is a PMON2000 bug, at least on Lemote Yeeloong,
 		 * which causes it to override part of the environment
 		 * pointers array with the environment data itself.
 		 *
@@ -75,10 +76,14 @@ pmon_getenv(const char *var)
 		 */
 		if ((vaddr_t)envstr < CKSEG1_BASE ||
 		    (vaddr_t)envstr >= CKSSEG_BASE) {
-			pmon_printf("WARNING! CORRUPTED ENVIRONMENT!\n");
-			pmon_printf("Unable to search for %s.\n", var);
-			pmon_printf("If the kernel fails to identify the system"
+			printf("WARNING! CORRUPTED ENVIRONMENT!\n");
+			printf("Unable to search for %s.\n", var);
+#ifdef _STANDALONE
+			printf("If boot fails, power-cycle the machine.\n");
+#else
+			printf("If the kernel fails to identify the system"
 			    " type, please boot it again with `-k' option.\n");
+#endif
 
 			/* terminate environment for further calls */
 			*envptr = 0;

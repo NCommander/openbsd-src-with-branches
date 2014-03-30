@@ -1,4 +1,4 @@
-/*	$NetBSD: pcb.h,v 1.3 1994/10/26 02:33:47 cgd Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.5 2003/06/02 23:27:50 millert Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,26 +38,4 @@
  *	@(#)pcb.h	8.1 (Berkeley) 6/10/93
  */
 
-#include <machine/frame.h>
-
-/*
- * mvme68k process control block
- */
-struct pcb {
-	short	pcb_flags;	/* misc. process flags */
-	short	pcb_ps; 	/* processor status word */
-	int	pcb_ustp;	/* user segment table pointer */
-	int	pcb_usp;	/* user stack pointer */
-	int	pcb_regs[12];	/* D2-D7, A2-A7 */
-	caddr_t	pcb_onfault;	/* for copyin/out faults */
-	struct	fpframe pcb_fpregs; /* 68881/2 context save area */
-};
-
-/*
- * The pcb is augmented with machine-dependent additional data for
- * core dumps. For the hp300, this includes an HP-UX exec header
- * which is dumped for HP-UX processes.
- */
-struct md_coredump {
-	int	md_exec[16];	/* exec structure for HP-UX core dumps */
-};
+#include <m68k/pcb.h>

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -9,7 +9,7 @@
  * the sendmail distribution.
  *
  *
- *	$Sendmail: pathnames.h,v 8.35 2001/03/23 22:09:44 ca Exp $
+ *	$Sendmail: pathnames.h,v 8.37 2013/11/22 20:51:30 ca Exp $
  */
 
 #ifndef SM_PATHNAMES_H
@@ -37,7 +37,7 @@
 #  endif /* ! _PATH_SENDMAIL */
 
 #  ifndef _PATH_MAILDIR
-#   define _PATH_MAILDIR		"/var/spool/mail"
+#   define _PATH_MAILDIR	"/var/spool/mail"
 #  endif /* ! _PATH_MAILDIR */
 
 #  ifndef _PATH_LOCTMP

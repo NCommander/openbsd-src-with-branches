@@ -1,5 +1,5 @@
 dnl
-dnl $KTH: capabilities.m4,v 1.3 2004/02/12 14:20:37 lha Exp $
+dnl $Id$
 dnl
 
 dnl
