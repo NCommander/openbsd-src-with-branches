@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.104 2013/09/14 01:35:00 guenther Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.105 2014/03/08 22:54:29 tedu Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -390,7 +390,7 @@ restart:
 			struct socket *so = (struct socket *)fp->f_data;
 
 			so->so_pgid = (long)SCARG(uap, arg);
-			so->so_siguid = p->p_cred->p_ruid;
+			so->so_siguid = p->p_ucred->cr_ruid;
 			so->so_sigeuid = p->p_ucred->cr_uid;
 			break;
 		}

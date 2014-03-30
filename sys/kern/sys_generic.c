@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_generic.c,v 1.84 2013/09/14 02:28:02 guenther Exp $	*/
+/*	$OpenBSD: sys_generic.c,v 1.85 2014/01/21 01:48:45 tedu Exp $	*/
 /*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
@@ -476,7 +476,7 @@ sys_ioctl(struct proc *p, void *v, register_t *retval)
 			struct socket *so = (struct socket *)fp->f_data;
 
 			so->so_pgid = tmp;
-			so->so_siguid = p->p_cred->p_ruid;
+			so->so_siguid = p->p_ucred->cr_ruid;
 			so->so_sigeuid = p->p_ucred->cr_uid;
 			error = 0;
 			break;
