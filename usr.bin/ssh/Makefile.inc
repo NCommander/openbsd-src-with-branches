@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile.inc,v 1.43 2014/02/07 21:14:24 miod Exp $
+#	$OpenBSD: Makefile.inc,v 1.44 2014/02/28 22:46:54 deraadt Exp $
 
 .include <bsd.own.mk>
 
 CFLAGS+=	-I${.CURDIR}/..
+CFLAGS+=	-fstack-protector-all
 
 CDIAGFLAGS=	-Wall
 CDIAGFLAGS+=	-Wchar-subscripts
