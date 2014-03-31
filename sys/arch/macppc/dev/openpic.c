@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.68 2011/10/28 15:18:51 drahn Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.69 2012/10/08 20:06:37 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2008 Dale Rahn <drahn@openbsd.org>
@@ -39,12 +39,10 @@
 
 #include <sys/param.h>
 #include <sys/device.h>
-#include <sys/ioctl.h>
-#include <sys/mbuf.h>
-#include <sys/socket.h>
 #include <sys/systm.h>
+#include <sys/malloc.h>
 
-#include <uvm/uvm.h>
+#include <uvm/uvm_extern.h>
 #include <ddb/db_var.h>
 
 #include <machine/atomic.h>

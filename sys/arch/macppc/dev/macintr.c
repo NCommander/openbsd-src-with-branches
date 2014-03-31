@@ -1,4 +1,4 @@
-/*	$OpenBSD: macintr.c,v 1.43 2011/08/29 20:21:44 drahn Exp $	*/
+/*	$OpenBSD: macintr.c,v 1.44 2011/09/16 17:56:52 drahn Exp $	*/
 
 /*-
  * Copyright (c) 2008 Dale Rahn <drahn@openbsd.org>
@@ -39,12 +39,10 @@
 
 #include <sys/param.h>
 #include <sys/device.h>
-#include <sys/ioctl.h>
-#include <sys/mbuf.h>
-#include <sys/socket.h>
 #include <sys/systm.h>
+#include <sys/malloc.h>
 
-#include <uvm/uvm.h>
+#include <uvm/uvm_extern.h>
 #include <ddb/db_var.h>
 
 #include <machine/atomic.h>
