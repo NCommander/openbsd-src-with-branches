@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.103 2014/03/13 03:52:55 dlg Exp $	*/
+/*	$OpenBSD: apm.c,v 1.104 2014/03/29 18:09:29 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -249,8 +249,8 @@ apm_suspend(int state)
 #if NWSDISPLAY > 0
 	wsdisplay_suspend();
 #endif /* NWSDISPLAY > 0 */
-	bufq_quiesce();
 	config_suspend(mainbus, DVACT_QUIESCE);
+	bufq_quiesce();
 
 	s = splhigh();
 	disable_intr();

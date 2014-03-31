@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.253 2014/02/21 23:48:38 deraadt Exp $ */
+/* $OpenBSD: acpi.c,v 1.254 2014/03/13 03:52:56 dlg Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -2126,10 +2126,11 @@ acpi_sleep_state(struct acpi_softc *sc, int state)
 #if NWSDISPLAY > 0
 	wsdisplay_suspend();
 #endif /* NWSDISPLAY > 0 */
-	bufq_quiesce();
 
 	if (config_suspend(mainbus, DVACT_QUIESCE))
 		goto fail_quiesce;
+
+	bufq_quiesce();
 
 #ifdef MULTIPROCESSOR
 	acpi_sleep_mp();
@@ -2190,9 +2191,9 @@ fail_suspend:
 	acpi_resume_mp();
 #endif
 
-fail_quiesce:
 	bufq_restart();
 
+fail_quiesce:
 	config_suspend(mainbus, DVACT_WAKEUP);
 
 #if NWSDISPLAY > 0

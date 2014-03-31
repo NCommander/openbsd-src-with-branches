@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.17 2013/12/06 21:03:05 deraadt Exp $	*/
+/*	$OpenBSD: apm.c,v 1.18 2014/03/13 03:52:55 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -370,8 +370,8 @@ apm_suspend(int state)
 
 	resettodr();
 
-	bufq_quiesce();
 	config_suspend(mainbus, DVACT_QUIESCE);
+	bufq_quiesce();
 
 	s = splhigh();
 	(void)disableintr();
