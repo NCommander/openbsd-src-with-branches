@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_fault.c,v 1.68 2013/05/30 16:39:26 tedu Exp $	*/
+/*	$OpenBSD: uvm_fault.c,v 1.69 2013/05/30 18:02:04 tedu Exp $	*/
 /*	$NetBSD: uvm_fault.c,v 1.51 2000/08/06 00:22:53 thorpej Exp $	*/
 
 /*
@@ -811,8 +811,9 @@ ReFault:
 			    PMAP_CANFAIL |
 			     (VM_MAPENT_ISWIRED(ufi.entry) ? PMAP_WIRED : 0));
 		}
-		pmap_update(ufi.orig_map->pmap);
 	}
+	if (npages > 1)
+		pmap_update(ufi.orig_map->pmap);
 
 	/* (shadowed == TRUE) if there is an anon at the faulting address */
 
