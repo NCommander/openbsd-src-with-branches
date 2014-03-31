@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.439 2014/03/31 21:36:43 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.440 2014/03/31 21:37:55 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -540,6 +540,7 @@ enum mode_key_cmd {
 	MODEKEYCHOICE_UP,
 
 	/* Copy keys. */
+	MODEKEYCOPY_APPENDSELECTION,
 	MODEKEYCOPY_BACKTOINDENTATION,
 	MODEKEYCOPY_BOTTOMLINE,
 	MODEKEYCOPY_CANCEL,
