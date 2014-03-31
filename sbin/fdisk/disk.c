@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.c,v 1.40 2014/03/17 16:40:00 krw Exp $	*/
+/*	$OpenBSD: disk.c,v 1.41 2014/03/20 13:18:21 krw Exp $	*/
 
 /*
  * Copyright (c) 1997, 2001 Tobias Weingartner
@@ -114,4 +114,3 @@ DISK_printgeometry(struct disk *disk, char *units)
 
 	return (0);
 }
-
