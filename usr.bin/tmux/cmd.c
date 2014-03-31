@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.89 2013/10/10 12:29:35 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.90 2014/01/09 14:20:55 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -138,6 +138,9 @@ cmd_pack_argv(int argc, char **argv, char *buf, size_t len)
 {
 	size_t	arglen;
 	int	i;
+
+	if (argc == 0)
+		return (0);
 
 	*buf = '\0';
 	for (i = 0; i < argc; i++) {
