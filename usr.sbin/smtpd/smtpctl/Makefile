@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.34 2013/10/26 20:32:48 eric Exp $
+#	$OpenBSD: Makefile,v 1.35 2014/01/18 05:54:51 martynas Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -10,7 +10,7 @@ BINMODE?=555
 BINDIR=	/usr/sbin
 MAN=	smtpctl.8
 
-CFLAGS+=	-g3 -ggdb -I${.CURDIR}/..
+CFLAGS+=	-I${.CURDIR}/..
 CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
