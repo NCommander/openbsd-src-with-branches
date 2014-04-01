@@ -1,4 +1,4 @@
-/*	$OpenBSD: delivery.c,v 1.3 2013/01/26 09:37:23 gilles Exp $	*/
+/*	$OpenBSD: delivery.c,v 1.4 2013/05/24 17:03:14 eric Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@poolp.org>
@@ -54,8 +54,7 @@ delivery_backend_lookup(enum action_type type)
 	case A_LMTP:
 		return &delivery_backend_lmtp;
 	default:
-		fatal("unsupported delivery_backend type");
+		break;
 	}
-
 	return NULL;
 }
