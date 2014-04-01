@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt.c,v 1.30 2010/06/26 23:24:43 guenther Exp $	*/
+/*	$OpenBSD: gdt.c,v 1.31 2012/12/05 23:20:12 deraadt Exp $	*/
 /*	$NetBSD: gdt.c,v 1.28 2002/12/14 09:38:50 junyoung Exp $	*/
 
 /*-
@@ -53,7 +53,7 @@
 #include <sys/lock.h>
 #include <sys/mutex.h>
 
-#include <uvm/uvm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/gdt.h>
 #include <machine/pcb.h>
