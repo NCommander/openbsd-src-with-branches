@@ -1,4 +1,4 @@
-/*	$OpenBSD: authpf.c,v 1.118 2013/01/19 16:58:16 miod Exp $	*/
+/*	$OpenBSD: authpf.c,v 1.119 2013/04/02 06:04:50 guenther Exp $	*/
 
 /*
  * Copyright (C) 1998 - 2007 Bob Beck (beck@openbsd.org).
@@ -805,7 +805,7 @@ change_filter(int add, const char *luser, const char *ipsrc)
 		case 0:
 			/* revoke group privs before exec */
 			gid = getgid();
-			if (setregid(gid, gid) == -1) {
+			if (setresgid(gid, gid, gid) == -1) {
 				err(1, "setregid");
 			}
 			execvp(PATH_PFCTL, pargv);
