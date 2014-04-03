@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_fault.h,v 1.12 2002/03/14 01:27:18 millert Exp $	*/
+/*	$OpenBSD: uvm_fault.h,v 1.13 2009/03/25 20:00:18 oga Exp $	*/
 /*	$NetBSD: uvm_fault.h,v 1.14 2000/06/26 14:21:17 mrg Exp $	*/
 
 /*
@@ -72,6 +72,7 @@ struct uvm_faultinfo {
  * fault prototypes
  */
 
+void		uvmfault_init(void);
 
 boolean_t	uvmfault_lookup(struct uvm_faultinfo *, boolean_t);
 boolean_t	uvmfault_relock(struct uvm_faultinfo *);
