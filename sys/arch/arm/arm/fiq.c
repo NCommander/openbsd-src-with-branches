@@ -1,4 +1,4 @@
-/*	$OpenBSD: fiq.c,v 1.3 2012/12/05 23:20:11 deraadt Exp $	*/
+/*	$OpenBSD: fiq.c,v 1.4 2013/05/10 10:18:46 patrick Exp $	*/
 /*	$NetBSD: fiq.c,v 1.5 2002/04/03 23:33:27 thorpej Exp $	*/
 
 /*
@@ -41,8 +41,6 @@
 
 #include <arm/cpufunc.h>
 #include <arm/fiq.h>
-
-#include <uvm/uvm.h>
 
 TAILQ_HEAD(, fiqhandler) fiqhandler_stack =
     TAILQ_HEAD_INITIALIZER(fiqhandler_stack);

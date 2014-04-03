@@ -1,4 +1,4 @@
-/*	$OpenBSD: scoop_pcic.c,v 1.2 2008/11/25 14:55:44 drahn Exp $	*/
+/*	$OpenBSD: scoop_pcic.c,v 1.3 2009/03/29 21:53:52 sthen Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@bsdx.de>
@@ -18,7 +18,8 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <uvm/uvm.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <arch/arm/xscale/pxa2x0var.h>
 #include <arch/arm/xscale/pxapcicvar.h>
