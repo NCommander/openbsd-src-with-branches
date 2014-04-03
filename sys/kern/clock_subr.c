@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock_subr.c,v 1.2 2006/11/14 18:00:27 jmc Exp $	*/
+/*	$OpenBSD: clock_subr.c,v 1.3 2013/07/02 01:58:42 guenther Exp $	*/
 /*	$NetBSD: clock_subr.c,v 1.3 1997/03/15 18:11:16 is Exp $	*/
 
 /*
@@ -126,7 +126,7 @@ clock_secs_to_ymdhms(time_t secs, struct clock_ymdhms *dt)
 	int i, days;
 	int rsec;	/* remainder seconds */
 
-	bcopy(month_days, mthdays, sizeof(mthdays));
+	memcpy(mthdays, month_days, sizeof(mthdays));
 
 	days = secs / SECDAY;
 	rsec = secs % SECDAY;
