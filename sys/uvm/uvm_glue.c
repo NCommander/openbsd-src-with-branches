@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_glue.c,v 1.59 2012/03/23 15:51:26 guenther Exp $	*/
+/*	$OpenBSD: uvm_glue.c,v 1.60 2013/03/31 17:06:34 deraadt Exp $	*/
 /*	$NetBSD: uvm_glue.c,v 1.44 2001/02/06 19:54:44 eeh Exp $	*/
 
 /* 
@@ -475,4 +475,13 @@ uvm_atopg(vaddr_t kva)
 	pg = PHYS_TO_VM_PAGE(pa);
 	KASSERT(pg != NULL);
 	return (pg);
-} 
+}
+
+void
+uvm_pause(void)
+{
+	KERNEL_UNLOCK();
+	KERNEL_LOCK();
+	if (curcpu()->ci_schedstate.spc_schedflags & SPCF_SHOULDYIELD)
+		preempt(NULL);
+}
