@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.446 2014/04/01 05:50:30 deraadt Exp $ */
+/* $OpenBSD: tmux.h,v 1.447 2014/04/02 18:12:18 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1168,6 +1168,7 @@ struct mouse_event {
 
 	u_int	button;
 	u_int	clicks;
+	u_int	scroll;
 
 	int	wheel;
 	int     event;
