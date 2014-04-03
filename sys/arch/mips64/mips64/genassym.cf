@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.9 2012/06/24 16:26:04 miod Exp $
+#	$OpenBSD: genassym.cf,v 1.10 2014/03/22 00:01:04 miod Exp $
 #
 # Copyright (c) 1997 Per Fogelstrom / Opsycon AB
 #
@@ -31,8 +31,6 @@ include <sys/proc.h>
 include <sys/mbuf.h>
 include <sys/user.h>
 include <sys/siginfo.h>
-
-include <uvm/uvm.h>
 
 include <machine/cpu.h>
 

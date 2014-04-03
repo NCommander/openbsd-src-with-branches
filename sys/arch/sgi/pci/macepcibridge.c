@@ -1,4 +1,4 @@
-/*	$OpenBSD: macepcibridge.c,v 1.44 2012/03/15 18:52:56 miod Exp $ */
+/*	$OpenBSD: macepcibridge.c,v 1.45 2012/09/29 18:54:39 miod Exp $ */
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -53,7 +53,6 @@
 #include <sys/proc.h>
 #include <sys/ioctl.h>
 #include <sys/extent.h>
-#include <uvm/uvm.h>
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
