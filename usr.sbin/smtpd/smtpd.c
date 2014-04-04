@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.215 2014/03/24 14:55:12 gilles Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.216 2014/04/01 09:00:46 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -616,7 +616,6 @@ main(int argc, char *argv[])
 
 	if (!queue_init(backend_queue, 1))
 		errx(1, "could not initialize queue backend");
-	purge_task();
 
 	env->sc_stat = stat_backend_lookup(backend_stat);
 	if (env->sc_stat == NULL)
@@ -690,6 +689,8 @@ main(int argc, char *argv[])
 
 	if (pidfile(NULL) < 0)
 		err(1, "pidfile");
+
+	purge_task();
 
 	if (event_dispatch() < 0)
 		fatal("smtpd: event_dispatch");
