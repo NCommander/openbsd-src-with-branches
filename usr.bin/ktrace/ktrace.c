@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrace.c,v 1.27 2013/11/06 17:26:55 sobrado Exp $	*/
+/*	$OpenBSD: ktrace.c,v 1.28 2014/04/04 21:34:47 miod Exp $	*/
 /*	$NetBSD: ktrace.c,v 1.4 1995/08/31 23:01:44 jtc Exp $	*/
 
 /*-
@@ -221,8 +221,8 @@ static void
 usage(void)
 {
 	if (is_ltrace)
-		fprintf(stderr, "usage: %s [-ai] [-f trfile] [-u trspec]"
-		    " command\n",
+		fprintf(stderr, "usage: %s [-ai] [-f trfile] [-t trstr]"
+		    " [-u trspec] command\n",
 		    __progname);
 	else
 		fprintf(stderr, "usage: %s [-aBCcdi] [-f trfile] [-g pgid]"
