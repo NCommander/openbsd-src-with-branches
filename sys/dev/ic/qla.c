@@ -1,4 +1,4 @@
-/*	$OpenBSD: qla.c,v 1.33 2014/04/05 12:49:27 jmatthew Exp $ */
+/*	$OpenBSD: qla.c,v 1.34 2014/04/07 00:38:43 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -548,8 +548,9 @@ qla_attach(struct qla_softc *sc)
 
 		if (qla_update_fabric(sc) == 0) {
 			u_int32_t firstport = 0xffffffff;
-			u_int32_t lastport = 0;
+			u_int32_t lastport;
 
+			lastport = sc->sc_port_id;
 			do {
 				port = qla_next_fabric_port(sc, &firstport,
 				    &lastport);
