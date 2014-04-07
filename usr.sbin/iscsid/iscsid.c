@@ -1,4 +1,4 @@
-/*	$OpenBSD: iscsid.c,v 1.8 2011/08/20 19:03:39 sthen Exp $ */
+/*	$OpenBSD: iscsid.c,v 1.9 2014/02/17 18:59:50 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -138,9 +138,7 @@ main(int argc, char *argv[])
 	signal_add(&ev_sighup, NULL);
 	signal(SIGPIPE, SIG_IGN);
 
-	if (control_listen() == -1)
-		fatalx("control socket listen failed");
-
+	control_event_init();
 	initiator = initiator_init();
 
 	event_dispatch();
