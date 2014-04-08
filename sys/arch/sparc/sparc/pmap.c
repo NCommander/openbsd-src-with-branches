@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.162 2013/06/11 16:42:11 deraadt Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.163 2013/09/21 10:04:42 miod Exp $	*/
 /*	$NetBSD: pmap.c,v 1.118 1998/05/19 19:00:18 thorpej Exp $ */
 
 /*
@@ -67,9 +67,9 @@
 #include <sys/core.h>
 #include <sys/kcore.h>
 #include <sys/lock.h>
-
-#include <uvm/uvm.h>
 #include <sys/pool.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/bsd_openprom.h>
