@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.4 2012/07/09 17:52:09 schwarze Exp $
+# $OpenBSD: Makefile,v 1.5 2012/07/12 15:31:49 schwarze Exp $
 
-REGRESS_TARGETS = empty font emptyNAME emptyNAMEuse badNAME badNAMEuse
+REGRESS_TARGETS = empty font emptyNAME emptyNAMEuse badNAME badNAMEuse long
 
 SKIP_GROFF = emptyNAME emptyNAMEuse badNAME badNAMEuse
 
