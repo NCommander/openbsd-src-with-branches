@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmstat.c,v 1.74 2013/05/14 20:39:25 miod Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.75 2013/10/31 02:00:11 deraadt Exp $	*/
 /*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
@@ -43,8 +43,7 @@
 #include <sys/proc.h>
 #include <sys/namei.h>
 #include <sys/sysctl.h>
-
-#include <uvm/uvm_extern.h>
+#include <sys/vmmeter.h>
 
 #include <ctype.h>
 #include <errno.h>
