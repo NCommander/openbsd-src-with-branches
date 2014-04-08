@@ -1,5 +1,5 @@
-# $OpenBSD: Makefile,v 1.5 2011/11/17 16:28:45 schwarze Exp $
+# $OpenBSD: Makefile,v 1.6 2012/07/18 16:51:50 schwarze Exp $
 
-REGRESS_TARGETS = literal spacing width manyargs empty
+REGRESS_TARGETS = empty literal longhead manyargs spacing width
 
 .include <bsd.regress.mk>
