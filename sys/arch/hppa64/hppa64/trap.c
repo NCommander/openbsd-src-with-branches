@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.33 2012/12/31 06:46:13 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.34 2014/03/26 05:23:42 guenther Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -27,7 +27,7 @@
 #include <sys/signalvar.h>
 #include <sys/user.h>
 
-#include <uvm/uvm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/cpufunc.h>

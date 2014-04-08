@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.18 2012/06/21 00:56:59 guenther Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.19 2013/01/16 19:04:43 miod Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -31,11 +31,11 @@
 #include <sys/core.h>
 #include <sys/pool.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/psl.h>
 #include <machine/pmap.h>
 #include <machine/pcb.h>
-
-#include <uvm/uvm.h>
 
 extern struct pool hppa_fppl;
 

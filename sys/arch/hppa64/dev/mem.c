@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.5 2008/04/27 17:48:09 martin Exp $	*/
+/*	$OpenBSD: mem.c,v 1.6 2010/12/26 15:40:59 miod Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -74,7 +74,7 @@
 #include <sys/ioctl.h>
 #include <sys/file.h>
 
-#include <uvm/uvm.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/conf.h>
 #include <machine/bus.h>

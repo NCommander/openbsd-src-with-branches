@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.217 2014/03/29 18:09:29 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.218 2014/04/04 20:25:21 miod Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -54,8 +54,6 @@
 
 #include <net/if.h>
 #include <uvm/uvm.h>
-#include <uvm/uvm_page.h>
-#include <uvm/uvm_swap.h>
 
 #include <dev/cons.h>
 
