@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcireg.h,v 1.44 2013/06/03 22:01:57 mikeb Exp $	*/
+/*	$OpenBSD: pcireg.h,v 1.45 2013/08/26 09:50:47 jsg Exp $	*/
 /*	$NetBSD: pcireg.h,v 1.26 2000/05/10 16:58:42 thorpej Exp $	*/
 
 /*
@@ -167,6 +167,7 @@ typedef u_int8_t pci_revision_t;
 #define	PCI_SUBCLASS_MASS_STORAGE_ATA		0x05
 #define	PCI_SUBCLASS_MASS_STORAGE_SATA		0x06
 #define	PCI_SUBCLASS_MASS_STORAGE_SAS		0x07
+#define	PCI_SUBCLASS_MASS_STORAGE_NVM		0x08
 #define	PCI_SUBCLASS_MASS_STORAGE_MISC		0x80
 
 /* 0x02 network subclasses */
