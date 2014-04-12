@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr.c,v 1.20 2013/04/21 04:25:49 deraadt Exp $	*/
+/*	$OpenBSD: subr.c,v 1.21 2013/12/10 20:56:59 naddy Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -44,8 +44,6 @@
 #include "extern.h"
 
 extern	struct termios tmode, omode;
-
-static void	compatflags(long);
 
 /*
  * Get a table entry.
