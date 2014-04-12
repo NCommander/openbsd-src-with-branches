@@ -1,4 +1,4 @@
-/* $OpenBSD: memconfig.c,v 1.14 2011/06/06 14:59:16 tedu Exp $ */
+/* $OpenBSD: memconfig.c,v 1.15 2011/09/20 08:28:51 deraadt Exp $ */
 
 /*-
  * Copyright (c) 1999 Michael Smith <msmith@freebsd.org>
@@ -242,7 +242,7 @@ setfunc(int memfd, int argc, char *argv[])
 	while(argc--) {
 		for (i = 0; attrnames[i].name != NULL; i++) {
 			if (!strcmp(attrnames[i].name, argv[0])) {
-				if (!attrnames[i].kind & MDF_SETTABLE)
+				if (!(attrnames[i].kind & MDF_SETTABLE))
 					help("flags");
 				mrd.mr_flags |= attrnames[i].val;
 				break;
