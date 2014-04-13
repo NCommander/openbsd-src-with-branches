@@ -1,6 +1,0 @@
-# $OpenBSD$
-/set \
-type=dir
-.
-/set type=file
-spec1
