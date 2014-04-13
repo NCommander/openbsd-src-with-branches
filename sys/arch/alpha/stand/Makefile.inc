@@ -1,7 +1,5 @@
-#	$OpenBSD: Makefile.inc,v 1.13 2012/11/08 12:14:08 otto Exp $
+#	$OpenBSD: Makefile.inc,v 1.14 2012/12/17 19:03:22 martynas Exp $
 #	$NetBSD: Makefile.inc,v 1.8 1997/04/06 08:39:38 cgd Exp $
-
-.include <bsd.own.mk>			# for ELF_TOOLCHAIN definition
 
 BINDIR=			/usr/mdec
 

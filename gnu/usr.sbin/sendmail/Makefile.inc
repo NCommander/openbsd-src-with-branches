@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.18 2012/08/21 14:05:59 jsg Exp $
+#	$OpenBSD: Makefile.inc,v 1.19 2013/01/09 22:17:58 matthieu Exp $
 
 .include <bsd.own.mk>
 .include <bsd.obj.mk>
@@ -39,14 +39,6 @@ LDFLAGS+=-L${.CURDIR}/../libsm/${__objdir}
 .else
 DPADD+= ${.CURDIR}/../libsm/libsm.a
 LDFLAGS+=-L${.CURDIR}/../libsm
-.endif
-.endif
-
-.if defined(WANT_LIBWRAP)
-.if (${TCP_WRAPPERS:L} == "yes")
-ENVDEF+=-DTCPWRAPPERS
-DPADD+= ${LIBWRAP}
-LDADD+= -lwrap
 .endif
 .endif
 
