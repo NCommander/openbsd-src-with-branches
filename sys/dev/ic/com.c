@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.155 2013/12/09 19:47:42 deraadt Exp $	*/
+/*	$OpenBSD: com.c,v 1.156 2013/12/09 19:54:31 deraadt Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -1446,7 +1446,8 @@ comcninit(struct consdev *cp)
 }
 
 int
-comcnattach(bus_space_tag_t iot, bus_addr_t iobase, int rate, int frequency, tcflag_t cflag)
+comcnattach(bus_space_tag_t iot, bus_addr_t iobase, int rate,
+    int frequency, tcflag_t cflag)
 {
 	static struct consdev comcons = {
 		NULL, NULL, comcngetc, comcnputc, comcnpollc, NULL,
