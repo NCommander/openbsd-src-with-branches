@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpleaps.c,v 1.10 2013/04/20 17:55:51 deraadt Exp $	*/
+/*	$OpenBSD: ntpleaps.c,v 1.11 2013/11/12 22:27:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002 Thorsten Glaser. All rights reserved.
@@ -30,9 +30,6 @@
  */
 
 /* Leap second support for NTP clients (generic) */
-
-static const char RCSId[] = "$OpenBSD: ntpleaps.c,v 1.10 2013/04/20 17:55:51 deraadt Exp $";
-
 
 /*
  * I could include tzfile.h, but this would make the code unportable
