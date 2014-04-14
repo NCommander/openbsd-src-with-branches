@@ -1,4 +1,4 @@
-/* $OpenBSD: imxahci.c,v 1.1 2013/09/06 20:45:53 patrick Exp $ */
+/* $OpenBSD: imxahci.c,v 1.2 2013/11/06 19:03:07 syl Exp $ */
 /*
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -25,6 +25,7 @@
 
 #include <machine/bus.h>
 
+#include <dev/ic/ahcireg.h>
 #include <dev/ic/ahcivar.h>
 
 #include <armv7/armv7/armv7var.h>
