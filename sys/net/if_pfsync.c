@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.203 2013/11/15 12:18:02 henning Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.204 2013/11/18 21:16:55 chl Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1683,7 +1683,7 @@ pfsync_sendout(void)
 	sc->sc_if.if_opackets++;
 	sc->sc_if.if_obytes += m->m_pkthdr.len;
 
-	m->m_pkthdr.rdomain = sc->sc_if.if_rdomain;
+	m->m_pkthdr.ph_rtableid = sc->sc_if.if_rdomain;
 
 	if (ip_output(m, NULL, NULL, IP_RAWOUTPUT, &sc->sc_imo, NULL) == 0)
 		pfsyncstats.pfsyncs_opackets++;

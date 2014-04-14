@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.118 2013/11/11 09:15:35 mpi Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.119 2014/01/09 06:29:06 tedu Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -235,7 +235,7 @@ ipsec_common_input(struct mbuf *m, int skip, int protoff, int af, int sproto,
 	}
 
 	s = splsoftnet();
-	tdbp = gettdb(rtable_l2(m->m_pkthdr.rdomain),
+	tdbp = gettdb(rtable_l2(m->m_pkthdr.ph_rtableid),
 	    spi, &dst_address, sproto);
 	if (tdbp == NULL) {
 		splx(s);
