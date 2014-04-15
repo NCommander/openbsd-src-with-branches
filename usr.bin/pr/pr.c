@@ -1,4 +1,4 @@
-/*	$OpenBSD: pr.c,v 1.32 2013/08/22 04:43:40 guenther Exp $	*/
+/*	$OpenBSD: pr.c,v 1.33 2013/11/26 13:19:07 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991 Keith Muller.
@@ -1757,11 +1757,11 @@ void
 usage(void)
 {
     ferrout(
-     "usage: pr [+page] [-column] [-adFfmrt] [-e [char] [gap]] [-h header]\n");
+     "usage: pr [+page] [-column] [-adFfmrt] [-e[char][gap]] [-h header]\n");
     ferrout(
-     "\t[-i [char] [gap]] [-l lines] [-n [char] [width]] [-o offset]\n");
+     "\t[-i[char][gap]] [-l lines] [-n[char][width]] [-o offset] [-s[char]]\n");
     ferrout(
-     "\t[-s [char]] [-w width] [-] [file ...]\n");
+     "\t[-w width] [file ...]\n");
 }
 
 /*
