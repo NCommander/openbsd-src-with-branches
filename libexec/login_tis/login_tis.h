@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: login_tis.h,v 1.1 2004/09/28 15:02:01 millert Exp $	*/
 
 /*
  * Copyright (c) 2004 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -33,5 +33,5 @@ struct tis_connection {
 	char *port;
 	char *server;
 	char *altserver;
-	des_key_schedule keysched;
+	DES_key_schedule keysched;
 };
