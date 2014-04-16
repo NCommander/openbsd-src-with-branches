@@ -19,7 +19,6 @@
 #define	UP_fflush	fflush
 #define	UP_ferror	ferror
 #define	UP_fileno	fileno
-
 #define	UP_open		open
 #define	UP_read		read
 #define	UP_write	write
