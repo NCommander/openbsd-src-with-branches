@@ -1,4 +1,4 @@
-# $OpenBSD: Program.pm,v 1.3 2012/11/09 10:55:01 espie Exp $
+# $OpenBSD: Program.pm,v 1.4 2014/04/16 10:31:27 zhuk Exp $
 
 # Copyright (c) 2007-2010 Steven Mestdagh <steven@openbsd.org>
 # Copyright (c) 2012 Marc Espie <espie@openbsd.org>
@@ -41,7 +41,7 @@ sub link
 	    $libdirs, $parser, $gp) = @_;
 
 	tsay {"linking program (", ($gp->static ? "not " : ""),
-	      	"dynamically linking not-installed libtool libraries)"};
+	    "dynamically linking not-installed libtool libraries)"};
 
 	my $fpath  = $self->{outfilepath};
 	my $RPdirs = $self->{RPdirs};
