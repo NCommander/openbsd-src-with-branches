@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.118 2014/02/17 22:42:20 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.119 2014/02/23 00:53:06 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -118,6 +118,11 @@ server_client_open(struct client *c, char **cause)
 {
 	if (c->flags & CLIENT_CONTROL)
 		return (0);
+
+	if (strcmp(c->ttyname, "/dev/tty") == 0) {
+		*cause = xstrdup("can't use /dev/tty");
+		return (-1);
+	}
 
 	if (!(c->flags & CLIENT_TERMINAL)) {
 		*cause = xstrdup("not a terminal");
