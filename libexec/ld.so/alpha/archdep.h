@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.12 2004/05/24 20:16:12 drahn Exp $ */
+/*	$OpenBSD: archdep.h,v 1.13 2010/01/02 12:16:35 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -60,7 +60,7 @@ RELOC_RELA(Elf64_Rela *r, const Elf64_Sym *s, Elf64_Addr *p, unsigned long v,
 		Elf64_Addr val = v + s->st_value + r->r_addend -
 			(Elf64_Addr)(p);
 		*p = val;
-		__asm __volatile("imb" : : : "memory");
+		__asm volatile("imb" : : : "memory");
 	} else if (ELF64_R_TYPE(r->r_info) == RELOC_GLOB_DAT) {
 		*p = v + s->st_value + r->r_addend;
 	} else {
