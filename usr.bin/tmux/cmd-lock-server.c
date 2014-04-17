@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-lock-server.c,v 1.14 2013/03/24 09:54:10 nicm Exp $ */
+/* $OpenBSD: cmd-lock-server.c,v 1.15 2013/10/10 12:00:21 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -17,10 +17,6 @@
  */
 
 #include <sys/types.h>
-
-#include <pwd.h>
-#include <string.h>
-#include <unistd.h>
 
 #include "tmux.h"
 
