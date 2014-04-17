@@ -1,4 +1,4 @@
-/* $OpenBSD: environ.c,v 1.4 2010/04/04 19:02:09 nicm Exp $ */
+/* $OpenBSD: environ.c,v 1.5 2012/07/10 11:53:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -137,7 +137,8 @@ environ_unset(struct environ *env, const char *name)
  * environment.
  */
 void
-environ_update(const char *vars, struct environ *srcenv, struct environ *dstenv)
+environ_update(const char *vars, struct environ *srcenv,
+    struct environ *dstenv)
 {
 	struct environ_entry	*envent;
 	char			*copyvars, *var, *next;

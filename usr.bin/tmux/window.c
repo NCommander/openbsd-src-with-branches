@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.106 2014/04/17 11:38:35 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.107 2014/04/17 13:02:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1162,7 +1162,8 @@ window_pane_visible(struct window_pane *wp)
 }
 
 char *
-window_pane_search(struct window_pane *wp, const char *searchstr, u_int *lineno)
+window_pane_search(struct window_pane *wp, const char *searchstr,
+    u_int *lineno)
 {
 	struct screen	*s = &wp->base;
 	char		*newsearchstr, *line, *msg;

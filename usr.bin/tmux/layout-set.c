@@ -1,4 +1,4 @@
-/* $OpenBSD: layout-set.c,v 1.9 2011/03/07 23:55:16 nicm Exp $ */
+/* $OpenBSD: layout-set.c,v 1.10 2011/11/09 12:02:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -23,8 +23,8 @@
 #include "tmux.h"
 
 /*
- * Set window layouts - predefined methods to arrange windows. These are one-off
- * and generate a layout tree.
+ * Set window layouts - predefined methods to arrange windows. These are
+ * one-off and generate a layout tree.
  */
 
 void	layout_set_even_h(struct window *);
