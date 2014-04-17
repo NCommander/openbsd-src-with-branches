@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpgetsticky.c,v 1.1 1999/07/23 03:16:27 rahnds Exp $	*/
+/*	$OpenBSD: fpgetsticky.c,v 1.2 2008/06/26 05:42:05 ray Exp $	*/
 /*	$NetBSD: fpgetsticky.c,v 1.1 1999/07/07 01:55:08 danw Exp $	*/
 
 /*
@@ -38,6 +38,6 @@ fpgetsticky()
 {
 	u_int64_t fpscr;
 
-	__asm__ __volatile("mffs %0" : "=f"(fpscr));
+	__asm__ volatile("mffs %0" : "=f"(fpscr));
 	return ((fpscr >> 25) & 0x1f);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fabs.c,v 1.7 2012/12/05 23:19:58 deraadt Exp $	*/
+/*	$OpenBSD: fabs.c,v 1.8 2013/03/28 18:09:38 martynas Exp $	*/
 
 /*
  * Copyright (c) 2002 Theo de Raadt
@@ -30,7 +30,7 @@
 double
 fabs(double x)
 {
-	__asm__ __volatile("fabs %0,%1" : "=f"(x) : "f"(x));
+	__asm__ volatile("fabs %0,%1" : "=f"(x) : "f"(x));
 	return (x);
 }
 
