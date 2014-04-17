@@ -1,4 +1,4 @@
-/* $OpenBSD: key-bindings.c,v 1.38 2013/03/24 09:54:10 nicm Exp $ */
+/* $OpenBSD: key-bindings.c,v 1.39 2013/03/24 09:57:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -212,7 +212,7 @@ key_bindings_dispatch(struct key_binding *bd, struct client *c)
 			readonly = 0;
 	}
 	if (!readonly && (c->flags & CLIENT_READONLY)) {
-		cmdq_info(c->cmdq, "client is read-only");
+		cmdq_error(c->cmdq, "client is read-only");
 		return;
 	}
 

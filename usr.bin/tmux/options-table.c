@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.46 2014/03/31 21:41:35 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.47 2014/04/17 07:36:45 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -90,7 +90,7 @@ const struct options_table_entry server_options_table[] = {
 
 	{ .name = "quiet",
 	  .type = OPTIONS_TABLE_FLAG,
-	  .default_num = 0 /* overridden in main() */
+	  .default_num = 0
 	},
 
 	{ .name = "set-clipboard",
