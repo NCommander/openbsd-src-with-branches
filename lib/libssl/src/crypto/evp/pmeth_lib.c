@@ -73,7 +73,7 @@ DECLARE_STACK_OF(EVP_PKEY_METHOD)
 STACK_OF(EVP_PKEY_METHOD) *app_pkey_methods = NULL;
 
 extern const EVP_PKEY_METHOD rsa_pkey_meth, dh_pkey_meth, dsa_pkey_meth;
-extern const EVP_PKEY_METHOD ec_pkey_meth, hmac_pkey_meth;
+extern const EVP_PKEY_METHOD ec_pkey_meth, hmac_pkey_meth, cmac_pkey_meth;
 
 static const EVP_PKEY_METHOD *standard_methods[] =
 	{
@@ -90,6 +90,7 @@ static const EVP_PKEY_METHOD *standard_methods[] =
 	&ec_pkey_meth,
 #endif
 	&hmac_pkey_meth,
+	&cmac_pkey_meth
 	};
 
 DECLARE_OBJ_BSEARCH_CMP_FN(const EVP_PKEY_METHOD *, const EVP_PKEY_METHOD *,
@@ -134,6 +135,8 @@ static EVP_PKEY_CTX *int_ctx_new(EVP_PKEY *pkey, ENGINE *e, int id)
 		id = pkey->ameth->pkey_id;
 		}
 #ifndef OPENSSL_NO_ENGINE
+	if (pkey && pkey->engine)
+		e = pkey->engine;
 	/* Try to find an ENGINE which implements this method */
 	if (e)
 		{
@@ -162,7 +165,7 @@ static EVP_PKEY_CTX *int_ctx_new(EVP_PKEY *pkey, ENGINE *e, int id)
 		return NULL;
 		}
 
-	ret = OPENSSL_malloc(sizeof(EVP_PKEY_CTX));
+	ret = malloc(sizeof(EVP_PKEY_CTX));
 	if (!ret)
 		{
 #ifndef OPENSSL_NO_ENGINE
@@ -197,9 +200,11 @@ static EVP_PKEY_CTX *int_ctx_new(EVP_PKEY *pkey, ENGINE *e, int id)
 EVP_PKEY_METHOD* EVP_PKEY_meth_new(int id, int flags)
 	{
 	EVP_PKEY_METHOD *pmeth;
-	pmeth = OPENSSL_malloc(sizeof(EVP_PKEY_METHOD));
+	pmeth = malloc(sizeof(EVP_PKEY_METHOD));
 	if (!pmeth)
 		return NULL;
+
+	memset(pmeth, 0, sizeof(EVP_PKEY_METHOD));
 
 	pmeth->pkey_id = id;
 	pmeth->flags = flags | EVP_PKEY_FLAG_DYNAMIC;
@@ -233,10 +238,60 @@ EVP_PKEY_METHOD* EVP_PKEY_meth_new(int id, int flags)
 	return pmeth;
 	}
 
+void EVP_PKEY_meth_get0_info(int *ppkey_id, int *pflags,
+				const EVP_PKEY_METHOD *meth)
+	{
+	if (ppkey_id)
+		*ppkey_id = meth->pkey_id;
+	if (pflags)
+		*pflags = meth->flags;
+	}
+
+void EVP_PKEY_meth_copy(EVP_PKEY_METHOD *dst, const EVP_PKEY_METHOD *src)
+	{
+
+	dst->init = src->init;
+	dst->copy = src->copy;
+	dst->cleanup = src->cleanup;
+
+	dst->paramgen_init = src->paramgen_init;
+	dst->paramgen = src->paramgen;
+
+	dst->keygen_init = src->keygen_init;
+	dst->keygen = src->keygen;
+
+	dst->sign_init = src->sign_init;
+	dst->sign = src->sign;
+
+	dst->verify_init = src->verify_init;
+	dst->verify = src->verify;
+
+	dst->verify_recover_init = src->verify_recover_init;
+	dst->verify_recover = src->verify_recover;
+
+	dst->signctx_init = src->signctx_init;
+	dst->signctx = src->signctx;
+
+	dst->verifyctx_init = src->verifyctx_init;
+	dst->verifyctx = src->verifyctx;
+
+	dst->encrypt_init = src->encrypt_init;
+	dst->encrypt = src->encrypt;
+
+	dst->decrypt_init = src->decrypt_init;
+	dst->decrypt = src->decrypt;
+
+	dst->derive_init = src->derive_init;
+	dst->derive = src->derive;
+
+	dst->ctrl = src->ctrl;
+	dst->ctrl_str = src->ctrl_str;
+	}
+
 void EVP_PKEY_meth_free(EVP_PKEY_METHOD *pmeth)
 	{
 	if (pmeth && (pmeth->flags & EVP_PKEY_FLAG_DYNAMIC))
-		OPENSSL_free(pmeth);
+		free(pmeth);
 	}
 
 EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *pkey, ENGINE *e)
@@ -262,7 +317,7 @@ EVP_PKEY_CTX *EVP_PKEY_CTX_dup(EVP_PKEY_CTX *pctx)
 		return 0;
 		}
 #endif
-	rctx = OPENSSL_malloc(sizeof(EVP_PKEY_CTX));
+	rctx = malloc(sizeof(EVP_PKEY_CTX));
 	if (!rctx)
 		return NULL;
 
@@ -323,7 +378,7 @@ void EVP_PKEY_CTX_free(EVP_PKEY_CTX *ctx)
 		 * functional reference we held for this reason. */
 		ENGINE_finish(ctx->engine);
 #endif
-	OPENSSL_free(ctx);
+	free(ctx);
 	}
 
 int EVP_PKEY_CTX_ctrl(EVP_PKEY_CTX *ctx, int keytype, int optype,

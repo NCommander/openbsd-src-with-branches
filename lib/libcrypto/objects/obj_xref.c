@@ -110,8 +110,10 @@ int OBJ_find_sigid_algs(int signid, int *pdig_nid, int *ppkey_nid)
 #endif
 	if (rv == NULL)
 		return 0;
-	*pdig_nid = rv->hash_id;
-	*ppkey_nid = rv->pkey_id;
+	if (pdig_nid)
+		*pdig_nid = rv->hash_id;
+	if (ppkey_nid)
+		*ppkey_nid = rv->pkey_id;
 	return 1;
 	}
 
@@ -144,7 +146,8 @@ int OBJ_find_sigid_by_algs(int *psignid, int dig_nid, int pkey_nid)
 #endif
 	if (rv == NULL)
 		return 0;
-	*psignid = (*rv)->sign_id;
+	if (psignid)
+		*psignid = (*rv)->sign_id;
 	return 1;
 	}
 
@@ -159,7 +162,7 @@ int OBJ_add_sigid(int signid, int dig_id, int pkey_id)
 		sigx_app = sk_nid_triple_new(sigx_cmp);
 	if (!sigx_app)
 		return 0;
-	ntr = OPENSSL_malloc(sizeof(int) * 3);
+	ntr = malloc(sizeof(int) * 3);
 	if (!ntr)
 		return 0;
 	ntr->sign_id = signid;
@@ -168,7 +171,7 @@ int OBJ_add_sigid(int signid, int dig_id, int pkey_id)
 
 	if (!sk_nid_triple_push(sig_app, ntr))
 		{
-		OPENSSL_free(ntr);
+		free(ntr);
 		return 0;
 		}
 
@@ -183,7 +186,7 @@ int OBJ_add_sigid(int signid, int dig_id, int pkey_id)
 
 static void sid_free(nid_triple *tt)
 	{
-	OPENSSL_free(tt);
+	free(tt);
 	}
 
 void OBJ_sigid_free(void)

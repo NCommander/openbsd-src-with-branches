@@ -157,6 +157,7 @@ static int ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
 			goto err;
 			}
 		}
+#ifndef OPENSSL_NO_EC2M
 	else
 		{
 		if (!EC_POINT_get_affine_coordinates_GF2m(group, tmp, x, y, ctx)) 
@@ -165,6 +166,7 @@ static int ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
 			goto err;
 			}
 		}
+#endif
 
 	buflen = (EC_GROUP_get_degree(group) + 7)/8;
 	len = BN_num_bytes(x);
@@ -173,7 +175,7 @@ static int ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
 		ECDHerr(ECDH_F_ECDH_COMPUTE_KEY,ERR_R_INTERNAL_ERROR);
 		goto err;
 		}
-	if ((buf = OPENSSL_malloc(buflen)) == NULL)
+	if ((buf = malloc(buflen)) == NULL)
 		{
 		ECDHerr(ECDH_F_ECDH_COMPUTE_KEY,ERR_R_MALLOC_FAILURE);
 		goto err;
@@ -208,6 +210,6 @@ err:
 	if (tmp) EC_POINT_free(tmp);
 	if (ctx) BN_CTX_end(ctx);
 	if (ctx) BN_CTX_free(ctx);
-	if (buf) OPENSSL_free(buf);
+	if (buf) free(buf);
 	return(ret);
 	}

@@ -1,5 +1,5 @@
 /* pcy_cache.c */
-/* Written by Dr Stephen N Henson (shenson@bigfoot.com) for the OpenSSL
+/* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2004.
  */
 /* ====================================================================
@@ -134,12 +134,11 @@ static int policy_cache_new(X509 *x)
 	CERTIFICATEPOLICIES *ext_cpols = NULL;
 	POLICY_MAPPINGS *ext_pmaps = NULL;
 	int i;
-	cache = OPENSSL_malloc(sizeof(X509_POLICY_CACHE));
+	cache = malloc(sizeof(X509_POLICY_CACHE));
 	if (!cache)
 		return 0;
 	cache->anyPolicy = NULL;
 	cache->data = NULL;
-	cache->maps = NULL;
 	cache->any_skip = -1;
 	cache->explicit_skip = -1;
 	cache->map_skip = -1;
@@ -241,7 +240,7 @@ void policy_cache_free(X509_POLICY_CACHE *cache)
 		policy_data_free(cache->anyPolicy);
 	if (cache->data)
 		sk_X509_POLICY_DATA_pop_free(cache->data, policy_data_free);
-	OPENSSL_free(cache);
+	free(cache);
 	}
 
 const X509_POLICY_CACHE *policy_cache_set(X509 *x)
