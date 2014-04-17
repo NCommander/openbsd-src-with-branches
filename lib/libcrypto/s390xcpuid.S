@@ -1,19 +1,18 @@
 .text
 
-.globl	OPENSSL_cpuid_setup
-.type	OPENSSL_cpuid_setup,@function
-.align	16
-OPENSSL_cpuid_setup:
-	br	%r14		# reserved for future
-.size	OPENSSL_cpuid_setup,.-OPENSSL_cpuid_setup
-
 .globl	OPENSSL_s390x_facilities
 .type	OPENSSL_s390x_facilities,@function
 .align	16
 OPENSSL_s390x_facilities:
 	lghi	%r0,0
-	.long	0xb2b0f010	# stfle	16(%r15)
-	lg	%r2,16(%r15)
+	larl	%r2,OPENSSL_s390xcap_P
+	stg	%r0,8(%r2)
+	.long	0xb2b02000	# stfle	0(%r2)
+	brc	8,.Ldone
+	lghi	%r0,1
+	.long	0xb2b02000	# stfle 0(%r2)
+.Ldone:
+	lg	%r2,0(%r2)
 	br	%r14
 .size	OPENSSL_s390x_facilities,.-OPENSSL_s390x_facilities
 
@@ -59,32 +58,7 @@ OPENSSL_wipe_cpu:
 	br	%r14
 .size	OPENSSL_wipe_cpu,.-OPENSSL_wipe_cpu
 
-.globl	OPENSSL_cleanse
-.type	OPENSSL_cleanse,@function
-.align	16
-OPENSSL_cleanse:
-	lghi	%r4,15
-	lghi	%r0,0
-	clgr	%r3,%r4
-	jh	.Lot
-.Little:
-	stc	%r0,0(%r2)
-	la	%r2,1(%r2)
-	brctg	%r3,.Little
-	br	%r14
-.align	4
-.Lot:	tmll	%r2,7
-	jz	.Laligned
-	stc	%r0,0(%r2)
-	la	%r2,1(%r2)
-	brctg	%r3,.Lot
-.Laligned:
-	srlg	%r4,%r3,3
-.Loop:	stg	%r0,0(%r2)
-	la	%r2,8(%r2)
-	brctg	%r4,.Loop
-	lghi	%r4,7
-	ngr	%r3,%r4
-	jnz	.Little
-	br	%r14
-.size	OPENSSL_cleanse,.-OPENSSL_cleanse
+.section	.init
+	brasl	%r14,OPENSSL_cpuid_setup
+
+.comm	OPENSSL_s390xcap_P,16,8
