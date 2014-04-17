@@ -1,4 +1,4 @@
-/* $OpenBSD: format.c,v 1.41 2014/03/31 21:37:55 nicm Exp $ */
+/* $OpenBSD: format.c,v 1.42 2014/04/02 18:12:18 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -487,8 +487,6 @@ format_winlink(struct format_tree *ft, struct session *s, struct winlink *wl)
 
 	format_add(ft, "window_bell_flag", "%u",
 	    !!(wl->flags & WINLINK_BELL));
-	format_add(ft, "window_content_flag", "%u",
-	    !!(wl->flags & WINLINK_CONTENT));
 	format_add(ft, "window_activity_flag", "%u",
 	    !!(wl->flags & WINLINK_ACTIVITY));
 	format_add(ft, "window_silence_flag", "%u",
