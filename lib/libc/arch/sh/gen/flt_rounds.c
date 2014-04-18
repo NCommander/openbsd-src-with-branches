@@ -1,4 +1,4 @@
-/*	$OpenBSD: flt_rounds.c,v 1.2 2006/11/14 09:51:25 otto Exp $	*/
+/*	$OpenBSD: flt_rounds.c,v 1.3 2012/06/25 17:01:11 deraadt Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -33,7 +33,7 @@ __flt_rounds()
 #if !defined(SOFTFLOAT)
 	register_t fpscr;
 
-	__asm__ __volatile__ ("sts fpscr, %0" : "=r" (fpscr));
+	__asm__ volatile ("sts fpscr, %0" : "=r" (fpscr));
 	return rndmap[fpscr & 0x03];
 #else
 	return rndmap[fpgetround()];
