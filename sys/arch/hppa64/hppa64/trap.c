@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.34 2014/03/26 05:23:42 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.35 2014/04/08 09:34:23 mpi Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -211,6 +211,9 @@ trap(int type, struct trapframe *frame)
 		mtctl(frame->tf_eiem, CR_EIEM);
 	        ssm(PSL_I, mask);
 	}
+
+	if (type & T_USER)
+		refreshcreds(p);
 
 	switch (type) {
 	case T_NONEXIST:
