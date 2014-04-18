@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikeca.c,v 1.24 2012/12/08 12:51:46 mikeb Exp $	*/
+/*	$OpenBSD: ikeca.c,v 1.25 2013/01/08 10:38:19 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010 Jonathan Gray <jsg@openbsd.org>
@@ -806,7 +806,6 @@ ca_setup(char *caname, int create, int quiet, char *pass)
 	struct stat	 st;
 	struct ca	*ca;
 	char		 path[PATH_MAX];
-	u_int32_t	 rnd[256];
 
 	if (stat(PATH_OPENSSL, &st) == -1)
 		err(1, "openssl binary not available");
@@ -845,9 +844,6 @@ ca_setup(char *caname, int create, int quiet, char *pass)
 
 	if (create && stat(ca->passfile, &st) == -1 && errno == ENOENT)
 		ca_newpass(ca->passfile, pass);
-
-	arc4random_buf(rnd, sizeof(rnd));
-	RAND_seed(rnd, sizeof(rnd));
 
 	return (ca);
 }
