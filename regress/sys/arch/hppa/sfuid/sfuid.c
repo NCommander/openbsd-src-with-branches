@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sfuid.c,v 1.1 2004/05/13 01:22:05 mickey Exp $	*/
 
 /*
  * Written by Michael Shalayeff, 2004. Public Domain.
@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <err.h>
 
-#define	sfuid(i,r)	__asm __volatile(	\
+#define	sfuid(i,r)	__asm volatile(	\
     "spop1,%1,0	%0" : "=r" (r) : "i" (i))
 
 volatile int sfu;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: noexec.c,v 1.13 2013/07/30 15:46:32 kettenis Exp $	*/
+/*	$OpenBSD: noexec.c,v 1.14 2014/01/10 13:45:00 jsing Exp $	*/
 
 /*
  * Copyright (c) 2002,2003 Michael Shalayeff
@@ -55,7 +55,7 @@ static void
 fdcache(void *p, size_t size)
 {
 #ifdef __hppa__
-	__asm __volatile(	/* XXX this hardcodes the TESTSZ */
+	__asm volatile(	/* XXX this hardcodes the TESTSZ */
 	    "fdc,m	%1(%0)\n\t"
 	    "fdc,m	%1(%0)\n\t"
 	    "fdc,m	%1(%0)\n\t"
@@ -71,7 +71,7 @@ fdcache(void *p, size_t size)
 	int i;
 
 	for (i = 0; i < TESTSZ; i += 8)
-	  __asm __volatile("flush %0" : : "r" (s + i) : "memory");
+	  __asm volatile("flush %0" : : "r" (s + i) : "memory");
 #endif
 }
 
