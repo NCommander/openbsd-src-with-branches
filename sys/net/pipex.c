@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.47 2013/10/24 11:31:43 mpi Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.48 2013/11/11 09:15:34 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -95,8 +95,8 @@ struct pipex_hash_head
 
 struct radix_node_head pipex_rd_head4;
 struct radix_node_head pipex_rd_head6;
-int pipex_rd_head4_initialized = 0;
-int pipex_rd_head6_initialized = 0;
+int pipex_rd_head4_initialized;
+int pipex_rd_head6_initialized;
 struct timeout pipex_timer_ch; 		/* callout timer context */
 int pipex_prune = 1;			/* walk list every seconds */
 
