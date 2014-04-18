@@ -1103,11 +1103,6 @@ tunstart(struct ifnet *ifp)
 
 	splassert(IPL_NET);
 
-	if (!(tp->tun_flags & TUN_LAYER2) &&
-	    !ALTQ_IS_ENABLED(&ifp->if_snd) &&
-	    !TBR_IS_ENABLED(&ifp->if_snd))
-		return;
-
 	IFQ_POLL(&ifp->if_snd, m);
 	if (m != NULL) {
 		if (tp->tun_flags & TUN_LAYER2) {
