@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.76 2013/07/10 21:31:12 kettenis Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.77 2013/11/06 10:40:36 mpi Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.28 1997/06/06 23:29:17 thorpej Exp $	*/
 
 /*-
@@ -859,10 +859,8 @@ pci_intr_disestablish(pci_chipset_tag_t pc, void *cookie)
 		pcireg_t reg;
 		int off;
 		
-		if (pci_get_capability(pc, tag, PCI_CAP_MSI, &off, &reg) == 0)
-			panic("%s: no msi capability", __func__);
-
-		pci_conf_write(pc, tag, off, reg &= ~PCI_MSI_MC_MSIE);
+		if (pci_get_capability(pc, tag, PCI_CAP_MSI, &off, &reg))
+			pci_conf_write(pc, tag, off, reg &= ~PCI_MSI_MC_MSIE);
 
 		apic_maxlevel[ih->ih_vec] = 0;
 		apic_intrhand[ih->ih_vec] = NULL;
