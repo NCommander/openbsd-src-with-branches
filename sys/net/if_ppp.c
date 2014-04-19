@@ -819,11 +819,7 @@ pppoutput(struct ifnet *ifp, struct mbuf *m0, struct sockaddr *dst,
 	m0->m_nextpkt = NULL;
 	sc->sc_npqtail = &m0->m_nextpkt;
     } else {
-	if ((m0->m_flags & M_HIGHPRI)
-#ifdef ALTQ
-	    && ALTQ_IS_ENABLED(&sc->sc_if.if_snd) == 0
-#endif
-	    ) {
+	if (m0->m_flags & M_HIGHPRI) {
 	    ifq = &sc->sc_fastq;
 	    if (IF_QFULL(ifq) && dst->sa_family != AF_UNSPEC) {
 		IF_DROP(ifq);
@@ -886,11 +882,7 @@ ppp_requeue(struct ppp_softc *sc)
 	     */
 	    *mpp = m->m_nextpkt;
 	    m->m_nextpkt = NULL;
-	    if ((m->m_flags & M_HIGHPRI)
-#ifdef ALTQ
-		&& ALTQ_IS_ENABLED(&sc->sc_if.if_snd) == 0
-#endif
-		) {
+	    if (m->m_flags & M_HIGHPRI) {
 		ifq = &sc->sc_fastq;
 		if (IF_QFULL(ifq)) {
 		    IF_DROP(ifq);
