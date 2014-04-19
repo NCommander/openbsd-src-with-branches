@@ -1,4 +1,4 @@
-/*	$OpenBSD: delivery_mbox.c,v 1.8 2013/01/26 09:37:23 gilles Exp $	*/
+/*	$OpenBSD: delivery_mbox.c,v 1.9 2013/05/24 17:03:14 eric Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@poolp.org>
@@ -57,7 +57,7 @@ delivery_mbox_open(struct deliver *deliver)
 	environ = environ_new;
 
 	if (deliver->from[0] == '\0')
-		strlcpy(deliver->from, "MAILER-DAEMON", sizeof deliver->from);
+		(void)strlcpy(deliver->from, "MAILER-DAEMON", sizeof deliver->from);
 	execle(PATH_MAILLOCAL, PATH_MAILLOCAL, "-f", deliver->from,
 	    deliver->to, (char *)NULL, environ_new);
 	perror("execle");
