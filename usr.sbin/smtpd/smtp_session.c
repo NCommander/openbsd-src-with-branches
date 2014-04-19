@@ -1461,9 +1461,9 @@ smtp_parse_mail_args(struct smtp_session *s, char *args)
 			b += 6;
 			if (strlcpy(s->evp.dsn_envid, b, sizeof(s->evp.dsn_envid))
 			    >= sizeof(s->evp.dsn_envid)) {
-			smtp_reply(s, "503 %s %s: option too large, truncated: %s",
-			    esc_code(ESC_STATUS_PERMFAIL, ESC_INVALID_COMMAND_ARGUMENTS),
-			    esc_description(ESC_INVALID_COMMAND_ARGUMENTS), b);
+				smtp_reply(s, "503 %s %s: option too large, truncated: %s",
+				    esc_code(ESC_STATUS_PERMFAIL, ESC_INVALID_COMMAND_ARGUMENTS),
+				    esc_description(ESC_INVALID_COMMAND_ARGUMENTS), b);
 				return (-1);
 			}
 		} else {
