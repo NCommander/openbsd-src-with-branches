@@ -2117,8 +2117,16 @@ create_filter(const char *name, const char *path)
 	}
 
 	f = xcalloc(1, sizeof(*f), "create_filter");
-	strlcpy(f->name, name, sizeof(f->name));
-	strlcpy(f->path, path, sizeof(f->path));
+	if (strlcpy(f->name, name, sizeof(f->name))
+	    >= sizeof (f->name)) {
+		yyerror("filter name \"%s\" too long", name);
+		return (NULL);
+	}
+	if (strlcpy(f->path, path, sizeof(f->path))
+	    >= sizeof (f->path)) {
+		yyerror("filter path \"%s\" too long", path);
+		return (NULL);
+	}
 
 	dict_xset(&conf->sc_filters, name, f);
 
