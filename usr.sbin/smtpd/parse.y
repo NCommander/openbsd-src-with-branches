@@ -2075,7 +2075,9 @@ is_if_in_group(const char *ifname, const char *groupname)
 		err(1, "socket");
 
         memset(&ifgr, 0, sizeof(ifgr));
-        strlcpy(ifgr.ifgr_name, ifname, IFNAMSIZ);
+        if (strlcpy(ifgr.ifgr_name, ifname, IFNAMSIZ) >= IFNAMSIZ)
+		errx(1, "interface name too large");
+
         if (ioctl(s, SIOCGIFGROUP, (caddr_t)&ifgr) == -1) {
                 if (errno == EINVAL || errno == ENOTTY)
 			goto end;
