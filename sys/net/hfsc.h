@@ -256,12 +256,6 @@ struct hfsc_if {
 #define	HFSC_ENABLED(ifq)	((ifq)->ifq_hfsc != NULL)
 #define	HFSC_DEFAULT_QLIMIT	50
 
-/* XXX hack */
-#ifndef ALTQ_IS_ENABLED
-#define ALTQ_IS_ENABLED(ifq)	HFSC_ENABLED(ifq)
-#endif
-/* XXX hack */
-
 struct ifnet; struct ifqueue; struct pf_queuespec;
 
 int		 hfsc_attach(struct ifnet *);
