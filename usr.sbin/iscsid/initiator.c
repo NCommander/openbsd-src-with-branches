@@ -1,4 +1,4 @@
-/*	$OpenBSD: initiator.c,v 1.8 2011/05/02 06:32:56 claudio Exp $ */
+/*	$OpenBSD: initiator.c,v 1.9 2011/05/04 21:00:04 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -76,7 +76,7 @@ initiator_init(void)
 	/* initialize initiator defaults */
 	initiator_sess_defaults = iscsi_sess_defaults;
 	initiator_conn_defaults = iscsi_conn_defaults;
-	initiator_sess_defaults.MaxConnections = 8;
+	initiator_sess_defaults.MaxConnections = ISCSID_DEF_CONNS;
 	initiator_conn_defaults.MaxRecvDataSegmentLength = 65536;
 
 	return initiator;
