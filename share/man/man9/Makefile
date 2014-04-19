@@ -3,7 +3,7 @@
 
 #	Makefile for section 9 (kernel function and variable) manual pages.
 
-MAN=	altq.9 aml_evalnode.9 atomic_add_int.9 atomic_cas_uint.9 \
+MAN=	aml_evalnode.9 atomic_add_int.9 atomic_cas_uint.9 \
 	atomic_dec_int.9 atomic_inc_int.9 atomic_setbits_int.9 \
 	atomic_sub_int.9 atomic_swap_uint.9 \
 	audio.9 autoconf.9 \
