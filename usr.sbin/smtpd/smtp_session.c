@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: smtp_session.c,v 1.200 2014/04/09 18:55:19 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1951,7 +1951,7 @@ smtp_strstate(int state)
 	CASE(STATE_BODY);
 	CASE(STATE_QUIT);
 	default:
-		snprintf(buf, sizeof(buf), "STATE_??? (%d)", state);
+		(void)snprintf(buf, sizeof(buf), "STATE_??? (%d)", state);
 		return (buf);
 	}
 }
