@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmp.c,v 1.13 2013/01/17 20:34:18 bluhm Exp $	*/
+/*	$OpenBSD: snmp.c,v 1.14 2014/04/14 12:58:04 blambert Exp $	*/
 
 /*
  * Copyright (c) 2008 Reyk Floeter <reyk@openbsd.org>
@@ -97,7 +97,9 @@ snmp_setsock(struct relayd *env, enum privsep_procid id)
 
 	bzero(&sun, sizeof(sun));
 	sun.sun_family = AF_UNIX;
-	strlcpy(sun.sun_path, env->sc_snmp_path, sizeof(sun.sun_path));
+	if (strlcpy(sun.sun_path, env->sc_snmp_path,
+	    sizeof(sun.sun_path)) >= sizeof(sun.sun_path))
+		fatalx("invalid socket path");
 
 	socket_set_blockmode(s, BM_NONBLOCK);
 
