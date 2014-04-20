@@ -1,4 +1,4 @@
-# $OpenBSD: Archive.pm,v 1.5 2012/11/09 10:51:47 espie Exp $
+# $OpenBSD: Archive.pm,v 1.6 2014/04/16 10:31:27 zhuk Exp $
 
 # Copyright (c) 2007-2010 Steven Mestdagh <steven@openbsd.org>
 # Copyright (c) 2012 Marc Espie <espie@openbsd.org>
@@ -58,8 +58,7 @@ sub get_symbollist
 
 	tsay {"generating symbol list in file: $filepath"};
 	tsay {"object list is @$objlist" };
-	my $symbols = [];
-	tie (@$symbols, 'LT::UList');
+	my $symbols = LT::UList->new;
 	open(my $sh, '-|', 'nm', '--', @$objlist) or 
 	    die "Error running nm on object list @$objlist\n";
 	my $c = 0;
