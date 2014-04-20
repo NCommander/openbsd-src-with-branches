@@ -8486,6 +8486,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "RT5370",
 	},
 	{
+	    USB_VENDOR_RALINK, USB_PRODUCT_RALINK_MT7601,
+	    "MT7601",
+	},
+	{
 	    USB_VENDOR_RALINK, USB_PRODUCT_RALINK_RT8070,
 	    "RT8070",
 	},
