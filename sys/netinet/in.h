@@ -808,22 +808,6 @@ in_cksum_phdr(u_int32_t src, u_int32_t dst, u_int32_t lenproto)
 	return (sum);
 }
 
-/*
- * in_cksum_addword:
- *
- *	Add the two 16-bit network-order values, carry, and return.
- */
-static __inline u_int16_t __attribute__((__unused__))
-in_cksum_addword(u_int16_t a, u_int16_t b)
-{
-	u_int32_t sum = a + b;
-
-	if (sum > 0xffff)
-		sum -= 0xffff;
-
-	return (sum);
-}
-
 extern	   int inetctlerrmap[];
 extern	   struct ifqueue ipintrq;	/* ip packet input queue */
 extern	   struct in_addr zeroin_addr;
