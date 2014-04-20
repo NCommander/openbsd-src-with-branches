@@ -1519,20 +1519,19 @@ carp_ourether(void *v, u_int8_t *ena)
 	return (NULL);
 }
 
-void
-carp_rewrite_lladdr(struct ifnet *ifp, u_int8_t *s_enaddr)
+u_char *
+carp_get_srclladdr(struct ifnet *ifp, u_char *esrc)
 {
 	struct carp_softc *sc = ifp->if_softc;
 
 	if (sc->sc_balancing != CARP_BAL_IPSTEALTH &&
 	    sc->sc_balancing != CARP_BAL_IP && sc->cur_vhe) {
 		if (sc->cur_vhe->vhe_leader)
-			bcopy((caddr_t)sc->sc_ac.ac_enaddr,
-			    (caddr_t)s_enaddr, ETHER_ADDR_LEN);
+			return (sc->sc_ac.ac_enaddr);
 		else
-			bcopy((caddr_t)sc->cur_vhe->vhe_enaddr,
-			    (caddr_t)s_enaddr, ETHER_ADDR_LEN);
+			return (sc->cur_vhe->vhe_enaddr);
 	}
+	return (esrc);
 }
 
 int
