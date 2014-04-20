@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.50 2013/10/14 23:28:23 djm Exp $ */
+/* $OpenBSD: misc.h,v 1.51 2014/03/26 04:55:35 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -79,6 +79,12 @@ void		put_u32(void *, u_int32_t)
     __bounded(( __minbytes__, 1, 4));
 void		put_u16(void *, u_int16_t)
     __bounded(( __minbytes__, 1, 2));
+
+/* Little-endian store/load, used by umac.c */
+u_int32_t	get_u32_le(const void *)
+    __bounded(( __minbytes__, 1, 4));
+void		put_u32_le(void *, u_int32_t)
+    __bounded(( __minbytes__, 1, 4));
 
 struct bwlimit {
 	size_t buflen;
