@@ -634,8 +634,7 @@ igmp_sendpkt(struct in_multi *inm, int type, in_addr_t addr)
 	imo.imo_multicast_loop = 0;
 #endif /* MROUTING */
 
-	ip_output(m, (struct mbuf *)0, (struct route *)0, IP_MULTICASTOPTS,
-	    &imo, (void *)NULL);
+	ip_output(m, NULL, NULL, IP_MULTICASTOPTS, &imo, NULL);
 
 	++igmpstat.igps_snd_reports;
 }

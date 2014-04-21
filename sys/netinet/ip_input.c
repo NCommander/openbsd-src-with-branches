@@ -1472,9 +1472,9 @@ ip_forward(struct mbuf *m, struct ifnet *ifp, int srcrt)
 		}
 	}
 
-	error = ip_output(m, (struct mbuf *)NULL, &ipforward_rt,
+	error = ip_output(m, NULL, &ipforward_rt,
 	    (IP_FORWARDING | (ip_directedbcast ? IP_ALLOWBROADCAST : 0)),
-	    (void *)NULL, (void *)NULL);
+	    NULL, NULL);
 	if (error)
 		ipstat.ips_cantforward++;
 	else {

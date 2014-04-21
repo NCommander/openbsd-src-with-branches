@@ -222,8 +222,8 @@ m_get(int nowait, int type)
 	splx(s);
 	if (m) {
 		m->m_type = type;
-		m->m_next = (struct mbuf *)NULL;
-		m->m_nextpkt = (struct mbuf *)NULL;
+		m->m_next = NULL;
+		m->m_nextpkt = NULL;
 		m->m_data = m->m_dat;
 		m->m_flags = 0;
 	}
@@ -249,8 +249,8 @@ m_gethdr(int nowait, int type)
 		m->m_type = type;
 
 		/* keep in sync with m_inithdr */
-		m->m_next = (struct mbuf *)NULL;
-		m->m_nextpkt = (struct mbuf *)NULL;
+		m->m_next = NULL;
+		m->m_nextpkt = NULL;
 		m->m_data = m->m_pktdat;
 		m->m_flags = M_PKTHDR;
 		bzero(&m->m_pkthdr, sizeof(m->m_pkthdr));
@@ -263,8 +263,8 @@ struct mbuf *
 m_inithdr(struct mbuf *m)
 {
 	/* keep in sync with m_gethdr */
-	m->m_next = (struct mbuf *)NULL;
-	m->m_nextpkt = (struct mbuf *)NULL;
+	m->m_next = NULL;
+	m->m_nextpkt = NULL;
 	m->m_data = m->m_pktdat;
 	m->m_flags = M_PKTHDR;
 	bzero(&m->m_pkthdr, sizeof(m->m_pkthdr));

@@ -844,7 +844,7 @@ icmp_send(struct mbuf *m, struct mbuf *opts)
 		printf("icmp_send dst %s src %s\n", dst, src);
 	}
 #endif
-	(void)ip_output(m, opts, (void *)NULL, 0, (void *)NULL, (void *)NULL);
+	ip_output(m, opts, NULL, 0, NULL, NULL);
 }
 
 n_time

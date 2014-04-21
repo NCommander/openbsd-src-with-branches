@@ -4414,8 +4414,7 @@ syn_cache_respond(struct syn_cache *sc, struct mbuf *m)
 #ifdef INET
 	case AF_INET:
 		error = ip_output(m, sc->sc_ipopts, ro,
-		    (ip_mtudisc ? IP_MTUDISC : 0), 
-		    (struct ip_moptions *)NULL, inp);
+		    (ip_mtudisc ? IP_MTUDISC : 0),  NULL, inp);
 		break;
 #endif
 #ifdef INET6
@@ -4424,7 +4423,7 @@ syn_cache_respond(struct syn_cache *sc, struct mbuf *m)
 				ro->ro_rt ? ro->ro_rt->rt_ifp : NULL);
 
 		error = ip6_output(m, NULL /*XXX*/, (struct route_in6 *)ro, 0,
-			(struct ip6_moptions *)0, NULL, NULL);
+		    NULL, NULL, NULL);
 		break;
 #endif
 	default:

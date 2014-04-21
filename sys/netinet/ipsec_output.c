@@ -511,7 +511,7 @@ ipsp_process_done(struct mbuf *m, struct tdb *tdb)
 	switch (tdb->tdb_dst.sa.sa_family) {
 #ifdef INET
 	case AF_INET:
-		return ip_output(m, (void *)NULL, (void *)NULL, IP_RAWOUTPUT, (void *)NULL, (void *)NULL);
+		return (ip_output(m, NULL, NULL, IP_RAWOUTPUT, NULL, NULL));
 #endif /* INET */
 
 #ifdef INET6
@@ -520,7 +520,7 @@ ipsp_process_done(struct mbuf *m, struct tdb *tdb)
 		 * We don't need massage, IPv6 header fields are always in
 		 * net endian.
 		 */
-		return ip6_output(m, NULL, NULL, 0, NULL, NULL, NULL);
+		return (ip6_output(m, NULL, NULL, 0, NULL, NULL, NULL));
 #endif /* INET6 */
 	}
 	return EINVAL; /* Not reached. */

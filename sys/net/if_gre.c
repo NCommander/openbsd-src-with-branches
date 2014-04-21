@@ -430,7 +430,7 @@ gre_output(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 #endif
 
 	/* Send it off */
-	error = ip_output(m, (void *)NULL, &sc->route, 0, (void *)NULL, (void *)NULL);
+	error = ip_output(m, NULL, &sc->route, 0, NULL, NULL);
   end:
 	if (error)
 		ifp->if_oerrors++;
