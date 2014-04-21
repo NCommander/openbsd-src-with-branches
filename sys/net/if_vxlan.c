@@ -636,7 +636,7 @@ vxlan_output(struct ifnet *ifp, struct mbuf *m)
 
 #ifdef INET
 	if ((error =
-	    ip_output(m, NULL, NULL, IP_RAWOUTPUT, &sc->sc_imo, NULL))) {
+	    ip_output(m, NULL, NULL, IP_RAWOUTPUT, &sc->sc_imo, NULL, 0))) {
 		ifp->if_oerrors++;
 	}
 #endif

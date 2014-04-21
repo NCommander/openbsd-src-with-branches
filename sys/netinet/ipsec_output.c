@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.49 2013/08/03 12:45:41 markus Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.51 2014/04/21 11:10:54 henning Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -511,7 +511,7 @@ ipsp_process_done(struct mbuf *m, struct tdb *tdb)
 	switch (tdb->tdb_dst.sa.sa_family) {
 #ifdef INET
 	case AF_INET:
-		return (ip_output(m, NULL, NULL, IP_RAWOUTPUT, NULL, NULL));
+		return (ip_output(m, NULL, NULL, IP_RAWOUTPUT, NULL, NULL, 0));
 #endif /* INET */
 
 #ifdef INET6

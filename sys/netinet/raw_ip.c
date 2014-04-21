@@ -278,7 +278,7 @@ rip_output(struct mbuf *m, ...)
 	m->m_pkthdr.ph_rtableid = inp->inp_rtableid;
 
 	error = ip_output(m, inp->inp_options, &inp->inp_route, flags,
-	    inp->inp_moptions, inp);
+	    inp->inp_moptions, inp, 0);
 	if (error == EACCES)	/* translate pf(4) error for userland */
 		error = EHOSTUNREACH;
 	return (error);

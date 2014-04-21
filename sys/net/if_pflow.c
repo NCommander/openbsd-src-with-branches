@@ -1124,7 +1124,8 @@ pflow_sendout_mbuf(struct pflow_softc *sc, struct mbuf *m)
 	sc->sc_if.if_opackets++;
 	sc->sc_if.if_obytes += m->m_pkthdr.len;
 
-	if ((err = ip_output(m, NULL, NULL, IP_RAWOUTPUT, &sc->sc_imo, NULL))) {
+	if ((err = ip_output(m, NULL, NULL, IP_RAWOUTPUT, &sc->sc_imo, NULL,
+	    0))) {
 		pflowstats.pflow_oerrors++;
 		sc->sc_if.if_oerrors++;
 	}

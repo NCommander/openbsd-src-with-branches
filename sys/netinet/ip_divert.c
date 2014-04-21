@@ -181,7 +181,7 @@ divert_output(struct mbuf *m, ...)
 		splx(s);
 	} else {
 		error = ip_output(m, NULL, &inp->inp_route,
-		    IP_ALLOWBROADCAST | IP_RAWOUTPUT, NULL, NULL);
+		    IP_ALLOWBROADCAST | IP_RAWOUTPUT, NULL, NULL, 0);
 		if (error == EACCES)	/* translate pf(4) error for userland */
 			error = EHOSTUNREACH;
 	}

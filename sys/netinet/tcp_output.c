@@ -1076,7 +1076,7 @@ send:
 		}
 		error = ip_output(m, tp->t_inpcb->inp_options,
 			&tp->t_inpcb->inp_route,
-			(ip_mtudisc ? IP_MTUDISC : 0), NULL, tp->t_inpcb);
+			(ip_mtudisc ? IP_MTUDISC : 0), NULL, tp->t_inpcb, 0);
 		break;
 #endif /* INET */
 #ifdef INET6
