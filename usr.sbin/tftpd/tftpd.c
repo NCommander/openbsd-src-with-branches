@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.17 2013/11/12 22:27:13 deraadt Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.18 2013/11/26 21:47:16 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 David Gwynne <dlg@uq.edu.au>
@@ -1376,7 +1376,7 @@ nak(struct tftp_client *client, int error)
 	}
 	if (pe->e_code < 0) {
 		pe->e_msg = strerror(error - 100);
-		tp->th_code = EUNDEF;   /* set 'undef' errorcode */
+		tp->th_code = htons(EUNDEF);   /* set 'undef' errorcode */
 	}
 
 	length = strlcpy(tp->th_msg, pe->e_msg, client->packet_size - 5) + 5;
