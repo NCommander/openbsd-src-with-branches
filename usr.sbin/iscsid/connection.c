@@ -1,4 +1,4 @@
-/*	$OpenBSD: connection.c,v 1.15 2014/04/20 18:17:12 claudio Exp $ */
+/*	$OpenBSD: connection.c,v 1.16 2014/04/20 20:12:31 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -131,6 +131,10 @@ conn_dispatch(int fd, short event, void *arg)
 		return;
 	}
 	if ((n = pdu_read(c)) == -1) {
+		if (errno == EAGAIN || errno == ENOBUFS ||
+		    errno == EINTR)	/* try later */
+			return;
+		log_warn("pdu_read");
 		conn_fsm(c, CONN_EV_FAIL);
 		return;
 	}
