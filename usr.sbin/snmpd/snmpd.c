@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.c,v 1.18 2013/10/17 08:42:44 reyk Exp $	*/
+/*	$OpenBSD: snmpd.c,v 1.19 2014/03/16 18:38:30 guenther Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -170,6 +170,7 @@ main(int argc, char *argv[])
 	pf_init();
 	snmpd_generate_engineid(env);
 
+	ps->ps_ninstances = 1;
 	proc_init(ps, procs, nitems(procs));
 
 	setproctitle("parent");
@@ -189,7 +190,7 @@ main(int argc, char *argv[])
 	signal_add(&ps->ps_evsighup, NULL);
 	signal_add(&ps->ps_evsigpipe, NULL);
 
-	proc_config(ps, procs, nitems(procs));
+	proc_listen(ps, procs, nitems(procs));
 
 	event_dispatch();
 
