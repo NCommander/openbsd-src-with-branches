@@ -1,4 +1,4 @@
-/*	$OpenBSD: eh.S,v 1.8 2007/12/21 23:56:54 miod Exp $	*/
+/*	$OpenBSD: eh.S,v 1.9 2013/01/05 11:20:55 miod Exp $	*/
 /*
  * Copyright (c) 2006, Miodrag Vallat
  *
@@ -33,7 +33,7 @@
  * PFSR_SAVE is invoked with TMP, TMP2 and TMP3 available, and TMP contains
  * curcpu().
  *
- * On the Luna88k we just have to peek at the CMMU PFSR our curcpu() points
+ * On the LUNA-88K we just have to peek at the CMMU PFSR our curcpu() points
  * to.
  */
 
