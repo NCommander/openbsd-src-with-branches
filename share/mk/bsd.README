@@ -222,8 +222,6 @@ bsd.own.mk):
 SKEY		Compile in support for S/key authentication. [yes, set
 		unconditionally]
 
-KERBEROS5	Compile in support for Kerberos 5 authentication.
-
 SYS_INCLUDE	Copy or symlink kernel include files into /usr/include.
 		Possible values are "symlinks" or "copies" (which is
 		the same as the variable being unset).
