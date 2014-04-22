@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.352 2014/02/05 05:59:42 brad Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.353 2014/02/24 20:00:48 brad Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -3502,7 +3502,8 @@ bge_rxeof(struct bge_softc *sc)
 		bge_rxcsum(sc, cur_rx, m);
 
 #if NVLAN > 0
-		if (cur_rx->bge_flags & BGE_RXBDFLAG_VLAN_TAG) {
+		if (ifp->if_capabilities & IFCAP_VLAN_HWTAGGING &&
+		    cur_rx->bge_flags & BGE_RXBDFLAG_VLAN_TAG) {
 			m->m_pkthdr.ether_vtag = cur_rx->bge_vlan_tag;
 			m->m_flags |= M_VLANTAG;
 		}
