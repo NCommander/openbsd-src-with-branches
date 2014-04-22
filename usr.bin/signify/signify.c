@@ -1,4 +1,4 @@
-/* $OpenBSD: signify.c,v 1.70 2014/04/14 00:35:32 tedu Exp $ */
+/* $OpenBSD: signify.c,v 1.71 2014/04/22 05:44:40 tedu Exp $ */
 /*
  * Copyright (c) 2013 Ted Unangst <tedu@openbsd.org>
  *
@@ -549,8 +549,8 @@ verifychecksums(char *msg, int argc, char **argv, int quiet)
 
 	line = msg;
 	while (line && *line) {
-		if (!(checksums = realloc(checksums,
-		    sizeof(*c) * (nchecksums + 1))))
+		if (!(checksums = reallocarray(checksums,
+		    nchecksums + 1, sizeof(*checksums))))
 			err(1, "realloc");
 		c = &checksums[nchecksums++];
 		if ((endline = strchr(line, '\n')))
