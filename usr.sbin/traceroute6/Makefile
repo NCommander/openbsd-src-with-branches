@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2006/12/19 14:47:45 itojun Exp $
+#	$OpenBSD: Makefile,v 1.7 2013/04/15 15:51:47 deraadt Exp $
 
 PROG=	traceroute6
 
@@ -7,6 +7,11 @@ BINGRP=	bin
 BINMODE=4555
 
 CPPFLAGS+=-DINET6
+
+CFLAGS+= -Wall -I${.CURDIR}
+CFLAGS+= -Wstrict-prototypes -Wmissing-prototypes
+CFLAGS+= -Wmissing-declarations
+CFLAGS+= -Wshadow -Wpointer-arith -Wcast-qual
 
 MAN=	traceroute6.8
 
