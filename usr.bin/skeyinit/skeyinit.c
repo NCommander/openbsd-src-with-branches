@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyinit.c,v 1.52 2013/11/28 18:24:55 deraadt Exp $	*/
+/*	$OpenBSD: skeyinit.c,v 1.53 2014/03/20 20:39:13 naddy Exp $	*/
 
 /* OpenBSD S/Key (skeyinit.c)
  *
@@ -184,7 +184,7 @@ main(int argc, char **argv)
 "secure mode this is normally done via an existing S/Key key.  However, since\n"
 "you do not have an entry in the S/Key database you will have to specify an\n"
 "alternate authentication type via the `-a' flag, e.g.\n"
-"    \"skeyinit -s -a krb5\" or \"skeyinit -s -a passwd\"\n\n"
+"    \"skeyinit -s -a passwd\"\n\n"
 "Note that entering a plaintext password over a non-secure link defeats the\n"
 "purpose of using S/Key in the fist place.\n");
 			exit(1);
