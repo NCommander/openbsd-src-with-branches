@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.192 2014/02/14 15:03:43 krw Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.193 2014/03/18 22:36:30 miod Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -838,7 +838,6 @@ edit(struct disklabel *lp, int f)
 		ending_sector = DL_GETBEND(&label);
 		starting_sector = DL_GETBSTART(&label);
 		total_sectors = DL_GETDSIZE(&label);
-		memset(&label, 0, sizeof(label));
 		error = getasciilabel(fp, &label);
 		DL_SETBEND(&label, ending_sector);
 		DL_SETBSTART(&label, starting_sector);
