@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.29 2014/01/22 00:21:17 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.30 2014/04/14 12:55:10 blambert Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -232,7 +232,7 @@ main		: LISTEN ON STRING		{
 			if (strlcpy(conf->sc_trcommunity, $3,
 			    sizeof(conf->sc_trcommunity)) >=
 			    sizeof(conf->sc_trcommunity)) {
-				yyerror("r/w community name too long");
+				yyerror("trap community name too long");
 				free($3);
 				YYERROR;
 			}
