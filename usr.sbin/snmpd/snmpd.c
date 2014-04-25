@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.c,v 1.19 2014/03/16 18:38:30 guenther Exp $	*/
+/*	$OpenBSD: snmpd.c,v 1.20 2014/04/21 19:47:27 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -51,7 +51,9 @@ int	 check_child(pid_t, const char *);
 struct snmpd	*snmpd_env;
 
 static struct privsep_proc procs[] = {
-	{ "snmpe", PROC_SNMPE, snmpd_dispatch_snmpe, snmpe, snmpe_shutdown }
+	{ "snmpe", PROC_SNMPE, snmpd_dispatch_snmpe, snmpe, snmpe_shutdown },
+	{ "traphandler", PROC_ALERT, snmpd_dispatch_traphandler, traphandler,
+	    traphandler_shutdown }
 };
 
 void
