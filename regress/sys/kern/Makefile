@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.60 2013/01/03 17:43:34 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.61 2013/10/07 15:52:17 jsing Exp $
 
-SUBDIR+= __syscall accept dup2 dup2_self exec_self execve exit extent
+SUBDIR+= __syscall access accept dup2 dup2_self exec_self execve exit extent
 SUBDIR+= fchdir
 SUBDIR+= fcntl_dup
 SUBDIR+= flock
