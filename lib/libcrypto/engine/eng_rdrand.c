@@ -84,15 +84,11 @@ static int get_random_bytes (unsigned char *buf, int num)
 static int random_status (void)
 {	return 1;	}
 
-static RAND_METHOD rdrand_meth =
-	{
-	NULL,	/* seed */
-	get_random_bytes,
-	NULL,	/* cleanup */
-	NULL,	/* add */
-	get_random_bytes,
-	random_status,
-	};
+static RAND_METHOD rdrand_meth = {
+	.bytes = get_random_bytes,
+	.pseudorand = get_random_bytes,
+	.status = random_status
+};
 
 static int rdrand_init(ENGINE *e)
 {	return 1;	}
@@ -104,6 +100,7 @@ static int bind_helper(ENGINE *e)
 	{
 	if (!ENGINE_set_id(e, engine_e_rdrand_id) ||
 	    !ENGINE_set_name(e, engine_e_rdrand_name) ||
+            !ENGINE_set_flags(e, ENGINE_FLAGS_NO_REGISTER_ALL) ||
 	    !ENGINE_set_init_function(e, rdrand_init) ||
 	    !ENGINE_set_RAND(e, &rdrand_meth) )
 		return 0;
