@@ -1,3 +1,7 @@
+#include "../bn_lcl.h"
+#if !(defined(__GNUC__) && __GNUC__>=2)
+# include "../bn_asm.c"	/* kind of dirty hack for Sun Studio */
+#else
 /*
  * x86_64 BIGNUM accelerator version 0.1, December 2002.
  *
@@ -13,23 +17,49 @@
  * A. Well, that's because this code is basically a quick-n-dirty
  *    proof-of-concept hack. As you can see it's implemented with
  *    inline assembler, which means that you're bound to GCC and that
- *    there must be a room for fine-tuning.
+ *    there might be enough room for further improvement.
  *
  * Q. Why inline assembler?
- * A. x86_64 features own ABI I'm not familiar with. Which is why
- *    I decided to let the compiler take care of subroutine
- *    prologue/epilogue as well as register allocation.
+ * A. x86_64 features own ABI which I'm not familiar with. This is
+ *    why I decided to let the compiler take care of subroutine
+ *    prologue/epilogue as well as register allocation. For reference.
+ *    Win64 implements different ABI for AMD64, different from Linux.
  *
  * Q. How much faster does it get?
- * A. Unfortunately people sitting on x86_64 hardware are prohibited
- *    to disclose the performance numbers, so they (SuSE labs to be
- *    specific) wouldn't tell me. However! Very similar coding technique
- *    (reaching out for 128-bit result from 64x64-bit multiplication)
- *    results in >3 times performance improvement on MIPS and I see no
- *    reason why gain on x86_64 would be so much different:-)
+ * A. 'apps/openssl speed rsa dsa' output with no-asm:
+ *
+ *	                  sign    verify    sign/s verify/s
+ *	rsa  512 bits   0.0006s   0.0001s   1683.8  18456.2
+ *	rsa 1024 bits   0.0028s   0.0002s    356.0   6407.0
+ *	rsa 2048 bits   0.0172s   0.0005s     58.0   1957.8
+ *	rsa 4096 bits   0.1155s   0.0018s      8.7    555.6
+ *	                  sign    verify    sign/s verify/s
+ *	dsa  512 bits   0.0005s   0.0006s   2100.8   1768.3
+ *	dsa 1024 bits   0.0014s   0.0018s    692.3    559.2
+ *	dsa 2048 bits   0.0049s   0.0061s    204.7    165.0
+ *
+ *    'apps/openssl speed rsa dsa' output with this module:
+ *
+ *	                  sign    verify    sign/s verify/s
+ *	rsa  512 bits   0.0004s   0.0000s   2767.1  33297.9
+ *	rsa 1024 bits   0.0012s   0.0001s    867.4  14674.7
+ *	rsa 2048 bits   0.0061s   0.0002s    164.0   5270.0
+ *	rsa 4096 bits   0.0384s   0.0006s     26.1   1650.8
+ *	                  sign    verify    sign/s verify/s
+ *	dsa  512 bits   0.0002s   0.0003s   4442.2   3786.3
+ *	dsa 1024 bits   0.0005s   0.0007s   1835.1   1497.4
+ *	dsa 2048 bits   0.0016s   0.0020s    620.4    504.6
+ *
+ *    For the reference. IA-32 assembler implementation performs
+ *    very much like 64-bit code compiled with no-asm on the same
+ *    machine.
  */
 
 #define BN_ULONG unsigned long
+
+#undef mul
+#undef mul_add
+#undef sqr
 
 /*
  * "m"(a), "+m"(r)	is the way to favor DirectPath µ-code;
@@ -72,7 +102,7 @@
 		: "a"(a)		\
 		: "cc");
 
-BN_ULONG bn_mul_add_words(BN_ULONG *rp, BN_ULONG *ap, int num, BN_ULONG w)
+BN_ULONG bn_mul_add_words(BN_ULONG *rp, const BN_ULONG *ap, int num, BN_ULONG w)
 	{
 	BN_ULONG c1=0;
 
@@ -96,7 +126,7 @@ BN_ULONG bn_mul_add_words(BN_ULONG *rp, BN_ULONG *ap, int num, BN_ULONG w)
 	return(c1);
 	} 
 
-BN_ULONG bn_mul_words(BN_ULONG *rp, BN_ULONG *ap, int num, BN_ULONG w)
+BN_ULONG bn_mul_words(BN_ULONG *rp, const BN_ULONG *ap, int num, BN_ULONG w)
 	{
 	BN_ULONG c1=0;
 
@@ -119,7 +149,7 @@ BN_ULONG bn_mul_words(BN_ULONG *rp, BN_ULONG *ap, int num, BN_ULONG w)
 	return(c1);
 	} 
 
-void bn_sqr_words(BN_ULONG *r, BN_ULONG *a, int n)
+void bn_sqr_words(BN_ULONG *r, const BN_ULONG *a, int n)
         {
 	if (n <= 0) return;
 
@@ -142,7 +172,7 @@ void bn_sqr_words(BN_ULONG *r, BN_ULONG *a, int n)
 BN_ULONG bn_div_words(BN_ULONG h, BN_ULONG l, BN_ULONG d)
 {	BN_ULONG ret,waste;
 
-	asm ("divq	%3"
+	asm ("divq	%4"
 		: "=a"(ret),"=d"(waste)
 		: "a"(l),"d"(h),"g"(d)
 		: "cc");
@@ -150,21 +180,21 @@ BN_ULONG bn_div_words(BN_ULONG h, BN_ULONG l, BN_ULONG d)
 	return ret;
 }
 
-BN_ULONG bn_add_words (BN_ULONG *rp, BN_ULONG *ap, BN_ULONG *bp,int n)
-{ BN_ULONG ret,i;
+BN_ULONG bn_add_words (BN_ULONG *rp, const BN_ULONG *ap, const BN_ULONG *bp,int n)
+{ BN_ULONG ret=0,i=0;
 
 	if (n <= 0) return 0;
 
 	asm (
 	"	subq	%2,%2		\n"
-	".align 16			\n"
+	".p2align 4			\n"
 	"1:	movq	(%4,%2,8),%0	\n"
 	"	adcq	(%5,%2,8),%0	\n"
 	"	movq	%0,(%3,%2,8)	\n"
 	"	leaq	1(%2),%2	\n"
 	"	loop	1b		\n"
 	"	sbbq	%0,%0		\n"
-		: "+a"(ret),"+c"(n),"+r"(i)
+		: "=&a"(ret),"+c"(n),"=&r"(i)
 		: "r"(rp),"r"(ap),"r"(bp)
 		: "cc"
 	);
@@ -173,21 +203,21 @@ BN_ULONG bn_add_words (BN_ULONG *rp, BN_ULONG *ap, BN_ULONG *bp,int n)
 }
 
 #ifndef SIMICS
-BN_ULONG bn_sub_words (BN_ULONG *rp, BN_ULONG *ap, BN_ULONG *bp,int n)
-{ BN_ULONG ret,i;
+BN_ULONG bn_sub_words (BN_ULONG *rp, const BN_ULONG *ap, const BN_ULONG *bp,int n)
+{ BN_ULONG ret=0,i=0;
 
 	if (n <= 0) return 0;
 
 	asm (
 	"	subq	%2,%2		\n"
-	".align 16			\n"
+	".p2align 4			\n"
 	"1:	movq	(%4,%2,8),%0	\n"
 	"	sbbq	(%5,%2,8),%0	\n"
 	"	movq	%0,(%3,%2,8)	\n"
 	"	leaq	1(%2),%2	\n"
 	"	loop	1b		\n"
 	"	sbbq	%0,%0		\n"
-		: "+a"(ret),"+c"(n),"+r"(i)
+		: "=&a"(ret),"+c"(n),"=&r"(i)
 		: "r"(rp),"r"(ap),"r"(bp)
 		: "cc"
 	);
@@ -318,7 +348,6 @@ BN_ULONG bn_sub_words(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b, int n)
 
 void bn_mul_comba8(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b)
 	{
-	BN_ULONG bl,bh;
 	BN_ULONG t1,t2;
 	BN_ULONG c1,c2,c3;
 
@@ -423,7 +452,6 @@ void bn_mul_comba8(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b)
 
 void bn_mul_comba4(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b)
 	{
-	BN_ULONG bl,bh;
 	BN_ULONG t1,t2;
 	BN_ULONG c1,c2,c3;
 
@@ -462,9 +490,8 @@ void bn_mul_comba4(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b)
 	r[7]=c2;
 	}
 
-void bn_sqr_comba8(BN_ULONG *r, BN_ULONG *a)
+void bn_sqr_comba8(BN_ULONG *r, const BN_ULONG *a)
 	{
-	BN_ULONG bl,bh;
 	BN_ULONG t1,t2;
 	BN_ULONG c1,c2,c3;
 
@@ -539,9 +566,8 @@ void bn_sqr_comba8(BN_ULONG *r, BN_ULONG *a)
 	r[15]=c1;
 	}
 
-void bn_sqr_comba4(BN_ULONG *r, BN_ULONG *a)
+void bn_sqr_comba4(BN_ULONG *r, const BN_ULONG *a)
 	{
-	BN_ULONG bl,bh;
 	BN_ULONG t1,t2;
 	BN_ULONG c1,c2,c3;
 
@@ -573,3 +599,4 @@ void bn_sqr_comba4(BN_ULONG *r, BN_ULONG *a)
 	r[6]=c1;
 	r[7]=c2;
 	}
+#endif
