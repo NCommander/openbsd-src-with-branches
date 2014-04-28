@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.c,v 1.192 2014/02/02 03:44:31 djm Exp $ */
+/* $OpenBSD: packet.c,v 1.193 2014/04/01 05:32:57 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1604,7 +1604,7 @@ packet_get_string(u_int *length_ptr)
 	return buffer_get_string(&active_state->incoming_packet, length_ptr);
 }
 
-void *
+const void *
 packet_get_string_ptr(u_int *length_ptr)
 {
 	return buffer_get_string_ptr(&active_state->incoming_packet, length_ptr);

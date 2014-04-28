@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.c,v 1.330 2014/02/15 23:05:36 djm Exp $ */
+/* $OpenBSD: channels.c,v 1.331 2014/02/26 20:29:29 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2290,7 +2290,7 @@ void
 channel_input_data(int type, u_int32_t seq, void *ctxt)
 {
 	int id;
-	char *data;
+	const u_char *data;
 	u_int data_len, win_len;
 	Channel *c;
 
