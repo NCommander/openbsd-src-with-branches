@@ -1,4 +1,4 @@
-/*	$OpenBSD: src/usr.sbin/smtpd/dict.c,v 1.1 2013/01/26 09:37:23 gilles Exp $	*/
+/*	$OpenBSD: dict.c,v 1.1 2013/06/03 16:00:50 tedu Exp $	*/
 
 /*
  * Copyright (c) 2012 Gilles Chehade <gilles@poolp.org>
@@ -26,7 +26,7 @@
 #define	MAX_DICTKEY_SIZE	NAME_MAX
 struct dictentry {
 	SPLAY_ENTRY(dictentry)	entry;
-	char			key[MAX_DICTKEY_SIZE];
+	char			key[MAX_DICTKEY_SIZE + 1];
 	void		       *data;
 };
 

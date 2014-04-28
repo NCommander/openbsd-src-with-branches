@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_private.h,v 1.8 2013/11/06 19:53:20 syl Exp $ */
+/* $OpenBSD: fuse_private.h,v 1.9 2013/12/03 09:59:40 syl Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -34,7 +34,7 @@ struct fuse_vnode {
 	ino_t ino;
 	ino_t parent;
 
-	char path[NAME_MAX];
+	char path[NAME_MAX + 1];
 	struct fuse_dirhandle *fd;
 
 	SIMPLEQ_ENTRY(fuse_vnode) node; /* for dict */
