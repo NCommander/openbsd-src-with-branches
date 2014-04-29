@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.355 2014/04/23 09:56:56 ajacoutot Exp $
+#	$OpenBSD: Makefile,v 1.356 2014/04/24 15:05:10 tedu Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -131,8 +131,6 @@ distribution-etc-root-var: distrib-dirs
 	cd root; \
 		${INSTALL} -c -o root -g wheel -m 644 dot.cshrc \
 		    ${DESTDIR}/root/.cshrc; \
-		${INSTALL} -c -o root -g wheel -m 600 dot.klogin \
-		    ${DESTDIR}/root/.klogin; \
 		${INSTALL} -c -o root -g wheel -m 644 dot.login \
 		    ${DESTDIR}/root/.login; \
 		${INSTALL} -c -o root -g wheel -m 644 dot.profile \
