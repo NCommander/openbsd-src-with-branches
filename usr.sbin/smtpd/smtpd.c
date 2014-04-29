@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.220 2014/04/09 19:12:45 eric Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.221 2014/04/19 14:00:45 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -721,7 +721,7 @@ void
 post_fork(int proc)
 {
 	if (proc != PROC_QUEUE && env->sc_queue_key)
-		memset(env->sc_queue_key, 0, strlen(env->sc_queue_key));
+		explicit_bzero(env->sc_queue_key, strlen(env->sc_queue_key));
 
 	if (proc != PROC_CONTROL) {
 		close(control_socket);
