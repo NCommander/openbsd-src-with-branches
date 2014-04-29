@@ -1,4 +1,4 @@
-/* $OpenBSD: cipher.h,v 1.43 2013/12/06 13:34:54 markus Exp $ */
+/* $OpenBSD: cipher.h,v 1.44 2014/01/25 10:12:50 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -39,6 +39,7 @@
 
 #include <openssl/evp.h>
 #include "cipher-chachapoly.h"
+#include "cipher-aesctr.h"
 
 /*
  * Cipher types for SSH-1.  New types can be added, but old types should not
@@ -69,6 +70,7 @@ struct CipherContext {
 	int	encrypt;
 	EVP_CIPHER_CTX evp;
 	struct chachapoly_ctx cp_ctx; /* XXX union with evp? */
+	struct aesctr_ctx ac_ctx; /* XXX union with evp? */
 	const Cipher *cipher;
 };
 
