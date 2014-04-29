@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhidev.c,v 1.58 2014/04/15 09:14:27 mpi Exp $	*/
+/*	$OpenBSD: uhidev.c,v 1.59 2014/04/24 09:40:28 mpi Exp $	*/
 /*	$NetBSD: uhidev.c,v 1.14 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -572,6 +572,10 @@ out1:
 		usbd_free_xfer(sc->sc_owxfer);
 		sc->sc_owxfer = NULL;
 	}
+	if (sc->sc_ixfer != NULL) {
+		usbd_free_xfer(sc->sc_ixfer);
+		sc->sc_ixfer = NULL;
+	}
 	return (error);
 }
 
@@ -587,11 +591,20 @@ uhidev_close(struct uhidev *scd)
 		return;
 	DPRINTF(("uhidev_close: close pipe\n"));
 
-	if (sc->sc_oxfer != NULL)
+	if (sc->sc_oxfer != NULL) {
 		usbd_free_xfer(sc->sc_oxfer);
+		sc->sc_oxfer = NULL;
+	}
 
-	if (sc->sc_owxfer != NULL)
+	if (sc->sc_owxfer != NULL) {
 		usbd_free_xfer(sc->sc_owxfer);
+		sc->sc_owxfer = NULL;
+	}
+
+	if (sc->sc_ixfer != NULL) {
+		usbd_free_xfer(sc->sc_ixfer);
+		sc->sc_ixfer = NULL;
+	}
 
 	/* Disable interrupts. */
 	if (sc->sc_opipe != NULL) {
