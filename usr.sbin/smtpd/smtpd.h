@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.457 2014/04/29 19:13:14 reyk Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.458 2014/04/30 08:23:43 reyk Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -621,6 +621,7 @@ struct forward_req {
 struct deliver {
 	char			to[SMTPD_MAXPATHLEN];
 	char			from[SMTPD_MAXPATHLEN];
+	char			dest[SMTPD_MAXLINESIZE];
 	char			user[SMTPD_MAXLOGNAME];
 	short			mode;
 
