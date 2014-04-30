@@ -40,14 +40,17 @@
 # sha256_block:-( This is presumably because 64-bit shifts/rotates
 # apparently are not atomic instructions, but implemented in microcode.
 
-$output=shift;
+$flavour = shift;
+$output  = shift;
+if ($flavour =~ /\./) { $output = $flavour; undef $flavour; }
 
 $0 =~ m/(.*[\/\\])[^\/\\]+$/; $dir=$1;
 ( $xlate="${dir}x86_64-xlate.pl" and -f $xlate ) or
 ( $xlate="${dir}../../perlasm/x86_64-xlate.pl" and -f $xlate) or
 die "can't locate x86_64-xlate.pl";
 
-open STDOUT,"| $^X $xlate $output";
+open OUT,"| \"$^X\" $xlate $flavour $output";
+*STDOUT=*OUT;
 
 if ($output =~ /512/) {
 	$func="sha512_block_data_order";
@@ -91,50 +94,44 @@ sub ROUND_00_15()
 { my ($i,$a,$b,$c,$d,$e,$f,$g,$h) = @_;
 
 $code.=<<___;
-	mov	$e,$a0
-	mov	$e,$a1
+	ror	\$`$Sigma1[2]-$Sigma1[1]`,$a0
 	mov	$f,$a2
-
-	ror	\$$Sigma1[0],$a0
-	ror	\$$Sigma1[1],$a1
-	xor	$g,$a2			# f^g
-
-	xor	$a1,$a0
-	ror	\$`$Sigma1[2]-$Sigma1[1]`,$a1
-	and	$e,$a2			# (f^g)&e
 	mov	$T1,`$SZ*($i&0xf)`(%rsp)
 
-	xor	$a1,$a0			# Sigma1(e)
-	xor	$g,$a2			# Ch(e,f,g)=((f^g)&e)^g
+	ror	\$`$Sigma0[2]-$Sigma0[1]`,$a1
+	xor	$e,$a0
+	xor	$g,$a2			# f^g
+
+	ror	\$`$Sigma1[1]-$Sigma1[0]`,$a0
 	add	$h,$T1			# T1+=h
+	xor	$a,$a1
 
-	mov	$a,$h
-	add	$a0,$T1			# T1+=Sigma1(e)
-
-	add	$a2,$T1			# T1+=Ch(e,f,g)
-	mov	$a,$a0
-	mov	$a,$a1
-
-	ror	\$$Sigma0[0],$h
-	ror	\$$Sigma0[1],$a0
-	mov	$a,$a2
 	add	($Tbl,$round,$SZ),$T1	# T1+=K[round]
+	and	$e,$a2			# (f^g)&e
+	mov	$b,$h
 
-	xor	$a0,$h
-	ror	\$`$Sigma0[2]-$Sigma0[1]`,$a0
-	or	$c,$a1			# a|c
+	ror	\$`$Sigma0[1]-$Sigma0[0]`,$a1
+	xor	$e,$a0
+	xor	$g,$a2			# Ch(e,f,g)=((f^g)&e)^g
 
-	xor	$a0,$h			# h=Sigma0(a)
-	and	$c,$a2			# a&c
+	xor	$c,$h			# b^c
+	xor	$a,$a1
+	add	$a2,$T1			# T1+=Ch(e,f,g)
+	mov	$b,$a2
+
+	ror	\$$Sigma1[0],$a0	# Sigma1(e)
+	and	$a,$h			# h=(b^c)&a
+	and	$c,$a2			# b&c
+
+	ror	\$$Sigma0[0],$a1	# Sigma0(a)
+	add	$a0,$T1			# T1+=Sigma1(e)
+	add	$a2,$h			# h+=b&c (completes +=Maj(a,b,c)
+
 	add	$T1,$d			# d+=T1
-
-	and	$b,$a1			# (a|c)&b
 	add	$T1,$h			# h+=T1
-
-	or	$a2,$a1			# Maj(a,b,c)=((a|c)&b)|(a&c)
 	lea	1($round),$round	# round++
+	add	$a1,$h			# h+=Sigma0(a)
 
-	add	$a1,$h			# h+=Maj(a,b,c)
 ___
 }
 
@@ -143,32 +140,30 @@ sub ROUND_16_XX()
 
 $code.=<<___;
 	mov	`$SZ*(($i+1)&0xf)`(%rsp),$a0
-	mov	`$SZ*(($i+14)&0xf)`(%rsp),$T1
+	mov	`$SZ*(($i+14)&0xf)`(%rsp),$a1
+	mov	$a0,$T1
+	mov	$a1,$a2
 
-	mov	$a0,$a2
-
+	ror	\$`$sigma0[1]-$sigma0[0]`,$T1
+	xor	$a0,$T1
 	shr	\$$sigma0[2],$a0
-	ror	\$$sigma0[0],$a2
 
-	xor	$a2,$a0
-	ror	\$`$sigma0[1]-$sigma0[0]`,$a2
+	ror	\$$sigma0[0],$T1
+	xor	$T1,$a0			# sigma0(X[(i+1)&0xf])
+	mov	`$SZ*(($i+9)&0xf)`(%rsp),$T1
 
-	xor	$a2,$a0			# sigma0(X[(i+1)&0xf])
-	mov	$T1,$a1
+	ror	\$`$sigma1[1]-$sigma1[0]`,$a2
+	xor	$a1,$a2
+	shr	\$$sigma1[2],$a1
 
-	shr	\$$sigma1[2],$T1
-	ror	\$$sigma1[0],$a1
-
-	xor	$a1,$T1
-	ror	\$`$sigma1[1]-$sigma1[0]`,$a1
-
-	xor	$a1,$T1			# sigma1(X[(i+14)&0xf])
-
+	ror	\$$sigma1[0],$a2
 	add	$a0,$T1
-
-	add	`$SZ*(($i+9)&0xf)`(%rsp),$T1
+	xor	$a2,$a1			# sigma1(X[(i+14)&0xf])
 
 	add	`$SZ*($i&0xf)`(%rsp),$T1
+	mov	$e,$a0
+	add	$a1,$T1
+	mov	$a,$a1
 ___
 	&ROUND_00_15(@_);
 }
@@ -186,7 +181,7 @@ $func:
 	push	%r13
 	push	%r14
 	push	%r15
-	mov	%rsp,%rbp		# copy %rsp
+	mov	%rsp,%r11		# copy %rsp
 	shl	\$4,%rdx		# num*16
 	sub	\$$framesz,%rsp
 	lea	($inp,%rdx,$SZ),%rdx	# inp+num*16*$SZ
@@ -194,10 +189,10 @@ $func:
 	mov	$ctx,$_ctx		# save ctx, 1st arg
 	mov	$inp,$_inp		# save inp, 2nd arh
 	mov	%rdx,$_end		# save end pointer, "3rd" arg
-	mov	%rbp,$_rsp		# save copy of %rsp
+	mov	%r11,$_rsp		# save copy of %rsp
+.Lprologue:
 
-	.picmeup $Tbl
-	lea	$TABLE-.($Tbl),$Tbl
+	lea	$TABLE(%rip),$Tbl
 
 	mov	$SZ*0($ctx),$A
 	mov	$SZ*1($ctx),$B
@@ -215,6 +210,8 @@ $func:
 ___
 	for($i=0;$i<16;$i++) {
 		$code.="	mov	$SZ*$i($inp),$T1\n";
+		$code.="	mov	@ROT[4],$a0\n";
+		$code.="	mov	@ROT[0],$a1\n";
 		$code.="	bswap	$T1\n";
 		&ROUND_00_15($i,@ROT);
 		unshift(@ROT,pop(@ROT));
@@ -257,14 +254,15 @@ $code.=<<___;
 	mov	$H,$SZ*7($ctx)
 	jb	.Lloop
 
-	mov	$_rsp,%rsp
-	pop	%r15
-	pop	%r14
-	pop	%r13
-	pop	%r12
-	pop	%rbp
-	pop	%rbx
-
+	mov	$_rsp,%rsi
+	mov	(%rsi),%r15
+	mov	8(%rsi),%r14
+	mov	16(%rsi),%r13
+	mov	24(%rsi),%r12
+	mov	32(%rsi),%rbp
+	mov	40(%rsi),%rbx
+	lea	48(%rsi),%rsp
+.Lepilogue:
 	ret
 .size	$func,.-$func
 ___
