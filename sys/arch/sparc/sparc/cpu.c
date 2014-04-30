@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.48 2010/11/11 17:58:23 miod Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.49 2012/11/25 13:34:17 jsg Exp $	*/
 /*	$NetBSD: cpu.c,v 1.56 1997/09/15 20:52:36 pk Exp $ */
 
 /*
@@ -294,7 +294,7 @@ void
 fpu_init(sc)
 	struct cpu_softc *sc;
 {
-	struct fpstate fpstate;
+	struct fpstate fpstate __aligned(8);
 
 	/*
 	 * Get the FSR and clear any exceptions.  If we do not unload
