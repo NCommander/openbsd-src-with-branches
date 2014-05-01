@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath.c,v 1.33 2013/08/29 02:54:36 dlg Exp $ */
+/*	$OpenBSD: mpath.c,v 1.34 2013/09/08 09:47:36 dlg Exp $ */
 
 /*
  * Copyright (c) 2009 David Gwynne <dlg@openbsd.org>
@@ -542,13 +542,14 @@ int
 mpath_path_detach(struct mpath_path *p)
 {
 	struct mpath_group *g = p->p_group;
-	struct mpath_dev *d = g->g_dev;
+	struct mpath_dev *d;
 	struct mpath_path *np = NULL;
 
 #ifdef DIAGNOSTIC
 	if (g == NULL)
 		panic("mpath: detaching a path from a nonexistant bus");
 #endif
+	d = g->g_dev;
 	p->p_group = NULL;
 
 	mtx_enter(&d->d_mtx);
