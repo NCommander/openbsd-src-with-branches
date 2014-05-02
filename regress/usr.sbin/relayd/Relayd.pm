@@ -1,4 +1,4 @@
-#	$OpenBSD: Relayd.pm,v 1.5 2012/12/28 20:36:25 bluhm Exp $
+#	$OpenBSD: Relayd.pm,v 1.6 2013/01/21 20:16:57 bluhm Exp $
 
 # Copyright (c) 2010-2012 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -52,6 +52,8 @@ sub new {
 	open(my $fh, '>', $self->{conffile})
 	    or die ref($self), " conf file $self->{conffile} create failed: $!";
 	print $fh "log all\n";
+	print $fh "table <table-$test> { $self->{connectaddr} }\n"
+	    if defined($self->{table});
 
 	my @protocol = @{$self->{protocol}};
 	my $proto = shift @protocol;
@@ -66,6 +68,10 @@ sub new {
 	print $fh  "\n}\n";
 
 	my @relay = @{$self->{relay}};
+	my $connectport = $self->{connectport};
+	my $connectaddr = $self->{connectaddr};
+	my $listenaddr = $self->{listenaddr};
+	my $listenport = $self->{listenport};
 	print $fh  "relay relay-$test {";
 	print $fh  "\n\tprotocol proto-$test"
 	    unless grep { /^protocol / } @relay;
@@ -75,6 +81,12 @@ sub new {
 	my $withssl = $self->{forwardssl} ? " with ssl" : "";
 	print $fh  "\n\tforward$withssl to $self->{connectaddr} ".
 	    "port $self->{connectport}" unless grep { /^forward / } @relay;
+	my @raux = @relay;
+	@relay = ();
+	foreach my $s (@raux) {
+		$s =~ s/(\$\w+)/$1/eeg;
+		push @relay, $s;
+	}
 	print $fh  map { "\n\t$_" } @relay;
 	print $fh  "\n}\n";
 
