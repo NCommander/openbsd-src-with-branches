@@ -182,12 +182,12 @@ kex_c25519_hash(int, char *, char *, char *, int,
 
 #define CURVE25519_SIZE 32
 void	kexc25519_keygen(u_char[CURVE25519_SIZE], u_char[CURVE25519_SIZE])
-	__bounded((__minbytes__, 1, CURVE25519_SIZE))
-	__bounded((__minbytes__, 2, CURVE25519_SIZE));
+	__attribute__((__bounded__(__minbytes__, 1, CURVE25519_SIZE)))
+	__attribute__((__bounded__(__minbytes__, 2, CURVE25519_SIZE)));
 void kexc25519_shared_key(const u_char key[CURVE25519_SIZE],
     const u_char pub[CURVE25519_SIZE], Buffer *out)
-	__bounded((__minbytes__, 1, CURVE25519_SIZE))
-	__bounded((__minbytes__, 2, CURVE25519_SIZE));
+	__attribute__((__bounded__(__minbytes__, 1, CURVE25519_SIZE)))
+	__attribute__((__bounded__(__minbytes__, 2, CURVE25519_SIZE)));
 
 void
 derive_ssh1_session_id(BIGNUM *, BIGNUM *, u_int8_t[8], u_int8_t[16]);

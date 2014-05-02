@@ -22,14 +22,14 @@ struct chacha_ctx {
 #define CHACHA_BLOCKLEN		64
 
 void chacha_keysetup(struct chacha_ctx *x, const u_char *k, u_int kbits)
-    __bounded((__minbytes__, 2, CHACHA_MINKEYLEN));
+    __attribute__((__bounded__(__minbytes__, 2, CHACHA_MINKEYLEN)));
 void chacha_ivsetup(struct chacha_ctx *x, const u_char *iv, const u_char *ctr)
-    __bounded((__minbytes__, 2, CHACHA_NONCELEN))
-    __bounded((__minbytes__, 3, CHACHA_CTRLEN));
+    __attribute__((__bounded__(__minbytes__, 2, CHACHA_NONCELEN)))
+    __attribute__((__bounded__(__minbytes__, 3, CHACHA_CTRLEN)));
 void chacha_encrypt_bytes(struct chacha_ctx *x, const u_char *m,
     u_char *c, u_int bytes)
-    __bounded((__buffer__, 2, 4))
-    __bounded((__buffer__, 3, 4));
+    __attribute__((__bounded__(__buffer__, 2, 4)))
+    __attribute__((__bounded__(__buffer__, 3, 4)));
 
 #endif	/* CHACHA_H */
 

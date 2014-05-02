@@ -43,9 +43,9 @@
 
 extern int crypto_scalarmult_curve25519(u_char a[CURVE25519_SIZE],
     const u_char b[CURVE25519_SIZE], const u_char c[CURVE25519_SIZE])
-	__bounded((__minbytes__, 1, CURVE25519_SIZE))
-	__bounded((__minbytes__, 2, CURVE25519_SIZE))
-	__bounded((__minbytes__, 3, CURVE25519_SIZE));
+	__attribute__((__bounded__(__minbytes__, 1, CURVE25519_SIZE)))
+	__attribute__((__bounded__(__minbytes__, 2, CURVE25519_SIZE)))
+	__attribute__((__bounded__(__minbytes__, 3, CURVE25519_SIZE)));
 
 void
 kexc25519_keygen(u_char key[CURVE25519_SIZE], u_char pub[CURVE25519_SIZE])

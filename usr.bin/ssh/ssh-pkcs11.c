@@ -377,7 +377,7 @@ pkcs11_open_session(struct pkcs11_provider *p, CK_ULONG slotidx, char *pin)
  */
 static int pkcs11_fetch_keys_filter(struct pkcs11_provider *, CK_ULONG,
     CK_ATTRIBUTE [], CK_ATTRIBUTE [3], Key ***, int *)
-	__bounded((__minbytes__,4, 3 * sizeof(CK_ATTRIBUTE)));
+	__attribute__((__bounded__(__minbytes__,4, 3 * sizeof(CK_ATTRIBUTE))));
 
 static int
 pkcs11_fetch_keys(struct pkcs11_provider *p, CK_ULONG slotidx,
