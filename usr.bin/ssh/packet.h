@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.h,v 1.59 2013/07/12 00:19:59 djm Exp $ */
+/* $OpenBSD: packet.h,v 1.60 2014/04/28 03:09:18 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -114,6 +114,7 @@ time_t	 packet_get_rekey_timeout(void);
 
 void	 packet_backup_state(void);
 void	 packet_restore_state(void);
+void	 packet_set_postauth(void);
 
 void	*packet_get_input(void);
 void	*packet_get_output(void);

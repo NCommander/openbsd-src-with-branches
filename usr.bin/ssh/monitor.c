@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.131 2014/02/02 03:44:31 djm Exp $ */
+/* $OpenBSD: monitor.c,v 1.132 2014/04/29 18:01:49 markus Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -1479,6 +1479,8 @@ monitor_apply_keystate(struct monitor *pmonitor)
 	/* Update with new address */
 	if (options.compression)
 		mm_init_compression(pmonitor->m_zlib);
+
+	packet_set_postauth();
 
 	if (options.rekey_limit || options.rekey_interval)
 		packet_set_rekey_limits((u_int32_t)options.rekey_limit,
