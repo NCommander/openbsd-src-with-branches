@@ -1,4 +1,4 @@
-/*	$OpenBSD: radeon_display.c,v 1.5 2013/12/05 13:29:56 kettenis Exp $	*/
+/*	$OpenBSD: radeon_display.c,v 1.6 2014/02/09 11:03:31 jsg Exp $	*/
 /*
  * Copyright 2007-8 Advanced Micro Devices, Inc.
  * Copyright 2008 Red Hat Inc.
@@ -743,6 +743,7 @@ int radeon_ddc_get_modes(struct radeon_connector *radeon_connector)
 	if (radeon_connector->edid) {
 		drm_mode_connector_update_edid_property(&radeon_connector->base, radeon_connector->edid);
 		ret = drm_add_edid_modes(&radeon_connector->base, radeon_connector->edid);
+		drm_edid_to_eld(&radeon_connector->base, radeon_connector->edid);
 		return ret;
 	}
 	drm_mode_connector_update_edid_property(&radeon_connector->base, NULL);
