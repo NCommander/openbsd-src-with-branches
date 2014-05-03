@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_tv.c,v 1.5 2014/01/22 05:16:55 kettenis Exp $	*/
+/*	$OpenBSD: intel_tv.c,v 1.6 2014/03/24 17:06:49 kettenis Exp $	*/
 /*
  * Copyright © 2006-2008 Intel Corporation
  *   Jesse Barnes <jesse.barnes@intel.com>
@@ -1531,9 +1531,14 @@ static int tv_is_present_in_vbt(struct drm_device *dev)
 		/*
 		 * If the device type is not TV, continue.
 		 */
-		if (p_child->device_type != DEVICE_TYPE_INT_TV &&
-			p_child->device_type != DEVICE_TYPE_TV)
+		switch (p_child->device_type) {
+		case DEVICE_TYPE_INT_TV:
+		case DEVICE_TYPE_TV:
+		case DEVICE_TYPE_TV_SVIDEO_COMPOSITE:
+			break;
+		default:
 			continue;
+		}
 		/* Only when the addin_offset is non-zero, it is regarded
 		 * as present.
 		 */
