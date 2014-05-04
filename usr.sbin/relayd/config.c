@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.12 2014/04/18 13:55:26 reyk Exp $	*/
+/*	$OpenBSD: config.c,v 1.13 2014/04/22 08:04:23 reyk Exp $	*/
 
 /*
  * Copyright (c) 2011 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -284,9 +284,8 @@ config_getcfg(struct relayd *env, struct imsg *imsg)
 
 	if (env->sc_flags & (F_SSL|F_SSLCLIENT)) {
 		ssl_init(env);
-		if ((what & CONFIG_CA_ENGINE) &&
-		    (ca_engine_init(env)) == -1)
-			fatal("CA engine failed");
+		if (what & CONFIG_CA_ENGINE)
+			ca_engine_init(env);
 	}
 
 	if (privsep_process != PROC_PARENT)
