@@ -1,4 +1,4 @@
-/*	$OpenBSD: hidms.c,v 1.4 2011/08/19 18:46:22 matthieu Exp $ */
+/*	$OpenBSD: hidms.c,v 1.5 2013/08/09 22:10:17 edd Exp $ */
 /*	$NetBSD: ums.c,v 1.60 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -257,6 +257,7 @@ hidms_setup(struct device *self, struct hidms *ms, uint32_t quirks,
 			break;
 		}
 	}
+	hid_end_parse(d);
 	return 0;
 }
 
