@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.c,v 1.41 2010/12/15 14:34:17 claudio Exp $ */
+/*	$OpenBSD: dhcpd.c,v 1.42 2014/05/05 18:27:57 pelikan Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -220,7 +220,6 @@ main(int argc, char *argv[])
 	    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid))
 		error("can't drop privileges: %m");
 
-	bootp_packet_handler = do_packet;
 	add_timeout(cur_time + 5, periodic_scan, NULL);
 	dispatch();
 
