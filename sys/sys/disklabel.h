@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.58 2013/11/03 14:18:55 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.59 2013/11/10 04:59:06 krw Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
@@ -147,7 +147,7 @@ struct disklabel {
 };
 
 
-struct	__partitionv0 {		/* the partition table */
+struct	__partitionv0 {		/* old (v0) partition table entry */
 	u_int32_t p_size;	/* number of sectors in partition */
 	u_int32_t p_offset;	/* starting sector */
 	u_int32_t p_fsize;	/* filesystem basic fragment size */
