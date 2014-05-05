@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.27 2014/04/22 12:00:03 reyk Exp $	*/
+/*	$OpenBSD: ca.c,v 1.28 2014/05/05 18:54:17 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -784,6 +784,7 @@ ca_x509_serialize(X509 *x509)
 
 	len = BIO_get_mem_data(out, &d);
 	buf = ibuf_new(d, len);
+	BIO_free(out);
 
 	return (buf);
 }
