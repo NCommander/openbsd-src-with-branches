@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgAdd.pm,v 1.63 2014/02/13 19:35:00 espie Exp $
+# $OpenBSD: PkgAdd.pm,v 1.64 2014/03/18 18:53:29 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -901,6 +901,9 @@ sub process_set
 	$set->figure_out_kept($state);
 
 	if (newer_has_errors($set, $state)) {
+		return ();
+	}
+	if ($set->newer == 0 && $set->older_to_do == 0) {
 		return ();
 	}
 
