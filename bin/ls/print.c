@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.30 2013/05/30 16:34:32 guenther Exp $	*/
+/*	$OpenBSD: print.c,v 1.31 2014/01/09 03:07:52 guenther Exp $	*/
 /*	$NetBSD: print.c,v 1.15 1996/12/11 03:25:39 thorpej Exp $	*/
 
 /*
@@ -174,7 +174,7 @@ printcol(DISPLAY *dp)
 	if (dp->entries > lastentries) {
 		FTSENT **a;
 
-		if ((a = realloc(array, dp->entries * sizeof(FTSENT *))) ==
+		if ((a = reallocarray(array, dp->entries, sizeof(FTSENT *))) ==
 		    NULL) {
 			free(array);
 			array = NULL;
