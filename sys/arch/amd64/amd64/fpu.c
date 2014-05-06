@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu.c,v 1.27 2012/08/30 16:10:32 kettenis Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.28 2014/03/29 18:09:28 guenther Exp $	*/
 /*	$NetBSD: fpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*-
@@ -40,7 +40,6 @@
 #include <sys/user.h>
 #include <sys/ioctl.h>
 #include <sys/device.h>
-#include <sys/vmmeter.h>
 #include <sys/signalvar.h>
 
 #include <uvm/uvm_extern.h>
