@@ -1,4 +1,4 @@
-/*	$OpenBSD: private.h,v 1.24 2011/10/10 13:53:24 ajacoutot Exp $	*/
+/*	$OpenBSD: private.h,v 1.25 2012/09/13 11:14:20 millert Exp $	*/
 #ifndef PRIVATE_H
 
 #define PRIVATE_H
@@ -16,7 +16,6 @@
 #define STD_INSPIRED		1
 #define HAVE_STRERROR		1
 #define HAVE_STDINT_H		1
-#define NO_RUN_TIME_WARNINGS_ABOUT_YEAR_2000_PROBLEMS_THANK_YOU	1
 
 /*
 ** This header is for use ONLY with the time conversion code.
