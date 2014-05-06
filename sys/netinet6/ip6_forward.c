@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_forward.c,v 1.64 2014/01/29 00:50:56 dlg Exp $	*/
+/*	$OpenBSD: ip6_forward.c,v 1.65 2014/04/14 09:06:42 mpi Exp $	*/
 /*	$KAME: ip6_forward.c,v 1.75 2001/06/29 12:42:13 jinmei Exp $	*/
 
 /*
@@ -201,6 +201,7 @@ reroute:
 		        if (error == -EINVAL) /* Should silently drop packet */
 				error = 0;
 
+			m_freem(m);
 			goto freecopy;
 		}
 	} else {
