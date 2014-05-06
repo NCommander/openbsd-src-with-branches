@@ -1,4 +1,4 @@
-/*	$OpenBSD: fmt.c,v 1.10 2013/10/31 01:59:33 deraadt Exp $	*/
+/*	$OpenBSD: fmt.c,v 1.11 2013/11/11 23:07:15 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -56,7 +56,7 @@ fmt_puts(const char *s, int *leftp)
 		while (len > newmaxlen)
 			newmaxlen *= 2;
 		nv = realloc(v, newmaxlen);
-		if (nv == 0) {
+		if (nv == NULL) {
 			free(v);
 			v = NULL;
 			maxlen = 0;
