@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.83 2014/02/05 20:35:42 halex Exp $	*/
+/*	$OpenBSD: options.c,v 1.84 2014/02/06 20:51:55 guenther Exp $	*/
 /*	$NetBSD: options.c,v 1.6 1996/03/26 23:54:18 mrg Exp $	*/
 
 /*-
@@ -779,11 +779,9 @@ tar_options(int argc, char **argv)
 				size_t n = nincfiles + 3;
 				struct incfile *p;
 
-				p = realloc(incfiles,
-				    sizeof(*incfiles) * n);
+				p = reallocarray(incfiles, n,
+				    sizeof(*incfiles));
 				if (p == NULL) {
-					free(incfiles);
-					incfiles = NULL;
 					paxwarn(0, "Unable to allocate space "
 					    "for option list");
 					exit(1);
