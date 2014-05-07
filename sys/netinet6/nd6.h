@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.h,v 1.35 2013/10/25 02:54:42 deraadt Exp $	*/
+/*	$OpenBSD: nd6.h,v 1.36 2014/01/07 17:07:46 mikeb Exp $	*/
 /*	$KAME: nd6.h,v 1.95 2002/06/08 11:31:06 itojun Exp $	*/
 
 /*
@@ -215,7 +215,6 @@ extern int nd6_prune;
 extern int nd6_delay;
 extern int nd6_umaxtries;
 extern int nd6_mmaxtries;
-extern int nd6_useloopback;
 extern int nd6_maxnudhint;
 extern int nd6_gctimer;
 extern struct llinfo_nd6 llinfo_nd6;
