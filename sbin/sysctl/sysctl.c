@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.200 2014/04/08 14:04:11 mpi Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.201 2014/05/07 01:41:18 tedu Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -1054,8 +1054,8 @@ parse_baddynamic(int mib[], size_t len, char *string, void **newvalp,
 						return;
 					if (!nflag)
 						printf("%s: ", string);
-					puts("kernel does contain bad dynamic "
-					    "port tables");
+					puts("kernel does not contain bad "
+					    "dynamic port tables");
 					return;
 				}
 				baddynamic_loaded = 1;
