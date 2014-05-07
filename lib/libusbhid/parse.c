@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.5 2009/07/24 11:41:15 jsg Exp $	*/
+/*	$OpenBSD: parse.c,v 1.7 2012/07/16 19:57:17 jasper Exp $	*/
 /*	$NetBSD: parse.c,v 1.2 2001/12/29 20:44:22 augustss Exp $	*/
 
 /*
@@ -91,10 +91,9 @@ hid_start_parse(report_desc_t d, int kindset, int id)
 {
 	struct hid_data *s;
 
-	s = malloc(sizeof *s);
+	s = calloc(1, sizeof *s);
 	if (s == NULL)
 		return (NULL);
-	memset(s, 0, sizeof *s);
 	s->start = s->p = d->data;
 	s->end = d->data + d->size;
 	s->kindset = kindset;
