@@ -1,4 +1,4 @@
-/*	$OpenBSD: pkill.c,v 1.33 2013/09/22 17:28:34 guenther Exp $	*/
+/*	$OpenBSD: pkill.c,v 1.34 2013/11/12 13:54:51 deraadt Exp $	*/
 /*	$NetBSD: pkill.c,v 1.5 2002/10/27 11:49:34 kleink Exp $	*/
 
 /*-
@@ -277,9 +277,8 @@ main(int argc, char **argv)
 	 * Allocate memory which will be used to keep track of the
 	 * selection.
 	 */
-	if ((selected = malloc(nproc)) == NULL)
+	if ((selected = calloc(nproc, 1)) == NULL)
 		errx(STATUS_ERROR, "memory allocation failure");
-	memset(selected, 0, nproc);
 
 	/*
 	 * Refine the selection.
