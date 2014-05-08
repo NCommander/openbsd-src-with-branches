@@ -1,4 +1,4 @@
-/* $OpenBSD: dec_kn300.c,v 1.6 2010/11/23 04:07:55 shadchin Exp $ */
+/* $OpenBSD: dec_kn300.c,v 1.7 2012/12/05 23:20:09 deraadt Exp $ */
 /* $NetBSD: dec_kn300.c,v 1.34 2007/03/04 15:18:10 yamt Exp $ */
 
 /*
@@ -194,11 +194,13 @@ dec_kn300_cons_init()
 		break;
 
 	default:
-		printf("ctb->ctb_term_type = 0x%lx\n", ctb->ctb_term_type);
-		printf("ctb->ctb_turboslot = 0x%lx\n", ctb->ctb_turboslot);
+		printf("ctb->ctb_term_type = 0x%lx\n",
+		    (unsigned long)ctb->ctb_term_type);
+		printf("ctb->ctb_turboslot = 0x%lx\n",
+		    (unsigned long)ctb->ctb_turboslot);
 
-		panic("consinit: unknown console type %ld",
-		    ctb->ctb_term_type);
+		panic("consinit: unknown console type %lu",
+		    (unsigned long)ctb->ctb_term_type);
 	}
 #ifdef KGDB
 	/* Attach the KGDB device. */
