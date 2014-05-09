@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.91 2014/03/31 21:32:31 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.92 2014/04/16 21:02:41 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -180,7 +180,7 @@ cmd_unpack_argv(char *buf, size_t len, int argc, char ***argv)
 }
 
 char **
-cmd_copy_argv(int argc, char *const *argv)
+cmd_copy_argv(int argc, char **argv)
 {
 	char	**new_argv;
 	int	  i;
