@@ -1,4 +1,4 @@
-/*	$OpenBSD: utpms.c,v 1.2 2013/07/06 14:42:38 mpi Exp $	*/
+/*	$OpenBSD: utpms.c,v 1.3 2013/11/15 08:17:44 pirofti Exp $	*/
 
 /*
  * Copyright (c) 2005, Johan Wallén
@@ -334,7 +334,7 @@ utpms_attach(struct device *parent, struct device *self, void *aux)
 	}
 	if (sc->sc_x_sensors <= 0 || sc->sc_x_sensors > UTPMS_X_SENSORS ||
 	    sc->sc_y_sensors <= 0 || sc->sc_y_sensors > UTPMS_Y_SENSORS) {
-		printf(": unexpected sensors configuration (d:d)\n",
+		printf(": unexpected sensors configuration (%d:%d)\n",
 		    sc->sc_x_sensors, sc->sc_y_sensors);
 		return;
 	}
