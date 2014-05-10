@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.131 2014/05/08 21:32:45 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.132 2014/05/10 05:33:00 guenther Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -31,10 +31,10 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/syscall.h>
-#include <sys/syscall_mi.h>
 #include <sys/proc.h>
 #include <sys/signalvar.h>
 #include <sys/user.h>
+#include <sys/syscall_mi.h>
 
 #include <uvm/uvm_extern.h>
 
