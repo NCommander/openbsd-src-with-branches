@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.36 2014/04/18 11:51:16 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.37 2014/04/30 06:24:23 sf Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -281,15 +281,7 @@ copyfault:
 		goto out;
 
 	case T_ASTFLT|T_USER:		/* Allow process switch */
-		uvmexp.softs++;
-		if (p->p_flag & P_OWEUPC) {
-			KERNEL_LOCK();
-			ADDUPROF(p);
-			KERNEL_UNLOCK();
-		}
-		/* Allow a forced task switch. */
-		if (curcpu()->ci_want_resched)
-			preempt(NULL);
+		mi_ast(p, curcpu()->ci_want_resched);
 		goto out;
 
 	case T_BOUND|T_USER:
