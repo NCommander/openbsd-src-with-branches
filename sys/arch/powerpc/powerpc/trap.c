@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.98 2014/05/10 05:33:00 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.99 2014/05/10 16:48:36 deraadt Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -620,6 +620,7 @@ for (i = 0; i < errnum; i++) {
 
 	case EXC_AST|EXC_USER:
 		p->p_md.md_astpending = 0;	/* we are about to do it */
+		uvmexp.softs++;
 		mi_ast(p, ci->ci_want_resched);
 		break;
 	}

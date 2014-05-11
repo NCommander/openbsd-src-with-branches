@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.132 2014/05/10 05:33:00 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.133 2014/05/10 21:58:56 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -139,6 +139,7 @@ ast(struct proc *p)
 {
 	if (p->p_md.md_astpending) {
 		p->p_md.md_astpending = 0;
+		uvmexp.softs++;
 		mi_ast(p, curcpu()->ci_want_resched);
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.114 2014/04/18 11:51:17 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.115 2014/05/10 05:33:00 guenther Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 /*-
@@ -334,6 +334,7 @@ trap(struct trapframe *frame)
 		goto out;
 
 	case T_ASTFLT|T_USER:		/* Allow process switch */
+		uvmexp.softs++;
 		mi_ast(p, want_resched);
 		goto out;
 
