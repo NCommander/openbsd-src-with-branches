@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip.h,v 1.13 2009/07/27 12:52:42 claudio Exp $	*/
+/*	$OpenBSD: ip.h,v 1.14 2013/10/24 15:21:21 deraadt Exp $	*/
 /*	$NetBSD: ip.h,v 1.9 1995/05/15 01:22:44 cgd Exp $	*/
 
 /*
@@ -150,6 +150,7 @@ struct ip {
 #define	IPOPT_LSRR		131		/* loose source route */
 #define	IPOPT_SATID		136		/* satnet id */
 #define	IPOPT_SSRR		137		/* strict source route */
+#define	IPOPT_RA		148		/* router alert */
 
 /*
  * Offsets to fields in options other than EOL and NOP.
