@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.304 2014/05/11 12:40:37 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.305 2014/05/11 14:00:52 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -237,10 +237,8 @@ routehandler(void)
 			break;
 		sa = get_ifa((char *)ifam + ifam->ifam_hdrlen,
 		    ifam->ifam_addrs);
-		if (sa == NULL) {
-			rslt = asprintf(&errmsg, "%s sa == NULL", ifi->name);
-			goto die;
-		}
+		if (sa == NULL)
+			goto done;
 
 		memcpy(&a, &((struct sockaddr_in *)sa)->sin_addr, sizeof(a));
 		if (a.s_addr == INADDR_ANY)
@@ -280,10 +278,8 @@ routehandler(void)
 			break;
 		sa = get_ifa((char *)ifam + ifam->ifam_hdrlen,
 		    ifam->ifam_addrs);
-		if (sa == NULL) {
-			rslt = asprintf(&errmsg, "%s sa == NULL", ifi->name);
-			goto die;
-		}
+		if (sa == NULL)
+			goto done;
 
 		memcpy(&a, &((struct sockaddr_in *)sa)->sin_addr, sizeof(a));
 		if (a.s_addr == INADDR_ANY)
