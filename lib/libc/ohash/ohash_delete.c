@@ -1,4 +1,4 @@
-/* $OpenBSD: ohash_delete.c,v 1.1 2001/03/02 13:27:07 espie Exp $ */
+/* $OpenBSD: ohash_delete.c,v 1.2 2004/06/22 20:00:16 espie Exp $ */
 /* ex:ts=8 sw=4: 
  */
 
@@ -23,8 +23,7 @@
 void 
 ohash_delete(struct ohash *h)
 {
-	(h->info.hfree)(h->t, sizeof(struct _ohash_record) * h->size,
-		h->info.data);
+	(h->info.free)(h->t, h->info.data);
 #ifndef NDEBUG
 	h->t = NULL;
 #endif
