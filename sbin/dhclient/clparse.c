@@ -1,4 +1,4 @@
-/*	$OpenBSD: clparse.c,v 1.85 2014/05/05 18:02:49 krw Exp $	*/
+/*	$OpenBSD: clparse.c,v 1.86 2014/05/11 12:40:37 krw Exp $	*/
 
 /* Parser for dhclient config and lease files. */
 
@@ -536,7 +536,8 @@ parse_client_lease_declaration(FILE *cfile, struct client_lease *lease)
 			return;
 		}
 		if (strcmp(ifi->name, val) != 0) {
-			parse_warn("wrong interface name.");
+			if (lease->is_static == 0)
+				parse_warn("wrong interface name.");
 			skip_to_semi(cfile);
 			return;
 		}
