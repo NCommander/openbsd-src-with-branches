@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmoused.c,v 1.29 2013/11/24 01:06:19 deraadt Exp $ */
+/* $OpenBSD: wsmoused.c,v 1.30 2014/05/14 18:14:09 shadchin Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -90,7 +90,6 @@ mouse_t mouse = {
 	.ttyname = NULL,
 	.proto = P_UNKNOWN,
 	.baudrate = 1200,
-	.old_baudrate = 1200,
 	.rate = MOUSE_RATE_UNKNOWN,
 	.resolution = MOUSE_RES_UNKNOWN,
 	.mfd = -1,
