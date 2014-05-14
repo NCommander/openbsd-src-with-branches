@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.53 2014/04/28 08:25:05 blambert Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.54 2014/04/28 12:03:32 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -187,6 +187,18 @@ extern  struct ctl_connlist ctl_conns;
 /*
  * kroute
  */
+
+struct kroute_node;
+struct kroute6_node;
+RB_HEAD(kroute_tree, kroute_node);
+RB_HEAD(kroute6_tree, kroute6_node);
+
+struct ktable {
+	struct kroute_tree	 krt;
+	struct kroute6_tree	 krt6;
+	u_int			 rtableid;
+	u_int			 rdomain;
+};
 
 union kaddr {
 	struct sockaddr		sa;
