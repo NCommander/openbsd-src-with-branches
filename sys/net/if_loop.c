@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_loop.c,v 1.52 2013/10/23 15:12:42 mpi Exp $	*/
+/*	$OpenBSD: if_loop.c,v 1.54 2014/04/19 11:01:37 henning Exp $	*/
 /*	$NetBSD: if_loop.c,v 1.15 1996/05/07 02:40:33 thorpej Exp $	*/
 
 /*
@@ -143,11 +143,7 @@
 #include <net/bpf.h>
 #endif
 
-#if defined(LARGE_LOMTU)
-#define LOMTU	(131072 +  MHLEN + MLEN)
-#else
-#define	LOMTU	(32768 +  MHLEN + MLEN)
-#endif
+#define	LOMTU	32768
 
 int	loop_clone_create(struct if_clone *, int);
 int	loop_clone_destroy(struct ifnet *);
