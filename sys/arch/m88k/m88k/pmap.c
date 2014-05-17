@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.75 2013/11/16 18:45:20 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.76 2014/05/08 22:17:33 miod Exp $	*/
 
 /*
  * Copyright (c) 2001-2004, 2010, Miodrag Vallat.
@@ -1417,12 +1417,6 @@ pmap_remove_page(struct vm_page *pg)
 		if (pte == NULL || !PDT_VALID(pte)) {
 			pvl = pvl->pv_next;
 			continue;	/* no page mapping */
-		}
-		if (pmap_pte_w(pte)) {
-			DPRINTF(CD_RMPG, ("pmap_remove_page(%p): wired mapping not removed\n",
-			    pg));
-			pvl = pvl->pv_next;
-			continue;
 		}
 
 		pmap_remove_pte(pmap, va, pte, pg, TRUE);
