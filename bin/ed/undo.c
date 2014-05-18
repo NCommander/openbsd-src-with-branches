@@ -1,4 +1,4 @@
-/*	$OpenBSD: undo.c,v 1.10 2009/10/27 23:59:21 deraadt Exp $	*/
+/*	$OpenBSD: undo.c,v 1.11 2012/12/04 02:40:48 deraadt Exp $	*/
 /*	$NetBSD: undo.c,v 1.2 1995/03/21 09:04:52 cgd Exp $	*/
 
 /* undo.c: This file contains the undo routines for the ed line editor */
@@ -44,7 +44,7 @@ push_undo_stack(int type, int from, int to)
 
 	t = ustack;
 	if (u_p < usize ||
-	    (t = (undo_t *) realloc(ustack, (usize += USIZE) * sizeof(undo_t))) != NULL) {
+	    (t = reallocarray(ustack, (usize += USIZE), sizeof(undo_t))) != NULL) {
 		ustack = t;
 		ustack[u_p].type = type;
 		ustack[u_p].t = get_addressed_line_node(to);
