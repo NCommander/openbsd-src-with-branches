@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkioconf.c,v 1.30 2011/07/16 11:34:43 chl Exp $	*/
+/*	$OpenBSD: mkioconf.c,v 1.31 2011/10/02 22:20:50 edd Exp $	*/
 /*	$NetBSD: mkioconf.c,v 1.41 1996/11/11 14:18:49 mycroft Exp $	*/
 
 /*
@@ -201,7 +201,7 @@ addlocname(const char *name)
 
 	if (locnames == NULL || nlocnames+1 > maxlocnames) {
 		maxlocnames *= 4;
-		locnames = (char **)erealloc(locnames, maxlocnames * sizeof(char *));
+		locnames = ereallocarray(locnames, maxlocnames, sizeof(char *));
 	}
 	for (i = 0; i < nlocnames; i++)
 		if (strcmp(name, locnames[i]) == 0)
@@ -219,7 +219,7 @@ addlocnami(short index)
 {
 	if (locnami == NULL || nlocnami+1 > maxlocnami) {
 		maxlocnami *= 4;
-		locnami = (short *)erealloc(locnami, maxlocnami * sizeof(short));
+		locnami = ereallocarray(locnami, maxlocnami, sizeof(short));
 	}
 	locnami[nlocnami++] = index;
 }
