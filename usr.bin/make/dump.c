@@ -1,4 +1,4 @@
-/* $OpenBSD: dump.c,v 1.4 2013/04/23 14:32:53 espie Exp $ */
+/* $OpenBSD: dump.c,v 1.5 2013/05/22 12:14:08 espie Exp $ */
 /*
  * Copyright (c) 2012 Marc Espie.
  *
@@ -67,7 +67,7 @@ sort_ohash(struct ohash *h, int (*comparison)(const void *, const void *))
 	unsigned int i, j;
 	void *e;
 	size_t n = ohash_entries(h);
-	void **t = emalloc(sizeof(void *) * (n+1));
+	void **t = ereallocarray(NULL, n+1, sizeof(void *));
 	cmp_offset = h->info.key_offset;
 
 	for (i = 0, e = ohash_first(h, &j); e != NULL; e = ohash_next(h, &j))

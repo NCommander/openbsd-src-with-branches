@@ -1,7 +1,7 @@
 #ifndef GARRAY_H
 #define GARRAY_H
 
-/* $OpenBSD: garray.h,v 1.7 2014/04/22 08:26:31 espie Exp $ */
+/* $OpenBSD: garray.h,v 1.8 2014/05/12 19:11:19 espie Exp $ */
 /* Growable array implementation */
 
 /*
@@ -108,7 +108,7 @@ do {						\
 do {							\
 	(l)->size = (sz);				\
 	(l)->n = 0;					\
-	(l)->a = emalloc(sizeof(GNode *) * (l)->size);	\
+	(l)->a = ereallocarray(NULL, (l)->size, sizeof(GNode *));	\
 } while (0)
 
 #define Array_Reset(l)		\
