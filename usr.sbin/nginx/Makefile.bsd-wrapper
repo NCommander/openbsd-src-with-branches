@@ -1,13 +1,9 @@
 # Build wrapper for Nginx
-# $OpenBSD: Makefile.bsd-wrapper,v 1.14 2013/11/04 14:09:19 florian Exp $
+# $OpenBSD: Makefile.bsd-wrapper,v 1.15 2014/04/15 20:55:42 miod Exp $
 
 LNDIR=	/usr/bin/lndir
 
 .include <bsd.own.mk>
-
-.if (${MACHINE_ARCH} == "vax")
-CFLAGS=-O1 ${PIPE} ${DEBUG}
-.endif
 
 CONFIGURE_ARGS=	--prefix=/var/www \
 		--conf-path=/etc/nginx/nginx.conf \
