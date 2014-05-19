@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.6 2013/04/16 07:29:08 yasuoka Exp $ */
+/*	$OpenBSD: parse.y,v 1.7 2013/11/25 12:58:17 benno Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -823,7 +823,7 @@ interface	: INTERFACE STRING ADDRESS in4_addr IPCP STRING {
 				YYERROR;
 			}
 
-			if ((n = malloc(sizeof(struct iface))) == NULL) {
+			if ((n = calloc(1, sizeof(struct iface))) == NULL) {
 				yyerror("out of memory");
 				free($2);
 				YYERROR;
