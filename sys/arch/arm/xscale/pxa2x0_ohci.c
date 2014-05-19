@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_ohci.c,v 1.24 2010/09/07 16:21:35 deraadt Exp $ */
+/*	$OpenBSD: pxa2x0_ohci.c,v 1.25 2013/04/16 14:55:23 deraadt Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -126,8 +126,7 @@ unsupported:
 		return;
 	}
 
-	sc->sc.sc_child = config_found((void *)sc, &sc->sc.sc_bus,
-	    usbctlprint);
+	config_found(self, &sc->sc.sc_bus, usbctlprint);
 }
 
 int
@@ -136,7 +135,7 @@ pxaohci_detach(struct device *self, int flags)
 	struct pxaohci_softc		*sc = (struct pxaohci_softc *)self;
 	int				rv;
 
-	rv = ohci_detach(&sc->sc, flags);
+	rv = ohci_detach(self, flags);
 	if (rv)
 		return (rv);
 

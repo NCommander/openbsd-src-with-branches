@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci_obio.c,v 1.2 2009/09/06 20:09:34 kettenis Exp $	*/
+/*	$OpenBSD: ehci_obio.c,v 1.3 2009/09/12 21:40:45 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -124,7 +124,7 @@ ehci_obio_attach(struct device *parent, struct device *self, void *aux)
 	printf("\n");
 
 	/* Attach usb device. */
-	sc->sc_child = config_found((void *)sc, &sc->sc_bus, usbctlprint);
+	config_found(self, &sc->sc_bus, usbctlprint);
 
 	return;
 
