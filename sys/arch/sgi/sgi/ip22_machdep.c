@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip22_machdep.c,v 1.16 2014/03/23 00:00:32 miod Exp $	*/
+/*	$OpenBSD: ip22_machdep.c,v 1.17 2014/04/03 08:07:16 mpi Exp $	*/
 
 /*
  * Copyright (c) 2012 Miodrag Vallat.
@@ -827,7 +827,8 @@ ip22_IOSyncDCache(struct cpu_info *ci, vaddr_t _va, size_t _sz, int how)
 			/* get the proper physical address */
 			if (pmap_extract(pmap_kernel(), va, &pa) == 0) {
 #ifdef DIAGNOSTIC
-				panic("%s: invalid va %p", __func__, va);
+				panic("%s: invalid va %p",
+				    __func__, (void *)va);
 #else
 				/* should not happen */
 #endif
