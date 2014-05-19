@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.215 2013/04/17 00:20:52 deraadt Exp $	*/
+/*	$OpenBSD: ci.c,v 1.216 2013/10/27 18:31:24 guenther Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -287,7 +287,6 @@ checkin_main(int argc, char **argv)
 			(void)fprintf(stderr,
 			    "%s  <--  %s\n", pb.fpath, pb.filename);
 
-		/* XXX - Should we rcsnum_free(pb.newrev)? */
 		if (rev_str != NULL)
 			if ((pb.newrev = rcs_getrevnum(rev_str, pb.file)) ==
 			    NULL)
@@ -315,6 +314,8 @@ checkin_main(int argc, char **argv)
 		}
 
 		rcs_close(pb.file);
+		if (rev_str != NULL)
+			rcsnum_free(pb.newrev);
 		pb.newrev = NULL;
 	}
 
