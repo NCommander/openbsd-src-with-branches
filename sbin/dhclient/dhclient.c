@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.306 2014/05/12 18:50:02 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.307 2014/05/18 15:17:50 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -344,7 +344,7 @@ routehandler(void)
 			if (ifi->linkstat) {
 				client->state = S_REBOOTING;
 				state_reboot();
-			} else {
+			} else if (strlen(path_option_db)) {
 				/* Let monitoring programs see link loss. */
 				write_file(path_option_db,
 				    O_WRONLY | O_CREAT | O_TRUNC | O_SYNC |
