@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.10 2007/07/29 17:12:18 sobrado Exp $	*/
+/*	$OpenBSD: dc.c,v 1.11 2009/10/27 23:59:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -91,10 +91,8 @@ main(int argc, char *argv[])
 			err(1, "cannot open file %s", argv[0]);
 		if (fstat(fileno(file), &st) == -1)
 			err(1, "%s", argv[0]);
-		if (S_ISDIR(st.st_mode)) {
-			errno = EISDIR;
-			err(1, "%s", argv[0]);
-		}
+		if (S_ISDIR(st.st_mode))
+			errc(1, EISDIR, "%s", argv[0]);
 		src_setstream(&src, file);
 		reset_bmachine(&src);
 		eval();

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkpath.c,v 1.2 2005/06/20 07:14:06 otto Exp $ */
+/*	$OpenBSD: mkpath.c,v 1.3 2013/11/12 13:51:42 deraadt Exp $ */
 /*
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -65,7 +65,7 @@ mkpath(char *path)
 				return (-1);
 			}
 		} else if (!S_ISDIR(sb.st_mode)) {
-			warnx("%s: %s", path, strerror(ENOTDIR));
+			warnc(ENOTDIR, "%s", path);
 			return (-1);
 		}
 

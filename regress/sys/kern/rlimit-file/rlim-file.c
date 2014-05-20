@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlim-file.c,v 1.2 2002/02/08 17:09:24 art Exp $	*/
+/*	$OpenBSD: rlim-file.c,v 1.3 2003/07/31 21:48:10 deraadt Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> (2002) Public Domain.
  */
@@ -34,7 +34,7 @@ main(int argc, char *argv[])
 		errx(1, "try to do the test on a less loaded system");
 
 	if (errno != EMFILE)
-		errx(1, "bad errno (%d): %s", errno, strerror(errno));
+		err(1, "bad errno (%d)", errno);
 
 	return 0;
 }
