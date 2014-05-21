@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.164 2014/04/25 10:41:09 mpi Exp $	*/
+/*	$OpenBSD: route.c,v 1.165 2014/04/29 11:58:29 mpi Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -174,7 +174,14 @@ encap_findgwifa(struct sockaddr *gw, u_int rdomain)
 	if ((encif = enc_getif(rdomain, 0)) == NULL)
 		return (NULL);
 
-	return (TAILQ_FIRST(&encif->if_addrlist));
+	/*
+	 * This is not a real link-layer address, it is an empty ifa of
+	 * type AF_LINK.
+	 * It is used when adding an encap route entry because RTM_ADD
+	 * and rt_getifa() want an ifa to find an ifp to associate it to
+	 * the route.
+	 */
+	return (encif->if_lladdr);
 }
 #endif
 
