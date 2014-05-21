@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.c,v 1.40 2013/11/03 02:22:07 krw Exp $	*/
+/*	$OpenBSD: inode.c,v 1.41 2013/11/11 18:51:06 deraadt Exp $	*/
 /*	$NetBSD: inode.c,v 1.23 1996/10/11 20:15:47 thorpej Exp $	*/
 
 /*
@@ -292,7 +292,7 @@ ginode(ino_t inumber)
 		startinum = (inumber / INOPB(&sblock)) * INOPB(&sblock);
 	}
 	if (sblock.fs_magic == FS_UFS1_MAGIC)
-		return ((union dinode *) 
+		return ((union dinode *)
 		    &pbp->b_un.b_dinode1[inumber % INOPB(&sblock)]);
 	return ((union dinode *)&pbp->b_un.b_dinode2[inumber % INOPB(&sblock)]);
 }
