@@ -1,4 +1,4 @@
-/*	$OpenBSD: args.c,v 1.23 2014/03/24 21:42:41 tedu Exp $	*/
+/*	$OpenBSD: args.c,v 1.24 2014/03/27 15:32:13 tedu Exp $	*/
 /*	$NetBSD: args.c,v 1.7 1996/03/01 01:18:58 jtc Exp $	*/
 
 /*-
@@ -383,7 +383,7 @@ get_bsz(char *val)
 	}
 	return (num);
 erange:
-	errx(1, "%s: %s", oper, strerror(ERANGE));
+	errc(1, ERANGE, "%s", oper);
 }
 
 /*
@@ -462,5 +462,5 @@ get_off(char *val)
 	}
 	return (num);
 erange:
-	errx(1, "%s: %s", oper, strerror(ERANGE));
+	errc(1, ERANGE, "%s", oper);
 }
