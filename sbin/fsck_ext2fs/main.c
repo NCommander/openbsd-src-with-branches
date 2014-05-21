@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.18 2011/03/12 17:50:47 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.19 2013/04/25 06:43:20 otto Exp $	*/
 /*	$NetBSD: main.c,v 1.1 1997/06/11 11:21:50 bouyer Exp $	*/
 
 /*
@@ -306,4 +306,3 @@ usage(void)
 	    __progname);
 	exit(1);
 }
-
