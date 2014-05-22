@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.125 2014/02/04 01:04:03 tedu Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.126 2014/04/22 20:14:39 beck Exp $	*/
 
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
@@ -4572,7 +4572,7 @@ softdep_fsync(struct vnode *vp)
 		 */
 		pip = VTOI(pvp);
 		if (flushparent) {
-			error = UFS_UPDATE(pip, MNT_WAIT);
+			error = UFS_UPDATE(pip, 1);
 			if (error) {
 				vput(pvp);
 				return (error);
@@ -5052,7 +5052,7 @@ flush_pagedep_deps(struct vnode *pvp, struct mount *mp,
 		 */
 		if (dap->da_state & MKDIR_PARENT) {
 			FREE_LOCK(&lk);
-			if ((error = UFS_UPDATE(VTOI(pvp), MNT_WAIT)))
+			if ((error = UFS_UPDATE(VTOI(pvp), 1)))
 				break;
 			ACQUIRE_LOCK(&lk);
 			/*
