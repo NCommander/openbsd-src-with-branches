@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftree.c,v 1.29 2009/10/27 23:59:22 deraadt Exp $	*/
+/*	$OpenBSD: ftree.c,v 1.30 2012/12/04 02:24:45 deraadt Exp $	*/
 /*	$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $	*/
 
 /*-
@@ -152,7 +152,7 @@ ftree_add(char *str, int chflg)
 	 * processed in the same order they were passed to pax). Get rid of any
 	 * trailing / the user may pass us. (watch out for / by itself).
 	 */
-	if ((ft = (FTREE *)malloc(sizeof(FTREE))) == NULL) {
+	if ((ft = malloc(sizeof(FTREE))) == NULL) {
 		paxwarn(0, "Unable to allocate memory for filename");
 		return(-1);
 	}

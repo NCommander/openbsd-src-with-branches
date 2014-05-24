@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_io.c,v 1.46 2014/05/23 19:47:49 guenther Exp $	*/
+/*	$OpenBSD: ar_io.c,v 1.47 2014/05/23 21:58:26 guenther Exp $	*/
 /*	$NetBSD: ar_io.c,v 1.5 1996/03/26 23:54:13 mrg Exp $	*/
 
 /*-
@@ -1217,7 +1217,7 @@ ar_next(void)
 		 */
 		if (ar_open(buf) >= 0) {
 			if (freeit) {
-				(void)free((char *)arcname);
+				free((char *)arcname);
 				freeit = 0;
 			}
 			if ((arcname = strdup(buf)) == NULL) {
