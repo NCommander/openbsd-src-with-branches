@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.152 2014/03/26 05:23:42 guenther Exp $ */
+/* $OpenBSD: machdep.c,v 1.153 2014/05/08 20:46:49 miod Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -192,7 +192,7 @@ int	alpha_unaligned_sigbus = 1;	/* SIGBUS on fixed-up accesses */
 int	alpha_fp_sync_complete = 0;	/* fp fixup if sync even without /s */
 #endif
 #if NIOASIC > 0
-int	alpha_led_blink = 0;
+int	alpha_led_blink = 1;
 #endif
 
 /* used by hw_sysctl */

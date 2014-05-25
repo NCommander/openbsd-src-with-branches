@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.153 2014/03/26 05:23:42 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.154 2014/05/10 12:29:58 kettenis Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -167,7 +167,7 @@ struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
 int	physmem;
 extern	caddr_t msgbufaddr;
 
-int sparc_led_blink;
+int sparc_led_blink = 1;
 
 #ifdef APERTURE
 #ifdef INSECURE

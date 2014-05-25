@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.29 2014/03/22 06:05:45 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.30 2014/03/26 05:23:42 guenther Exp $	*/
 /*	OpenBSD: machdep.c,v 1.105 2005/04/11 15:13:01 deraadt Exp 	*/
 
 /*
@@ -92,7 +92,7 @@ struct vm_map *phys_map = NULL;
 int	physmem;
 
 /* sysctl settable */
-int	sparc_led_blink = 0;
+int	sparc_led_blink = 1;
 
 /*
  * safepri is a safe priority for sleep to set for a spin-wait
