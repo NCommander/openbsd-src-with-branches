@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.108 2014/02/04 10:38:06 eric Exp $	*/
+/*	$OpenBSD: util.c,v 1.109 2014/04/19 14:32:03 gilles Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Markus Friedl.  All rights reserved.
@@ -583,11 +583,9 @@ addargs(arglist *args, char *fmt, ...)
 	} else if (args->num+2 >= nalloc)
 		nalloc *= 2;
 
-	if (SIZE_T_MAX / nalloc < sizeof(char *))
-		fatalx("addargs: nalloc * size > SIZE_T_MAX");
-	args->list = realloc(args->list, nalloc * sizeof(char *));
+	args->list = reallocarray(args->list, nalloc, sizeof(char *));
 	if (args->list == NULL)
-		fatal("addargs: realloc");
+		fatal("addargs: reallocarray");
 	args->nalloc = nalloc;
 	args->list[args->num++] = cp;
 	args->list[args->num] = NULL;
