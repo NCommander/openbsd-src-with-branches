@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.46 2013/12/31 04:07:34 guenther Exp $
+#	$OpenBSD: Makefile,v 1.47 2014/02/16 01:16:38 martynas Exp $
 
 SUBDIR=ldconfig ldd
 MAN=	ld.so.1
@@ -35,7 +35,9 @@ INSTALL_STRIP=
 ELF_LDFLAGS+=--shared -Bsymbolic --no-undefined
 
 test_prog=	test-$(PROG)
+CLEANFILES+=	test-$(PROG)
 candidate=	$(PROG).test
+CLEANFILES+=	${candidate}
 
 $(test_prog):
 	printf '#include <stdio.h>\nint main(int argc, char **argv){ printf("%%s\\n", argv[1]); }\n' | \
