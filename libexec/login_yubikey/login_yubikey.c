@@ -1,4 +1,4 @@
-/* $OpenBSD: login_yubikey.c,v 1.7 2013/11/02 15:34:13 benno Exp $ */
+/* $OpenBSD: login_yubikey.c,v 1.8 2013/11/27 21:25:25 deraadt Exp $ */
 
 /*
  * Copyright (c) 2010 Daniel Hartmeier <daniel@benzedrine.cx>
@@ -257,7 +257,7 @@ yubikey_login(const char *username, const char *password)
 			}
 			break; /* uid matches */
 		case -1:
-			syslog(LOG_INFO, "user %s: could not decode password"
+			syslog(LOG_INFO, "user %s: could not decode password "
 			    "with any keymap (%d crc ok)",
 			    username, crcok);
 			return (AUTH_FAILED);
