@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.13 2011/10/02 22:20:50 edd Exp $	*/
+/*	$OpenBSD: util.c,v 1.14 2014/05/18 09:29:54 espie Exp $	*/
 /*	$NetBSD: util.c,v 1.5 1996/08/31 20:58:29 mycroft Exp $	*/
 
 /*
@@ -62,9 +62,8 @@ emalloc(size_t size)
 {
 	void *p;
 
-	if ((p = malloc(size)) == NULL)
+	if ((p = calloc(1, size)) == NULL)
 		nomem();
-	memset(p, 0, size);
 	return (p);
 }
 
