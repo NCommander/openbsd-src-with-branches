@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_vnd.c,v 1.13 2013/04/23 19:57:02 deraadt Exp $	*/
+/*	$OpenBSD: mount_vnd.c,v 1.14 2013/11/11 23:08:02 deraadt Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -143,6 +143,10 @@ main(int argc, char **argv)
 	if (action == VND_CONFIG && argc == 2) {
 		int ind_raw, ind_reg;
 
+		if (opt_k || opt_K) {
+			fprintf(stderr, "WARNING: Encrypted vnd is insecure.\n"
+			    "Migrate your data to softraid before 5.7.\n");
+		}
 		if (opt_k) {
 			if (opt_K)
 				errx(1, "-k and -K are mutually exclusive");
