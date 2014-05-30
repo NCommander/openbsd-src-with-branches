@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: State.pm,v 1.27 2014/03/18 18:53:29 espie Exp $
+# $OpenBSD: State.pm,v 1.28 2014/05/20 05:43:55 espie Exp $
 #
 # Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
@@ -47,6 +47,7 @@ sub read_file
 			# bad line: should we say so ?
 			$state->errsay("Bad line in #1: #2 (#3)",
 			    $filename, $_, $.);
+			next;
 		}
 		# remove caps
 		$k =~ tr/A-Z/a-z/;
