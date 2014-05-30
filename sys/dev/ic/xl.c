@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.111 2013/12/06 21:03:03 deraadt Exp $	*/
+/*	$OpenBSD: xl.c,v 1.112 2013/12/28 03:35:01 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1102,10 +1102,8 @@ void
 xl_fill_rx_ring(struct xl_softc *sc)
 {  
 	struct xl_chain_data    *cd;
-	struct xl_list_data     *ld;
 
 	cd = &sc->xl_cdata;
-	ld = sc->xl_ldata;
 
 	while (cd->xl_rx_cnt < XL_RX_LIST_CNT) {
 		if (xl_newbuf(sc, cd->xl_rx_prod) == ENOBUFS)
