@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.48 2014/05/27 12:35:40 krw Exp $	*/
+/*	$OpenBSD: main.c,v 1.49 2014/05/30 20:48:21 stephan Exp $	*/
 /*	$NetBSD: main.c,v 1.14 1997/06/05 11:13:24 lukem Exp $	*/
 
 /*-
@@ -561,7 +561,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	(void)fprintf(stderr, "usage: %s [-0123456789acnuWw] [-B records] "
+	(void)fprintf(stderr, "usage: %s [-0123456789acnSuWw] [-B records] "
 		      "[-b blocksize] [-d density]\n"
 		      "\t[-f file] [-h level] [-s feet] "
 		      "[-T date] files-to-dump\n",
