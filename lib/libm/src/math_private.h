@@ -1,4 +1,4 @@
-/*	$OpenBSD: math_private.h,v 1.15 2011/07/26 11:43:01 martynas Exp $	*/
+/*	$OpenBSD: math_private.h,v 1.16 2013/11/12 20:35:09 martynas Exp $	*/
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
@@ -349,7 +349,7 @@ do {								\
 #define	STRICT_ASSIGN(type, lval, rval) do {	\
 	volatile type __lval;			\
 						\
-	if (sizeof(type) >= sizeof(double))	\
+	if (sizeof(type) >= sizeof(long double))	\
 		(lval) = (rval);		\
 	else {					\
 		__lval = (rval);		\
