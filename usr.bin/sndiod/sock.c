@@ -1,4 +1,4 @@
-/*	$OpenBSD: sock.c,v 1.11 2014/03/07 10:15:39 ratchov Exp $	*/
+/*	$OpenBSD: sock.c,v 1.12 2014/03/07 10:23:05 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -275,6 +275,7 @@ sock_new(int fd)
 	f->pstate = SOCK_AUTH;
 	f->opt = NULL;
 	f->slot = NULL;
+	f->port = NULL;
 	f->midi = NULL;
 	f->tickpending = 0;
 	f->fillpending = 0;
