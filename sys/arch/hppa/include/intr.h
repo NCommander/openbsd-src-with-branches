@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.38 2013/05/17 19:38:51 kettenis Exp $	*/
+/*	$OpenBSD: intr.h,v 1.39 2014/03/29 18:09:29 guenther Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -105,7 +105,7 @@ splraise(int ncpl)
 
 	if (ocpl < ncpl)
 		ci->ci_cpl = ncpl;
-	__asm volatile ("sync" : "+r" (ci->ci_cpl));
+	__asm volatile ("sync" : : : "memory");
 
 	return (ocpl);
 }
