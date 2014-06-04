@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.9 2003/06/02 20:18:32 millert Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.10 2012/08/22 17:19:35 pascal Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -41,11 +41,7 @@
 #include <sys/syscall.h>
 #include <machine/trap.h>
 
-#ifdef __STDC__
 #define _CAT(x,y) x##y
-#else
-#define _CAT(x,y) x/**/y
-#endif
 
 #define	__ENTRY(p,x)	ENTRY(_CAT(p,x)) ; .weak x; x = _CAT(p,x)
 
