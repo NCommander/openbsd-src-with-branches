@@ -1,4 +1,4 @@
-/*	$OpenBSD: data.c,v 1.6 2012/07/16 19:57:17 jasper Exp $	*/
+/*	$OpenBSD: data.c,v 1.7 2014/05/12 17:03:28 mpi Exp $	*/
 /*	$NetBSD: data.c,v 1.1 2001/12/28 17:45:26 augustss Exp $	*/
 
 /*
@@ -41,9 +41,11 @@ hid_get_data(const void *p, const hid_item_t *h)
 
 	buf = p;
 
+#if 0
 	/* Skip report ID byte. */
 	if (h->report_ID > 0)
 		buf++;
+#endif
 
 	hpos = h->pos;			/* bit position of data */
 	hsize = h->report_size;		/* bit length of data */
@@ -86,9 +88,11 @@ hid_set_data(void *p, const hid_item_t *h, int32_t data)
 
 	buf = p;
 
+#if 0
 	/* Set report ID byte. */
 	if (h->report_ID > 0)
 		*buf++ = h->report_ID & 0xff;
+#endif
 
 	hpos = h->pos;			/* bit position of data */
 	hsize = h->report_size;		/* bit length of data */
