@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.109 2014/05/08 06:03:30 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.110 2014/05/13 08:08:32 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -877,7 +877,6 @@ window_pane_timer_callback(unused int fd, unused short events, void *data)
 	if (wp->changes_redraw++ == interval) {
 		wp->flags |= PANE_REDRAW;
 		wp->changes_redraw = 0;
-
 	}
 
 	if (trigger == 0 || wp->changes < trigger) {
