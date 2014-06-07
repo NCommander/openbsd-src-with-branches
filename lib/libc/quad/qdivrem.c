@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: qdivrem.c,v 1.7 2005/08/08 08:05:35 espie Exp $ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -51,7 +51,7 @@ typedef unsigned short digit;
 typedef u_int digit;
 #endif
 
-static void shl __P((digit *p, int len, int sh));
+static void shl(digit *p, int len, int sh);
 
 /*
  * __qdivrem(u, v, rem) returns u/v and, optionally, sets *rem to u%v.

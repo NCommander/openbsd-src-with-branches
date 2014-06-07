@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: gram.y,v 1.9 2009/10/27 23:59:42 deraadt Exp $	*/
+/*	$OpenBSD: gram.y,v 1.10 2012/11/12 01:14:41 guenther Exp $	*/
 
 /*
  * Copyright (c) 1993 Michael A. Cooper
@@ -33,10 +33,10 @@
 
 #include "defs.h"
 
-static struct namelist *addnl __P((struct namelist *, struct namelist *));
-static struct namelist *subnl __P((struct namelist *, struct namelist *));
-static struct namelist *andnl __P((struct namelist *, struct namelist *));
-static int innl __P((struct namelist *nl, char *p));
+static struct namelist *addnl(struct namelist *, struct namelist *);
+static struct namelist *subnl(struct namelist *, struct namelist *);
+static struct namelist *andnl(struct namelist *, struct namelist *);
+static int innl(struct namelist *nl, char *p);
 
 struct	cmd *cmds = NULL;
 struct	cmd *last_cmd;
