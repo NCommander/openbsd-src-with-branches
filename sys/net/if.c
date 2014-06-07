@@ -1608,7 +1608,6 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 		case IFT_CARP:
 		case IFT_XETHER:
 		case IFT_ISO88025:
-		case IFT_L2VLAN:
 			bcopy((caddr_t)ifr->ifr_addr.sa_data,
 			    (caddr_t)((struct arpcom *)ifp)->ac_enaddr,
 			    ETHER_ADDR_LEN);

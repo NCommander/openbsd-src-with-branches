@@ -1824,7 +1824,6 @@ nd6_need_cache(struct ifnet *ifp)
 	case IFT_ETHER:
 	case IFT_IEEE1394:
 	case IFT_PROPVIRTUAL:
-	case IFT_L2VLAN:
 	case IFT_IEEE80211:
 	case IFT_CARP:
 	case IFT_GIF:		/* XXX need more cases? */

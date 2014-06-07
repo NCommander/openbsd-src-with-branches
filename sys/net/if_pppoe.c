@@ -924,9 +924,7 @@ pppoe_ioctl(struct ifnet *ifp, unsigned long cmd, caddr_t data)
 			struct ifnet	*eth_if;
 
 			eth_if = ifunit(parms->eth_ifname);
-			if (eth_if == NULL ||
-			    (eth_if->if_type != IFT_ETHER &&
-			     eth_if->if_type != IFT_L2VLAN)) {
+			if (eth_if == NULL || eth_if->if_type != IFT_ETHER) {
 				sc->sc_eth_if = NULL;
 				return (ENXIO);
 			}
