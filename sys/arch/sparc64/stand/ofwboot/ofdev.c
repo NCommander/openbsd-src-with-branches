@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofdev.c,v 1.19 2013/10/20 10:11:17 krw Exp $	*/
+/*	$OpenBSD: ofdev.c,v 1.20 2013/11/05 00:51:58 krw Exp $	*/
 /*	$NetBSD: ofdev.c,v 1.1 2000/08/20 14:58:41 mrg Exp $	*/
 
 /*
@@ -339,12 +339,10 @@ disklabel_sun_to_bsd(struct sun_disklabel *sl, struct disklabel *lp)
 				npp->p_fstype = FS_UNUSED;
 				continue;
 			}
-			npp->p_fstype = sun_fstypes[i+8];
-			if (npp->p_fstype == FS_BSDFFS) {
-				npp->p_fragblock =
-				    DISKLABELV1_FFS_FRAGBLOCK(2048, 8);
-				npp->p_cpg = 16;
-			}
+			npp->p_fstype = FS_BSDFFS;
+			npp->p_fragblock =
+			    DISKLABELV1_FFS_FRAGBLOCK(2048, 8);
+			npp->p_cpg = 16;
 		}
 		if (sl->sl_xpmag == SL_XPMAGTYP) {
 			for (i = 0; i < MAXPARTITIONS; i++) {
