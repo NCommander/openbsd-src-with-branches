@@ -1,4 +1,1 @@
-#	$OpenBSD: Makefile.inc,v 1.2 1998/07/19 00:28:08 rahnds Exp $
-
-KMINCLUDES= arch/powerpc/SYS.h
-KMSRCS=
+#	$OpenBSD: Makefile.inc,v 1.3 2000/03/01 17:31:22 todd Exp $
