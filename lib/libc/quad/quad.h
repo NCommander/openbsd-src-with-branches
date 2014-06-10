@@ -30,7 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: quad.h,v 1.6 2004/11/28 07:09:13 mickey Exp $
+ *	$OpenBSD: quad.h,v 1.7 2009/11/07 23:09:35 jsg Exp $
  */
 
 /*
@@ -50,11 +50,7 @@
  */
 
 #include <sys/types.h>
-#if !defined(_KERNEL) && !defined(_STANDALONE)
 #include <limits.h>
-#else
-#include <sys/limits.h>
-#endif
 
 /*
  * Depending on the desired operation, we view a `long long' (aka quad_t) in
