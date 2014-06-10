@@ -1,4 +1,4 @@
-/*	$OpenBSD: strlen.c,v 1.8 2004/11/28 07:23:41 mickey Exp $	*/
+/*	$OpenBSD: strlen.c,v 1.9 2009/10/27 23:59:35 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -29,11 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#if !defined(_KERNEL) && !defined(_STANDALONE)
-#include <string.h>
-#else
 #include <lib/libkern/libkern.h>
-#endif
 
 size_t
 strlen(const char *str)

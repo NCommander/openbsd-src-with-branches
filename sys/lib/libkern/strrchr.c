@@ -1,4 +1,4 @@
-/*	$OpenBSD: strchr.c,v 1.3 2004/05/06 01:12:05 deraadt Exp $	*/
+/*	$OpenBSD: strrchr.c,v 1.1 2007/11/25 18:25:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Daniel Hartmeier
@@ -30,13 +30,8 @@
  *
  */
 
-#include <sys/types.h>
-#if !defined(_KERNEL) && !defined(_STANDALONE)
-#include <string.h>
-#else
 #include <lib/libkern/libkern.h>
 #define NULL	((char *)0)
-#endif
 
 char *
 strrchr(const char *s, int c)
