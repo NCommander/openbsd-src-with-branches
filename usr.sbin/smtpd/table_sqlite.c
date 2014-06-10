@@ -1,4 +1,4 @@
-/*	$OpenBSD: table_sqlite.c,v 1.10 2013/11/28 10:43:37 eric Exp $	*/
+/*	$OpenBSD: table_sqlite.c,v 1.11 2013/12/26 17:25:32 eric Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -420,6 +420,7 @@ table_sqlite_lookup(int service, const char *key, char *dst, size_t sz)
 
 	switch(service) {
 	case K_ALIAS:
+		memset(dst, 0, sz);
 		do {
 			value = sqlite3_column_text(stmt, 0);
 			if (dst[0] && strlcat(dst, ", ", sz) >= sz) {

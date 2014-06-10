@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: table_ldap.c,v 1.9 2014/03/08 15:57:31 eric Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -514,6 +514,7 @@ ldap_run_query(int type, const char *key, char *dst, size_t sz)
 	switch (type) {
 
 	case K_ALIAS:
+		memset(dst, 0, sz);
 		for (i = 0; res[0][i]; i++) {
 			if (i && strlcat(dst, ", ", sz) >= sz) {
 				ret = -1;
