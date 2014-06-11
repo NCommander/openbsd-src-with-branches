@@ -1,4 +1,4 @@
-/*	$OpenBSD: task.h,v 1.4 2013/10/31 04:33:32 deraadt Exp $ */
+/*	$OpenBSD: task.h,v 1.5 2013/12/23 04:20:47 dlg Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -33,6 +33,7 @@ struct task {
 
 #ifdef _KERNEL
 extern struct taskq *const systq;
+extern struct taskq *const systqmp;
 
 struct taskq	*taskq_create(const char *, unsigned int, int);
 void		 taskq_destroy(struct taskq *);
