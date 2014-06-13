@@ -1,5 +1,6 @@
-#	$OpenBSD: Makefile,v 1.9 2011/10/07 20:16:55 ariane Exp $
+#	$OpenBSD: Makefile,v 1.10 2013/08/01 21:26:30 kettenis Exp $
 
+SUBDIR+= minherit_zero
 SUBDIR+= misc mmap_4g mmap_size mmap_fixed mmap_mod mmap_write_self
 SUBDIR+= mmap0
 
