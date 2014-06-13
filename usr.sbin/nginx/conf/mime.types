@@ -1,4 +1,4 @@
-# $OpenBSD: mime.types,v 1.6 2013/11/26 10:43:06 sthen Exp $
+# $OpenBSD: mime.types,v 1.7 2014/06/12 15:27:08 robert Exp $
 
 types {
     text/html                             html htm shtml;
@@ -80,7 +80,6 @@ types {
     application/octet-stream              bin exe dll;
     application/octet-stream              deb;
     application/octet-stream              dmg;
-    application/octet-stream              eot;
     application/octet-stream              iso img;
     application/octet-stream              msi msp msm;
 
