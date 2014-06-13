@@ -1,4 +1,4 @@
-.\"	$OpenBSD: getdtablecount.2,v 1.4 2014/01/26 22:27:31 tedu Exp $
+.\"	$OpenBSD: getentropy.2,v 1.1 2014/06/13 08:26:10 deraadt Exp $
 .\"
 .\" Copyright (c) 2014 Theo de Raadt
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: January 26 2014 $
+.Dd $Mdocdate: June 13 2014 $
 .Dt GETENTROPY 2
 .Os
 .Sh NAME
@@ -32,8 +32,7 @@ This is typically used to seed a process-context generator
 like
 .Xr arc4random 3 .
 .Sh ERRORS
-.Nm
-.Fn setlogin
+.Fn getlogin
 will succeed unless:
 .Bl -tag -width Er
 .It Bq Er EFAULT
