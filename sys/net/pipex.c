@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.48 2013/11/11 09:15:34 mpi Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.50 2014/04/21 12:22:25 henning Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -2832,6 +2832,8 @@ adjust_tcp_mss(struct mbuf *m0, int mtu)
 	if ((th->th_flags & TH_SYN) == 0)
 		goto handled;
 
+	lpktp = MIN(th->th_off << 4, lpktp);
+
 	pktp += sizeof(struct tcphdr);
 	lpktp -= sizeof(struct tcphdr);
 	while (lpktp >= TCPOLEN_MAXSEG) {
@@ -2860,7 +2862,9 @@ adjust_tcp_mss(struct mbuf *m0, int mtu)
 			break;
 		default:
 			GETCHAR(optlen, pktp);
-			pktp += 2 - optlen;
+			if (optlen < 2)	/* packet is broken */
+				goto drop;
+			pktp += optlen - 2;
 			lpktp -= optlen;
 			break;
 		}
