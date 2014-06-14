@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.29 2014/01/23 01:07:45 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.30 2014/06/05 08:39:07 otto Exp $	*/
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -63,7 +63,17 @@ void
 _dl_randombuf(void *buf, size_t buflen)
 {
 	const int mib[2] = { CTL_KERN, KERN_ARND };
-	_dl_sysctl(mib, 2, buf, &buflen, NULL, 0);
+	size_t chunk;
+
+	while (buflen != 0) {
+		if (buflen > 256)
+			chunk = 256;
+		else
+			chunk = buflen;
+		_dl_sysctl(mib, 2, buf, &chunk, NULL, 0);
+		buflen -= chunk;
+		buf += chunk;
+	}
 }
 
 u_int32_t
