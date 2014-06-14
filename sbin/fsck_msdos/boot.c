@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.16 2012/03/31 17:53:34 krw Exp $	*/
+/*	$OpenBSD: boot.c,v 1.17 2013/08/12 13:44:13 rapha Exp $	*/
 /*	$NetBSD: boot.c,v 1.5 1997/10/17 11:19:23 ws Exp $	*/
 
 /*
@@ -179,7 +179,7 @@ readboot(int dosfs, struct bootblock *boot)
 					xperror("Unable to seek FSInfo");
 					return FSFATAL;
 				}
-				n = write(dosfs, block, fsinfosz);
+				n = write(dosfs, fsinfo, fsinfosz);
 				if (n == -1 || n != fsinfosz) {
 					xperror("Unable to write FSInfo");
 					return FSFATAL;
