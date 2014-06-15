@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.107 2014/04/12 14:18:11 espie Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.108 2014/05/15 03:52:25 guenther Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -956,7 +956,7 @@ fdcopy(struct process *pr)
 		    M_FILEDESC, M_WAITOK);
 	}
 	newfdp->fd_nfiles = i;
-	memcpy(newfdp->fd_ofiles, fdp->fd_ofiles, i * sizeof(struct file **));
+	memcpy(newfdp->fd_ofiles, fdp->fd_ofiles, i * sizeof(struct file *));
 	memcpy(newfdp->fd_ofileflags, fdp->fd_ofileflags, i * sizeof(char));
 	memcpy(newfdp->fd_himap, fdp->fd_himap, NDHISLOTS(i) * sizeof(u_int));
 	memcpy(newfdp->fd_lomap, fdp->fd_lomap, NDLOSLOTS(i) * sizeof(u_int));
