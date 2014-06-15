@@ -1,4 +1,4 @@
-/*	$OpenBSD: amas.c,v 1.3 2009/05/07 22:08:59 ariane Exp $	*/
+/*	$OpenBSD: amas.c,v 1.4 2009/05/07 22:25:31 ariane Exp $	*/
 
 /*
  * Copyright (c) 2009 Ariane van der Steldt <ariane@stack.nl>
@@ -183,7 +183,7 @@ amas_attach(struct device *parent, struct device *self, void *aux)
 			amas_get_pagerange(amas, i, &start_pg, &end_pg);
 
 			if (!(start_pg == 0 && end_pg == 0))
-				printf(" [%p, %p]", start_pg, end_pg);
+				printf(" [%#lx, %#lx]", start_pg, end_pg);
 		}
 	}
 #endif /* DEBUG */
