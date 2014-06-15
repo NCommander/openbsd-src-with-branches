@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.66 2014/03/30 21:54:48 guenther Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.67 2014/04/18 11:51:17 guenther Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -1100,6 +1100,12 @@ systrace_getcwd(struct fsystrace *fst, struct str_process *strp, int atfd)
 		if (dvp->v_type != VDIR)
 			return (EINVAL);
 	}
+
+	/* Release any saved vnodes. */
+	if (fst->fd_cdir != NULL)
+		vrele(fst->fd_cdir);
+	if (fst->fd_rdir != NULL)
+		vrele(fst->fd_rdir);
 
 	/* Store our current values */
 	fst->fd_pid = strp->pid;
