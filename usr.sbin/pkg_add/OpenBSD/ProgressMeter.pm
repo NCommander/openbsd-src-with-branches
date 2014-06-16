@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: ProgressMeter.pm,v 1.39 2013/12/23 13:29:41 espie Exp $
+# $OpenBSD: ProgressMeter.pm,v 1.40 2013/12/23 15:04:37 espie Exp $
 #
 # Copyright (c) 2010 Marc Espie <espie@openbsd.org>
 #
@@ -45,6 +45,15 @@ sub errprint
 {
 	shift->clear;
 	print STDERR @_;
+}
+
+sub new_sizer
+{
+	return shift;
+}
+
+sub advance
+{
 }
 
 sub for_list
