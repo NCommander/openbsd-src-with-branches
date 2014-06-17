@@ -1,4 +1,4 @@
-/*	$OpenBSD: octeonvar.h,v 1.15 2013/11/04 17:51:03 bcallah Exp $	*/
+/*	$OpenBSD: octeonvar.h,v 1.16 2014/03/29 18:09:30 guenther Exp $	*/
 /*	$NetBSD: maltavar.h,v 1.3 2002/03/18 10:10:16 simonb Exp $	*/
 
 /*-
@@ -290,6 +290,9 @@ void	octeon_cal_timer(int);
 void	octeon_dma_init(struct octeon_config *);
 void	octeon_intr_init(void);
 int	octeon_get_ethaddr(int, u_int8_t *);
+
+int	octeon_ioclock_speed(void);
+
 #endif /* _KERNEL */
 
 static inline int
