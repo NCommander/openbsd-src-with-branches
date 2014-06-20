@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-tcp.c,v 1.28 2010/01/12 06:10:33 naddy Exp $	*/
+/*	$OpenBSD: print-tcp.c,v 1.29 2014/02/05 21:12:19 florian Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -419,23 +419,27 @@ tcp_print(register const u_char *bp, register u_int length,
 	}
 
 	if (ip && ip->ip_v == 4 && vflag) {
-		int sum;
 		if (TTEST2(tp->th_sport, length)) {
+			u_int16_t sum, tcp_sum;
 			sum = tcp_cksum(ip, tp, length);
-			if (sum != 0)
-				(void)printf(" [bad tcp cksum %x!]", sum);
-			else
+			if (sum != 0) {
+				tcp_sum = EXTRACT_16BITS(&tp->th_sum);
+				(void)printf(" [bad tcp cksum %x! -> %x]", tcp_sum,
+				    in_cksum_shouldbe(tcp_sum, sum));
+			} else
 				(void)printf(" [tcp sum ok]");
 		}
 	}
 #ifdef INET6
 	if (ip6 && ip6->ip6_plen && vflag) {
-		int sum;
 		if (TTEST2(tp->th_sport, length)) {
+			u_int16_t sum, tcp_sum;
 			sum = tcp6_cksum(ip6, tp, length);
-			if (sum != 0)
-				(void)printf(" [bad tcp cksum %x!]", sum);
-			else
+			if (sum != 0) {
+				tcp_sum = EXTRACT_16BITS(&tp->th_sum);
+				(void)printf(" [bad tcp cksum %x! -> %x]", tcp_sum,
+				    in_cksum_shouldbe(tcp_sum, sum));
+			} else
 				(void)printf(" [tcp sum ok]");
 		}
 	}
