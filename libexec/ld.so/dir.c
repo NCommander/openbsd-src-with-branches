@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.16 2012/03/21 04:28:45 matthew Exp $	*/
+/*	$OpenBSD: dir.c,v 1.17 2013/08/13 05:52:17 guenther Exp $	*/
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -68,7 +68,7 @@ _dl_opendir(const char *name)
 		return (NULL);
 	}
 	if (_dl_fcntl(fd, F_SETFD, FD_CLOEXEC) < 0 ||
-	    (dirp = _dl_malloc(sizeof(*dirp))) == NULL) {
+	    (dirp = _dl_calloc(1, sizeof(*dirp))) == NULL) {
 		_dl_close(fd);
 		return (NULL);
 	}
