@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.19 2011/03/02 06:48:17 jasper Exp $ */
+/*	$OpenBSD: if.c,v 1.20 2011/04/05 07:35:32 mpf Exp $ */
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
  *
@@ -191,7 +191,7 @@ fetchifstat(void)
 	size_t need;
 
 	mib[0] = CTL_NET;
-	mib[1] = AF_ROUTE;
+	mib[1] = PF_ROUTE;
 	mib[2] = 0;
 	mib[3] = 0;
 	mib[4] = NET_RT_IFLIST;
