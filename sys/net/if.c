@@ -423,6 +423,9 @@ if_attach(struct ifnet *ifp)
 #else
 	TAILQ_INSERT_TAIL(&ifnet, ifp, if_list);
 #endif
+#ifdef INET6
+	ifp->if_xflags |= IFXF_NOINET6;
+#endif
 
 	m_clinitifp(ifp);
 
