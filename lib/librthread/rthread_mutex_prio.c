@@ -1,7 +1,6 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rthread_mutex_prio.c,v 1.1 2011/12/22 00:42:07 guenther Exp $ */
 /*
  * Copyright (c) 2011 Philip Guenther <guenther@openbsd.org>
- * All Rights Reserved.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
