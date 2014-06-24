@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-bsdauth.c,v 1.11 2007/09/21 08:15:29 djm Exp $ */
+/* $OpenBSD: auth-bsdauth.c,v 1.12 2014/03/12 04:50:32 djm Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -24,6 +24,8 @@
  */
 
 #include <sys/types.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 #include "xmalloc.h"
 #include "key.h"

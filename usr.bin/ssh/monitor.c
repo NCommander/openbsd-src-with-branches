@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.132 2014/04/29 18:01:49 markus Exp $ */
+/* $OpenBSD: monitor.c,v 1.133 2014/05/03 17:20:34 markus Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -42,6 +42,8 @@
 #include <poll.h>
 #include <pwd.h>
 #include <signal.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

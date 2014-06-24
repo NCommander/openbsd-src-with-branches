@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-pkcs11-client.c,v 1.3 2012/01/16 20:34:09 miod Exp $ */
+/* $OpenBSD: ssh-pkcs11-client.c,v 1.4 2013/05/17 00:13:14 djm Exp $ */
 /*
  * Copyright (c) 2010 Markus Friedl.  All rights reserved.
  *
@@ -23,6 +23,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+
+#include <openssl/rsa.h>
 
 #include "pathnames.h"
 #include "xmalloc.h"

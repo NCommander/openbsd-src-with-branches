@@ -1,4 +1,4 @@
-/* $OpenBSD: dns.c,v 1.29 2013/05/17 00:13:13 djm Exp $ */
+/* $OpenBSD: dns.c,v 1.30 2014/04/20 09:24:26 logan Exp $ */
 
 /*
  * Copyright (c) 2003 Wesley Griffin. All rights reserved.
@@ -31,6 +31,8 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
 #include "xmalloc.h"
 #include "key.h"

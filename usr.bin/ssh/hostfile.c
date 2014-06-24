@@ -1,4 +1,4 @@
-/* $OpenBSD: hostfile.c,v 1.55 2014/01/31 16:39:19 tedu Exp $ */
+/* $OpenBSD: hostfile.c,v 1.56 2014/04/29 18:01:49 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -44,6 +44,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "xmalloc.h"
 #include "match.h"
