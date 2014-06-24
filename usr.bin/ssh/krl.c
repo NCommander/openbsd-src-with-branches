@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $OpenBSD: krl.c,v 1.14 2014/01/31 16:39:19 tedu Exp $ */
+/* $OpenBSD: krl.c,v 1.15 2014/04/28 03:09:18 djm Exp $ */
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -573,6 +573,7 @@ revoked_certs_generate(struct revoked_certs *rc, Buffer *buf)
 			buffer_put_char(buf, state);
 			buffer_put_string(buf,
 			    buffer_ptr(&sect), buffer_len(&sect));
+			buffer_clear(&sect);
 		}
 
 		/* If we are starting a new section then prepare it now */
