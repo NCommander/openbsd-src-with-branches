@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_installboot.c,v 1.2 2014/04/27 13:41:50 krw Exp $	*/
+/*	$OpenBSD: i386_installboot.c,v 1.3 2014/06/09 15:50:08 jsing Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -230,7 +230,8 @@ again:
 		    (mbroff == DOSBBSECTOR) ? "master" : "extended",
 		    (mbroff == DOSBBSECTOR) ? 'M' : 'E', mbroff);
 
-	secbuf = malloc(dl->d_secsize); 
+	if ((secbuf = malloc(dl->d_secsize)) == NULL)
+		err(1, NULL);
 	if (lseek(devfd, (off_t)mbroff * dl->d_secsize, SEEK_SET) < 0 ||
 	    read(devfd, secbuf, dl->d_secsize) < (ssize_t)sizeof(mbr))
 		err(4, "can't read boot record");
