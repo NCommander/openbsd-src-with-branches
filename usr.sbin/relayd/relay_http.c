@@ -1,7 +1,7 @@
-/*	$OpenBSD: relay_http.c,v 1.17 2014/04/15 22:35:11 andre Exp $	*/
+/*	$OpenBSD: relay_http.c,v 1.18 2014/04/20 16:18:32 reyk Exp $	*/
 
 /*
- * Copyright (c) 2006 - 2012 Reyk Floeter <reyk@openbsd.org>
+ * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

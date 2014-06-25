@@ -1,7 +1,7 @@
-/*	$OpenBSD: snmp.c,v 1.15 2014/04/20 16:23:33 reyk Exp $	*/
+/*	$OpenBSD: snmp.c,v 1.16 2014/04/23 15:45:16 reyk Exp $	*/
 
 /*
- * Copyright (c) 2008 Reyk Floeter <reyk@openbsd.org>
+ * Copyright (c) 2008 - 2014 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
