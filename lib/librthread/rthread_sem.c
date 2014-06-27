@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_sem.c,v 1.17 2013/12/08 19:04:07 fgsch Exp $ */
+/*	$OpenBSD: rthread_sem.c,v 1.18 2013/12/11 16:24:16 tedu Exp $ */
 /*
  * Copyright (c) 2004,2005,2013 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -367,7 +367,7 @@ sem_open(const char *name, int oflag, ...)
 		created = 1;
 	}
 	sem = mmap(NULL, SEM_MMAP_SIZE, PROT_READ | PROT_WRITE,
-	    MAP_FILE | MAP_SHARED | MAP_HASSEMAPHORE, fd, 0);
+	    MAP_SHARED, fd, 0);
 	close(fd);
 	if (sem == MAP_FAILED) {
 		errno = EINVAL;

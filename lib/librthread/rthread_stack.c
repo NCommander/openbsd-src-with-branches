@@ -1,4 +1,4 @@
-/* $OpenBSD: rthread_stack.c,v 1.10 2013/06/01 20:47:40 tedu Exp $ */
+/* $OpenBSD: rthread_stack.c,v 1.11 2013/12/18 16:42:08 deraadt Exp $ */
 /* $snafu: rthread_stack.c,v 1.12 2005/01/11 02:45:28 marc Exp $ */
 
 /* PUBLIC DOMAIN: No Rights Reserved. Marco S Hyman <marc@snafu.org> */
@@ -92,7 +92,8 @@ _rthread_alloc_stack(pthread_t thread)
 	size += guardsize;
 
 	/* actually allocate the real stack */
-	base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_ANON, -1, 0);
+	base = mmap(NULL, size, PROT_READ | PROT_WRITE,
+	    MAP_PRIVATE | MAP_ANON, -1, 0);
 	if (base == MAP_FAILED) {
 		free(stack);
 		return (NULL);
