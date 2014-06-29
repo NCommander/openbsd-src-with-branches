@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.1 2012/06/02 23:18:31 schwarze Exp $
+# $OpenBSD: Makefile,v 1.2 2014/03/30 19:43:19 schwarze Exp $
 
-REGRESS_TARGETS=TH Dd
+REGRESS_TARGETS = escname TH Dd
 
 .include <bsd.regress.mk>
 
