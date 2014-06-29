@@ -1,4 +1,4 @@
-/* $OpenBSD: tcpdrop.c,v 1.12 2013/10/24 02:55:50 deraadt Exp $ */
+/* $OpenBSD: tcpdrop.c,v 1.13 2014/01/10 04:02:15 lteo Exp $ */
 
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
@@ -19,6 +19,7 @@
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
+#include <sys/queue.h>
 #include <sys/timeout.h>
 
 #include <netinet/in.h>

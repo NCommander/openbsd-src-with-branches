@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.39 2013/06/01 21:57:12 brad Exp $	*/
+/*	$OpenBSD: config.c,v 1.40 2013/10/17 16:27:48 bluhm Exp $	*/
 /*	$KAME: config.c,v 1.62 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -35,6 +35,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/sysctl.h>
+#include <sys/queue.h>
 
 #include <net/if.h>
 #include <net/route.h>
