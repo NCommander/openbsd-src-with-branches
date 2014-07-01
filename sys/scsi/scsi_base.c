@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.212 2014/07/01 01:56:39 dlg Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.213 2014/07/01 02:11:46 dlg Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -1303,7 +1303,9 @@ scsi_done(struct scsi_xfer *xs)
 #endif /* SCSIDEBUG */
 
 	SET(xs->flags, ITSDONE);
+	KERNEL_LOCK();
 	xs->done(xs);
+	KERNEL_UNLOCK();
 }
 
 int
