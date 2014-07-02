@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88110_fp.c,v 1.9 2014/03/29 18:09:29 guenther Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.1 2014/06/09 16:26:32 miod Exp $	*/
 
 /*
  * Copyright (c) 2007, 2014, Miodrag Vallat.
@@ -214,7 +214,7 @@ done:
 	 */
 
 	if (cc & CC_UN)
-		cc |= CC_UE | CC_UG | CC_ULE | CC_UL | CC_UGE;
+		cc |= CC_NE | CC_UE | CC_UG | CC_ULE | CC_UL | CC_UGE;
 	if (cc & CC_EQ)
 		cc |= CC_LE | CC_GE | CC_UE;
 	if (cc & CC_GT)
