@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.7 2001/06/27 06:16:50 art Exp $
+#	$OpenBSD: Makefile,v 1.8 2007/12/15 03:43:41 deraadt Exp $
 
 PROG=	vmstat
 
+CPPFLAGS+= -D_LIBKVM
 SRCS=	dkstats.c vmstat.c
 MAN=	vmstat.8
 DPADD=	${LIBKVM}
