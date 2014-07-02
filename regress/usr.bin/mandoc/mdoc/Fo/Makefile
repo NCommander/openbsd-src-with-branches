@@ -1,6 +1,8 @@
-# $OpenBSD: Makefile,v 1.6 2012/11/18 00:05:28 schwarze Exp $
+# $OpenBSD: Makefile,v 1.7 2013/12/25 00:39:14 schwarze Exp $
 
-REGRESS_TARGETS = basic section break noarg font eos
+REGRESS_TARGETS = basic section break noarg font eos obsolete
+
+LINT_TARGETS = obsolete
 
 # groff does not handle .nr nS
 
