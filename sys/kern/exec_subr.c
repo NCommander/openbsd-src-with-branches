@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_subr.c,v 1.32 2014/03/28 17:57:11 mpi Exp $	*/
+/*	$OpenBSD: exec_subr.c,v 1.33 2014/05/29 05:05:34 guenther Exp $	*/
 /*	$NetBSD: exec_subr.c,v 1.9 1994/12/04 03:10:42 mycroft Exp $	*/
 
 /*
@@ -187,7 +187,7 @@ vmcmd_map_pagedvn(struct proc *p, struct exec_vmcmd *cmd)
 	 * first, attach to the object
 	 */
 
-	uobj = uvn_attach((void *)cmd->ev_vp, VM_PROT_READ|VM_PROT_EXECUTE);
+	uobj = uvn_attach(cmd->ev_vp, VM_PROT_READ|VM_PROT_EXECUTE);
 	if (uobj == NULL)
 		return (ENOMEM);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_extern.h,v 1.115 2014/05/15 03:52:25 guenther Exp $	*/
+/*	$OpenBSD: uvm_extern.h,v 1.116 2014/06/13 01:48:52 matthew Exp $	*/
 /*	$NetBSD: uvm_extern.h,v 1.57 2001/03/09 01:02:12 chs Exp $	*/
 
 /*
@@ -739,7 +739,7 @@ void			uvm_vnp_sync(struct mount *);
 void 			uvm_vnp_terminate(struct vnode *);
 				/* terminate a uvm/uvn object */
 boolean_t		uvm_vnp_uncache(struct vnode *);
-struct uvm_object	*uvn_attach(void *, vm_prot_t);
+struct uvm_object	*uvn_attach(struct vnode *, vm_prot_t);
 
 /* kern_malloc.c */
 void			kmeminit_nkmempages(void);
