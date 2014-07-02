@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip22_machdep.c,v 1.17 2014/04/03 08:07:16 mpi Exp $	*/
+/*	$OpenBSD: ip22_machdep.c,v 1.18 2014/05/19 21:18:42 miod Exp $	*/
 
 /*
  * Copyright (c) 2012 Miodrag Vallat.
@@ -352,7 +352,7 @@ ip22_video_setup()
 	else
 		return;
 
-	if (fbphys < GIO_ADDR_GFX || fbphys >= GIO_ADDR_END)
+	if (!IS_GIO_ADDRESS(fbphys))
 		return;
 
 	/*
