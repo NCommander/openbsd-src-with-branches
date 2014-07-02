@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.8 2008/09/16 04:20:42 drahn Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.9 2009/08/22 02:54:50 mk Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -34,17 +34,6 @@
 
 #include <machine/bus.h>
 
-/*
- *   System types.
- */
-#define OFWMACH         0       /* Openfirmware drivers */
-#define	POWER4e		1	/* V.I Power.4e board */
-#define	PWRSTK		2	/* Motorola Powerstack series */
-#define	APPL		3	/* Apple PowerMac machines (OFW?) */
-
-extern int system_type;
-
-/**/
 struct confargs;
 
 typedef int (*intr_handler_t)(void *);
