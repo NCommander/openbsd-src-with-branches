@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.246 2014/04/29 18:01:49 markus Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.247 2014/06/24 01:13:21 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -22,6 +22,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,7 +161,7 @@ int rounds = 0;
 /* argv0 */
 extern char *__progname;
 
-char hostname[MAXHOSTNAMELEN];
+char hostname[NI_MAXHOST];
 
 /* moduli.c */
 int gen_candidates(FILE *, u_int32_t, u_int32_t, BIGNUM *);
