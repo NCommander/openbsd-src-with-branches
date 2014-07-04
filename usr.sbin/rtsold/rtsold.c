@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsold.c,v 1.49 2013/04/21 19:42:32 florian Exp $	*/
+/*	$OpenBSD: rtsold.c,v 1.50 2013/10/21 08:46:07 phessler Exp $	*/
 /*	$KAME: rtsold.c,v 1.75 2004/01/03 00:00:07 itojun Exp $	*/
 
 /*
@@ -324,12 +324,11 @@ ifconfig(char *ifname)
 		return(-1);
 	}
 
-	if ((ifinfo = malloc(sizeof(*ifinfo))) == NULL) {
+	if ((ifinfo = calloc(1, sizeof(*ifinfo))) == NULL) {
 		warnmsg(LOG_ERR, __func__, "memory allocation failed");
 		free(sdl);
 		return(-1);
 	}
-	memset(ifinfo, 0, sizeof(*ifinfo));
 	ifinfo->sdl = sdl;
 
 	strncpy(ifinfo->ifname, ifname, sizeof(ifinfo->ifname));
