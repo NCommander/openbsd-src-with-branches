@@ -1,4 +1,4 @@
-/* $OpenBSD: machine.c,v 1.76 2013/03/23 21:12:32 tedu Exp $	 */
+/* $OpenBSD: machine.c,v 1.77 2014/04/08 14:04:11 mpi Exp $	 */
 
 /*-
  * Copyright (c) 1994 Thorsten Lockert <tholo@sigmasoft.com>
@@ -382,7 +382,7 @@ get_process_info(struct system_info *si, struct process_select *sel,
 		    (show_threads || (pp->p_flag & P_THREAD) == 0)) {
 			total_procs++;
 			process_states[(unsigned char) pp->p_stat]++;
-			if (pp->p_stat != SZOMB &&
+			if ((pp->p_psflags & PS_ZOMBIE) == 0 &&
 			    (show_idle || pp->p_pctcpu != 0 ||
 			    pp->p_stat == SRUN) &&
 			    (!hide_uid || pp->p_ruid != sel->huid) &&
