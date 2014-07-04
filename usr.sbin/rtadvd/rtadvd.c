@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.c,v 1.45 2013/05/05 14:25:52 dtucker Exp $	*/
+/*	$OpenBSD: rtadvd.c,v 1.46 2014/05/15 05:03:24 jca Exp $	*/
 /*	$KAME: rtadvd.c,v 1.66 2002/05/29 14:18:36 itojun Exp $	*/
 
 /*
@@ -249,15 +249,14 @@ main(argc, argv)
 		fatal("cannot drop privileges");
 
 	fdmasks = howmany(maxfd + 1, NFDBITS) * sizeof(fd_mask);
-	if ((fdsetp = malloc(fdmasks)) == NULL) {
-		err(1, "malloc");
+	if ((fdsetp = calloc(1, fdmasks)) == NULL) {
+		err(1, "calloc");
 		/*NOTREACHED*/
 	}
 	if ((selectfdp = malloc(fdmasks)) == NULL) {
 		err(1, "malloc");
 		/*NOTREACHED*/
 	}
-	memset(fdsetp, 0, fdmasks);
 	FD_SET(sock, fdsetp);
 	if (rtsock >= 0)
 		FD_SET(rtsock, fdsetp);
