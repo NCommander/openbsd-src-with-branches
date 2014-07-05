@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.c,v 1.12 2009/10/27 23:59:42 deraadt Exp $	*/
+/*	$OpenBSD: expand.c,v 1.13 2012/11/12 01:14:41 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -28,6 +28,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include <dirent.h>
 
 #include "defs.h"
 
@@ -356,7 +358,7 @@ void
 matchdir(char *pattern)			/* quote in pattern */
 {
 	struct stat stb;
-	DIRENTRY *dp;
+	struct dirent *dp;
 	DIR *dirp;
 
 	dirp = opendir(path);
