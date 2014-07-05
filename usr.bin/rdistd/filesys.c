@@ -1,4 +1,4 @@
-/*	$OpenBSD: filesys.c,v 1.11 2009/10/27 23:59:42 deraadt Exp $	*/
+/*	$OpenBSD: filesys.c,v 1.12 2011/04/10 15:47:28 krw Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -152,7 +152,7 @@ find_file(char *pathname, struct stat *statbuf, int *isvalid)
 	if (strcmp(pathname, file) == 0)
 		*isvalid = 1;
 
-	return((file && *file) ? file : NULL);
+	return(*file ? file : NULL);
 }
 
 #if defined(NFS_CHECK) || defined(RO_CHECK)
