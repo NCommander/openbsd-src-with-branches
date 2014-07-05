@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.h,v 1.10 2013/06/09 13:10:19 miod Exp $	*/
+/*	$OpenBSD: syscall.h,v 1.11 2013/08/13 05:52:19 guenther Exp $	*/
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist
@@ -40,6 +40,7 @@
     ((long)__res < 0 && (long)__res >= -_dl_MAX_ERRNO)
 
 int	_dl_close(int);
+__dead
 int	_dl_exit(int);
 int	_dl_issetugid(void);
 long	_dl__syscall(quad_t, ...);
