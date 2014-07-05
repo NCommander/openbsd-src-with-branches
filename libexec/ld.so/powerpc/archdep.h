@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.13 2004/05/24 20:16:12 drahn Exp $ */
+/*	$OpenBSD: archdep.h,v 1.14 2010/01/02 12:16:35 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -42,12 +42,6 @@
 #include "util.h"
 
 #define RTLD_PROTECT_PLT
-
-/* HACK */
-#define DT_PROCNUM 0
-#ifndef DT_BIND_NOW
-#define DT_BIND_NOW 0
-#endif
 
 /*
  *	The following functions are declared inline so they can

@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.3 2004/05/24 20:16:12 drahn Exp $ */
+/*	$OpenBSD: archdep.h,v 1.4 2010/01/02 12:16:35 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -40,12 +40,6 @@
 #include <machine/reloc.h>
 #include "syscall.h"
 #include "util.h"
-
-/* HACK */
-#define DT_PROCNUM 0
-#ifndef DT_BIND_NOW
-#define DT_BIND_NOW 0
-#endif
 
 /*
  *	The following functions are declared inline so they can
