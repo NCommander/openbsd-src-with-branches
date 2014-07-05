@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.12 2013/08/13 05:52:20 guenther Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.13 2013/12/25 15:14:59 miod Exp $ */
 
 /*
  * Copyright (c) 2006 Dale Rahn
@@ -197,7 +197,7 @@ DL_SYSCALL(open)
 DL_SYSCALL(read)
 
 .L_cerr:
-	mov	#-1, r0 
+	neg	r0, r0
 	rts
 	 nop
 
@@ -239,5 +239,3 @@ out:
 	.align	2
 LSYS_sigprocmask:
 	.long	SYS_sigprocmask
-
-
