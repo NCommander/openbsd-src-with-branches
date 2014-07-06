@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.146 2014/01/23 00:31:34 deraadt Exp $ */
+/*	$OpenBSD: boot.c,v 1.1 2014/02/16 01:16:38 martynas Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -40,7 +40,6 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <nlist.h>
-#include <string.h>
 #include <link.h>
 #include <dlfcn.h>
 

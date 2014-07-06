@@ -1,4 +1,4 @@
-/* $OpenBSD: dl_prebind.c,v 1.13 2013/11/13 05:41:41 deraadt Exp $ */
+/* $OpenBSD: dl_prebind.c,v 1.14 2014/06/21 08:00:22 otto Exp $ */
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
  *
@@ -21,7 +21,6 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <nlist.h>
-#include <string.h>
 #include <link.h>
 #include <dlfcn.h>
 #include <unistd.h>
