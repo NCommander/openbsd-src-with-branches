@@ -1,4 +1,4 @@
-/* $OpenBSD: pckbc.c,v 1.36 2013/05/23 18:29:51 tobias Exp $ */
+/* $OpenBSD: pckbc.c,v 1.37 2013/09/24 08:33:50 mpi Exp $ */
 /* $NetBSD: pckbc.c,v 1.5 2000/06/09 04:58:35 soda Exp $ */
 
 /*
@@ -992,7 +992,9 @@ pckbcintr_internal(struct pckbc_internal *t, struct pckbc_softc *sc)
 
 		if (!q) {
 			/* XXX do something for live insertion? */
+#ifdef PCKBCDEBUG
 			printf("pckbcintr: no dev for slot %d\n", slot);
+#endif
 			KBD_DELAY;
 			(void) bus_space_read_1(t->t_iot, t->t_ioh_d, 0);
 			continue;
