@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.6 2014/05/01 15:50:20 reyk Exp $	*/
+/*	$OpenBSD: ca.c,v 1.7 2014/04/22 08:04:23 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -28,6 +28,7 @@
 #include <pwd.h>
 #include <err.h>
 
+#include <openssl/ssl.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
@@ -250,8 +251,6 @@ ca_imsg(struct mproc *p, struct imsg *imsg)
 	int			 ret = 0;
 	uint64_t		 id;
 	int			 v;
-
-	log_imsg(smtpd_process, p->proc, imsg);
 
 	if (p->proc == PROC_PARENT) {
 		switch (imsg->hdr.type) {
@@ -578,5 +577,5 @@ ca_engine_init(void)
 
  fail:
 	ssl_error(errstr);
-	fatalx(errstr);
+	fatalx("%s", errstr);
 }
