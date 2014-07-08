@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_hangman.c,v 1.28 2008/04/18 06:42:20 djm Exp $	*/
+/*	$OpenBSD: db_hangman.c,v 1.29 2014/01/18 01:58:33 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Theo de Raadt, Michael Shalayeff
@@ -27,8 +27,7 @@
  */
 
 #include <sys/param.h>
-
-#include <uvm/uvm_extern.h>
+#include <sys/systm.h>
 
 #include <machine/db_machdep.h>
 

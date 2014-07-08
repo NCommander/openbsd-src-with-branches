@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_break.c,v 1.13 2006/03/13 06:23:20 jsg Exp $	*/
+/*	$OpenBSD: db_break.c,v 1.14 2010/11/27 19:59:11 miod Exp $	*/
 /*	$NetBSD: db_break.c,v 1.7 1996/03/30 22:30:03 christos Exp $	*/
 
 /* 
@@ -34,9 +34,8 @@
  * Breakpoints.
  */
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/proc.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>		/* type definitions */
 
