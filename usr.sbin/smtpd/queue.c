@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue.c,v 1.161 2014/04/08 15:25:43 eric Exp $	*/
+/*	$OpenBSD: queue.c,v 1.162 2014/04/19 13:40:24 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -561,6 +561,7 @@ static void
 queue_shutdown(void)
 {
 	log_info("info: queue handler exiting");
+	queue_close();
 	_exit(0);
 }
 
