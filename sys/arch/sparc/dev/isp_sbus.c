@@ -1,4 +1,4 @@
-/*	$OpenBSD: isp_sbus.c,v 1.31 2011/04/22 23:29:18 deraadt Exp $	*/
+/*	$OpenBSD: isp_sbus.c,v 1.32 2014/02/10 22:41:27 jmatthew Exp $	*/
 /*
  * SBus specific probe and attach routines for Qlogic ISP SCSI adapters.
  *
@@ -41,6 +41,8 @@
 #include <machine/param.h>
 #include <machine/vmparam.h>
 #include <sparc/sparc/cpuvar.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <dev/ic/isp_openbsd.h>
 
