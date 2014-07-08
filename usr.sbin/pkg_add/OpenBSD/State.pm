@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: State.pm,v 1.29 2014/05/30 15:04:54 espie Exp $
+# $OpenBSD: State.pm,v 1.30 2014/06/10 15:50:01 espie Exp $
 #
 # Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
@@ -233,7 +233,7 @@ sub f
 	my ($fmt, @l) = @_;
 	# make it so that #0 is #
 	unshift(@l, '#');
-	$fmt =~ s/\#(\d+)/$l[$1]/ge;
+	$fmt =~ s,\#(\d+),($l[$1] // "<Undefined #$1>"),ge;
 	return $fmt;
 }
 
