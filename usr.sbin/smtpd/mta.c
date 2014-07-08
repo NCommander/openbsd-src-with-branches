@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta.c,v 1.186 2014/04/19 13:32:07 gilles Exp $	*/
+/*	$OpenBSD: mta.c,v 1.187 2014/05/20 18:47:01 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -892,7 +892,7 @@ mta_query_source(struct mta_relay *relay)
 	if (relay->sourcetable == NULL) {
 		/*
 		 * This is a recursive call, but it only happens once, since
-		 * another source will not be queried immediatly.
+		 * another source will not be queried immediately.
 		 */
 		mta_relay_ref(relay);
 		mta_on_source(relay, mta_source(NULL));

@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.211 2014/05/17 20:07:54 chl Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.212 2014/07/04 15:24:46 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -995,7 +995,7 @@ smtp_command(struct smtp_session *s, char *line)
 	case CMD_HELO:
 	case CMD_EHLO:
 		if (s->phase != PHASE_INIT) {
-			smtp_reply(s, "503 %s %s: Already indentified",
+			smtp_reply(s, "503 %s %s: Already identified",
 			    esc_code(ESC_STATUS_PERMFAIL, ESC_INVALID_COMMAND),
 			    esc_description(ESC_INVALID_COMMAND));
 			break;
