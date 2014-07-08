@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_np.c,v 1.11 2014/05/02 21:58:51 kurt Exp $	*/
+/*	$OpenBSD: rthread_np.c,v 1.12 2014/07/01 03:32:18 guenther Exp $	*/
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2005 Otto Moerbeek <otto@openbsd.org>
@@ -32,7 +32,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <uvm/uvm_extern.h>
 #include <machine/spinlock.h>
 
 #include "rthread.h"

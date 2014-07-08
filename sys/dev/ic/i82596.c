@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82596.c,v 1.35 2013/11/26 09:50:33 mpi Exp $	*/
+/*	$OpenBSD: i82596.c,v 1.36 2013/11/27 06:48:50 deraadt Exp $	*/
 /*	$NetBSD: i82586.c,v 1.18 1998/08/15 04:42:42 mycroft Exp $	*/
 
 /*-
@@ -160,8 +160,6 @@ Mode of operation:
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif
-
-#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 

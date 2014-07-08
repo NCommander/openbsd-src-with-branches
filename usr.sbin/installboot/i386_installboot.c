@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_installboot.c,v 1.3 2014/06/09 15:50:08 jsing Exp $	*/
+/*	$OpenBSD: i386_installboot.c,v 1.4 2014/06/25 18:21:24 tobias Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -50,8 +50,6 @@
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
 #include <ufs/ffs/fs.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/biosvar.h>

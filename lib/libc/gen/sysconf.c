@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysconf.c,v 1.18 2013/03/24 20:04:35 guenther Exp $ */
+/*	$OpenBSD: sysconf.c,v 1.19 2014/04/08 14:04:11 mpi Exp $ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,8 +37,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <errno.h>
 #include <grp.h>

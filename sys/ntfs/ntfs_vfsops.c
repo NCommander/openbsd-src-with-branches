@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vfsops.c,v 1.37 2013/12/02 16:05:07 jsing Exp $	*/
+/*	$OpenBSD: ntfs_vfsops.c,v 1.38 2014/01/19 18:35:45 tedu Exp $	*/
 /*	$NetBSD: ntfs_vfsops.c,v 1.7 2003/04/24 07:50:19 christos Exp $	*/
 
 /*-
@@ -44,8 +44,6 @@
 #include <sys/device.h>
 #include <sys/conf.h>
 #include <sys/specdev.h>
-
-#include <uvm/uvm_extern.h>
 
 /*#define NTFS_DEBUG 1*/
 #include <ntfs/ntfs.h>

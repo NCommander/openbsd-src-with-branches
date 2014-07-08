@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.146 2014/05/27 19:38:15 claudio Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.147 2014/05/31 15:36:44 claudio Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -64,14 +64,12 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/domain.h>
 #include <sys/protosw.h>
-
-#include <uvm/uvm_extern.h>
-#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/route.h>

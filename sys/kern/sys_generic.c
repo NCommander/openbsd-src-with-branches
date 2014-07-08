@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_generic.c,v 1.85 2014/01/21 01:48:45 tedu Exp $	*/
+/*	$OpenBSD: sys_generic.c,v 1.86 2014/03/30 21:54:48 guenther Exp $	*/
 /*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
@@ -59,8 +59,6 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
-
-#include <uvm/uvm_extern.h>
 
 int selscan(struct proc *, fd_set *, fd_set *, int, int, register_t *);
 void pollscan(struct proc *, struct pollfd *, u_int, register_t *);

@@ -1,4 +1,4 @@
-/* $OpenBSD: lemac.c,v 1.14 2013/08/07 01:06:30 bluhm Exp $ */
+/* $OpenBSD: lemac.c,v 1.15 2013/11/26 09:50:33 mpi Exp $ */
 /* $NetBSD: lemac.c,v 1.20 2001/06/13 10:46:02 wiz Exp $ */
 
 /*-
@@ -61,10 +61,6 @@
 
 #include <dev/ic/lemacreg.h>
 #include <dev/ic/lemacvar.h>
-
-#if 0
-#include <uvm/uvm_extern.h>
-#endif
 
 #include "bpfilter.h"
 #if NBPFILTER > 0

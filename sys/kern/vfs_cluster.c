@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cluster.c,v 1.39 2013/06/11 16:42:16 deraadt Exp $	*/
+/*	$OpenBSD: vfs_cluster.c,v 1.40 2013/10/01 20:22:12 sf Exp $	*/
 /*	$NetBSD: vfs_cluster.c,v 1.12 1996/04/22 01:39:05 christos Exp $	*/
 
 /*
@@ -40,8 +40,6 @@
 #include <sys/malloc.h>
 #include <sys/systm.h>
 #include <sys/resourcevar.h>
-
-#include <uvm/uvm_extern.h>
 
 void cluster_wbuild(struct vnode *, struct buf *, long, daddr_t, int,
     daddr_t);

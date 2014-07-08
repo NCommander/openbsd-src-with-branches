@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_denode.c,v 1.46 2013/10/01 20:22:13 sf Exp $	*/
+/*	$OpenBSD: msdosfs_denode.c,v 1.47 2013/12/24 00:18:46 halex Exp $	*/
 /*	$NetBSD: msdosfs_denode.c,v 1.23 1997/10/17 11:23:58 ws Exp $	*/
 
 /*-
@@ -58,8 +58,6 @@
 #include <sys/kernel.h>		/* defines "time" */
 #include <sys/dirent.h>
 #include <sys/namei.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <msdosfs/bpb.h>
 #include <msdosfs/msdosfsmount.h>

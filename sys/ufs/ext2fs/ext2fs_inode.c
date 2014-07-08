@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_inode.c,v 1.47 2014/01/25 23:31:12 guenther Exp $	*/
+/*	$OpenBSD: ext2fs_inode.c,v 1.48 2014/05/27 14:31:24 krw Exp $	*/
 /*	$NetBSD: ext2fs_inode.c,v 1.24 2001/06/19 12:59:18 wiz Exp $	*/
 
 /*
@@ -44,8 +44,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/resourcevar.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>

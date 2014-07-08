@@ -1,4 +1,4 @@
-/*	$OpenBSD: atw.c,v 1.80 2013/12/06 21:03:02 deraadt Exp $	*/
+/*	$OpenBSD: atw.c,v 1.81 2014/03/19 10:09:19 mpi Exp $	*/
 /*	$NetBSD: atw.c,v 1.69 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -48,8 +48,6 @@
 #include <sys/time.h>
 
 #include <machine/endian.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>

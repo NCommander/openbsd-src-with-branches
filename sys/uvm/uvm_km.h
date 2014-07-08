@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_km.h,v 1.10 2010/06/28 04:20:29 miod Exp $	*/
+/*	$OpenBSD: uvm_km.h,v 1.11 2010/07/15 00:14:17 tedu Exp $	*/
 /*	$NetBSD: uvm_km.h,v 1.9 1999/06/21 17:25:11 thorpej Exp $	*/
 
 /*
@@ -43,6 +43,8 @@
  */
 
 #ifdef _KERNEL
+
+#include <sys/mutex.h>
 
 /*
  * prototypes
