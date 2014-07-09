@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lock.c,v 1.42 2013/05/06 16:37:55 tedu Exp $	*/
+/*	$OpenBSD: kern_lock.c,v 1.43 2014/01/21 01:48:44 tedu Exp $	*/
 
 /* 
  * Copyright (c) 1995
@@ -64,6 +64,8 @@ lockstatus(struct lock *lkp)
 	switch (rrw_status(&lkp->lk_lck)) {
 	case RW_WRITE:
 		return (LK_EXCLUSIVE);
+	case RW_WRITE_OTHER:
+		return (LK_EXCLOTHER);
 	case RW_READ:
 		return (LK_SHARED);
 	case 0:
