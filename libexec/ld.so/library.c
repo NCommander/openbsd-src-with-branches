@@ -1,4 +1,4 @@
-/*	$OpenBSD: library.c,v 1.67 2012/08/20 23:25:07 matthew Exp $ */
+/*	$OpenBSD: library.c,v 1.68 2014/06/21 08:00:22 otto Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -93,7 +93,7 @@ _dl_tryload_shlib(const char *libname, int type, int flags)
 #define ROUND_PG(x) (((x) + align) & ~(align))
 #define TRUNC_PG(x) ((x) & ~(align))
 
-	libfile = _dl_open(libname, O_RDONLY);
+	libfile = _dl_open(libname, O_RDONLY | O_CLOEXEC);
 	if (libfile < 0) {
 		_dl_errno = DL_CANT_OPEN;
 		return(0);
