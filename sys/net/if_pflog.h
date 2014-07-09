@@ -67,8 +67,6 @@ struct pflog_softc {
 	LIST_ENTRY(pflog_softc)	sc_list;
 };
 
-void	pflog_bpfcopy(const void *, void *, size_t);
-
 #if NPFLOG > 0
 #define	PFLOG_PACKET(a,b,c,d,e) pflog_packet(a,b,c,d,e)
 #else
