@@ -1,4 +1,4 @@
-/*	$OpenBSD: octeonvar.h,v 1.16 2014/03/29 18:09:30 guenther Exp $	*/
+/*	$OpenBSD: octeonvar.h,v 1.17 2014/06/17 01:33:04 jmatthew Exp $	*/
 /*	$NetBSD: maltavar.h,v 1.3 2002/03/18 10:10:16 simonb Exp $	*/
 
 /*-
@@ -306,6 +306,19 @@ ffs64(uint64_t val)
 		_ASM_EPILOGUE
 		: "=r"(ret) : "r"(val));
 	return 64 - ret;
+}
+
+static inline int
+ffs32(uint32_t val)
+{
+	int ret;
+
+	__asm __volatile ( \
+		_ASM_PROLOGUE_MIPS64
+		"	clz	%0, %1			\n"
+		_ASM_EPILOGUE
+		: "=r"(ret) : "r"(val));
+	return 32 - ret;
 }
 
 static inline uint64_t
