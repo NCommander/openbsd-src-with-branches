@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.24 2014/07/05 17:03:19 miod Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.25 2014/07/06 07:28:36 otto Exp $ */
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist
@@ -252,7 +252,6 @@ END(_dl_sigprocmask)
 
 DL_SYSCALL(close)
 DL_SYSCALL_NOERR(exit)
-DL_SYSCALL(fcntl)
 DL_SYSCALL(fstat)
 DL_SYSCALL2(getcwd,__getcwd)
 DL_SYSCALL(getdents)
