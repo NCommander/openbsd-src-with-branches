@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx.h,v 1.21 2006/12/21 02:28:47 krw Exp $	*/
+/*	$OpenBSD: aic79xx.h,v 1.22 2012/02/24 06:19:00 guenther Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -1105,7 +1105,6 @@ struct ahd_softc {
 #ifndef __linux__
 	bus_dma_tag_t		  buffer_dmat;   /* dmat for buffer I/O */
 #endif
-	void			*shutdown_hook;
 	struct scb_data		scb_data;
 
 	struct hardware_scb	 *next_queued_hscb;
