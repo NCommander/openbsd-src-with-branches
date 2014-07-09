@@ -702,7 +702,7 @@ ipsec_common_input_cb(struct mbuf *m, struct tdb *tdbp, int skip, int protoff,
 			hdr.flags = m->m_flags & (M_AUTH|M_CONF);
 
 			bpf_mtap_hdr(encif->if_bpf, (char *)&hdr,
-			    ENC_HDRLEN, m, BPF_DIRECTION_IN);
+			    ENC_HDRLEN, m, BPF_DIRECTION_IN, NULL);
 		}
 	}
 #endif

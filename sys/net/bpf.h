@@ -272,7 +272,8 @@ struct bpf_dltlist {
 int	 bpf_validate(struct bpf_insn *, int);
 int	 bpf_tap(caddr_t, u_char *, u_int, u_int);
 void	 bpf_mtap(caddr_t, struct mbuf *, u_int);
-void	 bpf_mtap_hdr(caddr_t, caddr_t, u_int, struct mbuf *, u_int);
+void	 bpf_mtap_hdr(caddr_t, caddr_t, u_int, struct mbuf *, u_int,
+	    void (*)(const void *, void *, size_t));
 void	 bpf_mtap_af(caddr_t, u_int32_t, struct mbuf *, u_int);
 void	 bpf_mtap_ether(caddr_t, struct mbuf *, u_int);
 void	 bpf_mtap_pflog(caddr_t, caddr_t, struct mbuf *);

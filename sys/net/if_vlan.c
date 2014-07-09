@@ -299,7 +299,7 @@ vlan_input(struct ether_header *eh, struct mbuf *m)
 #if NBPFILTER > 0
 	if (ifv->ifv_if.if_bpf)
 		bpf_mtap_hdr(ifv->ifv_if.if_bpf, (char *)eh, ETHER_HDR_LEN, m,
-		    BPF_DIRECTION_IN);
+		    BPF_DIRECTION_IN, NULL);
 #endif
 
 	/*

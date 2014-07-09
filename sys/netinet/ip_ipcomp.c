@@ -402,7 +402,7 @@ ipcomp_output(m, tdb, mp, skip, protoff)
 			hdr.spi = tdb->tdb_spi;
 
 			bpf_mtap_hdr(encif->if_bpf, (char *)&hdr,
-			    ENC_HDRLEN, m, BPF_DIRECTION_OUT);
+			    ENC_HDRLEN, m, BPF_DIRECTION_OUT, NULL);
 		}
 	}
 #endif

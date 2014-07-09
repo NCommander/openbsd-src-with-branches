@@ -1330,7 +1330,7 @@ bridge_input(struct ifnet *ifp, struct ether_header *eh, struct mbuf *m)
 #if NBPFILTER > 0
 	if (sc->sc_if.if_bpf)
 		bpf_mtap_hdr(sc->sc_if.if_bpf, (caddr_t)eh,
-		    ETHER_HDR_LEN, m, BPF_DIRECTION_IN);
+		    ETHER_HDR_LEN, m, BPF_DIRECTION_IN, NULL);
 #endif
 
 	bridge_span(sc, eh, m);
@@ -1441,10 +1441,8 @@ bridge_input(struct ifnet *ifp, struct ether_header *eh, struct mbuf *m)
 			 * is aware */
 #if NBPFILTER > 0
 			if (ifl->ifp->if_bpf)
-				bpf_mtap_hdr(ifl->ifp->if_bpf,
-				    (caddr_t)eh,
-				    ETHER_HDR_LEN, m,
-				    BPF_DIRECTION_IN);
+				bpf_mtap_hdr(ifl->ifp->if_bpf, (caddr_t)eh,
+				    ETHER_HDR_LEN, m, BPF_DIRECTION_IN, NULL);
 #endif
 			/* Count for the interface we are going to */
 			ifl->ifp->if_ipackets++;

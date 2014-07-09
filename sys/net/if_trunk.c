@@ -1102,7 +1102,7 @@ trunk_input(struct ifnet *ifp, struct ether_header *eh, struct mbuf *m)
 #if NBPFILTER > 0
 	if (trifp->if_bpf && tr->tr_proto != TRUNK_PROTO_FAILOVER)
 		bpf_mtap_hdr(trifp->if_bpf, (char *)eh, ETHER_HDR_LEN, m,
-		    BPF_DIRECTION_IN);
+		    BPF_DIRECTION_IN, NULL);
 #endif
 
 	error = (*tr->tr_input)(tr, tp, eh, m);
@@ -1372,7 +1372,7 @@ trunk_fail_input(struct trunk_softc *tr, struct trunk_port *tp,
 #if NBPFILTER > 0
 	if (ifp->if_bpf)
 		bpf_mtap_hdr(ifp->if_bpf, (char *)eh, ETHER_HDR_LEN, m,
-		    BPF_DIRECTION_IN);
+		    BPF_DIRECTION_IN, NULL);
 #endif
 
 	m->m_pkthdr.rcvif = ifp;

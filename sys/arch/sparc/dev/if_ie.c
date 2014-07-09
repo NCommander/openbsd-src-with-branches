@@ -1335,7 +1335,7 @@ ie_readframe(sc, num)
 	if (bpf_gets_it) {
 		/* Pass it up. */
 		bpf_mtap_hdr(sc->sc_arpcom.ac_if.if_bpf, (caddr_t)&eh,
-		    sizeof(eh), m, BPF_DIRECTION_IN);
+		    sizeof(eh), m, BPF_DIRECTION_IN, NULL);
 	}
 	/*
 	 * A signal passed up from the filtering code indicating that the

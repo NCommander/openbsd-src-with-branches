@@ -1016,7 +1016,7 @@ ah_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
 			hdr.flags |= M_AUTH;
 
 			bpf_mtap_hdr(encif->if_bpf, (char *)&hdr,
-			    ENC_HDRLEN, m, BPF_DIRECTION_OUT);
+			    ENC_HDRLEN, m, BPF_DIRECTION_OUT, NULL);
 		}
 	}
 #endif
