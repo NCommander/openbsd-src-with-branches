@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.151 2014/05/30 13:46:16 mpi Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.152 2014/05/31 15:49:28 mpi Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -40,6 +40,7 @@
 #include <sys/mbuf.h>
 #include <sys/mount.h>
 #include <sys/msgbuf.h>
+#include <sys/sysctl.h>
 #include <sys/proc.h>
 #include <sys/signalvar.h>
 #include <sys/reboot.h>
