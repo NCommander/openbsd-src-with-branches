@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.157 2014/06/04 12:28:21 mpi Exp $ */
+/*	$OpenBSD: ehci.c,v 1.158 2014/06/04 13:52:30 mpi Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -216,6 +216,7 @@ void		ehci_dump_exfer(struct ehci_xfer *);
 
 struct usbd_bus_methods ehci_bus_methods = {
 	.open_pipe = ehci_open,
+	.dev_setaddr = usbd_set_address,
 	.soft_intr = ehci_softintr,
 	.do_poll = ehci_poll,
 	.allocx = ehci_allocx,
