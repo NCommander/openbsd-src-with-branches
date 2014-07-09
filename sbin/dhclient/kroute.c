@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.64 2014/02/13 00:24:13 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.65 2014/05/05 18:02:49 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -611,7 +611,7 @@ create_route_label(struct sockaddr_rtlabel *label)
 	}
 
 	if (len >= sizeof(label->sr_label)) {
-		warning("creating route label: label too long (%d vs %zd)", len,
+		warning("creating route label: label too long (%d vs %zu)", len,
 		    sizeof(label->sr_label));
 		return (1);
 	}
