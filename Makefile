@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.120 2013/07/23 22:37:02 todd Exp $
+#	$OpenBSD: Makefile,v 1.121 2014/04/22 10:21:56 reyk Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -60,6 +60,7 @@ beforeinstall:
 afterinstall:
 .ifndef NOMAN
 	cd ${.CURDIR}/share/man && exec ${MAKE} makedb
+	cd ${.CURDIR}/distrib/sets && exec ${MAKE} makedb
 .endif
 
 .ifdef DESTDIR
