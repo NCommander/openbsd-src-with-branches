@@ -1,4 +1,4 @@
-#	$OpenBSD: funcs.pl,v 1.13 2014/07/10 10:19:06 bluhm Exp $
+#	$OpenBSD: funcs.pl,v 1.14 2014/07/10 11:56:11 reyk Exp $
 
 # Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -375,6 +375,8 @@ sub check_logs {
 
 sub check_len {
 	my ($c, $r, $s, %args) = @_;
+
+	$args{len} ||= 251 unless $args{lengths};
 
 	my @clen = $c->loggrep(qr/^LEN: /) or die "no client len"
 	    unless $args{client}{nocheck};
