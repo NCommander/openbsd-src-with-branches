@@ -1,3 +1,4 @@
+#	$OpenBSD$
 /dev/ttyb
 19200
 modem
