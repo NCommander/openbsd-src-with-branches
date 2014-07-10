@@ -983,15 +983,12 @@ boot(int howto)
 	int i;
 #endif
 
-	/* If system is cold, just halt. */
 	if (cold) {
-		/* (Unless the user explicitly asked for reboot.) */
 		if ((howto & RB_USERREQ) == 0)
 			howto |= RB_HALT;
 		goto haltsys;
 	}
 
-	/* If "always halt" was specified as a boot flag, obey. */
 	if ((boothowto & RB_HALT) != 0)
 		howto |= RB_HALT;
 

@@ -904,15 +904,10 @@ boot(int howto)
 {
 	struct device *mainbus;
 
-	/* Take a snapshot before clobbering any registers. */
 	if (curproc)
 		savectx(curproc->p_addr, 0);
 
 	if (cold) {
-		/*
-		 * If the system is cold, just halt, unless the user
-		 * explicitly asked for reboot.
-		 */
 		if ((howto & RB_USERREQ) == 0)
 			howto |= RB_HALT;
 		goto haltsys;

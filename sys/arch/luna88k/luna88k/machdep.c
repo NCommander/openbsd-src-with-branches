@@ -474,9 +474,7 @@ boot(int howto)
 	if (curproc && curproc->p_addr)
 		savectx(curpcb);
 
-	/* If system is cold, just halt. */
 	if (cold) {
-		/* (Unless the user explicitly asked for reboot.) */
 		if ((howto & RB_USERREQ) == 0)
 			howto |= RB_HALT;
 		goto haltsys;
