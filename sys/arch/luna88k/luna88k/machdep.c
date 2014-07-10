@@ -470,7 +470,6 @@ boot(int howto)
 {
 	struct device *mainbus;
 
-	/* take a snapshot before clobbering any registers */
 	if (curproc && curproc->p_addr)
 		savectx(curpcb);
 

@@ -253,10 +253,6 @@ boot(int howto)
 
 	mainbus = device_mainbus();
 
-	/*
-	 * If we are still cold then hit the air brakes
-	 * and crash to earth fast
-	 */
 	if (cold) {
 		doshutdownhooks();
 		if (mainbus != NULL)
