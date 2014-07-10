@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.32 2014/05/30 13:46:16 mpi Exp $	*/
+/*	$OpenBSD$	*/
 /*	OpenBSD: machdep.c,v 1.105 2005/04/11 15:13:01 deraadt Exp 	*/
 
 /*
@@ -513,9 +513,8 @@ sys_sigreturn(p, v, retval)
 
 int	waittime = -1;
 
-void
-boot(howto)
-	int howto;
+__dead void
+boot(int howto)
 {
 	int i;
 	static char str[4];	/* room for "-sd\0" */

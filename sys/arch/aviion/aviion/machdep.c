@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.63 2014/05/30 13:46:16 mpi Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2007 Miodrag Vallat.
  *
@@ -292,8 +292,7 @@ doboot()
 }
 
 __dead void
-boot(howto)
-	int howto;
+boot(int howto)
 {
 	struct device *mainbus;
 

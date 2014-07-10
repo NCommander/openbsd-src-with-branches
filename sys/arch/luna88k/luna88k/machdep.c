@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.99 2014/05/30 13:46:16 mpi Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -466,8 +466,7 @@ cpu_startup()
 }
 
 __dead void
-boot(howto)
-	int howto;
+boot(int howto)
 {
 	struct device *mainbus;
 

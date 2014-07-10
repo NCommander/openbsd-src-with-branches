@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.155 2014/05/30 13:46:16 mpi Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -974,9 +974,8 @@ skipMHz:
 int	waittime = -1;
 struct pcb dumppcb;
 
-void
-boot(howto)
-	int howto;
+__dead void
+boot(int howto)
 {
 	struct device *mainbus;
 #if defined(MULTIPROCESSOR)

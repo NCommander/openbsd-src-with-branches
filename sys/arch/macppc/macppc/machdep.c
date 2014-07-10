@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.152 2014/05/31 15:49:28 mpi Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -800,7 +800,7 @@ lcsplx(int ipl)
 /*
  * Halt or reboot the machine after syncing/dumping according to howto.
  */
-void
+__dead void
 boot(int howto)
 {
 	struct device *mainbus;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.47 2014/05/30 13:46:16 mpi Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -1028,7 +1028,7 @@ reserve_dumppages(caddr_t p)
 /*
  * Halt or reboot the machine after syncing/dumping according to howto.
  */
-void
+__dead void
 boot(int howto)
 {
 	static int syncing;

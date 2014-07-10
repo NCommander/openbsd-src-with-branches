@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.139 2014/05/30 13:46:16 mpi Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -826,7 +826,7 @@ sgi_cpuspeed(int *freq)
 
 int	waittime = -1;
 
-void
+__dead void
 boot(int howto)
 {
 	struct device *mainbus;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.48 2014/05/30 13:46:16 mpi Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2009, 2010, 2014 Miodrag Vallat.
@@ -899,7 +899,7 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 
 int	waittime = -1;
 
-void
+__dead void
 boot(int howto)
 {
 	struct device *mainbus;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.32 2014/05/30 13:46:16 mpi Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: machdep.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*-
@@ -190,7 +190,7 @@ landisk_startup(int howto, char *_esym)
 	for (;;) ;
 }
 
-void
+__dead void
 boot(int howto)
 {
 	struct device *mainbus;
