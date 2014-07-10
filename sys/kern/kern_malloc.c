@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc.c,v 1.107 2014/05/19 14:30:03 tedu Exp $	*/
+/*	$OpenBSD: kern_malloc.c,v 1.108 2014/06/21 19:24:57 daniel Exp $	*/
 /*	$NetBSD: kern_malloc.c,v 1.15.4.2 1996/06/13 17:10:56 cgd Exp $	*/
 
 /*
@@ -183,7 +183,7 @@ malloc(unsigned long size, int type, int flags)
 		if (pool_debug == 2)
 			yield();
 #endif
-		if (!cold) {
+		if (!cold && pool_debug) {
 			KERNEL_UNLOCK();
 			KERNEL_LOCK();
 		}
