@@ -632,8 +632,7 @@ boot(int howto)
 		vfs_shutdown();
 
 		/*
-		 * If we've been adjusting the clock, the todr
-		 * will be out of synch; adjust it now.
+		 * XXX
 		 * Do this only if the TOD clock has already been read out
 		 * successfully by inittodr() or set by an explicit call
 		 * to resettodr() (e.g. from settimeofday()).

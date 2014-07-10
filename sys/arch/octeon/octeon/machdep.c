@@ -688,16 +688,9 @@ boot(int howto)
 		/* fill curproc with live object */
 		if (curproc == NULL)
 			curproc = &proc0;
-		/*
-		 * Synchronize the disks...
-		 */
 		waittime = 0;
 		vfs_shutdown();
 
-		/*
-		 * If we've been adjusting the clock, the todr will be out of
-		 * sync; adjust it now.
-		 */
 		if ((howto & RB_TIMEBAD) == 0) {
 			resettodr();
 		} else {
