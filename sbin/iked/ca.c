@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.29 2014/05/05 18:56:42 markus Exp $	*/
+/*	$OpenBSD: ca.c,v 1.30 2014/05/07 12:57:13 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -43,6 +43,7 @@
 #include <openssl/pem.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
+#include <openssl/rsa.h>
 
 #include "iked.h"
 #include "ikev2.h"

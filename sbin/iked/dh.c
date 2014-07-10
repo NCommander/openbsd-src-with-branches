@@ -1,4 +1,4 @@
-/*	$OpenBSD: dh.c,v 1.10 2013/01/08 10:38:19 reyk Exp $	*/
+/*	$OpenBSD: dh.c,v 1.11 2013/11/14 12:30:35 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -23,6 +23,7 @@
 #include <openssl/dh.h>
 #include <openssl/ec.h>
 #include <openssl/ecdh.h>
+#include <openssl/bn.h>
 
 #include "dh.h"
 
