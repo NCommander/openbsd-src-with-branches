@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.7 2003/05/14 01:34:35 millert Exp $	*/
+/*	$OpenBSD: config.h,v 1.8 2003/06/03 02:56:14 millert Exp $	*/
 
 /*
  * Copyright (c) 1993 Michael A. Cooper
@@ -53,19 +53,6 @@
 #else
 #	include "mypaths.h"
 #endif
-
-/*
- * Define _PATH_OLDRDIST to be the name of the original rdist that
- * was distributed with 4.3BSD.  
- * 
- * If you want to be backwards compability with the old rdist, uncomment
- # the "#define" line.  If you don't want to be backwards compability or 
- * don't have the old rdist, then uncomment the "#undef" line.
- */
-#ifndef _PATH_OLDRDIST
-#define _PATH_OLDRDIST	"/usr/ucb/oldrdist"	/* Enable compat */
-#endif
-/*#undef  _PATH_OLDRDIST*/				/* Disable compat */
 
 /*
  * Check to see if file is on a NFS.  If it is, the file is
