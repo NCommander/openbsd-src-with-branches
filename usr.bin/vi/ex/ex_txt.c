@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_txt.c,v 1.10 2009/10/27 23:59:47 deraadt Exp $	*/
+/*	$OpenBSD: ex_txt.c,v 1.11 2013/11/25 23:27:11 krw Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "../common/common.h"
+#include "../vi/vi.h"
 
 /*
  * !!!
