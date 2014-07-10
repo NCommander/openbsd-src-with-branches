@@ -198,7 +198,8 @@ bootsync(int howto)
 {
 	static int bootsyncdone = 0;
 
-	if (bootsyncdone) return;
+	if (bootsyncdone)
+		return;
 
 	bootsyncdone = 1;
 
