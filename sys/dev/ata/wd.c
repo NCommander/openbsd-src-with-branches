@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.113 2013/10/14 23:26:23 krw Exp $ */
+/*	$OpenBSD: wd.c,v 1.114 2013/10/14 23:33:13 krw Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -77,8 +77,6 @@
 #include <sys/vnode.h>
 #include <sys/dkio.h>
 #include <sys/reboot.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <machine/intr.h>
 #include <machine/bus.h>

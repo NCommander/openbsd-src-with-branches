@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_ixgb.h,v 1.13 2010/08/27 08:24:53 deraadt Exp $ */
+/* $OpenBSD: if_ixgb.h,v 1.14 2013/08/07 01:06:35 bluhm Exp $ */
 
 #ifndef _IXGB_H_DEFINED_
 #define _IXGB_H_DEFINED_
@@ -71,7 +71,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <net/bpf.h>
 #endif
 
-#include <uvm/uvm_extern.h>
+typedef int	boolean_t;
+#define TRUE	1
+#define FALSE	0
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
