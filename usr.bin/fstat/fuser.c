@@ -1,4 +1,4 @@
-/*	$OpenBSD: fuser.c,v 1.2 2009/07/19 12:56:19 millert Exp $	*/
+/*	$OpenBSD: fuser.c,v 1.3 2013/10/22 16:40:28 guenther Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -46,6 +46,7 @@
 #include <sys/stat.h>
 #include <sys/sysctl.h>
 #define _KERNEL /* for DTYPE_VNODE */
+#include <sys/ucred.h>
 #include <sys/file.h>
 #undef _KERNEL
 
