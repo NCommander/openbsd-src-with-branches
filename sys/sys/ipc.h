@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipc.h,v 1.10 2004/07/15 11:24:46 millert Exp $	*/
+/*	$OpenBSD: ipc.h,v 1.11 2011/01/03 23:08:07 guenther Exp $	*/
 /*	$NetBSD: ipc.h,v 1.15 1996/02/09 18:25:12 christos Exp $	*/
 
 /*
@@ -79,6 +79,8 @@ struct ipc_perm {
 #define	IPCID_TO_IX(id)		((id) & 0xffff)
 #define	IPCID_TO_SEQ(id)	(((id) >> 16) & 0xffff)
 #define	IXSEQ_TO_IPCID(ix,perm)	(((perm.seq) << 16) | (ix & 0xffff))
+
+struct ucred;
 
 int ipcperm(struct ucred *, struct ipc_perm *, int);
 
