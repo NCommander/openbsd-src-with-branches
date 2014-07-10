@@ -1,4 +1,4 @@
-/*	$OpenBSD: endian.h,v 1.20 2013/08/20 12:55:02 kettenis Exp $	*/
+/*	$OpenBSD: endian.h,v 1.21 2014/03/14 10:47:21 dlg Exp $	*/
 
 /*-
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -227,7 +227,7 @@ __END_DECLS
 
 #define htobem16(_x, _v) (*(__uint16_t *)(_x) = htobe16(_v))
 #define htobem32(_x, _v) (*(__uint32_t *)(_x) = htobe32(_v))
-#define htobem64(_x, _v) (*(__uint64_t *)(_x) = htole64(_v))
+#define htobem64(_x, _v) (*(__uint64_t *)(_x) = htobe64(_v))
 
 #endif /* MD_SWAPIO */
 
