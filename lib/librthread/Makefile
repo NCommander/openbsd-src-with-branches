@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2013/07/05 21:29:51 miod Exp $
+#	$OpenBSD: Makefile,v 1.37 2013/08/06 19:11:53 miod Exp $
 
 LIB=pthread
 LIBCSRCDIR=	${.CURDIR}/../libc
@@ -38,9 +38,6 @@ SRCS=	rthread.c \
 	sched_prio.c
 
 OBJS+= _atomic_lock.o cerror.o
-
-MAN+=	__tfork_thread.3
-MLINKS+=__tfork_thread.3 __tfork.2
 
 SRCDIR= ${.CURDIR}/../libpthread
 .include "${SRCDIR}/include/Makefile.inc"
