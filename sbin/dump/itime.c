@@ -1,4 +1,4 @@
-/*	$OpenBSD: itime.c,v 1.16 2007/09/10 14:29:53 tobias Exp $	*/
+/*	$OpenBSD: itime.c,v 1.17 2009/10/27 23:59:32 deraadt Exp $	*/
 /*	$NetBSD: itime.c,v 1.4 1997/04/15 01:09:50 lukem Exp $	*/
 
 /*-
@@ -124,7 +124,7 @@ getdumptime(void)
 	int i;
 	char *fname;
 
-	fname = disk;
+	fname = Uflag ? duid : disk;
 #ifdef FDEBUG
 	msg("Looking for name %s in dumpdates = %s for level = %c\n",
 		fname, dumpdates, level);
@@ -164,7 +164,7 @@ putdumptime(void)
 		quit("cannot rewrite %s: %s\n", dumpdates, strerror(errno));
 	fd = fileno(df);
 	(void) flock(fd, LOCK_EX);
-	fname = disk;
+	fname = Uflag ? duid : disk;
 	free((char *)ddatev);
 	ddatev = 0;
 	nddates = 0;
