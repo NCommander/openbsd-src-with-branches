@@ -1,4 +1,4 @@
-/*	$OpenBSD: table_socketmap.c,v 1.3 2014/04/19 14:21:26 gilles Exp $	*/
+/*	$OpenBSD: table_socketmap.c,v 1.4 2014/07/08 13:49:09 eric Exp $	*/
 
 /*
  * Copyright (c) 2014 Gilles Chehade <gilles@poolp.org>
@@ -125,7 +125,7 @@ table_socketmap_connect(const char *s)
 	return 1;
 
 err:
-	if (sock) {
+	if (sock != -1) {
 		close(sock);
 		sock = -1;
 	}
