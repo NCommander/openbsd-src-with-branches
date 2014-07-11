@@ -105,6 +105,7 @@ interface_up(char *name)
 	if (ioctl(ifsock, SIOCGIFXFLAGS, (caddr_t)&ifr) < 0)
 		warn("SIOCGIFXFLAGS");
 	ifr.ifr_flags &= ~IFXF_NOINET6;
+	ifr.ifr_flags |= IFXF_AUTOCONF6;
 	if (ioctl(ifsock, SIOCSIFXFLAGS, (caddr_t)&ifr) < 0)
 		warn("SIOCSIFXFLAGS");
 
