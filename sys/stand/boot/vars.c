@@ -1,4 +1,4 @@
-/*	$OpenBSD: vars.c,v 1.12 2004/06/24 22:41:39 tom Exp $	*/
+/*	$OpenBSD: vars.c,v 1.14 2009/04/30 01:12:44 dlg Exp $	*/
 
 /*
  * Copyright (c) 1998-2000 Michael Shalayeff
@@ -190,10 +190,6 @@ Xhowto(void)
 			putchar('-');
 			if (cmd.boothowto & RB_ASKNAME)
 				putchar('a');
-#ifdef notused
-			if (cmd.boothowto & RB_HALT)
-				putchar('b');
-#endif
 			if (cmd.boothowto & RB_CONFIG)
 				putchar('c');
 			if (cmd.boothowto & RB_SINGLE)
@@ -221,15 +217,6 @@ bootparse(int i)
 				case 'a':
 					howto |= RB_ASKNAME;
 					break;
-#ifdef notused
-	/*
-	 * one day i get the same nice drink i was having
-	 * and figure out what is it supposed to be used for
-	 */
-				case 'b':
-					howto |= RB_HALT;
-					break;
-#endif
 				case 'c':
 					howto |= RB_CONFIG;
 					break;
