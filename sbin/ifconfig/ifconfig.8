@@ -31,7 +31,7 @@
 .\"
 .\"     @(#)ifconfig.8	8.4 (Berkeley) 6/1/94
 .\"
-.Dd $Mdocdate: June 23 2014 $
+.Dd $Mdocdate: July 2 2014 $
 .Dt IFCONFIG 8
 .Os
 .Sh NAME
@@ -151,6 +151,13 @@ This is currently implemented for mapping between
 DARPA Internet addresses and Ethernet addresses.
 .It Fl arp
 Disable the use of ARP.
+.It Cm autoconf
+Enable autoconfiguration.
+Valid for
+.Xr inet6
+only, controls wether router advertisements will be accepted on this interface.
+.It Fl autoconf
+Disable autoconfiguration.
 .It Cm broadcast Ar addr
 (inet only)
 Specify the address to use to represent broadcasts to the
