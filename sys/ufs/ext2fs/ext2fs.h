@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs.h,v 1.16 2014/05/27 14:31:24 krw Exp $	*/
+/*	$OpenBSD: ext2fs.h,v 1.17 2014/07/10 09:24:18 pelikan Exp $	*/
 /*	$NetBSD: ext2fs.h,v 1.10 2000/01/28 16:00:23 bouyer Exp $	*/
 
 /*
@@ -156,10 +156,15 @@ struct m_ext2fs {
 	int32_t	e2fs_ngdb;	/* number of group descriptor block */
 	int32_t	e2fs_ipb;	/* number of inodes per block */
 	int32_t	e2fs_itpg;	/* number of inode table per group */
+	off_t	e2fs_maxfilesize;	/* depends on LARGE/HUGE flags */
 	struct	ext2_gd *e2fs_gd; /* group descriptors */
 };
 
-
+static inline int
+e2fs_overflow(struct m_ext2fs *fs, off_t lower, off_t value)
+{
+	return (value < lower || value > fs->e2fs_maxfilesize);
+}
 
 /*
  * Filesystem identification
