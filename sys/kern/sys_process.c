@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_process.c,v 1.60 2014/03/30 21:54:48 guenther Exp $	*/
+/*	$OpenBSD: sys_process.c,v 1.61 2014/05/04 05:03:26 guenther Exp $	*/
 /*	$NetBSD: sys_process.c,v 1.55 1996/05/15 06:17:47 tls Exp $	*/
 
 /*-
@@ -492,7 +492,7 @@ sys_ptrace(struct proc *p, void *v, register_t *retval)
 			struct process *ppr;
 
 			ppr = prfind(tr->ps_oppid);
-			proc_reparent(tr, ppr ? ppr : initproc->p_p);
+			proc_reparent(tr, ppr ? ppr : initprocess);
 		}
 
 		/* not being traced any more */

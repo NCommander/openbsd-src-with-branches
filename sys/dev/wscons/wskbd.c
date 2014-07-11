@@ -1,4 +1,4 @@
-/* $OpenBSD: wskbd.c,v 1.77 2014/05/05 21:25:00 mpi Exp $ */
+/* $OpenBSD: wskbd.c,v 1.78 2014/05/15 09:29:38 mpi Exp $ */
 /* $NetBSD: wskbd.c,v 1.80 2005/05/04 01:52:16 augustss Exp $ */
 
 /*
@@ -1505,7 +1505,7 @@ internal_command(struct wskbd_softc *sc, u_int *type, keysym_t ksym,
 #endif
 		case 1:
 			kbd_reset = 0;
-			psignal(initproc, SIGUSR1);
+			prsignal(initprocess, SIGUSR1);
 			break;
 		default:
 			break;

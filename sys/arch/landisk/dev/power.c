@@ -1,4 +1,4 @@
-/*	$OpenBSD: power.c,v 1.4 2007/06/15 18:17:25 miod Exp $	*/
+/*	$OpenBSD: power.c,v 1.5 2011/06/24 19:47:48 naddy Exp $	*/
 
 /*
  * Copyright (c) 2007 Martin Reindl.
@@ -107,7 +107,7 @@ power_intr(void *arg)
 		_reg_write_1(LANDISK_PWRSW_INTCLR, 1);
 		if (allowpowerdown == 1) {
 			allowpowerdown = 0;
-			psignal(initproc, SIGUSR1);
+			prsignal(initprocess, SIGUSR1);
 		}
 		return (1);
 	}
