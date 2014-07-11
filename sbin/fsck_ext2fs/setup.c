@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.19 2013/11/22 04:38:02 guenther Exp $	*/
+/*	$OpenBSD: setup.c,v 1.20 2014/05/22 14:04:41 krw Exp $	*/
 /*	$NetBSD: setup.c,v 1.1 1997/06/11 11:22:01 bouyer Exp $	*/
 
 /*
@@ -271,6 +271,9 @@ readsb(int listerr)
 	}
 	if (sblock.e2fs.e2fs_log_bsize > 2) {
 		badsb(listerr, "BAD LOG_BSIZE"); return (0);
+	}
+	if (sblock.e2fs.e2fs_bpg == 0) {
+		badsb(listerr, "BAD BLOCKS PER GROUP"); return (0);
 	}
 
 	/* compute the dynamic fields of the in-memory sb */
