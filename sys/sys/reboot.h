@@ -1,4 +1,4 @@
-/*	$OpenBSD: reboot.h,v 1.15 2014/07/10 12:13:48 uebayasi Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: reboot.h,v 1.9 1996/04/22 01:23:25 christos Exp $	*/
 
 /*
@@ -96,6 +96,7 @@
 #if	defined(_KERNEL) && !defined(_STANDALONE) && !defined(_LOCORE)
 
 __BEGIN_DECLS
+__dead void	reboot(int);
 __dead void	boot(int);
 __END_DECLS
 

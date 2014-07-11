@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.163 2014/01/24 10:25:56 krw Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -1163,7 +1163,7 @@ setroot(struct device *bootdv, int part, int exitflags)
 			cnpollc(FALSE);
 			splx(s);
 			if (strcmp(buf, "exit") == 0)
-				boot(exitflags);
+				reboot(exitflags);
 			if (len == 0 && bootdv != NULL) {
 				strlcpy(buf, bootdv->dv_xname, sizeof buf);
 				len = strlen(buf);
@@ -1200,7 +1200,7 @@ setroot(struct device *bootdv, int part, int exitflags)
 			cnpollc(FALSE);
 			splx(s);
 			if (strcmp(buf, "exit") == 0)
-				boot(exitflags);
+				reboot(exitflags);
 			if (len == 0 && rootdv != NULL) {
 				switch (rootdv->dv_class) {
 				case DV_IFNET:

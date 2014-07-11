@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.80 2013/11/25 00:33:21 djm Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -217,7 +217,8 @@ panic(const char *fmt, ...)
 	else
 		db_stack_dump();
 #endif
-	boot(bootopt);
+	reboot(bootopt);
+	/* NOTREACHED */
 }
 
 /*
