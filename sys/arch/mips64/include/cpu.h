@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.100 2014/03/31 20:21:19 miod Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -258,6 +258,8 @@ void	smp_rendezvous_cpus(unsigned long, void (*)(void *), void *arg);
 #define cpu_unidle(ci)
 #define get_cpu_info(i)			(&cpu_info_primary)
 #endif
+
+#define CPU_BUSY_CYCLE()	do {} while (0)
 
 extern void (*md_startclock)(struct cpu_info *);
 void	cp0_calibrate(struct cpu_info *);

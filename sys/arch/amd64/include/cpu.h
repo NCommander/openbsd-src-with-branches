@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.83 2014/02/13 23:11:06 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -207,6 +207,8 @@ void cpu_init_idle_pcbs(void);
 void cpu_kick(struct cpu_info *);
 void cpu_unidle(struct cpu_info *);
 
+#define CPU_BUSY_CYCLE()	__asm volatile("pause": : : "memory")
+
 #else /* !MULTIPROCESSOR */
 
 #define MAXCPUS		1
@@ -218,6 +220,8 @@ extern struct cpu_info cpu_info_primary;
 
 #define cpu_kick(ci)
 #define cpu_unidle(ci)
+
+#define CPU_BUSY_CYCLE()	do {} while (0)
 
 #endif
 

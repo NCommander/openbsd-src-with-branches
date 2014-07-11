@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.85 2013/03/23 16:12:22 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -139,6 +139,8 @@ curcpu(void)
 #define	CPU_INFO_ITERATOR	int
 #define CPU_INFO_FOREACH(cii, ci) \
 	for (cii = 0, ci = &cpu_info[0]; cii < ncpus; cii++, ci++)
+
+#define CPU_BUSY_CYCLE()	do {} while (0)
 
 /* types */
 enum hppa_cpu_type {

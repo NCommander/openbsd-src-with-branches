@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.60 2013/05/31 17:00:58 tedu Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -211,6 +211,8 @@ void	m88k_broadcast_ipi(int);
 #define	CPU_IS_PRIMARY(ci)	1
 
 #endif	/* MULTIPROCESSOR */
+
+#define CPU_BUSY_CYCLE()	do {} while (0)
 
 void	set_cpu_number(cpuid_t);
 

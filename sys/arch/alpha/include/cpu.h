@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.51 2014/01/26 17:40:11 miod Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: cpu.h,v 1.45 2000/08/21 02:03:12 thorpej Exp $ */
 
 /*-
@@ -250,6 +250,8 @@ void	cpu_unidle(struct cpu_info *);
 #define cpu_unidle(ci)			do { /* nothing */ } while (0)
 
 #endif /* MULTIPROCESSOR */
+
+#define CPU_BUSY_CYCLE()	do {} while (0)
 
 #define	curproc		curcpu()->ci_curproc
 #define	fpcurproc	curcpu()->ci_fpcurproc
