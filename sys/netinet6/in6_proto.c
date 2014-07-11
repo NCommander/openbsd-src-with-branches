@@ -275,7 +275,6 @@ int	ip6_multipath = 0;	/* no using multipath routes unless ... */
 int	ip6_sendredirects = 1;
 int	ip6_defhlim = IPV6_DEFHLIM;
 int	ip6_defmcasthlim = IPV6_DEFAULT_MULTICAST_HOPS;
-int	ip6_accept_rtadv = 0;	/* enabling forwarding and rtadv concurrently is dangerous */
 int	ip6_maxfragpackets = 200;
 int	ip6_maxfrags = 200;
 int	ip6_log_interval = 5;

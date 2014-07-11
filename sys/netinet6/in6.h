@@ -623,7 +623,7 @@ ifatoia6(struct ifaddr *ifa)
 	{ "maxfragpackets", CTLTYPE_INT }, \
 	{ "sourcecheck", CTLTYPE_INT }, \
 	{ "sourcecheck_logint", CTLTYPE_INT }, \
-	{ "accept_rtadv", CTLTYPE_INT }, \
+	{ 0, 0 }, \
 	{ 0, 0 }, \
 	{ "log_interval", CTLTYPE_INT }, \
 	{ "hdrnestlimit", CTLTYPE_INT }, \
@@ -677,7 +677,7 @@ ifatoia6(struct ifaddr *ifa)
 	&ip6_maxfragpackets, \
 	NULL, \
 	NULL, \
-	&ip6_accept_rtadv, \
+	NULL, \
 	NULL, \
 	&ip6_log_interval, \
 	&ip6_hdrnestlimit, \
