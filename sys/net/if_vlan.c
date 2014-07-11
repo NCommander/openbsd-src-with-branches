@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.104 2014/05/05 10:00:45 henning Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.106 2014/07/09 09:30:49 henning Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -213,7 +213,7 @@ vlan_start(struct ifnet *ifp)
 
 #if NBPFILTER > 0
 		if (ifp->if_bpf)
-			bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_OUT);
+			bpf_mtap_stripvlan(ifp->if_bpf, m, BPF_DIRECTION_OUT);
 #endif
 
 		/*
