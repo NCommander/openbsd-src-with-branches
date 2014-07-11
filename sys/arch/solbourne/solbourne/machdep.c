@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.36 2014/07/10 20:15:27 uebayasi Exp $	*/
+/*	$OpenBSD$	*/
 /*	OpenBSD: machdep.c,v 1.105 2005/04/11 15:13:01 deraadt Exp 	*/
 
 /*
@@ -529,11 +529,6 @@ boot(int howto)
 	fb_unblank();
 	boothowto = howto;
 	if ((howto & RB_NOSYNC) == 0 && waittime < 0) {
-		extern struct proc proc0;
-
-		/* make sure there's a process to charge for I/O in sync() */
-		if (curproc == NULL)
-			curproc = &proc0;
 		waittime = 0;
 		vfs_shutdown();
 

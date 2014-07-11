@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.143 2014/07/10 20:15:27 uebayasi Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -842,10 +842,6 @@ boot(int howto)
 
 	boothowto = howto;
 	if ((howto & RB_NOSYNC) == 0 && waittime < 0) {
-		extern struct proc proc0;
-		/* fill curproc with live object */
-		if (curproc == NULL)
-			curproc = &proc0;
 		waittime = 0;
 		vfs_shutdown();
 
