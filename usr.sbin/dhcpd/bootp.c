@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootp.c,v 1.13 2006/03/13 19:57:42 otto Exp $	*/
+/*	$OpenBSD: bootp.c,v 1.14 2014/06/11 16:45:15 pelikan Exp $	*/
 
 /*
  * BOOTP Protocol support.
@@ -325,7 +325,7 @@ lose:
 		to.sin_addr = raw.giaddr;
 		to.sin_port = server_port;
 
-		(void) send_packet(packet->interface, &raw,
+		(void) packet->interface->send_packet(packet->interface, &raw,
 		    outgoing.packet_length, from, &to, packet->haddr);
 		return;
 	}
@@ -345,6 +345,6 @@ lose:
 	}
 
 	errno = 0;
-	(void) send_packet(packet->interface, &raw,
+	(void) packet->interface->send_packet(packet->interface, &raw,
 	    outgoing.packet_length, from, &to, packet->haddr);
 }
