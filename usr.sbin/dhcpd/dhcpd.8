@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dhcpd.8,v 1.22 2014/01/03 16:21:58 jmc Exp $
+.\"	$OpenBSD: dhcpd.8,v 1.23 2014/07/11 09:42:27 yasuoka Exp $
 .\"
 .\" Copyright (c) 1995, 1996 The Internet Software Consortium.
 .\" All rights reserved.
@@ -36,7 +36,7 @@
 .\" see ``http://www.isc.org/''.  To learn more about Vixie
 .\" Enterprises, see ``http://www.vix.com''.
 .\"
-.Dd $Mdocdate: January 3 2014 $
+.Dd $Mdocdate: July 11 2014 $
 .Dt DHCPD 8
 .Os
 .Sh NAME
@@ -248,7 +248,7 @@ Only DHCPINFORM messages can be handled on this socket, other messages are
 discarded.
 With this option,
 .Nm
-can answer DHCPINFORM from the clients on on non ethernet interfaces
+can answer DHCPINFORM from the clients on non ethernet interfaces
 (eg.
 .Xr tun 4
 or
