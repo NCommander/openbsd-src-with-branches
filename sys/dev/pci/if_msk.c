@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_msk.c,v 1.103 2014/07/08 05:35:18 dlg Exp $	*/
+/*	$OpenBSD: if_msk.c,v 1.104 2014/07/09 00:15:20 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -2140,7 +2140,7 @@ msk_stop(struct sk_if_softc *sc_if, int softonly)
 	while ((dma = SIMPLEQ_FIRST(&sc_if->sk_txmap_head))) {
 		SIMPLEQ_REMOVE_HEAD(&sc_if->sk_txmap_head, link);
 		bus_dmamap_destroy(sc->sc_dmatag, dma->dmamap);
-		free(dma, M_DEVBUF);
+		free(dma, M_DEVBUF, 0);
 	}
 }
 

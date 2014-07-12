@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemul_dumb.c,v 1.6 2007/11/26 16:56:42 miod Exp $ */
+/* $OpenBSD: wsemul_dumb.c,v 1.11 2013/10/18 22:06:41 miod Exp $ */
 /* $NetBSD: wsemul_dumb.c,v 1.7 2000/01/05 11:19:36 drochner Exp $ */
 
 /*
@@ -299,7 +299,7 @@ wsemul_dumb_detach(void *cookie, u_int *crowp, u_int *ccolp)
 	*crowp = edp->crow;
 	*ccolp = edp->ccol;
 	if (edp != &wsemul_dumb_console_emuldata)
-		free(edp, M_DEVBUF);
+		free(edp, M_DEVBUF, 0);
 }
 
 void

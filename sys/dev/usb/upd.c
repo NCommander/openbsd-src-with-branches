@@ -1,4 +1,4 @@
-/*	$OpenBSD: upd.c,v 1.8 2014/04/29 07:23:40 andre Exp $ */
+/*	$OpenBSD: upd.c,v 1.9 2014/05/12 09:50:44 mpi Exp $ */
 
 /*
  * Copyright (c) 2014 Andre de Oliveira <andre@openbsd.org>
@@ -251,8 +251,8 @@ upd_detach(struct device *self, int flags)
 		DPRINTF(("upd_detach: %s\n", sensor->ksensor.desc));
 	}
 
-	free(sc->sc_reports, M_USBDEV);
-	free(sc->sc_sensors, M_USBDEV);
+	free(sc->sc_reports, M_USBDEV, 0);
+	free(sc->sc_sensors, M_USBDEV, 0);
 	DPRINTF(("upd_detach: complete\n"));
 	return (0);
 }

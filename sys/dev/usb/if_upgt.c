@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.61 2014/03/19 10:09:19 mpi Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.62 2014/07/12 07:59:23 mpi Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -628,7 +628,7 @@ void
 upgt_fw_free(struct upgt_softc *sc)
 {
 	if (sc->sc_fw != NULL) {
-		free(sc->sc_fw, M_DEVBUF);
+		free(sc->sc_fw, M_DEVBUF, 0);
 		sc->sc_fw = NULL;
 		DPRINTF(1, "%s: firmware freed\n", sc->sc_dev.dv_xname);
 	}

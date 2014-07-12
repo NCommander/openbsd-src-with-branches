@@ -1,4 +1,4 @@
-/*	$OpenBSD: fms.c,v 1.24 2013/05/24 07:58:46 ratchov Exp $ */
+/*	$OpenBSD: fms.c,v 1.25 2013/11/15 16:46:27 brad Exp $ */
 /*	$NetBSD: fms.c,v 1.5.4.1 2000/06/30 16:27:50 simonb Exp $	*/
 
 /*-
@@ -737,7 +737,7 @@ fail_create:
 fail_map:
 	bus_dmamem_free(sc->sc_dmat, &p->seg, 1);
 fail_alloc:
-	free(p, pool);
+	free(p, pool, 0);
 	return 0;
 }
 
@@ -755,7 +755,7 @@ fms_free(void *addr, void *ptr, int pool)
 			bus_dmamem_free(sc->sc_dmat, &p->seg, 1);
 			
 			*pp = p->next;
-			free(p, pool);
+			free(p, pool, 0);
 			return;
 		}
 

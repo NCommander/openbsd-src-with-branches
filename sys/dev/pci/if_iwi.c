@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwi.c,v 1.115 2013/12/03 22:37:24 kettenis Exp $	*/
+/*	$OpenBSD: if_iwi.c,v 1.116 2013/12/06 21:03:04 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -2311,7 +2311,7 @@ iwi_init(struct ifnet *ifp)
 		goto fail2;
 	}
 
-	free(data, M_DEVBUF);
+	free(data, M_DEVBUF, 0);
 	sc->sc_flags |= IWI_FLAG_FW_INITED;
 
 	if ((error = iwi_config(sc)) != 0) {
@@ -2330,7 +2330,7 @@ iwi_init(struct ifnet *ifp)
 
 	return 0;
 
-fail2:	free(data, M_DEVBUF);
+fail2:	free(data, M_DEVBUF, 0);
 fail1:	iwi_stop(ifp, 0);
 	return error;
 }

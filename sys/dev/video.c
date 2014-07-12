@@ -1,4 +1,4 @@
-/*	$OpenBSD: video.c,v 1.29 2014/03/28 17:57:11 mpi Exp $	*/
+/*	$OpenBSD: video.c,v 1.30 2014/07/08 17:19:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -431,7 +431,7 @@ videodetach(struct device *self, int flags)
 	int maj, mn;
 
 	if (sc->sc_fbuffer != NULL)
-		free(sc->sc_fbuffer, M_DEVBUF);
+		free(sc->sc_fbuffer, M_DEVBUF, 0);
 
 	/* locate the major number */
 	for (maj = 0; maj < nchrdev; maj++)

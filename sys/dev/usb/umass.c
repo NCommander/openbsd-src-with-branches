@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass.c,v 1.64 2013/05/30 16:15:02 deraadt Exp $ */
+/*	$OpenBSD: umass.c,v 1.65 2013/11/06 14:37:31 pirofti Exp $ */
 /*	$NetBSD: umass.c,v 1.116 2004/06/30 05:53:46 mycroft Exp $	*/
 
 /*
@@ -656,7 +656,7 @@ umass_detach(struct device *self, int flags)
 	if (scbus != NULL) {
 		if (scbus->sc_child != NULL)
 			rv = config_detach(scbus->sc_child, flags);
-		free(scbus, M_DEVBUF);
+		free(scbus, M_DEVBUF, 0);
 		sc->bus = NULL;
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hidkbd.c,v 1.11 2014/03/23 11:54:59 mpi Exp $	*/
+/*	$OpenBSD: hidkbd.c,v 1.12 2014/05/12 09:50:44 mpi Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -249,7 +249,7 @@ hidkbd_detach(struct hidkbd *kbd, int flags)
 		rv = config_detach(kbd->sc_wskbddev, flags);
 
 	if (kbd->sc_var != NULL)
-		free(kbd->sc_var, M_DEVBUF);
+		free(kbd->sc_var, M_DEVBUF, 0);
 
 	return (rv);
 }

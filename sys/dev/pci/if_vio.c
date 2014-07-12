@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vio.c,v 1.16 2014/06/17 19:46:13 sf Exp $	*/
+/*	$OpenBSD: if_vio.c,v 1.17 2014/07/08 05:35:19 dlg Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch, Alexander Fiveg.
@@ -473,7 +473,7 @@ err_reqs:
 			bus_dmamap_destroy(vsc->sc_dmat, sc->sc_rx_dmamaps[i]);
 	}
 	if (sc->sc_arrays) {
-		free(sc->sc_arrays, M_DEVBUF);
+		free(sc->sc_arrays, M_DEVBUF, 0);
 		sc->sc_arrays = 0;
 	}
 err_hdr:

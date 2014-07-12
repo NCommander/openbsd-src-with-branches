@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.156 2014/06/13 08:26:09 deraadt Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.157 2014/06/14 18:01:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Theo de Raadt.
@@ -842,7 +842,7 @@ randomread(dev_t dev, struct uio *uio, int ioflag)
 	if (myctx)
 		explicit_bzero(&lctx, sizeof(lctx));
 	explicit_bzero(buf, POOLBYTES);
-	free(buf, M_TEMP);
+	free(buf, M_TEMP, 0);
 	return ret;
 }
 
@@ -875,7 +875,7 @@ randomwrite(dev_t dev, struct uio *uio, int flags)
 		arc4_init(NULL, NULL);
 
 	explicit_bzero(buf, POOLBYTES);
-	free(buf, M_TEMP);
+	free(buf, M_TEMP, 0);
 	return ret;
 }
 

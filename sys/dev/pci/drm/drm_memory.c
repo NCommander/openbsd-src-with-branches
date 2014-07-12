@@ -1,4 +1,4 @@
-/* $OpenBSD: drm_memory.c,v 1.24 2012/12/06 15:05:21 mpi Exp $ */
+/* $OpenBSD: drm_memory.c,v 1.25 2014/03/09 07:42:29 jsg Exp $ */
 /*-
  *Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -68,7 +68,7 @@ drm_realloc(void *oldpt, size_t oldsize, size_t size)
 		return NULL;
 	if (oldpt && oldsize) {
 		memcpy(pt, oldpt, min(oldsize, size));
-		free(oldpt, M_DRM);
+		free(oldpt, M_DRM, 0);
 	}
 	return pt;
 }
@@ -77,7 +77,7 @@ void
 drm_free(void *pt)
 {
 	if (pt != NULL)
-		free(pt, M_DRM);
+		free(pt, M_DRM, 0);
 }
 
 int

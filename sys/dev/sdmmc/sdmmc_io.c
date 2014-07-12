@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc_io.c,v 1.18 2010/08/19 17:54:12 jasper Exp $	*/
+/*	$OpenBSD: sdmmc_io.c,v 1.19 2010/08/24 14:52:23 blambert Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -682,7 +682,7 @@ sdmmc_intr_disestablish(void *cookie)
 	}
 	splx(s);
 
-	free(ih, M_DEVBUF);
+	free(ih, M_DEVBUF, 0);
 }
 
 /*

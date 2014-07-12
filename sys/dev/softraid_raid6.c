@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid6.c,v 1.60 2014/01/22 04:24:29 jsing Exp $ */
+/* $OpenBSD: softraid_raid6.c,v 1.61 2014/01/22 05:11:36 jsing Exp $ */
 /*
  * Copyright (c) 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2009 Jordan Hargrave <jordan@openbsd.org>
@@ -684,7 +684,7 @@ sr_raid6_intr(struct buf *bp)
 			/* Calculate q-parity */
 			sr_raid6_xorq(pq->qbuf, ccb->ccb_buf.b_data,
 			    ccb->ccb_buf.b_bcount, pq->gn);
-		free(pq, M_DEVBUF);
+		free(pq, M_DEVBUF, 0);
 		ccb->ccb_opaque = NULL;
 	}
 

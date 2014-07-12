@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvscom.c,v 1.29 2013/11/15 08:25:31 pirofti Exp $ */
+/*	$OpenBSD: uvscom.c,v 1.30 2013/11/15 10:17:39 pirofti Exp $ */
 /*	$NetBSD: uvscom.c,v 1.9 2003/02/12 15:36:20 ichiro Exp $	*/
 /*-
  * Copyright (c) 2001-2002, Shunsuke Akiyama <akiyama@jp.FreeBSD.org>.
@@ -372,7 +372,7 @@ uvscom_detach(struct device *self, int flags)
 	if (sc->sc_intr_pipe != NULL) {
 		usbd_abort_pipe(sc->sc_intr_pipe);
 		usbd_close_pipe(sc->sc_intr_pipe);
-		free(sc->sc_intr_buf, M_USBDEV);
+		free(sc->sc_intr_buf, M_USBDEV, 0);
 		sc->sc_intr_pipe = NULL;
 	}
 
@@ -779,7 +779,7 @@ uvscom_close(void *addr, int portno)
 			printf("%s: close interrupt pipe failed: %s\n",
 				sc->sc_dev.dv_xname,
 					   usbd_errstr(err));
-		free(sc->sc_intr_buf, M_USBDEV);
+		free(sc->sc_intr_buf, M_USBDEV, 0);
 		sc->sc_intr_pipe = NULL;
 	}
 }

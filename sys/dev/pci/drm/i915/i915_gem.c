@@ -1,4 +1,4 @@
-/*	$OpenBSD: i915_gem.c,v 1.72 2014/04/01 20:16:50 kettenis Exp $	*/
+/*	$OpenBSD: i915_gem.c,v 1.73 2014/05/12 19:29:16 kettenis Exp $	*/
 /*
  * Copyright (c) 2008-2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -2036,7 +2036,7 @@ err_pages:
 	return PTR_ERR(page);
 #else
 err_pages:
-	free(st, M_DRM);
+	free(st, M_DRM, 0);
 	return -ENOMEM;
 #endif
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vic.c,v 1.78 2014/07/08 05:35:19 dlg Exp $	*/
+/*	$OpenBSD: if_vic.c,v 1.79 2014/07/10 11:15:52 dlg Exp $	*/
 
 /*
  * Copyright (c) 2006 Reyk Floeter <reyk@openbsd.org>
@@ -627,11 +627,11 @@ vic_alloc_data(struct vic_softc *sc)
 
 	return (0);
 freetx:
-	free(sc->sc_txbuf, M_DEVBUF);
+	free(sc->sc_txbuf, M_DEVBUF, 0);
 	q = VIC_NRXRINGS;
 freerx:
 	while (q--)
-		free(sc->sc_rxq[q].bufs, M_DEVBUF);
+		free(sc->sc_rxq[q].bufs, M_DEVBUF, 0);
 
 	return (1);
 }

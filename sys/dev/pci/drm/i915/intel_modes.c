@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_modes.c,v 1.3 2013/08/13 10:23:51 jsg Exp $	*/
+/*	$OpenBSD: intel_modes.c,v 1.4 2014/01/21 04:47:38 kettenis Exp $	*/
 /*
  * Copyright (c) 2007 Dave Airlie <airlied@linux.ie>
  * Copyright (c) 2007, 2010 Intel Corporation
@@ -67,7 +67,7 @@ int intel_ddc_get_modes(struct drm_connector *connector,
 		return 0;
 
 	ret = intel_connector_update_modes(connector, edid);
-	free(edid, M_DRM);
+	free(edid, M_DRM, 0);
 
 	return ret;
 }

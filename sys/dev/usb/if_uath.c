@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.58 2014/03/19 10:09:19 mpi Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.59 2014/07/12 07:59:23 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -217,7 +217,7 @@ uath_attachhook(void *xsc)
 	}
 
 	error = uath_loadfirmware(sc, fw, size);
-	free(fw, M_DEVBUF);
+	free(fw, M_DEVBUF, 0);
 
 	if (error == 0) {
 		usb_port_status_t status;

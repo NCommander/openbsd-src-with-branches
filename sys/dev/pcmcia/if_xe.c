@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xe.c,v 1.42 2013/08/07 01:06:40 bluhm Exp $	*/
+/*	$OpenBSD: if_xe.c,v 1.43 2013/11/26 09:50:33 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist, Brandon Creighton, Job de Haas
@@ -428,7 +428,7 @@ bad:
 		pcmcia_io_free(pf, &psc->sc_pcioh);
 	if (state > 0)
 		pcmcia_function_disable(pa->pf);
-	free(cfe, M_DEVBUF);
+	free(cfe, M_DEVBUF, 0);
 }
 
 int
