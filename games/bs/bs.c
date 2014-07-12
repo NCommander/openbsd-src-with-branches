@@ -1,4 +1,4 @@
-/*	$OpenBSD: bs.c,v 1.23 2009/11/14 02:20:43 guenther Exp $	*/
+/*	$OpenBSD: bs.c,v 1.24 2013/08/29 20:22:11 naddy Exp $	*/
 /*
  * Copyright (c) 1986, Bruce Holloway
  * All rights reserved.
@@ -260,7 +260,6 @@ static void intro(void)
 	errx(1, "screen must be at least %dx%d.", PROMPTLINE + 3, COLWIDTH);
     }
 
-#ifdef PENGUIN
 #define	PR	(void)addstr
     (void)clear();
     (void)mvaddstr(4,29,"Welcome to Battleship!");
@@ -269,16 +268,15 @@ static void intro(void)
     PR("                           \\                     \\ \\\n");
     PR("                          \\ \\                   \\ \\ \\_____________\n");
     PR("                         \\ \\ \\_____________      \\ \\/            |\n");
-    PR("                          \\ \\/             \\      \\/             |\n");
-    PR("                           \\/               \\_____/              |__\n");
-    PR("           ________________/                                       |\n");
-    PR("           \\  S.S. Penguin                                         |\n");
-    PR("            \\                                                     /\n");
+    PR("                          \\ \\/     \\__/    \\      \\/             |\n");
+    PR("                           \\/     \\/  \\/    \\_____/              |__\n");
+    PR("           ________________/    /\\/  ..\\/                         |\n");
+    PR("           \\  S.S. Puffy        \\/\\___o/                          |\n");
+    PR("            \\                     / /\\ \\                          /\n");
     PR("             \\___________________________________________________/\n");
 
     (void) mvaddstr(22,27,"Hit any key to continue..."); (void)refresh();
     (void) getch();
-#endif /* PENGUIN */
 
 #ifdef A_COLOR
     start_color();
