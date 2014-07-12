@@ -1,4 +1,4 @@
-/*	$OpenBSD: interplayer.c,v 1.4 2000/06/29 07:39:44 pjanzen Exp $	*/
+/*	$OpenBSD: interplayer.c,v 1.5 2010/12/15 06:40:39 tedu Exp $	*/
 /*	$NetBSD: interplayer.c,v 1.2 1995/03/24 03:58:47 cgd Exp $	*/
 
 /*
@@ -123,10 +123,6 @@ battleplayer(foeplace)
 	Luckout = FALSE;
 	mvaddstr(4, 0, "Preparing for battle!\n");
 	refresh();
-
-#ifdef SYS5
-	flushinp();
-#endif
 
 	/* set up variables, file, etc. */
 	Player.p_status = S_INBATTLE;
