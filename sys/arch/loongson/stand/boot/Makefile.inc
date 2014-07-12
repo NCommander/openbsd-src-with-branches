@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile.inc,v 1.2 2010/02/17 21:25:49 miod Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 2012/11/04 16:30:44 matthieu Exp $
 
 NOMAN=
 S=		${.CURDIR}/../../../..
 BOOTDIR=	${S}/arch/loongson/stand/boot
 
-CPPFLAGS+=	${SAABI} -mno-abicalls -D_NO_ABICALLS \
+CPPFLAGS+=	${SAABI} -mno-abicalls -D_NO_ABICALLS -DCONSPEED=9600 \
 		-nostdinc -D__loongson__ \
 		-I${S} -I${S}/lib/libsa \
 		-I${.OBJDIR} -I${BOOTDIR}
