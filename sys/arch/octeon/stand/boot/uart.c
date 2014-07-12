@@ -123,8 +123,15 @@ cn30xxuartcngetc (dev_t dev)
 	/* 1/10th the time to transmit 1 character (estimate). */
 	d = cn30xxuart_delay();
 
+	if (dev & 0x80)
+		return octeon_xkphys_read_8(OCTEON_MIO_UART0_LSR) & LSR_RXRDY;
+
 	while ((octeon_xkphys_read_8(OCTEON_MIO_UART0_LSR) & LSR_RXRDY) == 0)
 		delay(d);
+
 	c = octeon_xkphys_read_8(OCTEON_MIO_UART0_RBR);
+	if (c == '\r')
+		c = '\n';
+
 	return (c);
 }
