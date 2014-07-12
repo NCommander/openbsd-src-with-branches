@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.315 2014/07/11 21:08:20 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.316 2014/07/12 09:04:21 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -228,6 +228,9 @@ routehandler(void)
 		goto done;
 
 	switch (rtm->rtm_type) {
+	case RTM_DESYNC:
+		warning("route socket buffer overflow");
+		break;
 	case RTM_NEWADDR:
 		ifam = (struct ifa_msghdr *)rtm;
 		if (ifam->ifam_index != ifi->index)
