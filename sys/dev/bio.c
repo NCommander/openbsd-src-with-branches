@@ -1,4 +1,4 @@
-/*	$OpenBSD: bio.c,v 1.13 2012/01/17 15:15:57 jsing Exp $	*/
+/*	$OpenBSD: bio.c,v 1.14 2012/01/20 12:38:20 jsing Exp $	*/
 
 /*
  * Copyright (c) 2002 Niklas Hallqvist.  All rights reserved.
@@ -134,7 +134,7 @@ bio_unregister(struct device *dev)
 
 		if (dev == bm->bm_dev) {
 			LIST_REMOVE(bm, bm_link);
-			free(bm, M_DEVBUF);
+			free(bm, M_DEVBUF, 0);
 		}
 	}
 }

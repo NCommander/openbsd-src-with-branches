@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.c,v 1.30 2011/12/03 03:29:13 krw Exp $
+/*	$OpenBSD: trm.c,v 1.31 2013/07/12 20:51:31 krw Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.c
@@ -2066,7 +2066,7 @@ trm_FinishSRB(struct trm_softc *sc, struct trm_scsi_req_q *pSRB)
 				sc_print_addr(xs->sc_link);
 				printf("trm_FinishSRB NO Device\n");
 #endif		
-				free(pDCB, M_DEVBUF);
+				free(pDCB, M_DEVBUF, 0);
 				sc->pDCB[target][lun] = NULL;
 				pDCB = NULL;
 

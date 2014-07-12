@@ -1,4 +1,4 @@
-/*	$OpenBSD: athn.c,v 1.80 2013/12/06 21:03:02 deraadt Exp $	*/
+/*	$OpenBSD: athn.c,v 1.81 2014/03/19 10:09:19 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -393,7 +393,7 @@ athn_detach(struct athn_softc *sc)
 	}
 	/* Free ROM copy. */
 	if (sc->eep != NULL)
-		free(sc->eep, M_DEVBUF);
+		free(sc->eep, M_DEVBUF, 0);
 
 	ieee80211_ifdetach(ifp);
 	if_detach(ifp);

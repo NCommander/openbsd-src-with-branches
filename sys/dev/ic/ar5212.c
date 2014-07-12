@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5212.c,v 1.53 2013/04/13 08:57:10 stsp Exp $	*/
+/*	$OpenBSD: ar5212.c,v 1.54 2014/07/09 16:36:13 stsp Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -457,12 +457,12 @@ void
 ar5k_ar5212_detach(struct ath_hal *hal)
 {
 	if (hal->ah_rf_banks != NULL)
-		free(hal->ah_rf_banks, M_DEVBUF);
+		free(hal->ah_rf_banks, M_DEVBUF, 0);
 
 	/*
 	 * Free HAL structure, assume interrupts are down
 	 */
-	free(hal, M_DEVBUF);
+	free(hal, M_DEVBUF, 0);
 }
 
 HAL_BOOL

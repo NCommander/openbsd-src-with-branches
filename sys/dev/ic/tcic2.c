@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcic2.c,v 1.9 2013/11/18 20:21:51 deraadt Exp $	*/
+/*	$OpenBSD: tcic2.c,v 1.10 2014/07/08 17:19:25 deraadt Exp $	*/
 /*	$NetBSD: tcic2.c,v 1.3 2000/01/13 09:38:17 joda Exp $	*/
 
 #undef	TCICDEBUG
@@ -499,7 +499,7 @@ tcic_event_thread(arg)
 			panic("tcic_event_thread: unknown event %d",
 			    pe->pe_type);
 		}
-		free(pe, M_TEMP);
+		free(pe, M_TEMP, 0);
 	}
 
 	h->event_thread = NULL;

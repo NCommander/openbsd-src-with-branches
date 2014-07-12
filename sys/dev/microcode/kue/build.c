@@ -1,4 +1,4 @@
-/*	$OpenBSD: build.c,v 1.4 2007/01/09 16:27:23 deraadt Exp $	*/
+/*	$OpenBSD: build.c,v 1.4 2007/01/09 16:30:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Theo de Raadt <deraadt@openbsd.org>
@@ -65,7 +65,7 @@ main(int argc, char *argv[])
 		err(1, "%s", FILENAME);
 	if (rlen != len)
 		errx(1, "%s: short write", FILENAME);
-	free(kf);
+	free(kf, 0);
 	close(fd);
 	return 0;
 }

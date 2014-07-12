@@ -1,4 +1,4 @@
-/*	$OpenBSD: atk0110.c,v 1.8 2014/02/21 16:25:57 deraadt Exp $	*/
+/*	$OpenBSD: atk0110.c,v 1.9 2014/05/21 02:14:07 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2009 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -330,7 +330,7 @@ aibs_add_sensor(struct aibs_softc *sc, char *name)
 		printf("%s: aibs_add_sensor: %s: unknown sensor type %llx\n",
 		    DEVNAME(sc), name, ri.v_package[0]->v_integer);
 		aml_freevalue(&ri);
-		free(as, M_DEVBUF);
+		free(as, M_DEVBUF, 0);
 		return;
 	}
 	strlcpy(as->s.desc, ri.v_package[1]->v_string,

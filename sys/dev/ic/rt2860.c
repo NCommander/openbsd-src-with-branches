@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2860.c,v 1.71 2013/12/06 21:03:03 deraadt Exp $	*/
+/*	$OpenBSD: rt2860.c,v 1.72 2014/03/19 10:09:19 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -399,7 +399,7 @@ rt2860_detach(void *xsc)
 	rt2860_free_tx_pool(sc);
 
 	if (sc->ucode != NULL)
-		free(sc->ucode, M_DEVBUF);
+		free(sc->ucode, M_DEVBUF, 0);
 
 	return 0;
 }
