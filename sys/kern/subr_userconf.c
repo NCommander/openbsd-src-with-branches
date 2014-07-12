@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_userconf.c,v 1.38 2013/12/12 20:56:01 guenther Exp $	*/
+/*	$OpenBSD: subr_userconf.c,v 1.39 2014/01/21 01:48:44 tedu Exp $	*/
 
 /*
  * Copyright (c) 1996-2001 Mats O Jansson <moj@stacken.kth.se>
@@ -510,7 +510,7 @@ userconf_change(int devno)
 				if (memcmp(cd->cf_loc, lk, sizeof(int) * i))
 					cd->cf_loc = lk;
 				else
-					free(lk, M_TEMP);
+					free(lk, M_TEMP, 0);
 			}
 
 			printf("%3d ", devno);

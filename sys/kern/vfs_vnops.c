@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.75 2014/01/24 06:00:01 guenther Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.76 2014/07/08 17:19:25 deraadt Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -173,7 +173,7 @@ vn_open(struct nameidata *ndp, int fmode, int cmode)
 		VOP_UNLOCK(vp, 0, p);		/* keep a reference */
 		vp = ndp->ni_vp;		/* for the increment below */
 
-		free(cip, M_TEMP);
+		free(cip, M_TEMP, 0);
 	}
 
 	if (fmode & FWRITE)

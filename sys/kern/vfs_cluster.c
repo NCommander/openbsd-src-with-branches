@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cluster.c,v 1.40 2013/10/01 20:22:12 sf Exp $	*/
+/*	$OpenBSD: vfs_cluster.c,v 1.41 2014/07/08 17:19:25 deraadt Exp $	*/
 /*	$NetBSD: vfs_cluster.c,v 1.12 1996/04/22 01:39:05 christos Exp $	*/
 
 /*
@@ -102,7 +102,7 @@ cluster_write(struct buf *bp, struct cluster_info *ci, u_quad_t filesize)
 					for (bpp = buflist->bs_children;
 					    bpp < endbp; bpp++)
 						brelse(*bpp);
-					free(buflist, M_VCLUSTER);
+					free(buflist, M_VCLUSTER, 0);
 					cluster_wbuild(vp, NULL, bp->b_bcount,
 					    ci->ci_cstart, cursize, lbn);
 				} else {
@@ -112,7 +112,7 @@ cluster_write(struct buf *bp, struct cluster_info *ci, u_quad_t filesize)
 					for (bpp = buflist->bs_children;
 					    bpp <= endbp; bpp++)
 						bdwrite(*bpp);
-					free(buflist, M_VCLUSTER);
+					free(buflist, M_VCLUSTER, 0);
 					ci->ci_lastw = lbn;
 					ci->ci_lasta = bp->b_blkno;
 					return;

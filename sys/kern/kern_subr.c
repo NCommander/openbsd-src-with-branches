@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_subr.c,v 1.36 2013/09/14 02:28:01 guenther Exp $	*/
+/*	$OpenBSD: kern_subr.c,v 1.37 2013/10/19 09:24:57 reyk Exp $	*/
 /*	$NetBSD: kern_subr.c,v 1.15 1996/04/09 17:21:56 ragge Exp $	*/
 
 /*
@@ -221,7 +221,7 @@ hook_disestablish(struct hook_desc_head *head, void *vhook)
 #endif
 	hdp = vhook;
 	TAILQ_REMOVE(head, hdp, hd_list);
-	free(hdp, M_DEVBUF);
+	free(hdp, M_DEVBUF, 0);
 }
 
 /*
@@ -244,7 +244,7 @@ dohooks(struct hook_desc_head *head, int flags)
 			TAILQ_REMOVE(head, hdp, hd_list);
 			(*hdp->hd_fn)(hdp->hd_arg);
 			if ((flags & HOOK_FREE) != 0)
-				free(hdp, M_DEVBUF);
+				free(hdp, M_DEVBUF, 0);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_log.c,v 1.19 2014/03/30 21:54:48 guenther Exp $	*/
+/*	$OpenBSD: subr_log.c,v 1.20 2014/07/10 08:55:35 deraadt Exp $	*/
 /*	$NetBSD: subr_log.c,v 1.11 1996/03/30 22:24:44 christos Exp $	*/
 
 /*
@@ -380,7 +380,7 @@ sys_sendsyslog(struct proc *p, void *v, register_t *retval)
 	if (ktriov != NULL) {
 		if (error == 0)
 			ktrgenio(p, 0, UIO_WRITE, ktriov, aiov.iov_len);
-		free(ktriov, M_TEMP);
+		free(ktriov, M_TEMP, 0);
 	}
 #endif
 	FRELE(f, p);

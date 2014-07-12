@@ -1,4 +1,4 @@
-/* $OpenBSD: vfs_getcwd.c,v 1.20 2013/06/09 13:15:26 tedu Exp $ */
+/* $OpenBSD: vfs_getcwd.c,v 1.21 2013/08/13 05:52:24 guenther Exp $ */
 /* $NetBSD: vfs_getcwd.c,v 1.3.2.3 1999/07/11 10:24:09 sommerfeld Exp $ */
 
 /*
@@ -192,7 +192,7 @@ out:
 	vrele(lvp);
 	*lvpp = NULL;
 
-	free(dirbuf, M_TEMP);
+	free(dirbuf, M_TEMP, 0);
 
 	return (error);
 }
@@ -420,7 +420,7 @@ sys___getcwd(struct proc *p, void *v, register_t *retval)
 	error = copyout(bp, SCARG(uap, buf), lenused);
 
 out:
-	free(path, M_TEMP);
+	free(path, M_TEMP, 0);
 
 	return (error);
 }

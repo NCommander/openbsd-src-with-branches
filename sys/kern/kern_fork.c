@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.170 2014/07/08 17:19:25 deraadt Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.171 2014/07/11 08:20:42 guenther Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -493,7 +493,7 @@ fork1(struct proc *curp, int flags, void *stack, pid_t *tidptr,
 		p->p_cpu = arg;
 
 	if (newptstat)
-		free(newptstat, M_SUBPROC);
+		free(newptstat, M_SUBPROC, 0);
 
 	/*
 	 * Notify any interested parties about the new process.

@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: kern_tc.c,v 1.24 2014/04/03 17:58:31 beck Exp $ */
 
 /*
  * Copyright (c) 2000 Poul-Henning Kamp <phk@FreeBSD.org>
@@ -541,7 +541,7 @@ sysctl_tc_choice(void *oldp, size_t *oldlenp, void *newp, size_t newlen)
 		strlcat(choices, buf, maxlen);
 	}
 	error = sysctl_rdstring(oldp, oldlenp, newp, choices);
-	free(choices, M_TEMP);
+	free(choices, M_TEMP, 0);
 	return (error);
 }
 

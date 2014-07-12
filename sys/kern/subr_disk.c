@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.165 2014/07/11 14:36:44 uebayasi Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.166 2014/07/12 17:50:36 jsing Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -816,7 +816,7 @@ disk_detach(struct disk *diskp)
 	/*
 	 * Free the space used by the disklabel structures.
 	 */
-	free(diskp->dk_label, M_DEVBUF);
+	free(diskp->dk_label, M_DEVBUF, 0);
 
 	/*
 	 * Remove from the disklist.
