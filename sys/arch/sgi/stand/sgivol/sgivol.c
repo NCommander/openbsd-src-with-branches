@@ -1,4 +1,4 @@
-/*	$OpenBSD: sgivol.c,v 1.20 2013/11/12 23:31:34 krw Exp $	*/
+/*	$OpenBSD: sgivol.c,v 1.21 2013/11/13 07:16:18 deraadt Exp $	*/
 /*	$NetBSD: sgivol.c,v 1.8 2003/11/08 04:59:00 sekiya Exp $	*/
 
 /*-
@@ -432,7 +432,7 @@ write_file(void)
 		i -= fsize;
 	}
 	fclose(fp);
-	free(fbuf);
+	free(fbuf, 0);
 }
 
 void

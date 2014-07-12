@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ip27_machdep.c,v 1.60 2014/07/12 14:12:44 uebayasi Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -784,7 +784,7 @@ ip27_hub_intr_disestablish(int intrbit)
 	splx(s);
 
 	if (ISSET(ih->ih_flags, IH_ALLOCATED))
-		free(ih, M_DEVBUF);
+		free(ih, M_DEVBUF, 0);
 }
 
 void

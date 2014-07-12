@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommu.c,v 1.67 2014/01/22 10:52:35 kettenis Exp $	*/
+/*	$OpenBSD: iommu.c,v 1.68 2014/05/10 12:20:38 kettenis Exp $	*/
 /*	$NetBSD: iommu.c,v 1.47 2002/02/08 20:03:45 eeh Exp $	*/
 
 /*
@@ -1660,7 +1660,7 @@ iommu_iomap_destroy(struct iommu_map_state *ims)
 		    ims->ims_map.ipm_pagecnt);
 #endif
 
-	free(ims, M_DEVBUF);
+	free(ims, M_DEVBUF, 0);
 }
 
 /*

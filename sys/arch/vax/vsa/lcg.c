@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcg.c,v 1.20 2013/10/20 20:07:28 miod Exp $	*/
+/*	$OpenBSD: lcg.c,v 1.21 2013/10/21 10:36:21 miod Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -317,7 +317,7 @@ fail3:
 fail2:
 	vax_unmap_physmem((vaddr_t)ss->ss_addr, ss->ss_fbsize / VAX_NBPG);
 fail1:
-	free(ss, M_DEVBUF);
+	free(ss, M_DEVBUF, 0);
 }
 
 /*

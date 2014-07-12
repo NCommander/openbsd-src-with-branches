@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.34 2014/05/19 21:18:42 miod Exp $ */
+/*	$OpenBSD: bus_dma.c,v 1.35 2014/07/11 09:36:26 mpi Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -120,7 +120,7 @@ _dmamap_create(bus_dma_tag_t t, bus_size_t size, int nsegments,
 void
 _dmamap_destroy(bus_dma_tag_t t, bus_dmamap_t map)
 {
-	free(map, M_DEVBUF);
+	free(map, M_DEVBUF, 0);
 }
 
 /*

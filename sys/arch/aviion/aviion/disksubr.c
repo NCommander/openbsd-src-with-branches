@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.57 2013/10/16 20:13:05 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.58 2013/10/19 09:32:13 krw Exp $	*/
 
 /*
  * Copyright (c) 2013 Miodrag Vallat.
@@ -450,7 +450,7 @@ readvditlabel(struct buf *bp, void (*strat)(struct buf *), struct disklabel *lp,
 	}
 
 done:
-	free(vdit_storage, M_DEVBUF);
+	free(vdit_storage, M_DEVBUF, 0);
 	if (sbp != NULL) {
 		sbp->b_flags |= B_INVAL;
 		brelse(sbp);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.28 2012/06/21 00:56:59 guenther Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.29 2013/01/16 19:04:43 miod Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.38 2001/06/30 00:02:20 eeh Exp $ */
 
 /*
@@ -367,7 +367,7 @@ cpu_exit(struct proc *p)
 {
 	if (p->p_md.md_fpstate != NULL) {
 		fpusave_proc(p, 0);
-		free(p->p_md.md_fpstate, M_SUBPROC);
+		free(p->p_md.md_fpstate, M_SUBPROC, 0);
 	}
 
 	pmap_deactivate(p);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: eisa_machdep.c,v 1.1 2012/04/02 20:40:52 miod Exp $	*/
+/*	$OpenBSD: eisa_machdep.c,v 1.2 2012/04/15 20:44:52 miod Exp $	*/
 
 /*
  * Copyright (c) 2012 Miodrag Vallat.
@@ -183,7 +183,7 @@ eisa_intr_disestablish(eisa_chipset_tag_t ec, void *cookie)
 	}
 
 	evcount_detach(&eih->ei_evcnt);
-	free(eih, M_DEVBUF);
+	free(eih, M_DEVBUF, 0);
 }
 
 int

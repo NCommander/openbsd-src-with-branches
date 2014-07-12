@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.13 2011/09/18 10:33:23 kettenis Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.14 2014/04/08 09:34:23 mpi Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -334,7 +334,7 @@ mbus_dmamap_destroy(void *v, bus_dmamap_t map)
 	if (map->dm_mapsize != 0)
 		mbus_dmamap_unload(v, map);
 
-	free(map, M_DEVBUF);
+	free(map, M_DEVBUF, 0);
 }
 
 /*

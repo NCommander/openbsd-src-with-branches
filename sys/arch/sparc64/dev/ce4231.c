@@ -1,4 +1,4 @@
-/*	$OpenBSD: ce4231.c,v 1.29 2013/05/15 08:29:23 ratchov Exp $	*/
+/*	$OpenBSD: ce4231.c,v 1.30 2013/05/16 06:31:50 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -1386,7 +1386,7 @@ fail2:
 fail1:
 	bus_dmamap_destroy(dmat, p->dmamap);
 fail:
-	free(p, pool);
+	free(p, pool, 0);
 	return (NULL);
 }
 
@@ -1408,7 +1408,7 @@ ce4231_free(addr, ptr, pool)
 		bus_dmamem_free(dmat, p->segs, p->nsegs);
 		bus_dmamap_destroy(dmat, p->dmamap);
 		*pp = p->next;
-		free(p, pool);
+		free(p, pool, 0);
 		return;
 	}
 	printf("%s: attempt to free rogue pointer\n", sc->sc_dev.dv_xname);

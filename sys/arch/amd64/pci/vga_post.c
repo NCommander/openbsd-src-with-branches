@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_post.c,v 1.5 2012/12/05 23:20:10 deraadt Exp $ */
+/* $OpenBSD: vga_post.c,v 1.6 2014/04/08 09:02:51 mpi Exp $ */
 /* $NetBSD: vga_post.c,v 1.12 2009/03/15 21:32:36 cegger Exp $ */
 
 /*-
@@ -142,7 +142,7 @@ vga_post_init(int bus, int device, int function)
 	    &sc->ram_backing, BASE_MEMORY/PAGE_SIZE, UVM_PLA_WAITOK);
 	if (err) {
 		uvm_km_free(kernel_map, sc->sys_image, 1024 * 1024);
-		free(sc, M_DEVBUF);
+		free(sc, M_DEVBUF, 0);
 		return NULL;
 	}
 
@@ -212,7 +212,7 @@ vga_post_free(struct vga_post *sc)
 	pmap_kremove(sc->sys_image, 1024 * 1024);
 	uvm_km_free(kernel_map, sc->sys_image, 1024 * 1024);
 	pmap_update(pmap_kernel());
-	free(sc, M_DEVBUF);
+	free(sc, M_DEVBUF, 0);
 }
 
 #ifdef DDB

@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi.c,v 1.1 2013/10/10 21:22:06 miod Exp $	*/
+/*	$OpenBSD: scsi.c,v 1.2 2013/10/16 16:59:34 miod Exp $	*/
 
 /*
  * Copyright (c) 2013 Miodrag Vallat.
@@ -93,7 +93,7 @@ scsi_initialize(const char *ctrlname, int ctrl, int unit, int lun, int part)
 
 done:
 	if (priv->scsicookie == NULL) {
-		free(priv, sizeof(struct scsi_private));
+		free(priv, sizeof(struct scsi_private), 0);
 		priv = NULL;
 	}
 

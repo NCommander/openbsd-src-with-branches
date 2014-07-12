@@ -1,4 +1,4 @@
-/*	$OpenBSD: octeon_pcibus.c,v 1.13 2014/05/10 22:25:16 jasper Exp $	*/
+/*	$OpenBSD: octeon_pcibus.c,v 1.14 2014/05/11 09:23:49 jasper Exp $	*/
 /*	$NetBSD: bonito_mainbus.c,v 1.11 2008/04/28 20:23:10 martin Exp $	*/
 /*	$NetBSD: bonito_pci.c,v 1.5 2008/04/28 20:23:28 martin Exp $	*/
 
@@ -504,7 +504,7 @@ octeon_pcibus_get_resource_extent(pci_chipset_tag_t pc, int io)
 
 out:
 	if (exname != NULL)
-		free(exname, M_DEVBUF);
+		free(exname, M_DEVBUF, 0);
 
 	return ex;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.83 2014/04/08 09:34:23 mpi Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.84 2014/05/08 21:32:45 miod Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -760,7 +760,7 @@ mbus_dmamap_destroy(void *v, bus_dmamap_t map)
 	if (map->dm_mapsize != 0)
 		mbus_dmamap_unload(v, map);
 
-	free(map, M_DEVBUF);
+	free(map, M_DEVBUF, 0);
 }
 
 /*

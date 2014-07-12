@@ -1,4 +1,4 @@
-/*	$OpenBSD: undefined.c,v 1.4 2008/05/19 18:42:11 miod Exp $	*/
+/*	$OpenBSD: undefined.c,v 1.5 2011/09/20 22:02:11 miod Exp $	*/
 /*	$NetBSD: undefined.c,v 1.22 2003/11/29 22:21:29 bjh21 Exp $	*/
 
 /*
@@ -98,7 +98,7 @@ remove_coproc_handler(void *cookie)
 	struct undefined_handler *uh = cookie;
 
 	LIST_REMOVE(uh, uh_link);
-	free(uh, M_TEMP);
+	free(uh, M_TEMP, 0);
 }
 
 

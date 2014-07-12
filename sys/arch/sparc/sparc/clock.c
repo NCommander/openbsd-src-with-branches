@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.27 2012/11/05 13:20:16 miod Exp $	*/
+/*	$OpenBSD: clock.c,v 1.28 2013/07/05 20:30:56 guenther Exp $	*/
 /*	$NetBSD: clock.c,v 1.52 1997/05/24 20:16:05 pk Exp $ */
 
 /*
@@ -1126,7 +1126,7 @@ eeprom_uio(uio)
 
  out:
 	if (buf)
-		free(buf, M_DEVBUF);
+		free(buf, M_DEVBUF, 0);
 	eeprom_give();
 	return (error);
 #else /* ! SUN4 */

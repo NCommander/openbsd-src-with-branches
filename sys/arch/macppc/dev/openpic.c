@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.70 2014/03/31 18:58:41 mpi Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.71 2014/04/01 20:27:14 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2008 Dale Rahn <drahn@openbsd.org>
@@ -379,7 +379,7 @@ openpic_intr_disestablish(void *lcp, void *arg)
 	ppc_intr_enable(s);
 
 	evcount_detach(&ih->ih_count);
-	free((void *)ih, M_DEVBUF);
+	free((void *)ih, M_DEVBUF, 0);
 
 	if (TAILQ_EMPTY(&iq->iq_list))
 		iq->iq_ist = IST_NONE;
