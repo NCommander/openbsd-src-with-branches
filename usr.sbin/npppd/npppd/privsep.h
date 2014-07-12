@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.h,v 1.4 2012/05/08 13:15:12 yasuoka Exp $ */
+/*	$OpenBSD: privsep.h,v 1.5 2012/09/18 13:14:08 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2010 Yasuoka Masahiko <yasuoka@openbsd.org>
@@ -17,6 +17,9 @@
  */
 #ifndef PRIVSEP_H
 #define PRIVSEP_H 1
+
+#include <sys/socket.h>
+#include <stdio.h>
 
 #define PRIVSEP_BUFSIZE		4092
 
