@@ -1,4 +1,4 @@
-.\"	$OpenBSD: send.2,v 1.30 2014/04/07 10:04:17 mpi Exp $
+.\"	$OpenBSD: sendsyslog.2,v 1.1 2014/07/12 02:28:56 deraadt Exp $
 .\"
 .\" Copyright (c) 2014 Theo de Raadt
 .\"
@@ -14,11 +14,11 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: June 15 2014 $
+.Dd $Mdocdate: July 12 2014 $
 .Dt SENDSYSLOG 2
 .Os
 .Sh NAME
-.Nm sendsyslog ,
+.Nm sendsyslog
 .Nd send a message to syslogd
 .Sh SYNOPSIS
 .Fd #include <sys/types.h>
@@ -34,13 +34,12 @@ without requiring the allocation of a socket.
 This is used internally by
 .Xr syslog_r 3 ,
 so that messages can be sent during difficult situations.
-.Pp
 .Sh RETURN VALUES
 The call returns 0 on success, or \-1
 if an error occurred.
 .Sh ERRORS
 .Fn sendsyslog
-fail if:
+can fail if:
 .Bl -tag -width Er
 .It Bq Er ENOTCONN
 The message cannot be sent, likely because
