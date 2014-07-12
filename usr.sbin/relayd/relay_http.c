@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_http.c,v 1.25 2014/07/11 23:11:54 benno Exp $	*/
+/*	$OpenBSD: relay_http.c,v 1.26 2014/07/12 14:34:13 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -1437,11 +1437,8 @@ relay_apply_actions(struct ctl_relay_event *cre, struct kvlist *actions)
 					if (kv_set(match, "%s",
 					    kv->kv_value) == -1)
 						goto fail;
-				} else {
-					if (kv_setkey(match, "%s,%s",
-					    match->kv_key, kv->kv_key) == -1)
-						goto fail;
-				}
+				} else
+					addkv = 1;
 				break;
 			default:
 				/* query, url not supported */
