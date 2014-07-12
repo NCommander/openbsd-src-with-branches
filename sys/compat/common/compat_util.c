@@ -1,4 +1,4 @@
-/* 	$OpenBSD: compat_util.c,v 1.11 2014/01/15 05:31:51 deraadt Exp $	*/
+/* 	$OpenBSD: compat_util.c,v 1.12 2014/03/26 05:23:42 guenther Exp $	*/
 /* 	$NetBSD: compat_util.c,v 1.4 1996/03/14 19:31:45 christos Exp $	*/
 
 /*
@@ -154,7 +154,7 @@ emul_find(struct proc *p, caddr_t *sgp, const char *prefix,
 			*pbuf = path;
 			goto bad;
 		}
-		free(buf, M_TEMP);
+		free(buf, M_TEMP, 0);
 	}
 
 	vrele(nd.ni_vp);
@@ -167,7 +167,7 @@ bad3:
 bad2:
 	vrele(nd.ni_vp);
 bad:
-	free(buf, M_TEMP);
+	free(buf, M_TEMP, 0);
 	return error;
 }
 

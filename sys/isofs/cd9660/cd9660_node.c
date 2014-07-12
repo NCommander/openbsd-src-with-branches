@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_node.c,v 1.22 2013/05/30 17:35:01 guenther Exp $	*/
+/*	$OpenBSD: cd9660_node.c,v 1.23 2013/06/02 01:07:39 deraadt Exp $	*/
 /*	$NetBSD: cd9660_node.c,v 1.17 1997/05/05 07:13:57 mycroft Exp $	*/
 
 /*-
@@ -217,7 +217,7 @@ cd9660_reclaim(v)
 		vrele(ip->i_devvp);
 		ip->i_devvp = 0;
 	}
-	free(vp->v_data, M_ISOFSNODE);
+	free(vp->v_data, M_ISOFSNODE, 0);
 	vp->v_data = NULL;
 	return (0);
 }
