@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_mem.c,v 1.2 2013/06/03 10:37:02 espie Exp $	*/
+/*	$OpenBSD: tmpfs_mem.c,v 1.3 2014/07/08 17:19:26 deraadt Exp $	*/
 /*	$NetBSD: tmpfs_mem.c,v 1.4 2011/05/24 01:09:47 rmind Exp $	*/
 
 /*
@@ -218,7 +218,7 @@ tmpfs_strname_free(struct tmpfs_mount *mp, char *str, size_t len)
 
 	KASSERT(sz > 0 && sz <= 1024);
 	tmpfs_mem_decr(mp, sz);
-	free(str, M_TEMP);
+	free(str, M_TEMP, 0);
 }
 
 int
