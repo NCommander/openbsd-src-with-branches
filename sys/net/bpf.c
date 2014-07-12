@@ -1308,7 +1308,7 @@ bpf_mtap_af(caddr_t arg, u_int32_t af, struct mbuf *m, u_int direction)
 	u_int32_t    afh;
 
 	afh = htonl(af);
-	bpf_mtap_hdr(arg, (caddr_t)&afh, 4, m, direction, NULL);
+	bpf_mtap_hdr(arg, (caddr_t)&afh, sizeof(afh), m, direction, NULL);
 }
 
 /*
