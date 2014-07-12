@@ -150,17 +150,7 @@ Specify whether or not to accept Router Advertisement messages
 received on the
 .Ar interface .
 Note that the kernel does not accept Router Advertisement messages
-unless the
-.Li net.inet6.ip6.accept_rtadv
-variable is non-0, even if the flag is on.
-This flag is set to 1 by default.
-See
-.Xr sysctl 8
-and
-.Xr sysctl.conf 5
-for further details on how to set the
-.Li net.inet6.ip6.accept_rtadv
-variable.
+unless the interface is configured for inet6 autconfiguration.
 .\".It Xo
 .\".Ic prefer_source
 .\".Xc
