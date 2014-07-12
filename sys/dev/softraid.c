@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.331 2014/01/22 23:32:42 jsing Exp $ */
+/* $OpenBSD: softraid.c,v 1.332 2014/07/10 12:21:09 mpi Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -3927,6 +3927,8 @@ sr_discipline_init(struct sr_discipline *sd, int level)
 	sd->sd_start_discipline = NULL;
 
 	task_set(&sd->sd_meta_save_task, sr_meta_save_callback, sd, NULL);
+	task_set(&sd->sd_hotspare_rebuild_task, sr_hotspare_rebuild_callback,
+	    sd, NULL);
 
 	switch (level) {
 	case 0:

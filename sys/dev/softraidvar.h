@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.154 2014/01/22 09:42:13 jsing Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.155 2014/07/10 12:21:09 mpi Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -617,6 +617,7 @@ struct sr_discipline {
 
 	/* Tasks. */
 	struct task		sd_meta_save_task;
+	struct task		sd_hotspare_rebuild_task;
 
 	TAILQ_ENTRY(sr_discipline) sd_link;
 };
