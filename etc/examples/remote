@@ -1,4 +1,4 @@
-#	$OpenBSD: remote,v 1.14 2012/06/21 01:00:36 deraadt Exp $
+#	$OpenBSD: remote,v 1.15 2014/03/18 22:36:29 miod Exp $
 #	from: @(#)remote	8.1 (Berkeley) 6/10/93
 #
 # remote -- remote host description database
