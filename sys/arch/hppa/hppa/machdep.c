@@ -32,7 +32,6 @@
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/buf.h>
-#include <sys/reboot.h>
 #include <sys/device.h>
 #include <sys/conf.h>
 #include <sys/file.h>
@@ -995,10 +994,9 @@ cpu_dumpsize(void)
 void
 hpmc_dump(void)
 {
-	printf("HPMC\n");
-
 	cold = 0;
-	reboot(RB_NOSYNC);
+	panic("HPMC");
+	/* NOTREACHED */
 }
 
 int
