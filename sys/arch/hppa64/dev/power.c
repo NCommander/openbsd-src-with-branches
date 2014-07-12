@@ -1,4 +1,4 @@
-/*	$OpenBSD: power.c,v 1.1 2005/04/01 10:40:47 mickey Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -123,7 +123,7 @@ power_thread_reg(void *v)
 		    : "=&r" (r) : "r" (sc->sc_pwr_reg));
 
 		if (!(r & 1))
-			boot(RB_POWERDOWN | RB_HALT);
+			reboot(RB_POWERDOWN | RB_HALT);
 
 		tsleep(v, PWAIT, "regpower", 10);
 	}

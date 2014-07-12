@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbus.c,v 1.38 2010/11/11 17:58:23 miod Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: sbus.c,v 1.46 2001/10/07 20:30:41 eeh Exp $ */
 
 /*-
@@ -571,7 +571,7 @@ sbus_overtemp(void *arg)
 	/* Should try a clean shutdown first */
 	printf("DANGER: OVER TEMPERATURE detected\nShutting down...\n");
 	delay(20);
-	boot(RB_POWERDOWN|RB_HALT);
+	reboot(RB_POWERDOWN | RB_HALT);
 	/*NOTREACHED*/
 	return (1);
 }
