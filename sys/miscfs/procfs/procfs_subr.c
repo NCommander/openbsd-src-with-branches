@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_subr.c,v 1.34 2010/12/21 20:14:43 thib Exp $	*/
+/*	$OpenBSD: procfs_subr.c,v 1.35 2011/12/24 04:34:20 guenther Exp $	*/
 /*	$NetBSD: procfs_subr.c,v 1.15 1996/02/12 15:01:42 christos Exp $	*/
 
 /*
@@ -184,7 +184,7 @@ procfs_freevp(struct vnode *vp)
 	struct pfsnode *pfs = VTOPFS(vp);
 
 	TAILQ_REMOVE(&pfshead, pfs, list);
-	free(vp->v_data, M_TEMP);
+	free(vp->v_data, M_TEMP, 0);
 	vp->v_data = 0;
 	return (0);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.54 2010/09/10 16:34:09 thib Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.55 2010/12/21 20:14:43 thib Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -199,7 +199,7 @@ nfs_inactive(void *v)
 		nfs_removeit(sp);
 		crfree(sp->s_cred);
 		vrele(sp->s_dvp);
-		free(sp, M_NFSREQ);
+		free(sp, M_NFSREQ, 0);
 	}
 	np->n_flag &= (NMODIFIED | NFLUSHINPROG | NFLUSHWANT);
 
