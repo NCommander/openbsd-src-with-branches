@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2012/08/21 14:46:19 pascal Exp $
+#	$OpenBSD: Makefile,v 1.13 2012/09/02 17:22:53 pascal Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -27,7 +27,7 @@ SRCS+=		clock.c ns16550.c wd.c wdc.c pciide.c wdc_obio.c fdt.c
 SRCS+=		ctime.c strtol.c cmd_socppc.c
 
 .PATH:	${S}/lib/libkern/arch/powerpc ${S}/lib/libkern
-SRCS+=	strlcpy.c strlen.c ashrdi3.c moddi3.c
+SRCS+=	getchar.c strlcpy.c strlen.c ashrdi3.c moddi3.c
 
 ### find out what to use for libz
 Z_AS=		library

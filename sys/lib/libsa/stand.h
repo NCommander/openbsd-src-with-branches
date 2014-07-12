@@ -1,4 +1,4 @@
-/*	$OpenBSD: stand.h,v 1.55 2013/01/07 20:02:11 miod Exp $	*/
+/*	$OpenBSD: stand.h,v 1.56 2013/12/28 02:51:07 deraadt Exp $	*/
 /*	$NetBSD: stand.h,v 1.18 1996/11/30 04:35:51 gwr Exp $	*/
 
 /*-
@@ -185,6 +185,7 @@ void	cnputc(int);
 int	cngetc(void);
 int	cnischar(void);
 int	cnspeed(dev_t, int);
+int	getchar(void);
 u_int	sleep(u_int);
 void	usleep(u_int);
 char	*ctime(const time_t *);

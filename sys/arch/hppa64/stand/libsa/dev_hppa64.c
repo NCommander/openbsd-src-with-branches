@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_hppa64.c,v 1.5 2010/12/06 22:51:45 jasper Exp $	*/
+/*	$OpenBSD: dev_hppa64.c,v 1.6 2012/02/25 20:12:00 miod Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -188,22 +188,6 @@ putchar(c)
 		pch_pos++;
 		break;
 	}
-}
-
-int
-getchar()
-{
-	int c = cngetc();
-
-	if (c == '\r')
-		c = '\n';
-
-	if ((c < ' ' && c != '\n') || c == '\177')
-		return(c);
-
-	putchar(c);
-
-	return(c);
 }
 
 char ttyname_buf[8];

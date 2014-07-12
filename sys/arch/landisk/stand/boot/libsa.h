@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.3 2006/10/29 14:47:59 drahn Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.4 2011/03/13 00:13:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -30,7 +30,7 @@ int blkdevopen(struct open_file *, ...);
 int blkdevclose(struct open_file *);
 int blkdevstrategy(void *, int, daddr32_t, size_t, void *, size_t *);
 void scif_init(unsigned int);
-int scif_getc(void);
+int  getc(void);
 void scif_putc(int);
 void cache_flush(void);
 void cache_disable(void);
