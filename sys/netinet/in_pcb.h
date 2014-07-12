@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.84 2014/04/16 13:04:38 mpi Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.85 2014/04/18 10:48:29 jca Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -158,6 +158,7 @@ struct inpcbtable {
 	LIST_HEAD(inpcbhead, inpcb) *inpt_hashtbl, *inpt_lhashtbl;
 	u_long	  inpt_hash, inpt_lhash;
 	u_int16_t inpt_lastport;
+	int	  inpt_count;
 };
 
 /* flags in inp_flags: */
