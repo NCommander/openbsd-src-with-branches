@@ -476,7 +476,7 @@ const struct	cmd {
 	{ "txpower",	NEXTARG,	0,		setignore },
 	{ "nwflag",	NEXTARG,	0,		setignore },
 	{ "rdomain",	NEXTARG,	0,		setignore },
-	{ "-inet6",	IFXF_NOINET6,	0,		setignore } ,
+	{ "-inet6",	AF_INET6,	0,		removeaf },
 	{ "description", NEXTARG,	0,		setignore },
 	{ "descr",	NEXTARG,	0,		setignore },
 	{ "wol",	IFXF_WOL,	0,		setignore },
