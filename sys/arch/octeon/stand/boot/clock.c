@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.1 2013/06/05 01:02:29 jasper Exp $	*/
+/*	$OpenBSD: clock.c,v 1.2 2013/06/05 02:45:37 jasper Exp $	*/
 
 /*
  * Copyright (c) 2013 Jasper Lievisse Adriaanse <jasper@openbsd.org>
@@ -24,9 +24,9 @@
 #define DELAY_MULTIPLIER 10000
 
 void
-delay(int ns)
+delay(int ms)
 {
-	volatile int i = ns * DELAY_MULTIPLIER;
+	volatile int i = ms * DELAY_MULTIPLIER;
 	for (; --i;)
 		;
 }
