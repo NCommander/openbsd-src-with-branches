@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.29 2014/07/05 06:55:29 guenther Exp $	*/
+/*	$OpenBSD: client.c,v 1.30 2014/07/12 03:07:22 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -1197,11 +1197,6 @@ void
 cleanup(int dummy)
 {
 	char *file;
-#ifdef USE_STATDB
-	extern char statfile[];
-
-	(void) unlink(statfile);
-#endif
 
 	if ((file = getnotifyfile()) != NULL)
 		(void) unlink(file);
