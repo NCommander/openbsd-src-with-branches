@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.67 2014/04/21 12:22:25 henning Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.68 2014/05/05 11:44:33 mpi Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -178,7 +178,7 @@ gre_clone_destroy(struct ifnet *ifp)
 
 	if_detach(ifp);
 
-	free(sc, M_DEVBUF);
+	free(sc, M_DEVBUF, 0);
 	return (0);
 }
 

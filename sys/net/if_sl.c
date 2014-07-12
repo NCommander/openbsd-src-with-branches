@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sl.c,v 1.50 2013/10/23 15:12:42 mpi Exp $	*/
+/*	$OpenBSD: if_sl.c,v 1.51 2014/04/14 09:06:42 mpi Exp $	*/
 /*	$NetBSD: if_sl.c,v 1.39.4.1 1996/06/02 16:26:31 thorpej Exp $	*/
 
 /*
@@ -243,7 +243,7 @@ sl_clone_destroy(ifp)
 
 	if_detach(ifp);
 
-	free(sc, M_DEVBUF);
+	free(sc, M_DEVBUF, 0);
 	return (0);
 }
 

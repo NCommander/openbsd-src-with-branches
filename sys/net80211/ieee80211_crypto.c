@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto.c,v 1.60 2011/01/11 15:42:05 deraadt Exp $	*/
+/*	$OpenBSD: ieee80211_crypto.c,v 1.61 2013/11/21 16:16:08 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -87,7 +87,7 @@ ieee80211_crypto_detach(struct ifnet *ifp)
 	while ((pmk = TAILQ_FIRST(&ic->ic_pmksa)) != NULL) {
 		TAILQ_REMOVE(&ic->ic_pmksa, pmk, pmk_next);
 		explicit_bzero(pmk, sizeof(*pmk));
-		free(pmk, M_DEVBUF);
+		free(pmk, M_DEVBUF, 0);
 	}
 
 	/* clear all group keys from memory */

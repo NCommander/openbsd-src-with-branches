@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.128 2014/04/21 11:10:54 henning Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.129 2014/04/21 12:22:26 henning Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -1012,7 +1012,7 @@ tcp_signature_tdb_zeroize(tdbp)
 {
 	if (tdbp->tdb_amxkey) {
 		explicit_bzero(tdbp->tdb_amxkey, tdbp->tdb_amxkeylen);
-		free(tdbp->tdb_amxkey, M_XDATA);
+		free(tdbp->tdb_amxkey, M_XDATA, 0);
 		tdbp->tdb_amxkey = NULL;
 	}
 

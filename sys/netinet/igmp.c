@@ -1,4 +1,4 @@
-/*	$OpenBSD: igmp.c,v 1.40 2014/05/12 09:15:00 mpi Exp $	*/
+/*	$OpenBSD: igmp.c,v 1.41 2014/07/08 17:19:26 deraadt Exp $	*/
 /*	$NetBSD: igmp.c,v 1.15 1996/02/13 23:41:25 christos Exp $	*/
 
 /*
@@ -202,7 +202,7 @@ rti_delete(struct ifnet *ifp)
 	for (rti = rti_head; rti != 0; rti = rti->rti_next) {
 		if (rti->rti_ifp == ifp) {
 			*prti = rti->rti_next;
-			free(rti, M_MRTABLE);
+			free(rti, M_MRTABLE, 0);
 			break;
 		}
 		prti = &rti->rti_next;

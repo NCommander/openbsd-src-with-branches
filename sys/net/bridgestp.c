@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgestp.c,v 1.46 2013/10/20 08:48:39 deraadt Exp $	*/
+/*	$OpenBSD: bridgestp.c,v 1.47 2014/04/19 15:54:39 henning Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -1957,7 +1957,7 @@ bstp_destroy(struct bstp_state *bs)
 	if (!LIST_EMPTY(&bs->bs_bplist))
 		panic("bstp still active");
 
-	free(bs, M_DEVBUF);
+	free(bs, M_DEVBUF, 0);
 }
 
 void
@@ -2033,7 +2033,7 @@ bstp_delete(struct bstp_port *bp)
 	LIST_REMOVE(bp, bp_next);
 	bp->bp_bs = NULL;
 	bp->bp_active = 0;
-	free(bp, M_DEVBUF);
+	free(bp, M_DEVBUF, 0);
 	bstp_initialization(bs);
 }
 
