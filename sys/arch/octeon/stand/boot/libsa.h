@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.1 2013/06/05 01:02:29 jasper Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.2 2014/07/12 20:36:52 jasper Exp $	*/
 
 /*
  * Copyright (c) 2013 Jasper Lievisse Adriaanse <jasper@openbsd.org>
@@ -19,8 +19,6 @@
 #include <lib/libsa/stand.h>
 
 #define DEFAULT_KERNEL_ADDRESS	0
-#define INITRD_BASE		PHYS_TO_CKSEG0(0x04000000)
-#define CONSPEED		115200
 
 extern char *kernelfile;
 
