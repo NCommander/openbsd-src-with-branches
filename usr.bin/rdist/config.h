@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.8 2003/06/03 02:56:14 millert Exp $	*/
+/*	$OpenBSD: config.h,v 1.9 2014/07/10 14:29:27 tedu Exp $	*/
 
 /*
  * Copyright (c) 1993 Michael A. Cooper
@@ -41,18 +41,6 @@
 /*
  * Configuration parameters
  */
-
-#include OS_H
-
-/*
- * Include system pathname header file.  Usually this is <paths.h>.  
- * If your system doesn't have such a file, use "mypaths.h"
- */
-#if	defined(PATHS_H)
-#	include PATHS_H
-#else
-#	include "mypaths.h"
-#endif
 
 /*
  * Check to see if file is on a NFS.  If it is, the file is

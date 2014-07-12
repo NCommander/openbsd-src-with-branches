@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.17 2013/07/05 21:29:51 miod Exp $
+#	$OpenBSD: Makefile,v 1.18 2014/07/05 05:31:35 guenther Exp $
 
 
 PROG=	rdist
-CFLAGS+=-I. -I${.CURDIR} -DOS_H=\"os-openbsd.h\"
+CFLAGS+=-I. -I${.CURDIR}
 SRCS=	gram.y child.c client.c common.c distopt.c docmd.c expand.c \
 	isexec.c lookup.c message.c rdist.c
 CLEANFILES+=gram.c y.tab.h
