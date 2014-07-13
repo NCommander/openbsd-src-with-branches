@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_subr.c,v 1.27 2014/07/09 15:46:22 tedu Exp $	*/
+/*	$OpenBSD: tty_subr.c,v 1.28 2014/07/12 18:43:32 tedu Exp $	*/
 /*	$NetBSD: tty_subr.c,v 1.13 1996/02/09 19:00:43 christos Exp $	*/
 
 /*
@@ -132,7 +132,7 @@ q_to_b(struct clist *clp, u_char *cp, int count)
 		if (cc > count)
 			cc = count;
 		bcopy(clp->c_cf, p, cc);
-		bzero(clp->c_cf, cc);
+		memset(clp->c_cf, 0, cc);
 		if (clp->c_cq)
 			clrbits(clp->c_cq, clp->c_cf - clp->c_cs, cc);
 		count -= cc;
