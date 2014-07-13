@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.164 2014/01/22 04:34:25 henning Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.165 2014/03/27 12:07:48 jca Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -702,6 +702,9 @@ pf_refragment6(struct mbuf **m0, struct m_tag *mtag, int dir)
 	m_tag_delete(m, mtag);
 	mtag = NULL;
 	ftag = NULL;
+
+	/* Checksum must be calculated for the whole packet */
+	in6_proto_cksum_out(m, NULL);
 
 	if (extoff) {
 		int off;
