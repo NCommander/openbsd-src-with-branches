@@ -1,4 +1,4 @@
-.\"	$OpenBSD: fsck.8,v 1.32 2013/02/11 17:35:46 jmc Exp $
+.\"	$OpenBSD: fsck.8,v 1.33 2014/07/13 12:03:48 claudio Exp $
 .\"	$NetBSD: fsck.8,v 1.14 1996/10/03 20:08:29 christos Exp $
 .\"
 .\" Copyright (c) 1996 Christos Zoulas.  All rights reserved.
@@ -28,7 +28,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: February 11 2013 $
+.Dd $Mdocdate: July 13 2014 $
 .Dt FSCK 8
 .Os
 .Sh NAME
@@ -37,7 +37,7 @@
 .Sh SYNOPSIS
 .Nm fsck
 .Bk -words
-.Op Fl dfnpvy
+.Op Fl dfNnpvy
 .Op Fl b Ar block#
 .Op Fl l Ar maxparallel
 .Op Fl T Ar fstype : Ns Ar fsoptions
@@ -104,11 +104,9 @@ the disks are checked round-robin, one file system at a time.
 When using
 .Xr fstab 5 ,
 only check filesystems that have the
-.Ar net
-mount option set.
-By default file systems with the
 .Dq net
-option are ignored.
+mount option set.
+By default file systems with this option are ignored.
 .It Fl n
 Assume a
 .Dq no
