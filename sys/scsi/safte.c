@@ -1,4 +1,4 @@
-/*	$OpenBSD: safte.c,v 1.48 2011/06/15 01:10:05 dlg Exp $ */
+/*	$OpenBSD: safte.c,v 1.49 2014/07/12 18:50:25 tedu Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -321,7 +321,7 @@ safte_read_config(struct safte_softc *sc)
 	sc->sc_nsensors = config->nfans + config->npwrsup + config->ntemps + 
 		(config->doorlock ? 1 : 0) + (config->alarm ? 1 : 0);
 
-	sc->sc_sensors = malloc(sc->sc_nsensors * sizeof(struct safte_sensor),
+	sc->sc_sensors = mallocarray(sc->sc_nsensors, sizeof(struct safte_sensor),
 	    M_DEVBUF, M_NOWAIT | M_ZERO);
 	if (sc->sc_sensors == NULL) {
 		dma_free(sc->sc_encbuf, sc->sc_encbuflen);
