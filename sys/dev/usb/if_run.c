@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_run.c,v 1.101 2014/07/12 07:59:23 mpi Exp $	*/
+/*	$OpenBSD: if_run.c,v 1.102 2014/07/12 18:48:52 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2008-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -48,9 +48,7 @@
 #include <net/if_types.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
-#include <netinet/ip.h>
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_amrr.h>

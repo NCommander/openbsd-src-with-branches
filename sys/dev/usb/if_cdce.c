@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.59 2013/12/07 20:17:42 brad Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.60 2014/07/12 07:59:23 mpi Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -58,8 +58,6 @@
 #endif
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
 
 #include <dev/usb/usb.h>

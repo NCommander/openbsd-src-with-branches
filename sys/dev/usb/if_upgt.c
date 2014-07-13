@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.62 2014/07/12 07:59:23 mpi Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.63 2014/07/12 18:48:52 tedu Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -42,9 +42,7 @@
 #include <net/if_types.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
-#include <netinet/ip.h>
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_radiotap.h>

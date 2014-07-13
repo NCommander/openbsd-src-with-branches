@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axen.c,v 1.6 2014/03/16 02:46:57 jsg Exp $	*/
+/*	$OpenBSD: if_axen.c,v 1.7 2014/07/12 07:59:23 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Yojiro UO <yuo@openbsd.org>
@@ -43,12 +43,8 @@
 #include <net/bpf.h>
 #endif
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
