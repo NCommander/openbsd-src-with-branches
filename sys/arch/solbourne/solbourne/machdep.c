@@ -570,7 +570,8 @@ haltsys:
 	} else
 		str[0] = 0;
 	romboot(str);
-	/*NOTREACHED*/
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 /* XXX - needs to be written */

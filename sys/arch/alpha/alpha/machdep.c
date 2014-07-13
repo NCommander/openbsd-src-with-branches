@@ -1031,7 +1031,7 @@ boot(int howto)
 		    cpus_running);
 #endif
 
-	if (howto & RB_DUMP)
+	if ((howto & RB_DUMP) != 0)
 		dumpsys();
 
 haltsys:
@@ -1056,7 +1056,8 @@ haltsys:
 	}
 	printf("%s\n\n", howto & RB_HALT ? "halted." : "rebooting...");
 	prom_halt(howto & RB_HALT);
-	/*NOTREACHED*/
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 /*

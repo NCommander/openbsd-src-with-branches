@@ -812,7 +812,7 @@ haltsys:
 		delay(cpureset_delay * 1000);
 	cpu_reset();
 	for(;;) ;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 }
 
 /*

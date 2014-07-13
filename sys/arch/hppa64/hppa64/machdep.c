@@ -600,7 +600,7 @@ haltsys:
 		    :: "r" (CMD_RESET), "r" (HPPA_LBCAST + iomod_command));
 	}
 
-	for (;;) ; /* loop while bus reset is coming up */
+	for (;;) ;
 	/* NOTREACHED */
 }
 

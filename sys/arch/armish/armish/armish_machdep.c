@@ -303,8 +303,8 @@ haltsys:
 	board_reset();
 	cpu_reset();
 	printf("reboot failed; spinning\n");
-	while(1);
-	/*NOTREACHED*/
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 /*

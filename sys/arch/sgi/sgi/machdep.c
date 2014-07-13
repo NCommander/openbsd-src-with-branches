@@ -879,7 +879,7 @@ haltsys:
 
 	printf("Failed!!! Please reset manually.\n");
 	for (;;) ;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 }
 
 void

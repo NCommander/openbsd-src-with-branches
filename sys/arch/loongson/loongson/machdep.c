@@ -962,7 +962,7 @@ haltsys:
 	}
 
 	for (;;) ;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 }
 
 u_long	dumpmag = 0x8fca0101;	/* Magic number for savecore. */

@@ -246,7 +246,7 @@ haltsys:
 	printf("rebooting...\n");
 	machine_reset();
 
-	/*NOTREACHED*/
+	/* NOTREACHED */
 	for (;;) {
 		continue;
 	}

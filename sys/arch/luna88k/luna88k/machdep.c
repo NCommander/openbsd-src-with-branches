@@ -518,8 +518,8 @@ haltsys:
 		*((volatile unsigned *)0x6d000010) = 0;
 	}
 
-	for (;;);  /* to keep compiler happy, and me from going crazy */
-	/*NOTREACHED*/
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 u_long dumpmag = 0x8fca0101;	 /* magic number for savecore */

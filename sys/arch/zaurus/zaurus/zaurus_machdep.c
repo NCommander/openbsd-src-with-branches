@@ -355,8 +355,8 @@ haltsys:
 	zapm_restart();
 #endif
 	printf("reboot failed; spinning\n");
-	while(1);
-	/*NOTREACHED*/
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 static __inline

@@ -813,7 +813,7 @@ boot(int howto)
 	}
 
 	boothowto = howto;
-	if (!(howto & RB_NOSYNC) && !syncing) {
+	if ((howto & RB_NOSYNC) == 0 && !syncing) {
 		syncing = 1;
 		vfs_shutdown();
 
@@ -860,7 +860,8 @@ haltsys:
 	OF_interpret("reset-all", 0);
 	OF_exit();
 	printf("boot failed, spinning\n");
-	while(1) /* forever */;
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 typedef void  (void_f) (void);

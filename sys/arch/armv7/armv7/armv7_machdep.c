@@ -316,8 +316,8 @@ boot(int howto)
 	delay(500000);
 	platform_watchdog_reset();
 	printf("reboot failed; spinning\n");
-	while(1);
-	/*NOTREACHED*/
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 static __inline

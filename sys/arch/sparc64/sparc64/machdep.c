@@ -694,7 +694,8 @@ haltsys:
 		str[0] = 0;
 	OF_boot(str);
 	panic("cpu_reboot -- failed");
-	/*NOTREACHED*/
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 u_long	dumpmag = 0x8fca0101;	/* magic number for savecore */

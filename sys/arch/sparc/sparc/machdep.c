@@ -592,7 +592,8 @@ haltsys:
 	} else
 		str[0] = 0;
 	romboot(str);
-	/*NOTREACHED*/
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 /* XXX - dumpmag not eplicitly used, savecore may search for it to get here */

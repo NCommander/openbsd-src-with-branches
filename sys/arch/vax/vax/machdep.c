@@ -538,7 +538,6 @@ boot(int howto)
 	if (howto & RB_DUMP)
 		dumpsys();
 
-
 haltsys:
 	doshutdownhooks();
 	mainbus = device_mainbus();

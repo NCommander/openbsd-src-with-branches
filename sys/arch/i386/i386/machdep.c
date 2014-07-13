@@ -2658,7 +2658,7 @@ haltsys:
 	printf("rebooting...\n");
 	cpu_reset();
 	for(;;) ;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 }
 
 /*

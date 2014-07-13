@@ -339,8 +339,8 @@ haltsys:
 
 	doboot();
 
-	for (;;);
-	/*NOTREACHED*/
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 unsigned dumpmag = 0x8fca0101;	 /* magic number for savecore */

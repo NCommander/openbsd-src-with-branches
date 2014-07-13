@@ -1041,7 +1041,7 @@ boot(int howto)
 	}
 
 	boothowto = howto;
-	if (!(howto & RB_NOSYNC) && !syncing) {
+	if ((howto & RB_NOSYNC) == 0 && !syncing) {
 		syncing = 1;
 		vfs_shutdown();
 
@@ -1057,7 +1057,7 @@ boot(int howto)
 	splhigh();
 	cold = 1;
 
-	if ((howto & RB_DUMP))
+	if ((howto & RB_DUMP) != 0)
 		dumpsys();
 
 haltsys:
@@ -1087,7 +1087,8 @@ haltsys:
 	}
 
 	printf("boot failed, spinning\n");
-	while(1) /* forever */;
+	for (;;) ;
+	/* NOTREACHED */
 }
 
 void
