@@ -1,4 +1,4 @@
-/*	$OpenBSD: iscsid.c,v 1.14 2014/04/21 18:00:23 claudio Exp $ */
+/*	$OpenBSD: iscsid.c,v 1.15 2014/05/10 11:30:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -20,6 +20,7 @@
 #include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
+#include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/uio.h>
 
@@ -69,7 +70,8 @@ main(int argc, char *argv[])
 	struct passwd *pw;
 	char *ctrlsock = ISCSID_CONTROL;
 	char *vscsidev = ISCSID_DEVICE;
-	int ch, debug = 0, verbose = 0;
+	int name[] = { CTL_KERN, KERN_PROC_NOBROADCASTKILL, 0 };
+	int ch, debug = 0, verbose = 0, nobkill = 1;
 
 	log_init(1);    /* log to stderr until daemonized */
 	log_verbose(1);
@@ -113,6 +115,10 @@ main(int argc, char *argv[])
 	if (!debug)
 		daemon(1, 0);
 	log_info("startup");
+
+	name[2] = getpid();
+	if (sysctl(name, 3, NULL, 0, &nobkill, sizeof(nobkill)) != 0)
+		fatal("sysctl");
 
 	event_init();
 	vscsi_open(vscsidev);
