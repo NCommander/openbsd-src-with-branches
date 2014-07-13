@@ -1,4 +1,4 @@
-.\"     $Id: man.cgi.8,v 1.1 2014/07/11 15:37:22 schwarze Exp $
+.\"     $Id: man.cgi.8,v 1.2 2014/07/13 00:16:03 schwarze Exp $
 .\"
 .\" Copyright (c) 2014 Ingo Schwarze <schwarze@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 11 2014 $
+.Dd $Mdocdate: July 13 2014 $
 .Dt MAN.CGI 8
 .Os
 .Sh NAME
@@ -270,6 +270,10 @@ Default
 data directory containing all the manual trees.
 Can be overridden by
 .Ev MAN_DIR .
+.It Pa /man/mandoc/man1/apropos.1 , /man/mandoc/man8/man.cgi.8
+Manual pages documenting
+.Nm
+itself, linked from the index page.
 .It Pa /man/manpath.conf
 The list of available manpaths, one per line.
 .It Pa /man/OpenBSD-current/man1/mandoc.1
