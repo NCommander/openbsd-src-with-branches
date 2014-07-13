@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.35 2014/07/10 13:34:32 uebayasi Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: machdep.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*-
@@ -205,15 +205,16 @@ boot(int howto)
 	if ((howto & RB_NOSYNC) == 0) {
 		vfs_shutdown();
 
-		if ((howto & RB_TIMEBAD) == 0)
+		if ((howto & RB_TIMEBAD) == 0) {
 			resettodr();
-		else
+		} else {
 			printf("WARNING: not updating battery clock\n");
+		}
 	}
 	if_downall();
 
 	uvm_shutdown();
-	splhigh();		/* Disable interrupts. */
+	splhigh();
 	cold = 1;
 
 	/* Do a dump if requested. */

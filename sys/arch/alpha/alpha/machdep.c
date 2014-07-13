@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.159 2014/07/10 20:15:26 uebayasi Exp $ */
+/* $OpenBSD$ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -1006,7 +1006,7 @@ boot(int howto)
 	if_downall();
 
 	uvm_shutdown();
-	splhigh();		/* Disable interrupts. */
+	splhigh();
 	cold = 1;
 
 #if defined(MULTIPROCESSOR)
@@ -1031,7 +1031,6 @@ boot(int howto)
 		    cpus_running);
 #endif
 
-	/* If rebooting and a dump is requested do it. */
 	if (howto & RB_DUMP)
 		dumpsys();
 

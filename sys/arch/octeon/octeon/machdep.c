@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.56 2014/07/13 14:16:09 jasper Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -691,7 +691,7 @@ boot(int howto)
 	if_downall();
 
 	uvm_shutdown();
-	splhigh();		/* Disable interrupts. */
+	splhigh();
 	cold = 1;
 
 	if (howto & RB_DUMP)
