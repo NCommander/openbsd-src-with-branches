@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2007/11/26 08:36:49 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 2012/08/21 14:46:18 pascal Exp $
 
 MAN=	boot.8
 MANSUBDIR=hppa64
@@ -11,7 +11,7 @@ PROG=	boot
 SRCS=	srt0.S exec.c conf.c
 
 .PATH:	${S}/stand/boot
-SRCS+=	bootarg.c boot.c vars.c cmd.c 
+SRCS+=	bootarg.c boot.c vars.c cmd.c
 
 .PATH:	${S}/lib/libkern/arch/hppa ${S}/lib/libkern
 SRCS+=	milli.S ashrdi3.c memcmp.c memcpy.c memset.c muldi3.c \

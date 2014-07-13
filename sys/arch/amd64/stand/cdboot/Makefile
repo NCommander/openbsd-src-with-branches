@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2014/07/12 21:54:57 jasper Exp $
+#	$OpenBSD: Makefile,v 1.24 2014/07/13 09:26:08 jasper Exp $
 
 MAN=	cdboot.8
 
@@ -10,8 +10,8 @@ PROG=	cdboot
 SRCS=	srt0.S boot.c conf.c
 LD?=	ld
 SIZE?=	size
-LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -nopie 
-LDFLAGS+=-melf_i386 -L/usr/libdata 
+LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -nopie
+LDFLAGS+=-melf_i386 -L/usr/libdata
 INSTALL_STRIP=
 
 .PATH:	${SADIR}/libsa
