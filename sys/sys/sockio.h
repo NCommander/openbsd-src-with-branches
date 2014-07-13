@@ -199,6 +199,6 @@
 #define	SIOCSETPFLOW	_IOW('i', 253, struct ifreq)
 #define	SIOCGETPFLOW	_IOWR('i', 254, struct ifreq)
 
-#define SIOCGIFRXR	_IOW('i', 170, struct ifreq)
+#define	SIOCGIFRXR	_IOW('i', 170, struct ifreq)
 
 #endif /* !_SYS_SOCKIO_H_ */
