@@ -156,8 +156,7 @@ void
 __assert(const char *t, const char *f, int l, const char *e)
 {
 
-	panic("kernel %sassertion \"%s\" failed: file \"%s\", line %d",
-		t, e, f, l);
+	panic(__KASSERTSTR, t, e, f, l);
 }
 
 /*
