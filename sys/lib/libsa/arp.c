@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.10 2003/06/01 17:00:32 deraadt Exp $	*/
+/*	$OpenBSD: arp.c,v 1.11 2003/08/11 06:23:09 deraadt Exp $	*/
 /*	$NetBSD: arp.c,v 1.15 1996/10/13 02:28:58 christos Exp $	*/
 
 /*
@@ -46,7 +46,6 @@
 #include <netinet/in.h>
 
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 
 #include "stand.h"
 #include "net.h"

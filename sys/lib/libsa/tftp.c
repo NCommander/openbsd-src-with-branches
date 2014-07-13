@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftp.c,v 1.4 2014/03/28 01:12:58 guenther Exp $	*/
+/*	$OpenBSD: tftp.c,v 1.5 2014/06/10 09:36:42 brad Exp $	*/
 /*	$NetBSD: tftp.c,v 1.15 2003/08/18 15:45:29 dsl Exp $	 */
 
 /*
@@ -51,7 +51,6 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <netinet/udp.h>
-#include <netinet/in_systm.h>
 #include <lib/libkern/libkern.h>
 
 #include "stand.h"

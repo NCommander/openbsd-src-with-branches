@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_cksum.c,v 1.2 1996/09/23 14:18:55 mickey Exp $	*/
+/*	$OpenBSD: in_cksum.c,v 1.3 2003/08/11 06:23:09 deraadt Exp $	*/
 /*	$NetBSD: in_cksum.c,v 1.3 1995/04/22 13:53:48 cgd Exp $	*/
 
 /*
@@ -46,7 +46,6 @@
 #include <netinet/in.h>
 
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 
 #include "stand.h"
 #include "net.h"
