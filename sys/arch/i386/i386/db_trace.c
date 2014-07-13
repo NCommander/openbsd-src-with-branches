@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.12 2006/09/19 11:06:33 jsg Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.13 2006/11/28 18:56:17 uwe Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.18 1996/05/03 19:42:01 christos Exp $	*/
 
 /*
@@ -61,7 +61,7 @@ struct db_variable db_regs[] = {
 	{ "esp",	(long *)&ddb_regs.tf_esp,    FCN_NULL },
 	{ "ss",		(long *)&ddb_regs.tf_ss,     FCN_NULL },
 };
-struct db_variable *db_eregs = db_regs + sizeof(db_regs)/sizeof(db_regs[0]);
+struct db_variable *db_eregs = db_regs + nitems(db_regs);
 
 /*
  * Stack trace.

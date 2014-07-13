@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.11 2009/12/16 16:54:43 jasper Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.12 2011/01/03 05:58:19 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -116,7 +116,7 @@ struct db_variable db_regs[] = {
 };
 #undef N
 
-struct db_variable *db_eregs = db_regs + sizeof(db_regs)/sizeof(db_regs[0]);
+struct db_variable *db_eregs = db_regs + nitems(db_regs);
 
 #define TRASHES    0x001	/* clobbers instruction field D */
 #define STORE      0x002	/* does a store to S1+IMM16 */

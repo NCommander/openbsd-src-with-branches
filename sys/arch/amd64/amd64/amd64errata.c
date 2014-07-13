@@ -1,4 +1,4 @@
-/*	$OpenBSD: amd64errata.c,v 1.5 2013/05/21 21:12:17 kettenis Exp $	*/
+/*	$OpenBSD: amd64errata.c,v 1.6 2013/12/07 01:43:50 brad Exp $	*/
 /*	$NetBSD: errata.c,v 1.6 2007/02/05 21:05:45 ad Exp $	*/
 
 /*-
@@ -312,7 +312,7 @@ amd64_errata(struct cpu_info *ci)
 		}
 	}
 
-	ex = errata + sizeof(errata) / sizeof(errata[0]);
+	ex = errata + nitems(errata);
 
 	/* Reset e_reporteds (for multiple CPUs) */
 	for (e = errata; e < ex; e++)

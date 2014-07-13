@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.6 2009/05/08 02:57:32 drahn Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.7 2013/04/30 11:50:47 patrick Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.34 2003/10/26 23:11:15 chris Exp $	*/
 
 /* 
@@ -90,7 +90,7 @@ struct db_variable db_regs[] = {
 
 extern label_t       *db_recover;
 
-struct db_variable * db_eregs = db_regs + sizeof(db_regs)/sizeof(db_regs[0]);
+struct db_variable * db_eregs = db_regs + nitems(db_regs);
 
 int	db_active = 0;
 
