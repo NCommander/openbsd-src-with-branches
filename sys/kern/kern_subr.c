@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_subr.c,v 1.38 2014/07/12 18:43:32 tedu Exp $	*/
+/*	$OpenBSD: kern_subr.c,v 1.39 2014/07/13 15:29:04 tedu Exp $	*/
 /*	$NetBSD: kern_subr.c,v 1.15 1996/04/09 17:21:56 ragge Exp $	*/
 
 /*
@@ -192,7 +192,7 @@ hook_establish(struct hook_desc_head *head, int tail, void (*fn)(void *),
 {
 	struct hook_desc *hdp;
 
-	hdp = (struct hook_desc *)malloc(sizeof (*hdp), M_DEVBUF, M_NOWAIT);
+	hdp = malloc(sizeof(*hdp), M_DEVBUF, M_NOWAIT);
 	if (hdp == NULL)
 		return (NULL);
 
