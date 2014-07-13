@@ -1,4 +1,4 @@
-/*	$OpenBSD: musycc.c,v 1.20 2010/04/08 00:23:53 tedu Exp $ */
+/*	$OpenBSD: musycc.c,v 1.21 2010/05/19 15:27:35 oga Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland
@@ -115,8 +115,8 @@ musycc_attach_common(struct musycc_softc *sc, u_int32_t portmap, u_int32_t mode)
 	    MUSYCC_CONF_BLAPSE_SET(3) | MUSYCC_CONF_INTB;
 
 	/* initialize group descriptors */
-	sc->mc_groups = malloc(sc->mc_ngroups * sizeof(struct musycc_group),
-	    M_DEVBUF, M_NOWAIT | M_ZERO);
+	sc->mc_groups = mallocarray(sc->mc_ngroups,
+	    sizeof(struct musycc_group), M_DEVBUF, M_NOWAIT | M_ZERO);
 	if (sc->mc_groups == NULL) {
 		printf(": couldn't alloc group descriptors\n");
 		musycc_free_groupdesc(sc);

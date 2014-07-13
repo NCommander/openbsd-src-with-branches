@@ -1,4 +1,4 @@
-/*	$OpenBSD: emuxki.c,v 1.44 2013/12/06 21:03:03 deraadt Exp $	*/
+/*	$OpenBSD: emuxki.c,v 1.45 2014/07/12 18:48:51 tedu Exp $	*/
 /*	$NetBSD: emuxki.c,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
@@ -293,7 +293,7 @@ emuxki_dmamem_alloc(bus_dma_tag_t dmat, size_t size, bus_size_t align,
 	mem->nsegs = nsegs;
 	mem->bound = 0;
 
-	mem->segs = malloc(mem->nsegs * sizeof(*(mem->segs)), type, flags);
+	mem->segs = mallocarray(mem->nsegs, sizeof(*(mem->segs)), type, flags);
 	if (mem->segs == NULL) {
 		free(mem, type, 0);
 		return (NULL);

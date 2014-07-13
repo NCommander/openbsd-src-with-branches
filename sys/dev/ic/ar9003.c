@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9003.c,v 1.27 2013/08/07 01:06:28 bluhm Exp $	*/
+/*	$OpenBSD: ar9003.c,v 1.28 2014/07/12 18:48:17 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -725,7 +725,8 @@ ar9003_rx_alloc(struct athn_softc *sc, int qid, int count)
 	struct ar_rx_status *ds;
 	int error, i;
 
-	rxq->bf = malloc(count * sizeof(*bf), M_DEVBUF, M_NOWAIT | M_ZERO);
+	rxq->bf = mallocarray(count, sizeof(*bf), M_DEVBUF,
+	    M_NOWAIT | M_ZERO);
 	if (rxq->bf == NULL)
 		return (ENOMEM);
 

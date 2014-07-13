@@ -1,4 +1,4 @@
-/*	$OpenBSD: qle.c,v 1.29 2014/05/21 22:59:26 jmatthew Exp $ */
+/*	$OpenBSD: qle.c,v 1.30 2014/07/12 18:48:52 tedu Exp $ */
 
 /*
  * Copyright (c) 2013, 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -2844,7 +2844,7 @@ qle_alloc_ccbs(struct qle_softc *sc)
 	mtx_init(&sc->sc_port_mtx, IPL_BIO);
 	mtx_init(&sc->sc_mbox_mtx, IPL_BIO);
 
-	sc->sc_ccbs = malloc(sizeof(struct qle_ccb) * sc->sc_maxcmds,
+	sc->sc_ccbs = mallocarray(sc->sc_maxcmds, sizeof(struct qle_ccb),
 	    M_DEVBUF, M_WAITOK | M_CANFAIL | M_ZERO);
 	if (sc->sc_ccbs == NULL) {
 		printf("%s: unable to allocate ccbs\n", DEVNAME(sc));

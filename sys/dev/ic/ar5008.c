@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5008.c,v 1.23 2013/08/07 01:06:28 bluhm Exp $	*/
+/*	$OpenBSD: ar5008.c,v 1.24 2014/07/12 18:48:17 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -569,7 +569,7 @@ ar5008_rx_alloc(struct athn_softc *sc)
 	bus_size_t size;
 	int error, nsegs, i;
 
-	rxq->bf = malloc(ATHN_NRXBUFS * sizeof(*bf), M_DEVBUF,
+	rxq->bf = mallocarray(ATHN_NRXBUFS, sizeof(*bf), M_DEVBUF,
 	    M_NOWAIT | M_ZERO);
 	if (rxq->bf == NULL)
 		return (ENOMEM);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.69 2014/06/17 03:49:03 guenther Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.70 2014/07/12 18:48:51 tedu Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -1639,8 +1639,7 @@ systrace_newpolicy(struct fsystrace *fst, int maxents)
 	DPRINTF(("%s: allocating %d -> %lu\n", __func__,
 		     maxents, (u_long)maxents * sizeof(int)));
 
-	pol->sysent = (u_char *)malloc(maxents * sizeof(u_char),
-	    M_XDATA, M_WAITOK);
+	pol->sysent = malloc(maxents, M_XDATA, M_WAITOK);
 	pol->nsysent = maxents;
 	for (i = 0; i < maxents; i++)
 		pol->sysent[i] = SYSTR_POLICY_ASK;

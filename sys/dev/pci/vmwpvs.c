@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmwpvs.c,v 1.8 2013/10/30 02:11:32 dlg Exp $ */
+/*	$OpenBSD: vmwpvs.c,v 1.9 2014/07/12 18:48:52 tedu Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -507,7 +507,8 @@ vmwpvs_attach(struct device *parent, struct device *self, void *aux)
 		goto free_sgl;
 	}
 
-	sc->sc_ccbs = malloc(sizeof(struct vmwpvs_ccb) * r, M_DEVBUF, M_WAITOK);
+	sc->sc_ccbs = mallocarray(r, sizeof(struct vmwpvs_ccb),
+	    M_DEVBUF, M_WAITOK);
 	/* cant fail */
 
 	sgls = VMWPVS_DMA_KVA(sc->sc_sgls);
