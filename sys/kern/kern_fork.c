@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.171 2014/07/11 08:20:42 guenther Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -614,7 +614,7 @@ proc_trampoline_mp(void)
 	__mp_unlock(&sched_lock);
 	spl0();
 	SCHED_ASSERT_UNLOCKED();
-	KASSERT(__mp_lock_held(&kernel_lock) == 0);
+	KERNEL_ASSERT_UNLOCKED();
 
 	KERNEL_LOCK();
 }

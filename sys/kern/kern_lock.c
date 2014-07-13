@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lock.c,v 1.43 2014/01/21 01:48:44 tedu Exp $	*/
+/*	$OpenBSD$	*/
 
 /* 
  * Copyright (c) 1995
@@ -133,5 +133,11 @@ void
 _kernel_unlock(void)
 {
 	__mp_unlock(&kernel_lock);
+}
+
+int
+_kernel_lock_held(void)
+{
+	return (__mp_lock_held(&kernel_lock));
 }
 #endif /* MULTIPROCESSOR */
