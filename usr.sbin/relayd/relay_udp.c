@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_udp.c,v 1.29 2014/06/25 11:05:15 reyk Exp $	*/
+/*	$OpenBSD: relay_udp.c,v 1.30 2014/07/09 16:42:05 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2013 Reyk Floeter <reyk@openbsd.org>
@@ -280,6 +280,7 @@ relay_udp_server(int fd, short sig, void *arg)
 	}
 
 	/* Pre-allocate log buffer */
+	con->se_haslog = 0;
 	con->se_log = evbuffer_new();
 	if (con->se_log == NULL) {
 		relay_close(con, "failed to allocate log buffer");
