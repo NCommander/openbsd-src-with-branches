@@ -1,4 +1,4 @@
-/*	$OpenBSD: hdr.h,v 1.11 2003/05/12 09:13:46 pjanzen Exp $	*/
+/*	$OpenBSD: hdr.h,v 1.12 2003/06/03 03:01:37 millert Exp $	*/
 /*	$NetBSD: hdr.h,v 1.2 1995/03/21 12:05:02 cgd Exp $	*/
 
 /*-
@@ -83,7 +83,7 @@ struct hashtab	{		/* hash table for vocabulary	*/
 	char  *atab;		/* pointer to actual string	*/
 } voc[HTSIZE];
 
-#define SEED 1815622		/* "Encryption" seed		*/
+#define SEED 1815622		/* "obfuscation" seed		*/
 
 struct text {
 #ifdef OLDSTUFF

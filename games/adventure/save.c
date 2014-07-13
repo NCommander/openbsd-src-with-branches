@@ -1,4 +1,4 @@
-/*	$OpenBSD: save.c,v 1.7 2004/07/09 15:59:26 deraadt Exp $	*/
+/*	$OpenBSD: save.c,v 1.8 2009/10/27 23:59:23 deraadt Exp $	*/
 /*	$NetBSD: save.c,v 1.2 1995/03/21 12:05:08 cgd Exp $	*/
 
 /*-
@@ -139,7 +139,7 @@ save(const char *outfile)
 	fwrite(&sum, sizeof(sum), 1, out);	/* Here's the random() key */
 	for (p = save_array; p->address != NULL; p++) {
 		for (s = p->address, i = 0; i < p->width; i++, s++)
-			*s = (*s ^ random()) & 0xFF;	/* Lightly encrypt */
+			*s = (*s ^ random()) & 0xFF;	/* Slightly obfuscate */
 		fwrite(p->address, p->width, 1, out);
 	}
 	fclose(out);
@@ -167,7 +167,7 @@ restore(const char *infile)
 	for (p = save_array; p->address != NULL; p++) {
 		fread(p->address, p->width, 1, in);
 		for (s = p->address, i = 0; i < p->width; i++, s++)
-			*s = (*s ^ random()) & 0xFF;	/* Lightly decrypt */
+			*s = (*s ^ random()) & 0xFF;	/* deobfuscate */
 	}
 	fclose(in);
 

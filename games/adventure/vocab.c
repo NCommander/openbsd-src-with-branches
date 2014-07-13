@@ -1,4 +1,4 @@
-/*	$OpenBSD: vocab.c,v 1.12 2006/03/27 00:10:14 tedu Exp $	*/
+/*	$OpenBSD: vocab.c,v 1.13 2009/10/27 23:59:23 deraadt Exp $	*/
 /*	$NetBSD: vocab.c,v 1.2 1995/03/21 12:05:13 cgd Exp $	*/
 
 /*-
@@ -154,7 +154,7 @@ vocab(const char *word, int type, int value)
 			for (s = word, t = h->atab; *s;)
 				*t++ = *s++ ^ '=';
 			*t = 0 ^ '=';
-			/* encrypt slightly to thwart core reader	*/
+			/* obfuscate slightly to frustrate core reader	*/
 		/*	printf("Stored \"%s\" (%d ch) as entry %d\n",	*/
 		/*		word, length(word), adr);		*/
 			return (0);	/* entry unused			*/
