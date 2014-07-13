@@ -1,4 +1,4 @@
-.\"	$OpenBSD: port-modules.5,v 1.177 2014/07/12 21:28:58 zhuk Exp $
+.\"	$OpenBSD: port-modules.5,v 1.178 2014/07/12 22:27:09 jmc Exp $
 .\"
 .\" Copyright (c) 2008 Marc Espie
 .\"
@@ -489,7 +489,8 @@ A link from
 .Xr gconftool-2 1
 to
 .Xr true 1
-will be put at the front of the path.
+will be put at the front of the
+.Ev PATH .
 Sets
 .Ev CONFIGURE_ARGS ,
 .Ev BUILD_DEPENDS
@@ -987,6 +988,19 @@ and
 This module is documented in the main
 .Xr bsd.port.mk 5
 manpage.
+.It security/heimdal
+A link from ${LOCALBASE}/heimdal/bin/krb5-config
+to
+.Xr krb5-config 1
+will be put at the front of the path.
+Sets
+.Ev LIB_DEPENDS
+and
+.Ev WANTLIB
+according to the values of
+.Ev MODHEIMDAL_LIB_DEPENDS ,
+and
+.Ev MODHEIMDAL_WANTLIB .
 .It textproc/intltool
 Sets
 .Ev MODINTLTOOL_OVERRIDE .
