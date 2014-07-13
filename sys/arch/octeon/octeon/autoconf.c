@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.3 2012/06/17 11:02:32 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.4 2013/04/08 09:42:26 jasper Exp $	*/
 /*
  * Copyright (c) 2009 Miodrag Vallat.
  *
@@ -51,7 +51,7 @@ parse_uboot_root(void)
 	size_t len;
 
         /*
-         * Turn the U-Boot root device (root=/dev/octcf0) into a boot device.
+         * Turn the U-Boot root device (rootdev=/dev/octcf0) into a boot device.
          */
         p = strrchr(uboot_rootdev, '/');
         if (p == NULL)
