@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2012/08/31 16:13:20 pascal Exp $
+#	$OpenBSD: Makefile,v 1.8 2013/10/15 22:49:03 deraadt Exp $
 
 NOMAN=	no man
 S	=${.CURDIR}/../../../..
@@ -15,6 +15,7 @@ SRCS=	srt0.S cdboot.c
 
 .PATH:	${.CURDIR}/../libsa
 SRCS+=	pdc.c itecons.c dev_hppa.c dk.c elf32.c elf64.c
+CPPFLAGS+=-DCONSPEED=9600
 
 .PATH:	${S}/lib/libkern/arch/hppa ${S}/lib/libkern
 SRCS+=	milli.S strlen.c strlcpy.c
