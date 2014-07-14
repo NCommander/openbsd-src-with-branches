@@ -2587,7 +2587,6 @@ boot(int howto)
 	splhigh();
 	cold = 1;
 
-	/* Do a dump if requested. */
 	if (howto & RB_DUMP)
 		dumpsys();
 
