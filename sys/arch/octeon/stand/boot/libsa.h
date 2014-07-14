@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.2 2014/07/12 20:36:52 jasper Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.3 2014/07/12 23:45:33 jasper Exp $	*/
 
 /*
  * Copyright (c) 2013 Jasper Lievisse Adriaanse <jasper@openbsd.org>
@@ -42,4 +42,3 @@ int	cn30xxuartcngetc(dev_t);
  */
 void	delay(int);
 u_int	cp0_get_count(void);
-
