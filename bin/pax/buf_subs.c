@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf_subs.c,v 1.23 2009/12/22 12:09:36 jasper Exp $	*/
+/*	$OpenBSD: buf_subs.c,v 1.24 2012/12/04 02:24:45 deraadt Exp $	*/
 /*	$NetBSD: buf_subs.c,v 1.5 1995/03/21 09:07:08 cgd Exp $	*/
 
 /*-
@@ -373,7 +373,6 @@ pback(char *pt, int cnt)
 {
 	bufpt -= cnt;
 	memcpy(bufpt, pt, cnt);
-	return;
 }
 
 /*
@@ -816,7 +815,6 @@ cp_file(ARCHD *arcn, int fd1, int fd2)
 	 */
 	if (!no_hole && isem && (arcn->sb.st_size > 0L))
 		file_flush(fd2, fnm, isem);
-	return;
 }
 
 /*
