@@ -1,4 +1,4 @@
-#	$OpenBSD: changelist,v 1.91 2014/07/12 03:52:39 deraadt Exp $
+#	$OpenBSD: changelist,v 1.92 2014/07/13 13:53:36 rpe Exp $
 #
 # List of files which the security script backs up and checks
 # for modifications.
@@ -110,9 +110,9 @@
 /etc/rc.conf
 /etc/rc.conf.local
 /etc/rc.d/rc.subr
-/etc/rc.local
-/etc/rc.securelevel
-/etc/rc.shutdown
++/etc/rc.local
++/etc/rc.securelevel
++/etc/rc.shutdown
 +/etc/relayd.conf
 +/etc/remote
 /etc/resolv.conf
