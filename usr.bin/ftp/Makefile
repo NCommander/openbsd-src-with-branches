@@ -17,8 +17,8 @@ SRCS=	cmds.c cmdtab.c complete.c cookie.c domacro.c fetch.c ftp.c \
 
 CPPFLAGS+= -DINET6
 
-LDADD+=	-ledit -lcurses -lutil -lssl -lcrypto
-DPADD+=	${LIBEDIT} ${LIBCURSES} ${LIBUTIL}
+LDADD+=	-ledit -lcurses -lutil -lressl -lssl -lcrypto
+DPADD+=	${LIBEDIT} ${LIBCURSES} ${LIBUTIL} ${LIBRESSL} ${LIBSSL} ${LIBCRYPTO}
 LDSTATIC= ${STATIC}
 
 #COPTS+= -Wall -Wconversion -Wstrict-prototypes -Wmissing-prototypes
