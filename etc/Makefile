@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.370 2014/07/13 13:53:36 rpe Exp $
+#	$OpenBSD: Makefile,v 1.371 2014/07/14 09:04:02 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -229,8 +229,6 @@ distribution-etc-root-var: distrib-dirs
 	    ${DESTDIR}/var/log/wtmp
 	${INSTALL} -c -o ${BINOWN} -g wheel -m 640 /dev/null \
 	    ${DESTDIR}/var/log/xferlog
-	${INSTALL} -c -o ${BINOWN} -g utmp -m 664 /dev/null \
-	    ${DESTDIR}/var/run/utmp
 	cd ../gnu/usr.sbin/sendmail/cf/cf && exec ${MAKE} distribution
 	cd ../usr.sbin/ypserv/ypinit && exec ${MAKE} distribution
 	cd ../usr.bin/ssh && exec ${MAKE} distribution
