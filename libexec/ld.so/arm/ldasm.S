@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.14 2014/07/06 07:28:36 otto Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.15 2014/07/09 12:51:20 guenther Exp $ */
 
 /*
  * Copyright (c) 2004 Dale Rahn
@@ -125,6 +125,7 @@ DL_SYSCALL(readlink)
 DL_SYSCALL(lstat)
 DL_SYSCALL(utrace)
 DL_SYSCALL(getentropy)
+DL_SYSCALL(sendsyslog)
 DL_SYSCALL2(getcwd,__getcwd)
 DL_SYSCALL2(sysctl,__sysctl)
 
