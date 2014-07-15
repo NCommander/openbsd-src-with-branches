@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.252 2014/07/11 16:44:17 deraadt Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.253 2014/07/12 01:31:11 schwarze Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 
@@ -210,6 +210,8 @@ usr
         bin
         ..
         lib
+            pkgconfig
+            ..
         ..
         include
         ..
