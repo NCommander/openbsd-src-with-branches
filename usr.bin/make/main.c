@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.102 2013/11/24 12:36:13 espie Exp $ */
+/*	$OpenBSD: main.c,v 1.103 2014/05/15 19:40:42 chl Exp $ */
 /*	$NetBSD: main.c,v 1.34 1997/03/24 20:56:36 gwr Exp $	*/
 
 /*
@@ -578,8 +578,7 @@ read_all_make_rules(bool noBuiltins, bool read_depend,
 {
 	/*
 	 * Read in the built-in rules first, followed by the specified
-	 * makefile(s), or the default BSDmakefile, Makefile or
-	 * makefile, in that order.
+	 * makefile(s), or the default Makefile or makefile, in that order.
 	 */
 	if (!noBuiltins) {
 		LIST sysMkPath; 		/* Path of sys.mk */
@@ -594,9 +593,8 @@ read_all_make_rules(bool noBuiltins, bool read_depend,
 
 	if (!Lst_IsEmpty(makefiles)) {
 		read_makefile_list(makefiles, d);
-	} else if (!ReadMakefile("BSDmakefile", d))
-		if (!ReadMakefile("makefile", d))
-			(void)ReadMakefile("Makefile", d);
+	} else if (!ReadMakefile("makefile", d))
+		(void)ReadMakefile("Makefile", d);
 
 	/* read a .depend file, if it exists, and we're not building depend */
 
