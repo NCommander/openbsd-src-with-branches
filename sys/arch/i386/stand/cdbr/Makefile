@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2012/08/21 14:46:18 pascal Exp $
+#	$OpenBSD: Makefile,v 1.5 2013/01/18 03:45:23 jsing Exp $
 #
 
 S=	${.CURDIR}/../../../..
@@ -18,6 +18,7 @@ NOMAN=
 #MAN+=	cdbr.8
 
 INSTALL_STRIP=
+BINMODE=644
 
 ${PROG}: $(OBJS)
 	$(LD) $(LDFLAGS) -o $(PROG) $(OBJS)
