@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2.c,v 1.130 2014/01/29 06:18:35 djm Exp $ */
+/* $OpenBSD: auth2.c,v 1.131 2014/07/03 11:16:55 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -40,6 +40,7 @@
 #include "packet.h"
 #include "log.h"
 #include "buffer.h"
+#include "misc.h"
 #include "servconf.h"
 #include "compat.h"
 #include "key.h"
