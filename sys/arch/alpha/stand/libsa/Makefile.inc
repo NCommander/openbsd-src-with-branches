@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.1 1997/05/05 06:01:57 millert Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 2011/06/05 21:49:36 miod Exp $
 #	$NetBSD: Makefile.inc,v 1.5 1996/09/30 16:01:18 ws Exp $
 #
 #	NOTE: $S must correspond to the top of the 'sys' tree
@@ -37,4 +37,3 @@ depend:			.NOTMAIN __always_make_salib
 
 __always_make_salib:	.NOTMAIN
 	@([ -d ${SADST} ] || mkdir -p ${SADST})
-
