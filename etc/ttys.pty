@@ -1,4 +1,6 @@
-#! /bin/ksh
+#! /bin/sh
+#
+# $OpenBSD$
 #
 # Copyright (c) 2004 Dale Rahn <drahn@openbsd.org>
 #
