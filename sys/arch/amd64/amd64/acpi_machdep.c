@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.60 2014/04/25 14:37:06 mlarkin Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.61 2014/06/08 17:53:14 daniel Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -303,12 +303,10 @@ acpi_sleep_cpu(struct acpi_softc *sc, int state)
 
 #ifdef HIBERNATE
 		if (state == ACPI_STATE_S4) {
-			uvm_pmr_zero_everything();
 			if (hibernate_suspend()) {
 				printf("%s: hibernate_suspend failed",
 				    DEVNAME(sc));
 				hibernate_free();
-				uvm_pmr_dirty_everything();
 				return (ECANCELED);
 			}
 		}
