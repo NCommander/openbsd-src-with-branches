@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2013/08/06 19:05:57 miod Exp $
+#	$OpenBSD: Makefile,v 1.11 2014/04/15 20:55:42 miod Exp $
 
 PROG=		ldapd
 MAN=		ldapd.8 ldapd.conf.5
@@ -27,4 +27,3 @@ distribution:
 	done
 
 .include <bsd.prog.mk>
-
