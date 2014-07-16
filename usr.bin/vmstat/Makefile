@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2007/12/15 03:43:41 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.9 2014/07/02 00:12:34 dlg Exp $
 
 PROG=	vmstat
 
@@ -9,4 +9,3 @@ DPADD=	${LIBKVM}
 LDADD=	-lkvm
 
 .include <bsd.prog.mk>
-

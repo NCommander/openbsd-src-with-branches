@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2007/09/25 06:02:36 otto Exp $
+#	$OpenBSD: Makefile,v 1.15 2010/03/18 12:28:09 otto Exp $
 #
 # Makefile for OpenBSD top-3.4.
 
@@ -10,4 +10,3 @@ DPADD=	${LIBCURSES}
 LDADD=	-lcurses
 
 .include <bsd.prog.mk>
-

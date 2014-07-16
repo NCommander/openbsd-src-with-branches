@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2006/12/11 23:10:11 reyk Exp $
+#	$OpenBSD: Makefile,v 1.2 2014/04/26 11:02:45 florian Exp $
 
 PROGDIR=	${.CURDIR}/../../../usr.sbin/traceroute
 
@@ -14,4 +14,3 @@ LINKS=		${BINDIR}/traceroute ${BINDIR}/traceroute6
 BINMODE=	000
 
 .PATH:		${PROGDIR}
-
