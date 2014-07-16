@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.10 2012/06/20 18:33:59 matthew Exp $
+#	$Id: Makefile,v 1.11 2012/06/20 18:45:44 matthew Exp $
 
 .if ${MACHINE} == "macppc"
 PROG=	pdisk
@@ -18,4 +18,3 @@ MAN=	pdisk.8
 MANSUBDIR=macppc
 
 .include <bsd.prog.mk>
-
