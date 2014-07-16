@@ -1,4 +1,3 @@
-#	$OpenBSD: Makefile.inc,v 1.2 2004/02/02 21:01:19 drahn Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2004/12/31 00:14:07 drahn Exp $
 
 CRUNCHGENOPTS= -E
-

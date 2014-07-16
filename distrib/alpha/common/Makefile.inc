@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.24 2011/07/08 21:39:32 drahn Exp $
+#	$OpenBSD: Makefile.inc,v 1.25 2013/10/18 14:04:04 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -108,4 +108,3 @@ unconfig:
 beforeinstall:
 	cp ${FLOPPY} ${RELEASEDIR}
 .endif
-
