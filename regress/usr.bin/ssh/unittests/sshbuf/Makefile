@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2014/04/30 05:32:00 djm Exp $
+#	$OpenBSD: Makefile,v 1.2 2014/06/24 01:14:18 djm Exp $
 
 TEST_ENV=      "MALLOC_OPTIONS=AFGJPRX"
 
@@ -16,4 +16,3 @@ run-regress-${PROG}: ${PROG}
 	env ${TEST_ENV} ./${PROG}
 
 .include <bsd.regress.mk>
-

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2011/11/29 04:06:42 guenther Exp $
+# $OpenBSD: Makefile,v 1.1 2011/11/29 04:36:15 kurt Exp $
 
 PROGS=		prog1 prog2 prog3 prog4
 SRCS=		main.c
@@ -29,4 +29,3 @@ do-prog4: prog4
 
 ${PROGS}: ${LIBCRT0} ${OBJS} ${LIBC} ${CRTBEGIN} ${CRTEND} ${DPADD}
 	${CC} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} ${OBJS} ${LDADD_${.TARGET}}
-

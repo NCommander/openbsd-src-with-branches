@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2002/01/03 01:04:59 art Exp $
+#	$OpenBSD: Makefile,v 1.9 2002/09/02 20:01:43 avsm Exp $
 
 REGRESS_TARGETS=do-cfman do-no3man do-scatman
 REGRESS_SLOW_TARGETS=${REGRESS_TARGETS}
@@ -11,4 +11,3 @@ do-scatman:
 	perl ${.CURDIR}/scatman /usr/share/man
 
 .include <bsd.regress.mk>
-
