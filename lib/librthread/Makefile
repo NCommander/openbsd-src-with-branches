@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.37 2013/08/06 19:11:53 miod Exp $
+#	$OpenBSD: Makefile,v 1.38 2014/07/10 13:46:30 guenther Exp $
 
 LIB=pthread
 LIBCSRCDIR=	${.CURDIR}/../libc
@@ -43,4 +43,3 @@ SRCDIR= ${.CURDIR}/../libpthread
 .include "${SRCDIR}/include/Makefile.inc"
 .include "${SRCDIR}/man/Makefile.inc"
 .include <bsd.lib.mk>
-
