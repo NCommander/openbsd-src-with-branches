@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.30 2013/10/01 20:22:11 sf Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.31 2014/07/12 18:44:41 tedu Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.7 2003/07/14 22:32:40 lukem Exp $	*/
 
 /*-
@@ -736,6 +736,7 @@ apic_intr_establish(int irq, int type, int level, int (*ih_fun)(void *),
 	ih->ih_arg = ih_arg;
 	ih->ih_next = NULL;
 	ih->ih_level = level;
+	ih->ih_flags = flags;
 	ih->ih_irq = irq;
 	evcount_attach(&ih->ih_count, ih_what, &pin->ip_vector);
 
