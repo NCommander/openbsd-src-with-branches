@@ -1,4 +1,4 @@
-/*	$OpenBSD: itecons.c,v 1.10 2008/01/23 16:37:56 jsing Exp $	*/
+/*	$OpenBSD: itecons.c,v 1.11 2014/07/12 23:34:54 jasper Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -186,7 +186,7 @@ ite_getc(dev)
 			printf("KBD input error: %d", err);
 #endif
 
-		/* if we are doing ischar() report immidiatelly */
+		/* if we are doing ischar() report immediately */
 		if (!i-- && (dev & 0x80) && l == 0) {
 #ifdef DEBUG
 			if (debug > 2)
