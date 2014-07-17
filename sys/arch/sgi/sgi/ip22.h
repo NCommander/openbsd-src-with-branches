@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip22.h,v 1.7 2012/06/24 20:29:46 miod Exp $	*/
+/*	$OpenBSD: ip22.h,v 1.8 2012/09/29 21:46:02 miod Exp $	*/
 
 /*
  * Copyright (c) 2012 Miodrag Vallat.
@@ -46,3 +46,4 @@ int	ip22_slow_mode(void);
 int	ip22_restore_mode(int);
 
 void	ip22_ConfigCache(struct cpu_info *);
+extern void (*ip22_extsync)(struct cpu_info *, paddr_t, size_t, int);
