@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.157 2014/06/14 18:01:42 deraadt Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.158 2014/07/12 18:48:51 tedu Exp $	*/
 
 /*
  * Copyright (c) 2011 Theo de Raadt.
@@ -946,6 +946,7 @@ sys_getentropy(struct proc *p, void *v, register_t *retval)
 	arc4random_buf(buf, SCARG(uap, nbyte));
 	if ((error = copyout(buf, SCARG(uap, buf), SCARG(uap, nbyte))) != 0)
 		return (error);
+	explicit_bzero(buf, sizeof(buf));
 	retval[0] = 0;
 	return (0);
 }
