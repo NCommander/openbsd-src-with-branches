@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.10 2014/03/29 18:09:29 guenther Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.11 2014/07/13 08:13:07 miod Exp $	*/
 
 /* Public Domain */
 
@@ -137,12 +137,12 @@ atomic_clear_int(volatile unsigned int *uip)
 	((unsigned long)atomic_cas_uint((unsigned int *)p, (unsigned int)o, \
 	 (unsigned int)n))
 #define	atomic_cas_ptr(p,o,n) \
-	((void *)atomic_cas_uint((void **)p, (void *)o, (void *)n))
+	((void *)atomic_cas_uint((void *)p, (void *)o, (void *)n))
 
 #define	atomic_swap_ulong(p,o) \
 	((unsigned long)atomic_swap_uint((unsigned int *)p, (unsigned int)o)
 #define	atomic_swap_ptr(p,o) \
-	((void *)atomic_swap_uint((void **)p, (void *)o))
+	((void *)atomic_swap_uint((void *)p, (void *)o))
 
 static inline void
 __sync_synchronize(void)
