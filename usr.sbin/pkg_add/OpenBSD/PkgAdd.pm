@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgAdd.pm,v 1.71 2014/07/12 19:58:20 espie Exp $
+# $OpenBSD: PkgAdd.pm,v 1.72 2014/07/12 22:08:23 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -280,7 +280,8 @@ sub check_security
 			if (defined $bad) {
 				require OpenBSD::PkgSpec;
 				my $spec = OpenBSD::PkgSpec->new($bad);
-				if ($spec->match_locations([$h->{location}])) {
+				my $r = $spec->match_locations([$h->{location}]);
+				if (@$r != 0) {
 					$error++;
 				}
 			}
