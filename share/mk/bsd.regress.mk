@@ -1,4 +1,4 @@
-# $OpenBSD: bsd.regress.mk,v 1.11 2013/06/14 22:38:50 halex Exp $
+# $OpenBSD: bsd.regress.mk,v 1.12 2013/08/01 20:43:07 kettenis Exp $
 # Documented in bsd.regress.mk(5)
 
 # No man pages for regression tests.
@@ -55,7 +55,7 @@ REGRESS_SKIP_TARGETS=run-regress-${PROG}
 .  endif
 .endif
 
-.if defined(REGRESS_SLOW_TARGETS) && !empty(REGRESS_SKIP_SLOW)
+.if defined(REGRESS_SLOW_TARGETS) && ${REGRESS_SKIP_SLOW} != no
 REGRESS_SKIP_TARGETS+=${REGRESS_SLOW_TARGETS}
 .endif
 
