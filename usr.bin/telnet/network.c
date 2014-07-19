@@ -1,4 +1,4 @@
-/*	$OpenBSD: network.c,v 1.8 2003/06/03 02:56:18 millert Exp $	*/
+/*	$OpenBSD: network.c,v 1.9 2013/04/21 09:51:24 millert Exp $	*/
 /*	$NetBSD: network.c,v 1.5 1996/02/28 21:04:06 thorpej Exp $	*/
 
 /*
@@ -110,10 +110,6 @@ netflush()
 {
     int n, n1;
 
-#if    defined(ENCRYPTION)
-    if (encrypt_output)
-	ring_encrypt(&netoring, encrypt_output);
-#endif
     if ((n1 = n = ring_full_consecutive(&netoring)) > 0) {
 	if (!ring_at_mark(&netoring)) {
 	    n = send(net, (char *)netoring.consume, n, 0); /* normal write */

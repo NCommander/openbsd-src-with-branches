@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.29 2014/04/15 20:55:42 miod Exp $
+#	$OpenBSD: Makefile,v 1.30 2014/04/22 10:21:56 reyk Exp $
 #
 # Copyright (c) 1990 The Regents of the University of California.
 # All rights reserved.
@@ -32,13 +32,12 @@
 
 PROG=	telnet
 
-CFLAGS+=-DKLUDGELINEMODE -DUSE_TERMIO -DENV_HACK -DSKEY -Dunix -I${.CURDIR}
-CFLAGS+= -DHAS_CGETENT -Wall -Wno-unused
+CFLAGS+=-DKLUDGELINEMODE -DSKEY -I${.CURDIR}
+CFLAGS+= -Wall -Wno-unused -Werror-implicit-function-declaration
 LDADD+=	-lcurses
 DPADD=	${LIBCURSES}
 
-SRCS=	authenc.c commands.c main.c network.c ring.c sys_bsd.c telnet.c \
-	terminal.c tn3270.c utilities.c auth.c encrypt.c genget.c getent.c \
-	misc.c
+SRCS=	commands.c main.c network.c ring.c sys_bsd.c telnet.c \
+	terminal.c utilities.c genget.c
 
 .include <bsd.prog.mk>
