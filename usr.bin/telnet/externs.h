@@ -1,4 +1,4 @@
-/*	$OpenBSD: externs.h,v 1.22 2014/07/20 08:12:45 guenther Exp $	*/
+/*	$OpenBSD: externs.h,v 1.23 2014/07/20 08:56:47 guenther Exp $	*/
 /* $KTH: externs.h,v 1.16 1997/11/29 02:28:35 joda Exp $ */
 
 /*
@@ -311,12 +311,8 @@ extern struct	termios new_tc;
 # define termIntChar		new_tc.c_cc[VINTR]
 # define termKillChar		new_tc.c_cc[VKILL]
 # define termQuitChar		new_tc.c_cc[VQUIT]
+# define termSuspChar		new_tc.c_cc[VSUSP]
 
-# ifndef	VSUSP
-extern cc_t termSuspChar;
-# else
-#  define termSuspChar		new_tc.c_cc[VSUSP]
-# endif
 # if	defined(VFLUSHO) && !defined(VDISCARD)
 #  define VDISCARD VFLUSHO
 # endif
