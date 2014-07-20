@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.55 2013/10/26 21:33:29 sthen Exp $	*/
+/*	$OpenBSD: commands.c,v 1.56 2014/07/19 23:50:38 guenther Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -610,10 +610,10 @@ static struct togglelist Togglelist[] = {
 		&autosynch,
 		    "send interrupt characters in urgent mode" },
     { "autologin",
-	"automatic sending of login and/or authentication info",
+	"automatic sending of login name",
 	    0,
 		&autologin,
-		    "send login name and/or authentication information" },
+		    "send login name" },
     { "skiprc",
 	"don't read ~/.telnetrc file",
 	    0,
