@@ -1,4 +1,4 @@
-/*	$OpenBSD: enqueue.c,v 1.80 2014/04/05 13:43:16 gilles Exp $	*/
+/*	$OpenBSD: enqueue.c,v 1.81 2014/06/06 15:02:08 gilles Exp $	*/
 
 /*
  * Copyright (c) 2005 Henning Brauer <henning@bulabula.org>
@@ -288,11 +288,12 @@ enqueue(int argc, char *argv[])
 
 	if ((fd = mkstemp(sfn)) == -1 ||
 	    (fp = fdopen(fd, "w+")) == NULL) {
+		int saved_errno = errno;
 		if (fd != -1) {
 			unlink(sfn);
 			close(fd);
 		}
-		err(EX_UNAVAILABLE, "mkstemp");
+		errc(EX_UNAVAILABLE, saved_errno, "mkstemp");
 	}
 	unlink(sfn);
 	noheader = parse_message(stdin, fake_from == NULL, tflag, fp);

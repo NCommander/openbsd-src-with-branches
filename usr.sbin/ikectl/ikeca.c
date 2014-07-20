@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikeca.c,v 1.25 2013/01/08 10:38:19 reyk Exp $	*/
+/*	$OpenBSD: ikeca.c,v 1.26 2014/04/18 21:29:20 tedu Exp $	*/
 
 /*
  * Copyright (c) 2010 Jonathan Gray <jsg@openbsd.org>
@@ -473,8 +473,9 @@ fcopy(char *src, char *dst, mode_t mode)
 		err(1, "open %s", src);
 
 	if ((ofd = open(dst, O_WRONLY|O_CREAT|O_TRUNC, mode)) == -1) {
+		int saved_errno = errno;
 		close(ifd);
-		err(1, "open %s", dst);
+		errc(1, saved_errno, "open %s", dst);
 	}
 
 	while ((r = read(ifd, buf, sizeof(buf))) > 0) {

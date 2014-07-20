@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mkdb.c,v 1.16 2005/04/14 22:21:24 djm Exp $	*/
+/*	$OpenBSD: kvm_mkdb.c,v 1.17 2009/10/27 23:59:51 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -161,8 +161,8 @@ kvm_mkdb(int fd, const char *dbdir, char *nlistpath, char *nlistname,
 		return(1);
 	}
 	if (create_knlist(nlistpath, fd, db) != 0) {
-		(void)unlink(dbtemp);
 		warn("cannot determine executable type of %s", nlistpath);
+		(void)unlink(dbtemp);
 		return(1);
 	}
 	if (db->close(db)) {
