@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: machdep.c,v 1.162 2014/07/13 22:53:38 uebayasi Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -721,12 +721,6 @@ nobootinfo:
 			boothowto |= RB_HALT;
 			break;
 
-#if 0
-		case 'm': /* mini root present in memory */
-		case 'M':
-			boothowto |= RB_MINIROOT;
-			break;
-#endif
 
 		case 'n': /* askname */
 		case 'N':
