@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_bsd.c,v 1.16 2014/07/19 23:50:38 guenther Exp $	*/
+/*	$OpenBSD: sys_bsd.c,v 1.17 2014/07/20 05:22:02 guenther Exp $	*/
 /*	$NetBSD: sys_bsd.c,v 1.11 1996/02/28 21:04:10 thorpej Exp $	*/
 
 /*
@@ -31,8 +31,10 @@
  */
 
 #include "telnet_locl.h"
+
 #include <sys/ioctl.h>
 #include <poll.h>
+#include <unistd.h>
 
 /*
  * The following routines try to encapsulate what is system dependent
