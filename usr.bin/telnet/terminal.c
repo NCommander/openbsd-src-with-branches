@@ -1,4 +1,4 @@
-/*	$OpenBSD: terminal.c,v 1.10 2014/07/20 08:12:46 guenther Exp $	*/
+/*	$OpenBSD: terminal.c,v 1.11 2014/07/20 09:31:25 guenther Exp $	*/
 /*	$NetBSD: terminal.c,v 1.5 1996/02/28 21:04:17 thorpej Exp $	*/
 
 /*
@@ -153,11 +153,7 @@ ttyflush(drop)
     int
 getconnmode()
 {
-    extern int linemode;
     int mode = 0;
-#ifdef	KLUDGELINEMODE
-    extern int kludgelinemode;
-#endif
 
     if (my_want_state_is_dont(TELOPT_ECHO))
 	mode |= MODE_ECHO;
