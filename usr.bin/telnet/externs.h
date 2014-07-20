@@ -1,4 +1,4 @@
-/*	$OpenBSD: externs.h,v 1.23 2014/07/20 08:56:47 guenther Exp $	*/
+/*	$OpenBSD: externs.h,v 1.24 2014/07/20 09:31:25 guenther Exp $	*/
 /* $KTH: externs.h,v 1.16 1997/11/29 02:28:35 joda Exp $ */
 
 /*
@@ -180,7 +180,6 @@ void command(int top, char *tbuf, int cnt);
 /* main.c */
 
 void tninit(void);
-void usage(void);
 
 /* network.c */
 
@@ -302,7 +301,7 @@ void printsub(int direction, unsigned char *pointer, int length);
 void EmptyTerminal(void);
 void SetForExit(void);
 __dead void Exit(int returnCode);
-void ExitString(char *string, int returnCode);
+__dead void ExitString(char *string, int returnCode);
 
 extern struct	termios new_tc;
 
