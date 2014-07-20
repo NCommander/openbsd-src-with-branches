@@ -1,4 +1,4 @@
-/*	$OpenBSD: externs.h,v 1.17 2013/10/26 21:33:29 sthen Exp $	*/
+/*	$OpenBSD: externs.h,v 1.18 2014/07/19 23:50:38 guenther Exp $	*/
 /* $KTH: externs.h,v 1.16 1997/11/29 02:28:35 joda Exp $ */
 
 /*
@@ -49,7 +49,6 @@ extern int
     localchars,		/* we recognize interrupt/quit */
     donelclchars,	/* the user has set "localchars" */
     showoptions,
-    wantencryption,	/* User has requested encryption */
     net,		/* Network file descriptor */
     tin,		/* Terminal input file descriptor */
     tout,		/* Terminal output file descriptor */
