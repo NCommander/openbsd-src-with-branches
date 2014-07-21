@@ -535,7 +535,7 @@ boot(int howto)
 	splhigh();
 	cold = 1;
 
-	if (howto & RB_DUMP)
+	if ((howto & RB_DUMP) != 0)
 		dumpsys();
 
 haltsys:
@@ -544,7 +544,7 @@ haltsys:
 	if (mainbus != NULL)
 		config_suspend(mainbus, DVACT_POWERDOWN);
 
-	if (howto & RB_HALT) {
+	if ((howto & RB_HALT) != 0) {
 		if (dep_call->cpu_halt)
 			(*dep_call->cpu_halt) ();
 		printf("halting (in tight loop); hit\n\t^P\n\tHALT\n\n");

@@ -295,7 +295,7 @@ boot(int howto)
 	struct device *mainbus;
 	extern int lid_suspend;
 
-	if (howto & RB_POWERDOWN)
+	if ((howto & RB_POWERDOWN) != 0)
 		lid_suspend = 0;
 
 	if (cold) {
@@ -311,7 +311,7 @@ boot(int howto)
 	 * that it cannot page part of the binary in as the filesystem has
 	 * been unmounted.
 	 */
-	if (!(howto & RB_NOSYNC))
+	if ((howto & RB_NOSYNC) == 0)
 		bootsync(howto);
 
 	if_downall();
@@ -332,9 +332,9 @@ haltsys:
 	/* Make sure IRQ's are disabled */
 	IRQdisable;
 
-	if (howto & RB_HALT) {
+	if ((howto & RB_HALT) != 0) {
 #if NAPM > 0
-		if (howto & RB_POWERDOWN) {
+		if ((howto & RB_POWERDOWN) != 0) {
 
 			printf("\nAttempting to power down...\n");
 			delay(6000000);

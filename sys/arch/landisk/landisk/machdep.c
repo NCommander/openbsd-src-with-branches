@@ -217,7 +217,7 @@ boot(int howto)
 	splhigh();
 	cold = 1;
 
-	if (howto & RB_DUMP)
+	if ((howto & RB_DUMP) != 0)
 		dumpsys();
 
 haltsys:
@@ -226,14 +226,14 @@ haltsys:
 	if (mainbus != NULL)
 		config_suspend(mainbus, DVACT_POWERDOWN);
 
-	if ((howto & RB_POWERDOWN) == RB_POWERDOWN) {
+	if ((howto & RB_POWERDOWN) != 0) {
 		_reg_write_1(LANDISK_PWRMNG, PWRMNG_POWEROFF);
 		delay(1 * 1000 * 1000);
 		printf("POWEROFF FAILED!\n");
 		howto |= RB_HALT;
 	}
 
-	if (howto & RB_HALT) {
+	if ((howto & RB_HALT) != 0) {
 		printf("\n");
 		printf("The operating system has halted.\n");
 		printf("Please press any key to reboot.\n\n");

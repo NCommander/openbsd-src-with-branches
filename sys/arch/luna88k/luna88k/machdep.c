@@ -495,7 +495,7 @@ boot(int howto)
 	splhigh();
 	cold = 1;
 
-	if (howto & RB_DUMP)
+	if ((howto & RB_DUMP) != 0)
 		dumpsys();
 
 haltsys:
@@ -505,13 +505,13 @@ haltsys:
 		config_suspend(mainbus, DVACT_POWERDOWN);
 
 	/* LUNA-88K supports automatic powerdown */
-	if ((howto & RB_POWERDOWN) == RB_POWERDOWN) {
+	if ((howto & RB_POWERDOWN) != 0) {
 		printf("attempting to power down...\n");
 		powerdown();
 		/* if failed, fall through. */
 	}
 
-	if (howto & RB_HALT) {
+	if ((howto & RB_HALT) != 0) {
 		printf("halted\n\n");
 	} else {
 		/* Reset all cpus, which causes reboot */

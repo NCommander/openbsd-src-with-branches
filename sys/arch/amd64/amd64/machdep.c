@@ -748,7 +748,7 @@ boot(int howto)
 {
 	struct device *mainbus;
 
-	if (howto & RB_POWERDOWN)
+	if ((howto & RB_POWERDOWN) != 0)
 		lid_suspend = 0;
 
 	if (cold) {
@@ -776,7 +776,7 @@ boot(int howto)
 	splhigh();
 	cold = 1;
 
-	if (howto & RB_DUMP)
+	if ((howto & RB_DUMP) != 0)
 		dumpsys();
 
 haltsys:
@@ -789,13 +789,13 @@ haltsys:
 	x86_broadcast_ipi(X86_IPI_HALT);
 #endif
 
-	if (howto & RB_HALT) {
+	if ((howto & RB_HALT) != 0) {
 #if NACPI > 0 && !defined(SMALL_KERNEL)
 		extern int acpi_enabled;
 
 		if (acpi_enabled) {
 			delay(500000);
-			if (howto & RB_POWERDOWN)
+			if ((howto & RB_POWERDOWN) != 0)
 				acpi_powerdown();
 		}
 #endif
@@ -811,7 +811,7 @@ haltsys:
 	if (cpureset_delay > 0)
 		delay(cpureset_delay * 1000);
 	cpu_reset();
-	for(;;) ;
+	for (;;) ;
 	/* NOTREACHED */
 }
 

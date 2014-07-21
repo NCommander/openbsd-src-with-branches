@@ -321,7 +321,7 @@ boot(int howto)
 	splhigh();
 	cold = 1;
 
-	if (howto & RB_DUMP)
+	if ((howto & RB_DUMP) != 0)
 		dumpsys();
 
 haltsys:
@@ -330,7 +330,7 @@ haltsys:
 	if (mainbus != NULL)
 		config_suspend(mainbus, DVACT_POWERDOWN);
 
-	if (howto & RB_HALT) {
+	if ((howto & RB_HALT) != 0) {
 		printf("System halted.\n\n");
 		bootstack();
 		cmmu_shutdown();
