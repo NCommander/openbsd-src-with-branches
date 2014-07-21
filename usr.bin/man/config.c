@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.8 2007/03/20 03:50:39 tedu Exp $	*/
+/*	$OpenBSD: config.c,v 1.9 2009/10/27 23:59:40 deraadt Exp $	*/
 /*	$NetBSD: config.c,v 1.7 1995/09/28 06:05:21 tls Exp $	*/
 
 /*
@@ -92,8 +92,7 @@ config(char *fname)
 			continue;
 		*t = '\0';
 
-		for (tp = TAILQ_FIRST(&head);	/* Find any matching tag. */
-		    tp != NULL && strcmp(p, tp->s); tp = TAILQ_NEXT(tp, q));
+		tp = getlist(p);	/* Find any matching tag. */
 
 		if (tp == NULL)		/* Create a new tag. */
 			tp = addlist(p);
