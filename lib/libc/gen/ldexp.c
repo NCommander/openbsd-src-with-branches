@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldexp.c,v 1.7 2013/03/28 18:09:38 martynas Exp $	*/
+/*	$OpenBSD: ldexp.c,v 1.8 2013/07/03 04:46:36 espie Exp $	*/
 /* @(#)s_scalbn.c 5.1 93/09/24 */
 /* @(#)fdlibm.h 5.1 93/09/24 */
 /*
@@ -13,7 +13,7 @@
  */
 
 #include <sys/types.h>
-#include <machine/endian.h>
+#include <endian.h>
 #include <float.h>
 #include <math.h>
 

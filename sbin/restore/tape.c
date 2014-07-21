@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.40 2012/07/14 08:58:18 halex Exp $	*/
+/*	$OpenBSD: tape.c,v 1.41 2013/04/24 13:46:29 deraadt Exp $	*/
 /*	$NetBSD: tape.c,v 1.26 1997/04/15 07:12:25 lukem Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
 #include <sys/stat.h>
-#include <sys/endian.h>
 
 #include <ufs/ufs/dinode.h>
 #include <protocols/dumprestore.h>

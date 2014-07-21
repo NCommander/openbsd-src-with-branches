@@ -1,4 +1,4 @@
-/*	$OpenBSD: pppoe.h,v 1.4 2012/05/08 13:15:12 yasuoka Exp $ */
+/*	$OpenBSD: pppoe.h,v 1.5 2012/09/18 13:14:08 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -62,7 +62,7 @@
 
 /** PPPoE Protocol Header */
 struct pppoe_header {
-#if _BYTE_ORDER == _BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
     uint8_t ver:4, type:4;
 #else
     uint8_t type:4, ver:4;
