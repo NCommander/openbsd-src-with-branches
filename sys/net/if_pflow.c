@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflow.c,v 1.43 2014/04/21 12:22:25 henning Exp $	*/
+/*	$OpenBSD: if_pflow.c,v 1.44 2014/07/12 18:44:22 tedu Exp $	*/
 
 /*
  * Copyright (c) 2011 Florian Obser <florian@narrans.de>
@@ -41,7 +41,6 @@
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/udp.h>

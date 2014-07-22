@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.258 2014/07/13 16:41:21 claudio Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.259 2014/07/17 13:44:21 tedu Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -83,7 +83,6 @@
 
 #include <net/route.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/in_pcb.h>
 #include <netinet/ip6.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.224 2014/07/09 09:30:49 henning Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.225 2014/07/12 18:44:22 tedu Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -57,7 +57,6 @@
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/if_ether.h>

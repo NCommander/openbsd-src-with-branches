@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.13 2014/04/21 12:22:25 henning Exp $	*/
+/*	$OpenBSD: if_vxlan.c,v 1.14 2014/07/12 18:44:22 tedu Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -44,7 +44,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_var.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>

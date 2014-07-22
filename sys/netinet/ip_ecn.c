@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ecn.c,v 1.4 2002/05/16 14:10:51 kjc Exp $	*/
+/*	$OpenBSD: ip_ecn.c,v 1.5 2012/03/15 16:37:11 markus Exp $	*/
 /*	$KAME: ip_ecn.c,v 1.9 2000/10/01 12:44:48 itojun Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #endif
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_trunk.c,v 1.88 2014/07/09 09:30:49 henning Exp $	*/
+/*	$OpenBSD: if_trunk.c,v 1.89 2014/07/12 18:44:22 tedu Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -43,7 +43,6 @@
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 #endif

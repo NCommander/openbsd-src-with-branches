@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ruleset.c,v 1.7 2012/11/15 17:44:10 deraadt Exp $ */
+/*	$OpenBSD: pf_ruleset.c,v 1.8 2014/07/12 18:44:22 tedu Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -44,7 +44,6 @@
 #include <sys/syslog.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 

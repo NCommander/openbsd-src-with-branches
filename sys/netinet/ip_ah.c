@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.c,v 1.109 2014/07/09 09:30:49 henning Exp $ */
+/*	$OpenBSD: ip_ah.c,v 1.110 2014/07/12 18:44:23 tedu Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -48,7 +48,6 @@
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #endif /* INET */

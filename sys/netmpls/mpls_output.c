@@ -1,4 +1,4 @@
-/* $OpenBSD: mpls_output.c,v 1.15 2011/04/04 17:44:43 henning Exp $ */
+/* $OpenBSD: mpls_output.c,v 1.16 2013/04/24 10:20:15 mpi Exp $ */
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -29,7 +29,6 @@
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #endif
 

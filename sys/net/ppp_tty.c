@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp_tty.c,v 1.25 2012/03/28 19:39:33 claudio Exp $	*/
+/*	$OpenBSD: ppp_tty.c,v 1.27 2014/04/19 12:18:35 henning Exp $	*/
 /*	$NetBSD: ppp_tty.c,v 1.12 1997/03/24 21:23:10 christos Exp $	*/
 
 /*
@@ -117,7 +117,6 @@
 
 #ifdef VJC
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <net/slcompress.h>
 #endif

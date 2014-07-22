@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.126 2014/06/03 13:32:24 mpi Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.127 2014/07/08 17:19:26 deraadt Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -85,7 +85,6 @@
 #include <net/netisr.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 
 #ifdef INET
 #include <netinet/ip.h>

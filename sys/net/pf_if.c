@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_if.c,v 1.72 2014/01/22 04:33:34 henning Exp $ */
+/*	$OpenBSD: pf_if.c,v 1.73 2014/07/12 18:44:22 tedu Exp $ */
 
 /*
  * Copyright 2005 Henning Brauer <henning@openbsd.org>
@@ -48,7 +48,6 @@
 #include <net/if_types.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 

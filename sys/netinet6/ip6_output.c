@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.156 2014/04/21 11:10:54 henning Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.157 2014/07/12 18:44:23 tedu Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -78,7 +78,6 @@
 #include <net/route.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/in_pcb.h>
 #include <netinet/udp.h>

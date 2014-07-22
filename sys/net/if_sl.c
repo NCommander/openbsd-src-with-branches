@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sl.c,v 1.51 2014/04/14 09:06:42 mpi Exp $	*/
+/*	$OpenBSD: if_sl.c,v 1.52 2014/07/12 18:44:22 tedu Exp $	*/
 /*	$NetBSD: if_sl.c,v 1.39.4.1 1996/06/02 16:26:31 thorpej Exp $	*/
 
 /*
@@ -81,7 +81,6 @@
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #else
 #error Huh? Slip without inet?

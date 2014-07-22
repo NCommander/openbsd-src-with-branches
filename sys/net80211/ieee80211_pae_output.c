@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_pae_output.c,v 1.15 2009/01/26 19:09:41 damien Exp $	*/
+/*	$OpenBSD: ieee80211_pae_output.c,v 1.16 2010/06/05 15:54:35 damien Exp $	*/
 
 /*-
  * Copyright (c) 2007,2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -42,7 +42,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #endif
 

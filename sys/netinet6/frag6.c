@@ -1,4 +1,4 @@
-/*	$OpenBSD: frag6.c,v 1.52 2014/04/14 09:06:42 mpi Exp $	*/
+/*	$OpenBSD: frag6.c,v 1.53 2014/07/12 18:44:23 tedu Exp $	*/
 /*	$KAME: frag6.c,v 1.40 2002/05/27 21:40:31 itojun Exp $	*/
 
 /*
@@ -50,7 +50,6 @@
 #include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>
 #include <netinet/icmp6.h>
-#include <netinet/in_systm.h>	/* for ECN definitions */
 #include <netinet/ip.h>		/* for ECN definitions */
 
 #include <dev/rndvar.h>

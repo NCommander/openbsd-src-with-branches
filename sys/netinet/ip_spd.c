@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_spd.c,v 1.70 2014/01/09 06:29:06 tedu Exp $ */
+/* $OpenBSD: ip_spd.c,v 1.71 2014/04/14 09:06:42 mpi Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -36,7 +36,6 @@
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/in_pcb.h>

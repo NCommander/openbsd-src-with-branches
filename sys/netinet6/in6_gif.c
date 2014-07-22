@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_gif.c,v 1.30 2011/04/03 13:54:21 stsp Exp $	*/
+/*	$OpenBSD: in6_gif.c,v 1.31 2013/05/31 15:04:23 bluhm Exp $	*/
 /*	$KAME: in6_gif.c,v 1.43 2001/01/22 07:27:17 itojun Exp $	*/
 
 /*
@@ -49,7 +49,6 @@
 #endif
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip_ipsp.h>
 
 #ifdef INET
