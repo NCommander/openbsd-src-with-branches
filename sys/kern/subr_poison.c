@@ -44,17 +44,7 @@ poison_value(void *v)
 
 	l = l >> PAGE_SHIFT;
 
-	switch (l & 3) {
-	case 0:
-		return POISON0;
-	case 1:
-		return POISON1;
-	case 2:
-		return ~POISON0;
-	case 3:
-		return ~POISON1;
-	}
-	return 0;
+	return (l & 1) ? POISON0 : POISON1;
 }
 
 void
