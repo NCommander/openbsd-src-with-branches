@@ -942,7 +942,7 @@ haltsys:
 		(*cold_hook)(HPPA_COLD_COLD);
 
 	if ((howto & RB_HALT) != 0) {
-		if ((howto & RB_POWERDOWN) != 0 && cold_hook) {
+		if ((howto & RB_POWERDOWN) != 0) {
 			printf("Powering off...");
 			DELAY(2000000);
 			(*cold_hook)(HPPA_COLD_OFF);
