@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mc.c,v 1.15 2013/08/07 22:22:42 bluhm Exp $	*/
+/*	$OpenBSD: if_mc.c,v 1.16 2013/10/23 10:31:19 mpi Exp $	*/
 /*	$NetBSD: if_mc.c,v 1.9.16.1 2006/06/21 14:53:13 yamt Exp $	*/
 
 /*-
@@ -50,14 +50,8 @@
 #include <net/if_dl.h>
 #include <net/if_media.h>
 
-#include <uvm/uvm_extern.h>
-
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
-#endif
 
 #include "bpfilter.h"
 #if NBPFILTER > 0

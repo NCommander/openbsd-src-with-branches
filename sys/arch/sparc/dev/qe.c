@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.34 2013/09/05 20:55:58 bluhm Exp $	*/
+/*	$OpenBSD: qe.c,v 1.35 2013/11/27 08:56:31 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998, 2000 Jason L. Wright.
@@ -51,12 +51,8 @@
 #include <net/if_media.h>
 #include <net/netisr.h>
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include "bpfilter.h"
 #if NBPFILTER > 0

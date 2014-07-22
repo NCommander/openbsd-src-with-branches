@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.45 2013/11/27 08:56:31 mpi Exp $	*/
+/*	$OpenBSD: be.c,v 1.46 2013/12/24 01:11:04 dlg Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -43,12 +43,8 @@
 #include <net/netisr.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include "bpfilter.h"
 #if NBPFILTER > 0

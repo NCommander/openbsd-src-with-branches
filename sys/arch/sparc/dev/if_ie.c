@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.44 2013/11/27 08:56:31 mpi Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.46 2014/07/09 09:30:49 henning Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.33 1997/07/29 17:55:38 fair Exp $	*/
 
 /*-
@@ -123,15 +123,10 @@ Mode of operation:
 #include <net/bpfdesc.h>
 #endif
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <uvm/uvm_extern.h>
-#include <uvm/uvm_map.h>
 
 /*
  * ugly byte-order hack for SUNs

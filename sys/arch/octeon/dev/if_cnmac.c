@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnmac.c,v 1.13 2014/03/10 09:41:27 jasper Exp $	*/
+/*	$OpenBSD: if_cnmac.c,v 1.14 2014/05/10 22:25:16 jasper Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -58,15 +58,10 @@
 #include <net/if_media.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <net/route.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
 #endif
-
-#include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 
 #include <machine/bus.h>
 #include <machine/intr.h>
