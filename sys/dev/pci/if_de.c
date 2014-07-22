@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.113 2014/04/19 12:25:03 henning Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.114 2014/04/22 14:41:03 mpi Exp $	*/
 /*	$NetBSD: if_de.c,v 1.58 1998/01/12 09:39:58 thorpej Exp $	*/
 
 /*-
@@ -62,12 +62,7 @@
 #include <net/bpf.h>
 #endif
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
-#endif
-
 #include <netinet/if_ether.h>
 
 #include <machine/bus.h>

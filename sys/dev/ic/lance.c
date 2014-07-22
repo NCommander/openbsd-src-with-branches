@@ -1,4 +1,4 @@
-/*	$OpenBSD: lance.c,v 1.2 2013/11/26 09:50:33 mpi Exp $	*/
+/*	$OpenBSD: lance.c,v 1.3 2014/07/13 23:10:23 deraadt Exp $	*/
 /*	$NetBSD: lance.c,v 1.46 2012/02/02 19:43:03 tls Exp $	*/
 
 /*-
@@ -83,8 +83,6 @@
 #ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #endif
 
 #if NBPFILTER > 0

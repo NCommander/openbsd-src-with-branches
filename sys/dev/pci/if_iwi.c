@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwi.c,v 1.116 2013/12/06 21:03:04 deraadt Exp $	*/
+/*	$OpenBSD: if_iwi.c,v 1.117 2014/07/12 18:48:51 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -51,9 +51,7 @@
 #include <net/if_types.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
-#include <netinet/ip.h>
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_radiotap.h>

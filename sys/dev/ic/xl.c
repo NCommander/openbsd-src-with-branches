@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.113 2014/05/30 19:51:22 chl Exp $	*/
+/*	$OpenBSD: xl.c,v 1.114 2014/07/08 05:35:18 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -121,8 +121,6 @@
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.133 2014/04/19 14:47:51 henning Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.134 2014/07/08 05:35:19 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -76,8 +76,6 @@
 #include <sys/device.h>
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif	/* INET */
 #include <net/if_dl.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl10019.c,v 1.4 2008/06/26 05:42:15 ray Exp $	*/
+/*	$OpenBSD: dl10019.c,v 1.5 2013/08/07 01:06:29 bluhm Exp $	*/
 /*	$NetBSD$	*/
 
 /*-
@@ -42,12 +42,8 @@
 #include <net/if_types.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <machine/bus.h>
 

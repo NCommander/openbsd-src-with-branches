@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwn.c,v 1.131 2014/03/19 10:09:19 mpi Exp $	*/
+/*	$OpenBSD: if_iwn.c,v 1.132 2014/07/12 18:48:51 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -52,9 +52,7 @@
 #include <net/if_types.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
-#include <netinet/ip.h>
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_amrr.h>

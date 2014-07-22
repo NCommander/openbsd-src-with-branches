@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.132 2014/04/18 14:56:59 henning Exp $	*/
+/*	$OpenBSD: dc.c,v 1.133 2014/07/12 18:48:17 tedu Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -107,12 +107,8 @@
 #include <net/if_dl.h>
 #include <net/if_types.h>
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <net/if_media.h>
 

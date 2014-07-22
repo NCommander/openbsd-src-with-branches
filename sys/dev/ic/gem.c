@@ -1,4 +1,4 @@
-/*	$OpenBSD: gem.c,v 1.103 2014/04/22 15:52:05 naddy Exp $	*/
+/*	$OpenBSD: gem.c,v 1.104 2014/07/08 05:35:18 dlg Exp $	*/
 /*	$NetBSD: gem.c,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -54,14 +54,8 @@
 #include <net/if_dl.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#include <netinet/tcp.h>
-#include <netinet/udp.h>
-#endif
 
 #if NBPFILTER > 0
 #include <net/bpf.h>

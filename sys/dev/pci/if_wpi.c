@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpi.c,v 1.118 2014/03/19 10:09:19 mpi Exp $	*/
+/*	$OpenBSD: if_wpi.c,v 1.119 2014/07/12 18:48:52 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -52,9 +52,7 @@
 #include <net/if_types.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
-#include <netinet/ip.h>
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_amrr.h>
