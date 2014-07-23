@@ -1,4 +1,4 @@
-.\" $OpenBSD: atomic_sub_int.9,v 1.4 2014/02/13 12:03:47 dlg Exp $
+.\" $OpenBSD: atomic_sub_int.9,v 1.5 2014/02/13 12:05:05 dlg Exp $
 .\"
 .\" Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
 .\" All rights reserved.
@@ -41,7 +41,7 @@ and multiple processors in the system.
 .Pp
 The value referenced by the pointer
 .Fa p
-is incremented by the value
+is decremented by the value
 .Fa v .
 .Sh CONTEXT
 .Fn atomic_sub_int ,
