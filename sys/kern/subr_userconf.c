@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_userconf.c,v 1.40 2014/07/12 18:43:32 tedu Exp $	*/
+/*	$OpenBSD: subr_userconf.c,v 1.41 2014/07/13 15:29:04 tedu Exp $	*/
 
 /*
  * Copyright (c) 1996-2001 Mats O Jansson <moj@stacken.kth.se>
@@ -1348,11 +1348,14 @@ user_config(void)
 	userconf_init();
 	printf("User Kernel Config\n");
 
+	cnpollc(1);
 	while (1) {
 		printf("UKC> ");
 		if (getsn(userconf_cmdbuf, sizeof(userconf_cmdbuf)) > 0 &&
 		    userconf_parse(userconf_cmdbuf))
 			break;
 	}
+	cnpollc(0);
+
 	printf("Continuing...\n");
 }
