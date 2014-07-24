@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_pae_input.c,v 1.18 2011/05/04 16:05:49 blambert Exp $	*/
+/*	$OpenBSD: ieee80211_pae_input.c,v 1.19 2014/07/22 11:06:10 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2007,2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -978,7 +978,8 @@ ieee80211_recv_group_msg2(struct ieee80211com *ic,
 
 	/* discard if we're not expecting this message */
 	if (ni->ni_rsn_gstate != RSNA_REKEYNEGOTIATING) {
-		DPRINTF(("%s: unexpected in state: %d\n", ni->ni_rsn_gstate));
+		DPRINTF(("%s: unexpected in state: %d\n", ic->ic_if.if_xname,
+		     ni->ni_rsn_gstate));
 		return;
 	}
 	if (BE_READ_8(key->replaycnt) != ni->ni_replaycnt) {
