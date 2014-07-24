@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.167 2014/05/08 09:28:08 mpi Exp $	*/
+/*	$OpenBSD: route.c,v 1.168 2014/06/23 03:46:16 guenther Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -319,6 +319,8 @@ flushroutes(int argc, char **argv)
 		if (verbose)
 			print_rtmsg(rtm, rtm->rtm_msglen);
 		if ((rtm->rtm_flags & (RTF_GATEWAY|RTF_STATIC|RTF_LLINFO)) == 0)
+			continue;
+		if ((rtm->rtm_flags & RTF_LOCAL) != 0)
 			continue;
 		sa = (struct sockaddr *)(next + rtm->rtm_hdrlen);
 		if (af && sa->sa_family != af)
