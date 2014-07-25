@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.188 2014/07/15 15:54:14 millert Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.189 2014/07/18 02:46:01 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -953,6 +953,7 @@ after_select(fd_set *readset, fd_set *writeset)
 					break;
 				}
 				buffer_append(&sockets[i].input, buf, len);
+				explicit_bzero(buf, sizeof(buf));
 				process_message(&sockets[i]);
 			}
 			break;
