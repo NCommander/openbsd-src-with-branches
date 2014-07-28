@@ -1,4 +1,4 @@
-/*	$OpenBSD: machfb.c,v 1.8 2013/10/20 20:07:27 miod Exp $	*/
+/*	$OpenBSD: machfb.c,v 1.9 2014/07/28 06:21:29 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2009 Mark Kettenis.
@@ -295,7 +295,7 @@ machfb_attach(struct device *parent, struct device *self, void *aux)
 
 	printf(", %dx%d\n", sc->sc_sunfb.sf_width, sc->sc_sunfb.sf_height);
 
-#ifdef SMALL_KERNEL
+#ifdef RAMDISK_HOOKS
 	printf("%s: aperture needed\n", self->dv_xname);
 #endif
 
