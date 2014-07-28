@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.26 2014/07/09 12:51:20 guenther Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.27 2014/07/14 03:54:50 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist
@@ -243,6 +243,7 @@ LEAF_NOPROFILE(_dl_sigprocmask, 4)
 	CALLSYS_NOERROR(sigprocmask)
 	beq	a3, 1f
 	jmp	zero, _dl_cerror
+1:
 	beq	a5, 1f
 	stl	v0, 0(a5)
 1:
