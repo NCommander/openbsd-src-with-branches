@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.25 2010/01/01 20:46:20 krw Exp $	*/
+/*	$OpenBSD: options.c,v 1.26 2010/01/02 04:21:16 krw Exp $	*/
 
 /* DHCP options parsing and reassembly. */
 
@@ -516,6 +516,5 @@ do_packet(struct interface_info *interface, struct dhcp_packet *packet,
 
 	/* Free the data associated with the options. */
 	for (i = 0; i < 256; i++)
-		if (tp.options[i].len && tp.options[i].data)
-			free(tp.options[i].data);
+		free(tp.options[i].data);
 }
