@@ -1,4 +1,4 @@
-/*	$OpenBSD: pathnames.h,v 1.3 1996/12/05 06:04:41 millert Exp $	*/
+/*	$OpenBSD: pathnames.h,v 1.4 2003/06/03 02:56:06 millert Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -33,7 +33,7 @@
 
 #include <paths.h>
 
-#define	_PATH_CPP	"/usr/bin/cpp"
+#define	_PATH_CPP	"/usr/libexec/tradcpp"
 
 			/* XXX -- fix when cpp parses arguments rationally */
 #define	_PATH_INCLUDE	"-I/usr/share/calendar"
