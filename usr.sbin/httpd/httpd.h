@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.21 2014/07/31 09:34:57 reyk Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.22 2014/07/31 13:28:15 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -33,6 +33,7 @@
 #define HTTPD_SERVERNAME	"OpenBSD httpd"
 #define HTTPD_DOCROOT		"/htdocs"
 #define HTTPD_INDEX		"index.html"
+#define HTTPD_FCGI_SOCKET	"/run/slowcgi.sock"
 #define FD_RESERVE		5
 
 #define SERVER_MAX_CLIENTS	1024
