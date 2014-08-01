@@ -1,4 +1,4 @@
-.\"	$OpenBSD: httpd.conf.5,v 1.12 2014/07/31 14:18:38 reyk Exp $
+.\"	$OpenBSD: httpd.conf.5,v 1.13 2014/08/01 21:51:02 doug Exp $
 .\"
 .\" Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 31 2014 $
+.Dd $Mdocdate: August 1 2014 $
 .Dt HTTPD.CONF 5
 .Os
 .Sh NAME
@@ -97,10 +97,6 @@ server "default" {
 Here are the settings that can be set globally:
 .Bl -tag -width Ds
 .It Xo
-.Ic log
-.Pq Ic updates Ns | Ns Ic all
-.Xc
-Set logging verbosity.
 .It Ic prefork Ar number
 Run the specified number of server processes.
 This increases the performance and prevents delays when connecting

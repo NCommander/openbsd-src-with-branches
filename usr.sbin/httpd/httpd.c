@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.c,v 1.9 2014/07/25 21:29:58 reyk Exp $	*/
+/*	$OpenBSD: httpd.c,v 1.10 2014/07/26 09:59:14 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -193,9 +193,6 @@ main(int argc, char *argv[])
 
 	if (parse_config(env->sc_conffile, env) == -1)
 		exit(1);
-
-	if (debug)
-		env->sc_opts |= HTTPD_OPT_LOGUPDATE;
 
 	if (geteuid())
 		errx(1, "need root privileges");
