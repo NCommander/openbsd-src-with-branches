@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.30 2014/08/01 22:24:05 reyk Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.31 2014/08/02 11:52:00 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -239,7 +239,8 @@ struct privsep_proc {
 
 enum fcgistate {
 	FCGI_READ_HEADER,
-	FCGI_READ_CONTENT
+	FCGI_READ_CONTENT,
+	FCGI_READ_PADDING
 };
 
 struct client {
@@ -270,6 +271,7 @@ struct client {
 	int			 clt_inflight;
 	enum fcgistate		 clt_fcgi_state;
 	int			 clt_fcgi_toread;
+	int			 clt_fcgi_padding_len;
 	int			 clt_fcgi_type;
 	struct evbuffer		*clt_srvevb;
 
