@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.33 2014/08/03 21:33:27 reyk Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.34 2014/08/03 22:38:12 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -78,7 +78,7 @@ server_http(struct httpd *x_env)
 void
 server_http_init(struct server *srv)
 {
-	/* nothing */	
+	/* nothing */
 }
 
 int

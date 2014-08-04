@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.15 2014/07/11 16:39:10 krw Exp $	*/
+/*	$OpenBSD: proc.c,v 1.1 2014/07/12 23:34:54 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -163,7 +163,7 @@ proc_open(struct privsep *ps, struct privsep_proc *p,
 
 	/*
 	 * Open socket pairs for our peers
-	 */	
+	 */
 	for (proc = 0; proc < nproc; proc++) {
 		procs[proc].p_ps = ps;
 		procs[proc].p_env = ps->ps_env;
