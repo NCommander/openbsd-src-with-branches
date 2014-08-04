@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.22 2014/07/31 09:23:53 florian Exp $
+#	$OpenBSD: Makefile,v 1.23 2014/08/04 11:09:25 reyk Exp $
 
 PROG=		httpd
 SRCS=		parse.y
-SRCS+=		config.c control.c httpd.c log.c proc.c
+SRCS+=		config.c control.c httpd.c log.c logger.c proc.c
 SRCS+=		server.c server_http.c server_file.c server_fcgi.c
 MAN=		httpd.8 httpd.conf.5
 
