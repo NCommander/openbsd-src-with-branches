@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.162 2014/07/12 20:13:48 mpi Exp $ */
+/*	$OpenBSD: ehci.c,v 1.163 2014/08/03 14:30:28 jsg Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -3388,7 +3388,7 @@ ehci_device_intr_start(struct usbd_xfer *xfer)
 void
 ehci_device_intr_abort(struct usbd_xfer *xfer)
 {
-	KASSERT(xfer->pipe->intrxfer == xfer);
+	KASSERT(!xfer->pipe->repeat || xfer->pipe->intrxfer == xfer);
 
 	/*
 	 * XXX - abort_xfer uses ehci_sync_hc, which syncs via the advance

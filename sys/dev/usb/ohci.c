@@ -1,4 +1,4 @@
-/*	$OpenBSD: ohci.c,v 1.135 2014/07/10 20:57:40 mpi Exp $ */
+/*	$OpenBSD: ohci.c,v 1.136 2014/07/12 20:13:48 mpi Exp $ */
 /*	$NetBSD: ohci.c,v 1.139 2003/02/22 05:24:16 tsutsui Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/ohci.c,v 1.22 1999/11/17 22:33:40 n_hibma Exp $	*/
 
@@ -2934,7 +2934,7 @@ ohci_device_intr_start(struct usbd_xfer *xfer)
 void
 ohci_device_intr_abort(struct usbd_xfer *xfer)
 {
-	KASSERT(xfer->pipe->intrxfer == xfer);
+	KASSERT(!xfer->pipe->repeat || xfer->pipe->intrxfer == xfer);
 
 	ohci_abort_xfer(xfer, USBD_CANCELLED);
 }
