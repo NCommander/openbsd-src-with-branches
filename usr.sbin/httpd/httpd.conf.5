@@ -1,4 +1,4 @@
-.\"	$OpenBSD: httpd.conf.5,v 1.20 2014/08/04 17:12:44 reyk Exp $
+.\"	$OpenBSD: httpd.conf.5,v 1.21 2014/08/04 17:38:12 reyk Exp $
 .\"
 .\" Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
 .\"
@@ -102,6 +102,13 @@ This increases the performance and prevents delays when connecting
 to a server.
 .Xr httpd 8
 runs 3 server processes by default.
+.It Ic chroot Ar directory
+Set the
+.Xr chroot 2
+directory.
+If not specified, it defaults to
+.Pa /var/www ,
+the home directory of the www user.
 .El
 .Sh SERVERS
 The configured web servers.
