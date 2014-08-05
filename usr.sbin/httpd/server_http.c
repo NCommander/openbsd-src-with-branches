@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.36 2014/08/04 11:09:25 reyk Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.37 2014/08/05 14:36:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -710,6 +710,9 @@ server_response(struct httpd *httpd, struct client *clt)
 		else
 			clt->clt_persist = 0;
 	}
+
+	if (clt->clt_persist >= SERVER_MAXREQUESTS)
+		clt->clt_persist = 0;
 
 	/*
 	 * Do we have a Host header and matching configuration?
