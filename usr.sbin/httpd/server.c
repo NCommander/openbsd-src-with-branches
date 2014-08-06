@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.36 2014/08/06 15:08:04 florian Exp $	*/
+/*	$OpenBSD: server.c,v 1.38 2014/08/06 16:10:02 jsing Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -998,8 +998,8 @@ server_log(struct client *clt, const char *msg)
 	}
 
 	if (debug_cmd != -1 && msg != NULL) {
-		memset(&ibuf, 0, sizeof(ibuf));
-		memset(&obuf, 0, sizeof(obuf));
+		memset(ibuf, 0, sizeof(ibuf));
+		memset(obuf, 0, sizeof(obuf));
 		(void)print_host(&clt->clt_ss, ibuf, sizeof(ibuf));
 		(void)server_http_host(&clt->clt_srv_ss, obuf, sizeof(obuf));
 		if (EVBUFFER_LENGTH(clt->clt_log) &&
