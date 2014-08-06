@@ -1,4 +1,4 @@
-/*	$OpenBSD: logger.c,v 1.3 2014/08/05 15:36:59 reyk Exp $	*/
+/*	$OpenBSD: logger.c,v 1.4 2014/08/06 12:29:43 jsg Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -109,7 +109,7 @@ logger_open_file(const char *name)
 	}
 
 	log->log_id = ++last_log_id;
-	(void)strlcpy(log->log_name, name, sizeof(log->log_name));	
+	(void)strlcpy(log->log_name, name, sizeof(log->log_name));
 
 	/* The file will be opened by the parent process */
 	log->log_fd = -1;
