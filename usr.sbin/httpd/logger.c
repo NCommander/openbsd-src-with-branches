@@ -1,4 +1,4 @@
-/*	$OpenBSD: logger.c,v 1.2 2014/08/04 15:57:25 reyk Exp $	*/
+/*	$OpenBSD: logger.c,v 1.3 2014/08/05 15:36:59 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -250,7 +250,7 @@ logger_log(struct imsg *imsg)
 		log = srv_conf->logerror;
 
 	if (log == NULL || log->log_fd == -1) {
-		log_warnx("log file %s not opened", log->log_name);
+		log_warnx("log file %s not opened", log ? log->log_name : "");
 		return (0);
 	}
 
