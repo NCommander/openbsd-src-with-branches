@@ -1,4 +1,4 @@
-/* $OpenBSD: mcbus.c,v 1.1 2007/03/16 21:22:27 robert Exp $ */
+/* $OpenBSD: mcbus.c,v 1.2 2012/12/05 23:20:10 deraadt Exp $ */
 /* $NetBSD: mcbus.c,v 1.19 2007/03/04 05:59:11 christos Exp $ */
 
 /*
@@ -155,7 +155,7 @@ mcbusattach(parent, self, aux)
 	    bcs[mcbus_primary.mcbus_bcache] : "Unknown");
 
 	mbp->mcbus_types[0] = MCBUS_TYPE_RES;
-	for (mid = 1; mid <= MCBUS_MID_MAX; ++mid)
+	for (mid = 1; mid < MCBUS_MID_MAX; ++mid)
 		mbp->mcbus_types[mid] = MCBUS_TYPE_UNK;
 
 	/*
