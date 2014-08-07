@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_fcgi.c,v 1.26 2014/08/06 20:56:23 florian Exp $	*/
+/*	$OpenBSD: server_fcgi.c,v 1.27 2014/08/06 21:08:47 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Florian Obser <florian@openbsd.org>
@@ -89,6 +89,7 @@ void	server_fcgi_read(struct bufferevent *, void *);
 int	server_fcgi_writeheader(struct client *, struct kv *, void *);
 int	fcgi_add_param(struct server_fcgi_param *, const char *, const char *,
 	    struct client *);
+int	get_status(struct evbuffer *);
 
 int
 server_fcgi(struct httpd *env, struct client *clt)
@@ -490,7 +491,8 @@ server_fcgi_read(struct bufferevent *bev, void *arg)
 			if (clt->clt_fcgi_type == FCGI_STDOUT &&
 			    EVBUFFER_LENGTH(clt->clt_srvevb) > 0) {
 				if (++clt->clt_chunk == 1)
-					server_fcgi_header(clt, 200);
+					server_fcgi_header(clt,
+					    get_status(clt->clt_srvevb));
 				server_bufferevent_write_buffer(clt,
 				    clt->clt_srvevb);
 			}
@@ -602,4 +604,29 @@ server_fcgi_writeheader(struct client *clt, struct kv *hdr, void *arg)
 	free(name);
 
 	return (ret);
+}
+
+int
+get_status(struct evbuffer *bev)
+{
+	int code;
+	char *statusline, *tok;
+	const char *errstr;
+
+	/* XXX This is a hack. We need to parse the response header. */
+	code = 200;
+	if (strncmp(EVBUFFER_DATA(bev), "Status: ", strlen("Status: ")) == 0) {
+		statusline = get_string(EVBUFFER_DATA(bev),
+		    EVBUFFER_LENGTH(bev));
+		if (strtok(statusline, " ") != NULL) {
+			if ((tok = strtok(NULL, " ")) != NULL) {
+				code = (int) strtonum(tok, 100, 600, &errstr);
+				if (errstr != NULL || server_httperror_byid(
+				   code) == NULL)
+					code = 200;
+			}
+		}
+		free(statusline);
+	}
+	return code;
 }
