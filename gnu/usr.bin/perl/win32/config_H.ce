@@ -636,6 +636,12 @@
  */
 #define	I_ARPA_INET		/**/
 
+/* I_ASSERT:
+ *	This symbol, if defined, indicates to the C program that it could
+ *	include <assert.h> to get the assert() macro.
+ */
+#define	I_ASSERT		/**/
+
 /* I_DBM:
  *	This symbol, if defined, indicates that <dbm.h> exists and should
  *	be included.
@@ -1043,6 +1049,12 @@
 #else
 #define BYTEORDER 0x1234	/* large digits for MSB */
 #endif /* NeXT */
+
+/* CHARBITS:
+ *	This symbol contains the size of a char, so that the C preprocessor
+ *	can make decisions based on it.
+ */
+#define CHARBITS 8		/**/
 
 /* CAT2:
  *	This macro concatenates 2 tokens together.
@@ -1883,9 +1895,16 @@
 /* LOCALTIME_R_NEEDS_TZSET:
  *	Many libc's localtime_r implementations do not call tzset,
  *	making them differ from localtime(), and making timezone
- *	changes using $ENV{TZ} without explicitly calling tzset
+ *	changes using \undef{TZ} without explicitly calling tzset
  *	impossible. This symbol makes us call tzset before localtime_r
  */
+/*#define LOCALTIME_R_NEEDS_TZSET /**/
+#ifdef LOCALTIME_R_NEEDS_TZSET
+#define L_R_TZSET tzset(),
+#else
+#define L_R_TZSET
+#endif
+
 /* LOCALTIME_R_PROTO:
  *	This symbol encodes the prototype of localtime_r.
  *	It is zero if d_localtime_r is undef, and one of the
@@ -1893,7 +1912,6 @@
  *	is defined.
  */
 /*#define HAS_LOCALTIME_R	   /**/
-/*#define LOCALTIME_R_NEEDS_TZSET	   /**/
 #define LOCALTIME_R_PROTO 0	   /**/
 
 /* HAS_LONG_DOUBLE:
@@ -2297,6 +2315,27 @@
 #define Sigsetjmp(buf,save_mask) setjmp((buf))
 #define Siglongjmp(buf,retval) longjmp((buf),(retval))
 #endif
+
+/* HAS_STATIC_INLINE:
+ *	This symbol, if defined, indicates that the C compiler supports
+ *	C99-style static inline.  That is, the function can't be called
+ *	from another translation unit.
+ */
+/* PERL_STATIC_INLINE:
+ *	This symbol gives the best-guess incantation to use for static
+ *	inline functions.  If HAS_STATIC_INLINE is defined, this will
+ *	give C99-style inline.  If HAS_STATIC_INLINE is not defined,
+ *	this will give a plain 'static'.  It will always be defined
+ *	to something that gives static linkage.
+ *	Possibilities include
+ *		static inline       (c99)
+ *		static __inline__   (gcc -ansi)
+ *		static __inline     (MSVC)
+ *		static _inline      (older MSVC)
+ *		static              (c89 compilers)
+ */
+/*#define HAS_STATIC_INLINE				/ **/
+#define PERL_STATIC_INLINE static           	/**/
 
 /* USE_SITECUSTOMIZE:
  *	This symbol, if defined, indicates that sitecustomize should
@@ -3242,7 +3281,13 @@
  *	This symbol contains the number of bits a variable of type NVTYPE
  *	can preserve of a variable of type UVTYPE.
  */
-/* NV_ZERO_IS_ALLBITS_ZERO:
+/* NV_OVERFLOWS_INTEGERS_AT
+ *	This symbol gives the largest integer value that NVs can hold. This
+ *	value + 1.0 cannot be stored accurately. It is expressed as constant
+ *	floating point expression to reduce the chance of decimale/binary
+ *	conversion issues. If it can not be determined, the value 0 is given.
+ */
+/* NV_ZERO_IS_ALLBITS_ZERO
  *	This symbol, if defined, indicates that a variable of type NVTYPE
  *	stores 0.0 in memory as all bits zero.
  */
@@ -3274,6 +3319,7 @@
 #define	NVSIZE		8		/**/
 #define	NV_PRESERVES_UV
 #define	NV_PRESERVES_UV_BITS	undef
+#define	NV_OVERFLOWS_INTEGERS_AT	256.0*256.0*256.0*256.0*256.0*256.0*2.0*2.0*2.0*2.0*2.0
 #undef	NV_ZERO_IS_ALLBITS_ZERO
 #if UVSIZE == 8
 #   ifdef BYTEORDER
@@ -3348,7 +3394,7 @@
  *	in programs that are not prepared to deal with ~ expansion at run-time.
  */
 #define PRIVLIB "\\Storage Card\\perl58m\\lib"		/**/
-#define PRIVLIB_EXP (win32_get_privlib("5.10.0"))	/**/
+#define PRIVLIB_EXP (win32_get_privlib(PERL_VERSION_STRING, NULL))	/**/
 
 /* PTRSIZE:
  *	This symbol contains the size of a pointer, so that the C preprocessor
@@ -3479,7 +3525,7 @@
  *	be tacked onto this variable to generate a list of directories to search.
  */
 #define SITELIB "\\Storage Card\\perl58m\\site\\lib"		/**/
-#define SITELIB_EXP (win32_get_sitelib("5.10.0"))	/**/
+#define SITELIB_EXP (win32_get_sitelib(PERL_VERSION_STRING, NULL))	/**/
 #define SITELIB_STEM ""		/**/
 
 /* Size_t_size:
@@ -3657,6 +3703,12 @@
 #endif
 /*#define	OLD_PTHREADS_API		/**/
 /*#define	USE_REENTRANT_API	/**/
+
+/* USE_DTRACE
+ *	This symbol, if defined, indicates that Perl should
+ *	be built with support for DTrace.
+ */
+/*#define USE_DTRACE			/ **/
 
 /* PERL_VENDORARCH:
  *	If defined, this symbol contains the name of a private library.
@@ -4380,5 +4432,25 @@
  */
 /*#define HAS_TTYNAME_R	   /**/
 #define TTYNAME_R_PROTO 0	   /**/
+/* GMTIME_MAX:
+ *	This symbol contains the maximum value for the time_t offset that
+ *	the system function gmtime () accepts, and defaults to 0
+ */
+/* GMTIME_MIN:
+ *	This symbol contains the minimum value for the time_t offset that
+ *	the system function gmtime () accepts, and defaults to 0
+ */
+/* LOCALTIME_MAX:
+ *	This symbol contains the maximum value for the time_t offset that
+ *	the system function localtime () accepts, and defaults to 0
+ */
+/* LOCALTIME_MIN:
+ *	This symbol contains the minimum value for the time_t offset that
+ *	the system function localtime () accepts, and defaults to 0
+ */
+#define GMTIME_MAX		2147483647	/**/
+#define GMTIME_MIN		0	/**/
+#define LOCALTIME_MAX	2147483647	/**/
+#define LOCALTIME_MIN	0	/**/
 
 #endif

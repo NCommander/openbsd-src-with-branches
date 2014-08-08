@@ -6,7 +6,7 @@ use strict;
 use Carp ();
 use Pod::Simple ();
 use vars qw( $ATTR_PAD @ISA $VERSION $SORT_ATTRS);
-$VERSION = '3.14';
+$VERSION = '3.28';
 BEGIN {
   @ISA = ('Pod::Simple');
   *DEBUG = \&Pod::Simple::DEBUG unless defined &DEBUG;
@@ -67,15 +67,15 @@ Pod::Simple::SimpleTree -- parse Pod into a simple parse tree
 =head1 SYNOPSIS
 
   % cat ptest.pod
-  
+
   =head1 PIE
-  
+
   I like B<pie>!
-  
+
   % perl -MPod::Simple::SimpleTree -MData::Dumper -e \
      "print Dumper(Pod::Simple::SimpleTree->new->parse_file(shift)->root)" \
      ptest.pod
-  
+
   $VAR1 = [
             'Document',
             { 'start_line' => 1 },
@@ -143,7 +143,7 @@ pod-people@perl.org mail list. Send an empty email to
 pod-people-subscribe@perl.org to subscribe.
 
 This module is managed in an open GitHub repository,
-L<http://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
+L<https://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
 to clone L<git://github.com/theory/pod-simple.git> and send patches!
 
 Patches against Pod::Simple are welcome. Please send bug reports to

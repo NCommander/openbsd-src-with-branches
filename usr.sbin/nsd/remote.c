@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -51,14 +51,23 @@
 #ifdef HAVE_OPENSSL_ERR_H
 #include <openssl/err.h>
 #endif
+#ifdef HAVE_OPENSSL_RAND_H
+#include <openssl/rand.h>
+#endif
 #include <ctype.h>
 #include <unistd.h>
 #include <assert.h>
 #include <fcntl.h>
 #ifndef USE_MINI_EVENT
-#include <event.h>
+#  ifdef HAVE_EVENT_H
+#    include <event.h>
+#  else
+#    include <event2/event.h>
+#    include "event2/event_struct.h"
+#    include "event2/event_compat.h"
+#  endif
 #else
-#include "mini_event.h"
+#  include "mini_event.h"
 #endif
 #include "remote.h"
 #include "util.h"
@@ -233,6 +242,20 @@ daemon_remote_create(nsd_options_t* cfg)
 	ERR_load_SSL_strings();
 	OpenSSL_add_all_algorithms();
 	(void)SSL_library_init();
+
+	if(!RAND_status()) {
+		/* try to seed it */
+		unsigned char buf[256];
+		unsigned int v, seed=(unsigned)time(NULL) ^ (unsigned)getpid();
+		size_t i;
+		v = seed;
+		for(i=0; i<256/sizeof(v); i++) {
+			memmove(buf+i*sizeof(v), &v, sizeof(v));
+			v = v*seed + (unsigned int)i;
+		}
+		RAND_seed(buf, 256);
+		log_msg(LOG_WARNING, "warning: no entropy, seeding openssl PRNG with time");
+	}
 
 	rc->ctx = SSL_CTX_new(SSLv23_server_method());
 	if(!rc->ctx) {

@@ -8,7 +8,7 @@
  *
  */
 
-#include <config.h>
+#include "config.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -19,8 +19,6 @@
 #include "configyyrename.h"
 #include "configparser.h"
 void c_error(const char *message);
-
-#define YY_NO_UNPUT
 
 #if 0
 #define LEXOUT(s)  printf s /* used ONLY when debugging */
@@ -46,6 +44,15 @@ static void config_start_include(const char* filename)
 	if(config_include_stack_ptr >= MAXINCLUDES) {
 		c_error_msg("includes nested too deeply, skipped (>%d)", MAXINCLUDES);
 		return;
+	}
+	if (cfg_parser->chroot) {
+		int l = strlen(cfg_parser->chroot); /* chroot has trailing slash */
+		if (strncmp(cfg_parser->chroot, filename, l) != 0) {
+			c_error_msg("include file '%s' is not relative to chroot '%s'",
+				filename, cfg_parser->chroot);
+			return;
+		}
+		filename += l - 1; /* strip chroot without trailing slash */
 	}
 	input = fopen(filename, "r");
 	if(!input) {
@@ -82,6 +89,16 @@ static void config_end_include(void)
 #endif
 
 %}
+%option noinput
+%option nounput
+%{
+#ifndef YY_NO_UNPUT
+#define YY_NO_UNPUT 1
+#endif
+#ifndef YY_NO_INPUT
+#define YY_NO_INPUT 1
+#endif
+%}
 
 SPACE   [ \t]
 LETTER  [a-zA-Z]
@@ -99,12 +116,17 @@ ANY     [^\"\n\r\\]|\\.
 server{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_SERVER;}
 name{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_NAME;}
 ip-address{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_IP_ADDRESS;}
+interface{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_IP_ADDRESS;}
+ip-transparent{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_IP_TRANSPARENT;}
 debug-mode{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DEBUG_MODE;}
 hide-version{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_HIDE_VERSION;}
 ip4-only{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_IP4_ONLY;}
 ip6-only{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_IP6_ONLY;}
+do-ip4{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_DO_IP4;}
+do-ip6{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_DO_IP6;}
 database{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_DATABASE;}
 identity{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_IDENTITY;}
+nsid{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_NSID;}
 logfile{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_LOGFILE;}
 server-count{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_SERVER_COUNT;}
 tcp-count{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_TCP_COUNT;}
@@ -118,8 +140,10 @@ statistics{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_STATISTICS;}
 chroot{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_CHROOT;}
 username{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_USERNAME;}
 zonesdir{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_ZONESDIR;}
+zonelistfile{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_ZONELISTFILE;}
 difffile{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_DIFFFILE;}
 xfrdfile{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_XFRDFILE;}
+xfrdir{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_XFRDIR;}
 xfrd-reload-timeout{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_XFRD_RELOAD_TIMEOUT;}
 verbosity{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_VERBOSITY;}
 zone{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_ZONE;}
@@ -134,8 +158,26 @@ allow-axfr-fallback{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_ALLOW_AXFR_F
 key{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_KEY;}
 algorithm{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_ALGORITHM;}
 secret{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_SECRET;}
+pattern{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_PATTERN;}
+include-pattern{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_INCLUDEPATTERN;}
+remote-control{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_REMOTE_CONTROL;}
+control-enable{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_CONTROL_ENABLE;}
+control-interface{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_CONTROL_INTERFACE;}
+control-port{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_CONTROL_PORT;}
+server-key-file{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_SERVER_KEY_FILE;}
+server-cert-file{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_SERVER_CERT_FILE;}
+control-key-file{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_CONTROL_KEY_FILE;}
+control-cert-file{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_CONTROL_CERT_FILE;}
 AXFR			{ LEXOUT(("v(%s) ", yytext)); return VAR_AXFR;}
 UDP			{ LEXOUT(("v(%s) ", yytext)); return VAR_UDP;}
+rrl-size{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_RRL_SIZE;}
+rrl-ratelimit{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_RRL_RATELIMIT;}
+rrl-slip{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_RRL_SLIP;}
+rrl-ipv4-prefix-length{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_RRL_IPV4_PREFIX_LENGTH;}
+rrl-ipv6-prefix-length{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_RRL_IPV6_PREFIX_LENGTH;}
+rrl-whitelist-ratelimit{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_RRL_WHITELIST_RATELIMIT;}
+rrl-whitelist{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_RRL_WHITELIST;}
+zonefiles-check{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_ZONEFILES_CHECK;}
 {NEWLINE}		{ LEXOUT(("NL\n")); cfg_parser->line++;}
 
 	/* Quoted strings. Strip leading and ending quotes */

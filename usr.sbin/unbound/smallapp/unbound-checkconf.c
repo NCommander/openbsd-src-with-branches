@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -50,8 +50,10 @@
 #include "util/regional.h"
 #include "iterator/iterator.h"
 #include "iterator/iter_fwd.h"
+#include "iterator/iter_hints.h"
 #include "validator/validator.h"
 #include "services/localzone.h"
+#include "ldns/sbuffer.h"
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
@@ -104,14 +106,14 @@ check_mod(struct config_file* cfg, struct module_func_block* fb)
 	memset(&env, 0, sizeof(env));
 	env.cfg = cfg;
 	env.scratch = regional_create();
-	env.scratch_buffer = ldns_buffer_new(BUFSIZ);
+	env.scratch_buffer = sldns_buffer_new(BUFSIZ);
 	if(!env.scratch || !env.scratch_buffer)
 		fatal_exit("out of memory");
 	if(!(*fb->init)(&env, 0)) {
 		fatal_exit("bad config for %s module", fb->name);
 	}
 	(*fb->deinit)(&env, 0);
-	ldns_buffer_free(env.scratch_buffer);
+	sldns_buffer_free(env.scratch_buffer);
 	regional_destroy(env.scratch);
 }
 
@@ -342,9 +344,9 @@ morechecks(struct config_file* cfg, const char* fname)
 		if(fname[0] != '/') {
 			if(getcwd(buf, sizeof(buf)) == NULL)
 				fatal_exit("getcwd: %s", strerror(errno));
-			strncat(buf, "/", sizeof(buf)-strlen(buf)-1);
+			(void)strlcat(buf, "/", sizeof(buf));
 		}
-		strncat(buf, fname, sizeof(buf)-strlen(buf)-1);
+		(void)strlcat(buf, fname, sizeof(buf));
 		if(strncmp(buf, cfg->chrootdir, strlen(cfg->chrootdir)) != 0)
 			fatal_exit("config file %s is not inside chroot %s",
 				buf, cfg->chrootdir);
@@ -434,6 +436,17 @@ check_fwd(struct config_file* cfg)
 	forwards_delete(fwd);
 }
 
+/** check hints */
+static void
+check_hints(struct config_file* cfg)
+{
+	struct iter_hints* hints = hints_create();
+	if(!hints || !hints_apply_cfg(hints, cfg)) {
+		fatal_exit("Could not set root or stub hints");
+	}
+	hints_delete(hints);
+}
+
 /** check config file */
 static void
 checkconf(const char* cfgfile, const char* opt)
@@ -454,6 +467,7 @@ checkconf(const char* cfgfile, const char* opt)
 		check_mod(cfg, pythonmod_get_funcblock());
 #endif
 	check_fwd(cfg);
+	check_hints(cfg);
 	if(opt) print_option(cfg, opt);
 	else	printf("unbound-checkconf: no errors in %s\n", cfgfile);
 	config_delete(cfg);
@@ -470,9 +484,15 @@ int main(int argc, char* argv[])
 	int c;
 	const char* f;
 	const char* opt = NULL;
+	const char* cfgfile = CONFIGFILE;
 	log_ident_set("unbound-checkconf");
 	log_init(NULL, 0, NULL);
 	checklock_start();
+#ifdef USE_WINSOCK
+	/* use registry config file in preference to compiletime location */
+	if(!(cfgfile=w_lookup_reg_str("Software\\Unbound", "ConfigFile")))
+		cfgfile = CONFIGFILE;
+#endif /* USE_WINSOCK */
 	/* parse the options */
 	while( (c=getopt(argc, argv, "ho:")) != -1) {
 		switch(c) {
@@ -491,7 +511,7 @@ int main(int argc, char* argv[])
 		usage();
 	if(argc == 1)
 		f = argv[0];
-	else	f = CONFIGFILE;
+	else	f = cfgfile;
 	checkconf(f, opt);
 	checklock_stop();
 	return 0;

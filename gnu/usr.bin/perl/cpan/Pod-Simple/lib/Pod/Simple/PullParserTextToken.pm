@@ -5,7 +5,7 @@ use Pod::Simple::PullParserToken ();
 use strict;
 use vars qw(@ISA $VERSION);
 @ISA = ('Pod::Simple::PullParserToken');
-$VERSION = '3.14';
+$VERSION = '3.28';
 
 sub new {  # Class->new(text);
   my $class = shift;
@@ -61,14 +61,14 @@ as calling $token->text would do.
 Or, if you want to alter the value, you can even do things like this:
 
   for ( ${  $token->text_r  } ) {  # Aliases it with $_ !!
-  
+
     s/ The / the /g; # just for example
-    
+
     if( 'A' eq chr(65) ) {  # (if in an ASCII world)
       tr/\xA0/ /;
       tr/\xAD//d;
     }
-    
+
     ...or however you want to alter the value...
   }
 
@@ -91,7 +91,7 @@ pod-people@perl.org mail list. Send an empty email to
 pod-people-subscribe@perl.org to subscribe.
 
 This module is managed in an open GitHub repository,
-L<http://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
+L<https://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
 to clone L<git://github.com/theory/pod-simple.git> and send patches!
 
 Patches against Pod::Simple are welcome. Please send bug reports to

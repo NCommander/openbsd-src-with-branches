@@ -1,4 +1,4 @@
-.TH "unbound-control" "8" "Feb  2, 2012" "NLnet Labs" "unbound 1.4.16"
+.TH "unbound-control" "8" "Mar 12, 2014" "NLnet Labs" "unbound 1.4.22"
 .\"
 .\" unbound-control.8 -- unbound remote control manual
 .\"
@@ -14,7 +14,7 @@
 \- Unbound remote server control utility.
 .SH "SYNOPSIS"
 .B unbound\-control
-.RB [ \-h ]
+.RB [ \-hq ]
 .RB [ \-c 
 .IR cfgfile ]
 .RB [ \-s 
@@ -38,6 +38,9 @@ config file @ub_conf_file@ is used.
 .B \-s \fIserver[@port]
 IPv4 or IPv6 address of the server to contact.  If not given, the
 address is read from the config file.
+.TP
+.B \-q
+quiet, if the option is given it does not print anything if it works ok.
 .SH "COMMANDS"
 There are several commands that the server understands.
 .TP
@@ -127,6 +130,9 @@ Remove all information at or below the name from the cache.
 The rrsets and key entries are removed so that new lookups will be performed.
 This needs to walk and inspect the entire cache, and is a slow operation.
 .TP
+.B flush_bogus
+Remove all bogus data from the cache.
+.TP
 .B flush_stats
 Reset statistics to zero.
 .TP
@@ -164,7 +170,7 @@ harden\-glue, harden\-dnssec\-stripped, harden\-below\-nxdomain,
 harden\-referral\-path, prefetch, prefetch\-key, log\-queries,
 hide\-identity, hide\-version, identity, version, val\-log\-level,
 val\-log\-squelch, ignore\-cd\-flag, add\-holddown, del\-holddown,
-keep\-missing, tcp\-upstream, ssl\-upstream.
+keep\-missing, tcp\-upstream, ssl\-upstream, max\-udp\-size.
 .TP
 .B get_option \fIopt
 Get the value of the option.  Give the option name without a trailing ':'.
@@ -189,6 +195,35 @@ List the local zones in use.  These are printed one per line with zone type.
 .TP
 .B list_local_data
 List the local data RRs in use.  The resource records are printed.
+.TP
+.B insecure_add \fIzone
+Add a \fBdomain\-insecure\fR for the given zone, like the statement in unbound.conf.
+Adds to the running unbound without affecting the cache contents (which may
+still be bogus, use \fBflush_zone\fR to remove it), does not affect the config file.
+.TP
+.B insecure_remove \fIzone
+Removes domain\-insecure for the given zone.
+.TP
+.B forward_add \fR[\fI+i\fR] \fIzone addr ...
+Add a new forward zone to running unbound.  With +i option also adds a
+\fIdomain\-insecure\fR for the zone (so it can resolve insecurely if you have
+a DNSSEC root trust anchor configured for other names).
+The addr can be IP4, IP6 or nameserver names, like \fIforward-zone\fR config
+in unbound.conf.
+.TP
+.B forward_remove \fR[\fI+i\fR] \fIzone
+Remove a forward zone from running unbound.  The +i also removes a
+\fIdomain\-insecure\fR for the zone.
+.TP
+.B stub_add \fR[\fI+ip\fR] \fIzone addr ...
+Add a new stub zone to running unbound.  With +i option also adds a
+\fIdomain\-insecure\fR for the zone.  With +p the stub zone is set to prime,
+without it it is set to notprime.  The addr can be IP4, IP6 or nameserver
+names, like the \fIstub-zone\fR config in unbound.conf.
+.TP
+.B stub_remove \fR[\fI+i\fR] \fIzone
+Remove a stub zone from running unbound.  The +i also removes a
+\fIdomain\-insecure\fR for the zone.
 .TP
 .B forward \fR[\fIoff\fR | \fIaddr ...\fR ]
 Setup forwarding mode.  Configures if the server should ask other upstream

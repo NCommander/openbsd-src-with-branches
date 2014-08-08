@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -43,12 +43,12 @@
 #define VALIDATOR_VAL_ANCHOR_H
 #include "util/rbtree.h"
 #include "util/locks.h"
-struct regional;
 struct trust_anchor;
 struct config_file;
 struct ub_packed_rrset_key;
 struct autr_point_data;
 struct autr_global_data;
+struct sldns_buffer;
 
 /**
  * Trust anchor store.
@@ -60,11 +60,6 @@ struct autr_global_data;
 struct val_anchors {
 	/** lock on trees */
 	lock_basic_t lock;
-	/** 
-	 * region where trust anchors are allocated.
-	 * Autotrust anchors are malloced so they can be updated. 
-	 */
-	struct regional* region;
 	/**
 	 * Anchors are store in this tree. Sort order is chosen, so that
 	 * dnames are in nsec-like order. A lookup on class, name will return
@@ -111,7 +106,6 @@ struct trust_anchor {
 	struct trust_anchor* parent;
 	/** 
 	 * List of DS or DNSKEY rrs that form the trust anchor.
-	 * It is allocated in the region.
 	 */
 	struct ta_key* keylist;
 	/** Autotrust anchor point data, or NULL */
@@ -191,7 +185,7 @@ struct trust_anchor* anchor_find(struct val_anchors* anchors,
  * @return NULL on error.
  */
 struct trust_anchor* anchor_store_str(struct val_anchors* anchors, 
-	ldns_buffer* buffer, const char* str);
+	struct sldns_buffer* buffer, const char* str);
 
 /**
  * Get memory in use by the trust anchor storage
@@ -202,5 +196,24 @@ size_t anchors_get_mem(struct val_anchors* anchors);
 
 /** compare two trust anchors */
 int anchor_cmp(const void* k1, const void* k2);
+
+/**
+ * Add insecure point trust anchor.  For external use (locks and init_parents)
+ * @param anchors: anchor storage.
+ * @param c: class.
+ * @param nm: name of insecure trust point.
+ * @return false on alloc failure.
+ */
+int anchors_add_insecure(struct val_anchors* anchors, uint16_t c, uint8_t* nm);
+
+/**
+ * Delete insecure point trust anchor.  Does not remove if no such point.
+ * For external use (locks and init_parents)
+ * @param anchors: anchor storage.
+ * @param c: class.
+ * @param nm: name of insecure trust point.
+ */
+void anchors_delete_insecure(struct val_anchors* anchors, uint16_t c,
+	uint8_t* nm);
 
 #endif /* VALIDATOR_VAL_ANCHOR_H */

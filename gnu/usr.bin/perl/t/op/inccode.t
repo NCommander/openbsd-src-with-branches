@@ -5,27 +5,33 @@
 BEGIN {
     chdir 't' if -d 't';
     @INC = qw(. ../lib);
+    require './test.pl';
 }
 
-use File::Spec;
+use Config;
 
-require "test.pl";
-plan(tests => 44);
+my $can_fork   = 0;
+my $has_perlio = $Config{useperlio};
 
-my @tempfiles = ();
+unless (is_miniperl()) {
+    if ($Config{d_fork} && eval 'require POSIX; 1') {
+	$can_fork = 1;
+    }
+}
+
+use strict;
+
+plan(tests => 60 + !is_miniperl() * (3 + 14 * $can_fork));
 
 sub get_temp_fh {
-    my $f = "DummyModule0000";
-    1 while -e ++$f;
-    push @tempfiles, $f;
+    my $f = tempfile();
     open my $fh, ">$f" or die "Can't create $f: $!";
-    print $fh "package ".substr($_[0],0,-3)."; 1;";
+    print $fh "package ".substr($_[0],0,-3).";\n1;\n";
+    print $fh $_[1] if @_ > 1;
     close $fh or die "Couldn't close: $!";
     open $fh, $f or die "Can't open $f: $!";
     return $fh;
 }
-
-END { 1 while unlink @tempfiles }
 
 sub fooinc {
     my ($self, $filename) = @_;
@@ -173,10 +179,166 @@ is( $INC{'Toto.pm'}, 'xyz',	   '  val Toto.pm is correct in %INC' );
 
 pop @INC;
 
-my $filename = $^O eq 'MacOS' ? ':Foo:Foo.pm' : './Foo.pm';
+push @INC, sub {
+    my ($self, $filename) = @_;
+    if ($filename eq 'abc.pl') {
+	return get_temp_fh($filename, qq(return "abc";\n));
+    }
+    else {
+	return undef;
+    }
+};
+
+my $ret = "";
+$ret ||= do 'abc.pl';
+is( $ret, 'abc', 'do "abc.pl" sees return value' );
+
 {
-    local @INC;
-    @INC = sub { $filename = 'seen'; return undef; };
-    eval { require $filename; };
-    is( $filename, 'seen', 'the coderef sees fully-qualified pathnames' );
+    my $got;
+    #local @INC; # local fails on tied @INC
+    my @old_INC = @INC; # because local doesn't work on tied arrays
+    @INC = ('lib', 'lib/Devel', sub { $got = $_[1]; return undef; });
+    foreach my $filename ('/test_require.pm', './test_require.pm',
+			  '../test_require.pm') {
+	local %INC;
+	undef $got;
+	undef $test_require::loaded;
+	eval { require $filename; };
+	is($got, $filename, "the coderef sees the pathname $filename");
+	is($test_require::loaded, undef, 'no module is loaded' );
+    }
+
+    local %INC;
+    undef $got;
+    undef $test_require::loaded;
+
+    eval { require 'test_require.pm'; };
+    is($got, undef, 'the directory is scanned for test_require.pm');
+    is($test_require::loaded, 1, 'the module is loaded');
+    @INC = @old_INC;
+}
+
+# this will segfault if it fails
+
+sub PVBM () { 'foo' }
+{ my $dummy = index 'foo', PVBM }
+
+# I don't know whether these requires should succeed or fail. 5.8 failed
+# all of them; 5.10 with an ordinary constant in place of PVBM lets the
+# latter two succeed. For now I don't care, as long as they don't
+# segfault :).
+
+unshift @INC, sub { PVBM };
+eval 'require foo';
+ok( 1, 'returning PVBM doesn\'t segfault require' );
+eval 'use foo';
+ok( 1, 'returning PVBM doesn\'t segfault use' );
+shift @INC;
+unshift @INC, sub { \PVBM };
+eval 'require foo';
+ok( 1, 'returning PVBM ref doesn\'t segfault require' );
+eval 'use foo';
+ok( 1, 'returning PVBM ref doesn\'t segfault use' );
+shift @INC;
+
+# [perl #92252]
+{
+    my $die = sub { die };
+    my $data = [];
+    unshift @INC, sub { $die, $data };
+
+    my $initial_sub_refcnt = &Internals::SvREFCNT($die);
+    my $initial_data_refcnt = &Internals::SvREFCNT($data);
+
+    do "foo";
+    is(&Internals::SvREFCNT($die), $initial_sub_refcnt, "no leaks");
+    is(&Internals::SvREFCNT($data), $initial_data_refcnt, "no leaks");
+
+    do "bar";
+    is(&Internals::SvREFCNT($die), $initial_sub_refcnt, "no leaks");
+    is(&Internals::SvREFCNT($data), $initial_data_refcnt, "no leaks");
+
+    shift @INC;
+}
+
+exit if is_miniperl();
+
+SKIP: {
+    skip( "No PerlIO available", 3 ) unless $has_perlio;
+    pop @INC;
+
+    push @INC, sub {
+        my ($cr, $filename) = @_;
+        my $module = $filename; $module =~ s,/,::,g; $module =~ s/\.pm$//;
+        open my $fh, '<',
+             \"package $module; sub complain { warn q() }; \$::file = __FILE__;"
+	    or die $!;
+        $INC{$filename} = "/custom/path/to/$filename";
+        return $fh;
+    };
+
+    require Publius::Vergilius::Maro;
+    is( $INC{'Publius/Vergilius/Maro.pm'},
+        '/custom/path/to/Publius/Vergilius/Maro.pm', '%INC set correctly');
+    is( our $file, '/custom/path/to/Publius/Vergilius/Maro.pm',
+        '__FILE__ set correctly' );
+    {
+        my $warning;
+        local $SIG{__WARN__} = sub { $warning = shift };
+        Publius::Vergilius::Maro::complain();
+        like( $warning, qr{something's wrong at /custom/path/to/Publius/Vergilius/Maro.pm}, 'warn() reports correct file source' );
+    }
+}
+pop @INC;
+
+if ($can_fork) {
+    require PerlIO::scalar;
+    # This little bundle of joy generates n more recursive use statements,
+    # with each module chaining the next one down to 0. If it works, then we
+    # can safely nest subprocesses
+    my $use_filter_too;
+    push @INC, sub {
+	return unless $_[1] =~ /^BBBLPLAST(\d+)\.pm/;
+	my $pid = open my $fh, "-|";
+	if ($pid) {
+	    # Parent
+	    return $fh unless $use_filter_too;
+	    # Try filters and state in addition.
+	    return ($fh, sub {s/$_[1]/pass/; return}, "die")
+	}
+	die "Can't fork self: $!" unless defined $pid;
+
+	# Child
+	my $count = $1;
+	# Lets force some fun with odd sized reads.
+	$| = 1;
+	print 'push @main::bbblplast, ';
+	print "$count;\n";
+	if ($count--) {
+	    print "use BBBLPLAST$count;\n";
+	}
+	if ($use_filter_too) {
+	    print "die('In $_[1]');";
+	} else {
+	    print "pass('In $_[1]');";
+	}
+	print '"Truth"';
+	POSIX::_exit(0);
+	die "Can't get here: $!";
+    };
+
+    @::bbblplast = ();
+    require BBBLPLAST5;
+    is ("@::bbblplast", "0 1 2 3 4 5", "All ran");
+
+    foreach (keys %INC) {
+	delete $INC{$_} if /^BBBLPLAST/;
+    }
+
+    @::bbblplast = ();
+    $use_filter_too = 1;
+
+    require BBBLPLAST5;
+
+    is ("@::bbblplast", "0 1 2 3 4 5", "All ran with a filter");
 }

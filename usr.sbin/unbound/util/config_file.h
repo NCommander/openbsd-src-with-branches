@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -119,6 +119,8 @@ struct config_file {
 	size_t infra_cache_slabs;
 	/** max number of hosts in the infra cache */
 	size_t infra_cache_numhosts;
+	/** delay close of udp-timeouted ports, if 0 no delayclose. in msec */
+	int delay_close;
 
 	/** the target fetch policy for the iterator */
 	char* target_fetch_policy;
@@ -130,6 +132,8 @@ struct config_file {
 	size_t so_rcvbuf;
 	/** SO_SNDBUF size to set on port 53 UDP socket */
 	size_t so_sndbuf;
+	/** SO_REUSEPORT requested on port 53 sockets */
+	int so_reuseport;
 
 	/** number of interfaces to open. If 0 default all interfaces. */
 	int num_ifs;
@@ -290,6 +294,15 @@ struct config_file {
 
 	/** daemonize, i.e. fork into the background. */
 	int do_daemonize;
+
+	/* minimal response when positive answer */
+	int minimal_responses;
+
+	/* RRSet roundrobin */
+	int rrset_roundrobin;
+
+	/* maximum UDP response size */
+	size_t max_udp_size;
 };
 
 /**
@@ -306,6 +319,8 @@ struct config_stub {
 	struct config_strlist* addrs;
 	/** if stub-prime is set */
 	int isprime;
+	/** if forward-first is set (failover to without if fails) */
+	int isfirst;
 };
 
 /**
@@ -485,7 +500,7 @@ void config_delstubs(struct config_stub* list);
  * @param str: string of 14 digits
  * @return time value or 0 for error.
  */
-uint32_t cfg_convert_timeval(const char* str);
+time_t cfg_convert_timeval(const char* str);
 
 /**
  * Count number of values in the string.
@@ -628,5 +643,16 @@ extern struct config_parser_state* cfg_parser;
 void ub_c_error(const char* msg);
 /** parsing helpers: print error with file and line numbers */
 void ub_c_error_msg(const char* fmt, ...) ATTR_FORMAT(printf, 1, 2);
+
+#ifdef UB_ON_WINDOWS
+/**
+ * Obtain registry string (if it exists).
+ * @param key: key string
+ * @param name: name of value to fetch.
+ * @return malloced string with the result or NULL if it did not
+ * 	exist on an error (logged with log_err) was encountered.
+ */
+char* w_lookup_reg_str(const char* key, const char* name);
+#endif /* UB_ON_WINDOWS */
 
 #endif /* UTIL_CONFIG_FILE_H */

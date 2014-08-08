@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -68,6 +68,7 @@ usage()
 	printf("Options:\n");
 	printf("  -c file	config file, default is %s\n", CONFIGFILE);
 	printf("  -s ip[@port]	server address, if omitted config is used.\n");
+	printf("  -q		quiet (don't print anything if it works ok).\n");
 	printf("  -h		show this usage help.\n");
 	printf("Commands:\n");
 	printf("  start				start server; runs unbound(8)\n");
@@ -93,6 +94,7 @@ usage()
 	printf("  flush_type <name> <type>	flush name, type from cache\n");
 	printf("  flush_zone <name>		flush everything at or under name\n");
 	printf("  				from rr and dnssec caches\n");
+	printf("  flush_bogus			flush all bogus data\n");
 	printf("  flush_stats 			flush statistics, make zero\n");
 	printf("  flush_requestlist 		drop queries that are worked on\n");
 	printf("  dump_requestlist		show what is worked on\n");
@@ -104,6 +106,14 @@ usage()
 	printf("  list_forwards			list forward-zones in use\n");
 	printf("  list_local_zones		list local-zones in use\n");
 	printf("  list_local_data		list local-data RRs in use\n");
+	printf("  insecure_add zone 		add domain-insecure zone\n");
+	printf("  insecure_remove zone		remove domain-insecure zone\n");
+	printf("  forward_add [+i] zone addr..	add forward-zone with servers\n");
+	printf("  forward_remove [+i] zone	remove forward zone\n");
+	printf("  stub_add [+ip] zone addr..	add stub-zone with servers\n");
+	printf("  stub_remove [+i] zone		remove stub zone\n");
+	printf("		+i		also do dnssec insecure point\n");
+	printf("		+p		set stub to use priming\n");
 	printf("  forward [off | addr ...]	without arg show forward setup\n");
 	printf("				or off to turn off root forwarding\n");
 	printf("				or give list of ip addresses\n");
@@ -256,7 +266,7 @@ send_file(SSL* ssl, FILE* in, char* buf, size_t sz)
 
 /** send command and display result */
 static int
-go_cmd(SSL* ssl, int argc, char* argv[])
+go_cmd(SSL* ssl, int quiet, int argc, char* argv[])
 {
 	char pre[10];
 	const char* space=" ";
@@ -290,9 +300,12 @@ go_cmd(SSL* ssl, int argc, char* argv[])
 			ssl_err("could not SSL_read");
 		}
 		buf[r] = 0;
-		printf("%s", buf);
-		if(first_line && strncmp(buf, "error", 5) == 0)
+		if(first_line && strncmp(buf, "error", 5) == 0) {
+			printf("%s", buf);
 			was_error = 1;
+		} else if (!quiet)
+			printf("%s", buf);
+
 		first_line = 0;
 	}
 	return was_error;
@@ -300,7 +313,7 @@ go_cmd(SSL* ssl, int argc, char* argv[])
 
 /** go ahead and read config, contact server and perform command and display */
 static int
-go(const char* cfgfile, char* svr, int argc, char* argv[])
+go(const char* cfgfile, char* svr, int quiet, int argc, char* argv[])
 {
 	struct config_file* cfg;
 	int fd, ret;
@@ -321,7 +334,7 @@ go(const char* cfgfile, char* svr, int argc, char* argv[])
 	ssl = setup_ssl(ctx, fd);
 	
 	/* send command */
-	ret = go_cmd(ssl, argc, argv);
+	ret = go_cmd(ssl, quiet, argc, argv);
 
 	SSL_free(ssl);
 #ifndef USE_WINSOCK
@@ -343,6 +356,7 @@ extern char* optarg;
 int main(int argc, char* argv[])
 {
 	int c, ret;
+	int quiet = 0;
 	const char* cfgfile = CONFIGFILE;
 	char* svr = NULL;
 #ifdef USE_WINSOCK
@@ -360,6 +374,9 @@ int main(int argc, char* argv[])
 #ifdef USE_WINSOCK
 	if((r = WSAStartup(MAKEWORD(2,2), &wsa_data)) != 0)
 		fatal_exit("WSAStartup failed: %s", wsa_strerror(r));
+	/* use registry config file in preference to compiletime location */
+	if(!(cfgfile=w_lookup_reg_str("Software\\Unbound", "ConfigFile")))
+		cfgfile = CONFIGFILE;
 #endif
 
 	ERR_load_crypto_strings();
@@ -370,7 +387,8 @@ int main(int argc, char* argv[])
 	if(!RAND_status()) {
                 /* try to seed it */
                 unsigned char buf[256];
-                unsigned int v, seed=(unsigned)time(NULL) ^ (unsigned)getpid();
+                unsigned int seed=(unsigned)time(NULL) ^ (unsigned)getpid();
+		unsigned int v = seed;
                 size_t i;
                 for(i=0; i<256/sizeof(v); i++) {
                         memmove(buf+i*sizeof(v), &v, sizeof(v));
@@ -381,13 +399,16 @@ int main(int argc, char* argv[])
 	}
 
 	/* parse the options */
-	while( (c=getopt(argc, argv, "c:s:h")) != -1) {
+	while( (c=getopt(argc, argv, "c:s:qh")) != -1) {
 		switch(c) {
 		case 'c':
 			cfgfile = optarg;
 			break;
 		case 's':
 			svr = optarg;
+			break;
+		case 'q':
+			quiet = 1;
 			break;
 		case '?':
 		case 'h':
@@ -407,7 +428,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	ret = go(cfgfile, svr, argc, argv);
+	ret = go(cfgfile, svr, quiet, argc, argv);
 
 #ifdef USE_WINSOCK
         WSACleanup();

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <sys/file.h>
 #ifdef SDBM
+#include "EXTERN.h"
 #include "sdbm.h"
 #else
 #include <ndbm.h>
@@ -64,12 +65,10 @@ static cmd *parse();
 static void badk(), doit(), prdatum();
 
 int
-main(argc, argv)
-int	argc;
-char *argv[];
+main(int argc, char **argv)
 {
 	int c;
-	register cmd *act;
+	cmd *act;
 	extern int optind;
 	extern char *optarg;
 
@@ -97,15 +96,13 @@ char *argv[];
 }
 
 static void
-doit(act, file)
-register cmd *act;
-char *file;
+doit(cmd *act, char *file)
 {
 	datum key;
 	datum val;
-	register DBM *db;
-	register char *op;
-	register int n;
+	DBM *db;
+	char *op;
+	int n;
 	char *line;
 #ifdef TIME
 	long start;
@@ -196,10 +193,9 @@ char *file;
 }
 
 static void
-badk(word)
-char *word;
+badk(char *word)
 {
-	register int i;
+	int i;
 
 	if (progname)
 		fprintf(stderr, "%s: ", progname);
@@ -213,11 +209,10 @@ char *word;
 }
 
 static cmd *
-parse(str)
-register char *str;
+parse(char *str)
 {
-	register int i = CTABSIZ;
-	register cmd *p;
+	int i = CTABSIZ;
+	cmd *p;
 	
 	for (p = cmds; i--; p++)
 		if (strcmp(p->sname, str) == 0)
@@ -226,13 +221,11 @@ register char *str;
 }
 
 static void
-prdatum(stream, d)
-FILE *stream;
-datum d;
+prdatum(FILE *stream, datum d)
 {
-	register int c;
-	register char *p = d.dptr;
-	register int n = d.dsize;
+	int c;
+	char *p = d.dptr;
+	int n = d.dsize;
 
 	while (n--) {
 		c = *p++ & 0377;

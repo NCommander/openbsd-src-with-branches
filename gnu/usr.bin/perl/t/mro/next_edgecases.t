@@ -3,7 +3,9 @@
 use strict;
 use warnings;
 
-require q(./test.pl); plan(tests => 11);
+BEGIN { chdir 't'; require q(./test.pl); @INC = qw "../lib lib" }
+
+plan(tests => 12);
 
 {
 
@@ -19,7 +21,7 @@ require q(./test.pl); plan(tests => 11);
     # call the submethod in the direct instance
 
     my $foo = Foo->new();
-    isa_ok($foo, 'Foo');
+    object_ok($foo, 'Foo');
 
     can_ok($foo, 'bar');
     is($foo->bar(), 'Foo::bar', '... got the right return value');    
@@ -35,8 +37,8 @@ require q(./test.pl); plan(tests => 11);
     }  
     
     my $bar = Bar->new();
-    isa_ok($bar, 'Bar');
-    isa_ok($bar, 'Foo');    
+    object_ok($bar, 'Bar');
+    object_ok($bar, 'Foo');    
     
     # test it working with with Sub::Name
     SKIP: {    
@@ -52,7 +54,7 @@ require q(./test.pl); plan(tests => 11);
 
         can_ok($bar, 'bar');
         my $value = eval { $bar->bar() };
-        ok(!$@, '... calling bar() succedded') || diag $@;
+        ok(!$@, '... calling bar() succeeded') || diag $@;
         is($value, 'Foo::bar', '... got the right return value too');
     }
     
@@ -66,8 +68,8 @@ require q(./test.pl); plan(tests => 11);
     }      
     
     my $baz = Baz->new();
-    isa_ok($baz, 'Baz');
-    isa_ok($baz, 'Foo');    
+    object_ok($baz, 'Baz');
+    object_ok($baz, 'Foo');    
     
     {
         my $m = sub { (shift)->next::method() };
@@ -78,5 +80,16 @@ require q(./test.pl); plan(tests => 11);
 
         eval { $baz->bar() };
         ok($@, '... calling bar() with next::method failed') || diag $@;
-    }    
+    }
+
+    # Test with non-existing class (used to segfault)
+    {
+        package Qux;
+        use mro;
+        sub foo { No::Such::Class->next::can }
+    }
+
+    eval { Qux->foo() };
+    is($@, '', "->next::can on non-existing package name");
+
 }

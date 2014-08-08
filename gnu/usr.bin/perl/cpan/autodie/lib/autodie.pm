@@ -8,7 +8,7 @@ our @ISA = qw(Fatal);
 our $VERSION;
 
 BEGIN {
-    $VERSION = '2.06_01';
+    $VERSION = '2.13';
 }
 
 use constant ERROR_WRONG_FATAL => q{
@@ -264,7 +264,7 @@ C<system> and C<exec> with:
 =head2 flock
 
 It is not considered an error for C<flock> to return false if it fails
-to an C<EWOULDBLOCK> (or equivalent) condition.  This means one can
+due to an C<EWOULDBLOCK> (or equivalent) condition.  This means one can
 still use the common convention of testing the return value of
 C<flock> when called with the C<LOCK_NB> option:
 
@@ -333,6 +333,10 @@ C<autodie>.  To workaround this, C<autodie> may be explicitly disabled until
 the end of the current block with C<no autodie>.
 To disable autodie for only a single function (eg, open)
 use C<no autodie qw(open)>.
+
+C<autodie> performs no checking of called context to determine whether to throw
+an exception; the explicitness of error handling with C<autodie> is a deliberate
+feature.
 
 =item No user hints defined for %s
 

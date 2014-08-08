@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
-# Load testing for YAML::Tiny
+delete $ENV{PERL_YAML_BACKEND};
+delete $ENV{PERL_JSON_BACKEND};
 
 BEGIN {
 	if( $ENV{PERL_CORE} ) {

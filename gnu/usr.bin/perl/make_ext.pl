@@ -2,21 +2,29 @@
 use strict;
 use warnings;
 use Config;
-use Cwd;
+
+my $is_Win32 = $^O eq 'MSWin32';
+my $is_VMS = $^O eq 'VMS';
+my $is_Unix = !$is_Win32 && !$is_VMS;
+
+my @ext_dirs = qw(cpan dist ext);
+my $ext_dirs_re = '(?:' . join('|', @ext_dirs) . ')';
 
 # This script acts as a simple interface for building extensions.
 
 # It's actually a cut and shut of the Unix version ext/utils/makeext and the
 # Windows version win32/build_ext.pl hence the two invocation styles.
 
-# On Unix, it primarily used by the perl Makefile one extention at a time:
+# On Unix, it primarily used by the perl Makefile one extension at a time:
 #
 # d_dummy $(dynamic_ext): miniperl preplibrary FORCE
 # 	@$(RUN) ./miniperl make_ext.pl --target=dynamic $@ MAKE=$(MAKE) LIBPERL_A=$(LIBPERL)
 #
 # On Windows or VMS,
 # If '--static' is specified, static extensions will be built.
-# If '--dynamic' is specified, dynamic (and nonxs) extensions will be built.
+# If '--dynamic' is specified, dynamic extensions will be built.
+# If '--nonxs' is specified, nonxs extensions will be built.
+# If '--dynaloader' is specified, DynaLoader will be built.
 # If '--all' is specified, all extensions will be built.
 #
 #    make_ext.pl "MAKE=make [-make_opts]" --dir=directory [--target=target] [--static|--dynamic|--all] +ext2 !ext1
@@ -41,12 +49,6 @@ use Cwd;
 # It may be deleted in a later release of perl so try to
 # avoid using it for other purposes.
 
-my $is_Win32 = $^O eq 'MSWin32';
-my $is_VMS = $^O eq 'VMS';
-my $is_Unix = !$is_Win32 && !$is_VMS;
-
-require FindExt if $is_Win32;
-
 my (%excl, %incl, %opts, @extspec, @pass_through);
 
 foreach (@ARGV) {
@@ -57,7 +59,7 @@ foreach (@ARGV) {
     } elsif (/^--([\w\-]+)$/) {
 	$opts{$1} = 1;
     } elsif (/^--([\w\-]+)=(.*)$/) {
-	$opts{$1} = $2;
+	push @{$opts{$1}}, $2;
     } elsif (/=/) {
 	push @pass_through, $_;
     } elsif (length) {
@@ -67,6 +69,8 @@ foreach (@ARGV) {
 
 my $static = $opts{static} || $opts{all};
 my $dynamic = $opts{dynamic} || $opts{all};
+my $nonxs = $opts{nonxs} || $opts{all};
+my $dynaloader = $opts{dynaloader} || $opts{all};
 
 # The Perl Makefile.SH will expand all extensions to
 #	lib/auto/X/X.a  (or lib/auto/X/Y/Y.a if nested)
@@ -79,7 +83,7 @@ foreach (@extspec) {
     if (s{^lib/auto/}{}) {
 	# Remove lib/auto prefix and /*.* suffix
 	s{/[^/]+\.[^/]+$}{};
-    } elsif (s{^ext/}{}) {
+    } elsif (s{^$ext_dirs_re/}{}) {
 	# Remove ext/ prefix and /pm_to_blib suffix
 	s{/pm_to_blib$}{};
 	# Targets are given as files on disk, but the extension spec is still
@@ -95,8 +99,8 @@ foreach (@extspec) {
 my $makecmd  = shift @pass_through; # Should be something like MAKE=make
 unshift @pass_through, 'PERL_CORE=1';
 
-my $dir  = $opts{dir} || 'ext';
-my $target   = $opts{target};
+my @dirs  = @{$opts{dir} || \@ext_dirs};
+my $target   = $opts{target}[0];
 $target = 'all' unless defined $target;
 
 # Previously, $make was taken from config.sh.  However, the user might
@@ -126,7 +130,7 @@ if ($target eq '') {
     die "$0: unknown make target '$target'\n";
 }
 
-if (!@extspec and !$static and !$dynamic)  {
+if (!@extspec and !$static and !$dynamic and !$nonxs and !$dynaloader)  {
     die "$0: no extension specified\n";
 }
 
@@ -134,9 +138,13 @@ my $perl;
 my %extra_passthrough;
 
 if ($is_Win32) {
-    (my $here = getcwd()) =~ s{/}{\\}g;
+    require Cwd;
+    require FindExt;
+    my $build = Cwd::getcwd();
     $perl = $^X;
     if ($perl =~ m#^\.\.#) {
+	my $here = $build;
+	$here =~ s{/}{\\}g;
 	$perl = "$here\\$perl";
     }
     (my $topdir = $perl) =~ s/\\[^\\]+$//;
@@ -144,82 +152,123 @@ if ($is_Win32) {
     $ENV{PATH} = "$topdir;$topdir\\win32\\bin;$ENV{PATH}";
     my $pl2bat = "$topdir\\win32\\bin\\pl2bat";
     unless (-f "$pl2bat.bat") {
-	my @args = ($perl, ("$pl2bat.pl") x 2);
+	my @args = ($perl, "-I$topdir\\lib", ("$pl2bat.pl") x 2);
 	print "@args\n";
 	system(@args) unless defined $::Cross::platform;
     }
 
-    print "In ", getcwd();
-    chdir($dir) || die "Cannot cd to $dir\n";
-    (my $ext = getcwd()) =~ s{/}{\\}g;
-    FindExt::scan_ext($ext);
-    FindExt::set_static_extensions(split ' ', $Config{static_ext});
+    print "In $build";
+    foreach my $dir (@dirs) {
+	chdir($dir) or die "Cannot cd to $dir: $!\n";
+	(my $ext = Cwd::getcwd()) =~ s{/}{\\}g;
+	FindExt::scan_ext($ext);
+	FindExt::set_static_extensions(split ' ', $Config{static_ext});
+	chdir $build
+	    or die "Couldn't chdir to '$build': $!"; # restore our start directory
+    }
 
     my @ext;
     push @ext, FindExt::static_ext() if $static;
-    push @ext, FindExt::dynamic_ext(), FindExt::nonxs_ext() if $dynamic;
+    push @ext, FindExt::dynamic_ext() if $dynamic;
+    push @ext, FindExt::nonxs_ext() if $nonxs;
+    push @ext, 'DynaLoader' if $dynaloader;
 
     foreach (sort @ext) {
 	if (%incl and !exists $incl{$_}) {
-	    #warn "Skipping extension $ext\\$_, not in inclusion list\n";
+	    #warn "Skipping extension $_, not in inclusion list\n";
 	    next;
 	}
 	if (exists $excl{$_}) {
-	    warn "Skipping extension $ext\\$_, not ported to current platform";
+	    warn "Skipping extension $_, not ported to current platform";
 	    next;
 	}
 	push @extspec, $_;
-	if(FindExt::is_static($_)) {
+	if($_ eq 'DynaLoader' and $target !~ /clean$/) {
+	    # No, we don't know why nmake can't work out the dependency chain
+	    push @{$extra_passthrough{$_}}, 'DynaLoader.c';
+	} elsif(FindExt::is_static($_)) {
 	    push @{$extra_passthrough{$_}}, 'LINKTYPE=static';
 	}
     }
-    chdir '..'; # now in the Perl build directory
+
+    chdir '..'
+	or die "Couldn't chdir to build directory: $!"; # now in the Perl build
 }
 elsif ($is_VMS) {
     $perl = $^X;
     push @extspec, (split ' ', $Config{static_ext}) if $static;
     push @extspec, (split ' ', $Config{dynamic_ext}) if $dynamic;
+    push @extspec, (split ' ', $Config{nonxs_ext}) if $nonxs;
+    push @extspec, 'DynaLoader' if $dynaloader;
+}
+
+{
+    # Cwd needs to be built before Encode recurses into subdirectories.
+    # Pod::Simple needs to be built before Pod::Functions
+    # This seems to be the simplest way to ensure this ordering:
+    my (@first, @other);
+    foreach (@extspec) {
+	if ($_ eq 'Cwd' || $_ eq 'Pod/Simple') {
+	    push @first, $_;
+	} else {
+	    push @other, $_;
+	}
+    }
+    @extspec = (@first, @other);
+}
+
+if ($Config{osname} eq 'catamount' and @extspec) {
+    # Snowball's chance of building extensions.
+    die "This is $Config{osname}, not building $extspec[0], sorry.\n";
 }
 
 foreach my $spec (@extspec)  {
     my $mname = $spec;
     $mname =~ s!/!::!g;
     my $ext_pathname;
-    if (-d "ext/$spec") {
-	# Old style ext/Data/Dumper/
-	$ext_pathname = "ext/$spec";
-    } elsif ($is_VMS and -d "vms/ext/" . substr($spec, 4)) {
-	# We could get rid of this by moving everything from
-	# [.vms.ext...] to [.ext.VMS...]
-	$ext_pathname = "vms/ext/" . substr($spec, 4);
-    } else {
-	# New style ext/Data-Dumper/
-	my $copy = $spec;
-	$copy =~ tr!/!-!;
-	$ext_pathname = "ext/$copy";
-    }
-    my $up = $ext_pathname;
-    $up =~ s![^/]+!..!g;
 
-    if ($Config{osname} eq 'catamount') {
-	# Snowball's chance of building extensions.
-	die "This is $Config{osname}, not building $mname, sorry.\n";
+    # Try new style ext/Data-Dumper/ first
+    my $copy = $spec;
+    $copy =~ tr!/!-!;
+    foreach my $dir (@ext_dirs) {
+	if (-d "$dir/$copy") {
+	    $ext_pathname = "$dir/$copy";
+	    last;
+	}
+    }
+
+    if (!defined $ext_pathname) {
+	if (-d "ext/$spec") {
+	    # Old style ext/Data/Dumper/
+	    $ext_pathname = "ext/$spec";
+	} else {
+	    warn "Can't find extension $spec in any of @ext_dirs";
+	    next;
+	}
     }
 
     print "\tMaking $mname ($target)\n";
 
-    build_extension('ext', $ext_pathname, $up, $perl || "$up/miniperl",
-		    "$up/lib", $mname,
+    build_extension($ext_pathname, $perl, $mname,
 		    [@pass_through, @{$extra_passthrough{$spec} || []}]);
 }
 
 sub build_extension {
-    my ($ext, $ext_dir, $return_dir, $perl, $lib_dir, $mname, $pass_through)
-	= @_;
+    my ($ext_dir, $perl, $mname, $pass_through) = @_;
+
     unless (chdir "$ext_dir") {
 	warn "Cannot cd to $ext_dir: $!";
 	return;
     }
+
+    my $up = $ext_dir;
+    $up =~ s![^/]+!..!g;
+
+    $perl ||= "$up/miniperl";
+    my $return_dir = $up;
+    my $lib_dir = "$up/lib";
+    $ENV{PERL_CORE} = 1;
+
     my $makefile;
     if ($is_VMS) {
 	$makefile = 'descrip.mms';
@@ -232,47 +281,127 @@ sub build_extension {
 	$makefile = 'Makefile';
     }
     
+    if (-f $makefile) {
+	open my $mfh, $makefile or die "Cannot open $makefile: $!";
+	while (<$mfh>) {
+	    # Plagiarised from CPAN::Distribution
+	    last if /MakeMaker post_initialize section/;
+	    next unless /^#\s+VERSION_FROM\s+=>\s+(.+)/;
+	    my $vmod = eval $1;
+	    my $oldv;
+	    while (<$mfh>) {
+		next unless /^XS_VERSION = (\S+)/;
+		$oldv = $1;
+		last;
+	    }
+	    last unless defined $oldv;
+	    require ExtUtils::MM_Unix;
+	    defined (my $newv = parse_version MM $vmod) or last;
+	    if ($newv ne $oldv) {
+		1 while unlink $makefile
+	    }
+	}
+    }
+
     if (!-f $makefile) {
 	if (!-f 'Makefile.PL') {
 	    print "\nCreating Makefile.PL in $ext_dir for $mname\n";
-	    # We need to cope well with various possible layouts
-	    my @dirs = split /::/, $mname;
-	    my $leaf = pop @dirs;
-	    my $leafname = "$leaf.pm";
-	    my $pathname = join '/', @dirs, $leafname;
-	    my @locations = ($leafname, $pathname, "lib/$pathname");
-	    my $fromname;
-	    foreach (@locations) {
-		if (-f $_) {
-		    $fromname = $_;
-		    last;
+	    my ($fromname, $key, $value);
+	    if ($mname eq 'podlators') {
+		# We need to special case this somewhere, and this is fewer
+		# lines of code than a core-only Makefile.PL, and no more
+		# complex
+		$fromname = 'VERSION';
+		$key = 'DISTNAME';
+		$value = 'podlators';
+		$mname = 'Pod';
+	    } else {
+		$key = 'ABSTRACT_FROM';
+		# We need to cope well with various possible layouts
+		my @dirs = split /::/, $mname;
+		my $leaf = pop @dirs;
+		my $leafname = "$leaf.pm";
+		my $pathname = join '/', @dirs, $leafname;
+		my @locations = ($leafname, $pathname, "lib/$pathname");
+		foreach (@locations) {
+		    if (-f $_) {
+			$fromname = $_;
+			last;
+		    }
 		}
-	    }
 
-	    unless ($fromname) {
-		die "For $mname tried @locations in in $ext_dir but can't find source";
+		unless ($fromname) {
+		    die "For $mname tried @locations in in $ext_dir but can't find source";
+		}
+		($value = $fromname) =~ s/\.pm\z/.pod/;
+		$value = $fromname unless -e $value;
 	    }
 	    open my $fh, '>', 'Makefile.PL'
 		or die "Can't open Makefile.PL for writing: $!";
-	    print $fh <<"EOM";
+	    printf $fh <<'EOM', $0, $mname, $fromname, $key, $value;
 #-*- buffer-read-only: t -*-
 
-# This Makefile.PL was written by $0.
+# This Makefile.PL was written by %s.
 # It will be deleted automatically by make realclean
 
 use strict;
 use ExtUtils::MakeMaker;
 
+# This is what the .PL extracts to. Not the ultimate file that is installed.
+# (ie Win32 runs pl2bat after this)
+
+# Doing this here avoids all sort of quoting issues that would come from
+# attempting to write out perl source with literals to generate the arrays and
+# hash.
+my @temps = 'Makefile.PL';
+foreach (glob('scripts/pod*.PL')) {
+    # The various pod*.PL extractors change directory. Doing that with relative
+    # paths in @INC breaks. It seems the lesser of two evils to copy (to avoid)
+    # the chdir doing anything, than to attempt to convert lib paths to
+    # absolute, and potentially run into problems with quoting special
+    # characters in the path to our build dir (such as spaces)
+    require File::Copy;
+
+    my $temp = $_;
+    $temp =~ s!scripts/!!;
+    File::Copy::copy($_, $temp) or die "Can't copy $temp to $_: $!";
+    push @temps, $temp;
+}
+
+my $script_ext = $^O eq 'VMS' ? '.com' : '';
+my %%pod_scripts;
+foreach (glob('pod*.PL')) {
+    my $script = $_;
+    s/.PL$/$script_ext/i;
+    $pod_scripts{$script} = $_;
+}
+my @exe_files = values %%pod_scripts;
+
 WriteMakefile(
-    NAME          => '$mname',
-    VERSION_FROM  => '$fromname',
-    ABSTRACT_FROM => '$fromname',
-    realclean     => {FILES => 'Makefile.PL'},
+    NAME          => '%s',
+    VERSION_FROM  => '%s',
+    %-13s => '%s',
+    realclean     => { FILES => "@temps" },
+    (%%pod_scripts ? (
+        PL_FILES  => \%%pod_scripts,
+        EXE_FILES => \@exe_files,
+        clean     => { FILES => "@exe_files" },
+    ) : ()),
 );
 
 # ex: set ro:
 EOM
 	    close $fh or die "Can't close Makefile.PL: $!";
+	    # As described in commit 23525070d6c0e51f:
+	    # Push the atime and mtime of generated Makefile.PLs back 4
+	    # seconds. In certain circumstances ( on virtual machines ) the
+	    # generated Makefile.PL can produce a Makefile that is older than
+	    # the Makefile.PL. Altering the atime and mtime backwards by 4
+	    # seconds seems to resolve the issue.
+	    eval {
+		my $ftime = time - 4;
+		utime $ftime, $ftime, 'Makefile.PL';
+	    };
 	}
 	print "\nRunning Makefile.PL in $ext_dir\n";
 
@@ -285,7 +414,7 @@ EOM
 	    # Inherited from make_ext.pl
 	    @cross = '-MCross';
 	}
-	    
+
 	my @args = ("-I$lib_dir", @cross, 'Makefile.PL');
 	if ($is_VMS) {
 	    my $libd = VMS::Filespec::vmspath($lib_dir);
@@ -342,19 +471,20 @@ EOS
     }
 
     if ($is_VMS) {
-	_macroify_passthrough($pass_through);
-	unshift @$pass_through, "/DESCRIPTION=$makefile";
+	_quote_args($pass_through);
+	@$pass_through = (
+			  "/DESCRIPTION=$makefile",
+			  '/MACRO=(' . join(',',@$pass_through) . ')'
+			 );
     }
 
     if (!$target or $target !~ /clean$/) {
 	# Give makefile an opportunity to rewrite itself.
 	# reassure users that life goes on...
 	my @args = ('config', @$pass_through);
-	_quote_args(\@args) if $is_VMS;
 	system(@run, @make, @args) and print "@run @make @args failed, continuing anyway...\n";
     }
     my @targ = ($target, @$pass_through);
-    _quote_args(\@targ) if $is_VMS;
     print "Making $target in $ext_dir\n@run @make @targ\n";
     my $code = system(@run, @make, @targ);
     die "Unsuccessful make($ext_dir): code=$code" if $code != 0;
@@ -372,12 +502,4 @@ sub _quote_args {
         }
     } @{$args}
     ;
-}
-
-sub _macroify_passthrough {
-    my $passthrough = shift;
-    _quote_args($passthrough);
-    my $macro = '/MACRO=(' . join(',',@$passthrough) . ')';
-    @$passthrough = ();
-    @$passthrough[0] = $macro;  
 }

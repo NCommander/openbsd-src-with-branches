@@ -1,12 +1,5 @@
 #!/usr/bin/perl -wT
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = '../lib';
-    }
-}
-
 use strict;
 use Config;
 use Test::More;
@@ -39,26 +32,36 @@ plan tests => 22 + keys(%modules) * 3;
 # Try to load the module
 use_ok( 'DynaLoader' );
 
+# Some tests need to be skipped on old Darwin versions.
+# Commit ce12ed1954 added the skip originally, without specifying which
+# darwin version needed it.  I know OS X 10.6 (Snow Leopard; darwin 10)
+# supports it, so skip anything before that.
+my $old_darwin = $^O eq 'darwin' && ($Config{osvers} =~ /^(\d+)/)[0] < 10;
 
 # Check functions
 can_ok( 'DynaLoader' => 'bootstrap'               ); # defined in Perl section
-can_ok( 'DynaLoader' => 'dl_error'                ); # defined in XS section
-can_ok( 'DynaLoader' => 'dl_find_symbol'          ); # defined in XS section
-can_ok( 'DynaLoader' => 'dl_install_xsub'         ); # defined in XS section
-can_ok( 'DynaLoader' => 'dl_load_file'            ); # defined in XS section
 can_ok( 'DynaLoader' => 'dl_load_flags'           ); # defined in Perl section
-can_ok( 'DynaLoader' => 'dl_undef_symbols'        ); # defined in XS section
-SKIP: {
-    skip "unloading unsupported on $^O", 1 if ($^O eq 'VMS' || $^O eq 'darwin');
-    can_ok( 'DynaLoader' => 'dl_unload_file'          ); # defined in XS section
+can_ok( 'DynaLoader' => 'dl_error'                ); # defined in XS section
+if ($Config{usedl}) {
+    can_ok( 'DynaLoader' => 'dl_find_symbol'      ); # defined in XS section
+    can_ok( 'DynaLoader' => 'dl_install_xsub'     ); # defined in XS section
+    can_ok( 'DynaLoader' => 'dl_load_file'        ); # defined in XS section
+    can_ok( 'DynaLoader' => 'dl_undef_symbols'    ); # defined in XS section
+    SKIP: {
+        skip "unloading unsupported on $^O", 1 if ($old_darwin || $^O eq 'VMS');
+        can_ok( 'DynaLoader' => 'dl_unload_file'  ); # defined in XS section
+    }
+} else {
+    foreach my $symbol (qw(dl_find_symbol dl_install_sub dl_load_file
+			   dl_undef_symbols dl_unload_file)) {
+	is(DynaLoader->can($symbol), undef,
+	   "Without dynamic loading, DynaLoader should not have $symbol");
+    }
 }
 
-TODO: {
-local $TODO = "Test::More::can_ok() seems to have trouble dealing with AutoLoaded functions";
-can_ok( 'DynaLoader' => 'dl_expandspec'           ); # defined in AutoLoaded section
-can_ok( 'DynaLoader' => 'dl_findfile'             ); # defined in AutoLoaded section
-can_ok( 'DynaLoader' => 'dl_find_symbol_anywhere' ); # defined in AutoLoaded section
-}
+can_ok( 'DynaLoader' => 'dl_expandspec'           );
+can_ok( 'DynaLoader' => 'dl_findfile'             );
+can_ok( 'DynaLoader' => 'dl_find_symbol_anywhere' );
 
 
 # Check error messages
@@ -68,16 +71,24 @@ like( $@, q{/^Usage: DynaLoader::bootstrap\(module\)/},
         "calling DynaLoader::bootstrap() with no argument" );
 
 eval { package egg_bacon_sausage_and_spam; DynaLoader::bootstrap("egg_bacon_sausage_and_spam") };
-like( $@, q{/^Can't locate loadable object for module egg_bacon_sausage_and_spam/},
+if ($Config{usedl}) {
+    like( $@, q{/^Can't locate loadable object for module egg_bacon_sausage_and_spam/},
         "calling DynaLoader::bootstrap() with a package without binary object" );
+} else {
+     like( $@, q{/^Can't load module egg_bacon_sausage_and_spam/},
+        "calling DynaLoader::bootstrap() with a package without binary object" );
+}
 
 # .. for dl_load_file()
-eval { DynaLoader::dl_load_file() };
-like( $@, q{/^Usage: DynaLoader::dl_load_file\(filename, flags=0\)/},
-        "calling DynaLoader::dl_load_file() with no argument" );
+SKIP: {
+    skip "no dl_load_file with dl_none.xs", 2 unless $Config{usedl};
+    eval { DynaLoader::dl_load_file() };
+    like( $@, q{/^Usage: DynaLoader::dl_load_file\(filename, flags=0\)/},
+            "calling DynaLoader::dl_load_file() with no argument" );
 
-eval { no warnings 'uninitialized'; DynaLoader::dl_load_file(undef) };
-is( $@, '', "calling DynaLoader::dl_load_file() with undefined argument" );     # is this expected ?
+    eval { no warnings 'uninitialized'; DynaLoader::dl_load_file(undef) };
+    is( $@, '', "calling DynaLoader::dl_load_file() with undefined argument" );     # is this expected ?
+}
 
 my ($dlhandle, $dlerr);
 eval { $dlhandle = DynaLoader::dl_load_file("egg_bacon_sausage_and_spam") };
@@ -131,8 +142,9 @@ is( scalar @DynaLoader::dl_modules, scalar keys %modules, "checking number of it
 my @loaded_modules = @DynaLoader::dl_modules;
 for my $libref (reverse @DynaLoader::dl_librefs) {
   SKIP: {
-    skip "unloading unsupported on $^O", 2 if ($^O eq 'VMS' || $^O eq 'darwin');
+    skip "unloading unsupported on $^O", 2 if ($old_darwin || $^O eq 'VMS');
     my $module = pop @loaded_modules;
+    skip "File::Glob sets PL_opfreehook", 2 if $module eq 'File::Glob';
     my $r = eval { DynaLoader::dl_unload_file($libref) };
     is( $@, '', "calling dl_unload_file() for $module" );
     is( $r,  1, " - unload was successful" );

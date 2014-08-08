@@ -7,11 +7,10 @@ static bool
 _runops_debug(int flag)
 {
     dTHX;
-    const bool d = PL_runops == MEMBER_TO_FPTR(Perl_runops_debug);
+    const bool d = PL_runops == Perl_runops_debug;
 
     if (flag >= 0)
-	PL_runops 
-	    = MEMBER_TO_FPTR(flag ? Perl_runops_debug : Perl_runops_standard);
+	PL_runops = flag ? Perl_runops_debug : Perl_runops_standard;
     return d;
 }
 
@@ -24,7 +23,7 @@ DeadCode(pTHX)
     SV* sva;
     SV* sv;
     SV* ret = newRV_noinc((SV*)newAV());
-    register SV* svend;
+    SV* svend;
     int tm = 0, tref = 0, ts = 0, ta = 0, tas = 0;
 
     for (sva = PL_sv_arenaroot; sva; sva = (SV*)SvANY(sva)) {
@@ -32,7 +31,8 @@ DeadCode(pTHX)
 	for (sv = sva + 1; sv < svend; ++sv) {
 	    if (SvTYPE(sv) == SVt_PVCV) {
 		CV *cv = (CV*)sv;
-		AV* padlist = CvPADLIST(cv), *argav;
+		PADLIST* padlist = CvPADLIST(cv);
+                AV *argav;
 		SV** svp;
 		SV** pad;
 		int i = 0, j, levelm, totm = 0, levelref, totref = 0;
@@ -54,10 +54,11 @@ DeadCode(pTHX)
 		    PerlIO_printf(Perl_debug_log, "  busy\n");
 		    continue;
 		}
-		svp = AvARRAY(padlist);
-		while (++i <= AvFILL(padlist)) { /* Depth. */
+		svp = (SV**) PadlistARRAY(padlist);
+		while (++i <= PadlistMAX(padlist)) { /* Depth. */
 		    SV **args;
 		    
+		    if (!svp[i]) continue;
 		    pad = AvARRAY((AV*)svp[i]);
 		    argav = (AV*)pad[0];
 		    if (!argav || (SV*)argav == &PL_sv_undef) {
@@ -109,7 +110,7 @@ DeadCode(pTHX)
 		    if (dumpit)
 			do_sv_dump(0, Perl_debug_log, (SV*)cv, 0, 2, 0, 0);
 		}
-		if (AvFILL(padlist) > 1) {
+		if (PadlistMAX(padlist) > 1) {
 		    PerlIO_printf(Perl_debug_log, "  total: refs: %i, strings: %i in %i,\targsarrays: %i, argsstrings: %i\n", 
 			    totref, totm, tots, tota, totas);
 		}
@@ -162,6 +163,7 @@ fill_mstats(SV *sv, int level)
 {
     dTHX;
 
+    if (SvIsCOW(sv)) sv_force_normal(sv);
     if (SvREADONLY(sv))
 	croak("Cannot modify a readonly value");
     SvGROW(sv, sizeof(struct mstats_buffer)+1);
@@ -295,18 +297,25 @@ mstats2hash(SV *sv, SV *rv, int level)
 static void
 fill_mstats(SV *sv, int level)
 {
+    PERL_UNUSED_ARG(sv);
+    PERL_UNUSED_ARG(level);
     croak("Cannot report mstats without Perl malloc");
 }
 
 static void
 mstats_fillhash(SV *sv, int level)
 {
+    PERL_UNUSED_ARG(sv);
+    PERL_UNUSED_ARG(level);
     croak("Cannot report mstats without Perl malloc");
 }
 
 static void
 mstats2hash(SV *sv, SV *rv, int level)
 {
+    PERL_UNUSED_ARG(sv);
+    PERL_UNUSED_ARG(rv);
+    PERL_UNUSED_ARG(level);
     croak("Cannot report mstats without Perl malloc");
 }
 #endif	/* defined(MYMALLOC) */ 

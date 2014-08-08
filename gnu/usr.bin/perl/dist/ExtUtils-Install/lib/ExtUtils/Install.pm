@@ -38,11 +38,11 @@ ExtUtils::Install - install files from here to there
 
 =head1 VERSION
 
-1.55
+1.59
 
 =cut
 
-$VERSION = '1.55';  # <---- dont forget to update the POD section just above this line!
+$VERSION = '1.59';  # <---- dont forget to update the POD section just above this line!
 $VERSION = eval $VERSION;
 
 =pod
@@ -73,9 +73,9 @@ has occured.
 If this value is defined but false then such an operation has
 ocurred, but should not impact later operations.
 
-=begin _private
-
 =over
+
+=begin _private
 
 =item _chmod($$;$)
 
@@ -96,33 +96,10 @@ Dies with a special message.
 =cut
 
 my $Is_VMS     = $^O eq 'VMS';
-my $Is_VMS_noefs = $Is_VMS;
 my $Is_MacPerl = $^O eq 'MacOS';
 my $Is_Win32   = $^O eq 'MSWin32';
 my $Is_cygwin  = $^O eq 'cygwin';
 my $CanMoveAtBoot = ($Is_Win32 || $Is_cygwin);
-
-    if( $Is_VMS ) {
-        my $vms_unix_rpt;
-        my $vms_efs;
-        my $vms_case;
-
-        if (eval { local $SIG{__DIE__}; require VMS::Feature; }) {
-            $vms_unix_rpt = VMS::Feature::current("filename_unix_report");
-            $vms_efs = VMS::Feature::current("efs_charset");
-            $vms_case = VMS::Feature::current("efs_case_preserve");
-        } else {
-            my $unix_rpt = $ENV{'DECC$FILENAME_UNIX_REPORT'} || '';
-            my $efs_charset = $ENV{'DECC$EFS_CHARSET'} || '';
-            my $efs_case = $ENV{'DECC$EFS_CASE_PRESERVE'} || '';
-            $vms_unix_rpt = $unix_rpt =~ /^[ET1]/i;
-            $vms_efs = $efs_charset =~ /^[ET1]/i;
-            $vms_case = $efs_case =~ /^[ET1]/i;
-        }
-        $Is_VMS_noefs = 0 if ($vms_efs);
-    }
-
-
 
 # *note* CanMoveAtBoot is only incidentally the same condition as below
 # this needs not hold true in the future.
@@ -297,7 +274,7 @@ sub _unlink_or_rename { #XXX OS-SPECIFIC
          "Going to try to rename it to '$tmp'.\n";
 
     if ( rename $file, $tmp ) {
-        warn "Rename succesful. Scheduling '$tmp'\nfor deletion at reboot.\n";
+        warn "Rename successful. Scheduling '$tmp'\nfor deletion at reboot.\n";
         # when $installing we can set $moan to true.
         # IOW, if we cant delete the renamed file at reboot its
         # not the end of the world. The other cases are more serious
@@ -310,7 +287,7 @@ sub _unlink_or_rename { #XXX OS-SPECIFIC
         _move_file_at_boot( $tmp, $file );
         return $tmp;
     } else {
-        _choke("Rename failed:$!", "Cannot procede.");
+        _choke("Rename failed:$!", "Cannot proceed.");
     }
 
 }
@@ -440,9 +417,7 @@ sub _can_write_dir {
     my $path='';
     my @make;
     while (@dirs) {
-        if ($Is_VMS_noefs) {
-            # There is a bug in catdir that is fixed when the EFS character
-            # set is enabled, which requires this VMS specific code.
+        if ($Is_VMS) {
             $dir = File::Spec->catdir($vol,@dirs);
         }
         else {
@@ -520,7 +495,7 @@ sub _mkpath {
 
 Wrapper around File::Copy::copy to handle errors.
 
-If $verbose is true and >1 then additional dignostics will be emitted.
+If $verbose is true and >1 then additional diagnostics will be emitted.
 
 If $dry_run is true then the copy will not actually occur.
 
@@ -790,7 +765,7 @@ sub install { #XXX OS-SPECIFIC
 
                 ];
             #restore the original directory we were in when File::Find
-            #called us so that it doesnt get horribly confused.
+            #called us so that it doesn't get horribly confused.
             _chdir($save_cwd);
         }, $current_directory );
         _chdir($cwd);
@@ -1056,7 +1031,7 @@ sub uninstall {
 
 Remove shadowed files. If $ignore is true then it is assumed to hold
 a filename to ignore. This is used to prevent spurious warnings from
-occuring when doing an install at reboot.
+occurring when doing an install at reboot.
 
 We now only die when failing to remove a file that has precedence over
 our own, when our install has precedence we only warn.
