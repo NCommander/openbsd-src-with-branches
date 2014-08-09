@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_np.c,v 1.12 2014/07/01 03:32:18 guenther Exp $	*/
+/*	$OpenBSD: rthread_np.c,v 1.13 2014/07/08 17:19:22 deraadt Exp $	*/
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2005 Otto Moerbeek <otto@openbsd.org>
@@ -24,7 +24,7 @@
 #include <sys/queue.h>
 #include <sys/sysctl.h>
 
-#include <inttypes.h>
+#include <stdint.h>
 #include <errno.h>
 #include <pthread.h>
 #include <pthread_np.h>

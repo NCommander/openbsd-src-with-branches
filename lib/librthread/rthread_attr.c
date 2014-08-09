@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_attr.c,v 1.18 2012/03/20 04:16:20 guenther Exp $ */
+/*	$OpenBSD: rthread_attr.c,v 1.19 2012/03/22 15:26:04 kurt Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -19,7 +19,7 @@
  * generic attribute support
  */
 
-#include <inttypes.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
