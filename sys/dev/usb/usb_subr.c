@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_subr.c,v 1.106 2014/07/12 18:48:53 tedu Exp $ */
+/*	$OpenBSD: usb_subr.c,v 1.107 2014/08/09 09:45:14 mpi Exp $ */
 /*	$NetBSD: usb_subr.c,v 1.103 2003/01/10 11:19:13 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_subr.c,v 1.18 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -909,8 +909,7 @@ usbd_probe_and_attach(struct device *parent, struct usbd_device *dev, int port,
 		}
 		nifaces = dev->cdesc->bNumInterface;
 		uaa.configno = dev->cdesc->bConfigurationValue;
-		ifaces = malloc(nifaces * sizeof(struct usbd_interface),
-		    M_USB, M_NOWAIT);
+		ifaces = malloc(nifaces * sizeof(*ifaces), M_USB, M_NOWAIT);
 		if (ifaces == NULL) {
 			err = USBD_NOMEM;
 			goto fail;
