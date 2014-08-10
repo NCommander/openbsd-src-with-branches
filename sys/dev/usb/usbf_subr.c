@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbf_subr.c,v 1.18 2014/03/07 18:56:14 mpi Exp $	*/
+/*	$OpenBSD: usbf_subr.c,v 1.19 2014/07/12 18:48:53 tedu Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -1067,8 +1067,7 @@ usbf_softintr_establish(struct usbf_bus *bus)
 {
 	KASSERT(bus->soft == NULL);
 
-	/* XXX we should have our own level */
-	bus->soft = softintr_establish(IPL_SOFTNET,
+	bus->soft = softintr_establish(IPL_SOFTUSB,
 	    bus->methods->soft_intr, bus);
 	if (bus->soft == NULL)
 		return USBF_INVAL;
