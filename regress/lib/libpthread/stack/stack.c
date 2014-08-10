@@ -1,11 +1,11 @@
-/* $OpenBSD: stack.c,v 1.2 2012/02/19 06:49:26 guenther Exp $ */
+/* $OpenBSD: stack.c,v 1.3 2012/08/04 21:55:22 guenther Exp $ */
 /* PUBLIC DOMAIN Feb 2012 <guenther@openbsd.org> */
 
 /* Test the handling of the pthread_attr_t stack attributes */
 
 #include <sys/types.h>
 #include <sys/mman.h>
-#include <inttypes.h>
+#include <stdint.h>
 #include <limits.h>
 #include <pthread.h>
 #include <stdio.h>
