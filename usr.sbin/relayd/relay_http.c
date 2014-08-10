@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_http.c,v 1.31 2014/07/14 00:11:12 bluhm Exp $	*/
+/*	$OpenBSD: relay_http.c,v 1.32 2014/07/17 11:35:26 stsp Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -427,9 +427,10 @@ relay_read_http(struct bufferevent *bev, void *arg)
 				relay_bindanyreq(con, 0, IPPROTO_TCP);
 				return;
 			}
-			if (relay_connect(con) == -1)
+			if (relay_connect(con) == -1) {
 				relay_abort_http(con, 502, "session failed", 0);
-			return;
+				return;
+			}
 		}
 	}
 	if (con->se_done) {
