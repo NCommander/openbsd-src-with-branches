@@ -1,4 +1,4 @@
-/*	$OpenBSD: raddauth.c,v 1.24 2012/12/04 02:24:47 deraadt Exp $	*/
+/*	$OpenBSD: raddauth.c,v 1.25 2013/11/27 21:25:25 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1996, 1997 Berkeley Software Design, Inc. All rights reserved.
@@ -73,7 +73,7 @@
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
-#include <inttypes.h>
+#include <stdint.h>
 #include <limits.h>
 #include <login_cap.h>
 #include <netdb.h>
