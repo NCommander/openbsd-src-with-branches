@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_cardbus.c,v 1.22 2011/04/02 17:47:04 jasper Exp $	*/
+/*	$OpenBSD: if_re_cardbus.c,v 1.23 2013/08/07 01:06:26 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -35,12 +35,8 @@
 #include <net/if_dl.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>

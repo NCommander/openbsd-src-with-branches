@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xe.c,v 1.43 2013/11/26 09:50:33 mpi Exp $	*/
+/*	$OpenBSD: if_xe.c,v 1.44 2014/07/12 18:48:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist, Brandon Creighton, Job de Haas
@@ -61,12 +61,8 @@
 #include <net/if_media.h>
 #include <net/if_types.h>
 
-#ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
