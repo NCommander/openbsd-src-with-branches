@@ -1,4 +1,4 @@
-/*	$OpenBSD: cn30xxpkovar.h,v 1.3 2013/06/01 21:25:26 jasper Exp $	*/
+/*	$OpenBSD: cn30xxpkovar.h,v 1.4 2013/06/01 22:20:35 jasper Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -63,11 +63,6 @@ struct cn30xxpko_softc {
 				*sc_cmdptr;
 	int			sc_cmd_buf_pool;
 	size_t			sc_cmd_buf_size;
-
-#ifdef OCTEON_ETH_DEBUG
-	struct evcnt		sc_ev_pkoerrdbell;
-	struct evcnt		sc_ev_pkoerrparity;
-#endif
 };
 
 /* XXX */
