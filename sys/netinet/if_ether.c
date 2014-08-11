@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.131 2014/07/12 18:44:23 tedu Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.132 2014/08/11 11:50:41 mpi Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -180,7 +180,7 @@ arp_rtrequest(int req, struct rtentry *rt)
 		    satosin(rt_mask(rt))->sin_addr.s_addr != 0xffffffff)
 			rt->rt_flags |= RTF_CLONING;
 		if (rt->rt_flags & RTF_CLONING ||
-		    ((rt->rt_flags & RTF_LLINFO) && !la)) {
+		    ((rt->rt_flags & (RTF_LLINFO | RTF_LOCAL)) && !la)) {
 			/*
 			 * Case 1: This route should come from a route to iface.
 			 */
