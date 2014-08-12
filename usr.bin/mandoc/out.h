@@ -1,4 +1,4 @@
-/*	$Id: out.h,v 1.12 2011/09/18 15:54:48 schwarze Exp $ */
+/*	$Id: out.h,v 1.13 2014/04/20 16:44:44 schwarze Exp $ */
 /*
  * Copyright (c) 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -59,7 +59,7 @@ __BEGIN_DECLS
 	while (/* CONSTCOND */ 0)
 
 #define	SCALE_HS_INIT(p, v) \
-	do { (p)->unit = SCALE_BU; \
+	do { (p)->unit = SCALE_EN; \
 	     (p)->scale = (v); } \
 	while (/* CONSTCOND */ 0)
 
