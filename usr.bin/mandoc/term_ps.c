@@ -1,4 +1,4 @@
-/*	$Id: term_ps.c,v 1.26 2014/07/27 21:53:04 schwarze Exp $ */
+/*	$Id: term_ps.c,v 1.64 2014/08/13 20:34:29 kristaps Exp $ */
 /*
  * Copyright (c) 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014 Ingo Schwarze <schwarze@openbsd.org>
@@ -1110,30 +1110,40 @@ ps_hspan(const struct termp *p, const struct roffsu *su)
 	 * All of these measurements are derived by converting from the
 	 * native measurement to AFM units.
 	 */
-
 	switch (su->unit) {
+	case SCALE_BU:
+		/*
+		 * Traditionally, the default unit is fixed to the
+		 * output media.  So this would refer to the point.  In
+		 * mandoc(1), however, we stick to the default terminal
+		 * scaling unit so that output is the same regardless
+		 * the media.
+		 */
+		r = PNT2AFM(p, su->scale * 72.0 / 240.0);
+		break;
 	case SCALE_CM:
-		r = PNT2AFM(p, su->scale * 28.34);
-		break;
-	case SCALE_IN:
-		r = PNT2AFM(p, su->scale * 72.0);
-		break;
-	case SCALE_PC:
-		r = PNT2AFM(p, su->scale * 12.0);
-		break;
-	case SCALE_PT:
-		r = PNT2AFM(p, su->scale * 100.0);
+		r = PNT2AFM(p, su->scale * 72.0 / 2.54);
 		break;
 	case SCALE_EM:
 		r = su->scale *
 		    fonts[(int)TERMFONT_NONE].gly[109 - 32].wx;
 		break;
-	case SCALE_MM:
-		r = PNT2AFM(p, su->scale * 2.834);
-		break;
 	case SCALE_EN:
 		r = su->scale *
 		    fonts[(int)TERMFONT_NONE].gly[110 - 32].wx;
+		break;
+	case SCALE_IN:
+		r = PNT2AFM(p, su->scale * 72.0);
+		break;
+	case SCALE_MM:
+		r = su->scale *
+		    fonts[(int)TERMFONT_NONE].gly[109 - 32].wx / 100.0;
+		break;
+	case SCALE_PC:
+		r = PNT2AFM(p, su->scale * 12.0);
+		break;
+	case SCALE_PT:
+		r = PNT2AFM(p, su->scale * 1.0);
 		break;
 	case SCALE_VS:
 		r = su->scale * p->ps->lineheight;
