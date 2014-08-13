@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflow.h,v 1.10 2014/01/20 10:46:53 benno Exp $	*/
+/*	$OpenBSD: if_pflow.h,v 1.11 2014/03/29 11:26:03 florian Exp $	*/
 
 /*
  * Copyright (c) 2008 Henning Brauer <henning@openbsd.org>
@@ -180,6 +180,7 @@ struct pflow_softc {
 	unsigned int		 sc_maxcount4;
 	unsigned int		 sc_maxcount6;
 	u_int64_t		 sc_gcounter;
+	u_int32_t		 sc_sequence;
 	struct ip_moptions	 sc_imo;
 	struct timeout		 sc_tmo;
 	struct timeout		 sc_tmo6;
