@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.20 2014/08/13 01:00:16 dlg Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.21 2014/08/13 01:03:56 dlg Exp $	*/
 
 /*
  * Copyright (c) 2012 David Gwynne <dlg@uq.edu.au>
@@ -550,6 +550,7 @@ tftpd_listen(const char *addr, const char *port, int family)
 	if (TAILQ_EMPTY(&tftp_servers))
 		errc(1, cerrno, "%s", cause);
 
+	freeaddrinfo(res0);
 	return (0);
 }
 
