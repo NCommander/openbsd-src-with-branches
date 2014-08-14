@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-tcp.c,v 1.29 2014/02/05 21:12:19 florian Exp $	*/
+/*	$OpenBSD: print-tcp.c,v 1.30 2014/06/20 04:04:52 lteo Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -26,11 +26,9 @@
 #include <sys/socket.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 #include <net/if.h>
 #include <net/pfvar.h>
 

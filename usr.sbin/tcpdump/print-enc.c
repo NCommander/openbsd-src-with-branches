@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-enc.c,v 1.10 2007/10/07 16:41:05 deraadt Exp $	*/
+/*	$OpenBSD: print-enc.c,v 1.11 2009/10/27 23:59:55 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996
@@ -34,7 +34,6 @@ struct rtentry;
 #include <net/if_enc.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 #include <ctype.h>

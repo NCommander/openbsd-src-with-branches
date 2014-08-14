@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-domain.c,v 1.18 2010/11/04 17:37:05 canacar Exp $	*/
+/*	$OpenBSD: print-domain.c,v 1.19 2014/05/23 20:36:04 sthen Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -29,7 +29,6 @@
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/udp.h>

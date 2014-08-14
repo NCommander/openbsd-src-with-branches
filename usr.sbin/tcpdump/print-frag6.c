@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-frag6.c,v 1.4 2009/10/27 23:59:55 deraadt Exp $	*/
+/*	$OpenBSD: print-frag6.c,v 1.5 2011/09/22 21:27:06 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994
@@ -32,7 +32,6 @@
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/ip_var.h>

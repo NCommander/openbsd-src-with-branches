@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ipsec.c,v 1.17 2012/05/03 10:17:23 mikeb Exp $	*/
+/*	$OpenBSD: print-ipsec.c,v 1.18 2014/01/11 04:35:52 lteo Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999
@@ -31,13 +31,11 @@
 #include <sys/socket.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 
 #include <stdio.h>
 #include <stdlib.h>

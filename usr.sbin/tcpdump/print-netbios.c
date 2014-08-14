@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-netbios.c,v 1.7 2007/10/07 16:41:05 deraadt Exp $	*/
+/*	$OpenBSD: print-netbios.c,v 1.8 2009/10/27 23:59:55 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996
@@ -28,7 +28,6 @@
 #include <sys/socket.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/udp.h>

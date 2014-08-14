@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-pfsync.c,v 1.37 2009/11/09 09:54:16 dlg Exp $	*/
+/*	$OpenBSD: print-pfsync.c,v 1.38 2012/09/19 13:50:36 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -39,7 +39,6 @@ struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 #include <net/pfvar.h>

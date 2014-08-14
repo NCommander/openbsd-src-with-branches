@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ospf.c,v 1.16 2011/03/22 17:31:18 claudio Exp $	*/
+/*	$OpenBSD: print-ospf.c,v 1.17 2014/07/04 08:42:38 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994, 1995, 1996, 1997
@@ -28,7 +28,6 @@
 #include <sys/socket.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 

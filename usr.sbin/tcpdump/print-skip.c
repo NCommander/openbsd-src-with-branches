@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-skip.c,v 1.2 1996/07/13 11:01:29 mickey Exp $	*/
+/*	$OpenBSD: print-skip.c,v 1.3 2007/11/26 09:28:34 martynas Exp $	*/
 
 /*
  * Copyright (c) 1995 Sun Microsystems, Inc.
@@ -29,11 +29,9 @@
 #include <sys/types.h>
  
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 
 #include <stdio.h>
 #include <stdlib.h>

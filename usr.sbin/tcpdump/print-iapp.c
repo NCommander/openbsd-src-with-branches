@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-iapp.c,v 1.2 2005/12/18 17:52:46 reyk Exp $	*/
+/*	$OpenBSD: print-iapp.c,v 1.3 2006/03/10 18:13:11 reyk Exp $	*/
 
 /*
  * Copyright (c) 2005 Reyk Floeter <reyk@openbsd.org>
@@ -25,7 +25,6 @@
 #include <net/if.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
 
 #include <net80211/ieee80211.h>

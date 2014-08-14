@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-fddi.c,v 1.13 2007/10/07 16:41:05 deraadt Exp $	*/
+/*	$OpenBSD: print-fddi.c,v 1.14 2009/10/27 23:59:55 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -34,7 +34,6 @@ struct rtentry;
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 #include <ctype.h>

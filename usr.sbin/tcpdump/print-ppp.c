@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ppp.c,v 1.25 2010/01/17 19:56:58 naddy Exp $	*/
+/*	$OpenBSD: print-ppp.c,v 1.26 2011/12/28 22:41:55 sthen Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -33,7 +33,6 @@ struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 #include <ctype.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-mobile.c,v 1.2 2008/06/27 06:03:08 ray Exp $ */
+/*	$OpenBSD: print-mobile.c,v 1.3 2009/10/28 23:22:47 schwarze Exp $ */
 /*	$NetBSD: print-mobile.c,v 1.3 1999/07/26 06:11:57 itojun Exp $ */
 
 /*
@@ -36,7 +36,6 @@
 #include <sys/socket.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 #include <netdb.h>

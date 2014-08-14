@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-lldp.c,v 1.5 2007/10/26 18:18:13 moritz Exp $	*/
+/*	$OpenBSD: print-lldp.c,v 1.6 2009/11/12 00:02:16 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Reyk Floeter <reyk@openbsd.org>
@@ -23,7 +23,6 @@
 #include <net/if.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
 #include <arpa/inet.h>
 

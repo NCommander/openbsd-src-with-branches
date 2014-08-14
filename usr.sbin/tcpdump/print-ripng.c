@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ripng.c,v 1.1 2000/04/26 21:35:42 jakob Exp $	*/
+/*	$OpenBSD: print-ripng.c,v 1.2 2009/10/27 23:59:55 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989, 1990, 1991, 1993, 1994
@@ -29,7 +29,6 @@
 #include <sys/socket.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/udp.h>
