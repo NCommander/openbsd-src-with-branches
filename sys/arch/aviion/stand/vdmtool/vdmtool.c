@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdmtool.c,v 1.3 2014/07/12 18:44:41 tedu Exp $	*/
+/*	$OpenBSD: vdmtool.c,v 1.4 2014/07/12 19:01:49 tedu Exp $	*/
 
 /*
  * Copyright (c) 2013 Miodrag Vallat.
@@ -189,7 +189,7 @@ register_subdriver(uint8_t *buf)
 
 	if (regid != NULL) {
 		if (*regid != 0)
-			printf("WARNING: subdriver \"%s\" overriden\n",
+			printf("WARNING: subdriver \"%s\" overridden\n",
 			    entry.name);
 		*regid = id;
 	}
