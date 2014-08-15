@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.3 2013/11/16 18:37:26 rpe Exp $
+#       $OpenBSD: install.md,v 1.4 2014/01/25 17:55:57 miod Exp $
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
@@ -34,7 +34,7 @@
 MDTERM=vt100
 NCPU=$(sysctl -n hw.ncpufound)
 
-((NCPU > 1)) && { DEFAULTSETS="bsd bsd.rd bsd.mp" ; SANESETS="bsd bsd.mp" ; }
+((NCPU > 1)) && { DEFAULTSETS="bsd bsd.rd bsd.mp"; SANESETS="bsd bsd.mp"; }
 
 _mdnoautoinstallboot=n
 

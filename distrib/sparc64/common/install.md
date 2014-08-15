@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.39 2012/10/15 18:17:38 deraadt Exp $
+#	$OpenBSD: install.md,v 1.40 2013/11/16 18:37:27 rpe Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -38,7 +38,7 @@ MDXAPERTURE=1
 MDXDM=y
 NCPU=$(sysctl -n hw.ncpufound)
 
-((NCPU > 1)) && { DEFAULTSETS="bsd bsd.rd bsd.mp" ; SANESETS="bsd bsd.mp" ; }
+((NCPU > 1)) && { DEFAULTSETS="bsd bsd.rd bsd.mp"; SANESETS="bsd bsd.mp"; }
 
 md_installboot() {
 	# Use cat to avoid holes created by cp(1)
