@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnet.c,v 1.32 2014/07/08 02:59:51 dlg Exp $	*/
+/*	$OpenBSD: vnet.c,v 1.33 2014/07/12 18:44:43 tedu Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -20,6 +20,7 @@
 #include <sys/param.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
+#include <sys/pool.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
