@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.80 2014/05/09 06:29:46 markus Exp $	*/
+/*	$OpenBSD: iked.h,v 1.81 2014/05/09 06:37:24 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -532,6 +532,7 @@ struct privsep {
 	struct event			 ps_evsigchld;
 	struct event			 ps_evsighup;
 	struct event			 ps_evsigpipe;
+	struct event			 ps_evsigusr1;
 
 	struct iked			*ps_env;
 };
