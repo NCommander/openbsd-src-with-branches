@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_age.c,v 1.21 2013/08/07 01:06:33 bluhm Exp $	*/
+/*	$OpenBSD: if_age.c,v 1.22 2014/07/22 13:12:11 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
@@ -1606,7 +1606,7 @@ age_init(struct ifnet *ifp)
 	 * it's hard to separate code path between Tx and Rx without
 	 * locking. If L1 hardware have a separate mail box register
 	 * for Tx and Rx consumer/producer management we could have
-	 * indepent Tx/Rx handler which in turn Rx handler could have
+	 * independent Tx/Rx handler which in turn Rx handler could have
 	 * been run without any locking.
 	*/
 	AGE_COMMIT_MBOX(sc);
