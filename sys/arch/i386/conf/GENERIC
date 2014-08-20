@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.782 2014/07/13 22:28:03 miod Exp $
+#	$OpenBSD: GENERIC,v 1.783 2014/08/15 14:06:48 mikeb Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -784,7 +784,6 @@ pseudo-device	hotplug		1	# devices hot plugging
 
 # mouse & keyboard multiplexor pseudo-devices
 pseudo-device	wsmux		2
-pseudo-device	crypto		1
 
 # Virtio devices
 virtio*		at pci? 	# Virtio PCI device
