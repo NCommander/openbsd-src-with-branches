@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2003 Anil Madhavapeddy <anil@recoil.org>
  *
