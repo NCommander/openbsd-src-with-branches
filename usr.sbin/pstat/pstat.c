@@ -1,4 +1,4 @@
-/*	$OpenBSD: pstat.c,v 1.89 2013/12/01 16:40:56 krw Exp $	*/
+/*	$OpenBSD: pstat.c,v 1.90 2014/03/19 04:17:33 guenther Exp $	*/
 /*	$NetBSD: pstat.c,v 1.27 1996/10/23 22:50:06 cgd Exp $	*/
 
 /*-
@@ -991,7 +991,7 @@ filemode(void)
 {
 	struct kinfo_file *kf;
 	char flagbuf[16], *fbp;
-	static char *dtypes[] = { "???", "inode", "socket", "pipe", "kqueue", "crypto", "systrace" };
+	static char *dtypes[] = { "???", "inode", "socket", "pipe", "kqueue", "???", "systrace" };
 	int mib[2], maxfile, nfile;
 	size_t len;
 

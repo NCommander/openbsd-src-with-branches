@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sysctl.8,v 1.180 2014/05/07 08:14:59 mpi Exp $
+.\"	$OpenBSD: sysctl.8,v 1.182 2014/07/11 16:43:07 henning Exp $
 .\"	$NetBSD: sysctl.8,v 1.4 1995/09/30 07:12:49 thorpej Exp $
 .\"
 .\" Copyright (c) 1993
@@ -167,13 +167,10 @@ and a few require a kernel compiled with non-standard
 .It kern.fscale Ta integer Ta no
 .It kern.nprocs Ta integer Ta no
 .It kern.stackgap_random Ta integer Ta yes
-.It kern.usercrypto Ta integer Ta yes
-.It kern.cryptodevallowsoft Ta integer Ta yes
 .It kern.splassert Ta integer Ta yes
 .It kern.nfiles Ta integer Ta no
 .It kern.ttycount Ta integer Ta no
 .It kern.numvnodes Ta integer Ta no
-.It kern.userasymcrypto Ta integer Ta yes
 .It kern.seminfo.semmni Ta integer Ta yes
 .It kern.seminfo.semmns Ta integer Ta yes
 .It kern.seminfo.semmnu Ta integer Ta yes
