@@ -1,4 +1,4 @@
-/* $OpenBSD: linux_futex.c,v 1.14 2013/04/10 13:17:41 pirofti Exp $ */
+/* $OpenBSD: linux_futex.c,v 1.15 2013/10/25 04:51:38 guenther Exp $ */
 /*	$NetBSD: linux_futex.c,v 1.26 2010/07/07 01:30:35 chs Exp $ */
 
 /*-
@@ -323,7 +323,8 @@ linux_do_futex(struct proc *p, const struct linux_sys_futex_args *uap,
 		if (newf->f_refcount != 1) {
 			futex_put(f);
 			futex_put(newf);
-			return EINVAL;
+			mtx_leave(&futex_lock);
+			return (EINVAL);
 		}
 
 		*retval = futex_wake(f, args_val, newf,
