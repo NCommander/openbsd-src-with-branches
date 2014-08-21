@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxe_net.c,v 1.3 2008/06/26 05:42:11 ray Exp $	*/
+/*	$OpenBSD: pxe_net.c,v 1.4 2011/03/13 00:13:53 deraadt Exp $	*/
 /*	$NetBSD: dev_net.c,v 1.4 2003/03/12 13:15:08 drochner Exp $	*/
 
 /*-
@@ -47,7 +47,6 @@
 #include <sys/socket.h>
 #include <net/if.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 
 #include <lib/libkern/libkern.h>
 

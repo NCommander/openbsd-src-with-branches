@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ze.c,v 1.4 2002/06/11 09:36:23 hugh Exp $ */
+/*	$OpenBSD: if_ze.c,v 1.5 2006/08/24 22:10:36 miod Exp $ */
 /*	$NetBSD: if_ze.c,v 1.12 2002/05/27 16:54:18 ragge Exp $	*/
 /*
  * Copyright (c) 1998 James R. Maynard III.  All rights reserved.
@@ -39,7 +39,6 @@
 #include <net/if.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/if_ether.h>
 
 #include <lib/libsa/netif.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: netio.c,v 1.4 2002/06/11 09:36:23 hugh Exp $	*/
+/*	$OpenBSD: netio.c,v 1.5 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: netio.c,v 1.6 2000/05/26 20:16:46 ragge Exp $	*/
 
 /*-
@@ -83,7 +83,6 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 
 #include "lib/libsa/stand.h"
 #include "lib/libsa/net.h"

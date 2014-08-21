@@ -1,8 +1,7 @@
-/*	$OpenBSD: conf.c,v 1.1 2013/10/08 21:55:20 miod Exp $ */
+/*	$OpenBSD: conf.c,v 1.2 2013/10/17 16:30:07 miod Exp $ */
 
 #include <sys/types.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 
 #include <stand.h>
 #include <ufs.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le.c,v 1.1 2013/10/17 16:30:07 miod Exp $ */
+/*	$OpenBSD: if_le.c,v 1.2 2013/10/17 16:44:23 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -58,7 +58,6 @@
 #include <sys/types.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 
 #include <machine/prom.h>
 

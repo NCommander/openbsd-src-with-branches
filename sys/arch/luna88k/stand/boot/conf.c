@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.1 2013/10/28 22:13:12 miod Exp $	*/
+/*	$OpenBSD: conf.c,v 1.2 2013/10/29 22:13:28 miod Exp $	*/
 /*	$NetBSD: conf.c,v 1.3 2013/01/16 15:46:20 tsutsui Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
 
 #include <net/if.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 
 #include <luna88k/stand/boot/samachdep.h>
 #include <lib/libsa/nfs.h>
