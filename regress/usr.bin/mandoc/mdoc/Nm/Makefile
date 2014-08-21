@@ -1,7 +1,7 @@
-# $OpenBSD: Makefile,v 1.8 2014/08/11 04:18:18 schwarze Exp $
+# $OpenBSD: Makefile,v 1.9 2014/08/17 18:42:07 schwarze Exp $
 
 REGRESS_TARGETS	 = badNAME badNAMEuse break empty emptyNAME emptyNAMEuse
-REGRESS_TARGETS	+= font long
+REGRESS_TARGETS	+= font long punct
 
 LINT_TARGETS	 = badNAME badNAMEuse break
 
