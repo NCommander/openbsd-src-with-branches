@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.13 2014/07/13 21:34:35 yasuoka Exp $ */
+/*	$OpenBSD: privsep.c,v 1.14 2014/07/18 13:16:22 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2010 Yasuoka Masahiko <yasuoka@openbsd.org>
@@ -282,11 +282,16 @@ FILE *
 priv_fopen(const char *path)
 {
 	int f;
+	FILE *fp;
 
 	if ((f = priv_open(path, O_RDONLY, 0600)) < 0)
 		return (NULL);
 
-	return fdopen(f, "r");
+	if ((fp = fdopen(f, "r")) == NULL) {
+		close(f);
+		return (NULL);
+	} else
+		return (fp);
 }
 
 int
