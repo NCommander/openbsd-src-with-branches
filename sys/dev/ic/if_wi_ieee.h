@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_ieee.h,v 1.28 2006/06/27 09:48:02 reyk Exp $	*/
+/*	$OpenBSD: if_wi_ieee.h,v 1.29 2006/06/27 20:55:51 reyk Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -45,8 +45,8 @@
  * interface, didn't I.
  */
 
-#define SIOCSWAVELAN	_IOW('i', 249, struct ifreq)	/* wavelan set op */
-#define SIOCGWAVELAN	_IOWR('i', 250, struct ifreq)	/* wavelan get op */
+#define SIOCSWAVELAN	_IOW('i', 206, struct ifreq)	/* wavelan set op */
+#define SIOCGWAVELAN	_IOWR('i', 207, struct ifreq)	/* wavelan get op */
 
 /*
  * Technically I don't think there's a limit to a record

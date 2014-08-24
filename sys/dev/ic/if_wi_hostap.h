@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_hostap.h,v 1.8 2003/01/21 20:09:39 millert Exp $	*/
+/*	$OpenBSD: if_wi_hostap.h,v 1.9 2003/10/21 18:58:49 jmc Exp $	*/
 
 /*
  * Copyright (c) 2002
@@ -53,12 +53,12 @@ struct hostap_sta {
 #define HOSTAP_FLAGS_PERM	0x0004
 #define	HOSTAP_FLAGS_BITS	"\20\01AUTH\02ASSOC\03PERM"
 
-#define SIOCHOSTAP_GET		_IOWR('i', 210, struct ifreq)
-#define SIOCHOSTAP_ADD		_IOWR('i', 211, struct ifreq)
-#define SIOCHOSTAP_DEL		_IOWR('i', 212, struct ifreq)
-#define SIOCHOSTAP_GETALL	_IOWR('i', 213, struct ifreq)
-#define SIOCHOSTAP_GFLAGS	_IOWR('i', 214, struct ifreq)
-#define SIOCHOSTAP_SFLAGS	_IOWR('i', 215, struct ifreq)
+#define SIOCHOSTAP_GET		_IOWR('i', 200, struct ifreq)
+#define SIOCHOSTAP_ADD		_IOWR('i', 201, struct ifreq)
+#define SIOCHOSTAP_DEL		_IOWR('i', 202, struct ifreq)
+#define SIOCHOSTAP_GETALL	_IOWR('i', 203, struct ifreq)
+#define SIOCHOSTAP_GFLAGS	_IOWR('i', 204, struct ifreq)
+#define SIOCHOSTAP_SFLAGS	_IOWR('i', 205, struct ifreq)
 
 /* Flags for SIOCHOSTAP_GFLAGS/SFLAGS */
 #define WIHAPFL_ACTIVE		0x0001
