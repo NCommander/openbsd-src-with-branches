@@ -144,9 +144,7 @@ _rc_parse_conf() {
 	_rc_do _rc_quirks
 
 	if [ -n "${_RC_DEBUG}" ]; then
-		for _i in ${_conf}; do
-			printf "%18s\t>$(eval echo '$'${_i})<\n" ${_i}
-		done | sort -uk 1b
+		echo "${_name}_flags >$(eval echo \${${_name}_flags})<"
 	fi
 }
 
