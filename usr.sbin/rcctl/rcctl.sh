@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD: rcctl.sh,v 1.14 2014/08/24 08:13:15 ajacoutot Exp $
+# $OpenBSD: rcctl.sh,v 1.15 2014/08/24 13:46:57 schwarze Exp $
 #
 # Copyright (c) 2014 Antoine Jacoutot <ajacoutot@openbsd.org>
 #
@@ -58,12 +58,8 @@ svc_default_enabled()
 	local _svc=$1
 	[ -n "${_svc}" ] || return
 
-	# get _defaults_ values only
 	_rc_parse_conf /etc/rc.conf
-
 	svc_is_enabled ${_svc} && _ret=0
-
-	# reparse _all_ values
 	_rc_parse_conf
 
 	return ${_ret}
