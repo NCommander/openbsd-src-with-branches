@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.2 2005/05/29 09:10:23 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.3 2014/04/16 05:16:39 miod Exp $ */
 
 /*
  * ssh.c
@@ -252,7 +252,7 @@ load_ssh1_private(RSA *rsa, struct iovec *iov)
 		MD5_Update(&md, (const u_char *)pass, strlen(pass));
 		MD5_Final(digest, &md);
 		
-		memset(pass, 0, strlen(pass));
+		explicit_bzero(pass, strlen(pass));
 		
 		if ((dstate = des3_init(digest, sizeof(digest))) == NULL)
 			return (-1);

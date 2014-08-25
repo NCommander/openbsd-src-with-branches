@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.202 2014/03/17 23:23:37 sthen Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.203 2014/03/24 16:41:27 tedu Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -695,7 +695,7 @@ sgetpwnam(char *name, struct passwd *pw)
 		/* NOTREACHED */
 	}
 	if (old) {
-		memset(old->pw_passwd, 0, strlen(old->pw_passwd));
+		explicit_bzero(old->pw_passwd, strlen(old->pw_passwd));
 		free(old);
 	}
 	return (save);

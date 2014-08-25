@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.58 2012/12/04 02:24:47 deraadt Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.59 2014/08/09 22:44:15 guenther Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -576,7 +576,7 @@ get_uid_gid(const char *argument, uid_t *uid, gid_t *gid)
 	u = strsep(&g, ":");
 
 	if ((pw = getpwnam(u)) != NULL) {
-		memset(pw->pw_passwd, 0, strlen(pw->pw_passwd));
+		explicit_bzero(pw->pw_passwd, strlen(pw->pw_passwd));
 		*uid = pw->pw_uid;
 		*gid = pw->pw_gid;
 		/* Ok if group not specified. */

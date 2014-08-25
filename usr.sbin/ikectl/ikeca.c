@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikeca.c,v 1.26 2014/04/18 21:29:20 tedu Exp $	*/
+/*	$OpenBSD: ikeca.c,v 1.27 2014/07/20 01:38:40 guenther Exp $	*/
 
 /*
  * Copyright (c) 2010 Jonathan Gray <jsg@openbsd.org>
@@ -795,7 +795,7 @@ ca_revoke(struct ca *ca, char *keyname)
 	    pass, ca->sslpath, ca->sslpath);
 	system(cmd);
 
-	bzero(pass, len);
+	explicit_bzero(pass, len);
 	free(pass);
 
 	return (0);
