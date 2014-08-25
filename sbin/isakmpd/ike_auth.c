@@ -1,4 +1,4 @@
-/* $OpenBSD: ike_auth.c,v 1.110 2007/04/16 13:01:39 moritz Exp $	 */
+/* $OpenBSD: ike_auth.c,v 1.111 2014/08/23 00:48:57 doug Exp $	 */
 /* $EOM: ike_auth.c,v 1.59 2000/11/21 00:21:31 angelos Exp $	 */
 
 /*
@@ -301,12 +301,14 @@ ignorekeynote:
 
 		if (check_file_secrecy_fd(fd, keyfile, &fsize)) {
 			free(privkeyfile);
+			close(fd);
 			return 0;
 		}
 
 		if ((keyfp = fdopen(fd, "r")) == NULL) {
 			log_print("ike_auth_get_key: fdopen failed");
 			free(privkeyfile);
+			close(fd);
 			return 0;
 		}
 #if SSLEAY_VERSION_NUMBER >= 0x00904100L
