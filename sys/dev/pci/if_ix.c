@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.96 2014/07/13 23:10:23 deraadt Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.97 2014/08/20 10:06:31 mikeb Exp $	*/
 
 /******************************************************************************
 
@@ -258,7 +258,7 @@ ixgbe_attach(struct device *parent, struct device *self, void *aux)
 		    "please contact your Intel or hardware representative "
 		    "who provided you with this hardware.\n");
 	} else if (error == IXGBE_ERR_SFP_NOT_SUPPORTED) {
-		printf("Unsupported SFP+ Module\n");
+		printf(": Unsupported SFP+ Module\n");
 	}
 
 	if (error) {
