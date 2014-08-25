@@ -1,8 +1,7 @@
-/*	$OpenBSD: dh.h,v 1.3 2010/06/23 11:26:13 reyk Exp $	*/
-/*	$vantronix: dh.h,v 1.8 2010/06/02 12:22:58 reyk Exp $	*/
+/*	$OpenBSD: dh.h,v 1.5 2013/01/08 10:38:19 reyk Exp $	*/
 
 /*
- * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
