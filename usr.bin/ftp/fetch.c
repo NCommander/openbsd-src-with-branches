@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.127 2014/08/21 16:46:48 jca Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.128 2014/08/25 11:33:55 jca Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -343,10 +343,12 @@ noslash:
 		}
 
 		path = newline;
+#ifndef SMALL
 	} else if (ishttpsurl) {
 		sslhost = strdup(host);
 		if (sslhost == NULL)
 			errx(1, "Can't allocate memory for https path/host.");
+#endif /* !SMALL */
 	}
 
 	if (isfileurl) {
