@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.121 2014/04/22 10:21:56 reyk Exp $
+#	$OpenBSD: Makefile,v 1.122 2014/07/09 19:23:28 espie Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -80,6 +80,7 @@ build:
 	cd ${.CURDIR}/gnu/lib && ${MAKE} depend && ${MAKE} && \
 	    NOMAN=1 exec ${SUDO} ${MAKE} install
 	${MAKE} depend && ${MAKE} && exec ${SUDO} ${MAKE} install
+	${SUDO} /bin/sh ${.CURDIR}/distrib/sets/makeetcset ${.CURDIR} ${MAKE}
 .endif
 
 CROSS_TARGETS=cross-env cross-dirs cross-obj cross-includes cross-binutils \
