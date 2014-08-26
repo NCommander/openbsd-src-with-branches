@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$OpenBSD$
+#	$OpenBSD: testdsa.sh,v 1.1 2014/05/24 13:32:46 jsing Exp $
 
 
 #Test DSA certificate generation of openssl
