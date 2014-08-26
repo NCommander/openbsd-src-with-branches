@@ -1,4 +1,4 @@
-.\"   $OpenBSD: slowcgi.8,v 1.8 2014/06/10 14:33:01 florian Exp $
+.\"   $OpenBSD: slowcgi.8,v 1.9 2014/06/10 14:38:27 florian Exp $
 .\"
 .\" Copyright (c) 2013 Florian Obser <florian@openbsd.org>
 .\"
@@ -34,11 +34,8 @@ and resource sharing limitations.
 While CGI scripts need to be forked for every request, FastCGI scripts
 can be kept running and handle many HTTP requests.
 .Pp
-.Xr nginx 8
-intentionally does not implement the CGI protocol.
 .Nm
 is a simple server that translates FastCGI requests coming from
-.Xr nginx 8
 to the CGI protocol.
 It executes the requested CGI script and translates its output back to the
 FastCGI protocol.
