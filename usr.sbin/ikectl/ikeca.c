@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikeca.c,v 1.27 2014/07/20 01:38:40 guenther Exp $	*/
+/*	$OpenBSD: ikeca.c,v 1.28 2014/08/25 07:50:26 doug Exp $	*/
 
 /*
  * Copyright (c) 2010 Jonathan Gray <jsg@openbsd.org>
@@ -52,7 +52,7 @@
 #endif
 
 #ifndef PATH_OPENSSL
-#define PATH_OPENSSL	"/usr/sbin/openssl"
+#define PATH_OPENSSL	"/usr/bin/openssl"
 #endif
 #ifndef PATH_ZIP
 #define PATH_ZIP	"/usr/local/bin/zip"

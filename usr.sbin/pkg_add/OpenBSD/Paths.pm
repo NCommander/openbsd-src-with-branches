@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Paths.pm,v 1.28 2014/04/18 10:00:48 schwarze Exp $
+# $OpenBSD: Paths.pm,v 1.29 2014/07/14 08:47:49 espie Exp $
 #
 # Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
@@ -30,7 +30,7 @@ sub install_info() { '/usr/bin/install-info' }
 sub useradd() { '/usr/sbin/useradd' }
 sub groupadd() { '/usr/sbin/groupadd' }
 sub sysctl() { '/sbin/sysctl' }
-sub openssl() { '/usr/sbin/openssl' }
+sub openssl() { '/usr/bin/openssl' }
 sub pkgca() { '/etc/ssl/pkgca.pem' }
 sub signify() { '/usr/bin/signify' }
 sub signifykey { my $s = $_[1]; "/etc/signify/$s.pub" }
