@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $OpenBSD: check-sig,v 1.1 2010/01/10 11:49:56 espie Exp $
+# $OpenBSD: check-sig,v 1.2 2010/01/10 12:41:20 espie Exp $
 # Written by Marc Espie
 # Public domain
 
@@ -8,7 +8,6 @@ use OpenBSD::PackingList;
 sub mycode
 {
 	my ($fh, $cont) = @_;
-	my $_;
 	while (<$fh>) {
 		return if m/^__END__/;
 		&$cont($_);
