@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.146 2014/07/11 12:20:26 benno Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.147 2014/07/22 11:06:10 mpi Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -1386,7 +1386,7 @@ icmp6_redirect_input(struct mbuf *m, int off)
 	/* XXX if we are router, we don't update route by icmp6 redirect */
 	if (ip6_forwarding)
 		goto freeit;
-	if (!icmp6_rediraccept)
+	if (!(ifp->if_xflags & IFXF_AUTOCONF6))
 		goto freeit;
 
 	IP6_EXTHDR_GET(nd_rd, struct nd_redirect *, m, off, icmp6len);
