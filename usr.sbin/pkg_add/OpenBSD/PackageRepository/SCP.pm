@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: SCP.pm,v 1.27 2011/07/19 17:30:05 espie Exp $
+# $OpenBSD: SCP.pm,v 1.28 2014/03/18 18:53:29 espie Exp $
 #
 # Copyright (c) 2003-2006 Marc Espie <espie@openbsd.org>
 #
@@ -18,10 +18,10 @@
 use strict;
 use warnings;
 
-use OpenBSD::PackageRepository::Persistant;
+use OpenBSD::PackageRepository::Persistent;
 
 package OpenBSD::PackageRepository::SCP;
-our @ISA=qw(OpenBSD::PackageRepository::Persistant);
+our @ISA=qw(OpenBSD::PackageRepository::Persistent);
 
 use IPC::Open2;
 use IO::Handle;
