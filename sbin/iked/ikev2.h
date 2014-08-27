@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2.h,v 1.14 2014/04/29 11:51:13 markus Exp $	*/
+/*	$OpenBSD: ikev2.h,v 1.15 2014/05/06 10:24:22 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -241,7 +241,7 @@ extern struct iked_constmap ikev2_xformauth_map[];
 #define IKEV2_XFORMDH_BRAINPOOL_P256R1	28	/* DH Group 28 */
 #define IKEV2_XFORMDH_BRAINPOOL_P384R1	29	/* DH Group 29 */
 #define IKEV2_XFORMDH_BRAINPOOL_P512R1	30	/* DH Group 30 */
-#define IKEV2_XFORMDH_MAX		31
+#define IKEV2_XFORMDH_X_CURVE25519	1034	/* curve25519 */
 
 extern struct iked_constmap ikev2_xformdh_map[];
 
