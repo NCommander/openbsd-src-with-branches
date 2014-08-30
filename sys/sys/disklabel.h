@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.62 2014/07/13 15:32:28 miod Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.63 2014/07/13 16:50:25 deraadt Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
@@ -519,6 +519,8 @@ struct dos_partition {
 #define	DOSPTYP_FREEBSD	0xa5		/* FreeBSD partition type */
 #define	DOSPTYP_OPENBSD	0xa6		/* OpenBSD partition type */
 #define	DOSPTYP_NETBSD	0xa9		/* NetBSD partition type */
+#define	DOSPTYP_EFI	0xee		/* EFI Protective Partition */
+#define	DOSPTYP_EFISYS	0xef		/* EFI System Partition */
 
 struct dos_mbr {
 	u_int8_t		dmbr_boot[DOSPARTOFF];
