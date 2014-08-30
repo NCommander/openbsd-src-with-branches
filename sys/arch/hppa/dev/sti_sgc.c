@@ -1,4 +1,4 @@
-/*	$OpenBSD: sti_sgc.c,v 1.38 2009/02/06 22:51:04 miod Exp $	*/
+/*	$OpenBSD: sti_sgc.c,v 1.39 2014/04/08 09:34:22 mpi Exp $	*/
 
 /*
  * Copyright (c) 2000-2003 Michael Shalayeff
@@ -120,7 +120,7 @@ sti_sgc_probe(struct device *parent, void *match, void *aux)
 
 	rom = sti_sgc_getrom(cf->cf_unit, ca);
 #ifdef STIDEBUG
-	printf ("sti: hpa=%x, rom=%x\n", ca->ca_hpa, rom);
+	printf ("sti: hpa=%lx, rom=%lx\n", ca->ca_hpa, rom);
 #endif
 
 	/* if it does not map, probably part of the lasi space */
