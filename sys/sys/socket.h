@@ -1,4 +1,4 @@
-/*	$OpenBSD: socket.h,v 1.83 2013/04/02 03:38:24 guenther Exp $	*/
+/*	$OpenBSD: socket.h,v 1.84 2014/08/31 01:42:36 guenther Exp $	*/
 /*	$NetBSD: socket.h,v 1.14 1996/02/09 18:25:36 christos Exp $	*/
 
 /*
@@ -517,6 +517,7 @@ ssize_t	sendto(int, const void *,
 ssize_t	sendmsg(int, const struct msghdr *, int);
 int	setsockopt(int, int, int, const void *, socklen_t);
 int	shutdown(int, int);
+int	sockatmark(int);
 int	socket(int, int, int);
 int	socketpair(int, int, int, int *);
 
