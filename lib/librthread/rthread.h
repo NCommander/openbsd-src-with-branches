@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.h,v 1.48 2013/11/29 16:27:40 guenther Exp $ */
+/*	$OpenBSD: rthread.h,v 1.49 2014/07/01 03:32:18 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -235,7 +235,6 @@ void	_leave_delayed_cancel(pthread_t, int);
 void	_thread_dump_info(void);
 
 /* syscalls */
-int	getthrid(void);
 void	__threxit(pid_t *);
 int	__thrsleep(const volatile void *, clockid_t, const struct timespec *,
 	    volatile void *, const int *);
