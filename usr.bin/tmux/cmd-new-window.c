@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-new-window.c,v 1.39 2014/04/17 13:02:59 nicm Exp $ */
+/* $OpenBSD: cmd-new-window.c,v 1.40 2014/05/13 08:08:32 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -88,7 +88,7 @@ cmd_new_window_exec(struct cmd *self, struct cmd_q *cmdq)
 		cmd = options_get_string(&s->options, "default-command");
 		if (cmd != NULL && *cmd != '\0') {
 			argc = 1;
-			argv = (char**)&cmd;
+			argv = (char **)&cmd;
 		} else {
 			argc = 0;
 			argv = NULL;

@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-queue.c,v 1.15 2014/01/09 13:46:12 nicm Exp $ */
+/* $OpenBSD: cmd-queue.c,v 1.16 2014/04/17 07:55:43 nicm Exp $ */
 
 /*
  * Copyright (c) 2013 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -124,14 +124,14 @@ cmdq_guard(struct cmd_q *cmdq, const char *guard, int flags)
 	struct client	*c = cmdq->client;
 
 	if (c == NULL)
-		return 0;
+		return (0);
 	if (!(c->flags & CLIENT_CONTROL))
-		return 0;
+		return (0);
 
 	evbuffer_add_printf(c->stdout_data, "%%%s %ld %u %d\n", guard,
 	    (long) cmdq->time, cmdq->number, flags);
 	server_push_stdout(c);
-	return 1;
+	return (1);
 }
 
 /* Add command list to queue and begin processing if needed. */
