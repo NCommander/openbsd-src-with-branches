@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urtwreg.h,v 1.14 2013/04/15 09:23:01 mglocker Exp $	*/
+/*	$OpenBSD: if_urtwreg.h,v 1.15 2013/11/26 20:33:18 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2009 Martynas Venckus <martynas@openbsd.org>
@@ -16,9 +16,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#define	URTW_CONFIG_NO			1
-#define	URTW_IFACE_INDEX		0
 
 /*
  * Known hardware revisions.
