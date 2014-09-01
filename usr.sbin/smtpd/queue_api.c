@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_api.c,v 1.4 2014/04/19 17:47:40 gilles Exp $	*/
+/*	$OpenBSD: queue_api.c,v 1.5 2014/07/08 15:45:32 eric Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -186,8 +186,12 @@ queue_msg_dispatch(void)
 			}
 			if (ifile)
 				fclose(ifile);
+			else
+				close(imsg.fd);
 			if (ofile)
 				fclose(ofile);
+			else
+				close(fd);
 		}
 
 		imsg_compose(&ibuf, PROC_QUEUE_OK, 0, 0, -1, &r, sizeof(r));
