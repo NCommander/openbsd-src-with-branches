@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.148 2014/08/27 00:22:26 dlg Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.149 2014/09/04 00:36:00 dlg Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -366,6 +366,9 @@ pool_init(struct pool *pp, size_t size, u_int align, u_int ioff, int flags,
 		pool_init(&phpool, sizeof(struct pool_item_header), 0, 0,
 		    0, "phpool", NULL);
 		pool_setipl(&phpool, IPL_HIGH);
+
+		/* make sure phpool wont "recurse" */
+		KASSERT(ISSET(phpool.pr_roflags, PR_PHINPAGE));
 	}
 
 	/* pglistalloc/constraint parameters */
