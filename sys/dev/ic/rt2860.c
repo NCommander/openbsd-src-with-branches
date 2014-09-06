@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2860.c,v 1.73 2014/07/12 18:48:17 tedu Exp $	*/
+/*	$OpenBSD: rt2860.c,v 1.74 2014/07/22 13:12:12 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -58,8 +58,6 @@
 #include <dev/ic/rt2860var.h>
 #include <dev/ic/rt2860reg.h>
 
-#include <dev/pci/pcireg.h>
-#include <dev/pci/pcivar.h>
 #include <dev/pci/pcidevs.h>
 
 #include <dev/rndvar.h>

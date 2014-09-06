@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.74 2014/07/13 23:10:23 deraadt Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.75 2014/07/22 13:12:12 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -60,8 +60,6 @@
 #include <dev/ic/rt2661var.h>
 #include <dev/ic/rt2661reg.h>
 
-#include <dev/pci/pcireg.h>
-#include <dev/pci/pcivar.h>
 #include <dev/pci/pcidevs.h>
 
 #ifdef RAL_DEBUG

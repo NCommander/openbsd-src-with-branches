@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560.c,v 1.65 2014/07/13 23:10:23 deraadt Exp $  */
+/*	$OpenBSD: rt2560.c,v 1.66 2014/07/22 13:12:12 mpi Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -57,10 +57,6 @@
 
 #include <dev/ic/rt2560reg.h>
 #include <dev/ic/rt2560var.h>
-
-#include <dev/pci/pcireg.h>
-#include <dev/pci/pcivar.h>
-#include <dev/pci/pcidevs.h>
 
 #ifdef RAL_DEBUG
 #define DPRINTF(x)	do { if (rt2560_debug > 0) printf x; } while (0)

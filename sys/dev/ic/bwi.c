@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.107 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.108 2014/08/03 14:23:59 jsg Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -83,7 +83,6 @@ int bwi_debug = 1;
 
 /* XXX temporary porting goop */
 #include <dev/pci/pcireg.h>
-#include <dev/pci/pcivar.h>
 #include <dev/pci/pcidevs.h>
 
 /* XXX does not belong here */

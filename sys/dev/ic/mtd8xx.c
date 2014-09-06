@@ -1,4 +1,4 @@
-/*	$OpenBSD: mtd8xx.c,v 1.20 2013/08/21 05:21:43 dlg Exp $	*/
+/*	$OpenBSD: mtd8xx.c,v 1.21 2013/11/26 09:50:33 mpi Exp $	*/
 
 /*
  * Copyright (c) 2003 Oleg Safiullin <form@pdp11.org.ru>
@@ -55,7 +55,6 @@
 #include <dev/mii/miivar.h>
 
 #include <dev/pci/pcidevs.h>
-#include <dev/pci/pcivar.h>
 
 #include <dev/ic/mtd8xxreg.h>
 #include <dev/ic/mtd8xxvar.h>
