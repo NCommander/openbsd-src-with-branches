@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.60 2014/08/22 22:14:53 sthen Exp $ */
+/*	$OpenBSD: arp.c,v 1.61 2014/09/03 10:39:41 mpi Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -531,7 +531,6 @@ print_entry(struct sockaddr_dl *sdl, struct sockaddr_inarp *sin,
 	struct hostent *hp = NULL;
 	int addrwidth, llwidth, ifwidth ;
 	struct timeval now;
-	char flgbuf[8];
 
 	gettimeofday(&now, 0);
 
@@ -569,12 +568,10 @@ print_entry(struct sockaddr_dl *sdl, struct sockaddr_inarp *sin,
 	else
 		printf(" %-10.10s", "expired");
 
-	snprintf(flgbuf, sizeof(flgbuf), "%s%s%s",
+	printf(" %s%s%s\n",
 	    (rtm->rtm_flags & RTF_LOCAL) ? "l" : "",
 	    (sin->sin_other & SIN_PROXY) ? "P" : "",
 	    (rtm->rtm_flags & RTF_ANNOUNCE) ? "p" : "");
-
-	printf(" %s\n", flgbuf);
 }
 
 /*
