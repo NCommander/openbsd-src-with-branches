@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Written by J.T. Conklin, Apr 4, 1995
  * Public domain.

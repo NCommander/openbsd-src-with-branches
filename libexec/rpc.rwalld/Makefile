@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.7 1995/04/12 00:47:56 jtc Exp $
+#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:43:21 deraadt Exp $
 
 PROG =	rpc.rwalld
 SRCS =	rwalld.c

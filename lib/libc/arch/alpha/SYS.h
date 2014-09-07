@@ -1,4 +1,5 @@
-/*	$NetBSD: SYS.h,v 1.1 1995/02/10 17:49:50 cgd Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.8 2002/01/04 21:37:18 drahn Exp $	*/
+/*	$NetBSD: SYS.h,v 1.4 1996/10/17 03:03:53 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -30,24 +31,71 @@
 #include <machine/asm.h>
 #include <sys/syscall.h>
 
-#define CALLSYS(num)						\
-	CONST(num, v0);						\
-	call_pal 0x83;			/* op_callsys */	
-	
-#define	SYSCALL_NOLABEL(x)					\
-	CALLSYS(SYS_/**/x);					\
-	beq	a3, 9f;						\
-	br	gp, 8f;						\
-8:	SETGP(gp);						\
-	lda	at_reg, cerror;					\
-	jmp	zero, (at_reg);					\
-9:
 
-#define	SYSCALL(x)	LEAF(x, 0 /* XXX */); SYSCALL_NOLABEL(x);
-#define RSYSCALL(x)	SYSCALL(x); RET; END(x);
+#define	CALLSYS_ERROR(name)					\
+	CALLSYS_NOERROR(name);					\
+	br	gp, LLABEL(name,0);				\
+LLABEL(name,0):							\
+	LDGP(gp);						\
+	beq	a3, LLABEL(name,1);				\
+	jmp	zero, __cerror;					\
+LLABEL(name,1):
 
-#define	PSEUDO(x,y)						\
-LEAF(x,0);				/* unknown # of args */	\
-	CALLSYS(SYS_/**/y);					\
+#define __LEAF(p,n,e)						\
+	LEAF(___CONCAT(p,n),e)
+#define __END(p,n)						\
+	END(___CONCAT(p,n))
+
+#define	__SYSCALL(p,name)					\
+__LEAF(p,name,0);			/* XXX # of args? */	\
+	CALLSYS_ERROR(name)
+
+#define	__SYSCALL_NOERROR(p,name)				\
+__LEAF(p,name,0);			/* XXX # of args? */	\
+	CALLSYS_NOERROR(name)
+
+
+#define __RSYSCALL(p,name)					\
+	__SYSCALL(p,name);					\
 	RET;							\
-END(x);
+__END(p,name)
+
+#define __RSYSCALL_NOERROR(p,name)				\
+	__SYSCALL_NOERROR(p,name);				\
+	RET;							\
+__END(p,name)
+
+
+#define	__PSEUDO(p,label,name)					\
+__LEAF(p,label,0);			/* XXX # of args? */	\
+	CALLSYS_ERROR(name);					\
+	RET;							\
+__END(p,label);
+
+#define	__PSEUDO_NOERROR(p,label,name)				\
+__LEAF(p,label,0);			/* XXX # of args? */	\
+	CALLSYS_NOERROR(name);					\
+	RET;							\
+__END(p,label);
+
+#define ALIAS(prefix,name) WEAK_ALIAS(name, ___CONCAT(prefix,name));
+
+/*
+ * For the thread_safe versions, we prepend _thread_sys_ to the function
+ * name so that the 'C' wrapper can go around the real name.
+ */
+# define SYSCALL(x)		ALIAS(_thread_sys_,x) \
+				__SYSCALL(_thread_sys_,x)
+# define SYSCALL_NOERROR(x)	ALIAS(_thread_sys_,x) \
+				__SYSCALL_NOERROR(_thread_sys_,x)
+# define RSYSCALL(x)		ALIAS(_thread_sys_,x) \
+				__RSYSCALL(_thread_sys_,x)
+# define RSYSCALL_NOERROR(x)	ALIAS(_thread_sys_,x) \
+				__RSYSCALL_NOERROR(_thread_sys_,x)
+# define PSEUDO(x,y)		ALIAS(_thread_sys_,x) \
+				__PSEUDO(_thread_sys_,x,y)
+# define PSEUDO_NOERROR(x,y)	ALIAS(_thread_sys_,x) \
+				__PSEUDO_NOERROR(_thread_sys_,x,y)
+# define SYSLEAF(x,e)		ALIAS(_thread_sys_,x) \
+				__LEAF(_thread_sys_,x,e)
+# define SYSEND(x)		__END(_thread_sys_,x)

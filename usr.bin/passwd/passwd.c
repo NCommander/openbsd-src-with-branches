@@ -1,3 +1,5 @@
+/*	$OpenBSD: passwd.c,v 1.25 2009/10/27 23:59:41 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,20 +29,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1988 The Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)passwd.c	5.5 (Berkeley) 7/6/91";*/
-static char rcsid[] = "$Id: passwd.c,v 1.7 1995/02/12 17:45:56 phil Exp $";
-#endif /* not lint */
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <err.h>
+#include <rpcsvc/ypclnt.h>
 
 /*
  * Note on configuration:
@@ -60,57 +50,38 @@ int use_yp;
 int force_yp;
 #endif
 
-main(argc, argv)
-	int argc;
-	char **argv;
+extern int local_passwd(char *, int);
+extern int yp_passwd(char *);
+extern int krb5_passwd(int, char **);
+extern int _yp_check(char **);
+void usage(int retval);
+
+int
+main(int argc, char **argv)
 {
 	extern int optind;
-	register int ch;
 	char *username;
+	int ch;
+#ifdef	YP
 	int status = 0;
-	char *basename;
-
-#if defined(KERBEROS) || defined(KERBEROS5)
-	use_kerberos = 1;
 #endif
 #ifdef	YP
 	use_yp = _yp_check(NULL);
-#endif
+	if (use_yp) {
+		char *dom;
 
-	basename = strrchr(argv[0], '/');
-	if (basename == NULL)
-		basename = argv[0];
-	if (strcmp(basename, "yppasswd") == 0) {
-#ifdef YP
-		if (!use_yp) {
-			fprintf(stderr, "yppasswd: YP not in use.\n");
-			exit (1);
-		}
-		use_kerberos = 0;
-		use_yp = 1;
-		force_yp = 1;
-#else
-		fprintf(stderr, "yppasswd: YP not compiled in\n");
-		exit(1);
-#endif
+		yp_get_default_domain(&dom);
+		yp_unbind(dom);
 	}
+#endif
 
-	
-	while ((ch = getopt(argc, argv, "lky")) != EOF)
+	/* Process args and options */
+	while ((ch = getopt(argc, argv, "ly")) != -1)
 		switch (ch) {
 		case 'l':		/* change local password file */
 			use_kerberos = 0;
 			use_yp = 0;
 			break;
-		case 'k':		/* change Kerberos password */
-#if defined(KERBEROS) || defined(KERBEROS5)
-			use_kerberos = 1;
-			use_yp = 0;
-			break;
-#else
-			fprintf(stderr, "passwd: Kerberos not compiled in\n");
-			exit(1);
-#endif
 		case 'y':		/* change YP password */
 #ifdef	YP
 			if (!use_yp) {
@@ -126,8 +97,7 @@ main(argc, argv)
 			exit(1);
 #endif
 		default:
-			usage();
-			exit(1);
+			usage(1);
 		}
 
 	argc -= optind;
@@ -138,40 +108,29 @@ main(argc, argv)
 		fprintf(stderr, "passwd: who are you ??\n");
 		exit(1);
 	}
-	
-	switch(argc) {
+
+	switch (argc) {
 	case 0:
 		break;
 	case 1:
-#if defined(KERBEROS) || defined(KERBEROS5)
-		if (use_kerberos && strcmp(argv[0], username)) {
-			(void)fprintf(stderr, "passwd: %s\n\t%s\n%s\n",
-"to change another user's Kerberos password, do",
-"\"kinit <user>; passwd; kdestroy\";",
-"to change a user's local passwd, use \"passwd -l <user>\"");
-			exit(1);
-		}
-#endif
 		username = argv[0];
 		break;
 	default:
-		usage();
-		exit(1);
+		usage(1);
 	}
 
-#if defined(KERBEROS) || defined(KERBEROS5)
-	if (use_kerberos)
-		exit(krb_passwd());
-#endif
 #ifdef	YP
-	if (force_yp || ((status = local_passwd(username)) && use_yp))
+	if (force_yp || ((status = local_passwd(username, 0)) && use_yp))
 		exit(yp_passwd(username));
 	exit(status);
+#else
+	exit(local_passwd(username, 0));
 #endif
-	exit(local_passwd(username));
 }
 
-usage()
+void
+usage(int retval)
 {
-	fprintf(stderr, "usage: passwd [-l] [-k] [-y] user\n");
+	fprintf(stderr, "usage: passwd [-l | -y] [user]\n");
+	exit(retval);
 }

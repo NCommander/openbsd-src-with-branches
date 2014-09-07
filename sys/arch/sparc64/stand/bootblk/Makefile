@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.11 2013/10/30 00:43:46 guenther Exp $
 #	$NetBSD: Makefile,v 1.1 2000/08/20 14:58:45 mrg Exp $
 
 CURDIR=	${.CURDIR}
@@ -8,47 +8,31 @@ S=	${CURDIR}/../../../..
 # Override normal settings
 #
 
-PROG=	bootblk
-SRCS=		bootblk.fth
-OBJS=
-CLEANFILES=	assym.fth.h assym.fth.h.tmp machine sparc \
+CLEANFILES=	assym.fth.h assym.fth.h.tmp machine \
 		bootblk bootblk.text bootblk.text.tmp
 
 NOMAN=
 STRIPFLAG=
-
-# deal with Solaris vs. NetBSD build environments for now ..
-OS!=uname -s
-.if (${OS} == "NetBSD")
-USE_GENASSYM?=	no
-SVR4=
-.else
-USE_GENASSYM?=	yes
-SVR4=-U__SVR4 -U__svr4__ -D__NetBSD__
-.endif
+BINMODE=644
 
 INCLUDES=	-I. -I$S/arch -I$S -nostdinc
-CPPFLAGS=	${INCLUDES} ${IDENT} ${PARAM} -D_LKM ${SVR4}
+CPPFLAGS=	${INCLUDES} ${IDENT} ${PARAM}
 
-#all:: bootblk.text bootblk
+.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(obj)
+.BEGIN:
+	@([ -h machine ] || ln -s ${.CURDIR}/../../include machine)
+.endif
 
-#clean:: 
-#	rm assym.fth.h bootblk.text machine bootblk
+all: bootblk.text bootblk
 
-sparc:
-	ln -s ${.CURDIR}/../../../sparc/include sparc
-
-machine:
-	ln -s ${.CURDIR}/../../../${MACHINE}/include machine
-
-assym.fth.h: ${.CURDIR}/genassym.sh genfth.cf machine
+assym.fth.h: ${.CURDIR}/genassym.sh genfth.cf
 	sh ${.CURDIR}/genassym.sh ${CC} ${CFLAGS} \
 	    ${CPPFLAGS} ${PROF} <${.CURDIR}/genfth.cf >assym.fth.h.tmp && \
 	    mv -f assym.fth.h.tmp assym.fth.h
 
 bootblk.text: bootblk.fth assym.fth.h
-	awk '/fload/ { print "#include \"" $$2 "\"" }; !/fload/' \
-	    ${.CURDIR}/bootblk.fth | /usr/bin/cpp -P >bootblk.text.tmp &&
+	awk '/fload/ { file=$$2; while ((ret = getline <file) == 1) print; close(file); if (ret == -1) print "unable to read " file >"/dev/stderr"; next }; !/fload/' \
+	    ${.CURDIR}/bootblk.fth >bootblk.text.tmp && \
 	    mv -f bootblk.text.tmp bootblk.text
 
 bootblk: bootblk.fth assym.fth.h
@@ -56,6 +40,10 @@ bootblk: bootblk.fth assym.fth.h
 
 beforedepend:
 	@touch .depend
+
+beforeinstall:
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
+	    bootblk ${DESTDIR}/usr/mdec
 
 #
 # The following are if you grab the fakeboot program from the Sun website

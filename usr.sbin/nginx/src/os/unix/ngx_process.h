@@ -9,6 +9,7 @@
 #define _NGX_PROCESS_H_INCLUDED_
 
 
+#include <ngx_setaffinity.h>
 #include <ngx_setproctitle.h>
 
 
@@ -76,6 +77,7 @@ void ngx_debug_point(void);
 extern int            ngx_argc;
 extern char         **ngx_argv;
 extern char         **ngx_os_argv;
+extern u_char	     *ngx_prefix;
 
 extern ngx_pid_t      ngx_pid;
 extern ngx_socket_t   ngx_channel;

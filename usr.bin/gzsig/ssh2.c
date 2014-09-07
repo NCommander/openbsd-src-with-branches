@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: ssh2.c,v 1.3 2009/07/12 18:04:03 jsg Exp $ */
 /*
  * ssh2.c
  *
@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 
+#include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <openssl/ssl.h>
 #include <openssl/des.h>
@@ -30,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <resolv.h>
 #include <err.h>
 
 #include "key.h"
@@ -49,7 +51,7 @@ _uudecode(const char *src, u_char *target, size_t targsize)
 
 	/* copy the 'readonly' source */
 	if ((encoded = strdup(src)) == NULL)
-		err(1, "");
+		err(1, "strdup");
 	/* skip whitespace and data */
 	for (p = encoded; *p == ' ' || *p == '\t'; p++)
 		;
@@ -85,11 +87,11 @@ _keyfromstr(char *str, int len)
 static int
 _read_int(struct iovec *iov, int *ival)
 {
-	iov->iov_len -= 4;
-	if (iov->iov_len < 0)
+	if (iov->iov_len < 4)
 		return (-1);
+	iov->iov_len -= 4;
 	*ival = GET_32BIT((u_char *)iov->iov_base);
-	(u_char*)iov->iov_base += 4;
+	iov->iov_base = (u_char*)iov->iov_base + 4;
 
 	return (0);
 }
@@ -100,12 +102,12 @@ _read_opaque(struct iovec *iov, u_char **buf, int *len)
 	if (_read_int(iov, len) < 0 || *len < 0)
 		return (-1);
 
-	iov->iov_len -= *len;
-	if (iov->iov_len < 0)
+	if (iov->iov_len < (size_t)*len)
 		return (-1);
+	iov->iov_len -= *len;
 
 	*buf = iov->iov_base;
-	(u_char*)iov->iov_base += *len;
+	iov->iov_base = (u_char*)iov->iov_base + *len;
 
 	return (0);
 }
@@ -131,7 +133,7 @@ _read_bignum(struct iovec *iov, BIGNUM *bn)
 int
 ssh2_load_public(struct key *k, struct iovec *iovp)
 {
-	int len, keytype, error = 0, blen;
+	int len, keytype, error = 0;
 	u_char *bp;
 	struct iovec iov;
 	/* iov->iov_base is NULL terminated */
@@ -150,7 +152,7 @@ ssh2_load_public(struct key *k, struct iovec *iovp)
 
 	len = 2*strlen(cp);
 	if ((savep = iov.iov_base = malloc(len)) == NULL)
-		err(1, "");
+		err(1, "malloc(%d)", len);
 	iov.iov_len = _uudecode(cp, iov.iov_base, len);
 
 	if (_read_opaque(&iov, &bp, &len) < 0 ||
@@ -167,7 +169,7 @@ ssh2_load_public(struct key *k, struct iovec *iovp)
 		if ((rsa = RSA_new()) == NULL ||
 		    (rsa->e = BN_new()) == NULL ||
 		    (rsa->n = BN_new()) == NULL)
-			errx(1, "");
+			errx(1, "BN_new");
 
 		if (_read_bignum(&iov, rsa->e) < 0 ||
 		    _read_bignum(&iov, rsa->n) < 0) {
@@ -188,7 +190,7 @@ ssh2_load_public(struct key *k, struct iovec *iovp)
 		    (dsa->q = BN_new()) == NULL ||
 		    (dsa->g = BN_new()) == NULL ||
 		    (dsa->pub_key = BN_new()) == NULL)
-			errx(1, "");
+			errx(1, "BN_new");
 
 		if (_read_bignum(&iov, dsa->p) < 0 ||
 		    _read_bignum(&iov, dsa->q) < 0 ||

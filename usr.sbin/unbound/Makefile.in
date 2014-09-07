@@ -77,7 +77,7 @@ LINTFLAGS+="-Dsigset_t=long"
 # FreeBSD
 LINTFLAGS+="-D__uint16_t=uint16_t" "-DEVP_PKEY_ASN1_METHOD=int"
 
-INSTALL=$(srcdir)/install-sh
+INSTALL=sh $(srcdir)/install-sh
 
 #pythonmod.c is not here, it is mentioned by itself in its own rules,
 #makedepend fails on missing interface.h otherwise.
@@ -456,7 +456,10 @@ unbound-event-install:
 	$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)
 	$(LIBTOOL) --mode=install cp $(srcdir)/libunbound/unbound-event.h $(DESTDIR)$(includedir)/unbound-event.h
 
-install:	$(INSTALLTARGET)
+install:
+	# avoid mistakes made by people who forget "make -f Makefile.bsd-wrapper"
+
+orig-install:	$(INSTALLTARGET)
 
 install-lib:	lib $(UNBOUND_EVENT_INSTALL)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(libdir)
@@ -495,7 +498,7 @@ install-all:	all $(PYTHONMOD_INSTALL) $(PYUNBOUND_INSTALL) $(UNBOUND_EVENT_INSTA
 	$(INSTALL) -c -m 644 doc/unbound-control.8 $(DESTDIR)$(mandir)/man8/unbound-control-setup.8
 	$(INSTALL) -c -m 644 doc/unbound-anchor.8 $(DESTDIR)$(mandir)/man8
 	$(INSTALL) -c -m 644 doc/unbound.conf.5 $(DESTDIR)$(mandir)/man5
-	$(INSTALL) -c -m 644 $(srcdir)/doc/unbound-host.1 $(DESTDIR)$(mandir)/man1
+	$(INSTALL) -c -m 644 doc/unbound-host.1 $(DESTDIR)$(mandir)/man1
 	$(INSTALL) -c -m 755 unbound-control-setup $(DESTDIR)$(sbindir)/unbound-control-setup
 	if test ! -e $(DESTDIR)$(configfile); then $(INSTALL) -d `dirname $(DESTDIR)$(configfile)`; $(INSTALL) -c -m 644 doc/example.conf $(DESTDIR)$(configfile); fi
 

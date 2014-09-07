@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -11,11 +11,11 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: timers.c,v 8.22 2001/05/10 01:16:11 ca Exp $")
+SM_RCSID("@(#)$Sendmail: timers.c,v 8.27 2013/11/22 20:51:57 ca Exp $")
 
 #if _FFR_TIMERS
 # include <sys/types.h>
-# include <sys/time.h>
+# include <sm/time.h>
 # include "sendmail.h"
 # include <sys/resource.h>	/* Must be after sendmail.h for NCR MP-RAS */
 
@@ -40,7 +40,7 @@ warntimer(msg, va_alist)
 		return;
 # endif /* 0 */
 	SM_VA_START(ap, msg);
-	(void) sm_vsnprintf(buf, sizeof buf, msg, ap);
+	(void) sm_vsnprintf(buf, sizeof(buf), msg, ap);
 	SM_VA_END(ap);
 	sm_syslog(LOG_NOTICE, CurEnv->e_id, "%s; e_timers=0x%lx",
 		  buf, (unsigned long) &CurEnv->e_timers);
@@ -50,7 +50,7 @@ static void
 zerotimer(ptimer)
 	TIMER *ptimer;
 {
-	memset(ptimer, '\0', sizeof *ptimer);
+	memset(ptimer, '\0', sizeof(*ptimer));
 }
 
 static void
@@ -130,7 +130,7 @@ getinctimer(ptimer)
 	if (BaseTimer.ti_wall_sec == 0)
 	{
 		/* first call */
-		memset(ptimer, '\0', sizeof *ptimer);
+		memset(ptimer, '\0', sizeof(*ptimer));
 	}
 	else
 	{
@@ -223,7 +223,7 @@ strtimer(ptimer)
 {
 	static char buf[40];
 
-	(void) sm_snprintf(buf, sizeof buf, "%ld.%06ldr/%ld.%06ldc",
+	(void) sm_snprintf(buf, sizeof(buf), "%ld.%06ldr/%ld.%06ldc",
 		ptimer->ti_wall_sec, ptimer->ti_wall_usec,
 		ptimer->ti_cpu_sec, ptimer->ti_cpu_usec);
 	return buf;

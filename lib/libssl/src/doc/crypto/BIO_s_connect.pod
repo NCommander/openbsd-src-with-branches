@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-BIO_s_connect, BIO_set_conn_hostname, BIO_set_conn_port,
+BIO_s_connect, BIO_new_connect, BIO_set_conn_hostname, BIO_set_conn_port,
 BIO_set_conn_ip, BIO_set_conn_int_port, BIO_get_conn_hostname,
 BIO_get_conn_port, BIO_get_conn_ip, BIO_get_conn_int_port,
 BIO_set_nbio, BIO_do_connect - connect BIO
@@ -86,7 +86,7 @@ BIO_get_conn_int_port() returns the port as an int.
 BIO_set_nbio() sets the non blocking I/O flag to B<n>. If B<n> is
 zero then blocking I/O is set. If B<n> is 1 then non blocking I/O
 is set. Blocking I/O is the default. The call to BIO_set_nbio()
-should be made before the connection is established because 
+should be made before the connection is established because
 non blocking I/O is set during the connect process.
 
 BIO_new_connect() combines BIO_new() and BIO_set_conn_hostname() into
@@ -169,24 +169,23 @@ to retrieve a page and copy the result to standard output.
  BIO *cbio, *out;
  int len;
  char tmpbuf[1024];
+
  ERR_load_crypto_strings();
  cbio = BIO_new_connect("localhost:http");
  out = BIO_new_fp(stdout, BIO_NOCLOSE);
- if(BIO_do_connect(cbio) <= 0) {
+ if (BIO_do_connect(cbio) <= 0) {
 	fprintf(stderr, "Error connecting to server\n");
 	ERR_print_errors_fp(stderr);
 	/* whatever ... */
-	}
+ }
  BIO_puts(cbio, "GET / HTTP/1.0\n\n");
- for(;;) {	
+ for(;;) {
 	len = BIO_read(cbio, tmpbuf, 1024);
-	if(len <= 0) break;
+	if (len <= 0)
+		break;
 	BIO_write(out, tmpbuf, len);
  }
  BIO_free(cbio);
  BIO_free(out);
 
-
-=head1 SEE ALSO
-
-TBA
+=cut

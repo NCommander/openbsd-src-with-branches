@@ -1,5 +1,6 @@
+/*	$OpenBSD: fdvar.h,v 1.8 2006/08/17 01:37:41 krw Exp $	*/
 /*
- *	$NetBSD: fdvar.h,v 1.3 1995/04/07 19:46:15 pk Exp $
+ *	$NetBSD: fdvar.h,v 1.5 1996/12/08 23:40:34 pk Exp $
  *
  * Copyright (c) 1995 Paul Kranenburg
  * All rights reserved.
@@ -31,12 +32,12 @@
  *
  */
 
-#define	FDC_BSIZE	512
+#define	FD_BSIZE(fd)	(128 << fd->sc_type->secsize)
 #define	FDC_MAXIOSIZE	NBPG	/* XXX should be MAXBSIZE */
 
 #define FDC_NSTATUS	10
 
-#if !defined(LOCORE)
+#ifndef _LOCORE
 struct fdcio {
 	/*
 	 * 82072 (sun4c) and 82077 (sun4m) controllers have different
@@ -49,7 +50,8 @@ struct fdcio {
 	/*
 	 * Interrupt state.
 	 */
-	int	fdcio_istate;
+	int	fdcio_itask;
+	int	fdcio_istatus;
 
 	/*
 	 * IO state.
@@ -59,18 +61,21 @@ struct fdcio {
 	u_char	fdcio_status[FDC_NSTATUS];	/* copy of registers */
 	int	fdcio_nstat;		/* # of valid status bytes */
 
-	/*
-	 * Statictics.
-	 */
-	struct	evcnt	fdcio_intrcnt;
+	struct	intrhand fdcio_ih;
+	void		*fdcio_sih;	/* softintr cookie */
 };
-#endif /* LOCORE */
+#endif /* _LOCORE */
 
-/* istate values */
-#define ISTATE_IDLE		0	/* No HW interrupt expected */
-#define ISTATE_SPURIOUS		1	/* Spurious HW interrupt detected */
-#define ISTATE_SENSEI		2	/* Do SENSEI on next HW interrupt */
-#define ISTATE_DMA		3	/* Pseudo-DMA in progress */
+/* itask values */
+#define FDC_ITASK_NONE		0	/* No HW interrupt expected */
+#define FDC_ITASK_SENSEI	1	/* Do SENSEI on next HW interrupt */
+#define FDC_ITASK_DMA		2	/* Do Pseudo-DMA */
+#define FDC_ITASK_RESULT	3	/* Pick up command results */
 
-#define FDIOCEJECT	_IO('f', 24)
+/* istatus values */
+#define FDC_ISTATUS_NONE	0	/* No status available */
+#define FDC_ISTATUS_SPURIOUS	1	/* Spurious HW interrupt detected */
+#define FDC_ISTATUS_ERROR	2	/* Operation completed abnormally */
+#define FDC_ISTATUS_DONE	3	/* Operation completed normally */
 
+#define SUNOS_FDIOCEJECT	_IO('f', 24)

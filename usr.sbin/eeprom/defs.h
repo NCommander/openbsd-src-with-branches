@@ -1,8 +1,12 @@
-/*	$NetBSD: defs.h,v 1.1 1995/07/13 18:08:56 thorpej Exp $	*/
+/*	$OpenBSD: defs.h,v 1.6 2007/11/12 20:54:54 kettenis Exp $	*/
+/*	$NetBSD: defs.h,v 1.2 1996/02/28 01:13:20 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,24 +16,18 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #undef BUFSIZE
@@ -57,7 +55,7 @@
 struct	keytabent {
 	char	*kt_keyword;		/* keyword for this entry */
 	u_int	kt_offset;		/* offset into prom of value */
-	void	(*kt_handler) __P((struct keytabent *, char *));
+	void	(*kt_handler)(struct keytabent *, char *);
 					/* handler function for this entry */
 };
 
@@ -70,7 +68,6 @@ struct	strvaltabent {
 	u_char	sv_val;			/* ... and the value */
 };
 
-#ifdef __sparc__
 /*
  * This is an entry in a table which describes a set of `exceptions'.
  * In other words, these are Openprom fields that we either can't
@@ -78,32 +75,29 @@ struct	strvaltabent {
  */
 struct	extabent {
 	char	*ex_keyword;		/* keyword for this entry */
-	void	(*ex_handler) __P((struct extabent *,
-		    struct opiocdesc *, char *));
+	void	(*ex_handler)(struct extabent *, struct opiocdesc *, char *);
 					/* handler function for this entry */
 };
-#endif /* __sparc__ */
 
 /* Sun 3/4 EEPROM handlers. */
-void	ee_hwupdate __P((struct keytabent *, char *));
-void	ee_num8 __P((struct keytabent *, char *));
-void	ee_num16 __P((struct keytabent *, char *));
-void	ee_screensize __P((struct keytabent *, char *));
-void	ee_truefalse __P((struct keytabent *, char *));
-void	ee_bootdev __P((struct keytabent *, char *));
-void	ee_kbdtype __P((struct keytabent *, char *));
-void	ee_constype __P((struct keytabent *, char *));
-void	ee_diagpath __P((struct keytabent *, char *));
-void	ee_banner __P((struct keytabent *, char *));
-void	ee_notsupp __P((struct keytabent *, char *));
+void	ee_hwupdate(struct keytabent *, char *);
+void	ee_num8(struct keytabent *, char *);
+void	ee_num16(struct keytabent *, char *);
+void	ee_screensize(struct keytabent *, char *);
+void	ee_truefalse(struct keytabent *, char *);
+void	ee_bootdev(struct keytabent *, char *);
+void	ee_kbdtype(struct keytabent *, char *);
+void	ee_constype(struct keytabent *, char *);
+void	ee_diagpath(struct keytabent *, char *);
+void	ee_banner(struct keytabent *, char *);
+void	ee_notsupp(struct keytabent *, char *);
 
 /* Sun 3/4 EEPROM checksum routines. */
-u_char	ee_checksum __P((u_char *, size_t));
-void	ee_updatechecksums __P((void));
-void	ee_verifychecksums __P((void));
+u_char	ee_checksum(u_char *, size_t);
+void	ee_updatechecksums(void);
+void	ee_verifychecksums(void);
 
-#ifdef __sparc__
-/* Sparc Openprom handlers. */
-char	*op_handler __P((char *, char *));
-void	op_dump __P((void));
-#endif /* __sparc__ */
+/* OpenPROM handlers. */
+char	*op_handler(char *, char *);
+void	 op_dump(void);
+void	 op_tree(void);

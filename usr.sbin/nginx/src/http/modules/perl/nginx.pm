@@ -50,7 +50,7 @@ our @EXPORT = qw(
     HTTP_INSUFFICIENT_STORAGE
 );
 
-our $VERSION = '1.0.14';
+our $VERSION = '%%VERSION%%';
 
 require XSLoader;
 XSLoader::load('nginx', $VERSION);
@@ -123,7 +123,7 @@ This module provides a Perl interface to the nginx HTTP server API.
 
 =head1 SEE ALSO
 
-http://sysoev.ru/nginx/docs/http/ngx_http_perl_module.html
+http://nginx.org/en/docs/http/ngx_http_perl_module.html
 
 =head1 AUTHOR
 
@@ -132,6 +132,7 @@ Igor Sysoev
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) Igor Sysoev
+Copyright (C) Nginx, Inc.
 
 
 =cut

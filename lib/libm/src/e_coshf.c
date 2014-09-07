@@ -13,26 +13,14 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_coshf.c,v 1.5 1995/05/10 20:45:01 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const volatile float huge = 1.0e30;
 static const float one = 1.0, half=0.5;
-#else
-static float one = 1.0, half=0.5, huge = 1.0e30;
-#endif
 
-#ifdef __STDC__
-	float __ieee754_coshf(float x)
-#else
-	float __ieee754_coshf(x)
-	float x;
-#endif
+float
+coshf(float x)
 {	
 	float t,w;
 	int32_t ix;
@@ -53,16 +41,16 @@ static float one = 1.0, half=0.5, huge = 1.0e30;
 
     /* |x| in [0.5*ln2,22], return (exp(|x|)+1/exp(|x|)/2; */
 	if (ix < 0x41b00000) {
-		t = __ieee754_expf(fabsf(x));
+		t = expf(fabsf(x));
 		return half*t+half/t;
 	}
 
     /* |x| in [22, log(maxdouble)] return half*exp(|x|) */
-	if (ix < 0x42b17180)  return half*__ieee754_expf(fabsf(x));
+	if (ix < 0x42b17180)  return half*expf(fabsf(x));
 
     /* |x| in [log(maxdouble), overflowthresold] */
 	if (ix<=0x42b2d4fc) {
-	    w = __ieee754_expf(half*fabsf(x));
+	    w = expf(half*fabsf(x));
 	    t = half*w;
 	    return t*w;
 	}

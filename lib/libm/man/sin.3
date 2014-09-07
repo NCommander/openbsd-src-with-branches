@@ -1,7 +1,7 @@
+.\"	$OpenBSD: sin.3,v 1.15 2013/06/05 03:40:26 tedu Exp $
 .\" Copyright (c) 1991 The Regents of the University of California.
 .\" All rights reserved.
 .\"
-.\"	@(#)sin.3	6.7 (Berkeley) 4/19/91
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
 .\" are met:
@@ -10,11 +10,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,46 +26,63 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)sin.3	6.7 (Berkeley) 4/19/91
-.\"	$Id: sin.3,v 1.5 1995/04/14 18:40:18 jtc Exp $
+.\"     from: @(#)cos.3	5.1 (Berkeley) 5/2/91
 .\"
-.Dd April 19, 1991
+.Dd $Mdocdate: June 5 2013 $
 .Dt SIN 3
 .Os
 .Sh NAME
-.Nm sin 
-.Nd sine function
+.Nm sin ,
+.Nm sinf ,
+.Nm sinl
+.Nd sine functions
 .Sh SYNOPSIS
-.Fd #include <math.h>
+.In math.h
 .Ft double
 .Fn sin "double x"
 .Ft float
 .Fn sinf "float x"
+.Ft long double
+.Fn sinl "long double x"
 .Sh DESCRIPTION
 The
 .Fn sin
 function computes the sine of
 .Fa x
 (measured in radians).
-A large magnitude argument may yield a result with little
-or no significance.
+The
+.Fn sinf
+function is a single precision version of
+.Fn sin .
+The
+.Fn sinl
+function is an extended precision version of
+.Fn sin .
+A large magnitude argument may yield a result with little or no
+significance.
 .Sh RETURN VALUES
 The
-.Fn sin
-function returns the sine value.
+.Fn sin ,
+.Fn sinf
+and
+.Fn sinl
+functions return the sine value.
 .Sh SEE ALSO
 .Xr acos 3 ,
 .Xr asin 3 ,
 .Xr atan 3 ,
 .Xr atan2 3 ,
-.Xr cos 3 ,
 .Xr cosh 3 ,
 .Xr sinh 3 ,
 .Xr tan 3 ,
-.Xr tanh 3 ,
-.Xr math 3
+.Xr tanh 3
 .Sh STANDARDS
 The
 .Fn sin
 function conforms to
 .St -ansiC .
+.Sh HISTORY
+A
+.Fn sin
+function first appeared in
+.At v1 .

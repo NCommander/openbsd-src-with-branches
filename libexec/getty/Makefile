@@ -1,5 +1,4 @@
-#	from: @(#)Makefile	8.1 (Berkeley) 6/4/93
-#	$Id: Makefile,v 1.7 1994/12/22 10:27:06 cgd Exp $
+#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:43:16 deraadt Exp $
 
 PROG=	getty
 SRCS=	main.c init.c subr.c

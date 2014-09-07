@@ -151,7 +151,7 @@ static const char *const log_usage[] =
     "\t-t\tOnly print header and descriptive text.\n",
     "\t-N\tDo not list tags.\n",
     "\t-b\tOnly list revisions on the default branch.\n",
-    "\t-r[revisions]\tSpecify revision(s)s to list.\n",
+    "\t-r[revisions]\tSpecify revision(s) to list.\n",
     "\t   rev1:rev2   Between rev1 and rev2, including rev1 and rev2.\n",
     "\t   rev1::rev2  Between rev1 and rev2, excluding rev1 and rev2.\n",
     "\t   rev:        rev and following revisions on the same branch.\n",
@@ -1553,6 +1553,15 @@ log_version (log_data, revlist, rcs, ver, trunk)
 	cvs_output (padd->data, 0);
 	cvs_output (" -", 2);
 	cvs_output (pdel->data, 0);
+	cvs_output (";", 1);
+    }
+
+    p = findnode (ver->other_delta,"commitid");
+    if (p != NULL && p->data)
+    {
+	cvs_output ("  commitid: ", 12);
+	cvs_output (p->data, 0);
+	cvs_output (";", 1);
     }
 
     if (ver->branches != NULL)

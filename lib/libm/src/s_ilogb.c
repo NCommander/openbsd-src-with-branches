@@ -10,25 +10,19 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_ilogb.c,v 1.9 1995/05/10 20:47:28 jtc Exp $";
-#endif
-
 /* ilogb(double x)
  * return the binary exponent of non-zero x
  * ilogb(0) = 0x80000001
  * ilogb(inf/NaN) = 0x7fffffff (no signal is raised)
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
-	int ilogb(double x)
-#else
-	int ilogb(x)
-	double x;
-#endif
+int
+ilogb(double x)
 {
 	int32_t hx,lx,ix;
 
@@ -49,3 +43,7 @@ static char rcsid[] = "$NetBSD: s_ilogb.c,v 1.9 1995/05/10 20:47:28 jtc Exp $";
 	else if (hx<0x7ff00000) return (hx>>20)-1023;
 	else return 0x7fffffff;
 }
+
+#if	LDBL_MANT_DIG == DBL_MANT_DIG
+__strong_alias(ilogbl, ilogb);
+#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */

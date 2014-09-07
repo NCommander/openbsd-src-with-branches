@@ -1,3 +1,5 @@
+.\"	$OpenBSD: whoami.1,v 1.13 2010/09/03 11:09:29 jmc Exp $
+.\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,33 +28,35 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)whoami.1	8.1 (Berkeley) 6/6/93
-.\"	$Id: whoami.1,v 1.2 1994/05/05 23:24:51 cgd Exp $
 .\"
-.Dd "June 6, 1993"
+.Dd $Mdocdate: September 3 2010 $
 .Dt WHOAMI 1
-.UC
+.Os
 .Sh NAME
 .Nm whoami
-.Nd display effective user id
+.Nd display effective user ID
 .Sh SYNOPSIS
 .Nm whoami
 .Sh DESCRIPTION
 The
-.Nm whoami
+.Nm
 utility has been obsoleted by the
 .Xr id 1
 utility, and is equivalent to
-.Dq Nm id Fl un .
+.Ic id Fl un .
 The command
-.Dq Nm id Fl p
+.Ic id Fl p
 is suggested for normal interactive use.
 .Pp
 The
-.Nm whoami
+.Nm
 utility displays your effective user ID as a name.
-.Pp
-The
-.Nm whoami
-utility exits 0 on success, and >0 if an error occurs.
+.Sh EXIT STATUS
+.Ex -std whoami
 .Sh SEE ALSO
 .Xr id 1
+.Sh HISTORY
+The
+.Nm
+utility first appeared in
+.Bx 2 .

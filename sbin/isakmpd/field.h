@@ -1,4 +1,5 @@
-/*	$Id: field.h,v 1.3 1998/08/02 20:25:01 niklas Exp $	*/
+/* $OpenBSD: field.h,v 1.5 2004/04/15 18:39:25 deraadt Exp $	 */
+/* $EOM: field.h,v 1.3 1998/08/02 20:25:01 niklas Exp $	 */
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -39,18 +35,20 @@
 #include <sys/types.h>
 
 struct field {
-  char *name;
-  int offset;
-  size_t len;
-  enum { raw, num, mask, ign, cst } type;
-  struct constant_map **maps;
+	char	*name;
+	int	 offset;
+	size_t	 len;
+	enum {
+		 raw, num, mask, ign, cst
+	}	 type;
+	struct constant_map **maps;
 };
 
-extern void field_dump_field (struct field *, u_int8_t *);
-extern void field_dump_payload (struct field *, u_int8_t *);
-extern u_int32_t field_get_num (struct field *, u_int8_t *);
-extern void field_get_raw (struct field *, u_int8_t *, u_int8_t *);
-extern void field_set_num (struct field *, u_int8_t *, u_int32_t);
-extern void field_set_raw (struct field *, u_int8_t *, u_int8_t *);
+extern void     field_dump_field(struct field *, u_int8_t *);
+extern void     field_dump_payload(struct field *, u_int8_t *);
+extern u_int32_t field_get_num(struct field *, u_int8_t *);
+extern void     field_get_raw(struct field *, u_int8_t *, u_int8_t *);
+extern void     field_set_num(struct field *, u_int8_t *, u_int32_t);
+extern void     field_set_raw(struct field *, u_int8_t *, u_int8_t *);
 
-#endif /* _FIELD_H_ */
+#endif				/* _FIELD_H_ */

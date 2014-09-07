@@ -12,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -32,20 +28,19 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)realpath.3	8.2 (Berkeley) 2/16/94
-.\"	$Id: realpath.3,v 1.1.1.1 1994/05/17 12:42:30 mycroft Exp $
+.\"	$OpenBSD: realpath.3,v 1.18 2013/06/05 03:39:23 tedu Exp $
 .\"
-.Dd "February 16, 1994"
+.Dd $Mdocdate: June 5 2013 $
 .Dt REALPATH 3
 .Os
 .Sh NAME
 .Nm realpath
 .Nd returns the canonicalized absolute pathname
 .Sh SYNOPSIS
-.Fd #include <sys/param.h>
-.Fd #include <stdlib.h>
+.In limits.h
+.In stdlib.h
 .Ft "char *"
-.Fn realpath "const char *pathname" "char resolvedname[MAXPATHLEN]"
+.Fn realpath "const char *pathname" "char *resolved"
 .Sh DESCRIPTION
 The
 .Fn realpath
@@ -57,18 +52,18 @@ and
 .Pa /../
 in
 .Fa pathname ,
-and copies the resulting absolute pathname into
-the memory referenced by
-.Fa resolvedname .
+and copies the resulting absolute pathname into the memory referenced by
+.Fa resolved .
 The
-.Fa resolvedname
+.Fa resolved
 argument
 .Em must
 refer to a buffer capable of storing at least
-.Dv MAXPATHLEN
-characters.
+.Dv PATH_MAX
+characters, or be
+.Dv NULL .
 .Pp
-The 
+The
 .Fn realpath
 function will resolve both absolute and relative paths
 and return the absolute pathname corresponding to
@@ -78,33 +73,49 @@ All but the last component of
 must exist when
 .Fn realpath
 is called.
-.Sh "RETURN VALUES"
+.Sh RETURN VALUES
 The
 .Fn realpath
 function returns
-.Fa resolved_name
+.Fa resolved
 on success.
+If
+.Fa resolved
+is
+.Dv NULL
+and no error occurred, then
+.Fn realpath
+returns a NUL-terminated string in a newly allocated buffer.
 If an error occurs,
 .Fn realpath
 returns
-.Dv NULL ,
-and
-.Fa resolved_name
-contains the pathname which caused the problem.
+.Dv NULL
+and the contents of
+.Fa resolved
+are undefined.
 .Sh ERRORS
 The function
 .Fn realpath
 may fail and set the external variable
 .Va errno
 for any of the errors specified for the library functions
-.Xr chdir 2 ,
-.Xr close 2 ,
-.Xr fchdir 2 ,
 .Xr lstat 2 ,
-.Xr open 2 ,
-.Xr readlink 2
+.Xr readlink 2 ,
 and
 .Xr getcwd 3 .
+.Sh SEE ALSO
+.Xr readlink 1 ,
+.Xr getcwd 3
+.Sh STANDARDS
+The
+.Fn realpath
+function conforms to
+.St -p1003.1-2008 .
+.Sh HISTORY
+The
+.Fn realpath
+function call first appeared in
+.Bx 4.4 .
 .Sh CAVEATS
 This implementation of
 .Fn realpath
@@ -114,13 +125,6 @@ The
 version always returns absolute pathnames,
 whereas the Solaris implementation will,
 under certain circumstances, return a relative
-.Fa resolved_path
+.Fa resolved
 when given a relative
 .Fa pathname .
-.Sh "SEE ALSO"
-.Xr getcwd 3
-.Sh HISTORY
-The
-.Fn realpath
-function call first appeared in
-.Bx 4.4 .

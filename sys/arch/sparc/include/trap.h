@@ -1,4 +1,5 @@
-/*	$NetBSD: trap.h,v 1.6 1995/07/04 22:58:51 christos Exp $ */
+/*	$OpenBSD: trap.h,v 1.5 2003/06/02 23:27:54 millert Exp $	*/
+/*	$NetBSD: trap.h,v 1.9 1996/05/16 15:57:04 abrown Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,9 +40,23 @@
  *
  *	@(#)trap.h	8.1 (Berkeley) 6/11/93
  */
+/*
+ * Sun4m support by Aaron Brown, Harvard University.
+ * Changes Copyright (c) 1995 The President and Fellows of Harvard College.
+ * All rights reserved.
+ */
 
 #ifndef	_MACHINE_TRAP_H
 #define	_MACHINE_TRAP_H
+
+/*
+ * vectors 0x00..0x1f are common to all sparc implementations, while
+ * vectors 0x20..0x2f are selectively implemented by some v8 cpu's
+ * either to support new instructions or simplify fault decoding.
+ * For sanity, these defines should match the layout of the trap
+ * table, but some cases may be treated in common.  The priorities
+ * listed are correct, but the v8 traps been inserted "between levels".
+ */
 
 /*	trap		vec	  (pri) description	*/
 #define	T_RESET		0x00	/* (1) not actually vectored; jumps to 0 */
@@ -80,13 +91,18 @@
 #define	T_L13INT	0x1d	/* (15) level 13 interrupt */
 #define	T_L14INT	0x1e	/* (14) level 14 interrupt */
 #define	T_L15INT	0x1f	/* (13) level 15 interrupt */
-/*			0x20	   unused */
+#define T_RREGERROR	0x20	/* (?) r-register access error (v8?) */
+#define T_TEXTERROR	0x21	/* (<2) error during instruction access (v8) */
+/*			0x22	   unused */
 /*	through		0x23	   unused */
 #define	T_CPDISABLED	0x24	/* (5) coprocessor instr while disabled */
 /*			0x25	   unused */
 /*	through		0x27	   unused */
 #define	T_CPEXCEPTION	0x28	/* (9) coprocessor exception */
-/*			0x29	   unused */
+#define T_DATAERROR	0x29	/* (<9) error during data access (v8) */
+#define T_IDIV0		0x2a	/* (<11) integer divide by zero (v8) */
+#define T_STOREBUFFAULT	0x2b	/* SuperSPARC: Store buffer copy-back fault */
+/*			0x2c	   unused */
 /*	through		0x7f	   unused */
 
 /* beginning of `user' vectors (from trap instructions) - all priority 12 */
@@ -119,7 +135,6 @@
 
 /* flags to system call (flags in %g1 along with syscall number) */
 #define	SYSCALL_G2RFLAG	0x400	/* on success, return to %g2 rather than npc */
-#define	SYSCALL_G7RFLAG	0x800	/* use %g7 as above (deprecated) */
 
 /*
  * `software trap' macros to keep people happy (sparc v8 manual says not

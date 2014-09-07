@@ -1,8 +1,9 @@
-/*	$NetBSD: lstDeQueue.c,v 1.4 1995/06/14 15:20:56 christos Exp $	*/
+/*	$OpenBSD: lstDeQueue.c,v 1.18 2007/09/16 09:46:14 espie Exp $	*/
+/*	$NetBSD: lstDeQueue.c,v 1.5 1996/11/06 17:59:36 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,20 +33,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstDeQueue.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstDeQueue.c,v 1.4 1995/06/14 15:20:56 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstDeQueue.c --
  *	Remove the node and return its datum from the head of the list
  */
 
 #include	"lstInt.h"
+#include 	<stdlib.h>
 
 /*-
  *-----------------------------------------------------------------------
@@ -57,31 +47,29 @@ static char rcsid[] = "$NetBSD: lstDeQueue.c,v 1.4 1995/06/14 15:20:56 christos 
  *	Remove and return the datum at the head of the given list.
  *
  * Results:
- *	The datum in the node at the head or (ick) NIL if the list
- *	is empty.
+ *	The datum in the node at the head or NULL if the list is empty.
  *
  * Side Effects:
  *	The head node is removed from the list.
- *
  *-----------------------------------------------------------------------
  */
-ClientData
-Lst_DeQueue (l)
-    Lst	    	  l;
+void *
+Lst_DeQueue(Lst l)
 {
-    ClientData	  rd;
-    register ListNode	tln;
-    
-    tln = (ListNode) Lst_First (l);
-    if (tln == NilListNode) {
-	return ((ClientData) NIL);
-    }
-    
-    rd = tln->datum;
-    if (Lst_Remove (l, (LstNode)tln) == FAILURE) {
-	return ((ClientData) NIL);
-    } else {
-	return (rd);
-    }
+	void *rd;
+	LstNode tln;
+
+	tln = l->firstPtr;
+	if (tln == NULL)
+		return NULL;
+
+	rd = tln->datum;
+	l->firstPtr = tln->nextPtr;
+	if (l->firstPtr)
+		l->firstPtr->prevPtr = NULL;
+	else
+		l->lastPtr = NULL;
+	free(tln);
+	return rd;
 }
 

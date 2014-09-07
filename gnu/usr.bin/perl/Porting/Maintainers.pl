@@ -14,6 +14,7 @@ use File::Glob qw(:case);
 %Maintainers = (
     'abergman'  => 'Arthur Bergman <abergman@cpan.org>',
     'abigail'   => 'Abigail <abigail@abigail.be>',
+    'afresh1'   => 'Andrew Fresh <afresh1@openbsd.org>',
     'ambs'      => 'Alberto Simões <ambs@cpan.org>',
     'ams'       => 'Abhijit Menon-Sen <ams@cpan.org>',
     'andk'      => 'Andreas J. Koenig <andk@cpan.org>',
@@ -1871,7 +1872,7 @@ use File::Glob qw(:case);
 
     'Text-Tabs+Wrap' => {
         'MAINTAINER'   => 'muir',
-        'DISTRIBUTION' => 'MUIR/modules/Text-Tabs+Wrap-2012.0818.tar.gz',
+        'DISTRIBUTION' => 'MUIR/modules/Text-Tabs+Wrap-2013.0523.tar.gz',
         'FILES'        => q[cpan/Text-Tabs],
         'EXCLUDED'   => [
             qr/^lib\.old/,
@@ -2213,6 +2214,12 @@ use File::Glob qw(:case);
                 lib/vmsish.{pm,t}
                 ],
         'UPSTREAM' => 'blead',
+    },
+
+    'openbsd' => {
+        'MAINTAINER' => 'afresh1',
+        'FILES'      => q[lib/Config_git.pl],
+        'UPSTREAM'   => undef,
     },
 );
 

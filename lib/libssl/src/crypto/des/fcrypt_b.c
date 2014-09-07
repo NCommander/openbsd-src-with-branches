@@ -1,4 +1,4 @@
-/* crypto/des/fcrypt_b.c */
+/* $OpenBSD$ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -67,6 +67,8 @@
 #define DES_FCRYPT
 #include "des_locl.h"
 #undef DES_FCRYPT
+
+#ifndef OPENBSD_DES_ASM
 
 #undef PERM_OP
 #define PERM_OP(a,b,t,n,m) ((t)=((((a)>>(n))^(b))&(m)),\
@@ -141,3 +143,4 @@ void fcrypt_body(DES_LONG *out, DES_key_schedule *ks, DES_LONG Eswap0,
 	out[1]=l;
 	}
 
+#endif /* OPENBSD_DES_ASM */

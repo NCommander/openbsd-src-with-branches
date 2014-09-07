@@ -1,4 +1,4 @@
-/* ssl/ssl3.h */
+/* $OpenBSD: ssl3.h,v 1.24 2014/07/10 08:51:15 tedu Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -117,9 +117,6 @@
 #ifndef HEADER_SSL3_H 
 #define HEADER_SSL3_H 
 
-#ifndef OPENSSL_NO_COMP
-#include <openssl/comp.h>
-#endif
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
@@ -161,16 +158,6 @@ extern "C" {
 #define SSL3_CK_ADH_DES_40_CBC_SHA		0x03000019
 #define SSL3_CK_ADH_DES_64_CBC_SHA		0x0300001A
 #define SSL3_CK_ADH_DES_192_CBC_SHA		0x0300001B
-
-#if 0
-	#define SSL3_CK_FZA_DMS_NULL_SHA		0x0300001C
-	#define SSL3_CK_FZA_DMS_FZA_SHA			0x0300001D
-	#if 0 /* Because it clashes with KRB5, is never used any more, and is safe
-		 to remove according to David Hopwood <david.hopwood@zetnet.co.uk>
-		 of the ietf-tls list */
-	#define SSL3_CK_FZA_DMS_RC4_SHA			0x0300001E
-	#endif
-#endif
 
 /*    VRS Additional Kerberos5 entries
  */
@@ -221,12 +208,6 @@ extern "C" {
 #define SSL3_TXT_ADH_DES_64_CBC_SHA		"ADH-DES-CBC-SHA"
 #define SSL3_TXT_ADH_DES_192_CBC_SHA		"ADH-DES-CBC3-SHA"
 
-#if 0
-	#define SSL3_TXT_FZA_DMS_NULL_SHA		"FZA-NULL-SHA"
-	#define SSL3_TXT_FZA_DMS_FZA_SHA		"FZA-FZA-CBC-SHA"
-	#define SSL3_TXT_FZA_DMS_RC4_SHA		"FZA-RC4-SHA"
-#endif
-
 #define SSL3_TXT_KRB5_DES_64_CBC_SHA		"KRB5-DES-CBC-SHA"
 #define SSL3_TXT_KRB5_DES_192_CBC3_SHA		"KRB5-DES-CBC3-SHA"
 #define SSL3_TXT_KRB5_RC4_128_SHA		"KRB5-RC4-SHA"
@@ -248,6 +229,7 @@ extern "C" {
 
 #define SSL3_MASTER_SECRET_SIZE			48
 #define SSL3_RANDOM_SIZE			32
+#define SSL3_SEQUENCE_SIZE			8
 #define SSL3_SESSION_ID_SIZE			32
 #define SSL3_RT_HEADER_LENGTH			5
 
@@ -299,13 +281,7 @@ extern "C" {
 			(SSL_RT_MAX_CIPHER_BLOCK_SIZE + SSL3_RT_MAX_MD_SIZE)
 
 /* If compression isn't used don't include the compression overhead */
-
-#ifdef OPENSSL_NO_COMP
 #define SSL3_RT_MAX_COMPRESSED_LENGTH		SSL3_RT_MAX_PLAIN_LENGTH
-#else
-#define SSL3_RT_MAX_COMPRESSED_LENGTH	\
-		(SSL3_RT_MAX_PLAIN_LENGTH+SSL3_RT_MAX_COMPRESSED_OVERHEAD)
-#endif
 #define SSL3_RT_MAX_ENCRYPTED_LENGTH	\
 		(SSL3_RT_MAX_ENCRYPTED_OVERHEAD+SSL3_RT_MAX_COMPRESSED_LENGTH)
 #define SSL3_RT_MAX_PACKET_SIZE		\
@@ -342,29 +318,26 @@ extern "C" {
 
 #define TLS1_HB_REQUEST		1
 #define TLS1_HB_RESPONSE	2
-	
+
 #ifndef OPENSSL_NO_SSL_INTERN
 
-typedef struct ssl3_record_st
-	{
+typedef struct ssl3_record_st {
 /*r */	int type;               /* type of record */
 /*rw*/	unsigned int length;    /* How many bytes available */
 /*r */	unsigned int off;       /* read/write offset into 'buf' */
 /*rw*/	unsigned char *data;    /* pointer to the record data */
 /*rw*/	unsigned char *input;   /* where the decode bytes are */
-/*r */	unsigned char *comp;    /* only used with decompression - malloc()ed */
 /*r */  unsigned long epoch;    /* epoch number, needed by DTLS1 */
 /*r */  unsigned char seq_num[8]; /* sequence number, needed by DTLS1 */
-	} SSL3_RECORD;
+} SSL3_RECORD;
 
-typedef struct ssl3_buffer_st
-	{
-	unsigned char *buf;     /* at least SSL3_RT_MAX_PACKET_SIZE bytes,
+typedef struct ssl3_buffer_st {
+	unsigned char *buf;	/* at least SSL3_RT_MAX_PACKET_SIZE bytes,
 	                         * see ssl3_setup_buffers() */
-	size_t len;             /* buffer size */
-	int offset;             /* where to 'copy from' */
-	int left;               /* how many bytes left */
-	} SSL3_BUFFER;
+	size_t len;		/* buffer size */
+	int offset;		/* where to 'copy from' */
+	int left;		/* how many bytes left */
+} SSL3_BUFFER;
 
 #endif
 
@@ -388,7 +361,8 @@ typedef struct ssl3_buffer_st
 #define TLS1_FLAGS_TLS_PADDING_BUG		0x0008
 #define TLS1_FLAGS_SKIP_CERT_VERIFY		0x0010
 #define TLS1_FLAGS_KEEP_HANDSHAKE		0x0020
- 
+#define SSL3_FLAGS_CCS_OK			0x0080
+
 /* SSL3_FLAGS_SGC_RESTART_DONE is set when we
  * restart a handshake because of MS SGC and so prevents us
  * from restarting the handshake in a loop. It's reset on a
@@ -402,15 +376,14 @@ typedef struct ssl3_buffer_st
 
 #ifndef OPENSSL_NO_SSL_INTERN
 
-typedef struct ssl3_state_st
-	{
+typedef struct ssl3_state_st {
 	long flags;
 	int delay_buf_pop_ret;
 
-	unsigned char read_sequence[8];
+	unsigned char read_sequence[SSL3_SEQUENCE_SIZE];
 	int read_mac_secret_size;
 	unsigned char read_mac_secret[EVP_MAX_MD_SIZE];
-	unsigned char write_sequence[8];
+	unsigned char write_sequence[SSL3_SEQUENCE_SIZE];
 	int write_mac_secret_size;
 	unsigned char write_mac_secret[EVP_MAX_MD_SIZE];
 
@@ -469,14 +442,6 @@ typedef struct ssl3_state_st
 
 	int in_read_app_data;
 
-	/* Opaque PRF input as used for the current handshake.
-	 * These fields are used only if TLSEXT_TYPE_opaque_prf_input is defined
-	 * (otherwise, they are merely present to improve binary compatibility) */
-	void *client_opaque_prf_input;
-	size_t client_opaque_prf_input_len;
-	void *server_opaque_prf_input;
-	size_t server_opaque_prf_input_len;
-
 	struct	{
 		/* actually only needs to be 16+20 */
 		unsigned char cert_verify_md[EVP_MAX_MD_SIZE*2];
@@ -492,16 +457,12 @@ typedef struct ssl3_state_st
 
 		/* used to hold the new cipher we are going to use */
 		const SSL_CIPHER *new_cipher;
-#ifndef OPENSSL_NO_DH
 		DH *dh;
-#endif
 
-#ifndef OPENSSL_NO_ECDH
 		EC_KEY *ecdh; /* holds short lived ECDH key */
-#endif
 
 		/* used when SSL_ST_FLUSH_DATA is entered */
-		int next_state;			
+		int next_state;
 
 		int reuse_message;
 
@@ -517,144 +478,137 @@ typedef struct ssl3_state_st
 		unsigned char *key_block;
 
 		const EVP_CIPHER *new_sym_enc;
+		const EVP_AEAD *new_aead;
 		const EVP_MD *new_hash;
 		int new_mac_pkey_type;
 		int new_mac_secret_size;
-#ifndef OPENSSL_NO_COMP
-		const SSL_COMP *new_compression;
-#else
-		char *new_compression;
-#endif
 		int cert_request;
-		} tmp;
+	} tmp;
 
-        /* Connection binding to prevent renegotiation attacks */
-        unsigned char previous_client_finished[EVP_MAX_MD_SIZE];
-        unsigned char previous_client_finished_len;
-        unsigned char previous_server_finished[EVP_MAX_MD_SIZE];
-        unsigned char previous_server_finished_len;
-        int send_connection_binding; /* TODOEKR */
+	/* Connection binding to prevent renegotiation attacks */
+	unsigned char previous_client_finished[EVP_MAX_MD_SIZE];
+	unsigned char previous_client_finished_len;
+	unsigned char previous_server_finished[EVP_MAX_MD_SIZE];
+	unsigned char previous_server_finished_len;
+	int send_connection_binding; /* TODOEKR */
 
 #ifndef OPENSSL_NO_NEXTPROTONEG
-	/* Set if we saw the Next Protocol Negotiation extension from our peer. */
+	/* Set if we saw the Next Protocol Negotiation extension from our peer.
+	 */
 	int next_proto_neg_seen;
 #endif
 
-#ifndef OPENSSL_NO_TLSEXT
-#ifndef OPENSSL_NO_EC
 	/* This is set to true if we believe that this is a version of Safari
 	 * running on OS X 10.6 or newer. We wish to know this because Safari
 	 * on 10.8 .. 10.8.3 has broken ECDHE-ECDSA support. */
 	char is_probably_safari;
-#endif /* !OPENSSL_NO_EC */
-#endif /* !OPENSSL_NO_TLSEXT */
-	} SSL3_STATE;
+} SSL3_STATE;
 
 #endif
 
 /* SSLv3 */
 /*client */
 /* extra state */
-#define SSL3_ST_CW_FLUSH		(0x100|SSL_ST_CONNECT)
+#define SSL3_ST_CW_FLUSH			(0x100|SSL_ST_CONNECT)
 #ifndef OPENSSL_NO_SCTP
-#define DTLS1_SCTP_ST_CW_WRITE_SOCK			(0x310|SSL_ST_CONNECT)
-#define DTLS1_SCTP_ST_CR_READ_SOCK			(0x320|SSL_ST_CONNECT)
+#define DTLS1_SCTP_ST_CW_WRITE_SOCK		(0x310|SSL_ST_CONNECT)
+#define DTLS1_SCTP_ST_CR_READ_SOCK		(0x320|SSL_ST_CONNECT)
 #endif	
 /* write to server */
-#define SSL3_ST_CW_CLNT_HELLO_A		(0x110|SSL_ST_CONNECT)
-#define SSL3_ST_CW_CLNT_HELLO_B		(0x111|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CLNT_HELLO_A			(0x110|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CLNT_HELLO_B			(0x111|SSL_ST_CONNECT)
 /* read from server */
-#define SSL3_ST_CR_SRVR_HELLO_A		(0x120|SSL_ST_CONNECT)
-#define SSL3_ST_CR_SRVR_HELLO_B		(0x121|SSL_ST_CONNECT)
-#define DTLS1_ST_CR_HELLO_VERIFY_REQUEST_A (0x126|SSL_ST_CONNECT)
-#define DTLS1_ST_CR_HELLO_VERIFY_REQUEST_B (0x127|SSL_ST_CONNECT)
-#define SSL3_ST_CR_CERT_A		(0x130|SSL_ST_CONNECT)
-#define SSL3_ST_CR_CERT_B		(0x131|SSL_ST_CONNECT)
-#define SSL3_ST_CR_KEY_EXCH_A		(0x140|SSL_ST_CONNECT)
-#define SSL3_ST_CR_KEY_EXCH_B		(0x141|SSL_ST_CONNECT)
-#define SSL3_ST_CR_CERT_REQ_A		(0x150|SSL_ST_CONNECT)
-#define SSL3_ST_CR_CERT_REQ_B		(0x151|SSL_ST_CONNECT)
-#define SSL3_ST_CR_SRVR_DONE_A		(0x160|SSL_ST_CONNECT)
-#define SSL3_ST_CR_SRVR_DONE_B		(0x161|SSL_ST_CONNECT)
+#define SSL3_ST_CR_SRVR_HELLO_A			(0x120|SSL_ST_CONNECT)
+#define SSL3_ST_CR_SRVR_HELLO_B			(0x121|SSL_ST_CONNECT)
+#define DTLS1_ST_CR_HELLO_VERIFY_REQUEST_A	(0x126|SSL_ST_CONNECT)
+#define DTLS1_ST_CR_HELLO_VERIFY_REQUEST_B	(0x127|SSL_ST_CONNECT)
+#define SSL3_ST_CR_CERT_A			(0x130|SSL_ST_CONNECT)
+#define SSL3_ST_CR_CERT_B			(0x131|SSL_ST_CONNECT)
+#define SSL3_ST_CR_KEY_EXCH_A			(0x140|SSL_ST_CONNECT)
+#define SSL3_ST_CR_KEY_EXCH_B			(0x141|SSL_ST_CONNECT)
+#define SSL3_ST_CR_CERT_REQ_A			(0x150|SSL_ST_CONNECT)
+#define SSL3_ST_CR_CERT_REQ_B			(0x151|SSL_ST_CONNECT)
+#define SSL3_ST_CR_SRVR_DONE_A			(0x160|SSL_ST_CONNECT)
+#define SSL3_ST_CR_SRVR_DONE_B			(0x161|SSL_ST_CONNECT)
 /* write to server */
-#define SSL3_ST_CW_CERT_A		(0x170|SSL_ST_CONNECT)
-#define SSL3_ST_CW_CERT_B		(0x171|SSL_ST_CONNECT)
-#define SSL3_ST_CW_CERT_C		(0x172|SSL_ST_CONNECT)
-#define SSL3_ST_CW_CERT_D		(0x173|SSL_ST_CONNECT)
-#define SSL3_ST_CW_KEY_EXCH_A		(0x180|SSL_ST_CONNECT)
-#define SSL3_ST_CW_KEY_EXCH_B		(0x181|SSL_ST_CONNECT)
-#define SSL3_ST_CW_CERT_VRFY_A		(0x190|SSL_ST_CONNECT)
-#define SSL3_ST_CW_CERT_VRFY_B		(0x191|SSL_ST_CONNECT)
-#define SSL3_ST_CW_CHANGE_A		(0x1A0|SSL_ST_CONNECT)
-#define SSL3_ST_CW_CHANGE_B		(0x1A1|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CERT_A			(0x170|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CERT_B			(0x171|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CERT_C			(0x172|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CERT_D			(0x173|SSL_ST_CONNECT)
+#define SSL3_ST_CW_KEY_EXCH_A			(0x180|SSL_ST_CONNECT)
+#define SSL3_ST_CW_KEY_EXCH_B			(0x181|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CERT_VRFY_A			(0x190|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CERT_VRFY_B			(0x191|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CHANGE_A			(0x1A0|SSL_ST_CONNECT)
+#define SSL3_ST_CW_CHANGE_B			(0x1A1|SSL_ST_CONNECT)
 #ifndef OPENSSL_NO_NEXTPROTONEG
-#define SSL3_ST_CW_NEXT_PROTO_A		(0x200|SSL_ST_CONNECT)
-#define SSL3_ST_CW_NEXT_PROTO_B		(0x201|SSL_ST_CONNECT)
+#define SSL3_ST_CW_NEXT_PROTO_A			(0x200|SSL_ST_CONNECT)
+#define SSL3_ST_CW_NEXT_PROTO_B			(0x201|SSL_ST_CONNECT)
 #endif
-#define SSL3_ST_CW_FINISHED_A		(0x1B0|SSL_ST_CONNECT)
-#define SSL3_ST_CW_FINISHED_B		(0x1B1|SSL_ST_CONNECT)
+#define SSL3_ST_CW_FINISHED_A			(0x1B0|SSL_ST_CONNECT)
+#define SSL3_ST_CW_FINISHED_B			(0x1B1|SSL_ST_CONNECT)
 /* read from server */
-#define SSL3_ST_CR_CHANGE_A		(0x1C0|SSL_ST_CONNECT)
-#define SSL3_ST_CR_CHANGE_B		(0x1C1|SSL_ST_CONNECT)
-#define SSL3_ST_CR_FINISHED_A		(0x1D0|SSL_ST_CONNECT)
-#define SSL3_ST_CR_FINISHED_B		(0x1D1|SSL_ST_CONNECT)
-#define SSL3_ST_CR_SESSION_TICKET_A	(0x1E0|SSL_ST_CONNECT)
-#define SSL3_ST_CR_SESSION_TICKET_B	(0x1E1|SSL_ST_CONNECT)
-#define SSL3_ST_CR_CERT_STATUS_A	(0x1F0|SSL_ST_CONNECT)
-#define SSL3_ST_CR_CERT_STATUS_B	(0x1F1|SSL_ST_CONNECT)
+#define SSL3_ST_CR_CHANGE_A			(0x1C0|SSL_ST_CONNECT)
+#define SSL3_ST_CR_CHANGE_B			(0x1C1|SSL_ST_CONNECT)
+#define SSL3_ST_CR_FINISHED_A			(0x1D0|SSL_ST_CONNECT)
+#define SSL3_ST_CR_FINISHED_B			(0x1D1|SSL_ST_CONNECT)
+#define SSL3_ST_CR_SESSION_TICKET_A		(0x1E0|SSL_ST_CONNECT)
+#define SSL3_ST_CR_SESSION_TICKET_B		(0x1E1|SSL_ST_CONNECT)
+#define SSL3_ST_CR_CERT_STATUS_A		(0x1F0|SSL_ST_CONNECT)
+#define SSL3_ST_CR_CERT_STATUS_B		(0x1F1|SSL_ST_CONNECT)
 
 /* server */
 /* extra state */
-#define SSL3_ST_SW_FLUSH		(0x100|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_FLUSH			(0x100|SSL_ST_ACCEPT)
 #ifndef OPENSSL_NO_SCTP
-#define DTLS1_SCTP_ST_SW_WRITE_SOCK			(0x310|SSL_ST_ACCEPT)
-#define DTLS1_SCTP_ST_SR_READ_SOCK			(0x320|SSL_ST_ACCEPT)
+#define DTLS1_SCTP_ST_SW_WRITE_SOCK		(0x310|SSL_ST_ACCEPT)
+#define DTLS1_SCTP_ST_SR_READ_SOCK		(0x320|SSL_ST_ACCEPT)
 #endif	
 /* read from client */
 /* Do not change the number values, they do matter */
-#define SSL3_ST_SR_CLNT_HELLO_A		(0x110|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_CLNT_HELLO_B		(0x111|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_CLNT_HELLO_C		(0x112|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_CLNT_HELLO_A			(0x110|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_CLNT_HELLO_B			(0x111|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_CLNT_HELLO_C			(0x112|SSL_ST_ACCEPT)
 /* write to client */
-#define DTLS1_ST_SW_HELLO_VERIFY_REQUEST_A (0x113|SSL_ST_ACCEPT)
-#define DTLS1_ST_SW_HELLO_VERIFY_REQUEST_B (0x114|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_HELLO_REQ_A		(0x120|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_HELLO_REQ_B		(0x121|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_HELLO_REQ_C		(0x122|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_SRVR_HELLO_A		(0x130|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_SRVR_HELLO_B		(0x131|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_CERT_A		(0x140|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_CERT_B		(0x141|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_KEY_EXCH_A		(0x150|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_KEY_EXCH_B		(0x151|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_CERT_REQ_A		(0x160|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_CERT_REQ_B		(0x161|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_SRVR_DONE_A		(0x170|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_SRVR_DONE_B		(0x171|SSL_ST_ACCEPT)
+#define DTLS1_ST_SW_HELLO_VERIFY_REQUEST_A	(0x113|SSL_ST_ACCEPT)
+#define DTLS1_ST_SW_HELLO_VERIFY_REQUEST_B	(0x114|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_HELLO_REQ_A			(0x120|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_HELLO_REQ_B			(0x121|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_HELLO_REQ_C			(0x122|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_SRVR_HELLO_A			(0x130|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_SRVR_HELLO_B			(0x131|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_CERT_A			(0x140|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_CERT_B			(0x141|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_KEY_EXCH_A			(0x150|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_KEY_EXCH_B			(0x151|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_CERT_REQ_A			(0x160|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_CERT_REQ_B			(0x161|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_SRVR_DONE_A			(0x170|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_SRVR_DONE_B			(0x171|SSL_ST_ACCEPT)
 /* read from client */
-#define SSL3_ST_SR_CERT_A		(0x180|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_CERT_B		(0x181|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_KEY_EXCH_A		(0x190|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_KEY_EXCH_B		(0x191|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_CERT_VRFY_A		(0x1A0|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_CERT_VRFY_B		(0x1A1|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_CHANGE_A		(0x1B0|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_CHANGE_B		(0x1B1|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_CERT_A			(0x180|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_CERT_B			(0x181|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_KEY_EXCH_A			(0x190|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_KEY_EXCH_B			(0x191|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_CERT_VRFY_A			(0x1A0|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_CERT_VRFY_B			(0x1A1|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_CHANGE_A			(0x1B0|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_CHANGE_B			(0x1B1|SSL_ST_ACCEPT)
 #ifndef OPENSSL_NO_NEXTPROTONEG
-#define SSL3_ST_SR_NEXT_PROTO_A		(0x210|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_NEXT_PROTO_B		(0x211|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_NEXT_PROTO_A			(0x210|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_NEXT_PROTO_B			(0x211|SSL_ST_ACCEPT)
 #endif
-#define SSL3_ST_SR_FINISHED_A		(0x1C0|SSL_ST_ACCEPT)
-#define SSL3_ST_SR_FINISHED_B		(0x1C1|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_FINISHED_A			(0x1C0|SSL_ST_ACCEPT)
+#define SSL3_ST_SR_FINISHED_B			(0x1C1|SSL_ST_ACCEPT)
 /* write to client */
-#define SSL3_ST_SW_CHANGE_A		(0x1D0|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_CHANGE_B		(0x1D1|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_FINISHED_A		(0x1E0|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_FINISHED_B		(0x1E1|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_SESSION_TICKET_A	(0x1F0|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_SESSION_TICKET_B	(0x1F1|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_CERT_STATUS_A	(0x200|SSL_ST_ACCEPT)
-#define SSL3_ST_SW_CERT_STATUS_B	(0x201|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_CHANGE_A			(0x1D0|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_CHANGE_B			(0x1D1|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_FINISHED_A			(0x1E0|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_FINISHED_B			(0x1E1|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_SESSION_TICKET_A		(0x1F0|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_SESSION_TICKET_B		(0x1F1|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_CERT_STATUS_A		(0x200|SSL_ST_ACCEPT)
+#define SSL3_ST_SW_CERT_STATUS_B		(0x201|SSL_ST_ACCEPT)
 
 #define SSL3_MT_HELLO_REQUEST			0
 #define SSL3_MT_CLIENT_HELLO			1
@@ -668,11 +622,12 @@ typedef struct ssl3_state_st
 #define SSL3_MT_CLIENT_KEY_EXCHANGE		16
 #define SSL3_MT_FINISHED			20
 #define SSL3_MT_CERTIFICATE_STATUS		22
+
 #ifndef OPENSSL_NO_NEXTPROTONEG
 #define SSL3_MT_NEXT_PROTO			67
 #endif
-#define DTLS1_MT_HELLO_VERIFY_REQUEST    3
 
+#define DTLS1_MT_HELLO_VERIFY_REQUEST		3
 
 #define SSL3_MT_CCS				1
 
@@ -681,13 +636,12 @@ typedef struct ssl3_state_st
 #define SSL3_CC_WRITE		0x02
 #define SSL3_CC_CLIENT		0x10
 #define SSL3_CC_SERVER		0x20
-#define SSL3_CHANGE_CIPHER_CLIENT_WRITE	(SSL3_CC_CLIENT|SSL3_CC_WRITE)	
-#define SSL3_CHANGE_CIPHER_SERVER_READ	(SSL3_CC_SERVER|SSL3_CC_READ)
-#define SSL3_CHANGE_CIPHER_CLIENT_READ	(SSL3_CC_CLIENT|SSL3_CC_READ)
-#define SSL3_CHANGE_CIPHER_SERVER_WRITE	(SSL3_CC_SERVER|SSL3_CC_WRITE)
+#define SSL3_CHANGE_CIPHER_CLIENT_WRITE		(SSL3_CC_CLIENT|SSL3_CC_WRITE)	
+#define SSL3_CHANGE_CIPHER_SERVER_READ		(SSL3_CC_SERVER|SSL3_CC_READ)
+#define SSL3_CHANGE_CIPHER_CLIENT_READ		(SSL3_CC_CLIENT|SSL3_CC_READ)
+#define SSL3_CHANGE_CIPHER_SERVER_WRITE		(SSL3_CC_SERVER|SSL3_CC_WRITE)
 
 #ifdef  __cplusplus
 }
 #endif
 #endif
-

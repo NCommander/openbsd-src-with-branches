@@ -20,6 +20,7 @@
 #include <stddef.h>             /* offsetof() */
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
@@ -88,6 +89,7 @@
 
 
 #define NGX_HAVE_OS_SPECIFIC_INIT    1
+#define NGX_HAVE_DEBUG_MALLOC        1
 
 
 extern char **environ;

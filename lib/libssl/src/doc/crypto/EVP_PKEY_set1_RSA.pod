@@ -4,8 +4,8 @@
 
 EVP_PKEY_set1_RSA, EVP_PKEY_set1_DSA, EVP_PKEY_set1_DH, EVP_PKEY_set1_EC_KEY,
 EVP_PKEY_get1_RSA, EVP_PKEY_get1_DSA, EVP_PKEY_get1_DH, EVP_PKEY_get1_EC_KEY,
-EVP_PKEY_assign_RSA, EVP_PKEY_assign_DSA, EVP_PKEY_assign_DH, EVP_PKEY_assign_EC_KEY,
-EVP_PKEY_type - EVP_PKEY assignment functions.
+EVP_PKEY_assign_RSA, EVP_PKEY_assign_DSA, EVP_PKEY_assign_DH,
+EVP_PKEY_assign_EC_KEY, EVP_PKEY_type - EVP_PKEY assignment functions.
 
 =head1 SYNOPSIS
 
@@ -63,7 +63,7 @@ EVP_PKEY_set1_RSA(), EVP_PKEY_set1_DSA(), EVP_PKEY_set1_DH() and
 EVP_PKEY_set1_EC_KEY() return 1 for success or 0 for failure.
 
 EVP_PKEY_get1_RSA(), EVP_PKEY_get1_DSA(), EVP_PKEY_get1_DH() and
-EVP_PKEY_get1_EC_KEY() return the referenced key or B<NULL> if 
+EVP_PKEY_get1_EC_KEY() return the referenced key or B<NULL> if
 an error occurred.
 
 EVP_PKEY_assign_RSA() EVP_PKEY_assign_DSA(), EVP_PKEY_assign_DH()
@@ -72,9 +72,5 @@ and EVP_PKEY_assign_EC_KEY() return 1 for success and 0 for failure.
 =head1 SEE ALSO
 
 L<EVP_PKEY_new(3)|EVP_PKEY_new(3)>
-
-=head1 HISTORY
-
-TBA
 
 =cut

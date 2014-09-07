@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+** Copyright (c) 1999-2002 Proofpoint, Inc. and its suppliers.
 **	All rights reserved.
 **
 ** By using this file, you agree to the terms and conditions set
@@ -8,7 +8,7 @@
 */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: smndbm.c,v 8.47 2001/05/10 01:23:58 ca Exp $")
+SM_RCSID("@(#)$Sendmail: smndbm.c,v 8.55 2013/11/22 20:51:49 ca Exp $")
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -37,7 +37,7 @@ struct smdb_dbm_cursor_struct
 };
 typedef struct smdb_dbm_cursor_struct SMDB_DBM_CURSOR;
 
-/*
+/*
 **  SMDB_PUT_FLAGS_TO_NDBM_FLAGS -- Translates smdb put flags to ndbm put flags.
 **
 **	Parameters:
@@ -438,13 +438,18 @@ smdbm_cursor(database, cursor, flags)
 
 	db->smndbm_cursor_in_use = true;
 	dbm_cursor = (SMDB_DBM_CURSOR *) malloc(sizeof(SMDB_DBM_CURSOR));
+	if (dbm_cursor == NULL)
+		return SMDBE_MALLOC;
 	dbm_cursor->smndbmc_db = db;
 	dbm_cursor->smndbmc_current_key.dptr = NULL;
 	dbm_cursor->smndbmc_current_key.dsize = 0;
 
 	cur = (SMDB_CURSOR*) malloc(sizeof(SMDB_CURSOR));
 	if (cur == NULL)
+	{
+		free(dbm_cursor);
 		return SMDBE_MALLOC;
+	}
 
 	cur->smdbc_impl = dbm_cursor;
 	cur->smdbc_close = smdbm_cursor_close;
@@ -455,7 +460,7 @@ smdbm_cursor(database, cursor, flags)
 
 	return SMDBE_OK;
 }
-/*
+/*
 **  SMDB_NDBM_OPEN -- Opens a ndbm database.
 **
 **	Parameters:
@@ -492,6 +497,7 @@ smdb_ndbm_open(database, db_name, mode, mode_mask, sff, type, user_info,
 	SMDB_USER_INFO *user_info;
 	SMDB_DBPARAMS *db_params;
 {
+	bool lockcreated = false;
 	int result;
 	int lock_fd;
 	SMDB_DATABASE *smdb_db;
@@ -516,15 +522,34 @@ smdb_ndbm_open(database, db_name, mode, mode_mask, sff, type, user_info,
 	if (result != SMDBE_OK)
 		return result;
 
+	if ((dir_stat_info.st_mode == ST_MODE_NOFILE ||
+	     pag_stat_info.st_mode == ST_MODE_NOFILE) &&
+	    bitset(mode, O_CREAT))
+		lockcreated = true;
+
 	lock_fd = -1;
-# if O_EXLOCK
-	mode |= O_EXLOCK;
-# else /* O_EXLOCK */
 	result = smdb_lock_file(&lock_fd, db_name, mode, sff,
 				SMNDB_DIR_FILE_EXTENSION);
 	if (result != SMDBE_OK)
 		return result;
-# endif /* O_EXLOCK */
+
+	if (lockcreated)
+	{
+		int pag_fd;
+
+		/* Need to pre-open the .pag file as well with O_EXCL */
+		result = smdb_lock_file(&pag_fd, db_name, mode, sff,
+					SMNDB_PAG_FILE_EXTENSION);
+		if (result != SMDBE_OK)
+		{
+			(void) close(lock_fd);
+			return result;
+		}
+		(void) close(pag_fd);
+
+		mode |= O_TRUNC;
+		mode &= ~(O_CREAT|O_EXCL);
+	}
 
 	smdb_db = smdb_malloc_database();
 	if (smdb_db == NULL)
@@ -540,7 +565,7 @@ smdb_ndbm_open(database, db_name, mode, mode_mask, sff, type, user_info,
 		db->smndbm_lock_fd = lock_fd;
 
 		errno = 0;
-		dbm = dbm_open(db_name, mode, 0644);
+		dbm = dbm_open(db_name, mode, DBMMODE);
 		if (dbm == NULL)
 		{
 			if (errno == 0)

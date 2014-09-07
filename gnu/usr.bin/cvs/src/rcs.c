@@ -9,6 +9,7 @@
  */
 
 #include <assert.h>
+#include <err.h>
 #include "cvs.h"
 #include "edit.h"
 #include "hardlink.h"
@@ -86,6 +87,7 @@ static char *RCS_addbranch PROTO ((RCSNode *, const char *));
 static char *truncate_revnum_in_place PROTO ((char *));
 static char *truncate_revnum PROTO ((const char *));
 static char *printable_date PROTO((const char *));
+static char *mdoc_date PROTO((const char *));
 static char *escape_keyword_value PROTO ((const char *, int *));
 static void expand_keywords PROTO((RCSNode *, RCSVers *, const char *,
 				   const char *, size_t, enum kflag, char *,
@@ -2895,7 +2897,7 @@ RCS_getdate (rcs, date, force_tag_match)
     if (retval != NULL)
 	return (retval);
 
-    if (!force_tag_match || RCS_datecmp (vers->date, date) <= 0)
+    if (vers && (!force_tag_match || RCS_datecmp (vers->date, date) <= 0))
 	return (xstrdup (vers->version));
     else
 	return (NULL);
@@ -3055,7 +3057,7 @@ RCS_getrevtime (rcs, rev, date, fudge)
 		    ftm->tm_min, ftm->tm_sec);
 
     /* turn it into seconds since the epoch */
-    revdate = get_date (tdate, (struct timeb *) NULL);
+    revdate = get_date (tdate);
     if (revdate != (time_t) -1)
     {
 	revdate -= fudge;		/* remove "fudge" seconds */
@@ -3342,7 +3344,7 @@ struct rcs_keyword
     size_t len;
 };
 #define KEYWORD_INIT(s) (s), sizeof (s) - 1
-static const struct rcs_keyword keywords[] =
+static struct rcs_keyword keywords[] =
 {
     { KEYWORD_INIT ("Author") },
     { KEYWORD_INIT ("Date") },
@@ -3355,6 +3357,8 @@ static const struct rcs_keyword keywords[] =
     { KEYWORD_INIT ("Revision") },
     { KEYWORD_INIT ("Source") },
     { KEYWORD_INIT ("State") },
+    { KEYWORD_INIT ("Mdocdate") },
+    { NULL, 0 },
     { NULL, 0 }
 };
 enum keyword
@@ -3369,7 +3373,9 @@ enum keyword
     KEYWORD_RCSFILE,
     KEYWORD_REVISION,
     KEYWORD_SOURCE,
-    KEYWORD_STATE
+    KEYWORD_STATE,
+    KEYWORD_MDOCDATE,
+    KEYWORD_LOCALID
 };
 
 /* Convert an RCS date string into a readable string.  This is like
@@ -3388,6 +3394,24 @@ printable_date (rcs_date)
 	year += 1900;
     sprintf (buf, "%04d/%02d/%02d %02d:%02d:%02d", year, mon, mday,
 	     hour, min, sec);
+    return xstrdup (buf);
+}
+
+static char *
+mdoc_date (rcs_date)
+     const char *rcs_date;
+{
+    int year, mon, mday, hour, min, sec;
+    char buf[100];
+    char *months[] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+    (void) sscanf (rcs_date, SDATEFORM, &year, &mon, &mday, &hour, &min,
+		   &sec);
+    if (mon < 1 || mon > 12)
+	errx(1, "mdoc_date: month index out of bounds");
+
+    if (year < 1900)
+	year += 1900;
+    sprintf (buf, "%s %d %04d", months[mon - 1], mday, year);
     return xstrdup (buf);
 }
 
@@ -3506,6 +3530,12 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 	return;
     }
 
+    if (RCS_citag != NULL && *RCS_citag && *RCS_citag != '-'
+	&& keywords[KEYWORD_LOCALID].string == NULL) {
+	keywords[KEYWORD_LOCALID].string = RCS_citag;
+	keywords[KEYWORD_LOCALID].len = strlen(RCS_citag);
+    }
+
     /* If we are using -kkvl, dig out the locker information if any.  */
     locker = NULL;
     if (expand == KFLAG_KVL)
@@ -3533,13 +3563,15 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 	srch_len -= (srch_next + 1) - srch;
 	srch = srch_next + 1;
 
-	/* Look for the first non alphabetic character after the '$'.  */
+	/* Look for the first non alphanumeric character after the '$'.  */
 	send = srch + srch_len;
-	for (s = srch; s < send; s++)
-	    if (! isalpha ((unsigned char) *s))
+	if (! isalpha((unsigned char) *srch))
+	    continue;	/* first character of a tag must be a letter */
+	for (s = srch+1; s < send; s++)
+	    if (! isalnum ((unsigned char) *s))
 		break;
 
-	/* If the first non alphabetic character is not '$' or ':',
+	/* If the first non alphanumeric character is not '$' or ':',
            then this is not an RCS keyword.  */
 	if (s == send || (*s != '$' && *s != ':'))
 	    continue;
@@ -3595,8 +3627,16 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 		free_value = 1;
 		break;
 
+	    case KEYWORD_MDOCDATE:
+		if (disable_mdocdate)
+			continue;
+		value = mdoc_date (ver->date);
+		free_value = 1;
+		break;
+
 	    case KEYWORD_HEADER:
 	    case KEYWORD_ID:
+	    case KEYWORD_LOCALID:
 		{
 		    char *path;
 		    int free_path;
@@ -3957,7 +3997,7 @@ RCS_checkout (rcs, workfile, rev, nametag, options, sout, pfn, callerdat)
     size_t len;
     int free_value = 0;
     char *log = NULL;
-    size_t loglen;
+    size_t loglen = 0;
     Node *vp = NULL;
 #ifdef PRESERVE_PERMISSIONS_SUPPORT
     uid_t rcs_owner = (uid_t) -1;
@@ -4228,7 +4268,7 @@ RCS_checkout (rcs, workfile, rev, nametag, options, sout, pfn, callerdat)
 	if (info != NULL)
 	{
 	    /* If the size of `devtype' changes, fix the sscanf call also */
-	    char devtype[16];
+	    char devtype[16+1];
 
 	    if (sscanf (info->data, "%16s %lu",
 			devtype, &devnum_long) < 2)
@@ -4809,6 +4849,7 @@ RCS_checkin (rcs, workfile, message, rev, flags)
 #ifdef PRESERVE_PERMISSIONS_SUPPORT
     struct stat sb;
 #endif
+    Node *np;
 
     commitpt = NULL;
 
@@ -4872,6 +4913,15 @@ RCS_checkin (rcs, workfile, message, rev, flags)
     }
     else
 	delta->state = xstrdup ("Exp");
+
+    delta->other_delta = getlist();
+
+    /* save the commit ID */
+    np = getnode();
+    np->type = RCSFIELD;
+    np->key = xstrdup ("commitid");
+    np->data = xstrdup(global_session_id);
+    addnode (delta->other_delta, np);
 
 #ifdef PRESERVE_PERMISSIONS_SUPPORT
     /* If permissions should be preserved on this project, then
@@ -6718,10 +6768,7 @@ linevector_copy (to, from)
     }
     if (from->nlines > to->lines_alloced)
     {
-	if (to->lines_alloced == 0)
-	    to->lines_alloced = 10;
-	while (from->nlines > to->lines_alloced)
-	    to->lines_alloced *= 2;
+	to->lines_alloced = from->nlines;
 	to->vector = (struct line **)
 	    xrealloc (to->vector, to->lines_alloced * sizeof (*to->vector));
     }
@@ -7144,6 +7191,8 @@ RCS_deltas (rcs, fp, rcsbuf, version, op, text, len, log, loglen)
 		    vers = trunk_vers;
 		    next = vers->next;
 		    linevector_copy (&curlines, &trunklines);
+		    linevector_free (&trunklines);
+		    linevector_init (&trunklines);
 		}
 	    }
 	    else
@@ -7225,7 +7274,7 @@ RCS_deltas (rcs, fp, rcsbuf, version, op, text, len, log, loglen)
 
 		for (ln = 0; ln < headlines.nlines; ++ln)
 		{
-		    char buf[80];
+		    char *buf;
 		    /* Period which separates year from month in date.  */
 		    char *ym;
 		    /* Period which separates month from day in date.  */
@@ -7236,10 +7285,12 @@ RCS_deltas (rcs, fp, rcsbuf, version, op, text, len, log, loglen)
 		    if (prvers == NULL)
 			prvers = vers;
 
+		    buf = xmalloc (strlen (prvers->version) + 24);
 		    sprintf (buf, "%-12s (%-8.8s ",
 			     prvers->version,
 			     prvers->author);
 		    cvs_output (buf, 0);
+		    free (buf);
 
 		    /* Now output the date.  */
 		    ym = strchr (prvers->date, '.');
@@ -8405,17 +8456,14 @@ make_file_label (path, rev, rcs)
 	    else
 		wm = gmtime (&sb.st_mtime);
 	}
-	else
+	if (wm == NULL)
 	{
 	    time_t t = 0;
 	    wm = gmtime(&t);
 	}
 
-	if (wm)
-	{
-	    (void) tm_to_internet (datebuf, wm);
-	    (void) sprintf (label, "-L%s\t%s", path, datebuf);
-	}
+	(void) tm_to_internet (datebuf, wm);
+	(void) sprintf (label, "-L%s\t%s", path, datebuf);
     }
     return label;
 }

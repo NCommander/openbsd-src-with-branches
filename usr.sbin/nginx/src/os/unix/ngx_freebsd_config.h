@@ -16,6 +16,7 @@
 #include <stddef.h>             /* offsetof() */
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
@@ -23,6 +24,7 @@
 #include <grp.h>
 #include <dirent.h>
 #include <glob.h>
+#include <time.h>
 #include <sys/param.h>          /* ALIGN() */
 #include <sys/mount.h>          /* statfs() */
 
@@ -93,6 +95,11 @@ typedef struct aiocb  ngx_aiocb_t;
 #define NGX_LISTEN_BACKLOG        -1
 
 
+#ifdef __DragonFly__
+#define NGX_KEEPALIVE_FACTOR      1000
+#endif
+
+
 #if (__FreeBSD_version < 430000 || __FreeBSD_version < 500012)
 
 pid_t rfork_thread(int flags, void *stack, int (*func)(void *arg), void *arg);
@@ -110,6 +117,7 @@ pid_t rfork_thread(int flags, void *stack, int (*func)(void *arg), void *arg);
 
 
 #define NGX_HAVE_OS_SPECIFIC_INIT    1
+#define NGX_HAVE_DEBUG_MALLOC        1
 
 
 extern char **environ;

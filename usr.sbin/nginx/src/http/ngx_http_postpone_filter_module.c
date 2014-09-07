@@ -46,7 +46,7 @@ ngx_module_t  ngx_http_postpone_filter_module = {
 };
 
 
-static ngx_http_output_body_filter_pt    ngx_http_next_filter;
+static ngx_http_output_body_filter_pt    ngx_http_next_body_filter;
 
 
 static ngx_int_t
@@ -70,8 +70,7 @@ ngx_http_postpone_filter(ngx_http_request_t *r, ngx_chain_t *in)
 #if 0
         /* TODO: SSI may pass NULL */
         ngx_log_error(NGX_LOG_ALERT, c->log, 0,
-                      "http postpone filter NULL inactive request",
-                      &r->uri, &r->args);
+                      "http postpone filter NULL inactive request");
 #endif
 
         return NGX_OK;
@@ -80,7 +79,7 @@ ngx_http_postpone_filter(ngx_http_request_t *r, ngx_chain_t *in)
     if (r->postponed == NULL) {
 
         if (in || c->buffered) {
-            return ngx_http_next_filter(r->main, in);
+            return ngx_http_next_body_filter(r->main, in);
         }
 
         return NGX_OK;
@@ -108,15 +107,14 @@ ngx_http_postpone_filter(ngx_http_request_t *r, ngx_chain_t *in)
 
         if (pr->out == NULL) {
             ngx_log_error(NGX_LOG_ALERT, c->log, 0,
-                          "http postpone filter NULL output",
-                          &r->uri, &r->args);
+                          "http postpone filter NULL output");
 
         } else {
             ngx_log_debug2(NGX_LOG_DEBUG_HTTP, c->log, 0,
                            "http postpone filter output \"%V?%V\"",
                            &r->uri, &r->args);
 
-            if (ngx_http_next_filter(r->main, pr->out) == NGX_ERROR) {
+            if (ngx_http_next_body_filter(r->main, pr->out) == NGX_ERROR) {
                 return NGX_ERROR;
             }
         }
@@ -171,7 +169,7 @@ found:
 static ngx_int_t
 ngx_http_postpone_filter_init(ngx_conf_t *cf)
 {
-    ngx_http_next_filter = ngx_http_top_body_filter;
+    ngx_http_next_body_filter = ngx_http_top_body_filter;
     ngx_http_top_body_filter = ngx_http_postpone_filter;
 
     return NGX_OK;

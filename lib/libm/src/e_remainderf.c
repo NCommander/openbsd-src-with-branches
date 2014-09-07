@@ -13,26 +13,13 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_remainderf.c,v 1.4 1995/05/10 20:46:08 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const float zero = 0.0;
-#else
-static float zero = 0.0;
-#endif
 
-
-#ifdef __STDC__
-	float __ieee754_remainderf(float x, float p)
-#else
-	float __ieee754_remainderf(x,p)
-	float x,p;
-#endif
+float
+remainderf(float x, float p)
 {
 	int32_t hx,hp;
 	u_int32_t sx;
@@ -51,7 +38,7 @@ static float zero = 0.0;
 	    return (x*p)/(x*p);
 
 
-	if (hp<=0x7effffff) x = __ieee754_fmodf(x,p+p);	/* now x < 2p */
+	if (hp<=0x7effffff) x = fmodf(x,p+p);	/* now x < 2p */
 	if ((hx-hp)==0) return zero*x;
 	x  = fabsf(x);
 	p  = fabsf(p);

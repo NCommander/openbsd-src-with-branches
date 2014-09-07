@@ -1,4 +1,4 @@
-/* crypto/des/cfb64ede.c */
+/* $OpenBSD$ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -57,7 +57,6 @@
  */
 
 #include "des_locl.h"
-#include "e_os.h"
 
 /* The input and output encrypted as though 64bit cfb mode is being
  * used.  The extra state information to record how much of the

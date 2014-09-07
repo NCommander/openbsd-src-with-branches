@@ -10,31 +10,21 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_fmod.c,v 1.8 1995/05/10 20:45:07 jtc Exp $";
-#endif
-
 /* 
- * __ieee754_fmod(x,y)
+ * fmod(x,y)
  * Return x mod y in exact arithmetic
  * Method: shift and subtract
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
 static const double one = 1.0, Zero[] = {0.0, -0.0,};
-#else
-static double one = 1.0, Zero[] = {0.0, -0.0,};
-#endif
 
-#ifdef __STDC__
-	double __ieee754_fmod(double x, double y)
-#else
-	double __ieee754_fmod(x,y)
-	double x,y ;
-#endif
+double
+fmod(double x, double y)
 {
 	int32_t n,hx,hy,hz,ix,iy,sx,i;
 	u_int32_t lx,ly,lz;
@@ -138,3 +128,7 @@ static double one = 1.0, Zero[] = {0.0, -0.0,};
 	}
 	return x;		/* exact output */
 }
+
+#if	LDBL_MANT_DIG == DBL_MANT_DIG
+__strong_alias(fmodl, fmod);
+#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */

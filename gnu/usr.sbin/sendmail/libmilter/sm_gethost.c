@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ *  Copyright (c) 1999-2001, 2004, 2010, 2013 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,14 +9,15 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: sm_gethost.c,v 8.23 2001/07/21 00:05:06 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: sm_gethost.c,v 8.32 2013/11/22 20:51:36 ca Exp $")
 
 #include <sendmail.h>
 #if NETINET || NETINET6
 # include <arpa/inet.h>
 #endif /* NETINET || NETINET6 */
+#include "libmilter.h"
 
-/*
+/*
 **  MI_GETHOSTBY{NAME,ADDR} -- compatibility routines for gethostbyXXX
 **
 **	Some operating systems have wierd problems with the gethostbyXXX
@@ -29,6 +30,8 @@ SM_RCSID("@(#)$Sendmail: sm_gethost.c,v 8.23 2001/07/21 00:05:06 gshapiro Exp $"
 
 #if NETINET6 && NEEDSGETIPNODE
 
+static struct hostent *sm_getipnodebyname __P((const char *, int, int, int *));
+
 # ifndef AI_ADDRCONFIG
 #  define AI_ADDRCONFIG	0	/* dummy */
 # endif /* ! AI_ADDRCONFIG */
@@ -40,8 +43,8 @@ SM_RCSID("@(#)$Sendmail: sm_gethost.c,v 8.23 2001/07/21 00:05:06 gshapiro Exp $"
 # endif /* ! AI_DEFAULT */
 
 static struct hostent *
-getipnodebyname(name, family, flags, err)
-	char *name;
+sm_getipnodebyname(name, family, flags, err)
+	const char *name;
 	int family;
 	int flags;
 	int *err;
@@ -59,7 +62,18 @@ getipnodebyname(name, family, flags, err)
 	h = gethostbyname(name);
 	if (family == AF_INET6 && !resv6)
 		_res.options &= ~RES_USE_INET6;
-	*err = h_errno;
+
+	/* the function is supposed to return only the requested family */
+	if (h != NULL && h->h_addrtype != family)
+	{
+# if NETINET6
+		freehostent(h);
+# endif /* NETINET6 */
+		h = NULL;
+		*err = NO_DATA;
+	}
+	else
+		*err = h_errno;
 	return h;
 }
 
@@ -74,6 +88,8 @@ freehostent(h)
 
 	return;
 }
+#else /* NEEDSGETIPNODE && NETINET6 */
+#define sm_getipnodebyname getipnodebyname 
 #endif /* NEEDSGETIPNODE && NETINET6 */
 
 struct hostent *
@@ -96,7 +112,12 @@ mi_gethostbyname(name, family)
 # endif /* SOLARIS == 20300 || SOLARIS == 203 */
 #else /* (SOLARIS > 10000 && SOLARIS < 20400) || (defined(SOLARIS) && SOLARIS < 204) || (defined(sony_news) && defined(__svr4)) */
 # if NETINET6
-	int flags = AI_DEFAULT|AI_ALL;
+#  ifndef SM_IPNODEBYNAME_FLAGS
+    /* For IPv4-mapped addresses, use: AI_DEFAULT|AI_ALL */
+#   define SM_IPNODEBYNAME_FLAGS	AI_ADDRCONFIG
+#  endif /* SM_IPNODEBYNAME_FLAGS */
+
+	int flags = SM_IPNODEBYNAME_FLAGS;
 	int err;
 # endif /* NETINET6 */
 
@@ -104,13 +125,23 @@ mi_gethostbyname(name, family)
 #  if ADDRCONFIG_IS_BROKEN
 	flags &= ~AI_ADDRCONFIG;
 #  endif /* ADDRCONFIG_IS_BROKEN */
-	h = getipnodebyname(name, family, flags, &err);
+	h = sm_getipnodebyname(name, family, flags, &err);
 	SM_SET_H_ERRNO(err);
 # else /* NETINET6 */
 	h = gethostbyname(name);
 # endif /* NETINET6 */
 
 #endif /* (SOLARIS > 10000 && SOLARIS < 20400) || (defined(SOLARIS) && SOLARIS < 204) || (defined(sony_news) && defined(__svr4)) */
+
+	/* the function is supposed to return only the requested family */
+	if (h != NULL && h->h_addrtype != family)
+	{
+# if NETINET6
+		freehostent(h);
+# endif /* NETINET6 */
+		h = NULL;
+		SM_SET_H_ERRNO(NO_DATA);
+	}
 	return h;
 }
 

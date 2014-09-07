@@ -1,4 +1,4 @@
-/* crypto/mdc2/mdc2.h */
+/* $OpenBSD: mdc2.h,v 1.12 2014/06/12 15:49:29 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -59,6 +59,8 @@
 #ifndef HEADER_MDC2_H
 #define HEADER_MDC2_H
 
+#include <openssl/opensslconf.h>
+
 #include <openssl/des.h>
 
 #ifdef  __cplusplus
@@ -81,9 +83,6 @@ typedef struct mdc2_ctx_st
 	} MDC2_CTX;
 
 
-#ifdef OPENSSL_FIPS
-int private_MDC2_Init(MDC2_CTX *c);
-#endif
 int MDC2_Init(MDC2_CTX *c);
 int MDC2_Update(MDC2_CTX *c, const unsigned char *data, size_t len);
 int MDC2_Final(unsigned char *md, MDC2_CTX *c);

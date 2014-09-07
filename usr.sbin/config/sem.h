@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: sem.h,v 1.12 2003/06/28 04:55:07 deraadt Exp $	*/
+/*	$NetBSD: sem.h,v 1.6 1996/11/11 23:40:10 gwr Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -19,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,26 +39,28 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)sem.h	8.1 (Berkeley) 6/6/93
- *	$Id: sem.h,v 1.1 1995/04/28 06:55:24 cgd Exp $
  */
 
-void		enddefs __P((const char *));
+void		enddefs(void);
 
-void		setdefmaxusers __P((int, int, int));
-void		setmaxusers __P((int));
-int		defattr __P((const char *, struct nvlist *));
-void		defdev __P((struct devbase *, int, struct nvlist *,
-			struct nvlist *, struct nvlist *, struct nvlist *));
-struct devbase *getdevbase __P((const char *name));
-struct attr    *getattr __P((const char *name));
-void		setmajor __P((struct devbase *d, int n));
-void		addconf __P((struct config *));
-void		setconf __P((struct nvlist **, const char *, struct nvlist *));
-void		adddev __P((const char *, const char *, struct nvlist *, int));
-void		addpseudo __P((const char *name, int number));
-const char     *ref __P((const char *name));
-const char     *starref __P((const char *name));
-const char     *wildref __P((const char *name));
+void		setdefmaxusers(int, int, int);
+void		setmaxusers(int);
+int		defattr(const char *, struct nvlist *);
+void		defdev(struct devbase *, int, struct nvlist *, struct nvlist *);
+void		defdevattach(struct deva *, struct devbase *,
+		    struct nvlist *, struct nvlist *);
+struct devbase *getdevbase(char *name);
+struct deva    *getdevattach(const char *name);
+struct attr    *getattr(const char *name);
+void		setmajor(struct devbase *d, int n);
+void		addconf(struct config *);
+void		setconf(struct nvlist **, const char *, struct nvlist *);
+void		adddev(const char *, const char *, struct nvlist *, int, int);
+void		enabledev(const char *, const char *);
+void		addpseudo(const char *name, int number, int disable);
+const char     *ref(const char *name);
+const char     *starref(const char *name);
+const char     *wildref(const char *name);
 
 extern const char *s_generic;
 extern const char *s_nfs;

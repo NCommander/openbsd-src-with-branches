@@ -1,3 +1,4 @@
+/*	$OpenBSD: tzfile.h,v 1.3 1998/03/30 06:53:47 deraadt Exp $	*/
 /*	$NetBSD: tzfile.h,v 1.3 1994/10/26 00:56:37 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -148,6 +145,6 @@ struct tzhead {
 ** that will probably do.
 */
 
-#define isleap(y) (((y) % 4) == 0 && ((y) % 100) != 0 || ((y) % 400) == 0)
+#define isleap(y) ((((y) % 4) == 0 && ((y) % 100) != 0) || ((y) % 400) == 0)
 
 #endif /* !_TZFILE_H_ */

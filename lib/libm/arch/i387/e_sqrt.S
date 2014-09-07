@@ -1,3 +1,4 @@
+/*	$OpenBSD: e_sqrt.S,v 1.2 2005/08/02 11:17:31 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -5,9 +6,7 @@
 
 #include <machine/asm.h>
 
-RCSID("$NetBSD: e_sqrt.S,v 1.4 1995/05/08 23:49:57 jtc Exp $")
-
-ENTRY(__ieee754_sqrt)
+ENTRY(sqrt)
 	fldl	4(%esp)
 	fsqrt
 	ret

@@ -1,4 +1,4 @@
-/* x509v3.h */
+/* $OpenBSD: x509v3.h,v 1.14 2014/06/12 15:49:31 deraadt Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -57,6 +57,8 @@
  */
 #ifndef HEADER_X509V3_H
 #define HEADER_X509V3_H
+
+#include <openssl/opensslconf.h>
 
 #include <openssl/bio.h>
 #include <openssl/x509.h>
@@ -379,8 +381,9 @@ struct ISSUING_DIST_POINT_st
 /* onlysomereasons present */
 #define IDP_REASONS	0x40
 
-#define X509V3_conf_err(val) ERR_add_error_data(6, "section:", val->section, \
-",name:", val->name, ",value:", val->value);
+#define X509V3_conf_err(val) ERR_asprintf_error_data( \
+			"section:%s,name:%s,value:%s", val->section, \
+			val->name, val->value);
 
 #define X509V3_set_ctx_test(ctx) \
 			X509V3_set_ctx(ctx, NULL, NULL, NULL, NULL, CTX_TEST)

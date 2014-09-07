@@ -1,4 +1,4 @@
-/* crypto/md5/md5_locl.h */
+/* $OpenBSD$ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -58,7 +58,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <openssl/e_os2.h>
+
+#include <openssl/opensslconf.h>
+
 #include <openssl/md5.h>
 
 #ifndef MD5_LONG_LOG2

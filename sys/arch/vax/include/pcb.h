@@ -1,4 +1,5 @@
-/*	$NetBSD: pcb.h,v 1.8 1995/05/07 16:43:34 ragge Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.7 2011/03/23 16:54:37 pirofti Exp $	*/
+/*	$NetBSD: pcb.h,v 1.10 1996/02/02 18:08:26 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -32,10 +33,11 @@
 
  /* All bugs are subject to removal without further notice */
 
-#ifndef _VAX_PCB_H_
-#define _VAX_PCB_H_
+#ifndef _MACHINE_PCB_H_
+#define _MACHINE_PCB_H_
 
-#include "machine/trap.h"
+#include <machine/reg.h>
+#include <machine/pte.h>
 
 struct pcb {
 
@@ -50,23 +52,27 @@ struct pcb {
 	long	FP;		/*  Frame Pointer             */
 	long	PC;		/*  Program Counter           */
 	long	PSL;		/*  Program Status Longword   */
-	void   *P0BR;		/*  Page 0 Base Register      */
+	pt_entry_t *P0BR;	/*  Page 0 Base Register      */
 	long	P0LR;		/*  Page 0 Length Register    */
-	void   *P1BR;		/*  Page 1 Base Register      */
+	pt_entry_t *P1BR;	/*  Page 1 Base Register      */
 	long	P1LR;		/*  Page 1 Length Register    */
 
 	/* Software registers, only used by kernel software */
 	void   *framep;		/* Pointer to syscall frame */
 	void   *iftrap;		/* Tells whether fault copy */
+
+	paddr_t	pcb_paddr;	/* physical address of PCB */
+	struct pmap *pcb_pm;	/* owning pmap */
+	struct pcb *pcb_pmnext;	/* next pcb that shares this pmap */
 };
 
 #define	AST_MASK 0x07000000
 #define	AST_PCB	 0x04000000
 
-/* machine-specific core dump; save trapframe */
+/* machine-specific core dump; save regs */
 struct	md_coredump {
-	struct trapframe md_tf;
+	struct reg md_reg;
 };
 
-#endif /* _VAX_PCB_H_ */
+#endif /* _MACHINE_PCB_H_ */
 

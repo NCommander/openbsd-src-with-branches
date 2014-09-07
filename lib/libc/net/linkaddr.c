@@ -1,5 +1,4 @@
-/*	$NetBSD: linkaddr.c,v 1.5 1995/02/25 06:20:49 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)linkaddr.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: linkaddr.c,v 1.5 1995/02/25 06:20:49 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -58,13 +45,11 @@ static char rcsid[] = "$NetBSD: linkaddr.c,v 1.5 1995/02/25 06:20:49 cgd Exp $";
 #define LETTER	(4*3)
 
 void
-link_addr(addr, sdl)
-	register const char *addr;
-	register struct sockaddr_dl *sdl;
+link_addr(const char *addr, struct sockaddr_dl *sdl)
 {
-	register char *cp = sdl->sdl_data;
+	char *cp = sdl->sdl_data;
 	char *cplim = sdl->sdl_len + (char *)sdl;
-	register int byte = 0, state = NAMING, new;
+	int byte = 0, state = NAMING, new;
 
 	bzero((char *)&sdl->sdl_family, sdl->sdl_len - 1);
 	sdl->sdl_family = AF_LINK;
@@ -129,13 +114,12 @@ link_addr(addr, sdl)
 static char hexlist[] = "0123456789abcdef";
 
 char *
-link_ntoa(sdl)
-	register const struct sockaddr_dl *sdl;
+link_ntoa(const struct sockaddr_dl *sdl)
 {
 	static char obuf[64];
-	register char *out = obuf; 
-	register int i;
-	register u_char *in = (u_char *)LLADDR(sdl);
+	char *out = obuf; 
+	int i;
+	u_char *in = (u_char *)LLADDR(sdl);
 	u_char *inlim = in + sdl->sdl_alen;
 	int firsttime = 1;
 

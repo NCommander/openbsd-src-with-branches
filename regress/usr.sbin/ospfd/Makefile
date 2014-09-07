@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # The following ports must be installed for the regression tests:
 # p5-AnyEvent		provide framework for multiple event loops
 # p5-Hash-Merge		merge associative arrays

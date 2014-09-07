@@ -1,4 +1,5 @@
-/*	$NetBSD: remote.c,v 1.3 1994/12/08 09:31:03 jtc Exp $	*/
+/*	$OpenBSD: remote.c,v 1.32 2010/07/11 23:16:42 chl Exp $	*/
+/*	$NetBSD: remote.c,v 1.5 1997/04/20 00:02:45 mellon Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,54 +31,24 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)remote.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: remote.c,v 1.3 1994/12/08 09:31:03 jtc Exp $";
-#endif /* not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "pathnames.h"
 #include "tip.h"
-
-/*
- * Attributes to be gleened from remote host description
- *   data base.
- */
-static char **caps[] = {
-	&AT, &DV, &CM, &CU, &EL, &IE, &OE, &PN, &PR, &DI,
-	&ES, &EX, &FO, &RC, &RE, &PA
-};
-
-static char *capstrings[] = {
-	"at", "dv", "cm", "cu", "el", "ie", "oe", "pn", "pr",
-	"di", "es", "ex", "fo", "rc", "re", "pa", 0
-};
 
 static char	*db_array[3] = { _PATH_REMOTE, 0, 0 };
 
 #define cgetflag(f)	(cgetcap(bp, f, ':') != NULL)
 
-static
-getremcap(host)
-	register char *host;
+char *
+getremote(char *host)
 {
-	register char **p, ***q;
-	char *bp;
-	char *rempath;
-	int   stat;
+	char   *bp, *rempath, *strval;
+	int	stat;
+	long	val;
 
 	rempath = getenv("REMOTE");
-	if (rempath != NULL)
+	if (rempath != NULL) {
 		if (*rempath != '/')
 			/* we have an entry */
 			cgetset(rempath);
@@ -89,143 +56,142 @@ getremcap(host)
 			db_array[1] = rempath;
 			db_array[2] = _PATH_REMOTE;
 		}
+	}
 
 	if ((stat = cgetent(&bp, db_array, host)) < 0) {
-		if (DV ||
-		    host[0] == '/' && access(DV = host, R_OK | W_OK) == 0) {
-			CU = DV;
-			HO = host;
-			HW = 1;
-			DU = 0;
-			if (!BR)
-				BR = DEFBR;
-			FS = DEFFS;
-			return;
+		if (vgetstr(DEVICE) != NULL ||
+		    (host[0] == '/' && access(host, R_OK | W_OK) == 0)) {
+			if (vgetstr(DEVICE) == NULL)
+				vsetstr(DEVICE, host);
+			vsetstr(HOST, host);
+			if (!vgetnum(BAUDRATE))
+				vsetnum(BAUDRATE, DEFBR);
+			vsetnum(FRAMESIZE, DEFFS);
+			return (vgetstr(DEVICE));
 		}
-		switch(stat) {
+		switch (stat) {
 		case -1:
-			fprintf(stderr, "tip: unknown host %s\n", host);
+			fprintf(stderr, "%s: unknown host %s\n", __progname,
+			    host);
 			break;
 		case -2:
-			fprintf(stderr, 
-			    "tip: can't open host description file\n");
+			fprintf(stderr,
+			    "%s: can't open host description file\n",
+			    __progname);
 			break;
 		case -3:
-			fprintf(stderr, 
-			    "tip: possible reference loop in host description file\n");
+			fprintf(stderr,
+			    "%s: possible reference loop in host description file\n", __progname);
 			break;
 		}
 		exit(3);
 	}
 
-	for (p = capstrings, q = caps; *p != NULL; p++, q++)
-		if (**q == NULL)
-			cgetstr(bp, *p, *q);
-	if (!BR && (cgetnum(bp, "br", &BR) == -1))
-		BR = DEFBR;
-	if (cgetnum(bp, "fs", &FS) == -1)
-		FS = DEFFS;
-	if (DU < 0)
-		DU = 0;
+	/* String options. Use if not already set. */
+	if (vgetstr(DEVICE) == NULL && cgetstr(bp, "dv", &strval) >= 0)
+		vsetstr(DEVICE, strval);
+	if (vgetstr(CONNECT) == NULL && cgetstr(bp, "cm", &strval) >= 0)
+		vsetstr(CONNECT, strval);
+	if (vgetstr(DISCONNECT) == NULL && cgetstr(bp, "di", &strval) >= 0)
+		vsetstr(DISCONNECT, strval);
+	if (vgetstr(EOL) == NULL && cgetstr(bp, "el", &strval) >= 0)
+		vsetstr(EOL, strval);
+	if (vgetstr(EOFREAD) == NULL && cgetstr(bp, "ie", &strval) >= 0)
+		vsetstr(EOFREAD, strval);
+	if (vgetstr(EOFWRITE) == NULL && cgetstr(bp, "oe", &strval) >= 0)
+		vsetstr(EOFWRITE, strval);
+	if (vgetstr(EXCEPTIONS) == NULL && cgetstr(bp, "ex", &strval) >= 0)
+		vsetstr(EXCEPTIONS, strval);
+	if (vgetstr(RECORD) == NULL && cgetstr(bp, "re", &strval) >= 0)
+		vsetstr(RECORD, strval);
+	if (vgetstr(PARITY) == NULL && cgetstr(bp, "pa", &strval) >= 0)
+		vsetstr(PARITY, strval);
+
+	/* Numbers with default values. Set if currently zero (XXX ugh). */
+	if (vgetnum(BAUDRATE) == 0) {
+		if (cgetnum(bp, "br", &val) < 0)
+			vsetnum(BAUDRATE, DEFBR);
+		else
+			vsetnum(BAUDRATE, val);
+	}
+	if (vgetnum(LINEDISC) == 0) { /* XXX relies on TTYDISC == 0 */
+		if (cgetnum(bp, "ld", &val) < 0)
+			vsetnum(LINEDISC, TTYDISC);
+		else
+			vsetnum(LINEDISC, val);
+	}
+	if (vgetnum(FRAMESIZE) == 0) {
+		if (cgetnum(bp, "fs", &val) < 0)
+			vsetnum(FRAMESIZE, DEFFS);
+		else
+			vsetnum(FRAMESIZE, val);
+	}
+
+	/* Numbers - default values already set in vinit() or zero. */
+	if (cgetnum(bp, "es", &val) >= 0)
+		vsetnum(ESCAPE, val);
+	if (cgetnum(bp, "fo", &val) >= 0)
+		vsetnum(FORCE, val);
+	if (cgetnum(bp, "pr", &val) >= 0)
+		vsetnum(PROMPT, val);
+	if (cgetnum(bp, "rc", &val) >= 0)
+		vsetnum(RAISECHAR, val);
+
+	/* Numbers - default is zero. */
+	if (cgetnum(bp, "dl", &val) < 0)
+		vsetnum(LDELAY, 0);
 	else
-		DU = cgetflag("du");
-	if (DV == NOSTR) {
+		vsetnum(LDELAY, val);
+	if (cgetnum(bp, "cl", &val) < 0)
+		vsetnum(CDELAY, 0);
+	else
+		vsetnum(CDELAY, val);
+	if (cgetnum(bp, "et", &val) < 0)
+		vsetnum(ETIMEOUT, 0);
+	else
+		vsetnum(ETIMEOUT, val);
+
+	/* Flag options. */
+	if (cgetflag("hd")) /* XXX overrides command line */
+		vsetnum(HALFDUPLEX, 1);
+	if (cgetflag("ra"))
+		vsetnum(RAISE, 1);
+	if (cgetflag("ec"))
+		vsetnum(ECHOCHECK, 1);
+	if (cgetflag("be"))
+		vsetnum(BEAUTIFY, 1);
+	if (cgetflag("nb"))
+		vsetnum(BEAUTIFY, 0);
+	if (cgetflag("sc"))
+		vsetnum(SCRIPT, 1);
+	if (cgetflag("tb"))
+		vsetnum(TABEXPAND, 1);
+	if (cgetflag("vb")) /* XXX overrides command line */
+		vsetnum(VERBOSE, 1);
+	if (cgetflag("nv")) /* XXX overrides command line */
+		vsetnum(VERBOSE, 0);
+	if (cgetflag("ta"))
+		vsetnum(TAND, 1);
+	if (cgetflag("nt"))
+		vsetnum(TAND, 0);
+	if (cgetflag("rw"))
+		vsetnum(RAWFTP, 1);
+	if (cgetflag("hd"))
+		vsetnum(HALFDUPLEX, 1);
+	if (cgetflag("dc"))
+		vsetnum(DC, 1);
+	if (cgetflag("hf"))
+		vsetnum(HARDWAREFLOW, 1);
+
+	if (vgetstr(RECORD) == NULL)
+		vsetstr(RECORD, "tip.record");
+	if (vgetstr(EXCEPTIONS) == NULL)
+		vsetstr(EXCEPTIONS, "\t\n\b\f");
+
+	vsetstr(HOST, host);
+	if (vgetstr(DEVICE) == NULL) {
 		fprintf(stderr, "%s: missing device spec\n", host);
 		exit(3);
 	}
-	if (DU && CU == NOSTR)
-		CU = DV;
-	if (DU && PN == NOSTR) {
-		fprintf(stderr, "%s: missing phone number\n", host);
-		exit(3);
-	}
-
-	HD = cgetflag("hd");
-
-	/*
-	 * This effectively eliminates the "hw" attribute
-	 *   from the description file
-	 */
-	if (!HW)
-		HW = (CU == NOSTR) || (DU && equal(DV, CU));
-	HO = host;
-	/*
-	 * see if uppercase mode should be turned on initially
-	 */
-	if (cgetflag("ra"))
-		boolean(value(RAISE)) = 1;
-	if (cgetflag("ec"))
-		boolean(value(ECHOCHECK)) = 1;
-	if (cgetflag("be"))
-		boolean(value(BEAUTIFY)) = 1;
-	if (cgetflag("nb"))
-		boolean(value(BEAUTIFY)) = 0;
-	if (cgetflag("sc"))
-		boolean(value(SCRIPT)) = 1;
-	if (cgetflag("tb"))
-		boolean(value(TABEXPAND)) = 1;
-	if (cgetflag("vb"))
-		boolean(value(VERBOSE)) = 1;
-	if (cgetflag("nv"))
-		boolean(value(VERBOSE)) = 0;
-	if (cgetflag("ta"))
-		boolean(value(TAND)) = 1;
-	if (cgetflag("nt"))
-		boolean(value(TAND)) = 0;
-	if (cgetflag("rw"))
-		boolean(value(RAWFTP)) = 1;
-	if (cgetflag("hd"))
-		boolean(value(HALFDUPLEX)) = 1;
-	if (RE == NOSTR)
-		RE = (char *)"tip.record";
-	if (EX == NOSTR)
-		EX = (char *)"\t\n\b\f";
-	if (ES != NOSTR)
-		vstring("es", ES);
-	if (FO != NOSTR)
-		vstring("fo", FO);
-	if (PR != NOSTR)
-		vstring("pr", PR);
-	if (RC != NOSTR)
-		vstring("rc", RC);
-	if (cgetnum(bp, "dl", &DL) == -1)
-		DL = 0;
-	if (cgetnum(bp, "cl", &CL) == -1)
-		CL = 0;
-	if (cgetnum(bp, "et", &ET) == -1)
-		ET = 10;
-}
-
-char *
-getremote(host)
-	char *host;
-{
-	register char *cp;
-	static char *next;
-	static int lookedup = 0;
-
-	if (!lookedup) {
-		if (host == NOSTR && (host = getenv("HOST")) == NOSTR) {
-			fprintf(stderr, "tip: no host specified\n");
-			exit(3);
-		}
-		getremcap(host);
-		next = DV;
-		lookedup++;
-	}
-	/*
-	 * We return a new device each time we're called (to allow
-	 *   a rotary action to be simulated)
-	 */
-	if (next == NOSTR)
-		return (NOSTR);
-	if ((cp = index(next, ',')) == NULL) {
-		DV = next;
-		next = NOSTR;
-	} else {
-		*cp++ = '\0';
-		DV = next;
-		next = cp;
-	}
-	return (DV);
+	return (vgetstr(DEVICE));
 }

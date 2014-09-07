@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bus_dma.c,v 1.10 2014/07/11 09:36:26 mpi Exp $	*/
 /*	$NetBSD: bus_dma.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*
@@ -28,6 +28,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
@@ -95,13 +96,12 @@ _bus_dmamap_create(bus_dma_tag_t t, bus_size_t size, int nsegments,
 	error = 0;
 	mapsize = sizeof(struct _bus_dmamap) +
 	    (sizeof(bus_dma_segment_t) * (nsegments - 1));
-	if ((mapstore = malloc(mapsize, M_DEVBUF,
-	    (flags & BUS_DMA_NOWAIT) ? M_NOWAIT : M_WAITOK)) == NULL)
+	if ((mapstore = malloc(mapsize, M_DEVBUF, (flags & BUS_DMA_NOWAIT) ?
+	    (M_NOWAIT | M_ZERO) : (M_WAITOK | M_ZERO))) == NULL)
 		return (ENOMEM);
 
 	DPRINTF(("bus_dmamap_create: dmamp = %p\n", mapstore));
 
-	memset(mapstore, 0, mapsize);
 	map = (bus_dmamap_t)mapstore;
 	map->_dm_size = size;
 	map->_dm_segcnt = nsegments;
@@ -126,7 +126,7 @@ _bus_dmamap_destroy(bus_dma_tag_t t, bus_dmamap_t map)
 
 	DPRINTF(("bus_dmamap_destroy: t = %p, map = %p\n", t, map));
 
-	free(map, M_DEVBUF);
+	free(map, M_DEVBUF, 0);
 }
 
 static inline int
@@ -444,6 +444,7 @@ _bus_dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t offset,
 
 	DPRINTF(("bus_dmamap_sync: t = %p, map = %p, offset = %ld, len = %ld, ops = %x\n", t, map, offset, len, ops));
 
+#ifdef DIAGNOSTIC
 	/*
 	 * Mixing PRE and POST operations is not allowed.
 	 */
@@ -451,7 +452,6 @@ _bus_dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t offset,
 	    (ops & (BUS_DMASYNC_POSTREAD|BUS_DMASYNC_POSTWRITE)) != 0)
 		panic("_bus_dmamap_sync: mix PRE and POST");
 
-#ifdef DIAGNOSTIC
 	if (offset >= map->dm_mapsize)
 		panic("_bus_dmamap_sync: bad offset");
 	if ((offset + len) > map->dm_mapsize)
@@ -496,21 +496,28 @@ _bus_dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t offset,
 
 		switch (ops) {
 		case BUS_DMASYNC_PREREAD|BUS_DMASYNC_PREWRITE:
-			sh_dcache_wbinv_range(naddr, minlen);
+			if (SH_HAS_WRITEBACK_CACHE)
+				sh_dcache_wbinv_range(naddr, minlen);
+			else
+				sh_dcache_inv_range(naddr, minlen);
 			break;
 
 		case BUS_DMASYNC_PREREAD:
-			if (((naddr | minlen) & (~(sh_cache_line_size - 1))) == 0) {
-				sh_dcache_inv_range(naddr, minlen);
-			} else {
+			if (SH_HAS_WRITEBACK_CACHE &&
+			    ((naddr | minlen) & (sh_cache_line_size - 1)) != 0)
 				sh_dcache_wbinv_range(naddr, minlen);
-			}
+			else
+				sh_dcache_inv_range(naddr, minlen);
 			break;
 
 		case BUS_DMASYNC_PREWRITE:
-			if (SH_HAS_WRITEBACK_CACHE) {
+			if (SH_HAS_WRITEBACK_CACHE)
 				sh_dcache_wb_range(naddr, minlen);
-			}
+			break;
+
+		case BUS_DMASYNC_POSTREAD:
+		case BUS_DMASYNC_POSTREAD|BUS_DMASYNC_POSTWRITE:
+			sh_dcache_inv_range(naddr, minlen);
 			break;
 		}
 		offset = 0;
@@ -526,14 +533,12 @@ _bus_dmamem_alloc(bus_dma_tag_t t, bus_size_t size, bus_size_t alignment,
     bus_size_t boundary, bus_dma_segment_t *segs, int nsegs, int *rsegs,
     int flags)
 {
-	extern paddr_t avail_start, avail_end;	/* from pmap.c */
 	struct pglist mlist;
 	paddr_t curaddr, lastaddr;
 	struct vm_page *m;
-	int curseg, error;
+	int curseg, error, plaflag;
 
 	DPRINTF(("bus_dmamem_alloc: t = %p, size = %ld, alignment = %ld, boundary = %ld, segs = %p, nsegs = %d, rsegs = %p, flags = %x\n", t, size, alignment, boundary, segs, nsegs, rsegs, flags));
-        DPRINTF(("bus_dmamem_alloc: avail_start = 0x%08lx, avail_end = 0x%08lx\n", avail_start, avail_end));
 
 	/* Always round the size. */
 	size = round_page(size);
@@ -541,8 +546,13 @@ _bus_dmamem_alloc(bus_dma_tag_t t, bus_size_t size, bus_size_t alignment,
 	/*
 	 * Allocate the pages from the VM system.
 	 */
-	error = uvm_pglistalloc(size, avail_start, avail_end - PAGE_SIZE,
-	    alignment, boundary, &mlist, nsegs, (flags & BUS_DMA_NOWAIT) == 0);
+	plaflag = flags & BUS_DMA_NOWAIT ? UVM_PLA_NOWAIT : UVM_PLA_WAITOK;
+	if (flags & BUS_DMA_ZERO)
+		plaflag |= UVM_PLA_ZERO;
+
+	TAILQ_INIT(&mlist);
+	error = uvm_pglistalloc(size, 0, -1, alignment, boundary,
+	    &mlist, nsegs, plaflag);
 	if (error)
 		return (error);
 
@@ -618,6 +628,7 @@ _bus_dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs,
 	vaddr_t va;
 	bus_addr_t addr;
 	int curseg;
+	const struct kmem_dyn_mode *kd;
 
 	DPRINTF(("bus_dmamem_map: t = %p, segs = %p, nsegs = %d, size = %d, kvap = %p, flags = %x\n", t, segs, nsegs, size, kvap, flags));
 
@@ -637,8 +648,8 @@ _bus_dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs,
 
 	/* Always round the size. */
 	size = round_page(size);
-
-	va = uvm_km_valloc(kernel_map, size);
+	kd = flags & BUS_DMA_NOWAIT ? &kd_trylock : &kd_waitok;
+	va = (vaddr_t)km_alloc(size, &kv_any, &kp_none, kd);
 	if (va == 0)
 		return (ENOMEM);
 
@@ -681,7 +692,7 @@ _bus_dmamem_unmap(bus_dma_tag_t t, caddr_t kva, size_t size)
 	size = round_page(size);
 	pmap_kremove((vaddr_t)kva, size);
 	pmap_update(pmap_kernel());
-	uvm_km_free(kernel_map, (vaddr_t)kva, size);
+	km_free(kva, size, &kv_any, &kp_none);
 }
 
 paddr_t

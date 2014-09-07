@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1987, 1988, 1993
@@ -12,13 +12,13 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: strcasecmp.c,v 1.12 2001/08/27 22:09:15 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: strcasecmp.c,v 1.16 2013/11/22 20:51:43 ca Exp $")
 
 #include <sm/config.h>
 #include <sm/string.h>
 #include <string.h>
 
-/*
+/*
 **  SM_STRCASECMP -- 8-bit clean version of strcasecmp
 **
 **	Thank you, vendors, for making this all necessary.

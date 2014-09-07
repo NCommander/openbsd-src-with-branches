@@ -492,7 +492,7 @@ mini_obj = $(minindt_obj) $(MINIDTRACE_O)
 ndt_obj = $(obj0) $(obj1) $(obj2) $(obj3) $(ARCHOBJS)
 obj = $(ndt_obj) $(DTRACE_O)
 
-perltoc_pod_prereqs = extra.pods pod/perl5182delta.pod pod/perlapi.pod pod/perlintern.pod pod/perlmodlib.pod pod/perluniprops.pod
+perltoc_pod_prereqs = extra.pods pod/perl5182delta.pod pod/perlapi.pod pod/perlintern.pod pod/perlmodlib.pod
 generated_pods = pod/perltoc.pod $(perltoc_pod_prereqs)
 generated_headers = uudmap.h bitcount.h mg_data.h
 
@@ -571,12 +571,13 @@ all: $(FIRSTMAKEFILE) $(MINIPERL_EXE) $(generated_pods) $(private) $(unidatafile
 
 .PHONY: all translators utilities
 
+# OpenBSD uses pre-generated lib/Config_git.pl and git_version.h files
 # Both git_version.h and lib/Config_git.pl are built
 # by make_patchnum.pl.
-git_version.h: lib/Config_git.pl
-
-lib/Config_git.pl: $(MINIPERL_EXE) make_patchnum.pl
-	$(MINIPERL) make_patchnum.pl
+#git_version.h: lib/Config_git.pl
+#
+#lib/Config_git.pl: $(MINIPERL_EXE) make_patchnum.pl
+#	$(MINIPERL) make_patchnum.pl
 
 # make sure that we recompile perl.c if the git version changes
 perl$(OBJ_EXT): git_version.h
@@ -695,6 +696,14 @@ case "$osname" in
 esac
 
 case "$osname" in
+openbsd)
+	$spitshell >>$Makefile <<!GROK!THIS!
+# When building Perl itself, link with the thread library,
+# so that extensions can use thread functions even though Perl
+# is not threaded
+CCDLFLAGS = $ccdlflags -lpthread
+!GROK!THIS!
+	;;
 aix)
 	$spitshell >>$Makefile <<!GROK!THIS!
 LIBS			= $perllibs
@@ -711,11 +720,11 @@ CCDLFLAGS		= `echo $ccdlflags|sed -e 's@-bE:.*/perl\.exp@-bE:perl.exp@'`
 LIBPERL_NONSHR		= libperl_nonshr$(LIB_EXT)
 MINIPERL_NONSHR		= miniperl_nonshr$(EXE_EXT)
 
-$(LIBPERL_NONSHR): $(obj)
-	$(RMS) $(LIBPERL_NONSHR)
-	$(AR) rcu $(LIBPERL_NONSHR) $(obj)
+#$(LIBPERL_NONSHR): $(obj)
+#	$(RMS) $(LIBPERL_NONSHR)
+#	$(AR) rcu $(LIBPERL_NONSHR) $(obj)
 
-$(MINIPERL_NONSHR): $(LIBPERL_NONSHR) miniperlmain$(OBJ_EXT) opmini$(OBJ_EXT)  perlmini$(OBJ_EXT)
+$(MINIPERL_NONSHR): miniperlmain$(OBJ_EXT) opmini$(OBJ_EXT)  perlmini$(OBJ_EXT)
 	$(CC) $(LDFLAGS) -o $(MINIPERL_NONSHR) miniperlmain$(OBJ_EXT) \
 	    opmini$(OBJ_EXT) perlmini$(OBJ_EXT) $(LIBPERL_NONSHR) $(LIBS)
 
@@ -799,33 +808,33 @@ $(MINIDTRACE_O): perldtrace.d $(minindt_obj) perlmini$(OBJ_EXT)
 		;;
     esac
 	$spitshell >>$Makefile <<'!NO!SUBS!'
-$(LIBPERL): $& $(obj) $(DYNALOADER) $(LIBPERLEXPORT)
-!NO!SUBS!
-	case "$useshrplib" in
-	true)
-		$spitshell >>$Makefile <<'!NO!SUBS!'
-	rm -f $@
-	$(LD) -o $@ $(SHRPLDFLAGS) $(obj) $(DYNALOADER) $(libs)
-!NO!SUBS!
-		case "$osname" in
-		aix)
-			$spitshell >>$Makefile <<'!NO!SUBS!'
-	rm -f libperl$(OBJ_EXT)
-	mv $@ libperl$(OBJ_EXT)
-	$(AR) qv $(LIBPERL) libperl$(OBJ_EXT)
-!NO!SUBS!
-			;;
-		esac
-		;;
-	*)
-		$spitshell >>$Makefile <<'!NO!SUBS!'
-	rm -f $(LIBPERL)
-	$(AR) rcu $(LIBPERL) $(obj) $(DYNALOADER)
-	@$(ranlib) $(LIBPERL)
-!NO!SUBS!
-		;;
-	esac
-	$spitshell >>$Makefile <<'!NO!SUBS!'
+#$(LIBPERL): $& $(obj) $(DYNALOADER) $(LIBPERLEXPORT)
+#!NO!SUBS!
+#	case "$useshrplib" in
+#	true)
+#		$spitshell >>$Makefile <<'!NO!SUBS!'
+#	rm -f $@
+#	$(LD) -o $@ $(SHRPLDFLAGS) $(obj) $(DYNALOADER) $(libs)
+#!NO!SUBS!
+#		case "$osname" in
+#		aix)
+#			$spitshell >>$Makefile <<'!NO!SUBS!'
+#	rm -f libperl$(OBJ_EXT)
+#	mv $@ libperl$(OBJ_EXT)
+#	$(AR) qv $(LIBPERL) libperl$(OBJ_EXT)
+#!NO!SUBS!
+#			;;
+#		esac
+#		;;
+#	*)
+#		$spitshell >>$Makefile <<'!NO!SUBS!'
+#	rm -f $(LIBPERL)
+#	$(AR) rcu $(LIBPERL) $(obj) $(DYNALOADER)
+#	@$(ranlib) $(LIBPERL)
+#!NO!SUBS!
+#		;;
+#	esac
+#	$spitshell >>$Makefile <<'!NO!SUBS!'
 
 # How to build executables.
 
@@ -888,19 +897,19 @@ $(MINIPERL_EXE): $& $(mini_obj)
 
 	$spitshell >>$Makefile <<'!NO!SUBS!'
 
-$(PERL_EXE): $& perlmain$(OBJ_EXT) $(LIBPERL) $(static_ext) ext.libs $(PERLEXPORT)
+$(PERL_EXE): $& perlmain$(OBJ_EXT) $(static_ext) ext.libs $(PERLEXPORT)
 	-@rm -f miniperl.xok
 	$(SHRPENV) $(LDLIBPTH) $(CC) -o perl$(PERL_SUFFIX) $(PERL_PROFILE_LDFLAGS) $(CLDFLAGS) $(CCDLFLAGS) perlmain$(OBJ_EXT) $(static_ext) $(LLIBPERL) `cat ext.libs` $(libs)
 
 # Purify/Quantify Perls.
 
-pure$(PERL_EXE): $& perlmain$(OBJ_EXT) $(LIBPERL) $(static_ext) ext.libs $(PERLEXPORT)
+pure$(PERL_EXE): $& perlmain$(OBJ_EXT) $(static_ext) ext.libs $(PERLEXPORT)
 	$(SHRPENV) $(LDLIBPTH) purify $(CC) -o pureperl $(CLDFLAGS) $(CCDLFLAGS) perlmain$(OBJ_EXT) $(static_ext) $(LLIBPERL) `cat ext.libs` $(libs)
 
-purecov$(PERL_EXE): $& perlmain$(OBJ_EXT) $(LIBPERL) $(static_ext) ext.libs $(PERLEXPORT)
+purecov$(PERL_EXE): $& perlmain$(OBJ_EXT) $(static_ext) ext.libs $(PERLEXPORT)
 	$(SHRPENV) $(LDLIBPTH) purecov $(CC) -o purecovperl $(CLDFLAGS) $(CCDLFLAGS) perlmain$(OBJ_EXT) $(static_ext) $(LLIBPERL) `cat ext.libs` $(libs)
 
-quant$(PERL_EXE): $& perlmain$(OBJ_EXT) $(LIBPERL) $(static_ext) ext.libs $(PERLEXPORT)
+quant$(PERL_EXE): $& perlmain$(OBJ_EXT) $(static_ext) ext.libs $(PERLEXPORT)
 	$(SHRPENV) $(LDLIBPTH) quantify $(CC) -o quantperl $(CLDFLAGS) $(CCDLFLAGS) perlmain$(OBJ_EXT) $(static_ext) $(LLIBPERL) `cat ext.libs` $(libs)
 
 !NO!SUBS!
@@ -1049,10 +1058,8 @@ lib/buildcustomize.pl: $(MINIPERL_EXE) write_buildcustomize.pl
 unidatafiles $(unidatafiles) pod/perluniprops.pod: uni.data
 
 uni.data: $(MINIPERL_EXE) $(CONFIGPM) lib/unicore/mktables $(nonxs_ext)
-	$(MINIPERL) $(Icwd) lib/unicore/mktables -C lib/unicore -P pod -maketest -makelist -p
-#	Commented out so always runs, mktables looks at far more files than we
-#	can in this makefile to decide if needs to run or not
-#	touch uni.data
+#	$(MINIPERL) $(Icwd) lib/unicore/mktables -C lib/unicore -P pod -maketest -makelist -p
+	touch uni.data
 
 # $(PERL_EXE) and ext because buildtoc uses Text::Wrap uses re
 # But also this ensures that all extensions are built before we try to scan
@@ -1277,14 +1284,13 @@ _mopup:
 	-rm -f perl.Addrs perl.Counts t/perl.Addrs t/perl.Counts *perl.xok
 	-rm -f cygwin.c libperl*.def libperl*.dll cygperl*.dll *.exe.stackdump
 	-rm -f $(PERL_EXE) $(MINIPERL_EXE) $(LIBPERL) libperl.* microperl
-	-rm -f config.arch config.over $(DTRACE_H) runtests
+	-rm -f $(DTRACE_H) runtests
 
 # Do not 'make _tidy' directly.
 _tidy:
 	-cd pod; $(LDLIBPTH) $(MAKE) clean
 	-cd utils; $(LDLIBPTH) $(MAKE) clean
 	-cd x2p; $(LDLIBPTH) $(MAKE) clean
-	-rm -f lib/Config_git.pl git_version.h
 	-@for x in $(DYNALOADER) $(dynamic_ext) $(static_ext) $(nonxs_ext) ; do \
 	$(MINIPERL) make_ext.pl --target=clean $$x MAKE=$(MAKE) ; \
 	done

@@ -22,7 +22,7 @@ not already explicitly performed by L<SSL_connect(3)|SSL_connect(3)> or
 L<SSL_accept(3)|SSL_accept(3)>. If the
 peer requests a re-negotiation, it will be performed transparently during
 the SSL_read() operation. The behaviour of SSL_read() depends on the
-underlying BIO. 
+underlying BIO.
 
 For the transparent negotiation to succeed, the B<ssl> must have been
 initialized to client or server mode. This is being done by calling
@@ -47,7 +47,7 @@ record is complete and SSL_read() can succeed.
 
 If the underlying BIO is B<blocking>, SSL_read() will only return, once the
 read operation has been finished or an error occurred, except when a
-renegotiation take place, in which case a SSL_ERROR_WANT_READ may occur. 
+renegotiation take place, in which case a SSL_ERROR_WANT_READ may occur.
 This behaviour can be controlled with the SSL_MODE_AUTO_RETRY flag of the
 L<SSL_CTX_set_mode(3)|SSL_CTX_set_mode(3)> call.
 
@@ -81,12 +81,12 @@ The following return values can occur:
 
 =over 4
 
-=item E<gt>0
+=item C<E<gt>0>
 
 The read operation was successful; the return value is the number of
 bytes actually read from the TLS/SSL connection.
 
-=item 0
+=item C<0>
 
 The read operation was not successful. The reason may either be a clean
 shutdown due to a "close notify" alert sent by the peer (in which case
@@ -103,7 +103,7 @@ only be detected, whether the underlying connection was closed. It cannot
 be checked, whether the closure was initiated by the peer or by something
 else.
 
-=item E<lt>0
+=item C<E<lt>0>
 
 The read operation was not successful, because either an error occurred
 or action must be taken by the calling process. Call SSL_get_error() with the

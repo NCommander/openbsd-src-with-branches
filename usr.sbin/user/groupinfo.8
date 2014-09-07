@@ -1,5 +1,5 @@
-.\" $NetBSD: groupinfo.8,v 1.2 2000/02/28 05:10:56 enami Exp $ */
-.\"
+.\" $OpenBSD: groupinfo.8,v 1.13 2010/09/03 11:22:36 jmc Exp $
+.\" $NetBSD: groupinfo.8,v 1.3 2000/10/03 19:32:23 bjh21 Exp $
 .\"
 .\" Copyright (c) 1999 Alistair G. Crooks.  All rights reserved.
 .\"
@@ -31,54 +31,65 @@
 .\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
 .\"
-.Dd November 30, 1999
+.Dd $Mdocdate: September 3 2010 $
 .Dt GROUPINFO 8
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm groupinfo
-.Nd displays group information
+.Nd display group information
 .Sh SYNOPSIS
-.Nm
+.Nm groupinfo
 .Op Fl e
-.Op Fl v
 .Ar group
 .Sh DESCRIPTION
 The
 .Nm
-utility retrieves the group information from the system.
+utility displays the name, group ID (GID),
+and members of the specified
+.Ar group .
 .Pp
-The following command line options are recognised:
+The options are as follows:
 .Bl -tag -width Ds
 .It Fl e
-return 0 if the group exists, and non-zero if the
-group does not exist, on the system. No information is
-displayed. This form of the command is useful for
+Do not display anything (quiet mode).
+This form of the command is useful for
 scripts which need to check whether a particular group
-name or gid is already in use on the system.
-.It Fl v
-perform any actions in a verbose manner.
+name or GID is already in use on the system.
 .El
-.Pp
-The group argument may either be a group's name, or a gid.
 .Pp
 The
+.Ar group
+argument may be either a group name or a GID.
+.Sh EXIT STATUS
+The
 .Nm
-utility exits 0 if the group name or gid exists, and non-zero if it does not.
-.Sh FILES
-.Bl -tag -width /etc/usermgmt.conf -compact
-.It Pa /etc/usermgmt.conf
-.El
+utility exits 0 if
+.Ar group
+exists, and non-zero if it does not.
 .Sh SEE ALSO
-.Xr passwd 5
+.Xr group 5 ,
+.Xr passwd 5 ,
+.Xr group 8 ,
+.Xr userinfo 8
 .Sh HISTORY
 The
 .Nm
 utility first appeared in
-.Nx 1.5 .
-It is based on the
-.Ar addnerd
-package by the same author.
-.Sh AUTHOR
+.Ox 2.7 .
+.Sh AUTHORS
 The
 .Nm
-utility was written by Alistair G. Crooks (agc@netbsd.org).
+utility was written by
+.An Alistair G. Crooks Aq Mt agc@NetBSD.org .
+.Sh CAVEATS
+If the specified
+.Ar group
+is the primary group of a user, but that user is not listed as a
+member of the
+.Ar group
+in the
+.Xr group 5
+file, the
+.Nm
+utility fails to list that user as a member of the
+.Ar group .

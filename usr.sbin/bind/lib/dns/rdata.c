@@ -334,8 +334,8 @@ dns_rdata_compare(const dns_rdata_t *rdata1, const dns_rdata_t *rdata2) {
 
 	REQUIRE(rdata1 != NULL);
 	REQUIRE(rdata2 != NULL);
-	REQUIRE(rdata1->data != NULL);
-	REQUIRE(rdata2->data != NULL);
+	REQUIRE(rdata1->length == 0 || rdata1->data != NULL);
+	REQUIRE(rdata2->length == 0 || rdata2->data != NULL);
 	REQUIRE(DNS_RDATA_VALIDFLAGS(rdata1));
 	REQUIRE(DNS_RDATA_VALIDFLAGS(rdata2));
 
@@ -913,8 +913,7 @@ dns_rdatatype_fromtext(dns_rdatatype_t *typep, isc_textregion_t *source) {
 		char *endp;
 		unsigned int val;
 
-		strncpy(buf, source->base + 4, source->length - 4);
-		buf[source->length - 4] = '\0';
+		strlcpy(buf, source->base + 4, sizeof(buf));
 		val = strtoul(buf, &endp, 10);
 		if (*endp == '\0' && val <= 0xffff) {
 			*typep = (dns_rdatatype_t)val;

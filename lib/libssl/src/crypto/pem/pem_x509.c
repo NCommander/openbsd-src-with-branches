@@ -1,4 +1,4 @@
-/* pem_x509.c */
+/* $OpenBSD: pem_x509.c,v 1.5 2014/06/12 15:49:30 deraadt Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,12 +57,11 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
+
 #include <openssl/bio.h>
 #include <openssl/evp.h>
-#include <openssl/x509.h>
-#include <openssl/pkcs7.h>
 #include <openssl/pem.h>
+#include <openssl/pkcs7.h>
+#include <openssl/x509.h>
 
 IMPLEMENT_PEM_rw(X509, X509, PEM_STRING_X509, X509)
-

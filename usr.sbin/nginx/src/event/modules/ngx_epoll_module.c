@@ -25,6 +25,8 @@
 #define EPOLLERR       0x008
 #define EPOLLHUP       0x010
 
+#define EPOLLRDHUP     0x2000
+
 #define EPOLLET        0x80000000
 #define EPOLLONESHOT   0x40000000
 
@@ -44,15 +46,24 @@ struct epoll_event {
     epoll_data_t  data;
 };
 
+
+int epoll_create(int size);
+
 int epoll_create(int size)
 {
     return -1;
 }
 
+
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+
 int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 {
     return -1;
 }
+
+
+int epoll_wait(int epfd, struct epoll_event *events, int nevents, int timeout);
 
 int epoll_wait(int epfd, struct epoll_event *events, int nevents, int timeout)
 {
@@ -75,11 +86,6 @@ struct io_event {
     int64_t   res2;  /* secondary result */
 };
 
-
-int eventfd(u_int initval)
-{
-    return -1;
-}
 
 #endif
 #endif
@@ -392,13 +398,13 @@ ngx_epoll_add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
     if (event == NGX_READ_EVENT) {
         e = c->write;
         prev = EPOLLOUT;
-#if (NGX_READ_EVENT != EPOLLIN)
-        events = EPOLLIN;
+#if (NGX_READ_EVENT != EPOLLIN|EPOLLRDHUP)
+        events = EPOLLIN|EPOLLRDHUP;
 #endif
 
     } else {
         e = c->read;
-        prev = EPOLLIN;
+        prev = EPOLLIN|EPOLLRDHUP;
 #if (NGX_WRITE_EVENT != EPOLLOUT)
         events = EPOLLOUT;
 #endif
@@ -445,7 +451,7 @@ ngx_epoll_del_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
 
     /*
      * when the file descriptor is closed, the epoll automatically deletes
-     * it from its queue, so we do not need to delete explicity the event
+     * it from its queue, so we do not need to delete explicitly the event
      * before the closing the file descriptor
      */
 
@@ -462,7 +468,7 @@ ngx_epoll_del_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
 
     } else {
         e = c->read;
-        prev = EPOLLIN;
+        prev = EPOLLIN|EPOLLRDHUP;
     }
 
     if (e->active) {
@@ -497,7 +503,7 @@ ngx_epoll_add_connection(ngx_connection_t *c)
 {
     struct epoll_event  ee;
 
-    ee.events = EPOLLIN|EPOLLOUT|EPOLLET;
+    ee.events = EPOLLIN|EPOLLOUT|EPOLLET|EPOLLRDHUP;
     ee.data.ptr = (void *) ((uintptr_t) c | c->read->instance);
 
     ngx_log_debug2(NGX_LOG_DEBUG_EVENT, c->log, 0,
@@ -524,7 +530,7 @@ ngx_epoll_del_connection(ngx_connection_t *c, ngx_uint_t flags)
 
     /*
      * when the file descriptor is closed the epoll automatically deletes
-     * it from its queue so we do not need to delete explicity the event
+     * it from its queue so we do not need to delete explicitly the event
      * before the closing the file descriptor
      */
 
@@ -661,6 +667,12 @@ ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
         }
 
         if ((revents & EPOLLIN) && rev->active) {
+
+#if (NGX_HAVE_EPOLLRDHUP)
+            if (revents & EPOLLRDHUP) {
+                rev->pending_eof = 1;
+            }
+#endif
 
             if ((flags & NGX_POST_THREAD_EVENTS) && !rev->accept) {
                 rev->posted_ready = 1;

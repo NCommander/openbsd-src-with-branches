@@ -1,11 +1,15 @@
-/* crypto/sha/sha256.c */
+/* $OpenBSD: sha256.c,v 1.6 2014/07/09 16:06:13 miod Exp $ */
 /* ====================================================================
  * Copyright (c) 2004 The OpenSSL Project.  All rights reserved
  * according to the OpenSSL license [found in ../../LICENSE].
  * ====================================================================
  */
+
 #include <openssl/opensslconf.h>
+
 #if !defined(OPENSSL_NO_SHA) && !defined(OPENSSL_NO_SHA256)
+
+#include <machine/endian.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -14,9 +18,7 @@
 #include <openssl/sha.h>
 #include <openssl/opensslv.h>
 
-const char SHA256_version[]="SHA-256" OPENSSL_VERSION_PTEXT;
-
-fips_md_init_ctx(SHA224, SHA256)
+int SHA224_Init(SHA256_CTX *c)
 	{
 	memset (c,0,sizeof(*c));
 	c->h[0]=0xc1059ed8UL;	c->h[1]=0x367cd507UL;
@@ -27,7 +29,7 @@ fips_md_init_ctx(SHA224, SHA256)
 	return 1;
 	}
 
-fips_md_init(SHA256)
+int SHA256_Init(SHA256_CTX *c)
 	{
 	memset (c,0,sizeof(*c));
 	c->h[0]=0x6a09e667UL;	c->h[1]=0xbb67ae85UL;
@@ -206,14 +208,14 @@ static void sha256_block_data_order (SHA256_CTX *ctx, const void *in, size_t num
 	SHA_LONG	X[16];
 	int i;
 	const unsigned char *data=in;
-	const union { long one; char little; } is_endian = {1};
 
 			while (num--) {
 
 	a = ctx->h[0];	b = ctx->h[1];	c = ctx->h[2];	d = ctx->h[3];
 	e = ctx->h[4];	f = ctx->h[5];	g = ctx->h[6];	h = ctx->h[7];
 
-	if (!is_endian.little && sizeof(SHA_LONG)==4 && ((size_t)in%4)==0)
+	if (BYTE_ORDER != LITTLE_ENDIAN &&
+	    sizeof(SHA_LONG)==4 && ((size_t)in%4)==0)
 		{
 		const SHA_LONG *W=(const SHA_LONG *)data;
 

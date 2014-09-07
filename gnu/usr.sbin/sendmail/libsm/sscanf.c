@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2001 Proofpoint, Inc. and its suppliers.
  *      All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,7 +13,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: sscanf.c,v 1.22 2001/03/02 23:53:41 ca Exp $")
+SM_RCSID("@(#)$Sendmail: sscanf.c,v 1.26 2013/11/22 20:51:43 ca Exp $")
 #include <string.h>
 #include <sm/varargs.h>
 #include <sm/io.h>
@@ -93,7 +93,6 @@ sm_io_sscanf(str, fmt, va_alist)
 	fake.f_type = "sm_io_sscanf:fake";
 	fake.f_flushfp = NULL;
 	fake.f_ub.smb_base = NULL;
-	fake.f_lb.smb_base = NULL;
 	fake.f_timeout = SM_TIME_FOREVER;
 	fake.f_timeoutstate = SM_TIME_BLOCK;
 	SM_VA_START(ap, fmt);

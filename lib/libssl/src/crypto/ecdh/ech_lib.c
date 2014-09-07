@@ -1,4 +1,4 @@
-/* crypto/ecdh/ech_lib.c */
+/* $OpenBSD: ech_lib.c,v 1.6 2014/07/09 11:10:50 bcook Exp $ */
 /* ====================================================================
  * Copyright 2002 Sun Microsystems, Inc. ALL RIGHTS RESERVED.
  *
@@ -67,17 +67,15 @@
  *
  */
 
-#include "ech_locl.h"
 #include <string.h>
+
+#include <openssl/opensslconf.h>
+
+#include "ech_locl.h"
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
 #include <openssl/err.h>
-#ifdef OPENSSL_FIPS
-#include <openssl/fips.h>
-#endif
-
-const char ECDH_version[]="ECDH" OPENSSL_VERSION_PTEXT;
 
 static const ECDH_METHOD *default_ECDH_method = NULL;
 
@@ -94,14 +92,7 @@ const ECDH_METHOD *ECDH_get_default_method(void)
 	{
 	if(!default_ECDH_method) 
 		{
-#ifdef OPENSSL_FIPS
-		if (FIPS_mode())
-			return FIPS_ecdh_openssl();
-		else
-			return ECDH_OpenSSL();
-#else
 		default_ECDH_method = ECDH_OpenSSL();
-#endif
 		}
 	return default_ECDH_method;
 	}
@@ -139,7 +130,7 @@ static ECDH_DATA *ECDH_DATA_new_method(ENGINE *engine)
 	{
 	ECDH_DATA *ret;
 
-	ret=(ECDH_DATA *)OPENSSL_malloc(sizeof(ECDH_DATA));
+	ret = malloc(sizeof(ECDH_DATA));
 	if (ret == NULL)
 		{
 		ECDHerr(ECDH_F_ECDH_DATA_NEW_METHOD, ERR_R_MALLOC_FAILURE);
@@ -160,7 +151,7 @@ static ECDH_DATA *ECDH_DATA_new_method(ENGINE *engine)
 			{
 			ECDHerr(ECDH_F_ECDH_DATA_NEW_METHOD, ERR_R_ENGINE_LIB);
 			ENGINE_finish(ret->engine);
-			OPENSSL_free(ret);
+			free(ret);
 			return NULL;
 			}
 		}
@@ -172,7 +163,7 @@ static ECDH_DATA *ECDH_DATA_new_method(ENGINE *engine)
 	if ((ret->meth->init != NULL) && !ret->meth->init(ret))
 		{
 		CRYPTO_free_ex_data(CRYPTO_EX_INDEX_ECDH, ret, &ret->ex_data);
-		OPENSSL_free(ret);
+		free(ret);
 		ret=NULL;
 		}
 #endif	
@@ -208,7 +199,7 @@ void ecdh_data_free(void *data)
 
 	OPENSSL_cleanse((void *)r, sizeof(ECDH_DATA));
 
-	OPENSSL_free(r);
+	free(r);
 	}
 
 ECDH_DATA *ecdh_check(EC_KEY *key)
@@ -234,15 +225,6 @@ ECDH_DATA *ecdh_check(EC_KEY *key)
 	}
 	else
 		ecdh_data = (ECDH_DATA *)data;
-#ifdef OPENSSL_FIPS
-	if (FIPS_mode() && !(ecdh_data->flags & ECDH_FLAG_FIPS_METHOD)
-			&& !(EC_KEY_get_flags(key) & EC_FLAG_NON_FIPS_ALLOW))
-		{
-		ECDHerr(ECDH_F_ECDH_CHECK, ECDH_R_NON_FIPS_METHOD);
-		return NULL;
-		}
-#endif
-	
 
 	return ecdh_data;
 	}

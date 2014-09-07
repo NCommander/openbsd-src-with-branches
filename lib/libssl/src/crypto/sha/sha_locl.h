@@ -1,4 +1,4 @@
-/* crypto/sha/sha_locl.h */
+/* $OpenBSD: sha_locl.h,v 1.16 2014/06/12 15:49:30 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -94,16 +94,9 @@ static void sha_block_data_order (SHA_CTX *c, const void *p,size_t num);
 # define HASH_FINAL              	SHA1_Final
 # define HASH_INIT			SHA1_Init
 # define HASH_BLOCK_DATA_ORDER   	sha1_block_data_order
-# if defined(__MWERKS__) && defined(__MC68K__)
-   /* Metrowerks for Motorola fails otherwise:-( <appro@fy.chalmers.se> */
-#  define Xupdate(a,ix,ia,ib,ic,id)	do { (a)=(ia^ib^ic^id);		\
-					     ix=(a)=ROTATE((a),1);	\
-					} while (0)
-# else
-#  define Xupdate(a,ix,ia,ib,ic,id)	( (a)=(ia^ib^ic^id),	\
+# define Xupdate(a,ix,ia,ib,ic,id)	( (a)=(ia^ib^ic^id),	\
 					  ix=(a)=ROTATE((a),1)	\
 					)
-# endif
 
 #ifndef SHA1_ASM
 static
@@ -123,9 +116,9 @@ void sha1_block_data_order (SHA_CTX *c, const void *p,size_t num);
 #define INIT_DATA_h4 0xc3d2e1f0UL
 
 #ifdef SHA_0
-fips_md_init(SHA)
+int SHA_Init(SHA_CTX *c)
 #else
-fips_md_init_ctx(SHA1, SHA)
+int SHA1_Init(SHA_CTX *c)
 #endif
 	{
 	memset (c,0,sizeof(*c));
@@ -209,6 +202,7 @@ fips_md_init_ctx(SHA1, SHA)
 #endif
 
 #if !defined(SHA_1) || !defined(SHA1_ASM)
+#include <machine/endian.h>
 static void HASH_BLOCK_DATA_ORDER (SHA_CTX *c, const void *p, size_t num)
 	{
 	const unsigned char *data=p;
@@ -228,9 +222,9 @@ static void HASH_BLOCK_DATA_ORDER (SHA_CTX *c, const void *p, size_t num)
 
 	for (;;)
 			{
-	const union { long one; char little; } is_endian = {1};
 
-	if (!is_endian.little && sizeof(SHA_LONG)==4 && ((size_t)p%4)==0)
+	if (BYTE_ORDER != LITTLE_ENDIAN &&
+	    sizeof(SHA_LONG)==4 && ((size_t)p%4)==0)
 		{
 		const SHA_LONG *W=(const SHA_LONG *)data;
 

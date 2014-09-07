@@ -1,72 +1,81 @@
-#	$NetBSD: bsd.man.mk,v 1.20 1995/06/07 01:15:20 cgd Exp $
+#	$OpenBSD: bsd.man.mk,v 1.39 2012/01/06 21:04:06 nicm Exp $
+#	$NetBSD: bsd.man.mk,v 1.23 1996/02/10 07:49:33 jtc Exp $
 #	@(#)bsd.man.mk	5.2 (Berkeley) 5/11/90
 
-MANTARGET?=	cat
-
 .if !target(.MAIN)
-.if exists(${.CURDIR}/../Makefile.inc)
-.include "${.CURDIR}/../Makefile.inc"
-.endif
+.  if exists(${.CURDIR}/../Makefile.inc)
+.    include "${.CURDIR}/../Makefile.inc"
+.  endif
 
 .MAIN: all
 .endif
 
-.SUFFIXES: .1 .2 .3 .4 .5 .6 .7 .8 .cat1 .cat2 .cat3 .cat4 .cat5 .cat6 \
-	.cat7 .cat8
+BEFOREMAN?=
+MANLINT=${MAN:S/$/.manlint/}
+CLEANFILES+=.man-linted ${MANLINT}
 
-.8.cat8 .7.cat7 .6.cat6 .5.cat5 .4.cat4 .3.cat3 .2.cat2 .1.cat1:
-	@echo "nroff -mandoc ${.IMPSRC} > ${.TARGET}"
-	@nroff -mandoc ${.IMPSRC} > ${.TARGET} || ( rm -f ${.TARGET} ; false )
-
-.if defined(MAN) && !empty(MAN)
-MANALL=	${MAN:S/.1$/.cat1/g:S/.2$/.cat2/g:S/.3$/.cat3/g:S/.4$/.cat4/g:S/.5$/.cat5/g:S/.6$/.cat6/g:S/.7$/.cat7/g:S/.8$/.cat8/g}
+# Add / so that we don't have to specify it.
+.if defined(MANSUBDIR) && !empty(MANSUBDIR)
+MANSUBDIR:=${MANSUBDIR:S,^,/,:S,$,/,}
+.else
+MANSUBDIR=/
 .endif
 
-MINSTALL=	install ${COPY} -o ${MANOWN} -g ${MANGRP} -m ${MANMODE}
-.if defined(MANZ)
-# chown and chmod are done afterward automatically
-MCOMPRESS=	gzip -cf
-MCOMPRESSSUFFIX= .gz
+# Files contained in ${BEFOREMAN} must be built before generating any
+# manual page source code.  However, static manual page files contained
+# in the source tree must not appear as targets, or the ${.IMPSRC} in
+# the .man.manlint suffix rule below will not find them in the .PATH.
+.for page in ${MAN}
+.  if target(${page})
+${page}: ${BEFOREMAN}
+.  endif
+.endfor
+
+# In any case, ${BEFOREMAN} must be finished before linting any manuals.
+.if !empty(MANLINT)
+${MANLINT}: ${BEFOREMAN}
 .endif
 
+# Set up the suffix rules for checking manuals.
+_MAN_SUFFIXES=1 2 3 3p 4 5 6 7 8 9
+.for s in ${_MAN_SUFFIXES}
+.SUFFIXES: .${s} .${s}.manlint
+.${s}.${s}.manlint:
+.if ${WARNINGS:L} == "yes"
+	@echo "mandoc -Tlint ${.IMPSRC}"
+	@mandoc -Tlint ${.IMPSRC} || [ $$? -lt 4 ]
+.else
+	mandoc -Tlint -Wfatal ${.IMPSRC}
+.endif
+	@touch ${.TARGET}
+.endfor
+
+# Install the real manuals.
+.for page in ${MAN}
+.  for sub in ${MANSUBDIR}
+_MAN_INST=${DESTDIR}${MANDIR}${page:E}${sub}${page:T}
+${_MAN_INST}: ${page}
+	${INSTALL} ${INSTALL_COPY} -o ${MANOWN} -g ${MANGRP} -m ${MANMODE} \
+		${.ALLSRC} ${.TARGET}
+
+maninstall: ${_MAN_INST}
+
+.PHONY: ${_MAN_INST}
+.  endfor
+.endfor
+
+# Install the manual hardlinks, if any.
 maninstall:
-.if defined(MANALL)
-	@for page in ${MANALL}; do \
-		dir=${DESTDIR}${MANDIR}`expr $$page : '.*\.cat\([1-8]\)'`; \
-		instpage=$${dir}${MANSUBDIR}/`expr $$page : '\(.*\)\.cat[1-8]'`.0${MCOMPRESSSUFFIX}; \
-		if [ X"${MCOMPRESS}" = X ]; then \
-			echo ${MINSTALL} $$page $$instpage; \
-			${MINSTALL} $$page $$instpage; \
-		else \
-			rm -f $$instpage; \
-			echo ${MCOMPRESS} $$page \> $$instpage; \
-			${MCOMPRESS} $$page > $$instpage; \
-			chown ${MANOWN}:${MANGRP} $$instpage; \
-			chmod ${MANMODE} $$instpage; \
-		fi \
-	done
-.endif
 .if defined(MLINKS) && !empty(MLINKS)
-	@set ${MLINKS}; \
-	while test $$# -ge 2; do \
-		name=$$1; \
-		shift; \
-		dir=${DESTDIR}${MANDIR}`expr $$name : '.*\.\(.*\)'`; \
-		l=$${dir}${MANSUBDIR}/`expr $$name : '\(.*\)\..*'`.0${MCOMPRESSSUFFIX}; \
-		name=$$1; \
-		shift; \
-		dir=${DESTDIR}${MANDIR}`expr $$name : '.*\.\(.*\)'`; \
-		t=$${dir}${MANSUBDIR}/`expr $$name : '\(.*\)\..*'`.0${MCOMPRESSSUFFIX}; \
-		echo $$t -\> $$l; \
-		rm -f $$t; \
-		ln $$l $$t; \
-	done
+.  for sub in ${MANSUBDIR}
+.     for lnk file in ${MLINKS}
+	@l=${DESTDIR}${MANDIR}${lnk:E}${sub}${lnk}; \
+	t=${DESTDIR}${MANDIR}${file:E}${sub}${file}; \
+	echo $$t -\> $$l; \
+	rm -f $$t; ln $$l $$t;
+.     endfor
+.  endfor
 .endif
 
-.if defined(MANALL)
-all: ${MANALL}
-
-cleandir: cleanman
-cleanman:
-	rm -f ${MANALL}
-.endif
+# Explicitly list ${BEFOREMAN} to get it done even if ${MAN} is empty.
+all: ${BEFOREMAN} ${MAN} ${MANLINT}

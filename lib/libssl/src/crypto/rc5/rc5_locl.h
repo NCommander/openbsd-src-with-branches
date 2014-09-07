@@ -1,4 +1,4 @@
-/* crypto/rc5/rc5_locl.h */
+/* $OpenBSD: rc5_locl.h,v 1.4 2014/06/12 15:49:30 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -57,6 +57,8 @@
  */
 
 #include <stdlib.h>
+
+#include <openssl/opensslconf.h>
 
 #undef c2l
 #define c2l(c,l)	(l =((unsigned long)(*((c)++)))    , \
@@ -146,10 +148,7 @@
                          *((c)++)=(unsigned char)(((l)>> 8L)&0xff), \
                          *((c)++)=(unsigned char)(((l)     )&0xff))
 
-#if (defined(OPENSSL_SYS_WIN32) && defined(_MSC_VER)) || defined(__ICC)
-#define ROTATE_l32(a,n)     _lrotl(a,n)
-#define ROTATE_r32(a,n)     _lrotr(a,n)
-#elif defined(__GNUC__) && __GNUC__>=2 && !defined(__STRICT_ANSI__) && !defined(OPENSSL_NO_ASM) && !defined(OPENSSL_NO_INLINE_ASM) && !defined(PEDANTIC)
+#if defined(__GNUC__) && __GNUC__>=2 && !defined(__STRICT_ANSI__) && !defined(OPENSSL_NO_ASM) && !defined(OPENSSL_NO_INLINE_ASM)
 # if defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__)
 #  define ROTATE_l32(a,n)	({ register unsigned int ret;	\
 					asm ("roll %%cl,%0"	\

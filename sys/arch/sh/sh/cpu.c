@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu.c,v 1.2 2007/05/14 07:05:49 art Exp $	*/
 /*	$NetBSD: cpu.c,v 1.8 2006/01/02 23:16:20 uwe Exp $	*/
 
 /*-
@@ -13,13 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -54,6 +47,8 @@ struct cfattach cpu_ca = {
 struct cfdriver cpu_cd = {
 	0, "cpu", DV_DULL
 };
+
+struct cpu_info cpu_info_store;
 
 int
 cpu_match(struct device *parent, void *vcf, void *aux)

@@ -1,5 +1,4 @@
-/*	$NetBSD: timezone.c,v 1.5 1995/02/27 05:54:24 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)timezone.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: timezone.c,v 1.5 1995/02/27 05:54:24 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/time.h>
 #include <stdio.h>
@@ -48,7 +35,7 @@ static char rcsid[] = "$NetBSD: timezone.c,v 1.5 1995/02/27 05:54:24 cgd Exp $";
 #include <string.h>
 #include <tzfile.h>
 
-char *_tztab();
+char *_tztab(int, int);
 
 /*
  * timezone --
@@ -61,20 +48,16 @@ char *_tztab();
 static char	czone[TZ_MAX_CHARS];		/* space for zone name */
 
 char *
-timezone(zone, dst)
-	int	zone,
-		dst;
+timezone(int zone, int dst)
 {
-	register char	*beg,
-			*end;
+	char	*beg, *end;
 
-	if (beg = getenv("TZNAME")) {		/* set in environment */
-		if (end = strchr(beg, ',')) {	/* "PST,PDT" */
+	if ((beg = getenv("TZNAME"))) {		/* set in environment */
+		if ((end = strchr(beg, ','))) {	/* "PST,PDT" */
 			if (dst)
 				return(++end);
 			*end = '\0';
-			(void)strncpy(czone,beg,sizeof(czone) - 1);
-			czone[sizeof(czone) - 1] = '\0';
+			strlcpy(czone,beg,sizeof(czone));
 			*end = ',';
 			return(czone);
 		}
@@ -88,22 +71,22 @@ static struct zone {
 	char	*stdzone;
 	char	*dlzone;
 } zonetab[] = {
-	-1*60,	"MET",	"MET DST",	/* Middle European */
-	-2*60,	"EET",	"EET DST",	/* Eastern European */
-	4*60,	"AST",	"ADT",		/* Atlantic */
-	5*60,	"EST",	"EDT",		/* Eastern */
-	6*60,	"CST",	"CDT",		/* Central */
-	7*60,	"MST",	"MDT",		/* Mountain */
-	8*60,	"PST",	"PDT",		/* Pacific */
+	{ -1*60,    "MET",	"MET DST"} ,	/* Middle European */
+	{ -2*60,    "EET",	"EET DST"} ,	/* Eastern European */
+	{ 4*60,	    "AST",	"ADT"} ,	/* Atlantic */
+	{ 5*60,	    "EST",	"EDT"} ,	/* Eastern */
+	{ 6*60,	    "CST",	"CDT"} ,	/* Central */
+	{ 7*60,	    "MST",	"MDT"} ,	/* Mountain */
+	{ 8*60,	    "PST",	"PDT"} ,	/* Pacific */
 #ifdef notdef
 	/* there's no way to distinguish this from WET */
-	0,	"GMT",	0,		/* Greenwich */
+	{ 0,	    "GMT",	0 },		/* Greenwich */
 #endif
-	0*60,	"WET",	"WET DST",	/* Western European */
-	-10*60,	"EST",	"EST",		/* Aust: Eastern */
-     -10*60+30,	"CST",	"CST",		/* Aust: Central */
-	-8*60,	"WST",	0,		/* Aust: Western */
-	-1
+	{ 0*60,	    "WET",	"WET DST" },	/* Western European */
+	{ -10*60,   "EST",	"EST" },	/* Aust: Eastern */
+	{ -10*60+30,"CST",	"CST" },	/* Aust: Central */
+	{ -8*60,    "WST",	0 },		/* Aust: Western */
+	{ -1 }
 };
 
 /*
@@ -114,12 +97,10 @@ static struct zone {
  *	STANDARD LIBRARY.
  */
 char *
-_tztab(zone,dst)
-	register int	zone;
-	int	dst;
+_tztab(int zone, int dst)
 {
-	register struct zone	*zp;
-	register char	sign;
+	struct zone	*zp;
+	char	sign;
 
 	for (zp = zonetab; zp->offset != -1;++zp)	/* static tables */
 		if (zp->offset == zone) {
@@ -135,6 +116,7 @@ _tztab(zone,dst)
 	}
 	else
 		sign = '-';
-	(void)sprintf(czone,"GMT%c%d:%02d",sign,zone / 60,zone % 60);
+	(void)snprintf(czone, sizeof czone, "GMT%c%d:%02d",
+	    sign,zone / 60,zone % 60);
 	return(czone);
 }

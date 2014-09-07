@@ -1,3 +1,4 @@
+/*	$OpenBSD: re.c,v 1.10 2003/06/11 23:42:12 deraadt Exp $	*/
 /*	$NetBSD: re.c,v 1.14 1995/03/21 09:04:48 cgd Exp $	*/
 
 /* re.c: This file contains the regular expression interface routines for
@@ -28,14 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char *rcsid = "@(#)re.c,v 1.6 1994/02/01 00:34:43 alm Exp";
-#else
-static char rcsid[] = "$NetBSD: re.c,v 1.14 1995/03/21 09:04:48 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include "ed.h"
 
 
@@ -43,10 +36,10 @@ extern int patlock;
 
 char errmsg[MAXPATHLEN + 40] = "";
 
-/* get_compiled_pattern: return pointer to compiled pattern from command 
+/* get_compiled_pattern: return pointer to compiled pattern from command
    buffer */
 pattern_t *
-get_compiled_pattern()
+get_compiled_pattern(void)
 {
 	static pattern_t *exp = NULL;
 
@@ -55,10 +48,11 @@ get_compiled_pattern()
 	int n;
 
 	if ((delimiter = *ibufp) == ' ') {
-		sprintf(errmsg, "invalid pattern delimiter");
+		seterrmsg("invalid pattern delimiter");
 		return NULL;
 	} else if (delimiter == '\n' || *++ibufp == '\n' || *ibufp == delimiter) {
-		if (!exp) sprintf(errmsg, "no previous pattern");
+		if (!exp)
+			seterrmsg("no previous pattern");
 		return exp;
 	} else if ((exps = extract_pattern(delimiter)) == NULL)
 		return NULL;
@@ -66,12 +60,12 @@ get_compiled_pattern()
 	if (exp && !patlock)
 		regfree(exp);
 	else if ((exp = (pattern_t *) malloc(sizeof(pattern_t))) == NULL) {
-		fprintf(stderr, "%s\n", strerror(errno));
-		sprintf(errmsg, "out of memory");
+		perror(NULL);
+		seterrmsg("out of memory");
 		return NULL;
 	}
 	patlock = 0;
-	if (n = regcomp(exp, exps, 0)) {
+	if ((n = regcomp(exp, exps, 0)) != 0) {
 		regerror(n, exp, errmsg, sizeof errmsg);
 		free(exp);
 		return exp = NULL;
@@ -83,8 +77,7 @@ get_compiled_pattern()
 /* extract_pattern: copy a pattern string from the command buffer; return
    pointer to the copy */
 char *
-extract_pattern(delimiter)
-	int delimiter;
+extract_pattern(int delimiter)
 {
 	static char *lhbuf = NULL;	/* buffer */
 	static int lhbufsz = 0;		/* buffer size */
@@ -98,13 +91,13 @@ extract_pattern(delimiter)
 			break;
 		case '[':
 			if ((nd = parse_char_class(++nd)) == NULL) {
-				sprintf(errmsg, "unbalanced brackets ([])");
+				seterrmsg("unbalanced brackets ([])");
 				return NULL;
 			}
 			break;
 		case '\\':
 			if (*++nd == '\n') {
-				sprintf(errmsg, "trailing backslash (\\)");
+				seterrmsg("trailing backslash (\\)");
 				return NULL;
 			}
 			break;
@@ -120,8 +113,7 @@ extract_pattern(delimiter)
 
 /* parse_char_class: expand a POSIX character class */
 char *
-parse_char_class(s)
-	char *s;
+parse_char_class(char *s)
 {
 	int c, d;
 

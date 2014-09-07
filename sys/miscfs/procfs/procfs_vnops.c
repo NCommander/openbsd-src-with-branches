@@ -1,4 +1,5 @@
-/*	$NetBSD: procfs_vnops.c,v 1.35 1995/10/09 14:03:38 mycroft Exp $	*/
+/*	$OpenBSD: procfs_vnops.c,v 1.59 2014/01/21 01:48:22 tedu Exp $	*/
+/*	$NetBSD: procfs_vnops.c,v 1.40 1996/03/16 23:52:55 christos Exp $	*/
 
 /*
  * Copyright (c) 1993 Jan-Simon Pendry
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,20 +46,25 @@
 #include <sys/kernel.h>
 #include <sys/file.h>
 #include <sys/proc.h>
+#include <sys/mount.h>
 #include <sys/vnode.h>
 #include <sys/namei.h>
 #include <sys/malloc.h>
 #include <sys/dirent.h>
 #include <sys/resourcevar.h>
+#include <sys/poll.h>
 #include <sys/ptrace.h>
-#include <vm/vm.h>	/* for PAGE_SIZE */
+#include <sys/stat.h>
+
 #include <machine/reg.h>
+
 #include <miscfs/procfs/procfs.h>
 
 /*
  * Vnode Operations.
  *
  */
+static int procfs_validfile_linux(struct proc *, struct mount *);
 
 /*
  * This is a list of the valid names in the
@@ -74,7 +76,7 @@ struct proc_target {
 	u_char	pt_namlen;
 	char	*pt_name;
 	pfstype	pt_pfstype;
-	int	(*pt_valid) __P((struct proc *p));
+	int	(*pt_valid)(struct proc *p, struct mount *mp);
 } proc_targets[] = {
 #define N(s) sizeof(s)-1, s
 	/*	  name		type		validp */
@@ -82,18 +84,89 @@ struct proc_target {
 	{ DT_DIR, N(".."),	Proot,		NULL },
 	{ DT_REG, N("file"),	Pfile,		procfs_validfile },
 	{ DT_REG, N("mem"),	Pmem,		NULL },
-	{ DT_REG, N("regs"),	Pregs,		procfs_validregs },
-	{ DT_REG, N("fpregs"),	Pfpregs,	procfs_validfpregs },
-	{ DT_REG, N("ctl"),	Pctl,		NULL },
 	{ DT_REG, N("status"),	Pstatus,	NULL },
-	{ DT_REG, N("note"),	Pnote,		NULL },
-	{ DT_REG, N("notepg"),	Pnotepg,	NULL },
+	{ DT_REG, N("cmdline"), Pcmdline,	NULL },
+	{ DT_REG, N("exe"),	Pfile,		procfs_validfile_linux },
 #undef N
 };
 static int nproc_targets = sizeof(proc_targets) / sizeof(proc_targets[0]);
 
-static pid_t atopid __P((const char *, u_int));
+/*
+ * List of files in the root directory.  Note: the validate function
+ * will be called with p == NULL for these
+ */
+struct proc_target proc_root_targets[] = {
+#define N(s) sizeof(s)-1, s
+	/*	  name		type		validp */
+	{ DT_REG, N("meminfo"),	Pmeminfo,	procfs_validfile_linux },
+	{ DT_REG, N("cpuinfo"),	Pcpuinfo,	procfs_validfile_linux },
+#undef N
+};
+static int nproc_root_targets =
+    sizeof(proc_root_targets) / sizeof(proc_root_targets[0]);
 
+static pid_t atopid(const char *, u_int);
+
+/*
+ * Prototypes for procfs vnode ops
+ */
+int	procfs_badop(void *);
+
+int	procfs_lookup(void *);
+int	procfs_open(void *);
+int	procfs_close(void *);
+int	procfs_access(void *);
+int	procfs_getattr(void *);
+int	procfs_setattr(void *);
+int	procfs_ioctl(void *);
+int	procfs_link(void *);
+int	procfs_symlink(void *);
+int	procfs_readdir(void *);
+int	procfs_readlink(void *);
+int	procfs_inactive(void *);
+int	procfs_reclaim(void *);
+int	procfs_print(void *);
+int	procfs_pathconf(void *);
+
+static pid_t atopid(const char *, u_int);
+
+/*
+ * procfs vnode operations.
+ */
+struct vops procfs_vops = {
+	.vop_lookup	= procfs_lookup,
+	.vop_create	= procfs_badop,
+	.vop_mknod	= procfs_badop,
+	.vop_open	= procfs_open,
+	.vop_close	= procfs_close,
+	.vop_access	= procfs_access,
+	.vop_getattr	= procfs_getattr,
+	.vop_setattr	= procfs_setattr,
+	.vop_read	= procfs_rw,
+	.vop_write	= procfs_rw,
+	.vop_ioctl	= procfs_ioctl,
+	.vop_poll	= procfs_poll,
+	.vop_fsync	= procfs_badop,
+	.vop_remove	= procfs_badop,
+	.vop_link	= procfs_link,
+	.vop_rename	= procfs_badop,
+	.vop_mkdir	= procfs_badop,
+	.vop_rmdir	= procfs_badop,
+	.vop_symlink	= procfs_symlink,
+	.vop_readdir	= procfs_readdir,
+	.vop_readlink	= procfs_readlink,
+	.vop_abortop	= vop_generic_abortop,
+	.vop_inactive	= procfs_inactive,
+	.vop_reclaim	= procfs_reclaim,
+	.vop_lock	= nullop,
+	.vop_unlock	= nullop,
+	.vop_bmap	= vop_generic_bmap,
+	.vop_strategy	= procfs_badop,
+	.vop_print	= procfs_print,
+	.vop_islocked	= nullop,
+	.vop_pathconf	= procfs_pathconf,
+	.vop_advlock	= procfs_badop,
+};
 /*
  * set things up for doing i/o on
  * the pfsnode (vp).  (vp) is locked
@@ -105,24 +178,26 @@ static pid_t atopid __P((const char *, u_int));
  * is to support exclusive open on process
  * memory images.
  */
-procfs_open(ap)
-	struct vop_open_args /* {
-		struct vnode *a_vp;
-		int  a_mode;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+int
+procfs_open(void *v)
 {
+	struct vop_open_args *ap = v;
 	struct pfsnode *pfs = VTOPFS(ap->a_vp);
+	struct proc *p1 = ap->a_p;	/* tracer */
+	struct proc *p2;		/* traced */
+	int error;
+
+	if ((p2 = pfind(pfs->pfs_pid)) == 0 || (p2->p_flag & P_THREAD))
+		return (ENOENT);	/* was ESRCH, jsp */
 
 	switch (pfs->pfs_type) {
 	case Pmem:
-		if (PFIND(pfs->pfs_pid) == 0)
-			return (ENOENT);	/* was ESRCH, jsp */
-
-		if ((pfs->pfs_flags & FWRITE) && (ap->a_mode & O_EXCL) ||
-		    (pfs->pfs_flags & O_EXCL) && (ap->a_mode & FWRITE))
+		if (((pfs->pfs_flags & FWRITE) && (ap->a_mode & O_EXCL)) ||
+		    ((pfs->pfs_flags & O_EXCL) && (ap->a_mode & FWRITE)))
 			return (EBUSY);
+
+		if ((error = process_checkioperm(p1, p2->p_p)) != 0)
+			return (error);
 
 		if (ap->a_mode & FWRITE)
 			pfs->pfs_flags = ap->a_mode & (FWRITE|O_EXCL);
@@ -143,20 +218,31 @@ procfs_open(ap)
  * nothing to do for procfs other than undo
  * any exclusive open flag (see _open above).
  */
-procfs_close(ap)
-	struct vop_close_args /* {
-		struct vnode *a_vp;
-		int  a_fflag;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+int
+procfs_close(void *v)
 {
+	struct vop_close_args *ap = v;
 	struct pfsnode *pfs = VTOPFS(ap->a_vp);
 
 	switch (pfs->pfs_type) {
 	case Pmem:
 		if ((ap->a_fflag & FWRITE) && (pfs->pfs_flags & O_EXCL))
 			pfs->pfs_flags &= ~(FWRITE|O_EXCL);
+		break;
+	case Pctl:
+	case Pstatus:
+	case Pnotepg:
+	case Pnote:
+	case Proot:
+	case Pcurproc:
+	case Pself:
+	case Pproc:
+	case Pfile:
+	case Pregs:
+	case Pfpregs:
+	case Pcmdline:
+	case Pmeminfo:
+	case Pcpuinfo:
 		break;
 	}
 
@@ -167,44 +253,12 @@ procfs_close(ap)
  * do an ioctl operation on pfsnode (vp).
  * (vp) is not locked on entry or exit.
  */
-procfs_ioctl(ap)
-	struct vop_ioctl_args /* {
-		struct vnode *a_vp;
-		u_long a_command;
-		caddr_t a_data;
-		int a_fflag;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+/*ARGSUSED*/
+int
+procfs_ioctl(void *v)
 {
 
 	return (ENOTTY);
-}
-
-/*
- * do block mapping for pfsnode (vp).
- * since we don't use the buffer cache
- * for procfs this function should never
- * be called.  in any case, it's not clear
- * what part of the kernel ever makes use
- * of this function.  for sanity, this is the
- * usual no-op bmap, although returning
- * (EIO) would be a reasonable alternative.
- */
-procfs_bmap(ap)
-	struct vop_bmap_args /* {
-		struct vnode *a_vp;
-		daddr_t  a_bn;
-		struct vnode **a_vpp;
-		daddr_t *a_bnp;
-	} */ *ap;
-{
-
-	if (ap->a_vpp != NULL)
-		*ap->a_vpp = ap->a_vp;
-	if (ap->a_bnp != NULL)
-		*ap->a_bnp = ap->a_bn;
-	return (0);
 }
 
 /*
@@ -219,19 +273,19 @@ procfs_bmap(ap)
  * the vnode by calling vgone().  this may
  * be overkill and a waste of time since the
  * chances are that the process will still be
- * there and PFIND is not free.
+ * there and pfind is not free.
  *
  * (vp) is not locked on entry or exit.
  */
-procfs_inactive(ap)
-	struct vop_inactive_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
+int
+procfs_inactive(void *v)
 {
-	struct pfsnode *pfs = VTOPFS(ap->a_vp);
+	struct vop_inactive_args *ap = v;
+	struct vnode *vp = ap->a_vp;
+	struct pfsnode *pfs = VTOPFS(vp);
 
-	if (PFIND(pfs->pfs_pid) == 0)
-		vgone(ap->a_vp);
+	if (pfind(pfs->pfs_pid) == NULL && !(vp->v_flag & VXLOCK))
+		vgone(vp);
 
 	return (0);
 }
@@ -243,11 +297,10 @@ procfs_inactive(ap)
  * to free any private data and remove the node
  * from any private lists.
  */
-procfs_reclaim(ap)
-	struct vop_reclaim_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
+int
+procfs_reclaim(void *v)
 {
+	struct vop_reclaim_args *ap = v;
 
 	return (procfs_freevp(ap->a_vp));
 }
@@ -255,37 +308,25 @@ procfs_reclaim(ap)
 /*
  * Return POSIX pathconf information applicable to special devices.
  */
-procfs_pathconf(ap)
-	struct vop_pathconf_args /* {
-		struct vnode *a_vp;
-		int a_name;
-		register_t *a_retval;
-	} */ *ap;
+int
+procfs_pathconf(void *v)
 {
+	struct vop_pathconf_args *ap = v;
+	int error = 0;
 
 	switch (ap->a_name) {
 	case _PC_LINK_MAX:
 		*ap->a_retval = LINK_MAX;
-		return (0);
-	case _PC_MAX_CANON:
-		*ap->a_retval = MAX_CANON;
-		return (0);
-	case _PC_MAX_INPUT:
-		*ap->a_retval = MAX_INPUT;
-		return (0);
-	case _PC_PIPE_BUF:
-		*ap->a_retval = PIPE_BUF;
-		return (0);
+		break;
 	case _PC_CHOWN_RESTRICTED:
 		*ap->a_retval = 1;
-		return (0);
-	case _PC_VDISABLE:
-		*ap->a_retval = _POSIX_VDISABLE;
-		return (0);
+		break;
 	default:
-		return (EINVAL);
+		error = EINVAL;
+		break;
 	}
-	/* NOTREACHED */
+
+	return (error);
 }
 
 /*
@@ -293,39 +334,44 @@ procfs_pathconf(ap)
  * just print a readable description
  * of (vp).
  */
-procfs_print(ap)
-	struct vop_print_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
+int
+procfs_print(void *v)
 {
+	struct vop_print_args *ap = v;
 	struct pfsnode *pfs = VTOPFS(ap->a_vp);
 
-	printf("tag VT_PROCFS, type %s, pid %d, mode %x, flags %x\n",
+	printf("tag VT_PROCFS, type %d, pid %d, mode %x, flags %lx\n",
 	    pfs->pfs_type, pfs->pfs_pid, pfs->pfs_mode, pfs->pfs_flags);
+	return 0;
 }
 
-/*
- * _abortop is called when operations such as
- * rename and create fail.  this entry is responsible
- * for undoing any side-effects caused by the lookup.
- * this will always include freeing the pathname buffer.
- */
-procfs_abortop(ap)
-	struct vop_abortop_args /* {
-		struct vnode *a_dvp;
-		struct componentname *a_cnp;
-	} */ *ap;
+int
+procfs_link(void *v)
 {
+	struct vop_link_args *ap = v;
 
-	if ((ap->a_cnp->cn_flags & (HASBUF | SAVESTART)) == HASBUF)
-		FREE(ap->a_cnp->cn_pnbuf, M_NAMEI);
-	return (0);
+	VOP_ABORTOP(ap->a_dvp, ap->a_cnp);
+	vput(ap->a_dvp);
+	return (EROFS);
 }
+
+int
+procfs_symlink(void *v)
+{
+	struct vop_symlink_args *ap = v;
+
+	VOP_ABORTOP(ap->a_dvp, ap->a_cnp);
+	vput(ap->a_dvp);
+	return (EROFS);
+}
+
 
 /*
  * generic entry point for unsupported operations
  */
-procfs_badop()
+/*ARGSUSED*/
+int
+procfs_badop(void *v)
 {
 
 	return (EIO);
@@ -340,30 +386,27 @@ procfs_badop()
  *
  * this is relatively minimal for procfs.
  */
-procfs_getattr(ap)
-	struct vop_getattr_args /* {
-		struct vnode *a_vp;
-		struct vattr *a_vap;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+int
+procfs_getattr(void *v)
 {
+	struct vop_getattr_args *ap = v;
 	struct pfsnode *pfs = VTOPFS(ap->a_vp);
 	struct vattr *vap = ap->a_vap;
 	struct proc *procp;
-	struct timeval tv;
 	int error;
 
 	/* first check the process still exists */
 	switch (pfs->pfs_type) {
 	case Proot:
 	case Pcurproc:
+	case Pcpuinfo:
+	case Pmeminfo:
 		procp = 0;
 		break;
 
 	default:
-		procp = PFIND(pfs->pfs_pid);
-		if (procp == 0)
+		procp = pfind(pfs->pfs_pid);
+		if (procp == 0 || (procp->p_flag & P_THREAD))
 			return (ENOENT);
 	}
 
@@ -388,30 +431,43 @@ procfs_getattr(ap)
 	 * p_stat structure is not addressible if u. gets
 	 * swapped out for that process.
 	 */
-	microtime(&tv);
-	TIMEVAL_TO_TIMESPEC(&tv, &vap->va_ctime);
+	getnanotime(&vap->va_ctime);
 	vap->va_atime = vap->va_mtime = vap->va_ctime;
 
-	/*
-	 * If the process has exercised some setuid or setgid
-	 * privilege, then rip away read/write permission so
-	 * that only root can gain access.
-	 */
 	switch (pfs->pfs_type) {
-	case Pmem:
 	case Pregs:
 	case Pfpregs:
-		if (procp->p_flag & P_SUGID)
-			vap->va_mode &= ~((VREAD|VWRITE)|
-					  ((VREAD|VWRITE)>>3)|
-					  ((VREAD|VWRITE)>>6));
+#ifndef PTRACE
+		break;
+#endif
+	case Pmem:
+		/*
+		 * If the process has exercised some setuid or setgid
+		 * privilege, then rip away read/write permission so
+		 * that only root can gain access.
+		 */
+		if (procp->p_p->ps_flags & PS_SUGID)
+			vap->va_mode &= ~(S_IRUSR|S_IWUSR);
+		/* FALLTHROUGH */
 	case Pctl:
 	case Pstatus:
 	case Pnote:
 	case Pnotepg:
+	case Pcmdline:
 		vap->va_nlink = 1;
 		vap->va_uid = procp->p_ucred->cr_uid;
 		vap->va_gid = procp->p_ucred->cr_gid;
+		break;
+	case Pmeminfo:
+	case Pcpuinfo:
+		vap->va_nlink = 1;
+		vap->va_uid = vap->va_gid = 0;
+		break;
+	case Pproc:
+	case Pfile:
+	case Proot:
+	case Pcurproc:
+	case Pself:
 		break;
 	}
 
@@ -438,13 +494,26 @@ procfs_getattr(ap)
 
 	case Pcurproc: {
 		char buf[16];		/* should be enough */
+		int len;
+
+		len = snprintf(buf, sizeof buf, "%ld", (long)curproc->p_pid);
+		if (len == -1 || len >= sizeof buf) {
+			error = EINVAL;
+			break;
+		}
 		vap->va_nlink = 1;
 		vap->va_uid = 0;
 		vap->va_gid = 0;
-		vap->va_size = vap->va_bytes =
-		    sprintf(buf, "%ld", (long)curproc->p_pid);
+		vap->va_size = vap->va_bytes = len;
 		break;
 	}
+
+	case Pself:
+		vap->va_nlink = 1;
+		vap->va_uid = 0;
+		vap->va_gid = 0;
+		vap->va_size = vap->va_bytes = sizeof("curproc");
+		break;
 
 	case Pproc:
 		vap->va_nlink = 2;
@@ -459,43 +528,47 @@ procfs_getattr(ap)
 
 	case Pmem:
 		vap->va_bytes = vap->va_size =
-			ctob(procp->p_vmspace->vm_tsize +
+			ptoa(procp->p_vmspace->vm_tsize +
 				    procp->p_vmspace->vm_dsize +
 				    procp->p_vmspace->vm_ssize);
 		break;
 
-#if defined(PT_GETREGS) || defined(PT_SETREGS)
 	case Pregs:
+#ifdef PTRACE
 		vap->va_bytes = vap->va_size = sizeof(struct reg);
-		break;
 #endif
+		break;
 
-#if defined(PT_GETFPREGS) || defined(PT_SETFPREGS)
 	case Pfpregs:
+#if defined(PT_GETFPREGS) || defined(PT_SETFPREGS)
+#ifdef PTRACE
 		vap->va_bytes = vap->va_size = sizeof(struct fpreg);
-		break;
 #endif
+#endif
+		break;
 
 	case Pctl:
 	case Pstatus:
 	case Pnote:
 	case Pnotepg:
+	case Pcmdline:
+	case Pmeminfo:
+	case Pcpuinfo:
+		vap->va_bytes = vap->va_size = 0;
 		break;
 
+#ifdef DIAGNOSTIC
 	default:
 		panic("procfs_getattr");
+#endif
 	}
 
 	return (error);
 }
 
-procfs_setattr(ap)
-	struct vop_setattr_args /* {
-		struct vnode *a_vp;
-		struct vattr *a_vap;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+/*ARGSUSED*/
+int
+procfs_setattr(void *v)
 {
 	/*
 	 * just fake out attribute setting
@@ -518,22 +591,18 @@ procfs_setattr(ap)
  * but does mean that the i/o entry points need to check
  * that the operation really does make sense.
  */
-procfs_access(ap)
-	struct vop_access_args /* {
-		struct vnode *a_vp;
-		int a_mode;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+int
+procfs_access(void *v)
 {
+	struct vop_access_args *ap = v;
 	struct vattr va;
 	int error;
 
-	if (error = VOP_GETATTR(ap->a_vp, &va, ap->a_cred, ap->a_p))
+	if ((error = VOP_GETATTR(ap->a_vp, &va, ap->a_cred, ap->a_p)) != 0)
 		return (error);
 
-	return (vaccess(va.va_mode, va.va_uid, va.va_gid, ap->a_mode,
-	    ap->a_cred));
+	return (vaccess(ap->a_vp->v_type, va.va_mode, va.va_uid, va.va_gid,
+			ap->a_mode, ap->a_cred));
 }
 
 /*
@@ -545,83 +614,139 @@ procfs_access(ap)
  * filesystem doesn't do any locking of its own.  otherwise
  * read and inwardly digest ufs_lookup().
  */
-procfs_lookup(ap)
-	struct vop_lookup_args /* {
-		struct vnode * a_dvp;
-		struct vnode ** a_vpp;
-		struct componentname * a_cnp;
-	} */ *ap;
+int
+procfs_lookup(void *v)
 {
+	struct vop_lookup_args *ap = v;
 	struct componentname *cnp = ap->a_cnp;
 	struct vnode **vpp = ap->a_vpp;
 	struct vnode *dvp = ap->a_dvp;
 	char *pname = cnp->cn_nameptr;
+	struct proc *curp = curproc;
 	struct proc_target *pt;
 	struct vnode *fvp;
 	pid_t pid;
 	struct pfsnode *pfs;
-	struct proc *p;
-	int i;
+	struct proc *p = NULL;
+	int i, error, wantpunlock, iscurproc = 0, isself = 0;
 
 	*vpp = NULL;
+	cnp->cn_flags &= ~PDIRUNLOCK;
 
 	if (cnp->cn_nameiop == DELETE || cnp->cn_nameiop == RENAME)
 		return (EROFS);
 
 	if (cnp->cn_namelen == 1 && *pname == '.') {
 		*vpp = dvp;
-		VREF(dvp);
-		/*VOP_LOCK(dvp);*/
+		vref(dvp);
 		return (0);
 	}
 
+	wantpunlock = (~cnp->cn_flags & (LOCKPARENT | ISLASTCN));
 	pfs = VTOPFS(dvp);
 	switch (pfs->pfs_type) {
 	case Proot:
 		if (cnp->cn_flags & ISDOTDOT)
 			return (EIO);
 
-		if (CNEQ(cnp, "curproc", 7))
-			return (procfs_allocvp(dvp->v_mount, vpp, 0, Pcurproc));
+		iscurproc = CNEQ(cnp, "curproc", 7);
+		isself = CNEQ(cnp, "self", 4);
+
+		if (iscurproc || isself) {
+			error = procfs_allocvp(dvp->v_mount, vpp, 0,
+			    iscurproc ? Pcurproc : Pself);
+			if ((error == 0) && (wantpunlock)) {
+				VOP_UNLOCK(dvp, 0, curp);
+				cnp->cn_flags |= PDIRUNLOCK;
+			}
+			return (error);
+		}
+
+		for (i = 0; i < nproc_root_targets; i++) {
+			pt = &proc_root_targets[i];
+			if (cnp->cn_namelen == pt->pt_namlen &&
+			    memcmp(pt->pt_name, pname, cnp->cn_namelen) == 0 &&
+			    (pt->pt_valid == NULL ||
+			     (*pt->pt_valid)(p, dvp->v_mount)))
+				break;
+		}
+
+		if (i != nproc_root_targets) {
+			error = procfs_allocvp(dvp->v_mount, vpp, 0,
+			    pt->pt_pfstype);
+			if ((error == 0) && (wantpunlock)) {
+				VOP_UNLOCK(dvp, 0, curp);
+				cnp->cn_flags |= PDIRUNLOCK;
+			}
+			return (error);
+		}
 
 		pid = atopid(pname, cnp->cn_namelen);
 		if (pid == NO_PID)
 			break;
 
-		p = PFIND(pid);
-		if (p == 0)
+		p = pfind(pid);
+		if (p == 0 || (p->p_flag & P_THREAD))
 			break;
 
-		return (procfs_allocvp(dvp->v_mount, vpp, pid, Pproc));
+		error = procfs_allocvp(dvp->v_mount, vpp, pid, Pproc);
+		if ((error == 0) && wantpunlock) {
+			VOP_UNLOCK(dvp, 0, curp);
+			cnp->cn_flags |= PDIRUNLOCK;
+		}
+		return (error);
 
 	case Pproc:
-		if (cnp->cn_flags & ISDOTDOT)
-			return (procfs_root(dvp->v_mount, vpp));
+		/*
+		 * do the .. dance. We unlock the directory, and then
+		 * get the root dir. That will automatically return ..
+		 * locked. Then if the caller wanted dvp locked, we
+		 * re-lock.
+		 */
+		if (cnp->cn_flags & ISDOTDOT) {
+			VOP_UNLOCK(dvp, 0, p);
+			cnp->cn_flags |= PDIRUNLOCK;
+			error = procfs_root(dvp->v_mount, vpp);
+			if ((error == 0) && (wantpunlock == 0) &&
+			    ((error = vn_lock(dvp, LK_EXCLUSIVE, curp)) == 0))
+				cnp->cn_flags &= ~PDIRUNLOCK;
+			return (error);
+		}
 
-		p = PFIND(pfs->pfs_pid);
-		if (p == 0)
+		p = pfind(pfs->pfs_pid);
+		if (p == 0 || (p->p_flag & P_THREAD))
 			break;
 
 		for (pt = proc_targets, i = 0; i < nproc_targets; pt++, i++) {
 			if (cnp->cn_namelen == pt->pt_namlen &&
 			    bcmp(pt->pt_name, pname, cnp->cn_namelen) == 0 &&
-			    (pt->pt_valid == NULL || (*pt->pt_valid)(p)))
+			    (pt->pt_valid == NULL ||
+			     (*pt->pt_valid)(p, dvp->v_mount)))
 				goto found;
 		}
 		break;
 
 	found:
 		if (pt->pt_pfstype == Pfile) {
-			fvp = procfs_findtextvp(p);
+			fvp = p->p_p->ps_textvp;
 			/* We already checked that it exists. */
-			VREF(fvp);
-			VOP_LOCK(fvp);
+			vref(fvp);
+			vn_lock(fvp, LK_EXCLUSIVE | LK_RETRY, curp);
+			if (wantpunlock) {
+				VOP_UNLOCK(dvp, 0, curp);
+				cnp->cn_flags |= PDIRUNLOCK;
+			}
 			*vpp = fvp;
 			return (0);
 		}
 
-		return (procfs_allocvp(dvp->v_mount, vpp, pfs->pfs_pid,
-		    pt->pt_pfstype));
+		error =  procfs_allocvp(dvp->v_mount, vpp, pfs->pfs_pid,
+		    pt->pt_pfstype);
+		if ((error == 0) && (wantpunlock)) {
+			VOP_UNLOCK(dvp, 0, curp);
+			cnp->cn_flags |= PDIRUNLOCK;
+		}
+		return (error);
 
 	default:
 		return (ENOTDIR);
@@ -631,11 +756,20 @@ procfs_lookup(ap)
 }
 
 int
-procfs_validfile(p)
-	struct proc *p;
+procfs_validfile(struct proc *p, struct mount *mp)
 {
 
-	return (procfs_findtextvp(p) != NULLVP);
+	return (p->p_p->ps_textvp != NULLVP);
+}
+
+int
+procfs_validfile_linux(struct proc *p, struct mount *mp)
+{
+	int flags;
+
+	flags = VFSTOPROC(mp)->pmnt_flags;
+	return ((flags & PROCFSMNT_LINUXCOMPAT) &&
+	    (p == NULL || procfs_validfile(p, mp)));
 }
 
 /*
@@ -650,34 +784,28 @@ procfs_validfile(p)
  *
  * this should just be done through read()
  */
-procfs_readdir(ap)
-	struct vop_readdir_args /* {
-		struct vnode *a_vp;
-		struct uio *a_uio;
-		struct ucred *a_cred;
-		int *a_eofflag;
-		u_long *a_cookies;
-		int a_ncookies;
-	} */ *ap;
+int
+procfs_readdir(void *v)
 {
+	struct vop_readdir_args *ap = v;
 	struct uio *uio = ap->a_uio;
 	struct dirent d;
 	struct pfsnode *pfs;
+	struct vnode *vp;
 	int i;
 	int error;
-	u_long *cookies = ap->a_cookies;
-	int ncookies = ap->a_ncookies;
 
-	pfs = VTOPFS(ap->a_vp);
+	vp = ap->a_vp;
+	pfs = VTOPFS(vp);
 
 	if (uio->uio_resid < UIO_MX)
-		return (EINVAL);
-	if (uio->uio_offset < 0)
 		return (EINVAL);
 
 	error = 0;
 	i = uio->uio_offset;
-	bzero((caddr_t)&d, UIO_MX);
+	if (i < 0)
+		return (EINVAL);
+	bzero(&d, UIO_MX);
 	d.d_reclen = UIO_MX;
 
 	switch (pfs->pfs_type) {
@@ -690,13 +818,14 @@ procfs_readdir(ap)
 		struct proc *p;
 		struct proc_target *pt;
 
-		p = PFIND(pfs->pfs_pid);
-		if (p == NULL)
+		p = pfind(pfs->pfs_pid);
+		if (p == NULL || (p->p_flag & P_THREAD))
 			break;
 
 		for (pt = &proc_targets[i];
 		     uio->uio_resid >= UIO_MX && i < nproc_targets; pt++, i++) {
-			if (pt->pt_valid && (*pt->pt_valid)(p) == 0)
+			if (pt->pt_valid &&
+			    (*pt->pt_valid)(p, vp->v_mount) == 0)
 				continue;
 			
 			d.d_fileno = PROCFS_FILENO(pfs->pfs_pid, pt->pt_pfstype);
@@ -704,10 +833,8 @@ procfs_readdir(ap)
 			bcopy(pt->pt_name, d.d_name, pt->pt_namlen + 1);
 			d.d_type = pt->pt_type;
 
-			if (error = uiomove((caddr_t)&d, UIO_MX, uio))
+			if ((error = uiomove(&d, UIO_MX, uio)) != 0)
 				break;
-			if (ncookies-- > 0)
-				*cookies++ = i + 1;
 		}
 
 	    	break;
@@ -716,9 +843,9 @@ procfs_readdir(ap)
 	/*
 	 * this is for the root of the procfs filesystem
 	 * what is needed is a special entry for "curproc"
-	 * followed by an entry for each process on allproc
+	 * followed by an entry for each process on allprocess
 #ifdef PROCFS_ZOMBIE
-	 * and zombproc.
+	 * and zombprocess.
 #endif
 	 */
 
@@ -727,12 +854,14 @@ procfs_readdir(ap)
 		int doingzomb = 0;
 #endif
 		int pcnt = i;
-		volatile struct proc *p = allproc.lh_first;
+		volatile struct process *pr = LIST_FIRST(&allprocess);
 
 		if (pcnt > 3)
 			pcnt = 3;
+#ifdef PROCFS_ZOMBIE
 	again:
-		for (; p && uio->uio_resid >= UIO_MX; i++, pcnt++) {
+#endif
+		for (; pr && uio->uio_resid >= UIO_MX; i++, pcnt++) {
 			switch (i) {
 			case 0:		/* `.' */
 			case 1:		/* `..' */
@@ -750,32 +879,52 @@ procfs_readdir(ap)
 				d.d_type = DT_LNK;
 				break;
 
-			default:
-				while (pcnt < i) {
-					pcnt++;
-					p = p->p_list.le_next;
-					if (!p)
-						goto done;
+			case 3:
+				d.d_fileno = PROCFS_FILENO(0, Pself);
+				d.d_namlen = 4;
+				bcopy("self", d.d_name, 5);
+				d.d_type = DT_LNK;
+				break;
+
+			case 4:
+				if (VFSTOPROC(vp->v_mount)->pmnt_flags &
+				    PROCFSMNT_LINUXCOMPAT) {
+					d.d_fileno = PROCFS_FILENO(0, Pcpuinfo);
+					d.d_namlen = 7;
+					bcopy("cpuinfo", d.d_name, 8);
+					d.d_type = DT_REG;
+					break;
 				}
-				d.d_fileno = PROCFS_FILENO(p->p_pid, Pproc);
-				d.d_namlen = sprintf(d.d_name, "%ld",
-				    (long)p->p_pid);
+				/* fall through */
+
+			case 5:
+				if (VFSTOPROC(vp->v_mount)->pmnt_flags &
+				    PROCFSMNT_LINUXCOMPAT) {
+					d.d_fileno = PROCFS_FILENO(0, Pmeminfo);
+					d.d_namlen = 7;
+					bcopy("meminfo", d.d_name, 8);
+					d.d_type = DT_REG;
+					break;
+				}
+				/* fall through */
+
+			default:
+				while (pcnt < i)
+					pcnt++;
+				d.d_fileno = PROCFS_FILENO(pr->ps_pid, Pproc);
+				d.d_namlen = snprintf(d.d_name, sizeof(d.d_name),
+				    "%ld", (long)pr->ps_pid);
 				d.d_type = DT_REG;
-				p = p->p_list.le_next;
 				break;
 			}
 
-			if (error = uiomove((caddr_t)&d, UIO_MX, uio))
+			if ((error = uiomove(&d, UIO_MX, uio)) != 0)
 				break;
-			if (ncookies-- > 0)
-				*cookies++ = i + 1;
 		}
-	done:
-
 #ifdef PROCFS_ZOMBIE
-		if (p == 0 && doingzomb == 0) {
+		if (pr == NULL && doingzomb == 0) {
 			doingzomb = 1;
-			p = zombproc.lh_first;
+			pr = LIST_FIRST(&zombprocess);
 			goto again;
 		}
 #endif
@@ -796,28 +945,30 @@ procfs_readdir(ap)
 /*
  * readlink reads the link of `curproc'
  */
-procfs_readlink(ap)
-	struct vop_readlink_args *ap;
+int
+procfs_readlink(void *v)
 {
-	struct uio *uio = ap->a_uio;
+	struct vop_readlink_args *ap = v;
 	char buf[16];		/* should be enough */
 	int len;
 
-	if (VTOPFS(ap->a_vp)->pfs_fileno != PROCFS_FILENO(0, Pcurproc))
+	if (VTOPFS(ap->a_vp)->pfs_fileno == PROCFS_FILENO(0, Pcurproc))
+		len = snprintf(buf, sizeof buf, "%ld", (long)curproc->p_pid);
+	else if (VTOPFS(ap->a_vp)->pfs_fileno == PROCFS_FILENO(0, Pself))
+		len = strlcpy(buf, "curproc", sizeof buf);
+	else
+		return (EINVAL);
+	if (len == -1 || len >= sizeof buf)
 		return (EINVAL);
 
-	len = sprintf(buf, "%ld", (long)curproc->p_pid);
-
-	return (uiomove((caddr_t)buf, len, ap->a_uio));
+	return (uiomove(buf, len, ap->a_uio));
 }
 
 /*
  * convert decimal ascii to pid_t
  */
 static pid_t
-atopid(b, len)
-	const char *b;
-	u_int len;
+atopid(const char *b, u_int len)
 {
 	pid_t p = 0;
 
@@ -832,53 +983,10 @@ atopid(b, len)
 
 	return (p);
 }
+int
+procfs_poll(void *v)
+{
+	struct vop_poll_args *ap = v;
 
-/*
- * procfs vnode operations.
- */
-int (**procfs_vnodeop_p)();
-struct vnodeopv_entry_desc procfs_vnodeop_entries[] = {
-	{ &vop_default_desc, vn_default_error },
-	{ &vop_lookup_desc, procfs_lookup },		/* lookup */
-	{ &vop_create_desc, procfs_create },		/* create */
-	{ &vop_mknod_desc, procfs_mknod },		/* mknod */
-	{ &vop_open_desc, procfs_open },		/* open */
-	{ &vop_close_desc, procfs_close },		/* close */
-	{ &vop_access_desc, procfs_access },		/* access */
-	{ &vop_getattr_desc, procfs_getattr },		/* getattr */
-	{ &vop_setattr_desc, procfs_setattr },		/* setattr */
-	{ &vop_read_desc, procfs_read },		/* read */
-	{ &vop_write_desc, procfs_write },		/* write */
-	{ &vop_ioctl_desc, procfs_ioctl },		/* ioctl */
-	{ &vop_select_desc, procfs_select },		/* select */
-	{ &vop_mmap_desc, procfs_mmap },		/* mmap */
-	{ &vop_fsync_desc, procfs_fsync },		/* fsync */
-	{ &vop_seek_desc, procfs_seek },		/* seek */
-	{ &vop_remove_desc, procfs_remove },		/* remove */
-	{ &vop_link_desc, procfs_link },		/* link */
-	{ &vop_rename_desc, procfs_rename },		/* rename */
-	{ &vop_mkdir_desc, procfs_mkdir },		/* mkdir */
-	{ &vop_rmdir_desc, procfs_rmdir },		/* rmdir */
-	{ &vop_symlink_desc, procfs_symlink },		/* symlink */
-	{ &vop_readdir_desc, procfs_readdir },		/* readdir */
-	{ &vop_readlink_desc, procfs_readlink },	/* readlink */
-	{ &vop_abortop_desc, procfs_abortop },		/* abortop */
-	{ &vop_inactive_desc, procfs_inactive },	/* inactive */
-	{ &vop_reclaim_desc, procfs_reclaim },		/* reclaim */
-	{ &vop_lock_desc, procfs_lock },		/* lock */
-	{ &vop_unlock_desc, procfs_unlock },		/* unlock */
-	{ &vop_bmap_desc, procfs_bmap },		/* bmap */
-	{ &vop_strategy_desc, procfs_strategy },	/* strategy */
-	{ &vop_print_desc, procfs_print },		/* print */
-	{ &vop_islocked_desc, procfs_islocked },	/* islocked */
-	{ &vop_pathconf_desc, procfs_pathconf },	/* pathconf */
-	{ &vop_advlock_desc, procfs_advlock },		/* advlock */
-	{ &vop_blkatoff_desc, procfs_blkatoff },	/* blkatoff */
-	{ &vop_valloc_desc, procfs_valloc },		/* valloc */
-	{ &vop_vfree_desc, procfs_vfree },		/* vfree */
-	{ &vop_truncate_desc, procfs_truncate },	/* truncate */
-	{ &vop_update_desc, procfs_update },		/* update */
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
-};
-struct vnodeopv_desc procfs_vnodeop_opv_desc =
-	{ &procfs_vnodeop_p, procfs_vnodeop_entries };
+	return (ap->a_events & (POLLIN | POLLOUT | POLLRDNORM | POLLWRNORM));
+}

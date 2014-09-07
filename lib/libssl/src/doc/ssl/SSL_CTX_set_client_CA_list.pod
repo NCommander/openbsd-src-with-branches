@@ -9,7 +9,7 @@ client certificate
 =head1 SYNOPSIS
 
  #include <openssl/ssl.h>
- 
+
  void SSL_CTX_set_client_CA_list(SSL_CTX *ctx, STACK_OF(X509_NAME) *list);
  void SSL_set_client_CA_list(SSL *s, STACK_OF(X509_NAME) *list);
  int SSL_CTX_add_client_CA(SSL_CTX *ctx, X509 *cacert);
@@ -35,14 +35,14 @@ the chosen B<ssl>, overriding the setting valid for B<ssl>'s SSL_CTX object.
 =head1 NOTES
 
 When a TLS/SSL server requests a client certificate (see
-B<SSL_CTX_set_verify_options()>), it sends a list of CAs, for which
+B<SSL_CTX_set_verify(3)>), it sends a list of CAs, for which
 it will accept certificates, to the client.
 
 This list must explicitly be set using SSL_CTX_set_client_CA_list() for
 B<ctx> and SSL_set_client_CA_list() for the specific B<ssl>. The list
 specified overrides the previous setting. The CAs listed do not become
 trusted (B<list> only contains the names, not the complete certificates); use
-L<SSL_CTX_load_verify_locations(3)|SSL_CTX_load_verify_locations(3)> 
+L<SSL_CTX_load_verify_locations(3)|SSL_CTX_load_verify_locations(3)>
 to additionally load them for verification.
 
 If the list of acceptable CAs is compiled in a file, the
@@ -66,13 +66,13 @@ values:
 
 =over 4
 
-=item 0
+=item C<0>
 
 A failure while manipulating the STACK_OF(X509_NAME) object occurred or
 the X509_NAME could not be extracted from B<cacert>. Check the error stack
 to find out the reason.
 
-=item 1
+=item C<1>
 
 The operation succeeded.
 

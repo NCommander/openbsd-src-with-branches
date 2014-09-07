@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-BIO_find_type, BIO_next - BIO chain traversal
+BIO_find_type, BIO_next, BIO_method_type - BIO chain traversal
 
 =head1 SYNOPSIS
 
@@ -47,7 +47,8 @@ B<BIO_TYPE_SOURCE_SINK>) then the next matching BIO of the given general type is
 searched for. BIO_find_type() returns the next matching BIO or NULL if none is
 found.
 
-Note: not all the B<BIO_TYPE_*> types above have corresponding BIO implementations.
+Note: not all the B<BIO_TYPE_*> types above have corresponding BIO
+implementations.
 
 BIO_next() returns the next BIO in a chain. It can be used to traverse all BIOs
 in a chain or used in conjunction with BIO_find_type() to find all BIOs of a
@@ -85,14 +86,12 @@ Traverse a chain looking for digest BIOs:
 
  do {
  	btmp = BIO_find_type(btmp, BIO_TYPE_MD);
-	if(btmp == NULL) break;	/* Not found */
+	if (btmp == NULL)
+		break;	/* Not found */
 	/* btmp is a digest BIO, do something with it ...*/
-   	...
+	...
 
 	btmp = BIO_next(btmp);
  } while(btmp);
 
-
-=head1 SEE ALSO
-
-TBA
+=cut

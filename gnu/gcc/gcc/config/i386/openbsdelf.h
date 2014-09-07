@@ -56,10 +56,10 @@ Boston, MA 02110-1301, USA.  */
 
 /* This must agree with <machine/ansi.h> */
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "long int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
@@ -111,9 +111,6 @@ Boston, MA 02110-1301, USA.  */
 
 /* Assembler format: exception region output.  */
 
-/* our configuration still doesn't handle dwarf2 correctly */
-#define DWARF2_UNWIND_INFO 0
-
 /* Assembler format: alignment output.  */
 
 /* Note that we pick up ASM_OUTPUT_MAX_SKIP_ALIGN from i386/gas.h */
@@ -126,6 +123,7 @@ Boston, MA 02110-1301, USA.  */
    %{shared:-shared} %{R*} \
    %{static:-Bstatic} \
    %{!static:-Bdynamic} \
+   %{rdynamic:-export-dynamic} \
    %{assert*} \
    %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.so}"
 

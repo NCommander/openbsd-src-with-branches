@@ -1,3 +1,4 @@
+/*	$OpenBSD: linux_dirent.h,v 1.3 2002/10/28 03:39:30 fgsch Exp $	*/
 /*	$NetBSD: linux_dirent.h,v 1.3 1995/10/07 06:26:59 mycroft Exp $	*/
 
 /*
@@ -31,8 +32,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _LINUX_DIRENT_H
-#define _LINUX_DIRENT_H
+#ifndef _LINUX_DIRENT_H_
+#define _LINUX_DIRENT_H_
 
 #define LINUX_MAXNAMLEN	255
 
@@ -43,7 +44,15 @@ struct linux_dirent {
 	char		d_name[LINUX_MAXNAMLEN + 1];
 };
 
+struct linux_dirent64 {
+	linux_ino64_t	d_ino;
+	linux_off64_t	d_off;
+	u_short		d_reclen;
+	u_char		d_type;
+	char		d_name[LINUX_MAXNAMLEN + 1];
+};
+
 #define LINUX_NAMEOFF(dp)       ((char *)&(dp)->d_name - (char *)dp)
 #define LINUX_RECLEN(de,namlen) ALIGN((LINUX_NAMEOFF(de) + (namlen) + 1))
 
-#endif /* !_LINUX_DIRENT_H */
+#endif /* !_LINUX_DIRENT_H_ */

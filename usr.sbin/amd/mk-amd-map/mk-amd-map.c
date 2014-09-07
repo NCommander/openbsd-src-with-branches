@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,31 +32,19 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mk-amd-map.c	8.1 (Berkeley) 6/28/93
- *	$Id: mk-amd-map.c,v 1.3 1994/06/13 20:50:42 mycroft Exp $
+ *	$Id: mk-amd-map.c,v 1.10 2009/10/27 23:59:51 deraadt Exp $
  */
 
 /*
  * Convert a file map into an ndbm map
  */
 
-#ifndef lint
-char copyright[] = "\
-@(#)Copyright (c) 1990, 1993 Jan-Simon Pendry\n\
-@(#)Copyright (c) 1990 Imperial College of Science, Technology & Medicine\n\
-@(#)Copyright (c) 1990, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static char rcsid[] = "$Id: mk-amd-map.c,v 1.3 1994/06/13 20:50:42 mycroft Exp $";
-static char sccsid[] = "@(#)mk-amd-map.c	8.1 (Berkeley) 6/28/93";
-#endif /* not lint */
-
 #include "am.h"
 
 #ifndef SIGINT
 #include <signal.h>
 #endif
+#include <unistd.h>
 
 #ifdef OS_HAS_NDBM
 #define HAS_DATABASE
@@ -72,9 +56,8 @@ static char sccsid[] = "@(#)mk-amd-map.c	8.1 (Berkeley) 6/28/93";
 
 #define create_database(name) dbm_open(name, O_RDWR|O_CREAT, 0644)
 
-static int store_data(db, k, v)
-voidp db;
-char *k, *v;
+static int
+store_data(void *db, char *k, char *v)
 {
 	datum key, val;
 
@@ -90,10 +73,8 @@ char *k, *v;
 #include <fcntl.h>
 #include <ctype.h>
 
-static int read_line(buf, size, fp)
-char *buf;
-int size;
-FILE *fp;
+static int
+read_line(char *buf, int size, FILE *fp)
 {
 	int done = 0;
 
@@ -126,10 +107,8 @@ FILE *fp;
 /*
  * Read through a map
  */
-static int read_file(fp, map, db)
-FILE *fp;
-char *map;
-voidp db;
+static int
+read_file(FILE *fp, char *map, void *db)
 {
 	char key_val[2048];
 	int chuck = 0;
@@ -163,7 +142,9 @@ voidp db;
 		/*
 		 * Find start of key
 		 */
-		for (kp = key_val; *kp && isascii(*kp) && isspace(*kp); kp++)
+		for (kp = key_val;
+		    isascii((unsigned char)*kp) && isspace((unsigned char)*kp);
+		    kp++)
 			;
 
 		/*
@@ -175,7 +156,9 @@ voidp db;
 		/*
 		 * Find end of key
 		 */
-		for (cp = kp; *cp&&(!isascii(*cp)||!isspace(*cp)); cp++)
+		for (cp = kp; *cp &&
+		    (!isascii((unsigned char)*cp) || !isspace((unsigned char)*cp));
+		    cp++)
 			;
 
 		/*
@@ -184,7 +167,7 @@ voidp db;
 		 */
 		if (*cp)
 			*cp++ = '\0';
-		while (*cp && isascii(*cp) && isspace(*cp))
+		while (isascii((unsigned char)*cp) && isspace((unsigned char)*cp))
 			cp++;
 		if (*kp == '+') {
 			fprintf(stderr, "Can't interpolate %s\n", kp);
@@ -218,23 +201,22 @@ again:
 	return errs;
 }
 
-static int remove_file(f)
-char *f;
+static int
+remove_file(char *f)
 {
 	if (unlink(f) < 0 && errno != ENOENT)
 		return -1;
 	return 0;
 }
 
-main(argc, argv)
-int argc;
-char *argv[];
+int
+main(int argc, char *argv[])
 {
 	FILE *mapf;
 	char *map;
 	int rc = 0;
 	DBM *mapd;
-	static char maptmp[] = "dbmXXXXXX";
+	static char maptmp[] = "dbmXXXXXXXXXX";
 	char maptpag[16];
 	char *mappag;
 #ifndef USING_DB
@@ -248,7 +230,7 @@ char *argv[];
 	int ch;
 	extern int optind;
 
-	while ((ch = getopt(argc, argv, "p")) != EOF)
+	while ((ch = getopt(argc, argv, "p")) != -1)
 	switch (ch) {
 	case 'p':
 		printit = 1;
@@ -276,30 +258,31 @@ char *argv[];
 	}
 
 	if (!printit) {
-		len = strlen(map);
 #ifdef USING_DB
-		mappag = (char *) malloc(len + 5);
+		len = strlen(map) + 4;
+		mappag = (char *) malloc(len);
 		if (!mappag) {
 			perror("mk-amd-map: malloc");
 			exit(1);
 		}
 		mktemp(maptmp);
-		sprintf(maptpag, "%s%s", maptmp, DBM_SUFFIX);
+		snprintf(maptpag, sizeof(maptpag), "%s.db", maptmp);
 		if (remove_file(maptpag) < 0) {
 			fprintf(stderr, "Can't remove existing temporary file");
 			perror(maptpag);
 			exit(1);
 		}
 #else
-		mappag = (char *) malloc(len + 5);
-		mapdir = (char *) malloc(len + 5);
+		len = strlen(map) + 5;
+		mappag = (char *) malloc(len);
+		mapdir = (char *) malloc(len);
 		if (!mappag || !mapdir) {
 			perror("mk-amd-map: malloc");
 			exit(1);
 		}
 		mktemp(maptmp);
-		sprintf(maptpag, "%s.pag", maptmp);
-		sprintf(maptdir, "%s.dir", maptmp);
+		snprintf(maptpag, sizeof(maptpag), "%s.pag", maptmp);
+		snprintf(maptdir, sizeof(maptdir), "%s.dir", maptmp);
 		if (remove_file(maptpag) < 0 || remove_file(maptdir) < 0) {
 			fprintf(stderr, "Can't remove existing temporary files; %s and", maptpag);
 			perror(maptdir);
@@ -334,7 +317,7 @@ char *argv[];
 				rc = 1;
 			} else {
 #ifdef USING_DB
-				sprintf(mappag, "%s%s", map, DBM_SUFFIX);
+				snprintf(mappag, len, "%s.db", map);
 				if (rename(maptpag, mappag) < 0) {
 					fprintf(stderr, "Couldn't rename %s to ", maptpag);
 					perror(mappag);
@@ -343,8 +326,8 @@ char *argv[];
 					rc = 1;
 				}
 #else
-				sprintf(mappag, "%s.pag", map);
-				sprintf(mapdir, "%s.dir", map);
+				snprintf(mappag, len, "%s.pag", map);
+				snprintf(mapdir, len, "%s.dir", map);
 				if (rename(maptpag, mappag) < 0) {
 					fprintf(stderr, "Couldn't rename %s to ", maptpag);
 					perror(mappag);

@@ -1,4 +1,4 @@
-/* crypto/cast/c_enc.c */
+/* $OpenBSD$ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -59,10 +59,11 @@
 #include <openssl/cast.h>
 #include "cast_lcl.h"
 
+#ifndef OPENBSD_CAST_ASM
 void CAST_encrypt(CAST_LONG *data, const CAST_KEY *key)
 	{
 	register CAST_LONG l,r,t;
-	const register CAST_LONG *k;
+	register const CAST_LONG *k;
 
 	k= &(key->data[0]);
 	l=data[0];
@@ -95,7 +96,7 @@ void CAST_encrypt(CAST_LONG *data, const CAST_KEY *key)
 void CAST_decrypt(CAST_LONG *data, const CAST_KEY *key)
 	{
 	register CAST_LONG l,r,t;
-	const register CAST_LONG *k;
+	register const CAST_LONG *k;
 
 	k= &(key->data[0]);
 	l=data[0];
@@ -124,6 +125,7 @@ void CAST_decrypt(CAST_LONG *data, const CAST_KEY *key)
 	data[1]=l&0xffffffffL;
 	data[0]=r&0xffffffffL;
 	}
+#endif
 
 void CAST_cbc_encrypt(const unsigned char *in, unsigned char *out, long length,
 	     const CAST_KEY *ks, unsigned char *iv, int enc)

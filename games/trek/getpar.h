@@ -1,3 +1,4 @@
+/*	$OpenBSD: getpar.h,v 1.7 2010/04/30 19:29:01 jsg Exp $	*/
 /*	$NetBSD: getpar.h,v 1.3 1995/04/22 10:58:59 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,13 +32,24 @@
  *	@(#)getpar.h	8.1 (Berkeley) 5/31/93
  */
 
-struct cvntab		/* used for getcodpar() paramater list */
+typedef void (*cmdfun)(int);
+
+struct cvntab		/* used for getcodpar() parameter list */
 {
 	char	*abrev;
 	char	*full;
-	int	(*value)();
+	cmdfun	value;
 	int	value2;
 };
 
-extern double		getfltpar();
-extern struct cvntab	*getcodpar();
+int getintpar(const char *);
+double getfltpar(const char *);
+int getynpar(const char *);
+const struct cvntab *getcodpar(const char *, const struct cvntab[]);
+void getstrpar(const char *, char *, int, const char *);
+int testnl(void);
+void skiptonl(int);
+int readdelim(int);
+
+extern const struct cvntab	Skitab[];
+extern const struct cvntab	Lentab[];

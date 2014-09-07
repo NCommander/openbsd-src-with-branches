@@ -1,4 +1,5 @@
-/*	$NetBSD: if_uba.h,v 1.3 1995/05/11 16:53:12 jtc Exp $	*/
+/*	$OpenBSD: if_uba.h,v 1.6 2003/06/02 23:27:57 millert Exp $	*/
+/*	$NetBSD: if_uba.h,v 1.6 1996/08/20 14:07:50 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -68,11 +65,11 @@
  * Information per interface.
  */
 struct	ifubinfo {
-	short	iff_uban;			/* uba number */
+	short	iff_flags;			/* used during uballoc's */
 	short	iff_hlen;			/* local net header length */
 	struct	uba_regs *iff_uba;		/* uba adaptor regs, in vm */
-	struct	pte *iff_ubamr;			/* uba map regs, in vm */
-	short	iff_flags;			/* used during uballoc's */
+	pt_entry_t *iff_ubamr;			/* uba map regs, in vm */
+	struct	uba_softc *iff_softc;		/* uba */
 };
 
 /*
@@ -85,7 +82,7 @@ struct ifrw {
 #define	IFRW_W	0x01				/* is a transmit buffer */
 	int	ifrw_info;			/* value from ubaalloc */
 	int	ifrw_proto;			/* map register prototype */
-	struct	pte *ifrw_mr;			/* base of map registers */
+	pt_entry_t *ifrw_mr;			/* base of map registers */
 };
 
 /*
@@ -94,7 +91,7 @@ struct ifrw {
 struct ifxmt {
 	struct	ifrw ifrw;
 	caddr_t	ifw_base;			/* virt addr of buffer */
-	struct	pte ifw_wmap[IF_MAXNUBAMR];	/* base pages for output */
+	pt_entry_t ifw_wmap[IF_MAXNUBAMR];	/* base pages for output */
 	struct	mbuf *ifw_xtofree;		/* pages being dma'd out */
 	short	ifw_xswapd;			/* mask of clusters swapped */
 	short	ifw_nmr;			/* number of entries in wmap */
@@ -116,7 +113,7 @@ struct ifuba {
 	struct	ifxmt ifu_xmt;
 };
 
-#define	ifu_uban	ifu_info.iff_uban
+#define	ifu_softc	ifu_info.iff_softc
 #define	ifu_hlen	ifu_info.iff_hlen
 #define	ifu_uba		ifu_info.iff_uba
 #define	ifu_ubamr	ifu_info.iff_ubamr
@@ -132,5 +129,12 @@ struct ifuba {
 		if_ubaget(&(ifu)->ifu_info, &(ifu)->ifu_r, totlen, off0, ifp)
 #define	if_wubaput(ifu, m) \
 		if_ubaput(&(ifu)->ifu_info, &(ifu)->ifu_xmt, m)
-struct	mbuf *if_ubaget();
+
+/* Prototypes */
+int	if_ubaminit(struct ifubinfo *, struct uba_softc *, int, int,
+	    struct ifrw *, int, struct ifxmt *, int);
+int	if_ubaput(struct ifubinfo *, struct ifxmt *, struct mbuf *);
+struct mbuf *if_ubaget(struct ifubinfo *, struct ifrw *, int,
+	struct ifnet *);
+
 #endif

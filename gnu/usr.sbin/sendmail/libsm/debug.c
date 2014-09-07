@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000, 2001, 2003, 2004 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -8,7 +8,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: debug.c,v 1.25 2001/09/04 22:41:27 ca Exp $")
+SM_RCSID("@(#)$Sendmail: debug.c,v 1.33 2013/11/22 20:51:42 ca Exp $")
 
 /*
 **  libsm debugging and tracing
@@ -17,6 +17,10 @@ SM_RCSID("@(#)$Sendmail: debug.c,v 1.25 2001/09/04 22:41:27 ca Exp $")
 
 #include <ctype.h>
 #include <stdlib.h>
+#if _FFR_DEBUG_PID_TIME
+#include <unistd.h>
+#include <time.h>
+#endif /* _FFR_DEBUG_PID_TIME */
 #include <setjmp.h>
 #include <sm/io.h>
 #include <sm/assert.h>
@@ -25,6 +29,9 @@ SM_RCSID("@(#)$Sendmail: debug.c,v 1.25 2001/09/04 22:41:27 ca Exp $")
 #include <sm/string.h>
 #include <sm/varargs.h>
 #include <sm/heap.h>
+
+static void		 sm_debug_reset __P((void));
+static const char	*parse_named_setting_x __P((const char *));
 
 /*
 **  Abstractions for printing trace messages.
@@ -77,6 +84,29 @@ sm_debug_setfile(fp)
 }
 
 /*
+**  SM_DEBUG_CLOSE -- Close debug file pointer.
+**
+**	Parameters:
+**		none.
+**
+**	Returns:
+**		none.
+**
+**	Side Effects:
+**		Closes SmDebugOutput.
+*/
+
+void
+sm_debug_close()
+{
+	if (SmDebugOutput != NULL && SmDebugOutput != smioout)
+	{
+		sm_io_close(SmDebugOutput, SM_TIME_DEFAULT);
+		SmDebugOutput = NULL;
+	}
+}
+
+/*
 **  SM_DPRINTF -- printf() for debug output.
 **
 **	Parameters:
@@ -85,6 +115,11 @@ sm_debug_setfile(fp)
 **	Returns:
 **		none.
 */
+
+#if _FFR_DEBUG_PID_TIME
+SM_DEBUG_T SmDBGPidTime = SM_DEBUG_INITIALIZER("sm_trace_pid_time",
+	"@(#)$Debug: sm_trace_pid_time - print pid and time in debug $");
+#endif /* _FFR_DEBUG_PID_TIME */
 
 void
 #if SM_VA_STD
@@ -96,6 +131,28 @@ sm_dprintf(fmt, va_alist)
 #endif /* SM_VA_STD */
 {
 	SM_VA_LOCAL_DECL
+
+	if (SmDebugOutput == NULL)
+		return;
+#if _FFR_DEBUG_PID_TIME
+	/* note: this is ugly if the output isn't a full line! */
+	if (sm_debug_active(&SmDBGPidTime, 1))
+	{
+		static char str[32] = "[1900-00-00/00:00:00] ";
+		struct tm *tmp;
+		time_t currt;
+
+		currt = time((time_t *)0);
+		tmp = localtime(&currt);
+		snprintf(str, sizeof(str), "[%d-%02d-%02d/%02d:%02d:%02d] ",
+			1900 + tmp->tm_year,	/* HACK */
+			tmp->tm_mon + 1,
+			tmp->tm_mday,
+			tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
+		sm_io_fprintf(SmDebugOutput, SmDebugOutput->f_timeout,
+			"%ld: %s ", (long) getpid(), str);
+	}
+#endif /* _FFR_DEBUG_PID_TIME */
 
 	SM_VA_START(ap, fmt);
 	sm_io_vfprintf(SmDebugOutput, SmDebugOutput->f_timeout, fmt, ap);
@@ -162,7 +219,7 @@ const char SmDebugMagic[] = "sm_debug";
 **		none.
 */
 
-void
+static void
 sm_debug_reset()
 {
 	SM_DEBUG_T *debug;
@@ -229,7 +286,7 @@ sm_debug_addsetting_x(pattern, level)
 
 static const char *
 parse_named_setting_x(s)
-	register const char *s;
+	const char *s;
 {
 	const char *pat, *endpat;
 	int level;
@@ -290,7 +347,7 @@ parse_named_setting_x(s)
 
 void
 sm_debug_addsettings_x(s)
-	register const char *s;
+	const char *s;
 {
 	for (;;)
 	{

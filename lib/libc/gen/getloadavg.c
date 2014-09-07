@@ -1,5 +1,4 @@
-/*	$NetBSD: getloadavg.c,v 1.5 1995/02/25 08:51:15 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,19 +28,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getloadavg.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getloadavg.c,v 1.5 1995/02/25 08:51:15 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/sysctl.h>
-#include <vm/vm_param.h>
 
 #include <stdlib.h>
 
@@ -56,9 +42,7 @@ static char rcsid[] = "$NetBSD: getloadavg.c,v 1.5 1995/02/25 08:51:15 cgd Exp $
  * Return number of samples retrieved, or -1 on error.
  */
 int
-getloadavg(loadavg, nelem)
-	double loadavg[];
-	int nelem;
+getloadavg(double loadavg[], int nelem)
 {
 	struct loadavg loadinfo;
 	int i, mib[2];

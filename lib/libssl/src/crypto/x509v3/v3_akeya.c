@@ -1,4 +1,4 @@
-/* v3_akey_asn1.c */
+/* $OpenBSD: v3_akeya.c,v 1.4 2014/06/12 15:49:31 deraadt Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,10 +57,10 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
-#include <openssl/conf.h>
+
 #include <openssl/asn1.h>
 #include <openssl/asn1t.h>
+#include <openssl/conf.h>
 #include <openssl/x509v3.h>
 
 ASN1_SEQUENCE(AUTHORITY_KEYID) = {

@@ -1,4 +1,5 @@
-/*	$NetBSD: extern.h,v 1.4 1995/03/21 09:04:09 cgd Exp $	*/
+/*	$OpenBSD: extern.h,v 1.8 2012/12/04 02:27:00 deraadt Exp $	*/
+/*	$NetBSD: extern.h,v 1.7 1996/02/20 19:29:07 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,29 +36,29 @@
  *	@(#)extern.h	8.3 (Berkeley) 4/2/94
  */
 
-#include <sys/cdefs.h>
-
-void block __P((void));
-void block_close __P((void));
-void dd_out __P((int));
-void def __P((void));
-void def_close __P((void));
-void jcl __P((char **));
-void pos_in __P((void));
-void pos_out __P((void));
-void summary __P((void));
-void summaryx __P((int));
-void terminate __P((int));
-void unblock __P((void));
-void unblock_close __P((void));
+void block(void);
+void block_close(void);
+void dd_out(int);
+void def(void);
+void def_close(void);
+void jcl(char **);
+void pos_in(void);
+void pos_out(void);
+void summary(void);
+void summaryx(int);
+void terminate(int);
+void unblock(void);
+void unblock_close(void);
 
 extern IO in, out;
 extern STAT st;
-extern void (*cfunc)();
-extern u_long cpy_cnt;
-extern u_int cbsz;
+extern void (*cfunc)(void);
+extern size_t cpy_cnt;
+extern size_t cbsz;
 extern u_int ddflags;
-extern u_int files_cnt;
-extern u_char *ctab;
-extern u_char a2e_32V[], a2e_POSIX[], a2ibm_32V[], a2ibm_POSIX[], e2a_32V[];
-extern u_char e2a_POSIX[], l2u[], u2l[];
+extern size_t files_cnt;
+extern const u_char *ctab;
+extern const u_char a2e_POSIX[];
+extern const u_char e2a_POSIX[];
+extern const u_char a2ibm_POSIX[];
+extern u_char casetab[];

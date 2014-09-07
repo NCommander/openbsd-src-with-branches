@@ -1,4 +1,5 @@
-/*	$NetBSD: auxreg.c,v 1.8 1995/02/22 21:13:01 pk Exp $ */
+/*	$OpenBSD: auxreg.c,v 1.14 2007/07/01 19:07:46 miod Exp $	*/
+/*	$NetBSD: auxreg.c,v 1.21 1997/05/24 20:15:59 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,26 +42,58 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
+#include <sys/timeout.h>
+
+#include <uvm/uvm_param.h>
 
 #include <machine/autoconf.h>
 
 #include <sparc/sparc/vaddrs.h>
-#include <sparc/sparc/auxreg.h>
+#include <sparc/sparc/auxioreg.h>
 
-static int auxregmatch __P((struct device *, void *, void *));
-static void auxregattach __P((struct device *, struct device *, void *));
-struct cfdriver auxregcd =
-    { 0, "auxreg", auxregmatch, auxregattach, DV_DULL, sizeof(struct device) };
+static int auxregmatch(struct device *, void *, void *);
+static void auxregattach(struct device *, struct device *, void *);
 
-#ifdef BLINK
-static int
-blink(zero)
+struct cfattach auxreg_ca = {
+	sizeof(struct device), auxregmatch, auxregattach
+};
+
+struct cfdriver auxreg_cd = {
+	0, "auxreg", DV_DULL
+};
+
+volatile u_char *auxio_reg;	/* Copy of AUXIO_REG */
+u_char auxio_regval;
+
+#ifdef SUN4M	/* Tadpole SPARCbook */
+volatile u_char *sb_auxio_reg;
+volatile u_char *sb_auxio2_reg;
+#endif
+
+extern int sparc_led_blink;	/* from machdep */
+struct timeout sparc_led_to;
+
+void
+led_blink(zero)
 	void *zero;
 {
-	register int s;
-	register fixpt_t lav;
+	int s;
+
+	/* Don't do anything if there's no auxreg, ok? */
+	if (auxio_reg == NULL)
+		return;
+
+	if (!sparc_led_blink) {
+		/* If blink has been disabled, make sure it goes back on... */
+		s = splhigh();
+		LED_ON;
+		splx(s);
+	
+		return;
+	}
 
 	s = splhigh();
 	LED_FLIP;
@@ -76,52 +105,107 @@ blink(zero)
 	 *	full cycle every 3 seconds if loadav = 2
 	 * etc.
 	 */
-	s = (((averunnable[0] + FSCALE) * hz) >> (FSHIFT + 1));
-	timeout(blink, (caddr_t)0, s);
+	s = (((averunnable.ldavg[0] + FSCALE) * hz) >> (FSHIFT + 1));
+
+	timeout_add(&sparc_led_to, s);
 }
-#endif
 
 /*
  * The OPENPROM calls this "auxiliary-io".
+ * We also need to match the "auxio2" register on Tadpole SPARCbooks.
  */
 static int
-auxregmatch(parent, vcf, aux)
-	struct device *parent;
-	void *aux, *vcf;
+auxregmatch(struct device *parent, void *cf, void *aux)
 {
-	register struct confargs *ca = aux;
-	struct cfdata *cf = vcf;
+	struct confargs *ca = aux;
 
-	if (cputyp==CPU_SUN4)
+	switch (cputyp) {
+	case CPU_SUN4:
+	default:
 		return (0);
-	return (strcmp("auxiliary-io", ca->ca_ra.ra_name) == 0);
+	case CPU_SUN4C:
+	case CPU_SUN4E:
+		return (strcmp("auxiliary-io", ca->ca_ra.ra_name) == 0);
+	case CPU_SUN4M:
+		return (strcmp("auxio", ca->ca_ra.ra_name) == 0 ||
+			strcmp("auxio2", ca->ca_ra.ra_name) == 0);
+	}
 }
 
 /* ARGSUSED */
 static void
-auxregattach(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
+auxregattach(struct device *parent, struct device *self, void *aux)
 {
 	struct confargs *ca = aux;
 	struct romaux *ra = &ca->ca_ra;
+#ifdef SUN4M
+	volatile u_char **regp;
 
-	(void)mapdev(ra->ra_paddr, AUXREG_VA, sizeof(long), ca->ca_bustype);
-	auxio_reg = AUXIO_REG;
-	printf("\n");
-#ifdef BLINK
-	blink((caddr_t)0);
+	if (CPU_ISSUN4M && strncmp("Tadpole", mainbus_model, 7) == 0) {
+		if (strcmp("auxio", ra->ra_name) == 0)
+			regp = &sb_auxio_reg;
+		else
+			regp = &sb_auxio2_reg;
+		if (*regp == NULL)
+			*regp = mapiodev(ra->ra_reg, 0, sizeof(char));
+	} else
 #endif
+	if (auxio_reg == NULL) {
+		(void)mapdev(ra->ra_reg, AUXREG_VA, 0, sizeof(long));
+		if (CPU_ISSUN4M) {
+			auxio_reg = AUXIO4M_REG;
+			auxio_regval = *AUXIO4M_REG | AUXIO4M_MB1;
+		} else {
+			auxio_reg = AUXIO4C_REG;
+			auxio_regval = *AUXIO4C_REG | AUXIO4C_FEJ | AUXIO4C_MB1;
+		}
+
+		timeout_set(&sparc_led_to, led_blink, NULL);
+		/* In case it's initialized to true... */
+		if (sparc_led_blink)
+			led_blink((caddr_t)0);
+	}
+
+	printf("\n");
 }
 
 unsigned int
-auxregbisc(bis, bic)
+auxregbisc(int bis, int bic)
 {
-	register int v, s = splhigh();
+	int s;
 
-	v = *AUXIO_REG;
-	*AUXIO_REG = ((v | bis) & ~bic) | AUXIO_MB1;
+#ifdef DIAGNOSTIC
+	if (auxio_reg == NULL)
+		/*
+		 * Not all machines have an `aux' register; devices that
+		 * depend on it should not get configured if it's absent.
+		 */
+		panic("no aux register");
+#endif
+
+	s = splhigh();
+	auxio_regval = (auxio_regval | bis) & ~bic;
+	*auxio_reg = auxio_regval;
 	splx(s);
-	return v;
+	return (auxio_regval);
 }
 
+#ifdef SUN4M
+unsigned int
+sb_auxregbisc(int isreg2, int bis, int bic)
+{
+	int s;
+	volatile u_char *auxreg;
+	u_char aux;
+
+	auxreg = isreg2 ? sb_auxio2_reg : sb_auxio_reg;
+	if (auxreg == NULL)
+		return (0);
+
+	s = splhigh();
+	aux = (*auxreg | bis) & ~bic;
+	*auxreg = aux;
+	splx(s);
+	return (aux);
+}
+#endif

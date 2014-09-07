@@ -1,4 +1,4 @@
-/* crypto/ecdsa/ecs_ossl.c */
+/* $OpenBSD: ecs_ossl.c,v 1.4 2014/07/10 22:45:57 jsing Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project
  */
@@ -56,6 +56,8 @@
  *
  */
 
+#include <openssl/opensslconf.h>
+
 #include "ecs_locl.h"
 #include <openssl/err.h>
 #include <openssl/obj_mac.h>
@@ -69,16 +71,10 @@ static int ecdsa_do_verify(const unsigned char *dgst, int dgst_len,
 		const ECDSA_SIG *sig, EC_KEY *eckey);
 
 static ECDSA_METHOD openssl_ecdsa_meth = {
-	"OpenSSL ECDSA method",
-	ecdsa_do_sign,
-	ecdsa_sign_setup,
-	ecdsa_do_verify,
-#if 0
-	NULL, /* init     */
-	NULL, /* finish   */
-#endif
-	0,    /* flags    */
-	NULL  /* app_data */
+	.name = "OpenSSL ECDSA method",
+	.ecdsa_do_sign = ecdsa_do_sign,
+	.ecdsa_sign_setup = ecdsa_sign_setup,
+	.ecdsa_do_verify = ecdsa_do_verify
 };
 
 const ECDSA_METHOD *ECDSA_OpenSSL(void)
@@ -193,28 +189,22 @@ static int ecdsa_sign_setup(EC_KEY *eckey, BN_CTX *ctx_in, BIGNUM **kinvp,
 		goto err;	
 	}
 	/* clear old values if necessary */
-	if (*rp != NULL)
-		BN_clear_free(*rp);
-	if (*kinvp != NULL) 
-		BN_clear_free(*kinvp);
+	BN_clear_free(*rp);
+	BN_clear_free(*kinvp);
 	/* save the pre-computed values  */
 	*rp    = r;
 	*kinvp = k;
 	ret = 1;
 err:
-	if (!ret)
-	{
-		if (k != NULL) BN_clear_free(k);
-		if (r != NULL) BN_clear_free(r);
+	if (!ret) {
+		BN_clear_free(k);
+		BN_clear_free(r);
 	}
 	if (ctx_in == NULL) 
 		BN_CTX_free(ctx);
-	if (order != NULL)
-		BN_free(order);
-	if (tmp_point != NULL) 
-		EC_POINT_free(tmp_point);
-	if (X)
-		BN_clear_free(X);
+	BN_free(order);
+	EC_POINT_free(tmp_point);
+	BN_clear_free(X);
 	return(ret);
 }
 
@@ -337,16 +327,11 @@ err:
 		ECDSA_SIG_free(ret);
 		ret = NULL;
 	}
-	if (ctx)
-		BN_CTX_free(ctx);
-	if (m)
-		BN_clear_free(m);
-	if (tmp)
-		BN_clear_free(tmp);
-	if (order)
-		BN_free(order);
-	if (kinv)
-		BN_clear_free(kinv);
+	BN_CTX_free(ctx);
+	BN_clear_free(m);
+	BN_clear_free(tmp);
+	BN_free(order);
+	BN_clear_free(kinv);
 	return ret;
 }
 
@@ -477,7 +462,6 @@ static int ecdsa_do_verify(const unsigned char *dgst, int dgst_len,
 err:
 	BN_CTX_end(ctx);
 	BN_CTX_free(ctx);
-	if (point)
-		EC_POINT_free(point);
+	EC_POINT_free(point);
 	return ret;
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: sigprocmask.S,v 1.8 2008/05/21 20:39:32 miod Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,28 +28,23 @@
  * SUCH DAMAGE.
  */
 
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)sigprocmask.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: sigprocmask.S,v 1.1 1995/04/17 12:24:08 ragge Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
-
 #include "SYS.h"
 
 err:
-	jmp	cerror
+	jmp	_C_LABEL(__cerror)
 
-ENTRY(sigprocmask)
-	tstl	8(ap)			# check new sigset pointer
+SYSENTRY(sigprocmask)
+	tstl	8(%ap)			# check new sigset pointer
 	bneq	1f			# if not null, indirect
-/*	movl	$0,8(ap)		# null mask pointer: block empty set */
-	movl	$1,4(ap)		# SIG_BLOCK
+/*	movl	$0,8(%ap)		# null mask pointer: block empty set */
+	movl	$1,4(%ap)		# SIG_BLOCK
 	jbr	2f
-1:	movl	*8(ap),8(ap)		# indirect to new mask arg
+1:	movl	*8(%ap),8(%ap)		# indirect to new mask arg
 2:	chmk	$ SYS_sigprocmask
 	jcs	err
-	tstl	12(ap)			# test if old mask requested
+	tstl	12(%ap)			# test if old mask requested
 	beql	out
-	movl	r0,*12(ap)		# store old mask
+	movl	%r0,*12(%ap)		# store old mask
 out:
-	clrl	r0
+	clrl	%r0
 	ret

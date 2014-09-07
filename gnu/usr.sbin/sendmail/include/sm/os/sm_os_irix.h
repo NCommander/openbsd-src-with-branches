@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2001 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: sm_os_irix.h,v 1.5 2001/03/18 18:07:25 ca Exp $
+ *	$Sendmail: sm_os_irix.h,v 1.8 2013/11/22 20:51:34 ca Exp $
  */
 
 /*

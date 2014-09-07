@@ -1,3 +1,4 @@
+/*	$OpenBSD: Locore.c,v 1.7 2007/01/16 14:39:57 tsi Exp $	*/
 /*	$NetBSD: Locore.c,v 1.1 2000/08/20 14:58:36 mrg Exp $	*/
 
 /*
@@ -36,18 +37,16 @@
 
 #include <machine/cpu.h>
 
-vaddr_t OF_claim_virt __P((vaddr_t vaddr, int len));
-vaddr_t OF_alloc_virt __P((int len, int align));
-int OF_free_virt __P((vaddr_t vaddr, int len));
-int OF_unmap_virt __P((vaddr_t vaddr, int len));
-vaddr_t OF_map_phys __P((paddr_t paddr, off_t size, vaddr_t vaddr, int mode));
-paddr_t OF_alloc_phys __P((int len, int align));
-paddr_t OF_claim_phys __P((paddr_t phys, int len));
-int OF_free_phys __P((paddr_t paddr, int len));
+static vaddr_t OF_claim_virt(vaddr_t vaddr, int len);
+static vaddr_t OF_alloc_virt(int len, int align);
+static int OF_free_virt(vaddr_t vaddr, int len);
+static vaddr_t OF_map_phys(paddr_t paddr, off_t size, vaddr_t vaddr, int mode);
+static paddr_t OF_alloc_phys(int len, int align);
+static int OF_free_phys(paddr_t paddr, int len);
 
 extern int openfirmware(void *);
 
-void setup __P((void));
+void setup(void);
 
 #if 0
 #ifdef XCOFF_GLUE
@@ -55,12 +54,7 @@ asm (".text; .globl _entry; _entry: .long _start,0,0");
 #endif
 
 __dead void
-_start(vpd, res, openfirm, arg, argl)
-	void *vpd;
-	int res;
-	int (*openfirm)(void *);
-	char *arg;
-	int argl;
+_start(void *vpd, int res, int (*openfirm)(void *), char *arg, int argl)
 {
 	extern char etext[];
 
@@ -75,7 +69,7 @@ _start(vpd, res, openfirm, arg, argl)
 #endif
 
 __dead void
-_rtt()
+_rtt(void)
 {
 	struct {
 		cell_t name;
@@ -91,7 +85,7 @@ _rtt()
 }
 
 void
-OF_enter()
+OF_enter(void)
 {
 	struct {
 		cell_t name;
@@ -106,8 +100,7 @@ OF_enter()
 }
 
 int
-OF_finddevice(name)
-	char *name;
+OF_finddevice(char *name)
 {
 	struct {
 		cell_t name;
@@ -116,7 +109,7 @@ OF_finddevice(name)
 		cell_t device;
 		cell_t phandle;
 	} args;
-	
+
 	args.name = ADR2CELL("finddevice");
 	args.nargs = 1;
 	args.nreturns = 1;
@@ -127,8 +120,7 @@ OF_finddevice(name)
 }
 
 int
-OF_instance_to_package(ihandle)
-	int ihandle;
+OF_instance_to_package(int ihandle)
 {
 	struct {
 		cell_t name;
@@ -137,7 +129,7 @@ OF_instance_to_package(ihandle)
 		cell_t ihandle;
 		cell_t phandle;
 	} args;
-	
+
 	args.name = ADR2CELL("instance-to-package");
 	args.nargs = 1;
 	args.nreturns = 1;
@@ -148,11 +140,7 @@ OF_instance_to_package(ihandle)
 }
 
 int
-OF_getprop(handle, prop, buf, buflen)
-	int handle;
-	char *prop;
-	void *buf;
-	int buflen;
+OF_getprop(int handle, char *prop, void *buf, int buflen)
 {
 	struct {
 		cell_t name;
@@ -164,7 +152,7 @@ OF_getprop(handle, prop, buf, buflen)
 		cell_t buflen;
 		cell_t size;
 	} args;
-	
+
 	args.name = ADR2CELL("getprop");
 	args.nargs = 4;
 	args.nreturns = 1;
@@ -179,11 +167,7 @@ OF_getprop(handle, prop, buf, buflen)
 
 #ifdef	__notyet__	/* Has a bug on FirePower */
 int
-OF_setprop(handle, prop, buf, len)
-	u_int handle;
-	char *prop;
-	void *buf;
-	int len;
+OF_setprop(u_int handle, char *prop, void *buf, int len)
 {
 	struct {
 		cell_t name;
@@ -195,7 +179,7 @@ OF_setprop(handle, prop, buf, len)
 		cell_t len;
 		cell_t size;
 	} args;
-	
+
 	args.name = ADR2CELL("setprop");
 	args.nargs = 4;
 	args.nreturns = 1;
@@ -210,8 +194,7 @@ OF_setprop(handle, prop, buf, len)
 #endif
 
 int
-OF_open(dname)
-	char *dname;
+OF_open(char *dname)
 {
 	struct {
 		cell_t name;
@@ -220,7 +203,7 @@ OF_open(dname)
 		cell_t dname;
 		cell_t handle;
 	} args;
-	
+
 	args.name = ADR2CELL("open");
 	args.nargs = 1;
 	args.nreturns = 1;
@@ -232,8 +215,7 @@ OF_open(dname)
 }
 
 void
-OF_close(handle)
-	int handle;
+OF_close(int handle)
 {
 	struct {
 		cell_t name;
@@ -241,7 +223,7 @@ OF_close(handle)
 		cell_t nreturns;
 		cell_t handle;
 	} args;
-	
+
 	args.name = ADR2CELL("close");
 	args.nargs = 1;
 	args.nreturns = 1;
@@ -250,10 +232,7 @@ OF_close(handle)
 }
 
 int
-OF_write(handle, addr, len)
-	int handle;
-	void *addr;
-	int len;
+OF_write(int handle, void *addr, int len)
 {
 	struct {
 		cell_t name;
@@ -277,10 +256,7 @@ OF_write(handle, addr, len)
 }
 
 int
-OF_read(handle, addr, len)
-	int handle;
-	void *addr;
-	int len;
+OF_read(int handle, void *addr, int len)
 {
 	struct {
 		cell_t name;
@@ -305,9 +281,7 @@ OF_read(handle, addr, len)
 }
 
 int
-OF_seek(handle, pos)
-	int handle;
-	u_quad_t pos;
+OF_seek(int handle, u_quad_t pos)
 {
 	struct {
 		cell_t name;
@@ -318,13 +292,13 @@ OF_seek(handle, pos)
 		cell_t poslo;
 		cell_t status;
 	} args;
-	
+
 	args.name = ADR2CELL("seek");
 	args.nargs = 3;
 	args.nreturns = 1;
 	args.handle = HDL2CELL(handle);
-	args.poshi = HDL2CELL(pos >> 32);
-	args.poslo = HDL2CELL(pos);
+	args.poshi = HDQ2CELL_HI(pos);
+	args.poslo = HDQ2CELL_LO(pos);
 	if (openfirmware(&args) == -1) {
 		return -1;
 	}
@@ -332,9 +306,7 @@ OF_seek(handle, pos)
 }
 
 void
-OF_release(virt, size)
-	void *virt;
-	u_int size;
+OF_release(void *virt, u_int size)
 {
 	struct {
 		cell_t name;
@@ -343,7 +315,7 @@ OF_release(virt, size)
 		cell_t virt;
 		cell_t size;
 	} args;
-	
+
 	args.name = ADR2CELL("release");
 	args.nargs = 2;
 	args.nreturns = 0;
@@ -353,7 +325,7 @@ OF_release(virt, size)
 }
 
 int
-OF_milliseconds()
+OF_milliseconds(void)
 {
 	struct {
 		cell_t name;
@@ -361,7 +333,7 @@ OF_milliseconds()
 		cell_t nreturns;
 		cell_t ms;
 	} args;
-	
+
 	args.name = ADR2CELL("milliseconds");
 	args.nargs = 0;
 	args.nreturns = 1;
@@ -370,14 +342,10 @@ OF_milliseconds()
 }
 
 void
-OF_chain(virt, size, entry, arg, len)
-	void *virt;
-	u_int size;
-	void (*entry)();
-	void *arg;
-	u_int len;
+OF_chain(void *virt, u_int size, void (*entry)(), void *arg, u_int len)
 {
 	extern int64_t romp;
+#ifdef __notyet
 	extern int debug;
 	struct {
 		cell_t name;
@@ -406,8 +374,9 @@ OF_chain(virt, size, entry, arg, len)
 		printf("Calling entry(0, %p, %x, %lx, %lx)\n", arg, len,
 			(unsigned long)romp, (unsigned long)romp);
 	}
+#endif
 	entry(0, arg, len, (unsigned long)romp, (unsigned long)romp);
-	panic("OF_chain: kernel returned!\n");
+	panic("OF_chain: kernel returned!");
 	__asm("ta 2" : :);
 }
 
@@ -417,10 +386,10 @@ static u_int mmuh = -1;
 static u_int memh = -1;
 
 void
-setup()
+setup(void)
 {
 	u_int chosen;
-	
+
 	if ((chosen = OF_finddevice("/chosen")) == -1)
 		_rtt();
 	if (OF_getprop(chosen, "stdin", &stdin, sizeof(stdin)) != sizeof(stdin)
@@ -434,15 +403,13 @@ setup()
  * The following need either the handle to memory or the handle to the MMU.
  */
 
-/* 
+/*
  * Grab some address space from the prom
  *
  * Only works while the prom is actively mapping us.
  */
-vaddr_t
-OF_claim_virt(vaddr, len)
-vaddr_t vaddr;
-int len;
+static vaddr_t
+OF_claim_virt(vaddr_t vaddr, int len)
 {
 	struct {
 		cell_t name;
@@ -459,7 +426,7 @@ int len;
 
 #ifdef	__notyet
 	if (mmuh == -1 && ((mmuh = get_mmu_handle()) == -1)) {
-		OF_printf("OF_claim_virt: cannot get mmuh\r\n");
+		printf("OF_claim_virt: cannot get mmuh\r\n");
 		return -1LL;
 	}
 #endif
@@ -471,20 +438,18 @@ int len;
 	args.align = 0;
 	args.len = len;
 	args.vaddr = ADR2CELL(vaddr);
-	if(openfirmware(&args) != 0)
+	if (openfirmware(&args) != 0)
 		return -1LL;
-	return args.retaddr; /* Kluge till we go 64-bit */
+	return (vaddr_t)args.retaddr;
 }
 
-/* 
+/*
  * Request some address space from the prom
  *
  * Only works while the prom is actively mapping us.
  */
-vaddr_t
-OF_alloc_virt(len, align)
-int len;
-int align;
+static vaddr_t
+OF_alloc_virt(int len, int align)
 {
 	int retaddr=-1;
 	struct {
@@ -501,7 +466,7 @@ int align;
 
 #ifdef	__notyet
 	if (mmuh == -1 && ((mmuh = get_mmu_handle()) == -1)) {
-		OF_printf("OF_alloc_virt: cannot get mmuh\r\n");
+		printf("OF_alloc_virt: cannot get mmuh\r\n");
 		return -1LL;
 	}
 #endif
@@ -509,24 +474,22 @@ int align;
 	args.nargs = 4;
 	args.nreturns = 2;
 	args.method = ADR2CELL("claim");
-	args.ihandle = mmuh;
+	args.ihandle = HDL2CELL(mmuh);
 	args.align = align;
 	args.len = len;
 	args.retaddr = ADR2CELL(&retaddr);
-	if(openfirmware(&args) != 0)
+	if (openfirmware(&args) != 0)
 		return -1LL;
-	return (vaddr_t)args.retaddr; /* Kluge till we go 64-bit */
+	return (vaddr_t)args.retaddr;
 }
 
-/* 
+/*
  * Release some address space to the prom
  *
  * Only works while the prom is actively mapping us.
  */
-int
-OF_free_virt(vaddr, len)
-vaddr_t vaddr;
-int len;
+static int
+OF_free_virt(vaddr_t vaddr, int len)
 {
 	struct {
 		cell_t name;
@@ -540,7 +503,7 @@ int len;
 
 #ifdef	__notyet
 	if (mmuh == -1 && ((mmuh = get_mmu_handle()) == -1)) {
-		OF_printf("OF_claim_virt: cannot get mmuh\r\n");
+		printf("OF_free_virt: cannot get mmuh\r\n");
 		return -1;
 	}
 #endif
@@ -555,53 +518,13 @@ int len;
 }
 
 
-/* 
- * Unmap some address space
- *
- * Only works while the prom is actively mapping us.
- */
-int
-OF_unmap_virt(vaddr, len)
-vaddr_t vaddr;
-int len;
-{
-	struct {
-		cell_t name;
-		cell_t nargs;
-		cell_t nreturns;
-		cell_t method;
-		cell_t ihandle;
-		cell_t len;
-		cell_t vaddr;
-	} args;
-
-#ifdef	__notyet
-	if (mmuh == -1 && ((mmuh = get_mmu_handle()) == -1)) {
-		OF_printf("OF_claim_virt: cannot get mmuh\r\n");
-		return -1;
-	}
-#endif
-	args.name = ADR2CELL("call-method");
-	args.nargs = 4;
-	args.nreturns = 0;
-	args.method = ADR2CELL("unmap");
-	args.ihandle = HDL2CELL(mmuh);
-	args.vaddr = ADR2CELL(vaddr);
-	args.len = len;
-	return openfirmware(&args);
-}
-
-/* 
+/*
  * Have prom map in some memory
  *
  * Only works while the prom is actively mapping us.
  */
-vaddr_t
-OF_map_phys(paddr, size, vaddr, mode)
-paddr_t paddr;
-off_t size;
-vaddr_t vaddr;
-int mode;
+static vaddr_t
+OF_map_phys(paddr_t paddr, off_t size, vaddr_t vaddr, int mode)
 {
 	struct {
 		cell_t name;
@@ -620,7 +543,7 @@ int mode;
 
 #ifdef	__notyet
 	if (mmuh == -1 && ((mmuh = get_mmu_handle()) == -1)) {
-		OF_printf("OF_map_phys: cannot get mmuh\r\n");
+		printf("OF_map_phys: cannot get mmuh\r\n");
 		return 0LL;
 	}
 #endif
@@ -632,8 +555,8 @@ int mode;
 	args.mode = mode;
 	args.size = size;
 	args.vaddr = ADR2CELL(vaddr);
-	args.paddr_hi = ADR2CELL(paddr>>32);
-	args.paddr_lo = ADR2CELL(paddr);
+	args.paddr_hi = HDQ2CELL_HI(paddr);
+	args.paddr_lo = HDQ2CELL_LO(paddr);
 
 	if (openfirmware(&args) == -1)
 		return -1;
@@ -643,17 +566,14 @@ int mode;
 }
 
 
-/* 
+/*
  * Request some RAM from the prom
  *
  * Only works while the prom is actively mapping us.
  */
-paddr_t
-OF_alloc_phys(len, align)
-int len;
-int align;
+static paddr_t
+OF_alloc_phys(int len, int align)
 {
-	paddr_t paddr;
 	struct {
 		cell_t name;
 		cell_t nargs;
@@ -669,7 +589,7 @@ int align;
 
 #ifdef	__notyet
 	if (memh == -1 && ((memh = get_memory_handle()) == -1)) {
-		OF_printf("OF_alloc_phys: cannot get memh\r\n");
+		printf("OF_alloc_phys: cannot get memh\r\n");
 		return -1LL;
 	}
 #endif
@@ -680,69 +600,19 @@ int align;
 	args.ihandle = HDL2CELL(memh);
 	args.align = align;
 	args.len = len;
-	if(openfirmware(&args) != 0)
+	if (openfirmware(&args) != 0)
 		return -1LL;
-	paddr = (paddr_t)(args.phys_hi<<32)|((unsigned int)(args.phys_lo));
-	return paddr; /* Kluge till we go 64-bit */
+	return (paddr_t)CELL2HDQ(args.phys_hi, args.phys_lo);
 }
 
-/* 
- * Request some specific RAM from the prom
- *
- * Only works while the prom is actively mapping us.
- */
-paddr_t
-OF_claim_phys(phys, len)
-paddr_t phys;
-int len;
-{
-	paddr_t paddr;
-	struct {
-		cell_t name;
-		cell_t nargs;
-		cell_t nreturns;
-		cell_t method;
-		cell_t ihandle;
-		cell_t align;
-		cell_t len;
-		cell_t phys_hi;
-		cell_t phys_lo;
-		cell_t status;
-		cell_t res;
-		cell_t rphys_hi;
-		cell_t rphys_lo;
-	} args;
 
-#ifdef	__notyet
-	if (memh == -1 && ((memh = get_memory_handle()) == -1)) {
-		OF_printf("OF_alloc_phys: cannot get memh\r\n");
-		return 0LL;
-	}
-#endif
-	args.name = ADR2CELL("call-method");
-	args.nargs = 6;
-	args.nreturns = 4;
-	args.method = ADR2CELL("claim");
-	args.ihandle = HDL2CELL(memh);
-	args.align = 0;
-	args.len = len;
-	args.phys_hi = HDL2CELL(phys>>32);
-	args.phys_lo = HDL2CELL(phys);
-	if(openfirmware(&args) != 0)
-		return 0LL;
-	paddr = (paddr_t)(args.rphys_hi<<32)|((unsigned int)(args.rphys_lo));
-	return paddr;
-}
-
-/* 
+/*
  * Free some RAM to prom
  *
  * Only works while the prom is actively mapping us.
  */
-int
-OF_free_phys(phys, len)
-paddr_t phys;
-int len;
+static int
+OF_free_phys(paddr_t phys, int len)
 {
 	struct {
 		cell_t name;
@@ -757,7 +627,7 @@ int len;
 
 #ifdef	__notyet
 	if (memh == -1 && ((memh = get_memory_handle()) == -1)) {
-		OF_printf("OF_free_phys: cannot get memh\r\n");
+		printf("OF_free_phys: cannot get memh\r\n");
 		return -1;
 	}
 #endif
@@ -767,8 +637,8 @@ int len;
 	args.method = ADR2CELL("release");
 	args.ihandle = HDL2CELL(memh);
 	args.len = len;
-	args.phys_hi = HDL2CELL(phys>>32);
-	args.phys_lo = HDL2CELL(phys);
+	args.phys_hi = HDQ2CELL_HI(phys);
+	args.phys_lo = HDQ2CELL_LO(phys);
 	return openfirmware(&args);
 }
 
@@ -778,10 +648,7 @@ int len;
  */
 
 void *
-OF_claim(virt, size, align)
-	void *virt;
-	u_int size;
-	u_int align;
+OF_claim(void *virt, u_int size, u_int align)
 {
 #define SUNVMOF
 #ifndef SUNVMOF
@@ -804,7 +671,7 @@ OF_claim(virt, size, align)
 	args.align = align;
 	if (openfirmware(&args) == -1)
 		return (void *)-1;
-	return args.baseaddr;
+	return (void *)args.baseaddr;
 #else
 /*
  * Sun Ultra machines run the firmware with VM enabled,
@@ -813,38 +680,43 @@ OF_claim(virt, size, align)
  */
 
 	paddr_t paddr;
-	void* newvirt = NULL;
+	void * newvirt = NULL;
 
 	if (virt == NULL) {
-		if ((virt = (void*)OF_alloc_virt(size, align)) == (void*)-1) {
-			printf("OF_alloc_virt(%d,%d) failed w/%x\n", size, align, virt);
-			return (void *)-1;
+		virt = (void *)OF_alloc_virt(size, align);
+		if (virt == (void *)-1LL) {
+			printf("OF_alloc_virt(%d,%d) failed w/%x\n",
+			       size, align, virt);
+			return virt;
 		}
 	} else {
-		if ((newvirt = (void*)OF_claim_virt((vaddr_t)virt, size)) == (void*)-1) {
-			printf("OF_claim_virt(%x,%d) failed w/%x\n", virt, size, newvirt);
-			return (void *)-1;
+		newvirt = (void *)OF_claim_virt((vaddr_t)virt, size);
+		if (newvirt == (void *)-1LL) {
+			printf("OF_claim_virt(%x,%d) failed w/%x\n",
+			       virt, size, newvirt);
+			return newvirt;
 		}
+		virt = newvirt;
 	}
-	if ((paddr = OF_alloc_phys(size, align)) == -1) {
+	if ((paddr = OF_alloc_phys(size, align)) == (paddr_t)-1LL) {
 		printf("OF_alloc_phys(%d,%d) failed\n", size, align);
 		OF_free_virt((vaddr_t)virt, size);
-		return (void *)-1;
+		return (void *)-1LL;
 	}
 	if (OF_map_phys(paddr, size, (vaddr_t)virt, -1) == -1) {
-		printf("OF_map_phys(%x,%d,%x,%d) failed\n", paddr, size, virt, -1);
+		printf("OF_map_phys(%x,%d,%x,%d) failed\n",
+		       paddr, size, virt, -1);
 		OF_free_phys((paddr_t)paddr, size);
 		OF_free_virt((vaddr_t)virt, size);
-		return (void *)-1;
+		return (void *)-1LL;
 	}
-	return (void *)virt;
+	return virt;
 #endif
 }
 
 
 void
-putchar(c)
-	int c;
+putchar(int c)
 {
 	char ch = c;
 
@@ -854,7 +726,7 @@ putchar(c)
 }
 
 int
-getchar()
+getchar(void)
 {
 	unsigned char ch = '\0';
 	int l;

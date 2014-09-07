@@ -1,9 +1,13 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
+# $Sendmail: smcontrol.pl,v 8.8 2008/07/21 21:31:43 ca Exp $
+
+use strict;
+use Getopt::Std;
 use FileHandle;
 use Socket;
 
-$sendmailDaemon = "/usr/sbin/sendmail -q30m -bd";
+my $sendmailDaemon = "/usr/sbin/sendmail -q30m -bd";
 
 ##########################################################################
 #
@@ -70,6 +74,7 @@ sub do_command
 	my $command = shift;
 	my $proto = getprotobyname('ip');
 	my @reply;
+	my $i;
 
 	socket(SOCK, PF_UNIX, SOCK_STREAM, $proto) or return undef;
 
@@ -216,7 +221,7 @@ sub start_daemon
 	}
 	elsif (defined $pid)
 	{
-		exec($main::sendmailDaemon);
+		exec($sendmailDaemon);
 		die "Unable to start sendmail daemon: $!.\n";
 	}
 	else
@@ -274,6 +279,29 @@ sub restart_daemon
 
 ##########################################################################
 #
+#  &memdump -- get memdump from the daemon using the control socket
+#
+#	Parameters:
+#		control -- control socket name
+#
+#	Returns:
+#		Error message or status message
+#
+
+sub memdump
+{
+	my $control = shift;
+	my $status;
+
+	if (not defined $control)
+	{
+		return "The control socket is not configured so the daemon can not be queried for memdump.";
+	}
+	return &do_command($control, "MEMDUMP");
+}
+
+##########################################################################
+#
 #  &help -- get help from the daemon using the control socket
 #
 #	Parameters:
@@ -295,10 +323,14 @@ sub help
 	return &do_command($control, "HELP");
 }
 
-my $command = shift;
-my $control = &get_controlname;
 my $status = undef;
 my $daemonStatus = undef;
+my $opts = {};
+
+getopts('f:', $opts) || die "Usage: $0 [-f /path/to/control/socket] command\n";
+
+my $control = $opts->{f} || &get_controlname;
+my $command = shift;
 
 if (not defined $control)
 {
@@ -306,7 +338,7 @@ if (not defined $control)
 }
 if (not defined $command)
 {
-	die "Usage: $0 command\n";
+	die "Usage: $0 [-f /path/to/control/socket] command\n";
 }
 if ($command eq "status")
 {
@@ -341,9 +373,29 @@ elsif (lc($command) eq "start")
 {
 	$status = &start_daemon($control);
 }
+elsif (lc($command) eq "memdump")
+{
+	$status = &memdump($control);
+}
 elsif (lc($command) eq "help")
 {
 	$status = &help($control);
+}
+elsif (lc($command) eq "mstat")
+{
+	$status = &do_command($control, "mstat");
+	if (not defined $status)
+	{
+		# Not responding on control channel, query via SMTP
+		if (&sendmail_running)
+		{
+			$daemonStatus = "Sendmail is running but not answering status queries.";
+		}
+		else
+		{
+			$daemonStatus = "Sendmail does not appear to be running.";
+		}
+	}
 }
 else
 {

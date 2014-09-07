@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -8,7 +8,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: xtrap.c,v 1.3 2000/12/08 08:03:09 rodney Exp $")
+SM_RCSID("@(#)$Sendmail: xtrap.c,v 1.6 2013/11/22 20:51:44 ca Exp $")
 
 #include <sm/xtrap.h>
 

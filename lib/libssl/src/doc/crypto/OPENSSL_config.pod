@@ -37,7 +37,7 @@ can be added without source changes.
 
 The environment variable B<OPENSSL_CONF> can be set to specify the location
 of the configuration file.
- 
+
 Currently ASN1 OBJECTs and ENGINE configuration can be performed future
 versions of OpenSSL will add new configuration options.
 
@@ -73,7 +73,7 @@ Neither OPENSSL_config() nor OPENSSL_no_config() return a value.
 =head1 SEE ALSO
 
 L<conf(5)|conf(5)>, L<CONF_load_modules_file(3)|CONF_load_modules_file(3)>,
-L<CONF_modules_free(3),CONF_modules_free(3)>
+L<CONF_modules_free(3)|CONF_modules_free(3)>
 
 =head1 HISTORY
 

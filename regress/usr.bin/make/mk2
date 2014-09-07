@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Invoke with make -r
 a:
-	@cd ${.CURDIR} && make -f mk2b COPTS='-g -O2'
+	@cd ${.CURDIR} && make -f mk2a COPTS='-g -O2'

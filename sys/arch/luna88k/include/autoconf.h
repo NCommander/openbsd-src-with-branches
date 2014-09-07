@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.11 2003/09/16 20:52:19 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.5 2007/05/08 15:33:10 deraadt Exp $ */
 /*
  * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -34,46 +34,17 @@
  * Autoconfiguration information.
  */
 
-#ifndef _MVME88K_AUTOCONF_H_
-#define _MVME88K_AUTOCONF_H_
-
-struct confargs {
-	int	ca_bustype;
-	void	*ca_vaddr;
-	void	*ca_paddr;
-	int	ca_offset;
-	int	ca_len;
-	int	ca_ipl;
-	int	ca_vec;
-	char	*ca_name;
-	void	*ca_master;	/* points to bus-dependent data */
-};
-
-#define BUS_MAIN      0
-#define BUS_MC        1
-#define BUS_PCC       2
-#define BUS_PCCTWO    3
-#define BUS_VMES      4
-#define BUS_VMEL      5
-#define BUS_SYSCON    6
-#define BUS_BUSSWITCH 7
+#ifndef _MACHINE_AUTOCONF_H_
+#define _MACHINE_AUTOCONF_H_
 
 /* the following are from the prom/bootblocks */
 extern void	*bootaddr;	/* PA of boot device */
 extern int	bootpart;	/* boot partition (disk) */
 
-extern	struct device *bootdv; /* boot device */
-
-void	*mapiodev(void *pa, int size);
-void	unmapiodev(void *kva, int size);
-
-struct device *getdevunit(char *name, int unit);
-
-/* taken from NetBSD/luna68k */
-
 struct mainbus_attach_args {
         const char *ma_name;
         paddr_t    ma_addr;
         int        ma_ilvl;
+	int	   ma_machine;
 };
 #endif

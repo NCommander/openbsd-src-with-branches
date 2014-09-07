@@ -1,3 +1,4 @@
+/* $OpenBSD: urem.S,v 1.5 2005/08/07 16:40:15 espie Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)urem.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: urem.S,v 1.1 1995/04/17 12:23:48 ragge Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "DEFS.h"
 
 /*
@@ -47,50 +39,58 @@
  * aurem() takes a pointer to a dividend and an ordinary divisor.
  */
 
-#define	DIVIDEND	4(ap)
-#define	DIVISOR		8(ap)
+#define	DIVIDEND	4(%ap)
+#define	DIVISOR		8(%ap)
 
-ASENTRY(urem,0)
-	movl	DIVISOR,r2
+#ifdef __ELF__
+ASENTRY(__urem, R2)
+#else
+ASENTRY(urem,R2)
+#endif
+	movl	DIVISOR,%r2
 	jlss	Leasy		# big divisor: settle by comparison
-	movl	DIVIDEND,r0
+	movl	DIVIDEND,%r0
 	jlss	Lhard		# big dividend: need extended division
-	divl3	r2,r0,r1	# small divisor and dividend: signed modulus
-	mull2	r2,r1
-	subl2	r1,r0
+	divl3	%r2,%r0,%r1	# small divisor and dividend: signed modulus
+	mull2	%r2,%r1
+	subl2	%r1,%r0
 	ret
 Lhard:
-	clrl	r1
-	ediv	r2,r0,r1,r0
+	clrl	%r1
+	ediv	%r2,%r0,%r1,%r0
 	ret
 Leasy:
-	subl3	r2,DIVIDEND,r0
+	subl3	%r2,DIVIDEND,%r0
 	jcc	Ldifference	# if divisor goes in once, return difference
-	movl	DIVIDEND,r0	# if divisor is bigger, return dividend
+	movl	DIVIDEND,%r0	# if divisor is bigger, return dividend
 Ldifference:
 	ret
 
-ASENTRY(aurem,0)
-	movl	DIVIDEND,r3
-	movl	DIVISOR,r2
+#ifdef __ELF__
+ASENTRY(__aurem, R2|R3)
+#else
+ASENTRY(aurem,R2|R3)
+#endif
+	movl	DIVIDEND,%r3
+	movl	DIVISOR,%r2
 	jlss	La_easy		# big divisor: settle by comparison
-	movl	(r3),r0
+	movl	(%r3),%r0
 	jlss	La_hard		# big dividend: need extended division
-	divl3	r2,r0,r1	# small divisor and dividend: signed modulus
-	mull2	r2,r1
-	subl2	r1,r0
-	movl	r0,(r3)		# leave the value of the assignment in r0
+	divl3	%r2,%r0,%r1	# small divisor and dividend: signed modulus
+	mull2	%r2,%r1
+	subl2	%r1,%r0
+	movl	%r0,(%r3)	# leave the value of the assignment in r0
 	ret
 La_hard:
-	clrl	r1
-	ediv	r2,r0,r1,r0
-	movl	r0,(r3)
+	clrl	%r1
+	ediv	%r2,%r0,%r1,%r0
+	movl	%r0,(%r3)
 	ret
 La_easy:
-	subl3	r2,(r3),r0
+	subl3	%r2,(%r3),%r0
 	jcs	La_dividend	# if divisor is bigger, leave dividend alone
-	movl	r0,(r3)		# if divisor goes in once, store difference
+	movl	%r0,(%r3)	# if divisor goes in once, store difference
 	ret
 La_dividend:
-	movl	(r3),r0
+	movl	(%r3),%r0
 	ret

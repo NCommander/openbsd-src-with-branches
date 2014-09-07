@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)fsi_analyze.c	8.1 (Berkeley) 6/6/93
- *	$Id: fsi_analyze.c,v 1.3 1994/06/13 20:50:08 mycroft Exp $
+ *	$Id: fsi_analyze.c,v 1.4 2003/04/07 23:45:45 tedu Exp $
  */
 
 /*
@@ -114,6 +110,7 @@ char *hn;
 	char *p = strdup(hn);
 	char *d;
 	char path[MAXPATHLEN];
+	size_t len = strlen(p) + 1;
 
 	domain_strip(p, hostname);
 	path[0] = '\0';
@@ -122,16 +119,16 @@ char *hn;
 		d = strrchr(p, '.');
 		if (d) {
 			*d = 0;
-			strcat(path, d+1);
-			strcat(path, "/");
+			strlcat(path, d+1, sizeof(path));
+			strlcat(path, "/", sizeof(path));
 		} else {
-			strcat(path, p);
+			strlcat(path, p, sizeof(path));
 		}
 	} while (d);
 
 	log("hostpath of '%s' is '%s'", hn, path);
 
-	strcpy(p, path);
+	strlcpy(p, path, len);
 	return p;
 }
 
@@ -222,7 +219,7 @@ disk_fs *dk;
 		log("Mount %s:", mp->m_name);
 		if (parent) {
 			char n[MAXPATHLEN];
-			sprintf(n, "%s/%s", parent->m_name, mp->m_name);
+			snprintf(n, sizeof(n), "%s/%s", parent->m_name, mp->m_name);
 			if (*mp->m_name == '/')
 				lerror(mp->m_ioloc, "sub-directory %s of %s starts with '/'", mp->m_name, parent->m_name);
 			else if (STREQ(mp->m_name, "default"))
@@ -282,7 +279,7 @@ qelem *q;
 	if (STREQ(mp2->m_name, "default")) {
 		if (ISSET(mp2->m_mask, DM_VOLNAME)) {
 			char nbuf[1024];
-			compute_automount_point(nbuf, dk->d_host, mp2->m_volname);
+			compute_automount_point(nbuf, sizeof(nbuf), dk->d_host, mp2->m_volname);
 			free(mp2->m_name);
 			mp2->m_name = strdup(nbuf);
 			log("%s:%s has default mount on %s", dk->d_host->h_hostname, dk->d_dev, mp2->m_name);
@@ -609,7 +606,7 @@ int lvl;
 		if (lvl > 0 || ap->a_mount)
 			if (ap->a_name[1] && strchr(ap->a_name+1, '/'))
 				lerror(ap->a_ioloc, "not allowed '/' in a directory name");
-		sprintf(nname, "%s/%s", pref, ap->a_name);
+		snprintf(nname, sizeof(nname), "%s/%s", pref, ap->a_name);
 		free(ap->a_name);
 		ap->a_name = strdup(nname[1] == '/' ? nname+1 : nname);
 		log("automount point %s:", ap->a_name);

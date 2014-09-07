@@ -4806,7 +4806,11 @@ Perl_upg_version(pTHX_ SV *ver, bool qv)
 
 	/* may get too much accuracy */ 
 	char tbuf[64];
+#ifdef __vax__
+	SV *sv = SvNVX(ver) > 10e37 ? newSV(64) : 0;
+#else
 	SV *sv = SvNVX(ver) > 10e50 ? newSV(64) : 0;
+#endif
 	char *buf;
 #ifdef USE_LOCALE_NUMERIC
 	char *loc = savepv(setlocale(LC_NUMERIC, NULL));
@@ -5582,6 +5586,9 @@ Perl_parse_unicode_opts(pTHX_ const char **popt)
 U32
 Perl_seed(pTHX)
 {
+#if defined(__OpenBSD__)
+	return arc4random();
+#else
     dVAR;
     /*
      * This is really just a quick hack which grabs various garbage
@@ -5658,6 +5665,7 @@ Perl_seed(pTHX)
     u += SEED_C5 * (U32)PTR2UV(&when);
 #endif
     return u;
+#endif
 }
 
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.16 2005/11/25 22:14:34 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.2 2011/03/23 16:54:34 pirofti Exp $ */
 /*
  * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -34,8 +34,8 @@
  * Autoconfiguration information.
  */
 
-#ifndef _AVIION_AUTOCONF_H_
-#define _AVIION_AUTOCONF_H_
+#ifndef _MACHINE_AUTOCONF_H_
+#define _MACHINE_AUTOCONF_H_
 
 #include <machine/bus.h>
 
@@ -49,7 +49,6 @@ struct confargs {
 void	cmdline_parse(void);
 void	myetheraddr(u_char *);
 
-extern u_int bootdev, bootunit, bootpart;
 extern char bootargs[256];
 
 #endif

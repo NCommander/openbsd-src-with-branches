@@ -1,5 +1,4 @@
-#	$NetBSD: Makefile,v 1.7 1995/03/18 15:01:05 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/5/93
+#	$OpenBSD: Makefile,v 1.2 1996/06/23 14:32:41 deraadt Exp $
 
 PROG=	shutdown
 MAN=	shutdown.8

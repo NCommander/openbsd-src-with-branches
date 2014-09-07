@@ -1,4 +1,4 @@
-/* crypto/ecdsa/ecdsa_sign.c */
+/* $OpenBSD: ecs_sign.c,v 1.3 2014/06/12 15:49:29 deraadt Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -53,6 +53,8 @@
  *
  */
 
+#include <openssl/opensslconf.h>
+
 #include "ecs_locl.h"
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
@@ -84,7 +86,6 @@ int ECDSA_sign_ex(int type, const unsigned char *dgst, int dlen, unsigned char
 	EC_KEY *eckey)
 {
 	ECDSA_SIG *s;
-	RAND_seed(dgst, dlen);
 	s = ECDSA_do_sign_ex(dgst, dlen, kinv, r, eckey);
 	if (s == NULL)
 	{

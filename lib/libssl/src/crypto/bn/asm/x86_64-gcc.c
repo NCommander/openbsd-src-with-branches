@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 #include "../bn_lcl.h"
 #if !(defined(__GNUC__) && __GNUC__>=2)
 # include "../bn_asm.c"	/* kind of dirty hack for Sun Studio */
@@ -55,11 +56,7 @@
  *    machine.
  */
 
-#ifdef _WIN64
-#define BN_ULONG unsigned long long
-#else
 #define BN_ULONG unsigned long
-#endif
 
 #undef mul
 #undef mul_add

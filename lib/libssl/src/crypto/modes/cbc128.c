@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* ====================================================================
  * Copyright (c) 2008 The OpenSSL Project.  All rights reserved.
  *
@@ -59,8 +60,11 @@
 #endif
 #include <assert.h>
 
-#ifndef STRICT_ALIGNMENT
-#  define STRICT_ALIGNMENT 0
+#undef STRICT_ALIGNMENT
+#ifdef __STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
+#else
+#define STRICT_ALIGNMENT 0
 #endif
 
 void CRYPTO_cbc128_encrypt(const unsigned char *in, unsigned char *out,
@@ -136,8 +140,7 @@ void CRYPTO_cbc128_decrypt(const unsigned char *in, unsigned char *out,
 				in  += 16;
 				out += 16;
 			}
-		}
-		else  if (16%sizeof(size_t) == 0) { /* always true */
+		} else if (16%sizeof(size_t) == 0) { /* always true */
 			while (len>=16) {
 				size_t *out_t=(size_t *)out, *iv_t=(size_t *)iv;
 
@@ -166,8 +169,7 @@ void CRYPTO_cbc128_decrypt(const unsigned char *in, unsigned char *out,
 				in  += 16;
 				out += 16;
 			}
-		}
-		else if (16%sizeof(size_t) == 0) { /* always true */
+		} else if (16%sizeof(size_t) == 0) { /* always true */
 			while (len>=16) {
 				size_t c, *out_t=(size_t *)out, *ivec_t=(size_t *)ivec;
 				const size_t *in_t=(const size_t *)in;

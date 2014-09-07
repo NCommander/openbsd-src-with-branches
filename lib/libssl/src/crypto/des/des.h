@@ -1,4 +1,4 @@
-/* crypto/des/des.h */
+/* $OpenBSD$ */
 /* Copyright (C) 1995-1997 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -59,17 +59,12 @@
 #ifndef HEADER_NEW_DES_H
 #define HEADER_NEW_DES_H
 
-#include <openssl/e_os2.h>	/* OPENSSL_EXTERN, OPENSSL_NO_DES,
-				   DES_LONG (via openssl/opensslconf.h */
+#include <openssl/opensslconf.h>
 
 #ifdef OPENSSL_NO_DES
 #error DES is disabled.
 #endif
 
-#ifdef OPENSSL_BUILD_SHLIBCRYPTO
-# undef OPENSSL_EXTERN
-# define OPENSSL_EXTERN OPENSSL_EXPORT
-#endif
 
 #ifdef  __cplusplus
 extern "C" {
@@ -90,16 +85,6 @@ typedef struct DES_ks
 	DES_LONG deslong[2];
 	} ks[16];
     } DES_key_schedule;
-
-#ifndef OPENSSL_DISABLE_OLD_DES_SUPPORT
-# ifndef OPENSSL_ENABLE_OLD_DES_SUPPORT
-#  define OPENSSL_ENABLE_OLD_DES_SUPPORT
-# endif
-#endif
-
-#ifdef OPENSSL_ENABLE_OLD_DES_SUPPORT
-# include <openssl/des_old.h>
-#endif
 
 #define DES_KEY_SZ 	(sizeof(DES_cblock))
 #define DES_SCHEDULE_SZ (sizeof(DES_key_schedule))
@@ -122,10 +107,8 @@ typedef struct DES_ks
 #define DES_ede2_ofb64_encrypt(i,o,l,k1,k2,iv,n) \
 	DES_ede3_ofb64_encrypt((i),(o),(l),(k1),(k2),(k1),(iv),(n))
 
-OPENSSL_DECLARE_GLOBAL(int,DES_check_key);	/* defaults to false */
-#define DES_check_key OPENSSL_GLOBAL_REF(DES_check_key)
-OPENSSL_DECLARE_GLOBAL(int,DES_rw_mode);	/* defaults to DES_PCBC_MODE */
-#define DES_rw_mode OPENSSL_GLOBAL_REF(DES_rw_mode)
+extern int DES_check_key;	/* defaults to false */
+extern int DES_rw_mode;		/* defaults to DES_PCBC_MODE */
 
 const char *DES_options(void);
 void DES_ecb3_encrypt(const_DES_cblock *input, DES_cblock *output,
@@ -224,9 +207,6 @@ int DES_set_key(const_DES_cblock *key,DES_key_schedule *schedule);
 int DES_key_sched(const_DES_cblock *key,DES_key_schedule *schedule);
 int DES_set_key_checked(const_DES_cblock *key,DES_key_schedule *schedule);
 void DES_set_key_unchecked(const_DES_cblock *key,DES_key_schedule *schedule);
-#ifdef OPENSSL_FIPS
-void private_DES_set_key_unchecked(const_DES_cblock *key,DES_key_schedule *schedule);
-#endif
 void DES_string_to_key(const char *str,DES_cblock *key);
 void DES_string_to_2keys(const char *str,DES_cblock *key1,DES_cblock *key2);
 void DES_cfb64_encrypt(const unsigned char *in,unsigned char *out,long length,
@@ -234,10 +214,6 @@ void DES_cfb64_encrypt(const unsigned char *in,unsigned char *out,long length,
 		       int enc);
 void DES_ofb64_encrypt(const unsigned char *in,unsigned char *out,long length,
 		       DES_key_schedule *schedule,DES_cblock *ivec,int *num);
-
-int DES_read_password(DES_cblock *key, const char *prompt, int verify);
-int DES_read_2passwords(DES_cblock *key1, DES_cblock *key2, const char *prompt,
-	int verify);
 
 #define DES_fixup_key_parity DES_set_odd_parity
 

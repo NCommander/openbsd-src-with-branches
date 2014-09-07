@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2001, 2006 Proofpoint, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: heap.h,v 1.22 2001/09/04 22:41:55 ca Exp $
+ *	$Sendmail: heap.h,v 1.24 2013/11/22 20:51:31 ca Exp $
  */
 
 /*
@@ -90,6 +90,16 @@ sm_fcalloc __P((
 # define sm_heap_group()	SmHeapGroup
 # define sm_heap_setgroup(g)	(SmHeapGroup = (g))
 # define sm_heap_newgroup()	(SmHeapGroup = ++SmHeapMaxGroup)
+
+#define SM_FREE(ptr)			\
+	do				\
+	{				\
+		if ((ptr) != NULL)	\
+		{			\
+			sm_free(ptr);	\
+			(ptr) = NULL;	\
+		}			\
+	} while (0)
 
 extern int SmHeapGroup;
 extern int SmHeapMaxGroup;

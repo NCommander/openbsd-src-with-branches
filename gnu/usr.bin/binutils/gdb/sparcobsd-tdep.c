@@ -1,6 +1,6 @@
 /* Target-dependent code for OpenBSD/sparc.
 
-   Copyright 2004 Free Software Foundation, Inc.
+   Copyright 2004, 2005 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -30,6 +30,7 @@
 
 #include "gdb_assert.h"
 
+#include "obsd-tdep.h"
 #include "sparc-tdep.h"
 
 /* Signal trampolines.  */
@@ -147,14 +148,12 @@ sparc32obsd_init_abi (struct gdbarch_info info, struct gdbarch *gdbarch)
 {
   struct gdbarch_tdep *tdep = gdbarch_tdep (gdbarch);
 
-  /* OpenBSD doesn't support the 128-bit `long double' from the psABI.  */
-  set_gdbarch_long_double_bit (gdbarch, 64);
-  set_gdbarch_long_double_format (gdbarch, &floatformat_ieee_double_big);
+  /* OpenBSD/sparc is very similar to NetBSD/sparc ELF.  */
+  sparc32nbsd_elf_init_abi (info, gdbarch);
+
+  set_gdbarch_skip_solib_resolver (gdbarch, obsd_skip_solib_resolver);
 
   frame_unwind_append_sniffer (gdbarch, sparc32obsd_sigtramp_frame_sniffer);
-
-  set_solib_svr4_fetch_link_map_offsets
-    (gdbarch, svr4_ilp32_fetch_link_map_offsets);
 }
 
 

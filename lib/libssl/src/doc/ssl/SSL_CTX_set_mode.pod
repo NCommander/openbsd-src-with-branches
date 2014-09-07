@@ -2,7 +2,8 @@
 
 =head1 NAME
 
-SSL_CTX_set_mode, SSL_set_mode, SSL_CTX_get_mode, SSL_get_mode - manipulate SSL engine mode
+SSL_CTX_set_mode, SSL_set_mode, SSL_CTX_get_mode, SSL_get_mode - manipulate SSL
+engine mode
 
 =head1 SYNOPSIS
 
@@ -66,7 +67,7 @@ return after the handshake and successful completion.
 When we no longer need a read buffer or a write buffer for a given SSL,
 then release the memory we were using to hold it.  Released memory is
 either appended to a list of unused RAM chunks on the SSL_CTX, or simply
-freed if the list of unused chunks would become longer than 
+freed if the list of unused chunks would become longer than
 SSL_CTX->freelist_max_len, which defaults to 32.  Using this flag can
 save around 34k per idle SSL connection.
 This flag has no effect on SSL v2 connections, or on DTLS connections.

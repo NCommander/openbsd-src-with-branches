@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2007  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 2004-2008  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 1999-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
@@ -15,7 +15,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: dispatch.c,v 1.116.18.19.12.1 2008/05/22 21:28:06 each Exp $ */
+/* $ISC: dispatch.c,v 1.116.18.19.12.5 2008/07/23 23:16:43 marka Exp $ */
 
 /*! \file */
 
@@ -30,6 +30,7 @@
 #include <isc/mutex.h>
 #include <isc/print.h>
 #include <isc/random.h>
+#include <isc/shuffle.h>
 #include <isc/string.h>
 #include <isc/task.h>
 #include <isc/time.h>
@@ -52,6 +53,7 @@ typedef struct dns_qid {
 	unsigned int	qid_increment;	/*%< id increment on collision */
 	isc_mutex_t	lock;
 	dns_displist_t	*qid_table;	/*%< the table itself */
+	isc_shuffle_t	qid_shuffle;	/*%< state generator info */
 } dns_qid_t;
 
 /* ARC4 Random generator state */
@@ -276,7 +278,26 @@ request_log(dns_dispatch_t *disp, dns_dispentry_t *resp,
 }
 
 /*
- * ARC4 random number generator obtained from OpenBSD
+ * ARC4 random number generator derived from OpenBSD.
+ * Only dispatch_arc4random() and dispatch_arc4uniformrandom() are expected
+ * to be called from general dispatch routines; the rest of them are subroutines
+ * for these two.
+ *
+ * The original copyright follows:
+ * Copyright (c) 1996, David Mazieres <dm@uun.org>
+ * Copyright (c) 2008, Damien Miller <djm@openbsd.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 static void
 dispatch_arc4init(arc4ctx_t *actx) {
@@ -378,6 +399,7 @@ dispatch_arc4random(dns_dispatchmgr_t *mgr) {
 	return (result);
 }
 
+#if 0
 static isc_uint16_t
 dispatch_arc4uniformrandom(dns_dispatchmgr_t *mgr, isc_uint16_t upper_bound) {
 	isc_uint16_t min, r;
@@ -410,6 +432,7 @@ dispatch_arc4uniformrandom(dns_dispatchmgr_t *mgr, isc_uint16_t upper_bound) {
 
 	return (r % upper_bound);
 }
+#endif
 
 /*
  * Return a hash of the destination and message id.
@@ -1172,7 +1195,7 @@ destroy_mgr(dns_dispatchmgr_t **mgrp) {
 
 static isc_result_t
 create_socket(isc_socketmgr_t *mgr, isc_sockaddr_t *local,
-	      isc_socket_t **sockp)
+	      unsigned int options, isc_socket_t **sockp)
 {
 	isc_socket_t *sock;
 	isc_result_t result;
@@ -1186,7 +1209,7 @@ create_socket(isc_socketmgr_t *mgr, isc_sockaddr_t *local,
 #ifndef ISC_ALLOW_MAPPED
 	isc_socket_ipv6only(sock, ISC_TRUE);
 #endif
-	result = isc_socket_bind(sock, local);
+	result = isc_socket_bind(sock, local, options);
 	if (result != ISC_R_SUCCESS) {
 		isc_socket_detach(&sock);
 		return (result);
@@ -1573,6 +1596,7 @@ qid_allocate(dns_dispatchmgr_t *mgr, unsigned int buckets,
 	qid->qid_nbuckets = buckets;
 	qid->qid_increment = increment;
 	qid->magic = QID_MAGIC;
+	isc_shuffle_init(&qid->qid_shuffle);
 	*qidp = qid;
 	return (ISC_R_SUCCESS);
 }
@@ -1907,6 +1931,7 @@ dispatch_createudp(dns_dispatchmgr_t *mgr, isc_socketmgr_t *sockmgr,
 	localaddr_bound = *localaddr;
  getsocket:
 	if ((attributes & DNS_DISPATCHATTR_RANDOMPORT) != 0) {
+#if 0
 		in_port_t prt;
 
 		/* XXX: should the range be configurable? */
@@ -1917,15 +1942,36 @@ dispatch_createudp(dns_dispatchmgr_t *mgr, isc_socketmgr_t *sockmgr,
 				attributes &= ~DNS_DISPATCHATTR_RANDOMPORT;
 			goto getsocket;
 		}
-		result = create_socket(sockmgr, &localaddr_bound, &sock);
+		result = create_socket(sockmgr, &localaddr_bound, 0, &sock);
 		if (result == ISC_R_ADDRINUSE) {
 			if (++k == 1024)
 				attributes &= ~DNS_DISPATCHATTR_RANDOMPORT;
 			goto getsocket;
 		}
 		localport = prt;
+#else
+		isc_sockaddr_t localaddr_listen;
+
+		isc_sockaddr_setport(&localaddr_bound, 0);
+		result = create_socket(sockmgr, &localaddr_bound, 0, &sock);
+		if (result != ISC_R_SUCCESS) {
+			if (++k == 1024)
+				attributes &= ~DNS_DISPATCHATTR_RANDOMPORT;
+			goto getsocket;
+		}
+		result = isc_socket_getsockname(sock, &localaddr_listen);
+		if (result != ISC_R_SUCCESS ||
+		    blacklisted(mgr, NULL, &localaddr_listen)) {
+			isc_socket_detach(&sock);
+			if (++k == 1024)
+				attributes &= ~DNS_DISPATCHATTR_RANDOMPORT;
+			goto getsocket;
+		}
+		localport = isc_sockaddr_getport(&localaddr_listen);
+#endif
 	} else
-		result = create_socket(sockmgr, localaddr, &sock);
+		result = create_socket(sockmgr, localaddr,
+				       ISC_SOCKET_REUSEADDRESS, &sock);
 	if (result != ISC_R_SUCCESS)
 		goto deallocate_dispatch;
 	if ((attributes & DNS_DISPATCHATTR_RANDOMPORT) == 0 &&
@@ -2085,8 +2131,8 @@ dns_dispatch_addresponse(dns_dispatch_t *disp, isc_sockaddr_t *dest,
 	/*
 	 * Try somewhat hard to find an unique ID.
 	 */
-	id = (dns_messageid_t)dispatch_arc4random(disp->mgr);
 	qid = DNS_QID(disp);
+	id = (dns_messageid_t)isc_shuffle_generate16(&qid->qid_shuffle);
 	LOCK(&qid->lock);
 	bucket = dns_hash(qid, dest, id, disp->localport);
 	ok = ISC_FALSE;

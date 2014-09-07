@@ -1,4 +1,4 @@
-/* crypto/des/cfb_enc.c */
+/* $OpenBSD: cfb_enc.c,v 1.10 2014/06/12 15:49:28 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,9 +56,9 @@
  * [including the GNU Public Licence.]
  */
 
-#include "e_os.h"
 #include "des_locl.h"
 #include <assert.h>
+#include <machine/endian.h>
 
 /* The input and output are loaded in multiples of 8 bits.
  * What this means is that if you hame numbits=12 and length=2
@@ -77,7 +77,7 @@ void DES_cfb_encrypt(const unsigned char *in, unsigned char *out, int numbits,
 	register int num=numbits/8,n=(numbits+7)/8,i,rem=numbits%8;
 	DES_LONG ti[2];
 	unsigned char *iv;
-#ifndef L_ENDIAN
+#if BYTE_ORDER != LITTLE_ENDIAN
 	unsigned char ovec[16];
 #else
 	unsigned int  sh[4];
@@ -115,7 +115,7 @@ void DES_cfb_encrypt(const unsigned char *in, unsigned char *out, int numbits,
 				{ v0=d0; v1=d1; }
 			else
 				{
-#ifndef L_ENDIAN
+#if BYTE_ORDER != LITTLE_ENDIAN
 				iv=&ovec[0];
 				l2c(v0,iv);
 				l2c(v1,iv);
@@ -130,7 +130,7 @@ void DES_cfb_encrypt(const unsigned char *in, unsigned char *out, int numbits,
 					for(i=0 ; i < 8 ; ++i)
 						ovec[i]=ovec[i+num]<<rem |
 							ovec[i+num+1]>>(8-rem);
-#ifdef L_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
 				v0=sh[0], v1=sh[1];
 #else
 				iv=&ovec[0];
@@ -158,7 +158,7 @@ void DES_cfb_encrypt(const unsigned char *in, unsigned char *out, int numbits,
 				{ v0=d0; v1=d1; }
 			else
 				{
-#ifndef L_ENDIAN
+#if BYTE_ORDER != LITTLE_ENDIAN
 				iv=&ovec[0];
 				l2c(v0,iv);
 				l2c(v1,iv);
@@ -173,7 +173,7 @@ void DES_cfb_encrypt(const unsigned char *in, unsigned char *out, int numbits,
 					for(i=0 ; i < 8 ; ++i)
 						ovec[i]=ovec[i+num]<<rem |
 							ovec[i+num+1]>>(8-rem);
-#ifdef L_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
 				v0=sh[0], v1=sh[1];
 #else
 				iv=&ovec[0];

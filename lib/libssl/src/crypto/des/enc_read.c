@@ -1,4 +1,4 @@
-/* crypto/des/enc_read.c */
+/* $OpenBSD: enc_read.c,v 1.13 2014/07/10 22:45:56 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,15 +56,16 @@
  * [including the GNU Public Licence.]
  */
 
-#include <stdio.h>
 #include <errno.h>
-#include "cryptlib.h"
+#include <stdio.h>
+
+#include <openssl/opensslconf.h>
+
 #include "des_locl.h"
 
 /* This has some uglies in it but it works - even over sockets. */
 /*extern int errno;*/
-OPENSSL_IMPLEMENT_GLOBAL(int,DES_rw_mode,DES_PCBC_MODE)
-
+int DES_rw_mode = DES_PCBC_MODE;
 
 /*
  * WARNINGS:
@@ -106,17 +107,17 @@ int DES_enc_read(int fd, void *buf, int len, DES_key_schedule *sched,
 
 	if (tmpbuf == NULL)
 		{
-		tmpbuf=OPENSSL_malloc(BSIZE);
+		tmpbuf=malloc(BSIZE);
 		if (tmpbuf == NULL) return(-1);
 		}
 	if (net == NULL)
 		{
-		net=OPENSSL_malloc(BSIZE);
+		net=malloc(BSIZE);
 		if (net == NULL) return(-1);
 		}
 	if (unnet == NULL)
 		{
-		unnet=OPENSSL_malloc(BSIZE);
+		unnet=malloc(BSIZE);
 		if (unnet == NULL) return(-1);
 		}
 	/* left over data from last decrypt */
@@ -150,11 +151,7 @@ int DES_enc_read(int fd, void *buf, int len, DES_key_schedule *sched,
 	/* first - get the length */
 	while (net_num < HDRSIZE) 
 		{
-#ifndef OPENSSL_SYS_WIN32
 		i=read(fd,(void *)&(net[net_num]),HDRSIZE-net_num);
-#else
-		i=_read(fd,(void *)&(net[net_num]),HDRSIZE-net_num);
-#endif
 #ifdef EINTR
 		if ((i == -1) && (errno == EINTR)) continue;
 #endif
@@ -176,11 +173,7 @@ int DES_enc_read(int fd, void *buf, int len, DES_key_schedule *sched,
 	net_num=0;
 	while (net_num < rnum)
 		{
-#ifndef OPENSSL_SYS_WIN32
 		i=read(fd,(void *)&(net[net_num]),rnum-net_num);
-#else
-		i=_read(fd,(void *)&(net[net_num]),rnum-net_num);
-#endif
 #ifdef EINTR
 		if ((i == -1) && (errno == EINTR)) continue;
 #endif

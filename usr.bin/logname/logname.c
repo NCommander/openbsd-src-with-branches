@@ -1,3 +1,4 @@
+/*	$OpenBSD: logname.c,v 1.6 2003/06/10 22:20:47 deraadt Exp $	*/
 /*	$NetBSD: logname.c,v 1.6 1994/12/22 06:39:32 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,38 +30,23 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1991, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)logname.c	8.2 (Berkeley) 4/3/94";
-#endif
-static char rcsid[] = "$NetBSD: logname.c,v 1.6 1994/12/22 06:39:32 jtc Exp $";
-#endif /* not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <unistd.h>
 #include <err.h>
 
-void usage __P((void));
+void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch;
 	char *p;
 
 	setlocale(LC_ALL, "");
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch (ch) {
 		case '?':
 		default:
@@ -84,7 +66,7 @@ main(argc, argv)
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr, "usage: logname\n");
 	exit(1);

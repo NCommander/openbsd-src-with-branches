@@ -2,7 +2,9 @@
 
 =head1 NAME
 
-SSL_CTX_set_options, SSL_set_options, SSL_CTX_clear_options, SSL_clear_options, SSL_CTX_get_options, SSL_get_options, SSL_get_secure_renegotiation_support - manipulate SSL options
+SSL_CTX_set_options, SSL_set_options, SSL_CTX_clear_options, SSL_clear_options,
+SSL_CTX_get_options, SSL_get_options, SSL_get_secure_renegotiation_support -
+manipulate SSL options
 
 =head1 SYNOPSIS
 
@@ -44,7 +46,7 @@ secure renegotiation.
 =head1 NOTES
 
 The behaviour of the SSL library can be changed by setting several options.
-The options are coded as bitmasks and can be combined by a logical B<or>
+The options are coded as bitmasks and can be combined by a bitwise B<or>
 operation (|).
 
 SSL_CTX_set_options() and SSL_set_options() affect the (external)
@@ -170,19 +172,11 @@ preferences. When set, the SSLv3/TLSv1 server will choose following its
 own preferences. Because of the different protocol, for SSLv2 the server
 will send its list of preferences to the client and the client chooses.
 
-=item SSL_OP_PKCS1_CHECK_1
-
-...
-
-=item SSL_OP_PKCS1_CHECK_2
-
-...
-
 =item SSL_OP_NETSCAPE_CA_DN_BUG
 
 If we accept a netscape connection, demand a client cert, have a
 non-self-signed CA which does not have its CA in netscape, and the
-browser has a cert, it will crash/hang.  Works for 3.x and 4.xbeta 
+browser has a cert, it will crash/hang.  Works for 3.x and 4.xbeta
 
 =item SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG
 
@@ -190,7 +184,8 @@ browser has a cert, it will crash/hang.  Works for 3.x and 4.xbeta
 
 =item SSL_OP_NO_SSLv2
 
-Do not use the SSLv2 protocol.
+As of OpenBSD 5.6, this option has no effect as SSLv2 support has been removed.
+In previous versions it disabled use of the SSLv2 protocol.
 
 =item SSL_OP_NO_SSLv3
 
@@ -198,7 +193,15 @@ Do not use the SSLv3 protocol.
 
 =item SSL_OP_NO_TLSv1
 
-Do not use the TLSv1 protocol.
+Do not use the TLSv1.0 protocol.
+
+=item SSL_OP_NO_TLSv1_1
+
+Do not use the TLSv1.1 protocol.
+
+=item SSL_OP_NO_TLSv1_2
+
+Do not use the TLSv1.2 protocol.
 
 =item SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
 
@@ -216,8 +219,10 @@ not be used by clients or servers.
 
 =item SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
 
-Allow legacy insecure renegotiation between OpenSSL and unpatched clients or
-servers. See the B<SECURE RENEGOTIATION> section for more details.
+As of OpenBSD 5.6, this option has no effect.
+In previous versions it allowed legacy insecure renegotiation between
+OpenSSL and unpatched clients or servers.
+See the B<SECURE RENEGOTIATION> section for more details.
 
 =item SSL_OP_LEGACY_SERVER_CONNECT
 
@@ -250,16 +255,13 @@ Connections and renegotiation are always permitted by OpenSSL implementations.
 
 =head2 Unpatched client and patched OpenSSL server
 
-The initial connection suceeds but client renegotiation is denied by the
+The initial connection succeeds but client renegotiation is denied by the
 server with a B<no_renegotiation> warning alert if TLS v1.0 is used or a fatal
 B<handshake_failure> alert in SSL v3.0.
 
 If the patched OpenSSL server attempts to renegotiate a fatal
 B<handshake_failure> alert is sent. This is because the server code may be
 unaware of the unpatched nature of the client.
-
-If the option B<SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION> is set then
-renegotiation B<always> succeeds.
 
 B<NB:> a bug in OpenSSL clients earlier than 0.9.8m (all of which are
 unpatched) will result in the connection hanging if it receives a
@@ -271,8 +273,7 @@ was refused.
 
 =head2 Patched OpenSSL client and unpatched server.
 
-If the option B<SSL_OP_LEGACY_SERVER_CONNECT> or
-B<SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION> is set then initial connections
+If the option B<SSL_OP_LEGACY_SERVER_CONNECT> is set then initial connections
 and renegotiation between patched OpenSSL clients and unpatched servers
 succeeds. If neither option is set then initial connections to unpatched
 servers will fail.
@@ -294,13 +295,6 @@ OpenSSL client applications that want to ensure they can B<not> connect to
 unpatched servers (and thus avoid any security issues) should always B<clear>
 B<SSL_OP_LEGACY_SERVER_CONNECT> using SSL_CTX_clear_options() or
 SSL_clear_options().
-
-The difference between the B<SSL_OP_LEGACY_SERVER_CONNECT> and
-B<SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION> options is that
-B<SSL_OP_LEGACY_SERVER_CONNECT> enables initial connections and secure
-renegotiation between OpenSSL clients and unpatched servers B<only>, while
-B<SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION> allows initial connections
-and renegotiation between OpenSSL and unpatched clients or servers.
 
 =head1 RETURN VALUES
 
@@ -328,9 +322,9 @@ B<SSL_OP_CIPHER_SERVER_PREFERENCE> and
 B<SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION> have been added in
 OpenSSL 0.9.7.
 
-B<SSL_OP_TLS_ROLLBACK_BUG> has been added in OpenSSL 0.9.6 and was automatically
-enabled with B<SSL_OP_ALL>. As of 0.9.7, it is no longer included in B<SSL_OP_ALL>
-and must be explicitly set.
+B<SSL_OP_TLS_ROLLBACK_BUG> has been added in OpenSSL 0.9.6 and was
+automatically enabled with B<SSL_OP_ALL>. As of 0.9.7, it is no longer included
+in B<SSL_OP_ALL> and must be explicitly set.
 
 B<SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS> has been added in OpenSSL 0.9.6e.
 Versions up to OpenSSL 0.9.6c do not include the countermeasure that
@@ -343,5 +337,8 @@ SSL_CTX_clear_options() and SSL_clear_options() were first added in OpenSSL
 B<SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION>, B<SSL_OP_LEGACY_SERVER_CONNECT>
 and the function SSL_get_secure_renegotiation_support() were first added in
 OpenSSL 0.9.8m.
+
+B<SSL_OP_NO_SSLv2> and B<SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION>
+were changed to have no effect in OpenBSD 5.6.
 
 =cut

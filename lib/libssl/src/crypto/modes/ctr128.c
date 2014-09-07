@@ -1,3 +1,4 @@
+/* $OpenBSD: ctr128.c,v 1.4 2014/06/12 15:49:30 deraadt Exp $ */
 /* ====================================================================
  * Copyright (c) 2008 The OpenSSL Project.  All rights reserved.
  *
@@ -77,11 +78,12 @@ static void ctr128_inc(unsigned char *counter) {
 }
 
 #if !defined(OPENSSL_SMALL_FOOTPRINT)
-static void ctr128_inc_aligned(unsigned char *counter) {
+static void
+ctr128_inc_aligned(unsigned char *counter)
+{
 	size_t *data,c,n;
-	const union { long one; char little; } is_endian = {1};
 
-	if (is_endian.little) {
+	if (BYTE_ORDER == LITTLE_ENDIAN) {
 		ctr128_inc(counter);
 		return;
 	}
@@ -132,7 +134,7 @@ void CRYPTO_ctr128_encrypt(const unsigned char *in, unsigned char *out,
 			n = (n+1) % 16;
 		}
 
-#if defined(STRICT_ALIGNMENT)
+#ifdef __STRICT_ALIGNMENT
 		if (((size_t)in|(size_t)out|(size_t)ivec)%sizeof(size_t) != 0)
 			break;
 #endif

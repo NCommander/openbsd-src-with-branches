@@ -2,7 +2,8 @@
 
 =head1 NAME
 
-SSL_CTX_add_session, SSL_add_session, SSL_CTX_remove_session, SSL_remove_session - manipulate session cache
+SSL_CTX_add_session, SSL_add_session, SSL_CTX_remove_session,
+SSL_remove_session - manipulate session cache
 
 =head1 SYNOPSIS
 
@@ -41,7 +42,7 @@ If a server SSL_CTX is configured with the SSL_SESS_CACHE_NO_INTERNAL_STORE
 flag then the internal cache will not be populated automatically by new
 sessions negotiated by the SSL/TLS implementation, even though the internal
 cache will be searched automatically for session-resume requests (the
-latter can be surpressed by SSL_SESS_CACHE_NO_INTERNAL_LOOKUP). So the
+latter can be suppressed by SSL_SESS_CACHE_NO_INTERNAL_LOOKUP). So the
 application can use SSL_CTX_add_session() directly to have full control
 over the sessions that can be resumed if desired.
 
@@ -52,14 +53,14 @@ The following values are returned by all functions:
 
 =over 4
 
-=item 0
+=item C<0>
 
  The operation failed. In case of the add operation, it was tried to add
  the same (identical) session twice. In case of the remove operation, the
  session was not found in the cache.
 
-=item 1
- 
+=item C<1>
+
  The operation succeeded.
 
 =back

@@ -1,4 +1,4 @@
-/* asn1t.h */
+/* $OpenBSD$ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -59,13 +59,10 @@
 #define HEADER_ASN1T_H
 
 #include <stddef.h>
-#include <openssl/e_os2.h>
-#include <openssl/asn1.h>
 
-#ifdef OPENSSL_BUILD_SHLIBCRYPTO
-# undef OPENSSL_EXTERN
-# define OPENSSL_EXTERN OPENSSL_EXPORT
-#endif
+#include <openssl/opensslconf.h>
+
+#include <openssl/asn1.h>
 
 /* ASN1 template defines, structures and functions */
 
@@ -74,7 +71,6 @@ extern "C" {
 #endif
 
 
-#ifndef OPENSSL_EXPORT_VAR_AS_FUNCTION
 
 /* Macro to obtain ASN1_ADB pointer from a type (only used internally) */
 #define ASN1_ADB_ptr(iptr) ((const ASN1_ADB *)(iptr))
@@ -83,30 +79,11 @@ extern "C" {
 /* Macros for start and end of ASN1_ITEM definition */
 
 #define ASN1_ITEM_start(itname) \
-	OPENSSL_GLOBAL const ASN1_ITEM itname##_it = {
+	const ASN1_ITEM itname##_it = {
 
 #define ASN1_ITEM_end(itname) \
 		};
 
-#else
-
-/* Macro to obtain ASN1_ADB pointer from a type (only used internally) */
-#define ASN1_ADB_ptr(iptr) ((const ASN1_ADB *)(iptr()))
-
-
-/* Macros for start and end of ASN1_ITEM definition */
-
-#define ASN1_ITEM_start(itname) \
-	const ASN1_ITEM * itname##_it(void) \
-	{ \
-		static const ASN1_ITEM local_it = { 
-
-#define ASN1_ITEM_end(itname) \
-		}; \
-	return &local_it; \
-	}
-
-#endif
 
 
 /* Macros to aid ASN1 template writing */
@@ -317,13 +294,8 @@ extern "C" {
 
 /* Any defined by macros: the field used is in the table itself */
 
-#ifndef OPENSSL_EXPORT_VAR_AS_FUNCTION
 #define ASN1_ADB_OBJECT(tblname) { ASN1_TFLG_ADB_OID, -1, 0, #tblname, (const ASN1_ITEM *)&(tblname##_adb) }
 #define ASN1_ADB_INTEGER(tblname) { ASN1_TFLG_ADB_INT, -1, 0, #tblname, (const ASN1_ITEM *)&(tblname##_adb) }
-#else
-#define ASN1_ADB_OBJECT(tblname) { ASN1_TFLG_ADB_OID, -1, 0, #tblname, tblname##_adb }
-#define ASN1_ADB_INTEGER(tblname) { ASN1_TFLG_ADB_INT, -1, 0, #tblname, tblname##_adb }
-#endif
 /* Plain simple type */
 #define ASN1_SIMPLE(stname, field, type) ASN1_EX_TYPE(0,0, stname, field, type)
 
@@ -396,7 +368,6 @@ extern "C" {
 #define ASN1_ADB(name) \
 	static const ASN1_ADB_TABLE name##_adbtbl[] 
 
-#ifndef OPENSSL_EXPORT_VAR_AS_FUNCTION
 
 #define ASN1_ADB_END(name, flags, field, app_table, def, none) \
 	;\
@@ -410,27 +381,6 @@ extern "C" {
 		none\
 	}
 
-#else
-
-#define ASN1_ADB_END(name, flags, field, app_table, def, none) \
-	;\
-	static const ASN1_ITEM *name##_adb(void) \
-	{ \
-	static const ASN1_ADB internal_adb = \
-		{\
-		flags,\
-		offsetof(name, field),\
-		app_table,\
-		name##_adbtbl,\
-		sizeof(name##_adbtbl) / sizeof(ASN1_ADB_TABLE),\
-		def,\
-		none\
-		}; \
-		return (const ASN1_ITEM *) &internal_adb; \
-	} \
-	void dummy_function(void)
-
-#endif
 
 #define ADB_ENTRY(val, template) {val, template}
 

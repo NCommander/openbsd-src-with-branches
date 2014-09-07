@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.21 2009/07/30 21:39:15 miod Exp $	*/
+/*	$OpenBSD: bus.h,v 1.5 2014/03/29 18:09:29 guenther Exp $	*/
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB Sweden.  All rights reserved.
@@ -43,7 +43,6 @@ typedef u_long bus_addr_t;
 typedef u_long bus_size_t;
 typedef u_long bus_space_handle_t;
 typedef struct mips_bus_space *bus_space_tag_t;
-typedef struct mips_bus_space bus_space_t;
 
 struct mips_bus_space {
 	bus_addr_t	bus_base;
@@ -83,6 +82,8 @@ struct mips_bus_space {
 	int		(*_space_subregion)(bus_space_tag_t, bus_space_handle_t,
 			  bus_size_t, bus_size_t, bus_space_handle_t *);
 	void *		(*_space_vaddr)(bus_space_tag_t, bus_space_handle_t);
+	paddr_t		(*_space_mmap)(bus_space_tag_t, bus_addr_t, off_t,
+			    int, int);
 };
 
 #define	bus_space_read_1(t, h, o) (*(t)->_space_read_1)((t), (h), (o))
@@ -119,6 +120,8 @@ struct mips_bus_space {
 #define	BUS_SPACE_MAP_PREFETCHABLE	0x04
 
 #define	bus_space_vaddr(t, h)	(*(t)->_space_vaddr)((t), (h))
+#define	bus_space_mmap(t, a, o, p, f) \
+	(*(t)->_space_mmap)((t), (a), (o), (p), (f))
 
 /*----------------------------------------------------------------------------*/
 #define bus_space_read_multi(n,m)					      \
@@ -159,7 +162,7 @@ CAT(bus_space_read_raw_region_,n)(bus_space_tag_t bst,			      \
 {									      \
 	cnt >>= ((n) >> 1);						      \
 	while (cnt--) {							      \
-		CAT(bus_space_read_raw_multi_,n)(bst, bsh, ba, x, 1);	      \
+		CAT(bus_space_read_raw_multi_,n)(bst, bsh, ba, x, (n));	      \
 		ba += (n);						      \
 		x += (n);						      \
 	}								      \
@@ -211,7 +214,7 @@ CAT(bus_space_write_raw_region_,n)(bus_space_tag_t bst,			      \
 {									      \
 	cnt >>= ((n) >> 1);						      \
 	while (cnt--) {							      \
-		CAT(bus_space_write_raw_multi_,n)(bst, bsh, ba, x, 1);	      \
+		CAT(bus_space_write_raw_multi_,n)(bst, bsh, ba, x, (n));      \
 		ba += (n);						      \
 		x += (n);						      \
 	}								      \
@@ -314,6 +317,7 @@ void	generic_space_read_raw_8(bus_space_tag_t, bus_space_handle_t,
 	    bus_addr_t, uint8_t *, bus_size_t);
 void	generic_space_write_raw_8(bus_space_tag_t, bus_space_handle_t,
 	    bus_addr_t, const uint8_t *, bus_size_t);
+paddr_t	generic_space_mmap(bus_space_tag_t, bus_addr_t, off_t, int, int);
 
 /*----------------------------------------------------------------------------*/
 /*
@@ -328,23 +332,24 @@ static inline void
 bus_space_barrier(bus_space_tag_t t, bus_space_handle_t h, bus_size_t offset,
     bus_size_t length, int flags)
 {
-	__asm__ __volatile__ ("sync" ::: "memory");
+	__asm__ volatile ("sync" ::: "memory");
 }
 #define BUS_SPACE_BARRIER_READ  0x01		/* force read barrier */
 #define BUS_SPACE_BARRIER_WRITE 0x02		/* force write barrier */
 
-#define	BUS_DMA_WAITOK		0x000
-#define	BUS_DMA_NOWAIT		0x001
-#define	BUS_DMA_ALLOCNOW	0x002
-#define	BUS_DMA_COHERENT	0x008
-#define	BUS_DMA_BUS1		0x010	/* placeholders for bus functions... */
-#define	BUS_DMA_BUS2		0x020
-#define	BUS_DMA_BUS3		0x040
-#define	BUS_DMA_BUS4		0x080
-#define	BUS_DMA_READ		0x100   /* mapping is device -> memory only */
-#define	BUS_DMA_WRITE		0x200   /* mapping is memory -> device only */
-#define	BUS_DMA_STREAMING	0x400   /* hint: sequential, unidirectional */
-#define	BUS_DMA_ZERO		0x800	/* zero memory in dmamem_alloc */
+#define	BUS_DMA_WAITOK		0x0000
+#define	BUS_DMA_NOWAIT		0x0001
+#define	BUS_DMA_ALLOCNOW	0x0002
+#define	BUS_DMA_COHERENT	0x0008
+#define	BUS_DMA_BUS1		0x0010	/* placeholders for bus functions... */
+#define	BUS_DMA_BUS2		0x0020
+#define	BUS_DMA_BUS3		0x0040
+#define	BUS_DMA_BUS4		0x0080
+#define	BUS_DMA_READ		0x0100	/* mapping is device -> memory only */
+#define	BUS_DMA_WRITE		0x0200	/* mapping is memory -> device only */
+#define	BUS_DMA_STREAMING	0x0400	/* hint: sequential, unidirectional */
+#define	BUS_DMA_ZERO		0x0800	/* zero memory in dmamem_alloc */
+#define	BUS_DMA_NOCACHE		0x1000
 
 /* Forwards needed by prototypes below. */
 struct mbuf;
@@ -476,7 +481,7 @@ int	_dmamem_map(bus_dma_tag_t, bus_dma_segment_t *,
 void	_dmamem_unmap(bus_dma_tag_t, caddr_t, size_t);
 paddr_t	_dmamem_mmap(bus_dma_tag_t, bus_dma_segment_t *, int, off_t, int, int);
 int	_dmamem_alloc_range(bus_dma_tag_t, bus_size_t, bus_size_t, bus_size_t,
-	    bus_dma_segment_t *, int, int *, int, vaddr_t, vaddr_t);
+	    bus_dma_segment_t *, int, int *, int, paddr_t, paddr_t);
 
 /*
  *	bus_dmamap_t

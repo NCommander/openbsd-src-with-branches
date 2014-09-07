@@ -1,4 +1,4 @@
-/* crypto/mdc2/mdc2dgst.c */
+/* $OpenBSD$ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -76,7 +76,7 @@
 			*((c)++)=(unsigned char)(((l)>>24L)&0xff))
 
 static void mdc2_body(MDC2_CTX *c, const unsigned char *in, size_t len);
-fips_md_init(MDC2)
+int MDC2_Init(MDC2_CTX *c)
 	{
 	c->num=0;
 	c->pad_type=1;
@@ -177,24 +177,3 @@ int MDC2_Final(unsigned char *md, MDC2_CTX *c)
 	memcpy(&(md[MDC2_BLOCK]),(char *)c->hh,MDC2_BLOCK);
 	return 1;
 	}
-
-#undef TEST
-
-#ifdef TEST
-main()
-	{
-	unsigned char md[MDC2_DIGEST_LENGTH];
-	int i;
-	MDC2_CTX c;
-	static char *text="Now is the time for all ";
-
-	MDC2_Init(&c);
-	MDC2_Update(&c,text,strlen(text));
-	MDC2_Final(&(md[0]),&c);
-
-	for (i=0; i<MDC2_DIGEST_LENGTH; i++)
-		printf("%02X",md[i]);
-	printf("\n");
-	}
-
-#endif

@@ -53,7 +53,9 @@ typedef struct {
 
 #ifdef __CYGWIN__
 
+#ifndef NGX_HAVE_CASELESS_FILESYSTEM
 #define NGX_HAVE_CASELESS_FILESYSTEM  1
+#endif
 
 #define ngx_open_file(name, mode, create, access)                            \
     open((const char *) name, mode|create|O_BINARY, access)
@@ -72,9 +74,33 @@ typedef struct {
 #define NGX_FILE_RDWR            O_RDWR
 #define NGX_FILE_CREATE_OR_OPEN  O_CREAT
 #define NGX_FILE_OPEN            0
-#define NGX_FILE_TRUNCATE        O_CREAT|O_TRUNC
-#define NGX_FILE_APPEND          O_WRONLY|O_APPEND
+#define NGX_FILE_TRUNCATE        (O_CREAT|O_TRUNC)
+#define NGX_FILE_APPEND          (O_WRONLY|O_APPEND)
 #define NGX_FILE_NONBLOCK        O_NONBLOCK
+
+#if (NGX_HAVE_OPENAT)
+#define NGX_FILE_NOFOLLOW        O_NOFOLLOW
+
+#if defined(O_DIRECTORY)
+#define NGX_FILE_DIRECTORY       O_DIRECTORY
+#else
+#define NGX_FILE_DIRECTORY       0
+#endif
+
+#if defined(O_SEARCH)
+#define NGX_FILE_SEARCH          (O_SEARCH|NGX_FILE_DIRECTORY)
+
+#elif defined(O_EXEC)
+#define NGX_FILE_SEARCH          (O_EXEC|NGX_FILE_DIRECTORY)
+
+#elif (NGX_HAVE_O_PATH)
+#define NGX_FILE_SEARCH          (O_PATH|O_RDONLY|NGX_FILE_DIRECTORY)
+
+#else
+#define NGX_FILE_SEARCH          (O_RDONLY|NGX_FILE_DIRECTORY)
+#endif
+
+#endif /* NGX_HAVE_OPENAT */
 
 #define NGX_FILE_DEFAULT_ACCESS  0644
 #define NGX_FILE_OWNER_ACCESS    0600
@@ -168,24 +194,24 @@ ngx_int_t ngx_create_file_mapping(ngx_file_mapping_t *fm);
 void ngx_close_file_mapping(ngx_file_mapping_t *fm);
 
 
-#if (NGX_HAVE_CASELESS_FILESYSTEM)
-
-#define ngx_filename_cmp(s1, s2, n)  strncasecmp((char *) s1, (char *) s2, n)
-
-#else
-
-#define ngx_filename_cmp         ngx_memcmp
-
-#endif
-
-
-#define ngx_realpath(p, r)       realpath((char *) p, (char *) r)
+#define ngx_realpath(p, r)       (u_char *) realpath((char *) p, (char *) r)
 #define ngx_realpath_n           "realpath()"
 #define ngx_getcwd(buf, size)    (getcwd((char *) buf, size) != NULL)
 #define ngx_getcwd_n             "getcwd()"
 #define ngx_path_separator(c)    ((c) == '/')
 
+
+#if defined(PATH_MAX)
+
+#define NGX_HAVE_MAX_PATH        1
 #define NGX_MAX_PATH             PATH_MAX
+
+#else
+
+#define NGX_MAX_PATH             4096
+
+#endif
+
 
 #define NGX_DIR_MASK_LEN         0
 
@@ -323,6 +349,23 @@ ngx_int_t ngx_directio_off(ngx_fd_t fd);
 #endif
 
 size_t ngx_fs_bsize(u_char *name);
+
+
+#if (NGX_HAVE_OPENAT)
+
+#define ngx_openat_file(fd, name, mode, create, access)                      \
+    openat(fd, (const char *) name, mode|create, access)
+
+#define ngx_openat_file_n        "openat()"
+
+#define ngx_file_at_info(fd, name, sb, flag)                                 \
+    fstatat(fd, (const char *) name, sb, flag)
+
+#define ngx_file_at_info_n       "fstatat()"
+
+#define NGX_AT_FDCWD             (ngx_fd_t) AT_FDCWD
+
+#endif
 
 
 #define ngx_stderr               STDERR_FILENO

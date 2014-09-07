@@ -1,7 +1,9 @@
-#	$NetBSD: Makefile,v 1.9 1995/03/18 15:01:34 cgd Exp $
-#	@(#)Makefile	8.2 (Berkeley) 2/20/94
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:38:25 deraadt Exp $
 
 PROG=	umount
 MAN=	umount.8
+
+DPADD+=	${LIBUTIL}
+LDADD+=	-lutil
 
 .include <bsd.prog.mk>

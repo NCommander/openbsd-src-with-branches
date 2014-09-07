@@ -1,4 +1,4 @@
-/* crypto/ripemd/ripemd.h */
+/* $OpenBSD: ripemd.h,v 1.13 2014/06/12 15:49:30 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,11 +56,12 @@
  * [including the GNU Public Licence.]
  */
 
+#include <stddef.h>
+
 #ifndef HEADER_RIPEMD_H
 #define HEADER_RIPEMD_H
 
-#include <openssl/e_os2.h>
-#include <stddef.h>
+#include <openssl/opensslconf.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -72,7 +73,7 @@ extern "C" {
 
 #if defined(__LP32__)
 #define RIPEMD160_LONG unsigned long
-#elif defined(OPENSSL_SYS_CRAY) || defined(__ILP64__)
+#elif defined(__ILP64__)
 #define RIPEMD160_LONG unsigned long
 #define RIPEMD160_LONG_LOG2 3
 #else
@@ -91,9 +92,6 @@ typedef struct RIPEMD160state_st
 	unsigned int   num;
 	} RIPEMD160_CTX;
 
-#ifdef OPENSSL_FIPS
-int private_RIPEMD160_Init(RIPEMD160_CTX *c);
-#endif
 int RIPEMD160_Init(RIPEMD160_CTX *c);
 int RIPEMD160_Update(RIPEMD160_CTX *c, const void *data, size_t len);
 int RIPEMD160_Final(unsigned char *md, RIPEMD160_CTX *c);
