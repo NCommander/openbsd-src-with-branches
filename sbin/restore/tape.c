@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.42 2014/07/21 01:51:11 guenther Exp $	*/
+/*	$OpenBSD: tape.c,v 1.43 2014/09/03 02:37:24 guenther Exp $	*/
 /*	$NetBSD: tape.c,v 1.26 1997/04/15 07:12:25 lukem Exp $	*/
 
 /*
@@ -118,7 +118,6 @@ static void	 setdumpnum(void);
 static void	 swap_header(struct s_spcl *);
 static void	 swap_old_header(struct s_ospcl *);
 static void	 terminateinput(void);
-static void	 xtrfile(char *, size_t);
 static void	 xtrlnkfile(char *, size_t);
 static void	 xtrlnkskip(char *, size_t);
 static void	 xtrmap(char *, size_t);
@@ -724,7 +723,7 @@ loop:
 /*
  * Write out the next block of a file.
  */
-static void
+void
 xtrfile(char *buf, size_t size)
 {
 
