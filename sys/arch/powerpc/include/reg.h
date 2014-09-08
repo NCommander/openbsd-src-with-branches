@@ -1,4 +1,4 @@
-/*	$OpenBSD: reg.h,v 1.9 2003/06/02 23:27:53 millert Exp $	*/
+/*	$OpenBSD: reg.h,v 1.10 2006/05/16 08:00:33 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -38,7 +38,7 @@
 #define _POWERPC_REG_H_
 
 /*
- * Struct reg, used for procfs and in signal contexts
+ * Struct reg, used for ptrace and in signal contexts
  * Note that in signal contexts, it's represented as an array.
  * That array has to look exactly like 'struct reg' though.
  */

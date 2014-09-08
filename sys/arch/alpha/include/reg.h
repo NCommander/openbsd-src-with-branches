@@ -1,4 +1,4 @@
-/*	$OpenBSD: reg.h,v 1.5 2002/03/14 01:26:27 millert Exp $	*/
+/*	$OpenBSD: reg.h,v 1.6 2011/03/23 16:54:34 pirofti Exp $	*/
 /*	$NetBSD: reg.h,v 1.2 1995/03/28 18:14:07 jtc Exp $	*/
 
 /*
@@ -36,7 +36,7 @@
  */
 
 /*
- * Struct reg, used for procfs and in signal contexts
+ * Struct reg, used for ptrace and in signal contexts
  * Note that in signal contexts, it's represented as an array.
  * That array has to look exactly like 'struct reg' though.
  */

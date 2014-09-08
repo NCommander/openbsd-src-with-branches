@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnode.h,v 1.123 2014/03/28 17:57:11 mpi Exp $	*/
+/*	$OpenBSD: vnode.h,v 1.124 2014/04/08 18:48:41 beck Exp $	*/
 /*	$NetBSD: vnode.h,v 1.38 1996/02/29 20:59:05 cgd Exp $	*/
 
 /*
@@ -74,7 +74,7 @@ enum vtagtype	{
 
 #define	VTAG_NAMES \
     "NON", "UFS", "NFS", "MFS", "MSDOSFS",			\
-    "PORTAL", "PROCFS", "AFS", "ISOFS", "ADOSFS",		\
+    "unused", "unused", "unused", "ISOFS", "unused",		\
     "EXT2FS", "VFS", "NTFS", "UDF", "FUSEFS", "TMPFS"
 
 /*
