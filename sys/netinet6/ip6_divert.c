@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip6_divert.c,v 1.28 2014/07/22 11:06:10 mpi Exp $ */
+/*      $OpenBSD: ip6_divert.c,v 1.29 2014/08/10 03:24:51 lteo Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -25,7 +25,6 @@
 #include <sys/sysctl.h>
 
 #include <net/if.h>
-#include <net/route.h>
 #include <net/netisr.h>
 #include <net/pfvar.h>
 

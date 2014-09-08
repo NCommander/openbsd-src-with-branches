@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_boot.c,v 1.31 2014/03/20 09:18:01 mpi Exp $ */
+/*	$OpenBSD: nfs_boot.c,v 1.32 2014/05/07 08:26:38 mpi Exp $ */
 /*	$NetBSD: nfs_boot.c,v 1.26 1996/05/07 02:51:25 thorpej Exp $	*/
 
 /*
@@ -42,7 +42,6 @@
 #include <sys/queue.h>
 
 #include <net/if.h>
-#include <net/route.h>
 
 #include <netinet/in.h>
 #include <netinet/in_var.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.196 2014/07/12 18:44:23 tedu Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.197 2014/07/22 11:06:10 mpi Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -49,7 +49,6 @@
 #include <sys/timeout.h>
 
 #include <net/if.h>
-#include <net/route.h>
 
 #if NPF > 0
 #include <net/pfvar.h>

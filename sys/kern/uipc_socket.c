@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.130 2014/07/13 15:52:38 tedu Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.131 2014/08/31 01:42:36 guenther Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -49,7 +49,6 @@
 #include <sys/signalvar.h>
 #include <sys/resourcevar.h>
 #include <net/if.h>
-#include <net/route.h>
 #include <sys/pool.h>
 
 void	sbsync(struct sockbuf *, struct mbuf *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.54 2014/05/21 14:48:28 mpi Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.55 2014/07/12 18:44:22 tedu Exp $	*/
 
 /*
  * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
@@ -30,7 +30,6 @@
 #include <net/if.h>
 #include <net/if_enc.h>
 #include <net/if_types.h>
-#include <net/route.h>
 #if NBPFILTER > 0
 #include <net/bpf.h>
 #endif

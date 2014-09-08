@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgestp.c,v 1.48 2014/07/12 18:44:22 tedu Exp $	*/
+/*	$OpenBSD: bridgestp.c,v 1.49 2014/07/22 11:06:09 mpi Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -50,7 +50,6 @@
 #include <net/if_dl.h>
 #include <net/if_llc.h>
 #include <net/if_media.h>
-#include <net/route.h>
 #include <net/netisr.h>
 
 #ifdef INET

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.232 2014/07/12 18:44:23 tedu Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.233 2014/07/22 11:06:10 mpi Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -51,7 +51,6 @@
 
 #include <net/if.h>
 #include <net/if_types.h>
-#include <net/route.h>
 #include <net/netisr.h>
 
 /* for arc4random() */

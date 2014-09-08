@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_cb.c,v 1.6 2012/01/11 23:47:06 bluhm Exp $	*/
+/*	$OpenBSD: raw_cb.c,v 1.7 2014/07/12 18:44:22 tedu Exp $	*/
 /*	$NetBSD: raw_cb.c,v 1.9 1996/02/13 22:00:39 christos Exp $	*/
 
 /*
@@ -42,7 +42,6 @@
 #include <sys/errno.h>
 
 #include <net/if.h>
-#include <net/route.h>
 #include <net/raw_cb.h>
 #include <netinet/in.h>
 

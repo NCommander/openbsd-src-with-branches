@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.166 2014/07/13 17:41:04 bluhm Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.167 2014/07/22 11:06:10 mpi Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -44,7 +44,6 @@
 #include <net/if.h>
 #include <net/if_types.h>
 #include <net/bpf.h>
-#include <net/route.h>
 #include <net/if_pflog.h>
 
 #include <netinet/in.h>
