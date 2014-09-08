@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.104 2014/07/22 13:12:11 mpi Exp $ */
+/*	$OpenBSD: acx.c,v 1.105 2014/09/06 05:41:35 jsg Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -97,7 +97,8 @@
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/ioctl.h>
-#include <sys/types.h>
+#include <sys/errno.h>
+#include <sys/device.h>
 
 #include <machine/bus.h>
 #include <machine/endian.h>
