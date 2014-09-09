@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingList.pm,v 1.132 2014/02/08 15:07:12 espie Exp $
+# $OpenBSD: PackingList.pm,v 1.133 2014/03/18 18:53:29 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -27,6 +27,8 @@ sub new
 	bless { default_owner=>'root',
 	     default_group=>'bin',
 	     default_mode=> 0444,
+	     owners => {},
+	     groups => {},
 	     cwd=>\$dot}, $class;
 }
 
