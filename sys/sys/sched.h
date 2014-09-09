@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched.h,v 1.34 2014/01/30 20:14:27 miod Exp $	*/
+/*	$OpenBSD: sched.h,v 1.35 2014/03/29 18:09:31 guenther Exp $	*/
 /* $NetBSD: sched.h,v 1.2 1999/02/28 18:14:58 ross Exp $ */
 
 /*-
@@ -172,6 +172,12 @@ void remrunqueue(struct proc *);
 /* Chargeback parents for the sins of their children.  */
 #define scheduler_wait_hook(parent, child) do {				\
 	(parent)->p_estcpu = ESTCPULIM((parent)->p_estcpu + (child)->p_estcpu);\
+} while (0)
+
+/* Allow other processes to progress */
+#define	sched_pause() do {						\
+	if (curcpu()->ci_schedstate.spc_schedflags & SPCF_SHOULDYIELD)	\
+		yield();						\
 } while (0)
 
 #if defined(MULTIPROCESSOR) || defined(LOCKDEBUG)

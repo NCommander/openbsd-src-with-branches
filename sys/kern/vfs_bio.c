@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.160 2014/07/13 15:48:41 tedu Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.161 2014/08/31 21:08:48 tedu Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*
@@ -1056,6 +1056,8 @@ buf_daemon(struct proc *p)
 
 			bawrite(bp);
 			pushed++;
+
+			sched_pause();
 
 			/* Never allow processing to run for more than 1 sec */
 			getmicrouptime(&tv);
