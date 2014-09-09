@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.91 2014/07/13 15:00:40 tedu Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.92 2014/08/31 01:42:36 guenther Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -960,7 +960,7 @@ sys_getpeername(struct proc *p, void *v, register_t *retval)
 	if ((error = getsock(p->p_fd, SCARG(uap, fdes), &fp)) != 0)
 		return (error);
 	so = fp->f_data;
-	if ((so->so_state & (SS_ISCONNECTED|SS_ISCONFIRMING)) == 0) {
+	if ((so->so_state & SS_ISCONNECTED) == 0) {
 		FRELE(fp, p);
 		return (ENOTCONN);
 	}
