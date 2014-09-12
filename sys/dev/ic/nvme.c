@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvme.c,v 1.6 2014/07/13 23:10:23 deraadt Exp $ */
+/*	$OpenBSD: nvme.c,v 1.7 2014/09/12 06:34:14 dlg Exp $ */
 
 /*
  * Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
@@ -472,6 +472,8 @@ nvme_identify(struct nvme_softc *sc, u_int mps)
 	rv = nvme_poll(sc, sc->sc_admin_q, ccb, nvme_fill_identify);
 	bus_dmamap_sync(sc->sc_dmat, NVME_DMA_MAP(mem),
 	    0, sizeof(*identify), BUS_DMASYNC_POSTREAD);
+
+	nvme_ccb_put(sc, ccb);
 
 	if (rv != 0)
 		goto done;
