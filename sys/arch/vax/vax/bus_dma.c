@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.28 2014/07/11 09:36:26 mpi Exp $	*/
+/*	$OpenBSD: bus_dma.c,v 1.29 2014/07/12 18:44:43 tedu Exp $	*/
 /*	$NetBSD: bus_dma.c,v 1.5 1999/11/13 00:32:20 thorpej Exp $	*/
 
 /*-
@@ -727,7 +727,7 @@ _bus_dmamem_alloc_range(t, size, alignment, boundary, segs, nsegs, rsegs,
 #endif	/* DEBUG_DMA */
 	m = TAILQ_NEXT(m, pageq);
 
-	for (; m != TAILQ_END(&mlist); m = TAILQ_NEXT(m, pageq)) {
+	for (; m != NULL; m = TAILQ_NEXT(m, pageq)) {
 		curaddr = VM_PAGE_TO_PHYS(m);
 #ifdef DIAGNOSTIC
 		if (curaddr < low || curaddr >= high) {

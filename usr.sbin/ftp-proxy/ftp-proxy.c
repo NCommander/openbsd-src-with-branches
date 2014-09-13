@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp-proxy.c,v 1.27 2013/03/11 17:40:11 deraadt Exp $ */
+/*	$OpenBSD: ftp-proxy.c,v 1.28 2013/03/15 13:31:27 benno Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -322,7 +322,7 @@ exit_daemon(void)
 {
 	struct session *s, *next;
 
-	for (s = LIST_FIRST(&sessions); s != LIST_END(&sessions); s = next) {
+	for (s = LIST_FIRST(&sessions); s != NULL; s = next) {
 		next = LIST_NEXT(s, entry);
 		end_session(s);
 	}

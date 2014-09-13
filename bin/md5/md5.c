@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.75 2014/03/26 03:16:39 lteo Exp $	*/
+/*	$OpenBSD: md5.c,v 1.76 2014/06/19 15:30:49 millert Exp $	*/
 
 /*
  * Copyright (c) 2001,2003,2005-2007,2010,2013,2014
@@ -263,7 +263,7 @@ main(int argc, char **argv)
 					    strcmp(hf->name, hftmp->name) == 0)
 						break;
 				}
-				if (hftmp == TAILQ_END(&hl))
+				if (hftmp == NULL)
 					hash_insert(&hl, hf, base64);
 			}
 			break;

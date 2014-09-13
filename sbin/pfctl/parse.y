@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.637 2014/08/21 15:09:27 mikeb Exp $	*/
+/*	$OpenBSD: parse.y,v 1.638 2014/08/23 00:11:03 pelikan Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1152,8 +1152,8 @@ tabledef	: TABLE '<' STRING '>' table_opts {
 				YYERROR;
 			}
 			free($3);
-			for (ti = SIMPLEQ_FIRST(&$5.init_nodes);
-			    ti != SIMPLEQ_END(&$5.init_nodes); ti = nti) {
+			for (ti = SIMPLEQ_FIRST(&$5.init_nodes); ti != NULL;
+			    ti = nti) {
 				if (ti->file)
 					free(ti->file);
 				for (h = ti->host; h != NULL; h = nh) {
