@@ -1,4 +1,4 @@
-/* $OpenBSD: fusebuf.c,v 1.6 2013/10/07 18:15:21 syl Exp $ */
+/* $OpenBSD: fusebuf.c,v 1.7 2014/07/12 18:43:52 tedu Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -20,7 +20,6 @@
 #include <sys/malloc.h>
 #include <sys/mount.h>
 #include <sys/pool.h>
-#include <sys/proc.h>
 #include <sys/statvfs.h>
 #include <sys/systm.h>
 #include <sys/vnode.h>

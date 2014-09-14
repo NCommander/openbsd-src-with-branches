@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.29 2013/07/04 19:06:48 sf Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.30 2014/03/29 18:09:29 guenther Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.22 1996/05/03 19:42:00 christos Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
  * Interface to new debugger.
  */
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/reboot.h>
 #include <sys/systm.h>
 #include <sys/mutex.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc_io.c,v 1.19 2010/08/24 14:52:23 blambert Exp $	*/
+/*	$OpenBSD: sdmmc_io.c,v 1.20 2014/07/12 18:48:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 #include <sys/systm.h>
 
 #include <dev/sdmmc/sdmmc_ioreg.h>

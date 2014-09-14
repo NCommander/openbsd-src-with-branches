@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpu401.c,v 1.12 2012/03/30 08:18:19 ratchov Exp $	*/
+/*	$OpenBSD: mpu401.c,v 1.13 2013/05/15 08:29:24 ratchov Exp $	*/
 /*	$NetBSD: mpu401.c,v 1.3 1998/11/25 22:17:06 augustss Exp $	*/
 
 /*
@@ -36,7 +36,6 @@
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/buf.h>
 
 #include <machine/cpu.h>

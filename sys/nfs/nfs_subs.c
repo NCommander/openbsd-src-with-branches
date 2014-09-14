@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_subs.c,v 1.115 2013/11/27 16:02:54 jsing Exp $	*/
+/*	$OpenBSD: nfs_subs.c,v 1.116 2014/07/08 17:19:26 deraadt Exp $	*/
 /*	$NetBSD: nfs_subs.c,v 1.27.4.3 1996/07/08 20:34:24 jtc Exp $	*/
 
 /*
@@ -42,7 +42,6 @@
  * copy data between mbuf chains and uio lists.
  */
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/mount.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: gus.c,v 1.39 2013/11/15 16:46:27 brad Exp $	*/
+/*	$OpenBSD: gus.c,v 1.40 2014/07/12 18:48:17 tedu Exp $	*/
 /*	$NetBSD: gus.c,v 1.51 1998/01/25 23:48:06 mycroft Exp $	*/
 
 /*-
@@ -94,7 +94,6 @@
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/buf.h>
 #include <sys/fcntl.h>
 #include <sys/malloc.h>

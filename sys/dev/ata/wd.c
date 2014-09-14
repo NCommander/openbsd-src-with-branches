@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.115 2014/07/10 14:21:20 deraadt Exp $ */
+/*	$OpenBSD: wd.c,v 1.116 2014/07/12 18:48:17 tedu Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -73,7 +73,7 @@
 #include <sys/disklabel.h>
 #include <sys/disk.h>
 #include <sys/syslog.h>
-#include <sys/proc.h>
+#include <sys/timeout.h>
 #include <sys/vnode.h>
 #include <sys/dkio.h>
 #include <sys/reboot.h>

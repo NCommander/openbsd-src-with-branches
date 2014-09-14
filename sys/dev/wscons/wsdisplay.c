@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.118 2014/05/14 18:11:24 shadchin Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.119 2014/07/12 18:48:53 tedu Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -36,7 +36,6 @@
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/syslog.h>
 #include <sys/systm.h>

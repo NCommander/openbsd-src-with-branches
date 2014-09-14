@@ -1,4 +1,4 @@
-/*	$OpenBSD: eephy.c,v 1.52 2013/12/28 03:28:45 deraadt Exp $	*/
+/*	$OpenBSD: eephy.c,v 1.53 2013/12/28 20:32:16 brad Exp $	*/
 /*
  * Principal Author: Parag Patel
  * Copyright (c) 2001
@@ -45,7 +45,6 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/socket.h>
-#include <sys/proc.h>
 
 #include <net/if.h>
 #include <net/if_media.h>

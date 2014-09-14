@@ -1,4 +1,4 @@
-/* $OpenBSD: powernow-k7.c,v 1.34 2010/04/20 22:05:41 tedu Exp $ */
+/* $OpenBSD: powernow-k7.c,v 1.35 2014/07/12 18:44:41 tedu Exp $ */
 
 /*
  * Copyright (c) 2004 Martin Végiard.
@@ -32,7 +32,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 #include <sys/sysctl.h>
 
 #include <machine/cpu.h>

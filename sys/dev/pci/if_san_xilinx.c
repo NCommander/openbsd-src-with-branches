@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_san_xilinx.c,v 1.29 2014/07/12 18:48:52 tedu Exp $	*/
+/*	$OpenBSD: if_san_xilinx.c,v 1.30 2014/07/22 13:12:11 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -41,7 +41,6 @@
 #include <sys/malloc.h>
 #include <sys/errno.h>
 #include <sys/mbuf.h>
-#include <sys/proc.h>
 #include <sys/socket.h>
 #include <sys/kernel.h>
 #include <sys/time.h>

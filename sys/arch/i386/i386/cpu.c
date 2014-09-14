@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.54 2014/01/19 12:45:35 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.55 2014/03/29 18:09:29 guenther Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -68,7 +68,7 @@
 #include "ioapic.h"
 
 #include <sys/param.h>
-#include <sys/proc.h>
+#include <sys/timeout.h>
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/malloc.h>

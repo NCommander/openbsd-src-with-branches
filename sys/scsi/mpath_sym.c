@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_sym.c,v 1.20 2014/01/30 05:53:38 dlg Exp $ */
+/*	$OpenBSD: mpath_sym.c,v 1.21 2014/01/31 02:55:46 dlg Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/queue.h>
 #include <sys/rwlock.h>

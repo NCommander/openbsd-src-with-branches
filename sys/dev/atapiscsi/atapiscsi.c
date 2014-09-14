@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.101 2014/01/18 20:50:24 dlg Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.102 2014/01/19 00:03:13 dlg Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -38,7 +38,6 @@
 #include <sys/buf.h>
 #include <sys/disklabel.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 #include <sys/reboot.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>

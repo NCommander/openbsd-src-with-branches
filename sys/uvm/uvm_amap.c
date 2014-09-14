@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_amap.c,v 1.52 2014/07/11 16:35:40 jsg Exp $	*/
+/*	$OpenBSD: uvm_amap.c,v 1.53 2014/07/12 18:44:01 tedu Exp $	*/
 /*	$NetBSD: uvm_amap.c,v 1.27 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/pool.h>

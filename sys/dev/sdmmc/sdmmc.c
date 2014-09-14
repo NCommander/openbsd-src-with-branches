@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc.c,v 1.33 2014/03/05 21:35:21 sthen Exp $	*/
+/*	$OpenBSD: sdmmc.c,v 1.34 2014/07/12 18:48:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -27,7 +27,6 @@
 #include <sys/kernel.h>
 #include <sys/kthread.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 #include <sys/rwlock.h>
 #include <sys/systm.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pmemrange.c,v 1.39 2014/04/05 17:18:00 miod Exp $	*/
+/*	$OpenBSD: uvm_pmemrange.c,v 1.40 2014/04/13 23:14:15 tedu Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Ariane van der Steldt <ariane@stack.nl>
@@ -20,7 +20,6 @@
 #include <sys/systm.h>
 #include <uvm/uvm.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>		/* XXX for atomic */
 #include <sys/kernel.h>
 #include <sys/mount.h>
 

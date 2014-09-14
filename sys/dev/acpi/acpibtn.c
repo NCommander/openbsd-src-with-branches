@@ -1,4 +1,4 @@
-/* $OpenBSD: acpibtn.c,v 1.34 2011/01/02 04:56:57 jordan Exp $ */
+/* $OpenBSD: acpibtn.c,v 1.35 2013/08/21 20:10:47 landry Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -16,7 +16,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/signalvar.h>
 #include <sys/systm.h>
 #include <sys/device.h>

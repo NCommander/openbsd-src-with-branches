@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_ipc.c,v 1.5 2005/12/13 10:33:14 jsg Exp $	*/
+/*	$OpenBSD: sysv_ipc.c,v 1.6 2008/06/09 23:38:37 millert Exp $	*/
 /*	$NetBSD: sysv_ipc.c,v 1.10 1995/06/03 05:53:28 mycroft Exp $	*/
 
 /*
@@ -32,7 +32,6 @@
 
 #include <sys/param.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
 #include <sys/ipc.h>
 #include <sys/systm.h>
 #include <sys/mount.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mii_physubr.c,v 1.41 2013/06/25 02:27:44 brad Exp $	*/
+/*	$OpenBSD: mii_physubr.c,v 1.42 2013/12/28 03:30:41 deraadt Exp $	*/
 /*	$NetBSD: mii_physubr.c,v 1.20 2001/04/13 23:30:09 thorpej Exp $	*/
 
 /*-
@@ -41,7 +41,6 @@
 #include <sys/kernel.h>
 #include <sys/socket.h>
 #include <sys/errno.h>
-#include <sys/proc.h>
 
 #include <net/if.h>
 #include <net/if_media.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.227 2014/07/12 18:48:17 tedu Exp $	*/
+/*	$OpenBSD: ami.c,v 1.228 2014/07/13 23:10:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -57,7 +57,6 @@
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 #include <sys/rwlock.h>
 #include <sys/pool.h>
 

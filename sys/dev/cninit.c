@@ -1,4 +1,4 @@
-/*	$OpenBSD: cninit.c,v 1.11 2011/06/23 16:02:33 tedu Exp $	*/
+/*	$OpenBSD: cninit.c,v 1.12 2013/09/29 12:56:31 kettenis Exp $	*/
 /*	$NetBSD: cninit.c,v 1.2 1995/04/11 22:08:10 pk Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 #include <sys/buf.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>

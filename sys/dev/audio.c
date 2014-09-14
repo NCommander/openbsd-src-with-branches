@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.121 2014/05/19 07:00:15 ratchov Exp $	*/
+/*	$OpenBSD: audio.c,v 1.122 2014/07/12 18:48:17 tedu Exp $	*/
 /*	$NetBSD: audio.c,v 1.119 1999/11/09 16:50:47 augustss Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 #include <sys/selinfo.h>
 #include <sys/poll.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/syslog.h>
 #include <sys/kernel.h>

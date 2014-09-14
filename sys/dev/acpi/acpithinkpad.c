@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpithinkpad.c,v 1.35 2014/03/24 23:22:54 jcs Exp $	*/
+/*	$OpenBSD: acpithinkpad.c,v 1.36 2014/07/08 21:32:15 miod Exp $	*/
 /*
  * Copyright (c) 2008 joshua stein <jcs@openbsd.org>
  *
@@ -17,7 +17,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 
 #include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>

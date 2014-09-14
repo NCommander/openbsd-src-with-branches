@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_debug.c,v 1.4 2013/05/31 14:00:08 guenther Exp $ */
+/*	$OpenBSD: nfs_debug.c,v 1.5 2014/07/10 13:36:38 tedu Exp $ */
 /*
  * Copyright (c) 2009 Thordur I. Bjornsson. <thib@openbsd.org>
  *
@@ -16,7 +16,7 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
+#include <sys/timeout.h>
 #include <sys/mount.h>
 #include <sys/kernel.h>
 #include <sys/pool.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.82 2014/08/08 15:16:39 jasper Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.83 2014/09/12 16:02:40 sthen Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -42,7 +42,6 @@
 #include <sys/sockio.h>
 #include <sys/endian.h>
 #include <sys/errno.h>
-#include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <sys/tree.h>
 

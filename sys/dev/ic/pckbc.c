@@ -1,4 +1,4 @@
-/* $OpenBSD: pckbc.c,v 1.37 2013/09/24 08:33:50 mpi Exp $ */
+/* $OpenBSD: pckbc.c,v 1.38 2014/07/07 18:20:15 shadchin Exp $ */
 /* $NetBSD: pckbc.c,v 1.5 2000/06/09 04:58:35 soda Exp $ */
 
 /*
@@ -30,7 +30,6 @@
 #include <sys/systm.h>
 #include <sys/timeout.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/errno.h>

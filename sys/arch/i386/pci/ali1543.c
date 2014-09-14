@@ -1,4 +1,4 @@
-/*	$OpenBSD: ali1543.c,v 1.2 2002/05/02 17:46:00 mickey Exp $	*/
+/*	$OpenBSD: ali1543.c,v 1.3 2008/06/27 06:03:08 ray Exp $	*/
 /*	$NetBSD: ali1543.c,v 1.2 2001/09/13 14:00:52 tshiozak Exp $	*/
 
 /*
@@ -92,7 +92,6 @@
 #include <sys/errno.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 
 #include <machine/intr.h>
 #include <machine/bus.h>

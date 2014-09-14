@@ -1,4 +1,4 @@
-/*	$OpenBSD: ses.c,v 1.52 2014/07/12 18:50:25 tedu Exp $ */
+/*	$OpenBSD: ses.c,v 1.53 2014/09/13 16:06:37 doug Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -24,7 +24,6 @@
 #include <sys/scsiio.h>
 #include <sys/malloc.h>
 #include <sys/pool.h>
-#include <sys/proc.h>
 #include <sys/rwlock.h>
 #include <sys/queue.h>
 #include <sys/sensors.h>

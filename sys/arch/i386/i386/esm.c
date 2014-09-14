@@ -1,4 +1,4 @@
-/*	$OpenBSD: esm.c,v 1.54 2013/07/04 16:55:18 sf Exp $ */
+/*	$OpenBSD: esm.c,v 1.55 2014/07/12 18:44:41 tedu Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -23,7 +23,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/timeout.h>
-#include <sys/proc.h>
 #include <sys/queue.h>
 #include <sys/sensors.h>
 

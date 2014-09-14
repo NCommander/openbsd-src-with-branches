@@ -1,4 +1,4 @@
-/*	$OpenBSD: ym_isapnp.c,v 1.8 2002/03/14 01:26:57 millert Exp $ */
+/*	$OpenBSD: ym_isapnp.c,v 1.9 2010/06/30 11:21:35 jakemsr Exp $ */
 
 
 /*
@@ -40,7 +40,6 @@
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 
 #include <sys/audioio.h>
 #include <dev/audio_if.h>

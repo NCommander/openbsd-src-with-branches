@@ -1,4 +1,4 @@
-/*      $OpenBSD: ata_wdc.c,v 1.45 2013/01/17 02:36:45 deraadt Exp $	*/
+/*      $OpenBSD: ata_wdc.c,v 1.46 2013/11/06 12:06:58 deraadt Exp $	*/
 /*	$NetBSD: ata_wdc.c,v 1.21 1999/08/09 09:43:11 bouyer Exp $	*/
 
 /*
@@ -66,7 +66,6 @@
 #include <sys/disklabel.h>
 #include <sys/disk.h>
 #include <sys/syslog.h>
-#include <sys/proc.h>
 
 #include <machine/intr.h>
 #include <machine/bus.h>

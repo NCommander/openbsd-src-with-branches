@@ -1,4 +1,4 @@
-/*	$OpenBSD: sili.c,v 1.52 2014/07/12 18:48:17 tedu Exp $ */
+/*	$OpenBSD: sili.c,v 1.53 2014/07/13 23:10:23 deraadt Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -22,7 +22,7 @@
 #include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/device.h>
-#include <sys/proc.h>
+#include <sys/timeout.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/mutex.h>

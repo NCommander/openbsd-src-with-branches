@@ -1,4 +1,4 @@
-/* $OpenBSD: acpiprt.c,v 1.44 2013/12/22 18:55:25 kettenis Exp $ */
+/* $OpenBSD: acpiprt.c,v 1.45 2014/05/02 14:10:15 kettenis Exp $ */
 /*
  * Copyright (c) 2006 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -16,7 +16,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/signalvar.h>
 #include <sys/systm.h>
 #include <sys/device.h>

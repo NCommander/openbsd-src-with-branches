@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_device.c,v 1.47 2014/07/11 16:35:40 jsg Exp $	*/
+/*	$OpenBSD: uvm_device.c,v 1.48 2014/07/12 18:44:01 tedu Exp $	*/
 /*	$NetBSD: uvm_device.c,v 1.30 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/conf.h>
-#include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/mutex.h>
 #include <sys/vnode.h>

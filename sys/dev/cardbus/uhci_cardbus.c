@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhci_cardbus.c,v 1.12 2013/04/15 09:23:01 mglocker Exp $	*/
+/*	$OpenBSD: uhci_cardbus.c,v 1.13 2014/05/16 18:17:03 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -34,7 +34,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 
 #include <machine/bus.h>
 

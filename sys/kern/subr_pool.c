@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.151 2014/09/08 00:00:05 dlg Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.152 2014/09/08 23:50:45 dlg Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -33,7 +33,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 #include <sys/errno.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>

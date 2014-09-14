@@ -1,4 +1,4 @@
-/*	$OpenBSD: owid.c,v 1.8 2010/07/08 07:19:54 jasper Exp $	*/
+/*	$OpenBSD: owid.c,v 1.9 2011/07/03 15:47:16 matthew Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -24,7 +24,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
 #include <sys/sensors.h>
 
 #include <dev/onewire/onewiredevs.h>

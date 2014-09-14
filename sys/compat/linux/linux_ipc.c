@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_ipc.c,v 1.16 2013/05/10 10:31:16 pirofti Exp $	*/
+/*	$OpenBSD: linux_ipc.c,v 1.17 2014/03/26 05:23:42 guenther Exp $	*/
 /*	$NetBSD: linux_ipc.c,v 1.10 1996/04/05 00:01:44 christos Exp $	*/
 
 /*
@@ -38,7 +38,6 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include <sys/msg.h>
-#include <sys/proc.h>
 #include <sys/uio.h>
 #include <sys/time.h>
 #include <sys/malloc.h>

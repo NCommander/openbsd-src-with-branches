@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_object.c,v 1.7 2013/05/30 15:17:59 tedu Exp $	*/
+/*	$OpenBSD: uvm_object.c,v 1.8 2014/05/08 20:08:50 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 The NetBSD Foundation, Inc.
@@ -35,7 +35,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/proc.h>		/* XXX for atomic */
 
 #include <uvm/uvm.h>
 

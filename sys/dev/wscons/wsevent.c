@@ -1,4 +1,4 @@
-/* $OpenBSD: wsevent.c,v 1.8 2012/12/05 23:20:22 deraadt Exp $ */
+/* $OpenBSD: wsevent.c,v 1.9 2014/07/12 18:48:53 tedu Exp $ */
 /* $NetBSD: wsevent.c,v 1.16 2003/08/07 16:31:29 agc Exp $ */
 
 /*
@@ -78,7 +78,6 @@
 #include <sys/param.h>
 #include <sys/fcntl.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/vnode.h>
 #include <sys/selinfo.h>

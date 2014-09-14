@@ -1,4 +1,4 @@
-/*	$OpenBSD: wds.c,v 1.40 2013/11/15 16:46:27 brad Exp $	*/
+/*	$OpenBSD: wds.c,v 1.41 2014/04/28 10:06:37 jsg Exp $	*/
 /*	$NetBSD: wds.c,v 1.13 1996/11/03 16:20:31 mycroft Exp $	*/
 
 #undef	WDSDIAG
@@ -66,7 +66,6 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/buf.h>
-#include <sys/proc.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>

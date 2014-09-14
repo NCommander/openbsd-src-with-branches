@@ -1,4 +1,4 @@
-/*	$OpenBSD: via.c,v 1.15 2014/03/29 18:09:28 guenther Exp $	*/
+/*	$OpenBSD: via.c,v 1.16 2014/07/12 18:44:41 tedu Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -23,7 +23,6 @@
 #include <sys/systm.h>
 #include <sys/signalvar.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
 #include <sys/exec.h>
 #include <sys/buf.h>
 #include <sys/reboot.h>

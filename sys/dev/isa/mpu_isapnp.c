@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpu_isapnp.c,v 1.6 2002/11/28 23:24:53 mickey Exp $	*/
+/*	$OpenBSD: mpu_isapnp.c,v 1.7 2013/05/24 07:58:46 ratchov Exp $	*/
 
 #include "midi.h"
 
@@ -8,7 +8,6 @@
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 
 #include <machine/bus.h>
 

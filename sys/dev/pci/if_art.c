@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_art.c,v 1.19 2013/06/20 09:38:24 mpi Exp $ */
+/*	$OpenBSD: if_art.c,v 1.20 2013/06/20 12:03:40 mpi Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland
@@ -21,7 +21,6 @@
 #include <sys/types.h>
 
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/syslog.h>

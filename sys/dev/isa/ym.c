@@ -1,4 +1,4 @@
-/* $OpenBSD: ym.c,v 1.17 2010/07/31 11:25:38 ratchov Exp $ */
+/* $OpenBSD: ym.c,v 1.18 2013/05/24 07:58:46 ratchov Exp $ */
 
 
 /*
@@ -35,7 +35,6 @@
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/buf.h>
 
 #include <machine/cpu.h>

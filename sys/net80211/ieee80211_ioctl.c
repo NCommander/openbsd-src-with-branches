@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_ioctl.c,v 1.35 2014/07/10 14:32:28 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_ioctl.c,v 1.36 2014/09/12 16:02:40 sthen Exp $	*/
 /*	$NetBSD: ieee80211_ioctl.c,v 1.15 2004/05/06 02:58:16 dyoung Exp $	*/
 
 /*-
@@ -39,7 +39,6 @@
 #include <sys/sockio.h>
 #include <sys/systm.h>
 #include <sys/endian.h>
-#include <sys/proc.h>
 #include <sys/tree.h>
 
 #include <net/if.h>

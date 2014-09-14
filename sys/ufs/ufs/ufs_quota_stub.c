@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_quota_stub.c,v 1.5 2008/01/05 19:49:26 otto Exp $	*/
+/*	$OpenBSD: ufs_quota_stub.c,v 1.6 2013/06/11 16:42:19 deraadt Exp $	*/
 
 #include <sys/param.h>
 #include <sys/kernel.h>
@@ -6,7 +6,6 @@
 #include <sys/namei.h>
 #include <sys/malloc.h>
 #include <sys/file.h>
-#include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/mount.h>
 

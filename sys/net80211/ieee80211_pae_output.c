@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_pae_output.c,v 1.16 2010/06/05 15:54:35 damien Exp $	*/
+/*	$OpenBSD: ieee80211_pae_output.c,v 1.17 2014/07/22 11:06:10 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2007,2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -30,7 +30,6 @@
 #include <sys/sockio.h>
 #include <sys/endian.h>
 #include <sys/errno.h>
-#include <sys/proc.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>

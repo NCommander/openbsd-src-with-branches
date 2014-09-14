@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_hds.c,v 1.15 2014/04/03 04:02:50 dlg Exp $ */
+/*	$OpenBSD: mpath_hds.c,v 1.16 2014/04/20 00:50:18 dlg Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -24,7 +24,6 @@
 #include <sys/kernel.h>  
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/queue.h>
 #include <sys/rwlock.h>

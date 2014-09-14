@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.16 2013/12/19 21:30:02 deraadt Exp $ */
+/*	$OpenBSD: mem.c,v 1.17 2014/07/12 18:44:41 tedu Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -52,7 +52,6 @@
 #include <sys/ioccom.h>
 #include <sys/malloc.h>
 #include <sys/memrange.h>
-#include <sys/proc.h>
 #include <sys/fcntl.h>
 #ifdef LKM
 #include <sys/lkm.h>

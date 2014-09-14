@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid1.c,v 1.56 2014/01/22 04:24:29 jsing Exp $ */
+/* $OpenBSD: softraid_raid1.c,v 1.57 2014/07/12 07:39:12 blambert Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  *
@@ -22,7 +22,6 @@
 #include <sys/buf.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
-#include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/disk.h>

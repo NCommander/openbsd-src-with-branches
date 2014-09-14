@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_aobj.c,v 1.67 2014/07/12 18:44:01 tedu Exp $	*/
+/*	$OpenBSD: uvm_aobj.c,v 1.68 2014/09/08 19:42:57 kettenis Exp $	*/
 /*	$NetBSD: uvm_aobj.c,v 1.39 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/pool.h>

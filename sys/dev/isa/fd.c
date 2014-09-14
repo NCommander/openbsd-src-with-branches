@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.99 2014/06/15 11:43:24 sf Exp $	*/
+/*	$OpenBSD: fd.c,v 1.100 2014/07/12 18:48:17 tedu Exp $	*/
 /*	$NetBSD: fd.c,v 1.90 1996/05/12 23:12:03 mycroft Exp $	*/
 
 /*-
@@ -54,7 +54,6 @@
 #include <sys/malloc.h>
 #include <sys/uio.h>
 #include <sys/mtio.h>
-#include <sys/proc.h>
 #include <sys/syslog.h>
 #include <sys/queue.h>
 #include <sys/stat.h>

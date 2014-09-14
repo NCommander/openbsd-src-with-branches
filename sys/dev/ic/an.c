@@ -1,4 +1,4 @@
-/*	$OpenBSD: an.c,v 1.60 2013/08/07 01:06:27 bluhm Exp $	*/
+/*	$OpenBSD: an.c,v 1.61 2014/07/22 13:12:11 mpi Exp $	*/
 /*	$NetBSD: an.c,v 1.34 2005/06/20 02:49:18 atatat Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -88,7 +88,6 @@
 #include <sys/socket.h>
 #include <sys/timeout.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/endian.h>
 #include <sys/tree.h>
 

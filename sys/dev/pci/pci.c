@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci.c,v 1.103 2014/07/12 18:48:52 tedu Exp $	*/
+/*	$OpenBSD: pci.c,v 1.104 2014/09/13 16:06:37 doug Exp $	*/
 /*	$NetBSD: pci.c,v 1.31 1997/06/06 23:48:04 thorpej Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

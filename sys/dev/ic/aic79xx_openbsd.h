@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx_openbsd.h,v 1.16 2005/12/10 11:45:43 miod Exp $	*/
+/*	$OpenBSD: aic79xx_openbsd.h,v 1.17 2007/10/01 12:10:55 martin Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -74,7 +74,6 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/buf.h>
-#include <sys/proc.h>
 #include <sys/queue.h>
 
 #define AIC_PCI_CONFIG 1

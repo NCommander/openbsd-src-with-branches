@@ -1,4 +1,4 @@
-/*	$OpenBSD: sb_isa.c,v 1.7 2003/04/27 11:22:53 ho Exp $	*/
+/*	$OpenBSD: sb_isa.c,v 1.8 2006/01/02 05:21:40 brad Exp $	*/
 /*	$NetBSD: sb_isa.c,v 1.15 1997/11/30 15:32:25 drochner Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 
 #include <machine/bus.h>
 

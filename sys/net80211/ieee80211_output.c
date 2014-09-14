@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_output.c,v 1.90 2014/03/19 10:09:19 mpi Exp $	*/
+/*	$OpenBSD: ieee80211_output.c,v 1.91 2014/07/22 11:06:10 mpi Exp $	*/
 /*	$NetBSD: ieee80211_output.c,v 1.13 2004/05/31 11:02:55 dyoung Exp $	*/
 
 /*-
@@ -41,7 +41,6 @@
 #include <sys/sockio.h>
 #include <sys/endian.h>
 #include <sys/errno.h>
-#include <sys/proc.h>
 #include <sys/sysctl.h>
 
 #include <net/if.h>

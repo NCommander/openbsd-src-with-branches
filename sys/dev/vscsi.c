@@ -1,4 +1,4 @@
-/*	$OpenBSD: vscsi.c,v 1.29 2014/04/22 08:48:51 dlg Exp $ */
+/*	$OpenBSD: vscsi.c,v 1.30 2014/07/12 18:48:51 tedu Exp $ */
 
 /*
  * Copyright (c) 2008 David Gwynne <dlg@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/kernel.h>  
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/queue.h>
 #include <sys/rwlock.h>

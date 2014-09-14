@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_util.c,v 1.6 2003/06/02 23:28:05 millert Exp $	*/
+/*	$OpenBSD: cd9660_util.c,v 1.7 2003/11/04 21:54:01 mickey Exp $	*/
 /*	$NetBSD: cd9660_util.c,v 1.12 1997/01/24 00:27:33 cgd Exp $	*/
 
 /*-
@@ -46,7 +46,6 @@
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/buf.h>
-#include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/mount.h>
 #include <sys/vnode.h>

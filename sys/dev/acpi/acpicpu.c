@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.59 2014/07/11 14:33:45 kettenis Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.60 2014/07/12 18:48:17 tedu Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -16,7 +16,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/signalvar.h>
 #include <sys/sysctl.h>
 #include <sys/systm.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: ics2101.c,v 1.7 2008/06/26 05:42:16 ray Exp $ */
+/* $OpenBSD: ics2101.c,v 1.8 2013/05/15 08:29:24 ratchov Exp $ */
 /* $NetBSD: ics2101.c,v 1.6 1997/10/09 07:57:23 jtc Exp $ */
 
 /*-
@@ -36,7 +36,6 @@
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/buf.h>
 
 #include <machine/cpu.h>
