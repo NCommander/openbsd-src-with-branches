@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsk.c,v 1.39 2014/07/12 18:44:43 tedu Exp $	*/
+/*	$OpenBSD: vdsk.c,v 1.40 2014/09/15 08:16:21 kettenis Exp $	*/
 /*
  * Copyright (c) 2009, 2011 Mark Kettenis
  *
@@ -914,7 +914,7 @@ vdsk_io_get(void *xsc)
 	int s;
 
 	s = splbio();
-	if (sc->sc_vio_state != VIO_ESTABLISHED &&
+	if (sc->sc_vio_state != VIO_ESTABLISHED ||
 	    sc->sc_tx_cnt >= sc->sc_vd->vd_nentries)
 		rv = NULL;
 	else
