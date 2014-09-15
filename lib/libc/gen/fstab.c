@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstab.c,v 1.18 2009/06/03 18:18:23 jsg Exp $ */
+/*	$OpenBSD: fstab.c,v 1.19 2013/06/01 01:42:55 tedu Exp $ */
 /*
  * Copyright (c) 1980, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -196,7 +196,7 @@ setfsent(void)
 		goto fail;
 	}
 
-	if ((_fs_fp = fopen(_PATH_FSTAB, "r")))
+	if ((_fs_fp = fopen(_PATH_FSTAB, "re")))
 		return(1);
 
 fail:

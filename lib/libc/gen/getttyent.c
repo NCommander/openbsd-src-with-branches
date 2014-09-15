@@ -1,4 +1,4 @@
-/*	$OpenBSD: getttyent.c,v 1.12 2009/11/09 00:18:27 kurt Exp $ */
+/*	$OpenBSD: getttyent.c,v 1.13 2013/11/24 23:51:29 deraadt Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -181,7 +181,7 @@ setttyent(void)
 	if (tf) {
 		rewind(tf);
 		return (1);
-	} else if ((tf = fopen(_PATH_TTYS, "r")))
+	} else if ((tf = fopen(_PATH_TTYS, "re")))
 		return (1);
 	return (0);
 }

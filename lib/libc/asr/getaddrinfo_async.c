@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo_async.c,v 1.28 2014/05/10 21:21:09 chl Exp $	*/
+/*	$OpenBSD: getaddrinfo_async.c,v 1.29 2014/07/23 21:26:25 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -409,7 +409,7 @@ getaddrinfo_async_run(struct asr_query *as, struct asr_result *ar)
 			break;
 
 		case ASR_DB_FILE:
-			f = fopen(as->as_ctx->ac_hostfile, "r");
+			f = fopen(as->as_ctx->ac_hostfile, "re");
 			if (f == NULL) {
 				async_set_state(as, ASR_STATE_NEXT_DB);
 				break;

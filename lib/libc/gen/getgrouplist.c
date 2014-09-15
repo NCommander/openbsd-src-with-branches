@@ -1,4 +1,4 @@
-/*	$OpenBSD: getgrouplist.c,v 1.22 2013/04/17 17:40:35 tedu Exp $ */
+/*	$OpenBSD: getgrouplist.c,v 1.23 2014/01/22 09:58:28 jsg Exp $ */
 /*
  * Copyright (c) 2008 Ingo Schwarze <schwarze@usta.de>
  * Copyright (c) 1991, 1993
@@ -114,7 +114,7 @@ _read_netid(const char *key, uid_t uid, gid_t *groups, int *ngroups,
 	char line[MAXLINELENGTH], *p;
 	int found = 0;
 
-	fp = fopen(_PATH_NETID, "r");
+	fp = fopen(_PATH_NETID, "re");
 	if (!fp) 
 		return (0);
 	while (!found && fgets(line, sizeof(line), fp)) {

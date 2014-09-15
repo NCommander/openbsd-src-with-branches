@@ -1,4 +1,4 @@
-/*	$OpenBSD: setrunelocale.c,v 1.9 2013/05/30 18:35:55 stsp Exp $ */
+/*	$OpenBSD: setrunelocale.c,v 1.10 2013/06/01 20:02:53 stsp Exp $ */
 /*	$NetBSD: setrunelocale.c,v 1.14 2003/08/07 16:43:07 agc Exp $	*/
 
 /*-
@@ -137,7 +137,7 @@ _newrunelocale(const char *path)
 	if (rl)
 		return 0;
 
-	if ((fp = fopen(path, "r")) == NULL)
+	if ((fp = fopen(path, "re")) == NULL)
 		return ENOENT;
 
 	if ((rl = _Read_RuneMagi(fp)) != NULL)

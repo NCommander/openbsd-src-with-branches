@@ -1,4 +1,4 @@
-/*	$OpenBSD: getrpcent.c,v 1.14 2007/02/20 01:47:03 ray Exp $ */
+/*	$OpenBSD: getrpcent.c,v 1.15 2010/09/01 14:43:34 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -110,7 +110,7 @@ setrpcent(int f)
 	if (d == NULL)
 		return;
 	if (d->rpcf == NULL)
-		d->rpcf = fopen(RPCDB, "r");
+		d->rpcf = fopen(RPCDB, "re");
 	else
 		rewind(d->rpcf);
 	d->stayopen |= f;
@@ -136,7 +136,7 @@ getrpcent(void)
 
 	if (d == NULL)
 		return(NULL);
-	if (d->rpcf == NULL && (d->rpcf = fopen(RPCDB, "r")) == NULL)
+	if (d->rpcf == NULL && (d->rpcf = fopen(RPCDB, "re")) == NULL)
 		return (NULL);
 	/* -1 so there is room to append a \n below */
         if (fgets(d->line, sizeof(d->line) - 1, d->rpcf) == NULL)
