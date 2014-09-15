@@ -1,4 +1,4 @@
-/*	$OpenBSD: getnetnamadr_async.c,v 1.15 2014/05/13 11:57:35 eric Exp $	*/
+/*	$OpenBSD: getnetnamadr_async.c,v 1.16 2014/07/23 21:26:25 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -178,7 +178,7 @@ getnetnamadr_async_run(struct asr_query *as, struct asr_result *ar)
 
 		case ASR_DB_FILE:
 
-			if ((f = fopen("/etc/networks", "r")) == NULL)
+			if ((f = fopen(_PATH_NETWORKS, "r")) == NULL)
 				break;
 
 			if (as->as_type == ASR_GETNETBYNAME)
