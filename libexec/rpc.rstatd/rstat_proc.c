@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstat_proc.c,v 1.30 2013/05/15 04:23:44 miod Exp $	*/
+/*	$OpenBSD: rstat_proc.c,v 1.31 2014/07/08 17:19:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -36,7 +36,7 @@
  */
 
 #include <sys/param.h>
-#include <sys/dkstat.h>
+#include <sys/sched.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
 #include <net/if.h>

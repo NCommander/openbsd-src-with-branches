@@ -1,4 +1,4 @@
-/*	$OpenBSD: iostat.c,v 1.33 2014/02/13 08:46:36 tedu Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.34 2014/02/13 21:01:23 tedu Exp $	*/
 /*	$NetBSD: iostat.c,v 1.10 1996/10/25 18:21:58 scottr Exp $	*/
 
 /*
@@ -62,9 +62,9 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/dkstat.h>
 #include <sys/limits.h>
 #include <sys/time.h>
+#include <sys/sched.h>
 
 #include <err.h>
 #include <ctype.h>

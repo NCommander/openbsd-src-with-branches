@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.1 2013/09/07 11:43:49 reyk Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.2 2013/09/11 07:01:03 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -47,7 +47,7 @@
  */
 
 #include <sys/param.h>
-#include <sys/dkstat.h>
+#include <sys/sched.h>
 #include <sys/sysctl.h>
 
 #include <stdlib.h>

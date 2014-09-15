@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.h,v 1.32 2013/01/17 21:24:58 deraadt Exp $	*/
+/*	$OpenBSD: tty.h,v 1.33 2013/12/13 19:55:12 naddy Exp $	*/
 /*	$NetBSD: tty.h,v 1.30.4.1 1996/06/02 09:08:13 mrg Exp $	*/
 
 /*-
@@ -246,6 +246,8 @@ extern	struct ttychars ttydefaults;
 
 /* Symbolic sleep message strings. */
 extern	 char ttyin[], ttyout[], ttopen[], ttclos[], ttybg[], ttybuf[];
+
+extern int64_t tk_cancc, tk_nin, tk_nout, tk_rawcc;
 
 int	sysctl_tty(int *, u_int, void *, size_t *, void *, size_t);
 int	sysctl_pty(int *, u_int, void *, size_t *, void *, size_t);
