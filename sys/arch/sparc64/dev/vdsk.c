@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsk.c,v 1.41 2014/09/15 20:34:15 kettenis Exp $	*/
+/*	$OpenBSD: vdsk.c,v 1.42 2014/09/16 15:59:35 kettenis Exp $	*/
 /*
  * Copyright (c) 2009, 2011 Mark Kettenis
  *
@@ -997,7 +997,7 @@ vdsk_scsi_cmd(struct scsi_xfer *xs)
 	timeout = 1000;
 	do {
 		if (vdsk_rx_intr(sc) &&
-		    sc->sc_vd->vd_desc[desc].status == VIO_DESC_FREE)
+		    sc->sc_vd->vd_desc[desc].hdr.dstate == VIO_DESC_FREE)
 			break;
 
 		delay(1000);
