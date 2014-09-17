@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.155 2014/09/16 21:45:12 dlg Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.156 2014/09/16 23:05:34 dlg Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -1382,7 +1382,7 @@ sysctl_dopool(int *name, u_int namelen, char *oldp, size_t *oldlenp)
 	case KERN_POOL_POOL:
 		break;
 	default:
-		return (EINVAL);
+		return (EOPNOTSUPP);
 	}
 
 	if (namelen != 2)
