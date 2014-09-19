@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.71 2014/07/22 01:04:04 uebayasi Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.72 2014/08/18 05:11:03 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -535,8 +535,6 @@ int waittime = -1;
 __dead void
 boot(int howto)
 {
-	struct device *mainbus;
-
 	/*
 	 * On older systems without software power control, prevent mi code
 	 * from spinning disks off, in case the operator changes his mind
@@ -575,9 +573,7 @@ boot(int howto)
 
 haltsys:
 	doshutdownhooks();
-	mainbus = device_mainbus();
-	if (mainbus != NULL)
-		config_suspend(mainbus, DVACT_POWERDOWN);
+	config_suspend_all(DVACT_POWERDOWN);
 
 	/* in case we came on powerfail interrupt */
 	if (cold_hook)
