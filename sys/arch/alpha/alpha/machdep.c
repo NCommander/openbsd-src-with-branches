@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: machdep.c,v 1.164 2014/07/21 17:25:47 uebayasi Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -971,7 +971,6 @@ struct pcb dumppcb;
 __dead void
 boot(int howto)
 {
-	struct device *mainbus;
 #if defined(MULTIPROCESSOR)
 	u_long wait_mask;
 	int i;
@@ -1030,9 +1029,7 @@ boot(int howto)
 
 haltsys:
 	doshutdownhooks();
-	mainbus = device_mainbus();
-	if (mainbus != NULL)
-		config_suspend(mainbus, DVACT_POWERDOWN);
+	config_suspend_all(DVACT_POWERDOWN);
 
 #ifdef BOOTKEY
 	printf("hit any key to %s...\n",
