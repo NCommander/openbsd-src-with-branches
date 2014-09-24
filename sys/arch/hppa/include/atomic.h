@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.7 2014/06/17 19:49:53 kettenis Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.8 2014/09/22 12:12:23 dlg Exp $	*/
 
 /* Public Domain */
 
@@ -152,7 +152,7 @@ _atomic_swap_ulong(volatile unsigned long *uip, unsigned long n)
 
 	return (rv);
 }
-#define atomic_swap_ulong(_p, _o, _n) _atomic_swap_ulong((_p), (_o), (_n))
+#define atomic_swap_ulong(_p, _n) _atomic_swap_ulong((_p), (_n))
 
 static inline void *
 _atomic_swap_ptr(volatile void *uip, void *n)
@@ -168,7 +168,7 @@ _atomic_swap_ptr(volatile void *uip, void *n)
 
 	return (rv);
 }
-#define atomic_swap_ptr(_p, _o, _n) _atomic_swap_ptr((_p), (_o), (_n))
+#define atomic_swap_ptr(_p, _n) _atomic_swap_ptr((_p), (_n))
 
 static __inline unsigned int
 _atomic_add_int_nv(volatile unsigned int *uip, unsigned int v)
