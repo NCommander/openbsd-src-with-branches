@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.5 2014/03/29 18:09:30 guenther Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.6 2014/09/24 04:54:44 dlg Exp $	*/
 
 /* Public Domain */
 
@@ -90,7 +90,7 @@ _atomic_swap_ptr(volatile void *uip, void *n)
 
 	return (rv);
 }
-#define atomic_swap_ptr(_p, _o, _n) _atomic_swap_ptr((_p), (_o), (_n))
+#define atomic_swap_ptr(_p, _n) _atomic_swap_ptr((_p), (_n))
 
 static inline unsigned int
 _atomic_add_word_nv(volatile unsigned int *uip, unsigned int v)
