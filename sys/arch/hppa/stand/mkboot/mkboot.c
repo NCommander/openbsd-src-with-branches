@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkboot.c,v 1.17 2013/10/17 08:02:15 deraadt Exp $	*/
+/*	$OpenBSD: mkboot.c,v 1.18 2014/01/22 09:18:04 jsing Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -204,10 +204,11 @@ putfile(char *from_file, int to)
 		if (n != sizeof (elf_header))
 			err(1, "%s: reading ELF header", from_file);
 		header_count = ntohs(elf_header.e_phnum);
-		memory_needed = header_count * sizeof (*elf_segments);
-		elf_segments = malloc(memory_needed);
+		elf_segments = reallocarray(NULL, header_count,
+		    sizeof(*elf_segments));
 		if (elf_segments == NULL)
 			err(1, "malloc");
+		memory_needed = header_count * sizeof(*elf_segments);
 		(void) lseek(from, ntohl(elf_header.e_phoff), SEEK_SET);
 		n = read(from, elf_segments, memory_needed);
 		if (n != memory_needed)
