@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx100.c,v 1.22 2012/10/27 16:13:28 claudio Exp $ */
+/*	$OpenBSD: acx100.c,v 1.23 2013/06/11 18:15:53 deraadt Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -49,6 +49,8 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include "bpfilter.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx111.c,v 1.18 2010/04/20 22:05:41 tedu Exp $ */
+/*	$OpenBSD: acx111.c,v 1.19 2012/10/27 16:13:28 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -49,6 +49,8 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include "bpfilter.h"
 
 #include <sys/param.h>
 #include <sys/endian.h>
