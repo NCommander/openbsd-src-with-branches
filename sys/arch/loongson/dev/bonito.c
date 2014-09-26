@@ -1,4 +1,4 @@
-/*	$OpenBSD: bonito.c,v 1.26 2014/05/24 21:11:01 miod Exp $	*/
+/*	$OpenBSD: bonito.c,v 1.27 2014/07/12 18:44:42 tedu Exp $	*/
 /*	$NetBSD: bonito_mainbus.c,v 1.11 2008/04/28 20:23:10 martin Exp $	*/
 /*	$NetBSD: bonito_pci.c,v 1.5 2008/04/28 20:23:28 martin Exp $	*/
 
@@ -976,10 +976,10 @@ bonito_pci_intr_string(void *cookie, pci_intr_handle_t ih)
 	static char irqstr[1 + 12];
 
 	if (BONITO_IRQ_IS_ISA(ih))
-		snprintf(irqstr, sizeof irqstr, "isa irq %d",
+		snprintf(irqstr, sizeof irqstr, "isa irq %lu",
 		    BONITO_IRQ_TO_ISA(ih));
 	else
-		snprintf(irqstr, sizeof irqstr, "irq %d", ih);
+		snprintf(irqstr, sizeof irqstr, "irq %lu", ih);
 	return irqstr;
 }
 
