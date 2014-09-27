@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.189 2014/07/21 17:25:47 uebayasi Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.190 2014/09/19 20:02:25 kettenis Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -354,7 +354,7 @@ cpu_startup(void)
 #ifdef BOOT_CONFIG
 		user_config();
 #else
-		printf("kernel does not support - c; continuing..\n");
+		printf("kernel does not support -c; continuing..\n");
 #endif
 	}
 
