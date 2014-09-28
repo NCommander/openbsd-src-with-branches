@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.233 2014/07/22 11:06:10 mpi Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.234 2014/09/08 06:24:13 jsg Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -1807,8 +1807,7 @@ carp_addr_updated(void *v)
 		if (ifa->ifa_addr->sa_family == AF_INET)
 			new_naddrs++;
 #ifdef INET6
-		else if (ifa->ifa_addr->sa_family == AF_INET6 &&
-		    !IN6_IS_ADDR_LINKLOCAL(&ifatoia6(ifa)->ia_addr.sin6_addr))
+		else if (ifa->ifa_addr->sa_family == AF_INET6)
 			new_naddrs6++;
 #endif /* INET6 */
 	}
