@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldcvar.h,v 1.4 2009/12/26 21:21:10 kettenis Exp $	*/
+/*	$OpenBSD: ldcvar.h,v 1.5 2012/10/21 18:56:00 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -19,7 +19,10 @@
  * LDC queues.
  */
 
+#include <sys/mutex.h>
+
 struct ldc_queue {
+	struct mutex	lq_mtx;
 	bus_dmamap_t	lq_map;
 	bus_dma_segment_t lq_seg;
 	caddr_t		lq_va;
