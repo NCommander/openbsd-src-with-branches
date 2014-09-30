@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.74 2014/04/04 20:52:05 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.75 2014/05/10 22:25:16 jasper Exp $	*/
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -35,6 +35,7 @@
 #ifdef SYSVSHM
 #include <sys/shm.h>
 #endif
+#include <sys/atomic.h>
 
 #include <mips64/cache.h>
 #include <machine/autoconf.h>

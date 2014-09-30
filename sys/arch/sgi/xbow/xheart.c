@@ -1,4 +1,4 @@
-/*	$OpenBSD: xheart.c,v 1.25 2012/10/03 11:18:23 miod Exp $	*/
+/*	$OpenBSD: xheart.c,v 1.26 2014/07/12 18:44:42 tedu Exp $	*/
 
 /*
  * Copyright (c) 2008 Miodrag Vallat.
@@ -27,8 +27,8 @@
 #include <sys/evcount.h>
 #include <sys/malloc.h>
 #include <sys/timetc.h>
+#include <sys/atomic.h>
 
-#include <machine/atomic.h>
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
 #include <mips64/mips_cpu.h>

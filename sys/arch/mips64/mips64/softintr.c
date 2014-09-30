@@ -1,4 +1,4 @@
-/*	$OpenBSD: softintr.c,v 1.16 2014/07/08 17:19:25 deraadt Exp $	*/
+/*	$OpenBSD: softintr.c,v 1.17 2014/07/12 18:44:42 tedu Exp $	*/
 /*	$NetBSD: softintr.c,v 1.2 2003/07/15 00:24:39 lukem Exp $	*/
 
 /*
@@ -39,10 +39,10 @@
 #include <sys/param.h>
 #include <sys/mutex.h>
 #include <sys/malloc.h>
+#include <sys/atomic.h>
 
 #include <uvm/uvm_extern.h>
 
-#include <machine/atomic.h>
 #include <machine/intr.h>
 #ifdef MULTIPROCESSOR
 #include <mips64/mips_cpu.h>
@@ -91,7 +91,7 @@ softintr_dispatch(int si)
 		TAILQ_REMOVE(&siq->siq_list, sih, sih_list);
 		sih->sih_pending = 0;
 
-		atomic_add_int(&uvmexp.softs, 1);
+		atomic_inc_int(&uvmexp.softs);
 
 		mtx_leave(&siq->siq_mtx);
 

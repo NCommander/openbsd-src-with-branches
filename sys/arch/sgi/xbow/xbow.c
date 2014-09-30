@@ -1,4 +1,4 @@
-/*	$OpenBSD: xbow.c,v 1.33 2012/03/15 18:52:57 miod Exp $	*/
+/*	$OpenBSD: xbow.c,v 1.34 2012/09/29 18:54:39 miod Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009, 2011 Miodrag Vallat.
@@ -60,10 +60,10 @@
 #include <sys/conf.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
+#include <sys/atomic.h>
 
 #include <mips64/archtype.h>
 
-#include <machine/atomic.h>
 #include <machine/autoconf.h>
 #include <machine/intr.h>
 #include <machine/mnode.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: xbridge.c,v 1.90 2014/07/12 18:44:42 tedu Exp $	*/
+/*	$OpenBSD: xbridge.c,v 1.91 2014/08/19 19:04:07 miod Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009, 2011  Miodrag Vallat.
@@ -37,8 +37,8 @@
 #include <sys/mbuf.h>
 #include <sys/mutex.h>
 #include <sys/queue.h>
+#include <sys/atomic.h>
 
-#include <machine/atomic.h>
 #include <machine/autoconf.h>
 #include <machine/bus.h>
 #include <machine/cpu.h>
