@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcstime.c,v 1.3 2007/02/27 07:59:13 xsa Exp $	*/
+/*	$OpenBSD: rcstime.c,v 1.4 2014/04/29 07:44:19 jsg Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -36,6 +36,7 @@ rcs_set_tz(char *tz, struct rcs_delta *rdp, struct tm *tb)
 	int tzone;
 	int pos;
 	char *h, *m;
+	const char *errstr;
 	struct tm *ltb;
 	time_t now;
 
@@ -62,8 +63,8 @@ rcs_set_tz(char *tz, struct rcs_delta *rdp, struct tm *tb)
 
 		memcpy(tb, &rdp->rd_date, sizeof(*tb));
 
-		tzone = atoi(h);
-		if ((tzone >= 24) || (tzone <= -24))
+		tzone = strtonum(h, -23, 23, &errstr);
+		if (errstr)
 			errx(1, "%s: not a known time zone", tz);
 
 		if (pos) {
@@ -78,9 +79,9 @@ rcs_set_tz(char *tz, struct rcs_delta *rdp, struct tm *tb)
 			tb->tm_hour = 0;
 
 		if (m != NULL) {
-			tzone = atoi(m);
-			if (tzone >= 60)
-				errx(1, "%s: not a known time zone", tz);
+			tzone = strtonum(m, 0, 59, &errstr);
+			if (errstr)
+				errx(1, "%s: not a known minute", m);
 
 			if ((tb->tm_min + tzone) >= 60) {
 				tb->tm_hour++;
