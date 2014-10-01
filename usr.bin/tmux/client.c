@@ -1,4 +1,4 @@
-/* $OpenBSD: client.c,v 1.82 2014/07/21 10:52:48 nicm Exp $ */
+/* $OpenBSD: client.c,v 1.83 2014/09/01 21:50:18 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -433,15 +433,11 @@ client_signal(int sig, unused short events, unused void *data)
 	struct sigaction sigact;
 	int		 status;
 
-	if (!client_attached) {
-		switch (sig) {
-		case SIGCHLD:
-			waitpid(WAIT_ANY, &status, WNOHANG);
-			break;
-		case SIGTERM:
+	if (sig == SIGCHLD)
+		waitpid(WAIT_ANY, &status, WNOHANG);
+	else if (!client_attached) {
+		if (sig == SIGTERM)
 			event_loopexit(NULL);
-			break;
-		}
 	} else {
 		switch (sig) {
 		case SIGHUP:
