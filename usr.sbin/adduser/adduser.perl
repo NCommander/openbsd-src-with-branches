@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-#	$OpenBSD: adduser.perl,v 1.61 2014/02/15 06:27:50 tedu Exp $
+#	$OpenBSD: adduser.perl,v 1.62 2014/07/13 20:09:38 tedu Exp $
 #
 # Copyright (c) 1995-1996 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
 # All rights reserved.
@@ -317,7 +317,7 @@ sub passwd_read {
 	    if ($verbose && $sh &&
 		!$shell{&basename($sh)} &&
 		$p_username !~ /^(news|xten|bin|nobody|uucp)$/ &&
-		$sh !~ /\/(pppd|sliplogin)$/);
+		$sh !~ /\/pppd$/);
 	$uid{$p_uid} = $p_username;
 	$pwgid{$p_gid} = $p_username;
     }
