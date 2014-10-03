@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.h,v 1.13 2014/09/08 00:43:42 doug Exp $ */
+/*	$OpenBSD: syslogd.h,v 1.14 2014/09/10 13:16:20 doug Exp $ */
 
 /*
  * Copyright (c) 2003 Anil Madhavapeddy <anil@recoil.org>
@@ -42,7 +42,7 @@ int  receive_fd(int);
 #define MAXUNIX	21
 extern int nunix;
 extern char *path_unix[MAXUNIX];
-extern char *ctlsock_path;
+extern char *path_ctlsock;
 
 #define dprintf(_f...)	do { if (Debug) printf(_f); } while (0)
 extern int Debug;
