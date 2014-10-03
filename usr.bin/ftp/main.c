@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.91 2014/07/14 09:26:27 jsing Exp $	*/
+/*	$OpenBSD: main.c,v 1.92 2014/07/16 04:52:43 lteo Exp $	*/
 /*	$NetBSD: main.c,v 1.24 1997/08/18 10:20:26 lukem Exp $	*/
 
 /*
@@ -322,21 +322,24 @@ main(volatile int argc, char *argv[])
 				case SSL_CAFILE:
 					if (str == NULL)
 						errx(1, "missing CA file");
-					ressl_config_set_ca_file(ressl_config,
-					    str);
+					if (ressl_config_set_ca_file(
+					    ressl_config, str) != 0)
+						errx(1, "ressl ca file failed");
 					break;
 				case SSL_CAPATH:
 					if (str == NULL)
 						errx(1, "missing CA directory"
 						    " path");
-					ressl_config_set_ca_path(ressl_config,
-					    str);
+					if (ressl_config_set_ca_path(
+					    ressl_config, str) != 0)
+						errx(1, "ressl ca path failed");
 					break;
 				case SSL_CIPHERS:
 					if (str == NULL)
 						errx(1, "missing cipher list");
-					ressl_config_set_ciphers(ressl_config,
-					    str);
+					if (ressl_config_set_ciphers(
+					    ressl_config, str) != 0)
+						errx(1, "ressl ciphers failed");
 					break;
 				case SSL_DONTVERIFY:
 					ressl_config_insecure_no_verify(
