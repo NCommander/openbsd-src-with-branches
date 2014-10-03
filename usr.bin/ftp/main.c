@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.92 2014/07/16 04:52:43 lteo Exp $	*/
+/*	$OpenBSD: main.c,v 1.93 2014/10/03 13:44:08 jsing Exp $	*/
 /*	$NetBSD: main.c,v 1.24 1997/08/18 10:20:26 lukem Exp $	*/
 
 /*
@@ -342,7 +342,9 @@ main(volatile int argc, char *argv[])
 						errx(1, "ressl ciphers failed");
 					break;
 				case SSL_DONTVERIFY:
-					ressl_config_insecure_no_verify(
+					ressl_config_insecure_noverifyhost(
+					    ressl_config);
+					ressl_config_insecure_noverifycert(
 					    ressl_config);
 					break;
 				case SSL_DOVERIFY:
