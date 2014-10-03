@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vfsops.c,v 1.10 2014/06/04 18:52:53 syl Exp $ */
+/* $OpenBSD: fuse_vfsops.c,v 1.11 2014/07/12 18:43:52 tedu Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -189,7 +189,7 @@ fusefs_root(struct mount *mp, struct vnode **vpp)
 int fusefs_quotactl(struct mount *mp, int cmds, uid_t uid, caddr_t arg,
     struct proc *p)
 {
-	return (0);
+	return (EOPNOTSUPP);
 }
 
 int fusefs_statfs(struct mount *mp, struct statfs *sbp, struct proc *p)
