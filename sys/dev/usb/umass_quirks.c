@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass_quirks.c,v 1.29 2007/06/13 10:33:52 mbalmer Exp $	*/
+/*	$OpenBSD: umass_quirks.c,v 1.30 2008/06/26 05:42:19 ray Exp $	*/
 /*	$NetBSD: umass_quirks.c,v 1.67 2004/06/28 07:49:16 mycroft Exp $	*/
 
 /*
@@ -63,6 +63,14 @@ const struct umass_quirk umass_quirks[] = {
 	{ { USB_VENDOR_DMI, USB_PRODUCT_DMI_SA2_0 },
 	  UMASS_WPROTO_UNSPEC, UMASS_CPROTO_UNSPEC,
 	  0,
+	  0,
+	  UMATCH_VENDOR_PRODUCT,
+	  NULL, NULL
+	},
+
+	{ { USB_VENDOR_DOMAIN, USB_PRODUCT_DOMAIN_ROCKCHIP },
+	  UMASS_WPROTO_UNSPEC, UMASS_CPROTO_UNSPEC,
+	  UMASS_QUIRK_WRONG_CSWTAG,
 	  0,
 	  UMATCH_VENDOR_PRODUCT,
 	  NULL, NULL
