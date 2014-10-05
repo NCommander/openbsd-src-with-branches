@@ -1,7 +1,9 @@
-#	$OpenBSD: Makefile,v 1.4 2003/07/31 18:20:07 avsm Exp $
+#	$OpenBSD: Makefile,v 1.5 2004/01/04 08:28:49 djm Exp $
 
 PROG=	syslogd
 SRCS=	syslogd.c ttymsg.c privsep.c privsep_fdpass.c ringbuf.c
 MAN=	syslogd.8 syslog.conf.5
+LDADD=	-levent
+DPADD=	${LIBEVENT}
 
 .include <bsd.prog.mk>
