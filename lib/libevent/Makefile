@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.31 2012/08/02 13:38:38 okan Exp $
+#	$OpenBSD: Makefile,v 1.32 2014/04/03 11:27:02 eric Exp $
 
 LIB=	event
 SRCS=	buffer.c evbuffer.c event.c event_tagging.c evutil.c kqueue.c \
@@ -73,7 +73,6 @@ CFLAGS+= -I${.CURDIR} -DNDEBUG \
 	-DHAVE_POLL \
 	-DHAVE_SELECT \
 	-DHAVE_SETFD \
-	-DHAVE_SIGACTION \
 	-DHAVE_STDARG_H \
 	-DHAVE_STDINT_H \
 	-DHAVE_STDLIB_H \
