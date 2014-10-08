@@ -1,4 +1,4 @@
-/*	$OpenBSD: rusers.c,v 1.30 2009/10/27 23:59:43 deraadt Exp $	*/
+/*	$OpenBSD: rusers.c,v 1.31 2013/04/03 04:12:49 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -186,8 +186,8 @@ add_host(char *host)
 	/* New entry, allocate space if needed and store. */
 	if (nentries == maxentries) {
 		maxentries += 128;
-		hostinfo = realloc(hostinfo,
-		    sizeof(*hostinfo) * maxentries);
+		hostinfo = reallocarray(hostinfo, maxentries,
+		    sizeof(*hostinfo));
 		if (hostinfo == NULL)
 			err(1, NULL);
 	}
