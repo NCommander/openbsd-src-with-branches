@@ -1,4 +1,4 @@
-/*	$OpenBSD: open_wmemstream.c,v 1.2 2013/04/03 03:11:53 guenther Exp $	*/
+/*	$OpenBSD: open_wmemstream.c,v 1.3 2014/03/06 07:28:21 gerhard Exp $	*/
 
 /*
  * Copyright (c) 2011 Martin Pieuchot <mpi@openbsd.org>
@@ -52,7 +52,7 @@ wmemstream_write(void *v, const char *b, int l)
 
 		if (sz < end + 1)
 			sz = end + 1;
-		p = realloc(st->string, sz * sizeof(wchar_t));
+		p = reallocarray(st->string, sz, sizeof(wchar_t));
 		if (!p)
 			return (-1);
 		bzero(p + st->size, (sz - st->size) * sizeof(wchar_t));
