@@ -1,4 +1,4 @@
-/*	$OpenBSD: re.c,v 1.156 2014/09/06 04:46:58 brad Exp $	*/
+/*	$OpenBSD: re.c,v 1.157 2014/09/21 16:52:11 jsg Exp $	*/
 /*	$FreeBSD: if_re.c,v 1.31 2004/09/04 07:54:05 ru Exp $	*/
 /*
  * Copyright (c) 1997, 1998-2003
@@ -1930,8 +1930,12 @@ re_init(struct ifnet *ifp)
 	 * For 8169 gigE NICs, set the max allowed RX packet
 	 * size so we can receive jumbo frames.
 	 */
-	if (sc->sc_hwrev != RL_HWREV_8139CPLUS)
-		CSR_WRITE_2(sc, RL_MAXRXPKTLEN, 16383);
+	if (sc->sc_hwrev != RL_HWREV_8139CPLUS) {
+		if (sc->rl_flags & RL_FLAG_PCIE)
+			CSR_WRITE_2(sc, RL_MAXRXPKTLEN, RE_RX_DESC_BUFLEN);
+		else
+			CSR_WRITE_2(sc, RL_MAXRXPKTLEN, 16383);
+	}
 
 	mii_mediachg(&sc->sc_mii);
 
