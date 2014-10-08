@@ -1,4 +1,4 @@
-/*	$OpenBSD: compile.c,v 1.34 2010/11/15 20:26:00 millert Exp $	*/
+/*	$OpenBSD: compile.c,v 1.35 2013/11/28 18:24:55 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -128,8 +128,8 @@ compile(void)
 	*compile_stream(&prog) = NULL;
 	fixuplabel(prog, NULL);
 	uselabel();
-	appends = xmalloc(sizeof(struct s_appends) * appendnum);
-	match = xmalloc((maxnsub + 1) * sizeof(regmatch_t));
+	appends = xreallocarray(NULL, appendnum, sizeof(struct s_appends));
+	match = xreallocarray(NULL, maxnsub + 1, sizeof(regmatch_t));
 }
 
 #define EATSPACE() do {							\

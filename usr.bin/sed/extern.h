@@ -1,4 +1,4 @@
-/* *	$OpenBSD: extern.h,v 1.5 2008/10/08 17:26:47 millert Exp $*/
+/* *	$OpenBSD: extern.h,v 1.6 2009/08/07 03:30:56 djm Exp $*/
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -53,4 +53,5 @@ int	 mf_fgets(SPACE *, enum e_spflag);
 void	 process(void);
 char	*strregerror(int, regex_t *);
 void	*xmalloc(size_t);
+void	*xreallocarray(void *, size_t, size_t);
 void	*xrealloc(void *, size_t);
