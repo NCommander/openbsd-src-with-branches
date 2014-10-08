@@ -1,4 +1,4 @@
-/*	$OpenBSD: mailwrapper.c,v 1.17 2007/09/02 15:19:39 deraadt Exp $	*/
+/*	$OpenBSD: mailwrapper.c,v 1.18 2007/11/06 14:39:19 otto Exp $	*/
 /*	$NetBSD: mailwrapper.c,v 1.2 1999/02/20 22:10:07 thorpej Exp $	*/
 
 /*
@@ -69,7 +69,7 @@ addarg(struct arglist *al, const char *arg, int copy)
 {
 	if (al->argc == al->maxc) {
 		al->maxc <<= 1;
-		al->argv = realloc(al->argv, al->maxc * sizeof(char *));
+		al->argv = reallocarray(al->argv, al->maxc, sizeof(char *));
 		if (al->argv == NULL)
 			err(1, "realloc");
 	}
