@@ -1,4 +1,4 @@
-/*	$OpenBSD: at.c,v 1.62 2013/11/25 18:02:50 deraadt Exp $	*/
+/*	$OpenBSD: at.c,v 1.63 2014/09/29 18:44:49 millert Exp $	*/
 
 /*
  *  at.c : Put file into atrun queue
@@ -571,7 +571,7 @@ list_jobs(int argc, char **argv, int count_only, int csort)
 		job->queue = queue;
 		if (numjobs == maxjobs) {
 			size_t newjobs = maxjobs * 2;
-			newatjobs = realloc(atjobs, newjobs * sizeof(job));
+			newatjobs = reallocarray(atjobs, newjobs, sizeof(job));
 			if (newatjobs == NULL)
 				panic("Insufficient virtual memory");
 			atjobs = newatjobs;
