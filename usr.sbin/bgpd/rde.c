@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.327 2014/01/22 04:08:08 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.328 2014/04/13 10:36:41 blambert Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -237,8 +237,9 @@ rde_main(int pipe_m2r[2], int pipe_s2r[2], int pipe_m2s[2], int pipe_s2rctl[2],
 
 	while (rde_quit == 0) {
 		if (pfd_elms < PFD_PIPE_COUNT + rde_mrt_cnt) {
-			if ((newp = realloc(pfd, sizeof(struct pollfd) *
-			    (PFD_PIPE_COUNT + rde_mrt_cnt))) == NULL) {
+			if ((newp = reallocarray(pfd,
+			    PFD_PIPE_COUNT + rde_mrt_cnt,
+			    sizeof(struct pollfd))) == NULL) {
 				/* panic for now  */
 				log_warn("could not resize pfd from %u -> %u"
 				    " entries", pfd_elms, PFD_PIPE_COUNT +
