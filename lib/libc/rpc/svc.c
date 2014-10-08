@@ -1,4 +1,4 @@
-/*	$OpenBSD: svc.c,v 1.24 2009/12/14 23:57:22 schwarze Exp $ */
+/*	$OpenBSD: svc.c,v 1.25 2010/09/01 14:43:34 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -144,7 +144,7 @@ svc_fd_insert(int sock)
 		int new_size, *new_freelist;
 
 		new_size = svc_pollfd ? svc_pollfd_size + 128 : FD_SETSIZE;
-		pfd = realloc(svc_pollfd, sizeof(*svc_pollfd) * new_size);
+		pfd = reallocarray(svc_pollfd, new_size, sizeof(*svc_pollfd));
 		if (pfd == NULL)
 			return (0);			/* no changes */
 		new_freelist = realloc(svc_pollfd_freelist, new_size / 2);
