@@ -1,4 +1,4 @@
-/*	$OpenBSD: event.h,v 1.25 2012/08/28 09:09:56 pascal Exp $	*/
+/*	$OpenBSD: event.h,v 1.26 2014/04/03 11:27:02 eric Exp $	*/
 
 /*
  * Copyright (c) 2000-2007 Niels Provos <provos@citi.umich.edu>
@@ -633,11 +633,7 @@ int event_pending(struct event *ev, short event, struct timeval *tv);
   @return 1 if the structure has been initialized, or 0 if it has not been
           initialized
  */
-#ifdef WIN32
-#define event_initialized(ev)		((ev)->ev_flags & EVLIST_INIT && (ev)->ev_fd != (int)INVALID_HANDLE_VALUE)
-#else
 #define event_initialized(ev)		((ev)->ev_flags & EVLIST_INIT)
-#endif
 
 
 /**
