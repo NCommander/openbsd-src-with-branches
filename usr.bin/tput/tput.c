@@ -1,4 +1,4 @@
-/*	$OpenBSD: tput.c,v 1.18 2013/11/27 00:13:24 deraadt Exp $	*/
+/*	$OpenBSD: tput.c,v 1.19 2013/11/27 15:23:01 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -126,7 +126,8 @@ main(int argc, char *argv[])
 				/* grow av as needed */
 				if (argc + 1 >= n) {
 					n += 64;
-					av = (char **)realloc(av, sizeof(char *) * n);
+					av = reallocarray(av, n,
+					    sizeof(char *));
 					if (av == NULL)
 						errx(1, "out of memory");
 				}
