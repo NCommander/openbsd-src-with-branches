@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.80 2013/04/17 17:43:55 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.81 2014/01/27 17:13:10 millert Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -213,8 +213,8 @@ main(int argc, char *argv[])
 		    (p = strtok_r(NULL, " ", &last))) {
 			if (nargc + 1 >= argc_extra) {
 				argc_extra += 1024;
-				nargv = realloc(nargv,
-				    (argc + argc_extra + 1) * sizeof(char *));
+				nargv = reallocarray(nargv,
+				    argc + argc_extra + 1, sizeof(char *));
 				if (nargv == NULL)
 					err(1, NULL);
 			}
