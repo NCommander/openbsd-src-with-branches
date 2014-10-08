@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.5 2013/03/04 14:00:31 bluhm Exp $	*/
+/*	$OpenBSD: pf.c,v 1.6 2013/09/07 04:43:21 joel Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -148,7 +148,7 @@ pfr_buf_grow(struct pfr_buffer *b, int minsize)
 			/* msize overflow */
 			return (-1);
 		}
-		p = realloc(b->pfrb_caddr, minsize * bs);
+		p = reallocarray(b->pfrb_caddr, minsize, bs);
 		if (p == NULL)
 			return (-1);
 		bzero(p + b->pfrb_msize * bs, (minsize - b->pfrb_msize) * bs);
