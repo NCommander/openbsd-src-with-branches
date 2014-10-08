@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.48 2009/10/27 23:59:53 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.49 2011/04/30 18:49:38 nicm Exp $	*/
 
 /*
  * main.c - Point-to-Point Protocol main module
@@ -1658,8 +1658,8 @@ script_setenv(var, value)
     /* reallocate script_env with more space if needed */
     if (i + 1 >= s_env_nalloc) {
 	int new_n = i + 17;
-	char **newenv = (char **) realloc((void *)script_env,
-					  new_n * sizeof(char *));
+	char **newenv = reallocarray(script_env,
+	    new_n, sizeof(char *));
 	if (newenv == 0)
 	    novm("script_setenv");
 	script_env = newenv;
