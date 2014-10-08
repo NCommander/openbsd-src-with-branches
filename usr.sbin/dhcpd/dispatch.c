@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.32 2013/10/18 15:19:39 krw Exp $ */
+/*	$OpenBSD: dispatch.c,v 1.33 2014/05/05 18:30:44 pelikan Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -291,7 +291,7 @@ dispatch(void)
 	if (syncfd != -1)
 		nfds++;
 	if (nfds > nfds_max) {
-		fds = realloc(fds, nfds * sizeof(struct pollfd));
+		fds = reallocarray(fds, nfds, sizeof(struct pollfd));
 		if (fds == NULL)
 			error("Can't allocate poll structures.");
 		nfds_max = nfds;
