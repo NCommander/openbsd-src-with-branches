@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsold.c,v 1.52 2014/07/11 16:44:13 henning Exp $	*/
+/*	$OpenBSD: rtsold.c,v 1.53 2014/08/27 14:04:16 florian Exp $	*/
 /*	$KAME: rtsold.c,v 1.75 2004/01/03 00:00:07 itojun Exp $	*/
 
 /*
@@ -737,7 +737,7 @@ autoifprobe(u_int rdomain)
 		if (n != 0 && dflag > 1)
 			warnx("multiple interfaces found");
 
-		a = (char **)realloc(argv, (n + 1) * sizeof(char **));
+		a = reallocarray(argv, n + 1, sizeof(char **));
 		if (a == NULL)
 			err(1, "realloc");
 		argv = a;
@@ -747,7 +747,7 @@ autoifprobe(u_int rdomain)
 	}
 
 	if (n) {
-		a = (char **)realloc(argv, (n + 1) * sizeof(char **));
+		a = reallocarray(argv, n + 1, sizeof(char **));
 		if (a == NULL)
 			err(1, "realloc");
 		argv = a;
