@@ -1,4 +1,4 @@
-/*	$OpenBSD: fts.c,v 1.45 2013/09/30 12:02:33 millert Exp $	*/
+/*	$OpenBSD: fts.c,v 1.46 2014/05/25 17:47:04 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -870,8 +870,8 @@ fts_sort(FTS *sp, FTSENT *head, int nitems)
 		struct _ftsent **a;
 
 		sp->fts_nitems = nitems + 40;
-		if ((a = realloc(sp->fts_array,
-		    sp->fts_nitems * sizeof(FTSENT *))) == NULL) {
+		if ((a = reallocarray(sp->fts_array,
+		    sp->fts_nitems, sizeof(FTSENT *))) == NULL) {
 			if (sp->fts_array)
 				free(sp->fts_array);
 			sp->fts_array = NULL;
