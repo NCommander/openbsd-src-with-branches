@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.30 2014/05/06 10:24:22 markus Exp $	*/
+/*	$OpenBSD: config.c,v 1.31 2014/05/06 14:10:53 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -335,8 +335,8 @@ config_add_transform(struct iked_proposal *prop, u_int type,
 		}
 	}
 
-	if ((xform = realloc(prop->prop_xforms,
-	    (prop->prop_nxforms + 1) * sizeof(*xform))) == NULL) {
+	if ((xform = reallocarray(prop->prop_xforms,
+	    prop->prop_nxforms + 1, sizeof(*xform))) == NULL) {
 		return (NULL);
 	}
 
