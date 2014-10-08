@@ -1,4 +1,4 @@
-/*      $OpenBSD: glxpcib.c,v 1.11 2013/12/06 21:03:03 deraadt Exp $	*/
+/*      $OpenBSD: glxpcib.c,v 1.12 2014/09/14 14:17:25 jsg Exp $	*/
 
 /*
  * Copyright (c) 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -415,9 +415,9 @@ glxpcib_attach(struct device *parent, struct device *self, void *aux)
 #endif
 	if (i2c)
 		config_found(&sc->sc_dev, &iba, iicbus_print);
-#endif
 
 	config_search(glxpcib_search, self, pa);
+#endif
 }
 
 int
