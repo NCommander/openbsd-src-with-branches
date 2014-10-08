@@ -1,4 +1,4 @@
-/*	$OpenBSD: rs.c,v 1.22 2012/12/03 19:26:24 otto Exp $	*/
+/*	$OpenBSD: rs.c,v 1.23 2013/11/15 15:47:53 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -340,7 +340,7 @@ getptrs(char **sp)
 	int newsize;
 
 	newsize = allocsize * 2;
-	p = realloc(elem, newsize * sizeof(char *));
+	p = reallocarray(elem, newsize, sizeof(char *));
 	if (p == NULL)
 		err(1, "no memory");
 
