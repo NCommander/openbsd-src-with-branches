@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.74 2013/11/04 17:14:26 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.75 2014/08/20 06:14:42 mikeb Exp $	*/
 /*	$NetBSD: conf.c,v 1.16 1996/10/18 21:26:57 cgd Exp $	*/
 
 /*-
@@ -145,7 +145,7 @@ struct cdevsw	cdevsw[] =
 	cdev_disk_init(NCD,cd),		/* 13: SCSI CD-ROM */
 	cdev_ch_init(NCH,ch),		/* 14: SCSI autochanger */
 	cdev_tty_init(NSCC,scc),	/* 15: scc 8530 serial interface */
-	cdev_lkm_init(NLKM,lkm),	/* 16: loadable module driver */
+	cdev_notdef(),			/* 16 was lkm */
 	cdev_lkm_dummy(),		/* 17 */
 	cdev_lkm_dummy(),		/* 18 */
 	cdev_lkm_dummy(),		/* 19 */
@@ -246,7 +246,6 @@ getnulldev()
 }
 
 int chrtoblktbl[] = {
-	/* XXXX This needs to be dynamic for LKMs. */
 	/*VCHR*/	/*VBLK*/
 	/*  0 */	NODEV,
 	/*  1 */	NODEV,
