@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioctl_compat.h,v 1.4 2003/06/02 23:28:21 millert Exp $	*/
+/*	$OpenBSD: ioctl_compat.h,v 1.5 2013/12/13 19:55:12 naddy Exp $	*/
 /*	$NetBSD: ioctl_compat.h,v 1.10 1995/03/31 03:10:15 christos Exp $	*/
 
 /*
@@ -42,7 +42,7 @@
 
 /*
  * Passthrough ioctl commands. These are passed through to devices
- * as they are, it is expected that the device (an LKM, for example),
+ * as they are, it is expected that the device (whatever it is)
  * will know how to deal with them. One for each emulation, so that
  * no namespace clashes will occur between them, for devices that
  * may be dealing with specific ioctls for multiple emulations.
