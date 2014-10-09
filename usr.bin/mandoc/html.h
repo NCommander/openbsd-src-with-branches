@@ -1,4 +1,4 @@
-/*	$OpenBSD: html.h,v 1.25 2014/10/07 18:17:05 schwarze Exp $ */
+/*	$OpenBSD: html.h,v 1.26 2014/10/09 15:49:09 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2011, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -63,6 +63,9 @@ enum	htmltag {
 	TAG_MTABLE,
 	TAG_MTR,
 	TAG_MTD,
+	TAG_MUNDEROVER,
+	TAG_MUNDER,
+	TAG_MOVER,
 	TAG_MAX
 };
 
