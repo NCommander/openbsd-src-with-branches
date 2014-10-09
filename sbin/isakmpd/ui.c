@@ -1,4 +1,4 @@
-/* $OpenBSD: ui.c,v 1.53 2007/04/16 13:01:39 moritz Exp $	 */
+/* $OpenBSD: ui.c,v 1.54 2008/06/10 22:14:02 bluhm Exp $	 */
 /* $EOM: ui.c,v 1.43 2000/10/05 09:25:12 niklas Exp $	 */
 
 /*
@@ -591,7 +591,7 @@ ui_handler(void)
 	}
 	/* If no place left in the buffer reallocate twice as large.  */
 	if (!resid) {
-		new_buf = realloc(buf, sz * 2);
+		new_buf = reallocarray(buf, sz, 2);
 		if (!new_buf) {
 			log_print("ui_handler: realloc (%p, %lu) failed", buf,
 			    (unsigned long)sz * 2);
