@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.113 2013/11/19 18:33:38 deraadt Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.114 2014/03/26 13:09:02 gsoares Exp $	*/
 
 /*
  * Copyright (c) 2002-2007 Bob Beck.  All rights reserved.
@@ -237,7 +237,7 @@ parse_configline(char *line)
 		if (ac == au) {
 			char **tmp;
 
-			tmp = realloc(av, (ac + 2048) * sizeof(char *));
+			tmp = reallocarray(av, ac + 2048, sizeof(char *));
 			if (tmp == NULL) {
 				free(av);
 				av = NULL;
