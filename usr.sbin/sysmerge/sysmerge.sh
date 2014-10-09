@@ -1,6 +1,6 @@
 #!/bin/ksh -
 #
-# $OpenBSD: sysmerge.sh,v 1.189 2014/09/13 12:00:52 ajacoutot Exp $
+# $OpenBSD: sysmerge.sh,v 1.190 2014/09/16 21:56:42 rpe Exp $
 #
 # Copyright (c) 2008-2014 Antoine Jacoutot <ajacoutot@openbsd.org>
 # Copyright (c) 1998-2003 Douglas Barton <DougB@FreeBSD.org>
@@ -293,6 +293,7 @@ sm_init() {
 sm_install() {
 	local _dmode _fgrp _fmode _fown _instdir
 	_instdir=${TARGET%/*}
+	[[ -z ${_instdir} ]] && _instdir="/"
 
 	_dmode=$(stat -f "%OMp%OLp" ./${_instdir}) || return
 	eval $(stat -f "_fmode=%OMp%OLp _fown=%Su _fgrp=%Sg" ${COMPFILE}) || return
