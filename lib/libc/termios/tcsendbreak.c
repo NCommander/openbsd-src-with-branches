@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcsendbreak.c,v 1.6 2005/08/05 13:03:00 espie Exp $ */
+/*	$OpenBSD: tcsendbreak.c,v 1.7 2014/10/09 06:20:01 dlg Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,16 +28,9 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/ioctl.h>
-#include <sys/tty.h>
-#include <sys/time.h>
-#include <sys/fcntl.h>
-
-#include <errno.h>
-#include <stdio.h>
 #include <termios.h>
-#include <unistd.h>
+#include <time.h>
 
 /* ARGSUSED */
 int
