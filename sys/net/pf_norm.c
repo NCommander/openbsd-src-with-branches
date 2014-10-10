@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.167 2014/07/22 11:06:10 mpi Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.168 2014/09/08 06:24:13 jsg Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -64,7 +64,7 @@
 struct pf_frent {
 	TAILQ_ENTRY(pf_frent) fr_next;
 	struct mbuf	*fe_m;
-	u_int16_t	 fe_hdrlen;	/* ipv4 header lenght with ip options
+	u_int16_t	 fe_hdrlen;	/* ipv4 header length with ip options
 					   ipv6, extension, fragment header */
 	u_int16_t	 fe_extoff;	/* last extension header offset or 0 */
 	u_int16_t	 fe_len;	/* fragment length */
@@ -98,7 +98,7 @@ struct pf_fragment {
 };
 
 struct pf_fragment_tag {
-	u_int16_t	 ft_hdrlen;	/* header lenght of reassembled pkt */
+	u_int16_t	 ft_hdrlen;	/* header length of reassembled pkt */
 	u_int16_t	 ft_extoff;	/* last extension header offset or 0 */
 	u_int16_t	 ft_maxlen;	/* maximum fragment payload length */
 };
