@@ -1,4 +1,4 @@
-/*	$OpenBSD: vscsi.c,v 1.31 2014/09/14 14:17:24 jsg Exp $ */
+/*	$OpenBSD: vscsi.c,v 1.32 2014/09/22 01:09:29 dlg Exp $ */
 
 /*
  * Copyright (c) 2008 David Gwynne <dlg@openbsd.org>
@@ -523,8 +523,8 @@ vscsi_devevent_task(void *xsc, void *xdt)
 	default:
 		panic("unexpected vscsi_devevent cmd");
 		/* NOTREACHED */
-	}
 #endif
+	}
 
 gone:
 	device_unref(&sc->sc_dev);
