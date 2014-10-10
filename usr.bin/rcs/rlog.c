@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlog.c,v 1.67 2014/01/07 14:08:16 deraadt Exp $	*/
+/*	$OpenBSD: rlog.c,v 1.68 2014/10/02 06:23:15 otto Exp $	*/
 /*
  * Copyright (c) 2005, 2009 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -433,7 +433,7 @@ rlog_rev_print(struct rcs_delta *rdp)
 	struct rcs_branch *rb;
 	struct rcs_delta *nrdp;
 
-	i = found = 0;
+	found = 0;
 	author = NULL;
 
 	/* -l[lockers] */
