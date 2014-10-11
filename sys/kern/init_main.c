@@ -116,11 +116,6 @@ struct	sigacts sigacts0;
 struct	process *initprocess;
 struct	proc *reaperproc;
 
-#ifndef SMALL_KERNEL
-extern struct timeout setperf_to;
-void auto_setperf(void *);
-#endif
-
 int	cmask = CMASK;
 extern	struct user *proc0paddr;
 
@@ -547,10 +542,6 @@ main(void *framep)
 	 */
 	start_init_exec = 1;
 	wakeup((void *)&start_init_exec);
-
-#ifndef SMALL_KERNEL
-	timeout_set(&setperf_to, auto_setperf, NULL);
-#endif
 
         /*
          * proc0: nothing to do, back to sleep
