@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdl.c,v 1.17 2007/09/02 15:19:20 deraadt Exp $ */
+/*	$OpenBSD: sdl.c,v 1.18 2007/11/03 19:16:07 beck Exp $ */
 
 /*
  * Copyright (c) 2003-2007 Bob Beck.  All rights reserved.
@@ -78,7 +78,7 @@ sdl_add(char *sdname, char *sdstring, char ** addrs, int addrc)
 	if (idx == blu && blu == blc) {
 		struct sdlist *tmp;
 
-		tmp = realloc(blacklists, (blc + 128) *
+		tmp = reallocarray(blacklists, blc + 128,
 		    sizeof(struct sdlist));
 		if (tmp == NULL)
 			return (-1);
@@ -242,8 +242,8 @@ sdl_lookup(struct sdlist *head, int af, void * src)
 				if (matches == sdnewlen) {
 					struct sdlist **tmp;
 
-					tmp = realloc(sdnew,
-					    (sdnewlen + 128) *
+					tmp = reallocarray(sdnew,
+					    sdnewlen + 128,
 					    sizeof(struct sdlist *));
 					if (tmp == NULL)
 						/*
