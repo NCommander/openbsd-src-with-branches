@@ -1,4 +1,4 @@
-/* $OpenBSD: autoexec.c,v 1.13 2006/12/20 21:31:45 deraadt Exp $ */
+/* $OpenBSD: autoexec.c,v 1.14 2007/02/08 21:40:03 kjell Exp $ */
 /* this file is in the public domain */
 /* Author: Vincent Labrecque <vincent@openbsd.org>	April 2002 */
 
@@ -39,7 +39,7 @@ find_autoexec(const char *fname)
 	SLIST_FOREACH(ae, &autos, next) {
 		if (fnmatch(ae->pattern, fname, 0) == 0) {
 			if (used >= have) {
-				npfl = realloc(pfl, (have + AUTO_GROW + 1) *
+				npfl = reallocarray(pfl, have + AUTO_GROW + 1,
 				    sizeof(PF));
 				if (npfl == NULL)
 					panic("out of memory");
