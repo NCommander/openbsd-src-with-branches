@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.286 2014/05/02 23:17:29 chl Exp $	*/
+/*	$OpenBSD: editor.c,v 1.287 2014/07/10 13:31:23 florian Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -567,7 +567,7 @@ again:
 	memcpy(lp, lp_org, sizeof(struct disklabel));
 	lp->d_npartitions = MAXPARTITIONS;
 	lastalloc = alloc_table[index].sz;
-	alloc = malloc(lastalloc * sizeof(struct space_allocation));
+	alloc = reallocarray(NULL, lastalloc, sizeof(struct space_allocation));
 	if (alloc == NULL)
 		errx(4, "out of memory");
 	memcpy(alloc, alloc_table[index].table,
