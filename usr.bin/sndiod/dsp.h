@@ -1,4 +1,4 @@
-/*	$OpenBSD: dsp.h,v 1.2 2013/11/18 17:37:45 ratchov Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -124,7 +124,7 @@ struct conv {
 	int bfirst;			/* bytes to skip at startup */
 	unsigned int bps;		/* bytes per sample */
 	unsigned int shift;		/* shift to get 32bit MSB */
-	int sigbit;			/* sign bits to XOR */
+	unsigned int bias;			/* bias of unsigned samples */
 	int bnext;			/* to reach the next byte */
 	int snext;			/* to reach the next sample */
 	int nch;
