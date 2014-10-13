@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.208 2014/07/12 18:43:32 tedu Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.209 2014/09/18 02:15:04 uebayasi Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -1211,6 +1211,8 @@ domknodat(struct proc *p, int fd, const char *path, mode_t mode, dev_t dev)
 	int error;
 	struct nameidata nd;
 
+	if (S_ISFIFO(mode) && dev == 0)
+		return (domkfifoat(p, fd, path, mode));
 	if ((error = suser(p, 0)) != 0)
 		return (error);
 	if (p->p_fd->fd_rdir)
