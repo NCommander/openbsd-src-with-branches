@@ -1,4 +1,4 @@
-/*	$OpenBSD$
+/*	$OpenBSD: tree.c,v 1.24 2014/10/10 15:25:06 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2011, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2013, 2014 Ingo Schwarze <schwarze@openbsd.org>
