@@ -1,4 +1,4 @@
-/*	$OpenBSD: paragraph.c,v 1.31 2014/03/27 09:30:55 florian Exp $	*/
+/*	$OpenBSD: paragraph.c,v 1.32 2014/10/12 18:09:41 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -92,6 +92,10 @@ gotoeop(int f, int n)
 			curwp->w_dotline++;
 		}
 	}
+	/* covers corner case of no '\n' at end of buffer */
+	if (lforw(curwp->w_dotp) == curbp->b_headp)
+		gotoeol(FFRAND, 1);
+
 	/* force screen update */
 	curwp->w_rflag |= WFMOVE;
 	return (TRUE);
