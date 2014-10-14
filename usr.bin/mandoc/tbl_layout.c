@@ -1,4 +1,4 @@
-/*	$Id: tbl_layout.c,v 1.14 2014/04/20 16:44:44 schwarze Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2012, 2014 Ingo Schwarze <schwarze@openbsd.org>
@@ -15,6 +15,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#include <sys/types.h>
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -163,6 +165,9 @@ mod:
 		cp->flags |= TBL_CELL_BALIGN;
 		goto mod;
 	case 'w':  /* XXX for now, ignore minimal column width */
+		goto mod;
+	case 'x':
+		cp->flags |= TBL_CELL_WMAX;
 		goto mod;
 	case 'f':
 		break;
