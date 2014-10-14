@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_subst.c,v 1.18 2013/11/25 23:27:11 krw Exp $	*/
+/*	$OpenBSD: ex_subst.c,v 1.19 2014/09/09 14:10:35 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -307,8 +307,8 @@ ex_subtilde(sp, cmdp)
 #define	NEEDNEWLINE(sp) {						\
 	if ((sp)->newl_len == (sp)->newl_cnt) {				\
 		(sp)->newl_len += 25;					\
-		REALLOC((sp), (sp)->newl, size_t *,			\
-		    (sp)->newl_len * sizeof(size_t));			\
+		REALLOCARRAY((sp), (sp)->newl, size_t *,		\
+		    (sp)->newl_len, sizeof(size_t));			\
 		if ((sp)->newl == NULL) {				\
 			(sp)->newl_len = 0;				\
 			return (1);					\
