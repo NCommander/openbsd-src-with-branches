@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.121 2014/08/11 13:51:07 mpi Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.122 2014/08/25 14:00:34 florian Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -664,8 +664,8 @@ nd6_lookup(struct in6_addr *addr6, int create, struct ifnet *ifp,
 		 * interface route.
 		 */
 		if (create) {
-			RTFREE(rt);
-			rt = 0;
+			rtfree(rt);
+			rt = NULL;
 		}
 	}
 	if (!rt) {
