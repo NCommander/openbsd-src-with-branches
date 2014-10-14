@@ -1,4 +1,4 @@
-/*	$OpenBSD: yacc.y,v 1.4 2011/01/14 23:15:40 nicm Exp $	*/
+/*	$OpenBSD: yacc.y,v 1.5 2012/12/05 23:20:25 deraadt Exp $	*/
 /*	$NetBSD: yacc.y,v 1.24 2004/01/05 23:23:36 jmmv Exp $	*/
 
 %{
@@ -311,7 +311,7 @@ xmalloc(size_t sz)
 u_int32_t *
 xlalloc(size_t sz)
 {
-    u_int32_t *r = (u_int32_t *)malloc(sz * sizeof(u_int32_t));
+    u_int32_t *r = (u_int32_t *)reallocarray(NULL, sz, sizeof(u_int32_t));
     if (!r) {
 	perror("xlalloc");
 	abort();
@@ -322,7 +322,7 @@ xlalloc(size_t sz)
 u_int32_t *
 xrelalloc(u_int32_t *old, size_t sz)
 {
-    u_int32_t *r = (u_int32_t *)realloc(old, sz * sizeof(u_int32_t));
+    u_int32_t *r = (u_int32_t *)reallocarray(old, sz, sizeof(u_int32_t));
     if (!r) {
 	perror("xrelalloc");
 	abort();
