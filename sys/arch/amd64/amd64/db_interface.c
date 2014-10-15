@@ -312,7 +312,7 @@ db_enter_ddb(void)
 		/* Busy wait without locking, we'll confirm with lock later */
 		while (ddb_active_cpu != cpu_number() &&
 		    curcpu()->ci_ddb_paused != CI_DDB_RUNNING)
-			CPU_BUSY_CYCLE();
+			;	/* Do nothing */
 
 		mtx_enter(&ddb_mp_mutex);
 	}
