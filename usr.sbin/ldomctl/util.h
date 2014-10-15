@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.2 2012/10/27 18:50:43 kettenis Exp $	*/
+/*	$OpenBSD: util.h,v 1.3 2012/11/24 10:42:46 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -23,6 +23,7 @@ extern int debug;
 
 void *xmalloc(size_t);
 void *xzalloc(size_t);
+void *xreallocarray(void *, size_t, size_t);
 char *xstrdup(const char *);
 int xasprintf(char**, const char *, ...);
 
