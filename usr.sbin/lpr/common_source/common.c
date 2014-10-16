@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.34 2012/03/04 04:05:15 fgsch Exp $	*/
+/*	$OpenBSD: common.c,v 1.35 2013/12/10 16:38:04 naddy Exp $	*/
 /*	$NetBSD: common.c,v 1.21 2000/08/09 14:28:50 itojun Exp $	*/
 
 /*
@@ -270,15 +270,14 @@ getq(struct queue ***namelist)
 		 */
 		if (nitems == arraysz) {
 			struct queue **newqueue;
-			size_t newarraysz = arraysz * 2;
-			newqueue = (struct queue **)realloc(queue,
-				newarraysz * sizeof(struct queue *));
+			newqueue = reallocarray(queue,
+			    arraysz, 2 * sizeof(struct queue *));
 			if (newqueue == NULL) {
 				free(q);
 				goto errdone;
 			}
+			arraysz *= 2;
 			queue = newqueue;
-			arraysz = newarraysz;
 		}
 		queue[nitems++] = q;
 	}
