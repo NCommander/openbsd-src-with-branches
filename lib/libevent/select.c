@@ -1,4 +1,4 @@
-/*	$OpenBSD: select.c,v 1.17 2013/08/24 10:46:48 dlg Exp $	*/
+/*	$OpenBSD: select.c,v 1.18 2014/10/11 04:07:39 doug Exp $	*/
 
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
@@ -26,9 +26,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <sys/types.h>
 #ifdef HAVE_SYS_TIME_H

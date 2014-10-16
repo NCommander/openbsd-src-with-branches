@@ -1,4 +1,4 @@
-/*	$OpenBSD: evutil.c,v 1.3 2010/07/12 18:03:38 nicm Exp $	*/
+/*	$OpenBSD: evutil.c,v 1.4 2014/10/08 20:14:19 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2007 Niels Provos <provos@citi.umich.edu>
@@ -26,9 +26,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <sys/types.h>
 #ifdef HAVE_SYS_SOCKET_H

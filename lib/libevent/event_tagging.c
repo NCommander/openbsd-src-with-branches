@@ -1,4 +1,4 @@
-/*	$OpenBSD: event_tagging.c,v 1.4 2013/04/17 15:33:02 deraadt Exp $	*/
+/*	$OpenBSD: event_tagging.c,v 1.5 2014/10/08 20:14:19 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Niels Provos <provos@citi.umich.edu>
@@ -26,10 +26,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
