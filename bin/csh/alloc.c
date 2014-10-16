@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.10 2009/10/27 23:59:21 deraadt Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.11 2014/10/16 18:23:26 deraadt Exp $	*/
 /*	$NetBSD: alloc.c,v 1.6 1995/03/21 09:02:23 cgd Exp $	*/
 
 /*-
@@ -56,6 +56,18 @@ Realloc(ptr_t p, size_t n)
     ptr_t   ptr;
 
     if ((ptr = realloc(p, n)) == (ptr_t) 0) {
+	child++;
+	stderror(ERR_NOMEM);
+    }
+    return (ptr);
+}
+
+ptr_t
+Reallocarray(ptr_t p, size_t c, size_t n)
+{
+    ptr_t   ptr;
+
+    if ((ptr = reallocarray(p, c, n)) == (ptr_t) 0) {
 	child++;
 	stderror(ERR_NOMEM);
     }
