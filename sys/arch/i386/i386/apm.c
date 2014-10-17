@@ -241,9 +241,7 @@ apm_perror(const char *str, struct apmregs *regs)
 void
 apm_suspend(int state)
 {
-#ifndef SMALL_KERNEL
 	extern int perflevel;
-#endif
 	int s;
 
 #if NWSDISPLAY > 0
@@ -278,11 +276,9 @@ apm_suspend(int state)
 	enable_intr();
 	splx(s);
 
-#ifndef SMALL_KERNEL
 	/* restore hw.setperf */
 	if (cpu_setperf != NULL)
 		cpu_setperf(perflevel);
-#endif
 	bufq_restart();
 
 	config_suspend_all(DVACT_WAKEUP);
