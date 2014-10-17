@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.13 2010/06/30 00:05:35 nicm Exp $	*/
+/*	$OpenBSD: read.c,v 1.14 2011/07/07 05:40:42 okan Exp $	*/
 /*	$NetBSD: read.c,v 1.57 2010/07/21 18:18:52 christos Exp $	*/
 
 /*-
@@ -366,7 +366,7 @@ read_pop(c_macro_t *ma)
 {
 	int i;
 
-	el_free(ma->macro[0]);
+	free(ma->macro[0]);
 	for (i = 0; i < ma->level; i++)
 		ma->macro[i] = ma->macro[i + 1];
 	ma->level--;

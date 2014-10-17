@@ -1,4 +1,4 @@
-/*	$OpenBSD: chartype.h,v 1.3 2011/07/07 05:40:42 okan Exp $	*/
+/*	$OpenBSD: chartype.h,v 1.4 2011/07/07 16:15:47 nicm Exp $	*/
 /*	$NetBSD: chartype.h,v 1.5 2010/04/15 00:55:57 christos Exp $	*/
 
 /*-
@@ -189,7 +189,7 @@ protected void ct_conv_buff_resize(ct_buffer_t *, size_t, size_t);
 protected ssize_t ct_encode_char(char *, size_t, Char);
 protected size_t ct_enc_width(Char);
 
-#define ct_free_argv(s)	el_free(s)
+#define ct_free_argv(s)	free(s)
 
 #else
 #define	ct_encode_string(s, b)	(s)
