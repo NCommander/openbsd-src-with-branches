@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.c,v 1.19 2014/10/08 20:14:19 bluhm Exp $	*/
+/*	$OpenBSD: signal.c,v 1.20 2014/10/16 07:38:06 bluhm Exp $	*/
 
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
@@ -28,24 +28,17 @@
  */
 
 #include <sys/types.h>
-#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#endif
 #include <sys/queue.h>
-#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
-#endif
+
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif
 #include <errno.h>
-#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
-#endif
 #include <assert.h>
 
 #include "event.h"
