@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.552 2014/10/17 01:46:26 dlg Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.551 2014/09/19 20:02:25 kettenis Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -3576,13 +3576,18 @@ bus_space_map(bus_space_tag_t t, bus_addr_t bpa, bus_size_t size, int flags,
 	/*
 	 * Pick the appropriate extent map.
 	 */
-	if (t == I386_BUS_SPACE_IO) {
+	switch (t) {
+	case I386_BUS_SPACE_IO:
 		ex = ioport_ex;
 		if (flags & BUS_SPACE_MAP_LINEAR)
 			return (EINVAL);
-	} else if (t == I386_BUS_SPACE_MEM) {
+		break;
+
+	case I386_BUS_SPACE_MEM:
 		ex = iomem_ex;
-	} else {
+		break;
+
+	default:
 		panic("bus_space_map: bad bus space tag");
 	}
 
@@ -3656,11 +3661,16 @@ bus_space_alloc(bus_space_tag_t t, bus_addr_t rstart, bus_addr_t rend,
 	/*
 	 * Pick the appropriate extent map.
 	 */
-	if (t == I386_BUS_SPACE_IO) {
+	switch (t) {
+	case I386_BUS_SPACE_IO:
 		ex = ioport_ex;
-	} else if (t == I386_BUS_SPACE_MEM) {
+		break;
+
+	case I386_BUS_SPACE_MEM:
 		ex = iomem_ex;
-	} else {
+		break;
+
+	default:
 		panic("bus_space_alloc: bad bus space tag");
 	}
 
