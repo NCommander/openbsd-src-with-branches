@@ -1,4 +1,4 @@
-#	$OpenBSD: files.cardbus,v 1.27 2008/05/21 18:49:47 kettenis Exp $
+#	$OpenBSD: files.cardbus,v 1.28 2009/11/14 16:55:11 damien Exp $
 #	$NetBSD: files.cardbus,v 1.8 2000/01/26 06:37:24 thorpej Exp $
 #
 # files.cardbus
@@ -6,7 +6,7 @@
 
 device	cardslot: cbbus, pcmciabus
 attach	cardslot at pcmciaslot
-file	dev/cardbus/cardslot.c			cardslot	needs-flag
+file	dev/cardbus/cardslot.c			cardslot
 
 device	cardbus {[dev = -1], [function = -1]}
 attach	cardbus at cbbus
