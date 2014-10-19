@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.134 2013/03/30 06:32:25 tedu Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.135 2013/06/17 19:11:54 guenther Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -428,10 +428,12 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 
 	vm = p->p_vmspace;
 	/* Now map address space */
-	vm->vm_taddr = (char *)pack.ep_taddr;
-	vm->vm_tsize = atop(round_page(pack.ep_tsize));
-	vm->vm_daddr = (char *)pack.ep_daddr;
-	vm->vm_dsize = atop(round_page(pack.ep_dsize));
+	vm->vm_taddr = (char *)trunc_page(pack.ep_taddr);
+	vm->vm_tsize = atop(round_page(pack.ep_taddr + pack.ep_tsize) -
+	    trunc_page(pack.ep_taddr));
+	vm->vm_daddr = (char *)trunc_page(pack.ep_daddr);
+	vm->vm_dsize = atop(round_page(pack.ep_daddr + pack.ep_dsize) -
+	    trunc_page(pack.ep_daddr));
 	vm->vm_dused = 0;
 	vm->vm_ssize = atop(round_page(pack.ep_ssize));
 	vm->vm_maxsaddr = (char *)pack.ep_maxsaddr;
