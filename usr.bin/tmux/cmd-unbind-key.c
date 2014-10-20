@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-unbind-key.c,v 1.18 2013/10/11 08:06:03 nicm Exp $ */
+/* $OpenBSD: cmd-unbind-key.c,v 1.19 2014/05/14 06:45:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -34,7 +34,6 @@ const struct cmd_entry cmd_unbind_key_entry = {
 	"acnt:", 0, 1,
 	"[-acn] [-t mode-table] key",
 	0,
-	NULL,
 	cmd_unbind_key_exec
 };
 

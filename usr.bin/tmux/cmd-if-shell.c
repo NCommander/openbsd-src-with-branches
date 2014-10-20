@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-if-shell.c,v 1.24 2013/10/10 12:00:19 nicm Exp $ */
+/* $OpenBSD: cmd-if-shell.c,v 1.25 2013/10/10 12:04:38 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -40,7 +40,6 @@ const struct cmd_entry cmd_if_shell_entry = {
 	"bt:", 2, 3,
 	"[-b] " CMD_TARGET_PANE_USAGE " shell-command command [command]",
 	0,
-	NULL,
 	cmd_if_shell_exec
 };
 
