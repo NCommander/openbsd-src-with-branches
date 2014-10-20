@@ -1,4 +1,4 @@
-/*	$OpenBSD: mapc.c,v 1.13 2009/10/27 23:59:50 deraadt Exp $	*/
+/*	$OpenBSD: mapc.c,v 1.14 2010/07/05 21:54:11 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1989 Jan-Simon Pendry
@@ -40,7 +40,7 @@
 
 #include "am.h"
 #ifdef HAS_REGEXP
-#include RE_HDR
+#include <regex.h>
 #endif
 
 /*
