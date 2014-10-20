@@ -1,4 +1,4 @@
-/* $OpenBSD: style.c,v 1.2 2014/02/22 01:38:47 nicm Exp $ */
+/* $OpenBSD: style.c,v 1.3 2014/05/08 05:53:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -16,6 +16,8 @@
  * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#include <sys/types.h>
 
 #include <string.h>
 

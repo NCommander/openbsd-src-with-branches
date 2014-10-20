@@ -1,4 +1,4 @@
-/* $OpenBSD: arguments.c,v 1.8 2014/01/15 11:44:18 nicm Exp $ */
+/* $OpenBSD: arguments.c,v 1.9 2014/04/11 19:35:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2010 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -18,6 +18,7 @@
 
 #include <sys/types.h>
 
+#include <getopt.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
