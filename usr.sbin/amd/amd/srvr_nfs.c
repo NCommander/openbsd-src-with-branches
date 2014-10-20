@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)srvr_nfs.c	8.1 (Berkeley) 6/6/93
- *	$Id: srvr_nfs.c,v 1.5 2002/08/05 07:24:26 pvalchev Exp $
+ *	$Id: srvr_nfs.c,v 1.6 2003/06/02 23:36:51 millert Exp $
  */
 
 /*
@@ -591,7 +591,6 @@ find_nfs_srvr(mntfs *mf)
 	{ struct mntent mnt;
 	  mnt.mnt_opts = mf->mf_mopts;
 	  pingval = hasmntval(&mnt, "ping");
-#ifdef HAS_TCP_NFS
 	  /*
 	   * Over TCP mount, don't bother to do pings.
 	   * This is experimental - maybe you want to
@@ -599,7 +598,6 @@ find_nfs_srvr(mntfs *mf)
 	   */
 	  if (pingval == 0 && hasmntopt(&mnt, "tcp"))
 		pingval = -1;
-#endif /* HAS_TCP_NFS */
 	}
 
 

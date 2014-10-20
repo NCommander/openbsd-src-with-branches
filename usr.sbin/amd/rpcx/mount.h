@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.h,v 1.5 2002/08/05 07:24:26 pvalchev Exp $	*/
+/*	$OpenBSD: mount.h,v 1.6 2003/06/02 23:36:52 millert Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -39,14 +39,6 @@
 #define MNTPATHLEN 1024
 #define MNTNAMLEN 255
 
-#if NFS_PROTOCOL_VERSION < 3
-#define FHSIZE 32
-typedef char fhandle[FHSIZE];
-typedef struct fhstatus {
-	u_int fhs_stat;
-	fhandle fhs_fhandle;
-} fhstatus;
-#else
 #define FHSIZE NFSX_V3FHMAX
 typedef char fhandle[NFSX_V3FHMAX];
 typedef struct fhstatus {
@@ -56,7 +48,6 @@ typedef struct fhstatus {
 	long		fhs_size;
 	fhandle		fhs_fhandle;
 } fhstatus;
-#endif
 
 bool_t xdr_fhandle();
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_ops.c,v 1.5 2002/08/05 07:24:26 pvalchev Exp $	*/
+/*	$OpenBSD: ufs_ops.c,v 1.6 2003/06/02 23:36:51 millert Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -101,13 +101,7 @@ mount_ufs(char *dir, char *fs_name, char *opts)
 
 	flags = compute_mount_flags(&mnt);
 
-#ifdef ULTRIX_HACK
-	ufs_args.ufs_flags = flags;
-	ufs_args.ufs_pgthresh = 64; /* 64K - XXX */
-	flags &= M_RDONLY;
-#else
 	ufs_args.fspec = fs_name;
-#endif /* ULTRIX_HACK */
 
 	/*
 	 * Call generic mount routine
