@@ -1,9 +1,0 @@
-#!/bin/sh
-#
-# $OpenBSD$
-
-daemon="/usr/sbin/watchdogd"
-
-. /etc/rc.d/rc.subr
-
-rc_cmd $1

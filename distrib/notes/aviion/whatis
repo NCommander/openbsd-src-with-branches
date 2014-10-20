@@ -1,5 +1,0 @@
-dnl	$OpenBSD: whatis,v 1.6 2005/03/18 13:29:46 miod Exp $
-
-OpenBSD/MACHINE runs on a few Motorola 88100 processor-based Data General
-AViiON workstations. Although hardware support is currently very limited,
-work is in progress to cover more models and devices.

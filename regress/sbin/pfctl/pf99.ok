@@ -1,2 +1,0 @@
-pass from route "foo" to any flags S/SA
-pass from any to route "bar" flags S/SA
