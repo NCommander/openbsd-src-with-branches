@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.160 2014/09/15 22:00:24 tedu Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.161 2014/10/20 00:40:19 tedu Exp $	*/
 
 /*
  * Copyright (c) 2011 Theo de Raadt.
@@ -106,7 +106,7 @@
  * RFC 1750, "Randomness Recommendations for Security", by Donald
  * Eastlake, Steve Crocker, and Jeff Schiller.
  *
- * Using a RC4 stream cipher as 2nd stage after the MD5 (now SH512) output
+ * Using a RC4 stream cipher as 2nd stage after the MD5 (now SHA512) output
  * is the result of work by David Mazieres.
  */
 
