@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.106 2014/05/02 19:03:06 deraadt Exp $	*/
+/*	$OpenBSD: param.h,v 1.107 2014/07/15 21:59:17 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -218,8 +218,12 @@
 
 /* Macros for calculating the offset of a field */
 #if !defined(offsetof) && defined(_KERNEL)
+#if __GNUC_PREREQ__(4, 0)
+#define offsetof(s, e) __builtin_offsetof(s, e)
+#else
 #define offsetof(s, e) ((size_t)&((s *)0)->e)
 #endif
+#endif /* !defined(offsetof) && defined(_KERNEL) */
 
 #define nitems(_a)	(sizeof((_a)) / sizeof((_a)[0]))
 
