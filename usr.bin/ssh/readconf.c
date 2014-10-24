@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.220 2014/07/15 15:54:14 millert Exp $ */
+/* $OpenBSD: readconf.c,v 1.221 2014/10/08 22:20:25 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -19,7 +19,6 @@
 #include <sys/un.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 #include <ctype.h>
