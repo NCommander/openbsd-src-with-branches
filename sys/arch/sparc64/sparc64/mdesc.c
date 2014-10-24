@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdesc.c,v 1.3 2009/05/10 12:37:01 kettenis Exp $	*/
+/*	$OpenBSD: mdesc.c,v 1.4 2014/04/03 09:15:06 mpi Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -58,7 +58,7 @@ again:
 	if (err != H_EOK)
 		goto fail;
 
-	va = uvm_km_valloc(kernel_map, len);
+	va = (vaddr_t)km_alloc(size, &kv_any, &kp_none, &kd_nowait);
 	if (va == 0)
 		panic("%s: out of memory", __func__);
 
