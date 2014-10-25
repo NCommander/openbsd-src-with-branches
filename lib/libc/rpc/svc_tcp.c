@@ -1,4 +1,4 @@
-/*	$OpenBSD: svc_tcp.c,v 1.31 2013/03/11 17:40:09 deraadt Exp $ */
+/*	$OpenBSD: svc_tcp.c,v 1.32 2013/04/15 13:08:39 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -47,7 +47,6 @@
 #include <sys/socket.h>
 #include <errno.h>
 
-#include <netinet/in_systm.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
