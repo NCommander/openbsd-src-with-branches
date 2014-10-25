@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.203 2014/03/24 16:41:27 tedu Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.204 2014/08/25 07:50:25 doug Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -69,7 +69,6 @@
 #include <sys/mman.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 
