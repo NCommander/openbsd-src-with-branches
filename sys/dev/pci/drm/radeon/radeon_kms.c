@@ -1,4 +1,4 @@
-/*	$OpenBSD: radeon_kms.c,v 1.28 2014/06/21 04:37:42 jsg Exp $	*/
+/*	$OpenBSD: radeon_kms.c,v 1.29 2014/07/06 08:24:54 jsg Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  * Copyright 2008 Red Hat Inc.
@@ -755,6 +755,9 @@ radeondrm_activate_kms(struct device *self, int act)
 {
 	struct radeon_device *rdev = (struct radeon_device *)self;
 	int rv = 0;
+
+	if (rdev->ddev == NULL)
+		return (0);
 
 	switch (act) {
 	case DVACT_QUIESCE:
