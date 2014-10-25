@@ -1,4 +1,4 @@
-/*	$OpenBSD: cradle.c,v 1.5 2010/05/29 10:29:11 deraadt Exp $	*/
+/*	$OpenBSD: cradle.c,v 1.6 2013/03/11 17:40:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003 Marius Aamodt Eriksen <marius@monkey.org>
@@ -34,7 +34,6 @@
 #include <sys/tree.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 
 #include <err.h>
 #include <errno.h>
