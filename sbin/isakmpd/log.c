@@ -1,4 +1,4 @@
-/* $OpenBSD: log.c,v 1.60 2007/06/02 01:29:11 pvalchev Exp $	 */
+/* $OpenBSD: log.c,v 1.61 2011/04/16 10:30:29 sthen Exp $	 */
 /* $EOM: log.c,v 1.30 2000/09/29 08:19:23 niklas Exp $	 */
 
 /*
@@ -37,7 +37,6 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip6.h>
 #include <netinet/udp.h>

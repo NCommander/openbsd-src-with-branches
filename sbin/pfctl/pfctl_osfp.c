@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_osfp.c,v 1.18 2010/10/18 15:55:28 deraadt Exp $ */
+/*	$OpenBSD: pfctl_osfp.c,v 1.19 2013/11/22 04:12:48 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@openbsd.org>
@@ -23,7 +23,6 @@
 #include <net/if.h>
 #include <net/pfvar.h>
 
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip6.h>
 
