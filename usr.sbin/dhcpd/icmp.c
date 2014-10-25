@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp.c,v 1.11 2014/05/05 18:27:57 pelikan Exp $ */
+/*	$OpenBSD: icmp.c,v 1.12 2014/05/07 13:20:47 pelikan Exp $ */
 
 /*
  * Copyright (c) 1997, 1998 The Internet Software Consortium.
@@ -39,7 +39,6 @@
  */
 
 #include "dhcpd.h"
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 

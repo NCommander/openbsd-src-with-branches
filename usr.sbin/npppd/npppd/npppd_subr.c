@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppd_subr.c,v 1.12 2014/06/13 06:35:58 yasuoka Exp $ */
+/*	$OpenBSD: npppd_subr.c,v 1.13 2014/08/14 08:08:00 mpi Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -32,7 +32,6 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <netinet/tcp.h>

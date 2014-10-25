@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.h,v 1.44 2011/05/09 12:24:41 claudio Exp $ */
+/*	$OpenBSD: ospfe.h,v 1.45 2013/01/17 10:07:56 markus Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -24,7 +24,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 TAILQ_HEAD(ctl_conns, ctl_conn)	ctl_conns;

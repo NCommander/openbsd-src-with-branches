@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_icmp.c,v 1.35 2013/01/29 15:04:42 sthen Exp $	*/
+/*	$OpenBSD: check_icmp.c,v 1.36 2013/03/10 23:32:53 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -23,7 +23,6 @@
 #include <sys/sysctl.h>
 
 #include <net/if.h>
-#include <netinet/in_systm.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>

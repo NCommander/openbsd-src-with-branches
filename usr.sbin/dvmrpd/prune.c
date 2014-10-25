@@ -1,4 +1,4 @@
-/*	$OpenBSD: prune.c,v 1.2 2009/03/14 15:32:55 michele Exp $ */
+/*	$OpenBSD: prune.c,v 1.3 2010/05/26 13:56:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -19,7 +19,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpe.h,v 1.30 2013/10/17 17:47:04 renato Exp $ */
+/*	$OpenBSD: ldpe.h,v 1.31 2013/10/17 17:52:21 renato Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2008 Esben Norby <norby@openbsd.org>
@@ -25,7 +25,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 TAILQ_HEAD(ctl_conns, ctl_conn)	ctl_conns;

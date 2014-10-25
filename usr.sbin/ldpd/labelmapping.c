@@ -1,4 +1,4 @@
-/*	$OpenBSD: labelmapping.c,v 1.27 2013/10/17 17:47:03 renato Exp $ */
+/*	$OpenBSD: labelmapping.c,v 1.28 2013/10/17 17:52:20 renato Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -21,7 +21,6 @@
 #include <sys/uio.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <net/if_dl.h>

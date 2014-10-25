@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.4 2014/08/04 15:49:28 reyk Exp $	*/
+/*	$OpenBSD: proc.c,v 1.16 2014/08/18 12:59:00 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -24,7 +24,6 @@
 #include <sys/tree.h>
 
 #include <net/if.h>
-#include <netinet/in_systm.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>

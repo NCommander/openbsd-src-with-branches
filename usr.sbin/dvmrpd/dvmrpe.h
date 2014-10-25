@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpe.h,v 1.3 2009/03/14 15:32:55 michele Exp $ */
+/*	$OpenBSD: dvmrpe.h,v 1.4 2010/05/26 13:56:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 TAILQ_HEAD(ctl_conns, ctl_conn)	ctl_conns;

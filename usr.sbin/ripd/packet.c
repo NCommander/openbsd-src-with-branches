@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.10 2008/03/24 16:11:05 deraadt Exp $ */
+/*	$OpenBSD: packet.c,v 1.11 2010/05/26 13:56:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -22,7 +22,6 @@
 #include <sys/uio.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <arpa/inet.h>
