@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.221 2014/10/13 22:42:22 deraadt Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.222 2014/10/17 01:51:39 tedu Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -531,7 +531,7 @@ main(void *framep)
 	if (kthread_create(uvm_aiodone_daemon, NULL, NULL, "aiodoned"))
 		panic("fork aiodoned");
 
-#ifndef __hppa__
+#if !defined(__hppa__) && !(defined(__m88k__) && defined(MULTIPROCESSOR))
 	/* Create the page zeroing kernel thread. */
 	if (kthread_create(uvm_pagezero_thread, NULL, NULL, "zerothread"))
 		panic("fork zerothread");
