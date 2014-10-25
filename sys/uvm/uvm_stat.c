@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_stat.c,v 1.26 2013/05/14 20:15:25 miod Exp $	 */
+/*	$OpenBSD: uvm_stat.c,v 1.27 2014/07/11 16:35:40 jsg Exp $	 */
 /*	$NetBSD: uvm_stat.c,v 1.18 2001/03/09 01:02:13 chs Exp $	 */
 
 /*
@@ -51,9 +51,9 @@ uvmexp_print(int (*pr)(const char *, ...))
 	(*pr)("  pagesize=%d (0x%x), pagemask=0x%x, pageshift=%d\n",
 	    uvmexp.pagesize, uvmexp.pagesize, uvmexp.pagemask,
 	    uvmexp.pageshift);
-	(*pr)("  %d VM pages: %d active, %d inactive, %d wired, %d free\n",
+	(*pr)("  %d VM pages: %d active, %d inactive, %d wired, %d free (%d zero)\n",
 	    uvmexp.npages, uvmexp.active, uvmexp.inactive, uvmexp.wired,
-	    uvmexp.free);
+	    uvmexp.free, uvmexp.zeropages);
 	(*pr)("  min  %d%% (%d) anon, %d%% (%d) vnode, %d%% (%d) vtext\n",
 	    uvmexp.anonminpct, uvmexp.anonmin, uvmexp.vnodeminpct,
 	    uvmexp.vnodemin, uvmexp.vtextminpct, uvmexp.vtextmin);
