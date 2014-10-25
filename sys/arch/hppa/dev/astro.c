@@ -1,4 +1,4 @@
-/*	$OpenBSD: astro.c,v 1.14 2014/02/08 20:41:48 kettenis Exp $	*/
+/*	$OpenBSD: astro.c,v 1.15 2014/07/12 18:44:41 tedu Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -280,7 +280,7 @@ astro_attach(struct device *parent, struct device *self, void *aux)
 	    1, UVM_PLA_NOWAIT) != 0)
 		panic("astrottach: no memory");
 
-	va = uvm_km_valloc(kernel_map, size);
+	va = (vaddr_t)km_alloc(size, &kv_any, &kp_none, &kd_nowait);
 	if (va == 0)
 		panic("astroattach: no memory");
 	sc->sc_pdir = (u_int64_t *)va;
