@@ -1,4 +1,4 @@
-/*	$OpenBSD: map.c,v 1.9 2007/11/27 16:22:14 martynas Exp $	*/
+/*	$OpenBSD: map.c,v 1.10 2009/10/27 23:59:50 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -105,7 +105,7 @@ exported_ap_realloc_map(int nsize)
 	if (nsize < 0 || nsize == exported_ap_size)
 		return 0;
 
-	exported_ap = (am_node **) xrealloc((void *)exported_ap, nsize * sizeof(am_node*));
+	exported_ap = xreallocarray(exported_ap, nsize, sizeof *exported_ap);
 
 	if (nsize > exported_ap_size)
 		bzero((char *) (exported_ap+exported_ap_size),

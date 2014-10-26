@@ -1,4 +1,4 @@
-/*	$OpenBSD: afs_ops.c,v 1.13 2014/10/20 02:33:42 guenther Exp $	*/
+/*	$OpenBSD: afs_ops.c,v 1.14 2014/10/20 06:55:59 guenther Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -1418,7 +1418,7 @@ in_progrss:
 			 * otherwise just use these defaults.
 			 */
 			if (*auto_opts && *dfl) {
-				char *nopts = (char *) xmalloc(strlen(auto_opts)+strlen(dfl)+2);
+				char *nopts = xmalloc(strlen(auto_opts)+strlen(dfl)+2);
 				snprintf(nopts,
 				    strlen(auto_opts) + strlen(dfl) + 2,
 				    "%s;%s", dfl, auto_opts);
