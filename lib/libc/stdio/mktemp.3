@@ -1,4 +1,4 @@
-.\"	$OpenBSD: mktemp.3,v 1.52 2014/08/31 02:21:18 guenther Exp $
+.\"	$OpenBSD: mktemp.3,v 1.53 2014/08/31 06:36:30 jmc Exp $
 .\"
 .\" Copyright (c) 1989, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -53,7 +53,7 @@
 .Ft int
 .Fn mkostemp "char *template" "int flags"
 .Ft int
-.Fn mkostemps "char *template" "int suffixlen" "int oflags"
+.Fn mkostemps "char *template" "int suffixlen" "int flags"
 .Sh DESCRIPTION
 The
 .Fn mktemp
