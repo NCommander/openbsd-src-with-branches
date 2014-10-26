@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_ops.c,v 1.7 2014/10/20 02:33:42 guenther Exp $	*/
+/*	$OpenBSD: ufs_ops.c,v 1.8 2014/10/20 06:55:59 guenther Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -102,7 +102,6 @@ mount_ufs(char *dir, char *fs_name, char *opts)
 	return mount_fs(&mnt, flags, (caddr_t) &ufs_args, 0, type);
 }
 
-/*ARGSUSED*/
 static int
 ufs_fmount(mntfs *mf)
 {
