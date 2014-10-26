@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.41 2013/11/13 15:07:27 deraadt Exp $	*/
+/*	$OpenBSD: sort.c,v 1.42 2014/10/11 03:02:59 doug Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -292,8 +292,8 @@ main(int argc, char *argv[])
 		act.sa_handler = onsig;
 		for (i = 0; sigtable[i]; ++i)	/* always unlink toutpath */
 			if (sigaction(sigtable[i], NULL, &oact) < 0 ||
-			    oact.sa_handler != SIG_IGN &&
-			    sigaction(sigtable[i], &act, NULL) < 0)
+			    (oact.sa_handler != SIG_IGN &&
+			    sigaction(sigtable[i], &act, NULL) < 0))
 				err(2, "sigaction");
 	} else
 		outfile = outpath;
