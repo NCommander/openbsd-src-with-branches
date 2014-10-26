@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched.c,v 1.15 2014/10/20 00:20:04 guenther Exp $	*/
+/*	$OpenBSD: sched.c,v 1.16 2014/10/26 02:43:50 guenther Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -34,7 +34,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)sched.c	8.1 (Berkeley) 6/6/93
- *	$Id: sched.c,v 1.15 2014/10/20 00:20:04 guenther Exp $
+ *	$Id: sched.c,v 1.16 2014/10/26 02:43:50 guenther Exp $
  */
 
 /*
@@ -259,6 +259,6 @@ do_task_notify(void)
 				WIFSIGNALED(p->w) ? WTERMSIG(p->w) : 0,
 				p->cb_closure);
 
-		free((void *)p);
+		free(p);
 	}
 }

@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)clock.c	8.1 (Berkeley) 6/6/93
- *	$Id: clock.c,v 1.5 2003/06/02 23:36:51 millert Exp $
+ *	$Id: clock.c,v 1.6 2014/10/26 03:03:34 guenther Exp $
  */
 
 /*
@@ -90,7 +90,7 @@ static void
 free_callout(callout *cp)
 {
 	if (nfree_callouts > CALLOUT_FREE_SLOP) {
-		free((void *)cp);
+		free(cp);
 	} else {
 		cp->c_next = free_callouts;
 		free_callouts = cp;

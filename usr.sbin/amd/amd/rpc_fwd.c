@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)rpc_fwd.c	8.1 (Berkeley) 6/6/93
- *	$Id: rpc_fwd.c,v 1.6 2002/09/06 19:46:52 deraadt Exp $
+ *	$Id: rpc_fwd.c,v 1.7 2003/06/02 23:36:51 millert Exp $
  */
 
 /*
@@ -156,7 +156,7 @@ fwd_free(rpc_forward *p)
 #ifdef DEBUG
 	/*dlog("fwd_free: rpc_head = %#x", rpc_head.q_forw);*/
 #endif /* DEBUG */
-	free((void *)p);
+	free(p);
 }
 
 /*
@@ -420,6 +420,6 @@ out:;
 	/*
 	 * Free the packet
 	 */
-	free((void *)pkt);
+	free(pkt);
 #endif /* DYNAMIC_BUFFERS */
 }
