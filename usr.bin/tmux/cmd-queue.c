@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-queue.c,v 1.18 2014/10/20 23:57:13 nicm Exp $ */
+/* $OpenBSD: cmd-queue.c,v 1.19 2014/10/21 22:06:46 nicm Exp $ */
 
 /*
  * Copyright (c) 2013 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -93,17 +93,16 @@ cmdq_error(struct cmd_q *cmdq, const char *fmt, ...)
 	struct client	*c = cmdq->client;
 	struct cmd	*cmd = cmdq->cmd;
 	va_list		 ap;
-	char		*msg, *cause;
+	char		*msg;
 	size_t		 msglen;
 
 	va_start(ap, fmt);
 	msglen = xvasprintf(&msg, fmt, ap);
 	va_end(ap);
 
-	if (c == NULL) {
-		xasprintf(&cause, "%s:%u: %s", cmd->file, cmd->line, msg);
-		ARRAY_ADD(&cfg_causes, cause);
-	} else if (c->session == NULL || (c->flags & CLIENT_CONTROL)) {
+	if (c == NULL)
+		cfg_add_cause("%s:%u: %s", cmd->file, cmd->line, msg);
+	else if (c->session == NULL || (c->flags & CLIENT_CONTROL)) {
 		evbuffer_add(c->stderr_data, msg, msglen);
 		evbuffer_add(c->stderr_data, "\n", 1);
 
