@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmd.c,v 1.71 2014/10/17 07:41:40 jmc Exp $	*/
+/*	$OpenBSD: apmd.c,v 1.72 2014/10/26 22:16:16 guenther Exp $	*/
 
 /*
  *  Copyright (c) 1995, 1996 John T. Kohl
@@ -61,11 +61,6 @@ const char sockfile[] = _PATH_APM_SOCKET;
 int debug = 0;
 
 int doperf = PERF_NONE;
-#define PERFDEC 20
-#define PERFMIN 0
-#define PERFMAX 100
-#define PERFINCTHRES 50
-#define PERFDECTHRES 60
 
 extern char *__progname;
 
