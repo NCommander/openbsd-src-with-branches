@@ -1,4 +1,4 @@
-/*	$OpenBSD: event_tagging.c,v 1.6 2014/10/16 07:38:06 bluhm Exp $	*/
+/*	$OpenBSD: event_tagging.c,v 1.7 2014/10/17 19:16:01 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Niels Provos <provos@citi.umich.edu>
@@ -168,7 +168,7 @@ evtag_marshal(struct evbuffer *evbuf, ev_uint32_t tag,
 {
 	evtag_encode_tag(evbuf, tag);
 	encode_int(evbuf, len);
-	evbuffer_add(evbuf, (void *)data, len);
+	evbuffer_add(evbuf, data, len);
 }
 
 /* Marshaling for integers */
