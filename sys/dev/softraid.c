@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.341 2014/10/07 20:23:32 tedu Exp $ */
+/* $OpenBSD: softraid.c,v 1.342 2014/10/30 17:23:45 tedu Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -1490,7 +1490,7 @@ unwind:
 		free(sdk, M_DEVBUF, 0);
 	}
 
-	free(devs, M_DEVBUF, BIOC_CRMAXLEN);
+	free(devs, M_DEVBUF, BIOC_CRMAXLEN * sizeof(dev_t));
 	free(ondisk, M_DEVBUF, BIOC_CRMAXLEN * sizeof(u_int64_t));
 
 	return (rv);
