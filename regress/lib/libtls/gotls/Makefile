@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2014/07/12 16:01:28 jsing Exp $
 
 GO_VERSION != sh -c "(go version) 2>/dev/null || true"
 
@@ -7,9 +7,9 @@ regress:
 	@echo golang is required for this regress... skipping
 .endif
 
-REGRESS_TARGETS=regress-goressl
+REGRESS_TARGETS=regress-gotls
 
-regress-goressl:
+regress-gotls:
 	cd ${.CURDIR} && go test -test.v .
 
 .include <bsd.regress.mk>
