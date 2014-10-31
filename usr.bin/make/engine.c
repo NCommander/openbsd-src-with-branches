@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.47 2013/11/22 15:47:35 espie Exp $ */
+/*	$OpenBSD: engine.c,v 1.48 2014/05/30 21:19:57 espie Exp $ */
 /*
  * Copyright (c) 2012 Marc Espie.
  *
@@ -274,10 +274,9 @@ Job_Touch(GNode *gn)
 
 		if (set_times(file) == -1){
 			if (rewrite_time(file) == -1) {
-				(void)fprintf(stdout,
+				(void)fprintf(stderr,
 				    "*** couldn't touch %s: %s", file,
 				    strerror(errno));
-				(void)fflush(stdout);
 		    	}
 		}
 	}
