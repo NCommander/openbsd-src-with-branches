@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.23 2014/07/19 18:01:23 pirofti Exp $	*/
+/*	$OpenBSD: apm.c,v 1.24 2014/09/20 09:28:24 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -368,7 +368,7 @@ apm_suspend(int state)
 	int rv;
 	int s;
 
-#if NSWDISPLAY > 0
+#if NWSDISPLAY > 0
 	wsdisplay_suspend();
 #endif
 
