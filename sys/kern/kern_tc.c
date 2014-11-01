@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_tc.c,v 1.25 2014/07/12 18:43:32 tedu Exp $ */
+/*	$OpenBSD: kern_tc.c,v 1.26 2014/09/14 14:17:25 jsg Exp $ */
 
 /*
  * Copyright (c) 2000 Poul-Henning Kamp <phk@FreeBSD.org>
@@ -541,7 +541,7 @@ sysctl_tc_choice(void *oldp, size_t *oldlenp, void *newp, size_t newlen)
 		strlcat(choices, buf, maxlen);
 	}
 	error = sysctl_rdstring(oldp, oldlenp, newp, choices);
-	free(choices, M_TEMP, 0);
+	free(choices, M_TEMP, maxlen);
 	return (error);
 }
 
