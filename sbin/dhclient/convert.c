@@ -1,4 +1,4 @@
-/*	$OpenBSD: convert.c,v 1.8 2014/10/27 17:01:28 krw Exp $	*/
+/*	$OpenBSD: convert.c,v 1.9 2014/10/29 15:28:51 krw Exp $	*/
 
 /*
  * Safe copying of option values into and out of the option buffer,
@@ -42,14 +42,3 @@
  * see ``http://www.vix.com/isc''.  To learn more about Vixie
  * Enterprises, see ``http://www.vix.com''.
  */
-
-#include "dhcpd.h"
-
-u_int32_t
-getULong(unsigned char *buf)
-{
-	u_int32_t ibuf;
-
-	memcpy(&ibuf, buf, sizeof(ibuf));
-	return (ntohl(ibuf));
-}
