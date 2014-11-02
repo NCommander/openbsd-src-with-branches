@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.18 2013/04/20 20:12:10 miod Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.19 2013/11/28 18:26:46 deraadt Exp $	*/
 /*	$NetBSD: bpf.c,v 1.5.2.1 1995/11/14 08:45:42 thorpej Exp $	*/
 
 /*
@@ -74,7 +74,7 @@ static u_int8_t *BpfPkt = NULL;
 **		None.
 **
 **	Returns:
-**		File descriptor of opened BPF device (for select() etc).
+**		File descriptor of opened BPF device
 **
 **	Side Effects:
 **		If an error is encountered, the program terminates here.
