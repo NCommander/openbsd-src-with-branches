@@ -165,7 +165,7 @@ while (@ARGV){
 	my $p = shift @ARGV;
 	my $op = undef;
 	my $v = undef;
-	if (@ARGV >= 2  && $ARGV[0] =~ /^[<=>!]+$/ &&
+	if (@ARGV >= 2  && $ARGV[0] =~ /^[<=>]+$/ &&
 	    $ARGV[1] =~ /^[\d\.]+[\w\.]*$/) {
 	    	$op = shift @ARGV;
 		$v = shift @ARGV;
