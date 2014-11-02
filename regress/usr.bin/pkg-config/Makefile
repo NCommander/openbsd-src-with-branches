@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.46 2014/07/09 22:50:12 jasper Exp $
+#	$OpenBSD: Makefile,v 1.47 2014/11/02 01:04:53 jca Exp $
 
 REGRESS_TARGETS=cmp-vers1-1 \
 		cmp-vers1-2 \
@@ -155,7 +155,7 @@ cmp-vers2-5:
 
 cmp-vers2-6:
 	# Test regular versions (a != b)
-	@! ${PCONFIG} --exists "vers2 != 0.2.0"
+	@if ${PCONFIG} --exists "vers2 != 0.2.0"; then false; fi
 
 cmp-vers3:
 	# Test regular versions (a = b)
