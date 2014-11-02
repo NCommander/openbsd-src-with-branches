@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc.c,v 1.114 2014/07/13 14:59:28 tedu Exp $	*/
+/*	$OpenBSD: kern_malloc.c,v 1.115 2014/09/14 14:17:25 jsg Exp $	*/
 /*	$NetBSD: kern_malloc.c,v 1.15.4.2 1996/06/13 17:10:56 cgd Exp $	*/
 
 /*
@@ -162,7 +162,7 @@ malloc(size_t size, int type, int flags)
 	struct kmemstats *ksp = &kmemstats[type];
 
 	if (((unsigned long)type) <= 1 || ((unsigned long)type) >= M_LAST)
-		panic("malloc - bogus type");
+		panic("malloc: bogus type %d", type);
 #endif
 
 	KASSERT(flags & (M_WAITOK | M_NOWAIT));
@@ -723,7 +723,7 @@ mallocarray(size_t nmemb, size_t size, int type, int flags)
 	    nmemb > 0 && SIZE_MAX / nmemb < size) {
 		if (flags & M_CANFAIL)
 			return (NULL);
-		panic("mallocarray overflow: %zu * %zu", nmemb, size);
+		panic("mallocarray: overflow %zu * %zu", nmemb, size);
 	}
 	return (malloc(size * nmemb, type, flags));
 }
