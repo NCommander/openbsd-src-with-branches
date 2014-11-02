@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_vnops.c,v 1.16 2014/03/28 17:57:11 mpi Exp $	*/
+/*	$OpenBSD: tmpfs_vnops.c,v 1.17 2014/07/08 17:19:26 deraadt Exp $	*/
 /*	$NetBSD: tmpfs_vnops.c,v 1.100 2012/11/05 17:27:39 dholland Exp $	*/
 
 /*
@@ -45,7 +45,6 @@ __KERNEL_RCSID(0, "$NetBSD: tmpfs_vnops.c,v 1.100 2012/11/05 17:27:39 dholland E
 #include <sys/dirent.h>
 #include <sys/fcntl.h>
 #include <sys/event.h>
-#include <sys/malloc.h>
 #include <sys/namei.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
