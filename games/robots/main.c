@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.17 2009/10/27 23:59:26 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.18 2013/08/29 20:22:19 naddy Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
@@ -71,7 +71,6 @@ main(int ac, char *av[])
 			/* Could be a command-line option */
 			tv.tv_sec = 3;
 			tv.tv_usec = 0;
-			FD_ZERO(&rset);
 			break;
 		case 'a':
 			Start_level = 4;
