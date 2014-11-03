@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.5 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: init.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
 /*	$NetBSD: init.c,v 1.5 1995/03/24 05:01:40 cgd Exp $	*/
 
 /*
@@ -86,12 +86,8 @@ shuffle()
 	int	i, r;
 	CARD	temp;
 
-	for (i = 0; i < DECK_SZ; i++) {
-		r = roll(1, DECK_SZ) - 1;
-		if (r < 0 || r > DECK_SZ - 1) {
-			warnx("shuffle: card no. error: %d", r);
-			die(1);
-		}
+	for (i = DECK_SZ - 1; i > 0; i--) {
+		r = arc4random_uniform(i + 1);
 		temp = Deck[r];
 		Deck[r] = Deck[i];
 		Deck[i] = temp;
