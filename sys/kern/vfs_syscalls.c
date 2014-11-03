@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.211 2014/10/22 21:43:16 millert Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.212 2014/11/03 03:08:00 deraadt Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -55,6 +55,7 @@
 #include <sys/dkio.h>
 #include <sys/disklabel.h>
 #include <sys/ktrace.h>
+#include <sys/unistd.h>
 
 #include <sys/syscallargs.h>
 

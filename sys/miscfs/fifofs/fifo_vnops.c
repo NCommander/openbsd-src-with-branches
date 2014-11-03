@@ -1,4 +1,4 @@
-/*	$OpenBSD: fifo_vnops.c,v 1.41 2014/09/14 14:17:26 jsg Exp $	*/
+/*	$OpenBSD: fifo_vnops.c,v 1.42 2014/10/09 16:36:36 millert Exp $	*/
 /*	$NetBSD: fifo_vnops.c,v 1.18 1996/03/16 23:52:42 christos Exp $	*/
 
 /*
@@ -47,6 +47,8 @@
 #include <sys/malloc.h>
 #include <sys/poll.h>
 #include <sys/un.h>
+#include <sys/unistd.h>
+
 #include <miscfs/fifofs/fifo.h>
 
 /*

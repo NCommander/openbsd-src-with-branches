@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vnops.c,v 1.54 2013/12/14 02:57:25 guenther Exp $	*/
+/*	$OpenBSD: udf_vnops.c,v 1.55 2014/07/12 18:50:00 tedu Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -46,9 +46,9 @@
 #include <sys/vnode.h>
 #include <sys/dirent.h>
 #include <sys/queue.h>
-#include <sys/unistd.h>
 #include <sys/endian.h>
 #include <sys/specdev.h>
+#include <sys/unistd.h>
 
 #include <isofs/udf/ecma167-udf.h>
 #include <isofs/udf/udf.h>

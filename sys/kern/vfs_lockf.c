@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lockf.c,v 1.16 2010/06/29 03:14:42 tedu Exp $	*/
+/*	$OpenBSD: vfs_lockf.c,v 1.17 2012/04/10 09:07:20 guenther Exp $	*/
 /*	$NetBSD: vfs_lockf.c,v 1.7 1996/02/04 02:18:21 christos Exp $	*/
 
 /*
@@ -44,6 +44,7 @@
 #include <sys/pool.h>
 #include <sys/fcntl.h>
 #include <sys/lockf.h>
+#include <sys/unistd.h>
 
 struct pool lockfpool;
 
