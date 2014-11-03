@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.280 2013/10/19 15:04:25 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.281 2013/11/13 09:14:48 florian Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -957,6 +957,7 @@ struct in6_addr	*prefixlen2mask6(u_int8_t prefixlen);
 /* log.c */
 void		 log_init(int);
 void		 log_verbose(int);
+void		 logit(int, const char *, ...);
 void		 vlog(int, const char *, va_list);
 void		 log_peer_warn(const struct peer_config *, const char *, ...);
 void		 log_peer_warnx(const struct peer_config *, const char *, ...);

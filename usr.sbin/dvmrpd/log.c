@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.2 2009/11/02 20:31:50 claudio Exp $ */
+/*	$OpenBSD: log.c,v 1.3 2011/08/20 19:02:28 sthen Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -36,8 +36,6 @@ static const char * const procnames[] = {
 
 int	debug;
 int	verbose;
-
-void	 logit(int, const char *, ...);
 
 void
 log_init(int n_debug)

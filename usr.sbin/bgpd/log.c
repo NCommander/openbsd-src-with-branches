@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.56 2012/06/10 11:16:08 claudio Exp $ */
+/*	$OpenBSD: log.c,v 1.57 2013/01/10 09:56:57 sthen Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -33,8 +33,6 @@
 
 int	debug;
 int	verbose;
-
-void	 logit(int, const char *, ...);
 
 char *
 log_fmt_peer(const struct peer_config *peer)
