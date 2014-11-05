@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: SipHash24.9,v 1.2 2014/11/05 00:43:33 dlg Exp $
 .\"
 .\" Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: October 4 2014 $
+.Dd $Mdocdate: November 5 2014 $
 .Dt SIPHASH24 9
 .Os
 .Sh NAME
@@ -63,7 +63,7 @@ is called after all data has been added to
 .Fa ctx
 via
 .Fn SipHash24_Update
-and returns a message digest in the hosts' native endian.
+and returns a message digest in the host's native endian.
 .Pp
 .Fn SipHash24_Final
 is called after all data has been added to
@@ -104,6 +104,6 @@ can be called during autoconf, from process context, or from interrupt context.
 .Fn SipHash24_End
 and
 .Fn SipHash24
-returns the 64-bit message digest in the hosts native endian representation.
+return the 64-bit message digest in the host's native endian representation.
 .Sh SEE ALSO
 .Xr arc4random_buf 9
