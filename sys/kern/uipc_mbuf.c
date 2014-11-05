@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.196 2014/10/03 01:11:17 dlg Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.197 2014/10/03 02:16:21 dlg Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -144,7 +144,7 @@ mbinit(void)
 		panic("mbinit: the largest cluster size != MAXMCLBYTES");
 #endif
 
-	pool_init(&mbpool, MSIZE, 0, 0, 0, "mbpl", NULL);
+	pool_init(&mbpool, MSIZE, 0, 0, 0, "mbufpl", NULL);
 	pool_setipl(&mbpool, IPL_NET);
 	pool_set_constraints(&mbpool, &kp_dma_contig);
 	pool_setlowat(&mbpool, mblowat);
