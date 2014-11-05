@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp.c,v 1.139 2014/07/08 14:38:17 eric Exp $	*/
+/*	$OpenBSD: smtp.c,v 1.140 2014/10/12 11:49:38 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -240,7 +240,7 @@ smtp_enqueue(uid_t *euid)
 
 	hostname = env->sc_hostname;
 	if (euid) {
-		(void)snprintf(buf, sizeof(buf), "%d@%s", *euid, hostname);
+		(void)snprintf(buf, sizeof(buf), "%s", hostname);
 		hostname = buf;
 	}
 
