@@ -38,7 +38,7 @@
 .Fn "SipHash24" "const SIPHASH_KEY *key" "const void *data" "size_t len"
 .Sh DESCRIPTION
 The SipHash algorithm is a keyed hash algorithm optimised for short
-inputs and produces a 64-bit digest of data.
+inputs which produces a 64-bit digest of data.
 The SipHash24 functions implement the algorithm with 2 compression
 rounds and 4 finalisation rounds.
 .Pp
@@ -63,7 +63,7 @@ is called after all data has been added to
 .Fa ctx
 via
 .Fn SipHash24_Update
-and returns a message digest in the hosts native endian.
+and returns a message digest in the hosts' native endian.
 .Pp
 .Fn SipHash24_Final
 is called after all data has been added to
