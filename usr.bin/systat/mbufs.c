@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbufs.c,v 1.35 2014/07/08 05:35:19 dlg Exp $ */
+/*	$OpenBSD: mbufs.c,v 1.36 2014/10/20 07:06:00 jsg Exp $ */
 /*
  * Copyright (c) 2008 Can Erkin Acar <canacar@openbsd.org>
  *
@@ -151,7 +151,7 @@ initmembufs(void)
 			continue;
 		}
 
-		if (strcmp(pname, "mbpl") == 0) {
+		if (strcmp(pname, "mbufpl") == 0) {
 			mbpool_index = i;
 			continue;
 		}

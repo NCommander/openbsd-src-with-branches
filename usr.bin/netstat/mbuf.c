@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.c,v 1.31 2010/07/08 08:47:07 lum Exp $	*/
+/*	$OpenBSD: mbuf.c,v 1.32 2014/07/02 00:12:34 dlg Exp $	*/
 /*	$NetBSD: mbuf.c,v 1.9 1996/05/07 02:55:03 thorpej Exp $	*/
 
 /*
@@ -139,7 +139,7 @@ mbpr(void)
 			return;
 		}
 
-		if (!strncmp(name, "mbpl", strlen("mbpl")))
+		if (!strncmp(name, "mbufpl", strlen("mbufpl")))
 			bcopy(&pool, &mbpool, sizeof(pool));
 		else if (mclp < sizeof(mclpools) / sizeof(mclpools[0]) &&
 		    !strncmp(name, *mclnamep, strlen(*mclnamep))) {
