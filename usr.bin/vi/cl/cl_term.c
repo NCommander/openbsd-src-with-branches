@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_term.c,v 1.15 2006/04/22 03:09:15 ray Exp $	*/
+/*	$OpenBSD: cl_term.c,v 1.16 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -447,20 +447,6 @@ noterm:	if (row == 0)
 	return (0);
 }
 
-#ifdef _USE_OLD_CURSES_
-/*
- * cl_putchar --
- *	Function version of putchar, for tputs.
- *
- * PUBLIC: int cl_putchar(int);
- */
-void
-cl_putchar(ch)
-	int ch;
-{
-	(void)putchar(ch);
-}
-#else
 /*
  * cl_putchar --
  *	Function version of putchar, for tputs.
@@ -473,4 +459,3 @@ cl_putchar(ch)
 {
 	return (putchar(ch));
 }
-#endif
