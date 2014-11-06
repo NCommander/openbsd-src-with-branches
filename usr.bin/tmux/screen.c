@@ -1,4 +1,4 @@
-/* $OpenBSD: screen.c,v 1.30 2014/10/08 17:35:58 nicm Exp $ */
+/* $OpenBSD: screen.c,v 1.31 2014/10/20 23:27:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -269,6 +269,7 @@ screen_clear_selection(struct screen *s)
 	struct screen_sel	*sel = &s->sel;
 
 	sel->flag = 0;
+	sel->lineflag = LINE_SEL_NONE;
 }
 
 /* Check if cell in selection. */
