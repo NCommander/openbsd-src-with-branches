@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2.c,v 1.114 2014/07/09 12:05:01 markus Exp $	*/
+/*	$OpenBSD: ikev2.c,v 1.115 2014/11/07 14:02:32 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -2276,12 +2276,13 @@ ikev2_resp_ike_eap(struct iked *env, struct iked_sa *sa, struct ibuf *eapmsg)
 	int				 ret = -1;
 	ssize_t				 len = 0;
 
-	if (!sa_stateok(sa, IKEV2_STATE_EAP))
-		return (0);
-
 	/* Responder only */
 	if (sa->sa_hdr.sh_initiator)
 		return (-1);
+
+	/* Check if "ca" has done it's job yet */
+	if (!sa->sa_localauth.id_type)
+		return (0);
 
 	/* New encrypted message buffer */
 	if ((e = ibuf_static()) == NULL)
