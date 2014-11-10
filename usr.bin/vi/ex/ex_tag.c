@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_tag.c,v 1.16 2013/12/01 16:47:59 krw Exp $	*/
+/*	$OpenBSD: ex_tag.c,v 1.17 2013/12/01 19:26:37 krw Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -16,11 +16,7 @@
 
 #include <sys/param.h>
 #include <sys/types.h>		/* XXX: param.h may not have included types.h */
-
-#ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
-#endif
-
 #include <sys/queue.h>
 #include <sys/stat.h>
 #include <sys/time.h>
