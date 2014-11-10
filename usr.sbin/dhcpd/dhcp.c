@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcp.c,v 1.38 2014/07/11 16:48:29 yasuoka Exp $ */
+/*	$OpenBSD: dhcp.c,v 1.39 2014/08/11 18:39:41 tobias Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -513,7 +513,7 @@ dhcpinform(struct packet *packet)
 		if (memcmp(&packet->raw->ciaddr.s_addr,
 		    packet->client_addr.iabuf, 4) != 0) {
 			note("DHCPINFORM from %s but ciaddr %s is not "
-			    "consitent with actual address",
+			    "consistent with actual address",
 			    piaddr(packet->client_addr),
 			    inet_ntoa(packet->raw->ciaddr));
 			return;
