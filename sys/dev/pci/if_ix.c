@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.100 2014/09/08 02:39:57 chris Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.101 2014/11/10 15:58:32 mikeb Exp $	*/
 
 /******************************************************************************
 
@@ -1237,7 +1237,6 @@ ixgbe_local_timer(void *arg)
 
 	s = splnet();
 
-	ixgbe_update_link_status(sc);
 	ixgbe_update_stats_counters(sc);
 
 #ifdef IX_DEBUG
