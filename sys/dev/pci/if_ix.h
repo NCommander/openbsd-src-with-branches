@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.h,v 1.24 2013/08/05 19:58:05 mikeb Exp $	*/
+/*	$OpenBSD: if_ix.h,v 1.25 2014/07/08 05:35:18 dlg Exp $	*/
 
 /******************************************************************************
 
@@ -257,9 +257,6 @@ struct ix_softc {
 
 	/* Mbuf cluster size */
 	uint32_t		rx_mbuf_sz;
-
-	/* Support for pluggable optics */
-	bool			sfp_probe;
 
 	/*
 	 * Queues:
