@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_getmaps.c,v 1.10 2005/08/08 08:05:35 espie Exp $ */
+/*	$OpenBSD: pmap_getmaps.c,v 1.11 2010/09/01 14:43:34 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -74,8 +74,6 @@ pmap_getmaps(struct sockaddr_in *address)
 		}
 		CLNT_DESTROY(client);
 	}
-	if (sock != -1)
-		(void)close(sock);
 	address->sin_port = 0;
 	return (head);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_rmt.c,v 1.29 2010/09/01 14:43:34 millert Exp $ */
+/*	$OpenBSD: pmap_rmt.c,v 1.30 2013/11/12 06:59:12 deraadt Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -91,8 +91,6 @@ pmap_rmtcall(struct sockaddr_in *addr, u_long prog, u_long vers, u_long proc,
 	} else {
 		stat = RPC_FAILED;
 	}
-	if (sock != -1)
-		(void)close(sock);
 	addr->sin_port = 0;
 	return (stat);
 }
