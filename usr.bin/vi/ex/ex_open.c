@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_open.c,v 1.4 2002/02/16 21:27:57 millert Exp $	*/
+/*	$OpenBSD: ex_open.c,v 1.5 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -28,9 +28,7 @@
  * PUBLIC: int ex_open(SCR *, EXCMD *);
  */
 int
-ex_open(sp, cmdp)
-	SCR *sp;
-	EXCMD *cmdp;
+ex_open(SCR *sp, EXCMD *cmdp)
 {
 	/* If open option off, disallow open command. */
 	if (!O_ISSET(sp, O_OPEN)) {

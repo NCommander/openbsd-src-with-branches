@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_put.c,v 1.4 2002/02/16 21:27:58 millert Exp $	*/
+/*	$OpenBSD: v_put.c,v 1.5 2009/10/27 23:59:48 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -31,9 +31,7 @@ static void	inc_buf(SCR *, VICMD *);
  * PUBLIC: int v_Put(SCR *, VICMD *);
  */
 int
-v_Put(sp, vp)
-	SCR *sp;
-	VICMD *vp;
+v_Put(SCR *sp, VICMD *vp)
 {
 	u_long cnt;
 
@@ -64,9 +62,7 @@ v_Put(sp, vp)
  * PUBLIC: int v_put(SCR *, VICMD *);
  */
 int
-v_put(sp, vp)
-	SCR *sp;
-	VICMD *vp;
+v_put(SCR *sp, VICMD *vp)
 {
 	u_long cnt;
 
@@ -106,9 +102,7 @@ v_put(sp, vp)
  * the buffer increment gets done regardless of the success of the put.
  */
 static void
-inc_buf(sp, vp)
-	SCR *sp;
-	VICMD *vp;
+inc_buf(SCR *sp, VICMD *vp)
 {
 	CHAR_T v;
 

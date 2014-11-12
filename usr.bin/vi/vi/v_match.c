@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_match.c,v 1.5 2006/01/08 21:05:40 miod Exp $	*/
+/*	$OpenBSD: v_match.c,v 1.6 2009/10/27 23:59:48 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -30,9 +30,7 @@
  * PUBLIC: int v_match(SCR *, VICMD *);
  */
 int
-v_match(sp, vp)
-	SCR *sp;
-	VICMD *vp;
+v_match(SCR *sp, VICMD *vp)
 {
 	VCS cs;
 	MARK *mp;

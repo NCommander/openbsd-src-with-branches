@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_at.c,v 1.7 2009/10/27 23:59:47 deraadt Exp $	*/
+/*	$OpenBSD: v_at.c,v 1.8 2013/11/25 23:27:11 krw Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -30,9 +30,7 @@
  * PUBLIC: int v_at(SCR *, VICMD *);
  */
 int
-v_at(sp, vp)
-	SCR *sp;
-	VICMD *vp;
+v_at(SCR *sp, VICMD *vp)
 {
 	CB *cbp;
 	CHAR_T name;

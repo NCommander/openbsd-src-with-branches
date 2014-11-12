@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_status.c,v 1.4 2002/02/16 21:27:58 millert Exp $	*/
+/*	$OpenBSD: v_status.c,v 1.5 2009/10/27 23:59:48 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -30,9 +30,7 @@
  * PUBLIC: int v_status(SCR *, VICMD *);
  */
 int
-v_status(sp, vp)
-	SCR *sp;
-	VICMD *vp;
+v_status(SCR *sp, VICMD *vp)
 {
 	(void)msgq_status(sp, vp->m_start.lno, MSTAT_SHOWLAST);
 	return (0);

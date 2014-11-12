@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_zexit.c,v 1.4 2002/02/16 21:27:58 millert Exp $	*/
+/*	$OpenBSD: v_zexit.c,v 1.5 2009/10/27 23:59:48 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -30,9 +30,7 @@
  * PUBLIC: int v_zexit(SCR *, VICMD *);
  */
 int
-v_zexit(sp, vp)
-	SCR *sp;
-	VICMD *vp;
+v_zexit(SCR *sp, VICMD *vp)
 {
 	/* Write back any modifications. */
 	if (F_ISSET(sp->ep, F_MODIFIED) &&

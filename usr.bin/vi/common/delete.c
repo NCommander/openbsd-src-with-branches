@@ -1,4 +1,4 @@
-/*	$OpenBSD: delete.c,v 1.7 2002/02/16 21:27:56 millert Exp $	*/
+/*	$OpenBSD: delete.c,v 1.8 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -30,10 +30,7 @@
  * PUBLIC: int del(SCR *, MARK *, MARK *, int);
  */
 int
-del(sp, fm, tm, lmode)
-	SCR *sp;
-	MARK *fm, *tm;
-	int lmode;
+del(SCR *sp, MARK *fm, MARK *tm, int lmode)
 {
 	recno_t lno;
 	size_t blen, len, nlen, tlen;

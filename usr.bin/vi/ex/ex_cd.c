@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_cd.c,v 1.8 2006/01/08 21:05:40 miod Exp $	*/
+/*	$OpenBSD: ex_cd.c,v 1.9 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -32,9 +32,7 @@
  * PUBLIC: int ex_cd(SCR *, EXCMD *);
  */
 int
-ex_cd(sp, cmdp)
-	SCR *sp;
-	EXCMD *cmdp;
+ex_cd(SCR *sp, EXCMD *cmdp)
 {
 	struct passwd *pw;
 	ARGS *ap;

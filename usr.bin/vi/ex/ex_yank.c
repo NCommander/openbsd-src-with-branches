@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_yank.c,v 1.4 2002/02/16 21:27:57 millert Exp $	*/
+/*	$OpenBSD: ex_yank.c,v 1.5 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -27,9 +27,7 @@
  * PUBLIC: int ex_yank(SCR *, EXCMD *);
  */
 int
-ex_yank(sp, cmdp)
-	SCR *sp;
-	EXCMD *cmdp;
+ex_yank(SCR *sp, EXCMD *cmdp)
 {
 	NEEDFILE(sp, cmdp);
 

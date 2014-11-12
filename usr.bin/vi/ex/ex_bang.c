@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_bang.c,v 1.6 2006/01/08 21:05:40 miod Exp $	*/
+/*	$OpenBSD: ex_bang.c,v 1.7 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -45,9 +45,7 @@
  * PUBLIC: int ex_bang(SCR *, EXCMD *);
  */
 int
-ex_bang(sp, cmdp)
-	SCR *sp;
-	EXCMD *cmdp;
+ex_bang(SCR *sp, EXCMD *cmdp)
 {
 	enum filtertype ftype;
 	ARGS *ap;

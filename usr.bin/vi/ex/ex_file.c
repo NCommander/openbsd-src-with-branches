@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_file.c,v 1.5 2002/02/16 21:27:57 millert Exp $	*/
+/*	$OpenBSD: ex_file.c,v 1.6 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -30,9 +30,7 @@
  * PUBLIC: int ex_file(SCR *, EXCMD *);
  */
 int
-ex_file(sp, cmdp)
-	SCR *sp;
-	EXCMD *cmdp;
+ex_file(SCR *sp, EXCMD *cmdp)
 {
 	CHAR_T *p;
 	FREF *frp;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_delete.c,v 1.6 2002/02/16 21:27:58 millert Exp $	*/
+/*	$OpenBSD: v_delete.c,v 1.7 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -30,9 +30,7 @@
  * PUBLIC: int v_delete(SCR *, VICMD *);
  */
 int
-v_delete(sp, vp)
-	SCR *sp;
-	VICMD *vp;
+v_delete(SCR *sp, VICMD *vp)
 {
 	recno_t nlines;
 	size_t len;

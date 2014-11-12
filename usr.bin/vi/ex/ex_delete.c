@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_delete.c,v 1.5 2002/02/16 21:27:57 millert Exp $	*/
+/*	$OpenBSD: ex_delete.c,v 1.6 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -28,9 +28,7 @@
  * PUBLIC: int ex_delete(SCR *, EXCMD *);
  */
 int
-ex_delete(sp, cmdp)
-	SCR *sp;
-	EXCMD *cmdp;
+ex_delete(SCR *sp, EXCMD *cmdp)
 {
 	recno_t lno;
 
