@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_script.c,v 1.19 2013/11/28 22:12:40 krw Exp $	*/
+/*	$OpenBSD: ex_script.c,v 1.20 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -145,15 +145,12 @@ err:		if (sc->sh_master != -1)
 			_exit(126);
 
 		(void)setsid();
-#ifdef TIOCSCTTY
 		/*
 		 * 4.4BSD allocates a controlling terminal using the TIOCSCTTY
 		 * ioctl, not by opening a terminal device file.  POSIX 1003.1
-		 * doesn't define a portable way to do this.  If TIOCSCTTY is
-		 * not available, hope that the open does it.
+		 * doesn't define a portable way to do this.
 		 */
 		(void)ioctl(sc->sh_slave, TIOCSCTTY, 0);
-#endif
 		(void)close(sc->sh_master);
 		(void)dup2(sc->sh_slave, STDIN_FILENO);
 		(void)dup2(sc->sh_slave, STDOUT_FILENO);

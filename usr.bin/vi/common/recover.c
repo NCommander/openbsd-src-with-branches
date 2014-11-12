@@ -1,4 +1,4 @@
-/*	$OpenBSD: recover.c,v 1.16 2014/11/10 21:31:42 tedu Exp $	*/
+/*	$OpenBSD: recover.c,v 1.17 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -12,7 +12,6 @@
 #include "config.h"
 
 #include <sys/param.h>
-#include <sys/types.h>		/* XXX: param.h may not have included types.h */
 #include <sys/queue.h>
 #include <sys/stat.h>
 

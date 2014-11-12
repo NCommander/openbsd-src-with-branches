@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: script.h,v 1.3 2001/01/29 01:58:46 niklas Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -18,8 +18,6 @@ struct _script {
 	char	*sh_prompt;		/* Prompt. */
 	size_t	 sh_prompt_len;		/* Prompt length. */
 	char	 sh_name[64];		/* Pty name */
-#ifdef TIOCGWINSZ
 	struct winsize sh_win;		/* Window size. */
-#endif
 	struct termios sh_term;		/* Terminal information. */
 };
