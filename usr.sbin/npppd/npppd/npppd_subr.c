@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppd_subr.c,v 1.13 2014/08/14 08:08:00 mpi Exp $ */
+/*	$OpenBSD: npppd_subr.c,v 1.14 2014/10/25 03:23:49 lteo Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -242,8 +242,8 @@ in_route0(int type, struct in_addr *dest, struct in_addr *mask,
 	}
 
 	if ((rval = priv_send(sock, buf, rtm->rtm_msglen, 0)) <= 0) {
-		if (!(type == RTM_DELETE && errno == ESRCH) &&
-		    !(type == RTM_ADD    && errno == EEXIST)) {
+		if ((type == RTM_DELETE && errno == ESRCH) ||
+		    (type == RTM_ADD    && errno == EEXIST)) {
 			log_printf(LOG_DEBUG,
 			    "write() failed in %s on %s : %m", __func__,
 			    strtype);
