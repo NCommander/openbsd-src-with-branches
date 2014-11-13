@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysdef.h,v 1.15 2006/08/01 22:16:03 jason Exp $	*/
+/*	$OpenBSD: sysdef.h,v 1.16 2008/09/15 16:11:35 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -15,12 +15,9 @@
 #include <signal.h>
 
 #define	KBLOCK		8192	/* Kill grow.			 */
-#define	GOOD		0	/* Good exit status.		 */
 
 typedef int	RSIZE;		/* Type for file/region sizes	 */
 typedef short	KCHAR;		/* Type for internal keystrokes	 */
-
-#define MALLOCROUND(m)	(m+=7,m&=~7)	/* round up to 8 byte boundary	 */
 
 struct fileinfo {
 	uid_t		fi_uid;
