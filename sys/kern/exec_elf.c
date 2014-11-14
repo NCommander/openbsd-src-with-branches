@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.103 2014/11/06 17:23:40 millert Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.104 2014/11/06 17:31:19 tedu Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -739,7 +739,7 @@ ELFNAME2(exec,makecmds)(struct proc *p, struct exec_package *epp)
 	if (interp) {
 		struct elf_args *ap;
 
-		ap = malloc(sizeof(struct elf_args), M_TEMP, M_WAITOK);
+		ap = malloc(sizeof(*ap), M_TEMP, M_WAITOK);
 
 		ap->arg_phaddr = phdr;
 		ap->arg_phentsize = eh->e_phentsize;
