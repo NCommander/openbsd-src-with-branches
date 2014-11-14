@@ -1,4 +1,4 @@
-/* $OpenBSD: fixunsdfsi.S,v 1.5 2005/08/07 11:30:38 espie Exp $ */
+/* $OpenBSD: fixunsdfsi.S,v 1.6 2012/08/22 17:19:34 pascal Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -66,4 +66,4 @@ ENTRY(__fixunsdfsi)
 	orl	$0x80000000,%eax	/* restore bias */
 	ret
 
-fbiggestsigned:	.double	0r2147483648.0
+fbiggestsigned:	.double	2147483648.0
