@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: ftok.c,v 1.7 2005/08/08 08:05:34 espie Exp $ */
 /*
  * Copyright (c) 1994 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
  * All rights reserved.
@@ -26,7 +26,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ipc.h>
 
