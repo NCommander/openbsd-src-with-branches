@@ -1,4 +1,4 @@
-/*	$OpenBSD: inp.c,v 1.37 2013/11/26 13:19:07 deraadt Exp $	*/
+/*	$OpenBSD: inp.c,v 1.38 2014/10/08 04:06:23 doug Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -72,13 +72,13 @@ void
 re_input(void)
 {
 	if (using_plan_a) {
-		i_size = 0;
 		free(i_ptr);
 		i_ptr = NULL;
 		if (i_womp != NULL) {
 			munmap(i_womp, i_size);
 			i_womp = NULL;
 		}
+		i_size = 0;
 	} else {
 		using_plan_a = true;	/* maybe the next one is smaller */
 		close(tifd);
