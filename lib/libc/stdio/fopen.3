@@ -1,4 +1,4 @@
-.\"	$OpenBSD: fopen.3,v 1.28 2014/08/31 02:21:18 guenther Exp $
+.\"	$OpenBSD: fopen.3,v 1.29 2014/08/31 06:36:30 jmc Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -77,11 +77,15 @@ Open for reading and writing.
 The file is created if it does not exist.
 .El
 .Pp
-The letter ``b'' in the
+The letter
+.Dq b
+in the
 .Fa mode
 strings above is strictly for compatibility with
 .St -ansiC
-and has no effect; the ``b'' is ignored.
+and has no effect; the
+.Dq b
+is ignored.
 .Pp
 After any of the above prefixes, the
 .Fa mode

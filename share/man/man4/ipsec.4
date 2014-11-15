@@ -1,4 +1,4 @@
-.\" $OpenBSD: ipsec.4,v 1.78 2010/06/07 08:38:09 jmc Exp $
+.\" $OpenBSD: ipsec.4,v 1.79 2012/08/15 19:17:02 jmc Exp $
 .\"
 .\" Copyright 1997 Niels Provos <provos@physnet.uni-hamburg.de>
 .\" All rights reserved.
@@ -30,7 +30,7 @@
 .\"
 .\" Manual page, using -mandoc macros
 .\"
-.Dd $Mdocdate: June 7 2010 $
+.Dd $Mdocdate: August 15 2012 $
 .Dt IPSEC 4
 .Os
 .Sh NAME
@@ -368,7 +368,11 @@ displays information about IPsec flows.
 .Xr vmstat 8
 displays information about memory use by IPsec with the
 .Fl m
-flag (look for ``tdb'' and ``xform'' allocations).
+flag (look for
+.Dq tdb
+and
+.Dq xform
+allocations).
 .Sh SEE ALSO
 .Xr enc 4 ,
 .\".Xr ipcomp 4 ,
