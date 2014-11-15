@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_get_ioperm.c,v 1.5 2008/06/26 05:42:04 ray Exp $	*/
+/*	$OpenBSD: i386_get_ioperm.c,v 1.6 2012/12/05 23:19:58 deraadt Exp $	*/
 /*	$NetBSD: i386_get_ioperm.c,v 1.2 1996/02/27 22:57:22 jtc Exp $	*/
 
 /*-
@@ -43,6 +43,5 @@ i386_get_ioperm(iomap)
 
 	p.iomap = iomap;
 
-	/* LINTED pointer casts may be troublesome */
-	return sysarch(I386_GET_IOPERM, (char *)&p);
+	return sysarch(I386_GET_IOPERM, &p);
 }

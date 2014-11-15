@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_iopl.c,v 1.5 2008/06/26 05:42:04 ray Exp $	*/
+/*	$OpenBSD: i386_iopl.c,v 1.6 2012/12/05 23:19:58 deraadt Exp $	*/
 /*	$NetBSD: i386_iopl.c,v 1.2 1996/02/27 22:57:29 jtc Exp $	*/
 
 /*-
@@ -43,6 +43,5 @@ i386_iopl(iopl)
 
 	p.iopl = iopl;
 
-	/* LINTED pointer casts may be troublesome */
-	return sysarch(I386_IOPL, (char *)&p);
+	return sysarch(I386_IOPL, &p);
 }
