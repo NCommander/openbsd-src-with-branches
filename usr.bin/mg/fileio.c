@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.96 2013/05/18 05:53:58 lum Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.97 2014/03/20 07:47:29 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -289,7 +289,7 @@ fbackupfile(const char *fn)
 char *
 adjustname(const char *fn, int slashslash)
 {
-	static char	 fnb[MAXPATHLEN];
+	static char	 fnb[PATH_MAX];
 	const char	*cp, *ep = NULL;
 	char		*path;
 

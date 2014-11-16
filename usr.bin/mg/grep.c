@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.c,v 1.40 2014/03/20 07:47:29 lum Exp $	*/
+/*	$OpenBSD: grep.c,v 1.41 2014/11/16 00:59:25 guenther Exp $	*/
 
 /* This file is in the public domain */
 
@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <ctype.h>
 #include <libgen.h>
+#include <limits.h>
 #include <time.h>
 
 int	 globalwd = FALSE;

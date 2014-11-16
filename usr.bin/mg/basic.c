@@ -1,4 +1,4 @@
-/*	$OpenBSD: basic.c,v 1.41 2013/05/31 18:19:19 florian Exp $	*/
+/*	$OpenBSD: basic.c,v 1.42 2014/03/20 07:47:29 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -14,6 +14,7 @@
 #include "def.h"
 
 #include <ctype.h>
+#include <limits.h>
 
 /*
  * Go to beginning of line.

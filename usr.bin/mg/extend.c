@@ -1,4 +1,4 @@
-/*	$OpenBSD: extend.c,v 1.55 2014/04/02 20:32:00 lum Exp $	*/
+/*	$OpenBSD: extend.c,v 1.56 2014/11/16 00:59:25 guenther Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -12,6 +12,7 @@
 
 #include <sys/types.h>
 #include <ctype.h>
+#include <limits.h>
 
 #include "macro.h"
 
