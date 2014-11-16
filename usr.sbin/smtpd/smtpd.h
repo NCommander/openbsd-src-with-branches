@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.468 2014/07/10 14:45:02 eric Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.469 2014/10/15 08:09:02 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1174,6 +1174,7 @@ void lka_session_forward_reply(struct forward_req *, int);
 
 /* log.c */
 void vlog(int, const char *, va_list);
+void logit(int, const char *, ...) __attribute__((format (printf, 2, 3)));
 
 
 /* mda.c */
