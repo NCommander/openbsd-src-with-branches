@@ -1,4 +1,4 @@
-/*	$OpenBSD: cscope.c,v 1.5 2014/03/20 07:47:29 lum Exp $	*/
+/*	$OpenBSD: cscope.c,v 1.6 2014/04/10 14:03:57 jsg Exp $	*/
 
 /*
  * This file is in the public domain.
@@ -557,7 +557,7 @@ prettyprint(struct buffer *bp, struct cstokens *t)
 const char *
 ltrim(const char *s)
 {
-	while (isblank(*s))
+	while (isblank((unsigned char)*s))
 		s++;
 	return s;
 }

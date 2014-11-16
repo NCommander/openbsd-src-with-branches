@@ -1,4 +1,4 @@
-/*	$OpenBSD: extend.c,v 1.54 2014/03/20 07:47:29 lum Exp $	*/
+/*	$OpenBSD: extend.c,v 1.55 2014/04/02 20:32:00 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -446,7 +446,7 @@ dobindkey(KEYMAP *map, const char *func, const char *str)
 	for (i = 0; *str && i < MAXKEY; i++) {
 		/* XXX - convert numbers w/ strol()? */
 		if (*str == '^' && *(str + 1) !=  '\0') {
-			key.k_chars[i] = CCHR(toupper(*++str));
+			key.k_chars[i] = CCHR(toupper((unsigned char)*++str));
 		} else if (*str == '\\' && *(str + 1) != '\0') {
 			switch (*++str) {
 			case '^':

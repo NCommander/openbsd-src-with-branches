@@ -1,4 +1,4 @@
-/*	$OpenBSD: tags.c,v 1.8 2014/03/20 07:47:29 lum Exp $	*/
+/*	$OpenBSD: tags.c,v 1.9 2014/03/22 10:00:58 lum Exp $	*/
 
 /*
  * This file is in the public domain.
@@ -475,7 +475,7 @@ curtoken(int f, int n, char *token)
 	
 	/* strip away leading whitespace if any like emacs. */
 	while (ltext(curwp->w_dotp) && 
-	    isspace(curwp->w_dotp->l_text[tdoto]))
+	    isspace(lgetc(curwp->w_dotp, tdoto)))
 		tdoto++;
 
 	size = curwp->w_doto - tdoto;
