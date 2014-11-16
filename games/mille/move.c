@@ -1,4 +1,4 @@
-/*	$OpenBSD: move.c,v 1.11 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: move.c,v 1.12 2009/12/10 23:53:05 beck Exp $	*/
 /*	$NetBSD: move.c,v 1.4 1995/03/24 05:01:57 cgd Exp $	*/
 
 /*
@@ -30,11 +30,8 @@
  * SUCH DAMAGE.
  */
 
-#ifdef DEBUG
-#include <sys/param.h>
-#endif
-
-#include <termios.h>
+#include	<limits.h>
+#include	<termios.h>
 #include	"mille.h"
 
 /*
@@ -417,7 +414,7 @@ getmove()
 #ifdef DEBUG
 		  case 'Z':		/* Debug code */
 			if (!Debug && outf == NULL) {
-				char	buf[MAXPATHLEN];
+				char	buf[PATH_MAX];
 over:
 				prompt(FILEPROMPT);
 				leaveok(Board, FALSE);

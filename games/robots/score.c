@@ -1,4 +1,4 @@
-/*	$OpenBSD: score.c,v 1.9 2004/11/29 08:52:29 jsg Exp $	*/
+/*	$OpenBSD: score.c,v 1.10 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: score.c,v 1.3 1995/04/22 10:09:12 cgd Exp $	*/
 
 /*
@@ -134,7 +134,7 @@ set_name(SCORE *scp)
 
 	if ((pp = getpwuid(scp->s_uid)) == NULL)
 		pp->pw_name = "???";
-	strlcpy(scp->s_name, pp->pw_name, MAXLOGNAME);
+	strlcpy(scp->s_name, pp->pw_name, LOGIN_NAME_MAX);
 }
 
 /*

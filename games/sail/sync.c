@@ -1,4 +1,4 @@
-/*	$OpenBSD: sync.c,v 1.9 2009/10/27 23:59:27 deraadt Exp $	*/
+/*	$OpenBSD: sync.c,v 1.10 2011/06/20 17:40:55 miod Exp $	*/
 /*	$NetBSD: sync.c,v 1.9 1998/08/30 09:19:40 veego Exp $	*/
 
 /*
@@ -30,14 +30,14 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include <fcntl.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/file.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <time.h>
 #include "extern.h"
 #include "pathnames.h"

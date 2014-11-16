@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.15 2013/08/29 20:22:17 naddy Exp $	*/
+/*	$OpenBSD: main.c,v 1.16 2014/07/12 03:41:04 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/04/24 12:24:37 cgd Exp $	*/
 
 /*
@@ -29,6 +29,7 @@
  */
 
 #include <sys/types.h>
+#include <limits.h>
 #include <pwd.h>
 #ifdef TERMIOS
 #include <termios.h>
@@ -194,7 +195,7 @@ main(argc, argv)
 		Timeout = TRUE;
 
 	/* update some important player statistics */
-	strlcpy(Player.p_login, Login, MAXLOGNAME);
+	strlcpy(Player.p_login, Login, LOGIN_NAME_MAX);
 	time(&seconds);
 	Player.p_lastused = localtime(&seconds)->tm_yday;
 	Player.p_status = S_PLAYING;

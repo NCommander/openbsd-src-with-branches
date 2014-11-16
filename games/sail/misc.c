@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.4 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.5 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: misc.c,v 1.3 1995/04/22 10:37:03 cgd Exp $	*/
 
 /*
@@ -32,7 +32,6 @@
 
 #include <fcntl.h>
 #include <stdlib.h>
-#include <sys/file.h>
 #include <unistd.h>
 #include "extern.h"
 #include "pathnames.h"

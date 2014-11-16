@@ -1,4 +1,4 @@
-/*	$OpenBSD: pl_7.c,v 1.8 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: pl_7.c,v 1.9 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: pl_7.c,v 1.6 1995/04/22 10:37:17 cgd Exp $	*/
 
 /*
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/ttydefaults.h>
 #include "player.h"
 #include <stdarg.h>
 #include <unistd.h>

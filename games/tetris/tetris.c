@@ -1,4 +1,4 @@
-/*	$OpenBSD: tetris.c,v 1.23 2009/10/28 00:25:38 deraadt Exp $	*/
+/*	$OpenBSD: tetris.c,v 1.24 2013/08/29 20:22:20 naddy Exp $	*/
 /*	$NetBSD: tetris.c,v 1.2 1995/04/22 07:42:47 cgd Exp $	*/
 
 /*-
@@ -39,11 +39,11 @@
  * Tetris (or however it is spelled).
  */
 
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/types.h>
 
 #include <err.h>
+#include <limits.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: snake.c,v 1.14 2009/11/13 21:50:12 deraadt Exp $	*/
+/*	$OpenBSD: snake.c,v 1.15 2013/08/29 20:22:20 naddy Exp $	*/
 /*	$NetBSD: snake.c,v 1.8 1995/04/29 00:06:41 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
  *	cc -O snake.c move.c -o snake -lm -lcurses
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
@@ -184,7 +183,7 @@ main(int argc, char *argv[])
 	if (!ccnt || ccnt > COLS - 3)
 		ccnt = COLS - 3;
 
-	i = MIN(lcnt, ccnt);
+	i = lcnt < ccnt ? lcnt : ccnt;
 	if (i < 4) {
 		endwin();
 		errx(1, "screen too small for a fair game.");
