@@ -1,4 +1,4 @@
-/*	$OpenBSD: obio.c,v 1.7 2009/12/25 20:52:55 miod Exp $	*/
+/*	$OpenBSD: obio.c,v 1.8 2010/04/04 12:49:30 miod Exp $	*/
 /*	$NetBSD: obio.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*-
@@ -269,7 +269,7 @@ obio_iomem_add_mapping(bus_addr_t bpa, bus_size_t size, int type,
 #undef MODE
 
 	for (; pa < endpa; pa += PAGE_SIZE, va += PAGE_SIZE) {
-		pmap_kenter_pa(va, pa, VM_PROT_READ | VM_PROT_WRITE);
+		pmap_kenter_pa(va, pa, PROT_READ | PROT_WRITE);
 		pte = __pmap_kpte_lookup(va);
 		KDASSERT(pte);
 		*pte |= m;  /* PTEA PCMCIA assistant bit */

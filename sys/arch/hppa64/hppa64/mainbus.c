@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.14 2014/04/08 09:34:23 mpi Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.15 2014/07/12 18:44:41 tedu Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -184,7 +184,7 @@ mbus_add_mapping(bus_addr_t bpa, bus_size_t size, int flags,
 
 	for (spa = trunc_page(bpa), epa = bpa + size;
 	     spa < epa; spa += PAGE_SIZE)
-		pmap_kenter_pa(spa, spa, UVM_PROT_RW);
+		pmap_kenter_pa(spa, spa, PROT_READ | PROT_WRITE);
 
 	*bshp = bpa;
 	return (0);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.39 2014/07/11 09:36:26 mpi Exp $	*/
+/*	$OpenBSD: dma.c,v 1.40 2014/07/12 18:44:42 tedu Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -485,8 +485,8 @@ _dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, size_t size,
 			if (size == 0)
 				panic("_bus_dmamem_map: size botch");
 			error = pmap_enter(pmap_kernel(), va, addr | pmapflags,
-			    VM_PROT_READ | VM_PROT_WRITE, VM_PROT_READ |
-			    VM_PROT_WRITE | PMAP_WIRED | PMAP_CANFAIL);
+			    PROT_READ | PROT_WRITE,
+			    PROT_READ | PROT_WRITE | PMAP_WIRED | PMAP_CANFAIL);
 			if (error) {
 				pmap_update(pmap_kernel());
 				km_free((void *)sva, ssize, &kv_any, &kp_none);

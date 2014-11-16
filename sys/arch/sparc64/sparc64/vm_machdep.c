@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.30 2014/07/12 18:44:43 tedu Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.31 2014/10/24 20:26:58 kettenis Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.38 2001/06/30 00:02:20 eeh Exp $ */
 
 /*
@@ -104,9 +104,9 @@ vmapbuf(struct buf *bp, vsize_t len)
 			panic("vmapbuf: null page frame");
 		/* Now map the page into kernel space. */
 		pmap_enter(pmap_kernel(), kva,
-			pa /* | PMAP_NC */,
-			VM_PROT_READ|VM_PROT_WRITE,
-			VM_PROT_READ|VM_PROT_WRITE|PMAP_WIRED);
+		    pa /* | PMAP_NC */,
+		    PROT_READ | PROT_WRITE,
+		    PROT_READ | PROT_WRITE | PMAP_WIRED);
 
 		uva += PAGE_SIZE;
 		kva += PAGE_SIZE;

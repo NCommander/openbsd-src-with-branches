@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_syscon.c,v 1.14 2013/09/24 20:14:34 miod Exp $	*/
+/*	$OpenBSD: if_le_syscon.c,v 1.15 2013/10/23 22:14:22 miod Exp $	*/
 
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -237,7 +237,8 @@ le_syscon_attach(struct device *parent, struct device *self, void *aux)
 
 	TAILQ_FOREACH(pg, &pglist, pageq) {
 		pmap_enter(pmap_kernel(), va, pa,
-		    UVM_PROT_RW, UVM_PROT_RW | PMAP_WIRED);
+		    PROT_READ | PROT_WRITE,
+		    PROT_READ | PROT_WRITE | PMAP_WIRED);
 		va += PAGE_SIZE;
 		pa += PAGE_SIZE;
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_physio.c,v 1.40 2014/07/13 23:49:40 uebayasi Exp $	*/
+/*	$OpenBSD: kern_physio.c,v 1.41 2014/09/14 14:17:25 jsg Exp $	*/
 /*	$NetBSD: kern_physio.c,v 1.28 1997/05/19 10:43:28 pk Exp $	*/
 
 /*-
@@ -139,7 +139,7 @@ physio(void (*strategy)(struct buf *), dev_t dev, int flags,
 			 */
 			error = uvm_vslock_device(p, iovp->iov_base, todo,
 			    (flags & B_READ) ?
-			    VM_PROT_READ | VM_PROT_WRITE : VM_PROT_READ, &map);
+			    PROT_READ | PROT_WRITE : PROT_READ, &map);
 			if (error)
 				goto done;
 			if (map) {

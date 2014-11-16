@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.9 2008/11/05 06:32:47 matthieu Exp $	*/
+/*	$OpenBSD: mem.c,v 1.10 2010/12/26 15:40:59 miod Exp $	*/
 /*	$NetBSD: mem.c,v 1.11 2003/10/16 12:02:58 jdolecek Exp $	*/
 
 /*
@@ -183,8 +183,8 @@ mmrw(dev, uio, flags)
 
 		case DEV_MEM:
 			v = uio->uio_offset;
-			prot = uio->uio_rw == UIO_READ ? VM_PROT_READ :
-			    VM_PROT_WRITE;
+			prot = uio->uio_rw == UIO_READ ? PROT_READ :
+			    PROT_WRITE;
 			pmap_enter(pmap_kernel(), (vaddr_t)memhook,
 			    trunc_page(v), prot, prot|PMAP_WIRED);
 			pmap_update(pmap_kernel());

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.45 2007/10/10 15:53:52 art Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.46 2013/01/16 19:04:43 miod Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.1 1996/09/30 16:34:57 ws Exp $	*/
 
 /*
@@ -217,7 +217,7 @@ vmapbuf(struct buf *bp, vsize_t len)
 		pmap_extract(vm_map_pmap(&bp->b_proc->p_vmspace->vm_map),
 		    faddr, &pa);
 		pmap_enter(vm_map_pmap(phys_map), taddr, pa,
-		    VM_PROT_READ | VM_PROT_WRITE, PMAP_WIRED);
+		    PROT_READ | PROT_WRITE, PMAP_WIRED);
 		faddr += NBPG;
 		taddr += NBPG;
 	}

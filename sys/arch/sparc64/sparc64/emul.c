@@ -1,4 +1,4 @@
-/*	$OpenBSD: emul.c,v 1.20 2011/07/06 21:41:37 art Exp $	*/
+/*	$OpenBSD: emul.c,v 1.22 2011/07/11 15:40:47 guenther Exp $	*/
 /*	$NetBSD: emul.c,v 1.8 2001/06/29 23:58:40 eeh Exp $	*/
 
 /*-
@@ -394,7 +394,7 @@ emul_qf(int32_t insv, struct proc *p, union sigval sv, struct trapframe *tf)
 
 segv:
 	KERNEL_LOCK();
-	trapsignal(p, SIGSEGV, isload ? VM_PROT_READ : VM_PROT_WRITE,
+	trapsignal(p, SIGSEGV, isload ? PROT_READ : PROT_WRITE,
 	    SEGV_MAPERR, sv);
 	KERNEL_UNLOCK();
 	return (0);
