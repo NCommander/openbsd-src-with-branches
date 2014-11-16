@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.29 2008/06/11 00:03:49 tobias Exp $	*/
+/*	$OpenBSD: tty.c,v 1.30 2008/09/15 16:11:35 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -35,7 +35,7 @@
 
 #include <term.h>
 
-static int	 charcost(char *);
+static int	 charcost(const char *);
 
 static int	 cci;
 static int	 insdel;	/* Do we have both insert & delete line? */
@@ -438,7 +438,7 @@ fakec(int c)
 
 /* calculate the cost of doing string s */
 static int
-charcost(char *s)
+charcost(const char *s)
 {
 	cci = 0;
 
