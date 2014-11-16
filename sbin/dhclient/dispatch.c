@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.90 2014/05/05 18:02:49 krw Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.91 2014/11/13 00:33:35 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -148,7 +148,7 @@ dispatch(void)
 			continue;
 		}
 		if (ifi->rfdesc == -1) {
-			warning("%s bpf socket gone; exiting");
+			warning("%s bpf socket gone; exiting", ifi->name);
 			quit = INTERNALSIG;
 			continue;
 		}
