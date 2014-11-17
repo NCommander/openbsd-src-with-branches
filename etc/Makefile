@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.397 2014/10/01 10:11:03 mpi Exp $
+#	$OpenBSD: Makefile,v 1.398 2014/10/03 19:22:38 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -210,6 +210,7 @@ distribution-etc-root-var: distrib-dirs
 		    ${DESTDIR}/etc/rc.d && \
 		${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 555 ${RCDAEMONS} \
 		    ${DESTDIR}/etc/rc.d
+	cd ${DESTDIR}/var; ln -fs ../tmp
 	touch ${DESTDIR}/usr/share/sysmerge/etcsum
 	touch ${DESTDIR}/usr/share/sysmerge/examplessum
 	cd ${DESTDIR}/ && \

@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.266 2014/10/01 10:11:03 mpi Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.267 2014/10/09 04:24:30 tedu Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 
@@ -776,12 +776,6 @@ var
         uucp			uname=uucp gname=daemon
         ..
         uucppublic		uname=uucp gname=daemon mode=0755
-        ..
-    ..
-
-    # ./var/tmp
-    tmp				mode=01777
-        vi.recover		mode=01777
         ..
     ..
 
