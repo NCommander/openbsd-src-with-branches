@@ -1,4 +1,4 @@
-/*	$OpenBSD: gethostnamadr_async.c,v 1.24 2014/02/17 10:49:53 eric Exp $	*/
+/*	$OpenBSD: gethostnamadr_async.c,v 1.25 2014/02/26 20:00:08 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -349,13 +349,12 @@ gethostnamadr_async_run(struct async *as, struct async_res *ar)
 		}
 
 		/*
-		 * No address found in the dns packet. The blocking version
-		 * reports this as an error.
+		 * No valid hostname or address found in the dns packet.
+		 * Ignore it.
 		 */
 		if ((as->as_type == ASR_GETHOSTBYNAME &&
 		     h->h.h_addr_list[0] == NULL) ||
-		    (as->as_type == ASR_GETHOSTBYADDR &&
-		     h->h.h_name == NULL)) {
+		    h->h.h_name == NULL) {
 			free(h);
 			async_set_state(as, ASR_STATE_NEXT_DB);
 			break;
