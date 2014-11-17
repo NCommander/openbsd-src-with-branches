@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.11 2011/03/07 07:43:02 henning Exp $ */
+/*	$OpenBSD: parser.c,v 1.12 2012/10/21 21:30:44 bluhm Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -334,6 +334,7 @@ parse_prefix(const char *word, struct in6_addr *addr, u_int8_t *prefixlen)
 			free(ps);
 			return (0);
 		}
+		free(ps);
 
 		inet6applymask(addr, addr, mask);
 		*prefixlen = mask;
