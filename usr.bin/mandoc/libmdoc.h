@@ -1,7 +1,7 @@
-/*	$Id: libmdoc.h,v 1.57 2014/08/08 15:32:17 schwarze Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
- * Copyright (c) 2013 Ingo Schwarze <schwarze@openbsd.org>
+ * Copyright (c) 2013, 2014 Ingo Schwarze <schwarze@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -37,6 +37,7 @@ struct	mdoc {
 #define	MDOC_SYNOPSIS	 (1 << 7) /* SYNOPSIS-style formatting */
 #define	MDOC_KEEP	 (1 << 8) /* in a word keep */
 #define	MDOC_SMOFF	 (1 << 9) /* spacing is off */
+#define	MDOC_NODELIMC	 (1 << 10) /* disable closing delimiter handling */
 	enum mdoc_next	  next; /* where to put the next node */
 	struct mdoc_node *last; /* the last node parsed */
 	struct mdoc_node *first; /* the first node parsed */
