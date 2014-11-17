@@ -17,7 +17,7 @@ BEGIN {
 use strict;
 use Config;
 
-plan tests => 797;
+plan tests => 800;
 
 $| = 1;
 
@@ -182,7 +182,9 @@ my $TEST = 'TEST';
 
 	local $ENV{PATH} = $tmp;
 	is(eval { `$echo 1` }, undef);
-	like($@, qr/^Insecure directory in \$ENV\{PATH}/);
+	# Message can be different depending on whether echo
+	# is a builtin or not
+	like($@, qr/^Insecure (?:directory in )?\$ENV\{PATH}/);
     }
 
     SKIP: {
@@ -1057,6 +1059,18 @@ my $TEST = 'TEST';
 	is($s,   'abcd',   "$desc: s value");
 	is($res, 'xyz',    "$desc: res value");
 	is($one, 'abcd',   "$desc: \$1 value");
+
+        # [perl #121854] match taintedness became sticky
+        # when one match has a taintess result, subseqent matches
+        # using the same pattern shouldn't necessarily be tainted
+
+        {
+            my $f = sub { $_[0] =~ /(.*)/ or die; $1 };
+            $res = $f->($TAINT);
+            is_tainted($res,   "121854: res tainted");
+            $res = $f->("abc");
+            isnt_tainted($res,   "121854: res not tainted");
+        }
     }
 
     $foo = $1 if 'bar' =~ /(.+)$TAINT/;
@@ -1433,7 +1447,12 @@ SKIP: {
         my $sent = "foobar";
         my $rcvd;
         my $size = 2000;
-        my $id = shmget(IPC_PRIVATE, $size, S_IRWXU);
+        my $id;
+        eval {
+            local $SIG{SYS} = sub { die "SIGSYS caught\n" };
+            $id = shmget(IPC_PRIVATE, $size, S_IRWXU);
+            1;
+        } or do { chomp(my $msg = $@); skip "shmget: $msg", 1; };
 
         if (defined $id) {
             if (shmwrite($id, $sent, 0, 60)) {
@@ -1453,7 +1472,7 @@ SKIP: {
         skip "SysV shared memory operation failed", 1 unless 
           $rcvd eq $sent;
 
-        is_tainted($rcvd);
+        is_tainted($rcvd, "shmread");
     }
 
 
@@ -1462,7 +1481,12 @@ SKIP: {
         skip "msg*() not available", 1 unless $Config{d_msg};
 
 	no strict 'subs';
-	my $id = msgget(IPC_PRIVATE, IPC_CREAT | S_IRWXU);
+        my $id;
+        eval {
+            local $SIG{SYS} = sub { die "SIGSYS caught\n" };
+            $id = msgget(IPC_PRIVATE, IPC_CREAT | S_IRWXU);
+            1;
+        } or do { chomp(my $msg = $@); skip "msgget: $msg", 1; };
 
 	my $sent      = "message";
 	my $type_sent = 1234;
@@ -1488,7 +1512,7 @@ SKIP: {
             skip "SysV message queue operation failed", 1
               unless $rcvd eq $sent && $type_sent == $type_rcvd;
 
-	    is_tainted($rcvd);
+	    is_tainted($rcvd, "msgrcv");
 	}
     }
 }
@@ -1997,18 +2021,21 @@ foreach my $ord (78, 163, 256) {
 }
 
 {
-    # 59998
-    sub cr { my $x = crypt($_[0], $_[1]); $x }
-    sub co { my $x = ~$_[0]; $x }
-    my ($a, $b);
-    $a = cr('hello', 'foo' . $TAINT);
-    $b = cr('hello', 'foo');
-    is_tainted($a,  "tainted crypt");
-    isnt_tainted($b, "untainted crypt");
-    $a = co('foo' . $TAINT);
-    $b = co('foo');
-    is_tainted($a,  "tainted complement");
-    isnt_tainted($b, "untainted complement");
+  SKIP: {
+      skip 'No crypt function, skipping crypt tests', 4 if(!$Config{d_crypt});
+      # 59998
+      sub cr { my $x = crypt($_[0], $_[1]); $x }
+      sub co { my $x = ~$_[0]; $x }
+      my ($a, $b);
+      $a = cr('hello', 'foo' . $TAINT);
+      $b = cr('hello', 'foo');
+      is_tainted($a,  "tainted crypt");
+      isnt_tainted($b, "untainted crypt");
+      $a = co('foo' . $TAINT);
+      $b = co('foo');
+      is_tainted($a,  "tainted complement");
+      isnt_tainted($b, "untainted complement");
+    }
 }
 
 {
@@ -2350,6 +2377,11 @@ SKIP: {
     eval { "a" =~ /$code/ };
     like($@, qr/Eval-group in insecure regular expression/, "tainted (?{})");
 }
+
+# reset() and tainted undef (?!)
+$::x = "foo";
+$_ = "$TAINT".reset "x";
+is eval { eval $::x.1 }, 1, 'reset does not taint undef';
 
 # This may bomb out with the alarm signal so keep it last
 SKIP: {
