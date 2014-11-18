@@ -1,4 +1,4 @@
-/*	$OpenBSD: ast.c,v 1.12 2014/05/11 00:12:44 guenther Exp $	*/
+/*	$OpenBSD: ast.c,v 1.13 2014/05/11 12:59:31 deraadt Exp $	*/
 /*	$NetBSD: ast.c,v 1.6 2003/10/31 16:44:34 cl Exp $	*/
 
 /*
@@ -55,7 +55,6 @@
 
 #include <machine/cpu.h>
 #include <machine/frame.h>
-#include <machine/cpu.h>
 
 #include <arm/cpufunc.h>
 

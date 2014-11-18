@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.31 2013/06/04 22:23:18 benno Exp $	*/
+/*	$OpenBSD: main.c,v 1.32 2013/11/27 21:25:25 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1993
@@ -45,7 +45,6 @@
 #include <string.h>
 #include <syslog.h>
 #include <stdio.h>
-#include <time.h>
 #include <unistd.h>
 #include <util.h>
 

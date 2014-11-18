@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.25 2014/07/10 18:59:49 tobias Exp $	*/
+/*	$OpenBSD: dir.c,v 1.26 2014/07/11 14:35:19 tobias Exp $	*/
 /*	$NetBSD: dir.c,v 1.11 1997/10/17 11:19:35 ws Exp $	*/
 
 /*
@@ -32,7 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <time.h>
 

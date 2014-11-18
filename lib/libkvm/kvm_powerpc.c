@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_powerpc.c,v 1.7 2012/03/16 03:00:03 deraadt Exp $	*/
+/*	$OpenBSD: kvm_powerpc.c,v 1.8 2013/11/01 15:57:56 deraadt Exp $	*/
 
 /*-
  * Copyright (C) 1996 Wolfgang Solfrank.
@@ -50,7 +50,6 @@
 #include <stdlib.h>
 #include <db.h>
 #include <limits.h>
-#include <kvm.h>
 
 #include "kvm_private.h"
 

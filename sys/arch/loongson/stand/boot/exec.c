@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.1 2010/02/14 22:39:33 miod Exp $	*/
+/*	$OpenBSD: exec.c,v 1.2 2010/04/03 19:13:27 miod Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -22,7 +22,6 @@
 #include <machine/pmon.h>
 #include "libsa.h"
 #include <lib/libsa/loadfile.h>
-#include <machine/cpu.h>
 
 typedef void (*program)(int32_t, int32_t, int32_t *, int32_t, uint64_t *);
 

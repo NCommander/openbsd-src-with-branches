@@ -1,4 +1,4 @@
-/*	$OpenBSD: snscore.c,v 1.9 2009/11/13 19:45:41 jsg Exp $	*/
+/*	$OpenBSD: snscore.c,v 1.10 2009/11/13 19:54:09 jsg Exp $	*/
 /*	$NetBSD: snscore.c,v 1.5 1995/04/24 12:25:43 cgd Exp $	*/
 
 /*
@@ -36,7 +36,6 @@
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include "pathnames.h"
