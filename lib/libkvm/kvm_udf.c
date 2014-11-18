@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_udf.c,v 1.6 2013/10/22 16:40:27 guenther Exp $	*/
+/*	$OpenBSD: kvm_udf.c,v 1.7 2013/11/16 00:37:11 guenther Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -34,6 +34,8 @@
 #include <sys/vnode.h>
 #include <sys/sysctl.h>
 #include <sys/specdev.h>
+
+#include <crypto/siphash.h>
 
 #include <isofs/udf/ecma167-udf.h>
 #include <isofs/udf/udf.h>
