@@ -1,4 +1,4 @@
-/*	$OpenBSD: moscom.c,v 1.19 2013/11/15 08:25:30 pirofti Exp $	*/
+/*	$OpenBSD: moscom.c,v 1.20 2014/07/12 21:24:33 mpi Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -28,7 +28,6 @@
 #include <dev/usb/usbdi_util.h>
 #include <dev/usb/usbdevs.h>
 
-#include <dev/usb/usbdevs.h>
 #include <dev/usb/ucomvar.h>
 
 #define MOSCOMBUFSZ		256

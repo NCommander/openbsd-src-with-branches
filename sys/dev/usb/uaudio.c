@@ -1,4 +1,4 @@
-/*	$OpenBSD: uaudio.c,v 1.104 2014/07/12 18:48:52 tedu Exp $ */
+/*	$OpenBSD: uaudio.c,v 1.105 2014/08/21 14:52:55 mpi Exp $ */
 /*	$NetBSD: uaudio.c,v 1.90 2004/10/29 17:12:53 kent Exp $	*/
 
 /*
@@ -46,7 +46,6 @@
 #include <sys/tty.h>
 #include <sys/file.h>
 #include <sys/selinfo.h>
-#include <sys/device.h>
 #include <sys/poll.h>
 
 #include <machine/bus.h>

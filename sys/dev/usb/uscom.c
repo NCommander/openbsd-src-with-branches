@@ -1,4 +1,4 @@
-/*	$OpenBSD: uscom.c,v 1.1 2014/03/25 03:29:23 jsg Exp $	*/
+/*	$OpenBSD: uscom.c,v 1.2 2014/07/12 21:24:33 mpi Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -28,7 +28,6 @@
 #include <dev/usb/usbdi_util.h>
 #include <dev/usb/usbdevs.h>
 
-#include <dev/usb/usbdevs.h>
 #include <dev/usb/ucomvar.h>
 
 #define USCOMBUFSZ		256

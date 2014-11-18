@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.c,v 1.176 2014/10/18 08:01:34 armani Exp $ */
+/*	$OpenBSD: uvideo.c,v 1.177 2014/10/23 07:34:48 brad Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -28,7 +28,6 @@
 #include <sys/selinfo.h>
 #include <sys/lock.h>
 #include <sys/stat.h>
-#include <sys/device.h>
 #include <sys/poll.h>
 #include <sys/timeout.h>
 #include <sys/kthread.h>
