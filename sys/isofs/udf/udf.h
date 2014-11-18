@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf.h,v 1.18 2013/08/16 14:27:28 mlarkin Exp $	*/
+/*	$OpenBSD: udf.h,v 1.19 2013/09/17 04:31:56 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -71,6 +71,7 @@ struct umount {
 	struct unode *um_vat;
 	struct long_ad um_root_icb;
 	LIST_HEAD(udf_hash_lh, unode) *um_hashtbl;
+	SIPHASH_KEY um_hashkey;
 	u_long um_hashsz;
 	struct mutex um_hashmtx;
 	int um_psecs;
