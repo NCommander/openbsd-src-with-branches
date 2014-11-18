@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_pae_input.c,v 1.20 2014/07/24 08:23:12 mpi Exp $	*/
+/*	$OpenBSD: ieee80211_pae_input.c,v 1.21 2014/09/14 14:17:26 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2007,2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -42,8 +42,6 @@
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_priv.h>
-
-#include <dev/rndvar.h>
 
 void	ieee80211_recv_4way_msg1(struct ieee80211com *,
 	    struct ieee80211_eapol_key *, struct ieee80211_node *);

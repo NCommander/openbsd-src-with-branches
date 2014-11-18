@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_id.c,v 1.6 2008/04/18 06:42:20 djm Exp $	*/
+/*	$OpenBSD: ip6_id.c,v 1.8 2010/02/08 12:16:02 jsing Exp $	*/
 /*	$NetBSD: ip6_id.c,v 1.7 2003/09/13 21:32:59 itojun Exp $	*/
 /*	$KAME: ip6_id.c,v 1.8 2003/09/06 13:41:06 itojun Exp $	*/
 
@@ -85,13 +85,12 @@
 #include <sys/param.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>
+#include <sys/systm.h>
 
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>
-
-#include <dev/rndvar.h>
 
 struct randomtab {
 	const int	ru_bits; /* resulting bits */

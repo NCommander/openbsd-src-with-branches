@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.119 2014/07/22 11:06:10 mpi Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.120 2014/09/14 14:17:26 jsg Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -79,8 +79,6 @@
 #include <sys/domain.h>
 #include <sys/kernel.h>
 #include <sys/pool.h>
-
-#include <dev/rndvar.h>
 
 #include <net/if.h>
 #include <net/route.h>

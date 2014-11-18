@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.101 2014/07/13 15:46:21 uebayasi Exp $	*/
+/*	$OpenBSD: systm.h,v 1.102 2014/10/09 04:04:27 tedu Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -214,6 +214,10 @@ int	copyoutstr(const void *, void *, size_t, size_t *);
 int	copyin(const void *, void *, size_t)
 		__attribute__ ((__bounded__(__buffer__,2,3)));
 int	copyout(const void *, void *, size_t);
+
+void arc4random_buf(void *, size_t);
+u_int32_t arc4random(void);
+u_int32_t arc4random_uniform(u_int32_t);
 
 struct timeval;
 struct timespec;

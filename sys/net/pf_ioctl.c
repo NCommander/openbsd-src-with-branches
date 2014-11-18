@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.275 2014/08/12 14:38:28 mikeb Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.276 2014/08/12 15:29:33 mikeb Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -64,7 +64,6 @@
 #include <netinet/ip_var.h>
 #include <netinet/ip_icmp.h>
 
-#include <dev/rndvar.h>
 #include <crypto/md5.h>
 #include <net/pfvar.h>
 

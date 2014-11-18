@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.166 2014/11/14 02:02:42 tedu Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.167 2014/11/15 06:55:32 dlg Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -42,7 +42,6 @@
 #include <sys/sysctl.h>
 
 #include <uvm/uvm_extern.h>
-#include <dev/rndvar.h>
 
 /*
  * Pool resource management utility.

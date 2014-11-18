@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_hostap.c,v 1.45 2014/09/13 16:06:37 doug Exp $	*/
+/*	$OpenBSD: if_wi_hostap.c,v 1.46 2014/09/14 14:17:24 jsg Exp $	*/
 
 /*
  * Copyright (c) 2002
@@ -66,8 +66,6 @@
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_ioctl.h>
-
-#include <dev/rndvar.h>
 
 #include <dev/ic/if_wireg.h>
 #include <dev/ic/if_wi_ieee.h>

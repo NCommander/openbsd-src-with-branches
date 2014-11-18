@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_alloc.c,v 1.101 2014/07/08 17:19:26 deraadt Exp $	*/
+/*	$OpenBSD: ffs_alloc.c,v 1.102 2014/09/14 14:17:26 jsg Exp $	*/
 /*	$NetBSD: ffs_alloc.c,v 1.11 1996/05/11 18:27:09 mycroft Exp $	*/
 
 /*
@@ -50,8 +50,6 @@
 #include <sys/syslog.h>
 #include <sys/stdint.h>
 #include <sys/time.h>
-
-#include <dev/rndvar.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>

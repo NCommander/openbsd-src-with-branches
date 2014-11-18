@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.c,v 1.177 2014/11/13 00:47:44 tedu Exp $	*/
+/*	$OpenBSD: uvm_map.c,v 1.178 2014/11/16 12:31:00 deraadt Exp $	*/
 /*	$NetBSD: uvm_map.c,v 1.86 2000/11/27 08:40:03 chs Exp $	*/
 
 /*
@@ -91,8 +91,6 @@
 #include <sys/malloc.h>
 #include <sys/pool.h>
 #include <sys/kernel.h>
-
-#include <dev/rndvar.h>
 
 #ifdef SYSVSHM
 #include <sys/shm.h>

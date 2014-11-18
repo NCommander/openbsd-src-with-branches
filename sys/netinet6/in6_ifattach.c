@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_ifattach.c,v 1.73 2014/08/25 14:00:34 florian Exp $	*/
+/*	$OpenBSD: in6_ifattach.c,v 1.74 2014/11/01 21:40:39 mpi Exp $	*/
 /*	$KAME: in6_ifattach.c,v 1.124 2001/07/18 08:32:51 jinmei Exp $	*/
 
 /*
@@ -57,8 +57,6 @@
 #ifdef MROUTING
 #include <netinet6/ip6_mroute.h>
 #endif
-
-#include <dev/rndvar.h>
 
 unsigned long in6_maxmtu = 0;
 

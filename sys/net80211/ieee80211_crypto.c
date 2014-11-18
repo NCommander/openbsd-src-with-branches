@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto.c,v 1.62 2014/07/12 18:44:22 tedu Exp $	*/
+/*	$OpenBSD: ieee80211_crypto.c,v 1.63 2014/09/14 14:17:26 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -40,7 +40,6 @@
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_priv.h>
 
-#include <dev/rndvar.h>
 #include <crypto/arc4.h>
 #include <crypto/md5.h>
 #include <crypto/sha1.h>

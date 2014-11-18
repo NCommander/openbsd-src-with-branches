@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.198 2014/09/08 06:24:13 jsg Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.199 2014/09/14 14:17:26 jsg Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -73,7 +73,6 @@
 #include <netinet/ip_ipsp.h>
 #include <net/pfkeyv2.h>
 #include <crypto/xform.h>
-#include <dev/rndvar.h>
 
 #ifdef DDB
 #include <ddb/db_output.h>

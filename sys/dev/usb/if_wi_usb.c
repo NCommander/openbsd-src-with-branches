@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_usb.c,v 1.62 2014/07/12 18:48:52 tedu Exp $ */
+/*	$OpenBSD: if_wi_usb.c,v 1.63 2014/07/13 15:52:49 mpi Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -64,8 +64,6 @@
 #endif
 
 #include <machine/bus.h>
-
-#include <dev/rndvar.h>
 
 #include <dev/ic/if_wireg.h>
 #include <dev/ic/if_wi_ieee.h>

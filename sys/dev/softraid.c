@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.342 2014/10/30 17:23:45 tedu Exp $ */
+/* $OpenBSD: softraid.c,v 1.343 2014/10/30 19:07:54 tedu Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -49,7 +49,6 @@
 #include <scsi/scsi_disk.h>
 
 #include <dev/softraidvar.h>
-#include <dev/rndvar.h>
 
 #ifdef HIBERNATE
 #include <lib/libsa/aes_xts.h>

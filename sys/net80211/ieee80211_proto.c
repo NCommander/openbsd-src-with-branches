@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_proto.c,v 1.47 2014/07/12 18:44:23 tedu Exp $	*/
+/*	$OpenBSD: ieee80211_proto.c,v 1.48 2014/09/14 14:17:26 jsg Exp $	*/
 /*	$NetBSD: ieee80211_proto.c,v 1.8 2004/04/30 23:58:20 dyoung Exp $	*/
 
 /*-
@@ -63,8 +63,6 @@
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_priv.h>
-
-#include <dev/rndvar.h>
 
 const char * const ieee80211_mgt_subtype_name[] = {
 	"assoc_req",	"assoc_resp",	"reassoc_req",	"reassoc_resp",

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe.h,v 1.15 2014/07/10 14:21:20 deraadt Exp $	*/
+/*	$OpenBSD: ixgbe.h,v 1.16 2014/07/22 13:12:11 mpi Exp $	*/
 
 /******************************************************************************
 
@@ -75,8 +75,6 @@
 typedef int	boolean_t;
 #define TRUE	1
 #define FALSE	0
-
-#include <dev/rndvar.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_addr.c,v 1.8 2014/06/10 20:08:48 kettenis Exp $	*/
+/*	$OpenBSD: uvm_addr.c,v 1.9 2014/11/13 00:47:44 tedu Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -22,7 +22,6 @@
 #include <uvm/uvm.h>
 #include <uvm/uvm_addr.h>
 #include <sys/pool.h>
-#include <dev/rndvar.h>
 
 /* Max gap between hint allocations. */
 #define UADDR_HINT_MAXGAP	(4 * PAGE_SIZE)

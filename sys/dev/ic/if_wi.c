@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.156 2014/07/22 13:12:12 mpi Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.157 2014/09/14 14:17:24 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -91,8 +91,6 @@
 #endif
 
 #include <machine/bus.h>
-
-#include <dev/rndvar.h>
 
 #include <dev/ic/if_wireg.h>
 #include <dev/ic/if_wi_ieee.h>

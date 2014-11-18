@@ -1,4 +1,4 @@
-/*	$OpenBSD: mld6.c,v 1.37 2014/01/24 12:20:22 naddy Exp $	*/
+/*	$OpenBSD: mld6.c,v 1.38 2014/04/14 09:06:42 mpi Exp $	*/
 /*	$KAME: mld6.c,v 1.26 2001/02/16 14:50:35 itojun Exp $	*/
 
 /*
@@ -71,7 +71,6 @@
 #include <sys/socket.h>
 #include <sys/protosw.h>
 #include <sys/syslog.h>
-#include <dev/rndvar.h>
 
 #include <net/if.h>
 #include <net/if_var.h>

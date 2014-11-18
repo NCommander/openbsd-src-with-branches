@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_rtr.c,v 1.88 2014/10/07 08:47:28 mpi Exp $	*/
+/*	$OpenBSD: nd6_rtr.c,v 1.89 2014/11/01 21:40:39 mpi Exp $	*/
 /*	$KAME: nd6_rtr.c,v 1.97 2001/02/07 11:09:13 itojun Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
 #include <sys/queue.h>
-#include <dev/rndvar.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
@@ -57,8 +56,6 @@
 #include <netinet6/ip6_var.h>
 #include <netinet6/nd6.h>
 #include <netinet/icmp6.h>
-
-#include <dev/rndvar.h>
 
 #define SDL(s)	((struct sockaddr_dl *)s)
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.168 2014/09/08 06:24:13 jsg Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.169 2014/10/10 16:20:03 sthen Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -40,7 +40,6 @@
 #include <sys/pool.h>
 #include <sys/syslog.h>
 
-#include <dev/rndvar.h>
 #include <net/if.h>
 #include <net/if_types.h>
 #include <net/bpf.h>

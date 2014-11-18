@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto_wep.c,v 1.9 2013/11/21 16:16:08 mpi Exp $	*/
+/*	$OpenBSD: ieee80211_crypto_wep.c,v 1.10 2014/07/12 18:44:22 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -42,7 +42,6 @@
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_crypto.h>
 
-#include <dev/rndvar.h>
 #include <crypto/arc4.h>
 
 /* WEP software crypto context */

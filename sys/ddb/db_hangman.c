@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_hangman.c,v 1.29 2014/01/18 01:58:33 deraadt Exp $	*/
+/*	$OpenBSD: db_hangman.c,v 1.30 2014/07/08 13:02:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Theo de Raadt, Michael Shalayeff
@@ -36,7 +36,6 @@
 #include <ddb/db_output.h>
 
 #include <dev/cons.h>
-#include <dev/rndvar.h>
 
 #define ABC_ISCLR(c)	sabc->abc[(c)-'a']==0
 #define ABC_ISWRONG(c)	sabc->abc[(c)-'a']=='_'
