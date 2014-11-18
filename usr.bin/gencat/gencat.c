@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencat.c,v 1.15 2012/03/04 04:05:15 fgsch Exp $	*/
+/*	$OpenBSD: gencat.c,v 1.16 2012/12/05 23:20:25 deraadt Exp $	*/
 /*	$NetBSD: gencat.c,v 1.9 1998/10/09 17:00:56 itohy Exp $	*/
 
 /*-
@@ -78,9 +78,6 @@ up-to-date.  Many thanks.
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <nl_types.h>
-#include <err.h>
 
 struct _msgT {
 	long    msgId;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripe.c,v 1.15 2013/11/26 12:00:19 henning Exp $ */
+/*	$OpenBSD: ripe.c,v 1.16 2014/07/12 20:16:38 krw Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -35,7 +35,6 @@
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "ripd.h"
 #include "rip.h"

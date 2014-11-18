@@ -1,4 +1,4 @@
-/*	$OpenBSD: ophandlers.c,v 1.11 2007/11/12 20:54:54 kettenis Exp $	*/
+/*	$OpenBSD: ophandlers.c,v 1.12 2008/06/26 05:42:21 ray Exp $	*/
 /*	$NetBSD: ophandlers.c,v 1.2 1996/02/28 01:13:30 thorpej Exp $	*/
 
 /*-
@@ -38,7 +38,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <vis.h>
 

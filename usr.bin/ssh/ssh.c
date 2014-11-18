@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.408 2014/10/08 22:20:25 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.409 2014/10/09 06:21:31 jmc Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -47,7 +47,6 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 

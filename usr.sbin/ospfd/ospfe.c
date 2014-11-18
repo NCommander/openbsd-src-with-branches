@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.87 2013/11/13 20:43:00 benno Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.88 2014/07/12 20:16:38 krw Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -34,7 +34,6 @@
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "ospf.h"
 #include "ospfd.h"

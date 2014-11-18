@@ -1,4 +1,4 @@
-/*	$OpenBSD: group.c,v 1.2 2009/03/06 18:39:13 michele Exp $ */
+/*	$OpenBSD: group.c,v 1.3 2009/06/06 07:52:04 pyr Exp $ */
 
 /*
  * Copyright (c) 2006 Esben Norby <norby@openbsd.org>
@@ -21,7 +21,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
-#include <sys/socket.h>
 #include <stdlib.h>
 #include <string.h>
 #include <event.h>

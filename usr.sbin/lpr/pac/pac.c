@@ -1,4 +1,4 @@
-/*	$OpenBSD: pac.c,v 1.20 2013/11/24 21:32:32 deraadt Exp $ */
+/*	$OpenBSD: pac.c,v 1.21 2014/01/22 09:50:51 jsg Exp $ */
 /*	$NetBSD: pac.c,v 1.14 2000/04/27 13:40:18 msaitoh Exp $	*/
 
 /*
@@ -47,7 +47,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "lp.h"

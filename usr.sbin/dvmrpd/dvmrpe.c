@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpe.c,v 1.11 2013/11/26 11:32:31 henning Exp $ */
+/*	$OpenBSD: dvmrpe.c,v 1.12 2014/07/12 19:22:32 krw Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -34,7 +34,6 @@
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "igmp.h"
 #include "dvmrp.h"

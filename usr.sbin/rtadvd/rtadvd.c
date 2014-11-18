@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.c,v 1.48 2014/10/22 19:47:28 brad Exp $	*/
+/*	$OpenBSD: rtadvd.c,v 1.49 2014/11/02 02:33:33 deraadt Exp $	*/
 /*	$KAME: rtadvd.c,v 1.66 2002/05/29 14:18:36 itojun Exp $	*/
 
 /*
@@ -54,7 +54,6 @@
 #include <err.h>
 #include <errno.h>
 #include <string.h>
-#include <stdlib.h>
 #include <util.h>
 #include <pwd.h>
 
