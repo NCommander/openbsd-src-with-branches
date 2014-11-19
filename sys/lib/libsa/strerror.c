@@ -1,4 +1,4 @@
-/*	$OpenBSD: strerror.c,v 1.8 2003/08/11 06:23:09 deraadt Exp $	*/
+/*	$OpenBSD: strerror.c,v 1.9 2011/09/20 22:26:05 miod Exp $	*/
 /*	$NetBSD: strerror.c,v 1.11 1996/10/13 02:29:08 christos Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #include "saerrno.h"
 #include "stand.h"
 
-char *
+const char *
 strerror(int err)
 {
 	static	char ebuf[64];
