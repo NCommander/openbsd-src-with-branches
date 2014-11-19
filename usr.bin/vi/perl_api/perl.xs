@@ -1,4 +1,4 @@
-/*	$OpenBSD: perl.xs,v 1.3 2002/02/16 21:27:58 millert Exp $	*/
+/*	$OpenBSD: perl.xs,v 1.4 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -74,7 +74,7 @@ perl_end(gp)
 		/*Irestartop = 0;            			/ * XXX */
 		perl_run(gp->perl_interp);
 		perl_destruct(gp->perl_interp);
-#if defined(DEBUG) || defined(PURIFY) || defined(LIBRARY)
+#if defined(DEBUG) || defined(PURIFY)
 		perl_free(gp->perl_interp);
 #endif
 	}
