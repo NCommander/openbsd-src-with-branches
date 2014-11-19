@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2012/08/30 19:29:14 pascal Exp $
+#	$OpenBSD: Makefile,v 1.9 2013/01/01 18:49:33 miod Exp $
 
 LIB=	sa
 
@@ -24,7 +24,7 @@ SRCS+=	close.c closeall.c dev.c disklabel.c dkcksum.c fstat.c ioctl.c lseek.c \
 	open.c read.c stat.c write.c cread.c
 
 # network routines
-SRCS+=	arp.c ether.c in_cksum.c net.c netif.c rpc.c
+SRCS+=	arp.c ether.c in_cksum.c net.c netif.c netudp.c rpc.c
 
 # network info services
 SRCS+=	bootp.c bootparam.c rarp.c
