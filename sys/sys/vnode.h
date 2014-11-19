@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnode.h,v 1.125 2014/09/08 01:47:06 guenther Exp $	*/
+/*	$OpenBSD: vnode.h,v 1.126 2014/11/17 16:49:04 tedu Exp $	*/
 /*	$NetBSD: vnode.h,v 1.38 1996/02/29 20:59:05 cgd Exp $	*/
 
 /*
@@ -206,14 +206,6 @@ struct vattr {
  * Token indicating no attribute value yet assigned.
  */
 #define	VNOVAL	(-1)
-
-/*
- * Structure returned by the KERN_VNODE sysctl
- */
-struct e_vnode {
-	struct vnode *vptr;
-	struct vnode vnode;
-};
 
 #ifdef _KERNEL
 /*
