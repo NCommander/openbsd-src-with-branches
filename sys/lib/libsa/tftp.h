@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftp.h,v 1.2 2004/04/02 04:39:51 deraadt Exp $	*/
+/*	$OpenBSD: tftp.h,v 1.3 2009/03/02 00:00:56 krw Exp $	*/
 /*	$NetBSD: tftp.h,v 1.3 2003/08/07 16:32:30 agc Exp $	*/
 
 /*
@@ -109,7 +109,6 @@ int	tftp_read(struct open_file *, void *, size_t, size_t *);
 int	tftp_write(struct open_file *, void *, size_t, size_t *);
 off_t	tftp_seek(struct open_file *, off_t, int);
 int	tftp_stat(struct open_file *, struct stat *);
-int	tftp_mount(int, struct in_addr, char *);
 int	tftp_readdir(struct open_file *, char *);
 
 #define IPPORT_TFTP 69
