@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_udp.c,v 1.32 2014/08/08 18:26:50 reyk Exp $	*/
+/*	$OpenBSD: relay_udp.c,v 1.33 2014/10/25 03:23:49 lteo Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2013 Reyk Floeter <reyk@openbsd.org>
@@ -269,6 +269,7 @@ relay_udp_server(int fd, short sig, void *arg)
 
 	relay_sessions++;
 	SPLAY_INSERT(session_tree, &rlay->rl_sessions, con);
+	relay_session_publish(con);
 
 	/* Increment the per-relay session counter */
 	rlay->rl_stats[proc_id].last++;
