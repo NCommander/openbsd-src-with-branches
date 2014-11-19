@@ -1,4 +1,4 @@
-/*	$OpenBSD: nat_traversal.c,v 1.20 2007/05/05 17:43:34 cloder Exp $	*/
+/*	$OpenBSD: nat_traversal.c,v 1.21 2012/10/29 17:09:52 markus Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -35,7 +35,6 @@
 #include "isakmp_fld.h"
 #include "isakmp_num.h"
 #include "ipsec_num.h"
-#include "hash.h"
 #include "log.h"
 #include "message.h"
 #include "nat_traversal.h"

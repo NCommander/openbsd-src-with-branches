@@ -1,4 +1,4 @@
-/*	$OpenBSD: sod.c,v 1.4 2014/07/06 11:52:02 miod Exp $	*/
+/*	$OpenBSD: sod.c,v 1.5 2014/07/10 09:03:02 otto Exp $	*/
 
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -40,7 +40,6 @@
 #include <fcntl.h>
 #include <nlist.h>
 #include <link.h>
-#include <limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
