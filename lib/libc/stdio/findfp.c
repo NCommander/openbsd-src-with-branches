@@ -1,4 +1,4 @@
-/*	$OpenBSD: findfp.c,v 1.14 2013/11/13 15:52:48 deraadt Exp $ */
+/*	$OpenBSD: findfp.c,v 1.15 2013/12/17 16:33:27 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -141,7 +141,7 @@ found:
 }
 
 /*
- * exit() and abort() call _cleanup() through the callback registered
+ * exit() calls _cleanup() through the callback registered
  * with __atexit_register_cleanup(), set whenever we open or buffer a
  * file. This chicanery is done so that programs that do not use stdio
  * need not link it all in.
