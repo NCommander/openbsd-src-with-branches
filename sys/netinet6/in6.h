@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.h,v 1.74 2014/08/26 21:44:29 florian Exp $	*/
+/*	$OpenBSD: in6.h,v 1.75 2014/08/31 19:20:44 bluhm Exp $	*/
 /*	$KAME: in6.h,v 1.83 2001/03/29 02:55:07 jinmei Exp $	*/
 
 /*
@@ -420,7 +420,6 @@ typedef	__socklen_t	socklen_t;	/* length type for network syscalls */
 extern	u_char inet6ctlerrmap[];
 extern	struct ifqueue ip6intrq;	/* IP6 packet input queue */
 extern	struct in6_addr zeroin6_addr;
-extern	unsigned long in6_maxmtu;
 
 struct cmsghdr;
 
