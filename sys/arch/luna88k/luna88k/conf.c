@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.22 2014/10/09 03:59:59 tedu Exp $	*/
+/*	$OpenBSD: conf.c,v 1.23 2014/10/09 04:10:03 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -121,7 +121,7 @@ struct cdevsw	cdevsw[] =
 	cdev_fd_init(1,filedesc),	/* 21: file descriptor pseudo-dev */
 	cdev_bpf_init(NBPFILTER,bpf),	/* 22: berkeley packet filter */
 	cdev_tun_init(NTUN,tun),	/* 23: network tunnel */
-	cdev_notdef(),			/* 26 was LKM */
+	cdev_notdef(),			/* 24 was LKM */
 	cdev_pcex_init(NPCEX, pcex),	/* 25: PC-9801 extension board slot */
 	cdev_notdef(),			/* 26 */
 	cdev_notdef(),			/* 27 */
