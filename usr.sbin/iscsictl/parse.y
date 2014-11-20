@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.5 2014/04/21 17:33:20 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.6 2014/11/03 03:42:12 doug Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -544,6 +544,9 @@ top:
 			} else if (c == quotec) {
 				*p = '\0';
 				break;
+			} else if (c == '\0') {
+				yyerror("syntax error");
+				return (findeol());
 			}
 			if (p + 1 >= buf + sizeof(buf) - 1) {
 				yyerror("string too long");
