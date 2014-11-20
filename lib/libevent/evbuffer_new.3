@@ -1,4 +1,4 @@
-.\"	$OpenBSD: evbuffer_new.3,v 1.6 2014/11/19 23:58:07 dlg Exp $
+.\"	$OpenBSD: evbuffer_new.3,v 1.8 2014/11/20 00:01:55 dlg Exp $
 .\"
 .\" Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: November 19 2014 $
+.Dd $Mdocdate: November 20 2014 $
 .Dt EVBUFFER_NEW 3
 .Os
 .Sh NAME
@@ -73,6 +73,8 @@
 .Fa "size_t *read_out"
 .Fa "enum evbuffer_eol_style eol_style"
 .Fc
+.Ft size_t
+.Fn "EVBUFFER_LENGTH" "const struct evbuffer *buf"
 .Sh DESCRIPTION
 The evbuffer API provides an implementation of buffering for use with
 libevent.
@@ -195,6 +197,10 @@ A carriage return followed by a new line character.
 .It Dv EVBUFFER_EOL_LF
 A new line character.
 .El
+.Pp
+.Fn EVBUFFER_LENGTH
+reports how many bytes are stored in the evbuffer
+.Fa buf .
 .Sh RETURN VALUES
 .Fn evbuffer_new
 returns a pointer to a newly allocated buffer on success,
@@ -247,6 +253,9 @@ return a pointer to the line on success,
 or
 .Dv NULL
 on failure.
+.Pp
+.Fn EVBUFFER_LENGTH
+returns the number of bytes available in the evbuffer.
 .Sh SEE ALSO
 .Xr errno 2 ,
 .Xr event 3 ,
