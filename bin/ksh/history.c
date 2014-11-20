@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.38 2010/05/01 21:09:23 guenther Exp $	*/
+/*	$OpenBSD: history.c,v 1.39 2010/05/19 17:36:08 jasper Exp $	*/
 
 /*
  * command history
@@ -19,7 +19,6 @@
 #include <sys/stat.h>
 
 #ifdef HISTORY
-# include <sys/file.h>
 # include <sys/mman.h>
 
 /*

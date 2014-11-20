@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi.c,v 1.27 2012/09/03 20:46:44 okan Exp $	*/
+/*	$OpenBSD: scsi.c,v 1.28 2013/11/12 04:59:02 deraadt Exp $	*/
 /*	$FreeBSD: scsi.c,v 1.11 1996/04/06 11:00:28 joerg Exp $	*/
 
 /*
@@ -46,13 +46,13 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/scsiio.h>
-#include <sys/file.h>
 #include <ctype.h>
 #include <signal.h>
 #include <err.h>

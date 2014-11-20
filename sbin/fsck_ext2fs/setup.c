@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.22 2014/07/13 13:50:00 pelikan Exp $	*/
+/*	$OpenBSD: setup.c,v 1.23 2014/07/13 16:08:53 pelikan Exp $	*/
 /*	$NetBSD: setup.c,v 1.1 1997/06/11 11:22:01 bouyer Exp $	*/
 
 /*
@@ -40,7 +40,6 @@
 #include <sys/ioctl.h>
 #include <sys/dkio.h>
 #include <sys/disklabel.h>
-#include <sys/file.h>
 
 #include <errno.h>
 #include <fcntl.h>
