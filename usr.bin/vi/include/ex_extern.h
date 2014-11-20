@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_extern.h,v 1.10 2013/05/03 20:43:25 kili Exp $	*/
+/*	$OpenBSD: ex_extern.h,v 1.11 2014/11/14 20:26:13 tedu Exp $	*/
 
 int ex(SCR **);
 int ex_cmd(SCR *);
@@ -51,7 +51,6 @@ int ex_mkexrc(SCR *, EXCMD *);
 int ex_copy(SCR *, EXCMD *);
 int ex_move(SCR *, EXCMD *);
 int ex_open(SCR *, EXCMD *);
-int ex_perl(SCR*, EXCMD *);
 int ex_preserve(SCR *, EXCMD *);
 int ex_recover(SCR *, EXCMD *);
 int ex_list(SCR *, EXCMD *);
