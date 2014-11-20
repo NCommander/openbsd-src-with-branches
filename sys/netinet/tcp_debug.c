@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_debug.c,v 1.20 2004/09/24 15:02:43 markus Exp $	*/
+/*	$OpenBSD: tcp_debug.c,v 1.21 2014/03/11 19:45:28 guenther Exp $	*/
 /*	$NetBSD: tcp_debug.c,v 1.10 1996/02/13 23:43:36 christos Exp $	*/
 
 /*
@@ -98,9 +98,6 @@
 #include <netinet/tcp_fsm.h>
 
 #ifdef INET6
-#ifndef INET
-#include <netinet/in.h>
-#endif
 #include <netinet/ip6.h>
 #endif /* INET6 */
 

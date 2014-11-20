@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsecctl.c,v 1.76 2012/06/29 15:01:07 mikeb Exp $	*/
+/*	$OpenBSD: ipsecctl.c,v 1.77 2012/07/05 09:02:20 mikeb Exp $	*/
 /*
  * Copyright (c) 2004, 2005 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  *
@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <netdb.h>
 
 #include "ipsecctl.h"
 #include "pfkey.h"

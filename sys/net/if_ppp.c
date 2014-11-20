@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ppp.c,v 1.75 2014/07/12 18:44:22 tedu Exp $	*/
+/*	$OpenBSD: if_ppp.c,v 1.76 2014/07/22 11:06:09 mpi Exp $	*/
 /*	$NetBSD: if_ppp.c,v 1.39 1997/05/17 21:11:59 christos Exp $	*/
 
 /*
@@ -137,9 +137,6 @@
 #endif
 
 #include "bpfilter.h"
-#if NBPFILTER > 0
-#include <net/bpf.h>
-#endif
 
 #ifdef VJC
 #include <net/slcompress.h>

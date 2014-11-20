@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencode.c,v 1.37 2014/03/14 03:44:13 lteo Exp $	*/
+/*	$OpenBSD: gencode.c,v 1.38 2014/03/14 03:45:41 lteo Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
@@ -54,7 +54,6 @@ struct rtentry;
 #include <pcap-namedb.h>
 #ifdef INET6
 #include <netdb.h>
-#include <sys/socket.h>
 #endif /*INET6*/
 
 #ifdef HAVE_OS_PROTO_H
