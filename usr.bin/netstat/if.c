@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.67 2013/11/21 17:32:13 mikeb Exp $	*/
+/*	$OpenBSD: if.c,v 1.68 2014/06/23 03:46:17 guenther Exp $	*/
 /*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
@@ -38,7 +38,6 @@
 #include <sys/sysctl.h>
 
 #include <net/if.h>
-#include <net/if_var.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>
 #include <net/route.h>
