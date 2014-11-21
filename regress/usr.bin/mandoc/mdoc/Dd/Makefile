@@ -1,7 +1,7 @@
-# $OpenBSD: Makefile,v 1.3 2014/07/02 08:03:57 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2014/08/14 02:00:52 schwarze Exp $
 
-REGRESS_TARGETS	 = badarg dupe late manarg noarg order
-LINT_TARGETS	 = badarg dupe late manarg noarg order
+REGRESS_TARGETS	 = badarg dupe late long manarg noarg order
+LINT_TARGETS	 = badarg dupe late long manarg noarg order
 
 # If groff finds exactly three arguments, it assumes they are month,
 # day and year without further checking.  If there are no arguments,
@@ -9,7 +9,7 @@ LINT_TARGETS	 = badarg dupe late manarg noarg order
 # to today's date.
 # That is not at all sane behaviour, we are not going to imitate it.
 
-SKIP_GROFF	 = badarg manarg noarg
+SKIP_GROFF	 = badarg long manarg noarg
 SKIP_ASCII	 = noarg
 
 # Autodetection fails for late .Dd, so specify -mdoc explicitly.
