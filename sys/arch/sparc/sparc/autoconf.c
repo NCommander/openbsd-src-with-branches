@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.95 2014/07/12 18:44:43 tedu Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.96 2014/11/16 12:30:58 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.73 1997/07/29 09:41:53 fair Exp $ */
 
 /*
@@ -1163,7 +1163,6 @@ mainbus_attach(parent, dev, aux)
 		 * elsewhere.
 		 */
 		"SUNW,sx",		/* XXX: no driver for SX yet */
-		"eccmemctl",
 		"virtual-memory",
 		"aliases",
 		"memory",
