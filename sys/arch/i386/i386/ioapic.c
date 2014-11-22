@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.31 2014/07/12 18:44:41 tedu Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.32 2014/07/17 12:56:07 dlg Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.7 2003/07/14 22:32:40 lukem Exp $	*/
 
 /*-
@@ -259,7 +259,8 @@ ioapic_match(struct device *parent, void *v, void *aux)
 
 /* Reprogram the APIC ID, and check that it actually got set. */
 void
-ioapic_set_id(struct ioapic_softc *sc) {
+ioapic_set_id(struct ioapic_softc *sc)
+{
 	u_int8_t apic_id;
 
 	ioapic_write(sc, IOAPIC_ID,
@@ -828,7 +829,8 @@ apic_intr_disestablish(void *arg)
 }
 
 void
-apic_stray(int irqnum) {
+apic_stray(int irqnum)
+{
 	unsigned int apicid;
 	struct ioapic_softc *sc;
 
