@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.131 2014/08/18 12:59:00 reyk Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.132 2014/11/19 10:24:40 blambert Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -1340,7 +1340,7 @@ canonicalize_host(const char *host, char *name, size_t len)
 {
 	struct sockaddr_in	 sin4;
 	struct sockaddr_in6	 sin6;
-	u_int			 i, j;
+	size_t			 i, j;
 	size_t			 plen;
 	char			 c;
 

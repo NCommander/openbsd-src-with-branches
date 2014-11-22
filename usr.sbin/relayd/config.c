@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.18 2014/07/11 16:59:38 reyk Exp $	*/
+/*	$OpenBSD: config.c,v 1.19 2014/11/19 10:24:40 blambert Exp $	*/
 
 /*
  * Copyright (c) 2011 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -912,7 +912,7 @@ config_getrelay(struct relayd *env, struct imsg *imsg)
 		}
 	}
 
-	if ((u_int)(IMSG_DATA_SIZE(imsg) - s) <
+	if ((off_t)(IMSG_DATA_SIZE(imsg) - s) <
 	    (rlay->rl_conf.ssl_cert_len +
 	    rlay->rl_conf.ssl_key_len +
 	    rlay->rl_conf.ssl_ca_len +
