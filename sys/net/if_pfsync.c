@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.210 2014/10/17 00:47:48 dlg Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.211 2014/11/06 05:29:35 lteo Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -379,7 +379,7 @@ pfsync_clone_destroy(struct ifnet *ifp)
 
 	pool_destroy(&sc->sc_pool);
 	free(sc->sc_imo.imo_membership, M_IPMOPTS, 0);
-	free(sc, M_DEVBUF, 0);
+	free(sc, M_DEVBUF, sizeof(*sc));
 
 	pfsyncif = NULL;
 	splx(s);

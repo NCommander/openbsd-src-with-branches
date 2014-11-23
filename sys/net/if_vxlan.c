@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.14 2014/07/12 18:44:22 tedu Exp $	*/
+/*	$OpenBSD: if_vxlan.c,v 1.15 2014/07/22 11:06:09 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -168,7 +168,7 @@ vxlan_clone_destroy(struct ifnet *ifp)
 	ether_ifdetach(ifp);
 	if_detach(ifp);
 	free(sc->sc_imo.imo_membership, M_IPMOPTS, 0);
-	free(sc, M_DEVBUF, 0);
+	free(sc, M_DEVBUF, sizeof(*sc));
 
 	return (0);
 }

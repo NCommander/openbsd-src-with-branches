@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.21 2014/07/12 18:44:22 tedu Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.22 2014/09/08 06:24:13 jsg Exp $	*/
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -218,7 +218,7 @@ pfkey_attach(struct socket *socket, struct mbuf *proto, struct proc *p)
 	return (0);
 
 ret:
-	free(socket->so_pcb, M_PCB, 0);
+	free(socket->so_pcb, M_PCB, sizeof(struct rawcb));
 	return (rval);
 }
 
