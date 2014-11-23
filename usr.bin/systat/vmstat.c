@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmstat.c,v 1.76 2014/04/08 14:04:11 mpi Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.77 2014/09/15 19:08:21 miod Exp $	*/
 /*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
@@ -35,7 +35,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/buf.h>
 #include <sys/namei.h>
 #include <sys/proc.h>
 #include <sys/sched.h>
