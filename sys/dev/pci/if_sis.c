@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sis.c,v 1.116 2014/07/08 05:35:18 dlg Exp $ */
+/*	$OpenBSD: if_sis.c,v 1.117 2014/07/22 13:12:11 mpi Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -1890,6 +1890,11 @@ sis_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 	case SIOCSIFMEDIA:
 		mii = &sc->sc_mii;
 		error = ifmedia_ioctl(ifp, ifr, &mii->mii_media, command);
+		break;
+
+	case SIOCGIFRXR:
+		error = if_rxr_ioctl((struct if_rxrinfo *)ifr->ifr_data,
+		    NULL, MCLBYTES, &sc->sis_cdata.sis_rx_ring);
 		break;
 
 	default:
