@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rl_pci.c,v 1.27 2013/08/07 01:06:36 bluhm Exp $ */
+/*	$OpenBSD: if_rl_pci.c,v 1.28 2014/07/22 13:12:11 mpi Exp $ */
 
 /*
  * Copyright (c) 1997, 1998
@@ -72,7 +72,7 @@
  * there appear to be problems with memory mapped mode: it looks like
  * doing too many memory mapped access back to back in rapid succession
  * can hang the bus. I'm inclined to blame this on crummy design/construction
- * on the part of RealTek. Memory mapped mode does appear to work on
+ * on the part of Realtek. Memory mapped mode does appear to work on
  * uniprocessor systems though.
  */
 #define RL_USEIOSPACE

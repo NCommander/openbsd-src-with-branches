@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl80x9reg.h,v 1.2 2003/10/21 18:58:49 jmc Exp $	*/
+/*	$OpenBSD: rtl80x9reg.h,v 1.3 2008/06/26 05:42:16 ray Exp $	*/
 /*	$NetBSD: rtl80x9reg.h,v 1.2 1998/10/31 00:31:43 thorpej Exp $	*/
 
 /*-
@@ -32,7 +32,7 @@
  */
 
 /*
- * Registers on RealTek 8019 and 8029 NE2000-compatible network interfaces.
+ * Registers on Realtek 8019 and 8029 NE2000-compatible network interfaces.
  *
  * Data sheets for these chips can be found at:
  *
