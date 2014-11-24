@@ -4,7 +4,7 @@
  * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.
  *
  * generated from:
- *	OpenBSD: miidevs,v 1.121 2013/12/14 09:45:03 brad Exp 
+ *	OpenBSD: miidevs,v 1.123 2014/11/24 00:13:42 brad Exp 
  */
 /* $NetBSD: miidevs,v 1.3 1998/11/05 03:43:43 thorpej Exp $ */
 
@@ -104,7 +104,7 @@
 #define	MII_OUI_xxBROADCOM3	0x00d897	/* Broadcom */
 #define	MII_OUI_xxDAVICOM	0x006040	/* Davicom */
 
-/* This is the OUI of the gigE PHY in the RealTek 8169S/8110S chips */
+/* This is the OUI of the gigE PHY in the Realtek 8169S/8110S chips */
 #define	MII_OUI_xxREALTEK	0x000732	/* Realtek */
 
 /* Contrived vendor for dcphy */
