@@ -1,4 +1,4 @@
-/*	$OpenBSD: paste.c,v 1.17 2009/10/27 23:59:41 deraadt Exp $	*/
+/*	$OpenBSD: paste.c,v 1.18 2010/08/12 05:02:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -130,6 +130,8 @@ parallel(char **argv)
 			if (!(buf = fgetln(lp->fp, &len))) {
 				if (!--opencnt)
 					break;
+				if (lp->fp != stdin)
+					(void)fclose(lp->fp);
 				lp->fp = NULL;
 				if (output && lp->cnt &&
 				    (ch = delim[(lp->cnt - 1) % delimcnt]))
