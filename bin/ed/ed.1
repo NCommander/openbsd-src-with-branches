@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ed.1,v 1.60 2014/04/14 22:12:01 tedu Exp $
+.\"	$OpenBSD: ed.1,v 1.61 2014/04/14 23:19:51 jmc Exp $
 .\"
 .\" Copyright (c) 1993 Andrew Moore, Talke Studio.
 .\" All rights reserved.
@@ -810,6 +810,19 @@ additionally, it says behaviour for the
 .Fl
 option is
 .Dq unspecified .
+.Pp
+The
+.St -p1003.1-2008
+specification says the
+.Ic l
+command should mark the ends of lines with a
+.Sq $
+character,
+and that
+.Sq $
+characters
+within the text should be output preceded by a backslash;
+this implementation does not support that.
 .Sh HISTORY
 An
 .Nm
