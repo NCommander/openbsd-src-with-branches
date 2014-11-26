@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.11 2009/10/27 23:59:37 deraadt Exp $	*/
+/*	$OpenBSD: dc.c,v 1.12 2014/05/20 01:25:23 guenther Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -72,8 +72,8 @@ main(int argc, char *argv[])
 	argv += optind;
 
 	init_bmachine(extended_regs);
-	(void)setlinebuf(stdout);
-	(void)setlinebuf(stderr);
+	(void)setvbuf(stdout, NULL, _IOLBF, 0);
+	(void)setvbuf(stderr, NULL, _IOLBF, 0);
 
 	if (argc > 1)
 		usage();

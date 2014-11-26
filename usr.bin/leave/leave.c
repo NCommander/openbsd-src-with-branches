@@ -1,4 +1,4 @@
-/*	$OpenBSD: leave.c,v 1.12 2009/10/27 23:59:39 deraadt Exp $	*/
+/*	$OpenBSD: leave.c,v 1.13 2013/11/26 13:19:07 deraadt Exp $	*/
 /*	$NetBSD: leave.c,v 1.4 1995/07/03 16:50:13 phil Exp $	*/
 
 /*
@@ -64,7 +64,7 @@ main(int argc, char *argv[])
 	int plusnow = 0, twentyfour;
 	char buf[50];
 	
-	if (setlinebuf(stdout) != 0)
+	if (setvbuf(stdout, NULL, _IOLBF, 0) != 0)
 		errx(1, "Cannot set stdout to line buffered.");
 
 	if (argc < 2) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.c,v 1.45 2012/12/29 01:32:44 millert Exp $	*/
+/*	$OpenBSD: grep.c,v 1.46 2014/11/26 17:26:40 millert Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -484,7 +484,7 @@ main(int argc, char *argv[])
 	}
 
 	if (lbflag)
-		setlinebuf(stdout);
+		setvbuf(stdout, NULL, _IOLBF, 0);
 
 	if ((argc == 0 || argc == 1) && !Rflag && !Hflag)
 		hflag = 1;

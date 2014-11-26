@@ -1,4 +1,4 @@
-/* $OpenBSD: syslogc.c,v 1.15 2011/07/04 20:23:09 mpf Exp $ */
+/* $OpenBSD: syslogc.c,v 1.16 2011/07/12 11:28:31 sthen Exp $ */
 
 /*
  * Copyright (c) 2004 Damien Miller
@@ -154,8 +154,8 @@ main(int argc, char **argv)
 		err(1, "fwrite");
 
 	fflush(ctlf);
-	setlinebuf(ctlf);
-	setlinebuf(stdout);
+	setvbuf(ctlf, NULL, _IOLBF, 0);
+	setvbuf(stdout, NULL, _IOLBF, 0);
 
 	/* Fetch header */
 	if (fread(&rr, sizeof(rr), 1, ctlf) != 1)

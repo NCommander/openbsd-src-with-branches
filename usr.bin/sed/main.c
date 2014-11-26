@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.16 2009/08/07 03:30:56 djm Exp $	*/
+/*	$OpenBSD: main.c,v 1.17 2009/10/27 23:59:43 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -118,7 +118,7 @@ main(int argc, char *argv[])
 			nflag = 1;
 			break;
 		case 'u':
-			setlinebuf(stdout);
+			setvbuf(stdout, NULL, _IOLBF, 0);
 			break;
 		default:
 		case '?':

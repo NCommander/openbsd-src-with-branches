@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.19 2009/10/27 23:59:34 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.20 2013/11/15 22:20:04 millert Exp $	*/
 /*	$NetBSD: main.c,v 1.13 1997/07/01 05:37:51 lukem Exp $	*/
 
 /*
@@ -157,7 +157,7 @@ main(int argc, char *argv[])
 		(void)signal(SIGINT, SIG_IGN);
 	if (signal(SIGTERM, onintr) == SIG_IGN)
 		(void)signal(SIGTERM, SIG_IGN);
-	setlinebuf(stderr);
+	setvbuf(stderr, NULL, _IOLBF, 0);
 
 	atexit(cleanup);
 
