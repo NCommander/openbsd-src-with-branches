@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sysmerge.8,v 1.66 2014/09/05 17:19:48 ajacoutot Exp $
+.\"	$OpenBSD: sysmerge.8,v 1.67 2014/09/05 17:26:08 ajacoutot Exp $
 .\"
 .\" Copyright (c) 2008 Antoine Jacoutot <ajacoutot@openbsd.org>
 .\"
@@ -41,12 +41,9 @@ All work is done under
 .Em work directory )
 which contains the temporary root directory
 .Pa temproot ,
-the
-.Pa backup
-directory containing modified and/or replaced files
 and the
-.Pa sysmerge.log
-run output log file.
+.Pa backup
+directory containing modified and/or replaced files.
 .Pp
 .Nm
 will work through the fileset,
@@ -152,7 +149,7 @@ Specifies the pagination program to use.
 .It Ev TMPDIR
 Directory in which the work directory is created.
 If unset, this defaults to
-.Pa /var/tmp .
+.Pa /tmp .
 .El
 .Sh FILES
 .Bl -tag -width "${TMPDIR}/sysmerge.XXXXXXXXXX" -compact
@@ -163,9 +160,6 @@ The
 and
 .Sy backup
 directories are created relative to this.
-.It ${WRKDIR}/sysmerge.log
-.Nm
-log file.
 .It /etc/sysmerge.ignore
 Files and directories to ignore from comparison.
 .It /usr/share/sysmerge/etc.tgz
