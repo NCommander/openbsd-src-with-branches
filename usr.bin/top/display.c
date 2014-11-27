@@ -1,4 +1,4 @@
-/* $OpenBSD: display.c,v 1.46 2013/11/28 18:24:55 deraadt Exp $	 */
+/* $OpenBSD: display.c,v 1.47 2014/01/14 02:44:57 guenther Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -370,7 +370,7 @@ i_cpustates(int64_t *ostates)
 			first = 0;
 			move(2, 0);
 			clrtoeol();
-			addstrp("All CPUs: ");
+			printwp("%-3d CPUs: ", ncpu);
 
 			while ((thisname = *names++) != NULL) {
 				if (*thisname != '\0') {
