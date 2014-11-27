@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.58 2014/11/20 06:51:41 mlarkin Exp $	*/
+/*	$OpenBSD: locore.S,v 1.59 2014/11/20 08:56:52 mlarkin Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -598,7 +598,8 @@ cont:
 	xorl	%eax,%eax	/* XXX */
 	orl	$(EFER_LME|EFER_SCE),%eax
 	movl	RELOC((pg_nx + 4)), %ebx
-	jz 	write_efer
+	cmpl	$0, %ebx
+	je 	write_efer
 	orl	$(EFER_NXE), %eax
 write_efer:	
 	wrmsr
