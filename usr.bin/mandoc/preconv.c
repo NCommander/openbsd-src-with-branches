@@ -1,4 +1,4 @@
-/*	$OpenBSD: preconv.c,v 1.2 2014/11/01 04:07:25 schwarze Exp $ */
+/*	$OpenBSD: preconv.c,v 1.3 2014/11/14 04:23:08 schwarze Exp $ */
 /*
  * Copyright (c) 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014 Ingo Schwarze <schwarze@openbsd.org>
@@ -15,7 +15,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
 #include <sys/types.h>
 
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/*	$Id: mandoc_aux.h,v 1.3 2014/04/23 21:06:33 schwarze Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2009, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014 Ingo Schwarze <schwarze@openbsd.org>

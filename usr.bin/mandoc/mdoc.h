@@ -1,4 +1,4 @@
-/*	$Id: mdoc.h,v 1.55 2014/08/08 15:03:24 schwarze Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  *

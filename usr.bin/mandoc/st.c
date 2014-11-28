@@ -1,4 +1,4 @@
-/*	$Id: st.c,v 1.6 2011/04/24 16:22:02 schwarze Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2009 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,6 +14,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#include <sys/types.h>
+
 #include <string.h>
 
 #include "mdoc.h"

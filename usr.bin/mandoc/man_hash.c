@@ -1,4 +1,4 @@
-/*	$Id: man_hash.c,v 1.16 2014/03/21 22:17:01 schwarze Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2008, 2009, 2010 Kristaps Dzonsons <kristaps@bsd.lv>
  *
