@@ -1,4 +1,4 @@
-/*	$OpenBSD: bzero.S,v 1.3 2007/05/25 20:32:29 krw Exp $	*/
+/*	$OpenBSD: bzero.S,v 1.4 2007/11/25 18:25:35 deraadt Exp $	*/
 
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
@@ -13,7 +13,6 @@ ENTRY(bzero)
 	movl	8(%esp),%edi
 	movl	12(%esp),%edx
 
-	cld				/* set fill direction forward */
 	xorl	%eax,%eax		/* set fill data to 0 */
 
 	/*

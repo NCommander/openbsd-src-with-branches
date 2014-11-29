@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: memcmp.S,v 1.1 2000/06/16 19:56:54 millert Exp $	*/
 
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
@@ -12,7 +12,6 @@ ENTRY(memcmp)
 	pushl	%esi
 	movl	12(%esp),%edi
 	movl	16(%esp),%esi
-	cld				/* set compare direction forward */
 
 	movl	20(%esp),%ecx		/* compare by words */
 	shrl	$2,%ecx

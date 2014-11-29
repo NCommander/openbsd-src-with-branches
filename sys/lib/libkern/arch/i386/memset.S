@@ -1,4 +1,4 @@
-/*	$OpenBSD: memset.S,v 1.2 1996/09/27 06:47:47 mickey Exp $	*/
+/*	$OpenBSD: memset.S,v 1.3 2007/05/25 20:32:29 krw Exp $	*/
 
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
@@ -14,8 +14,6 @@ ENTRY(memset)
 	movzbl	16(%esp),%eax		/* unsigned char, zero extend */
 	movl	20(%esp),%ecx
 	pushl	%edi			/* push address of buffer */
-
-	cld				/* set fill direction forward */
 
 	/*
 	 * if the string is too short, it's really not worth the overhead

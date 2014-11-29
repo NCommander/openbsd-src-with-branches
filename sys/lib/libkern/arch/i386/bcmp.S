@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bcmp.S,v 1.2 1996/09/27 06:47:44 mickey Exp $	*/
 
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
@@ -13,7 +13,6 @@ ENTRY(bcmp)
 	movl	12(%esp),%edi
 	movl	16(%esp),%esi
 	xorl	%eax,%eax		/* clear return value */
-	cld				/* set compare direction forward */
 
 	movl	20(%esp),%ecx		/* compare by words */
 	shrl	$2,%ecx
