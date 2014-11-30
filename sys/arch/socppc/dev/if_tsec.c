@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tsec.c,v 1.31 2014/07/12 18:44:42 tedu Exp $	*/
+/*	$OpenBSD: if_tsec.c,v 1.32 2014/07/16 10:45:46 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -585,6 +585,11 @@ tsec_ioctl(struct ifnet *ifp, u_long cmd, caddr_t addr)
 	case SIOCGIFMEDIA:
 	case SIOCSIFMEDIA:
 		error = ifmedia_ioctl(ifp, ifr, &sc->sc_media, cmd);
+		break;
+
+	case SIOCGIFRXR:
+		error = if_rxr_ioctl((struct if_rxrinfo *)ifr->ifr_data,
+		    NULL, MCLBYTES, &sc->sc_rx_ring);
 		break;
 
 	default:
