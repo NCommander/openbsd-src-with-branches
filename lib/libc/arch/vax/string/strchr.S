@@ -1,10 +1,7 @@
-/*	$OpenBSD: bcopy.S,v 1.5 2005/08/07 11:30:38 espie Exp $	*/
-
-/*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
- *
- * This code is derived from locore.s.
+/*	$OpenBSD: index.S,v 1.6 2013/07/05 21:10:50 miod Exp $ */
+/*
+ * Copyright (c) 1980, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,52 +28,31 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
-
 /*
- * memmove(src, dst, cnt)
- *  ws@tools.de     (Wolfgang Solfrank, TooLs GmbH) +49-228-985800
+ * Find the first occurrence of c in the string cp.
+ * Return pointer to match or null pointer.
+ *
+ * char *strchr(char *cp, char c)
  */
+#include "DEFS.h"
 
-ENTRY(memmove)
-	pushl	%esi
-	pushl	%edi
+/* Alas not quite twice as fast as the generic C version on a uvax2 */
 
-	movl	12(%esp),%edi
-	movl	16(%esp),%esi
-	movl	%edi, %eax
-
-	movl	20(%esp),%ecx
-	movl	%ecx,%edx
-	cmpl	%esi,%edi	/* potentially overlapping? */
-	jnb	1f
-	cld			/* nope, copy forwards. */
-	shrl	$2,%ecx		/* copy by words */
-	rep
-	movsl
-	movl	%edx,%ecx
-	andl	$3,%ecx		/* any bytes left? */
-	rep
-	movsb
-	popl	%edi
-	popl	%esi
-	ret
+STRONG_ALIAS(index, strchr)
+ENTRY(strchr, 0)
+	movq	4(%ap),%r0	# r0 = cp; r1 = c
+	tstb	%r1		# special case, looking for '\0'
+	jeql	3f
 1:
-	addl	%ecx,%edi	/* copy backwards. */
-	addl	%ecx,%esi
-	std
-	andl	$3,%ecx		/* any fractional bytes? */
-	decl	%edi
-	decl	%esi
-	rep
-	movsb
-	movl	%edx,%ecx
-	shrl	$2,%ecx
-	subl	$3,%esi
-	subl	$3,%edi
-	rep
-	movsl
-	popl	%edi
-	popl	%esi
-	cld
+	cmpb	(%r0),%r1
+	jeql	2f
+	tstb	(%r0)+
+	jneq	1b
+	clrl	%r0		# return NULL if no match
+2:
 	ret
+3:
+	tstb	(%r0)+
+	jneq	3b
+	decl	%r0
+	jbr	2b

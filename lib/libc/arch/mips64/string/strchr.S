@@ -1,10 +1,10 @@
-/*	$OpenBSD: bcopy.S,v 1.5 2005/08/07 11:30:38 espie Exp $	*/
-
+/*	$OpenBSD: index.S,v 1.5 2009/12/11 05:10:17 miod Exp $ */
 /*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1991, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
- * This code is derived from locore.s.
+ * This code is derived from software contributed to Berkeley by
+ * Ralph Campbell.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,50 +33,18 @@
 
 #include <machine/asm.h>
 
-/*
- * memmove(src, dst, cnt)
- *  ws@tools.de     (Wolfgang Solfrank, TooLs GmbH) +49-228-985800
- */
-
-ENTRY(memmove)
-	pushl	%esi
-	pushl	%edi
-
-	movl	12(%esp),%edi
-	movl	16(%esp),%esi
-	movl	%edi, %eax
-
-	movl	20(%esp),%ecx
-	movl	%ecx,%edx
-	cmpl	%esi,%edi	/* potentially overlapping? */
-	jnb	1f
-	cld			/* nope, copy forwards. */
-	shrl	$2,%ecx		/* copy by words */
-	rep
-	movsl
-	movl	%edx,%ecx
-	andl	$3,%ecx		/* any bytes left? */
-	rep
-	movsb
-	popl	%edi
-	popl	%esi
-	ret
-1:
-	addl	%ecx,%edi	/* copy backwards. */
-	addl	%ecx,%esi
-	std
-	andl	$3,%ecx		/* any fractional bytes? */
-	decl	%edi
-	decl	%esi
-	rep
-	movsb
-	movl	%edx,%ecx
-	shrl	$2,%ecx
-	subl	$3,%esi
-	subl	$3,%edi
-	rep
-	movsl
-	popl	%edi
-	popl	%esi
-	cld
-	ret
+LEAF(strchr, 0)
+ALEAF(index)
+	.set	reorder
+0:
+	lbu	a2, 0(a0)		# get a byte
+	daddu	a0, a0, 1
+	beq	a2, a1, fnd
+	bne	a2, zero, 0b
+notfnd:
+	move	v0, zero
+	j	ra
+fnd:
+	dsubu	v0, a0, 1
+	j	ra
+END(strchr)

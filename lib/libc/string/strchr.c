@@ -1,10 +1,7 @@
-/*	$OpenBSD: rindex.S,v 1.3 2005/08/07 16:40:15 espie Exp $ */
+/*	$OpenBSD: index.c,v 1.5 2005/08/08 08:05:37 espie Exp $ */
 /*-
- * Copyright (c) 1991, 1993
- *	The Regents of the University of California.  All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * Ralph Campbell.
+ * Copyright (c) 1990 The Regents of the University of California.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,17 +28,16 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+#include <string.h>
 
-LEAF(rindex, 0)
-	.set	reorder
-	move	v0, zero		# default if not found
-1:
-	lbu	a3, 0(a0)		# get a byte
-	daddu	a0, a0, 1
-	bne	a3, a1, 2f
-	dsubu	v0, a0, 1		# save address of last match
-2:
-	bne	a3, zero, 1b		# continue if not end
-	j	ra
-END(rindex)
+char *
+strchr(const char *p, int ch)
+{
+	for (;; ++p) {
+		if (*p == ch)
+			return((char *)p);
+		if (!*p)
+			return((char *)NULL);
+	}
+	/* NOTREACHED */
+}
