@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock_machdep.c,v 1.6 2014/03/14 01:20:44 dlg Exp $	*/
+/*	$OpenBSD: lock_machdep.c,v 1.7 2014/03/29 18:09:30 guenther Exp $	*/
 
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
@@ -53,7 +53,10 @@ extern int __mp_lock_spinout;
  * effectively nops, executing them on earlier non-CMT processors is
  * harmless, so we make this the default.
  *
- * On SPARC64 VI and it successors we execute the processor-specific
+ * On SPARC T4 and later, we can use the processor-specific pause
+ * instruction.
+ *
+ * On SPARC64 VI and its successors we execute the processor-specific
  * sleep instruction.
  */
 static __inline void
@@ -63,6 +66,14 @@ __mp_lock_spin_hook(void)
 		"999:	rd	%%ccr, %%g0			\n"
 		"	rd	%%ccr, %%g0			\n"
 		"	rd	%%ccr, %%g0			\n"
+		"	.section .sun4v_pause_patch, \"ax\"	\n"
+		"	.word	999b				\n"
+		"	.word	0xb7802080	! pause	128	\n"
+		"	.word	999b + 4			\n"
+		"	nop					\n"
+		"	.word	999b + 8			\n"
+		"	nop					\n"
+		"	.previous				\n"
 		"	.section .sun4u_mtp_patch, \"ax\"	\n"
 		"	.word	999b				\n"
 		"	.word	0x81b01060	! sleep		\n"
