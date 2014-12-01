@@ -1,4 +1,4 @@
-/*	$OpenBSD: run.c,v 1.34 2013/09/29 15:42:25 deraadt Exp $	*/
+/*	$OpenBSD: run.c,v 1.35 2014/10/11 03:07:29 doug Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -921,7 +921,7 @@ int format(char **pbuf, int *pbufsize, const char *s, Node *a)	/* printf-like co
 			break;
 		case 'c':
 			if (isnum(x)) {
-				if (getfval(x))
+				if ((int)getfval(x))
 					snprintf(p, buf + bufsize - p, fmt, (int) getfval(x));
 				else {
 					*p++ = '\0'; /* explicit null byte */
