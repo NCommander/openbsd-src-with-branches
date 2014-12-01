@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.47 2013/11/26 13:21:16 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.48 2014/05/20 01:25:23 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -565,6 +565,14 @@ grep_realloc(void *ptr, size_t size)
 {
 	if ((ptr = realloc(ptr, size)) == NULL)
 		err(2, "realloc");
+	return ptr;
+}
+
+void *
+grep_reallocarray(void *ptr, size_t nmemb, size_t size)
+{
+	if ((ptr = reallocarray(ptr, nmemb, size)) == NULL)
+		err(2, "reallocarray");
 	return ptr;
 }
 
