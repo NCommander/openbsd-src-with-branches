@@ -1,4 +1,4 @@
-/* $OpenBSD: ui.c,v 1.54 2008/06/10 22:14:02 bluhm Exp $	 */
+/* $OpenBSD: ui.c,v 1.55 2014/10/09 02:38:56 deraadt Exp $	 */
 /* $EOM: ui.c,v 1.43 2000/10/05 09:25:12 niklas Exp $	 */
 
 /*
@@ -621,7 +621,7 @@ ui_handler(void)
 		if (*p == '\n') {
 			*p = '\0';
 			ui_handle_command(buf);
-			memcpy(buf, p + 1, n);
+			memmove(buf, p + 1, n);
 			p = buf;
 			resid = sz - n;
 			continue;
