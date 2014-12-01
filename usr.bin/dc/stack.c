@@ -1,4 +1,4 @@
-/*	$OpenBSD: stack.c,v 1.11 2009/10/27 23:59:37 deraadt Exp $	*/
+/*	$OpenBSD: stack.c,v 1.13 2014/12/01 13:11:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -133,8 +133,8 @@ stack_grow(struct stack *stack)
 
 	if (++stack->sp == stack->size) {
 		new_size = stack->size * 2 + 1;
-		stack->stack = brealloc(stack->stack,
-		    new_size * sizeof(*stack->stack));
+		stack->stack = breallocarray(stack->stack,
+		    new_size, sizeof(*stack->stack));
 		stack->size = new_size;
 	}
 }
@@ -303,7 +303,7 @@ array_grow(struct array *array, size_t newsize)
 {
 	size_t i;
 
-	array->data = brealloc(array->data, newsize * sizeof(*array->data));
+	array->data = breallocarray(array->data, newsize, sizeof(*array->data));
 	for (i = array->size; i < newsize; i++) {
 		array->data[i].type = BCODE_NONE;
 		array->data[i].array = NULL;

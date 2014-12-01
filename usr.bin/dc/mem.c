@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.4 2004/07/11 06:41:48 otto Exp $	*/
+/*	$OpenBSD: mem.c,v 1.6 2014/12/01 13:11:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -68,11 +68,11 @@ bmalloc(size_t sz)
 }
 
 void *
-brealloc(void *p, size_t sz)
+breallocarray(void *p, size_t nmemb, size_t size)
 {
 	void *q;
 
-	q = realloc(p, sz);
+	q = reallocarray(p, nmemb, size);
 	if (q == NULL)
 		err(1, NULL);
 	return q;
