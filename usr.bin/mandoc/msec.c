@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: msec.c,v 1.9 2014/09/03 23:20:33 schwarze Exp $ */
 /*
  * Copyright (c) 2009 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -18,7 +18,6 @@
 
 #include <string.h>
 
-#include "mandoc.h"
 #include "libmandoc.h"
 
 #define LINE(x, y) \

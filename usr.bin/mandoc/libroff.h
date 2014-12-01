@@ -1,4 +1,4 @@
-/*	$OpenBSD: libroff.h,v 1.9 2014/10/25 14:32:07 schwarze Exp $ */
+/*	$OpenBSD: libroff.h,v 1.10 2014/11/27 14:31:29 deraadt Exp $ */
 /*
  * Copyright (c) 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014 Ingo Schwarze <schwarze@openbsd.org>
@@ -15,8 +15,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-__BEGIN_DECLS
 
 enum	tbl_part {
 	TBL_PART_OPTS, /* in options (first line) */
@@ -63,6 +61,8 @@ struct	eqn_def {
 	char		 *val;
 	size_t		  valsz;
 };
+
+__BEGIN_DECLS
 
 struct tbl_node	*tbl_alloc(int, int, struct mparse *);
 void		 tbl_restart(int, int, struct tbl_node *);

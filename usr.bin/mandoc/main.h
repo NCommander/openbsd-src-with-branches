@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.h,v 1.12 2014/10/28 17:35:42 schwarze Exp $ */
+/*	$OpenBSD: main.h,v 1.13 2014/11/27 14:31:29 deraadt Exp $ */
 /*
  * Copyright (c) 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -15,13 +15,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-__BEGIN_DECLS
-
-struct	mdoc;
-struct	man;
-
 #define	UNCONST(a)	((void *)(uintptr_t)(const void *)(a))
 
+__BEGIN_DECLS
+
+struct	mchars;
+struct	mdoc;
+struct	man;
 
 /*
  * Definitions for main.c-visible output device functions, e.g., -Thtml
