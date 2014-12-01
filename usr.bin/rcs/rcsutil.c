@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsutil.c,v 1.40 2014/05/29 16:39:42 tedu Exp $	*/
+/*	$OpenBSD: rcsutil.c,v 1.41 2014/10/10 08:15:25 otto Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -592,7 +592,7 @@ rcs_strsplit(const char *str, const char *sep)
 
 	while ((p = strsep(&cp, sep)) != NULL) {
 		av->argv[i++] = p;
-		av->argv = xrealloc(av->argv,
+		av->argv = xreallocarray(av->argv,
 		    i + 1, sizeof(*(av->argv)));
 	}
 	av->argv[i] = NULL;
