@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.47 2013/10/24 11:31:43 mpi Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.48 2013/11/11 09:15:34 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -1038,6 +1038,7 @@ pipex_ppp_input(struct mbuf *m0, struct pipex_session *session, int decrypted)
 	struct m_tag *mtag;
 	struct pipex_tag *tag;
 
+	KASSERT(m0->m_pkthdr.len >= PIPEX_PPPMINLEN);
 	proto = pipex_ppp_proto(m0, session, 0, &hlen);
 #ifdef PIPEX_MPPE
 	if (pipex_session_is_mppe_accepted(session) && proto == PPP_COMP) {
@@ -1292,7 +1293,8 @@ pipex_common_input(struct pipex_session *session, struct mbuf *m0, int hlen,
 	int proto, ppphlen;
 	u_char code;
 
-	if (m0->m_pkthdr.len < hlen + PIPEX_PPPMINLEN)
+	if ((m0->m_pkthdr.len < hlen + PIPEX_PPPMINLEN) ||
+	    (plen < PIPEX_PPPMINLEN))
 		goto drop;
 
 	proto = pipex_ppp_proto(m0, session, hlen, &ppphlen);
@@ -1353,6 +1355,7 @@ pipex_ppp_proto(struct mbuf *m0, struct pipex_session *session, int off,
 	int proto;
 	u_char *cp, pktbuf[4];
 
+	KASSERT(m0->m_pkthdr.len > sizeof(pktbuf));
 	m_copydata(m0, off, sizeof(pktbuf), pktbuf);
 	cp = pktbuf;
 
@@ -1613,6 +1616,13 @@ pipex_pptp_lookup_session(struct mbuf *m0)
 	if ((flags & PIPEX_GRE_KFLAG) == 0) {
 		PIPEX_DBG((NULL, LOG_DEBUG,
 		    "<%s> gre header has no keys.", __func__));
+		goto not_ours;
+	}
+
+	/* flag check */
+	if ((flags & PIPEX_GRE_UNUSEDFLAGS) != 0) {
+		PIPEX_DBG((NULL, LOG_DEBUG,
+		    "<%s> gre header has unused flags at pptp.", __func__));
 		goto not_ours;
 	}
 
@@ -2570,6 +2580,8 @@ pipex_mppe_input(struct mbuf *m0, struct pipex_session *session)
 		mppe->coher_cnt++;
 		mppe->coher_cnt &= PIPEX_COHERENCY_CNT_MASK;
 	}
+	if (m0->m_pkthdr.len < PIPEX_PPPMINLEN)
+		goto drop;
 
 	pipex_ppp_input(m0, session, 1);
 
