@@ -1,4 +1,4 @@
-/* $OpenBSD: defs.h,v 1.3 2002/08/12 00:42:56 aaron Exp $ */
+/* $OpenBSD: defs.h,v 1.4 2004/04/19 17:48:31 millert Exp $ */
 /* $NetBSD: defs.h,v 1.5 1999/12/24 09:08:49 agc Exp $ */
 
 /*
@@ -35,15 +35,19 @@
 #define DEFS_H_
 
 #define NEWARRAY(type,ptr,size,action) do {				\
-	if ((ptr = (type *) calloc(size, sizeof(type))) == (type *) NULL) { \
-		warn("can't allocate %ld bytes", (long)(size * sizeof(type))); \
+	if ((ptr = (type *) calloc((size),				\
+	    sizeof(type))) == (type *) NULL) {				\
+		warn("can't allocate %ld bytes",			\
+		    (long)((size) * sizeof(type)));			\
 		action;							\
 	}								\
 } while( /* CONSTCOND */ 0)
 
 #define RENEW(type,ptr,size,action) do {				\
-	if ((ptr = (type *) realloc(ptr, sizeof(type) * size)) == (type *) NULL) { \
-		warn("can't realloc %ld bytes", (long)(size * sizeof(type))); \
+	if ((ptr = (type *) reallocarray(ptr,				\
+	    (size), sizeof(type))) == (type *) NULL) {			\
+		warn("can't realloc %ld bytes",				\
+		    (long)((size) * sizeof(type)));			\
 		action;							\
 	}								\
 } while( /* CONSTCOND */ 0)
