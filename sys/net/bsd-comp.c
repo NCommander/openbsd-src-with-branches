@@ -1,4 +1,4 @@
-/*	$OpenBSD: bsd-comp.c,v 1.7 2007/09/15 16:43:51 henning Exp $	*/
+/*	$OpenBSD: bsd-comp.c,v 1.8 2014/07/12 18:44:22 tedu Exp $	*/
 /*	$NetBSD: bsd-comp.c,v 1.6 1996/10/13 02:10:58 christos Exp $	*/
 
 /* Because this code is derived from the 4.3BSD compress source:
@@ -353,7 +353,7 @@ bsd_alloc(options, opt_len, decomp)
     if (!decomp) {
 	db->lens = NULL;
     } else {
-	db->lens = malloc((maxmaxcode+1) * sizeof(db->lens[0]), M_DEVBUF,
+	db->lens = mallocarray(maxmaxcode + 1, sizeof(db->lens[0]), M_DEVBUF,
 	    M_NOWAIT);
 	if (!db->lens) {
 	    free(db, M_DEVBUF, 0);

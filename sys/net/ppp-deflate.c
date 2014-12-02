@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp-deflate.c,v 1.9 2011/07/07 02:57:25 deraadt Exp $	*/
+/*	$OpenBSD: ppp-deflate.c,v 1.10 2014/07/12 18:44:22 tedu Exp $	*/
 /*	$NetBSD: ppp-deflate.c,v 1.1 1996/03/15 02:28:09 paulus Exp $	*/
 
 /*
@@ -131,7 +131,7 @@ zcalloc(notused, items, size)
 {
     void *ptr;
 
-    ptr = malloc(items * size, M_DEVBUF, M_NOWAIT);
+    ptr = mallocarray(items, size, M_DEVBUF, M_NOWAIT);
     return ptr;
 }
 
