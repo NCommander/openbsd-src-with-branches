@@ -1,4 +1,4 @@
-/*	$OpenBSD: closure.c,v 1.12 2014/03/08 00:44:14 tedu Exp $	*/
+/*	$OpenBSD: closure.c,v 1.13 2014/03/13 01:18:22 tedu Exp $	*/
 /*	$NetBSD: closure.c,v 1.4 1996/03/19 03:21:29 jtc Exp $	*/
 
 /*
@@ -105,8 +105,6 @@ set_first_derives(void)
 				}
 			}
 		}
-
-		vrow += varsetsize;
 		rrow += rulesetsize;
 	}
 
