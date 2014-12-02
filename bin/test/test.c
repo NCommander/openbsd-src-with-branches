@@ -1,4 +1,4 @@
-/*	$OpenBSD: test.c,v 1.11 2009/10/27 23:59:22 deraadt Exp $	*/
+/*	$OpenBSD: test.c,v 1.12 2013/11/21 15:54:46 deraadt Exp $	*/
 /*	$NetBSD: test.c,v 1.15 1995/03/21 07:04:06 cgd Exp $	*/
 
 /*
@@ -155,9 +155,10 @@ static void syntax(const char *op, char *msg);
 int
 main(int argc, char *argv[])
 {
+	extern char *__progname;
 	int	res;
 
-	if (strcmp(argv[0], "[") == 0) {
+	if (strcmp(__progname, "[") == 0) {
 		if (strcmp(argv[--argc], "]"))
 			errx(2, "missing ]");
 		argv[argc] = NULL;
