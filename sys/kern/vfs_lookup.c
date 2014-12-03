@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lookup.c,v 1.46 2013/03/30 04:53:09 guenther Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.47 2014/03/25 04:04:36 guenther Exp $	*/
 /*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
@@ -49,7 +49,6 @@
 #include <sys/pool.h>
 #include <sys/filedesc.h>
 #include <sys/proc.h>
-#include <sys/hash.h>
 #include <sys/file.h>
 #include <sys/fcntl.h>
 
