@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci_pci.c,v 1.5 2014/04/14 04:42:22 dlg Exp $ */
+/*	$OpenBSD: ahci_pci.c,v 1.6 2014/07/10 14:21:20 deraadt Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -328,7 +328,6 @@ ahci_pci_attach(struct device *parent, struct device *self, void *aux)
 	struct pci_attach_args		*pa = aux;
 	const struct ahci_device	*ad;
 	pci_intr_handle_t		ih;
-	int				mapped = 0;
 
 	psc->psc_pc = pa->pa_pc;
 	psc->psc_tag = pa->pa_tag;
@@ -342,10 +341,10 @@ ahci_pci_attach(struct device *parent, struct device *self, void *aux)
 		}
 	}
 
-	if (!(sc->sc_flags & AHCI_F_NO_MSI))
-		mapped = pci_intr_map_msi(pa, &ih) != 0 ? 0 : 1;
-	
-	if (!mapped && pci_intr_map(pa, &ih) != 0) {
+	if (sc->sc_flags & AHCI_F_NO_MSI)
+		pa->pa_flags &= ~PCI_FLAGS_MSI_ENABLED;
+
+	if (pci_intr_map_msi(pa, &ih) != 0 && pci_intr_map(pa, &ih) != 0) {
 		printf(": unable to map interrupt\n");
 		return;
 	}
