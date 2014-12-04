@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.335 2014/10/08 16:15:37 deraadt Exp $ */
+/*	$OpenBSD: session.c,v 1.336 2014/10/25 03:23:49 lteo Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -1890,7 +1890,7 @@ session_process_msg(struct peer *p)
 
 	if (rpos < av) {
 		left = av - rpos;
-		memcpy(&p->rbuf->buf, p->rbuf->buf + rpos, left);
+		memmove(&p->rbuf->buf, p->rbuf->buf + rpos, left);
 		p->rbuf->wpos = left;
 	} else
 		p->rbuf->wpos = 0;
