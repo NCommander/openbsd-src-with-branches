@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.c,v 1.25 2014/11/21 17:49:10 deraadt Exp $	*/
+/*	$OpenBSD: httpd.c,v 1.26 2014/11/22 00:24:22 tedu Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/resource.h>
-#include <sys/hash.h>
 
 #include <net/if.h>
 #include <netinet/in.h>
@@ -40,8 +39,6 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <pwd.h>
-#include <sha1.h>
-#include <md5.h>
 
 #include "httpd.h"
 
