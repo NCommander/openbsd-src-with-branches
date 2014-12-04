@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.180 2014/11/29 18:50:06 tedu Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.181 2014/12/01 17:46:56 tedu Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -87,6 +87,7 @@ didn't get a copy, you may request one from <license@ipv6.nrl.navy.mil>.
 #include <sys/syslog.h>
 #include <sys/timeout.h>
 
+#include <crypto/siphash.h>	/* required by if_trunk.h */
 
 #include <net/if.h>
 #include <net/netisr.h>
