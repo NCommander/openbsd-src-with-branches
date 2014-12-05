@@ -1,4 +1,4 @@
-/*	$OpenBSD: amphy.c,v 1.18 2008/09/08 07:38:33 brad Exp $	*/
+/*	$OpenBSD: amphy.c,v 1.19 2013/12/28 03:30:40 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -47,6 +47,7 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

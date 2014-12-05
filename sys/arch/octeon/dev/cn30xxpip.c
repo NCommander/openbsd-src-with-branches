@@ -1,4 +1,4 @@
-/*	$OpenBSD: cn30xxpip.c,v 1.2 2011/06/24 02:13:23 yasuoka Exp $	*/
+/*	$OpenBSD: cn30xxpip.c,v 1.3 2014/08/11 18:29:56 miod Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -33,6 +33,7 @@
 #include <sys/syslog.h>
 #include <sys/time.h>
 #include <net/if.h>
+#include <net/if_var.h>
 
 #include <machine/octeonvar.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: acphy.c,v 1.6 2006/12/27 19:11:08 kettenis Exp $	*/
+/*	$OpenBSD: acphy.c,v 1.7 2013/12/28 03:30:40 deraadt Exp $	*/
 /*	$NetBSD: acphy.c,v 1.13 2003/04/29 01:49:33 thorpej Exp $	*/
 
 /*
@@ -48,6 +48,7 @@
 #include <sys/errno.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

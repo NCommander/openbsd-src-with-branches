@@ -1,4 +1,4 @@
-/*	$OpenBSD: atphy.c,v 1.6 2011/06/17 09:59:52 kevlo Exp $	*/
+/*	$OpenBSD: atphy.c,v 1.7 2013/12/28 03:30:40 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
@@ -38,6 +38,7 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

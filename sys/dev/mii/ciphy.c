@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciphy.c,v 1.23 2012/10/22 09:14:36 brad Exp $	*/
+/*	$OpenBSD: ciphy.c,v 1.24 2013/12/28 03:30:41 deraadt Exp $	*/
 /*	$FreeBSD: ciphy.c,v 1.1 2004/09/10 20:57:45 wpaul Exp $	*/
 /*
  * Copyright (c) 2004
@@ -46,6 +46,7 @@
 #include <machine/bus.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

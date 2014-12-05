@@ -1,4 +1,4 @@
-/*	$OpenBSD: xmphy.c,v 1.19 2013/05/28 09:46:06 mikeb Exp $	*/
+/*	$OpenBSD: xmphy.c,v 1.20 2013/12/28 03:30:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -48,6 +48,7 @@
 #include <sys/errno.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

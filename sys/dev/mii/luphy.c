@@ -1,4 +1,4 @@
-/*	$OpenBSD: luphy.c,v 1.3 2005/04/15 00:44:39 brad Exp $	*/
+/*	$OpenBSD: luphy.c,v 1.4 2013/12/28 03:30:41 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2004 Marius Strobl
@@ -48,6 +48,7 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

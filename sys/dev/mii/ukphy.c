@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukphy.c,v 1.20 2010/07/23 07:47:13 jsg Exp $	*/
+/*	$OpenBSD: ukphy.c,v 1.21 2013/12/28 03:30:41 deraadt Exp $	*/
 /*	$NetBSD: ukphy.c,v 1.9 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -67,6 +67,7 @@
 #include <sys/errno.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

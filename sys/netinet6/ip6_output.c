@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.161 2014/11/01 21:40:39 mpi Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.162 2014/11/20 13:54:24 mpi Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -74,6 +74,7 @@
 #include <sys/systm.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_enc.h>
 #include <net/route.h>
 

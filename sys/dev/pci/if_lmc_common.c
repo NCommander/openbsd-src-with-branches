@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc_common.c,v 1.12 2010/04/08 00:23:53 tedu Exp $ */
+/*	$OpenBSD: if_lmc_common.c,v 1.13 2011/07/06 02:42:28 henning Exp $ */
 /*	$NetBSD: if_lmc_common.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -78,6 +78,7 @@
 #include <dev/pci/pcidevs.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_types.h>
 #include <net/if_dl.h>
 #include <net/netisr.h>

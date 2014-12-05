@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmt.c,v 1.18 2014/07/11 08:18:31 guenther Exp $ */
+/*	$OpenBSD: vmt.c,v 1.19 2014/07/12 18:48:51 tedu Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -39,6 +39,7 @@
 #include <sys/proc.h>
 #include <sys/socket.h>
 #include <net/if.h>
+#include <net/if_var.h>
 #include <netinet/in.h>
 
 /* "The" magic number, always occupies the EAX register. */

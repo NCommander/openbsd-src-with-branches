@@ -1,4 +1,4 @@
-/*	$OpenBSD: gentbi.c,v 1.8 2010/07/23 07:47:13 jsg Exp $	*/
+/*	$OpenBSD: gentbi.c,v 1.9 2013/12/28 03:30:41 deraadt Exp $	*/
 /*	$NetBSD: gentbi.c,v 1.12 2004/04/11 15:40:56 thorpej Exp $	*/
 
 /*-
@@ -70,6 +70,7 @@
 #include <sys/errno.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

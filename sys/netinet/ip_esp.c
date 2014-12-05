@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.126 2014/07/22 11:06:10 mpi Exp $ */
+/*	$OpenBSD: ip_esp.c,v 1.127 2014/11/18 02:37:31 tedu Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -43,6 +43,7 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/bpf.h>
 
 #ifdef INET

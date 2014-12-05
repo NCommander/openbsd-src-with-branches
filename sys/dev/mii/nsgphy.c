@@ -1,4 +1,4 @@
-/*	$OpenBSD: nsgphy.c,v 1.22 2009/07/22 10:39:51 sthen Exp $	*/
+/*	$OpenBSD: nsgphy.c,v 1.23 2013/12/28 03:30:41 deraadt Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 2001
@@ -57,6 +57,7 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

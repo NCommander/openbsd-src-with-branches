@@ -1,4 +1,4 @@
-/*	$OpenBSD: mlphy.c,v 1.3 2013/05/28 09:46:06 mikeb Exp $	*/
+/*	$OpenBSD: mlphy.c,v 1.4 2013/12/28 03:30:41 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1997, 1998, 1999
@@ -111,6 +111,7 @@
 #include <sys/errno.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_media.h>
 
 #include <dev/mii/mii.h>

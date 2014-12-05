@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip.c,v 1.76 2014/10/14 09:55:44 mpi Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.77 2014/11/09 22:05:08 bluhm Exp $	*/
 /*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
@@ -76,6 +76,7 @@
 #include <sys/socketvar.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/route.h>
 #include <net/pfvar.h>
 

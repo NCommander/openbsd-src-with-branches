@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc_obsd.c,v 1.22 2010/09/20 07:40:38 deraadt Exp $ */
+/*	$OpenBSD: if_lmc_obsd.c,v 1.23 2011/04/03 15:36:02 jasper Exp $ */
 /*	$NetBSD: if_lmc_nbsd.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -78,6 +78,7 @@
 #include <dev/pci/pcidevs.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_types.h>
 #include <net/if_dl.h>
 #include <net/netisr.h>

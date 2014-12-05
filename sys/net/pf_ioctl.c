@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.276 2014/08/12 15:29:33 mikeb Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.277 2014/11/18 02:37:31 tedu Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -56,6 +56,7 @@
 #include <uvm/uvm_extern.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/if_types.h>
 #include <net/route.h>
 
