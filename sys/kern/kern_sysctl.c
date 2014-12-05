@@ -1877,6 +1877,11 @@ sysctl_proc_vmmap(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 
 	pid = name[0];
 	if (pid > 0) {
+#if 1
+		/* XXX Allow only root for now */
+		if ((error = suser(cp, 0)) != 0)
+			return (error);
+#endif
 		if ((findpr = prfind(pid)) == NULL)
 			return (ESRCH);
 
