@@ -1,4 +1,4 @@
-/*	$OpenBSD: pickmove.c,v 1.11 2009/10/27 23:59:24 deraadt Exp $	*/
+/*	$OpenBSD: pickmove.c,v 1.12 2013/08/29 20:22:13 naddy Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -203,11 +203,7 @@ better(sp, sp1, us)
 	if (sp->s_wval != sp1->s_wval)
 		return (0);
 
-#ifdef SVR4
-	return (rand() & 1);
-#else
 	return (arc4random() & 1);
-#endif
 }
 
 int	curcolor;	/* implicit parameter to makecombo() */
