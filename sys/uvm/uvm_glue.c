@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_glue.c,v 1.66 2014/07/11 16:35:40 jsg Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: uvm_glue.c,v 1.44 2001/02/06 19:54:44 eeh Exp $	*/
 
 /* 
@@ -472,3 +472,18 @@ uvm_pause(void)
 	if (curcpu()->ci_schedstate.spc_schedflags & SPCF_SHOULDYIELD)
 		preempt(NULL);
 }
+
+#ifndef SMALL_KERNEL
+int
+fill_vmmap(struct process *pr, struct kinfo_vmentry *kve,
+    size_t *lenp)
+{
+	struct vm_map *map;
+
+	if (pr != NULL)
+		map = &pr->ps_vmspace->vm_map;
+	else
+		map = kernel_map;
+	return uvm_map_fill_vmmap(map, kve, lenp);
+}
+#endif
