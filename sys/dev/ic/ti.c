@@ -1,4 +1,4 @@
-/*	$OpenBSD: ti.c,v 1.9 2014/07/22 13:12:12 mpi Exp $	*/
+/*	$OpenBSD: ti.c,v 1.10 2014/08/20 01:02:02 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -100,7 +100,6 @@
 #endif
 
 #if NVLAN > 0
-#include <net/if_types.h>
 #include <net/if_vlan_var.h>
 #endif
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nametoaddr.c,v 1.13 2006/01/11 07:31:46 jaredy Exp $	*/
+/*	$OpenBSD: nametoaddr.c,v 1.14 2014/03/21 02:55:29 lteo Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996
@@ -36,10 +36,6 @@ struct rtentry;
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <arpa/inet.h>
-#ifdef INET6
-#include <netdb.h>
-#include <sys/socket.h>
-#endif /*INET6*/
 
 #include <ctype.h>
 #include <errno.h>
