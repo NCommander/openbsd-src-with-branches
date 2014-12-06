@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.49 2014/01/03 22:29:00 millert Exp $	*/
+/*	$OpenBSD: init.c,v 1.50 2014/04/22 20:40:37 tedu Exp $	*/
 /*	$NetBSD: init.c,v 1.22 1996/05/15 23:29:33 jtc Exp $	*/
 
 /*-
@@ -1340,7 +1340,6 @@ nice_death(void)
 	logwtmp("~", "shutdown", "");
 
 	if (access(_PATH_RUNCOM, R_OK) != -1) {
-		pid_t pid;
 		struct sigaction sa;
 
 		switch ((pid = fork())) {
