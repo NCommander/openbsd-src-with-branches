@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.22 2014/09/05 10:04:20 reyk Exp $	*/
+/*	$OpenBSD: config.c,v 1.23 2014/11/22 00:24:22 tedu Exp $	*/
 
 /*
  * Copyright (c) 2011 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -400,8 +400,10 @@ config_getserver(struct httpd *env, struct imsg *imsg)
 	return (0);
 
  fail:
-	free(srv->srv_conf.ssl_cert);
-	free(srv->srv_conf.ssl_key);
+	if (srv != NULL) {
+		free(srv->srv_conf.ssl_cert);
+		free(srv->srv_conf.ssl_key);
+	}
 	free(srv);
 
 	return (-1);
