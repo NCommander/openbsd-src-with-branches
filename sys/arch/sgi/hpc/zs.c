@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.11 2013/10/21 12:14:51 miod Exp $	*/
+/*	$OpenBSD: zs.c,v 1.12 2014/05/19 21:18:42 miod Exp $	*/
 /*	$NetBSD: zs.c,v 1.37 2011/02/20 07:59:50 matt Exp $	*/
 
 /*-
@@ -346,7 +346,7 @@ zs_print(void *aux, const char *name)
 	struct zsc_attach_args *args = aux;
 
 	if (name != NULL)
-		printf("%s: ", name);
+		printf("%s:", name);
 
 	if (args->channel != -1)
 		printf(" channel %d", args->channel);
