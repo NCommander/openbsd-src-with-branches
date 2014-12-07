@@ -1,4 +1,4 @@
-/*	$OpenBSD: targequiv.c,v 1.4 2013/04/23 14:32:53 espie Exp $ */
+/*	$OpenBSD: targequiv.c,v 1.5 2014/05/12 19:11:19 espie Exp $ */
 /*
  * Copyright (c) 2007-2008 Marc Espie.
  *
@@ -221,8 +221,10 @@ parse_reduce(size_t i, const char *src)
 			}
 			buffer[i++] = *src++;
 		}
-		buffer[i++] = *src;
+		if (src[0] == '/') 
+			buffer[i++] = *src++;
 	}
+	buffer[i++] = 0;
 	return i;
 }
 
