@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_np.c,v 1.13 2014/07/08 17:19:22 deraadt Exp $	*/
+/*	$OpenBSD: rthread_np.c,v 1.14 2014/08/09 03:29:35 guenther Exp $	*/
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2005 Otto Moerbeek <otto@openbsd.org>
@@ -66,7 +66,8 @@ pthread_stackseg_np(pthread_t thread, stack_t *sinfo)
 #ifdef MACHINE_STACK_GROWS_UP
 		sinfo->ss_sp = thread->stack->base;
 #else
-		sinfo->ss_sp = thread->stack->base + thread->stack->len;
+		sinfo->ss_sp = (char *)thread->stack->base +
+		    thread->stack->len;
 #endif
 		sinfo->ss_size = thread->stack->len;
 		if (thread->stack->guardsize != 1)
