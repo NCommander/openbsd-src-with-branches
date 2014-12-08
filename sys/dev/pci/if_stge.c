@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_stge.c,v 1.55 2013/08/07 01:06:38 bluhm Exp $	*/
+/*	$OpenBSD: if_stge.c,v 1.56 2014/07/22 13:12:11 mpi Exp $	*/
 /*	$NetBSD: if_stge.c,v 1.27 2005/05/16 21:35:32 bouyer Exp $	*/
 
 /*-
@@ -708,9 +708,6 @@ stge_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			stge_iff(sc);
 		error = 0;
 	}
-
-	/* Try to get more packets going. */
-	stge_start(ifp);
 
 	splx(s);
 	return (error);
