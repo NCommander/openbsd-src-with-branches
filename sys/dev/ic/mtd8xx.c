@@ -1,4 +1,4 @@
-/*	$OpenBSD: mtd8xx.c,v 1.21 2013/11/26 09:50:33 mpi Exp $	*/
+/*	$OpenBSD: mtd8xx.c,v 1.22 2014/09/06 05:41:35 jsg Exp $	*/
 
 /*
  * Copyright (c) 2003 Oleg Safiullin <form@pdp11.org.ru>
@@ -636,6 +636,11 @@ mtd_init(struct ifnet *ifp)
 	mtd_stop(ifp);
 
 	/*
+	 * Reset the chip to a known state.
+	 */
+	mtd_reset(sc);
+
+	/*
 	 * Set cache alignment and burst length.
 	 */
 	CSR_WRITE_4(MTD_BCR, BCR_PBL8);
@@ -801,8 +806,6 @@ mtd_watchdog(struct ifnet *ifp)
 	ifp->if_oerrors++;
 	printf("%s: watchdog timeout\n", sc->sc_dev.dv_xname);
 
-	mtd_stop(ifp);
-	mtd_reset(sc);
 	mtd_init(ifp);
 
 	if (!IFQ_IS_EMPTY(&ifp->if_snd))
