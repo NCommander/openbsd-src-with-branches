@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.181 2014/12/01 17:46:56 tedu Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.182 2014/12/04 00:01:53 tedu Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -813,11 +813,6 @@ ether_ifdetach(struct ifnet *ifp)
 		LIST_REMOVE(enm, enm_list);
 		free(enm, M_IFMADDR, 0);
 	}
-
-#if 0
-	/* moved to if_detach() */
-	if_free_sadl(ifp);
-#endif
 }
 
 #if 0
