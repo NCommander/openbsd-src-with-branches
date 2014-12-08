@@ -1,4 +1,4 @@
-/*	$OpenBSD: execute.c,v 1.8 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: execute.c,v 1.9 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: execute.c,v 1.3 1995/03/23 08:34:38 cgd Exp $	*/
 
 /*
@@ -257,7 +257,7 @@ game_restore()
 {
 	int i;
 
-	cfree(play);
+	free(play);
 	for (i = 0; i < num_play; i++)
 		free(name_list[i]);
 	restore();

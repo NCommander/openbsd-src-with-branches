@@ -1,4 +1,4 @@
-/*	$OpenBSD: monop.c,v 1.10 2009/10/27 23:59:26 deraadt Exp $	*/
+/*	$OpenBSD: monop.c,v 1.11 2013/08/29 20:22:16 naddy Exp $	*/
 /*	$NetBSD: monop.c,v 1.3 1995/03/23 08:34:52 cgd Exp $	*/
 
 /*
@@ -112,7 +112,7 @@ blew_it:
 					printf("\"done\" is a reserved word.  Please try again\n");
 				for (i = 0; i < num_play; i++)
 					free(play[i].name);
-				cfree(play);
+				free(play);
 				goto blew_it;
 			}
 }
