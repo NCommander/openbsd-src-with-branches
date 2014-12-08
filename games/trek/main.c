@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.11 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.12 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.4 1995/04/22 10:59:10 cgd Exp $	*/
 
 /*
@@ -127,7 +127,6 @@ main(argc, argv)
 	av = argv;
 	ac = argc;
 	av++;
-	srandomdev();
 
 #ifdef xTRACE
 	Trace = 0;

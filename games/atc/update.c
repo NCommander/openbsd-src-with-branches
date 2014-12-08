@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.13 2014/07/13 13:00:40 tedu Exp $	*/
+/*	$OpenBSD: update.c,v 1.14 2014/07/13 14:01:04 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -48,7 +48,7 @@ void
 setseed(const char *seed)
 {
 	seeded = 1;
-	srandom(atol(seed));
+	srandom_deterministic(atol(seed));
 }
 
 uint32_t
