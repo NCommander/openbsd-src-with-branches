@@ -1,4 +1,4 @@
-/*	$OpenBSD: C.c,v 1.13 2010/11/03 19:39:38 millert Exp $	*/
+/*	$OpenBSD: C.c,v 1.14 2012/03/04 04:05:15 fgsch Exp $	*/
 /*	$NetBSD: C.c,v 1.3 1995/03/26 20:14:02 glass Exp $	*/
 
 /*
@@ -138,7 +138,8 @@ endtok:			if (sp > tok) {
 		 */
 		case '(':
 			do {
-				c = getc(inf);
+				if (GETC(==, EOF))
+					return;
 			} while (iswhite(c));
 			if (c == '*')
 				break;
