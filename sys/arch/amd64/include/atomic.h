@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.9 2012/11/19 15:18:06 pirofti Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.10 2014/02/17 10:01:32 dlg Exp $	*/
 /*	$NetBSD: atomic.h,v 1.1 2003/04/26 18:39:37 fvdl Exp $	*/
 
 /*
@@ -54,6 +54,13 @@
 #else
 #define LOCK
 #endif
+
+#define __membar(_f) do { __asm __volatile(_f ::: "memory"); } while (0)
+
+/* virtio needs MP membars even on SP kernels */
+#define virtio_membar_producer()	__membar("")
+#define virtio_membar_consumer()	__membar("")
+#define virtio_membar_sync()		__membar("mfence")
 
 static __inline u_int64_t
 x86_atomic_testset_u64(volatile u_int64_t *ptr, u_int64_t val)
