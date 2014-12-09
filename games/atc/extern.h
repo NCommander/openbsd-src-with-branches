@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.7 2013/10/25 21:57:10 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.8 2014/07/13 14:01:04 tedu Exp $	*/
 /*	$NetBSD: extern.h,v 1.4 1995/04/27 21:22:22 mycroft Exp $	*/
 
 /*-
@@ -47,7 +47,7 @@
 extern char		GAMES[];
 extern const char	*file;
 
-extern int		clck, safe_planes, test_mode, makenoise;
+extern int		clck, safe_planes, seeded, test_mode, makenoise;
 
 extern time_t		start_time;
 
