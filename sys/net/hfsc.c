@@ -1,4 +1,4 @@
-/*	$OpenBSD: hfsc.c,v 1.11 2014/07/12 18:44:22 tedu Exp $	*/
+/*	$OpenBSD: hfsc.c,v 1.12 2014/12/05 15:50:04 mpi Exp $	*/
 
 /*
  * Copyright (c) 2012-2013 Henning Brauer <henning@openbsd.org>
@@ -144,7 +144,8 @@ hfsc_grow_class_tbl(struct hfsc_if *hif, u_int howmany)
 {
 	struct hfsc_class **newtbl, **old;
 
-	newtbl = malloc(howmany * sizeof(void *), M_DEVBUF, M_WAITOK | M_ZERO);
+	newtbl = mallocarray(howmany, sizeof(void *), M_DEVBUF,
+	    M_WAITOK | M_ZERO);
 	old = hif->hif_class_tbl;
 
 	memcpy(newtbl, old, hif->hif_allocated * sizeof(void *));
