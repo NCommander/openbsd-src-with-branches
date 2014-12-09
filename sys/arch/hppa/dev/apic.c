@@ -1,4 +1,4 @@
-/*	$OpenBSD: apic.c,v 1.14 2011/05/01 21:59:39 kettenis Exp $	*/
+/*	$OpenBSD: apic.c,v 1.15 2014/07/12 18:44:41 tedu Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -107,7 +107,7 @@ apic_attach(struct elroy_softc *sc)
 	printf(" APIC ver %x, %d pins",
 	    data & APIC_VERSION_MASK, sc->sc_nints);
 
-	sc->sc_irq = malloc(sc->sc_nints * sizeof(int), M_DEVBUF,
+	sc->sc_irq = mallocarray(sc->sc_nints, sizeof(int), M_DEVBUF,
 	    M_NOWAIT | M_ZERO);
 	if (sc->sc_irq == NULL)
 		panic("apic_attach: cannot allocate irq table");
