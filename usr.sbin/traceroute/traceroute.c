@@ -1,4 +1,4 @@
-/*	$OpenBSD: traceroute.c,v 1.132 2014/06/05 14:49:11 florian Exp $	*/
+/*	$OpenBSD: traceroute.c,v 1.133 2014/10/25 03:23:49 lteo Exp $	*/
 /*	$NetBSD: traceroute.c,v 1.10 1995/05/21 15:50:45 mycroft Exp $	*/
 
 /*
@@ -1711,7 +1711,7 @@ inetname(struct sockaddr *sa)
 		first = 0;
 		if (gethostname(domain, sizeof(domain)) == 0 &&
 		    (cp = strchr(domain, '.')) != NULL)
-			(void) strlcpy(domain, cp + 1, sizeof(domain));
+			memmove(domain, cp + 1, strlen(cp + 1) + 1);
 		else
 			domain[0] = 0;
 	}
