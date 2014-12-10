@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc.c,v 1.124 2014/11/16 12:31:00 deraadt Exp $	*/
+/*	$OpenBSD: kern_malloc.c,v 1.125 2014/11/18 02:37:31 tedu Exp $	*/
 /*	$NetBSD: kern_malloc.c,v 1.15.4.2 1996/06/13 17:10:56 cgd Exp $	*/
 
 /*
@@ -599,7 +599,7 @@ sysctl_malloc(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 		return (sysctl_rdstring(oldp, oldlenp, newp, buckstring));
 
 	case KERN_MALLOC_BUCKET:
-		bcopy(&bucket[BUCKETINDX(name[1])], &kb, sizeof(kb));
+		memcpy(&kb, &bucket[BUCKETINDX(name[1])], sizeof(kb));
 		memset(&kb.kb_freelist, 0, sizeof(kb.kb_freelist));
 		return (sysctl_rdstruct(oldp, oldlenp, newp, &kb, sizeof(kb)));
 	case KERN_MALLOC_KMEMSTATS:

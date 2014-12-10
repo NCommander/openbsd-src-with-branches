@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.60 2014/07/12 18:43:32 tedu Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.61 2014/11/03 03:08:00 deraadt Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -240,7 +240,7 @@ enterpgrp(struct process *pr, pid_t pgid, struct pgrp *newpgrp,
 			newsess->s_count = 1;
 			newsess->s_ttyvp = NULL;
 			newsess->s_ttyp = NULL;
-			bcopy(pr->ps_session->s_login, newsess->s_login,
+			memcpy(newsess->s_login, pr->ps_session->s_login,
 			    sizeof(newsess->s_login));
 			atomic_clearbits_int(&pr->ps_flags, PS_CONTROLT);
 			pgrp->pg_session = newsess;
