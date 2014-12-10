@@ -1,4 +1,4 @@
-/*	$OpenBSD: armish_machdep.c,v 1.33 2014/11/16 12:30:56 deraadt Exp $ */
+/*	$OpenBSD: armish_machdep.c,v 1.34 2014/12/03 20:09:32 krw Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -272,9 +272,8 @@ boot(int howto)
 
 	if ((howto & (RB_DUMP | RB_HALT)) == RB_DUMP)
 		dumpsys();
-	
+
 haltsys:
-	doshutdownhooks();
 	config_suspend_all(DVACT_POWERDOWN);
 
 	/* Make sure IRQ's are disabled */
