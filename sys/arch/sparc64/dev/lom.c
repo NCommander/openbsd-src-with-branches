@@ -1,4 +1,4 @@
-/*	$OpenBSD: lom.c,v 1.23 2012/10/17 22:32:01 deraadt Exp $	*/
+/*	$OpenBSD: lom.c,v 1.24 2013/05/30 16:15:01 deraadt Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -368,6 +368,7 @@ lom_activate(struct device *self, int act)
 
 	switch (act) {
 	case DVACT_POWERDOWN:
+		wdog_shutdown(self);
 		lom_shutdown(self);
 		break;
 	}
