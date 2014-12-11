@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.251 2014/07/15 15:54:14 millert Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.252 2014/12/04 02:24:32 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -14,6 +14,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
