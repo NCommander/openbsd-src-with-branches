@@ -1,4 +1,4 @@
-/*	$OpenBSD: fnmatch.c,v 1.16 2011/12/06 11:47:46 stsp Exp $	*/
+/*	$OpenBSD: fnmatch.c,v 1.17 2013/11/24 23:51:29 deraadt Exp $	*/
 
 /* Copyright (c) 2011, VMware, Inc.
  * All rights reserved.
@@ -88,7 +88,6 @@
 #include <fnmatch.h>
 #include <string.h>
 #include <ctype.h>
-#include <limits.h>
 
 #include "charclass.h"
 
@@ -293,10 +292,6 @@ int fnmatch(const char *pattern, const char *string, int flags)
     const char *strstartseg = NULL;
     const char *mismatch = NULL;
     int matchlen = 0;
-
-    if (strnlen(pattern, PATH_MAX) == PATH_MAX ||
-        strnlen(string, PATH_MAX) == PATH_MAX)
-            return (FNM_NOMATCH);
 
     if (*pattern == '*')
         goto firstsegment;
