@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.c,v 1.19 2013/11/28 18:24:55 deraadt Exp $	*/
+/*	$OpenBSD: process.c,v 1.20 2014/12/01 06:37:25 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -184,10 +184,11 @@ redirect:
 				    (p = memchr(ps, '\n', psl - 1)) != NULL) {
 					oldpsl = psl;
 					psl = (p + 1) - ps;
-				}
-				OUT(ps);
-				if (p != NULL)
+					OUT(ps);
 					psl = oldpsl;
+				} else {
+					OUT(ps);
+				}
 				break;
 			case 'q':
 				if (!nflag && !pd)
