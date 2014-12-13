@@ -1,4 +1,4 @@
-/* $OpenBSD: ampintc.c,v 1.3 2014/07/12 18:44:41 tedu Exp $ */
+/* $OpenBSD: ampintc.c,v 1.4 2014/10/08 14:53:36 rapha Exp $ */
 /*
  * Copyright (c) 2007,2009,2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -268,9 +268,8 @@ ampintc_attach(struct device *parent, struct device *self, void *args)
 	/* XXX - check power saving bit */
 
 
-	sc->sc_ampintc_handler = malloc(
-	    (sizeof (*sc->sc_ampintc_handler) * nintr),
-	    M_DEVBUF, M_ZERO | M_NOWAIT);
+	sc->sc_ampintc_handler = mallocarray(nintr,
+	    sizeof(*sc->sc_ampintc_handler), M_DEVBUF, M_ZERO | M_NOWAIT);
 	for (i = 0; i < nintr; i++) {
 		TAILQ_INIT(&sc->sc_ampintc_handler[i].iq_list);
 	}

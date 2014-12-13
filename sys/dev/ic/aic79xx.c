@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx.c,v 1.53 2014/07/12 18:48:17 tedu Exp $	*/
+/*	$OpenBSD: aic79xx.c,v 1.54 2014/07/13 23:10:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -8584,11 +8584,12 @@ ahd_loadseq(struct ahd_softc *ahd)
 
 	ahd->num_critical_sections = cs_count;
 	if (cs_count != 0) {
-
-		cs_count *= sizeof(struct cs);
-		ahd->critical_sections = malloc(cs_count, M_DEVBUF, M_NOWAIT);
+		ahd->critical_sections = mallocarray(cs_count,
+		    sizeof(struct cs), M_DEVBUF, M_NOWAIT);
 		if (ahd->critical_sections == NULL)
 			panic("ahd_loadseq: Could not malloc");
+		cs_count *= sizeof(struct cs);
+
 		memcpy(ahd->critical_sections, cs_table, cs_count);
 	}
 	ahd_outb(ahd, SEQCTL0, PERRORDIS|FAILDIS|FASTMODE);

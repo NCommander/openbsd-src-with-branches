@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_oce.c,v 1.78 2014/08/14 09:52:03 mikeb Exp $	*/
+/*	$OpenBSD: if_oce.c,v 1.79 2014/08/30 09:48:23 dlg Exp $	*/
 
 /*
  * Copyright (c) 2012 Mike Belopuhov
@@ -911,7 +911,7 @@ oce_rxrinfo(struct oce_softc *sc, struct if_rxrinfo *ifri)
 	u_int n = 0;
 
 	if (sc->sc_nrq > 1) {
-		if ((ifr = malloc(sc->sc_nrq * sizeof(*ifr), M_DEVBUF,
+		if ((ifr = mallocarray(sc->sc_nrq, sizeof(*ifr), M_DEVBUF,
 		    M_WAITOK | M_ZERO)) == NULL)
 			return (ENOMEM);
 	} else
