@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.71 2014/12/02 18:13:10 tedu Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.72 2014/12/12 16:51:32 tedu Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -359,6 +359,8 @@ cpu_init_mwait(struct cpu_softc *sc)
 	else
 		mwait_size = largest;
 	printf("\n");
+	/* XXX disable mwait: ACPI says not to use it on too many systems */
+	mwait_size = 0;
 }
 
 void
