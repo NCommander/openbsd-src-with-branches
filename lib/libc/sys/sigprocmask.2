@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sigprocmask.2,v 1.9 2011/04/26 23:04:23 schwarze Exp $
+.\"	$OpenBSD: sigprocmask.2,v 1.10 2014/09/09 08:16:52 guenther Exp $
 .\"	$NetBSD: sigprocmask.2,v 1.6 1995/02/27 12:37:33 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -30,7 +30,7 @@
 .\"
 .\"	@(#)sigprocmask.2	8.1 (Berkeley) 6/4/93
 .\"
-.Dd $Mdocdate: April 26 2011 $
+.Dd $Mdocdate: September 9 2014 $
 .Dt SIGPROCMASK 2
 .Os
 .Sh NAME
@@ -75,7 +75,7 @@ When
 .Fa set
 is null,
 the value of
-.Ar how
+.Fa how
 is insignificant and the mask remains unchanged,
 providing a way to examine the signal mask without modification.
 .Pp
