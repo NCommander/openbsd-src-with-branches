@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.c,v 1.187 2014/04/22 07:29:11 dlg Exp $	*/
+/*	$OpenBSD: scsiconf.c,v 1.188 2014/07/12 18:50:25 tedu Exp $	*/
 /*	$NetBSD: scsiconf.c,v 1.57 1996/05/02 01:09:01 neil Exp $	*/
 
 /*
@@ -932,7 +932,7 @@ scsi_probedev(struct scsibus_softc *scsi, int target, int lun)
 	}
 
 	rslt = scsi_inquire(sc_link, inqbuf, scsi_autoconf | SCSI_SILENT);
-	bcopy(inqbuf, &sc_link->inqdata, sizeof(sc_link->inqdata));
+	memcpy(&sc_link->inqdata, inqbuf, sizeof(sc_link->inqdata));
 	dma_free(inqbuf, sizeof(*inqbuf));
 
 	if (rslt != 0) {
