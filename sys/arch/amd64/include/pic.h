@@ -1,4 +1,4 @@
-/*	$OpenBSD: pic.h,v 1.5 2005/05/31 09:34:23 art Exp $	*/
+/*	$OpenBSD: pic.h,v 1.6 2011/05/21 15:58:27 kettenis Exp $	*/
 /*	$NetBSD: pic.h,v 1.1 2003/02/26 21:26:11 fvdl Exp $	*/
 
 #ifndef _X86_PIC_H
@@ -6,7 +6,6 @@
 
 #include <sys/device.h>
 #include <sys/mutex.h>
-#include <sys/lock.h>
 
 struct cpu_info;
 
