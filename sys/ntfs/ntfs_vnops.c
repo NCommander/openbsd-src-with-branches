@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vnops.c,v 1.35 2013/12/14 02:57:25 guenther Exp $	*/
+/*	$OpenBSD: ntfs_vnops.c,v 1.36 2014/07/12 18:43:52 tedu Exp $	*/
 /*	$NetBSD: ntfs_vnops.c,v 1.6 2003/04/10 21:57:26 jdolecek Exp $	*/
 
 /*
@@ -42,6 +42,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/mount.h>
 #include <sys/namei.h>
 #include <sys/malloc.h>

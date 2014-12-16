@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vfsops.c,v 1.41 2014/11/18 23:55:01 krw Exp $	*/
+/*	$OpenBSD: ntfs_vfsops.c,v 1.42 2014/12/09 07:16:41 doug Exp $	*/
 /*	$NetBSD: ntfs_vfsops.c,v 1.7 2003/04/24 07:50:19 christos Exp $	*/
 
 /*-
@@ -35,6 +35,7 @@
 #include <sys/proc.h>
 #include <sys/kernel.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/mount.h>
 #include <sys/buf.h>
 #include <sys/disk.h>
