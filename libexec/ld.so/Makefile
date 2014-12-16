@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.49 2014/06/05 08:41:09 otto Exp $
+#	$OpenBSD: Makefile,v 1.50 2014/06/21 08:00:22 otto Exp $
 
 SUBDIR=ldconfig ldd
 MAN=	ld.so.1
@@ -50,6 +50,10 @@ $(PROG): $(test_prog)
 	ulimit -c 0; [ "`${.OBJDIR}/$(test_prog) ok`" = ok ]
 	cp $(candidate) $@
 .endif
+
+afterinstall:
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${NONBINMODE} \
+	    ${.OBJDIR}/ld.so ${DESTDIR}/sbin/ld.so
 
 .include <bsd.prog.mk>
 
