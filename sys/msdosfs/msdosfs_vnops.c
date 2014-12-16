@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vnops.c,v 1.95 2014/08/10 09:23:06 jsg Exp $	*/
+/*	$OpenBSD: msdosfs_vnops.c,v 1.96 2014/11/03 21:28:35 tedu Exp $	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.63 1997/10/17 11:24:19 ws Exp $	*/
 
 /*-
@@ -60,6 +60,7 @@
 #include <sys/proc.h>
 #include <sys/mount.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/signalvar.h>
 #include <sys/specdev.h> /* XXX */	/* defines v_rdev */
 #include <sys/malloc.h>

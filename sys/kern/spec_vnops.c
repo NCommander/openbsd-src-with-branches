@@ -1,4 +1,4 @@
-/*	$OpenBSD: spec_vnops.c,v 1.79 2014/09/13 16:06:37 doug Exp $	*/
+/*	$OpenBSD: spec_vnops.c,v 1.80 2014/11/03 21:28:35 tedu Exp $	*/
 /*	$NetBSD: spec_vnops.c,v 1.29 1996/04/22 01:42:38 christos Exp $	*/
 
 /*
@@ -41,6 +41,7 @@
 #include <sys/mount.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/stat.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>

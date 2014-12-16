@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_lookup.c,v 1.8 2014/02/01 09:30:38 syl Exp $ */
+/* $OpenBSD: fuse_lookup.c,v 1.9 2014/03/18 08:51:53 mpi Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -21,6 +21,7 @@
 #include <sys/namei.h>
 #include <sys/statvfs.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/fusebuf.h>
 
 #include "fusefs_node.h"

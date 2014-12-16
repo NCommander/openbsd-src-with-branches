@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vnops.c,v 1.19 2014/07/12 18:43:52 tedu Exp $ */
+/* $OpenBSD: fuse_vnops.c,v 1.20 2014/08/10 09:23:06 jsg Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -29,6 +29,7 @@
 #include <sys/specdev.h>
 #include <sys/statvfs.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/fusebuf.h>
 
 #include "fusefs_node.h"

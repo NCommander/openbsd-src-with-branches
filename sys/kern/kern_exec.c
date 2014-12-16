@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.150 2014/12/10 02:44:46 tedu Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.151 2014/12/15 02:24:23 guenther Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -58,6 +58,8 @@
 #endif
 
 #include <sys/syscallargs.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <machine/reg.h>
 

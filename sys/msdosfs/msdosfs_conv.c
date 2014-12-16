@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_conv.c,v 1.16 2013/10/01 20:22:13 sf Exp $	*/
+/*	$OpenBSD: msdosfs_conv.c,v 1.17 2014/04/21 15:35:02 krw Exp $	*/
 /*	$NetBSD: msdosfs_conv.c,v 1.24 1997/10/17 11:23:54 ws Exp $	*/
 
 /*-
@@ -57,6 +57,7 @@
 #include <sys/kernel.h>		/* defines tz */
 #include <sys/dirent.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 
 /*
  * MSDOSFS include files.

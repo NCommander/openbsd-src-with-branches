@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.343 2014/10/30 19:07:54 tedu Exp $ */
+/* $OpenBSD: softraid.c,v 1.344 2014/11/18 02:37:30 tedu Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -41,6 +41,8 @@
 #include <sys/task.h>
 #include <sys/kthread.h>
 #include <sys/dkio.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <crypto/cryptodev.h>
 

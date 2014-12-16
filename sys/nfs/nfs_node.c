@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.57 2014/09/14 14:17:26 jsg Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.58 2014/11/15 00:03:12 tedu Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -42,6 +42,7 @@
 #include <sys/mount.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/pool.h>

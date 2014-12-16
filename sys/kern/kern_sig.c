@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.174 2014/08/10 23:44:20 bluhm Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.175 2014/11/16 05:42:21 guenther Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -65,6 +65,8 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
+
+#include <uvm/uvm_extern.h>
 
 int	filt_sigattach(struct knote *kn);
 void	filt_sigdetach(struct knote *kn);

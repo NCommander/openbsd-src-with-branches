@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_lookup.c,v 1.20 2013/06/11 16:42:15 deraadt Exp $	*/
+/*	$OpenBSD: cd9660_lookup.c,v 1.21 2014/07/12 18:50:00 tedu Exp $	*/
 /*	$NetBSD: cd9660_lookup.c,v 1.18 1997/05/08 16:19:59 mycroft Exp $	*/
 
 /*-
@@ -44,6 +44,7 @@
 #include <sys/buf.h>
 #include <sys/file.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/mount.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>

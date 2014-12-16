@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.29 2014/05/10 22:25:16 jasper Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.30 2014/11/16 12:30:58 deraadt Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -52,6 +52,7 @@
 #include <sys/exec.h>
 #include <sys/signalvar.h>
 
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <mips64/mips_cpu.h>

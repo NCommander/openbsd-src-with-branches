@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_machdep.c,v 1.44 2014/03/22 06:05:45 guenther Exp $	*/
+/*	$OpenBSD: linux_machdep.c,v 1.45 2014/03/26 05:23:42 guenther Exp $	*/
 /*	$NetBSD: linux_machdep.c,v 1.29 1996/05/03 19:42:11 christos Exp $	*/
 
 /*
@@ -46,11 +46,12 @@
 #include <sys/mbuf.h>
 #include <sys/msgbuf.h>
 #include <sys/mount.h>
-#include <sys/vnode.h>
 #include <sys/device.h>
 #include <sys/sysctl.h>
 #include <sys/syscallargs.h>
 #include <sys/filedesc.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <compat/linux/linux_types.h>
 #include <compat/linux/linux_signal.h>

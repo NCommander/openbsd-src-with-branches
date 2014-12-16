@@ -1,4 +1,4 @@
-/* $OpenBSD: vfs_getcwd.c,v 1.22 2014/07/12 18:43:32 tedu Exp $ */
+/* $OpenBSD: vfs_getcwd.c,v 1.23 2014/11/03 03:08:00 deraadt Exp $ */
 /* $NetBSD: vfs_getcwd.c,v 1.3.2.3 1999/07/11 10:24:09 sommerfeld Exp $ */
 
 /*
@@ -37,6 +37,7 @@
 #include <sys/kernel.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/lock.h>
 #include <sys/vnode.h>
 #include <sys/mount.h>
 #include <sys/proc.h>

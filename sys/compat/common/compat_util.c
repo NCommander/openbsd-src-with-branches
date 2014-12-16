@@ -1,4 +1,4 @@
-/* 	$OpenBSD: compat_util.c,v 1.12 2014/03/26 05:23:42 guenther Exp $	*/
+/* 	$OpenBSD: compat_util.c,v 1.13 2014/07/12 18:50:00 tedu Exp $	*/
 /* 	$NetBSD: compat_util.c,v 1.4 1996/03/14 19:31:45 christos Exp $	*/
 
 /*
@@ -41,6 +41,8 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/vnode.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <compat/common/compat_util.h>
 

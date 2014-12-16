@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.163 2014/10/08 07:33:14 blambert Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.164 2014/12/11 14:33:48 jmc Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*
@@ -61,6 +61,8 @@
 #ifdef HIBERNATE
 #include <sys/hibernate.h>
 #endif /* HIBERNATE */
+
+#include <uvm/uvm_extern.h>
 
 int nobuffers;
 int needbuffer;

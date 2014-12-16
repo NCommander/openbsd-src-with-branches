@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_denode.c,v 1.50 2014/09/14 14:17:26 jsg Exp $	*/
+/*	$OpenBSD: msdosfs_denode.c,v 1.51 2014/11/18 10:42:15 dlg Exp $	*/
 /*	$NetBSD: msdosfs_denode.c,v 1.23 1997/10/17 11:23:58 ws Exp $	*/
 
 /*-
@@ -54,6 +54,7 @@
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/kernel.h>		/* defines "time" */
 #include <sys/dirent.h>
 #include <sys/namei.h>

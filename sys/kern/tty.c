@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.116 2014/12/01 07:51:47 deraadt Exp $	*/
+/*	$OpenBSD: tty.c,v 1.117 2014/12/10 02:44:47 tedu Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -59,6 +59,8 @@
 #include <sys/unistd.h>
 
 #include <sys/namei.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <dev/rndvar.h>
 

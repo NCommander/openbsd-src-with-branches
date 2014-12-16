@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_subr.c,v 1.43 2014/12/10 02:44:46 tedu Exp $	*/
+/*	$OpenBSD: exec_subr.c,v 1.44 2014/12/15 02:24:23 guenther Exp $	*/
 /*	$NetBSD: exec_subr.c,v 1.9 1994/12/04 03:10:42 mycroft Exp $	*/
 
 /*
@@ -40,6 +40,8 @@
 #include <sys/exec.h>
 #include <sys/mman.h>
 #include <sys/resourcevar.h>
+
+#include <uvm/uvm_extern.h>
 
 #ifdef DEBUG
 /*

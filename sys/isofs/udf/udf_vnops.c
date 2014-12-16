@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vnops.c,v 1.56 2014/11/03 21:28:35 tedu Exp $	*/
+/*	$OpenBSD: udf_vnops.c,v 1.57 2014/11/18 10:42:15 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -44,6 +44,7 @@
 #include <sys/lock.h>
 #include <sys/mount.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/dirent.h>
 #include <sys/queue.h>
 #include <sys/endian.h>
