@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.135 2014/09/12 09:52:45 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.136 2014/12/02 18:13:10 tedu Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -64,7 +64,6 @@
 #define clockframe intrframe
 
 #include <sys/device.h>
-#include <sys/lock.h>			/* will also get LOCKDEBUG */
 #include <sys/sched.h>
 #include <sys/sensors.h>
 
