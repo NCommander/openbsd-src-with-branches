@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.55 2014/10/29 06:16:34 deraadt Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.56 2014/10/31 20:11:52 deraadt Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -171,7 +171,7 @@ main(int argc, char *argv[])
 			(void) close(f);
 		}
 		(void) chdir("/");
-		(void) setpgrp(0, getpid());
+		(void) setpgid(0, 0);
 		devnull = open(_PATH_DEVNULL, O_RDWR);
 		if (devnull >= 0) {
 			(void) dup2(devnull, STDIN_FILENO);

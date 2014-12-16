@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.19 2014/08/18 09:43:02 reyk Exp $	*/
+/*	$OpenBSD: proc.c,v 1.20 2014/10/25 03:18:13 lteo Exp $	*/
 
 /*
  * Copyright (c) 2010 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -351,7 +351,7 @@ proc_run(struct privsep *ps, struct privsep_proc *p,
 		fatal("proc_run: cannot fork");
 	case 0:
 		/* Set the process group of the current process */
-		setpgrp(0, getpid());
+		setpgid(0, 0);
 		break;
 	default:
 		return (pid);
