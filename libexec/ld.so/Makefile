@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.50 2014/06/21 08:00:22 otto Exp $
+#	$OpenBSD: Makefile,v 1.51 2014/12/16 20:53:12 pascal Exp $
 
 SUBDIR=ldconfig ldd
 MAN=	ld.so.1
@@ -9,6 +9,7 @@ MAN=	ld.so.1
 NOPROG=
 .else
 PROG=	ld.so
+BINMODE=444
 
 VPATH=${.CURDIR}/../../lib/libc/string
 
@@ -52,7 +53,7 @@ $(PROG): $(test_prog)
 .endif
 
 afterinstall:
-	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${NONBINMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
 	    ${.OBJDIR}/ld.so ${DESTDIR}/sbin/ld.so
 
 .include <bsd.prog.mk>
