@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_aobj.c,v 1.72 2014/11/21 07:18:44 tedu Exp $	*/
+/*	$OpenBSD: uvm_aobj.c,v 1.73 2014/12/09 07:16:41 doug Exp $	*/
 /*	$NetBSD: uvm_aobj.c,v 1.39 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -43,6 +43,7 @@
 #include <sys/kernel.h>
 #include <sys/pool.h>
 #include <sys/stdint.h>
+#include <sys/atomic.h>
 
 #include <uvm/uvm.h>
 

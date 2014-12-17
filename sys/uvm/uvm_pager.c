@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pager.c,v 1.69 2014/09/14 14:17:27 jsg Exp $	*/
+/*	$OpenBSD: uvm_pager.c,v 1.70 2014/11/16 12:31:00 deraadt Exp $	*/
 /*	$NetBSD: uvm_pager.c,v 1.36 2000/11/27 18:26:41 chs Exp $	*/
 
 /*
@@ -36,8 +36,8 @@
 #include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/pool.h>
-#include <sys/vnode.h>
 #include <sys/buf.h>
+#include <sys/atomic.h>
 
 #include <uvm/uvm.h>
 
