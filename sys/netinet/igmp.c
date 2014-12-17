@@ -1,4 +1,4 @@
-/*	$OpenBSD: igmp.c,v 1.45 2014/09/14 14:17:26 jsg Exp $	*/
+/*	$OpenBSD: igmp.c,v 1.46 2014/11/18 02:37:31 tedu Exp $	*/
 /*	$NetBSD: igmp.c,v 1.15 1996/02/13 23:41:25 christos Exp $	*/
 
 /*
@@ -641,7 +641,7 @@ igmp_sendpkt(struct in_multi *inm, int type, in_addr_t addr)
 	m->m_data -= sizeof(struct ip);
 	m->m_len += sizeof(struct ip);
 
-	imo.imo_multicast_ifp = if_get(inm->inm_ifidx);
+	imo.imo_ifidx = inm->inm_ifidx;
 	imo.imo_multicast_ttl = 1;
 
 	/*
