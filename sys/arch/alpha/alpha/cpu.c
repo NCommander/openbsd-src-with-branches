@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.c,v 1.35 2014/03/29 18:09:28 guenther Exp $ */
+/* $OpenBSD: cpu.c,v 1.36 2014/05/08 20:46:49 miod Exp $ */
 /* $NetBSD: cpu.c,v 1.44 2000/05/23 05:12:53 thorpej Exp $ */
 
 /*-
@@ -298,7 +298,6 @@ recognized:
 		ci = malloc(sizeof(*ci), M_DEVBUF, M_WAITOK | M_ZERO);
 
 	cpu_info[ma->ma_slot] = ci;
-	simple_lock_init(&ci->ci_slock);
 #else
 	ci = &cpu_info_primary;
 #endif
