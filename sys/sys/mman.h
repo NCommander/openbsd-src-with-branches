@@ -1,4 +1,4 @@
-/*	$OpenBSD: mman.h,v 1.26 2014/07/10 19:00:23 matthew Exp $	*/
+/*	$OpenBSD: mman.h,v 1.27 2014/10/03 17:41:00 kettenis Exp $	*/
 /*	$NetBSD: mman.h,v 1.11 1995/03/26 20:24:23 jtc Exp $	*/
 
 /*-
@@ -109,7 +109,7 @@
 #if __BSD_VISIBLE
 /*
  * Original advice values, equivalent to POSIX definitions,
- * and few implementation-specific ones.
+ * and few implementation-specific ones.  For in-kernel and historic use.
  */
 #define	MADV_NORMAL		POSIX_MADV_NORMAL
 #define	MADV_RANDOM		POSIX_MADV_RANDOM
