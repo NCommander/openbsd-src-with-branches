@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.170 2014/11/18 02:37:30 tedu Exp $ */
+/*	$OpenBSD: ehci.c,v 1.171 2014/12/09 07:05:06 doug Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -524,11 +524,12 @@ ehci_intr1(struct ehci_softc *sc)
 		return (0);
 	}
 
-	intrs = EHCI_STS_INTRS(EOREAD4(sc, EHCI_USBSTS));
+	intrs = EOREAD4(sc, EHCI_USBSTS);
 	if (intrs == 0xffffffff) {
 		sc->sc_bus.dying = 1;
 		return (0);
 	}
+	intrs = EHCI_STS_INTRS(intrs);
 	if (!intrs)
 		return (0);
 
