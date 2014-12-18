@@ -1,4 +1,4 @@
-/* $OpenBSD: prom.h,v 1.8 2000/11/08 21:27:22 ericj Exp $ */
+/* $OpenBSD: prom.h,v 1.9 2009/09/30 19:41:54 miod Exp $ */
 /* $NetBSD: prom.h,v 1.12 2000/06/08 03:10:06 thorpej Exp $ */
 
 /*
@@ -112,9 +112,6 @@ void	hwrpb_restart_setup(void);
 
 #ifndef ASSEMBLER
 #ifdef _KERNEL
-int	prom_enter(void);
-void	prom_leave(int);
-
 void	promcnputc(dev_t, int);
 int	promcngetc(dev_t);
 int	promcnlookc(dev_t, char *);
