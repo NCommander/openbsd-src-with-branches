@@ -279,9 +279,6 @@ apm_suspend(int state)
 	splx(s);
 
 	resume_randomness();		/* force RNG upper level reseed */
-	/* restore hw.setperf */
-	if (cpu_setperf != NULL)
-		cpu_setperf(perflevel);
 	bufq_restart();
 
 	config_suspend_all(DVACT_WAKEUP);
@@ -289,6 +286,10 @@ apm_suspend(int state)
 #if NWSDISPLAY > 0
 	wsdisplay_resume();
 #endif /* NWSDISPLAY > 0 */
+
+	/* restore hw.setperf */
+	if (cpu_setperf != NULL)
+		cpu_setperf(perflevel);
 }
 
 void
