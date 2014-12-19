@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlw.c,v 1.24 2014/07/13 23:10:23 deraadt Exp $ */
+/*	$OpenBSD: qlw.c,v 1.25 2014/09/14 14:17:24 jsg Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -1517,7 +1517,7 @@ qlw_read_nvram(struct qlw_softc *sc)
 		csum += data[i] >> 8;
 	}
 
-	bcopy(data, &sc->sc_nvram, sizeof(sc->sc_nvram));
+	memcpy(&sc->sc_nvram, data, sizeof(sc->sc_nvram));
 	/* id field should be 'ISP ', version should high enough */
 	if (sc->sc_nvram.id[0] != 'I' || sc->sc_nvram.id[1] != 'S' ||
 	    sc->sc_nvram.id[2] != 'P' || sc->sc_nvram.id[3] != ' ' ||
