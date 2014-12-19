@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ipwvar.h,v 1.22 2013/11/14 12:41:14 dlg Exp $	*/
+/*	$OpenBSD: if_ipwvar.h,v 1.23 2013/12/06 21:03:04 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2004-2006
@@ -116,6 +116,9 @@ struct ipw_softc {
 	struct ipw_soft_hdr		shdr_list[IPW_NDATA];
 	struct ipw_soft_bd		srbd_list[IPW_NRBD];
 	struct ipw_soft_buf		rx_sbuf_list[IPW_NRBD];
+
+	struct task			sc_scantask;
+	struct task			sc_authandassoctask;
 
 	SLIST_HEAD(, ipw_soft_hdr)	free_shdr;
 	SLIST_HEAD(, ipw_soft_buf)	free_sbuf;
