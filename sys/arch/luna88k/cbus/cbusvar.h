@@ -1,4 +1,4 @@
-/*	$OpenBSD:$	*/
+/*	$OpenBSD: cbusvar.h,v 1.1 2014/12/08 13:24:04 aoyama Exp $	*/
 
 /*
  * Copyright (c) 2014 Kenji Aoyama.
