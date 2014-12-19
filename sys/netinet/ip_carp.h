@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.h,v 1.29 2012/10/08 18:48:25 camield Exp $	*/
+/*	$OpenBSD: ip_carp.h,v 1.31 2014/04/20 14:54:39 henning Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -115,7 +115,7 @@ struct carpstats {
 #define CARPDEVNAMSIZ	16
 #ifdef IFNAMSIZ
 #if CARPDEVNAMSIZ != IFNAMSIZ
-#error
+#error namsiz mismatch
 #endif
 #endif
 
