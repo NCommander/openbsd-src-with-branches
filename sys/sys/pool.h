@@ -1,4 +1,4 @@
-/*	$OpenBSD: pool.h,v 1.53 2014/09/22 01:04:58 dlg Exp $	*/
+/*	$OpenBSD: pool.h,v 1.54 2014/11/01 23:58:07 tedu Exp $	*/
 /*	$NetBSD: pool.h,v 1.27 2001/06/06 22:00:17 rafal Exp $	*/
 
 /*-
@@ -82,7 +82,7 @@ struct pool_allocator {
 	int pa_pagesz;
 };
 
-LIST_HEAD(pool_pagelist, pool_item_header);
+TAILQ_HEAD(pool_pagelist, pool_item_header);
 
 struct pool {
 	struct mutex	pr_mtx;
