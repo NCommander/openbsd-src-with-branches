@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gem_pci.c,v 1.33 2012/09/30 02:16:17 brad Exp $	*/
+/*	$OpenBSD: if_gem_pci.c,v 1.34 2012/10/16 10:58:04 jsg Exp $	*/
 /*	$NetBSD: if_gem_pci.c,v 1.1 2001/09/16 00:11:42 eeh Exp $ */
 
 /*
@@ -41,8 +41,7 @@
 #include <sys/socket.h>
 #include <sys/errno.h>
 #include <sys/device.h>
-
-#include <machine/endian.h>
+#include <sys/endian.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>

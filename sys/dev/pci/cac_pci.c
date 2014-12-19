@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac_pci.c,v 1.13 2009/04/06 15:18:45 kettenis Exp $	*/
+/*	$OpenBSD: cac_pci.c,v 1.14 2013/05/30 16:15:02 deraadt Exp $	*/
 /*	$NetBSD: cac_pci.c,v 1.10 2001/01/10 16:48:04 ad Exp $	*/
 
 /*-
@@ -39,8 +39,8 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/queue.h>
+#include <sys/endian.h>
 
-#include <machine/endian.h>
 #include <machine/bus.h>
 
 #include <dev/pci/pcidevs.h>

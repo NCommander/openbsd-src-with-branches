@@ -1,4 +1,4 @@
-/*	$OpenBSD: uberry.c,v 1.21 2013/04/15 09:23:02 mglocker Exp $	*/
+/*	$OpenBSD: uberry.c,v 1.22 2014/07/12 20:26:33 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2006 Theo de Raadt <deraadt@openbsd.org>
@@ -25,9 +25,9 @@
 #include <sys/timeout.h>
 #include <sys/conf.h>
 #include <sys/device.h>
+#include <sys/endian.h>
 
 #include <machine/bus.h>
-#include <machine/endian.h>
 #include <machine/intr.h>
 
 #include <dev/usb/usb.h>

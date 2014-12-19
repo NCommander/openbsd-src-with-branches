@@ -1,4 +1,4 @@
-/*	$OpenBSD: rasops1.c,v 1.7 2009/09/05 14:09:35 miod Exp $	*/
+/*	$OpenBSD: rasops1.c,v 1.8 2010/08/28 12:48:14 miod Exp $	*/
 /*	$NetBSD: rasops1.c,v 1.11 2000/04/12 14:22:29 pk Exp $	*/
 
 /*-
@@ -33,7 +33,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/time.h>
-#include <machine/endian.h>
+#include <sys/endian.h>
 
 #include <dev/wscons/wsdisplayvar.h>
 #include <dev/wscons/wsconsio.h>

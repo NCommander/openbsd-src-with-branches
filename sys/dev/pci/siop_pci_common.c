@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop_pci_common.c,v 1.17 2007/11/02 00:01:37 fgsch Exp $ */
+/*	$OpenBSD: siop_pci_common.c,v 1.18 2010/07/23 07:47:13 jsg Exp $ */
 /*	$NetBSD: siop_pci_common.c,v 1.25 2005/06/28 00:28:42 thorpej Exp $ */
 
 /*
@@ -33,8 +33,7 @@
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/kernel.h>
-
-#include <machine/endian.h>
+#include <sys/endian.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

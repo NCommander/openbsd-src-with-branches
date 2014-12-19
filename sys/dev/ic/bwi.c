@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.110 2014/09/14 14:17:24 jsg Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.111 2014/12/16 18:03:17 miod Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -48,9 +48,9 @@
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/systm.h>
+#include <sys/endian.h>
 
 #include <machine/bus.h>
-#include <machine/endian.h>
 #include <machine/intr.h>
 
 #include <net/if.h>

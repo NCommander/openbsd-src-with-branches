@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560.c,v 1.66 2014/07/22 13:12:12 mpi Exp $  */
+/*	$OpenBSD: rt2560.c,v 1.67 2014/09/06 05:41:35 jsg Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -34,9 +34,9 @@
 #include <sys/timeout.h>
 #include <sys/conf.h>
 #include <sys/device.h>
+#include <sys/endian.h>
 
 #include <machine/bus.h>
-#include <machine/endian.h>
 #include <machine/intr.h>
 
 #if NBPFILTER > 0

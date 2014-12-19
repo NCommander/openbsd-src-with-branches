@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.75 2014/07/22 13:12:12 mpi Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.76 2014/09/06 05:41:35 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -35,9 +35,9 @@
 #include <sys/conf.h>
 #include <sys/device.h>
 #include <sys/queue.h>
+#include <sys/endian.h>
 
 #include <machine/bus.h>
-#include <machine/endian.h>
 #include <machine/intr.h>
 
 #if NBPFILTER > 0

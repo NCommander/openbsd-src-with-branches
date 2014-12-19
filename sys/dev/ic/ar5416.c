@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5416.c,v 1.13 2013/08/07 01:06:28 bluhm Exp $	*/
+/*	$OpenBSD: ar5416.c,v 1.14 2014/07/22 13:12:11 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -35,9 +35,9 @@
 #include <sys/timeout.h>
 #include <sys/conf.h>
 #include <sys/device.h>
+#include <sys/endian.h>
 
 #include <machine/bus.h>
-#include <machine/endian.h>
 #include <machine/intr.h>
 
 #if NBPFILTER > 0

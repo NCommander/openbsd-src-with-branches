@@ -1,4 +1,4 @@
-/*	$OpenBSD: gem.c,v 1.105 2014/07/22 13:12:12 mpi Exp $	*/
+/*	$OpenBSD: gem.c,v 1.106 2014/08/27 05:54:15 dlg Exp $	*/
 /*	$NetBSD: gem.c,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -47,8 +47,7 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/device.h>
-
-#include <machine/endian.h>
+#include <sys/endian.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>

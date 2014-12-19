@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9003.c,v 1.29 2014/07/13 23:10:23 deraadt Exp $	*/
+/*	$OpenBSD: ar9003.c,v 1.30 2014/07/22 13:12:11 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -36,9 +36,9 @@
 #include <sys/conf.h>
 #include <sys/device.h>
 #include <sys/stdint.h>	/* uintptr_t */
+#include <sys/endian.h>
 
 #include <machine/bus.h>
-#include <machine/endian.h>
 #include <machine/intr.h>
 
 #if NBPFILTER > 0

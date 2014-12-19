@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpt.c,v 1.33 2011/06/21 20:23:49 matthew Exp $	*/
+/*	$OpenBSD: dpt.c,v 1.34 2013/05/30 16:15:02 deraadt Exp $	*/
 /*	$NetBSD: dpt.c,v 1.12 1999/10/23 16:26:33 ad Exp $	*/
 
 /*-
@@ -69,8 +69,8 @@
 #include <sys/queue.h>
 #include <sys/proc.h>
 #include <sys/buf.h>
+#include <sys/endian.h>
 
-#include <machine/endian.h>
 #include <machine/bus.h>
 
 #include <scsi/scsi_all.h>

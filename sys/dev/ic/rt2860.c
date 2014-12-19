@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2860.c,v 1.75 2014/09/06 05:41:35 jsg Exp $	*/
+/*	$OpenBSD: rt2860.c,v 1.76 2014/11/18 02:37:30 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -34,9 +34,9 @@
 #include <sys/timeout.h>
 #include <sys/conf.h>
 #include <sys/device.h>
+#include <sys/endian.h>
 
 #include <machine/bus.h>
-#include <machine/endian.h>
 #include <machine/intr.h>
 
 #if NBPFILTER > 0

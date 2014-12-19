@@ -1,4 +1,4 @@
-/*	$OpenBSD: uts.c,v 1.33 2014/03/07 18:39:02 mpi Exp $ */
+/*	$OpenBSD: uts.c,v 1.34 2014/07/12 18:48:53 tedu Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -26,9 +26,9 @@
 #include <sys/timeout.h>
 #include <sys/conf.h>
 #include <sys/device.h>
+#include <sys/endian.h>
 
 #include <machine/bus.h>
-#include <machine/endian.h>
 #include <machine/intr.h>
 
 #include <dev/usb/usb.h>

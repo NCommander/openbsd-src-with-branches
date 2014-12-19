@@ -1,4 +1,4 @@
-/*	$OpenBSD: atw.c,v 1.82 2014/07/08 17:19:25 deraadt Exp $	*/
+/*	$OpenBSD: atw.c,v 1.83 2014/07/12 18:48:17 tedu Exp $	*/
 /*	$NetBSD: atw.c,v 1.69 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -46,8 +46,7 @@
 #include <sys/errno.h>
 #include <sys/device.h>
 #include <sys/time.h>
-
-#include <machine/endian.h>
+#include <sys/endian.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>
