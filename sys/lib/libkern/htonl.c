@@ -1,8 +1,10 @@
+/*	$OpenBSD$	*/
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
+#include <sys/types.h>
 #include <sys/endian.h>
 
 #undef htonl
