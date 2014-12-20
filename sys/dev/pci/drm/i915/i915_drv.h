@@ -1,4 +1,4 @@
-/* $OpenBSD: i915_drv.h,v 1.52 2014/05/12 19:29:16 kettenis Exp $ */
+/* $OpenBSD: i915_drv.h,v 1.53 2014/11/06 05:48:42 jsg Exp $ */
 /* i915_drv.h -- Private header for the I915 driver -*- linux-c -*-
  */
 /*
@@ -553,7 +553,8 @@ struct inteldrm_softc {
 	int			 nscreens;
 	void			(*switchcb)(void *, int, int);
 	void			*switchcbarg;
-	struct workq_task	 switchwqt;
+	void			*switchcookie;
+	struct task		 switchtask;
 	struct rasops_info	 ro;
 
 	int	sc_offset;
