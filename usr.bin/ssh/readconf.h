@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.103 2014/10/08 22:20:25 djm Exp $ */
+/* $OpenBSD: readconf.h,v 1.104 2014/12/04 02:24:32 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -145,6 +145,8 @@ typedef struct {
 	struct allowed_cname permitted_cnames[MAX_CANON_DOMAINS];
 
 	char	*revoked_host_keys;
+
+	int	fingerprint_hash;
 
 	char	*ignored_unknown; /* Pattern list of unknown tokens to ignore */
 }       Options;
