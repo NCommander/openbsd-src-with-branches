@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfwprintf.c,v 1.10 2014/05/03 12:36:45 deraadt Exp $ */
+/*	$OpenBSD: vfwprintf.c,v 1.11 2014/06/04 07:45:25 stsp Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -731,10 +731,9 @@ fp_common:
 			if (signflag)
 				sign = '-';
 			if (expt == INT_MAX) {	/* inf or nan */
-				if (*cp == 'N') {
+				if (*cp == 'N')
 					cp = (ch >= 'a') ? L"nan" : L"NAN";
-					sign = '\0';
-				} else
+				else
 					cp = (ch >= 'a') ? L"inf" : L"INF";
  				size = 3;
 				flags &= ~ZEROPAD;
