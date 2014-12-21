@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.199 2014/12/17 13:54:27 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.200 2014/12/18 20:55:01 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -24,6 +24,7 @@
 #include <sys/tree.h>
 
 #include <sys/param.h>		/* MAXHOSTNAMELEN */
+#include <netinet/in.h>
 #include <limits.h>
 #include <imsg.h>
 #include <siphash.h>

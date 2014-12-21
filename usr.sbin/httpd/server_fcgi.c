@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_fcgi.c,v 1.41 2014/12/04 02:44:42 tedu Exp $	*/
+/*	$OpenBSD: server_fcgi.c,v 1.42 2014/12/12 14:45:59 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Florian Obser <florian@openbsd.org>
@@ -28,7 +28,6 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
-#include <arpa/inet.h>
 
 #include <errno.h>
 #include <fcntl.h>

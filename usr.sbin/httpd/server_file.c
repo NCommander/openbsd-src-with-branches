@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_file.c,v 1.40 2014/12/04 02:44:42 tedu Exp $	*/
+/*	$OpenBSD: server_file.c,v 1.41 2014/12/12 14:45:59 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -28,7 +28,6 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
-#include <arpa/inet.h>
 
 #include <errno.h>
 #include <fcntl.h>

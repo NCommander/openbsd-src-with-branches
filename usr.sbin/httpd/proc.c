@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.5 2014/10/25 03:23:49 lteo Exp $	*/
+/*	$OpenBSD: proc.c,v 1.6 2014/12/16 03:35:49 millert Exp $	*/
 
 /*
  * Copyright (c) 2010 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -26,7 +26,6 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <arpa/inet.h>
 
 #include <stdio.h>
 #include <stdlib.h>
