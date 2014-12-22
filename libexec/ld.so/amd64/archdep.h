@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.4 2010/01/02 12:16:35 kettenis Exp $	*/
+/*	$OpenBSD: archdep.h,v 1.5 2014/01/19 10:25:45 guenther Exp $	*/
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -65,8 +65,9 @@ RELOC_RELA(Elf64_Rela *r, const Elf64_Sym *s, Elf64_Addr *p, unsigned long v,
 		*p = v + r->r_addend;
 	} else if (ELF64_R_TYPE(r->r_info) == R_X86_64_GLOB_DAT) {
 		*p = v + s->st_value + r->r_addend;
+	} else if (ELF64_R_TYPE(r->r_info) == R_X86_64_64) {
+		*p = v + s->st_value + r->r_addend;
 	} else {
-		_dl_printf("unknown bootstrap relocation\n");
 		_dl_exit(6);
 	}
 }
