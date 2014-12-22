@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.25 2013/11/26 09:50:33 mpi Exp $	*/
+/*	$OpenBSD: qe.c,v 1.26 2014/08/11 12:45:45 mpi Exp $	*/
 /*	$NetBSD: qe.c,v 1.16 2001/03/30 17:30:18 christos Exp $	*/
 
 /*-
@@ -904,12 +904,10 @@ qeioctl(ifp, cmd, data)
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
 		switch (ifa->ifa_addr->sa_family) {
-#ifdef INET
 		case AF_INET:
 			qeinit(sc);
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
-#endif /* INET */
 		default:
 			qeinit(sc);
 			break;

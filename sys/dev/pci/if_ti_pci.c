@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti_pci.c,v 1.2 2013/08/07 01:06:38 bluhm Exp $	*/
+/*	$OpenBSD: if_ti_pci.c,v 1.3 2014/07/22 13:12:11 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -80,10 +80,8 @@
 #include <net/if_dl.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

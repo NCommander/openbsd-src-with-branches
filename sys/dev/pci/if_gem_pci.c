@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gem_pci.c,v 1.34 2012/10/16 10:58:04 jsg Exp $	*/
+/*	$OpenBSD: if_gem_pci.c,v 1.35 2014/12/19 22:44:58 guenther Exp $	*/
 /*	$NetBSD: if_gem_pci.c,v 1.1 2001/09/16 00:11:42 eeh Exp $ */
 
 /*
@@ -47,10 +47,8 @@
 #include <net/if_dl.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <machine/bus.h>
 #include <machine/intr.h>

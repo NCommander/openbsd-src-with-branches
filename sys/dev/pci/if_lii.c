@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lii.c,v 1.32 2013/12/28 03:34:54 deraadt Exp $	*/
+/*	$OpenBSD: if_lii.c,v 1.33 2014/08/30 09:52:13 brad Exp $	*/
 
 /*
  *  Copyright (c) 2007 The NetBSD Foundation.
@@ -53,10 +53,8 @@
 #include <net/bpf.h>
 #endif
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
@@ -1085,10 +1083,8 @@ lii_ioctl(struct ifnet *ifp, u_long cmd, caddr_t addr)
 	switch(cmd) {
 	case SIOCSIFADDR:
 		SET(ifp->if_flags, IFF_UP);
-#ifdef INET
 		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&sc->sc_ac, ifa);
-#endif
 		/* FALLTHROUGH */
 
 	case SIOCSIFFLAGS:

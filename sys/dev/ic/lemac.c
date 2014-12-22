@@ -1,4 +1,4 @@
-/* $OpenBSD: lemac.c,v 1.16 2014/07/08 17:19:25 deraadt Exp $ */
+/* $OpenBSD: lemac.c,v 1.17 2014/07/22 13:12:12 mpi Exp $ */
 /* $NetBSD: lemac.c,v 1.20 2001/06/13 10:46:02 wiz Exp $ */
 
 /*-
@@ -50,10 +50,8 @@
 #include <net/route.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <machine/bus.h>
 
@@ -798,11 +796,9 @@ lemac_ifioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		lemac_init(sc);
 		switch (ifa->ifa_addr->sa_family) {
-#ifdef INET
 		case AF_INET:
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
-#endif /* INET */
 
 		default:
 			break;

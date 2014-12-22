@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl80x9.c,v 1.7 2003/06/25 17:35:36 miod Exp $	*/
+/*	$OpenBSD: rtl80x9.c,v 1.8 2008/06/26 05:42:16 ray Exp $	*/
 /*	$NetBSD: rtl80x9.c,v 1.1 1998/10/31 00:44:33 thorpej Exp $	*/
 
 /*-
@@ -43,10 +43,8 @@
 #include <net/if.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <machine/bus.h>
 

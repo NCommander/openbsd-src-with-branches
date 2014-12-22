@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: ixgb_hw.c,v 1.4 2013/08/07 01:06:39 bluhm Exp $ */
+/* $OpenBSD: ixgb_hw.c,v 1.5 2014/07/22 13:12:11 mpi Exp $ */
 
 /* ixgb_hw.c
  * Shared functions for accessing and configuring the adapter
@@ -50,10 +50,8 @@
 #include <net/if_dl.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <uvm/uvm_extern.h>
 

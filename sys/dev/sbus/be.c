@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.26 2013/11/26 09:50:33 mpi Exp $	*/
+/*	$OpenBSD: be.c,v 1.27 2014/08/11 12:45:45 mpi Exp $	*/
 /*	$NetBSD: be.c,v 1.26 2001/03/20 15:39:20 pk Exp $	*/
 
 /*-
@@ -932,12 +932,10 @@ beioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
 		switch (ifa->ifa_addr->sa_family) {
-#ifdef INET
 		case AF_INET:
 			beinit(sc);
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
-#endif /* INET */
 		default:
 			beinit(sc);
 			break;

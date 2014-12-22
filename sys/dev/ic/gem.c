@@ -1,4 +1,4 @@
-/*	$OpenBSD: gem.c,v 1.106 2014/08/27 05:54:15 dlg Exp $	*/
+/*	$OpenBSD: gem.c,v 1.107 2014/12/19 22:44:58 guenther Exp $	*/
 /*	$NetBSD: gem.c,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -1508,10 +1508,8 @@ gem_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if ((ifp->if_flags & IFF_RUNNING) == 0)
 			gem_init(ifp);
-#ifdef INET
 		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&sc->sc_arpcom, ifa);
-#endif
 		break;
 
 	case SIOCSIFFLAGS:

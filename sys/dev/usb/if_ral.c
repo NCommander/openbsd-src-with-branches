@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.128 2014/07/13 15:52:49 mpi Exp $	*/
+/*	$OpenBSD: if_ral.c,v 1.129 2014/12/19 22:44:59 guenther Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006
@@ -1331,10 +1331,8 @@ ural_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	case SIOCSIFADDR:
 		ifa = (struct ifaddr *)data;
 		ifp->if_flags |= IFF_UP;
-#ifdef INET
 		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&ic->ic_ac, ifa);
-#endif
 		/* FALLTHROUGH */
 	case SIOCSIFFLAGS:
 		if (ifp->if_flags & IFF_UP) {

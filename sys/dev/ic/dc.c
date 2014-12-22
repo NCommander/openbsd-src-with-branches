@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.134 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: dc.c,v 1.135 2014/11/18 22:53:56 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2934,10 +2934,8 @@ dc_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if (!(ifp->if_flags & IFF_RUNNING))
 			dc_init(sc);
-#ifdef INET
 		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&sc->sc_arpcom, ifa);
-#endif
 		break;
 	case SIOCSIFFLAGS:
 		if (ifp->if_flags & IFF_UP) {

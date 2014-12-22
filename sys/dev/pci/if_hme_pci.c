@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_hme_pci.c,v 1.17 2013/08/07 01:06:35 bluhm Exp $	*/
+/*	$OpenBSD: if_hme_pci.c,v 1.18 2014/07/22 13:12:11 mpi Exp $	*/
 /*	$NetBSD: if_hme_pci.c,v 1.3 2000/12/28 22:59:13 sommerfeld Exp $	*/
 
 /*
@@ -44,10 +44,8 @@
 #include <net/if_dl.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>

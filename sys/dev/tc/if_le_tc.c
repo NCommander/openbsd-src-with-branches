@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_tc.c,v 1.10 2008/08/09 16:42:30 miod Exp $	*/
+/*	$OpenBSD: if_le_tc.c,v 1.11 2013/09/24 20:11:05 miod Exp $	*/
 /*	$NetBSD: if_le_tc.c,v 1.12 2001/11/13 06:26:10 lukem Exp $	*/
 
 /*
@@ -42,10 +42,8 @@
 #include <net/if.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <dev/ic/lancereg.h>
 #include <dev/ic/lancevar.h>

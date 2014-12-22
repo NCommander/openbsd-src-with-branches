@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.111 2014/11/27 15:49:13 brad Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.112 2014/12/13 21:05:33 doug Exp $	*/
 
 /******************************************************************************
 
@@ -435,10 +435,8 @@ ixgbe_ioctl(struct ifnet * ifp, u_long command, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if (!(ifp->if_flags & IFF_RUNNING))
 			ixgbe_init(sc);
-#ifdef INET
 		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&sc->arpcom, ifa);
-#endif
 		break;
 
 	case SIOCSIFFLAGS:
