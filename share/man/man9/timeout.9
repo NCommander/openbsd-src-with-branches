@@ -1,4 +1,4 @@
-.\"	$OpenBSD: timeout.9,v 1.36 2014/02/13 12:40:02 dlg Exp $
+.\"	$OpenBSD: timeout.9,v 1.37 2014/02/13 14:20:07 jmc Exp $
 .\"
 .\" Copyright (c) 2000 Artur Grabowski <art@openbsd.org>
 .\" All rights reserved.
@@ -39,7 +39,8 @@
 .Nm timeout_del ,
 .Nm timeout_pending ,
 .Nm timeout_initialized ,
-.Nm timeout_triggered
+.Nm timeout_triggered ,
+.Nm TIMEOUT_INITIALIZER
 .Nd execute a function after a specified period of time
 .Sh SYNOPSIS
 .In sys/types.h
@@ -70,6 +71,7 @@
 .Fn "timeout_add_usec" "struct timeout *to" "int usec"
 .Ft int
 .Fn "timeout_add_nsec" "struct timeout *to" "int nsec"
+.Fn "TIMEOUT_INITIALIZER" "void (*fn)(void *)" "void *arg"
 .Sh DESCRIPTION
 The
 .Nm timeout
@@ -173,6 +175,16 @@ functions instead of
 .Fn timeout_add .
 Those functions add a timeout whilst converting the time specified
 by the respective types.
+.Pp
+A timeout declaration can be initialised with the
+.Fn TIMEOUT_INITIALIZER
+macro.
+The timeout will be prepared to call the function specified by the
+.Fa fn
+argument with the
+.Fa void *
+argument given in
+.Fa arg .
 .Sh CONTEXT
 .Fn timeout_set
 can be called during autoconf, from process context, or from interrupt
