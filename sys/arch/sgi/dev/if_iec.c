@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iec.c,v 1.10 2014/05/19 21:18:42 miod Exp $	*/
+/*	$OpenBSD: if_iec.c,v 1.11 2014/07/22 10:35:35 mpi Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -1026,10 +1026,8 @@ iec_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if (!(ifp->if_flags & IFF_RUNNING))
 			iec_init(ifp);
-#ifdef INET
 		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&sc->sc_ac, ifa);
-#endif
 		break;
 
 	case SIOCSIFFLAGS:

@@ -1,4 +1,4 @@
-/* $OpenBSD: imxenet.c,v 1.6 2014/07/12 20:07:34 brad Exp $ */
+/* $OpenBSD: imxenet.c,v 1.7 2014/08/21 14:24:08 mpi Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -607,10 +607,8 @@ imxenet_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if (!(ifp->if_flags & IFF_RUNNING))
 			imxenet_init(sc);
-#ifdef INET
 		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&sc->sc_ac, ifa);
-#endif
 		break;
 
 	case SIOCSIFFLAGS:

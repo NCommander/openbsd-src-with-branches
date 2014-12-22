@@ -1,4 +1,4 @@
-/*	$OpenBSD: sgec.c,v 1.23 2014/08/06 15:40:40 jsg Exp $	*/
+/*	$OpenBSD: sgec.c,v 1.24 2014/08/14 17:49:50 miod Exp $	*/
 /*      $NetBSD: sgec.c,v 1.5 2000/06/04 02:14:14 matt Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -631,12 +631,10 @@ zeioctl(ifp, cmd, data)
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
 		switch(ifa->ifa_addr->sa_family) {
-#ifdef INET
 		case AF_INET:
 			zeinit(sc);
 			arp_ifinit(&sc->sc_ac, ifa);
 			break;
-#endif
 		}
 		break;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sq.c,v 1.10 2014/07/22 10:35:35 mpi Exp $	*/
+/*	$OpenBSD: if_sq.c,v 1.11 2014/08/27 02:10:24 brad Exp $	*/
 /*	$NetBSD: if_sq.c,v 1.42 2011/07/01 18:53:47 dyoung Exp $	*/
 
 /*
@@ -610,10 +610,8 @@ sq_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if (!(ifp->if_flags & IFF_RUNNING))
 			sq_init(ifp);
-#ifdef INET
 		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&sc->sc_ac, ifa);
-#endif
 		break;
 
 	case SIOCSIFMEDIA:

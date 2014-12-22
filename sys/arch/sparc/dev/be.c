@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.46 2013/12/24 01:11:04 dlg Exp $	*/
+/*	$OpenBSD: be.c,v 1.47 2014/07/22 10:35:35 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -571,12 +571,10 @@ beioctl(ifp, cmd, data)
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
 		switch (ifa->ifa_addr->sa_family) {
-#ifdef INET
 		case AF_INET:
 			beinit(sc);
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
-#endif /* INET */
 		default:
 			beinit(sc);
 			break;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_obio.c,v 1.16 2009/10/13 19:33:16 pirofti Exp $	*/
+/*	$OpenBSD: if_wi_obio.c,v 1.17 2011/07/03 15:47:16 matthew Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -56,10 +56,8 @@
 #include <net/if_dl.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <net80211/ieee80211.h>
 #include <net80211/ieee80211_ioctl.h>
