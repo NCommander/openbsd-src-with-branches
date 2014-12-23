@@ -1,4 +1,4 @@
-/*	$OpenBSD: domain.h,v 1.11 2013/04/24 10:17:08 mpi Exp $	*/
+/*	$OpenBSD: domain.h,v 1.12 2014/08/31 01:42:36 guenther Exp $	*/
 /*	$NetBSD: domain.h,v 1.10 1996/02/09 18:25:07 christos Exp $	*/
 
 /*
@@ -70,9 +70,7 @@ struct	domain {
 extern struct	domain *domains;
 void domaininit(void);
 
-#ifdef INET
 extern struct domain inetdomain;
-#endif
 
 #ifdef INET6
 extern struct domain inet6domain;
