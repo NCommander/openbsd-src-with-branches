@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.197 2014/12/18 20:55:01 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.198 2014/12/21 00:54:49 guenther Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -492,6 +492,9 @@ rdropts_l	: rdropts_l rdroptsl nl
 
 rdroptsl	: forwardmode TO tablespec interface	{
 			if (hashkey != NULL) {
+				memcpy(&rdr->conf.key,
+				    hashkey, sizeof(rdr->conf.key));
+				rdr->conf.flags |= F_HASHKEY;
 				free(hashkey);
 				hashkey = NULL;
 			}
@@ -775,15 +778,15 @@ tableopts	: CHECK tablecheck
 			switch ($2) {
 			case RELAY_DSTMODE_LOADBALANCE:
 			case RELAY_DSTMODE_HASH:
-			case RELAY_DSTMODE_RANDOM:
-			case RELAY_DSTMODE_SRCHASH:
 				if (rdr != NULL) {
 					yyerror("mode not supported "
 					    "for redirections");
 					YYERROR;
 				}
 				/* FALLTHROUGH */
+			case RELAY_DSTMODE_RANDOM:
 			case RELAY_DSTMODE_ROUNDROBIN:
+			case RELAY_DSTMODE_SRCHASH:
 				dstmode = $2;
 				break;
 			case RELAY_DSTMODE_LEASTSTATES:
