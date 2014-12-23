@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vfsops.c,v 1.12 2014/10/03 18:53:13 tedu Exp $ */
+/* $OpenBSD: fuse_vfsops.c,v 1.13 2014/12/16 18:30:04 tedu Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -305,8 +305,8 @@ int fusefs_vptofh(struct vnode *vp, struct fid *fhp)
 
 int fusefs_init(struct vfsconf *vfc)
 {
-	pool_init(&fusefs_fbuf_pool, sizeof(struct fusebuf), 0, 0, 0,
-	    "fmsg", &pool_allocator_nointr);
+	pool_init(&fusefs_fbuf_pool, sizeof(struct fusebuf), 0, 0, PR_WAITOK,
+	    "fmsg", NULL);
 
 	return (0);
 }
