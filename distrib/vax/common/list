@@ -1,7 +1,7 @@
-#	$OpenBSD: list,v 1.30 2014/07/20 02:37:35 deraadt Exp $
+#	$OpenBSD: list,v 1.31 2014/12/03 20:11:19 florian Exp $
 
 SRCDIRS distrib/special
-SRCDIRS bin sbin
+#SRCDIRS bin sbin
 SRCDIRS sys/arch/vax/stand
 
 # copy the crunched binary, link to it, and kill it
