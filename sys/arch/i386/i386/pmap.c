@@ -202,15 +202,6 @@
 #define PMAP_HEAD_TO_MAP_LOCK()		/* null */
 #define PMAP_HEAD_TO_MAP_UNLOCK()	/* null */
 
-#define PD_MASK         0xffc00000      /* page directory address bits */
-#define PT_MASK         0x003ff000      /* page table address bits */
-
-/*
- * pdei/ptei: generate index into PDP/PTP from a VA
- */
-#define pdei(VA)        (((VA) & PD_MASK) >> PDSHIFT)
-#define ptei(VA)        (((VA) & PT_MASK) >> PAGE_SHIFT)
-
 /*
  * global data structures
  */

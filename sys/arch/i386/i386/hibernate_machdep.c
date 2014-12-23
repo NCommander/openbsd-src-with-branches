@@ -193,7 +193,7 @@ hibernate_enter_resume_4m_pde(vaddr_t va, paddr_t pa)
 	pt_entry_t *pde, npde;
 
 	pde = s4pde_4m(va);
-	npde = (pa & HIB_PD_MASK) | PG_RW | PG_V | PG_M | PG_PS;
+	npde = (pa & PD_MASK) | PG_RW | PG_V | PG_M | PG_PS;
 	*pde = npde;
 }
 

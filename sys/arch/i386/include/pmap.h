@@ -196,6 +196,12 @@
 			 ((unsigned)(VA) & ~PG_FRAME))
 
 /*
+ * pdei/ptei: generate index into PDP/PTP from a VA
+ */
+#define	pdei(VA)	(((VA) & PD_MASK) >> PDSHIFT)
+#define	ptei(VA)	(((VA) & PT_MASK) >> PAGE_SHIFT)
+
+/*
  * PTP macros:
  *   A PTP's index is the PD index of the PDE that points to it.
  *   A PTP's offset is the byte-offset in the PTE space that this PTP is at.
