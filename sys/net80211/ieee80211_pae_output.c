@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_pae_output.c,v 1.17 2014/07/22 11:06:10 mpi Exp $	*/
+/*	$OpenBSD: ieee80211_pae_output.c,v 1.18 2014/09/14 14:17:26 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2007,2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -38,11 +38,9 @@
 #include <net/if_llc.h>
 #include <net/bpf.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
-#endif
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_priv.h>

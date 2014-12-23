@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_regdomain.c,v 1.7 2006/11/26 19:46:28 deraadt Exp $	*/
+/*	$OpenBSD: ieee80211_regdomain.c,v 1.8 2014/08/08 15:16:39 jasper Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
@@ -35,10 +35,8 @@
 #include <net/if_arp.h>
 #include <net/if_llc.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_regdomain.h>

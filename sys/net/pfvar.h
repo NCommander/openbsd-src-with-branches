@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.404 2014/12/19 05:36:28 tedu Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.405 2014/12/19 13:04:08 reyk Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -229,23 +229,16 @@ struct pfi_dynaddr {
  */
 
 #ifdef _KERNEL
-#ifdef INET
 #ifndef INET6
 #define PF_INET_ONLY
 #endif /* ! INET6 */
-#endif /* INET */
 
 #ifdef INET6
-#ifndef INET
-#define PF_INET6_ONLY
-#endif /* ! INET */
 #endif /* INET6 */
 
-#ifdef INET
 #ifdef INET6
 #define PF_INET_INET6
 #endif /* INET6 */
-#endif /* INET */
 
 #else
 
