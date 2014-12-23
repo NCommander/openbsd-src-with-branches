@@ -118,27 +118,23 @@ loop:
 	 */
 	rw_exit_write(&nfs_hashlock);
 	error = getnewvnode(VT_NFS, mnt, &nfs_vops, &nvp);
-	if (error) {
-		*npp = NULL;
-		return (error);
-	}
-	/* grab one of these too while we're outside the lock */
-	np2 = pool_get(&nfs_node_pool, PR_WAITOK | PR_ZERO);
-
 	/* note that we don't have this vnode set up completely yet */
 	rw_enter_write(&nfs_hashlock);
+	if (error) {
+		*npp = NULL;
+		rw_exit_write(&nfs_hashlock);
+		return (error);
+	}
 	nvp->v_flag |= VLARVAL;
 	np = RB_FIND(nfs_nodetree, &nmp->nm_ntree, &find);
-	/* lost race. undo and repeat */
 	if (np != NULL) {
-		pool_put(&nfs_node_pool, np2);
 		vgone(nvp);
 		rw_exit_write(&nfs_hashlock);
 		goto loop;
 	}
 
 	vp = nvp;
-	np = np2;
+	np = pool_get(&nfs_node_pool, PR_WAITOK | PR_ZERO);
 	vp->v_data = np;
 	/* we now have an nfsnode on this vnode */
 	vp->v_flag &= ~VLARVAL;
