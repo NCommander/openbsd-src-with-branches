@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.2 2014/04/26 11:02:45 florian Exp $
+#	$OpenBSD: Makefile,v 1.3 2014/07/16 20:06:27 okan Exp $
 
 PROGDIR=	${.CURDIR}/../../../usr.sbin/traceroute
 
-LDSTATIC=	-static
+LDSTATIC=	${STATIC}
 CFLAGS+=	-I${PROGDIR}
 NOMAN=		yes
 
