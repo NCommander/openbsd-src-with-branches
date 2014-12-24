@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.10 2014/07/10 20:16:48 jsg Exp $	*/
+/*	$OpenBSD: ca.c,v 1.11 2014/10/02 19:14:56 gilles Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -21,6 +21,7 @@
 #include <sys/queue.h>
 #include <sys/socket.h>
 
+#include <signal.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
