@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.152 2014/12/23 17:20:11 deraadt Exp $
+#	$OpenBSD: bsd.own.mk,v 1.153 2014/12/25 18:58:34 pascal Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -41,7 +41,7 @@ BINUTILS_VERSION=binutils
 .endif
 
 .if !empty(STATICPIE_ARCH:M${_arch})
-STATICPIE?=-pie -Wl,-Bsymbolic
+STATICPIE?=-pie
 .endif
 
 .if !empty(PIE_ARCH:M${_arch})
