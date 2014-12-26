@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.92 2013/11/21 17:32:13 mikeb Exp $	*/
+/*	$OpenBSD: route.c,v 1.93 2013/11/25 12:48:39 bluhm Exp $	*/
 /*	$NetBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $	*/
 
 /*
@@ -53,10 +53,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifndef INET
-#define INET
-#endif
 
 #include <netinet/ip_ipsp.h>
 #include "netstat.h"
