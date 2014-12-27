@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.82 2014/07/13 17:24:06 espie Exp $
+# $OpenBSD: Makefile,v 1.83 2014/08/27 18:39:57 kspillner Exp $
 
 .include <bsd.own.mk>
 
@@ -66,6 +66,7 @@ PACKAGES= \
     OpenBSD/UpdateSet.pm \
     OpenBSD/Ustar.pm \
     OpenBSD/Vstat.pm \
+    OpenBSD/FwUpdate.pm \
     OpenBSD/md5.pm \
     OpenBSD/signify.pm \
     OpenBSD/x509.pm
