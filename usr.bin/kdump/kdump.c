@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.94 2014/12/15 01:48:54 guenther Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.95 2014/12/15 07:01:12 jmc Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -1292,6 +1292,7 @@ static void
 ktrpsig(struct ktr_psig *psig)
 {
 	signame(psig->signo);
+	printf(" ");
 	if (psig->action == SIG_DFL)
 		(void)printf("SIG_DFL");
 	else {
