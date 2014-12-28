@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.7 2011/03/23 16:54:35 pirofti Exp $	*/
+/*	$OpenBSD: intr.h,v 1.8 2013/12/25 10:41:55 aoyama Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -36,6 +36,7 @@
 #define IPL_NONE	0
 #define IPL_SOFTINT	1
 #define IPL_BIO		3
+#define IPL_AUDIO	4
 #define IPL_NET		4
 #define IPL_TTY		5
 #define IPL_VM		5

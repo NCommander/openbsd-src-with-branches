@@ -67,7 +67,12 @@ int pcex_wait_int(struct pcex_softc *, u_int);
 int
 pcex_match(struct device *parent, void *cf, void *aux)
 {
-	return 1;	/* XXX: always matched */
+	struct cbus_attach_args *caa = aux;
+
+	if (strcmp(caa->ca_name, pcex_cd.cd_name))
+		return 0;
+
+	return 1;
 }
 
 void

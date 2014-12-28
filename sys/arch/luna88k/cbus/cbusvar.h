@@ -42,5 +42,6 @@ int	cbus_isrunlink(int (*)(void *), int);
 void	cbus_isrdispatch(int);
 
 struct cbus_attach_args {
-	int	intlevel;
+	char	*ca_name;
+	int	ca_intlevel;
 };
