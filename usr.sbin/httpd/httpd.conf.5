@@ -1,4 +1,4 @@
-.\"	$OpenBSD: httpd.conf.5,v 1.38 2014/12/18 09:00:19 reyk Exp $
+.\"	$OpenBSD: httpd.conf.5,v 1.39 2014/12/18 10:18:25 reyk Exp $
 .\"
 .\" Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
 .\"
@@ -354,16 +354,13 @@ Include types definitions from an external file, for example
 .El
 .Sh EXAMPLES
 The following example will start one server that is pre-forked two
-times and listening on the primary IP address of the network interface
-that is a member of the
-.Qq egress
-group.
+times and is listening on all local IP addresses.
 It additionally defines some media types overriding the defaults.
 .Bd -literal -offset indent
 prefork 2
 
 server "default" {
-	listen on egress port 80
+	listen on * port 80
 }
 
 types {
@@ -375,6 +372,16 @@ types {
 	image/png			png
 	application/javascript		js
 	application/xml			xml
+}
+.Ed
+.Pp
+The server can also be configured to only listen on the primary IP
+address of the network interface that is a member of the
+.Qq egress
+group.
+.Bd -literal -offset indent
+server "default" {
+	listen on egress port 80
 }
 .Ed
 .Pp
