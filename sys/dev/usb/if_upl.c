@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upl.c,v 1.59 2014/12/22 02:28:52 tedu Exp $ */
+/*	$OpenBSD: if_upl.c,v 1.60 2014/12/29 00:46:01 brad Exp $ */
 /*	$NetBSD: if_upl.c,v 1.19 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -780,6 +780,7 @@ upl_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if (!(ifp->if_flags & IFF_RUNNING))
 			upl_init(sc);
+		break;
 
 	case SIOCSIFFLAGS:
 		if (ifp->if_flags & IFF_UP) {
@@ -798,10 +799,10 @@ upl_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 			error = EINVAL;
 		else
 			ifp->if_mtu = ifr->ifr_mtu;
+		break;
 
 	default:
 		error = ENOTTY;
-		break;
 	}
 
 	if (error == ENETRESET)
