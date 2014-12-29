@@ -3,8 +3,8 @@
 .\" THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.
 .\" generated from:
 .\"
-.\"	OpenBSD: etc.luna88k/MAKEDEV.md,v 1.22 2014/04/24 14:52:09 aoyama Exp 
-.\"	OpenBSD: MAKEDEV.common,v 1.76 2014/08/20 11:23:40 mikeb Exp 
+.\"	OpenBSD: etc.luna88k/MAKEDEV.md,v 1.24 2014/12/29 21:55:10 aoyama Exp 
+.\"	OpenBSD: MAKEDEV.common,v 1.77 2014/10/09 04:33:50 tedu Exp 
 .\"	OpenBSD: MAKEDEV.man,v 1.7 2009/03/18 17:34:25 sobrado Exp 
 .\"	OpenBSD: MAKEDEV.mansub,v 1.2 2004/02/20 19:13:01 miod Exp 
 .\"
@@ -145,6 +145,9 @@ wscons mice, see
 .Pp
 .Sy Special purpose devices
 .Bl -tag -width tenletters -compact
+.It Ar audio*
+Audio devices, see
+.Xr audio 4 .
 .It Ar bio
 ioctl tunnel pseudo-device, see
 .Xr bio 4 .
