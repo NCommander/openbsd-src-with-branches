@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vnops.c,v 1.67 2014/07/13 16:59:35 pelikan Exp $	*/
+/*	$OpenBSD: ext2fs_vnops.c,v 1.68 2014/11/03 21:28:35 tedu Exp $	*/
 /*	$NetBSD: ext2fs_vnops.c,v 1.1 1997/06/11 09:34:09 bouyer Exp $	*/
 
 /*
@@ -68,6 +68,8 @@
 #include <ufs/ext2fs/ext2fs.h>
 #include <ufs/ext2fs/ext2fs_extern.h>
 #include <ufs/ext2fs/ext2fs_dir.h>
+
+#include <uvm/uvm_extern.h>
 
 static int ext2fs_chmod(struct vnode *, mode_t, struct ucred *, struct proc *);
 static int ext2fs_chown(struct vnode *, uid_t, gid_t, struct ucred *, struct proc *);

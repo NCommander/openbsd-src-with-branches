@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.115 2014/07/12 18:44:01 tedu Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.116 2014/11/03 21:28:35 tedu Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -69,6 +69,8 @@
 #include <ufs/ufs/dirhash.h>
 #endif
 #include <ufs/ext2fs/ext2fs_extern.h>
+
+#include <uvm/uvm_extern.h>
 
 int ufs_chmod(struct vnode *, int, struct ucred *, struct proc *);
 int ufs_chown(struct vnode *, uid_t, gid_t, struct ucred *, struct proc *);
