@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.67 2014/04/03 20:17:12 lum Exp $	*/
+/*	$OpenBSD: dired.c,v 1.68 2014/11/16 04:16:41 guenther Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -213,7 +213,7 @@ dired(int f, int n)
 	char		 dname[NFILEN], *bufp, *slash;
 	struct buffer	*bp;
 
-	if (curbp->b_fname && curbp->b_fname[0] != '\0') {
+	if (curbp->b_fname[0] != '\0') {
 		(void)strlcpy(dname, curbp->b_fname, sizeof(dname));
 		if ((slash = strrchr(dname, '/')) != NULL) {
 			*(slash + 1) = '\0';
@@ -243,7 +243,7 @@ d_otherwindow(int f, int n)
 	struct buffer	*bp;
 	struct mgwin	*wp;
 
-	if (curbp->b_fname && curbp->b_fname[0] != '\0') {
+	if (curbp->b_fname[0] != '\0') {
 		(void)strlcpy(dname, curbp->b_fname, sizeof(dname));
 		if ((slash = strrchr(dname, '/')) != NULL) {
 			*(slash + 1) = '\0';
