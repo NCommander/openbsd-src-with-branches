@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.17 2014/10/30 17:45:58 schwarze Exp $
+# $OpenBSD: Makefile.inc,v 1.18 2014/11/07 00:40:27 schwarze Exp $
 
 .include "Makefile.sub"
 
@@ -188,7 +188,7 @@ NROFF	 = /usr/local/bin/nroff -c
 .ifdef MOPTS
 NOPTS	?= ${MOPTS}
 .else
-NOPTS	?= -mandoc
+NOPTS	?= -mandoc -Wall
 .endif
 
 # --- the list of targets ---
