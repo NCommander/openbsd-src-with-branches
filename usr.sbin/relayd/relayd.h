@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.200 2014/12/18 20:55:01 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.201 2014/12/21 00:54:49 guenther Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -1187,6 +1187,7 @@ const char
 const char
 	*relay_httperror_byid(u_int);
 int	 relay_httpdesc_init(struct ctl_relay_event *);
+ssize_t	 relay_http_time(time_t, char *, size_t);
 
 /* relay_udp.c */
 void	 relay_udp_privinit(struct relayd *, struct relay *);
