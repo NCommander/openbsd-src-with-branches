@@ -1,4 +1,4 @@
-/* $OpenBSD: tcpdrop.c,v 1.13 2014/01/10 04:02:15 lteo Exp $ */
+/* $OpenBSD: tcpdrop.c,v 1.14 2014/06/29 00:58:45 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
@@ -106,11 +106,9 @@ fail:
 		errx(1, "%s port %s: %s", addr1, port1,
 		    gai_strerror(gaierr));
 
-	if ((gaierr = getaddrinfo(faddr2, port2, &hints, &faddr)) != 0) {
-		freeaddrinfo(laddr);
+	if ((gaierr = getaddrinfo(faddr2, port2, &hints, &faddr)) != 0)
 		errx(1, "%s port %s: %s", addr2, port2,
 		    gai_strerror(gaierr));
-	}
 
 	rval = 1;
 	for (ail = laddr; ail; ail = ail->ai_next) {
