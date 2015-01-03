@@ -1740,6 +1740,8 @@ server_inherit(struct server *src, const char *name,
 	if ((dst->srv_conf.tls_key_file =
 	    strdup(src->srv_conf.tls_key_file)) == NULL)
 		fatal("out of memory");
+	dst->srv_conf.tls_cert = NULL;
+	dst->srv_conf.tls_key = NULL;
 
 	dst->srv_conf.id = ++last_server_id;
 	if (last_server_id == INT_MAX) {
