@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.867 2014/01/24 12:07:50 henning Exp $ */
+/*	$OpenBSD: pf.c,v 1.868 2014/01/25 03:39:00 lteo Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5796,6 +5796,8 @@ pf_route6(struct mbuf **m, struct pf_rule *r, int dir, struct ifnet *oifp,
 			goto bad;
 		}
 	}
+
+	in6_proto_cksum_out(m0, ifp);
 
 	/*
 	 * If the packet is too large for the outgoing interface,
