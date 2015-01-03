@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.868 2014/01/25 03:39:00 lteo Exp $ */
+/*	$OpenBSD: pf.c,v 1.868.4.1 2015/01/03 00:37:05 brad Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5276,7 +5276,9 @@ pf_test_state_icmp(struct pf_pdesc *pd, struct pf_state **state,
 				m_copyback(pd->m, pd->off,
 				    sizeof(struct icmp6_hdr), pd->hdr.icmp6,
 				    M_NOWAIT);
-				m_copyback(pd->m, pd2.off,
+				m_copyback(pd2.m, ipoff2, sizeof(h2_6), &h2_6,
+				    M_NOWAIT);
+				m_copyback(pd2.m, pd2.off,
 				    sizeof(struct icmp6_hdr), &iih, M_NOWAIT);
 				copyback = 1;
 			}
