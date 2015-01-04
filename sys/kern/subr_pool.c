@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.173 2014/12/22 00:33:40 dlg Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.174 2014/12/22 02:59:53 tedu Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -863,7 +863,7 @@ pool_update_curpage(struct pool *pp)
 void
 pool_setlowat(struct pool *pp, int n)
 {
-	int prime;
+	int prime = 0;
 
 	mtx_enter(&pp->pr_mtx);
 	pp->pr_minitems = n;
