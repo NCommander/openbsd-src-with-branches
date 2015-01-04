@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -40,14 +41,8 @@ double
 ldexp(double value, int exp)
 {
 	double temp;
-#if __GNUC__ >= 2
 	__asm ("fscale"
 		: "=t" (temp)
 		: "0" (value), "u" ((double)exp));
-#else
-	__asm ("fscale; fstp %%st(1)"
-		: "=f" (temp)
-		: "f" (value), "0" ((double)exp));
-#endif
 	return (temp);
 }
