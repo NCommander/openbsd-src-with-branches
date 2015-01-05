@@ -1,4 +1,4 @@
-/*	$OpenBSD: dd.c,v 1.18 2013/06/01 16:46:49 tedu Exp $	*/
+/*	$OpenBSD: dd.c,v 1.19 2014/12/11 20:39:06 tedu Exp $	*/
 /*	$NetBSD: dd.c,v 1.6 1996/02/20 19:29:06 jtc Exp $	*/
 
 /*-
@@ -304,7 +304,7 @@ dd_in(void)
 		}
 
 		if (ddflags & C_SWAB) {
-			if ((n = in.dbcnt) & 1) {
+			if ((n = in.dbrcnt) & 1) {
 				++st.swab;
 				--n;
 			}
