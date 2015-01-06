@@ -1,4 +1,4 @@
-/*	$OpenBSD: softintr.c,v 1.5 2009/04/19 19:13:57 oga Exp $	*/
+/*	$OpenBSD: softintr.c,v 1.6 2014/07/12 18:44:41 tedu Exp $	*/
 /*	$NetBSD: softintr.c,v 1.1 2003/02/26 21:26:12 fvdl Exp $	*/
 
 /*-
@@ -76,8 +76,13 @@ softintr_init(void)
 void
 softintr_dispatch(int which)
 {
+	struct cpu_info *ci = curcpu();
 	struct x86_soft_intr *si = &x86_soft_intrs[which];
 	struct x86_soft_intrhand *sih;
+	int floor;
+
+	floor = ci->ci_handled_intr_level;
+	ci->ci_handled_intr_level = ci->ci_ilevel;
 
 	for (;;) {
 		mtx_enter(&si->softintr_lock);
@@ -95,6 +100,8 @@ softintr_dispatch(int which)
 
 		(*sih->sih_fn)(sih->sih_arg);
 	}
+
+	ci->ci_handled_intr_level = floor;
 }
 
 /*

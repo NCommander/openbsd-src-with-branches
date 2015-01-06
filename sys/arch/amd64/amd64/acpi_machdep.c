@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.66 2014/12/08 07:12:37 mlarkin Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.67 2014/12/18 05:33:48 mlarkin Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -426,6 +426,7 @@ acpi_resume_mp(void)
 		pcb->pcb_rbp = 0;
 
 		ci->ci_idepth = 0;
+		ci->ci_handled_intr_level = IPL_NONE;
 
 		ci->ci_flags &= ~CPUF_PRESENT;
 		cpu_start_secondary(ci);

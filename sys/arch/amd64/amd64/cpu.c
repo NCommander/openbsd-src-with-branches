@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.75 2014/12/18 05:33:48 mlarkin Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.76 2014/12/18 16:23:26 deraadt Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -432,6 +432,7 @@ cpu_attach(struct device *parent, struct device *self, void *aux)
 	ci->ci_cpuid = 0;	/* False for APs, but they're not used anyway */
 #endif
 	ci->ci_func = caa->cpu_func;
+	ci->ci_handled_intr_level = IPL_NONE;
 
 #if defined(MULTIPROCESSOR)
 	/*
