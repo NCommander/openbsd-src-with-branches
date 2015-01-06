@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_file.c,v 1.43 2015/01/01 14:15:02 reyk Exp $	*/
+/*	$OpenBSD: server_file.c,v 1.44 2015/01/04 22:23:58 chrisz Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -134,6 +134,7 @@ server_file_access(struct httpd *env, struct client *clt,
  fail:
 	switch (errno) {
 	case ENOENT:
+	case ENOTDIR:
 		return (404);
 	case EACCES:
 		return (403);
