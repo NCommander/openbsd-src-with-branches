@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipi.c,v 1.10 2010/12/27 20:22:23 guenther Exp $	*/
+/*	$OpenBSD: ipi.c,v 1.11 2012/12/05 23:20:10 deraadt Exp $	*/
 /*	$NetBSD: ipi.c,v 1.2 2003/03/01 13:05:37 fvdl Exp $	*/
 
 /*-
@@ -103,7 +103,7 @@ x86_ipi_handler(void)
 	u_int32_t pending;
 	int bit;
 
-	pending = x86_atomic_testset_u32(&ci->ci_ipis, 0);
+	pending = atomic_swap_uint(&ci->ci_ipis, 0);
 
 	for (bit = 0; bit < X86_NIPI && pending; bit++) {
 		if (pending & (1<<bit)) {
