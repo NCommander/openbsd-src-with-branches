@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.196 2014/12/29 11:53:58 mpi Exp $	*/
+/*	$OpenBSD: route.c,v 1.197 2015/01/08 14:29:18 mpi Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -830,6 +830,7 @@ rtrequest1(int req, struct rt_addrinfo *info, u_int8_t prio,
 			return (ENOBUFS);
 
 		rt->rt_flags = info->rti_flags;
+		rt->rt_tableid = tableid;
 
 		if (prio == 0)
 			prio = ifa->ifa_ifp->if_priority + RTP_STATIC;
