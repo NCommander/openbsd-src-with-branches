@@ -680,7 +680,7 @@ uhidev_set_report_async(struct uhidev_softc *sc, int type, int id, void *data,
 		len++;
 		buf = malloc(len, M_TEMP, M_NOWAIT);
 		if (buf == NULL)
-			return (USBD_NOMEM);
+			return (-1);
 		buf[0] = id;
 		memcpy(buf + 1, data, len - 1);
 	}
