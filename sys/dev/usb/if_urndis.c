@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urndis.c,v 1.50 2014/11/30 21:45:04 kettenis Exp $ */
+/*	$OpenBSD: if_urndis.c,v 1.51 2014/12/22 02:28:52 tedu Exp $ */
 
 /*
  * Copyright (c) 2010 Jonathan Armani <armani@openbsd.org>
@@ -1307,10 +1307,13 @@ urndis_lookup(usb_interface_descriptor_t *id)
 int
 urndis_match(struct device *parent, void *match, void *aux)
 {
-	struct usb_attach_arg		*uaa;
+	struct usb_attach_arg		*uaa = aux;
 	usb_interface_descriptor_t	*id;
 
-	uaa = aux;
+	/* Advertises both RNDIS and CDC Ethernet, but RNDIS doesn't work. */
+	if (uaa->vendor == USB_VENDOR_FUJITSUCOMP &&
+	    uaa->product == USB_PRODUCT_FUJITSUCOMP_VIRTETH)
+		return (UMATCH_NONE);
 
 	if (!uaa->iface)
 		return (UMATCH_NONE);
