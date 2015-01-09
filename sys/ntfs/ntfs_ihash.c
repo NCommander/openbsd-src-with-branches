@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_ihash.c,v 1.16 2014/09/14 14:17:26 jsg Exp $	*/
+/*	$OpenBSD: ntfs_ihash.c,v 1.17 2014/11/18 10:42:15 dlg Exp $	*/
 /*	$NetBSD: ntfs_ihash.c,v 1.1 2002/12/23 17:38:32 jdolecek Exp $	*/
 
 /*
@@ -69,7 +69,7 @@ ntfs_nthashinit(void)
 	if (ntfs_nthashtbl)
 		return;
 
-	nthashtbl = hashinit(desiredvnodes, M_NTFSNTHASH, M_WAITOK, &nthash);
+	nthashtbl = hashinit(initialvnodes, M_NTFSNTHASH, M_WAITOK, &nthash);
 	if (ntfs_nthashtbl) {
 		free(nthashtbl, M_NTFSNTHASH, 0);
 		return;
