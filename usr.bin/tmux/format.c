@@ -1,4 +1,4 @@
-/* $OpenBSD: format.c,v 1.54 2014/12/02 23:19:45 nicm Exp $ */
+/* $OpenBSD: format.c,v 1.55 2014/12/09 19:23:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -133,7 +133,7 @@ struct format_tree *
 format_create(void)
 {
 	struct format_tree	*ft;
-	char			 host[MAXHOSTNAMELEN], *ptr;
+	char			 host[HOST_NAME_MAX+1], *ptr;
 
 	ft = xcalloc(1, sizeof *ft);
 	RB_INIT(&ft->tree);
