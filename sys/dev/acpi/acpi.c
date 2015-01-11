@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.277 2014/12/09 06:58:29 doug Exp $ */
+/* $OpenBSD: acpi.c,v 1.278 2014/12/18 16:31:50 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -1042,10 +1042,10 @@ acpi_maptable(struct acpi_softc *sc, paddr_t addr, const char *sig,
 	if (acpi_map(addr, len, &handle))
 		return NULL;
 	hdr = (struct acpi_table_header *)handle.va;
-	if (acpi_checksum(hdr, len)) {
-		acpi_unmap(&handle);
-		return NULL;
-	}
+	if (acpi_checksum(hdr, len))
+		printf("\n%s: %.4s checksum error",
+		    DEVNAME(sc), hdr->signature);
+
 	if ((sig && memcmp(sig, hdr->signature, 4)) ||
 	    (oem && memcmp(oem, hdr->oemid, 6)) ||
 	    (tbl && memcmp(tbl, hdr->oemtableid, 8))) {
