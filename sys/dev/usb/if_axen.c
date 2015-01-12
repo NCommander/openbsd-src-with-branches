@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axen.c,v 1.8 2014/07/13 15:52:49 mpi Exp $	*/
+/*	$OpenBSD: if_axen.c,v 1.9 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 2013 Yojiro UO <yuo@openbsd.org>
@@ -1032,7 +1032,7 @@ axen_rxeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 
 		pkt_hdr = letoh32(*hdr_p);
 		pkt_len = (pkt_hdr >> 16) & 0x1fff;
-		DPRINTFN(10,("rxeof: packet#%d, pkt_hdr 0x%08x, pkt_len %d\n", 
+		DPRINTFN(10,("rxeof: packet#%d, pkt_hdr 0x%08x, pkt_len %zu\n",
 		   pkt_count, pkt_hdr, pkt_len));
 
 		if ((pkt_hdr & AXEN_RXHDR_CRC_ERR) ||
