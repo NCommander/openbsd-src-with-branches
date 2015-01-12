@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cache.c,v 1.41 2015/01/08 18:07:35 tedu Exp $	*/
+/*	$OpenBSD: vfs_cache.c,v 1.42 2015/01/09 05:01:56 tedu Exp $	*/
 /*	$NetBSD: vfs_cache.c,v 1.13 1996/02/04 02:18:09 christos Exp $	*/
 
 /*
@@ -349,7 +349,7 @@ cache_enter(struct vnode *dvp, struct vnode *vp, struct componentname *cnp)
 	/*
 	 * allocate, or recycle (free and allocate) an ncp.
 	 */
-	if (numcache >= maxvnodes) {
+	if (numcache >= initialvnodes) {
 		if ((ncp = TAILQ_FIRST(&nclruhead)) != NULL)
 			cache_zap(ncp);
 		else if ((ncp = TAILQ_FIRST(&nclruneghead)) != NULL)
