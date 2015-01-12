@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.41 2014/11/14 03:22:47 doug Exp $	*/
+/*	$OpenBSD: parse.y,v 1.42 2014/11/20 05:51:20 jsg Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -2622,6 +2622,8 @@ create_ike(char *name, int af, u_int8_t ipproto, struct ipsec_hosts *hosts,
 		flows[j].flow_dst.addr_mask = ipb->mask;
 		flows[j].flow_dst.addr_net = ipb->netaddress;
 		flows[j].flow_dst.addr_port = hosts->dport;
+
+		flows[j].flow_ipproto = ipproto;
 
 		pol.pol_nflows++;
 		RB_INSERT(iked_flows, &pol.pol_flows, &flows[j]);
