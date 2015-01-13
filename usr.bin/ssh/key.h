@@ -1,4 +1,4 @@
-/* $OpenBSD: key.h,v 1.44 2014/12/21 22:27:56 djm Exp $ */
+/* $OpenBSD: key.h,v 1.45 2015/01/08 10:14:08 djm Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -50,7 +50,6 @@ typedef struct sshkey Key;
 #define key_size		sshkey_size
 #define key_ecdsa_bits_to_nid	sshkey_ecdsa_bits_to_nid
 #define key_ecdsa_key_to_nid	sshkey_ecdsa_key_to_nid
-#define key_names_valid2	sshkey_names_valid2
 #define key_is_cert		sshkey_is_cert
 #define key_type_plain		sshkey_type_plain
 #define key_cert_is_legacy	sshkey_cert_is_legacy
