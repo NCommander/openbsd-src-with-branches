@@ -1,4 +1,4 @@
-/*	$OpenBSD: msgbuf.h,v 1.7 2003/06/02 23:28:21 millert Exp $	*/
+/*	$OpenBSD: msgbuf.h,v 1.8 2005/04/14 21:58:50 krw Exp $	*/
 /*	$NetBSD: msgbuf.h,v 1.8 1995/03/26 20:24:27 jtc Exp $	*/
 
 /*
@@ -42,8 +42,10 @@ struct	msgbuf {
 	char	msg_bufc[1];		/* buffer */
 };
 #ifdef _KERNEL
+#define CONSBUFSIZE	(16 * 1024)	/* console message buffer size */
 extern struct msgbuf *msgbufp;
+extern struct msgbuf *consbufp;
 
 void	initmsgbuf(caddr_t buf, size_t bufsize);
-void	msgbuf_putchar(const char c);
+void	msgbuf_putchar(struct msgbuf *, const char c);
 #endif
