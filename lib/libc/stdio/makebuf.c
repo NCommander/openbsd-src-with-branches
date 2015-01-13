@@ -1,4 +1,4 @@
-/*	$OpenBSD: makebuf.c,v 1.7 2005/08/08 08:05:36 espie Exp $ */
+/*	$OpenBSD: makebuf.c,v 1.8 2005/12/28 18:50:22 millert Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -65,7 +65,6 @@ __smakebuf(FILE *fp)
 		fp->_bf._size = 1;
 		return;
 	}
-	__atexit_register_cleanup(_cleanup);
 	flags |= __SMBF;
 	fp->_bf._base = fp->_p = p;
 	fp->_bf._size = size;
