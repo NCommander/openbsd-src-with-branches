@@ -737,6 +737,9 @@ getlist(char ** db_array, char *name, struct blacklist *blist,
 		return (0);
 	}
 	if (black) {
+		if (debug)
+			fprintf(stderr, "blacklist %s %zu entries\n",
+			    name, blc / 2);
 		blistnew->message = message;
 		blistnew->name = name;
 		blistnew->black = black;
@@ -745,13 +748,13 @@ getlist(char ** db_array, char *name, struct blacklist *blist,
 		blistnew->bls = bls;
 	} else {
 		/* whitelist applied to last active blacklist */
+		if (debug)
+			fprintf(stderr, "whitelist %s %zu entries\n",
+			    name, (blc - blist->blc) / 2);
 		blist->bl = bl;
 		blist->blc = blc;
 		blist->bls = bls;
 	}
-	if (debug)
-		fprintf(stderr, "%slist %s %zu entries\n",
-		    black ? "black" : "white", name, blc / 2);
 	return (black);
 }
 
