@@ -1,7 +1,7 @@
-/*	$OpenBSD: server_file.c,v 1.44 2015/01/04 22:23:58 chrisz Exp $	*/
+/*	$OpenBSD: server_file.c,v 1.45 2015/01/06 17:55:28 stsp Exp $	*/
 
 /*
- * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
+ * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

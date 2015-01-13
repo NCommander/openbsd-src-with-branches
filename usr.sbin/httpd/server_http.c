@@ -1,7 +1,7 @@
-/*	$OpenBSD: server_http.c,v 1.61 2015/01/06 13:48:15 reyk Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.62 2015/01/06 17:48:04 reyk Exp $	*/
 
 /*
- * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
+ * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

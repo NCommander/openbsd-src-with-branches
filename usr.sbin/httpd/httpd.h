@@ -1,7 +1,7 @@
-/*	$OpenBSD: httpd.h,v 1.65 2015/01/02 19:09:52 reyk Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.66 2015/01/04 22:23:58 chrisz Exp $	*/
 
 /*
- * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
+ * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  *
