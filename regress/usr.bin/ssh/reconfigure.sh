@@ -1,8 +1,9 @@
-#	$OpenBSD: reconfigure.sh,v 1.2 2003/06/21 09:14:05 markus Exp $
+#	$OpenBSD: reconfigure.sh,v 1.3 2015/01/14 09:54:38 markus Exp $
 #	Placed in the Public Domain.
 
 tid="simple connect after reconfigure"
 
+# we need the full path to sshd for -HUP
 start_sshd
 
 trace "connect before restart"
