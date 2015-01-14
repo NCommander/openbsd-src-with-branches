@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo_async.c,v 1.30 2014/09/15 06:15:48 guenther Exp $	*/
+/*	$OpenBSD: getaddrinfo_async.c,v 1.31 2014/11/18 20:51:00 krw Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -21,12 +21,6 @@
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <net/if.h>
-#ifdef YP
-#include <rpc/rpc.h>
-#include <rpcsvc/yp.h>
-#include <rpcsvc/ypclnt.h>
-#include "ypinternal.h"
-#endif
 #include <netdb.h>
 
 #include <asr.h>
@@ -37,6 +31,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
+
+#ifdef YP
+#include <rpc/rpc.h>
+#include <rpcsvc/yp.h>
+#include <rpcsvc/ypclnt.h>
+#include "ypinternal.h"
+#endif
 
 #include "asr_private.h"
 
