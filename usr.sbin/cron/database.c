@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.18 2009/10/27 23:59:51 deraadt Exp $	*/
+/*	$OpenBSD: database.c,v 1.19 2010/12/14 23:31:33 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -36,7 +36,7 @@ void
 load_database(cron_db *old_db) {
 	struct stat statbuf, syscron_stat;
 	cron_db new_db;
-	DIR_T *dp;
+	struct dirent *dp;
 	DIR *dir;
 	user *u, *nu;
 

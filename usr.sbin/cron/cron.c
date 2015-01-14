@@ -1,4 +1,4 @@
-/*	$OpenBSD: cron.c,v 1.45 2014/10/29 04:39:02 deraadt Exp $	*/
+/*	$OpenBSD: cron.c,v 1.46 2014/11/26 18:34:52 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -468,8 +468,8 @@ quit(int x) {
 
 static void
 sigchld_reaper(void) {
-	WAIT_T waiter;
-	PID_T pid;
+	int waiter;
+	pid_t pid;
 
 	do {
 		pid = waitpid(-1, &waiter, WNOHANG);

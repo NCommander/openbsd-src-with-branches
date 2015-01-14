@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.48 2014/10/26 22:16:16 guenther Exp $	*/
+/*	$OpenBSD: misc.c,v 1.49 2015/01/14 17:27:13 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -432,9 +432,9 @@ allowed(const char *username, const char *allow_file, const char *deny_file) {
 }
 
 void
-log_it(const char *username, PID_T xpid, const char *event, const char *detail) {
+log_it(const char *username, pid_t xpid, const char *event, const char *detail) {
 #if defined(LOG_FILE) || DEBUGGING
-	PID_T pid = xpid;
+	pid_t pid = xpid;
 #endif
 #if defined(LOG_FILE)
 	char *msg;
