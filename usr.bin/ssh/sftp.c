@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.167 2014/10/06 00:47:15 djm Exp $ */
+/* $OpenBSD: sftp.c,v 1.168 2014/11/26 18:34:51 millert Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -44,7 +44,8 @@
 #include "misc.h"
 
 #include "sftp.h"
-#include "buffer.h"
+#include "ssherr.h"
+#include "sshbuf.h"
 #include "sftp-common.h"
 #include "sftp-client.h"
 
