@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-options.h,v 1.19 2010/04/16 01:47:26 djm Exp $ */
+/* $OpenBSD: auth-options.h,v 1.20 2010/05/07 11:30:29 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -35,6 +35,6 @@ extern char *authorized_principals;
 
 int	auth_parse_options(struct passwd *, char *, char *, u_long);
 void	auth_clear_options(void);
-int	auth_cert_options(Key *, struct passwd *);
+int	auth_cert_options(struct sshkey *, struct passwd *);
 
 #endif
