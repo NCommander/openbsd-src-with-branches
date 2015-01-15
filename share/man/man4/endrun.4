@@ -1,4 +1,4 @@
-.\"	$OpenBSD: endrun.4,v 1.1 2009/05/06 18:21:23 stevesk Exp $
+.\"	$OpenBSD: endrun.4,v 1.2 2009/05/06 18:55:29 stevesk Exp $
 .\"
 .\" Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
 .\" Copyright (c) 2009 Kevin Steves <stevesk@openbsd.org>
@@ -28,7 +28,7 @@ This line discipline interfaces serial EndRun Technologies devices.
 .Pp
 The line discipline is enabled by the following sequence:
 .Bd -literal -offset indent
-#include <sys/ttycom.h>
+#include <sys/ioctl.h>
 int ldisc = ENDRUNDISC, fildes; ...
 ioctl(fildes, TIOCSETD, &ldisc);
 .Ed

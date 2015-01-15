@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldattach.c,v 1.14 2009/10/31 02:53:11 ckuethe Exp $	*/
+/*	$OpenBSD: ldattach.c,v 1.15 2014/08/10 02:09:35 guenther Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -27,7 +27,7 @@
 #include <sys/limits.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/ttycom.h>
+#include <sys/ioctl.h>
 
 #include <err.h>
 #include <errno.h>
