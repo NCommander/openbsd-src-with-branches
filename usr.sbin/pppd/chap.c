@@ -1,4 +1,4 @@
-/*	$OpenBSD: chap.c,v 1.16 2014/01/21 23:54:50 deraadt Exp $	*/
+/*	$OpenBSD: chap.c,v 1.17 2014/05/17 20:31:07 chl Exp $	*/
 
 /*
  * chap.c - Challenge Handshake Authentication Protocol.
@@ -65,10 +65,6 @@
 
 #include "pppd.h"
 #include "chap.h"
-
-#ifdef CHAPMS
-#include "chap_ms.h"
-#endif
 
 /*
  * Protocol entry points.
@@ -468,12 +464,6 @@ ChapReceiveChallenge(cstate, inp, id, len)
 	BCOPY(hash, cstate->response, MD5_SIGNATURE_SIZE);
 	cstate->resp_length = MD5_SIGNATURE_SIZE;
 	break;
-
-#ifdef CHAPMS
-    case CHAP_MICROSOFT:
-	ChapMS(cstate, rchallenge, rchallenge_len, secret, secret_len);
-	break;
-#endif
 
     default:
 	CHAPDEBUG((LOG_INFO, "unknown digest type %d", cstate->resp_type));
