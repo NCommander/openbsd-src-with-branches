@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.39 2013/12/05 14:22:42 jca Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.40 2014/10/11 02:29:24 doug Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -29,7 +29,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <sys/ttycom.h>
 #include <netinet/in.h>
 #include <rpcsvc/yp.h>
 #include "ypv1.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppush_svc.c,v 1.12 2006/04/03 05:01:23 deraadt Exp $ */
+/*	$OpenBSD: yppush_svc.c,v 1.13 2009/10/27 23:59:58 deraadt Exp $ */
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -27,7 +27,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/ttycom.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
