@@ -1,4 +1,4 @@
-.\" 	$OpenBSD: rc.subr.8,v 1.26 2014/09/22 16:17:32 schwarze Exp $
+.\" 	$OpenBSD: rc.subr.8,v 1.27 2014/09/22 16:27:03 schwarze Exp $
 .\"
 .\" Copyright (c) 2011 Robert Nagy, Antoine Jacoutot, Ingo Schwarze
 .\" All rights reserved.
@@ -234,11 +234,20 @@ User to run the daemon as, using
 .Xr su 1 .
 .It Va daemon_timeout
 Maximum time in seconds to wait for the
-.Cm start ,
+.Cm start
+(only if
+.Va rc_bg
+is set),
 .Cm stop
 and
 .Cm reload
 actions to return.
+This is only guaranteed with the default
+.Ic rc_start ,
+.Ic rc_stop
+and
+.Ic rc_reload
+functions.
 .It Va daemon_class
 Login class to run the daemon with, using
 .Xr su 1 .
