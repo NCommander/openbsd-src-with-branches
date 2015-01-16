@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.3 2014/04/19 18:31:33 claudio Exp $ */
+/*	$OpenBSD: util.c,v 1.4 2014/04/21 17:41:52 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -15,8 +15,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include <sys/types.h>
-#include <sys/param.h>
+
+#include <sys/param.h>	/* nitems */
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
