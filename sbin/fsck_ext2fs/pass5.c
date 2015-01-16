@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass5.c,v 1.16 2013/04/24 13:46:27 deraadt Exp $	*/
+/*	$OpenBSD: pass5.c,v 1.17 2014/07/13 16:08:53 pelikan Exp $	*/
 /*	$NetBSD: pass5.c,v 1.7 2000/01/28 16:01:46 bouyer Exp $ */
 
 /*
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* setbit isset */
 #include <sys/time.h>
 #include <ufs/ufs/dinode.h>
 #include <ufs/ext2fs/ext2fs_dinode.h>

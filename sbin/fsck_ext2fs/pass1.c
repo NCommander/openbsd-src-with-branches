@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass1.c,v 1.13 2013/04/24 13:46:27 deraadt Exp $	*/
+/*	$OpenBSD: pass1.c,v 1.14 2014/07/13 16:08:53 pelikan Exp $	*/
 /*	$NetBSD: pass1.c,v 1.9 2000/01/31 11:40:12 bouyer Exp $	*/
 
 /*
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* setbit btodb isset */
 #include <sys/time.h>
 #include <ufs/ext2fs/ext2fs_dinode.h>
 #include <ufs/ext2fs/ext2fs_dir.h>

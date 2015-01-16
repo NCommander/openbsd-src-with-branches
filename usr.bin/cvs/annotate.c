@@ -1,4 +1,4 @@
-/*	$OpenBSD: annotate.c,v 1.62 2010/07/30 21:47:18 ray Exp $	*/
+/*	$OpenBSD: annotate.c,v 1.63 2011/12/27 13:59:01 nicm Exp $	*/
 /*
  * Copyright (c) 2007 Tobias Stoeckmann <tobias@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/dirent.h>
 
 #include <errno.h>

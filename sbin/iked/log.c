@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.2 2010/06/24 20:15:30 reyk Exp $	*/
+/*	$OpenBSD: log.c,v 1.3 2013/01/08 10:38:19 reyk Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -16,7 +16,6 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/tree.h>

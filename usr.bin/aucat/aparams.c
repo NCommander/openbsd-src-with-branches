@@ -1,4 +1,4 @@
-/*	$OpenBSD: aparams.c,v 1.13 2011/04/28 07:20:03 ratchov Exp $	*/
+/*	$OpenBSD: aparams.c,v 1.14 2012/04/11 06:05:43 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -14,6 +14,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#include <endian.h>
 
 #include "aparams.h"
 #ifdef DEBUG

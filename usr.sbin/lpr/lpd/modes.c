@@ -1,4 +1,4 @@
-/*	$OpenBSD: modes.c,v 1.6 2003/06/02 23:36:53 millert Exp $	*/
+/*	$OpenBSD: modes.c,v 1.7 2009/10/27 23:59:52 deraadt Exp $	*/
 /*	$NetBSD: modes.c,v 1.3 1997/10/20 08:08:31 scottr Exp $	*/
 
 /*-
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <stddef.h>
 #include <string.h>

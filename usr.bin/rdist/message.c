@@ -1,4 +1,4 @@
-/*	$OpenBSD: message.c,v 1.20 2014/07/05 05:05:51 guenther Exp $	*/
+/*	$OpenBSD: message.c,v 1.21 2014/07/05 06:18:58 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -473,7 +473,7 @@ msgsendnotify(MSGFACILITY *msgfac, int mtype, int flags, char *msgbuf)
 void
 checkhostname(void)
 {
-	static char mbuf[MAXHOSTNAMELEN];
+	static char mbuf[HOST_NAME_MAX+1];
 	char *cp;
 
 	if (!currenthost) {

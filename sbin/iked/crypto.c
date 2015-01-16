@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto.c,v 1.13 2014/02/17 11:00:14 reyk Exp $	*/
+/*	$OpenBSD: crypto.c,v 1.14 2014/07/10 12:50:05 jsg Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* roundup */
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/uio.h>

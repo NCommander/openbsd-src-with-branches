@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.36 2014/08/25 07:50:25 doug Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.37 2014/11/07 14:02:32 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* roundup */
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/wait.h>

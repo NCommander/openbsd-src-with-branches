@@ -1,4 +1,4 @@
-/* $OpenBSD: ldapclient.c,v 1.30 2014/07/13 15:38:09 krw Exp $ */
+/* $OpenBSD: ldapclient.c,v 1.31 2014/11/16 23:24:44 tedu Exp $ */
 
 /*
  * Copyright (c) 2008 Alexander Schrijver <aschrijver@openbsd.org>
@@ -18,9 +18,9 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
+#include <sys/signal.h>
 #include <sys/tree.h>
 
 #include <netinet/in.h>
@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "aldap.h"
 #include "ypldap.h"

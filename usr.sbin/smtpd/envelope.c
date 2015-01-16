@@ -1,4 +1,4 @@
-/*	$OpenBSD: envelope.c,v 1.28 2014/02/04 15:44:05 eric Exp $	*/
+/*	$OpenBSD: envelope.c,v 1.29 2014/04/19 12:30:54 gilles Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -35,6 +35,7 @@
 #include <inttypes.h>
 #include <libgen.h>
 #include <pwd.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.56 2010/02/21 15:24:01 sobrado Exp $	*/
+/*	$OpenBSD: diff.c,v 1.57 2010/07/16 23:27:58 ray Exp $	*/
 
 /*
  * Copyright (c) 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -20,7 +20,6 @@
  * Materiel Command, USAF, under agreement number F39502-99-1-0512.
  */
 
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <ctype.h>
@@ -33,6 +32,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "diff.h"
 #include "xmalloc.h"

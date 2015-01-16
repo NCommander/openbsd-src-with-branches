@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-802_11.c,v 1.5 2006/06/23 21:53:01 reyk Exp $	*/
+/*	$OpenBSD: print-802_11.c,v 1.6 2006/06/26 23:06:07 reyk Exp $	*/
 
 /*
  * Copyright (c) 2005 Reyk Floeter <reyk@openbsd.org>
@@ -18,7 +18,6 @@
 
 /* usr.sbin/tcpdump/print-802_11.c,v 1.3 2005/03/09 11:43:17 deraadt Exp */
 
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/file.h>
@@ -41,6 +40,7 @@
 #include <pcap.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include "hostapd.h"
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: machine.c,v 1.79 2014/09/15 19:08:21 miod Exp $	 */
+/* $OpenBSD: machine.c,v 1.80 2014/09/17 01:56:54 dlg Exp $	 */
 
 /*-
  * Copyright (c) 1994 Thorsten Lockert <tholo@sigmasoft.com>
@@ -33,8 +33,9 @@
  *	    Patch for new swapctl(2) by Tobias Weingartner <weingart@openbsd.org>
  */
 
+#include <sys/param.h>	/* DEV_BSIZE MAXCOMLEN PZERO */
 #include <sys/types.h>
-#include <sys/param.h>
+#include <sys/signal.h>
 #include <sys/mount.h>
 #include <sys/proc.h>
 #include <sys/sched.h>

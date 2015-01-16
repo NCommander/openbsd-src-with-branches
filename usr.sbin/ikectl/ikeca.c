@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikeca.c,v 1.28 2014/08/25 07:50:26 doug Exp $	*/
+/*	$OpenBSD: ikeca.c,v 1.29 2014/08/26 17:47:24 jsing Exp $	*/
 
 /*
  * Copyright (c) 2010 Jonathan Gray <jsg@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -29,6 +28,7 @@
 #include <fcntl.h>
 #include <fts.h>
 #include <dirent.h>
+#include <limits.h>
 
 #include <openssl/rand.h>
 #include <openssl/rsa.h>
@@ -189,7 +189,7 @@ int
 ca_sign(struct ca *ca, char *keyname, int type, char *envargs)
 {
 	char		cmd[PATH_MAX * 2];
-	char		hostname[MAXHOSTNAMELEN];
+	char		hostname[HOST_NAME_MAX+1];
 	char		name[128];
 
 	strlcpy(name, keyname, sizeof(name));

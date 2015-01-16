@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.32 2014/07/12 03:25:03 guenther Exp $	*/
+/*	$OpenBSD: common.c,v 1.33 2014/07/12 03:32:00 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -44,7 +44,7 @@
 /*
  * Variables common to both client and server
  */
-char			host[MAXHOSTNAMELEN];	/* Name of this host */
+char			host[HOST_NAME_MAX+1];	/* Name of this host */
 uid_t			userid = (uid_t)-1;	/* User's UID */
 gid_t			groupid = (gid_t)-1;	/* User's GID */
 char		       *homedir = NULL;		/* User's $HOME */

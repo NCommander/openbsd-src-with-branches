@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.7 2011/07/04 04:34:14 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.8 2014/06/23 03:46:17 guenther Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -17,7 +17,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>

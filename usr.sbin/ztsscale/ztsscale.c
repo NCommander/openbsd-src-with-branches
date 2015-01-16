@@ -1,4 +1,4 @@
-/*	$OpenBSD: ztsscale.c,v 1.16 2013/12/31 07:16:50 matthieu Exp $	*/
+/*	$OpenBSD: ztsscale.c,v 1.17 2014/09/27 06:28:45 doug Exp $	*/
 
 /*
  * Copyright (c) 2005 Matthieu Herrb
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <machine/cpu.h>

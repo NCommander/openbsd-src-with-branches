@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.195 2014/05/05 16:33:34 krw Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.196 2014/07/20 01:38:40 guenther Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXFRAG DEV_BSIZE */
 #include <sys/ioctl.h>
 #include <sys/dkio.h>
 #include <sys/stat.h>

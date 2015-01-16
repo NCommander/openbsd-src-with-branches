@@ -1,4 +1,4 @@
-/* $OpenBSD: join.c,v 1.22 2013/11/15 22:20:04 millert Exp $	*/
+/* $OpenBSD: join.c,v 1.23 2014/10/11 04:31:55 doug Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -33,13 +33,13 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#define MAXIMUM(a, b)	(((a) > (b)) ? (a) : (b))
 
 /*
  * There's a structure per input file which encapsulates the state of the
@@ -347,7 +347,7 @@ slurpit(INPUT *F)
 		if (lp->linealloc <= len + 1) {
 			char *p;
 			u_long newsize = lp->linealloc +
-			    MAX(100, len + 1 - lp->linealloc);
+			    MAXIMUM(100, len + 1 - lp->linealloc);
 			if ((p = realloc(lp->line, newsize)) == NULL)
 				err(1, NULL);
 			lp->line = p;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_filter.c,v 1.11 2011/07/10 13:20:25 millert Exp $	*/
+/*	$OpenBSD: ex_filter.c,v 1.12 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -11,7 +11,6 @@
 
 #include "config.h"
 
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/queue.h>
@@ -46,7 +45,7 @@ ex_filter(SCR *sp, EXCMD *cmdp, MARK *fm, MARK *tm, MARK *rp, char *cmd,
 	pid_t parent_writer_pid, utility_pid;
 	recno_t nread;
 	int input[2], output[2], fd, rval;
-	char *name, tname[MAXPATHLEN];
+	char *name, tname[PATH_MAX];
 
 	rval = 0;
 

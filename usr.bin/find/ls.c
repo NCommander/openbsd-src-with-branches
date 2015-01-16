@@ -1,4 +1,4 @@
-/*	$OpenBSD: ls.c,v 1.14 2013/04/23 18:08:40 deraadt Exp $	*/
+/*	$OpenBSD: ls.c,v 1.15 2014/01/10 04:53:35 guenther Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -29,7 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <err.h>
@@ -39,6 +38,7 @@
 #include <time.h>
 #include <tzfile.h>
 #include <unistd.h>
+#include <limits.h>
 #include <utmp.h>
 #include <pwd.h>
 #include <grp.h>
@@ -106,7 +106,7 @@ static void
 printlink(char *name)
 {
 	int lnklen;
-	char path[MAXPATHLEN];
+	char path[PATH_MAX];
 
 	if ((lnklen = readlink(name, path, sizeof(path) - 1)) == -1) {
 		warn("%s", name);

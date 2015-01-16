@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-snmp.c,v 1.16 2009/10/27 23:59:55 deraadt Exp $	*/
+/*	$OpenBSD: print-snmp.c,v 1.17 2009/11/12 00:02:16 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -55,7 +55,6 @@
  #	@(#)snmp.awk.x	1.1 (LANL) 1/15/90
  */
 
-#include <sys/param.h>
 #include <sys/time.h>
 
 #include <ctype.h>

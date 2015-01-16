@@ -1,11 +1,10 @@
-/*	$OpenBSD: sdiff.c,v 1.29 2013/04/01 16:08:00 tobias Exp $ */
+/*	$OpenBSD: sdiff.c,v 1.30 2013/11/26 21:08:12 deraadt Exp $ */
 
 /*
  * Written by Raymond Lai <ray@cyth.net>.
  * Public domain.
  */
 
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/stat.h>
 #include <sys/types.h>

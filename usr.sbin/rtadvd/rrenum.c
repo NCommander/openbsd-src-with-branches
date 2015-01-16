@@ -1,4 +1,4 @@
-/*	$OpenBSD: rrenum.c,v 1.16 2013/10/17 16:27:48 bluhm Exp $	*/
+/*	$OpenBSD: rrenum.c,v 1.17 2014/06/29 00:58:45 deraadt Exp $	*/
 /*	$KAME: rrenum.c,v 1.11 2002/05/21 14:26:55 itojun Exp $	*/
 
 /*
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>

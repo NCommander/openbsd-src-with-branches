@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_skey.c,v 1.22 2008/03/24 16:11:00 deraadt Exp $	*/
+/*	$OpenBSD: login_skey.c,v 1.23 2009/06/02 20:42:48 jmeltzer Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001, 2004 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -34,6 +33,7 @@
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <login_cap.h>
 #include <bsd_auth.h>

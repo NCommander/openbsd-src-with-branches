@@ -1,5 +1,5 @@
 /*
- *	$OpenBSD: locate.c,v 1.24 2009/10/27 23:59:39 deraadt Exp $
+ *	$OpenBSD: locate.c,v 1.25 2012/04/13 15:13:07 ajacoutot Exp $
  *
  * Copyright (c) 1995 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
  * Copyright (c) 1989, 1993
@@ -32,7 +32,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *      $Id: locate.c,v 1.24 2009/10/27 23:59:39 deraadt Exp $
+ *      $Id: locate.c,v 1.25 2012/04/13 15:13:07 ajacoutot Exp $
  */
 
 /*
@@ -63,7 +63,6 @@
  * in the standard 'find'.
  */
 
-#include <sys/param.h>
 #include <ctype.h>
 #include <err.h>
 #include <fnmatch.h>
@@ -73,6 +72,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #ifdef MMAP
 #  include <sys/types.h>
@@ -334,7 +334,7 @@ usage(void)
 void
 sane_count(int count)
 {
-	if (count < 0 || count >= MAXPATHLEN) {
+	if (count < 0 || count >= PATH_MAX) {
 		fprintf(stderr, "locate: corrupted database\n");
 		exit(1);
 	}

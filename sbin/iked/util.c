@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.24 2014/02/14 09:00:03 markus Exp $	*/
+/*	$OpenBSD: util.c,v 1.25 2014/02/21 20:52:38 markus Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <event.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.18 2008/06/26 05:42:21 ray Exp $	*/
+/*	$OpenBSD: main.c,v 1.19 2014/07/24 19:19:26 miod Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1996/05/16 16:00:55 thorpej Exp $	*/
 
 /*-
@@ -30,7 +30,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <err.h>
 #include <string.h>
 #include <stdio.h>

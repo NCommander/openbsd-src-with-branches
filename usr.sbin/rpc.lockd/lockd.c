@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockd.c,v 1.11 2008/06/15 04:48:03 sturm Exp $	*/
+/*	$OpenBSD: lockd.c,v 1.12 2009/11/15 09:07:56 chl Exp $	*/
 
 /*
  * Copyright (c) 1995
@@ -33,7 +33,6 @@
  *
  */
 
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <rpc/rpc.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: modules.c,v 1.16 2009/03/29 19:17:26 joris Exp $	*/
+/*	$OpenBSD: modules.c,v 1.17 2014/01/08 13:23:55 okan Exp $	*/
 /*
  * Copyright (c) 2008 Joris Vink <joris@openbsd.org>
  *
@@ -15,7 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/dirent.h>
 #include <sys/resource.h>
 
@@ -55,7 +55,7 @@ modules_parse_line(char *line, int lineno)
 	int flags;
 	struct module_info *mi;
 	char *bline, *val, *p, *module, *sp, *dp;
-	char *dirname, fpath[MAXPATHLEN], *prog;
+	char *dirname, fpath[PATH_MAX], *prog;
 
 	prog = NULL;
 	bline = xstrdup(line);

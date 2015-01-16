@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.41 2014/06/29 00:58:45 deraadt Exp $	*/
+/*	$OpenBSD: config.c,v 1.42 2014/07/04 22:39:31 guenther Exp $	*/
 /*	$KAME: config.c,v 1.62 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/time.h>

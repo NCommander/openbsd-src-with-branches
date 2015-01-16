@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.30 2014/04/29 19:13:13 reyk Exp $	*/
+/*	$OpenBSD: config.c,v 1.31 2014/05/01 15:50:20 reyk Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -26,6 +26,7 @@
 #include <imsg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <string.h>
 #include <unistd.h>
 

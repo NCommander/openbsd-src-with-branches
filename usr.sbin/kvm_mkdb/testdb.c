@@ -1,4 +1,4 @@
-/*	$OpenBSD: testdb.c,v 1.7 2004/11/24 17:57:16 millert Exp $	*/
+/*	$OpenBSD: testdb.c,v 1.8 2009/10/27 23:59:51 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -29,7 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/sysctl.h>
 
 #include <db.h>

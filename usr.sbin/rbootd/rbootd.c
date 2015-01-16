@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbootd.c,v 1.24 2013/04/20 20:11:41 deraadt Exp $	*/
+/*	$OpenBSD: rbootd.c,v 1.25 2014/05/17 21:37:51 chl Exp $	*/
 /*	$NetBSD: rbootd.c,v 1.5 1995/10/06 05:12:17 thorpej Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
  * Author: Jeff Forys, University of Utah CSS
  */
 
-#include <sys/param.h>
 #include <sys/time.h>
 
 #include <ctype.h>
@@ -56,6 +55,7 @@
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <limits.h>
 #include <util.h>
 #include <pwd.h>
 #include <poll.h>
@@ -158,7 +158,7 @@ main(int argc, char *argv[])
 	(void) signal(SIGINT, Exit);
 	(void) signal(SIGTERM, Exit);
 
-	gethostname(MyHost, MAXHOSTNAMELEN);
+	gethostname(MyHost, HOST_NAME_MAX+1);
 
 	if (pidfile(NULL) < 0)
 		syslog(LOG_WARNING, "pidfile: failed");

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.h,v 1.6 2003/06/03 02:56:16 millert Exp $	*/
+/*	$OpenBSD: sort.h,v 1.7 2007/08/21 20:29:25 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -33,8 +33,6 @@
  *
  *	@(#)sort.h	8.1 (Berkeley) 6/6/93
  */
-
-#include <sys/param.h>
 
 #include <db.h>
 #include <err.h>

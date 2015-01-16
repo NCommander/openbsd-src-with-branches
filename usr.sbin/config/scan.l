@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: scan.l,v 1.20 2007/11/25 08:26:59 deraadt Exp $	*/
+/*	$OpenBSD: scan.l,v 1.21 2012/09/17 17:36:13 espie Exp $	*/
 /*	$NetBSD: scan.l,v 1.13 1997/02/02 21:12:37 thorpej Exp $	*/
 
 /*
@@ -42,7 +42,6 @@
  *	from: @(#)scan.l	8.1 (Berkeley) 6/6/93
  */
 
-#include <sys/param.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>

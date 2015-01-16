@@ -1,4 +1,4 @@
-/*	$OpenBSD: reboot.c,v 1.32 2012/07/10 12:58:26 halex Exp $	*/
+/*	$OpenBSD: reboot.c,v 1.33 2013/02/09 21:21:27 millert Exp $	*/
 /*	$NetBSD: reboot.c,v 1.8 1995/10/05 05:36:22 mycroft Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
 #include <sys/types.h>
 #include <sys/reboot.h>
 #include <sys/fcntl.h>
-#include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/wait.h>
 #include <machine/cpu.h>

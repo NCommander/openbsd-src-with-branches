@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_mkdb.c,v 1.11 2009/10/27 23:59:51 deraadt Exp $	*/
+/*	$OpenBSD: dev_mkdb.c,v 1.12 2013/11/27 13:32:02 okan Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -29,7 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <db.h>
@@ -60,7 +59,7 @@ main(int argc, char *argv[])
 	HASHINFO info;
 	int ch;
 	u_char buf[MAXNAMLEN + 1];
-	char dbtmp[MAXPATHLEN], dbname[MAXPATHLEN];
+	char dbtmp[PATH_MAX], dbname[PATH_MAX];
 
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {

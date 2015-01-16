@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_table.c,v 1.71 2011/07/27 00:26:10 mcbride Exp $ */
+/*	$OpenBSD: pfctl_table.c,v 1.72 2013/07/05 13:07:57 blambert Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -47,6 +47,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <limits.h>
 
 #include "pfctl_parser.h"
 #include "pfctl.h"

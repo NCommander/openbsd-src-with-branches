@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntp.c,v 1.31 2011/12/28 21:39:30 sthen Exp $	*/
+/*	$OpenBSD: ntp.c,v 1.32 2014/10/29 04:00:44 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996, 1997 by N.M. Maclaren. All rights reserved.
@@ -29,7 +29,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>

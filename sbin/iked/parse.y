@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.42 2014/11/20 05:51:20 jsg Exp $	*/
+/*	$OpenBSD: parse.y,v 1.43 2015/01/12 11:24:58 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -1653,7 +1653,7 @@ get_id_type(char *string)
 int
 check_pubkey(char *idstr, int type)
 {
-	char		 keyfile[MAXPATHLEN];
+	char		 keyfile[PATH_MAX];
 	FILE		*fp = NULL;
 	const char	*suffix = NULL;
 

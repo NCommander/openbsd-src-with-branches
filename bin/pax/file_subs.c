@@ -1,4 +1,4 @@
-/*	$OpenBSD: file_subs.c,v 1.36 2014/07/14 05:58:19 guenther Exp $	*/
+/*	$OpenBSD: file_subs.c,v 1.37 2014/11/23 05:32:20 guenther Exp $	*/
 /*	$NetBSD: file_subs.c,v 1.4 1995/03/21 09:07:18 cgd Exp $	*/
 
 /*-
@@ -841,7 +841,7 @@ file_write(int fd, char *str, int cnt, int *rem, int *isempt, int sz,
 		 * only examine up to the end of the current file block or
 		 * remaining characters to write, whatever is smaller
 		 */
-		wcnt = MIN(cnt, *rem);
+		wcnt = MINIMUM(cnt, *rem);
 		cnt -= wcnt;
 		*rem -= wcnt;
 		if (*isempt) {

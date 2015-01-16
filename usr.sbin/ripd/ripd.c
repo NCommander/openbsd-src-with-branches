@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripd.c,v 1.22 2013/11/19 22:25:32 benno Exp $ */
+/*	$OpenBSD: ripd.c,v 1.23 2014/07/12 20:16:38 krw Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -25,7 +25,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <sys/param.h>
 #include <sys/sysctl.h>
 
 #include <netinet/in.h>

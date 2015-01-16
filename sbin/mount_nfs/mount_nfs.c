@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_nfs.c,v 1.50 2012/05/29 20:04:59 jasper Exp $	*/
+/*	$OpenBSD: mount_nfs.c,v 1.51 2014/05/21 06:23:01 guenther Exp $	*/
 /*	$NetBSD: mount_nfs.c,v 1.12.4.1 1996/05/25 22:48:05 fvdl Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/mount.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
@@ -60,6 +60,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "mntopts.h"
 
@@ -163,7 +164,7 @@ main(int argc, char *argv[])
 	struct nfs_args *nfsargsp;
 	struct nfs_args nfsargs;
 	int mntflags, num;
-	char name[MAXPATHLEN], *options = NULL, *spec;
+	char name[PATH_MAX], *options = NULL, *spec;
 	const char *p;
 	union mntval value;
 

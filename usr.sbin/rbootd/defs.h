@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.7 2005/09/22 14:24:51 jmc Exp $	*/
+/*	$OpenBSD: defs.h,v 1.8 2013/04/20 20:17:17 miod Exp $	*/
 /*	$NetBSD: defs.h,v 1.5 1995/10/06 05:12:14 thorpej Exp $	*/
 
 /*
@@ -50,13 +50,6 @@
 **  Common #define's and external variables.  All other files should
 **  include this.
 */
-
-/*
- *  This may be defined in <sys/param.h>, if not, it's defined here.
- */
-#ifndef	MAXHOSTNAMELEN
-#define	MAXHOSTNAMELEN 64
-#endif
 
 /*
  *  SIGUSR1 and SIGUSR2 are defined in <signal.h> for 4.3BSD systems.

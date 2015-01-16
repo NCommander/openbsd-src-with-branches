@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.136 2014/10/26 14:43:03 chl Exp $	*/
+/*	$OpenBSD: inet.c,v 1.137 2014/11/03 17:20:46 bluhm Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
@@ -802,7 +801,7 @@ inetname(struct in_addr *inp)
 	char *cp;
 	static char line[50];
 	struct hostent *hp;
-	static char domain[MAXHOSTNAMELEN];
+	static char domain[HOST_NAME_MAX+1];
 	static int first = 1;
 
 	if (first && !nflag) {

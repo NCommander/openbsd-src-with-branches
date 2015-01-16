@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.8 2009/10/27 23:59:47 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.9 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -11,7 +11,6 @@
 
 #include "config.h"
 
-#include <sys/param.h>
 #include <sys/queue.h>
 
 #include <bitstring.h>
@@ -23,6 +22,8 @@
 #include <unistd.h>
 
 #include "common.h"
+
+#define MAXIMUM(a, b)	(((a) > (b)) ? (a) : (b))
 
 /*
  * binc --
@@ -39,7 +40,7 @@ binc(SCR *sp, void *bp, size_t *bsizep, size_t min)
 	if (min && *bsizep >= min)
 		return (bp);
 
-	csize = *bsizep + MAX(min, 256);
+	csize = *bsizep + MAXIMUM(min, 256);
 	REALLOC(sp, bp, void *, csize);
 
 	if (bp == NULL) {

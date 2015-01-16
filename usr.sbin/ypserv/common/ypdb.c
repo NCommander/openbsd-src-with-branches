@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypdb.c,v 1.10 2003/06/04 16:08:08 deraadt Exp $ */
+/*	$OpenBSD: ypdb.c,v 1.11 2003/07/15 06:10:46 deraadt Exp $ */
 
 /*
  * Copyright (c) 1990, 1993
@@ -36,7 +36,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
@@ -54,7 +53,7 @@ extern DBM *
 ypdb_open(const char *file, int flags, int mode)
 {
 	BTREEINFO info;
-	char path[MAXPATHLEN];
+	char path[PATH_MAX];
 	DBM *db;
 
 	memset(&info, 0, sizeof info);

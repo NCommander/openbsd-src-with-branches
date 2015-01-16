@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.43 2011/04/06 11:36:25 miod Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.44 2011/05/04 21:40:07 oga Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
  * atactl(8) - a program to control ATA devices.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* DEV_BSIZE */
 #include <sys/ioctl.h>
 
 #include <err.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: finger.c,v 1.17 2009/10/27 23:59:38 deraadt Exp $	*/
+/*	$OpenBSD: finger.c,v 1.18 2009/11/12 15:33:21 nicm Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -56,7 +56,6 @@
  * well as home directory, shell, mail info, and .plan/.project files.
  */
 
-#include <sys/param.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -64,6 +63,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <limits.h>
 #include <err.h>
 #include "finger.h"
 #include "extern.h"
@@ -80,7 +80,7 @@ main(int argc, char *argv[])
 	extern int optind;
 	extern char *__progname;
 	int ch;
-	char domain[MAXHOSTNAMELEN];
+	char domain[HOST_NAME_MAX+1];
 	struct stat sb;
 
 	oflag = 1;		/* default to old "office" behavior */

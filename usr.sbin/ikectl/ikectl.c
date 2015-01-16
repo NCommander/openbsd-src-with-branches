@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikectl.c,v 1.17 2013/08/16 19:47:42 guenther Exp $	*/
+/*	$OpenBSD: ikectl.c,v 1.18 2013/11/14 20:48:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007-2013 Reyk Floeter <reyk@openbsd.org>
@@ -19,7 +19,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/queue.h>

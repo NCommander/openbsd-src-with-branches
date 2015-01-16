@@ -1,4 +1,4 @@
-/*	$OpenBSD: mtree.c,v 1.20 2009/10/27 23:59:53 deraadt Exp $	*/
+/*	$OpenBSD: mtree.c,v 1.21 2013/11/27 13:32:02 okan Exp $	*/
 /*	$NetBSD: mtree.c,v 1.7 1996/09/05 23:29:22 thorpej Exp $	*/
 
 /*-
@@ -30,11 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <limits.h>
 #include <fts.h>
 #include "mtree.h"
 #include "extern.h"
@@ -45,7 +45,7 @@ int ftsoptions = FTS_PHYSICAL;
 int cflag, dflag, eflag, iflag, lflag, nflag, qflag, rflag, sflag, tflag,
     uflag, Uflag;
 u_int keys;
-char fullpath[MAXPATHLEN];
+char fullpath[PATH_MAX];
 
 static void usage(void);
 

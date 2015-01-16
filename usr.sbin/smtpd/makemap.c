@@ -1,4 +1,4 @@
-/*	$OpenBSD: makemap.c,v 1.49 2014/07/08 13:49:09 eric Exp $	*/
+/*	$OpenBSD: makemap.c,v 1.50 2014/10/25 18:48:30 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include <util.h>
 
 #include "smtpd.h"

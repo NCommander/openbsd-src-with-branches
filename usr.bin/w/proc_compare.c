@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc_compare.c,v 1.13 2012/12/18 21:28:45 millert Exp $	*/
+/*	$OpenBSD: proc_compare.c,v 1.14 2014/07/04 05:58:31 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -29,7 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXCOMLEN */
 #include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <sys/time.h>

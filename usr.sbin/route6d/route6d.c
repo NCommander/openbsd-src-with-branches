@@ -1,4 +1,4 @@
-/*	$OpenBSD: route6d.c,v 1.62 2014/03/24 10:48:29 mpi Exp $	*/
+/*	$OpenBSD: route6d.c,v 1.63 2014/10/08 10:57:17 deraadt Exp $	*/
 /*	$KAME: route6d.c,v 1.111 2006/10/25 06:38:13 jinmei Exp $	*/
 
 /*
@@ -47,7 +47,6 @@
 #include <poll.h>
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/file.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>

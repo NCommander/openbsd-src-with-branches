@@ -1,4 +1,4 @@
-/*	$OpenBSD: re.c,v 1.10 2003/06/11 23:42:12 deraadt Exp $	*/
+/*	$OpenBSD: re.c,v 1.11 2009/10/27 23:59:21 deraadt Exp $	*/
 /*	$NetBSD: re.c,v 1.14 1995/03/21 09:04:48 cgd Exp $	*/
 
 /* re.c: This file contains the regular expression interface routines for
@@ -34,7 +34,7 @@
 
 extern int patlock;
 
-char errmsg[MAXPATHLEN + 40] = "";
+char errmsg[PATH_MAX + 40] = "";
 
 /* get_compiled_pattern: return pointer to compiled pattern from command
    buffer */

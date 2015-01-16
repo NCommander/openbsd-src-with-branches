@@ -1,4 +1,4 @@
-/*	$OpenBSD: irrfilter.c,v 1.3 2007/03/06 16:45:34 henning Exp $ */
+/*	$OpenBSD: irrfilter.c,v 1.4 2007/05/28 23:31:53 henning Exp $ */
 
 /*
  * Copyright (c) 2007 Henning Brauer <henning@openbsd.org>
@@ -17,7 +17,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>

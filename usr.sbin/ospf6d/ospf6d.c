@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.c,v 1.24 2013/11/13 20:49:49 benno Exp $ */
+/*	$OpenBSD: ospf6d.c,v 1.25 2014/07/12 20:16:38 krw Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -24,7 +24,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <sys/param.h>
 #include <sys/sysctl.h>
 
 #include <netinet/in.h>

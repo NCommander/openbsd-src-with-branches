@@ -1,4 +1,4 @@
-/*	$OpenBSD: unix.c,v 1.22 2013/11/09 20:04:13 guenther Exp $	*/
+/*	$OpenBSD: unix.c,v 1.23 2014/07/10 14:08:13 deraadt Exp $	*/
 /*	$NetBSD: unix.c,v 1.13 1995/10/03 21:42:48 thorpej Exp $	*/
 
 /*-
@@ -33,7 +33,7 @@
 /*
  * Display protocol blocks in the unix domain.
  */
-#include <sys/param.h>
+#include <sys/param.h>	/* MSIZE */
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>

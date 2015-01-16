@@ -1,4 +1,4 @@
-/*	$OpenBSD: mroute.c,v 1.21 2014/06/23 03:46:17 guenther Exp $	*/
+/*	$OpenBSD: mroute.c,v 1.22 2014/08/14 12:34:04 mpi Exp $	*/
 /*	$NetBSD: mroute.c,v 1.10 1996/05/11 13:51:27 mycroft Exp $	*/
 
 /*
@@ -42,7 +42,7 @@
  * MROUTING 1.0
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/protosw.h>

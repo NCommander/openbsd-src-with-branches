@@ -1,4 +1,4 @@
-/*	$OpenBSD: tokeninit.c,v 1.6 2007/03/15 22:33:22 jmc Exp $	*/
+/*	$OpenBSD: tokeninit.c,v 1.7 2008/07/09 19:58:28 sobrado Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -34,7 +34,7 @@
  *	BSDI $From: tokeninit.c,v 1.1 1996/08/26 20:27:28 prb Exp
  */
 
-#include <sys/param.h>
+#include <sys/signal.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 
@@ -43,6 +43,7 @@
 #include <syslog.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 #include <string.h>
 #include <readpassphrase.h>
 

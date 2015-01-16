@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass1.c,v 1.39 2014/09/06 04:05:40 guenther Exp $	*/
+/*	$OpenBSD: pass1.c,v 1.40 2014/10/14 15:01:51 deraadt Exp $	*/
 /*	$NetBSD: pass1.c,v 1.16 1996/09/27 22:45:15 christos Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXFRAG MIN setbit btodb isset */
 #include <sys/time.h>
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "fsck.h"
 #include "extern.h"

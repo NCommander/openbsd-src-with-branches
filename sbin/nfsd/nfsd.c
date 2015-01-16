@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsd.c,v 1.33 2014/05/05 15:08:37 tedu Exp $	*/
+/*	$OpenBSD: nfsd.c,v 1.34 2014/05/11 00:03:14 chl Exp $	*/
 /*	$NetBSD: nfsd.c,v 1.19 1996/02/18 23:18:56 mycroft Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>

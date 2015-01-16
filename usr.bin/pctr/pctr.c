@@ -1,4 +1,4 @@
-/*	$OpenBSD: pctr.c,v 1.19 2007/11/16 16:34:33 deraadt Exp $	*/
+/*	$OpenBSD: pctr.c,v 1.20 2008/07/08 21:39:52 sobrado Exp $	*/
 
 /*
  * Copyright (c) 2007 Mike Belopuhov, Aleksey Lomovtsev
@@ -25,7 +25,6 @@
  * OpenBSD project by leaving this copyright notice intact.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/sysctl.h>

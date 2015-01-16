@@ -1,4 +1,4 @@
-/* 	$OpenBSD: print-slow.c,v 1.1 2008/10/16 12:57:01 mpf Exp $ 	*/
+/* 	$OpenBSD: print-slow.c,v 1.2 2014/08/14 12:44:44 mpi Exp $ 	*/
 
 /*
  * Copyright (c) 1998-2005 The TCPDUMP project
@@ -19,7 +19,6 @@
  * Original code by Hannes Gredler (hannes@juniper.net)
  */
 
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/file.h>

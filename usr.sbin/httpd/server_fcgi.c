@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_fcgi.c,v 1.44 2015/01/04 22:23:58 chrisz Exp $	*/
+/*	$OpenBSD: server_fcgi.c,v 1.45 2015/01/13 08:54:01 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Florian Obser <florian@openbsd.org>
@@ -97,7 +97,7 @@ server_fcgi(struct httpd *env, struct client *clt)
 	struct http_descriptor		*desc = clt->clt_descreq;
 	struct fcgi_record_header	*h;
 	struct fcgi_begin_request_body	*begin;
-	char				 hbuf[MAXHOSTNAMELEN];
+	char				 hbuf[HOST_NAME_MAX+1];
 	size_t				 scriptlen;
 	int				 pathlen;
 	int				 fd = -1, ret;

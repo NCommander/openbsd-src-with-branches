@@ -1,4 +1,4 @@
-/*	$OpenBSD: spellprog.c,v 1.7 2013/11/28 18:24:55 deraadt Exp $	*/
+/*	$OpenBSD: spellprog.c,v 1.8 2014/05/20 01:25:23 guenther Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -64,7 +64,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 

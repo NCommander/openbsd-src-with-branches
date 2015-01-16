@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-rt6.c,v 1.3 2009/10/27 23:59:55 deraadt Exp $	*/
+/*	$OpenBSD: print-rt6.c,v 1.4 2014/08/14 12:44:44 mpi Exp $	*/
 
 
 /*
@@ -24,7 +24,6 @@
 
 #ifdef INET6
 
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapctl.c,v 1.17 2007/11/26 13:36:33 deraadt Exp $	*/
+/*	$OpenBSD: swapctl.c,v 1.18 2010/12/29 12:14:41 stsp Exp $	*/
 /*	$NetBSD: swapctl.c,v 1.9 1998/07/26 20:23:15 mycroft Exp $	*/
 
 /*
@@ -50,9 +50,7 @@
  *	<dev>		add this device
  */
 
-#include <sys/param.h>
 #include <sys/stat.h>
-
 #include <sys/swap.h>
 
 #include <unistd.h>

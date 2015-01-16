@@ -1,4 +1,4 @@
-/*	$OpenBSD: files.c,v 1.18 2011/10/02 22:20:49 edd Exp $	*/
+/*	$OpenBSD: files.c,v 1.19 2012/09/17 17:36:13 espie Exp $	*/
 /*	$NetBSD: files.c,v 1.6 1996/03/17 13:18:17 cgd Exp $	*/
 
 /*
@@ -40,8 +40,6 @@
  *
  *	from: @(#)files.c	8.1 (Berkeley) 6/6/93
  */
-
-#include <sys/param.h>
 
 #include <errno.h>
 #include <stdio.h>

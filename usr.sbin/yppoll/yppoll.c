@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppoll.c,v 1.13 2013/04/02 02:50:49 deraadt Exp $ */
+/*	$OpenBSD: yppoll.c,v 1.14 2013/04/16 19:24:55 deraadt Exp $ */
 /*	$NetBSD: yppoll.c,v 1.5 1996/05/13 02:46:36 thorpej Exp $	*/
 
 /*
@@ -31,7 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>

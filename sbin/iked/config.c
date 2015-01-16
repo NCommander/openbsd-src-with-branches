@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.32 2014/10/08 05:47:03 deraadt Exp $	*/
+/*	$OpenBSD: config.c,v 1.33 2014/12/03 23:18:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/wait.h>
 #include <sys/socket.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta.c,v 1.186 2014/04/19 13:32:07 gilles Exp $	*/
+/*	$OpenBSD: mta.c,v 1.189 2014/07/08 13:02:42 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -31,6 +31,7 @@
 #include <imsg.h>
 #include <inttypes.h>
 #include <netdb.h>
+#include <limits.h>
 #include <pwd.h>
 #include <signal.h>
 #include <stdio.h>

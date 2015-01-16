@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.28 2014/11/18 20:54:28 krw Exp $	*/
+/*	$OpenBSD: util.c,v 1.29 2014/11/19 22:07:13 millert Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -35,7 +35,6 @@
 
 #include <sys/types.h>
 #include <sys/uio.h>
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <err.h>
 #include <stdio.h>

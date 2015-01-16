@@ -1,4 +1,4 @@
-/*	$OpenBSD: check.c,v 1.15 2012/03/31 17:53:34 krw Exp $	*/
+/*	$OpenBSD: check.c,v 1.16 2014/06/16 18:33:33 tobias Exp $	*/
 /*	$NetBSD: check.c,v 1.8 1997/10/17 11:19:29 ws Exp $	*/
 
 /*
@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/dkio.h>
 #include <sys/disklabel.h>
@@ -35,6 +35,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <limits.h>
 #include <fcntl.h>
 #include <util.h>
 

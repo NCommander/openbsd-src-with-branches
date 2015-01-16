@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.169 2014/07/24 17:45:35 jca Exp $	*/
+/*	$OpenBSD: route.c,v 1.170 2014/08/19 12:39:36 mpi Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/sysctl.h>
@@ -46,6 +45,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <limits.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stddef.h>

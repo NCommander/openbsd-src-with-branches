@@ -1,4 +1,4 @@
-/*	$OpenBSD: dh.c,v 1.14 2014/08/27 10:28:57 reyk Exp $	*/
+/*	$OpenBSD: dh.c,v 1.15 2014/10/12 15:57:00 jsg Exp $	*/
 
 /*
  * Copyright (c) 2010-2014 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* roundup */
 #include <string.h>
 
 #include <openssl/obj_mac.h>

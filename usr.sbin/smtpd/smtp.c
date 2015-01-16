@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp.c,v 1.140 2014/10/12 11:49:38 gilles Exp $	*/
+/*	$OpenBSD: smtp.c,v 1.141 2014/11/05 19:38:09 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -30,6 +30,7 @@
 #include <netdb.h>
 #include <pwd.h>
 #include <signal.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

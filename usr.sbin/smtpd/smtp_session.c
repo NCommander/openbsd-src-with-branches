@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.223 2015/01/07 18:28:12 gilles Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.225 2015/01/14 08:50:32 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <event.h>
 #include <imsg.h>
+#include <limits.h>
 #include <inttypes.h>
 #include <openssl/ssl.h>
 #include <resolv.h>

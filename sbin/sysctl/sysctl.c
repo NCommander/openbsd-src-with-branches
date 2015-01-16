@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.206 2014/10/26 03:45:29 brad Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.207 2014/11/19 18:04:54 tedu Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/gmon.h>
 #include <sys/mount.h>
 #include <sys/sem.h>

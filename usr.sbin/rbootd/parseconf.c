@@ -1,4 +1,4 @@
-/*	$OpenBSD: parseconf.c,v 1.10 2009/10/27 23:59:54 deraadt Exp $	*/
+/*	$OpenBSD: parseconf.c,v 1.11 2013/11/28 18:26:46 deraadt Exp $	*/
 /*	$NetBSD: parseconf.c,v 1.4 1995/10/06 05:12:16 thorpej Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
  * Author: Jeff Forys, University of Utah CSS
  */
 
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <ctype.h>

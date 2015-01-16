@@ -1,4 +1,4 @@
-/*	$OpenBSD: kgmon.c,v 1.19 2013/11/12 13:09:22 deraadt Exp $	*/
+/*	$OpenBSD: kgmon.c,v 1.20 2013/11/27 13:32:02 okan Exp $	*/
 
 /*
  * Copyright (c) 1983, 1992, 1993
@@ -29,7 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/file.h>
 #include <sys/sysctl.h>
 #include <sys/gmon.h>

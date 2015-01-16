@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.26 2014/07/11 14:35:19 tobias Exp $	*/
+/*	$OpenBSD: dir.c,v 1.27 2014/11/18 20:51:00 krw Exp $	*/
 /*	$NetBSD: dir.c,v 1.11 1997/10/17 11:19:35 ws Exp $	*/
 
 /*
@@ -33,9 +33,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <limits.h>
 #include <time.h>
-
-#include <sys/param.h>
 
 #include "ext.h"
 
@@ -154,7 +153,7 @@ static struct dirTodoNode *pendingDirectories = NULL;
 static char *
 fullpath(struct dosDirEntry *dir)
 {
-	static char namebuf[MAXPATHLEN + 1];
+	static char namebuf[PATH_MAX + 1];
 	char *cp, *np;
 	int nl;
 

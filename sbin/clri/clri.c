@@ -1,4 +1,4 @@
-/*	$OpenBSD: clri.c,v 1.12 2009/10/27 23:59:32 deraadt Exp $	*/
+/*	$OpenBSD: clri.c,v 1.13 2013/04/23 17:29:26 deraadt Exp $	*/
 /*	$NetBSD: clri.c,v 1.19 2005/01/20 15:50:47 xtraeme Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXFRAG MAXBSIZE DEV_BSIZE */
 
 #include <ufs/ufs/dinode.h>
 #include <ufs/ffs/fs.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkheaders.c,v 1.19 2011/10/02 22:20:49 edd Exp $	*/
+/*	$OpenBSD: mkheaders.c,v 1.20 2013/11/23 17:38:15 deraadt Exp $	*/
 /*	$NetBSD: mkheaders.c,v 1.12 1997/02/02 21:12:34 thorpej Exp $	*/
 
 /*
@@ -40,8 +40,6 @@
  *
  *	from: @(#)mkheaders.c	8.1 (Berkeley) 6/6/93
  */
-
-#include <sys/param.h>
 
 #include <ctype.h>
 #include <errno.h>

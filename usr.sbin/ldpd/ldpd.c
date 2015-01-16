@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.19 2013/11/26 11:59:38 henning Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.20 2014/07/12 20:16:38 krw Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -24,7 +24,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <sys/param.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>

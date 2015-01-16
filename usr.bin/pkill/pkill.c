@@ -1,4 +1,4 @@
-/*	$OpenBSD: pkill.c,v 1.34 2013/11/12 13:54:51 deraadt Exp $	*/
+/*	$OpenBSD: pkill.c,v 1.35 2014/05/07 01:27:42 tedu Exp $	*/
 /*	$NetBSD: pkill.c,v 1.5 2002/10/27 11:49:34 kleink Exp $	*/
 
 /*-
@@ -30,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/param.h>	/* MAXCOMLEN */
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/proc.h>
 #include <sys/queue.h>
@@ -540,7 +540,7 @@ makelist(struct listhead *head, enum listtype type, char *src)
 	struct passwd *pw;
 	struct group *gr;
 	struct stat st;
-	char *sp, *p, buf[MAXPATHLEN];
+	char *sp, *p, buf[PATH_MAX];
 	int empty;
 
 	empty = 1;

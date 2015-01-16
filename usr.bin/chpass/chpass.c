@@ -1,4 +1,4 @@
-/*	$OpenBSD: chpass.c,v 1.39 2013/04/18 16:23:25 okan Exp $	*/
+/*	$OpenBSD: chpass.c,v 1.40 2014/10/26 20:38:13 guenther Exp $	*/
 /*	$NetBSD: chpass.c,v 1.8 1996/05/15 21:50:43 jtc Exp $	*/
 
 /*-
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>

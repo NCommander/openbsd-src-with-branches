@@ -1,4 +1,4 @@
-/*	$OpenBSD: xargs.c,v 1.26 2009/10/27 23:59:50 deraadt Exp $	*/
+/*	$OpenBSD: xargs.c,v 1.27 2010/03/25 01:03:57 schwarze Exp $	*/
 /*	$FreeBSD: xargs.c,v 1.51 2003/05/03 19:09:11 obrien Exp $	*/
 
 /*-
@@ -35,7 +35,6 @@
  * $xMach: xargs.c,v 1.6 2002/02/23 05:27:47 tim Exp $
  */
 
-#include <sys/param.h>
 #include <sys/wait.h>
 
 #include <ctype.h>

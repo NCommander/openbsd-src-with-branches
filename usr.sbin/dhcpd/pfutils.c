@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfutils.c,v 1.9 2007/12/23 21:52:16 jmc Exp $ */
+/*	$OpenBSD: pfutils.c,v 1.10 2013/10/18 15:19:39 krw Exp $ */
 /*
  * Copyright (c) 2006 Chris Kuethe <ckuethe@openbsd.org>
  *
@@ -17,7 +17,6 @@
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 

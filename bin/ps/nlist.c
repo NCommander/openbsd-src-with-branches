@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.17 2009/10/27 23:59:22 deraadt Exp $	*/
+/*	$OpenBSD: nlist.c,v 1.18 2011/12/11 00:16:49 nicm Exp $	*/
 /*	$NetBSD: nlist.c,v 1.11 1995/03/21 09:08:03 cgd Exp $	*/
 
 /*-
@@ -30,8 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXCOMLEN */
 #include <sys/time.h>
+#include <sys/signal.h>
 #include <sys/proc.h>
 #include <sys/resource.h>
 #include <sys/sysctl.h>

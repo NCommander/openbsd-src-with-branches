@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.22 2007/02/08 11:15:55 reyk Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.23 2007/05/02 09:09:29 claudio Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
@@ -17,7 +17,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -48,6 +47,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "hostapd.h"
 #include "iapp.h"

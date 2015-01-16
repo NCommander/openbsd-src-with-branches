@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkswap.c,v 1.13 2011/10/02 22:20:50 edd Exp $	*/
+/*	$OpenBSD: mkswap.c,v 1.14 2013/04/19 15:03:02 florian Exp $	*/
 /*	$NetBSD: mkswap.c,v 1.5 1996/08/31 20:58:27 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
  *	from: @(#)mkswap.c	8.1 (Berkeley) 6/6/93
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* NODEV */
 
 #include <errno.h>
 #include <stdio.h>

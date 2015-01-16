@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmjob.c,v 1.20 2012/11/29 02:15:44 guenther Exp $	*/
+/*	$OpenBSD: rmjob.c,v 1.21 2013/11/24 21:32:32 deraadt Exp $	*/
 /*	$NetBSD: rmjob.c,v 1.16 2000/04/16 14:43:58 mrg Exp $	*/
 
 /*
@@ -30,13 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-
 #include <signal.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

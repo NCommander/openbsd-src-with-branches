@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.26 2013/10/27 18:49:25 guenther Exp $	*/
+/*	$OpenBSD: options.c,v 1.27 2014/12/10 03:39:54 jsg Exp $	*/
 
 /*
  * options.c - handles option processing for PPP.
@@ -97,7 +97,7 @@ int	dflag = 0;		/* Tell libpcap we want debugging */
 int	debug = 0;		/* Debug flag */
 int	kdebugflag = 0;		/* Tell kernel to print debug messages */
 int	default_device = 1;	/* Using /dev/tty or equivalent */
-char	devnam[MAXPATHLEN] = "/dev/tty";	/* Device name */
+char	devnam[PATH_MAX] = "/dev/tty";	/* Device name */
 int	crtscts = 0;		/* Use hardware flow control */
 int	modem = 1;		/* Use modem control lines */
 int	modem_chat = 0;		/* Use modem control lines during chat */
@@ -1567,7 +1567,7 @@ setdevname(cp, quiet)
     int quiet;
 {
     struct stat statbuf;
-    char dev[MAXPATHLEN];
+    char dev[PATH_MAX];
 
     if (*cp == 0)
 	return 0;
@@ -1588,7 +1588,7 @@ setdevname(cp, quiet)
 	return -1;
     }
 
-    (void) strlcpy(devnam, cp, MAXPATHLEN);
+    (void) strlcpy(devnam, cp, PATH_MAX);
     default_device = FALSE;
     devnam_info.priv = privileged_option;
     devnam_info.source = option_source;

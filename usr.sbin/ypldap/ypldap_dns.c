@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypldap_dns.c,v 1.6 2014/07/13 12:07:59 krw Exp $ */
+/*	$OpenBSD: ypldap_dns.c,v 1.7 2014/07/13 15:38:09 krw Exp $ */
 
 /*
  * Copyright (c) 2003-2008 Henning Brauer <henning@openbsd.org>
@@ -19,7 +19,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/tree.h>
 #include <sys/queue.h>
@@ -37,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "ypldap.h"
 

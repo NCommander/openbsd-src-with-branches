@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.101 2014/06/23 03:46:17 guenther Exp $	*/
+/*	$OpenBSD: main.c,v 1.102 2014/10/23 16:45:57 schwarze Exp $	*/
 /*	$NetBSD: main.c,v 1.9 1996/05/07 02:55:02 thorpej Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>

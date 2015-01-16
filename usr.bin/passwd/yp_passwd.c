@@ -1,4 +1,4 @@
-/*	$OpenBSD: yp_passwd.c,v 1.33 2014/11/20 14:53:15 tedu Exp $	*/
+/*	$OpenBSD: yp_passwd.c,v 1.34 2014/11/21 05:13:44 tedu Exp $	*/
 
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -39,6 +39,7 @@
 #include <time.h>
 #include <pwd.h>
 #include <err.h>
+#include <signal.h>
 #include <errno.h>
 #include <ctype.h>
 #include <login_cap.h>

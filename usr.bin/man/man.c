@@ -1,4 +1,4 @@
-/*	$OpenBSD: man.c,v 1.47 2013/07/01 17:16:03 jca Exp $	*/
+/*	$OpenBSD: man.c,v 1.48 2013/07/01 18:47:39 schwarze Exp $	*/
 /*	$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $	*/
 
 /*
@@ -47,7 +47,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/stat.h>
 

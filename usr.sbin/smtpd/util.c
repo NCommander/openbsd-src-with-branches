@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.109 2014/04/19 14:32:03 gilles Exp $	*/
+/*	$OpenBSD: util.c,v 1.110 2014/05/25 10:55:36 espie Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Markus Friedl.  All rights reserved.
@@ -39,6 +39,7 @@
 #include <libgen.h>
 #include <netdb.h>
 #include <pwd.h>
+#include <limits.h>
 #include <resolv.h>
 #include <stdarg.h>
 #include <stdio.h>

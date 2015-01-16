@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmesg.c,v 1.23 2014/04/22 20:43:12 tedu Exp $	*/
+/*	$OpenBSD: dmesg.c,v 1.24 2015/01/13 10:07:58 mpf Exp $	*/
 /*	$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
 
 /*-
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/msgbuf.h>
 #include <sys/sysctl.h>
 
