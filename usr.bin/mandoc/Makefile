@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.88 2014/12/13 15:30:52 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.89 2014/12/14 17:55:37 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -29,7 +29,7 @@ LINKS =	${BINDIR}/mandoc ${BINDIR}/apropos \
 
 MAN =	apropos.1 man.1 mandoc.1 whatis.1 makewhatis.8
 
-CLEANFILES += man.cgi cgi.o man.cgi.8.manlint
+CLEANFILES += man.cgi cgi.o
 
 
 # ----------------------------------------------------------------------
