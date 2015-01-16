@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap-bpf.c,v 1.23 2014/03/14 03:44:13 lteo Exp $	*/
+/*	$OpenBSD: pcap-bpf.c,v 1.24 2014/10/16 20:08:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1998
@@ -431,9 +431,8 @@ pcap_cleanup_bpf(pcap_t *p)
 void
 pcap_close(pcap_t *p)
 {
-	if (p->opt.source != NULL)
-		free(p->opt.source);
 	pcap_cleanup_bpf(p);
+	free(p->opt.source);
 	free(p);
 }
 
