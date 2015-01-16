@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ksh.1,v 1.154 2014/12/09 14:39:37 jmc Exp $
+.\"	$OpenBSD: ksh.1,v 1.155 2014/12/09 15:37:13 schwarze Exp $
 .\"
 .\"	Public Domain
 .\"
@@ -495,9 +495,9 @@ and
 are reserved words, not meta-characters.
 .It Xo case Ar word No in
 .Oo Op \&(
-.Ar \ pattern
-.Op \*(Ba Ar pattern
-.No ... No )
+.Ar pattern
+.Op | Ar pattern
+.No ... )
 .Ar list No ;;\ \& Oc ... esac
 .Xc
 The
@@ -4165,7 +4165,7 @@ A command that exits with a zero value.
 .Op Fl R Ns Op Ar n
 .Op Fl Z Ns Op Ar n
 .Op Fl i Ns Op Ar n
-.No \*(Ba Fl f Op Fl tux
+.No \&| Fl f Op Fl tux
 .Oc
 .Oo
 .Ar name
