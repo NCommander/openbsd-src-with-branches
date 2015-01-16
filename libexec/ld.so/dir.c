@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.21 2014/07/09 11:19:42 guenther Exp $	*/
+/*	$OpenBSD: dir.c,v 1.22 2014/07/10 09:03:01 otto Exp $	*/
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,8 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-#include <sys/mount.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <dirent.h>

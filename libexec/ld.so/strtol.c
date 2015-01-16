@@ -1,4 +1,4 @@
-/* $OpenBSD: strtol.c,v 1.4 2003/06/02 23:28:10 millert Exp $ */
+/* $OpenBSD: strtol.c,v 1.1 2003/07/06 20:03:58 deraadt Exp $ */
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -29,7 +29,8 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
+#include <limits.h>
 #include "util.h"
 
 /*

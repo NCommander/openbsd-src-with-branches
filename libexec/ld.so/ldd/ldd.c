@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldd.c,v 1.16 2013/07/14 14:36:41 jca Exp $	*/
+/*	$OpenBSD: ldd.c,v 1.17 2014/10/18 03:16:19 doug Exp $	*/
 /*
  * Copyright (c) 2001 Artur Grabowski <art@openbsd.org>
  * All rights reserved.
@@ -31,12 +31,12 @@
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include <dlfcn.h>
 
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
-#include <sys/param.h>
 
 int usage(void);
 int doit(char *);
@@ -95,7 +95,7 @@ doit(char *name)
 	Elf_Ehdr ehdr;
 	Elf_Phdr *phdr;
 	int fd, i, size, status, interp=0;
-	char buf[MAXPATHLEN];
+	char buf[PATH_MAX];
 	void * dlhandle; 
 
 	if ((fd = open(name, O_RDONLY)) < 0) {
