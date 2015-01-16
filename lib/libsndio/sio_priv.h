@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sio_priv.h,v 1.8 2014/03/05 20:40:49 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -17,7 +17,6 @@
 #ifndef SNDIO_PRIV_H
 #define SNDIO_PRIV_H
 
-#include <sys/param.h>
 #include "sndio.h"
 
 #define SIO_MAXNFDS	16

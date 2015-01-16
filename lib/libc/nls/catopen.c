@@ -1,4 +1,4 @@
-/*	$OpenBSD: catopen.c,v 1.14 2011/07/12 21:31:20 matthew Exp $ */
+/*	$OpenBSD: catopen.c,v 1.15 2013/06/01 21:26:17 stsp Exp $ */
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <unistd.h>

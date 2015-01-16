@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.c,v 1.33 2014/03/26 18:13:15 eric Exp $	*/
+/*	$OpenBSD: asr.c,v 1.34 2014/09/15 06:15:48 guenther Exp $	*/
 /*
  * Copyright (c) 2010-2012 Eric Faurot <eric@openbsd.org>
  *
@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "asr_private.h"
 

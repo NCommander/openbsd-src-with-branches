@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mio_priv.h,v 1.10 2013/11/13 22:38:22 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -17,7 +17,6 @@
 #ifndef MIO_PRIV_H
 #define MIO_PRIV_H
 
-#include <sys/param.h>
 #include "sndio.h"
 
 #define MIO_MAXNFDS	16

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio.c,v 1.17 2014/03/05 20:40:49 ratchov Exp $	*/
+/*	$OpenBSD: sio.c,v 1.18 2014/08/10 09:11:07 jsg Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -15,7 +15,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 

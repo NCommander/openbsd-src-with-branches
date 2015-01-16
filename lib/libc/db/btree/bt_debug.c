@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_debug.c,v 1.8 2005/03/23 19:34:58 otto Exp $	*/
+/*	$OpenBSD: bt_debug.c,v 1.9 2005/08/08 08:05:33 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -31,8 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <sys/param.h>
 
 #include <stdio.h>
 #include <stdlib.h>

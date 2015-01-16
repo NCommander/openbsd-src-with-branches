@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: getmntinfo.c,v 1.7 2005/08/08 08:05:34 espie Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/mount.h>
 #include <stdlib.h>
 

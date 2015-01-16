@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcount.c,v 1.13 2013/02/12 08:06:22 mpi Exp $ */
+/*	$OpenBSD: mcount.c,v 1.14 2013/03/12 09:37:16 mpi Exp $ */
 /*-
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/gmon.h>
 
 /*

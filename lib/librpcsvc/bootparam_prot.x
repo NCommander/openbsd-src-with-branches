@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootparam_prot.x,v 1.8 2009/10/27 23:59:30 deraadt Exp $	*/
+/*	$OpenBSD: bootparam_prot.x,v 1.9 2010/09/01 14:43:34 millert Exp $	*/
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -42,7 +42,7 @@
  */
 
 #ifdef RPC_HDR
-%#include <sys/param.h>
+%#include <sys/types.h>
 %#include <rpc/types.h>
 %#include <sys/time.h>
 %#include <sys/ucred.h>

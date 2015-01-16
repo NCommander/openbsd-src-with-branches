@@ -1,4 +1,4 @@
-/*	$OpenBSD: gmon.c,v 1.20 2005/11/20 17:06:06 millert Exp $ */
+/*	$OpenBSD: gmon.c,v 1.22 2013/02/12 08:06:22 mpi Exp $ */
 /*-
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,7 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/gmon.h>
 #include <sys/mman.h>

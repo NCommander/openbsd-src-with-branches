@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.18 2005/11/25 20:25:44 krw Exp $	*/
+/*	$OpenBSD: inet.c,v 1.19 2006/03/26 20:58:50 djm Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996, 1997, 1998
@@ -34,7 +34,6 @@
  */
 
 
-#include <sys/param.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>

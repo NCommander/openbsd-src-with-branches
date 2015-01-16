@@ -10,10 +10,9 @@
  *
  * S/Key verification check, lookups, and authentication.
  *
- * $OpenBSD: skeylogin.c,v 1.54 2007/03/20 03:40:06 tedu Exp $
+ * $OpenBSD: skeylogin.c,v 1.55 2013/11/29 19:00:51 deraadt Exp $
  */
 
-#include <sys/param.h>
 #ifdef	QUOTA
 #include <sys/quota.h>
 #endif
@@ -32,6 +31,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <limits.h>
 #include <sha1.h>
 
 #include "skey.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uname.c,v 1.8 2005/08/08 08:05:34 espie Exp $ */
+/*	$OpenBSD: uname.c,v 1.9 2013/04/05 12:59:54 kurt Exp $ */
 /*-
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/sysctl.h>
 #include <sys/utsname.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_sem.c,v 1.18 2013/12/11 16:24:16 tedu Exp $ */
+/*	$OpenBSD: rthread_sem.c,v 1.19 2014/06/27 23:21:47 matthew Exp $ */
 /*
  * Copyright (c) 2004,2005,2013 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -15,7 +15,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include <sys/param.h>
+
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>

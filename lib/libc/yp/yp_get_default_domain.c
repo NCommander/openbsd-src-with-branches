@@ -1,4 +1,4 @@
-/*	$OpenBSD: yp_get_default_domain.c,v 1.6 2005/08/05 13:02:16 espie Exp $ */
+/*	$OpenBSD: yp_get_default_domain.c,v 1.7 2009/06/05 16:39:39 schwarze Exp $ */
 /*
  * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@theos.com>
  * All rights reserved.
@@ -25,9 +25,9 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <limits.h>
 #include <rpc/rpc.h>
 #include <rpc/xdr.h>
 #include <rpcsvc/yp.h>

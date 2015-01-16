@@ -1,4 +1,4 @@
-/*	$OpenBSD: yp_first.c,v 1.8 2005/08/05 13:02:16 espie Exp $ */
+/*	$OpenBSD: yp_first.c,v 1.9 2009/06/07 03:33:36 schwarze Exp $ */
 /*
  * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@theos.com>
  * All rights reserved.
@@ -25,8 +25,8 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/types.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <rpc/rpc.h>
