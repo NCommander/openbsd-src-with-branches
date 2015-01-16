@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: inetname.c,v 1.1 2010/07/22 12:33:29 giovanni Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1992, 1993
@@ -29,7 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/signal.h>
 #include <sys/socket.h>
 
 #include <netinet/in.h>

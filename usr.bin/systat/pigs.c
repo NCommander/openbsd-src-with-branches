@@ -1,4 +1,4 @@
-/*	$OpenBSD: pigs.c,v 1.27 2014/09/15 19:08:21 miod Exp $	*/
+/*	$OpenBSD: pigs.c,v 1.28 2014/10/08 04:10:04 doug Exp $	*/
 /*	$NetBSD: pigs.c,v 1.3 1995/04/29 05:54:50 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,8 @@
  * Pigs display from Bill Reeves at Lucasfilm
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXCOMLEN */
+#include <sys/signal.h>
 #include <sys/proc.h>
 #include <sys/resource.h>
 #include <sys/sched.h>
