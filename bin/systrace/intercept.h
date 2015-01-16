@@ -1,4 +1,4 @@
-/*	$OpenBSD: intercept.h,v 1.25 2011/09/18 23:24:14 matthew Exp $	*/
+/*	$OpenBSD: intercept.h,v 1.26 2012/08/23 00:08:36 guenther Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -31,7 +31,7 @@
 
 #ifndef _INTERCEPT_H_
 #define _INTERCEPT_H_
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/queue.h>
 
 struct intercept_pid;
@@ -102,7 +102,7 @@ struct intercept_pid {
 	gid_t gid;		/* current gid */
 
 	char username[LOGIN_NAME_MAX];
-	char home[MAXPATHLEN];	/* current home dir for uid */
+	char home[PATH_MAX];	/* current home dir for uid */
 
 	void *data;
 

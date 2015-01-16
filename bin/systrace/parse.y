@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.16 2006/03/18 19:03:23 robert Exp $	*/
+/*	$OpenBSD: parse.y,v 1.18 2009/11/12 20:07:46 millert Exp $	*/
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -41,6 +41,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include <pwd.h>
 #include <grp.h>
 #include <regex.h>
