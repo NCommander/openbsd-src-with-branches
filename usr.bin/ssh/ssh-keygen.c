@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.252 2015/01/15 09:40:00 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.253 2015/01/16 06:40:12 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -991,8 +991,8 @@ do_gen_all_hostkeys(struct passwd *pw)
 			first = 0;
 			continue;
 		}
-		if (!sshkey_write(public, f)) {
-			fprintf(stderr, "write key failed\n");
+		if ((r = sshkey_write(public, f)) != 0) {
+			fprintf(stderr, "write key failed: %s\n", ssh_err(r));
 			fclose(f);
 			sshkey_free(public);
 			first = 0;
