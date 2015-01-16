@@ -1,4 +1,4 @@
-/* $OpenBSD: magic.c,v 1.8 2009/10/27 23:59:37 deraadt Exp $ */
+/* $OpenBSD: magic.c,v 1.9 2014/10/11 03:06:44 doug Exp $ */
 /*
  * Copyright (c) Christos Zoulas 2003.
  * All Rights Reserved.
@@ -27,7 +27,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>	/* for MAXPATHLEN */
 #include <sys/stat.h>
 
 #include "file.h"
