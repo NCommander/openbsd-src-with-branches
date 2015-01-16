@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap.c,v 1.14 2014/03/14 03:44:13 lteo Exp $	*/
+/*	$OpenBSD: pcap.c,v 1.15 2014/06/26 04:03:33 lteo Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1997, 1998
@@ -256,7 +256,7 @@ pcap_list_datalinks(pcap_t *p, int **dlt_buffer)
 		 * DLT for an interface.  Return a list of DLTs
 		 * containing only the DLT this device supports.
 		 */
-		*dlt_buffer = (int*)malloc(sizeof(**dlt_buffer));
+		*dlt_buffer = malloc(sizeof(**dlt_buffer));
 		if (*dlt_buffer == NULL) {
 			(void)snprintf(p->errbuf, sizeof(p->errbuf),
 			    "malloc: %s", pcap_strerror(errno));
