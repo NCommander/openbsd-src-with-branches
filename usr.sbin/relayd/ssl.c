@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl.c,v 1.25 2014/07/10 12:50:05 jsg Exp $	*/
+/*	$OpenBSD: ssl.c,v 1.26 2014/12/12 10:05:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -17,7 +17,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
 

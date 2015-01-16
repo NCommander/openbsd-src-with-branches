@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.9 2014/10/02 19:16:31 gilles Exp $	*/
+/*	$OpenBSD: ca.c,v 1.10 2014/12/12 10:05:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/uio.h>

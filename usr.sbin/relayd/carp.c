@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.8 2011/05/05 12:01:43 reyk Exp $ */
+/*	$OpenBSD: carp.c,v 1.9 2012/11/27 05:00:28 guenther Exp $ */
 
 /*
  * Copyright (c) 2006 Henning Brauer <henning@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
