@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.106 2014/10/17 20:34:23 kettenis Exp $	*/
+/*	$OpenBSD: bios.c,v 1.107 2014/11/16 12:30:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -168,7 +168,10 @@ biosattach(struct device *parent, struct device *self, void *aux)
 	struct smbtable bios;
 	volatile u_int8_t *va;
 	char scratch[64], *str;
-	int flags, smbiosrev = 0, ncpu = 0, usingacpi = 0;
+	int flags, smbiosrev = 0, ncpu = 0;
+#if NACPI > 0
+	int usingacpi = 0;
+#endif
 
 	/* remember flags */
 	flags = sc->sc_dev.dv_cfdata->cf_flags;
