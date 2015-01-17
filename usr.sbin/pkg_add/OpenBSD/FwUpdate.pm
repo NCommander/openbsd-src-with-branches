@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: FwUpdate.pm,v 1.8 2015/01/05 16:32:28 espie Exp $
+# $OpenBSD: FwUpdate.pm,v 1.9 2015/01/15 19:16:17 espie Exp $
 #
 # Copyright (c) 2014 Marc Espie <espie@openbsd.org>
 #
@@ -58,6 +58,7 @@ sub handle_options
 	$state->{localbase} = OpenBSD::Paths->localbase;
 	$state->{destdir} = '';
 	$state->{wantntogo} = 0;
+	$state->{interactive} = OpenBSD::InteractiveStub->new($state);
 	$state->{subst}->add('repair', 1);
 	if ($state->opt('a') && @ARGV != 0) {
 		$state->usage;
