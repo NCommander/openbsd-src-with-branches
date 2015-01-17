@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash.c,v 1.16 2014/05/18 09:29:54 espie Exp $	*/
+/*	$OpenBSD: hash.c,v 1.17 2015/01/16 16:25:50 deraadt Exp $	*/
 /*	$NetBSD: hash.c,v 1.4 1996/11/07 22:59:43 gwr Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
  *	from: @(#)hash.c	8.1 (Berkeley) 6/6/93
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* ALIGNBYTES */
 
 #include <stdlib.h>
 #include <string.h>
