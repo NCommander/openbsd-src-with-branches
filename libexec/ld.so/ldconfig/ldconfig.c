@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldconfig.c,v 1.32 2013/12/30 21:58:07 deraadt Exp $	*/
+/*	$OpenBSD: ldconfig.c,v 1.33 2015/01/16 16:18:07 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
@@ -43,7 +43,6 @@
 #include <fcntl.h>
 #include <ar.h>
 #include <ranlib.h>
-#include <a.out.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
