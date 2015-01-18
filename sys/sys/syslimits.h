@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslimits.h,v 1.11 2008/02/02 15:31:31 kettenis Exp $	*/
+/*	$OpenBSD: syslimits.h,v 1.12 2013/03/24 19:55:45 guenther Exp $	*/
 /*	$NetBSD: syslimits.h,v 1.12 1995/10/05 05:26:19 thorpej Exp $	*/
 
 /*
@@ -73,5 +73,5 @@
 #endif /* __XPG_VISIBLE >= 500 || __POSIX_VISIBLE >= 199506 || __BSD_VISIBLE */
 
 #if __POSIX_VISIBLE >= 200112
-#define HOST_NAME_MAX		255
+#define HOST_NAME_MAX		255	/* max hostname length w/o NUL */
 #endif
