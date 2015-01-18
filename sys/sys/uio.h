@@ -1,4 +1,4 @@
-/*	$OpenBSD: uio.h,v 1.16 2012/10/01 00:21:20 guenther Exp $	*/
+/*	$OpenBSD: uio.h,v 1.17 2013/04/02 21:32:06 kettenis Exp $	*/
 /*	$NetBSD: uio.h,v 1.12 1996/02/09 18:25:45 christos Exp $	*/
 
 /*
@@ -96,6 +96,7 @@ __END_DECLS
 #else
 int	ureadc(int c, struct uio *);
 
+struct file;
 int	dofilereadv(struct proc *, int, struct file *,
 	    const struct iovec *, int, int, off_t *, register_t *);
 int	dofilewritev(struct proc *, int, struct file *,
