@@ -1,4 +1,4 @@
-/* *	$OpenBSD: pr.h,v 1.3 1997/04/23 08:08:29 grr Exp $*/
+/*	$OpenBSD: pr.h,v 1.4 2003/06/03 02:56:14 millert Exp $ */
 /*-
  * Copyright (c) 1991 Keith Muller.
  * Copyright (c) 1993
