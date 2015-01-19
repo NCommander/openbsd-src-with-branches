@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.205 2014/10/25 03:19:22 lteo Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.206 2015/01/16 06:39:50 deraadt Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -144,11 +144,7 @@ int	family = AF_UNSPEC;
 volatile sig_atomic_t transflag;
 off_t	file_size;
 off_t	byte_count;
-#if !defined(CMASK) || CMASK == 0
-#undef CMASK
-#define CMASK 022
-#endif
-mode_t	defumask = CMASK;		/* default umask value */
+mode_t	defumask = S_IWGRP|S_IWOTH;		/* default umask value */
 int	umaskchange = 1;		/* allow user to change umask value. */
 char	tmpline[7];
 char	hostname[HOST_NAME_MAX+1];
