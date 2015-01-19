@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: init.c,v 1.7 2014/11/03 22:18:15 tedu Exp $	*/
 /*	$NetBSD: init.c,v 1.5 1995/03/24 05:01:40 cgd Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-# include	"mille.h"
+#include	"mille.h"
 
 /*
  * @(#)init.c	1.1 (Berkeley) 4/1/82

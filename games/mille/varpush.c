@@ -1,4 +1,4 @@
-/*	$OpenBSD: varpush.c,v 1.6 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: varpush.c,v 1.7 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: varpush.c,v 1.4 1995/03/24 05:02:35 cgd Exp $	*/
 
 /*
@@ -30,8 +30,8 @@
  * SUCH DAMAGE.
  */
 
-# include	<paths.h>
-# include	"mille.h"
+#include	<paths.h>
+#include	"mille.h"
 
 /*
  * @(#)varpush.c	1.1 (Berkeley) 4/1/82

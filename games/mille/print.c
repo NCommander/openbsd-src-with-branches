@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.5 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: print.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
 /*	$NetBSD: print.c,v 1.4 1995/03/24 05:02:02 cgd Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-# include	"mille.h"
+#include	"mille.h"
 
 /*
  * @(#)print.c	1.1 (Berkeley) 4/1/82
