@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcp.c,v 1.8 2012/09/18 13:14:08 yasuoka Exp $ */
+/*	$OpenBSD: lcp.c,v 1.9 2013/04/20 23:32:32 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Id: lcp.c,v 1.8 2012/09/18 13:14:08 yasuoka Exp $ */
+/* $Id: lcp.c,v 1.9 2013/04/20 23:32:32 yasuoka Exp $ */
 /**@file
  * This file provides LCP related functions.
  *<pre>
@@ -34,7 +34,6 @@
  *</pre>
  */
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
@@ -981,7 +980,7 @@ lcp_rechoreq(fsm *f, int id, u_char *inp, int inlen)
 	inp0 = inp;
 	PUTLONG(_this->magic_number, inp)
 
-	len = MIN(inlen, f->ppp->peer_mru - 8);
+	len = MINIMUM(inlen, f->ppp->peer_mru - 8);
 	fsm_sdata(f, ECHOREP, id, inp0, len);
 
 	return 1;
@@ -1004,7 +1003,7 @@ lcp_ext(fsm *f, int code, int id, u_char *inp, int inlen)
 			GETLONG(magic, inp);
 			inlen -= 4;
 			memset(buf, 0, sizeof(buf));
-			len = MIN(inlen, sizeof(buf) - 1);
+			len = MINIMUM(inlen, sizeof(buf) - 1);
 			memcpy(buf, inp, len);
 			buf[len] = '\0';
 			for (i = 0; i < len; i++) {

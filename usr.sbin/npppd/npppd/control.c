@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.1 2014/03/22 04:30:31 yasuoka Exp $	*/
+/*	$OpenBSD: control.c,v 1.2 2014/07/22 02:03:00 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
