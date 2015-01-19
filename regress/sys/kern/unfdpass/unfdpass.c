@@ -1,4 +1,4 @@
-/*	$OpenBSD: unfdpass.c,v 1.16 2008/06/26 05:42:06 ray Exp $	*/
+/*	$OpenBSD: unfdpass.c,v 1.17 2011/07/06 19:48:10 matthew Exp $	*/
 /*	$NetBSD: unfdpass.c,v 1.3 1998/06/24 23:51:30 thorpej Exp $	*/
 
 /*-
@@ -120,7 +120,6 @@ main(int argc, char *argv[])
 		(void) memset(&sun, 0, sizeof(sun));
 		sun.sun_family = AF_LOCAL;
 		(void) strlcpy(sun.sun_path, SOCK_NAME, sizeof sun.sun_path);
-		sun.sun_len = SUN_LEN(&sun);
 
 		if (bind(listensock, (struct sockaddr *)&sun, sizeof(sun)) == -1)
 			err(1, "bind");
@@ -259,7 +258,6 @@ child(int sock, int type)
 		(void) memset(&sun, 0, sizeof(sun));
 		sun.sun_family = AF_LOCAL;
 		(void) strlcpy(sun.sun_path, SOCK_NAME, sizeof sun.sun_path);
-		sun.sun_len = SUN_LEN(&sun);
 
 		if (connect(sock, (struct sockaddr *)&sun, sizeof(sun)) == -1)
 			err(1, "child connect");
