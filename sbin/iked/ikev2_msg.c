@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.37 2014/11/07 14:02:32 mikeb Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.38 2015/01/16 06:39:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -23,7 +23,6 @@
 #include <sys/uio.h>
 
 #include <netinet/in.h>
-#include <netinet/ip_ipsp.h>
 #include <arpa/inet.h>
 
 #include <stdlib.h>

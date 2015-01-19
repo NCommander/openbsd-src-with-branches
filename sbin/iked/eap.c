@@ -1,4 +1,4 @@
-/*	$OpenBSD: eap.c,v 1.10 2014/02/17 11:00:14 reyk Exp $	*/
+/*	$OpenBSD: eap.c,v 1.11 2015/01/16 06:39:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/uio.h>
 
 #include <netinet/in.h>
-#include <netinet/ip_ipsp.h>
 #include <arpa/inet.h>
 
 #include <stdlib.h>
