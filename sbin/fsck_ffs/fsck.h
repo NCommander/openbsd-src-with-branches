@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsck.h,v 1.29 2014/05/09 13:19:34 krw Exp $	*/
+/*	$OpenBSD: fsck.h,v 1.30 2014/09/06 04:05:40 guenther Exp $	*/
 /*	$NetBSD: fsck.h,v 1.13 1996/10/11 20:15:46 thorpej Exp $	*/
 
 /*
@@ -61,10 +61,6 @@ union dinode {
 	else					\
 		(dp)->dp2.field = (val);	\
 	} while (0)
-
-#ifndef BUFSIZ
-#define BUFSIZ 1024
-#endif
 
 /*
  * Each inode on the file system is described by the following structure.

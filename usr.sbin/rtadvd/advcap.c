@@ -1,4 +1,4 @@
-/*	$OpenBSD: advcap.c,v 1.13 2008/04/21 20:40:55 rainer Exp $	*/
+/*	$OpenBSD: advcap.c,v 1.14 2013/11/22 15:15:17 deraadt Exp $	*/
 /*	$KAME: advcap.c,v 1.9 2002/05/29 14:28:35 itojun Exp $	*/
 
 /*
@@ -47,9 +47,6 @@
 #include "pathnames.h"
 #include "log.h"
 
-#ifndef BUFSIZ
-#define	BUFSIZ		1024
-#endif
 #define MAXHOP		32		/* max number of tc= indirections */
 
 #define	tgetent		agetent
