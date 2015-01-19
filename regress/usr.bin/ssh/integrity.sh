@@ -1,4 +1,4 @@
-#	$OpenBSD: integrity.sh,v 1.13 2014/04/21 22:15:37 djm Exp $
+#	$OpenBSD: integrity.sh,v 1.14 2014/05/21 07:04:21 djm Exp $
 #	Placed in the Public Domain.
 
 tid="integrity"
@@ -52,7 +52,7 @@ for m in $macs; do
 		     tr -s '\r\n' '.')
 		case "$out" in
 		Bad?packet*)	elen=$((elen+1)); skip=2;;
-		Corrupted?MAC* | Decryption?integrity?check?failed*)
+		Corrupted?MAC* | *message?authentication?code?incorrect*)
 				emac=$((emac+1)); skip=0;;
 		padding*)	epad=$((epad+1)); skip=0;;
 		*)		fail "unexpected error mac $m at $off: $out";;
