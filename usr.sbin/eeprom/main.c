@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.19 2014/07/24 19:19:26 miod Exp $	*/
+/*	$OpenBSD: main.c,v 1.20 2015/01/16 06:40:16 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1996/05/16 16:00:55 thorpej Exp $	*/
 
 /*-
@@ -42,6 +42,7 @@
 #include <sys/sysctl.h>
 #include <machine/cpu.h>
 #include <machine/eeprom.h>
+#include <machine/param.h>
 #endif /* __sparc__ && !__sparc64__ */
 
 #include <machine/openpromio.h>
