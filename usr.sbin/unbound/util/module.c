@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * util/module.c - module interface
  *

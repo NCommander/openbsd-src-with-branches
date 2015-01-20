@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * iterator/iter_resptype.c - response type information and classification.
  *

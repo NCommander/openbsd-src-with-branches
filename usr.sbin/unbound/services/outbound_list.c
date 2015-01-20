@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * services/outbound_list.c - keep list of outbound serviced queries.
  *
