@@ -1,4 +1,4 @@
-/*	$OpenBSD: rgephy.c,v 1.33 2013/12/30 22:35:29 brad Exp $	*/
+/*	$OpenBSD: rgephy.c,v 1.34 2014/11/24 00:13:42 brad Exp $	*/
 /*
  * Copyright (c) 2003
  *	Bill Paul <wpaul@windriver.com>.  All rights reserved.
@@ -485,7 +485,6 @@ rgephy_reset(struct mii_softc *sc)
 		PHY_WRITE(sc, 31, 0x0a43);
 		reg = PHY_READ(sc, RGEPHY_CR);
 		if ((reg & RGEPHY_CR_ALDPS) != 0) {
-			printf("rgephy disabling ALDPS");
 			reg &= ~RGEPHY_CR_ALDPS;
 			PHY_WRITE(sc, RGEPHY_CR, reg);
 		}
