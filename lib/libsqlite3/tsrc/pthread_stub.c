@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* stubs for pthreads function, quick and dirty */
 #if SQLITE_THREADSAFE && !defined(SQLITE_TEST)
 

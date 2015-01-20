@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Written by Michael Shalayeff. Public Domain
  */

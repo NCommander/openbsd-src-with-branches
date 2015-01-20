@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
  *

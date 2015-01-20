@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 #include        "gprof.h"
 
 void

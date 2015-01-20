@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 #include <sys/types.h>
 #include <sys/malloc.h>
 #include <lib/libz/zutil.h>

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
 ** 2008 October 28
 **

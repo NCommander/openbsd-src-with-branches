@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Public domain. Author: Artur Grabowski <art@openbsd.org>
  */
