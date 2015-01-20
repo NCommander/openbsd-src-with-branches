@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.33 2014/07/12 03:32:00 guenther Exp $	*/
+/*	$OpenBSD: common.c,v 1.34 2015/01/16 06:40:11 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -35,9 +35,6 @@
  * Things common to both the client and server.
  */
 
-#if	defined(NEED_UTIME_H)
-#include <utime.h>
-#endif	/* defined(NEED_UTIME_H) */
 #include <sys/wait.h>
 #include <sys/socket.h>
 
