@@ -1,4 +1,4 @@
-/*	$OpenBSD: rdistd.c,v 1.7 2007/02/26 15:44:57 jmc Exp $	*/
+/*	$OpenBSD: rdistd.c,v 1.8 2009/10/27 23:59:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -29,7 +29,11 @@
  * SUCH DAMAGE.
  */
 
-#include "defs.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include "server.h"
 
 int main(int, char **, char **);
 static void usage(void);

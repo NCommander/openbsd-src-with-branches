@@ -1,4 +1,4 @@
-/*	$OpenBSD: lookup.c,v 1.13 2009/10/27 23:59:42 deraadt Exp $	*/
+/*	$OpenBSD: lookup.c,v 1.14 2012/11/12 01:14:41 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -29,7 +29,9 @@
  * SUCH DAMAGE.
  */
 
-#include "defs.h"
+#include <string.h>
+
+#include "client.h"
 
 	/* symbol types */
 #define VAR	1
