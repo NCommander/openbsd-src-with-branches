@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.c,v 1.338 2014/12/11 08:20:09 djm Exp $ */
+/* $OpenBSD: channels.c,v 1.339 2015/01/19 20:07:45 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -40,7 +40,7 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
+#include <sys/param.h>	/* MIN MAX */
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/un.h>
@@ -59,6 +59,7 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
+#include <limits.h>
 #include <stdarg.h>
 
 #include "xmalloc.h"

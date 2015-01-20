@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.254 2014/12/21 22:27:56 djm Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.255 2015/01/19 20:20:20 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -13,8 +13,8 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
+#include <sys/param.h>	/* roundup */
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/socket.h>

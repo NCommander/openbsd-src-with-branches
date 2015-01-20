@@ -14,10 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $OpenBSD: krl.c,v 1.27 2015/01/18 14:01:00 deraadt Exp $ */
+/* $OpenBSD: krl.c,v 1.28 2015/01/19 17:35:48 djm Exp $ */
 
+#include <sys/param.h>	/* MIN */
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/tree.h>
 #include <sys/queue.h>
 

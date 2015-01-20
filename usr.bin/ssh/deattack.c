@@ -1,4 +1,4 @@
-/* $OpenBSD: deattack.c,v 1.30 2006/09/16 19:53:37 djm Exp $ */
+/* $OpenBSD: deattack.c,v 1.31 2015/01/19 19:52:16 markus Exp $ */
 /*
  * Cryptographic attack detector for ssh - source code
  *
@@ -18,7 +18,6 @@
  * <http://www.core-sdi.com>
  */
 
-#include <sys/param.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

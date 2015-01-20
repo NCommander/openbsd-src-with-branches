@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshbuf.c,v 1.1 2014/04/30 05:29:56 djm Exp $	*/
+/*	$OpenBSD: sshbuf.c,v 1.2 2014/06/25 14:16:09 deraadt Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller
  *
@@ -15,8 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/param.h>	/* roundup */
 #include <sys/types.h>
-#include <sys/param.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
