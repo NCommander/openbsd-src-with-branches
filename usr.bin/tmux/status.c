@@ -1,4 +1,4 @@
-/* $OpenBSD: status.c,v 1.117 2014/10/20 23:57:14 nicm Exp $ */
+/* $OpenBSD: status.c,v 1.118 2014/11/05 23:15:11 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -328,7 +328,7 @@ draw:
 		wloffset = 0;
 	if (wlwidth < wlavailable) {
 		switch (options_get_number(&s->options, "status-justify")) {
-		case 1:	/* centered */
+		case 1:	/* centred */
 			wloffset += (wlavailable - wlwidth) / 2;
 			break;
 		case 2:	/* right */
