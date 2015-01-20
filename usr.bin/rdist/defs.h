@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.32 2015/01/16 06:40:11 deraadt Exp $	*/
+/*	$OpenBSD: defs.h,v 1.33 2015/01/20 03:14:52 guenther Exp $	*/
 
 #ifndef __DEFS_H__
 #define __DEFS_H__
@@ -324,7 +324,6 @@ char *xbasename(char *);
 char *searchpath(char *);
 
 /* distopt.c */
-DISTOPTINFO *getdistopt(char *, int *);
 int parsedistopts(char *, opt_t *, int);
 char *getdistoptlist(void);
 char *getondistoptlist(opt_t);
