@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.31 2014/07/12 03:48:04 guenther Exp $	*/
+/*	$OpenBSD: defs.h,v 1.32 2015/01/16 06:40:11 deraadt Exp $	*/
 
 #ifndef __DEFS_H__
 #define __DEFS_H__
@@ -52,7 +52,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
 #include <unistd.h>
 #include <limits.h>
 
