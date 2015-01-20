@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.13 2003/06/25 15:13:32 millert Exp $	*/
+/*	$OpenBSD: def.h,v 1.14 2015/01/16 06:40:09 deraadt Exp $	*/
 /*	$NetBSD: def.h,v 1.9 1996/12/28 07:11:00 tls Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)def.h	8.4 (Berkeley) 4/20/95
- *	$OpenBSD: def.h,v 1.13 2003/06/25 15:13:32 millert Exp $
+ *	$OpenBSD: def.h,v 1.14 2015/01/16 06:40:09 deraadt Exp $
  */
 
 /*
@@ -172,6 +172,7 @@ struct headline {
  */
 struct header {
 	struct name *h_to;		/* Dynamic "To:" string */
+	char *h_from;			/* User-specified "From:" string */
 	char *h_subject;		/* Subject string */
 	struct name *h_cc;		/* Carbon copies string */
 	struct name *h_bcc;		/* Blind carbon copies */
