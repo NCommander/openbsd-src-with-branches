@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: limit.c,v 1.3 2014/02/04 14:56:03 eric Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -28,6 +28,7 @@
 #include <imsg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <string.h>
 
 #include "smtpd.h"

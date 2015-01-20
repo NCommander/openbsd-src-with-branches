@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_proc.c,v 1.3 2014/07/08 15:45:32 eric Exp $	*/
+/*	$OpenBSD: queue_proc.c,v 1.4 2015/01/16 06:40:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -34,6 +34,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "smtpd.h"
 #include "log.h"

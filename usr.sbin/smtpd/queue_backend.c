@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_backend.c,v 1.53 2014/12/08 08:19:36 gilles Exp $	*/
+/*	$OpenBSD: queue_backend.c,v 1.54 2015/01/16 06:40:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@poolp.org>
@@ -369,7 +369,7 @@ err:
 int
 queue_message_fd_rw(uint32_t msgid)
 {
-	char buf[SMTPD_MAXPATHLEN];
+	char buf[PATH_MAX];
 
 	queue_message_path(msgid, buf, sizeof(buf));
 
