@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.12 2014/07/12 18:44:42 tedu Exp $	*/
+/*	$OpenBSD: dma.c,v 1.41 2014/11/16 12:30:58 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -462,8 +462,11 @@ _dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, size_t size,
 	vaddr_t va, sva;
 	size_t ssize;
 	bus_addr_t addr;
-	int curseg, error;
+	int curseg, pmapflags = 0, error;
 	const struct kmem_dyn_mode *kd;
+
+	if (flags & BUS_DMA_NOCACHE)
+		pmapflags |= PMAP_NOCACHE;
 
 	size = round_page(size);
 	kd = flags & BUS_DMA_NOWAIT ? &kd_trylock : &kd_waitok;
@@ -481,7 +484,7 @@ _dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, size_t size,
 		    addr += PAGE_SIZE, va += PAGE_SIZE, size -= PAGE_SIZE) {
 			if (size == 0)
 				panic("_bus_dmamem_map: size botch");
-			error = pmap_enter(pmap_kernel(), va, addr,
+			error = pmap_enter(pmap_kernel(), va, addr | pmapflags,
 			    PROT_READ | PROT_WRITE,
 			    PROT_READ | PROT_WRITE | PMAP_WIRED | PMAP_CANFAIL);
 			if (error) {
@@ -520,7 +523,10 @@ paddr_t
 _dmamem_mmap(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, off_t off,
     int prot, int flags)
 {
-	int i;
+	int i, pmapflags = 0;
+
+	if (flags & BUS_DMA_NOCACHE)
+		pmapflags |= PMAP_NOCACHE;
 
 	for (i = 0; i < nsegs; i++) {
 #ifdef DIAGNOSTIC
@@ -537,7 +543,7 @@ _dmamem_mmap(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, off_t off,
 			continue;
 		}
 
-		return (segs[i].ds_addr + off);
+		return ((segs[i].ds_addr + off) | pmapflags);
 	}
 
 	/* Page not found. */
