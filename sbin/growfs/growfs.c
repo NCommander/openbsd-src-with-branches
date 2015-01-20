@@ -1,4 +1,4 @@
-/*	$OpenBSD: growfs.c,v 1.36 2014/05/15 19:18:23 chl Exp $	*/
+/*	$OpenBSD: growfs.c,v 1.37 2015/01/16 06:39:58 deraadt Exp $	*/
 /*
  * Copyright (c) 2000 Christoph Herrmann, Thomas-Henning von Kamptz
  * Copyright (c) 1980, 1989, 1993 The Regents of the University of California.
@@ -42,7 +42,7 @@
  */
 
 /* ********************************************************** INCLUDES ***** */
-#include <sys/param.h>	/* DEV_BSIZE MAXFRAG MAXBSIZE setbit isset isclr clrbit */
+#include <sys/param.h>	/* DEV_BSIZE MAXBSIZE setbit isset isclr clrbit */
 #include <sys/types.h>
 #include <sys/disklabel.h>
 #include <sys/ioctl.h>

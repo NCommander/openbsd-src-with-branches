@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.289 2015/01/16 06:39:57 deraadt Exp $	*/
+/*	$OpenBSD: editor.c,v 1.290 2015/01/16 20:21:40 miod Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>	/* MAXBSIZE DEV_BSIZE MAXFRAG */
+#include <sys/param.h>	/* MAXBSIZE DEV_BSIZE */
 #include <sys/types.h>
 #include <sys/signal.h>
 #include <sys/stat.h>

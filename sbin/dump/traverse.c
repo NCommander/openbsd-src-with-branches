@@ -1,4 +1,4 @@
-/*	$OpenBSD: traverse.c,v 1.36 2014/07/10 09:33:43 krw Exp $	*/
+/*	$OpenBSD: traverse.c,v 1.37 2015/01/16 06:39:57 deraadt Exp $	*/
 /*	$NetBSD: traverse.c,v 1.17 1997/06/05 11:13:27 lukem Exp $	*/
 
 /*-
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>	/* MAXFRAG MAXBSIZE DEV_BSIZE dbtob */
+#include <sys/param.h>	/* MAXBSIZE DEV_BSIZE dbtob */
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/disklabel.h>

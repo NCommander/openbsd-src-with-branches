@@ -1,4 +1,4 @@
-/*	$OpenBSD: interactive.c,v 1.28 2013/04/25 06:43:20 otto Exp $	*/
+/*	$OpenBSD: interactive.c,v 1.29 2015/01/16 06:40:00 deraadt Exp $	*/
 /*	$NetBSD: interactive.c,v 1.10 1997/03/19 08:42:52 lukem Exp $	*/
 
 /*
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>	/* MAXFRAG */
 #include <sys/time.h>
 #include <sys/stat.h>
 

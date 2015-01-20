@@ -1,4 +1,4 @@
-/*	$OpenBSD: tunefs.c,v 1.34 2014/05/20 21:11:16 krw Exp $	*/
+/*	$OpenBSD: tunefs.c,v 1.35 2015/01/16 06:40:01 deraadt Exp $	*/
 /*	$NetBSD: tunefs.c,v 1.33 2005/01/19 20:46:16 xtraeme Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
 /*
  * tunefs: change layout parameters to an existing file system.
  */
-#include <sys/param.h>	/* DEV_BSIZE MAXBSIZE MAXFRAG */
+#include <sys/param.h>	/* DEV_BSIZE MAXBSIZE */
 
 #include <ufs/ufs/dinode.h>
 #include <ufs/ffs/fs.h>
