@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.5 2003/05/14 01:34:35 millert Exp $	*/
+/*	$OpenBSD: types.h,v 1.6 2015/01/20 06:02:30 guenther Exp $	*/
 
 #ifndef __myTYPES_H__
 #define __myTYPES_H__
@@ -64,13 +64,5 @@ typedef long		opt_t;
 			 MT_WARNING|MT_CHANGE|\
 			 MT_INFO|MT_NOTICE|\
 			 MT_SYSLOG|MT_VERBOSE)
-
-/*
- * Message Facilities
- */
-#define MF_STDOUT	1			/* Standard Output */
-#define MF_NOTIFY	2			/* Notify mail service */
-#define MF_FILE		3			/* A normal file */
-#define MF_SYSLOG	4			/* syslog() */
 
 #endif	/* __myTYPES_H__ */
