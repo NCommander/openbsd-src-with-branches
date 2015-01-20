@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 static struct def_values def_data_lecture[] = {
     { "never", never },
     { "once", once },
