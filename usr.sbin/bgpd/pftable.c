@@ -1,4 +1,4 @@
-/*	$OpenBSD: pftable.c,v 1.6 2009/12/01 14:28:05 claudio Exp $ */
+/*	$OpenBSD: pftable.c,v 1.7 2014/10/08 16:15:37 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Damien Miller <djm@openbsd.org>
@@ -20,6 +20,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
+#include <netinet/in.h>
 #include <net/if.h>
 #include <net/pfvar.h>
 

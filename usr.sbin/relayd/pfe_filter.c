@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe_filter.c,v 1.54 2014/12/23 13:18:23 reyk Exp $	*/
+/*	$OpenBSD: pfe_filter.c,v 1.55 2015/01/16 15:06:40 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -21,11 +21,11 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
-#include <net/if.h>
-#include <net/pfvar.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+#include <net/if.h>
+#include <net/pfvar.h>
 
 #include <limits.h>
 #include <fcntl.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.73 2014/11/18 20:54:29 krw Exp $	*/
+/*	$OpenBSD: mib.c,v 1.74 2015/01/16 00:05:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -33,15 +33,15 @@
 #include <sys/ioctl.h>
 #include <sys/disk.h>
 
-#include <net/if.h>
-#include <net/if_types.h>
-#include <net/pfvar.h>
-#include <net/if_pfsync.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_carp.h>
 #include <netinet/ip_var.h>
 #include <arpa/inet.h>
+#include <net/if.h>
+#include <net/if_types.h>
+#include <net/pfvar.h>
+#include <net/if_pfsync.h>
 
 #include <stdlib.h>
 #include <stdio.h>

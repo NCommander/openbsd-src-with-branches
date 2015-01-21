@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_radix.c,v 1.30 2013/11/22 04:12:48 deraadt Exp $ */
+/*	$OpenBSD: pfctl_radix.c,v 1.31 2014/05/07 14:59:11 tedu Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -34,6 +34,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
+#include <netinet/in.h>
 #include <net/if.h>
 #include <net/pfvar.h>
 

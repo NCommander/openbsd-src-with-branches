@@ -1,4 +1,4 @@
-/*	$OpenBSD: filter.c,v 1.19 2012/07/07 16:24:32 henning Exp $ */
+/*	$OpenBSD: filter.c,v 1.20 2012/09/18 10:11:53 henning Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -20,11 +20,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include <net/if.h>
-#include <net/pfvar.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+#include <net/if.h>
+#include <net/pfvar.h>
 
 #include <err.h>
 #include <errno.h>

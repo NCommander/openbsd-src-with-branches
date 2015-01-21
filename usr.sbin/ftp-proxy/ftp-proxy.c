@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp-proxy.c,v 1.28 2013/03/15 13:31:27 benno Exp $ */
+/*	$OpenBSD: ftp-proxy.c,v 1.29 2014/09/13 16:06:37 doug Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -22,10 +22,10 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 
-#include <net/if.h>
-#include <net/pfvar.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <net/if.h>
+#include <net/pfvar.h>
 
 #include <err.h>
 #include <errno.h>

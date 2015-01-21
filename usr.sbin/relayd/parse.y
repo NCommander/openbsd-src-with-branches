@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.199 2014/12/23 13:18:23 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.200 2015/01/16 15:06:40 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -31,11 +31,10 @@
 #include <sys/queue.h>
 #include <sys/ioctl.h>
 
-#include <net/if.h>
-#include <net/pfvar.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <net/route.h>
+#include <net/if.h>
+#include <net/pfvar.h>
 
 #include <ctype.h>
 #include <unistd.h>
