@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_file.c,v 1.46 2015/01/13 09:21:15 reyk Exp $	*/
+/*	$OpenBSD: server_file.c,v 1.47 2015/01/16 06:40:17 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -17,18 +17,10 @@
  */
 
 #include <sys/types.h>
-#include <sys/queue.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <sys/tree.h>
 
-#include <net/if.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/tcp.h>
-
+#include <limits.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -37,7 +29,6 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <time.h>
-#include <err.h>
 #include <event.h>
 
 #include "httpd.h"

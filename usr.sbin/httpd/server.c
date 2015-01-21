@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.52 2015/01/16 06:40:17 deraadt Exp $	*/
+/*	$OpenBSD: server.c,v 1.53 2015/01/19 19:37:50 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -22,26 +22,24 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
-#include <sys/un.h>
 #include <sys/uio.h>
 #include <sys/tree.h>
 
-#include <net/if.h>
 #include <netinet/in.h>
-#include <netinet/ip.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <limits.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <err.h>
-#include <pwd.h>
 #include <event.h>
-#include <fnmatch.h>
+#include <imsg.h>
 #include <tls.h>
 
 #include "httpd.h"
