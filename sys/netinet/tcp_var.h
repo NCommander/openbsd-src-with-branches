@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_var.h,v 1.103 2013/10/21 08:42:24 phessler Exp $	*/
+/*	$OpenBSD: tcp_var.h,v 1.105 2014/01/23 23:51:29 henning Exp $	*/
 /*	$NetBSD: tcp_var.h,v 1.17 1996/02/13 23:44:24 christos Exp $	*/
 
 /*
@@ -34,6 +34,8 @@
 
 #ifndef _NETINET_TCP_VAR_H_
 #define _NETINET_TCP_VAR_H_
+
+#include <sys/timeout.h>
 
 /*
  * Kernel variables for tcp.
