@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.33 2015/01/20 03:14:52 guenther Exp $	*/
+/*	$OpenBSD: server.h,v 1.1 2015/01/20 09:00:16 guenther Exp $	*/
 
 #ifndef __SERVER_H__
 #define __SERVER_H__
@@ -65,7 +65,7 @@ typedef struct {
  */
 struct mntinfo {
 	mntent_t			*mi_mnt;
-	struct stat			*mi_statb;
+	dev_t				mi_dev;
 	struct mntinfo			*mi_nxt;
 };
 
