@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.c,v 1.66 2014/06/21 08:00:23 otto Exp $ */
+/*	$OpenBSD: resolve.c,v 1.67 2014/07/10 09:03:01 otto Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -41,7 +41,7 @@
 
 /* substitution types */
 typedef enum {
-        SUBST_UNKNOWN, SUBST_ORIGIN, SUBST_OSNAME, SUBST_OSREL, SUBST_PLATFORM
+	SUBST_UNKNOWN, SUBST_ORIGIN, SUBST_OSNAME, SUBST_OSREL, SUBST_PLATFORM
 } SUBST_TYPES;
 
 elf_object_t *_dl_objects;
@@ -180,7 +180,7 @@ _dl_origin_subst_path(elf_object_t *object, const char *origin_path,
 		return;
 
 	/* NULL terminate tmp_path */
-        *tp = '\0';
+	*tp = '\0';
 
 	if (_dl_strcmp(tmp_path, *path) == 0)
 		return;
@@ -691,5 +691,5 @@ found:
 void
 _dl_debug_state(void)
 {
-        /* Debugger stub */
+	/* Debugger stub */
 }
