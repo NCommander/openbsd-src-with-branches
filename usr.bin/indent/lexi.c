@@ -1,4 +1,4 @@
-/*	$OpenBSD: lexi.c,v 1.16 2013/11/26 13:21:17 deraadt Exp $	*/
+/*	$OpenBSD: lexi.c,v 1.17 2014/10/11 03:05:48 doug Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -201,6 +201,12 @@ lexi(void)
 		    continue;
 		}
 		break;
+	    }
+	    if (!(seensfx & 1) &&    
+	        (*buf_ptr == 'F' || *buf_ptr == 'f')) {
+		CHECK_SIZE_TOKEN;
+		*e_token++ = *buf_ptr++;
+		seensfx |= 1;
 	    }
 	}
 	else
