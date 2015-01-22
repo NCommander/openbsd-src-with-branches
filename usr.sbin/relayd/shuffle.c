@@ -1,4 +1,4 @@
-/*	$OpenBSD: shuffle.c,v 1.2 2009/06/09 16:26:03 deraadt Exp $	*/
+/*	$OpenBSD: shuffle.c,v 1.3 2014/12/21 00:54:49 guenther Exp $	*/
 
 /*
  * Portions Copyright (C) 2008 Theo de Raadt
@@ -20,17 +20,9 @@
 /* based on: bind/lib/isc/shuffle.c,v 1.4 2008/07/09 17:07:32 reyk Exp $ */
 
 #include <sys/types.h>
-#include <sys/socket.h>
-
-#include <netinet/in.h>
-#include <net/if.h>
 
 #include <stdlib.h>
-#include <string.h>
-#include <event.h>
 #include <assert.h>
-
-#include <openssl/ssl.h>
 
 #include "relayd.h"
 
