@@ -1,4 +1,4 @@
-/*	$OpenBSD */
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2012 Claudio Jeker <claudio@openbsd.org>

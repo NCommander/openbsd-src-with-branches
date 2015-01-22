@@ -1,4 +1,4 @@
-/*	$OpenBSD: */
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2015 SASANO Takayoshi <uaa@openbsd.org>
