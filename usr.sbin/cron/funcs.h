@@ -1,4 +1,4 @@
-/*	$OpenBSD: funcs.h,v 1.14 2008/01/05 16:59:06 chl Exp $	*/
+/*	$OpenBSD: funcs.h,v 1.15 2013/04/17 15:58:45 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -43,7 +43,6 @@ void		set_cron_uid(void),
 		atrun(at_db *, double, time_t);
 
 int		job_runqueue(void),
-		set_debug_flags(const char *),
 		get_char(FILE *),
 		get_string(char *, int, FILE *, char *),
 		swap_gids(void),
