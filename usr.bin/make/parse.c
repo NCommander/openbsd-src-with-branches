@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.110 2013/11/22 15:47:35 espie Exp $	*/
+/*	$OpenBSD: parse.c,v 1.111 2015/01/23 13:18:40 espie Exp $	*/
 /*	$NetBSD: parse.c,v 1.29 1997/03/10 21:20:04 christos Exp $	*/
 
 /*
@@ -479,6 +479,7 @@ static int
 ParseFindMain(void *gnp, void *dummy UNUSED)
 {
 	GNode *gn = gnp;
+
 	if ((gn->type & OP_NOTARGET) == 0 && gn->special == SPECIAL_NONE) {
 		mainNode = gn;
 		return 0;

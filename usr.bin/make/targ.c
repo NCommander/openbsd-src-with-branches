@@ -1,4 +1,4 @@
-/*	$OpenBSD: targ.c,v 1.74 2013/05/30 08:58:38 espie Exp $ */
+/*	$OpenBSD: targ.c,v 1.75 2014/05/12 19:11:19 espie Exp $ */
 /*	$NetBSD: targ.c,v 1.11 1997/02/20 16:51:50 christos Exp $	*/
 
 /*
@@ -256,7 +256,7 @@ Targ_Precious(GNode *gn)
 void
 Targ_PrintCmd(void *p)
 {
-	struct command *cmd = p;
+	const struct command *cmd = p;
 	printf("\t%s\n", cmd->string);
 }
 

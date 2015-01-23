@@ -1,4 +1,4 @@
-/*	$OpenBSD: suff.c,v 1.88 2014/05/12 19:11:19 espie Exp $ */
+/*	$OpenBSD: suff.c,v 1.89 2015/01/23 13:18:40 espie Exp $ */
 /*	$NetBSD: suff.c,v 1.13 1996/11/06 17:59:25 christos Exp $	*/
 
 /*
@@ -1712,7 +1712,7 @@ Suff_Init(void)
 static void
 SuffPrintName(void *p)
 {
-	Suff *s = p;
+	const Suff *s = p;
 	printf("%s ", s == emptySuff ? "<empty>" : s->name);
 }
 
