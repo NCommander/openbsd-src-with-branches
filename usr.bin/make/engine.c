@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.48 2014/05/30 21:19:57 espie Exp $ */
+/*	$OpenBSD: engine.c,v 1.49 2014/10/31 13:29:42 gsoares Exp $ */
 /*
  * Copyright (c) 2012 Marc Espie.
  *
@@ -427,7 +427,7 @@ Make_DoAllVar(GNode *gn)
 static void
 MakeTimeStamp(void *parent, void *child)
 {
-    Make_TimeStamp((GNode *)parent, (GNode *)child);
+    Make_TimeStamp(parent, child);
 }
 
 bool
