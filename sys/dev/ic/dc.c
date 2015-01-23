@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.135 2014/11/18 22:53:56 brad Exp $	*/
+/*	$OpenBSD: dc.c,v 1.136 2014/12/22 02:28:51 tedu Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -788,7 +788,6 @@ dc_miibus_writereg(struct device *self, int phy, int reg, int data)
 			printf("%s: phy_write: bad phy register %x\n",
 			    sc->sc_dev.dv_xname, reg);
 			return;
-			break;
 		}
 
 		CSR_WRITE_4(sc, phy_reg, data);
