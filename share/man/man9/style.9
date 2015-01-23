@@ -22,9 +22,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$OpenBSD: style.9,v 1.57 2014/01/21 03:15:46 schwarze Exp $
+.\"	$OpenBSD: style.9,v 1.58 2014/06/01 15:44:09 deraadt Exp $
 .\"
-.Dd $Mdocdate: January 21 2014 $
+.Dd $Mdocdate: June 1 2014 $
 .Dt STYLE 9
 .Os
 .Sh NAME
@@ -325,6 +325,7 @@ for (; cnt < 15; cnt++) {
 .Pp
 Indentation is an 8 character tab.
 Second level indents are four spaces.
+All code should fit in 80 columns.
 .Bd -literal -offset indent
 while (cnt < 20)
 	z = a + really + long + statement + that + needs +
