@@ -1,4 +1,4 @@
-.\"	$OpenBSD: roff.7,v 1.44 2015/01/21 20:20:49 schwarze Exp $
+.\"	$OpenBSD: roff.7,v 1.45 2015/01/21 23:48:05 jmc Exp $
 .\"
 .\" Copyright (c) 2010, 2011, 2012 Kristaps Dzonsons <kristaps@bsd.lv>
 .\" Copyright (c) 2010, 2011, 2013, 2014 Ingo Schwarze <schwarze@openbsd.org>
@@ -1713,6 +1713,14 @@ prefixed by an optional sign
 .Sq +
 or
 .Sq - .
+Each number may be followed by one optional scaling unit described below
+.Sx Scaling Widths .
+The following equations hold:
+.Bd -literal -offset indent
+1i = 6v = 6P = 10m = 10n = 72p = 1000M = 240u = 240
+254c = 100i = 24000u = 24000 
+1f = 65536u = 65536
+.Ed
 .Pp
 The following binary operators are implemented.
 Unless otherwise stated, they behave as in the C language:
