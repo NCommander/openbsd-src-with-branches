@@ -1,4 +1,4 @@
-/*	$OpenBSD: entry.c,v 1.36 2015/01/22 22:38:55 tedu Exp $	*/
+/*	$OpenBSD: entry.c,v 1.37 2015/01/23 01:01:06 tedu Exp $	*/
 
 /*
  * Copyright 1988,1990,1993,1994 by Paul Vixie
@@ -564,5 +564,5 @@ set_element(bitstr_t *bits, int low, int high, int number) {
 		return (EOF);
 
 	bit_set(bits, (number-low));
-	return (OK);
+	return (0);
 }
