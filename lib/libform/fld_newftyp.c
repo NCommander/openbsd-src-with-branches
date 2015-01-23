@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /****************************************************************************
  * Copyright (c) 1998-2004,2007 Free Software Foundation, Inc.              *
  *                                                                          *
@@ -32,7 +33,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("$Id: fld_newftyp.c,v 1.15 2007/10/13 19:30:55 tom Exp $")
+MODULE_ID("$Id: fld_newftyp.c,v 1.6 2010/01/12 23:22:07 nicm Exp $")
 
 static FIELDTYPE const default_fieldtype =
 {

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /****************************************************************************
  * Copyright (c) 1998-2006,2007 Free Software Foundation, Inc.              *
  *                                                                          *
@@ -34,7 +35,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("$Id: fty_int.c,v 1.22 2007/10/13 19:32:40 tom Exp $")
+MODULE_ID("$Id: fty_int.c,v 1.8 2010/01/12 23:22:07 nicm Exp $")
 
 #if USE_WIDEC_SUPPORT
 #define isDigit(c) (iswdigit((wint_t)(c)) || isdigit(UChar(c)))

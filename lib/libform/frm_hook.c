@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /****************************************************************************
  * Copyright (c) 1998-2003,2004 Free Software Foundation, Inc.              *
  *                                                                          *
@@ -32,7 +33,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("$Id: frm_hook.c,v 1.14 2004/12/25 22:37:27 tom Exp $")
+MODULE_ID("$Id: frm_hook.c,v 1.7 2010/01/12 23:22:07 nicm Exp $")
 
 /* "Template" macro to generate function to set application specific hook */
 #define GEN_HOOK_SET_FUNCTION( typ, name ) \

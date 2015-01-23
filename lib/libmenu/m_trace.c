@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /****************************************************************************
  * Copyright (c) 2004,2005 Free Software Foundation, Inc.                   *
  *                                                                          *
@@ -32,7 +33,7 @@
 
 #include "menu.priv.h"
 
-MODULE_ID("$Id: m_trace.c,v 1.3 2005/01/16 01:06:11 tom Exp $")
+MODULE_ID("$Id: m_trace.c,v 1.1 2010/01/12 23:22:08 nicm Exp $")
 
 NCURSES_EXPORT(ITEM *)
 _nc_retrace_item(ITEM * code)

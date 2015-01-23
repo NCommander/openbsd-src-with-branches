@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /****************************************************************************
  * Copyright (c) 1998-2005,2008 Free Software Foundation, Inc.              *
  *                                                                          *
@@ -37,7 +38,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("$Id: frm_req_name.c,v 1.16 2008/07/05 23:22:08 tom Exp $")
+MODULE_ID("$Id: frm_req_name.c,v 1.6 2010/01/12 23:22:07 nicm Exp $")
 
 static const char *request_names[MAX_FORM_COMMAND - MIN_FORM_COMMAND + 1] =
 {

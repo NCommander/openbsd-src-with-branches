@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /****************************************************************************
  * Copyright (c) 1998-2006,2008 Free Software Foundation, Inc.              *
  *                                                                          *
@@ -30,7 +31,7 @@
  *   Author:  Juergen Pfeifer, 1995,1997                                    *
  ****************************************************************************/
 
-/* $Id: form.priv.h,v 0.27 2008/09/08 20:29:05 tom Exp $ */
+/* $Id: form.priv.h,v 1.7 2010/01/12 23:22:07 nicm Exp $ */
 
 #ifndef FORM_PRIV_H
 #define FORM_PRIV_H 1

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /****************************************************************************
  * Copyright (c) 1998-2005,2008 Free Software Foundation, Inc.              *
  *                                                                          *
@@ -26,7 +27,7 @@
  * authorization.                                                           *
  ****************************************************************************/
 
-/* $Id: panel.priv.h,v 1.22 2008/09/27 22:36:11 tom Exp $ */
+/* $Id: panel.priv.h,v 1.9 2010/01/12 23:22:08 nicm Exp $ */
 
 #ifndef NCURSES_PANEL_PRIV_H
 #define NCURSES_PANEL_PRIV_H 1

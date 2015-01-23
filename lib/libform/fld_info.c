@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /****************************************************************************
  * Copyright (c) 1998-2003,2004 Free Software Foundation, Inc.              *
  *                                                                          *
@@ -32,7 +33,7 @@
 
 #include "form.priv.h"
 
-MODULE_ID("$Id: fld_info.c,v 1.10 2004/12/11 22:24:57 tom Exp $")
+MODULE_ID("$Id: fld_info.c,v 1.5 2010/01/12 23:22:07 nicm Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
