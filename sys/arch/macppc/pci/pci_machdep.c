@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.2 2013/10/13 16:36:46 mpi Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.3 2014/04/26 14:26:48 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Martin Pieuchot
@@ -50,6 +50,7 @@ struct powerpc_bus_dma_tag pci_bus_dma_tag = {
 	_dmamap_unload,
 	_dmamap_sync,
 	_dmamem_alloc,
+	_dmamem_alloc_range,
 	_dmamem_free,
 	_dmamem_map,
 	_dmamem_unmap,
