@@ -1,4 +1,4 @@
-/* $OpenBSD: hostfile.h,v 1.21 2015/01/15 09:40:00 djm Exp $ */
+/* $OpenBSD: hostfile.h,v 1.22 2015/01/18 21:40:24 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -43,6 +43,9 @@ int	 lookup_key_in_hostkeys_by_type(struct hostkeys *, int,
 int	 hostfile_read_key(char **, u_int *, struct sshkey *);
 int	 add_host_to_hostfile(const char *, const char *,
     const struct sshkey *, int);
+
+int	 hostfile_replace_entries(const char *filename, const char *host,
+    struct sshkey **keys, size_t nkeys, int store_hash, int quiet);
 
 #define HASH_MAGIC	"|1|"
 #define HASH_DELIM	'|'
