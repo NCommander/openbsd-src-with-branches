@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: r600_audio.c,v 1.1 2013/08/12 04:11:53 jsg Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  * Copyright 2008 Red Hat Inc.
@@ -123,7 +123,7 @@ struct r600_audio r600_audio_status(struct radeon_device *rdev)
  * update all hdmi interfaces with current audio parameters
  */
 void
-r600_audio_update_hdmi(void *arg1, void *arg2)
+r600_audio_update_hdmi(void *arg1)
 {
 	struct radeon_device *rdev = arg1;
 	struct drm_device *dev = rdev->ddev;
