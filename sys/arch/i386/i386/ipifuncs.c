@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.23 2014/01/24 21:20:23 kettenis Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.24 2014/07/11 10:56:52 mlarkin Exp $	*/
 /* $NetBSD: ipifuncs.c,v 1.1.2.3 2000/06/26 02:04:06 sommerfeld Exp $ */
 
 /*-
@@ -172,14 +172,6 @@ i386_fast_ipi(struct cpu_info *ci, int ipi)
 
 	return (i386_ipi(ipi, ci->ci_apicid, LAPIC_DLMODE_FIXED));
 }
-
-void
-i386_self_ipi(int vector)
-{
-	i82489_writereg(LAPIC_ICRLO,
-	    vector | LAPIC_DLMODE_FIXED | LAPIC_LVL_ASSERT | LAPIC_DEST_SELF);
-}
-
 
 void
 i386_broadcast_ipi(int ipimask)
