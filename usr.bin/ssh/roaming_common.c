@@ -1,4 +1,4 @@
-/* $OpenBSD: roaming_common.c,v 1.11 2013/11/03 10:37:19 djm Exp $ */
+/* $OpenBSD: roaming_common.c,v 1.12 2014/01/09 23:20:00 djm Exp $ */
 /*
  * Copyright (c) 2004-2009 AppGate Network Security AB
  *
@@ -20,7 +20,6 @@
 #include <sys/uio.h>
 
 #include <errno.h>
-#include <inttypes.h>
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
