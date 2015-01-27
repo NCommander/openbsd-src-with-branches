@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_loop.c,v 1.61 2014/12/05 15:50:04 mpi Exp $	*/
+/*	$OpenBSD: if_loop.c,v 1.62 2014/12/19 17:14:39 tedu Exp $	*/
 /*	$NetBSD: if_loop.c,v 1.15 1996/05/07 02:40:33 thorpej Exp $	*/
 
 /*
@@ -271,7 +271,7 @@ looutput(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 void
 lortrequest(int cmd, struct rtentry *rt)
 {
-	if (rt)
+	if (rt && rt->rt_rmx.rmx_mtu == 0)
 		rt->rt_rmx.rmx_mtu = LOMTU;
 }
 
