@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.195 2015/01/14 19:33:41 djm Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.196 2015/01/16 06:40:12 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -197,7 +197,8 @@ confirm_key(Identity *id)
 	int ret = -1;
 
 	p = sshkey_fingerprint(id->key, fingerprint_hash, SSH_FP_DEFAULT);
-	if (ask_permission("Allow use of key %s?\nKey fingerprint %s.",
+	if (p != NULL &&
+	    ask_permission("Allow use of key %s?\nKey fingerprint %s.",
 	    id->comment, p))
 		ret = 0;
 	free(p);
