@@ -1,7 +1,7 @@
-# $OpenBSD: Makefile,v 1.9 2015/01/26 18:41:45 schwarze Exp $
+# $OpenBSD: Makefile,v 1.10 2015/01/28 02:23:33 schwarze Exp $
 
-REGRESS_TARGETS	 = blankline center expand fonts layout macro misalign
-REGRESS_TARGETS	+= nested numbers opt span vert
+REGRESS_TARGETS	 = blankline center expand fonts layout layout_center
+REGRESS_TARGETS	+= macro misalign nested numbers opt span vert
 LINT_TARGETS	 = layout macro nested opt
 
 # groff-1.22.3 defect:
