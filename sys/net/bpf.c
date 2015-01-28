@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.113 2014/12/16 18:30:04 tedu Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.114 2015/01/09 04:59:54 tedu Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -437,6 +437,7 @@ bpfread(dev_t dev, struct uio *uio, int ioflag)
 			if (elapsed < d->bd_rtout) {
 				error = tsleep(d, PRINET|PCATCH, "bpf",
 				    d->bd_rtout - elapsed);
+				d->bd_rdStart = 0;
 			} else
 				error = EWOULDBLOCK;
 		}
