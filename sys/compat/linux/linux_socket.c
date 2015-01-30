@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_socket.c,v 1.58 2015/01/21 02:23:14 guenther Exp $	*/
+/*	$OpenBSD: linux_socket.c,v 1.59 2015/01/21 13:47:45 mpi Exp $	*/
 /*	$NetBSD: linux_socket.c,v 1.14 1996/04/05 00:01:50 christos Exp $	*/
 
 /*
@@ -969,10 +969,8 @@ linux_setsockopt(p, v, retval)
 	if (lsa.optval != NULL) {
 		m = m_get(M_WAIT, MT_SOOPTS);
 		error = copyin(lsa.optval, mtod(m, caddr_t), lsa.optlen);
-		if (error) {
-			(void) m_free(m);
+		if (error)
 			goto bad;
-		}
 		m->m_len = lsa.optlen;
 	}
 	so = (struct socket *)fp->f_data;
@@ -984,7 +982,10 @@ linux_setsockopt(p, v, retval)
 		goto bad;
 	}
 	error = sosetopt(so, level, name, m);
+	m = NULL;
 bad:
+	if (m)
+		m_free(m);
 	FRELE(fp, p);
 	return (error);
 }
