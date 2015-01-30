@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.258 2015/01/19 00:32:54 deraadt Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.259 2015/01/28 22:36:00 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -706,12 +706,12 @@ do_convert_from(struct passwd *pw)
 		fatal("%s: unknown key format %d", __func__, convert_format);
 	}
 
-	if (!private)
+	if (!private) {
 		if ((r = sshkey_write(k, stdout)) == 0)
 			ok = 1;
 		if (ok)
 			fprintf(stdout, "\n");
-	else {
+	} else {
 		switch (k->type) {
 		case KEY_DSA:
 			ok = PEM_write_DSAPrivateKey(stdout, k->dsa, NULL,
