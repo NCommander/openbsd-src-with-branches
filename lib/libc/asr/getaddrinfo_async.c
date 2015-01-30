@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo_async.c,v 1.31 2014/11/18 20:51:00 krw Exp $	*/
+/*	$OpenBSD: getaddrinfo_async.c,v 1.32 2015/01/14 23:36:15 deraadt Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -217,6 +217,8 @@ getaddrinfo_async_run(struct asr_query *as, struct asr_result *ar)
 			v6 = 0;
 			for (ifa = ifa0; ifa != NULL; ifa = ifa->ifa_next) {
 				if (ifa->ifa_flags & IFF_LOOPBACK)
+					continue;
+				if (ifa->ifa_addr == NULL)
 					continue;
 				if (ifa->ifa_addr->sa_family == PF_INET)
 					v4 = 1;
