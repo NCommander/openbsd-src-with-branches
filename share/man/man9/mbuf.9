@@ -1,4 +1,4 @@
-.\"     $OpenBSD: mbuf.9,v 1.76 2014/08/18 04:06:16 dlg Exp $
+.\"     $OpenBSD: mbuf.9,v 1.77 2015/01/31 03:06:25 lteo Exp $
 .\"
 .\" Copyright (c) 2001 Jean-Jacques Bernard-Gundol <jjbg@openbsd.org>
 .\" All rights reserved.
@@ -25,7 +25,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: August 18 2014 $
+.Dd $Mdocdate: January 31 2015 $
 .Dt MBUF 9
 .Os
 .Sh NAME
@@ -398,7 +398,7 @@ The data part of the mbuf has now the following elements:
 .Bl -tag -width foobarmoocow
 .It Fa m_pkthdr
 a packet header, just like the previous case, but it is empty.
-No information is stored here
+No information is stored here.
 .It Fa m_ext
 a structure containing information about the external storage
 buffer.
