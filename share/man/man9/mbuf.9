@@ -1,4 +1,4 @@
-.\"     $OpenBSD: mbuf.9,v 1.77 2015/01/31 03:06:25 lteo Exp $
+.\"     $OpenBSD: mbuf.9,v 1.78 2015/01/31 03:08:33 lteo Exp $
 .\"
 .\" Copyright (c) 2001 Jean-Jacques Bernard-Gundol <jjbg@openbsd.org>
 .\" All rights reserved.
@@ -187,7 +187,8 @@ struct pkthdr {
 };
 
 struct pkthdr_pf {
-	void	 *statekey;
+	struct pf_state_key *statekey;
+	struct inpcb *inp;
 	u_int32_t qid;
 	u_int16_t tag;
 	u_int8_t  flags;
@@ -201,9 +202,6 @@ struct mbuf_ext {
 	void    (*ext_free)(caddr_t, u_int, void *);
 	void    *ext_arg;
 	u_int   ext_size;
-	int     ext_type;
-	u_short ext_ifidx;
-	int     ext_backend;
 	struct mbuf *ext_nextref;
 	struct mbuf *ext_prevref;
 };
