@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.7 2013/07/05 21:11:57 miod Exp $   */
+/*	$OpenBSD: locore.S,v 1.8 2013/11/24 22:08:25 miod Exp $   */
 /*	$NetBSD: intvec.s,v 1.39 1999/06/28 08:20:48 itojun Exp $   */
 
 /*
@@ -165,7 +165,7 @@ SCBENTRY(mcheck)
 	bneq	L4		# Yes.
 
 	pushr	$0x7f
-	pushab	24(%sp)
+	pushab	28(%sp)
 	movl	_C_LABEL(dep_call),%r6	# CPU dependent mchk handling
 	calls	$1,*MCHK(%r6)
 	tstl	%r0		# If not machine check, try memory error
