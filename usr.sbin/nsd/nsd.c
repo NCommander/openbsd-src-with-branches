@@ -829,11 +829,11 @@ main(int argc, char *argv[])
 #ifdef HAVE_GETPWNAM
 	/* Parse the username into uid and gid */
 	if (*nsd.username) {
-		if (isdigit((int)*nsd.username)) {
+		if (isdigit((unsigned char)*nsd.username)) {
 			char *t;
 			nsd.uid = strtol(nsd.username, &t, 10);
 			if (*t != 0) {
-				if (*t != '.' || !isdigit((int)*++t)) {
+				if (*t != '.' || !isdigit((unsigned char)*++t)) {
 					error("-u user or -u uid or -u uid.gid");
 				}
 				nsd.gid = strtol(t, &t, 10);
@@ -872,7 +872,7 @@ main(int argc, char *argv[])
 		/* zonesdir must be absolute and within chroot,
 		 * all other pathnames may be relative to zonesdir */
 		if (strncmp(nsd.options->zonesdir, nsd.chrootdir, strlen(nsd.chrootdir)) != 0) {
-			error("zonesdir %s is not relative to %s: chroot not possible",
+			error("zonesdir %s has to be an absolute path that starts with the chroot path %s",
 				nsd.options->zonesdir, nsd.chrootdir);
 		} else if (!file_inside_chroot(nsd.pidfile, nsd.chrootdir)) {
 			error("pidfile %s is not relative to %s: chroot not possible",
@@ -1106,6 +1106,10 @@ main(int argc, char *argv[])
 			nsd.username));
 	}
 #endif /* HAVE_GETPWNAM */
+#ifdef USE_ZONE_STATS
+	options_zonestatnames_create(nsd.options);
+	server_zonestat_alloc(&nsd);
+#endif /* USE_ZONE_STATS */
 
 	if(nsd.server_kind == NSD_SERVER_MAIN) {
 		server_prepare_xfrd(&nsd);

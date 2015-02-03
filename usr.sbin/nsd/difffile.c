@@ -236,8 +236,8 @@ has_data_below(domain_type* top)
 }
 
 /** check if domain with 0 rrsets has become empty (nonexist) */
-static void
-rrset_zero_nonexist_check(domain_type* domain)
+static domain_type*
+rrset_zero_nonexist_check(domain_type* domain, domain_type* ce)
 {
 	/* is the node now an empty node (completely deleted) */
 	if(domain->rrsets == 0) {
@@ -248,13 +248,18 @@ rrset_zero_nonexist_check(domain_type* domain)
 			/* nonexist this domain and all parent empty nonterminals */
 			domain_type* p = domain;
 			while(p != NULL && p->rrsets == 0) {
-				if(has_data_below(p))
-					break;
+				if(p == ce || has_data_below(p))
+					return p;
 				p->is_existing = 0;
+				/* fixup wildcard child of parent */
+				if(p->parent &&
+					p->parent->wildcard_child_closest_match == p)
+					p->parent->wildcard_child_closest_match = domain_previous_existing_child(p);
 				p = p->parent;
 			}
 		}
 	}
+	return NULL;
 }
 
 /** remove rrset.  Adjusts zone params.  Does not remove domain */
@@ -682,7 +687,7 @@ delete_RR(namedb_type* db, const dname_type* dname,
 			/* delete entire rrset */
 			rrset_delete(db, domain, rrset);
 			/* check if domain is now nonexisting (or parents) */
-			rrset_zero_nonexist_check(domain);
+			rrset_zero_nonexist_check(domain, NULL);
 #ifdef NSEC3
 			/* cleanup nsec3 */
 			nsec3_delete_rrset_trigger(db, domain, zone, type);
@@ -914,9 +919,10 @@ delete_zone_rrs(namedb_type* db, zone_type* zone)
 		domain = next;
 	}
 
-	/* check if data deleteions have created nonexisting domain entries,
+	/* check if data deletions have created nonexisting domain entries,
 	 * but after deleting domains so the checks are faster */
 	if(nonexist_check) {
+		domain_type* ce = NULL; /* for speeding up has_data_below */
 		DEBUG(DEBUG_XFRD, 1, (LOG_INFO, "axfrdel: zero rrset check"));
 		domain = zone->apex;
 		while(domain && domain_is_subdomain(domain, zone->apex))
@@ -926,7 +932,7 @@ delete_zone_rrs(namedb_type* db, zone_type* zone)
 			 * sub-zones, since we only spuriously check empty
 			 * nonterminals */
 			if(domain->is_existing)
-				rrset_zero_nonexist_check(domain);
+				ce = rrset_zero_nonexist_check(domain, ce);
 			domain = domain_next(domain);
 		}
 	}
@@ -1618,7 +1624,7 @@ void* task_new_stat_info(udb_base* udb, udb_ptr* last, struct nsdst* stat,
 
 void
 task_new_add_zone(udb_base* udb, udb_ptr* last, const char* zone,
-	const char* pattern)
+	const char* pattern, unsigned zonestatid)
 {
 	size_t zlen = strlen(zone);
 	size_t plen = strlen(pattern);
@@ -1631,6 +1637,7 @@ task_new_add_zone(udb_base* udb, udb_ptr* last, const char* zone,
 		return;
 	}
 	TASKLIST(&e)->task_type = task_add_zone;
+	TASKLIST(&e)->yesno = zonestatid;
 	p = TASKLIST(&e)->zname;
 	memcpy(p, zone, zlen+1);
 	memmove(p+zlen+1, pattern, plen+1);
@@ -1749,6 +1756,22 @@ void task_new_opt_change(udb_base* udb, udb_ptr* last, nsd_options_t* opt)
 	udb_ptr_unlink(&e, udb);
 }
 
+void task_new_zonestat_inc(udb_base* udb, udb_ptr* last, unsigned sz)
+{
+	udb_ptr e;
+	DEBUG(DEBUG_IPC,1, (LOG_INFO, "add task zonestat_inc"));
+	if(sz == 0)
+		return; /* no need to decrease to 0 */
+	if(!task_create_new_elem(udb, last, &e, sizeof(struct task_list_d),
+		NULL)) {
+		log_msg(LOG_ERR, "tasklist: out of space, cannot add z_i");
+		return;
+	}
+	TASKLIST(&e)->task_type = task_zonestat_inc;
+	TASKLIST(&e)->oldserial = (uint32_t)sz;
+	udb_ptr_unlink(&e, udb);
+}
+
 int
 task_new_apply_xfr(udb_base* udb, udb_ptr* last, const dname_type* dname,
 	uint32_t old_serial, uint32_t new_serial, uint64_t filenumber)
@@ -1852,6 +1875,7 @@ task_process_add_zone(struct nsd* nsd, udb_base* udb, udb_ptr* last_task,
 		log_msg(LOG_ERR, "can not add zone %s %s", zname, pname);
 		return;
 	}
+	z->zonestatid = (unsigned)task->yesno;
 	/* if zone is empty, attempt to read the zonefile from disk (if any) */
 	if(!z->soa_rrset && z->opts->pattern->zonefile) {
 		namedb_read_zonefile(nsd, z, udb, last_task);
@@ -1950,6 +1974,18 @@ task_process_opt_change(struct nsd* nsd, struct task_list_d* task)
 #endif
 }
 
+#ifdef USE_ZONE_STATS
+static void
+task_process_zonestat_inc(struct nsd* nsd, udb_base* udb, udb_ptr *last_task,
+	struct task_list_d* task)
+{
+	DEBUG(DEBUG_IPC,1, (LOG_INFO, "zonestat_inc task %u", (unsigned)task->oldserial));
+	nsd->zonestatdesired = (unsigned)task->oldserial;
+	/* send echo to xfrd to increment on its end */
+	task_new_zonestat_inc(udb, last_task, nsd->zonestatdesired);
+}
+#endif
+
 static void
 task_process_apply_xfr(struct nsd* nsd, udb_base* udb, udb_ptr *last_task,
 	udb_ptr* task)
@@ -2026,6 +2062,11 @@ void task_process_in_reload(struct nsd* nsd, udb_base* udb, udb_ptr *last_task,
 	case task_opt_change:
 		task_process_opt_change(nsd, TASKLIST(task));
 		break;
+#ifdef USE_ZONE_STATS
+	case task_zonestat_inc:
+		task_process_zonestat_inc(nsd, udb, last_task, TASKLIST(task));
+		break;
+#endif
 	case task_apply_xfr:
 		task_process_apply_xfr(nsd, udb, last_task, task);
 		break;

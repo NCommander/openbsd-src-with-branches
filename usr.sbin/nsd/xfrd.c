@@ -76,8 +76,6 @@ static void xfrd_handle_reload(int fd, short event, void* arg);
 /* handle child timeout */
 static void xfrd_handle_child_timer(int fd, short event, void* arg);
 
-/* send expiry notifications to nsd */
-static void xfrd_send_expire_notification(xfrd_zone_t* zone);
 /* send ixfr request, returns fd of connection to read on */
 static int xfrd_send_ixfr_request_udp(xfrd_zone_t* zone);
 /* obtain udp socket slot */
@@ -142,6 +140,9 @@ xfrd_init(int socket, struct nsd* nsd, int shortsoa, int reload_active,
 	xfrd->udp_use_num = 0;
 	xfrd->got_time = 0;
 	xfrd->xfrfilenumber = 0;
+#ifdef USE_ZONE_STATS
+	xfrd->zonestat_safe = nsd->zonestatdesired;
+#endif
 	xfrd->activated_first = NULL;
 	xfrd->ipc_pass = buffer_create(xfrd->region, QIOBUFSZ);
 	xfrd->last_task = region_alloc(xfrd->region, sizeof(*xfrd->last_task));
@@ -1147,7 +1148,7 @@ xfrd_handle_incoming_soa(xfrd_zone_t* zone,
 	xfrd_send_notify(xfrd->notify_zones, zone->apex, &zone->soa_nsd);
 }
 
-static void
+void
 xfrd_send_expire_notification(xfrd_zone_t* zone)
 {
 	task_new_expire(xfrd->nsd->task[xfrd->nsd->mytask], xfrd->last_task,
@@ -2087,6 +2088,11 @@ xfrd_handle_notify_and_start_xfr(xfrd_zone_t* zone, xfrd_soa_t* soa)
 			!zone->tcp_waiting && !zone->udp_waiting) {
 			xfrd_set_refresh_now(zone);
 		}
+		/* zones with no content start expbackoff again; this is also
+		 * for nsd-control started transfer commands, and also when
+		 * the master apparently sends notifies (is back up) */
+		if(zone->soa_disk_acquired == 0)
+			zone->fresh_xfr_timeout = XFRD_TRANSFER_TIMEOUT_START;
 	}
 }
 
@@ -2293,9 +2299,25 @@ xfrd_process_stat_info_task(xfrd_state_t* xfrd, struct task_list_d* task)
 }
 #endif /* BIND8_STATS */
 
+#ifdef USE_ZONE_STATS
+/** process zonestat inc task */
+static void
+xfrd_process_zonestat_inc_task(xfrd_state_t* xfrd, struct task_list_d* task)
+{
+	xfrd->zonestat_safe = (unsigned)task->oldserial;
+	zonestat_remap(xfrd->nsd, 0, xfrd->zonestat_safe*sizeof(struct nsdst));
+	xfrd->nsd->zonestatsize[0] = xfrd->zonestat_safe;
+	zonestat_remap(xfrd->nsd, 1, xfrd->zonestat_safe*sizeof(struct nsdst));
+	xfrd->nsd->zonestatsize[1] = xfrd->zonestat_safe;
+}
+#endif /* USE_ZONE_STATS */
+
 static void
 xfrd_handle_taskresult(xfrd_state_t* xfrd, struct task_list_d* task)
 {
+#ifndef BIND8_STATS
+	(void)xfrd;
+#endif
 	switch(task->task_type) {
 	case task_soa_info:
 		xfrd_process_soa_info_task(task);
@@ -2305,6 +2327,11 @@ xfrd_handle_taskresult(xfrd_state_t* xfrd, struct task_list_d* task)
 		xfrd_process_stat_info_task(xfrd, task);
 		break;
 #endif /* BIND8_STATS */
+#ifdef USE_ZONE_STATS
+	case task_zonestat_inc:
+		xfrd_process_zonestat_inc_task(xfrd, task);
+		break;
+#endif
 	default:
 		log_msg(LOG_WARNING, "unhandled task result in xfrd from "
 			"reload type %d", (int)task->task_type);

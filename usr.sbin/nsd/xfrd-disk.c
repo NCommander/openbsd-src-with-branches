@@ -308,6 +308,10 @@ xfrd_read_state(struct xfrd_state* xfrd)
 		 * contents trumps the contents of this cache */
 		/* zone->soa_disk_acquired = soa_disk_acquired_read; */
 		zone->soa_notified_acquired = soa_notified_acquired_read;
+		if (zone->state == xfrd_zone_expired)
+		{
+			xfrd_send_expire_notification(zone);
+		}
 		xfrd_handle_incoming_soa(zone, &incoming_soa, incoming_acquired);
 	}
 
@@ -367,7 +371,7 @@ static void xfrd_write_dname(FILE* out, uint8_t* dname)
 		for(i=0; i<len; i++)
 		{
 			uint8_t ch = *d++;
-			if (isalnum(ch) || ch == '-' || ch == '_') {
+			if (isalnum((unsigned char)ch) || ch == '-' || ch == '_') {
 				fprintf(out, "%c", ch);
 			} else if (ch == '.' || ch == '\\') {
 				fprintf(out, "\\%c", ch);

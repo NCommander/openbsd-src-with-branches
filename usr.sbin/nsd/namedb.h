@@ -128,6 +128,7 @@ struct zone
 	char*        filename; /* set if read from file, which file */
 	char*        logstr; /* set for zone xfer, the log string */
 	time_t       mtime; /* time of last modification */
+	unsigned     zonestatid; /* array index for zone stats */
 	unsigned     is_secure : 1; /* zone uses DNSSEC */
 	unsigned     is_ok : 1; /* zone has not expired. */
 	unsigned     is_changed : 1; /* zone was changed by AXFR */
@@ -250,6 +251,7 @@ int domain_is_glue(domain_type* domain, zone_type* zone);
 rrset_type* domain_find_non_cname_rrset(domain_type* domain, zone_type* zone);
 
 domain_type* domain_wildcard_child(domain_type* domain);
+domain_type *domain_previous_existing_child(domain_type* domain);
 
 int zone_is_secure(zone_type* zone);
 

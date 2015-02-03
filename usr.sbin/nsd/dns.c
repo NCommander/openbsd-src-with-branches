@@ -289,9 +289,14 @@ static rrtype_descriptor_type rrtype_descriptors[(RRTYPE_DESCRIPTORS_LENGTH+1)] 
 	/* 58 - TALINK */
 	{ 58, NULL, T_UTYPE, 1, 1, { RDATA_WF_BINARY }, { RDATA_ZF_UNKNOWN } },
 	/* 59 - CDS */
-	{ 59, NULL, T_UTYPE, 1, 1, { RDATA_WF_BINARY }, { RDATA_ZF_UNKNOWN } },
-	/* 60 */
-	{ 60, NULL, T_UTYPE, 1, 1, { RDATA_WF_BINARY }, { RDATA_ZF_UNKNOWN } },
+	{ TYPE_CDS, "CDS", T_CDS, 4, 4,
+	  { RDATA_WF_SHORT, RDATA_WF_BYTE, RDATA_WF_BYTE, RDATA_WF_BINARY },
+	  { RDATA_ZF_SHORT, RDATA_ZF_ALGORITHM, RDATA_ZF_BYTE, RDATA_ZF_HEX } },
+	/* 60 - CDNSKEY */
+	{ TYPE_CDNSKEY, "CDNSKEY", T_CDNSKEY, 4, 4,
+	  { RDATA_WF_SHORT, RDATA_WF_BYTE, RDATA_WF_BYTE, RDATA_WF_BINARY },
+	  { RDATA_ZF_SHORT, RDATA_ZF_BYTE, RDATA_ZF_ALGORITHM,
+	    RDATA_ZF_BASE64 } },
 	/* 61 */
 	{ 61, NULL, T_UTYPE, 1, 1, { RDATA_WF_BINARY }, { RDATA_ZF_UNKNOWN } },
 	/* 62 */
@@ -886,7 +891,7 @@ rrtype_from_string(const char *name)
 	if (strncasecmp(name, "TYPE", 4) != 0)
 		return 0;
 
-	if (!isdigit((int)name[4]))
+	if (!isdigit((unsigned char)name[4]))
 		return 0;
 
 	/* The rest from the string must be a number.  */
@@ -931,7 +936,7 @@ rrclass_from_string(const char *name)
 	if (strncasecmp(name, "CLASS", 5) != 0)
 		return 0;
 
-	if (!isdigit((int)name[5]))
+	if (!isdigit((unsigned char)name[5]))
 		return 0;
 
 	/* The rest from the string must be a number.  */

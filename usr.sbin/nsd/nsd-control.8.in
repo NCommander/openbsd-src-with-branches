@@ -1,4 +1,4 @@
-.TH "nsd\-control" "8" "Sep  4, 2014" "NLnet Labs" "nsd 4.1.0"
+.TH "nsd\-control" "8" "Feb  3, 2015" "NLnet Labs" "nsd 4.1.1"
 .\" Copyright (c) 2011, NLnet Labs. All rights reserved.
 .\" See LICENSE for the license.
 .SH "NAME"
@@ -108,7 +108,9 @@ Attempt to update slave zones that are hosted on this server by contacting
 the masters.  The masters are configured via 'request\-xfr:' lists.
 If a zone is given, that zone is updated.  Usually NSD receives a NOTIFY
 from the masters (configured via 'allow\-notify:' acl list) that a new zone
-serial has to be transferred.
+serial has to be transferred.  For zones with no content, NSD may have backed
+off from asking often because the masters did not respond, but this command
+will reset the backoff to its initial timeout, for frequent retries.
 .TP
 .B force_transfer [<zone>]
 Force update slave zones that are hosted on this server.  Even if the
