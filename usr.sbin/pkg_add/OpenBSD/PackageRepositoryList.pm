@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: PackageRepositoryList.pm,v 1.28 2010/12/24 09:04:14 espie Exp $
 #
 # Copyright (c) 2003-2006 Marc Espie <espie@openbsd.org>
 #
@@ -31,6 +31,7 @@ sub filter_new
 	my $self = shift;
 	my @l = ();
 	for my $r (@_) {
+		next if !defined $r;
 		next if $self->{k}{$r};
 		$self->{k}{$r} = 1;
 		push @l, $r;
