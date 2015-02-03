@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-add.c,v 1.117 2015/01/16 06:40:12 deraadt Exp $ */
+/* $OpenBSD: ssh-add.c,v 1.118 2015/01/28 22:36:00 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -224,8 +224,8 @@ add_file(int agent_fd, const char *filename, int key_only)
 	if (private == NULL) {
 		/* clear passphrase since it did not work */
 		clear_pass();
-		snprintf(msg, sizeof msg, "Enter passphrase for %.200s: ",
-		    comment);
+		snprintf(msg, sizeof msg, "Enter passphrase for %.200s%s: ",
+		    comment, confirm ? " (will confirm each use)" : "");
 		for (;;) {
 			pass = read_passphrase(msg, RP_ALLOW_STDIN);
 			if (strcmp(pass, "") == 0)
@@ -245,7 +245,8 @@ add_file(int agent_fd, const char *filename, int key_only)
 			}
 			clear_pass();
 			snprintf(msg, sizeof msg,
-			    "Bad passphrase, try again for %.200s: ", comment);
+			    "Bad passphrase, try again for %.200s%s: ", comment,
+			    confirm ? " (will confirm each use)" : "");
 		}
 	}
 	sshbuf_free(keyblob);
