@@ -1,4 +1,4 @@
-/*	$OpenBSD: route6d.c,v 1.63 2014/10/08 10:57:17 deraadt Exp $	*/
+/*	$OpenBSD: route6d.c,v 1.64 2015/01/16 06:40:20 deraadt Exp $	*/
 /*	$KAME: route6d.c,v 1.111 2006/10/25 06:38:13 jinmei Exp $	*/
 
 /*
@@ -2449,9 +2449,9 @@ krtread(int again)
 	mib[5] = 0;		/* No flags */
 	do {
 		retry++;
+		free(buf);
+		buf = NULL;
 		errmsg = NULL;
-		if (buf)
-			free(buf);
 		if (sysctl(mib, 6, NULL, &msize, NULL, 0) < 0) {
 			errmsg = "sysctl estimate";
 			continue;
