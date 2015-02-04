@@ -1,5 +1,5 @@
 %{
-/* $OpenBSD: keynote.l,v 1.19 2011/04/06 11:36:23 miod Exp $ */
+/* $OpenBSD: keynote.l,v 1.20 2013/11/29 19:00:51 deraadt Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -269,9 +269,9 @@ keynote_lex_add(void *s, int type)
     /* Not enough space, increase the size of the array */
     keynote_max_lex_list *= 2;
 
-    p = (struct lex_list *) realloc(keynote_lex_list,
-				    keynote_max_lex_list *
-				    sizeof(struct lex_list));
+    p = (struct lex_list *) reallocarray(keynote_lex_list,
+					 keynote_max_lex_list,
+					 sizeof(struct lex_list));
     if (p == (struct lex_list *) NULL)
     {
 	switch (type)
@@ -285,9 +285,6 @@ keynote_lex_add(void *s, int type)
 	keynote_errno = ERROR_MEMORY;
         return -1;
     }
-
-    if (p != keynote_lex_list)
- 	free(keynote_lex_list);
 
     keynote_lex_list = p;
     keynote_lex_list[i].lex_s = s;
