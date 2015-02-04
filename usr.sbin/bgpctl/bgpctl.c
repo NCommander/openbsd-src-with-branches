@@ -1653,8 +1653,8 @@ network_bulk(struct parse_result *res)
 	FILE *f;
 
 	if ((f = fdopen(STDIN_FILENO, "r")) != NULL) {
-		lbuf = NULL;
 		while ((buf = fgetln(f, &slen))) {
+			lbuf = NULL;
 			if (buf[slen - 1] == '\n')
 				buf[slen - 1] = '\0';
 			else {
