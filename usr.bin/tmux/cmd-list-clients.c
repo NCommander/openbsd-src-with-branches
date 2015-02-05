@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-list-clients.c,v 1.18 2014/10/20 22:29:25 nicm Exp $ */
+/* $OpenBSD: cmd-list-clients.c,v 1.19 2014/10/20 23:35:28 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -74,8 +74,7 @@ cmd_list_clients_exec(struct cmd *self, struct cmd_q *cmdq)
 
 		ft = format_create();
 		format_add(ft, "line", "%u", i);
-		format_session(ft, c->session);
-		format_client(ft, c);
+		format_defaults(ft, c, NULL, NULL, NULL);
 
 		line = format_expand(ft, template);
 		cmdq_print(cmdq, "%s", line);
