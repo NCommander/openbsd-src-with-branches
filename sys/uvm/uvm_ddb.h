@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_ddb.h,v 1.12 2002/03/14 03:16:13 millert Exp $	*/
+/*	$OpenBSD: uvm_ddb.h,v 1.13 2014/07/11 16:35:40 jsg Exp $	*/
 /*	$NetBSD: uvm_ddb.h,v 1.5 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -24,8 +24,6 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * from: Id: uvm_extern.h,v 1.1.2.21 1998/02/07 01:16:53 chs Exp
  */
 
 #ifndef _UVM_UVM_DDB_H_
