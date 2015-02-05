@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: rdomain.4,v 1.1 2015/02/05 08:58:10 phessler Exp $
 .\"
 .\" Copyright (c) 2015 Peter Hessler <phessler@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: February 5 2015 $
 .Dt RDOMAIN 4
 .Os
 .Sh NAME
@@ -27,8 +27,8 @@ allowed for non-conflicting IP address assignments.
 .Em rtable
 and
 .Em rdomain
-allows us to have seperate lookup tables for routes,
-and assign IP addresses independantly from other interfaces.
+allows us to have separate lookup tables for routes,
+and assign IP addresses independently from other interfaces.
 .Pp
 .Sh rtable
 .Em rtable
@@ -40,8 +40,8 @@ within the same routing domain.
 Commonly used to set Policy Based Routing.
 .Sh rdomain
 .Em rdomain
-are completely seperate seperate routing domains and tables in the kernel.
-An IP address (e.g. 10.0.0.1/16) can be assigned in multple
+are completely separate routing domains and tables in the kernel.
+An IP address (e.g. 10.0.0.1/16) can be assigned in multiple
 .Em rdomains ,
 but
 cannot be assigned more than once per
