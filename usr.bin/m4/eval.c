@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.72 2014/04/28 12:34:11 espie Exp $	*/
+/*	$OpenBSD: eval.c,v 1.73 2014/07/11 21:04:17 espie Exp $	*/
 /*	$NetBSD: eval.c,v 1.7 1996/11/10 21:21:29 pk Exp $	*/
 
 /*
@@ -45,6 +45,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>

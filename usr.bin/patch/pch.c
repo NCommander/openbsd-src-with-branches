@@ -1,4 +1,4 @@
-/*	$OpenBSD: pch.c,v 1.49 2014/12/13 10:31:07 tobias Exp $	*/
+/*	$OpenBSD: pch.c,v 1.50 2014/12/14 09:12:59 tobias Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include <libgen.h>
 #include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

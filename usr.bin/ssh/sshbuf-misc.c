@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshbuf-misc.c,v 1.1 2014/04/30 05:29:56 djm Exp $	*/
+/*	$OpenBSD: sshbuf-misc.c,v 1.2 2014/06/24 01:13:21 djm Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller
  *
@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <limits.h>
 #include <string.h>

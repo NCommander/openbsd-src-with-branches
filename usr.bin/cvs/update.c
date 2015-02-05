@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.168 2013/12/13 15:19:41 zhuk Exp $	*/
+/*	$OpenBSD: update.c,v 1.169 2015/01/16 06:40:07 deraadt Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -20,6 +20,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: open_wmemstream.c,v 1.4 2014/10/08 05:28:19 deraadt Exp $	*/
+/*	$OpenBSD: open_wmemstream.c,v 1.5 2015/01/16 16:48:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Martin Pieuchot <mpi@openbsd.org>
@@ -18,8 +18,8 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <limits.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>

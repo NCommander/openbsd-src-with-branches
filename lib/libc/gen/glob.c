@@ -1,4 +1,4 @@
-/*	$OpenBSD: glob.c,v 1.40 2013/09/30 12:02:34 millert Exp $ */
+/*	$OpenBSD: glob.c,v 1.41 2014/10/08 05:35:27 deraadt Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -64,6 +64,7 @@
 #include <glob.h>
 #include <limits.h>
 #include <pwd.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
