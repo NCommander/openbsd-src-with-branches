@@ -1235,6 +1235,14 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 		if ((ifp = ifunit(ifar->ifar_name)) == NULL)
 			return (ENXIO);
 		switch (ifar->ifar_af) {
+		case AF_INET:
+			/* attach is a noop for AF_INET */
+			if (cmd == SIOCIFAFDETACH) {
+				s = splsoftnet();
+				in_ifdetach(ifp);
+				splx(s);
+			}
+			return (0);
 #ifdef INET6
 		case AF_INET6:
 			s = splsoftnet();
