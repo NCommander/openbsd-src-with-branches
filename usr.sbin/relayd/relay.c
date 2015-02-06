@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.189 2015/01/22 15:21:28 reyk Exp $	*/
+/*	$OpenBSD: relay.c,v 1.190 2015/01/22 17:42:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -2059,7 +2059,7 @@ relay_tls_ctx_create(struct relay *rlay)
 		return (ctx);
 
 	log_debug("%s: loading certificate", __func__);
-	if (!SSL_CTX_use_certificate_chain(ctx,
+	if (!SSL_CTX_use_certificate_chain_mem(ctx,
 	    rlay->rl_tls_cert, rlay->rl_conf.tls_cert_len))
 		goto err;
 
