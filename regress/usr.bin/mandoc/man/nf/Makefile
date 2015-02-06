@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.5 2014/03/08 16:20:00 schwarze Exp $
+# $OpenBSD: Makefile,v 1.6 2014/07/02 11:42:56 schwarze Exp $
 
 REGRESS_TARGETS = indent args vert dupe userdef
-LINT_TARGETS	= dupe
+LINT_TARGETS	= args dupe
 
 .include <bsd.regress.mk>
