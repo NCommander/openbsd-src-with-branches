@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.140 2015/01/19 20:16:15 markus Exp $ */
+/* $OpenBSD: monitor.c,v 1.141 2015/01/20 23:14:00 deraadt Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -42,10 +42,10 @@
 #include <pwd.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
 #include "atomicio.h"
 #include "xmalloc.h"
@@ -394,7 +394,7 @@ mm_zalloc(struct mm_master *mm, u_int ncount, u_int size)
 	size_t len = (size_t) size * ncount;
 	void *address;
 
-	if (len == 0 || ncount > SIZE_T_MAX / size)
+	if (len == 0 || ncount > SIZE_MAX / size)
 		fatal("%s: mm_zalloc(%u, %u)", __func__, ncount, size);
 
 	address = mm_malloc(mm, len);

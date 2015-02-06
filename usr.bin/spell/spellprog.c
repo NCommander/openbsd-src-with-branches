@@ -1,4 +1,4 @@
-/*	$OpenBSD: spellprog.c,v 1.8 2014/05/20 01:25:23 guenther Exp $	*/
+/*	$OpenBSD: spellprog.c,v 1.9 2015/01/16 06:40:12 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -73,6 +73,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <locale.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -283,7 +284,7 @@ main(int argc, char **argv)
 		wlists[i].fd = open(argv[i], O_RDONLY, 0);
 		if (wlists[i].fd == -1 || fstat(wlists[i].fd, &sb) != 0)
 			err(1, "%s", argv[i]);
-		if (sb.st_size > SIZE_T_MAX)
+		if (sb.st_size > SIZE_MAX)
 			errc(1, EFBIG, "%s", argv[i]);
 		wlists[i].front = mmap(NULL, (size_t)sb.st_size, PROT_READ,
 		    MAP_PRIVATE, wlists[i].fd, (off_t)0);

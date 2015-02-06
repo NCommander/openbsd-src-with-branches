@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_opt.c,v 1.10 2014/05/20 13:22:06 syl Exp $ */
+/* $OpenBSD: fuse_opt.c,v 1.11 2014/10/08 04:50:10 deraadt Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  * Copyright (c) 2013 Stefan Sperling <stsp@openbsd.org>
@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -174,7 +175,7 @@ fuse_opt_add_opt_escaped(char **opts, const char *opt)
 
 	while (*s) {
 		/* malloc(size + escaped) overflow check */
-		if (size >= (SIZE_T_MAX / 2))
+		if (size >= (SIZE_MAX / 2))
 			return (-1);
 
 		if (*s == ',' || *s == '\\')

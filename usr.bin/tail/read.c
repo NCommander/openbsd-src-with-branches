@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.13 2008/06/02 06:01:15 otto Exp $	*/
+/*	$OpenBSD: read.c,v 1.14 2009/10/27 23:59:44 deraadt Exp $	*/
 /*	$NetBSD: read.c,v 1.4 1994/11/23 07:42:07 jtc Exp $	*/
 
 /*-
@@ -35,10 +35,10 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/limits.h>
 
 #include <err.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -67,7 +67,7 @@ bytes(FILE *fp, off_t off)
 	int wrap;
 	char *sp;
 
-	if (off > SIZE_T_MAX)
+	if (off > SIZE_MAX)
 		errx(1, "offset too large");
 
 	if ((sp = p = malloc(off)) == NULL)
@@ -148,7 +148,7 @@ lines(FILE *fp, off_t off)
 	size_t cnt, recno, blen, newsize;
 	char *sp = NULL, *newp = NULL;
 
-	if (off > SIZE_T_MAX)
+	if (off > SIZE_MAX)
 		errx(1, "offset too large");
 
 	if ((lines = calloc(off, sizeof(*lines))) == NULL)
