@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpithinkpad.c,v 1.41 2014/10/08 14:30:32 dcoppa Exp $	*/
+/*	$OpenBSD: acpithinkpad.c,v 1.42 2014/12/13 05:29:50 deraadt Exp $	*/
 /*
  * Copyright (c) 2008 joshua stein <jcs@openbsd.org>
  *
@@ -347,8 +347,9 @@ thinkpad_hotkey(struct aml_node *node, int notify_type, void *arg)
 			break;
 		case THINKPAD_BUTTON_HIBERNATE:
 #if defined(HIBERNATE) && !defined(SMALL_KERNEL)
-			acpi_addtask(sc->sc_acpi, acpi_sleep_task, 
-			    sc->sc_acpi, ACPI_STATE_S4);
+			if (acpi_record_event(sc->sc_acpi, APM_USER_HIBERNATE_REQ))
+				acpi_addtask(sc->sc_acpi, acpi_sleep_task, 
+				    sc->sc_acpi, ACPI_STATE_S4);
 #endif
 			handled = 1;
 			break;
