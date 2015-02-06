@@ -1,4 +1,4 @@
-/*	$OpenBSD: fortune.c,v 1.40 2015/02/06 10:46:52 tedu Exp $	*/
+/*	$OpenBSD: fortune.c,v 1.41 2015/02/06 10:49:32 tedu Exp $	*/
 /*	$NetBSD: fortune.c,v 1.8 1995/03/23 08:28:40 cgd Exp $	*/
 
 /*-
@@ -200,7 +200,7 @@ void
 rot13(char *p, size_t len)
 {
 	while (len--) {
-		char ch = *p;
+		unsigned char ch = *p;
 		if (isupper(ch))
 			*p = 'A' + (ch - 'A' + 13) % 26;
 		else if (islower(ch))
