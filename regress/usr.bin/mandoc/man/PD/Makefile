@@ -1,5 +1,6 @@
-# $OpenBSD: Makefile,v 1.2 2011/11/17 16:28:45 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2012/11/18 00:23:56 schwarze Exp $
 
-REGRESS_TARGETS = spacing args
+REGRESS_TARGETS	 = spacing args
+LINT_TARGETS	 = args
 
 .include <bsd.regress.mk>
