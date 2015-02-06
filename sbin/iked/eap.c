@@ -1,4 +1,4 @@
-/*	$OpenBSD: eap.c,v 1.11 2015/01/16 06:39:58 deraadt Exp $	*/
+/*	$OpenBSD: eap.c,v 1.12 2015/01/19 14:42:42 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <getopt.h>
 #include <signal.h>
 #include <errno.h>
 #include <err.h>

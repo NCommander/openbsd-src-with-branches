@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.32 2014/12/05 07:24:45 mikeb Exp $	*/
+/*	$OpenBSD: ca.c,v 1.33 2015/01/16 06:39:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
-#include <getopt.h>
 #include <signal.h>
 #include <errno.h>
 #include <err.h>
