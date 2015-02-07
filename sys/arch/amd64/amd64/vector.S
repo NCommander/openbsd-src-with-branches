@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.34 2013/11/02 14:23:38 kettenis Exp $	*/
+/*	$OpenBSD: vector.S,v 1.35 2014/11/23 00:25:05 guenther Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -307,11 +307,7 @@ calltrap:
  */
 
 /* XXX See comment in locore.s */
-#ifdef __ELF__
 #define	XINTR(name,num)		Xintr_##name##num
-#else
-#define	XINTR(name,num)		_Xintr_##name##num
-#endif
 
 #if NLAPIC > 0
 #ifdef MULTIPROCESSOR
