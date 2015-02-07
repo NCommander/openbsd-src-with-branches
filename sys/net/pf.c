@@ -4192,7 +4192,7 @@ pf_synproxy(struct pf_pdesc *pd, struct pf_state **state, u_short *reason)
 			    0, pd->rdomain, NULL, NULL);
 			REASON_SET(reason, PFRES_SYNPROXY);
 			return (PF_SYNPROXY_DROP);
-		} else if (!(th->th_flags & TH_ACK) ||
+		} else if ((th->th_flags & (TH_ACK|TH_RST|TH_FIN)) != TH_ACK ||
 		    (ntohl(th->th_ack) != (*state)->src.seqhi + 1) ||
 		    (ntohl(th->th_seq) != (*state)->src.seqlo + 1)) {
 			REASON_SET(reason, PFRES_SYNPROXY);
