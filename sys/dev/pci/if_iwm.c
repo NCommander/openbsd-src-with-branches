@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwm.c,v 1.2 2015/02/06 23:52:23 stsp Exp $	*/
+/*	$OpenBSD: if_iwm.c,v 1.3 2015/02/07 07:10:44 phessler Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -5439,7 +5439,7 @@ iwm_newstate_cb(void *wk)
 		break; }
 
 	default:
-		panic("unsupported state %d\n", nstate);
+		break;
 	}
 
 	sc->sc_newstate(ic, nstate, arg);
