@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.156 2015/01/20 19:43:21 kettenis Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.157 2015/01/26 22:51:37 kettenis Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -371,6 +371,12 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 		dp += len;
 		cpp++;
 		argc++;
+	}
+
+	/* must have at least one argument */
+	if (argc == 0) {
+		error = EINVAL;
+		goto bad;
 	}
 
 	envc = 0;
