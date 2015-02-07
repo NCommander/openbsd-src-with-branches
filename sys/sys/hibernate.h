@@ -1,4 +1,4 @@
-/*	$OpenBSD: hibernate.h,v 1.37 2014/09/26 09:25:38 kettenis Exp $	*/
+/*	$OpenBSD: hibernate.h,v 1.38 2014/10/09 00:42:05 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -144,6 +144,7 @@ void	hibernate_unpack_image(union hibernate_info *);
 void	hibernate_populate_resume_pt(union hibernate_info *, paddr_t, paddr_t);
 int	hibernate_alloc(void);
 void	hibernate_free(void);
+void	hib_getentropy(char **, size_t *);
 
 void	hibernate_sort_ranges(union hibernate_info *);
 void	hibernate_suspend_bufcache(void);

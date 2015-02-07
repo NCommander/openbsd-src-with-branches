@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmt.c,v 1.26 2014/12/19 15:14:48 reyk Exp $ */
+/*	$OpenBSD: vmt.c,v 1.27 2014/12/20 11:27:18 reyk Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -387,7 +387,7 @@ vmt_resume(void)
 	add_true_randomness(frame.esi.word);
 	add_true_randomness(frame.edx.word);
 	add_true_randomness(frame.ebx.word);
-	resume_randomness();
+	resume_randomness(NULL, 0);
 }
 
 int
