@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.42 2015/01/16 06:39:57 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.43 2015/01/20 18:22:21 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.22 1996/10/11 20:15:48 thorpej Exp $	*/
 
 /*
@@ -64,7 +64,7 @@ main(int argc, char *argv[])
 	while ((ch = getopt(argc, argv, "dfpnNyYb:c:m:")) != -1) {
 		switch (ch) {
 		case 'p':
-			preen++;
+			preen = 1;
 			break;
 
 		case 'b':
@@ -82,7 +82,7 @@ main(int argc, char *argv[])
 			break;
 
 		case 'd':
-			debug++;
+			debug = 1;
 			break;
 
 		case 'f':
@@ -98,13 +98,13 @@ main(int argc, char *argv[])
 
 		case 'n':
 		case 'N':
-			nflag++;
+			nflag = 1;
 			yflag = 0;
 			break;
 
 		case 'y':
 		case 'Y':
-			yflag++;
+			yflag = 1;
 			nflag = 0;
 			break;
 

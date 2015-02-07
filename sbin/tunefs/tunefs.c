@@ -1,4 +1,4 @@
-/*	$OpenBSD: tunefs.c,v 1.35 2015/01/16 06:40:01 deraadt Exp $	*/
+/*	$OpenBSD: tunefs.c,v 1.36 2015/01/20 18:22:21 deraadt Exp $	*/
 /*	$NetBSD: tunefs.c,v 1.33 2005/01/19 20:46:16 xtraeme Exp $	*/
 
 /*
@@ -94,15 +94,15 @@ main(int argc, char *argv[])
 		switch (ch) {
 
 		case 'A':
-			Aflag++;
+			Aflag = 1;
 			break;
 
 		case 'F':
-			Fflag++;
+			Fflag = 1;
 			break;
 
 		case 'N':
-			Nflag++;
+			Nflag = 1;
 			break;
 
 		case 'e':
