@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.c,v 1.5 2008/04/01 21:05:50 miod Exp $	*/
+/*	$OpenBSD: extern.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
 /*	$NetBSD: extern.c,v 1.3 1995/03/23 08:32:41 cgd Exp $	*/
 
 /*
@@ -68,7 +68,7 @@ FILE	*Dict = NULL;
 
 off_t	Dict_size;
 
-int	ksyms;
-int	ksymfd = -1;
-off_t	ksymoffs, ksymsize;
+int	syms;
+int	symfd = -1;
+off_t	symoffs, symsize;
 
