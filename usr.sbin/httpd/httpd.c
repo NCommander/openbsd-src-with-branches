@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.c,v 1.30 2015/01/19 19:37:50 reyk Exp $	*/
+/*	$OpenBSD: httpd.c,v 1.31 2015/01/21 22:21:05 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -584,7 +584,7 @@ url_decode(char *url)
 	}
 	*q = '\0';
 
-	return(url);
+	return (url);
 }
 
 const char *
