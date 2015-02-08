@@ -1,4 +1,4 @@
-/*	$OpenBSD: exp.c,v 1.10 2013/03/28 08:39:54 nicm Exp $	*/
+/*	$OpenBSD: exp.c,v 1.11 2015/02/08 05:51:37 tedu Exp $	*/
 /*	$NetBSD: exp.c,v 1.6 1995/03/21 09:02:51 cgd Exp $	*/
 
 /*-
@@ -585,8 +585,7 @@ evalav(Char **v)
     hp->prev = hp->next = hp;
     hp->word = STRNULL;
     while (*v) {
-	struct wordent *new =
-	(struct wordent *) xcalloc(1, sizeof *wdp);
+	struct wordent *new = xcalloc(1, sizeof *wdp);
 
 	new->prev = wdp;
 	new->next = hp;

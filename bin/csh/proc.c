@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.24 2014/10/13 20:55:16 chl Exp $	*/
+/*	$OpenBSD: proc.c,v 1.25 2015/02/08 05:51:37 tedu Exp $	*/
 /*	$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $	*/
 
 /*-
@@ -444,7 +444,7 @@ palloc(int pid, struct command *t)
     struct process *pp;
     int     i;
 
-    pp = (struct process *) xcalloc(1, (size_t) sizeof(struct process));
+    pp = xcalloc(1, (size_t) sizeof(struct process));
     pp->p_pid = pid;
     pp->p_flags = t->t_dflg & F_AMPERSAND ? PRUNNING : PRUNNING | PFOREGND;
     if (t->t_dflg & F_TIME)
