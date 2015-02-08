@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.285 2014/12/05 15:50:04 mpi Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.286 2014/12/19 17:14:40 tedu Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -853,8 +853,10 @@ findpcb:
 				 */
 				if (so->so_qlen > so->so_qlimit ||
 				    syn_cache_add(&src.sa, &dst.sa, th, iphlen,
-				    so, m, optp, optlen, &opti, reuse) == -1)
+				    so, m, optp, optlen, &opti, reuse) == -1) {
+					tcpstat.tcps_dropsyn++;
 					goto drop;
+				}
 				return;
 			}
 		}

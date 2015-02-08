@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_var.h,v 1.105 2014/01/23 23:51:29 henning Exp $	*/
+/*	$OpenBSD: tcp_var.h,v 1.106 2015/01/21 22:23:52 deraadt Exp $	*/
 /*	$NetBSD: tcp_var.h,v 1.17 1996/02/13 23:44:24 christos Exp $	*/
 
 /*
@@ -408,6 +408,7 @@ struct	tcpstat {
 	u_int32_t tcps_pcbhashmiss;	/* input packets missing pcb hash */
 	u_int32_t tcps_noport;		/* no socket on port */
 	u_int32_t tcps_badsyn;		/* SYN packet with src==dst rcv'ed */
+	u_int32_t tcps_dropsyn;		/* SYN packet dropped */
 
 	u_int32_t tcps_rcvbadsig;	/* rcvd bad/missing TCP signatures */
 	u_int64_t tcps_rcvgoodsig;	/* rcvd good TCP signatures */
