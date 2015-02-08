@@ -144,7 +144,7 @@ int	process_sstep(struct proc *, int);
  * Handle an AST for the current process.
  */
 void
-ast()
+ast(void)
 {
 	struct cpu_info *ci = curcpu();
 	struct proc *p = ci->ci_curproc;
@@ -847,8 +847,7 @@ fault_common_no_miss:
 }
 
 void
-child_return(arg)
-	void *arg;
+child_return(void *arg)
 {
 	struct proc *p = arg;
 	struct trap_frame *trapframe;
@@ -1166,7 +1165,6 @@ void stacktrace_subr(struct trap_frame *, int, int (*)(const char*, ...));
  */
 void
 stacktrace(struct trap_frame *regs)
-	struct trap_frame *regs;
 {
 	stacktrace_subr(regs, 6, printf);
 }
