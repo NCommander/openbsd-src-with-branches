@@ -1,4 +1,4 @@
-/*	$OpenBSD: spellprog.c,v 1.9 2015/01/16 06:40:12 deraadt Exp $	*/
+/*	$OpenBSD: spellprog.c,v 1.10 2015/02/06 23:21:59 millert Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -261,11 +261,11 @@ main(int argc, char **argv)
 			break;
 		case 'v':
 			/* Also write derivations to "found" file. */
-			vflag++;
+			vflag = 1;
 			break;
 		case 'x':
 			/* Print plausible stems to stdout. */
-			xflag++;
+			xflag = 1;
 			break;
 		default:
 			usage();

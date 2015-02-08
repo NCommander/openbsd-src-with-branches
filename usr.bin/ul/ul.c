@@ -1,4 +1,4 @@
-/*	$OpenBSD: ul.c,v 1.16 2014/11/18 20:54:28 krw Exp $	*/
+/*	$OpenBSD: ul.c,v 1.17 2015/02/06 09:19:16 tedu Exp $	*/
 /*	$NetBSD: ul.c,v 1.3 1994/12/07 00:28:24 jtc Exp $	*/
 
 /*
@@ -105,7 +105,7 @@ main(int argc, char *argv[])
 		switch (c) {
 		case 't':
 		case 'T': /* for nroff compatibility */
-				termtype = optarg;
+			termtype = optarg;
 			break;
 		case 'i':
 			iflag = 1;
