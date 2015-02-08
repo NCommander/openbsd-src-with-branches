@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.12 2014/10/16 19:43:31 deraadt Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.13 2014/10/17 06:17:37 deraadt Exp $	*/
 /*	$NetBSD: alloc.c,v 1.6 1995/03/21 09:02:23 cgd Exp $	*/
 
 /*-
@@ -78,6 +78,5 @@ Calloc(size_t s, size_t n)
 void
 Free(ptr_t p)
 {
-    if (p)
 	free(p);
 }
