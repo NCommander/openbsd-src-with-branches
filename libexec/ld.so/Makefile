@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.53 2014/12/19 14:19:41 deraadt Exp $
+#	$OpenBSD$
 
 SUBDIR=ldconfig ldd
 MAN=	ld.so.1
@@ -47,7 +47,9 @@ $(test_prog):
 
 $(PROG): $(test_prog)
 	$(LD) -x -e _dl_start $(ELF_LDFLAGS) -o $(candidate) $(OBJS) $(LDADD)
+.ifndef CROSSDIR
 	ulimit -c 0; [ "`${.OBJDIR}/$(test_prog) ok`" = ok ]
+.endif
 	cp $(candidate) $@
 .endif
 
