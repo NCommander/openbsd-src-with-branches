@@ -1388,7 +1388,6 @@ Case2:
 			 */
 			atomic_clearbits_int(&pg->pg_flags, PG_CLEAN);
 			uao_dropswap(uobj, pg->offset >> PAGE_SHIFT);
-			atomic_clearbits_int(&pg->pg_flags, PQ_AOBJ);
 		}
 	} else {
 		/* activate it */
