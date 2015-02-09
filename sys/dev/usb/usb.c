@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb.c,v 1.103 2014/12/18 10:44:17 mpi Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: usb.c,v 1.77 2003/01/01 00:10:26 thorpej Exp $	*/
 
 /*
@@ -202,8 +202,6 @@ usb_attach(struct device *parent, struct device *self, void *aux)
 		sc->sc_bus->dying = 1;
 		return;
 	}
-
-
 
 	if (!usb_attach_roothub(sc)) {
 		struct usbd_device *dev = sc->sc_bus->root_hub;
