@@ -1,4 +1,4 @@
-/*	$OpenBSD: deroff.c,v 1.8 2009/10/27 23:59:37 deraadt Exp $	*/
+/*	$OpenBSD: deroff.c,v 1.9 2014/12/03 16:44:55 millert Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -300,11 +300,11 @@ main(int ac, char **av)
 				disp = YES;
 				break;
 			default:
-				errflg++;
+				errflg = 1;
 				break;
 			}
-			if (errflg == 0 && optarg[1] != '\0')
-				errflg++;
+			if (optarg[1] != '\0')
+				errflg = 1;
 			break;
 		case 'p':
 			parag = YES;
@@ -314,7 +314,7 @@ main(int ac, char **av)
 			kflag = YES;
 			break;
 		default:
-			errflg++;
+			errflg = 1;
 		}
 	}
 	argc = ac - optind;
