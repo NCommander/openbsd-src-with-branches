@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.899 2015/01/24 00:29:06 deraadt Exp $ */
+/*	$OpenBSD: pf.c,v 1.901 2015/02/07 09:15:25 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -3836,8 +3836,9 @@ pf_tcp_track_full(struct pf_pdesc *pd, struct pf_state_peer *src,
 					dws = dst->wscale & PF_WSCALE_MASK;
 				} else {
 					/* fixup other window */
-					dst->max_win <<= dst->wscale &
-					    PF_WSCALE_MASK;
+					dst->max_win = MIN(TCP_MAXWIN,
+					    (u_int32_t)dst->max_win <<
+					    (dst->wscale & PF_WSCALE_MASK));
 					/* in case of a retrans SYN|ACK */
 					dst->wscale = 0;
 				}
