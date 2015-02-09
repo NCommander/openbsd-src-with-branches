@@ -1,4 +1,4 @@
-/*	$OpenBSD: zic.c,v 1.36 2015/02/09 08:25:11 tedu Exp $	*/
+/*	$OpenBSD: zic.c,v 1.37 2015/02/09 11:29:19 tedu Exp $	*/
 /*
 ** This file is in the public domain, so clarified as of
 ** 2006-07-17 by Arthur David Olson.
