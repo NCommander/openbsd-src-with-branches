@@ -1,10 +1,6 @@
-/*	$OpenBSD: user.c,v 1.12 2015/01/23 18:52:31 tedu Exp $	*/
+/*	$OpenBSD: user.c,v 1.13 2015/01/23 19:07:27 tedu Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
- * All rights reserved
- */
-
-/*
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *

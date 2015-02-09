@@ -1,10 +1,6 @@
-/*	$OpenBSD: cron.h,v 1.8 2003/02/17 18:40:11 millert Exp $	*/
+/*	$OpenBSD: cron.h,v 1.9 2004/06/17 22:11:55 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
- * All rights reserved
- */
-
-/*
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *

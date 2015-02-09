@@ -1,10 +1,6 @@
-/*	$OpenBSD: cron.c,v 1.50 2015/01/23 01:03:03 tedu Exp $	*/
+/*	$OpenBSD: cron.c,v 1.51 2015/01/23 19:07:27 tedu Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
- * All rights reserved
- */
-
-/*
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *

@@ -1,10 +1,6 @@
-/*	$OpenBSD: config.h,v 1.18 2015/01/14 17:27:51 millert Exp $	*/
+/*	$OpenBSD: config.h,v 1.19 2015/01/23 01:01:06 tedu Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
- * All rights reserved
- */
-
-/*
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
  * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *
