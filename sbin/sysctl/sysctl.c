@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.207 2014/11/19 18:04:54 tedu Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.208 2015/01/16 06:40:01 deraadt Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -2129,6 +2129,20 @@ sysctl_inet6(char *string, char **bufpp, int mib[], int flags, int *typep)
 		return (-1);
 	mib[3] = indx;
 	*typep = lp->list[indx].ctl_type;
+	if (*typep == CTLTYPE_NODE) {
+		int tindx;
+
+		if (*bufpp == NULL) {
+			listall(string, &ifqlist);
+			return(-1);
+		}
+		lp = &ifqlist;
+		if ((tindx = findname(string, "fifth", bufpp, lp)) == -1)
+			return (-1);
+		mib[4] = tindx;
+		*typep = lp->list[tindx].ctl_type;
+		return(5);
+	}
 	return (4);
 }
 #endif
