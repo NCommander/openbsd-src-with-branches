@@ -1,6 +1,5 @@
-/*	$OpenBSD: strptime.c,v 1.17 2014/10/02 23:50:11 doug Exp $ */
+/*	$OpenBSD: strptime.c,v 1.18 2014/10/11 02:21:27 doug Exp $ */
 /*	$NetBSD: strptime.c,v 1.12 1998/01/20 21:39:40 mycroft Exp $	*/
-
 /*-
  * Copyright (c) 1997, 1998, 2005, 2008 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -34,7 +33,8 @@
 #include <locale.h>
 #include <string.h>
 #include <time.h>
-#include <tzfile.h>
+
+#include "tzfile.h"
 
 #define	_ctloc(x)		(_CurrentTimeLocale->x)
 
