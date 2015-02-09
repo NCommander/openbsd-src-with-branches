@@ -1,4 +1,4 @@
-/*	$OpenBSD: chat.c,v 1.29 2013/04/20 20:32:37 deraadt Exp $	*/
+/*	$OpenBSD: chat.c,v 1.30 2013/04/21 17:50:29 tedu Exp $	*/
 
 /*
  *	Chat -- a program for automatic session establishment (i.e. dial
@@ -242,19 +242,19 @@ main(argc, argv)
     while ((option = getopt(argc, argv, "esSvVt:r:f:T:U:")) != -1) {
 	switch (option) {
 	case 'e':
-	    ++echo;
+	    echo = 1;
 	    break;
 
 	case 'v':
-	    ++verbose;
+	    verbose = 1;
 	    break;
 
 	case 'V':
-	    ++Verbose;
+	    Verbose = 1;
 	    break;
 
 	case 's':
-	    ++to_stderr;
+	    to_stderr = 1;
 	    break;
 
 	case 'S':

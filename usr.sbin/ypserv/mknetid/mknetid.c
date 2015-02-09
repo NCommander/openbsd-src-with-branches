@@ -1,4 +1,4 @@
-/*	$OpenBSD: mknetid.c,v 1.20 2013/12/04 02:18:05 deraadt Exp $ */
+/*	$OpenBSD: mknetid.c,v 1.21 2015/01/16 06:40:23 deraadt Exp $ */
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -505,7 +505,7 @@ main(int argc, char *argv[])
 			MasterPasswdFile = optarg;
 			break;
 		case 'q':
-			qflag++;
+			qflag = 1;
 			break;
 		default:
 			usage();

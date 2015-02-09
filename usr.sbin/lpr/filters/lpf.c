@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpf.c,v 1.11 2004/04/14 20:52:20 millert Exp $	*/
+/*	$OpenBSD: lpf.c,v 1.12 2009/10/27 23:59:52 deraadt Exp $	*/
 /*	$NetBSD: lpf.c,v 1.8 2000/04/29 00:12:32 abs Exp $	*/
 
 /*
@@ -89,7 +89,7 @@ main(int argc, char **argv)
 			indent = atoi(optarg);
 			break;
 		case 'r':	/* map nl->cr-nl */
-			onlcr++;
+			onlcr = 1;
 			break;
 		case 'c':	/* Print control chars */
 			literal++;
