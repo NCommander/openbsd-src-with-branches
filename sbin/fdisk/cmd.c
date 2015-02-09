@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.70 2014/03/31 22:03:29 krw Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.71 2014/03/31 23:04:03 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -262,7 +262,7 @@ Xselect(char *args, struct disk *disk, struct mbr *mbr, struct mbr *tt,
 	}
 
 	/* Recursion is beautiful! */
-	USER_modify(disk, tt, off, firstoff);
+	USER_edit(disk, tt, off, firstoff);
 	return (CMD_CONT);
 }
 
