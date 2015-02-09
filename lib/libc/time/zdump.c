@@ -1,4 +1,4 @@
-/*	$OpenBSD: zdump.c,v 1.22 2010/08/23 22:35:34 millert Exp $ */
+/*	$OpenBSD: zdump.c,v 1.23 2015/02/09 08:25:11 tedu Exp $ */
 /*
 ** This file is in the public domain, so clarified as of
 ** 2009-05-17 by Arthur David Olson.
@@ -18,9 +18,6 @@
 #include "stdlib.h"	/* for exit, malloc, atoi */
 #include "float.h"	/* for FLT_MAX and DBL_MAX */
 #include "ctype.h"	/* for isalpha et al. */
-#ifndef isascii
-#define isascii(x) 1
-#endif /* !defined isascii */
 
 #ifndef ZDUMP_LO_YEAR
 #define ZDUMP_LO_YEAR	(-500)
