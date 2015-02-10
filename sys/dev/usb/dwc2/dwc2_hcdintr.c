@@ -2092,7 +2092,7 @@ irqreturn_t dwc2_handle_hcd_intr(struct dwc2_hsotg *hsotg)
 		return retval;
 	}
 
-	KASSERT(mutex_owned(&hsotg->lock));
+	KASSERT(mtx_owned(&hsotg->lock));
 
 	/* Check if HOST Mode */
 	if (dwc2_is_host_mode(hsotg)) {

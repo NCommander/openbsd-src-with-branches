@@ -780,9 +780,9 @@ int dwc2_hcd_urb_enqueue(struct dwc2_hsotg *, struct dwc2_hcd_urb *, void **,
 void dwc2_hcd_urb_set_pipeinfo(struct dwc2_hsotg *, struct dwc2_hcd_urb *,
 			       u8 ,u8, u8, u8, u16);
 
-void dwc2_conn_id_status_change(struct work *);
-void dwc2_hcd_start_func(struct work *);
-void dwc2_hcd_reset_func(struct work *);
+void dwc2_conn_id_status_change(struct task *);
+void dwc2_hcd_start_func(struct task *);
+void dwc2_hcd_reset_func(struct task *);
 
 struct dwc2_hcd_urb * dwc2_hcd_urb_alloc(struct dwc2_hsotg *, int, gfp_t);
 void dwc2_hcd_urb_free(struct dwc2_hsotg *, struct dwc2_hcd_urb *, int);

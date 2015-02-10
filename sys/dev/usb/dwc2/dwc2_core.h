@@ -416,8 +416,8 @@ struct dwc2_hsotg {
 	unsigned int queuing_high_bandwidth:1;
 	unsigned int srp_success:1;
 
-	struct workqueue *wq_otg;
-	struct work wf_otg;
+	struct taskq *wq_otg;
+	struct task wf_otg;
 	struct callout wkp_timer;
 	enum dwc2_lx_state lx_state;
 
