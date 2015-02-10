@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.29 2014/07/12 18:44:43 tedu Exp $	*/
+/*	$OpenBSD: clock.c,v 1.30 2014/11/16 12:30:58 deraadt Exp $	*/
 /*	$NetBSD: clock.c,v 1.52 1997/05/24 20:16:05 pk Exp $ */
 
 /*
@@ -1118,7 +1118,7 @@ eeprom_uio(uio)
 		for (bcnt = 0; bcnt < EEPROM_SIZE; ++bcnt)
 			*(char *)(buf + bcnt) = *(char *)(eeprom_va + bcnt);
 
-	if ((error = uiomove(buf + off, (int)cnt, uio)) != 0)
+	if ((error = uiomovei(buf + off, (int)cnt, uio)) != 0)
 		goto out;
 
 	if (uio->uio_rw != UIO_READ)

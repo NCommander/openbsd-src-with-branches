@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vnops.c,v 1.159 2014/12/18 20:59:21 tedu Exp $	*/
+/*	$OpenBSD: nfs_vnops.c,v 1.160 2014/12/29 05:29:28 miod Exp $	*/
 /*	$NetBSD: nfs_vnops.c,v 1.62.4.1 1996/07/08 20:26:52 jtc Exp $	*/
 
 /*
@@ -2030,7 +2030,7 @@ nfs_readdir(void *v)
 				break;
 			}
 
-			if ((error = uiomove(dp, dp->d_reclen, uio)))
+			if ((error = uiomovei(dp, dp->d_reclen, uio)))
 				break;
 
 			newoff = fxdr_hyper(&ndp->cookie[0]);

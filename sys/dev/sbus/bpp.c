@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpp.c,v 1.2 2008/06/26 05:42:18 ray Exp $	*/
+/*	$OpenBSD: bpp.c,v 1.3 2011/09/18 14:07:45 miod Exp $	*/
 /*	$NetBSD: bpp.c,v 1.25 2005/12/11 12:23:44 christos Exp $ */
 
 /*-
@@ -305,7 +305,7 @@ bppwrite(dev_t dev, struct uio *uio, int flags)
 		caddr_t bp = sc->sc_buf;
 		size_t len = min(sc->sc_bufsz, uio->uio_resid);
 
-		if ((error = uiomove(bp, len, uio)) != 0)
+		if ((error = uiomovei(bp, len, uio)) != 0)
 			break;
 
 		while (len > 0) {

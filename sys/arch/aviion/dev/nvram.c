@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvram.c,v 1.8 2013/07/02 04:39:04 guenther Exp $ */
+/*	$OpenBSD: nvram.c,v 1.9 2014/05/08 22:17:33 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -473,7 +473,7 @@ nvramrw(caddr_t base, int len, struct uio *uio, int flags)
 			c = len - v;	/* till end of dev */
 		if (c == 0)
 			return (0);
-		error = uiomove(base + v, c, uio);
+		error = uiomovei(base + v, c, uio);
 	}
 	return (error);
 }

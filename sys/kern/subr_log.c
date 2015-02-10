@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_log.c,v 1.26 2015/01/13 10:07:58 mpf Exp $	*/
+/*	$OpenBSD: subr_log.c,v 1.27 2015/01/13 18:51:27 kettenis Exp $	*/
 /*	$NetBSD: subr_log.c,v 1.11 1996/03/30 22:24:44 christos Exp $	*/
 
 /*
@@ -207,7 +207,7 @@ logread(dev_t dev, struct uio *uio, int flag)
 		l = min(l, uio->uio_resid);
 		if (l == 0)
 			break;
-		error = uiomove(&mbp->msg_bufc[mbp->msg_bufr], (int)l, uio);
+		error = uiomovei(&mbp->msg_bufc[mbp->msg_bufr], (int)l, uio);
 		if (error)
 			break;
 		mbp->msg_bufr += l;

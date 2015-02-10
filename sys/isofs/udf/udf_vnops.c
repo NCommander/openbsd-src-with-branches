@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vnops.c,v 1.57 2014/11/18 10:42:15 dlg Exp $	*/
+/*	$OpenBSD: udf_vnops.c,v 1.58 2014/12/16 18:30:03 tedu Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -452,7 +452,7 @@ udf_read(void *v)
 			size = fsize - offset;
 		error = udf_readatoffset(up, &size, offset, &bp, &data);
 		if (error == 0)
-			error = uiomove(data, size, uio);
+			error = uiomovei(data, size, uio);
 		if (bp != NULL) {
 			brelse(bp);
 			bp = NULL;
@@ -553,7 +553,7 @@ udf_uiodir(struct udf_uiodir *uiodir, struct uio *uio, long off)
 	uiodir->dirent->d_off = off;
 	uiodir->dirent->d_reclen = de_size;
 
-	return (uiomove(uiodir->dirent, de_size, uio));
+	return (uiomovei(uiodir->dirent, de_size, uio));
 }
 
 static struct udf_dirstream *

@@ -1,4 +1,4 @@
-/* $OpenBSD: drm_drv.c,v 1.131 2014/09/24 10:35:39 jsg Exp $ */
+/* $OpenBSD: drm_drv.c,v 1.132 2015/02/10 01:39:32 jsg Exp $ */
 /*-
  * Copyright 2007-2009 Owain G. Ainsworth <oga@openbsd.org>
  * Copyright © 2008 Intel Corporation
@@ -823,7 +823,7 @@ drmread(dev_t kdev, struct uio *uio, int ioflag)
 	while (drm_dequeue_event(dev, file_priv, uio->uio_resid, &ev)) {
 		MUTEX_ASSERT_UNLOCKED(&dev->event_lock);
 		/* XXX we always destroy the event on error. */
-		error = uiomove(ev->event, ev->event->length, uio);
+		error = uiomovei(ev->event, ev->event->length, uio);
 		ev->destroy(ev);
 		if (error)
 			break;
