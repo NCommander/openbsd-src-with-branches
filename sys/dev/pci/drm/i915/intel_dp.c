@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_dp.c,v 1.20 2014/06/19 06:51:05 jsg Exp $	*/
+/*	$OpenBSD: intel_dp.c,v 1.21 2015/01/27 03:17:36 dlg Exp $	*/
 /*
  * Copyright © 2008 Intel Corporation
  *
@@ -1114,9 +1114,9 @@ static void ironlake_panel_vdd_work(void *arg1)
 	struct intel_dp *intel_dp = arg1;
 	struct drm_device *dev = intel_dp_to_dev(intel_dp);
 
-	rw_enter_write(&dev->mode_config.rwl);
+	mutex_lock(&dev->mode_config.mutex);
 	ironlake_panel_vdd_off_sync(intel_dp);
-	rw_exit_write(&dev->mode_config.rwl);
+	mutex_unlock(&dev->mode_config.mutex);
 }
 
 static void
