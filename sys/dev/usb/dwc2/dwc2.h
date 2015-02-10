@@ -36,12 +36,14 @@
 #include <sys/param.h>
 #include <sys/kernel.h>
 
-#include <sys/workqueue.h>
-#include <sys/callout.h>
+#include <sys/task.h>
+#include <sys/timeout.h>
 
-#include <linux/list.h>
+#include <dev/usb/dwc2/linux/list.h>
 
+#if 0
 #include "opt_usb.h"
+#endif
 // #define VERBOSE_DEBUG
 // #define DWC2_DUMP_FRREM
 // #define CONFIG_USB_DWC2_TRACK_MISSED_SOFS

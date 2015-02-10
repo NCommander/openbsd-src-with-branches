@@ -35,18 +35,23 @@
 __KERNEL_RCSID(0, "$NetBSD: dwc2.c,v 1.32 2014/09/02 23:26:20 macallan Exp $");
 #endif
 
+#if 0
 #include "opt_usb.h"
+#endif
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kmem.h>
+#include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/select.h>
 #include <sys/proc.h>
 #include <sys/queue.h>
+#if 0
 #include <sys/cpu.h>
+#endif
 
+#include <machine/bus.h>
 #include <machine/endian.h>
 
 #include <dev/usb/usb.h>
@@ -54,13 +59,15 @@ __KERNEL_RCSID(0, "$NetBSD: dwc2.c,v 1.32 2014/09/02 23:26:20 macallan Exp $");
 #include <dev/usb/usbdivar.h>
 #include <dev/usb/usb_mem.h>
 
+#if 0
 #include <dev/usb/usbroothub_subr.h>
+#endif
 
-#include <dwc2/dwc2.h>
-#include <dwc2/dwc2var.h>
+#include <dev/usb/dwc2/dwc2.h>
+#include <dev/usb/dwc2/dwc2var.h>
 
-#include "dwc2_core.h"
-#include "dwc2_hcd.h"
+#include <dev/usb/dwc2/dwc2_core.h>
+#include <dev/usb/dwc2/dwc2_hcd.h>
 
 #ifdef DWC2_COUNTERS
 #define	DWC2_EVCNT_ADD(a,b)	((void)((a).ev_count += (b)))

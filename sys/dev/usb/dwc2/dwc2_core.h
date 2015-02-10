@@ -41,15 +41,17 @@
 #define __DWC2_CORE_H__
 
 #include <sys/stdint.h>
-#include <sys/workqueue.h>
+#include <sys/task.h>
 #include <sys/pool.h>
 #include <sys/queue.h>
 #include <sys/device.h>
 
 #include <machine/intr.h>
-#include <sys/bus.h>
+#include <machine/bus.h>
 
-#include "dwc2_hw.h"
+#include <dev/usb/dwc2/linux/list.h>
+
+#include <dev/usb/dwc2/dwc2_hw.h>
 
 /* Maximum number of Endpoints/HostChannels */
 #define MAX_EPS_CHANNELS	16

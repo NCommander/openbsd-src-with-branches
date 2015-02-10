@@ -45,23 +45,24 @@
 __KERNEL_RCSID(0, "$NetBSD: dwc2_hcdintr.c,v 1.11 2014/11/24 10:14:14 skrll Exp $");
 #endif
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/pool.h>
+
+#include <machine/bus.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdivar.h>
 #include <dev/usb/usb_mem.h>
 
-#include <machine/param.h>
+#include <dev/usb/dwc2/linux/kernel.h>
 
-#include <linux/kernel.h>
+#include <dev/usb/dwc2/dwc2.h>
+#include <dev/usb/dwc2/dwc2var.h>
 
-#include <dwc2/dwc2.h>
-#include <dwc2/dwc2var.h>
-
-#include "dwc2_core.h"
-#include "dwc2_hcd.h"
+#include <dev/usb/dwc2/dwc2_core.h>
+#include <dev/usb/dwc2/dwc2_hcd.h>
 
 /* This function is for debug only */
 static void dwc2_track_missed_sofs(struct dwc2_hsotg *hsotg)
