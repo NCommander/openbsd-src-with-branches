@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse.c,v 1.23 2014/05/20 13:22:06 syl Exp $ */
+/* $OpenBSD: fuse.c,v 1.24 2014/05/20 13:32:22 syl Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -55,6 +55,7 @@ static struct fuse_opt fuse_core_opts[] = {
 	FUSE_OPT_KEY("-f",			KEY_STUB),
 	FUSE_OPT_KEY("-s",			KEY_STUB),
 	FUSE_OPT_KEY("use_ino",			KEY_STUB),
+	FUSE_OPT_KEY("big_writes",		KEY_STUB),
 	FUSE_OPT_KEY("default_permissions",	KEY_STUB),
 	FUSE_OPT_KEY("fsname=",			KEY_STUB),
 	FUSE_OPT_END
