@@ -853,6 +853,8 @@ print_rule(struct pf_rule *r, const char *anchor_call, int opts)
 	}
 	if (r->tos)
 		printf(" tos 0x%2.2x", r->tos);
+	if (r->prio != 0xff)
+		printf(" prio %u", r->prio);
 
 	if (r->scrub_flags & PFSTATE_SETMASK || r->qname[0]) {
 		char *comma = "";

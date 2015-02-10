@@ -2459,6 +2459,7 @@ pf_rule_copyin(struct pf_rule *from, struct pf_rule *to,
 	to->divert.port = from->divert.port;
 	to->divert_packet.addr = from->divert_packet.addr;
 	to->divert_packet.port = from->divert_packet.port;
+	to->prio = from->prio;
 	to->set_prio[0] = from->set_prio[0];
 	to->set_prio[1] = from->set_prio[1];
 
