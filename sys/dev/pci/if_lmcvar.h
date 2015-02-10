@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmcvar.h,v 1.10 2006/03/25 22:41:45 djm Exp $ */
+/*	$OpenBSD: if_lmcvar.h,v 1.11 2007/09/03 00:47:37 krw Exp $ */
 /*	$NetBSD: if_lmcvar.h,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -571,5 +571,5 @@ extern struct cfdriver lmc_cd;
 
 typedef int lmc_spl_t;
 
-#define LMC_GETCTX(m, t)	((t) (m)->m_pkthdr.rcvif + 0)
-#define LMC_SETCTX(m, c)	((void) ((m)->m_pkthdr.rcvif = (void *) (c)))
+#define LMC_GETCTX(m, t)	((t) (m)->m_pkthdr.ph_cookie + 0)
+#define LMC_SETCTX(m, c)	((void) ((m)->m_pkthdr.ph_cookie = (void *)(c)))
