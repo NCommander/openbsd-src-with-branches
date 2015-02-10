@@ -1,4 +1,4 @@
-/*	$OpenBSD: private.h,v 1.33 2015/02/09 13:46:22 tedu Exp $	*/
+/*	$OpenBSD: private.h,v 1.34 2015/02/09 14:00:03 tedu Exp $	*/
 #ifndef PRIVATE_H
 
 #define PRIVATE_H
@@ -43,12 +43,6 @@
 #include <unistd.h>	/* for F_OK, R_OK, and other POSIX goodness */
 
 #include <stdint.h>
-
-/*
-** Private function declarations.
-*/
-
-const char *	scheck(const char * string, const char * format);
 
 /*
 ** Finally, some convenience items.
