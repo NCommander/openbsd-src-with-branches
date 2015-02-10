@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_device.c,v 1.15 2014/07/12 18:43:52 tedu Exp $ */
+/* $OpenBSD: fuse_device.c,v 1.16 2015/02/10 21:56:10 miod Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -469,7 +469,7 @@ fusewrite(dev_t dev, struct uio *uio, int ioflag)
 	if (uio->uio_resid != FUSEBUFSIZE)
 		return (EINVAL);
 
-	if ((error = uiomovei(&hdr, sizeof(hdr), uio)) != 0)
+	if ((error = uiomove(&hdr, sizeof(hdr), uio)) != 0)
 		return (error);
 
 	/* looking for uuid in fd_fbufs_wait */
