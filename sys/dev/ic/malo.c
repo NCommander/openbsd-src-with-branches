@@ -1,4 +1,4 @@
-/*	$OpenBSD: malo.c,v 1.103 2014/12/19 22:44:58 guenther Exp $ */
+/*	$OpenBSD: malo.c,v 1.104 2014/12/22 02:28:51 tedu Exp $ */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -1690,7 +1690,6 @@ malo_rx_intr(struct malo_softc *sc)
 		desc->physdata = htole32(data->map->dm_segs->ds_addr);
 
 		/* finalize mbuf */
-		m->m_pkthdr.rcvif = ifp;
 		m->m_pkthdr.len = m->m_len = letoh16(desc->len);
 
 		/*

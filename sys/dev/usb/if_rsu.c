@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rsu.c,v 1.23 2014/12/19 22:44:59 guenther Exp $	*/
+/*	$OpenBSD: if_rsu.c,v 1.24 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1118,7 +1118,6 @@ rsu_event_survey(struct rsu_softc *sc, uint8_t *buf, int len)
 
 	/* Finalize mbuf. */
 	m->m_pkthdr.len = m->m_len = pktlen;
-	m->m_pkthdr.rcvif = ifp;
 
 	ni = ieee80211_find_rxnode(ic, wh);
 	rxi.rxi_flags = 0;
@@ -1313,7 +1312,6 @@ rsu_rx_frame(struct rsu_softc *sc, uint8_t *buf, int pktlen)
 		}
 	}
 	/* Finalize mbuf. */
-	m->m_pkthdr.rcvif = ifp;
 	/* Hardware does Rx TCP checksum offload. */
 	if (rxdw3 & R92S_RXDW3_TCPCHKVALID) {
 		if (__predict_true(rxdw3 & R92S_RXDW3_TCPCHKRPT))

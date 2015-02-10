@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5008.c,v 1.26 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: ar5008.c,v 1.27 2014/12/19 22:44:58 guenther Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -893,7 +893,6 @@ ar5008_rx_process(struct athn_softc *sc)
 	bf->bf_m = m1;
 
 	/* Finalize mbuf. */
-	m->m_pkthdr.rcvif = ifp;
 	m->m_pkthdr.len = m->m_len = len;
 
 	/* Grab a reference to the source node. */

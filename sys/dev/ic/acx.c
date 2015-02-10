@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.108 2014/12/19 22:44:58 guenther Exp $ */
+/*	$OpenBSD: acx.c,v 1.109 2014/12/22 02:28:51 tedu Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -1388,7 +1388,6 @@ acx_rxeof(struct acx_softc *sc)
 			}
 
 			m->m_len = m->m_pkthdr.len = len;
-			m->m_pkthdr.rcvif = &ic->ic_if;
 
 #if NBPFILTER > 0
 			if (sc->sc_drvbpf != NULL) {
