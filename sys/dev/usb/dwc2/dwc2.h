@@ -107,7 +107,7 @@ extern int dwc2debug;
 
 #define gfp_t		int
 #define GFP_KERNEL	 M_WAITOK
-#define GFP_ATOMIC	 KM_NOSLEEP
+#define GFP_ATOMIC	 M_NOWAIT
 
 enum usb_otg_state {
 	OTG_STATE_RESERVED = 0,
@@ -122,7 +122,7 @@ enum usb_otg_state {
 #define usleep_range(l, u)	do { DELAY(u); } while (0)
 
 #define spinlock_t		struct mutex
-#define spin_lock_init(lock)	mtx_init(lock, MUTEX_DEFAULT, IPL_SCHED)
+#define spin_lock_init(lock)	mtx_init(lock, IPL_SCHED)
 #define	spin_lock(l)		do { mtx_enter(l); } while (0)
 #define	spin_unlock(l)		do { mtx_leave(l); } while (0)
 

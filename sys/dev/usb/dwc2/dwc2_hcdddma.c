@@ -106,7 +106,7 @@ static int dwc2_desc_list_alloc(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 {
 	int err;
 
-	KASSERT(!cpu_intr_p() && !cpu_softintr_p());
+	//KASSERT(!cpu_intr_p() && !cpu_softintr_p());
 
 	qh->desc_list = NULL;
 	err = usb_allocmem(&hsotg->hsotg_sc->sc_bus,

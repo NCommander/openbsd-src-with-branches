@@ -2228,8 +2228,7 @@ int dwc2_hcd_init(struct dwc2_hsotg *hsotg,
 	/* Create new workqueue and init work */
 	retval = -ENOMEM;
 	hsotg->wq_otg = taskq_create("dwc2", 1, IPL_USB);
-
-	if (err) {
+	if (hsotg->wq_otg == NULL) {
 		dev_err(hsotg->dev, "Failed to create workqueue\n");
 		goto error2;
 	}
