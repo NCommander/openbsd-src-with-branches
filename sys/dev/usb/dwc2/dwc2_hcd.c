@@ -398,7 +398,7 @@ dwc2_hcd_urb_enqueue(struct dwc2_hsotg *hsotg, struct dwc2_hcd_urb *urb,
 		}
 	}
 
-	qtd = pool_get(sc->sc_qtdpool, PR_NOWAIT);
+	qtd = pool_get(&sc->sc_qtdpool, PR_NOWAIT);
 	if (!qtd)
 		return -ENOMEM;
 
@@ -411,7 +411,7 @@ dwc2_hcd_urb_enqueue(struct dwc2_hsotg *hsotg, struct dwc2_hcd_urb *urb,
 		dev_err(hsotg->dev,
 			"DWC OTG HCD URB Enqueue failed adding QTD. Error status %d\n",
 			retval);
-		pool_put(sc->sc_qtdpool, qtd);
+		pool_put(&sc->sc_qtdpool, qtd);
 		return retval;
 	}
 

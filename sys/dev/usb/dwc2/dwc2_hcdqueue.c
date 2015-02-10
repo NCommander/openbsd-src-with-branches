@@ -221,7 +221,7 @@ static struct dwc2_qh *dwc2_hcd_qh_create(struct dwc2_hsotg *hsotg,
 		return NULL;
 
 	/* Allocate memory */
-	qh = pool_get(sc->sc_qhpool, PR_NOWAIT);
+	qh = pool_get(&sc->sc_qhpool, PR_NOWAIT);
 	if (!qh)
 		return NULL;
 
@@ -259,7 +259,7 @@ void dwc2_hcd_qh_free(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 		usb_freemem(&hsotg->hsotg_sc->sc_bus, &qh->dw_align_buf_usbdma);
 	}
 
-	pool_put(sc->sc_qhpool, qh);
+	pool_put(&sc->sc_qhpool, qh);
 }
 
 /**
@@ -851,7 +851,7 @@ void dwc2_hcd_qtd_unlink_and_free(struct dwc2_hsotg *hsotg,
 	struct dwc2_softc *sc = hsotg->hsotg_sc;
 
 	list_del_init(&qtd->qtd_list_entry);
- 	pool_put(sc->sc_qtdpool, qtd);
+ 	pool_put(&sc->sc_qtdpool, qtd);
 }
 
 #define BITSTUFFTIME(bytecount)	((8 * 7 * (bytecount)) / 6)
