@@ -205,12 +205,12 @@ udelay(unsigned long usecs)
 
 #define NS_TO_US(ns)	((ns + 500L) / 1000L)
 
-void dw_callout(void *);
+void dw_timeout(void *);
 void dwc2_worker(struct task *, void *);
 
 struct delayed_work {
 	struct task work;
-	struct callout dw_timer;
+	struct timeout dw_timer;
 
 	struct taskq *dw_wq;
 };
@@ -224,7 +224,7 @@ INIT_DELAYED_WORK(struct delayed_work *dw, void (*fn)(struct task *))
 static inline void
 queue_delayed_work(struct taskq *wq, struct delayed_work *dw, int j)
 {
-	timeout_reset(&dw->dw_timer, j, dw_callout, dw);
+	timeout_reset(&dw->dw_timer, j, dw_timeout, dw);
 }
 
 #endif

@@ -405,7 +405,7 @@ struct dwc2_hw_params {
  * @frame_list_dma:     Frame list DMA address
  */
 struct dwc2_hsotg {
-	device_t dev;
+	struct device *dev;
 	struct dwc2_softc *hsotg_sc;
 	/** Params detected from hardware */
 	struct dwc2_hw_params hw_params;
@@ -418,7 +418,7 @@ struct dwc2_hsotg {
 
 	struct taskq *wq_otg;
 	struct task wf_otg;
-	struct callout wkp_timer;
+	struct timeout wkp_timer;
 	enum dwc2_lx_state lx_state;
 
 	union dwc2_hcd_internal_flags {
