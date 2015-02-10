@@ -621,7 +621,7 @@ static inline u32 dwc2_hcd_urb_get_iso_desc_actual_length(
 }
 
 static inline int dwc2_hcd_is_bandwidth_allocated(struct dwc2_hsotg *hsotg,
-						  usbd_xfer_handle xfer)
+						  struct usbd_xfer * xfer)
 {
 	struct dwc2_pipe *dpipe = DWC2_XFER2DPIPE(xfer);
 	struct dwc2_qh *qh = dpipe->priv;

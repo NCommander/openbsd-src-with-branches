@@ -91,7 +91,7 @@ typedef struct dwc2_softc {
 	bool sc_hcdenabled;
 	void *sc_rhc_si;
 
-	usbd_xfer_handle sc_intrxfer;
+	struct usbd_xfer * sc_intrxfer;
 
 	device_t sc_child;		/* /dev/usb# device */
 	char sc_dying;
