@@ -106,7 +106,7 @@ extern int dwc2debug;
 #define msecs_to_jiffies	mstohz
 
 #define gfp_t		int
-#define GFP_KERNEL	 KM_SLEEP
+#define GFP_KERNEL	 M_WAITOK
 #define GFP_ATOMIC	 KM_NOSLEEP
 
 enum usb_otg_state {
