@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.197 2015/02/09 04:06:13 dlg Exp $	*/
+/*	$OpenBSD: proc.h,v 1.198 2015/02/09 04:27:18 dlg Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -493,6 +493,7 @@ void	exit2(struct proc *);
 int	dowait4(struct proc *, pid_t, int *, int, struct rusage *,
 	    register_t *);
 void	cpu_exit(struct proc *);
+void	process_initialize(struct process *, struct proc *);
 int	fork1(struct proc *, int, void *, pid_t *, void (*)(void *),
 	    void *, register_t *, struct proc **);
 int	groupmember(gid_t, struct ucred *);
