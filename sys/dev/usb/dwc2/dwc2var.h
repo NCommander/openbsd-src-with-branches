@@ -56,7 +56,7 @@ struct dwc2_pipe {
 	void *priv;			/* QH */
 
 	 /* DMA buffer for control endpoint requests */
-	usb_dma_t req_dma;
+	struct usb_dma * req_dma;
 };
 
 

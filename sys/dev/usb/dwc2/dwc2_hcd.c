@@ -689,7 +689,7 @@ static int dwc2_hc_setup_align_buf(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 		err = usb_allocmem(&hsotg->hsotg_sc->sc_bus, buf_size, buf_size,
 				   &qh->dw_align_buf_usbdma);
 		if (!err) {
-			usb_dma_t *ud = &qh->dw_align_buf_usbdma;
+			struct usb_dma *ud = &qh->dw_align_buf_usbdma;
 
 			qh->dw_align_buf = KERNADDR(ud, 0);
 			qh->dw_align_buf_dma = DMAADDR(ud, 0);
