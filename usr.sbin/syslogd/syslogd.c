@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.151 2015/02/08 15:17:30 bluhm Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.152 2015/02/09 09:28:56 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -729,7 +729,7 @@ unix_readcb(int fd, short event, void *arg)
 	if (n > 0) {
 		linebuf[n] = '\0';
 		printline(LocalHostName, linebuf);
-	} else if (n == -1 && errno != EINTR)
+	} else if (n < 0 && errno != EINTR)
 		logerror("recvfrom unix");
 }
 
