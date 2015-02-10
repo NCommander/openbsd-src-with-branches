@@ -283,13 +283,13 @@ struct dwc2_qh {
 	u16 frame_usecs[8];
 	u16 start_split_frame;
 	u16 ntd;
-	struct usb_dma * dw_align_buf_usbdma;
+	struct usb_dma dw_align_buf_usbdma;
 	u8 *dw_align_buf;
 	dma_addr_t dw_align_buf_dma;
 	struct list_head qtd_list;
 	struct dwc2_host_chan *channel;
 	struct list_head qh_list_entry;
-	struct usb_dma * desc_list_usbdma;
+	struct usb_dma desc_list_usbdma;
 	struct dwc2_hcd_dma_desc *desc_list;
 	dma_addr_t desc_list_dma;
 	u32 *n_bytes;

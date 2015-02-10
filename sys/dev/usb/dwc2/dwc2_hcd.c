@@ -2316,9 +2316,9 @@ error1:
 
 #ifdef CONFIG_USB_DWC2_TRACK_MISSED_SOFS
 	free(hsotg->last_frame_num_array, M_DEVBUF,
-		sizeof(*hsotg->last_frame_num_array) * FRAME_NUM_ARRAY_SIZE);
+	      sizeof(*hsotg->last_frame_num_array) * FRAME_NUM_ARRAY_SIZE);
 	free(hsotg->frame_num_array, M_DEVBUF,
-		sizeof(*hsotg->frame_num_array) * FRAME_NUM_ARRAY_SIZE);
+		  sizeof(*hsotg->frame_num_array) * FRAME_NUM_ARRAY_SIZE);
 #endif
 
 	dev_err(hsotg->dev, "%s() FAILED, returning %d\n", __func__, retval);
