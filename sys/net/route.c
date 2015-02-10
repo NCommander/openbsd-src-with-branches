@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.203 2015/01/28 22:10:13 mpi Exp $	*/
+/*	$OpenBSD: route.c,v 1.204 2015/02/06 01:21:17 mpi Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -1655,6 +1655,9 @@ rt_if_track(struct ifnet *ifp)
 		return;
 
 	for (tid = 0; tid <= rtbl_id_max; tid++) {
+		/* skip rtables that are not in the rdomain of the ifp */
+		if (rtable_l2(tid) != ifp->if_rdomain)
+			continue;
 		for (i = 1; i <= AF_MAX; i++) {
 			if ((rnh = rtable_get(tid, i)) != NULL) {
 				if (!rn_mpath_capable(rnh))
