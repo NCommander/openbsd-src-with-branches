@@ -213,18 +213,20 @@ struct delayed_work {
 	struct timeout dw_timer;
 
 	struct taskq *dw_wq;
+	void (*dw_fn)(struct task *);
 };
 
 static inline void
 INIT_DELAYED_WORK(struct delayed_work *dw, void (*fn)(struct task *))
 {
-	timeout_init(&dw->dw_timer, CALLOUT_MPSAFE);
+	dw->dw_fn = fn;
+	timeout_set(&dw->dw_timer, dw_timeout, dw);
 }
 
 static inline void
 queue_delayed_work(struct taskq *wq, struct delayed_work *dw, int j)
 {
-	timeout_reset(&dw->dw_timer, j, dw_timeout, dw);
+	timeout_add(&dw->dw_timer, j);
 }
 
 #endif

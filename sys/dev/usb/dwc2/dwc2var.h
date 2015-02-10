@@ -132,4 +132,10 @@ dwc2_root_intr(dwc2_softc_t *sc)
 	softintr_schedule(sc->sc_rhc_si);
 }
 
+#define	timeout_reset(x, t, f, a) \
+do { \
+	timeout_set((x), (f), (a)); \
+	timeout_add((x), (t)); \
+} while (0)
+
 #endif	/* _DWC_OTGVAR_H_ */

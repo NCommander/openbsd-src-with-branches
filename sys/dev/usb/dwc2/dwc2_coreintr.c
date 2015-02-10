@@ -305,7 +305,7 @@ static void dwc2_handle_conn_id_status_change_intr(struct dwc2_hsotg *hsotg)
 	 * scheduling.
 	 */
 	spin_unlock(&hsotg->lock);
-	taskq_enqueue(hsotg->wq_otg, &hsotg->wf_otg, NULL);
+	task_add(hsotg->wq_otg, &hsotg->wf_otg);
 	spin_lock(&hsotg->lock);
 
 	/* Clear interrupt */

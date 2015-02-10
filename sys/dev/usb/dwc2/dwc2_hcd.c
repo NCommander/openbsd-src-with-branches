@@ -2137,7 +2137,7 @@ static void dwc2_hcd_free(struct dwc2_hsotg *hsotg)
 
 	free(hsotg->core_params, M_DEVBUF, sizeof(*hsotg->core_params));
 	hsotg->core_params = NULL;
-	timeout_destroy(&hsotg->wkp_timer);
+	timeout_del(&hsotg->wkp_timer);
 }
 
 static void dwc2_hcd_release(struct dwc2_hsotg *hsotg)
@@ -2174,7 +2174,7 @@ int dwc2_hcd_init(struct dwc2_hsotg *hsotg,
 {
 	struct dwc2_host_chan *channel;
 	int i, num_channels;
-	int err, retval;
+	int retval;
 
 	dev_dbg(hsotg->dev, "DWC OTG HCD INIT\n");
 
@@ -2227,17 +2227,14 @@ int dwc2_hcd_init(struct dwc2_hsotg *hsotg,
 
 	/* Create new workqueue and init work */
 	retval = -ENOMEM;
-	err = taskq_create(&hsotg->wq_otg, "dwc2", dwc2_worker, hsotg,
-			 PRI_BIO, IPL_USB, WQ_MPSAFE);
+	hsotg->wq_otg = taskq_create("dwc2", 1, IPL_USB);
 
-	retval = -err;
 	if (err) {
 		dev_err(hsotg->dev, "Failed to create workqueue\n");
 		goto error2;
 	}
 
-	timeout_init(&hsotg->wkp_timer, CALLOUT_MPSAFE);
-	timeout_setfunc(&hsotg->wkp_timer, dwc2_wakeup_detected, hsotg);
+	timeout_set(&hsotg->wkp_timer, dwc2_wakeup_detected, hsotg);
 
 	/* Initialize the non-periodic schedule */
 	INIT_LIST_HEAD(&hsotg->non_periodic_sched_inactive);
