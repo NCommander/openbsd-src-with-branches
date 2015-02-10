@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: atom.h,v 1.1 2013/08/12 04:11:53 jsg Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  *
@@ -125,7 +125,7 @@ struct card_info {
 
 struct atom_context {
 	struct card_info *card;
-	struct rwlock rwlock;
+	struct rwlock mutex;
 	void *bios;
 	uint32_t cmd_table, data_table;
 	uint16_t *iio;

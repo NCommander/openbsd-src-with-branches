@@ -1,4 +1,4 @@
-/*	$OpenBSD: si.c,v 1.14 2014/06/21 04:47:58 jsg Exp $	*/
+/*	$OpenBSD: si.c,v 1.15 2014/07/12 18:48:52 tedu Exp $	*/
 /*
  * Copyright 2011 Advanced Micro Devices, Inc.
  *
@@ -4446,10 +4446,10 @@ uint64_t si_get_gpu_clock(struct radeon_device *rdev)
 {
 	uint64_t clock;
 
-	rw_enter_write(&rdev->gpu_clock_rwlock);
+	mutex_lock(&rdev->gpu_clock_mutex);
 	WREG32(RLC_CAPTURE_GPU_CLOCK_COUNT, 1);
 	clock = (uint64_t)RREG32(RLC_GPU_CLOCK_COUNT_LSB) |
 	        ((uint64_t)RREG32(RLC_GPU_CLOCK_COUNT_MSB) << 32ULL);
-	rw_exit_write(&rdev->gpu_clock_rwlock);
+	mutex_unlock(&rdev->gpu_clock_mutex);
 	return clock;
 }
