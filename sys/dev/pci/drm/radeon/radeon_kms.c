@@ -1,4 +1,4 @@
-/*	$OpenBSD: radeon_kms.c,v 1.31 2014/12/20 16:34:27 krw Exp $	*/
+/*	$OpenBSD: radeon_kms.c,v 1.32 2015/01/27 03:17:36 dlg Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  * Copyright 2008 Red Hat Inc.
@@ -795,7 +795,7 @@ radeon_set_filp_rights(struct drm_device *dev,
 				   struct drm_file *applier,
 				   uint32_t *value)
 {
-	DRM_LOCK();
+	mutex_lock(&dev->struct_mutex);
 	if (*value == 1) {
 		/* wants rights */
 		if (!*owner)
@@ -806,7 +806,7 @@ radeon_set_filp_rights(struct drm_device *dev,
 			*owner = NULL;
 	}
 	*value = *owner == applier ? 1 : 0;
-	DRM_UNLOCK();
+	mutex_unlock(&dev->struct_mutex);
 }
 
 /*
