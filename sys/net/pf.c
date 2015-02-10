@@ -1142,6 +1142,8 @@ pf_state_export(struct pfsync_state *sp, struct pf_state *st)
 	sp->max_mss = htons(st->max_mss);
 	sp->min_ttl = st->min_ttl;
 	sp->set_tos = st->set_tos;
+	sp->set_prio[0] = st->set_prio[0];
+	sp->set_prio[1] = st->set_prio[1];
 }
 
 /* END state table stuff */
