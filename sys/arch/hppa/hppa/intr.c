@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.44 2014/07/12 18:44:41 tedu Exp $	*/
+/*	$OpenBSD: intr.c,v 1.45 2015/02/11 01:36:13 miod Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -384,5 +384,5 @@ softintr_schedule(void *cookie)
 {
 	struct hppa_iv *iv = cookie;
 
-	softintr(1 << (iv->pri - 1));
+	atomic_setbits_long(&curcpu()->ci_ipending, 1 << (iv->pri - 1));
 }

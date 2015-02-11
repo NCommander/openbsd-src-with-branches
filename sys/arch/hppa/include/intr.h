@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.39 2014/03/29 18:09:29 guenther Exp $	*/
+/*	$OpenBSD: intr.h,v 1.40 2014/06/03 13:30:24 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -147,8 +147,6 @@ hppa_intr_enable(register_t eiem)
 #define	splhigh()	splraise(IPL_HIGH)
 #define	splipi()	splraise(IPL_IPI)
 #define	spl0()		spllower(IPL_NONE)
-
-#define	softintr(mask)	atomic_setbits_long(&curcpu()->ci_ipending, mask)
 
 #define	SOFTINT_MASK ((1 << (IPL_SOFTCLOCK - 1)) | \
     (1 << (IPL_SOFTNET - 1)) | (1 << (IPL_SOFTTTY - 1)))
