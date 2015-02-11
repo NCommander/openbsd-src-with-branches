@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.129 2015/01/08 14:29:18 mpi Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.130 2015/01/27 03:17:36 dlg Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -1022,7 +1022,7 @@ nd6_rtrequest(int req, struct rtentry *rt)
 			 * treated as on-link but is currently not
 			 * (RTF_LLINFO && !ln case).
 			 */
-			rt_setgate(rt, rt_key(rt), (struct sockaddr *)&null_sdl,
+			rt_setgate(rt, (struct sockaddr *)&null_sdl,
 			    ifp->if_rdomain);
 			gate = rt->rt_gateway;
 			SDL(gate)->sdl_type = ifp->if_type;
