@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.16 2014/07/10 11:59:57 pirofti Exp $
+#	$OpenBSD$
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -49,6 +49,9 @@ pci*		at ppb?
 cn30xxgmx*	at iobus?
 cnmac*		at cn30xxgmx?
 
+#dwctwo0 	at iobus?
+#usb*		at dwctwo?
+
 rgephy*		at mii?
 ukphy*		at mii?
 atphy*		at mii?
@@ -68,4 +71,3 @@ wd*		at pciide? flags 0x0000
 
 # USB devices
 #uhub*		at usb?		# USB Hubs
-
