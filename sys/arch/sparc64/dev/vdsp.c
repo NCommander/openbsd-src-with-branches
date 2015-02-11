@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsp.c,v 1.36 2015/01/25 21:42:13 kettenis Exp $	*/
+/*	$OpenBSD: vdsp.c,v 1.37 2015/01/27 03:17:35 dlg Exp $	*/
 /*
  * Copyright (c) 2009, 2011, 2014 Mark Kettenis
  *
@@ -24,7 +24,6 @@
 #include <sys/fcntl.h>
 #include <sys/malloc.h>
 #include <sys/mutex.h>
-#include <sys/lock.h>
 #include <sys/namei.h>
 #include <sys/systm.h>
 #include <sys/task.h>
