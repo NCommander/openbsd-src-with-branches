@@ -1,4 +1,4 @@
-/*	$OpenBSD: rwlock.h,v 1.16 2014/07/09 13:32:00 guenther Exp $	*/
+/*	$OpenBSD: rwlock.h,v 1.17 2015/02/10 10:04:27 dlg Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  *
@@ -109,10 +109,6 @@ int rw_status(struct rwlock *);
  * some other thread
  */
 #define RW_WRITE_OTHER	0x0100UL
-
-#ifndef rw_cas
-int rw_cas(volatile unsigned long *, unsigned long, unsigned long);
-#endif
 
 /* recursive rwlocks; */
 struct rrwlock {

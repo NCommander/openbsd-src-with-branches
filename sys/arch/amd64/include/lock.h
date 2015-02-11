@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock.h,v 1.8 2014/03/27 10:24:40 dlg Exp $	*/
+/*	$OpenBSD: lock.h,v 1.9 2014/03/29 18:09:28 guenther Exp $	*/
 /*	$NetBSD: lock.h,v 1.1.2.2 2000/05/03 14:40:55 sommerfeld Exp $	*/
 
 /*-
@@ -47,9 +47,5 @@
 
 #define __lockbarrier() __asm volatile("": : :"memory")
 #define SPINLOCK_SPIN_HOOK __asm volatile("pause": : :"memory");
-
-#include <machine/atomic.h>
-
-#define rw_cas(p, o, n) (atomic_cas_ulong(p, o, n) != o)
 
 #endif /* _MACHINE_LOCK_H_ */

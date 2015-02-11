@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock.h,v 1.5 2013/05/21 20:05:30 tedu Exp $	*/
+/*	$OpenBSD: lock.h,v 1.6 2014/09/30 06:51:58 jmatthew Exp $	*/
 
 /* public domain */
 
@@ -7,7 +7,6 @@
 
 #include <sys/atomic.h>
 
-#define rw_cas __cpu_cas
 static __inline int
 __cpu_cas(volatile unsigned long *addr, unsigned long old, unsigned long new)
 {
