@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkbc.c,v 1.11 2011/04/07 15:30:16 miod Exp $  */
+/*	$OpenBSD: mkbc.c,v 1.12 2012/08/10 17:49:31 shadchin Exp $  */
 
 /*
  * Copyright (c) 2006, 2007, Joel Sing
@@ -74,7 +74,6 @@
 #include <sys/signalvar.h>
 #include <sys/errno.h>
 #include <sys/queue.h>
-#include <sys/lock.h>
 
 #include <machine/autoconf.h>
 #include <machine/bus.h>

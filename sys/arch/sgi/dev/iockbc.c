@@ -1,4 +1,4 @@
-/*	$OpenBSD: iockbc.c,v 1.9 2013/12/25 21:01:01 miod Exp $	*/
+/*	$OpenBSD: iockbc.c,v 1.10 2013/12/29 18:31:50 miod Exp $	*/
 /*
  * Copyright (c) 2013, Miodrag Vallat
  * Copyright (c) 2006, 2007, 2009 Joel Sing <jsing@openbsd.org>
@@ -59,7 +59,6 @@
 #include <sys/signalvar.h>
 #include <sys/errno.h>
 #include <sys/queue.h>
-#include <sys/lock.h>
 
 #include <machine/autoconf.h>
 #include <machine/bus.h>

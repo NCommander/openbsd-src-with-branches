@@ -1,4 +1,4 @@
-/*	$OpenBSD: mplock.c,v 1.1 2007/12/02 21:20:17 miod Exp $	*/
+/*	$OpenBSD: mplock.c,v 1.2 2009/02/21 18:37:48 miod Exp $	*/
 
 /*
  * Copyright (c) 2004 Niklas Hallqvist.  All rights reserved.
@@ -25,7 +25,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/lock.h>
 #include <sys/systm.h>
 
 #include <machine/asm_macro.h>
