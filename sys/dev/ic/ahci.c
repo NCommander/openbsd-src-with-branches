@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci.c,v 1.16 2014/07/13 23:10:23 deraadt Exp $ */
+/*	$OpenBSD: ahci.c,v 1.17 2014/12/03 04:33:06 jsg Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -405,6 +405,9 @@ ahci_init(struct ahci_softc *sc)
 		break;
 	case AHCI_REG_VS_1_3:
 		revision = "1.3";
+		break;
+	case AHCI_REG_VS_1_3_1:
+		revision = "1.3.1";
 		break;
 
 	default:
