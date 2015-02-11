@@ -99,6 +99,9 @@ openpromread(dev_t dev, struct uio *uio, int flags)
 	if (minor(dev) != 1)
 		return (ENXIO);
 
+	if (uio->uio_offset < 0)
+		return (EINVAL);
+
 	while (uio->uio_resid > 0) {
 		if (uio->uio_offset >= mdesc_len)
 			break;
@@ -108,7 +111,7 @@ openpromread(dev_t dev, struct uio *uio, int flags)
 		if (len > uio->uio_resid)
 			len = uio->uio_resid;
 
-		error = uiomovei(v, len, uio);
+		error = uiomove(v, len, uio);
 		if (error)
 			return (error);
 	}
