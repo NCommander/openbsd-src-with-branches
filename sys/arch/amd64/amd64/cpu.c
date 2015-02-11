@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.77 2015/01/06 12:50:47 dlg Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.78 2015/01/16 10:17:51 sf Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -74,6 +74,7 @@
 #include <sys/malloc.h>
 #include <sys/memrange.h>
 #include <dev/rndvar.h>
+#include <sys/atomic.h>
 
 #include <uvm/uvm_extern.h>
 
