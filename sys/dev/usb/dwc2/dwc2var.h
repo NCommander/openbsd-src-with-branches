@@ -42,7 +42,7 @@ struct dwc2_hsotg;
 struct dwc2_qtd;
 
 struct dwc2_xfer {
-	struct usbd_xfer *xfer;			/* Needs to be first */
+	struct usbd_xfer xfer;			/* Needs to be first */
 	struct usb_task	abort_task;
 
 	struct dwc2_hcd_urb *urb;
@@ -82,7 +82,6 @@ typedef struct dwc2_softc {
 
  	bus_space_tag_t		sc_iot;
  	bus_space_handle_t	sc_ioh;
- 	bus_dma_tag_t		sc_dmat;
 	struct dwc2_core_params *sc_params;
 
 	/*
