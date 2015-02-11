@@ -69,6 +69,16 @@
 #define AHCI_REG_EM_LOC		0x01c /* Enclosure Mgmt Location */
 #define AHCI_REG_EM_CTL		0x020 /* Enclosure Mgmt Control */
 
+#define AHCI_REG_CAP2		0x024 /* HBA Capabilities Extended */
+#define  AHCI_REG_CAP2_DESO	(1<<5)  /* DevSlp from slumber only */
+#define  AHCI_REG_CAP2_SADM	(1<<4)  /* Aggro DevSlp mgmt */
+#define  AHCI_REG_CAP2_SDS	(1<<3)  /* Supports DevSlp */
+#define  AHCI_REG_CAP2_APST	(1<<2)  /* Auto partial->slumber */
+#define  AHCI_REG_CAP2_NVMP	(1<<1)  /* NVMHCI present */
+#define  AHCI_REG_CAP2_BOH	(1<<0)  /* BIOS/OS handoff */
+#define  AHCI_FMT_CAP2		"\020" "\006DESO" "\005SADM" "\004SDS" \
+				    "\003APST" "\002NVMP" "\001BOH"
+
 #define AHCI_PORT_REGION(_p)	(0x100 + ((_p) * 0x80))
 #define AHCI_PORT_SIZE		0x80
 

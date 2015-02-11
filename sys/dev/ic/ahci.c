@@ -209,6 +209,8 @@ ahci_attach(struct ahci_softc *sc)
 		printf("%s: capabilities 0x%b, %d ports, %d cmds, gen %s\n",
 		    DEVNAME(sc), sc->sc_cap, AHCI_FMT_CAP,
 		    AHCI_REG_CAP_NP(sc->sc_cap), sc->sc_ncmds, gen);
+		printf("%s: extended capabilities 0x%b\n", DEVNAME(sc),
+		    ahci_read(sc, AHCI_REG_CAP2), AHCI_FMT_CAP2);
 	}
 #endif
 
