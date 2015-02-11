@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.h,v 1.33 2014/12/17 15:23:42 deraadt Exp $ */
+/* $OpenBSD: pmap.h,v 1.34 2015/02/09 22:35:06 miod Exp $ */
 /* $NetBSD: pmap.h,v 1.37 2000/11/19 03:16:35 thorpej Exp $ */
 
 /*-
@@ -74,7 +74,6 @@
 
 #ifdef _KERNEL
 
-#include <sys/lock.h>
 #include <sys/queue.h>
 
 /*
