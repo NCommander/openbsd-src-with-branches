@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.55 2014/06/18 20:03:55 miod Exp $ */
+/*	$OpenBSD: cpu.c,v 1.56 2014/09/30 06:51:58 jmatthew Exp $ */
 
 /*
  * Copyright (c) 1997-2004 Opsycon AB (www.opsycon.se)
@@ -29,6 +29,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/atomic.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <dev/rndvar.h>
