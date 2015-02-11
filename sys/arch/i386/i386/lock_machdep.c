@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock_machdep.c,v 1.15 2014/07/10 12:14:48 mlarkin Exp $	*/
+/*	$OpenBSD: lock_machdep.c,v 1.16 2014/07/20 02:48:59 guenther Exp $	*/
 /* $NetBSD: lock_machdep.c,v 1.1.2.3 2000/05/03 14:40:30 sommerfeld Exp $ */
 
 /*-
@@ -36,7 +36,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/lock.h>
 #include <sys/systm.h>
 
 #include <machine/atomic.h>

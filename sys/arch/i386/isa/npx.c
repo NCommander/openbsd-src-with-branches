@@ -1,4 +1,4 @@
-/*	$OpenBSD: npx.c,v 1.59 2013/11/16 21:00:02 brad Exp $	*/
+/*	$OpenBSD: npx.c,v 1.60 2014/03/29 18:09:29 guenther Exp $	*/
 /*	$NetBSD: npx.c,v 1.57 1996/05/12 23:12:24 mycroft Exp $	*/
 
 #if 0
@@ -61,6 +61,7 @@
 #include <machine/trap.h>
 #include <machine/specialreg.h>
 #include <machine/i8259.h>
+#include <machine/lock.h>
 
 #include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
