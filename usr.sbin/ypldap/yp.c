@@ -1,4 +1,4 @@
-/*	$OpenBSD: yp.c,v 1.12 2013/10/01 12:00:34 deraadt Exp $ */
+/*	$OpenBSD: yp.c,v 1.13 2015/01/16 06:40:22 deraadt Exp $ */
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
  *
@@ -209,7 +209,7 @@ yp_dispatch(struct svc_req *req, SVCXPRT *trans)
 		if (yp_check(req) == -1)
 			return;
 		svcerr_noproc(trans);
-		break;
+		return;
 	case YPPROC_CLEAR:
 		log_debug("ypproc_clear");
 		if (yp_check(req) == -1)
