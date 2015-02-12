@@ -83,6 +83,7 @@ typedef struct dwc2_softc {
  	bus_space_tag_t		sc_iot;
  	bus_space_handle_t	sc_ioh;
 	struct dwc2_core_params *sc_params;
+	struct dwc2_core_dma_config *sc_dma_config;
 
 	/*
 	 * Private
@@ -118,6 +119,8 @@ typedef struct dwc2_softc {
 } dwc2_softc_t;
 
 int		dwc2_init(struct dwc2_softc *);
+int		dwc2_dma_config(struct dwc2_softc *,
+				struct dwc2_core_dma_config *);
 int		dwc2_intr(void *);
 int		dwc2_detach(dwc2_softc_t *, int);
 bool		dwc2_shutdown(struct device *, int);

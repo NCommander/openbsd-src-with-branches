@@ -1640,6 +1640,13 @@ fail1:
 	return err;
 }
 
+int
+dwc2_dma_config(struct dwc2_softc *sc, struct dwc2_core_dma_config *config)
+{
+	sc->sc_dma_config = config;
+	return dwc2_hcd_dma_config(sc->sc_hsotg, sc->sc_dma_config);
+}
+
 #if 0
 /*
  * curmode is a mode indication bit 0 = device, 1 = host

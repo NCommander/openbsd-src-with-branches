@@ -2324,3 +2324,10 @@ error1:
 	dev_err(hsotg->dev, "%s() FAILED, returning %d\n", __func__, retval);
 	return retval;
 }
+
+int dwc2_hcd_dma_config(struct dwc2_hsotg *hsotg,
+			struct dwc2_core_dma_config *config)
+{
+	hsotg->core_dma_config = config;
+	return 0;
+}
