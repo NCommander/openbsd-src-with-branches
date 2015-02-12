@@ -241,7 +241,7 @@ pflogioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 
 int
 pflog_packet(struct pf_pdesc *pd, u_int8_t reason, struct pf_rule *rm,
-    struct pf_rule *am, struct pf_ruleset *ruleset)
+    struct pf_rule *am, struct pf_ruleset *ruleset, struct pf_rule *trigger)
 {
 #if NBPFILTER > 0
 	struct ifnet *ifn;
@@ -249,9 +249,11 @@ pflog_packet(struct pf_pdesc *pd, u_int8_t reason, struct pf_rule *rm,
 
 	if (rm == NULL || pd == NULL || pd->kif == NULL || pd->m == NULL)
 		return (-1);
+	if (trigger == NULL)
+		trigger = rm;
 
-	if (rm->logif >= npflogifs || (ifn = pflogifs[rm->logif]) == NULL ||
-	    !ifn->if_bpf)
+	if (trigger->logif >= npflogifs || (ifn = pflogifs[trigger->logif]) ==
+	    NULL || !ifn->if_bpf)
 		return (0);
 
 	bzero(&hdr, sizeof(hdr));
@@ -270,7 +272,7 @@ pflog_packet(struct pf_pdesc *pd, u_int8_t reason, struct pf_rule *rm,
 			strlcpy(hdr.ruleset, ruleset->anchor->name,
 			    sizeof(hdr.ruleset));
 	}
-	if (rm->log & PF_LOG_SOCKET_LOOKUP && !pd->lookup.done)
+	if (trigger->log & PF_LOG_SOCKET_LOOKUP && !pd->lookup.done)
 		pd->lookup.done = pf_socket_lookup(pd);
 	if (pd->lookup.done > 0) {
 		hdr.uid = pd->lookup.uid;
