@@ -1677,8 +1677,10 @@ void dwc2_host_hub_info(struct dwc2_hsotg *hsotg, void *context, int *hub_addr,
 	struct dwc2_pipe *dpipe = DWC2_XFER2DPIPE(xfer);
 	struct usbd_device *dev = dpipe->pipe.device;
 
-	*hub_addr = dev->myhsport->parent->address;
- 	*hub_port = dev->myhsport->portno;
+	if (dev->myhsport != NULL) {
+		*hub_addr = dev->myhsport->parent->address;
+ 		*hub_port = dev->myhsport->portno;
+	}
 }
 
 int dwc2_host_get_speed(struct dwc2_hsotg *hsotg, void *context)
