@@ -1,4 +1,4 @@
-/*	$OpenBSD: si.c,v 1.16 2015/02/10 06:19:36 jsg Exp $	*/
+/*	$OpenBSD: si.c,v 1.17 2015/02/11 07:01:37 jsg Exp $	*/
 /*
  * Copyright 2011 Advanced Micro Devices, Inc.
  *
@@ -3744,7 +3744,7 @@ restart_ih:
 	DRM_DEBUG("si_irq_process start: rptr %d, wptr %d\n", rptr, wptr);
 
 	/* Order reading of wptr vs. reading of IH ring data */
-	DRM_READMEMORYBARRIER();
+	rmb();
 
 	/* display interrupts */
 	si_irq_ack(rdev);
