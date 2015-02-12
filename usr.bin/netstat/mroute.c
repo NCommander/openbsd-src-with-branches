@@ -1,4 +1,4 @@
-/*	$OpenBSD: mroute.c,v 1.23 2015/01/16 06:40:10 deraadt Exp $	*/
+/*	$OpenBSD: mroute.c,v 1.24 2015/02/09 12:25:03 claudio Exp $	*/
 /*	$NetBSD: mroute.c,v 1.10 1996/05/11 13:51:27 mycroft Exp $	*/
 
 /*
@@ -151,6 +151,8 @@ mroutepr(void)
 
 	printf("\n");
 	nflag = saved_nflag;
+
+	free(buf);
 }
 
 void

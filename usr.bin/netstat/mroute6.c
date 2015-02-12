@@ -1,4 +1,4 @@
-/*	$OpenBSD: mroute6.c,v 1.17 2015/02/09 12:25:03 claudio Exp $	*/
+/*	$OpenBSD: mroute6.c,v 1.18 2015/02/12 13:06:47 sthen Exp $	*/
 
 /*
  * Copyright (C) 1998 WIDE Project.
@@ -187,6 +187,8 @@ mroute6pr(void)
 
 	printf("\n");
 	nflag = saved_nflag;
+
+	free(buf);
 }
 
 void
