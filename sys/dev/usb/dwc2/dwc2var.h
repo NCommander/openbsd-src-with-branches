@@ -133,6 +133,13 @@ void		dwc2_worker(struct task *, void *);
 void		dwc2_host_complete(struct dwc2_hsotg *, struct dwc2_qtd *,
 				   int);
 
+#define DWC2_READ_4(hsotg, reg) \
+    bus_space_read_4((hsotg)->hsotg_sc->sc_iot, (hsotg)->hsotg_sc->sc_ioh, \
+    (reg))
+#define DWC2_WRITE_4(hsotg, reg, data)  \
+    bus_space_write_4((hsotg)->hsotg_sc->sc_iot, (hsotg)->hsotg_sc->sc_ioh, \
+    (reg), (data));
+
 static inline void
 dwc2_root_intr(dwc2_softc_t *sc)
 {

@@ -64,11 +64,6 @@ typedef int irqreturn_t;
 
 #define	dma_addr_t	bus_addr_t
 
-#define DWC2_READ_4(hsotg, reg) \
-    bus_space_read_4((hsotg)->hsotg_sc->sc_iot, (hsotg)->hsotg_sc->sc_ioh, (reg))
-#define DWC2_WRITE_4(hsotg, reg, data)  \
-    bus_space_write_4((hsotg)->hsotg_sc->sc_iot, (hsotg)->hsotg_sc->sc_ioh, (reg), (data));
-
 #ifdef DWC2_DEBUG
 extern int dwc2debug;
 #define WARN_ON(x)	KASSERT(!(x))
