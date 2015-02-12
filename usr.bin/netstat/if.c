@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.71 2015/02/08 04:25:56 claudio Exp $	*/
+/*	$OpenBSD: if.c,v 1.72 2015/02/09 12:25:03 claudio Exp $	*/
 /*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
@@ -503,7 +503,7 @@ fetchifs(void)
 	struct if_data *ifd;
 	struct sockaddr *sa, *rti_info[RTAX_MAX];
 	struct sockaddr_dl *sdl;
-	char *buf, *next, *lim;
+	char *buf = NULL, *next, *lim;
 	char name[IFNAMSIZ];
 	size_t len;
 	int takeit = 0;
