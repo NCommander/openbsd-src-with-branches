@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.13 2013/11/16 18:37:27 rpe Exp $
+#	$OpenBSD: install.md,v 1.14 2014/08/15 09:45:54 rpe Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -81,13 +81,13 @@ e 0
 
 
 1
-$(expr $_s \* 2048)
+$((_s * 2048))
 e 3
 0
 e 3
 A6
 
-$(expr $_s \* 2048 + 1)
+$((_s * 2048 + 1))
 *
 update
 write
