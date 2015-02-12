@@ -44,6 +44,10 @@
 #if 0
 #include "opt_usb.h"
 #endif
+
+#define	STATIC_INLINE		static inline
+#define	STATIC
+
 // #define VERBOSE_DEBUG
 // #define DWC2_DUMP_FRREM
 // #define CONFIG_USB_DWC2_TRACK_MISSED_SOFS
@@ -194,7 +198,7 @@ enum usb_otg_state {
 #define	USB_PORT_STAT_C_RESET		UPS_C_PORT_RESET
 #define	USB_PORT_STAT_C_L1		UPS_C_PORT_L1
 
-static inline void
+STATIC_INLINE void
 udelay(unsigned long usecs)
 {
 	DELAY(usecs);
@@ -216,14 +220,14 @@ struct delayed_work {
 	void (*dw_fn)(void *);
 };
 
-static inline void
+STATIC_INLINE void
 INIT_DELAYED_WORK(struct delayed_work *dw, void (*fn)(struct task *))
 {
 	dw->dw_fn = (void (*)(void *))fn;
 	timeout_set(&dw->dw_timer, dw_timeout, dw);
 }
 
-static inline void
+STATIC_INLINE void
 queue_delayed_work(struct taskq *wq, struct delayed_work *dw, int j)
 {
 	timeout_add(&dw->dw_timer, j);
