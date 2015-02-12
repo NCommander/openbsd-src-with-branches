@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_panel.c,v 1.6 2014/01/24 04:05:06 jsg Exp $	*/
+/*	$OpenBSD: intel_panel.c,v 1.7 2014/03/24 17:06:49 kettenis Exp $	*/
 /*
  * Copyright © 2006-2010 Intel Corporation
  * Copyright (c) 2006 Dave Airlie <airlied@linux.ie>
@@ -140,7 +140,7 @@ static u32 i915_read_blc_pwm_ctl(struct drm_device *dev)
 
 	/* Restore the CTL value if it lost, e.g. GPU reset */
 
-	if (HAS_PCH_SPLIT(dev)) {
+	if (HAS_PCH_SPLIT(dev_priv->dev)) {
 		val = I915_READ(BLC_PWM_PCH_CTL2);
 		if (dev_priv->regfile.saveBLC_PWM_CTL2 == 0) {
 			dev_priv->regfile.saveBLC_PWM_CTL2 = val;
