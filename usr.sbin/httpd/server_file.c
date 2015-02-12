@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_file.c,v 1.49 2015/02/08 00:00:59 reyk Exp $	*/
+/*	$OpenBSD: server_file.c,v 1.50 2015/02/10 08:12:29 florian Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -341,7 +341,7 @@ server_file_index(struct httpd *env, struct client *clt, struct stat *st)
 		strftime(tmstr, sizeof(tmstr), "%d-%h-%Y %R", &tm);
 		namewidth = 51 - strlen(dp->d_name);
 
-		if ((escapeduri = escape_uri(dp->d_name)) == NULL)
+		if ((escapeduri = url_encode(dp->d_name)) == NULL)
 			goto fail;
 		if ((escapedhtml = escape_html(dp->d_name)) == NULL)
 			goto fail;
