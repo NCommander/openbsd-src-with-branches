@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhub.c,v 1.81 2014/12/09 07:05:06 doug Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: uhub.c,v 1.64 2003/02/08 03:32:51 ichiro Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/uhub.c,v 1.18 1999/11/17 22:33:43 n_hibma Exp $	*/
 
@@ -299,7 +299,7 @@ uhub_attach(struct device *parent, struct device *self, void *aux)
 		struct usbd_port *up = &hub->ports[p];
 		up->device = NULL;
 		up->parent = dev;
-		up->portno = p+1;
+		up->portno = p + 1;
 		if (dev->self_powered)
 			/* Self powered hub, give ports maximum current. */
 			up->power = USB_MAX_POWER;
