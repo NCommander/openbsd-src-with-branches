@@ -1,4 +1,4 @@
-/*	$OpenBSD: rs600.c,v 1.5 2014/02/09 11:03:31 jsg Exp $	*/
+/*	$OpenBSD: rs600.c,v 1.6 2014/02/09 12:33:44 jsg Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  * Copyright 2008 Red Hat Inc.
@@ -712,7 +712,7 @@ int rs600_irq_process(struct radeon_device *rdev)
 	if (!status &&
 	    !rdev->irq.stat_regs.r500.disp_int &&
 	    !rdev->irq.stat_regs.r500.hdmi0_status) {
-		return (0);
+		return IRQ_NONE;
 	}
 	while (status ||
 	       rdev->irq.stat_regs.r500.disp_int ||
@@ -772,7 +772,7 @@ int rs600_irq_process(struct radeon_device *rdev)
 			break;
 		}
 	}
-	return (1);
+	return IRQ_HANDLED;
 }
 
 u32 rs600_get_vblank_counter(struct radeon_device *rdev, int crtc)
