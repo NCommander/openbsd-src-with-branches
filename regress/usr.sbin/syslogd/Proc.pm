@@ -1,4 +1,4 @@
-#	$OpenBSD: Proc.pm,v 1.4 2015/01/01 19:58:48 bluhm Exp $
+#	$OpenBSD: Proc.pm,v 1.5 2015/01/28 19:23:22 bluhm Exp $
 
 # Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
 # Copyright (c) 2014 Florian Riehm <mail@friehm.de>
@@ -189,7 +189,7 @@ sub up {
 
 sub down {
 	my $self = shift;
-	my $timeout = shift || 30;
+	my $timeout = shift || 60;
 	$self->loggrep(qr/$self->{down}/, $timeout)
 	    or croak ref($self), " no '$self->{down}' in $self->{logfile} ".
 		"after $timeout seconds";
