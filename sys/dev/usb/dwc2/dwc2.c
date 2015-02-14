@@ -1821,6 +1821,9 @@ _dwc2_hcd_start(struct dwc2_hsotg *hsotg)
 
 	dwc2_hcd_reinit(hsotg);
 
+	/* Try to enable port. */
+	dwc2_handle_hcd_intr(hsotg);
+
 	/*XXXNH*/
 	delay(50);
 
