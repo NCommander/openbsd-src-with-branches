@@ -1,4 +1,4 @@
-/*	$OpenBSD: stty.c,v 1.14 2009/10/28 20:58:38 deraadt Exp $	*/
+/*	$OpenBSD: stty.c,v 1.15 2013/11/21 15:54:46 deraadt Exp $	*/
 /*	$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $	*/
 
 /*-
@@ -60,7 +60,7 @@ main(int argc, char *argv[])
 	    strspn(argv[optind], "-aefg") == strlen(argv[optind]) &&
 	    (ch = getopt(argc, argv, "aef:g")) != -1)
 		switch(ch) {
-		case 'a':		/* undocumented: POSIX compatibility */
+		case 'a':
 			fmt = POSIX;
 			break;
 		case 'e':
