@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap-bpf.c,v 1.26 2015/01/16 03:19:57 lteo Exp $	*/
+/*	$OpenBSD: pcap-bpf.c,v 1.27 2015/01/16 04:03:04 lteo Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1998
@@ -719,6 +719,7 @@ monitor_mode(pcap_t *p, int set)
 			return (PCAP_ERROR_NO_SUCH_DEVICE);
 
 		case EINVAL:
+		case ENOTTY:
 			/*
 			 * Interface doesn't support SIOC{G,S}IFMEDIA.
 			 */
