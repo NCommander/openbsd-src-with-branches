@@ -1,4 +1,4 @@
-.\"     $OpenBSD: mbuf.9,v 1.82 2015/02/10 03:50:30 lteo Exp $
+.\"     $OpenBSD: mbuf.9,v 1.83 2015/02/10 04:08:00 lteo Exp $
 .\"
 .\" Copyright (c) 2001 Jean-Jacques Bernard-Gundol <jjbg@openbsd.org>
 .\" All rights reserved.
@@ -174,7 +174,7 @@
 #define MCLBYTES        (1 << MCLSHIFT)
 #define MCLOFSET        (MCLBYTES - 1)
 
-#define mtod(m,t)       ((t)((m)-\*(Gtm_data))
+#define mtod(m,t)       ((t)((m)->m_data))
 
 struct m_hdr {
         struct  mbuf *mh_next;

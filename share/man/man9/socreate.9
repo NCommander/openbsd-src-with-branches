@@ -1,4 +1,4 @@
-.\"	$OpenBSD: socreate.9,v 1.1 2009/01/29 16:47:25 claudio Exp $
+.\"	$OpenBSD: socreate.9,v 1.2 2009/01/29 17:57:18 jmc Exp $
 .\"
 .\" Copyright (c) 2006 Robert N. M. Watson
 .\" All rights reserved.
@@ -135,11 +135,11 @@ Unlike the user system call,
 returns immediately; the caller may
 .Xr tsleep 9
 on
-.Fa so-\*(Gtso_timeo
+.Fa so->so_timeo
 and wait for the
 .Dv SS_ISCONNECTING
 flag to clear or
-.Fa so-\*(Gtso_error
+.Fa so->so_error
 to become non-zero.
 If
 .Fn soconnect
