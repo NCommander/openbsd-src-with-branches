@@ -1,4 +1,4 @@
-/*	$OpenBSD: inout.c,v 1.18 2014/12/01 13:11:21 deraadt Exp $	*/
+/*	$OpenBSD: inout.c,v 1.18 2014/12/01 13:13:00 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <ssl/ssl.h>
 #include <ctype.h>
 #include <err.h>
 #include <string.h>

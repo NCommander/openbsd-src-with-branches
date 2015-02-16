@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcode.c,v 1.45 2012/11/07 11:06:14 otto Exp $	*/
+/*	$OpenBSD: bcode.c,v 1.46 2014/10/08 03:59:56 doug Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <ssl/ssl.h>
 #include <err.h>
 #include <limits.h>
 #include <signal.h>
