@@ -1,4 +1,4 @@
-/* $OpenBSD: ge25519.h,v 1.2 2013/12/07 00:26:37 djm Exp $ */
+/* $OpenBSD: ge25519.h,v 1.3 2013/12/09 11:03:45 markus Exp $ */
 
 /*
  * Public Domain, Authors: Daniel J. Bernstein, Niels Duif, Tanja Lange,
@@ -28,7 +28,7 @@ typedef struct
   fe25519 t;
 } ge25519;
 
-const ge25519 ge25519_base;
+extern const ge25519 ge25519_base;
 
 int ge25519_unpackneg_vartime(ge25519 *r, const unsigned char p[32]);
 
