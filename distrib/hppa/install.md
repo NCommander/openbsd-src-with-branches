@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.24 2014/08/15 09:45:54 rpe Exp $
+#	$OpenBSD: install.md,v 1.25 2015/02/08 06:20:22 deraadt Exp $
 #
 # machine dependent section of installation/upgrade script.
 #
@@ -9,7 +9,7 @@ NCPU=$(sysctl -n hw.ncpufound)
 ((NCPU > 1)) && { DEFAULTSETS="bsd bsd.rd bsd.mp"; SANESETS="bsd bsd.mp"; }
 
 md_installboot() {
-	if ! installboot ${1} sdboot; then
+	if ! installboot -r /mnt ${1}; then
 		echo "\nFailed to install bootblocks."
 		echo "You will not be able to boot OpenBSD from ${1}."
 		exit
