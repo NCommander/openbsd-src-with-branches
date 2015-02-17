@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.42 2014/10/16 17:36:11 deraadt Exp $	*/
+/*	$OpenBSD: display.c,v 1.43 2015/02/17 00:32:40 tedu Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -206,10 +206,10 @@ vtresize(int force, int newrow, int newcol)
 			}
 		}
 
-		TRYREALLOCARRAY(score, newrow * newrow, sizeof(struct score));
+		TRYREALLOCARRAY(score, newrow, newrow * sizeof(struct score));
 		TRYREALLOCARRAY(vscreen, (newrow - 1), sizeof(struct video *));
 		TRYREALLOCARRAY(pscreen, (newrow - 1), sizeof(struct video *));
-		TRYREALLOCARRAY(video, (2 * (newrow - 1)), sizeof(struct video));
+		TRYREALLOCARRAY(video, (newrow - 1), 2 * sizeof(struct video));
 
 		/*
 		 * Zero-out the entries we just allocated.
