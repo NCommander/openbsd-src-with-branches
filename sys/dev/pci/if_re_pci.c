@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_pci.c,v 1.44 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_re_pci.c,v 1.45 2015/01/26 09:58:47 brad Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -182,7 +182,7 @@ re_pci_attach(struct device *parent, struct device *self, void *aux)
 			/* Set PCIe maximum read request size to 2048. */
 			reg = pci_conf_read(pa->pa_pc, pa->pa_tag,
 			    sc->rl_expcap + PCI_PCIE_DCSR);
-			reg = (reg & ~PCI_PCIE_DCSR_MPS);
+			reg &= PCI_PCIE_DCSR_MPS;
 			reg >>= 12;
 			rrs = (1 << (reg + 7));
 			if (rrs < 2048) {
