@@ -1,4 +1,4 @@
-#	$OpenBSD: hostkey-agent.sh,v 1.3 2015/01/20 08:02:33 djm Exp $
+#	$OpenBSD: hostkey-agent.sh,v 1.4 2015/01/27 12:01:36 djm Exp $
 #	Placed in the Public Domain.
 
 tid="hostkey agent"
@@ -22,7 +22,7 @@ for k in `${SSH} -Q key-plain` ; do
 	) >> $OBJ/known_hosts.orig
 	${SSHADD} $OBJ/agent-key.$k >/dev/null 2>&1 || \
 		fatal "couldn't load key $OBJ/agent-key.$k"
-	echo "Hostkey $OBJ/agent-key.${k}" >> sshd_proxy.orig
+	echo "Hostkey $OBJ/agent-key.${k}" >> $OBJ/sshd_proxy.orig
 	# Remove private key so the server can't use it.
 	rm $OBJ/agent-key.$k || fatal "couldn't rm $OBJ/agent-key.$k"
 done
