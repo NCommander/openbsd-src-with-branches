@@ -311,7 +311,6 @@ sig_cleanup(int which_sig)
 	(void) write(STDERR_FILENO, errbuf, strlen(errbuf));
 
 	ar_close(1);
-	sltab_process(1);
 	proc_dir(1);
 	if (tflag)
 		atdir_end();
