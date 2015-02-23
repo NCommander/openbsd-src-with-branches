@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.261 2015/01/30 01:10:33 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.262 2015/02/16 22:08:57 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -825,7 +825,7 @@ do_fingerprint(struct passwd *pw)
 		exit(1);
 	}
 	if ((r = sshkey_load_public(identity_file, &public, &comment)) != 0)
-		error("Error loading public key \"%s\": %s",
+		debug("Error loading public key \"%s\": %s",
 		    identity_file, ssh_err(r));
 	else {
 		fp = sshkey_fingerprint(public, fptype, rep);
