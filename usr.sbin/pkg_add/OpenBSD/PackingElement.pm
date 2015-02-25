@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.237 2014/10/13 12:44:16 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.238 2014/12/23 08:46:31 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -569,7 +569,7 @@ sub report
 	if (@l > 0) {
 		$state->say("The following new rcscripts were installed: #1",
 		    join(' ', @l));
-		$state->say("See rc.d(8) for details.");
+		$state->say("See rcctl(8) for details.");
 	}
 }
 
