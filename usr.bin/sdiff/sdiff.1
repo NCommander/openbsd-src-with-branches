@@ -1,9 +1,9 @@
-.\" $OpenBSD: sdiff.1,v 1.16 2010/10/16 18:00:32 jmc Exp $
+.\" $OpenBSD: sdiff.1,v 1.17 2013/07/16 00:07:52 schwarze Exp $
 .\"
 .\" Written by Raymond Lai <ray@cyth.net>.
 .\" Public domain.
 .\"
-.Dd $Mdocdate: October 16 2010 $
+.Dd $Mdocdate: July 16 2013 $
 .Dt SDIFF 1
 .Os
 .Sh NAME
@@ -22,11 +22,11 @@
 displays two files side by side,
 with any differences between the two highlighted as follows:
 new lines are marked with
-.Sq \*(Gt ;
+.Sq > ;
 deleted lines are marked with
-.Sq \*(Lt ;
+.Sq < ;
 and changed lines are marked with
-.Sq \*(Ba .
+.Sq | .
 .Pp
 .Nm
 can also be used to interactively merge two files,

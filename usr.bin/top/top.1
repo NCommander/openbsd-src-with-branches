@@ -1,4 +1,4 @@
-.\"	$OpenBSD: top.1,v 1.63 2014/09/17 02:10:27 dlg Exp $
+.\"	$OpenBSD: top.1,v 1.64 2014/09/17 02:20:07 dlg Exp $
 .\"
 .\" Copyright (c) 1997, Jason Downs.  All rights reserved.
 .\"
@@ -265,7 +265,7 @@ are recognized, and a newline terminates the input.
 .Pp
 These commands are currently recognized (^L refers to control-L):
 .Bl -tag -width XxXXXX
-.It h \*(Ba \&?
+.It h | \&?
 Display a summary of the commands (help screen).
 .It ^L
 Redraw the screen.
@@ -310,7 +310,7 @@ in their command name.
 shows all processes.
 .It H
 Toggle the display of process threads.
-.It I \*(Ba i
+.It I | i
 Toggle the display of idle processes.
 .It Xo k
 .Op - Ns Ar sig
