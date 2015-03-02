@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwm.c,v 1.24 2015/03/02 13:46:40 jsg Exp $	*/
+/*	$OpenBSD: if_iwm.c,v 1.25 2015/03/02 13:51:10 jsg Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -5282,7 +5282,8 @@ iwm_setrates(struct iwm_node *in)
 
 	/* init amrr */
 	ieee80211_amrr_node_init(&sc->sc_amrr, &in->in_amn);
-	ni->ni_txrate = nrates-1;
+	/* Start at lowest available bit-rate, AMRR will raise. */
+	ni->ni_txrate = 0;
 }
 
 int
