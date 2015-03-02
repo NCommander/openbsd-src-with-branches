@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_athn_usb.h,v 1.3 2012/11/10 14:35:06 mikeb Exp $	*/
+/*	$OpenBSD: if_athn_usb.h,v 1.4 2013/04/15 09:23:01 mglocker Exp $	*/
 
 /*-
  * Copyright (c) 2011 Damien Bergamini <damien.bergamini@free.fr>
@@ -458,4 +458,7 @@ struct athn_usb_softc {
 	uint8_t				ep_uapsd;
 	uint8_t				ep_mgmt;
 	uint8_t				ep_data[EDCA_NUM_AC];
+
+	/* Firmware cannot handle more than 8 STAs. */
+	uint8_t				nnodes;
 };
