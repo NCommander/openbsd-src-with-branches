@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.81 2015/01/19 19:52:17 markus Exp $
+#	$OpenBSD: Makefile,v 1.82 2015/01/19 20:30:24 markus Exp $
 
 .PATH:		${.CURDIR}/..
 .include "${.CURDIR}/../Makefile.inc"
@@ -36,8 +36,12 @@ SRCS=	${LIB_SRCS} \
 	roaming_dummy.c \
 	chacha.c poly1305.c cipher-chachapoly.c ssh-ed25519.c hmac.c umac.c
 
+.if (${SSH1:L} == "yes")
+SRCS+=	cipher-3des1.c cipher-bf1.c
+.endif
+
 .if (${OPENSSL:L} == "yes")
-SRCS+=	bufec.c bufbn.c cipher-3des1.c cipher-bf1.c rsa.c \
+SRCS+=	bufec.c bufbn.c rsa.c \
 	ssh-dss.c ssh-rsa.c ssh-ecdsa.c dh.c \
 	kexdh.c kexgex.c kexecdh.c \
 	kexdhc.c kexgexc.c kexecdhc.c \
