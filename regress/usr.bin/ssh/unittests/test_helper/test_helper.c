@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_helper.c,v 1.4 2015/01/15 07:36:28 djm Exp $	*/
+/*	$OpenBSD: test_helper.c,v 1.5 2015/02/16 22:20:50 djm Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller <djm@mindrot.org>
  *
@@ -174,7 +174,7 @@ test_info(char *s, size_t len)
 
 #ifdef SIGINFO
 static void
-siginfo(int unused __unused)
+siginfo(int unused __attribute__((__unused__)))
 {
 	char buf[256];
 
