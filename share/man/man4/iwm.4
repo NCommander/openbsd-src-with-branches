@@ -1,4 +1,4 @@
-.\" $OpenBSD: iwm.4,v 1.9 2015/02/21 11:48:01 stsp Exp $
+.\" $OpenBSD: iwm.4,v 1.10 2015/03/02 16:50:21 stsp Exp $
 .\"
 .\" Copyright (c) 2007,2008
 .\"	Damien Bergamini <damien.bergamini@free.fr>. All rights reserved.
@@ -15,7 +15,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: February 21 2015 $
+.Dd $Mdocdate: March 2 2015 $
 .Dt IWM 4
 .Os
 .Sh NAME
@@ -148,6 +148,3 @@ The firmware stops passing traffic if the MAC address is changed with
 Occasionally, firmware errors occur before association to a wireless
 network has completed.
 Several attempts may be required before link is successfully established.
-.Pp
-802.11a support is disabled because transmitting packets in this mode
-does not work yet.
