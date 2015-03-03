@@ -1,4 +1,4 @@
-#	$OpenBSD: proto-version.sh,v 1.3 2002/03/15 13:08:56 markus Exp $
+#	$OpenBSD: proto-version.sh,v 1.4 2013/05/17 00:37:40 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="sshd version with different protocol combinations"
@@ -28,7 +28,9 @@ check_version ()
 	fi
 }
 
-check_version	2,1	199
-check_version	1,2	199
 check_version	2	20
-check_version	1	15
+if ssh_version 1; then
+	check_version	2,1	199
+	check_version	1,2	199
+	check_version	1	15
+fi

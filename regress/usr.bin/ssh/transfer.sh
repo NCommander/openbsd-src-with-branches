@@ -1,9 +1,9 @@
-#	$OpenBSD: transfer.sh,v 1.1 2002/03/27 00:03:37 markus Exp $
+#	$OpenBSD: transfer.sh,v 1.2 2013/05/17 04:29:14 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="transfer data"
 
-for p in 1 2; do
+for p in ${SSH_PROTOCOLS}; do
 	verbose "$tid: proto $p"
 	rm -f ${COPY}
 	${SSH} -n -q -$p -F $OBJ/ssh_proxy somehost cat ${DATA} > ${COPY}
