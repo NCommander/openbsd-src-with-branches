@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath.c,v 1.36 2014/07/12 18:50:25 tedu Exp $ */
+/*	$OpenBSD: mpath.c,v 1.37 2014/09/14 14:17:26 jsg Exp $ */
 
 /*
  * Copyright (c) 2009 David Gwynne <dlg@openbsd.org>
@@ -425,6 +425,9 @@ mpath_path_probe(struct scsi_link *link)
 		return (ENXIO);
 
 	if (link->id == NULL)
+		return (EINVAL);
+
+	if (ISSET(link->flags, SDEV_UMASS))
 		return (EINVAL);
 
 	if (mpath == link->adapter_softc)
