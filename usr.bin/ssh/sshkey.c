@@ -1,4 +1,4 @@
-/* $OpenBSD: sshkey.c,v 1.13 2015/01/16 06:40:12 deraadt Exp $ */
+/* $OpenBSD: sshkey.c,v 1.14 2015/01/26 02:59:11 djm Exp $ */
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Alexander von Gernler.  All rights reserved.
@@ -2418,6 +2418,7 @@ sshkey_certify(struct sshkey *k, struct sshkey *ca)
 		break;
 	default:
 		ret = SSH_ERR_INVALID_ARGUMENT;
+		goto out;
 	}
 
 	/* -v01 certs have a serial number next */
