@@ -1,4 +1,4 @@
-/*	$OpenBSD: softintr.c,v 1.5 2014/12/24 22:48:27 miod Exp $	*/
+/*	$OpenBSD: softintr.c,v 1.6 2015/03/03 23:50:37 aoyama Exp $	*/
 /*	$NetBSD: softintr.c,v 1.2 2003/07/15 00:24:39 lukem Exp $	*/
 
 /*
@@ -113,7 +113,9 @@ softintr_establish(int ipl, void (*func)(void *), void *arg)
 	case IPL_SOFTNET:
 		si = SI_SOFTNET;
 		break;
+#if IPL_TTY != IPL_SOFTTTY
 	case IPL_TTY:
+#endif
 	case IPL_SOFTTTY:
 		si = SI_SOFTTTY;
 		break;
