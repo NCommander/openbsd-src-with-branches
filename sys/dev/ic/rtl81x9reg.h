@@ -833,7 +833,6 @@ struct rl_softc {
 	bus_space_handle_t	rl_bhandle;	/* bus space handle */
 	bus_space_tag_t		rl_btag;	/* bus space tag */
 	bus_dma_tag_t		sc_dmat;
-	u_int32_t		rl_expcap;
 	bus_dma_segment_t 	sc_rx_seg;
 	bus_dmamap_t		sc_rx_dmamap;
 	struct arpcom		sc_arpcom;	/* interface info */
