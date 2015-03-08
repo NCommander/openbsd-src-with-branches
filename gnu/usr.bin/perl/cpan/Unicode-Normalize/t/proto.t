@@ -1,8 +1,11 @@
 
 BEGIN {
-    unless ("A" eq pack('U', 0x41)) {
-	print "1..0 # Unicode::Normalize " .
-	    "cannot stringify a Unicode code point\n";
+    unless ('A' eq pack('U', 0x41)) {
+	print "1..0 # Unicode::Normalize cannot pack a Unicode code point\n";
+	exit 0;
+    }
+    unless (0x41 == unpack('U', 'A')) {
+	print "1..0 # Unicode::Normalize cannot get a Unicode code point\n";
 	exit 0;
     }
 }
@@ -16,12 +19,22 @@ BEGIN {
 
 #########################
 
-use Test;
 use strict;
 use warnings;
-BEGIN { plan tests => 42 };
+BEGIN { $| = 1; print "1..48\n"; }
+my $count = 0;
+sub ok ($;$) {
+    my $p = my $r = shift;
+    if (@_) {
+	my $x = shift;
+	$p = !defined $x ? !defined $r : !defined $r ? 0 : $r eq $x;
+    }
+    print $p ? "ok" : "not ok", ' ', ++$count, "\n";
+}
+
 use Unicode::Normalize qw(:all);
-ok(1); # If we made it this far, we're ok.
+
+ok(1);
 
 #########################
 
@@ -34,6 +47,8 @@ ok(NFKC    "\x{30A}\x{327}" eq "\x{327}\x{30A}");
 ok(FCD     "\x{30A}\x{327}" eq "\x{327}\x{30A}");
 ok(FCC     "\x{30A}\x{327}" eq "\x{327}\x{30A}");
 ok(reorder "\x{30A}\x{327}" eq "\x{327}\x{30A}");
+
+# 9
 
 ok(prototype \&normalize,'$$');
 ok(prototype \&NFD,  '$');
@@ -56,6 +71,8 @@ ok(prototype \&reorder,   '$');
 ok(prototype \&compose,   '$');
 ok(prototype \&composeContiguous, '$');
 
+# 27
+
 ok(prototype \&getCanon,      '$');
 ok(prototype \&getCompat,     '$');
 ok(prototype \&getComposite,  '$$');
@@ -65,11 +82,18 @@ ok(prototype \&isSingleton,   '$');
 ok(prototype \&isNonStDecomp, '$');
 ok(prototype \&isComp2nd,     '$');
 ok(prototype \&isComp_Ex,     '$');
-
 ok(prototype \&isNFD_NO,      '$');
 ok(prototype \&isNFC_NO,      '$');
 ok(prototype \&isNFC_MAYBE,   '$');
 ok(prototype \&isNFKD_NO,     '$');
 ok(prototype \&isNFKC_NO,     '$');
 ok(prototype \&isNFKC_MAYBE,  '$');
+ok(prototype \&splitOnLastStarter, undef);
+ok(prototype \&normalize_partial, '$$');
+ok(prototype \&NFD_partial,  '$');
+ok(prototype \&NFC_partial,  '$');
+ok(prototype \&NFKD_partial, '$');
+ok(prototype \&NFKC_partial, '$');
+
+# 48
 

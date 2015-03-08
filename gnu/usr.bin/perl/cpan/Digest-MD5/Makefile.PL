@@ -5,7 +5,8 @@ use Config qw(%Config);
 use ExtUtils::MakeMaker;
 
 my @extra;
-@extra = (DEFINE => "-DU32_ALIGNMENT_REQUIRED") unless free_u32_alignment();
+push(@extra, DEFINE => "-DU32_ALIGNMENT_REQUIRED") unless free_u32_alignment();
+push(@extra, INSTALLDIRS => 'perl') if $] >= 5.008 && $] < 5.012;
 
 if ($^O eq 'VMS') {
     if (defined($Config{ccname})) {
@@ -16,18 +17,24 @@ if ($^O eq 'VMS') {
     }
 }
 
-push(@extra, 'INSTALLDIRS'  => 'perl') if $] >= 5.008;
-push @extra, 'LICENSE' => 'perl' if eval($ExtUtils::MakeMaker::VERSION) >= "6.30";
 
 WriteMakefile(
     'NAME'	   => 'Digest::MD5',
     'VERSION_FROM' => 'MD5.pm',
-    'PREREQ_PM'    => { 'File::Spec' => 0,
+    'ABSTRACT'     => 'Perl interface to the MD-5 algorithm',
+    'AUTHOR'       => 'Gisle Aas <gisle@activestate.com>',
+    'LICENSE'      => 'perl',
+    'MIN_PERL_VERSION' => 5.006,
+    'PREREQ_PM'    => {
 			'Digest::base' => '1.00',
 			'XSLoader' => 0,
 		      },
+    'META_MERGE'   => {
+        resources  => {
+            repository => 'http://github.com/gisle/digest-md5',
+        }
+    },
     @extra,
-    'dist'         => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 );
 
 
@@ -73,8 +80,8 @@ sub free_u32_alignment
 int main(int argc, char** argv, char** env)
 {
 #if BYTEORDER == 0x1234 || BYTEORDER == 0x4321
-    U8 buf[] = "\0\0\0\1\0\0\0\0";
-    U32 *up;
+    volatile U8 buf[] = "\0\0\0\1\0\0\0\0";
+    volatile U32 *up;
     int i;
 
     if (sizeof(U32) != 4) {
@@ -143,4 +150,26 @@ EOT
     }
     print "signal $rc\n" if $rc && $rc < 0x80;
     return 0;
+}
+
+BEGIN {
+    # compatibility with older versions of MakeMaker
+    my $developer = -d ".git";
+    my %mm_req = (
+        LICENCE => 6.31,
+        META_MERGE => 6.45,
+        META_ADD => 6.45,
+        MIN_PERL_VERSION => 6.48,
+    );
+    undef(*WriteMakefile);
+    *WriteMakefile = sub {
+        my %arg = @_;
+        for (keys %mm_req) {
+            unless (eval { ExtUtils::MakeMaker->VERSION($mm_req{$_}) }) {
+                warn "$_ $@" if $developer;
+                delete $arg{$_};
+            }
+        }
+        ExtUtils::MakeMaker::WriteMakefile(%arg);
+    };
 }

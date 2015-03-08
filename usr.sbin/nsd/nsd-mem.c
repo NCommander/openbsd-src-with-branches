@@ -26,6 +26,7 @@
 #include "util.h"
 
 static void error(const char *format, ...) ATTR_FORMAT(printf, 1, 2);
+struct nsd nsd;
 
 /*
  * Print the help text.
@@ -104,9 +105,11 @@ account_zone(struct namedb* db, struct zone_mem* zmem)
 {
 	zmem->data = region_get_mem(db->region);
 	zmem->data_unused = region_get_mem_unused(db->region);
-	zmem->udb_data = (size_t)db->udb->alloc->disk->stat_data;
-	zmem->udb_overhead = (size_t)(db->udb->alloc->disk->stat_alloc -
-		db->udb->alloc->disk->stat_data);
+	if(db->udb) {
+		zmem->udb_data = (size_t)db->udb->alloc->disk->stat_data;
+		zmem->udb_overhead = (size_t)(db->udb->alloc->disk->stat_alloc -
+			db->udb->alloc->disk->stat_data);
+	}
 	zmem->domaincount = db->domains->nametree->count;
 }
 
@@ -192,6 +195,7 @@ static void
 check_zone_mem(const char* tf, const char* df, zone_options_t* zo,
 	nsd_options_t* opt, struct tot_mem* totmem)
 {
+	struct nsd nsd;
 	struct namedb* db;
 	const dname_type* dname = (const dname_type*)zo->node.key;
 	zone_type* zone;
@@ -203,14 +207,15 @@ check_zone_mem(const char* tf, const char* df, zone_options_t* zo,
 
 	/* init*/
 	memset(&zmem, 0, sizeof(zmem));
-	db = namedb_open(df, opt);
+	memset(&nsd, 0, sizeof(nsd));
+	nsd.db = db = namedb_open(df, opt);
 	if(!db) error("cannot open %s: %s", df, strerror(errno));
 	zone = namedb_zone_create(db, dname, zo);
 	taskudb = udb_base_create_new(tf, &namedb_walkfunc, NULL);
 	udb_ptr_init(&last_task, taskudb);
 
 	/* read the zone */
-	namedb_read_zonefile(db, zone, taskudb, &last_task);
+	namedb_read_zonefile(&nsd, zone, taskudb, &last_task);
 
 	/* account the memory for this zone */
 	account_zone(db, &zmem);
@@ -237,7 +242,9 @@ check_mem(nsd_options_t* opt)
 	char df[512];
 	memset(&totmem, 0, sizeof(totmem));
 	snprintf(tf, sizeof(tf), "./nsd-mem-task-%u.db", (unsigned)getpid());
-	snprintf(df, sizeof(df), "./nsd-mem-db-%u.db", (unsigned)getpid());
+	if(opt->database == NULL || opt->database[0] == 0)
+		df[0] = 0;
+	else snprintf(df, sizeof(df), "./nsd-mem-db-%u.db", (unsigned)getpid());
 
 	/* read all zones and account memory */
 	RBTREE_FOR(zo, zone_options_t*, opt->zone_options) {
@@ -250,10 +257,12 @@ check_mem(nsd_options_t* opt)
 	print_tot_mem(&totmem);
 
 	/* final advice */
-	printf("\nFinal advice estimate:\n");
-	printf("(The partial mmap causes reload&AXFR to take longer(disk access))\n");
-	pretty_mem(totmem.ram + totmem.disk, "data and big mmap");
-	pretty_mem(totmem.ram + totmem.disk/6, "data and partial mmap");
+	if(opt->database != NULL && opt->database[0] != 0) {
+		printf("\nFinal advice estimate:\n");
+		printf("(The partial mmap causes reload&AXFR to take longer(disk access))\n");
+		pretty_mem(totmem.ram + totmem.disk, "data and big mmap");
+		pretty_mem(totmem.ram + totmem.disk/6, "data and partial mmap");
+	}
 }
 
 /* dummy functions to link */

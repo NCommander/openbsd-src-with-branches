@@ -1,16 +1,9 @@
 #!/usr/bin/perl
 
-# Testing of basic document structures
+delete $ENV{PERL_YAML_BACKEND};
+delete $ENV{PERL_JSON_BACKEND};
 
-BEGIN {
-	if( $ENV{PERL_CORE} ) {
-		chdir 't';
-		@INC = ('../lib', 'lib');
-	}
-	else {
-		unshift @INC, 't/lib/';
-	}
-}
+# Testing of basic document structures
 
 use strict;
 BEGIN {

@@ -6,7 +6,7 @@ BEGIN {
     require './test.pl';
 }
 
-plan tests => 38;
+plan tests => 40;
 
 $^R = undef;
 like( 'a',  qr/^a(?{1})(?:b(?{2}))?/, 'a =~ ab?' );
@@ -84,3 +84,14 @@ cmp_ok( scalar(@var), '==', 0, '..still nothing pushed (package)' );
     ok( 'abbb' =~ /^a(?{36})(?:b(?{37})|c(?{38}))+/, 'abbbb =~ a(?:b|c)+' );
     ok( $^R == 37, '$^R == 37' ) or print "# \$^R=$^R\n";
 }
+
+# Broken temporarily by the jumbo re-eval rewrite in 5.17.1; fixed in .6
+{
+    use re 'eval';
+    $x = "(?{})";
+    is eval { "a" =~ /a++(?{})+$x/x } || $@, '1', '/a++(?{})+$code_block/'
+}
+
+# [perl #78194] $_ in code block aliasing op return values
+"$_" =~ /(?{ is \$_, \$_,
+               '[perl #78194] \$_ == \$_ when $_ aliases "$x"' })/;

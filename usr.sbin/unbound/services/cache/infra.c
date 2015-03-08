@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -39,7 +39,7 @@
  * This file contains the infrastructure cache.
  */
 #include "config.h"
-#include <ldns/rr.h>
+#include "ldns/rrdef.h"
 #include "services/cache/infra.h"
 #include "util/storage/slabhash.h"
 #include "util/storage/lookup3.h"
@@ -51,6 +51,11 @@
 
 /** Timeout when only a single probe query per IP is allowed. */
 #define PROBE_MAXRTO 12000 /* in msec */
+
+/** number of timeouts for a type when the domain can be blocked ;
+ * even if another type has completely rtt maxed it, the different type
+ * can do this number of packets (until those all timeout too) */
+#define TIMEOUT_COUNT_MAX 3
 
 size_t 
 infra_sizefunc(void* k, void* ATTR_UNUSED(d))
@@ -184,7 +189,7 @@ infra_lookup_nottl(struct infra_cache* infra, struct sockaddr_storage* addr,
 /** init the data elements */
 static void
 data_entry_init(struct infra_cache* infra, struct lruhash_entry* e, 
-	uint32_t timenow)
+	time_t timenow)
 {
 	struct infra_data* data = (struct infra_data*)e->data;
 	data->ttl = timenow + infra->host_ttl;
@@ -196,6 +201,9 @@ data_entry_init(struct infra_cache* infra, struct lruhash_entry* e,
 	data->rec_lame = 0;
 	data->lame_type_A = 0;
 	data->lame_other = 0;
+	data->timeout_A = 0;
+	data->timeout_AAAA = 0;
+	data->timeout_other = 0;
 }
 
 /** 
@@ -210,7 +218,7 @@ data_entry_init(struct infra_cache* infra, struct lruhash_entry* e,
  */
 static struct lruhash_entry*
 new_entry(struct infra_cache* infra, struct sockaddr_storage* addr, 
-	socklen_t addrlen, uint8_t* name, size_t namelen, uint32_t tm)
+	socklen_t addrlen, uint8_t* name, size_t namelen, time_t tm)
 {
 	struct infra_data* data;
 	struct infra_key* key = (struct infra_key*)malloc(sizeof(*key));
@@ -240,7 +248,7 @@ new_entry(struct infra_cache* infra, struct sockaddr_storage* addr,
 
 int 
 infra_host(struct infra_cache* infra, struct sockaddr_storage* addr,
-        socklen_t addrlen, uint8_t* nm, size_t nmlen, uint32_t timenow,
+        socklen_t addrlen, uint8_t* nm, size_t nmlen, time_t timenow,
 	int* edns_vs, uint8_t* edns_lame_known, int* to)
 {
 	struct lruhash_entry* e = infra_lookup_nottl(infra, addr, addrlen,
@@ -250,6 +258,9 @@ infra_host(struct infra_cache* infra, struct sockaddr_storage* addr,
 	if(e && ((struct infra_data*)e->data)->ttl < timenow) {
 		/* it expired, try to reuse existing entry */
 		int old = ((struct infra_data*)e->data)->rtt.rto;
+		uint8_t tA = ((struct infra_data*)e->data)->timeout_A;
+		uint8_t tAAAA = ((struct infra_data*)e->data)->timeout_AAAA;
+		uint8_t tother = ((struct infra_data*)e->data)->timeout_other;
 		lock_rw_unlock(&e->lock);
 		e = infra_lookup_nottl(infra, addr, addrlen, nm, nmlen, 1);
 		if(e) {
@@ -259,9 +270,13 @@ infra_host(struct infra_cache* infra, struct sockaddr_storage* addr,
 			data_entry_init(infra, e, timenow);
 			wr = 1;
 			/* TOP_TIMEOUT remains on reuse */
-			if(old >= USEFUL_SERVER_TOP_TIMEOUT)
+			if(old >= USEFUL_SERVER_TOP_TIMEOUT) {
 				((struct infra_data*)e->data)->rtt.rto
 					= USEFUL_SERVER_TOP_TIMEOUT;
+				((struct infra_data*)e->data)->timeout_A = tA;
+				((struct infra_data*)e->data)->timeout_AAAA = tAAAA;
+				((struct infra_data*)e->data)->timeout_other = tother;
+			}
 		}
 	}
 	if(!e) {
@@ -302,7 +317,7 @@ infra_host(struct infra_cache* infra, struct sockaddr_storage* addr,
 
 int 
 infra_set_lame(struct infra_cache* infra, struct sockaddr_storage* addr,
-	socklen_t addrlen, uint8_t* nm, size_t nmlen, uint32_t timenow,
+	socklen_t addrlen, uint8_t* nm, size_t nmlen, time_t timenow,
 	int dnsseclame, int reclame, uint16_t qtype)
 {
 	struct infra_data* data;
@@ -358,8 +373,8 @@ infra_update_tcp_works(struct infra_cache* infra,
 
 int 
 infra_rtt_update(struct infra_cache* infra, struct sockaddr_storage* addr,
-	socklen_t addrlen, uint8_t* nm, size_t nmlen, int roundtrip,
-	int orig_rtt, uint32_t timenow)
+	socklen_t addrlen, uint8_t* nm, size_t nmlen, int qtype,
+	int roundtrip, int orig_rtt, time_t timenow)
 {
 	struct lruhash_entry* e = infra_lookup_nottl(infra, addr, addrlen,
 		nm, nmlen, 1);
@@ -377,9 +392,29 @@ infra_rtt_update(struct infra_cache* infra, struct sockaddr_storage* addr,
 	data = (struct infra_data*)e->data;
 	if(roundtrip == -1) {
 		rtt_lost(&data->rtt, orig_rtt);
+		if(qtype == LDNS_RR_TYPE_A) {
+			if(data->timeout_A < TIMEOUT_COUNT_MAX)
+				data->timeout_A++;
+		} else if(qtype == LDNS_RR_TYPE_AAAA) {
+			if(data->timeout_AAAA < TIMEOUT_COUNT_MAX)
+				data->timeout_AAAA++;
+		} else {
+			if(data->timeout_other < TIMEOUT_COUNT_MAX)
+				data->timeout_other++;
+		}
 	} else {
+		/* if we got a reply, but the old timeout was above server
+		 * selection height, delete the timeout so the server is
+		 * fully available again */
+		if(rtt_unclamped(&data->rtt) >= USEFUL_SERVER_TOP_TIMEOUT)
+			rtt_init(&data->rtt);
 		rtt_update(&data->rtt, roundtrip);
 		data->probedelay = 0;
+		if(qtype == LDNS_RR_TYPE_A)
+			data->timeout_A = 0;
+		else if(qtype == LDNS_RR_TYPE_AAAA)
+			data->timeout_AAAA = 0;
+		else	data->timeout_other = 0;
 	}
 	if(data->rtt.rto > 0)
 		rto = data->rtt.rto;
@@ -390,23 +425,27 @@ infra_rtt_update(struct infra_cache* infra, struct sockaddr_storage* addr,
 	return rto;
 }
 
-int infra_get_host_rto(struct infra_cache* infra,
+long long infra_get_host_rto(struct infra_cache* infra,
         struct sockaddr_storage* addr, socklen_t addrlen, uint8_t* nm,
-	size_t nmlen, struct rtt_info* rtt, int* delay, uint32_t timenow)
+	size_t nmlen, struct rtt_info* rtt, int* delay, time_t timenow,
+	int* tA, int* tAAAA, int* tother)
 {
 	struct lruhash_entry* e = infra_lookup_nottl(infra, addr, addrlen,
 		nm, nmlen, 0);
 	struct infra_data* data;
-	int ttl = -2;
+	long long ttl = -2;
 	if(!e) return -1;
 	data = (struct infra_data*)e->data;
 	if(data->ttl >= timenow) {
-		ttl = (int)(data->ttl - timenow);
+		ttl = (long long)(data->ttl - timenow);
 		memmove(rtt, &data->rtt, sizeof(*rtt));
 		if(timenow < data->probedelay)
 			*delay = (int)(data->probedelay - timenow);
 		else	*delay = 0;
 	}
+	*tA = (int)data->timeout_A;
+	*tAAAA = (int)data->timeout_AAAA;
+	*tother = (int)data->timeout_other;
 	lock_rw_unlock(&e->lock);
 	return ttl;
 }
@@ -414,7 +453,7 @@ int infra_get_host_rto(struct infra_cache* infra,
 int 
 infra_edns_update(struct infra_cache* infra, struct sockaddr_storage* addr,
 	socklen_t addrlen, uint8_t* nm, size_t nmlen, int edns_version,
-	uint32_t timenow)
+	time_t timenow)
 {
 	struct lruhash_entry* e = infra_lookup_nottl(infra, addr, addrlen,
 		nm, nmlen, 1);
@@ -446,7 +485,7 @@ int
 infra_get_lame_rtt(struct infra_cache* infra,
         struct sockaddr_storage* addr, socklen_t addrlen,
         uint8_t* name, size_t namelen, uint16_t qtype, 
-	int* lame, int* dnsseclame, int* reclame, int* rtt, uint32_t timenow)
+	int* lame, int* dnsseclame, int* reclame, int* rtt, time_t timenow)
 {
 	struct infra_data* host;
 	struct lruhash_entry* e = infra_lookup_nottl(infra, addr, addrlen,
@@ -456,20 +495,34 @@ infra_get_lame_rtt(struct infra_cache* infra,
 	host = (struct infra_data*)e->data;
 	*rtt = rtt_unclamped(&host->rtt);
 	if(host->rtt.rto >= PROBE_MAXRTO && timenow < host->probedelay
-		&& rtt_notimeout(&host->rtt)*4 <= host->rtt.rto)
+		&& rtt_notimeout(&host->rtt)*4 <= host->rtt.rto) {
 		/* single probe for this domain, and we are not probing */
-		*rtt = USEFUL_SERVER_TOP_TIMEOUT;
+		/* unless the query type allows a probe to happen */
+		if(qtype == LDNS_RR_TYPE_A) {
+			if(host->timeout_A >= TIMEOUT_COUNT_MAX)
+				*rtt = USEFUL_SERVER_TOP_TIMEOUT;
+			else	*rtt = USEFUL_SERVER_TOP_TIMEOUT-1000;
+		} else if(qtype == LDNS_RR_TYPE_AAAA) {
+			if(host->timeout_AAAA >= TIMEOUT_COUNT_MAX)
+				*rtt = USEFUL_SERVER_TOP_TIMEOUT;
+			else	*rtt = USEFUL_SERVER_TOP_TIMEOUT-1000;
+		} else {
+			if(host->timeout_other >= TIMEOUT_COUNT_MAX)
+				*rtt = USEFUL_SERVER_TOP_TIMEOUT;
+			else	*rtt = USEFUL_SERVER_TOP_TIMEOUT-1000;
+		}
+	}
 	if(timenow > host->ttl) {
 		/* expired entry */
 		/* see if this can be a re-probe of an unresponsive server */
 		/* minus 1000 because that is outside of the RTTBAND, so
 		 * blacklisted servers stay blacklisted if this is chosen */
 		if(host->rtt.rto >= USEFUL_SERVER_TOP_TIMEOUT) {
+			lock_rw_unlock(&e->lock);
 			*rtt = USEFUL_SERVER_TOP_TIMEOUT-1000;
 			*lame = 0;
 			*dnsseclame = 0;
 			*reclame = 0;
-			lock_rw_unlock(&e->lock);
 			return 1;
 		}
 		lock_rw_unlock(&e->lock);

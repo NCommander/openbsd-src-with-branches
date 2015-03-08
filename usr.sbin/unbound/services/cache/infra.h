@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -68,10 +68,10 @@ struct infra_key {
  */
 struct infra_data {
 	/** TTL value for this entry. absolute time. */
-	uint32_t ttl;
+	time_t ttl;
 
 	/** time in seconds (absolute) when probing re-commences, 0 disabled */
-	uint32_t probedelay;
+	time_t probedelay;
 	/** round trip times for timeout calculation */
 	struct rtt_info rtt;
 
@@ -91,6 +91,13 @@ struct infra_data {
 	uint8_t lame_type_A;
 	/** the host is lame (not authoritative) for other query types */
 	uint8_t lame_other;
+
+	/** timeouts counter for type A */
+	uint8_t timeout_A;
+	/** timeouts counter for type AAAA */
+	uint8_t timeout_AAAA;
+	/** timeouts counter for others */
+	uint8_t timeout_other;
 };
 
 /**
@@ -166,7 +173,7 @@ struct lruhash_entry* infra_lookup_nottl(struct infra_cache* infra,
  */
 int infra_host(struct infra_cache* infra, struct sockaddr_storage* addr, 
 	socklen_t addrlen, uint8_t* name, size_t namelen,
-	uint32_t timenow, int* edns_vs, uint8_t* edns_lame_known, int* to);
+	time_t timenow, int* edns_vs, uint8_t* edns_lame_known, int* to);
 
 /**
  * Set a host to be lame for the given zone.
@@ -185,7 +192,7 @@ int infra_host(struct infra_cache* infra, struct sockaddr_storage* addr,
  */
 int infra_set_lame(struct infra_cache* infra,
         struct sockaddr_storage* addr, socklen_t addrlen,
-	uint8_t* name, size_t namelen, uint32_t timenow, int dnsseclame,
+	uint8_t* name, size_t namelen, time_t timenow, int dnsseclame,
 	int reclame, uint16_t qtype);
 
 /**
@@ -195,6 +202,7 @@ int infra_set_lame(struct infra_cache* infra,
  * @param addrlen: length of addr.
  * @param name: zone name
  * @param namelen: zone name length
+ * @param qtype: query type.
  * @param roundtrip: estimate of roundtrip time in milliseconds or -1 for 
  * 	timeout.
  * @param orig_rtt: original rtt for the query that timed out (roundtrip==-1).
@@ -203,8 +211,8 @@ int infra_set_lame(struct infra_cache* infra,
  * @return: 0 on error. new rto otherwise.
  */
 int infra_rtt_update(struct infra_cache* infra, struct sockaddr_storage* addr,
-	socklen_t addrlen, uint8_t* name, size_t namelen,
-	int roundtrip, int orig_rtt, uint32_t timenow);
+	socklen_t addrlen, uint8_t* name, size_t namelen, int qtype,
+	int roundtrip, int orig_rtt, time_t timenow);
 
 /**
  * Update information for the host, store that a TCP transaction works.
@@ -232,7 +240,7 @@ void infra_update_tcp_works(struct infra_cache* infra,
  */
 int infra_edns_update(struct infra_cache* infra,
         struct sockaddr_storage* addr, socklen_t addrlen,
-	uint8_t* name, size_t namelen, int edns_version, uint32_t timenow);
+	uint8_t* name, size_t namelen, int edns_version, time_t timenow);
 
 /**
  * Get Lameness information and average RTT if host is in the cache.
@@ -255,7 +263,7 @@ int infra_edns_update(struct infra_cache* infra,
 int infra_get_lame_rtt(struct infra_cache* infra,
         struct sockaddr_storage* addr, socklen_t addrlen, 
 	uint8_t* name, size_t namelen, uint16_t qtype, 
-	int* lame, int* dnsseclame, int* reclame, int* rtt, uint32_t timenow);
+	int* lame, int* dnsseclame, int* reclame, int* rtt, time_t timenow);
 
 /**
  * Get additional (debug) info on timing.
@@ -267,12 +275,16 @@ int infra_get_lame_rtt(struct infra_cache* infra,
  * @param rtt: the rtt_info is copied into here (caller alloced return struct).
  * @param delay: probe delay (if any).
  * @param timenow: what time it is now.
+ * @param tA: timeout counter on type A.
+ * @param tAAAA: timeout counter on type AAAA.
+ * @param tother: timeout counter on type other.
  * @return TTL the infra host element is valid for. If -1: not found in cache.
  *	TTL -2: found but expired.
  */
-int infra_get_host_rto(struct infra_cache* infra,
+long long infra_get_host_rto(struct infra_cache* infra,
         struct sockaddr_storage* addr, socklen_t addrlen, uint8_t* name,
-	size_t namelen, struct rtt_info* rtt, int* delay, uint32_t timenow);
+	size_t namelen, struct rtt_info* rtt, int* delay, time_t timenow,
+	int* tA, int* tAAAA, int* tother);
 
 /**
  * Get memory used by the infra cache.

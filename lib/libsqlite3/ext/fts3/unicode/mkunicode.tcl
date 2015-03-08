@@ -160,7 +160,7 @@ proc print_rd {map} {
   }
   assert( key>=aDia[iRes] );
   return ((c > (aDia[iRes]>>3) + (aDia[iRes]&0x07)) ? c : (int)aChar[iRes]);}
-  puts "\};"
+  puts "\}"
 }
 
 proc print_isdiacritic {zFunc map} {
@@ -239,7 +239,10 @@ proc an_load_unicodedata_text {zName} {
     foreach $lField $fields {}
 
     set iCode [expr "0x$code"]
-    set bAlnum [expr {[lsearch {L N} [string range $general_category 0 0]]>=0}]
+    set bAlnum [expr {
+         [lsearch {L N} [string range $general_category 0 0]] >= 0
+      || $general_category=="Co"
+    }]
 
     if { !$bAlnum } { lappend lRet $iCode }
   }
@@ -295,7 +298,7 @@ proc an_print_range_array {lRange} {
   ** using this format.
   */
   }]
-  puts -nonewline "  const static unsigned int aEntry\[\] = \{"
+  puts -nonewline "  static const unsigned int aEntry\[\] = \{"
   set i 0
   foreach range $lRange {
     foreach {iFirst nRange} $range {}
@@ -346,7 +349,7 @@ proc print_isalnum {zFunc lRange} {
     return ( (aAscii[c >> 5] & (1 << (c & 0x001F)))==0 );
   }else if( c<(1<<22) ){
     unsigned int key = (((unsigned int)c)<<10) | 0x000003FF;
-    int iRes;
+    int iRes = 0;
     int iHi = sizeof(aEntry)/sizeof(aEntry[0]) - 1;
     int iLo = 0;
     while( iHi>=iLo ){
@@ -360,7 +363,7 @@ proc print_isalnum {zFunc lRange} {
     }
     assert( aEntry[0]<key );
     assert( key>=aEntry[iRes] );
-    return (c >= ((aEntry[iRes]>>10) + (aEntry[iRes]&0x3FF)));
+    return (((unsigned int)c) >= ((aEntry[iRes]>>10) + (aEntry[iRes]&0x3FF)));
   }
   return 1;}
   puts "\}"
@@ -729,7 +732,7 @@ proc print_fileheader {} {
 */
   }]
   puts ""
-  puts "#if !defined(SQLITE_DISABLE_FTS3_UNICODE)"
+  puts "#ifndef SQLITE_DISABLE_FTS3_UNICODE"
   puts "#if defined(SQLITE_ENABLE_FTS3) || defined(SQLITE_ENABLE_FTS4)"
   puts ""
   puts "#include <assert.h>"

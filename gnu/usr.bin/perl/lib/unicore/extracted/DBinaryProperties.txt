@@ -1,8 +1,8 @@
-# DerivedBinaryProperties-5.2.0.txt
-# Date: 2009-05-22, 18:51:12 GMT [MD]
+# DerivedBinaryProperties-6.3.0.txt
+# Date: 2013-07-05, 14:08:44 GMT [MD]
 #
 # Unicode Character Database
-# Copyright (c) 1991-2009 Unicode, Inc.
+# Copyright (c) 1991-2013 Unicode, Inc.
 # For terms of use, see http://www.unicode.org/terms_of_use.html
 # For documentation, see http://www.unicode.org/reports/tr44/
 
@@ -60,7 +60,10 @@
 22D0..22D1    ; Bidi_Mirrored # Sm   [2] DOUBLE SUBSET..DOUBLE SUPERSET
 22D6..22ED    ; Bidi_Mirrored # Sm  [24] LESS-THAN WITH DOT..DOES NOT CONTAIN AS NORMAL SUBGROUP OR EQUAL
 22F0..22FF    ; Bidi_Mirrored # Sm  [16] UP RIGHT DIAGONAL ELLIPSIS..Z NOTATION BAG MEMBERSHIP
-2308..230B    ; Bidi_Mirrored # Sm   [4] LEFT CEILING..RIGHT FLOOR
+2308          ; Bidi_Mirrored # Ps       LEFT CEILING
+2309          ; Bidi_Mirrored # Pe       RIGHT CEILING
+230A          ; Bidi_Mirrored # Ps       LEFT FLOOR
+230B          ; Bidi_Mirrored # Pe       RIGHT FLOOR
 2320..2321    ; Bidi_Mirrored # Sm   [2] TOP HALF INTEGRAL..BOTTOM HALF INTEGRAL
 2329          ; Bidi_Mirrored # Ps       LEFT-POINTING ANGLE BRACKET
 232A          ; Bidi_Mirrored # Pe       RIGHT-POINTING ANGLE BRACKET
@@ -83,7 +86,7 @@
 27C5          ; Bidi_Mirrored # Ps       LEFT S-SHAPED BAG DELIMITER
 27C6          ; Bidi_Mirrored # Pe       RIGHT S-SHAPED BAG DELIMITER
 27C8..27C9    ; Bidi_Mirrored # Sm   [2] REVERSE SOLIDUS PRECEDING SUBSET..SUPERSET PRECEDING SOLIDUS
-27CC          ; Bidi_Mirrored # Sm       LONG DIVISION
+27CB..27CD    ; Bidi_Mirrored # Sm   [3] MATHEMATICAL RISING DIAGONAL..MATHEMATICAL FALLING DIAGONAL
 27D3..27D6    ; Bidi_Mirrored # Sm   [4] LOWER RIGHT CORNER WITH DOT..RIGHT OUTER JOIN
 27DC..27DE    ; Bidi_Mirrored # Sm   [3] LEFT MULTIMAP..LONG LEFT TACK
 27E2..27E5    ; Bidi_Mirrored # Sm   [4] WHITE CONCAVE-SIDED DIAMOND WITH LEFTWARDS TICK..WHITE SQUARE WITH RIGHTWARDS TICK
@@ -222,6 +225,6 @@ FF63          ; Bidi_Mirrored # Pe       HALFWIDTH RIGHT CORNER BRACKET
 1D789         ; Bidi_Mirrored # Sm       MATHEMATICAL SANS-SERIF BOLD PARTIAL DIFFERENTIAL
 1D7C3         ; Bidi_Mirrored # Sm       MATHEMATICAL SANS-SERIF BOLD ITALIC PARTIAL DIFFERENTIAL
 
-# Total code points: 543
+# Total code points: 545
 
 # EOF

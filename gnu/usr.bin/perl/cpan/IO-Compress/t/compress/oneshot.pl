@@ -16,7 +16,7 @@ BEGIN {
     $extra = 1
         if eval { require Test::NoWarnings ;  import Test::NoWarnings; 1 };
 
-    plan tests => 986 + $extra ;
+    plan tests => 995 + $extra ;
 
     use_ok('IO::Uncompress::AnyUncompress', qw(anyuncompress $AnyUncompressError)) ;
 
@@ -79,18 +79,18 @@ sub run
         }
 
         {
-            my $dir = "tmpdir";
+            my $dir ;
             my $lex = new LexDir $dir ;
-            mkdir $dir, 0777 ;
+            my $d = quotemeta $dir;
 
-            $a = $Func->($dir, \$x) ;
+            $a = $Func->("$dir", \$x) ;
             is $a, undef, "  $TopType returned undef";
-            like $$Error, "/input file '$dir' is a directory/",
+            like $$Error, "/input file '$d' is a directory/",
                 '  Input filename is a directory';
 
-            $a = $Func->(\$x, $dir) ;
+            $a = $Func->(\$x, "$dir") ;
             is $a, undef, "  $TopType returned undef";
-            like $$Error, "/output file '$dir' is a directory/",
+            like $$Error, "/output file '$d' is a directory/",
                 '  Output filename is a directory';
         }
 
@@ -183,8 +183,10 @@ sub run
                 use Config;
 
                 skip 'readonly + threads', 1
-                    if $Config{useithreads};
+                    if $Config{useithreads} ;
 
+                skip '\\ returns mutable value in 5.19.3', 1
+                    if $] >= 5.019003;
                 
                 eval { $a = $Func->(\$in, \$out, TrailingData => \"abc") ;} ;
                 like $@, mkErr("^$TopType: Parameter 'TrailingData' not writable"),
@@ -302,6 +304,7 @@ sub run
                     is $keep, $buffer, "  Input buffer not changed" ;
                     my $got = anyUncompress(\$output, $already);
                     $got = undef if ! defined $buffer && $got eq '' ;
+                    ok ! $$Error, "  no error [$$Error]" ;
                     is $got, $buffer, "  Uncompressed matches original";
 
                 }
@@ -890,21 +893,19 @@ sub run
         for my $files ( [qw(a1)], [qw(a1 a2 a3)] )
         {
 
-            my $tmpDir1 = 'tmpdir1';
-            my $tmpDir2 = 'tmpdir2';
+            my $tmpDir1 ;
+            my $tmpDir2 ;
             my $lex = new LexDir($tmpDir1, $tmpDir2) ;
-
-            mkdir $tmpDir1, 0777;
-            mkdir $tmpDir2, 0777;
+            my $d1 = quotemeta $tmpDir1 ;
+            my $d2 = quotemeta $tmpDir2 ;
 
             ok   -d $tmpDir1, "  Temp Directory $tmpDir1 exists";
-            #ok ! -d $tmpDir2, "  Temp Directory $tmpDir2 does not exist";
 
             my @files = map { "$tmpDir1/$_.tmp" } @$files ;
             foreach (@files) { writeFile($_, "abc $_") }
 
             my @expected = map { "abc $_" } @files ;
-            my @outFiles = map { s/$tmpDir1/$tmpDir2/; $_ } @files ;
+            my @outFiles = map { s/$d1/$tmpDir2/; $_ } @files ;
 
             {
                 title "$TopType - From FileGlob to FileGlob files [@$files]" ;
@@ -961,8 +962,7 @@ sub run
                 {
                     title "$TopType - From FileGlob to Filename files [@$files], MS $ms" ;
 
-                    my $filename = "abcde";
-                    my $lex = new LexFile($filename) ;
+                    my $lex = new LexFile(my $filename) ;
                     
                     ok &$Func("<$tmpDir1/a*.tmp>" => $filename,
                               MultiStream => $ms), '  Compressed ok' 
@@ -980,8 +980,7 @@ sub run
                 {
                     title "$TopType - From FileGlob to Filehandle files [@$files], MS $ms" ;
 
-                    my $filename = "abcde";
-                    my $lex = new LexFile($filename) ;
+                    my $lex = new LexFile(my $filename) ;
                     my $fh = new IO::File ">$filename";
                     
                     ok &$Func("<$tmpDir1/a*.tmp>" => $fh, 
@@ -1399,25 +1398,23 @@ sub run
         my $Func = getTopFuncRef($bit);
         my $TopType = getTopFuncName($bit);
 
-        my $tmpDir1 = 'tmpdir1';
-        my $tmpDir2 = 'tmpdir2';
+        my $tmpDir1 ;
+        my $tmpDir2 ;
         my $lex = new LexDir($tmpDir1, $tmpDir2) ;
-
-        mkdir $tmpDir1, 0777;
-        mkdir $tmpDir2, 0777;
+        my $d1 = quotemeta $tmpDir1 ;
+        my $d2 = quotemeta $tmpDir2 ;
 
         my @opts = ();
         @opts = (RawInflate => 1, UnLzma => 1)
             if $bit eq 'IO::Uncompress::AnyUncompress';
 
         ok   -d $tmpDir1, "  Temp Directory $tmpDir1 exists";
-        #ok ! -d $tmpDir2, "  Temp Directory $tmpDir2 does not exist";
 
         my @files = map { "$tmpDir1/$_.tmp" } qw( a1 a2 a3) ;
         foreach (@files) { writeFile($_, compressBuffer($UncompressClass, "abc $_")) }
 
         my @expected = map { "abc $_" } @files ;
-        my @outFiles = map { s/$tmpDir1/$tmpDir2/; $_ } @files ;
+        my @outFiles = map { s/$d1/$tmpDir2/; $_ } @files ;
 
         {
             title "$TopType - From FileGlob to FileGlob" ;
@@ -1475,8 +1472,7 @@ sub run
         {
             title "$TopType - From FileGlob to Filehandle" ;
 
-            my $output = 'abc' ;
-            my $lex = new LexFile $output ;
+            my $lex = new LexFile my $output ;
             my $fh = new IO::File ">$output" ;
             ok &$Func("<$tmpDir1/a*.tmp>" => $fh, AutoClose => 1, @opts), '  UnCompressed ok' 
                 or diag $$Error ;
@@ -1585,8 +1581,26 @@ sub run
         }
     }
 
-}
 
+    {
+        # check setting $/ 
+
+        my $CompFunc = getTopFuncRef($CompressClass);
+        my $UncompFunc = getTopFuncRef($UncompressClass);
+        my $lex = new LexFile my $file ;
+
+        local $\ = "\n" ;
+        my $input = "hello world";
+        my $compressed ;
+        my $output;
+        ok &$CompFunc(\$input => \$compressed), '  Compressed ok' ;
+        ok &$UncompFunc(\$compressed => $file), '  UnCompressed ok' ;
+        my $content = readFile($file) ;
+        is $content, $input, "round trip ok" ;
+
+    }
+
+}
 # TODO add more error cases
 
 1;

@@ -7,13 +7,12 @@ BEGIN {
 }
 use strict;
 
-# Currently only testing the reset of patterns.
-plan tests => 24;
+plan tests => 39;
 
 package aiieee;
 
 sub zlopp {
-    (shift =~ ?zlopp?) ? 1 : 0;
+    (shift =~ m?zlopp?) ? 1 : 0;
 }
 
 sub reset_zlopp {
@@ -23,7 +22,7 @@ sub reset_zlopp {
 package CLINK;
 
 sub ZZIP {
-    shift =~ ?ZZIP? ? 1 : 0;
+    shift =~ m?ZZIP? ? 1 : 0;
 }
 
 sub reset_ZZIP {
@@ -62,6 +61,106 @@ CLINK::reset_ZZIP();
 is(CLINK::ZZIP("ZZIP"), 1, "match matches after reset");
 is(CLINK::ZZIP(""), 0, "mismatch doesn't match");
 
+sub match_foo{
+    "foo" =~ m?foo?;
+}
+match_foo();
+reset "";
+ok !match_foo(), 'reset "" leaves patterns alone [perl #97958]';
+
+$scratch::a = "foo";
+$scratch::a2 = "bar";
+$scratch::b   = "baz";
+package scratch { reset "a" }
+is join("-", $scratch::a//'u', $scratch::a2//'u', $scratch::b//'u'),
+   "u-u-baz",
+   'reset "char"';
+
+$scratch::a = "foo";
+$scratch::a2 = "bar";
+$scratch::b   = "baz";
+$scratch::c    = "sea";
+package scratch { reset "bc" }
+is join("-", $scratch::a//'u', $scratch::a2//'u', $scratch::b//'u',
+             $scratch::c//'u'),
+   "foo-bar-u-u",
+   'reset "chars"';
+
+$scratch::a = "foo";
+$scratch::a2 = "bar";
+$scratch::b   = "baz";
+$scratch::c    = "sea";
+package scratch { reset "a-b" }
+is join("-", $scratch::a//'u', $scratch::a2//'u', $scratch::b//'u',
+             $scratch::c//'u'),
+   "u-u-u-sea",
+   'reset "range"';
+
+{ no strict; ${"scratch::\0foo"} = "bar" }
+$scratch::a = "foo";
+package scratch { reset "\0a" }
+is join("-", $scratch::a//'u', do { no strict; ${"scratch::\0foo"} }//'u'),
+   "u-u",
+   'reset "\0char"';
+
+$scratch::cow = __PACKAGE__;
+$scratch::qr = ${qr//};
+$scratch::v  = v6;
+$scratch::glob = *is;
+*scratch::ro = \1;
+package scratch { reset 'cqgvr' }
+is join ("-", map $_//'u', $scratch::cow, $scratch::qr, $scratch::v,
+                           $scratch::glob,$scratch::ro), 'u-u-u-u-1',
+   'cow, qr, vstring, glob, ro test';
+
+@scratch::an_array = 1..3;
+%scratch::a_hash   = 1..4;
+package scratch { reset 'a' }
+is @scratch::an_array, 0, 'resetting an array';
+is %scratch::a_hash,   0, 'resetting a hash';
+
+@scratch::an_array = 1..3;
+%scratch::an_array = 1..4;
+*scratch::an_array = \1;
+package scratch { reset 'a' }
+is @scratch::an_array, 0, 'resetting array in the same gv as a ro scalar';
+is @scratch::an_array, 0, 'resetting a hash in the same gv as a ro scalar';
+is $scratch::an_array, 1, 'reset skips ro scalars in the same gv as av/hv';
+
+for our $z (*_) {
+    {
+        local *_;
+        reset "z";
+        $z = 3;
+        () = *_{SCALAR};
+	no warnings;
+        () = "$_";   # used to crash
+    }
+    is ref\$z, "GLOB", 'reset leaves real-globs-as-scalars as GLOBs';
+    is $z, "*main::_", 'And the glob still has the right value';
+}
+
+# This used to crash under threaded builds, because pmops were remembering
+# their stashes by name, rather than by pointer.
+fresh_perl_is( # it crashes more reliably with a smaller script
+  'package bar;
+   sub foo {
+     m??;
+     BEGIN { *baz:: = *bar::; *bar:: = *foo:: }
+     # The name "bar" no langer refers to the same package
+   }
+   undef &foo; # so freeing the op does not remove it from the stash’s list
+   $_ = "";
+   push @_, ($_) x 10000;  # and its memory is scribbled over
+   reset;  # so reset on the original package tries to reset an invalid op
+   print "ok\n";',
+  "ok\n", {},
+  "no crash if package is effectively renamed before op is freed");
+
+sub _117941 { package _117941; reset }
+delete $::{"_117941::"};
+_117941();
+pass("no crash when current package is freed");
 
 undef $/;
 my $prog = <DATA>;
@@ -88,17 +187,17 @@ use strict;
 
 # Note that there are no digits in this program, other than the placeholders
 sub a {
-8one8;
+m8one8;
 }
 sub b {
-9two9;
+m9two9;
 }
 
 use threads;
 use threads::shared;
 
 sub wipe {
-    eval 'no warnings; sub b {}';
+    eval 'no warnings; sub b {}; 1' or die $@;
 }
 
 sub lock_then_wipe {

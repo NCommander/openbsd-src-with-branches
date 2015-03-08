@@ -3,144 +3,121 @@
 BEGIN {
     chdir 't' if -d 't';
     @INC = '../lib';
-    unless (find PerlIO::Layer 'perlio') {
-	print "1..0 # Skip: not perlio\n";
-	exit 0;
-    }
+    require './test.pl';
+    skip_all_without_perlio();
 }
 
 no utf8; # needed for use utf8 not griping about the raw octets
 
-$| = 1;
-print "1..31\n";
 
-open(F,"+>:utf8",'a');
+plan(tests => 63);
+
+$| = 1;
+
+my $a_file = tempfile();
+
+open(F,"+>:utf8",$a_file);
 print F chr(0x100).'£';
-print '#'.tell(F)."\n";
-print "not " unless tell(F) == 4;
-print "ok 1\n";
+cmp_ok( tell(F), '==', 4, tell(F) );
 print F "\n";
-print '#'.tell(F)."\n";
-print "not " unless tell(F) >= 5;
-print "ok 2\n";
+cmp_ok( tell(F), '>=', 5, tell(F) );
 seek(F,0,0);
-print "not " unless getc(F) eq chr(0x100);
-print "ok 3\n";
-print "not " unless getc(F) eq "£";
-print "ok 4\n";
-print "not " unless getc(F) eq "\n";
-print "ok 5\n";
+is( getc(F), chr(0x100) );
+is( getc(F), "£" );
+is( getc(F), "\n" );
 seek(F,0,0);
 binmode(F,":bytes");
 my $chr = chr(0xc4);
-if (ord('A') == 193) { $chr = chr(0x8c); } # EBCDIC
-print "not " unless getc(F) eq $chr;
-print "ok 6\n";
+if (ord($a_file) == 193) { $chr = chr(0x8c); } # EBCDIC
+is( getc(F), $chr );
 $chr = chr(0x80);
-if (ord('A') == 193) { $chr = chr(0x41); } # EBCDIC
-print "not " unless getc(F) eq $chr;
-print "ok 7\n";
+if (ord($a_file) == 193) { $chr = chr(0x41); } # EBCDIC
+is( getc(F), $chr );
 $chr = chr(0xc2);
-if (ord('A') == 193) { $chr = chr(0x80); } # EBCDIC
-print "not " unless getc(F) eq $chr;
-print "ok 8\n";
+if (ord($a_file) == 193) { $chr = chr(0x80); } # EBCDIC
+is( getc(F), $chr );
 $chr = chr(0xa3);
-if (ord('A') == 193) { $chr = chr(0x44); } # EBCDIC
-print "not " unless getc(F) eq $chr;
-print "ok 9\n";
-print "not " unless getc(F) eq "\n";
-print "ok 10\n";
+if (ord($a_file) == 193) { $chr = chr(0x44); } # EBCDIC
+is( getc(F), $chr );
+is( getc(F), "\n" );
 seek(F,0,0);
 binmode(F,":utf8");
-print "not " unless scalar(<F>) eq "\x{100}£\n";
-print "ok 11\n";
+is( scalar(<F>), "\x{100}£\n" );
 seek(F,0,0);
 $buf = chr(0x200);
 $count = read(F,$buf,2,1);
-print "not " unless $count == 2;
-print "ok 12\n";
-print "not " unless $buf eq "\x{200}\x{100}£";
-print "ok 13\n";
+cmp_ok( $count, '==', 2 );
+is( $buf, "\x{200}\x{100}£" );
 close(F);
 
 {
     $a = chr(300); # This *is* UTF-encoded
     $b = chr(130); # This is not.
 
-    open F, ">:utf8", 'a' or die $!;
+    open F, ">:utf8", $a_file or die $!;
     print F $a,"\n";
     close F;
 
-    open F, "<:utf8", 'a' or die $!;
+    open F, "<:utf8", $a_file or die $!;
     $x = <F>;
     chomp($x);
-    print "not " unless $x eq chr(300);
-    print "ok 14\n";
+    is( $x, chr(300) );
 
-    open F, "a" or die $!; # Not UTF
+    open F, $a_file or die $!; # Not UTF
     binmode(F, ":bytes");
     $x = <F>;
     chomp($x);
     $chr = chr(196).chr(172);
-    if (ord('A') == 193) { $chr = chr(141).chr(83); } # EBCDIC
-    print "not " unless $x eq $chr;
-    print "ok 15\n";
+    if (ord($a_file) == 193) { $chr = chr(141).chr(83); } # EBCDIC
+    is( $x, $chr );
     close F;
 
-    open F, ">:utf8", 'a' or die $!;
+    open F, ">:utf8", $a_file or die $!;
     binmode(F);  # we write a "\n" and then tell() - avoid CRLF issues.
     binmode(F,":utf8"); # turn UTF-8-ness back on
     print F $a;
     my $y;
     { my $x = tell(F);
       { use bytes; $y = length($a);}
-      print "not " unless $x == $y;
-      print "ok 16\n";
+      cmp_ok( $x, '==', $y );
   }
 
     { # Check byte length of $b
 	use bytes; my $y = length($b);
-	print "not " unless $y == 1;
-	print "ok 17\n";
+	cmp_ok( $y, '==', 1 );
     }
 
     print F $b,"\n"; # Don't upgrades $b
 
     { # Check byte length of $b
 	use bytes; my $y = length($b);
-	print "not ($y) " unless $y == 1;
-	print "ok 18\n";
+	cmp_ok( $y, '==', 1 );
     }
 
     {
 	my $x = tell(F);
 	{ use bytes; if (ord('A')==193){$y += 2;}else{$y += 3;}} # EBCDIC ASCII
-	print "not ($x,$y) " unless $x == $y;
-	print "ok 19\n";
+	cmp_ok( $x, '==', $y );
     }
 
     close F;
 
-    open F, "a" or die $!; # Not UTF
+    open F, $a_file or die $!; # Not UTF
     binmode(F, ":bytes");
     $x = <F>;
     chomp($x);
     $chr = v196.172.194.130;
     if (ord('A') == 193) { $chr = v141.83.130; } # EBCDIC
-    printf "not (%vd) ", $x unless $x eq $chr;
-    print "ok 20\n";
+    is( $x, $chr, sprintf('(%vd)', $x) );
 
-    open F, "<:utf8", "a" or die $!;
+    open F, "<:utf8", $a_file or die $!;
     $x = <F>;
     chomp($x);
     close F;
-    printf "not (%vd) ", $x unless $x eq chr(300).chr(130);
-    print "ok 21\n";
+    is( $x, chr(300).chr(130), sprintf('(%vd)', $x) );
 
-    open F, ">", "a" or die $!;
-    if (${^OPEN} =~ /:utf8/) {
-        binmode(F, ":bytes:");
-    }
+    open F, ">", $a_file or die $!;
+    binmode(F, ":bytes:");
 
     # Now let's make it suffer.
     my $w;
@@ -148,54 +125,63 @@ close(F);
 	use warnings 'utf8';
 	local $SIG{__WARN__} = sub { $w = $_[0] };
 	print F $a;
-	print "not " if ($@ || $w !~ /Wide character in print/i);
+        ok( (!$@));
+	like($w, qr/Wide character in print/i );
     }
-    print "ok 22\n";
 }
 
 # Hm. Time to get more evil.
-open F, ">:utf8", "a" or die $!;
+open F, ">:utf8", $a_file or die $!;
 print F $a;
 binmode(F, ":bytes");
 print F chr(130)."\n";
 close F;
 
-open F, "<", "a" or die $!;
+open F, "<", $a_file or die $!;
 binmode(F, ":bytes");
 $x = <F>; chomp $x;
 $chr = v196.172.130;
 if (ord('A') == 193) { $chr = v141.83.130; } # EBCDIC
-print "not " unless $x eq $chr;
-print "ok 23\n";
+is( $x, $chr );
 
 # Right.
-open F, ">:utf8", "a" or die $!;
+open F, ">:utf8", $a_file or die $!;
 print F $a;
 close F;
-open F, ">>", "a" or die $!;
+open F, ">>", $a_file or die $!;
+binmode(F, ":bytes");
 print F chr(130)."\n";
 close F;
 
-open F, "<", "a" or die $!;
+open F, "<", $a_file or die $!;
+binmode(F, ":bytes");
 $x = <F>; chomp $x;
-print "not " unless $x eq $chr;
-print "ok 24\n";
+SKIP: {
+    skip("Defaulting to UTF-8 output means that we can't generate a mangled file")
+	if $UTF8_OUTPUT;
+    is( $x, $chr );
+}
 
 # Now we have a deformed file.
 
-if (ord('A') == 193) {
-    print "ok 25 # Skip: EBCDIC\n"; # EBCDIC doesn't complain
-} else {
-    open F, "<:utf8", "a" or die $!;
-    $x = <F>; chomp $x;
-    local $SIG{__WARN__} = sub { print "ok 25\n" };
-    eval { sprintf "%vd\n", $x };
+SKIP: {
+    if (ord('A') == 193) {
+	skip("EBCDIC doesn't complain", 2);
+    } else {
+	my @warnings;
+	open F, "<:utf8", $a_file or die $!;
+	$x = <F>; chomp $x;
+	local $SIG{__WARN__} = sub { push @warnings, $_[0]; };
+	eval { sprintf "%vd\n", $x };
+	is (scalar @warnings, 1);
+	like ($warnings[0], qr/Malformed UTF-8 character \(unexpected continuation byte 0x82, with no preceding start byte/);
+    }
 }
 
 close F;
-unlink('a');
+unlink($a_file);
 
-open F, ">:utf8", "a";
+open F, ">:utf8", $a_file;
 @a = map { chr(1 << ($_ << 2)) } 0..5; # 0x1, 0x10, .., 0x100000
 unshift @a, chr(0); # ... and a null byte in front just for fun
 print F @a;
@@ -204,8 +190,9 @@ close F;
 my $c;
 
 # read() should work on characters, not bytes
-open F, "<:utf8", "a";
+open F, "<:utf8", $a_file;
 $a = 0;
+my $failed;
 for (@a) {
     unless (($c = read(F, $b, 1) == 1)  &&
             length($b)           == 1  &&
@@ -218,12 +205,12 @@ for (@a) {
         print '# tell(F)           == ', tell(F), "\n";
         print '# $a                == ', $a, "\n";
         print '# $c                == ', $c, "\n";
-        print "not ";
+	$failed++;
         last;
     }
 }
 close F;
-print "ok 26\n";
+is($failed, undef);
 
 {
     # Check that warnings are on on I/O, and that they can be muffled.
@@ -231,52 +218,184 @@ print "ok 26\n";
     local $SIG{__WARN__} = sub { $@ = shift };
 
     undef $@;
-    open F, ">a";
+    open F, ">$a_file";
     binmode(F, ":bytes");
     print F chr(0x100);
     close(F);
 
-    print $@ =~ /Wide character in print/ ? "ok 27\n" : "not ok 27\n";
+    like( $@, 'Wide character in print' );
 
     undef $@;
-    open F, ">:utf8", "a";
+    open F, ">:utf8", $a_file;
     print F chr(0x100);
     close(F);
 
-    print defined $@ ? "not ok 28\n" : "ok 28\n";
+    isnt( defined $@, !0 );
 
     undef $@;
-    open F, ">a";
+    open F, ">$a_file";
     binmode(F, ":utf8");
     print F chr(0x100);
     close(F);
 
-    print defined $@ ? "not ok 29\n" : "ok 29\n";
+    isnt( defined $@, !0 );
 
     no warnings 'utf8';
 
     undef $@;
-    open F, ">a";
+    open F, ">$a_file";
     print F chr(0x100);
     close(F);
 
-    print defined $@ ? "not ok 30\n" : "ok 30\n";
+    isnt( defined $@, !0 );
 
     use warnings 'utf8';
 
     undef $@;
-    open F, ">a";
+    open F, ">$a_file";
     binmode(F, ":bytes");
     print F chr(0x100);
     close(F);
 
-    print $@ =~ /Wide character in print/ ? "ok 31\n" : "not ok 31\n";
+    like( $@, 'Wide character in print' );
 }
 
-# sysread() and syswrite() tested in lib/open.t since Fnctl is used
+{
+    open F, ">:bytes",$a_file; print F "\xde"; close F;
 
-END {
-    1 while unlink "a";
-    1 while unlink "b";
+    open F, "<:bytes", $a_file;
+    my $b = chr 0x100;
+    $b .= <F>;
+    is( $b, chr(0x100).chr(0xde), "21395 '.= <>' utf8 vs. bytes" );
+    close F;
 }
 
+{
+    open F, ">:utf8",$a_file; print F chr 0x100; close F;
+
+    open F, "<:utf8", $a_file;
+    my $b = "\xde";
+    $b .= <F>;
+    is( $b, chr(0xde).chr(0x100), "21395 '.= <>' bytes vs. utf8" );
+    close F;
+}
+
+{
+    my @a = ( [ 0x007F, "bytes" ],
+	      [ 0x0080, "bytes" ],
+	      [ 0x0080, "utf8"  ],
+	      [ 0x0100, "utf8"  ] );
+    my $t = 34;
+    for my $u (@a) {
+	for my $v (@a) {
+	    # print "# @$u - @$v\n";
+	    open F, ">$a_file";
+	    binmode(F, ":" . $u->[1]);
+	    print F chr($u->[0]);
+	    close F;
+
+	    open F, "<$a_file";
+	    binmode(F, ":" . $u->[1]);
+
+	    my $s = chr($v->[0]);
+	    utf8::upgrade($s) if $v->[1] eq "utf8";
+
+	    $s .= <F>;
+	    is( $s, chr($v->[0]) . chr($u->[0]), 'rcatline utf8' );
+	    close F;
+	    $t++;
+	}
+    }
+    # last test here 49
+}
+
+{
+    # [perl #23428] Somethings rotten in unicode semantics
+    open F, ">$a_file";
+    binmode F, ":utf8";
+    syswrite(F, $a = chr(0x100));
+    close F;
+    is( ord($a), 0x100, '23428 syswrite should not downgrade scalar' );
+    like( $a, qr/^\w+/, '23428 syswrite should not downgrade scalar' );
+}
+
+# sysread() and syswrite() tested in lib/open.t since Fcntl is used
+
+{
+    # <FH> on a :utf8 stream should complain immediately with -w
+    # if it finds bad UTF-8 (:encoding(utf8) works this way)
+    use warnings 'utf8';
+    undef $@;
+    local $SIG{__WARN__} = sub { $@ = shift };
+    open F, ">$a_file";
+    binmode F;
+    my ($chrE4, $chrF6) = (chr(0xE4), chr(0xF6));
+    if (ord('A') == 193)	# EBCDIC
+    { ($chrE4, $chrF6) = (chr(0x43), chr(0xEC)); }
+    print F "foo", $chrE4, "\n";
+    print F "foo", $chrF6, "\n";
+    close F;
+    open F, "<:utf8", $a_file;
+    undef $@;
+    my $line = <F>;
+    my ($chrE4, $chrF6) = ("E4", "F6");
+    if (ord('A') == 193) { ($chrE4, $chrF6) = ("43", "EC"); } # EBCDIC
+    like( $@, qr/utf8 "\\x$chrE4" does not map to Unicode .+ <F> line 1/,
+	  "<:utf8 readline must warn about bad utf8");
+    undef $@;
+    $line .= <F>;
+    like( $@, qr/utf8 "\\x$chrF6" does not map to Unicode .+ <F> line 2/,
+	  "<:utf8 rcatline must warn about bad utf8");
+    close F;
+}
+
+{
+    # fixed record reads
+    open F, ">:utf8", $a_file;
+    print F "foo\xE4";
+    print F "bar\xFE";
+    print F "\xC0\xC8\xCC\xD2";
+    print F "a\xE4ab";
+    print F "a\xE4a";
+    close F;
+    open F, "<:utf8", $a_file;
+    local $/ = \4;
+    my $line = <F>;
+    is($line, "foo\xE4", "readline with \$/ = \\4");
+    $line .= <F>;
+    is($line, "foo\xE4bar\xFE", "rcatline with \$/ = \\4");
+    $line = <F>;
+    is($line, "\xC0\xC8\xCC\xD2", "readline with several encoded characters");
+    $line = <F>;
+    is($line, "a\xE4ab", "readline with another boundary condition");
+    $line = <F>;
+    is($line, "a\xE4a", "readline with boundary condition");
+    close F;
+
+    # badly encoded at EOF
+    open F, ">:raw", $a_file;
+    print F "foo\xEF\xAC"; # truncated \x{FB04} small ligature ffl
+    close F;
+
+    use warnings 'utf8';
+    open F, "<:utf8", $a_file;
+    undef $@;
+    local $SIG{__WARN__} = sub { $@ = shift };
+    $line = <F>;
+
+    like( $@, qr/utf8 "\\xEF" does not map to Unicode .+ <F> chunk 1/,
+	  "<:utf8 readline (fixed) must warn about bad utf8");
+    close F;
+}
+
+# getc should reset the utf8 flag and not be affected by previous
+# return values
+SKIP: {
+    skip "no PerlIO::scalar on miniperl", 2, if is_miniperl();
+    open my $fh, "<:raw",  \($buf = chr 255);
+    open my $uh, "<:utf8", \($uuf = "\xc4\x80");
+    for([$uh,chr 256], [$fh,chr 255]) {
+	is getc $$_[0], $$_[1],
+	  'getc returning non-utf8 after utf8';
+    }
+}

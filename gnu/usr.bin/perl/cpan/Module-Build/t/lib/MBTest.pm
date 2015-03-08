@@ -2,7 +2,6 @@ package MBTest;
 
 use strict;
 
-use IO::File ();
 use File::Spec;
 use File::Temp ();
 use File::Path ();
@@ -12,6 +11,7 @@ use File::Path ();
 BEGIN {
     # Environment variables which might effect our testing
     my @delete_env_keys = qw(
+        HOME
         DEVEL_COVER_OPTIONS
         MODULEBUILDRC
         PERL_MB_OPT
@@ -54,12 +54,10 @@ BEGIN {
   my $t_lib = File::Spec->catdir('t', 'bundled');
   push @INC, $t_lib; # Let user's installed version override
 
-  if ($ENV{PERL_CORE}) {
-    # We change directories, so expand @INC and $^X to absolute paths
-    # Also add .
-    @INC = (map(File::Spec->rel2abs($_), @INC), ".");
-    $^X = File::Spec->rel2abs($^X);
-  }
+  # We change directories, so expand @INC and $^X to absolute paths
+  # Also add .
+  @INC = (map(File::Spec->rel2abs($_), @INC), ".");
+  $^X = File::Spec->rel2abs($^X);
 }
 
 use Exporter;
@@ -96,7 +94,11 @@ __PACKAGE__->export(scalar caller, @extra_exports);
 
 # always return to the current directory
 {
-  my $cwd = File::Spec->rel2abs(Cwd::cwd);
+  my $cwd;
+  # must be done in BEGIN because tmpdir uses it in BEGIN for $ENV{HOME}
+  BEGIN { 
+    $cwd = File::Spec->rel2abs(Cwd::cwd);
+  }
 
   sub original_cwd { return $cwd }
 
@@ -121,6 +123,10 @@ sub tmpdir {
   my ($self, @args) = @_;
   my $dir = $ENV{PERL_CORE} ? MBTest->original_cwd : File::Spec->tmpdir;
   return File::Temp::tempdir('MB-XXXXXXXX', CLEANUP => 1, DIR => $dir, @args);
+}
+
+BEGIN {
+  $ENV{HOME} = tmpdir; # don't want .modulebuildrc or other things interfering
 }
 
 sub save_handle {
@@ -152,7 +158,7 @@ sub stdout_stderr_of {
 }
 
 sub slurp {
-  my $fh = IO::File->new($_[0]) or die "Can't open $_[0]: $!";
+  open(my $fh, '<', $_[0]) or die "Can't open $_[0]: $!";
   local $/;
   return scalar <$fh>;
 }
@@ -191,7 +197,15 @@ sub find_in_path {
 }
 
 sub check_compiler {
-  return (1,1) if $ENV{PERL_CORE};
+  if ($ENV{PERL_CORE}) {
+    require IPC::Cmd;
+    if ( $Config{usecrosscompile} && !IPC::Cmd::can_run($Config{cc}) ) {
+      return;
+    }
+    else {
+      return(1,1);
+    }
+  }
 
   local $SIG{__WARN__} = sub {};
 
@@ -201,6 +215,9 @@ sub check_compiler {
 
   my $have_c_compiler;
   stderr_of( sub {$have_c_compiler = $mb->have_c_compiler} );
+  # XXX link_executable() is not yet implemented for Windows
+  # and noexec tmpdir is irrelevant on Windows
+  return ($have_c_compiler, 1) if $^O eq "MSWin32";
 
   # check noexec tmpdir
   my $tmp_exec;

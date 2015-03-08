@@ -12,7 +12,7 @@ package Pod::InputObjects;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '1.31';  ## Current version of this package
+$VERSION = '1.62';  ## Current version of this package
 require  5.005;    ## requires this Perl version or later
 
 #############################################################################
@@ -35,13 +35,17 @@ Nothing.
 
 =head1 DESCRIPTION
 
+B<NOTE: This module is considered legacy; modern Perl releases (5.18 and
+higher) are going to remove Pod-Parser from core and use L<Pod-Simple>
+for all things POD.>
+
 This module defines some basic input objects used by B<Pod::Parser> when
 reading and parsing POD text from an input source. The following objects
 are defined:
 
-=over 4
-
 =begin __PRIVATE__
+
+=over 4
 
 =item package B<Pod::InputSource>
 
@@ -50,7 +54,11 @@ wrapper around a filehandle or C<IO::Handle>-type object (or anything
 that implements the C<getline()> method) which keeps track of some
 additional information relevant to the parsing of PODs.
 
+=back
+
 =end __PRIVATE__
+
+=over 4
 
 =item package B<Pod::Paragraph>
 
@@ -476,7 +484,7 @@ sub new {
           @_
     };
 
-    ## Initialize contents if they havent been already
+    ## Initialize contents if they haven't been already
     my $ptree = $self->{'-ptree'} || new Pod::ParseTree();
     if ( ref $ptree =~ /^(ARRAY)?$/ ) {
         ## We have an array-ref, or a normal scalar. Pass it as an
@@ -922,6 +930,8 @@ sub DESTROY {
 #############################################################################
 
 =head1 SEE ALSO
+
+B<Pod::InputObjects> is part of the L<Pod::Parser> distribution.
 
 See L<Pod::Parser>, L<Pod::Select>
 

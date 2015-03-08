@@ -1,26 +1,29 @@
 #!./perl
 
-print "1..5\n";
+BEGIN {
+    chdir 't';
+    @INC = '../lib';
+    require './test.pl';
+}
 
-my $test = 0;
+plan tests => 8;
 
 # symbolic filehandles should only result in glob entries with FH constructors
 
 $|=1;
 my $a = "SYM000";
-print "not " if defined(fileno($a)) or defined *{$a};
-++$test; print "ok $test\n";
+ok(!defined(fileno($a)), 'initial file handle is undefined');
+ok(!defined *{$a}, 'initial typeglob of file handle is undefined');
 
 select select $a;
-print "not " unless defined *{$a};
-++$test; print "ok $test\n";
+ok(defined *{$a}, 'typeglob of file handle defined after select');
 
 $a++;
-print "not " if close $a or defined *{$a};
-++$test; print "ok $test\n";
+ok(!close $a, 'close does not succeed with incremented file handle');
+ok(!defined *{$a}, 'typeglob of file handle not defined after increment');
 
-print "not " unless open($a, ">&STDOUT") and defined *{$a};
-++$test; print $a "ok $test\n";
+ok(open($a, ">&STDOUT"), 'file handle used with open of standard output');
+ok(defined *{$a}, 'typeglob of file handle defined after opening standard output');
 
-print "not " unless close $a;
-++$test; print $a "not "; print "ok $test\n";
+ok(close $a, 'close standard output via file handle;');
+

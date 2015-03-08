@@ -1,344 +1,280 @@
-PPDEF(pp_null)
-PPDEF(pp_stub)
-PPDEF(pp_scalar)
-PPDEF(pp_pushmark)
-PPDEF(pp_wantarray)
-PPDEF(pp_const)
-PPDEF(pp_gvsv)
-PPDEF(pp_gv)
-PPDEF(pp_gelem)
-PPDEF(pp_padsv)
-PPDEF(pp_padav)
-PPDEF(pp_padhv)
-PPDEF(pp_padany)
-PPDEF(pp_pushre)
-PPDEF(pp_rv2gv)
-PPDEF(pp_rv2sv)
-PPDEF(pp_av2arylen)
-PPDEF(pp_rv2cv)
-PPDEF(pp_anoncode)
-PPDEF(pp_prototype)
-PPDEF(pp_refgen)
-PPDEF(pp_srefgen)
-PPDEF(pp_ref)
-PPDEF(pp_bless)
-PPDEF(pp_backtick)
-PPDEF(pp_glob)
-PPDEF(pp_readline)
-PPDEF(pp_rcatline)
-PPDEF(pp_regcmaybe)
-PPDEF(pp_regcreset)
-PPDEF(pp_regcomp)
-PPDEF(pp_match)
-PPDEF(pp_qr)
-PPDEF(pp_subst)
-PPDEF(pp_substcont)
-PPDEF(pp_trans)
-PPDEF(pp_sassign)
-PPDEF(pp_aassign)
-PPDEF(pp_chop)
-PPDEF(pp_schop)
-PPDEF(pp_chomp)
-PPDEF(pp_schomp)
-PPDEF(pp_defined)
-PPDEF(pp_undef)
-PPDEF(pp_study)
-PPDEF(pp_pos)
-PPDEF(pp_preinc)
-PPDEF(pp_predec)
-PPDEF(pp_postinc)
-PPDEF(pp_postdec)
-PPDEF(pp_pow)
-PPDEF(pp_multiply)
-PPDEF(pp_i_multiply)
-PPDEF(pp_divide)
-PPDEF(pp_i_divide)
-PPDEF(pp_modulo)
-PPDEF(pp_i_modulo)
-PPDEF(pp_repeat)
-PPDEF(pp_add)
-PPDEF(pp_i_add)
-PPDEF(pp_subtract)
-PPDEF(pp_i_subtract)
-PPDEF(pp_concat)
-PPDEF(pp_stringify)
-PPDEF(pp_left_shift)
-PPDEF(pp_right_shift)
-PPDEF(pp_lt)
-PPDEF(pp_i_lt)
-PPDEF(pp_gt)
-PPDEF(pp_i_gt)
-PPDEF(pp_le)
-PPDEF(pp_i_le)
-PPDEF(pp_ge)
-PPDEF(pp_i_ge)
-PPDEF(pp_eq)
-PPDEF(pp_i_eq)
-PPDEF(pp_ne)
-PPDEF(pp_i_ne)
-PPDEF(pp_ncmp)
-PPDEF(pp_i_ncmp)
-PPDEF(pp_slt)
-PPDEF(pp_sgt)
-PPDEF(pp_sle)
-PPDEF(pp_sge)
-PPDEF(pp_seq)
-PPDEF(pp_sne)
-PPDEF(pp_scmp)
-PPDEF(pp_bit_and)
-PPDEF(pp_bit_xor)
-PPDEF(pp_bit_or)
-PPDEF(pp_negate)
-PPDEF(pp_i_negate)
-PPDEF(pp_not)
-PPDEF(pp_complement)
-PPDEF(pp_atan2)
-PPDEF(pp_sin)
-PPDEF(pp_cos)
-PPDEF(pp_rand)
-PPDEF(pp_srand)
-PPDEF(pp_exp)
-PPDEF(pp_log)
-PPDEF(pp_sqrt)
-PPDEF(pp_int)
-PPDEF(pp_hex)
-PPDEF(pp_oct)
-PPDEF(pp_abs)
-PPDEF(pp_length)
-PPDEF(pp_substr)
-PPDEF(pp_vec)
-PPDEF(pp_index)
-PPDEF(pp_rindex)
-PPDEF(pp_sprintf)
-PPDEF(pp_formline)
-PPDEF(pp_ord)
-PPDEF(pp_chr)
-PPDEF(pp_crypt)
-PPDEF(pp_ucfirst)
-PPDEF(pp_lcfirst)
-PPDEF(pp_uc)
-PPDEF(pp_lc)
-PPDEF(pp_quotemeta)
-PPDEF(pp_rv2av)
-PPDEF(pp_aelemfast)
-PPDEF(pp_aelem)
-PPDEF(pp_aslice)
-PPDEF(pp_each)
-PPDEF(pp_values)
-PPDEF(pp_keys)
-PPDEF(pp_delete)
-PPDEF(pp_exists)
-PPDEF(pp_rv2hv)
-PPDEF(pp_helem)
-PPDEF(pp_hslice)
-PPDEF(pp_unpack)
-PPDEF(pp_pack)
-PPDEF(pp_split)
-PPDEF(pp_join)
-PPDEF(pp_list)
-PPDEF(pp_lslice)
-PPDEF(pp_anonlist)
-PPDEF(pp_anonhash)
-PPDEF(pp_splice)
-PPDEF(pp_push)
-PPDEF(pp_pop)
-PPDEF(pp_shift)
-PPDEF(pp_unshift)
-PPDEF(pp_sort)
-PPDEF(pp_reverse)
-PPDEF(pp_grepstart)
-PPDEF(pp_grepwhile)
-PPDEF(pp_mapstart)
-PPDEF(pp_mapwhile)
-PPDEF(pp_range)
-PPDEF(pp_flip)
-PPDEF(pp_flop)
-PPDEF(pp_and)
-PPDEF(pp_or)
-PPDEF(pp_xor)
-PPDEF(pp_cond_expr)
-PPDEF(pp_andassign)
-PPDEF(pp_orassign)
-PPDEF(pp_method)
-PPDEF(pp_entersub)
-PPDEF(pp_leavesub)
-PPDEF(pp_caller)
-PPDEF(pp_warn)
-PPDEF(pp_die)
-PPDEF(pp_reset)
-PPDEF(pp_lineseq)
-PPDEF(pp_nextstate)
-PPDEF(pp_dbstate)
-PPDEF(pp_unstack)
-PPDEF(pp_enter)
-PPDEF(pp_leave)
-PPDEF(pp_scope)
-PPDEF(pp_enteriter)
-PPDEF(pp_iter)
-PPDEF(pp_enterloop)
-PPDEF(pp_leaveloop)
-PPDEF(pp_return)
-PPDEF(pp_last)
-PPDEF(pp_next)
-PPDEF(pp_redo)
-PPDEF(pp_dump)
-PPDEF(pp_goto)
-PPDEF(pp_exit)
-PPDEF(pp_open)
-PPDEF(pp_close)
-PPDEF(pp_pipe_op)
-PPDEF(pp_fileno)
-PPDEF(pp_umask)
-PPDEF(pp_binmode)
-PPDEF(pp_tie)
-PPDEF(pp_untie)
-PPDEF(pp_tied)
-PPDEF(pp_dbmopen)
-PPDEF(pp_dbmclose)
-PPDEF(pp_sselect)
-PPDEF(pp_select)
-PPDEF(pp_getc)
-PPDEF(pp_read)
-PPDEF(pp_enterwrite)
-PPDEF(pp_leavewrite)
-PPDEF(pp_prtf)
-PPDEF(pp_print)
-PPDEF(pp_sysopen)
-PPDEF(pp_sysseek)
-PPDEF(pp_sysread)
-PPDEF(pp_syswrite)
-PPDEF(pp_send)
-PPDEF(pp_recv)
-PPDEF(pp_eof)
-PPDEF(pp_tell)
-PPDEF(pp_seek)
-PPDEF(pp_truncate)
-PPDEF(pp_fcntl)
-PPDEF(pp_ioctl)
-PPDEF(pp_flock)
-PPDEF(pp_socket)
-PPDEF(pp_sockpair)
-PPDEF(pp_bind)
-PPDEF(pp_connect)
-PPDEF(pp_listen)
-PPDEF(pp_accept)
-PPDEF(pp_shutdown)
-PPDEF(pp_gsockopt)
-PPDEF(pp_ssockopt)
-PPDEF(pp_getsockname)
-PPDEF(pp_getpeername)
-PPDEF(pp_lstat)
-PPDEF(pp_stat)
-PPDEF(pp_ftrread)
-PPDEF(pp_ftrwrite)
-PPDEF(pp_ftrexec)
-PPDEF(pp_fteread)
-PPDEF(pp_ftewrite)
-PPDEF(pp_fteexec)
-PPDEF(pp_ftis)
-PPDEF(pp_fteowned)
-PPDEF(pp_ftrowned)
-PPDEF(pp_ftzero)
-PPDEF(pp_ftsize)
-PPDEF(pp_ftmtime)
-PPDEF(pp_ftatime)
-PPDEF(pp_ftctime)
-PPDEF(pp_ftsock)
-PPDEF(pp_ftchr)
-PPDEF(pp_ftblk)
-PPDEF(pp_ftfile)
-PPDEF(pp_ftdir)
-PPDEF(pp_ftpipe)
-PPDEF(pp_ftlink)
-PPDEF(pp_ftsuid)
-PPDEF(pp_ftsgid)
-PPDEF(pp_ftsvtx)
-PPDEF(pp_fttty)
-PPDEF(pp_fttext)
-PPDEF(pp_ftbinary)
-PPDEF(pp_chdir)
-PPDEF(pp_chown)
-PPDEF(pp_chroot)
-PPDEF(pp_unlink)
-PPDEF(pp_chmod)
-PPDEF(pp_utime)
-PPDEF(pp_rename)
-PPDEF(pp_link)
-PPDEF(pp_symlink)
-PPDEF(pp_readlink)
-PPDEF(pp_mkdir)
-PPDEF(pp_rmdir)
-PPDEF(pp_open_dir)
-PPDEF(pp_readdir)
-PPDEF(pp_telldir)
-PPDEF(pp_seekdir)
-PPDEF(pp_rewinddir)
-PPDEF(pp_closedir)
-PPDEF(pp_fork)
-PPDEF(pp_wait)
-PPDEF(pp_waitpid)
-PPDEF(pp_system)
-PPDEF(pp_exec)
-PPDEF(pp_kill)
-PPDEF(pp_getppid)
-PPDEF(pp_getpgrp)
-PPDEF(pp_setpgrp)
-PPDEF(pp_getpriority)
-PPDEF(pp_setpriority)
-PPDEF(pp_time)
-PPDEF(pp_tms)
-PPDEF(pp_localtime)
-PPDEF(pp_gmtime)
-PPDEF(pp_alarm)
-PPDEF(pp_sleep)
-PPDEF(pp_shmget)
-PPDEF(pp_shmctl)
-PPDEF(pp_shmread)
-PPDEF(pp_shmwrite)
-PPDEF(pp_msgget)
-PPDEF(pp_msgctl)
-PPDEF(pp_msgsnd)
-PPDEF(pp_msgrcv)
-PPDEF(pp_semget)
-PPDEF(pp_semctl)
-PPDEF(pp_semop)
-PPDEF(pp_require)
-PPDEF(pp_dofile)
-PPDEF(pp_entereval)
-PPDEF(pp_leaveeval)
-PPDEF(pp_entertry)
-PPDEF(pp_leavetry)
-PPDEF(pp_ghbyname)
-PPDEF(pp_ghbyaddr)
-PPDEF(pp_ghostent)
-PPDEF(pp_gnbyname)
-PPDEF(pp_gnbyaddr)
-PPDEF(pp_gnetent)
-PPDEF(pp_gpbyname)
-PPDEF(pp_gpbynumber)
-PPDEF(pp_gprotoent)
-PPDEF(pp_gsbyname)
-PPDEF(pp_gsbyport)
-PPDEF(pp_gservent)
-PPDEF(pp_shostent)
-PPDEF(pp_snetent)
-PPDEF(pp_sprotoent)
-PPDEF(pp_sservent)
-PPDEF(pp_ehostent)
-PPDEF(pp_enetent)
-PPDEF(pp_eprotoent)
-PPDEF(pp_eservent)
-PPDEF(pp_gpwnam)
-PPDEF(pp_gpwuid)
-PPDEF(pp_gpwent)
-PPDEF(pp_spwent)
-PPDEF(pp_epwent)
-PPDEF(pp_ggrnam)
-PPDEF(pp_ggrgid)
-PPDEF(pp_ggrent)
-PPDEF(pp_sgrent)
-PPDEF(pp_egrent)
-PPDEF(pp_getlogin)
-PPDEF(pp_syscall)
-PPDEF(pp_lock)
-PPDEF(pp_threadsv)
+/* -*- buffer-read-only: t -*-
+   !!!!!!!   DO NOT EDIT THIS FILE   !!!!!!!
+   This file is built by opcode.pl from its data.
+   Any changes made here will be lost!
+ */
+
+PERL_CALLCONV OP *Perl_do_kv(pTHX);
+PERL_CALLCONV OP *Perl_pp_aassign(pTHX);
+PERL_CALLCONV OP *Perl_pp_abs(pTHX);
+PERL_CALLCONV OP *Perl_pp_accept(pTHX);
+PERL_CALLCONV OP *Perl_pp_add(pTHX);
+PERL_CALLCONV OP *Perl_pp_aeach(pTHX);
+PERL_CALLCONV OP *Perl_pp_aelem(pTHX);
+PERL_CALLCONV OP *Perl_pp_aelemfast(pTHX);
+PERL_CALLCONV OP *Perl_pp_akeys(pTHX);
+PERL_CALLCONV OP *Perl_pp_alarm(pTHX);
+PERL_CALLCONV OP *Perl_pp_and(pTHX);
+PERL_CALLCONV OP *Perl_pp_anoncode(pTHX);
+PERL_CALLCONV OP *Perl_pp_anonhash(pTHX);
+PERL_CALLCONV OP *Perl_pp_anonlist(pTHX);
+PERL_CALLCONV OP *Perl_pp_aslice(pTHX);
+PERL_CALLCONV OP *Perl_pp_atan2(pTHX);
+PERL_CALLCONV OP *Perl_pp_av2arylen(pTHX);
+PERL_CALLCONV OP *Perl_pp_backtick(pTHX);
+PERL_CALLCONV OP *Perl_pp_bind(pTHX);
+PERL_CALLCONV OP *Perl_pp_binmode(pTHX);
+PERL_CALLCONV OP *Perl_pp_bit_and(pTHX);
+PERL_CALLCONV OP *Perl_pp_bit_or(pTHX);
+PERL_CALLCONV OP *Perl_pp_bless(pTHX);
+PERL_CALLCONV OP *Perl_pp_break(pTHX);
+PERL_CALLCONV OP *Perl_pp_caller(pTHX);
+PERL_CALLCONV OP *Perl_pp_chdir(pTHX);
+PERL_CALLCONV OP *Perl_pp_chop(pTHX);
+PERL_CALLCONV OP *Perl_pp_chown(pTHX);
+PERL_CALLCONV OP *Perl_pp_chr(pTHX);
+PERL_CALLCONV OP *Perl_pp_chroot(pTHX);
+PERL_CALLCONV OP *Perl_pp_clonecv(pTHX);
+PERL_CALLCONV OP *Perl_pp_close(pTHX);
+PERL_CALLCONV OP *Perl_pp_closedir(pTHX);
+PERL_CALLCONV OP *Perl_pp_complement(pTHX);
+PERL_CALLCONV OP *Perl_pp_concat(pTHX);
+PERL_CALLCONV OP *Perl_pp_cond_expr(pTHX);
+PERL_CALLCONV OP *Perl_pp_const(pTHX);
+PERL_CALLCONV OP *Perl_pp_continue(pTHX);
+PERL_CALLCONV OP *Perl_pp_coreargs(pTHX);
+PERL_CALLCONV OP *Perl_pp_crypt(pTHX);
+PERL_CALLCONV OP *Perl_pp_dbmopen(pTHX);
+PERL_CALLCONV OP *Perl_pp_dbstate(pTHX);
+PERL_CALLCONV OP *Perl_pp_defined(pTHX);
+PERL_CALLCONV OP *Perl_pp_delete(pTHX);
+PERL_CALLCONV OP *Perl_pp_die(pTHX);
+PERL_CALLCONV OP *Perl_pp_divide(pTHX);
+PERL_CALLCONV OP *Perl_pp_each(pTHX);
+PERL_CALLCONV OP *Perl_pp_ehostent(pTHX);
+PERL_CALLCONV OP *Perl_pp_enter(pTHX);
+PERL_CALLCONV OP *Perl_pp_entereval(pTHX);
+PERL_CALLCONV OP *Perl_pp_entergiven(pTHX);
+PERL_CALLCONV OP *Perl_pp_enteriter(pTHX);
+PERL_CALLCONV OP *Perl_pp_enterloop(pTHX);
+PERL_CALLCONV OP *Perl_pp_entersub(pTHX);
+PERL_CALLCONV OP *Perl_pp_entertry(pTHX);
+PERL_CALLCONV OP *Perl_pp_enterwhen(pTHX);
+PERL_CALLCONV OP *Perl_pp_enterwrite(pTHX);
+PERL_CALLCONV OP *Perl_pp_eof(pTHX);
+PERL_CALLCONV OP *Perl_pp_eq(pTHX);
+PERL_CALLCONV OP *Perl_pp_exec(pTHX);
+PERL_CALLCONV OP *Perl_pp_exists(pTHX);
+PERL_CALLCONV OP *Perl_pp_exit(pTHX);
+PERL_CALLCONV OP *Perl_pp_fc(pTHX);
+PERL_CALLCONV OP *Perl_pp_fileno(pTHX);
+PERL_CALLCONV OP *Perl_pp_flip(pTHX);
+PERL_CALLCONV OP *Perl_pp_flock(pTHX);
+PERL_CALLCONV OP *Perl_pp_flop(pTHX);
+PERL_CALLCONV OP *Perl_pp_fork(pTHX);
+PERL_CALLCONV OP *Perl_pp_formline(pTHX);
+PERL_CALLCONV OP *Perl_pp_ftis(pTHX);
+PERL_CALLCONV OP *Perl_pp_ftlink(pTHX);
+PERL_CALLCONV OP *Perl_pp_ftrowned(pTHX);
+PERL_CALLCONV OP *Perl_pp_ftrread(pTHX);
+PERL_CALLCONV OP *Perl_pp_fttext(pTHX);
+PERL_CALLCONV OP *Perl_pp_fttty(pTHX);
+PERL_CALLCONV OP *Perl_pp_ge(pTHX);
+PERL_CALLCONV OP *Perl_pp_gelem(pTHX);
+PERL_CALLCONV OP *Perl_pp_getc(pTHX);
+PERL_CALLCONV OP *Perl_pp_getlogin(pTHX);
+PERL_CALLCONV OP *Perl_pp_getpeername(pTHX);
+PERL_CALLCONV OP *Perl_pp_getpgrp(pTHX);
+PERL_CALLCONV OP *Perl_pp_getppid(pTHX);
+PERL_CALLCONV OP *Perl_pp_getpriority(pTHX);
+PERL_CALLCONV OP *Perl_pp_ggrent(pTHX);
+PERL_CALLCONV OP *Perl_pp_ghostent(pTHX);
+PERL_CALLCONV OP *Perl_pp_glob(pTHX);
+PERL_CALLCONV OP *Perl_pp_gmtime(pTHX);
+PERL_CALLCONV OP *Perl_pp_gnetent(pTHX);
+PERL_CALLCONV OP *Perl_pp_goto(pTHX);
+PERL_CALLCONV OP *Perl_pp_gprotoent(pTHX);
+PERL_CALLCONV OP *Perl_pp_gpwent(pTHX);
+PERL_CALLCONV OP *Perl_pp_grepstart(pTHX);
+PERL_CALLCONV OP *Perl_pp_grepwhile(pTHX);
+PERL_CALLCONV OP *Perl_pp_gservent(pTHX);
+PERL_CALLCONV OP *Perl_pp_gt(pTHX);
+PERL_CALLCONV OP *Perl_pp_gv(pTHX);
+PERL_CALLCONV OP *Perl_pp_gvsv(pTHX);
+PERL_CALLCONV OP *Perl_pp_helem(pTHX);
+PERL_CALLCONV OP *Perl_pp_hintseval(pTHX);
+PERL_CALLCONV OP *Perl_pp_hslice(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_add(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_divide(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_eq(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_ge(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_gt(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_le(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_lt(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_modulo(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_multiply(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_ncmp(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_ne(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_negate(pTHX);
+PERL_CALLCONV OP *Perl_pp_i_subtract(pTHX);
+PERL_CALLCONV OP *Perl_pp_index(pTHX);
+PERL_CALLCONV OP *Perl_pp_int(pTHX);
+PERL_CALLCONV OP *Perl_pp_introcv(pTHX);
+PERL_CALLCONV OP *Perl_pp_ioctl(pTHX);
+PERL_CALLCONV OP *Perl_pp_iter(pTHX);
+PERL_CALLCONV OP *Perl_pp_join(pTHX);
+PERL_CALLCONV OP *Perl_pp_kvaslice(pTHX);
+PERL_CALLCONV OP *Perl_pp_kvhslice(pTHX);
+PERL_CALLCONV OP *Perl_pp_last(pTHX);
+PERL_CALLCONV OP *Perl_pp_lc(pTHX);
+PERL_CALLCONV OP *Perl_pp_le(pTHX);
+PERL_CALLCONV OP *Perl_pp_leave(pTHX);
+PERL_CALLCONV OP *Perl_pp_leaveeval(pTHX);
+PERL_CALLCONV OP *Perl_pp_leavegiven(pTHX);
+PERL_CALLCONV OP *Perl_pp_leaveloop(pTHX);
+PERL_CALLCONV OP *Perl_pp_leavesub(pTHX);
+PERL_CALLCONV OP *Perl_pp_leavesublv(pTHX);
+PERL_CALLCONV OP *Perl_pp_leavetry(pTHX);
+PERL_CALLCONV OP *Perl_pp_leavewhen(pTHX);
+PERL_CALLCONV OP *Perl_pp_leavewrite(pTHX);
+PERL_CALLCONV OP *Perl_pp_left_shift(pTHX);
+PERL_CALLCONV OP *Perl_pp_length(pTHX);
+PERL_CALLCONV OP *Perl_pp_link(pTHX);
+PERL_CALLCONV OP *Perl_pp_list(pTHX);
+PERL_CALLCONV OP *Perl_pp_listen(pTHX);
+PERL_CALLCONV OP *Perl_pp_lock(pTHX);
+PERL_CALLCONV OP *Perl_pp_lslice(pTHX);
+PERL_CALLCONV OP *Perl_pp_lt(pTHX);
+PERL_CALLCONV OP *Perl_pp_mapwhile(pTHX);
+PERL_CALLCONV OP *Perl_pp_match(pTHX);
+PERL_CALLCONV OP *Perl_pp_method(pTHX);
+PERL_CALLCONV OP *Perl_pp_method_named(pTHX);
+PERL_CALLCONV OP *Perl_pp_mkdir(pTHX);
+PERL_CALLCONV OP *Perl_pp_modulo(pTHX);
+PERL_CALLCONV OP *Perl_pp_multiply(pTHX);
+PERL_CALLCONV OP *Perl_pp_ncmp(pTHX);
+PERL_CALLCONV OP *Perl_pp_ne(pTHX);
+PERL_CALLCONV OP *Perl_pp_negate(pTHX);
+PERL_CALLCONV OP *Perl_pp_next(pTHX);
+PERL_CALLCONV OP *Perl_pp_nextstate(pTHX);
+PERL_CALLCONV OP *Perl_pp_not(pTHX);
+PERL_CALLCONV OP *Perl_pp_null(pTHX);
+PERL_CALLCONV OP *Perl_pp_oct(pTHX);
+PERL_CALLCONV OP *Perl_pp_once(pTHX);
+PERL_CALLCONV OP *Perl_pp_open(pTHX);
+PERL_CALLCONV OP *Perl_pp_open_dir(pTHX);
+PERL_CALLCONV OP *Perl_pp_or(pTHX);
+PERL_CALLCONV OP *Perl_pp_ord(pTHX);
+PERL_CALLCONV OP *Perl_pp_pack(pTHX);
+PERL_CALLCONV OP *Perl_pp_padav(pTHX);
+PERL_CALLCONV OP *Perl_pp_padcv(pTHX);
+PERL_CALLCONV OP *Perl_pp_padhv(pTHX);
+PERL_CALLCONV OP *Perl_pp_padrange(pTHX);
+PERL_CALLCONV OP *Perl_pp_padsv(pTHX);
+PERL_CALLCONV OP *Perl_pp_pipe_op(pTHX);
+PERL_CALLCONV OP *Perl_pp_pos(pTHX);
+PERL_CALLCONV OP *Perl_pp_postinc(pTHX);
+PERL_CALLCONV OP *Perl_pp_pow(pTHX);
+PERL_CALLCONV OP *Perl_pp_preinc(pTHX);
+PERL_CALLCONV OP *Perl_pp_print(pTHX);
+PERL_CALLCONV OP *Perl_pp_prototype(pTHX);
+PERL_CALLCONV OP *Perl_pp_prtf(pTHX);
+PERL_CALLCONV OP *Perl_pp_push(pTHX);
+PERL_CALLCONV OP *Perl_pp_pushmark(pTHX);
+PERL_CALLCONV OP *Perl_pp_pushre(pTHX);
+PERL_CALLCONV OP *Perl_pp_qr(pTHX);
+PERL_CALLCONV OP *Perl_pp_quotemeta(pTHX);
+PERL_CALLCONV OP *Perl_pp_rand(pTHX);
+PERL_CALLCONV OP *Perl_pp_range(pTHX);
+PERL_CALLCONV OP *Perl_pp_rcatline(pTHX);
+PERL_CALLCONV OP *Perl_pp_readdir(pTHX);
+PERL_CALLCONV OP *Perl_pp_readline(pTHX);
+PERL_CALLCONV OP *Perl_pp_readlink(pTHX);
+PERL_CALLCONV OP *Perl_pp_redo(pTHX);
+PERL_CALLCONV OP *Perl_pp_ref(pTHX);
+PERL_CALLCONV OP *Perl_pp_refgen(pTHX);
+PERL_CALLCONV OP *Perl_pp_regcomp(pTHX);
+PERL_CALLCONV OP *Perl_pp_regcreset(pTHX);
+PERL_CALLCONV OP *Perl_pp_rename(pTHX);
+PERL_CALLCONV OP *Perl_pp_repeat(pTHX);
+PERL_CALLCONV OP *Perl_pp_require(pTHX);
+PERL_CALLCONV OP *Perl_pp_reset(pTHX);
+PERL_CALLCONV OP *Perl_pp_return(pTHX);
+PERL_CALLCONV OP *Perl_pp_reverse(pTHX);
+PERL_CALLCONV OP *Perl_pp_rewinddir(pTHX);
+PERL_CALLCONV OP *Perl_pp_right_shift(pTHX);
+PERL_CALLCONV OP *Perl_pp_rkeys(pTHX);
+PERL_CALLCONV OP *Perl_pp_rmdir(pTHX);
+PERL_CALLCONV OP *Perl_pp_runcv(pTHX);
+PERL_CALLCONV OP *Perl_pp_rv2av(pTHX);
+PERL_CALLCONV OP *Perl_pp_rv2cv(pTHX);
+PERL_CALLCONV OP *Perl_pp_rv2gv(pTHX);
+PERL_CALLCONV OP *Perl_pp_rv2sv(pTHX);
+PERL_CALLCONV OP *Perl_pp_sassign(pTHX);
+PERL_CALLCONV OP *Perl_pp_schop(pTHX);
+PERL_CALLCONV OP *Perl_pp_scmp(pTHX);
+PERL_CALLCONV OP *Perl_pp_seekdir(pTHX);
+PERL_CALLCONV OP *Perl_pp_select(pTHX);
+PERL_CALLCONV OP *Perl_pp_semctl(pTHX);
+PERL_CALLCONV OP *Perl_pp_semget(pTHX);
+PERL_CALLCONV OP *Perl_pp_seq(pTHX);
+PERL_CALLCONV OP *Perl_pp_setpgrp(pTHX);
+PERL_CALLCONV OP *Perl_pp_setpriority(pTHX);
+PERL_CALLCONV OP *Perl_pp_shift(pTHX);
+PERL_CALLCONV OP *Perl_pp_shmwrite(pTHX);
+PERL_CALLCONV OP *Perl_pp_shostent(pTHX);
+PERL_CALLCONV OP *Perl_pp_shutdown(pTHX);
+PERL_CALLCONV OP *Perl_pp_sin(pTHX);
+PERL_CALLCONV OP *Perl_pp_sle(pTHX);
+PERL_CALLCONV OP *Perl_pp_sleep(pTHX);
+PERL_CALLCONV OP *Perl_pp_smartmatch(pTHX);
+PERL_CALLCONV OP *Perl_pp_sne(pTHX);
+PERL_CALLCONV OP *Perl_pp_socket(pTHX);
+PERL_CALLCONV OP *Perl_pp_sockpair(pTHX);
+PERL_CALLCONV OP *Perl_pp_sort(pTHX);
+PERL_CALLCONV OP *Perl_pp_splice(pTHX);
+PERL_CALLCONV OP *Perl_pp_split(pTHX);
+PERL_CALLCONV OP *Perl_pp_sprintf(pTHX);
+PERL_CALLCONV OP *Perl_pp_srand(pTHX);
+PERL_CALLCONV OP *Perl_pp_srefgen(pTHX);
+PERL_CALLCONV OP *Perl_pp_sselect(pTHX);
+PERL_CALLCONV OP *Perl_pp_ssockopt(pTHX);
+PERL_CALLCONV OP *Perl_pp_stat(pTHX);
+PERL_CALLCONV OP *Perl_pp_stringify(pTHX);
+PERL_CALLCONV OP *Perl_pp_stub(pTHX);
+PERL_CALLCONV OP *Perl_pp_study(pTHX);
+PERL_CALLCONV OP *Perl_pp_subst(pTHX);
+PERL_CALLCONV OP *Perl_pp_substcont(pTHX);
+PERL_CALLCONV OP *Perl_pp_substr(pTHX);
+PERL_CALLCONV OP *Perl_pp_subtract(pTHX);
+PERL_CALLCONV OP *Perl_pp_syscall(pTHX);
+PERL_CALLCONV OP *Perl_pp_sysopen(pTHX);
+PERL_CALLCONV OP *Perl_pp_sysread(pTHX);
+PERL_CALLCONV OP *Perl_pp_sysseek(pTHX);
+PERL_CALLCONV OP *Perl_pp_system(pTHX);
+PERL_CALLCONV OP *Perl_pp_syswrite(pTHX);
+PERL_CALLCONV OP *Perl_pp_tell(pTHX);
+PERL_CALLCONV OP *Perl_pp_telldir(pTHX);
+PERL_CALLCONV OP *Perl_pp_tie(pTHX);
+PERL_CALLCONV OP *Perl_pp_tied(pTHX);
+PERL_CALLCONV OP *Perl_pp_time(pTHX);
+PERL_CALLCONV OP *Perl_pp_tms(pTHX);
+PERL_CALLCONV OP *Perl_pp_trans(pTHX);
+PERL_CALLCONV OP *Perl_pp_truncate(pTHX);
+PERL_CALLCONV OP *Perl_pp_uc(pTHX);
+PERL_CALLCONV OP *Perl_pp_ucfirst(pTHX);
+PERL_CALLCONV OP *Perl_pp_umask(pTHX);
+PERL_CALLCONV OP *Perl_pp_undef(pTHX);
+PERL_CALLCONV OP *Perl_pp_unpack(pTHX);
+PERL_CALLCONV OP *Perl_pp_unshift(pTHX);
+PERL_CALLCONV OP *Perl_pp_unstack(pTHX);
+PERL_CALLCONV OP *Perl_pp_untie(pTHX);
+PERL_CALLCONV OP *Perl_pp_vec(pTHX);
+PERL_CALLCONV OP *Perl_pp_wait(pTHX);
+PERL_CALLCONV OP *Perl_pp_waitpid(pTHX);
+PERL_CALLCONV OP *Perl_pp_wantarray(pTHX);
+PERL_CALLCONV OP *Perl_pp_warn(pTHX);
+PERL_CALLCONV OP *Perl_pp_xor(pTHX);
+PERL_CALLCONV OP *Perl_unimplemented_op(pTHX);
+
+/* ex: set ro: */

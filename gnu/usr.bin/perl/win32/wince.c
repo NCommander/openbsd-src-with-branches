@@ -13,7 +13,7 @@
 
 #define PERLIO_NOT_STDIO 0
 
-#if !defined(PERLIO_IS_STDIO) && !defined(USE_SFIO)
+#if !defined(PERLIO_IS_STDIO)
 #define PerlIO FILE
 #endif
 
@@ -70,16 +70,17 @@ static int		do_spawn2(pTHX_ char *cmd, int exectype);
 static BOOL		has_shell_metachars(char *ptr);
 static long		filetime_to_clock(PFILETIME ft);
 static BOOL		filetime_from_time(PFILETIME ft, time_t t);
-static char *		get_emd_part(SV **leading, char *trailing, ...);
+static char *		get_emd_part(SV **leading, STRLEN *const len,
+				     char *trailing, ...);
 static void		remove_dead_process(long deceased);
-static long		find_pid(int pid);
+static long		find_pid(pTHX_ int pid);
 static char *		qualified_path(const char *cmd);
 static char *		win32_get_xlib(const char *pl, const char *xlib,
-				       const char *libname);
+				       const char *libname, STRLEN *const len);
 
 #ifdef USE_ITHREADS
 static void		remove_dead_pseudo_process(long child);
-static long		find_pseudo_pid(int pid);
+static long		find_pseudo_pid(pTHX_ int pid);
 #endif
 
 int _fmode = O_TEXT; /* celib do not provide _fmode, so we define it here */
@@ -135,7 +136,7 @@ get_regstr_from(HKEY hkey, const char *valuename, SV **svp)
     HKEY handle;
     DWORD type;
     const char *subkey = "Software\\Perl";
-    char *str = Nullch;
+    char *str = NULL;
     long retval;
 
     retval = XCERegOpenKeyExA(hkey, subkey, 0, KEY_READ, &handle);
@@ -171,7 +172,7 @@ get_regstr(const char *valuename, SV **svp)
 
 /* *prev_pathp (if non-NULL) is expected to be POK (valid allocated SvPVX(sv)) */
 static char *
-get_emd_part(SV **prev_pathp, char *trailing_path, ...)
+get_emd_part(SV **prev_pathp, STRLEN *const len, char *trailing_path, ...)
 {
     char base[10];
     va_list ap;
@@ -228,19 +229,21 @@ get_emd_part(SV **prev_pathp, char *trailing_path, ...)
 	    *prev_pathp = sv_2mortal(newSVpvn("",0));
 	sv_catpvn(*prev_pathp, ";", 1);
 	sv_catpv(*prev_pathp, mod_name);
+	if(len)
+	    *len = SvCUR(*prev_pathp);
 	return SvPVX(*prev_pathp);
     }
 
-    return Nullch;
+    return NULL;
 }
 
 char *
-win32_get_privlib(const char *pl)
+win32_get_privlib(const char *pl, STRLEN *const len)
 {
     dTHX;
     char *stdlib = "lib";
     char buffer[MAX_PATH+1];
-    SV *sv = Nullsv;
+    SV *sv = NULL;
 
     /* $stdlib = $HKCU{"lib-$]"} || $HKLM{"lib-$]"} || $HKCU{"lib"} || $HKLM{"lib"} || "";  */
     sprintf(buffer, "%s-%s", stdlib, pl);
@@ -248,19 +251,18 @@ win32_get_privlib(const char *pl)
 	(void)get_regstr(stdlib, &sv);
 
     /* $stdlib .= ";$EMD/../../lib" */
-    return get_emd_part(&sv, stdlib, ARCHNAME, "bin", Nullch);
+    return get_emd_part(&sv, len, stdlib, ARCHNAME, "bin", NULL);
 }
 
 static char *
-win32_get_xlib(const char *pl, const char *xlib, const char *libname)
+win32_get_xlib(const char *pl, const char *xlib, const char *libname,
+	       STRLEN *const len)
 {
     dTHX;
     char regstr[40];
     char pathstr[MAX_PATH+1];
-    DWORD datalen;
-    int len, newsize;
-    SV *sv1 = Nullsv;
-    SV *sv2 = Nullsv;
+    SV *sv1 = NULL;
+    SV *sv2 = NULL;
 
     /* $HKCU{"$xlib-$]"} || $HKLM{"$xlib-$]"} . ---; */
     sprintf(regstr, "%s-%s", xlib, pl);
@@ -269,7 +271,7 @@ win32_get_xlib(const char *pl, const char *xlib, const char *libname)
     /* $xlib .=
      * ";$EMD/" . ((-d $EMD/../../../$]) ? "../../.." : "../.."). "/$libname/$]/lib";  */
     sprintf(pathstr, "%s/%s/lib", libname, pl);
-    (void)get_emd_part(&sv1, pathstr, ARCHNAME, "bin", pl, Nullch);
+    (void)get_emd_part(&sv1, NULL, pathstr, ARCHNAME, "bin", pl, NULL);
 
     /* $HKCU{$xlib} || $HKLM{$xlib} . ---; */
     (void)get_regstr(xlib, &sv2);
@@ -277,25 +279,26 @@ win32_get_xlib(const char *pl, const char *xlib, const char *libname)
     /* $xlib .=
      * ";$EMD/" . ((-d $EMD/../../../$]) ? "../../.." : "../.."). "/$libname/lib";  */
     sprintf(pathstr, "%s/lib", libname);
-    (void)get_emd_part(&sv2, pathstr, ARCHNAME, "bin", pl, Nullch);
+    (void)get_emd_part(&sv2, NULL, pathstr, ARCHNAME, "bin", pl, NULL);
 
     if (!sv1 && !sv2)
-	return Nullch;
-    if (!sv1)
-	return SvPVX(sv2);
-    if (!sv2)
-	return SvPVX(sv1);
+	return NULL;
+    if (!sv1) {
+	sv1 = sv2;
+    } else if (sv2) {
+	sv_catpvn(sv1, ";", 1);
+	sv_catsv(sv1, sv2);
+    }
 
-    sv_catpvn(sv1, ";", 1);
-    sv_catsv(sv1, sv2);
-
+    if (len)
+	*len = SvCUR(sv1);
     return SvPVX(sv1);
 }
 
 char *
-win32_get_sitelib(const char *pl)
+win32_get_sitelib(const char *pl, STRLEN *const len)
 {
-    return win32_get_xlib(pl, "sitelib", "site");
+    return win32_get_xlib(pl, "sitelib", "site", len);
 }
 
 #ifndef PERL_VENDORLIB_NAME
@@ -303,9 +306,9 @@ win32_get_sitelib(const char *pl)
 #endif
 
 char *
-win32_get_vendorlib(const char *pl)
+win32_get_vendorlib(const char *pl, STRLEN *const len)
 {
-    return win32_get_xlib(pl, "vendorlib", PERL_VENDORLIB_NAME);
+    return win32_get_xlib(pl, "vendorlib", PERL_VENDORLIB_NAME, len);
 }
 
 static BOOL
@@ -406,14 +409,14 @@ win32_getpid(void)
 static long
 tokenize(const char *str, char **dest, char ***destv)
 {
-    char *retstart = Nullch;
+    char *retstart = NULL;
     char **retvstart = 0;
     int items = -1;
     if (str) {
 	dTHX;
 	int slen = strlen(str);
-	register char *ret;
-	register char **retv;
+	char *ret;
+	char **retv;
 	Newx(ret, slen+2, char);
 	Newx(retv, (slen+3)/2, char*);
 
@@ -441,7 +444,7 @@ tokenize(const char *str, char **dest, char ***destv)
 		++items;
 	    ret++;
 	}
-	retvstart[items] = Nullch;
+	retvstart[items] = NULL;
 	*ret++ = '\0';
 	*ret = '\0';
     }
@@ -496,6 +499,8 @@ get_shell(void)
 int
 Perl_do_aspawn(pTHX_ SV *really, SV **mark, SV **sp)
 {
+  PERL_ARGS_ASSERT_DO_ASPAWN;
+
   Perl_croak(aTHX_ PL_no_func, "aspawn");
   return -1;
 }
@@ -551,7 +556,7 @@ do_spawn2(pTHX_ char *cmd, int exectype)
 	    if (*s)
 		*s++ = '\0';
 	}
-	*a = Nullch;
+	*a = NULL;
 	if (argv[0]) {
 	    switch (exectype) {
 	    case EXECF_SPAWN:
@@ -580,7 +585,7 @@ do_spawn2(pTHX_ char *cmd, int exectype)
 	while (++i < w32_perlshell_items)
 	    argv[i] = w32_perlshell_vec[i];
 	argv[i++] = cmd;
-	argv[i] = Nullch;
+	argv[i] = NULL;
 	switch (exectype) {
 	case EXECF_SPAWN:
 	    status = win32_spawnvp(P_WAIT, argv[0],
@@ -619,18 +624,24 @@ do_spawn2(pTHX_ char *cmd, int exectype)
 int
 Perl_do_spawn(pTHX_ char *cmd)
 {
+    PERL_ARGS_ASSERT_DO_SPAWN;
+
     return do_spawn2(aTHX_ cmd, EXECF_SPAWN);
 }
 
 int
 Perl_do_spawn_nowait(pTHX_ char *cmd)
 {
+    PERL_ARGS_ASSERT_DO_SPAWN_NOWAIT;
+
     return do_spawn2(aTHX_ cmd, EXECF_SPAWN_NOWAIT);
 }
 
 bool
 Perl_do_exec(pTHX_ const char *cmd)
 {
+    PERL_ARGS_ASSERT_DO_EXEC;
+
     do_spawn2(aTHX_ cmd, EXECF_EXEC);
     return FALSE;
 }
@@ -880,7 +891,51 @@ win32_longpath(char *path)
   return path;
 }
 
-#ifndef USE_WIN32_RTL_ENV
+static void
+out_of_memory(void)
+{
+    if (PL_curinterp) {
+        dTHX;
+        /* Can't use PerlIO to write as it allocates memory */
+        PerlLIO_write(PerlIO_fileno(Perl_error_log),
+                      PL_no_mem, strlen(PL_no_mem));
+        my_exit(1);
+    }
+    exit(1);
+}
+
+/* The win32_ansipath() function takes a Unicode filename and converts it
+ * into the current Windows codepage. If some characters cannot be mapped,
+ * then it will convert the short name instead.
+ *
+ * The buffer to the ansi pathname must be freed with win32_free() when it
+ * it no longer needed.
+ *
+ * The argument to win32_ansipath() must exist before this function is
+ * called; otherwise there is no way to determine the short path name.
+ *
+ * Ideas for future refinement:
+ * - Only convert those segments of the path that are not in the current
+ *   codepage, but leave the other segments in their long form.
+ * - If the resulting name is longer than MAX_PATH, start converting
+ *   additional path segments into short names until the full name
+ *   is shorter than MAX_PATH.  Shorten the filename part last!
+ */
+DllExport char *
+win32_ansipath(const WCHAR *widename)
+{
+    char *name;
+    size_t widelen = wcslen(widename)+1;
+    int len = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, widename, widelen,
+                                  NULL, 0, NULL, NULL);
+    name = win32_malloc(len);
+    if (!name)
+        out_of_memory();
+
+    WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, widename, widelen,
+                        name, len, NULL, NULL);
+    return name;
+}
 
 DllExport char *
 win32_getenv(const char *name)
@@ -893,8 +948,6 @@ win32_putenv(const char *name)
 {
   return xceputenv(name);
 }
-
-#endif
 
 static long
 filetime_to_clock(PFILETIME ft)
@@ -1248,7 +1301,7 @@ win32_crypt(const char *txt, const char *salt)
     return des_fcrypt(txt, salt, w32_crypt_buffer);
 #else
     Perl_croak(aTHX_ "The crypt() function is unimplemented due to excessive paranoia.");
-    return Nullch;
+    return NULL;
 #endif
 }
 
@@ -1489,9 +1542,6 @@ win32_tmpfd(void)
 	    if (fh != INVALID_HANDLE_VALUE) {
 		int fd = win32_open_osfhandle((intptr_t)fh, 0);
 		if (fd >= 0) {
-#if defined(__BORLANDC__)
-        	    setmode(fd,O_BINARY);
-#endif
 		    DEBUG_p(PerlIO_printf(Perl_debug_log,
 					  "Created tmpfile=%s\n",filename));
 		    return fd;
@@ -1814,7 +1864,7 @@ qualified_path(const char *cmd)
     int has_slash = 0;
 
     if (!cmd)
-	return Nullch;
+	return NULL;
     fullcmd = (char*)cmd;
     while (*fullcmd) {
 	if (*fullcmd == '/' || *fullcmd == '\\')
@@ -1889,7 +1939,7 @@ qualified_path(const char *cmd)
     }
 
     Safefree(fullcmd);
-    return Nullch;
+    return NULL;
 }
 
 /* The following are just place holders.
@@ -1975,7 +2025,7 @@ win32_spawnvp(int mode, const char *cmdname, const char *const *argv)
     PROCESS_INFORMATION ProcessInformation;
     DWORD create = 0;
     char *cmd;
-    char *fullcmd = Nullch;
+    char *fullcmd = NULL;
     char *cname = (char *)cmdname;
     STRLEN clen = 0;
 
@@ -2399,9 +2449,7 @@ XS(w32_GetCwd)
   EXTEND(SP,1);
   SvPOK_on(sv);
   ST(0) = sv;
-#ifndef INCOMPLETE_TAINTS
   SvTAINTED_on(ST(0));
-#endif
   XSRETURN(1);
 }
 
@@ -2440,12 +2488,12 @@ XS(w32_GetOSVersion)
     if (!XCEGetVersionExA(&osver)) {
       XSRETURN_EMPTY;
     }
-    XPUSHs(newSVpvn(osver.szCSDVersion, strlen(osver.szCSDVersion)));
-    XPUSHs(newSViv(osver.dwMajorVersion));
-    XPUSHs(newSViv(osver.dwMinorVersion));
-    XPUSHs(newSViv(osver.dwBuildNumber));
+    mXPUSHp(osver.szCSDVersion, strlen(osver.szCSDVersion));
+    mXPUSHi(osver.dwMajorVersion);
+    mXPUSHi(osver.dwMinorVersion);
+    mXPUSHi(osver.dwBuildNumber);
     /* WINCE = 3 */
-    XPUSHs(newSViv(osver.dwPlatformId));
+    mXPUSHi(osver.dwPlatformId);
     PUTBACK;
 }
 
@@ -2554,15 +2602,15 @@ XS(w32_GetPowerStatus)
       XSRETURN_EMPTY;
     }
 
-  XPUSHs(newSViv(sps.ACLineStatus));
-  XPUSHs(newSViv(sps.BatteryFlag));
-  XPUSHs(newSViv(sps.BatteryLifePercent));
-  XPUSHs(newSViv(sps.BatteryLifeTime));
-  XPUSHs(newSViv(sps.BatteryFullLifeTime));
-  XPUSHs(newSViv(sps.BackupBatteryFlag));
-  XPUSHs(newSViv(sps.BackupBatteryLifePercent));
-  XPUSHs(newSViv(sps.BackupBatteryLifeTime));
-  XPUSHs(newSViv(sps.BackupBatteryFullLifeTime));
+  mXPUSHi(sps.ACLineStatus);
+  mXPUSHi(sps.BatteryFlag);
+  mXPUSHi(sps.BatteryLifePercent);
+  mXPUSHi(sps.BatteryLifeTime);
+  mXPUSHi(sps.BatteryFullLifeTime);
+  mXPUSHi(sps.BackupBatteryFlag);
+  mXPUSHi(sps.BackupBatteryLifePercent);
+  mXPUSHi(sps.BackupBatteryLifeTime);
+  mXPUSHi(sps.BackupBatteryFullLifeTime);
 
   PUTBACK;
 }
@@ -2612,7 +2660,7 @@ Perl_init_os_extras(void)
     char *file = __FILE__;
     dXSUB_SYS;
 
-    w32_perlshell_tokens = Nullch;
+    w32_perlshell_tokens = NULL;
     w32_perlshell_items = -1;
     w32_fdpid = newAV(); /* XX needs to be in Perl_win32_init()? */
     Newx(w32_children, 1, child_tab);
@@ -2728,12 +2776,6 @@ getcwd(char *buf, size_t size)
   return xcegetcwd(buf, size);
 }
 
-int
-isnan(double d)
-{
-  return _isnan(d);
-}
-
 
 DllExport PerlIO*
 win32_popenlist(const char *mode, IV narg, SV **args)
@@ -2782,7 +2824,7 @@ void
 Perl_sys_intern_init(pTHX)
 {
     int i;
-    w32_perlshell_tokens	= Nullch;
+    w32_perlshell_tokens	= NULL;
     w32_perlshell_vec		= (char**)NULL;
     w32_perlshell_items		= 0;
     w32_fdpid			= newAV();
@@ -2819,7 +2861,7 @@ Perl_sys_intern_clear(pTHX)
 void
 Perl_sys_intern_dup(pTHX_ struct interp_intern *src, struct interp_intern *dst)
 {
-    dst->perlshell_tokens	= Nullch;
+    dst->perlshell_tokens	= NULL;
     dst->perlshell_vec		= (char**)NULL;
     dst->perlshell_items	= 0;
     dst->fdpid			= newAV();

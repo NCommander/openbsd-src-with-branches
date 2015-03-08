@@ -1,6 +1,7 @@
 /*    mathoms.c
  *
- *    Copyright (C) 2005, 2006, 2007, 2007, by Larry Wall and others
+ *    Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010,
+ *    2011, 2012 by Larry Wall and others
  *
  *    You may distribute under the terms of either the GNU General Public
  *    License or the Artistic License, as specified in the README file.
@@ -8,13 +9,15 @@
  */
 
 /*
- * "Anything that Hobbits had no immediate use for, but were unwilling to 
- * throw away, they called a mathom. Their dwellings were apt to become
- * rather crowded with mathoms, and many of the presents that passed from
- * hand to hand were of that sort." 
+ *  Anything that Hobbits had no immediate use for, but were unwilling to
+ *  throw away, they called a mathom.  Their dwellings were apt to become
+ *  rather crowded with mathoms, and many of the presents that passed from
+ *  hand to hand were of that sort.
+ *
+ *     [p.5 of _The Lord of the Rings_: "Prologue"]
  */
 
-#ifndef NO_MATHOMS
+
 
 /* 
  * This file contains mathoms, various binary artifacts from previous
@@ -23,41 +26,54 @@
  *
  * SMP - Oct. 24, 2005
  *
+ * The compilation of this file can be suppressed; see INSTALL
+ *
  */
 
 #include "EXTERN.h"
 #define PERL_IN_MATHOMS_C
 #include "perl.h"
 
+#ifdef NO_MATHOMS
+/* ..." warning: ISO C forbids an empty source file"
+   So make sure we have something in here by processing the headers anyway.
+ */
+#else
+
+/* Not all of these have prototypes elsewhere, so do this to get
+ * non-mangled names.
+ */
+START_EXTERN_C
+
 PERL_CALLCONV OP * Perl_ref(pTHX_ OP *o, I32 type);
 PERL_CALLCONV void Perl_sv_unref(pTHX_ SV *sv);
 PERL_CALLCONV void Perl_sv_taint(pTHX_ SV *sv);
-PERL_CALLCONV IV Perl_sv_2iv(pTHX_ register SV *sv);
-PERL_CALLCONV UV Perl_sv_2uv(pTHX_ register SV *sv);
-PERL_CALLCONV char * Perl_sv_2pv(pTHX_ register SV *sv, STRLEN *lp);
-PERL_CALLCONV char * Perl_sv_2pv_nolen(pTHX_ register SV *sv);
-PERL_CALLCONV char * Perl_sv_2pvbyte_nolen(pTHX_ register SV *sv);
-PERL_CALLCONV char * Perl_sv_2pvutf8_nolen(pTHX_ register SV *sv);
-PERL_CALLCONV void Perl_sv_force_normal(pTHX_ register SV *sv);
-PERL_CALLCONV void Perl_sv_setsv(pTHX_ SV *dstr, register SV *sstr);
+PERL_CALLCONV IV Perl_sv_2iv(pTHX_ SV *sv);
+PERL_CALLCONV UV Perl_sv_2uv(pTHX_ SV *sv);
+PERL_CALLCONV NV Perl_sv_2nv(pTHX_ SV *sv);
+PERL_CALLCONV char * Perl_sv_2pv(pTHX_ SV *sv, STRLEN *lp);
+PERL_CALLCONV char * Perl_sv_2pv_nolen(pTHX_ SV *sv);
+PERL_CALLCONV char * Perl_sv_2pvbyte_nolen(pTHX_ SV *sv);
+PERL_CALLCONV char * Perl_sv_2pvutf8_nolen(pTHX_ SV *sv);
+PERL_CALLCONV void Perl_sv_force_normal(pTHX_ SV *sv);
+PERL_CALLCONV void Perl_sv_setsv(pTHX_ SV *dstr, SV *sstr);
 PERL_CALLCONV void Perl_sv_catpvn(pTHX_ SV *dsv, const char* sstr, STRLEN slen);
-PERL_CALLCONV void Perl_sv_catpvn_mg(pTHX_ register SV *sv, register const char *ptr, register STRLEN len);
-PERL_CALLCONV void Perl_sv_catsv(pTHX_ SV *dstr, register SV *sstr);
-PERL_CALLCONV void Perl_sv_catsv_mg(pTHX_ SV *dsv, register SV *ssv);
+PERL_CALLCONV void Perl_sv_catpvn_mg(pTHX_ SV *sv, const char *ptr, STRLEN len);
+PERL_CALLCONV void Perl_sv_catsv(pTHX_ SV *dstr, SV *sstr);
+PERL_CALLCONV void Perl_sv_catsv_mg(pTHX_ SV *dsv, SV *ssv);
 PERL_CALLCONV char * Perl_sv_pv(pTHX_ SV *sv);
 PERL_CALLCONV char * Perl_sv_pvn_force(pTHX_ SV *sv, STRLEN *lp);
 PERL_CALLCONV char * Perl_sv_pvbyte(pTHX_ SV *sv);
 PERL_CALLCONV char * Perl_sv_pvutf8(pTHX_ SV *sv);
-PERL_CALLCONV STRLEN Perl_sv_utf8_upgrade(pTHX_ register SV *sv);
+PERL_CALLCONV STRLEN Perl_sv_utf8_upgrade(pTHX_ SV *sv);
 PERL_CALLCONV NV Perl_huge(void);
 PERL_CALLCONV void Perl_gv_fullname3(pTHX_ SV *sv, const GV *gv, const char *prefix);
 PERL_CALLCONV void Perl_gv_efullname3(pTHX_ SV *sv, const GV *gv, const char *prefix);
 PERL_CALLCONV GV * Perl_gv_fetchmethod(pTHX_ HV *stash, const char *name);
 PERL_CALLCONV HE * Perl_hv_iternext(pTHX_ HV *hv);
 PERL_CALLCONV void Perl_hv_magic(pTHX_ HV *hv, GV *gv, int how);
-PERL_CALLCONV bool Perl_do_open(pTHX_ GV *gv, register const char *name, I32 len, int as_raw, int rawmode, int rawperm, PerlIO *supplied_fp);
-PERL_CALLCONV bool Perl_do_aexec(pTHX_ SV *really, register SV **mark, register SV **sp);
-PERL_CALLCONV bool Perl_do_exec(pTHX_ const char *cmd);
+PERL_CALLCONV bool Perl_do_open(pTHX_ GV *gv, const char *name, I32 len, int as_raw, int rawmode, int rawperm, PerlIO *supplied_fp);
+PERL_CALLCONV bool Perl_do_aexec(pTHX_ SV *really, SV **mark, SV **sp);
 PERL_CALLCONV U8 * Perl_uvuni_to_utf8(pTHX_ U8 *d, UV uv);
 PERL_CALLCONV bool Perl_is_utf8_string_loc(pTHX_ const U8 *s, STRLEN len, const U8 **ep);
 PERL_CALLCONV void Perl_sv_nolocking(pTHX_ SV *sv);
@@ -65,7 +81,21 @@ PERL_CALLCONV void Perl_sv_usepvn_mg(pTHX_ SV *sv, char *ptr, STRLEN len);
 PERL_CALLCONV void Perl_sv_usepvn(pTHX_ SV *sv, char *ptr, STRLEN len);
 PERL_CALLCONV int Perl_fprintf_nocontext(PerlIO *stream, const char *format, ...);
 PERL_CALLCONV int Perl_printf_nocontext(const char *format, ...);
-
+PERL_CALLCONV int Perl_magic_setglob(pTHX_ SV* sv, MAGIC* mg);
+PERL_CALLCONV AV * Perl_newAV(pTHX);
+PERL_CALLCONV HV * Perl_newHV(pTHX);
+PERL_CALLCONV IO * Perl_newIO(pTHX);
+PERL_CALLCONV I32 Perl_my_stat(pTHX);
+PERL_CALLCONV I32 Perl_my_lstat(pTHX);
+PERL_CALLCONV I32 Perl_sv_eq(pTHX_ SV *sv1, SV *sv2);
+PERL_CALLCONV char * Perl_sv_collxfrm(pTHX_ SV *const sv, STRLEN *const nxp);
+PERL_CALLCONV bool Perl_sv_2bool(pTHX_ SV *const sv);
+PERL_CALLCONV CV * Perl_newSUB(pTHX_ I32 floor, OP* o, OP* proto, OP* block);
+PERL_CALLCONV UV Perl_to_utf8_lower(pTHX_ const U8 *p, U8* ustrp, STRLEN *lenp);
+PERL_CALLCONV UV Perl_to_utf8_title(pTHX_ const U8 *p, U8* ustrp, STRLEN *lenp);
+PERL_CALLCONV UV Perl_to_utf8_upper(pTHX_ const U8 *p, U8* ustrp, STRLEN *lenp);
+PERL_CALLCONV UV Perl_to_utf8_fold(pTHX_ const U8 *p, U8* ustrp, STRLEN *lenp);
+PERL_CALLCONV SV *Perl_sv_mortalcopy(pTHX_ SV *const oldstr);
 
 /* ref() is now a macro using Perl_doref;
  * this version provided for binary compatibility only.
@@ -90,19 +120,24 @@ being zero.  See C<SvROK_off>.
 void
 Perl_sv_unref(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_UNREF;
+
     sv_unref_flags(sv, 0);
 }
 
 /*
 =for apidoc sv_taint
 
-Taint an SV. Use C<SvTAINTED_on> instead.
+Taint an SV.  Use C<SvTAINTED_on> instead.
+
 =cut
 */
 
 void
 Perl_sv_taint(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_TAINT;
+
     sv_magic((sv), NULL, PERL_MAGIC_taint, NULL, 0);
 }
 
@@ -111,8 +146,10 @@ Perl_sv_taint(pTHX_ SV *sv)
  */
 
 IV
-Perl_sv_2iv(pTHX_ register SV *sv)
+Perl_sv_2iv(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_2IV;
+
     return sv_2iv_flags(sv, SV_GMAGIC);
 }
 
@@ -121,32 +158,49 @@ Perl_sv_2iv(pTHX_ register SV *sv)
  */
 
 UV
-Perl_sv_2uv(pTHX_ register SV *sv)
+Perl_sv_2uv(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_2UV;
+
     return sv_2uv_flags(sv, SV_GMAGIC);
 }
+
+/* sv_2nv() is now a macro using Perl_sv_2nv_flags();
+ * this function provided for binary compatibility only
+ */
+
+NV
+Perl_sv_2nv(pTHX_ SV *sv)
+{
+    return sv_2nv_flags(sv, SV_GMAGIC);
+}
+
 
 /* sv_2pv() is now a macro using Perl_sv_2pv_flags();
  * this function provided for binary compatibility only
  */
 
 char *
-Perl_sv_2pv(pTHX_ register SV *sv, STRLEN *lp)
+Perl_sv_2pv(pTHX_ SV *sv, STRLEN *lp)
 {
+    PERL_ARGS_ASSERT_SV_2PV;
+
     return sv_2pv_flags(sv, lp, SV_GMAGIC);
 }
 
 /*
 =for apidoc sv_2pv_nolen
 
-Like C<sv_2pv()>, but doesn't return the length too. You should usually
+Like C<sv_2pv()>, but doesn't return the length too.  You should usually
 use the macro wrapper C<SvPV_nolen(sv)> instead.
+
 =cut
 */
 
 char *
-Perl_sv_2pv_nolen(pTHX_ register SV *sv)
+Perl_sv_2pv_nolen(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_2PV_NOLEN;
     return sv_2pv(sv, NULL);
 }
 
@@ -162,8 +216,10 @@ Usually accessed via the C<SvPVbyte_nolen> macro.
 */
 
 char *
-Perl_sv_2pvbyte_nolen(pTHX_ register SV *sv)
+Perl_sv_2pvbyte_nolen(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_2PVBYTE_NOLEN;
+
     return sv_2pvbyte(sv, NULL);
 }
 
@@ -179,8 +235,10 @@ Usually accessed via the C<SvPVutf8_nolen> macro.
 */
 
 char *
-Perl_sv_2pvutf8_nolen(pTHX_ register SV *sv)
+Perl_sv_2pvutf8_nolen(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_2PVUTF8_NOLEN;
+
     return sv_2pvutf8(sv, NULL);
 }
 
@@ -189,14 +247,16 @@ Perl_sv_2pvutf8_nolen(pTHX_ register SV *sv)
 
 Undo various types of fakery on an SV: if the PV is a shared string, make
 a private copy; if we're a ref, stop refing; if we're a glob, downgrade to
-an xpvmg. See also C<sv_force_normal_flags>.
+an xpvmg.  See also C<sv_force_normal_flags>.
 
 =cut
 */
 
 void
-Perl_sv_force_normal(pTHX_ register SV *sv)
+Perl_sv_force_normal(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_FORCE_NORMAL;
+
     sv_force_normal_flags(sv, 0);
 }
 
@@ -205,8 +265,10 @@ Perl_sv_force_normal(pTHX_ register SV *sv)
  */
 
 void
-Perl_sv_setsv(pTHX_ SV *dstr, register SV *sstr)
+Perl_sv_setsv(pTHX_ SV *dstr, SV *sstr)
 {
+    PERL_ARGS_ASSERT_SV_SETSV;
+
     sv_setsv_flags(dstr, sstr, SV_GMAGIC);
 }
 
@@ -217,6 +279,8 @@ Perl_sv_setsv(pTHX_ SV *dstr, register SV *sstr)
 void
 Perl_sv_catpvn(pTHX_ SV *dsv, const char* sstr, STRLEN slen)
 {
+    PERL_ARGS_ASSERT_SV_CATPVN;
+
     sv_catpvn_flags(dsv, sstr, slen, SV_GMAGIC);
 }
 
@@ -229,8 +293,10 @@ Like C<sv_catpvn>, but also handles 'set' magic.
 */
 
 void
-Perl_sv_catpvn_mg(pTHX_ register SV *sv, register const char *ptr, register STRLEN len)
+Perl_sv_catpvn_mg(pTHX_ SV *sv, const char *ptr, STRLEN len)
 {
+    PERL_ARGS_ASSERT_SV_CATPVN_MG;
+
     sv_catpvn_flags(sv,ptr,len,SV_GMAGIC|SV_SMAGIC);
 }
 
@@ -239,8 +305,10 @@ Perl_sv_catpvn_mg(pTHX_ register SV *sv, register const char *ptr, register STRL
  */
 
 void
-Perl_sv_catsv(pTHX_ SV *dstr, register SV *sstr)
+Perl_sv_catsv(pTHX_ SV *dstr, SV *sstr)
 {
+    PERL_ARGS_ASSERT_SV_CATSV;
+
     sv_catsv_flags(dstr, sstr, SV_GMAGIC);
 }
 
@@ -253,8 +321,10 @@ Like C<sv_catsv>, but also handles 'set' magic.
 */
 
 void
-Perl_sv_catsv_mg(pTHX_ SV *dsv, register SV *ssv)
+Perl_sv_catsv_mg(pTHX_ SV *dsv, SV *ssv)
 {
+    PERL_ARGS_ASSERT_SV_CATSV_MG;
+
     sv_catsv_flags(dsv,ssv,SV_GMAGIC|SV_SMAGIC);
 }
 
@@ -262,14 +332,16 @@ Perl_sv_catsv_mg(pTHX_ SV *dsv, register SV *ssv)
 =for apidoc sv_iv
 
 A private implementation of the C<SvIVx> macro for compilers which can't
-cope with complex macro expressions. Always use the macro instead.
+cope with complex macro expressions.  Always use the macro instead.
 
 =cut
 */
 
 IV
-Perl_sv_iv(pTHX_ register SV *sv)
+Perl_sv_iv(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_IV;
+
     if (SvIOK(sv)) {
 	if (SvIsUV(sv))
 	    return (IV)SvUVX(sv);
@@ -282,14 +354,16 @@ Perl_sv_iv(pTHX_ register SV *sv)
 =for apidoc sv_uv
 
 A private implementation of the C<SvUVx> macro for compilers which can't
-cope with complex macro expressions. Always use the macro instead.
+cope with complex macro expressions.  Always use the macro instead.
 
 =cut
 */
 
 UV
-Perl_sv_uv(pTHX_ register SV *sv)
+Perl_sv_uv(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_UV;
+
     if (SvIOK(sv)) {
 	if (SvIsUV(sv))
 	    return SvUVX(sv);
@@ -302,14 +376,16 @@ Perl_sv_uv(pTHX_ register SV *sv)
 =for apidoc sv_nv
 
 A private implementation of the C<SvNVx> macro for compilers which can't
-cope with complex macro expressions. Always use the macro instead.
+cope with complex macro expressions.  Always use the macro instead.
 
 =cut
 */
 
 NV
-Perl_sv_nv(pTHX_ register SV *sv)
+Perl_sv_nv(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_NV;
+
     if (SvNOK(sv))
 	return SvNVX(sv);
     return sv_2nv(sv);
@@ -323,7 +399,7 @@ Use the C<SvPV_nolen> macro instead
 =for apidoc sv_pvn
 
 A private implementation of the C<SvPV> macro for compilers which can't
-cope with complex macro expressions. Always use the macro instead.
+cope with complex macro expressions.  Always use the macro instead.
 
 =cut
 */
@@ -331,6 +407,8 @@ cope with complex macro expressions. Always use the macro instead.
 char *
 Perl_sv_pvn(pTHX_ SV *sv, STRLEN *lp)
 {
+    PERL_ARGS_ASSERT_SV_PVN;
+
     if (SvPOK(sv)) {
 	*lp = SvCUR(sv);
 	return SvPVX(sv);
@@ -340,8 +418,10 @@ Perl_sv_pvn(pTHX_ SV *sv, STRLEN *lp)
 
 
 char *
-Perl_sv_pvn_nomg(pTHX_ register SV *sv, STRLEN *lp)
+Perl_sv_pvn_nomg(pTHX_ SV *sv, STRLEN *lp)
 {
+    PERL_ARGS_ASSERT_SV_PVN_NOMG;
+
     if (SvPOK(sv)) {
 	*lp = SvCUR(sv);
 	return SvPVX(sv);
@@ -356,6 +436,8 @@ Perl_sv_pvn_nomg(pTHX_ register SV *sv, STRLEN *lp)
 char *
 Perl_sv_pv(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_PV;
+
     if (SvPOK(sv))
         return SvPVX(sv);
 
@@ -369,6 +451,8 @@ Perl_sv_pv(pTHX_ SV *sv)
 char *
 Perl_sv_pvn_force(pTHX_ SV *sv, STRLEN *lp)
 {
+    PERL_ARGS_ASSERT_SV_PVN_FORCE;
+
     return sv_pvn_force_flags(sv, lp, SV_GMAGIC);
 }
 
@@ -379,6 +463,8 @@ Perl_sv_pvn_force(pTHX_ SV *sv, STRLEN *lp)
 char *
 Perl_sv_pvbyte(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_PVBYTE;
+
     sv_utf8_downgrade(sv, FALSE);
     return sv_pv(sv);
 }
@@ -391,7 +477,7 @@ Use C<SvPVbyte_nolen> instead.
 =for apidoc sv_pvbyten
 
 A private implementation of the C<SvPVbyte> macro for compilers
-which can't cope with complex macro expressions. Always use the macro
+which can't cope with complex macro expressions.  Always use the macro
 instead.
 
 =cut
@@ -400,6 +486,8 @@ instead.
 char *
 Perl_sv_pvbyten(pTHX_ SV *sv, STRLEN *lp)
 {
+    PERL_ARGS_ASSERT_SV_PVBYTEN;
+
     sv_utf8_downgrade(sv, FALSE);
     return sv_pvn(sv,lp);
 }
@@ -411,6 +499,8 @@ Perl_sv_pvbyten(pTHX_ SV *sv, STRLEN *lp)
 char *
 Perl_sv_pvutf8(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_PVUTF8;
+
     sv_utf8_upgrade(sv);
     return sv_pv(sv);
 }
@@ -423,7 +513,7 @@ Use the C<SvPVutf8_nolen> macro instead
 =for apidoc sv_pvutf8n
 
 A private implementation of the C<SvPVutf8> macro for compilers
-which can't cope with complex macro expressions. Always use the macro
+which can't cope with complex macro expressions.  Always use the macro
 instead.
 
 =cut
@@ -432,6 +522,8 @@ instead.
 char *
 Perl_sv_pvutf8n(pTHX_ SV *sv, STRLEN *lp)
 {
+    PERL_ARGS_ASSERT_SV_PVUTF8N;
+
     sv_utf8_upgrade(sv);
     return sv_pvn(sv,lp);
 }
@@ -441,8 +533,10 @@ Perl_sv_pvutf8n(pTHX_ SV *sv, STRLEN *lp)
  */
 
 STRLEN
-Perl_sv_utf8_upgrade(pTHX_ register SV *sv)
+Perl_sv_utf8_upgrade(pTHX_ SV *sv)
 {
+    PERL_ARGS_ASSERT_SV_UTF8_UPGRADE;
+
     return sv_utf8_upgrade_flags(sv, SV_GMAGIC);
 }
 
@@ -450,9 +544,19 @@ int
 Perl_fprintf_nocontext(PerlIO *stream, const char *format, ...)
 {
     dTHXs;
+    int ret = 0;
     va_list(arglist);
+
+    /* Easier to special case this here than in embed.pl. (Look at what it
+       generates for proto.h) */
+#ifdef PERL_IMPLICIT_CONTEXT
+    PERL_ARGS_ASSERT_FPRINTF_NOCONTEXT;
+#endif
+
     va_start(arglist, format);
-    return PerlIO_vprintf(stream, format, arglist);
+    ret = PerlIO_vprintf(stream, format, arglist);
+    va_end(arglist);
+    return ret;
 }
 
 int
@@ -460,8 +564,16 @@ Perl_printf_nocontext(const char *format, ...)
 {
     dTHX;
     va_list(arglist);
+    int ret = 0;
+
+#ifdef PERL_IMPLICIT_CONTEXT
+    PERL_ARGS_ASSERT_PRINTF_NOCONTEXT;
+#endif
+
     va_start(arglist, format);
-    return PerlIO_vprintf(PerlIO_stdout(), format, arglist);
+    ret = PerlIO_vprintf(PerlIO_stdout(), format, arglist);
+    va_end(arglist);
+    return ret;
 }
 
 #if defined(HUGE_VAL) || (defined(USE_LONG_DOUBLE) && defined(HUGE_VALL))
@@ -485,6 +597,8 @@ Perl_huge(void)
 void
 Perl_gv_fullname(pTHX_ SV *sv, const GV *gv)
 {
+    PERL_ARGS_ASSERT_GV_FULLNAME;
+
     gv_fullname3(sv, gv, sv == (const SV*)gv ? "*" : "");
 }
 
@@ -492,25 +606,31 @@ Perl_gv_fullname(pTHX_ SV *sv, const GV *gv)
 void
 Perl_gv_efullname(pTHX_ SV *sv, const GV *gv)
 {
+    PERL_ARGS_ASSERT_GV_EFULLNAME;
+
     gv_efullname3(sv, gv, sv == (const SV*)gv ? "*" : "");
 }
 
 void
 Perl_gv_fullname3(pTHX_ SV *sv, const GV *gv, const char *prefix)
 {
+    PERL_ARGS_ASSERT_GV_FULLNAME3;
+
     gv_fullname4(sv, gv, prefix, TRUE);
 }
 
 void
 Perl_gv_efullname3(pTHX_ SV *sv, const GV *gv, const char *prefix)
 {
+    PERL_ARGS_ASSERT_GV_EFULLNAME3;
+
     gv_efullname4(sv, gv, prefix, TRUE);
 }
 
 /*
 =for apidoc gv_fetchmethod
 
-See L<gv_fetchmethod_autoload>.
+See L</gv_fetchmethod_autoload>.
 
 =cut
 */
@@ -518,55 +638,45 @@ See L<gv_fetchmethod_autoload>.
 GV *
 Perl_gv_fetchmethod(pTHX_ HV *stash, const char *name)
 {
+    PERL_ARGS_ASSERT_GV_FETCHMETHOD;
+
     return gv_fetchmethod_autoload(stash, name, TRUE);
 }
 
 HE *
 Perl_hv_iternext(pTHX_ HV *hv)
 {
+    PERL_ARGS_ASSERT_HV_ITERNEXT;
+
     return hv_iternext_flags(hv, 0);
 }
 
 void
 Perl_hv_magic(pTHX_ HV *hv, GV *gv, int how)
 {
-    sv_magic((SV*)hv, (SV*)gv, how, NULL, 0);
-}
+    PERL_ARGS_ASSERT_HV_MAGIC;
 
-AV *
-Perl_av_fake(pTHX_ register I32 size, register SV **strp)
-{
-    register SV** ary;
-    register AV * const av = (AV*)newSV_type(SVt_PVAV);
-    Newx(ary,size+1,SV*);
-    AvALLOC(av) = ary;
-    Copy(strp,ary,size,SV*);
-    AvREIFY_only(av);
-    AvARRAY(av) = ary;
-    AvFILLp(av) = size - 1;
-    AvMAX(av) = size - 1;
-    while (size--) {
-        assert (*strp);
-        SvTEMP_off(*strp);
-        strp++;
-    }
-    return av;
+    sv_magic(MUTABLE_SV(hv), MUTABLE_SV(gv), how, NULL, 0);
 }
 
 bool
-Perl_do_open(pTHX_ GV *gv, register const char *name, I32 len, int as_raw,
+Perl_do_open(pTHX_ GV *gv, const char *name, I32 len, int as_raw,
 	     int rawmode, int rawperm, PerlIO *supplied_fp)
 {
+    PERL_ARGS_ASSERT_DO_OPEN;
+
     return do_openn(gv, name, len, as_raw, rawmode, rawperm,
 		    supplied_fp, (SV **) NULL, 0);
 }
 
 bool
-Perl_do_open9(pTHX_ GV *gv, register const char *name, I32 len, int 
+Perl_do_open9(pTHX_ GV *gv, const char *name, I32 len, int
 as_raw,
               int rawmode, int rawperm, PerlIO *supplied_fp, SV *svs,
               I32 num_svs)
 {
+    PERL_ARGS_ASSERT_DO_OPEN9;
+
     PERL_UNUSED_ARG(num_svs);
     return do_openn(gv, name, len, as_raw, rawmode, rawperm,
                     supplied_fp, &svs, 1);
@@ -579,6 +689,9 @@ Perl_do_binmode(pTHX_ PerlIO *fp, int iotype, int mode)
   * This is a stub for any XS code which might have been calling it.
   */
  const char *name = ":raw";
+
+ PERL_ARGS_ASSERT_DO_BINMODE;
+
 #ifdef PERLIO_USING_CRLF
  if (!(mode & O_BINARY))
      name = ":crlf";
@@ -588,17 +701,11 @@ Perl_do_binmode(pTHX_ PerlIO *fp, int iotype, int mode)
 
 #ifndef OS2
 bool
-Perl_do_aexec(pTHX_ SV *really, register SV **mark, register SV **sp)
+Perl_do_aexec(pTHX_ SV *really, SV **mark, SV **sp)
 {
-    return do_aexec5(really, mark, sp, 0, 0);
-}
-#endif
+    PERL_ARGS_ASSERT_DO_AEXEC;
 
-#ifdef PERL_DEFAULT_DO_EXEC3_IMPLEMENTATION
-bool
-Perl_do_exec(pTHX_ const char *cmd)
-{
-    return do_exec3(cmd,0,0);
+    return do_aexec5(really, mark, sp, 0, 0);
 }
 #endif
 
@@ -609,447 +716,11 @@ Perl_init_i18nl14n(pTHX_ int printwarn)
     return init_i18nl10n(printwarn);
 }
 
-OP *
-Perl_oopsCV(pTHX_ OP *o)
-{
-    Perl_croak(aTHX_ "NOT IMPL LINE %d",__LINE__);
-    /* STUB */
-    PERL_UNUSED_ARG(o);
-    NORETURN_FUNCTION_END;
-}
-
-PP(pp_padany)
-{
-    DIE(aTHX_ "NOT IMPL LINE %d",__LINE__);
-}
-
-PP(pp_mapstart)
-{
-    DIE(aTHX_ "panic: mapstart");	/* uses grepstart */
-}
-
-/* These ops all have the same body as pp_null.  */
-PP(pp_scalar)
-{
-    dVAR;
-    return NORMAL;
-}
-
-PP(pp_regcmaybe)
-{
-    dVAR;
-    return NORMAL;
-}
-
-PP(pp_lineseq)
-{
-    dVAR;
-    return NORMAL;
-}
-
-PP(pp_scope)
-{
-    dVAR;
-    return NORMAL;
-}
-
-/* Ops that are calls to do_kv.  */
-PP(pp_values)
-{
-    return do_kv();
-}
-
-PP(pp_keys)
-{
-    return do_kv();
-}
-
-/* Ops that are simply calls to other ops.  */
-PP(pp_dump)
-{
-    return pp_goto();
-    /*NOTREACHED*/
-}
-
-PP(pp_dofile)
-{
-    return pp_require();
-}
-
-PP(pp_dbmclose)
-{
-    return pp_untie();
-}
-
-PP(pp_read)
-{
-    return pp_sysread();
-}
-
-PP(pp_recv)
-{
-    return pp_sysread();
-}
-
-PP(pp_seek)
-{
-    return pp_sysseek();
-}
-
-PP(pp_fcntl)
-{
-    return pp_ioctl();
-}
-
-PP(pp_gsockopt)
-{
-    return pp_ssockopt();
-}
-
-PP(pp_getsockname)
-{
-    return pp_getpeername();
-}
-
-PP(pp_lstat)
-{
-    return pp_stat();
-}
-
-PP(pp_fteowned)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftbinary)
-{
-    return pp_fttext();
-}
-
-PP(pp_localtime)
-{
-    return pp_gmtime();
-}
-
-PP(pp_shmget)
-{
-    return pp_semget();
-}
-
-PP(pp_shmctl)
-{
-    return pp_semctl();
-}
-
-PP(pp_shmread)
-{
-    return pp_shmwrite();
-}
-
-PP(pp_msgget)
-{
-    return pp_semget();
-}
-
-PP(pp_msgctl)
-{
-    return pp_semctl();
-}
-
-PP(pp_ghbyname)
-{
-    return pp_ghostent();
-}
-
-PP(pp_ghbyaddr)
-{
-    return pp_ghostent();
-}
-
-PP(pp_gnbyname)
-{
-    return pp_gnetent();
-}
-
-PP(pp_gnbyaddr)
-{
-    return pp_gnetent();
-}
-
-PP(pp_gpbyname)
-{
-    return pp_gprotoent();
-}
-
-PP(pp_gpbynumber)
-{
-    return pp_gprotoent();
-}
-
-PP(pp_gsbyname)
-{
-    return pp_gservent();
-}
-
-PP(pp_gsbyport)
-{
-    return pp_gservent();
-}
-
-PP(pp_gpwnam)
-{
-    return pp_gpwent();
-}
-
-PP(pp_gpwuid)
-{
-    return pp_gpwent();
-}
-
-PP(pp_ggrnam)
-{
-    return pp_ggrent();
-}
-
-PP(pp_ggrgid)
-{
-    return pp_ggrent();
-}
-
-PP(pp_ftsize)
-{
-    return pp_ftis();
-}
-
-PP(pp_ftmtime)
-{
-    return pp_ftis();
-}
-
-PP(pp_ftatime)
-{
-    return pp_ftis();
-}
-
-PP(pp_ftctime)
-{
-    return pp_ftis();
-}
-
-PP(pp_ftzero)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftsock)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftchr)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftblk)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftfile)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftdir)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftpipe)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftsuid)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftsgid)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_ftsvtx)
-{
-    return pp_ftrowned();
-}
-
-PP(pp_unlink)
-{
-    return pp_chown();
-}
-
-PP(pp_chmod)
-{
-    return pp_chown();
-}
-
-PP(pp_utime)
-{
-    return pp_chown();
-}
-
-PP(pp_kill)
-{
-    return pp_chown();
-}
-
-PP(pp_symlink)
-{
-    return pp_link();
-}
-
-PP(pp_ftrwrite)
-{
-    return pp_ftrread();
-}
-
-PP(pp_ftrexec)
-{
-    return pp_ftrread();
-}
-
-PP(pp_fteread)
-{
-    return pp_ftrread();
-}
-
-PP(pp_ftewrite)
-{
-    return pp_ftrread();
-}
-
-PP(pp_fteexec)
-{
-    return pp_ftrread();
-}
-
-PP(pp_msgsnd)
-{
-    return pp_shmwrite();
-}
-
-PP(pp_msgrcv)
-{
-    return pp_shmwrite();
-}
-
-PP(pp_syswrite)
-{
-    return pp_send();
-}
-
-PP(pp_semop)
-{
-    return pp_shmwrite();
-}
-
-PP(pp_dor)
-{
-    return pp_defined();
-}
-
-PP(pp_andassign)
-{
-    return pp_and();
-}
-
-PP(pp_orassign)
-{
-    return pp_or();
-}
-
-PP(pp_dorassign)
-{
-    return pp_defined();
-} 
-
-PP(pp_lcfirst)
-{
-    return pp_ucfirst();
-}
-
-PP(pp_slt)
-{
-    return pp_sle();
-}
-
-PP(pp_sgt)
-{
-    return pp_sle();
-}
-
-PP(pp_sge)
-{
-    return pp_sle();
-}
-
-PP(pp_rindex)
-{
-    return pp_index();
-}
-
-PP(pp_hex)
-{
-    return pp_oct();
-}
-
-PP(pp_pop)
-{
-    return pp_shift();
-}
-
-PP(pp_cos)
-{
-    return pp_sin();
-}
-
-PP(pp_exp)
-{
-    return pp_sin();
-}
-
-PP(pp_log)
-{
-    return pp_sin();
-}
-
-PP(pp_sqrt)
-{
-    return pp_sin();
-}
-
-PP(pp_bit_xor)
-{
-    return pp_bit_or();
-}
-
-PP(pp_rv2hv)
-{
-    return Perl_pp_rv2av(aTHX);
-}
-
-U8 *
-Perl_uvuni_to_utf8(pTHX_ U8 *d, UV uv)
-{
-    return Perl_uvuni_to_utf8_flags(aTHX_ d, uv, 0);
-}
-
 bool
 Perl_is_utf8_string_loc(pTHX_ const U8 *s, STRLEN len, const U8 **ep)
 {
+    PERL_ARGS_ASSERT_IS_UTF8_STRING_LOC;
+
     return is_utf8_string_loclen(s, len, ep, 0);
 }
 
@@ -1096,44 +767,57 @@ void
 Perl_save_long(pTHX_ long int *longp)
 {
     dVAR;
+
+    PERL_ARGS_ASSERT_SAVE_LONG;
+
     SSCHECK(3);
     SSPUSHLONG(*longp);
     SSPUSHPTR(longp);
-    SSPUSHINT(SAVEt_LONG);
+    SSPUSHUV(SAVEt_LONG);
 }
 
 void
 Perl_save_iv(pTHX_ IV *ivp)
 {
     dVAR;
+
+    PERL_ARGS_ASSERT_SAVE_IV;
+
     SSCHECK(3);
     SSPUSHIV(*ivp);
     SSPUSHPTR(ivp);
-    SSPUSHINT(SAVEt_IV);
+    SSPUSHUV(SAVEt_IV);
 }
 
 void
 Perl_save_nogv(pTHX_ GV *gv)
 {
     dVAR;
+
+    PERL_ARGS_ASSERT_SAVE_NOGV;
+
     SSCHECK(2);
     SSPUSHPTR(gv);
-    SSPUSHINT(SAVEt_NSTAB);
+    SSPUSHUV(SAVEt_NSTAB);
 }
 
 void
-Perl_save_list(pTHX_ register SV **sarg, I32 maxsarg)
+Perl_save_list(pTHX_ SV **sarg, I32 maxsarg)
 {
     dVAR;
-    register I32 i;
+    I32 i;
+
+    PERL_ARGS_ASSERT_SAVE_LIST;
 
     for (i = 1; i <= maxsarg; i++) {
-	register SV * const sv = newSV(0);
-	sv_setsv(sv,sarg[i]);
+	SV *sv;
+	SvGETMAGIC(sarg[i]);
+	sv = newSV(0);
+	sv_setsv_nomg(sv,sarg[i]);
 	SSCHECK(3);
 	SSPUSHPTR(sarg[i]);		/* remember the pointer */
 	SSPUSHPTR(sv);			/* remember the value */
-	SSPUSHINT(SAVEt_ITEM);
+	SSPUSHUV(SAVEt_ITEM);
     }
 }
 
@@ -1148,15 +832,17 @@ Like C<sv_usepvn>, but also handles 'set' magic.
 void
 Perl_sv_usepvn_mg(pTHX_ SV *sv, char *ptr, STRLEN len)
 {
+    PERL_ARGS_ASSERT_SV_USEPVN_MG;
+
     sv_usepvn_flags(sv,ptr,len, SV_SMAGIC);
 }
 
 /*
 =for apidoc sv_usepvn
 
-Tells an SV to use C<ptr> to find its string value. Implemented by
+Tells an SV to use C<ptr> to find its string value.  Implemented by
 calling C<sv_usepvn_flags> with C<flags> of 0, hence does not handle 'set'
-magic. See C<sv_usepvn_flags>.
+magic.  See C<sv_usepvn_flags>.
 
 =cut
 */
@@ -1164,20 +850,17 @@ magic. See C<sv_usepvn_flags>.
 void
 Perl_sv_usepvn(pTHX_ SV *sv, char *ptr, STRLEN len)
 {
-    sv_usepvn_flags(sv,ptr,len, 0);
-}
+    PERL_ARGS_ASSERT_SV_USEPVN;
 
-void
-Perl_cv_ckproto(pTHX_ const CV *cv, const GV *gv, const char *p)
-{
-    cv_ckproto_len(cv, gv, p, p ? strlen(p) : 0);
+    sv_usepvn_flags(sv,ptr,len, 0);
 }
 
 /*
 =for apidoc unpack_str
 
-The engine implementing unpack() Perl function. Note: parameters strbeg, new_s
-and ocnt are not used. This call should not be used, use unpackstring instead.
+The engine implementing unpack() Perl function.  Note: parameters strbeg,
+new_s and ocnt are not used.  This call should not be used, use
+unpackstring instead.
 
 =cut */
 
@@ -1186,6 +869,8 @@ Perl_unpack_str(pTHX_ const char *pat, const char *patend, const char *s,
 		const char *strbeg, const char *strend, char **new_s, I32 ocnt,
 		U32 flags)
 {
+    PERL_ARGS_ASSERT_UNPACK_STR;
+
     PERL_UNUSED_ARG(strbeg);
     PERL_UNUSED_ARG(new_s);
     PERL_UNUSED_ARG(ocnt);
@@ -1196,15 +881,18 @@ Perl_unpack_str(pTHX_ const char *pat, const char *patend, const char *s,
 /*
 =for apidoc pack_cat
 
-The engine implementing pack() Perl function. Note: parameters next_in_list and
-flags are not used. This call should not be used; use packlist instead.
+The engine implementing pack() Perl function.  Note: parameters
+next_in_list and flags are not used.  This call should not be used; use
+packlist instead.
 
 =cut
 */
 
 void
-Perl_pack_cat(pTHX_ SV *cat, const char *pat, const char *patend, register SV **beglist, SV **endlist, SV ***next_in_list, U32 flags)
+Perl_pack_cat(pTHX_ SV *cat, const char *pat, const char *patend, SV **beglist, SV **endlist, SV ***next_in_list, U32 flags)
 {
+    PERL_ARGS_ASSERT_PACK_CAT;
+
     PERL_UNUSED_ARG(next_in_list);
     PERL_UNUSED_ARG(flags);
 
@@ -1220,6 +908,8 @@ Perl_hv_store_ent(pTHX_ HV *hv, SV *keysv, SV *val, U32 hash)
 bool
 Perl_hv_exists_ent(pTHX_ HV *hv, SV *keysv, U32 hash)
 {
+    PERL_ARGS_ASSERT_HV_EXISTS_ENT;
+
     return hv_common(hv, keysv, NULL, 0, 0, HV_FETCH_ISEXISTS, 0, hash)
 	? TRUE : FALSE;
 }
@@ -1227,6 +917,8 @@ Perl_hv_exists_ent(pTHX_ HV *hv, SV *keysv, U32 hash)
 HE *
 Perl_hv_fetch_ent(pTHX_ HV *hv, SV *keysv, I32 lval, U32 hash)
 {
+    PERL_ARGS_ASSERT_HV_FETCH_ENT;
+
     return (HE *)hv_common(hv, keysv, NULL, 0, 0, 
 		     (lval ? HV_FETCH_LVALUE : 0), NULL, hash);
 }
@@ -1234,8 +926,10 @@ Perl_hv_fetch_ent(pTHX_ HV *hv, SV *keysv, I32 lval, U32 hash)
 SV *
 Perl_hv_delete_ent(pTHX_ HV *hv, SV *keysv, I32 flags, U32 hash)
 {
-    return (SV *) hv_common(hv, keysv, NULL, 0, 0, flags | HV_DELETE, NULL,
-			    hash);
+    PERL_ARGS_ASSERT_HV_DELETE_ENT;
+
+    return MUTABLE_SV(hv_common(hv, keysv, NULL, 0, 0, flags | HV_DELETE, NULL,
+				hash));
 }
 
 SV**
@@ -1269,6 +963,8 @@ Perl_hv_exists(pTHX_ HV *hv, const char *key, I32 klen_i32)
     STRLEN klen;
     int flags;
 
+    PERL_ARGS_ASSERT_HV_EXISTS;
+
     if (klen_i32 < 0) {
 	klen = -klen_i32;
 	flags = HVhek_UTF8;
@@ -1285,6 +981,8 @@ Perl_hv_fetch(pTHX_ HV *hv, const char *key, I32 klen_i32, I32 lval)
 {
     STRLEN klen;
     int flags;
+
+    PERL_ARGS_ASSERT_HV_FETCH;
 
     if (klen_i32 < 0) {
 	klen = -klen_i32;
@@ -1304,6 +1002,8 @@ Perl_hv_delete(pTHX_ HV *hv, const char *key, I32 klen_i32, I32 flags)
     STRLEN klen;
     int k_flags;
 
+    PERL_ARGS_ASSERT_HV_DELETE;
+
     if (klen_i32 < 0) {
 	klen = -klen_i32;
 	k_flags = HVhek_UTF8;
@@ -1311,9 +1011,624 @@ Perl_hv_delete(pTHX_ HV *hv, const char *key, I32 klen_i32, I32 flags)
 	klen = klen_i32;
 	k_flags = 0;
     }
-    return (SV *) hv_common(hv, NULL, key, klen, k_flags, flags | HV_DELETE,
-			    NULL, 0);
+    return MUTABLE_SV(hv_common(hv, NULL, key, klen, k_flags, flags | HV_DELETE,
+				NULL, 0));
 }
+
+/* Functions after here were made mathoms post 5.10.0 but pre 5.8.9 */
+
+AV *
+Perl_newAV(pTHX)
+{
+    return MUTABLE_AV(newSV_type(SVt_PVAV));
+    /* sv_upgrade does AvREAL_only():
+    AvALLOC(av) = 0;
+    AvARRAY(av) = NULL;
+    AvMAX(av) = AvFILLp(av) = -1; */
+}
+
+HV *
+Perl_newHV(pTHX)
+{
+    HV * const hv = MUTABLE_HV(newSV_type(SVt_PVHV));
+    assert(!SvOK(hv));
+
+    return hv;
+}
+
+void
+Perl_sv_insert(pTHX_ SV *const bigstr, const STRLEN offset, const STRLEN len, 
+              const char *const little, const STRLEN littlelen)
+{
+    PERL_ARGS_ASSERT_SV_INSERT;
+    sv_insert_flags(bigstr, offset, len, little, littlelen, SV_GMAGIC);
+}
+
+void
+Perl_save_freesv(pTHX_ SV *sv)
+{
+    dVAR;
+    save_freesv(sv);
+}
+
+void
+Perl_save_mortalizesv(pTHX_ SV *sv)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_SAVE_MORTALIZESV;
+
+    save_mortalizesv(sv);
+}
+
+void
+Perl_save_freeop(pTHX_ OP *o)
+{
+    dVAR;
+    save_freeop(o);
+}
+
+void
+Perl_save_freepv(pTHX_ char *pv)
+{
+    dVAR;
+    save_freepv(pv);
+}
+
+void
+Perl_save_op(pTHX)
+{
+    dVAR;
+    save_op();
+}
+
+#ifdef PERL_DONT_CREATE_GVSV
+GV *
+Perl_gv_SVadd(pTHX_ GV *gv)
+{
+    return gv_SVadd(gv);
+}
+#endif
+
+GV *
+Perl_gv_AVadd(pTHX_ GV *gv)
+{
+    return gv_AVadd(gv);
+}
+
+GV *
+Perl_gv_HVadd(pTHX_ GV *gv)
+{
+    return gv_HVadd(gv);
+}
+
+GV *
+Perl_gv_IOadd(pTHX_ GV *gv)
+{
+    return gv_IOadd(gv);
+}
+
+IO *
+Perl_newIO(pTHX)
+{
+    return MUTABLE_IO(newSV_type(SVt_PVIO));
+}
+
+I32
+Perl_my_stat(pTHX)
+{
+    return my_stat_flags(SV_GMAGIC);
+}
+
+I32
+Perl_my_lstat(pTHX)
+{
+    return my_lstat_flags(SV_GMAGIC);
+}
+
+I32
+Perl_sv_eq(pTHX_ SV *sv1, SV *sv2)
+{
+    return sv_eq_flags(sv1, sv2, SV_GMAGIC);
+}
+
+#ifdef USE_LOCALE_COLLATE
+char *
+Perl_sv_collxfrm(pTHX_ SV *const sv, STRLEN *const nxp)
+{
+    return sv_collxfrm_flags(sv, nxp, SV_GMAGIC);
+}
+#endif
+
+bool
+Perl_sv_2bool(pTHX_ SV *const sv)
+{
+    return sv_2bool_flags(sv, SV_GMAGIC);
+}
+
+
+/*
+=for apidoc custom_op_name
+Return the name for a given custom op.  This was once used by the OP_NAME
+macro, but is no longer: it has only been kept for compatibility, and
+should not be used.
+
+=for apidoc custom_op_desc
+Return the description of a given custom op.  This was once used by the
+OP_DESC macro, but is no longer: it has only been kept for
+compatibility, and should not be used.
+
+=cut
+*/
+
+const char*
+Perl_custom_op_name(pTHX_ const OP* o)
+{
+    PERL_ARGS_ASSERT_CUSTOM_OP_NAME;
+    return XopENTRYCUSTOM(o, xop_name);
+}
+
+const char*
+Perl_custom_op_desc(pTHX_ const OP* o)
+{
+    PERL_ARGS_ASSERT_CUSTOM_OP_DESC;
+    return XopENTRYCUSTOM(o, xop_desc);
+}
+
+CV *
+Perl_newSUB(pTHX_ I32 floor, OP *o, OP *proto, OP *block)
+{
+    return newATTRSUB(floor, o, proto, NULL, block);
+}
+
+UV
+Perl_to_utf8_fold(pTHX_ const U8 *p, U8* ustrp, STRLEN *lenp)
+{
+    PERL_ARGS_ASSERT_TO_UTF8_FOLD;
+
+    return _to_utf8_fold_flags(p, ustrp, lenp, FOLD_FLAGS_FULL);
+}
+
+UV
+Perl_to_utf8_lower(pTHX_ const U8 *p, U8* ustrp, STRLEN *lenp)
+{
+    PERL_ARGS_ASSERT_TO_UTF8_LOWER;
+
+    return _to_utf8_lower_flags(p, ustrp, lenp, FALSE);
+}
+
+UV
+Perl_to_utf8_title(pTHX_ const U8 *p, U8* ustrp, STRLEN *lenp)
+{
+    PERL_ARGS_ASSERT_TO_UTF8_TITLE;
+
+    return _to_utf8_title_flags(p, ustrp, lenp, FALSE);
+}
+
+UV
+Perl_to_utf8_upper(pTHX_ const U8 *p, U8* ustrp, STRLEN *lenp)
+{
+    PERL_ARGS_ASSERT_TO_UTF8_UPPER;
+
+    return _to_utf8_upper_flags(p, ustrp, lenp, FALSE);
+}
+
+SV *
+Perl_sv_mortalcopy(pTHX_ SV *const oldstr)
+{
+    return Perl_sv_mortalcopy_flags(aTHX_ oldstr, SV_GMAGIC);
+}
+
+UV      /* Made into a function, so can be deprecated */
+NATIVE_TO_NEED(const UV enc, const UV ch)
+{
+    PERL_UNUSED_ARG(enc);
+    return ch;
+}
+
+UV      /* Made into a function, so can be deprecated */
+ASCII_TO_NEED(const UV enc, const UV ch)
+{
+    PERL_UNUSED_ARG(enc);
+    return ch;
+}
+
+bool
+Perl_is_uni_alnum(pTHX_ UV c)
+{
+    return isWORDCHAR_uni(c);
+}
+
+bool
+Perl_is_uni_alnumc(pTHX_ UV c)
+{
+    return isALNUM_uni(c);
+}
+
+bool
+Perl_is_uni_alpha(pTHX_ UV c)
+{
+    return isALPHA_uni(c);
+}
+
+bool
+Perl_is_uni_ascii(pTHX_ UV c)
+{
+    return isASCII_uni(c);
+}
+
+bool
+Perl_is_uni_blank(pTHX_ UV c)
+{
+    return isBLANK_uni(c);
+}
+
+bool
+Perl_is_uni_space(pTHX_ UV c)
+{
+    return isSPACE_uni(c);
+}
+
+bool
+Perl_is_uni_digit(pTHX_ UV c)
+{
+    return isDIGIT_uni(c);
+}
+
+bool
+Perl_is_uni_upper(pTHX_ UV c)
+{
+    return isUPPER_uni(c);
+}
+
+bool
+Perl_is_uni_lower(pTHX_ UV c)
+{
+    return isLOWER_uni(c);
+}
+
+bool
+Perl_is_uni_cntrl(pTHX_ UV c)
+{
+    return isCNTRL_L1(c);
+}
+
+bool
+Perl_is_uni_graph(pTHX_ UV c)
+{
+    return isGRAPH_uni(c);
+}
+
+bool
+Perl_is_uni_print(pTHX_ UV c)
+{
+    return isPRINT_uni(c);
+}
+
+bool
+Perl_is_uni_punct(pTHX_ UV c)
+{
+    return isPUNCT_uni(c);
+}
+
+bool
+Perl_is_uni_xdigit(pTHX_ UV c)
+{
+    return isXDIGIT_uni(c);
+}
+
+bool
+Perl_is_uni_alnum_lc(pTHX_ UV c)
+{
+    return isWORDCHAR_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_alnumc_lc(pTHX_ UV c)
+{
+    return isALPHANUMERIC_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_idfirst_lc(pTHX_ UV c)
+{
+    /* XXX Should probably be something that resolves to the old IDFIRST, but
+     * this function is deprecated, so not bothering */
+    return isIDFIRST_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_alpha_lc(pTHX_ UV c)
+{
+    return isALPHA_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_ascii_lc(pTHX_ UV c)
+{
+    return isASCII_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_blank_lc(pTHX_ UV c)
+{
+    return isBLANK_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_space_lc(pTHX_ UV c)
+{
+    return isSPACE_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_digit_lc(pTHX_ UV c)
+{
+    return isDIGIT_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_upper_lc(pTHX_ UV c)
+{
+    return isUPPER_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_lower_lc(pTHX_ UV c)
+{
+    return isLOWER_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_cntrl_lc(pTHX_ UV c)
+{
+    return isCNTRL_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_graph_lc(pTHX_ UV c)
+{
+    return isGRAPH_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_print_lc(pTHX_ UV c)
+{
+    return isPRINT_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_punct_lc(pTHX_ UV c)
+{
+    return isPUNCT_LC_uvchr(c);
+}
+
+bool
+Perl_is_uni_xdigit_lc(pTHX_ UV c)
+{
+    return isXDIGIT_LC_uvchr(c);
+}
+
+U32
+Perl_to_uni_upper_lc(pTHX_ U32 c)
+{
+    /* XXX returns only the first character -- do not use XXX */
+    /* XXX no locale support yet */
+    STRLEN len;
+    U8 tmpbuf[UTF8_MAXBYTES_CASE+1];
+    return (U32)to_uni_upper(c, tmpbuf, &len);
+}
+
+U32
+Perl_to_uni_title_lc(pTHX_ U32 c)
+{
+    /* XXX returns only the first character XXX -- do not use XXX */
+    /* XXX no locale support yet */
+    STRLEN len;
+    U8 tmpbuf[UTF8_MAXBYTES_CASE+1];
+    return (U32)to_uni_title(c, tmpbuf, &len);
+}
+
+U32
+Perl_to_uni_lower_lc(pTHX_ U32 c)
+{
+    /* XXX returns only the first character -- do not use XXX */
+    /* XXX no locale support yet */
+    STRLEN len;
+    U8 tmpbuf[UTF8_MAXBYTES_CASE+1];
+    return (U32)to_uni_lower(c, tmpbuf, &len);
+}
+
+bool
+Perl_is_utf8_alnum(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_ALNUM;
+
+    /* NOTE: "IsWord", not "IsAlnum", since Alnum is a true
+     * descendant of isalnum(3), in other words, it doesn't
+     * contain the '_'. --jhi */
+    return isWORDCHAR_utf8(p);
+}
+
+bool
+Perl_is_utf8_alnumc(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_ALNUMC;
+
+    return isALPHANUMERIC_utf8(p);
+}
+
+bool
+Perl_is_utf8_alpha(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_ALPHA;
+
+    return isALPHA_utf8(p);
+}
+
+bool
+Perl_is_utf8_ascii(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_ASCII;
+
+    return isASCII_utf8(p);
+}
+
+bool
+Perl_is_utf8_blank(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_BLANK;
+
+    return isBLANK_utf8(p);
+}
+
+bool
+Perl_is_utf8_space(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_SPACE;
+
+    return isSPACE_utf8(p);
+}
+
+bool
+Perl_is_utf8_perl_space(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_PERL_SPACE;
+
+    /* Only true if is an ASCII space-like character, and ASCII is invariant
+     * under utf8, so can just use the macro */
+    return isSPACE_A(*p);
+}
+
+bool
+Perl_is_utf8_perl_word(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_PERL_WORD;
+
+    /* Only true if is an ASCII word character, and ASCII is invariant
+     * under utf8, so can just use the macro */
+    return isWORDCHAR_A(*p);
+}
+
+bool
+Perl_is_utf8_digit(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_DIGIT;
+
+    return isDIGIT_utf8(p);
+}
+
+bool
+Perl_is_utf8_posix_digit(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_POSIX_DIGIT;
+
+    /* Only true if is an ASCII digit character, and ASCII is invariant
+     * under utf8, so can just use the macro */
+    return isDIGIT_A(*p);
+}
+
+bool
+Perl_is_utf8_upper(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_UPPER;
+
+    return isUPPER_utf8(p);
+}
+
+bool
+Perl_is_utf8_lower(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_LOWER;
+
+    return isLOWER_utf8(p);
+}
+
+bool
+Perl_is_utf8_cntrl(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_CNTRL;
+
+    return isCNTRL_utf8(p);
+}
+
+bool
+Perl_is_utf8_graph(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_GRAPH;
+
+    return isGRAPH_utf8(p);
+}
+
+bool
+Perl_is_utf8_print(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_PRINT;
+
+    return isPRINT_utf8(p);
+}
+
+bool
+Perl_is_utf8_punct(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_PUNCT;
+
+    return isPUNCT_utf8(p);
+}
+
+bool
+Perl_is_utf8_xdigit(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_XDIGIT;
+
+    return isXDIGIT_utf8(p);
+}
+
+bool
+Perl_is_utf8_mark(pTHX_ const U8 *p)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_IS_UTF8_MARK;
+
+    return _is_utf8_mark(p);
+}
+
+END_EXTERN_C
 
 #endif /* NO_MATHOMS */
 
@@ -1321,8 +1636,8 @@ Perl_hv_delete(pTHX_ HV *hv, const char *key, I32 klen_i32, I32 flags)
  * Local variables:
  * c-indentation-style: bsd
  * c-basic-offset: 4
- * indent-tabs-mode: t
+ * indent-tabs-mode: nil
  * End:
  *
- * ex: set ts=8 sts=4 sw=4 noet:
+ * ex: set ts=8 sts=4 sw=4 et:
  */

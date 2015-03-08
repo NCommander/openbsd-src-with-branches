@@ -2,7 +2,7 @@ package Module::Build::Platform::VMS;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.3603';
+$VERSION = '0.4205';
 $VERSION = eval $VERSION;
 use Module::Build::Base;
 use Config;
@@ -77,9 +77,28 @@ Prefixify taking into account VMS' filepath syntax.
 =cut
 
 # Translated from ExtUtils::MM_VMS::prefixify()
+
+sub _catprefix {
+    my($self, $rprefix, $default) = @_;
+
+    my($rvol, $rdirs) = File::Spec->splitpath($rprefix);
+    if( $rvol ) {
+        return File::Spec->catpath($rvol,
+                                   File::Spec->catdir($rdirs, $default),
+                                   ''
+                                  )
+    }
+    else {
+        return File::Spec->catdir($rdirs, $default);
+    }
+}
+
+
 sub _prefixify {
     my($self, $path, $sprefix, $type) = @_;
     my $rprefix = $self->prefix;
+
+    return '' unless defined $path;
 
     $self->log_verbose("  prefixify $path from $sprefix to $rprefix\n");
 
@@ -90,7 +109,7 @@ sub _prefixify {
     $self->log_verbose("  rprefix translated to $rprefix\n".
                        "  sprefix translated to $sprefix\n");
 
-    if( length $path == 0 ) {
+    if( length($path) == 0 ) {
         $self->log_verbose("  no path to prefixify.\n")
     }
     elsif( !File::Spec->file_name_is_absolute($path) ) {
@@ -260,30 +279,6 @@ sub oneliner {
     return "MCR $^X $oneliner";
 }
 
-=item _infer_xs_spec
-
-Inherit the standard version but tweak the library file name to be
-something Dynaloader can find.
-
-=cut
-
-sub _infer_xs_spec {
-  my $self = shift;
-  my $file = shift;
-
-  my $spec = $self->SUPER::_infer_xs_spec($file);
-
-  # Need to create with the same name as DynaLoader will load with.
-  if (defined &DynaLoader::mod2fname) {
-    my $file = $$spec{module_name} . '.' . $self->{config}->get('dlext');
-    $file =~ tr/:/_/;
-    $file = DynaLoader::mod2fname([$file]);
-    $$spec{lib_file} = File::Spec->catfile($$spec{archdir}, $file);
-  }
-
-  return $spec;
-}
-
 =item rscan_dir
 
 Inherit the standard version but remove dots at end of name.
@@ -408,26 +403,15 @@ sub _detildefy {
         my @hdirs = File::Spec::Unix->splitdir($hdir);
         my @dirs = File::Spec::Unix->splitdir($dir);
 
-        my $newdirs;
+        unless ($arg =~ m#^~/#) {
+            # There is a home directory after the tilde, but it will already
+            # be present in in @hdirs so we need to remove it by from @dirs.
 
-        # Two cases of tilde handling
-        if ($arg =~ m#^~/#) {
-
-            # Simple case, just merge together
-            $newdirs = File::Spec::Unix->catdir(@hdirs, @dirs);
-
-        } else {
-
-            # Complex case, need to add an updir - No delimiters
-            my @backup = File::Spec::Unix->splitdir(File::Spec::Unix->updir);
-
-            $newdirs = File::Spec::Unix->catdir(@hdirs, @backup, @dirs);
-
+            shift @dirs;
         }
+        my $newdirs = File::Spec::Unix->catdir(@hdirs, @dirs);
 
-        # Now put the two cases back together
         $arg = File::Spec::Unix->catpath($hvol, $newdirs, $file);
-
     }
     return $arg;
 

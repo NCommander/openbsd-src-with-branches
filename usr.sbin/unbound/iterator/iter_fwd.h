@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -45,14 +45,11 @@
 #include "util/rbtree.h"
 struct config_file;
 struct delegpt;
-struct regional;
 
 /**
  * Iterator forward zones structure
  */
 struct iter_forwards {
-	/** regional where forward zone server addresses are allocated */
-	struct regional* region;
 	/** 
 	 * Zones are stored in this tree. Sort order is specially chosen.
 	 * first sorted on qclass. Then on dname in nsec-like order, so that
@@ -77,7 +74,9 @@ struct iter_forward_zone {
 	int namelabs;
 	/** delegation point with forward server information for this zone. 
 	 * If NULL then this forward entry is used to indicate that a
-	 * stub-zone with the same name exists, and should be used. */
+	 * stub-zone with the same name exists, and should be used. 
+	 * This delegation point is malloced.
+	 */
 	struct delegpt* dp;
 	/** pointer to parent in tree (or NULL if none) */
 	struct iter_forward_zone* parent;
@@ -104,6 +103,16 @@ void forwards_delete(struct iter_forwards* fwd);
  * @return 0 on error.
  */
 int forwards_apply_cfg(struct iter_forwards* fwd, struct config_file* cfg);
+
+/**
+ * Find forward zone exactly by name
+ * @param fwd: forward storage.
+ * @param qname: The qname of the query.
+ * @param qclass: The qclass of the query.
+ * @return: A delegation point or null.
+ */
+struct delegpt* forwards_find(struct iter_forwards* fwd, uint8_t* qname,
+	uint16_t qclass);
 
 /**
  * Find forward zone information
@@ -152,9 +161,7 @@ int fwd_cmp(const void* k1, const void* k2);
  * @param fwd: the forward data structure
  * @param c: class of zone
  * @param dp: delegation point with name and target nameservers for new
- *	forward zone. This delegation point and all its data must be
- *	malloced in the fwd->region. (then it is freed when the fwd is
- *	deleted).
+ *	forward zone. malloced.
  * @return false on failure (out of memory);
  */
 int forwards_add_zone(struct iter_forwards* fwd, uint16_t c, 
@@ -162,12 +169,31 @@ int forwards_add_zone(struct iter_forwards* fwd, uint16_t c,
 
 /**
  * Remove zone from forward structure. For external use since it 
- * recalcs the tree parents. Does not actually release any memory, the region 
- * is unchanged.
+ * recalcs the tree parents.
  * @param fwd: the forward data structure
  * @param c: class of zone
  * @param nm: name of zone (in uncompressed wireformat).
  */
 void forwards_delete_zone(struct iter_forwards* fwd, uint16_t c, uint8_t* nm);
+
+/**
+ * Add stub hole (empty entry in forward table, that makes resolution skip
+ * a forward-zone because the stub zone should override the forward zone).
+ * Does not add one if not necessary.
+ * @param fwd: the forward data structure
+ * @param c: class of zone
+ * @param nm: name of zone (in uncompressed wireformat).
+ * @return false on failure (out of memory);
+ */
+int forwards_add_stub_hole(struct iter_forwards* fwd, uint16_t c, uint8_t* nm);
+
+/**
+ * Remove stub hole, if one exists.
+ * @param fwd: the forward data structure
+ * @param c: class of zone
+ * @param nm: name of zone (in uncompressed wireformat).
+ */
+void forwards_delete_stub_hole(struct iter_forwards* fwd, uint16_t c,
+	uint8_t* nm);
 
 #endif /* ITERATOR_ITER_FWD_H */

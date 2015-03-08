@@ -24,7 +24,7 @@ use vars qw($VERSION @ISA $upgrade $downgrade
 
 @ISA = qw(Math::BigFloat);
 
-$VERSION = '0.2603';
+$VERSION = '0.2606';
 $VERSION = eval $VERSION;
 
 # inherit overload from Math::BigFloat, but disable the bitwise ops that don't
@@ -258,7 +258,7 @@ sub new
 
         if ($n->{sign} =~ /^[+-]$/ && $d->{sign} =~ /^[+-]$/)
 	  {
-	  # both parts are ok as integers (wierd things like ' 1e0'
+	  # both parts are ok as integers (weird things like ' 1e0'
           $self->{_n} = $MBI->_copy($n->{value});
           $self->{_d} = $MBI->_copy($d->{value});
           $self->{sign} = $n->{sign};
@@ -446,7 +446,7 @@ sub bneg
 
   return $x if $x->modify('bneg');
 
-  # for +0 dont negate (to have always normalized +0). Does nothing for 'NaN'
+  # for +0 do not negate (to have always normalized +0). Does nothing for 'NaN'
   $x->{sign} =~ tr/+-/-+/ unless ($x->{sign} eq '+' && $MBI->_is_zero($x->{_n}));
   $x;
   }
@@ -1271,7 +1271,7 @@ sub bsqrt
   $x->{_n} = _float_from_part( $x->{_n} )->bsqrt();
   $x->{_d} = _float_from_part( $x->{_d} )->bsqrt();
 
-  # XXX TODO: we probably can optimze this:
+  # XXX TODO: we probably can optimize this:
 
   # if sqrt(D) was not integer
   if ($x->{_d}->{_es} ne '+')
@@ -1692,7 +1692,7 @@ BigInts.
 
 Returns the object as a scalar. This will lose some data if the object
 cannot be represented by a normal Perl scalar (integer or float), so
-use L<as_int()> or L<as_float()> instead.
+use L<as_int()|/as_int()E<sol>as_number()> or L</as_float()> instead.
 
 This routine is automatically used whenever a scalar is required:
 
@@ -1925,7 +1925,7 @@ Euler's number.
 
 This method was added in v0.20 of Math::BigRat (May 2007).
 
-See also L<blog()>.
+See also C<blog()>.
 
 =head2 bnok()
 
@@ -2012,7 +2012,7 @@ the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<Math::BigFloat> and L<Math::Big> as well as L<Math::BigInt::BitVect>,
+L<Math::BigFloat> and L<Math::Big> as well as
 L<Math::BigInt::Pari> and  L<Math::BigInt::GMP>.
 
 See L<http://search.cpan.org/search?dist=bignum> for a way to use

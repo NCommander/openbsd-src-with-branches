@@ -374,4 +374,11 @@ const dname_type *dname_replace(region_type* region,
 				const dname_type* src,
 				const dname_type* dest);
 
+/** Convert uncompressed wireformat dname to a string */
+char* wiredname2str(const uint8_t* dname);
+/** convert uncompressed label to string */
+char* wirelabel2str(const uint8_t* label);
+/** check if two uncompressed dnames of the same total length are equal */
+int dname_equal_nocase(uint8_t* a, uint8_t* b, uint16_t len);
+
 #endif /* _DNAME_H_ */

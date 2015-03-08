@@ -1,14 +1,16 @@
 package inc::latest;
+
+use if $] >= 5.019, 'deprecate';
+
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.3603';
+$VERSION = '0.4205';
 $VERSION = eval $VERSION;
 
 use Carp;
 use File::Basename  ();
 use File::Spec      ();
 use File::Path      ();
-use IO::File        ();
 use File::Copy      ();
 
 # track and return modules loaded by inc::latest
@@ -43,7 +45,7 @@ sub write {
 
   # write inc/latest.pm
   File::Path::mkpath( $where );
-  my $fh = IO::File->new( File::Spec->catfile($where,'latest.pm'), "w" );
+  open my $fh, '>', File::Spec->catfile($where,'latest.pm');
   print {$fh} "# This stub created by inc::latest $VERSION\n";
   print {$fh} <<'HERE';
 package inc::latest;
@@ -132,7 +134,7 @@ a distribution and are used by Build.PL (or Makefile.PL).
 
 Arguments to C<inc::latest> are module names that are checked against both the
 current C<@INC> array and against specially-named directories in C<inc>.  If
-the bundled verison is newer than the installed one (or the module isn't
+the bundled version is newer than the installed one (or the module isn't
 installed, then, the bundled directory is added to the start of <@INC> and the
 module is loaded from there.
 
@@ -192,7 +194,7 @@ available.  For example:
   my @list = inc::latest->loaded_modules;
 
 This takes no arguments and always returns a list of module names requested for
-loading via "use inc::latest 'MODULE'", regardless of wether the load was
+loading via "use inc::latest 'MODULE'", regardless of whether the load was
 successful or not.
 
 =item write()

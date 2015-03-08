@@ -1,13 +1,14 @@
 
 require 5;
 package Pod::Simple::DumpAsXML;
-$VERSION = '3.14';
+$VERSION = '3.28';
 use Pod::Simple ();
 BEGIN {@ISA = ('Pod::Simple')}
 
 use strict;
 
 use Carp ();
+use Text::Wrap qw(wrap);
 
 BEGIN { *DEBUG = \&Pod::Simple::DEBUG unless defined &DEBUG }
 
@@ -16,6 +17,7 @@ sub new {
   my $new = $self->SUPER::new(@_);
   $new->{'output_fh'} ||= *STDOUT{IO};
   $new->accept_codes('VerbatimFormatted');
+  $new->keep_encoding_directive(1);
   return $new;
 }
 
@@ -49,15 +51,8 @@ sub _handle_text {
     my $indent = '  ' x $_[0]{'indent'};
     my $text = $_[1];
     _xml_escape($text);
-    $text =~  # A not-totally-brilliant wrapping algorithm:
-      s/(
-         [^\n]{55}         # Snare some characters from a line
-         [^\n\ ]{0,50}     #  and finish any current word
-        )
-        \x20{1,10}(?!\n)   # capture some spaces not at line-end
-       /$1\n$indent/gx     # => line-break here
-    ;
-    
+    local $Text::Wrap::huge = 'overflow';
+    $text = wrap('', $indent, $text);
     print {$_[0]{'output_fh'}} $indent, $text, "\n";
   }
   return;
@@ -114,7 +109,7 @@ L<Pod::Simple>.
 L<Pod::Simple::XMLOutStream> is rather like this class.
 Pod::Simple::XMLOutStream's output is space-padded in a way
 that's better for sending to an XML processor (that is, it has
-no ignoreable whitespace). But
+no ignorable whitespace). But
 Pod::Simple::DumpAsXML's output is much more human-readable, being
 (more-or-less) one token per line, with line-wrapping.
 
@@ -133,7 +128,7 @@ pod-people@perl.org mail list. Send an empty email to
 pod-people-subscribe@perl.org to subscribe.
 
 This module is managed in an open GitHub repository,
-L<http://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
+L<https://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
 to clone L<git://github.com/theory/pod-simple.git> and send patches!
 
 Patches against Pod::Simple are welcome. Please send bug reports to

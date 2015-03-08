@@ -1,10 +1,20 @@
-=head1 How to write a perldelta
+=head1 NAME
+
+how_to_write_a_perldelta - How to write a perldelta
+
+=head2 Description
 
 This is intended as a guide for how to write a perldelta. There has never
 been a formal specification - the working rule is "fake up a document that
 looks something close to the existing perldeltas". So if it's unclear how
-do to do something, see if it's been done before, and if the approach works
+to do something, see if it's been done before, and if the approach works
 there, steal it.
+
+=head2 Template
+
+Note there is a file F<Porting/perldelta_template.pod> which contains a
+skeleton version of a perldelta.pod file, which should normally be copied
+in at the start of a new release.
 
 =head2 Style
 
@@ -31,8 +41,13 @@ Be consistent in how bugs are referenced. One style is
 
 =item rt.perl.org
 
-C<RT #43010> inline, but enclose in square brackets after a sentence.
-C<[RT #43010]>
+C<perl #43010> inline, but enclose in square brackets after a sentence.
+C<[perl #43010]>.  This mirrors how rt.perl.org subject lines appear.
+
+=item rt.cpan.org
+
+C<rt.cpan.org #43010> inline, but enclose in square brackets after a sentence.
+C<[rt.cpan.org #43010]>.  This mirrors how rt.cpan.org subject lines appear.
 
 =item ActiveState
 
@@ -71,13 +86,13 @@ Follows this formula:
 
 For a release on a stable branch, follows this formula:
 
-    This document describes differences between the 5.10.3 release and
-    the 5.10.4 release.
+    This document describes differences between the 5.10.3 release
+    and the 5.10.4 release.
 
 For the start of a new stable branch, follows this formula:
 
-    This document describes differences between the 5.12.0 release and
-    the 5.10.0 release.
+    This document describes differences between the 5.12.0 release
+    and the 5.10.0 release.
 
 Clearly this sets the scope of which changes are to be summarised in the rest
 of the document.
@@ -91,8 +106,8 @@ notice.
 
 For a release on a stable branch, this section aspires to be
 
-    There are no changes intentionally incompatible with 5.10.3. If any exist,
-    they are bugs and reports are welcome.
+    There are no changes intentionally incompatible with 5.10.3.
+    If any exist, they are bugs and reports are welcome.
 
 =item Core Enhancements
 
@@ -111,17 +126,42 @@ source tree.
 
 =item Modules and Pragmata
 
-All changes to installed files in F<ext/> and F<lib/> go here, in a list
-ordered by distribution name. Minimally it should be the module version,
-but it's more useful to the end user to give a paragraph's summary of the
-module's changes. In an ideal world, dual-life modules would have a
-F<Changes> file that could be cribbed.
+All changes to installed files in F<cpan/>, F<dist/>, F<ext/> and F<lib/> go
+here, in a list ordered by distribution name. Minimally it should be the
+module version, but it's more useful to the end user to give a paragraph's
+summary of the module's changes. In an ideal world, dual-life modules would
+have a F<Changes> file that could be cribbed.
 
 Whilst this section could be built by incrementally working through change
 descriptions applying to files, this is prone to error. It's better to
-collate changes to F<ext/> and F<lib/> by module, and then summarise all
-changes to a module as a group. This can be done by partitioning directories
-within F<ext/> and F<lib/> to a number of people.
+collate changes by module, and then summarise all changes to a module as a
+group.
+
+If Module::CoreList has been updated, then F<Porting/corelist-perldelta.pl>
+will automatically update two sections in F<perldelta>:
+
+    * New Modules and Pragmata
+    * Updated Modules and Pragmata
+
+(Currently, it does not update the Removed Modules and Pragmata section.)
+
+Each section will have stub entries following a template like this:
+
+    =item C<less>
+
+    Upgraded from version 0.01 to 0.02
+
+It does not include modules listed in F<Porting/Maintainers.pl> under
+C<_PERLLIB>, but it's a start.  Where relevant, a summary of changes can be
+added by hand.
+
+A more adventurous enhancement would be to automate grabbing
+the changelogs for dual lived modules. For each of them, grab the relevant
+changes files from CPAN for the old and new versions, and if the old one is
+a strict subset of the new one, use the extra lines as a basis for summarising.
+
+(And if not, experiment with using F<git> to get the relevant part of changelog
+for the particular file in core.)
 
 =item Utility Changes
 
@@ -131,6 +171,61 @@ of these are built within the directories F<utils> and F<x2p>.
 =item New Documentation
 
 Changes which create B<new> files in F<pod/> go here.
+
+B<FIXME> - this could be automated, at least as far as generating a first
+draft.
+
+=over
+
+=item 1
+
+Start with a clean exploded tarball of the previous release, and a clean
+checkout of the branch in question
+
+=item 2
+
+Take the F<MANIFEST> file of each
+
+=item 3
+
+Search for lines matching C<m!^pod/.*\.pod!>
+
+=item 4
+
+Diff them
+
+=item 5
+
+Explode if anyone deleted documentation. [No idea what the policy on that is
+yet]
+
+=item 6
+
+For each file only in the newer F<MANIFEST>
+
+=over
+
+=item 1
+
+Use F<git> to determine its Author
+
+=item 2
+
+Open the pod file itself
+
+=item 3
+
+Grab the description section
+
+=item 4
+
+Write out a block of text starting roughly
+
+    L<perlfoo>, by A. U. Thor, provides @description
+
+=back
+
+=back
 
 =item Changes to Existing Documentation
 
@@ -168,6 +263,10 @@ Changes which create B<new> files in F<t/> go here. Changes to existing files
 in F<t/> aren't worth summarising, although the bugs that they represent
 may be.
 
+Autogenerate this section by running something like this:
+
+ # perl newtests-perldelta.pl v5.11.1 HEAD
+
 =item Known Problems
 
 Descriptions of platform agnostic bugs we know we can't fix go here. Any
@@ -191,7 +290,9 @@ here.
 
 =item Acknowledgements
 
-The list of people to thank goes here.
+Generate this with:
+
+  perl Porting/acknowledgements.pl v5.15.0..HEAD
 
 =item Reporting Bugs
 

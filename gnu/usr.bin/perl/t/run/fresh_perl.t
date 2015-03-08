@@ -4,20 +4,9 @@
 # Instead, put the test in the appropriate test file and use the 
 # fresh_perl_is()/fresh_perl_like() functions in t/test.pl.
 
-# This is for tests that will normally cause segfaults, and other nasty
+# This is for tests that used to abnormally cause segfaults, and other nasty
 # errors that might kill the interpreter and for some reason you can't
 # use an eval().
-#
-# New tests are added to the bottom.  For example.
-#
-#       ######## perlbug ID 20020831.001
-#       ($a, b) = (1,2)
-#       EXPECT
-#       Can't modify constant item in list assignment - at line 1
-#
-# to test that the code "($a, b) = (1,2)" causes the appropriate syntax
-# error, rather than just segfaulting as reported in perlbug ID
-# 20020831.001
 
 BEGIN {
     chdir 't' if -d 't';
@@ -46,11 +35,13 @@ foreach my $prog (@prgs) {
     my($raw_prog, $name) = @$prog;
 
     my $switch;
-    if ($raw_prog =~ s/^\s*(-\w.*)//){
+    if ($raw_prog =~ s/^\s*(-\w.*)\n//){
 	$switch = $1;
     }
 
     my($prog,$expected) = split(/\nEXPECT\n/, $raw_prog);
+    $prog .= "\n";
+    $expected = '' unless defined $expected;
 
     if ($prog =~ /^\# SKIP: (.+)/m) {
 	if (eval $1) {
@@ -61,12 +52,12 @@ foreach my $prog (@prgs) {
 
     $expected =~ s/\n+$//;
 
-    fresh_perl_is($prog, $expected, { switches => [$switch] }, $name);
+    fresh_perl_is($prog, $expected, { switches => [$switch || ''] }, $name);
 }
 
 __END__
 ########
-$a = ":="; split /($a)/o, "a:=b:=c"; print "@_"
+$a = ":="; @_ = split /($a)/o, "a:=b:=c"; print "@_"
 EXPECT
 a := b := c
 ########
@@ -90,7 +81,7 @@ $array[128]=1
 ########
 $x=0x0eabcd; print $x->ref;
 EXPECT
-Can't call method "ref" without a package or object reference at - line 1.
+Can't locate object method "ref" via package "961485" (perhaps you forgot to load "961485"?) at - line 1.
 ########
 chop ($str .= <DATA>);
 ########
@@ -100,9 +91,9 @@ $x=2;$y=3;$x<$y ? $x : $y += 23;print $x;
 EXPECT
 25
 ########
-eval {sub bar {print "In bar";}}
+eval 'sub bar {print "In bar"}';
 ########
-system './perl -ne "print if eof" /dev/null' unless $^O eq 'MacOS'
+system './perl -ne "print if eof" /dev/null'
 ########
 chop($file = <DATA>);
 ########
@@ -113,11 +104,6 @@ $aa=12345;
 print $aa;
 EXPECT
 12345
-########
-%@x=0;
-EXPECT
-Can't modify hash dereference in repeat (x) at - line 1, near "0;"
-Execution of - aborted due to compilation errors.
 ########
 $_="foo";
 printf(STDOUT "%s\n", $_);
@@ -289,7 +275,7 @@ print "ok\n" if ("\0" lt "\xFF");
 EXPECT
 ok
 ########
-open(H,$^O eq 'MacOS' ? ':run:fresh_perl.t' : 'run/fresh_perl.t'); # must be in the 't' directory
+open(H,'run/fresh_perl.t'); # must be in the 't' directory
 stat(H);
 print "ok\n" if (-e _ and -f _ and -r _);
 EXPECT
@@ -359,20 +345,16 @@ map {#this newline here tickles the bug
 $s += $_} (1,2,4);
 print "eat flaming death\n" unless ($s == 7);
 ########
-sub foo { local $_ = shift; split; @_ }
+sub foo { local $_ = shift; @_ = split; @_ }
 @x = foo(' x  y  z ');
 print "you die joe!\n" unless "@x" eq 'x y z';
 ########
-/(?{"{"})/	# Check it outside of eval too
+"A" =~ /(?{"{"})/	# Check it outside of eval too
 EXPECT
-Sequence (?{...}) not terminated or not {}-balanced at - line 1, within pattern
-Sequence (?{...}) not terminated or not {}-balanced in regex; marked by <-- HERE in m/(?{ <-- HERE "{"})/ at - line 1.
 ########
 /(?{"{"}})/	# Check it outside of eval too
 EXPECT
-Unmatched right curly bracket at (re_eval 1) line 1, at end of line
-syntax error at (re_eval 1) line 1, near ""{"}"
-Compilation failed in regexp at - line 1.
+Sequence (?{...}) not terminated with ')' at - line 1.
 ########
 BEGIN { @ARGV = qw(a b c d e) }
 BEGIN { print "argv <@ARGV>\nbegin <",shift,">\n" }
@@ -400,7 +382,7 @@ EXPECT
 -w
 sub testme { my $a = "test"; { local $a = "new test"; print $a }}
 EXPECT
-Can't localize lexical variable $a at - line 2.
+Can't localize lexical variable $a at - line 1.
 ########
 package X;
 sub ascalar { my $r; bless \$r }
@@ -527,7 +509,7 @@ else {
   if ($x == 0) { print "" } else { print $x }
 }
 EXPECT
-Use of uninitialized value in numeric eq (==) at - line 4.
+Use of uninitialized value $x in numeric eq (==) at - line 3.
 ########
 $x = sub {};
 foo();
@@ -545,12 +527,13 @@ my $x = "foo";
 EXPECT
 foo
 ########
+# [perl #3066]
 sub C () { 1 }
-sub M { $_[0] = 2; }
+sub M { print "$_[0]\n" }
 eval "C";
 M(C);
 EXPECT
-Modification of a read-only value attempted at - line 2.
+1
 ########
 print qw(ab a\b a\\b);
 EXPECT
@@ -580,45 +563,11 @@ EOT
 EXPECT
 ok
 ########
-# This test is here instead of lib/locale.t because
-# the bug depends on in the internal state of the locale
-# settings and pragma/locale messes up that state pretty badly.
-# We need a "fresh run".
-BEGIN {
-    eval { require POSIX };
-    if ($@) {
-	exit(0); # running minitest?
-    }
-}
-use Config;
-my $have_setlocale = $Config{d_setlocale} eq 'define';
-$have_setlocale = 0 if $@;
-# Visual C's CRT goes silly on strings of the form "en_US.ISO8859-1"
-# and mingw32 uses said silly CRT
-$have_setlocale = 0 if (($^O eq 'MSWin32' || $^O eq 'NetWare') && $Config{cc} =~ /^(cl|gcc)/i);
-exit(0) unless $have_setlocale;
-my @locales;
-if (-x "/usr/bin/locale" && open(LOCALES, "/usr/bin/locale -a 2>/dev/null|")) {
-    while(<LOCALES>) {
-        chomp;
-        push(@locales, $_);
-    }
-    close(LOCALES);
-}
-exit(0) unless @locales;
-for (@locales) {
-    use POSIX qw(locale_h);
-    use locale;
-    setlocale(LC_NUMERIC, $_) or next;
-    my $s = sprintf "%g %g", 3.1, 3.1;
-    next if $s eq '3.1 3.1' || $s =~ /^(3.+1) \1$/;
-    print "$_ $s\n";
-}
-EXPECT
-########
+# [ID 20001202.002] and change #8066 added 'at -e line 1';
+# reversed again as a result of [perl #17763]
 die qr(x)
 EXPECT
-(?-xism:x) at - line 1.
+(?^:x)
 ########
 # 20001210.003 mjd@plover.com
 format REMITOUT_TOP =
@@ -666,8 +615,9 @@ new_pmop "abcdef"; reset;
 close STDERR; die;
 EXPECT
 ########
+# core dump in 20000716.007
 -w
-"x" =~ /(\G?x)?/;	# core dump in 20000716.007
+"x" =~ /(\G?x)?/;
 ########
 # Bug 20010515.004
 my @h = 1 .. 10;
@@ -686,18 +636,6 @@ OK
 EXPECT
 ok
 ########
-# Bug 20010422.005
-{s//${}/; //}
-EXPECT
-syntax error at - line 2, near "${}"
-Execution of - aborted due to compilation errors.
-########
-# Bug 20010528.007
-"\x{"
-EXPECT
-Missing right brace on \x{} at - line 2, within string
-Execution of - aborted due to compilation errors.
-########
 my $foo = Bar->new();
 my @dst;
 END {
@@ -715,26 +653,6 @@ sub DESTROY {
 }
 EXPECT
 Bar=ARRAY(0x...)
-########
-######## found by Markov chain stress testing
-eval "a.b.c.d.e.f;sub"
-EXPECT
-
-######## perlbug ID 20010831.001
-($a, b) = (1, 2);
-EXPECT
-Can't modify constant item in list assignment at - line 1, near ");"
-Execution of - aborted due to compilation errors.
-######## tying a bareword causes a segfault in 5.6.1
-tie FOO, "Foo";
-EXPECT
-Can't modify constant item in tie at - line 1, near ""Foo";"
-Execution of - aborted due to compilation errors.
-######## undefing constant causes a segfault in 5.6.1 [ID 20010906.019]
-undef foo;
-EXPECT
-Can't modify constant item in undef operator at - line 1, near "foo;"
-Execution of - aborted due to compilation errors.
 ######## (?{...}) compilation bounces on PL_rs
 -0
 {
@@ -744,11 +662,6 @@ Execution of - aborted due to compilation errors.
 BEGIN { print "ok\n" }
 EXPECT
 ok
-######## read($var, FILE, 1) segfaults on 5.6.1 [ID 20011025.054]
-read($bla, FILE, 1);
-EXPECT
-Can't modify constant item in read at - line 1, near "1)"
-Execution of - aborted due to compilation errors.
 ######## scalar ref to file test operator segfaults on 5.6.1 [ID 20011127.155]
 # This only happens if the filename is 11 characters or less.
 $foo = \-f "blah";
@@ -765,36 +678,6 @@ ok
 print join '', @a, "\n";
 EXPECT
 123456789
-######## [ID 20020104.007] "coredump on dbmclose"
-package Foo;
-eval { require AnyDBM_File }; # not all places have dbm* functions
-if ($@) {
-    print "ok\n";
-    exit 0;
-}
-package Foo;
-sub new {
-        my $proto = shift;
-        my $class = ref($proto) || $proto;
-        my $self  = {};
-        bless($self,$class);
-        my %LT;
-        dbmopen(%LT, "dbmtest", 0666) ||
-	    die "Can't open dbmtest because of $!\n";
-        $self->{'LT'} = \%LT;
-        return $self;
-}
-sub DESTROY {
-        my $self = shift;
-	dbmclose(%{$self->{'LT'}});
-	1 while unlink 'dbmtest';
-	1 while unlink <dbmtest.*>;
-	print "ok\n";
-}
-package main;
-$test = Foo->new(); # must be package var
-EXPECT
-ok
 ######## example from Camel 5, ch. 15, pp.406 (with my)
 # SKIP: ord "A" == 193 # EBCDIC
 use strict;
@@ -844,3 +727,125 @@ ok 1
 ######## [ID 20020623.009] nested eval/sub segfaults
 $eval = eval 'sub { eval "sub { %S }" }';
 $eval->({});
+######## [perl #17951] Strange UTF error
+-W
+# From: "John Kodis" <kodis@mail630.gsfc.nasa.gov>
+# Newsgroups: comp.lang.perl.moderated
+# Subject: Strange UTF error
+# Date: Fri, 11 Oct 2002 16:19:58 -0400
+# Message-ID: <pan.2002.10.11.20.19.48.407190@mail630.gsfc.nasa.gov>
+$_ = "foobar\n";
+utf8::upgrade($_); # the original code used a UTF-8 locale (affects STDIN)
+# matching is actually irrelevant: avoiding several dozen of these
+# Illegal hexadecimal digit '	' ignored at /usr/lib/perl5/5.8.0/utf8_heavy.pl line 152
+# is what matters.
+/^([[:digit:]]+)/;
+EXPECT
+######## [perl #20667] unicode regex vs non-unicode regex
+$toto = 'Hello';
+$toto =~ /\w/; # this line provokes the problem!
+$name = 'A B';
+# utf8::upgrade($name) if @ARGV;
+if ($name =~ /(\p{IsUpper}) (\p{IsUpper})/){
+    print "It's good! >$1< >$2<\n";
+} else {
+    print "It's not good...\n";
+}
+EXPECT
+It's good! >A< >B<
+######## [perl #8760] strangeness with utf8 and warn
+$_="foo";utf8::upgrade($_);/bar/i,warn$_;
+EXPECT
+foo at - line 1.
+######## "#75146: 27e904532594b7fb (fix for #23810) introduces a #regression"
+use strict;
+
+unshift @INC, sub {
+    my ($self, $fn) = @_;
+
+    (my $pkg = $fn) =~ s{/}{::}g;
+    $pkg =~ s{.pm$}{};
+
+    if ($pkg eq 'Credit') {
+        my $code = <<'EOC';
+package Credit;
+
+use NonsenseAndBalderdash;
+
+1;
+EOC
+        eval $code;
+        die "\$@ is $@";
+    }
+
+    #print STDERR "Generator: not one of mine, ignoring\n";
+    return undef;
+};
+
+# create load-on-demand new() constructors
+{
+    package Credit;
+    sub new {
+        eval "use Credit";
+    }
+};
+
+eval {
+    my $credit = new Credit;
+};
+
+print "If you get here, you didn't crash\n";
+EXPECT
+If you get here, you didn't crash
+######## [perl #112312] crash on syntax error
+# SKIP: !defined &DynaLoader::boot_DynaLoader # miniperl
+#!/usr/bin/perl
+use strict;
+use warnings;
+sub meow (&);
+my %h;
+my $k;
+meow {
+	my $t : need_this;
+	$t = {
+		size =>  $h{$k}{size};
+		used =>  $h{$k}(used}
+	};
+};
+EXPECT
+syntax error at - line 12, near "used"
+syntax error at - line 12, near "used}"
+Unmatched right curly bracket at - line 14, at end of line
+Execution of - aborted due to compilation errors.
+######## [perl #112312] crash on syntax error - another test
+# SKIP: !defined &DynaLoader::boot_DynaLoader # miniperl
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+sub meow (&);
+
+my %h;
+my $k;
+
+meow {
+        my $t : need_this;
+        $t = {
+                size => $h{$k}{size};
+                used => $h{$k}(used}
+        };
+};
+
+sub testo {
+        my $value = shift;
+        print;
+        print;
+        print;
+        1;
+}
+
+EXPECT
+syntax error at - line 15, near "used"
+syntax error at - line 15, near "used}"
+Unmatched right curly bracket at - line 17, at end of line
+Execution of - aborted due to compilation errors.

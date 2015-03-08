@@ -1,5 +1,5 @@
 /*
- * Copyright © 2001 Novell, Inc. All Rights Reserved.
+ * Copyright Â© 2001 Novell, Inc. All Rights Reserved.
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Artistic License, as specified in the README file.
@@ -184,7 +184,7 @@ PerlDirClose(struct IPerlDir* piPerl, DIR *dirp)
 }
 
 DIR*
-PerlDirOpen(struct IPerlDir* piPerl, char *filename)
+PerlDirOpen(struct IPerlDir* piPerl, const char *filename)
 {
 	return nw_opendir(filename);
 }
@@ -335,14 +335,14 @@ PerlStdIOGetc(struct IPerlStdIO* piPerl, FILE* pf)
     return nw_getc(pf);
 }
 
-char*
+STDCHAR*
 PerlStdIOGetBase(struct IPerlStdIO* piPerl, FILE* pf)
 {
 #ifdef FILE_base
     FILE *f = pf;
     return FILE_base(f);
 #else
-    return Nullch;
+    return NULL;
 #endif
 }
 
@@ -368,14 +368,14 @@ PerlStdIOGetCnt(struct IPerlStdIO* piPerl, FILE* pf)
 #endif
 }
 
-char*
+STDCHAR*
 PerlStdIOGetPtr(struct IPerlStdIO* piPerl, FILE* pf)
 {
 #ifdef USE_STDIO_PTR
     FILE *f = pf;
     return FILE_ptr(f);
 #else
-    return Nullch;
+    return NULL;
 #endif
 }
 
@@ -461,7 +461,7 @@ PerlStdIOSetCnt(struct IPerlStdIO* piPerl, FILE* pf, int n)
 }
 
 void
-PerlStdIOSetPtr(struct IPerlStdIO* piPerl, FILE* pf, char * ptr)
+PerlStdIOSetPtr(struct IPerlStdIO* piPerl, FILE* pf, STDCHAR * ptr)
 {
 #ifdef STDIO_PTR_LVALUE
     FILE *f = pf;
@@ -780,7 +780,7 @@ PerlLIOUnlink(struct IPerlLIO* piPerl, const char *filename)
 }
 
 int
-PerlLIOUtime(struct IPerlLIO* piPerl, char *filename, struct utimbuf *times)
+PerlLIOUtime(struct IPerlLIO* piPerl, const char *filename, struct utimbuf *times)
 {
     return nw_utime(filename, times);
 }

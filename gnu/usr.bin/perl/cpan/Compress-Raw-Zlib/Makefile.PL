@@ -1,11 +1,12 @@
 #! perl -w
 
 use strict ;
-require 5.004 ;
+require 5.006 ;
 
 use private::MakeUtil;
 use ExtUtils::MakeMaker 5.16 ;
 use ExtUtils::Install (); # only needed to check for version
+use Config;
 
 my $ZLIB_LIB ;
 my $ZLIB_INCLUDE ;
@@ -14,6 +15,10 @@ my $OLD_ZLIB = '' ;
 my $WALL = '' ;
 my $GZIP_OS_CODE = -1 ;
 my $USE_PPPORT_H = ($ENV{PERL_CORE}) ? '' : '-DUSE_PPPORT_H';
+my $OPTIMIZE = $Config{'optimize'};
+if ($Config{'gccversion'} and $OPTIMIZE =~ /-g (gdb)? 3/x) {
+  $OPTIMIZE =~ s/-g(gdb)?3/-g/g; # [88936] out of memory with -g3 since 2.062
+}
 
 #$WALL = ' -pedantic ' if $Config{'cc'} =~ /gcc/ ;
 #$WALL = ' -Wall -Wno-comment ' if $Config{'cc'} =~ /gcc/ ;
@@ -66,7 +71,7 @@ WriteMakefile(
     NAME         => 'Compress::Raw::Zlib',
     VERSION_FROM => 'lib/Compress/Raw/Zlib.pm',
     INC          => "-I$ZLIB_INCLUDE" ,
-    DEFINE       => "$OLD_ZLIB $WALL -DGZIP_OS_CODE=$GZIP_OS_CODE $USE_PPPORT_H" ,
+    DEFINE       => "-DNO_VIZ -DZ_SOLO $OLD_ZLIB $WALL -DGZIP_OS_CODE=$GZIP_OS_CODE $USE_PPPORT_H" ,
     XS           => { 'Zlib.xs' => 'Zlib.c'},
     'depend'     => { 'Makefile'   => 'config.in' },
     'clean'      => { FILES        => '*.c constants.h constants.xs' },
@@ -81,13 +86,27 @@ WriteMakefile(
         ? zlib_files($ZLIB_LIB)
         : (LIBS => [ "-L$ZLIB_LIB -lz " ])
     ),
-      
-    INSTALLDIRS => ($] >= 5.009 ? 'perl' : 'site'),
+    OPTIMIZE => $OPTIMIZE,
+
+    INSTALLDIRS => ($] >= 5.009 && $] < 5.011 ? 'perl' : 'site'),
+
+    META_MERGE => {
+        no_index => {
+            directory => [ 't', 'private' ],
+        },
+    },    
 
     ((ExtUtils::MakeMaker->VERSION() gt '6.30') ?
         ('LICENSE'  => 'perl')         : ()),    
 
 ) ;
+
+sub version_Macro
+{
+    my $ver = shift ;
+
+    return [ "#if ZLIB_VERNUM >= 0x$ver\n", "#endif\n" ];
+}
 
 my @names = qw(
 
@@ -129,9 +148,13 @@ my @names = qw(
 );
     #ZLIB_VERNUM
 
+my %verSpecificNames = (
+    Z_TREES => '1240',
+);
+
 if (eval {require ExtUtils::Constant; 1}) {
     # Check the constants above all appear in @EXPORT in Zlib.pm
-    my %names = map { $_, 1} @names, 'ZLIB_VERSION';
+    my %names = %verSpecificNames, map { $_, 1} @names, 'ZLIB_VERSION';
     open F, "<lib/Compress/Raw/Zlib.pm" or die "Cannot open Zlib.pm: $!\n";
     while (<F>)
     {
@@ -153,7 +176,13 @@ if (eval {require ExtUtils::Constant; 1}) {
             "\t$missing\n" ;
     }
     
-    push @names, {name => 'ZLIB_VERSION', type => 'PV' };
+    push @names, { name => 'ZLIB_VERSION', type => 'PV' };
+    
+    push @names, map { { name => $_, 
+                         macro => version_Macro $verSpecificNames{$_} 
+                       } 
+                     } 
+                 keys %verSpecificNames ;
 
     ExtUtils::Constant::WriteConstants(
                                      NAME => 'Zlib',
@@ -162,6 +191,7 @@ if (eval {require ExtUtils::Constant; 1}) {
                                      XS_FILE  => 'constants.xs',
                                                                        
                                     );
+
 } 
 else {
     foreach my $name (qw( constants.h constants.xs ))
@@ -210,18 +240,26 @@ sub ParseCONFIG
     die "The following keys are missing from $CONFIG  [@missing]\n" 
         if @missing = keys %Parsed ;
 
-    $ZLIB_INCLUDE = $ENV{'ZLIB_INCLUDE'} || $Info{'INCLUDE'} ;
-    $ZLIB_LIB = $ENV{'ZLIB_LIB'} || $Info{'LIB'} ;
+    $ZLIB_INCLUDE = defined $ENV{'ZLIB_INCLUDE'}
+                        ? $ENV{'ZLIB_INCLUDE'} 
+                        : $Info{'INCLUDE'} ;
+    $ZLIB_LIB = defined $ENV{'ZLIB_LIB'} 
+                    ?$ENV{'ZLIB_LIB'} 
+                    : $Info{'LIB'} ;
 
     if ($^O eq 'VMS') {
         $ZLIB_INCLUDE = VMS::Filespec::vmspath($ZLIB_INCLUDE);
         $ZLIB_LIB = VMS::Filespec::vmspath($ZLIB_LIB);
     }
 
-    my $y = $ENV{'OLD_ZLIB'} || $Info{'OLD_ZLIB'} ;
+    my $y = defined $ENV{'OLD_ZLIB'}
+                ? $ENV{'OLD_ZLIB'} 
+                : $Info{'OLD_ZLIB'} ;
     $OLD_ZLIB = '-DOLD_ZLIB' if $y and $y =~ /^yes|on|true|1$/i;
 
-    my $x = $ENV{'BUILD_ZLIB'} || $Info{'BUILD_ZLIB'} ;
+    my $x = defined $ENV{'BUILD_ZLIB'} 
+                ? $ENV{'BUILD_ZLIB'} 
+                : $Info{'BUILD_ZLIB'} ;
 
     if ($x and $x =~ /^yes|on|true|1$/i ) {
 

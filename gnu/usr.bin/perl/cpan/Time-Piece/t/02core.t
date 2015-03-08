@@ -1,7 +1,8 @@
-use Test::More tests => 95;
+use Test::More tests => 96;
 
 my $is_win32 = ($^O =~ /Win32/);
 my $is_qnx = ($^O eq 'qnx');
+my $is_vos = ($^O eq 'vos');
 BEGIN { use_ok('Time::Piece'); }
 ok(1);
 
@@ -113,7 +114,7 @@ SKIP: {
 cmp_ok($t->strftime('%U'), 'eq', '09'); # Sun cmp Mon
 
 SKIP: {
-    skip "can't strftime %V on Win32 or QNX", 1 if $is_win32 or $is_qnx;
+    skip "can't strftime %V on Win32 or QNX or VOS", 1 if $is_win32 or $is_qnx or $is_vos;
     # is this test really broken on Mac OS? -- rjbs, 2006-02-08
     cmp_ok($t->strftime('%V'), 'eq', '09'); # Sun cmp Mon
 }
@@ -214,8 +215,15 @@ cmp_ok(Time::Piece->strptime("2002/12/31", '%Y/%m/%d')->yday,  '==', 364);
 cmp_ok(Time::Piece->strptime("2002/07/10", '%Y/%m/%d')->isdst, '==', 0);
 cmp_ok(Time::Piece->strptime("2002/07/10", '%Y/%m/%d')->day_of_week, '==', 3);
 
+is(
+  Time::Piece->strptime('12212', "%y%j")->ymd(),
+  '2012-07-30',
+  "day of the year parsing",
+);
+
 cmp_ok(
   Time::Piece->strptime("2000/02/29 12:34:56", '%Y/%m/%d %H:%M:%S')->epoch,
   '==',
   951827696
 );
+
