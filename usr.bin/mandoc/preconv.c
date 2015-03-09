@@ -1,4 +1,4 @@
-/*	$OpenBSD: preconv.c,v 1.4 2014/11/28 19:25:03 schwarze Exp $ */
+/*	$OpenBSD: preconv.c,v 1.5 2014/12/19 04:57:11 schwarze Exp $ */
 /*
  * Copyright (c) 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014 Ingo Schwarze <schwarze@openbsd.org>
@@ -31,7 +31,7 @@ preconv_encode(struct buf *ib, size_t *ii, struct buf *ob, size_t *oi,
 	int		 nby;
 	unsigned int	 accum;
 
-	cu = ib->buf + *ii;
+	cu = (unsigned char *)ib->buf + *ii;
 	assert(*cu & 0x80);
 
 	if ( ! (*filenc & MPARSE_UTF8))
