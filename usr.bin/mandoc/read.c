@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.103 2015/02/23 13:30:02 schwarze Exp $ */
+/*	$OpenBSD: read.c,v 1.104 2015/03/02 14:48:31 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2015 Ingo Schwarze <schwarze@openbsd.org>
@@ -630,7 +630,7 @@ read_whole_file(struct mparse *curp, const char *file, int fd,
 	 */
 
 	if (S_ISREG(st.st_mode)) {
-		if (st.st_size >= (1U << 31)) {
+		if ((size_t)st.st_size >= (1U << 31)) {
 			mandoc_msg(MANDOCERR_TOOLARGE, curp, 0, 0, NULL);
 			return(0);
 		}
