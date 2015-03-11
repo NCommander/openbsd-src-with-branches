@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.68 2012/10/17 02:06:39 deraadt Exp $
+#	$OpenBSD: install.md,v 1.69 2013/11/16 18:37:27 rpe Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 #
@@ -40,7 +40,7 @@ MDDKDEVS='/^sd[0-9] /s/ .*//p;/^x[dy][0-9] /s/ .*//p'
 md_installboot() {
 	# Use cat to avoid holes created by cp(1)
 	cat /mnt/usr/mdec/boot > /mnt/boot
-	sync
+	sync; sleep 3
 	/mnt/usr/mdec/installboot /mnt/boot /mnt/usr/mdec/bootxx /dev/r${1}c
 }
 
