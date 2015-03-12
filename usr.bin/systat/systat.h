@@ -1,4 +1,4 @@
-/*	$OpenBSD: systat.h,v 1.19 2013/09/07 11:43:50 reyk Exp $	*/
+/*	$OpenBSD: systat.h,v 1.20 2014/07/10 14:39:18 deraadt Exp $	*/
 /*	$NetBSD: systat.h,v 1.2 1995/01/20 08:52:14 jtc Exp $	*/
 
 /*-
@@ -43,9 +43,6 @@
 
 #define	CF_INIT		0x1		/* been initialized */
 #define	CF_LOADAV	0x2		/* display w/ load average */
-
-#define	TCP	0x1
-#define	UDP	0x2
 
 #define FIELD_ADDR(struct, x) (&struct[x])
 #define KREAD(addr, buf, len)  kvm_ckread((addr), (buf), (len))
