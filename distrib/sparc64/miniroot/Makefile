@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2011/04/18 16:52:10 thib Exp $
+#	$OpenBSD: Makefile,v 1.7 2014/11/22 15:02:27 deraadt Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -37,7 +37,7 @@ bsd.rd:
 
 ofwboot:
 	install -c -m 555 -o root -g wheel \
-	    ${DESTDIR}/usr/mdec/ofwboot /mnt/ofwboot
+	    ${DESTDIR}/usr/mdec/ofwbootfd /mnt/ofwboot
 
 installboot:
 	installboot -v vnd0
