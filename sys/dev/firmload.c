@@ -1,4 +1,4 @@
-/*	$OpenBSD: firmload.c,v 1.10 2011/03/23 16:09:19 marco Exp $	*/
+/*	$OpenBSD: firmload.c,v 1.11 2014/07/12 18:48:17 tedu Exp $	*/
 
 /*
  * Copyright (c) 2004 Theo de Raadt <deraadt@openbsd.org>
@@ -19,10 +19,8 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/syslimits.h>
-#include <sys/time.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
-#include <sys/mount.h>
 #include <sys/errno.h>
 #include <sys/malloc.h>
 #include <sys/proc.h>
