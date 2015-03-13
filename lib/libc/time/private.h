@@ -1,4 +1,4 @@
-/*	$OpenBSD: private.h,v 1.34 2015/02/09 14:00:03 tedu Exp $	*/
+/*	$OpenBSD: private.h,v 1.35 2015/02/10 05:44:50 tedu Exp $	*/
 #ifndef PRIVATE_H
 
 #define PRIVATE_H
@@ -101,9 +101,5 @@
 #ifndef SECSPERREPEAT_BITS
 #define SECSPERREPEAT_BITS	34	/* ceil(log2(SECSPERREPEAT)) */
 #endif /* !defined SECSPERREPEAT_BITS */
-
-/*
-** UNIX was a registered trademark of The Open Group in 2003.
-*/
 
 #endif /* !defined PRIVATE_H */
