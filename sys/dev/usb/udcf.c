@@ -1,4 +1,4 @@
-/*	$OpenBSD: udcf.c,v 1.57 2013/04/15 09:23:02 mglocker Exp $ */
+/*	$OpenBSD: udcf.c,v 1.58 2014/07/12 20:26:33 mpi Exp $ */
 
 /*
  * Copyright (c) 2006, 2007, 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -19,7 +19,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/conf.h>
 #include <sys/file.h>
 #include <sys/select.h>
 #include <sys/device.h>

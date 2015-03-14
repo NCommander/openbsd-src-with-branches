@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.74 2015/02/18 23:58:34 dlg Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.75 2015/02/20 23:24:30 chris Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -41,7 +41,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>

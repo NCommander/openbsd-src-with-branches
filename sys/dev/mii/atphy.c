@@ -1,4 +1,4 @@
-/*	$OpenBSD: atphy.c,v 1.7 2013/12/28 03:30:40 deraadt Exp $	*/
+/*	$OpenBSD: atphy.c,v 1.8 2014/12/05 15:50:04 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
@@ -33,7 +33,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/socket.h>
 

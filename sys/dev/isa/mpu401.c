@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpu401.c,v 1.13 2013/05/15 08:29:24 ratchov Exp $	*/
+/*	$OpenBSD: mpu401.c,v 1.14 2014/09/14 14:17:25 jsg Exp $	*/
 /*	$NetBSD: mpu401.c,v 1.3 1998/11/25 22:17:06 augustss Exp $	*/
 
 /*
@@ -46,7 +46,6 @@
 #include <dev/midi_if.h>
 
 #include <dev/isa/isavar.h>
-#include <dev/isa/isadmavar.h>
 
 #include <dev/ic/mpuvar.h>
 

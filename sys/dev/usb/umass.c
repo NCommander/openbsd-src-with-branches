@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass.c,v 1.68 2015/01/18 14:40:05 mpi Exp $ */
+/*	$OpenBSD: umass.c,v 1.69 2015/01/27 11:04:45 mpi Exp $ */
 /*	$NetBSD: umass.c,v 1.116 2004/06/30 05:53:46 mycroft Exp $	*/
 
 /*
@@ -142,7 +142,6 @@
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdi_util.h>
 #include <dev/usb/usbdivar.h>
-#include <dev/usb/usbdevs.h>
 
 #include <dev/usb/umassvar.h>
 #include <dev/usb/umass_quirks.h>

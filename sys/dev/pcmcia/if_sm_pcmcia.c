@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sm_pcmcia.c,v 1.34 2014/08/11 12:45:45 mpi Exp $	*/
+/*	$OpenBSD: if_sm_pcmcia.c,v 1.35 2014/12/03 20:09:32 krw Exp $	*/
 /*	$NetBSD: if_sm_pcmcia.c,v 1.11 1998/08/15 20:47:32 thorpej Exp $  */
 
 /*-
@@ -61,7 +61,6 @@
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
-#include <dev/ic/smc91cxxreg.h>
 #include <dev/ic/smc91cxxvar.h>
 
 #include <dev/pcmcia/pcmciareg.h>

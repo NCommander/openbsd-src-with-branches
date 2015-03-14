@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_vnops.c,v 1.44 2013/01/15 11:20:55 jsing Exp $	*/
+/*	$OpenBSD: mfs_vnops.c,v 1.45 2014/07/12 18:44:01 tedu Exp $	*/
 /*	$NetBSD: mfs_vnops.c,v 1.8 1996/03/17 02:16:32 christos Exp $	*/
 
 /*
@@ -42,8 +42,6 @@
 #include <sys/malloc.h>
 #include <sys/mount.h>
 #include <sys/specdev.h>
-
-#include <machine/vmparam.h>
 
 #include <ufs/mfs/mfsnode.h>
 #include <ufs/mfs/mfs_extern.h>

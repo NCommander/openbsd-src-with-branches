@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmwpvs.c,v 1.10 2014/07/13 23:10:23 deraadt Exp $ */
+/*	$OpenBSD: vmwpvs.c,v 1.11 2015/01/27 03:17:36 dlg Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -18,7 +18,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/buf.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>

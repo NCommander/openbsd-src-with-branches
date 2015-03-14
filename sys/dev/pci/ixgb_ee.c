@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: ixgb_ee.c,v 1.4 2014/07/22 13:12:11 mpi Exp $ */
+/* $OpenBSD: ixgb_ee.c,v 1.5 2014/12/22 02:28:52 tedu Exp $ */
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -53,7 +53,6 @@
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
-#include <dev/pci/pcidevs.h>
 
 #include <dev/pci/ixgb_hw.h> 
 #include <dev/pci/ixgb_ee.h> 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: amphy.c,v 1.19 2013/12/28 03:30:40 deraadt Exp $	*/
+/*	$OpenBSD: amphy.c,v 1.20 2014/12/05 15:50:04 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -42,7 +42,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/socket.h>
 

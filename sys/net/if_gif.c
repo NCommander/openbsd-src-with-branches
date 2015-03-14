@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.71 2014/12/05 15:50:04 mpi Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.72 2014/12/19 17:14:39 tedu Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -32,7 +32,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>

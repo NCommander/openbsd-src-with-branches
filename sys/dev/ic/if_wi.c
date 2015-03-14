@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.158 2014/11/18 02:37:30 tedu Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.159 2014/12/22 02:28:51 tedu Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -76,7 +76,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

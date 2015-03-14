@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_loop.c,v 1.62 2014/12/19 17:14:39 tedu Exp $	*/
+/*	$OpenBSD: if_loop.c,v 1.63 2015/01/27 10:20:31 mpi Exp $	*/
 /*	$NetBSD: if_loop.c,v 1.15 1996/05/07 02:40:33 thorpej Exp $	*/
 
 /*
@@ -124,7 +124,6 @@
 #include <net/route.h>
 
 #include <netinet/in.h>
-#include <netinet/ip.h>
 
 #ifdef INET6
 #include <netinet/ip6.h>

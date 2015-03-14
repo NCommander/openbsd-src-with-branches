@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfe.c,v 1.107 2014/08/20 23:56:57 dlg Exp $	*/
+/*	$OpenBSD: if_nfe.c,v 1.108 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2006, 2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -52,7 +52,6 @@
 #include <net/bpf.h>
 #endif
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/pci/pcireg.h>

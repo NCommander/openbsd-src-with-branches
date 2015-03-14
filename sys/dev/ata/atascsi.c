@@ -1,4 +1,4 @@
-/*	$OpenBSD: atascsi.c,v 1.121 2014/12/09 07:05:06 doug Exp $ */
+/*	$OpenBSD: atascsi.c,v 1.122 2015/01/27 03:17:36 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -33,8 +33,6 @@
 
 #include <dev/ata/atascsi.h>
 #include <dev/ata/pmreg.h>
-
-#include <sys/ataio.h>
 
 struct atascsi_port;
 

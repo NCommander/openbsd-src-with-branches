@@ -1,4 +1,4 @@
-/*	$OpenBSD: umodem.c,v 1.57 2014/07/12 20:26:33 mpi Exp $ */
+/*	$OpenBSD: umodem.c,v 1.58 2015/02/16 14:52:39 sthen Exp $ */
 /*	$NetBSD: umodem.c,v 1.45 2002/09/23 05:51:23 simonb Exp $	*/
 
 /*
@@ -59,7 +59,6 @@
 #include <dev/usb/usbcdc.h>
 
 #include <dev/usb/usbdi.h>
-#include <dev/usb/usbdi_util.h>
 #include <dev/usb/usbdevs.h>
 #include <dev/usb/usb_quirks.h>
 

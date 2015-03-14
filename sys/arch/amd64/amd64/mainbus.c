@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.26 2012/10/04 08:32:20 ehrhardt Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.27 2013/05/30 16:15:01 deraadt Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.1 2003/04/26 18:39:29 fvdl Exp $	*/
 
 /*
@@ -53,7 +53,6 @@
 #include <machine/cpuvar.h>
 #include <machine/i82093var.h>
 
-#include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
 
 #if NIPMI > 0

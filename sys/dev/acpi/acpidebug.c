@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidebug.c,v 1.28 2013/11/18 23:44:57 deraadt Exp $ */
+/* $OpenBSD: acpidebug.c,v 1.29 2013/12/12 21:00:09 guenther Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@openbsd.org>
  *
@@ -16,7 +16,6 @@
  */
 
 #include <machine/db_machdep.h>
-#include <ddb/db_command.h>
 #include <ddb/db_output.h>
 #include <ddb/db_extern.h>
 #include <ddb/db_lex.h>

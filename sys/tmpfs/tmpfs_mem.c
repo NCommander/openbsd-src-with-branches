@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_mem.c,v 1.5 2014/11/02 03:47:28 tedu Exp $	*/
+/*	$OpenBSD: tmpfs_mem.c,v 1.6 2015/01/21 22:26:52 deraadt Exp $	*/
 /*	$NetBSD: tmpfs_mem.c,v 1.4 2011/05/24 01:09:47 rmind Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
 #include <sys/namei.h>
 #include <sys/pool.h>
 #include <sys/vnode.h>
-#include <sys/sysctl.h>
 #include <sys/malloc.h>
 
 #include <tmpfs/tmpfs.h>

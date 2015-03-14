@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl10019.c,v 1.5 2013/08/07 01:06:29 bluhm Exp $	*/
+/*	$OpenBSD: dl10019.c,v 1.6 2014/07/22 13:12:11 mpi Exp $	*/
 /*	$NetBSD$	*/
 
 /*-
@@ -58,7 +58,6 @@
 #include <dev/ic/ne2000var.h>
 
 #include <dev/ic/dl10019reg.h>
-#include <dev/ic/dl10019var.h>
 
 int	dl10019_mii_readreg(struct device *, int, int);
 void	dl10019_mii_writereg(struct device *, int, int, int);

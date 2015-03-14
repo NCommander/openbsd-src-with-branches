@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_pci.c,v 1.70 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: if_dc_pci.c,v 1.71 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -61,7 +61,6 @@
 #include <net/bpf.h>
 #endif
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/pci/pcireg.h>

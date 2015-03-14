@@ -1,4 +1,4 @@
-/*	$OpenBSD: x86emu_util.c,v 1.4 2009/06/06 06:05:27 deraadt Exp $	*/
+/*	$OpenBSD: x86emu_util.c,v 1.5 2009/06/18 14:19:21 pirofti Exp $	*/
 /*	$NetBSD: x86emu_util.c,v 1.2 2007/12/04 17:32:22 joerg Exp $	*/
 
 /*
@@ -36,7 +36,6 @@
 #include <sys/endian.h>
 
 #include <dev/x86emu/x86emu.h>
-#include <dev/x86emu/x86emu_regs.h>
 
 
 

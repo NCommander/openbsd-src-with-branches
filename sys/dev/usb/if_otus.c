@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_otus.c,v 1.44 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_otus.c,v 1.45 2015/02/10 23:25:46 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -33,7 +33,6 @@
 #include <sys/device.h>
 #include <sys/endian.h>
 
-#include <machine/bus.h>
 #include <machine/intr.h>
 
 #if NBPFILTER > 0

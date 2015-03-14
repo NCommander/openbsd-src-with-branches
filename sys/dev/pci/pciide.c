@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide.c,v 1.350 2014/12/19 22:44:58 guenther Exp $	*/
+/*	$OpenBSD: pciide.c,v 1.351 2015/01/09 07:29:45 jsg Exp $	*/
 /*	$NetBSD: pciide.c,v 1.127 2001/08/03 01:31:08 tsutsui Exp $	*/
 
 /*
@@ -118,7 +118,6 @@ int wdcdebug_pciide_mask = WDCDEBUG_PCIIDE_MASK;
 #include <dev/pci/pciide_acard_reg.h>
 #include <dev/pci/pciide_natsemi_reg.h>
 #include <dev/pci/pciide_nforce_reg.h>
-#include <dev/pci/pciide_i31244_reg.h>
 #include <dev/pci/pciide_ite_reg.h>
 #include <dev/pci/pciide_ixp_reg.h>
 #include <dev/pci/pciide_svwsata_reg.h>

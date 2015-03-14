@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.c,v 1.25 2014/12/22 03:13:45 deraadt Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.26 2015/01/24 15:13:55 kettenis Exp $	*/
 /*	$NetBSD: isa_machdep.c,v 1.22 1997/06/12 23:57:32 thorpej Exp $	*/
 
 #define ISA_DMA_STATS
@@ -92,7 +92,6 @@
 #include <machine/cpufunc.h>
 #include <machine/i8259.h>
 
-#include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 #if 0
 #include <dev/isa/isadmavar.h>

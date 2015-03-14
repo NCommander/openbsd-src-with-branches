@@ -1,4 +1,4 @@
-/*	$OpenBSD: udl.c,v 1.80 2014/07/12 18:48:52 tedu Exp $ */
+/*	$OpenBSD: udl.c,v 1.81 2014/12/09 07:05:06 doug Exp $ */
 
 /*
  * Copyright (c) 2009 Marcus Glocker <mglocker@openbsd.org>
@@ -35,8 +35,6 @@
 #include <sys/systm.h>
 
 #include <uvm/uvm_extern.h>
-
-#include <machine/bus.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>

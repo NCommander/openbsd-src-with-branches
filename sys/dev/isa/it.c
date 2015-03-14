@@ -1,4 +1,4 @@
-/*	$OpenBSD: it.c,v 1.44 2013/04/10 01:35:55 guenther Exp $	*/
+/*	$OpenBSD: it.c,v 1.45 2014/12/10 12:27:57 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2007-2008 Oleg Safiullin <form@pdp-11.org.ru>
@@ -34,7 +34,6 @@
 
 #include <machine/bus.h>
 
-#include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 #include <dev/isa/itvar.h>
 

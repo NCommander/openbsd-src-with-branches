@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_extent.c,v 1.54 2014/09/14 14:17:25 jsg Exp $	*/
+/*	$OpenBSD: subr_extent.c,v 1.55 2014/11/03 03:08:00 deraadt Exp $	*/
 /*	$NetBSD: subr_extent.c,v 1.7 1996/11/21 18:46:34 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,6 @@
 #include <sys/param.h>
 #include <sys/extent.h>
 #include <sys/malloc.h>
-#include <sys/time.h>
 #include <sys/systm.h>
 #include <sys/queue.h>
 #include <sys/pool.h>

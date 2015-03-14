@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9.c,v 1.86 2014/12/22 02:28:51 tedu Exp $ */
+/*	$OpenBSD: rtl81x9.c,v 1.87 2015/01/08 00:49:18 brad Exp $ */
 
 /*
  * Copyright (c) 1997, 1998
@@ -96,7 +96,6 @@
 #include <sys/timeout.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_types.h>
 
 #include <netinet/in.h>

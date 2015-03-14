@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.215 2014/12/08 20:56:11 guenther Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.216 2014/12/16 18:30:04 tedu Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -52,7 +52,6 @@
 #include <sys/uio.h>
 #include <sys/malloc.h>
 #include <sys/pool.h>
-#include <sys/dirent.h>
 #include <sys/dkio.h>
 #include <sys/disklabel.h>
 #include <sys/ktrace.h>

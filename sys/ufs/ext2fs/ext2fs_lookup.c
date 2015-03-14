@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_lookup.c,v 1.37 2014/07/13 16:59:35 pelikan Exp $	*/
+/*	$OpenBSD: ext2fs_lookup.c,v 1.38 2015/02/10 21:56:10 miod Exp $	*/
 /*	$NetBSD: ext2fs_lookup.c,v 1.16 2000/08/03 20:29:26 thorpej Exp $	*/
 
 /*
@@ -52,7 +52,6 @@
 #include <sys/systm.h>
 #include <sys/namei.h>
 #include <sys/buf.h>
-#include <sys/file.h>
 #include <sys/mount.h>
 #include <sys/vnode.h>
 #include <sys/malloc.h>

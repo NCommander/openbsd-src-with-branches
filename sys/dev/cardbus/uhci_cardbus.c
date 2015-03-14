@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhci_cardbus.c,v 1.13 2014/05/16 18:17:03 mpi Exp $	*/
+/*	$OpenBSD: uhci_cardbus.c,v 1.14 2014/09/14 14:17:24 jsg Exp $	*/
 
 /*
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -38,7 +38,6 @@
 #include <machine/bus.h>
 
 #include <dev/cardbus/cardbusvar.h>
-#include <dev/pci/pcidevs.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>

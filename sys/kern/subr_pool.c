@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.179 2015/01/22 05:09:41 dlg Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.180 2015/02/10 06:16:13 dlg Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -991,7 +991,6 @@ pool_reclaim_all(void)
 
 #ifdef DDB
 #include <machine/db_machdep.h>
-#include <ddb/db_interface.h>
 #include <ddb/db_output.h>
 
 /*

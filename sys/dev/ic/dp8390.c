@@ -1,4 +1,4 @@
-/*	$OpenBSD: dp8390.c,v 1.47 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: dp8390.c,v 1.48 2014/12/22 02:28:51 tedu Exp $	*/
 /*	$NetBSD: dp8390.c,v 1.13 1998/07/05 06:49:11 jonathan Exp $	*/
 
 /*
@@ -26,7 +26,6 @@
 #include <sys/syslog.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_types.h>
 #include <net/if_media.h>
 

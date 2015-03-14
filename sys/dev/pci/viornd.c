@@ -1,4 +1,4 @@
-/*	$OpenBSD: $	*/
+/*	$OpenBSD: viornd.c,v 1.1 2014/01/21 21:14:58 sf Exp $	*/
 
 /*
  * Copyright (c) 2014 Stefan Fritsch <sf@sfritsch.de>
@@ -24,7 +24,6 @@
 #include <sys/device.h>
 #include <sys/pool.h>
 #include <dev/rndvar.h>
-#include <dev/pci/pcivar.h>
 #include <dev/pci/virtioreg.h>
 #include <dev/pci/virtiovar.h>
 

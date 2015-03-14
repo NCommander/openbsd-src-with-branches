@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_srvcache.c,v 1.25 2014/09/14 14:17:26 jsg Exp $	*/
+/*	$OpenBSD: nfs_srvcache.c,v 1.26 2014/11/18 10:42:15 dlg Exp $	*/
 /*	$NetBSD: nfs_srvcache.c,v 1.12 1996/02/18 11:53:49 fvdl Exp $	*/
 
 /*
@@ -52,7 +52,6 @@
 #include <crypto/siphash.h>
 
 #include <netinet/in.h>
-#include <nfs/rpcv2.h>
 #include <nfs/nfsproto.h>
 #include <nfs/nfs.h>
 #include <nfs/nfsrvcache.h>

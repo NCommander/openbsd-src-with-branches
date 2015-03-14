@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mos.c,v 1.26 2014/07/13 15:52:49 mpi Exp $	*/
+/*	$OpenBSD: if_mos.c,v 1.27 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 2008 Johann Christian Rode <jcrode@gmx.net>
@@ -95,7 +95,6 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/usb/usb.h>

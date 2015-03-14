@@ -1,4 +1,4 @@
-/* $OpenBSD: acpihpet.c,v 1.16 2013/12/21 16:41:01 deraadt Exp $ */
+/* $OpenBSD: acpihpet.c,v 1.17 2014/03/05 23:47:00 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -18,7 +18,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 #include <sys/timetc.h>
 
 #include <machine/bus.h>

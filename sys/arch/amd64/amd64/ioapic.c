@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.21 2014/11/22 18:55:20 deraadt Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.22 2014/12/09 06:58:28 doug Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.6 2003/05/15 13:30:31 fvdl Exp $	*/
 
 /*-
@@ -77,7 +77,6 @@
 #include <machine/i82093reg.h>
 #include <machine/i82093var.h>
 
-#include <machine/i82489reg.h>
 #include <machine/i82489var.h>
 
 #include <machine/pmap.h>

@@ -1,5 +1,5 @@
-/* $OpenBSD: if_lmc_media.c,v 1.17 2010/04/08 00:23:53 tedu Exp $ */
-/* $Id: if_lmc_media.c,v 1.17 2010/04/08 00:23:53 tedu Exp $ */
+/* $OpenBSD: if_lmc_media.c,v 1.18 2014/12/05 15:50:04 mpi Exp $ */
+/* $Id: if_lmc_media.c,v 1.18 2014/12/05 15:50:04 mpi Exp $ */
 
 /*-
  * Copyright (c) 1997-1999 LAN Media Corporation (LMC)
@@ -69,7 +69,6 @@
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
-#include <dev/ic/dc21040reg.h>
 
 #include <dev/pci/if_lmc_types.h>
 #include <dev/pci/if_lmcioctl.h>

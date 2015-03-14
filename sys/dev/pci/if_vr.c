@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.137 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.138 2015/03/13 15:58:22 jasper Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -90,7 +90,6 @@
 
 #include <machine/bus.h>
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/pci/pcireg.h>

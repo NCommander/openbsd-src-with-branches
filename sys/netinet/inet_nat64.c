@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: inet_nat64.c,v 1.1 2011/10/13 18:23:40 claudio Exp $	*/
 /*	$vantronix: inet_nat64.c,v 1.2 2011/02/28 14:57:58 mike Exp $	*/
 
 /*
@@ -21,9 +21,7 @@
 #include <sys/socket.h>
 #ifdef _KERNEL
 #include <sys/mbuf.h>
-#include <netinet/in.h>
 #else
-#include <netinet/in.h>
 #include <errno.h>
 #endif
 

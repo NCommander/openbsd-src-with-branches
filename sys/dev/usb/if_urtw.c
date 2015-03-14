@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urtw.c,v 1.50 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_urtw.c,v 1.51 2015/02/10 23:25:46 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009 Martynas Venckus <martynas@openbsd.org>
@@ -31,7 +31,6 @@
 #include <sys/device.h>
 #include <sys/endian.h>
 
-#include <machine/bus.h>
 #if NBPFILTER > 0
 #include <net/bpf.h>
 #endif

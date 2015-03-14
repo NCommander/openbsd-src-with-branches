@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_balloc.c,v 1.41 2014/05/22 02:02:39 guenther Exp $	*/
+/*	$OpenBSD: ffs_balloc.c,v 1.42 2014/07/08 17:19:26 deraadt Exp $	*/
 /*	$NetBSD: ffs_balloc.c,v 1.3 1996/02/09 22:22:21 christos Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 #include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
-#include <sys/file.h>
 #include <sys/mount.h>
 #include <sys/vnode.h>
 

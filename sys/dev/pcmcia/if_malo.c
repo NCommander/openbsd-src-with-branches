@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_malo.c,v 1.80 2014/09/14 14:17:25 jsg Exp $ */
+/*      $OpenBSD: if_malo.c,v 1.81 2014/12/22 02:28:52 tedu Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -47,7 +47,6 @@
 #include <machine/bus.h>
 #include <machine/intr.h>
 
-#include <dev/pcmcia/pcmciareg.h>
 #include <dev/pcmcia/pcmciavar.h>
 #include <dev/pcmcia/pcmciadevs.h>
 

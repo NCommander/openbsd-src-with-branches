@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci_cardbus.c,v 1.19 2014/05/17 12:54:57 stsp Exp $ */
+/*	$OpenBSD: ehci_cardbus.c,v 1.20 2014/09/14 14:17:24 jsg Exp $ */
 /*	$NetBSD: ehci_cardbus.c,v 1.6.6.3 2004/09/21 13:27:25 skrll Exp $	*/
 
 /*
@@ -40,7 +40,6 @@
 #include <machine/bus.h>
 
 #include <dev/cardbus/cardbusvar.h>
-#include <dev/pci/pcidevs.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>

@@ -1,4 +1,4 @@
-/*      $OpenBSD: ata.c,v 1.32 2011/04/08 00:34:56 deraadt Exp $      */
+/*      $OpenBSD: ata.c,v 1.33 2011/06/22 14:17:01 krw Exp $      */
 /*      $NetBSD: ata.c,v 1.9 1999/04/15 09:41:09 bouyer Exp $      */
 /*
  * Copyright (c) 1998, 2001 Manuel Bouyer.  All rights reserved.
@@ -39,7 +39,6 @@
 #include <dev/ata/atareg.h>
 #include <dev/ata/atavar.h>
 #include <dev/ic/wdcreg.h>
-#include <dev/ic/wdcvar.h>
 
 #define DEBUG_FUNCS  0x08
 #define DEBUG_PROBE  0x10

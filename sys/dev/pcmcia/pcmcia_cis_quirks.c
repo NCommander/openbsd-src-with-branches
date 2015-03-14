@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcmcia_cis_quirks.c,v 1.10 2014/07/12 18:48:52 tedu Exp $	*/
+/*	$OpenBSD: pcmcia_cis_quirks.c,v 1.11 2014/08/18 04:23:11 dlg Exp $	*/
 /*	$NetBSD: pcmcia_cis_quirks.c,v 1.3 1998/12/29 09:00:28 marc Exp $	*/
 
 /*
@@ -38,7 +38,6 @@
 
 #include <dev/pcmcia/pcmciadevs.h>
 #include <dev/pcmcia/pcmciareg.h>
-#include <dev/pcmcia/pcmciachip.h>
 #include <dev/pcmcia/pcmciavar.h>
 
 /* There are cards out there whose CIS flat-out lies.  This file

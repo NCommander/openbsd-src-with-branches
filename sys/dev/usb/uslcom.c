@@ -1,4 +1,4 @@
-/*	$OpenBSD: uslcom.c,v 1.32 2014/11/18 23:55:01 krw Exp $	*/
+/*	$OpenBSD: uslcom.c,v 1.33 2014/11/23 21:18:46 sasano Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -19,7 +19,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/conf.h>
 #include <sys/tty.h>
 #include <sys/device.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sched.c,v 1.34 2014/07/26 16:07:39 kettenis Exp $	*/
+/*	$OpenBSD: kern_sched.c,v 1.35 2014/09/24 09:13:20 mpi Exp $	*/
 /*
  * Copyright (c) 2007, 2008 Artur Grabowski <art@openbsd.org>
  *
@@ -26,9 +26,6 @@
 #include <sys/mutex.h>
 
 #include <uvm/uvm_extern.h>
-
-#include <sys/malloc.h>
-
 
 void sched_kthreads_create(void *);
 

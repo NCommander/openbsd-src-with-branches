@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lii.c,v 1.33 2014/08/30 09:52:13 brad Exp $	*/
+/*	$OpenBSD: if_lii.c,v 1.34 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*
  *  Copyright (c) 2007 The NetBSD Foundation.
@@ -56,7 +56,6 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/pci/pcireg.h>

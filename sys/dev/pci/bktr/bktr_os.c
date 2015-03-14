@@ -1,4 +1,4 @@
-/*	$OpenBSD: bktr_os.c,v 1.30 2009/03/29 21:53:53 sthen Exp $	*/
+/*	$OpenBSD: bktr_os.c,v 1.31 2013/07/01 07:18:23 brad Exp $	*/
 /* $FreeBSD: src/sys/dev/bktr/bktr_os.c,v 1.20 2000/10/20 08:16:53 roger Exp $ */
 
 /*
@@ -85,7 +85,6 @@ int bktr_debug = 1;
 #include <dev/ic/bt8xx.h>	/* OpenBSD location for .h files */
 #include <dev/pci/bktr/bktr_reg.h>
 #include <dev/pci/bktr/bktr_tuner.h>
-#include <dev/pci/bktr/bktr_card.h>
 #include <dev/pci/bktr/bktr_audio.h>
 #include <dev/pci/bktr/bktr_core.h>
 #include <dev/pci/bktr/bktr_os.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: powernow-k8.c,v 1.23 2014/07/12 18:44:41 tedu Exp $ */
+/*	$OpenBSD: powernow-k8.c,v 1.24 2014/09/14 14:17:23 jsg Exp $ */
 /*
  * Copyright (c) 2004 Martin Végiard.
  * Copyright (c) 2004-2005 Bruno Ducrot
@@ -43,7 +43,6 @@
 
 #if NACPICPU > 0
 #include <dev/acpi/acpidev.h>
-#include <dev/acpi/acpivar.h>
 #endif
 
 #define BIOS_START			0xe0000

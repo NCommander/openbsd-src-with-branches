@@ -1,4 +1,4 @@
-/* 	$OpenBSD: compat_util.c,v 1.14 2014/12/16 18:30:03 tedu Exp $	*/
+/* 	$OpenBSD: compat_util.c,v 1.15 2015/01/26 22:51:37 kettenis Exp $	*/
 /* 	$NetBSD: compat_util.c,v 1.4 1996/03/14 19:31:45 christos Exp $	*/
 
 /*
@@ -34,7 +34,6 @@
 #include <sys/systm.h>
 #include <sys/namei.h>
 #include <sys/proc.h>
-#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/filedesc.h>
 #include <sys/ioctl.h>

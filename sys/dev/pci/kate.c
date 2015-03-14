@@ -1,4 +1,4 @@
-/*	$OpenBSD: kate.c,v 1.4 2008/09/03 12:00:56 jsg Exp $	*/
+/*	$OpenBSD: kate.c,v 1.5 2009/01/26 15:07:49 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2008 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -20,8 +20,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/sensors.h>
-
-#include <machine/bus.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

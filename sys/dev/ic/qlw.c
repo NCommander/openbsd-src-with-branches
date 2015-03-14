@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlw.c,v 1.26 2014/12/19 07:23:57 deraadt Exp $ */
+/*	$OpenBSD: qlw.c,v 1.27 2015/01/27 03:17:36 dlg Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -20,7 +20,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/buf.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>

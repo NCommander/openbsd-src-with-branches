@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay_compat_usl.c,v 1.25 2014/04/18 21:18:50 guenther Exp $ */
+/* $OpenBSD: wsdisplay_compat_usl.c,v 1.26 2014/07/12 18:48:53 tedu Exp $ */
 /* $NetBSD: wsdisplay_compat_usl.c,v 1.12 2000/03/23 07:01:47 thorpej Exp $ */
 
 /*
@@ -30,7 +30,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/timeout.h>
-#include <sys/ioctl.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/signalvar.h>

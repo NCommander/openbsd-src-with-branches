@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_rdac.c,v 1.21 2014/04/02 11:31:57 dlg Exp $ */
+/*	$OpenBSD: mpath_rdac.c,v 1.22 2014/09/14 14:17:26 jsg Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -20,7 +20,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/buf.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>

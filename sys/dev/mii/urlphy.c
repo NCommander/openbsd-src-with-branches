@@ -1,4 +1,4 @@
-/*	$OpenBSD: urlphy.c,v 1.15 2013/12/28 03:30:41 deraadt Exp $ */
+/*	$OpenBSD: urlphy.c,v 1.16 2014/12/05 15:50:04 mpi Exp $ */
 /*	$NetBSD: urlphy.c,v 1.1 2002/03/28 21:07:53 ichiro Exp $	*/
 /*
  * Copyright (c) 2001, 2002
@@ -46,7 +46,6 @@
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
-#include <dev/mii/miidevs.h>
 #include <dev/mii/urlphyreg.h>
 
 #define	URLPHY_DEBUG	0

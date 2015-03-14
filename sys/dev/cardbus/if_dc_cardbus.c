@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_cardbus.c,v 1.35 2011/04/02 17:47:04 jasper Exp $	*/
+/*	$OpenBSD: if_dc_cardbus.c,v 1.36 2014/09/14 14:17:24 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -52,7 +52,6 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <machine/bus.h>

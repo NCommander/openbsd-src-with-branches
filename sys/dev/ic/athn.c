@@ -1,4 +1,4 @@
-/*	$OpenBSD: athn.c,v 1.84 2014/12/19 22:44:58 guenther Exp $	*/
+/*	$OpenBSD: athn.c,v 1.85 2014/12/22 02:28:51 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -45,7 +45,6 @@
 #include <net/bpf.h>
 #endif
 #include <net/if.h>
-#include <net/if_arp.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
 #include <net/if_types.h>

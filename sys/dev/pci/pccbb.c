@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.91 2013/12/06 21:03:04 deraadt Exp $	*/
+/*	$OpenBSD: pccbb.c,v 1.92 2014/07/12 18:48:52 tedu Exp $	*/
 /*	$NetBSD: pccbb.c,v 1.96 2004/03/28 09:49:31 nakayama Exp $	*/
 
 /*
@@ -42,7 +42,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/errno.h>
 #include <sys/evcount.h>
 #include <sys/ioctl.h>
 #include <sys/syslog.h>

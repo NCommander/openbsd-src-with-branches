@@ -1,4 +1,4 @@
-/*	$OpenBSD: adw_pci.c,v 1.15 2008/06/26 05:42:17 ray Exp $ */
+/*	$OpenBSD: adw_pci.c,v 1.16 2011/04/03 15:36:02 jasper Exp $ */
 /* $NetBSD: adw_pci.c,v 1.7 2000/05/26 15:13:46 dante Exp $	 */
 
 /*
@@ -51,7 +51,6 @@
 #include <sys/timeout.h>
 
 #include <machine/bus.h>
-#include <machine/intr.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>

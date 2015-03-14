@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.58 2014/12/19 22:44:58 guenther Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.59 2014/12/22 02:28:52 tedu Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -71,7 +71,6 @@
 #include <machine/bus.h>
 #include <machine/intr.h>
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/pci/pcivar.h>

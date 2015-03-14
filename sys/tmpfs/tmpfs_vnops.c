@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_vnops.c,v 1.19 2015/01/21 22:26:52 deraadt Exp $	*/
+/*	$OpenBSD: tmpfs_vnops.c,v 1.20 2015/02/10 21:56:10 miod Exp $	*/
 /*	$NetBSD: tmpfs_vnops.c,v 1.100 2012/11/05 17:27:39 dholland Exp $	*/
 
 /*
@@ -37,7 +37,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/dirent.h>
 #include <sys/fcntl.h>
 #include <sys/event.h>
 #include <sys/namei.h>

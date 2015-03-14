@@ -1,4 +1,4 @@
-/*	$OpenBSD: envy.c,v 1.57 2014/05/17 12:23:46 ratchov Exp $	*/
+/*	$OpenBSD: envy.c,v 1.58 2014/05/29 20:40:26 ratchov Exp $	*/
 /*
  * Copyright (c) 2007 Alexandre Ratchov <alex@caoua.org>
  *
@@ -30,7 +30,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
-#include <sys/ioctl.h>
 #include <sys/audioio.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>

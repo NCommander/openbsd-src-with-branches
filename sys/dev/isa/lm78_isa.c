@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm78_isa.c,v 1.8 2014/12/19 13:53:08 krw Exp $	*/
+/*	$OpenBSD: lm78_isa.c,v 1.9 2015/01/02 22:36:15 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Mark Kettenis
@@ -22,7 +22,6 @@
 #include <sys/sensors.h>
 #include <machine/bus.h>
 
-#include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 
 #include <dev/ic/lm78var.h>

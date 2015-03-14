@@ -1,4 +1,4 @@
-/*	$OpenBSD: isadma.c,v 1.32 2014/07/12 18:48:18 tedu Exp $	*/
+/*	$OpenBSD: isadma.c,v 1.33 2014/09/14 14:17:25 jsg Exp $	*/
 /*	$NetBSD: isadma.c,v 1.32 1997/09/05 01:48:33 thorpej Exp $	*/
 
 /*-
@@ -43,7 +43,6 @@
 
 #include <machine/bus.h>
 
-#include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 #include <dev/isa/isadmavar.h>
 #include <dev/isa/isadmareg.h>

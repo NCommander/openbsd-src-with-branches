@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_et.c,v 1.24 2014/08/30 09:52:13 brad Exp $	*/
+/*	$OpenBSD: if_et.c,v 1.25 2014/12/22 02:28:52 tedu Exp $	*/
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
  * 
@@ -64,7 +64,6 @@
 #endif
 #include <net/if_vlan_var.h>
  
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/pci/pcireg.h>

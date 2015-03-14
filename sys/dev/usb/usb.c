@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb.c,v 1.105 2015/02/09 12:45:12 uebayasi Exp $	*/
+/*	$OpenBSD: usb.c,v 1.106 2015/02/10 21:56:09 miod Exp $	*/
 /*	$NetBSD: usb.c,v 1.77 2003/01/01 00:10:26 thorpej Exp $	*/
 
 /*
@@ -63,7 +63,6 @@
 #include <machine/bus.h>
 
 #include <dev/usb/usbdivar.h>
-#include <dev/usb/usb_quirks.h>
 
 #ifdef USB_DEBUG
 #define DPRINTF(x)	do { if (usbdebug) printf x; } while (0)

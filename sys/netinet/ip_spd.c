@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_spd.c,v 1.76 2014/11/25 13:10:03 mpi Exp $ */
+/* $OpenBSD: ip_spd.c,v 1.77 2014/12/19 17:14:40 tedu Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -30,7 +30,6 @@
 #include <sys/pool.h>
 #include <sys/timeout.h>
 
-#include <net/if.h>
 #include <net/route.h>
 #include <net/netisr.h>
 

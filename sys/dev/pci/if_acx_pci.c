@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_acx_pci.c,v 1.6 2006/11/18 20:44:40 grange Exp $  */
+/*	$OpenBSD: if_acx_pci.c,v 1.7 2009/03/29 21:53:52 sthen Exp $  */
 
 /*-
  * Copyright (c) 2006 Theo de Raadt <deraadt@openbsd.org>
@@ -49,7 +49,6 @@
 #include <net80211/ieee80211_radiotap.h>
 
 #include <dev/ic/acxvar.h>
-#include <dev/ic/acxreg.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

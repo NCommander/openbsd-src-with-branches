@@ -1,4 +1,4 @@
-/* $OpenBSD: acpiec.c,v 1.50 2014/06/25 07:46:14 kettenis Exp $ */
+/* $OpenBSD: acpiec.c,v 1.51 2014/09/14 14:17:24 jsg Exp $ */
 /*
  * Copyright (c) 2006 Can Erkin Acar <canacar@openbsd.org>
  *
@@ -19,7 +19,6 @@
 #include <sys/signalvar.h>
 #include <sys/systm.h>
 #include <sys/device.h>
-#include <sys/malloc.h>
 
 #include <machine/bus.h>
 

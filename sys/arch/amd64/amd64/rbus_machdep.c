@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus_machdep.c,v 1.11 2010/01/13 09:10:33 jsg Exp $	*/
+/*	$OpenBSD: rbus_machdep.c,v 1.12 2010/09/22 02:28:37 jsg Exp $	*/
 /*	$NetBSD: rbus_machdep.c,v 1.2 1999/10/15 06:43:06 haya Exp $	*/
 
 /*
@@ -28,7 +28,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/device.h>
 #include <sys/extent.h>
 
 #include <uvm/uvm_extern.h>

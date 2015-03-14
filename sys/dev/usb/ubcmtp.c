@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubcmtp.c,v 1.5 2014/02/06 16:43:04 jcs Exp $ */
+/*	$OpenBSD: ubcmtp.c,v 1.6 2014/07/12 18:48:52 tedu Exp $ */
 
 /*
  * Copyright (c) 2013-2014, joshua stein <jcs@openbsd.org>
@@ -48,7 +48,6 @@
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdevs.h>
 #include <dev/usb/uhidev.h>
-#include <dev/usb/hid.h>
 #include <dev/usb/usbhid.h>
 
 #include <dev/wscons/wsconsio.h>

@@ -1,4 +1,4 @@
-/*      $OpenBSD: pci_map.c,v 1.29 2010/09/06 12:30:35 kettenis Exp $     */
+/*      $OpenBSD: pci_map.c,v 1.30 2013/02/09 20:43:33 miod Exp $     */
 /*	$NetBSD: pci_map.c,v 1.7 2000/05/10 16:58:42 thorpej Exp $	*/
 
 /*-
@@ -36,7 +36,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/device.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

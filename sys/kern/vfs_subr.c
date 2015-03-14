@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.228 2015/01/09 05:01:56 tedu Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.229 2015/03/02 20:46:50 guenther Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -2087,7 +2087,6 @@ vn_isdisk(struct vnode *vp, int *errp)
 #ifdef DDB
 #include <machine/db_machdep.h>
 #include <ddb/db_interface.h>
-#include <ddb/db_output.h>
 
 void
 vfs_buf_print(void *b, int full,

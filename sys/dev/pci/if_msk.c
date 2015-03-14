@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_msk.c,v 1.111 2014/11/24 23:28:50 brad Exp $	*/
+/*	$OpenBSD: if_msk.c,v 1.112 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -115,7 +115,6 @@
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
-#include <dev/mii/brgphyreg.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>

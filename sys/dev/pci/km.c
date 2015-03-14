@@ -1,4 +1,4 @@
-/*	$OpenBSD: km.c,v 1.8 2013/09/17 13:42:34 kettenis Exp $	*/
+/*	$OpenBSD: km.c,v 1.9 2014/12/06 03:52:50 jsg Exp $	*/
 
 /*
  * Copyright (c) 2008 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -23,7 +23,6 @@
 
 #include <machine/bus.h>
 
-#include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcidevs.h>
 

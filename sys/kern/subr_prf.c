@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.83 2014/07/13 23:49:40 uebayasi Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.84 2015/01/13 10:07:58 mpf Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -39,7 +39,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/buf.h>
 #include <sys/conf.h>
 #include <sys/reboot.h>
 #include <sys/msgbuf.h>

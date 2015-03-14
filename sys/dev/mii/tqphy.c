@@ -1,4 +1,4 @@
-/*	$OpenBSD: tqphy.c,v 1.16 2013/12/28 03:30:41 deraadt Exp $	*/
+/*	$OpenBSD: tqphy.c,v 1.17 2014/12/05 15:50:04 mpi Exp $	*/
 /*	$NetBSD: tqphy.c,v 1.9 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*
@@ -63,7 +63,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/socket.h>
 

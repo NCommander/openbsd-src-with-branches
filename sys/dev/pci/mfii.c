@@ -1,4 +1,4 @@
-/* $OpenBSD: mfii.c,v 1.23 2015/01/07 10:26:48 dlg Exp $ */
+/* $OpenBSD: mfii.c,v 1.24 2015/01/09 03:34:40 dlg Exp $ */
 
 /*
  * Copyright (c) 2012 David Gwynne <dlg@openbsd.org>
@@ -20,7 +20,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
 #include <sys/types.h>

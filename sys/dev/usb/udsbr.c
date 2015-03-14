@@ -1,4 +1,4 @@
-/*	$OpenBSD: udsbr.c,v 1.24 2013/04/15 09:23:02 mglocker Exp $	*/
+/*	$OpenBSD: udsbr.c,v 1.25 2013/11/07 12:06:25 pirofti Exp $	*/
 /*	$NetBSD: udsbr.c,v 1.7 2002/07/11 21:14:27 augustss Exp $	*/
 
 /*
@@ -40,7 +40,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/device.h>
 
 #include <sys/radioio.h>

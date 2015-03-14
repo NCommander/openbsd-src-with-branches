@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivideo.c,v 1.8 2011/04/06 21:16:13 martynas Exp $	*/
+/*	$OpenBSD: acpivideo.c,v 1.9 2011/05/23 11:58:40 pirofti Exp $	*/
 /*
  * Copyright (c) 2008 Federico G. Schwindt <fgsch@openbsd.org>
  * Copyright (c) 2009 Paul Irofti <pirofti@openbsd.org>
@@ -22,7 +22,6 @@
 
 #include <machine/bus.h>
 
-#include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
 #include <dev/acpi/acpidev.h>
 #include <dev/acpi/amltypes.h>

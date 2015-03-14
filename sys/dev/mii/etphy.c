@@ -1,4 +1,4 @@
-/*	$OpenBSD: etphy.c,v 1.5 2013/12/28 03:30:41 deraadt Exp $	*/
+/*	$OpenBSD: etphy.c,v 1.6 2014/12/05 15:50:04 mpi Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -38,7 +38,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/socket.h>
 

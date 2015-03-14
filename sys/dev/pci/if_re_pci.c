@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_pci.c,v 1.44 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_re_pci.c,v 1.47 2015/03/08 01:54:04 tobiasu Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -38,7 +38,6 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/pci/pcireg.h>

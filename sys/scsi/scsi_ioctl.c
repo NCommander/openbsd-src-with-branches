@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_ioctl.c,v 1.48 2011/06/21 22:36:42 matthew Exp $	*/
+/*	$OpenBSD: scsi_ioctl.c,v 1.49 2014/12/15 02:11:57 tedu Exp $	*/
 /*	$NetBSD: scsi_ioctl.c,v 1.23 1996/10/12 23:23:17 christos Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
 #include <sys/systm.h>
 #include <sys/file.h>
 #include <sys/pool.h>
-#include <sys/buf.h>
 #include <sys/device.h>
 #include <sys/fcntl.h>
 

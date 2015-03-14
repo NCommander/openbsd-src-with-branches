@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.c,v 1.213 2014/07/20 12:20:38 kettenis Exp $ */
+/* $OpenBSD: dsdt.c,v 1.214 2014/09/14 14:17:24 jsg Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -25,7 +25,6 @@
 
 #ifdef DDB
 #include <machine/db_machdep.h>
-#include <ddb/db_command.h>
 #endif
 
 #include <dev/acpi/acpireg.h>

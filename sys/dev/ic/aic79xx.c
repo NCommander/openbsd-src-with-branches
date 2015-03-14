@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx.c,v 1.54 2014/07/13 23:10:23 deraadt Exp $	*/
+/*	$OpenBSD: aic79xx.c,v 1.55 2014/12/13 21:05:33 doug Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -75,7 +75,6 @@
 #include <dev/ic/aic79xx_inline.h>
 #include <dev/ic/aic79xx.h>
 
-#include <dev/microcode/aic7xxx/aicasm.h>
 #include <dev/microcode/aic7xxx/aicasm_insformat.h>
 
 /******************************** Globals *************************************/

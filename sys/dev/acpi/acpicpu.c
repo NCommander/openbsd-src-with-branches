@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.61 2014/09/14 14:17:24 jsg Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.62 2014/12/09 06:58:29 doug Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -25,7 +25,6 @@
 
 #include <machine/bus.h>
 #include <machine/cpu.h>
-#include <machine/cpufunc.h>
 #include <machine/specialreg.h>
 
 #include <dev/acpi/acpireg.h>

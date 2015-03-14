@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu.c,v 1.28 2014/03/29 18:09:28 guenther Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.29 2014/05/06 11:50:13 mpi Exp $	*/
 /*	$NetBSD: fpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*-
@@ -54,7 +54,6 @@
 #include <machine/fpu.h>
 #include <machine/lock.h>
 
-#include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 
 /*

@@ -1,4 +1,4 @@
-/* $OpenBSD: pckbd.c,v 1.38 2014/07/24 22:38:19 mpi Exp $ */
+/* $OpenBSD: pckbd.c,v 1.39 2015/03/12 20:28:26 deraadt Exp $ */
 /* $NetBSD: pckbd.c,v 1.24 2000/06/05 22:20:57 sommerfeld Exp $ */
 
 /*-
@@ -78,7 +78,6 @@
 
 #include <dev/ic/pckbcvar.h>
 #include <dev/pckbc/pckbdreg.h>
-#include <dev/pckbc/pckbdvar.h>
 #include <dev/pckbc/pmsreg.h>
 
 #include <dev/wscons/wsconsio.h>

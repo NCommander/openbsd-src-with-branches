@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_inode.c,v 1.54 2014/07/13 16:59:35 pelikan Exp $	*/
+/*	$OpenBSD: ext2fs_inode.c,v 1.55 2014/07/31 17:37:52 pelikan Exp $	*/
 /*	$NetBSD: ext2fs_inode.c,v 1.24 2001/06/19 12:59:18 wiz Exp $	*/
 
 /*
@@ -38,7 +38,6 @@
 #include <sys/systm.h>
 #include <sys/mount.h>
 #include <sys/proc.h>
-#include <sys/file.h>
 #include <sys/buf.h>
 #include <sys/vnode.h>
 #include <sys/kernel.h>

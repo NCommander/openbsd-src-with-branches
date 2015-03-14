@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.171 2015/02/10 21:56:09 miod Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.172 2015/02/17 22:34:59 tedu Exp $	*/
 
 /*
  * Copyright (c) 2011 Theo de Raadt.
@@ -112,7 +112,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/conf.h>
 #include <sys/disk.h>
 #include <sys/event.h>
 #include <sys/limits.h>

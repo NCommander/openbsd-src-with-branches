@@ -1,4 +1,4 @@
-/*	$OpenBSD: atw.c,v 1.85 2014/12/22 02:28:51 tedu Exp $	*/
+/*	$OpenBSD: atw.c,v 1.86 2015/02/10 23:25:46 mpi Exp $	*/
 /*	$NetBSD: atw.c,v 1.69 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -49,7 +49,6 @@
 #include <sys/endian.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #if NBPFILTER > 0

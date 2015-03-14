@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xe.c,v 1.45 2014/08/11 12:45:45 mpi Exp $	*/
+/*	$OpenBSD: if_xe.c,v 1.46 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist, Brandon Creighton, Job de Haas
@@ -57,7 +57,6 @@
 #include <sys/syslog.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 #include <net/if_types.h>
 

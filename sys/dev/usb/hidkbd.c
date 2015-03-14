@@ -1,4 +1,4 @@
-/*	$OpenBSD: hidkbd.c,v 1.12 2014/05/12 09:50:44 mpi Exp $	*/
+/*	$OpenBSD: hidkbd.c,v 1.13 2014/07/12 18:48:52 tedu Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -55,7 +55,6 @@
 #include <dev/wscons/wsksymvar.h>
 
 #include <dev/usb/hidkbdsc.h>
-#include <dev/usb/hidkbdvar.h>
 
 #ifdef HIDKBD_DEBUG
 #define DPRINTF(x)	do { if (hidkbddebug) printf x; } while (0)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: gem.c,v 1.109 2015/02/08 06:02:03 mpi Exp $	*/
+/*	$OpenBSD: gem.c,v 1.110 2015/02/09 03:09:57 dlg Exp $	*/
 /*	$NetBSD: gem.c,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -65,7 +65,6 @@
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
-#include <dev/mii/mii_bitbang.h>
 
 #include <dev/ic/gemreg.h>
 #include <dev/ic/gemvar.h>

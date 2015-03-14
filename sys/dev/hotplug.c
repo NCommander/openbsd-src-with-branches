@@ -1,4 +1,4 @@
-/*	$OpenBSD: hotplug.c,v 1.13 2015/02/10 21:56:09 miod Exp $	*/
+/*	$OpenBSD: hotplug.c,v 1.14 2015/02/10 21:58:16 miod Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -21,7 +21,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/conf.h>
 #include <sys/device.h>
 #include <sys/fcntl.h>
 #include <sys/hotplug.h>

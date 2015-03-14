@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.58 2014/12/08 10:46:14 mpi Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.59 2014/12/13 21:05:33 doug Exp $	*/
 
 /*
  * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
@@ -21,7 +21,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>

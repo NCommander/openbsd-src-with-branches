@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_output.c,v 1.92 2014/09/14 14:17:26 jsg Exp $	*/
+/*	$OpenBSD: ieee80211_output.c,v 1.93 2014/12/23 03:24:08 tedu Exp $	*/
 /*	$NetBSD: ieee80211_output.c,v 1.13 2004/05/31 11:02:55 dyoung Exp $	*/
 
 /*-
@@ -46,7 +46,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_arp.h>
 #include <net/if_llc.h>
 #include <net/bpf.h>
 

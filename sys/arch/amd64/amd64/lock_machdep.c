@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock_machdep.c,v 1.6 2014/07/10 12:14:48 mlarkin Exp $	*/
+/*	$OpenBSD: lock_machdep.c,v 1.7 2015/02/11 06:39:24 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
@@ -23,8 +23,6 @@
 #include <machine/atomic.h>
 #include <machine/lock.h>
 #include <machine/cpufunc.h>
-
-#include <ddb/db_output.h>
 
 void
 __mp_lock_init(struct __mp_lock *mpl)

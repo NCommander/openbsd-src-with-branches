@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bwi_pci.c,v 1.13 2013/11/14 12:10:05 dlg Exp $ */
+/*	$OpenBSD: if_bwi_pci.c,v 1.14 2013/12/06 21:03:04 deraadt Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -33,7 +33,6 @@
 #include <sys/device.h>
 
 #include <machine/bus.h>
-#include <machine/intr.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>

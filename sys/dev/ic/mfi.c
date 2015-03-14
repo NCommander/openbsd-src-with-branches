@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi.c,v 1.160 2015/02/08 12:17:31 yasuoka Exp $ */
+/* $OpenBSD: mfi.c,v 1.161 2015/03/08 04:33:44 dlg Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -21,7 +21,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
-#include <sys/ioctl.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>

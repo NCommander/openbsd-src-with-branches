@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4280.c,v 1.44 2013/12/06 21:03:03 deraadt Exp $	*/
+/*	$OpenBSD: cs4280.c,v 1.45 2014/07/12 18:48:51 tedu Exp $	*/
 /*	$NetBSD: cs4280.c,v 1.5 2000/06/26 04:56:23 simonb Exp $	*/
 
 /*
@@ -78,7 +78,6 @@ int cs4280debug = 0;
 
 #include <sys/audioio.h>
 #include <dev/audio_if.h>
-#include <dev/midi_if.h>
 #include <dev/mulaw.h>
 #include <dev/auconv.h>
 

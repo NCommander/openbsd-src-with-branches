@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivout.c,v 1.9 2011/05/23 11:58:03 pirofti Exp $	*/
+/*	$OpenBSD: acpivout.c,v 1.10 2014/12/09 06:58:29 doug Exp $	*/
 /*
  * Copyright (c) 2009 Paul Irofti <pirofti@openbsd.org>
  *
@@ -22,7 +22,6 @@
 
 #include <machine/bus.h>
 
-#include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
 #include <dev/acpi/acpidev.h>
 #include <dev/acpi/amltypes.h>

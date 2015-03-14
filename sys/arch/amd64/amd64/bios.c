@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.29 2014/11/16 12:30:56 deraadt Exp $	*/
+/*	$OpenBSD: bios.c,v 1.30 2014/12/15 01:53:45 tedu Exp $	*/
 /*
  * Copyright (c) 2006 Gordon Willem Klok <gklok@cogeco.ca>
  *
@@ -34,7 +34,6 @@
 #include <amd64/include/isa_machdep.h>
 #include <dev/pci/pcivar.h>
 
-#include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
 
 #include <dev/rndvar.h>

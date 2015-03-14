@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vio.c,v 1.23 2015/02/09 00:27:58 pelikan Exp $	*/
+/*	$OpenBSD: if_vio.c,v 1.24 2015/02/09 03:09:57 dlg Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch, Alexander Fiveg.
@@ -37,7 +37,6 @@
 #include <sys/sockio.h>
 #include <sys/timeout.h>
 
-#include <dev/pci/pcidevs.h>
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
 #include <dev/pci/virtioreg.h>

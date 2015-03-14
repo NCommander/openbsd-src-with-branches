@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl80x9.c,v 1.8 2008/06/26 05:42:16 ray Exp $	*/
+/*	$OpenBSD: rtl80x9.c,v 1.9 2014/12/22 02:28:51 tedu Exp $	*/
 /*	$NetBSD: rtl80x9.c,v 1.1 1998/10/31 00:44:33 thorpej Exp $	*/
 
 /*-
@@ -51,7 +51,6 @@
 #include <dev/ic/dp8390reg.h>
 #include <dev/ic/dp8390var.h>
 
-#include <dev/ic/ne2000reg.h>
 #include <dev/ic/ne2000var.h>
 
 #include <dev/ic/rtl80x9reg.h>

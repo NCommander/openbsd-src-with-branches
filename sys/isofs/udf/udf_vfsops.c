@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vfsops.c,v 1.43 2014/11/18 10:42:15 dlg Exp $	*/
+/*	$OpenBSD: udf_vfsops.c,v 1.44 2014/12/16 18:30:03 tedu Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -51,7 +51,6 @@
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/buf.h>
-#include <sys/conf.h>
 #include <sys/dirent.h>
 #include <sys/fcntl.h>
 #include <sys/kernel.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: wbsio.c,v 1.8 2012/07/01 02:15:09 lteo Exp $	*/
+/*	$OpenBSD: wbsio.c,v 1.9 2015/01/02 23:02:54 chris Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -26,7 +26,6 @@
 
 #include <machine/bus.h>
 
-#include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 #include <dev/isa/wbsioreg.h>
 

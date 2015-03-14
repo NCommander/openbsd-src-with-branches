@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock_subr.c,v 1.3 2013/07/02 01:58:42 guenther Exp $	*/
+/*	$OpenBSD: clock_subr.c,v 1.4 2014/04/03 22:19:27 tedu Exp $	*/
 /*	$NetBSD: clock_subr.c,v 1.3 1997/03/15 18:11:16 is Exp $	*/
 
 /*
@@ -47,8 +47,6 @@
 
 #include <sys/types.h>
 #include <sys/systm.h>
-
-#include <dev/clock_subr.h>
 
 static inline int leapyear(int year);
 #define FEBRUARY	2

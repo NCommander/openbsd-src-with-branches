@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.65 2014/12/19 22:44:59 guenther Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.66 2014/12/22 02:28:52 tedu Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -29,7 +29,6 @@
 #include <sys/device.h>
 #include <sys/endian.h>
 
-#include <machine/bus.h>
 #include <machine/intr.h>
 
 #if NBPFILTER > 0

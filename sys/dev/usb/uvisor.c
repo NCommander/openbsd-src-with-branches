@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvisor.c,v 1.48 2013/11/15 08:25:31 pirofti Exp $	*/
+/*	$OpenBSD: uvisor.c,v 1.49 2014/07/12 21:24:33 mpi Exp $	*/
 /*	$NetBSD: uvisor.c,v 1.21 2003/08/03 21:59:26 nathanw Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
 #include <sys/tty.h>
 
 #include <dev/usb/usb.h>
-#include <dev/usb/usbhid.h>
 
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdi_util.h>

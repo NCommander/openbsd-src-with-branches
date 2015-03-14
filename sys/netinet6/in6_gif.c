@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_gif.c,v 1.35 2014/12/19 17:14:40 tedu Exp $	*/
+/*	$OpenBSD: in6_gif.c,v 1.36 2015/01/24 00:29:06 deraadt Exp $	*/
 /*	$KAME: in6_gif.c,v 1.43 2001/01/22 07:27:17 itojun Exp $	*/
 
 /*
@@ -50,8 +50,6 @@
 #if NPF > 0
 #include <net/pfvar.h>
 #endif
-
-#include <netinet/ip.h>
 
 #include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>

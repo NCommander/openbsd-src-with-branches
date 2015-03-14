@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsfont.c,v 1.38 2014/12/13 21:05:33 doug Exp $ */
+/*	$OpenBSD: wsfont.c,v 1.39 2015/01/11 13:00:05 deraadt Exp $ */
 /*	$NetBSD: wsfont.c,v 1.17 2001/02/07 13:59:24 ad Exp $	*/
 
 /*-
@@ -37,7 +37,6 @@
 #include <sys/malloc.h>
 #include <sys/queue.h>
 
-#include <dev/wscons/wsdisplayvar.h>
 #include <dev/wscons/wsconsio.h>
 #include <dev/wsfont/wsfont.h>
 

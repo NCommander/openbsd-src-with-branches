@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskmap.c,v 1.8 2014/07/12 18:48:17 tedu Exp $	*/
+/*	$OpenBSD: diskmap.c,v 1.9 2014/12/16 18:30:03 tedu Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Joel Sing <jsing@openbsd.org>
@@ -25,7 +25,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/errno.h>
-#include <sys/buf.h>
 #include <sys/conf.h>
 #include <sys/dkio.h>
 #include <sys/disk.h>

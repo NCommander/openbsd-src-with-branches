@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_jme.c,v 1.36 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: if_jme.c,v 1.37 2014/12/22 02:28:52 tedu Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -60,7 +60,6 @@
 #include <net/bpf.h>
 #endif
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 #include <dev/mii/jmphyreg.h>
 

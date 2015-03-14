@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_pcmcia.c,v 1.53 2011/07/03 15:47:17 matthew Exp $	*/
+/*	$OpenBSD: com_pcmcia.c,v 1.54 2014/09/14 14:17:25 jsg Exp $	*/
 /*	$NetBSD: com_pcmcia.c,v 1.15 1998/08/22 17:47:58 msaitoh Exp $	*/
 
 /*
@@ -102,7 +102,6 @@
 #include <sys/device.h>
 
 #include <machine/intr.h>
-#include <machine/bus.h>
 
 #include <dev/pcmcia/pcmciavar.h>
 #include <dev/pcmcia/pcmciareg.h>

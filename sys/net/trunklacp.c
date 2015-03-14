@@ -1,4 +1,4 @@
-/*	$OpenBSD: trunklacp.c,v 1.17 2014/11/23 07:39:02 deraadt Exp $ */
+/*	$OpenBSD: trunklacp.c,v 1.18 2014/12/04 00:01:53 tedu Exp $ */
 /*	$NetBSD: ieee8023ad_lacp.c,v 1.3 2005/12/11 12:24:54 christos Exp $ */
 /*	$FreeBSD:ieee8023ad_lacp.c,v 1.15 2008/03/16 19:25:30 thompsa Exp $ */
 
@@ -44,7 +44,6 @@
 #include <crypto/siphash.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/ethertypes.h>
 #include <net/if_media.h>
 #include <net/if_types.h>

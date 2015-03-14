@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet_ntop.c,v 1.1 2013/11/11 09:15:34 mpi Exp $	*/
+/*	$OpenBSD: inet_ntop.c,v 1.2 2014/05/20 09:16:43 mpi Exp $	*/
 
 /* Copyright (c) 1996 by Internet Software Consortium.
  *
@@ -20,7 +20,6 @@
 #include <sys/systm.h>
 #include <sys/socket.h>
 
-#include <net/if.h>
 #include <netinet/in.h>
 
 #define IN6ADDRSZ	16

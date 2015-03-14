@@ -1,4 +1,4 @@
-/*	$OpenBSD: uaudio.c,v 1.108 2014/12/13 21:05:33 doug Exp $ */
+/*	$OpenBSD: uaudio.c,v 1.109 2015/01/12 07:12:58 deraadt Exp $ */
 /*	$NetBSD: uaudio.c,v 1.90 2004/10/29 17:12:53 kent Exp $	*/
 
 /*
@@ -53,7 +53,6 @@
 #include <sys/audioio.h>
 #include <dev/audio_if.h>
 #include <dev/mulaw.h>
-#include <dev/auconv.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdevs.h>

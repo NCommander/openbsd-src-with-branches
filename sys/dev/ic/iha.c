@@ -1,4 +1,4 @@
-/*	$OpenBSD: iha.c,v 1.41 2012/01/11 16:22:33 dhill Exp $ */
+/*	$OpenBSD: iha.c,v 1.42 2012/02/04 21:44:54 krw Exp $ */
 /*-------------------------------------------------------------------------
  *
  * Device driver for the INI-9XXXU/UW or INIC-940/950  PCI SCSI Controller.
@@ -34,7 +34,6 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/buf.h>
 #include <sys/device.h>
 

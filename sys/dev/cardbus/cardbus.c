@@ -1,4 +1,4 @@
-/*	$OpenBSD: cardbus.c,v 1.48 2014/09/14 14:17:24 jsg Exp $	*/
+/*	$OpenBSD: cardbus.c,v 1.49 2014/12/18 10:51:35 mpi Exp $	*/
 /*	$NetBSD: cardbus.c,v 1.24 2000/04/02 19:11:37 mycroft Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
-#include <sys/syslog.h>
 
 #include <machine/bus.h>
 

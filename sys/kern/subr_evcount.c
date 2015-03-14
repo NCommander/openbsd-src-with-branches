@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_evcount.c,v 1.10 2010/09/20 06:33:46 matthew Exp $ */
+/*	$OpenBSD: subr_evcount.c,v 1.11 2014/09/14 14:17:25 jsg Exp $ */
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
  * Copyright (c) 2004 Aaron Campbell <aaron@openbsd.org>
@@ -28,7 +28,6 @@
 #include <sys/param.h>
 #include <sys/evcount.h>
 #include <sys/timeout.h>
-#include <sys/kernel.h>
 #include <sys/systm.h>
 #include <sys/sysctl.h>
 

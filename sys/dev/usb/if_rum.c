@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rum.c,v 1.108 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_rum.c,v 1.109 2015/02/10 23:25:46 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2005-2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -35,7 +35,6 @@
 #include <sys/device.h>
 #include <sys/endian.h>
 
-#include <machine/bus.h>
 #include <machine/intr.h>
 
 #if NBPFILTER > 0

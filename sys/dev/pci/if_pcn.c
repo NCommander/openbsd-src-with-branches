@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pcn.c,v 1.34 2015/02/08 06:55:28 mpi Exp $	*/
+/*	$OpenBSD: if_pcn.c,v 1.35 2015/02/09 03:09:57 dlg Exp $	*/
 /*	$NetBSD: if_pcn.c,v 1.26 2005/05/07 09:15:44 is Exp $	*/
 
 /*
@@ -95,7 +95,6 @@
 #include <machine/bus.h>
 #include <machine/intr.h>
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/ic/am79900reg.h>

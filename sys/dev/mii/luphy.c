@@ -1,4 +1,4 @@
-/*	$OpenBSD: luphy.c,v 1.4 2013/12/28 03:30:41 deraadt Exp $	*/
+/*	$OpenBSD: luphy.c,v 1.5 2014/12/05 15:50:04 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2004 Marius Strobl
@@ -43,7 +43,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/socket.h>
 

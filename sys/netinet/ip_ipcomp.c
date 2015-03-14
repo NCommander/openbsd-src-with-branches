@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_ipcomp.c,v 1.38 2014/12/05 15:50:04 mpi Exp $ */
+/* $OpenBSD: ip_ipcomp.c,v 1.39 2014/12/19 17:14:40 tedu Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -53,8 +53,6 @@
 
 #include <crypto/cryptodev.h>
 #include <crypto/xform.h>
-
-#include <lib/libz/zlib.h>
 
 #include "bpfilter.h"
 

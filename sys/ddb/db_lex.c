@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_lex.c,v 1.10 2014/07/08 13:02:57 deraadt Exp $	*/
+/*	$OpenBSD: db_lex.c,v 1.11 2014/09/14 14:17:24 jsg Exp $	*/
 /*	$NetBSD: db_lex.c,v 1.8 1996/02/05 01:57:05 christos Exp $	*/
 
 /* 
@@ -41,7 +41,6 @@
 #include <ddb/db_lex.h>
 #include <ddb/db_output.h>
 #include <ddb/db_command.h>
-#include <ddb/db_sym.h>
 #include <ddb/db_extern.h>
 #include <ddb/db_var.h>
 

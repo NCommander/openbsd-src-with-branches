@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_age.c,v 1.24 2014/11/18 02:37:30 tedu Exp $	*/
+/*	$OpenBSD: if_age.c,v 1.25 2014/12/22 02:28:51 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
@@ -53,7 +53,6 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
-#include <net/if_types.h>
 #include <net/if_vlan_var.h>
 
 #if NBPFILTER > 0

@@ -1,4 +1,4 @@
-/*	$OpenBSD: moscom.c,v 1.20 2014/07/12 21:24:33 mpi Exp $	*/
+/*	$OpenBSD: moscom.c,v 1.21 2014/11/18 23:55:01 krw Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -19,7 +19,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/conf.h>
 #include <sys/tty.h>
 #include <sys/device.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.c,v 1.32 2014/10/09 04:04:46 tedu Exp $	*/
+/*	$OpenBSD: midi.c,v 1.33 2015/02/10 21:56:09 miod Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexandre Ratchov
@@ -20,7 +20,6 @@
 #include <sys/fcntl.h>
 #include <sys/systm.h>
 #include <sys/ioctl.h>
-#include <sys/exec.h>
 #include <sys/conf.h>
 #include <sys/poll.h>
 #include <sys/kernel.h>

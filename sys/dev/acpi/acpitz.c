@@ -1,4 +1,4 @@
-/* $OpenBSD: acpitz.c,v 1.46 2014/07/11 08:18:31 guenther Exp $ */
+/* $OpenBSD: acpitz.c,v 1.47 2014/07/12 02:44:49 mlarkin Exp $ */
 /*
  * Copyright (c) 2006 Can Erkin Acar <canacar@openbsd.org>
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
@@ -27,7 +27,6 @@
 
 #include <machine/bus.h>
 
-#include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
 #include <dev/acpi/acpidev.h>
 #include <dev/acpi/amltypes.h>

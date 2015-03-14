@@ -1,4 +1,4 @@
-/* $OpenBSD: acpiutil.c,v 1.6 2009/12/05 02:38:11 jordan Exp $ */
+/* $OpenBSD: acpiutil.c,v 1.7 2010/07/13 21:10:50 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -19,7 +19,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 
-#include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
 
 u_int

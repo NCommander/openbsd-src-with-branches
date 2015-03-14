@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioscsi.c,v 1.1 2013/12/20 21:50:49 matthew Exp $	*/
+/*	$OpenBSD: vioscsi.c,v 1.2 2013/12/22 10:49:40 sf Exp $	*/
 /*
  * Copyright (c) 2013 Google Inc.
  *
@@ -23,7 +23,6 @@
 #include <machine/bus.h>
 #include <machine/intr.h>
 
-#include <dev/pci/pcidevs.h>
 #include <dev/pci/vioscsireg.h>
 #include <dev/pci/virtiovar.h>
 

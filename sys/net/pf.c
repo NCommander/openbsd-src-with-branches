@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.905 2015/02/12 01:24:10 henning Exp $ */
+/*	$OpenBSD: pf.c,v 1.906 2015/02/14 23:32:41 sthen Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -57,7 +57,6 @@
 
 #include <net/if.h>
 #include <net/if_types.h>
-#include <net/bpf.h>
 #include <net/route.h>
 #include <net/radix_mpath.h>
 

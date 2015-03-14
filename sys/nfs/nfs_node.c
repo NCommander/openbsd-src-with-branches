@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.59 2014/12/16 18:30:04 tedu Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.61 2014/12/23 07:54:13 tedu Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -51,7 +51,6 @@
 
 #include <nfs/rpcv2.h>
 #include <nfs/nfsproto.h>
-#include <nfs/nfs.h>
 #include <nfs/nfsnode.h>
 #include <nfs/nfsmount.h>
 #include <nfs/nfs_var.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoakv.c,v 1.8 2014/05/07 08:17:21 mpi Exp $   */
+/*	$OpenBSD: uoakv.c,v 1.9 2014/07/12 18:48:52 tedu Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -30,7 +30,6 @@
 #include <dev/usb/usb.h>
 #include <dev/usb/usbhid.h>
 #include <dev/usb/usbdi.h>
-#include <dev/usb/usbdi_util.h>
 #include <dev/usb/usbdevs.h>
 #include <dev/usb/uhidev.h>
 #include <dev/usb/hid.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_run.c,v 1.23 2014/07/08 13:02:57 deraadt Exp $	*/
+/*	$OpenBSD: db_run.c,v 1.24 2014/09/14 14:17:24 jsg Exp $	*/
 /*	$NetBSD: db_run.c,v 1.8 1996/02/05 01:57:12 christos Exp $	*/
 
 /* 
@@ -51,7 +51,6 @@ int		db_inst_count;
 
 #ifndef KGDB
 
-#include <ddb/db_lex.h>
 #include <ddb/db_watch.h>
 #include <ddb/db_output.h>
 #include <ddb/db_sym.h>

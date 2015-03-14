@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urtwn.c,v 1.41 2015/02/07 21:21:44 mpi Exp $	*/
+/*	$OpenBSD: if_urtwn.c,v 1.42 2015/02/10 23:25:46 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -33,7 +33,6 @@
 #include <sys/device.h>
 #include <sys/endian.h>
 
-#include <machine/bus.h>
 #include <machine/intr.h>
 
 #if NBPFILTER > 0

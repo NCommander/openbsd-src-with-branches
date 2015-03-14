@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_input.c,v 1.12 2014/07/08 13:02:57 deraadt Exp $	*/
+/*	$OpenBSD: db_input.c,v 1.13 2014/09/14 14:17:24 jsg Exp $	*/
 /*	$NetBSD: db_input.c,v 1.7 1996/02/05 01:57:02 christos Exp $	*/
 
 /* 
@@ -37,7 +37,6 @@
 
 #include <ddb/db_var.h>
 #include <ddb/db_output.h>
-#include <ddb/db_command.h>
 #include <ddb/db_sym.h>
 #include <ddb/db_extern.h>
 
