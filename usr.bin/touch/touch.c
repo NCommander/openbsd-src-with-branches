@@ -1,4 +1,4 @@
-/*	$OpenBSD: touch.c,v 1.20 2011/08/30 02:07:11 guenther Exp $	*/
+/*	$OpenBSD: touch.c,v 1.21 2011/08/31 08:48:40 jmc Exp $	*/
 /*	$NetBSD: touch.c,v 1.11 1995/08/31 22:10:06 jtc Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
 #include <string.h>
 #include <locale.h>
 #include <time.h>
-#include <tzfile.h>
 #include <unistd.h>
 
 void		stime_arg1(char *, struct timespec *);

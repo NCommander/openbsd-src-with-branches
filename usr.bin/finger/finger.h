@@ -1,4 +1,4 @@
-/*	$OpenBSD: finger.h,v 1.6 2004/03/15 02:50:29 tedu Exp $ */
+/*	$OpenBSD: finger.h,v 1.7 2015/01/19 15:30:52 krw Exp $ */
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -37,6 +37,9 @@
 #include <utmp.h>
 
 #define _PATH_MAILSPOOL "/var/mail"
+
+#define	SECSPERDAY	(24 * 60 * 60)
+#define	SIXMONTHS	(SECSPERDAY * 365 / 2)
 
 /*
  * All unique persons are linked in a list headed by "head" and linkd

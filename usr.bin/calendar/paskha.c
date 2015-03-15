@@ -1,4 +1,4 @@
-/*	$OpenBSD: paskha.c,v 1.5 2005/11/16 16:45:11 deraadt Exp $	*/
+/*	$OpenBSD: paskha.c,v 1.6 2009/10/27 23:59:36 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1993-1996 by Andrey A. Chernov, Moscow, Russia.
@@ -27,7 +27,6 @@
  */
 
 #include <stdio.h>
-#include <tzfile.h>
 
 #include "calendar.h"
 

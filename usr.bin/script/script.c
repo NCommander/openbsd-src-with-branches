@@ -1,4 +1,4 @@
-/*	$OpenBSD: script.c,v 1.24 2005/12/12 20:10:53 deraadt Exp $	*/
+/*	$OpenBSD: script.c,v 1.25 2009/10/27 23:59:43 deraadt Exp $	*/
 /*	$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $	*/
 
 /*
@@ -69,7 +69,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h>
-#include <tzfile.h>
 #include <unistd.h>
 
 #include <util.h>
@@ -242,7 +241,7 @@ dooutput(void)
 	sa.sa_handler = scriptflush;
 	(void)sigaction(SIGALRM, &sa, NULL);
 
-	value.it_interval.tv_sec = SECSPERMIN / 2;
+	value.it_interval.tv_sec = 30;
 	value.it_interval.tv_usec = 0;
 	value.it_value = value.it_interval;
 	(void)setitimer(ITIMER_REAL, &value, NULL);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.7 2004/09/14 22:24:24 deraadt Exp $	*/
+/*	$OpenBSD: extern.h,v 1.8 2011/04/10 03:20:59 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -37,3 +37,6 @@ void	fmt_putc(int, int *);
 void	pr_attime(time_t *, time_t *);
 void	pr_idle(time_t);
 int	proc_compare(const struct kinfo_proc *, const struct kinfo_proc *);
+
+#define SECSPERHOUR	(60 * 60)
+#define SECSPERDAY	(24 * 60 * 60)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cal.c,v 1.25 2009/10/27 23:59:36 deraadt Exp $	*/
+/*	$OpenBSD: cal.c,v 1.26 2013/11/20 21:33:17 deraadt Exp $	*/
 /*	$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <tzfile.h>
 #include <unistd.h>
 
 #define	THURSDAY		4		/* for reformation */

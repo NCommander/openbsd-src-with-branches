@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpcmd.y,v 1.56 2014/02/08 13:31:51 millert Exp $	*/
+/*	$OpenBSD: ftpcmd.y,v 1.57 2015/01/16 06:39:50 deraadt Exp $	*/
 /*	$NetBSD: ftpcmd.y,v 1.7 1996/04/08 19:03:11 jtc Exp $	*/
 
 /*
@@ -51,7 +51,6 @@
 #include <glob.h>
 #include <pwd.h>
 #include <signal.h>
-#include <tzfile.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: day.c,v 1.26 2013/11/12 19:35:47 deraadt Exp $	*/
+/*	$OpenBSD: day.c,v 1.27 2013/11/26 13:18:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -39,7 +39,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <tzfile.h>
 
 #include "pathnames.h"
 #include "calendar.h"

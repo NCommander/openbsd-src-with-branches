@@ -1,4 +1,4 @@
-/*	$OpenBSD: parsetime.c,v 1.19 2013/11/25 18:02:50 deraadt Exp $	*/
+/*	$OpenBSD: parsetime.c,v 1.20 2014/01/13 23:18:57 millert Exp $	*/
 
 /*
  * parsetime.c - parse time for at(1)
@@ -42,7 +42,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <tzfile.h>
 #include <unistd.h>
 
 #include "globals.h"
