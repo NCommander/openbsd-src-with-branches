@@ -1,4 +1,4 @@
-/*	$OpenBSD: file_subs.c,v 1.43 2015/02/15 22:18:29 millert Exp $	*/
+/*	$OpenBSD: file_subs.c,v 1.45 2015/03/09 04:23:29 guenther Exp $	*/
 /*	$NetBSD: file_subs.c,v 1.4 1995/03/21 09:07:18 cgd Exp $	*/
 
 /*-
@@ -82,7 +82,7 @@ file_creat(ARCHD *arcn)
 	 * first with lstat.
 	 */
 	file_mode = arcn->sb.st_mode & FILEBITS;
-	if ((fd = open(arcn->name, O_WRONLY | O_CREAT | O_TRUNC | O_EXCL,
+	if ((fd = open(arcn->name, O_WRONLY | O_CREAT | O_EXCL,
 	    file_mode)) >= 0)
 		return(fd);
 
