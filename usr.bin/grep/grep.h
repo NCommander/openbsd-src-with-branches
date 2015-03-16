@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.h,v 1.20 2014/12/01 06:36:04 deraadt Exp $	*/
+/*	$OpenBSD: grep.h,v 1.21 2015/01/10 13:48:02 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -27,9 +27,10 @@
  */
 
 #include <sys/types.h>
-#include <sys/limits.h>
 
+#include <limits.h>
 #include <regex.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <zlib.h>
 
