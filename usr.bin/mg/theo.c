@@ -1,4 +1,4 @@
-/*	$OpenBSD: theo.c,v 1.142 2014/10/15 18:20:06 tedu Exp $	*/
+/*	$OpenBSD: theo.c,v 1.143 2014/11/19 21:22:47 schwarze Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved.
@@ -201,12 +201,12 @@ theo_analyze(int f, int n)
 	str = talk[arc4random_uniform(ntalk)];
 	len = strlen(str);
 
-	newline(FFRAND, 2);
+	enewline(FFRAND, 2);
 
 	while (len--)
 		linsert(1, *str++);
 
-	newline(FFRAND, 2);
+	enewline(FFRAND, 2);
 
 	return (TRUE);
 }
