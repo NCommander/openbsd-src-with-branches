@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.c,v 1.48 2014/12/01 06:36:04 deraadt Exp $	*/
+/*	$OpenBSD: grep.c,v 1.49 2015/01/10 13:48:02 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -27,7 +27,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/limits.h>
 #include <sys/stat.h>
 #include <sys/queue.h>
 
