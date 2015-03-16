@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.140 2014/03/22 11:05:37 lum Exp $	*/
+/*	$OpenBSD: def.h,v 1.141 2014/04/03 20:17:12 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -510,7 +510,7 @@ int		 showcpos(int, int);
 int		 getcolpos(struct mgwin *);
 int		 twiddle(int, int);
 int		 openline(int, int);
-int		 newline(int, int);
+int		 enewline(int, int);
 int		 deblank(int, int);
 int		 justone(int, int);
 int		 delwhite(int, int);

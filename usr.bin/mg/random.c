@@ -1,4 +1,4 @@
-/*	$OpenBSD: random.c,v 1.32 2013/03/25 11:41:44 florian Exp $	*/
+/*	$OpenBSD: random.c,v 1.33 2014/03/26 22:02:06 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -189,7 +189,7 @@ openline(int f, int n)
  */
 /* ARGSUSED */
 int
-newline(int f, int n)
+enewline(int f, int n)
 {
 	int	 s;
 

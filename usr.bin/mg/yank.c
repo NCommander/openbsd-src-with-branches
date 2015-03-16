@@ -1,4 +1,4 @@
-/*	$OpenBSD: yank.c,v 1.10 2011/07/15 16:50:52 deraadt Exp $	*/
+/*	$OpenBSD: yank.c,v 1.11 2014/03/20 07:47:29 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -239,7 +239,7 @@ yank(int f, int n)
 		i = 0;
 		while ((c = kremove(i)) >= 0) {
 			if (c == '\n') {
-				if (newline(FFRAND, 1) == FALSE)
+				if (enewline(FFRAND, 1) == FALSE)
 					return (FALSE);
 				++nline;
 			} else {
