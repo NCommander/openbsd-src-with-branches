@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.31 2014/11/16 00:47:35 guenther Exp $	*/
+/*	$OpenBSD: tty.c,v 1.32 2014/11/16 00:50:00 guenther Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -152,9 +152,7 @@ ttreinit(void)
 void
 tttidy(void)
 {
-#ifdef	XKEYS
 	ttykeymaptidy();
-#endif /* XKEYS */
 
 	/* set the term back to normal mode */
 	if (exit_ca_mode)
