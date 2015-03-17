@@ -1,8 +1,8 @@
 /*	$OpenBSD$	*/
 
 /*-
- * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
  * Copyright (C) 2012 Oleg Moskalenko <mom040267@gmail.com>
+ * Copyright (C) 2012 Gabor Kovesdan <gabor@FreeBSD.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,83 +27,11 @@
  * SUCH DAMAGE.
  */
 
-#if !defined(__BSD_SORT_H__)
-#define	__BSD_SORT_H__
+#ifndef _VSORT_H_
+#define	_VSORT_H_
 
-#include <errno.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <sysexits.h>
-#include <wchar.h>
+#include "bwstring.h"
 
-#include <sys/types.h>
-#include <md5.h>
+int vcmp(struct bwstring *s1, struct bwstring *s2);
 
-#define	VERSION	"2.3-OpenBSD"
-
-/*
- * If true, we output some debug information.
- */
-extern bool debug_sort;
-
-/*
- * MD5 context for random hash function
- */
-extern MD5_CTX md5_ctx;
-
-/*
- * sort.c
- */
-
-/*
- * This structure holds main sort options which are NOT affecting the sort ordering.
- */
-struct sort_opts {
-	wint_t		field_sep;
-	int		sort_method;
-	bool		cflag;
-	bool		csilentflag;
-	bool		kflag;
-	bool		mflag;
-	bool		sflag;
-	bool		uflag;
-	bool		zflag;
-	bool		tflag;
-	bool		complex_sort;
-};
-
-/*
- * Key value structure forward declaration
- */
-struct key_value;
-
-/*
- * Cmp function
- */
-typedef int (*cmpcoll_t)(struct key_value *kv1, struct key_value *kv2, size_t offset);
-
-/*
- * This structure holds "sort modifiers" - options which are affecting the sort ordering.
- */
-struct sort_mods {
-	cmpcoll_t	func;
-	bool		bflag;
-	bool		dflag;
-	bool		fflag;
-	bool		gflag;
-	bool		iflag;
-	bool		Mflag;
-	bool		nflag;
-	bool		rflag;
-	bool		Rflag;
-	bool		Vflag;
-	bool		hflag;
-};
-
-extern bool need_hint;
-
-extern struct sort_opts sort_opts_vals;
-
-extern struct sort_mods * const default_sort_mods;
-
-#endif /* __BSD_SORT_H__ */
+#endif
