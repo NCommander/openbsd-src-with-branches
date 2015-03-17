@@ -1,4 +1,4 @@
-/*	$OpenBSD: tables.c,v 1.43 2015/02/15 22:18:29 millert Exp $	*/
+/*	$OpenBSD: tables.c,v 1.45 2015/03/09 04:23:29 guenther Exp $	*/
 /*	$NetBSD: tables.c,v 1.4 1995/03/21 09:07:45 cgd Exp $	*/
 
 /*-
@@ -223,7 +223,7 @@ purg_lnk(ARCHD *arcn)
 	 * do not bother to look if it could not be in the database
 	 */
 	if ((arcn->sb.st_nlink <= 1) || (arcn->type == PAX_DIR) ||
-	    (arcn->type == PAX_HLK) || (arcn->type == PAX_HRG))
+	    PAX_IS_HARDLINK(arcn->type))
 		return;
 
 	/*
