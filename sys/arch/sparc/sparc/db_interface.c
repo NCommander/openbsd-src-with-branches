@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.13 2010/06/29 21:28:11 miod Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.14 2014/07/13 12:11:01 jasper Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.18 1997/09/01 00:16:31 pk Exp $ */
 
 /*
@@ -89,7 +89,7 @@ db_write_bytes(addr, size, data)
 
 	dst = (char *)addr;
 	while (size-- > 0) {
-		if (dst >= (char *)VM_MIN_KERNEL_ADDRESS && dst < __data_start)
+		if (dst >= (char *)KERNBASE && dst < __data_start)
 			pmap_writetext(dst, *data);
 		else
 			*dst = *data;
