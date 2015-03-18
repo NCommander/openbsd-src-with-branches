@@ -1,4 +1,4 @@
-/*	$OpenBSD: opendir.c,v 1.26 2013/11/06 20:35:25 schwarze Exp $ */
+/*	$OpenBSD: opendir.c,v 1.27 2014/03/10 07:54:14 schwarze Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -104,7 +104,7 @@ __fdopendir(int fd)
 		return (NULL);
 
 	pageoffset = getpagesize() - 1;
-	dirp->dd_len = ((int)sb.st_blksize + pageoffset) & ~pageoffset;
+	dirp->dd_len = ((int)sb.st_blksize * 4 + pageoffset) & ~pageoffset;
 	dirp->dd_buf = malloc((size_t)dirp->dd_len);
 	if (dirp->dd_buf == NULL) {
 		free(dirp);
