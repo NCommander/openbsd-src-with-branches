@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.38 2013/11/28 10:33:37 sobrado Exp $	*/
+/*	$OpenBSD: misc.c,v 1.39 2015/01/16 06:39:32 deraadt Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -1053,10 +1053,7 @@ strip_nuls(char *buf, int nbytes)
 {
 	char *dst;
 
-	/* nbytes check because some systems (older freebsd's) have a buggy
-	 * memchr()
-	 */
-	if (nbytes && (dst = memchr(buf, '\0', nbytes))) {
+	if ((dst = memchr(buf, '\0', nbytes))) {
 		char *end = buf + nbytes;
 		char *p, *q;
 
