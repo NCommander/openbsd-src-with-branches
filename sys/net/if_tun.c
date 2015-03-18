@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.132 2015/02/10 21:56:10 miod Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.133 2015/03/14 03:38:51 jsg Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -906,8 +906,7 @@ tunwrite(dev_t dev, struct uio *uio, int ioflag)
 		splx(s);
 		ifp->if_collisions++;
 		m_freem(top);
-		if (!ifq->ifq_congestion)
-			if_congestion(ifq);
+		if_congestion();
 		return (ENOBUFS);
 	}
 	IF_ENQUEUE(ifq, top);

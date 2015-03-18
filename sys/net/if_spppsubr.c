@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.129 2014/12/19 17:14:39 tedu Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.130 2015/01/27 03:17:36 dlg Exp $	*/
 /*
  * Synchronous PPP/Cisco link level subroutines.
  * Keepalive protocol implemented in both Cisco and PPP modes.
@@ -614,8 +614,7 @@ sppp_input(struct ifnet *ifp, struct mbuf *m)
 		if (debug)
 			log(LOG_DEBUG, SPP_FMT "protocol queue overflow\n",
 				SPP_ARGS(ifp));
-		if (!inq->ifq_congestion)
-			if_congestion(inq);
+		if_congestion();
 		goto drop;
 	}
 	IF_ENQUEUE(inq, m);
