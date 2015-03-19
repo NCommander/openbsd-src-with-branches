@@ -1,10 +1,16 @@
-/*	$OpenBSD: funmap.c,v 1.47 2013/05/31 18:03:44 lum Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.48 2015/03/16 13:47:48 bcallah Exp $	*/
 
 /* This file is in the public domain */
 
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "def.h"
-#include "kbd.h"
 #include "funmap.h"
+#include "kbd.h"
 
 /*
  * If the function is NULL, it must be listed with the

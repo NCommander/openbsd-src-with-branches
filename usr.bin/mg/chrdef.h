@@ -1,4 +1,4 @@
-/*	$OpenBSD: chrdef.h,v 1.7 2005/06/14 18:14:40 kjell Exp $	*/
+/*	$OpenBSD: chrdef.h,v 1.8 2015/03/17 18:08:52 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -9,8 +9,7 @@
 
 /*
  * Casting should be at least as efficient as anding with 0xff,
- * and won't have the size problems.  Override in sysdef.h if no
- * unsigned char type.
+ * and won't have the size problems.
  */
 #define	CHARMASK(c)	((unsigned char) (c))
 

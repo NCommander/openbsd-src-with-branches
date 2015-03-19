@@ -1,4 +1,4 @@
-/*	$OpenBSD: modes.c,v 1.18 2008/06/14 08:46:30 kjell Exp $	*/
+/*	$OpenBSD: modes.c,v 1.19 2014/03/20 07:47:29 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -7,6 +7,11 @@
  * toggle the given mode.  A negative or zero argument will turn the mode
  * off.  A positive argument will turn the mode on.
  */
+
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "def.h"
 #include "kbd.h"

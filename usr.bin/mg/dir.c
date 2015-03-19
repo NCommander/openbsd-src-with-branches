@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.26 2014/03/31 18:00:58 lum Exp $	*/
+/*	$OpenBSD: dir.c,v 1.27 2014/04/03 20:17:12 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -9,7 +9,12 @@
  *		Modified for MG 2a by Mic Kaczmarczik 03-Aug-1987
  */
 
+#include <sys/queue.h>
 #include <sys/stat.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "def.h"
 

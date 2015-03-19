@@ -1,4 +1,4 @@
-/*	$OpenBSD: word.c,v 1.15 2008/09/15 16:11:35 kjell Exp $	*/
+/*	$OpenBSD: word.c,v 1.16 2014/03/20 07:47:29 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -7,6 +7,10 @@
  * The routines in this file implement commands that work word at a time.
  * There are all sorts of word mode commands.
  */
+
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
 
 #include "def.h"
 

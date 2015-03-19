@@ -1,10 +1,15 @@
-/*	$OpenBSD: macro.c,v 1.14 2012/04/12 04:47:59 lum Exp $	*/
+/*	$OpenBSD: macro.c,v 1.15 2014/03/20 07:47:29 lum Exp $	*/
 
 /* This file is in the public domain. */
 
 /*
  *	Keyboard macros.
  */
+
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "def.h"
 #include "key.h"

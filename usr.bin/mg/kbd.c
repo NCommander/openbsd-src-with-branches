@@ -1,10 +1,14 @@
-/*	$OpenBSD: kbd.c,v 1.25 2012/04/12 04:47:59 lum Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.26 2013/05/31 18:03:44 lum Exp $	*/
 
 /* This file is in the public domain. */
 
 /*
  *	Terminal independent keyboard handling.
  */
+
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
 
 #include "def.h"
 #include "kbd.h"

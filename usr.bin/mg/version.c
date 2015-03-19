@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.8 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: version.c,v 1.9 2005/06/14 18:14:40 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -6,6 +6,10 @@
  * This file contains the string that gets written
  * out by the emacs-version command.
  */
+
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
 
 #include "def.h"
 

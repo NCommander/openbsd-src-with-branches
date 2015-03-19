@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttykbd.c,v 1.16 2012/04/12 04:47:59 lum Exp $	*/
+/*	$OpenBSD: ttykbd.c,v 1.17 2015/03/17 18:08:52 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -8,10 +8,14 @@
  * Created:	22-Nov-1987 Mic Kaczmarczik (mic@emx.cc.utexas.edu)
  */
 
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <term.h>
+
 #include "def.h"
 #include "kbd.h"
-
-#include <term.h>
 
 /*
  * Get keyboard character.  Very simple if you use keymaps and keys files.

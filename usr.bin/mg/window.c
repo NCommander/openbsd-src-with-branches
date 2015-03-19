@@ -1,10 +1,15 @@
-/*	$OpenBSD: window.c,v 1.30 2014/03/20 07:47:29 lum Exp $	*/
+/*	$OpenBSD: window.c,v 1.31 2014/05/28 07:59:36 florian Exp $	*/
 
 /* This file is in the public domain. */
 
 /*
  *		Window handling.
  */
+
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "def.h"
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: help.c,v 1.33 2012/03/14 13:56:35 lum Exp $	*/
+/*	$OpenBSD: help.c,v 1.34 2012/04/12 04:47:59 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -6,9 +6,13 @@
  * Help functions for Mg 2
  */
 
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "def.h"
 #include "funmap.h"
-
 #include "kbd.h"
 #include "key.h"
 #include "macro.h"

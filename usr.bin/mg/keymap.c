@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.52 2014/08/14 12:22:58 bcallah Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.53 2015/03/16 13:47:48 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -6,6 +6,12 @@
  * Keyboard maps.  This is character set dependent.  The terminal specific
  * parts of building the keymap has been moved to a better place.
  */
+
+#include <sys/queue.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "def.h"
 #include "kbd.h"

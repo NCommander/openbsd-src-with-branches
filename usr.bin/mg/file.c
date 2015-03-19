@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.94 2014/04/03 20:17:12 lum Exp $	*/
+/*	$OpenBSD: file.c,v 1.95 2014/04/09 20:50:03 florian Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -6,11 +6,17 @@
  *	File commands.
  */
 
-#include "def.h"
-
+#include <sys/queue.h>
 #include <sys/stat.h>
-
+#include <errno.h>
 #include <libgen.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "def.h"
 
 size_t xdirname(char *, const char *, size_t);
 

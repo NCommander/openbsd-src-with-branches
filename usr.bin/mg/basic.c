@@ -1,4 +1,4 @@
-/*	$OpenBSD: basic.c,v 1.42 2014/03/20 07:47:29 lum Exp $	*/
+/*	$OpenBSD: basic.c,v 1.43 2014/11/16 04:16:41 guenther Exp $	*/
 
 /* This file is in the public domain */
 
@@ -11,10 +11,15 @@
  * mark. Only moves between lines, which might make the
  * current buffer framing bad, are hard.
  */
-#include "def.h"
 
+#include <sys/queue.h>
 #include <ctype.h>
 #include <limits.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "def.h"
 
 /*
  * Go to beginning of line.

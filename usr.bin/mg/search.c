@@ -1,4 +1,4 @@
-/*	$OpenBSD: search.c,v 1.42 2013/05/31 18:03:45 lum Exp $	*/
+/*	$OpenBSD: search.c,v 1.43 2014/03/20 07:47:29 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -11,10 +11,13 @@
  * The incremental search code and the query-replace code is by Rich Ellison.
  */
 
-#include "def.h"
-
+#include <sys/queue.h>
 #include <ctype.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
 
+#include "def.h"
 #include "macro.h"
 
 #define SRCH_BEGIN	(0)	/* Search sub-codes.	 */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.73 2014/11/13 21:36:23 florian Exp $	*/
+/*	$OpenBSD: main.c,v 1.74 2014/11/16 04:16:41 guenther Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -6,14 +6,20 @@
  *	Mainline.
  */
 
+#include <sys/queue.h>
+#include <err.h>
+#include <limits.h>
+#include <locale.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "def.h"
 #include "kbd.h"
 #include "funmap.h"
 #include "macro.h"
-
-#include <err.h>
-#include <limits.h>
-#include <locale.h>
 
 int		 thisflag;			/* flags, this command	*/
 int		 lastflag;			/* flags, last command	*/
