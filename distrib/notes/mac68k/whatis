@@ -1,4 +1,0 @@
-dnl	$OpenBSD: whatis,v 1.16 2004/09/10 19:11:52 miod Exp $
-
-OpenBSD/MACHINE runs on some of the old Macintosh (Motorola 680x0-based)
-computers.

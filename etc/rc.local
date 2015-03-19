@@ -1,6 +1,0 @@
-#	$OpenBSD: rc.local,v 1.43 2011/04/18 18:08:20 robert Exp $
-
-# Site-specific startup actions, daemons, and other things which
-# can be done AFTER your system goes into securemode.  For actions
-# which should be done BEFORE your system has gone into securemode
-# please see /etc/rc.securelevel.
