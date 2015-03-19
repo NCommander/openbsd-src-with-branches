@@ -1,5 +1,0 @@
-/*	$OpenBSD$	*/
-ad()
-{
-}
-int libglobal;
