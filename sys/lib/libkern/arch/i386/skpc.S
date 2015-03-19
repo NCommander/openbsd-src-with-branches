@@ -1,3 +1,4 @@
+/*	$OpenBSD: skpc.S,v 1.2 1996/09/27 06:47:49 mickey Exp $	*/
 /*	$NetBSD: skpc.S,v 1.2 1994/10/26 06:39:15 cgd Exp $	*/
 
 /*
@@ -36,7 +37,6 @@ ENTRY(skpc)
 	movl	16(%esp),%edi
 	movl	12(%esp),%ecx
 	movl	8(%esp),%eax
-	cld
 	repe
 	scasb
 	je	1f

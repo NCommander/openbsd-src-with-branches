@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 #include <sys/types.h>
 #include <assert.h>
 

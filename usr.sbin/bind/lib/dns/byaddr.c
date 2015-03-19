@@ -116,9 +116,9 @@ dns_byaddr_createptrname2(isc_netaddr_t *address, unsigned int options,
 			*cp++ = '.';
 		}
 		if ((options & DNS_BYADDROPT_IPV6INT) != 0)
-			strcpy(cp, "ip6.int.");
+			strlcpy(cp, "ip6.int.", sizeof(textname) - (cp - textname));
 		else
-			strcpy(cp, "ip6.arpa.");
+			strlcpy(cp, "ip6.arpa.", sizeof(textname) - (cp - textname));
 	} else
 		return (ISC_R_NOTIMPLEMENTED);
 

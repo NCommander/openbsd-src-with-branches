@@ -19,26 +19,55 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Get generic OpenBSD definitions.  */
-#define OBSD_OLD_GAS
 #include <openbsd.h>
 
 /* Run-time target specifications.  */
-#define CPP_PREDEFINES "-D__unix__ -D__sparc__ -D__OpenBSD__ -Asystem=unix -Asystem=OpenBSD -Acpu=sparc -Amachine=sparc"
+#define TARGET_OS_CPP_BUILTINS()			\
+  do							\
+    {							\
+      OPENBSD_OS_CPP_BUILTINS_ELF();			\
+      builtin_define ("__sparc");			\
+      builtin_define ("__sparc__");			\
+    }							\
+  while (0)
 
 /* Layout of source language data types */
 
-/* This must agree with <machine/ansi.h> */
+/* This must agree with <machine/_types.h> */
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "long int"
+
+#undef INTMAX_TYPE
+#define INTMAX_TYPE "long long int"
+
+#undef UINTMAX_TYPE
+#define UINTMAX_TYPE "long long unsigned int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
+
+#undef LINK_SPEC
+#define LINK_SPEC \
+  "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e __start}}}} \
+   %{shared:-shared} %{R*} \
+   %{static:-Bstatic} \
+   %{!static:-Bdynamic} \
+   %{assert*} \
+   %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.so}"
+
+/* As an elf system, we need crtbegin/crtend stuff.  */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+        %{!shared: %{pg:gcrt0%O%s} %{!pg:%{p:gcrt0%O%s} %{!p:crt0%O%s}} \
+        crtbegin%O%s} %{shared:crtbeginS%O%s}"
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC "%{!shared:crtend%O%s} %{shared:crtendS%O%s}"
 
 /* Specific options for DBX Output.  */
 

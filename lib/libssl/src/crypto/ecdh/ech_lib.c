@@ -1,4 +1,4 @@
-/* crypto/ecdh/ech_lib.c */
+/* $OpenBSD: ech_lib.c,v 1.7 2014/07/10 22:45:57 jsing Exp $ */
 /* ====================================================================
  * Copyright 2002 Sun Microsystems, Inc. ALL RIGHTS RESERVED.
  *
@@ -67,17 +67,15 @@
  *
  */
 
-#include "ech_locl.h"
 #include <string.h>
+
+#include <openssl/opensslconf.h>
+
+#include "ech_locl.h"
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
 #include <openssl/err.h>
-#ifdef OPENSSL_FIPS
-#include <openssl/fips.h>
-#endif
-
-const char ECDH_version[]="ECDH" OPENSSL_VERSION_PTEXT;
 
 static const ECDH_METHOD *default_ECDH_method = NULL;
 
@@ -94,14 +92,7 @@ const ECDH_METHOD *ECDH_get_default_method(void)
 	{
 	if(!default_ECDH_method) 
 		{
-#ifdef OPENSSL_FIPS
-		if (FIPS_mode())
-			return FIPS_ecdh_openssl();
-		else
-			return ECDH_OpenSSL();
-#else
 		default_ECDH_method = ECDH_OpenSSL();
-#endif
 		}
 	return default_ECDH_method;
 	}
@@ -115,11 +106,6 @@ int ECDH_set_method(EC_KEY *eckey, const ECDH_METHOD *meth)
 	if (ecdh == NULL)
 		return 0;
 
-#if 0
-        mtmp = ecdh->meth;
-        if (mtmp->finish)
-		mtmp->finish(eckey);
-#endif
 #ifndef OPENSSL_NO_ENGINE
 	if (ecdh->engine)
 		{
@@ -128,10 +114,6 @@ int ECDH_set_method(EC_KEY *eckey, const ECDH_METHOD *meth)
 		}
 #endif
         ecdh->meth = meth;
-#if 0
-        if (meth->init) 
-		meth->init(eckey);
-#endif
         return 1;
 	}
 
@@ -139,7 +121,7 @@ static ECDH_DATA *ECDH_DATA_new_method(ENGINE *engine)
 	{
 	ECDH_DATA *ret;
 
-	ret=(ECDH_DATA *)OPENSSL_malloc(sizeof(ECDH_DATA));
+	ret = malloc(sizeof(ECDH_DATA));
 	if (ret == NULL)
 		{
 		ECDHerr(ECDH_F_ECDH_DATA_NEW_METHOD, ERR_R_MALLOC_FAILURE);
@@ -160,7 +142,7 @@ static ECDH_DATA *ECDH_DATA_new_method(ENGINE *engine)
 			{
 			ECDHerr(ECDH_F_ECDH_DATA_NEW_METHOD, ERR_R_ENGINE_LIB);
 			ENGINE_finish(ret->engine);
-			OPENSSL_free(ret);
+			free(ret);
 			return NULL;
 			}
 		}
@@ -168,14 +150,6 @@ static ECDH_DATA *ECDH_DATA_new_method(ENGINE *engine)
 
 	ret->flags = ret->meth->flags;
 	CRYPTO_new_ex_data(CRYPTO_EX_INDEX_ECDH, ret, &ret->ex_data);
-#if 0
-	if ((ret->meth->init != NULL) && !ret->meth->init(ret))
-		{
-		CRYPTO_free_ex_data(CRYPTO_EX_INDEX_ECDH, ret, &ret->ex_data);
-		OPENSSL_free(ret);
-		ret=NULL;
-		}
-#endif	
 	return(ret);
 	}
 
@@ -208,7 +182,7 @@ void ecdh_data_free(void *data)
 
 	OPENSSL_cleanse((void *)r, sizeof(ECDH_DATA));
 
-	OPENSSL_free(r);
+	free(r);
 	}
 
 ECDH_DATA *ecdh_check(EC_KEY *key)
@@ -234,15 +208,6 @@ ECDH_DATA *ecdh_check(EC_KEY *key)
 	}
 	else
 		ecdh_data = (ECDH_DATA *)data;
-#ifdef OPENSSL_FIPS
-	if (FIPS_mode() && !(ecdh_data->flags & ECDH_FLAG_FIPS_METHOD)
-			&& !(EC_KEY_get_flags(key) & EC_FLAG_NON_FIPS_ALLOW))
-		{
-		ECDHerr(ECDH_F_ECDH_CHECK, ECDH_R_NON_FIPS_METHOD);
-		return NULL;
-		}
-#endif
-	
 
 	return ecdh_data;
 	}

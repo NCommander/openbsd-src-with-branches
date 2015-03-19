@@ -1,4 +1,5 @@
-/*	$NetBSD: hunt.c,v 1.4 1994/12/24 17:56:27 cgd Exp $	*/
+/*	$OpenBSD: hunt.c,v 1.18 2010/07/02 05:52:48 nicm Exp $	*/
+/*	$NetBSD: hunt.c,v 1.6 1997/04/20 00:02:10 mellon Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,67 +30,94 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)hunt.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: hunt.c,v 1.4 1994/12/24 17:56:27 cgd Exp $";
-#endif /* not lint */
+#include <util.h>
 
 #include "tip.h"
 
-extern char *getremote();
-extern char *rindex();
+static jmp_buf	deadline;
+static int	deadflag;
 
-static	jmp_buf deadline;
-static	int deadfl;
+static void	dead(int);
 
-void
-dead()
+/*ARGSUSED*/
+static void
+dead(int signo)
 {
-	deadfl = 1;
+	deadflag = 1;
 	longjmp(deadline, 1);
 }
 
-long
-hunt(name)
-	char *name;
+/* Find and open the host. Returns the fd, or exits on error. */
+int
+hunt(char *hosts)
 {
-	register char *cp;
-	sig_t f;
+	char   	       *copy, *last, *host, *device;
+	struct termios	tio;
+	int		fd, tried;
+	sig_t		old_alrm;
 
-	f = signal(SIGALRM, dead);
-	while (cp = getremote(name)) {
-		deadfl = 0;
-		uucplock = rindex(cp, '/')+1;
-		if (uu_lock(uucplock) < 0)
+	if (hosts == NULL) {
+		hosts = getenv("HOST");
+		if (hosts == NULL)
+			errx(3, "no host specified");
+	}
+
+	if ((copy = strdup(hosts)) == NULL)
+		err(1, "strdup");
+	last = copy;
+
+	old_alrm = signal(SIGALRM, dead);
+
+	tried = 0;
+	while ((host = strsep(&last, ",")) != NULL) {
+		device = getremote(host);
+
+		uucplock = strrchr(device, '/');
+		if (uucplock == NULL)
+			uucplock = strdup(device);
+		else
+			uucplock = strdup(uucplock + 1);
+		if (uucplock == NULL)
+			err(1, "strdup");
+		if (uu_lock(uucplock) != UU_LOCK_OK)
 			continue;
-		/*
-		 * Straight through call units, such as the BIZCOMP,
-		 * VADIC and the DF, must indicate they're hardwired in
-		 *  order to get an open file descriptor placed in FD.
-		 * Otherwise, as for a DN-11, the open will have to
-		 *  be done in the "open" routine.
-		 */
-		if (!HW)
-			break;
+
+		deadflag = 0;
 		if (setjmp(deadline) == 0) {
 			alarm(10);
-			FD = open(cp, O_RDWR);
+
+			fd = open(device,
+			    O_RDWR | (vgetnum(DC) ? O_NONBLOCK : 0));
+			if (fd < 0)
+				perror(device);
 		}
 		alarm(0);
-		if (FD < 0) {
-			perror(cp);
-			deadfl = 1;
+
+		tried++;
+		if (fd >= 0 && !deadflag) {
+			tcgetattr(fd, &tio);
+			if (!vgetnum(DC))
+				tio.c_cflag |= HUPCL;
+			if (tcsetattr(fd, TCSAFLUSH, &tio) != 0)
+				errx(1, "tcsetattr");
+
+			if (ioctl(fd, TIOCEXCL) != 0)
+				errx(1, "ioctl");
+
+			signal(SIGALRM, old_alrm);
+			return (fd);
 		}
-		if (!deadfl) {
-			ioctl(FD, TIOCEXCL, 0);
-			ioctl(FD, TIOCHPCL, 0);
-			signal(SIGALRM, SIG_DFL);
-			return ((long)cp);
-		}
-		(void)uu_unlock(uucplock);
+
+		uu_unlock(uucplock);
+		free(uucplock);
 	}
-	signal(SIGALRM, f);
-	return (deadfl ? -1 : (long)cp);
+	free(copy);
+
+	signal(SIGALRM, old_alrm);
+	if (tried == 0) {
+		printf("all ports busy\n");
+		exit(3);
+	}
+	printf("link down\n");
+	exit(3);
 }

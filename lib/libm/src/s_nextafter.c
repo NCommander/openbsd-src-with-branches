@@ -10,10 +10,6 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_nextafter.c,v 1.8 1995/05/10 20:47:58 jtc Exp $";
-#endif
-
 /* IEEE functions
  *	nextafter(x,y)
  *	return the next machine floating-point number of x in the
@@ -21,15 +17,13 @@ static char rcsid[] = "$NetBSD: s_nextafter.c,v 1.8 1995/05/10 20:47:58 jtc Exp 
  *   Special cases:
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
-	double nextafter(double x, double y)
-#else
-	double nextafter(x,y)
-	double x,y;
-#endif
+double
+nextafter(double x, double y)
 {
 	int32_t hx,hy,ix,iy;
 	u_int32_t lx,ly;
@@ -39,15 +33,15 @@ static char rcsid[] = "$NetBSD: s_nextafter.c,v 1.8 1995/05/10 20:47:58 jtc Exp 
 	ix = hx&0x7fffffff;		/* |x| */
 	iy = hy&0x7fffffff;		/* |y| */
 
-	if(((ix>=0x7ff00000)&&((ix-0x7ff00000)|lx)!=0) ||   /* x is nan */ 
-	   ((iy>=0x7ff00000)&&((iy-0x7ff00000)|ly)!=0))     /* y is nan */ 
+	if(((ix>=0x7ff00000)&&((ix-0x7ff00000)|lx)!=0) ||   /* x is nan */
+	   ((iy>=0x7ff00000)&&((iy-0x7ff00000)|ly)!=0))     /* y is nan */
 	   return x+y;				
-	if(x==y) return x;		/* x=y, return x */
+	if(x==y) return y;		/* x=y, return y */
 	if((ix|lx)==0) {			/* x == 0 */
 	    INSERT_WORDS(x,hy&0x80000000,1);	/* return +-minsubnormal */
 	    y = x*x;
 	    if(y==x) return y; else return x;	/* raise underflow flag */
-	} 
+	}
 	if(hx>=0) {				/* x > 0 */
 	    if(hx>hy||((hx==hy)&&(lx>ly))) {	/* x > y, x -= ulp */
 		if(lx==0) hx -= 1;
@@ -77,3 +71,9 @@ static char rcsid[] = "$NetBSD: s_nextafter.c,v 1.8 1995/05/10 20:47:58 jtc Exp 
 	INSERT_WORDS(x,hx,lx);
 	return x;
 }
+
+#if	LDBL_MANT_DIG == DBL_MANT_DIG
+__strong_alias(nextafterl, nextafter);
+__strong_alias(nexttoward, nextafter);
+__strong_alias(nexttowardl, nextafter);
+#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */

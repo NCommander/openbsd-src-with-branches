@@ -1,3 +1,4 @@
+/*	$OpenBSD: pathnames.h,v 1.3 1996/06/26 05:44:02 deraadt Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.3 1994/11/14 06:51:38 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +29,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
-<<<<<<< pathnames.h
- *	from: @(#)pathnames.h	5.1 (Berkeley) 4/17/90
- *	$Id: pathnames.h,v 1.3 1994/11/14 06:51:38 jtc Exp $
-||||||| 1.1.1.2
- *	@(#)pathnames.h	5.1 (Berkeley) 4/17/90
-=======
  *	@(#)pathnames.h	8.1 (Berkeley) 6/6/93
->>>>>>> /var/tmp/T4001951
  */
 
 #define	_PATH_ECHO	"/bin/echo"

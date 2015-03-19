@@ -2,7 +2,8 @@
 
 =head1 NAME
 
-EVP_DigestVerifyInit, EVP_DigestVerifyUpdate, EVP_DigestVerifyFinal - EVP signature verification functions
+EVP_DigestVerifyInit, EVP_DigestVerifyUpdate, EVP_DigestVerifyFinal - EVP
+signature verification functions
 
 =head1 SYNOPSIS
 
@@ -55,9 +56,6 @@ and public key algorithms. This meant that "clone" digests such as EVP_dss1()
 needed to be used to sign using SHA1 and DSA. This is no longer necessary and
 the use of clone digest is now discouraged.
 
-For some key types and parameters the random number generator must be seeded
-or the operation will fail. 
-
 The call to EVP_DigestVerifyFinal() internally finalizes a copy of the digest
 context. This means that calls to EVP_VerifyUpdate() and EVP_VerifyFinal() can
 be called later to digest and verify additional data.
@@ -76,7 +74,7 @@ L<sha(3)|sha(3)>, L<dgst(1)|dgst(1)>
 
 =head1 HISTORY
 
-EVP_DigestVerifyInit(), EVP_DigestVerifyUpdate() and EVP_DigestVerifyFinal() 
+EVP_DigestVerifyInit(), EVP_DigestVerifyUpdate() and EVP_DigestVerifyFinal()
 were first added to OpenSSL 1.0.0.
 
 =cut

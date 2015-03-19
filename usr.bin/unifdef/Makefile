@@ -1,6 +1,8 @@
-#	$NetBSD: Makefile,v 1.3 1994/12/07 00:33:47 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.6 2003/11/20 23:23:09 avsm Exp $
 
 PROG=	unifdef
+COPTS+=	-Wall
+
+unifdef: unifdef.c unifdef.h version.h
 
 .include <bsd.prog.mk>

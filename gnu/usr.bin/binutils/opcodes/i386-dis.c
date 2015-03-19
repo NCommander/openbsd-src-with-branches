@@ -93,13 +93,17 @@ static void OP_MS (int, int);
 static void OP_XS (int, int);
 static void OP_M (int, int);
 static void OP_0fae (int, int);
-static void OP_0f07 (int, int);
 static void NOP_Fixup (int, int);
 static void OP_3DNowSuffix (int, int);
+static void OP_xcrypt2 (int, int);
+static void OP_xcrypt (int, int);
 static void OP_SIMD_Suffix (int, int);
 static void SIMD_Fixup (int, int);
 static void PNI_Fixup (int, int);
+static void XCR_Fixup (int, int);
 static void INVLPG_Fixup (int, int);
+static void OP_0f38 (int, int);
+static void OP_0f3a (int, int);
 static void BadOp (void);
 
 struct dis_private {
@@ -297,7 +301,11 @@ fetch_data (struct disassemble_info *info, bfd_byte *addr)
 #define MS OP_MS, v_mode
 #define XS OP_XS, v_mode
 #define OPSUF OP_3DNowSuffix, 0
+#define OPXCRYPT OP_xcrypt, 0
+#define OPXCRYPT2 OP_xcrypt2, 0
 #define OPSIMD OP_SIMD_Suffix, 0
+#define OP0F38 OP_0f38, 0
+#define OP0F3A OP_0f3a, 0
 
 #define cond_jump_flag NULL, cond_jump_mode
 #define loop_jcxz_flag NULL, loop_jcxz_mode
@@ -393,7 +401,6 @@ fetch_data (struct disassemble_info *info, bfd_byte *addr)
 #define GRP13	  NULL, NULL, USE_GROUPS, NULL, 20, NULL, 0
 #define GRP14	  NULL, NULL, USE_GROUPS, NULL, 21, NULL, 0
 #define GRPAMD	  NULL, NULL, USE_GROUPS, NULL, 22, NULL, 0
-#define GRPPADLCK NULL, NULL, USE_GROUPS, NULL, 23, NULL, 0
 
 #define PREGRP0   NULL, NULL, USE_PREFIX_USER_TABLE, NULL,  0, NULL, 0
 #define PREGRP1   NULL, NULL, USE_PREFIX_USER_TABLE, NULL,  1, NULL, 0
@@ -829,9 +836,9 @@ static const struct dis386 dis386_twobyte[] = {
   { "(bad)",		XX, XX, XX },
   { "(bad)",		XX, XX, XX },
   /* 38 */
+  { "",			OP0F38, XX, XX },
   { "(bad)",		XX, XX, XX },
-  { "(bad)",		XX, XX, XX },
-  { "(bad)",		XX, XX, XX },
+  { "",			OP0F3A, XX, XX },
   { "(bad)",		XX, XX, XX },
   { "(bad)",		XX, XX, XX },
   { "(bad)",		XX, XX, XX },
@@ -952,8 +959,8 @@ static const struct dis386 dis386_twobyte[] = {
   { "btS",		Ev, Gv, XX },
   { "shldS",		Ev, Gv, Ib },
   { "shldS",		Ev, Gv, CL },
-  { "(bad)",		XX, XX, XX },
-  { GRPPADLCK },
+  { "",			OPXCRYPT2, XX, XX },
+  { "",			OPXCRYPT, XX, XX },
   /* a8 */
   { "pushT",		gs, XX, XX },
   { "popT",		gs, XX, XX },
@@ -1107,7 +1114,7 @@ static const unsigned char twobyte_uses_SSE_prefix[256] = {
   /* 00 */ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* 0f */
   /* 10 */ 1,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0, /* 1f */
   /* 20 */ 0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0, /* 2f */
-  /* 30 */ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* 3f */
+  /* 30 */ 0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0, /* 3f */
   /* 40 */ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, /* 4f */
   /* 50 */ 0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1, /* 5f */
   /* 60 */ 0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1, /* 6f */
@@ -1360,7 +1367,7 @@ static const struct dis386 grps[][8] = {
   {
     { "sgdtQ",	 M, XX, XX },
     { "sidtQ", PNI_Fixup, 0, XX, XX },
-    { "lgdtQ",	 M, XX, XX },
+    { "lgdtQ", XCR_Fixup, 0, XX, XX },
     { "lidtQ",	 M, XX, XX },
     { "smswQ",	Ev, XX, XX },
     { "(bad)",	XX, XX, XX },
@@ -1386,7 +1393,7 @@ static const struct dis386 grps[][8] = {
     { "(bad)",	XX, XX, XX },
     { "(bad)",	XX, XX, XX },
     { "(bad)",	XX, XX, XX },
-    { "(bad)",	XX, XX, XX },
+    { "rdrand",	Ev, XX, XX },
     { "(bad)",	XX, XX, XX },
   },
   /* GRP10 */
@@ -1428,10 +1435,10 @@ static const struct dis386 grps[][8] = {
     { "fxrstor", Ev, XX, XX },
     { "ldmxcsr", Ev, XX, XX },
     { "stmxcsr", Ev, XX, XX },
-    { "(bad)",	XX, XX, XX },
-    { "lfence", OP_0fae, 0, XX, XX },
-    { "mfence", OP_0fae, 0, XX, XX },
-    { "clflush", OP_0fae, 0, XX, XX },
+    { "xsave",	Ev, XX, XX },
+    { "xrstor", OP_0fae, v_mode, XX, XX },
+    { "xsaveopt", OP_0fae, v_mode, XX, XX },
+    { "clflush", OP_0fae, v_mode, XX, XX },
   },
   /* GRP14 */
   {
@@ -1455,17 +1462,6 @@ static const struct dis386 grps[][8] = {
     { "(bad)",	XX, XX, XX },
     { "(bad)",	XX, XX, XX },
   },
-  /* GRPPADLCK */
-  {
-    { "xstorerng", OP_0f07, 0, XX, XX },
-    { "xcryptecb", OP_0f07, 0, XX, XX },
-    { "xcryptcbc", OP_0f07, 0, XX, XX },
-    { "(bad)",	   OP_0f07, 0, XX, XX },
-    { "xcryptcfb", OP_0f07, 0, XX, XX },
-    { "xcryptofb", OP_0f07, 0, XX, XX },
-    { "(bad)",	   OP_0f07, 0, XX, XX },
-    { "(bad)",	   OP_0f07, 0, XX, XX },
-  }
 };
 
 static const struct dis386 prefix_user_table[][4] = {
@@ -3961,21 +3957,17 @@ OP_M (int bytemode, int sizeflag)
 }
 
 static void
-OP_0f07 (int bytemode, int sizeflag)
-{
-  if (mod != 3 || rm != 0)
-    BadOp ();
-  else
-    OP_E (bytemode, sizeflag);
-}
-
-static void
 OP_0fae (int bytemode, int sizeflag)
 {
   if (mod == 3)
     {
       if (reg == 7)
 	strcpy (obuf + strlen (obuf) - sizeof ("clflush") + 1, "sfence");
+      else if (reg == 6)
+	strcpy (obuf + strlen (obuf) - sizeof ("xsaveopt") + 1, "mfence");
+      else if (reg == 5)
+	strcpy (obuf + strlen (obuf) - sizeof ("xrstor") + 1, "lfence");
+      bytemode = 0;
 
       if (reg < 5 || rm != 0)
 	{
@@ -3983,9 +3975,9 @@ OP_0fae (int bytemode, int sizeflag)
 	  return;
 	}
     }
-  else if (reg != 7)
+  else if (reg < 5)
     {
-      BadOp ();		/* bad clflush */
+      BadOp ();		/* bad sfence, mfence, or lfence */
       return;
     }
 
@@ -4162,7 +4154,7 @@ SIMD_Fixup (int extrachar, int sizeflag ATTRIBUTE_UNUSED)
 static void
 PNI_Fixup (int extrachar ATTRIBUTE_UNUSED, int sizeflag)
 {
-  if (mod == 3 && reg == 1)
+  if (mod == 3 && reg == 1 && rm <= 1)
     {
       char *p = obuf + strlen (obuf);
 
@@ -4180,23 +4172,261 @@ PNI_Fixup (int extrachar ATTRIBUTE_UNUSED, int sizeflag)
 
       codep++;
     }
+  else if (mod == 3 && reg == 1 && rm <= 3)
+    {
+      size_t olen = strlen (obuf);
+      char *p = obuf + olen - 4;
+      if (*codep == 0xca)
+        strcpy (p, "clac");
+      else if (*codep == 0xcb)
+        strcpy (p, "stac");
+      codep++;
+    }
   else
     OP_E (0, sizeflag);
 }
 
 static void
-INVLPG_Fixup (int bytemode, int sizeflag)
+XCR_Fixup (int extrachar ATTRIBUTE_UNUSED, int sizeflag)
 {
-  if (*codep == 0xf8)
+  if (mod == 3 && reg == 2 && rm <= 1)
     {
       char *p = obuf + strlen (obuf);
 
-      /* Override "invlpg".  */
-      strcpy (p - 6, "swapgs");
+      /* Override "lgdt".  */
+      if (rm)
+	{
+	  strcpy (p - 4, "xsetbv");
+	}
+      else
+	{
+	  strcpy (p - 4, "xgetbv");
+	}
+
       codep++;
     }
   else
-    OP_E (bytemode, sizeflag);
+    OP_M (0, sizeflag);
+}
+
+static void
+INVLPG_Fixup (int bytemode, int sizeflag)
+{
+  const char *alt;
+
+  switch (*codep)
+    {
+    case 0xf8:
+      alt = "swapgs";
+      break;
+    case 0xf9:
+      alt = "rdtscp";
+      break;
+    default:
+      OP_M (bytemode, sizeflag);
+      return;
+    }
+  /* Override "invlpg".  */
+  strcpy (obuf + strlen (obuf) - 6, alt);
+  codep++;
+}
+
+static struct {
+     unsigned char opc;
+     char *name;
+} xcrypt[] = {
+  {  0xc0, "xstore-rng" },
+  {  0xc8, "xcrypt-ecb" },
+  {  0xd0, "xcrypt-cbc" },
+  {  0xd8, "xcrypt-ctr" },
+  {  0xe0, "xcrypt-cfb" },
+  {  0xe8, "xcrypt-ofb" },
+};
+
+static struct {
+     unsigned char opc;
+     char *name;
+} xcrypt2[] = {
+  {  0xc0, "montmul" },
+  {  0xc8, "xsha1" },
+  {  0xd0, "xsha256" },
+};
+
+static void
+OP_xcrypt (bytemode, sizeflag)
+     int bytemode ATTRIBUTE_UNUSED;
+     int sizeflag ATTRIBUTE_UNUSED;
+{
+  const char *mnemonic = NULL;
+  unsigned int i;
+
+  FETCH_DATA (the_info, codep + 1);
+  /* VIA C3 xcrypt-* & xmove-* instructions are specified by an opcode
+     suffix in the place where an 8-bit immediate would normally go.
+     ie. the last byte of the instruction.  */
+  obufp = obuf + strlen(obuf);
+
+  for (i = 0; i < sizeof(xcrypt) / sizeof(xcrypt[0]); i++)
+    if (xcrypt[i].opc == (*codep & 0xff))
+      mnemonic = xcrypt[i].name;
+  codep++;
+  if (mnemonic)
+    oappend (mnemonic);
+  else
+    BadOp();
+}
+
+static void
+OP_xcrypt2 (bytemode, sizeflag)
+     int bytemode ATTRIBUTE_UNUSED;
+     int sizeflag ATTRIBUTE_UNUSED;
+{
+  const char *mnemonic = NULL;
+  unsigned int i;
+
+  FETCH_DATA (the_info, codep + 1);
+  /* VIA C3 xcrypt2 instructions are specified by an opcode
+     suffix in the place where an 8-bit immediate would normally go.
+     ie. the last byte of the instruction.  */
+  obufp = obuf + strlen(obuf);
+
+  for (i = 0; i < sizeof(xcrypt2) / sizeof(xcrypt2[0]); i++)
+    if (xcrypt2[i].opc == (*codep & 0xff))
+      mnemonic = xcrypt2[i].name;
+  codep++;
+  if (mnemonic)
+    oappend (mnemonic);
+  else
+    BadOp();
+ }
+
+static struct {
+     unsigned char opc;
+     char *name;
+} aes[] = {
+  {  0x00, "pshufb" },
+  {  0xdb, "aesimc" },
+  {  0xdc, "aesenc" },
+  {  0xde, "aesdec" },
+  {  0xdd, "aesenclast" },
+  {  0xdf, "aesdeclast" }
+};
+
+#define XMM_DST(rex, modrm) \
+	(((((rex) & ~0x40) & 0x4) ? 8 : 0) | (((modrm) & ~0xc0) >> 3))
+#define XMM_SRC(rex, modrm) \
+	(((((rex) & ~0x40) & 0x1) ? 8 : 0) | (((modrm) & ~0xc0) & 7))
+
+static void
+OP_0f38 (bytemode, sizeflag)
+     int bytemode ATTRIBUTE_UNUSED;
+     int sizeflag ATTRIBUTE_UNUSED;
+{
+  const char *mnemonic = NULL;
+  unsigned int i;
+
+  FETCH_DATA (the_info, codep + 1);
+  obufp = obuf + strlen (obuf);
+
+  for (i = 0; i < sizeof(aes) / sizeof(aes[0]); i++)
+    if (aes[i].opc == (*codep & 0xff))
+      mnemonic = aes[i].name;
+
+  codep++;
+  if (mnemonic)
+   {
+     oappend (mnemonic);
+
+     FETCH_DATA (the_info, codep + 1);
+     sprintf (scratchbuf, " %%xmm%d", XMM_SRC (rex, *codep));
+     oappend (scratchbuf);
+     sprintf (scratchbuf, ",%%xmm%d", XMM_DST (rex, *codep));
+     oappend (scratchbuf);
+
+     codep++;
+     used_prefixes |= (prefixes & PREFIX_DATA);
+     USED_REX(rex);
+   }
+  else
+    BadOp();
+}
+
+static struct {
+     unsigned char opc;
+     char *name;
+} pclmul[] = {
+  {  0x00, "pclmullqlqdq" },
+  {  0x01, "pclmulhqlqdq" },
+  {  0x10, "pclmullqhqdq" },
+  {  0x11, "pclmulhqhqdq" },
+};
+
+static void
+OP_0f3a (bytemode, sizeflag)
+     int bytemode ATTRIBUTE_UNUSED;
+     int sizeflag ATTRIBUTE_UNUSED;
+{
+  const char *mnemonic = NULL;
+  unsigned int i, xmms;
+  unsigned char op, imm;
+
+  FETCH_DATA (the_info, codep + 1);
+  obufp = obuf + strlen (obuf);
+
+  op = *codep;
+  codep++;
+
+  FETCH_DATA (the_info, codep + 1);
+
+  /* save xmm pair */
+  xmms = XMM_DST (rex, *codep) << 8;
+  xmms |= XMM_SRC (rex, *codep);
+  codep++;
+
+  /* save immediate field */
+  FETCH_DATA (the_info, codep + 2);
+  imm = *codep;
+  codep++;
+
+  if (op != 0x44 && op != 0xdf)
+   {
+     BadOp();
+     return;
+   }
+
+  switch (op)
+   {
+   case 0x44:
+     for (i = 0; i < sizeof(pclmul) / sizeof(pclmul[0]); i++)
+       if (pclmul[i].opc == imm)
+	 mnemonic = pclmul[i].name;
+
+     if (!mnemonic)
+      {
+	oappend ("pclmulqdq");
+        sprintf (scratchbuf, " $%#x,", imm);
+        oappend (scratchbuf);
+      }
+     else
+      {
+	oappend (mnemonic);
+	oappend (" ");
+      }
+     break;
+   case 0xdf:
+     oappend ("aeskeygenassist ");
+     sprintf (scratchbuf, " $%#x,", imm);
+     oappend (scratchbuf);
+     break;
+   }
+
+   sprintf (scratchbuf, "%%xmm%d,", xmms & 0xff);
+   oappend (scratchbuf);
+   sprintf (scratchbuf, "%%xmm%d", xmms >> 8);
+   oappend (scratchbuf);
+
+   used_prefixes |= (prefixes & PREFIX_DATA);
+   USED_REX(rex);
 }
 
 static void

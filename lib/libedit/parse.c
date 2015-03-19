@@ -1,3 +1,6 @@
+/*	$OpenBSD: parse.c,v 1.11 2011/11/27 21:46:44 pascal Exp $	*/
+/*	$NetBSD: parse.c,v 1.23 2009/12/30 22:37:40 christos Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,9 +33,7 @@
  * SUCH DAMAGE.
  */
 
-#if !defined(lint) && !defined(SCCSID)
-static char sccsid[] = "@(#)parse.c	8.1 (Berkeley) 6/4/93";
-#endif /* not lint && not SCCSID */
+#include "config.h"
 
 /*
  * parse.c: parse an editline extended command
@@ -45,24 +42,27 @@ static char sccsid[] = "@(#)parse.c	8.1 (Berkeley) 6/4/93";
  *
  *	bind
  *	echotc
- *	settc
+ *	edit
  *	gettc
+ *	history
+ *	settc
+ *	setty
  */
-#include "sys.h"
 #include "el.h"
-#include "tokenizer.h"
+#include <stdlib.h>
 
-private struct {
-    char *name;
-    int (*func) __P((EditLine *, int, char **));
+private const struct {
+	const Char *name;
+	int (*func)(EditLine *, int, const Char **);
 } cmds[] = {
-    {	"bind",		map_bind 	},
-    {	"echotc",	term_echotc 	},
-    {	"history",	hist_list	},
-    {	"telltc",	term_telltc 	},
-    {	"settc",	term_settc	},
-    {	"setty",	tty_stty	},
-    {	NULL,		NULL		}
+	{ STR("bind"),  	map_bind	},
+	{ STR("echotc"),	term_echotc	},
+	{ STR("edit"),  	el_editmode	},
+	{ STR("history"),	hist_command	},
+	{ STR("telltc"),	term_telltc	},
+	{ STR("settc"),	        term_settc	},
+	{ STR("setty"),	        tty_stty	},
+	{ NULL,		        NULL		}
 };
 
 
@@ -70,178 +70,211 @@ private struct {
  *	Parse a line and dispatch it
  */
 protected int
-parse_line(el, line)
-    EditLine *el;
-    const char *line;
+parse_line(EditLine *el, const Char *line)
 {
-    char **argv;
-    int argc;
-    Tokenizer *tok;
+	const Char **argv;
+	int argc;
+	TYPE(Tokenizer) *tok;
 
-    tok = tok_init(NULL);
-    tok_line(tok, line, &argc, &argv);
-    argc = el_parse(el, argc, argv);
-    tok_end(tok);
-    return argc;
+	tok = FUN(tok,init)(NULL);
+	FUN(tok,str)(tok, line, &argc, &argv);
+	argc = FUN(el,parse)(el, argc, argv);
+	FUN(tok,end)(tok);
+	return (argc);
 }
+
 
 /* el_parse():
  *	Command dispatcher
  */
 public int
-el_parse(el, argc, argv)
-    EditLine *el;
-    int argc;
-    char *argv[];
+FUN(el,parse)(EditLine *el, int argc, const Char *argv[])
 {
-    char *ptr;
-    int i;
+	const Char *ptr;
+	int i;
 
-    for (ptr = argv[0]; *ptr && *ptr != ':'; ptr++)
-	continue;
+	if (argc < 1)
+		return (-1);
+	ptr = Strchr(argv[0], ':');
+	if (ptr != NULL) {
+		Char *tprog;
+		size_t l;
 
-    if (*ptr == ':') {
-	*ptr = '\0';
-	if (el_match(el->el_prog, ptr))
-	    return 0;
-    }
-    else
-	ptr = argv[0];
+		if (ptr == argv[0])
+			return (0);
+		l = ptr - argv[0] - 1;
+		tprog = reallocarray(NULL, l + 1, sizeof(*tprog));
+		if (tprog == NULL)
+			return (0);
+		(void) Strncpy(tprog, argv[0], l);
+		tprog[l] = '\0';
+		ptr++;
+		l = el_match(el->el_prog, tprog);
+		free(tprog);
+		if (!l)
+			return (0);
+	} else
+		ptr = argv[0];
 
-    for (i = 0; cmds[i].name != NULL; i++)
-	if (strcmp(cmds[i].name, ptr) == 0) {
-	    i = (*cmds[i].func)(el, argc, argv);
-	    return -i;
-	}
-
-    return -1;
+	for (i = 0; cmds[i].name != NULL; i++)
+		if (Strcmp(cmds[i].name, ptr) == 0) {
+			i = (*cmds[i].func) (el, argc, argv);
+			return (-i);
+		}
+	return (-1);
 }
 
 
 /* parse__escape():
- *	Parse a string of the form ^<char> \<odigit> \<char> and return
+ *	Parse a string of the form ^<char> \<odigit> \<char> \U+xxxx and return
  *	the appropriate character or -1 if the escape is not valid
  */
 protected int
-parse__escape(ptr)
-    const char  ** const ptr;
+parse__escape(const Char **ptr)
 {
-    const char   *p;
-    int   c;
+	const Char *p;
+	Int c;
 
-    p = *ptr;
+	p = *ptr;
 
-    if (p[1] == 0) 
-	return -1;
+	if (p[1] == 0)
+		return (-1);
 
-    if (*p == '\\') {
-	p++;
-	switch (*p) {
-	case 'a':
-	    c = '\007';		/* Bell */
-	    break;
-	case 'b':
-	    c = '\010';		/* Backspace */
-	    break;
-	case 't':
-	    c = '\011';		/* Horizontal Tab */
-	    break;
-	case 'n':
-	    c = '\012';		/* New Line */
-	    break;
-	case 'v':
-	    c = '\013';		/* Vertical Tab */
-	    break;
-	case 'f':
-	    c = '\014';		/* Form Feed */
-	    break;
-	case 'r':
-	    c = '\015';		/* Carriage Return */
-	    break;
-	case 'e':
-	    c = '\033';		/* Escape */
-	    break;
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	    {
-		int cnt, ch;
-
-		for (cnt = 0, c = 0; cnt < 3; cnt++) {
-		    ch = *p++;
-		    if (ch < '0' || ch > '7') {
-			p--;
+	if (*p == '\\') {
+		p++;
+		switch (*p) {
+		case 'a':
+			c = '\007';	/* Bell */
 			break;
-		    }
-		    c = (c << 3) | (ch - '0');
+		case 'b':
+			c = '\010';	/* Backspace */
+			break;
+		case 't':
+			c = '\011';	/* Horizontal Tab */
+			break;
+		case 'n':
+			c = '\012';	/* New Line */
+			break;
+		case 'v':
+			c = '\013';	/* Vertical Tab */
+			break;
+		case 'f':
+			c = '\014';	/* Form Feed */
+			break;
+		case 'r':
+			c = '\015';	/* Carriage Return */
+			break;
+		case 'e':
+			c = '\033';	/* Escape */
+			break;
+                case 'U':               /* Unicode \U+xxxx or \U+xxxxx format */
+                {
+                        int i;
+                        const Char hex[] = STR("0123456789ABCDEF");
+                        const Char *h;
+                        ++p;
+                        if (*p++ != '+')
+                                return (-1);
+			c = 0;
+                        for (i = 0; i < 5; ++i) {
+                                h = Strchr(hex, *p++);
+                                if (!h && i < 4)
+                                        return (-1);
+                                else if (h)
+                                        c = (c << 4) | ((int)(h - hex));
+                                else
+                                        --p;
+                        }
+                        if (c > 0x10FFFF) /* outside valid character range */
+                                return -1;
+                        break;
+                }
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		{
+			int cnt, ch;
+
+			for (cnt = 0, c = 0; cnt < 3; cnt++) {
+				ch = *p++;
+				if (ch < '0' || ch > '7') {
+					p--;
+					break;
+				}
+				c = (c << 3) | (ch - '0');
+			}
+			if ((c & 0xffffff00) != 0)
+				return (-1);
+			--p;
+			break;
 		}
-		if ((c & 0xffffff00) != 0) 
-		    return -1;
-		--p;
-	    }
-	    break;
-	default:
-	    c = *p;
-	    break;
-	}
-    }
-    else if (*p == '^' && isalpha((unsigned char) *p)) {
-	p++;
-	c = (*p == '?') ? '\177' : (*p & 0237);
-    }
-    else
-	c = *p;
-    *ptr = ++p;
-    return c;
+		default:
+			c = *p;
+			break;
+		}
+	} else if (*p == '^') {
+		p++;
+		c = (*p == '?') ? '\177' : (*p & 0237);
+	} else
+		c = *p;
+	*ptr = ++p;
+	return (c);
 }
 
 /* parse__string():
  *	Parse the escapes from in and put the raw string out
  */
-protected char *
-parse__string(out, in)
-    char *out;
-    const char *in;
+protected Char *
+parse__string(Char *out, const Char *in)
 {
-    char *rv = out;
-    int n;
-    for (;;)
-	switch (*in) {
-	case '\0':
-	    *out = '\0';
-	    return rv;
+	Char *rv = out;
+	int n;
 
-	case '\\':
-	case '^':
-	    if ((n = parse__escape(&in)) == -1)
-		return NULL;
-	    *out++ = n;
-	    break;
+	for (;;)
+		switch (*in) {
+		case '\0':
+			*out = '\0';
+			return (rv);
 
-	default:
-	    *out++ = *in++;
-	    break;
-	}
+		case '\\':
+		case '^':
+			if ((n = parse__escape(&in)) == -1)
+				return (NULL);
+			*out++ = n;
+			break;
+
+		case 'M':
+			if (in[1] == '-' && in[2] != '\0') {
+				*out++ = '\033';
+				in += 2;
+				break;
+			}
+			/*FALLTHROUGH*/
+
+		default:
+			*out++ = *in++;
+			break;
+		}
 }
+
 
 /* parse_cmd():
  *	Return the command number for the command string given
  *	or -1 if one is not found
  */
 protected int
-parse_cmd(el, cmd)
-    EditLine *el;
-    const char *cmd;
+parse_cmd(EditLine *el, const Char *cmd)
 {
-    el_bindings_t *b;
+	el_bindings_t *b;
+	int i;
 
-    for (b = el->el_map.help; b->name != NULL; b++)
-	if (strcmp(b->name, cmd) == 0)
-	    return b->func;
-    return -1;
+	for (b = el->el_map.help, i = 0; i < el->el_map.nfunc; i++)
+		if (Strcmp(b[i].name, cmd) == 0)
+			return (b[i].func);
+	return (-1);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_stdio_1.c,v 1.3 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: stdio.c,v 1.2 2003/07/31 21:48:06 deraadt Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -45,8 +45,8 @@ char * dir_name = SRCDIR;
 char * fullname;
 
 /* Test fopen()/ftell()/getc() */
-void
-test_1()
+static void
+test_1(void)
 {
 	struct stat statbuf;
 	FILE * fp;
@@ -66,8 +66,8 @@ test_1()
 }
 
 /* Test fopen()/fclose() */
-void
-test_2()
+static void
+test_2(void)
 {
 	FILE *fp1, *fp2;
 
@@ -81,7 +81,7 @@ test_2()
 }
 
 /* Test sscanf()/sprintf() */
-void
+static void
 test_3(void)
 {
 	char * str = "10 4.53";
@@ -92,16 +92,18 @@ test_3(void)
 	ASSERT(sscanf(str, "%d %lf", &i, &d) == 2);
 
 	/* Should have a check */
-	sprintf(buf, "%d %2.2f", i, d);
+	snprintf(buf, sizeof buf, "%d %2.2f", i, d);
 	ASSERT(strcmp(buf, str) == 0);
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 
-	CHECKn(fullname = malloc (strlen (dir_name) + strlen (base_name) + 2));
-	sprintf (fullname, "%s/%s", dir_name, base_name);
+	int len = strlen (dir_name) + strlen (base_name) + 2;
+
+	CHECKn(fullname = malloc (len));
+	snprintf(fullname, len, "%s/%s", dir_name, base_name);
 
 	test_1();
 	test_2();

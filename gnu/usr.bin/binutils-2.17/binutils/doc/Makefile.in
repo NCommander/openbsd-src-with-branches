@@ -66,7 +66,7 @@ MAKEINFOHTML = $(MAKEINFO) --html
 AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS)
 DVIPS = dvips
 man1dir = $(mandir)/man1
-am__installdirs = "$(DESTDIR)$(man1dir)"
+am__installdirs =
 NROFF = nroff
 MANS = $(man_MANS)
 ACLOCAL = @ACLOCAL@
@@ -205,7 +205,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-AUTOMAKE_OPTIONS = cygnus
+AUTOMAKE_OPTIONS = cygnus no-installman
 
 # What version of the manual you want; "all" includes everything
 CONFIG = all
@@ -237,8 +237,8 @@ man_MANS = \
 info_TEXINFOS = binutils.texi
 binutils_TEXINFOS = config.texi
 binutils_TEXI = $(srcdir)/binutils.texi
-AM_MAKEINFOFLAGS = -I "$(srcdir)" -I "$(top_srcdir)/../libiberty"
-TEXI2DVI = texi2dvi -I "$(srcdir)" -I "$(top_srcdir)/../libiberty"
+AM_MAKEINFOFLAGS = -I "$(srcdir)" -I "$(top_srcdir)/../../../lib/libiberty/src"
+TEXI2DVI = texi2dvi -I "$(srcdir)" -I "$(top_srcdir)/../../../lib/libiberty/src"
 MAINTAINERCLEANFILES = config.texi
 MOSTLYCLEANFILES = $(DEMANGLER_NAME).1
 html__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
@@ -286,26 +286,8 @@ distclean-libtool:
 	-rm -f libtool
 
 .texi.info:
-	restore=: && backupdir="$(am__leading_dot)am$$$$" && \
-	am__cwd=`pwd` && cd $(srcdir) && \
-	rm -rf $$backupdir && mkdir $$backupdir && \
-	if ($(MAKEINFO) --version) >/dev/null 2>&1; then \
-	  for f in $@ $@-[0-9] $@-[0-9][0-9] $(@:.info=).i[0-9] $(@:.info=).i[0-9][0-9]; do \
-	    if test -f $$f; then mv $$f $$backupdir; restore=mv; else :; fi; \
-	  done; \
-	else :; fi && \
-	cd "$$am__cwd"; \
-	if $(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
-	 -o $@ $<; \
-	then \
-	  rc=0; \
-	  cd $(srcdir); \
-	else \
-	  rc=$$?; \
-	  cd $(srcdir) && \
-	  $$restore $$backupdir/* `echo "./$@" | sed 's|[^/]*$$||'`; \
-	fi; \
-	rm -rf $$backupdir; exit $$rc
+	@rm -f $@ $@-[0-9] $@-[0-9][0-9]
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) $<
 
 .texi.dvi:
 	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
@@ -443,7 +425,7 @@ CTAGS:
 
 check-am:
 check: check-am
-all-am: Makefile $(MANS)
+all-am: Makefile
 installdirs:
 	for dir in "$(DESTDIR)$(man1dir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
@@ -494,7 +476,7 @@ info: info-am
 
 info-am: $(INFO_DEPS) info-local
 
-install-data-am: install-data-local install-man
+install-data-am: install-data-local
 
 install-exec-am:
 
@@ -552,7 +534,7 @@ ps: ps-am
 
 ps-am: $(PSS)
 
-uninstall-am: uninstall-man
+uninstall-am:
 
 uninstall-man: uninstall-man1
 

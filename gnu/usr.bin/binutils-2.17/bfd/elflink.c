@@ -177,7 +177,7 @@ _bfd_elf_link_create_dynamic_sections (bfd *abfd, struct bfd_link_info *info)
 
   /* A dynamically linked executable has a .interp section, but a
      shared library does not.  */
-  if (info->executable)
+  if (info->executable && !info->static_link)
     {
       s = bfd_make_section_with_flags (abfd, ".interp",
 				       flags | SEC_READONLY);
@@ -2327,7 +2327,7 @@ _bfd_elf_fix_symbol_flags (struct elf_link_hash_entry *h,
   if (h->needs_plt
       && eif->info->shared
       && is_elf_hash_table (eif->info->hash)
-      && (eif->info->symbolic
+      && (eif->info->symbolic || eif->info->static_link
 	  || ELF_ST_VISIBILITY (h->other) != STV_DEFAULT)
       && h->def_regular)
     {
@@ -3079,8 +3079,11 @@ elf_link_add_object_symbols (bfd *abfd, struct bfd_link_info *info)
   bfd_boolean add_needed;
   struct elf_link_hash_table *htab;
   bfd_size_type amt;
+#if 0
   void *alloc_mark = NULL;
+#endif
   void *old_tab = NULL;
+#if 0
   void *old_hash;
   void *old_ent;
   struct bfd_link_hash_entry *old_undefs = NULL;
@@ -3088,6 +3091,7 @@ elf_link_add_object_symbols (bfd *abfd, struct bfd_link_info *info)
   long old_dynsymcount = 0;
   size_t tabsize = 0;
   size_t hashsize = 0;
+#endif
 
   htab = elf_hash_table (info);
   bed = get_elf_backend_data (abfd);
@@ -3462,6 +3466,7 @@ elf_link_add_object_symbols (bfd *abfd, struct bfd_link_info *info)
 	}
     }
 
+#if 0
   /* If we are loading an as-needed shared lib, save the symbol table
      state before we start adding symbols.  If the lib turns out
      to be unneeded, restore the state.  */
@@ -3524,6 +3529,7 @@ elf_link_add_object_symbols (bfd *abfd, struct bfd_link_info *info)
 	    }
 	}
     }
+#endif
 
   weaks = NULL;
   ever = extversym != NULL ? extversym + extsymoff : NULL;
@@ -4133,6 +4139,7 @@ elf_link_add_object_symbols (bfd *abfd, struct bfd_link_info *info)
       isymbuf = NULL;
     }
 
+#if 0
   if ((elf_dyn_lib_class (abfd) & DYN_AS_NEEDED) != 0)
     {
       unsigned int i;
@@ -4176,6 +4183,7 @@ elf_link_add_object_symbols (bfd *abfd, struct bfd_link_info *info)
 	free (nondeflt_vers);
       return TRUE;
     }
+#endif
 
   if (old_tab != NULL)
     {
@@ -4978,6 +4986,7 @@ bfd_elf_size_dynamic_sections (bfd *output_bfd,
     return TRUE;
 
   elf_tdata (output_bfd)->relro = info->relro;
+  elf_tdata (output_bfd)->executable = info->executable;
   if (info->execstack)
     elf_tdata (output_bfd)->stack_flags = PF_R | PF_W | PF_X;
   else if (info->noexecstack)
@@ -5050,7 +5059,6 @@ bfd_elf_size_dynamic_sections (bfd *output_bfd,
       bfd_boolean all_defined;
 
       *sinterpptr = bfd_get_section_by_name (dynobj, ".interp");
-      BFD_ASSERT (*sinterpptr != NULL || !info->executable);
 
       if (soname != NULL)
 	{
@@ -8987,6 +8995,7 @@ elf_gc_sweep (bfd *abfd, struct bfd_link_info *info)
 	{
 	  /* Keep debug and special sections.  */
 	  if ((o->flags & (SEC_DEBUGGING | SEC_LINKER_CREATED)) != 0
+	      || elf_section_data (o)->this_hdr.sh_type == SHT_NOTE
 	      || (o->flags & (SEC_ALLOC | SEC_LOAD | SEC_RELOC)) == 0)
 	    o->gc_mark = 1;
 

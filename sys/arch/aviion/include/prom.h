@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: prom.h,v 1.5 2011/03/23 16:54:34 pirofti Exp $	*/
 /*
  * Copyright (c) 2006, Miodrag Vallat.
  *
@@ -24,8 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __AVIION_PROM_H__
-#define __AVIION_PROM_H__
+#ifndef _MACHINE_PROM_H_
+#define _MACHINE_PROM_H_
 
 #include <sys/cdefs.h>
 
@@ -39,6 +39,7 @@
 #define	SCM_OCRLF		0x26
 #define	SCM_HALT		0x63
 #define	SCM_STDIO		0x70
+#define	SCM_JPSTART		0x100
 #define	SCM_REBOOT		0x101
 #define	SCM_CPUID		0x102
 #define	SCM_MSIZE		0x103
@@ -50,6 +51,13 @@
 /* 88204 PROMs only system calls */
 #define	SCM_SYSID		0x31
 #define	SCM_CPUCONFIG		0x107
+
+/* SCM_JPSTART return values */
+#define	JPSTART_OK		0
+#define	JPSTART_NO_JP		1
+#define	JPSTART_SINGLE_JP	2
+#define	JPSTART_NOT_IDLE	3
+#define	JPSTART_NO_ANSWER	4
 
 struct	scm_cpuconfig {
 	u_int32_t	version;
@@ -65,13 +73,33 @@ u_int	scm_cpuid(void);
 int	scm_getc(void);
 void	scm_getenaddr(u_char *);
 __dead void scm_halt(void);
-u_int	scm_memsize(void);
+u_int	scm_jpstart(cpuid_t, vaddr_t);
+u_int	scm_memsize(int);
+void	scm_printf(const char *);
 u_int	scm_promver(void);
 void	scm_putc(int);
 void	scm_putcrlf(void);
 __dead void scm_reboot(const char *);
 u_int	scm_sysid(void);
 
-extern u_int32_t scmvec[2], osvec[2];		/* SCM trap vector copies */
+/*
+ * SCM boot device names
+ */
 
-#endif /* __AVIION_PROM_H__ */
+/* cied */
+#define	SCM_CIEN	0x6369656e
+/* cimd */
+/* cird */
+/* cisc */
+#define	SCM_DGEN	0x6467656e
+#define	SCM_DGSC	0x64677363
+/* hada */
+#define	SCM_HKEN	0x686b656e
+#define	SCM_INEN	0x696e656e
+#define	SCM_INSC	0x696e7363
+#define	SCM_NCSC	0x6e637363
+/* nvrd */
+/* pefn */
+/* vitr */
+
+#endif /* _MACHINE_PROM_H_ */

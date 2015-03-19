@@ -51,11 +51,38 @@
 #ifdef _KERNEL
 
 /*
- * Can't swapout u-area, (__SWAP_BROKEN)
- * since we use P1 converted address for trapframe.
+ * Per-CPU information.
  */
-#define	cpu_swapin(p)			/* nothing */
-#define	cpu_swapout(p)			/* nothing */
+
+#include <machine/intr.h>
+#include <sys/sched.h>
+
+struct cpu_info {
+	struct proc *ci_curproc;
+
+	struct schedstate_percpu ci_schedstate; /* scheduler state */
+	u_int32_t ci_randseed;
+#ifdef DIAGNOSTIC
+	int	ci_mutex_level;
+#endif
+#ifdef GPROF
+	struct gmonparam *ci_gmon;
+#endif
+};
+
+extern struct cpu_info cpu_info_store;
+#define	curcpu()	(&cpu_info_store)
+#define cpu_number()	0
+#define CPU_IS_PRIMARY(ci)	1
+#define CPU_INFO_ITERATOR	int
+#define CPU_INFO_FOREACH(cii, ci) \
+	for (cii = 0, ci = curcpu(); ci != NULL; ci = NULL)
+#define CPU_INFO_UNIT(ci)	0
+#define MAXCPUS	1
+#define cpu_unidle(ci)
+
+#define CPU_BUSY_CYCLE()	do {} while (0)
+
 
 /*
  * Arguments to hardclock and gatherstats encapsulate the previous
@@ -68,7 +95,6 @@ struct clockframe {
 };
 
 #define	CLKF_USERMODE(cf)	(!KERNELMODE((cf)->ssr))
-#define	CLKF_BASEPRI(cf)	(((cf)->ssr & 0xf0) == 0)
 #define	CLKF_PC(cf)		((cf)->spc)
 #define	CLKF_INTR(cf)		0	/* XXX */
 
@@ -76,8 +102,8 @@ struct clockframe {
  * This is used during profiling to integrate system time.  It can safely
  * assume that the process is resident.
  */
-#define	PROC_PC(p)							\
-	(((struct trapframe *)(p)->p_md.md_regs)->tf_spc)
+#define	PROC_PC(p)	((p)->p_md.md_regs->tf_spc)
+#define	PROC_STACK(p)	((p)->p_md.md_regs->tf_r15)
 
 /*
  * Preempt the current process if in interrupt from user mode,
@@ -89,17 +115,14 @@ do {									\
 	if (curproc != NULL)						\
 		aston(curproc);					\
 } while (/*CONSTCOND*/0)
+#define clear_resched(ci) 	want_resched = 0
 
 /*
  * Give a profiling tick to the current process when the user profiling
  * buffer pages are invalid.  On the MIPS, request an ast to send us
  * through trap, marking the proc as needing a profiling tick.
  */
-#define	need_proftick(p)						\
-do {									\
-	(p)->p_flag |= P_OWEUPC;					\
-	aston(p);							\
-} while (/*CONSTCOND*/0)
+#define	need_proftick(p)	aston(p)
 
 /*
  * Notify the current process (p) that it has a signal pending,
@@ -115,6 +138,11 @@ extern int want_resched;		/* need_resched() was called */
  * We need a machine-independent name for this.
  */
 #define	DELAY(x)		delay(x)
+
+#define	cpu_idle_enter()	do { /* nothing */ } while (0)
+#define	cpu_idle_cycle()	__asm volatile("sleep")
+#define	cpu_idle_leave()	do { /* nothing */ } while (0)
+
 #endif /* _KERNEL */
 
 /*
@@ -143,26 +171,65 @@ extern int want_resched;		/* need_resched() was called */
 #ifdef _KERNEL
 #ifndef __lint__
 
-/* switch from P1 to P2 */
-#define	RUN_P2 do {							\
-		void *p;						\
-		p = &&P2;						\
-		goto *(void *)SH3_P1SEG_TO_P2SEG(p);			\
-	    P2:	(void)0;						\
+/*
+ * Switch from P1 (cached) to P2 (uncached).  This used to be written
+ * using gcc's assigned goto extension, but gcc4 aggressive optimizations
+ * tend to optimize that away under certain circumstances.
+ */
+#define RUN_P2						\
+	do {						\
+		register uint32_t r0 asm("r0");		\
+		uint32_t pc;				\
+		__asm volatile(				\
+			"	mov.l	1f, %1	;"	\
+			"	mova	2f, %0	;"	\
+			"	or	%0, %1	;"	\
+			"	jmp	@%1	;"	\
+			"	 nop		;"	\
+			"	.align 2	;"	\
+			"1:	.long	0x20000000;"	\
+			"2:;"				\
+			: "=r"(r0), "=r"(pc));		\
 	} while (0)
 
-/* switch from P2 to P1 */
-#define	RUN_P1 do {							\
-		void *p;						\
-		p = &&P1;						\
-		__asm volatile("nop;nop;nop;nop;nop;nop;nop;nop");	\
-		goto *(void *)SH3_P2SEG_TO_P1SEG(p);			\
-	    P1:	(void)0;						\
+/*
+ * Switch from P2 (uncached) back to P1 (cached).  We need to be
+ * running on P2 to access cache control, memory-mapped cache and TLB
+ * arrays, etc. and after touching them at least 8 instructinos are
+ * necessary before jumping to P1, so provide that padding here.
+ */
+#define RUN_P1						\
+	do {						\
+		register uint32_t r0 asm("r0");		\
+		uint32_t pc;				\
+		__asm volatile(				\
+		/*1*/	"	mov.l	1f, %1	;"	\
+		/*2*/	"	mova	2f, %0	;"	\
+		/*3*/	"	nop		;"	\
+		/*4*/	"	and	%0, %1	;"	\
+		/*5*/	"	nop		;"	\
+		/*6*/	"	nop		;"	\
+		/*7*/	"	nop		;"	\
+		/*8*/	"	nop		;"	\
+			"	jmp	@%1	;"	\
+			"	 nop		;"	\
+			"	.align 2	;"	\
+			"1:	.long	~0x20000000;"	\
+			"2:;"				\
+			: "=r"(r0), "=r"(pc));		\
 	} while (0)
+
+/*
+ * If RUN_P1 is the last thing we do in a function we can omit it, b/c
+ * we are going to return to a P1 caller anyway, but we still need to
+ * ensure there's at least 8 instructions before jump to P1.
+ */
+#define PAD_P1_SWITCH	__asm volatile ("nop;nop;nop;nop;nop;nop;nop;nop;")
 
 #else  /* __lint__ */
-#define	RUN_P2	do {} while (/* CONSTCOND */ 0)
-#define	RUN_P1	do {} while (/* CONSTCOND */ 0)
+#define	RUN_P2		do {} while (/* CONSTCOND */ 0)
+#define	RUN_P1		do {} while (/* CONSTCOND */ 0)
+#define	PAD_P1_SWITCH	do {} while (/* CONSTCOND */ 0)
 #endif
 #endif
 
@@ -189,17 +256,6 @@ extern int want_resched;		/* need_resched() was called */
  */
 #include <machine/cputypes.h>
 
-/*
- * CTL_MACHDEP definitions.
- */
-#define	CPU_CONSDEV		1	/* dev_t: console terminal device */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
-
-#define	CTL_MACHDEP_NAMES {						\
-	{ 0, 0 },							\
-	{ "console_device",	CTLTYPE_STRUCT },			\
-}
-
 #ifdef _KERNEL
 void sh_cpu_init(int, int);
 void sh_startup(void);
@@ -208,6 +264,12 @@ void _cpu_spin(uint32_t);	/* for delay loop. */
 void delay(int);
 struct pcb;
 void savectx(struct pcb *);
+struct fpreg;
+void fpu_save(struct fpreg *);
+void fpu_restore(struct fpreg *);
+u_int cpu_dump(int (*)(dev_t, daddr_t, caddr_t, size_t), daddr_t *);
+u_int cpu_dumpsize(void);
+void dumpconf(void);
 void dumpsys(void);
 #endif /* _KERNEL */
 #endif /* !_SH_CPU_H_ */

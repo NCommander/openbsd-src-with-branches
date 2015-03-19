@@ -1,3 +1,5 @@
+/*	$OpenBSD: audiotest_rw.c,v 1.9 2007/10/20 02:34:54 jakemsr Exp $	*/
+
 /*
  * Copyright (c) 2007 Jacob Meuser <jakemsr@sdf.lonestar.org>
  *
@@ -14,9 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
- * $Id: audiotest_rw.c,v 1.3 2007/07/04 04:03:07 jakemsr Exp $
- */
 
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -33,21 +32,21 @@
 #include <string.h>
 
 extern char *__progname;
-/* extern int errno; */
 
 void useage(void);
 int audio_set_duplex(int, char *, int);
-int audio_set_info(int, u_int, u_int, u_int, u_int);
-int audio_wait_frame(int, u_int, int, int);
-int audio_do_frame(int, size_t , char *, char *, u_int, int, int);
-int audio_do_test(int, size_t, char *, char *, u_int, int, int, int, int);
+int audio_set_info(int, u_int, u_int, u_int, u_int, size_t *);
+int audio_trigger_record(int);
+int audio_wait_frame(int, size_t, u_int, int, int, int);
+int audio_do_frame(int, size_t , char *, char *, u_int, int, int, int);
+int audio_do_test(int, size_t, char *, char *, u_int, int, int, int, int, int);
 
 void
 useage(void)
 {
 	fprintf(stderr,
-	    "Usage: %s [-dpsv] [-b buffersize] [-c channels] [-e encoding]\n"
-	    "          [-f device] [-i input ] [-l loops] [-o output] [-r samplerate]\n",
+	    "usage: %s [-dpsv] [-b buffersize] [-c channels] [-e encoding]\n"
+	    "          [-f device] [-i input] [-l loops] [-o output] [-r samplerate]\n",
 	    __progname);
 	return;
 }
@@ -89,7 +88,7 @@ int i, has_duplex;
 
 int
 audio_set_info(int audio_fd, u_int mode, u_int encoding, u_int sample_rate,
-    u_int channels)
+    u_int channels, size_t *buffer_size)
 {
 audio_info_t audio_if;
 audio_encoding_t audio_enc;
@@ -121,12 +120,14 @@ u_int precision;
 		audio_if.record.channels = channels;
 		audio_if.record.sample_rate = sample_rate;
 		audio_if.record.encoding = encoding;
+		audio_if.record.block_size = *buffer_size;
 	}
 	if (mode & AUMODE_PLAY) {
 		audio_if.play.precision = precision;
 		audio_if.play.channels = channels;
 		audio_if.play.sample_rate = sample_rate;
 		audio_if.play.encoding = encoding;
+		audio_if.play.block_size = *buffer_size;
 	}
 
 	if (ioctl(audio_fd, AUDIO_SETINFO, &audio_if) < 0) {
@@ -160,6 +161,7 @@ u_int precision;
 			    encoding, audio_if.record.encoding);
 			return 1;
 		}
+		*buffer_size = audio_if.record.block_size;
 	}
 
 	if (mode & AUMODE_PLAY) {
@@ -183,21 +185,34 @@ u_int precision;
 			    encoding, audio_if.play.encoding);
 			return 1;
 		}
+		*buffer_size = audio_if.play.block_size;
 	}
 
-	if (ioctl(audio_fd, AUDIO_FLUSH) < 0) {
-		warn("AUDIO_FLUSH");
+	return 0;
+}
+
+int
+audio_trigger_record(int audio_fd)
+{
+audio_info_t audio_if;
+
+	AUDIO_INITINFO(&audio_if);
+	audio_if.record.pause = 0;
+	if (ioctl(audio_fd, AUDIO_SETINFO, &audio_if) < 0) {
+		warn("AUDIO_SETINFO: audio_if.record.pause = %d",
+		    audio_if.record.pause);
 		return 1;
 	}
 
 	return 0;
 }
 
-
 /* return 0 on error, 1 if read, 2 if write, 3 if both read and write */
 int
-audio_wait_frame(int audio_fd, u_int mode, int use_select, int use_poll)
+audio_wait_frame(int audio_fd, size_t buffer_size, u_int mode, int use_select,
+    int use_poll, int use_bufinfo)
 {
+struct audio_bufinfo ab;
 struct pollfd pfd[1];
 fd_set *sfdsr;
 fd_set *sfdsw;
@@ -214,7 +229,7 @@ int ret;
 		sfdsr = NULL;
 		sfdsw = NULL;
 		if (mode & AUMODE_RECORD) {
-			if ((sfdsr = calloc(max + 1, sizeof(fd_mask))) == NULL) {
+			if ((sfdsr = calloc(max + 1, sizeof(fd_set))) == NULL) {
 				warn("fd_set sfdsr");
 				return 0;
 			}
@@ -222,7 +237,7 @@ int ret;
 			FD_SET(audio_fd, sfdsr);
 		}
 		if (mode & AUMODE_PLAY) {
-			if ((sfdsw = calloc(max + 1, sizeof(fd_mask))) == NULL) {
+			if ((sfdsw = calloc(max + 1, sizeof(fd_set))) == NULL) {
 				warn("fd_set sfdsw");
 				return 0;
 			}
@@ -270,6 +285,29 @@ int ret;
 		if (mode & AUMODE_PLAY)
 			if (pfd[0].revents & POLLOUT)
 				ret |= 2;
+	} else if (use_bufinfo) {
+retry:
+		if (mode & AUMODE_RECORD) {
+			if (ioctl(audio_fd, AUDIO_GETRRINFO, &ab) < 0) {
+				warn("AUDIO_GETRRINFO");
+				return 0;
+			}
+			if (ab.seek >= buffer_size)
+				ret |= 1;
+		}
+		if (mode & AUMODE_PLAY) {
+			if (ioctl(audio_fd, AUDIO_GETPRINFO, &ab) < 0) {
+				warn("AUDIO_GETPRINFO");
+				return 0;
+			}
+			if (ab.hiwat * ab.blksize - ab.seek >= buffer_size)
+				ret |= 2;
+		}
+		if (ret == 0) {
+			/* 1/100th of a second */
+			usleep(100000);
+			goto retry;
+		}
 	} else {
 		if (mode & AUMODE_RECORD)
 			ret |= 1;
@@ -284,14 +322,15 @@ int ret;
 /* return 0 on error, 1 if read, 2 if write, 3 if both read and write */
 int
 audio_do_frame(int audio_fd, size_t buffer_size, char *rbuffer, char *wbuffer,
-    u_int mode, int use_poll, int use_select)
+    u_int mode, int use_poll, int use_select, int use_bufinfo)
 {
 size_t offset;
 size_t left;
 ssize_t retval;
 int ret;
 
-	ret = audio_wait_frame(audio_fd, mode, use_select, use_poll);
+	ret = audio_wait_frame(audio_fd, buffer_size, mode, use_select,
+	    use_poll, use_bufinfo);
 	if (ret == 0)
 		return 0;
 
@@ -338,8 +377,9 @@ int ret;
 
 
 int
-audio_do_test(int audio_fd, size_t buffer_size, char *input_file, char *output_file,
-    u_int mode, int use_poll, int use_select, int loops, int verbose)
+audio_do_test(int audio_fd, size_t buffer_size, char *input_file,
+    char *output_file, u_int mode, int use_poll, int use_select,
+    int use_bufinfo, int loops, int verbose)
 {
 FILE *fout;
 FILE *fin;
@@ -378,7 +418,7 @@ int i, ret;
 	}
 	for (i = 1; mode && i <= loops; i++) {
 		ret = audio_do_frame(audio_fd, buffer_size, rbuffer,
-		    wbuffer, mode, use_poll, use_select);
+		    wbuffer, mode, use_poll, use_select, use_bufinfo);
 		if (ret == 0)
 			return 1;
 		if (ret & 1) {
@@ -444,6 +484,7 @@ int use_duplex;
 int use_nonblock;
 int use_poll;
 int use_select;
+int use_bufinfo;
 int verbose;
 
 int loops;
@@ -471,10 +512,11 @@ extern int optind;
 	use_nonblock = 0;
 	use_select = 0;
 	use_poll = 0;
+	use_bufinfo = 0;
 	use_duplex = 0;
 	verbose = 0;
 
-	while ((ch = getopt(argc, argv, "b:c:e:f:i:l:o:r:dpsv")) != -1) {
+	while ((ch = getopt(argc, argv, "b:c:e:f:i:l:o:r:dnpsv")) != -1) {
 		switch (ch) {
 		case 'b':
 			buffer_size = (size_t)strtonum(optarg, 32, 65536, &errstr);
@@ -505,6 +547,9 @@ extern int optind;
 			if (errstr != NULL)
 				errx(1, "could not grok loops: %s", errstr);
 			break;
+		case 'n':
+			use_bufinfo = 1;
+			break;
 		case 'o':
 			output_file = optarg;
 			break;
@@ -533,8 +578,8 @@ extern int optind;
 	argc -= optind;
 	argv += optind;
 
-	if (use_select && use_poll)
-		errx(1, "can't use select and poll at the same time");
+	if (use_select + use_poll + use_bufinfo > 1)
+		errx(1, "can only use one of select, poll or buffer info");
 
 	if ((input_file == NULL) && (output_file == NULL))
 		errx(1, "no input or output file specified");
@@ -567,7 +612,8 @@ extern int optind;
 	if (audio_set_duplex(audio_fd, audio_device, use_duplex))
 		errx(1, "could not set duplex mode");
 
-	if (audio_set_info(audio_fd, mode, encoding, sample_rate, channels))
+	if (audio_set_info(audio_fd, mode, encoding, sample_rate, channels,
+	    &buffer_size))
 		errx(1, "could not initialize audio device");
 
 	if (verbose) {
@@ -596,13 +642,18 @@ extern int optind;
 		warnx("channels:           %u", channels);
 		warnx("use_select:         %d", use_select);
 		warnx("use_poll:           %d", use_poll);
+		warnx("use_bufinfo:        %d", use_bufinfo);
 		warnx("use_duplex:         %d", use_duplex);
 		warnx("buffer_size:        %lu", (unsigned long)buffer_size);
 	}
 
+	/* need to trigger recording in duplex mode */
+	if (use_duplex && (mode & AUMODE_RECORD))
+		if (audio_trigger_record(audio_fd))
+			exit(1);
 
 	if (audio_do_test(audio_fd, buffer_size, input_file, output_file,
-	    mode, use_poll, use_select, loops, verbose))
+	    mode, use_poll, use_select, use_bufinfo, loops, verbose))
 		exit(1);
 
 	if (verbose)

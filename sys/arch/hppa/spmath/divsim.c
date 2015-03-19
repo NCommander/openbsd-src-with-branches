@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,19 +12,14 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/divsim.c,v $
- * $Revision: 1.6.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:05:56 $
- */
+/* @(#)divsim.c: Revision: 1.6.88.1 Date: 93/12/07 15:05:56 */
 
+#include "md.h"
 
-#include "../spmath/md.h"
-
-VOID divsim(opnd1,opnd2,result)
-
-int opnd1, opnd2;
-struct mdsfu_register *result;
+void
+divsim(opnd1,opnd2,result)
+	int opnd1, opnd2;
+	struct mdsfu_register *result;
 {
 	int sign, op1_sign;
 
@@ -59,16 +55,16 @@ struct mdsfu_register *result;
 		/* do the divide */
 		divu(0,opnd1,opnd2,result);
 
-		/* 
+		/*
 		 * check for overflow
-                 *        
-                 * at this point, the only way we can get overflow
-                 * is with opnd1 = -2**31 and opnd2 = -1
-                 */
-                if (sign>0 && result_lo<0) {
-                        overflow = TRUE;
-                        return;
-                }
+		 *
+		 * at this point, the only way we can get overflow
+		 * is with opnd1 = -2**31 and opnd2 = -1
+		 */
+		if (sign>0 && result_lo<0) {
+			overflow = TRUE;
+			return;
+		}
 	}
 	overflow = FALSE;
 

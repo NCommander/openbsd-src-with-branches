@@ -1,3 +1,4 @@
+/*	$OpenBSD: prtable.c,v 1.10 2008/03/20 12:02:27 millert Exp $	*/
 /*	$NetBSD: prtable.c,v 1.2 1995/03/21 12:14:42 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,7 +41,9 @@
 
 #define NCOLS	5
 
-static int	get_maxlen __P((char *[], int, int (*)(char **, int)));
+static int	get_maxlen(char **, int, int (*)(char **, int));
+
+extern int	lastline, LIST_LINE, LIST_COL;
 
 /*
  * Routine to print a table
@@ -58,22 +57,19 @@ static int	get_maxlen __P((char *[], int, int (*)(char **, int)));
  *	length  - address of the routine to call to determine the length
  *		  of string to be printed 
  *
- * prtable and length are called with the the address of the base and
+ * prtable and length are called with the address of the base and
  * an index
  */
 void
-prtable(base, num, d_cols, width, prentry, length)
-	char *base[];
-	int num, d_cols, width;
-	void (*prentry) __P((char *[], int));
-	int (*length) __P((char *[], int));
+prtable(char **base, int num, int d_cols, int width, 
+        void (*prentry)(char **, int), int (*length)(char **, int))
 {
-        register int c, j;
-        register int a, b, cols, loc, maxlen, nrows, z;
+	int c, j;
+	int a, b, cols, loc, maxlen, nrows, z;
 	int col, row;
 
-        if (num == 0)
-                return;
+	if (num == 0)
+		return;
 	maxlen = get_maxlen(base, num, length) + 1;
 	if (d_cols > 0)
 		cols = d_cols;
@@ -81,44 +77,56 @@ prtable(base, num, d_cols, width, prentry, length)
 		cols = width / maxlen;
 	if (cols == 0)
 		cols = NCOLS;
-        nrows = (num - 1) / cols + 1;
-        for (a = 1; a <= nrows; a++) {
-                b = c = z = loc = 0;
-                for (j = 0; j < num; j++) {
-                        c++;
-                        if (c >= a + b)
-                                break;
-                }
-                while (j < num) {
-                        (*prentry)(base, j);
+	nrows = (num - 1) / cols + 1;
+	for (a = 1; a <= nrows; a++) {
+		b = c = z = loc = 0;
+		for (j = 0; j < num; j++) {
+			c++;
+			if (c >= a + b)
+				break;
+		}
+		while (j < num) {
+			(*prentry)(base, j);
 			loc += (*length)(base, j);
-                        z++;
-                        b += nrows;
-                        for (j++; j < num; j++) {
-                                c++;
-                                if (c >= a + b)
-                                        break;
-                        }
-                        if (j < num) {
-                                while (loc < z * maxlen) {
-					addch(' ');
-                                        loc++;
-                                }
+			z++;
+			b += nrows;
+			for (j++; j < num; j++) {
+				c++;
+				if (c >= a + b)
+					break;
 			}
-                }
+			if (j < num) {
+				while (loc < z * maxlen) {
+					addch(' ');
+					loc++;
+				}
+			}
+		}
 		getyx(stdscr, row, col);
 		move(row + 1, 0);
-        }
+		if (row + 1 == lastline && a != nrows) {
+			attron(A_REVERSE);
+			printw("--More--");
+			attroff(A_REVERSE);
+			do {
+			    j = inputch();
+			} while (j != ' ' && j != 'q' && j != 'Q');
+			if (j == 'q' || j == 'Q') {
+				move(row + 1, 0);
+				wclrtoeol(stdscr);
+				break;
+			}
+			move(LIST_LINE, LIST_COL);
+			wclrtobot(stdscr);
+		}
+	}
 	refresh();
 }
 
 static int
-get_maxlen(base, num, length)
-	char *base[];
-	int num;
-	int (*length) __P((char **, int));
+get_maxlen(char **base, int num, int (*length)(char **, int))
 {
-	register int i, len, max;
+	int i, len, max;
 
 	max = (*length)(base, 0);
 	for (i = 0; i < num; i++) {

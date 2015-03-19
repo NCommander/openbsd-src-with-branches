@@ -1455,7 +1455,7 @@ alpha_relocate_section (output_bfd, info, input_bfd, input_section,
 	  amt = sizeof (struct ecoff_section_tdata);
 	  lita_sec_data = ((struct ecoff_section_tdata *)
 			   bfd_zalloc (input_bfd, amt));
-	  ecoff_section_data (input_bfd, lita_sec) = lita_sec_data;
+	  lita_sec->used_by_bfd = lita_sec_data;
 	}
 
       if (lita_sec_data->gp != 0)
@@ -2189,7 +2189,7 @@ alpha_ecoff_get_elt_at_filepos (archive, filepos)
   bim->buffer = buf;
 
   nbfd->mtime_set = TRUE;
-  nbfd->mtime = strtol (hdr->ar_date, (char **) NULL, 10);
+  nbfd->mtime = strtoll (hdr->ar_date, (char **) NULL, 10);
 
   nbfd->flags |= BFD_IN_MEMORY;
   nbfd->iostream = (PTR) bim;

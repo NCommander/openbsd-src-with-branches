@@ -1,39 +1,55 @@
+/*	$OpenBSD: magic.c,v 1.9 2009/10/27 23:59:53 deraadt Exp $	*/
+
 /*
  * magic.c - PPP Magic Number routines.
  *
- * Copyright (c) 1989 Carnegie Mellon University.
- * All rights reserved.
+ * Copyright (c) 1984-2000 Carnegie Mellon University. All rights reserved.
  *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * advertising materials, and other materials related to such
- * distribution and use acknowledge that the software was developed
- * by Carnegie Mellon University.  The name of the
- * University may not be used to endorse or promote products derived
- * from this software without specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The name "Carnegie Mellon University" must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission. For permission or any legal
+ *    details, please contact
+ *      Office of Technology Transfer
+ *      Carnegie Mellon University
+ *      5000 Forbes Avenue
+ *      Pittsburgh, PA  15213-3890
+ *      (412) 268-4387, fax: (412) 268-7395
+ *      tech-transfer@andrew.cmu.edu
+ *
+ * 4. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by Computing Services
+ *     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+ *
+ * CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+ * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+ * FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef lint
-static char rcsid[] = "$Id: magic.c,v 1.3 1995/07/04 23:47:51 paulus Exp $";
-#endif
-
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <stdlib.h>
 
 #include "pppd.h"
 #include "magic.h"
-
-static u_int32_t next;		/* Next value to return */
-
-extern int gethostid __P((void));
-extern long mrand48 __P((void));
-extern void srand48 __P((long));
-
 
 /*
  * magic_init - Initialize the magic number generator.
@@ -45,12 +61,6 @@ extern void srand48 __P((long));
 void
 magic_init()
 {
-    long seed;
-    struct timeval t;
-
-    gettimeofday(&t, NULL);
-    seed = gethostid() ^ t.tv_sec ^ t.tv_usec ^ getpid();
-    srand48(seed);
 }
 
 /*
@@ -59,32 +69,5 @@ magic_init()
 u_int32_t
 magic()
 {
-    return (u_int32_t) mrand48();
+    return arc4random();
 }
-
-#ifdef NO_DRAND48
-/*
- * Substitute procedures for those systems which don't have
- * drand48 et al.
- */
-
-double
-drand48()
-{
-    return (double)random() / (double)0x7fffffffL; /* 2**31-1 */
-}
-
-long
-mrand48()
-{
-    return random();
-}
-
-void
-srand48(seedval)
-long seedval;
-{
-    srandom((int)seedval);
-}
-
-#endif

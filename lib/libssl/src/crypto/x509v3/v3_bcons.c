@@ -1,4 +1,4 @@
-/* v3_bcons.c */
+/* $OpenBSD: v3_bcons.c,v 1.10 2014/07/11 08:44:49 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -56,26 +56,29 @@
  *
  */
 
-
 #include <stdio.h>
-#include "cryptlib.h"
+#include <string.h>
+
 #include <openssl/asn1.h>
 #include <openssl/asn1t.h>
 #include <openssl/conf.h>
+#include <openssl/err.h>
 #include <openssl/x509v3.h>
 
-static STACK_OF(CONF_VALUE) *i2v_BASIC_CONSTRAINTS(X509V3_EXT_METHOD *method, BASIC_CONSTRAINTS *bcons, STACK_OF(CONF_VALUE) *extlist);
-static BASIC_CONSTRAINTS *v2i_BASIC_CONSTRAINTS(X509V3_EXT_METHOD *method, X509V3_CTX *ctx, STACK_OF(CONF_VALUE) *values);
+static STACK_OF(CONF_VALUE) *i2v_BASIC_CONSTRAINTS(X509V3_EXT_METHOD *method,
+    BASIC_CONSTRAINTS *bcons, STACK_OF(CONF_VALUE) *extlist);
+static BASIC_CONSTRAINTS *v2i_BASIC_CONSTRAINTS(X509V3_EXT_METHOD *method,
+    X509V3_CTX *ctx, STACK_OF(CONF_VALUE) *values);
 
 const X509V3_EXT_METHOD v3_bcons = {
-NID_basic_constraints, 0,
-ASN1_ITEM_ref(BASIC_CONSTRAINTS),
-0,0,0,0,
-0,0,
-(X509V3_EXT_I2V)i2v_BASIC_CONSTRAINTS,
-(X509V3_EXT_V2I)v2i_BASIC_CONSTRAINTS,
-NULL,NULL,
-NULL
+	NID_basic_constraints, 0,
+	ASN1_ITEM_ref(BASIC_CONSTRAINTS),
+	0, 0, 0, 0,
+	0, 0,
+	(X509V3_EXT_I2V)i2v_BASIC_CONSTRAINTS,
+	(X509V3_EXT_V2I)v2i_BASIC_CONSTRAINTS,
+	NULL, NULL,
+	NULL
 };
 
 ASN1_SEQUENCE(BASIC_CONSTRAINTS) = {
@@ -83,42 +86,72 @@ ASN1_SEQUENCE(BASIC_CONSTRAINTS) = {
 	ASN1_OPT(BASIC_CONSTRAINTS, pathlen, ASN1_INTEGER)
 } ASN1_SEQUENCE_END(BASIC_CONSTRAINTS)
 
-IMPLEMENT_ASN1_FUNCTIONS(BASIC_CONSTRAINTS)
+
+BASIC_CONSTRAINTS *
+d2i_BASIC_CONSTRAINTS(BASIC_CONSTRAINTS **a, const unsigned char **in, long len)
+{
+	return (BASIC_CONSTRAINTS *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &BASIC_CONSTRAINTS_it);
+}
+
+int
+i2d_BASIC_CONSTRAINTS(BASIC_CONSTRAINTS *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &BASIC_CONSTRAINTS_it);
+}
+
+BASIC_CONSTRAINTS *
+BASIC_CONSTRAINTS_new(void)
+{
+	return (BASIC_CONSTRAINTS *)ASN1_item_new(&BASIC_CONSTRAINTS_it);
+}
+
+void
+BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *a)
+{
+	ASN1_item_free((ASN1_VALUE *)a, &BASIC_CONSTRAINTS_it);
+}
 
 
-static STACK_OF(CONF_VALUE) *i2v_BASIC_CONSTRAINTS(X509V3_EXT_METHOD *method,
-	     BASIC_CONSTRAINTS *bcons, STACK_OF(CONF_VALUE) *extlist)
+static STACK_OF(CONF_VALUE) *
+i2v_BASIC_CONSTRAINTS(X509V3_EXT_METHOD *method, BASIC_CONSTRAINTS *bcons,
+    STACK_OF(CONF_VALUE) *extlist)
 {
 	X509V3_add_value_bool("CA", bcons->ca, &extlist);
 	X509V3_add_value_int("pathlen", bcons->pathlen, &extlist);
 	return extlist;
 }
 
-static BASIC_CONSTRAINTS *v2i_BASIC_CONSTRAINTS(X509V3_EXT_METHOD *method,
-	     X509V3_CTX *ctx, STACK_OF(CONF_VALUE) *values)
+static BASIC_CONSTRAINTS *
+v2i_BASIC_CONSTRAINTS(X509V3_EXT_METHOD *method, X509V3_CTX *ctx,
+    STACK_OF(CONF_VALUE) *values)
 {
-	BASIC_CONSTRAINTS *bcons=NULL;
+	BASIC_CONSTRAINTS *bcons = NULL;
 	CONF_VALUE *val;
 	int i;
-	if(!(bcons = BASIC_CONSTRAINTS_new())) {
+
+	if (!(bcons = BASIC_CONSTRAINTS_new())) {
 		X509V3err(X509V3_F_V2I_BASIC_CONSTRAINTS, ERR_R_MALLOC_FAILURE);
 		return NULL;
 	}
-	for(i = 0; i < sk_CONF_VALUE_num(values); i++) {
+	for (i = 0; i < sk_CONF_VALUE_num(values); i++) {
 		val = sk_CONF_VALUE_value(values, i);
-		if(!strcmp(val->name, "CA")) {
-			if(!X509V3_get_value_bool(val, &bcons->ca)) goto err;
-		} else if(!strcmp(val->name, "pathlen")) {
-			if(!X509V3_get_value_int(val, &bcons->pathlen)) goto err;
+		if (!strcmp(val->name, "CA")) {
+			if (!X509V3_get_value_bool(val, &bcons->ca))
+				goto err;
+		} else if (!strcmp(val->name, "pathlen")) {
+			if (!X509V3_get_value_int(val, &bcons->pathlen))
+				goto err;
 		} else {
-			X509V3err(X509V3_F_V2I_BASIC_CONSTRAINTS, X509V3_R_INVALID_NAME);
+			X509V3err(X509V3_F_V2I_BASIC_CONSTRAINTS,
+			    X509V3_R_INVALID_NAME);
 			X509V3_conf_err(val);
 			goto err;
 		}
 	}
 	return bcons;
-	err:
+
+err:
 	BASIC_CONSTRAINTS_free(bcons);
 	return NULL;
 }
-

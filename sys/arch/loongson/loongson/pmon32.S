@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pmon32.S,v 1.3 2010/02/14 22:39:33 miod Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -19,25 +19,20 @@
 /*
  * Wrapper routines to invoke PMON2000 functions from 64-bit code.
  *
- * Since the PMON code is compiled as 32 bit code, the upper part of the
- * registers may be destroyed.
+ * PMON is compiled as 64 bit code, using the gcc o64 ABI (similar to the o32
+ * ABI, but using 64 bit registers).
  *
- * As a result, we need to explicitely save all caller-saved registers,
- * prior to invoking any PMON function.
- *
- * Moreover, O32 calling convention only allows up to four arguments to
- * be passed through registers.  It's up to the caller to never invoke
- * pmon_printf() with more than four arguments; other functions are not
- * affected.
- *
- * 64-bit (off_t) return values are preserved (by merging v1 and v0) on a
- * case-by-case basis.
+ * As a result, only up to four arguments to functions will be passed through
+ * registers.  It's up to the caller to never invoke pmon_printf() with more
+ * than four arguments; other functions are not affected.
  */
 
 #include <machine/param.h>
 #include <machine/asm.h>
 
+#ifndef _STANDALONE
 #include "assym.h"
+#endif
 
 	.set	mips3
 
@@ -48,14 +43,11 @@ pmon_callvec:
 
 	.text
 
-	.set	noat
-
 /*
- * Note that we need to provide a 32-bit CF_SZ untouched area above sp, or
- * we'll get our stack corrupted upon return.
+ * Note that we need to provide a CF_SZ untouched area above sp, or we'll risk
+ * our stack being corrupted upon return.
  */
-
-#define	PMON_WRAP(name) \
+#define	PMON_WRAP(name, index) \
 	NNON_LEAF(name, FRAMESZ(CF_SZ + 9 * REGSZ),  ra); \
 	PTR_SUBU sp, sp, FRAMESZ(CF_SZ + 9 * REGSZ); \
 	REG_S	ra, CF_RA_OFFS(sp); \
@@ -68,9 +60,11 @@ pmon_callvec:
 	REG_S	s5, (5 * REGSZ + CF_SZ)(sp); \
 	REG_S	s6, (6 * REGSZ + CF_SZ)(sp); \
 	REG_S	s7, (7 * REGSZ + CF_SZ)(sp); \
-	REG_S	s8, (8 * REGSZ + CF_SZ)(sp)
-
-#define	PMON_END(name) \
+	REG_S	s8, (8 * REGSZ + CF_SZ)(sp); \
+	lw	t0, pmon_callvec; \
+	lw	t0, (index) * 4 (t0); \
+	jalr	t0; \
+	nop; \
 	REG_L	s8, (8 * REGSZ + CF_SZ)(sp); \
 	REG_L	s7, (7 * REGSZ + CF_SZ)(sp); \
 	REG_L	s6, (6 * REGSZ + CF_SZ)(sp); \
@@ -86,80 +80,15 @@ pmon_callvec:
 	nop; \
 	END(name)
 
-PMON_WRAP(pmon_printf)
-	lw	t0, pmon_callvec
-	lw	t0, 5 * 4 (t0)
-	jalr	t0
-	nop
-PMON_END(pmon_printf)
-
-PMON_WRAP(pmon_gets)
-	lw	t0, pmon_callvec
-	lw	t0, 7 * 4 (t0)
-	jalr	t0
-	nop
-	/* make sure the return value is sign extended */
-	dsll32	v0, 0
-	dsra32	v0, 0
-PMON_END(pmon_gets)
-
-#if 0
-
-PMON_WRAP(pmon_cacheflush)
-	lw	t0, pmon_callvec
-	lw	t0, 6 * 4 (t0)
-	jalr	t0
-	nop
-PMON_END(pmon_cacheflush)
-
-/*
- * The following routines are untested.
- */
-
-PMON_WRAP(pmon_open)
-	lw	t0, pmon_callvec
-	lw	t0, 0 * 4 (t0)
-	jalr	t0
-	nop
-PMON_END(pmon_open)
-
-PMON_WRAP(pmon_close)
-	lw	t0, pmon_callvec
-	lw	t0, 1 * 4 (t0)
-	jalr	t0
-	nop
-PMON_END(pmon_close)
-
-PMON_WRAP(pmon_read)
-	lw	t0, pmon_callvec
-	lw	t0, 2 * 4 (t0)
-	jalr	t0
-	nop
-PMON_END(pmon_read)
-
-PMON_WRAP(pmon_write)
-	lw	t0, pmon_callvec
-	lw	t0, 3 * 4 (t0)
-	jalr	t0
-	nop
-PMON_END(pmon_write)
-
-PMON_WRAP(pmon_lseek)
-	lw	t0, pmon_callvec
-	lw	t0, 4 * 4 (t0)
-	jalr	t0
-	nop
-	/* rebuild the 64 bit return value */
-	dsll32	v0, 0
-	dsll32	v1, 0
-#ifdef __MIPSEB__
-	/* v1 = lo << 32, v0 = hi << 32 */
-	dsrl32	v1, 0
-#else
-	/* v1 = hi << 32, v0 = lo << 32 */
-	dsrl32	v0, 0
+PMON_WRAP(pmon_printf, 5)
+PMON_WRAP(pmon_gets, 7)
+#ifdef _STANDALONE
+PMON_WRAP(pmon_open, 0)
+PMON_WRAP(pmon_close, 1)
+PMON_WRAP(pmon_read, 2)
+PMON_WRAP(pmon_lseek, 4)
+PMON_WRAP(pmon_cacheflush, 6)
 #endif
-	or	v0, v1, v0
-PMON_END(pmon_lseek)
-
+#if 0	/* unused */
+PMON_WRAP(pmon_write, 3)
 #endif

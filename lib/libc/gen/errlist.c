@@ -1,5 +1,4 @@
-/*	$NetBSD: errlist.c,v 1.4 1995/02/25 13:40:51 cgd Exp $	*/
-
+/*	$OpenBSD: errlist.c,v 1.14 2009/11/24 09:22:22 guenther Exp $ */
 /*
  * Copyright (c) 1982, 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)errlst.c	8.2 (Berkeley) 11/16/93";
-#else
-static char *rcsid = "$NetBSD: errlist.c,v 1.4 1995/02/25 13:40:51 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 const char *const _sys_errlist[] = {
 	"Undefined error: 0",			/*  0 - ENOERROR */
@@ -126,7 +113,7 @@ const char *const _sys_errlist[] = {
 /* quotas & mush */
 	"Too many processes",			/* 67 - EPROCLIM */
 	"Too many users",			/* 68 - EUSERS */
-	"Disc quota exceeded",			/* 69 - EDQUOT */
+	"Disk quota exceeded",			/* 69 - EDQUOT */
 
 /* Network File System */
 	"Stale NFS file handle",		/* 70 - ESTALE */
@@ -140,5 +127,18 @@ const char *const _sys_errlist[] = {
 	"No locks available",			/* 77 - ENOLCK */
 	"Function not implemented",		/* 78 - ENOSYS */
 	"Inappropriate file type or format",	/* 79 - EFTYPE */
+	"Authentication error",			/* 80 - EAUTH */
+	"Need authenticator",			/* 81 - ENEEDAUTH */
+	"IPsec processing failure",		/* 82 - EIPSEC */
+	"Attribute not found",			/* 83 - ENOATTR */
+	"Illegal byte sequence",		/* 84 - EILSEQ */
+	"No medium found",			/* 85 - ENOMEDIUM */
+	"Wrong medium type",			/* 86 - EMEDIUMTYPE */
+						/* 87 - EOVERFLOW */
+	"Value too large to be stored in data type",
+	"Operation canceled",			/* 88 - ECANCELED */
+	"Identifier removed",			/* 89 - EIDRM */
+	"No message of desired type",		/* 90 - ENOMSG */
+	"Not supported",			/* 91 - ENOTSUP */
 };
 int _sys_nerr = { sizeof _sys_errlist/sizeof _sys_errlist[0] };

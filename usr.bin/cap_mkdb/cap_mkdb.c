@@ -1,3 +1,4 @@
+/*	$OpenBSD: cap_mkdb.c,v 1.18 2011/07/04 21:34:54 nicm Exp $	*/
 /*	$NetBSD: cap_mkdb.c,v 1.5 1995/09/02 05:47:12 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,20 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)cap_mkdb.c	8.2 (Berkeley) 4/27/95";
-#endif
-static char rcsid[] = "$NetBSD: cap_mkdb.c,v 1.5 1995/09/02 05:47:12 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <db.h>
@@ -57,15 +40,21 @@ static char rcsid[] = "$NetBSD: cap_mkdb.c,v 1.5 1995/09/02 05:47:12 jtc Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 
-void	 db_build __P((char **));
-void	 dounlink __P((void));
-void	 usage __P((void));
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
+#define MAXIMUM(a, b)	(((a) > (b)) ? (a) : (b))
+
+void	 db_build(char **);
+void	 dounlink(void);
+void	 usage(void);
+int	 igetnext(char **, char **);
+int	 main(int, char *[]);
 
 DB *capdbp;
-int verbose;
-char *capdb, *capname, buf[8 * 1024];
+int info, verbose;
+char *capname, buf[8 * 1024];
 
 HASHINFO openinfo = {
 	4096,		/* bsize */
@@ -77,27 +66,28 @@ HASHINFO openinfo = {
 };
 
 /*
- * Mkcapdb creates a capability hash database for quick retrieval of capability
+ * cap_mkdb creates a capability hash database for quick retrieval of capability
  * records.  The database contains 2 types of entries: records and references
  * marked by the first byte in the data.  A record entry contains the actual
  * capability record whereas a reference contains the name (key) under which
  * the correct record is stored.
  */
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int c;
 
 	capname = NULL;
-	while ((c = getopt(argc, argv, "f:v")) != EOF) {
+	while ((c = getopt(argc, argv, "f:iv")) != -1) {
 		switch(c) {
 		case 'f':
 			capname = optarg;
 			break;
 		case 'v':
 			verbose = 1;
+			break;
+		case 'i':
+			info = 1;
 			break;
 		case '?':
 		default:
@@ -112,11 +102,11 @@ main(argc, argv)
 
 	/*
 	 * The database file is the first argument if no name is specified.
-	 * Make arrangements to unlink it if exit badly.
+	 * Make arrangements to unlink it if we exit badly.
 	 */
 	(void)snprintf(buf, sizeof(buf), "%s.db", capname ? capname : *argv);
 	if ((capname = strdup(buf)) == NULL)
-		err(1, "");
+		err(1, NULL);
 	if ((capdbp = dbopen(capname, O_CREAT | O_TRUNC | O_RDWR,
 	    DEFFILEMODE, DB_HASH, &openinfo)) == NULL)
 		err(1, "%s", buf);
@@ -133,7 +123,7 @@ main(argc, argv)
 }
 
 void
-dounlink()
+dounlink(void)
 {
 	if (capname != NULL)
 		(void)unlink(capname);
@@ -148,37 +138,44 @@ dounlink()
 #define SHADOW	(char)2
 
 /*
- * Db_build() builds the name and capabilty databases according to the
+ * db_build() builds the name and capability databases according to the
  * details above.
  */
 void
-db_build(ifiles)
-	char **ifiles;
+db_build(char **ifiles)
 {
 	DBT key, data;
 	recno_t reccnt;
 	size_t len, bplen;
 	int st;
-	char *bp, *p, *t;
+	char *bp, *p, *t, *out, ch;
+
+	cgetusedb(0);		/* disable reading of .db files in getcap(3) */
 
 	data.data = NULL;
 	key.data = NULL;
-	for (reccnt = 0, bplen = 0; (st = cgetnext(&bp, ifiles)) > 0;) {
+	for (reccnt = 0, bplen = 0;
+	     (st = (info ? igetnext(&bp, ifiles) : cgetnext(&bp, ifiles))) > 0;) {
 
 		/*
-		 * Allocate enough memory to store record, terminating
-		 * NULL and one extra byte.
+		 * Allocate enough memory to store four times the size of the
+		 * record (so an existing ':' can be expanded to '\072' for
+		 * terminfo) plus a terminating NULL and one extra byte.
 		 */
 		len = strlen(bp);
-		if (bplen <= len + 2) {
-			bplen += MAX(256, len + 2);
-			if ((data.data = realloc(data.data, bplen)) == NULL)
-				err(1, "");
+		if (bplen <= 4 * len + 2) {
+			int newbplen = bplen + MAXIMUM(256, 4 * len + 2);
+			void *newdata;
+
+			if ((newdata = realloc(data.data, newbplen)) == NULL)
+				err(1, NULL);
+			data.data = newdata;
+			bplen = newbplen;
 		}
 
 		/* Find the end of the name field. */
-		if ((p = strchr(bp, ':')) == NULL) {
-			warnx("no name field: %.*s", MIN(len, 20), bp);
+		if ((p = strchr(bp, info ? ',' : ':')) == NULL) {
+			warnx("no name field: %.*s", (int)MINIMUM(len, 20), bp);
 			continue;
 		}
 
@@ -189,13 +186,75 @@ db_build(ifiles)
 			break;
 		case 2:
 			((char *)(data.data))[0] = TCERR;
-			warnx("Record not tc expanded: %.*s", p - bp, bp);
+			warnx("Record not tc expanded: %.*s", (int)(p - bp), bp);
 			break;
 		}
 
 		/* Create the stored record. */
-		memmove(&((u_char *)(data.data))[1], bp, len + 1);
-		data.size = len + 2;
+		if (info) {
+			/*
+			 * The record separator is :, so it is necessary to
+			 * change commas into colons. However, \, should be
+			 * left alone, unless the \ is the last part of ^\.
+			 */
+			data.size = len + 2;
+			out = ((char *) data.data) + 1;
+			t = bp;
+			while (t < bp + len) {
+				switch (ch = *t++) {
+				case '^':
+				case '\\':
+					*out++ = ch;
+					if (*t != '\0')
+						*out++ = *t++;
+					break;
+				case ':':
+					memcpy(out, "\\072", 4);
+					out += 4;
+					data.size += 3; /* : already counted */
+					break;
+				case ',':
+					*out++ = ':';
+					break;
+				default:
+					*out++ = ch;
+					break;
+				}
+			}
+			*out++ = '\0';
+			if (memchr((char *)data.data + 1, '\0', data.size - 2)) {
+				warnx("NUL in entry: %.*s", (int)MINIMUM(len, 20), bp);
+				continue;
+			}
+		} else {
+			char *capbeg, *capend;
+
+			t = (char *)data.data + 1;
+			/* Copy the cap name and trailing ':' */
+			len = p - bp + 1;
+			memcpy(t, bp, len);
+			t += len;
+
+			/* Copy entry, collapsing empty fields. */
+			capbeg = p + 1;
+			while (*capbeg) {
+				/* Skip empty fields. */
+				if ((len = strspn(capbeg, ": \t\n\r")))
+					capbeg += len;
+
+				/* Find the end of this cap and copy it w/ : */
+				capend = strchr(capbeg, ':');
+				if (capend)
+					len = capend - capbeg + 1;
+				else
+					len = strlen(capbeg);
+				memcpy(t, capbeg, len);
+				t += len;
+				capbeg += len;
+			}
+			*t = '\0';
+			data.size = t - (char *)data.data + 1;
+		}
 
 		/* Store the record under the name field. */
 		key.data = bp;
@@ -207,7 +266,7 @@ db_build(ifiles)
 			/* NOTREACHED */
 		case 1:
 			warnx("ignored duplicate: %.*s",
-			    key.size, (char *)key.data);
+			    (int)key.size, (char *)key.data);
 			continue;
 		}
 		++reccnt;
@@ -218,14 +277,24 @@ db_build(ifiles)
 
 		/* The rest of the names reference the entire name. */
 		((char *)(data.data))[0] = SHADOW;
-		memmove(&((u_char *)(data.data))[1], key.data, key.size);
+		(void) memmove(&((u_char *)(data.data))[1], key.data, key.size);
 		data.size = key.size + 1;
 
 		/* Store references for other names. */
 		for (p = t = bp;; ++p) {
-			if (p > t && (*p == ':' || *p == '|')) {
+			if (p > t && (*p == (info ? ',' : ':') || *p == '|')) {
 				key.size = p - t;
 				key.data = t;
+
+				/*
+				 * If this is the last entry and contains any
+				 * spaces, it is a description rather than an
+				 * alias, so skip it and break.
+				 */
+				if (*p != '|' &&
+				    memchr(key.data, ' ', key.size) != NULL)
+					break;
+
 				switch(capdbp->put(capdbp,
 				    &key, &data, R_NOOVERWRITE)) {
 				case -1:
@@ -233,13 +302,14 @@ db_build(ifiles)
 					/* NOTREACHED */
 				case 1:
 					warnx("ignored duplicate: %.*s",
-					    key.size, (char *)key.data);
+					      (int)key.size, (char *)key.data);
 				}
 				t = p + 1;
 			}
-			if (*p == ':')
+			if (*p == (info ? ',' : ':'))
 				break;
 		}
+		free(bp);
 	}
 
 	switch(st) {
@@ -256,9 +326,9 @@ db_build(ifiles)
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
-	    "usage: cap_mkdb [-v] [-f outfile] file1 [file2 ...]\n");
+	    "usage: cap_mkdb [-iv] [-f outfile] file1 [file2 ...]\n");
 	exit(1);
 }

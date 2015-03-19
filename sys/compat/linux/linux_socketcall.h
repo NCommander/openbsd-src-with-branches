@@ -1,3 +1,4 @@
+/*	$OpenBSD: linux_socketcall.h,v 1.5 2011/04/05 22:54:31 pirofti Exp $	*/
 /*	$NetBSD: linux_socketcall.h,v 1.1 1995/02/28 23:26:05 fvdl Exp $	*/
 
 /*
@@ -31,8 +32,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _LINUX_SOCKETCALL_H
-#define _LINUX_SOCKETCALL_H
+#ifndef _LINUX_SOCKETCALL_H_
+#define _LINUX_SOCKETCALL_H_
 
 /*
  * Values passed to the Linux socketcall() syscall, determining the actual
@@ -53,6 +54,8 @@
 #define LINUX_SYS_shutdown	13
 #define LINUX_SYS_setsockopt	14
 #define LINUX_SYS_getsockopt	15
+#define LINUX_SYS_sendmsg	16
+#define LINUX_SYS_recvmsg	17
 
 /*
  * Structures for the arguments of the different system calls. This looks
@@ -66,13 +69,13 @@ struct linux_socket_args {
 
 struct linux_bind_args {
 	int s;
-	struct sockaddr *name;
+	struct linux_sockaddr *name;
 	int namelen;
 };
 
 struct linux_connect_args {
 	int s;
-	struct sockaddr *name;
+	struct linux_sockaddr *name;
 	int namelen;
 };
 
@@ -125,7 +128,7 @@ struct linux_sendto_args {
 	void *msg;
 	int len;
 	int flags;
-	struct sockaddr *to;
+	struct linux_sockaddr *to;
 	int tolen;
 };
 
@@ -159,4 +162,16 @@ struct linux_setsockopt_args {
 	int optlen;
 };
 
-#endif /* _LINUX_SOCKETCALL_H */
+struct linux_sendmsg_args {
+	int s;
+	struct msghdr *msg;
+	int flags;
+};
+
+struct linux_recvmsg_args {
+	int s;
+	struct msghdr *msg;
+	int flags;
+};
+
+#endif /* _LINUX_SOCKETCALL_H_ */

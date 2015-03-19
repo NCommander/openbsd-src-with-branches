@@ -1,3 +1,4 @@
+/*	$OpenBSD: from.c,v 1.16 2013/11/27 13:32:02 okan Exp $	*/
 /*	$NetBSD: from.c,v 1.6 1995/09/01 01:39:10 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,19 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1988, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)from.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: from.c,v 1.6 1995/09/01 01:39:10 jtc Exp $";
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <ctype.h>
 #include <pwd.h>
@@ -53,37 +37,39 @@ static char rcsid[] = "$NetBSD: from.c,v 1.6 1995/09/01 01:39:10 jtc Exp $";
 #include <stdlib.h>
 #include <unistd.h>
 #include <paths.h>
+#include <string.h>
+#include <err.h>
 
-main(argc, argv)
-	int argc;
-	char **argv;
+int	match(char *, char *);
+
+int
+main(int argc, char *argv[])
 {
-	extern char *optarg;
-	extern int optind;
 	struct passwd *pwd;
 	int ch, newline;
 	char *file, *sender, *p;
-#if MAXPATHLEN > BUFSIZ
-	char buf[MAXPATHLEN];
+#if PATH_MAX > BUFSIZ
+	char buf[PATH_MAX];
 #else
 	char buf[BUFSIZ];
 #endif
 
 	file = sender = NULL;
-	while ((ch = getopt(argc, argv, "f:s:")) != EOF)
-		switch((char)ch) {
+	while ((ch = getopt(argc, argv, "f:s:")) != -1)
+		switch(ch) {
 		case 'f':
 			file = optarg;
 			break;
 		case 's':
 			sender = optarg;
 			for (p = sender; *p; ++p)
-				if (isupper(*p))
-					*p = tolower(*p);
+				if (isupper((unsigned char)*p))
+					*p = tolower((unsigned char)*p);
 			break;
 		case '?':
 		default:
-			fprintf(stderr, "usage: from [-f file] [-s sender] [user]\n");
+			fprintf(stderr,
+			    "usage: from [-f file] [-s sender] [user]\n");
 			exit(1);
 		}
 	argv += optind;
@@ -98,28 +84,25 @@ main(argc, argv)
 	if (!file) {
 		if (!(file = *argv)) {
 			if (!(file = getenv("MAIL"))) {
-				if (!(pwd = getpwuid(getuid()))) {
-					(void)fprintf(stderr,
-				"from: no password file entry for you.\n");
-					exit(1);
-				}
-				if (file = getenv("USER")) {
-					(void)sprintf(buf, "%s/%s",
-					    _PATH_MAILDIR, file);
+				if (!(pwd = getpwuid(getuid())))
+					errx(1, "no password file entry for you");
+				if ((file = getenv("USER"))) {
+					(void)snprintf(buf, sizeof(buf),
+					    "%s/%s", _PATH_MAILDIR, file);
 					file = buf;
 				} else
-					(void)sprintf(file = buf, "%s/%s",
-					    _PATH_MAILDIR, pwd->pw_name);
+					(void)snprintf(file = buf, sizeof(buf),
+					    "%s/%s", _PATH_MAILDIR,
+					    pwd->pw_name);
 			}
 		} else {
-			(void)sprintf(buf, "%s/%s", _PATH_MAILDIR, file);
+			(void)snprintf(buf, sizeof(buf), "%s/%s",
+			    _PATH_MAILDIR, file);
 			file = buf;
 		}
 	}
-	if (!freopen(file, "r", stdin)) {
-		(void)fprintf(stderr, "from: can't read %s.\n", file);
-		exit(1);
-	}
+	if (!freopen(file, "r", stdin))
+		err(1, "%s", file);
 	for (newline = 1; fgets(buf, sizeof(buf), stdin);) {
 		if (*buf == '\n') {
 			newline = 1;
@@ -133,24 +116,24 @@ main(argc, argv)
 	exit(0);
 }
 
-match(line, sender)
-	register char *line, *sender;
+int
+match(char *line, char *sender)
 {
-	register char ch, pch, first, *p, *t;
+	char ch, pch, first, *p, *t;
 
 	for (first = *sender++;;) {
-		if (isspace(ch = *line))
+		if (isspace((unsigned char)(ch = *line)))
 			return(0);
 		++line;
-		if (isupper(ch))
-			ch = tolower(ch);
+		if (isupper((unsigned char)ch))
+			ch = tolower((unsigned char)ch);
 		if (ch != first)
 			continue;
 		for (p = sender, t = line;;) {
 			if (!(pch = *p++))
 				return(1);
-			if (isupper(ch = *t++))
-				ch = tolower(ch);
+			if (isupper((unsigned char)(ch = *t++)))
+				ch = tolower((unsigned char)ch);
 			if (ch != pch)
 				break;
 		}

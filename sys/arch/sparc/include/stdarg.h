@@ -1,4 +1,5 @@
-/*	$NetBSD: stdarg.h,v 1.6 1995/01/28 01:52:21 jtc Exp $ */
+/*	$OpenBSD: stdarg.h,v 1.15 2011/03/23 16:54:37 pirofti Exp $	*/
+/*	$NetBSD: stdarg.h,v 1.10 1996/12/27 20:55:28 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,75 +41,60 @@
  *	from: @(#)stdarg.h	8.2 (Berkeley) 9/27/93
  */
 
-/*
- * SPARC stdarg.h
- */
+#ifndef _MACHINE_STDARG_H_
+#define	_MACHINE_STDARG_H_
 
-#ifndef _SPARC_STDARG_H_
-#define	_SPARC_STDARG_H_
+#include <sys/cdefs.h>
+#include <machine/_types.h>
 
-#include <machine/ansi.h>
+typedef __va_list	va_list;
 
-typedef _BSD_VA_LIST_	va_list;
+#define	__va_size(type) \
+	(((sizeof(type) + sizeof(long) - 1) / sizeof(long)) * sizeof(long))
 
-/*
- * va_start sets ap to point to the first variable argument.
- * The `last fixed argument' parameter l is ignored (and should
- * never have been included in the ANSI standard!).
- *
- * va_end cleans up after va_start.  There is nothing to do there.
- */
-#ifdef __GCC_NEW_VARARGS__	/* gcc 2.4.5 */
-#define va_start(ap, l)	((ap) = (va_list)__builtin_saveregs())
-#else				/* gcc 2.3.3 */
-#define va_start(ap, l)	(__builtin_saveregs(), \
-			 (ap) = (va_list)__builtin_next_arg())
-#endif
-#define va_end(ap)	((void) 0)
-
-#if __GNUC__ == 1
-#define __extension__	/* hack for bootstrapping via gcc 1.x */
-#endif
+#define	va_start(ap, last) \
+	(__builtin_next_arg(last), (ap) = (va_list)__builtin_saveregs())
 
 /*
- * va_arg picks up the next argument of type `ty'.  Appending an
- * asterisk to ty must produce a pointer to ty (i.e., ty may not be,
- * e.g., `int (*)()').  In addition, ty must not be any type which
- * undergoes promotion to some other type (e.g., char): it must
- * be the promoted type instead.
+ * va_arg picks up the next argument of type `type'.  Appending an
+ * asterisk to `type' must produce a pointer to `type' (i.e., `type'
+ * may not be, e.g., `int (*)()').
  *
  * Gcc-2.x tries to use ldd/std for double and quad_t values, but Sun's
- * brain-damaged calling convention does not quad-align these.  Thus,
- * for 8-byte arguments, we have to pick up the actual value four bytes
- * at a time, and use type punning (i.e., a union) to produce the result.
+ * brain-damaged calling convention does not quad-align these.  Thus, for
+ * 8-byte arguments, we have to pick up the actual value four bytes at a
+ * time, and use type punning (i.e., a union) to produce the result.
  * (We could also do this with a libc function, actually, by returning
  * 8 byte integers in %o0+%o1 and the same 8 bytes as a double in %f0+%f1.)
  *
- * Note: we cannot use the union trick (which generates better code) for
- * C++, since `ty' might be a type with a constructor (these may not appear
- * in a union).
- *
- * The extraneous casts through `void *' avoid gcc alignment warnings.
+ * Note: We don't declare __d with type `type', since in C++ the type might
+ * have a constructor.
  */
-#ifdef __cplusplus
-#define	__va_8byte(ap, ty) ({ \
-	int __va_i[2]; \
-	__va_i[0] = ((int *)(void *)(ap))[0]; \
-	__va_i[1] = ((int *)(void *)(ap))[1]; \
-	(ap) += 8; *(ty *)(void *)__va_i; })
-#else
-#define	__va_8byte(ap, ty) ({ \
-	union { ty __d; int __i[2]; } __va_u; \
-	__va_u.__i[0] = ((int *)(void *)(ap))[0]; \
-	__va_u.__i[1] = ((int *)(void *)(ap))[1]; \
-	(ap) += 8; __va_u.__d; })
-#endif /* __cplusplus */
+#define	__va_8byte(ap, type) \
+	__statement({							\
+		union { char __d[sizeof(type)]; int __i[2]; } __va_u;	\
+		__va_u.__i[0] = ((int *)(void *)(ap))[0];		\
+		__va_u.__i[1] = ((int *)(void *)(ap))[1];		\
+		(ap) += 8; *(type *)(va_list)__va_u.__d;		\
+	})
 
-#define va_arg(ap, ty) __extension__ ({ \
-    ty __va_temp; /* to check for invisible-ptr struct-valued args */ \
-    __builtin_classify_type(__va_temp) >= 12 ? \
-	((ty **)(void *)((ap) += sizeof(ty *)))[-1][0] : \
-    sizeof(ty) == 8 ? __va_8byte(ap, ty) : \
-	((ty *)(void *)(ap += sizeof(ty)))[-1]; })
+#define	__va_arg(ap, type) \
+	(*(type *)((ap) += __va_size(type),			\
+		   (ap) - (sizeof(type) < sizeof(long) &&	\
+			   sizeof(type) != __va_size(type) ?	\
+			   sizeof(type) : __va_size(type))))
 
-#endif /* !_SPARC_STDARG_H_ */
+#define	__RECORD_TYPE_CLASS	12
+#define va_arg(ap, type) \
+	(__builtin_classify_type(*(type *)0) >= __RECORD_TYPE_CLASS ?	\
+	 *__va_arg(ap, type *) : __va_size(type) == 8 ?			\
+	 __va_8byte(ap, type) : __va_arg(ap, type))
+
+#if __ISO_C_VISIBLE >= 1999
+#define __va_copy(dest, src) \
+	((dest) = (src))
+#endif
+
+#define va_end(ap)	
+
+#endif /* !_MACHINE_STDARG_H_ */

@@ -10,11 +10,7 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_sqrt.c,v 1.8 1995/05/10 20:46:17 jtc Exp $";
-#endif
-
-/* __ieee754_sqrt(x)
+/* sqrt(x)
  * Return correctly rounded sqrt.
  *           ------------------------------------------
  *	     |  Use the hardware sqrt if you have one |
@@ -84,21 +80,15 @@ static char rcsid[] = "$NetBSD: e_sqrt.c,v 1.8 1995/05/10 20:46:17 jtc Exp $";
  *---------------
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
 static	const double	one	= 1.0, tiny=1.0e-300;
-#else
-static	double	one	= 1.0, tiny=1.0e-300;
-#endif
 
-#ifdef __STDC__
-	double __ieee754_sqrt(double x)
-#else
-	double __ieee754_sqrt(x)
-	double x;
-#endif
+double
+sqrt(double x)
 {
 	double z;
 	int32_t sign = (int)0x80000000; 
@@ -450,4 +440,7 @@ B.  sqrt(x) by Reciproot Iteration
     (4)	Special cases (see (4) of Section A).	
  
  */
- 
+
+#if	LDBL_MANT_DIG == DBL_MANT_DIG
+__strong_alias(sqrtl, sqrt);
+#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */

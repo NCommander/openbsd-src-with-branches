@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: spinlock.h,v 1.4 2013/06/01 20:47:40 tedu Exp $	*/
 /*	$NetBSD: lock.h,v 1.10 2006/01/03 01:29:46 uwe Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -44,9 +37,13 @@
 #ifndef _SH_SPINLOCK_H_
 #define	_SH_SPINLOCK_H_
 
-typedef volatile u_int8_t _spinlock_lock_t;
+typedef unsigned char _atomic_lock_t;
 
-#define	_SPINLOCK_LOCKED	0x80
-#define	_SPINLOCK_UNLOCKED	0x00
+#ifndef _KERNEL
+int _atomic_lock(volatile _atomic_lock_t *);
+#endif
+
+#define	_ATOMIC_LOCK_LOCKED	0x80
+#define	_ATOMIC_LOCK_UNLOCKED	0x00
 
 #endif /* !_SH_SPINLOCK_H_ */

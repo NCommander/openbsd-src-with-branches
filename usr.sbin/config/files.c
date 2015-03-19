@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: files.c,v 1.19 2012/09/17 17:36:13 espie Exp $	*/
+/*	$NetBSD: files.c,v 1.6 1996/03/17 13:18:17 cgd Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -19,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,14 +39,13 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)files.c	8.1 (Berkeley) 6/6/93
- *	$Id: files.c,v 1.1 1995/04/28 06:55:05 cgd Exp $
  */
 
-#include <sys/param.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "config.h"
 
 extern const char *yyfile;
@@ -64,39 +62,40 @@ static struct hashtab *pathtab;		/* full path names */
 static struct files **nextfile;
 static struct files **unchecked;
 
+static struct objects **nextobject;
+
+static int	checkaux(const char *, void *);
+static int	fixcount(const char *, void *);
+static int	fixfsel(const char *, void *);
+static int	fixsel(const char *, void *);
+static int	expr_eval(struct nvlist *,
+		    int (*)(const char *, void *), void *);
+static void	expr_free(struct nvlist *);
+
+#ifdef DEBUG
+static void	pr0();
+#endif
+
 void
-initfiles()
+initfiles(void)
 {
 
 	basetab = ht_new();
 	pathtab = ht_new();
 	nextfile = &allfiles;
 	unchecked = &allfiles;
-}
-
-static void
-showprev(pref, fi)
-	const char *pref;
-	register struct files *fi;
-{
-
-	xerror(fi->fi_srcfile, fi->fi_srcline,
-	    "%sfile %s ...", pref, fi->fi_path);
-	errors--;
+	nextobject = &allobjects;
 }
 
 void
-addfile(path, opts, flags, rule)
-	const char *path;
-	struct nvlist *opts;
-	int flags;
-	const char *rule;
+addfile(struct nvlist *nvpath, struct nvlist *optx, int flags, const char *rule)
 {
 	struct files *fi;
-	const char *base, *dotp, *tail;
+	const char *dotp, *dotp1, *tail, *path, *tail1 = NULL;
+	struct nvlist *nv;
 	size_t baselen;
 	int needc, needf;
-	char buf[200];
+	char base[200];
 
 	/* check various errors */
 	needc = flags & FI_NEEDSCOUNT;
@@ -105,75 +104,98 @@ addfile(path, opts, flags, rule)
 		error("cannot mix needs-count and needs-flag");
 		goto bad;
 	}
-	if (opts == NULL && (needc || needf)) {
-		error("nothing to %s for %s", needc ? "count" : "flag", path);
-		goto bad;
-	}
-	if ((fi = ht_lookup(pathtab, path)) != NULL) {
-		showprev("", fi);
-		error("file %s listed again", path);
+	if (optx == NULL && (needc || needf)) {
+		error("nothing to %s", needc ? "count" : "flag");
 		goto bad;
 	}
 
-	/* find last part of pathname, and same without trailing suffix */
-	tail = rindex(path, '/');
-	if (tail == NULL)
-		tail = path;
-	else
-		tail++;
-	dotp = rindex(tail, '.');
-	if (dotp == NULL || dotp[1] == 0 ||
-	    (baselen = dotp - tail) >= sizeof(buf)) {
-		error("invalid pathname `%s'", path);
-		goto bad;
-	}
+	for (nv = nvpath; nv; nv = nv->nv_next) {
+		path = nv->nv_name;
 
-	/*
-	 * Make a copy of the path without the .c/.s/whatever suffix.
-	 * This must be unique per "files" file (e.g., a specific
-	 * file can override a standard file, but no standard file
-	 * can override another standard file).  This is not perfect
-	 * but should catch any major errors.
-	 */
-	bcopy(tail, buf, baselen);
-	buf[baselen] = 0;
-	base = intern(buf);
-	if ((fi = ht_lookup(basetab, base)) != NULL) {
-		if (fi->fi_srcfile != yyfile) {
-			showprev("note: ", fi);
-			error("is overriden by %s", path);
-			errors--;	/* take it away */
-			fi->fi_flags |= FI_HIDDEN;
-		} else {
-			showprev("", fi);
-			error("collides with %s (both make %s.o)",
-			    path, base);
+		/* find last part of pathname, and same without trailing suffix */
+		tail = strrchr(path, '/');
+		if (tail == NULL)
+			tail = path;
+		else
+			tail++;
+		dotp = strrchr(tail, '.');
+		if (dotp == NULL || dotp[1] == 0 ||
+		    (baselen = dotp - tail) >= sizeof(base)) {
+			error("invalid pathname `%s'", path);
 			goto bad;
 		}
+
+		/*
+		 * Ensure all tailnames are identical, because .o
+		 * filenames must be identical too.
+		 */
+		if (tail1 &&
+		    (dotp - tail != dotp1 - tail1 ||
+		    strncmp(tail1, tail, dotp - tail)))
+			error("different production from %s %s",
+			    nvpath->nv_name, tail);
+		tail1 = tail;
+		dotp1 = dotp;
 	}
 
 	/*
-	 * Commit this file to memory.
+	 * Commit this file to memory.  We will decide later whether it
+	 * will be used after all.
 	 */
 	fi = emalloc(sizeof *fi);
+	if (ht_insert(pathtab, path, fi)) {
+		free(fi);
+		if ((fi = ht_lookup(pathtab, path)) == NULL)
+			panic("addfile: ht_lookup(%s)", path);
+		error("duplicate file %s", path);
+		xerror(fi->fi_srcfile, fi->fi_srcline,
+		    "here is the original definition");
+	}
+	memcpy(base, tail, baselen);
+	base[baselen] = 0;
 	fi->fi_next = NULL;
 	fi->fi_srcfile = yyfile;
 	fi->fi_srcline = currentline();
 	fi->fi_flags = flags;
-	fi->fi_lastc = dotp[strlen(dotp) - 1];
-	fi->fi_path = path;
-	fi->fi_tail = tail;
-	fi->fi_base = base;
-	fi->fi_opt = opts;
+	fi->fi_nvpath = nvpath;
+	fi->fi_base = intern(base);
+	fi->fi_optx = optx;
+	fi->fi_optf = NULL;
 	fi->fi_mkrule = rule;
-	if (ht_insert(pathtab, path, fi))
-		panic("addfile: ht_insert(%s)", path);
-	(void)ht_replace(basetab, base, fi);
 	*nextfile = fi;
 	nextfile = &fi->fi_next;
 	return;
 bad:
-	nvfreel(opts);
+	expr_free(optx);
+}
+
+void
+addobject(const char *path, struct nvlist *optx, int flags)
+{
+	struct objects *oi;
+
+	/*
+	 * Commit this object to memory.  We will decide later whether it
+	 * will be used after all.
+	 */
+	oi = emalloc(sizeof *oi);
+	if (ht_insert(pathtab, path, oi)) {
+		free(oi);
+		if ((oi = ht_lookup(pathtab, path)) == NULL)
+			panic("addfile: ht_lookup(%s)", path);
+		error("duplicate file %s", path);
+		xerror(oi->oi_srcfile, oi->oi_srcline,
+		    "here is the original definition");
+	}
+	oi->oi_next = NULL;
+	oi->oi_srcfile = yyfile;
+	oi->oi_srcline = currentline();
+	oi->oi_flags = flags;
+	oi->oi_path = path;
+	oi->oi_optx = optx;
+	oi->oi_optf = NULL;
+	*nextobject = oi;
+	nextobject = &oi->oi_next;
 }
 
 /*
@@ -183,81 +205,286 @@ bad:
  * depending on some machine-specific device.)
  */
 void
-checkfiles()
+checkfiles(void)
 {
-	register struct files *fi, *last;
-	register struct nvlist *nv;
+	struct files *fi, *last;
 
 	last = NULL;
-	for (fi = *unchecked; fi != NULL; last = fi, fi = fi->fi_next) {
-		if ((fi->fi_flags & FI_NEEDSCOUNT) == 0)
-			continue;
-		for (nv = fi->fi_opt; nv != NULL; nv = nv->nv_next)
-			if (ht_lookup(devbasetab, nv->nv_name) == NULL) {
-				xerror(fi->fi_srcfile, fi->fi_srcline,
-				    "`%s' is not a countable device",
-				    nv->nv_name);
-				/* keep fixfiles() from complaining again */
-				fi->fi_flags |= FI_HIDDEN;
-			}
-	}
+	for (fi = *unchecked; fi != NULL; last = fi, fi = fi->fi_next)
+		if ((fi->fi_flags & FI_NEEDSCOUNT) != 0)
+			(void)expr_eval(fi->fi_optx, checkaux, fi);
 	if (last != NULL)
 		unchecked = &last->fi_next;
 }
 
 /*
+ * Auxiliary function for checkfiles, called from expr_eval.
+ * We are not actually interested in the expression's value.
+ */
+static int
+checkaux(const char *name, void *context)
+{
+	struct files *fi = context;
+
+	if (ht_lookup(devbasetab, name) == NULL) {
+		xerror(fi->fi_srcfile, fi->fi_srcline,
+		    "`%s' is not a countable device",
+		    name);
+		/* keep fixfiles() from complaining again */
+		fi->fi_flags |= FI_HIDDEN;
+	}
+	return (0);
+}
+
+/*
  * We have finished reading everything.  Tack the files down: calculate
- * selection and counts as needed.
+ * selection and counts as needed.  Check that the object files built
+ * from the selected sources do not collide.
  */
 int
-fixfiles()
+fixfiles(void)
 {
-	register struct files *fi;
-	register struct nvlist *nv;
-	register struct devbase *dev;
-	int sel, err;
+	struct files *fi, *ofi;
+	struct nvlist *flathead, **flatp;
+	int err, sel;
 
 	err = 0;
 	for (fi = allfiles; fi != NULL; fi = fi->fi_next) {
+		/* Skip files that generated counted-device complaints. */
 		if (fi->fi_flags & FI_HIDDEN)
 			continue;
-		if ((nv = fi->fi_opt) == NULL) {	/* standard */
-			fi->fi_flags |= FI_SEL;
-			continue;
+
+		/* Optional: see if it is to be included. */
+		if (fi->fi_optx != NULL) {
+			flathead = NULL;
+			flatp = &flathead;
+			sel = expr_eval(fi->fi_optx,
+			    fi->fi_flags & FI_NEEDSCOUNT ? fixcount :
+			    fi->fi_flags & FI_NEEDSFLAG ? fixfsel :
+			    fixsel,
+			    &flatp);
+			fi->fi_optf = flathead;
+			if (!sel)
+				continue;
 		}
-		/* figure out whether it is selected */
-		sel = 0;
-		if (fi->fi_flags & FI_NEEDSCOUNT) {
-			/* ... and compute counts too */
-			do {
-				dev = ht_lookup(devbasetab, nv->nv_name);
-				if (dev == NULL) {
-					xerror(fi->fi_srcfile, fi->fi_srcline,
-					    "`%s' is not a countable device",
-					    nv->nv_name);
-					err = 1;
-				} else {
-					if (dev->d_umax)
-						sel = 1;
-					nv->nv_int = dev->d_umax;
-					(void)ht_insert(needcnttab,
-					    nv->nv_name, nv);
-				}
-			} while ((nv = nv->nv_next) != NULL);
-		} else {
-			do {
-				if (ht_lookup(selecttab, nv->nv_name)) {
-					sel = 1;
-					break;
-				}
-			} while ((nv = nv->nv_next) != NULL);
-			if (fi->fi_flags & FI_NEEDSFLAG)
-				for (nv = fi->fi_opt; nv; nv = nv->nv_next)
-					nv->nv_int = sel;
+
+		/* We like this file.  Make sure it generates a unique .o. */
+		if (ht_insert(basetab, fi->fi_base, fi)) {
+			if ((ofi = ht_lookup(basetab, fi->fi_base)) == NULL)
+				panic("fixfiles ht_lookup(%s)", fi->fi_base);
+			/*
+			 * If the new file comes from a different source,
+			 * allow the new one to override the old one.
+			 */
+			if (fi->fi_nvpath != ofi->fi_nvpath) {
+				if (ht_replace(basetab, fi->fi_base, fi) != 1)
+					panic("fixfiles ht_replace(%s)",
+					    fi->fi_base);
+				ofi->fi_flags &= ~FI_SEL;
+				ofi->fi_flags |= FI_HIDDEN;
+			} else {
+				xerror(fi->fi_srcfile, fi->fi_srcline,
+				    "object file collision on %s.o, from %s",
+				    fi->fi_base, fi->fi_nvpath->nv_name);
+				xerror(ofi->fi_srcfile, ofi->fi_srcline,
+				    "here is the previous file: %s",
+				    ofi->fi_nvpath->nv_name);
+				err = 1;
+			}
 		}
-		/* if selected, we are go */
-		if (sel)
-			fi->fi_flags |= FI_SEL;
+		fi->fi_flags |= FI_SEL;
 	}
 	return (err);
 }
+
+/*
+ * We have finished reading everything.  Tack the objects down: calculate
+ * selection.
+ */
+int
+fixobjects(void)
+{
+	struct objects *oi;
+	struct nvlist *flathead, **flatp;
+	int err, sel;
+
+	err = 0;
+	for (oi = allobjects; oi != NULL; oi = oi->oi_next) {
+		/* Optional: see if it is to be included. */
+		if (oi->oi_optx != NULL) {
+			flathead = NULL;
+			flatp = &flathead;
+			sel = expr_eval(oi->oi_optx,
+			    oi->oi_flags & OI_NEEDSFLAG ? fixfsel :
+			    fixsel,
+			    &flatp);
+			oi->oi_optf = flathead;
+			if (!sel)
+				continue;
+		}
+
+		oi->oi_flags |= OI_SEL;
+	}
+	return (err);
+}
+
+/*
+ * Called when evaluating a needs-count expression.  Make sure the
+ * atom is a countable device.  The expression succeeds iff there
+ * is at least one of them (note that while `xx*' will not always
+ * set xx's d_umax > 0, you cannot mix '*' and needs-count).  The
+ * mkheaders() routine wants a flattened, in-order list of the
+ * atoms for `#define name value' lines, so we build that as we
+ * are called to eval each atom.
+ */
+static int
+fixcount(const char *name, void *context)
+{
+	struct nvlist ***p = context;
+	struct devbase *dev;
+	struct nvlist *nv;
+
+	dev = ht_lookup(devbasetab, name);
+	if (dev == NULL)	/* cannot occur here; we checked earlier */
+		panic("fixcount(%s)", name);
+	nv = newnv(name, NULL, NULL, dev->d_umax, NULL);
+	**p = nv;
+	*p = &nv->nv_next;
+	(void)ht_insert(needcnttab, name, nv);
+	return (dev->d_umax != 0);
+}
+
+/*
+ * Called from fixfiles when eval'ing a selection expression for a
+ * file that will generate a .h with flags.  We will need the flat list.
+ */
+static int
+fixfsel(const char *name, void *context)
+{
+	struct nvlist ***p = context;
+	struct nvlist *nv;
+	int sel;
+
+	sel = ht_lookup(selecttab, name) != NULL;
+	nv = newnv(name, NULL, NULL, sel, NULL);
+	**p = nv;
+	*p = &nv->nv_next;
+	return (sel);
+}
+
+/*
+ * As for fixfsel above, but we do not need the flat list.
+ */
+static int
+fixsel(const char *name, void *context)
+{
+
+	return (ht_lookup(selecttab, name) != NULL);
+}
+
+/*
+ * Eval an expression tree.  Calls the given function on each node,
+ * passing it the given context & the name; return value is &/|/! of
+ * results of evaluating atoms.
+ *
+ * No short circuiting ever occurs.  fn must return 0 or 1 (otherwise
+ * our mixing of C's bitwise & boolean here may give surprises).
+ */
+static int
+expr_eval(struct nvlist *expr, int (*fn)(const char *, void *), void *context)
+{
+	int lhs, rhs;
+
+	switch (expr->nv_int) {
+
+	case FX_ATOM:
+		return ((*fn)(expr->nv_name, context));
+
+	case FX_NOT:
+		return (!expr_eval(expr->nv_next, fn, context));
+
+	case FX_AND:
+		lhs = expr_eval(expr->nv_ptr, fn, context);
+		rhs = expr_eval(expr->nv_next, fn, context);
+		return (lhs & rhs);
+
+	case FX_OR:
+		lhs = expr_eval(expr->nv_ptr, fn, context);
+		rhs = expr_eval(expr->nv_next, fn, context);
+		return (lhs | rhs);
+	}
+	panic("expr_eval %d", expr->nv_int);
+	return (0);
+}
+
+/*
+ * Free an expression tree.
+ */
+static void
+expr_free(struct nvlist *expr)
+{
+	struct nvlist *rhs;
+
+	/* This loop traverses down the RHS of each subexpression. */
+	for (; expr != NULL; expr = rhs) {
+		switch (expr->nv_int) {
+
+		/* Atoms and !-exprs have no left hand side. */
+		case FX_ATOM:
+		case FX_NOT:
+			break;
+
+		/* For AND and OR nodes, free the LHS. */
+		case FX_AND:
+		case FX_OR:
+			expr_free(expr->nv_ptr);
+			break;
+
+		default:
+			panic("expr_free %d", expr->nv_int);
+		}
+		rhs = expr->nv_next;
+		nvfree(expr);
+	}
+}
+
+#ifdef DEBUG
+/*
+ * Print expression tree.
+ */
+void
+prexpr(struct nvlist *expr)
+{
+	printf("expr =");
+	pr0(expr);
+	printf("\n");
+	(void)fflush(stdout);
+}
+
+static void
+pr0(struct nvlist *e)
+{
+
+	switch (e->nv_int) {
+	case FX_ATOM:
+		printf(" %s", e->nv_name);
+		return;
+	case FX_NOT:
+		printf(" (!");
+		break;
+	case FX_AND:
+		printf(" (&");
+		break;
+	case FX_OR:
+		printf(" (|");
+		break;
+	default:
+		printf(" (?%d?", e->nv_int);
+		break;
+	}
+	if (e->nv_ptr)
+		pr0(e->nv_ptr);
+	pr0(e->nv_next);
+	printf(")");
+}
+#endif

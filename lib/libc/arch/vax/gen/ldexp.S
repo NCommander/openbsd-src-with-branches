@@ -1,3 +1,4 @@
+/* $OpenBSD: ldexp.S,v 1.9 2013/03/28 18:09:38 martynas Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,11 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	/*.asciz "@(#)ldexp.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: ldexp.S,v 1.2 1995/06/01 01:11:41 ragge Exp $"
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * double ldexp (value, exp)
@@ -58,29 +50,30 @@
  */
 #define	ERANGE	34
 
-	.globl	_errno
+	.globl	_C_LABEL(errno)
 
-ENTRY(ldexp, 0)
-	movd	4(ap),r0	/* fetch "value" */
-	extzv	$7,$8,r0,r2	/* r2 := biased exponent */
+STRONG_ALIAS(ldexpl,ldexp)
+ENTRY(ldexp, R2)
+	movd	4(%ap),%r0	/* fetch "value" */
+	extzv	$7,$8,%r0,%r2	/* r2 := biased exponent */
 	jeql	1f		/* if zero, done */
 
-	addl2	12(ap),r2	/* r2 := new biased exponent */
+	addl2	12(%ap),%r2	/* r2 := new biased exponent */
 	jleq	2f		/* if <= 0, underflow */
-	cmpl	r2,$256		/* otherwise check if too big */
+	cmpl	%r2,$256	/* otherwise check if too big */
 	jgeq	3f		/* jump if overflow */
-	insv	r2,$7,$8,r0	/* put exponent back in result */
+	insv	%r2,$7,$8,%r0	/* put exponent back in result */
 1:
 	ret
 2:
-	clrd	r0
+	clrd	%r0
 	jbr	1f
 3:
-	movd	huge,r0		/* largest possible floating magnitude */
-	jbc	$15,4(ap),1f	/* jump if argument was positive */
-	mnegd	r0,r0		/* if arg < 0, make result negative */
+	movd	huge,%r0	/* largest possible floating magnitude */
+	jbc	$15,4(%ap),1f	/* jump if argument was positive */
+	mnegd	%r0,%r0		/* if arg < 0, make result negative */
 1:
-	movl	$ ERANGE,_errno
+	movl	$ ERANGE,_C_LABEL(errno)
 	ret
 
 	.data

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: Troff.mac,v 1.2 1995/03/23 08:28:53 cgd Exp $
 .\"	$NetBSD: Troff.mac,v 1.2 1995/03/23 08:28:53 cgd Exp $
 .\"
 .nr tp 8

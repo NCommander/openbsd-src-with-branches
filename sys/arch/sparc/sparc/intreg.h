@@ -1,4 +1,5 @@
-/*	$NetBSD: intreg.h,v 1.3 1995/06/25 21:34:28 pk Exp $ */
+/*	$OpenBSD: intreg.h,v 1.10 2010/07/06 20:40:01 miod Exp $	*/
+/*	$NetBSD: intreg.h,v 1.6 1997/07/22 20:19:10 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,17 +41,22 @@
  *	@(#)intreg.h	8.1 (Berkeley) 6/11/93
  */
 
+#include <sparc/sparc/vaddrs.h>
+
+#if defined(SUN4) || defined(SUN4C) || defined(SUN4E)
+
 /*
  * sun4c interrupt enable register.
  *
- * The register is a single byte.  C code must use the ienab_bis and
- * ienab_bic functions found in locore.s.
+ * The register is a single byte.  C code must use the intreg_set_44c and
+ * intreg_clr_44c functions found in locore.s.
  *
  * The register's physical address is defined here as the register
  * must be mapped early in the boot process (otherwise NMI handling
  * will fail).
  */
-#define	INT_ENABLE_REG_PHYSADR	0xf5000000	/* phys addr in IOspace */
+#define	INT_ENABLE_REG_PHYSADR_44C	0xf5000000
+#define	INT_ENABLE_REG_PHYSADR_4E	0xea000000
 
 /*
  * Bits in interrupt enable register.  Software interrupt requests must
@@ -69,13 +71,15 @@
 #define	IE_L1		0x02	/* request software level 1 interrupt */
 #define	IE_ALLIE	0x01	/* enable interrupts */
 
-#ifndef LOCORE
-void	ienab_bis __P((int bis));	/* set given bits */
-void	ienab_bic __P((int bic));	/* clear given bits */
+#ifndef _LOCORE
+void	intreg_set_44c(int);	/* set given bits */
+void	intreg_clr_44c(int);	/* clear given bits */
 #endif
 
+#endif /* SUN4 || SUN4C || SUN4E */
+
 #if defined(SUN4M)
-#define	ICR_REG_PHYSADR	0x71e00000	/* XXX - phys addr in IOspace */
+
 /*
  * Interrupt Control Registers, located in IO space.
  * (mapped to `locore' for now..)
@@ -83,39 +87,58 @@ void	ienab_bic __P((int bic));	/* clear given bits */
  * and `System Interrupts'. The `Processor' set corresponds to the 15
  * interrupt levels as seen by the CPU. The `System' set corresponds to
  * a set of devices supported by the implementing chip-set.
+ *
+ * Briefly, the ICR_PI_* are per-processor interrupts; the ICR_SI_* are
+ * system-wide interrupts, and the ICR_ITR selects the processor to get
+ * the system's interrupts.
  */
-#define ICR_PI_PEND		(IE_reg_addr + 0x0)
-#define ICR_PI_CLR		(IE_reg_addr + 0x4)
-#define ICR_PI_SET		(IE_reg_addr + 0x8)
-#define ICR_SI_PEND		(IE_reg_addr + 0x1000)
-#define ICR_SI_MASK		(IE_reg_addr + 0x1004)
-#define ICR_SI_CLR		(IE_reg_addr + 0x1008)
-#define ICR_SI_SET		(IE_reg_addr + 0x100c)
+#define ICR_PI_PEND		(PI_INTR_VA + 0x0)
+#define ICR_PI_CLR		(PI_INTR_VA + 0x4)
+#define ICR_PI_SET		(PI_INTR_VA + 0x8)
+#define ICR_SI_PEND		(SI_INTR_VA)
+#define ICR_SI_MASK		(SI_INTR_VA + 0x4)
+#define ICR_SI_CLR		(SI_INTR_VA + 0x8)
+#define ICR_SI_SET		(SI_INTR_VA + 0xc)
+#define ICR_ITR			(SI_INTR_VA + 0x10)
+
 /*
  * Bits in interrupt registers.  Software interrupt requests must
  * be cleared in software.  This is done in locore.s.
  * There are separate registers for reading pending interrupts and
  * setting/clearing (software) interrupts.
  */
-#define PINTR_SOFTINTR(n)	((n)) << 16)
+#define PINTR_SINTRLEV(n)	(1 << (16 + (n)))
 #define PINTR_IC		0x8000		/* Level 15 clear */
 
 #define SINTR_MA		0x80000000	/* Mask All interrupts */
 #define SINTR_ME		0x40000000	/* Module Error (async) */
 #define SINTR_I			0x20000000	/* MSI (MBus-SBus) */
 #define SINTR_M			0x10000000	/* ECC Memory controller */
-#define SINTR_RSVD2		0x0f800000
+#define SINTR_V			0x08000000	/* VME Async error */
+#define SINTR_RSVD2		0x07800000
 #define SINTR_F			0x00400000	/* Floppy */
-#define SINTR_RSVD3		0x00200000
-#define SINTR_V			0x00100000	/* Video (Supersparc only) */
+#define SINTR_MI		0x00200000	/* Module interrupt */
+#define SINTR_VI		0x00100000	/* Video (Supersparc only) */
 #define SINTR_T			0x00080000	/* Level 10 counter */
 #define SINTR_SC		0x00040000	/* SCSI */
-#define SINTR_RSVD4		0x00020000
+#define SINTR_A			0x00020000	/* Audio/ISDN */
 #define SINTR_E			0x00010000	/* Ethernet */
 #define SINTR_S			0x00008000	/* Serial port */
 #define SINTR_K			0x00004000	/* Keyboard/mouse */
 #define SINTR_SBUSMASK		0x00003f80	/* SBus */
-#define SINTR_SBUS(n)		(((n) << 7) & 0x00003f80)
-#define SINTR_RSVD5		0x0000007f
+#define SINTR_SBUS(n)		(1 << (7+(n)-1))
+#define SINTR_VMEMASK		0x0000007f	/* VME */
+#define SINTR_VME(n)		(1 << ((n)-1))
+#define SINTR_BITS		"\020" \
+				"\01VME0\02VME1\03VME2\04VME3\05VME4\06VME5" \
+				"\07VME6\010SBUS0\011SBUS1\012SBUS2\013SBUS3" \
+				"\014SBUS4\015SBUS5\016SBUS6\017K\020S\021E" \
+				"\022A\023SC\024T\025VI\065MI\027F" \
+				"\034V\035M\036I\037ME\040MA"
 
+#ifndef _LOCORE
+void	intreg_clr_4m(int);
+void	intreg_set_4m(int);
 #endif
+
+#endif	/* SUN4M */

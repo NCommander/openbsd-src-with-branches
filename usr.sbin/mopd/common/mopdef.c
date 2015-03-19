@@ -1,3 +1,5 @@
+/*	$OpenBSD: mopdef.c,v 1.7 2006/04/17 13:17:07 maja Exp $ */
+
 /*
  * Copyright (c) 1995 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -27,23 +24,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINT
-static char rcsid[] = "$Id: mopdef.c,v 1.2 1995/10/02 16:50:22 moj Exp $";
-#endif
+#include <sys/types.h>
 
 #define MOPDEF_SURPESS_EXTERN
 #include "common/mopdef.h"
 
-char dl_mcst[6] = MOP_DL_MULTICAST;	/* Dump/Load Multicast         */
-char rc_mcst[6] = MOP_RC_MULTICAST;	/* Remote Console Multicast    */
-char dl_802_proto[5] = MOP_K_PROTO_802_DL; /* MOP Dump/Load 802.2      */
-char rc_802_proto[5] = MOP_K_PROTO_802_RC; /* MOP Remote Console 802.2 */
-char lp_802_proto[5] = MOP_K_PROTO_802_LP; /* Loopback 802.2           */
+u_char dl_mcst[6] = MOP_DL_MULTICAST;	/* Dump/Load Multicast         */
+u_char rc_mcst[6] = MOP_RC_MULTICAST;	/* Remote Console Multicast    */
+u_char dl_802_proto[5] = MOP_K_PROTO_802_DL; /* MOP Dump/Load 802.2      */
+u_char rc_802_proto[5] = MOP_K_PROTO_802_RC; /* MOP Remote Console 802.2 */
+u_char lp_802_proto[5] = MOP_K_PROTO_802_LP; /* Loopback 802.2           */
 
 int
-mopdef_dummy()
+mopdef_dummy(void)
 {
 	/* Just to keep them as variables */
-	return(dl_mcst[0]-rc_mcst[0]-
-	       lp_802_proto[1]-rc_802_proto[1]-lp_802_proto[1]);
+	return (dl_mcst[0] - rc_mcst[0] - lp_802_proto[1] - rc_802_proto[1] -
+	    lp_802_proto[1]);
 }

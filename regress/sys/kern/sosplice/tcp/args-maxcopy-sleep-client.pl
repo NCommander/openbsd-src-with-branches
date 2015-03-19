@@ -1,4 +1,5 @@
-# test relay maximum data length then copy with delay before client
+# test maximum data length then copy stream,
+# client sleeps before writing
 
 use strict;
 use warnings;
@@ -8,7 +9,10 @@ our %args = (
 	func => sub { sleep 3; write_stream(@_); },
     },
     relay => {
-	func => sub { relay(@_, 61); relay_copy(@_); },
+	func => sub { relay(@_); relay_copy(@_); },
+	max => 197,
+	big => 1,
+	end => 1,
 	nocheck => 1,
     },
     len => 251,

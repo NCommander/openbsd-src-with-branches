@@ -1,17 +1,15 @@
-/*	$NetBSD: cache.h,v 1.5 1995/04/13 14:48:51 pk Exp $ */
+/*	$OpenBSD: cache.h,v 1.11 2010/07/10 19:32:24 miod Exp $	*/
+/*	$NetBSD: cache.h,v 1.16 1997/07/06 21:15:14 pk Exp $ */
 
 /*
+ * Copyright (c) 1996
+ * 	The President and Fellows of Harvard College. All rights reserved.
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * This software was developed by the Computer Systems Engineering group
  * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
  * contributed to Berkeley.
- *
- * All advertising materials mentioning features or use of this software
- * must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Lawrence Berkeley Laboratory.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,6 +21,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
+ *	This product includes software developed by Aaron Brown and
+ *	Harvard University.
  *	This product includes software developed by the University of
  *	California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
@@ -44,6 +44,9 @@
  *	@(#)cache.h	8.1 (Berkeley) 6/11/93
  */
 
+#ifndef SPARC_CACHE_H
+#define SPARC_CACHE_H
+
 /*
  * Sun-4 and Sun-4c virtual address cache.
  *
@@ -51,14 +54,8 @@
  * and write-back (Sun-4).  The write-back caches are much faster
  * but require a bit more care.
  *
- * VAC_NONE is not actually used now, but if someone builds a physical
- * cache Sun-4 (or, more likely, a virtual index/physical tag cache)
- * everything will work (after pulling out the #ifdef notdef's: grep
- * for VAC_NONE to find them).
  */
-enum vactype { VAC_NONE, VAC_WRITETHROUGH, VAC_WRITEBACK };
-
-extern enum vactype vactype;	/* XXX  move into cacheinfo struct */
+enum vactype { VAC_UNKNOWN, VAC_NONE, VAC_WRITETHROUGH, VAC_WRITEBACK };
 
 /*
  * Cache tags can be written in control space, and must be set to 0
@@ -108,26 +105,27 @@ extern enum vactype vactype;	/* XXX  move into cacheinfo struct */
  * bits that are one position higher.
  */
 
+/* Some more well-known values: */
+
 #define	CACHE_ALIAS_DIST_SUN4	0x20000
 #define	CACHE_ALIAS_DIST_SUN4C	0x10000
 
 #define	CACHE_ALIAS_BITS_SUN4	0x1e000
 #define	CACHE_ALIAS_BITS_SUN4C	0xf000
 
-#if defined(SUN4) && defined(SUN4C)
-#define	CACHE_ALIAS_DIST	((cputyp == CPU_SUN4) ? CACHE_ALIAS_DIST_SUN4 : \
-				    CACHE_ALIAS_DIST_SUN4C)
-#define	CACHE_ALIAS_BITS	((cputyp == CPU_SUN4) ? CACHE_ALIAS_BITS_SUN4 : \
-				    CACHE_ALIAS_BITS_SUN4C)
-#else
-#if defined(SUN4)
+extern int cache_alias_dist;
+extern int cache_alias_bits;
+
+/* Optimize cache alias macros on single architecture kernels */
+#if (defined(SUN4) || defined(SUN4E)) && !(defined(SUN4C) || defined(SUN4D) || defined(SUN4M))
 #define	CACHE_ALIAS_DIST	CACHE_ALIAS_DIST_SUN4
 #define	CACHE_ALIAS_BITS	CACHE_ALIAS_BITS_SUN4
-#endif
-#if defined(SUN4C)
+#elif !(defined(SUN4) || defined(SUN4E)) && defined(SUN4C) && !(defined(SUN4D) || defined(SUN4M))
 #define	CACHE_ALIAS_DIST	CACHE_ALIAS_DIST_SUN4C
 #define	CACHE_ALIAS_BITS	CACHE_ALIAS_BITS_SUN4C
-#endif
+#else
+#define	CACHE_ALIAS_DIST	cache_alias_dist
+#define	CACHE_ALIAS_BITS	cache_alias_bits
 #endif
 
 /*
@@ -138,23 +136,107 @@ extern enum vactype vactype;	/* XXX  move into cacheinfo struct */
 /*
  * Routines for dealing with the cache.
  */
-void	cache_enable __P((void));		/* turn it on */
-void	cache_flush_context __P((void));	/* flush current context */
-void	cache_flush_segment __P((int vreg, int vseg));	/* flush seg in cur ctx */
-void	cache_flush_page __P((int va));		/* flush page in cur ctx */
-void	cache_flush __P((caddr_t base, u_int len));/* flush region */
+void	sun4_cache_enable(void);		/* turn it on */
+void	ms1_cache_enable(void);			/* turn it on */
+void	viking_cache_enable(void);		/* turn it on */
+void	hypersparc_cache_enable(void);		/* turn it on */
+void	swift_cache_enable(void);		/* turn it on */
+void	cypress_cache_enable(void);		/* turn it on */
+void	turbosparc_cache_enable(void);		/* turn it on */
+void	kap_cache_enable(void);			/* turn it on */
+
+void	sun4_vcache_flush_context(void);	/* flush current context */
+void	sun4_vcache_flush_region(int);		/* flush region in cur ctx */
+void	sun4_vcache_flush_segment(int, int);	/* flush seg in cur ctx */
+void	sun4_vcache_flush_page(int va);		/* flush page in cur ctx */
+void	sun4_cache_flush(caddr_t, u_int);	/* flush region */
+
+void	srmmu_vcache_flush_context(void);	/* flush current context */
+void	srmmu_vcache_flush_region(int);		/* flush region in cur ctx */
+void	srmmu_vcache_flush_segment(int, int);	/* flush seg in cur ctx */
+void	srmmu_vcache_flush_page(int va);	/* flush page in cur ctx */
+void	srmmu_cache_flush(caddr_t, u_int);	/* flush region */
+void	hypersparc_pure_vcache_flush(void);
+
+void	ms1_cache_flush_all(void);
+void	srmmu_cache_flush_all(void);
+void	cypress_cache_flush_all(void);
+void	hypersparc_cache_flush_all(void);
+
+void	ms1_cache_flush(caddr_t, u_int);
+void	viking_cache_flush(caddr_t, u_int);
+void	viking_pcache_flush_line(int, int);
+void	srmmu_pcache_flush_line(int, int);
+
+void	kap_vcache_flush_context(void);		/* flush current context */
+void	kap_vcache_flush_page(int va);		/* flush page in cur ctx */
+void	kap_cache_flush(caddr_t, u_int);	/* flush region */
+
+extern void sparc_noop(void);
+
+#define noop_vcache_flush_context \
+	(void (*)(void)) sparc_noop
+#define noop_vcache_flush_region \
+	(void (*)(int)) sparc_noop
+#define noop_vcache_flush_segment \
+	(void (*)(int,int)) sparc_noop
+#define noop_vcache_flush_page \
+	(void (*)(int)) sparc_noop
+#define noop_cache_flush \
+	(void (*)(caddr_t, u_int)) sparc_noop
+#define noop_pcache_flush_line \
+	(void (*)(int, int)) sparc_noop
+#define noop_pure_vcache_flush \
+	(void (*)(void)) sparc_noop
+#define noop_cache_flush_all \
+	(void (*)(void)) sparc_noop
+
+#define cache_flush_page(va)		cpuinfo.vcache_flush_page(va)
+#define cache_flush_segment(vr,vs)	cpuinfo.vcache_flush_segment(vr,vs)
+#define cache_flush_region(vr)		cpuinfo.vcache_flush_region(vr)
+#define cache_flush_context()		cpuinfo.vcache_flush_context()
 
 /*
  * Cache control information.
  */
 struct cacheinfo {
 	int	c_totalsize;		/* total size, in bytes */
+					/* if split, MAX(icache,dcache) */
 	int	c_enabled;		/* true => cache is enabled */
 	int	c_hwflush;		/* true => have hardware flush */
 	int	c_linesize;		/* line size, in bytes */
 	int	c_l2linesize;		/* log2(linesize) */
+	int	c_nlines;		/* number of cache lines */
+	int	c_physical;		/* true => cache has physical
+						   address tags */
+	int 	c_associativity;	/* # of "buckets" in cache line */
+	int 	c_split;		/* true => cache is split */
+
+	int 	ic_totalsize;		/* instruction cache */
+	int 	ic_enabled;
+	int 	ic_linesize;
+	int 	ic_l2linesize;
+	int 	ic_nlines;
+	int 	ic_associativity;
+
+	int 	dc_totalsize;		/* data cache */
+	int 	dc_enabled;
+	int 	dc_linesize;
+	int 	dc_l2linesize;
+	int 	dc_nlines;
+	int 	dc_associativity;
+
+	int	ec_totalsize;		/* external cache info */
+	int 	ec_enabled;
+	int	ec_linesize;
+	int	ec_l2linesize;
+	int 	ec_nlines;
+	int 	ec_associativity;
+
+	enum vactype	c_vactype;
 };
-extern struct cacheinfo cacheinfo;
+
+#define CACHEINFO cpuinfo.cacheinfo
 
 /*
  * Cache control statistics.
@@ -169,3 +251,4 @@ struct cachestats {
 	int	cs_ra[65];		/* pages/range */
 #endif
 };
+#endif /* SPARC_CACHE_H */

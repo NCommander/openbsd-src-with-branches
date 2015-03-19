@@ -1,30 +1,34 @@
+/*	$OpenBSD: rex.x,v 1.4 2009/10/27 23:59:30 deraadt Exp $	*/
+
 /*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user.
- * 
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- * 
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- * 
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- * 
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -32,11 +36,6 @@
  */
 
 #ifndef RPC_HDR
-%#ifndef lint
-%/*static char sccsid[] = "from: @(#)rex.x 1.3 87/09/18 Copyr 1987 Sun Micro";*/
-%/*static char sccsid[] = "from: @(#)rex.x	2.1 88/08/01 4.0 RPCSRC";*/
-%static char rcsid[] = "$Id: rex.x,v 1.1 1995/01/12 19:39:52 jtc Exp $";
-%#endif /* not lint */
 #endif
 
 const STRINGSIZE = 1024;
@@ -48,7 +47,7 @@ typedef string rexstring<1024>;
 const SIGINT = 2;	/* interrupt */
 
 /*
- * Values for rst_flags, below 
+ * Values for rst_flags, below
  */
 const REX_INTERACTIVE = 1;	/* interactive mode */
 
@@ -65,7 +64,7 @@ struct rex_start {
 };
 
 struct rex_result {
-   	int rlt_stat;		/* integer status code */
+	int rlt_stat;		/* integer status code */
 	rexstring rlt_message;	/* string message for human consumption */
 };
 
@@ -174,10 +173,10 @@ struct rex_ttysize {
 };
 
 struct rex_ttymode {
-    sgttyb basic;    /* standard unix tty flags */
-    tchars more; /* interrupt, kill characters, etc. */
-    ltchars yetmore; /* special Berkeley characters */
-    unsigned andmore;     /* and Berkeley modes */
+    sgttyb basic;	/* standard unix tty flags */
+    tchars more;	/* interrupt, kill characters, etc. */
+    ltchars yetmore;	/* special Berkeley characters */
+    unsigned andmore;	/* and Berkeley modes */
 };
 
 /* values for andmore above */
@@ -204,7 +203,7 @@ program REXPROG {
 		/*
 		 * Start remote execution
 		 */
-		rex_result 
+		rex_result
 		REXPROC_START(rex_start) = 1;
 
 		/*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: cerror.S,v 1.7 2012/08/22 17:19:35 pascal Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,31 +30,30 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * from: Header: cerror.s,v 1.3 92/07/02 04:17:59 torek Exp
- * $Id: cerror.S,v 1.2 1994/02/10 20:15:57 pk Exp $
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "@(#)cerror.s	8.1 (Berkeley) 6/4/93"
-#endif /* LIBC_SCCS and not lint */
 
 #include "DEFS.h"
 #include "SYS.h"
 
-	.globl	_errno
-#ifdef PIC
-FUNC(cerror)
-	ld	[%g1 + _errno], %g1
+	.globl	_C_LABEL(errno)
+
+WEAK_ALIAS(__cerror, ___cerror)
+
+FUNC(_C_LABEL(___cerror))
+#ifdef __PIC__
+#if __PIC__ == 1
+	ld	[%g1 + _C_LABEL(errno)], %g1
 	st	%o0, [%g1]
-	mov	-1, %o0
-	retl
-	 mov	-1, %o1
-#else
-FUNC(cerror)
-	sethi	%hi(_errno), %g1
-	st	%o0, [%g1 + %lo(_errno)]
-	mov	-1, %o0
-	retl
-	 mov	-1, %o1
+#else /* __PIC__ == 2 */
+	sethi	%hi(_C_LABEL(errno)), %g2
+	or	%g2, %lo(_C_LABEL(errno)), %g2
+	ld	[%g1 + %g2], %g1
+	st	%o0, [%g1]
 #endif
+#else
+	sethi	%hi(_C_LABEL(errno)), %g1
+	st	%o0, [%g1 + %lo(_C_LABEL(errno))]
+#endif
+	mov	-1, %o0
+	retl
+	 mov	-1, %o1

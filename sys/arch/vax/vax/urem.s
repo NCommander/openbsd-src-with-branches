@@ -1,3 +1,4 @@
+/*	$OpenBSD: urem.s,v 1.4 2005/05/06 18:55:02 miod Exp $	*/
 /*	$NetBSD: urem.s,v 1.2 1994/10/26 08:03:37 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,32 +35,32 @@
  *	@(#)urem.s      5.6 (Berkeley) 4/15/91
  */
 
+#include <machine/asm.h>
+
 /*
  * Unsigned modulus, PCC flavor.
  * urem() takes an ordinary dividend/divisor pair;
  */
 
-#define	DIVIDEND	4(ap)
-#define	DIVISOR		8(ap)
-	.globl	urem
-	.align	2
-urem:	.word	0x0
+#define	DIVIDEND	4(%ap)
+#define	DIVISOR		8(%ap)
 
-	movl	8(ap),r2
+ASENTRY(__urem, 0)
+	movl	8(%ap),%r2
 	jlss	Leasy		# big divisor: settle by comparison
-	movl	4(ap),r0
+	movl	4(%ap),%r0
 	jlss	Lhard		# big dividend: need extended division
-	divl3	r2,r0,r1	# small divisor and dividend: signed modulus
-	mull2	r2,r1
-	subl2	r1,r0
+	divl3	%r2,%r0,%r1	# small divisor and dividend: signed modulus
+	mull2	%r2,%r1
+	subl2	%r1,%r0
 	ret
 Lhard:
-	clrl	r1
-	ediv	r2,r0,r1,r0
+	clrl	%r1
+	ediv	%r2,%r0,%r1,%r0
 	ret
 Leasy:
-	subl3	r2,DIVIDEND,r0
+	subl3	%r2,DIVIDEND,%r0
 	jcc	Ldifference	# if divisor goes in once, return difference
-	movl	DIVIDEND,r0	# if divisor is bigger, return dividend
+	movl	DIVIDEND,%r0	# if divisor is bigger, return dividend
 Ldifference:
 	ret

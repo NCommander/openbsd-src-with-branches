@@ -1,4 +1,5 @@
-/*	$NetBSD: restore.h,v 1.7 1995/03/18 14:59:53 cgd Exp $	*/
+/*	$OpenBSD: restore.h,v 1.7 2007/06/03 20:16:08 millert Exp $	*/
+/*	$NetBSD: restore.h,v 1.8 1997/07/01 05:37:54 lukem Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -62,10 +59,12 @@ extern long	volno;		/* current volume being read */
 extern long	ntrec;		/* number of TP_BSIZE records per tape block */
 extern time_t	dumptime;	/* time that this dump begins */
 extern time_t	dumpdate;	/* time that this dump was made */
-extern char	command;	/* opration being performed */
+extern char	command;	/* operation being performed */
 extern FILE	*terminal;	/* file descriptor for the terminal input */
+extern char	*tmpdir;	/* where to store temporary files */
 extern int	oldinofmt;	/* reading tape with old format inodes */
 extern int	Bcvt;		/* need byte swapping on inodes and dirs */
+extern char	*__progname;	/* from crt0.o */
 
 /*
  * Each file in the file system is described by one of these entries
@@ -76,7 +75,7 @@ struct entry {
 	char	e_type;			/* type of this entry, see below */
 	short	e_flags;		/* status flags, see below */
 	ino_t	e_ino;			/* inode number in previous file sys */
-	long	e_index;		/* unique index (for dumpped table) */
+	long	e_index;		/* unique index (for dumped table) */
 	struct	entry *e_parent;	/* pointer to parent directory (..) */
 	struct	entry *e_sibling;	/* next element in this directory (.) */
 	struct	entry *e_links;		/* hard links to this inode */
@@ -106,10 +105,21 @@ struct entry {
  * The entry describes the next file available on the tape
  */
 struct context {
-	char	*name;		/* name of file */
+	short	action;		/* action being taken on this file */
+	mode_t	mode;		/* mode of file */
 	ino_t	ino;		/* inumber of file */
-	struct	dinode *dip;	/* pointer to inode */
-	char	action;		/* action being taken on this file */
+	uid_t	uid;		/* file owner */
+	gid_t	gid;		/* file group */
+	int	file_flags;	/* status flags (chflags) */
+	int	rdev;		/* device number of file */
+	time_t	atime_sec;	/* access time seconds */
+	time_t	mtime_sec;	/* modified time seconds */
+	time_t	birthtime_sec;	/* creation time seconds */
+	int	atime_nsec;	/* access time nanoseconds */
+	int	mtime_nsec;	/* modified time nanoseconds */
+	int	birthtime_nsec;	/* creation time nanoseconds */
+	off_t	size;		/* size of file */
+	char	*name;		/* name of file */
 } curfile;
 /* actions */
 #define	USING	1	/* extracting from the tape */
@@ -134,8 +144,8 @@ typedef struct rstdirdesc RST_DIR;
 #define	SETINO(ino, map) \
 	map[(u_int)((ino) - 1) / NBBY] |=  1 << ((u_int)((ino) - 1) % NBBY)
 
-#define dprintf		if (dflag) fprintf
-#define vprintf		if (vflag) fprintf
+#define Dprintf		if (dflag) fprintf
+#define Vprintf		if (vflag) fprintf
 
 #define GOOD 1
 #define FAIL 0

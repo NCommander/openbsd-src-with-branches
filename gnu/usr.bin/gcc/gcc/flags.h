@@ -162,6 +162,12 @@ extern int warn_cast_align;
 extern int warn_larger_than;
 extern HOST_WIDE_INT larger_than_size;
 
+/* Nonzero means warn about any function whose stack usage is larger
+   than N bytes.  The value N is in `stack_larger_than_size'.  */
+
+extern int warn_stack_larger_than;
+extern HOST_WIDE_INT stack_larger_than_size;
+
 /* Warn if a function returns an aggregate,
    since there are often incompatible calling conventions for doing this.  */
 
@@ -188,6 +194,11 @@ extern int warn_deprecated_decl;
    aliasing safe.  */
 
 extern int warn_strict_aliasing;
+
+/* Nonzero means warn about any automatic declaration whose size is not
+   constant.  */
+
+extern int warn_variable_decl;
 
 /* Nonzero if generating code to do profiling.  */
 
@@ -472,6 +483,16 @@ extern int flag_pedantic_errors;
 
 extern int flag_pic;
 
+/* Nonzero if we are compiling position independent code for executable.
+   1 vs 2 for a target-dependent "small" or "large" mode.  */
+
+extern int flag_pie;
+
+/* Nonzero if we are compiling code for a shared library, zero for
+   executable.  */
+
+extern int flag_shlib;
+
 /* Nonzero means generate extra code for exception handling and enable
    exception handling.  */
 
@@ -633,6 +654,10 @@ extern enum graph_dump_types graph_dump_format;
 
 extern int flag_no_ident;
 
+/* Nonzero if we want to perform global cse.  */
+
+extern int flag_gcse;
+
 /* Nonzero if we want to perform enhanced load motion during gcse.  */
 
 extern int flag_gcse_lm;
@@ -689,5 +714,15 @@ extern const char *flag_random_seed;
    and the rounding mode is important.  */
 #define HONOR_SIGN_DEPENDENT_ROUNDING(MODE) \
   (MODE_HAS_SIGN_DEPENDENT_ROUNDING (MODE) && !flag_unsafe_math_optimizations)
+
+/* Nonzero means use propolice as a stack protection method */
+
+extern int flag_propolice_protection;
+extern int flag_stack_protection;
+extern int flag_strong_protection;
+
+/* Warn when not issuing stack smashing protection for some reason */
+
+extern int warn_stack_protector;
 
 #endif /* ! GCC_FLAGS_H */

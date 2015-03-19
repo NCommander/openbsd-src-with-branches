@@ -1,0 +1,24 @@
+.Dd October 6, 2013
+.Dt BL-NOIT 1
+.Os OpenBSD
+.Sh NAME
+.Nm Bl-noIt
+.Nd list missing item macros
+.Sh DESCRIPTION
+.Bl -tag -width Ds
+Stray text.
+.Em More stray text.
+.It tag
+Tagged text.
+.El
+.Bl -bullet
+Stray text.
+.Sm off
+.Em More Sy stray Em text.
+.Sm on
+.It
+Bullet point.
+.El
+.Bl -dash
+Stray text only.
+.El

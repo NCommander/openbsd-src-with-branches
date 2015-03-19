@@ -1,3 +1,5 @@
+/*	$OpenBSD: uname.c,v 1.12 2011/10/21 14:48:02 ajacoutot Exp $	*/
+
 /*
  * Copyright (c) 1994 Winning Strategies, Inc.
  * All rights reserved.
@@ -29,29 +31,26 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$Id: uname.c,v 1.7 1994/12/20 01:28:57 jtc Exp $";
-#endif /* not lint */
-
+#include <sys/param.h>	/* MACHINE_ARCH */
 #include <stdio.h>
+#include <stdlib.h>
 #include <locale.h>
 #include <unistd.h>
 #include <sys/utsname.h>
 #include <err.h>
 
-static void usage();
+static void usage(void);
 
-#define	PRINT_SYSNAME	0x01
-#define	PRINT_NODENAME	0x02
-#define	PRINT_RELEASE	0x04
-#define	PRINT_VERSION	0x08
-#define	PRINT_MACHINE	0x10
-#define	PRINT_ALL	0x1f
+#define	PRINT_SYSNAME		0x01
+#define	PRINT_NODENAME		0x02
+#define	PRINT_RELEASE		0x04
+#define	PRINT_VERSION		0x08
+#define	PRINT_MACHINE		0x10
+#define	PRINT_ALL		0x1f
+#define PRINT_MACHINE_ARCH	0x20
 
 int
-main(argc, argv) 
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	struct utsname u;
 	int c;
@@ -60,8 +59,8 @@ main(argc, argv)
 
 	setlocale(LC_ALL, "");
 
-	while ((c = getopt(argc,argv,"amnrsv")) != -1 ) {
-		switch ( c ) {
+	while ((c = getopt(argc, argv, "amnrsvp")) != -1 ) {
+		switch (c) {
 		case 'a':
 			print_mask |= PRINT_ALL;
 			break;
@@ -79,6 +78,9 @@ main(argc, argv)
 			break;
 		case 'v':
 			print_mask |= PRINT_VERSION;
+			break;
+		case 'p':
+			print_mask |= PRINT_MACHINE_ARCH;
 			break;
 		default:
 			usage();
@@ -120,6 +122,10 @@ main(argc, argv)
 		if (space++) putchar(' ');
 		fputs(u.machine, stdout);
 	}
+	if (print_mask & PRINT_MACHINE_ARCH) {
+		if (space++) putchar(' ');
+		fputs(MACHINE_ARCH, stdout);
+	}		
 	putchar('\n');
 
 	exit(0);
@@ -127,8 +133,8 @@ main(argc, argv)
 }
 
 static void
-usage()
+usage(void)
 {
-	fprintf(stderr, "usage: uname [-amnrsv]\n");
+	fprintf(stderr, "usage: uname [-amnprsv]\n");
 	exit(1);
 }

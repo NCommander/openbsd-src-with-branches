@@ -698,6 +698,10 @@ extern void tree_vec_elt_check_failed PARAMS ((int, int, const char *,
 #define TREE_LANG_FLAG_4(NODE) ((NODE)->common.lang_flag_4)
 #define TREE_LANG_FLAG_5(NODE) ((NODE)->common.lang_flag_5)
 #define TREE_LANG_FLAG_6(NODE) ((NODE)->common.lang_flag_6)
+
+/* Used to track constants derived from sizeof(pointer) operations */
+#define SIZEOF_PTR_DERIVED(NODE) (TREE_LANG_FLAG_6((NODE)))
+
 
 /* Define additional fields and accessors for nodes representing constants.  */
 
@@ -1643,6 +1647,9 @@ struct tree_type GTY(())
 /* Nonzero in a FUNCTION_DECL means this function can be substituted
    where it is called.  */
 #define DECL_INLINE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inline_flag)
+
+/* Nonzero in a VAR_DECL means this variable is skipped by propolice. */
+#define DECL_VAR_INLINE(NODE) (VAR_DECL_CHECK (NODE)->decl.inline_flag)
 
 /* Nonzero in a FUNCTION_DECL means this function has been found inlinable
    only by virtue of -finline-functions  */

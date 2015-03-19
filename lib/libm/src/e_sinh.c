@@ -10,11 +10,7 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_sinh.c,v 1.7 1995/05/10 20:46:13 jtc Exp $";
-#endif
-
-/* __ieee754_sinh(x)
+/* sinh(x)
  * Method : 
  * mathematically sinh(x) if defined to be (exp(x)-exp(-x))/2
  *	1. Replace x by |x| (sinh(-x) = -sinh(x)). 
@@ -32,21 +28,15 @@ static char rcsid[] = "$NetBSD: e_sinh.c,v 1.7 1995/05/10 20:46:13 jtc Exp $";
  *	only sinh(0)=0 is exact for finite x.
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
 static const double one = 1.0, shuge = 1.0e307;
-#else
-static double one = 1.0, shuge = 1.0e307;
-#endif
 
-#ifdef __STDC__
-	double __ieee754_sinh(double x)
-#else
-	double __ieee754_sinh(x)
-	double x;
-#endif
+double
+sinh(double x)
 {	
 	double t,w,h;
 	int32_t ix,jx;
@@ -71,12 +61,12 @@ static double one = 1.0, shuge = 1.0e307;
 	}
 
     /* |x| in [22, log(maxdouble)] return 0.5*exp(|x|) */
-	if (ix < 0x40862E42)  return h*__ieee754_exp(fabs(x));
+	if (ix < 0x40862E42)  return h*exp(fabs(x));
 
     /* |x| in [log(maxdouble), overflowthresold] */
 	GET_LOW_WORD(lx,x);
-	if (ix<0x408633CE || (ix==0x408633ce)&&(lx<=(u_int32_t)0x8fb9f87d)) {
-	    w = __ieee754_exp(0.5*fabs(x));
+	if (ix<0x408633CE || ((ix==0x408633ce)&&(lx<=(u_int32_t)0x8fb9f87d))) {
+	    w = exp(0.5*fabs(x));
 	    t = h*w;
 	    return t*w;
 	}
@@ -84,3 +74,7 @@ static double one = 1.0, shuge = 1.0e307;
     /* |x| > overflowthresold, sinh(x) overflow */
 	return x*shuge;
 }
+
+#if	LDBL_MANT_DIG == DBL_MANT_DIG
+__strong_alias(sinhl, sinh);
+#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */

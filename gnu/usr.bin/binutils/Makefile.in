@@ -103,7 +103,7 @@ REALLY_SET_LIB_PATH = \
   $(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH):$(TARGET_LIB_PATH):$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 # This is the list of directories to be built for the build system.
-BUILD_CONFIGDIRS = libiberty
+BUILD_CONFIGDIRS =
 # Build programs are put under this directory.
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
@@ -529,71 +529,8 @@ EXTRA_GCC_FLAGS = \
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS)
 
 .PHONY: configure-host
-configure-host: maybe-configure-gcc  \
-    maybe-configure-ash \
-    maybe-configure-autoconf \
-    maybe-configure-automake \
-    maybe-configure-bash \
-    maybe-configure-bfd \
-    maybe-configure-opcodes \
-    maybe-configure-binutils \
-    maybe-configure-bison \
-    maybe-configure-byacc \
-    maybe-configure-bzip2 \
-    maybe-configure-dejagnu \
-    maybe-configure-diff \
-    maybe-configure-dosutils \
-    maybe-configure-etc \
-    maybe-configure-fastjar \
-    maybe-configure-fileutils \
-    maybe-configure-findutils \
-    maybe-configure-find \
-    maybe-configure-flex \
-    maybe-configure-gas \
-    maybe-configure-gawk \
-    maybe-configure-gettext \
-    maybe-configure-gnuserv \
-    maybe-configure-gprof \
-    maybe-configure-gzip \
-    maybe-configure-hello \
-    maybe-configure-indent \
-    maybe-configure-intl \
-    maybe-configure-tcl \
-    maybe-configure-itcl \
-    maybe-configure-ld \
-    maybe-configure-libgui \
-    maybe-configure-libiberty \
-    maybe-configure-libtool \
-    maybe-configure-m4 \
-    maybe-configure-make \
-    maybe-configure-mmalloc \
-    maybe-configure-patch \
-    maybe-configure-perl \
-    maybe-configure-prms \
-    maybe-configure-rcs \
-    maybe-configure-readline \
-    maybe-configure-release \
-    maybe-configure-recode \
-    maybe-configure-sed \
-    maybe-configure-send-pr \
-    maybe-configure-shellutils \
-    maybe-configure-sid \
-    maybe-configure-sim \
-    maybe-configure-tar \
-    maybe-configure-texinfo \
-    maybe-configure-textutils \
-    maybe-configure-time \
-    maybe-configure-uudecode \
-    maybe-configure-wdiff \
-    maybe-configure-zip \
-    maybe-configure-zlib \
-    maybe-configure-gdb \
-    maybe-configure-expect \
-    maybe-configure-guile \
-    maybe-configure-tk \
-    maybe-configure-tix \
-    maybe-configure-libtermcap \
-    maybe-configure-utils
+configure-host: ${CONFIGURE_HOST_MODULES}
+
 .PHONY: configure-target
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
@@ -619,71 +556,9 @@ configure-target:  \
 all.normal: @all_build_modules@ all-host all-target
 
 .PHONY: all-host
-all-host: maybe-all-gcc  \
-    maybe-all-ash \
-    maybe-all-autoconf \
-    maybe-all-automake \
-    maybe-all-bash \
-    maybe-all-bfd \
-    maybe-all-opcodes \
-    maybe-all-binutils \
-    maybe-all-bison \
-    maybe-all-byacc \
-    maybe-all-bzip2 \
-    maybe-all-dejagnu \
-    maybe-all-diff \
-    maybe-all-dosutils \
-    maybe-all-etc \
-    maybe-all-fastjar \
-    maybe-all-fileutils \
-    maybe-all-findutils \
-    maybe-all-find \
-    maybe-all-flex \
-    maybe-all-gas \
-    maybe-all-gawk \
-    maybe-all-gettext \
-    maybe-all-gnuserv \
-    maybe-all-gprof \
-    maybe-all-gzip \
-    maybe-all-hello \
-    maybe-all-indent \
-    maybe-all-intl \
-    maybe-all-tcl \
-    maybe-all-itcl \
-    maybe-all-ld \
-    maybe-all-libgui \
-    maybe-all-libiberty \
-    maybe-all-libtool \
-    maybe-all-m4 \
-    maybe-all-make \
-    maybe-all-mmalloc \
-    maybe-all-patch \
-    maybe-all-perl \
-    maybe-all-prms \
-    maybe-all-rcs \
-    maybe-all-readline \
-    maybe-all-release \
-    maybe-all-recode \
-    maybe-all-sed \
-    maybe-all-send-pr \
-    maybe-all-shellutils \
-    maybe-all-sid \
-    maybe-all-sim \
-    maybe-all-tar \
-    maybe-all-texinfo \
-    maybe-all-textutils \
-    maybe-all-time \
-    maybe-all-uudecode \
-    maybe-all-wdiff \
-    maybe-all-zip \
-    maybe-all-zlib \
-    maybe-all-gdb \
-    maybe-all-expect \
-    maybe-all-guile \
-    maybe-all-tk \
-    maybe-all-tix \
-    maybe-all-libtermcap \
-    maybe-all-utils
+ALL_HOST_MODULES= @all_host_modules@
+all-host: ${ALL_HOST_MODULES}
+
 .PHONY: all-target
 all-target:  \
     maybe-all-target-libstdc++-v3 \
@@ -713,71 +588,8 @@ all-target:  \
 do-info: info-host info-target
 
 .PHONY: info-host
-info-host: maybe-info-gcc  \
-    maybe-info-ash \
-    maybe-info-autoconf \
-    maybe-info-automake \
-    maybe-info-bash \
-    maybe-info-bfd \
-    maybe-info-opcodes \
-    maybe-info-binutils \
-    maybe-info-bison \
-    maybe-info-byacc \
-    maybe-info-bzip2 \
-    maybe-info-dejagnu \
-    maybe-info-diff \
-    maybe-info-dosutils \
-    maybe-info-etc \
-    maybe-info-fastjar \
-    maybe-info-fileutils \
-    maybe-info-findutils \
-    maybe-info-find \
-    maybe-info-flex \
-    maybe-info-gas \
-    maybe-info-gawk \
-    maybe-info-gettext \
-    maybe-info-gnuserv \
-    maybe-info-gprof \
-    maybe-info-gzip \
-    maybe-info-hello \
-    maybe-info-indent \
-    maybe-info-intl \
-    maybe-info-tcl \
-    maybe-info-itcl \
-    maybe-info-ld \
-    maybe-info-libgui \
-    maybe-info-libiberty \
-    maybe-info-libtool \
-    maybe-info-m4 \
-    maybe-info-make \
-    maybe-info-mmalloc \
-    maybe-info-patch \
-    maybe-info-perl \
-    maybe-info-prms \
-    maybe-info-rcs \
-    maybe-info-readline \
-    maybe-info-release \
-    maybe-info-recode \
-    maybe-info-sed \
-    maybe-info-send-pr \
-    maybe-info-shellutils \
-    maybe-info-sid \
-    maybe-info-sim \
-    maybe-info-tar \
-    maybe-info-texinfo \
-    maybe-info-textutils \
-    maybe-info-time \
-    maybe-info-uudecode \
-    maybe-info-wdiff \
-    maybe-info-zip \
-    maybe-info-zlib \
-    maybe-info-gdb \
-    maybe-info-expect \
-    maybe-info-guile \
-    maybe-info-tk \
-    maybe-info-tix \
-    maybe-info-libtermcap \
-    maybe-info-utils
+INFO_HOST_MODULES= @info_host_modules@
+info-host: ${INFO_HOST_MODULES}
 
 .PHONY: info-target
 info-target:  \
@@ -6410,71 +6222,8 @@ TAGS-target-libada: \
 do-install-info: install-info-host install-info-target
 
 .PHONY: install-info-host
-install-info-host: maybe-install-info-gcc  \
-    maybe-install-info-ash \
-    maybe-install-info-autoconf \
-    maybe-install-info-automake \
-    maybe-install-info-bash \
-    maybe-install-info-bfd \
-    maybe-install-info-opcodes \
-    maybe-install-info-binutils \
-    maybe-install-info-bison \
-    maybe-install-info-byacc \
-    maybe-install-info-bzip2 \
-    maybe-install-info-dejagnu \
-    maybe-install-info-diff \
-    maybe-install-info-dosutils \
-    maybe-install-info-etc \
-    maybe-install-info-fastjar \
-    maybe-install-info-fileutils \
-    maybe-install-info-findutils \
-    maybe-install-info-find \
-    maybe-install-info-flex \
-    maybe-install-info-gas \
-    maybe-install-info-gawk \
-    maybe-install-info-gettext \
-    maybe-install-info-gnuserv \
-    maybe-install-info-gprof \
-    maybe-install-info-gzip \
-    maybe-install-info-hello \
-    maybe-install-info-indent \
-    maybe-install-info-intl \
-    maybe-install-info-tcl \
-    maybe-install-info-itcl \
-    maybe-install-info-ld \
-    maybe-install-info-libgui \
-    maybe-install-info-libiberty \
-    maybe-install-info-libtool \
-    maybe-install-info-m4 \
-    maybe-install-info-make \
-    maybe-install-info-mmalloc \
-    maybe-install-info-patch \
-    maybe-install-info-perl \
-    maybe-install-info-prms \
-    maybe-install-info-rcs \
-    maybe-install-info-readline \
-    maybe-install-info-release \
-    maybe-install-info-recode \
-    maybe-install-info-sed \
-    maybe-install-info-send-pr \
-    maybe-install-info-shellutils \
-    maybe-install-info-sid \
-    maybe-install-info-sim \
-    maybe-install-info-tar \
-    maybe-install-info-texinfo \
-    maybe-install-info-textutils \
-    maybe-install-info-time \
-    maybe-install-info-uudecode \
-    maybe-install-info-wdiff \
-    maybe-install-info-zip \
-    maybe-install-info-zlib \
-    maybe-install-info-gdb \
-    maybe-install-info-expect \
-    maybe-install-info-guile \
-    maybe-install-info-tk \
-    maybe-install-info-tix \
-    maybe-install-info-libtermcap \
-    maybe-install-info-utils
+INSTALL_INFO_HOST_MODULES= @install_info_host_modules@
+install-info-host: ${INSTALL_INFO_HOST_MODULES}
 
 .PHONY: install-info-target
 install-info-target:  \
@@ -17666,71 +17415,8 @@ install-host-nogcc:  \
     maybe-install-utils
 
 .PHONY: install-host
-install-host: maybe-install-gcc  \
-    maybe-install-ash \
-    maybe-install-autoconf \
-    maybe-install-automake \
-    maybe-install-bash \
-    maybe-install-bfd \
-    maybe-install-opcodes \
-    maybe-install-binutils \
-    maybe-install-bison \
-    maybe-install-byacc \
-    maybe-install-bzip2 \
-    maybe-install-dejagnu \
-    maybe-install-diff \
-    maybe-install-dosutils \
-    maybe-install-etc \
-    maybe-install-fastjar \
-    maybe-install-fileutils \
-    maybe-install-findutils \
-    maybe-install-find \
-    maybe-install-flex \
-    maybe-install-gas \
-    maybe-install-gawk \
-    maybe-install-gettext \
-    maybe-install-gnuserv \
-    maybe-install-gprof \
-    maybe-install-gzip \
-    maybe-install-hello \
-    maybe-install-indent \
-    maybe-install-intl \
-    maybe-install-tcl \
-    maybe-install-itcl \
-    maybe-install-ld \
-    maybe-install-libgui \
-    maybe-install-libiberty \
-    maybe-install-libtool \
-    maybe-install-m4 \
-    maybe-install-make \
-    maybe-install-mmalloc \
-    maybe-install-patch \
-    maybe-install-perl \
-    maybe-install-prms \
-    maybe-install-rcs \
-    maybe-install-readline \
-    maybe-install-release \
-    maybe-install-recode \
-    maybe-install-sed \
-    maybe-install-send-pr \
-    maybe-install-shellutils \
-    maybe-install-sid \
-    maybe-install-sim \
-    maybe-install-tar \
-    maybe-install-texinfo \
-    maybe-install-textutils \
-    maybe-install-time \
-    maybe-install-uudecode \
-    maybe-install-wdiff \
-    maybe-install-zip \
-    maybe-install-zlib \
-    maybe-install-gdb \
-    maybe-install-expect \
-    maybe-install-guile \
-    maybe-install-tk \
-    maybe-install-tix \
-    maybe-install-libtermcap \
-    maybe-install-utils
+INSTALL_MODULES= @install_host_modules@ @install_target_modules@
+install-host: ${INSTALL_MODULES}
 
 .PHONY: install-target
 install-target:  \
@@ -18193,7 +17879,7 @@ configure-bfd:
 	  || exit 1
 
 .PHONY: all-bfd maybe-all-bfd
-maybe-all-bfd:
+maybe-all-bfd: all-bfd
 all-bfd: configure-bfd
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -18261,7 +17947,7 @@ configure-opcodes:
 	  || exit 1
 
 .PHONY: all-opcodes maybe-all-opcodes
-maybe-all-opcodes:
+maybe-all-opcodes: all-opcodes
 all-opcodes: configure-opcodes
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -23836,13 +23522,13 @@ all-bootstrap: maybe-all-libiberty maybe-all-intl maybe-all-texinfo maybe-all-bi
 # GDB needs to know that the simulator is being built.
 configure-gdb: maybe-configure-itcl maybe-configure-tcl maybe-configure-tk maybe-configure-sim
 GDB_TK = @GDB_TK@
-all-gdb: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-mmalloc maybe-all-readline maybe-all-bison maybe-all-byacc maybe-all-sim $(gdbnlmrequirements) $(GDB_TK)
+all-gdb: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-readline maybe-all-bison maybe-all-byacc maybe-all-sim $(gdbnlmrequirements) $(GDB_TK)
 install-gdb: maybe-install-tcl maybe-install-tk maybe-install-itcl maybe-install-tix maybe-install-libgui
 configure-libgui: maybe-configure-tcl maybe-configure-tk
 all-libgui: maybe-all-tcl maybe-all-tk maybe-all-itcl
 
 # Host modules specific to binutils.
-configure-bfd: configure-libiberty
+configure-bfd:
 all-bfd: maybe-all-libiberty maybe-all-intl
 all-binutils: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-flex maybe-all-bison maybe-all-byacc maybe-all-intl
 # We put install-opcodes before install-binutils because the installed

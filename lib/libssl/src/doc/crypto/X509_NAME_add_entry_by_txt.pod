@@ -2,8 +2,9 @@
 
 =head1 NAME
 
-X509_NAME_add_entry_by_txt, X509_NAME_add_entry_by_OBJ, X509_NAME_add_entry_by_NID,
-X509_NAME_add_entry, X509_NAME_delete_entry - X509_NAME modification functions
+X509_NAME_add_entry_by_txt, X509_NAME_add_entry_by_OBJ,
+X509_NAME_add_entry_by_NID, X509_NAME_add_entry, X509_NAME_delete_entry -
+X509_NAME modification functions
 
 =head1 SYNOPSIS
 
@@ -61,7 +62,7 @@ to 0. This adds a new entry to the end of B<name> as a single valued
 RelativeDistinguishedName (RDN).
 
 B<loc> actually determines the index where the new entry is inserted:
-if it is -1 it is appended. 
+if it is -1 it is appended.
 
 B<set> determines how the new type is added. If it is zero a
 new RDN is created.

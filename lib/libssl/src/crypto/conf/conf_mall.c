@@ -1,4 +1,4 @@
-/* conf_mall.c */
+/* $OpenBSD: conf_mall.c,v 1.8 2014/07/10 22:45:56 jsing Exp $ */
 /* Written by Stephen Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,25 +57,26 @@
  */
 
 #include <stdio.h>
-#include <openssl/crypto.h>
-#include "cryptlib.h"
-#include <openssl/conf.h>
-#include <openssl/dso.h>
-#include <openssl/x509.h>
+
+#include <openssl/opensslconf.h>
+
 #include <openssl/asn1.h>
+#include <openssl/conf.h>
+#include <openssl/crypto.h>
+#include <openssl/x509.h>
+
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
 
 /* Load all OpenSSL builtin modules */
 
-void OPENSSL_load_builtin_modules(void)
-	{
+void
+OPENSSL_load_builtin_modules(void)
+{
 	/* Add builtin modules here */
 	ASN1_add_oid_module();
 #ifndef OPENSSL_NO_ENGINE
 	ENGINE_add_conf_module();
 #endif
-	EVP_add_alg_module();
-	}
-
+}

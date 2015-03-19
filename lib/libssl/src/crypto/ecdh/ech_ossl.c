@@ -1,4 +1,4 @@
-/* crypto/ecdh/ech_ossl.c */
+/* $OpenBSD: ech_ossl.c,v 1.8 2014/07/12 16:03:37 miod Exp $ */
 /* ====================================================================
  * Copyright 2002 Sun Microsystems, Inc. ALL RIGHTS RESERVED.
  *
@@ -67,31 +67,25 @@
  *
  */
 
-
-#include <string.h>
 #include <limits.h>
+#include <string.h>
 
-#include "cryptlib.h"
+#include <openssl/opensslconf.h>
+
+#include <openssl/bn.h>
+#include <openssl/err.h>
+#include <openssl/obj_mac.h>
+#include <openssl/sha.h>
 
 #include "ech_locl.h"
-#include <openssl/err.h>
-#include <openssl/sha.h>
-#include <openssl/obj_mac.h>
-#include <openssl/bn.h>
 
 static int ecdh_compute_key(void *out, size_t len, const EC_POINT *pub_key,
 	EC_KEY *ecdh, 
 	void *(*KDF)(const void *in, size_t inlen, void *out, size_t *outlen));
 
 static ECDH_METHOD openssl_ecdh_meth = {
-	"OpenSSL ECDH method",
-	ecdh_compute_key,
-#if 0
-	NULL, /* init     */
-	NULL, /* finish   */
-#endif
-	0,    /* flags    */
-	NULL  /* app_data */
+	.name = "OpenSSL ECDH method",
+	.compute_key = ecdh_compute_key
 };
 
 const ECDH_METHOD *ECDH_OpenSSL(void)
@@ -126,8 +120,10 @@ static int ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
 
 	if ((ctx = BN_CTX_new()) == NULL) goto err;
 	BN_CTX_start(ctx);
-	x = BN_CTX_get(ctx);
-	y = BN_CTX_get(ctx);
+	if ((x = BN_CTX_get(ctx)) == NULL)
+		goto err;
+	if ((y = BN_CTX_get(ctx)) == NULL)
+		goto err;
 	
 	priv_key = EC_KEY_get0_private_key(ecdh);
 	if (priv_key == NULL)
@@ -175,7 +171,7 @@ static int ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
 		ECDHerr(ECDH_F_ECDH_COMPUTE_KEY,ERR_R_INTERNAL_ERROR);
 		goto err;
 		}
-	if ((buf = OPENSSL_malloc(buflen)) == NULL)
+	if ((buf = malloc(buflen)) == NULL)
 		{
 		ECDHerr(ECDH_F_ECDH_COMPUTE_KEY,ERR_R_MALLOC_FAILURE);
 		goto err;
@@ -207,9 +203,10 @@ static int ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
 		}
 	
 err:
-	if (tmp) EC_POINT_free(tmp);
-	if (ctx) BN_CTX_end(ctx);
-	if (ctx) BN_CTX_free(ctx);
-	if (buf) OPENSSL_free(buf);
+	EC_POINT_free(tmp);
+	if (ctx)
+		BN_CTX_end(ctx);
+	BN_CTX_free(ctx);
+	free(buf);
 	return(ret);
 	}

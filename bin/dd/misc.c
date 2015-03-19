@@ -1,3 +1,4 @@
+/*	$OpenBSD: misc.c,v 1.17 2013/04/16 22:13:43 deraadt Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,20 +34,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)misc.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
+#include <sys/time.h>
+#include <sys/uio.h>
 
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -58,49 +50,72 @@ static char rcsid[] = "$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $";
 #include "extern.h"
 
 void
-summary()
+summary(void)
 {
-	time_t secs;
-	char buf[100];
+	struct timeval nowtv;
+	char buf[4][100];
+	struct iovec iov[4];
+	double microsecs;
+	int i = 0;
 
-	(void)time(&secs);
-	if ((secs -= st.start) == 0)
-		secs = 1;
+	if (ddflags & C_NOINFO)
+		return;
+
+	(void)gettimeofday(&nowtv, (struct timezone *)NULL);
+	timersub(&nowtv, &st.startv, &nowtv);
+	microsecs = ((double)nowtv.tv_sec * 1000000) + nowtv.tv_usec;
+	if (microsecs == 0)
+		microsecs = 1;
+
 	/* Use snprintf(3) so that we don't reenter stdio(3). */
-	(void)snprintf(buf, sizeof(buf),
-	    "%u+%u records in\n%u+%u records out\n",
+	(void)snprintf(buf[0], sizeof(buf[0]),
+	    "%zu+%zu records in\n%zu+%zu records out\n",
 	    st.in_full, st.in_part, st.out_full, st.out_part);
-	(void)write(STDERR_FILENO, buf, strlen(buf));
+	iov[i].iov_base = buf[0];
+	iov[i++].iov_len = strlen(buf[0]);
+
 	if (st.swab) {
-		(void)snprintf(buf, sizeof(buf), "%u odd length swab %s\n",
+		(void)snprintf(buf[1], sizeof(buf[1]),
+		    "%zu odd length swab %s\n",
 		     st.swab, (st.swab == 1) ? "block" : "blocks");
-		(void)write(STDERR_FILENO, buf, strlen(buf));
+		iov[i].iov_base = buf[1];
+		iov[i++].iov_len = strlen(buf[1]);
 	}
 	if (st.trunc) {
-		(void)snprintf(buf, sizeof(buf), "%u truncated %s\n",
+		(void)snprintf(buf[2], sizeof(buf[2]),
+		    "%zu truncated %s\n",
 		     st.trunc, (st.trunc == 1) ? "block" : "blocks");
-		(void)write(STDERR_FILENO, buf, strlen(buf));
+		iov[i].iov_base = buf[2];
+		iov[i++].iov_len = strlen(buf[2]);
 	}
-	(void)snprintf(buf, sizeof(buf),
-	    "%u bytes transferred in %u secs (%u bytes/sec)\n",
-	    st.bytes, secs, st.bytes / secs);
-	(void)write(STDERR_FILENO, buf, strlen(buf));
+	if (!(ddflags & C_NOXFER)) {
+		(void)snprintf(buf[3], sizeof(buf[3]),
+		    "%qd bytes transferred in %lld.%03ld secs "
+		    "(%0.0f bytes/sec)\n", (long long)st.bytes,
+		    (long long)nowtv.tv_sec, nowtv.tv_usec / 1000,
+		    ((double)st.bytes * 1000000) / microsecs);
+		iov[i].iov_base = buf[3];
+		iov[i++].iov_len = strlen(buf[3]);
+	}
+
+	(void)writev(STDERR_FILENO, iov, i);
 }
 
 /* ARGSUSED */
 void
-summaryx(notused)
-	int notused;
+summaryx(int notused)
+{
+	int save_errno = errno;
+
+	summary();
+	errno = save_errno;
+}
+
+/* ARGSUSED */
+void
+terminate(int notused)
 {
 
 	summary();
-}
-
-/* ARGSUSED */
-void
-terminate(notused)
-	int notused;
-{
-
-	exit(0);
+	_exit(0);
 }

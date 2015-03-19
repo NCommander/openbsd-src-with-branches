@@ -1,0 +1,10 @@
+# $OpenBSD$
+.PHONY: all
+
+AB = a
+AC = b
+B = C
+
+# note the non-terminated brace
+all:
+	@echo ${A${B}

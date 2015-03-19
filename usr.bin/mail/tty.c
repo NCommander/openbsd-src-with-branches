@@ -1,3 +1,6 @@
+/*	$OpenBSD: tty.c,v 1.19 2009/10/27 23:59:40 deraadt Exp $	*/
+/*	$NetBSD: tty.c,v 1.7 1997/07/09 05:25:46 mikel Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "from: @(#)tty.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: tty.c,v 1.4 1995/05/02 01:40:17 mycroft Exp $";
-#endif /* not lint */
-
 /*
  * Mail -- a mail program
  *
@@ -44,44 +38,50 @@ static char rcsid[] = "$Id: tty.c,v 1.4 1995/05/02 01:40:17 mycroft Exp $";
 
 #include "rcv.h"
 #include "extern.h"
+#include <sys/ioctl.h>
+#include <errno.h>
 
-static	cc_t	c_erase;		/* Current erase char */
-static	cc_t	c_kill;			/* Current kill char */
-static	jmp_buf	rewrite;		/* Place to go when continued */
-static	jmp_buf	intjmp;			/* Place to go when interrupted */
+static	cc_t		c_erase;	/* Current erase char */
+static	cc_t		c_kill;		/* Current kill char */
 #ifndef TIOCSTI
-static	int	ttyset;			/* We must now do erase/kill */
+static	int		ttyset;		/* We must now do erase/kill */
 #endif
+static	volatile sig_atomic_t	ttysignal;	/* Interrupted by a signal? */
 
 /*
  * Read all relevant header fields.
  */
-
 int
-grabh(hp, gflags)
-	struct header *hp;
-	int gflags;
+grabh(struct header *hp, int gflags)
 {
 	struct termios ttybuf;
-	sig_t saveint;
 #ifndef TIOCSTI
-	sig_t savequit;
+	struct sigaction savequit;
+#else
+# ifdef	TIOCEXT
+	int extproc;
+	int flag;
+# endif /* TIOCEXT */
 #endif
-	sig_t savetstp;
-	sig_t savettou;
-	sig_t savettin;
-	int errs;
-	void ttyint();
+	struct sigaction savetstp;
+	struct sigaction savettou;
+	struct sigaction savettin;
+	struct sigaction act;
+	char *s;
+	int error;
 
-	savetstp = signal(SIGTSTP, SIG_DFL);
-	savettou = signal(SIGTTOU, SIG_DFL);
-	savettin = signal(SIGTTIN, SIG_DFL);
-	errs = 0;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = SA_RESTART;
+	act.sa_handler = SIG_DFL;
+	(void)sigaction(SIGTSTP, &act, &savetstp);
+	(void)sigaction(SIGTTOU, &act, &savettou);
+	(void)sigaction(SIGTTIN, &act, &savettin);
+	error = 1;
 #ifndef TIOCSTI
 	ttyset = 0;
 #endif
 	if (tcgetattr(fileno(stdin), &ttybuf) < 0) {
-		perror("tcgetattr");
+		warn("tcgetattr");
 		return(-1);
 	}
 	c_erase = ttybuf.c_cc[VERASE];
@@ -89,59 +89,81 @@ grabh(hp, gflags)
 #ifndef TIOCSTI
 	ttybuf.c_cc[VERASE] = 0;
 	ttybuf.c_cc[VKILL] = 0;
-	if ((saveint = signal(SIGINT, SIG_IGN)) == SIG_DFL)
-		signal(SIGINT, SIG_DFL);
-	if ((savequit = signal(SIGQUIT, SIG_IGN)) == SIG_DFL)
-		signal(SIGQUIT, SIG_DFL);
+	act.sa_handler = SIG_IGN;
+	if (sigaction(SIGQUIT, &act, &savequit) == 0 &&
+	    savequit.sa_handler == SIG_DFL)
+		(void)sigaction(SIGQUIT, &savequit, NULL);
 #else
-	if (setjmp(intjmp))
-		goto out;
-	saveint = signal(SIGINT, ttyint);
+# ifdef	TIOCEXT
+	extproc = ((ttybuf.c_lflag & EXTPROC) ? 1 : 0);
+	if (extproc) {
+		flag = 0;
+		if (ioctl(fileno(stdin), TIOCEXT, &flag) < 0)
+			warn("TIOCEXT: off");
+	}
+# endif /* TIOCEXT */
 #endif
 	if (gflags & GTO) {
 #ifndef TIOCSTI
-		if (!ttyset && hp->h_to != NIL)
+		if (!ttyset && hp->h_to != NULL)
 			ttyset++, tcsetattr(fileno(stdin), TCSADRAIN, &ttybuf);
 #endif
-		hp->h_to =
-			extract(readtty("To: ", detract(hp->h_to, 0)), GTO);
+		s = readtty("To: ", detract(hp->h_to, 0));
+		if (s == NULL)
+			goto out;
+		hp->h_to = extract(s, GTO);
 	}
 	if (gflags & GSUBJECT) {
 #ifndef TIOCSTI
-		if (!ttyset && hp->h_subject != NOSTR)
+		if (!ttyset && hp->h_subject != NULL)
 			ttyset++, tcsetattr(fileno(stdin), TCSADRAIN, &ttybuf);
 #endif
-		hp->h_subject = readtty("Subject: ", hp->h_subject);
+		s = readtty("Subject: ", hp->h_subject);
+		if (s == NULL)
+			goto out;
+		hp->h_subject = s;
 	}
 	if (gflags & GCC) {
 #ifndef TIOCSTI
-		if (!ttyset && hp->h_cc != NIL)
+		if (!ttyset && hp->h_cc != NULL)
 			ttyset++, tcsetattr(fileno(stdin), TCSADRAIN, &ttybuf);
 #endif
-		hp->h_cc =
-			extract(readtty("Cc: ", detract(hp->h_cc, 0)), GCC);
+		s = readtty("Cc: ", detract(hp->h_cc, 0));
+		if (s == NULL)
+			goto out;
+		hp->h_cc = extract(s, GCC);
 	}
 	if (gflags & GBCC) {
 #ifndef TIOCSTI
-		if (!ttyset && hp->h_bcc != NIL)
+		if (!ttyset && hp->h_bcc != NULL)
 			ttyset++, tcsetattr(fileno(stdin), TCSADRAIN, &ttybuf);
 #endif
-		hp->h_bcc =
-			extract(readtty("Bcc: ", detract(hp->h_bcc, 0)), GBCC);
+		s = readtty("Bcc: ", detract(hp->h_bcc, 0));
+		if (s == NULL)
+			goto out;
+		hp->h_bcc = extract(s, GBCC);
 	}
+	error = 0;
 out:
-	signal(SIGTSTP, savetstp);
-	signal(SIGTTOU, savettou);
-	signal(SIGTTIN, savettin);
+	(void)sigaction(SIGTSTP, &savetstp, NULL);
+	(void)sigaction(SIGTTOU, &savettou, NULL);
+	(void)sigaction(SIGTTIN, &savettin, NULL);
 #ifndef TIOCSTI
 	ttybuf.c_cc[VERASE] = c_erase;
 	ttybuf.c_cc[VKILL] = c_kill;
 	if (ttyset)
 		tcsetattr(fileno(stdin), TCSADRAIN, &ttybuf);
-	signal(SIGQUIT, savequit);
+	(void)sigaction(SIGQUIT, &savequit, NULL);
+#else
+# ifdef	TIOCEXT
+	if (extproc) {
+		flag = 1;
+		if (ioctl(fileno(stdin), TIOCEXT, &flag) < 0)
+			warn("TIOCEXT: on");
+	}
+# endif /* TIOCEXT */
 #endif
-	signal(SIGINT, saveint);
-	return(errs);
+	return(error);
 }
 
 /*
@@ -150,32 +172,31 @@ out:
  * be read.
  *
  */
-
 char *
-readtty(pr, src)
-	char pr[], src[];
+readtty(char *pr, char *src)
 {
+	struct sigaction act, saveint;
 	char ch, canonb[BUFSIZ];
+	char *cp, *cp2;
+	sigset_t oset;
 	int c;
-	register char *cp, *cp2;
-	void ttystop();
 
 	fputs(pr, stdout);
 	fflush(stdout);
-	if (src != NOSTR && strlen(src) > BUFSIZ - 2) {
-		printf("too long to edit\n");
+	if (src != NULL && strlen(src) > sizeof(canonb) - 2) {
+		puts("too long to edit");
 		return(src);
 	}
 #ifndef TIOCSTI
-	if (src != NOSTR)
-		cp = copy(src, canonb);
+	if (src != NULL)
+		cp = copy(src, canonb);	/* safe, bounds checked above */
 	else
 		cp = copy("", canonb);
 	fputs(canonb, stdout);
 	fflush(stdout);
 #else
-	cp = src == NOSTR ? "" : src;
-	while (c = *cp++) {
+	cp = src == NULL ? "" : src;
+	while ((c = (unsigned char)*cp++) != '\0') {
 		if ((c_erase != _POSIX_VDISABLE && c == c_erase) ||
 		    (c_kill != _POSIX_VDISABLE && c == c_kill)) {
 			ch = '\\';
@@ -187,40 +208,61 @@ readtty(pr, src)
 	cp = canonb;
 	*cp = 0;
 #endif
-	cp2 = cp;
-	while (cp2 < canonb + BUFSIZ)
-		*cp2++ = 0;
-	cp2 = cp;
-	if (setjmp(rewrite))
-		goto redo;
-	signal(SIGTSTP, ttystop);
-	signal(SIGTTOU, ttystop);
-	signal(SIGTTIN, ttystop);
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;		/* Note: will not restart syscalls */
+	act.sa_handler = ttyint;
+	(void)sigaction(SIGINT, &act, &saveint);
+	act.sa_handler = ttystop;
+	(void)sigaction(SIGTSTP, &act, NULL);
+	(void)sigaction(SIGTTOU, &act, NULL);
+	(void)sigaction(SIGTTIN, &act, NULL);
+	(void)sigprocmask(SIG_UNBLOCK, &intset, &oset);
 	clearerr(stdin);
-	while (cp2 < canonb + BUFSIZ) {
+	memset(cp, 0, canonb + sizeof(canonb) - cp);
+	for (cp2 = cp; cp2 < canonb + sizeof(canonb) - 1; ) {
 		c = getc(stdin);
+		switch (ttysignal) {
+			case SIGINT:
+				ttysignal = 0;
+				cp2 = NULL;
+				c = EOF;
+				/* FALLTHROUGH */
+			case 0:
+				break;
+			default:
+				ttysignal = 0;
+				goto redo;
+		}
 		if (c == EOF || c == '\n')
 			break;
 		*cp2++ = c;
 	}
-	*cp2 = 0;
-	signal(SIGTSTP, SIG_DFL);
-	signal(SIGTTOU, SIG_DFL);
-	signal(SIGTTIN, SIG_DFL);
+	act.sa_handler = SIG_DFL;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = SA_RESTART;
+	(void)sigprocmask(SIG_SETMASK, &oset, NULL);
+	(void)sigaction(SIGTSTP, &act, NULL);
+	(void)sigaction(SIGTTOU, &act, NULL);
+	(void)sigaction(SIGTTIN, &act, NULL);
+	(void)sigaction(SIGINT, &saveint, NULL);
+	if (cp2 == NULL)
+		return(NULL);			/* user hit ^C */
+	*cp2 = '\0';
 	if (c == EOF && ferror(stdin)) {
 redo:
-		cp = strlen(canonb) > 0 ? canonb : NOSTR;
+		cp = strlen(canonb) > 0 ? canonb : NULL;
 		clearerr(stdin);
+		/* XXX - make iterative, not recursive */
 		return(readtty(pr, cp));
 	}
 #ifndef TIOCSTI
-	if (cp == NOSTR || *cp == '\0')
+	if (cp == NULL || *cp == '\0')
 		return(src);
 	cp2 = cp;
 	if (!ttyset)
-		return(strlen(canonb) > 0 ? savestr(canonb) : NOSTR);
+		return(strlen(canonb) > 0 ? savestr(canonb) : NULL);
 	while (*cp != '\0') {
-		c = *cp++;
+		c = (unsigned char)*cp++;
 		if (c_erase != _POSIX_VDISABLE && c == c_erase) {
 			if (cp2 == canonb)
 				continue;
@@ -246,7 +288,7 @@ redo:
 	*cp2 = '\0';
 #endif
 	if (equal("", canonb))
-		return(NOSTR);
+		return("");
 	return(savestr(canonb));
 }
 
@@ -254,22 +296,35 @@ redo:
  * Receipt continuation.
  */
 void
-ttystop(s)
-	int s;
+ttystop(int s)
 {
-	sig_t old_action = signal(s, SIG_DFL);
+	struct sigaction act, oact;
+	sigset_t nset;
+	int save_errno;
 
-	sigsetmask(sigblock(0) & ~sigmask(s));
-	kill(0, s);
-	sigblock(sigmask(s));
-	signal(s, old_action);
-	longjmp(rewrite, 1);
+	/*
+	 * Save old handler and set to default.
+	 * Unblock receipt of 's' and then resend it.
+	 */
+	save_errno = errno;
+	(void)sigemptyset(&act.sa_mask);
+	act.sa_flags = SA_RESTART;
+	act.sa_handler = SIG_DFL;
+	(void)sigaction(s, &act, &oact);
+	(void)sigemptyset(&nset);
+	(void)sigaddset(&nset, s);
+	(void)sigprocmask(SIG_UNBLOCK, &nset, NULL);
+	(void)kill(0, s);
+	(void)sigprocmask(SIG_BLOCK, &nset, NULL);
+	(void)sigaction(s, &oact, NULL);
+	ttysignal = s;
+	errno = save_errno;
 }
 
 /*ARGSUSED*/
 void
-ttyint(s)
-	int s;
+ttyint(int s)
 {
-	longjmp(intjmp, 1);
+
+	ttysignal = s;
 }

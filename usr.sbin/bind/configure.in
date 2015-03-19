@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2007  Internet Systems Consortium, Inc. ("ISC")
+# Copyright (C) 2004-2008  Internet Systems Consortium, Inc. ("ISC")
 # Copyright (C) 1998-2003  Internet Software Consortium.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -18,7 +18,7 @@ AC_DIVERT_PUSH(1)dnl
 esyscmd([sed "s/^/# /" COPYRIGHT])dnl
 AC_DIVERT_POP()dnl
 
-AC_REVISION($Revision: 1.355.18.71 $)
+AC_REVISION($Revision: 1.16 $)
 
 AC_INIT(lib/dns/name.c)
 AC_PREREQ(2.59)
@@ -1839,7 +1839,7 @@ case "$host" in
 	[*-solaris2.[89]])
 		hack_shutup_pthreadonceinit=yes
 		;;
-	*-solaris2.10)
+	*-solaris2.1[0-9])
 		hack_shutup_pthreadonceinit=yes
 		;;
 esac
@@ -2471,43 +2471,9 @@ AC_CONFIG_FILES([
 	lib/lwres/unix/Makefile
 	lib/lwres/unix/include/Makefile
 	lib/lwres/unix/include/lwres/Makefile
-	lib/tests/Makefile
-	lib/tests/include/Makefile
-	lib/tests/include/tests/Makefile
 	bin/Makefile
-	bin/check/Makefile
-	bin/named/Makefile
-	bin/named/unix/Makefile
-	bin/rndc/Makefile
-	bin/rndc/unix/Makefile
 	bin/dig/Makefile
-	bin/nsupdate/Makefile
-	bin/tests/Makefile
-	bin/tests/names/Makefile
-	bin/tests/master/Makefile
-	bin/tests/rbt/Makefile
-	bin/tests/db/Makefile
-	bin/tests/tasks/Makefile
-	bin/tests/timers/Makefile
-	bin/tests/dst/Makefile
-	bin/tests/mem/Makefile
-	bin/tests/net/Makefile
-	bin/tests/sockaddr/Makefile
-	bin/tests/system/Makefile
-	bin/tests/system/conf.sh
-	bin/tests/system/lwresd/Makefile
-	bin/tests/system/tkey/Makefile
-	bin/tests/headerdep_test.sh
-	bin/dnssec/Makefile
-	doc/Makefile
-	doc/arm/Makefile
-	doc/misc/Makefile
 	isc-config.sh
-	doc/xsl/Makefile
-	doc/xsl/isc-docbook-chunk.xsl
-	doc/xsl/isc-docbook-html.xsl
-	doc/xsl/isc-docbook-latex.xsl
-	doc/xsl/isc-manpage.xsl
 ])
 
 #

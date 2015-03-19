@@ -2372,6 +2372,8 @@ get_segment_type (unsigned long p_type)
 			return "GNU_EH_FRAME";
     case PT_GNU_STACK:	return "GNU_STACK";
     case PT_GNU_RELRO:  return "GNU_RELRO";
+    case PT_OPENBSD_RANDOMIZE:
+			return "OPENBSD_RANDOMIZE";
 
     default:
       if ((p_type >= PT_LOPROC) && (p_type <= PT_HIPROC))
@@ -3792,7 +3794,12 @@ get_elf_section_flags (bfd_vma sh_flags)
 		}
 
 	      size -= flags [index].len;
+#if 0
 	      p = stpcpy (p, flags [index].str);
+#else
+	      strcpy (p, flags [index].str);
+	      p += strlen(p);
+#endif
 	    }
 	  else if (flag & SHF_MASKOS)
 	    os_flags |= flag;
@@ -6973,7 +6980,7 @@ process_symbol_table (FILE *file)
 
 	      printf ("  %6s", get_symbol_type (ELF_ST_TYPE (psym->st_info)));
 	      printf (" %6s",  get_symbol_binding (ELF_ST_BIND (psym->st_info)));
-	      printf (" %3s",  get_symbol_visibility (ELF_ST_VISIBILITY (psym->st_other)));
+	      printf (" %7s",  get_symbol_visibility (ELF_ST_VISIBILITY (psym->st_other)));
 	      /* Check to see if any other bits in the st_other field are set.
 	         Note - displaying this information disrupts the layout of the
 	         table being generated, but for the moment this case is very rare.  */
@@ -7045,7 +7052,7 @@ process_symbol_table (FILE *file)
 	      print_vma (psym->st_size, DEC_5);
 	      printf (" %-7s", get_symbol_type (ELF_ST_TYPE (psym->st_info)));
 	      printf (" %-6s", get_symbol_binding (ELF_ST_BIND (psym->st_info)));
-	      printf (" %-3s", get_symbol_visibility (ELF_ST_VISIBILITY (psym->st_other)));
+	      printf (" %-7s", get_symbol_visibility (ELF_ST_VISIBILITY (psym->st_other)));
 	      /* Check to see if any other bits in the st_other field are set.
 	         Note - displaying this information disrupts the layout of the
 	         table being generated, but for the moment this case is very rare.  */
@@ -8856,8 +8863,10 @@ get_file_header (FILE *file)
   if (is_32bit_elf)
     {
       Elf32_External_Ehdr ehdr32;
+      /* Temporary var to prevent the GCC -Wbounded checker from firing. */
+      void *tmp = &ehdr32.e_type[0];
 
-      if (fread (ehdr32.e_type, sizeof (ehdr32) - EI_NIDENT, 1, file) != 1)
+      if (fread (tmp, sizeof (ehdr32) - EI_NIDENT, 1, file) != 1)
 	return 0;
 
       elf_header.e_type      = BYTE_GET (ehdr32.e_type);
@@ -8877,6 +8886,8 @@ get_file_header (FILE *file)
   else
     {
       Elf64_External_Ehdr ehdr64;
+      /* Temporary var to prevent the GCC -Wbounded checker from firing. */
+      void *tmp = &ehdr64.e_type[0];
 
       /* If we have been compiled with sizeof (bfd_vma) == 4, then
 	 we will not be able to cope with the 64bit data found in
@@ -8889,7 +8900,7 @@ get_file_header (FILE *file)
 	  return 0;
 	}
 
-      if (fread (ehdr64.e_type, sizeof (ehdr64) - EI_NIDENT, 1, file) != 1)
+      if (fread (tmp, sizeof (ehdr64) - EI_NIDENT, 1, file) != 1)
 	return 0;
 
       elf_header.e_type      = BYTE_GET (ehdr64.e_type);

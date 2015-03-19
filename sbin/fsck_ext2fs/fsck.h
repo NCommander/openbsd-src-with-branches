@@ -1,8 +1,8 @@
-/*	$NetBSD: fsck.h,v 1.13 1996/10/11 20:15:46 thorpej Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: fsck.h,v 1.11 2014/05/22 14:04:41 krw Exp $	*/
+/*	$NetBSD: fsck.h,v 1.1 1997/06/11 11:21:47 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,10 +38,6 @@
 #define	MAXBUFSPACE	80*1024	/* maximum space to allocate to buffers */
 #define	INOBUFSIZE	128*1024	/* size of buffer to read inodes in pass1 */
 
-#ifndef BUFSIZ
-#define BUFSIZ 1024
-#endif
-
 #define	USTATE	01		/* inode not allocated */
 #define	FSTATE	02		/* inode is file */
 #define	DSTATE	03		/* inode is directory */
@@ -59,14 +51,14 @@
 struct bufarea {
 	struct bufarea	*b_next;		/* free list queue */
 	struct bufarea	*b_prev;		/* free list queue */
-	daddr_t	b_bno;
+	daddr32_t	b_bno;
 	int	b_size;
 	int	b_errs;
 	int	b_flags;
 	union {
 		char	*b_buf;			/* buffer space */
-		daddr_t	*b_indir;		/* indirect block */
-		struct	m_ext2fs *b_fs;		/* super block */
+		daddr32_t	*b_indir;		/* indirect block */
+		struct	ext2fs *b_fs;		/* super block */
 		struct	ext2_gd *b_cgd;		/* cylinder group descriptor */
 		struct	ext2fs_dinode *b_dinode;	/* inode block */
 	} b_un;
@@ -78,30 +70,29 @@ struct bufarea {
 #define	MINBUFS		5	/* minimum number of buffers required */
 struct bufarea bufhead;		/* head of list of other blks in filesys */
 struct bufarea sblk;		/* file system superblock */
+struct bufarea asblk;		/* first alternate superblock */
 struct bufarea *pdirbp;		/* current directory contents */
 struct bufarea *pbp;		/* current inode block */
-struct bufarea *getdatablk __P((daddr_t, long));
+struct bufarea *getdatablk(daddr32_t, long);
+struct m_ext2fs sblock;
 
 #define	dirty(bp)	(bp)->b_dirty = 1
 #define	initbarea(bp) \
 	(bp)->b_dirty = 0; \
-	(bp)->b_bno = (daddr_t)-1; \
+	(bp)->b_bno = (daddr32_t)-1; \
 	(bp)->b_flags = 0;
 
-#define	sbdirty()	sblk.b_dirty = 1
-#define	cgdirty()	cgblk.b_dirty = 1
-#define	sblock		(*sblk.b_un.b_fs)
-#define	cgrp		(*cgblk.b_un.b_cg)
+#define	sbdirty()	copyback_sb(&sblk); sblk.b_dirty = 1
 
 enum fixstate {DONTKNOW, NOFIX, FIX, IGNORE};
 
 struct inodesc {
 	enum fixstate id_fix;	/* policy on fixing errors */
 	int (*id_func)		/* function to be applied to blocks of inode */
-	    __P((struct inodesc *));
+(struct inodesc *);
 	ino_t id_number;	/* inode number described */
 	ino_t id_parent;	/* for DATA nodes, their parent */
-	daddr_t id_blkno;	/* current block number being examined */
+	daddr32_t id_blkno;	/* current block number being examined */
 	int id_numfrags;	/* number of frags contained in block */
 	quad_t id_filesize;	/* for DATA nodes, the size of the directory */
 	int id_loc;		/* for DATA nodes, current location in dir */
@@ -116,16 +107,16 @@ struct inodesc {
 
 /*
  * Linked list of duplicate blocks.
- * 
+ *
  * The list is composed of two parts. The first part of the
  * list (from duplist through the node pointed to by muldup)
- * contains a single copy of each duplicate block that has been 
+ * contains a single copy of each duplicate block that has been
  * found. The second part of the list (from muldup to the end)
  * contains duplicate blocks that have been found more than once.
  * To check if a block has been found as a duplicate it is only
- * necessary to search from duplist through muldup. To find the 
+ * necessary to search from duplist through muldup. To find the
  * total number of times that a block has been found as a duplicate
- * the entire list must be searched for occurences of the block
+ * the entire list must be searched for occurrences of the block
  * in question. The following diagram shows a sample list where
  * w (found twice), x (found once), y (found three times), and z
  * (found once) are duplicate block numbers:
@@ -137,7 +128,7 @@ struct inodesc {
  */
 struct dups {
 	struct dups *next;
-	daddr_t dup;
+	daddr32_t dup;
 };
 struct dups *duplist;		/* head of dup list */
 struct dups *muldup;		/* end of unique duplicate dup block numbers */
@@ -160,13 +151,12 @@ struct inoinfo {
 	ino_t	i_number;		/* inode number of this entry */
 	ino_t	i_parent;		/* inode number of parent */
 	ino_t	i_dotdot;		/* inode number of `..' */
-	size_t	i_isize;		/* size of inode */
+	u_int64_t	i_isize;		/* size of inode */
 	u_int	i_numblks;		/* size of block array in bytes */
-	daddr_t	i_blks[1];		/* actually longer */
+	daddr32_t	i_blks[1];		/* actually longer */
 } **inphead, **inpsort;
 long numdirs, listmax, inplast;
 
-long	dev_bsize;		/* computed value of DEV_BSIZE */
 long	secsize;		/* actual disk sector size */
 char	nflag;			/* assume a no response */
 char	yflag;			/* assume a yes response */
@@ -180,20 +170,20 @@ int	fsreadfd;		/* file descriptor for reading file system */
 int	fswritefd;		/* file descriptor for writing file system */
 int	rerun;			/* rerun fsck.  Only used in non-preen mode */
 
-daddr_t	maxfsblock;		/* number of blocks in the file system */
-daddr_t cgoverhead;		/* overhead per cg */
+daddr32_t	maxfsblock;		/* number of blocks in the file system */
 char	*blockmap;		/* ptr to primary blk allocation map */
 ino_t	maxino;			/* number of inodes in file system */
 ino_t	lastino;		/* last inode in use */
 char	*statemap;		/* ptr to inode state table */
+u_char	*typemap;		/* ptr to inode type table */
 int16_t	*lncntp;		/* ptr to link count table */
 
 ino_t	lfdir;			/* lost & found directory inode number */
 char	*lfname;		/* lost & found directory name */
 int	lfmode;			/* lost & found directory creation mode */
 
-daddr_t	n_blks;			/* number of blocks in use */
-daddr_t	n_files;		/* number of files in use */
+daddr32_t	n_blks;			/* number of blocks in use */
+daddr32_t	n_files;		/* number of files in use */
 
 #define	clearinode(dp)	(*(dp) = zino)
 struct	ext2fs_dinode zino;
@@ -208,7 +198,9 @@ struct	ext2fs_dinode zino;
 #define	ALTERED	0x08
 #define	FOUND	0x10
 
-struct ext2fs_dinode *ginode __P((ino_t));
-struct inoinfo *getinoinfo __P((ino_t));
-void getblk __P((struct bufarea *, daddr_t, long));
-ino_t allocino __P((ino_t, int));
+struct ext2fs_dinode *ginode(ino_t);
+struct inoinfo *getinoinfo(ino_t);
+void getblk(struct bufarea *, daddr32_t, long);
+ino_t allocino(ino_t, int);
+void copyback_sb(struct bufarea*);
+daddr32_t cgoverhead(int);	/* overhead per cg */

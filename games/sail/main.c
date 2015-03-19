@@ -1,3 +1,4 @@
+/*	$OpenBSD: main.c,v 1.7 2013/08/29 20:22:20 naddy Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/04/22 10:37:01 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,33 +30,33 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: main.c,v 1.3 1995/04/22 10:37:01 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include "externs.h"
+#include "extern.h"
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <err.h>
 
 /*ARGSUSED*/
+int
 main(argc, argv)
 	int argc;
-	register char **argv;
+	char **argv;
 {
-	register char *p;
+	char *p;
 	int i;
+	int fd;
 
-	(void) srand(getpid());
-	issetuid = getuid() != geteuid();
-	if (p = rindex(*argv, '/'))
+	gid = getgid();
+	egid = getegid();
+	setegid(gid);
+
+	fd = open("/dev/null", O_RDONLY);
+	if (fd < 3)
+		exit(1);
+	close(fd);
+
+	if ((p = strrchr(*argv, '/')))
 		p++;
 	else
 		p = *argv;
@@ -81,7 +78,7 @@ main(argc, argv)
 			debug++;
 			break;
 		case 'x':
-			randomize;
+			randomize++;
 			break;
 		case 'l':
 			longfmt++;
@@ -90,25 +87,23 @@ main(argc, argv)
 			nobells++;
 			break;
 		default:
-			fprintf(stderr, "SAIL: Unknown flag %s.\n", p);
-			exit(1);
+			errx(1, "unknown flag %s", p);
 		}
 	if (*argv)
 		game = atoi(*argv);
 	else
 		game = -1;
-	if (i = setjmp(restart))
+	if ((i = setjmp(restart)))
 		mode = i;
 	switch (mode) {
 	case MODE_PLAYER:
-		return pl_main();
+		pl_main();
 	case MODE_DRIVER:
 		return dr_main();
 	case MODE_LOGGER:
 		return lo_main();
 	default:
-		fprintf(stderr, "SAIL: Unknown mode %d.\n", mode);
+		warnx("Unknown mode %d", mode);
 		abort();
 	}
-	/*NOTREACHED*/
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mem.c,v 1.4 2010/12/26 15:41:00 miod Exp $	*/
 /*	$NetBSD: mem.c,v 1.21 2006/07/23 22:06:07 ad Exp $	*/
 
 /*
@@ -132,7 +132,7 @@ mmrw(dev_t dev, struct uio *uio, int flags)
 {
 	struct iovec *iov;
 	vaddr_t v, o;
-	int c;
+	size_t c;
 	int error = 0;
 
 	while (uio->uio_resid > 0 && !error) {
@@ -148,12 +148,11 @@ mmrw(dev_t dev, struct uio *uio, int flags)
 		v = uio->uio_offset;
 
 		switch (minor(dev)) {
-kmemphys:
 		case DEV_MEM:
 			/* Physical address */
 			if (__mm_mem_addr(v)) {
 				o = v & PGOFSET;
-				c = min(uio->uio_resid, (int)(PAGE_SIZE - o));
+				c = ulmin(uio->uio_resid, PAGE_SIZE - o);
 				error = uiomove((caddr_t)SH3_PHYS_TO_P1SEG(v),
 				    c, uio);
 			} else {
@@ -162,23 +161,26 @@ kmemphys:
 			break;
 
 		case DEV_KMEM:
-			/* P0 */
-			if (v < SH3_P1SEG_BASE)
+			if (v < SH3_P1SEG_BASE)			/* P0 */
 				return (EFAULT);
-			/* P1 */
-			if (v < SH3_P2SEG_BASE) {
-				v = SH3_P1SEG_TO_PHYS(v);
-				goto kmemphys;
+			if (v < SH3_P2SEG_BASE) {		/* P1 */
+				/* permitted */
+			/*
+				if (__mm_mem_addr(SH3_P1SEG_TO_PHYS(v))
+				    == FALSE)
+					return (EFAULT);
+			*/
+				c = ulmin(iov->iov_len, MAXPHYS);
+				error = uiomove((caddr_t)v, c, uio);
+			} else if (v < SH3_P3SEG_BASE)		/* P2 */
+				return (EFAULT);
+			else {					/* P3 */
+				c = ulmin(iov->iov_len, MAXPHYS);
+				if (!uvm_kernacc((void *)v, c,
+				    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
+					return (EFAULT);
+				error = uiomove((caddr_t)v, c, uio);
 			}
-			/* P2 */
-			if (v < SH3_P3SEG_BASE)
-				return (EFAULT);
-			/* P3 */
-			c = min(iov->iov_len, MAXPHYS);
-			if (!uvm_kernacc((void *)v, c,
-			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
-				return (EFAULT);
-			error = uiomove((caddr_t)v, c, uio);
 			break;
 
 		case DEV_NULL:
@@ -191,11 +193,10 @@ kmemphys:
 				uio->uio_resid = 0;
 				return (0);
 			}
-			if (zeropage == NULL) {
-				zeropage = malloc(PAGE_SIZE, M_TEMP, M_WAITOK);
-				memset(zeropage, 0, PAGE_SIZE);
-			}
-			c = min(iov->iov_len, PAGE_SIZE);
+			if (zeropage == NULL)
+				zeropage = malloc(PAGE_SIZE, M_TEMP,
+				    M_WAITOK | M_ZERO);
+			c = ulmin(iov->iov_len, PAGE_SIZE);
 			error = uiomove(zeropage, c, uio);
 			break;
 
@@ -218,7 +219,7 @@ mmmmap(dev_t dev, off_t off, int prot)
 
 	if (__mm_mem_addr((paddr_t)off) == FALSE && suser(p, 0) != 0)
 		return (-1);
-	return (atop((paddr_t)off));
+	return ((paddr_t)off);
 }
 
 /*ARGSUSED*/
@@ -236,7 +237,9 @@ mmioctl(dev_t dev, u_long cmd, caddr_t data, int flags, struct proc *p)
 boolean_t
 __mm_mem_addr(paddr_t pa)
 {
+#if 0
 	extern vaddr_t kernend; /* from machdep.c */
+#endif
 	struct vm_physseg *seg;
 	unsigned int segno;
 
@@ -244,6 +247,7 @@ __mm_mem_addr(paddr_t pa)
 		if (pa < seg->start || pa >= seg->end)
 			continue;
 
+#if 0
 		/*
 		 * This assumes the kernel image occupies the beginning of a
 		 * memory segment.
@@ -252,6 +256,7 @@ __mm_mem_addr(paddr_t pa)
 			if (pa < kernend)
 				return (FALSE);
 		}
+#endif
 
 		return (TRUE);
 	}

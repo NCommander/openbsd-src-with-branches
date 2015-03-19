@@ -1,32 +1,35 @@
+/*	$OpenBSD: clnt.h,v 1.10 2004/01/22 21:48:02 espie Exp $	*/
 /*	$NetBSD: clnt.h,v 1.6 1995/04/29 05:27:58 cgd Exp $	*/
 
 /*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user.
- * 
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- * 
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- * 
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- * 
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *	from: @(#)clnt.h 1.31 88/02/08 SMI
  *	@(#)clnt.h	2.1 88/07/29 4.0 RPCSRC
@@ -34,8 +37,6 @@
 
 /*
  * clnt.h - Client side remote procedure call interface.
- *
- * Copyright (C) 1984, Sun Microsystems, Inc.
  */
 
 #ifndef _RPC_CLNT_H_
@@ -72,7 +73,7 @@ enum clnt_stat {
 	 * callrpc & clnt_create errors
 	 */
 	RPC_UNKNOWNHOST=13,		/* unknown host name */
-	RPC_UNKNOWNPROTO=17,		/* unkown protocol */
+	RPC_UNKNOWNPROTO=17,		/* unknown protocol */
 
 	/*
 	 * _ create errors
@@ -92,7 +93,7 @@ enum clnt_stat {
 struct rpc_err {
 	enum clnt_stat re_status;
 	union {
-		int RE_errno;		/* realated system error */
+		int RE_errno;		/* related system error */
 		enum auth_stat RE_why;	/* why the auth error occurred */
 		struct {
 			u_int32_t low;	/* lowest verion supported */
@@ -119,22 +120,22 @@ typedef struct __rpc_client {
 	AUTH	*cl_auth;			/* authenticator */
 	struct clnt_ops {
 		/* call remote procedure */
-		enum clnt_stat	(*cl_call) __P((struct __rpc_client *,
-				    u_long, xdrproc_t, caddr_t, xdrproc_t,
-				    caddr_t, struct timeval));
+		enum clnt_stat	(*cl_call)(struct __rpc_client *,
+				    unsigned long, xdrproc_t, caddr_t, 
+				    xdrproc_t, caddr_t, struct timeval);
 		/* abort a call */
-		void		(*cl_abort) __P((struct __rpc_client *));
+		void		(*cl_abort)(struct __rpc_client *);
 		/* get specific error code */
-		void		(*cl_geterr) __P((struct __rpc_client *,
-				    struct rpc_err *));
+		void		(*cl_geterr)(struct __rpc_client *,
+				    struct rpc_err *);
 		/* frees results */
-		bool_t		(*cl_freeres) __P((struct __rpc_client *,
-				    xdrproc_t, caddr_t));
+		bool_t		(*cl_freeres)(struct __rpc_client *,
+				    xdrproc_t, caddr_t);
 		/* destroy this structure */
-		void		(*cl_destroy) __P((struct __rpc_client *));
+		void		(*cl_destroy)(struct __rpc_client *);
 		/* the ioctl() of rpc */
-		bool_t          (*cl_control) __P((struct __rpc_client *, u_int,
-				    char *));
+		bool_t          (*cl_control)(struct __rpc_client *, 
+				    unsigned int, void *);
 	} *cl_ops;
 	caddr_t			cl_private;	/* private stuff */
 } CLIENT;
@@ -151,7 +152,7 @@ typedef struct __rpc_client {
  * enum clnt_stat
  * CLNT_CALL(rh, proc, xargs, argsp, xres, resp, timeout)
  * 	CLIENT *rh;
- *	u_long proc;
+ *	unsigned long proc;
  *	xdrproc_t xargs;
  *	caddr_t argsp;
  *	xdrproc_t xres;
@@ -196,7 +197,7 @@ typedef struct __rpc_client {
  * bool_t
  * CLNT_CONTROL(cl, request, info)
  *      CLIENT *cl;
- *      u_int request;
+ *      unsigned int request;
  *      char *info;
  */
 #define	CLNT_CONTROL(cl,rq,in) ((*(cl)->cl_ops->cl_control)(cl,rq,in))
@@ -229,16 +230,16 @@ typedef struct __rpc_client {
  * and network administration.
  */
 
-#define RPCTEST_PROGRAM		((u_long)1)
-#define RPCTEST_VERSION		((u_long)1)
-#define RPCTEST_NULL_PROC	((u_long)2)
-#define RPCTEST_NULL_BATCH_PROC	((u_long)3)
+#define RPCTEST_PROGRAM		((unsigned long)1)
+#define RPCTEST_VERSION		((unsigned long)1)
+#define RPCTEST_NULL_PROC	((unsigned long)2)
+#define RPCTEST_NULL_BATCH_PROC	((unsigned long)3)
 
 /*
  * By convention, procedure 0 takes null arguments and returns them
  */
 
-#define NULLPROC ((u_long)0)
+#define NULLPROC ((unsigned int)0)
 
 /*
  * Below are the client handle creation routines for the various
@@ -250,11 +251,11 @@ typedef struct __rpc_client {
  * Memory based rpc (for speed check and testing)
  * CLIENT *
  * clntraw_create(prog, vers)
- *	u_long prog;
- *	u_long vers;
+ *	unsigned long prog;
+ *	unsigned long vers;
  */
 __BEGIN_DECLS
-extern CLIENT *clntraw_create	__P((u_long, u_long));
+extern CLIENT *clntraw_create(unsigned long, unsigned long);
 __END_DECLS
 
 
@@ -262,13 +263,13 @@ __END_DECLS
  * Generic client creation routine. Supported protocols are "udp" and "tcp"
  * CLIENT *
  * clnt_create(host, prog, vers, prot);
- *	char *host; 	-- hostname
- *	u_long prog;	-- program number
- *	u_long vers;	-- version number
- *	char *prot;	-- protocol
+ *	char *host; 		-- hostname
+ *	unsigned long prog;	-- program number
+ *	unsigned long vers;	-- version number
+ *	char *prot;		-- protocol
  */
 __BEGIN_DECLS
-extern CLIENT *clnt_create	__P((char *, u_long, u_long, char *));
+extern CLIENT *clnt_create(char *, unsigned long, unsigned long, char *);
 __END_DECLS
 
 
@@ -277,19 +278,15 @@ __END_DECLS
  * CLIENT *
  * clnttcp_create(raddr, prog, vers, sockp, sendsz, recvsz)
  *	struct sockaddr_in *raddr;
- *	u_long prog;
- *	u_long version;
- *	register int *sockp;
- *	u_int sendsz;
- *	u_int recvsz;
+ *	unsigned long prog;
+ *	unsigned long version;
+ *	int *sockp;
+ *	unsigned int sendsz;
+ *	unsigned int recvsz;
  */
 __BEGIN_DECLS
-extern CLIENT *clnttcp_create	__P((struct sockaddr_in *,
-				     u_long,
-				     u_long,
-				     int *,
-				     u_int,
-				     u_int));
+extern CLIENT *clnttcp_create(struct sockaddr_in *, unsigned long, 
+    unsigned long, int *, unsigned int, unsigned int);
 __END_DECLS
 
 
@@ -298,8 +295,8 @@ __END_DECLS
  * CLIENT *
  * clntudp_create(raddr, program, version, wait, sockp)
  *	struct sockaddr_in *raddr;
- *	u_long program;
- *	u_long version;
+ *	unsigned long program;
+ *	unsigned long version;
  *	struct timeval wait;
  *	int *sockp;
  *
@@ -307,26 +304,18 @@ __END_DECLS
  * CLIENT *
  * clntudp_bufcreate(raddr, program, version, wait, sockp, sendsz, recvsz)
  *	struct sockaddr_in *raddr;
- *	u_long program;
- *	u_long version;
+ *	unsigned long program;
+ *	unsigned long version;
  *	struct timeval wait;
  *	int *sockp;
- *	u_int sendsz;
- *	u_int recvsz;
+ *	unsigned int sendsz;
+ *	unsigned int recvsz;
  */
 __BEGIN_DECLS
-extern CLIENT *clntudp_create	__P((struct sockaddr_in *,
-				     u_long,
-				     u_long,
-				     struct timeval,
-				     int *));
-extern CLIENT *clntudp_bufcreate __P((struct sockaddr_in *,
-				     u_long,
-				     u_long,
-				     struct timeval,
-				     int *,
-				     u_int,
-				     u_int));
+extern CLIENT *clntudp_create(struct sockaddr_in *, unsigned long, 
+    unsigned long, struct timeval, int *);
+extern CLIENT *clntudp_bufcreate(struct sockaddr_in *, unsigned long, 
+    unsigned long, struct timeval, int *, unsigned int, unsigned int);
 __END_DECLS
 
 
@@ -334,24 +323,24 @@ __END_DECLS
  * Print why creation failed
  */
 __BEGIN_DECLS
-extern void clnt_pcreateerror	__P((char *));			/* stderr */
-extern char *clnt_spcreateerror	__P((char *));			/* string */
+extern void clnt_pcreateerror(char *);		/* stderr */
+extern char *clnt_spcreateerror(char *);	/* string */
 __END_DECLS
 
 /*
  * Like clnt_perror(), but is more verbose in its output
  */ 
 __BEGIN_DECLS
-extern void clnt_perrno		__P((enum clnt_stat));		/* stderr */
-extern char *clnt_sperrno	__P((enum clnt_stat));		/* string */
+extern void clnt_perrno(enum clnt_stat);	/* stderr */
+extern char *clnt_sperrno(enum clnt_stat);	/* string */
 __END_DECLS
 
 /*
  * Print an English error message, given the client error code
  */
 __BEGIN_DECLS
-extern void clnt_perror		__P((CLIENT *, char *)); 	/* stderr */
-extern char *clnt_sperror	__P((CLIENT *, char *));	/* string */
+extern void clnt_perror(CLIENT *, char *); 	/* stderr */
+extern char *clnt_sperror(CLIENT *, char *);	/* string */
 __END_DECLS
 
 

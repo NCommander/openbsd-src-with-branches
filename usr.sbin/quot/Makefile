@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.3 1994/12/22 11:39:03 cgd Exp $
+#	$OpenBSD$
 
 PROG=	quot
 MAN=	quot.8

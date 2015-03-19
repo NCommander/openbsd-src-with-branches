@@ -1,4 +1,8 @@
-/*	$NetBSD: dir.h,v 1.3 1995/06/14 15:19:11 christos Exp $	*/
+#ifndef DIR_H
+#define DIR_H
+
+/*	$OpenBSD: dir.h,v 1.28 2012/12/07 07:15:31 espie Exp $	*/
+/*	$NetBSD: dir.h,v 1.4 1996/11/06 17:59:05 christos Exp $ */
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -17,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,36 +37,100 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)dir.h	5.4 (Berkeley) 12/28/90
+ *	from: @(#)dir.h 8.1 (Berkeley) 6/6/93
  */
 
-/* dir.h --
+#include <sys/time.h>
+
+/* dir --
+ *	Directory searching using wildcards and/or normal names...
+ *	Used both for source wildcarding in the Makefile and for finding
+ *	implicit sources.
  */
 
-#ifndef	_DIR
-#define	_DIR
+/* Dir_Init()
+ *	Initialize the module.
+ */
+extern void Dir_Init(void);
 
-typedef struct Path {
-    char         *name;	    	/* Name of directory */
-    int	    	  refCount; 	/* Number of paths with this directory */
-    int		  hits;	    	/* the number of times a file in this
-				 * directory has been found */
-    Hash_Table    files;    	/* Hash table of files in directory */
-} Path;
+/*
+ * Manipulating paths. By convention, the empty path always allows for
+ * finding files in the current directory.
+ */
 
-void Dir_Init __P((void));
-void Dir_End __P((void));
-Boolean Dir_HasWildcards __P((char *));
-void Dir_Expand __P((char *, Lst, Lst));
-char *Dir_FindFile __P((char *, Lst));
-int Dir_MTime __P((GNode *));
-void Dir_AddDir __P((Lst, char *));
-char *Dir_MakeFlags __P((char *, Lst));
-void Dir_ClearPath __P((Lst));
-void Dir_Concat __P((Lst, Lst));
-void Dir_PrintDirectories __P((void));
-void Dir_PrintPath __P((Lst));
-void Dir_Destroy __P((ClientData));
-ClientData Dir_CopyDir __P((ClientData));
+/* Dir_AddDiri(path, name, end);
+ *	Add directory (name, end) to a search path.
+ */
+extern void Dir_AddDiri(Lst, const char *, const char *);
+#define Dir_AddDir(l, n)	Dir_AddDiri(l, n, NULL)
 
-#endif /* _DIR */
+/* Dir_Concat(p1, p2);
+ *	Concatenate two paths, adding dirs in p2 to the end of p1, but
+ *	avoiding duplicates.
+ */
+extern void Dir_Concat(Lst, Lst);
+
+/* Dir_Destroy(d);
+ *	Destroy a directory in a search path.
+ */
+extern void Dir_Destroy(void *);
+
+/* p2 = Dir_CopyDir(p);
+ * 	Return a copy of a directory. Callback to duplicate search paths.
+ */
+extern void *Dir_CopyDir(void *);
+
+/* Dir_PrintPath(p);
+ *	Print the directory names along a given path.
+ */
+extern void Dir_PrintPath(Lst);
+
+
+/*
+ * Handling file names, and looking them up in paths
+ */
+
+/* fullname = Dir_FindFileComplexi(name, end, path, checkCurdirFirst)
+ *	Searches for a file (name, end) on a given search path.  If it exists,
+ *	return the fullname of the file, otherwise NULL.
+ *	The fullname is always a copy, and the caller is responsible for
+ *	free()ing it.
+ *	Looking for a simple name always looks in the current directory,
+ *	unless checkCurdirFirst is false.
+ *	For complex names, the current directory search only occurs for
+ *	paths with dot in them.
+ */
+extern char *Dir_FindFileComplexi(const char *, const char *, Lst, bool);
+#define Dir_FindFilei(n, e, p) Dir_FindFileComplexi(n, e, p, true)
+#define Dir_FindFileNoDoti(n, e, p) Dir_FindFileComplexi(n, e, p, false)
+#define Dir_FindFile(n, p) Dir_FindFilei(n, strchr(n, '\0'), p)
+#define Dir_FindFileNoDot(n, p) Dir_FindFileNoDoti(n, strchr(n, '\0'), p)
+
+/* stamp = Dir_MTime(gn);
+ *	Return the modification time of node gn, searching along
+ *	the default search path.
+ *	Side effect: the path and mtime fields of gn are filled in.
+ *	Return specific value if file can't be found, to be tested by
+ *	is_out_of_date().
+ */
+extern struct timespec Dir_MTime(GNode *);
+
+
+
+
+/*
+ * Misc
+ */
+
+/* List of directories to search when looking for targets. */
+extern Lst	defaultPath;
+
+
+/* communication between dir.c and direxpand.c */
+struct PathEntry;
+extern struct PathEntry *dot;
+/* Handles wildcard expansion on a given directory. */
+extern  void Dir_MatchFilesi(const char *, const char *, struct PathEntry *,
+    Lst);
+extern char *PathEntry_name(struct PathEntry *);
+#endif /* DIR_H */

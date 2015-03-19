@@ -13,7 +13,7 @@ For a signature algorithm:
 - Define the algorithm public key prefixes, and add them to
   signature.h (the *_HEX, *_HEX_LEN, *_BASE64, *_BASE64_LEN
   definitions).
-- In aux.c, function keynote_keyhash(), add to the switch statement
+- In auxil.c, function keynote_keyhash(), add to the switch statement
   a case handling the new algorithm; the return value is an integer,
   and is used as an index into a hash table.
 - In signature.c:
@@ -28,7 +28,7 @@ For a signature algorithm:
     the new algorithm's structure for storing a key (use the DSA
     code as a guide).
   - Similarly for kn_encode_key()
-  - In keynote_keycompare(), add code that compares two keys and
+  - In kn_keycompare(), add code that compares two keys and
     returns RETURN_TRUE if they are equal, and RETURN_FALSE otherwise.
   - In keynote_signverify_assertion, add code that verifies a
     signature for the new algorithm.

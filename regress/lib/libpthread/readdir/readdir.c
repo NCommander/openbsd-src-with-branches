@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_readdir.c,v 1.4 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: readdir.c,v 1.2 2001/09/20 16:43:15 todd Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -45,10 +45,11 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "test.h"
 
 int
-main()
+main(int argc, char *argv[])
 {
 	struct dirent * file;
 	DIR * dot_dir;

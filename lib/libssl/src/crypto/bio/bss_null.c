@@ -1,4 +1,4 @@
-/* crypto/bio/bss_null.c */
+/* $OpenBSD: bss_null.c,v 1.9 2014/07/10 13:58:22 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,9 +56,10 @@
  * [including the GNU Public Licence.]
  */
 
-#include <stdio.h>
 #include <errno.h>
-#include "cryptlib.h"
+#include <stdio.h>
+#include <string.h>
+
 #include <openssl/bio.h>
 
 static int null_write(BIO *h, const char *buf, int num);
@@ -68,62 +69,67 @@ static int null_gets(BIO *h, char *str, int size);
 static long null_ctrl(BIO *h, int cmd, long arg1, void *arg2);
 static int null_new(BIO *h);
 static int null_free(BIO *data);
-static BIO_METHOD null_method=
-	{
-	BIO_TYPE_NULL,
-	"NULL",
-	null_write,
-	null_read,
-	null_puts,
-	null_gets,
-	null_ctrl,
-	null_new,
-	null_free,
-	NULL,
-	};
 
-BIO_METHOD *BIO_s_null(void)
-	{
-	return(&null_method);
-	}
+static BIO_METHOD null_method = {
+	.type = BIO_TYPE_NULL,
+	.name = "NULL",
+	.bwrite = null_write,
+	.bread = null_read,
+	.bputs = null_puts,
+	.bgets = null_gets,
+	.ctrl = null_ctrl,
+	.create = null_new,
+	.destroy = null_free
+};
 
-static int null_new(BIO *bi)
-	{
-	bi->init=1;
-	bi->num=0;
-	bi->ptr=(NULL);
-	return(1);
-	}
+BIO_METHOD *
+BIO_s_null(void)
+{
+	return (&null_method);
+}
 
-static int null_free(BIO *a)
-	{
-	if (a == NULL) return(0);
-	return(1);
-	}
-	
-static int null_read(BIO *b, char *out, int outl)
-	{
-	return(0);
-	}
+static int
+null_new(BIO *bi)
+{
+	bi->init = 1;
+	bi->num = 0;
+	bi->ptr = (NULL);
+	return (1);
+}
 
-static int null_write(BIO *b, const char *in, int inl)
-	{
-	return(inl);
-	}
+static int
+null_free(BIO *a)
+{
+	if (a == NULL)
+		return (0);
+	return (1);
+}
 
-static long null_ctrl(BIO *b, int cmd, long num, void *ptr)
-	{
-	long ret=1;
+static int
+null_read(BIO *b, char *out, int outl)
+{
+	return (0);
+}
 
-	switch (cmd)
-		{
+static int
+null_write(BIO *b, const char *in, int inl)
+{
+	return (inl);
+}
+
+static long
+null_ctrl(BIO *b, int cmd, long num, void *ptr)
+{
+	long ret = 1;
+
+	switch (cmd) {
 	case BIO_CTRL_RESET:
 	case BIO_CTRL_EOF:
 	case BIO_CTRL_SET:
 	case BIO_CTRL_SET_CLOSE:
 	case BIO_CTRL_FLUSH:
 	case BIO_CTRL_DUP:
-		ret=1;
+		ret = 1;
 		break;
 	case BIO_CTRL_GET_CLOSE:
 	case BIO_CTRL_INFO:
@@ -131,20 +137,22 @@ static long null_ctrl(BIO *b, int cmd, long num, void *ptr)
 	case BIO_CTRL_PENDING:
 	case BIO_CTRL_WPENDING:
 	default:
-		ret=0;
+		ret = 0;
 		break;
-		}
-	return(ret);
 	}
+	return (ret);
+}
 
-static int null_gets(BIO *bp, char *buf, int size)
-	{
-	return(0);
-	}
+static int
+null_gets(BIO *bp, char *buf, int size)
+{
+	return (0);
+}
 
-static int null_puts(BIO *bp, const char *str)
-	{
-	if (str == NULL) return(0);
-	return(strlen(str));
-	}
-
+static int
+null_puts(BIO *bp, const char *str)
+{
+	if (str == NULL)
+		return (0);
+	return (strlen(str));
+}

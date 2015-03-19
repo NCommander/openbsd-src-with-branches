@@ -1,3 +1,4 @@
+/*	$OpenBSD: timer.c,v 1.11 2013/09/12 23:06:43 krw Exp $	*/
 /*	$NetBSD: timer.c,v 1.3 1995/04/24 12:22:45 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,26 +33,20 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)timer.c	8.2 (Berkeley) 2/22/94";
-#else
-static char rcsid[] = "$NetBSD: timer.c,v 1.3 1995/04/24 12:22:45 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/time.h>
 
 #include <curses.h>
 #include <setjmp.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "bog.h"
 #include "extern.h"
 
-static int waitch __P((long));
+extern int TIMER_LINE, TIMER_COL;
+
+static int waitch(long);
 
 /*
  * Update the display of the remaining time while waiting for a character
@@ -64,7 +55,7 @@ static int waitch __P((long));
  * Leave the cursor where it was initially
  */
 int
-timerch()
+timerch(void)
 {
 	extern int tlimit;
 	extern time_t start_t;
@@ -91,7 +82,7 @@ timerch()
 		move(row, col);
 		refresh();
 	}
-	return (getch() & 0177);
+	return (inputch());
 }
 
 /*
@@ -99,8 +90,7 @@ timerch()
  * Returns 1 if input is ready, 0 oth.
  */
 static int
-waitch(delay)
-	long delay;
+waitch(long delay)
 {
 	fd_set fdbits;
 	struct timeval duration;
@@ -109,16 +99,15 @@ waitch(delay)
 	duration.tv_usec = delay;
 	FD_ZERO(&fdbits);
 	FD_SET(STDIN_FILENO, &fdbits);
-	return (select(32, &fdbits, NULL, NULL, &duration));
+	return (select(STDIN_FILENO+1, &fdbits, NULL, NULL, &duration));
 }
 
 void
-delay(tenths)
-	int tenths;
+delay(int tenths)
 {
 	struct timeval duration;
 
 	duration.tv_usec = (tenths % 10 ) * 100000L;
-	duration.tv_sec = (long) (tenths / 10);
-	select(32, 0, 0, 0, &duration);
+	duration.tv_sec = tenths / 10;
+	select(0, 0, 0, 0, &duration);
 }

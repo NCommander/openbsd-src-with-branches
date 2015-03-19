@@ -27,7 +27,6 @@
  * 
  */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #include <machine/segments.h>
@@ -45,5 +44,5 @@ i386_get_ldt(start, desc, num)
 	p.desc = desc;
 	p.num = num;
 
-	return sysarch(I386_GET_LDT, (char *)&p);
+	return sysarch(I386_GET_LDT, &p);
 }

@@ -1,6 +1,9 @@
-#	$NetBSD: Makefile.inc,v 1.7 1995/02/27 13:06:20 cgd Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 1996/08/19 08:29:58 tholo Exp $
 
-.PATH: ${.CURDIR}/nls
+.PATH: ${LIBCSRCDIR}/nls
 
-SRCS+=	catclose.c catgets.c catopen.c msgcat.c
+SRCS+=	catclose.c catgets.c catopen.c 
 MAN+=	catclose.3 catgets.3 catopen.3
+
+# indirect reference stubs, to be removed soon.
+SRCS+=	_catclose.c _catgets.c _catopen.c

@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: genfth.cf,v 1.3 2003/08/26 19:55:21 drahn Exp $
 #	$NetBSD: genfth.cf,v 1.1 2000/08/20 14:58:46 mrg Exp $
 
 #
@@ -16,13 +16,6 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#        This product includes software developed by the NetBSD
-#        Foundation, Inc. and its contributors.
-# 4. Neither the name of The NetBSD Foundation nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
 # ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -56,11 +49,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and its contributors.
-# 4. Neither the name of the University nor the names of its contributors
+# 3. Neither the name of the University nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 #
@@ -80,10 +69,32 @@
 #
 
 include <sys/param.h>
+include <sys/disklabel.h>
 include <sys/time.h>
+
+include <dev/sun/disklabel.h>
+
 include <ufs/ufs/dinode.h>
 include <ufs/ufs/dir.h>
 include <ufs/ffs/fs.h>
+
+#ifdef SOFTRAID
+include <sys/stdarg.h> /* XXX */
+include <sys/device.h>
+include <sys/sensors.h>
+include <dev/softraidvar.h>
+#endif
+
+#
+# sun disklabel
+#
+struct sun_disklabel
+member sl_types
+member sl_magic
+
+define sun_dkmagic	SUN_DKMAGIC
+define fs_bsdffs	FS_BSDFFS
+define fs_raid		FS_RAID
 
 #
 # ufs sizing constants
@@ -134,7 +145,7 @@ member	fs_maxsymlinklen
 #
 # ufs dinode
 #
-struct	dinode
+struct	ufs1_dinode
 member	di_size
 member	di_mode
 member	di_db
@@ -160,3 +171,22 @@ define	rootino		ROOTINO
 define	ifmt		IFMT
 define	ifdir		IFDIR
 define	iflnk		IFLNK
+
+#
+# softraid
+#
+#ifdef SOFTRAID
+struct	sr_meta_invariant
+member	ssd_magic
+member	ssd_version
+member	ssd_vol_flags
+
+define	sr_magic1	(SR_MAGIC >> 32)
+define	sr_magic2	(SR_MAGIC & 0xffffffff)
+define	sr_meta_offset	SR_META_OFFSET
+define	sr_meta_size	SR_META_SIZE
+define	sr_boot_offset	SR_BOOT_LOADER_OFFSET
+define	sr_boot_size	SR_BOOT_LOADER_SIZE
+
+define	bioc_scbootable	BIOC_SCBOOTABLE
+#endif

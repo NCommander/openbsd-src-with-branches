@@ -1,3 +1,4 @@
+/*	$OpenBSD: lose.c,v 1.4 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: lose.c,v 1.3 1995/04/22 10:59:08 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,16 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lose.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: lose.c,v 1.3 1995/04/22 10:59:08 cgd Exp $";
-#endif
-#endif /* not lint */
-
-# include	"trek.h"
-# include	<setjmp.h>
+#include <stdio.h>
+#include <setjmp.h>
+#include <unistd.h>
+#include "trek.h"
+#include "getpar.h"
 
 /*
 **  PRINT OUT LOSER MESSAGES
@@ -52,7 +44,7 @@ static char rcsid[] = "$NetBSD: lose.c,v 1.3 1995/04/22 10:59:08 cgd Exp $";
 **	actions which need be taken are taken.
 */
 
-char	*Losemsg[] =
+const char	*const Losemsg[] =
 {
 	"You ran out of time",
 	"You ran out of energy",
@@ -69,8 +61,9 @@ char	*Losemsg[] =
 	"Your last crew member died",
 };
 
+void
 lose(why)
-int	why;
+	int	why;
 {
 	extern jmp_buf	env;
 

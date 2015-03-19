@@ -1,4 +1,5 @@
-/*      $NetBSD: n_atanh.c,v 1.1 1995/10/10 23:36:38 ragge Exp $ */
+/*	$OpenBSD: n_atanh.c,v 1.6 2008/06/21 08:26:19 martynas Exp $	*/
+/*	$NetBSD: n_atanh.c,v 1.1 1995/10/10 23:36:38 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,21 +29,17 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)atanh.c	8.1 (Berkeley) 6/4/93";
-#endif /* not lint */
-
 /* ATANH(X)
  * RETURN THE HYPERBOLIC ARC TANGENT OF X
  * DOUBLE PRECISION (VAX D format 56 bits, IEEE DOUBLE 53 BITS)
- * CODED IN C BY K.C. NG, 1/8/85; 
+ * CODED IN C BY K.C. NG, 1/8/85;
  * REVISED BY K.C. NG on 2/7/85, 3/7/85, 8/18/85.
  *
  * Required kernel function:
  *	log1p(x) 	...return log(1+x)
  *
- * Method :
- *	Return 
+ * Method:
+ *	Return
  *                          1              2x                          x
  *		atanh(x) = --- * log(1 + -------) = 0.5 * log1p(2 * --------)
  *                          2             1 - x                      1 - x
@@ -62,23 +55,25 @@ static char sccsid[] = "@(#)atanh.c	8.1 (Berkeley) 6/4/93";
  *	observed error was 1.87 ulps (units in the last place) at
  *	x= -3.8962076028810414000e-03.
  */
+
+#include "math.h"
 #include "mathimpl.h"
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)
 #include <errno.h>
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__) */
 
-double atanh(x)
-double x;
+double
+atanh(double x)
 {
 	double z;
 	z = copysign(0.5,x);
 	x = copysign(x,1.0);
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)
 	if (x == 1.0) {
 	    return(copysign(1.0,z)*infnan(ERANGE));	/* sign(x)*INF */
 	}
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__) */
 	x = x/(1.0-x);
 	return( z*log1p(x+x) );
 }

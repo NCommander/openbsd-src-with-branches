@@ -1,4 +1,4 @@
-/* v3_pcia.c -*- mode:C; c-file-style: "eay" -*- */
+/* $OpenBSD: v3_pcia.c,v 1.4 2014/06/12 15:49:31 deraadt Exp $ */
 /* Contributed to the OpenSSL Project 2004
  * by Richard Levitte (richard@levitte.org)
  */
@@ -38,18 +38,65 @@
 #include <openssl/asn1t.h>
 #include <openssl/x509v3.h>
 
-ASN1_SEQUENCE(PROXY_POLICY) =
-	{
-	ASN1_SIMPLE(PROXY_POLICY,policyLanguage,ASN1_OBJECT),
-	ASN1_OPT(PROXY_POLICY,policy,ASN1_OCTET_STRING)
+ASN1_SEQUENCE(PROXY_POLICY) = {
+	ASN1_SIMPLE(PROXY_POLICY, policyLanguage, ASN1_OBJECT),
+	ASN1_OPT(PROXY_POLICY, policy, ASN1_OCTET_STRING)
 } ASN1_SEQUENCE_END(PROXY_POLICY)
 
-IMPLEMENT_ASN1_FUNCTIONS(PROXY_POLICY)
 
-ASN1_SEQUENCE(PROXY_CERT_INFO_EXTENSION) =
-	{
-	ASN1_OPT(PROXY_CERT_INFO_EXTENSION,pcPathLengthConstraint,ASN1_INTEGER),
-	ASN1_SIMPLE(PROXY_CERT_INFO_EXTENSION,proxyPolicy,PROXY_POLICY)
+PROXY_POLICY *
+d2i_PROXY_POLICY(PROXY_POLICY **a, const unsigned char **in, long len)
+{
+	return (PROXY_POLICY *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &PROXY_POLICY_it);
+}
+
+int
+i2d_PROXY_POLICY(PROXY_POLICY *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &PROXY_POLICY_it);
+}
+
+PROXY_POLICY *
+PROXY_POLICY_new(void)
+{
+	return (PROXY_POLICY *)ASN1_item_new(&PROXY_POLICY_it);
+}
+
+void
+PROXY_POLICY_free(PROXY_POLICY *a)
+{
+	ASN1_item_free((ASN1_VALUE *)a, &PROXY_POLICY_it);
+}
+
+ASN1_SEQUENCE(PROXY_CERT_INFO_EXTENSION) = {
+	ASN1_OPT(PROXY_CERT_INFO_EXTENSION, pcPathLengthConstraint,
+	    ASN1_INTEGER),
+	ASN1_SIMPLE(PROXY_CERT_INFO_EXTENSION, proxyPolicy, PROXY_POLICY)
 } ASN1_SEQUENCE_END(PROXY_CERT_INFO_EXTENSION)
 
-IMPLEMENT_ASN1_FUNCTIONS(PROXY_CERT_INFO_EXTENSION)
+
+PROXY_CERT_INFO_EXTENSION *
+d2i_PROXY_CERT_INFO_EXTENSION(PROXY_CERT_INFO_EXTENSION **a, const unsigned char **in, long len)
+{
+	return (PROXY_CERT_INFO_EXTENSION *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &PROXY_CERT_INFO_EXTENSION_it);
+}
+
+int
+i2d_PROXY_CERT_INFO_EXTENSION(PROXY_CERT_INFO_EXTENSION *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &PROXY_CERT_INFO_EXTENSION_it);
+}
+
+PROXY_CERT_INFO_EXTENSION *
+PROXY_CERT_INFO_EXTENSION_new(void)
+{
+	return (PROXY_CERT_INFO_EXTENSION *)ASN1_item_new(&PROXY_CERT_INFO_EXTENSION_it);
+}
+
+void
+PROXY_CERT_INFO_EXTENSION_free(PROXY_CERT_INFO_EXTENSION *a)
+{
+	ASN1_item_free((ASN1_VALUE *)a, &PROXY_CERT_INFO_EXTENSION_it);
+}

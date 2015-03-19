@@ -1,9 +1,10 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: expand.h,v 1.5 2004/12/18 21:25:44 millert Exp $	*/
 
 /*
  * Expanding strings
  */
 
+#define X_EXTRA		8	/* this many extra bytes in X string */
 
 #if 0				/* Usage */
 	XString xs;
@@ -11,15 +12,15 @@
 
 	Xinit(xs, xp, 128, ATEMP); /* allocate initial string */
 	while ((c = generate()) {
-		Xcheck(xs, xp);	/* expand string if neccessary */
+		Xcheck(xs, xp);	/* expand string if necessary */
 		Xput(xs, xp, c); /* add character */
 	}
 	return Xclose(xs, xp);	/* resize string */
 /*
  * NOTE:
- *	The Xcheck and Xinit macros have a magic + 8 in the lengths.  This is
- *	so that you can put up to 4 characters in a XString before calling
- *	Xcheck.  (See yylex in lex.c)
+ *     The Xcheck and Xinit macros have a magic + X_EXTRA in the lengths.
+ *     This is so that you can put up to X_EXTRA characters in a XString
+ *     before calling Xcheck. (See yylex in lex.c)
  */
 #endif /* 0 */
 
@@ -35,7 +36,7 @@ typedef char * XStringP;
 #define	Xinit(xs, xp, length, area) do { \
 			(xs).len = length; \
 			(xs).areap = (area); \
-			(xs).beg = alloc((xs).len + 8, (xs).areap); \
+			(xs).beg = alloc((xs).len + X_EXTRA, (xs).areap); \
 			(xs).end = (xs).beg + (xs).len; \
 			xp = (xs).beg; \
 		} while (0)
@@ -68,7 +69,7 @@ typedef char * XStringP;
 #define	Xsavepos(xs, xp) ((xp) - (xs).beg)
 #define	Xrestpos(xs, xp, n) ((xs).beg + (n))
 
-char *	Xcheck_grow_	ARGS((XString *xsp, char *xp, int more));
+char *	Xcheck_grow_(XString *xsp, char *xp, int more);
 
 /*
  * expandable vector of generic pointers
@@ -80,11 +81,11 @@ typedef struct XPtrV {
 } XPtrV;
 
 #define	XPinit(x, n) do { \
-			register void **vp__; \
+			void **vp__; \
 			vp__ = (void**) alloc(sizeofN(void*, n), ATEMP); \
 			(x).cur = (x).beg = vp__; \
 			(x).end = vp__ + n; \
-		    } while (0)
+		} while (0)
 
 #define	XPput(x, p) do { \
 			if ((x).cur >= (x).end) { \

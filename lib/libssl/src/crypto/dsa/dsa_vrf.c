@@ -1,4 +1,4 @@
-/* crypto/dsa/dsa_vrf.c */
+/* $OpenBSD: dsa_vrf.c,v 1.15 2014/07/09 10:16:24 miod Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -58,19 +58,10 @@
 
 /* Original version from Steven Schoch <schoch@sheba.arc.nasa.gov> */
 
-#include "cryptlib.h"
 #include <openssl/dsa.h>
 
-int DSA_do_verify(const unsigned char *dgst, int dgst_len, DSA_SIG *sig,
-		  DSA *dsa)
-	{
-#ifdef OPENSSL_FIPS
-	if (FIPS_mode() && !(dsa->meth->flags & DSA_FLAG_FIPS_METHOD)
-			&& !(dsa->flags & DSA_FLAG_NON_FIPS_ALLOW))
-		{
-		DSAerr(DSA_F_DSA_DO_VERIFY, DSA_R_NON_FIPS_DSA_METHOD);
-		return -1;
-		}
-#endif
+int
+DSA_do_verify(const unsigned char *dgst, int dgst_len, DSA_SIG *sig, DSA *dsa)
+{
 	return dsa->meth->dsa_do_verify(dgst, dgst_len, sig, dsa);
-	}
+}

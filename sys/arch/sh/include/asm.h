@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: asm.h,v 1.3 2012/08/22 17:19:35 pascal Exp $	*/
 /*	$NetBSD: asm.h,v 1.25 2006/01/20 22:02:40 christos Exp $	*/
 
 /*-
@@ -141,7 +141,7 @@
  * 	CALL_DATUM(function, 2b)
  */
 
-#ifdef PIC
+#ifdef __PIC__
 
 #define	PIC_PLT(x)	x@PLT
 #define	PIC_GOT(x)	x@GOT
@@ -206,6 +206,9 @@
 #define	ASMSTR		.asciz
 
 #ifdef __ELF__
+#define	STRONG_ALIAS(alias,sym)						\
+	.global _C_LABEL(alias);					\
+	_C_LABEL(alias) = _C_LABEL(sym)
 #define	WEAK_ALIAS(alias,sym)						\
 	.weak _C_LABEL(alias);						\
 	_C_LABEL(alias) = _C_LABEL(sym)

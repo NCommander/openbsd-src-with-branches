@@ -1,4 +1,4 @@
-/* crypto/rc4/rc4_enc.c */
+/* $OpenBSD: rc4_enc.c,v 1.12 2014/07/09 16:06:13 miod Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,6 +56,7 @@
  * [including the GNU Public Licence.]
  */
 
+#include <machine/endian.h>
 #include <openssl/rc4.h>
 #include "rc4_locl.h"
 
@@ -70,8 +71,8 @@
 void RC4(RC4_KEY *key, size_t len, const unsigned char *indata,
 	     unsigned char *outdata)
 	{
-        register RC4_INT *d;
-        register RC4_INT x,y,tx,ty;
+        RC4_INT *d;
+        RC4_INT x,y,tx,ty;
 	size_t i;
         
         x=key->x;     
@@ -99,7 +100,7 @@ void RC4(RC4_KEY *key, size_t len, const unsigned char *indata,
 	 * (**)	i.e. according to 'apps/openssl speed rc4' benchmark,
 	 *	crypto/rc4/rc4speed.c exhibits almost 70% speed-up...
 	 *
-	 * Cavets.
+	 * Caveats.
 	 *
 	 * - RC4_CHUNK="unsigned long long" should be a #1 choice for
 	 *   UltraSPARC. Unfortunately gcc generates very slow code
@@ -124,7 +125,6 @@ void RC4(RC4_KEY *key, size_t len, const unsigned char *indata,
 	       ((size_t)outdata & (sizeof(RC4_CHUNK)-1)) ) == 0 )
 		{
 		RC4_CHUNK ichunk,otp;
-		const union { long one; char little; } is_endian = {1};
 
 		/*
 		 * I reckon we can afford to implement both endian
@@ -132,14 +132,10 @@ void RC4(RC4_KEY *key, size_t len, const unsigned char *indata,
 		 * because the machine code appears to be very compact
 		 * and redundant 1-2KB is perfectly tolerable (i.e.
 		 * in case the compiler fails to eliminate it:-). By
-		 * suggestion from Terrel Larson <terr@terralogic.net>
-		 * who also stands for the is_endian union:-)
+		 * suggestion from Terrel Larson <terr@terralogic.net>.
 		 *
 		 * Special notes.
 		 *
-		 * - is_endian is declared automatic as doing otherwise
-		 *   (declaring static) prevents gcc from eliminating
-		 *   the redundant code;
 		 * - compilers (those I've tried) don't seem to have
 		 *   problems eliminating either the operators guarded
 		 *   by "if (sizeof(RC4_CHUNK)==8)" or the condition
@@ -154,7 +150,7 @@ void RC4(RC4_KEY *key, size_t len, const unsigned char *indata,
 		 *
 		 *			<appro@fy.chalmers.se>
 		 */
-		if (!is_endian.little)
+		if (BYTE_ORDER != LITTLE_ENDIAN)
 			{	/* BIG-ENDIAN CASE */
 # define BESHFT(c)	(((sizeof(RC4_CHUNK)-(c)-1)*8)&(sizeof(RC4_CHUNK)*8-1))
 			for (;len&(0-sizeof(RC4_CHUNK));len-=sizeof(RC4_CHUNK))
@@ -193,11 +189,6 @@ void RC4(RC4_KEY *key, size_t len, const unsigned char *indata,
 					case 3:	otp |= RC4_STEP<<i, i-=8;
 					case 2:	otp |= RC4_STEP<<i, i-=8;
 					case 1:	otp |= RC4_STEP<<i, i-=8;
-					case 0: ; /*
-						   * it's never the case,
-						   * but it has to be here
-						   * for ultrix?
-						   */
 					}
 				ochunk &= ~mask;
 				ochunk |= (otp^ichunk) & mask;
@@ -246,11 +237,6 @@ void RC4(RC4_KEY *key, size_t len, const unsigned char *indata,
 					case 3:	otp |= RC4_STEP<<i, i+=8;
 					case 2:	otp |= RC4_STEP<<i, i+=8;
 					case 1:	otp |= RC4_STEP<<i, i+=8;
-					case 0: ; /*
-						   * it's never the case,
-						   * but it has to be here
-						   * for ultrix?
-						   */
 					}
 				ochunk &= ~mask;
 				ochunk |= (otp^ichunk) & mask;

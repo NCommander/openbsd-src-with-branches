@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #	@(#)input	5.5 (Berkeley) 7/2/94
 
 MAPS, EXECUTABLE BUFFERS AND INPUT IN EX/VI:

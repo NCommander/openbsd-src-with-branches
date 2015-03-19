@@ -1,4 +1,4 @@
-.\"	$NetBSD: wump.6,v 1.4 1995/04/22 08:19:49 cgd Exp $
+.\"	$OpenBSD: wump.6,v 1.8 2007/04/02 15:27:13 jmc Exp $
 .\"
 .\" Copyright (c) 1989, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -14,11 +14,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,7 +32,7 @@
 .\"
 .\"	@(#)wump.6	8.1 (Berkeley) 5/31/93
 .\"
-.Dd May 31, 1993
+.Dd $Mdocdate$
 .Dt WUMP 6
 .Os
 .Sh NAME
@@ -44,7 +40,7 @@
 .Nd hunt the wumpus in an underground cave
 .Sh SYNOPSIS
 .Nm wump
-.Op Fl h
+.Op Fl ho
 .Op Fl a Ar arrows
 .Op Fl b Ar bats
 .Op Fl p Ar pits
@@ -52,7 +48,7 @@
 .Op Fl t Ar tunnels
 .Sh DESCRIPTION
 The game
-.Nm wump 
+.Nm
 is based on a fantasy game first presented in the pages of
 .Em People's Computer Company
 in 1973.
@@ -64,22 +60,26 @@ arrows.
 .Pp
 The options are as follows:
 .Bl -tag -width indent
-.It Fl a
+.It Fl a Ar arrows
 Specifies the number of magic arrows the adventurer gets.
 The default is five.
-.It Fl b
+.It Fl b Ar bats
 Specifies the number of rooms in the cave which contain bats.
 The default is three.
 .It Fl h
 Play the hard version -- more pits, more bats, and a generally more
 dangerous cave.
-.It Fl p
+.It Fl o
+Play the original version, where there are twenty rooms arranged on the
+vertices of a dodecahedron, connected by the edges.
+In this case, the default is two pits and two bat rooms.
+.It Fl p Ar pits
 Specifies the number of rooms in the cave which contain bottomless pits.
 The default is three.
-.It Fl r
+.It Fl r Ar rooms
 Specifies the number of rooms in the cave.
 The default cave size is twenty-five rooms.
-.It Fl t
+.It Fl t Ar tunnels
 Specifies the number of tunnels connecting each room in the cave to
 another room.
 Beware, too many tunnels in a small cave can easily cause it to collapse!

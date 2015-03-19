@@ -1,8 +1,5 @@
-#	$NetBSD: Makefile,v 1.6 1995/09/28 06:05:11 tls Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.5 1999/10/18 01:46:36 aaron Exp $
 
-PROG=	man
-SRCS=	config.c man.c
-MAN=	man.1 man.conf.5
+MAN=	man.conf.5 help.1
 
 .include <bsd.prog.mk>

@@ -1,6 +1,6 @@
-/*	$OpenBSD: m8820x.c,v 1.45 2005/12/04 12:20:19 miod Exp $	*/
+/*	$OpenBSD: m8820x.c,v 1.11 2013/09/26 18:37:07 miod Exp $	*/
 /*
- * Copyright (c) 2004, 2006, Miodrag Vallat.
+ * Copyright (c) 2004, 2006, 2010 Miodrag Vallat.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,12 +30,19 @@
 #include <uvm/uvm_extern.h>
 
 #include <machine/asm_macro.h>
+#include <machine/avcommon.h>
+#include <machine/board.h>
 #include <machine/cmmu.h>
 #include <machine/cpu.h>
 #include <machine/m8820x.h>
+#include <machine/pmap.h>
 #include <machine/prom.h>
 
-#include <machine/av400.h>
+extern	u_int32_t pfsr_straight[];
+extern	u_int32_t pfsr_double[];
+extern	u_int32_t pfsr_six[];
+
+volatile u_int32_t *whoamiptr;
 
 /*
  * This routine sets up the CPU/CMMU configuration.
@@ -43,59 +50,82 @@
 void
 m8820x_setup_board_config()
 {
+	extern u_int32_t pfsr_save[];
 	struct m8820x_cmmu *cmmu;
 	struct scm_cpuconfig scc;
-	int type, cpu_num, cmmu_num;
+	int type, cpu_num, cpu_cmmu_num, cmmu_num, cmmu_per_cpu;
 	volatile u_int *cr;
 	u_int32_t whoami;
+	u_int32_t *m8820x_pfsr;
 
 	/*
-	 * These are the fixed assignments on AV400 designs.
+	 * Check whether the WHOAMI register exists.
+	 * According to documentation, that register is not available
+	 * on 100, 200 and 300 models.
+	 *
+	 * Since it is unknown whether models 100 and 200 share the
+	 * 300/310 cpuid, we'd better check whether the register can
+	 * be read.
 	 */
-	m8820x_cmmu[0].cmmu_regs = (void *)AV400_CMMU_I0;
-	m8820x_cmmu[1].cmmu_regs = (void *)AV400_CMMU_D0;
-	m8820x_cmmu[2].cmmu_regs = (void *)AV400_CMMU_I1;
-	m8820x_cmmu[3].cmmu_regs = (void *)AV400_CMMU_D1;
-	m8820x_cmmu[4].cmmu_regs = (void *)AV400_CMMU_I2;
-	m8820x_cmmu[5].cmmu_regs = (void *)AV400_CMMU_D2;
-	m8820x_cmmu[6].cmmu_regs = (void *)AV400_CMMU_I3;
-	m8820x_cmmu[7].cmmu_regs = (void *)AV400_CMMU_D3;
+
+	switch (cpuid) {
+	case AVIION_300_310:
+	/* the following for consistency and safety */
+	case AVIION_300C_310C:
+	case AVIION_300CD_310CD:
+	case AVIION_300D_310D:
+		break;
+	default:
+		if (badaddr((vaddr_t)AV_WHOAMI, 4) == 0)
+			whoamiptr = (volatile u_int32_t *)AV_WHOAMI;
+		break;
+	}
+	
 
 	/*
 	 * First, find if any CPU0 CMMU is a 88204. If so, we can
 	 * issue the CPUCONFIG system call to get the configuration
 	 * details.
+	 * NOTE that this relies upon [0] and [1] to always have
+	 * valid CMMU addresses - thankfully this is always the case
+	 * on model 530 regardless of the CMMU configuration.
 	 */
-	if (badaddr(AV400_CMMU_I0, 4) != 0 ||
-	    badaddr(AV400_CMMU_D0, 4) != 0) {
+	if (badaddr((vaddr_t)m8820x_cmmu[0].cmmu_regs, 4) != 0 ||
+	    badaddr((vaddr_t)m8820x_cmmu[1].cmmu_regs, 4) != 0) {
 		printf("CPU0: missing CMMUs ???\n");
 		scm_halt();
 		/* NOTREACHED */
 	}
 
-	cr = (void *)AV400_CMMU_I0;
+	cr = (void *)m8820x_cmmu[0].cmmu_regs;
 	type = CMMU_TYPE(cr[CMMU_IDR]);
 
-	switch (type) {
-	default:
+	if (type != M88204_ID && type != M88200_ID) {
 		printf("CPU0: unrecognized CMMU type %d\n", type);
 		scm_halt();
 		/* NOTREACHED */
-		break;
+	}
+
+	/*
+	 * Try and use the CPUCONFIG system call to get all the information
+	 * we need. This is theoretically only available on 88204-based
+	 * machines, but it can't hurt to give it a try.
+	 */
+	if (scm_cpuconfig(&scc) == 0 && scc.version == SCM_CPUCONFIG_VERSION)
+		goto knowledge;
+
+	/*
+	 * XXX Instead of deciding on the CMMU type, we should decide on
+	 * XXX the board type instead. But then, I am not sure not all
+	 * XXX 88204-based designs have the WHOAMI register... -- miod
+	 */
+	switch (type) {
 	case M88204_ID:
 		/*
-		 * We can use the CPUCONFIG system call to get all the
-		 * information we need.
-		 */
-		if (scm_cpuconfig(&scc) == 0 &&
-		    scc.version == SCM_CPUCONFIG_VERSION)
-			break;
-
-		/*
-		 * If it fails, we'll need to probe CMU addresses to
-		 * discover which CPU slots are populated. Actually,
-		 * we'll simply check how many upper slots we can ignore,
-		 * and keep using badaddr() to cope with unpopulated slots.
+		 * Probe CMMU addresses to discover which CPU slots are
+		 * populated. Actually, we'll simply check how many upper
+		 * slots we can ignore, and keep using badaddr() to cope
+		 * with unpopulated slots.
 		 */
 hardprobe:
 		/*
@@ -111,28 +141,56 @@ hardprobe:
 		 * slots we can ignore, and keep using badaddr() to cope
 		 * with unpopulated slots.
 		 */
-		cmmu = m8820x_cmmu + 7;
-		for (max_cmmus = 7; max_cmmus != 0; max_cmmus--, cmmu--) {
+		cmmu = m8820x_cmmu + MAX_CMMUS - 1;
+		for (max_cmmus = MAX_CMMUS - 1; max_cmmus != 0;
+		    max_cmmus--, cmmu--) {
+			if (cmmu->cmmu_regs == NULL)
+				continue;
 			if (badaddr((vaddr_t)cmmu->cmmu_regs, 4) == 0)
 				break;
 		}
 		scc.cpucount = (1 + max_cmmus) >> 1;
-
 		break;
+
 	case M88200_ID:
 		/*
-		 * Deduce our configuration from the whoami register.
+		 * Deduce our configuration from the WHOAMI register.
 		 */
-		whoami = *(volatile u_int32_t *)AV400_WHOAMI;
-		switch ((whoami & 0xf0) >> 4) {
+
+		if (whoamiptr == NULL)
+			whoami = 0x0a;	/* 1 CPU, 2 CMMUs */
+		else
+			whoami = (*whoamiptr & 0xf0) >> 4;
+
+		switch (whoami) {
 		case 0:		/* 4 CPUs, 8 CMMUs */
 			scc.cpucount = 4;
 			break;
 		case 5:		/* 2 CPUs, 4 CMMUs */
 			scc.cpucount = 2;
 			break;
-		case 0x0a:	/* 1 CPU, 2 CMMU */
+		case 0x0a:	/* 1 CPU, 2 CMMUs */
 			scc.cpucount = 1;
+			break;
+		case 3:		/* 2 CPUs, 12 CMMUs */
+		case 7:		/* 1 CPU, 6 CMMUs */
+			/*
+			 * Regular logic can't cope with asymmetrical
+			 * designs. Report a 4:1 ratio with two missing
+			 * data CMMUs.
+			 */
+			ncpusfound = whoami == 7 ? 1 : 2;
+			cmmu_per_cpu = 6;
+			cmmu_shift = 3;
+			max_cmmus = ncpusfound << cmmu_shift;
+#if 0
+			scc.igang = 4;
+			scc.isplit = (1U << 12) | (1U << 13);
+			scc.dgang = 2;
+			scc.dsplit = (1U << 12);
+#endif
+			m8820x_pfsr = pfsr_six;
+			goto done;
 			break;
 		default:
 			printf("unrecognized CMMU configuration, whoami %x\n",
@@ -153,6 +211,7 @@ hardprobe:
 		break;
 	}
 
+knowledge:
 	if (scc.igang != scc.dgang ||
 	    scc.igang == 0 || scc.igang > 2) {
 		printf("Unsupported CMMU to CPU ratio (%dI/%dD)\n",
@@ -161,14 +220,22 @@ hardprobe:
 		/* NOTREACHED */
 	}
 
-	max_cpus = scc.cpucount;
-	cmmu_shift = scc.igang == 1 ? 1 : 2;
-	max_cmmus = max_cpus << scc.igang;
+	ncpusfound = scc.cpucount;
+	if (scc.igang == 1) {
+		cmmu_shift = 1;
+		m8820x_pfsr = pfsr_straight;
+	} else {
+		cmmu_shift = 2;
+		m8820x_pfsr = pfsr_double;
+	}
+	max_cmmus = ncpusfound << cmmu_shift;
+	cmmu_per_cpu = 1 << cmmu_shift;
 
+done:
 	/*
 	 * Now that we know which CMMUs are there, report every association
 	 */
-	for (cpu_num = 0; cpu_num < max_cpus; cpu_num++) {
+	for (cpu_num = 0; cpu_num < ncpusfound; cpu_num++) {
 		cmmu_num = cpu_num << cmmu_shift;
 		cr = m8820x_cmmu[cmmu_num].cmmu_regs;
 		if (badaddr((vaddr_t)cr, 4) == 0) {
@@ -176,31 +243,61 @@ hardprobe:
 			    cmmu_regs[CMMU_IDR]);
 
 			printf("CPU%d is associated to %d MC8820%c CMMUs\n",
-			    cpu_num, 1 << cmmu_shift,
+			    cpu_num, cmmu_per_cpu,
 			    type == M88204_ID ? '4' : '0');
 		}
 	}
 
-
 	/*
 	 * Now set up addressing limits
 	 */
-	if (cmmu_shift > 1) {
+	switch (cmmu_shift) {
+	case 3:	/* 6:1 schemes */
 		for (cmmu_num = 0, cmmu = m8820x_cmmu; cmmu_num < max_cmmus;
 		    cmmu_num++, cmmu++) {
-			cpu_num = cmmu_num >> 1; /* CPU view of the CMMU */
+			if (cmmu->cmmu_regs == NULL)
+				continue;
 
-			if (cmmu_num & 1) {
+			cpu_cmmu_num = cmmu_num >> 1; /* CPU view of the CMMU */
+
+			if (CMMU_MODE(cmmu_num) == INST_CMMU) {
+				/* I0, I1, I2, I3: A13:A12 split */
+				cmmu->cmmu_addr = (cpu_cmmu_num & 0x03) << 12;
+				cmmu->cmmu_addr_mask = (1U << 13) | (1U << 12);
+			} else {
+				/* D0, D1: A12 split */
+				cmmu->cmmu_addr = (cpu_cmmu_num & 0x01) << 12;
+				cmmu->cmmu_addr_mask = 1U << 12;
+			}
+		}
+		break;
+	case 2:	/* 4:1 schemes */
+		for (cmmu_num = 0, cmmu = m8820x_cmmu; cmmu_num < max_cmmus;
+		    cmmu_num++, cmmu++) {
+			cpu_cmmu_num = cmmu_num >> 1; /* CPU view of the CMMU */
+
+			if (CMMU_MODE(cmmu_num) == INST_CMMU) {
 				/* I0, I1 */
-				cmmu->cmmu_addr = cpu_num < 2 ? 0 : scc.isplit;
+				cmmu->cmmu_addr =
+				    cpu_cmmu_num < 2 ? 0 : scc.isplit;
 				cmmu->cmmu_addr_mask = scc.isplit;
 			} else {
 				/* D0, D1 */
-				cmmu->cmmu_addr = cpu_num < 2 ? 0 : scc.dsplit;
+				cmmu->cmmu_addr =
+				    cpu_cmmu_num < 2 ? 0 : scc.dsplit;
 				cmmu->cmmu_addr_mask = scc.dsplit;
 			}
 		}
+		break;
 	}
+
+	/*
+	 * Patch the exception handling code to invoke the correct pfsr
+	 * analysis chunk.
+	 */
+	pfsr_save[0] = 0xc4000000 |
+	    (((vaddr_t)m8820x_pfsr + 4 - (vaddr_t)pfsr_save) >> 2);
+	pfsr_save[1] = m8820x_pfsr[0];
 }
 
 /*
@@ -214,14 +311,19 @@ m8820x_cpu_number()
 	u_int32_t whoami;
 	cpuid_t cpu;
 
-	whoami = *(volatile u_int32_t *)AV400_WHOAMI;
+	if (whoamiptr == NULL)
+		return 0;
+
+	whoami = *whoamiptr;
 	switch ((whoami & 0xf0) >> 4) {
 	case 0:
+	case 3:
 	case 5:
 		for (cpu = 0; cpu < 4; cpu++)
 			if (whoami & (1 << cpu))
 				return (cpu);
 		break;
+	case 7:
 	case 0x0a:
 		/* for single processors, this field of whoami is undefined */
 		return (0);

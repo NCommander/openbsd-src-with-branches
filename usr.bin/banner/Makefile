@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.1.1.1 1995/04/09 05:53:04 cgd Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:48:23 deraadt Exp $
 
 PROG=	banner
 
@@ -14,4 +14,3 @@ SRCS=	$(PROG).c chset.c
 #CFLAGS+= -DLPD_CHSET
 
 .include <bsd.prog.mk>
-

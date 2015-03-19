@@ -1,4 +1,4 @@
-/* v3_genn.c */
+/* $OpenBSD: v3_genn.c,v 1.9 2014/07/11 08:44:49 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -58,7 +58,7 @@
 
 
 #include <stdio.h>
-#include "cryptlib.h"
+
 #include <openssl/asn1t.h>
 #include <openssl/conf.h>
 #include <openssl/x509v3.h>
@@ -69,14 +69,62 @@ ASN1_SEQUENCE(OTHERNAME) = {
 	ASN1_EXP(OTHERNAME, value, ASN1_ANY, 0)
 } ASN1_SEQUENCE_END(OTHERNAME)
 
-IMPLEMENT_ASN1_FUNCTIONS(OTHERNAME)
+
+OTHERNAME *
+d2i_OTHERNAME(OTHERNAME **a, const unsigned char **in, long len)
+{
+	return (OTHERNAME *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &OTHERNAME_it);
+}
+
+int
+i2d_OTHERNAME(OTHERNAME *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &OTHERNAME_it);
+}
+
+OTHERNAME *
+OTHERNAME_new(void)
+{
+	return (OTHERNAME *)ASN1_item_new(&OTHERNAME_it);
+}
+
+void
+OTHERNAME_free(OTHERNAME *a)
+{
+	ASN1_item_free((ASN1_VALUE *)a, &OTHERNAME_it);
+}
 
 ASN1_SEQUENCE(EDIPARTYNAME) = {
 	ASN1_IMP_OPT(EDIPARTYNAME, nameAssigner, DIRECTORYSTRING, 0),
 	ASN1_IMP_OPT(EDIPARTYNAME, partyName, DIRECTORYSTRING, 1)
 } ASN1_SEQUENCE_END(EDIPARTYNAME)
 
-IMPLEMENT_ASN1_FUNCTIONS(EDIPARTYNAME)
+
+EDIPARTYNAME *
+d2i_EDIPARTYNAME(EDIPARTYNAME **a, const unsigned char **in, long len)
+{
+	return (EDIPARTYNAME *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &EDIPARTYNAME_it);
+}
+
+int
+i2d_EDIPARTYNAME(EDIPARTYNAME *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &EDIPARTYNAME_it);
+}
+
+EDIPARTYNAME *
+EDIPARTYNAME_new(void)
+{
+	return (EDIPARTYNAME *)ASN1_item_new(&EDIPARTYNAME_it);
+}
+
+void
+EDIPARTYNAME_free(EDIPARTYNAME *a)
+{
+	ASN1_item_free((ASN1_VALUE *)a, &EDIPARTYNAME_it);
+}
 
 ASN1_CHOICE(GENERAL_NAME) = {
 	ASN1_IMP(GENERAL_NAME, d.otherName, OTHERNAME, GEN_OTHERNAME),
@@ -92,29 +140,78 @@ ASN1_CHOICE(GENERAL_NAME) = {
 	ASN1_IMP(GENERAL_NAME, d.registeredID, ASN1_OBJECT, GEN_RID)
 } ASN1_CHOICE_END(GENERAL_NAME)
 
-IMPLEMENT_ASN1_FUNCTIONS(GENERAL_NAME)
 
-ASN1_ITEM_TEMPLATE(GENERAL_NAMES) = 
-	ASN1_EX_TEMPLATE_TYPE(ASN1_TFLG_SEQUENCE_OF, 0, GeneralNames, GENERAL_NAME)
+GENERAL_NAME *
+d2i_GENERAL_NAME(GENERAL_NAME **a, const unsigned char **in, long len)
+{
+	return (GENERAL_NAME *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &GENERAL_NAME_it);
+}
+
+int
+i2d_GENERAL_NAME(GENERAL_NAME *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &GENERAL_NAME_it);
+}
+
+GENERAL_NAME *
+GENERAL_NAME_new(void)
+{
+	return (GENERAL_NAME *)ASN1_item_new(&GENERAL_NAME_it);
+}
+
+void
+GENERAL_NAME_free(GENERAL_NAME *a)
+{
+	ASN1_item_free((ASN1_VALUE *)a, &GENERAL_NAME_it);
+}
+
+ASN1_ITEM_TEMPLATE(GENERAL_NAMES) =
+    ASN1_EX_TEMPLATE_TYPE(ASN1_TFLG_SEQUENCE_OF, 0, GeneralNames, GENERAL_NAME)
 ASN1_ITEM_TEMPLATE_END(GENERAL_NAMES)
 
-IMPLEMENT_ASN1_FUNCTIONS(GENERAL_NAMES)
 
-GENERAL_NAME *GENERAL_NAME_dup(GENERAL_NAME *a)
-	{
-	return (GENERAL_NAME *) ASN1_dup((i2d_of_void *) i2d_GENERAL_NAME,
-					 (d2i_of_void *) d2i_GENERAL_NAME,
-					 (char *) a);
-	}
+GENERAL_NAMES *
+d2i_GENERAL_NAMES(GENERAL_NAMES **a, const unsigned char **in, long len)
+{
+	return (GENERAL_NAMES *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &GENERAL_NAMES_it);
+}
+
+int
+i2d_GENERAL_NAMES(GENERAL_NAMES *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &GENERAL_NAMES_it);
+}
+
+GENERAL_NAMES *
+GENERAL_NAMES_new(void)
+{
+	return (GENERAL_NAMES *)ASN1_item_new(&GENERAL_NAMES_it);
+}
+
+void
+GENERAL_NAMES_free(GENERAL_NAMES *a)
+{
+	ASN1_item_free((ASN1_VALUE *)a, &GENERAL_NAMES_it);
+}
+
+GENERAL_NAME *
+GENERAL_NAME_dup(GENERAL_NAME *a)
+{
+	return (GENERAL_NAME *)ASN1_dup((i2d_of_void *)i2d_GENERAL_NAME,
+	    (d2i_of_void *)d2i_GENERAL_NAME, (char *)a);
+}
 
 /* Returns 0 if they are equal, != 0 otherwise. */
-int GENERAL_NAME_cmp(GENERAL_NAME *a, GENERAL_NAME *b)
-	{
+int
+GENERAL_NAME_cmp(GENERAL_NAME *a, GENERAL_NAME *b)
+{
 	int result = -1;
 
-	if (!a || !b || a->type != b->type) return -1;
-	switch(a->type)
-		{
+	if (!a || !b || a->type != b->type)
+		return -1;
+	switch (a->type) {
 	case GEN_X400:
 	case GEN_EDIPARTY:
 		result = ASN1_TYPE_cmp(a->d.other, b->d.other);
@@ -137,32 +234,34 @@ int GENERAL_NAME_cmp(GENERAL_NAME *a, GENERAL_NAME *b)
 	case GEN_IPADD:
 		result = ASN1_OCTET_STRING_cmp(a->d.ip, b->d.ip);
 		break;
-	
+
 	case GEN_RID:
 		result = OBJ_cmp(a->d.rid, b->d.rid);
 		break;
-		}
-	return result;
 	}
+	return result;
+}
 
 /* Returns 0 if they are equal, != 0 otherwise. */
-int OTHERNAME_cmp(OTHERNAME *a, OTHERNAME *b)
-	{
+int
+OTHERNAME_cmp(OTHERNAME *a, OTHERNAME *b)
+{
 	int result = -1;
 
-	if (!a || !b) return -1;
+	if (!a || !b)
+		return -1;
 	/* Check their type first. */
 	if ((result = OBJ_cmp(a->type_id, b->type_id)) != 0)
 		return result;
 	/* Check the value. */
 	result = ASN1_TYPE_cmp(a->value, b->value);
 	return result;
-	}
+}
 
-void GENERAL_NAME_set0_value(GENERAL_NAME *a, int type, void *value)
-	{
-	switch(type)
-		{
+void
+GENERAL_NAME_set0_value(GENERAL_NAME *a, int type, void *value)
+{
+	switch (type) {
 	case GEN_X400:
 	case GEN_EDIPARTY:
 		a->d.other = value;
@@ -185,20 +284,20 @@ void GENERAL_NAME_set0_value(GENERAL_NAME *a, int type, void *value)
 	case GEN_IPADD:
 		a->d.ip = value;
 		break;
-	
+
 	case GEN_RID:
 		a->d.rid = value;
 		break;
-		}
-	a->type = type;
 	}
+	a->type = type;
+}
 
-void *GENERAL_NAME_get0_value(GENERAL_NAME *a, int *ptype)
-	{
+void *
+GENERAL_NAME_get0_value(GENERAL_NAME *a, int *ptype)
+{
 	if (ptype)
 		*ptype = a->type;
-	switch(a->type)
-		{
+	switch (a->type) {
 	case GEN_X400:
 	case GEN_EDIPARTY:
 		return a->d.other;
@@ -216,19 +315,21 @@ void *GENERAL_NAME_get0_value(GENERAL_NAME *a, int *ptype)
 
 	case GEN_IPADD:
 		return a->d.ip;
-	
+
 	case GEN_RID:
 		return a->d.rid;
 
 	default:
 		return NULL;
-		}
 	}
+}
 
-int GENERAL_NAME_set0_othername(GENERAL_NAME *gen,
-				ASN1_OBJECT *oid, ASN1_TYPE *value)
-	{
+int
+GENERAL_NAME_set0_othername(GENERAL_NAME *gen, ASN1_OBJECT *oid,
+    ASN1_TYPE *value)
+{
 	OTHERNAME *oth;
+
 	oth = OTHERNAME_new();
 	if (!oth)
 		return 0;
@@ -236,11 +337,12 @@ int GENERAL_NAME_set0_othername(GENERAL_NAME *gen,
 	oth->value = value;
 	GENERAL_NAME_set0_value(gen, GEN_OTHERNAME, oth);
 	return 1;
-	}
+}
 
-int GENERAL_NAME_get0_otherName(GENERAL_NAME *gen, 
-				ASN1_OBJECT **poid, ASN1_TYPE **pvalue)
-	{
+int
+GENERAL_NAME_get0_otherName(GENERAL_NAME *gen, ASN1_OBJECT **poid,
+    ASN1_TYPE **pvalue)
+{
 	if (gen->type != GEN_OTHERNAME)
 		return 0;
 	if (poid)
@@ -248,5 +350,4 @@ int GENERAL_NAME_get0_otherName(GENERAL_NAME *gen,
 	if (pvalue)
 		*pvalue = gen->d.otherName->value;
 	return 1;
-	}
-
+}

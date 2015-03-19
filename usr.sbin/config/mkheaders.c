@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: mkheaders.c,v 1.20 2013/11/23 17:38:15 deraadt Exp $	*/
+/*	$NetBSD: mkheaders.c,v 1.12 1997/02/02 21:12:34 thorpej Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -19,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,59 +39,63 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mkheaders.c	8.1 (Berkeley) 6/6/93
- *	$Id: mkheaders.c,v 1.7 1995/04/28 06:55:12 cgd Exp $
  */
 
-#include <sys/param.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "config.h"
 
-static int emitcnt __P((struct nvlist *));
-static int err __P((const char *, char *, FILE *));
-static char *cntname __P((const char *));
+static int emitcnt(struct nvlist *);
+static int emitopt(struct nvlist *);
+static int err(const char *, char *, FILE *);
+static char *cntname(const char *);
 
 /*
  * Make headers containing counts, as needed.
  */
 int
-mkheaders()
+mkheaders(void)
 {
-	register struct files *fi;
+	struct files *fi;
+	struct nvlist *nv;
 
 	for (fi = allfiles; fi != NULL; fi = fi->fi_next) {
 		if (fi->fi_flags & FI_HIDDEN)
 			continue;
 		if (fi->fi_flags & (FI_NEEDSCOUNT | FI_NEEDSFLAG) &&
-		    emitcnt(fi->fi_opt))
+		    emitcnt(fi->fi_optf))
 			return (1);
 	}
+
+	for (nv = defoptions; nv != NULL; nv = nv->nv_next)
+		if (emitopt(nv))
+			return (1);
+
 	return (0);
 }
 
 static int
-emitcnt(head)
-	register struct nvlist *head;
+emitcnt(struct nvlist *head)
 {
-	register struct nvlist *nv;
-	register FILE *fp;
-	register char *fname;
+	struct nvlist *nv;
+	FILE *fp;
 	int cnt;
 	char nam[100];
 	char buf[BUFSIZ];
+	char fname[BUFSIZ];
 
-	(void)sprintf(buf, "%s.h", head->nv_name);
-	fname = path(buf);
+	(void)snprintf(fname, sizeof fname, "%s.h", head->nv_name);
 	if ((fp = fopen(fname, "r")) == NULL)
 		goto writeit;
 	nv = head;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		if (nv == NULL)
 			goto writeit;
-		if (sscanf(buf, "#define %s %d", nam, &cnt) != 2 ||
+		if (sscanf(buf, "#define %99s %d", nam, &cnt) != 2 ||
 		    strcmp(nam, cntname(nv->nv_name)) != 0 ||
 		    cnt != nv->nv_int)
 			goto writeit;
@@ -119,31 +122,92 @@ writeit:
 }
 
 static int
-err(what, fname, fp)
-	const char *what;
-	char *fname;
+emitopt(struct nvlist *nv)
+{
+	struct nvlist *option;
+	char new_contents[BUFSIZ], buf[BUFSIZ];
+	char fname[BUFSIZ];
+	int totlen, nlines;
 	FILE *fp;
+
+	/*
+	 * Generate the new contents of the file.
+	 */
+	if ((option = ht_lookup(opttab, nv->nv_str)) == NULL)
+		totlen = snprintf(new_contents, sizeof new_contents,
+		    "/* option `%s' not defined */\n",
+		    nv->nv_str);
+	else {
+		if (option->nv_str != NULL)
+			totlen = snprintf(new_contents, sizeof new_contents,
+			    "#define\t%s\t%s\n",
+			    option->nv_name, option->nv_str);
+		else
+			totlen = snprintf(new_contents, sizeof new_contents,
+			    "#define\t%s\n",
+			    option->nv_name);
+	}
+
+	if (totlen < 0 || totlen >= sizeof new_contents) {
+		fprintf(stderr, "config: string too long\n");
+		return (1);
+	}
+
+	/*
+	 * Compare the new file to the old.
+	 */
+	snprintf(fname, sizeof fname, "opt_%s.h", nv->nv_name);
+	if ((fp = fopen(fname, "r")) == NULL)
+		goto writeit;
+	nlines = 0;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		if (++nlines != 1 ||
+		    strcmp(buf, new_contents) != 0)
+			goto writeit;
+	}
+	if (ferror(fp))
+		return (err("read", fname, fp));
+	(void)fclose(fp);
+	if (nlines == 1)
+		return (0);
+writeit:
+	/*
+	 * They're different, or the file doesn't exist.
+	 */
+	if ((fp = fopen(fname, "w")) == NULL) {
+		(void)fprintf(stderr, "config: cannot write %s: %s\n",
+		    fname, strerror(errno));
+		return (1);
+	}
+	if (fprintf(fp, "%s", new_contents) < 0)
+		return (err("writ", fname, fp));
+	if (fclose(fp))
+		return (err("writ", fname, fp));
+	return (0);
+}
+
+static int
+err(const char *what, char *fname, FILE *fp)
 {
 
 	(void)fprintf(stderr, "config: error %sing %s: %s\n",
 	    what, fname, strerror(errno));
 	if (fp)
 		(void)fclose(fp);
-	free(fname);
 	return (1);
 }
 
 static char *
-cntname(src)
-	register const char *src;
+cntname(const char *src)
 {
-	register char *dst, c;
+	char *dst, c;
 	static char buf[100];
 
 	dst = buf;
 	*dst++ = 'N';
 	while ((c = *src++) != 0)
-		*dst++ = islower(c) ? toupper(c) : c;
+		*dst++ = islower((unsigned char)c) ?
+		    toupper((unsigned char)c) : c;
 	*dst = 0;
 	return (buf);
 }

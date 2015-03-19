@@ -1,13 +1,10 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: ffs.S,v 1.7 1995/04/28 22:58:00 jtc Exp $")
-#endif
 
 ENTRY(ffs)
 	bsfl	4(%esp),%eax

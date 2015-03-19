@@ -1,3 +1,4 @@
+/*	$OpenBSD: mrand48.c,v 1.4 2014/12/08 21:45:20 deraadt Exp $ */
 /*
  * Copyright (c) 1993 Martin Birgmeier
  * All rights reserved.
@@ -18,6 +19,8 @@ extern unsigned short __rand48_seed[3];
 long
 mrand48(void)
 {
+	if (__rand48_deterministic == 0)
+		return (int)arc4random();
 	__dorand48(__rand48_seed);
 	return ((long) __rand48_seed[2] << 16) + (long) __rand48_seed[1];
 }

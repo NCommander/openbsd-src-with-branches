@@ -27,18 +27,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: extern.h,v 1.1 1994/03/24 18:41:50 cgd Exp $
+ *	$Id: extern.h,v 1.3 2002/02/16 21:28:09 millert Exp $
  */
 
-#include <sys/types.h>
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXCOMLEN */
 #include <db.h>
 
 /* structures */
 
 struct cmdinfo {
 	char		ci_comm[MAXCOMLEN+2];	/* command name (+ '*') */
-	u_long		ci_uid;			/* user id */
+	uid_t		ci_uid;			/* user id */
 	u_quad_t	ci_calls;		/* number of calls */
 	u_quad_t	ci_etime;		/* elapsed time */
 	u_quad_t	ci_utime;		/* user time */
@@ -50,7 +49,7 @@ struct cmdinfo {
 #define	CI_UNPRINTABLE	0x0001			/* unprintable chars in name */
 
 struct userinfo {
-	u_long		ui_uid;			/* user id; for consistency */
+	uid_t		ui_uid;			/* user id; for consistency */
 	u_quad_t	ui_calls;		/* number of invocations */
 	u_quad_t	ui_utime;		/* user time */
 	u_quad_t	ui_stime;		/* system time */
@@ -60,24 +59,24 @@ struct userinfo {
 
 /* typedefs */
 
-typedef	int (*cmpf_t) __P((const DBT *, const DBT *));
+typedef	int (*cmpf_t)(const DBT *, const DBT *);
 
 /* external functions in sa.c */
-int	main		__P((int, char **));
+int	main(int, char **);
 
 /* external functions in pdb.c */
-int	pacct_init	__P((void));
-void	pacct_destroy	__P((void));
-int	pacct_add	__P((const struct cmdinfo *));
-int	pacct_update	__P((void));
-void	pacct_print	__P((void));
+int	pacct_init(void);
+void	pacct_destroy(void);
+int	pacct_add(const struct cmdinfo *);
+int	pacct_update(void);
+void	pacct_print(void);
 
 /* external functions in usrdb.c */
-int	usracct_init	__P((void));
-void	usracct_destroy	__P((void));
-int	usracct_add	__P((const struct cmdinfo *));
-int	usracct_update	__P((void));
-void	usracct_print	__P((void));
+int	usracct_init(void);
+void	usracct_destroy(void);
+int	usracct_add(const struct cmdinfo *);
+int	usracct_update(void);
+void	usracct_print(void);
 
 /* variables */
 

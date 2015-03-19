@@ -1,3 +1,5 @@
+/*	$OpenBSD: htons.S,v 1.3 2003/06/02 23:28:09 millert Exp $	*/
+
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,17 +35,12 @@
  * Header: htons.s,v 1.1 92/06/25 12:47:05 torek Exp
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#ifdef notdef
-	.asciz "@(#)htons.s	8.1 (Berkeley) 6/4/93"
-#endif
-	.asciz "$NetBSD: htons.S,v 1.2 1994/10/26 06:39:59 cgd Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 /* netorder = htons(hostorder) */
 
 #include "DEFS.h"
 
+_ENTRY(bswap16)
+_ENTRY(ntohs)
 ENTRY(htons)
 	sethi	%hi(0xffff0000), %o1
 	retl

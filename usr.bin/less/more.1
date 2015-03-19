@@ -1,0 +1,322 @@
+.\"	$OpenBSD: more.1,v 1.16 2014/04/25 18:07:41 schwarze Exp $
+.\"
+.\" Copyright (c) 1988, 1990, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"	@(#)more.1	8.2 (Berkeley) 4/18/94
+.\"
+.Dd $Mdocdate: April 25 2014 $
+.Dt MORE 1
+.Os
+.Sh NAME
+.Nm more
+.Nd view files
+.Sh SYNOPSIS
+.Nm more
+.Op Fl ceisu
+.Op Fl n Ar number
+.Op Fl p Ar command
+.Op Fl t Ar tag
+.Op Ar
+.Sh DESCRIPTION
+The
+.Nm
+pager displays text one screenful at a time.
+After showing each screenful, it prompts the user for a command.
+Most commands scroll the text or move to a different place
+in the file, while some switch to another file.
+If no
+.Ar file
+is specified, or if
+.Ar file
+is a single dash
+.Pq Ql - ,
+the standard input is used.
+.Pp
+When showing the last line of a file,
+.Nm
+displays a prompt indicating end of file and the name of the next file
+to examine, if any.
+It then waits for input from the user.
+Scrolling forward switches to the next file,
+or exits if there is none.
+.Pp
+This version of
+.Nm
+is actually
+.Xr less 1
+in disguise.
+As such, it will also accept options documented in
+.Xr less 1 .
+This manual page describes only features
+relevant to a POSIX compliant
+.Nm .
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl c
+When changing the display, paint from the top line down.
+The default is to scroll from the bottom of the screen.
+.It Fl e
+Exit immediately after showing the last line of the last file,
+without prompting the user for a command first.
+.It Fl i
+Ignore case.
+Upper case and lower case are considered identical.
+.It Fl n Ar number
+Page
+.Ar number
+of lines per screenful.
+By default,
+.Nm
+uses the terminal window size.
+.It Fl p Ar command
+Execute the specified
+.Nm
+commands when a file is first examined (or re-examined, such as with the
+.Ic :e
+or
+.Ic :p
+commands).
+Multiple commands have to be concatenated into one single argument.
+Search patterns may contain blank characters and can be terminated
+by newline characters embedded in the
+.Ar command
+argument.
+Any other blank and newline characters contained in the argument are
+interpreted as
+.Ic SPACE
+and
+.Ic RETURN
+commands, respectively.
+.It Fl s
+Squeeze consecutive blank lines into a single blank line.
+.It Fl t Ar tag
+Examine the file containing
+.Ar tag .
+For more information, see
+.Xr ctags  1 .
+.It Fl u
+Display backspaces as control characters
+.Pq Sq ^H
+and leave CR-LF sequences alone.
+By default,
+.Nm
+treats backspaces and CR-LF sequences specially:
+backspaces which appear adjacent to an underscore character are
+displayed as underlined text;
+backspaces which appear between two identical characters are displayed
+as emboldened text;
+and CR-LF sequences are compressed to a single linefeed character.
+.El
+.Sh COMMANDS
+Interactive commands for
+.Nm
+are based on
+.Xr vi  1  .
+Some commands may be preceded by a decimal number, called N in the
+descriptions below.
+In the following descriptions, ^X means control-X.
+.Bl -tag -width Ic
+.It Ic h
+Help: display a summary of these commands.
+.It Ic SPACE | f | ^F
+Scroll forward N lines, default one window.
+If N is more than the screen size, only the final screenful is displayed.
+.It Ic b | ^B
+Scroll backward N lines, default one window (see the
+.Fl n
+option).
+If N is more than the screen size, only the final screenful is displayed.
+.It Ic j | RETURN
+Scroll forward N lines, default 1.
+The entire N lines are displayed, even if N is more than the screen size.
+.It Ic k
+Scroll backward N lines, default 1.
+The entire N lines are displayed, even if N is more than the screen size.
+.It Ic d | ^D
+Scroll forward N lines, default one half of the screen size.
+If N is specified, it becomes the new default for
+subsequent d and u commands.
+.It Ic u | ^U
+Scroll backward N lines, default one half of the screen size.
+If N is specified, it becomes the new default for
+subsequent d and u commands.
+.It Ic g
+Go to line N in the file, default 1 (beginning of file).
+.It Ic G
+Go to line N in the file, default the end of the file.
+.It Ic r | ^L
+Repaint the screen.
+.It Ic R
+Repaint the screen, discarding any buffered input.
+Useful if the file is changing while it is being viewed.
+.It Ic m
+Followed by any lowercase letter,
+marks the current position with that letter.
+.It Ic '
+(Single quote.)
+Followed by any lowercase letter, returns to the position which
+was previously marked with that letter.
+Followed by another single quote, returns to the position at
+which the last "large" movement command was executed, or the
+beginning of the file if no such movements have occurred.
+All marks are lost when a new file is examined.
+.It Ic / Ns Ar pattern
+Search forward in the file for the N-th line containing the pattern.
+N defaults to 1.
+The pattern is a basic regular expression (BRE).
+See
+.Xr re_format 7
+for more information on regular expressions.
+The search starts at the second line displayed.
+.It Ic ?\& Ns Ar pattern
+Search backward in the file for the N-th line containing the pattern.
+The search starts at the line immediately before the top line displayed.
+.It Ic /! Ns Ar pattern
+Like /, but the search is for the N-th line
+which does NOT contain the pattern.
+.It Ic ?! Ns Ar pattern
+Like ?, but the search is for the N-th line
+which does NOT contain the pattern.
+.It Ic n
+Repeat previous search, for N-th line containing the last pattern
+(or NOT containing the last pattern,
+if the previous search was /! or ?!).
+.It Ic N
+Repeat previous search in the opposite direction,
+for N-th line containing the last pattern
+(or NOT containing the last pattern,
+if the previous search was /! or ?!).
+.It Ic :e Op Ar filename
+Examine a new file.
+If the filename is missing, the "current" file (see the
+.Ic :n
+and
+.Ic :p
+commands below)
+from the list of files in the command line is re-examined.
+If the filename is a pound sign (#), the previously examined file is
+re-examined.
+.It Ic :n
+Examine the next file (from the list of files given in the command line).
+If a number N is specified (not to be confused with the command N),
+the N-th next file is examined.
+.It Ic :p
+Examine the previous file.
+If a number N is specified, the N-th previous file is examined.
+.It Ic :t
+Go to supplied tag.
+.It Ic v
+Invokes an editor to edit the current file being viewed.
+The editor is taken from the environment variable
+.Ev EDITOR ,
+or defaults to
+.Xr vi 1 .
+.It Ic = | ^G
+These options print out the number of the file currently being displayed
+relative to the total number of files there are to display, the current
+line number, the current byte number and the total bytes to display, and
+what percentage of the file has been displayed.
+If
+.Nm
+is reading from the standard input,
+or the file is shorter than a single screen, some
+of these items may not be available.
+Note, all of these items reference the first byte of the last line
+displayed on the screen.
+.It Ic q | :q | ZZ
+Exits
+.Nm .
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width "COLUMNSXXX"
+.It Ev COLUMNS
+Sets the number of columns on the screen.
+Takes precedence over the number of columns specified by the
+.Ev TERM
+variable,
+but may be overridden by window systems which support
+.Dv TIOCGWINSZ .
+.It Ev EDITOR
+Specifies the default editor.
+If not set,
+.Xr vi 1
+is used.
+.It Ev LINES
+Sets the number of lines on the screen.
+Takes precedence over the number of lines specified by the TERM variable,
+but may be overridden by window systems which support
+.Dv TIOCGWINSZ .
+.It Ev MORE
+Default command line options to use with
+.Nm .
+The options should be space-separated and must be prefixed with a dash
+.Pq Ql - .
+.It Ev TERM
+Specifies the terminal type.
+Used by
+.Nm
+to get the terminal characteristics necessary to manipulate the screen.
+.El
+.Sh EXIT STATUS
+.Ex -std more
+.Sh EXAMPLES
+Examine the ends of all files in the current directory, showing line
+and byte counts for each:
+.Pp
+.Dl $ more -p G= *
+.Pp
+Examine several manual pages, starting from the options description
+in the DESCRIPTION section:
+.Bd -literal -offset indent
+$ more -p '/DESCRIPTION
+> /options
+> ' *.1
+.Ed
+.Sh SEE ALSO
+.Xr ctags 1 ,
+.Xr less 1 ,
+.Xr vi 1 ,
+.Xr re_format 7
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification,
+though its presence is optional.
+.Pp
+Functionality allowing the user to skip (as opposed to scroll)
+forward is not currently implemented.
+.Sh HISTORY
+A
+.Nm
+command appeared in
+.Bx 3.0 .
+.Sh AUTHORS
+.An Mark Nudelman Aq Mt markn@greenwoodsoftware.com

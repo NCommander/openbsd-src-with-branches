@@ -1,4 +1,5 @@
-/*	$NetBSD: syslog.h,v 1.9 1995/03/26 20:24:51 jtc Exp $	*/
+/*	$OpenBSD: syslog.h,v 1.14 2014/07/10 08:55:35 deraadt Exp $	*/
+/*	$NetBSD: syslog.h,v 1.14 1996/04/03 20:46:44 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +32,12 @@
  *	@(#)syslog.h	8.1 (Berkeley) 6/2/93
  */
 
+#ifndef _SYS_SYSLOG_H_
+#define _SYS_SYSLOG_H_
+
 #define	_PATH_LOG	"/dev/log"
+
+#define	LIOCSFD		_IOW('l', 127, int)	/* set sendsyslog() fd */
 
 /*
  * priorities/facilities are encoded into a single 32-bit quantity, where the
@@ -58,31 +60,30 @@
 #define	LOG_PRIMASK	0x07	/* mask to extract priority part (internal) */
 				/* extract priority */
 #define	LOG_PRI(p)	((p) & LOG_PRIMASK)
-#define	LOG_MAKEPRI(fac, pri)	(((fac) << 3) | (pri))
 
 #ifdef SYSLOG_NAMES
 #define	INTERNAL_NOPRI	0x10	/* the "no priority" priority */
 				/* mark "facility" */
-#define	INTERNAL_MARK	LOG_MAKEPRI(LOG_NFACILITIES, 0)
+#define	INTERNAL_MARK	(LOG_NFACILITIES<<3)
 typedef struct _code {
 	char	*c_name;
 	int	c_val;
 } CODE;
 
 CODE prioritynames[] = {
-	"alert",	LOG_ALERT,
-	"crit",		LOG_CRIT,
-	"debug",	LOG_DEBUG,
-	"emerg",	LOG_EMERG,
-	"err",		LOG_ERR,
-	"error",	LOG_ERR,		/* DEPRECATED */
-	"info",		LOG_INFO,
-	"none",		INTERNAL_NOPRI,		/* INTERNAL */
-	"notice",	LOG_NOTICE,
-	"panic", 	LOG_EMERG,		/* DEPRECATED */
-	"warn",		LOG_WARNING,		/* DEPRECATED */
-	"warning",	LOG_WARNING,
-	NULL,		-1,
+	{ "alert",	LOG_ALERT },
+	{ "crit",	LOG_CRIT },
+	{ "debug",	LOG_DEBUG },
+	{ "emerg",	LOG_EMERG },
+	{ "err",	LOG_ERR },
+	{ "error",	LOG_ERR },		/* DEPRECATED */
+	{ "info",	LOG_INFO },
+	{ "none",	INTERNAL_NOPRI },	/* INTERNAL */
+	{ "notice",	LOG_NOTICE },
+	{ "panic", 	LOG_EMERG },		/* DEPRECATED */
+	{ "warn",	LOG_WARNING },		/* DEPRECATED */
+	{ "warning",	LOG_WARNING },
+	{ NULL,		-1 },
 };
 #endif
 
@@ -117,31 +118,42 @@ CODE prioritynames[] = {
 
 #ifdef SYSLOG_NAMES
 CODE facilitynames[] = {
-	"auth",		LOG_AUTH,
-	"authpriv",	LOG_AUTHPRIV,
-	"cron", 	LOG_CRON,
-	"daemon",	LOG_DAEMON,
-	"ftp",		LOG_FTP,
-	"kern",		LOG_KERN,
-	"lpr",		LOG_LPR,
-	"mail",		LOG_MAIL,
-	"mark", 	INTERNAL_MARK,		/* INTERNAL */
-	"news",		LOG_NEWS,
-	"security",	LOG_AUTH,		/* DEPRECATED */
-	"syslog",	LOG_SYSLOG,
-	"user",		LOG_USER,
-	"uucp",		LOG_UUCP,
-	"local0",	LOG_LOCAL0,
-	"local1",	LOG_LOCAL1,
-	"local2",	LOG_LOCAL2,
-	"local3",	LOG_LOCAL3,
-	"local4",	LOG_LOCAL4,
-	"local5",	LOG_LOCAL5,
-	"local6",	LOG_LOCAL6,
-	"local7",	LOG_LOCAL7,
-	NULL,		-1,
+	{ "auth",	LOG_AUTH },
+	{ "authpriv",	LOG_AUTHPRIV },
+	{ "cron", 	LOG_CRON },
+	{ "daemon",	LOG_DAEMON },
+	{ "ftp",	LOG_FTP },
+	{ "kern",	LOG_KERN },
+	{ "lpr",	LOG_LPR },
+	{ "mail",	LOG_MAIL },
+	{ "mark", 	INTERNAL_MARK },	/* INTERNAL */
+	{ "news",	LOG_NEWS },
+	{ "security",	LOG_AUTH },		/* DEPRECATED */
+	{ "syslog",	LOG_SYSLOG },
+	{ "user",	LOG_USER },
+	{ "uucp",	LOG_UUCP },
+	{ "local0",	LOG_LOCAL0 },
+	{ "local1",	LOG_LOCAL1 },
+	{ "local2",	LOG_LOCAL2 },
+	{ "local3",	LOG_LOCAL3 },
+	{ "local4",	LOG_LOCAL4 },
+	{ "local5",	LOG_LOCAL5 },
+	{ "local6",	LOG_LOCAL6 },
+	{ "local7",	LOG_LOCAL7 },
+	{ NULL,		-1 },
 };
 #endif
+
+/* Used by reentrant functions */
+
+struct syslog_data {
+	int	log_stat;
+	const char 	*log_tag;
+	int 	log_fac;
+	int 	log_mask;
+};
+
+#define SYSLOG_DATA_INIT {0, (const char *)0, LOG_USER, 0xff}
 
 #ifdef _KERNEL
 #define	LOG_PRINTF	-1	/* pseudo-priority to indicate use of printf */
@@ -173,23 +185,35 @@ CODE facilitynames[] = {
  * places (<machine/varargs.h> and <machine/stdarg.h>), so if we include one
  * of them here we may collide with the utility's includes.  It's unreasonable
  * for utilities to have to include one of them to include syslog.h, so we get
- * _BSD_VA_LIST_ from <machine/ansi.h> and use it.
+ * __va_list from <machine/_types.h> and use it.
  */
-#include <machine/ansi.h>
 #include <sys/cdefs.h>
+#include <machine/_types.h>
 
 __BEGIN_DECLS
-void	closelog __P((void));
-void	openlog __P((const char *, int, int));
-int	setlogmask __P((int));
-void	syslog __P((int, const char *, ...));
-void	vsyslog __P((int, const char *, _BSD_VA_LIST_));
+void	closelog(void);
+void	openlog(const char *, int, int);
+int	setlogmask(int);
+void	syslog(int, const char *, ...)
+    __attribute__((__format__(__syslog__,2,3)));
+void	vsyslog(int, const char *, __va_list);
+void	closelog_r(struct syslog_data *);
+void	openlog_r(const char *, int, int, struct syslog_data *);
+int	setlogmask_r(int, struct syslog_data *);
+void	syslog_r(int, struct syslog_data *, const char *, ...)
+     __attribute__((__format__(__syslog__,3,4)));
+void	vsyslog_r(int, struct syslog_data *, const char *, __va_list);
 __END_DECLS
 
 #else /* !_KERNEL */
 
-void	logpri __P((int));
-void	log __P((int, const char *, ...));
-void	addlog __P((const char *, ...));
+void	logpri(int);
+void	log(int, const char *, ...)
+    __attribute__((__format__(__kprintf__,2,3)));
+int	addlog(const char *, ...)
+    __attribute__((__format__(__kprintf__,1,2)));
+void	logwakeup(void);
 
 #endif /* !_KERNEL */
+#endif /* !_SYS_SYSLOG_H_ */
+

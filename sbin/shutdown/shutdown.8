@@ -1,3 +1,4 @@
+.\"	$OpenBSD: shutdown.8,v 1.39 2007/11/19 08:51:49 jmc Exp $
 .\"	$NetBSD: shutdown.8,v 1.6 1995/03/18 15:01:07 cgd Exp $
 .\"
 .\" Copyright (c) 1988, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,62 +30,95 @@
 .\"
 .\"     @(#)shutdown.8	8.1 (Berkeley) 6/5/93
 .\"
-.Dd June 5, 1993
+.Dd $Mdocdate: November 19 2007 $
 .Dt SHUTDOWN 8
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm shutdown
-.Nd "close down the system at a given time"
+.Nd close down the system at a given time
 .Sh SYNOPSIS
 .Nm shutdown
-.Op Fl 
-.Op Fl fhkrn
+.Op Fl
+.Op Fl dfhknpr
 .Ar time
 .Op Ar warning-message ...
 .Sh DESCRIPTION
-.Nm Shutdown
-provides an automated shutdown procedure for super-users
+.Nm
+provides an automated shutdown procedure for superusers
 to nicely notify users when the system is shutting down,
 saving them from system administrators, hackers, and gurus, who
 would otherwise not bother with such niceties.
+When the
+.Nm
+command is issued without options the system is placed in single
+user mode at the indicated time after shutting down all system
+services.
 .Pp
-Available friendlinesses:
-.Bl -tag -width time
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl d
+When used with
+.Fl h ,
+.Fl p ,
+or
+.Fl r
+causes system to perform a dump.
+This option is useful for debugging system dump procedures or capturing the
+state of a corrupted or misbehaving system.
+See
+.Xr savecore 8
+for information on how to recover this dump.
 .It Fl f
-.Nm Shutdown
-arranges, in the manner of
-.Xr fastboot 8 ,
-for the file systems
-.Em not to be
-checked on reboot.
+Create the file
+.Pa /fastboot
+so that the file systems will
+.Em not
+be checked by
+.Xr fsck 8
+during the next boot.
+(See
+.Xr rc 8 ) .
 .It Fl h
 The system is halted at the specified
 .Ar time
 when
-.Nm shutdown
+.Nm
 execs
 .Xr halt 8 .
 .It Fl k
-Kick every body off.
+Kick everybody off.
 The
 .Fl k
 option
 does not actually halt the system, but leaves the
-system multi-user with logins disabled (for all but super-user).
+system multi-user with logins disabled (for all but superuser).
 .It Fl n
-Prevent the normal
+When used with
+.Fl h ,
+.Fl p ,
+or
+.Fl r
+prevents the normal
 .Xr sync 2
-before stopping.
-.It Fl r 
-.Nm Shutdown
+before stopping the system.
+.It Fl p
+The system is powered down at the specified
+.Ar time .
+The
+.Fl p
+flag is passed on to
+.Xr halt 8 ,
+causing machines which support automatic power down to do so after halting.
+.It Fl r
+.Nm
 execs
 .Xr reboot 8
 at the specified
 .Ar time .
 .It Ar time
-.Ar Time
+.Ar time
 is the time at which
-.Nm shutdown
+.Nm
 will bring the system down and
 may be the word
 .Ar now
@@ -98,7 +128,8 @@ specify a future time in one of two formats:
 or
 .Ar yymmddhhmm ,
 where the year, month, and day may be defaulted
-to the current system values.  The first form brings the system down in
+to the current system values.
+The first form brings the system down in
 .Ar number
 minutes and the second at the absolute time specified.
 .It Ar warning-message
@@ -106,31 +137,32 @@ Any other arguments comprise the warning message that is broadcast
 to users currently logged into the system.
 .It Fl
 If
-.Ql Fl
+.Sq Fl
 is supplied as an option, the warning message is read from the standard
 input.
 .El
 .Pp
 At intervals, becoming more frequent as apocalypse approaches
 and starting at ten hours before shutdown, warning messages are displayed
-on the terminals of all users logged in.  Five minutes before
+on the terminals of all users logged in.
+Five minutes before
 shutdown, or immediately if shutdown is in less than 5 minutes,
 logins are disabled by creating
 .Pa /etc/nologin
 and copying the
-warning message there.  If this file exists when a user attempts to
-log in,
+warning message there.
+If this file exists when a user attempts to log in,
 .Xr login 1
-prints its contents and exits.  The file is
-removed just before
-.Nm shutdown
+prints its contents and exits.
+The file is removed just before
+.Nm
 exits.
 .Pp
 At shutdown time a message is written in the system log, containing the
 time of shutdown, who initiated the shutdown and the reason.
 A terminate
 signal is then sent to
-.Xr init
+.Em init
 to bring the system down to single-user state (depending on above
 options).
 The time of the shutdown and the warning message
@@ -139,24 +171,37 @@ are placed in
 and should be used to
 inform the users about when the system will be back up
 and why it is going down (or anything else).
+.Pp
+You can cancel a scheduled shutdown with the
+.Xr kill 1
+command by killing the shutdown process.
 .Sh FILES
-.Bl -tag -width /etc/nologin -compact
+.Bl -tag -width /etc/rc.shutdown -compact
 .It Pa /etc/nologin
 tells login not to let anyone log in
+.It Pa /etc/rc.shutdown
+run by
+.Xr rc 8
+before the system is shutdown
 .It Pa /fastboot
 tells
 .Xr rc 8
-not to run fsck when rebooting
+not to run
+.Xr fsck 8
+during the next boot
 .El
 .Sh SEE ALSO
+.Xr kill 1 ,
 .Xr login 1 ,
 .Xr wall 1 ,
-.Xr fastboot 8 ,
 .Xr halt 8 ,
+.Xr rc.shutdown 8 ,
 .Xr reboot 8
-.Sh BACKWARD COMPATIBILITY
+.Sh STANDARDS
 The hours and minutes in the second time format may be separated by
-a colon (``:'') for backward compatibility.
+a colon
+.Pq Sq \&:
+for backward compatibility.
 .Sh HISTORY
 The
 .Nm

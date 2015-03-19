@@ -1,0 +1,32 @@
+.Dd February 12, 2015
+.Dt BREAK-TWICE 1
+.Os OpenBSD
+.Sh NAME
+.Nm break-twice
+.Nd breaking the same block twice
+.Sh DESCRIPTION
+Standard case, explicit:
+.Bo bo
+.Bro bro
+.Ao ao brc
+.Brc bc
+.Bc ac
+.Ac
+.Pp
+Standard case, implicit:
+.Bo bo
+.Bro bro
+.Aq aq brc Brc bc Bc eol
+.Pp
+Two of the same kind, explicit:
+.Bo bo
+.Bo bo
+.Ao ao bc
+.Bc bc
+.Bc ac
+.Ac
+.Pp
+Two of the same kind, implicit:
+.Bo bo
+.Bo bo
+.Aq aq bc Bc bc Bc eol

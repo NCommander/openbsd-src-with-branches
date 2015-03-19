@@ -1,3 +1,4 @@
+/*	$OpenBSD: tar.h,v 1.8 2013/04/09 18:30:34 fgsch Exp $	*/
 /*	$NetBSD: tar.h,v 1.3 1995/03/21 09:07:51 cgd Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -65,6 +62,18 @@
 #define	CONTTYPE	'7'		/* high perf file */
 
 /*
+ * Extended header - POSIX.1-2001
+ */
+#define	XHDRTYPE	'x'		/* Extended header */
+#define	GHDRTYPE	'g'		/* Global header*/
+
+/*
+ * GNU tar compatibility;
+ */
+#define	LONGLINKTYPE	'K'		/* Long Symlink */
+#define	LONGNAMETYPE	'L'		/* Long File */
+
+/*
  * Mode field encoding of the different file types - values in octal
  */
 #define TSUID		04000		/* Set UID on execution */
@@ -93,8 +102,8 @@
  */
 typedef struct {
 	char name[TNMSZ];		/* name of entry */
-	char mode[8]; 			/* mode */
-	char uid[8]; 			/* uid */
+	char mode[8];			/* mode */
+	char uid[8];			/* uid */
 	char gid[8];			/* gid */
 	char size[12];			/* size */
 	char mtime[12];			/* modification time */
@@ -113,12 +122,12 @@ typedef struct {
 /*
  * default device names
  */
-#define	DEV_0		"/dev/rmt0"
-#define	DEV_1		"/dev/rmt1"
-#define	DEV_4		"/dev/rmt4"
-#define	DEV_5		"/dev/rmt5"
-#define	DEV_7		"/dev/rmt7"
-#define	DEV_8		"/dev/rmt8"
+#define	DEV_0		"/dev/rst0"
+#define	DEV_1		"/dev/rst1"
+#define	DEV_4		"/dev/rst4"
+#define	DEV_5		"/dev/rst5"
+#define	DEV_7		"/dev/rst7"
+#define	DEV_8		"/dev/rst8"
 #endif /* _PAX_ */
 
 /*
@@ -132,8 +141,8 @@ typedef struct {
 
 typedef struct {
 	char name[TNMSZ];		/* name of entry */
-	char mode[8]; 			/* mode */
-	char uid[8]; 			/* uid */
+	char mode[8];			/* mode */
+	char uid[8];			/* uid */
 	char gid[8];			/* gid */
 	char size[12];			/* size */
 	char mtime[12];			/* modification time */

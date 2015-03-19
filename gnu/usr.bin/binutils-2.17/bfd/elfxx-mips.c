@@ -7263,7 +7263,7 @@ _bfd_mips_elf_size_dynamic_sections (bfd *output_bfd,
   if (elf_hash_table (info)->dynamic_sections_created)
     {
       /* Set the contents of the .interp section to the interpreter.  */
-      if (info->executable)
+      if (info->executable && !info->static_link)
 	{
 	  s = bfd_get_section_by_name (dynobj, ".interp");
 	  BFD_ASSERT (s != NULL);
@@ -8862,11 +8862,16 @@ _bfd_mips_elf_finish_dynamic_sections (bfd *output_bfd,
 		 decided not to make.  This is for the n64 irix rld,
 		 which doesn't seem to apply any relocations if there
 		 are trailing null entries.  */
-	      s = mips_elf_rel_dyn_section (info, FALSE);
-	      dyn.d_un.d_val = (s->reloc_count
-				* (ABI_64_P (output_bfd)
-				   ? sizeof (Elf64_Mips_External_Rel)
-				   : sizeof (Elf32_External_Rel)));
+	      if (SGI_COMPAT (output_bfd))
+		{
+		  s = mips_elf_rel_dyn_section (info, FALSE);
+		  dyn.d_un.d_val = (s->reloc_count
+				    * (ABI_64_P (output_bfd)
+				       ? sizeof (Elf64_Mips_External_Rel)
+				       : sizeof (Elf32_External_Rel)));
+		}
+	      else
+		swap_out_p = FALSE;
 	      break;
 
 	    default:
@@ -11127,4 +11132,12 @@ bfd_boolean
 _bfd_mips_elf_ignore_undef_symbol (struct elf_link_hash_entry *h)
 {
   return ELF_MIPS_IS_OPTIONAL (h->other) ? TRUE : FALSE;
+}
+
+bfd_boolean
+_bfd_mips_elf_common_definition (Elf_Internal_Sym *sym)
+{
+  return (sym->st_shndx == SHN_COMMON
+	  || sym->st_shndx == SHN_MIPS_ACOMMON
+	  || sym->st_shndx == SHN_MIPS_SCOMMON);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: conv.c,v 1.5 1995/10/08 23:01:23 gwr Exp $	*/
+/*	$OpenBSD: conv.c,v 1.11 2009/10/27 23:59:21 deraadt Exp $	*/
+/*	$NetBSD: conv.c,v 1.6 1996/02/20 19:29:02 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,21 +34,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)conv.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: conv.c,v 1.5 1995/10/08 23:01:23 gwr Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/time.h>
 
 #include <err.h>
 #include <string.h>
 
 #include "dd.h"
 #include "extern.h"
+
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
 /*
  * def --
@@ -60,12 +52,13 @@ static char rcsid[] = "$NetBSD: conv.c,v 1.5 1995/10/08 23:01:23 gwr Exp $";
  * Worst case buffer calculation is (ibs + obs - 1).
  */
 void
-def()
+def(void)
 {
-	int cnt;
-	u_char *inp, *t;
+	size_t cnt;
+	u_char *inp;
+	const u_char *t;
 
-	if (t = ctab)
+	if ((t = ctab) != NULL)
 		for (inp = in.dbp - (cnt = in.dbrcnt); cnt--; ++inp)
 			*inp = t[*inp];
 
@@ -88,7 +81,7 @@ def()
 }
 
 void
-def_close()
+def_close(void)
 {
 	/* Just update the count, everything is already in the buffer. */
 	if (in.dbcnt)
@@ -99,10 +92,10 @@ def_close()
 /* Build a smaller version (i.e. for a miniroot) */
 /* These can not be called, but just in case...  */
 static char no_block[] = "unblock and -DNO_CONV?";
-void block()       { errx(1, no_block + 2); }
-void block_close() { errx(1, no_block + 2); }
-void unblock()       { errx(1, no_block); }
-void unblock_close() { errx(1, no_block); }
+void block()       { errx(1, "%s", no_block + 2); }
+void block_close() { errx(1, "%s", no_block + 2); }
+void unblock()       { errx(1, "%s", no_block); }
+void unblock_close() { errx(1, "%s", no_block); }
 #else	/* NO_CONV */
 
 /*
@@ -113,11 +106,13 @@ void unblock_close() { errx(1, no_block); }
  * max out buffer: obs + cbsz
  */
 void
-block()
+block(void)
 {
 	static int intrunc;
-	int ch, cnt, maxlen;
-	u_char *inp, *outp, *t;
+	int ch = -1;
+	size_t cnt, maxlen;
+	u_char *inp, *outp;
+	const u_char *t;
 
 	/*
 	 * Record truncation can cross block boundaries.  If currently in a
@@ -144,8 +139,8 @@ block()
 	 * translation is done as we copy into the output buffer.
 	 */
 	for (inp = in.dbp - in.dbcnt, outp = out.dbp; in.dbcnt;) {
-		maxlen = MIN(cbsz, in.dbcnt);
-		if (t = ctab)
+		maxlen = MINIMUM(cbsz, in.dbcnt);
+		if ((t = ctab) != NULL)
 			for (cnt = 0;
 			    cnt < maxlen && (ch = *inp++) != '\n'; ++cnt)
 				*outp++ = t[ch];
@@ -158,7 +153,7 @@ block()
 		 * input block.
 		 */
 		if (ch != '\n' && in.dbcnt < cbsz) {
-			memmove(in.db, in.dbp - in.dbcnt, in.dbcnt);
+			(void)memmove(in.db, in.dbp - in.dbcnt, in.dbcnt);
 			break;
 		}
 
@@ -196,7 +191,7 @@ block()
 }
 
 void
-block_close()
+block_close(void)
 {
 	/*
 	 * Copy any remaining data into the output buffer and pad to a record.
@@ -208,7 +203,7 @@ block_close()
 	 */
 	if (in.dbcnt) {
 		++st.trunc;
-		memmove(out.dbp, in.dbp - in.dbcnt, in.dbcnt);
+		(void)memmove(out.dbp, in.dbp - in.dbcnt, in.dbcnt);
 		(void)memset(out.dbp + in.dbcnt,
 		    ctab ? ctab[' '] : ' ', cbsz - in.dbcnt);
 		out.dbcnt += cbsz;
@@ -223,15 +218,16 @@ block_close()
  * max out buffer: obs + cbsz
  */
 void
-unblock()
+unblock(void)
 {
-	int cnt;
-	u_char *inp, *t;
+	size_t cnt;
+	u_char *inp;
+	const u_char *t;
 
 	/* Translation and case conversion. */
-	if (t = ctab)
-		for (cnt = in.dbrcnt, inp = in.dbp; cnt--;)
-			*--inp = t[*inp];
+	if ((t = ctab) != NULL)
+		for (cnt = in.dbrcnt, inp = in.dbp - 1; cnt--; inp--)
+			*inp = t[*inp];
 	/*
 	 * Copy records (max cbsz size chunks) into the output buffer.  The
 	 * translation has to already be done or we might not recognize the
@@ -241,7 +237,7 @@ unblock()
 		for (t = inp + cbsz - 1; t >= inp && *t == ' '; --t);
 		if (t >= inp) {
 			cnt = t - inp + 1;
-			memmove(out.dbp, inp, cnt);
+			(void)memmove(out.dbp, inp, cnt);
 			out.dbp += cnt;
 			out.dbcnt += cnt;
 		}
@@ -251,14 +247,14 @@ unblock()
 			dd_out(0);
 	}
 	if (in.dbcnt)
-		memmove(in.db, in.dbp - in.dbcnt, in.dbcnt);
+		(void)memmove(in.db, in.dbp - in.dbcnt, in.dbcnt);
 	in.dbp = in.db + in.dbcnt;
 }
 
 void
-unblock_close()
+unblock_close(void)
 {
-	int cnt;
+	size_t cnt;
 	u_char *t;
 
 	if (in.dbcnt) {
@@ -266,7 +262,7 @@ unblock_close()
 		for (t = in.db + in.dbcnt - 1; t >= in.db && *t == ' '; --t);
 		if (t >= in.db) {
 			cnt = t - in.db + 1;
-			memmove(out.dbp, in.db, cnt);
+			(void)memmove(out.dbp, in.db, cnt);
 			out.dbp += cnt;
 			out.dbcnt += cnt;
 		}

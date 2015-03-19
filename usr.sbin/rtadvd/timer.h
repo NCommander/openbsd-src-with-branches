@@ -1,3 +1,6 @@
+/*	$OpenBSD: timer.h,v 1.6 2002/02/17 19:42:39 millert Exp $	*/
+/*	$KAME: timer.h,v 1.3 2000/05/27 11:30:43 jinmei Exp $	*/
+
 /*
  * Copyright (C) 1998 WIDE Project.
  * All rights reserved.
@@ -27,35 +30,20 @@
  * SUCH DAMAGE.
  */
 
-/* a < b */
-#define TIMEVAL_LT(a, b) (((a).tv_sec < (b).tv_sec) ||\
-			  (((a).tv_sec == (b).tv_sec) && \
-			    ((a).tv_usec < (b).tv_usec)))
-
-/* a <= b */
-#define TIMEVAL_LEQ(a, b) (((a).tv_sec < (b).tv_sec) ||\
-			   (((a).tv_sec == (b).tv_sec) &&\
- 			    ((a).tv_usec <= (b).tv_usec)))
-
 struct rtadvd_timer {
-	struct rtadvd_timer *next;
-	struct rtadvd_timer *prev;
+	SLIST_ENTRY(rtadvd_timer) entries;
 	struct rainfo *rai;
 	struct timeval tm;
 
-	void (*expire) __P((void *));	/* expiration function */
+	void (*expire)(void *);		/* expiration function */
 	void *expire_data;
-	void (*update) __P((void *, struct timeval *));	/* update function */
+	void (*update)(void *, struct timeval *);	/* update function */
 	void *update_data;
 };
 
-void rtadvd_timer_init __P((void));
-struct rtadvd_timer *rtadvd_add_timer __P((void (*) __P((void *)),
-		void (*) __P((void *, struct timeval *)), void *, void *));
-void rtadvd_set_timer __P((struct timeval *, struct rtadvd_timer *));
-struct timeval * rtadvd_check_timer __P((void));
-struct timeval * rtadvd_timer_rest __P((struct rtadvd_timer *));
-void TIMEVAL_ADD __P((struct timeval *, struct timeval *,
-		      struct timeval *)); 
-void TIMEVAL_SUB __P((struct timeval *, struct timeval *,
-		      struct timeval *)); 
+struct rtadvd_timer *rtadvd_add_timer(void (*)(void *),
+    void (*)(void *, struct timeval *), void *, void *);
+void rtadvd_set_timer(struct timeval *, struct rtadvd_timer *);
+void rtadvd_remove_timer(struct rtadvd_timer **);
+struct timeval * rtadvd_check_timer(void);
+struct timeval * rtadvd_timer_rest(struct rtadvd_timer *);

@@ -1,3 +1,6 @@
+/*	$OpenBSD: advcap.h,v 1.6 2002/05/29 14:34:05 itojun Exp $	*/
+/*	$KAME: advcap.h,v 1.4 2001/06/08 04:46:19 jinmei Exp $	*/
+
 /*
  * Copyright (C) 1994,1995 by Andrey A. Chernov, Moscow, Russia.
  * All rights reserved.
@@ -29,14 +32,12 @@
 #ifndef _ADVCAP_H_
 #define _ADVCAP_H_
 
-#include <sys/cdefs.h>
-
 __BEGIN_DECLS
 
-extern int agetent __P((char *, const char *));
-extern int agetflag __P((const char *));
-extern int agetnum __P((const char *));
-extern char *agetstr __P((const char *, char **));
+extern int agetent(char *, const char *);
+extern int agetflag(const char *);
+extern int64_t agetnum(const char *);
+extern char *agetstr(const char *, char **);
 
 __END_DECLS
 

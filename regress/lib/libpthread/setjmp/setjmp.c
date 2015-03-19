@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_setjmp.c,v 1.5 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: setjmp.c,v 1.2 2001/09/20 16:43:15 todd Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -33,13 +33,13 @@
  */ 
 
 #include <setjmp.h>
+#include <stdlib.h>
 #include "test.h"
 
 int reached;
 
-void *
-_jump(arg)
-	void *arg;
+static void *
+_jump(void *arg)
 {
 	jmp_buf foo;
 
@@ -53,9 +53,8 @@ _jump(arg)
 	PANIC("_longjmp");
 }
 
-void *
-jump(arg)
-	void *arg;
+static void *
+jump(void *arg)
 {
 	jmp_buf foo;
 
@@ -70,7 +69,7 @@ jump(arg)
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	pthread_t child;
 	void *res;

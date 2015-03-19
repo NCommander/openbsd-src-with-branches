@@ -1,3 +1,4 @@
+/*	$OpenBSD: col.c,v 1.13 2014/10/16 13:45:12 schwarze Exp $	*/
 /*	$NetBSD: col.c,v 1.7 1995/09/02 05:48:50 jtc Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,25 +33,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1990, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)col.c	8.5 (Berkeley) 5/4/95";
-#endif
-static char rcsid[] = "$NetBSD: col.c,v 1.7 1995/09/02 05:48:50 jtc Exp $";
-#endif /* not lint */
-
 #include <ctype.h>
 #include <err.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 
 #define	BS	'\b'		/* backspace */
 #define	TAB	'\t'		/* tab */
@@ -77,7 +62,7 @@ typedef char CSET;
 typedef struct char_str {
 #define	CS_NORMAL	1
 #define	CS_ALTERNATE	2
-	short		c_column;	/* column character is in */
+	size_t		c_column;	/* column character is in */
 	CSET		c_set;		/* character set (currently only 2) */
 	char		c_char;		/* character in question */
 } CHAR;
@@ -87,21 +72,20 @@ struct line_str {
 	CHAR	*l_line;		/* characters on the line */
 	LINE	*l_prev;		/* previous line */
 	LINE	*l_next;		/* next line */
-	int	l_lsize;		/* allocated sizeof l_line */
-	int	l_line_len;		/* strlen(l_line) */
+	size_t	l_lsize;		/* allocated sizeof l_line */
+	size_t	l_line_len;		/* strlen(l_line) */
+	size_t	l_max_col;		/* max column in the line */
 	int	l_needs_sort;		/* set if chars went in out of order */
-	int	l_max_col;		/* max column in the line */
 };
 
-LINE   *alloc_line __P((void));
-void	dowarn __P((int));
-void	flush_line __P((LINE *));
-void	flush_lines __P((int));
-void	flush_blanks __P((void));
-void	free_line __P((LINE *));
-void	usage __P((void));
-void	wrerr __P((void));
-void   *xmalloc __P((void *, size_t));
+LINE   *alloc_line(void);
+void	dowarn(int);
+void	flush_line(LINE *);
+void	flush_lines(int);
+void	flush_blanks(void);
+void	free_line(LINE *);
+void	usage(void);
+void   *xreallocarray(void *, size_t, size_t);
 
 CSET	last_set;		/* char_set of last char printed */
 LINE   *lines;
@@ -113,28 +97,27 @@ int	no_backspaces;		/* if not to output any backspaces */
 
 #define	PUTC(ch) \
 	if (putchar(ch) == EOF) \
-		wrerr();
+		err(1, "stdout");
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	int ch;
 	CHAR *c;
 	CSET cur_set;			/* current character set */
 	LINE *l;			/* current line */
 	int extra_lines;		/* # of lines above first line */
-	int cur_col;			/* current column */
+	size_t cur_col;			/* current column */
 	int cur_line;			/* line number of current position */
 	int max_line;			/* max value of cur_line */
 	int this_line;			/* line l points to */
 	int nflushd_lines;		/* number of lines that were flushed */
 	int adjust, opt, warned;
+	const char *errstr;
 
 	max_bufd_lines = 128;
 	compress_spaces = 1;		/* compress spaces into tabs */
-	while ((opt = getopt(argc, argv, "bfhl:x")) != EOF)
+	while ((opt = getopt(argc, argv, "bfhl:x")) != -1)
 		switch (opt) {
 		case 'b':		/* do not output backspaces */
 			no_backspaces = 1;
@@ -146,11 +129,10 @@ main(argc, argv)
 			compress_spaces = 1;
 			break;
 		case 'l':		/* buffered line count */
-			if ((max_bufd_lines = atoi(optarg)) <= 0) {
-				(void)fprintf(stderr,
-				    "col: bad -l argument %s.\n", optarg);
-				exit(1);
-			}
+			max_bufd_lines = strtonum(optarg, 1, INT_MAX, &errstr);
+			if (errstr != NULL)
+				errx(1, "bad -l argument, %s: %s", errstr, 
+					optarg);
 			break;
 		case 'x':		/* do not compress spaces into tabs */
 			compress_spaces = 0;
@@ -166,7 +148,8 @@ main(argc, argv)
 	/* this value is in half lines */
 	max_bufd_lines *= 2;
 
-	adjust = cur_col = extra_lines = warned = 0;
+	adjust = extra_lines = warned = 0;
+	cur_col = 0;
 	cur_line = max_line = nflushd_lines = this_line = 0;
 	cur_set = last_set = CS_NORMAL;
 	lines = l = alloc_line();
@@ -279,12 +262,12 @@ main(argc, argv)
 		}
 		/* grow line's buffer? */
 		if (l->l_line_len + 1 >= l->l_lsize) {
-			int need;
+			size_t need;
 
-			need = l->l_lsize ? l->l_lsize * 2 : 90;
-			l->l_line = (CHAR *)xmalloc((void *) l->l_line,
-			    (unsigned) need * sizeof(CHAR));
-			l->l_lsize = need;
+			need = l->l_lsize ? l->l_lsize : 45;
+			l->l_line = xreallocarray(l->l_line,
+			    need, 2 * sizeof(CHAR));
+			l->l_lsize = need * 2;
 		}
 		c = &l->l_line[l->l_line_len++];
 		c->c_char = ch;
@@ -324,8 +307,7 @@ main(argc, argv)
 }
 
 void
-flush_lines(nflush)
-	int nflush;
+flush_lines(int nflush)
 {
 	LINE *l;
 
@@ -351,7 +333,7 @@ flush_lines(nflush)
  * feeds.
  */
 void
-flush_blanks()
+flush_blanks(void)
 {
 	int half, i, nb;
 
@@ -368,7 +350,7 @@ flush_blanks()
 		PUTC('\n');
 	if (half) {
 		PUTC('\033');
-		PUTC('9');
+		PUTC('\011');
 		if (!nb)
 			PUTC('\r');
 	}
@@ -380,18 +362,18 @@ flush_blanks()
  * and character set shifts.
  */
 void
-flush_line(l)
-	LINE *l;
+flush_line(LINE *l)
 {
 	CHAR *c, *endc;
-	int nchars, last_col, this_col;
+	size_t nchars, last_col, this_col;
 
 	last_col = 0;
 	nchars = l->l_line_len;
 
 	if (l->l_needs_sort) {
 		static CHAR *sorted;
-		static int count_size, *count, i, save, sorted_size, tot;
+		static size_t count_size, i, sorted_size;
+		static int *count, save, tot;
 
 		/*
 		 * Do an O(n) sort on l->l_line by column being careful to
@@ -399,16 +381,16 @@ flush_line(l)
 		 */
 		if (l->l_lsize > sorted_size) {
 			sorted_size = l->l_lsize;
-			sorted = (CHAR *)xmalloc((void *)sorted,
-			    (unsigned)sizeof(CHAR) * sorted_size);
+			sorted = xreallocarray(sorted,
+			    sorted_size, sizeof(CHAR));
 		}
 		if (l->l_max_col >= count_size) {
 			count_size = l->l_max_col + 1;
-			count = (int *)xmalloc((void *)count,
-			    (unsigned)sizeof(int) * count_size);
+			count = xreallocarray(count,
+			    count_size, sizeof(int));
 		}
-		memset((char *)count, 0, sizeof(int) * l->l_max_col + 1);
-		for (i = nchars, c = l->l_line; --i >= 0; c++)
+		memset(count, 0, sizeof(*count) * (l->l_max_col + 1));
+		for (i = nchars, c = l->l_line; i-- > 0; c++)
 			count[c->c_column]++;
 
 		/*
@@ -421,7 +403,7 @@ flush_line(l)
 			tot += save;
 		}
 
-		for (i = nchars, c = l->l_line; --i >= 0; c++)
+		for (i = nchars, c = l->l_line; i-- > 0; c++)
 			sorted[count[c->c_column]++] = *c;
 		c = sorted;
 	} else
@@ -438,19 +420,19 @@ flush_line(l)
 			c = endc - 1;
 
 		if (this_col > last_col) {
-			int nspace = this_col - last_col;
+			size_t nspace = this_col - last_col;
 
 			if (compress_spaces && nspace > 1) {
-				int ntabs;
+				size_t ntabs;
 
 				ntabs = ((last_col % 8) + nspace) / 8;
 				if (ntabs) {
 					nspace -= (ntabs * 8) - (last_col % 8);
-					while (--ntabs >= 0)
+					while (ntabs-- > 0)
 						PUTC('\t');
 				}
 			}
-			while (--nspace >= 0)
+			while (nspace-- > 0)
 				PUTC(' ');
 			last_col = this_col;
 		}
@@ -480,13 +462,13 @@ flush_line(l)
 static LINE *line_freelist;
 
 LINE *
-alloc_line()
+alloc_line(void)
 {
 	LINE *l;
 	int i;
 
 	if (!line_freelist) {
-		l = (LINE *)xmalloc((void *)NULL, sizeof(LINE) * NALLOC);
+		l = xreallocarray(NULL, NALLOC, sizeof(LINE));
 		line_freelist = l;
 		for (i = 1; i < NALLOC; i++, l++)
 			l->l_next = l + 1;
@@ -500,8 +482,7 @@ alloc_line()
 }
 
 void
-free_line(l)
-	LINE *l;
+free_line(LINE *l)
 {
 
 	l->l_next = line_freelist;
@@ -509,35 +490,23 @@ free_line(l)
 }
 
 void *
-xmalloc(p, size)
-	void *p;
-	size_t size;
+xreallocarray(void *p, size_t n, size_t size)
 {
 
-	if (!(p = (void *)realloc(p, size)))
-		err(1, NULL);
+	if (!(p = reallocarray(p, n, size)))
+		err(1, "realloc failed");
 	return (p);
 }
 
 void
-usage()
+usage(void)
 {
-
-	(void)fprintf(stderr, "usage: col [-bfx] [-l nline]\n");
+	(void)fprintf(stderr, "usage: col [-bfhx] [-l num]\n");
 	exit(1);
 }
 
 void
-wrerr()
-{
-
-	(void)fprintf(stderr, "col: write error.\n");
-	exit(1);
-}
-
-void
-dowarn(line)
-	int line;
+dowarn(int line)
 {
 
 	warnx("warning: can't back up %s",

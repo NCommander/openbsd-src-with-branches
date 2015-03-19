@@ -1,4 +1,32 @@
-/*	$NetBSD: for.c,v 1.3 1995/06/14 15:19:13 christos Exp $	*/
+/*	$OpenBSD: for.c,v 1.45 2013/11/22 15:47:35 espie Exp $	*/
+/*	$NetBSD: for.c,v 1.4 1996/11/06 17:59:05 christos Exp $ */
+
+/*
+ * Copyright (c) 1999 Marc Espie.
+ *
+ * Extensive code modifications for the OpenBSD project.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
+ * PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
  * Copyright (c) 1992, The Regents of the University of California.
@@ -12,11 +40,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,273 +57,230 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)for.c	5.6 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: for.c,v 1.3 1995/06/14 15:19:13 christos Exp $";
-#endif
-#endif /* not lint */
-
-/*-
- * for.c --
- *	Functions to handle loops in a makefile.
- *
- * Interface:
- *	For_Eval 	Evaluate the loop in the passed line.
- *	For_Run		Run accumulated loop
- *
- */
-
-#include    <ctype.h>
-#include    "make.h"
-#include    "hash.h"
-#include    "dir.h"
-#include    "buf.h"
+#include <assert.h>
+#include <ctype.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "config.h"
+#include "defines.h"
+#include "buf.h"
+#include "for.h"
+#include "lst.h"
+#include "error.h"
+#include "var.h"
+#include "lowparse.h"
+#include "str.h"
+#include "memory.h"
 
 /*
  * For statements are of the form:
  *
- * .for <variable> in <varlist>
+ * .for <variable> [variable...] in <varlist>
  * ...
  * .endfor
  *
- * The trick is to look for the matching end inside for for loop
- * To do that, we count the current nesting level of the for loops.
- * and the .endfor statements, accumulating all the statements between
- * the initial .for loop and the matching .endfor; 
- * then we evaluate the for loop for each variable in the varlist.
+ * The trick is to look for the matching .end inside .for loops.
+ * To do that, we keep track of the nesting level of .for loops
+ * and matching .endfor statements, accumulating all statements between
+ * the initial .for loop and the matching .endfor,
+ * then we evaluate the .for loop for each variable in the varlist.
  */
 
-static int  	  forLevel = 0;  	/* Nesting level	*/
-static char	 *forVar;		/* Iteration variable	*/
-static Buffer	  forBuf;		/* Commands in loop	*/
-static Lst	  forLst;		/* List of items	*/
+/* State of a for loop.  */
+struct For_ {
+	char		*text;		/* Unexpanded text		*/
+	LIST		vars;		/* List of variables		*/
+	LstNode		var;		/* Current var			*/
+	int		nvars;		/* Total number of vars		*/
+	LIST		lst;		/* List of items		*/
+	size_t		guess;		/* Estimated expansion size	*/
+	BUFFER		buf;		/* Accumulating text		*/
+	unsigned long	lineno; 	/* Line number at start of loop */
+	unsigned long	level;		/* Nesting level		*/
+	bool		freeold;
+};
 
-/*
- * State of a for loop.
- */
-typedef struct _For {
-    Buffer	  buf;			/* Unexpanded buffer	*/
-    char*	  var;			/* Index name		*/
-    Lst  	  lst;			/* List of variables	*/
-} For;
+/* ForExec(value, handle);
+ *	Expands next variable in loop sequence described by handle to value. */
+static void ForExec(void *, void *);
 
-static int ForExec	__P((ClientData, ClientData));
+/* n = build_words_list(lst, s);
+ *	Cuts string into words, pushes words into list, in reverse order,
+ *	because Parse_FromString works as a stack.
+ *	Returns the number of words.  */
+static unsigned long build_words_list(Lst, const char *);
 
-
-
-
-/*-
- *-----------------------------------------------------------------------
- * For_Eval --
- *	Evaluate the for loop in the passed line. The line
- *	looks like this:
- *	    .for <variable> in <varlist>
- *
- * Results:
- *	TRUE: We found a for loop, or we are inside a for loop
- *	FALSE: We did not find a for loop, or we found the end of the for
- *	       for loop.
- *
- * Side Effects:
- *	None.
- *
- *-----------------------------------------------------------------------
- */
-int
-For_Eval (line)
-    char    	    *line;    /* Line to parse */
+static unsigned long
+build_words_list(Lst lst, const char *s)
 {
-    char	    *ptr = line, *sub, *wrd;
-    int	    	    level;  	/* Level at which to report errors. */
+	const char *end, *wrd;
+	unsigned long n;
 
-    level = PARSE_FATAL;
+	n = 0;
+	end = s;
 
-
-    if (forLevel == 0) {
-	Buffer	    buf;
-	int	    varlen;
-
-	for (ptr++; *ptr && isspace((unsigned char) *ptr); ptr++)
-	    continue;
-	/*
-	 * If we are not in a for loop quickly determine if the statement is
-	 * a for.
-	 */
-	if (ptr[0] != 'f' || ptr[1] != 'o' || ptr[2] != 'r' ||
-	    !isspace((unsigned char) ptr[3]))
-	    return FALSE;
-	ptr += 3;
-	
-	/*
-	 * we found a for loop, and now we are going to parse it.
-	 */
-	while (*ptr && isspace((unsigned char) *ptr))
-	    ptr++;
-	
-	/*
-	 * Grab the variable
-	 */
-	buf = Buf_Init(0);
-	for (wrd = ptr; *ptr && !isspace((unsigned char) *ptr); ptr++) 
-	    continue;
-	Buf_AddBytes(buf, ptr - wrd, (Byte *) wrd);
-
-	forVar = (char *) Buf_GetAll(buf, &varlen);
-	if (varlen == 0) {
-	    Parse_Error (level, "missing variable in for");
-	    return 0;
+	while ((wrd = iterate_words(&end)) != NULL) {
+		Lst_AtFront(lst, escape_dupi(wrd, end, "\"'"));
+		n++;
 	}
-	Buf_Destroy(buf, FALSE);
+	return n;
+}
 
-	while (*ptr && isspace((unsigned char) *ptr))
-	    ptr++;
+For *
+For_Eval(const char *line)
+{
+	const char	*ptr = line;
+	const char	*wrd;
+	char	*sub;
+	const char	*endVar;
+	For 	*arg;
+	unsigned long n;
 
-	/*
-	 * Grab the `in'
-	 */
-	if (ptr[0] != 'i' || ptr[1] != 'n' ||
-	    !isspace((unsigned char) ptr[2])) {
-	    Parse_Error (level, "missing `in' in for");
-	    printf("%s\n", ptr);
-	    return 0;
+	while (ISSPACE(*ptr))
+		ptr++;
+
+	/* Parse loop.  */
+
+	arg = emalloc(sizeof(*arg));
+	arg->nvars = 0;
+	Lst_Init(&arg->vars);
+
+	for (;;) {
+		/* Grab the variables.  */
+		for (wrd = ptr; *ptr && !ISSPACE(*ptr); ptr++)
+			continue;
+		if (ptr - wrd == 0) {
+			Parse_Error(PARSE_FATAL, "Syntax error in for");
+			return 0;
+		}
+		endVar = ptr++;
+		while (ISSPACE(*ptr))
+			ptr++;
+		/* End of variable list ? */
+		if (endVar - wrd == 2 && wrd[0] == 'i' && wrd[1] == 'n')
+			break;
+		Lst_AtEnd(&arg->vars, Var_NewLoopVar(wrd, endVar));
+		arg->nvars++;
 	}
-	ptr += 3;
-
-	while (*ptr && isspace((unsigned char) *ptr))
-	    ptr++;
-
-	/*
-	 * Make a list with the remaining words
-	 */
-	forLst = Lst_Init(FALSE);
-	buf = Buf_Init(0);
-	sub = Var_Subst(NULL, ptr, VAR_GLOBAL, FALSE); 
-
-#define ADDWORD() \
-	Buf_AddBytes(buf, ptr - wrd, (Byte *) wrd), \
-	Buf_AddByte(buf, (Byte) '\0'), \
-	Lst_AtEnd(forLst, (ClientData) Buf_GetAll(buf, &varlen)), \
-	Buf_Destroy(buf, FALSE)
-
-	for (ptr = sub; *ptr && isspace((unsigned char) *ptr); ptr++)
-	    continue;
-
-	for (wrd = ptr; *ptr; ptr++)
-	    if (isspace((unsigned char) *ptr)) {
-		ADDWORD();
-		buf = Buf_Init(0);
-		while (*ptr && isspace((unsigned char) *ptr))
-		    ptr++;
-		wrd = ptr--;
-	    }
-	if (DEBUG(FOR))
-	    (void) fprintf(stderr, "For: Iterator %s List %s\n", forVar, sub);
-	if (ptr - wrd > 0) 
-	    ADDWORD();
-	else
-	    Buf_Destroy(buf, TRUE);
-	free((Address) sub);
-	    
-	forBuf = Buf_Init(0);
-	forLevel++;
-	return 1;
-    }
-    else if (*ptr == '.') {
-
-	for (ptr++; *ptr && isspace((unsigned char) *ptr); ptr++)
-	    continue;
-
-	if (strncmp(ptr, "endfor", 6) == 0 &&
-	    (isspace((unsigned char) ptr[6]) || !ptr[6])) {
-	    if (DEBUG(FOR))
-		(void) fprintf(stderr, "For: end for %d\n", forLevel);
-	    if (--forLevel < 0) {
-		Parse_Error (level, "for-less endfor");
+	if (arg->nvars == 0) {
+		Parse_Error(PARSE_FATAL, "Missing variable in for");
 		return 0;
-	    }
 	}
-	else if (strncmp(ptr, "for", 3) == 0 &&
-		 isspace((unsigned char) ptr[3])) {
-	    forLevel++;
-	    if (DEBUG(FOR))
-		(void) fprintf(stderr, "For: new loop %d\n", forLevel);
-	}
-    }
 
-    if (forLevel != 0) {
-	Buf_AddBytes(forBuf, strlen(line), (Byte *) line);
-	Buf_AddByte(forBuf, (Byte) '\n');
-	return 1;
-    }
-    else {
-	return 0;
-    }
+	/* Make a list with the remaining words.  */
+	sub = Var_Subst(ptr, NULL, false);
+	if (DEBUG(FOR)) {
+		LstNode ln;
+		(void)fprintf(stderr, "For: Iterator ");
+		for (ln = Lst_First(&arg->vars); ln != NULL; ln = Lst_Adv(ln))
+			(void)fprintf(stderr, "%s ",
+			    Var_LoopVarName(Lst_Datum(ln)));
+		(void)fprintf(stderr, "List %s\n", sub);
+	}
+
+	Lst_Init(&arg->lst);
+	n = build_words_list(&arg->lst, sub);
+	free(sub);
+	if (arg->nvars != 1 && n % arg->nvars != 0) {
+		LstNode ln;
+
+		Parse_Error(PARSE_FATAL, "Wrong number of items in for loop");
+		(void)fprintf(stderr, "%lu items for %d variables:", 
+		    n, arg->nvars);
+		for (ln = Lst_First(&arg->lst); ln != NULL; ln = Lst_Adv(ln)) {
+			char *p = Lst_Datum(ln);
+
+			(void)fprintf(stderr, " %s", p);
+		}
+		(void)fprintf(stderr, "\n");
+		return 0;
+	}
+	arg->lineno = Parse_Getlineno();
+	arg->level = 1;
+	Buf_Init(&arg->buf, 0);
+
+	return arg;
 }
 
-/*-
- *-----------------------------------------------------------------------
- * ForExec --
- *	Expand the for loop for this index and push it in the Makefile
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	None.
- *
- *-----------------------------------------------------------------------
- */
-static int
-ForExec(namep, argp)
-    ClientData namep;
-    ClientData argp;
+
+bool
+For_Accumulate(For *arg, const char *line)
 {
-    char *name = (char *) namep;
-    For *arg = (For *) argp;
-    int len;
-    Var_Set(arg->var, name, VAR_GLOBAL);
-    if (DEBUG(FOR))
-	(void) fprintf(stderr, "--- %s = %s\n", arg->var, name);
-    Parse_FromString(Var_Subst(arg->var, (char *) Buf_GetAll(arg->buf, &len), 
-			       VAR_GLOBAL, FALSE));
-    Var_Delete(arg->var, VAR_GLOBAL);
+	const char *ptr = line;
 
-    return 0;
+	assert(arg->level > 0);
+
+	if (*ptr == '.') {
+
+		for (ptr++; ISSPACE(*ptr); ptr++)
+			continue;
+
+		if (strncmp(ptr, "endfor", 6) == 0 &&
+		    (ISSPACE(ptr[6]) || !ptr[6])) {
+			if (DEBUG(FOR))
+				(void)fprintf(stderr, "For: end for %lu\n",
+				    arg->level);
+			/* If matching endfor, don't add line to buffer.  */
+			if (--arg->level == 0)
+				return false;
+		}
+		else if (strncmp(ptr, "for", 3) == 0 &&
+		     ISSPACE(ptr[3])) {
+			arg->level++;
+			if (DEBUG(FOR))
+				(void)fprintf(stderr, "For: new loop %lu\n",
+				    arg->level);
+		}
+	}
+	Buf_AddString(&arg->buf, line);
+	Buf_AddChar(&arg->buf, '\n');
+	return true;
 }
 
-
-/*-
- *-----------------------------------------------------------------------
- * For_Run --
- *	Run the for loop, immitating the actions of an include file
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	None.
- *
- *-----------------------------------------------------------------------
- */
+
+#define GUESS_EXPANSION 32
+static void
+ForExec(void *valuep, void *argp)
+{
+	char *value = valuep;
+	For *arg = argp;
+	BUFFER buf;
+
+	/* Parse_FromString pushes stuff back, so we need to go over vars in
+	   reverse.  */
+	if (arg->var == NULL) {
+		arg->var = Lst_Last(&arg->vars);
+		arg->text = Buf_Retrieve(&arg->buf);
+		arg->freeold = false;
+	}
+
+	if (DEBUG(FOR))
+		(void)fprintf(stderr, "--- %s = %s\n",
+		    Var_LoopVarName(Lst_Datum(arg->var)), value);
+	Buf_Init(&buf, arg->guess);
+	Var_SubstVar(&buf, arg->text, Lst_Datum(arg->var), value);
+	if (arg->freeold)
+		free(arg->text);
+	arg->text = Buf_Retrieve(&buf);
+	arg->freeold = true;
+	arg->var = Lst_Rev(arg->var);
+	if (arg->var == NULL)
+		Parse_FromString(arg->text, arg->lineno);
+}
+
+
 void
-For_Run()
+For_Run(For *arg)
 {
-    For arg;
+	arg->text = Buf_Retrieve(&arg->buf);
+	arg->guess = Buf_Size(&arg->buf) + GUESS_EXPANSION;
 
-    if (forVar == NULL || forBuf == NULL || forLst == NULL)
-	return;
-    arg.var = forVar;
-    arg.buf = forBuf;
-    arg.lst = forLst;
-    forVar = NULL;
-    forBuf = NULL;
-    forLst = NULL;
-
-    Lst_ForEach(arg.lst, ForExec, (ClientData) &arg);
-
-    free((Address)arg.var);
-    Lst_Destroy(arg.lst, (void (*) __P((ClientData))) free);
-    Buf_Destroy(arg.buf, TRUE);
+	arg->var = NULL;
+	Lst_ForEach(&arg->lst, ForExec, arg);
+	Buf_Destroy(&arg->buf);
+	Lst_Destroy(&arg->vars, (SimpleProc)Var_DeleteLoopVar);
+	Lst_Destroy(&arg->lst, (SimpleProc)free);
+	free(arg);
 }

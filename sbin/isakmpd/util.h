@@ -1,7 +1,9 @@
-/*	$Id: util.h,v 1.6 1998/11/12 13:01:46 niklas Exp $	*/
+/* $OpenBSD: util.h,v 1.31 2014/01/22 22:17:16 deraadt Exp $	 */
+/* $EOM: util.h,v 1.10 2000/10/24 13:33:39 niklas Exp $	 */
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 2001, 2004 Håkan Olsson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -37,17 +34,33 @@
 #define _UTIL_H_
 
 #include <sys/types.h>
+#include <sys/time.h>
 
-#define ROUNDUP_32(x) (((x) + 3) & ~4)
+extern int      allow_name_lookups;
+
+extern int      sysdep_cleartext(int, int);
 
 struct message;
+struct sockaddr;
 
-extern u_int16_t decode_16 (u_int8_t *);
-extern u_int32_t decode_32 (u_int8_t *);
-extern void encode_16 (u_int8_t *, u_int16_t);
-extern void encode_32 (u_int8_t *, u_int32_t);
-extern u_int8_t *getrandom (u_int8_t *, size_t);
-extern int hex2raw (char *, u_int8_t *, size_t);
-extern int zero_test (const u_int8_t *, size_t);
+extern int      check_file_secrecy_fd(int, char *, size_t *);
+extern u_int16_t decode_16(u_int8_t *);
+extern u_int32_t decode_32(u_int8_t *);
+extern void     encode_16(u_int8_t *, u_int16_t);
+extern void     encode_32(u_int8_t *, u_int32_t);
+extern int      hex2raw(char *, u_int8_t *, size_t);
+extern char 	*raw2hex(u_int8_t *, size_t);
+extern int      sockaddr2text(struct sockaddr *, char **, int);
+extern u_int8_t *sockaddr_addrdata(struct sockaddr *);
+extern int      sockaddr_addrlen(struct sockaddr *);
+extern in_port_t sockaddr_port(struct sockaddr *);
+extern void	sockaddr_set_port(struct sockaddr *, in_port_t);
+extern in_port_t text2port(char *);
+extern int      text2sockaddr(char *, char *, struct sockaddr **,
+		    sa_family_t, int);
+extern void     util_ntoa(char **, int, u_int8_t *);
+extern int      zero_test(const u_int8_t *, size_t);
+extern long	get_timeout(struct timeval *);
+extern int	expand_string(char *, size_t, const char *, const char *);
 
-#endif /* _UTIL_H_ */
+#endif				/* _UTIL_H_ */

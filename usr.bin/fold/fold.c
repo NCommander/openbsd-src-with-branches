@@ -1,3 +1,4 @@
+/*	$OpenBSD: fold.c,v 1.14 2015/02/06 08:53:01 tedu Exp $	*/
 /*	$NetBSD: fold.c,v 1.6 1995/09/01 01:42:44 jtc Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,43 +33,34 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1990, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)fold.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: fold.c,v 1.6 1995/09/01 01:42:44 jtc Exp $";
-#endif /* not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <err.h>
+#include <limits.h>
 
 #define	DEFLINEWIDTH	80
 
-static void fold ();
-static int new_column_position ();
+static void fold(unsigned int);
+static unsigned int new_column_position(unsigned int, int);
+static __dead void usage(void);
 int count_bytes = 0;
 int split_words = 0;
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	register int ch;
-	int width;
-	char *p;
+	int ch, lastch, newarg, prevoptind;
+	unsigned int width;
+	const char *errstr;
 
-	width = -1;
-	while ((ch = getopt(argc, argv, "0123456789bsw:")) != -1)
+	width = 0;
+	lastch = '\0';
+	prevoptind = 1;
+	newarg = 1;
+	while ((ch = getopt(argc, argv, "0123456789bsw:")) != -1) {
 		switch (ch) {
 		case 'b':
 			count_bytes = 1;
@@ -81,38 +69,41 @@ main(argc, argv)
 			split_words = 1;
 			break;
 		case 'w':
-			if ((width = atoi(optarg)) <= 0) {
-				(void)fprintf(stderr,
-				    "fold: illegal width value.\n");
-				exit(1);
-			}
+			width = strtonum(optarg, 1, UINT_MAX, &errstr);
+			if (errstr != NULL)
+				errx(1, "illegal width value, %s: %s", errstr, 
+					optarg);
 			break;
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
-			if (width == -1) {
-				p = argv[optind - 1];
-				if (p[0] == '-' && p[1] == ch && !p[2])
-					width = atoi(++p);
-				else
-					width = atoi(argv[optind] + 1);
-			}
+			if (newarg)
+				width = 0;
+			else if (!isdigit(lastch))
+				usage();
+			if (width > UINT_MAX / 10 - 1)
+				errx(1, "illegal width value, too large");
+			width = (width * 10) + (ch - '0');
+			if (width < 1)
+				errx(1, "illegal width value, too small");
 			break;
 		default:
-			(void)fprintf(stderr,
-			    "usage: fold [-bs] [-w width] [file ...]\n");
-			exit(1);
+			usage();
 		}
+		lastch = ch;
+		newarg = optind != prevoptind;
+		prevoptind = optind;
+	}
 	argv += optind;
 	argc -= optind;
 
-	if (width == -1)
+	if (width == 0)
 		width = DEFLINEWIDTH;
 
 	if (!*argv)
 		fold(width);
 	else for (; *argv; ++argv)
 		if (!freopen(*argv, "r", stdin)) {
-			err (1, "%s", *argv);
+			err(1, "%s", *argv);
 			/* NOTREACHED */
 		} else
 			fold(width);
@@ -131,76 +122,78 @@ main(argc, argv)
  * returns embedded in the input stream.
  */
 static void
-fold(width)
-	register int width;
+fold(unsigned int width)
 {
 	static char *buf = NULL;
 	static int   buf_max = 0;
-	register int ch, col;
-	register int indx;
+	int ch;
+	unsigned int col, indx;
 
 	col = indx = 0;
 	while ((ch = getchar()) != EOF) {
 		if (ch == '\n') {
 			if (indx != 0)
-				fwrite (buf, 1, indx, stdout);
+				fwrite(buf, 1, indx, stdout);
 			putchar('\n');
 			col = indx = 0;
 			continue;
 		}
 
-		col = new_column_position (col, ch);
+		col = new_column_position(col, ch);
 		if (col > width) {
-			int i, last_space;
+			unsigned int i, last_space;
 
 			if (split_words) {
 				for (i = 0, last_space = -1; i < indx; i++)
-					if(buf[i] == ' ') last_space = i;
+					if(buf[i] == ' ')
+						last_space = i;
 			}
 
 			if (split_words && last_space != -1) {
 				last_space++;
 
-				fwrite (buf, 1, last_space, stdout);
-				memmove (buf, buf+last_space, indx-last_space);
+				fwrite(buf, 1, last_space, stdout);
+				memmove(buf, buf+last_space, indx-last_space);
 
 				indx -= last_space;
 				col = 0;
 				for (i = 0; i < indx; i++) {
-					col = new_column_position (col, ch);
+					col = new_column_position(col, buf[i]);
 				}
 			} else {
-				fwrite (buf, 1, indx, stdout);
+				fwrite(buf, 1, indx, stdout);
 				col = indx = 0;
 			}
 			putchar('\n');
 
 			/* calculate the column position for the next line. */
-			col = new_column_position (col, ch);
+			col = new_column_position(col, ch);
 		}
 
 		if (indx + 1 > buf_max) {
+			int newmax = buf_max + 2048;
+			char *newbuf;
+
 			/* Allocate buffer in LINE_MAX increments */
-			buf_max += 2048;
-			if((buf = realloc (buf, buf_max)) == NULL) {
-				err (1, NULL);
+			if ((newbuf = realloc(buf, newmax)) == NULL) {
+				err(1, NULL);
 				/* NOTREACHED */
 			}
+			buf = newbuf;
+			buf_max = newmax;
 		}
 		buf[indx++] = ch;
 	}
 
 	if (indx != 0)
-		fwrite (buf, 1, indx, stdout);
+		fwrite(buf, 1, indx, stdout);
 }
 
 /*
  * calculate the column position 
  */
-static int
-new_column_position (col, ch)
-	int col;
-	int ch;
+static unsigned int
+new_column_position(unsigned int col, int ch)
 {
 	if (!count_bytes) {
 		switch (ch) {
@@ -223,4 +216,11 @@ new_column_position (col, ch)
 	}
 
 	return col;
+}
+
+static __dead void
+usage(void)
+{
+	(void)fprintf(stderr, "usage: fold [-bs] [-w width] [file ...]\n");
+	exit(1);
 }

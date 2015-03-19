@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: siotty.c,v 1.15 2010/09/29 13:39:03 miod Exp $ */
 /* $NetBSD: siotty.c,v 1.9 2002/03/17 19:40:43 atatat Exp $ */
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -43,7 +36,6 @@
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/fcntl.h>
@@ -65,7 +57,7 @@ static const u_int8_t ch0_regs[6] = {
 	WR5_TX8BIT | WR5_TXENBL | WR5_DTR | WR5_RTS, /* Tx */
 };
 
-static struct speedtab siospeedtab[] = {
+static const struct speedtab siospeedtab[] = {
 	{ 2400,	WR4_BAUD24, },
 	{ 4800,	WR4_BAUD48, },
 	{ 9600,	WR4_BAUD96, },
@@ -93,14 +85,12 @@ const struct cfattach siotty_ca = {
 	sizeof(struct siotty_softc), siotty_match, siotty_attach
 };
 
-const struct cfdriver siotty_cd = {
+struct cfdriver siotty_cd = {
         NULL, "siotty", DV_TTY
 };
 
 int 
-siotty_match(parent, cf, aux)
-	struct device *parent;
-	void *cf, *aux;
+siotty_match(struct device *parent, void *cf, void *aux)
 {
 	struct sio_attach_args *args = aux;
 
@@ -110,9 +100,7 @@ siotty_match(parent, cf, aux)
 }
 
 void 
-siotty_attach(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
+siotty_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct sio_softc *scp = (void *)parent;
 	struct siotty_softc *sc = (void *)self;
@@ -144,8 +132,7 @@ siotty_attach(parent, self, aux)
 /*--------------------  low level routine --------------------*/
 
 void
-siottyintr(chan)
-	int chan;
+siottyintr(int chan)
 {
 	struct siotty_softc *sc;
 	struct sioreg *sio;
@@ -178,9 +165,6 @@ siottyintr(chan)
 				return;
 			}
 #endif
-/*
-			(*tp->t_linesw->l_rint)(code, tp);
-*/
 			(*linesw[tp->t_line].l_rint)(code, tp);
 		} while ((rr = getsiocsr(sio)) & RR_RXRDY);
 	}
@@ -188,17 +172,13 @@ siottyintr(chan)
 		sio->sio_cmd = WR0_RSTPEND;
 		if (tp != NULL) {
 			tp->t_state &= ~(TS_BUSY|TS_FLUSH);
-/*
-			(*tp->t_linesw->l_start)(tp);
-*/
 			(*linesw[tp->t_line].l_start)(tp);
 		}
 	}
 }
 
 void
-siostart(tp)
-	struct tty *tp;
+siostart(struct tty *tp)
 {
 	struct siotty_softc *sc = siotty_cd.cd_devs[minor(tp->t_dev)];
 	int s, c;
@@ -206,13 +186,7 @@ siostart(tp)
 	s = spltty();
 	if (tp->t_state & (TS_BUSY|TS_TIMEOUT|TS_TTSTOP))
 		goto out;
-	if (tp->t_outq.c_cc <= tp->t_lowat) {
-		if (tp->t_state & TS_ASLEEP) {
-			tp->t_state &= ~TS_ASLEEP;
-			wakeup((caddr_t)&tp->t_outq);
-		}
-		selwakeup(&tp->t_wsel);
-	}
+	ttwakeupwr(tp);
 	if (tp->t_outq.c_cc == 0)
 		goto out;
 
@@ -227,9 +201,7 @@ out:
 }
 
 int
-siostop(tp, flag)
-	struct tty *tp;
-	int flag;
+siostop(struct tty *tp, int flag)
 {
 	int s;
 
@@ -245,9 +217,7 @@ siostop(tp, flag)
 }
 
 int
-sioparam(tp, t)
-	struct tty *tp;
-	struct termios *t;
+sioparam(struct tty *tp, struct termios *t)
 {
 	struct siotty_softc *sc = siotty_cd.cd_devs[minor(tp->t_dev)];
 	int wr4, s;
@@ -305,9 +275,7 @@ sioparam(tp, t)
 }
 
 int
-siomctl(sc, control, op)
-	struct siotty_softc *sc;
-	int control, op;
+siomctl(struct siotty_softc *sc, int control, int op)
 {
 	int val, s, wr5, rr;
 
@@ -323,7 +291,7 @@ siomctl(sc, control, op)
 	switch (op) {
 	case DMSET:
 		wr5 &= ~(WR5_BREAK|WR5_DTR|WR5_RTS);
-		/* FALLTHRU */
+		/* FALLTHROUGH */
 	case DMBIS:
 		wr5 |= val;
 		break;
@@ -346,7 +314,7 @@ siomctl(sc, control, op)
 	sc->sc_wr[WR5] = wr5;
 	setsioreg(sc->sc_ctl, WR5, wr5);
 	val = 0;
-  done:
+done:
 	splx(s);
 	return val;
 }
@@ -354,10 +322,7 @@ siomctl(sc, control, op)
 /*--------------------  cdevsw[] interface --------------------*/
 
 int
-sioopen(dev, flag, mode, p)
-	dev_t dev;
-	int flag, mode;
-	struct proc *p;
+sioopen(dev_t dev, int flag, int mode, struct proc *p)
 {
 	struct siotty_softc *sc;
 	struct tty *tp;
@@ -366,10 +331,10 @@ sioopen(dev, flag, mode, p)
 	if ((sc = siotty_cd.cd_devs[minor(dev)]) == NULL)
 		return ENXIO;
 	if ((tp = sc->sc_tty) == NULL) {
-		tp = sc->sc_tty = ttymalloc();
+		tp = sc->sc_tty = ttymalloc(0);
 	}		
 	else if ((tp->t_state & TS_ISOPEN) && (tp->t_state & TS_XCLUDE)
-	    && p->p_ucred->cr_uid != 0)
+	    && suser(p, 0) != 0)
 		return EBUSY;
 
 	tp->t_oproc = siostart;
@@ -401,29 +366,20 @@ sioopen(dev, flag, mode, p)
 #endif
 	}
 
-	error = ttyopen(dev, tp);
+	error = ttyopen(dev, tp, p);
 	if (error > 0)
 		return error;
-/*
-	return (*tp->t_linesw->l_open)(dev, tp);
-*/
-	return (*linesw[tp->t_line].l_open)(dev, tp);
+	return (*linesw[tp->t_line].l_open)(dev, tp, p);
 }
  
 int
-sioclose(dev, flag, mode, p)
-	dev_t dev;
-	int flag, mode;
-	struct proc *p;
+sioclose(dev_t dev, int flag, int mode, struct proc *p)
 {
 	struct siotty_softc *sc = siotty_cd.cd_devs[minor(dev)];
 	struct tty *tp = sc->sc_tty;
 	int s;
 
-/*
-	(*tp->t_linesw->l_close)(tp, flag);
-*/
-	(*linesw[tp->t_line].l_close)(tp, flag);
+	(*linesw[tp->t_line].l_close)(tp, flag, p);
 
 	s = spltty();
 	siomctl(sc, TIOCM_BREAK, DMBIC);
@@ -440,32 +396,20 @@ sioclose(dev, flag, mode, p)
 }
  
 int
-sioread(dev, uio, flag)
-	dev_t dev;
-	struct uio *uio;
-	int flag;
+sioread(dev_t dev, struct uio *uio, int flag)
 {
 	struct siotty_softc *sc = siotty_cd.cd_devs[minor(dev)];
 	struct tty *tp = sc->sc_tty;
  
-/*
-	return (*tp->t_linesw->l_read)(tp, uio, flag);
-*/
 	return (*linesw[tp->t_line].l_read)(tp, uio, flag);
 }
  
 int
-siowrite(dev, uio, flag)
-	dev_t dev;
-	struct uio *uio;
-	int flag;
+siowrite(dev_t dev, struct uio *uio, int flag)
 {
 	struct siotty_softc *sc = siotty_cd.cd_devs[minor(dev)];
 	struct tty *tp = sc->sc_tty;
  
-/*
-	return (*tp->t_linesw->l_write)(tp, uio, flag);
-*/
 	return (*linesw[tp->t_line].l_write)(tp, uio, flag);
 }
 
@@ -479,29 +423,18 @@ sioselect(dev, events, p)
 	struct siotty_softc *sc = siotty_cd.cd_devs[minor(dev)];
 	struct tty *tp = sc->sc_tty;
  
-/*
-	return ((*tp->t_linesw->l_poll)(tp, events, p));
-*/
 	return ((*linesw[tp->t_line].l_select)(tp, events, p));
 
 }
 #endif
 
 int
-sioioctl(dev, cmd, data, flag, p)
-	dev_t dev;
-	u_long cmd;
-	caddr_t data;
-	int flag;
-	struct proc *p;
+sioioctl(dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 {
 	struct siotty_softc *sc = siotty_cd.cd_devs[minor(dev)];
 	struct tty *tp = sc->sc_tty;
 	int error;
 
-/*
-	error = (*tp->t_linesw->l_ioctl)(tp, cmd, data, flag, p);
-*/
 	error = (*linesw[tp->t_line].l_ioctl)(tp, cmd, data, flag, p);
 	if (error >= 0)
 		return error;
@@ -537,15 +470,15 @@ sioioctl(dev, cmd, data, flag, p)
 		siomctl(sc, *(int *)data, DMBIC);
 		break;
 	case TIOCSFLAGS: /* Instruct how serial port behaves */
+		error = suser(p, 0);
+		if (error != 0)
+			return EPERM;
 		sc->sc_flags = *(int *)data;
 		break;
 	case TIOCGFLAGS: /* Return current serial port state */
 		*(int *)data = sc->sc_flags;
 		break;
 	default:
-/*
-		return EPASSTHROUGH;
-*/
 		return ENOTTY;
 	}
 	return 0;
@@ -553,8 +486,7 @@ sioioctl(dev, cmd, data, flag, p)
 
 /* ARSGUSED */
 struct tty *
-siotty(dev)
-	dev_t dev;
+siotty(dev_t dev)
 {
 	struct siotty_softc *sc = siotty_cd.cd_devs[minor(dev)];
  
@@ -564,9 +496,7 @@ siotty(dev)
 /*--------------------  miscellaneous routines --------------------*/
 
 /* EXPORT */ void
-setsioreg(sio, regno, val)
-	struct sioreg *sio;
-	int regno, val;
+setsioreg(struct sioreg *sio, int regno, int val)
 {
 	if (regno != 0)
 		sio->sio_cmd = regno;	/* DELAY(); */
@@ -574,8 +504,7 @@ setsioreg(sio, regno, val)
 }
 
 /* EXPORT */ int
-getsiocsr(sio)
-	struct sioreg *sio;
+getsiocsr(struct sioreg *sio)
 {
 	int val;
 
@@ -599,12 +528,11 @@ struct consdev syscons = {
 	nullcnpollc,
 	NULL,
 	NODEV,
-	CN_REMOTE,
+	CN_HIGHPRI,
 };
 
 /* EXPORT */ void
-syscnattach(channel)
-	int channel;
+syscnattach(int channel)
 {
 /*
  * Channel A is immediately initialized with 9600N1 right after cold
@@ -613,7 +541,6 @@ syscnattach(channel)
 	struct sioreg *sio;
 	sio = (struct sioreg *)0x51000000 + channel;
 
-/*	syscons.cn_dev = makedev(7, channel); */
 	syscons.cn_dev = makedev(12, channel);
 	cn_tab = &syscons;
 
@@ -630,8 +557,7 @@ syscnattach(channel)
 }
 
 /* EXPORT */ int
-syscngetc(dev)
-	dev_t dev;
+syscngetc(dev_t dev)
 {
 	struct sioreg *sio;
 	int s, c;
@@ -647,9 +573,7 @@ syscngetc(dev)
 }
 
 /* EXPORT */ void
-syscnputc(dev, c)
-	dev_t dev;
-	int c;
+syscnputc(dev_t dev, int c)
 {
 	struct sioreg *sio;
 	int s;

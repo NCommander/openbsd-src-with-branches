@@ -127,7 +127,7 @@ compile_pattern(pattern, search_type, comp_pattern)
 	char *cvt_pattern;
 	int result;
 
-	if (caseless != OPT_ONPLUS)
+	if (caseless != OPT_ONPLUS && (caseless != OPT_ON || !less_is_more))
 		cvt_pattern = pattern;
 	else
 	{
@@ -306,6 +306,11 @@ match_pattern(pattern, tpattern, line, line_len, sp, ep, notbol, search_type)
 	{
 		regmatch_t rm;
 		int flags = (notbol) ? REG_NOTBOL : 0;
+#ifdef REG_STARTEND
+		flags |= REG_STARTEND;
+		rm.rm_so = 0;
+		rm.rm_eo = line_len;
+#endif
 		matched = !regexec(spattern, line, 1, &rm, flags);
 		if (matched)
 		{

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: read.2,v 1.34 2014/05/29 06:28:51 guenther Exp $
 .\"	$NetBSD: read.2,v 1.6 1995/02/27 12:35:47 cgd Exp $
 .\"
 .\" Copyright (c) 1980, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,62 +30,76 @@
 .\"
 .\"     @(#)read.2	8.4 (Berkeley) 2/26/94
 .\"
-.Dd February 26, 1994
+.Dd $Mdocdate: May 29 2014 $
 .Dt READ 2
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm read ,
-.Nm readv
+.Nm readv ,
+.Nm pread ,
+.Nm preadv
 .Nd read input
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <sys/uio.h>
-.Fd #include <unistd.h>
+.In unistd.h
 .Ft ssize_t
 .Fn read "int d" "void *buf" "size_t nbytes"
 .Ft ssize_t
+.Fn pread "int d" "void *buf" "size_t nbytes" "off_t offset"
+.Pp
+.In sys/uio.h
+.Ft ssize_t
 .Fn readv "int d" "const struct iovec *iov" "int iovcnt"
+.In sys/types.h
+.In sys/uio.h
+.Ft ssize_t
+.Fn preadv "int d" "const struct iovec *iov" "int iovcnt" "off_t offset"
 .Sh DESCRIPTION
-.Fn Read
+.Fn read
 attempts to read
 .Fa nbytes
 of data from the object referenced by the descriptor
 .Fa d
 into the buffer pointed to by
 .Fa buf .
-.Fn Readv
-performs the same action, but scatters the input data
-into the 
+.Fn readv
+performs the same action, but scatters the input data into the
 .Fa iovcnt
 buffers specified by the members of the
 .Fa iov
-array: iov[0], iov[1], ..., iov[iovcnt\|\-\|1].
+array: iov[0], iov[1], ..., iov[iovcnt-1].
+.Fn pread
+and
+.Fn preadv
+perform the same functions, but read from the specified position
+.Fa offset
+in the file without modifying the file pointer.
 .Pp
-For 
-.Fn readv ,
-the 
+For
+.Fn readv
+and
+.Fn preadv ,
+the
 .Fa iovec
 structure is defined as:
-.Pp
-.Bd -literal -offset indent -compact
+.Bd -literal -offset indent
 struct iovec {
 	void *iov_base;
 	size_t iov_len;
 };
 .Ed
 .Pp
-Each 
+Each
 .Fa iovec
 entry specifies the base address and length of an area
-in memory where data should be placed. 
-.Fn Readv
-will always fill an area completely before proceeding
-to the next.
+in memory where data should be placed.
+.Fn readv
+and
+.Fn preadv
+will always fill an area completely before proceeding to the next.
 .Pp
 On objects capable of seeking, the
 .Fn read
-starts at a position
-given by the pointer associated with
+starts at a position given by the pointer associated with
 .Fa d
 (see
 .Xr lseek 2 ) .
@@ -97,73 +108,121 @@ Upon return from
 the pointer is incremented by the number of bytes actually read.
 .Pp
 Objects that are not capable of seeking always read from the current
-position.  The value of the pointer associated with such an
-object is undefined.
+position.
+The value of the pointer associated with such an object is undefined.
 .Pp
 Upon successful completion,
-.Fn read
+.Fn read ,
+.Fn readv ,
+.Fn pread ,
 and
-.Fn readv
+.Fn preadv
 return the number of bytes actually read and placed in the buffer.
 The system guarantees to read the number of bytes requested if
 the descriptor references a normal file that has that many bytes left
 before the end-of-file, but in no other case.
 .Pp
+Note that
+.Fn readv
+and
+.Fn preadv
+will fail if the value of
+.Fa iovcnt
+exceeds the constant
+.Dv IOV_MAX .
 .Sh RETURN VALUES
 If successful, the
-number of bytes actually read is returned. Upon reading end-of-file,
-zero is returned.
-Otherwise, a -1 is returned and the global variable
+number of bytes actually read is returned.
+Upon reading end-of-file, zero is returned.
+Otherwise, a \-1 is returned and the global variable
 .Va errno
 is set to indicate the error.
 .Sh ERRORS
-.Fn Read
+.Fn read ,
+.Fn readv ,
+.Fn pread ,
 and
-.Fn readv
+.Fn preadv
 will succeed unless:
 .Bl -tag -width Er
 .It Bq Er EBADF
-.Fa D
+.Fa d
 is not a valid file or socket descriptor open for reading.
 .It Bq Er EFAULT
-.Fa Buf
-points outside the allocated address space.
+Part of
+.Fa buf
+points outside the process's allocated address space.
 .It Bq Er EIO
 An I/O error occurred while reading from the file system.
 .It Bq Er EINTR
-A read from a slow device was interrupted before
-any data arrived by the delivery of a signal.
-.It Bq Er EINVAL
-The pointer associated with
-.Fa d
-was negative.
+A read from a slow device
+(i.e. one that might block for an arbitrary amount of time)
+was interrupted by the delivery of a signal
+before any data arrived.
+.El
+.Pp
+In addition,
+.Fn read
+and
+.Fn readv
+may return the following errors:
+.Bl -tag -width Er
 .It Bq Er EAGAIN
 The file was marked for non-blocking I/O,
 and no data were ready to be read.
+.It Bq Er ENOTCONN
+The file is a socket associated with a connection-oriented protocol
+and has not been connected.
+.It Bq Er EIO
+The process is a member of a background process attempting to read
+from its controlling terminal, the process is ignoring or blocking
+the
+.Dv SIGTTIN
+signal or the process group is orphaned.
 .El
 .Pp
-In addition, 
+.Fn read
+and
+.Fn pread
+may return the following error:
+.Bl -tag -width Er
+.It Bq Er EINVAL
+.Fa nbytes
+was larger than
+.Dv SSIZE_MAX .
+.El
+.Pp
+.Fn pread
+and
+.Fn preadv
+may return the following errors:
+.Bl -tag -width Er
+.It Bq Er EINVAL
+.Fa offset
+was negative.
+.It Bq Er ESPIPE
+.Fa d
+is associated with a pipe, socket, FIFO, or tty.
+.El
+.Pp
 .Fn readv
+and
+.Fn preadv
 may return one of the following errors:
 .Bl -tag -width Er
 .It Bq Er EINVAL
-.Fa Iovcnt
+.Fa iovcnt
 was less than or equal to 0, or greater than
-.Dv {UIO_MAXIOV} .
-.It Bq Er EINVAL
-One of the
-.Fa iov_len
-values in the
-.Fa iov
-array was negative.
+.Dv IOV_MAX .
 .It Bq Er EINVAL
 The sum of the
 .Fa iov_len
 values in the
 .Fa iov
-array overflowed a 32-bit integer.
+array overflowed an
+.Vt ssize_t .
 .It Bq Er EFAULT
-Part of the
+Part of
 .Fa iov
 points outside the process's allocated address space.
 .El
@@ -172,21 +231,50 @@ points outside the process's allocated address space.
 .Xr fcntl 2 ,
 .Xr open 2 ,
 .Xr pipe 2 ,
+.Xr poll 2 ,
 .Xr select 2 ,
 .Xr socket 2 ,
 .Xr socketpair 2
 .Sh STANDARDS
 The
-.Fn read
-function is expected to conform to
-.St -p1003.1-88 .
+.Fn read ,
+.Fn readv ,
+and
+.Fn pread
+functions conform to
+.St -p1003.1-2008 .
 .Sh HISTORY
-The
-.Fn readv
-function call
-appeared in
-.Bx 4.2 .
-The
+A
 .Fn read
-function call appeared in
-.At v6 .
+system call first appeared in
+.At v1 ;
+.Fn readv
+in
+.Bx 4.1c ;
+.Fn pread
+in
+.At V.4 ;
+and
+.Fn preadv
+in
+.Ox 2.7 .
+.Sh CAVEATS
+Error checks should explicitly test for \-1.
+Code such as
+.Bd -literal -offset indent
+while ((nr = read(fd, buf, sizeof(buf))) > 0)
+.Ed
+.Pp
+is not maximally portable, as some platforms allow for
+.Fa nbytes
+to range between
+.Dv SSIZE_MAX
+and
+.Dv SIZE_MAX
+\- 2, in which case the return value of an error-free
+.Fn read
+may appear as a negative number distinct from \-1.
+Proper loops should use
+.Bd -literal -offset indent
+while ((nr = read(fd, buf, sizeof(buf))) != -1 && nr != 0)
+.Ed

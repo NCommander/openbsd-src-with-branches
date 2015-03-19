@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)ifs_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: ifs_ops.c,v 1.3 1994/06/13 20:47:14 mycroft Exp $
+ *	$Id: ifs_ops.c,v 1.4 2007/11/26 09:28:34 martynas Exp $
  */
 
 #include "am.h"
@@ -55,18 +51,15 @@ static char not_a_filesystem[] = "Attempting to inherit not-a-filesystem";
 /*
  * This should never be called.
  */
-/*ARGSUSED*/
-static char *ifs_match P((am_opts *fo));
-static char *ifs_match(fo)
-am_opts *fo;
+static char *
+ifs_match(am_opts *fo)
 {
 	plog(XLOG_FATAL, "ifs_match called!");
 	return 0;
 }
 
-static int ifs_init P((mntfs *mf));
-static int ifs_init(mf)
-mntfs *mf;
+static int
+ifs_init(mntfs *mf)
 {
 	mntfs *mf_link = (mntfs *) mf->mf_private;
 	if (mf_link == 0) {
@@ -87,13 +80,12 @@ mntfs *mf;
 	return 0;
 }
 
-static mntfs *ifs_inherit P((mntfs *mf));
-static mntfs *ifs_inherit(mf)
-mntfs *mf;
+static mntfs *
+ifs_inherit(mntfs *mf)
 {
 	/*
 	 * Take the linked mount point and
-	 * propogate.
+	 * propagate.
 	 */
 	mntfs *mf_link = (mntfs *) mf->mf_private;
 	if (mf_link == 0) {
@@ -130,9 +122,8 @@ mntfs *mf;
 	return mf_link;
 }
 
-static int ifs_mount P((am_node *mp));
-static int ifs_mount(mp)
-am_node *mp;
+static int
+ifs_mount(am_node *mp)
 {
 	mntfs *newmf = ifs_inherit(mp->am_mnt);
 	if (newmf) {
@@ -149,9 +140,8 @@ am_node *mp;
 	return EINVAL;
 }
 
-static int ifs_fmount P((mntfs *mf));
-static int ifs_fmount(mf)
-mntfs *mf;
+static int
+ifs_fmount(mntfs *mf)
 {
 	am_node *mp = find_mf(mf);
 	if (mp)
@@ -159,10 +149,8 @@ mntfs *mf;
 	return ifs_inherit(mf) ? 0 : EINVAL;
 }
 
-/*ARGSUSED*/
-static int ifs_fumount P((mntfs *mf));
-static int ifs_fumount(mf)
-mntfs *mf;
+static int
+ifs_fumount(mntfs *mf)
 {
 	/*
 	 * Always succeed

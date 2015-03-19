@@ -1,44 +1,38 @@
-/*	$NetBSD: xdr_float.c,v 1.9 1995/06/05 11:48:26 pk Exp $	*/
+/*	$OpenBSD: xdr_float.c,v 1.21 2014/07/21 01:51:11 guenther Exp $ */
 
 /*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user.
- * 
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- * 
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- * 
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- * 
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)xdr_float.c 1.12 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)xdr_float.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: xdr_float.c,v 1.9 1995/06/05 11:48:26 pk Exp $";
-#endif
-
 /*
- * xdr_float.c, Generic XDR routines impelmentation.
- *
- * Copyright (C) 1984, Sun Microsystems, Inc.
+ * xdr_float.c, Generic XDR routines implementation.
  *
  * These are the "floating point" xdr routines used to (de)serialize
  * most common data items.  See xdr.h for more info on the interface to
@@ -47,7 +41,6 @@ static char *rcsid = "$NetBSD: xdr_float.c,v 1.9 1995/06/05 11:48:26 pk Exp $";
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/param.h>
 #include <rpc/types.h>
 #include <rpc/xdr.h>
 
@@ -56,13 +49,7 @@ static char *rcsid = "$NetBSD: xdr_float.c,v 1.9 1995/06/05 11:48:26 pk Exp $";
  * This routine works on machines with IEEE754 FP and Vaxen.
  */
 
-#if defined(__m68k__) || defined(__sparc__) || defined(__i386__) || \
-    defined(__mips__) || defined(__ns32k__) || defined(__alpha__)
-#include <machine/endian.h>
-#define IEEEFP
-#endif
-
-#ifdef vax
+#ifdef __vax__
 
 /* What IEEE single precision floating point looks like on a Vax */
 struct	ieee_single {
@@ -91,12 +78,14 @@ static struct sgl_limits {
 	{{ 0x0, 0x0, 0x0, 0x0 },	/* Min Vax */
 	{ 0x0, 0x0, 0x0 }}		/* Min IEEE */
 };
-#endif /* vax */
+
+#else
+#include <endian.h>
+#define IEEEFP
+#endif
 
 bool_t
-xdr_float(xdrs, fp)
-	register XDR *xdrs;
-	register float *fp;
+xdr_float(XDR *xdrs, float *fp)
 {
 #ifdef IEEEFP
 	bool_t rv;
@@ -164,7 +153,7 @@ xdr_float(xdrs, fp)
 	return (FALSE);
 }
 
-#ifdef vax
+#ifdef __vax__
 /* What IEEE double precision floating point looks like on a Vax */
 struct	ieee_double {
 	unsigned int	mantissa1 : 20;
@@ -197,23 +186,21 @@ static struct dbl_limits {
 	{ 0x0, 0x0, 0x0, 0x0 }}				/* Min IEEE */
 };
 
-#endif /* vax */
+#endif /* __vax__ */
 
 
 bool_t
-xdr_double(xdrs, dp)
-	register XDR *xdrs;
-	double *dp;
+xdr_double(XDR *xdrs, double *dp)
 {
 #ifdef IEEEFP
-	register int32_t *i32p;
+	int32_t *i32p;
 	bool_t rv;
 	long tmpl;
 #else
-	register long *lp;
+	long *lp;
 	struct	ieee_double id;
 	struct	vax_double vd;
-	register struct dbl_limits *lim;
+	struct dbl_limits *lim;
 	int i;
 #endif
 
@@ -222,7 +209,7 @@ xdr_double(xdrs, dp)
 	case XDR_ENCODE:
 #ifdef IEEEFP
 		i32p = (int32_t *)dp;
-#if BYTE_ORDER == BIG_ENDIAN
+#if (BYTE_ORDER == BIG_ENDIAN) || (defined(__arm__) && !defined(__VFP_FP__))
 		tmpl = *i32p++;
 		rv = XDR_PUTLONG(xdrs, &tmpl);
 		if (!rv)
@@ -266,7 +253,7 @@ xdr_double(xdrs, dp)
 	case XDR_DECODE:
 #ifdef IEEEFP
 		i32p = (int32_t *)dp;
-#if BYTE_ORDER == BIG_ENDIAN
+#if (BYTE_ORDER == BIG_ENDIAN) || (defined(__arm__) && !defined(__VFP_FP__))
 		rv = XDR_GETLONG(xdrs, &tmpl);
 		*i32p++ = tmpl;
 		if (!rv)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.18 2006/03/13 19:43:21 brad Exp $	*/
+/*	$OpenBSD: intr.h,v 1.4 2011/03/23 16:54:34 pirofti Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _AVIION_INTR_H_
-#define _AVIION_INTR_H_
+#ifndef _MACHINE_INTR_H_
+#define _MACHINE_INTR_H_
 
 /*
  * IPL levels.
@@ -37,8 +37,7 @@
  */
 
 #define IPL_NONE	0
-#define IPL_SOFTCLOCK	1
-#define IPL_SOFTNET	1
+#define IPL_SOFTINT	1
 #define IPL_BIO		2
 #define IPL_NET		3
 #define IPL_TTY		3
@@ -50,6 +49,10 @@
 #define IPL_NMI		7
 #define IPL_ABORT	7
 
+#define	NIPLS		8
+
+#define	IPL_MPSAFE	0	/* no "mpsafe" interrupts */
+
 #include <m88k/intr.h>
 
-#endif /* _AVIION_INTR_H_ */
+#endif /* _MACHINE_INTR_H_ */
