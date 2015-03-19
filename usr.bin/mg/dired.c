@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.69 2014/12/30 22:05:32 bcallah Exp $	*/
+/*	$OpenBSD: dired.c,v 1.70 2015/03/19 21:22:15 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -139,13 +139,9 @@ static PF dirednull[] = {
 	NULL
 };
 
-#ifndef	DIRED_XMAPS
-#define	NDIRED_XMAPS	0	/* number of extra map sections */
-#endif /* DIRED_XMAPS */
-
-static struct KEYMAPE (1 + IMAPEXT) d_backpagemap = {
+static struct KEYMAPE (1) d_backpagemap = {
 	1,
-	1 + IMAPEXT,
+	1,
 	rescan,                 
 	{
 		{
@@ -154,9 +150,9 @@ static struct KEYMAPE (1 + IMAPEXT) d_backpagemap = {
 	}
 };
 
-static struct KEYMAPE (7 + NDIRED_XMAPS + IMAPEXT) diredmap = {
-	7 + NDIRED_XMAPS,
-	7 + NDIRED_XMAPS + IMAPEXT,
+static struct KEYMAPE (7) diredmap = {
+	7,
+	7,
 	rescan,
 	{
 		{
@@ -181,9 +177,6 @@ static struct KEYMAPE (7 + NDIRED_XMAPS + IMAPEXT) diredmap = {
 		{
 			CCHR('?'), CCHR('?'), direddl, NULL
 		},
-#ifdef	DIRED_XMAPS
-		DIRED_XMAPS,	/* map sections for dired mode keys	 */
-#endif /* DIRED_XMAPS */
 	}
 };
 

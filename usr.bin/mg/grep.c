@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.c,v 1.42 2014/11/16 04:16:41 guenther Exp $	*/
+/*	$OpenBSD: grep.c,v 1.43 2015/03/19 21:22:15 bcallah Exp $	*/
 
 /* This file is in the public domain */
 
@@ -40,9 +40,9 @@ static PF compile_pf[] = {
 	compile_goto_error
 };
 
-static struct KEYMAPE (1 + IMAPEXT) compilemap = {
+static struct KEYMAPE (1) compilemap = {
 	1,
-	1 + IMAPEXT,
+	1,
 	rescan,
 	{
 		{ CCHR('M'), CCHR('M'), compile_pf, NULL }

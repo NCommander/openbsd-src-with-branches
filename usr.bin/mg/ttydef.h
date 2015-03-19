@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttydef.h,v 1.9 2005/06/14 18:14:40 kjell Exp $	*/
+/*	$OpenBSD: ttydef.h,v 1.10 2005/11/20 03:53:45 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -11,7 +11,6 @@
  */
 
 #define STANDOUT_GLITCH			/* possible standout glitch	 */
-#define TERMCAP				/* for possible use in ttyio.c	 */
 
 #ifdef undef
 #define MOVE_STANDOUT			/* don't move in standout mode	 */

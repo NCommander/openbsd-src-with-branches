@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.95 2015/03/16 13:47:48 bcallah Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.96 2015/03/19 21:22:15 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -253,9 +253,9 @@ static PF listbuf_one[] = {
 };
 
 
-static struct KEYMAPE (2 + IMAPEXT) listbufmap = {
+static struct KEYMAPE (2) listbufmap = {
 	2,
-	2 + IMAPEXT,
+	2,
 	rescan,
 	{
 		{

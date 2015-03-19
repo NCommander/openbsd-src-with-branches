@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.33 2015/03/17 18:08:52 bcallah Exp $	*/
+/*	$OpenBSD: tty.c,v 1.34 2015/03/19 21:22:15 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -408,14 +408,12 @@ ttresize(void)
 {
 	int newrow = 0, newcol = 0;
 
-#ifdef	TIOCGWINSZ
 	struct	winsize winsize;
 
 	if (ioctl(0, TIOCGWINSZ, &winsize) == 0) {
 		newrow = winsize.ws_row;
 		newcol = winsize.ws_col;
 	}
-#endif
 	if ((newrow <= 0 || newcol <= 0) &&
 	    ((newrow = lines) <= 0 || (newcol = columns) <= 0)) {
 		newrow = 24;

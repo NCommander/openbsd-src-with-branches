@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.h,v 1.17 2005/11/18 20:56:53 deraadt Exp $	*/
+/*	$OpenBSD: kbd.h,v 1.18 2006/07/27 19:59:29 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -30,7 +30,6 @@ struct map_element {
 typedef struct keymap_s KEYMAPE(1) KEYMAP;
 
 /* Number of map_elements to grow an overflowed keymap by */
-#define IMAPEXT 0
 #define MAPGROW 3
 #define MAPINIT (MAPGROW+1)
 
