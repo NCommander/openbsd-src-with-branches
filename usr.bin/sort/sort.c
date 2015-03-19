@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.44 2015/03/17 17:45:13 millert Exp $	*/
+/*	$OpenBSD: sort.c,v 1.45 2015/03/19 11:38:12 jmc Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -156,7 +156,7 @@ usage(int exit_val)
 {
 
 	fprintf(exit_val ? stderr : stdout,
-	    "usage: %s [-bCcdfgHhiMnRrsuVz] [-k field1[,field2]] [-o output] "
+	    "usage: %s [-bCcdfgHhiMmnRrsuVz] [-k field1[,field2]] [-o output] "
 	    "[-S size]\n\t[-T dir] [-t char] [file ...]\n", getprogname());
 	exit(exit_val);
 }
