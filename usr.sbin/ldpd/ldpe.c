@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpe.c,v 1.26 2015/02/09 11:54:24 claudio Exp $ */
+/*	$OpenBSD: ldpe.c,v 1.27 2015/02/10 01:03:54 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -279,6 +279,7 @@ ldpe_shutdown(void)
 	}
 
 	close(leconf->ldp_discovery_socket);
+	close(leconf->ldp_ediscovery_socket);
 	close(leconf->ldp_session_socket);
 
 	/* clean up */
