@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.10 2013/12/06 22:56:20 kettenis Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.11 2014/03/29 18:09:28 guenther Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.3 2003/05/08 10:27:43 fvdl Exp $	*/
 
 /*-
@@ -307,6 +307,16 @@ mwait(u_long extensions, u_int hints)
 {
 
 	__asm volatile("mwait" : : "a" (hints), "c" (extensions));
+}
+
+static __inline void
+xsetbv(uint32_t reg, uint64_t mask)
+{
+	uint32_t lo, hi;
+
+	lo = mask;
+	hi = mask >> 32;
+	__asm volatile("xsetbv" :: "c" (reg), "a" (lo), "d" (hi) : "memory");
 }
 
 /* Break into DDB/KGDB. */
