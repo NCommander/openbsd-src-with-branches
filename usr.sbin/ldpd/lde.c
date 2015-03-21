@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde.c,v 1.28 2013/11/26 11:59:38 henning Exp $ */
+/*	$OpenBSD: lde.c,v 1.29 2014/07/12 20:16:38 krw Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -198,10 +198,8 @@ lde_dispatch_imsg(int fd, short event, void *bula)
 	struct imsg		 imsg;
 	struct lde_nbr		 *nbr;
 	struct map		 map;
-	struct timespec		 tp;
 	struct in_addr		 addr;
 	ssize_t			 n;
-	time_t			 now;
 	int			 shut = 0, verbose;
 
 	if (event & EV_READ) {
@@ -216,9 +214,6 @@ lde_dispatch_imsg(int fd, short event, void *bula)
 		if (n == 0)	/* connection closed */
 			shut = 1;
 	}
-
-	clock_gettime(CLOCK_MONOTONIC, &tp);
-	now = tp.tv_sec;
 
 	for (;;) {
 		if ((n = imsg_get(ibuf, &imsg)) == -1)
