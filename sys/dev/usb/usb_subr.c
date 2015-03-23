@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_subr.c,v 1.115 2014/12/13 21:05:33 doug Exp $ */
+/*	$OpenBSD: usb_subr.c,v 1.116 2014/12/21 12:04:01 mpi Exp $ */
 /*	$NetBSD: usb_subr.c,v 1.103 2003/01/10 11:19:13 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_subr.c,v 1.18 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -1315,6 +1315,8 @@ usbd_get_cdesc(struct usbd_device *dev, int index, int *lenp)
 
 	if (index == USB_CURRENT_CONFIG_INDEX) {
 		tdesc = usbd_get_config_descriptor(dev);
+		if (tdesc == NULL)
+			return (NULL);
 		len = UGETW(tdesc->wTotalLength);
 		if (lenp)
 			*lenp = len;
