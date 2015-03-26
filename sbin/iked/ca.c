@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.33 2015/01/16 06:39:58 deraadt Exp $	*/
+/*	$OpenBSD: ca.c,v 1.34 2015/02/06 10:39:01 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -301,6 +301,12 @@ ca_setauth(struct iked *env, struct iked_sa *sa,
 	int			 iovcnt = 3;
 	struct iked_policy	*policy = sa->sa_policy;
 	u_int8_t		 type = policy->pol_auth.auth_method;
+
+	/* switch encoding to IKEV2_AUTH_SIG if SHA2 is supported */
+	if (sa->sa_sigsha2 && type == IKEV2_AUTH_RSA_SIG) {
+		log_debug("%s: switching from RSA_SIG to SIG", __func__);
+		type = IKEV2_AUTH_SIG;
+	}
 
 	if (type == IKEV2_AUTH_SHARED_KEY_MIC) {
 		sa->sa_stateflags |= IKED_REQ_AUTH;
