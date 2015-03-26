@@ -1,4 +1,4 @@
-.\" $OpenBSD: ntpd.conf.5,v 1.28 2015/02/16 12:56:43 reyk Exp $
+.\" $OpenBSD: ntpd.conf.5,v 1.29 2015/02/16 19:25:35 jmc Exp $
 .\"
 .\" Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
 .\"
@@ -184,8 +184,7 @@ from trusted HTTPS servers via TLS.
 This time information is not used for precision but acts as an
 authenticated constraint,
 thereby reducing the impact of unauthenticated NTP
-.Sq Man-In-The-Middle
-attacks.
+man-in-the-middle attacks.
 Received NTP packets with time information falling outside of a range
 near the constraint will be discarded and such NTP servers
 will be marked as invalid.
