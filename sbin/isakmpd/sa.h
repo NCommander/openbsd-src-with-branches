@@ -1,4 +1,4 @@
-/* $OpenBSD: sa.h,v 1.50 2013/11/21 22:25:02 yasuoka Exp $	 */
+/* $OpenBSD: sa.h,v 1.51 2015/01/16 06:39:59 deraadt Exp $	 */
 /* $EOM: sa.h,v 1.58 2000/10/10 12:39:01 provos Exp $	 */
 
 /*
@@ -301,7 +301,6 @@ struct sa_kinfo {
 
 	struct sockaddr_storage	dst;
 	struct sockaddr_storage	src;
-	struct sockaddr_storage	proxy;
 
 	u_int32_t	spi;
 	u_int16_t	udpencap_port;
