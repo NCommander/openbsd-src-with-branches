@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.285 2015/03/16 20:31:46 deraadt Exp $ */
+/* $OpenBSD: acpi.c,v 1.286 2015/03/20 20:25:10 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -183,9 +183,7 @@ static const char *sbtn_pnp[] = {
 	"LEN0041",
 	"LEN0042",
 	"LEN0045",
-	"LEN0046",
 	"LEN0047",
-	"LEN0048",
 	"LEN0049",
 	"LEN2000",
 	"LEN2001",
