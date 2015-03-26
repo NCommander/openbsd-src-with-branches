@@ -1,4 +1,4 @@
-/* $OpenBSD: dh.c,v 1.54 2015/01/19 20:16:15 markus Exp $ */
+/* $OpenBSD: dh.c,v 1.55 2015/01/20 23:14:00 deraadt Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  *
@@ -258,7 +258,7 @@ dh_gen_key(DH *dh, int need)
 
 	if (need < 0 || dh->p == NULL ||
 	    (pbits = BN_num_bits(dh->p)) <= 0 ||
-	    need > INT_MAX / 2 || 2 * need >= pbits)
+	    need > INT_MAX / 2 || 2 * need > pbits)
 		return SSH_ERR_INVALID_ARGUMENT;
 	dh->length = MIN(need * 2, pbits - 1);
 	if (DH_generate_key(dh) == 0 ||
