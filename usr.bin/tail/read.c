@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.14 2009/10/27 23:59:44 deraadt Exp $	*/
+/*	$OpenBSD: read.c,v 1.15 2015/02/06 23:21:59 millert Exp $	*/
 /*	$NetBSD: read.c,v 1.4 1994/11/23 07:42:07 jtc Exp $	*/
 
 /*-
@@ -91,7 +91,7 @@ bytes(FILE *fp, off_t off)
 			if (*t == '\n' && len) {
 				WR(t + 1, len);
 				len = 0;
-		}
+			}
 		if (wrap) {
 			tlen = len;
 			for (t = ep - 1, len = 0; t >= p; --t, ++len)
