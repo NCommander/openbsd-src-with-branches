@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.93 2015/03/18 18:04:12 pascal Exp $
+#	$OpenBSD: Makefile,v 1.94 2015/03/26 23:45:37 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -51,7 +51,7 @@ HTML_OBJS =	html.o mdoc_html.o man_html.o tbl_html.o eqn_html.o out.o
 CGI_OBJS =	${LIBMANDOC_OBJS} ${HTML_OBJS} \
 		mansearch.o mansearch_const.o cgi.o
 
-cgi.o: main.h mandoc.h mandoc_aux.h manpath.h mansearch.h cgi.h
+cgi.o: main.h mandoc.h mandoc_aux.h manconf.h mansearch.h cgi.h
 
 man.cgi: ${CGI_OBJS}
 	${CC} ${LDFLAGS} ${STATIC} -o ${.TARGET} ${CGI_OBJS} ${LDADD}
