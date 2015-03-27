@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.26 2014/07/13 17:53:41 claudio Exp $ */
+/*	$OpenBSD: identd.c,v 1.27 2015/01/16 06:40:17 deraadt Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -489,6 +489,9 @@ parent_wr(int fd, short events, void *arg)
 		free(r->buf);
 
 	free(r);
+
+	if (!SIMPLEQ_EMPTY(&sc.parent.replies))
+		event_add(&proc_wr, NULL);
 }
 
 void
