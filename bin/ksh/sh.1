@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sh.1,v 1.122 2015/03/26 20:08:58 jmc Exp $
+.\"	$OpenBSD: sh.1,v 1.123 2015/03/26 20:10:22 jmc Exp $
 .\"
 .\" Copyright (c) 2015 Jason McIntyre <jmc@openbsd.org>
 .\"
@@ -1884,14 +1884,14 @@ block
 or otherwise the exit status of the last command executed.
 .Pp
 Functions allow the user to define a group of commands,
-executed whenever the function name is invoked.
+executed whenever the function is invoked.
 Its format is:
 .Bd -unfilled -offset indent
 .Ar function Ns () Ar command-list
 .Ed
 .Pp
 The above simply defines a function;
-nothing is executed until the function name is invoked.
+nothing is executed until the function is invoked.
 Commands may specify redirections
 and positional parameters are changed,
 for the duration of the function,
