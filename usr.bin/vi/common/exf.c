@@ -1,4 +1,4 @@
-/*	$OpenBSD: exf.c,v 1.32 2014/11/14 20:23:56 tedu Exp $	*/
+/*	$OpenBSD: exf.c,v 1.33 2015/01/16 06:40:14 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -822,14 +822,11 @@ file_write(SCR *sp, MARK *fm, MARK *tm, char *name, int flags)
 		return (1);
 
 	/* Open the file. */
-	SIGBLOCK;
 	if ((fd = open(name, oflags,
 	    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) < 0) {
 		msgq_str(sp, M_SYSERR, name, "%s");
-		SIGUNBLOCK;
 		return (1);
 	}
-	SIGUNBLOCK;
 
 	/* Try and get a lock. */
 	if (!noname && file_lock(sp, NULL, NULL, fd, 0) == LOCK_UNAVAIL)
