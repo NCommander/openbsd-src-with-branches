@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib.c,v 1.19 2010/06/13 17:58:19 millert Exp $	*/
+/*	$OpenBSD: lib.c,v 1.20 2011/09/28 19:27:18 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -648,7 +648,8 @@ void eprint(void)	/* try to print context around error */
 	static int been_here = 0;
 	extern char ebuf[], *ep;
 
-	if (compile_time == 2 || compile_time == 0 || been_here++ > 0)
+	if (compile_time == 2 || compile_time == 0 || been_here++ > 0 ||
+	    ebuf == ep)
 		return;
 	p = ep - 1;
 	if (p > ebuf && *p == '\n')
