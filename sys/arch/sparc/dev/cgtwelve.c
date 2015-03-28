@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgtwelve.c,v 1.18 2013/05/31 22:07:49 deraadt Exp $	*/
+/*	$OpenBSD: cgtwelve.c,v 1.19 2013/10/20 20:07:25 miod Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Miodrag Vallat.  All rights reserved.
@@ -69,7 +69,6 @@
 #include <machine/fbvar.h>
 
 #include <sparc/dev/cgtwelvereg.h>
-#include <sparc/dev/sbusvar.h>
 
 #include <dev/cons.h>	/* for prom console hook */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ts102.c,v 1.19 2009/04/10 20:54:57 miod Exp $	*/
+/*	$OpenBSD: ts102.c,v 1.20 2013/11/18 20:21:51 deraadt Exp $	*/
 /*
  * Copyright (c) 2003, 2004, Miodrag Vallat.
  *
@@ -78,7 +78,6 @@
 #include <dev/pcmcia/pcmciavar.h>
 #include <dev/pcmcia/pcmciachip.h>
 
-#include <sparc/dev/sbusvar.h>
 #include <sparc/dev/tctrlvar.h>
 #include <sparc/dev/ts102reg.h>
 

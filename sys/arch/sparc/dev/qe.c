@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.36 2014/07/22 10:35:35 mpi Exp $	*/
+/*	$OpenBSD: qe.c,v 1.37 2014/12/22 02:26:54 tedu Exp $	*/
 
 /*
  * Copyright (c) 1998, 2000 Jason L. Wright.
@@ -63,7 +63,6 @@
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
 
-#include <sparc/dev/sbusvar.h>
 #include <sparc/dev/dmareg.h>
 #include <sparc/dev/dmavar.h>
 

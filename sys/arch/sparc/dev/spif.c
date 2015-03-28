@@ -1,4 +1,4 @@
-/*	$OpenBSD: spif.c,v 1.26 2010/06/28 14:13:30 deraadt Exp $	*/
+/*	$OpenBSD: spif.c,v 1.27 2010/07/02 17:27:01 nicm Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -49,7 +49,6 @@
 #include <machine/autoconf.h>
 #include <sparc/cpu.h>
 #include <sparc/sparc/cpuvar.h>
-#include <sparc/dev/sbusvar.h>
 #include <sparc/dev/spifreg.h>
 #include <sparc/dev/spifvar.h>
 

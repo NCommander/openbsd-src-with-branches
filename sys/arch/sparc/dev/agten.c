@@ -1,4 +1,4 @@
-/*	$OpenBSD: agten.c,v 1.12 2008/12/26 22:30:21 miod Exp $	*/
+/*	$OpenBSD: agten.c,v 1.13 2013/10/20 20:07:25 miod Exp $	*/
 /*
  * Copyright (c) 2002, 2003, Miodrag Vallat.
  * All rights reserved.
@@ -79,8 +79,6 @@
 
 #include <dev/ic/p9000.h>
 #include <dev/ic/ibm561reg.h>
-
-#include <sparc/dev/sbusvar.h>
 
 struct agten_cmap {
 	u_int8_t	cm_red[256];
