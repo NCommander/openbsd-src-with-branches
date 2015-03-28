@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.9 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: util.c,v 1.10 2015/01/16 06:40:14 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -14,6 +14,7 @@
 #include <sys/queue.h>
 
 #include <bitstring.h>
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>

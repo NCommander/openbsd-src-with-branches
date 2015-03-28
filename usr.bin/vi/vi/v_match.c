@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_match.c,v 1.6 2009/10/27 23:59:48 deraadt Exp $	*/
+/*	$OpenBSD: v_match.c,v 1.7 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -16,6 +16,7 @@
 #include <sys/time.h>
 
 #include <bitstring.h>
+#include <ctype.h>
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>

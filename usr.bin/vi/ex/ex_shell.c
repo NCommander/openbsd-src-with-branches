@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_shell.c,v 1.13 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: ex_shell.c,v 1.14 2015/01/16 06:40:14 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -15,6 +15,7 @@
 #include <sys/wait.h>
 
 #include <bitstring.h>
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <signal.h>
