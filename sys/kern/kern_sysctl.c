@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.282 2015/02/11 04:00:05 guenther Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.283 2015/02/11 05:09:33 claudio Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1146,8 +1146,10 @@ fill_file(struct kinfo_file *kf, struct file *fp, struct filedesc *fdp,
 
 			if (show_pointers) {
 				kf->unp_conn	= PTRTOINT64(unpcb->unp_conn);
-				kf->unp_refs	= PTRTOINT64(unpcb->unp_refs);
-				kf->unp_nextref	= PTRTOINT64(unpcb->unp_nextref);
+				kf->unp_refs	= PTRTOINT64(
+				    SLIST_FIRST(&unpcb->unp_refs));
+				kf->unp_nextref	= PTRTOINT64(
+				    SLIST_NEXT(unpcb, unp_nextref));
 				kf->v_un	= PTRTOINT64(unpcb->unp_vnode);
 				kf->unp_addr	= PTRTOINT64(unpcb->unp_addr);
 			}
