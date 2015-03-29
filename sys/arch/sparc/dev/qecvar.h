@@ -1,4 +1,4 @@
-/*	$OpenBSD: qecvar.h,v 1.10 2003/06/02 15:54:22 deraadt Exp $	*/
+/*	$OpenBSD: qecvar.h,v 1.11 2006/06/02 20:00:54 miod Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -46,4 +46,4 @@ struct qec_softc {
 
 void	qec_reset(struct qec_softc *);
 int	qec_put(u_int8_t *, struct mbuf *);
-struct mbuf *qec_get(struct ifnet *, u_int8_t *, int);
+struct mbuf *qec_get(u_int8_t *, int);
