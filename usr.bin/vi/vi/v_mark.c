@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_mark.c,v 1.8 2009/10/27 23:59:48 deraadt Exp $	*/
+/*	$OpenBSD: v_mark.c,v 1.9 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -170,22 +170,7 @@ mark(SCR *sp, VICMD *vp, enum which cmd)
 	 * Delete cursor motion was always to the start of the text region,
 	 * regardless.  Ignore other motion commands.
 	 */
-#ifdef HISTORICAL_PRACTICE
-	if (ISCMD(vp->rkp, 'y')) {
-		if ((cmd == BQMARK ||
-		    cmd == FQMARK && vp->m_start.lno != vp->m_stop.lno) &&
-		    (vp->m_start.lno > vp->m_stop.lno ||
-		    vp->m_start.lno == vp->m_stop.lno &&
-		    vp->m_start.cno > vp->m_stop.cno))
-			vp->m_final = vp->m_stop;
-	} else if (ISCMD(vp->rkp, 'd'))
-		if (vp->m_start.lno > vp->m_stop.lno ||
-		    vp->m_start.lno == vp->m_stop.lno &&
-		    vp->m_start.cno > vp->m_stop.cno)
-			vp->m_final = vp->m_stop;
-#else
 	vp->m_final = vp->m_start;
-#endif
 
 	/*
 	 * Forward marks are always line oriented, and it's set in the

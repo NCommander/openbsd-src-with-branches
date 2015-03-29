@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_funcs.c,v 1.16 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: cl_funcs.c,v 1.17 2014/11/12 16:29:04 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -261,10 +261,6 @@ cl_cursor(SCR *sp, size_t *yp, size_t *xp)
 int
 cl_deleteln(SCR *sp)
 {
-#ifndef mvchgat
-	CHAR_T ch;
-	size_t col, lno, spcnt;
-#endif
 	size_t oldy, oldx;
 
 	/*
