@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.48 2015/03/20 23:04:07 millert Exp $	*/
+/*	$OpenBSD: sort.c,v 1.49 2015/03/30 22:20:18 millert Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -386,7 +386,7 @@ sig_handler(int sig __unused)
 {
 
 	clear_tmp_files();
-	exit(2);
+	_exit(2);
 }
 
 /*
