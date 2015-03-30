@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.111 2015/02/06 23:58:12 deraadt Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.112 2015/02/10 23:39:57 guenther Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -377,7 +377,8 @@ ELFNAME(load_file)(struct proc *p, char *path, struct exec_package *epp,
 	 * would (i.e. something safely out of the way).
 	 */
 	if (pos == ELFDEFNNAME(NO_ADDR)) {
-		pos = uvm_map_hint(p->p_vmspace, PROT_EXEC);
+		pos = uvm_map_hint(p->p_vmspace, PROT_EXEC,
+		    VM_MIN_ADDRESS, VM_MAXUSER_ADDRESS);
 	}
 
 	pos = ELF_ROUND(pos, file_align);

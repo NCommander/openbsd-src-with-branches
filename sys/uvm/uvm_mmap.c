@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.106 2015/02/07 00:42:20 tedu Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.107 2015/02/13 13:35:03 millert Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -152,7 +152,8 @@ sys_mquery(struct proc *p, void *v, register_t *retval)
 	}
 
 	if (vaddr == 0)
-		vaddr = uvm_map_hint(p->p_vmspace, prot);
+		vaddr = uvm_map_hint(p->p_vmspace, prot, VM_MIN_ADDRESS,
+		    VM_MAXUSER_ADDRESS);
 
 	error = uvm_map_mquery(&p->p_vmspace->vm_map, &vaddr, size, uoff,
 	    flags);
