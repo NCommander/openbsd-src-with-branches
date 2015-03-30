@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.h,v 1.17 2015/03/14 15:21:53 krw Exp $	*/
+/*	$OpenBSD: disk.h,v 1.18 2015/03/16 23:51:50 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -30,6 +30,8 @@ struct disk {
 int  DISK_open(char *, int);
 void DISK_getlabelgeometry(void);
 int  DISK_printgeometry(char *);
+char *DISK_readsector(int, off_t);
+int DISK_writesector(int, char *, off_t);
 
 extern struct disk disk;
 extern struct disklabel dl;
