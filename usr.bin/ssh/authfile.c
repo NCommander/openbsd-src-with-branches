@@ -1,4 +1,4 @@
-/* $OpenBSD: authfile.c,v 1.111 2015/02/23 16:55:51 djm Exp $ */
+/* $OpenBSD: authfile.c,v 1.112 2015/03/18 01:44:21 djm Exp $ */
 /*
  * Copyright (c) 2000, 2013 Markus Friedl.  All rights reserved.
  *
@@ -354,6 +354,8 @@ sshkey_load_public(const char *filename, struct sshkey **keyp, char **commentp)
 	case 0:
 		return r;
 	}
+#else /* WITH_SSH1 */
+	close(fd);
 #endif /* WITH_SSH1 */
 
 	/* try ssh2 public key */
