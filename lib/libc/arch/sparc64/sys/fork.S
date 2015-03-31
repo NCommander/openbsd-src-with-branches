@@ -1,4 +1,4 @@
-/*	$OpenBSD: fork.S,v 1.1 2001/08/28 22:50:18 art Exp $	*/
+/*	$OpenBSD: fork.S,v 1.2 2003/06/02 20:18:33 millert Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -37,7 +37,4 @@
 
 #include "SYS.h"
 
-SYSCALL(fork)
-	dec	%o1		/* from 1 to 0 in child, 0 to -1 in parent */
-	retl
-	 and	%o0, %o1, %o0	/* return 0 in child, pid in parent */
+RSYSCALL(fork)

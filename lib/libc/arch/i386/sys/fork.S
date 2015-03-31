@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: fork.S,v 1.4 2005/08/07 11:30:38 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -33,7 +33,4 @@
 
 #include "SYS.h"
 
-SYSCALL(fork)
-	decl	%edx	/* from 1 to 0 in child, 0 to -1 in parent */
-	andl	%edx,%eax
-	ret		/* pid = fork(); */
+RSYSCALL(fork)
