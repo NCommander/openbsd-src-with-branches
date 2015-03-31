@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.122 2015/01/15 13:35:13 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.123 2015/02/05 10:29:43 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1216,7 +1216,7 @@ window_copy_write_line(struct window_pane *wp, struct screen_write_ctx *ctx,
 			limit = screen_size_x(s) + 1;
 		if (data->inputtype == WINDOW_COPY_NUMERICPREFIX) {
 			xoff = size = xsnprintf(hdr, limit,
-			    "Repeat: %u", data->numprefix);
+			    "Repeat: %d", data->numprefix);
 		} else {
 			xoff = size = xsnprintf(hdr, limit,
 			    "%s: %s", data->inputprompt, data->inputstr);
