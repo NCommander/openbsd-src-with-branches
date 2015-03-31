@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.51 2015/03/31 11:46:26 millert Exp $	*/
+/*	$OpenBSD: sort.c,v 1.52 2015/03/31 12:16:02 millert Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -309,11 +309,13 @@ set_locale(void)
 static void
 set_tmpdir(void)
 {
-	char *td;
+	if (!issetugid()) {
+		char *td;
 
-	td = getenv("TMPDIR");
-	if (td != NULL)
-		tmpdir = sort_strdup(td);
+		td = getenv("TMPDIR");
+		if (td != NULL)
+			tmpdir = sort_strdup(td);
+	}
 }
 
 /*
