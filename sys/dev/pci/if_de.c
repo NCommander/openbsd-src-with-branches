@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.117 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.118 2015/03/14 03:38:48 jsg Exp $	*/
 /*	$NetBSD: if_de.c,v 1.58 1998/01/12 09:39:58 thorpej Exp $	*/
 
 /*-
@@ -4217,9 +4217,6 @@ tulip_ifioctl(struct ifnet * ifp, u_long cmd, caddr_t data)
  * goes wrong.
  * the modification becomes a bit complicated since tulip_txput() might
  * copy and modify the mbuf passed.
- */
-/*
- * These routines gets called at device spl (from ether_output).
  */
 
 void
