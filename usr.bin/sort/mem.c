@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.2 2015/03/17 17:49:27 millert Exp $	*/
+/*	$OpenBSD: mem.c,v 1.3 2015/03/30 19:57:36 millert Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -66,7 +66,6 @@ sort_calloc(size_t nmemb, size_t size)
 void
 sort_free(void *ptr)
 {
-
 	free(ptr);
 }
 
@@ -76,7 +75,6 @@ sort_free(void *ptr)
 void *
 sort_realloc(void *ptr, size_t size)
 {
-
 	if ((ptr = realloc(ptr, size)) == NULL)
 		err(2, NULL);
 	return ptr;
@@ -88,7 +86,6 @@ sort_realloc(void *ptr, size_t size)
 void *
 sort_reallocarray(void *ptr, size_t nmemb, size_t size)
 {
-
 	if ((ptr = reallocarray(ptr, nmemb, size)) == NULL)
 		err(2, NULL);
 	return ptr;
