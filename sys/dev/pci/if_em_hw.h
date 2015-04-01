@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: if_em_hw.h,v 1.61 2014/11/05 15:30:17 claudio Exp $ */
+/* $OpenBSD: if_em_hw.h,v 1.62 2015/01/28 22:33:02 brad Exp $ */
 /* $FreeBSD: if_em_hw.h,v 1.15 2005/05/26 23:32:02 tackerman Exp $ */
 
 /* if_em_hw.h
@@ -2320,7 +2320,7 @@ typedef enum {
     em_mng_mode_host_interface_only
 } em_mng_mode;
 
-/* Host Inteface Control Register */
+/* Host Interface Control Register */
 #define E1000_HICR_EN           0x00000001  /* Enable Bit - RO */
 #define E1000_HICR_C            0x00000002  /* Driver sets this bit when done
                                              * to put command in RAM */
