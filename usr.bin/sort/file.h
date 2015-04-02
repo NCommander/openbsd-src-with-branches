@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.2 2015/03/20 00:26:38 millert Exp $	*/
+/*	$OpenBSD: file.h,v 1.3 2015/04/02 21:04:06 tobias Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -54,7 +54,7 @@ struct sort_list {
 };
 
 /*
- * File reader object 
+ * File reader object
  */
 struct file_reader;
 
