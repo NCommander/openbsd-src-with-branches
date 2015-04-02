@@ -1,10 +1,10 @@
-#	$OpenBSD: list.local,v 1.1 2010/10/18 04:08:32 deraadt Exp $
+#	$OpenBSD: list.local,v 1.2 2012/10/17 17:59:41 deraadt Exp $
 #	$NetBSD: list,v 1.2.4.2 1996/06/26 19:25:00 pk Exp $
 
 # extras
 LINK	instbin					sbin/disklabel
 LINK	instbin					usr/bin/grep usr/bin/egrep usr/bin/fgrep
-LINK	instbin					usr/bin/less usr/bin/more
+LINK	instbin					usr/bin/more usr/bin/less
 
 SYMLINK	/tmp	var/tmp
 
