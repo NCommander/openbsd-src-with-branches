@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.1 2015/03/17 17:45:13 millert Exp $	*/
+/*	$OpenBSD: file.h,v 1.2 2015/03/20 00:26:38 millert Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -72,7 +72,6 @@ struct file_list {
 
 /**/
 
-extern unsigned long long free_memory;
 extern unsigned long long available_free_memory;
 
 /* Are we using mmap ? */
