@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: att.c,v 1.9 2014/11/28 18:57:04 schwarze Exp $ */
 /*
  * Copyright (c) 2009 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <string.h>
 
+#include "roff.h"
 #include "mdoc.h"
 #include "libmdoc.h"
 
