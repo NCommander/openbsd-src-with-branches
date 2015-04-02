@@ -75,7 +75,6 @@ struct file_reader {
 	size_t			 cbsz;
 	size_t			 mmapsize;
 	size_t			 strbeg;
-	int			 fd;
 	char			 elsymb;
 };
 
@@ -577,10 +576,8 @@ file_reader_init(const char *fsrc)
 		sz = stat_buf.st_size;
 
 		addr = mmap(NULL, sz, PROT_READ, 0, fd, 0);
-		if (addr == MAP_FAILED) {
-			close(fd);
-		} else {
-			ret->fd = fd;
+		close(fd);
+		if (addr != MAP_FAILED) {
 			ret->mmapaddr = addr;
 			ret->mmapsize = sz;
 			ret->mmapptr = ret->mmapaddr;
@@ -724,9 +721,6 @@ file_reader_clean(struct file_reader *fr)
 {
 	if (fr->mmapaddr)
 		munmap(fr->mmapaddr, fr->mmapsize);
-
-	if (fr->fd)
-		close(fr->fd);
 
 	sort_free(fr->buffer);
 
