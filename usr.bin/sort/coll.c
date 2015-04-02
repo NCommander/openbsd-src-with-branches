@@ -1,4 +1,4 @@
-/*	$OpenBSD: coll.c,v 1.5 2015/04/01 21:46:38 millert Exp $	*/
+/*	$OpenBSD: coll.c,v 1.6 2015/04/01 21:47:19 millert Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -120,7 +120,7 @@ set_key_on_keys_array(struct keys_array *ka, struct bwstring *s, size_t ind)
 
 		kv = &(ka->key[ind]);
 
-		if (kv->k && kv->k != s)
+		if (kv->k != s)
 			bwsfree(kv->k);
 		kv->k = s;
 	}
