@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.70 2015/04/02 20:56:00 tobias Exp $	*/
+/*	$OpenBSD: sort.c,v 1.71 2015/04/02 20:57:34 tobias Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -428,7 +428,7 @@ check_mutually_exclusive_flags(char c, bool *mef_flags)
 	int i, fo_index, mec;
 	bool found_others, found_this;
 
-	found_others = found_this =false;
+	found_others = found_this = false;
 	fo_index = 0;
 
 	for (i = 0; i < NUMBER_OF_MUTUALLY_EXCLUSIVE_FLAGS; i++) {
