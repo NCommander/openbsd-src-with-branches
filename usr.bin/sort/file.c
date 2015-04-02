@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.13 2015/04/01 22:24:02 millert Exp $	*/
+/*	$OpenBSD: file.c,v 1.14 2015/04/01 22:43:16 deraadt Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -731,8 +731,7 @@ file_reader_clean(struct file_reader *fr)
 	sort_free(fr->buffer);
 
 	if (fr->file)
-		if (fr->file != stdin)
-			closefile(fr->file, fr->fname);
+		closefile(fr->file, fr->fname);
 
 	sort_free(fr->fname);
 
