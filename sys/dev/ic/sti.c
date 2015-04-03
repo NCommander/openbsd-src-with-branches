@@ -1,4 +1,4 @@
-/*	$OpenBSD: sti.c,v 1.73 2014/08/30 14:42:05 miod Exp $	*/
+/*	$OpenBSD: sti.c,v 1.74 2014/11/16 12:31:00 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000-2003 Michael Shalayeff
@@ -1041,7 +1041,7 @@ sti_ioctl(void *v, u_long cmd, caddr_t data, int flag, struct proc *p)
 			break;
 		if ((ret = copyin(cmapp->blue, &scr->scr_bcmap[idx], count)))
 			break;
-		for (i = idx + count - 1; i >= idx; i--)
+		for (i = idx + count - 1; i >= (int)idx; i--)
 			if ((ret = sti_setcment(scr, i, scr->scr_rcmap[i],
 			    scr->scr_gcmap[i], scr->scr_bcmap[i]))) {
 #ifdef STIDEBUG
