@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_ringbuffer.h,v 1.2 2014/03/24 17:06:49 kettenis Exp $	*/
+/*	$OpenBSD: intel_ringbuffer.h,v 1.3 2014/03/30 00:58:24 jsg Exp $	*/
 
 #ifndef _INTEL_RINGBUFFER_H_
 #define _INTEL_RINGBUFFER_H_
@@ -206,6 +206,8 @@ static inline void intel_ring_emit(struct intel_ring_buffer *ring,
 	iowrite32(data, ring->virtual_start + ring->tail);
 	ring->tail += 4;
 }
+#else
+void intel_ring_emit(struct intel_ring_buffer *, u_int32_t);
 #endif
 void intel_ring_advance(struct intel_ring_buffer *ring);
 int intel_ring_idle(struct intel_ring_buffer *ring);
