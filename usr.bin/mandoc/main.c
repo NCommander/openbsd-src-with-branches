@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.135 2015/03/27 21:17:16 schwarze Exp $ */
+/*	$OpenBSD: main.c,v 1.136 2015/04/02 21:03:18 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2012, 2014, 2015 Ingo Schwarze <schwarze@openbsd.org>
@@ -972,7 +972,7 @@ spawn_pager(void)
 	if (pager == NULL || *pager == '\0')
 		pager = getenv("PAGER");
 	if (pager == NULL || *pager == '\0')
-		pager = "/usr/bin/more -s";
+		pager = "more -s";
 	cp = mandoc_strdup(pager);
 
 	/*
