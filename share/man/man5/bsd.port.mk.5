@@ -1095,18 +1095,18 @@ However, the extra
 .Sq bootstrap
 rule is needed to take build cycles into account.
 For instance, the
-.Pa net/avahi,-gtk3
-has dependencies which in turn requires
-.Pa net/avahi,-main
-to build.
+.Pa x11/gnome/gvfs,-goa
+subpackage depends on gnome-online-accounts, which in turn requires
+.Pa x11/gnome/gvfs,-main
+to build (through its dependencies).
 So
-.Pa net/avahi
+.Pa x11/gnome/gvfs
 has
-.Li PSEUDO_FLAVORS = no_gui no_mono no_qt3 no_qt4 bootstrap
-and the bulk build first builds
-.Pa net/avahi,no_gui,no_mono,no_qt3,no_qt4,bootstrap,-main
+.Li PSEUDO_FLAVORS = no_smb no_goa bootstrap
+and the GNOME build first builds
+.Pa x11/gnome/gvfs,no_smb,no_goa,bootstrap,-main
 which is later used to rebuild
-.Pa net/avahi .
+.Pa x11/gnome/gvfs .
 .It Ev BUILD_PKGPATH
 Full
 .Xr pkgpath 7
