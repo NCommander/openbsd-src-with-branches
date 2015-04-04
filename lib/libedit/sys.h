@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sys.h,v 1.9 2010/06/30 00:05:35 nicm Exp $	*/
 /*	$NetBSD: sys.h,v 1.13 2009/12/30 22:37:40 christos Exp $	*/
 
 /*-
@@ -45,7 +45,7 @@
 #include <sys/cdefs.h>
 #endif
 
-#if !defined(__attribute__) && (defined(__cplusplus) || !defined(__GNUC__)  || __GNUC__ == 2 && __GNUC_MINOR__ < 8)
+#if !defined(__attribute__) && defined(__cplusplus)
 # define __attribute__(A)
 #endif
 

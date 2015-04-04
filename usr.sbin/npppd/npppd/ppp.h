@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp.h,v 1.15 2013/02/13 22:10:38 yasuoka Exp $ */
+/*	$OpenBSD: ppp.h,v 1.16 2013/04/26 02:20:04 gsoares Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -703,12 +703,8 @@ typedef struct _dialin_proxy_info {
 
 /* adapted from FreeBSD:/usr/include/sys/cdefs */
 #ifndef __printflike
-#if __GNUC__ < 2 || __GNUC__ == 2 && __GNUC_MINOR__ < 7
-#define __printflike(fmtarg, firstvararg)
-#else
 #define __printflike(fmtarg, firstvararg) \
 	__attribute__((__format__ (__printf__, fmtarg, firstvararg)))
-#endif
 #endif
 
 /*

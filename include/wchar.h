@@ -1,4 +1,4 @@
-/*	$OpenBSD: wchar.h,v 1.27 2015/01/12 20:58:07 millert Exp $	*/
+/*	$OpenBSD: wchar.h,v 1.28 2015/02/09 23:02:25 millert Exp $	*/
 /*	$NetBSD: wchar.h,v 1.16 2003/03/07 07:11:35 tshiozak Exp $	*/
 
 /*-
@@ -185,12 +185,9 @@ size_t wcsftime(wchar_t * __restrict, size_t, const wchar_t *__restrict,
 	const struct tm *__restrict);
 #endif
 
-#if (defined(__GNUC__) && __GNUC__ >= 2 && !defined(__STRICT_ANSI__)) || \
-    __ISO_C_VISIBLE >= 1999
-/* LONGLONG */
+#if !defined(__STRICT_ANSI__) || __ISO_C_VISIBLE >= 1999
 long long int wcstoll(const wchar_t * __restrict,
 	wchar_t ** __restrict, int base);
-/* LONGLONG */
 unsigned long long int wcstoull(const wchar_t * __restrict,
 	wchar_t ** __restrict, int base);
 #endif
