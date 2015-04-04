@@ -1,4 +1,4 @@
-/*	$OpenBSD: adjacency.c,v 1.2 2013/10/15 20:13:47 renato Exp $ */
+/*	$OpenBSD: adjacency.c,v 1.3 2013/10/15 20:21:24 renato Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -41,8 +41,7 @@ void	 tnbr_start_hello_timer(struct tnbr *);
 void	 tnbr_stop_hello_timer(struct tnbr *);
 
 struct adj *
-adj_new(struct nbr *nbr, struct hello_source *source, u_int16_t holdtime,
-    struct in_addr addr)
+adj_new(struct nbr *nbr, struct hello_source *source, struct in_addr addr)
 {
 	struct adj	*adj;
 
