@@ -1,4 +1,4 @@
-/*	$OpenBSD: savestr.c,v 1.6 2007/10/07 16:41:05 deraadt Exp $	*/
+/*	$OpenBSD: savestr.c,v 1.7 2009/10/27 23:59:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997
@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gnuc.h"
 #ifdef HAVE_OS_PROTO_H
 #include "os-proto.h"
 #endif
