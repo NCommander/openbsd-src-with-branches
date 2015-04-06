@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttm_execbuf_util.c,v 1.1 2013/08/12 04:11:53 jsg Exp $	*/
+/*	$OpenBSD: ttm_execbuf_util.c,v 1.2 2015/02/10 10:50:49 jsg Exp $	*/
 /**************************************************************************
  *
  * Copyright (c) 2006-2009 VMware, Inc., Palo Alto, CA., USA
@@ -46,7 +46,7 @@ static void ttm_eu_backoff_reservation_locked(struct list_head *list)
 		}
 		entry->reserved = false;
 		atomic_set(&bo->reserved, 0);
-		wakeup(&bo->event_queue);
+		wake_up_all(&bo->event_queue);
 	}
 }
 

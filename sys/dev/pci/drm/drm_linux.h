@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.h,v 1.8 2015/04/03 13:10:59 jsg Exp $	*/
+/*	$OpenBSD: drm_linux.h,v 1.9 2015/04/05 11:53:53 kettenis Exp $	*/
 /*
  * Copyright (c) 2013, 2014 Mark Kettenis
  *
@@ -109,6 +109,9 @@ spin_unlock_irqrestore(struct mutex *mtxp, __unused unsigned long flags)
 #define write_lock(rwl)			rw_enter_write(rwl)
 #define write_unlock(rwl)		rw_exit_write(rwl)
 
+#define wake_up(x)			wakeup(x)
+#define wake_up_all(x)			wakeup(x)
+#define wake_up_all_locked(x)		wakeup(x)
 
 #define NSEC_PER_SEC	1000000000L
 
