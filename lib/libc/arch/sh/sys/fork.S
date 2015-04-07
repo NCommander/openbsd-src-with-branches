@@ -1,4 +1,4 @@
-/*	$OpenBSD: fork.S,v 1.2 2006/11/03 21:23:22 drahn Exp $	*/
+/*	$OpenBSD: fork.S,v 1.3 2015/03/31 04:32:02 guenther Exp $	*/
 /*	$NetBSD: fork.S,v 1.10 2006/01/06 05:11:29 uwe Exp $	*/
 
 /*-
@@ -37,4 +37,5 @@
 
 #include "SYS.h"
 
-RSYSCALL(fork)
+RSYSCALL_HIDDEN(fork)
+WEAK_ALIAS(_thread_fork,_thread_sys_fork)

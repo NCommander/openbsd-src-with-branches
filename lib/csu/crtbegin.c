@@ -1,4 +1,4 @@
-/*	$OpenBSD: crtbegin.c,v 1.17 2013/12/28 18:38:42 kettenis Exp $	*/
+/*	$OpenBSD: crtbegin.c,v 1.18 2015/04/04 18:05:05 guenther Exp $	*/
 /*	$NetBSD: crtbegin.c,v 1.1 1996/09/12 16:59:03 cgd Exp $	*/
 
 /*
@@ -90,6 +90,19 @@ atexit(void (*fn)(void))
 {
 	return (__cxa_atexit((void (*)(void *))fn, NULL, NULL));
 }
+
+/*
+ * Ditto for pthread_atfork()
+ */
+int	_thread_atfork(void (*)(void), void (*)(void), void (*)(void), void *)
+	    __attribute__((weak));
+
+int
+pthread_atfork(void (*prep)(void), void (*parent)(void), void (*child)(void))
+{
+	return (_thread_atfork(prep, parent, child, NULL));
+}
+asm(".weak pthread_atfork");
 
 
 static const init_f __CTOR_LIST__[1]

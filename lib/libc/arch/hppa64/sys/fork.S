@@ -1,4 +1,4 @@
-/*	$OpenBSD: fork.S,v 1.4 2011/04/21 14:12:20 jsing Exp $	*/
+/*	$OpenBSD: fork.S,v 1.5 2015/03/31 04:32:01 guenther Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -28,4 +28,5 @@
 
 #include "SYS.h"
 
-RSYSCALL(fork)
+RSYSCALL_HIDDEN(fork)
+WEAK_ALIAS(_thread_fork,_thread_sys_fork)

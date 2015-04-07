@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.8 2002/01/04 21:37:18 drahn Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.9 2002/10/06 23:23:18 art Exp $	*/
 /*	$NetBSD: SYS.h,v 1.4 1996/10/17 03:03:53 cgd Exp $	*/
 
 /*
@@ -90,6 +90,7 @@ __END(p,label);
 				__SYSCALL_NOERROR(_thread_sys_,x)
 # define RSYSCALL(x)		ALIAS(_thread_sys_,x) \
 				__RSYSCALL(_thread_sys_,x)
+# define RSYSCALL_HIDDEN(x)	__RSYSCALL(_thread_sys_,x)
 # define RSYSCALL_NOERROR(x)	ALIAS(_thread_sys_,x) \
 				__RSYSCALL_NOERROR(_thread_sys_,x)
 # define PSEUDO(x,y)		ALIAS(_thread_sys_,x) \
