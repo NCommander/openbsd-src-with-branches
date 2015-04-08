@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttm_bo_util.c,v 1.10 2015/04/06 12:25:10 jsg Exp $	*/
+/*	$OpenBSD: ttm_bo_util.c,v 1.11 2015/04/08 02:28:13 jsg Exp $	*/
 /**************************************************************************
  *
  * Copyright (c) 2007-2009 VMware, Inc., Palo Alto, CA., USA
@@ -274,7 +274,7 @@ static int ttm_copy_io_ttm_page(struct ttm_tt *ttm, void *src,
 	if (!dst)
 		return -ENOMEM;
 
-	memcpy(dst, src, PAGE_SIZE);
+	memcpy_fromio(dst, src, PAGE_SIZE);
 
 	if (pgprot_val(prot) != pgprot_val(PAGE_KERNEL))
 		vunmap(dst, PAGE_SIZE);
