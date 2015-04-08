@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.908 2015/03/16 02:40:55 yasuoka Exp $ */
+/*	$OpenBSD: pf.c,v 1.909 2015/03/18 12:23:15 dlg Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -6277,7 +6277,7 @@ pf_counters_inc(int action, struct pf_pdesc *pd, struct pf_state *s,
 					pfr_update_stats(ri->r->dst.addr.p.tbl,
 					    &s->key[(s->direction == PF_IN)]->
 						addr[(s->direction == PF_IN)],
-					    pd, ri->r->action, ri->r->src.neg);
+					    pd, ri->r->action, ri->r->dst.neg);
 			}
 		}
 		if (r->src.addr.type == PF_ADDR_TABLE)
