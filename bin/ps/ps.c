@@ -1,4 +1,4 @@
-/*	$OpenBSD: ps.c,v 1.62 2014/07/08 23:31:22 deraadt Exp $	*/
+/*	$OpenBSD: ps.c,v 1.63 2015/01/16 06:39:32 deraadt Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -158,7 +158,7 @@ main(int argc, char *argv[])
 			jfmt[0] = '\0';
 			break;
 		case 'k':
-			kflag++;
+			kflag = 1;
 			break;
 		case 'L':
 			showkey();
@@ -248,7 +248,7 @@ main(int argc, char *argv[])
 				termwidth = UNLIMITED;
 			else if (termwidth < 131)
 				termwidth = 131;
-			wflag++;
+			wflag = 1;
 			break;
 		case 'x':
 			xflg = 1;
