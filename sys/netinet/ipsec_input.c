@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.126 2015/01/24 00:29:06 deraadt Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.127 2015/03/26 12:21:37 mikeb Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -708,28 +708,18 @@ ah4_input(struct mbuf *m, ...)
 int
 ah4_input_cb(struct mbuf *m, ...)
 {
-	struct ifqueue *ifq = &ipintrq;
-	int s = splnet();
-
 	/*
 	 * Interface pointer is already in first mbuf; chop off the
 	 * `outer' header and reschedule.
 	 */
 
-	if (IF_QFULL(ifq)) {
-		IF_DROP(ifq);
+	if (niq_enqueue(&ipintrq, m) != 0) {
 		ahstat.ahs_qfull++;
-		splx(s);
-
-		m_freem(m);
 		DPRINTF(("ah4_input_cb(): dropped packet because of full "
 		    "IP queue\n"));
 		return ENOBUFS;
 	}
 
-	IF_ENQUEUE(ifq, m);
-	schednetisr(NETISR_IP);
-	splx(s);
 	return 0;
 }
 
@@ -764,27 +754,17 @@ esp4_input(struct mbuf *m, ...)
 int
 esp4_input_cb(struct mbuf *m, ...)
 {
-	struct ifqueue *ifq = &ipintrq;
-	int s = splnet();
-
 	/*
 	 * Interface pointer is already in first mbuf; chop off the
 	 * `outer' header and reschedule.
 	 */
-	if (IF_QFULL(ifq)) {
-		IF_DROP(ifq);
+	if (niq_enqueue(&ipintrq, m) != 0) {
 		espstat.esps_qfull++;
-		splx(s);
-
-		m_freem(m);
 		DPRINTF(("esp4_input_cb(): dropped packet because of full "
 		    "IP queue\n"));
 		return ENOBUFS;
 	}
 
-	IF_ENQUEUE(ifq, m);
-	schednetisr(NETISR_IP);
-	splx(s);
 	return 0;
 }
 
@@ -806,26 +786,15 @@ ipcomp4_input(struct mbuf *m, ...)
 int
 ipcomp4_input_cb(struct mbuf *m, ...)
 {
-	struct ifqueue *ifq = &ipintrq;
-	int s = splnet();
-
 	/*
 	 * Interface pointer is already in first mbuf; chop off the
 	 * `outer' header and reschedule.
 	 */
-	if (IF_QFULL(ifq)) {
-		IF_DROP(ifq);
+	if (niq_enqueue(&ipintrq, m) != 0) {
 		ipcompstat.ipcomps_qfull++;
-		splx(s);
-
-		m_freem(m);
 		DPRINTF(("ipcomp4_input_cb(): dropped packet because of full IP queue\n"));
 		return ENOBUFS;
 	}
-
-	IF_ENQUEUE(ifq, m);
-	schednetisr(NETISR_IP);
-	splx(s);
 
 	return 0;
 }
