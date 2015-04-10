@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.444 2015/02/20 22:17:21 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.445 2015/03/31 22:55:24 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -890,6 +890,10 @@ notify_hostkeys(struct ssh *ssh)
 	struct sshkey *key;
 	int i, nkeys, r;
 	char *fp;
+
+	/* Some clients cannot cope with the hostkeys message, skip those. */
+	if (datafellows & SSH_BUG_HOSTKEYS)
+		return;
 
 	if ((buf = sshbuf_new()) == NULL)
 		fatal("%s: sshbuf_new", __func__);
