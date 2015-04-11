@@ -1,4 +1,4 @@
-/* $OpenBSD: i915_drv.c,v 1.75 2015/02/12 04:56:03 kettenis Exp $ */
+/* $OpenBSD: i915_drv.c,v 1.76 2015/04/03 13:10:59 jsg Exp $ */
 /*
  * Copyright (c) 2008-2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -1338,7 +1338,7 @@ nope:
 }
 
 void
-i915_gem_chipset_flush(struct drm_device *dev)
+intel_gtt_chipset_flush(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 
