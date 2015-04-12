@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.h,v 1.40 2014/12/22 03:38:01 tedu Exp $	*/
+/*	$OpenBSD: if_bridge.h,v 1.41 2015/01/24 00:29:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -35,6 +35,7 @@
 #ifndef _NET_IF_BRIDGE_H_
 #define _NET_IF_BRIDGE_H_
 
+#include <sys/timeout.h>
 #include <net/pfvar.h>
 
 /*
