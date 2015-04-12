@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.235 2015/02/10 05:28:18 guenther Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.236 2015/04/07 11:07:56 dlg Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -553,7 +553,9 @@ main(void *framep)
 	/*
 	 * Start the idle pool page garbage collector
 	 */
+#if notyet
 	pool_gc_pages(NULL);
+#endif
 
         /*
          * proc0: nothing to do, back to sleep
