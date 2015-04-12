@@ -1,4 +1,4 @@
-/*	$OpenBSD: extend.c,v 1.60 2015/03/19 21:22:15 bcallah Exp $	*/
+/*	$OpenBSD: extend.c,v 1.61 2015/03/24 22:28:10 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -911,6 +911,8 @@ cleanup:
 		lp = np;
 	}
 	free(lp);
+	maclhead = NULL;
+	macrodef = FALSE;
 	return (status);
 }
 
