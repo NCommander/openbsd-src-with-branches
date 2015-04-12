@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_ringbuffer.h,v 1.3 2014/03/30 00:58:24 jsg Exp $	*/
+/*	$OpenBSD: intel_ringbuffer.h,v 1.4 2015/04/03 13:10:59 jsg Exp $	*/
 
 #ifndef _INTEL_RINGBUFFER_H_
 #define _INTEL_RINGBUFFER_H_
@@ -131,7 +131,7 @@ struct  intel_ring_buffer {
 	u32 outstanding_lazy_request;
 	bool gpu_caches_dirty;
 
-	int irq_queue;
+	wait_queue_head_t irq_queue;
 
 	/**
 	 * Do an explicit TLB flush before MI_SET_CONTEXT

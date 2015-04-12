@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttm_lock.c,v 1.3 2015/02/10 10:50:49 jsg Exp $	*/
+/*	$OpenBSD: ttm_lock.c,v 1.4 2015/04/06 05:35:29 jsg Exp $	*/
 /**************************************************************************
  *
  * Copyright (c) 2007-2009 VMware, Inc., Palo Alto, CA., USA
@@ -44,9 +44,7 @@ void	 ttm_write_lock_downgrade(struct ttm_lock *);
 void ttm_lock_init(struct ttm_lock *lock)
 {
 	mtx_init(&lock->lock, IPL_NONE);
-#ifdef notyet
 	init_waitqueue_head(&lock->queue);
-#endif
 	lock->rw = 0;
 	lock->flags = 0;
 	lock->kill_takers = false;
