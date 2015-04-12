@@ -1,4 +1,4 @@
-/*	$OpenBSD: mptramp.s,v 1.13 2010/04/01 19:48:50 kettenis Exp $	*/
+/*	$OpenBSD: mptramp.s,v 1.14 2014/01/05 20:23:57 mlarkin Exp $	*/
 
 /*-
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -159,6 +159,16 @@ _TRMP_LABEL(mp_startup)
 
 	/* Load base of page directory and enable mapping. */
 	movl	%ecx,%cr3		# load ptd addr into mmu
+#ifndef SMALL_KERNEL
+	movl	$_C_LABEL(pmap_pte_set_pae),%eax
+	cmpl	RELOC(_C_LABEL(pmap_pte_set_p)),%eax
+	jne	nopae
+
+	movl	%cr4,%eax
+	orl	$CR4_PAE,%eax
+	movl	%eax, %cr4
+nopae:
+#endif
 	movl	%cr0,%eax		# get control word
 					# enable paging & NPX emulation
 	orl	$(CR0_PE|CR0_PG|CR0_NE|CR0_TS|CR0_EM|CR0_MP|CR0_WP),%eax
