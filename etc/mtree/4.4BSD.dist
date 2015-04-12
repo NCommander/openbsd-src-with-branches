@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.268 2014/11/17 18:19:08 deraadt Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.269 2014/12/22 15:39:28 tedu Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 
@@ -738,6 +738,10 @@ var
 
         # ./var/nsd/zones
         zones			uname=root gname=wheel mode=0755
+            master		uname=root gname=wheel mode=0755
+            ..
+            slave		uname=root gname=_nsd mode=0775
+            ..
         ..
     ..
 
