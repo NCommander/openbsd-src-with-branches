@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttm_bo_util.c,v 1.12 2015/04/08 04:03:06 jsg Exp $	*/
+/*	$OpenBSD: ttm_bo_util.c,v 1.13 2015/04/12 03:54:10 jsg Exp $	*/
 /**************************************************************************
  *
  * Copyright (c) 2007-2009 VMware, Inc., Palo Alto, CA., USA
@@ -247,11 +247,7 @@ static int ttm_copy_io_page(void *dst, void *src, unsigned long page)
 
 	int i;
 	for (i = 0; i < PAGE_SIZE / sizeof(uint32_t); ++i)
-#ifdef notyet
 		iowrite32(ioread32(srcP++), dstP++);
-#else
-		*dstP++ = *srcP++;
-#endif
 	return 0;
 }
 
