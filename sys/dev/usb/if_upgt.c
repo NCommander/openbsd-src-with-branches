@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.66 2014/12/22 02:28:52 tedu Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.67 2015/03/14 03:38:49 jsg Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -1735,7 +1735,7 @@ upgt_rx(struct upgt_softc *sc, uint8_t *data, int pkglen)
 	rxdesc = (struct upgt_lmac_rx_desc *)data;
 
 	/* create mbuf which is suitable for strict alignment archs */
-	m = m_devget(rxdesc->data, pkglen, ETHER_ALIGN, ifp);
+	m = m_devget(rxdesc->data, pkglen, ETHER_ALIGN);
 	if (m == NULL) {
 		DPRINTF(1, "%s: could not create RX mbuf!\n", sc->sc_dev.dv_xname);
 		ifp->if_ierrors++;
