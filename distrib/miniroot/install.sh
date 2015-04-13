@@ -1,5 +1,5 @@
 #!/bin/ksh
-#	$OpenBSD: install.sh,v 1.263 2015/04/06 21:36:56 rpe Exp $
+#	$OpenBSD: install.sh,v 1.264 2015/04/07 09:59:38 rpe Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1997-2015 Todd Miller, Theo de Raadt, Ken Westerback
@@ -359,7 +359,7 @@ if [[ -n "$_rootpass" ]]; then
 w
 q" | ed /mnt/etc/master.passwd 2>/dev/null
 fi
-/mnt/usr/sbin/pwd_mkdb -p -d /mnt/etc /etc/master.passwd
+pwd_mkdb -p -d /mnt/etc /etc/master.passwd
 
 # During autoinstall, add root user's public ssh key to authorized_keys.
 [[ -n "$rootkey" ]] && (
