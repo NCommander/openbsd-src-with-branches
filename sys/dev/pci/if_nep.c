@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nep.c,v 1.16 2015/01/10 22:14:30 kettenis Exp $	*/
+/*	$OpenBSD: if_nep.c,v 1.17 2015/03/24 09:59:23 mpi Exp $	*/
 /*
  * Copyright (c) 2014, 2015 Mark Kettenis
  *
@@ -588,9 +588,8 @@ nep_attach(struct device *parent, struct device *self, void *aux)
 #ifdef __sparc64__
 	if (OF_getprop(PCITAG_NODE(pa->pa_tag), "local-mac-address",
 	    sc->sc_lladdr, ETHER_ADDR_LEN) <= 0)
-#else
-		nep_pci_enaddr(sc, pa);
 #endif
+		nep_pci_enaddr(sc, pa);
 
 	printf(", address %s\n", ether_sprintf(sc->sc_lladdr));
 
