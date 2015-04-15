@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.135 2015/04/01 14:29:54 mpi Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.136 2015/04/10 13:58:20 dlg Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -897,7 +897,7 @@ tunwrite(dev_t dev, struct uio *uio, int ioflag)
 		return (EAFNOSUPPORT);
 	}
 
-	if (niq_enqueue(ifq, m) != 0) {
+	if (niq_enqueue(ifq, top) != 0) {
 		ifp->if_collisions++;
 		return (ENOBUFS);
 	}
