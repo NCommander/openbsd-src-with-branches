@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.358 2015/02/10 04:20:26 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.359 2015/02/15 01:56:42 tedu Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -467,7 +467,7 @@ main(int argc, char *argv[])
 	get_ifname(argv[0]);
 	ifi->index = if_nametoindex(ifi->name);
 	if (ifi->index == 0)
-		error("'%s' is not an interface", ifi->name);
+		error("%s: no such interface", ifi->name);
 
 	tzset();
 
