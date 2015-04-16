@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.165 2015/04/14 14:20:01 mikeb Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.166 2015/04/16 19:24:13 markus Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -183,7 +183,6 @@ struct ipsec_acquire {
 	struct inpcb                    *ipa_pcb;
 	TAILQ_ENTRY(ipsec_acquire)	ipa_ipo_next;
 	TAILQ_ENTRY(ipsec_acquire)	ipa_next;
-	TAILQ_ENTRY(ipsec_acquire)      ipa_inp_next;
 };
 
 struct ipsec_policy {
