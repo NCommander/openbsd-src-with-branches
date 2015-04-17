@@ -1,4 +1,4 @@
-/* $OpenBSD: kex.c,v 1.104 2015/01/26 06:10:03 djm Exp $ */
+/* $OpenBSD: kex.c,v 1.105 2015/01/30 00:22:25 djm Exp $ */
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
  *
@@ -210,6 +210,8 @@ kex_prop_free(char **proposal)
 {
 	u_int i;
 
+	if (proposal == NULL)
+		return;
 	for (i = 0; i < PROPOSAL_MAX; i++)
 		free(proposal[i]);
 	free(proposal);
