@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vnops.c,v 1.70 2015/02/10 21:56:09 miod Exp $	*/
+/*	$OpenBSD: cd9660_vnops.c,v 1.71 2015/03/14 03:38:50 jsg Exp $	*/
 /*	$NetBSD: cd9660_vnops.c,v 1.42 1997/10/16 23:56:57 christos Exp $	*/
 
 /*-
@@ -94,8 +94,9 @@ cd9660_setattr(void *v)
 	struct vattr *vap = ap->a_vap;
 
 	if (vap->va_flags != VNOVAL || vap->va_uid != (uid_t)VNOVAL ||
-	    vap->va_gid != (gid_t)VNOVAL || vap->va_atime.tv_sec != VNOVAL ||
-	    vap->va_mtime.tv_sec != VNOVAL || vap->va_mode != (mode_t)VNOVAL)
+	    vap->va_gid != (gid_t)VNOVAL || vap->va_atime.tv_nsec != VNOVAL ||
+	    vap->va_mtime.tv_nsec != VNOVAL || vap->va_mode != (mode_t)VNOVAL ||
+	    (vap->va_vaflags & VA_UTIMES_CHANGE))
 		return (EROFS);
 	if (vap->va_size != VNOVAL) {
 		switch (vp->v_type) {
