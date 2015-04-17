@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.415 2015/02/20 22:17:21 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.416 2015/03/03 06:48:58 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1623,6 +1623,8 @@ ssh_session(void)
 	}
 	/* Request X11 forwarding if enabled and DISPLAY is set. */
 	display = getenv("DISPLAY");
+	if (display == NULL && options.forward_x11)
+		debug("X11 forwarding requested but DISPLAY not set");
 	if (options.forward_x11 && display != NULL) {
 		char *proto, *data;
 		/* Get reasonable local authentication information. */
@@ -1724,6 +1726,8 @@ ssh_session2_setup(int id, int success, void *arg)
 		return; /* No need for error message, channels code sens one */
 
 	display = getenv("DISPLAY");
+	if (display == NULL && options.forward_x11)
+		debug("X11 forwarding requested but DISPLAY not set");
 	if (options.forward_x11 && display != NULL) {
 		char *proto, *data;
 		/* Get reasonable local authentication information. */
