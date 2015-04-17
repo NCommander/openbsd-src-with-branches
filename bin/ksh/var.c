@@ -1,4 +1,4 @@
-/*	$OpenBSD: var.c,v 1.39 2014/12/08 21:48:27 deraadt Exp $	*/
+/*	$OpenBSD: var.c,v 1.40 2014/12/12 05:00:55 jsg Exp $	*/
 
 #include "sh.h"
 #include <time.h>
@@ -1007,8 +1007,18 @@ setspec(struct tbl *vp)
 			set_editmode(str_val(vp));
 		break;
 	case V_COLUMNS:
-		if ((x_cols = intval(vp)) <= MIN_COLS)
-			x_cols = MIN_COLS;
+		{
+			long l;
+
+			if (getint(vp, &l, false) == -1) {
+				x_cols = MIN_COLS;
+				break;
+			}
+			if (l <= MIN_COLS || l > INT_MAX)
+				x_cols = MIN_COLS;
+			else
+				x_cols = l;
+		}
 		break;
 #endif /* EDIT */
 	case V_MAIL:
