@@ -1,4 +1,4 @@
-/*	$OpenBSD: i915_gem.c,v 1.90 2015/04/12 03:54:10 jsg Exp $	*/
+/*	$OpenBSD: i915_gem.c,v 1.91 2015/04/12 17:10:07 kettenis Exp $	*/
 /*
  * Copyright (c) 2008-2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -3812,14 +3812,12 @@ unlock:
 	return ret;
 }
 
-#ifdef notyet
 int
 i915_gem_throttle_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv)
 {
 	return i915_gem_ring_throttle(dev, file_priv);
 }
-#endif
 
 int
 i915_gem_madvise_ioctl(struct drm_device *dev, void *data,
