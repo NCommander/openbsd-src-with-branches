@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.62 2015/01/16 10:17:51 sf Exp $	*/
+/*	$OpenBSD: locore.S,v 1.63 2015/03/22 05:55:39 guenther Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -1024,7 +1024,7 @@ IDTVEC(syscall)
 	movq	%r11, TF_RFLAGS(%rsp)	/* old rflags from syscall insn */
 	movq	$(GSEL(GUCODE_SEL, SEL_UPL)), TF_CS(%rsp)
 	movq	%rcx,TF_RIP(%rsp)
-	movq	$2,TF_ERR(%rsp)
+	movq	$2,TF_ERR(%rsp)		/* ignored */
 	movq	$T_ASTFLT, TF_TRAPNO(%rsp)
 
 	movq	CPUVAR(CURPROC),%r14

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.151 2015/04/01 19:45:21 mlarkin Exp $	*/
+/*	$OpenBSD: locore.s,v 1.152 2015/04/12 18:37:53 mlarkin Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -1491,7 +1491,7 @@ calltrap:
  * Trap gate entry for syscall
  */
 IDTVEC(syscall)
-	pushl	$2		# size of instruction for restart
+	pushl	$2		# ignored
 	pushl	$T_ASTFLT	# trap # for doing ASTs
 	INTRENTRY
 	pushl	%esp
