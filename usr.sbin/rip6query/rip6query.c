@@ -1,4 +1,4 @@
-/*	$OpenBSD: rip6query.c,v 1.13 2008/05/17 23:31:52 sobrado Exp $	*/
+/*	$OpenBSD: rip6query.c,v 1.14 2014/03/19 14:02:24 mpi Exp $	*/
 /*	$KAME: rip6query.c,v 1.17 2002/09/08 01:35:17 itojun Exp $	*/
 
 /*
@@ -38,6 +38,7 @@
 #include <ctype.h>
 #include <signal.h>
 #include <errno.h>
+#include <limits.h>
 #include <err.h>
 
 #include <sys/types.h>
@@ -76,6 +77,7 @@ main(int argc, char *argv[])
 	int c;
 	int ifidx = -1;
 	int error;
+	const char *errstr;
 	char pbuf[NI_MAXSERV];
 	struct addrinfo hints, *res;
 
@@ -89,7 +91,9 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'w':
-			query_wait = atoi(optarg);
+			query_wait = strtonum(optarg, 1, INT_MAX, &errstr);
+			if (errstr)
+				errx(1, "-w %s: %s", optarg, errstr);
 			break;
 		default:
 			usage();

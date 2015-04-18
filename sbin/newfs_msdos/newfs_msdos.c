@@ -1,4 +1,4 @@
-/*	$OpenBSD: newfs_msdos.c,v 1.24 2014/07/10 20:09:53 tobias Exp $	*/
+/*	$OpenBSD: newfs_msdos.c,v 1.25 2015/01/16 06:40:00 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998 Robert Nordier
@@ -260,11 +260,9 @@ main(int argc, char *argv[])
 	    opt_B = optarg;
 	    break;
 	case 'F':
-	    if (strcmp(optarg, "12") &&
-		strcmp(optarg, "16") &&
-		strcmp(optarg, "32"))
+	    opt_F = strtonum(optarg, 1, INT_MAX, NULL);
+	    if (!(opt_F == 12 || opt_F == 16 || opt_F == 32))
 		errx(1, "%s: bad FAT type", optarg);
-	    opt_F = atoi(optarg);
 	    break;
 	case 'I':
 	    opt_I = argto4(optarg, 0, "volume ID");

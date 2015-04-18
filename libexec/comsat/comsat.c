@@ -1,4 +1,4 @@
-/*	$OpenBSD: comsat.c,v 1.37 2012/12/04 02:24:47 deraadt Exp $	*/
+/*	$OpenBSD: comsat.c,v 1.38 2015/01/16 06:39:49 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -200,13 +200,16 @@ mailfor(char *name)
 {
 	struct utmp *utp = &utmp[nutmp];
 	char utname[UT_NAMESIZE+1];
+	const char *errstr;
 	char *cp;
 	off_t offset;
 
 	if (!(cp = strchr(name, '@')))
 		return;
 	*cp = '\0';
-	offset = atoi(cp + 1);
+	offset = strtonum(cp + 1, 0, LLONG_MAX, &errstr);
+	if (errstr)
+		return;
 	while (--utp >= utmp) {
 		memcpy(utname, utp->ut_name, UT_NAMESIZE);
 		utname[UT_NAMESIZE] = '\0';

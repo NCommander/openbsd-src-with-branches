@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.58 2014/09/07 22:40:30 bluhm Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.59 2015/01/16 06:40:18 deraadt Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -102,6 +102,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include <err.h>
 
 #include "gmt2local.h"
@@ -202,8 +203,8 @@ main(int argc, char *argv[])
 				/*NOTREACHED*/
 			}
 			mode = 'a';
-			repeat = atoi(optarg);
-			if (repeat < 0) {
+			repeat = strtonum(optarg, 1, INT_MAX, &errstr);
+			if (errstr) {
 				usage();
 				/*NOTREACHED*/
 			}
