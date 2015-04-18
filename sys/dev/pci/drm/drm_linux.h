@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.h,v 1.23 2015/04/12 12:14:30 jsg Exp $	*/
+/*	$OpenBSD: drm_linux.h,v 1.24 2015/04/12 17:10:07 kettenis Exp $	*/
 /*
  * Copyright (c) 2013, 2014 Mark Kettenis
  *
@@ -60,7 +60,11 @@ typedef bus_addr_t phys_addr_t;
 #define DMA_BIT_MASK(n) (((n) == 64) ? ~0ULL : (1ULL<<(n)) -1)
 
 #define EXPORT_SYMBOL(x)
+
 #define MODULE_FIRMWARE(x)
+#define MODULE_PARM_DESC(parm, desc)
+#define module_param_named(name, value, type, perm)
+
 #define ARRAY_SIZE nitems
 
 #define ERESTARTSYS	EINTR
