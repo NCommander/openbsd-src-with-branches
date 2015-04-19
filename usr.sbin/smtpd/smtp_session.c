@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.195 2014/02/04 15:44:05 eric Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.196 2014/02/17 11:06:54 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -181,6 +181,7 @@ static uint8_t dsn_notify_str_to_uint8(const char *);
 static void smtp_auth_failure_pause(struct smtp_session *);
 static void smtp_auth_failure_resume(int, short, void *);
 static int smtp_sni_callback(SSL *, int *, void *);
+static const char *smtp_sni_get_servername(struct smtp_session *);
 
 static struct { int code; const char *cmd; } commands[] = {
 	{ CMD_HELO,		"HELO" },
@@ -607,7 +608,7 @@ smtp_session_imsg(struct mproc *p, struct imsg *imsg)
 		ssl = ssl_smtp_init(ssl_ctx,
 		    resp_ca_cert->cert, resp_ca_cert->cert_len,
 		    resp_ca_cert->key, resp_ca_cert->key_len,
-		    smtp_sni_callback, s);
+		    smtp_sni_callback);
 		io_set_read(&s->io);
 		io_start_tls(&s->io, ssl);
 
@@ -787,6 +788,7 @@ smtp_io(struct io *io, int evt)
 {
 	struct ca_cert_req_msg	req_ca_cert;
 	struct smtp_session    *s = io->arg;
+	const char	       *sn;
 	char		       *line;
 	size_t			len, i;
 	X509		       *x;
@@ -803,6 +805,14 @@ smtp_io(struct io *io, int evt)
 		s->flags |= SF_SECURE;
 		s->kickcount = 0;
 		s->phase = PHASE_INIT;
+
+		sn = smtp_sni_get_servername(s);
+		if (sn) {
+			if (strlcpy(s->sni, sn, sizeof s->sni) >= sizeof s->sni) {
+				smtp_free(s, "client SNI exceeds max hostname length");
+				return;
+			}
+		}
 
 		if (smtp_verify_certificate(s)) {
 			io_pause(&s->io, IO_PAUSE_IN);
@@ -1901,25 +1911,24 @@ smtp_auth_failure_pause(struct smtp_session *s)
 	evtimer_add(&s->pause, &tv);
 }
 
+static const char *
+smtp_sni_get_servername(struct smtp_session *s)
+{
+	return SSL_get_servername(s->io.ssl, TLSEXT_NAMETYPE_host_name);
+}
+
 static int
 smtp_sni_callback(SSL *ssl, int *ad, void *arg)
 {
 	const char		*sn;
-	struct smtp_session	*s = arg;
 	void			*ssl_ctx;
 
 	sn = SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name);
 	if (sn == NULL)
 		return SSL_TLSEXT_ERR_NOACK;
-	if (strlcpy(s->sni, sn, sizeof s->sni) >= sizeof s->sni) {
-		log_warnx("warn: client SNI exceeds max hostname length");
-		return SSL_TLSEXT_ERR_NOACK;
-	}
 	ssl_ctx = dict_get(env->sc_ssl_dict, sn);
-	if (ssl_ctx == NULL) {
-		log_warnx("warn: SNI name not found in PKI");
+	if (ssl_ctx == NULL)
 		return SSL_TLSEXT_ERR_NOACK;
-	}
 	SSL_set_SSL_CTX(ssl, ssl_ctx);
 	return SSL_TLSEXT_ERR_OK;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ssl_smtpd.c,v 1.4 2014/02/04 13:44:41 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -90,7 +90,7 @@ dummy_verify(int ok, X509_STORE_CTX *store)
 }
 
 void *
-ssl_smtp_init(void *ssl_ctx, char *cert, off_t cert_len, char *key, off_t key_len, void *sni, void *arg)
+ssl_smtp_init(void *ssl_ctx, char *cert, off_t cert_len, char *key, off_t key_len, void *sni)
 {
 	SSL	*ssl = NULL;
 	int	(*cb)(SSL *,int *,void *) = sni;
@@ -105,10 +105,8 @@ ssl_smtp_init(void *ssl_ctx, char *cert, off_t cert_len, char *key, off_t key_le
 
 	SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER, dummy_verify);
 
-	if (cb) {
+	if (cb)
 		SSL_CTX_set_tlsext_servername_callback(ssl_ctx, cb);
-		SSL_CTX_set_tlsext_servername_arg(ssl_ctx, arg);
-	}
 
 	if ((ssl = SSL_new(ssl_ctx)) == NULL)
 		goto err;
