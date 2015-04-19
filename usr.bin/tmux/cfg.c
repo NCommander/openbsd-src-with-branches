@@ -1,4 +1,4 @@
-/* $OpenBSD: cfg.c,v 1.32 2014/06/25 19:17:27 tobias Exp $ */
+/* $OpenBSD: cfg.c,v 1.33 2014/10/27 22:23:47 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -75,7 +75,7 @@ load_cfg(const char *path, struct cmd_q *cmdq, char **cause)
 
 		if (cmdlist == NULL)
 			continue;
-		cmdq_append(cmdq, cmdlist);
+		cmdq_append(cmdq, cmdlist, NULL);
 		cmd_list_free(cmdlist);
 		found++;
 	}

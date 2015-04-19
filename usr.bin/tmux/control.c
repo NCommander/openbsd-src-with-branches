@@ -1,4 +1,4 @@
-/* $OpenBSD: control.c,v 1.12 2013/10/10 11:45:29 nicm Exp $ */
+/* $OpenBSD: control.c,v 1.13 2014/10/20 23:57:13 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -81,7 +81,7 @@ control_callback(struct client *c, int closed, unused void *data)
 		} else {
 			TAILQ_FOREACH(cmd, &cmdlist->list, qentry)
 				cmd->flags |= CMD_CONTROL;
-			cmdq_run(c->cmdq, cmdlist);
+			cmdq_run(c->cmdq, cmdlist, NULL);
 			cmd_list_free(cmdlist);
 		}
 
