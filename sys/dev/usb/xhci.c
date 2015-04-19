@@ -1,4 +1,4 @@
-/* $OpenBSD: xhci.c,v 1.57 2015/01/18 20:35:11 mpi Exp $ */
+/* $OpenBSD: xhci.c,v 1.58 2015/01/21 14:02:33 mpi Exp $ */
 
 /*
  * Copyright (c) 2014-2015 Martin Pieuchot
@@ -714,7 +714,8 @@ xhci_event_xfer(struct xhci_softc *sc, uint64_t paddr, uint32_t status,
 	struct xhci_pipe *xp;
 	struct usbd_xfer *xfer;
 	struct xhci_xfer *xx;
-	uint8_t dci, slot, code, remain;
+	uint8_t dci, slot, code;
+	uint32_t remain;
 	int trb_idx;
 
 	slot = XHCI_TRB_GET_SLOT(flags);
