@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.117 2015/04/19 21:05:27 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.118 2015/04/19 21:34:21 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -650,7 +650,7 @@ window_destroy_panes(struct window *w)
 char *
 window_printable_flags(struct session *s, struct winlink *wl)
 {
-	char	flags[BUFSIZ];
+	char	flags[32];
 	int	pos;
 
 	pos = 0;
