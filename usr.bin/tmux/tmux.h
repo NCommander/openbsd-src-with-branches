@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.492 2015/04/19 21:34:21 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.493 2015/04/20 15:34:56 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -2225,7 +2225,7 @@ struct layout_cell *layout_split_pane(
 void		 layout_close_pane(struct window_pane *);
 
 /* layout-custom.c */
-char		*layout_dump(struct window *);
+char		*layout_dump(struct layout_cell *);
 int		 layout_parse(struct window *, const char *);
 
 /* layout-set.c */
