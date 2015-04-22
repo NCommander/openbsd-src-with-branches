@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc_mem.c,v 1.19 2014/07/12 18:48:52 tedu Exp $	*/
+/*	$OpenBSD: sdmmc_mem.c,v 1.20 2014/09/23 12:08:13 rapha Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -621,7 +621,7 @@ int
 sdmmc_mem_single_read_block(struct sdmmc_function *sf, int blkno, u_char *data,
     size_t datalen)
 {
-	int error;
+	int error = 0;
 	int i;
 
 	for (i = 0; i < datalen / sf->csd.sector_size; i++) {
@@ -709,7 +709,7 @@ int
 sdmmc_mem_single_write_block(struct sdmmc_function *sf, int blkno, u_char *data,
     size_t datalen)
 {
-	int error;
+	int error = 0;
 	int i;
 
 	for (i = 0; i < datalen / sf->csd.sector_size; i++) {
