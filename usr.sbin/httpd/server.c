@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.61 2015/03/15 22:08:45 florian Exp $	*/
+/*	$OpenBSD: server.c,v 1.62 2015/04/11 14:52:49 jsing Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -852,6 +852,11 @@ server_accept(int fd, short event, void *arg)
 	if ((clt = calloc(1, sizeof(*clt))) == NULL)
 		goto err;
 
+	/* Pre-allocate log buffer */
+	clt->clt_log = evbuffer_new();
+	if (clt->clt_log == NULL)
+		goto err;
+
 	clt->clt_s = s;
 	clt->clt_fd = -1;
 	clt->clt_toread = TOREAD_UNLIMITED;
@@ -896,13 +901,6 @@ server_accept(int fd, short event, void *arg)
 	clt->clt_output = evbuffer_new();
 	if (clt->clt_output == NULL) {
 		server_close(clt, "failed to allocate output buffer");
-		return;
-	}
-
-	/* Pre-allocate log buffer */
-	clt->clt_log = evbuffer_new();
-	if (clt->clt_log == NULL) {
-		server_close(clt, "failed to allocate log buffer");
 		return;
 	}
 
