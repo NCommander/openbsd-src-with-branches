@@ -1,5 +1,5 @@
 
-/* $OpenBSD: servconf.c,v 1.260 2015/02/02 01:57:44 deraadt Exp $ */
+/* $OpenBSD: servconf.c,v 1.261 2015/04/17 04:12:35 dtucker Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1564,7 +1564,7 @@ process_server_config_line(ServerOptions *options, char *line,
 		break;
 
 	case sForceCommand:
-		if (cp == NULL)
+		if (cp == NULL || *cp == '\0')
 			fatal("%.200s line %d: Missing argument.", filename,
 			    linenum);
 		len = strspn(cp, WHITESPACE);
@@ -1609,7 +1609,7 @@ process_server_config_line(ServerOptions *options, char *line,
 		break;
 
 	case sVersionAddendum:
-		if (cp == NULL)
+		if (cp == NULL || *cp == '\0')
 			fatal("%.200s line %d: Missing argument.", filename,
 			    linenum);
 		len = strspn(cp, WHITESPACE);
