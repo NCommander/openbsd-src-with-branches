@@ -1,4 +1,4 @@
-/*	$OpenBSD: shutdown.c,v 1.41 2015/03/15 00:41:27 millert Exp $	*/
+/*	$OpenBSD: shutdown.c,v 1.42 2015/04/18 18:28:37 deraadt Exp $	*/
 /*	$NetBSD: shutdown.c,v 1.9 1995/03/18 15:01:09 cgd Exp $	*/
 
 /*
@@ -440,7 +440,7 @@ getoffset(char *timearg)
 		const char *errstr;
 
 		offset = strtonum(++timearg, 0, INT_MAX, &errstr);
-		if (errstr);
+		if (errstr)
 			badtime();
 		offset *= 60;
 		shuttime = now + offset;
