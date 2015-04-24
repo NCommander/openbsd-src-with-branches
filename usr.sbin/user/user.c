@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.101 2015/01/16 06:40:22 deraadt Exp $ */
+/* $OpenBSD: user.c,v 1.102 2015/04/23 17:11:42 millert Exp $ */
 /* $NetBSD: user.c,v 1.69 2003/04/14 17:40:07 agc Exp $ */
 
 /*
@@ -815,7 +815,7 @@ read_defaults(user_t *up)
 				}
 				up->u_preserve = (strncmp(cp, "true", 4) == 0) ? 1 :
 						  (strncmp(cp, "yes", 3) == 0) ? 1 :
-						   strtonum(optarg, INT_MIN, INT_MAX, NULL);
+						   strtonum(cp, INT_MIN, INT_MAX, NULL);
 			} else if (strncmp(s, "expire", 6) == 0) {
 				for (cp = s + 6 ; isspace((unsigned char)*cp); cp++) {
 				}
