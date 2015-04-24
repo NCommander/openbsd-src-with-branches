@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.h,v 1.6 2006/01/08 21:05:40 miod Exp $	*/
+/*	$OpenBSD: vi.h,v 1.7 2013/11/28 22:12:40 krw Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -255,7 +255,7 @@ typedef struct _vi_private {
 	size_t	busy_fx;	/* Busy character x coordinate. */
 	size_t	busy_oldy;	/* Saved y coordinate. */
 	size_t	busy_oldx;	/* Saved x coordinate. */
-	struct timeval busy_tv;	/* Busy timer. */
+	struct timespec busy_ts;/* Busy timer. */
 
 	char   *ps;		/* Paragraph plus section list. */
 
