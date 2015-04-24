@@ -1,36 +1,39 @@
-#	$OpenBSD: Makefile,v 1.11 2008/11/09 23:00:42 espie Exp $
+# $OpenBSD$
+
+PROG=   file
+SRCS=   file.c magic-dump.c magic-load.c magic-test.c magic-common.c text.c \
+	xmalloc.c
+MAN=	file.1 magic.5
+
+CDIAGFLAGS+= -Wno-long-long -Wall -W -Wnested-externs -Wformat=2
+CDIAGFLAGS+= -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations
+CDIAGFLAGS+= -Wwrite-strings -Wshadow -Wpointer-arith -Wsign-compare
+CDIAGFLAGS+= -Wundef -Wbad-function-cast -Winline -Wcast-align
 
 MAGIC=		/etc/magic
 MAGICOWN=	root
 MAGICGRP=	bin
 MAGICMODE=	444
 
-PROG=		file
-SRCS=		file.c apprentice.c fsmagic.c softmagic.c ascmagic.c is_tar.c \
-		print.c compress.c readelf.c magic.c funcs.c
-CFLAGS+=	-DMAGIC='"$(MAGIC)"' -DUSE_UTIMES -DHAVE_CONFIG_H
-MAN=		file.1 magic.5
-
 CLEANFILES+=	magic post-magic
-all:		file magic
 
-MAG1=		$(.CURDIR)/magdir/Header\
-		$(.CURDIR)/magdir/Localstuff\
+MAG1=		$(.CURDIR)/magdir/Header \
+		$(.CURDIR)/magdir/Localstuff \
 		$(.CURDIR)/magdir/OpenBSD
 MAGFILES=	$(.CURDIR)/magdir/[0-9a-z]*
 
-post-magic:	$(MAGFILES)
-	for i in ${.ALLSRC:N*.orig}; \
-	do \
+post-magic: $(MAGFILES)
+	for i in ${.ALLSRC:N*.orig}; do \
 		echo $$i; \
-	done|sort|xargs -n 1024 cat > $(.TARGET)
+	done|sort|xargs -n 1024 cat >$(.TARGET)
 
-magic:		$(MAG1) post-magic
-	cat ${MAG1} post-magic > $(.TARGET)
-
+magic: $(MAG1) post-magic
+	cat ${MAG1} post-magic >$(.TARGET)
 
 afterinstall:
-	${INSTALL} ${INSTALL_COPY} -o $(MAGICOWN) -g $(MAGICGRP) -m $(MAGICMODE) magic \
-		$(DESTDIR)$(MAGIC)
+	${INSTALL} ${INSTALL_COPY} -o $(MAGICOWN) -g $(MAGICGRP) \
+		-m $(MAGICMODE) magic $(DESTDIR)$(MAGIC)
+
+all: file magic
 
 .include <bsd.prog.mk>
