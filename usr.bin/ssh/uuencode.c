@@ -1,4 +1,4 @@
-/* $OpenBSD: uuencode.c,v 1.26 2010/08/31 11:54:45 djm Exp $ */
+/* $OpenBSD: uuencode.c,v 1.27 2013/05/17 00:13:14 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -80,7 +80,7 @@ dump_base64(FILE *fp, const u_char *data, u_int len)
 		fprintf(fp, "dump_base64: len > 65536\n");
 		return;
 	}
-	buf = xmalloc(2*len);
+	buf = xreallocarray(NULL, 2, len);
 	n = uuencode(data, len, buf, 2*len);
 	for (i = 0; i < n; i++) {
 		fprintf(fp, "%c", buf[i]);
