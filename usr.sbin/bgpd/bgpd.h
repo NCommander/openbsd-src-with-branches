@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.283 2015/03/14 02:43:02 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.284 2015/03/14 03:52:42 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -694,6 +694,7 @@ enum comp_ops {
 struct filter_peers {
 	u_int32_t	peerid;
 	u_int32_t	groupid;
+	u_int32_t	remote_as;
 	u_int16_t	ribid;
 };
 
