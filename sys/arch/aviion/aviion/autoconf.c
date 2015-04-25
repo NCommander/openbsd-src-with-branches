@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.15 2013/10/09 21:28:33 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.16 2013/10/10 21:24:58 miod Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -156,6 +156,7 @@ strtoi(const char *s)
 			break;
 		val *= 10;
 		val += c - '0';
+		c = *s++;
 	}
 
 	return val;

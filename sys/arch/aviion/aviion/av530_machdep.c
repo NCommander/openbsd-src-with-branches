@@ -1,4 +1,4 @@
-/*	$OpenBSD: av530_machdep.c,v 1.13 2014/11/16 12:30:56 deraadt Exp $	*/
+/*	$OpenBSD: av530_machdep.c,v 1.14 2014/12/16 21:29:05 miod Exp $	*/
 /*
  * Copyright (c) 2006, 2007, 2010 Miodrag Vallat.
  *
@@ -221,7 +221,7 @@ av530_get_boot_device(uint32_t *name, u_int unit)
 		case 0:
 			return AV530_SCSI1;
 		case 1:
-			return AV530_SCSI1;
+			return AV530_SCSI2;
 		}
 		break;
 	}
