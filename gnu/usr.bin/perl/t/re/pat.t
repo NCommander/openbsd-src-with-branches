@@ -20,7 +20,7 @@ BEGIN {
     require './test.pl';
 }
 
-plan tests => 722;  # Update this when adding/deleting tests.
+plan tests => 726;  # Update this when adding/deleting tests.
 
 run_tests() unless caller;
 
@@ -1588,6 +1588,20 @@ EOP
         like("X", qr/$x/, "UTF-8 of /[x]/i matches upper case");
     }
 
+    {	# [perl #123539]
+        like("TffffffffffffTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT5TTTTTTTTTTTTTTTTTTTTTTTTT3TTgTTTTTTTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTTTTTTTHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHiHHHHHHHfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff&ffff", qr/TffffffffffffTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT5TTTTTTTTTTTTTTTTTTTTTTTTT3TTgTTTTTTTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTTTTTTTHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHiHHHHHHHfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff&ffff/il, "");
+        like("TffffffffffffT\x{100}TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT5TTTTTTTTTTTTTTTTTTTTTTTTT3TTgTTTTTTTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTTTTTTTHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHiHHHHHHHfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff&ffff", qr/TffffffffffffT\x{100}TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT5TTTTTTTTTTTTTTTTTTTTTTTTT3TTgTTTTTTTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTTTTTTTHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHiHHHHHHHfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff&ffff/il, "");
+    }
+
+	{	# [perl #123604]
+		my($s, $x, @x) = ('abc', 'a', 'd');
+		my $long = 'b' x 2000;
+		my $eval = q{$s =~ m{$x[bbb]c} ? 1 : 0};
+		$eval =~ s{bbb}{$long};
+		my $match = eval $eval;
+		ok(1, "did not crash");
+		ok($match, "[bbb...] resolved as character class, not subscript");
+	}
 } # End of sub run_tests
 
 1;
