@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.75 2013/11/13 20:41:01 benno Exp $ */
+/*	$OpenBSD: control.c,v 1.76 2015/02/09 11:37:31 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -50,7 +50,12 @@ control_init(int restricted, char *path)
 
 	bzero(&sun, sizeof(sun));
 	sun.sun_family = AF_UNIX;
-	strlcpy(sun.sun_path, path, sizeof(sun.sun_path));
+	if (strlcpy(sun.sun_path, path, sizeof(sun.sun_path)) >=
+	    sizeof(sun.sun_path)) {
+		log_warn("control_init: socket name too long");
+		close(fd);
+		return (-1);
+	}
 
 	if (unlink(path) == -1)
 		if (errno != ENOENT) {
