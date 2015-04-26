@@ -1,4 +1,4 @@
-/*	$OpenBSD: sndiod.c,v 1.6 2014/03/05 20:24:16 ratchov Exp $	*/
+/*	$OpenBSD: sndiod.c,v 1.7 2015/01/16 06:40:12 deraadt Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -74,7 +74,7 @@
  * buffer size if neither ``-z'' nor ``-b'' is used
  */
 #ifndef DEFAULT_BUFSZ
-#define DEFAULT_BUFSZ	7860
+#define DEFAULT_BUFSZ	7680
 #endif
 
 /*
