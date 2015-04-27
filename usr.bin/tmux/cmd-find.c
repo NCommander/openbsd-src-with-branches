@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.100 2015/04/21 22:42:27 nicm Exp $ */
+/* $OpenBSD: cmd-find.c,v 1.1 2015/04/27 16:25:57 nicm Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -131,7 +131,7 @@ cmd_find_best_client(struct client **clist, u_int csize)
 	} else {
 		TAILQ_FOREACH(c_loop, &clients, entry) {
 			if (cmd_find_client_better(c_loop, c))
-				c_loop = c;
+				c = c_loop;
 		}
 	}
 	return (c);
