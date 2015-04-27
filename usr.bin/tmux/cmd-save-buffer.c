@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-save-buffer.c,v 1.26 2014/10/08 17:35:58 nicm Exp $ */
+/* $OpenBSD: cmd-save-buffer.c,v 1.27 2014/10/20 22:29:25 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -93,7 +93,7 @@ cmd_save_buffer_exec(struct cmd *self, struct cmd_q *cmdq)
 
 	if (c != NULL && c->session == NULL)
 		cwd = c->cwd;
-	else if ((s = cmd_current_session(cmdq, 0)) != NULL)
+	else if ((s = cmd_find_current(cmdq)) != NULL)
 		cwd = s->cwd;
 	else
 		cwd = AT_FDCWD;
