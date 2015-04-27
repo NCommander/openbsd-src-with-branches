@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.97 2015/01/16 06:40:00 deraadt Exp $	*/
+/*	$OpenBSD: show.c,v 1.98 2015/02/06 03:22:00 reyk Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -154,8 +154,6 @@ p_rttables(int af, u_int tableid, int hastable)
 			if (rtm->rtm_version != RTM_VERSION)
 				continue;
 			sa = (struct sockaddr *)(next + rtm->rtm_hdrlen);
-			if (af != AF_UNSPEC && sa->sa_family != af)
-				continue;
 			p_rtentry(rtm);
 		}
 		free(buf);
