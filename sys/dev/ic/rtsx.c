@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsx.c,v 1.10 2014/08/19 17:55:03 phessler Exp $	*/
+/*	$OpenBSD: rtsx.c,v 1.11 2015/03/14 03:38:47 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -18,7 +18,7 @@
  */
 
 /*
- * Realtek RTS5209/RTS5227/RTS5229/RTL8402 Card Reader driver.
+ * Realtek RTS52xx/RTL84xx Card Reader driver.
  */
 
 #include <sys/param.h>
