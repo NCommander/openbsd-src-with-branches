@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic6915.c,v 1.13 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: aic6915.c,v 1.14 2014/12/22 02:28:51 tedu Exp $	*/
 /*	$NetBSD: aic6915.c,v 1.15 2005/12/24 20:27:29 perry Exp $	*/
 
 /*-
@@ -405,6 +405,7 @@ sf_start(struct ifnet *ifp)
 			if (error) {
 				printf("%s: unable to load Tx buffer, "
 				    "error = %d\n", sc->sc_dev.dv_xname, error);
+				m_freem(m);
 				break;
 			}
 		}
