@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.57 2010/07/16 23:27:58 ray Exp $	*/
+/*	$OpenBSD: diff.c,v 1.58 2015/01/16 06:40:07 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -337,7 +337,7 @@ push_ignore_pats(char *pattern)
 	else {
 		/* old + "|" + new + NUL */
 		len = strlen(ignore_pats) + strlen(pattern) + 2;
-		ignore_pats = xrealloc(ignore_pats, 1, len);
+		ignore_pats = xreallocarray(ignore_pats, 1, len);
 		strlcat(ignore_pats, "|", len);
 		strlcat(ignore_pats, pattern, len);
 	}
