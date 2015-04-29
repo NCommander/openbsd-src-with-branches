@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.102 2014/09/06 09:42:23 mpi Exp $	*/
+/*	$OpenBSD: trap.c,v 1.103 2014/11/16 12:30:58 deraadt Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -90,9 +90,6 @@ save_vec(struct proc *p)
 	struct pcb *pcb = &p->p_addr->u_pcb;
 	struct vreg *pcb_vr = pcb->pcb_vr;
 	u_int32_t oldmsr, msr;
-
-	if (p == NULL)
-		return;
 
 	/* first we enable vector so that we dont throw an exception
 	 * in kernel mode
