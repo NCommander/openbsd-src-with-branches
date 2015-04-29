@@ -1,4 +1,4 @@
-/* $OpenBSD: gnum4.c,v 1.48 2015/03/14 23:00:43 millert Exp $ */
+/* $OpenBSD: gnum4.c,v 1.49 2015/04/25 15:33:47 espie Exp $ */
 
 /*
  * Copyright (c) 1999 Marc Espie
@@ -37,6 +37,7 @@
 #include <regex.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
