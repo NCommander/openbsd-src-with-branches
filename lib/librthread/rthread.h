@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.h,v 1.49 2014/07/01 03:32:18 guenther Exp $ */
+/*	$OpenBSD: rthread.h,v 1.50 2014/08/31 04:02:08 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -170,9 +170,7 @@ struct pthread {
 	LIST_ENTRY(pthread) threads;
 	TAILQ_ENTRY(pthread) waiting;
 	pthread_cond_t blocking_cond;
-	int sched_policy;
 	struct pthread_attr attr;
-	struct sched_param sched_param;
 	struct rthread_storage *local_storage;
 	struct rthread_cleanup_fn *cleanup_fns;
 	int myerrno;
