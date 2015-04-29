@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: daily,v 1.81 2014/07/02 13:39:41 sthen Exp $
+#	$OpenBSD: daily,v 1.82 2014/11/17 18:19:08 deraadt Exp $
 #	From: @(#)daily	8.2 (Berkeley) 1/25/94
 #
 # For local additions, create the file /etc/daily.local.
@@ -133,6 +133,8 @@ if [ "X$VERBOSESTATUS" != X0 ]; then
 	df -ikl
 	echo ""
 	dump W
+else
+	dump w | grep -vB1 ^Dump
 fi
 
 # The first two regular expressions handle sendmail, the third postfix.
