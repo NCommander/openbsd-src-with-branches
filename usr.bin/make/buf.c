@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.c,v 1.25 2012/11/07 14:18:41 espie Exp $	*/
+/*	$OpenBSD: buf.c,v 1.26 2015/04/25 15:33:47 espie Exp $	*/
 /*	$NetBSD: buf.c,v 1.9 1996/12/31 17:53:21 christos Exp $ */
 
 /*
@@ -69,6 +69,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
