@@ -1,4 +1,4 @@
-/*	$OpenBSD: pax.c,v 1.36 2014/05/23 19:47:49 guenther Exp $	*/
+/*	$OpenBSD: pax.c,v 1.37 2014/05/24 03:49:49 guenther Exp $	*/
 /*	$NetBSD: pax.c,v 1.5 1996/03/26 23:54:20 mrg Exp $	*/
 
 /*-
@@ -311,6 +311,7 @@ sig_cleanup(int which_sig)
 	(void) write(STDERR_FILENO, errbuf, strlen(errbuf));
 
 	ar_close(1);
+	sltab_process(1);
 	proc_dir(1);
 	if (tflag)
 		atdir_end();

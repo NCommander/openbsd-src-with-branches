@@ -1,4 +1,4 @@
-/*	$OpenBSD: tables.h,v 1.7 2004/11/29 16:23:22 otto Exp $	*/
+/*	$OpenBSD: tables.h,v 1.8 2006/08/05 23:05:13 ray Exp $	*/
 /*	$NetBSD: tables.h,v 1.3 1995/03/21 09:07:47 cgd Exp $	*/
 
 /*-
@@ -50,6 +50,7 @@
 #define N_TAB_SZ	541		/* interactive rename hash table */
 #define D_TAB_SZ	317		/* unique device mapping table */
 #define A_TAB_SZ	317		/* ftree dir access time reset table */
+#define SL_TAB_SZ	317		/* escape symlink tables */
 #define MAXKEYLEN	64		/* max number of chars for hash */
 #define DIRP_SIZE	64		/* initial size of created dir table */
 
@@ -143,11 +144,7 @@ typedef struct dlist {
  */
 
 typedef struct atdir {
-	char *name;	/* name of directory to reset */
-	dev_t dev;	/* dev and inode for fast lookup */
-	ino_t ino;
-	time_t mtime;	/* access and mod time to reset to */
-	time_t atime;
+	struct file_times ft;
 	struct atdir *fow;
 } ATDIR;
 
@@ -162,9 +159,7 @@ typedef struct atdir {
  */
 
 typedef struct dirdata {
-	char *name;	/* file name */
-	time_t mtime;	/* mtime to set */
-	time_t atime;	/* atime to set */
-	u_int16_t mode;	/* file mode to restore */
+	struct file_times ft;
+	u_int16_t mode;		/* file mode to restore */
 	u_int16_t frc_mode;	/* do we force mode settings? */
 } DIRDATA;
