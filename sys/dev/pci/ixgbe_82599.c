@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe_82599.c,v 1.10 2013/08/05 19:58:06 mikeb Exp $	*/
+/*	$OpenBSD: ixgbe_82599.c,v 1.11 2015/04/30 13:24:36 sthen Exp $	*/
 
 /******************************************************************************
 
@@ -1582,6 +1582,8 @@ sfp_check:
 			physical_layer = IXGBE_PHYSICAL_LAYER_1000BASE_T;
 		else if (comp_codes_1g & IXGBE_SFF_1GBASESX_CAPABLE)
 			physical_layer = IXGBE_PHYSICAL_LAYER_1000BASE_SX;
+		else if (comp_codes_1g & IXGBE_SFF_1GBASELX_CAPABLE)
+			physical_layer = IXGBE_PHYSICAL_LAYER_1000BASE_LX;
 		break;
 	default:
 		break;
