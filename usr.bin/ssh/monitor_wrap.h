@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_wrap.h,v 1.25 2015/01/19 19:52:16 markus Exp $ */
+/* $OpenBSD: monitor_wrap.h,v 1.26 2015/02/16 22:13:32 djm Exp $ */
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -45,8 +45,8 @@ void mm_inform_authserv(char *, char *);
 struct passwd *mm_getpwnamallow(const char *);
 char *mm_auth2_read_banner(void);
 int mm_auth_password(struct Authctxt *, char *);
-int mm_key_allowed(enum mm_keytype, char *, char *, Key *);
-int mm_user_key_allowed(struct passwd *, Key *);
+int mm_key_allowed(enum mm_keytype, char *, char *, Key *, int);
+int mm_user_key_allowed(struct passwd *, Key *, int);
 int mm_hostbased_key_allowed(struct passwd *, char *, char *, Key *);
 int mm_auth_rhosts_rsa_key_allowed(struct passwd *, char *, char *, Key *);
 int mm_key_verify(Key *, u_char *, u_int, u_char *, u_int);
