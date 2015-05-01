@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.80 2014/12/16 18:30:04 tedu Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.81 2015/03/14 03:38:51 jsg Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -501,7 +501,7 @@ vn_ioctl(struct file *fp, u_long com, caddr_t data, struct proc *p)
 int
 vn_poll(struct file *fp, int events, struct proc *p)
 {
-	return (VOP_POLL(((struct vnode *)fp->f_data), events, p));
+	return (VOP_POLL(((struct vnode *)fp->f_data), fp->f_flag, events, p));
 }
 
 /*

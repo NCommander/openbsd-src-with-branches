@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_tty.c,v 1.13 2014/12/16 18:30:04 tedu Exp $	*/
+/*	$OpenBSD: tty_tty.c,v 1.14 2015/03/14 03:38:51 jsg Exp $	*/
 /*	$NetBSD: tty_tty.c,v 1.13 1996/03/30 22:24:46 christos Exp $	*/
 
 /*-
@@ -137,7 +137,7 @@ cttypoll(dev_t dev, int events, struct proc *p)
 
 	if (ttyvp == NULL)	/* try operation to get EOF/failure */
 		return (seltrue(dev, events, p));
-	return (VOP_POLL(ttyvp, events, p));
+	return (VOP_POLL(ttyvp, FREAD|FWRITE, events, p));
 }
 
 /*ARGSUSED*/
