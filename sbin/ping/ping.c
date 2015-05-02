@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.120 2015/04/19 12:56:42 dlg Exp $	*/
+/*	$OpenBSD: ping.c,v 1.121 2015/04/20 00:36:51 dlg Exp $	*/
 /*	$NetBSD: ping.c,v 1.20 1995/08/11 22:37:58 cgd Exp $	*/
 
 /*
@@ -317,7 +317,7 @@ main(int argc, char *argv[])
 #endif	/* SMALL */
 		case 't':
 			options |= F_TTL;
-			ttl = (u_char)strtonum(optarg, 1, 255, &errstr);
+			ttl = strtonum(optarg, 0, MAXTTL, &errstr);
 			if (errstr)
 				errx(1, "ttl value is %s: %s", errstr, optarg);
 			break;
