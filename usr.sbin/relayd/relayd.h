@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.207 2015/01/22 17:42:09 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.208 2015/03/09 17:20:38 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -1253,7 +1253,8 @@ struct ca_pkey	*pkey_add(struct relayd *, EVP_PKEY *, objid_t);
 int		 expand_string(char *, size_t, const char *, const char *);
 void		 translate_string(char *);
 void		 purge_key(char **, off_t);
-void		 purge_table(struct tablelist *, struct table *);
+void		 purge_table(struct relayd *, struct tablelist *,
+		    struct table *);
 void		 purge_relay(struct relayd *, struct relay *);
 char		*digeststr(enum digest_type, const u_int8_t *, size_t, char *);
 const char	*canonicalize_host(const char *, char *, size_t);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.23 2015/01/21 21:50:33 deraadt Exp $	*/
+/*	$OpenBSD: config.c,v 1.24 2015/01/22 17:42:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2011 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -142,7 +142,7 @@ config_purge(struct relayd *env, u_int reset)
 
 	if (what & CONFIG_TABLES && env->sc_tables != NULL) {
 		while ((table = TAILQ_FIRST(env->sc_tables)) != NULL)
-			purge_table(env->sc_tables, table);
+			purge_table(env, env->sc_tables, table);
 		env->sc_tablecount = 0;
 	}
 	if (what & CONFIG_RDRS && env->sc_rdrs != NULL) {
