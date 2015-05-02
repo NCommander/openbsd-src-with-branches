@@ -1,4 +1,4 @@
-/*	$OpenBSD: sgec.c,v 1.25 2014/12/22 02:26:54 tedu Exp $	*/
+/*	$OpenBSD: sgec.c,v 1.26 2015/03/28 11:24:25 mpi Exp $	*/
 /*      $NetBSD: sgec.c,v 1.5 2000/06/04 02:14:14 matt Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -594,6 +594,7 @@ sgec_intr(sc)
 	if (csr & ZE_NICSR5_ME) {
 		printf("%s: memory error, resetting\n", sc->sc_dev.dv_xname);
 		zeinit(sc);
+		splx(s);
 		return (1);
 	}
 
