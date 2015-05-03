@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.77 2015/04/09 16:48:29 florian Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.78 2015/04/18 09:27:54 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -784,6 +784,13 @@ server_abort_http(struct client *clt, u_int code, const char *msg)
 	case 401:
 		if (asprintf(&extraheader,
 		    "WWW-Authenticate: Basic realm=\"%s\"\r\n", msg) == -1) {
+			code = 500;
+			extraheader = NULL;
+		}
+		break;
+	case 416:
+		if (asprintf(&extraheader,
+		    "Content-Range: %s\r\n", msg) == -1) {
 			code = 500;
 			extraheader = NULL;
 		}
