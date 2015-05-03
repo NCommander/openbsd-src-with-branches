@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciss.c,v 1.71 2014/09/14 14:17:24 jsg Exp $	*/
+/*	$OpenBSD: ciss.c,v 1.72 2015/03/14 03:38:47 jsg Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -756,8 +756,10 @@ ciss_ldmap(struct ciss_softc *sc)
 	total = sizeof(*lmap) + (sc->maxunits - 1) * sizeof(lmap->map);
 
 	ccb = scsi_io_get(&sc->sc_iopool, SCSI_POLL|SCSI_NOSLEEP);
-	if (ccb == NULL)
+	if (ccb == NULL) {
+		CISS_UNLOCK_SCRATCH(sc, lock);
 		return ENOMEM;
+	}
 
 	ccb->ccb_len = total;
 	ccb->ccb_data = lmap;
@@ -800,8 +802,10 @@ ciss_sync(struct ciss_softc *sc)
 	flush->flush = sc->sc_flush;
 
 	ccb = scsi_io_get(&sc->sc_iopool, SCSI_POLL|SCSI_NOSLEEP);
-	if (ccb == NULL)
+	if (ccb == NULL) {
+		CISS_UNLOCK_SCRATCH(sc, lock);
 		return ENOMEM;
+	}
 
 	ccb->ccb_len = sizeof(*flush);
 	ccb->ccb_data = flush;
