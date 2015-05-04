@@ -1,4 +1,4 @@
-/*	$OpenBSD: clnt_raw.c,v 1.16 2009/06/04 03:51:29 schwarze Exp $ */
+/*	$OpenBSD: clnt_raw.c,v 1.17 2010/09/01 14:43:34 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -124,7 +124,7 @@ clntraw_create(u_long prog, u_long vers)
 	return (client);
 
 fail:
-	mem_free((caddr_t)clntraw_private, sizeof(clntraw_private));
+	mem_free((caddr_t)clntraw_private, sizeof(*clntraw_private));
 	clntraw_private = NULL;
 	rpc_createerr.cf_stat = RPC_SYSTEMERROR;
 	rpc_createerr.cf_error.re_errno = errno;
