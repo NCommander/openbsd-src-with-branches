@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_swap_encrypt.c,v 1.19 2014/11/18 02:37:31 tedu Exp $	*/
+/*	$OpenBSD: uvm_swap_encrypt.c,v 1.20 2015/03/14 03:38:53 jsg Exp $	*/
 
 /*
  * Copyright 1999 Niels Provos <provos@citi.umich.edu>
@@ -39,6 +39,7 @@
 #include <crypto/rijndael.h>
 
 #include <uvm/uvm.h>
+#include <uvm/uvm_swap_encrypt.h>
 
 struct swap_key *kcur = NULL;
 rijndael_ctx swap_ctxt;
