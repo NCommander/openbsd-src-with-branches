@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.193 2015/04/10 13:58:20 dlg Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.194 2015/04/13 08:52:51 mpi Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -559,6 +559,7 @@ ether_input(struct mbuf *m, void *hdr)
 				return (1);
 			/* The bridge has determined it's for us. */
 			ifp = m->m_pkthdr.rcvif;
+			m_adj(m, ETHER_HDR_LEN);
 		}
 	}
 #endif
