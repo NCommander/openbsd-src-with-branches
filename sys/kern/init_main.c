@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.237 2015/04/12 11:12:09 dlg Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.238 2015/05/01 11:18:21 miod Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/core.h>
 #include <sys/filedesc.h>
 #include <sys/file.h>
 #include <sys/errno.h>
@@ -169,8 +168,8 @@ struct emul emul_native = {
 	0,
 	copyargs,
 	setregs,
-	NULL,
-	coredump_trad,
+	NULL,		/* fixup */
+	NULL,		/* coredump */
 	sigcode,
 	esigcode,
 	EMUL_ENABLED | EMUL_NATIVE,

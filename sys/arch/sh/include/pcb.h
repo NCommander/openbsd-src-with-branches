@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.2 2007/03/02 06:11:54 miod Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.3 2008/06/26 05:42:12 ray Exp $	*/
 /*	$NetBSD: pcb.h,v 1.7 2002/05/09 12:28:08 uch Exp $	*/
 
 /*-
@@ -40,9 +40,6 @@ struct pcb {
 	struct	switchframe	pcb_sf;		/* kernel context for resume */
 	caddr_t			pcb_onfault;	/* for copyin/out fault */
 	struct	fpreg		pcb_fp;		/* fp context for resume */
-};
-
-struct md_coredump {
 };
 
 extern struct pcb *curpcb;

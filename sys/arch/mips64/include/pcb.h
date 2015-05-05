@@ -1,4 +1,4 @@
-/*      $OpenBSD: pcb.h,v 1.5 2011/03/23 16:54:36 pirofti Exp $	*/
+/*      $OpenBSD: pcb.h,v 1.6 2014/03/22 00:01:04 miod Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -55,14 +55,6 @@ struct pcb {
 	uint	pcb_nwired;		/* number of extra wired TLB entries */
 	vaddr_t	pcb_wiredva;		/* va of above */
 	vaddr_t	pcb_wiredpc;		/* last tracked pc value within above */
-};
-
-/*
- * The pcb is augmented with machine-dependent additional data for
- * core dumps. For the MIPS, there is nothing to add.
- */
-struct md_coredump {
-	long	md_pad[8];
 };
 
 #endif	/* !_MIPS64_PCB_H_ */
