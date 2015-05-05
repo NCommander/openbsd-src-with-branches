@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.61 2013/12/20 08:51:28 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.62 2014/09/07 10:12:17 guenther Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -88,9 +88,10 @@ _aucat_wmsg(struct aucat *hdl, int *eof)
 	ssize_t n;
 	unsigned char *data;
 
-	if (hdl->wstate == WSTATE_IDLE)
+	if (hdl->wstate == WSTATE_IDLE) {
 		hdl->wstate = WSTATE_MSG;
 		hdl->wtodo = sizeof(struct amsg);
+	}
 	if (hdl->wstate != WSTATE_MSG) {
 		DPRINTF("_aucat_wmsg: bad state\n");
 		abort();
