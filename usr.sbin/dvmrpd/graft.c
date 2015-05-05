@@ -1,4 +1,4 @@
-/*	$OpenBSD: graft.c,v 1.2 2010/05/26 13:56:07 nicm Exp $ */
+/*	$OpenBSD: graft.c,v 1.3 2014/10/25 03:23:49 lteo Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -58,7 +58,7 @@ send_graft(struct iface *iface, struct in_addr addr, void *data, int len)
 	dst.sin_addr.s_addr = addr.s_addr;
 
 	/* update chksum */
-	dvmrp_hdr = ibuf_seek(buf, 0, sizeof(dvmrp_hdr));
+	dvmrp_hdr = ibuf_seek(buf, 0, sizeof(*dvmrp_hdr));
 	dvmrp_hdr->chksum = in_cksum(buf->buf, buf->wpos);
 
 	ret = send_packet(iface, buf->buf, buf->wpos, &dst);
