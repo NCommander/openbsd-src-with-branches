@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.22 2014/07/02 15:34:43 tobiasu Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.23 2014/07/12 18:44:42 tedu Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -157,13 +157,11 @@ mbattach(struct device *parent, struct device *self, void *aux)
 
 	for (node = OF_child(OF_peer(0)); node; node=OF_peer(node)) {
 		bzero (name, sizeof(name));
-		if (OF_getprop(node, "device_type", name,
-		    sizeof(name)) <= 0) {
-			if (OF_getprop(node, "name", name,
-			    sizeof(name)) <= 0)
-				printf ("name not found on node %x\n",
-				    node);
+		if (OF_getprop(node, "device_type", name, sizeof(name)) <= 0) {
+			if (OF_getprop(node, "name", name, sizeof(name)) <= 0) {
+				printf ("name not found on node %x\n", node);
 				continue;
+			}
 		}
 		if (strcmp(name, "memory") == 0) {
 			nca.ca_name = "mem";
