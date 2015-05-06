@@ -1,4 +1,4 @@
-/*	$OpenBSD: gmon.c,v 1.22 2013/02/12 08:06:22 mpi Exp $ */
+/*	$OpenBSD: gmon.c,v 1.23 2015/01/16 16:48:51 deraadt Exp $ */
 /*-
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -230,6 +230,7 @@ _mcleanup(void)
 	log = open("gmon.log", O_CREAT|O_TRUNC|O_WRONLY, 0664);
 	if (log < 0) {
 		perror("mcount: gmon.log");
+		close(fd);
 		return;
 	}
 	snprintf(dbuf, sizeof dbuf, "[mcleanup1] kcount 0x%x ssiz %d\n",
