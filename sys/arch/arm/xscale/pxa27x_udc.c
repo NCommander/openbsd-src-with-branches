@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa27x_udc.c,v 1.28 2011/04/07 15:30:15 miod Exp $ */
+/*	$OpenBSD: pxa27x_udc.c,v 1.29 2013/04/16 14:55:23 deraadt Exp $ */
 
 /*
  * Copyright (c) 2007 Dale Rahn <drahn@openbsd.org>
@@ -625,7 +625,7 @@ pxaudc_write(struct pxaudc_softc *sc, struct usbf_xfer *xfer)
 	if (csr & USBDC_UDCCSR_SST)
 		csr_o |= USBDC_UDCCSR_SST;
 	if (csr_o != 0)
-	CSR_WRITE_4(sc, USBDC_UDCCSR(ep), csr_o);
+		CSR_WRITE_4(sc, USBDC_UDCCSR(ep), csr_o);
 
 
 	while (CSR_READ_4(sc, USBDC_UDCCSR(ep)) & USBDC_UDCCSR_BNF) {
