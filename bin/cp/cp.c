@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp.c,v 1.36 2014/05/21 06:23:02 guenther Exp $	*/
+/*	$OpenBSD: cp.c,v 1.37 2015/01/16 06:39:31 deraadt Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -360,7 +360,7 @@ copy(char *argv[], enum op type, int fts_options)
 				 * unmodified by the umask; arguably wrong,
 				 * but it's been that way forever.
 				 */
-				if (pflag && setfile(curr->fts_statp, 0))
+				if (pflag && setfile(curr->fts_statp, -1))
 					rval = 1;
 				else if (fts_dne(curr))
 					(void)chmod(to.p_path,
