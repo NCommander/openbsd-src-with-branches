@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.504 2015/05/06 08:35:39 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.505 2015/05/06 23:56:46 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -34,8 +34,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <termios.h>
-
-#include "array.h"
 
 extern char    *__progname;
 extern char   **environ;
