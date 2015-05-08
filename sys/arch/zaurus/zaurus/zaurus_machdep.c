@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_machdep.c,v 1.56 2015/01/18 10:17:42 jsg Exp $	*/
+/*	$OpenBSD: zaurus_machdep.c,v 1.57 2015/05/05 02:13:47 guenther Exp $	*/
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -121,13 +121,13 @@
 #include <sys/msgbuf.h>
 #include <sys/reboot.h>
 #include <sys/termios.h>
+#include <sys/kcore.h>
 
 #include <uvm/uvm_extern.h>
 
 #include <sys/conf.h>
 #include <sys/queue.h>
 #include <dev/cons.h>
-#include <dev/ic/smc91cxxreg.h>
 #include <sys/socket.h>
 
 #include <machine/db_machdep.h>
