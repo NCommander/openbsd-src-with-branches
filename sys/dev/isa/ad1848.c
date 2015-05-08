@@ -1,4 +1,4 @@
-/*	$OpenBSD: ad1848.c,v 1.39 2013/05/15 08:29:24 ratchov Exp $	*/
+/*	$OpenBSD: ad1848.c,v 1.40 2014/09/14 14:17:25 jsg Exp $	*/
 /*	$NetBSD: ad1848.c,v 1.45 1998/01/30 02:02:38 augustss Exp $	*/
 
 /*
@@ -1274,7 +1274,7 @@ ad1848_reset(struct ad1848_softc *sc)
 
 	/* Clear interrupt status */
 	if (sc->mode == 2)
-	ad_write(sc, CS_IRQ_STATUS, 0);
+		ad_write(sc, CS_IRQ_STATUS, 0);
 	ADWRITE(sc, AD1848_STATUS, 0);
 
 #ifdef AUDIO_DEBUG
