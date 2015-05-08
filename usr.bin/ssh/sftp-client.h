@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-client.h,v 1.25 2014/04/21 14:36:16 logan Exp $ */
+/* $OpenBSD: sftp-client.h,v 1.26 2015/01/14 13:54:13 djm Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
@@ -111,7 +111,7 @@ int do_download(struct sftp_conn *, const char *, const char *,
     Attrib *, int, int, int);
 
 /*
- * Recursively download 'remote_directory' to 'local_directory'. Preserve 
+ * Recursively download 'remote_directory' to 'local_directory'. Preserve
  * times if 'pflag' is set
  */
 int download_dir(struct sftp_conn *, const char *, const char *,
@@ -124,7 +124,7 @@ int download_dir(struct sftp_conn *, const char *, const char *,
 int do_upload(struct sftp_conn *, const char *, const char *, int, int, int);
 
 /*
- * Recursively upload 'local_directory' to 'remote_directory'. Preserve 
+ * Recursively upload 'local_directory' to 'remote_directory'. Preserve
  * times if 'pflag' is set
  */
 int upload_dir(struct sftp_conn *, const char *, const char *, int, int, int,

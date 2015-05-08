@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.h,v 1.115 2014/07/15 15:54:14 millert Exp $ */
+/* $OpenBSD: channels.h,v 1.116 2015/01/19 20:07:45 markus Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -110,7 +110,7 @@ struct Channel {
 	time_t	notbefore;	/* Pause IO until deadline (time_t) */
 	int     delayed;	/* post-select handlers for newly created
 				 * channels are delayed until the first call
-				 * to a matching pre-select handler. 
+				 * to a matching pre-select handler.
 				 * this way post-select handlers are not
 				 * accidentally called if a FD gets reused */
 	Buffer  input;		/* data read from socket, to be sent over
