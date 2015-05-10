@@ -1,4 +1,4 @@
-/* 	$OpenBSD: vmparam.h,v 1.7 2011/05/30 22:25:20 oga Exp $	*/
+/* 	$OpenBSD: vmparam.h,v 1.8 2011/09/21 10:09:52 miod Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.23 2003/05/22 05:47:07 thorpej Exp $	*/
 
 /*
@@ -55,6 +55,8 @@
  * Mappings >= KERNEL_BASE are constant across all processes
  */
 #define	KERNEL_BASE		ARM_KERNEL_BASE
+
+#define VM_KERNEL_SPACE_SIZE	0x20000000
 
 /*
  * Override the default pager_map size, there's not enough KVA.
