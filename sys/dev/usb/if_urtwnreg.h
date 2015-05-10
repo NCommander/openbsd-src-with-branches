@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urtwnreg.h,v 1.4 2013/04/15 09:23:01 mglocker Exp $	*/
+/*	$OpenBSD: if_urtwnreg.h,v 1.5 2015/05/04 11:46:29 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1153,7 +1153,8 @@ struct urtwn_softc {
 	struct usbd_pipe		*tx_pipe[R92C_MAX_EPOUT];
 	int				ac2idx[EDCA_NUM_AC];
 	u_int				sc_flags;
-#define URTWN_FLAG_CCK_HIPWR	0x01
+#define URTWN_FLAG_CCK_HIPWR		0x01
+#define URTWN_FLAG_FORCE_RAID_11B	0x02
 
 	u_int				chip;
 #define	URTWN_CHIP_92C		0x01
