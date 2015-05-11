@@ -1,4 +1,4 @@
-/*	$OpenBSD: audioamd.c,v 1.2 2013/05/15 08:29:23 ratchov Exp $	*/
+/*	$OpenBSD: audioamd.c,v 1.3 2013/05/15 21:19:16 ratchov Exp $	*/
 /*	$NetBSD: audioamd.c,v 1.26 2011/06/04 01:27:57 tsutsui Exp $	*/
 
 /*
@@ -107,7 +107,8 @@ struct am7930_glue audioamd_glue = {
 	audioamd_codec_iread16,
 	audioamd_codec_iwrite16,
 	audioamd_onopen,
-	audioamd_onclose
+	audioamd_onclose,
+	8
 };
 
 /*
