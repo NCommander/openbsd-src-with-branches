@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.1 2011/10/17 06:39:20 guenther Exp $ */
+/*	$OpenBSD: cerror.S,v 1.2 2013/07/05 21:10:50 miod Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +31,8 @@
 #include "SYS.h"
 
 	.globl	_C_LABEL(__errno)
-_C_LABEL(_cerror):
+	.globl	_C_LABEL(__cerror)
+_C_LABEL(__cerror):
 	pushl	%r0
 	calls	$0, _C_LABEL(__errno)
 	movl	(%sp)+, (%r0)
