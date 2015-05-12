@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi_if.h,v 1.6 2006/04/07 22:41:32 jsg Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: midi_if.h,v 1.3 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*
@@ -54,12 +54,6 @@ struct midi_hw_if {
 	int	(*ioctl)(void *, u_long, caddr_t, int, struct proc *);
 };
 
-void	       midi_attach(struct midi_softc *, struct device *);
-struct device *midi_attach_mi(struct midi_hw_if *, void *, 
-				   struct device *);
-
-int	       midi_unit_count(void);
-void	       midi_getinfo(dev_t, struct midi_info *);
-int	       midi_writebytes(int, u_char *, int);
+struct device *midi_attach_mi(struct midi_hw_if *, void *, struct device *);
 
 #endif /* _SYS_DEV_MIDI_IF_H_ */
