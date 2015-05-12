@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.168 2014/07/12 18:48:51 tedu Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.169 2014/07/13 23:10:23 deraadt Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -2754,8 +2754,10 @@ hifn_mkmbuf_chain(int totlen, struct mbuf *mtemplate)
 		}
 	}
 	MCLGET(m0, M_DONTWAIT);
-	if (!(m0->m_flags & M_EXT))
+	if (!(m0->m_flags & M_EXT)) {
 		m_freem(m0);
+		return (NULL);
+	}
 	len = MCLBYTES;
 
 	totlen -= len;
@@ -2770,6 +2772,7 @@ hifn_mkmbuf_chain(int totlen, struct mbuf *mtemplate)
 		}
 		MCLGET(m, M_DONTWAIT);
 		if (!(m->m_flags & M_EXT)) {
+			m_free(m);
 			m_freem(m0);
 			return (NULL);
 		}
