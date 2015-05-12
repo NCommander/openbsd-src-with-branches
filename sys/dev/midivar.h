@@ -1,4 +1,4 @@
-/*	$OpenBSD: midivar.h,v 1.6 2012/03/30 08:18:19 ratchov Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexandre Ratchov
@@ -72,7 +72,6 @@ struct midi_softc {
 	struct device	    dev;
 	struct midi_hw_if  *hw_if;
 	void		   *hw_hdl;
-	int	 	    isopen;
 	int		    isbusy;		/* concerns only the output */
 	int		    isdying;
 	int		    flags;		/* open flags */
