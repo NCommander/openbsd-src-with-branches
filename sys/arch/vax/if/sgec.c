@@ -1,4 +1,4 @@
-/*	$OpenBSD: sgec.c,v 1.26 2015/03/28 11:24:25 mpi Exp $	*/
+/*	$OpenBSD: sgec.c,v 1.27 2015/05/02 14:33:19 jsg Exp $	*/
 /*      $NetBSD: sgec.c,v 1.5 2000/06/04 02:14:14 matt Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -385,7 +385,7 @@ zestart(ifp)
 		}
 		idx = sc->sc_nexttx;
 		IF_DEQUEUE(&sc->sc_if.if_snd, m);
-		if (m == 0)
+		if (m == NULL)
 			goto out;
 		/*
 		 * Count number of mbufs in chain.

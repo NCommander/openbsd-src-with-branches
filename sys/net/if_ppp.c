@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ppp.c,v 1.81 2015/03/18 12:23:15 dlg Exp $	*/
+/*	$OpenBSD: if_ppp.c,v 1.82 2015/04/10 13:58:20 dlg Exp $	*/
 /*	$NetBSD: if_ppp.c,v 1.39 1997/05/17 21:11:59 christos Exp $	*/
 
 /*
@@ -736,7 +736,7 @@ pppoutput(struct ifnet *ifp, struct mbuf *m0, struct sockaddr *dst,
      * (This assumes M_LEADINGSPACE is always 0 for a cluster mbuf.)
      */
     M_PREPEND(m0, PPP_HDRLEN, M_DONTWAIT);
-    if (m0 == 0) {
+    if (m0 == NULL) {
 	error = ENOBUFS;
 	goto bad;
     }

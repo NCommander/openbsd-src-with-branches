@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.117 2015/02/10 00:53:55 pelikan Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.118 2015/02/10 21:56:10 miod Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -1157,7 +1157,7 @@ bpf_mcopy(const void *src_arg, void *dst_arg, size_t len)
 	m = src_arg;
 	dst = dst_arg;
 	while (len > 0) {
-		if (m == 0)
+		if (m == NULL)
 			panic("bpf_mcopy");
 		count = min(m->m_len, len);
 		bcopy(mtod(m, caddr_t), (caddr_t)dst, count);

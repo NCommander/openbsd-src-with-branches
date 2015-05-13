@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.129 2015/04/14 14:20:01 mikeb Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.130 2015/04/17 11:04:02 mikeb Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -132,7 +132,7 @@ ipsec_common_input(struct mbuf *m, int skip, int protoff, int af, int sproto,
 	IPSEC_ISTAT(espstat.esps_input, ahstat.ahs_input,
 	    ipcompstat.ipcomps_input);
 
-	if (m == 0) {
+	if (m == NULL) {
 		DPRINTF(("ipsec_common_input(): NULL packet received\n"));
 		IPSEC_ISTAT(espstat.esps_hdrops, ahstat.ahs_hdrops,
 		    ipcompstat.ipcomps_hdrops);
