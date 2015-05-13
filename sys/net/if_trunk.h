@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_trunk.h,v 1.19 2014/12/04 00:01:53 tedu Exp $	*/
+/*	$OpenBSD: if_trunk.h,v 1.20 2015/05/11 08:41:43 mpi Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -141,6 +141,8 @@ struct trunk_port {
 	/* Redirected callbacks */
 	void	(*tp_watchdog)(struct ifnet *);
 	int	(*tp_ioctl)(struct ifnet *, u_long, caddr_t);
+	int	(*tp_output)(struct ifnet *, struct mbuf *, struct sockaddr *,
+		    struct rtentry *);
 
 	SLIST_ENTRY(trunk_port)		tp_entries;
 };
