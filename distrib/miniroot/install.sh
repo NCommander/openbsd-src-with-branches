@@ -1,5 +1,5 @@
 #!/bin/ksh
-#	$OpenBSD: install.sh,v 1.265 2015/04/13 21:27:07 deraadt Exp $
+#	$OpenBSD: install.sh,v 1.266 2015/04/27 23:17:11 djm Exp $
 #	$NetBSD: install.sh,v 1.5.2.8 1996/08/27 18:15:05 gwr Exp $
 #
 # Copyright (c) 1997-2015 Todd Miller, Theo de Raadt, Ken Westerback
@@ -111,8 +111,6 @@ _fsent=
 
 # Remove traces of previous install attempt.
 rm -f /tmp/fstab*
-
-ask_yn "Use DUIDs rather than device names in fstab?" yes && FSTABFLAG=-F
 
 # Configure the disk(s).
 while :; do
