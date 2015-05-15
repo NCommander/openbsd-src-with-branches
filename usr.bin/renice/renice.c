@@ -1,4 +1,4 @@
-/*	$OpenBSD: renice.c,v 1.16 2013/11/15 22:20:04 millert Exp $	*/
+/*	$OpenBSD: renice.c,v 1.17 2015/03/20 19:42:29 millert Exp $	*/
 
 /*
  * Copyright (c) 2009, 2015 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -180,7 +180,6 @@ renice(struct renice_param *p, struct renice_param *end)
 __dead void
 usage(void)
 {
-	fprintf(stderr, "usage: renice -n increment [[-g] pgrp ...] "
-	    "[[-p] pid ...] [[-u] user ...]\n");
+	fprintf(stderr, "usage: renice [-n] increment [-gpu] id\n");
 	exit(1);
 }
