@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_var.h,v 1.25 2015/04/23 09:45:24 dlg Exp $	*/
+/*	$OpenBSD: if_var.h,v 1.26 2015/05/15 10:15:13 mpi Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -389,6 +389,7 @@ do {									\
 /* default interface priorities */
 #define IF_WIRED_DEFAULT_PRIORITY	0
 #define IF_WIRELESS_DEFAULT_PRIORITY	4
+#define IF_CARP_DEFAULT_PRIORITY	15
 
 /*
  * Network stack input queues.
