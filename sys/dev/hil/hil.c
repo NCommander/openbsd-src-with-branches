@@ -1,4 +1,4 @@
-/*	$OpenBSD: hil.c,v 1.24 2010/11/20 16:45:46 miod Exp $	*/
+/*	$OpenBSD: hil.c,v 1.25 2013/11/18 20:21:51 deraadt Exp $	*/
 /*
  * Copyright (c) 2003, 2004, Miodrag Vallat.
  * All rights reserved.
@@ -616,6 +616,7 @@ hilempty(struct hil_softc *sc)
 			 * configuration has changed.
 			 */
 			hilconfig(sc, oldmaxdev);
+			splx(s);
 			return;
 		}
 	}
