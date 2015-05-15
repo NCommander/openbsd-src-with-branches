@@ -1,4 +1,4 @@
-/* $OpenBSD: imx.c,v 1.3 2013/11/06 19:03:07 syl Exp $ */
+/* $OpenBSD: imx.c,v 1.4 2015/05/15 15:35:43 jsg Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
@@ -172,8 +172,8 @@ struct board_dev novena_devs[] = {
 	{ "imxgpio",	4 },
 	{ "imxgpio",	5 },
 	{ "imxgpio",	6 },
+	{ "imxesdhc",	1 },
 	{ "imxesdhc",	2 },
-	{ "imxesdhc",	3 },
 	{ "ehci",	0 },
 	{ "imxenet",	0 },
 	{ "ahci",	0 },
