@@ -1,4 +1,4 @@
-/*	$OpenBSD: rindex.S,v 1.4 2009/12/11 05:10:17 miod Exp $ */
+/*	$OpenBSD: strrchr.S,v 1.1 2014/11/30 19:43:56 deraadt Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,8 +33,9 @@
 
 #include <machine/asm.h>
 
+WEAK_ALIAS(rindex, strrchr)
+
 LEAF(strrchr, 0)
-ALEAF(rindex)
 	.set	reorder
 	move	v0, zero		# default if not found
 1:
