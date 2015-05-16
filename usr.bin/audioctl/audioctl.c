@@ -178,10 +178,7 @@ prval(u_int format, void *valp)
 		v = *(u_int *)valp;
 		cm = "";
 		if (v & AUMODE_PLAY) {
-			if (v & AUMODE_PLAY_ALL)
-				fprintf(out, "play");
-			else
-				fprintf(out, "playsync");
+			fprintf(out, "play");
 			cm = ",";
 		}
 		if (v & AUMODE_RECORD)
