@@ -40,8 +40,6 @@ struct midi_info {
 #define MIDI_PROP_OUT_INTR  1
 #define MIDI_PROP_CAN_INPUT 2
 
-struct midi_softc;
-
 struct midi_hw_if {
 	int	(*open)(void *, int, 	/* open hardware */
 			void (*)(void *, int), /* input callback */
