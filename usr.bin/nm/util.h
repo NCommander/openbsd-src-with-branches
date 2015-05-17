@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.1 2004/10/09 20:26:57 mickey Exp $	*/
+/*	$OpenBSD: util.h,v 1.2 2004/10/09 22:11:11 millert Exp $	*/
 
 /*
  * Placed in the public domain by Todd C. Miller <Todd.Miller@courtesan.com>
@@ -29,3 +29,4 @@
 } while (0)
 
 extern int usemmap;
+extern int dynamic_only;
