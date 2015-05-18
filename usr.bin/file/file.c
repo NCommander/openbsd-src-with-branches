@@ -1,4 +1,4 @@
-/* $OpenBSD: file.c,v 1.36 2015/04/27 13:52:17 nicm Exp $ */
+/* $OpenBSD: file.c,v 1.37 2015/04/28 02:26:43 lteo Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -186,7 +186,6 @@ main(int argc, char **argv)
 	}
 	if (magicfp == NULL)
 		err(1, "%s", magicpath);
-	setvbuf(magicfp, NULL, _IOLBF, 0); /* stops stdio calling fstat */
 
 	parent = getpid();
 	if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pair) != 0)
