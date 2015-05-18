@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.115 2014/12/23 10:59:29 aoyama Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.116 2015/02/25 17:41:22 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -868,17 +868,8 @@ luna88k_ext_int(struct trapframe *eframe)
 		case 5:
 		case 4:
 		case 3:
-#ifdef MULTIPROCESSOR
-			if (CPU_IS_PRIMARY(ci)) {
-				if (old_spl < IPL_SCHED)
-					__mp_lock(&kernel_lock);
-#endif
+			if (CPU_IS_PRIMARY(ci))
 				isrdispatch_autovec(cur_int_level);
-#ifdef MULTIPROCESSOR
-				if (old_spl < IPL_SCHED)
-					__mp_unlock(&kernel_lock);
-			}
-#endif
 			break;
 		default:
 			printf("%s: cpu%d level %d interrupt.\n",
