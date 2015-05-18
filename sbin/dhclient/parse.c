@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.37 2014/01/21 03:07:50 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.38 2014/05/05 18:02:49 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -351,6 +351,7 @@ parse_date(FILE *cfile)
 		switch (token) {
 		case TOK_NAME:
 		case TOK_NUMBER:
+		case TOK_NUMBER_OR_NAME:
 		case '/':
 		case ':':
 			token = next_token(&val, cfile);
