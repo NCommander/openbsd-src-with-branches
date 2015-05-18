@@ -1,4 +1,4 @@
-/*	$OpenBSD: constraint.c,v 1.8 2015/04/21 01:49:19 jsg Exp $	*/
+/*	$OpenBSD: constraint.c,v 1.9 2015/05/17 18:31:32 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -66,6 +66,7 @@ void	*httpsdate_query(const char *, const char *, const char *,
 char	*tls_readline(struct tls *, size_t *, size_t *, struct timeval *);
 
 extern u_int constraint_cnt;
+extern u_int peer_cnt;
 
 struct httpsdate {
 	char			*tls_host;
@@ -560,7 +561,8 @@ constraint_check(double val)
 	if (((val - constraint) > CONSTRAINT_MARGIN) ||
 	    ((constraint - val) > CONSTRAINT_MARGIN)) {
 		/* XXX get new constraint if too many errors happened */
-		if (conf->constraint_errors++ > CONSTRAINT_ERROR_MARGIN) {
+		if (conf->constraint_errors++ >
+		    (CONSTRAINT_ERROR_MARGIN * peer_cnt)) {
 			constraint_reset();
 		}
 
