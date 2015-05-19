@@ -1,4 +1,4 @@
-/*	$OpenBSD: armv7_machdep.h,v 1.1 2013/10/30 20:20:23 syl Exp $	*/
+/*	$OpenBSD: armv7_machdep.h,v 1.2 2015/05/15 15:35:43 jsg Exp $	*/
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -22,7 +22,6 @@ void platform_powerdown(void);
 void platform_watchdog_reset(void);
 void platform_init_cons(void);
 const char *platform_board_name(void);
-void platform_bootconfig_dram(BootConfig *, psize_t *, psize_t *);
 void platform_disable_l2_if_needed(void);
 extern const char *platform_boot_name;
 
