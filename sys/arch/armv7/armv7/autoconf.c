@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.1 2013/09/04 14:38:25 patrick Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.2 2015/05/15 15:35:43 jsg Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.2 2001/09/05 16:17:36 matt Exp $	*/
 
 /*
@@ -52,6 +52,7 @@
 
 #include <machine/bootconfig.h>
 #include <machine/intr.h>
+#include <machine/bus.h>
 
 #include <armv7/armv7/armv7_machdep.h>
 
