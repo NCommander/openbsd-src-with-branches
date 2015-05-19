@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.330 2015/04/23 09:45:24 dlg Exp $	*/
+/*	$OpenBSD: if.c,v 1.331 2015/05/15 10:15:13 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -530,10 +530,19 @@ if_input_process(void *xmq)
 		if ((++mit & 0x1f) == 0)
 			yield();
 
+again:
+		/*
+		 * Pass this mbuf to all input handlers of its
+		 * interface until it is consumed.
+		 */
 		ifp = m->m_pkthdr.rcvif;
 		SLIST_FOREACH(ifih, &ifp->if_inputs, ifih_next) {
 			if ((*ifih->ifih_input)(m, NULL))
 				break;
+
+			/* Pseudo-drivers might be stacked. */
+			if (ifp != m->m_pkthdr.rcvif)
+				goto again;
 		}
 	}
 	splx(s);
