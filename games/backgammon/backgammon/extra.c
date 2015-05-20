@@ -1,4 +1,4 @@
-/*	$OpenBSD: extra.c,v 1.5 2006/12/14 10:14:05 martin Exp $	*/
+/*	$OpenBSD: extra.c,v 1.6 2009/10/27 23:59:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -165,7 +165,7 @@ dblgood()
 #endif
 
 	/* double if 2-3 moves ahead */
-	if (n > 10 + rnum(7))
+	if (n > (int)(10 + rnum(7)))
 		return(1);
 	return(0);
 }
