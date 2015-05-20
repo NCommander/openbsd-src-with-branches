@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.120 2015/05/19 11:09:24 mpi Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.121 2015/05/19 11:21:42 mpi Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -253,6 +253,7 @@ vlan_start(struct ifnet *ifp)
 			ifp->if_oerrors++;
 			continue;
 		}
+		ifp->if_opackets++;
 	}
 }
 
