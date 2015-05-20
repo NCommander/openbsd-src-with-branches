@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan_var.h,v 1.24 2013/10/24 11:14:33 deraadt Exp $	*/
+/*	$OpenBSD: if_vlan_var.h,v 1.25 2015/05/19 11:09:24 mpi Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -87,6 +87,7 @@ struct	ifvlan {
 	int ifv_flags;
 	void *lh_cookie;
 	void *dh_cookie;
+	struct ifih *ifv_ifih;
 };
 
 #define	ifv_if		ifv_ac.ac_if
