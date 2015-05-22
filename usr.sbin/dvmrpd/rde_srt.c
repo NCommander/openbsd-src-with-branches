@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_srt.c,v 1.24 2009/09/06 09:52:14 michele Exp $ */
+/*	$OpenBSD: rde_srt.c,v 1.25 2010/09/02 14:03:21 sobrado Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -225,7 +225,7 @@ rt_remove(struct rt_node *r)
 		return (-1);
 	}
 
-	LIST_FOREACH(ds_nbr, &r->ds_list, entry) {
+	while ((ds_nbr = LIST_FIRST(&r->ds_list)) != NULL) {
 		LIST_REMOVE(ds_nbr, entry);
 		free(ds_nbr);
 	}
