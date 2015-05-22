@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.117 2015/04/29 03:48:56 dtucker Exp $ */
+/* $OpenBSD: servconf.h,v 1.118 2015/05/21 06:43:31 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -118,6 +118,7 @@ typedef struct {
 						 * authenticated with Kerberos. */
 	int     gss_authentication;	/* If true, permit GSSAPI authentication */
 	int     gss_cleanup_creds;	/* If true, destroy cred cache on logout */
+	int     gss_strict_acceptor;	/* If true, restrict the GSSAPI acceptor name */
 	int     password_authentication;	/* If true, permit password
 						 * authentication. */
 	int     kbd_interactive_authentication;	/* If true, permit */
