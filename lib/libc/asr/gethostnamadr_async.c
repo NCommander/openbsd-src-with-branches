@@ -1,4 +1,4 @@
-/*	$OpenBSD: gethostnamadr_async.c,v 1.30 2014/07/23 21:26:25 eric Exp $	*/
+/*	$OpenBSD: gethostnamadr_async.c,v 1.30.4.1 2014/11/17 16:56:01 tedu Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -39,8 +39,8 @@
 
 #include "asr_private.h"
 
-#define MAXALIASES	16
-#define MAXADDRS	16
+#define MAXALIASES	35
+#define MAXADDRS	35
 
 struct hostent_ext {
 	struct hostent	 h;
@@ -607,7 +607,7 @@ hostent_add_alias(struct hostent_ext *h, const char *name, int isdname)
 		if (h->aliases[i] == NULL)
 			break;
 	if (i == MAXALIASES)
-		return (-1);
+		return (0);
 
 	if (isdname) {
 		asr_strdname(name, buf, sizeof buf);
@@ -619,7 +619,7 @@ hostent_add_alias(struct hostent_ext *h, const char *name, int isdname)
 
 	n = strlen(name) + 1;
 	if (h->pos + n >= h->end)
-		return (-1);
+		return (0);
 
 	h->aliases[i] = h->pos;
 	memmove(h->pos, name, n);
@@ -636,10 +636,10 @@ hostent_add_addr(struct hostent_ext *h, const void *addr, size_t size)
 		if (h->addrs[i] == NULL)
 			break;
 	if (i == MAXADDRS)
-		return (-1);
+		return (0);
 
 	if (h->pos + size >= h->end)
-		return (-1);
+		return (0);
 
 	h->addrs[i] = h->pos;
 	memmove(h->pos, addr, size);
