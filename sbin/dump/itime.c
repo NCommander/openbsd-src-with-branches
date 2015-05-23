@@ -1,4 +1,4 @@
-/*	$OpenBSD: itime.c,v 1.19 2015/01/16 06:39:57 deraadt Exp $	*/
+/*	$OpenBSD: itime.c,v 1.20 2015/05/03 01:44:34 guenther Exp $	*/
 /*	$NetBSD: itime.c,v 1.4 1997/04/15 01:09:50 lukem Exp $	*/
 
 /*-
@@ -251,6 +251,11 @@ makedumpdate(struct dumpdates *ddp, char *tbuf)
 
 	if (sscanf(tbuf, DUMPINFMT, ddp->dd_name, &ddp->dd_level, un_buf) != 3)
 		return(-1);
+	str = getduid(ddp->dd_name);
+	if (str != NULL) {
+		strlcpy(ddp->dd_name, str, sizeof(ddp->dd_name));
+		free(str);
+	}
 	str = strptime(un_buf, "%a %b %e %H:%M:%S %Y", &then);
 	then.tm_isdst = -1;
 	if (str == NULL || (*str != '\n' && *str != '\0'))
