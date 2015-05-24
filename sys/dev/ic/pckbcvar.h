@@ -1,4 +1,4 @@
-/* $OpenBSD: pckbcvar.h,v 1.12 2012/08/10 17:49:31 shadchin Exp $ */
+/* $OpenBSD: pckbcvar.h,v 1.14 2013/05/23 18:29:51 tobias Exp $ */
 /* $NetBSD: pckbcvar.h,v 1.4 2000/06/09 04:58:35 soda Exp $ */
 
 /*
@@ -76,8 +76,6 @@ struct pckbc_softc {
 	pckbc_inputfcn inputhandler[PCKBC_NSLOTS];
 	void *inputarg[PCKBC_NSLOTS];
 	char *subname[PCKBC_NSLOTS];
-
-	void (*intr_establish)(struct pckbc_softc *, pckbc_slot_t);
 };
 
 struct pckbc_attach_args {
