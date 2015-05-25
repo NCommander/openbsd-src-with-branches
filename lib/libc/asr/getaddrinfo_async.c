@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo_async.c,v 1.36 2015/05/05 17:08:44 jca Exp $	*/
+/*	$OpenBSD: getaddrinfo_async.c,v 1.37 2015/05/25 19:30:25 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -27,7 +27,7 @@
 #include <err.h>
 #include <errno.h>
 #include <ifaddrs.h>
-#include <resolv.h> /* for res_hnok */
+#include <resolv.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
