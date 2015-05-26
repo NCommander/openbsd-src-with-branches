@@ -1,4 +1,4 @@
-/* $OpenBSD: kexgexc.c,v 1.20 2015/01/26 06:10:03 djm Exp $ */
+/* $OpenBSD: kexgexc.c,v 1.21 2015/04/13 02:04:08 djm Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -24,6 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/param.h>
 #include <sys/types.h>
 
 #include <openssl/dh.h>
@@ -60,6 +61,8 @@ kexgex_client(struct ssh *ssh)
 	kex->min = DH_GRP_MIN;
 	kex->max = DH_GRP_MAX;
 	kex->nbits = nbits;
+	if (datafellows & SSH_BUG_DHGEX_LARGE)
+		kex->nbits = MIN(kex->nbits, 4096);
 	/* New GEX request */
 	if ((r = sshpkt_start(ssh, SSH2_MSG_KEX_DH_GEX_REQUEST)) != 0 ||
 	    (r = sshpkt_put_u32(ssh, kex->min)) != 0 ||
