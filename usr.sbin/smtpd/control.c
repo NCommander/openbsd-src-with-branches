@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.101 2014/07/10 15:54:55 eric Exp $	*/
+/*	$OpenBSD: control.c,v 1.102 2015/01/20 17:37:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 Gilles Chehade <gilles@poolp.org>
@@ -304,7 +304,6 @@ static void
 control_shutdown(void)
 {
 	log_info("info: control process exiting");
-	unlink(SMTPD_SOCKET);
 	_exit(0);
 }
 
