@@ -1,4 +1,4 @@
-/* $OpenBSD: file.c,v 1.37 2015/04/28 02:26:43 lteo Exp $ */
+/* $OpenBSD: file.c,v 1.38 2015/05/18 11:57:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -107,7 +107,7 @@ static struct option longopts[] = {
 __dead void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-bchiLsW] [file ...]\n", __progname);
+	fprintf(stderr, "usage: %s [-bchiLsW] file ...\n", __progname);
 	exit(1);
 }
 
