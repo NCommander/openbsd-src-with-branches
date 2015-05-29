@@ -154,3 +154,4 @@ ENTRY(strlen)
 	dec	%rsi
 	or	%rsi,%rdx		/* low bytes now non-zero */
 	jmp	2b
+END(strlen)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: strchr.S,v 1.4 2014/12/09 15:10:39 reyk Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: strchr.S,v 1.7 2014/03/22 19:16:34 jakllsch Exp $	*/
 
 /*-
@@ -123,3 +123,4 @@ ENTRY(strchr)
 	sar	%cl,%r10	/* top bytes 0xff */
 	and	%r10,%rax	/* clear lsb from unwanted low bytes */
 	jmp	21b
+END(strchr)
