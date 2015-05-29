@@ -1,4 +1,4 @@
-/* $OpenBSD: magic-load.c,v 1.3 2015/04/25 18:44:28 nicm Exp $ */
+/* $OpenBSD: magic-load.c,v 1.4 2015/04/25 21:17:09 nicm Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -287,7 +287,7 @@ magic_get_strength(struct magic_line *ml)
 	if (ml->test_not || ml->test_operator == 'x')
 		return (1);
 
-	n = 20;
+	n = 2 * MAGIC_STRENGTH_MULTIPLIER;
 	switch (ml->type) {
 	case MAGIC_TYPE_NONE:
 	case MAGIC_TYPE_DEFAULT:
