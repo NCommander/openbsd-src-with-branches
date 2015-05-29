@@ -1341,16 +1341,6 @@ void
 vic_tick(void *arg)
 {
 	struct vic_softc		*sc = (struct vic_softc *)arg;
-	int				s, q;
-
-	/*
-	 * XXX Poll Rx interrupt and process existing packets to work-around
-	 * XXX occasional Rx interrupt lossage.
-	 */
-	s = splnet();
-	for (q = 0; q < VIC_NRXRINGS; q++)
-		vic_rx_proc(sc, q);
-	splx(s);
 
 	vic_link_state(sc);
 

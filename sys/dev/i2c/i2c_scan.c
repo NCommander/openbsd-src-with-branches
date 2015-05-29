@@ -1059,7 +1059,6 @@ iic_scan(struct device *self, struct i2cbus_attach_args *iba)
 	bzero(ignore_addrs, sizeof(ignore_addrs));
 
 	for (i = 0; probes[i].probe; i++) {
-#if 0
 #if NIPMI > 0
 		extern int ipmi_enabled;
 
@@ -1068,7 +1067,6 @@ iic_scan(struct device *self, struct i2cbus_attach_args *iba)
 			    self->dv_xname);
 			continue;
 		}
-#endif
 #endif
 		pl = probes[i].pl;
 		for (j = 0; pl[j].start && pl[j].end; j++) {
