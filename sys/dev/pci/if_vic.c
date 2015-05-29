@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vic.c,v 1.87 2015/04/01 16:09:21 uebayasi Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2006 Reyk Floeter <reyk@openbsd.org>
@@ -1341,6 +1341,16 @@ void
 vic_tick(void *arg)
 {
 	struct vic_softc		*sc = (struct vic_softc *)arg;
+	int				s, q;
+
+	/*
+	 * XXX Poll Rx interrupt and process existing packets to work-around
+	 * XXX occasional Rx interrupt lossage.
+	 */
+	s = splnet();
+	for (q = 0; q < VIC_NRXRINGS; q++)
+		vic_rx_proc(sc, q);
+	splx(s);
 
 	vic_link_state(sc);
 

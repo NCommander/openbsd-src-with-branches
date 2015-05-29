@@ -1,4 +1,4 @@
-.\"	$OpenBSD: bioctl.8,v 1.94 2015/02/28 21:51:57 bentley Exp $
+.\"	$OpenBSD$
 .\"
 .\" Copyright (c) 2004, 2005 Marco Peereboom
 .\"
@@ -23,7 +23,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: February 28 2015 $
+.Dd $Mdocdate$
 .Dt BIOCTL 8
 .Os
 .Sh NAME
@@ -37,6 +37,7 @@
 .Op Fl b Ar channel:target[.lun]
 .Op Fl H Ar channel:target[.lun]
 .Op Fl R Ar device | channel:target[.lun]
+.Op Fl t Ar patrol-function
 .Op Fl u Ar channel:target[.lun]
 .Ar device
 .Ek
@@ -144,6 +145,29 @@ in the volume.
 .Ar device
 must be specified as a full path to the chunk device file (e.g. /dev/wd0d).
 A RAID volume rather than a RAID controller is expected as the final argument.
+.It Fl t Ar patrol-function
+Control the RAID card's patrol functionality, if supported.
+.Ar patrol-function
+may be one of:
+.Pp
+.Bl -tag -width disable -compact
+.It Ar stop
+Stop the patrol on the RAID controller.
+.It Ar start
+Start the patrol on the RAID controller.
+.It Ar get
+Retrieve the current patrol configuration.
+.It Ar disable
+Disable the patrol functionality.
+.It Ar manual
+Enable the patrol functionality to start/stop manually.
+.It Ar auto[.interval[.start]]
+Enable the patrol functionality to start/stop automatically in every
+.Ar interval
+seconds, starting the first iteration after
+.Ar start
+seconds.
+.El
 .It Fl u Ar channel:target[.lun]
 Instruct the device at
 .Ar channel:target[.lun]

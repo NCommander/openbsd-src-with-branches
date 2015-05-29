@@ -1,4 +1,4 @@
-/*	$OpenBSD: bio.c,v 1.14 2012/01/20 12:38:20 jsing Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2002 Niklas Hallqvist.  All rights reserved.
@@ -98,6 +98,7 @@ bioioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 	case BIOCCREATERAID:
 	case BIOCDELETERAID:
 	case BIOCDISCIPLINE:
+	case BIOCPATROL:
 		bio = (struct bio *)addr;
 		if (!bio_validate(bio->bio_cookie))
 			return (ENOENT);

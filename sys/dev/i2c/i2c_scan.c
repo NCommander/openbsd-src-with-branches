@@ -1,4 +1,4 @@
-/*	$OpenBSD: i2c_scan.c,v 1.142 2014/09/27 06:07:01 jsg Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt <deraadt@openbsd.org>
@@ -1059,6 +1059,7 @@ iic_scan(struct device *self, struct i2cbus_attach_args *iba)
 	bzero(ignore_addrs, sizeof(ignore_addrs));
 
 	for (i = 0; probes[i].probe; i++) {
+#if 0
 #if NIPMI > 0
 		extern int ipmi_enabled;
 
@@ -1067,6 +1068,7 @@ iic_scan(struct device *self, struct i2cbus_attach_args *iba)
 			    self->dv_xname);
 			continue;
 		}
+#endif
 #endif
 		pl = probes[i].pl;
 		for (j = 0; pl[j].start && pl[j].end; j++) {
