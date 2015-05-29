@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid5.c,v 1.17 2014/11/18 02:37:30 tedu Exp $ */
+/* $OpenBSD: softraid_raid5.c,v 1.18 2015/04/11 16:23:34 jsing Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2009 Marco Peereboom <marco@peereboom.us>
@@ -514,7 +514,7 @@ sr_raid5_regenerate(struct sr_workunit *wu, int chunk, daddr_t blkno,
 	 * Regenerate a block on a RAID 5 volume by xoring the data and parity
 	 * from all of the remaining online chunks. This requires the parity
 	 * to already be correct.
- 	 */
+	 */
 
 	DNPRINTF(SR_D_DIS, "%s: %s sr_raid5_regenerate chunk %d offline, "
 	    "regenerating block %llu\n",
