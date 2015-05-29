@@ -25,3 +25,8 @@ ENTRY(fpgetmask)
 	notl %eax
 	andl $63,%eax
 	ret
+#ifdef WEAK_ALIAS
+END(_fpgetmask)
+#else
+END(fpgetmask)
+#endif

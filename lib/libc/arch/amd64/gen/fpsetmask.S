@@ -40,3 +40,8 @@ ENTRY(fpsetmask)
 	ldmxcsr	-8(%rsp)
 	andl	$63,%eax
 	ret
+#ifdef WEAK_ALIAS
+END(_fpsetmask)
+#else
+END(fpsetmask)
+#endif

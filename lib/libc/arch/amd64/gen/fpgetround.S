@@ -24,3 +24,8 @@ ENTRY(fpgetround)
 	rorl $10,%eax
 	andl $3,%eax
 	ret
+#ifdef WEAK_ALIAS
+END(_fpgetround)
+#else
+END(fpgetround)
+#endif

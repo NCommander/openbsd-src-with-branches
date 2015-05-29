@@ -26,3 +26,8 @@ ENTRY(fpgetsticky)
 	orl	-8(%rsp),%eax
 	andl	$63,%eax
 	ret
+#ifdef WEAK_ALIAS
+END(_fpgetsticky)
+#else
+END(fpgetsticky)
+#endif

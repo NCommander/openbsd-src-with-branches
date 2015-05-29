@@ -1,4 +1,4 @@
-/*	$OpenBSD: fabs.S,v 1.4 2008/12/09 20:54:02 martynas Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: fabs.S,v 1.1 2001/06/19 00:25:02 fvdl Exp $	*/
 
 #include <machine/asm.h>
@@ -15,3 +15,4 @@ ENTRY(fabs)
 	fstpl	-8(%rsp)
 	movsd	-8(%rsp),%xmm0
 	ret
+END(fabs)

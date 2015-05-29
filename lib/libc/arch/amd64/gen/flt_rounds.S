@@ -1,4 +1,4 @@
-/*	$OpenBSD: flt_rounds.S,v 1.2 2012/08/22 17:19:34 pascal Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: flt_rounds.S,v 1.2 2002/06/06 23:04:35 fvdl Exp $	*/
 
 /*
@@ -28,3 +28,4 @@ ENTRY(__flt_rounds)
 	movb _map(,%rax,1),%al
 #endif
 	ret
+END(__flt_rounds)
