@@ -4,7 +4,8 @@
 
 #include <machine/asm.h>
 
-ENTRY(_C_LABEL(htonl))
+ENTRY(htonl)
 	movl    %edi,%eax
 	bswapl  %eax
 	ret
+END(htonl)
