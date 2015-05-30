@@ -1,4 +1,4 @@
-/* $OpenBSD: omgpiovar.h,v 1.1 2009/05/08 03:13:26 drahn Exp $ */
+/* $OpenBSD: imxccmvar.h,v 1.1 2013/09/06 20:45:53 patrick Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -25,7 +25,9 @@ unsigned int imxccm_get_ipg_perclk(void);
 unsigned int imxccm_get_ahbclk(void);
 void imxccm_enable_i2c(int x);
 void imxccm_enable_usboh3(void);
+void imxccm_disable_usb1_chrg_detect(void);
 void imxccm_disable_usb2_chrg_detect(void);
+void imxccm_enable_pll_usb1(void);
 void imxccm_enable_pll_usb2(void);
 void imxccm_enable_enet(void);
 void imxccm_enable_sata(void);
