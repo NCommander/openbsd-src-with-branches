@@ -1,4 +1,4 @@
-/* $OpenBSD: drmP.h,v 1.194 2015/04/17 00:54:41 jsg Exp $ */
+/* $OpenBSD: drmP.h,v 1.195 2015/04/18 14:47:34 jsg Exp $ */
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  */
@@ -188,7 +188,7 @@ drm_can_sleep(void)
 	    curproc->p_pid, __func__ , ## arg)
 
 
-#ifdef DRM_DEBUG
+#ifdef DRMDEBUG
 #define DRM_INFO(fmt, arg...)  printf("drm: " fmt, ## arg)
 #else
 #define DRM_INFO(fmt, arg...) do { } while(/* CONSTCOND */ 0)
