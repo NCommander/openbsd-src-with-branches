@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.122 2015/04/24 23:17:11 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.123 2015/05/27 13:28:04 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
