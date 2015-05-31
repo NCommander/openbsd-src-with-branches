@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.202 2015/03/14 03:38:51 jsg Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.203 2015/04/13 08:45:48 mpi Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -1266,10 +1266,11 @@ ml_enqueue(struct mbuf_list *ml, struct mbuf *m)
 void
 ml_join(struct mbuf_list *mla, struct mbuf_list *mlb)
 {
-	if (mla->ml_tail == NULL)
-		*mla = *mlb;
-	else if (mlb->ml_tail != NULL) {
-		mla->ml_tail->m_nextpkt = mlb->ml_head;
+	if (!ml_empty(mlb)) {
+		if (ml_empty(mla))
+			mla->ml_head = mlb->ml_head;
+		else
+			mla->ml_tail->m_nextpkt = mlb->ml_head;
 		mla->ml_tail = mlb->ml_tail;
 		mla->ml_len += mlb->ml_len;
 
