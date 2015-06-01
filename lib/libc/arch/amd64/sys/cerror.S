@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.5 2011/04/04 12:42:39 guenther Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cerror.S,v 1.2 2002/06/03 18:30:33 fvdl Exp $	*/
 
 /*-
@@ -52,3 +52,4 @@ _ENTRY(_CERROR)
 #endif /* PIC */
 	movq	$-1,%rax
 	ret
+END(_CERROR)
