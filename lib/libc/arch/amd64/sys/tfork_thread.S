@@ -1,4 +1,4 @@
-/*	$OpenBSD: tfork_thread.S,v 1.3 2012/08/22 17:19:34 pascal Exp $ */
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 2000 Peter Wemm <peter@FreeBSD.org>
  * Copyright (c) 2003 Alan L. Cox <alc@cs.rice.edu>
@@ -91,3 +91,4 @@ ENTRY(__tfork_thread)
 #else
 	jmp	CERROR
 #endif
+END(__tfork_thread)
