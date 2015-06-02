@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.39 2015/05/31 19:40:10 rpe Exp $
+#	$OpenBSD: install.md,v 1.40 2015/06/02 19:39:18 rpe Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -111,7 +111,7 @@ start of the disk, NOT the start of the OpenBSD MBR partition.
 
 __EOT
 
-	disklabel $FSTABFLAG $_f -E $_disk
+	disklabel -F $_f -E $_disk
 }
 
 md_congrats() {

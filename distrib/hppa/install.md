@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.28 2015/05/04 19:55:26 rpe Exp $
+#	$OpenBSD: install.md,v 1.29 2015/05/31 19:40:10 rpe Exp $
 #
 # machine dependent section of installation/upgrade script.
 #
@@ -32,7 +32,7 @@ in this program.
 
 __EOT
 
-	disklabel $FSTABFLAG $_f -E $_disk
+	disklabel -F $_f -E $_disk
 }
 
 md_congrats() {
