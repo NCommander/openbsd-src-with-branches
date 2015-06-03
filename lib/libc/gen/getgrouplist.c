@@ -1,4 +1,4 @@
-/*	$OpenBSD: getgrouplist.c,v 1.23 2014/01/22 09:58:28 jsg Exp $ */
+/*	$OpenBSD: getgrouplist.c,v 1.24 2014/09/15 06:15:48 guenther Exp $ */
 /*
  * Copyright (c) 2008 Ingo Schwarze <schwarze@usta.de>
  * Copyright (c) 1991, 1993
@@ -204,8 +204,8 @@ getgrouplist(const char *uname, gid_t agroup, gid_t *groups, int *grpcnt)
 		if (getpwnam_r(uname, &pwstore, buf, sizeof buf, NULL) ||
 		    (!__ypdomain && yp_get_default_domain(&__ypdomain)))
 			goto out;
-		asprintf(&key, "unix.%u@%s", pwstore.pw_uid, __ypdomain);
-		if (key == NULL)
+		i = asprintf(&key, "unix.%u@%s", pwstore.pw_uid, __ypdomain);
+		if (i == -1)
 			goto out;
 
 		/* First scan the static netid file. */
