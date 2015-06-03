@@ -1,4 +1,4 @@
-/*	$OpenBSD: match.c,v 1.17 2013/05/31 18:03:44 lum Exp $	*/
+/*	$OpenBSD: match.c,v 1.18 2015/03/19 21:22:15 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -81,8 +81,7 @@ balance(void)
 
 	/*
 	 * Move behind the inserted character.	We are always guaranteed
-	 * that there is at least one character on the line, since one was
-	 * just self-inserted by blinkparen.
+	 * that there is at least one character on the line.
 	 */
 	clp = curwp->w_dotp;
 	cbo = curwp->w_doto - 1;
