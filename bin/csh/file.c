@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.18 2015/01/16 06:39:31 deraadt Exp $	*/
+/*	$OpenBSD: file.c,v 1.19 2015/02/08 05:47:28 tedu Exp $	*/
 /*	$NetBSD: file.c,v 1.11 1996/11/08 19:34:37 christos Exp $	*/
 
 /*-
@@ -186,8 +186,7 @@ catn(Char *des, Char *src, int count)
 }
 
 /*
- * Like strncpy but always leave room for trailing \0
- * and always null terminate.
+ * Places Char's like strlcpy, but no special return value.
  */
 static void
 copyn(Char *des, Char *src, int count)
