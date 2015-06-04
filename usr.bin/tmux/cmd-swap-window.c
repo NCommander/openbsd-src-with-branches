@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-swap-window.c,v 1.10 2013/10/10 12:00:24 nicm Exp $ */
+/* $OpenBSD: cmd-swap-window.c,v 1.11 2014/10/20 22:29:25 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -47,7 +47,7 @@ cmd_swap_window_exec(struct cmd *self, struct cmd_q *cmdq)
 	struct window		*w;
 
 	target_src = args_get(args, 's');
-	if ((wl_src = cmd_find_window(cmdq, target_src, &src)) == NULL)
+	if ((wl_src = cmd_find_window_marked(cmdq, target_src, &src)) == NULL)
 		return (CMD_RETURN_ERROR);
 	target_dst = args_get(args, 't');
 	if ((wl_dst = cmd_find_window(cmdq, target_dst, &dst)) == NULL)
