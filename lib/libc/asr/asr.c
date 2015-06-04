@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.c,v 1.36 2015/05/26 19:28:57 eric Exp $	*/
+/*	$OpenBSD: asr.c,v 1.37 2015/05/29 08:49:37 eric Exp $	*/
 /*
  * Copyright (c) 2010-2012 Eric Faurot <eric@openbsd.org>
  *
@@ -412,12 +412,20 @@ asr_check_reload(struct asr *asr)
 #if ASR_OPT_RELOADCONF
 	struct stat	 st;
 	struct timespec	 ts;
+	pid_t		 pid;
 #endif
 
 	if (asr->a_path == NULL)
 		return;
 
 #if ASR_OPT_RELOADCONF
+
+	pid = getpid();
+	if (pid != asr->a_pid) {
+		asr->a_pid = pid;
+		asr->a_rtime = 0;
+	}
+
 	if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1)
 		return;
 
