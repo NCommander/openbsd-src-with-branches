@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.c,v 1.134 2015/01/19 09:57:33 nicm Exp $ */
+/* $OpenBSD: tmux.c,v 1.135 2015/01/19 09:58:34 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -58,7 +58,7 @@ __dead void
 usage(void)
 {
 	fprintf(stderr,
-	    "usage: %s [-2lquv] [-c shell-command] [-f file] [-L socket-name]\n"
+	    "usage: %s [-2Cluv] [-c shell-command] [-f file] [-L socket-name]\n"
 	    "            [-S socket-path] [command [flags]]\n",
 	    __progname);
 	exit(1);
