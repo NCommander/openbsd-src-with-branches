@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.145 2015/04/23 14:42:02 mpi Exp $ */
+/*	$OpenBSD: pmap.c,v 1.146 2015/06/05 09:05:35 mpi Exp $ */
 
 /*
  * Copyright (c) 2001, 2002, 2007 Dale Rahn.
@@ -498,6 +498,7 @@ pmap_enter_pv(struct pte_desc *pted, struct vm_page *pg)
 void
 pmap_remove_pv(struct pte_desc *pted)
 {
+	pted->pted_va &= ~PTED_VA_MANAGED_M;
 	LIST_REMOVE(pted, pted_pv_list);
 }
 
