@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-confirm-before.c,v 1.22 2014/10/20 23:27:14 nicm Exp $ */
+/* $OpenBSD: cmd-confirm-before.c,v 1.23 2015/04/19 21:34:21 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -117,7 +117,7 @@ cmd_confirm_before_free(void *data)
 	struct cmd_confirm_before_data	*cdata = data;
 	struct client			*c = cdata->client;
 
-	c->references--;
+	server_client_deref(c);
 
 	free(cdata->cmd);
 	free(cdata);
