@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpbios.c,v 1.23 2014/11/16 12:30:56 deraadt Exp $	*/
+/*	$OpenBSD: mpbios.c,v 1.24 2014/12/09 06:58:28 doug Exp $	*/
 /*	$NetBSD: mpbios.c,v 1.7 2003/05/15 16:32:50 fvdl Exp $	*/
 
 /*-
@@ -1019,6 +1019,8 @@ mpbios_int(const u_int8_t *ent, int enttype, struct mp_intr_map *mpi)
 	case MPS_INTTYPE_NMI:
 		mpb = &nmi_bus;
 		break;
+	default:
+		panic("unknown MPS interrupt type %d", entry->int_type);
 	}
 	mpi->bus = mpb;
 	mpi->bus_pin = dev;
