@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflow.c,v 1.48 2014/11/20 14:51:42 krw Exp $	*/
+/*	$OpenBSD: if_pflow.c,v 1.49 2014/12/19 17:14:39 tedu Exp $	*/
 
 /*
  * Copyright (c) 2011 Florian Obser <florian@narrans.de>
@@ -1007,8 +1007,8 @@ pflow_sendout_ipfix(struct pflow_softc *sc, sa_family_t af)
 		set_length = sizeof(struct pflow_set_header)
 		    + sc->sc_count6 * sizeof(struct pflow_ipfix_flow6);
 		break;
-	default: /* NOTREACHED */
-		break;
+	default:
+		unhandled_af(af);
 	}
 
 	if (!(ifp->if_flags & IFF_RUNNING)) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.123 2014/12/05 15:50:04 mpi Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.124 2015/06/07 01:25:27 krw Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -824,6 +824,8 @@ tcp_ident(void *oldp, size_t *oldlenp, void *newp, size_t newlen, int dodrop)
 		inp = in_pcbhashlookup(&tcbtable, fin->sin_addr,
 		    fin->sin_port, lin->sin_addr, lin->sin_port, tir.rdomain);
 		break;
+	default:
+		unhandled_af(tir.faddr.ss_family);
 	}
 
 	if (dodrop) {
