@@ -1,3 +1,0 @@
-#	$OpenBSD$
-
-REV=${OSrev}
