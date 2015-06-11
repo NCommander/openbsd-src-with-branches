@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmp.h,v 1.12 2014/07/21 01:51:11 guenther Exp $	*/
+/*	$OpenBSD: snmp.h,v 1.13 2014/11/19 10:19:00 blambert Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -16,8 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SNMP_HEADER
-#define SNMP_HEADER
+#ifndef SNMPD_SNMP_H
+#define SNMPD_SNMP_H
 
 #include <sys/types.h>
 #include <endian.h>
@@ -450,4 +450,4 @@ snmp_agentx_byteorder_native(struct agentx_hdr *h)
 #error "Unknown host byte order"
 #endif
 
-#endif /* SNMP_HEADER */
+#endif /* SNMPD_SNMP_H */
