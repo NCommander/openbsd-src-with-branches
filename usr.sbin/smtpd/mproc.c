@@ -1,4 +1,4 @@
-/*	$OpenBSD: mproc.c,v 1.8 2014/04/19 17:45:05 gilles Exp $	*/
+/*	$OpenBSD: mproc.c,v 1.10 2014/07/08 13:49:09 eric Exp $	*/
 
 /*
  * Copyright (c) 2012 Eric Faurot <eric@faurot.net>
@@ -185,6 +185,14 @@ mproc_dispatch(int fd, short event, void *arg)
 
 	for (;;) {
 		if ((n = imsg_get(&p->imsgbuf, &imsg)) == -1) {
+
+			if (smtpd_process == PROC_CONTROL &&
+			    p->proc == PROC_CLIENT) {
+				log_warnx("warn: client sent invalid imsg "
+				    "over control socket");
+				p->handler(p, NULL);
+				return;
+			}
 			log_warn("fatal: %s: error in imsg_get for %s",
 			    proc_name(smtpd_process),  p->name);
 			fatalx(NULL);
