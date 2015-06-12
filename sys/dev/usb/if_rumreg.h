@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rumreg.h,v 1.14 2009/08/10 18:04:56 damien Exp $	*/
+/*	$OpenBSD: if_rumreg.h,v 1.15 2013/11/26 20:33:18 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006 Damien Bergamini <damien.bergamini@free.fr>
@@ -19,9 +19,6 @@
 
 #define RT2573_TX_DESC_SIZE	(sizeof (struct rum_tx_desc))
 #define RT2573_RX_DESC_SIZE	(sizeof (struct rum_rx_desc))
-
-#define RT2573_CONFIG_NO	1
-#define RT2573_IFACE_INDEX	0
 
 #define RT2573_MCU_CNTL		0x01
 #define RT2573_WRITE_MAC	0x02

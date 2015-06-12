@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axenreg.h,v 1.2 2013/11/26 20:33:18 deraadt Exp $	*/
+/*	$OpenBSD: if_axenreg.h,v 1.3 2014/01/08 22:24:35 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2013 Yojiro UO <yuo@openbsd.org>. All right reserved.
@@ -210,9 +210,6 @@
 #define AXEN_RX_LIST_CNT		1
 #define AXEN_TX_LIST_CNT		1
 
-
-#define AXEN_CONFIG_NO		1
-#define AXEN_IFACE_IDX		0
 
 /*
  * The interrupt endpoint is currently unused
