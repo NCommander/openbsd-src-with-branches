@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.9 2014/06/04 20:13:49 matthew Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -42,7 +42,7 @@
 #define SYSTRAP(x)	movl $(SYS_ ## x),%eax; movq %rcx, %r10; syscall
 
 #define SYSENTRY(x)							\
-	ENTRY(_thread_sys_ ## x);					\
+	SYSENTRY_HIDDEN(x);					\
 	.weak _C_LABEL(x);						\
 	_C_LABEL(x) = _C_LABEL(_thread_sys_ ## x)
 #define SYSENTRY_HIDDEN(x)						\
