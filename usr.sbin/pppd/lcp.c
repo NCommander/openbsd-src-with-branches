@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcp.c,v 1.10 2009/10/27 23:59:53 deraadt Exp $	*/
+/*	$OpenBSD: lcp.c,v 1.11 2015/01/15 23:19:48 tedu Exp $	*/
 
 /*
  * lcp.c - PPP Link Control Protocol.
@@ -1441,7 +1441,7 @@ endswitch:
 	if (orc == CONFREJ) {		/* Reject this CI */
 	    rc = CONFREJ;
 	    if (cip != rejp)		/* Need to move rejected CI? */
-		BCOPY(cip, rejp, cilen); /* Move it */
+		BMOVE(cip, rejp, cilen); /* Move it (NB: overlapped regions) */
 	    INCPTR(cilen, rejp);	/* Update output pointer */
 	}
     }

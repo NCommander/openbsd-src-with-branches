@@ -1,4 +1,4 @@
-/*	$OpenBSD: pppd.h,v 1.17 2011/04/30 18:49:38 nicm Exp $	*/
+/*	$OpenBSD: pppd.h,v 1.18 2015/01/16 06:40:19 deraadt Exp $	*/
 
 /*
  * pppd.h - PPP daemon global declarations.
@@ -402,6 +402,7 @@ extern struct option_info devnam_info;
 #define UNTIMEOUT(r, f)		untimeout((r), (f))
 
 #define BCOPY(s, d, l)		memcpy(d, s, l)
+#define BMOVE(s, d, l)		memmove(d, s, l)
 #define BZERO(s, n)		memset(s, 0, n)
 #define EXIT(u)			quit()
 
