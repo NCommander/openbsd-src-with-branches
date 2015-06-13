@@ -1,4 +1,4 @@
-/*	$OpenBSD: i80321_clock.c,v 1.8 2008/02/14 19:53:22 drahn Exp $ */
+/*	$OpenBSD: i80321_clock.c,v 1.9 2010/09/20 06:33:47 matthew Exp $ */
 
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@openbsd.org>
@@ -490,7 +490,7 @@ resettodr(void)
 {
 	struct timeval rtctime;
 
-	if (time_second == 0)
+	if (time_second == 1)
 		return;
 
 	microtime(&rtctime);
