@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile.inc,v 1.2 2013/03/30 23:00:28 jasper Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 2013/06/01 17:55:29 jasper Exp $
 
 KERNELS += GENERIC.MP bsd.mp
 
 bootblocks:
 	# None yet.
 
-MDEXT=	bsd.rd
+MDEXT=	bsd.rd miniroot${OSrev}.fs
