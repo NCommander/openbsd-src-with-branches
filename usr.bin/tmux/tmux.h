@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.522 2015/06/07 21:39:39 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.523 2015/06/14 10:07:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -892,6 +892,7 @@ struct window {
 	char		*name;
 	struct event	 name_timer;
 	struct timeval	 silence_timer;
+	struct timeval	 activity_time;
 
 	struct window_pane *active;
 	struct window_pane *last;
