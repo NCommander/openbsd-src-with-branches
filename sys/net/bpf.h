@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.h,v 1.47 2014/10/07 11:16:23 dlg Exp $	*/
+/*	$OpenBSD: bpf.h,v 1.48 2015/02/10 00:53:55 pelikan Exp $	*/
 /*	$NetBSD: bpf.h,v 1.15 1996/12/13 07:57:33 mikel Exp $	*/
 
 /*
@@ -271,6 +271,8 @@ struct bpf_dltlist {
 #define BPF_JUMP(code, k, jt, jf) { (u_int16_t)(code), jt, jf, k }
 
 #ifdef _KERNEL
+struct ifnet;
+
 int	 bpf_validate(struct bpf_insn *, int);
 int	 bpf_tap(caddr_t, u_char *, u_int, u_int);
 void	 bpf_mtap(caddr_t, struct mbuf *, u_int);

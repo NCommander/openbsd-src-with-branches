@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.190 2015/04/17 11:04:02 mikeb Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.191 2015/05/23 12:52:59 markus Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -121,7 +121,7 @@ struct pkthdr_pf {
 
 /* record/packet header in first mbuf of chain; valid if M_PKTHDR set */
 struct	pkthdr {
-	struct ifnet		*rcvif;		/* rcv interface */
+	void			*ph_cookie;	/* additional data */
 	SLIST_HEAD(packet_tags, m_tag) tags;	/* list of packet tags */
 	int			 len;		/* total packet length */
 	u_int16_t		 tagsset;	/* mtags attached */
@@ -129,7 +129,7 @@ struct	pkthdr {
 	u_int16_t		 csum_flags;	/* checksum flags */
 	u_int16_t		 ether_vtag;	/* Ethernet 802.1p+Q vlan tag */
 	u_int			 ph_rtableid;	/* routing table id */
-	void			*ph_cookie;	/* additional data */
+	u_int			 ph_ifidx;	/* rcv interface index */
 	struct pkthdr_pf	 pf;
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflow.c,v 1.49 2014/12/19 17:14:39 tedu Exp $	*/
+/*	$OpenBSD: if_pflow.c,v 1.50 2015/06/07 12:02:28 jsg Exp $	*/
 
 /*
  * Copyright (c) 2011 Florian Obser <florian@narrans.de>
@@ -506,7 +506,7 @@ pflow_get_mbuf(struct pflow_softc *sc, u_int16_t set_id)
 	}
 
 	m->m_len = m->m_pkthdr.len = 0;
-	m->m_pkthdr.rcvif = NULL;
+	m->m_pkthdr.ph_ifidx = 0;
 
 	if (sc == NULL)		/* get only a new empty mbuf */
 		return (m);

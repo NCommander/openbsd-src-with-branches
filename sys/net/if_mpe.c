@@ -1,4 +1,4 @@
-/* $OpenBSD: if_mpe.c,v 1.43 2015/04/10 13:58:20 dlg Exp $ */
+/* $OpenBSD: if_mpe.c,v 1.44 2015/05/15 10:15:13 mpi Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -214,7 +214,7 @@ mpeoutput(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 		    ifp->if_rdomain, rtable_l2(m->m_pkthdr.ph_rtableid));
 	}
 #endif
-	m->m_pkthdr.rcvif = ifp;
+	m->m_pkthdr.ph_ifidx = ifp->if_index;
 	/* XXX assumes MPLS is always in rdomain 0 */
 	m->m_pkthdr.ph_rtableid = 0;
 
@@ -391,7 +391,7 @@ mpe_input(struct mbuf *m, struct ifnet *ifp, struct sockaddr_mpls *smpls,
 	}
 	
 	/* new receive if and move into correct rtable */
-	m->m_pkthdr.rcvif = ifp;
+	m->m_pkthdr.ph_ifidx = ifp->if_index;
 	m->m_pkthdr.ph_rtableid = ifp->if_rdomain;
 
 #if NBPFILTER > 0
@@ -423,7 +423,7 @@ mpe_input6(struct mbuf *m, struct ifnet *ifp, struct sockaddr_mpls *smpls,
 	}
 
 	/* new receive if and move into correct rtable */
-	m->m_pkthdr.rcvif = ifp;
+	m->m_pkthdr.ph_ifidx = ifp->if_index;
 	m->m_pkthdr.ph_rtableid = ifp->if_rdomain;
 
 #if NBPFILTER > 0

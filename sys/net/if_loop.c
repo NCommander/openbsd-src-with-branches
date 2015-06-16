@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_loop.c,v 1.64 2015/03/14 03:38:51 jsg Exp $	*/
+/*	$OpenBSD: if_loop.c,v 1.65 2015/04/10 13:58:20 dlg Exp $	*/
 /*	$NetBSD: if_loop.c,v 1.15 1996/05/07 02:40:33 thorpej Exp $	*/
 
 /*
@@ -216,7 +216,7 @@ looutput(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 	if (ifp->if_bpf && (ifp->if_flags & IFF_LOOPBACK))
 		bpf_mtap_af(ifp->if_bpf, dst->sa_family, m, BPF_DIRECTION_OUT);
 #endif
-	m->m_pkthdr.rcvif = ifp;
+	m->m_pkthdr.ph_ifidx = ifp->if_index;
 
 	if (rt && rt->rt_flags & (RTF_REJECT|RTF_BLACKHOLE)) {
 		m_freem(m);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.118 2015/02/10 21:56:10 miod Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.119 2015/05/13 10:42:46 jsg Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -180,7 +180,7 @@ bpf_movein(struct uio *uio, u_int linktype, struct mbuf **mp,
 	len = uio->uio_resid;
 
 	MGETHDR(m, M_WAIT, MT_DATA);
-	m->m_pkthdr.rcvif = NULL;
+	m->m_pkthdr.ph_ifidx = 0;
 	m->m_pkthdr.len = len - hlen;
 
 	if (len > MHLEN) {

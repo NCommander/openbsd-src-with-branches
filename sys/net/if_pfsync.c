@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.217 2015/02/10 09:28:40 henning Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.218 2015/03/14 03:38:51 jsg Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -672,7 +672,7 @@ pfsync_input(struct mbuf *m, ...)
 		goto done;
 
 	/* verify that the packet came in on the right interface */
-	if (sc->sc_sync_if != m->m_pkthdr.rcvif) {
+	if (sc->sc_sync_if->if_index != m->m_pkthdr.ph_ifidx) {
 		pfsyncstats.pfsyncs_badif++;
 		goto done;
 	}

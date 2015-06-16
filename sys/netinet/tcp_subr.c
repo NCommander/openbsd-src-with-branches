@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.141 2015/05/07 09:19:31 mikeb Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.142 2015/05/13 10:42:46 jsg Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -394,7 +394,7 @@ tcp_respond(struct tcpcb *tp, caddr_t template, struct tcphdr *th0,
 
 	m->m_len = tlen;
 	m->m_pkthdr.len = tlen;
-	m->m_pkthdr.rcvif = (struct ifnet *) 0;
+	m->m_pkthdr.ph_ifidx = 0;
 	m->m_pkthdr.csum_flags |= M_TCP_CSUM_OUT;
 
 	/* force routing table */
