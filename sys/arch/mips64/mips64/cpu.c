@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.56 2014/09/30 06:51:58 jmatthew Exp $ */
+/*	$OpenBSD: cpu.c,v 1.57 2015/02/11 05:25:15 miod Exp $ */
 
 /*
  * Copyright (c) 1997-2004 Opsycon AB (www.opsycon.se)
@@ -456,7 +456,7 @@ alloc_contiguous_pages(size_t size)
 	paddr_t pa;
 
 	TAILQ_INIT(&mlist);
-	error = uvm_pglistalloc(roundup(size, USPACE), 0, (paddr_t)-1, 0, 0,
+	error = uvm_pglistalloc(round_page(size), 0, (paddr_t)-1, 0, 0,
 		&mlist, 1, UVM_PLA_NOWAIT | UVM_PLA_ZERO);
 	if (error)
 		return 0;
