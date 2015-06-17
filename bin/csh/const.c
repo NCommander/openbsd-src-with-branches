@@ -1,4 +1,4 @@
-/*	$OpenBSD: const.c,v 1.5 2003/06/02 23:32:06 millert Exp $	*/
+/*	$OpenBSD: const.c,v 1.6 2009/10/27 23:59:21 deraadt Exp $	*/
 /*	$NetBSD: const.c,v 1.6 1995/03/21 09:02:31 cgd Exp $	*/
 
 /*-
@@ -79,9 +79,7 @@ Char STRequal[]		= { '=', '\0' };
 Char STRfakecom[]	= { '{', ' ', '.', '.', '.', ' ', '}', '\0' };
 Char STRfakecom1[]	= { '`', ' ', '.', '.', '.', ' ', '`', '\0' };
 Char STRfignore[]	= { 'f', 'i', 'g', 'n', 'o', 'r', 'e', '\0' };
-#ifdef FILEC
 Char STRfilec[] = { 'f', 'i', 'l', 'e', 'c', '\0' };
-#endif /* FILEC */
 Char STRhistchars[]	= { 'h', 'i', 's', 't', 'c', 'h', 'a', 'r', 's', '\0' };
 Char STRtildothist[]	= { '~', '/', '.', 'h', 'i', 's', 't', 'o', 'r',
 			    'y', '\0' };

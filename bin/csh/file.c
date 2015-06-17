@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.19 2015/02/08 05:47:28 tedu Exp $	*/
+/*	$OpenBSD: file.c,v 1.20 2015/06/03 01:49:35 deraadt Exp $	*/
 /*	$NetBSD: file.c,v 1.11 1996/11/08 19:34:37 christos Exp $	*/
 
 /*-
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifdef FILEC
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -645,4 +644,3 @@ ignored(Char *entry)
 	    return (TRUE);
     return (FALSE);
 }
-#endif				/* FILEC */
