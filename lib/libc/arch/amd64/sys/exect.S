@@ -1,4 +1,4 @@
-/*	$OpenBSD: exect.S,v 1.2 2005/12/13 00:10:48 jsg Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: exect.S,v 1.1 2001/06/19 00:25:06 fvdl Exp $	*/
 
 /*-
@@ -51,3 +51,4 @@ SYSENTRY(exect)
 #else
 	jmp	CERROR
 #endif
+SYSEXIT(exect)

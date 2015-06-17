@@ -1,4 +1,4 @@
-/*	$OpenBSD: brk.S,v 1.3 2005/12/13 00:10:48 jsg Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: brk.S,v 1.2 2002/06/03 18:30:33 fvdl Exp $	*/
 
 /*-
@@ -83,3 +83,4 @@ err:
 err:
 	jmp	CERROR
 #endif
+SYSEXIT(_brk)
