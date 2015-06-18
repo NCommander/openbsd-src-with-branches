@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_auereg.h,v 1.16 2013/04/15 09:23:01 mglocker Exp $ */
+/*	$OpenBSD: if_auereg.h,v 1.17 2013/12/13 01:13:56 brad Exp $ */
 /*	$NetBSD: if_auereg.h,v 1.16 2001/10/10 02:14:17 augustss Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -50,9 +50,6 @@
 
 #define AUE_UR_READREG		0xF0
 #define AUE_UR_WRITEREG		0xF1
-
-#define AUE_CONFIG_NO		1
-#define AUE_IFACE_IDX		0
 
 /*
  * Note that while the ADMtek technically has four
