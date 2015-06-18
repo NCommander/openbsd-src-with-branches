@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_smscreg.h,v 1.3 2012/11/10 18:48:22 brad Exp $	*/
+/*	$OpenBSD: if_smscreg.h,v 1.4 2013/04/15 09:23:01 mglocker Exp $	*/
 /*-
  * Copyright (c) 2012
  *	Ben Gray <bgray@freebsd.org>.
@@ -240,9 +240,6 @@
 
 #define SMSC_RX_LIST_CNT	1
 #define SMSC_TX_LIST_CNT	1
-
-#define	SMSC_CONFIG_INDEX	1	/* config number 1 */
-#define	SMSC_IFACE_IDX		0
 
 #define SMSC_ENDPT_RX		0
 #define SMSC_ENDPT_TX		1
