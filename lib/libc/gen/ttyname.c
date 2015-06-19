@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttyname.c,v 1.12 2005/08/08 08:05:34 espie Exp $ */
+/*	$OpenBSD: ttyname.c,v 1.13 2007/05/23 18:30:07 kurt Exp $ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -48,17 +48,18 @@ char *
 ttyname(int fd)
 {
 	_THREAD_PRIVATE_KEY(ttyname);
-	char * bufp = (char*) _THREAD_PRIVATE(ttyname, buf, NULL);
+	char *bufp = (char *) _THREAD_PRIVATE(ttyname, buf, NULL);
 	int err;
 
-	if (bufp == NULL) 
+	if (bufp == NULL)
 		return NULL;
+
 	err = ttyname_r(fd, bufp, sizeof buf);
 	if (err) {
 		errno = err;
 		return NULL;
 	}
-	else
+
 	return bufp;
 }
 
