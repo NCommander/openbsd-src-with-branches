@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_private.h,v 1.29 2015/05/29 08:49:37 eric Exp $	*/
+/*	$OpenBSD: asr_private.h,v 1.30 2015/06/04 19:23:17 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -342,7 +342,7 @@ struct asr_query *gethostbyaddr_async_ctx(const void *, socklen_t, int,
 const char *asr_querystr(int);
 const char *asr_statestr(int);
 const char *asr_transitionstr(int);
-const char *print_sockaddr(const struct sockaddr *, char *, size_t);
+const char *asr_print_sockaddr(const struct sockaddr *, char *, size_t);
 void asr_dump_config(FILE *, struct asr *);
 void asr_dump_packet(FILE *, const void *, size_t);
 
