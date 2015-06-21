@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnet.c,v 1.43 2015/04/02 09:46:48 kettenis Exp $	*/
+/*	$OpenBSD: vnet.c,v 1.44 2015/04/13 08:45:48 mpi Exp $	*/
 /*
  * Copyright (c) 2009, 2015 Mark Kettenis
  *
@@ -767,6 +767,7 @@ vnet_rx_vio_desc_data(struct vnet_softc *sc, struct vio_msg_tag *tag)
 		atomic_dec_int(&map->lm_count);
 
 		pool_put(&sc->sc_pool, sc->sc_vsd[cons].vsd_buf);
+		ifp->if_opackets++;
 
 		sc->sc_tx_cons++;
 		break;
@@ -880,6 +881,7 @@ vnet_rx_vio_dring_data(struct vnet_softc *sc, struct vio_msg_tag *tag)
 			atomic_dec_int(&map->lm_count);
 
 			pool_put(&sc->sc_pool, sc->sc_vsd[cons].vsd_buf);
+			ifp->if_opackets++;
 
 			sc->sc_vd->vd_desc[cons].hdr.dstate = VIO_DESC_FREE;
 			sc->sc_tx_cons++;
