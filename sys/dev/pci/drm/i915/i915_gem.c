@@ -1,4 +1,4 @@
-/*	$OpenBSD: i915_gem.c,v 1.93 2015/04/18 11:41:28 jsg Exp $	*/
+/*	$OpenBSD: i915_gem.c,v 1.94 2015/04/18 14:47:34 jsg Exp $	*/
 /*
  * Copyright (c) 2008-2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -225,7 +225,7 @@ i915_gem_create(struct drm_file *file,
 	int ret;
 	u32 handle;
 
-	size = round_page(size);
+	size = roundup(size, PAGE_SIZE);
 	if (size == 0)
 		return -EINVAL;
 
