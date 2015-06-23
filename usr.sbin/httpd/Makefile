@@ -1,10 +1,13 @@
-#	$OpenBSD: Makefile,v 1.26 2014/10/31 13:49:52 jsing Exp $
+#	$OpenBSD: Makefile,v 1.27 2015/02/23 10:39:10 reyk Exp $
 
 PROG=		httpd
 SRCS=		parse.y
 SRCS+=		config.c control.c httpd.c log.c logger.c proc.c
 SRCS+=		server.c server_http.c server_file.c server_fcgi.c
 MAN=		httpd.8 httpd.conf.5
+
+SRCS+=		patterns.c
+MAN+=		patterns.7
 
 LDADD=		-levent -ltls -lssl -lcrypto -lutil
 DPADD=		${LIBEVENT} ${LIBTLS} ${LIBSSL} ${LIBCRYPTO} ${LIBUTIL}
