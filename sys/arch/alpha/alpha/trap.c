@@ -1,4 +1,4 @@
-/* $OpenBSD: trap.c,v 1.78 2015/06/05 16:45:24 deraadt Exp $ */
+/* $OpenBSD: trap.c,v 1.79 2015/06/05 16:59:10 deraadt Exp $ */
 /* $NetBSD: trap.c,v 1.52 2000/05/24 16:48:33 thorpej Exp $ */
 
 /*-
@@ -409,7 +409,7 @@ do_fault:
 			 * argument space is lazy-allocated.
 			 */
 			if (!user && (a0 >= VM_MIN_KERNEL_ADDRESS ||
-			    p == NULL || p->p_addr->u_pcb.pcb_onfault == 0)) {
+			    p->p_addr->u_pcb.pcb_onfault == 0)) {
 				vm = NULL;
 				map = kernel_map;
 			} else {
@@ -433,8 +433,7 @@ do_fault:
 			if (map != kernel_map &&
 			    (caddr_t)va >= vm->vm_maxsaddr) {
 				if (rv == 0) {
-					if (p != NULL)
-					    uvm_grow(p, va);
+					uvm_grow(p, va);
 				} else if (rv == EACCES)
 					rv = EFAULT;
 			}
