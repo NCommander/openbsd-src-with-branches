@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass_quirks.c,v 1.30 2008/06/26 05:42:19 ray Exp $	*/
+/*	$OpenBSD: umass_quirks.c,v 1.31 2014/10/05 08:34:14 mpi Exp $	*/
 /*	$NetBSD: umass_quirks.c,v 1.67 2004/06/28 07:49:16 mycroft Exp $	*/
 
 /*
@@ -462,6 +462,14 @@ const struct umass_quirk umass_quirks[] = {
 	 UMASS_WPROTO_UNSPEC, UMASS_CPROTO_UNSPEC,
 	 0,
 	 SDEV_NOSYNCCACHE,
+	 UMATCH_VENDOR_PRODUCT,
+	 NULL, NULL
+	},
+
+	{ { USB_VENDOR_SUPERTOP, USB_PRODUCT_SUPERTOP_IDEBRIDGE },
+	 UMASS_WPROTO_UNSPEC, UMASS_CPROTO_UNSPEC,
+	 0,
+	 ADEV_NOSENSE,
 	 UMATCH_VENDOR_PRODUCT,
 	 NULL, NULL
 	},
