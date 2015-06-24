@@ -76,7 +76,7 @@ temporarily_use_uid(struct passwd *pw)
 			fatal("getgroups: %.100s", strerror(errno));
 	}
 	/* Set the effective uid to the given (unprivileged) uid. */
-	if (user_groupslen > 0 && setgroups(user_groupslen, user_groups) < 0)
+	if (setgroups(user_groupslen, user_groups) < 0)
 		fatal("setgroups: %.100s", strerror(errno));
 	if (setegid(pw->pw_gid) < 0)
 		fatal("setegid %u: %.100s", (u_int)pw->pw_gid,
@@ -103,8 +103,7 @@ restore_uid(void)
 	/* Set the effective uid back to the saved privileged uid. */
 	if (seteuid(saved_euid) < 0)
 		fatal("seteuid %u: %.100s", (u_int)saved_euid, strerror(errno));
-	if (saved_egroupslen > 0 &&
-	    setgroups(saved_egroupslen, saved_egroups) < 0)
+	if (setgroups(saved_egroupslen, saved_egroups) < 0)
 		fatal("setgroups: %.100s", strerror(errno));
 	if (setegid(saved_egid) < 0)
 		fatal("setegid %u: %.100s", (u_int)saved_egid, strerror(errno));
