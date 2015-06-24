@@ -1,4 +1,4 @@
-/*	$OpenBSD: chap.c,v 1.11 2014/05/28 16:14:19 yasuoka Exp $ */
+/*	$OpenBSD: chap.c,v 1.12 2015/01/19 01:48:59 deraadt Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -36,7 +36,7 @@
  * </ul></p>
  */
 /* RFC 1994, 2433 */
-/* $Id: chap.c,v 1.11 2014/05/28 16:14:19 yasuoka Exp $ */
+/* $Id: chap.c,v 1.12 2015/01/19 01:48:59 deraadt Exp $ */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -851,7 +851,7 @@ chap_radius_response(void *context, RADIUS_PACKET *pkt, int flags,
 	if (code == RADIUS_CODE_ACCESS_REJECT) {
 		reason="reject";
 		errorCode = ERROR_AUTHENTICATION_FAILURE;
-		/* Windows peer will reset the passowrd by this error code */
+		/* Windows peer will reset the password by this error code */
 		goto auth_failed;
 	} else if (code != RADIUS_CODE_ACCESS_ACCEPT) {
 		reason="error";
