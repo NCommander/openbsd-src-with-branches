@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nep.c,v 1.17 2015/03/24 09:59:23 mpi Exp $	*/
+/*	$OpenBSD: if_nep.c,v 1.18 2015/04/13 20:02:58 kettenis Exp $	*/
 /*
  * Copyright (c) 2014, 2015 Mark Kettenis
  *
@@ -1029,7 +1029,6 @@ nep_rx_proc(struct nep_softc *sc)
 			m->m_pkthdr.len = m->m_len = len;
 			m->m_data += ETHER_ALIGN;
 
-			ifp->if_ipackets++;
 			ml_enqueue(&ml, m);
 		}
 

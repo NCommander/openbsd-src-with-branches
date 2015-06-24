@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_msk.c,v 1.113 2015/03/14 03:38:48 jsg Exp $	*/
+/*	$OpenBSD: if_msk.c,v 1.114 2015/04/30 07:51:07 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -1669,8 +1669,6 @@ msk_rxeof(struct sk_if_softc *sc_if, u_int16_t len, u_int32_t rxstat)
 	m->m_pkthdr.len = m->m_len = total_len;
 
 	ml_enqueue(&ml, m);
-	ifp->if_ipackets++;
-
 	if_input(ifp, &ml);
 }
 

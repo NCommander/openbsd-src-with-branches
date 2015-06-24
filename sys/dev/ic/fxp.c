@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxp.c,v 1.119 2015/02/12 09:08:00 mpi Exp $	*/
+/*	$OpenBSD: fxp.c,v 1.120 2015/03/14 03:38:47 jsg Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -957,7 +957,6 @@ fxp_stats_update(void *arg)
 	ifp->if_opackets += letoh32(sp->tx_good);
 	ifp->if_collisions += letoh32(sp->tx_total_collisions);
 	if (sp->rx_good) {
-		ifp->if_ipackets += letoh32(sp->rx_good);
 		sc->rx_idle_secs = 0;
 	} else if (sc->sc_flags & FXPF_RECV_WORKAROUND)
 		sc->rx_idle_secs++;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.38 2015/03/28 19:07:07 miod Exp $	*/
+/*	$OpenBSD: qe.c,v 1.39 2015/03/29 10:59:47 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998, 2000 Jason L. Wright.
@@ -768,7 +768,6 @@ qe_read(sc, idx, len)
 		ifp->if_ierrors++;
 		return;
 	}
-	ifp->if_ipackets++;
 
 	ml_enqueue(&ml, m);
 	if_input(ifp, &ml);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.68 2015/04/08 10:07:47 mpi Exp $	*/
+/*	$OpenBSD: hme.c,v 1.69 2015/04/13 08:45:48 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -833,8 +833,6 @@ hme_read(sc, idx, len, flags)
 		ifp->if_ierrors++;
 		return;
 	}
-
-	ifp->if_ipackets++;
 
 	ml_enqueue(&ml, m);
 	if_input(ifp, &ml);

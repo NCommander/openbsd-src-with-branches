@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.28 2015/05/29 00:37:10 uebayasi Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.29 2015/06/04 17:10:33 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -767,7 +767,6 @@ skip_buffer:
 		}
 	}
 
-	ifp->if_ipackets += ml_len(&ml);
 	if_input(ifp, &ml);
 
 	/* XXX Should we (try to) allocate buffers for ring 2 too? */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: gem.c,v 1.110 2015/02/09 03:09:57 dlg Exp $	*/
+/*	$OpenBSD: gem.c,v 1.111 2015/03/14 03:38:47 jsg Exp $	*/
 /*	$NetBSD: gem.c,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -996,8 +996,6 @@ gem_rint(struct gem_softc *sc)
 		len = GEM_RD_BUFLEN(rxstat);
 
 		m->m_data += 2; /* We're already off by two */
-
-		ifp->if_ipackets++;
 		m->m_pkthdr.len = m->m_len = len;
 
 		ml_enqueue(&ml, m);

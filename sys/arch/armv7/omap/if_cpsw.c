@@ -1,4 +1,4 @@
-/* $OpenBSD: if_cpsw.c,v 1.24 2014/12/22 02:26:53 tedu Exp $ */
+/* $OpenBSD: if_cpsw.c,v 1.25 2015/03/16 16:21:21 mpi Exp $ */
 /*	$NetBSD: if_cpsw.c,v 1.3 2013/04/17 14:36:34 bouyer Exp $	*/
 
 /*
@@ -1025,8 +1025,6 @@ cpsw_rxintr(void *arg)
 
 		m->m_pkthdr.len = m->m_len = len;
 		m->m_data += off;
-
-		ifp->if_ipackets++;
 
 		ml_enqueue(&ml, m);
 

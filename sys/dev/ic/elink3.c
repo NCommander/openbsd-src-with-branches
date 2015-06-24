@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3.c,v 1.83 2015/03/14 03:38:47 jsg Exp $	*/
+/*	$OpenBSD: elink3.c,v 1.84 2015/03/30 10:04:11 mpi Exp $	*/
 /*	$NetBSD: elink3.c,v 1.32 1997/05/14 00:22:00 thorpej Exp $	*/
 
 /*
@@ -1293,8 +1293,6 @@ again:
 		error = 1;
 		goto done;
 	}
-
-	++ifp->if_ipackets;
 
 	ml_enqueue(&ml, m);
 

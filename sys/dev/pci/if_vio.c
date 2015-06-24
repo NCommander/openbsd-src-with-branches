@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vio.c,v 1.31 2015/05/26 19:12:24 sf Exp $	*/
+/*	$OpenBSD: if_vio.c,v 1.32 2015/06/11 04:38:23 jsg Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch, Alexander Fiveg.
@@ -1039,7 +1039,6 @@ vio_rxeof(struct vio_softc *sc)
 		}
 
 		if (bufs_left == 0) {
-			ifp->if_ipackets++;
 			ml_enqueue(&ml, m0);
 			m0 = NULL;
 		}

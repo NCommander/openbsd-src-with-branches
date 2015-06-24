@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.129 2015/06/16 11:09:39 mpi Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.130 2015/06/23 09:42:23 mpi Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -339,7 +339,6 @@ vlan_input(struct mbuf *m)
 
 	ml_enqueue(&ml, m);
 	if_input(&ifv->ifv_if, &ml);
-	ifv->ifv_if.if_ipackets++;
 	return (1);
 }
 

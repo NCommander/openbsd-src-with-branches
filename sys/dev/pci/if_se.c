@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_se.c,v 1.11 2015/03/14 03:38:48 jsg Exp $	*/
+/*	$OpenBSD: if_se.c,v 1.12 2015/04/30 07:51:07 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009, 2010 Christopher Zimmermann <madroach@zakweb.de>
@@ -962,7 +962,6 @@ se_rxeof(struct se_softc *sc)
 		    SE_RX_BYTES(rxstat) - SE_RX_PAD_BYTES;
 
 		ml_enqueue(&ml, m);
-		ifp->if_ipackets++;
 	}
 
 	if_input(ifp, &ml);

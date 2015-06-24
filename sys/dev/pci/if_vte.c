@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vte.c,v 1.11 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_vte.c,v 1.12 2015/04/30 07:51:07 mpi Exp $	*/
 /*-
  * Copyright (c) 2010, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -849,7 +849,6 @@ vte_stats_update(struct vte_softc *sc)
 	ifp->if_opackets = stat->tx_frames;
 	ifp->if_collisions = stat->tx_late_colls;
 	ifp->if_oerrors = stat->tx_late_colls + stat->tx_underruns;
-	ifp->if_ipackets = stat->rx_frames;
 	ifp->if_ierrors = stat->rx_crcerrs + stat->rx_runts +
 	    stat->rx_long_frames + stat->rx_fifo_full;
 }

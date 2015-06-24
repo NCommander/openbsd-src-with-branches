@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.59 2015/04/08 10:07:47 mpi Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.60 2015/04/13 08:45:48 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -976,8 +976,6 @@ void wb_rxeof(sc)
 			ifp->if_ierrors++;
 			break;
 		}
-
-		ifp->if_ipackets++;
 
 		ml_enqueue(&ml, m);
 	}

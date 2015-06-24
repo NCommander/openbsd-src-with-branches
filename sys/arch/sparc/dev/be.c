@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.49 2015/03/28 19:07:07 miod Exp $	*/
+/*	$OpenBSD: be.c,v 1.50 2015/03/29 10:59:47 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -1009,7 +1009,6 @@ be_read(sc, idx, len)
 		ifp->if_ierrors++;
 		return;
 	}
-	ifp->if_ipackets++;
 
 	ml_enqueue(&ml, m);
 	if_input(ifp, &ml);

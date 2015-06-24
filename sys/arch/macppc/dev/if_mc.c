@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mc.c,v 1.19 2015/02/08 07:00:48 mpi Exp $	*/
+/*	$OpenBSD: if_mc.c,v 1.20 2015/02/09 03:09:57 dlg Exp $	*/
 /*	$NetBSD: if_mc.c,v 1.9.16.1 2006/06/21 14:53:13 yamt Exp $	*/
 
 /*-
@@ -896,7 +896,6 @@ mace_read(struct mc_softc *sc, caddr_t pkt, int len)
 
 	ml_enqueue(&ml, m);
 	if_input(ifp, &ml);
-	ifp->if_ipackets++;
 }
 
 /*

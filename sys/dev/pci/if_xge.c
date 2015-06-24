@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.60 2015/03/14 03:38:48 jsg Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.61 2015/04/30 07:51:07 mpi Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -910,8 +910,6 @@ xge_intr(void *pv)
 			ifp->if_ierrors++;
 			break;
 		}
-
-		ifp->if_ipackets++;
 
 		if (RXD_CTL1_PROTOS(val) & RXD_CTL1_P_IPv4)
 			m->m_pkthdr.csum_flags |= M_IPV4_CSUM_IN_OK;

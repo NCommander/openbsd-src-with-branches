@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnw.c,v 1.29 2015/05/19 11:24:01 mpi Exp $	*/
+/*	$OpenBSD: if_cnw.c,v 1.30 2015/05/21 09:36:20 mpi Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -652,7 +652,6 @@ cnw_recv(sc)
 			++ifp->if_ierrors;
 			break;
 		}
-		++ifp->if_ipackets;
 		ml_enqueue(&ml, m);
 	}
 

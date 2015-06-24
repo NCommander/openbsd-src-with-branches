@@ -1,4 +1,4 @@
-/*    $OpenBSD: if_el.c,v 1.25 2015/05/13 10:42:46 jsg Exp $       */
+/*    $OpenBSD: if_el.c,v 1.26 2015/05/19 11:24:01 mpi Exp $       */
 /*	$NetBSD: if_el.c,v 1.39 1996/05/12 23:52:32 mycroft Exp $	*/
 
 /*
@@ -508,9 +508,7 @@ elread(sc, len)
 		return;
 	}
 
-	ifp->if_ipackets++;
 	ml_enqueue(&ml, m);
-
 	if_input(ifp, &ml);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.160 2015/03/14 03:38:47 jsg Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.161 2015/05/19 11:34:30 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -759,8 +759,6 @@ wi_rxeof(struct wi_softc *sc)
 			}
 			break;
 		}
-
-		ifp->if_ipackets++;
 
 		if (sc->wi_use_wep &&
 		    rx_frame.wi_frame_ctl & htole16(WI_FCTL_WEP)) {

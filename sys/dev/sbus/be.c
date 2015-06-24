@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.29 2015/04/07 14:59:06 mpi Exp $	*/
+/*	$OpenBSD: be.c,v 1.30 2015/05/13 10:42:46 jsg Exp $	*/
 /*	$NetBSD: be.c,v 1.26 2001/03/20 15:39:20 pk Exp $	*/
 
 /*-
@@ -549,7 +549,6 @@ be_read(struct be_softc *sc, int idx, int len)
 		ifp->if_ierrors++;
 		return;
 	}
-	ifp->if_ipackets++;
 
 	ml_enqueue(&ml, m);
 	if_input(ifp, &ml);

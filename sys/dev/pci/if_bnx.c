@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnx.c,v 1.109 2015/01/27 03:17:36 dlg Exp $	*/
+/*	$OpenBSD: if_bnx.c,v 1.110 2015/03/10 15:28:48 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -4477,9 +4477,6 @@ bnx_rx_intr(struct bnx_softc *sc)
 				goto bnx_rx_int_next_rx;
 #endif			
 			}
-
-			/* Pass the mbuf off to the upper layers. */
-			ifp->if_ipackets++;
 
 bnx_rx_int_next_rx:
 			sw_prod = NEXT_RX_BD(sw_prod);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.27 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: qe.c,v 1.28 2015/04/07 14:59:06 mpi Exp $	*/
 /*	$NetBSD: qe.c,v 1.16 2001/03/30 17:30:18 christos Exp $	*/
 
 /*-
@@ -420,7 +420,6 @@ qe_read(sc, idx, len)
 		ifp->if_ierrors++;
 		return;
 	}
-	ifp->if_ipackets++;
 
 	ml_enqueue(&ml, m);
 	if_input(ifp, &ml);

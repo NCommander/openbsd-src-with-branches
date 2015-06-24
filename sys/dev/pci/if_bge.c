@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.366 2015/03/14 03:38:48 jsg Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.367 2015/05/19 12:50:53 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -3497,7 +3497,6 @@ bge_rxeof(struct bge_softc *sc)
 			}
 		}
 
-		ifp->if_ipackets++;
 #ifdef __STRICT_ALIGNMENT
 		/*
 		 * The i386 allows unaligned accesses, but for other

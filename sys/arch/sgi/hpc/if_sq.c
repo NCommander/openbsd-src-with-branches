@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sq.c,v 1.12 2014/12/22 02:26:53 tedu Exp $	*/
+/*	$OpenBSD: if_sq.c,v 1.13 2015/03/29 11:03:34 mpi Exp $	*/
 /*	$NetBSD: if_sq.c,v 1.42 2011/07/01 18:53:47 dyoung Exp $	*/
 
 /*
@@ -1187,8 +1187,6 @@ sq_rxintr(struct sq_softc *sc)
 
 		m->m_data += 2;
 		m->m_pkthdr.len = m->m_len = framelen;
-
-		ifp->if_ipackets++;
 
 		SQ_DPRINTF(("%s: sq_rxintr: buf %d len %d\n",
 		    sc->sc_dev.dv_xname, i, framelen));

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9.c,v 1.89 2015/03/30 10:04:11 mpi Exp $ */
+/*	$OpenBSD: rtl81x9.c,v 1.90 2015/04/13 08:45:48 mpi Exp $ */
 
 /*
  * Copyright (c) 1997, 1998
@@ -671,8 +671,6 @@ rl_rxeof(struct rl_softc *sc)
 			ifp->if_ierrors++;
 			continue;
 		}
-
-		ifp->if_ipackets++;
 
 		ml_enqueue(&ml, m);
 

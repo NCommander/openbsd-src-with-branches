@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iec.c,v 1.12 2014/12/22 02:26:53 tedu Exp $	*/
+/*	$OpenBSD: if_iec.c,v 1.13 2015/03/11 22:14:43 mpi Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -1301,8 +1301,6 @@ dropit:
 
 		rxd->rxd_stat = 0;
 		IEC_RXSTATSYNC(sc, i, BUS_DMASYNC_PREREAD);
-
-		ifp->if_ipackets++;
 
 		ml_enqueue(&ml, m);
 	}
