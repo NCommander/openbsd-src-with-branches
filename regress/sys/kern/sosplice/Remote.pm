@@ -1,4 +1,4 @@
-#	$OpenBSD: Remote.pm,v 1.1.1.1 2013/01/03 17:36:38 bluhm Exp $
+#	$OpenBSD: Remote.pm,v 1.2 2014/08/18 22:58:19 bluhm Exp $
 
 # Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -66,8 +66,7 @@ sub child {
 	my @cmd = ("ssh", "-n", @opts, $self->{remotessh}, "perl",
 	    "-I", "$dir/..", "$dir/".basename($0), $self->{forward},
 	    $self->{listenaddr}, $self->{connectaddr}, $self->{connectport},
-	    ($self->{testfile} ? "$dir/".basename($self->{testfile}) :
-	    ()));
+	    ($self->{testfile} ? "$dir/".basename($self->{testfile}) : ()));
 	print STDERR "execute: @cmd\n";
 	exec @cmd;
 	die ref($self), " exec '@cmd' failed: $!";
