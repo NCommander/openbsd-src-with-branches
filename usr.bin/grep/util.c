@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.48 2014/05/20 01:25:23 guenther Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -85,7 +85,7 @@ grep_tree(char **argv)
 	}
 	if (errno)
 		err(2, "fts_read");
-
+	fts_close(fts);
 	return c;
 }
 

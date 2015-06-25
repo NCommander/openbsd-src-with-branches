@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.83 2015/01/16 06:40:06 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -463,7 +463,7 @@ main(int argc, char *argv[])
 	}
 	if (list)
 		list_stats(NULL, NULL, NULL);
-
+	fts_close(ftsp);
 	exit(rc);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: du.c,v 1.28 2014/10/19 18:24:58 jmc Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: du.c,v 1.11 1996/10/18 07:20:35 thorpej Exp $	*/
 
 /*
@@ -206,6 +206,7 @@ main(int argc, char *argv[])
 	if (cflag) {
 		prtout((quad_t)howmany(totalblocks, blocksize), "total", hflag);
 	}
+	fts_close(fts);
 	exit(rval);
 }
 
