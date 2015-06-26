@@ -24,8 +24,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _MACHINE_MPLOCK_H_
-#define _MACHINE_MPLOCK_H_
+#ifndef _POWERPC_MPLOCK_H_
+#define _POWERPC_MPLOCK_H_
 
 /*
  * Really simple spinlock implementation with recursive capabilities.
@@ -49,4 +49,4 @@ int __mp_lock_held(struct __mp_lock *);
 
 #endif
 
-#endif /* !_MACHINE_MPLOCK_H */
+#endif /* !_POWERPC_MPLOCK_H */
