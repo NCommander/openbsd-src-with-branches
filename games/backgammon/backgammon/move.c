@@ -1,4 +1,4 @@
-/*	$OpenBSD: move.c,v 1.9 2006/12/14 10:14:05 martin Exp $	*/
+/*	$OpenBSD: move.c,v 1.10 2009/10/27 23:59:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -69,8 +69,9 @@ domove(okay)
 	int     l = 0;		/* last man */
 
 	bestmove = -9999999.;
-	if (okay && dflag != 0) {	 /* see if comp should double */
-		if (gvalue < 64 && dlast != cturn && dblgood()) {
+	if (okay) {
+	    	/* see if comp should double */
+		if (dflag && gvalue < 64 && dlast != cturn && dblgood()) {
 			addstr(*Colorptr);
 			dble();	/* double */
 			/* return if declined */

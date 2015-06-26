@@ -1,4 +1,4 @@
-/*	$OpenBSD: subs.c,v 1.18 2009/10/27 23:59:23 deraadt Exp $	*/
+/*	$OpenBSD: subs.c,v 1.19 2013/11/27 13:32:02 okan Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -98,6 +98,8 @@ gwrite()
 			addstr(color[1]);
 		addstr(" doubled last.");
 	} else {
+		if (!dflag)
+			printw("[No doubling.]  ");
 		switch (pnum) {
 		case -1:	/* player is red */
 			addstr(plred);
