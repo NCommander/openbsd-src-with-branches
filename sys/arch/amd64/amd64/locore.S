@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.66 2015/06/23 14:19:21 bluhm Exp $	*/
+/*	$OpenBSD: locore.S,v 1.67 2015/06/28 01:16:28 guenther Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -1108,16 +1108,6 @@ IDTVEC(syscall)
 
 
 NENTRY(proc_trampoline)
-#ifdef MULTIPROCESSOR
-	call	_C_LABEL(proc_trampoline_mp)
-#endif
-	movl	$IPL_NONE,CPUVAR(ILEVEL)
-	movq	%r13,%rdi
-	call	*%r12
-	INTRFASTEXIT
-	/* NOTREACHED */
-
-NENTRY(child_trampoline)
 #ifdef MULTIPROCESSOR
 	call	_C_LABEL(proc_trampoline_mp)
 #endif
