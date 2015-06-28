@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc2.h,v 1.11 2015/02/12 07:51:51 uebayasi Exp $	*/
+/*	$OpenBSD: dwc2.h,v 1.12 2015/06/08 08:47:38 jmatthew Exp $	*/
 /*	$NetBSD: dwc2.h,v 1.4 2014/12/23 16:20:06 macallan Exp $	*/
 
 /*-
@@ -39,7 +39,7 @@
 #include <sys/task.h>
 #include <sys/timeout.h>
 
-#include <dev/usb/dwc2/linux/list.h>
+#include <lib/libkern/libkern.h>
 
 #if 0
 #include "opt_usb.h"
