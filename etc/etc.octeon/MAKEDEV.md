@@ -1,6 +1,6 @@
 define(MACHINE,octeon)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.5 2014/10/09 04:37:43 tedu Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.6 2015/05/04 23:48:14 jmatthew Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -63,6 +63,8 @@ _TITLE(point)
 _DEV(wsmouse, 27)
 _TITLE(usb)
 _DEV(ttyU, 66)
+_DEV(uall)
+_DEV(usb, 61)
 _TITLE(spec)
 _DEV(au, 44)
 _DEV(bio, 49)
