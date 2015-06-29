@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.38 2015/05/18 19:59:27 guenther Exp $	*/
+/*	$OpenBSD: vector.S,v 1.39 2015/06/28 01:16:29 guenther Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -129,7 +129,7 @@ IDTVEC(trap07)
 	call	_C_LABEL(fpudna)
 	INTRFASTEXIT
 IDTVEC(trap08)
-	ZTRAP(T_DOUBLEFLT)
+	TRAP(T_DOUBLEFLT)
 IDTVEC(trap09)
 	ZTRAP(T_FPOPFLT)
 IDTVEC(trap0a)
