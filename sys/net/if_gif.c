@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.73 2015/03/14 03:38:51 jsg Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.74 2015/05/15 10:15:13 mpi Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -315,7 +315,7 @@ gif_output(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 	if ((error = gif_checkloop(ifp, m)))
 		goto end;
 
-	error = if_output(ifp, m);
+	error = if_enqueue(ifp, m);
 
 end:
 	if (error)

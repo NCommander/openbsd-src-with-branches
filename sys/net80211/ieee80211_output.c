@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_output.c,v 1.94 2015/03/14 03:38:51 jsg Exp $	*/
+/*	$OpenBSD: ieee80211_output.c,v 1.95 2015/05/26 15:34:00 mpi Exp $	*/
 /*	$NetBSD: ieee80211_output.c,v 1.13 2004/05/31 11:02:55 dyoung Exp $	*/
 
 /*-
@@ -142,7 +142,7 @@ ieee80211_output(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 		    IEEE80211_FC0_TYPE_CTL)
 			return (EINVAL);
 
-		return (if_output(ifp, m));
+		return (if_enqueue(ifp, m));
 	}
 
  fallback:

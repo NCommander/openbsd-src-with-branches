@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.261 2015/06/24 09:40:55 mpi Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.262 2015/06/29 10:32:29 dlg Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -2304,7 +2304,7 @@ carp_start(struct ifnet *ifp)
 			memcpy(eh->ether_shost, esrc, sizeof(eh->ether_shost));
 		}
 
-		if (if_output(ifp->if_carpdev, m)) {
+		if (if_enqueue(ifp->if_carpdev, m)) {
 			ifp->if_oerrors++;
 			continue;
 		}

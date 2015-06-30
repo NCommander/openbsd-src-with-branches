@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.131 2015/06/24 09:40:54 mpi Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.132 2015/06/29 10:32:29 dlg Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -231,7 +231,7 @@ vlan_start(struct ifnet *ifp)
 			m->m_flags &= ~M_VLANTAG;
 		}
 
-		if (if_output(p, m)) {
+		if (if_enqueue(p, m)) {
 			ifp->if_oerrors++;
 			continue;
 		}
