@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip.c,v 1.79 2015/01/24 00:29:06 deraadt Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.80 2015/06/07 01:25:27 krw Exp $	*/
 /*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
@@ -161,7 +161,7 @@ rip_input(struct mbuf *m, ...)
 		if (last) {
 			struct mbuf *n;
 
-			if ((n = m_copy(m, 0, (int)M_COPYALL)) != NULL) {
+			if ((n = m_copym(m, 0, M_COPYALL, M_NOWAIT)) != NULL) {
 				if (last->inp_flags & INP_CONTROLOPTS ||
 				    last->inp_socket->so_options & SO_TIMESTAMP)
 					ip_savecontrol(last, &opts, ip, n);

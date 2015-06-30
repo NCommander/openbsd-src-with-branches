@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.158 2015/06/08 22:19:27 krw Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.159 2015/06/16 11:09:40 mpi Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -1114,7 +1114,7 @@ icmp6_rip6_input(struct mbuf **mp, int off)
 			continue;
 		if (last) {
 			struct	mbuf *n;
-			if ((n = m_copy(m, 0, (int)M_COPYALL)) != NULL) {
+			if ((n = m_copym(m, 0, M_COPYALL, M_NOWAIT)) != NULL) {
 				if (last->inp_flags & IN6P_CONTROLOPTS)
 					ip6_savecontrol(last, n, &opts);
 				/* strip intermediate headers */
