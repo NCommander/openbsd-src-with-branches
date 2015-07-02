@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: srp_enter.9,v 1.1 2015/07/02 01:33:59 dlg Exp $
 .\"
 .\" Copyright (c) 2015 David Gwynne <dlg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: July 2 2015 $
 .Dt SRP_ENTER 9
 .Os
 .Sh NAME
@@ -151,6 +151,11 @@ can be called during autoconf, or from process context.
 and
 .Fn srp_leave
 can be called during autoconf, from process context, or from interrupt context.
+Calling
+.Fn srp_leave
+from a different context to the preceding
+.Fn srp_enter
+call will lead to undefined behaviour.
 .Sh RETURN VALUES
 .Fn srp_enter
 and
