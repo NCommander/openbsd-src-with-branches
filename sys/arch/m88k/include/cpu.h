@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.62 2014/07/11 10:53:07 uebayasi Exp $ */
+/*	$OpenBSD: cpu.h,v 1.63 2015/02/11 07:05:39 dlg Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -95,6 +95,10 @@ struct cpu_info {
 	struct pmap	*ci_curpmap;		/* ...and its pmap */
 
 	u_int		 ci_cpuid;		/* cpu number */
+
+#if defined(MULTIPROCESSOR)
+	struct srp_hazard ci_srp_hazards[SRP_HAZARD_NUM];
+#endif
 
 	/*
 	 * Function pointers used within mplock to ensure

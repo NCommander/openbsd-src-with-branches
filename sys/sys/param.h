@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.116 2015/06/17 22:32:08 deraadt Exp $	*/
+/*	$OpenBSD: param.h,v 1.117 2015/06/17 22:35:08 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -83,6 +83,7 @@
 #include <sys/resource.h>
 #include <sys/ucred.h>
 #include <sys/uio.h>
+#include <sys/srp.h>
 #endif
 
 /* Signals. */
