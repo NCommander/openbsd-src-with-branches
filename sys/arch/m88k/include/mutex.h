@@ -1,6 +1,6 @@
 #ifndef _M88K_MUTEX_H_
 #define _M88K_MUTEX_H_
-/*	$OpenBSD: mutex.h,v 1.1 2005/12/03 19:01:14 miod Exp $	*/
+/*	$OpenBSD: mutex.h,v 1.2 2014/02/02 20:31:10 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat.
@@ -55,15 +55,13 @@ void __mtx_init(struct mutex *, int);
 
 #ifdef DIAGNOSTIC
 
-#define	MUTEX_ASSERT_LOCKED(mtx)					\
-do {									\
-	if ((mtx)->mtx_lock == 0 || (mtx)->mtx_cpu != curcpu())		\
+#define MUTEX_ASSERT_LOCKED(mtx) do {					\
+	if ((mtx)->mtx_owner != curcpu())				\
 		panic("mutex %p not held in %s", (mtx), __func__);	\
 } while (0)
 
-#define	MUTEX_ASSERT_UNLOCKED(mtx)					\
-do {									\
-	if ((mtx)->mtx_lock != 0)					\
+#define MUTEX_ASSERT_UNLOCKED(mtx) do {					\
+	if ((mtx)->mtx_owner == curcpu())				\
 		panic("mutex %p held in %s", (mtx), __func__);		\
 } while (0)
 
