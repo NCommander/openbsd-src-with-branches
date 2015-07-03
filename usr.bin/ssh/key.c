@@ -1,4 +1,4 @@
-/* $OpenBSD: key.c,v 1.126 2015/01/20 23:14:00 deraadt Exp $ */
+/* $OpenBSD: key.c,v 1.127 2015/01/28 22:36:00 djm Exp $ */
 /*
  * placed in the public domain
  */
@@ -182,11 +182,11 @@ key_demote(const Key *k)
 }
 
 int
-key_to_certified(Key *k, int legacy)
+key_to_certified(Key *k)
 {
 	int r;
 
-	if ((r = sshkey_to_certified(k, legacy)) != 0) {
+	if ((r = sshkey_to_certified(k)) != 0) {
 		fatal_on_fatal_errors(r, __func__, 0);
 		error("%s: %s", __func__, ssh_err(r));
 		return -1;

@@ -1,4 +1,4 @@
-/* $OpenBSD: authfd.c,v 1.96 2015/03/25 19:21:48 markus Exp $ */
+/* $OpenBSD: authfd.c,v 1.97 2015/03/26 19:32:19 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -558,10 +558,8 @@ ssh_add_identity_constrained(int sock, struct sshkey *key, const char *comment,
 #ifdef WITH_OPENSSL
 	case KEY_RSA:
 	case KEY_RSA_CERT:
-	case KEY_RSA_CERT_V00:
 	case KEY_DSA:
 	case KEY_DSA_CERT:
-	case KEY_DSA_CERT_V00:
 	case KEY_ECDSA:
 	case KEY_ECDSA_CERT:
 #endif
