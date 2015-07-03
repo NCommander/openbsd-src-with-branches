@@ -1,6 +1,6 @@
 #ifndef _M88K_MUTEX_H_
 #define _M88K_MUTEX_H_
-/*	$OpenBSD: mutex.h,v 1.2 2014/02/02 20:31:10 kettenis Exp $	*/
+/*	$OpenBSD: mutex.h,v 1.3 2015/07/02 08:58:16 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat.
@@ -31,7 +31,7 @@ struct mutex {
 	volatile int mtx_lock;	/* mutex.S relies upon this field being first */
 	int mtx_wantipl;
 	int mtx_oldipl;
-	void *mtx_cpu;
+	void *mtx_owner;
 };
 
 /*
