@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.168 2015/02/09 08:48:23 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.169 2015/02/11 01:14:16 dlg Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -1810,8 +1810,10 @@ fpusave_proc(struct proc *p, int save)
 		 * The other cpu may still be running and could have
 		 * discarded the fpu context on its own.
 		 */
-		if (oci->ci_fpcurproc != p)
+		if (oci->ci_fpcurproc != p) {
+			alpha_pal_swpipl(s);
 			continue;
+		}
 
 		alpha_send_ipi(oci->ci_cpuid, ipi);
 		alpha_pal_swpipl(s);
