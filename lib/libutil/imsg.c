@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.6 2014/06/30 00:26:22 deraadt Exp $	*/
+/*	$OpenBSD: imsg.c,v 1.7 2015/06/11 19:25:53 reyk Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -58,6 +58,7 @@ imsg_read(struct imsgbuf *ibuf)
 	struct imsg_fd		*ifd;
 
 	bzero(&msg, sizeof(msg));
+	bzero(&cmsgbuf, sizeof(cmsgbuf));
 
 	iov.iov_base = ibuf->r.buf + ibuf->r.wpos;
 	iov.iov_len = sizeof(ibuf->r.buf) - ibuf->r.wpos;
