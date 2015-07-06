@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.51 2015/01/19 16:40:49 bluhm Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.52 2015/06/30 12:03:32 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2003 Anil Madhavapeddy <anil@recoil.org>
@@ -16,11 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/ioctl.h>
 #include <sys/queue.h>
-#include <sys/uio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 
@@ -30,14 +26,12 @@
 #include <limits.h>
 #include <netdb.h>
 #include <paths.h>
-#include <poll.h>
 #include <pwd.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <util.h>
 #include <utmp.h>
 
 #include "syslogd.h"

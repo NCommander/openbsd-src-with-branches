@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.168 2015/07/02 16:24:48 bluhm Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.169 2015/07/05 22:05:12 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -68,11 +68,8 @@
 
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
 #include <sys/msgbuf.h>
 #include <sys/queue.h>
-#include <sys/uio.h>
 #include <sys/sysctl.h>
 #include <sys/un.h>
 #include <sys/time.h>
@@ -89,7 +86,6 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <paths.h>
-#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
