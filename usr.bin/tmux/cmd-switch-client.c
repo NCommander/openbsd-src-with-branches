@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-switch-client.c,v 1.25 2015/05/07 14:07:16 nicm Exp $ */
+/* $OpenBSD: cmd-switch-client.c,v 1.26 2015/06/07 21:39:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -119,7 +119,7 @@ cmd_switch_client_exec(struct cmd *self, struct cmd_q *cmdq)
 		}
 	}
 
-	if (c != NULL && s != c->session && !args_has(args, 'E')) {
+	if (c != NULL && !args_has(args, 'E')) {
 		update = options_get_string(&s->options, "update-environment");
 		environ_update(update, &c->environ, &s->environ);
 	}
