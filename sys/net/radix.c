@@ -1,4 +1,4 @@
-/*	$OpenBSD: radix.c,v 1.43 2014/12/02 18:11:56 tedu Exp $	*/
+/*	$OpenBSD: radix.c,v 1.44 2015/03/04 15:53:29 claudio Exp $	*/
 /*	$NetBSD: radix.c,v 1.20 2003/08/07 16:32:56 agc Exp $	*/
 
 /*
@@ -192,6 +192,9 @@ rn_lookup(void *v_arg, void *m_arg, struct radix_node_head *head)
 		while (x && x->rn_mask != netmask)
 			x = x->rn_dupedkey;
 	}
+	/* Never return internal nodes to the upper layer. */
+	if (x && (x->rn_flags & RNF_ROOT))
+		return (NULL);
 	return x;
 }
 
