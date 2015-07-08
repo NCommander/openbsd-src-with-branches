@@ -1,4 +1,4 @@
-/* $OpenBSD: log.c,v 1.44 2013/04/07 02:10:33 dtucker Exp $ */
+/* $OpenBSD: log.c,v 1.45 2013/05/16 09:08:41 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -46,7 +46,6 @@
 #include <errno.h>
 #include <vis.h>
 
-#include "xmalloc.h"
 #include "log.h"
 
 static LogLevel log_level = SYSLOG_LEVEL_INFO;
