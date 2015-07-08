@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.920 2015/06/22 15:58:23 mikeb Exp $ */
+/*	$OpenBSD: pf.c,v 1.921 2015/06/30 15:30:17 mpi Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -6656,6 +6656,7 @@ void
 pf_pkt_addr_changed(struct mbuf *m)
 {
 	m->m_pkthdr.pf.statekey = NULL;
+	m->m_pkthdr.pf.inp = NULL;
 }
 
 void
