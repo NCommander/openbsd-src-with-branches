@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.202 2015/04/24 06:26:49 jmc Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.203 2015/05/15 05:44:21 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -58,9 +58,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <util.h>
-
-#include "key.h"	/* XXX for typedef */
-#include "buffer.h"	/* XXX for typedef */
 
 #include "xmalloc.h"
 #include "ssh.h"
