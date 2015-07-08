@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.139 2015/06/16 11:09:39 mpi Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.140 2015/06/30 15:30:17 mpi Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -761,7 +761,7 @@ dontblock:
 				m->m_next = 0;
 				m = so->so_rcv.sb_mb;
 			} else {
-				MFREE(m, so->so_rcv.sb_mb);
+				so->so_rcv.sb_mb = m_free(m);
 				m = so->so_rcv.sb_mb;
 			}
 			sbsync(&so->so_rcv, nextrecord);
@@ -872,7 +872,7 @@ dontblock:
 					so->so_rcv.sb_mb = m = m->m_next;
 					*mp = NULL;
 				} else {
-					MFREE(m, so->so_rcv.sb_mb);
+					so->so_rcv.sb_mb = m_free(m);
 					m = so->so_rcv.sb_mb;
 				}
 				/*
@@ -1271,7 +1271,7 @@ somove(struct socket *so, int wait)
 		 */
 		m = so->so_rcv.sb_mb;
 		sbfree(&so->so_rcv, m);
-		MFREE(m, so->so_rcv.sb_mb);
+		so->so_rcv.sb_mb = m_free(m);
 		sbsync(&so->so_rcv, nextrecord);
 	}
 	/*
@@ -1281,7 +1281,7 @@ somove(struct socket *so, int wait)
 	m = so->so_rcv.sb_mb;
 	while (m && m->m_type == MT_CONTROL) {
 		sbfree(&so->so_rcv, m);
-		MFREE(m, so->so_rcv.sb_mb);
+		so->so_rcv.sb_mb = m_free(m);
 		m = so->so_rcv.sb_mb;
 		sbsync(&so->so_rcv, nextrecord);
 	}

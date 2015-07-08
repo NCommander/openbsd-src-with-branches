@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.193 2015/06/25 09:20:20 mpi Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.194 2015/06/30 15:30:17 mpi Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -303,13 +303,6 @@ struct mbuf {
 
 #define MCLGET(m, how) (void) m_clget((m), (how), MCLBYTES)
 #define MCLGETI(m, how, ifp, l) m_clget((m), (how), (l))
-
-/*
- * MFREE(struct mbuf *m, struct mbuf *n)
- * Free a single mbuf and associated external storage.
- * Place the successor, if any, in n.
- */
-#define	MFREE(m, n) n = m_free((m))
 
 /*
  * Move just m_pkthdr from from to to,

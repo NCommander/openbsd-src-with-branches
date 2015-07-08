@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp_tty.c,v 1.33 2015/06/03 00:50:09 dlg Exp $	*/
+/*	$OpenBSD: ppp_tty.c,v 1.34 2015/06/16 11:09:40 mpi Exp $	*/
 /*	$NetBSD: ppp_tty.c,v 1.12 1997/03/24 21:23:10 christos Exp $	*/
 
 /*
@@ -642,7 +642,7 @@ pppasyncstart(struct ppp_softc *sc)
 	    }
 
 	    /* Finished with this mbuf; free it and move on. */
-	    MFREE(m, m2);
+	    m2 = m_free(m);
 	    m = m2;
 	    if (m == NULL) {
 		/* Finished a packet */

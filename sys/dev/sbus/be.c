@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.30 2015/05/13 10:42:46 jsg Exp $	*/
+/*	$OpenBSD: be.c,v 1.31 2015/06/24 09:40:54 mpi Exp $	*/
 /*	$NetBSD: be.c,v 1.26 2001/03/20 15:39:20 pk Exp $	*/
 
 /*-
@@ -458,13 +458,13 @@ be_put(struct be_softc *sc, int idx, struct mbuf *m)
 	for (; m; m = n) {
 		len = m->m_len;
 		if (len == 0) {
-			MFREE(m, n);
+			n = m_free(m);
 			continue;
 		}
 		bcopy(mtod(m, caddr_t), bp+boff, len);
 		boff += len;
 		tlen += len;
-		MFREE(m, n);
+		n = m_free(m);
 	}
 	return (tlen);
 }

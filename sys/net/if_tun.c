@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.147 2015/06/24 09:40:54 mpi Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.148 2015/06/30 13:54:42 mpi Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -776,7 +776,7 @@ tunread(dev_t dev, struct uio *uio, int ioflag)
 		len = min(uio->uio_resid, m0->m_len);
 		if (len != 0)
 			error = uiomovei(mtod(m0, caddr_t), len, uio);
-		MFREE(m0, m);
+		m = m_free(m0);
 		m0 = m;
 	}
 
