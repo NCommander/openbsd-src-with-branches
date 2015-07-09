@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep_fdpass.c,v 1.9 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: privsep_fdpass.c,v 1.10 2015/07/06 16:12:16 millert Exp $	*/
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -104,6 +104,9 @@ receive_fd(int sock)
 
 	if ((n = recvmsg(sock, &msg, 0)) == -1) {
 		warn("%s: recvmsg", "receive_fd");
+		/* receive message failed, but the result is in the socket */
+		if (errno == EMSGSIZE)
+			recv(sock, &result, sizeof(int), MSG_DONTWAIT);
 		return -1;
 	}
 	if (n != sizeof(int))
