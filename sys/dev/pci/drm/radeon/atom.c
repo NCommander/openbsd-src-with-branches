@@ -1,4 +1,4 @@
-/*	$OpenBSD: atom.c,v 1.6 2015/02/11 07:01:37 jsg Exp $	*/
+/*	$OpenBSD: atom.c,v 1.7 2015/04/18 14:47:34 jsg Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  *
@@ -731,7 +731,7 @@ static void atom_op_jump(atom_exec_context *ctx, int *ptr, int arg)
 	SDEBUG("   target: 0x%04X\n", target);
 	if (execute) {
 		if (ctx->last_jump == (ctx->start + target)) {
-			cjiffies = ticks;
+			cjiffies = jiffies;
 			if (time_after(cjiffies, ctx->last_jump_jiffies)) {
 				cjiffies -= ctx->last_jump_jiffies;
 				if ((jiffies_to_msecs(cjiffies) > 5000)) {
@@ -740,11 +740,11 @@ static void atom_op_jump(atom_exec_context *ctx, int *ptr, int arg)
 				}
 			} else {
 				/* jiffies wrap around we will just wait a little longer */
-				ctx->last_jump_jiffies = ticks;
+				ctx->last_jump_jiffies = jiffies;
 			}
 		} else {
 			ctx->last_jump = ctx->start + target;
-			ctx->last_jump_jiffies = ticks;
+			ctx->last_jump_jiffies = jiffies;
 		}
 		*ptr = ctx->start + target;
 	}
