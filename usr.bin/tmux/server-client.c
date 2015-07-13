@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.143 2015/06/14 10:07:44 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.144 2015/07/13 15:49:31 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
