@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpdump.c,v 1.70 2015/04/18 18:28:38 deraadt Exp $	*/
+/*	$OpenBSD: tcpdump.c,v 1.71 2015/07/12 19:58:00 naddy Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -515,7 +515,7 @@ cleanup(int signo)
 	/* Can't print the summary if reading from a savefile */
 	(void)write(STDERR_FILENO, "\n", 1);
 	if (pd != NULL && pcap_file(pd) == NULL) {
-		if (pcap_stats(pd, &stat) < 0) {
+		if (priv_pcap_stats(&stat) < 0) {
 			(void)snprintf(buf, sizeof buf,
 			    "pcap_stats: %s\n", pcap_geterr(pd));
 			write(STDERR_FILENO, buf, strlen(buf));
