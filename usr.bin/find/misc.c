@@ -60,14 +60,14 @@ brace_subst(char *orig, char **store, char *path, int len)
 	for (p = *store; (ch = *orig); ++orig)
 		if (ch == '{' && orig[1] == '}') {
 			while ((p - *store) + plen > len) {
-				int newlen = len * 2;
 				char *newstore;
 
-				if (!(newstore = realloc(*store, newlen)))
+				newstore = reallocarray(*store, len, 2);
+				if (newstore == NULL)
 					err(1, NULL);
 				p = (p - *store) + newstore;
 				*store = newstore;
-				len = newlen;
+				len *= 2;
 			}
 			memmove(p, path, plen);
 			p += plen;
