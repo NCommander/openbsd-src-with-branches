@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.11 2009/10/27 23:59:38 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.12 2014/05/18 08:10:00 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -65,6 +65,7 @@ brace_subst(char *orig, char **store, char *path, int len)
 
 				if (!(newstore = realloc(*store, newlen)))
 					err(1, NULL);
+				p = (p - *store) + newstore;
 				*store = newstore;
 				len = newlen;
 			}
