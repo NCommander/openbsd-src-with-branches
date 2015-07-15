@@ -1,4 +1,4 @@
-.\" 	$OpenBSD: isduid.3,v 1.1 2010/11/17 10:10:31 jsing Exp $
+.\" 	$OpenBSD: isduid.3,v 1.2 2013/06/05 03:40:26 tedu Exp $
 .\"
 .\" * Copyright (c) Joel Sing <jsing@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: November 17 2010 $
+.Dd $Mdocdate: June 5 2013 $
 .Dt ISDUID 3
 .Os
 .Sh NAME
@@ -40,7 +40,7 @@ are specified using the same flags as used by
 If the OPENDEV_PART flag is included in
 .Fa dflags
 the disklabel UID must consist of a 16-character hexadecimal string.
-Otherwise the disklabel UID must consist of a 16-character hexidecimal string
+Otherwise the disklabel UID must consist of a 16-character hexadecimal string
 followed by a
 .Sq \&.
 and a partition letter.
