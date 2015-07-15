@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.215 2015/07/02 15:16:57 mpi Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.216 2015/07/02 23:15:03 dlg Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -273,8 +273,7 @@ ether_output(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 
 	return (if_enqueue(ifp, m));
 bad:
-	if (m)
-		m_freem(m);
+	m_freem(m);
 	return (error);
 }
 

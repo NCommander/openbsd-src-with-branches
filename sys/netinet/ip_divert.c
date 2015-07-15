@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_divert.c,v 1.33 2015/04/10 13:58:20 dlg Exp $ */
+/*      $OpenBSD: ip_divert.c,v 1.34 2015/06/16 11:09:40 mpi Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -93,8 +93,7 @@ divert_output(struct inpcb *inp, struct mbuf *m, struct mbuf *nam,
 	m->m_nextpkt = NULL;
 	m->m_pkthdr.ph_rtableid = inp->inp_rtableid;
 
-	if (control)
-		m_freem(control);
+	m_freem(control);
 
 	sin = mtod(nam, struct sockaddr_in *);
 	so = inp->inp_socket;
@@ -337,11 +336,8 @@ divert_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *addr,
 	}
 
 release:
-	if (control) {
-		m_freem(control);
-	}
-	if (m)
-		m_freem(m);
+	m_freem(control);
+	m_freem(m);
 	return (error);
 }
 

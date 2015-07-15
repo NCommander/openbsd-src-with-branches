@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_ipcomp.c,v 1.42 2015/04/17 11:04:01 mikeb Exp $ */
+/* $OpenBSD: ip_ipcomp.c,v 1.43 2015/06/15 13:26:48 mikeb Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -350,8 +350,7 @@ ipcomp_input_cb(struct cryptop *crp)
 baddone:
 	splx(s);
 
-	if (m)
-		m_freem(m);
+	m_freem(m);
 
 	crypto_freereq(crp);
 
@@ -664,8 +663,7 @@ ipcomp_output_cb(struct cryptop *crp)
 baddone:
 	splx(s);
 
-	if (m)
-		m_freem(m);
+	m_freem(m);
 
 	crypto_freereq(crp);
 

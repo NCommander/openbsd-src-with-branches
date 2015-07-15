@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_usrreq.c,v 1.19 2015/05/13 10:42:46 jsg Exp $	*/
+/*	$OpenBSD: raw_usrreq.c,v 1.20 2015/06/30 15:30:17 mpi Exp $	*/
 /*	$NetBSD: raw_usrreq.c,v 1.11 1996/02/13 22:00:43 christos Exp $	*/
 
 /*
@@ -310,7 +310,6 @@ raw_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 	}
 	splx(s);
 release:
-	if (m != NULL)
-		m_freem(m);
+	m_freem(m);
 	return (error);
 }

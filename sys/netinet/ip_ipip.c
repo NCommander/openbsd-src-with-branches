@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.60 2015/06/16 11:09:40 mpi Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.61 2015/07/15 17:33:48 deraadt Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -623,8 +623,7 @@ ipe4_input(struct mbuf *m, ...)
 {
 	/* This is a rather serious mistake, so no conditional printing. */
 	printf("ipe4_input(): should never be called\n");
-	if (m)
-		m_freem(m);
+	m_freem(m);
 }
 #endif	/* IPSEC */
 

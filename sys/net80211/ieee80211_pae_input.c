@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_pae_input.c,v 1.23 2014/12/23 03:24:08 tedu Exp $	*/
+/*	$OpenBSD: ieee80211_pae_input.c,v 1.24 2015/03/14 03:38:51 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2007,2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -173,8 +173,7 @@ ieee80211_eapol_key_input(struct ieee80211com *ic, struct mbuf *m,
 #endif
 	}
  done:
-	if (m != NULL)
-		m_freem(m);
+	m_freem(m);
 }
 
 /*
