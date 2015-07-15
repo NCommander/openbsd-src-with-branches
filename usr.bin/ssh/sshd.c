@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.453 2015/07/03 03:49:45 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.454 2015/07/10 06:21:53 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -761,7 +761,7 @@ list_hostkey_types(void)
 		key = sensitive_data.host_keys[i];
 		if (key == NULL)
 			key = sensitive_data.host_pubkeys[i];
-		if (key == NULL)
+		if (key == NULL && key->type != KEY_RSA1)
 			continue;
 		/* Check that the key is accepted in HostkeyAlgorithms */
 		if (match_pattern_list(sshkey_ssh_name(key),
