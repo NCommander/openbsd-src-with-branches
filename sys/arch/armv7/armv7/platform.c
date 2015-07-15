@@ -1,4 +1,4 @@
-/*	$OpenBSD: platform.c,v 1.2 2015/05/27 08:03:43 jsg Exp $	*/
+/*	$OpenBSD: platform.c,v 1.3 2015/06/08 06:33:16 jsg Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -69,6 +69,7 @@ platform_init(void)
 	}
 	if (platform == NULL)
 		panic("no matching armv7 platform");
+	platform->board_init();
 }
 
 const char *
@@ -118,10 +119,4 @@ struct board_dev *
 platform_board_devs()
 {
 	return (platform->devs);
-}
-
-void
-platform_board_init()
-{
-	platform->board_init();
 }
