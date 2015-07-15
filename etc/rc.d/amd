@@ -1,11 +1,12 @@
 #!/bin/sh
 #
-# $OpenBSD: amd,v 1.5 2012/11/21 08:07:33 ajacoutot Exp $
+# $OpenBSD: amd,v 1.6 2013/09/01 15:02:35 ajacoutot Exp $
 
 daemon="/usr/sbin/amd"
 
 . /etc/rc.d/rc.subr
 
+pexp="${daemon}.*"
 rc_reload=NO
 rc_stop=NO
 

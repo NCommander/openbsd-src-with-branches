@@ -1,12 +1,12 @@
 #!/bin/sh
 #
-# $OpenBSD: spamd,v 1.5 2014/07/17 15:00:06 ajacoutot Exp $
+# $OpenBSD: spamd,v 1.6 2014/07/20 08:37:07 rpe Exp $
 
 daemon="/usr/libexec/spamd"
 
 . /etc/rc.d/rc.subr
 
-pexp="spamd: \[priv\]"
+pexp="spamd: \[priv\].*"
 rc_reload=NO
 
 rc_pre() {
