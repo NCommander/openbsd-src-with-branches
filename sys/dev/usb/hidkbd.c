@@ -1,4 +1,4 @@
-/*	$OpenBSD: hidkbd.c,v 1.13 2014/07/12 18:48:52 tedu Exp $	*/
+/*	$OpenBSD: hidkbd.c,v 1.14 2015/03/14 03:38:49 jsg Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -599,7 +599,7 @@ hidkbd_parse_desc(struct hidkbd *kbd, int id, void *desc, int dlen)
 			}
 
 			/* variable report */
-			if (ivar < MAXVARS) {
+			if (i <= MAXVARS) {
 				kbd->sc_var[i].loc = h.loc;
 				kbd->sc_var[i].mask = 1 << (i % 8);
 				kbd->sc_var[i].key = HID_GET_USAGE(h.usage);
