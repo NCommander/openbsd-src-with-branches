@@ -1,4 +1,4 @@
-#	$OpenBSD: funcs.pl,v 1.1 2015/07/16 16:35:57 reyk Exp $
+#	$OpenBSD: funcs.pl,v 1.2 2015/07/16 16:38:40 reyk Exp $
 
 # Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -288,15 +288,15 @@ sub read_char {
 	if (defined($max) && $max == 0) {
 		print STDERR "Max\n";
 	} else {
-		while (<STDIN>) {
-			$len += length($_);
+		while ((my $r = sysread(STDIN, my $buf, POSIX::BUFSIZ))) {
+			$_ = $buf;
+			$len += $r;
 			$ctx->add($_);
 			print STDERR ".";
 			if (defined($max) && $len >= $max) {
 				print STDERR "\nMax";
 				last;
 			}			
-			#sleep 1 if (($len % 512) == 0);
 		}
 		print STDERR "\n";
 	}
