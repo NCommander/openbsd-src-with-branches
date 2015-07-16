@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.4 2002/02/16 21:27:30 millert Exp $*/
+/*	$OpenBSD: extern.h,v 1.5 2003/06/02 19:38:24 millert Exp $*/
 
 /*
  * Copyright (c) 1993
@@ -36,7 +36,6 @@ struct delayval;
 int	 adelay(int, struct delayval *);
 char	*autobaud(void);
 int	 delaybits(void);
-void	 edithost(char *);
 void	 gendefaults(void);
 int	 getent(char *, char *);
 int	 getflag(char *);
