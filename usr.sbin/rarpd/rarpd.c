@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.58 2015/01/16 06:40:19 deraadt Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.59 2015/01/19 23:51:54 guenther Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -671,7 +671,7 @@ rarp_reply(struct if_info *ii, struct if_addr *ia, struct ether_header *ep,
 
 	/*
 	 * Poke the kernel arp tables with the ethernet/ip address
-	 * combinataion given.  When processing a reply, we must
+	 * combination given.  When processing a reply, we must
 	 * do this so that the booting host (i.e. the guy running
 	 * rarpd), won't try to ARP for the hardware address of the
 	 * guy being booted (he cannot answer the ARP).
