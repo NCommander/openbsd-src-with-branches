@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.230 2015/03/14 03:38:51 jsg Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.231 2015/05/12 09:30:35 mikeb Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -1470,8 +1470,6 @@ vfs_export_lookup(struct mount *mp, struct netexport *nep, struct mbuf *nam)
 				np = (struct netcred *)
 					(*rnh->rnh_matchaddr)((caddr_t)saddr,
 					    rnh);
-				if (np && np->netc_rnodes->rn_flags & RNF_ROOT)
-					np = NULL;
 			}
 		}
 		/*

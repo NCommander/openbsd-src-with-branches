@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.161 2015/06/30 15:30:17 mpi Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.162 2015/07/15 22:16:42 deraadt Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -443,7 +443,6 @@ int
 route_output(struct mbuf *m, ...)
 {
 	struct rt_msghdr	*rtm = NULL;
-	struct radix_node	*rn = NULL;
 	struct rtentry		*rt = NULL;
 	struct rtentry		*saved_nrt = NULL;
 	struct radix_node_head	*rnh;
@@ -625,10 +624,8 @@ route_output(struct mbuf *m, ...)
 		}
 		rt = rt_lookup(info.rti_info[RTAX_DST],
 		    info.rti_info[RTAX_NETMASK], tableid);
-		rn = (struct radix_node *)rt;
-		if (rn == NULL || (rn->rn_flags & RNF_ROOT) != 0) {
+		if (rt == NULL) {
 			error = ESRCH;
-			rt = NULL;
 			goto flush;
 		}
 #ifndef SMALL_KERNEL
@@ -667,7 +664,6 @@ route_output(struct mbuf *m, ...)
 					goto flush;
 				}
 			}
-			rn = (struct radix_node *)rt;
 		}
 #endif
 		rt->rt_refcnt++;
