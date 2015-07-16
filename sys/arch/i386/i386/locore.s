@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.157 2015/04/26 09:48:29 kettenis Exp $	*/
+/*	$OpenBSD: locore.s,v 1.158 2015/06/28 01:11:27 guenther Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -430,10 +430,6 @@ try586:	/* Use the `cpuid' instruction. */
 
 	movl	$2,%eax
 	cpuid
-/*
-	cmp	$1,%al
-	jne	1f
-*/
 
 	movl	%eax,RELOC(_C_LABEL(cpu_cache_eax))
 	movl	%ebx,RELOC(_C_LABEL(cpu_cache_ebx))
