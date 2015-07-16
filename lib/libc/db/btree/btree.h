@@ -1,4 +1,4 @@
-/*	$OpenBSD: btree.h,v 1.5 2002/02/16 21:27:22 millert Exp $	*/
+/*	$OpenBSD: btree.h,v 1.6 2003/06/02 20:18:33 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -367,7 +367,6 @@ typedef struct _btree {
 #define	R_CLOSEFP	0x00040		/* opened a file pointer */
 #define	R_EOF		0x00100		/* end of input file reached. */
 #define	R_FIXLEN	0x00200		/* fixed length records */
-#define	R_MEMMAPPED	0x00400		/* memory mapped file. */
 #define	R_INMEM		0x00800		/* in-memory file */
 #define	R_MODIFIED	0x01000		/* modified file */
 #define	R_RDONLY	0x02000		/* read-only file */
