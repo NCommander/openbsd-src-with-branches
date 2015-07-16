@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_cacoshl.c,v 1.1 2011/07/08 19:25:31 martynas Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -51,6 +51,6 @@ cacoshl(long double complex z)
 {
 	long double complex w;
 
-	w = I * cacosl(z);
+	w = clogl(z + csqrtl(z + 1) * csqrtl(z - 1));
 	return (w);
 }
