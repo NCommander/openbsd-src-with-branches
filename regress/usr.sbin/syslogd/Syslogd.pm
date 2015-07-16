@@ -1,4 +1,4 @@
-#	$OpenBSD: Syslogd.pm,v 1.11 2015/02/13 21:40:50 bluhm Exp $
+#	$OpenBSD: Syslogd.pm,v 1.12 2015/06/15 21:44:57 bluhm Exp $
 
 # Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
 # Copyright (c) 2014 Florian Riehm <mail@friehm.de>
@@ -98,7 +98,7 @@ sub child {
 	my $self = shift;
 	my @sudo = $ENV{SUDO} ? $ENV{SUDO} : ();
 
-	my @pkill = (@sudo, "pkill", "-x", "syslogd");
+	my @pkill = (@sudo, "pkill", "-KILL", "-x", "syslogd");
 	my @pgrep = ("pgrep", "-x", "syslogd");
 	system(@pkill) && $? != 256
 	    and die ref($self), " system '@pkill' failed: $?";
