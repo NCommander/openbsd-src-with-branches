@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.571 2015/06/07 06:24:59 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.572 2015/07/16 05:10:14 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -2618,8 +2618,6 @@ boot(int howto)
 		}
 	}
 	if_downall();
-
-	delay(4*1000000);	/* XXX */
 
 	uvm_shutdown();
 	splhigh();
