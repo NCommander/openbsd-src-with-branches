@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_cacoshf.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -50,6 +50,6 @@ cacoshf(float complex z)
 {
 	float complex w;
 
-	w = I * cacosf (z);
+	w = clogf(z + csqrtf(z + 1) * csqrtf(z - 1));
 	return (w);
 }
