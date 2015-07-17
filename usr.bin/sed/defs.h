@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.4 2008/10/16 16:34:32 millert Exp $ */
+/*	$OpenBSD: defs.h,v 1.5 2015/01/19 15:30:52 krw Exp $ */
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -128,6 +128,7 @@ typedef struct {
 	char *space;		/* Current space pointer. */
 	size_t len;		/* Current length. */
 	int deleted;		/* If deleted. */
+	int append_newline;	/* If originally terminated by \n. */
 	char *back;		/* Backing memory. */
 	size_t blen;		/* Backing memory length. */
 } SPACE;
