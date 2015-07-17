@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.36 2011/07/06 18:32:59 miod Exp $
+#	$OpenBSD: RAMDISK,v 1.37 2014/10/10 05:43:36 deraadt Exp $
 
 machine		vax
 maxusers	4
@@ -16,7 +16,6 @@ option		MINIROOTSIZE=3072
 option		FFS
 option		NFSCLIENT
 option		CD9660
-option		INET
 option		INET6
 
 # Here are all different supported CPU types listed.

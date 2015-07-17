@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.24 2014/11/24 02:03:37 brad Exp $
+#	$OpenBSD: RAMDISK,v 1.25 2015/01/04 20:55:38 uaa Exp $
 
 machine		loongson mips64
 maxusers	4
@@ -22,7 +22,6 @@ option		CD9660
 option		UDF
 option		EXT2FS
 option		MSDOSFS
-option		INET
 option		INET6
 
 option		CPU_LOONGSON2

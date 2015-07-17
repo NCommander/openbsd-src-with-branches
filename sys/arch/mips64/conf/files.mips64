@@ -1,4 +1,4 @@
-#	$OpenBSD: files.mips64,v 1.22 2014/03/22 00:01:04 miod Exp $
+#	$OpenBSD: files.mips64,v 1.23 2015/07/08 13:37:31 dlg Exp $
 
 file	arch/mips64/mips64/arcbios.c		arcbios
 file	arch/mips64/mips64/clock.c		clock
@@ -39,7 +39,7 @@ file	arch/mips64/mips64/lcore_ddb.S		ddb|debug
 
 file	arch/mips64/mips64/ipifuncs.c           multiprocessor
 
-file	netinet/in_cksum.c			inet
-file	netinet/in4_cksum.c			inet
+file	netinet/in_cksum.c
+file	netinet/in4_cksum.c
 
 file	lib/libkern/softfloat.c

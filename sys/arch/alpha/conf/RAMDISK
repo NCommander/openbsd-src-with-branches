@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.76 2014/03/31 04:22:26 deraadt Exp $
+#	$OpenBSD: RAMDISK,v 1.77 2014/10/10 05:43:33 deraadt Exp $
 
 machine		alpha
 maxusers	4
@@ -15,7 +15,6 @@ option		MINIROOTSIZE=5744
 option		SCSITERSE
 
 option		FFS
-option		INET
 
 # CPU Support; at least one is REQUIRED
 #option		DEC_3000_500	# Flamingo etc:	3000/[4-9]00*
