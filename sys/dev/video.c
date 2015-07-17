@@ -1,4 +1,4 @@
-/*	$OpenBSD: video.c,v 1.34 2014/12/16 18:30:03 tedu Exp $	*/
+/*	$OpenBSD: video.c,v 1.35 2015/02/10 21:56:09 miod Exp $	*/
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -341,7 +341,7 @@ videopoll(dev_t dev, int events, struct proc *p)
 			revents |= events & (POLLIN | POLLRDNORM);
 	}
 	if (revents == 0) {
-		if (events & (POLLIN | POLLRDNORM))
+		if (events & (POLLIN | POLLRDNORM)) {
 			/*
 			 * Start the stream in read() mode if not already
 			 * started.  If the user wanted mmap() mode,
@@ -355,6 +355,7 @@ videopoll(dev_t dev, int events, struct proc *p)
 				sc->sc_vidmode = VIDMODE_READ;
 			}
 			selrecord(p, &sc->sc_rsel);
+		}
 	}
 
 	DPRINTF(("%s: revents=0x%x\n", __func__, revents));
