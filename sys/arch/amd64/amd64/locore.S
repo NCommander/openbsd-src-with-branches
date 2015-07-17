@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.70 2015/07/16 23:04:12 mlarkin Exp $	*/
+/*	$OpenBSD: locore.S,v 1.71 2015/07/17 06:13:44 mlarkin Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -1128,7 +1128,7 @@ NENTRY(intr_fast_exit)
 	movq	TF_RBP(%rsp),%rbp
 	movq	TF_RBX(%rsp),%rbx
 
-	testq	$SEL_UPL,TF_CS(%rsp)
+	testq	$SEL_RPL,TF_CS(%rsp)
 	je	5f
 
 	INTR_RESTORE_SELECTORS
