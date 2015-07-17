@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosvar.h,v 1.61 2013/11/02 15:02:27 kettenis Exp $	*/
+/*	$OpenBSD: biosvar.h,v 1.62 2015/04/12 18:37:54 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -268,6 +268,7 @@ void bios_getopt(void);
 
 /* bios32.c */
 int  bios32_service(u_int32_t, bios32_entry_t, bios32_entry_info_t);
+void bios32_cleanup(void);
 
 extern u_int bootapiver;
 extern bios_memmap_t *bios_memmap;
