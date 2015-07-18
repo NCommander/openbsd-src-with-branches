@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.100 2015/02/12 01:54:57 reyk Exp $ */
+/*	$OpenBSD: client.c,v 1.101 2015/03/28 03:49:01 bcook Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -215,7 +215,7 @@ client_dispatch(struct ntp_peer *p, u_int8_t settime)
 	double			 T1, T2, T3, T4;
 	time_t			 interval;
 
-	bzero(&somsg, sizeof(somsg));
+	memset(&somsg, 0, sizeof(somsg));
 	iov[0].iov_base = buf;
 	iov[0].iov_len = sizeof(buf);
 	somsg.msg_iov = iov;
