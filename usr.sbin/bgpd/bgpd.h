@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.285 2015/04/25 15:28:18 phessler Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.286 2015/07/16 18:26:04 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -978,7 +978,7 @@ void		 log_warn(const char *, ...);
 void		 log_warnx(const char *, ...);
 void		 log_info(const char *, ...);
 void		 log_debug(const char *, ...);
-void		 fatal(const char *) __dead;
+void		 fatal(const char *, ...) __dead;
 void		 fatalx(const char *) __dead;
 
 /* mrt.c */
