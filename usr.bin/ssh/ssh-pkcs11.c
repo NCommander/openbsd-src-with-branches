@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-pkcs11.c,v 1.18 2015/04/24 01:36:01 deraadt Exp $ */
+/* $OpenBSD: ssh-pkcs11.c,v 1.19 2015/05/27 05:15:02 djm Exp $ */
 /*
  * Copyright (c) 2010 Markus Friedl.  All rights reserved.
  *
@@ -619,6 +619,11 @@ pkcs11_add_provider(char *provider_id, char *pin, struct sshkey ***keyp)
 		if ((rv = f->C_GetTokenInfo(p->slotlist[i], token))
 		    != CKR_OK) {
 			error("C_GetTokenInfo failed: %lu", rv);
+			continue;
+		}
+		if ((token->flags & CKF_TOKEN_INITIALIZED) == 0) {
+			debug2("%s: ignoring uninitialised token in slot %lu",
+			    __func__, (unsigned long)i);
 			continue;
 		}
 		rmspace(token->label, sizeof(token->label));
