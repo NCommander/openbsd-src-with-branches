@@ -1,4 +1,4 @@
-.\"   $OpenBSD: tftpd.8,v 1.3 2012/03/04 05:30:47 dlg Exp $
+.\"   $OpenBSD: tftpd.8,v 1.4 2012/03/04 07:26:51 jmc Exp $
 .\"
 .\" Copyright (c) 1983, 1991 The Regents of the University of California.
 .\" All rights reserved.
@@ -69,6 +69,15 @@ should be considered before enabling TFTP service.
 The server must be started as root, but will chroot to the
 .Ar directory
 specified on the command line and drop privileges to the _tftpd user.
+.Pp
+.Nm tftpd
+always provides random data at the path
+.Pa /etc/random.seed ,
+and therefore this path will be ignored inside the
+.Ar directory .
+.Ox
+network bootloaders access this path to harvest entropy during
+kernel load.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
