@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_isa.c,v 1.8 2002/03/14 01:26:56 millert Exp $ */
+/* $OpenBSD: vga_isa.c,v 1.9 2010/08/28 12:48:14 miod Exp $ */
 /* $NetBSD: vga_isa.c,v 1.3 1998/06/12 18:45:48 drochner Exp $ */
 
 /*
@@ -39,11 +39,12 @@
 #include <dev/ic/mc6845reg.h>
 #include <dev/ic/pcdisplayvar.h>
 #include <dev/ic/vgareg.h>
-#include <dev/ic/vgavar.h>
-#include <dev/isa/vga_isavar.h>
 
 #include <dev/wscons/wsconsio.h>
 #include <dev/wscons/wsdisplayvar.h>
+
+#include <dev/ic/vgavar.h>
+#include <dev/isa/vga_isavar.h>
 
 struct vga_isa_softc {
 	struct device sc_dev; 
