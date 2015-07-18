@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.65 2015/07/18 00:53:37 guenther Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.66 2015/07/18 19:19:14 sf Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -678,9 +678,6 @@ cpu_set_tss_gates(struct cpu_info *ci)
 int
 mp_cpu_start(struct cpu_info *ci)
 {
-#if NLAPIC > 0
-	int error;
-#endif
 	unsigned short dwordptr[2];
 
 	/*
@@ -715,14 +712,12 @@ mp_cpu_start(struct cpu_info *ci)
 		delay(10000);
 
 		if (cpu_feature & CPUID_APIC) {
-			if ((error = i386_ipi(MP_TRAMPOLINE / PAGE_SIZE,
-			    ci->ci_apicid, LAPIC_DLMODE_STARTUP)) != 0)
-				return (error);
+			i386_ipi(MP_TRAMPOLINE / PAGE_SIZE, ci->ci_apicid,
+			    LAPIC_DLMODE_STARTUP);
 			delay(200);
 
-			if ((error = i386_ipi(MP_TRAMPOLINE / PAGE_SIZE,
-			    ci->ci_apicid, LAPIC_DLMODE_STARTUP)) != 0)
-				return (error);
+			i386_ipi(MP_TRAMPOLINE / PAGE_SIZE, ci->ci_apicid,
+			    LAPIC_DLMODE_STARTUP);
 			delay(200);
 		}
 	}
