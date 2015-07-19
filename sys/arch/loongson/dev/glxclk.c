@@ -1,4 +1,4 @@
-/*	$OpenBSD: glxclk.c,v 1.3 2013/01/15 01:08:43 pirofti Exp $	*/
+/*	$OpenBSD: glxclk.c,v 1.4 2013/01/15 23:30:36 pirofti Exp $	*/
 
 /*
  * Copyright (c) 2013 Paul Irofti.
@@ -100,8 +100,7 @@ glxclk_match(struct device *parent, void *match, void *aux)
 	struct glxpcib_attach_args *gaa = aux;
 	struct cfdata *cf = match;
 
-	if (gaa->gaa_name == NULL || strcmp(gaa->gaa_name,
-	    cf->cf_driver->cd_name) != 0)
+	if (strcmp(gaa->gaa_name, cf->cf_driver->cd_name) != 0)
 		return 0;
 
 	return 1;
