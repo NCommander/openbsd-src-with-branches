@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.60 2015/03/15 00:41:27 millert Exp $	*/
+/*	$OpenBSD: print.c,v 1.61 2015/06/29 15:03:33 bluhm Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -269,6 +269,8 @@ state(const struct kinfo_proc *kp, VARENT *ve)
 		*cp++ = 's';
 	if ((kp->p_psflags & PS_CONTROLT) && kp->p__pgid == kp->p_tpgid)
 		*cp++ = '+';
+	if (kp->p_psflags & PS_TAMED)
+		*cp++ = 't';
 	*cp = '\0';
 
 	if (state == 'R' && kp->p_cpuid != KI_NOCPU) {
