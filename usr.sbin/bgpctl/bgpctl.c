@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.178 2015/04/17 07:51:09 phessler Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.179 2015/07/18 16:12:03 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -1917,9 +1917,13 @@ log_warn(const char *emsg, ...)
 }
 
 void
-fatal(const char *emsg)
+fatal(const char *emsg, ...)
 {
-	err(1, "%s", emsg);
+	va_list	 ap;
+
+	va_start(ap, emsg);
+	verr(1, emsg, ap);
+	va_end(ap);
 }
 
 void
