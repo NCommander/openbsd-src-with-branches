@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_concat.c,v 1.20 2013/11/21 16:54:46 krw Exp $ */
+/* $OpenBSD: softraid_concat.c,v 1.21 2013/11/22 03:47:07 krw Exp $ */
 /*
  * Copyright (c) 2008 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2011 Joel Sing <jsing@openbsd.org>
@@ -134,7 +134,6 @@ sr_concat_rw(struct sr_workunit *wu)
 			goto bad;
 
 		length = MIN(MIN(leftover, chunkend - lbaoffs), MAXPHYS);
-		physoffs += sd->sd_meta->ssd_data_offset << DEV_BSHIFT;
 
 		/* make sure chunk is online */
 		scp = sd->sd_vol.sv_chunks[chunk];
