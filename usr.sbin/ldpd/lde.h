@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde.h,v 1.23 2013/10/15 20:36:30 renato Exp $ */
+/*	$OpenBSD: lde.h,v 1.24 2015/07/19 18:27:59 renato Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -33,6 +33,8 @@ struct fec {
 	struct in_addr		prefix;
 	u_int8_t		prefixlen;
 };
+RB_PROTOTYPE(fec_tree, fec, entry, fec_compare)
+extern struct fec_tree rt;
 
 /*
  * fec tree of pending label request
