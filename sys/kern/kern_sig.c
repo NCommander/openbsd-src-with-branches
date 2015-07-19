@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.179 2015/03/14 03:38:50 jsg Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.180 2015/05/05 02:13:46 guenther Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1420,6 +1420,7 @@ sigexit(struct proc *p, int signum)
 		    TAILQ_NEXT(p, p_thr_link) != NULL)
 			single_thread_set(p, SINGLE_SUSPEND, 0);
 
+		atomic_clearbits_int(&p->p_p->ps_flags, PS_TAMED);
 		if (coredump(p) == 0)
 			signum |= WCOREFLAG;
 	}
