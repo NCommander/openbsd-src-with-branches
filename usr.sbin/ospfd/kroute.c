@@ -1019,9 +1019,6 @@ if_change(u_short ifindex, int flags, struct if_data *ifd,
 		return;
 	}
 
-	/* notify ospfe about interface link state */
-	main_imsg_compose_ospfe(IMSG_IFINFO, 0, kif, sizeof(struct kif));
-
 	reachable = (kif->flags & IFF_UP) &&
 	    LINK_STATE_IS_UP(kif->link_state);
 
@@ -1029,6 +1026,9 @@ if_change(u_short ifindex, int flags, struct if_data *ifd,
 		return;		/* nothing changed wrt nexthop validity */
 
 	kif->nh_reachable = reachable;
+
+	/* notify ospfe about interface link state */
+	main_imsg_compose_ospfe(IMSG_IFINFO, 0, kif, sizeof(struct kif));
 
 	/* update redistribute list */
 	RB_FOREACH(kr, kroute_tree, &krt) {
