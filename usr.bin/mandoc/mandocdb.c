@@ -1,4 +1,4 @@
-/*	$OpenBSD: mandocdb.c,v 1.146 2015/04/18 17:50:02 schwarze Exp $ */
+/*	$OpenBSD: mandocdb.c,v 1.147 2015/04/23 16:17:04 schwarze Exp $ */
 /*
  * Copyright (c) 2011, 2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2011-2015 Ingo Schwarze <schwarze@openbsd.org>
@@ -1228,10 +1228,6 @@ mpages_merge(struct mparse *mp)
 		mlink = mpage->mlinks;
 
 nextpage:
-		if (mparse_wait(mp) != MANDOCLEVEL_OK) {
-			exitcode = (int)MANDOCLEVEL_SYSERR;
-			say(mlink->file, "&wait gunzip");
-		}
 		ohash_delete(&strings);
 		ohash_delete(&names);
 		mpage = ohash_next(&mpages, &pslot);
