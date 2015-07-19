@@ -342,7 +342,7 @@ ipgphy_status(struct mii_softc *sc)
 
 		if (IFM_SUBTYPE(mii->mii_media_active) == IFM_1000_T) {
 			if (PHY_READ(sc, IPGPHY_MII_1000SR) &
-			    IPGPHY_1000SR_MMASTER)
+			    IPGPHY_1000SR_MASTER)
 				mii->mii_media_active |= IFM_ETH_MASTER;
 		}
 	} else
