@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipi.c,v 1.14 2015/03/14 03:38:46 jsg Exp $	*/
+/*	$OpenBSD: ipi.c,v 1.15 2015/07/18 19:21:02 sf Exp $	*/
 /*	$NetBSD: ipi.c,v 1.2 2003/03/01 13:05:37 fvdl Exp $	*/
 
 /*-
@@ -42,20 +42,16 @@
 #include <machine/i82489reg.h>
 #include <machine/i82489var.h>
 
-int
+void
 x86_send_ipi(struct cpu_info *ci, int ipimask)
 {
-	int ret;
-
 	x86_atomic_setbits_u32(&ci->ci_ipis, ipimask);
 
 	/* Don't send IPI to cpu which isn't (yet) running. */
 	if (!(ci->ci_flags & CPUF_RUNNING))
-		return ENOENT;
+		return;
 
 	x86_ipi(LAPIC_IPI_VECTOR, ci->ci_apicid, LAPIC_DLMODE_FIXED);
-
-	return ret;
 }
 
 int

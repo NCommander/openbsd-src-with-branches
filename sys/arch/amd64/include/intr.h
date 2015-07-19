@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.26 2014/03/29 18:09:28 guenther Exp $	*/
+/*	$OpenBSD: intr.h,v 1.27 2015/07/16 05:10:14 guenther Exp $	*/
 /*	$NetBSD: intr.h,v 1.2 2003/05/04 22:01:56 fvdl Exp $	*/
 
 /*-
@@ -211,7 +211,7 @@ int intr_find_mpmapping(int bus, int pin, int *handle);
 void intr_printconfig(void);
 
 #ifdef MULTIPROCESSOR
-int x86_send_ipi(struct cpu_info *, int);
+void x86_send_ipi(struct cpu_info *, int);
 int x86_fast_ipi(struct cpu_info *, int);
 void x86_broadcast_ipi(int);
 void x86_ipi_handler(void);
