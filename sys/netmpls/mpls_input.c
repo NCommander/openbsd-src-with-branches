@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.44 2015/06/16 11:09:40 mpi Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.45 2015/07/20 21:16:39 rzalamena Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -278,6 +278,11 @@ do_v6:
 				goto done;
 			}
 #endif
+			if (ifp->if_type == IFT_MPLSTUNNEL) {
+				ifp->if_output(ifp, m, rt_key(rt), rt);
+				goto done;
+			}
+
 			if (!rt->rt_gateway) {
 				m_freem(m);
 				goto done;
