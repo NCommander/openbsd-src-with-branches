@@ -1,4 +1,4 @@
-/* $OpenBSD: pms.c,v 1.62 2015/06/08 06:39:22 stsp Exp $ */
+/* $OpenBSD: pms.c,v 1.63 2015/07/19 15:43:44 krw Exp $ */
 /* $NetBSD: psm.c,v 1.11 2000/06/05 22:20:57 sommerfeld Exp $ */
 
 /*-
@@ -1177,9 +1177,12 @@ pms_proc_synaptics(struct pms_softc *sc)
 	case 5:
 		/* fingerwidth 5, numfingers 1 */
 		break;
-	default:
+	case 4:
+	case 8:
 		/* fingerwidth 4, numfingers 1 */
 		w = 4;
+		break;
+	default:
 		break;
 	}
 
