@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.932 2015/07/19 23:13:58 sashan Exp $ */
+/*	$OpenBSD: pf.c,v 1.933 2015/07/20 01:18:33 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2813,6 +2813,8 @@ pf_socket_lookup(struct pf_pdesc *pd)
 		}
 		break;
 #endif /* INET6 */
+	default:
+		unhandled_af(pd->af);
 	}
 	pd->lookup.uid = inp->inp_socket->so_euid;
 	pd->lookup.gid = inp->inp_socket->so_egid;

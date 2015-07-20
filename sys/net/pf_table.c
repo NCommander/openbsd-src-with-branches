@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_table.c,v 1.111 2015/07/18 15:19:44 sashan Exp $	*/
+/*	$OpenBSD: pf_table.c,v 1.112 2015/07/18 19:06:37 sashan Exp $	*/
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -2171,6 +2171,8 @@ pfr_update_stats(struct pfr_ktable *kt, struct pf_addr *a, struct pf_pdesc *pd,
 	case PF_DROP:
 		op_idx = PFR_OP_BLOCK;
 		break;
+	default:
+		panic("unhandled op");
 	}
 
 	if ((ke == NULL || (ke->pfrke_flags & PFRKE_FLAG_NOT)) != notrule) {
