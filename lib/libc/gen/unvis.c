@@ -1,4 +1,4 @@
-/*	$OpenBSD: unvis.c,v 1.14 2010/08/24 23:49:06 djm Exp $ */
+/*	$OpenBSD: unvis.c,v 1.15 2011/03/13 22:21:32 guenther Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -78,6 +78,7 @@ unvis(char *cp, char c, int *astate, int flag)
 			*astate = S_GROUND;
 			return (0);
 		case '\\':
+		case '"':
 			*cp = c;
 			*astate = S_GROUND;
 			return (UNVIS_VALID);
