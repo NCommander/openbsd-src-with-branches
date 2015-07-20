@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.184 2015/04/07 11:15:02 dlg Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -639,7 +639,6 @@ pool_put(struct pool *pp, void *v)
 {
 	struct pool_item *pi = v;
 	struct pool_item_header *ph, *freeph = NULL;
-	extern int ticks;
 
 #ifdef DIAGNOSTIC
 	if (v == NULL)
@@ -1368,7 +1367,6 @@ pool_gc_sched(void *null)
 void
 pool_gc_pages(void *null)
 {
-	extern int ticks;
 	struct pool *pp;
 	struct pool_item_header *ph, *freeph;
 	int s;
