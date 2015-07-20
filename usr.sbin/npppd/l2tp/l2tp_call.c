@@ -1,4 +1,4 @@
-/*	$OpenBSD: l2tp_call.c,v 1.16 2015/01/19 01:48:59 deraadt Exp $	*/
+/*	$OpenBSD: l2tp_call.c,v 1.17 2015/06/24 05:20:16 yasuoka Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Id: l2tp_call.c,v 1.16 2015/01/19 01:48:59 deraadt Exp $ */
+/* $Id: l2tp_call.c,v 1.17 2015/06/24 05:20:16 yasuoka Exp $ */
 /**@file L2TP LNS call */
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -1047,6 +1047,6 @@ fail:
 		ppp_destroy(ppp);
 	_this->ppp = NULL;
 
-	l2tp_call_disconnect(_this, code, 0, NULL, NULL, 0);
+	l2tp_call_disconnect(_this, code, errcode, NULL, NULL, 0);
 	return 1;
 }
