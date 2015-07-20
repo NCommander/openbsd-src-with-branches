@@ -1,4 +1,4 @@
-.\" $OpenBSD: tame.2,v 1.9 2015/07/19 17:08:35 jmc Exp $
+.\" $OpenBSD: tame.2,v 1.10 2015/07/20 15:26:28 nicm Exp $
 .\"
 .\" Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 19 2015 $
+.Dd $Mdocdate: July 20 2015 $
 .Dt TAME 2
 .Os
 .Sh NAME
@@ -121,9 +121,10 @@ May operate on
 .It Xr sysctl 3
 A small set of read-only operations are allowed, sufficient to
 support:
-.Xr getifaddrs 3 ,
 .Xr getdomainname 3 ,
 .Xr gethostname 3 ,
+.Xr getifaddrs 3 ,
+.Xr uname 3 ,
 system sensor readings.
 .It Xr tame 2
 Can only reduce permissions.
