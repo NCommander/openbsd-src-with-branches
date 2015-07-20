@@ -1,4 +1,4 @@
-#	$OpenBSD: funcs.pl,v 1.19 2015/05/17 22:49:03 bluhm Exp $
+#	$OpenBSD: funcs.pl,v 1.20 2015/07/18 22:11:34 benno Exp $
 
 # Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -94,7 +94,7 @@ sub write_blocks {
 		}
 	}
 	print STDERR "\n";
-	$outb += write_syswrite($self,"\n\n");	
+	$outb += write_syswrite($self,"\n\n");
 	IO::Handle::flush(\*STDOUT);
 	print STDERR "LEN: ", $outb, "\n";
 }
