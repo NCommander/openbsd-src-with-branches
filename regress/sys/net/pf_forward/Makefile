@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2014/07/13 01:47:20 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.8 2014/07/18 23:54:55 bluhm Exp $
 
 # The following ports must be installed:
 #
@@ -103,7 +103,8 @@ addr.py: Makefile
 	mv $@.tmp $@
 
 # load the pf rules into the kernel of the PF machine
-stamp-pfctl: addr.py
+stamp-pfctl: addr.py pf.conf
+	cat addr.py ${.CURDIR}/pf.conf | pfctl -n -f -
 	cat addr.py ${.CURDIR}/pf.conf | \
 	    ssh ${PF_SSH} ${SUDO} pfctl -a regress -f -
 	@date >$@
