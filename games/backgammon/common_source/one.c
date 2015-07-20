@@ -1,4 +1,4 @@
-/*	$OpenBSD: one.c,v 1.4 2003/06/03 03:01:38 millert Exp $	*/
+/*	$OpenBSD: one.c,v 1.5 2009/10/27 23:59:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -51,11 +51,8 @@ makmove(i)
 	} else {
 		if (n == max ? D0 < n && D1 < n : D0 != n && D1 != n)
 			return(checkd(d) + 1);
-		if (n == max ? D0 < n : D0 != n) {
-			if (d0)
-				return (checkd(d) + 1);
+		if (n == max ? D0 < n : D0 != n)
 			swap;
-		}
 	}
 	if (g[i] == home && *offptr < 0)
 		return(checkd(d) + 4);
