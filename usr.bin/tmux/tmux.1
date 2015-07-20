@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.443 2015/07/13 15:37:26 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.444 2015/07/20 10:34:11 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
 .\"
@@ -14,7 +14,7 @@
 .\" IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
 .\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 13 2015 $
+.Dd $Mdocdate: July 20 2015 $
 .Dt TMUX 1
 .Os
 .Sh NAME
@@ -2396,6 +2396,10 @@ passed through to applications running in
 .Nm .
 Attached clients should be detached and attached again after changing this
 option.
+.It Ic history-file Ar path
+If not empty, a file to which
+.Nm
+will write command prompt history on exit and load it from on start.
 .It Ic message-limit Ar number
 Set the number of error or information messages to save in the message log for
 each client.
