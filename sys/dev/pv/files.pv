@@ -1,0 +1,14 @@
+#	$OpenBSD$
+#
+# Config file and device description for paravirtual devices.
+# Included by ports that need it.
+
+define	pvbus {}
+device	pvbus
+attach	pvbus at mainbus
+file	dev/pv/pvbus.c			pvbus	needs-flag
+
+# VMware Tools
+device	vmt
+attach	vmt at pvbus
+file	dev/vmt.c			vmt	needs-flag
