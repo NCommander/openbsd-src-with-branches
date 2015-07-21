@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vmt.4,v 1.7 2013/07/16 16:05:49 schwarze Exp $
+.\"	$OpenBSD: vmt.4,v 1.8 2015/07/21 03:40:01 reyk Exp $
 .\"
 .\" Copyright (c) 2008 Marco Peereboom <marco@openbsd.org>
 .\" Text was heavily borrowed from the IPMI spec V1.5
@@ -14,7 +14,7 @@
 .\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 .\" ACTION OF CONTRACT, NEGLIGENCE OR TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.Dd $Mdocdate: July 16 2013 $
+.Dd $Mdocdate: July 21 2015 $
 .Dt VMT 4
 .Os
 .Sh NAME
@@ -32,7 +32,11 @@ running inside virtual machines.
 .Nm
 handles shutdown and reboot requests from the host by signalling
 .Xr init 8
-with SIGUSR2 and SIGINT respectively.
+with
+.Dv SIGUSR2
+and
+.Dv SIGINT
+respectively.
 .Nm
 will log notifications that the guest has been suspended or resumed by the
 host.
@@ -47,7 +51,7 @@ reports the guest's hostname and first non-loopback IP address to the host.
 .Xr sysctl 8
 .Pp
 A
-.Nm vmwh
+.Sy vmwh
 helper program is available via
 .Xr packages 7 .
 .Sh HISTORY
