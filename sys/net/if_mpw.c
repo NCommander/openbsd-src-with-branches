@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2015 Rafael Zalamena <rzalamena@openbsd.org>
  *
