@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: radiusd.c,v 1.1 2015/07/21 04:06:04 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2013 Internet Initiative Japan Inc.
@@ -94,7 +94,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s [-dh] [-f file]\n", __progname);
+	fprintf(stderr, "usage: %s [-dhn] [-f file]\n", __progname);
 	exit(EX_USAGE);
 }
 
