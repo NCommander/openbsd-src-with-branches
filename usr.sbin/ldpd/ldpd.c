@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.24 2015/07/21 04:45:21 renato Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.25 2015/07/21 04:52:29 renato Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -274,7 +274,6 @@ ldpd_shutdown(void)
 	if (lde_pid)
 		kill(lde_pid, SIGTERM);
 
-	control_cleanup();
 	kr_shutdown();
 
 	do {
