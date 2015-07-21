@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pvvar.h,v 1.1 2015/07/21 03:38:22 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -30,7 +30,6 @@ struct pvbus_attach_args {
 
 struct pv_attach_args {
 	const char		*pva_busname;
-	uint8_t			 pva_type;	/* required hv type */
 	uint8_t			 pva_types;	/* detected hv types */
 };
 
