@@ -1,4 +1,4 @@
-/*	$OpenBSD: radius_req.c,v 1.8 2014/05/30 05:06:00 yasuoka Exp $ */
+/*	$OpenBSD: radius_req.c,v 1.9 2015/01/19 01:48:59 deraadt Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -26,9 +26,9 @@
  * SUCH DAMAGE.
  */
 /**@file
- * This file provides functions for RADIUS request using radius+.c and event(3).
+ * This file provides functions for RADIUS request using radius(3) and event(3).
  * @author	Yasuoka Masahiko
- * $Id: radius_req.c,v 1.8 2014/05/30 05:06:00 yasuoka Exp $
+ * $Id: radius_req.c,v 1.9 2015/01/19 01:48:59 deraadt Exp $
  */
 #include <sys/types.h>
 #include <sys/time.h>
@@ -38,8 +38,6 @@
 #include <stdio.h>
 #include <syslog.h>
 #include <stdlib.h>
-#include <radius+.h>
-#include <radiusconst.h>
 #include <debugutil.h>
 #include <time.h>
 #include <event.h>
@@ -47,6 +45,7 @@
 #include <errno.h>
 
 #include "radius_req.h"
+#include <radius.h>
 
 #ifndef nitems
 #define	nitems(_a)	(sizeof((_a)) / sizeof((_a)[0]))
@@ -387,7 +386,7 @@ radius_request0(struct overlapped *lap, int new_message)
 		}
 	}
 	if (new_message) {
-		radius_set_request_authenticator(lap->pkt,
+		radius_set_accounting_request_authenticator(lap->pkt,
 		    radius_get_server_secret(lap));
 	}
 

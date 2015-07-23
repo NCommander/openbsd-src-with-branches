@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp.h,v 1.16 2013/04/26 02:20:04 gsoares Exp $ */
+/*	$OpenBSD: ppp.h,v 1.17 2015/04/04 18:05:04 guenther Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -223,8 +223,7 @@ typedef struct _npppd_ppp	npppd_ppp;
 #include "fsm.h"
 
 #ifdef USE_NPPPD_RADIUS
-#include <radius+.h>
-#include <radiusconst.h>
+#include <radius.h>
 #include <radius_req.h>
 #endif
 
