@@ -1,4 +1,4 @@
-/*	$OpenBSD: siofile.c,v 1.5 2014/10/08 16:44:47 ratchov Exp $	*/
+/*	$OpenBSD: siofile.c,v 1.6 2015/02/16 06:28:05 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -228,6 +228,7 @@ dev_sio_close(struct dev *d)
 		log_puts(": closed\n");
 	}
 #endif
+	timo_del(&d->sio.watchdog);
 	file_del(d->sio.file);
 	sio_close(d->sio.hdl);	
 }
