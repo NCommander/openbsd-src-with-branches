@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.37 2013/06/13 04:13:47 brad Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.38 2014/04/16 10:52:59 guenther Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -290,8 +290,7 @@ resolve_failed:
 			Elf_Addr soff;
 
 			soff = _dl_find_symbol(symn, &srcsym,
-			    SYM_SEARCH_OTHER|SYM_WARNNOTFOUND|
-			    ((type == R_TYPE(JMP_SLOT)) ? SYM_PLT : SYM_NOTPLT),
+			    SYM_SEARCH_OTHER|SYM_WARNNOTFOUND|SYM_NOTPLT,
 			    dstsym, object, NULL);
 			if (srcsym == NULL)
 				goto resolve_failed;
