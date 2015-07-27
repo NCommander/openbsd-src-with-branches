@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.201 2015/07/19 02:35:35 deraadt Exp $	*/
+/*	$OpenBSD: proc.h,v 1.202 2015/07/20 00:56:10 guenther Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -331,6 +331,7 @@ struct proc {
 #define TMN_IMODIFY	0x00000004
 #define TMN_YPLOCK	0x00000008
 #define TMN_DNSRESOLV	0x00000010
+#define TMN_COREDUMP	0x00000020
 	int	p_tameafter;
 
 #ifndef	__HAVE_MD_TCB

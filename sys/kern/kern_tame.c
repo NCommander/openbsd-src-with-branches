@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_tame.c,v 1.14 2015/07/23 02:57:51 doug Exp $	*/
+/*	$OpenBSD: kern_tame.c,v 1.15 2015/07/27 15:02:36 semarie Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -270,6 +270,9 @@ int
 tame_namei(struct proc *p, char *origpath)
 {
 	char path[PATH_MAX];
+
+	if (p->p_tamenote == TMN_COREDUMP)
+		return (0);			/* Allow a coredump */
 
 	if (canonpath(origpath, path, sizeof(path)) != 0)
 		return (tame_fail(p, EPERM, TAME_RPATH));
