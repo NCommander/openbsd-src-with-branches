@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: tame.h,v 1.1 2015/07/19 02:35:35 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -37,7 +37,7 @@
 #define _TM_PROC	0x00001000	/* fork, waitpid, etc */
 #define _TM_CPATH	0x00002000	/* allow create, mkdir, or inode mods */
 
-#define _TM_ABORT	0x08000000	/* SIGABRT instea of SIGKILL */
+#define _TM_ABORT	0x08000000	/* SIGABRT instead of SIGKILL */
 
 /* Following flags are set by kernel, as it learns things.
  * Not user settable. Should be moved to a seperate variable */
