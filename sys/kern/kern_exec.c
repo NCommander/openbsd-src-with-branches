@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.144 2014/07/12 18:43:32 tedu Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.144.4.1 2014/10/19 22:18:02 tedu Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -763,12 +763,12 @@ exec_abort:
 
 free_pack_abort:
 	free(pack.ep_hdr, M_EXEC, 0);
+	if (pathbuf != NULL)
+		pool_put(&namei_pool, pathbuf);
 	exit1(p, W_EXITCODE(0, SIGABRT), EXIT_NORMAL);
 
 	/* NOTREACHED */
 	atomic_clearbits_int(&pr->ps_flags, PS_INEXEC);
-	if (pathbuf != NULL)
-		pool_put(&namei_pool, pathbuf);
 
 	return (0);
 }
