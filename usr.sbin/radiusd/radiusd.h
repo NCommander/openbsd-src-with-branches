@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: radiusd.h,v 1.1 2015/07/21 04:06:04 yasuoka Exp $	*/
 
 #ifndef	RADIUSD_H
 #define	RADIUSD_H 1
@@ -19,8 +19,9 @@
  */
 #include <stdbool.h>
 
-#define	RADIUSD_MODULE_NAME_LEN			32
-#define	RADIUSD_SECRET_MAX			128
+#define	RADIUSD_MODULE_NAME_LEN		32
+#define	RADIUSD_SECRET_MAX		128
+#define	RADIUSD_USER			"_radiusd"
 
 enum imsg_type {
 	IMSG_NONE = 0,
