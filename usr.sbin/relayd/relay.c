@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.196 2015/06/12 14:40:55 reyk Exp $	*/
+/*	$OpenBSD: relay.c,v 1.197 2015/07/18 16:01:28 benno Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -870,7 +870,7 @@ relay_splice(struct ctl_relay_event *cre)
 	if (cre->bev == NULL || cre->dst->bev == NULL)
 		return (0);
 
-	if (! (cre->toread == TOREAD_UNLIMITED || cre->toread > 0)) {
+	if (!(cre->toread == TOREAD_UNLIMITED || cre->toread > 0)) {
 		DPRINTF("%s: session %d: splice dir %d, nothing to read %lld",
 		    __func__, con->se_id, cre->dir, cre->toread);
 		return (0);
