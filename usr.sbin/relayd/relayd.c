@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.141 2015/05/30 09:47:25 claudio Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.142 2015/06/03 02:24:36 millert Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -1021,11 +1021,8 @@ rule_settable(struct relay_rules *rules, struct relay_table *rlt)
 
 	TAILQ_FOREACH(r, rules, rule_entry) {
 		if (r->rule_tablename[0] &&
-		    strcmp(pname, r->rule_tablename) == 0) {
+		    strcmp(pname, r->rule_tablename) == 0)
 			r->rule_table = rlt;
-		} else {
-			r->rule_table = NULL;
-		}
 	}
 }
 
