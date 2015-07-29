@@ -1,4 +1,4 @@
-/* $OpenBSD: tsort.c,v 1.24 2014/10/11 03:57:13 deraadt Exp $ */
+/* $OpenBSD: tsort.c,v 1.25 2015/07/21 07:13:59 jasper Exp $ */
 /* ex:ts=8 sw=4:
  *
  * Copyright (c) 1999-2004 Marc Espie <espie@openbsd.org>
@@ -145,7 +145,6 @@ static void enqueue(struct array *, struct node *);
 
 
 
-#define erealloc(n, s)	emem(realloc(n, s))
 static void *hash_calloc(size_t, size_t, void *);
 static void hash_free(void *, void *);
 static void* entry_alloc(size_t, void *);
