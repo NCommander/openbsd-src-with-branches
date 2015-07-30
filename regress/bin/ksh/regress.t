@@ -1,4 +1,4 @@
-#	$OpenBSD: regress.t,v 1.16 2013/09/14 20:09:30 millert Exp $
+#	$OpenBSD: regress.t,v 1.1 2013/12/02 20:39:44 millert Exp $
 
 #
 # The first 39 of these tests are from the old Bugs script.
@@ -1089,3 +1089,24 @@ expected-stdout:
 	ot OK
 ---
 
+name: regression-63
+description:
+	Check octal escape expansion in prompts.
+file-setup: file 644 "env"
+	PS1=\\131
+	PS2=\\130
+env-setup: !ENV=./env!
+arguments: !-i!
+stdin:
+	echo hello
+	for i in 1 2 3; do
+		echo there
+	done
+expected-stdout: 
+	hello
+	there
+	there
+	there
+expected-stderr: !
+	YYXXY
+---
