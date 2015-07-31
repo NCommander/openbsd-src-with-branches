@@ -1,4 +1,4 @@
-/*	$OpenBSD: pch.c,v 1.41 2013/11/26 13:19:07 deraadt Exp $	*/
+/*	$OpenBSD: pch.c,v 1.41.6.1 2015/07/27 16:08:18 guenther Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -1393,7 +1393,19 @@ do_ed_script(void)
 		    (*t == 'a' || *t == 'c' || *t == 'd' || *t == 'i' || *t == 's')) {
 			if (pipefp != NULL)
 				fputs(buf, pipefp);
-			if (*t != 'd') {
+			if (*t == 's') {
+				for (;;) {
+					bool continued = false;
+					t = buf + strlen(buf) - 1;
+					while (--t >= buf && *t == '\\')
+						continued = !continued;
+					if (!continued ||
+					    pgets(buf, sizeof buf, pfp) == NULL)
+						break;
+					if (pipefp != NULL)
+						fputs(buf, pipefp);
+				}
+			} else if (*t != 'd') {
 				while (pgets(buf, sizeof buf, pfp) != NULL) {
 					p_input_line++;
 					if (pipefp != NULL)
