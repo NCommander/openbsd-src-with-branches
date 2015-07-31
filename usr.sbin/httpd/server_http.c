@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.94 2015/07/29 20:03:14 florian Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.95 2015/07/29 22:03:41 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -1244,7 +1244,7 @@ server_response_http(struct client *clt, u_int code,
 		return (-1);
 
 	/* Add error codes */
-	if (kv_setkey(&resp->http_pathquery, "%lu", code) == -1 ||
+	if (kv_setkey(&resp->http_pathquery, "%u", code) == -1 ||
 	    kv_set(&resp->http_pathquery, "%s", error) == -1)
 		return (-1);
 
@@ -1281,7 +1281,7 @@ server_response_http(struct client *clt, u_int code,
 		if ((cl =
 		    kv_add(&resp->http_headers, "Strict-Transport-Security",
 		    NULL)) == NULL ||
-		    kv_set(cl, "max-age=%d%s%s%s", srv_conf->hsts_max_age,
+		    kv_set(cl, "max-age=%d%s%s", srv_conf->hsts_max_age,
 		    srv_conf->hsts_flags & HSTSFLAG_SUBDOMAINS ?
 		    "; includeSubDomains" : "",
 		    srv_conf->hsts_flags & HSTSFLAG_PRELOAD ?
