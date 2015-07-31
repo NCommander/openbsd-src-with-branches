@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.c,v 1.76 2015/07/20 21:16:39 rzalamena Exp $  */
+/*	$OpenBSD: ip_ether.c,v 1.77 2015/07/29 00:04:03 rzalamena Exp $  */
 /*
  * The author of this code is Angelos D. Keromytis (kermit@adk.gr)
  *
@@ -266,15 +266,6 @@ void
 mplsip_decap(struct mbuf *m, int iphlen)
 {
 	struct gif_softc *sc;
-
-	/*
-	 * Avoid going through all the code if the interface doesn't have
-	 * the appropriate flag.
-	 */
-	if ((sc->gif_if.if_xflags & IFXF_MPLS) == 0) {
-		m_freem(m);
-		return;
-	}
 
 	etheripstat.etherip_ipackets++;
 
