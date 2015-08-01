@@ -1,4 +1,4 @@
-/*	$OpenBSD: fnmatch.c,v 1.17 2013/11/24 23:51:29 deraadt Exp $	*/
+/*	$OpenBSD: fnmatch.c,v 1.18 2014/12/11 16:25:34 millert Exp $	*/
 
 /* Copyright (c) 2011, VMware, Inc.
  * All rights reserved.
@@ -192,6 +192,8 @@ static int fnmatch_ch(const char **pattern, const char **string, int flags)
                 result = 0;
                 continue;
             }
+            if (!**pattern)
+                break;
 
 leadingclosebrace:
             /* Look at only well-formed range patterns; 
