@@ -115,7 +115,6 @@ do_process(void)
 		ASSX(ke.filter == EVFILT_PROC);
 		switch (ke.fflags) {
 		case NOTE_EXIT:
-			didchild = 1;
 			ASSX((pid_t)ke.ident == pid);
 			fprintf(stderr, "exit %d\n", pid);
 			break;
