@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.106 2015/06/05 16:35:24 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.107 2015/07/19 17:00:39 visa Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -181,10 +181,8 @@ trap(struct trap_frame *trapframe)
 	if (type != T_SYSCALL)
 #endif
 		atomic_inc_int(&uvmexp.traps);
-	if (USERMODE(trapframe->sr)) {
+	if (USERMODE(trapframe->sr))
 		type |= T_USER;
-		refreshcreds(p);
-	}
 
 	/*
 	 * Enable hardware interrupts if they were on before the trap;
@@ -207,6 +205,9 @@ trap(struct trap_frame *trapframe)
 		}
 		break;
 	}
+
+	if (type & T_USER)
+		refreshcreds(p);
 
 #ifdef CPU_R8000
 	/*
