@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_file.c,v 1.58 2015/07/18 14:36:24 kili Exp $	*/
+/*	$OpenBSD: server_file.c,v 1.59 2015/07/20 11:38:19 semarie Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -262,6 +262,7 @@ server_file_request(struct httpd *env, struct client *clt, char *path,
 	if (clt->clt_srvbev != NULL)
 		bufferevent_free(clt->clt_srvbev);
 
+	clt->clt_srvbev_throttled = 0;
 	clt->clt_srvbev = bufferevent_new(clt->clt_fd, server_read,
 	    server_write, server_file_error, clt);
 	if (clt->clt_srvbev == NULL) {
