@@ -1,4 +1,4 @@
-/* $OpenBSD: acpihpet.c,v 1.17 2014/03/05 23:47:00 deraadt Exp $ */
+/* $OpenBSD: acpihpet.c,v 1.18 2015/03/14 03:38:46 jsg Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -50,7 +50,6 @@ static struct timecounter hpet_timecounter = {
 
 #define HPET_TIMERS	3
 struct hpet_regs {
-	u_int64_t	capability;
 	u_int64_t	configuration;
 	u_int64_t	interrupt_status;
 	u_int64_t	main_counter;
@@ -110,8 +109,6 @@ acpihpet_activate(struct device *self, int act)
 		bus_space_write_4(sc->sc_iot, sc->sc_ioh,
 		    HPET_CONFIGURATION, sc->sc_conf);
 
-		sc->sc_save.capability = acpihpet_r(sc->sc_iot,
-		    sc->sc_ioh, HPET_CAPABILITIES);
 		sc->sc_save.configuration = acpihpet_r(sc->sc_iot,
 		    sc->sc_ioh, HPET_CONFIGURATION);
 		sc->sc_save.interrupt_status = acpihpet_r(sc->sc_iot,
@@ -142,8 +139,6 @@ acpihpet_activate(struct device *self, int act)
 		bus_space_write_4(sc->sc_iot, sc->sc_ioh,
 		    HPET_CONFIGURATION, sc->sc_conf);
 
-		acpihpet_w(sc->sc_iot, sc->sc_ioh,
-		    HPET_CAPABILITIES, sc->sc_save.capability);
 		acpihpet_w(sc->sc_iot, sc->sc_ioh,
 		    HPET_CONFIGURATION, sc->sc_save.configuration);
 		acpihpet_w(sc->sc_iot, sc->sc_ioh,
