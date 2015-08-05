@@ -1,4 +1,4 @@
-/* 	$OpenBSD: test_sshkey.c,v 1.5 2015/07/03 04:39:23 djm Exp $ */
+/* 	$OpenBSD: test_sshkey.c,v 1.6 2015/07/07 14:53:30 markus Exp $ */
 /*
  * Regress test for sshkey.h key management API
  *
@@ -275,7 +275,7 @@ sshkey_tests(void)
 	TEST_DONE();
 
 	TEST_START("generate KEY_RSA");
-	ASSERT_INT_EQ(sshkey_generate(KEY_RSA, 768, &kr),
+	ASSERT_INT_EQ(sshkey_generate(KEY_RSA, 767, &kr),
 	    SSH_ERR_INVALID_ARGUMENT);
 	ASSERT_INT_EQ(sshkey_generate(KEY_RSA, 1024, &kr), 0);
 	ASSERT_PTR_NE(kr, NULL);
