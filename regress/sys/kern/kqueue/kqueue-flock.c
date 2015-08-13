@@ -1,4 +1,4 @@
-/*	$OpenBSD: kqueue-flock.c,v 1.1 2012/07/08 12:31:03 guenther Exp $	*/
+/*	$OpenBSD$	*/
 /*
  *	Written by Philip Guenther <guenther@openbsd.org> 2012 Public Domain
  */
@@ -44,6 +44,7 @@ check_lock(int fd, const char *msg)
 			printf("lock not found %s\n", msg);
 			_exit(1);
 		}
+		close(fd);
 		_exit(0);
 	}
 
