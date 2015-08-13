@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.3 2015/05/17 20:19:08 guenther Exp $	*/
+/*	$OpenBSD: util.h,v 1.4 2015/06/23 15:16:34 semarie Exp $	*/
 
 /*
  * Placed in the public domain by Todd C. Miller <Todd.Miller@courtesan.com>
@@ -31,3 +31,8 @@
 
 extern int usemmap;
 extern int dynamic_only;
+
+struct xnlist {
+	struct nlist nl;
+	unsigned long n_size;
+};
