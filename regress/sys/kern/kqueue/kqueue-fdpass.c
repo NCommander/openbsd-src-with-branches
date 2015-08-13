@@ -53,6 +53,7 @@ do_fdpass(void)
 		if (kevent(fd, &ke, 1, NULL, 0, NULL) != 0)
 			err(1, "can't register events on kqueue");
 
+		memset(&cmsgbuf.buf, 0, sizeof cmsgbuf.buf);
 		memset(&msg, 0, sizeof msg);
 		msg.msg_control = &cmsgbuf.buf;
 		msg.msg_controllen = sizeof(cmsgbuf);
@@ -69,11 +70,13 @@ do_fdpass(void)
 		if (errno != EINVAL)
 			err(1, "child sendmsg");
 		printf("sendmsg failed with EINVAL as expected\n");
+		close(pfd[1]);
 		exit(0);
 	}
 
 	close(pfd[1]);
 	wait(&status);
+	close(pfd[0]);
 
 	return (0);
 }
