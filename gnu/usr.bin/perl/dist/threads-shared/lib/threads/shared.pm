@@ -7,12 +7,15 @@ use warnings;
 
 use Scalar::Util qw(reftype refaddr blessed);
 
-our $VERSION = '1.40';
+our $VERSION = '1.46'; # Please update the pod, too.
 my $XS_VERSION = $VERSION;
 $VERSION = eval $VERSION;
 
 # Declare that we have been loaded
 $threads::shared::threads_shared = 1;
+
+# Method of complaint about things we can't clone
+$threads::shared::clone_warn = undef;
 
 # Load the XS code, if applicable
 if ($threads::threads) {
@@ -156,7 +159,12 @@ $make_shared = sub {
 
     } else {
         require Carp;
-        Carp::croak("Unsupported ref type: ", $ref_type);
+        if (! defined($threads::shared::clone_warn)) {
+            Carp::croak("Unsupported ref type: ", $ref_type);
+        } elsif ($threads::shared::clone_warn) {
+            Carp::carp("Unsupported ref type: ", $ref_type);
+        }
+        return undef;
     }
 
     # If input item is an object, then bless the copy into the same class
@@ -187,7 +195,7 @@ threads::shared - Perl extension for sharing data structures between threads
 
 =head1 VERSION
 
-This document describes threads::shared version 1.40
+This document describes threads::shared version 1.46
 
 =head1 SYNOPSIS
 
@@ -311,11 +319,24 @@ For cloning empty array or hash refs, the following may also be used:
   $var = &share([]);   # Same as $var = shared_clone([]);
   $var = &share({});   # Same as $var = shared_clone({});
 
+Not all Perl data types can be cloned (e.g., globs, code refs).  By default,
+C<shared_clone> will L<croak|Carp> if it encounters such items.  To change
+this behaviour to a warning, then set the following:
+
+  $threads::shared::clone_warn = 1;
+
+In this case, C<undef> will be substituted for the item to be cloned.  If
+set to zero:
+
+  $threads::shared::clone_warn = 0;
+
+then the C<undef> substitution will be performed silently.
+
 =item is_shared VARIABLE
 
 C<is_shared> checks if the specified variable is shared or not.  If shared,
 returns the variable's internal ID (similar to
-L<refaddr()|Scalar::Util/"refaddr EXPR">).  Otherwise, returns C<undef>.
+C<refaddr()> (see L<Scalar::Util>).  Otherwise, returns C<undef>.
 
   if (is_shared($var)) {
       print("\$var is shared\n");
@@ -383,10 +404,11 @@ L<Thread::Semaphore>.
 The C<cond_wait> function takes a B<locked> variable as a parameter, unlocks
 the variable, and blocks until another thread does a C<cond_signal> or
 C<cond_broadcast> for that same locked variable.  The variable that
-C<cond_wait> blocked on is relocked after the C<cond_wait> is satisfied.  If
+C<cond_wait> blocked on is re-locked after the C<cond_wait> is satisfied.  If
 there are multiple threads C<cond_wait>ing on the same variable, all but one
-will re-block waiting to reacquire the lock on the variable. (So if you're only
-using C<cond_wait> for synchronisation, give up the lock as soon as possible).
+will re-block waiting to reacquire the
+lock on the variable.  (So if you're only
+using C<cond_wait> for synchronization, give up the lock as soon as possible).
 The two actions of unlocking the variable and entering the blocked wait state
 are atomic, the two actions of exiting from the blocked wait state and
 re-locking the variable are not.
@@ -408,7 +430,8 @@ drops to zero:
 =item cond_timedwait CONDVAR, ABS_TIMEOUT, LOCKVAR
 
 In its two-argument form, C<cond_timedwait> takes a B<locked> variable and an
-absolute timeout as parameters, unlocks the variable, and blocks until the
+absolute timeout in I<epoch> seconds (see L<time() in perlfunc|perlfunc/time>
+for more) as parameters, unlocks the variable, and blocks until the
 timeout is reached or another thread signals the variable.  A false value is
 returned if the timeout is reached, and a true value otherwise.  In either
 case, the variable is re-locked upon return.
@@ -432,16 +455,19 @@ be recalculated with each pass:
 =item cond_signal VARIABLE
 
 The C<cond_signal> function takes a B<locked> variable as a parameter and
-unblocks one thread that's C<cond_wait>ing on that variable. If more than one
+unblocks one thread that's C<cond_wait>ing
+on that variable.  If more than one
 thread is blocked in a C<cond_wait> on that variable, only one (and which one
 is indeterminate) will be unblocked.
 
 If there are no threads blocked in a C<cond_wait> on the variable, the signal
-is discarded. By always locking before signaling, you can (with care), avoid
+is discarded.  By always locking before
+signaling, you can (with care), avoid
 signaling before another thread has entered cond_wait().
 
 C<cond_signal> will normally generate a warning if you attempt to use it on an
-unlocked variable. On the rare occasions where doing this may be sensible, you
+unlocked variable.  On the rare occasions
+where doing this may be sensible, you
 can suppress the warning with:
 
   { no warnings 'threads'; cond_signal($foo); }
@@ -499,6 +525,18 @@ If you want access to threads, you must C<use threads> before you
 C<use threads::shared>.  L<threads> will emit a warning if you use it after
 L<threads::shared>.
 
+=head1 WARNINGS
+
+=over 4
+
+=item cond_broadcast() called on unlocked variable
+
+=item cond_signal() called on unlocked variable
+
+See L</"cond_signal VARIABLE">, above.
+
+=back
+
 =head1 BUGS AND LIMITATIONS
 
 When C<share> is used on arrays, hashes, array refs or hash refs, any data
@@ -543,10 +581,10 @@ C<share()> allows you to C<< share($hashref->{key}) >> and
 C<< share($arrayref->[idx]) >> without giving any error message.  But the
 C<< $hashref->{key} >> or C<< $arrayref->[idx] >> is B<not> shared, causing
 the error "lock can only be used on shared values" to occur when you attempt
-to C<< lock($hasref->{key}) >> or C<< lock($arrayref->[idx]) >> in another
+to C<< lock($hashref->{key}) >> or C<< lock($arrayref->[idx]) >> in another
 thread.
 
-Using L<refaddr()|Scalar::Util/"refaddr EXPR">) is unreliable for testing
+Using C<refaddr()> is unreliable for testing
 whether or not two shared references are equivalent (e.g., when testing for
 circular references).  Use L<is_shared()|/"is_shared VARIABLE">, instead:
 
@@ -584,6 +622,13 @@ Either of the following will work instead:
         my $val = $foo{'bar'}{$key};
         ...
     }
+
+This module supports dual-valued variables created using C<dualvar()> from
+L<Scalar::Util>.  However, while C<$!> acts
+like a dualvar, it is implemented as a tied SV.  To propagate its value, use
+the follow construct, if needed:
+
+    my $errno :shared = dualvar($!,$!);
 
 View existing bug reports at, and submit any new bugs, problems, patches, etc.
 to: L<http://rt.cpan.org/Public/Dist/Display.html?Name=threads-shared>

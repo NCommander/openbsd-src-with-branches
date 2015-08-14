@@ -1,8 +1,11 @@
 
 BEGIN {
-    unless ("A" eq pack('U', 0x41)) {
-	print "1..0 # Unicode::Collate " .
-	    "cannot stringify a Unicode code point\n";
+    unless ('A' eq pack('U', 0x41)) {
+	print "1..0 # Unicode::Collate cannot pack a Unicode code point\n";
+	exit 0;
+    }
+    unless (0x41 == unpack('U', 'A')) {
+	print "1..0 # Unicode::Collate cannot get a Unicode code point\n";
 	exit 0;
     }
     if ($ENV{PERL_CORE}) {
@@ -25,7 +28,7 @@ BEGIN {
 
 use strict;
 use warnings;
-BEGIN { $| = 1; print "1..61\n"; } # 1 + 30 * 2
+BEGIN { $| = 1; print "1..90\n"; }
 my $count = 0;
 sub ok ($;$) {
     my $p = my $r = shift;
@@ -54,7 +57,7 @@ no warnings 'utf8';
 #    allowing "Disi\x{301}lva<LOW>John" to sort next to "Disilva<LOW>John".
 
 my $entry = <<'ENTRIES';
-FFFE  ; [*0001.0020.0005.FFFE] # <noncharacter-FFFE>
+FFFE  ; [.0001.0020.0005.FFFE] # <noncharacter-FFFE>
 FFFF  ; [.FFFE.0020.0005.FFFF] # <noncharacter-FFFF>
 ENTRIES
 
@@ -67,7 +70,7 @@ for my $norm (undef, 'NFD') {
     if (defined $norm) {
 	eval { require Unicode::Normalize };
 	if ($@) {
-	    ok(1) for 1..30; # silent skip
+	    ok(1) for 1..34; # silent skip
 	    next;
 	}
     }
@@ -114,9 +117,59 @@ for my $norm (undef, 'NFD') {
     # 26
     ok($coll->lt($dsf[-1], $dsj[0]));
 
-    # 27..30
+    $coll->change(level => 1);
+
+    # 27..34
     for my $i (0 .. $#disilva) {
+	ok($coll->lt($dsf[$i], $dsJ[$i]));
 	ok($coll->lt($dsj[$i], $dsJ[$i]));
     }
 }
 
+# 69
+
+{
+    my $coll = Unicode::Collate->new(
+	table => 'keys.txt',
+	normalization => undef,
+	highestFFFF => 1,
+	minimalFFFE => 1,
+    );
+
+    $coll->change(level => 1);
+    ok($coll->lt("perl\x{FFFD}",   "perl\x{FFFF}"));
+    ok($coll->lt("perl\x{1FFFD}",  "perl\x{FFFF}"));
+    ok($coll->lt("perl\x{1FFFE}",  "perl\x{FFFF}"));
+    ok($coll->lt("perl\x{1FFFF}",  "perl\x{FFFF}"));
+    ok($coll->lt("perl\x{2FFFD}",  "perl\x{FFFF}"));
+    ok($coll->lt("perl\x{2FFFE}",  "perl\x{FFFF}"));
+    ok($coll->lt("perl\x{2FFFF}",  "perl\x{FFFF}"));
+    ok($coll->lt("perl\x{10FFFD}", "perl\x{FFFF}"));
+    ok($coll->lt("perl\x{10FFFE}", "perl\x{FFFF}"));
+    ok($coll->lt("perl\x{10FFFF}", "perl\x{FFFF}"));
+
+# 79
+
+    $coll->change(level => 3);
+    my @list = (
+	"ab\x{FFFE}a",
+	"Ab\x{FFFE}a",
+	"ab\x{FFFE}c",
+	"Ab\x{FFFE}c",
+	"ab\x{FFFE}xyz",
+	"abc\x{FFFE}def",
+	"abc\x{FFFE}xYz",
+	"aBc\x{FFFE}xyz",
+	"abcX\x{FFFE}def",
+	"abcx\x{FFFE}xyz",
+	"b\x{FFFE}aaa",
+	"bbb\x{FFFE}a",
+    );
+    my $p = shift @list;
+    for my $c (@list) {
+	ok($coll->lt($p, $c));
+	$p = $c;
+    }
+}
+
+# 90

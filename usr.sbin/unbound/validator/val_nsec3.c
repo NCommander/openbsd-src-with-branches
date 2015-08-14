@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -45,6 +45,10 @@
 #ifdef HAVE_OPENSSL_SSL_H
 #include "openssl/ssl.h"
 #endif
+#ifdef HAVE_NSS
+/* nss3 */
+#include "sechash.h"
+#endif
 #include "validator/val_nsec3.h"
 #include "validator/validator.h"
 #include "validator/val_kentry.h"
@@ -58,18 +62,19 @@
 #include "util/data/msgreply.h"
 /* we include nsec.h for the bitmap_has_type function */
 #include "validator/val_nsec.h"
+#include "sldns/sbuffer.h"
 
 /** 
  * This function we get from ldns-compat or from base system 
  * it returns the number of data bytes stored at the target, or <0 on error.
  */
-int ldns_b32_ntop_extended_hex(uint8_t const *src, size_t srclength,
+int sldns_b32_ntop_extended_hex(uint8_t const *src, size_t srclength,
 	char *target, size_t targsize);
 /** 
  * This function we get from ldns-compat or from base system 
  * it returns the number of data bytes stored at the target, or <0 on error.
  */
-int ldns_b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, 
+int sldns_b32_pton_extended_hex(char const *src, size_t hashed_owner_str_len, 
 	uint8_t *target, size_t targsize);
 
 /**
@@ -255,7 +260,7 @@ size_t nsec3_hash_to_b32(uint8_t* hash, size_t hashlen, uint8_t* zone,
 	int ret;
 	if(max < hashlen*2+1) /* quick approx of b32, as if hexb16 */
 		return 0;
-	ret = ldns_b32_ntop_extended_hex(hash, hashlen, (char*)buf+1, max-1);
+	ret = sldns_b32_ntop_extended_hex(hash, hashlen, (char*)buf+1, max-1);
 	if(ret < 1) 
 		return 0;
 	buf[0] = (uint8_t)ret; /* length of b32 label */
@@ -530,37 +535,54 @@ nsec3_hash_cmp(const void* c1, const void* c2)
 }
 
 size_t
-nsec3_get_hashed(ldns_buffer* buf, uint8_t* nm, size_t nmlen, int algo, 
+nsec3_get_hashed(sldns_buffer* buf, uint8_t* nm, size_t nmlen, int algo, 
 	size_t iter, uint8_t* salt, size_t saltlen, uint8_t* res, size_t max)
 {
 	size_t i, hash_len;
 	/* prepare buffer for first iteration */
-	ldns_buffer_clear(buf);
-	ldns_buffer_write(buf, nm, nmlen);
-	query_dname_tolower(ldns_buffer_begin(buf));
-	ldns_buffer_write(buf, salt, saltlen);
-	ldns_buffer_flip(buf);
+	sldns_buffer_clear(buf);
+	sldns_buffer_write(buf, nm, nmlen);
+	query_dname_tolower(sldns_buffer_begin(buf));
+	sldns_buffer_write(buf, salt, saltlen);
+	sldns_buffer_flip(buf);
 	switch(algo) {
-#ifdef HAVE_EVP_SHA1
+#if defined(HAVE_EVP_SHA1) || defined(HAVE_NSS)
 		case NSEC3_HASH_SHA1:
+#ifdef HAVE_SSL
 			hash_len = SHA_DIGEST_LENGTH;
+#else
+			hash_len = SHA1_LENGTH;
+#endif
 			if(hash_len > max)
 				return 0;
-			(void)SHA1((unsigned char*)ldns_buffer_begin(buf),
-				(unsigned long)ldns_buffer_limit(buf),
+#  ifdef HAVE_SSL
+			(void)SHA1((unsigned char*)sldns_buffer_begin(buf),
+				(unsigned long)sldns_buffer_limit(buf),
 				(unsigned char*)res);
+#  else
+			(void)HASH_HashBuf(HASH_AlgSHA1, (unsigned char*)res,
+				(unsigned char*)sldns_buffer_begin(buf),
+				(unsigned long)sldns_buffer_limit(buf));
+#  endif
 			for(i=0; i<iter; i++) {
-				ldns_buffer_clear(buf);
-				ldns_buffer_write(buf, res, hash_len);
-				ldns_buffer_write(buf, salt, saltlen);
-				ldns_buffer_flip(buf);
+				sldns_buffer_clear(buf);
+				sldns_buffer_write(buf, res, hash_len);
+				sldns_buffer_write(buf, salt, saltlen);
+				sldns_buffer_flip(buf);
+#  ifdef HAVE_SSL
 				(void)SHA1(
-					(unsigned char*)ldns_buffer_begin(buf),
-					(unsigned long)ldns_buffer_limit(buf),
+					(unsigned char*)sldns_buffer_begin(buf),
+					(unsigned long)sldns_buffer_limit(buf),
 					(unsigned char*)res);
+#  else
+				(void)HASH_HashBuf(HASH_AlgSHA1,
+					(unsigned char*)res,
+					(unsigned char*)sldns_buffer_begin(buf),
+					(unsigned long)sldns_buffer_limit(buf));
+#  endif
 			}
 			break;
-#endif /* HAVE_EVP_SHA1 */
+#endif /* HAVE_EVP_SHA1 or NSS */
 		default:
 			log_err("nsec3 hash of unknown algo %d", algo);
 			return 0;
@@ -570,7 +592,7 @@ nsec3_get_hashed(ldns_buffer* buf, uint8_t* nm, size_t nmlen, int algo,
 
 /** perform hash of name */
 static int
-nsec3_calc_hash(struct regional* region, ldns_buffer* buf, 
+nsec3_calc_hash(struct regional* region, sldns_buffer* buf, 
 	struct nsec3_cached_hash* c)
 {
 	int algo = nsec3_get_algo(c->nsec3, c->rr);
@@ -580,34 +602,52 @@ nsec3_calc_hash(struct regional* region, ldns_buffer* buf,
 	if(!nsec3_get_salt(c->nsec3, c->rr, &salt, &saltlen))
 		return -1;
 	/* prepare buffer for first iteration */
-	ldns_buffer_clear(buf);
-	ldns_buffer_write(buf, c->dname, c->dname_len);
-	query_dname_tolower(ldns_buffer_begin(buf));
-	ldns_buffer_write(buf, salt, saltlen);
-	ldns_buffer_flip(buf);
+	sldns_buffer_clear(buf);
+	sldns_buffer_write(buf, c->dname, c->dname_len);
+	query_dname_tolower(sldns_buffer_begin(buf));
+	sldns_buffer_write(buf, salt, saltlen);
+	sldns_buffer_flip(buf);
 	switch(algo) {
-#ifdef HAVE_EVP_SHA1
+#if defined(HAVE_EVP_SHA1) || defined(HAVE_NSS)
 		case NSEC3_HASH_SHA1:
+#ifdef HAVE_SSL
 			c->hash_len = SHA_DIGEST_LENGTH;
+#else
+			c->hash_len = SHA1_LENGTH;
+#endif
 			c->hash = (uint8_t*)regional_alloc(region, 
 				c->hash_len);
 			if(!c->hash)
 				return 0;
-			(void)SHA1((unsigned char*)ldns_buffer_begin(buf),
-				(unsigned long)ldns_buffer_limit(buf),
+#  ifdef HAVE_SSL
+			(void)SHA1((unsigned char*)sldns_buffer_begin(buf),
+				(unsigned long)sldns_buffer_limit(buf),
 				(unsigned char*)c->hash);
+#  else
+			(void)HASH_HashBuf(HASH_AlgSHA1,
+				(unsigned char*)c->hash,
+				(unsigned char*)sldns_buffer_begin(buf),
+				(unsigned long)sldns_buffer_limit(buf));
+#  endif
 			for(i=0; i<iter; i++) {
-				ldns_buffer_clear(buf);
-				ldns_buffer_write(buf, c->hash, c->hash_len);
-				ldns_buffer_write(buf, salt, saltlen);
-				ldns_buffer_flip(buf);
+				sldns_buffer_clear(buf);
+				sldns_buffer_write(buf, c->hash, c->hash_len);
+				sldns_buffer_write(buf, salt, saltlen);
+				sldns_buffer_flip(buf);
+#  ifdef HAVE_SSL
 				(void)SHA1(
-					(unsigned char*)ldns_buffer_begin(buf),
-					(unsigned long)ldns_buffer_limit(buf),
+					(unsigned char*)sldns_buffer_begin(buf),
+					(unsigned long)sldns_buffer_limit(buf),
 					(unsigned char*)c->hash);
+#  else
+				(void)HASH_HashBuf(HASH_AlgSHA1,
+					(unsigned char*)c->hash,
+					(unsigned char*)sldns_buffer_begin(buf),
+					(unsigned long)sldns_buffer_limit(buf));
+#  endif
 			}
 			break;
-#endif /* HAVE_EVP_SHA1 */
+#endif /* HAVE_EVP_SHA1 or NSS */
 		default:
 			log_err("nsec3 hash of unknown algo %d", algo);
 			return -1;
@@ -617,19 +657,19 @@ nsec3_calc_hash(struct regional* region, ldns_buffer* buf,
 
 /** perform b32 encoding of hash */
 static int
-nsec3_calc_b32(struct regional* region, ldns_buffer* buf, 
+nsec3_calc_b32(struct regional* region, sldns_buffer* buf, 
 	struct nsec3_cached_hash* c)
 {
 	int r;
-	ldns_buffer_clear(buf);
-	r = ldns_b32_ntop_extended_hex(c->hash, c->hash_len,
-		(char*)ldns_buffer_begin(buf), ldns_buffer_limit(buf));
+	sldns_buffer_clear(buf);
+	r = sldns_b32_ntop_extended_hex(c->hash, c->hash_len,
+		(char*)sldns_buffer_begin(buf), sldns_buffer_limit(buf));
 	if(r < 1) {
 		log_err("b32_ntop_extended_hex: error in encoding: %d", r);
 		return 0;
 	}
 	c->b32_len = (size_t)r;
-	c->b32 = regional_alloc_init(region, ldns_buffer_begin(buf), 
+	c->b32 = regional_alloc_init(region, sldns_buffer_begin(buf), 
 		c->b32_len);
 	if(!c->b32)
 		return 0;
@@ -637,7 +677,7 @@ nsec3_calc_b32(struct regional* region, ldns_buffer* buf,
 }
 
 int
-nsec3_hash_name(rbtree_t* table, struct regional* region, ldns_buffer* buf,
+nsec3_hash_name(rbtree_t* table, struct regional* region, sldns_buffer* buf,
 	struct ub_packed_rrset_key* nsec3, int rr, uint8_t* dname, 
 	size_t dname_len, struct nsec3_cached_hash** hash)
 {
@@ -674,6 +714,8 @@ nsec3_hash_name(rbtree_t* table, struct regional* region, ldns_buffer* buf,
 		return r;
 #ifdef UNBOUND_DEBUG
 	n =
+#else
+	(void)
 #endif
 	rbtree_insert(table, &c->node);
 	log_assert(n); /* cannot be duplicate, just did lookup */
@@ -689,8 +731,8 @@ label_compare_lower(uint8_t* lab1, uint8_t* lab2, size_t lablen)
 {
 	size_t i;
 	for(i=0; i<lablen; i++) {
-		if(tolower((int)*lab1) != tolower((int)*lab2)) {
-			if(tolower((int)*lab1) < tolower((int)*lab2))
+		if(tolower((unsigned char)*lab1) != tolower((unsigned char)*lab2)) {
+			if(tolower((unsigned char)*lab1) < tolower((unsigned char)*lab2))
 				return -1;
 			return 1;
 		}
@@ -775,7 +817,7 @@ find_matching_nsec3(struct module_env* env, struct nsec3_filter* flt,
 
 int
 nsec3_covers(uint8_t* zone, struct nsec3_cached_hash* hash,
-	struct ub_packed_rrset_key* rrset, int rr, ldns_buffer* buf)
+	struct ub_packed_rrset_key* rrset, int rr, sldns_buffer* buf)
 {
 	uint8_t* next, *owner;
 	size_t nextlen;
@@ -799,10 +841,10 @@ nsec3_covers(uint8_t* zone, struct nsec3_cached_hash* hash,
 		return 1;
 
 	/* convert owner name from text to binary */
-	ldns_buffer_clear(buf);
-	owner = ldns_buffer_begin(buf);
-	len = ldns_b32_pton_extended_hex((char*)rrset->rk.dname+1, 
-		hash->b32_len, owner, ldns_buffer_limit(buf));
+	sldns_buffer_clear(buf);
+	owner = sldns_buffer_begin(buf);
+	len = sldns_b32_pton_extended_hex((char*)rrset->rk.dname+1, 
+		hash->b32_len, owner, sldns_buffer_limit(buf));
 	if(len<1)
 		return 0; /* bad owner name in some way */
 	if((size_t)len != hash->hash_len || (size_t)len != nextlen)
@@ -1133,8 +1175,8 @@ nsec3_do_prove_nodata(struct module_env* env, struct nsec3_filter* flt,
 		 * If not type DS: matching nsec3 must not be a delegation.
 		 */
 		if(qinfo->qtype == LDNS_RR_TYPE_DS && qinfo->qname_len != 1 
-			&& nsec3_has_type(rrset, rr, LDNS_RR_TYPE_SOA &&
-			!dname_is_root(qinfo->qname))) {
+			&& nsec3_has_type(rrset, rr, LDNS_RR_TYPE_SOA) &&
+			!dname_is_root(qinfo->qname)) {
 			verbose(VERB_ALGO, "proveNodata: apex NSEC3 "
 				"abused for no DS proof, bogus");
 			return sec_status_bogus;

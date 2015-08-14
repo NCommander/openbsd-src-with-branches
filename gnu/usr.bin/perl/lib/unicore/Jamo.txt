@@ -1,21 +1,22 @@
-# Jamo-3.2.0.txt
+# Jamo-6.3.0.txt
+# Date: 2013-01-02, 08:35:00 GMT [KW, LI]
 #
-# This file is a normative contributory data file in the
-# Unicode Character Database.
+# Unicode Character Database
+# Copyright (c) 1991-2013 Unicode, Inc.
+# For terms of use, see http://www.unicode.org/terms_of_use.html
+# For documentation, see http://www.unicode.org/reports/tr44/
 #
-# This file defines the Jamo Short Name property, repeating
-# in machine readable form the information printed in Table 4-4
-# of The Unicode Standard, Version 3.0.
+# This file defines the Jamo_Short_Name property.
 #
-# See sections 3.11 and 4.4 of The Unicode Standard, Version 3.0
+# See Section 3.12 of The Unicode Standard, Version 6.3
 # for more information.
 #
 # Each line contains two fields, separated by a semicolon.
 #
 # The first field gives the code point, in 4-digit hexadecimal
-# form, of a combining jamo character that participates in
-# the algorithmic determination Hangul syllable character names.
-# The second field gives the Jamo Short Name as a one-, two-,
+# form, of a conjoining jamo character that participates in the
+# algorithmic determination of Hangul syllable character names.
+# The second field gives the Jamo_Short_Name as a one-, two-,
 # or three-character ASCII string (or in one case, for U+110B,
 # the null string).
 #
@@ -89,3 +90,4 @@
 11C1; P   # HANGUL JONGSEONG PHIEUPH
 11C2; H   # HANGUL JONGSEONG HIEUH
 
+# EOF

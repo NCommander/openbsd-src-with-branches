@@ -194,11 +194,11 @@ you can fit the whole thing in memory!):
     open my $in,  '<',  $file      or die "Can't read old file: $!"
     open my $out, '>', "$file.new" or die "Can't write new file: $!";
 
-    my @lines = do { local $/; <$in> }; # slurp!
+    my $content = do { local $/; <$in> }; # slurp!
 
         # do your magic here
 
-    print $out @lines;
+    print $out $content;
 
 Modules such as L<File::Slurp> and L<Tie::File> can help with that
 too. If you can, however, avoid reading the entire file at once. Perl
@@ -1134,7 +1134,7 @@ accessing an element of the array actually accesses the corresponding
 line in the file.
 
 If you want to load the entire file, you can use the L<File::Slurp>
-module to do it in one one simple and efficient step:
+module to do it in one simple and efficient step:
 
     use File::Slurp;
 
@@ -1373,7 +1373,7 @@ numeric descriptor as with C<MHCONTEXT> above. But if you really have
 to, you may be able to do this:
 
     require 'sys/syscall.ph';
-    my $rc = syscall(&SYS_close, $fd + 0);  # must force numeric
+    my $rc = syscall(SYS_close(), $fd + 0);  # must force numeric
     die "can't sysclose $fd: $!" unless $rc == -1;
 
 Or, just use the fdopen(3S) feature of C<open()>:

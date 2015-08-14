@@ -398,7 +398,7 @@ static amatch_avl *amatchAvlInsert(amatch_avl **ppHead, amatch_avl *pNew){
 */
 static void amatchAvlRemove(amatch_avl **ppHead, amatch_avl *pOld){
   amatch_avl **ppParent;
-  amatch_avl *pBalance;
+  amatch_avl *pBalance = 0;
   /* assert( amatchAvlSearch(*ppHead, pOld->zKey)==pOld ); */
   ppParent = amatchAvlFromPtr(pOld, ppHead);
   if( pOld->pBefore==0 && pOld->pAfter==0 ){
@@ -786,6 +786,7 @@ static void amatchFree(amatch_vtab *p){
     sqlite3_free(p->zVocabTab);
     sqlite3_free(p->zVocabWord);
     sqlite3_free(p->zVocabLang);
+    sqlite3_free(p->zSelf);
     memset(p, 0, sizeof(*p));
     sqlite3_free(p);
   }
@@ -948,6 +949,9 @@ static void amatchClearCursor(amatch_cursor *pCur){
   pCur->pAllWords = 0;
   sqlite3_free(pCur->zInput);
   pCur->zInput = 0;
+  sqlite3_free(pCur->zBuf);
+  pCur->zBuf = 0;
+  pCur->nBuf = 0;
   pCur->pCost = 0;
   pCur->pWord = 0;
   pCur->pCurrent = 0;
@@ -993,6 +997,23 @@ static void amatchWriteCost(amatch_word *pWord){
   amatchEncodeInt(pWord->iSeq, pWord->zCost+4);
   pWord->zCost[8] = 0;
 }
+
+/* Circumvent compiler warnings about the use of strcpy() by supplying
+** our own implementation.
+*/
+#if defined(__OpenBSD__)
+static void amatchStrcpy(char *dest, const char *src){
+  while( (*(dest++) = *(src++))!=0 ){}
+}
+static void amatchStrcat(char *dest, const char *src){
+  while( *dest ) dest++;
+  amatchStrcpy(dest, src);
+}
+#else
+# define amatchStrcpy strcpy
+# define amatchStrcat strcat
+#endif
+
 
 /*
 ** Add a new amatch_word object to the queue.
@@ -1069,7 +1090,7 @@ static void amatchAddWord(
   assert( pOther==0 ); (void)pOther;
   pWord->sWord.zKey = pWord->zWord;
   pWord->sWord.pWord = pWord;
-  strcpy(pWord->zWord, pCur->zBuf);
+  amatchStrcpy(pWord->zWord, pCur->zBuf);
   pOther = amatchAvlInsert(&pCur->pWord, &pWord->sWord);
   assert( pOther==0 ); (void)pOther;
 #ifdef AMATCH_TRACE_1
@@ -1078,6 +1099,7 @@ static void amatchAddWord(
        pWord->zWord, pWord->zCost);
 #endif
 }
+
 
 /*
 ** Advance a cursor to its next row of output
@@ -1103,7 +1125,7 @@ static int amatchNext(sqlite3_vtab_cursor *cur){
     char *zSql;
     if( p->zVocabLang && p->zVocabLang[0] ){
       zSql = sqlite3_mprintf(
-          "SELECT \"%s\" FROM \"%s\"",
+          "SELECT \"%w\" FROM \"%w\"",
           " WHERE \"%w\">=?1 AND \"%w\"=?2"
           " ORDER BY 1",
           p->zVocabWord, p->zVocabTab,
@@ -1111,7 +1133,7 @@ static int amatchNext(sqlite3_vtab_cursor *cur){
       );
     }else{
       zSql = sqlite3_mprintf(
-          "SELECT \"%s\" FROM \"%s\""
+          "SELECT \"%w\" FROM \"%w\""
           " WHERE \"%w\">=?1"
           " ORDER BY 1",
           p->zVocabWord, p->zVocabTab,
@@ -1144,7 +1166,7 @@ static int amatchNext(sqlite3_vtab_cursor *cur){
       zBuf = sqlite3_realloc(zBuf, nBuf);
       if( zBuf==0 ) return SQLITE_NOMEM;
     }
-    strcpy(zBuf, pWord->zWord+2);
+    amatchStrcpy(zBuf, pWord->zWord+2);
     zNext[0] = 0;
     zNextIn[0] = pCur->zInput[pWord->nMatch];
     if( zNextIn[0] ){
@@ -1159,7 +1181,7 @@ static int amatchNext(sqlite3_vtab_cursor *cur){
 
     if( zNextIn[0] && zNextIn[0]!='*' ){
       sqlite3_reset(p->pVCheck);
-      strcat(zBuf, zNextIn);
+      amatchStrcat(zBuf, zNextIn);
       sqlite3_bind_text(p->pVCheck, 1, zBuf, nWord+nNextIn, SQLITE_STATIC);
       rc = sqlite3_step(p->pVCheck);
       if( rc==SQLITE_ROW ){
@@ -1172,13 +1194,13 @@ static int amatchNext(sqlite3_vtab_cursor *cur){
     }
 
     while( 1 ){
-      strcpy(zBuf+nWord, zNext);
+      amatchStrcpy(zBuf+nWord, zNext);
       sqlite3_reset(p->pVCheck);
       sqlite3_bind_text(p->pVCheck, 1, zBuf, -1, SQLITE_TRANSIENT);
       rc = sqlite3_step(p->pVCheck);
       if( rc!=SQLITE_ROW ) break;
       zW = (const char*)sqlite3_column_text(p->pVCheck, 0);
-      strcpy(zBuf+nWord, zNext);
+      amatchStrcpy(zBuf+nWord, zNext);
       if( strncmp(zW, zBuf, nWord)!=0 ) break;
       if( (zNextIn[0]=='*' && zNextIn[1]==0)
        || (zNextIn[0]==0 && zW[nWord]==0)

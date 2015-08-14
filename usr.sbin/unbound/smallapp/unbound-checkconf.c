@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -50,8 +50,10 @@
 #include "util/regional.h"
 #include "iterator/iterator.h"
 #include "iterator/iter_fwd.h"
+#include "iterator/iter_hints.h"
 #include "validator/validator.h"
 #include "services/localzone.h"
+#include "sldns/sbuffer.h"
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
@@ -76,6 +78,7 @@ usage()
 	printf("	Checks unbound configuration file for errors.\n");
 	printf("file	if omitted %s is used.\n", CONFIGFILE);
 	printf("-o option	print value of option to stdout.\n");
+	printf("-f 		output full pathname with chroot applied, eg. with -o pidfile.\n");
 	printf("-h		show this usage help.\n");
 	printf("Version %s\n", PACKAGE_VERSION);
 	printf("BSD licensed, see LICENSE in source package for details.\n");
@@ -88,10 +91,15 @@ usage()
  * @param cfg: config
  * @param opt: option name without trailing :. 
  *	This is different from config_set_option.
+ * @param final: if final pathname with chroot applied has to be printed.
  */
 static void
-print_option(struct config_file* cfg, const char* opt)
+print_option(struct config_file* cfg, const char* opt, int final)
 {
+	if(strcmp(opt, "pidfile") == 0 && final) {
+		printf("%s\n", fname_after_chroot(cfg->pidfile, cfg, 1));
+		return;
+	}
 	if(!config_get_option(cfg, opt, config_print_func, stdout))
 		fatal_exit("cannot print option '%s'", opt);
 }
@@ -104,14 +112,14 @@ check_mod(struct config_file* cfg, struct module_func_block* fb)
 	memset(&env, 0, sizeof(env));
 	env.cfg = cfg;
 	env.scratch = regional_create();
-	env.scratch_buffer = ldns_buffer_new(BUFSIZ);
+	env.scratch_buffer = sldns_buffer_new(BUFSIZ);
 	if(!env.scratch || !env.scratch_buffer)
 		fatal_exit("out of memory");
 	if(!(*fb->init)(&env, 0)) {
 		fatal_exit("bad config for %s module", fb->name);
 	}
 	(*fb->deinit)(&env, 0);
-	ldns_buffer_free(env.scratch_buffer);
+	sldns_buffer_free(env.scratch_buffer);
 	regional_destroy(env.scratch);
 }
 
@@ -342,9 +350,9 @@ morechecks(struct config_file* cfg, const char* fname)
 		if(fname[0] != '/') {
 			if(getcwd(buf, sizeof(buf)) == NULL)
 				fatal_exit("getcwd: %s", strerror(errno));
-			strncat(buf, "/", sizeof(buf)-strlen(buf)-1);
+			(void)strlcat(buf, "/", sizeof(buf));
 		}
-		strncat(buf, fname, sizeof(buf)-strlen(buf)-1);
+		(void)strlcat(buf, fname, sizeof(buf));
 		if(strncmp(buf, cfg->chrootdir, strlen(cfg->chrootdir)) != 0)
 			fatal_exit("config file %s is not inside chroot %s",
 				buf, cfg->chrootdir);
@@ -390,10 +398,17 @@ morechecks(struct config_file* cfg, const char* fname)
 	
 	if(strcmp(cfg->module_conf, "iterator") != 0 
 		&& strcmp(cfg->module_conf, "validator iterator") != 0
+		&& strcmp(cfg->module_conf, "dns64 validator iterator") != 0
+		&& strcmp(cfg->module_conf, "dns64 iterator") != 0
 #ifdef WITH_PYTHONMODULE
 		&& strcmp(cfg->module_conf, "python iterator") != 0 
 		&& strcmp(cfg->module_conf, "python validator iterator") != 0 
 		&& strcmp(cfg->module_conf, "validator python iterator") != 0
+		&& strcmp(cfg->module_conf, "dns64 python iterator") != 0 
+		&& strcmp(cfg->module_conf, "dns64 python validator iterator") != 0 
+		&& strcmp(cfg->module_conf, "dns64 validator python iterator") != 0
+		&& strcmp(cfg->module_conf, "python dns64 iterator") != 0 
+		&& strcmp(cfg->module_conf, "python dns64 validator iterator") != 0 
 #endif
 		) {
 		fatal_exit("module conf '%s' is not known to work",
@@ -407,7 +422,7 @@ morechecks(struct config_file* cfg, const char* fname)
 		endpwent();
 	}
 #endif
-	if(cfg->remote_control_enable) {
+	if(cfg->remote_control_enable && cfg->remote_control_use_cert) {
 		check_chroot_string("server-key-file", &cfg->server_key_file,
 			cfg->chrootdir, cfg);
 		check_chroot_string("server-cert-file", &cfg->server_cert_file,
@@ -434,9 +449,20 @@ check_fwd(struct config_file* cfg)
 	forwards_delete(fwd);
 }
 
+/** check hints */
+static void
+check_hints(struct config_file* cfg)
+{
+	struct iter_hints* hints = hints_create();
+	if(!hints || !hints_apply_cfg(hints, cfg)) {
+		fatal_exit("Could not set root or stub hints");
+	}
+	hints_delete(hints);
+}
+
 /** check config file */
 static void
-checkconf(const char* cfgfile, const char* opt)
+checkconf(const char* cfgfile, const char* opt, int final)
 {
 	struct config_file* cfg = config_create();
 	if(!cfg)
@@ -446,6 +472,11 @@ checkconf(const char* cfgfile, const char* opt)
 		config_delete(cfg);
 		exit(1);
 	}
+	if(opt) {
+		print_option(cfg, opt, final);
+		config_delete(cfg);
+		return;
+	}
 	morechecks(cfg, cfgfile);
 	check_mod(cfg, iter_get_funcblock());
 	check_mod(cfg, val_get_funcblock());
@@ -454,8 +485,8 @@ checkconf(const char* cfgfile, const char* opt)
 		check_mod(cfg, pythonmod_get_funcblock());
 #endif
 	check_fwd(cfg);
-	if(opt) print_option(cfg, opt);
-	else	printf("unbound-checkconf: no errors in %s\n", cfgfile);
+	check_hints(cfg);
+	printf("unbound-checkconf: no errors in %s\n", cfgfile);
 	config_delete(cfg);
 }
 
@@ -468,14 +499,24 @@ extern char* optarg;
 int main(int argc, char* argv[])
 {
 	int c;
+	int final = 0;
 	const char* f;
 	const char* opt = NULL;
+	const char* cfgfile = CONFIGFILE;
 	log_ident_set("unbound-checkconf");
 	log_init(NULL, 0, NULL);
 	checklock_start();
+#ifdef USE_WINSOCK
+	/* use registry config file in preference to compiletime location */
+	if(!(cfgfile=w_lookup_reg_str("Software\\Unbound", "ConfigFile")))
+		cfgfile = CONFIGFILE;
+#endif /* USE_WINSOCK */
 	/* parse the options */
-	while( (c=getopt(argc, argv, "ho:")) != -1) {
+	while( (c=getopt(argc, argv, "fho:")) != -1) {
 		switch(c) {
+		case 'f':
+			final = 1;
+			break;
 		case 'o':
 			opt = optarg;
 			break;
@@ -491,8 +532,8 @@ int main(int argc, char* argv[])
 		usage();
 	if(argc == 1)
 		f = argv[0];
-	else	f = CONFIGFILE;
-	checkconf(f, opt);
+	else	f = cfgfile;
+	checkconf(f, opt, final);
 	checklock_stop();
 	return 0;
 }

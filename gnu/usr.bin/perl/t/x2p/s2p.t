@@ -36,7 +36,6 @@ BEGIN {
     @INC = ( '../lib' );
 }
 
-### use Test::More;
 use File::Copy;
 use File::Spec;
 require './test.pl';
@@ -583,7 +582,7 @@ line 8
 ### s ###
 's' => {
   script => <<'[TheEnd]',
-# enclose any `(a)'.. `(c)' in `-'
+# enclose any '(a)'.. '(c)' in '-'
 s/([a-z])/-\1-/g
 
 s/\([abc]\)/-\1-/g
@@ -625,6 +624,19 @@ s/a\{3\}/a rep 3/
 @1ine 6
 @1ine 7
 @1ine 8
+[TheEnd]
+},
+
+### s2 ### RT #115156
+'s2' => {
+  todo   => 'RT #115156',
+  script => 's/1*$/x/g',
+  input  => 'bins',
+  expect => <<'[TheEnd]',
+0x
+x
+1000x
+1000x
 [TheEnd]
 },
 
@@ -790,16 +802,21 @@ my $plsed  = "s2pt$$.pl";
 my $s2p  = File::Spec->catfile( File::Spec->updir(), 'x2p', 's2p' );
 my $psed = File::Spec->catfile( File::Spec->curdir(), 'psed' );
 if ($^O eq 'VMS') {
-  # default in the .com extenson if it's not already there
+  # default in the .com extension if it's not already there
+  $s2p = VMS::Filespec::vmsify($s2p);
+  $psed = VMS::Filespec::vmsify($psed);
+  # Converting file specs from Unix format to VMS with the extended
+  # character set active can result in a trailing '.' added for null
+  # extensions.  This must be removed if the intent is to default the
+  # extension.
+  $s2p =~ s/\.$//;
+  $psed =~ s/\.$//;
   $s2p = VMS::Filespec::rmsexpand($s2p, '.com');
   $psed = VMS::Filespec::rmsexpand($psed, '.com');
 }
 my $sedcmd = [ $psed, '-f', $script, $stdin ];
 my $s2pcmd = [ $s2p,  '-f', $script ];
 my $plcmd  = [ $plsed, $stdin ];
-
-my $switches = '';
-$switches = ['-x'] if $^O eq 'MacOS';
 
 # psed: we create a local copy as linking may not work on some systems.
 copy( $s2p, $psed );
@@ -810,6 +827,8 @@ push( @aux, $psed );
 my $indat = '';
 for my $tc ( sort keys %testcase ){
     my( $psedres, $s2pres );
+
+    local $TODO = $testcase{$tc}{todo};
 
     # 1st test: run psed
     # prepare the script 
@@ -844,19 +863,19 @@ for my $tc ( sort keys %testcase ){
 
     # run and compare
     #
-    $psedres = runperl( args => $sedcmd, switches => $switches );
+    $psedres = runperl( args => $sedcmd );
     is( $psedres, $testcase{$tc}{expect}, "psed $tc" );
 
     # 2nd test: run s2p
     # translate the sed script to a Perl program
 
-    my $perlprog = runperl( args => $s2pcmd, switches => $switches );
+    my $perlprog = runperl( args => $s2pcmd );
     open( PP, ">$plsed" ) || goto FAIL_S2P;
     print PP $perlprog;
     close( PP ) || goto FAIL_S2P;
 
     # execute generated Perl program, compare
-    $s2pres = runperl( args => $plcmd, switches => $switches );
+    $s2pres = runperl( args => $plcmd );
     is( $s2pres, $testcase{$tc}{expect}, "s2p $tc" );
     next;
 

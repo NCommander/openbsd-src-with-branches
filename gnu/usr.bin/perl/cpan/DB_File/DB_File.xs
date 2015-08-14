@@ -2,13 +2,11 @@
 
  DB_File.xs -- Perl 5 interface to Berkeley DB 
 
- written by Paul Marquess <pmqs@cpan.org>
- last modified 4th February 2007
- version 1.818
+ Written by Paul Marquess <pmqs@cpan.org>
 
  All comments/suggestions/problems are welcome
 
-     Copyright (c) 1995-2009 Paul Marquess. All rights reserved.
+     Copyright (c) 1995-2013 Paul Marquess. All rights reserved.
      This program is free software; you can redistribute it and/or
      modify it under the same terms as Perl itself.
 
@@ -69,7 +67,7 @@
         1.67 -  Backed off the use of newSVpvn.
 		Fixed DBM Filter code for Perl 5.004.
 		Fixed a small memory leak in the filter code.
-        1.68 -  fixed backward compatability bug with R_IAFTER & R_IBEFORE
+        1.68 -  fixed backward compatibility bug with R_IAFTER & R_IBEFORE
 		merged in the 5.005_58 changes
         1.69 -  fixed a bug in push -- DB_APPEND wasn't working properly.
 		Fixed the R_SETCURSOR bug introduced in 1.68
@@ -79,7 +77,7 @@
 		Added a BOOT check to test for equivalent versions of db.h &
 		libdb.a/so.
         1.71 -  Support for Berkeley DB version 3.
-		Support for Berkeley DB 2/3's backward compatability mode.
+		Support for Berkeley DB 2/3's backward compatibility mode.
 		Rewrote push
         1.72 -  No change to DB_File.xs
         1.73 -  No change to DB_File.xs
@@ -87,7 +85,7 @@
                 with a win32 macro.
 		Added Perl core patches 7703 & 7801.
         1.75 -  Fixed Perl core patch 7703.
-		Added suppport to allow DB_File to be built with 
+		Added support to allow DB_File to be built with 
 		Berkeley DB 3.2 -- btree_compare, btree_prefix and hash_cb
 		needed to be changed.
         1.76 -  No change to DB_File.xs
@@ -95,7 +93,7 @@
         1.78 -  Core patch 10335, 10372, 10534, 10549, 11051 included.
         1.79 -  NEXTKEY ignores the input key.
                 Added lots of casts
-        1.800 - Moved backward compatability code into ppport.h.
+        1.800 - Moved backward compatibility code into ppport.h.
                 Use the new constants code.
         1.801 - No change to DB_File.xs
         1.802 - No change to DB_File.xs
@@ -142,6 +140,16 @@
 #ifdef COMPAT185
 #    include <db_185.h>
 #else
+
+/* Uncomment one of the lines below */
+/* See the section "At least one secondary cursor must be specified to DB->join"
+   in the README file for the circumstances where you need to uncomment one
+   of the two lines below.
+*/
+
+/* #define time_t __time64_t */
+/* #define time_t __time32_t */
+
 #    include <db.h>
 #endif
 
@@ -206,6 +214,10 @@
 
 #if DB_VERSION_MAJOR > 4 || (DB_VERSION_MAJOR == 4 && DB_VERSION_MINOR >= 3)
 #    define AT_LEAST_DB_4_3
+#endif
+
+#if DB_VERSION_MAJOR >= 6 
+#    define AT_LEAST_DB_6_0
 #endif
 
 #ifdef AT_LEAST_DB_3_3
@@ -536,6 +548,19 @@ tidyUp(DB_File db)
 
 
 static int
+
+#ifdef AT_LEAST_DB_6_0
+#ifdef CAN_PROTOTYPE
+btree_compare(DB * db, const DBT *key1, const DBT *key2, size_t* locp)
+#else
+btree_compare(db, key1, key2, locp)
+DB * db ;
+const DBT * key1 ;
+const DBT * key2 ;
+size_t* locp;
+#endif /* CAN_PROTOTYPE */
+
+#else /* Berkeley DB < 6.0 */
 #ifdef AT_LEAST_DB_3_2
 
 #ifdef CAN_PROTOTYPE
@@ -557,6 +582,7 @@ const DBT * key1 ;
 const DBT * key2 ;
 #endif
 
+#endif
 #endif
 
 {
@@ -1471,7 +1497,10 @@ SV *   sv ;
 	}
 
         if (status)
+	{
+	    db_close(RETVAL); /* close **dbp handle to prevent mem.leak */
 	    RETVAL->dbp = NULL ;
+	}
 
     }
 
@@ -1525,6 +1554,7 @@ db_DoTie_(isHASH, dbtype, name=undef, flags=O_CREAT|O_RDWR, mode=0666, type=DB_H
 	        sv = ST(5) ;
 
 	    RETVAL = ParseOpenInfo(aTHX_ isHASH, name, flags, mode, sv) ;
+	    Trace(("db_DoTie_ %p\n", RETVAL));
 	    if (RETVAL->dbp == NULL) {
 	        Safefree(RETVAL);
 	        RETVAL = NULL ;

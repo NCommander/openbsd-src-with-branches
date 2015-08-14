@@ -7,9 +7,9 @@
  *
  */
 
-#include <config.h>
+#include "config.h"
 
-#if defined(TSIG) && defined(HAVE_SSL)
+#if defined(HAVE_SSL)
 
 #include "tsig-openssl.h"
 #include "tsig.h"
@@ -31,7 +31,7 @@ tsig_openssl_init_algorithm(region_type* region,
 
 	hmac_algorithm = EVP_get_digestbyname(digest);
 	if (!hmac_algorithm) {
-		log_msg(LOG_ERR, "%s digest not available", digest);
+		/* skip but don't error */
 		return 0;
 	}
 
@@ -58,21 +58,23 @@ tsig_openssl_init_algorithm(region_type* region,
 int
 tsig_openssl_init(region_type *region)
 {
+	int count = 0;
 	OpenSSL_add_all_digests();
 
-	/* TODO: walk lookup supported algorithms table */
-	if (!tsig_openssl_init_algorithm(region, "md5", "hmac-md5","hmac-md5.sig-alg.reg.int."))
-		return 0;
-#ifdef HAVE_EVP_SHA1
-	if (!tsig_openssl_init_algorithm(region, "sha1", "hmac-sha1", "hmac-sha1."))
-		return 0;
-#endif /* HAVE_EVP_SHA1 */
+	count += tsig_openssl_init_algorithm(region,
+	    "md5", "hmac-md5","hmac-md5.sig-alg.reg.int.");
+	count += tsig_openssl_init_algorithm(region,
+	    "sha1", "hmac-sha1", "hmac-sha1.");
+	count += tsig_openssl_init_algorithm(region,
+	    "sha224", "hmac-sha224", "hmac-sha224.");
+	count += tsig_openssl_init_algorithm(region,
+	    "sha256", "hmac-sha256", "hmac-sha256.");
+	count += tsig_openssl_init_algorithm(region,
+	    "sha384", "hmac-sha384", "hmac-sha384.");
+	count += tsig_openssl_init_algorithm(region,
+	    "sha512", "hmac-sha512", "hmac-sha512.");
 
-#ifdef HAVE_EVP_SHA256
-	if (!tsig_openssl_init_algorithm(region, "sha256", "hmac-sha256", "hmac-sha256."))
-		return 0;
-#endif /* HAVE_EVP_SHA256 */
-	return 1;
+	return count;
 }
 
 static void
@@ -124,4 +126,4 @@ tsig_openssl_finalize()
 	EVP_cleanup();
 }
 
-#endif /* defined(TSIG) && defined(HAVE_SSL) */
+#endif /* defined(HAVE_SSL) */

@@ -10,6 +10,7 @@ use strict;
 use TieOut;
 use File::Path;
 use File::Spec;
+use File::Temp qw[tempdir];
 
 use Test::More tests => 70;
 
@@ -22,13 +23,15 @@ foreach my $func (qw(install uninstall pm_to_blib install_default)) {
     can_ok(__PACKAGE__, $func);
 }
 
+my $tmpdir = tempdir( DIR => 't', CLEANUP => 1 );
+chdir $tmpdir;
 
 ok( setup_recurs(), 'setup' );
 END {
     ok( chdir File::Spec->updir );
     ok( teardown_recurs(), 'teardown' );
 }
-# ensure the env doesnt pollute our tests
+# ensure the env doesn't pollute our tests
 local $ENV{EU_INSTALL_ALWAYS_COPY};
 local $ENV{EU_ALWAYS_COPY};    
     
@@ -118,7 +121,7 @@ close DUMMY;
                                              '  UNINST=0 left different' );
 }
 
-# Test UNINST=1 only warning when failing to remove an irrelevent shadow file
+# Test UNINST=1 only warning when failing to remove an irrelevant shadow file
 {
   my $tfile='install-test/lib/perl/Big/Dummy.pm';
   local $ExtUtils::Install::Testing = $tfile; 
@@ -144,7 +147,7 @@ close DUMMY;
   
 }
 
-# Test UNINST=1 dieing when failing to remove an relevent shadow file
+# Test UNINST=1 dieing when failing to remove an relevant shadow file
 {
   my $tfile='install-test/lib/perl/Big/Dummy.pm';
   local $ExtUtils::Install::Testing = $tfile;

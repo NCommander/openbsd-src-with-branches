@@ -12,10 +12,13 @@ BEGIN {
     if ($Config{'extensions'} !~ /\bOpcode\b/ && $Config{'osname'} ne 'VMS') {
         print "1..0\n"; exit 0;
     }
+
+    # We need test.pl for runperl().  Since this test script is only run in
+    # the perl core, this should be fine:
+    require '../../t/test.pl';
 }
 
 use strict;
-use Test::More;
 use Safe;
 
 # Read the op names and descriptions directly from opcode.pl
@@ -28,10 +31,7 @@ while (<DATA>) {
     $code{$1} = $2;
 }
 
-open my $fh, '<', '../../opcode.pl' or die "Can't open opcode.pl: $!";
-while (<$fh>) {
-    last if /^__END__/;
-}
+open my $fh, '<', '../../regen/opcodes' or die "Can't open opcodes: $!";
 while (<$fh>) {
     chomp;
     next if !$_ or /^#/;
@@ -40,7 +40,7 @@ while (<$fh>) {
 }
 close $fh;
 
-plan(tests => scalar @op);
+plan(tests => scalar @op + 3);
 
 sub testop {
     my ($op, $opname, $code) = @_;
@@ -56,9 +56,41 @@ foreach (@op) {
     if ($_->[2]) {
 	testop @$_;
     } else {
-	local $TODO = "No test yet for $_->[1]";
+	local our $TODO = "No test yet for $_->[1]";
 	fail();
     }
+}
+
+# Test also that the errors resulting from disallowed ops do not cause
+# ‘Unbalanced’ warnings.
+{
+    local $ENV{PERL_DESTRUCT_LEVEL}=2;
+    unlike
+	runperl(
+	    switches => [ '-MSafe', '-w' ],
+	    prog     => 'Safe->new->reval(q(use strict))',
+	    stderr   => 1,
+	),
+	qr/Unbalanced/,
+	'No Unbalanced warnings when disallowing ops';
+    unlike
+	runperl(
+	    switches => [ '-MSafe', '-w' ],
+	    prog     => 'Safe->new->reval(q(use strict), 1)',
+	    stderr   => 1,
+	),
+	qr/Unbalanced/,
+	'No Unbalanced warnings when disallowing ops';
+    unlike
+	runperl(
+	    switches => [ '-MSafe', '-w' ],
+	    prog     => 'Safe->new->reval('
+			. 'q(BEGIN{$^H{foo}=bar};use strict), 0'
+			.')',
+	    stderr   => 1,
+	),
+	qr/Unbalanced/,
+	'No Unbalanced warnings when disallowing ops with %^H set';
 }
 
 # things that begin with SKIP are skipped, for various reasons (notably
@@ -421,7 +453,7 @@ dor		$x // $y
 dorassign	$x //= $y
 once		SKIP {use feature 'state'; state $foo = 42;}
 say		SKIP {use feature 'say'; say "foo";}
-smartmatch	$x ~~ $y
+smartmatch	no warnings 'experimental::smartmatch'; $x ~~ $y
 aeach		SKIP each @t
 akeys		SKIP keys @t
 avalues		SKIP values @t

@@ -1,17 +1,16 @@
 #!./perl -w
 
+use strict;
+use Test::More;
+use Config;
+
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
-    require Config; import Config;
-    if ($^O ne 'VMS' and $Config{'extensions'} !~ /\bPOSIX\b/) {
-	print "1..0\n";
-	exit 0;
-    }
+    plan(skip_all => "\$^O eq '$^O'") if $^O eq 'VMS';
+    plan(skip_all => "POSIX is unavailable")
+	unless $Config{extensions} =~ /\bPOSIX\b/;
 }
 
 use POSIX;
-use strict ;
 
 # E.g. \t might or might not be isprint() depending on the locale,
 # so let's reset to the default.
@@ -52,6 +51,10 @@ my %classes =
    " \t"       => [ qw(space) ],
 
    "abcde\001" => [],
+
+   # An empty string. Always true (al least in old days) [bug #24554]
+   ''     => [ qw(print graph alnum alpha lower upper digit xdigit
+                  punct cntrl space) ],
   );
 
 
@@ -68,11 +71,8 @@ foreach my $s (keys %classes) {
 
 # Expected number of tests is one each for every combination of a
 # known is<xxx> function and string listed above.
-require './test.pl';
-plan(tests => keys(%classes) * keys(%functions));
+plan(tests => keys(%classes) * keys(%functions) + 1);
 
-
-#
 # Main test loop: Run all POSIX::is<xxx> tests on each string defined above.
 # Only the character classes listed for that string should return 1.  We
 # always run all functions on every string, and expect to get 0 for the
@@ -81,8 +81,41 @@ plan(tests => keys(%classes) * keys(%functions));
 foreach my $s (sort keys %classes) {
     foreach my $f (sort keys %functions) {
 	my $expected = exists $classes{$s}->{$f};
-	my $actual   = eval "POSIX::$f( \$s )";
+	my $actual   = eval "no warnings 'deprecated'; POSIX::$f( \$s )";
 
-	ok( $actual == $expected, "$f('$s') == $actual");
+	cmp_ok($actual, '==', $expected, "$f('$s')");
     }
+}
+
+{
+    my @warnings;
+    local $SIG {__WARN__} = sub { push @warnings, @_; };
+
+    foreach (0 .. 3) {
+        my $a;
+        $a =POSIX::isalnum("a");
+        $a =POSIX::isalpha("a");
+        $a =POSIX::iscntrl("a");
+        $a =POSIX::isdigit("a");
+        $a =POSIX::isgraph("a");
+        $a =POSIX::islower("a");
+        $a =POSIX::ispunct("a");
+        $a =POSIX::isspace("a");
+        $a =POSIX::isupper("a");
+        $a =POSIX::isxdigit("a");
+        $a =POSIX::isalnum("a");
+        $a =POSIX::isalpha("a");
+        $a =POSIX::iscntrl("a");
+        $a =POSIX::isdigit("a");
+        $a =POSIX::isgraph("a");
+        $a =POSIX::islower("a");
+        $a =POSIX::ispunct("a");
+        $a =POSIX::isspace("a");
+        $a =POSIX::isupper("a");
+        $a =POSIX::isxdigit("a");
+    }
+
+    # Each of the 10 classes should warn twice, because each has 2 lexical
+    # calls
+    is(scalar @warnings, 20);
 }

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <sys/file.h>
+#include "EXTERN.h"
 #include "sdbm.h"
 
 char *progname;
@@ -13,8 +14,7 @@ extern void oops();
 #define empty(page)	(((short *) page)[0] == 0)
 
 int
-main(argc, argv)
-char **argv;
+main(int argc, char **argv)
 {
 	int n;
 	char *p;
@@ -25,6 +25,9 @@ char **argv;
 
 	if (p = argv[1]) {
 		name = (char *) malloc((n = strlen(p)) + 5);
+		if (!name)
+		    oops("cannot get memory");
+
 		strcpy(name, p);
 		strcpy(name + n, ".pag");
 
@@ -38,12 +41,12 @@ char **argv;
 	return 0;
 }
 
-sdump(pagf)
-int pagf;
+void
+sdump(int pagf)
 {
-	register r;
-	register n = 0;
-	register o = 0;
+	int r;
+	int n = 0;
+	int o = 0;
 	char pag[PBLKSIZ];
 
 	while ((r = read(pagf, pag, PBLKSIZ)) > 0) {
@@ -64,12 +67,12 @@ int pagf;
 
 
 #ifdef OLD
-dispage(pag)
-char *pag;
+int
+dispage(char *pag)
 {
-	register i, n;
-	register off;
-	register short *ino = (short *) pag;
+	int i, n;
+	int off;
+	int short *ino = (short *) pag;
 
 	off = PBLKSIZ;
 	for (i = 1; i < ino[0]; i += 2) {
@@ -86,12 +89,12 @@ char *pag;
 	}
 }
 #else
-dispage(pag)
-char *pag;
+void
+dispage(char *pag)
 {
-	register i, n;
-	register off;
-	register short *ino = (short *) pag;
+	int i, n;
+	int off;
+	short *ino = (short *) pag;
 
 	off = PBLKSIZ;
 	for (i = 1; i < ino[0]; i += 2) {

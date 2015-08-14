@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -46,14 +46,11 @@
 struct iter_env;
 struct config_file;
 struct delegpt;
-struct regional;
 
 /**
  * Iterator hints structure
  */
 struct iter_hints {
-	/** regional where hints are allocated */
-	struct regional* region;
 	/** 
 	 * Hints are stored in this tree. Sort order is specially chosen.
 	 * first sorted on qclass. Then on dname in nsec-like order, so that
@@ -71,7 +68,7 @@ struct iter_hints {
 struct iter_hints_stub {
 	/** tree sorted by name, class */
 	struct name_tree_node node;
-	/** delegation point with hint information for this stub. */
+	/** delegation point with hint information for this stub. malloced. */
 	struct delegpt* dp;
 	/** does the stub need to forego priming (like on other ports) */
 	uint8_t noprime;
@@ -138,5 +135,27 @@ struct iter_hints_stub* hints_lookup_stub(struct iter_hints* hints,
  * @return bytes in use
  */
 size_t hints_get_mem(struct iter_hints* hints);
+
+/**
+ * Add stub to hints structure. For external use since it recalcs 
+ * the tree parents.
+ * @param hints: the hints data structure
+ * @param c: class of zone
+ * @param dp: delegation point with name and target nameservers for new
+ *	hints stub. malloced.
+ * @param noprime: set noprime option to true or false on new hint stub.
+ * @return false on failure (out of memory);
+ */
+int hints_add_stub(struct iter_hints* hints, uint16_t c, struct delegpt* dp,
+	int noprime);
+
+/**
+ * Remove stub from hints structure. For external use since it 
+ * recalcs the tree parents.
+ * @param hints: the hints data structure
+ * @param c: class of stub zone
+ * @param nm: name of stub zone (in uncompressed wireformat).
+ */
+void hints_delete_stub(struct iter_hints* hints, uint16_t c, uint8_t* nm);
 
 #endif /* ITERATOR_ITER_HINTS_H */

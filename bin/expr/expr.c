@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.19 2013/11/21 15:54:45 deraadt Exp $	*/
+/*	$OpenBSD: expr.c,v 1.18 2013/03/28 08:40:31 nicm Exp $	*/
 /*	$NetBSD: expr.c,v 1.3.6.1 1996/06/04 20:41:47 cgd Exp $	*/
 
 /*
@@ -58,7 +58,7 @@ make_int(int i)
 {
 	struct val     *vp;
 
-	vp = malloc(sizeof(*vp));
+	vp = (struct val *) malloc(sizeof(*vp));
 	if (vp == NULL) {
 		err(3, NULL);
 	}
@@ -73,7 +73,7 @@ make_str(char *s)
 {
 	struct val     *vp;
 
-	vp = malloc(sizeof(*vp));
+	vp = (struct val *) malloc(sizeof(*vp));
 	if (vp == NULL || ((vp->u.s = strdup(s)) == NULL)) {
 		err(3, NULL);
 	}

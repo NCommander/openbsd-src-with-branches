@@ -1,8 +1,11 @@
 
 BEGIN {
-    unless ("A" eq pack('U', 0x41)) {
-	print "1..0 # Unicode::Normalize " .
-	    "cannot stringify a Unicode code point\n";
+    unless ('A' eq pack('U', 0x41)) {
+	print "1..0 # Unicode::Normalize cannot pack a Unicode code point\n";
+	exit 0;
+    }
+    unless (0x41 == unpack('U', 'A')) {
+	print "1..0 # Unicode::Normalize cannot get a Unicode code point\n";
 	exit 0;
     }
 }
@@ -27,10 +30,20 @@ BEGIN {
     }
 }
 
-use Test;
 use strict;
 use warnings;
-BEGIN { plan tests => 16 };
+BEGIN { $| = 1; print "1..17\n"; }
+my $count = 0;
+sub ok ($;$) {
+    my $p = my $r = shift;
+    if (@_) {
+	my $x = shift;
+	$p = !defined $x ? !defined $r : !defined $r ? 0 : $r eq $x;
+    }
+    print $p ? "ok" : "not ok", ' ', ++$count, "\n";
+}
+
+ok(1);
 
 package tiescalar;
 sub TIESCALAR {

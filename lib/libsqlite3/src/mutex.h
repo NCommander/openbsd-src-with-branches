@@ -25,7 +25,7 @@
 ** Figure out what version of the code to use.  The choices are
 **
 **   SQLITE_MUTEX_OMIT         No mutex logic.  Not even stubs.  The
-**                             mutexes implemention cannot be overridden
+**                             mutexes implementation cannot be overridden
 **                             at start-time.
 **
 **   SQLITE_MUTEX_NOOP         For single-threaded applications.  No
@@ -36,8 +36,6 @@
 **   SQLITE_MUTEX_PTHREADS     For multi-threaded applications on Unix.
 **
 **   SQLITE_MUTEX_W32          For multi-threaded applications on Win32.
-**
-**   SQLITE_MUTEX_OS2          For multi-threaded applications on OS/2.
 */
 #if !SQLITE_THREADSAFE
 # define SQLITE_MUTEX_OMIT
@@ -47,8 +45,6 @@
 #    define SQLITE_MUTEX_PTHREADS
 #  elif SQLITE_OS_WIN
 #    define SQLITE_MUTEX_W32
-#  elif SQLITE_OS_OS2
-#    define SQLITE_MUTEX_OS2
 #  else
 #    define SQLITE_MUTEX_NOOP
 #  endif

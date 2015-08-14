@@ -140,12 +140,20 @@ struct query;
 #define	MAXRRSPP		10240    /* Maximum number of rr's per packet */
 #define MAX_COMPRESSED_DNAMES	MAXRRSPP /* Maximum number of compressed domains. */
 #define MAX_COMPRESSION_OFFSET  16383	 /* Compression pointers are 14 bit. */
+#define IPV4_MINIMAL_RESPONSE_SIZE 1480	 /* Recommended minimal edns size for IPv4 */
+#define IPV6_MINIMAL_RESPONSE_SIZE 1220	 /* Recommended minimal edns size for IPv6 */
+
+/* use round robin rotation */
+extern int round_robin;
 
 /*
  * Encode RR with OWNER as owner name into QUERY.  Returns the number
  * of RRs successfully encoded.
  */
-int packet_encode_rr(struct query *query, domain_type *owner, rr_type *rr);
+int packet_encode_rr(struct query *query,
+		     domain_type *owner,
+		     rr_type *rr,
+		     uint32_t ttl);
 
 /*
  * Encode RRSET with OWNER as the owner name into QUERY.  Returns the
@@ -156,7 +164,9 @@ int packet_encode_rr(struct query *query, domain_type *owner, rr_type *rr);
 int packet_encode_rrset(struct query *query,
 			domain_type *owner,
 			rrset_type *rrset,
-			int truncate_rrset);
+			int truncate_rrset,
+			size_t minimal_respsize,
+			int* done);
 
 /*
  * Skip the RR at the current position in PACKET.
@@ -185,5 +195,9 @@ int packet_read_query_section(buffer_type *packet,
 			uint8_t* dest,
 			uint16_t* qtype,
 			uint16_t* qclass);
+
+/* read notify SOA serial from packet. buffer position is unmodified on return.
+ * returns false on no-serial found or parse failure. */
+int packet_find_notify_serial(buffer_type *packet, uint32_t* serial);
 
 #endif /* _PACKET_H_ */

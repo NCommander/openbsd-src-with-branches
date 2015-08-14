@@ -67,10 +67,14 @@ dl_private_init(pTHX)
 static int
 dl_static_linked(char *filename)
 {
-    char **p;
+    const char * const *p;
     char *ptr, *hptr;
-    static char subStr[] = "/auto/";
+    static const char subStr[] = "/auto/";
     char szBuffer[MAX_PATH];
+
+    /* avoid buffer overflow when called with invalid filenames */
+    if (strlen(filename) >= sizeof(szBuffer))
+        return 0;
 
     /* change all the '\\' to '/' */
     strcpy(szBuffer, filename);
@@ -107,26 +111,27 @@ MODULE = DynaLoader	PACKAGE = DynaLoader
 BOOT:
     (void)dl_private_init(aTHX);
 
-void *
+void
 dl_load_file(filename,flags=0)
     char *		filename
     int			flags
     PREINIT:
+    void *retv;
     CODE:
   {
     DLDEBUG(1,PerlIO_printf(Perl_debug_log,"dl_load_file(%s):\n", filename));
     if (dl_static_linked(filename) == 0) {
-	RETVAL = PerlProc_DynaLoad(filename);
+	retv = PerlProc_DynaLoad(filename);
     }
     else
-	RETVAL = (void*) Win_GetModuleHandle(NULL);
-    DLDEBUG(2,PerlIO_printf(Perl_debug_log," libref=%x\n", RETVAL));
+	retv = (void*) Win_GetModuleHandle(NULL);
+    DLDEBUG(2,PerlIO_printf(Perl_debug_log," libref=%x\n", retv));
     ST(0) = sv_newmortal() ;
-    if (RETVAL == NULL)
+    if (retv == NULL)
 	SaveError(aTHX_ "load_file:%s",
 		  OS_Error_String(aTHX)) ;
     else
-	sv_setiv( ST(0), (IV)RETVAL);
+	sv_setiv( ST(0), (IV)retv);
   }
 
 int
@@ -141,26 +146,28 @@ dl_unload_file(libref)
   OUTPUT:
     RETVAL
 
-void *
+void
 dl_find_symbol(libhandle, symbolname)
     void *	libhandle
     char *	symbolname
+    PREINIT:
+    void *retv;
     CODE:
     DLDEBUG(2,PerlIO_printf(Perl_debug_log,"dl_find_symbol(handle=%x, symbol=%s)\n",
 		      libhandle, symbolname));
-    RETVAL = (void*) GetProcAddress((HINSTANCE) libhandle, symbolname);
-    DLDEBUG(2,PerlIO_printf(Perl_debug_log,"  symbolref = %x\n", RETVAL));
+    retv = (void*) GetProcAddress((HINSTANCE) libhandle, symbolname);
+    DLDEBUG(2,PerlIO_printf(Perl_debug_log,"  symbolref = %x\n", retv));
     ST(0) = sv_newmortal() ;
-    if (RETVAL == NULL)
+    if (retv == NULL)
 	SaveError(aTHX_ "find_symbol:%s",
 		  OS_Error_String(aTHX)) ;
     else
-	sv_setiv( ST(0), (IV)RETVAL);
+	sv_setiv( ST(0), (IV)retv);
 
 
 void
 dl_undef_symbols()
-    PPCODE:
+    CODE:
 
 
 
@@ -193,6 +200,8 @@ void
 CLONE(...)
     CODE:
     MY_CXT_CLONE;
+
+    PERL_UNUSED_VAR(items);
 
     /* MY_CXT_CLONE just does a memcpy on the whole structure, so to avoid
      * using Perl variables that belong to another thread, we create our 

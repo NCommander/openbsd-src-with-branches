@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCreate.pm,v 1.116 2015/05/18 10:41:20 espie Exp $
+# $OpenBSD: PkgCreate.pm,v 1.115 2015/05/18 10:37:12 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -237,10 +237,7 @@ sub compute_checksum
 		$result->make_symlink($value);
 	} elsif (-f _) {
 		my ($dev, $ino, $size, $mtime) = (stat _)[0,1,7, 9];
-		# XXX when rebuilding packages, tied updates can produce
-		# spurious hardlinks. We also refer to the installed plist 
-		# we're rebuilding to know if we must checksum.
-		if (defined $state->stash("$dev/$ino") && !defined $self->{d}) {
+		if (defined $state->stash("$dev/$ino")) {
 			$result->make_hardlink($state->stash("$dev/$ino"));
 		} else {
 			$state->{stash}{"$dev/$ino"} = $name;

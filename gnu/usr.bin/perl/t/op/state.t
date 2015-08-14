@@ -8,9 +8,15 @@ BEGIN {
 }
 
 use strict;
+
+plan tests => 137;
+
+# Before loading feature.pm, test it with CORE::
+ok eval 'CORE::state $x = 1;', 'CORE::state outside of feature.pm scope';
+
+
 use feature ":5.10";
 
-plan tests => 123;
 
 ok( ! defined state $uninit, q(state vars are undef by default) );
 
@@ -205,6 +211,7 @@ my $first  = $stones [0];
 my $First  = ucfirst $first;
 $_ = "bambam";
 foreach my $flint (@stones) {
+    no warnings 'experimental::lexical_topic';
     state $_ = $flint;
     is $_, $first, 'state $_';
     ok /$first/, '/.../ binds to $_';
@@ -222,9 +229,9 @@ again:
     is $simpson, 'Homer', 'goto 1';
     goto again if @simpsons;
 
-goto Elvis;
 my $vi;
 {
+    goto Elvis unless $vi;
            state $calvin = ++ $vi;
     Elvis: state $vile   = ++ $vi;
     redo unless defined $calvin;
@@ -305,6 +312,7 @@ foreach my $x (0 .. 4) {
 #
 my @spam = qw [spam ham bacon beans];
 foreach my $spam (@spam) {
+    no warnings 'experimental::smartmatch';
     given (state $spam = $spam) {
         when ($spam [0]) {ok 1, "given"}
         default          {ok 0, "given"}
@@ -354,6 +362,99 @@ foreach my $forbidden (<DATA>) {
     eval $forbidden;
     like $@, qr/Initialization of state variables in list context currently forbidden/, "Currently forbidden: $forbidden";
 }
+
+# [perl #49522] state variable not available
+
+{
+    my @warnings;
+    local $SIG{__WARN__} = sub { push @warnings, $_[0] };
+
+    eval q{
+	use warnings;
+
+	sub f_49522 {
+	    state $s = 88;
+	    sub g_49522 { $s }
+	    sub { $s };
+	}
+
+	sub h_49522 {
+	    state $t = 99;
+	    sub i_49522 {
+		sub { $t };
+	    }
+	}
+    };
+    is $@, '', "eval f_49522";
+    # shouldn't be any 'not available' or 'not stay shared' warnings
+    ok !@warnings, "suppress warnings part 1 [@warnings]";
+
+    @warnings = ();
+    my $f = f_49522();
+    is $f->(), 88, "state var closure 1";
+    is g_49522(), 88, "state var closure 2";
+    ok !@warnings, "suppress warnings part 2 [@warnings]";
+
+
+    @warnings = ();
+    $f = i_49522();
+    h_49522(); # initialise $t
+    is $f->(), 99, "state var closure 3";
+    ok !@warnings, "suppress warnings part 3 [@warnings]";
+
+
+}
+
+
+# [perl #117095] state var initialisation getting skipped
+# the 'if 0' code below causes a call to op_free at compile-time,
+# which used to inadvertently mark the state var as initialised.
+
+{
+    state $f = 1;
+    foo($f) if 0; # this calls op_free on padmy($f)
+    ok(defined $f, 'state init not skipped');
+}
+
+# [perl #121134] Make sure padrange doesn't mess with these
+{
+    sub thing {
+	my $expect = shift;
+        my ($x, $y);
+        state $z;
+
+        is($z, $expect, "State variable is correct");
+
+        $z = 5;
+    }
+
+    thing(undef);
+    thing(5);
+
+    sub thing2 {
+        my $expect = shift;
+        my $x;
+        my $y;
+        state $z;
+
+        is($z, $expect, "State variable is correct");
+
+        $z = 6;
+    }
+
+    thing2(undef);
+    thing2(6);
+}
+
+# [perl #123029] regression in "state" under PERL_NO_COW
+sub rt_123029 {
+    state $s;
+    $s = 'foo'x500;
+    my $c = $s;
+    return defined $s;
+}
+ok(rt_123029(), "state variables don't surprisingly disappear when accessed");
+
 __DATA__
 state ($a) = 1;
 (state $a) = 1;

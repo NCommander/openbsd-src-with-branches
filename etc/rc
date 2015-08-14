@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.456 2015/08/12 17:27:27 rpe Exp $
+#	$OpenBSD: rc,v 1.454 2015/07/20 06:59:39 rpe Exp $
 
 # System startup script run by init on autoboot or after single-user.
 # Output and error are redirected to console by init, and the console is the
@@ -10,74 +10,96 @@ set +o sh
 # Subroutines (have to come first).
 
 
-# Strip in- and whole-line comments from a file.
-# Strip leading and trailing whitespace if IFS is set.
-# Usage: stripcom /path/to/file
+# Strip comments (and leading/trailing whitespace if IFS is set) from a file
+# and spew to stdout.
 stripcom() {
-	local _file=$1 _line
+	local _file="$1"
+	local _line
 
-	[[ -s $_file ]] || return
-
-	while read _line ; do
-		_line=${_line%%#*}
-		[[ -n $_line ]] && print -r -- "$_line"
-	done <$_file
+	{
+		while read _line ; do
+			_line=${_line%%#*}		# strip comments
+			[ -z "$_line" ] && continue
+			echo $_line
+		done
+	} <$_file
 }
 
-# Update resource limits based on login.conf settings.
-# Usage: update_limit -flag capability
+# Update resource limits when sysctl changes.
+# Usage: update_limit -X loginconf_name
 update_limit() {
-	local _flag=$1		# ulimit flag
-	local _cap=$2 _val	# login.conf capability and its value
-	local _suffix
+	local _fl="$1"	# ulimit flag
+	local _lc="$2"	# login.conf name
+	local _new _suf
 
-	for _suffix in {,-cur,-max}; do
-		_val=$(getcap -f /etc/login.conf -s ${_cap}${_suffix} daemon 2>/dev/null)
-		[[ -n $_val ]] || continue
-		[[ $_val == infinity ]] && _val=unlimited
-
-		case $_suffix in
-		-cur)	ulimit -S $_flag $_val
-			;;
-		-max)	ulimit -H $_flag $_val
-			;;
-		*)	ulimit $_flag $_val
-			return
-			;;
-		esac
+	for _suf in "" -cur -max; do
+		_new=`getcap -f /etc/login.conf -s ${_lc}${_suf} daemon 2>/dev/null`
+		if [ X"$_new" != X"" ]; then
+			if [ X"$_new" = X"infinity" ]; then
+				_new=unlimited
+			fi
+			case "$_suf" in
+			-cur)
+				ulimit -S $_fl $_new
+				;;
+			-max)
+				ulimit -H $_fl $_new
+				;;
+			*)
+				ulimit $_fl $_new
+				return
+				;;
+			esac
+		fi
 	done
 }
 
-# Apply sysctl.conf(5) settings.
+# Apply sysctl(8) settings.
 sysctl_conf() {
-	stripcom /etc/sysctl.conf |
-	while read _line; do
-		sysctl "$_line"
+	[ -s /etc/sysctl.conf ] || return
 
-		case $_line in
+	# delete comments and blank lines
+	set -- `stripcom /etc/sysctl.conf`
+	while [ $# -ge 1 ] ; do
+		sysctl $1
+		# update limits if needed
+		case $1 in
 		kern.maxproc=*)
-			update_limit -p maxproc;;
+			update_limit -p maxproc
+			;;
 		kern.maxfiles=*)
-			update_limit -n openfiles;;
+			update_limit -n openfiles
+			;;
 		esac
+		shift
 	done
 }
 
-# Apply mixerctl.conf(5) settings.
+# Apply mixerctl(1) settings.
 mixerctl_conf() {
-	stripcom /etc/mixerctl.conf |
-	while read _line; do
-		mixerctl -q "$_line" 2>/dev/null
+	[ -s /etc/mixerctl.conf ] || return
+
+	# delete comments and blank lines
+	set -- `stripcom /etc/mixerctl.conf`
+	while [ $# -ge 1 ] ; do
+		mixerctl -q $1 >/dev/null 2>&1
+		shift
 	done
 }
 
-# Apply wsconsctl.conf(5) settings.
+# Apply wscons system driver settings using wsconsctl(8).
 wsconsctl_conf() {
-	[[ -x /sbin/wsconsctl ]] || return
+	local save_IFS="$IFS"
 
-	stripcom /etc/wsconsctl.conf |
-	while read _line; do
-		wsconsctl "$_line"
+	[ -x /sbin/wsconsctl -a -s /etc/wsconsctl.conf ] || return
+	# delete comments and blank lines
+	IFS="
+"
+	set -- `stripcom /etc/wsconsctl.conf`
+	IFS="$save_IFS"
+	while [ $# -ge 1 ] ; do
+		eval wsconsctl $1
+		shift
 	done
 }
 

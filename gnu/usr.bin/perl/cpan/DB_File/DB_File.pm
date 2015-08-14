@@ -1,17 +1,15 @@
 # DB_File.pm -- Perl 5 interface to Berkeley DB 
 #
-# written by Paul Marquess (pmqs@cpan.org)
-# last modified 28th October 2007
-# version 1.818
+# Written by Paul Marquess (pmqs@cpan.org)
 #
-#     Copyright (c) 1995-2009 Paul Marquess. All rights reserved.
+#     Copyright (c) 1995-2013 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
 #     modify it under the same terms as Perl itself.
 
 
 package DB_File::HASHINFO ;
 
-require 5.00404;
+require 5.00504;
 
 use warnings;
 use strict;
@@ -161,16 +159,22 @@ package DB_File ;
 use warnings;
 use strict;
 our ($VERSION, @ISA, @EXPORT, $AUTOLOAD, $DB_BTREE, $DB_HASH, $DB_RECNO);
-our ($db_version, $use_XSLoader, $splice_end_array, $Error);
+our ($db_version, $use_XSLoader, $splice_end_array_no_length, $splice_end_array, $Error);
 use Carp;
 
 
-$VERSION = "1.820" ;
+$VERSION = "1.831" ;
 $VERSION = eval $VERSION; # needed for dev releases
 
 {
-    local $SIG{__WARN__} = sub {$splice_end_array = "@_";};
+    local $SIG{__WARN__} = sub {$splice_end_array_no_length = join(" ",@_);};
     my @a =(1); splice(@a, 3);
+    $splice_end_array_no_length = 
+        ($splice_end_array_no_length =~ /^splice\(\) offset past end of array at /);
+}      
+{
+    local $SIG{__WARN__} = sub {$splice_end_array = join(" ", @_);};
+    my @a =(1); splice(@a, 3, 1);
     $splice_end_array = 
         ($splice_end_array =~ /^splice\(\) offset past end of array at /);
 }      
@@ -182,7 +186,6 @@ $DB_RECNO = new DB_File::RECNOINFO ;
 
 require Tie::Hash;
 require Exporter;
-use AutoLoader;
 BEGIN {
     $use_XSLoader = 1 ;
     { local $SIG{__DIE__} ; eval { require XSLoader } ; }
@@ -252,9 +255,6 @@ if ($use_XSLoader)
   { XSLoader::load("DB_File", $VERSION)}
 else
   { bootstrap DB_File $VERSION }
-
-# Preloaded methods go here.  Autoload methods go after __END__, and are
-# processed by the autosplit program.
 
 sub tie_hash_or_array
 {
@@ -342,6 +342,7 @@ sub SPLICE
 	$offset = 0;
     }
 
+    my $has_length = @_;
     my $length = @_ ? shift : 0;
     # Carping about definedness comes _after_ the OFFSET sanity check.
     # This is so we get the same error messages as Perl's splice().
@@ -371,7 +372,7 @@ sub SPLICE
     if ($offset > $size) {
  	$offset = $size;
 	warnings::warnif('misc', 'splice() offset past end of array')
-            if $splice_end_array;
+            if $has_length ? $splice_end_array : $splice_end_array_no_length;
     }
 
     # 'If LENGTH is omitted, removes everything from OFFSET onward.'
@@ -569,6 +570,20 @@ sub get_dup
  
     return ($wantarray ? ($flag ? %values : @values) : $counter) ;
 }
+
+
+sub STORABLE_freeze
+{
+    my $type = ref shift;
+    croak "Cannot freeze $type object\n";
+}
+
+sub STORABLE_thaw
+{
+    my $type = ref shift;
+    croak "Cannot thaw $type object\n";
+}
+
 
 
 1;
@@ -2256,13 +2271,9 @@ All versions of Berkeley DB are available there.
 Alternatively, Berkeley DB version 1 is available at your nearest CPAN
 archive in F<src/misc/db.1.85.tar.gz>.
 
-If you are running IRIX, then get Berkeley DB version 1 from
-F<http://reality.sgi.com/ariel>. It has the patches necessary to
-compile properly on IRIX 5.3.
-
 =head1 COPYRIGHT
 
-Copyright (c) 1995-2007 Paul Marquess. All rights reserved. This program
+Copyright (c) 1995-2012 Paul Marquess. All rights reserved. This program
 is free software; you can redistribute it and/or modify it under the
 same terms as Perl itself.
 
@@ -2270,7 +2281,7 @@ Although B<DB_File> is covered by the Perl license, the library it
 makes use of, namely Berkeley DB, is not. Berkeley DB has its own
 copyright and its own license. Please take the time to read it.
 
-Here are are few words taken from the Berkeley DB FAQ (at
+Here are a few words taken from the Berkeley DB FAQ (at
 F<http://www.oracle.com/technology/products/berkeley-db/db/index.html>) regarding the license:
 
     Do I have to license DB to use it in Perl scripts? 

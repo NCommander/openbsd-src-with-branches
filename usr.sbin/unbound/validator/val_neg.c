@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -44,6 +44,9 @@
 #include "config.h"
 #ifdef HAVE_OPENSSL_SSL_H
 #include "openssl/ssl.h"
+#define NSEC3_SHA_LEN SHA_DIGEST_LENGTH
+#else
+#define NSEC3_SHA_LEN 20
 #endif
 #include "validator/val_neg.h"
 #include "validator/val_nsec.h"
@@ -56,6 +59,8 @@
 #include "util/config_file.h"
 #include "services/cache/rrset.h"
 #include "services/cache/dns.h"
+#include "sldns/rrdef.h"
+#include "sldns/sbuffer.h"
 
 int val_neg_data_compare(const void* a, const void* b)
 {
@@ -491,8 +496,8 @@ static struct val_neg_zone* neg_zone_chain(
 			struct val_neg_zone* p=first, *np;
 			while(p) {
 				np = p->parent;
-				free(p);
 				free(p->name);
+				free(p);
 				p = np;
 			}
 			return NULL;
@@ -637,8 +642,8 @@ static struct val_neg_data* neg_data_chain(
 			struct val_neg_data* p = first, *np;
 			while(p) {
 				np = p->parent;
-				free(p);
 				free(p->name);
+				free(p);
 				p = np;
 			}
 			return NULL;
@@ -914,7 +919,7 @@ static int neg_closest_data(struct val_neg_zone* zone,
 }
 
 int val_neg_dlvlookup(struct val_neg_cache* neg, uint8_t* qname, size_t len,
-        uint16_t qclass, struct rrset_cache* rrset_cache, uint32_t now)
+        uint16_t qclass, struct rrset_cache* rrset_cache, time_t now)
 {
 	/* lookup closest zone */
 	struct val_neg_zone* zone;
@@ -1135,7 +1140,7 @@ static struct ub_packed_rrset_key*
 grab_nsec(struct rrset_cache* rrset_cache, uint8_t* qname, size_t qname_len,
 	uint16_t qtype, uint16_t qclass, uint32_t flags, 
 	struct regional* region, int checkbit, uint16_t checktype, 
-	uint32_t now)
+	time_t now)
 {
 	struct ub_packed_rrset_key* r, *k = rrset_cache_lookup(rrset_cache,
 		qname, qname_len, qtype, qclass, flags, now, 0);
@@ -1171,10 +1176,10 @@ grab_nsec(struct rrset_cache* rrset_cache, uint8_t* qname, size_t qname_len,
 /** find nsec3 closest encloser in neg cache */
 static struct val_neg_data*
 neg_find_nsec3_ce(struct val_neg_zone* zone, uint8_t* qname, size_t qname_len,
-		int qlabs, ldns_buffer* buf, uint8_t* hashnc, size_t* nclen)
+		int qlabs, sldns_buffer* buf, uint8_t* hashnc, size_t* nclen)
 {
 	struct val_neg_data* data;
-	uint8_t hashce[SHA_DIGEST_LENGTH];
+	uint8_t hashce[NSEC3_SHA_LEN];
 	uint8_t b32[257];
 	size_t celen, b32len;
 
@@ -1222,7 +1227,7 @@ neg_params_ok(struct val_neg_zone* zone, struct ub_packed_rrset_key* rrset)
 static struct ub_packed_rrset_key*
 neg_nsec3_getnc(struct val_neg_zone* zone, uint8_t* hashnc, size_t nclen,
 	struct rrset_cache* rrset_cache, struct regional* region, 
-	uint32_t now, uint8_t* b32, size_t maxb32)
+	time_t now, uint8_t* b32, size_t maxb32)
 {
 	struct ub_packed_rrset_key* nc_rrset;
 	struct val_neg_data* data;
@@ -1254,12 +1259,12 @@ neg_nsec3_getnc(struct val_neg_zone* zone, uint8_t* hashnc, size_t nclen,
 /** neg cache nsec3 proof procedure*/
 static struct dns_msg*
 neg_nsec3_proof_ds(struct val_neg_zone* zone, uint8_t* qname, size_t qname_len,
-		int qlabs, ldns_buffer* buf, struct rrset_cache* rrset_cache,
-		struct regional* region, uint32_t now, uint8_t* topname)
+		int qlabs, sldns_buffer* buf, struct rrset_cache* rrset_cache,
+		struct regional* region, time_t now, uint8_t* topname)
 {
 	struct dns_msg* msg;
 	struct val_neg_data* data;
-	uint8_t hashnc[SHA_DIGEST_LENGTH];
+	uint8_t hashnc[NSEC3_SHA_LEN];
 	size_t nclen;
 	struct ub_packed_rrset_key* ce_rrset, *nc_rrset;
 	struct nsec3_cached_hash c;
@@ -1353,7 +1358,7 @@ neg_nsec3_proof_ds(struct val_neg_zone* zone, uint8_t* qname, size_t qname_len,
  * @param zone: val_neg_zone if we have one.
  * @return false on lookup or alloc failure.
  */
-static int add_soa(struct rrset_cache* rrset_cache, uint32_t now,
+static int add_soa(struct rrset_cache* rrset_cache, time_t now,
 	struct regional* region, struct dns_msg* msg, struct val_neg_zone* zone)
 {
 	struct ub_packed_rrset_key* soa;
@@ -1385,7 +1390,7 @@ static int add_soa(struct rrset_cache* rrset_cache, uint32_t now,
 struct dns_msg* 
 val_neg_getmsg(struct val_neg_cache* neg, struct query_info* qinfo, 
 	struct regional* region, struct rrset_cache* rrset_cache, 
-	ldns_buffer* buf, uint32_t now, int addsoa, uint8_t* topname)
+	sldns_buffer* buf, time_t now, int addsoa, uint8_t* topname)
 {
 	struct dns_msg* msg;
 	struct ub_packed_rrset_key* rrset;

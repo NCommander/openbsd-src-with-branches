@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -116,7 +116,7 @@
 
 #include "config.h"
 #include "libunbound/unbound.h"
-#include <ldns/rr.h>
+#include "sldns/rrdef.h"
 #include <expat.h>
 #ifndef HAVE_EXPAT_H
 #error "need libexpat to parse root-anchors.xml file."
@@ -134,6 +134,7 @@
 #include <openssl/rand.h>
 #endif
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
 #include <openssl/pem.h>
 
 /** name of server in URL to fetch HTTPS from */
@@ -142,6 +143,8 @@
 #define XMLNAME "root-anchors/root-anchors.xml"
 /** path on HTTPS server to p7s file */
 #define P7SNAME "root-anchors/root-anchors.p7s"
+/** name of the signer of the certificate */
+#define P7SIGNER "dnssec@iana.org"
 /** port number for https access */
 #define HTTPS_PORT 443
 
@@ -184,6 +187,7 @@ usage()
 	printf("-u name		server in https url, default %s\n", URLNAME);
 	printf("-x path		pathname to xml in url, default %s\n", XMLNAME);
 	printf("-s path		pathname to p7s in url, default %s\n", P7SNAME);
+	printf("-n name		signer's subject emailAddress, default %s\n", P7SIGNER);
 	printf("-4		work using IPv4 only\n");
 	printf("-6		work using IPv6 only\n");
 	printf("-f resolv.conf	use given resolv.conf to resolve -u name\n");
@@ -240,7 +244,7 @@ get_builtin_ds(void)
 
 /** print hex data */
 static void
-print_data(char* msg, char* data, int len)
+print_data(const char* msg, const char* data, int len)
 {
 	int i;
 	printf("%s: ", msg);
@@ -264,8 +268,8 @@ ub_ctx_error_exit(struct ub_ctx* ctx, const char* str, const char* str2)
  * Create a new unbound context with the commandline settings applied
  */
 static struct ub_ctx* 
-create_unbound_context(char* res_conf, char* root_hints, char* debugconf,
-        int ip4only, int ip6only)
+create_unbound_context(const char* res_conf, const char* root_hints,
+	const char* debugconf, int ip4only, int ip6only)
 {
 	int r;
 	struct ub_ctx* ctx = ub_ctx_create();
@@ -302,7 +306,7 @@ create_unbound_context(char* res_conf, char* root_hints, char* debugconf,
 
 /** printout certificate in detail */
 static void
-verb_cert(char* msg, X509* x)
+verb_cert(const char* msg, X509* x)
 {
 	if(verb == 0 || verb == 1) return;
 	if(verb == 2) {
@@ -318,7 +322,7 @@ verb_cert(char* msg, X509* x)
 
 /** printout certificates in detail */
 static void
-verb_certs(char* msg, STACK_OF(X509)* sk)
+verb_certs(const char* msg, STACK_OF(X509)* sk)
 {
 	int i, num = sk_X509_num(sk);
 	if(verb == 0 || verb == 1) return;
@@ -356,7 +360,7 @@ read_cert_bio(BIO* bio)
 
 /* read the certificate file */
 static STACK_OF(X509)*
-read_cert_file(char* file)
+read_cert_file(const char* file)
 {
 	STACK_OF(X509)* sk;
 	FILE* in;
@@ -431,7 +435,7 @@ read_builtin_cert(void)
 
 /** read update cert file or use builtin */
 static STACK_OF(X509)*
-read_cert_or_builtin(char* file)
+read_cert_or_builtin(const char* file)
 {
 	STACK_OF(X509) *sk = read_cert_file(file);
 	if(!sk) {
@@ -455,7 +459,7 @@ do_list_builtin(void)
 
 /** printout IP address with message */
 static void
-verb_addr(char* msg, struct ip_list* ip)
+verb_addr(const char* msg, struct ip_list* ip)
 {
 	if(verb) {
 		char out[100];
@@ -522,7 +526,7 @@ RR_to_ip(int tp, char* data, int len, int port)
 
 /** Resolve name, type, class and add addresses to iplist */
 static void
-resolve_host_ip(struct ub_ctx* ctx, char* host, int port, int tp, int cl,
+resolve_host_ip(struct ub_ctx* ctx, const char* host, int port, int tp, int cl,
 	struct ip_list** head)
 {
 	struct ub_result* res = NULL;
@@ -540,6 +544,11 @@ resolve_host_ip(struct ub_ctx* ctx, char* host, int port, int tp, int cl,
 		ub_ctx_delete(ctx);
 		exit(0);
 	}
+	if(!res->havedata || res->rcode || !res->data) {
+		if(verb) printf("resolve %s %s: no result\n", host,
+			(tp==LDNS_RR_TYPE_A)?"A":"AAAA");
+		return;
+	}
 	for(i = 0; res->data[i]; i++) {
 		struct ip_list* ip = RR_to_ip(tp, res->data[i], res->len[i],
 			port);
@@ -552,29 +561,27 @@ resolve_host_ip(struct ub_ctx* ctx, char* host, int port, int tp, int cl,
 
 /** parse a text IP address into a sockaddr */
 static struct ip_list*
-parse_ip_addr(char* str, int port)
+parse_ip_addr(const char* str, int port)
 {
 	socklen_t len = 0;
-	struct sockaddr_storage* addr = NULL;
-	struct sockaddr_in6 a6;
-	struct sockaddr_in a;
+	union {
+		struct sockaddr_in6 a6;
+		struct sockaddr_in a;
+	} addr;
 	struct ip_list* ip;
 	uint16_t p = (uint16_t)port;
-	memset(&a6, 0, sizeof(a6));
-	memset(&a, 0, sizeof(a));
+	memset(&addr, 0, sizeof(addr));
 
-	if(inet_pton(AF_INET6, str, &a6.sin6_addr) > 0) {
+	if(inet_pton(AF_INET6, str, &addr.a6.sin6_addr) > 0) {
 		/* it is an IPv6 */
-		a6.sin6_family = AF_INET6;
-		a6.sin6_port = (in_port_t)htons(p);
-		addr = (struct sockaddr_storage*)&a6;
-		len = (socklen_t)sizeof(struct sockaddr_in6);
+		addr.a6.sin6_family = AF_INET6;
+		addr.a6.sin6_port = (in_port_t)htons(p);
+		len = (socklen_t)sizeof(addr.a6);
 	}
-	if(inet_pton(AF_INET, str, &a.sin_addr) > 0) {
+	if(inet_pton(AF_INET, str, &addr.a.sin_addr) > 0) {
 		/* it is an IPv4 */
-		a.sin_family = AF_INET;
-		a.sin_port = (in_port_t)htons(p);
-		addr = (struct sockaddr_storage*)&a;
+		addr.a.sin_family = AF_INET;
+		addr.a.sin_port = (in_port_t)htons(p);
 		len = (socklen_t)sizeof(struct sockaddr_in);
 	}
 	if(!len) return NULL;
@@ -584,7 +591,7 @@ parse_ip_addr(char* str, int port)
 		exit(0);
 	}
 	ip->len = len;
-	memmove(&ip->addr, addr, len);
+	memmove(&ip->addr, &addr, len);
 	if(verb) printf("server address is %s\n", str);
 	return ip;
 }
@@ -604,8 +611,8 @@ parse_ip_addr(char* str, int port)
  * @return list of IP addresses.
  */
 static struct ip_list*
-resolve_name(char* host, int port, char* res_conf, char* root_hints,
-	char* debugconf, int ip4only, int ip6only)
+resolve_name(const char* host, int port, const char* res_conf,
+	const char* root_hints, const char* debugconf, int ip4only, int ip6only)
 {
 	struct ub_ctx* ctx;
 	struct ip_list* list = NULL;
@@ -669,7 +676,7 @@ pick_random_ip(struct ip_list* list)
 	int sel;
 	if(num == 0) return NULL;
 	/* not perfect, but random enough */
-	sel = (int)ldns_get_random() % num;
+	sel = (int)arc4random_uniform((uint32_t)num);
 	/* skip over unused elements that we did not select */
 	while(sel > 0 && p) {
 		if(!p->used) sel--;
@@ -792,7 +799,7 @@ TLS_shutdown(int fd, SSL* ssl, SSL_CTX* sslctx)
 
 /** write a line over SSL */
 static int
-write_ssl_line(SSL* ssl, char* str, char* sec)
+write_ssl_line(SSL* ssl, const char* str, const char* sec)
 {
 	char buf[1024];
 	size_t l;
@@ -908,7 +915,10 @@ read_data_chunk(SSL* ssl, size_t len)
 {
 	size_t got = 0;
 	int r;
-	char* data = malloc(len+1);
+	char* data;
+	if(len >= 0xfffffff0)
+		return NULL; /* to protect against integer overflow in malloc*/
+	data = malloc(len+1);
 	if(!data) {
 		if(verb) printf("out of memory\n");
 		return NULL;
@@ -1011,7 +1021,7 @@ do_chunked_read(SSL* ssl)
 
 /** start HTTP1.1 transaction on SSL */
 static int
-write_http_get(SSL* ssl, char* pathname, char* urlname)
+write_http_get(SSL* ssl, const char* pathname, const char* urlname)
 {
 	if(write_ssl_line(ssl, "GET /%s HTTP/1.1", pathname) &&
 	   write_ssl_line(ssl, "Host: %s", urlname) &&
@@ -1082,7 +1092,7 @@ read_http_result(SSL* ssl)
 
 /** https to an IP addr, return BIO with pathname or NULL */
 static BIO*
-https_to_ip(struct ip_list* ip, char* pathname, char* urlname)
+https_to_ip(struct ip_list* ip, const char* pathname, const char* urlname)
 {
 	int fd;
 	SSL* ssl;
@@ -1122,7 +1132,7 @@ https_to_ip(struct ip_list* ip, char* pathname, char* urlname)
  * @return a memory BIO with the file in it.
  */
 static BIO*
-https(struct ip_list* ip_list, char* pathname, char* urlname)
+https(struct ip_list* ip_list, const char* pathname, const char* urlname)
 {
 	struct ip_list* ip;
 	BIO* bio = NULL;
@@ -1204,7 +1214,7 @@ xml_selectbio(struct xml_data* data, const char* tag)
  * 	NOT zero terminated.
  * @param len: length of this part of the data.
  */
-void
+static void
 xml_charhandle(void *userData, const XML_Char *s, int len)
 {
 	struct xml_data* data = (struct xml_data*)userData;
@@ -1222,7 +1232,7 @@ xml_charhandle(void *userData, const XML_Char *s, int len)
 		printf("'\n");
 	}
 	if(strcasecmp(data->tag, "Zone") == 0) {
-		if(BIO_write(data->czone, s, len) <= 0) {
+		if(BIO_write(data->czone, s, len) < 0) {
 			if(verb) printf("out of memory in BIO_write\n");
 			exit(0);
 		}
@@ -1233,7 +1243,7 @@ xml_charhandle(void *userData, const XML_Char *s, int len)
 		return;
 	b = xml_selectbio(data, data->tag);
 	if(b) {
-		if(BIO_write(b, s, len) <= 0) {
+		if(BIO_write(b, s, len) < 0) {
 			if(verb) printf("out of memory in BIO_write\n");
 			exit(0);
 		}
@@ -1247,7 +1257,7 @@ xml_charhandle(void *userData, const XML_Char *s, int len)
  * @return the value or NULL. (ptr into atts).
  */
 static const XML_Char*
-find_att(const XML_Char **atts, XML_Char* name)
+find_att(const XML_Char **atts, const XML_Char* name)
 {
 	int i;
 	for(i=0; atts[i]; i+=2) {
@@ -1361,7 +1371,7 @@ handle_keydigest(struct xml_data* data, const XML_Char **atts)
 
 /** See if XML element equals the zone name */
 static int
-xml_is_zone_name(BIO* zone, char* name)
+xml_is_zone_name(BIO* zone, const char* name)
 {
 	char buf[1024];
 	char* z = NULL;
@@ -1426,7 +1436,7 @@ xml_startelem(void *userData, const XML_Char *name, const XML_Char **atts)
 static void
 xml_append_str(BIO* b, const char* s)
 {
-	if(BIO_write(b, s, (int)strlen(s)) <= 0) {
+	if(BIO_write(b, s, (int)strlen(s)) < 0) {
 		if(verb) printf("out of memory in BIO_write\n");
 		exit(0);
 	}
@@ -1450,7 +1460,7 @@ xml_append_bio(BIO* b, BIO* a)
 			z[i] = ' ';
 	}
 	/* write to BIO */
-	if(BIO_write(b, z, len) <= 0) {
+	if(BIO_write(b, z, len) < 0) {
 		if(verb) printf("out of memory in BIO_write\n");
 		exit(0);
 	}
@@ -1498,6 +1508,20 @@ xml_endelem(void *userData, const XML_Char *name)
 	}
 }
 
+/* Stop the parser when an entity declaration is encountered. For safety. */
+static void
+xml_entitydeclhandler(void *userData,
+	const XML_Char *ATTR_UNUSED(entityName),
+	int ATTR_UNUSED(is_parameter_entity),
+	const XML_Char *ATTR_UNUSED(value), int ATTR_UNUSED(value_length),
+	const XML_Char *ATTR_UNUSED(base),
+	const XML_Char *ATTR_UNUSED(systemId),
+	const XML_Char *ATTR_UNUSED(publicId),
+	const XML_Char *ATTR_UNUSED(notationName))
+{
+	(void)XML_StopParser((XML_Parser)userData, XML_FALSE);
+}
+
 /**
  * XML parser setup of the callbacks for the tags
  */
@@ -1522,10 +1546,11 @@ xml_parse_setup(XML_Parser parser, struct xml_data* data, time_t now)
 	}
 	snprintf(buf, sizeof(buf), "; created by unbound-anchor on %s",
 		ctime(&now));
-	if(BIO_write(data->ds, buf, (int)strlen(buf)) <= 0) {
+	if(BIO_write(data->ds, buf, (int)strlen(buf)) < 0) {
 		if(verb) printf("out of memory\n");
 		exit(0);
 	}
+	XML_SetEntityDeclHandler(parser, xml_entitydeclhandler);
 	XML_SetElementHandler(parser, xml_startelem, xml_endelem);
 	XML_SetCharacterDataHandler(parser, xml_charhandle);
 }
@@ -1578,8 +1603,6 @@ xml_parse(BIO* xml, time_t now)
 	XML_ParserFree(parser);
 
 	if(verb >= 4) {
-		char* pp = NULL;
-		int len;
 		(void)BIO_seek(data.ds, 0);
 		len = BIO_get_mem_data(data.ds, &pp);
 		printf("got DS bio %d: '", len);
@@ -1603,12 +1626,113 @@ xml_parse(BIO* xml, time_t now)
 	}
 }
 
+/* get key usage out of its extension, returns 0 if no key_usage extension */
+static unsigned long
+get_usage_of_ex(X509* cert)
+{
+	unsigned long val = 0;
+	ASN1_BIT_STRING* s;
+	if((s=X509_get_ext_d2i(cert, NID_key_usage, NULL, NULL))) {
+		if(s->length > 0) {
+			val = s->data[0];
+			if(s->length > 1)
+				val |= s->data[1] << 8;
+		}
+		ASN1_BIT_STRING_free(s);
+	}
+	return val;
+}
+
+/** get valid signers from the list of signers in the signature */
+static STACK_OF(X509)*
+get_valid_signers(PKCS7* p7, const char* p7signer)
+{
+	int i;
+	STACK_OF(X509)* validsigners = sk_X509_new_null();
+	STACK_OF(X509)* signers = PKCS7_get0_signers(p7, NULL, 0);
+	unsigned long usage = 0;
+	if(!validsigners) {
+		if(verb) printf("out of memory\n");
+		sk_X509_free(signers);
+		return NULL;
+	}
+	if(!signers) {
+		if(verb) printf("no signers in pkcs7 signature\n");
+		sk_X509_free(validsigners);
+		return NULL;
+	}
+	for(i=0; i<sk_X509_num(signers); i++) {
+		X509_NAME* nm = X509_get_subject_name(
+			sk_X509_value(signers, i));
+		char buf[1024];
+		if(!nm) {
+			if(verb) printf("signer %d: cert has no subject name\n", i);
+			continue;
+		}
+		if(verb && nm) {
+			char* nmline = X509_NAME_oneline(nm, buf,
+				(int)sizeof(buf));
+			printf("signer %d: Subject: %s\n", i,
+				nmline?nmline:"no subject");
+			if(verb >= 3 && X509_NAME_get_text_by_NID(nm,
+				NID_commonName, buf, (int)sizeof(buf)))
+				printf("commonName: %s\n", buf);
+			if(verb >= 3 && X509_NAME_get_text_by_NID(nm,
+				NID_pkcs9_emailAddress, buf, (int)sizeof(buf)))
+				printf("emailAddress: %s\n", buf);
+		}
+		if(verb) {
+			int ku_loc = X509_get_ext_by_NID(
+				sk_X509_value(signers, i), NID_key_usage, -1);
+			if(verb >= 3 && ku_loc >= 0) {
+				X509_EXTENSION *ex = X509_get_ext(
+					sk_X509_value(signers, i), ku_loc);
+				if(ex) {
+					printf("keyUsage: ");
+					X509V3_EXT_print_fp(stdout, ex, 0, 0);
+					printf("\n");
+				}
+			}
+		}
+		if(!p7signer || strcmp(p7signer, "")==0) {
+			/* there is no name to check, return all records */
+			if(verb) printf("did not check commonName of signer\n");
+		} else {
+			if(!X509_NAME_get_text_by_NID(nm,
+				NID_pkcs9_emailAddress,
+				buf, (int)sizeof(buf))) {
+				if(verb) printf("removed cert with no name\n");
+				continue; /* no name, no use */
+			}
+			if(strcmp(buf, p7signer) != 0) {
+				if(verb) printf("removed cert with wrong name\n");
+				continue; /* wrong name, skip it */
+			}
+		}
+
+		/* check that the key usage allows digital signatures
+		 * (the p7s) */
+		usage = get_usage_of_ex(sk_X509_value(signers, i));
+		if(!(usage & KU_DIGITAL_SIGNATURE)) {
+			if(verb) printf("removed cert with no key usage Digital Signature allowed\n");
+			continue;
+		}
+
+		/* we like this cert, add it to our list of valid
+		 * signers certificates */
+		sk_X509_push(validsigners, sk_X509_value(signers, i));
+	}
+	sk_X509_free(signers);
+	return validsigners;
+}
+
 /** verify a PKCS7 signature, false on failure */
 static int
-verify_p7sig(BIO* data, BIO* p7s, STACK_OF(X509)* trust)
+verify_p7sig(BIO* data, BIO* p7s, STACK_OF(X509)* trust, const char* p7signer)
 {
 	PKCS7* p7;
 	X509_STORE *store = X509_STORE_new();
+	STACK_OF(X509)* validsigners;
 	int secure = 0;
 	int i;
 #ifdef X509_V_FLAG_CHECK_SS_SIGNATURE
@@ -1630,6 +1754,9 @@ verify_p7sig(BIO* data, BIO* p7s, STACK_OF(X509)* trust)
 #endif
 		return 0;
 	}
+#ifdef X509_V_FLAG_CHECK_SS_SIGNATURE
+	X509_VERIFY_PARAM_free(param);
+#endif
 
 	(void)BIO_reset(p7s);
 	(void)BIO_reset(data);
@@ -1654,7 +1781,15 @@ verify_p7sig(BIO* data, BIO* p7s, STACK_OF(X509)* trust)
 	}
 	if(verb >= 2) printf("setup the X509_STORE\n");
 
-	if(PKCS7_verify(p7, NULL, store, data, NULL, 0) == 1) {
+	/* check what is in the Subject name of the certificates,
+	 * and build a stack that contains only the right certificates */
+	validsigners = get_valid_signers(p7, p7signer);
+	if(!validsigners) {
+			X509_STORE_free(store);
+			PKCS7_free(p7);
+			return 0;
+	}
+	if(PKCS7_verify(p7, validsigners, store, data, NULL, PKCS7_NOINTERN) == 1) {
 		secure = 1;
 		if(verb) printf("the PKCS7 signature verified\n");
 	} else {
@@ -1663,6 +1798,7 @@ verify_p7sig(BIO* data, BIO* p7s, STACK_OF(X509)* trust)
 		}
 	}
 
+	sk_X509_free(validsigners);
 	X509_STORE_free(store);
 	PKCS7_free(p7);
 	return secure;
@@ -1670,7 +1806,7 @@ verify_p7sig(BIO* data, BIO* p7s, STACK_OF(X509)* trust)
 
 /** write unsigned root anchor file, a 5011 revoked tp */
 static void
-write_unsigned_root(char* root_anchor_file)
+write_unsigned_root(const char* root_anchor_file)
 {
 	FILE* out;
 	time_t now = time(NULL);
@@ -1696,7 +1832,7 @@ write_unsigned_root(char* root_anchor_file)
 
 /** write root anchor file */
 static void
-write_root_anchor(char* root_anchor_file, BIO* ds)
+write_root_anchor(const char* root_anchor_file, BIO* ds)
 {
 	char* pp = NULL;
 	int len;
@@ -1722,13 +1858,13 @@ write_root_anchor(char* root_anchor_file, BIO* ds)
 
 /** Perform the verification and update of the trustanchor file */
 static void
-verify_and_update_anchor(char* root_anchor_file, BIO* xml, BIO* p7s,
-	STACK_OF(X509)* cert)
+verify_and_update_anchor(const char* root_anchor_file, BIO* xml, BIO* p7s,
+	STACK_OF(X509)* cert, const char* p7signer)
 {
 	BIO* ds;
 
 	/* verify xml file */
-	if(!verify_p7sig(xml, p7s, cert)) {
+	if(!verify_p7sig(xml, p7s, cert, p7signer)) {
 		printf("the PKCS7 signature failed\n");
 		exit(0);
 	}
@@ -1751,10 +1887,11 @@ static void do_wsa_cleanup(void) { WSACleanup(); }
 
 /** perform actual certupdate work */
 static int
-do_certupdate(char* root_anchor_file, char* root_cert_file,
-	char* urlname, char* xmlname, char* p7sname,
-	char* res_conf, char* root_hints, char* debugconf,
-	int ip4only, int ip6only, int port, struct ub_result* dnskey)
+do_certupdate(const char* root_anchor_file, const char* root_cert_file,
+	const char* urlname, const char* xmlname, const char* p7sname,
+	const char* p7signer, const char* res_conf, const char* root_hints,
+	const char* debugconf, int ip4only, int ip6only, int port,
+	struct ub_result* dnskey)
 {
 	STACK_OF(X509)* cert;
 	BIO *xml, *p7s;
@@ -1785,7 +1922,7 @@ do_certupdate(char* root_anchor_file, char* root_cert_file,
 	p7s = https(ip_list, p7sname, urlname);
 
 	/* verify and update the root anchor */
-	verify_and_update_anchor(root_anchor_file, xml, p7s, cert);
+	verify_and_update_anchor(root_anchor_file, xml, p7s, cert, p7signer);
 	if(verb) printf("success: the anchor has been updated "
 			"using the cert\n");
 
@@ -1808,7 +1945,7 @@ do_certupdate(char* root_anchor_file, char* root_cert_file,
  * 	2 if it is OK.
  */
 static int
-try_read_anchor(char* file)
+try_read_anchor(const char* file)
 {
 	int empty = 1;
 	char line[10240];
@@ -1852,7 +1989,7 @@ try_read_anchor(char* file)
 
 /** Write the builtin root anchor to a file */
 static void
-write_builtin_anchor(char* file)
+write_builtin_anchor(const char* file)
 {
 	const char* builtin_root_anchor = get_builtin_ds();
 	FILE* out = fopen(file, "w");
@@ -1878,7 +2015,7 @@ write_builtin_anchor(char* file)
  * @return 0 if trustpoint is insecure, 1 on success.  Exit on failure.
  */
 static int
-provide_builtin(char* root_anchor_file, int* used_builtin)
+provide_builtin(const char* root_anchor_file, int* used_builtin)
 {
 	/* try to read it */
 	switch(try_read_anchor(root_anchor_file))
@@ -1900,7 +2037,7 @@ provide_builtin(char* root_anchor_file, int* used_builtin)
  * add an autotrust anchor for the root to the context
  */
 static void
-add_5011_probe_root(struct ub_ctx* ctx, char* root_anchor_file)
+add_5011_probe_root(struct ub_ctx* ctx, const char* root_anchor_file)
 {
 	int r;
 	r = ub_ctx_set_option(ctx, "auto-trust-anchor-file:", root_anchor_file);
@@ -1937,7 +2074,7 @@ prime_root_key(struct ub_ctx* ctx)
 
 /** see if ADDPEND keys exist in autotrust file (if possible) */
 static int
-read_if_pending_keys(char* file)
+read_if_pending_keys(const char* file)
 {
 	FILE* in = fopen(file, "r");
 	char line[8192];
@@ -1959,7 +2096,7 @@ read_if_pending_keys(char* file)
 
 /** read last successful probe time from autotrust file (if possible) */
 static int32_t
-read_last_success_time(char* file)
+read_last_success_time(const char* file)
 {
 	FILE* in = fopen(file, "r");
 	char line[1024];
@@ -1996,7 +2133,7 @@ read_last_success_time(char* file)
  * @return true if certupdate is ok.
  */
 static int
-probe_date_allows_certupdate(char* root_anchor_file)
+probe_date_allows_certupdate(const char* root_anchor_file)
 {
 	int has_pending_keys = read_if_pending_keys(root_anchor_file);
 	int32_t last_success = read_last_success_time(root_anchor_file);
@@ -2034,10 +2171,10 @@ probe_date_allows_certupdate(char* root_anchor_file)
 
 /** perform the unbound-anchor work */
 static int
-do_root_update_work(char* root_anchor_file, char* root_cert_file,
-	char* urlname, char* xmlname, char* p7sname,
-	char* res_conf, char* root_hints, char* debugconf,
-	int ip4only, int ip6only, int force, int port)
+do_root_update_work(const char* root_anchor_file, const char* root_cert_file,
+	const char* urlname, const char* xmlname, const char* p7sname,
+	const char* p7signer, const char* res_conf, const char* root_hints,
+	const char* debugconf, int ip4only, int ip6only, int force, int port)
 {
 	struct ub_ctx* ctx;
 	struct ub_result* dnskey;
@@ -2068,8 +2205,8 @@ do_root_update_work(char* root_anchor_file, char* root_cert_file,
 	if((dnskey->rcode == 0 &&
 		probe_date_allows_certupdate(root_anchor_file)) || force) {
 		if(do_certupdate(root_anchor_file, root_cert_file, urlname,
-			xmlname, p7sname, res_conf, root_hints, debugconf,
-			ip4only, ip6only, port, dnskey))
+			xmlname, p7sname, p7signer, res_conf, root_hints,
+			debugconf, ip4only, ip6only, port, dnskey))
 			return 1;
 		return used_builtin;
 	}
@@ -2087,17 +2224,18 @@ extern char* optarg;
 int main(int argc, char* argv[])
 {
 	int c;
-	char* root_anchor_file = ROOT_ANCHOR_FILE;
-	char* root_cert_file = ROOT_CERT_FILE;
-	char* urlname = URLNAME;
-	char* xmlname = XMLNAME;
-	char* p7sname = P7SNAME;
-	char* res_conf = NULL;
-	char* root_hints = NULL;
-	char* debugconf = NULL;
+	const char* root_anchor_file = ROOT_ANCHOR_FILE;
+	const char* root_cert_file = ROOT_CERT_FILE;
+	const char* urlname = URLNAME;
+	const char* xmlname = XMLNAME;
+	const char* p7sname = P7SNAME;
+	const char* p7signer = P7SIGNER;
+	const char* res_conf = NULL;
+	const char* root_hints = NULL;
+	const char* debugconf = NULL;
 	int dolist=0, ip4only=0, ip6only=0, force=0, port = HTTPS_PORT;
 	/* parse the options */
-	while( (c=getopt(argc, argv, "46C:FP:a:c:f:hlr:s:u:vx:")) != -1) {
+	while( (c=getopt(argc, argv, "46C:FP:a:c:f:hln:r:s:u:vx:")) != -1) {
 		switch(c) {
 		case 'l':
 			dolist = 1;
@@ -2122,6 +2260,9 @@ int main(int argc, char* argv[])
 			break;
 		case 's':
 			p7sname = optarg;
+			break;
+		case 'n':
+			p7signer = optarg;
 			break;
 		case 'f':
 			res_conf = optarg;
@@ -2160,6 +2301,6 @@ int main(int argc, char* argv[])
 	if(dolist) do_list_builtin();
 
 	return do_root_update_work(root_anchor_file, root_cert_file, urlname,
-		xmlname, p7sname, res_conf, root_hints, debugconf, ip4only,
-		ip6only, force, port);
+		xmlname, p7sname, p7signer, res_conf, root_hints, debugconf,
+		ip4only, ip6only, force, port);
 }

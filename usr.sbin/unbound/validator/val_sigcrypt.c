@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -41,8 +41,8 @@
  * bridging between RR wireformat data and crypto calls.
  */
 #include "config.h"
-#include <ldns/ldns.h>
 #include "validator/val_sigcrypt.h"
+#include "validator/val_secalgo.h"
 #include "validator/validator.h"
 #include "util/data/msgreply.h"
 #include "util/data/msgparse.h"
@@ -51,9 +51,14 @@
 #include "util/module.h"
 #include "util/net_help.h"
 #include "util/regional.h"
+#include "sldns/keyraw.h"
+#include "sldns/sbuffer.h"
+#include "sldns/parseutil.h"
+#include "sldns/wire2str.h"
 
-#ifndef HAVE_SSL
-#error "Need SSL library to do digital signature cryptography"
+#include <ctype.h>
+#if !defined(HAVE_SSL) && !defined(HAVE_NSS)
+#error "Need crypto library to do digital signature cryptography"
 #endif
 
 #ifdef HAVE_OPENSSL_ERR_H
@@ -265,37 +270,8 @@ ds_get_sigdata(struct ub_packed_rrset_key* k, size_t idx, uint8_t** digest,
 static size_t
 ds_digest_size_algo(struct ub_packed_rrset_key* k, size_t idx)
 {
-	switch(ds_get_digest_algo(k, idx)) {
-#ifdef HAVE_EVP_SHA1
-		case LDNS_SHA1:
-			return SHA_DIGEST_LENGTH;
-#endif
-#ifdef HAVE_EVP_SHA256
-		case LDNS_SHA256:
-			return SHA256_DIGEST_LENGTH;
-#endif
-#ifdef USE_GOST
-		case LDNS_HASH_GOST:
-			if(EVP_get_digestbyname("md_gost94"))
-				return 32;
-			else	return 0;
-#endif
-		default: break;
-	}
-	return 0;
+	return ds_digest_size_supported(ds_get_digest_algo(k, idx));
 }
-
-#ifdef USE_GOST
-/** Perform GOST hash */
-static int
-do_gost94(unsigned char* data, size_t len, unsigned char* dest)
-{
-	const EVP_MD* md = EVP_get_digestbyname("md_gost94");
-	if(!md) 
-		return 0;
-	return ldns_digest_evp(data, (unsigned int)len, dest, md);
-}
-#endif
 
 /**
  * Create a DS digest for a DNSKEY entry.
@@ -314,7 +290,7 @@ ds_create_dnskey_digest(struct module_env* env,
 	struct ub_packed_rrset_key* ds_rrset, size_t ds_idx,
 	uint8_t* digest)
 {
-	ldns_buffer* b = env->scratch_buffer;
+	sldns_buffer* b = env->scratch_buffer;
 	uint8_t* dnskey_rdata;
 	size_t dnskey_len;
 	rrset_get_rdata(dnskey_rrset, dnskey_idx, &dnskey_rdata, &dnskey_len);
@@ -322,38 +298,16 @@ ds_create_dnskey_digest(struct module_env* env,
 	/* create digest source material in buffer 
 	 * digest = digest_algorithm( DNSKEY owner name | DNSKEY RDATA);
 	 *	DNSKEY RDATA = Flags | Protocol | Algorithm | Public Key. */
-	ldns_buffer_clear(b);
-	ldns_buffer_write(b, dnskey_rrset->rk.dname, 
+	sldns_buffer_clear(b);
+	sldns_buffer_write(b, dnskey_rrset->rk.dname, 
 		dnskey_rrset->rk.dname_len);
-	query_dname_tolower(ldns_buffer_begin(b));
-	ldns_buffer_write(b, dnskey_rdata+2, dnskey_len-2); /* skip rdatalen*/
-	ldns_buffer_flip(b);
+	query_dname_tolower(sldns_buffer_begin(b));
+	sldns_buffer_write(b, dnskey_rdata+2, dnskey_len-2); /* skip rdatalen*/
+	sldns_buffer_flip(b);
 	
-	switch(ds_get_digest_algo(ds_rrset, ds_idx)) {
-#ifdef HAVE_EVP_SHA1
-		case LDNS_SHA1:
-			(void)SHA1((unsigned char*)ldns_buffer_begin(b),
-				ldns_buffer_limit(b), (unsigned char*)digest);
-			return 1;
-#endif
-#ifdef HAVE_EVP_SHA256
-		case LDNS_SHA256:
-			(void)SHA256((unsigned char*)ldns_buffer_begin(b),
-				ldns_buffer_limit(b), (unsigned char*)digest);
-			return 1;
-#endif
-#ifdef USE_GOST
-		case LDNS_HASH_GOST:
-			if(do_gost94((unsigned char*)ldns_buffer_begin(b), 
-				ldns_buffer_limit(b), (unsigned char*)digest))
-				return 1;
-#endif
-		default: 
-			verbose(VERB_QUERY, "unknown DS digest algorithm %d", 
-				(int) ds_get_digest_algo(ds_rrset, ds_idx));
-			break;
-	}
-	return 0;
+	return secalgo_ds_digest(ds_get_digest_algo(ds_rrset, ds_idx),
+		(unsigned char*)sldns_buffer_begin(b), sldns_buffer_limit(b),
+		(unsigned char*)digest);
 }
 
 int ds_digest_match_dnskey(struct module_env* env,
@@ -402,33 +356,6 @@ ds_digest_algo_is_supported(struct ub_packed_rrset_key* ds_rrset,
 	return (ds_digest_size_algo(ds_rrset, ds_idx) != 0);
 }
 
-/** return true if DNSKEY algorithm id is supported */
-static int
-dnskey_algo_id_is_supported(int id)
-{
-	switch(id) {
-	case LDNS_DSA:
-	case LDNS_DSA_NSEC3:
-	case LDNS_RSASHA1:
-	case LDNS_RSASHA1_NSEC3:
-	case LDNS_RSAMD5:
-#if defined(HAVE_EVP_SHA256) && defined(USE_SHA2)
-	case LDNS_RSASHA256:
-#endif
-#if defined(HAVE_EVP_SHA512) && defined(USE_SHA2)
-	case LDNS_RSASHA512:
-#endif
-		return 1;
-#ifdef USE_GOST
-	case LDNS_ECC_GOST:
-		/* we support GOST if it can be loaded */
-		return ldns_key_EVP_load_gost_id();
-#endif
-	default:
-		return 0;
-	}
-}
-
 int 
 ds_key_algo_is_supported(struct ub_packed_rrset_key* ds_rrset, 
 	size_t ds_idx)
@@ -443,7 +370,7 @@ dnskey_calc_keytag(struct ub_packed_rrset_key* dnskey_rrset, size_t dnskey_idx)
 	size_t len;
 	rrset_get_rdata(dnskey_rrset, dnskey_idx, &data, &len);
 	/* do not pass rdatalen to ldns */
-	return ldns_calc_keytag_raw(data+2, len-2);
+	return sldns_calc_keytag_raw(data+2, len-2);
 }
 
 int dnskey_algo_is_supported(struct ub_packed_rrset_key* dnskey_rrset,
@@ -592,10 +519,14 @@ dnskeyset_verify_rrset(struct module_env* env, struct val_env* ve,
 				(uint8_t)rrset_get_sig_algo(rrset, i));
 		}
 	}
-	verbose(VERB_ALGO, "rrset failed to verify: no valid signatures for "
-		"%d algorithms", (int)algo_needs_num_missing(&needs));
 	if(sigalg && (alg=algo_needs_missing(&needs)) != 0) {
+		verbose(VERB_ALGO, "rrset failed to verify: "
+			"no valid signatures for %d algorithms",
+			(int)algo_needs_num_missing(&needs));
 		algo_needs_reason(env, alg, reason, "no signatures");
+	} else {
+		verbose(VERB_ALGO, "rrset failed to verify: "
+			"no valid signatures");
 	}
 	return sec_status_bogus;
 }
@@ -603,7 +534,7 @@ dnskeyset_verify_rrset(struct module_env* env, struct val_env* ve,
 void algo_needs_reason(struct module_env* env, int alg, char** reason, char* s)
 {
 	char buf[256];
-	ldns_lookup_table *t = ldns_lookup_by_id(ldns_algorithms, alg);
+	sldns_lookup_table *t = sldns_lookup_by_id(sldns_algorithms, alg);
 	if(t&&t->name)
 		snprintf(buf, sizeof(buf), "%s with algorithm %s", s, t->name);
 	else	snprintf(buf, sizeof(buf), "%s with algorithm ALG%u", s,
@@ -652,7 +583,7 @@ dnskey_verify_rrset(struct module_env* env, struct val_env* ve,
 
 enum sec_status 
 dnskeyset_verify_rrset_sig(struct module_env* env, struct val_env* ve, 
-	uint32_t now, struct ub_packed_rrset_key* rrset, 
+	time_t now, struct ub_packed_rrset_key* rrset, 
 	struct ub_packed_rrset_key* dnskey, size_t sig_idx, 
 	struct rbtree_t** sortree, char** reason)
 {
@@ -713,7 +644,7 @@ struct canon_rr {
  */
 static int
 canonical_compare_byfield(struct packed_rrset_data* d, 
-	const ldns_rr_descriptor* desc, size_t i, size_t j)
+	const sldns_rr_descriptor* desc, size_t i, size_t j)
 {
 	/* sweep across rdata, keep track of some state:
 	 * 	which rr field, and bytes left in field.
@@ -857,7 +788,7 @@ canonical_compare(struct ub_packed_rrset_key* rrset, size_t i, size_t j)
 {
 	struct packed_rrset_data* d = (struct packed_rrset_data*)
 		rrset->entry.data;
-	const ldns_rr_descriptor* desc;
+	const sldns_rr_descriptor* desc;
 	uint16_t type = ntohs(rrset->rk.type);
 	size_t minlen;
 	int c;
@@ -881,7 +812,12 @@ canonical_compare(struct ub_packed_rrset_key* rrset, size_t i, size_t j)
 		case LDNS_RR_TYPE_MR:
 		case LDNS_RR_TYPE_PTR:
 		case LDNS_RR_TYPE_DNAME:
-			return query_dname_compare(d->rr_data[i]+2, 
+			/* the wireread function has already checked these
+			 * dname's for correctness, and this double checks */
+			if(!dname_valid(d->rr_data[i]+2, d->rr_len[i]-2) ||
+				!dname_valid(d->rr_data[j]+2, d->rr_len[j]-2))
+				return 0;
+			return query_dname_compare(d->rr_data[i]+2,
 				d->rr_data[j]+2);
 
 		/* These RR types have STR and fixed size rdata fields
@@ -904,7 +840,7 @@ canonical_compare(struct ub_packed_rrset_key* rrset, size_t i, size_t j)
 		case LDNS_RR_TYPE_PX:
 		case LDNS_RR_TYPE_NAPTR:
 		case LDNS_RR_TYPE_SRV:
-			desc = ldns_rr_descript(type);
+			desc = sldns_rr_descript(type);
 			log_assert(desc);
 			/* this holds for the types that need canonicalizing */
 			log_assert(desc->_minimum == desc->_maximum);
@@ -977,15 +913,15 @@ canonical_sort(struct ub_packed_rrset_key* rrset, struct packed_rrset_data* d,
  * @param can_owner_len: length of canonical owner name.
  */
 static void
-insert_can_owner(ldns_buffer* buf, struct ub_packed_rrset_key* k,
+insert_can_owner(sldns_buffer* buf, struct ub_packed_rrset_key* k,
 	uint8_t* sig, uint8_t** can_owner, size_t* can_owner_len)
 {
 	int rrsig_labels = (int)sig[3];
 	int fqdn_labels = dname_signame_label_count(k->rk.dname);
-	*can_owner = ldns_buffer_current(buf);
+	*can_owner = sldns_buffer_current(buf);
 	if(rrsig_labels == fqdn_labels) {
 		/* no change */
-		ldns_buffer_write(buf, k->rk.dname, k->rk.dname_len);
+		sldns_buffer_write(buf, k->rk.dname, k->rk.dname_len);
 		query_dname_tolower(*can_owner);
 		*can_owner_len = k->rk.dname_len;
 		return;
@@ -1001,8 +937,8 @@ insert_can_owner(ldns_buffer* buf, struct ub_packed_rrset_key* k,
 			dname_remove_label(&nm, &len);	
 		}
 		*can_owner_len = len+2;
-		ldns_buffer_write(buf, (uint8_t*)"\001*", 2);
-		ldns_buffer_write(buf, nm, len);
+		sldns_buffer_write(buf, (uint8_t*)"\001*", 2);
+		sldns_buffer_write(buf, nm, len);
 		query_dname_tolower(*can_owner);
 	}
 }
@@ -1014,10 +950,10 @@ insert_can_owner(ldns_buffer* buf, struct ub_packed_rrset_key* k,
  * @param len: length of the rdata (including rdatalen uint16).
  */
 static void
-canonicalize_rdata(ldns_buffer* buf, struct ub_packed_rrset_key* rrset,
+canonicalize_rdata(sldns_buffer* buf, struct ub_packed_rrset_key* rrset,
 	size_t len)
 {
-	uint8_t* datstart = ldns_buffer_current(buf)-len+2;
+	uint8_t* datstart = sldns_buffer_current(buf)-len+2;
 	switch(ntohs(rrset->rk.type)) {
 		case LDNS_RR_TYPE_NXT: 
 		case LDNS_RR_TYPE_NS:
@@ -1108,6 +1044,71 @@ canonicalize_rdata(ldns_buffer* buf, struct ub_packed_rrset_key* rrset,
 	}
 }
 
+int rrset_canonical_equal(struct regional* region,
+	struct ub_packed_rrset_key* k1, struct ub_packed_rrset_key* k2)
+{
+	struct rbtree_t sortree1, sortree2;
+	struct canon_rr *rrs1, *rrs2, *p1, *p2;
+	struct packed_rrset_data* d1=(struct packed_rrset_data*)k1->entry.data;
+	struct packed_rrset_data* d2=(struct packed_rrset_data*)k2->entry.data;
+	struct ub_packed_rrset_key fk;
+	struct packed_rrset_data fd;
+	size_t flen[2];
+	uint8_t* fdata[2];
+
+	/* basic compare */
+	if(k1->rk.dname_len != k2->rk.dname_len ||
+		k1->rk.flags != k2->rk.flags ||
+		k1->rk.type != k2->rk.type ||
+		k1->rk.rrset_class != k2->rk.rrset_class ||
+		query_dname_compare(k1->rk.dname, k2->rk.dname) != 0)
+		return 0;
+	if(d1->ttl != d2->ttl ||
+		d1->count != d2->count ||
+		d1->rrsig_count != d2->rrsig_count ||
+		d1->trust != d2->trust ||
+		d1->security != d2->security)
+		return 0;
+
+	/* init */
+	memset(&fk, 0, sizeof(fk));
+	memset(&fd, 0, sizeof(fd));
+	fk.entry.data = &fd;
+	fd.count = 2;
+	fd.rr_len = flen;
+	fd.rr_data = fdata;
+	rbtree_init(&sortree1, &canonical_tree_compare);
+	rbtree_init(&sortree2, &canonical_tree_compare);
+	if(d1->count > RR_COUNT_MAX || d2->count > RR_COUNT_MAX)
+		return 1; /* protection against integer overflow */
+	rrs1 = regional_alloc(region, sizeof(struct canon_rr)*d1->count);
+	rrs2 = regional_alloc(region, sizeof(struct canon_rr)*d2->count);
+	if(!rrs1 || !rrs2) return 1; /* alloc failure */
+
+	/* sort */
+	canonical_sort(k1, d1, &sortree1, rrs1);
+	canonical_sort(k2, d2, &sortree2, rrs2);
+
+	/* compare canonical-sorted RRs for canonical-equality */
+	if(sortree1.count != sortree2.count)
+		return 0;
+	p1 = (struct canon_rr*)rbtree_first(&sortree1);
+	p2 = (struct canon_rr*)rbtree_first(&sortree2);
+	while(p1 != (struct canon_rr*)RBTREE_NULL &&
+		p2 != (struct canon_rr*)RBTREE_NULL) {
+		flen[0] = d1->rr_len[p1->rr_idx];
+		flen[1] = d2->rr_len[p2->rr_idx];
+		fdata[0] = d1->rr_data[p1->rr_idx];
+		fdata[1] = d2->rr_data[p2->rr_idx];
+
+		if(canonical_compare(&fk, 0, 1) != 0)
+			return 0;
+		p1 = (struct canon_rr*)rbtree_next(&p1->node);
+		p2 = (struct canon_rr*)rbtree_next(&p2->node);
+	}
+	return 1;
+}
+
 /**
  * Create canonical form of rrset in the scratch buffer.
  * @param region: temporary region.
@@ -1121,7 +1122,7 @@ canonicalize_rdata(ldns_buffer* buf, struct ub_packed_rrset_key* rrset,
  * @return false on alloc error.
  */
 static int
-rrset_canonical(struct regional* region, ldns_buffer* buf, 
+rrset_canonical(struct regional* region, sldns_buffer* buf, 
 	struct ub_packed_rrset_key* k, uint8_t* sig, size_t siglen,
 	struct rbtree_t** sortree)
 {
@@ -1136,6 +1137,8 @@ rrset_canonical(struct regional* region, ldns_buffer* buf,
 			sizeof(rbtree_t));
 		if(!*sortree)
 			return 0;
+		if(d->count > RR_COUNT_MAX)
+			return 0; /* integer overflow protection */
 		rrs = regional_alloc(region, sizeof(struct canon_rr)*d->count);
 		if(!rrs) {
 			*sortree = NULL;
@@ -1145,13 +1148,13 @@ rrset_canonical(struct regional* region, ldns_buffer* buf,
 		canonical_sort(k, d, *sortree, rrs);
 	}
 
-	ldns_buffer_clear(buf);
-	ldns_buffer_write(buf, sig, siglen);
+	sldns_buffer_clear(buf);
+	sldns_buffer_write(buf, sig, siglen);
 	/* canonicalize signer name */
-	query_dname_tolower(ldns_buffer_begin(buf)+18); 
+	query_dname_tolower(sldns_buffer_begin(buf)+18); 
 	RBTREE_FOR(walk, struct canon_rr*, (*sortree)) {
 		/* see if there is enough space left in the buffer */
-		if(ldns_buffer_remaining(buf) < can_owner_len + 2 + 2 + 4
+		if(sldns_buffer_remaining(buf) < can_owner_len + 2 + 2 + 4
 			+ d->rr_len[walk->rr_idx]) {
 			log_err("verify: failed to canonicalize, "
 				"rrset too big");
@@ -1159,17 +1162,17 @@ rrset_canonical(struct regional* region, ldns_buffer* buf,
 		}
 		/* determine canonical owner name */
 		if(can_owner)
-			ldns_buffer_write(buf, can_owner, can_owner_len);
+			sldns_buffer_write(buf, can_owner, can_owner_len);
 		else	insert_can_owner(buf, k, sig, &can_owner, 
 				&can_owner_len);
-		ldns_buffer_write(buf, &k->rk.type, 2);
-		ldns_buffer_write(buf, &k->rk.rrset_class, 2);
-		ldns_buffer_write(buf, sig+4, 4);
-		ldns_buffer_write(buf, d->rr_data[walk->rr_idx], 
+		sldns_buffer_write(buf, &k->rk.type, 2);
+		sldns_buffer_write(buf, &k->rk.rrset_class, 2);
+		sldns_buffer_write(buf, sig+4, 4);
+		sldns_buffer_write(buf, d->rr_data[walk->rr_idx], 
 			d->rr_len[walk->rr_idx]);
 		canonicalize_rdata(buf, k, d->rr_len[walk->rr_idx]);
 	}
-	ldns_buffer_flip(buf);
+	sldns_buffer_flip(buf);
 	return 1;
 }
 
@@ -1288,282 +1291,21 @@ adjust_ttl(struct val_env* ve, uint32_t unow,
 	 *
 	 * Use the smallest of these.
 	 */
-	if(d->ttl > (uint32_t)origttl) {
+	if(d->ttl > (time_t)origttl) {
 		verbose(VERB_QUERY, "rrset TTL larger than original TTL,"
 			" adjusting TTL downwards");
 		d->ttl = origttl;
 	}
-	if(expittl > 0 && d->ttl > (uint32_t)expittl) {
+	if(expittl > 0 && d->ttl > (time_t)expittl) {
 		verbose(VERB_ALGO, "rrset TTL larger than sig expiration ttl,"
 			" adjusting TTL downwards");
 		d->ttl = expittl;
 	}
 }
 
-
-/**
- * Output a libcrypto openssl error to the logfile.
- * @param str: string to add to it.
- * @param e: the error to output, error number from ERR_get_error().
- */
-static void
-log_crypto_error(const char* str, unsigned long e)
-{
-	char buf[128];
-	/* or use ERR_error_string if ERR_error_string_n is not avail TODO */
-	ERR_error_string_n(e, buf, sizeof(buf));
-	/* buf now contains */
-	/* error:[error code]:[library name]:[function name]:[reason string] */
-	log_err("%s crypto %s", str, buf);
-}
-
-/**
- * Setup DSA key digest in DER encoding ... 
- * @param sig: input is signature output alloced ptr (unless failure).
- * 	caller must free alloced ptr if this routine returns true.
- * @param len: intput is initial siglen, output is output len.
- * @return false on failure.
- */
-static int
-setup_dsa_sig(unsigned char** sig, unsigned int* len)
-{
-	unsigned char* orig = *sig;
-	unsigned int origlen = *len;
-	int newlen;
-	BIGNUM *R, *S;
-	DSA_SIG *dsasig;
-
-	/* extract the R and S field from the sig buffer */
-	if(origlen < 1 + 2*SHA_DIGEST_LENGTH)
-		return 0;
-	R = BN_new();
-	if(!R) return 0;
-	(void) BN_bin2bn(orig + 1, SHA_DIGEST_LENGTH, R);
-	S = BN_new();
-	if(!S) return 0;
-	(void) BN_bin2bn(orig + 21, SHA_DIGEST_LENGTH, S);
-	dsasig = DSA_SIG_new();
-	if(!dsasig) return 0;
-
-	dsasig->r = R;
-	dsasig->s = S;
-	*sig = NULL;
-	newlen = i2d_DSA_SIG(dsasig, sig);
-	if(newlen < 0) {
-		free(*sig);
-		return 0;
-	}
-	*len = (unsigned int)newlen;
-	DSA_SIG_free(dsasig);
-	return 1;
-}
-
-/**
- * Setup key and digest for verification. Adjust sig if necessary.
- *
- * @param algo: key algorithm
- * @param evp_key: EVP PKEY public key to create.
- * @param digest_type: digest type to use
- * @param key: key to setup for.
- * @param keylen: length of key.
- * @return false on failure.
- */
-static int
-setup_key_digest(int algo, EVP_PKEY** evp_key, const EVP_MD** digest_type, 
-	unsigned char* key, size_t keylen)
-{
-	DSA* dsa;
-	RSA* rsa;
-
-	switch(algo) {
-		case LDNS_DSA:
-		case LDNS_DSA_NSEC3:
-			*evp_key = EVP_PKEY_new();
-			if(!*evp_key) {
-				log_err("verify: malloc failure in crypto");
-				return sec_status_unchecked;
-			}
-			dsa = ldns_key_buf2dsa_raw(key, keylen);
-			if(!dsa) {
-				verbose(VERB_QUERY, "verify: "
-					"ldns_key_buf2dsa_raw failed");
-				return 0;
-			}
-			if(EVP_PKEY_assign_DSA(*evp_key, dsa) == 0) {
-				verbose(VERB_QUERY, "verify: "
-					"EVP_PKEY_assign_DSA failed");
-				return 0;
-			}
-			*digest_type = EVP_dss1();
-
-			break;
-		case LDNS_RSASHA1:
-		case LDNS_RSASHA1_NSEC3:
-#if defined(HAVE_EVP_SHA256) && defined(USE_SHA2)
-		case LDNS_RSASHA256:
-#endif
-#if defined(HAVE_EVP_SHA512) && defined(USE_SHA2)
-		case LDNS_RSASHA512:
-#endif
-			*evp_key = EVP_PKEY_new();
-			if(!*evp_key) {
-				log_err("verify: malloc failure in crypto");
-				return sec_status_unchecked;
-			}
-			rsa = ldns_key_buf2rsa_raw(key, keylen);
-			if(!rsa) {
-				verbose(VERB_QUERY, "verify: "
-					"ldns_key_buf2rsa_raw SHA failed");
-				return 0;
-			}
-			if(EVP_PKEY_assign_RSA(*evp_key, rsa) == 0) {
-				verbose(VERB_QUERY, "verify: "
-					"EVP_PKEY_assign_RSA SHA failed");
-				return 0;
-			}
-
-			/* select SHA version */
-#if defined(HAVE_EVP_SHA256) && defined(USE_SHA2)
-			if(algo == LDNS_RSASHA256)
-				*digest_type = EVP_sha256();
-			else
-#endif
-#if defined(HAVE_EVP_SHA512) && defined(USE_SHA2)
-				if(algo == LDNS_RSASHA512)
-				*digest_type = EVP_sha512();
-			else
-#endif
-				*digest_type = EVP_sha1();
-
-			break;
-		case LDNS_RSAMD5:
-			*evp_key = EVP_PKEY_new();
-			if(!*evp_key) {
-				log_err("verify: malloc failure in crypto");
-				return sec_status_unchecked;
-			}
-			rsa = ldns_key_buf2rsa_raw(key, keylen);
-			if(!rsa) {
-				verbose(VERB_QUERY, "verify: "
-					"ldns_key_buf2rsa_raw MD5 failed");
-				return 0;
-			}
-			if(EVP_PKEY_assign_RSA(*evp_key, rsa) == 0) {
-				verbose(VERB_QUERY, "verify: "
-					"EVP_PKEY_assign_RSA MD5 failed");
-				return 0;
-			}
-			*digest_type = EVP_md5();
-
-			break;
-#ifdef USE_GOST
-		case LDNS_ECC_GOST:
-			*evp_key = ldns_gost2pkey_raw(key, keylen);
-			if(!*evp_key) {
-				verbose(VERB_QUERY, "verify: "
-					"ldns_gost2pkey_raw failed");
-				return 0;
-			}
-			*digest_type = EVP_get_digestbyname("md_gost94");
-			if(!*digest_type) {
-				verbose(VERB_QUERY, "verify: "
-					"EVP_getdigest md_gost94 failed");
-				return 0;
-			}
-			break;
-#endif
-		default:
-			verbose(VERB_QUERY, "verify: unknown algorithm %d", 
-				algo);
-			return 0;
-	}
-	return 1;
-}
-
-/**
- * Check a canonical sig+rrset and signature against a dnskey
- * @param buf: buffer with data to verify, the first rrsig part and the
- *	canonicalized rrset.
- * @param algo: DNSKEY algorithm.
- * @param sigblock: signature rdata field from RRSIG
- * @param sigblock_len: length of sigblock data.
- * @param key: public key data from DNSKEY RR.
- * @param keylen: length of keydata.
- * @param reason: bogus reason in more detail.
- * @return secure if verification succeeded, bogus on crypto failure,
- *	unchecked on format errors and alloc failures.
- */
-static enum sec_status
-verify_canonrrset(ldns_buffer* buf, int algo, unsigned char* sigblock, 
-	unsigned int sigblock_len, unsigned char* key, unsigned int keylen,
-	char** reason)
-{
-	const EVP_MD *digest_type;
-	EVP_MD_CTX ctx;
-	int res, dofree = 0;
-	EVP_PKEY *evp_key = NULL;
-	
-	if(!setup_key_digest(algo, &evp_key, &digest_type, key, keylen)) {
-		verbose(VERB_QUERY, "verify: failed to setup key");
-		*reason = "use of key for crypto failed";
-		EVP_PKEY_free(evp_key);
-		return sec_status_bogus;
-	}
-	/* if it is a DSA signature in bind format, convert to DER format */
-	if((algo == LDNS_DSA || algo == LDNS_DSA_NSEC3) && 
-		sigblock_len == 1+2*SHA_DIGEST_LENGTH) {
-		if(!setup_dsa_sig(&sigblock, &sigblock_len)) {
-			verbose(VERB_QUERY, "verify: failed to setup DSA sig");
-			*reason = "use of key for DSA crypto failed";
-			EVP_PKEY_free(evp_key);
-			return sec_status_bogus;
-		}
-		dofree = 1;
-	} 
-
-	/* do the signature cryptography work */
-	EVP_MD_CTX_init(&ctx);
-	if(EVP_VerifyInit(&ctx, digest_type) == 0) {
-		verbose(VERB_QUERY, "verify: EVP_VerifyInit failed");
-		EVP_PKEY_free(evp_key);
-		if(dofree) free(sigblock);
-		return sec_status_unchecked;
-	}
-	if(EVP_VerifyUpdate(&ctx, (unsigned char*)ldns_buffer_begin(buf), 
-		(unsigned int)ldns_buffer_limit(buf)) == 0) {
-		verbose(VERB_QUERY, "verify: EVP_VerifyUpdate failed");
-		EVP_PKEY_free(evp_key);
-		if(dofree) free(sigblock);
-		return sec_status_unchecked;
-	}
-		
-	res = EVP_VerifyFinal(&ctx, sigblock, sigblock_len, evp_key);
-	if(EVP_MD_CTX_cleanup(&ctx) == 0) {
-		verbose(VERB_QUERY, "verify: EVP_MD_CTX_cleanup failed");
-		EVP_PKEY_free(evp_key);
-		if(dofree) free(sigblock);
-		return sec_status_unchecked;
-	}
-	EVP_PKEY_free(evp_key);
-
-	if(dofree)
-		free(sigblock);
-
-	if(res == 1) {
-		return sec_status_secure;
-	} else if(res == 0) {
-		verbose(VERB_QUERY, "verify: signature mismatch");
-		*reason = "signature crypto failed";
-		return sec_status_bogus;
-	}
-
-	log_crypto_error("verify:", ERR_get_error());
-	return sec_status_unchecked;
-}
-
 enum sec_status 
-dnskey_verify_rrset_sig(struct regional* region, ldns_buffer* buf, 
-	struct val_env* ve, uint32_t now,
+dnskey_verify_rrset_sig(struct regional* region, sldns_buffer* buf, 
+	struct val_env* ve, time_t now,
         struct ub_packed_rrset_key* rrset, struct ub_packed_rrset_key* dnskey,
         size_t dnskey_idx, size_t sig_idx,
 	struct rbtree_t** sortree, int* buf_canon, char** reason)

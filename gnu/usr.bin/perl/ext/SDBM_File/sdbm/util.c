@@ -6,9 +6,7 @@
 #endif
 
 void
-oops(s1, s2)
-register char *s1;
-register char *s2;
+oops(char *s1, char *s2)
 {
 	extern int errno, sys_nerr;
 	extern char *sys_errlist[];
@@ -24,12 +22,11 @@ register char *s2;
 }
 
 int
-okpage(pag)
-char *pag;
+okpage(char *pag)
 {
-	register unsigned n;
-	register off;
-	register short *ino = (short *) pag;
+	unsigned n;
+	int off;
+	short *ino = (short *) pag;
 
 	if ((n = ino[0]) > PBLKSIZ / sizeof(short))
 		return 0;

@@ -192,7 +192,7 @@ static int getColumnNames(
         rc = SQLITE_NOMEM;
         goto out;
       }
-      nBytes += strlen(zName)+1;
+      nBytes += (int)strlen(zName)+1;
     }
     aCol = (char **)sqlite3MallocZero(nBytes);
     if( !aCol ){
@@ -206,8 +206,8 @@ static int getColumnNames(
     zSpace = (char *)(&aCol[nCol]);
     for(ii=0; ii<nCol; ii++){
       aCol[ii] = zSpace;
-      zSpace += sprintf(zSpace, "%s", sqlite3_column_name(pStmt, ii));
-      zSpace++;
+      sqlite3_snprintf(nBytes, zSpace, "%s", sqlite3_column_name(pStmt,ii));
+      zSpace += (int)strlen(zSpace) + 1;
     }
     assert( (zSpace-nBytes)==(char *)aCol );
   }
@@ -265,6 +265,7 @@ static int getIndexArray(
   while( pStmt && sqlite3_step(pStmt)==SQLITE_ROW ){
     const char *zIdx = (const char *)sqlite3_column_text(pStmt, 1);
     sqlite3_stmt *pStmt2 = 0;
+    if( zIdx==0 ) continue;
     zSql = sqlite3_mprintf("PRAGMA index_info(%s)", zIdx);
     if( !zSql ){
       rc = SQLITE_NOMEM;
@@ -647,12 +648,12 @@ static int echoRowid(sqlite3_vtab_cursor *cur, sqlite_int64 *pRowid){
 ** indeed the hash of the supplied idxStr.
 */
 static int hashString(const char *zString){
-  int val = 0;
+  u32 val = 0;
   int ii;
   for(ii=0; zString[ii]; ii++){
     val = (val << 3) + (int)zString[ii];
   }
-  return val;
+  return (int)(val&0x7fffffff);
 }
 
 /* 
@@ -776,11 +777,11 @@ static int echoBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
   sqlite3_stmt *pStmt = 0;
   Tcl_Interp *interp = pVtab->interp;
 
-  int nRow;
+  int nRow = 0;
   int useIdx = 0;
   int rc = SQLITE_OK;
   int useCost = 0;
-  double cost;
+  double cost = 0;
   int isIgnoreUsable = 0;
   if( Tcl_GetVar(interp, "echo_module_ignore_usable", TCL_GLOBAL_ONLY) ){
     isIgnoreUsable = 1;
@@ -891,7 +892,7 @@ static int echoBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
     pIdxInfo->estimatedCost = cost;
   }else if( useIdx ){
     /* Approximation of log2(nRow). */
-    for( ii=0; ii<(sizeof(int)*8); ii++ ){
+    for( ii=0; ii<(sizeof(int)*8)-1; ii++ ){
       if( nRow & (1<<ii) ){
         pIdxInfo->estimatedCost = (double)ii;
       }
@@ -926,7 +927,7 @@ int echoUpdate(
   sqlite3 *db = pVtab->db;
   int rc = SQLITE_OK;
 
-  sqlite3_stmt *pStmt;
+  sqlite3_stmt *pStmt = 0;
   char *z = 0;               /* SQL statement to execute */
   int bindArgZero = 0;       /* True to bind apData[0] to sql var no. nData */
   int bindArgOne = 0;        /* True to bind apData[1] to sql var no. 1 */
@@ -1217,7 +1218,7 @@ static int echoRename(sqlite3_vtab *vtab, const char *zNewName){
   }
 
   if( p->isPattern ){
-    int nThis = strlen(p->zThis);
+    int nThis = (int)strlen(p->zThis);
     char *zSql = sqlite3_mprintf("ALTER TABLE %s RENAME TO %s%s", 
         p->zTableName, zNewName, &p->zTableName[nThis]
     );
@@ -1300,6 +1301,7 @@ static sqlite3_module echoModuleV2 = {
 ** Decode a pointer to an sqlite3 object.
 */
 extern int getDbPointer(Tcl_Interp *interp, const char *zA, sqlite3 **ppDb);
+extern const char *sqlite3ErrName(int);
 
 static void moduleDestroy(void *p){
   sqlite3_free(p);
@@ -1314,6 +1316,7 @@ static int register_echo_module(
   int objc,              /* Number of arguments */
   Tcl_Obj *CONST objv[]  /* Command arguments */
 ){
+  int rc;
   sqlite3 *db;
   EchoModule *pMod;
   if( objc!=2 ){
@@ -1325,14 +1328,20 @@ static int register_echo_module(
   /* Virtual table module "echo" */
   pMod = sqlite3_malloc(sizeof(EchoModule));
   pMod->interp = interp;
-  sqlite3_create_module_v2(db, "echo", &echoModule, (void*)pMod, moduleDestroy);
+  rc = sqlite3_create_module_v2(
+      db, "echo", &echoModule, (void*)pMod, moduleDestroy
+  );
 
   /* Virtual table module "echo_v2" */
-  pMod = sqlite3_malloc(sizeof(EchoModule));
-  pMod->interp = interp;
-  sqlite3_create_module_v2(db, "echo_v2", 
-      &echoModuleV2, (void*)pMod, moduleDestroy
-  );
+  if( rc==SQLITE_OK ){
+    pMod = sqlite3_malloc(sizeof(EchoModule));
+    pMod->interp = interp;
+    rc = sqlite3_create_module_v2(db, "echo_v2", 
+        &echoModuleV2, (void*)pMod, moduleDestroy
+    );
+  }
+
+  Tcl_SetResult(interp, (char *)sqlite3ErrName(rc), TCL_STATIC);
   return TCL_OK;
 }
 
@@ -1374,8 +1383,8 @@ int Sqlitetest8_Init(Tcl_Interp *interp){
      Tcl_ObjCmdProc *xProc;
      void *clientData;
   } aObjCmd[] = {
-     { "register_echo_module",   register_echo_module, 0 },
-     { "sqlite3_declare_vtab",   declare_vtab, 0 },
+     { "register_echo_module",       register_echo_module, 0 },
+     { "sqlite3_declare_vtab",       declare_vtab, 0 },
   };
   int i;
   for(i=0; i<sizeof(aObjCmd)/sizeof(aObjCmd[0]); i++){

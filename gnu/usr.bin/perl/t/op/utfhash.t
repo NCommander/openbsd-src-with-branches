@@ -5,7 +5,7 @@ BEGIN {
     @INC = '../lib';
     require './test.pl';
 
-    plan(tests => 91);
+    plan(tests => 99);
 }
 
 use strict;
@@ -21,7 +21,7 @@ my %hashu = ( "\xff" => 0xff,
               "\x{1ff}" => 0x1ff,
             );
 
-# Check that we can find the 8-bit things by various litterals
+# Check that we can find the 8-bit things by various literals
 is($hash8{"\x{00ff}"},0xFF);
 is($hash8{"\x{007f}"},0x7F);
 is($hash8{"\xff"},0xFF);
@@ -32,8 +32,9 @@ is($hashu{"\xff"},0xFF);
 is($hashu{"\x7f"},0x7F);
 
 # Now try same thing with variables forced into various forms.
-foreach my $a ("\x7f","\xff")
+foreach ("\x7f","\xff")
  {
+  my $a = $_; # Force a copy
   utf8::upgrade($a);
   is($hash8{$a},ord($a));
   is($hashu{$a},ord($a));
@@ -56,8 +57,9 @@ $hash8{chr(0x1ff)} = 0x1ff;
 # Check we have not got an spurious extra keys
 is(join('',sort { ord $a <=> ord $b } keys %hash8),"\x7f\xff\x{1ff}");
 
-foreach my $a ("\x7f","\xff","\x{1ff}")
+foreach ("\x7f","\xff","\x{1ff}")
  {
+  my $a = $_;
   utf8::upgrade($a);
   is($hash8{$a},ord($a));
   my $b = $a.chr(100);
@@ -69,8 +71,9 @@ foreach my $a ("\x7f","\xff","\x{1ff}")
 is(delete $hashu{chr(0x1ff)},0x1ff);
 is(join('',sort keys %hashu),"\x7f\xff");
 
-foreach my $a ("\x7f","\xff")
+foreach ("\x7f","\xff")
  {
+  my $a = $_;
   utf8::upgrade($a);
   is($hashu{$a},ord($a));
   utf8::downgrade($a);
@@ -169,4 +172,53 @@ foreach my $a ("\x7f","\xff")
     is ($l, $r, "\\w on each, utf8 now bytes");
   }
 
+}
+
+{
+    local $/; # Slurp.
+    my $utf8      = <DATA>;
+    my $utfebcdic = <DATA>;
+    if (ord('A') == 65) {
+	eval $utf8;
+    } elsif (ord('A') == 193) {
+	eval $utfebcdic;
+    }
+}
+__END__
+{
+  # See if utf8 barewords work [perl #22969]
+  use utf8;
+  my %hash = (Ñ‚ÐµÑÑ‚ => 123);
+  is($hash{Ñ‚ÐµÑÑ‚}, $hash{'Ñ‚ÐµÑÑ‚'});
+  is($hash{Ñ‚ÐµÑÑ‚}, 123);
+  is($hash{'Ñ‚ÐµÑÑ‚'}, 123);
+  %hash = (Ñ‚ÐµÑÑ‚ => 123);
+  is($hash{Ñ‚ÐµÑÑ‚}, $hash{'Ñ‚ÐµÑÑ‚'});
+  is($hash{Ñ‚ÐµÑÑ‚}, 123);
+  is($hash{'Ñ‚ÐµÑÑ‚'}, 123);
+
+  # See if plain ASCII strings quoted with '=>' erroneously get utf8 flag [perl #68812]
+  my %foo = (a => 'b', 'c' => 'd');
+  for my $key (keys %foo) {
+    ok !utf8::is_utf8($key), "'$key' shouldn't have utf8 flag";
+  }
+}
+__END__
+{
+  # See if utf8 barewords work [perl #22969]
+  use utf8; # UTF-EBCDIC, really.
+  my %hash = (½ää½âÀ½äâ½ää => 123);
+  is($hash{½ää½âÀ½äâ½ää}, $hash{'½ää½âÀ½äâ½ää'});
+  is($hash{½ää½âÀ½äâ½ää}, 123);
+  is($hash{'½ää½âÀ½äâ½ää'}, 123);
+  %hash = (½ää½âÀ½äâ½ää => 123);
+  is($hash{½ää½âÀ½äâ½ää}, $hash{'½ää½âÀ½äâ½ää'});
+  is($hash{½ää½âÀ½äâ½ää}, 123);
+  is($hash{'½ää½âÀ½äâ½ää'}, 123);
+
+  # See if plain ASCII strings quoted with '=>' erroneously get utf8 flag [perl #68812]
+  my %foo = (a => 'b', 'c' => 'd');
+  for my $key (keys %foo) {
+    ok !utf8::is_utf8($key), "'$key' shouldn't have utf8 flag";
+  }
 }

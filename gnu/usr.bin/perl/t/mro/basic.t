@@ -3,7 +3,14 @@
 use strict;
 use warnings;
 
-require q(./test.pl); plan(tests => 38);
+BEGIN {
+    chdir 't';
+    @INC = '../lib';
+    require q(./test.pl);
+}
+plan(tests => 61);
+
+require mro;
 
 {
     package MRO_A;
@@ -55,10 +62,10 @@ ok(!mro::is_universal('MRO_B'));
 ok(mro::is_universal('MRO_B'));
 
 @UNIVERSAL::ISA = ();
-ok(mro::is_universal('MRO_B'));
+ok(!mro::is_universal('MRO_B'));
 
 # is_universal, get_mro, and get_linear_isa should
-# handle non-existant packages sanely
+# handle non-existent packages sanely
 ok(!mro::is_universal('Does_Not_Exist'));
 is(mro::get_mro('Also_Does_Not_Exist'), 'dfs');
 ok(eq_array(
@@ -173,6 +180,19 @@ is(eval { MRO_N->testfunc() }, 123);
 
     ok(eq_array(mro::get_linear_isa('ISACLEAR1'),[qw/ISACLEAR1/]));
     ok(eq_array(mro::get_linear_isa('ISACLEAR2'),[qw/ISACLEAR2/]));
+
+    # [perl #49564]  This is a pretty obscure way of clearing @ISA but
+    # it tests a regression that affects XS code calling av_clear too.
+    {
+        package ISACLEAR3;
+        our @ISA = qw/WW XX/;
+    }
+    ok(eq_array(mro::get_linear_isa('ISACLEAR3'),[qw/ISACLEAR3 WW XX/]));
+    {
+        package ISACLEAR3;
+        reset 'I';
+    }
+    ok(eq_array(mro::get_linear_isa('ISACLEAR3'),[qw/ISACLEAR3/]));
 }
 
 # Check that recursion bails out "cleanly" in a variety of cases
@@ -218,3 +238,160 @@ is(eval { MRO_N->testfunc() }, 123);
     is($stk_obj->foo(3), 6);
 }
 
+{ 
+  {
+    # assigning @ISA via arrayref to globref RT 60220
+    package P1;
+    sub new { bless {}, shift }
+    
+    package P2;
+  }
+  *{P2::ISA} = [ 'P1' ];
+  my $foo = P2->new;
+  ok(!eval { $foo->bark }, "no bark method");
+  no warnings 'once';  # otherwise it'll bark about P1::bark used only once
+  *{P1::bark} = sub { "[bark]" };
+  is(scalar eval { $foo->bark }, "[bark]", "can bark now");
+}
+
+{
+  # assigning @ISA via arrayref then modifying it RT 72866
+  {
+    package Q1;
+    sub foo {  }
+
+    package Q2;
+    sub bar { }
+
+    package Q3;
+  }
+  push @Q3::ISA, "Q1";
+  can_ok("Q3", "foo");
+  *Q3::ISA = [];
+  push @Q3::ISA, "Q1";
+  can_ok("Q3", "foo");
+  *Q3::ISA = [];
+  push @Q3::ISA, "Q2";
+  can_ok("Q3", "bar");
+  ok(!Q3->can("foo"), "can't call foo method any longer");
+}
+
+{
+    # test mro::method_changed_in
+    my $count = mro::get_pkg_gen("MRO_A");
+    mro::method_changed_in("MRO_A");
+    my $count_new = mro::get_pkg_gen("MRO_A");
+
+    is($count_new, $count + 1);
+}
+
+{
+    # test if we can call mro::invalidate_all_method_caches;
+    eval {
+        mro::invalidate_all_method_caches();
+    };
+    is($@, "");
+}
+
+{
+    # @main::ISA
+    no warnings 'once';
+    @main::ISA = 'parent';
+    my $output = '';
+    *parent::do = sub { $output .= 'parent' };
+    *parent2::do = sub { $output .= 'parent2' };
+    main->do;
+    @main::ISA = 'parent2';
+    main->do;
+    is $output, 'parentparent2', '@main::ISA is magical';
+}
+
+{
+    # Undefining *ISA, then modifying @ISA
+    # This broke Class::Trait. See [perl #79024].
+    {package Class::Trait::Base}
+    no strict 'refs';
+    undef   *{"Extra::TSpouse::ISA"};
+    'Extra::TSpouse'->isa('Class::Trait::Base'); # cache the mro
+    unshift @{"Extra::TSpouse::ISA"}, 'Class::Trait::Base';
+    ok 'Extra::TSpouse'->isa('Class::Trait::Base'),
+     'a isa b after undef *a::ISA and @a::ISA modification';
+}
+
+{
+    # Deleting $package::{ISA}
+    # Broken in 5.10.0; fixed in 5.13.7
+    @Blength::ISA = 'Bladd';
+    delete $Blength::{ISA};
+    ok !Blength->isa("Bladd"), 'delete $package::{ISA}';
+}
+
+{
+    # Undefining stashes
+    @Thrext::ISA = "Thwit";
+    @Thwit::ISA = "Sile";
+    undef %Thwit::;
+    ok !Thrext->isa('Sile'), 'undef %package:: updates subclasses';
+}
+
+{
+    # Obliterating @ISA via glob assignment
+    # Broken in 5.14.0; fixed in 5.17.2
+    @Gwythaint::ISA = "Fantastic::Creature";
+    undef *This_glob_haD_better_not_exist; # paranoia; must have no array
+    *Gwythaint::ISA = *This_glob_haD_better_not_exist;
+    ok !Gwythaint->isa("Fantastic::Creature"),
+       'obliterating @ISA via glob assignment';
+}
+
+{
+    # Autovivifying @ISA via @{*ISA}
+    no warnings;
+    undef *fednu::ISA;
+    @{*fednu::ISA} = "pyfg";
+    ok +fednu->isa("pyfg"), 'autovivifying @ISA via *{@ISA}';
+}
+
+{
+    sub Detached::method;
+    my $h = delete $::{"Detached::"};
+    eval { local *Detached::method };
+    is $@, "", 'localising gv-with-cv belonging to detached package';
+}
+
+{
+    # *ISA localisation
+    @il::ISA = "ilsuper";
+    sub ilsuper::can { "puree" }
+    sub il::tomatoes;
+    {
+        local *il::ISA;
+        is +il->can("tomatoes"), \&il::tomatoes, 'local *ISA';
+    }
+    is "il"->can("tomatoes"), "puree", 'local *ISA unwinding';
+    {
+        local *il::ISA = [];
+        is +il->can("tomatoes"), \&il::tomatoes, 'local *ISA = []';
+    }
+    is "il"->can("tomatoes"), "puree", 'local *ISA=[] unwinding';
+}
+
+# Changes to UNIVERSAL::DESTROY should not leave stale DESTROY caches
+# (part of #114864)
+our $destroy_output;
+sub UNIVERSAL::DESTROY { $destroy_output = "old" }
+my $x = bless[];
+undef $x; # cache the DESTROY method
+undef *UNIVERSAL::DESTROY;
+*UNIVERSAL::DESTROY = sub { $destroy_output = "new" };
+$x = bless[];
+undef $x; # should use the new DESTROY
+is $destroy_output, "new",
+    'Changes to UNIVERSAL::DESTROY invalidate DESTROY caches';
+undef *UNIVERSAL::DESTROY;
+
+{
+    no warnings 'uninitialized';
+    $#_119433::ISA++;
+    pass "no crash when ISA contains nonexistent elements";
+}

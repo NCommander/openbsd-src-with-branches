@@ -1,8 +1,11 @@
 
 BEGIN {
-    unless ("A" eq pack('U', 0x41)) {
-	print "1..0 # Unicode::Normalize " .
-	    "cannot stringify a Unicode code point\n";
+    unless ('A' eq pack('U', 0x41)) {
+	print "1..0 # Unicode::Normalize cannot pack a Unicode code point\n";
+	exit 0;
+    }
+    unless (0x41 == unpack('U', 'A')) {
+	print "1..0 # Unicode::Normalize cannot get a Unicode code point\n";
 	exit 0;
     }
 }
@@ -35,16 +38,25 @@ BEGIN {
     }
 }
 
-use Test;
 use strict;
 use warnings;
 
-BEGIN { plan tests => 112 };
+BEGIN { $| = 1; print "1..113\n"; }
+my $count = 0;
+sub ok ($;$) {
+    my $p = my $r = shift;
+    if (@_) {
+	my $x = shift;
+	$p = !defined $x ? !defined $r : !defined $r ? 0 : $r eq $x;
+    }
+    print $p ? "ok" : "not ok", ' ', ++$count, "\n";
+}
+
+ok(1);
 
 #########################
 
 no warnings qw(utf8);
-# To avoid warning in Test.pm, EXPR in ok(EXPR) must be boolean.
 
 for my $u (0xD800, 0xDFFF, 0xFDD0, 0xFDEF, 0xFEFF, 0xFFFE, 0xFFFF,
 	   0x1FFFF, 0x10FFFF, 0x110000, 0x7FFFFFFF)

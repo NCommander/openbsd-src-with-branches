@@ -1,4 +1,4 @@
-/* $OpenBSD: magic-test.c,v 1.12 2015/08/12 09:29:49 nicm Exp $ */
+/* $OpenBSD: magic-test.c,v 1.5 2015/05/29 15:11:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -206,18 +206,6 @@ magic_test_unsigned(struct magic_line *ml, uint64_t value, uint64_t wanted)
 }
 
 static int
-magic_test_double(struct magic_line *ml, double value, double wanted)
-{
-	switch (ml->test_operator) {
-	case 'x':
-		return (1);
-	case '=':
-		return (value == wanted);
-	}
-	return (-1);
-}
-
-static int
 magic_test_type_none(__unused struct magic_line *ml,
     __unused struct magic_state *ms)
 {
@@ -235,16 +223,6 @@ magic_test_type_byte(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (int8_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (int8_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (int8_t)ml->type_operand;
-	else if (ml->type_operator == '/')
-		value /= (int8_t)ml->type_operand;
-	else if (ml->type_operator == '%')
-		value %= (int8_t)ml->type_operand;
-	else if (ml->type_operator == '*')
-		value *= (int8_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -271,16 +249,6 @@ magic_test_type_short(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (int16_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (int16_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (int16_t)ml->type_operand;
-	else if (ml->type_operator == '/')
-		value /= (int16_t)ml->type_operand;
-	else if (ml->type_operator == '%')
-		value %= (int16_t)ml->type_operand;
-	else if (ml->type_operator == '*')
-		value *= (int16_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -307,16 +275,6 @@ magic_test_type_long(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (int32_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (int32_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (int32_t)ml->type_operand;
-	else if (ml->type_operator == '/')
-		value /= (int32_t)ml->type_operand;
-	else if (ml->type_operator == '%')
-		value %= (int32_t)ml->type_operand;
-	else if (ml->type_operator == '*')
-		value *= (int32_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -343,16 +301,6 @@ magic_test_type_quad(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (int64_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (int64_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (int64_t)ml->type_operand;
-	else if (ml->type_operator == '/')
-		value /= (int64_t)ml->type_operand;
-	else if (ml->type_operator == '%')
-		value %= (int64_t)ml->type_operand;
-	else if (ml->type_operator == '*')
-		value *= (int64_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -375,16 +323,6 @@ magic_test_type_ubyte(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (uint8_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (uint8_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (uint8_t)ml->type_operand;
-	else if (ml->type_operator == '/')
-		value /= (uint8_t)ml->type_operand;
-	else if (ml->type_operator == '%')
-		value %= (uint8_t)ml->type_operand;
-	else if (ml->type_operator == '*')
-		value *= (uint8_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -411,16 +349,6 @@ magic_test_type_ushort(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (uint16_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (uint16_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (uint16_t)ml->type_operand;
-	else if (ml->type_operator == '/')
-		value /= (uint16_t)ml->type_operand;
-	else if (ml->type_operator == '%')
-		value %= (uint16_t)ml->type_operand;
-	else if (ml->type_operator == '*')
-		value *= (uint16_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -447,16 +375,6 @@ magic_test_type_ulong(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (uint32_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (uint32_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (uint32_t)ml->type_operand;
-	else if (ml->type_operator == '/')
-		value /= (uint32_t)ml->type_operand;
-	else if (ml->type_operator == '%')
-		value %= (uint32_t)ml->type_operand;
-	else if (ml->type_operator == '*')
-		value *= (uint32_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -483,16 +401,6 @@ magic_test_type_uquad(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (uint64_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (uint64_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (uint64_t)ml->type_operand;
-	else if (ml->type_operator == '/')
-		value /= (uint64_t)ml->type_operand;
-	else if (ml->type_operator == '%')
-		value %= (uint64_t)ml->type_operand;
-	else if (ml->type_operator == '*')
-		value *= (uint64_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -509,7 +417,6 @@ magic_test_type_float(struct magic_line *ml, struct magic_state *ms)
 {
 	uint32_t	value0;
 	double		value;
-	int		result;
 
 	if (magic_copy_from(ms, -1, &value0, sizeof value0) != 0)
 		return (0);
@@ -522,11 +429,11 @@ magic_test_type_float(struct magic_line *ml, struct magic_state *ms)
 	if (ml->type_operator != ' ')
 		return (-1);
 
-	result = magic_test_double(ml, value, (float)ml->test_double);
-	if (result == !ml->test_not && ml->result != NULL) {
-		magic_add_result(ms, ml, "%g", value);
-		ms->offset += sizeof value0;
-	}
+	if (ml->test_operator != 'x')
+		return (-1);
+
+	magic_add_result(ms, ml, "%g", value);
+	ms->offset += sizeof value0;
 	return (1);
 }
 
@@ -535,7 +442,6 @@ magic_test_type_double(struct magic_line *ml, struct magic_state *ms)
 {
 	uint64_t	value0;
 	double		value;
-	int		result;
 
 	if (magic_copy_from(ms, -1, &value0, sizeof value0) != 0)
 		return (0);
@@ -548,11 +454,11 @@ magic_test_type_double(struct magic_line *ml, struct magic_state *ms)
 	if (ml->type_operator != ' ')
 		return (-1);
 
-	result = magic_test_double(ml, value, (double)ml->test_double);
-	if (result == !ml->test_not && ml->result != NULL) {
-		magic_add_result(ms, ml, "%g", value);
-		ms->offset += sizeof value0;
-	}
+	if (ml->test_operator != 'x')
+		return (-1);
+
+	magic_add_result(ms, ml, "%g", value);
+	ms->offset += sizeof value0;
 	return (1);
 }
 
@@ -571,17 +477,13 @@ magic_test_type_string(struct magic_line *ml, struct magic_state *ms)
 		for (; *cp != '\0'; cp++) {
 			switch (*cp) {
 			case 'B':
-			case 'W':
 				Bflag = 1;
 				break;
 			case 'b':
-			case 'w':
 				bflag = 1;
 				break;
 			case 'c':
 				cflag = 1;
-				break;
-			case 't':
 				break;
 			default:
 				return (-1);
@@ -607,7 +509,6 @@ magic_test_type_string(struct magic_line *ml, struct magic_state *ms)
 		result = result > 0;
 		break;
 	case '=':
-		slen = ml->test_string_size; /* only print what was found */
 		result = result == 0;
 		break;
 	default:
@@ -626,22 +527,9 @@ magic_test_type_string(struct magic_line *ml, struct magic_state *ms)
 static int
 magic_test_type_pstring(struct magic_line *ml, struct magic_state *ms)
 {
-	const char	*s, *cp;
+	const char	*s;
 	size_t		 slen;
 	int		 result;
-
-	cp = &ml->type_string[(sizeof "pstring") - 1];
-	if (*cp != '\0') {
-		if (*cp != '/')
-			return (-1);
-		cp++;
-		for (; *cp != '\0'; cp++) {
-			switch (*cp) {
-			default:
-				return (-1);
-			}
-		}
-	}
 
 	s = ms->base + ms->offset;
 	if (ms->size - ms->offset < 1)
@@ -677,7 +565,7 @@ magic_test_type_pstring(struct magic_line *ml, struct magic_state *ms)
 	if (result == !ml->test_not) {
 		if (ml->result != NULL)
 			magic_add_string(ms, ml, s, slen);
-		if (result && ml->test_operator == '=')
+		if (result)
 			ms->offset += slen + 1;
 	}
 	return (result);
@@ -702,10 +590,6 @@ magic_test_type_date(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (int32_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (int32_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (int32_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -748,10 +632,6 @@ magic_test_type_qdate(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (int64_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (int64_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (int64_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -794,10 +674,6 @@ magic_test_type_udate(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (uint32_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (uint32_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (uint32_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -840,10 +716,6 @@ magic_test_type_uqdate(struct magic_line *ml, struct magic_state *ms)
 
 	if (ml->type_operator == '&')
 		value &= (uint64_t)ml->type_operand;
-	else if (ml->type_operator == '-')
-		value -= (uint64_t)ml->type_operand;
-	else if (ml->type_operator == '+')
-		value += (uint64_t)ml->type_operand;
 	else if (ml->type_operator != ' ')
 		return (-1);
 
@@ -935,9 +807,8 @@ magic_test_type_regex(struct magic_line *ml, struct magic_state *ms)
 	m.rm_eo = ms->size;
 
 	result = (regexec(&re, ms->base, 1, &m, REG_STARTEND) == 0);
-	if (result == !ml->test_not) {
-		if (ml->result != NULL)
-			magic_add_result(ms, ml, "%s", "");
+	if (result == !ml->test_not && ml->result != NULL) {
+		magic_add_result(ms, ml, "%s", "");
 		if (result) {
 			if (sflag)
 				ms->offset = m.rm_so;
@@ -971,17 +842,13 @@ magic_test_type_search(struct magic_line *ml, struct magic_state *ms)
 			for (cp = endptr + 1; *cp != '\0'; cp++) {
 				switch (*cp) {
 				case 'B':
-				case 'W':
 					Bflag = 1;
 					break;
 				case 'b':
-				case 'w':
 					bflag = 1;
 					break;
 				case 'c':
 					cflag = 1;
-					break;
-				case 't':
 					break;
 				default:
 					return (-1);
@@ -1039,11 +906,9 @@ magic_test_type_search(struct magic_line *ml, struct magic_state *ms)
 	}
 	result = (found != NULL);
 
-	if (result == !ml->test_not) {
-		if (ml->result != NULL)
-			magic_add_string(ms, ml, found, ms->size - ms->offset);
-		if (result && found != NULL && ml->test_operator == '=')
-			ms->offset = (found + size) - ms->base;
+	if (result == !ml->test_not && ml->result != NULL && found != NULL) {
+		magic_add_string(ms, ml, found, ms->size - ms->offset);
+		ms->offset = found - start + size;
 	}
 	return (result);
 }

@@ -1,6 +1,6 @@
 #!./perl -w
 
-# Test that there are no missing Maintainers in Maintainers.PL 
+# Test that there are no missing Maintainers in Maintainers.pl
 
 BEGIN {
 	# This test script uses a slightly atypical invocation of the 'standard'
@@ -11,6 +11,12 @@ BEGIN {
 
     chdir '..' unless -d 't';
     @INC = qw(lib Porting);
+    require './t/test.pl';
+}
+
+use Config;
+if ( $Config{usecrosscompile} ) {
+  skip_all( "Odd failures during cross-compilation" );
 }
 
 use strict;
@@ -18,17 +24,16 @@ use warnings;
 use Maintainers qw(show_results process_options finish_tap_output);
 
 if ($^O eq 'VMS') {
-    print "1..0 # Skip: home-grown glob doesn't handle fancy patterns\n";
-    exit 0;
+    skip_all "home-grown glob doesn't handle fancy patterns";
 }
 
 {
-    local @ARGV = qw|--tap-output --checkmani|;
+    local @ARGV = qw|--checkmani|;
     show_results(process_options());
 }
 
 {
-    local @ARGV = qw|--tap-output --checkmani lib/ ext/|;
+    local @ARGV = qw|--checkmani lib/ ext/|;
     show_results(process_options());
 }
 

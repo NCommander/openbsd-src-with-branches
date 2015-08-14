@@ -1,4 +1,4 @@
-/* $OpenBSD: magic.h,v 1.7 2015/08/11 21:42:16 nicm Exp $ */
+/* $OpenBSD: magic.h,v 1.5 2015/04/24 16:24:11 nicm Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -27,7 +27,6 @@
 #include <err.h>
 #include <regex.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -129,7 +128,6 @@ struct magic_line {
 	size_t			 test_string_size;
 	uint64_t		 test_unsigned;
 	int64_t			 test_signed;
-	double			 test_double;
 
 	int			 stringify;
 	const char		*result;
@@ -172,9 +170,6 @@ RB_PROTOTYPE(magic_tree, magic_line, node, magic_compare);
 
 char		*magic_strtoull(const char *, uint64_t *);
 char		*magic_strtoll(const char *, int64_t *);
-void		 magic_vwarnm(struct magic *, u_int, const char *, va_list);
-void		 magic_warnm(struct magic *, u_int, const char *, ...)
-		     __attribute__ ((format (printf, 3, 4)));
 void		 magic_warn(struct magic_line *, const char *, ...)
 		     __attribute__ ((format (printf, 2, 3)));
 
