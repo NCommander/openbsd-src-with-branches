@@ -153,7 +153,7 @@ and
 can be called during autoconf, from process context, or from interrupt context.
 Calling
 .Fn srp_leave
-from a different context to the preceding
+from a different context or on a different CPU to the preceding
 .Fn srp_enter
 call will lead to undefined behaviour.
 .Sh RETURN VALUES
