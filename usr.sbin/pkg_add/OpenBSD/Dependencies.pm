@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Dependencies.pm,v 1.154 2014/11/30 15:56:34 espie Exp $
+# $OpenBSD: Dependencies.pm,v 1.155 2015/01/30 11:42:55 espie Exp $
 #
 # Copyright (c) 2005-2010 Marc Espie <espie@openbsd.org>
 #
@@ -543,6 +543,7 @@ sub check_for_loops
 				unless ($k->{finished}) {
 					$state->say("| #1", $k->print);
 					delete $k->solver->{deplist};
+					delete $k->solver->{to_register};
 					push(@real, $k);
 				}
 				$merged->{$k} = 1;
@@ -550,6 +551,7 @@ sub check_for_loops
 			}
 		}
 		delete $initial->solver->{deplist};
+		delete $initial->solver->{to_register};
 		$initial->merge($state->tracker, @real);
 	}
 }
