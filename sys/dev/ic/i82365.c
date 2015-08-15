@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365.c,v 1.32 2014/07/12 18:48:17 tedu Exp $	*/
+/*	$OpenBSD: i82365.c,v 1.33 2015/07/26 02:14:09 miod Exp $	*/
 /*	$NetBSD: i82365.c,v 1.10 1998/06/09 07:36:55 thorpej Exp $	*/
 
 /*
@@ -837,15 +837,16 @@ pcic_power(why, arg)
 	struct pcic_event *pe;
 
 	if (why != DVACT_RESUME) {
-		timeout_del(&sc->poll_timeout);
-	}
-	else {
+		if (sc->poll_established)
+			timeout_del(&sc->poll_timeout);
+	} else {
 		pcic_intr_socket(h);
 
 		while ((pe = SIMPLEQ_FIRST(&h->events)))
 			pcic_event_process(h, pe);
 
-		timeout_add_msec(&sc->poll_timeout, 500);
+		if (sc->poll_established)
+			timeout_add_msec(&sc->poll_timeout, 500);
 	}
 }
 
