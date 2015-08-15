@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: pci_alphabook1.c,v 1.3 2015/07/26 05:09:44 miod Exp $ */
 /* $NetBSD: pci_alphabook1.c,v 1.16 2012/02/06 02:14:15 matt Exp $ */
 
 /*-
@@ -76,7 +76,6 @@
 
 #include <alpha/pci/pci_alphabook1.h>
 #include <alpha/pci/siovar.h>
-#include <alpha/pci/sioreg.h>
 
 #include "sio.h"
 
