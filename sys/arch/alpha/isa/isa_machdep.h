@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.h,v 1.13 2009/08/22 02:54:50 mk Exp $	*/
+/*	$OpenBSD: isa_machdep.h,v 1.14 2013/03/08 18:29:33 miod Exp $	*/
 /*	$NetBSD: isa_machdep.h,v 1.3 1996/11/19 04:53:07 cgd Exp $	*/
 
 /*
@@ -41,8 +41,8 @@ struct alpha_isa_chipset {
 	void	*(*ic_intr_establish)(void *, int, int, int,
 		    int (*)(void *), void *, const char *);
 	void	(*ic_intr_disestablish)(void *, void *);
-	int	(*ic_intr_alloc)(isa_chipset_tag_t *, int, int, int *);
-	int	(*ic_intr_check)(isa_chipset_tag_t *, int, int);
+	int	(*ic_intr_alloc)(isa_chipset_tag_t, int, int, int *);
+	int	(*ic_intr_check)(isa_chipset_tag_t, int, int);
 };
 
 /*
