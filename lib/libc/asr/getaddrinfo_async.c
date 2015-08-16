@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo_async.c,v 1.39 2015/05/26 19:28:57 eric Exp $	*/
+/*	$OpenBSD: getaddrinfo_async.c,v 1.40 2015/05/29 08:49:37 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -854,7 +854,7 @@ addrconfig_setup(struct asr_query *as)
 		case PF_INET:
 			sinp = (struct sockaddr_in *)ifa->ifa_addr;
 
-			if (sinp->sin_addr.s_addr == INADDR_LOOPBACK)
+			if (sinp->sin_addr.s_addr == htonl(INADDR_LOOPBACK))
 				continue;
 
 			as->as.ai.flags &= ~ASYNC_NO_INET;
