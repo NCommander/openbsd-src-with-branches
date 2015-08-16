@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-clear-history.c,v 1.11 2013/10/10 12:00:18 nicm Exp $ */
+/* $OpenBSD: cmd-clear-history.c,v 1.12 2014/10/20 22:29:25 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -44,6 +44,9 @@ cmd_clear_history_exec(struct cmd *self, struct cmd_q *cmdq)
 	if (cmd_find_pane(cmdq, args_get(args, 't'), NULL, &wp) == NULL)
 		return (CMD_RETURN_ERROR);
 	gd = wp->base.grid;
+
+	if (wp->mode == &window_copy_mode)
+		window_pane_reset_mode(wp);
 
 	grid_move_lines(gd, 0, gd->hsize, gd->sy);
 	gd->hsize = 0;
