@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.h,v 1.10 2015/01/16 06:47:03 deraadt Exp $ */
+/*	$OpenBSD: boot.h,v 1.11 2015/07/03 11:17:25 miod Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -49,8 +49,6 @@
 #include "sod.h"
 #include "stdlib.h"
 #include "dl_prebind.h"
-
-#include "../../lib/csu/os-note-elf.h"
 
 #ifdef RCRT0
 
