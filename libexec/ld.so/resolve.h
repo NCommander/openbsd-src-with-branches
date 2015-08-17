@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.70 2013/11/13 05:41:42 deraadt Exp $ */
+/*	$OpenBSD: resolve.h,v 1.71 2015/01/22 05:48:17 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -302,8 +302,8 @@ TAILQ_HEAD(dlochld, dep_node);
 extern struct dlochld _dlopened_child_list;
 
 /* variables used to avoid duplicate node checking */
-int _dl_searchnum;
-uint32_t _dl_skipnum;
+extern int _dl_searchnum;
+extern uint32_t _dl_skipnum;
 void _dl_newsymsearch(void);
 
 #endif /* _RESOLVE_H_ */
