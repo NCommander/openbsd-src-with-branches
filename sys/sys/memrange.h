@@ -1,4 +1,4 @@
-/* $OpenBSD: memrange.h,v 1.8 2013/12/19 21:30:02 deraadt Exp $ */
+/* $OpenBSD: memrange.h,v 1.9 2015/06/22 18:57:26 kettenis Exp $ */
 /*-
  * Copyright (c) 1999 Michael Smith <msmith@freebsd.org>
  * All rights reserved.
@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  */
 /*
- * Memory range attribute operations, peformed on /dev/mem
+ * Memory range attribute operations, performed on /dev/mem
  */
 
 /* Memory range attributes */
