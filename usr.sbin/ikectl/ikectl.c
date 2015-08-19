@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikectl.c,v 1.18 2013/11/14 20:48:52 deraadt Exp $	*/
+/*	$OpenBSD: ikectl.c,v 1.19 2015/01/16 06:40:17 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007-2013 Reyk Floeter <reyk@openbsd.org>
@@ -44,7 +44,7 @@ struct imsgname {
 	void (*func)(struct imsg *);
 };
 
-struct imsgname *monitor_lookup(u_int8_t);
+struct imsgname *monitor_lookup(uint8_t);
 void		 monitor_id(struct imsg *);
 int		 monitor(struct imsg *);
 
@@ -343,7 +343,7 @@ main(int argc, char *argv[])
 }
 
 struct imsgname *
-monitor_lookup(u_int8_t type)
+monitor_lookup(uint8_t type)
 {
 	int i;
 
