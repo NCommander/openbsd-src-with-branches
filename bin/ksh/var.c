@@ -1,12 +1,10 @@
-/*	$OpenBSD: var.c,v 1.40 2014/12/12 05:00:55 jsg Exp $	*/
+/*	$OpenBSD: var.c,v 1.41 2015/04/17 17:20:41 deraadt Exp $	*/
 
 #include "sh.h"
 #include <time.h>
 #include "ksh_limval.h"
 #include <sys/stat.h>
 #include <ctype.h>
-#include <limits.h>
-#include <stdlib.h>
 
 /*
  * Variables
