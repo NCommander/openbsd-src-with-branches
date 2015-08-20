@@ -1,4 +1,4 @@
-/*	$OpenBSD: ztsscale.c,v 1.17 2014/09/27 06:28:45 doug Exp $	*/
+/*	$OpenBSD: ztsscale.c,v 1.18 2015/01/16 06:40:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Matthieu Herrb
@@ -135,7 +135,7 @@ save_screen(void)
 	    PROT_READ|PROT_WRITE, MAP_SHARED, fd, (off_t)0);
 	if (mapaddr == MAP_FAILED)
 		err(2, "mmap");
-	save = (u_short *)malloc(WIDTH*HEIGHT*sizeof(u_short));
+	save = malloc(WIDTH*HEIGHT*sizeof(u_short));
 	if (save == NULL)
 		err(2, "malloc");
 	memcpy(save, mapaddr, WIDTH*HEIGHT*sizeof(u_short));

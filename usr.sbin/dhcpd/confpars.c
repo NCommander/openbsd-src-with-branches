@@ -1,4 +1,4 @@
-/*	$OpenBSD: confpars.c,v 1.23 2014/07/09 13:42:24 yasuoka Exp $ */
+/*	$OpenBSD: confpars.c,v 1.24 2015/05/18 17:51:21 krw Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997 The Internet Software Consortium.
@@ -1277,8 +1277,7 @@ parse_lease_declaration(FILE *cfile)
 				if (token == TOK_STRING) {
 					token = next_token(&val, cfile);
 					lease.uid_len = strlen(val);
-					lease.uid = (unsigned char *)
-						malloc(lease.uid_len);
+					lease.uid = malloc(lease.uid_len);
 					if (!lease.uid) {
 						warning("no space for uid");
 						return NULL;

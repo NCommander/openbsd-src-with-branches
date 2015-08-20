@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.21 2015/01/16 06:40:19 deraadt Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.22 2015/04/18 18:28:38 deraadt Exp $	*/
 /*	$NetBSD: bpf.c,v 1.5.2.1 1995/11/14 08:45:42 thorpej Exp $	*/
 
 /*
@@ -160,7 +160,7 @@ BpfOpen(void)
 		DoExit();
 	}
 	if (BpfPkt == NULL)
-		BpfPkt = (u_int8_t *)malloc(BpfLen);
+		BpfPkt = malloc(BpfLen);
 
 	if (BpfPkt == NULL) {
 		syslog(LOG_ERR, "bpf: out of memory (%u bytes for bpfpkt)",

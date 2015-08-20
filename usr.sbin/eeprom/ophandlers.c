@@ -1,4 +1,4 @@
-/*	$OpenBSD: ophandlers.c,v 1.12 2008/06/26 05:42:21 ray Exp $	*/
+/*	$OpenBSD: ophandlers.c,v 1.13 2014/11/18 20:54:28 krw Exp $	*/
 /*	$NetBSD: ophandlers.c,v 1.2 1996/02/28 01:13:30 thorpej Exp $	*/
 
 /*-
@@ -265,7 +265,7 @@ op_print(char *op_buf)
 	size_t size;
 
 	size = 1 + 4 * strlen(op_buf);
-	vistr = (char *)malloc(size);
+	vistr = malloc(size);
 	if (vistr == NULL)
 		printf("(out of memory)\n");
 	else {
