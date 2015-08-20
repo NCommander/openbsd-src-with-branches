@@ -206,9 +206,6 @@ const u_int tame_syscalls[SYS_MAXSYSCALL] = {
 int
 sys_tame(struct proc *p, void *v, register_t *retval)
 {
-#if 1
-	return (ENOSYS);
-#else
 	struct sys_tame_args /* {
 		syscallarg(int) flags;
 	} */	*uap = v;
@@ -230,7 +227,6 @@ sys_tame(struct proc *p, void *v, register_t *retval)
 	p->p_p->ps_tame &= flags;
 	p->p_p->ps_tame &= _TM_USERSET;
 	return (0);
-#endif
 }
 
 int
