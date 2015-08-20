@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.52 2015/01/16 06:39:58 deraadt Exp $	*/
+/*	$OpenBSD: init.c,v 1.53 2015/07/14 19:14:05 millert Exp $	*/
 /*	$NetBSD: init.c,v 1.22 1996/05/15 23:29:33 jtc Exp $	*/
 
 /*-
@@ -834,8 +834,7 @@ char **
 construct_argv(char *command)
 {
 	int argc = 0;
-	char **argv = (char **) calloc((strlen(command) + 1) / 2 + 1,
-	    sizeof (char *));
+	char **argv = calloc((strlen(command) + 1) / 2 + 1, sizeof (char *));
 	static const char separators[] = " \t";
 
 	if (argv == NULL)

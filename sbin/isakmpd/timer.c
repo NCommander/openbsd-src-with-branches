@@ -1,4 +1,4 @@
-/* $OpenBSD: timer.c,v 1.15 2005/04/08 22:32:10 cloder Exp $	 */
+/* $OpenBSD: timer.c,v 1.16 2013/04/02 03:06:18 guenther Exp $	 */
 /* $EOM: timer.c,v 1.13 2000/02/20 19:58:42 niklas Exp $	 */
 
 /*
@@ -82,7 +82,7 @@ struct event *
 timer_add_event(char *name, void (*func)(void *), void *arg,
     struct timeval *expiration)
 {
-	struct event   *ev = (struct event *) malloc(sizeof *ev);
+	struct event   *ev = malloc(sizeof *ev);
 	struct event   *n;
 	struct timeval  now;
 

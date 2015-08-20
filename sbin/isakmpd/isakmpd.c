@@ -1,4 +1,4 @@
-/* $OpenBSD: isakmpd.c,v 1.101 2013/09/26 15:31:14 patrick Exp $	 */
+/* $OpenBSD: isakmpd.c,v 1.102 2015/02/07 02:09:13 deraadt Exp $	 */
 /* $EOM: isakmpd.c,v 1.54 2000/10/05 09:28:22 niklas Exp $	 */
 
 /*
@@ -418,11 +418,11 @@ main(int argc, char *argv[])
 	/* Allocate the file descriptor sets just big enough.  */
 	n = getdtablesize();
 	mask_size = howmany(n, NFDBITS) * sizeof(fd_mask);
-	rfds = (fd_set *) malloc(mask_size);
+	rfds = malloc(mask_size);
 	if (!rfds)
 		log_fatal("main: malloc (%lu) failed",
 		    (unsigned long)mask_size);
-	wfds = (fd_set *) malloc(mask_size);
+	wfds = malloc(mask_size);
 	if (!wfds)
 		log_fatal("main: malloc (%lu) failed",
 		    (unsigned long)mask_size);
