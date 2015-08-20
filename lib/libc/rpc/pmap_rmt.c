@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_rmt.c,v 1.30 2013/11/12 06:59:12 deraadt Exp $ */
+/*	$OpenBSD: pmap_rmt.c,v 1.31 2014/11/11 04:51:49 guenther Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -171,7 +171,7 @@ newgetbroadcastnets(struct in_addr **addrsp)
 		}
 	}
 
-	addrs = (struct in_addr *)calloc(n, sizeof(*addrs));
+	addrs = calloc(n, sizeof(*addrs));
 	if (addrs == NULL) {
 		freeifaddrs(ifap);
 		return 0;

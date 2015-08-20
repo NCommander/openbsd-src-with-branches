@@ -1,4 +1,4 @@
-/*	$OpenBSD: clnt_raw.c,v 1.17 2010/09/01 14:43:34 millert Exp $ */
+/*	$OpenBSD: clnt_raw.c,v 1.18 2015/05/04 09:43:51 jsg Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -89,7 +89,7 @@ clntraw_create(u_long prog, u_long vers)
 	CLIENT	*client;
 
 	if (clp == NULL) {
-		clp = (struct clntraw_private *)calloc(1, sizeof (*clp));
+		clp = calloc(1, sizeof (*clp));
 		if (clp == NULL)
 			goto fail;
 		clntraw_private = clp;

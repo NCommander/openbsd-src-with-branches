@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_none.c,v 1.10 2006/03/31 18:28:55 deraadt Exp $ */
+/*	$OpenBSD: auth_none.c,v 1.11 2010/09/01 14:43:34 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -75,7 +75,7 @@ authnone_create(void)
 	XDR *xdrs;
 
 	if (ap == NULL) {
-		ap = (struct authnone_private *)calloc(1, sizeof (*ap));
+		ap = calloc(1, sizeof (*ap));
 		if (ap == NULL)
 			return (NULL);
 		authnone_private = ap;
