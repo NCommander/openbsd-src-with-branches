@@ -1,4 +1,4 @@
-/*	$OpenBSD: quota.c,v 1.34 2015/01/17 17:22:07 deraadt Exp $	*/
+/*	$OpenBSD: quota.c,v 1.35 2015/02/08 23:40:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1990, 1993
@@ -444,8 +444,7 @@ getprivs(long id, int quotatype)
 	setfsent();
 	for (i = 0; i < nfst; i++) {
 		if (qup == NULL) {
-			if ((qup =
-			    (struct quotause *)malloc(sizeof *qup)) == NULL)
+			if ((qup = malloc(sizeof *qup)) == NULL)
 				errx(2, "out of memory");
 		}
 		if (strncmp(fst[i].f_fstypename, "nfs", MFSNAMELEN) == 0) {

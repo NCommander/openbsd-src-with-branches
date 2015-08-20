@@ -1,4 +1,4 @@
-/*	$OpenBSD: sprint.c,v 1.14 2014/10/17 20:19:15 millert Exp $	*/
+/*	$OpenBSD: sprint.c,v 1.15 2015/03/15 00:41:28 millert Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -132,7 +132,7 @@ sort(void)
 	PERSON *pn, **lp;
 	PERSON **list;
 
-	if (!(list = (PERSON **)calloc((u_int)entries, sizeof(PERSON *))))
+	if (!(list = calloc((u_int)entries, sizeof(PERSON *))))
 		err(1, "malloc");
 	for (lp = list, pn = phead; pn != NULL; pn = pn->next)
 		*lp++ = pn;

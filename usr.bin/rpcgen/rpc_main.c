@@ -1,4 +1,4 @@
-/* $OpenBSD: rpc_main.c,v 1.28 2014/11/18 20:54:28 krw Exp $	 */
+/* $OpenBSD: rpc_main.c,v 1.29 2015/01/16 06:40:11 deraadt Exp $	 */
 /* $NetBSD: rpc_main.c,v 1.9 1996/02/19 11:12:43 pk Exp $	 */
 
 /*
@@ -214,7 +214,7 @@ extendfile(char *path, char *ext)
 		file++;
 
 	len = strlen(file) + strlen(ext) + 1;
-	res = alloc(len);
+	res = malloc(len);
 	if (res == NULL) {
 		fprintf(stderr, "could not allocate memory\n");
 		exit(1);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: indent.c,v 1.25 2014/07/20 01:38:40 guenther Exp $	*/
+/*	$OpenBSD: indent.c,v 1.26 2015/01/16 06:40:08 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -89,10 +89,10 @@ main(int argc, char **argv)
     ps.last_nl = true;		/* this is true if the last thing scanned was
 				 * a newline */
     ps.last_token = semicolon;
-    combuf = (char *) malloc(bufsize);
-    labbuf = (char *) malloc(bufsize);
-    codebuf = (char *) malloc(bufsize);
-    tokenbuf = (char *) malloc(bufsize);
+    combuf = malloc(bufsize);
+    labbuf = malloc(bufsize);
+    codebuf = malloc(bufsize);
+    tokenbuf = malloc(bufsize);
     if (combuf == NULL || labbuf == NULL || codebuf == NULL ||
         tokenbuf == NULL)
 	    err(1, NULL);
@@ -109,7 +109,7 @@ main(int argc, char **argv)
     s_com = e_com = combuf + 1;
     s_token = e_token = tokenbuf + 1;
 
-    in_buffer = (char *) malloc(10);
+    in_buffer = malloc(10);
     if (in_buffer == NULL)
 	    err(1, NULL);
     in_buffer_limit = in_buffer + 8;

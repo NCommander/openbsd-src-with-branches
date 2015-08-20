@@ -1,4 +1,4 @@
-/*	$OpenBSD: parsetime.c,v 1.21 2015/03/15 00:41:27 millert Exp $	*/
+/*	$OpenBSD: parsetime.c,v 1.22 2015/03/17 19:31:30 millert Exp $	*/
 
 /*
  * parsetime.c - parse time for at(1)
@@ -180,7 +180,7 @@ init_scanner(int argc, char **argv)
 	while (argc-- > 0)
 		sc_len += strlen(*argv++);
 
-	if ((sc_token = (char *) malloc(sc_len)) == NULL) {
+	if ((sc_token = malloc(sc_len)) == NULL) {
 		fprintf(stderr, "%s: Insufficient virtual memory\n",
 		    ProgramName);
 		return (-1);

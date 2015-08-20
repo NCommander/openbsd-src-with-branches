@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.142 2015/04/16 19:24:13 markus Exp $	*/
+/*	$OpenBSD: inet.c,v 1.143 2015/06/21 12:11:13 claudio Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -833,7 +833,7 @@ getrpcportnam(in_port_t port, int proto)
 			return (NULL);
 		}
 		for (; head != NULL; head = head->pml_next) {
-			n = (struct rpcnams *)malloc(sizeof(struct rpcnams));
+			n = malloc(sizeof(struct rpcnams));
 			if (n == NULL)
 				continue;
 			n->next = rpcn;

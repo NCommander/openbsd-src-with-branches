@@ -1,4 +1,4 @@
-/*	$OpenBSD: lexi.c,v 1.17 2014/10/11 03:05:48 doug Exp $	*/
+/*	$OpenBSD: lexi.c,v 1.18 2015/01/22 05:35:27 jsg Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -582,7 +582,7 @@ addkey(char *key, int val)
 	 */
 	nspecials = sizeof (specialsinit) / sizeof (specialsinit[0]);
 	maxspecials = nspecials + (nspecials >> 2);
-	specials = (struct templ *)calloc(maxspecials, sizeof specials[0]);
+	specials = calloc(maxspecials, sizeof specials[0]);
 	if (specials == NULL)
 	    err(1, NULL);
 	memcpy(specials, specialsinit, sizeof specialsinit);
