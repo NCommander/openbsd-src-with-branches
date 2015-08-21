@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-atalk.c,v 1.27 2014/08/14 12:44:44 mpi Exp $	*/
+/*	$OpenBSD: print-atalk.c,v 1.28 2015/01/16 06:40:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -224,7 +224,7 @@ ddp_print(register const u_char *bp, register u_int length, register int t,
 			clen = snaplen;
 
 		if (abuf == NULL) {
-			abuf = (u_char *)malloc(snaplen);
+			abuf = malloc(snaplen);
 			if (abuf == NULL)
 				error("ddp_print: malloc");
 		}
