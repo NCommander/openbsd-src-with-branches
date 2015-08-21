@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.186 2015/07/20 23:47:20 uebayasi Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.187 2015/07/23 12:44:43 dlg Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -238,7 +238,7 @@ pool_init(struct pool *pp, size_t size, u_int align, u_int ioff, int flags,
 	size = roundup(size, align);
 
 	if (palloc == NULL) {
-		while (size > pgsize)
+		while (size * 8 > pgsize)
 			pgsize <<= 1;
 
 		if (pgsize > PAGE_SIZE) {
