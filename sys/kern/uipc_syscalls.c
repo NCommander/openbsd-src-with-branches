@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.105 2015/07/27 04:01:51 guenther Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.106 2015/07/28 05:50:41 guenther Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/signalvar.h>
-#include <sys/tame.h>
 #include <sys/unpcb.h>
 #include <sys/un.h>
 #ifdef KTRACE
