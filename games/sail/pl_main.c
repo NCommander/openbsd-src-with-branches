@@ -1,4 +1,4 @@
-/*	$OpenBSD: pl_main.c,v 1.12 2009/10/27 23:59:27 deraadt Exp $	*/
+/*	$OpenBSD: pl_main.c,v 1.13 2014/03/11 07:42:55 guenther Exp $	*/
 /*	$NetBSD: pl_main.c,v 1.5 1995/04/24 12:25:25 cgd Exp $	*/
 
 /*
@@ -83,7 +83,7 @@ reprint:
 		nat[n] = 0;
 	foreachship(sp) {
 		if (sp->file == NULL &&
-		    (sp->file = (struct File *)calloc(1, sizeof (struct File))) == NULL)
+		    (sp->file = calloc(1, sizeof (struct File))) == NULL)
 			err(1, NULL);
 		sp->file->index = sp - SHIP(0);
 		sp->file->stern = nat[sp->nationality]++;

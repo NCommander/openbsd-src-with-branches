@@ -1,4 +1,4 @@
-/*	$OpenBSD: worm.c,v 1.28 2015/03/09 19:52:02 tedu Exp $	*/
+/*	$OpenBSD: worm.c,v 1.29 2015/08/21 02:42:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -359,7 +359,7 @@ newlink(void)
 {
 	struct body *tmp;
 
-	if ((tmp = (struct body *) malloc(sizeof (struct body))) == NULL) {
+	if ((tmp = malloc(sizeof (struct body))) == NULL) {
 		endwin();
 		errx(1, "out of memory");
 	}

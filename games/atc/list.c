@@ -1,4 +1,4 @@
-/*	$OpenBSD: list.c,v 1.6 2004/11/29 08:52:28 jsg Exp $	*/
+/*	$OpenBSD: list.c,v 1.7 2009/10/27 23:59:23 deraadt Exp $	*/
 /*	$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $	*/
 
 /*-
@@ -49,7 +49,7 @@ newplane(void)
 {
 	PLANE *p;
 	
-	if ((p = (PLANE *) calloc(1, sizeof (PLANE))) == NULL)
+	if ((p = calloc(1, sizeof (PLANE))) == NULL)
 		loser(NULL, "Out of memory");
 	return (p);
 }
