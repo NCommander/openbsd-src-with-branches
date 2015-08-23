@@ -48,7 +48,7 @@
  * Descriptor associated with each open bpf file.
  */
 struct bpf_d {
-	struct srp	bd_next;	/* Linked list of descriptors */
+	struct bpf_d	*bd_next;	/* Linked list of descriptors */
 	/*
 	 * Buffer slots: two mbuf clusters buffer the incoming packets.
 	 *   The model has three slots.  Sbuf is always occupied.
@@ -69,8 +69,8 @@ struct bpf_d {
 	struct bpf_if *	bd_bif;		/* interface descriptor */
 	u_long		bd_rtout;	/* Read timeout in 'ticks' */
 	u_long		bd_rdStart;	/* when the read started */
-	struct srp	bd_rfilter;	/* read filter code */
-	struct srp	bd_wfilter; 	/* write filter code */
+	struct bpf_insn *bd_rfilter; 	/* read filter code */
+	struct bpf_insn *bd_wfilter; 	/* write filter code */
 	u_long		bd_rcount;	/* number of packets received */
 	u_long		bd_dcount;	/* number of packets dropped */
 
@@ -98,7 +98,7 @@ struct bpf_d {
  */
 struct bpf_if {
 	struct bpf_if *bif_next;	/* list of all interfaces */
-	struct srp bif_dlist;		/* descriptor list */
+	struct bpf_d *bif_dlist;	/* descriptor list */
 	struct bpf_if **bif_driverp;	/* pointer into softc */
 	u_int bif_dlt;			/* link layer type */
 	u_int bif_hdrlen;		/* length of header (with padding) */
