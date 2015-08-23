@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.123 2014/08/26 20:19:25 rpe Exp $
+#	$OpenBSD: Makefile,v 1.124 2015/06/02 06:10:14 deraadt Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -42,7 +42,7 @@ SUBDIR+= gnu
 SUBDIR+= sys
 
 .if   make(clean) || make(cleandir) || make(obj)
-SUBDIR+= distrib regress
+SUBDIR+= etc distrib regress
 .endif
 
 regression-tests:
