@@ -1,4 +1,4 @@
-/* $OpenBSD: sandbox.c,v 1.7 2015/05/29 15:58:34 nicm Exp $ */
+/* $OpenBSD: sandbox.c,v 1.8 2015/06/04 22:56:33 nicm Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -49,6 +49,7 @@ static const struct
 	{ SYS_getpid, SYSTR_POLICY_PERMIT },
 	{ SYS_getrlimit, SYSTR_POLICY_PERMIT },
 	{ SYS_issetugid, SYSTR_POLICY_PERMIT },
+	{ SYS_kbind, SYSTR_POLICY_PERMIT },
 	{ SYS_madvise, SYSTR_POLICY_PERMIT },
 	{ SYS_mmap, SYSTR_POLICY_PERMIT },
 	{ SYS_mprotect, SYSTR_POLICY_PERMIT },
