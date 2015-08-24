@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.h,v 1.43 2015/06/23 09:42:23 mpi Exp $	*/
+/*	$OpenBSD: if_bridge.h,v 1.44 2015/07/02 09:40:02 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -421,7 +421,6 @@ struct bridge_rtnode {
  */
 struct bridge_softc {
 	struct ifnet			sc_if;	/* the interface */
-	LIST_ENTRY(bridge_softc)	sc_list;	/* all bridges */
 	struct bridge_iflist		*sc_root_port;
 	u_int32_t			sc_brtmax;	/* max # addresses */
 	u_int32_t			sc_brtcnt;	/* current # addrs */
