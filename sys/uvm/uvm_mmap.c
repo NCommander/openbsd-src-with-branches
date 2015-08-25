@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.111 2015/07/20 05:49:30 jsg Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.112 2015/07/20 22:41:41 miod Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -1236,7 +1236,9 @@ sys_kbind(struct proc *p, void *v, register_t *retval)
 		}
 
 		/* do the update */
-		memcpy((char *)kva + pageoffset, data, paramp[i].kb_size);
+		if ((error = kcopy(data, (char *)kva + pageoffset,
+		    paramp[i].kb_size)))
+			break;
 		data += paramp[i].kb_size;
 	}
 
