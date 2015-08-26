@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.58 2015/01/16 16:48:51 deraadt Exp $ */
+/*	$OpenBSD: nlist.c,v 1.59 2015/02/06 23:21:58 millert Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -48,9 +48,6 @@
 #define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
 int	__fdnlist(int, struct nlist *);
-#ifdef _NLIST_DO_ELF
-int	__elf_is_okay__(Elf_Ehdr *ehdr);
-#endif
 
 #define	ISLAST(p)	(p->n_un.n_name == 0 || p->n_un.n_name[0] == 0)
 
@@ -62,7 +59,7 @@ int	__elf_is_okay__(Elf_Ehdr *ehdr);
  * WARNING:  This is NOT a ELF ABI function and
  * as such its use should be restricted.
  */
-int
+static int
 __elf_is_okay__(Elf_Ehdr *ehdr)
 {
 	int retval = 0;

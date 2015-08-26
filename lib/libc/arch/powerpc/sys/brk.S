@@ -1,4 +1,4 @@
-/* $OpenBSD: brk.S,v 1.8 2012/08/22 22:26:16 deraadt Exp $ */
+/* $OpenBSD: brk.S,v 1.9 2015/08/23 15:44:51 kettenis Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -27,10 +27,12 @@
 
 #include "SYS.h"
 
-	.extern _ASM_LABEL(__curbrk)
+	.extern __curbrk
 	.extern _C_LABEL(end)
 
-PREFIX2(brk,break)
+WEAK_ALIAS(brk, _brk)
+
+PREFIX2(_brk,break)
 	
 	/* check >= _end, if not make the call for _end */
 #ifndef __PIC__
@@ -53,10 +55,10 @@ PREFIX2(brk,break)
 	mr	7, 3
 	/* call break(size) */
 #ifndef __PIC__
-	addis	6, 0, _ASM_LABEL(__curbrk)@H
-	ori	6, 6, _ASM_LABEL(__curbrk)@L	/* # 6 = &__curbrk */
+	addis	6, 0, __curbrk@H
+	ori	6, 6, __curbrk@L	/* # 6 = &__curbrk */
 #else
-	lwz	6,_ASM_LABEL(__curbrk)@got(9)
+	lwz	6,__curbrk@got(9)
 #endif
 
 	sc
