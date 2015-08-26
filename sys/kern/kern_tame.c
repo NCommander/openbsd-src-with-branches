@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_tame.c,v 1.28 2015/08/24 06:19:39 semarie Exp $	*/
+/*	$OpenBSD: kern_tame.c,v 1.29 2015/08/25 15:35:44 jsg Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -206,7 +206,7 @@ sys_tame(struct proc *p, void *v, register_t *retval)
 {
 	struct sys_tame_args /* {
 		syscallarg(int) flags;
-		syscallarg(char **)paths;
+		syscallarg(const char **)paths;
 	} */	*uap = v;
 	int	 flags = SCARG(uap, flags);
 
@@ -227,7 +227,7 @@ sys_tame(struct proc *p, void *v, register_t *retval)
 	}
 
 	if (SCARG(uap, paths)) {
-		char **u = SCARG(uap, paths), *sp;
+		const char **u = SCARG(uap, paths), *sp;
 		struct whitepaths *wl;
 		char *cwdpath = NULL, *path;
 		size_t cwdpathlen, cwdlen, len, maxargs = 0;
