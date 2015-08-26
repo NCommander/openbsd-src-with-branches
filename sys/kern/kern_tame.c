@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_tame.c,v 1.29 2015/08/25 15:35:44 jsg Exp $	*/
+/*	$OpenBSD: kern_tame.c,v 1.30 2015/08/26 05:20:06 doug Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -931,6 +931,7 @@ tame_ioctl_check(struct proc *p, long com, void *v)
 		return (EPERM);
 
 	/* tty subsystem */
+	case TIOCGETA:
 	case TIOCGPGRP:
 	case TIOCGWINSZ:	/* various programs */
 	case TIOCSTI:		/* ksh? csh? */
