@@ -1,4 +1,4 @@
-/*	$OpenBSD: robots.h,v 1.7 2014/11/03 22:14:54 deraadt Exp $	*/
+/*	$OpenBSD: robots.h,v 1.8 2014/11/16 04:49:48 guenther Exp $	*/
 /*	$NetBSD: robots.h,v 1.5 1995/04/24 12:24:54 cgd Exp $	*/
 
 /*
@@ -107,7 +107,7 @@ extern char	Cnt_move, Field[Y_FIELDSIZE][X_FIELDSIZE], *Next_move,
 extern int	Count, Level, Num_robots, Num_scores, Score,
 		Start_level, Wait_bonus;
 
-extern struct timeval	tv;
+extern struct timespec	tv;
 
 extern COORD	Max, Min, My_pos, Robots[];
 
