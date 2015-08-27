@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.c,v 1.37 2015/08/20 18:42:11 rzalamena Exp $ */
+/* $OpenBSD: doas.c,v 1.38 2015/08/22 16:01:05 doug Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -409,7 +409,7 @@ main(int argc, char **argv, char **envp)
 	if (!(rule->options & NOPASS)) {
 		if (nflag)
 			errx(1, "Authorization required");
-		if (!auth_userokay(myname, NULL, NULL, NULL)) {
+		if (!auth_userokay(myname, NULL, "auth-doas", NULL)) {
 			syslog(LOG_AUTHPRIV | LOG_NOTICE,
 			    "failed password for %s", myname);
 			permfail();
