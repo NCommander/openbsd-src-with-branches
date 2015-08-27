@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: vmt.c,v 1.4 2015/08/12 09:15:52 uebayasi Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -375,7 +375,7 @@ vmt_attach(struct device *parent, struct device *self, void *aux)
 	return;
 
 free:
-	free(sc->sc_rpc_buf, M_DEVBUF, 0);
+	free(sc->sc_rpc_buf, M_DEVBUF, VMT_RPC_BUFLEN);
 }
 
 void
