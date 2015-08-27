@@ -1,4 +1,4 @@
-/*	$OpenBSD: owctr.c,v 1.6 2014/09/14 14:17:25 jsg Exp $	*/
+/*	$OpenBSD: owctr.c,v 1.7 2015/03/14 03:38:48 jsg Exp $	*/
 /*
  * Copyright (c) 2010 John L. Scarfone <john@scarfone.net>
  *
@@ -211,7 +211,7 @@ owctr_update_counter(void *arg, int bank)
 	}
 
 	onewire_reset(sc->sc_onewire);
-	free(buf, M_DEVBUF, 0);
+	free(buf, M_DEVBUF, DS2423_COUNTER_BUFSZ);
 
 done:
 	onewire_unlock(sc->sc_onewire);
