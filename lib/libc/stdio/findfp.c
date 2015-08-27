@@ -1,4 +1,4 @@
-/*	$OpenBSD: findfp.c,v 1.16 2014/11/19 04:19:56 guenther Exp $ */
+/*	$OpenBSD: findfp.c,v 1.17 2015/01/16 16:48:51 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -58,7 +58,7 @@ static struct glue uglue = { 0, FOPEN_MAX - 3, usual };
 static struct glue *lastglue = &uglue;
 _THREAD_PRIVATE_MUTEX(__sfp_mutex);
 
-struct __sfileext __sFext[3];
+static struct __sfileext __sFext[3];
 FILE __sF[3] = {
 	std(__SRD, STDIN_FILENO),		/* stdin */
 	std(__SWR, STDOUT_FILENO),		/* stdout */

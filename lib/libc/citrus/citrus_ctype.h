@@ -1,4 +1,4 @@
-/*      $OpenBSD: citrus_ctype.h,v 1.2 2010/07/27 16:59:03 stsp Exp $       */
+/*      $OpenBSD: citrus_ctype.h,v 1.3 2010/08/01 02:49:07 chl Exp $       */
 /*      $NetBSD: citrus_ctype.h,v 1.2 2003/03/05 20:18:15 tshiozak Exp $        */
 
 /*-
@@ -33,8 +33,10 @@
 
 #include "citrus_ctype_local.h"
 
+__BEGIN_HIDDEN_DECLS
 extern struct _citrus_ctype_rec _citrus_ctype_none;
 
 int _citrus_ctype_open(struct _citrus_ctype_rec **, char const *);
+__END_HIDDEN_DECLS
 
 #endif
