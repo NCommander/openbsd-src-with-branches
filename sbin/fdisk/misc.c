@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.50 2015/03/29 21:16:39 krw Exp $	*/
+/*	$OpenBSD: misc.c,v 1.51 2015/03/30 17:11:49 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -303,10 +303,10 @@ getuint64(char *prompt, u_int64_t oval, u_int64_t maxval)
 
 		if (saveerr == ERANGE || d > maxval || d < 0 || d < d2) {
 			printf("%s is out of range: %c%s%c\n", prompt, operator,
-			    p, unit); 
+			    p, unit);
 		} else if (*endptr != '\0') {
 			printf("%s is invalid: %c%s%c\n", prompt, operator,
-			    p, unit); 
+			    p, unit);
 		} else {
 			break;
 		}
