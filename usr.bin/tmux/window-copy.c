@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.129 2015/04/21 15:16:06 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.130 2015/04/24 22:19:36 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -91,7 +91,6 @@ const struct window_mode window_copy_mode = {
 	window_copy_free,
 	window_copy_resize,
 	window_copy_key,
-	NULL,
 };
 
 enum window_copy_input_type {
