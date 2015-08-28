@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.531 2015/07/29 11:56:02 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.532 2015/08/28 07:49:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1449,7 +1449,6 @@ void		 cfg_show_causes(struct session *);
 
 /* format.c */
 struct format_tree;
-void		 format_clean(void);
 struct format_tree *format_create(void);
 struct format_tree *format_create_status(int);
 void		 format_free(struct format_tree *);
