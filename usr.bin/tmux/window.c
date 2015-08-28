@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.134 2015/06/17 16:50:28 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.135 2015/07/17 13:09:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -412,6 +412,7 @@ window_set_active_pane(struct window *w, struct window_pane *wp)
 			return (1);
 	}
 	w->active->active_point = next_active_point++;
+	w->active->flags |= PANE_CHANGED;
 	return (1);
 }
 
