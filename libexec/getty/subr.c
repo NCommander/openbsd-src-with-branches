@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr.c,v 1.22 2014/04/12 17:01:23 jsg Exp $	*/
+/*	$OpenBSD: subr.c,v 1.23 2015/07/16 04:31:25 tedu Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -488,7 +488,7 @@ autobaud(void)
 		return (type);
 	if (read(STDIN_FILENO, &c, sizeof(char)) != sizeof(char))
 		return (type);
-	
+
 	ts.tv_sec = 0;
 	ts.tv_nsec = 20 * 1000;
 	nanosleep(&ts, NULL);
