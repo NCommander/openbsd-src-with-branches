@@ -1,0 +1,83 @@
+.Dd November 17, 2014
+.Dt NO-PUNCT 1
+.Os OpenBSD
+.Sh NAME
+.Nm No-punct
+.Nd punctuation after the normal macro
+.Sh DESCRIPTION
+Leading punctuation:
+.No ( b
+.No [ b
+.No | b
+.No . b
+.No , b
+.No ; b
+.No : b
+.No ? b
+.No ! b
+.No ) b
+.No ] b
+.Pp
+Trailing punctuation:
+.No a (
+.No a [
+.No a |
+.No a .
+.No a ,
+.No a ;
+.No a :
+.No a ?
+.No a !
+.No a )
+.No a ]
+.Pp
+Middle punctuation:
+.No a ( b
+.No a [ b
+.No a | b
+.No a . b
+.No a , b
+.No a ; b
+.No a : b
+.No a ? b
+.No a ! b
+.No a ) b
+.No a ] b
+.Pp
+Isolated punctuation:
+.No a No ( No b
+.No a No [ No b
+.No a No | No b
+.No a No . No b
+.No a No , No b
+.No a No ; No b
+.No a No : No b
+.No a No ? No b
+.No a No ! No b
+.No a No ) No b
+.No a No ] No b
+.Pp
+Isolated trailing punctuation:
+.No a No (
+.No a No [
+.No a No |
+.No a No .
+.No a No ,
+.No a No ;
+.No a No :
+.No a No ?
+.No a No !
+.No a No )
+.No a No ]
+.Pp
+Multiple isolated punctuation:
+.No a No ( [ No b
+.No a No ) ] No b
+.Pp
+Multiple punctuation:
+.No [ ( arg ) ] .
+.Pp
+Quoted:
+.No "a . b Nm"
+.No ". b Nm"
+.No "."

@@ -1,11 +1,29 @@
-#	$Id: Makefile,v 1.1 1993/12/21 03:28:00 cgd Exp $
+#	$OpenBSD: Makefile,v 1.9 2011/01/26 15:10:59 espie Exp $
 
-NOMAN=
+MAN=makewhatis.8
 NOPROG=
-NOOBJ=
+PACKAGES= \
+	OpenBSD/Makewhatis.pm \
+	OpenBSD/Makewhatis/Check.pm \
+	OpenBSD/Makewhatis/Find.pm \
+	OpenBSD/Makewhatis/Formated.pm \
+	OpenBSD/Makewhatis/Subject.pm \
+	OpenBSD/Makewhatis/Unformated.pm \
+	OpenBSD/Makewhatis/Whatis.pm
 
-afterinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-		$(.CURDIR)/makewhatis.sh $(DESTDIR)$(BINDIR)/makewhatis
+SCRIPTS= \
+	makewhatis
+
+LIBBASE=/usr/libdata/perl5
+
+realinstall: 
+.for i in ${PACKAGES}
+	${INSTALL} -d -o ${LIBOWN} -g ${LIBGRP} -m ${DIRMODE} \
+		${DESTDIR}${LIBBASE}/${i:H}
+	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+		${.CURDIR}/$i ${DESTDIR}${LIBBASE}/$i
+.endfor
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
+		${.CURDIR}/makewhatis ${DESTDIR}${BINDIR}/makewhatis
 
 .include <bsd.prog.mk>

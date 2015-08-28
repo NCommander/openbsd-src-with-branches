@@ -1,4 +1,5 @@
-/*	$NetBSD: process_machdep.c,v 1.5 1994/11/20 20:54:37 deraadt Exp $ */
+/*	$OpenBSD: process_machdep.c,v 1.12 2005/12/30 00:18:30 kettenis Exp $	*/
+/*	$NetBSD: process_machdep.c,v 1.6 1996/03/14 21:09:26 christos Exp $ */
 
 /*
  * Copyright (c) 1993 The Regents of the University of California.
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -65,6 +62,7 @@
 #include <sys/systm.h>
 #include <sys/time.h>
 #include <sys/kernel.h>
+#include <sys/malloc.h>
 #include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/vnode.h>
@@ -72,6 +70,8 @@
 #include <machine/reg.h>
 #include <machine/frame.h>
 #include <sys/ptrace.h>
+
+#include <sparc/sparc/cpuvar.h>
 
 int
 process_read_regs(p, regs)
@@ -84,11 +84,35 @@ process_read_regs(p, regs)
 }
 
 int
+process_read_fpregs(p, regs)
+	struct proc	*p;
+	struct fpreg	*regs;
+{
+	extern struct fpstate	initfpstate;
+	struct fpstate		*statep = &initfpstate;
+
+	/* NOTE: struct fpreg == struct fpstate */
+	if (p->p_md.md_fpstate) {
+		if (p == cpuinfo.fpproc)
+			savefpstate(p->p_md.md_fpstate);
+		statep = p->p_md.md_fpstate;
+	}
+	bcopy(statep, regs, sizeof(struct fpreg));
+	return 0;
+}
+
+#ifdef PTRACE
+
+int
 process_write_regs(p, regs)
 	struct proc *p;
 	struct reg *regs;
 {
 	int	psr = p->p_md.md_tf->tf_psr & ~PSR_ICC;
+
+	if (((regs->r_pc | regs->r_npc) & 0x03) != 0)
+		return (EINVAL);
+
 	bcopy((caddr_t)regs, p->p_md.md_tf, sizeof(struct reg));
 	p->p_md.md_tf->tf_psr = psr | (regs->r_psr & PSR_ICC);
 	return (0);
@@ -97,6 +121,7 @@ process_write_regs(p, regs)
 int
 process_sstep(p, sstep)
 	struct proc *p;
+	int sstep;
 {
 	if (sstep)
 		return EINVAL;
@@ -108,34 +133,40 @@ process_set_pc(p, addr)
 	struct proc *p;
 	caddr_t addr;
 {
+	if (((u_int)addr & 0x03) != 0)
+		return (EINVAL);
+
 	p->p_md.md_tf->tf_pc = (u_int)addr;
 	p->p_md.md_tf->tf_npc = (u_int)addr + 4;
 	return (0);
 }
 
 int
-process_read_fpregs(p, regs)
-struct proc	*p;
-struct fpreg	*regs;
-{
-	extern struct fpstate	initfpstate;
-	struct fpstate		*statep = &initfpstate;
-
-	/* NOTE: struct fpreg == struct fpstate */
-	if (p->p_md.md_fpstate)
-		statep = p->p_md.md_fpstate;
-	bcopy(statep, regs, sizeof(struct fpreg));
-	return 0;
-}
-
-int
 process_write_fpregs(p, regs)
-struct proc	*p;
-struct fpreg	*regs;
+	struct proc	*p;
+	struct fpreg	*regs;
 {
-	if (p->p_md.md_fpstate == NULL)
-		return EINVAL;
+	/* NOTE: struct fpreg == struct fpstate */
+	if (p->p_md.md_fpstate == NULL) {
+		p->p_md.md_fpstate = malloc(sizeof(struct fpstate),
+		    M_SUBPROC, M_WAITOK);
+	}
+
+	if (p == cpuinfo.fpproc) {
+		/* Release the fpu. */
+		savefpstate(p->p_md.md_fpstate);
+		cpuinfo.fpproc = NULL;
+	}
 
 	bcopy(regs, p->p_md.md_fpstate, sizeof(struct fpreg));
 	return 0;
+}
+
+#endif	/* PTRACE */
+
+register_t
+process_get_wcookie(p)
+	struct proc *p;
+{
+	return p->p_addr->u_pcb.pcb_wcookie;
 }

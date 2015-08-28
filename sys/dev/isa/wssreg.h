@@ -1,3 +1,4 @@
+/*	$OpenBSD: wssreg.h,v 1.3 1997/11/07 08:07:12 niklas Exp $	*/
 /*	$NetBSD: wssreg.h,v 1.3 1995/07/07 02:15:15 brezak Exp $	*/
 
 /*
@@ -37,12 +38,10 @@
  * Copyright (c) 1993 Analog Devices Inc. All rights reserved
  */
 
-#define WSS_NPORT	8
-
 /*
  * Macros to detect valid hardware configuration data.
  */
-#define WSS_IRQ_VALID(irq)   ((irq) ==	7 || (irq) ==  9 || \
+#define WSS_IRQ_VALID(irq)   ((irq) == 5 || (irq) ==	7 || (irq) ==  9 || \
 			     (irq) == 10 || (irq) == 11)
 #define WSS_DRQ_VALID(chan)  ((chan) == 0 || (chan) == 1 || (chan) == 3)
 #define WSS_BASE_VALID(base) ((base) == 0x0530 || \
@@ -50,12 +49,11 @@
 			      (base) == 0x0e80 || \
 			      (base) == 0x0f40)
 
-/* Default WSS base */
-#define WSS_BASE_ADDRESS 0x0530
-
 /* WSS registers */
 #define WSS_CONFIG	0x00	/* write only */
 #define WSS_STATUS	0x03	/* read only */
+#define WSS_CODEC	0x04	/* ad1848 codec registers (0x04-0x07) */
+#define WSS_NPORT	8
 
 /* WSS status register bits */
 #define WSS_16SLOT	0x80

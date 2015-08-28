@@ -1,4 +1,5 @@
-/*	$NetBSD: gencons.h,v 1.3 1995/06/05 16:26:38 ragge Exp $ */
+/*	$OpenBSD: gencons.h,v 1.5 2002/03/14 01:26:48 millert Exp $ */
+/*	$NetBSD: gencons.h,v 1.9 2000/01/20 00:07:49 matt Exp $ */
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -32,7 +33,6 @@
  */
 
  /* All bugs are subject to removal without further notice */
-		
 
 /*
  * Some definitions for generic console interface (PR 32-35)
@@ -51,5 +51,20 @@
 #define	GC_CON	0xf00	/* mfpr($PR_RXDB)&GC_CON==0 then console chr */
 
 /* PR_TXDB */
-#define	GC_BOOT	0xf02	/* boot machine */
-#define	GC_CCF	0xf04	/* clear cold start flag */
+#define	GC_CONS	0xf00	/* Console software !8600 */
+#define	GC_BTFL	0x2	/* boot machine */
+#define	GC_CWFL	0x3	/* clear warm start flag */
+#define	GC_CCFL	0x4	/* clear cold start flag */
+
+/* Interrupt vectors used */
+#define	SCB_G0R	0xf8
+#define	SCB_G0T	0xfc
+#define	SCB_G1R	0xc8
+#define	SCB_G1T	0xcc
+#define	SCB_G2R	0xd0
+#define	SCB_G2T	0xd4
+#define	SCB_G3R	0xd8
+#define	SCB_G3T	0xdc
+
+/* Prototypes */
+void	gencnputc(dev_t, int);

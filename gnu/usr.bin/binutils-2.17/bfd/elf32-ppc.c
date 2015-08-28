@@ -3809,7 +3809,7 @@ ppc_elf_gc_sweep_hook (bfd *abfd,
 	    {
 	      bfd_vma addend = r_type == R_PPC_PLTREL24 ? rel->r_addend : 0;
 	      struct plt_entry *ent = find_plt_ent (h, got2, addend);
-	      if (ent->plt.refcount > 0)
+	      if (ent != NULL && ent->plt.refcount > 0)
 		ent->plt.refcount -= 1;
 	    }
 	  break;
@@ -4655,7 +4655,7 @@ ppc_elf_size_dynamic_sections (bfd *output_bfd ATTRIBUTE_UNUSED,
   if (elf_hash_table (info)->dynamic_sections_created)
     {
       /* Set the contents of the .interp section to the interpreter.  */
-      if (info->executable)
+      if (info->executable && !info->static_link)
 	{
 	  s = bfd_get_section_by_name (htab->elf.dynobj, ".interp");
 	  BFD_ASSERT (s != NULL);

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: tr.1,v 1.24 2014/12/09 15:37:14 schwarze Exp $
 .\"	$NetBSD: tr.1,v 1.5 1994/12/07 08:35:13 jtc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,7 +33,7 @@
 .\"
 .\"     @(#)tr.1	8.1 (Berkeley) 6/6/93
 .\"
-.Dd June 6, 1993
+.Dd $Mdocdate: December 9 2014 $
 .Dt TR 1
 .Os
 .Sh NAME
@@ -44,32 +41,40 @@
 .Nd translate characters
 .Sh SYNOPSIS
 .Nm tr
-.Op Fl cs
+.Op Fl Ccs
 .Ar string1 string2
 .Nm tr
-.Op Fl c
+.Op Fl Cc
 .Fl d
 .Ar string1
 .Nm tr
-.Op Fl c
+.Op Fl Cc
 .Fl s
 .Ar string1
 .Nm tr
-.Op Fl c
+.Op Fl Cc
 .Fl ds
 .Ar string1 string2
 .Sh DESCRIPTION
 The
-.Nm tr
+.Nm
 utility copies the standard input to the standard output with substitution
 or deletion of selected characters.
 .Pp
-The following options are available:
+The options are as follows:
 .Bl -tag -width Ds
-.It Fl c
+.It Fl C
 Complements the set of characters in
-.Ar string1 ,
-that is ``-c ab'' includes every character except for ``a'' and ``b''.
+.Ar string1 ;
+for instance,
+.Dq -C\ ab
+includes every character except for
+.Sq a
+and
+.Sq b .
+.It Fl c
+The same as
+.Fl C .
 .It Fl d
 The
 .Fl d
@@ -133,69 +138,97 @@ to specify sets of characters:
 Any character not described by one of the following conventions
 represents itself.
 .It \eoctal
-A backslash followed by 1, 2 or 3 octal digits represents a character
+A backslash followed by 1, 2, or 3 octal digits represents a character
 with that encoded value.
 To follow an octal sequence with a digit as a character, left zero-pad
 the octal sequence to the full 3 octal digits.
 .It \echaracter
 A backslash followed by certain special characters maps to special
 values.
-.sp
-.Bl -column
-.It \ea	<alert character>
-.It \eb	<backspace>
-.It \ef	<form-feed>
-.It \en	<newline>
-.It \er	<carriage return>
-.It \et	<tab>
-.It \ev	<vertical tab>
+.Pp
+.Bl -tag -width "nn" -offset indent -compact
+.It \ea
+<alert character>
+.It \eb
+<backspace>
+.It \ef
+<form-feed>
+.It \en
+<newline>
+.It \er
+<carriage return>
+.It \et
+<tab>
+.It \ev
+<vertical tab>
 .El
-.sp
+.Pp
 A backslash followed by any other character maps to that character.
 .It c-c
 Represents the range of characters between the range endpoints, inclusively.
 .It [:class:]
 Represents all characters belonging to the defined character class.
 Class names are:
-.sp
-.Bl -column
-.It alnum	<alphanumeric characters>
-.It alpha	<alphabetic characters>
-.It blank	<blank characters>
-.It cntrl	<control characters>
-.It digit	<numeric characters>
-.It graph	<graphic characters>
-.It lower	<lower-case alphabetic characters>
-.It print	<printable characters>
-.It punct	<punctuation characters>
-.It space	<space characters>
-.It upper	<upper-case characters>
-.It xdigit	<hexadecimal characters>
+.Pp
+.Bl -tag -width "xdigit" -offset indent -compact
+.It alnum
+<alphanumeric characters>
+.It alpha
+<alphabetic characters>
+.It blank
+<blank characters>
+.It cntrl
+<control characters>
+.It digit
+<numeric characters>
+.It graph
+<graphic characters>
+.It lower
+<lower-case alphabetic characters>
+.It print
+<printable characters>
+.It punct
+<punctuation characters>
+.It space
+<space characters>
+.It upper
+<upper-case characters>
+.It xdigit
+<hexadecimal characters>
 .El
 .Pp
-\." All classes may be used in
-\." .Ar string1 ,
-\." and in
-\." .Ar string2
-\." when both the
-\." .Fl d
-\." and
-\." .Fl s
-\." options are specified.
-\." Otherwise, only the classes ``upper'' and ``lower'' may be used in
-\." .Ar string2
-\." and then only when the corresponding class (``upper'' for ``lower''
-\." and vice-versa) is specified in the same relative position in
-\." .Ar string1 .
-\." .Pp
-With the exception of the ``upper'' and ``lower'' classes, characters
+.\" All classes may be used in
+.\" .Ar string1 ,
+.\" and in
+.\" .Ar string2
+.\" when both the
+.\" .Fl d
+.\" and
+.\" .Fl s
+.\" options are specified.
+.\" Otherwise, only the classes ``upper'' and ``lower'' may be used in
+.\" .Ar string2
+.\" and then only when the corresponding class (``upper'' for ``lower''
+.\" and vice-versa) is specified in the same relative position in
+.\" .Ar string1 .
+.\" .Pp
+With the exception of the
+.Dq upper
+and
+.Dq lower
+classes, characters
 in the classes are in unspecified order.
-In the ``upper'' and ``lower'' classes, characters are entered in
+In the
+.Dq upper
+and
+.Dq lower
+classes, characters are entered in
 ascending order.
 .Pp
 For specific information as to which ASCII characters are included
 in these classes, see
-.Xr ctype 3
+.Xr isalnum 3 ,
+.Xr isalpha 3 ,
 and related manual pages.
 .It [=equiv=]
 Represents all characters or collating (sorting) elements belonging to
@@ -204,8 +237,12 @@ the same equivalence class as
 If
 there is a secondary ordering within the equivalence class, the characters
 are ordered in ascending sequence.
-Otherwise, they are ordered after their encoded values. 
-An example of an equivalence class might be ``c'' and ``ch'' in Spanish;
+Otherwise, they are ordered after their encoded values.
+An example of an equivalence class might be
+.Dq c
+and
+.Dq ch
+in Spanish;
 English has no equivalence classes.
 .It [#*n]
 Represents
@@ -217,73 +254,103 @@ expression is only valid when it occurs in
 .Ar string2 .
 If
 .Ar n
-is omitted or is zero, it is be interpreted as large enough to extend
+is omitted or is zero, it is interpreted as large enough to extend the
 .Ar string2
 sequence to the length of
 .Ar string1 .
 If
 .Ar n
-has a leading zero, it is interpreted as an octal value, otherwise,
+has a leading zero, it is interpreted as an octal value; otherwise,
 it's interpreted as a decimal value.
 .El
-.Pp
-The
-.Nm tr
-utility exits 0 on success, and >0 if an error occurs.
+.Sh EXIT STATUS
+.Ex -std tr
 .Sh EXAMPLES
 The following examples are shown as given to the shell:
-.sp
+.Pp
 Create a list of the words in file1, one per line, where a word is taken to
 be a maximal string of letters.
-.sp
-.D1 Li "tr -cs \*q[:alpha:]\*q \*q\en\*q < file1"
-.sp
+.Pp
+.Dl $ tr -cs Qo [:alpha:] Qc Qo \en Qc < file1
+.Pp
 Translate the contents of file1 to upper-case.
-.sp
-.D1 Li "tr \*q[:lower:]\*q \*q[:upper:]\*q < file1"
-.sp
+.Pp
+.Dl $ tr Qo [:lower:] Qc Qo [:upper:] Qc < file1
+.Pp
 Strip out non-printable characters from file1.
-.sp
-.D1 Li "tr -cd \*q[:print:]\*q < file1"
-.Sh COMPATIBILITY
+.Pp
+.Dl $ tr -cd Qo [:print:] Qc < file1
+.Sh SEE ALSO
+.Xr sed 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification,
+except that the
+.Fl C
+option behaves the same as the
+.Fl c
+option since
+.Nm
+is not locale-aware.
+.Pp
 System V has historically implemented character ranges using the syntax
-``[c-c]'' instead of the ``c-c'' used by historic BSD implementations and
+.Dq [c-c]
+instead of the
+.Dq c-c
+used by historic
+.Bx
+implementations and
 standardized by POSIX.
 System V shell scripts should work under this implementation as long as
-the range is intended to map in another range, i.e. the command
-``tr [a-z] [A-Z]'' will work as it will map the ``['' character in
+the range is intended to map in another range, i.e., the command
+.Dq tr [a-z] [A-Z]
+will work as it will map the
+.Sq \&[
+character in
 .Ar string1
-to the ``['' character in
-.Ar string2.
+to the
+.Sq \&[
+character in
+.Ar string2 .
 However, if the shell script is deleting or squeezing characters as in
-the command ``tr -d [a-z]'', the characters ``['' and ``]'' will be 
-included in the deletion or compression list which would not have happened
+the command
+.Dq tr\ -d\ [a-z] ,
+the characters
+.Sq \&[
+and
+.Sq \&]
+will be
+included in the deletion or compression list, which would not have happened
 under an historic System V implementation.
-Additionally, any scripts that depended on the sequence ``a-z'' to
-represent the three characters ``a'', ``-'' and ``z'' will have to be
-rewritten as ``a\e-z''.
+Additionally, any scripts that depended on the sequence
+.Dq a-z
+to represent the three characters
+.Sq a ,
+.Sq - ,
+and
+.Sq z
+will have to be rewritten as
+.Dq a\e-z .
 .Pp
 The
-.Nm tr
+.Nm
 utility has historically not permitted the manipulation of NUL bytes in
-its input and, additionally, stripped NUL's from its input stream.
+its input and, additionally, has stripped NUL's from its input stream.
 This implementation has removed this behavior as a bug.
 .Pp
 The
-.Nm tr
-utility has historically been extremely forgiving of syntax errors,
+.Nm
+utility has historically been extremely forgiving of syntax errors:
 for example, the
 .Fl c
 and
 .Fl s
 options were ignored unless two strings were specified.
 This implementation will not permit illegal syntax.
-.Sh STANDARDS
-The
-.Nm tr
-utility is expected to be
-.St -p1003.2
-compatible.
+.Pp
 It should be noted that the feature wherein the last character of
 .Ar string2
 is duplicated if
@@ -292,4 +359,6 @@ has less characters than
 .Ar string1
 is permitted by POSIX but is not required.
 Shell scripts attempting to be portable to other POSIX systems should use
-the ``[#*]'' convention instead of relying on this behavior.
+the
+.Dq [#*]
+convention instead of relying on this behavior.

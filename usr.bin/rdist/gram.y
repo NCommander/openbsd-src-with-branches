@@ -1,7 +1,10 @@
 %{
+/*	$OpenBSD: gram.y,v 1.11 2014/06/07 15:28:21 deraadt Exp $	*/
+
 /*
- * Copyright (c) 1983, 1993
- *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1993 Michael A. Cooper
+ * Copyright (c) 1993 Regents of the University of California.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,49 +31,45 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)gram.y	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$Id: gram.y,v 1.3 1994/03/07 05:05:30 cgd Exp $";
-#endif /* not lint */
+#include "client.h"
 
-#include "defs.h"
+static struct namelist *addnl(struct namelist *, struct namelist *);
+static struct namelist *subnl(struct namelist *, struct namelist *);
+static struct namelist *andnl(struct namelist *, struct namelist *);
+static int innl(struct namelist *nl, char *p);
 
 struct	cmd *cmds = NULL;
 struct	cmd *last_cmd;
 struct	namelist *last_n;
 struct	subcmd *last_sc;
-
-static char  *makestr __P((char *));
+int	parendepth = 0;
 
 %}
 
-%term EQUAL	1
-%term LP	2
-%term RP	3
-%term SM	4
-%term ARROW	5
-%term COLON	6
-%term DCOLON	7
-%term NAME	8
-%term STRING	9
-%term INSTALL	10
-%term NOTIFY	11
-%term EXCEPT	12
-%term PATTERN	13
-%term SPECIAL	14
-%term OPTION	15
+%term ARROW		1
+%term COLON		2
+%term DCOLON		3
+%term NAME		4
+%term STRING		5
+%term INSTALL		6
+%term NOTIFY		7
+%term EXCEPT		8
+%term PATTERN		9
+%term SPECIAL		10
+%term CMDSPECIAL	11
+%term OPTION		12
 
 %union {
-	int intval;
-	char *string;
-	struct subcmd *subcmd;
-	struct namelist *namel;
+	opt_t 			optval;
+	char 		       *string;
+	struct subcmd 	       *subcmd;
+	struct namelist        *namel;
 }
 
-%type <intval> OPTION, options
+%type <optval> OPTION, options
 %type <string> NAME, STRING
-%type <subcmd> INSTALL, NOTIFY, EXCEPT, PATTERN, SPECIAL, cmdlist, cmd
-%type <namel> namelist, names, opt_namelist
+%type <subcmd> INSTALL, NOTIFY, EXCEPT, PATTERN, SPECIAL, CMDSPECIAL, cmdlist, cmd
+%type <namel> namelist, names, opt_namelist nlist
 
 %%
 
@@ -82,17 +77,17 @@ file:		  /* VOID */
 		| file command
 		;
 
-command:	  NAME EQUAL namelist = {
+command:	  NAME '=' namelist = {
 			(void) lookup($1, INSERT, $3);
 		}
 		| namelist ARROW namelist cmdlist = {
-			insert(NULL, $1, $3, $4);
+			insert((char *)NULL, $1, $3, $4);
 		}
 		| NAME COLON namelist ARROW namelist cmdlist = {
 			insert($1, $3, $5, $6);
 		}
 		| namelist DCOLON NAME cmdlist = {
-			append(NULL, $1, $3, $4);
+			append((char *)NULL, $1, $3, $4);
 		}
 		| NAME COLON namelist DCOLON NAME cmdlist = {
 			append($1, $3, $5, $6);
@@ -100,10 +95,24 @@ command:	  NAME EQUAL namelist = {
 		| error
 		;
 
-namelist:	  NAME = {
+namelist: 	nlist { 
+			$$ = $1; 
+		}
+		| nlist '-' nlist { 
+			$$ = subnl($1, $3); 
+		}
+		| nlist '+' nlist { 
+			$$ = addnl($1, $3); 
+		}
+		| nlist '&' nlist { 
+			$$ = andnl($1, $3); 
+		}
+		;
+
+nlist:	  NAME = {
 			$$ = makenl($1);
 		}
-		| LP names RP = {
+		| '(' names ')' = {
 			$$ = $2;
 		}
 		;
@@ -136,8 +145,8 @@ cmdlist:	  /* VOID */ {
 		}
 		;
 
-cmd:		  INSTALL options opt_namelist SM = {
-			register struct namelist *nl;
+cmd:		  INSTALL options opt_namelist ';' = {
+			struct namelist *nl;
 
 			$1->sc_options = $2 | options;
 			if ($3 != NULL) {
@@ -152,27 +161,42 @@ cmd:		  INSTALL options opt_namelist SM = {
 			}
 			$$ = $1;
 		}
-		| NOTIFY namelist SM = {
+		| NOTIFY namelist ';' = {
 			if ($2 != NULL)
 				$1->sc_args = expand($2, E_VARS);
 			$$ = $1;
 		}
-		| EXCEPT namelist SM = {
+		| EXCEPT namelist ';' = {
 			if ($2 != NULL)
 				$1->sc_args = expand($2, E_ALL);
 			$$ = $1;
 		}
-		| PATTERN namelist SM = {
+		| PATTERN namelist ';' = {
 			struct namelist *nl;
-			char *cp, *re_comp();
+			char ebuf[BUFSIZ];
+			regex_t reg;
+			int ecode;
 
-			for (nl = $2; nl != NULL; nl = nl->n_next)
-				if ((cp = re_comp(nl->n_name)) != NULL)
-					yyerror(cp);
+			for (nl = $2; nl != NULL; nl = nl->n_next) {
+				/* check for a valid regex */
+				ecode = regcomp(&reg, nl->n_name, REG_NOSUB);
+				if (ecode) {
+					regerror(ecode, &reg, ebuf,
+					    sizeof(ebuf));
+					yyerror(ebuf);
+				}
+				regfree(&reg);
+			}
 			$1->sc_args = expand($2, E_VARS);
 			$$ = $1;
 		}
-		| SPECIAL opt_namelist STRING SM = {
+		| SPECIAL opt_namelist STRING ';' = {
+			if ($2 != NULL)
+				$1->sc_args = expand($2, E_ALL);
+			$1->sc_name = $3;
+			$$ = $1;
+		}
+		| CMDSPECIAL opt_namelist STRING ';' = {
 			if ($2 != NULL)
 				$1->sc_args = expand($2, E_ALL);
 			$1->sc_name = $3;
@@ -202,11 +226,11 @@ int	yylineno = 1;
 extern	FILE *fin;
 
 int
-yylex()
+yylex(void)
 {
 	static char yytext[INMAX];
-	register int c;
-	register char *cp1, *cp2;
+	int c;
+	char *cp1, *cp2;
 	static char quotechars[] = "[]{}*?$";
 	
 again:
@@ -226,21 +250,23 @@ again:
 		goto again;
 
 	case '=':  /* EQUAL */
-		return(EQUAL);
+	case ';':  /* SM */
+	case '+': 
+	case '&': 
+		return(c);
 
 	case '(':  /* LP */
-		return(LP);
+		++parendepth;
+		return(c);
 
 	case ')':  /* RP */
-		return(RP);
-
-	case ';':  /* SM */
-		return(SM);
+		--parendepth;
+		return(c);
 
 	case '-':  /* -> */
 		if ((c = getc(fin)) == '>')
 			return(ARROW);
-		ungetc(c, fin);
+		(void) ungetc(c, fin);
 		c = '-';
 		break;
 
@@ -270,13 +296,13 @@ again:
 		if (c != '"')
 			yyerror("missing closing '\"'\n");
 		*cp1 = '\0';
-		yylval.string = makestr(yytext);
+		yylval.string = xstrdup(yytext);
 		return(STRING);
 
 	case ':':  /* : or :: */
 		if ((c = getc(fin)) == ':')
 			return(DCOLON);
-		ungetc(c, fin);
+		(void) ungetc(c, fin);
 		return(COLON);
 	}
 	cp1 = yytext;
@@ -289,7 +315,7 @@ again:
 		if (c == '\\') {
 			if ((c = getc(fin)) != EOF) {
 				if (any(c, quotechars))
-					c |= QUOTE;
+					*cp1++ = QUOTECHAR;
 			} else {
 				*cp1++ = '\\';
 				break;
@@ -298,41 +324,52 @@ again:
 		*cp1++ = c;
 		c = getc(fin);
 		if (c == EOF || any(c, " \"'\t()=;:\n")) {
-			ungetc(c, fin);
+			(void) ungetc(c, fin);
 			break;
 		}
 	}
 	*cp1 = '\0';
-	if (yytext[0] == '-' && yytext[2] == '\0') {
+	if (yytext[0] == '-' && yytext[1] == CNULL) 
+		return '-';
+	if (yytext[0] == '-' && parendepth <= 0) {
+		opt_t opt = 0;
+		static char ebuf[BUFSIZ];
+
 		switch (yytext[1]) {
-		case 'b':
-			yylval.intval = COMPARE;
-			return(OPTION);
+		case 'o':
+			if (parsedistopts(&yytext[2], &opt, TRUE)) {
+				(void) snprintf(ebuf, sizeof(ebuf),
+					        "Bad distfile options \"%s\".", 
+					        &yytext[2]);
+				yyerror(ebuf);
+			}
+			break;
 
-		case 'R':
-			yylval.intval = REMOVE;
-			return(OPTION);
+			/*
+			 * These options are obsoleted by -o.
+			 */
+		case 'b':	opt = DO_COMPARE;		break;
+		case 'R':	opt = DO_REMOVE;		break;
+		case 'v':	opt = DO_VERIFY;		break;
+		case 'w':	opt = DO_WHOLE;			break;
+		case 'y':	opt = DO_YOUNGER;		break;
+		case 'h':	opt = DO_FOLLOW;		break;
+		case 'i':	opt = DO_IGNLNKS;		break;
+		case 'q':	opt = DO_QUIET;			break;
+		case 'x':	opt = DO_NOEXEC;		break;
+		case 'N':	opt = DO_CHKNFS;		break;
+		case 'O':	opt = DO_CHKREADONLY;		break;
+		case 's':	opt = DO_SAVETARGETS;		break;
+		case 'r':	opt = DO_NODESCEND;		break;
 
-		case 'v':
-			yylval.intval = VERIFY;
-			return(OPTION);
-
-		case 'w':
-			yylval.intval = WHOLE;
-			return(OPTION);
-
-		case 'y':
-			yylval.intval = YOUNGER;
-			return(OPTION);
-
-		case 'h':
-			yylval.intval = FOLLOW;
-			return(OPTION);
-
-		case 'i':
-			yylval.intval = IGNLNKS;
-			return(OPTION);
+		default:
+			(void) snprintf(ebuf, sizeof(ebuf),
+					"Unknown option \"%s\".", yytext);
+			yyerror(ebuf);
 		}
+
+		yylval.optval = opt;
+		return(OPTION);
 	}
 	if (!strcmp(yytext, "install"))
 		c = INSTALL;
@@ -344,18 +381,21 @@ again:
 		c = PATTERN;
 	else if (!strcmp(yytext, "special"))
 		c = SPECIAL;
+	else if (!strcmp(yytext, "cmdspecial"))
+		c = CMDSPECIAL;
 	else {
-		yylval.string = makestr(yytext);
+		yylval.string = xstrdup(yytext);
 		return(NAME);
 	}
 	yylval.subcmd = makesubcmd(c);
 	return(c);
 }
 
-int
-any(c, str)
-	register int c;
-	register char *str;
+/*
+ * XXX We should use strchr(), but most versions can't handle
+ * some of the characters we use.
+ */
+int any(int c, char *str)
 {
 	while (*str)
 		if (c == *str++)
@@ -367,17 +407,20 @@ any(c, str)
  * Insert or append ARROW command to list of hosts to be updated.
  */
 void
-insert(label, files, hosts, subcmds)
-	char *label;
-	struct namelist *files, *hosts;
-	struct subcmd *subcmds;
+insert(char *label, struct namelist *files, struct namelist *hosts,
+    struct subcmd *scmds)
 {
-	register struct cmd *c, *prev, *nc;
-	register struct namelist *h;
+	struct cmd *c, *prev, *nc;
+	struct namelist *h, *lasth;
+
+	debugmsg(DM_CALL, "insert(%s, %p, %p, %p) start, files = %s", 
+		 label == NULL ? "(null)" : label,
+		 files, hosts, scmds, getnlstr(files));
 
 	files = expand(files, E_VARS|E_SHELL);
 	hosts = expand(hosts, E_ALL);
-	for (h = hosts; h != NULL; free(h), h = h->n_next) {
+	for (h = hosts; h != NULL; lasth = h, h = h->n_next, 
+	     free((char *)lasth)) {
 		/*
 		 * Search command list for an update to the same host.
 		 */
@@ -395,13 +438,12 @@ insert(label, files, hosts, subcmds)
 		 * Insert new command to update host.
 		 */
 		nc = ALLOC(cmd);
-		if (nc == NULL)
-			fatal("ran out of memory\n");
 		nc->c_type = ARROW;
 		nc->c_name = h->n_name;
 		nc->c_label = label;
 		nc->c_files = files;
-		nc->c_cmds = subcmds;
+		nc->c_cmds = scmds;
+		nc->c_flags = 0;
 		nc->c_next = c;
 		if (prev == NULL)
 			cmds = nc;
@@ -418,22 +460,16 @@ insert(label, files, hosts, subcmds)
  * executed in the order they appear in the distfile.
  */
 void
-append(label, files, stamp, subcmds)
-	char *label;
-	struct namelist *files;
-	char *stamp;
-	struct subcmd *subcmds;
+append(char *label, struct namelist *files, char *stamp, struct subcmd *scmds)
 {
-	register struct cmd *c;
+	struct cmd *c;
 
 	c = ALLOC(cmd);
-	if (c == NULL)
-		fatal("ran out of memory\n");
 	c->c_type = DCOLON;
 	c->c_name = stamp;
 	c->c_label = label;
 	c->c_files = expand(files, E_ALL);
-	c->c_cmds = subcmds;
+	c->c_cmds = scmds;
 	c->c_next = NULL;
 	if (cmds == NULL)
 		cmds = last_cmd = c;
@@ -447,63 +483,116 @@ append(label, files, stamp, subcmds)
  * Error printing routine in parser.
  */
 void
-yyerror(s)
-	char *s;
+yyerror(char *s)
 {
-	++nerrs;
-	fflush(stdout);
-	fprintf(stderr, "rdist: line %d: %s\n", yylineno, s);
-}
-
-/*
- * Return a copy of the string.
- */
-static char *
-makestr(str)
-	char *str;
-{
-	register char *cp, *s;
-
-	str = cp = malloc(strlen(s = str) + 1);
-	if (cp == NULL)
-		fatal("ran out of memory\n");
-	while (*cp++ = *s++)
-		;
-	return(str);
+	error("Error in distfile: line %d: %s", yylineno, s);
 }
 
 /*
  * Allocate a namelist structure.
  */
 struct namelist *
-makenl(name)
-	char *name;
+makenl(char *name)
 {
-	register struct namelist *nl;
+	struct namelist *nl;
+
+	debugmsg(DM_CALL, "makenl(%s)", name == NULL ? "null" : name);
 
 	nl = ALLOC(namelist);
-	if (nl == NULL)
-		fatal("ran out of memory\n");
 	nl->n_name = name;
+	nl->n_regex = NULL;
 	nl->n_next = NULL;
+
 	return(nl);
+}
+
+
+/*
+ * Is the name p in the namelist nl?
+ */
+static int
+innl(struct namelist *nl, char *p)
+{
+	for ( ; nl; nl = nl->n_next)
+		if (!strcmp(p, nl->n_name))
+			return(1);
+	return(0);
+}
+
+/*
+ * Join two namelists.
+ */
+static struct namelist *
+addnl(struct namelist *n1, struct namelist *n2)
+{
+	struct namelist *nl, *prev;
+
+	n1 = expand(n1, E_VARS);
+	n2 = expand(n2, E_VARS);
+	for (prev = NULL, nl = NULL; n1; n1 = n1->n_next, prev = nl) {
+		nl = makenl(n1->n_name);
+		nl->n_next = prev;
+	}
+	for (; n2; n2 = n2->n_next)
+		if (!innl(nl, n2->n_name)) {
+			nl = makenl(n2->n_name);
+			nl->n_next = prev;
+			prev = nl;
+		}
+	return(prev);
+}
+
+/*
+ * Copy n1 except for elements that are in n2.
+ */
+static struct namelist *
+subnl(struct namelist *n1, struct namelist *n2)
+{
+	struct namelist *nl, *prev;
+
+	n1 = expand(n1, E_VARS);
+	n2 = expand(n2, E_VARS);
+	for (prev = NULL; n1; n1 = n1->n_next)
+		if (!innl(n2, n1->n_name)) {
+			nl = makenl(n1->n_name);
+			nl->n_next = prev;
+			prev = nl;
+		}
+	return(prev);
+}
+
+/*
+ * Copy all items of n1 that are also in n2.
+ */
+static struct namelist *
+andnl(struct namelist *n1, struct namelist *n2)
+{
+	struct namelist *nl, *prev;
+
+	n1 = expand(n1, E_VARS);
+	n2 = expand(n2, E_VARS);
+	for (prev = NULL; n1; n1 = n1->n_next)
+		if (innl(n2, n1->n_name)) {
+			nl = makenl(n1->n_name);
+			nl->n_next = prev;
+			prev = nl;
+		}
+	return(prev);
 }
 
 /*
  * Make a sub command for lists of variables, commands, etc.
  */
 struct subcmd *
-makesubcmd(type)
-	int type;
+makesubcmd(int type)
 {
-	register struct subcmd *sc;
+	struct subcmd *sc;
 
 	sc = ALLOC(subcmd);
-	if (sc == NULL)
-		fatal("ran out of memory\n");
 	sc->sc_type = type;
 	sc->sc_args = NULL;
 	sc->sc_next = NULL;
 	sc->sc_name = NULL;
+
 	return(sc);
 }

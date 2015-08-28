@@ -1,3 +1,4 @@
+/* $OpenBSD: ccm128.c,v 1.3 2014/06/12 15:49:30 deraadt Exp $ */
 /* ====================================================================
  * Copyright (c) 2011 The OpenSSL Project.  All rights reserved.
  *
@@ -56,7 +57,6 @@
 #  define NDEBUG
 # endif
 #endif
-#include <assert.h>
 
 /* First you setup M and L parameters and pass the key schedule.
  * This is called once per session setup... */
@@ -197,7 +197,7 @@ int CRYPTO_ccm128_encrypt(CCM128_CONTEXT *ctx,
 	if (ctx->blocks > (U64(1)<<61))	return -2; /* too much data */
 
 	while (len>=16) {
-#if defined(STRICT_ALIGNMENT)
+#ifdef __STRICT_ALIGNMENT
 		union { u64 u[2]; u8 c[16]; } temp;
 
 		memcpy (temp.c,inp,16);
@@ -210,7 +210,7 @@ int CRYPTO_ccm128_encrypt(CCM128_CONTEXT *ctx,
 		(*block)(ctx->cmac.c,ctx->cmac.c,key);
 		(*block)(ctx->nonce.c,scratch.c,key);
 		ctr64_inc(ctx->nonce.c);
-#if defined(STRICT_ALIGNMENT)
+#ifdef __STRICT_ALIGNMENT
 		temp.u[0] ^= scratch.u[0];
 		temp.u[1] ^= scratch.u[1];
 		memcpy(out,temp.c,16);
@@ -268,12 +268,12 @@ int CRYPTO_ccm128_decrypt(CCM128_CONTEXT *ctx,
 	if (n!=len) return -1;
 
 	while (len>=16) {
-#if defined(STRICT_ALIGNMENT)
+#ifdef __STRICT_ALIGNMENT
 		union { u64 u[2]; u8 c[16]; } temp;
 #endif
 		(*block)(ctx->nonce.c,scratch.c,key);
 		ctr64_inc(ctx->nonce.c);
-#if defined(STRICT_ALIGNMENT)
+#ifdef __STRICT_ALIGNMENT
 		memcpy (temp.c,inp,16);
 		ctx->cmac.u[0] ^= (scratch.u[0] ^= temp.u[0]);
 		ctx->cmac.u[1] ^= (scratch.u[1] ^= temp.u[1]);

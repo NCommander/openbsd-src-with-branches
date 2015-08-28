@@ -1,3 +1,4 @@
+.\" $OpenBSD: bootparams.5,v 1.10 2010/03/26 19:30:40 jmc Exp $
 .\"
 .\" Copyright (c) 1994 Gordon W. Ross
 .\" All rights reserved.
@@ -24,9 +25,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: bootparams.5,v 1.2 1994/10/03 19:26:13 gwr Exp $
-.\"
-.Dd October 2, 1994
+.Dd $Mdocdate: March 26 2010 $
 .Dt BOOTPARAMS 5
 .Os
 .Sh NAME
@@ -38,18 +37,15 @@
 The
 .Nm bootparams
 file specifies the boot parameters that
-.Xr diskless
+.Xr diskless 8
 clients may request when booting over the network.
 Each client supported by this server must have an entry in the
 .Nm bootparams
-file containing the pathnames for its
-.Nm root
-and (optionally)
-.Nm swap
-areas.
+file containing the pathnames for its "root" and (optionally) "swap" areas.
 .Pp
 Each line in the file
-(other than comment lines that begin with a #)
+(other than comment lines that begin with a
+.Sq # )
 specifies the client name followed by the pathnames that
 the client may request by their logical names.
 The components of the line are delimited with blank or tab,
@@ -57,22 +53,28 @@ and may be continued onto multiple lines with a backslash.
 .Pp
 For example:
 .Bd -literal -offset indent
-dummy	root=/export/dummy/root \\
-	swap=/export/dummy/swap \\
-	dump=/export/dummy/swap
+client	root=server:/export/client/root \e
+	swap=server:/export/client/swap \e
+	dump=server:/export/client/swap
 .Ed
 .Pp
-When the client named "dummy" requests the pathname for
-its logical "root" it will be given the pathname
-.Dq Pa "/export/dummy/root"
+When the client named "client" requests the pathname for
+its logical "root" it will be given the server name "server"
+and the pathname
+.Pa /export/client/root
 as the response to its
 .Tn RPC
 request.
+.Pp
+A line containing simply
+.Sq +
+will cause YP lookups to be done on the YP map "bootparams".
 .Sh FILES
 .Bl -tag -width /etc/bootparams -compact
 .It Pa /etc/bootparams
 default configuration file
 .El
-.Sh "SEE ALSO"
+.Sh SEE ALSO
 .Xr diskless 8 ,
-.Xr rpc.bootparamd 8
+.Xr rpc.bootparamd 8 ,
+.Xr yp 8

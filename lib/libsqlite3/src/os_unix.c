@@ -6125,6 +6125,9 @@ static int unixRandomness(sqlite3_vfs *NotUsed, int nBuf, char *zBuf){
   memset(zBuf, 0, nBuf);
   randomnessPid = osGetpid(0);  
 #if !defined(SQLITE_TEST)
+# if HAVE_ARC4RANDOM_BUF
+  arc4random_buf(zBuf, nBuf);
+# else
   {
     int fd, got;
     fd = robust_open("/dev/urandom", O_RDONLY, 0);
@@ -6140,6 +6143,7 @@ static int unixRandomness(sqlite3_vfs *NotUsed, int nBuf, char *zBuf){
       robust_close(0, fd, __LINE__);
     }
   }
+# endif
 #endif
   return nBuf;
 }

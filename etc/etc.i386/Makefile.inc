@@ -1,38 +1,11 @@
-#
-#	etc.i386/Makefile.inc -- i386-specific etc Makefile targets
-#
-#	$Id: Makefile.inc,v 1.5 1994/05/01 07:50:20 cgd Exp $
+#	$OpenBSD: Makefile.inc,v 1.23 2014/03/07 22:50:31 tedu Exp $
 
-.ifdef DESTDIR
-snap_md: netbsd-aha netbsd-bt
-#snap_md: kc_aha.fs kc_bt.fs
+KERNELS += GENERIC.MP bsd.mp
 
-netbsd-aha:
-	cd ${.CURDIR}/../sys/arch/i386/conf && config GENERICAHA
-	cd ${.CURDIR}/../sys/arch/i386/compile/GENERICAHA && \
-	    make clean && make depend && make
-	cp ${.CURDIR}/../sys/arch/i386/compile/GENERICAHA/netbsd \
-	    ${DESTDIR}/snapshot/netbsd-aha
+bootblocks:
+	cp ${DESTDIR}/usr/mdec/pxeboot ${RELEASEDIR}
+	cp ${DESTDIR}/usr/mdec/cdboot ${RELEASEDIR}
+	cp ${DESTDIR}/usr/mdec/cdbr ${RELEASEDIR}
 
-netbsd-bt:
-	cd ${.CURDIR}/../sys/arch/i386/conf && config GENERICBT
-	cd ${.CURDIR}/../sys/arch/i386/compile/GENERICBT && \
-	    make clean && make depend && make
-	cp ${.CURDIR}/../sys/arch/i386/compile/GENERICBT/netbsd \
-	    ${DESTDIR}/snapshot/netbsd-bt
-
-kc_aha.fs:
-	make -f ${.CURDIR}/etc.i386/Makefile.kc \
-	    IMAGE=${DESTDIR}/snapshot/kc_aha.fs \
-	    KERNEL=${DESTDIR}/snapshot/netbsd-aha || \
-	make -f ${.CURDIR}/etc.i386/Makefile.kc \
-	    IMAGE=${DESTDIR}/snapshot/kc_aha.fs unconfig
-
-kc_bt.fs:
-	make -f ${.CURDIR}/etc.i386/Makefile.kc \
-	    IMAGE=${DESTDIR}/snapshot/kc_bt.fs \
-	    KERNEL=${DESTDIR}/snapshot/netbsd-bt || \
-	make -f ${.CURDIR}/etc.i386/Makefile.kc \
-	    IMAGE=${DESTDIR}/snapshot/kc_bt.fs unconfig
-
-.endif	# DESTDIR check
+MDEXT=	bsd.rd cd${OSrev}.iso floppy${OSrev}.fs miniroot${OSrev}.fs \
+	pxeboot cdboot cdbr

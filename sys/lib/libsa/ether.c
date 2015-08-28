@@ -1,4 +1,5 @@
-/*	$NetBSD: ether.c,v 1.6 1995/09/14 23:45:25 pk Exp $	*/
+/*	$OpenBSD: ether.c,v 1.9 2014/11/19 19:59:39 miod Exp $	*/
+/*	$NetBSD: ether.c,v 1.8 1996/10/13 02:29:00 christos Exp $	*/
 
 /*
  * Copyright (c) 1992 Regents of the University of California.
@@ -41,13 +42,11 @@
 
 #include <sys/param.h>
 #include <sys/socket.h>
-#include <string.h>
 
 #include <net/if.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 #include "stand.h"
@@ -56,18 +55,13 @@
 
 /* Caller must leave room for ethernet header in front!! */
 ssize_t
-sendether(d, pkt, len, dea, etype)
-	struct iodesc *d;
-	void *pkt;
-	size_t len;
-	u_char *dea;
-	int etype;
+sendether(struct iodesc *d, void *pkt, size_t len, u_char *dea, int etype)
 {
-	register ssize_t n;
-	register struct ether_header *eh;
+	ssize_t n;
+	struct ether_header *eh;
 
 #ifdef ETHER_DEBUG
- 	if (debug)
+	if (debug)
 		printf("sendether: called\n");
 #endif
 
@@ -79,7 +73,7 @@ sendether(d, pkt, len, dea, etype)
 	eh->ether_type = htons(etype);
 
 	n = netif_put(d, eh, len);
-	if (n == -1 || n < sizeof(*eh))
+	if (n < 0 || (size_t)n < sizeof(*eh))
 		return (-1);
 
 	n -= sizeof(*eh);
@@ -92,18 +86,14 @@ sendether(d, pkt, len, dea, etype)
  * NOTE: Caller must leave room for the Ether header.
  */
 ssize_t
-readether(d, pkt, len, tleft, etype)
-	register struct iodesc *d;
-	register void *pkt;
-	register size_t len;
-	time_t tleft;
-	register u_int16_t *etype;
+readether(struct iodesc *d, void *pkt, size_t len, time_t tleft,
+    u_int16_t *etype)
 {
-	register ssize_t n;
-	register struct ether_header *eh;
+	ssize_t n;
+	struct ether_header *eh;
 
 #ifdef ETHER_DEBUG
- 	if (debug)
+	if (debug)
 		printf("readether: called\n");
 #endif
 
@@ -111,7 +101,7 @@ readether(d, pkt, len, tleft, etype)
 	len += sizeof(*eh);
 
 	n = netif_get(d, eh, len, tleft);
-	if (n == -1 || n < sizeof(*eh))
+	if (n < 0 || (size_t)n < sizeof(*eh))
 		return (-1);
 
 	/* Validate Ethernet address. */
@@ -120,7 +110,7 @@ readether(d, pkt, len, tleft, etype)
 #ifdef ETHER_DEBUG
 		if (debug)
 			printf("readether: not ours (ea=%s)\n",
-				ether_sprintf(eh->ether_dhost));
+			    ether_sprintf(eh->ether_dhost));
 #endif
 		return (-1);
 	}
@@ -133,14 +123,13 @@ readether(d, pkt, len, tleft, etype)
 /*
  * Convert Ethernet address to printable (loggable) representation.
  */
-static char digits[] = "0123456789abcdef";
-char *
-ether_sprintf(ap)
-        register u_char *ap;
+static const char digits[] = "0123456789abcdef";
+const char *
+ether_sprintf(const u_char *ap)
 {
-	register i;
+	int i;
 	static char etherbuf[18];
-	register char *cp = etherbuf;
+	char *cp = etherbuf;
 
 	for (i = 0; i < 6; i++) {
 		*cp++ = digits[*ap >> 4];

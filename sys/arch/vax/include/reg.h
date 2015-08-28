@@ -1,3 +1,4 @@
+/*	$OpenBSD: reg.h,v 1.3 2000/10/09 23:11:57 bjc Exp $	*/
 /*	$NetBSD: reg.h,v 1.3 1995/04/12 15:26:52 ragge Exp $	*/
 
 /*
@@ -31,7 +32,9 @@
  */
 
  /* All bugs are subject to removal without further notice */
-		
+
+#ifndef _MACHINE_REG_H_
+#define _MACHINE_REG_H_
 
 struct  reg {
 	int	r0;     /* General registers saved upon trap/syscall */
@@ -53,3 +56,4 @@ struct  reg {
 	int	psl;    /* User psl */
 };
 
+#endif /* _MACHINE_REG_H_ */

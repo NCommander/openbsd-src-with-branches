@@ -1,3 +1,4 @@
+.\"	$OpenBSD: cp.1,v 1.36 2014/01/29 09:04:23 jmc Exp $
 .\"	$NetBSD: cp.1,v 1.9 1995/07/25 19:36:45 jtc Exp $
 .\"
 .\" Copyright (c) 1989, 1990, 1993, 1994
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,119 +33,131 @@
 .\"
 .\"	@(#)cp.1	8.3 (Berkeley) 4/18/94
 .\"
-.Dd April 18, 1994
+.Dd $Mdocdate: January 29 2014 $
 .Dt CP 1
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm cp
 .Nd copy files
 .Sh SYNOPSIS
 .Nm cp
+.Op Fl fip
 .Oo
 .Fl R
-.Op Fl H | Fl L | Fl P
+.Op Fl H | L | P
 .Oc
-.Op Fl fip
-.Ar source_file target_file
+.Ar source target
 .Nm cp
+.Op Fl fip
 .Oo
 .Fl R
-.Op Fl H | Fl L | Fl P
+.Op Fl H | L | P
 .Oc
-.Op Fl fip
-.Ar source_file ... target_directory
+.Ar source ... directory
 .Sh DESCRIPTION
 In the first synopsis form, the
-.Nm cp
+.Nm
 utility copies the contents of the
-.Ar source_file
-to the
-.Ar target_file .
+.Ar source
+file to the
+.Ar target
+file.
 In the second synopsis form,
 the contents of each named
-.Ar source_file
-is copied to the destination
-.Ar target_directory .
+.Ar source
+file are copied to the destination
+.Ar directory .
 The names of the files themselves are not changed.
 If
-.Nm cp
+.Nm
 detects an attempt to copy a file to itself, the copy will fail.
 .Pp
-The following options are available:
-.Bl -tag -width flag
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl f
+For each existing destination pathname, remove it and
+create a new file, without prompting for confirmation,
+regardless of its permissions.
+The
+.Fl f
+option overrides any previous
+.Fl i
+options.
 .It Fl H
 If the
 .Fl R
-option is specified, symbolic links on the command line are followed.
-(Symbolic links encountered in the tree traversal are not followed.)
-.It Fl L
-If the
-.Fl R
-option is specified, all symbolic links are followed.
-.It Fl P
-If the
-.Fl R
-option is specified, no symbolic links are followed.
-.It Fl R
-If
-.Ar source_file
-designates a directory,
-.Nm cp
-copies the directory and the entire subtree connected at that point.
-This option also causes symbolic links to be copied, rather than
-indirected through, and for
-.Nm cp
-to create special files rather than copying them as normal files.
-Created directories have the same mode as the corresponding source
-directory, unmodified by the process' umask.
-.It Fl f
-For each existing destination pathname, remove it and
-create a new file, without prompting for confirmation
-regardless of its permissions.
-(The
-.Fl i
-option is ignored if the
-.Fl f
-option is specified.)
+option is also specified, symbolic links on the command line are followed.
+Symbolic links encountered in the tree traversal are not followed.
 .It Fl i
-Causes
-.Nm cp
-to write a prompt to the standard error output before copying a file
+Write a prompt to the standard error output before copying a file
 that would overwrite an existing file.
 If the response from the standard input begins with the character
 .Sq Li y ,
 the file copy is attempted.
+The
+.Fl i
+option overrides any previous
+.Fl f
+options.
+.It Fl L
+If the
+.Fl R
+option is also specified, all symbolic links are followed.
+.It Fl P
+If the
+.Fl R
+option is also specified, no symbolic links are followed.
 .It Fl p
-Causes
-.Nm cp
-to preserve in the copy as many of the modification time, access time,
+Preserve in the copy as many of the modification time, access time,
 file flags, file mode, user ID, and group ID as allowed by permissions.
 .Pp
 If the user ID and group ID cannot be preserved, no error message
 is displayed and the exit value is not altered.
 .Pp
-If the source file has its set user ID bit on and the user ID cannot
-be preserved, the set user ID bit is not preserved
+If the source file has its set-user-ID bit on and the user ID cannot
+be preserved, the set-user-ID bit is not preserved
 in the copy's permissions.
-If the source file has its set group ID bit on and the group ID cannot
-be preserved, the set group ID bit is not preserved
+If the source file has its set-group-ID bit on and the group ID cannot
+be preserved, the set-group-ID bit is not preserved
 in the copy's permissions.
-If the source file has both its set user ID and set group ID bits on,
+If the source file has both its set-user-ID and set-group-ID bits on,
 and either the user ID or group ID cannot be preserved, neither
-the set user ID or set group ID bits are preserved in the copy's
+the set-user-ID nor set-group-ID bits are preserved in the copy's
 permissions.
+.It Fl R
+If
+.Ar source
+designates a directory,
+.Nm
+copies the directory and the entire subtree connected at that point.
+Created directories have the same mode as the corresponding source
+directory, unmodified by the process's umask.
+.Pp
+This option also causes symbolic links to be copied, rather than
+followed, and
+special files to be created, rather than being copied as normal files.
+However,
+.Nm
+copies hard linked files as separate files.
+To preserve hard links,
+use a utility such as
+.Xr pax 1
+or
+.Xr tar 1
+instead.
 .El
 .Pp
 For each destination file that already exists, its contents are
 overwritten if permissions allow, but its mode, user ID, and group
 ID are unchanged.
 .Pp
-In the second synopsis form, 
-.Ar target_directory 
-must exist unless there is only one named
-.Ar source_file
-which is a directory and the 
-.Fl R 
+In the second synopsis form,
+the destination specified by the
+.Ar directory
+operand must exist unless there is only one named
+.Ar source
+which is a directory and the
+.Fl R
 flag is specified.
 .Pp
 If the destination file does not exist, the mode of the source file is
@@ -156,30 +165,34 @@ used as modified by the file mode creation mask
 .Pf ( Ic umask ,
 see
 .Xr csh 1 ) .
-If the source file has its set user ID bit on, that bit is removed
+If the source file has its set-user-ID bit on, that bit is removed
 unless both the source file and the destination file are owned by the
 same user.
-If the source file has its set group ID bit on, that bit is removed
+If the source file has its set-group-ID bit on, that bit is removed
 unless both the source file and the destination file are in the same
 group and the user is a member of that group.
-If both the set user ID and set group ID bits are set, all of the above
+If both the set-user-ID and set-group-ID bits are set, all of the above
 conditions must be fulfilled or both bits are removed.
 .Pp
 Appropriate permissions are required for file creation or overwriting.
 .Pp
-Symbolic links are always followed unless the 
-.Fl R 
+When a file containing large blocks of zero-valued bytes is copied,
+.Nm
+will attempt to create a sparse file.
+.Pp
+Symbolic links are always followed unless the
+.Fl R
 flag is set, in which case symbolic links are not followed, by default.
 The
 .Fl H
-or 
+or
 .Fl L
 flags (in conjunction with the
 .Fl R
 flag) cause symbolic links to be followed as described above.
 The
 .Fl H ,
-.Fl L
+.Fl L ,
 and
 .Fl P
 options are ignored unless the
@@ -187,27 +200,51 @@ options are ignored unless the
 option is specified.
 In addition, these options override each other and the
 command's actions are determined by the last one specified.
+.Sh EXIT STATUS
+.Ex -std cp
+.Sh EXAMPLES
+Make a copy of file
+.Pa foo
+named
+.Pa bar :
 .Pp
-.Nm Cp
-exits 0 on success, >0 if an error occurred.
-.Sh COMPATIBILITY
-Historic versions of the
-.Nm cp
-utility had a
-.Fl r
-option.
-This implementation supports that option, however, its use is strongly
-discouraged, as it does not correctly copy special files, symbolic links
-or fifo's.
+.Dl $ cp foo bar
+.Pp
+Copy a group of files to the
+.Pa /tmp
+directory:
+.Pp
+.Dl $ cp *.txt /tmp
+.Pp
+Copy the directory
+.Pa junk
+and all of its contents (including any subdirectories) to the
+.Pa /tmp
+directory:
+.Pp
+.Dl $ cp -R junk /tmp
 .Sh SEE ALSO
 .Xr mv 1 ,
-.Xr rcp 1 ,
-.Xr umask 2 , 
+.Xr umask 2 ,
 .Xr fts 3 ,
 .Xr symlink 7
 .Sh STANDARDS
 The
-.Nm cp
-utility is expected to be
-.St -p1003.2
-compatible.
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+Historic versions of the
+.Nm
+utility had a
+.Fl r
+option.
+This implementation supports that option; however, its use is strongly
+discouraged, as it does not correctly copy special files, symbolic links
+or FIFOs.
+.Sh HISTORY
+A
+.Nm
+command appeared in
+.At v1 .

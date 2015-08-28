@@ -1,4 +1,5 @@
-/*      $NetBSD: cpu.h,v 1.12 1995/06/05 17:17:57 ragge Exp $      */
+/*	$OpenBSD: cpu.h,v 1.47 2014/07/11 10:53:07 uebayasi Exp $	*/
+/*	$NetBSD: cpu.h,v 1.41 1999/10/21 20:01:36 ragge Exp $	*/
 
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden
@@ -30,59 +31,159 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /* All bugs are subject to removal without further notice */
+#ifndef _MACHINE_CPU_H_
+#define _MACHINE_CPU_H_
+#ifdef _KERNEL
 
-#include "sys/cdefs.h"
-#include "machine/mtpr.h"
-#include "machine/pcb.h"
+#include <sys/device.h>
+#include <sys/evcount.h>
 
-#define enablertclock()
-#define	cpu_wait(p)
-#define	cpu_swapout(p)
+#include <machine/mtpr.h>
+#include <machine/pte.h>
+#include <machine/pcb.h>
+#include <machine/uvax.h>
+#include <machine/psl.h>
+#include <machine/trap.h>
+#include <machine/intr.h>
 
+#include <sys/sched.h>
+struct cpu_info {
+	struct proc *ci_curproc;
 
-extern volatile int cpunumber;
-extern struct cpu_dep cpu_calls[];
-
-struct	cpu_dep {
-	int	(*cpu_loinit)(); /* Locore init before everything else */
-	int	(*cpu_clock)();	 /* CPU dependent clock handling */
-	int	(*cpu_mchk)();   /* Machine check handling */
-	int	(*cpu_memerr)(); /* Memory subsystem errors */
-	int	(*cpu_conf)();	 /* Autoconfiguration */
+	struct schedstate_percpu ci_schedstate; /* scheduler state */
+	u_int32_t 		ci_randseed;
+#ifdef DIAGNOSTIC
+	int	ci_mutex_level;
+#endif
+#ifdef GPROF
+	struct gmonparam *ci_gmon;
+#endif
 };
+
+extern struct cpu_info cpu_info_store;
+#define	curcpu()	(&cpu_info_store)
+#define cpu_number()	0
+#define CPU_IS_PRIMARY(ci)	1
+#define CPU_INFO_ITERATOR	int
+#define CPU_INFO_FOREACH(cii, ci) \
+	for (cii = 0, ci = curcpu(); ci != NULL; ci = NULL)
+#define CPU_INFO_UNIT(ci)	0
+#define MAXCPUS	1
+#define cpu_unidle(ci)
+
+#define CPU_BUSY_CYCLE()	do {} while (0)
 
 struct clockframe {
-        int     pc;
-        int     ps;
+	int	pc;
+	int	ps;
 };
 
-#define	setsoftnet()	mtpr(12,PR_SIRR)
-#define setsoftclock()	mtpr(8,PR_SIRR)
+/*
+ * All cpu-dependent info is kept in this struct. Pointer to the
+ * struct for the current cpu is set up in locore.c.
+ */
+struct	cpu_dep {
+	void	(*cpu_init)(void);	/* pmap init before mm is on */
+	int	(*cpu_mchk)(caddr_t);	/* Machine check handling */
+	void	(*cpu_memerr)(void);	/* Memory subsystem errors */
+	void	(*cpu_conf)(void);	/* Autoconfiguration */
+	int	(*cpu_clkread)(struct timespec *, time_t); /* Read cpu clock time */
+	void	(*cpu_clkwrite)(void);	/* Write system time to cpu */
+	short	cpu_vups;	/* speed of cpu */
+	short	cpu_scbsz;	/* (estimated) size of system control block */
+	void	(*cpu_halt)(void); /* Cpu dependent halt call */
+	void	(*cpu_reboot)(int); /* Cpu dependent reboot call */
+	void	(*cpu_clrf)(void); /* Clear cold/warm start flags */
+	void	(*cpu_hardclock)(struct clockframe *);	/* hardclock handler */
+};
+
+extern struct cpu_dep *dep_call; /* Holds pointer to current CPU struct. */
+
+extern struct device *booted_from;
+extern int mastercpu;
+extern int bootdev;
 
 /*
  * Preempt the current process if in interrupt from user mode,
  * or after the current trap/syscall if in system mode.
  */
 
-#define need_resched(){ \
+#define need_resched(ci){ \
 	want_resched++; \
 	mtpr(AST_OK,PR_ASTLVL); \
 	}
+#define clear_resched(ci) 	want_resched = 0
 
 /*
  * Notify the current process (p) that it has a signal pending,
  * process as soon as possible.
  */
 
-#define signotify(p)     mtpr(AST_OK,PR_ASTLVL);
+#define signotify(p)		mtpr(AST_OK,PR_ASTLVL);
 
-extern	int     want_resched;   /* resched() was called */
+extern	int	want_resched;	/* resched() was called */
+
+/*
+ * This is used during profiling to integrate system time.
+ */
+#define	PROC_PC(p)	(((struct trapframe *)((p)->p_addr->u_pcb.framep))->pc)
+#define	PROC_STACK(p)	(((struct trapframe *)((p)->p_addr->u_pcb.framep))->sp)
 
 /*
  * Give a profiling tick to the current process when the user profiling
- * buffer pages are invalid.  On the hp300, request an ast to send us
+ * buffer pages are invalid.  On the vax, request an ast to send us
  * through trap, marking the proc as needing a profiling tick.
  */
-#define need_proftick(p) {(p)->p_flag |= P_OWEUPC; mtpr(AST_OK,PR_ASTLVL); }
+#define need_proftick(p) mtpr(AST_OK,PR_ASTLVL)
 
+/*
+ * Temporarily switching to ipl 1 when the kernel is idle allows SIMH
+ * to recognize the system is idle, and relinquish CPU time as well.
+ */
+#define	cpu_idle_enter()	do { /* nothing */ } while (0)
+#define	cpu_idle_leave()	do { /* nothing */ } while (0)
+#define	cpu_idle_cycle() \
+do { \
+	mtpr(0x01, PR_IPL); \
+	mtpr(0x00, PR_IPL); \
+} while (0)
+
+/*
+ * This defines the I/O device register space size in pages.
+ */
+#define	IOSPSZ	((16*1024) / VAX_NBPG)	/* 16Kb == 32 pages */
+
+struct device;
+
+extern char cpu_model[100];
+
+/* Some low-level prototypes */
+int	badaddr(caddr_t, int);
+void	dumpconf(void);
+void	dumpsys(void);
+void	swapconf(void);
+void	disk_printtype(int, int);
+vaddr_t	vax_map_physmem(paddr_t, int);
+void	vax_unmap_physmem(vaddr_t, int);
+void	ioaccess(vaddr_t, paddr_t, int);
+void	iounaccess(vaddr_t, int);
+void	findcpu(void);
+#ifdef DDB
+int	kdbrint(int);
+#endif
+#endif /* _KERNEL */
+
+/*
+ * CTL_MACHDEP definitions.
+ */
+#define CPU_CONSDEV		1	/* dev_t: console terminal device */
+#define	CPU_LED_BLINK		2	/* int: display led patterns */
+#define CPU_MAXID		3	/* number of valid machdep ids */
+
+#define CTL_MACHDEP_NAMES { \
+	{ 0, 0 }, \
+	{ "console_device", CTLTYPE_STRUCT }, \
+	{ "led_blink", CTLTYPE_INT } \
+}
+
+#endif /* _MACHINE_CPU_H_ */

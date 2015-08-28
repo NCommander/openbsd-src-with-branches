@@ -271,7 +271,11 @@ main (int argc, char **argv)
   link_info.emitrelocations = FALSE;
   link_info.task_link = FALSE;
   link_info.shared = FALSE;
+#ifdef PIE_DEFAULT
+  link_info.pie = TRUE;
+#else
   link_info.pie = FALSE;
+#endif
   link_info.executable = FALSE;
   link_info.symbolic = FALSE;
   link_info.export_dynamic = FALSE;
@@ -323,6 +327,7 @@ main (int argc, char **argv)
   force_make_executable = FALSE;
   config.magic_demand_paged = TRUE;
   config.text_read_only = TRUE;
+  config.data_bss_contig = FALSE;
 
   emulation = get_emulation (argc, argv);
   ldemul_choose_mode (emulation);
@@ -336,6 +341,14 @@ main (int argc, char **argv)
     bfd_hash_set_default_size (config.hash_table_size);
 
   ldemul_set_symbols ();
+
+  if (! link_info.shared && link_info.pie)
+    {
+      if (link_info.relocatable)
+        link_info.pie = FALSE;
+      else
+        link_info.shared = TRUE;
+    }
 
   if (link_info.relocatable)
     {
@@ -357,6 +370,9 @@ main (int argc, char **argv)
 
   if (! link_info.shared || link_info.pie)
     link_info.executable = TRUE;
+
+  if (! config.dynamic_link && link_info.pie)
+    link_info.static_link = TRUE;
 
   /* Treat ld -r -s as ld -r -S -x (i.e., strip all local symbols).  I
      don't see how else this can be handled, since in this case we

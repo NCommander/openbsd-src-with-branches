@@ -1,4 +1,5 @@
-/*	$NetBSD: sbus.c,v 1.6 1995/02/01 12:37:28 pk Exp $ */
+/*	$OpenBSD: sbus.c,v 1.20 2015/03/21 19:55:31 miod Exp $	*/
+/*	$NetBSD: sbus.c,v 1.17 1997/06/01 22:10:39 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,24 +42,50 @@
  */
 
 /*
- * Sbus stuff.
+ * SBus stuff.
  */
 
 #include <sys/param.h>
+#include <sys/malloc.h>
+#include <sys/systm.h>
 #include <sys/device.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 
 #include <sparc/dev/sbusreg.h>
 #include <sparc/dev/sbusvar.h>
+#include <sparc/dev/xboxreg.h>
+#include <sparc/dev/xboxvar.h>
+#include <sparc/dev/dmareg.h>
+
+int sbus_print(void *, const char *);
 
 /* autoconfiguration driver */
-void	sbus_attach __P((struct device *, struct device *, void *));
-int	sbus_match __P((struct device *, void *, void *));
-struct cfdriver sbuscd = {
-	NULL, "sbus", sbus_match, sbus_attach,
-	DV_DULL, sizeof(struct sbus_softc)
+void	sbus_attach(struct device *, struct device *, void *);
+int	sbus_match(struct device *, void *, void *);
+int	sbus_search(struct device *, void *, void *);
+
+struct cfattach sbus_ca = {
+	sizeof(struct sbus_softc), sbus_match, sbus_attach
 };
+
+struct cfdriver sbus_cd = {
+	NULL, "sbus", DV_DULL
+};
+
+/*
+ * SBus driver attach arguments.
+ * We carry a few more information than a mere struct confargs internally,
+ * for the sake of sbus_match() and sbus_print().
+ */
+struct sbus_attach_args {
+	struct confargs	sa_ca;
+	int		sa_slave_only;
+	int		sa_unsupported;
+};
+
+static /*const*/ char *sl = "slave-only";
 
 /*
  * Print the location of some sbus-attached device (called just
@@ -71,54 +94,68 @@ struct cfdriver sbuscd = {
  * Return UNCONF (config_find ignores this if the device was configured).
  */
 int
-sbus_print(args, sbus)
-	void *args;
-	char *sbus;
+sbus_print(void *args, const char *sbus)
 {
-	register struct confargs *ca = args;
+	struct sbus_attach_args *sa = args;
+	char *class;
 
-	if (sbus)
-		printf("%s at %s", ca->ca_ra.ra_name, sbus);
-	printf(" slot %d offset 0x%x", ca->ca_slot, ca->ca_offset);
-	return (UNCONF);
+	if (sbus != NULL) {
+		printf("\"%s\" at %s", sa->sa_ca.ca_ra.ra_name, sbus);
+		class = getpropstring(sa->sa_ca.ca_ra.ra_node, "device_type");
+		if (*class != '\0')
+			printf(" class %s", class);
+	}
+	if (sa->sa_slave_only)
+		printf(" %s", sl);
+	printf(" slot %d offset 0x%x", sa->sa_ca.ca_slot, sa->sa_ca.ca_offset);
+
+	return sa->sa_unsupported != 0 ? UNSUPP : UNCONF;
 }
 
 int
-sbus_match(parent, vcf, aux)
-	struct device *parent;
-	void *vcf, *aux;
+sbus_match(struct device *parent, void *vcf, void *aux)
 {
 	struct cfdata *cf = vcf;
-	register struct confargs *ca = aux;
-	register struct romaux *ra = &ca->ca_ra;
+	struct confargs *ca = aux;
+	struct romaux *ra = &ca->ca_ra;
 
-	if (cputyp==CPU_SUN4)
+	if (CPU_ISSUN4)
 		return (0);
+
+	if (ca->ca_bustype == BUS_XBOX) {
+		struct xbox_softc *xsc = (struct xbox_softc *)parent;
+
+		/* Prevent multiple attachments */
+		if (xsc->sc_attached == 0) {
+			xsc->sc_attached = 1;
+			return (1);
+		}
+
+		return (0);
+	}
+
 	return (strcmp(cf->cf_driver->cd_name, ra->ra_name) == 0);
 }
 
 /*
- * Attach an Sbus.
+ * Attach an SBus.
  */
 void
-sbus_attach(parent, self, aux)
-	struct device *parent;
-	struct device *self;
-	void *aux;
+sbus_attach(struct device *parent, struct device *self, void *aux)
 {
-	register struct sbus_softc *sc = (struct sbus_softc *)self;
+	struct sbus_softc *sc = (struct sbus_softc *)self;
 	struct confargs *ca = aux;
-	register struct romaux *ra = &ca->ca_ra;
-	register int base, node, slot;
-	register int i;
-	register char *name;
-	struct confargs oca;
+	struct romaux *ra = &ca->ca_ra;
+	int node;
+	char *name;
+	struct sbus_attach_args saa;
+	int rlen;
 
 	/*
-	 * XXX there is only one Sbus, for now -- do not know how to
+	 * XXX there is only one SBus, for now -- do not know how to
 	 * address children on others
 	 */
-	if (sc->sc_dev.dv_unit > 0) {
+	if (sc->sc_dev.dv_unit > 0 && ca->ca_bustype != BUS_XBOX) {
 		printf(" unsupported\n");
 		return;
 	}
@@ -128,13 +165,47 @@ sbus_attach(parent, self, aux)
 	 * IS THIS THE CORRECT DEFAULT??
 	 */
 	node = ra->ra_node;
-	sc->sc_clockfreq = getpropint(node, "clock-frequency", 25*1000*1000);
-	printf(": clock = %s MHz\n", clockfreq(sc->sc_clockfreq));
+	sc->sc_clockfreq = getpropint(node, "clock-frequency", -1);
+	if (sc->sc_clockfreq <= 0)
+		sc->sc_clockfreq = getpropint(findroot(), "clock-frequency",
+		    25 * 1000 * 1000);
+	printf(": %s MHz\n", clockfreq(sc->sc_clockfreq));
 
-	if (ra->ra_bp != NULL && strcmp(ra->ra_bp->name, "sbus") == 0)
-		oca.ca_ra.ra_bp = ra->ra_bp + 1;
+	/*
+	 * Get the SBus burst transfer size if burst transfers are supported
+	 */
+	sc->sc_burst = getpropint(node, "burst-sizes", 0);
+	sc->sc_burst = sc->sc_burst & ~SBUS_BURST_64;
+
+	if (ca->ca_bustype == BUS_XBOX) {
+		struct xbox_softc *xsc = (struct xbox_softc *)parent;
+
+		/* Parent has already done the leg work */
+		sc->sc_nrange = xsc->sc_nrange;
+		sc->sc_range = xsc->sc_range;
+		xsc->sc_attached = 2;
+
+		sc->sc_slave_only = getpropint(node, sl, 0);
+	} else {
+		/* Check root node for 'slave-only' property */
+		sc->sc_slave_only = getpropint(0, sl, 0);
+
+		rlen = getproplen(node, "ranges");
+		if (rlen > 0) {
+			sc->sc_nrange = rlen / sizeof(struct rom_range);
+			sc->sc_range =
+			    (struct rom_range *)malloc(rlen, M_DEVBUF, M_NOWAIT);
+			if (sc->sc_range == NULL)
+				panic("sbus: PROM ranges too large: %d", rlen);
+			(void)getprop(node, "ranges", sc->sc_range, rlen);
+		}
+	}
+
+	if (ca->ca_bustype != BUS_XBOX && ra->ra_bp != NULL &&
+	    strcmp(ra->ra_bp->name, "sbus") == 0)
+		saa.sa_ca.ca_ra.ra_bp = ra->ra_bp + 1;
 	else
-		oca.ca_ra.ra_bp = NULL;
+		saa.sa_ca.ca_ra.ra_bp = NULL;
 
 	/*
 	 * Loop through ROM children, fixing any relative addresses
@@ -142,61 +213,104 @@ sbus_attach(parent, self, aux)
 	 */
 	for (node = firstchild(node); node; node = nextsibling(node)) {
 		name = getpropstring(node, "name");
-		if (!romprop(&oca.ca_ra, name, node))
+#ifdef SUN4E
+		if (CPU_ISSUN4E && strcmp(name, "vm") == 0)
 			continue;
-		base = (int)oca.ca_ra.ra_paddr;
+#endif
+		if (!romprop(&saa.sa_ca.ca_ra, name, node))
+			continue;
+
+		saa.sa_ca.ca_bustype = BUS_SBUS;
+		saa.sa_ca.ca_dmat = ca->ca_dmat;
+		saa.sa_unsupported = sbus_translate(self, &saa.sa_ca) != 0;
+		saa.sa_slave_only =
+		    sc->sc_slave_only & (1 << saa.sa_ca.ca_slot);
+
+		config_found_sm(&sc->sc_dev, (void *)&saa, sbus_print,
+		    sbus_search);
+	}
+}
+
+int
+sbus_search(struct device *parent, void *vcf, void *args)
+{
+	struct cfdata *cf = vcf;
+	struct sbus_attach_args *saa = args;
+
+	if (saa->sa_unsupported != 0)
+		return 0;
+
+	return (cf->cf_attach->ca_match)(parent, cf, &saa->sa_ca);
+}
+
+int
+sbus_translate(struct device *dev, struct confargs *ca)
+{
+	struct sbus_softc *sc = (struct sbus_softc *)dev;
+	int base, slot;
+	int i;
+
+	if (sc->sc_nrange == 0) {
+		/* Old-style SBus configuration */
+		base = (int)ca->ca_ra.ra_paddr;
 		if (SBUS_ABS(base)) {
-			oca.ca_slot = SBUS_ABS_TO_SLOT(base);
-			oca.ca_offset = SBUS_ABS_TO_OFFSET(base);
+			ca->ca_slot = SBUS_ABS_TO_SLOT(base);
+			ca->ca_offset = SBUS_ABS_TO_OFFSET(base);
 		} else {
-			oca.ca_slot = slot = oca.ca_ra.ra_iospace;
-			oca.ca_offset = base;
-			oca.ca_ra.ra_paddr = (void *)SBUS_ADDR(slot, base);
-			/* Fix any remaining register banks */
-			for (i = 1; i < oca.ca_ra.ra_nreg; i++) {
-				base = (int)oca.ca_ra.ra_reg[i].rr_paddr;
-				oca.ca_ra.ra_reg[i].rr_paddr =
+			if (!CPU_ISSUN4C && !CPU_ISSUN4E) {
+				printf("%s: relative sbus addressing not supported\n",
+				    dev->dv_xname);
+				return ENXIO;
+			}
+			ca->ca_slot = slot = ca->ca_ra.ra_iospace;
+			ca->ca_offset = base;
+
+			/* Fix all register banks */
+			for (i = 0; i < ca->ca_ra.ra_nreg; i++) {
+				base = (int)ca->ca_ra.ra_reg[i].rr_paddr;
+				if ((base & ~SBUS_PAGE_MASK) != 0)
+					return ENXIO;
+				ca->ca_ra.ra_reg[i].rr_paddr =
 					(void *)SBUS_ADDR(slot, base);
+				ca->ca_ra.ra_reg[i].rr_iospace = PMAP_OBIO;
 			}
 		}
-		oca.ca_bustype = BUS_SBUS;
-		(void) config_found(&sc->sc_dev, (void *)&oca, sbus_print);
-	}
-}
+	} else {
+		ca->ca_slot = ca->ca_ra.ra_iospace;
+		ca->ca_offset = (int)ca->ca_ra.ra_paddr;
 
-/*
- * Each attached device calls sbus_establish after it initializes
- * its sbusdev portion.
- */
-void
-sbus_establish(sd, dev)
-	register struct sbusdev *sd;
-	register struct device *dev;
-{
-	register struct sbus_softc *sc = (struct sbus_softc *)dev->dv_parent;
+		/* Translate into parent address spaces */
+		for (i = 0; i < ca->ca_ra.ra_nreg; i++) {
+			int j, cspace = ca->ca_ra.ra_reg[i].rr_iospace;
 
-	sd->sd_dev = dev;
-	sd->sd_bchain = sc->sc_sbdev;
-	sc->sc_sbdev = sd;
-}
-
-/*
- * Reset the given sbus. (???)
- */
-void
-sbusreset(sbus)
-	int sbus;
-{
-	register struct sbusdev *sd;
-	struct sbus_softc *sc = sbuscd.cd_devs[sbus];
-	struct device *dev;
-
-	printf("reset %s:", sc->sc_dev.dv_xname);
-	for (sd = sc->sc_sbdev; sd != NULL; sd = sd->sd_bchain) {
-		if (sd->sd_reset) {
-			dev = sd->sd_dev;
-			(*sd->sd_reset)(dev);
-			printf(" %s", dev->dv_xname);
+			for (j = 0; j < sc->sc_nrange; j++) {
+				if (sc->sc_range[j].cspace == cspace) {
+					ca->ca_ra.ra_reg[i].rr_paddr +=
+						sc->sc_range[j].poffset;
+					ca->ca_ra.ra_reg[i].rr_iospace =
+						sc->sc_range[j].pspace;
+					break;
+				}
+			}
 		}
 	}
+
+	return 0;
+}
+
+/*
+ * Returns true if this sbus slot is capable of dma
+ */
+int
+sbus_testdma(struct sbus_softc *sc, struct confargs *ca)
+{
+        struct romaux *ra = &ca->ca_ra;
+
+	if (sc->sc_slave_only & (1 << ca->ca_slot)) {
+		printf("%s: dma card found in non-dma sbus slot %d"
+			": not supported\n", ra->ra_name, ca->ca_slot);
+		return (0);
+	}
+
+	return (1);
 }

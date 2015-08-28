@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.35 2009/10/26 20:14:14 miod Exp $ */
+/*	$OpenBSD: intr.h,v 1.5 2013/05/17 19:38:52 kettenis Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -54,8 +54,15 @@
 #define	IPL_TTY		4	/* terminal */
 #define	IPL_VM		5	/* memory allocation */
 #define	IPL_CLOCK	6	/* clock */
+#define	IPL_STATCLOCK	IPL_CLOCK
+#define	IPL_SCHED	7	/* everything */
 #define	IPL_HIGH	7	/* everything */
 #define	NIPLS		8	/* Number of levels */
+
+#define IPL_MPFLOOR	IPL_TTY
+
+/* Interrupt priority 'flags'. */
+#define	IPL_MPSAFE	0	/* no "mpsafe" interrupts */
 
 /* Interrupt sharing types. */
 #define	IST_NONE	0	/* none */
@@ -104,11 +111,6 @@ void	 softintr_dispatch(int);
 void	*softintr_establish(int, void (*)(void *), void *);
 void	 softintr_init(void);
 void	 softintr_schedule(void *);
-
-/* XXX For legacy software interrupts. */
-extern struct soft_intrhand *softnet_intrhand;
-
-#define	setsoftnet()	softintr_schedule(softnet_intrhand)
 
 #define	splsoft()	splraise(IPL_SOFTINT)
 #define splbio()	splraise(IPL_BIO)

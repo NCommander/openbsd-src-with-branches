@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: sio.c,v 1.4 2008/06/26 05:42:11 ray Exp $ */
 /* $NetBSD: sio.c,v 1.1 2000/01/05 08:48:55 nisimura Exp $ */
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -45,7 +38,6 @@
 
 #include <machine/cpu.h>
 #include <machine/autoconf.h>
-#include <machine/locore.h>		/* badaddr() */
 
 #include <luna88k/luna88k/isr.h>
 #include <luna88k/dev/siovar.h>
@@ -66,9 +58,7 @@ void nullintr(int);
 int xsiointr(void *);
 
 int
-sio_match(parent, cf, aux)
-	struct device *parent;
-	void *cf, *aux;
+sio_match(struct device *parent, void *cf, void *aux)
 {
 	struct mainbus_attach_args *ma = aux;
 
@@ -80,9 +70,7 @@ sio_match(parent, cf, aux)
 }
 
 void
-sio_attach(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
+sio_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct sio_softc *sc = (void *)self;
 	struct mainbus_attach_args *ma = aux;
@@ -100,13 +88,12 @@ sio_attach(parent, self, aux)
 		config_found(self, (void *)&sio_args, sio_print);
 	}
 
-	isrlink_autovec(xsiointr, sc, ma->ma_ilvl, ISRPRI_TTYNOBUF);
+	isrlink_autovec(xsiointr, sc, ma->ma_ilvl, ISRPRI_TTYNOBUF,
+	    self->dv_xname);
 }
 
 int
-sio_print(aux, name)
-	void *aux;
-	const char *name;
+sio_print(void *aux, const char *name)
 {
 	struct sio_attach_args *args = aux;
 
@@ -120,8 +107,7 @@ sio_print(aux, name)
 }
 
 int
-xsiointr(arg)
-	void *arg;
+xsiointr(void *arg)
 {
 	struct sio_softc *sc = arg;
 
@@ -130,7 +116,6 @@ xsiointr(arg)
 	return 1;
 }
 
-void nullintr(v)
-	int v;
+void nullintr(int v)
 {
 }

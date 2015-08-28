@@ -1,4 +1,4 @@
-/* krb5_asn.h */
+/* $OpenBSD$ */
 /* Written by Vern Staats <staatsvr@asc.hpc.mil> for the OpenSSL project,
 ** using ocsp/{*.h,*asn*.c} as a starting point
 */
@@ -227,7 +227,7 @@ DECLARE_STACK_OF(KRB5_AUTHENTBODY)
 **	 DECLARE_ASN1_ENCODE_FUNCTIONS(type, itname, name) =
 **	  type *d2i_##name(type **a, const unsigned char **in, long len);
 **	  int i2d_##name(type *a, unsigned char **out);
-**	  DECLARE_ASN1_ITEM(itname) = OPENSSL_EXTERN const ASN1_ITEM itname##_it
+**	  DECLARE_ASN1_ITEM(itname) = extern const ASN1_ITEM itname##_it
 */
 
 DECLARE_ASN1_FUNCTIONS(KRB5_ENCDATA)

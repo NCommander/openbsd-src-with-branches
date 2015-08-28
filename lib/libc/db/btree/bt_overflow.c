@@ -1,4 +1,4 @@
-/*	$NetBSD: bt_overflow.c,v 1.5 1995/02/27 13:20:33 cgd Exp $	*/
+/*	$OpenBSD: bt_overflow.c,v 1.10 2007/08/08 23:57:19 ray Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,22 +32,14 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)bt_overflow.c	8.4 (Berkeley) 6/20/94";
-#else
-static char rcsid[] = "$NetBSD: bt_overflow.c,v 1.5 1995/02/27 13:20:33 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <db.h>
 #include "btree.h"
+
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
 /*
  * Big key/data code.
@@ -83,17 +71,13 @@ static char rcsid[] = "$NetBSD: bt_overflow.c,v 1.5 1995/02/27 13:20:33 cgd Exp 
  *	RET_ERROR, RET_SUCCESS
  */
 int
-__ovfl_get(t, p, ssz, buf, bufsz)
-	BTREE *t;
-	void *p;
-	size_t *ssz;
-	char **buf;
-	size_t *bufsz;
+__ovfl_get(BTREE *t, void *p, size_t *ssz, void **buf, size_t *bufsz)
 {
 	PAGE *h;
 	pgno_t pg;
 	size_t nb, plen;
 	u_int32_t sz;
+	void *tp;
 
 	memmove(&pg, p, sizeof(pgno_t));
 	memmove(&sz, (char *)p + sizeof(pgno_t), sizeof(u_int32_t));
@@ -105,9 +89,10 @@ __ovfl_get(t, p, ssz, buf, bufsz)
 #endif
 	/* Make the buffer bigger as necessary. */
 	if (*bufsz < sz) {
-		*buf = (char *)(*buf == NULL ? malloc(sz) : realloc(*buf, sz));
-		if (*buf == NULL)
+		tp = realloc(*buf, sz);
+		if (tp == NULL)
 			return (RET_ERROR);
+		*buf = tp;
 		*bufsz = sz;
 	}
 
@@ -120,7 +105,7 @@ __ovfl_get(t, p, ssz, buf, bufsz)
 		if ((h = mpool_get(t->bt_mp, pg, 0)) == NULL)
 			return (RET_ERROR);
 
-		nb = MIN(sz, plen);
+		nb = MINIMUM(sz, plen);
 		memmove(p, (char *)h + BTDATAOFF, nb);
 		mpool_put(t->bt_mp, h, 0);
 
@@ -142,10 +127,7 @@ __ovfl_get(t, p, ssz, buf, bufsz)
  *	RET_ERROR, RET_SUCCESS
  */
 int
-__ovfl_put(t, dbt, pg)
-	BTREE *t;
-	const DBT *dbt;
-	pgno_t *pg;
+__ovfl_put(BTREE *t, const DBT *dbt, pgno_t *pg)
 {
 	PAGE *h, *last;
 	void *p;
@@ -168,7 +150,7 @@ __ovfl_put(t, dbt, pg)
 		h->flags = P_OVERFLOW;
 		h->lower = h->upper = 0;
 
-		nb = MIN(sz, plen);
+		nb = MINIMUM(sz, plen);
 		memmove((char *)h + BTDATAOFF, p, nb);
 
 		if (last) {
@@ -196,9 +178,7 @@ __ovfl_put(t, dbt, pg)
  *	RET_ERROR, RET_SUCCESS
  */
 int
-__ovfl_delete(t, p)
-	BTREE *t;
-	void *p;
+__ovfl_delete(BTREE *t, void *p)
 {
 	PAGE *h;
 	pgno_t pg;

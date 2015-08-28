@@ -1,4 +1,5 @@
-/*	$NetBSD: fabs.S,v 1.1 1995/02/10 17:50:21 cgd Exp $	*/
+/*	$OpenBSD: fabs.S,v 1.7 2011/07/08 22:28:32 martynas Exp $	*/
+/*	$NetBSD: fabs.S,v 1.2 1996/10/17 03:08:05 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -27,8 +28,9 @@
  * rights to redistribute these changes.
  */
 
-#include "DEFS.h"
+#include <machine/asm.h>
 
+STRONG_ALIAS(fabsl, fabs)
 LEAF(fabs, 1)
 	cpys	fzero, fa0, fv0
 	RET

@@ -1,4 +1,5 @@
-/*	$NetBSD: uipc_proto.c,v 1.5 1994/06/29 06:33:36 cgd Exp $	*/
+/*	$OpenBSD: uipc_proto.c,v 1.7 2015/03/14 03:38:51 jsg Exp $	*/
+/*	$NetBSD: uipc_proto.c,v 1.8 1996/02/13 21:10:47 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,22 +37,29 @@
 #include <sys/protosw.h>
 #include <sys/domain.h>
 #include <sys/mbuf.h>
+#include <sys/unpcb.h> 
+#include <sys/socketvar.h>
+                        
+#include <net/raw_cb.h>
 
 /*
  * Definitions of protocols supported in the UNIX domain.
  */
 
-int	uipc_usrreq(), raw_usrreq();
-void	raw_init(), raw_input(), raw_ctlinput();
 extern	struct domain unixdomain;		/* or at least forward */
 
 struct protosw unixsw[] = {
-{ SOCK_STREAM,	&unixdomain,	0,	PR_CONNREQUIRED|PR_WANTRCVD|PR_RIGHTS,
+{ SOCK_STREAM,	&unixdomain,	PF_LOCAL,	PR_CONNREQUIRED|PR_WANTRCVD|PR_RIGHTS,
   0,		0,		0,		0,
   uipc_usrreq,
   0,		0,		0,		0,
 },
-{ SOCK_DGRAM,	&unixdomain,	0,		PR_ATOMIC|PR_ADDR|PR_RIGHTS,
+{ SOCK_SEQPACKET,&unixdomain,	PF_LOCAL,	PR_ATOMIC|PR_CONNREQUIRED|PR_WANTRCVD|PR_RIGHTS,
+  0,		0,		0,		0,
+  uipc_usrreq,
+  0,		0,		0,		0,
+},
+{ SOCK_DGRAM,	&unixdomain,	PF_LOCAL,	PR_ATOMIC|PR_ADDR|PR_RIGHTS,
   0,		0,		0,		0,
   uipc_usrreq,
   0,		0,		0,		0,
@@ -67,8 +71,6 @@ struct protosw unixsw[] = {
 }
 };
 
-int	unp_externalize(), unp_dispose();
-
 struct domain unixdomain =
-    { AF_UNIX, "unix", 0, unp_externalize, unp_dispose,
-      unixsw, &unixsw[sizeof(unixsw)/sizeof(unixsw[0])] };
+    { AF_LOCAL, "unix", 0, unp_externalize, unp_dispose,
+      unixsw, &unixsw[nitems(unixsw)] };

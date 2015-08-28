@@ -1,7 +1,4 @@
-#ifndef lint
-static char rcsid[] = "$Id: infinity.c,v 1.1 1993/10/19 08:17:20 deraadt Exp $";
-#endif /* not lint */
-
+/*	$OpenBSD$ */
 /* infinity.c */
 
 #include <math.h>

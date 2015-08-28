@@ -627,7 +627,7 @@ rl_redisplay ()
 	{
 	  if (_rl_output_meta_chars == 0)
 	    {
-	      sprintf (line + out, "\\%o", c);
+	      snprintf (line + out, line_size - out, "\\%o", c);
 
 	      if (lpos + 4 >= _rl_screenwidth)
 		{
@@ -1440,8 +1440,8 @@ rl_on_new_line_with_prompt ()
 
   /* Make sure the line structures hold the already-displayed prompt for
      redisplay. */
-  strcpy (visible_line, rl_prompt);
-  strcpy (invisible_line, rl_prompt);
+  strlcpy (visible_line, rl_prompt, line_size);
+  strlcpy (invisible_line, rl_prompt, line_size);
 
   /* If the prompt contains newlines, take the last tail. */
   prompt_last_line = strrchr (rl_prompt, '\n');
@@ -1740,8 +1740,7 @@ int
 rl_message (format, arg1, arg2)
      char *format;
 {
-  sprintf (msg_buf, format, arg1, arg2);
-  msg_buf[sizeof(msg_buf) - 1] = '\0';	/* overflow? */
+  snprintf (msg_buf, sizeof(msg_buf), format, arg1, arg2);
   rl_display_prompt = msg_buf;
   (*rl_redisplay_function) ();
   return 0;
@@ -1810,7 +1809,7 @@ _rl_make_prompt_for_search (pchar)
       len = (rl_prompt && *rl_prompt) ? strlen (rl_prompt) : 0;
       pmt = (char *)xmalloc (len + 2);
       if (len)
-	strcpy (pmt, rl_prompt);
+	strlcpy (pmt, rl_prompt, len + 2);
       pmt[len] = pchar;
       pmt[len+1] = '\0';
     }
@@ -1819,7 +1818,7 @@ _rl_make_prompt_for_search (pchar)
       len = *saved_local_prompt ? strlen (saved_local_prompt) : 0;
       pmt = (char *)xmalloc (len + 2);
       if (len)
-	strcpy (pmt, saved_local_prompt);
+	strlcpy (pmt, saved_local_prompt, len + 2);
       pmt[len] = pchar;
       pmt[len+1] = '\0';
       local_prompt = savestring (pmt);

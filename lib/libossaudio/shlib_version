@@ -1,5 +1,2 @@
-#	$OpenBSD$
-#	$NetBSD: shlib_version,v 1.4 1998/01/05 07:41:13 perry Exp $
-#
-major=0
+major=4
 minor=0

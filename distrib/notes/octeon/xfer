@@ -1,0 +1,14 @@
+dnl	$OpenBS$
+Installation is supported from several media types, including:
+
+	FFS partitions
+	DOS (FAT) partitions
+	EXT2 partitions
+	Remote NFS partition
+	HTTP
+
+OpenBSDXferPrelude
+
+OpenBSDXferNFS
+
+OpenBSDXferFFS

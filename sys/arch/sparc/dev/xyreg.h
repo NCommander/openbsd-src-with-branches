@@ -1,7 +1,7 @@
-/* $NetBSD: xyreg.h,v 1.1 1995/09/25 20:35:15 chuck Exp $ */
+/*	$OpenBSD: xyreg.h,v 1.4 2004/04/12 22:12:32 jmc Exp $	*/
+/*	$NetBSD: xyreg.h,v 1.3 1996/03/31 22:39:02 pk Exp $	*/
 
 /*
- *
  * Copyright (c) 1995 Charles D. Cranor
  * All rights reserved.
  *
@@ -13,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Charles D. Cranor.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -90,9 +85,9 @@ struct xyc {
  *     add iopb to the chain, and clear AREQ to resume I/O
  *
  * when the controller is done with a command it may interrupt (if you
- * ask it to) and it will set the XYC_IPND bit in the csr.   clear 
+ * ask it to) and it will set the XYC_IPND bit in the csr.   clear
  * the interrupt by writing one to this bit.
- * 
+ *
  * the format of the iopb is described in section 2.4 of the manual.
  * note that it is byte-swapped on the sun.
  */
@@ -170,7 +165,7 @@ struct xy_iopb {
 				 /* section 2.4.14: byte 11 */
   volatile u_char subfn;	 /* sub-function */
 				 /* section 2.4.13: byte 10 */
-  volatile u_char hoff;		 /* head offset for fixed/removeable drives */
+  volatile u_char hoff;		 /* head offset for fixed/removable drives */
 				 /* section 2.4.15: byte 12,13 */
   volatile u_short nxtiopb;	 /* next iopb address (same relocation) */
 				 /* section 2.4.16: byte 14,15 */

@@ -1,3 +1,4 @@
+/* $OpenBSD: modf.S,v 1.8 2012/08/22 17:19:35 pascal Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +30,7 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * from: Header: modf.s,v 1.3 92/06/20 00:00:54 torek Exp
- * $Id: modf.S,v 1.3 1994/02/10 20:15:47 pk Exp $
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "@(#)modf.s	8.1 (Berkeley) 6/4/93"
-#endif /* LIBC_SCCS and not lint */
 
 #include "DEFS.h"
 #include <machine/fsr.h>
@@ -102,7 +92,7 @@ ENTRY(modf)
 	sethi	%hi(0x80000000), %l1	! sign bit
 	andn	%i0, %l1, %l0
 	st	%l0, [%fp - 16]
-#ifdef PIC
+#ifdef __PIC__
 	PICCY_SET(Lmagic, %l0, %o7)
 	ldd	[%l0], %f2
 #else
@@ -174,7 +164,7 @@ ENTRY(modf)
 	ldd	[%fp - 16], %f0		! %f0:f1 = val;
 	fsubd	%f0, %f4, %f0		! %f0:f1 -= %f4:f5;
 	ret
-	restore
+	 restore
 
 Lbig:
 	/*
@@ -183,14 +173,14 @@ Lbig:
 	 * case the integer part is the original value, and the
 	 * fractional part is 0.
 	 */
-#ifdef PIC
+#ifdef __PIC__
 	PICCY_SET(L0, %l0, %o7)
-	std	%f0, [%i2]		! *ival = val;
+	std	%i0, [%i2]		! *ival = val;
 	ldd	[%l0], %f0		! return 0.0;
 #else
 	sethi	%hi(L0), %l0
-	std	%f0, [%i2]		! *ival = val;
+	std	%i0, [%i2]		! *ival = val;
 	ldd	[%l0 + %lo(L0)], %f0	! return 0.0;
 #endif
 	ret
-	restore
+	 restore

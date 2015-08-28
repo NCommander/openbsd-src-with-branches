@@ -1,8 +1,7 @@
-#	$NetBSD: Makefile,v 1.2 1995/04/20 22:38:24 cgd Exp $
+#	$OpenBSD: Makefile,v 1.17 2014/07/14 01:05:36 jsing Exp $
 
-SUBDIR+= libc
-
-regress: _SUBDIRUSE
+SUBDIR+= csu libc libcrypto libevent libm libpthread libskey libssl libtls \
+	 libutil
 
 install:
 

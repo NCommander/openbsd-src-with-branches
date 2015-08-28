@@ -1,120 +1,178 @@
-/*	$OpenBSD: disklabel.h,v 1.5 2005/11/04 13:33:59 uwe Exp $	*/
-/*	$NetBSD: disklabel.h,v 1.2 2001/11/25 19:02:03 thorpej Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.12 2013/09/28 19:25:25 miod Exp $	*/
 
 /*
- * Copyright (c) 1994 Mark Brinicombe.
- * Copyright (c) 1994 Brini.
- * All rights reserved.
+ * Copyright (c) 2010 Miodrag Vallat.
  *
- * This code is derived from software written for Brini by Mark Brinicombe
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Brini.
- * 4. The name of the company nor the name of the author may be used to
- *    endorse or promote products derived from this software without specific
- *    prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY BRINI ``AS IS'' AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL BRINI OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- * RiscBSD kernel project
- *
- * disklabel.h
- *
- * machine specific disk label info
- *
- * Created      : 04/10/94
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _AVIION_DISKLABEL_H_
-#define _AVIION_DISKLABEL_H_
+#ifndef	_MACHINE_DISKLABEL_H_
+#define	_MACHINE_DISKLABEL_H_
 
-#define LABELSECTOR	1		/* sector containing label */
-#define LABELOFFSET	0		/* offset of label in sector */
-#define MAXPARTITIONS	16		/* number of partitions */
-#define RAW_PART	2		/* raw partition: XX?c */
+#define	LABELSECTOR	1		/* sector containing label */
+#define	LABELOFFSET	0		/* offset of label in sector */
+#define	MAXPARTITIONS	16		/* number of partitions */
 
-#include <sys/dkbad.h>
+/*
+ * AViiON native disk identification
+ */
 
-/* MBR partition table */
-#define	DOSBBSECTOR	0		/* MBR sector number */
-#define	DOSPARTOFF	446		/* Offset of MBR partition table */
-#define	NDOSPART	4		/* # of partitions in MBR */
-#define	DOSMAGICOFF	510		/* Offset of magic number */
-#define	DOSMAGIC	0xaa55		/* Actual magic number */
-#define	MBRMAGIC	DOSMAGIC
-#define DOSMBR_SIGNATURE MBRMAGIC
-#define DOSMBR_SIGNATURE_OFF DOSMAGICOFF
-#define	DOSACTIVE	0x80
+#define	VDM_LABEL_SIGNATURE		0x1234abcd
 
+#define	VDM_LABEL_SECTOR		0
+#define	VDM_LABEL_OFFSET		0x1c8
+#define	VDM_LABEL_OFFSET_ALT		0x1c0
 
-struct dos_partition {
-	u_int8_t	dp_flag;	/* bootstrap flags */
-	u_int8_t	dp_shd;		/* starting head */
-	u_int8_t	dp_ssect;	/* starting sector */
-	u_int8_t	dp_scyl;	/* starting cylinder */
-	u_int8_t	dp_typ;		/* partition type (see below) */
-	u_int8_t	dp_ehd;		/* end head */
-	u_int8_t	dp_esect;	/* end sector */
-	u_int8_t	dp_ecyl;	/* end cylinder */
-	u_int32_t	dp_start;	/* absolute starting sector number */
-	u_int32_t	dp_size;	/* partition size in sectors */
+struct vdm_label {
+	uint32_t	signature;
+	uint32_t	version;
+	uint32_t	unused[2];
 };
 
-/* Known DOS partition types. */
-#define	DOSPTYP_UNUSED	0x00		/* Unused partition */
-#define DOSPTYP_FAT12	0x01		/* 12-bit FAT */
-#define DOSPTYP_FAT16S	0x04		/* 16-bit FAT, less than 32M */
-#define DOSPTYP_EXTEND	0x05		/* Extended; contains sub-partitions */
-#define DOSPTYP_FAT16B	0x06		/* 16-bit FAT, more than 32M */
-#define DOSPTYP_FAT32	0x0b		/* 32-bit FAT */
-#define DOSPTYP_FAT32L	0x0c		/* 32-bit FAT, LBA-mapped */
-#define DOSPTYP_FAT16C	0x0e		/* 16-bit FAT, CHS-mapped */
-#define DOSPTYP_EXTENDL 0x0f		/* Extended, LBA-mapped; contains sub-partitions */
-#define DOSPTYP_ONTRACK	0x54
-#define	DOSPTYP_LINUX	0x83		/* That other thing */
-#define DOSPTYP_OPENBSD	0xa6		/* OpenBSD partition type */
+#define	VDM_LABEL_VERSION		0
 
-/* Isolate the relevant bits to get sector and cylinder. */
-#define	DPSECT(s)	((s) & 0x3f)
-#define	DPCYL(c, s)	((c) + (((s) & 0xc0) << 2))
-
-
-static __inline u_int32_t get_le(void *p);
-static __inline u_int32_t
-get_le(void *p)
-{
-	u_int8_t *_p = (u_int8_t *)p;
-	int x;
-	x = _p[0];
-	x |= _p[1] << 8;
-	x |= _p[2] << 16;
-	x |= _p[3] << 24;
-	return x;
-}
-
-#define NMBRPART 4
-struct cpu_disklabel {
-	struct dos_partition dosparts[NMBRPART];
-	struct dkbad bad;
+struct vdm_boot_info {
+	uint32_t	padding[6];
+	uint32_t	signature;
+	uint32_t	boot_start;
+	uint32_t	boot_size;
+	uint32_t	version;
 };
 
-#endif /* _AVIION_DISKLABEL_H_ */
+#define	VDM_BOOT_INFO_VERSION		1
+#define	VDM_BOOT_DEFAULT_SIZE		500
+
+/*
+ * MBR identification information is in <sys/disklabel.h>
+ */
+
+/* DG/UX VDM partition type (apparently not used on m88k AViiON) */
+#define	DOSPTYP_DGUX_VDM		0xdf
+
+/*
+ * DG/UX VDM structures
+ */
+
+#define	VDIT_SECTOR			1
+
+struct vdm_self_id {
+	union {
+		uint8_t			_kind;
+		uint32_t		_blkno;
+	} u;
+	uint32_t			node_number;
+} __packed;
+
+#define	VDM_ID_KIND(id)			((id)->u._kind)
+#define	VDM_BLKNO_MASK			0x00ffffff	/* low 24 bits */
+#define	VDM_ID_BLKNO(id)		(((id)->u._blkno) & VDM_BLKNO_MASK)
+#define	VDM_NO_NODE_NUMBER		012345670123
+#define	VDM_NO_BLK_NUMBER		0xffffffff
+
+#define	VDIT_BLOCK			0x12
+#define	VDIT_PORTION_HEADER_BLOCK	0x13
+#define	VDIT_BLOCK_HEAD_BE		0x14
+#define	VDIT_BLOCK_HEAD_LE		0x18
+
+struct vdit_block_header {
+	struct vdm_self_id		id;
+	uint32_t			nextblk;
+	uint32_t			timestamp;
+	uint32_t			secondary_vdit;
+	uint16_t			chunksz;
+	uint16_t			padding;
+} __packed;
+
+typedef uint32_t vdit_timestamp_t;
+typedef uint32_t vdit_id_t;
+
+struct vdit_entry_header {
+	uint16_t			type;
+	uint16_t			size;
+	vdit_timestamp_t		timestamp;
+} __packed;
+
+#define	VDIT_ENTRY_SENTINEL		0x00
+#define	VDIT_ENTRY_UNUSED		0x01
+#define	VDIT_ENTRY_BOOT_INFO		0x02
+#define	VDIT_ENTRY_SUBDRIVER_INFO	0x03
+#define	VDIT_ENTRY_INSTANCE		0x04
+
+#define	VDIT_NAME_MAX 0x20
+
+struct vdit_instance_id {
+	vdit_timestamp_t		generation_timestamp;
+	vdit_id_t			system_id;
+} __packed;
+
+struct vdit_boot_info_entry {
+	uint16_t			version;
+	struct vdit_instance_id		default_swap;
+	struct vdit_instance_id		default_root;
+} __packed;
+
+struct vdit_subdriver_entry {
+	uint16_t			version;
+	vdit_id_t			subdriver_id;
+	char				name[VDIT_NAME_MAX];
+} __packed;
+
+#define	VDM_SUBDRIVER_VDMPHYS		"vdmphys"
+#define	VDM_SUBDRIVER_VDMPART		"vdmpart"
+#define	VDM_SUBDRIVER_VDMAGGR		"vdmaggr"
+#define	VDM_SUBDRIVER_VDMREMAP		"vdmremap"
+
+struct vdit_instance_entry {
+	uint16_t			version;
+	char				name[VDIT_NAME_MAX];
+	vdit_id_t			subdriver_id;
+	struct vdit_instance_id		instance_id;
+	uint8_t				exported;
+} __packed;
+
+#define	VDM_INSTANCE_OPENBSD		"OpenBSD"
+
+struct vdit_vdmphys_instance {
+	struct vdit_instance_entry	instance;
+	uint16_t			version;
+	uint16_t			mode;
+#define	VDMPHYS_MODE_READONLY	0x00
+#define	VDMPHYS_MODE_READWRITE	0x01
+} __packed;
+
+struct vdit_vdmpart_instance {
+	struct vdit_instance_entry	instance;
+	uint16_t			version;
+	struct vdit_instance_id		child_instance;
+	uint32_t			start_blkno;
+	uint32_t			size;
+	struct vdit_instance_id		remap_instance;
+} __packed;
+
+struct vdit_vdmaggr_instance {
+	struct vdit_instance_entry	instance;
+	uint16_t			version;
+	uint16_t			aggr_count;
+	uint32_t			stripe_size;
+	struct vdit_instance_id		pieces[0];
+} __packed;
+
+struct vdit_vdmremap_instance {
+	struct vdit_instance_entry	instance;
+	uint16_t			version;
+	struct vdit_instance_id		primary_remap_table;
+	struct vdit_instance_id		secondary_remap_table;
+	struct vdit_instance_id		remap_area;
+} __packed;
+
+#endif	/* _MACHINE_DISKLABEL_H_ */

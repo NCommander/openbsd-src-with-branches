@@ -1,7 +1,38 @@
-/*	$NetBSD: pte.h,v 1.2 1995/03/28 18:14:04 jtc Exp $	*/
+/* $OpenBSD: pte.h,v 1.11 2014/01/06 20:27:44 miod Exp $ */
+/* $NetBSD: pte.h,v 1.26 1999/04/09 00:38:11 thorpej Exp $ */
+
+/*-
+ * Copyright (c) 1998 The NetBSD Foundation, Inc.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe of the Numerical Aerospace Simulation Facility,
+ * NASA Ames Research Center.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -27,6 +58,9 @@
  * rights to redistribute these changes.
  */
 
+#ifndef _MACHINE_PTE_H_
+#define	_MACHINE_PTE_H_
+
 /*
  * Alpha page table entry.
  * Things which are in the VMS PALcode but not in the OSF PALcode
@@ -40,70 +74,70 @@
 /*
  * Alpha Page Table Entry
  */
-typedef u_int64_t	pt_entry_t;
+
+#include <machine/alpha_cpu.h>
+
+typedef	alpha_pt_entry_t	pt_entry_t;
+
 #define	PT_ENTRY_NULL	((pt_entry_t *) 0)
 #define	PTESHIFT	3			/* pte size == 1 << PTESHIFT */
 
-#define	PG_V		0x0000000000000001	/* PFN Valid */
-#define	PG_NV		0x0000000000000000	/* PFN NOT Valid */
-#define	PG_FOR		0x0000000000000002	/* Fault on read */
-#define	PG_FOW		0x0000000000000004	/* Fault on write */
-#define	PG_FOE		0x0000000000000008	/* Fault on execute */
-#define	PG_ASM		0x0000000000000010	/* Address space match */
-#define	PG_GH		0x0000000000000060	/* Granularity hint */
-#define	PG_KRE		0x0000000000000100	/* Kernel read enable */
-#define	PG_URE		0x0000000000000200	/* User	read enable */
-#define	PG_KWE		0x0000000000001000	/* Kernel write enable */
-#define	PG_UWE		0x0000000000002000	/* User write enable */
-#define	PG_PROT		0x000000000000ff00
-#define	PG_RSVD		0x000000000000cc80	/* Reserved fpr hardware */
+#define	PG_V		ALPHA_PTE_VALID
+#define	PG_NV		0
+#define	PG_FOR		ALPHA_PTE_FAULT_ON_READ
+#define	PG_FOW		ALPHA_PTE_FAULT_ON_WRITE
+#define	PG_FOE		ALPHA_PTE_FAULT_ON_EXECUTE
+#define	PG_ASM		ALPHA_PTE_ASM
+#define	PG_GH		ALPHA_PTE_GRANULARITY
+#define	PG_KRE		ALPHA_PTE_KR
+#define	PG_URE		ALPHA_PTE_UR
+#define	PG_KWE		ALPHA_PTE_KW
+#define	PG_UWE		ALPHA_PTE_UW
+#define	PG_PROT		(ALPHA_PTE_PROT | PG_EXEC | PG_FOE)
+#define	PG_RSVD		0x000000000000cc80	/* Reserved for hardware */
 #define	PG_WIRED	0x0000000000010000	/* Wired. [SOFTWARE] */
-#define	PG_MOD		0x0000000000020000	/* Modified. [SOFTWARE] */
-#define	PG_USED		0x0000000000040000	/* Referenced. [SOFTWARE] */
-#define	PG_FRAME	0xffffffff00000000
+#define	PG_PVLIST	0x0000000000020000	/* on pv list [SOFTWARE] */
+#define	PG_EXEC		0x0000000000040000	/* execute perms [SOFTWARE] */
+#define	PG_FRAME	ALPHA_PTE_PFN
 #define	PG_SHIFT	32
-#define	PG_PFNUM(x)	(((x) & PG_FRAME) >> PG_SHIFT)
+#define	PG_PFNUM(x)	ALPHA_PTE_TO_PFN(x)
 
-#if defined(_KERNEL) && !defined(LOCORE)
-#define	K0SEG_BEGIN	0xfffffc0000000000	/* unmapped, cached */
-#define	K0SEG_END	0xfffffe0000000000
-#define PHYS_UNCACHED	0x0000000040000000
+/*
+ * These are the PALcode PTE bits that we care about when checking to see
+ * if a PTE has changed in such a way as to require a TBI.
+ */
+#define	PG_PALCODE(x)	((x) & ALPHA_PTE_PALCODE)
 
-#define	k0segtophys(x)	((vm_offset_t)(x) & 0x00000003ffffffff)
-#define	phystok0seg(x)	((vm_offset_t)(x) | K0SEG_BEGIN)
-
-#define phystouncached(x) ((vm_offset_t)(x) | PHYS_UNCACHED)
-#define uncachedtophys(x) ((vm_offset_t)(x) & ~PHYS_UNCACHED)
+#if defined(_KERNEL) || defined(__KVM_ALPHA_PRIVATE)
+#define	NPTEPG_SHIFT	(PAGE_SHIFT - PTESHIFT)
+#define	NPTEPG		(1L << NPTEPG_SHIFT)
 
 #define	PTEMASK		(NPTEPG - 1)
-#define	vatopte(va)	(((va) >> PGSHIFT) & PTEMASK)
-#define	vatoste(va)	(((va) >> SEGSHIFT) & PTEMASK)
-#define	vatopa(va) \
-	((PG_PFNUM(*kvtopte(va)) << PGSHIFT) | ((vm_offset_t)(va) & PGOFSET))
 
-#define	ALPHA_STSIZE		NBPG			/* 8k */
-#define	ALPHA_MAX_PTSIZE	(NPTEPG * NBPG)		/* 8M */
+#define	l3pte_index(va)	\
+	(((vaddr_t)(va) >> PAGE_SHIFT) & PTEMASK)
 
-/*
- * Kernel virtual address to Sysmap entry and visa versa.
- */
-#define	kvtopte(va) \
-	(Sysmap + (((vm_offset_t)(va) - VM_MIN_KERNEL_ADDRESS) >> PGSHIFT))
-#define	ptetokv(pte) \
-	((((pt_entry_t *)(pte) - Sysmap) << PGSHIFT) + VM_MIN_KERNEL_ADDRESS)
+#define	l2pte_index(va)	\
+	(((vaddr_t)(va) >> (PAGE_SHIFT + NPTEPG_SHIFT)) & PTEMASK)
 
-/*
- * Kernel virtual address to Lev1map entry index.
- */
-#define kvtol1pte(va) \
-	(((vm_offset_t)(va) >> (PGSHIFT + 2*(PGSHIFT-PTESHIFT))) & PTEMASK)
+#define	l1pte_index(va) \
+	(((vaddr_t)(va) >> (PAGE_SHIFT + 2 * NPTEPG_SHIFT)) & PTEMASK)
 
-#define loadustp(stpte) {					\
-	Lev1map[kvtol1pte(VM_MIN_ADDRESS)] = stpte;		\
-	TBIAP();						\
-}
+#define	VPT_INDEX(va)	\
+	(((vaddr_t)(va) >> PAGE_SHIFT) & ((1 << 3 * NPTEPG_SHIFT) - 1))
 
-extern	pt_entry_t *Lev1map;		/* Alpha Level One page table */
-extern	pt_entry_t *Sysmap;		/* kernel pte table */
-extern	vm_size_t Sysmapsize;		/* number of pte's in Sysmap */
-#endif
+/* Space mapped by one level 1 PTE */
+#define	ALPHA_L1SEG_SIZE	(1L << ((2 * NPTEPG_SHIFT) + PAGE_SHIFT))
+
+/* Space mapped by one level 2 PTE */
+#define	ALPHA_L2SEG_SIZE	(1L << (NPTEPG_SHIFT + PAGE_SHIFT))
+
+#define	alpha_trunc_l1seg(x)	(((u_long)(x)) & ~(ALPHA_L1SEG_SIZE-1))
+#define	alpha_trunc_l2seg(x)	(((u_long)(x)) & ~(ALPHA_L2SEG_SIZE-1))
+#endif /* _KERNEL || __KVM_ALPHA_PRIVATE */
+
+#ifdef _KERNEL
+extern	pt_entry_t *kernel_lev1map;	/* kernel level 1 page table */
+#endif /* _KERNEL */
+
+#endif /* ! _MACHINE_PTE_H_ */

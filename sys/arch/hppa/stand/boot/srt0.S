@@ -1,5 +1,30 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: srt0.S,v 1.10 2005/04/07 00:21:51 mickey Exp $	*/
 
+/*
+ * Copyright (c) 1998-2004 Michael Shalayeff
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR OR HIS RELATIVES BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF MIND, USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
  *              All Rights Reserved 
@@ -21,9 +46,6 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  * 
  */
-/*
- * pmk1.1
- */
 ;
 ; Copyright (c) 1990 mt Xinu, Inc.  All rights reserved.
 ; Copyright (c) 1990 University of Utah.  All rights reserved.
@@ -37,49 +59,16 @@
 ;	Utah $Hdr: srt0.c 1.3 94/12/13$
 ;
 
-;
-; Startup code for standalone HP700 system.
-;
+#define	_LOCORE
+#include <machine/asm.h>
+#include <machine/cpu.h>
+#include <machine/iomod.h>
 
-#include <sys/reboot.h>
+/*
+ * This is the ending of the begin
+ */
+ENTRY(begin,0)
 
-;
-; Define our Stack Unwind spaces/variables.
-;
-	.SPACE	$TEXT$
-;	.SUBSPA	$UNWIND_START$,QUAD=0,ALIGN=8,ACCESS=0x2c,SORT=56
-	.EXPORT	$UNWIND_START
-$UNWIND_START
-;	.SUBSPA	$UNWIND_END$,QUAD=0,ALIGN=8,ACCESS=0x2c,SORT=73
-	.EXPORT	$UNWIND_END
-$UNWIND_END
-
-
-	.space  $PRIVATE$
-	.subspa $DATA$
-	.import howto,data
-	.import rstaddr,data
-	.import stack_base,data
-
-;
-; Execution begins here.
-;
-; We are called by the PDC as:
-;
-;	begin(interactive, endaddr)
-;
-; Where:
-;
-;	interactive - 0 if not interactive, 1 if interactive.
-;
-	.SPACE	$TEXT$
-;	.SUBSPA	$FIRST$
-	.EXPORT	begin,entry
-	.IMPORT	boot,code
-	.IMPORT	pdc_init,code
-	.IMPORT	end,DATA
-
-begin
 	blr	%r0,%r5			; Get address of 'boff' into 'r5',
 	ldo	begin-boff(%r5),%r5	;   and subtract to get 'begin'.
 boff
@@ -90,18 +79,19 @@ boff
 	ldo	R%edata(%r3),%r3	; Get address of edata.
 	ldil	L%begin,%r1
 	ldo	R%begin(%r1),%r1	; Get address of begin
-	sub	%r3,%r1,%r3		; Subtract to get # to bytes to copy
+	sub	%r3,%r1,%r3		; Subtract to get # of bytes to copy
 copyloop				; do
 	ldwm	4(%r5),%r1		;   *r4++ = *r5++;
 	addib,>= -4,%r3,copyloop	; while (--r3 >= 0);
 	stwm	%r1,4(%r4)
 
 	; here we zero the .bss
-	ldil	L%end, %r3		; the end af all
-	ldil	L%__bss_start, %r4	; .bss is here
-	sub	%r3,%r4,%r3
+	ldil	L%__bss_start, %r4
+	ldo	R%__bss_start(%r4), %r4
+	ldil	L%__bss_end, %r3
+	ldo	R%__bss_end(%r3), %r3
 zeroloop
-	addib,>= -4,%r3,zeroloop	; while (--r3 >= 0);
+	combf,<,n %r3,%r4, zeroloop	; while (r4 < r3);
 	stwm	%r0,4(%r4)		;	*r4++ = 0;
 
 	ldil	L%$global$,%dp
@@ -123,12 +113,12 @@ zeroloop
 	ldil	L%begin,%r1		; set %r1 to address of begin
 	ldo	R%begin(%r1),%r1
 	sub	%r21,%r1,%r21		; Subtract to get length
-	mtsp	%r0,%sr0			; Set sr0 to kernel space.
+	mtsp	%r0,%sr0		; Set sr0 to kernel space.
 	ldo	-1(%r21),%r21
 	fdc	%r21(0,%r22)
 loop	addib,>,n -16,%r21,loop		; Decrement by cache line size (16).
-	fdc	%r21(0,%r22)
-	fdc	0(0,%r22)		; Flush first word at addr to handle
+	fdc	%r21(%sr0,%r22)
+	fdc	0(%sr0,%r22)		; Flush first word at addr to handle
 	sync				;   arbitrary cache line boundary.
 	nop				; Prevent prefetching.
 	nop
@@ -137,75 +127,37 @@ loop	addib,>,n -16,%r21,loop		; Decrement by cache line size (16).
 	nop
 	nop
 	nop
-	bv	%r0(%rp)		; Jump to relocated start
-	stw	%rp,rstaddr-$global$(%dp) ;   saving address for _rtt.
+	bv	0(rp)
+	nop
+EXIT(begin)				/* jump to relocated code */
 
 start
-	ldil	L%stack_base,%sp
-	ldo	R%stack_base(%sp),%sp
-	dep	%r0,31,6,%sp		;   and ensure maximum alignment.	
+	ldil	L%HEAP_LIMIT, %sp
+	ldo	R%HEAP_LIMIT(%sp), %sp
 
-;	bl	pdc_init,%rp		; Initialize PDC and related variables
-;	ldo	64(%sp),%sp		;   and push our first stack frame.
-
-	b	boot			; Call boot(),
-	ldw	rstaddr-$global$(%dp),%rp ;   a return will go back to start().
-
-;
-; rtt - restart boot device selection (after ^C, etc).
-;
-	.IMPORT	howto,DATA
-	.IMPORT	rstaddr,DATA
-	.EXPORT	_rtt
-_rtt
-	ldi	RB_ASKNAME+RB_SINGLE,%r1     ; Restarts get RB_SINGLE|RB_ASKNAME
-	stw	%r1,howto-$global$(%dp)		;   and save in 'howto'.
-	ldw	rstaddr-$global$(%dp),%rp	; Load restart address into 'rp'
-	bv,n	%r0(%rp)			;   and branch to it.
-	or	%r0,%r0,%r0
-#if 0
-	.EXPORT	execute,entry
-	.IMPORT	pdc,DATA
-	.PROC
-	.CALLINFO
-	.ENTRY
-execute	
-	mtsm	%r0			; Disable traps and interrupts.
-	mtctl	%r0,%cr17		; Clear two-level IIA Space Queue
-	mtctl	%r0,%cr17		;    effectively setting kernel space.
-	mtctl	%arg0,%cr18		; Stuff entry point into head of IIA
-	ldo	4(%arg0),%arg0		;    Offset Queue, and entry point + 4
-	mtctl	%arg0,%cr18		;    into tail of IIA Offset Queue.
-	ldi	0x9,%arg0		; Set PSW Q & I bits (collect intrpt
-	mtctl	%arg0,%ipsw		;    state, allow external intrpts).
-	copy	%arg2,%arg0
-	.EXIT
-	rfi				; Begin execution of kernel.
+	comb,=	%r0, %r26, call_boot
 	nop
-	.PROCEND
+	.import	boottimeout, data
+	ldil	L%boottimeout, %r22
+	stw	%r0, R%boottimeout(%r22)
 
-	.export getdp
-getdp	.proc
-	.callinfo
+call_boot
+	b	boot			; Call boot(),
+	copy	%r0, arg0		; use default boot device
+	nop
 
-	bv	0(%rp)
-	or	%dp,%r0,%ret0
+/*
+ * rtt - restart the box
+ */
+LEAF_ENTRY(_rtt)
+	ldil    L%HPPA_LBCAST, %r25
+	ldi     CMD_RESET, %r26
+	stw     %r26,R%iomod_command(%r25)
+forever                                 ; Loop until bus reset takes effect.
+	b,n     forever
 
-	.procend
-
-	.export getsp
-getsp	.proc
-	.callinfo
-
-	bv	0(%rp)
-	or	%sp,%r0,%ret0
-
-	.procend
-#endif
-	.SPACE	$PRIVATE$
-;	.SUBSPA	$GLOBAL$
-	.EXPORT	$global$
-$global$
-	.WORD	0
+	bv	0(rp)
+	ldo     -48(sp),sp
+EXIT(_rtt)
 
 	.end

@@ -1,4 +1,4 @@
-$OpenBSD$
+$OpenBSD: ChangeLog.0,v 1.4 2003/02/28 09:45:09 jmc Exp $
 
 Thu Jun 15 11:02:06 NDT 1995 Michael Rendell (michael@panda.cs.mun.ca)
 
@@ -265,7 +265,7 @@ Mon May  1 09:41:56 NDT 1995 Michael Rendell (michael@panda.cs.mun.ca)
 Sat Apr 29 21:10:54 NDT 1995 Michael Rendell (michael@garfield.cs.mun.ca)
 
 	* vi.c(glob_word): don't append * if there are unescaped globing
-	  characters in the last component of the filename; some redundent
+	  characters in the last component of the filename; some redundant
 	  code eliminated.
 	  (based on fix from Michael Jetzer).
 
@@ -289,7 +289,7 @@ Tue Apr 25 12:20:45 NDT 1995 Michael Rendell (michael@dragon.cs.mun.ca)
 	* c_ksh.c(c_pwd): new function.
 	* sh.h(current_wd, current_wd_size): new variables.
 	* c_ksh.c(c_cd): changed to handle -L, -P.
-	* main.c(main): use set_current_wd when setting $PWD; 
+	* main.c(main): use set_current_wd when setting $PWD;
 	  instead of changing to / when can't get pwd, print warning;
 	  deleted pwd alias; don't make PWD and OLDPWD reaedonly.
 	* path.c(simplify_path): changed to handle relative paths.
@@ -315,7 +315,7 @@ Thu Apr 20 21:18:12 NDT 1995 Michael Rendell (michael@panda.cs.mun.ca)
 
 	* history.c(hist_get) if n < 0, use n + 1 to account for histbackup().
 
-	* lex.c(set_prompt): added source argument; changed all calls; 
+	* lex.c(set_prompt): added source argument; changed all calls;
 	  changed to do ! and !! substitutions when setting PS1.
 	* lex.c(pprompt): ifdef'd out code to deal with ! and !!.
 
@@ -642,7 +642,7 @@ Mon Dec 12 20:55:53 NST 1994 John Rochester (jr@panda.cs.mun.ca)
 
 Fri Dec  9 15:21:36 NST 1994 Michael Rendell (michael@panda.cs.mun.ca)
 
-	* trap.c(inittraps): OS2: don't trap SIGTERM (temproary fix).
+	* trap.c(inittraps): OS2: don't trap SIGTERM (temporary fix).
 
 	* exec.c(search_access1): OS2: fixed to check for valid suffix
 	  and change mode from X_OK to R_OK if appropriate.
@@ -745,7 +745,7 @@ Tue Nov 29 12:32:26 NST 1994 Michael Rendell (michael@panda.cs.mun.ca)
 	* ksh_dir.h(NLENGTH): new macro.
 	* eval.c(globit): use NLENGTH macro.
 
-	* alloc.c(aresize): removed redundent np and optr variables.
+	* alloc.c(aresize): removed redundant np and optr variables.
 
 Mon Nov 28 14:55:49 NST 1994 Michael Rendell (michael@panda.cs.mun.ca)
 
@@ -841,7 +841,7 @@ Tue Nov 22 10:26:13 NST 1994 Michael Rendell (michael@panda.cs.mun.ca)
 
 Mon Nov 21 10:45:34 NST 1994 Michael Rendell (michael@panda.cs.mun.ca)
 
-	* exec.c(do_selectargs): removed use of pmenu variable (redundent)
+	* exec.c(do_selectargs): removed use of pmenu variable (redundant)
 	  use isspace() instead of IFS chars; include <ctype.h>.
 
 	* aclocal.m4(KSH_TERM_CHECK): do not allow HAVE_TERMIOS_H check to
@@ -1565,7 +1565,7 @@ Fri Sep 16 11:32:01 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 	* eval.c(expand): set subst_exstat to return value of waitlast().
 	* c_sh.c(c_set): if !FPOSIX, return subst_exstat instead of 0.
 
-	* exec.c(execute): removed redundent "exstat = rv;" near if FERREXIT.
+	* exec.c(execute): removed redundant "exstat = rv;" near if FERREXIT.
 	* exec.c(comexec): case CFUNC: for normal function completion, set
 	  i to 0 and rv to return value of execute() (was i=LRETURN,exstat=..).
 
@@ -1586,7 +1586,7 @@ Fri Sep 16 11:32:01 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 	  routines.
 	* jobs.c: use ifdef JOB_SIGS instead of ifdef JOBS when setting
 	  signal masks and routines or using waitpid; define TTY_PGRP and
-	  NEED_PGRP_SYNC seperately from JOBS.
+	  NEED_PGRP_SYNC separately from JOBS.
 	* jobs.c(j_kill): only send SIGCONT if job is stopped.
 	* jobs.c(j_jobs): remove exited/signaled jobs even if !FMONITOR,
 	  un-ifdef JOBS same.
@@ -1863,7 +1863,7 @@ Fri Aug 26 21:58:25 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 
 	* lex.c(getsc_): flush output after write when echoing.
 
-	* Makefile.in(dist): after creating distrubution, use pathchk -p 
+	* Makefile.in(dist): after creating distrubution, use pathchk -p
 	  to check file names.
 
 Fri Aug 26 10:28:20 NDT 1994 Michael Rendell (michael@arlene.cs.mun.ca)
@@ -2062,7 +2062,7 @@ Mon Aug 22 09:39:54 NDT 1994 Michael Rendell (michael@arlene.cs.mun.ca)
 
 	* sh.h: added TF_TTY_INTR flag.
 	* trap.c(inittrap): set TF_TTY_INTR for SIGINT.
-	* jobs.c(j_waitj): if 
+	* jobs.c(j_waitj): if
 
 	* jobs.c,sh.h: deleted SA_RESTART ifdefs; moved SIGCLD->SIGCHLD ifdefs
 	  from jobs.c to sh.h.
@@ -2179,7 +2179,7 @@ Fri Aug 19 09:59:43 NDT 1994 Michael Rendell (michael@arlene.cs.mun.ca)
 	  instead of ATEMP.
 
 	* shf.c(shf_sopen): if buf is 0 and writing and DYNMAIC, allocate
-	  a buffer; if writing, save room for a trailing null. 
+	  a buffer; if writing, save room for a trailing null.
 	* shf.c(shf_sclose): new function.
 	* shf.c(shf_snprintf),tree.c(snptreef): use shf_sclose().
 	* tree.c(snptreef): changed return type to char *; if buffer
@@ -2204,7 +2204,7 @@ Thu Aug 18 11:06:49 NDT 1994 Michael Rendell (michael@arlene.cs.mun.ca)
 
 	* c_test.c(is_op,is_binop,is_unop): new functions to test for
 	  unary/binary operators.
-	* c_test.c(oexpr,aexpr,nexpr,primary): no longer take argument - 
+	* c_test.c(oexpr,aexpr,nexpr,primary): no longer take argument -
 	  call is_unop/is_binop directly.
 	* c_test.c(ISDBRACKET,ISTEST,ISBOTH,ACCEPT_BE): new defines.
 	* c_test.c(struct t_op): changed op_type field to op_flags.
@@ -2312,7 +2312,7 @@ Tue Aug 16 10:17:47 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 	* main.c(shell): changed s->echo to set/clr of SF_ECHO in s->flags.
 
 	* table.h: added aliases and keywords tables; deleted lexicals table
-	  (POSIX says they are seperate).
+	  (POSIX says they are separate).
 	* syn.c(keywords,initkeywords): changed name of keywords() function
 	  to initkeywords(); changed all calls; add to keywords table instead
 	  of lexicals table.
@@ -2385,7 +2385,7 @@ Tue Aug 16 10:17:47 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 
 	* eval.c(expand): expand tilde in place; don't do tilde expansion
 	  on results of substitution (POSIX); only do tilde expansion
-	  if login name is unquoted (POSIX); don't check for fdo&DOTILDE 
+	  if login name is unquoted (POSIX); don't check for fdo&DOTILDE
 	  when a word is completed.
 	* eval.c(tilde): changed to return home directory of a given login name
 	  (taking care of null/+/-) (old version copied string, scanning
@@ -2938,7 +2938,7 @@ Sun Jul  3 11:09:01 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 
 	* configure.in, aclocal.m4(KSH_TERMIOS_H, KSH_TERM_CHECK): replaced
 	  KSH_TERMIOS_H with KSH_TERM_CHECK; removed calls to
-	  tcgetpgrp/tcsetpgrp - there is a seperate test for this.
+	  tcgetpgrp/tcsetpgrp - there is a separate test for this.
 
 	* main.c(main), sh.h: move getcwd() declaration to sh.h.
 
@@ -3138,7 +3138,7 @@ Fri Jun  3 12:28:06 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 	* io.c(errorf): set exstat to 1.
 
 	* exec.c(search): assume mode is R_OK or X_OK (not 0/1 - 0 is F_OK, we
-	  want R_OK); changed all calls to pass R_OK/X_OK.  
+	  want R_OK); changed all calls to pass R_OK/X_OK.
 	  sh.h: define R_OK,W_OK,X_OK,F_OK if not defined.
 	  eaccess(): changed all calls to use [RWXF]_OK.
 
@@ -3189,7 +3189,7 @@ Wed Jun  1 09:17:50 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 	* aclocal.m4, configure.in, sh.h, tree.c, io.c, shf.c: added
 	  new config test KSH_PROTOTYPES to check for function prototypes
 	  (MIPS RICS/os 5.0 C compiler isn't STDC and it can't mix <stddef.h>
-	  with <varargs.h>).  Removed stdarg.h test (now redundent).  Changed
+	  with <varargs.h>).  Removed stdarg.h test (now redundant).  Changed
 	  all varargs functions to use HAVE_PROTOTYPES instead of
 	  HAVE_STDARG_H && STDC.
 
@@ -3210,7 +3210,7 @@ Wed Jun  1 09:17:50 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 Tue May 31 10:49:16 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 
 	* configure.in, Makefile.in: added code to set GCC_WARNFLAGS from
-	  $(srcdir)/Warn-flags if gcc is being used;  Took -Wall, etc. 
+	  $(srcdir)/Warn-flags if gcc is being used;  Took -Wall, etc.
 	  out of CFLAGS, took -Dno_RCSids out of DEFS.  Added install.sh to
 	  DISTFILES, grabbed copy of install.sh from autoconf (who grabbed
 	  it from X11R5).
@@ -3223,7 +3223,7 @@ Tue May 31 10:49:16 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 	  appropriately for BSD vs POSIX/SYSV getpgrp.
 
 	* expand.h, ksh_dir.h, ksh_stat.h, ksh_time.h, ksh_wait.h, shf.h,
-	  tty.h: added RCS $Id$'s.
+	  tty.h: added RCS Id's.
 
 	* acconfig.h: updated SIGSET_T comment: unisgned int -> unsigned.
 
@@ -3294,7 +3294,7 @@ Fri May 5 12:16:46 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 	      - skip IFS at start of line "echo ' a b' |(read a b; echo $a)"
 		should print a, not nothing.
 	      - changed EOF check to set all vars to null (same way \n is
-	        handled)
+		handled)
 	  - eval.c(comsub):
 	      - after compile(), return if t is NULL
 	      - use setfileno() instead of fileno(x) = .. (see sh.h changes);
@@ -3449,7 +3449,7 @@ Fri May 5 12:16:46 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 		thats where they are set from tty structs.
 	      - x_init(): set ed_intrc, ed_quitc for _BSD & _POSIX_TERM ifdefs
 	      - send output to shlout (instead of stdout - at&t ksh writes to
-	        stderr)
+		stderr)
 	      - made x_do_init static.
 	  - exit.c(x_getc), lex.c(yylex): restart interrupted reads in
 	    x_getc(), changed read-restart in yylex() to only effect call
@@ -3504,7 +3504,7 @@ Fri May 5 12:16:46 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 		      2:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
 		      3:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
 		      EOF
-		      $ 
+		      $
 		    the cat picks up reading at the offset where the read
 		    command left off (ie, at bcdefg... - the 1:a are skipped).
 	  - exec.c(comexec): built-in c_exec && no args: close the saved fd's
@@ -3570,7 +3570,7 @@ Fri May 5 12:16:46 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 		(involves #defining free)
 	  - main.c(main): smart initialization of PWD (ensures it is always
 	    valid).
-	  - lex.h, table.h, tree.h: removed redundent function declarations
+	  - lex.h, table.h, tree.h: removed redundant function declarations
 	    (were also in proto.h)
 	  - sh.h: increased LINE from 256 to 1024
 	  - main.c(include), sh.h(E_INC), c_sh.c(c_return): added hack so a
@@ -3586,4 +3586,4 @@ Fri May 5 12:16:46 NDT 1994 Michael Rendell (michael@panda.cs.mun.ca)
 	  - exec.c(iosetup): don't save fd if already saved (and don't
 	    generate an error)
 	  - exec.c(findcom): in if (..ALLOC && eaccess), test for
-	    ALLOC redundent - always call afree()
+	    ALLOC redundant - always call afree()

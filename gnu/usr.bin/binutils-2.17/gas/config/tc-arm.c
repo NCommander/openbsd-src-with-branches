@@ -111,7 +111,7 @@ enum arm_float_abi
 #ifndef FPU_DEFAULT
 # ifdef TE_LINUX
 #  define FPU_DEFAULT FPU_ARCH_FPA
-# elif defined (TE_NetBSD)
+# elif defined (TE_NetBSD) || defined (TE_OpenBSD)
 #  ifdef OBJ_ELF
 #   define FPU_DEFAULT FPU_ARCH_VFP	/* Soft-float, but VFP order.  */
 #  else
@@ -4661,6 +4661,7 @@ do_barrier (void)
   if (inst.operands[0].present)
     {
       constraint ((inst.instruction & 0xf0) != 0x40
+		  && (inst.instruction & 0xf0) != 0x50
 		  && inst.operands[0].imm != 0xf,
 		  "bad barrier type");
       inst.instruction |= inst.operands[0].imm;
@@ -6555,6 +6556,7 @@ do_t_barrier (void)
   if (inst.operands[0].present)
     {
       constraint ((inst.instruction & 0xf0) != 0x40
+		  && (inst.instruction & 0xf0) != 0x50
 		  && inst.operands[0].imm != 0xf,
 		  "bad barrier type");
       inst.instruction |= inst.operands[0].imm;
@@ -7641,6 +7643,13 @@ do_t_rbit (void)
 {
   inst.instruction |= inst.operands[0].reg << 8;
   inst.instruction |= inst.operands[1].reg << 16;
+}
+
+static void
+do_t_rd_rm (void)
+{
+  inst.instruction |= inst.operands[0].reg << 8;
+  inst.instruction |= inst.operands[1].reg;
 }
 
 static void
@@ -8819,10 +8828,16 @@ static const struct asm_cond conds[] =
 
 static struct asm_barrier_opt barrier_opt_names[] =
 {
-  { "sy",   0xf },
-  { "un",   0x7 },
-  { "st",   0xe },
-  { "unst", 0x6 }
+  { "oshst", 0x2 },
+  { "osh",   0x3 },
+  { "nshst", 0x6 },
+  { "unst",  0x6 },
+  { "nsh",   0x7 },
+  { "un",    0x7 },
+  { "ishst", 0xa },
+  { "ish",   0xb },
+  { "st",    0xe },
+  { "sy",    0xf } 
 };
 
 /* Table of ARM-format instructions.	*/
@@ -9333,6 +9348,9 @@ static const struct asm_opcode insns[] =
 #define THUMB_VARIANT &arm_ext_v6_notm
  TCE(ldrexd,	1b00f9f, e8d0007f, 3, (RRnpc, oRRnpc, RRnpcb),        ldrexd, t_ldrexd),
  TCE(strexd,	1a00f90, e8c00070, 4, (RRnpc, RRnpc, oRRnpc, RRnpcb), strexd, t_strexd),
+
+ TCE(rrx,      1a00060, ea4f0030, 2, (RR, RR),      rd_rm, t_rd_rm),
+ TCE(rrxs,     1b00060, ea5f0030, 2, (RR, RR),      rd_rm, t_rd_rm),
 
 #undef THUMB_VARIANT
 #define THUMB_VARIANT &arm_ext_v6t2
@@ -12880,7 +12898,7 @@ md_begin (void)
     }
   else if (!mfpu_opt)
     {
-#if !(defined (TE_LINUX) || defined (TE_NetBSD) || defined (TE_VXWORKS))
+#if !(defined (TE_LINUX) || defined (TE_NetBSD) || defined (TE_OpenBSD) || defined (TE_VXWORKS))
       /* Some environments specify a default FPU.  If they don't, infer it
 	 from the processor.  */
       if (mcpu_fpu_opt)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_sigwait.c,v 1.3 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: sigwait.c,v 1.5 2012/02/20 02:07:41 guenther Exp $	*/
 /*
  * Copyright (c) 1998 Daniel M. Eischen <eischen@vigrid.com>
  * All rights reserved.
@@ -52,14 +52,8 @@ static void *
 sigwaiter (void *arg)
 {
 	int signo;
-	sigset_t mask;
 
 	SET_NAME("sigwaiter");
-
-	/* Block SIGHUP */
-	sigemptyset (&mask);
-	sigaddset (&mask, SIGHUP);
-	CHECKe(sigprocmask (SIG_BLOCK, &mask, NULL));
 
 	while (sigcounts[SIGINT] == 0) {
 		printf("Sigwait waiting (thread %p)\n", pthread_self());
@@ -80,11 +74,17 @@ sigwaiter (void *arg)
 static void
 sighandler (int signo)
 {
-	printf ("  -> Signal handler caught signal %d (%s) in thread %p\n",
+	int save_errno = errno;
+	char buf[8192];
+
+	snprintf(buf, sizeof buf,
+	    "  -> Signal handler caught signal %d (%s) in thread %p\n",
 	    signo, strsignal(signo), pthread_self());
+	write(STDOUT_FILENO, buf, strlen(buf));
 
 	if ((signo >= 0) && (signo <= NSIG))
 		sigcounts[signo]++;
+	errno = save_errno;
 }
 
 int main (int argc, char *argv[])
@@ -97,7 +97,7 @@ int main (int argc, char *argv[])
 	/* Initialize our signal counts. */
 	memset ((void *) sigcounts, 0, NSIG * sizeof (int));
 
-	/* Setupt our wait mask. */
+	/* Setup our wait mask. */
 	sigemptyset (&wait_mask);		/* Default action	*/
 	sigaddset (&wait_mask, SIGHUP);		/* terminate		*/
 	sigaddset (&wait_mask, SIGINT);		/* terminate		*/
@@ -105,6 +105,9 @@ int main (int argc, char *argv[])
 	sigaddset (&wait_mask, SIGURG);		/* ignore		*/
 	sigaddset (&wait_mask, SIGIO);		/* ignore		*/
 	sigaddset (&wait_mask, SIGUSR1);	/* terminate		*/
+
+	/* Block all of the signals that will be waited for */
+	CHECKe(sigprocmask (SIG_BLOCK, &wait_mask, NULL));
 
 	/* Ignore signals SIGHUP and SIGIO. */
 	sigemptyset (&act.sa_mask);
@@ -144,6 +147,15 @@ int main (int argc, char *argv[])
 	 */
 	CHECKr(pthread_create (&tid, &pattr, sigwaiter, NULL));
 
+#if 0	/* XXX To quote POSIX 2008, XSH, from section 2.4.1
+	 * (Signal Generation and Delivery) paragraph 4:
+	 *	If the action associated with a blocked signal is to
+	 *	ignore the signal and if that signal is generated for
+	 *	the process, it is unspecified whether the signal is
+	 *	discarded immediately upon generation or remains pending.
+	 * So, SIGIO may remain pending here and be accepted by the sigwait()
+	 * in the other thread, even though its disposition is "ignored".
+	 */
 	/*
 	 * Verify that an ignored signal doesn't cause a wakeup.
 	 * We don't have a handler installed for SIGIO.
@@ -154,6 +166,7 @@ int main (int argc, char *argv[])
 	sleep (1);
 	/* sigwait should not wake up for ignored signal SIGIO */
 	ASSERT(sigcounts[SIGIO] == 0);
+#endif
 
 	/*
 	 * Verify that a signal with a default action of ignore, for
@@ -213,20 +226,10 @@ int main (int argc, char *argv[])
 	/* Release the waiter from sigwait. */
 	CHECKe(kill(getpid(), SIGHUP));
 	sleep (1);
-	/* sigwait should wake up for SIGHUP */
+	/* signal waiter should wake up for SIGHUP */
 	ASSERT(sigcounts[SIGHUP] == 1);
-	/*
-	 * Add SIGHUP to all threads pending signals.  Since there is
-	 * a signal handler installed for SIGHUP and this signal is
-	 * blocked from the waiter thread and unblocked in the main
-	 * thread, the signal handler should be called once for SIGHUP.
-	 */
-	CHECKe(kill(getpid(), SIGHUP));
 	/* Release the waiter thread and allow him to run. */
 	CHECKr(pthread_mutex_unlock (&waiter_mutex));
-	sleep (1);
-	/* sigwait should return for pending SIGHUP */
-	ASSERT(sigcounts[SIGHUP] == 3);
 
 	/*
 	 * Repeat the above test using pthread_kill and SIGUSR1
@@ -238,10 +241,10 @@ int main (int argc, char *argv[])
 	sleep (1);
 	/* sigwait should wake up for SIGUSR1 */
 	ASSERT(sigcounts[SIGUSR1] == 1);
-	/* Add SIGHUP to the waiters pending signals. */
+	/* Add SIGUSR1 to the waiters pending signals. */
 	CHECKr(pthread_kill (tid, SIGUSR1));
 	/* Release the waiter thread and allow him to run. */
-	CHECKe(pthread_mutex_unlock (&waiter_mutex));
+	CHECKr(pthread_mutex_unlock (&waiter_mutex));
 	sleep (1);
 	/* sigwait should return for pending SIGUSR1 */
 	ASSERT(sigcounts[SIGUSR1] == 2);

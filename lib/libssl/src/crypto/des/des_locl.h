@@ -1,4 +1,4 @@
-/* crypto/des/des_locl.h */
+/* $OpenBSD: des_locl.h,v 1.17 2014/08/18 19:15:34 bcook Exp $ */
 /* Copyright (C) 1995-1997 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -59,44 +59,16 @@
 #ifndef HEADER_DES_LOCL_H
 #define HEADER_DES_LOCL_H
 
-#include <openssl/e_os2.h>
-
-#if defined(OPENSSL_SYS_WIN32)
-#ifndef OPENSSL_SYS_MSDOS
-#define OPENSSL_SYS_MSDOS
-#endif
-#endif
-
+#include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#ifndef OPENSSL_SYS_MSDOS
-#if !defined(OPENSSL_SYS_VMS) || defined(__DECC)
-#ifdef OPENSSL_UNISTD
-# include OPENSSL_UNISTD
-#else
-# include <unistd.h>
-#endif
-#include <math.h>
-#endif
-#endif
-#include <openssl/des.h>
-
-#ifdef OPENSSL_SYS_MSDOS		/* Visual C++ 2.1 (Windows NT/95) */
-#include <stdlib.h>
-#include <errno.h>
-#include <time.h>
-#include <io.h>
-#endif
-
-#if defined(__STDC__) || defined(OPENSSL_SYS_VMS) || defined(M_XENIX) || defined(OPENSSL_SYS_MSDOS)
 #include <string.h>
-#endif
+#include <unistd.h>
 
-#ifdef OPENSSL_BUILD_SHLIBCRYPTO
-# undef OPENSSL_EXTERN
-# define OPENSSL_EXTERN OPENSSL_EXPORT
-#endif
+#include <openssl/opensslconf.h>
+
+#include <openssl/des.h>
 
 #define ITERATIONS 16
 #define HALF_ITERATIONS 8
@@ -160,22 +132,10 @@
 				} \
 			}
 
-#if (defined(OPENSSL_SYS_WIN32) && defined(_MSC_VER)) || defined(__ICC)
-#define	ROTATE(a,n)	(_lrotr(a,n))
-#elif defined(__GNUC__) && __GNUC__>=2 && !defined(__STRICT_ANSI__) && !defined(OPENSSL_NO_ASM) && !defined(OPENSSL_NO_INLINE_ASM) && !defined(PEDANTIC)
-# if defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__)
-#  define ROTATE(a,n)	({ register unsigned int ret;	\
-				asm ("rorl %1,%0"	\
-					: "=r"(ret)	\
-					: "I"(n),"0"(a)	\
-					: "cc");	\
-			   ret;				\
-			})
-# endif
-#endif
-#ifndef ROTATE
-#define	ROTATE(a,n)	(((a)>>(n))+((a)<<(32-(n))))
-#endif
+static inline uint32_t ROTATE(uint32_t a, uint32_t n)
+{
+	return (a>>n)+(a<<(32-n));
+}
 
 /* Don't worry about the LOAD_DATA() stuff, that is used by
  * fcrypt() to add it's little bit to the front */
@@ -403,7 +363,7 @@
 
 #define IP(l,r) \
 	{ \
-	register DES_LONG tt; \
+	DES_LONG tt; \
 	PERM_OP(r,l,tt, 4,0x0f0f0f0fL); \
 	PERM_OP(l,r,tt,16,0x0000ffffL); \
 	PERM_OP(r,l,tt, 2,0x33333333L); \
@@ -413,7 +373,7 @@
 
 #define FP(l,r) \
 	{ \
-	register DES_LONG tt; \
+	DES_LONG tt; \
 	PERM_OP(l,r,tt, 1,0x55555555L); \
 	PERM_OP(r,l,tt, 8,0x00ff00ffL); \
 	PERM_OP(l,r,tt, 2,0x33333333L); \

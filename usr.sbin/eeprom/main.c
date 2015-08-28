@@ -1,8 +1,12 @@
-/*	$NetBSD: main.c,v 1.1 1995/07/13 18:15:44 thorpej Exp $	*/
+/*	$OpenBSD: main.c,v 1.21 2015/01/19 18:01:11 miod Exp $	*/
+/*	$NetBSD: main.c,v 1.3 1996/05/16 16:00:55 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,55 +16,48 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <err.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
-#ifdef __sparc__
+#if defined(__sparc__) && !defined(__sparc64__)
 #include <fcntl.h>
-#include <kvm.h>
 #include <limits.h>
-#include <nlist.h>
+#include <sys/sysctl.h>
+#include <machine/cpu.h>
+#include <machine/eeprom.h>
+#include <machine/param.h>
+#endif /* __sparc__ && !__sparc64__ */
 
 #include <machine/openpromio.h>
 
-struct	nlist nl[] = {
-	{ "_cputyp" },
-#define SYM_CPUTYP	0
-	{ NULL },
-};
-
-static	char *system = NULL;
-#endif /* __sparc__ */
-
-#include <machine/eeprom.h>
-
 #include "defs.h"
 
+#if defined(__sparc__) && !defined(__sparc64__)
+static	char *nlistf = NULL;
+
 struct	keytabent eekeytab[] = {
+#ifndef SMALL
 	{ "hwupdate",		0x10,	ee_hwupdate },
+#else
+	{ "hwupdate",		0x00,	ee_notsupp },
+#endif
 	{ "memsize",		0x14,	ee_num8 },
 	{ "memtest",		0x15,	ee_num8 },
 	{ "scrsize",		0x16,	ee_screensize },
@@ -86,13 +83,14 @@ struct	keytabent eekeytab[] = {
 	{ "password",		0,	ee_notsupp },
 	{ NULL,			0,	ee_notsupp },
 };
+#endif /* __sparc__ && !__sparc64__ */
 
-static	void action __P((char *));
-static	void dump_prom __P((void));
-static	void usage __P((void));
-#ifdef __sparc__
-static	int getcputype __P((void));
-#endif /* __sparc__ */
+static	void action(char *);
+static	void dump_prom(void);
+static	void usage(void);
+#if defined(__sparc__) && !defined(__sparc64__)
+static	int getcputype(void);
+#endif /* __sparc__ && !__sparc64__ */
 
 char	*path_eeprom = "/dev/eeprom";
 char	*path_openprom = "/dev/openprom";
@@ -103,22 +101,17 @@ int	cksumfail = 0;
 u_short	writecount;
 int	eval = 0;
 int	use_openprom = 0;
+int	print_tree = 0;
 int	verbose = 0;
 
 extern	char *__progname;
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	int ch, do_stdin = 0;
 	char *cp, line[BUFSIZE];
-#ifdef __sparc__
-	char *optstring = "-cf:ivN:";
-#else
-	char *optstring = "-cf:i";
-#endif /* __sparc__ */
+	char *optstring = "cf:ipvN:-";
 
 	while ((ch = getopt(argc, argv, optstring)) != -1)
 		switch (ch) {
@@ -137,16 +130,20 @@ main(argc, argv)
 		case 'i':
 			ignore_checksum = 1;
 			break;
-#ifdef __sparc__
+
+		case 'p':
+			print_tree = 1;
+			break;
+
 		case 'v':
 			verbose = 1;
 			break;
 
+#if defined(__sparc__) && !defined(__sparc64__)
 		case 'N':
-			system = optarg;
+			nlistf = optarg;
 			break;
-
-#endif /* __sparc__ */
+#endif /* __sparc__ && !__sparc64__ */
 
 		case '?':
 		default:
@@ -155,16 +152,22 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-#ifdef __sparc__
+#if defined(__sparc__) && !defined(__sparc64__)
 	if (getcputype() != CPU_SUN4)
+#endif /* __sparc__ && !__sparc64__ */
 		use_openprom = 1;
-#endif /* __sparc__ */
+	if (print_tree && use_openprom) {
+		op_tree();
+		exit(0);
+	}
 
+#if defined(__sparc__) && !defined(__sparc64__)
 	if (use_openprom == 0) {
 		ee_verifychecksums();
 		if (fix_checksum || cksumfail)
 			exit(cksumfail);
 	}
+#endif /* __sparc__ && !__sparc64__ */
 
 	if (do_stdin) {
 		while (fgets(line, BUFSIZE, stdin) != NULL) {
@@ -183,67 +186,57 @@ main(argc, argv)
 		}
 
 		while (argc) {
-			action(argv[argc - 1]);
+			action(*argv);
 			++argv;
 			--argc;
 		}
 	}
 
+#if defined(__sparc__) && !defined(__sparc64__)
 	if (use_openprom == 0)
 		if (update_checksums) {
 			++writecount;
 			ee_updatechecksums();
 		}
+#endif /* __sparc__ && !__sparc64__ */
 
 	exit(eval + cksumfail);
 }
 
-#ifdef __sparc__
-#define KVM_ABORT(kd, str) {						\
-	(void)kvm_close((kd));						\
-	errx(1, "%s: %s", (str), kvm_geterr((kd)));			\
-}
-
+#if defined(__sparc__) && !defined(__sparc64__)
 static int
-getcputype()
+getcputype(void)
 {
-	char errbuf[_POSIX2_LINE_MAX];
+	int mib[2];
+	size_t len;
 	int cputype;
-	kvm_t *kd;
 
-	bzero(errbuf, sizeof(errbuf));
+	mib[0] = CTL_MACHDEP;
+	mib[1] = CPU_CPUTYPE;
+	len = sizeof(cputype);
+	if (sysctl(mib, 2, &cputype, &len, NULL, 0) < 0)
+		err(1, "sysctl(machdep.cputype)");
 
-	if ((kd = kvm_openfiles(system, NULL, NULL, O_RDONLY, errbuf)) == NULL)
-		errx(1, "can't open kvm: %s", errbuf);
-
-	if (kvm_nlist(kd, nl))
-		KVM_ABORT(kd, "can't read symbol table");
-
-	if (kvm_read(kd, nl[SYM_CPUTYP].n_value, (char *)&cputype,
-	    sizeof(cputype)) != sizeof(cputype))
-		KVM_ABORT(kd, "can't determine cpu type");
-
-	(void)kvm_close(kd);
 	return (cputype);
 }
-#endif /* __sparc__ */
+#endif /* __sparc__ && !__sparc64__ */
 
 /*
  * Separate the keyword from the argument (if any), find the keyword in
  * the table, and call the corresponding handler function.
  */
 static void
-action(line)
-	char *line;
+action(char *line)
 {
 	char *keyword, *arg, *cp;
 	struct keytabent *ktent;
 
 	keyword = strdup(line);
+	if (!keyword)
+		errx(1, "out of memory");
 	if ((arg = strrchr(keyword, '=')) != NULL)
 		*arg++ = '\0';
 
-#ifdef __sparc__
 	if (use_openprom) {
 		/*
 		 * The whole point of the Openprom is that one
@@ -252,16 +245,18 @@ action(line)
 		 * the generic op_handler.
 		 */
 		if ((cp = op_handler(keyword, arg)) != NULL)
-			warnx(cp);
+			warnx("%s", cp);
 		return;
-	} else
-#endif /* __sparc__ */
+	}
+#if defined(__sparc__) && !defined(__sparc64__)
+	  else
 		for (ktent = eekeytab; ktent->kt_keyword != NULL; ++ktent) {
 			if (strcmp(ktent->kt_keyword, keyword) == 0) {
 				(*ktent->kt_handler)(ktent, arg);
 				return; 
 			}
 		}
+#endif /* __sparc__ && !__sparc64__ */
 
 	warnx("unknown keyword %s", keyword);
 	++eval;
@@ -271,33 +266,35 @@ action(line)
  * Dump the contents of the prom corresponding to all known keywords.
  */
 static void
-dump_prom()
+dump_prom(void)
 {
 	struct keytabent *ktent;
 
-#ifdef __sparc__
 	if (use_openprom) {
 		/*
 		 * We have a special dump routine for this.
 		 */
 		op_dump();
-	} else
-#endif /* __sparc__ */
+	}
+#if defined(__sparc__) && !defined(__sparc64__)
+	  else
 		for (ktent = eekeytab; ktent->kt_keyword != NULL; ++ktent)
 			(*ktent->kt_handler)(ktent, NULL);
+#endif /* __sparc__ && !__sparc64__ */
 }
 
 static void
-usage()
+usage(void)
 {
 
-#ifdef __sparc__
-	fprintf(stderr, "usage: %s %s %s\n", __progname,
-	    "[-] [-c] [-f device] [-i] [-v]",
-	    "[-N system] [field[=value] ...]");
+#if defined(__sparc__) && !defined(__sparc64__)
+	fprintf(stderr,
+	    "usage: %s [-cipv] [-f device] [-N system] [field[=value] ...]\n",
+	    __progname);
 #else
-	fprintf(stderr, "usage: %s %s\n", __progname,
-	    "[-] [-c] [-f device] [-i] [field[=value] ...]");
-#endif /* __sparc__ */
+	fprintf(stderr,
+	    "usage: %s [-cipv] [-f device] [field[=value] ...]\n",
+	    __progname);
+#endif /* __sparc__ && !__sparc64__ */
 	exit(1);
 }

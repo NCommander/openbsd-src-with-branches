@@ -1,3 +1,4 @@
+/*	$OpenBSD: n_tan.S,v 1.9 2013/07/05 21:10:50 miod Exp $	*/
 /*	$NetBSD: n_tan.S,v 1.1 1995/10/10 23:40:31 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,6 +31,8 @@
  *	@(#)tan.s	8.1 (Berkeley) 6/4/93
  */
 
+#include <machine/asm.h>
+
 /*  This is the implementation of Peter Tang's double precision  
  *  tangent for the VAX using Bob Corbett's argument reduction.
  *  
@@ -41,29 +40,33 @@
  *       under 1,024,000 random arguments testing on [0,2*pi] 
  *       tan() observed maximum error = 2.15 ulps
  *
- * double tan(arg)
- * double arg;
+ * double
+ * tan(double arg)
  * method: true range reduction to [-pi/4,pi/4], P. Tang  &  B. Corbett
  * S. McDonald, April 4,  1985
  */
-	.globl	_tan
-	.text
-	.align	1
 
-_tan:	.word	0xffc		# save r2-r11
-	movq	4(ap),r0
-	bicw3	$0x807f,r0,r2
+ENTRY(tanf, 0)
+	cvtfd	4(%ap),-(%sp)
+	calls	$2,_C_LABEL(tan)
+	cvtdf	%r0,%r0
+	ret
+
+STRONG_ALIAS(tanl,tan)
+ENTRY(tan, R2|R3|R4|R5|R6|R7|R8|R9|R10|R11)
+	movq	4(%ap),%r0
+	bicw3	$0x807f,%r0,%r2
 	beql	1f		# if x is zero or reserved operand then return x
 /*
  * Save the PSL's IV & FU bits on the stack.
  */
-	movpsl	r2
-	bicw3	$0xff9f,r2,-(sp)
+	movpsl	%r2
+	bicw3	$0xff9f,%r2,-(%sp)
 /*
  *  Clear the IV & FU bits.
  */
 	bicpsw	$0x0060
-	jsb	libm$argred
+	jsb	__libm_argred
 /*
  *  At this point,
  *	   r0  contains the quadrant number, 0, 1, 2, or 3;
@@ -72,24 +75,24 @@ _tan:	.word	0xffc		# save r2-r11
  *
  *  Save  r3/r0  so that we can call cosine after calling sine.
  */
-	movq	r2,-(sp)
-	movq	r0,-(sp)
+	movq	%r2,-(%sp)
+	movq	%r0,-(%sp)
 /*
  *  Call sine.  r4 = 0  implies sine.
  */
-	movl	$0,r4
-	jsb	libm$sincos
+	movl	$0,%r4
+	jsb	__libm_sincos
 /*
  *  Save  sin(x)  in  r11/r10 .
  */
-	movd	r0,r10
+	movd	%r0,%r10
 /*
  *  Call cosine.  r4 = 1  implies cosine.
  */
-	movq	(sp)+,r0
-	movq	(sp)+,r2
-	movl	$1,r4
-	jsb	libm$sincos
-	divd3	r0,r10,r0
-	bispsw	(sp)+
+	movq	(%sp)+,%r0
+	movq	(%sp)+,%r2
+	movl	$1,%r4
+	jsb	__libm_sincos
+	divd3	%r0,%r10,%r0
+	bispsw	(%sp)+
 1:	ret

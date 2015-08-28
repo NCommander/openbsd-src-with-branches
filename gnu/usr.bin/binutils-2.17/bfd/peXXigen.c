@@ -235,7 +235,8 @@ _bfd_XXi_swap_aux_in (bfd *	abfd,
 	  in->x_file.x_n.x_offset = H_GET_32 (abfd, ext->x_file.x_n.x_offset);
 	}
       else
-	memcpy (in->x_file.x_fname, ext->x_file.x_fname, FILNMLEN);
+	memcpy (in->x_file.x_fname, ext->x_file.x_fname,
+	    sizeof in->x_file.x_fname);
       return;
 
     case C_STAT:
@@ -308,7 +309,8 @@ _bfd_XXi_swap_aux_out (bfd *  abfd,
 	  H_PUT_32 (abfd, in->x_file.x_n.x_offset, ext->x_file.x_n.x_offset);
 	}
       else
-	memcpy (ext->x_file.x_fname, in->x_file.x_fname, FILNMLEN);
+	memcpy (ext->x_file.x_fname, in->x_file.x_fname,
+	    sizeof ext->x_file.x_fname);
 
       return AUXESZ;
 
@@ -635,7 +637,8 @@ _bfd_XXi_swap_aouthdr_out (bfd * abfd, void * in, void * out)
 	   fix, strip munges the file.  */
 	if (coff_section_data (abfd, sec) != NULL
 	    && pei_section_data (abfd, sec) != NULL)
-	  isize += SA (FA (pei_section_data (abfd, sec)->virt_size));
+	  isize = (sec->vma - extra->ImageBase
+		   + SA (FA (pei_section_data (abfd, sec)->virt_size)));
       }
 
     aouthdr_in->dsize = dsize;

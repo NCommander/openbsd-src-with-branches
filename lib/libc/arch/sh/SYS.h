@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: SYS.h,v 1.5 2014/06/04 20:13:49 matthew Exp $	*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -37,19 +37,12 @@
 #include <machine/asm.h>
 #include <sys/syscall.h>
 
-#ifdef __STDC__
 #define	SYSENTRY(x)					\
-	.weak	_C_LABEL(x);				\
-	_C_LABEL(x) = _C_LABEL(_thread_sys_ ## x);	\
+	WEAK_ALIAS(x,_thread_sys_ ## x);		\
 	ENTRY(_thread_sys_ ## x)
-#else
-#define	SYSENTRY(x)					\
-	.weak	_C_LABEL(x);				\
-	_C_LABEL(x) = _C_LABEL(_thread_sys_/**/x);	\
-	ENTRY(_thread_sys_/**/x)
-#endif
+#define	SYSENTRY_HIDDEN(x)				\
+	ENTRY(_thread_sys_ ## x)
 
-#ifdef __STDC__
 #define SYSTRAP(x)					\
 		mov.l	903f, r0;			\
 		.word	0xc380;	/* trapa #0x80; */	\
@@ -58,24 +51,18 @@
 		.align	2;				\
 	903:	.long	(SYS_ ## x);			\
 	904:
-#else
-#define SYSTRAP(x)					\
-		mov.l	903f, r0;			\
-		trapa	#0x80;				\
-		bra	904f;				\
-		 nop;					\
-		.align	2;				\
-	903:	.long	(SYS_/**/x);			\
-	904:
-#endif
 
 #define	CERROR	_C_LABEL(__cerror)
+#define	_CERROR	_C_LABEL(___cerror)
 
 #define _SYSCALL_NOERROR(x,y)				\
 		SYSENTRY(x);				\
 		SYSTRAP(y)
+#define _SYSCALL_HIDDEN_NOERROR(x,y)			\
+		SYSENTRY_HIDDEN(x);			\
+		SYSTRAP(y)
 
-#ifdef PIC
+#ifdef __PIC__
 
 #define JUMP_CERROR					\
 		mov	r0, r4;				\
@@ -106,6 +93,11 @@
 	911:	JUMP_CERROR;				\
 		_SYSCALL_NOERROR(x,y);			\
 		bf	911b
+#define _SYSCALL_HIDDEN(x,y)				\
+		.text;					\
+	911:	JUMP_CERROR;				\
+		_SYSCALL_HIDDEN_NOERROR(x,y);		\
+		bf	911b
 
 #define SYSCALL_NOERROR(x)				\
 		_SYSCALL_NOERROR(x,x)
@@ -123,10 +115,13 @@
 		rts;					\
 		 nop
 
-#define RSYSCALL_NOERROR(x)				\
-		PSEUDO_NOERROR(x,x)
+#define PSEUDO_HIDDEN(x,y)				\
+		_SYSCALL_HIDDEN(x,y);			\
+		rts;					\
+		 nop
 
-#define RSYSCALL(x)					\
-		PSEUDO(x,x)
+#define RSYSCALL_NOERROR(x)		PSEUDO_NOERROR(x,x)
+#define RSYSCALL(x)			PSEUDO(x,x)
+#define RSYSCALL_HIDDEN(x)		PSEUDO_HIDDEN(x,x)
 
 	.globl	CERROR

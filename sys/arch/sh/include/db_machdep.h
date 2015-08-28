@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: db_machdep.h,v 1.5 2010/11/27 19:57:23 miod Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.12 2006/05/10 06:24:03 skrll Exp $	*/
 
 /*
@@ -54,26 +54,14 @@ extern db_regs_t	ddb_regs;	/* register state */
 
 #define	FIXUP_PC_AFTER_BREAK(regs)	((regs)->tf_spc -= BKPT_SIZE)
 
-#define	IS_BREAKPOINT_TRAP(type, code)	((type) == EXPEVT_BREAK)
+#define	IS_BREAKPOINT_TRAP(type, code)	((type) == EXPEVT_TRAPA)
 #define	IS_WATCHPOINT_TRAP(type, code)	(0) /* XXX (msaitoh) */
 
-#define	inst_load(ins)		0
-#define	inst_store(ins)		0
-
-/* macro for checking if a thread has used floating-point */
-#define	db_thread_fp_used(thread)	((thread)->pcb->ims.ifps != 0)
-
 int kdb_trap(int, int, db_regs_t *);
+void db_machine_init (void);
 boolean_t inst_call(int);
 boolean_t inst_return(int);
 boolean_t inst_trap_return(int);
-
-/*
- * We use ELF symbols in DDB.
- *
- */
-#define	DB_ELF_SYMBOLS
-#define	DB_ELFSIZE	32
 
 /*
  * We have machine-dependent commands.

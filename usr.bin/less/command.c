@@ -54,9 +54,7 @@ extern int screen_trashed;	/* The screen has been overwritten */
 extern int shift_count;
 extern int oldbot;
 extern int forw_prompt;
-extern int be_helpful;
 extern int less_is_more;
-extern int quit_at_eof;
 
 #if SHELL_ESCAPE
 static char *shellcmd = NULL;	/* For holding last shell command for "!!" */
@@ -71,7 +69,6 @@ static int optflag;
 static int optgetname;
 static POSITION bottompos;
 static int save_hshift;
-static char *help_prompt;
 #if PIPEC
 static char pipec;
 #endif
@@ -751,7 +748,7 @@ prompt()
 		clear_bot();
 	clear_cmd();
 	forw_prompt = 0;
-	p = help_prompt ? help_prompt : pr_string();
+	p = pr_string();
 	if (is_filtering())
 		putstr("& ");
 	if (p == NULL || *p == '\0')
@@ -760,11 +757,8 @@ prompt()
 	{
 		at_enter(AT_STANDOUT);
 		putstr(p);
-		if (be_helpful && !help_prompt && strlen(p) + 40 < sc_width)
-			putstr(" [Press space to continue, 'q' to quit.]");
 		at_exit();
 	}
-	help_prompt = NULL;
 	clear_eol();
 }
 
@@ -1030,7 +1024,6 @@ commands()
 	IFILE old_ifile;
 	IFILE new_ifile;
 	char *tagfile;
-	int until_hilite = 0;
 
 	search_type = SRCH_FORW;
 	wscroll = (sc_height + 1) / 2;
@@ -1259,8 +1252,6 @@ commands()
 			 * Forward forever, ignoring EOF.
 			 */
 			newaction = forw_loop(0);
-			if (less_is_more)
-				quit_at_eof = OPT_ON;
 			break;
 
 		case A_F_UNTIL_HILITE:
@@ -1500,7 +1491,7 @@ commands()
 			cmd_exec();
 			save_hshift = hshift;
 			hshift = 0;
-			(void) edit(HELPFILE);
+			(void) edit(helpfile());
 #endif /* !SMALL */
 			break;
 
@@ -1815,10 +1806,7 @@ commands()
 			break;
 
 		default:
-			if (be_helpful)
-				help_prompt = "[Press 'h' for instructions.]";
-			else
-				bell();
+			bell();
 			break;
 		}
 	}

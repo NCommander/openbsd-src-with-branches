@@ -372,7 +372,7 @@ readline_internal_teardown (eof)
       entry = replace_history_entry (where_history (), the_line, (histdata_t)NULL);
       _rl_free_history_entry (entry);
 
-      strcpy (the_line, temp);
+      strlcpy (the_line, temp, rl_line_buffer_len);
       free (temp);
     }
 

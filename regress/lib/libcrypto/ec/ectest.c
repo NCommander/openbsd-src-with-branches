@@ -81,7 +81,6 @@
 #include <openssl/err.h>
 #include <openssl/obj_mac.h>
 #include <openssl/objects.h>
-#include <openssl/rand.h>
 #include <openssl/bn.h>
 #include <openssl/opensslconf.h>
 
@@ -1070,14 +1069,14 @@ static void internal_curve_test(void)
 
 	crv_len = EC_get_builtin_curves(NULL, 0);
 
-	curves = OPENSSL_malloc(sizeof(EC_builtin_curve) * crv_len);
+	curves = reallocarray(NULL, sizeof(EC_builtin_curve),  crv_len);
 
 	if (curves == NULL)
 		return;
 
 	if (!EC_get_builtin_curves(curves, crv_len))
 		{
-		OPENSSL_free(curves);
+		free(curves);
 		return;
 		}
 
@@ -1115,7 +1114,7 @@ static void internal_curve_test(void)
 		fprintf(stdout, " failed\n\n");
 		ABORT;
 		}
-	OPENSSL_free(curves);
+	free(curves);
 	return;
 	}
 
@@ -1289,20 +1288,7 @@ void nistp_tests()
 #endif
 
 int main(int argc, char *argv[])
-	{	
-	
-	/* enable memory leak checking unless explicitly disabled */
-	if (!((getenv("OPENSSL_DEBUG_MEMORY") != NULL) && (0 == strcmp(getenv("OPENSSL_DEBUG_MEMORY"), "off"))))
-		{
-		CRYPTO_malloc_debug_init();
-		CRYPTO_set_mem_debug_options(V_CRYPTO_MDEBUG_ALL);
-		}
-	else
-		{
-		/* OPENSSL_DEBUG_MEMORY=off */
-		CRYPTO_set_mem_debug_functions(0, 0, 0, 0, 0);
-		}
-	CRYPTO_mem_ctrl(CRYPTO_MEM_CHECK_ON);
+	{
 	ERR_load_crypto_strings();
 
 	prime_field_tests();

@@ -1,3 +1,4 @@
+/*	$OpenBSD: set.c,v 1.14 2015/02/08 05:47:28 tedu Exp $	*/
 /*	$NetBSD: set.c,v 1.8 1995/03/21 18:35:52 mycroft Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,40 +30,28 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)set.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: set.c,v 1.8 1995/03/21 18:35:52 mycroft Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <stdlib.h>
 #ifndef SHORT_STRINGS
 #include <string.h>
 #endif /* SHORT_STRINGS */
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
 
-static Char	*getinx __P((Char *, int *));
-static void	 asx __P((Char *, int, Char *));
+static Char	*getinx(Char *, int *);
+static void	 asx(Char *, int, Char *);
 static struct varent
-		*getvx __P((Char *, int));
-static Char	*xset __P((Char *, Char ***));
-static Char	*operate __P((int, Char *, Char *));
-static void	 putn1 __P((int));
+		*getvx(Char *, int);
+static Char	*xset(Char *, Char ***);
+static Char	*operate(int, Char *, Char *);
+static void	 putn1(int);
 static struct varent
-		*madrof __P((Char *, struct varent *));
-static void	 unsetv1 __P((struct varent *));
-static void	 exportpath __P((Char **));
-static void	 balance __P((struct varent *, int, int));
+		*madrof(Char *, struct varent *);
+static void	 unsetv1(struct varent *);
+static void	 exportpath(Char **);
+static void	 balance(struct varent *, int, int);
 
 
 /*
@@ -75,11 +60,9 @@ static void	 balance __P((struct varent *, int, int));
 
 void
 /*ARGSUSED*/
-doset(v, t)
-    Char **v;
-    struct command *t;
+doset(Char **v, struct command *t)
 {
-    register Char *p;
+    Char *p;
     Char   *vp, op;
     Char  **vecp;
     bool    hadsub;
@@ -120,7 +103,7 @@ doset(v, t)
 	if (op && op != '=')
 	    stderror(ERR_NAME | ERR_SYNTAX);
 	if (eq(p, STRLparen)) {
-	    register Char **e = v;
+	    Char **e = v;
 
 	    if (hadsub)
 		stderror(ERR_NAME | ERR_SYNTAX);
@@ -147,7 +130,7 @@ doset(v, t)
 	    dohash(NULL, NULL);
 	}
 	else if (eq(vp, STRhistchars)) {
-	    register Char *pn = value(STRhistchars);
+	    Char *pn = value(STRhistchars);
 
 	    HIST = *pn++;
 	    HISTSUB = *pn;
@@ -162,12 +145,12 @@ doset(v, t)
 	else if (eq(vp, STRterm))
 	    Setenv(STRTERM, value(vp));
 	else if (eq(vp, STRhome)) {
-	    register Char *cp;
+	    Char *cp;
 
 	    cp = Strsave(value(vp));	/* get the old value back */
 
 	    /*
-	     * convert to cononical pathname (possibly resolving symlinks)
+	     * convert to canonical pathname (possibly resolving symlinks)
 	     */
 	    cp = dcanon(cp, cp);
 
@@ -177,19 +160,15 @@ doset(v, t)
 	    Setenv(STRHOME, cp);
 	    /* fix directory stack for new tilde home */
 	    dtilde();
-	    xfree((ptr_t) cp);
+	    xfree(cp);
 	}
-#ifdef FILEC
 	else if (eq(vp, STRfilec))
 	    filec = 1;
-#endif
     } while ((p = *v++) != NULL);
 }
 
 static Char *
-getinx(cp, ip)
-    register Char *cp;
-    register int *ip;
+getinx(Char *cp, int *ip)
 {
 
     *ip = 0;
@@ -202,23 +181,18 @@ getinx(cp, ip)
 }
 
 static void
-asx(vp, subscr, p)
-    Char   *vp;
-    int     subscr;
-    Char   *p;
+asx(Char *vp, int subscr, Char *p)
 {
-    register struct varent *v = getvx(vp, subscr);
+    struct varent *v = getvx(vp, subscr);
 
-    xfree((ptr_t) v->vec[subscr - 1]);
+    xfree(v->vec[subscr - 1]);
     v->vec[subscr - 1] = globone(p, G_APPEND);
 }
 
 static struct varent *
-getvx(vp, subscr)
-    Char   *vp;
-    int     subscr;
+getvx(Char *vp, int subscr)
 {
-    register struct varent *v = adrof(vp);
+    struct varent *v = adrof(vp);
 
     if (v == 0)
 	udvar(vp);
@@ -229,11 +203,9 @@ getvx(vp, subscr)
 
 void
 /*ARGSUSED*/
-dolet(v, t)
-    Char **v;
-    struct command *t;
+dolet(Char **v, struct command *t)
 {
-    register Char *p;
+    Char *p;
     Char   *vp, c, op;
     bool    hadsub;
     int     subscr;
@@ -308,37 +280,34 @@ dolet(v, t)
 	    exportpath(adrof(STRpath)->vec);
 	    dohash(NULL, NULL);
 	}
-	xfree((ptr_t) vp);
+	xfree(vp);
 	if (c != '=')
-	    xfree((ptr_t) p);
+	    xfree(p);
     } while ((p = *v++) != NULL);
 }
 
 static Char *
-xset(cp, vp)
-    Char   *cp, ***vp;
+xset(Char *cp, Char ***vp)
 {
-    register Char *dp;
+    Char *dp;
 
     if (*cp) {
 	dp = Strsave(cp);
 	--(*vp);
-	xfree((ptr_t) ** vp);
+	xfree(** vp);
 	**vp = dp;
     }
     return (putn(expr(vp)));
 }
 
 static Char *
-operate(op, vp, p)
-    int    op;
-    Char  *vp, *p;
+operate(int op, Char *vp, Char *p)
 {
     Char    opr[2];
     Char   *vec[5];
-    register Char **v = vec;
+    Char **v = vec;
     Char  **vecp = v;
-    register int i;
+    int i;
 
     if (op != '=') {
 	if (*vp)
@@ -360,8 +329,7 @@ operate(op, vp, p)
 static Char *putp;
 
 Char   *
-putn(n)
-    register int n;
+putn(int n)
 {
     int     num;
     static Char number[15];
@@ -393,8 +361,7 @@ putn(n)
 }
 
 static void
-putn1(n)
-    register int n;
+putn1(int n)
 {
     if (n > 9)
 	putn1(n / 10);
@@ -402,10 +369,9 @@ putn1(n)
 }
 
 int
-getn(cp)
-    register Char *cp;
+getn(Char *cp)
 {
-    register int n;
+    int n;
     int     sign;
 
     sign = 0;
@@ -426,22 +392,18 @@ getn(cp)
 }
 
 Char   *
-value1(var, head)
-    Char   *var;
-    struct varent *head;
+value1(Char *var, struct varent *head)
 {
-    register struct varent *vp;
+    struct varent *vp;
 
     vp = adrof1(var, head);
     return (vp == 0 || vp->vec[0] == 0 ? STRNULL : vp->vec[0]);
 }
 
 static struct varent *
-madrof(pat, vp)
-    Char   *pat;
-    register struct varent *vp;
+madrof(Char *pat, struct varent *vp)
 {
-    register struct varent *vp1;
+    struct varent *vp1;
 
     for (; vp; vp = vp->v_right) {
 	if (vp->v_left && (vp1 = madrof(pat, vp->v_left)))
@@ -453,11 +415,9 @@ madrof(pat, vp)
 }
 
 struct varent *
-adrof1(name, v)
-    register Char *name;
-    register struct varent *v;
+adrof1(Char *name, struct varent *v)
 {
-    register cmp;
+    int cmp;
 
     v = v->v_left;
     while (v && ((cmp = *name - *v->v_name) ||
@@ -473,10 +433,9 @@ adrof1(name, v)
  * The caller is responsible for putting value in a safe place
  */
 void
-set(var, val)
-    Char   *var, *val;
+set(Char *var, Char *val)
 {
-    register Char **vec = (Char **) xmalloc((size_t) (2 * sizeof(Char **)));
+    Char **vec = xreallocarray(NULL, 2, sizeof(Char **));
 
     vec[0] = val;
     vec[1] = 0;
@@ -484,11 +443,9 @@ set(var, val)
 }
 
 void
-set1(var, vec, head)
-    Char   *var, **vec;
-    struct varent *head;
+set1(Char *var, Char **vec, struct varent *head)
 {
-    register Char **oldv = vec;
+    Char **oldv = vec;
 
     gflag = 0;
     tglob(oldv);
@@ -507,12 +464,10 @@ set1(var, vec, head)
 
 
 void
-setq(name, vec, p)
-    Char   *name, **vec;
-    register struct varent *p;
+setq(Char *name, Char **vec, struct varent *p)
 {
-    register struct varent *c;
-    register f;
+    struct varent *c;
+    int f;
 
     f = 0;			/* tree hangs off the header's left link */
     while ((c = p->v_link[f]) != NULL) {
@@ -536,15 +491,11 @@ found:
 
 void
 /*ARGSUSED*/
-unset(v, t)
-    Char **v;
-    struct command *t;
+unset(Char **v, struct command *t)
 {
     unset1(v, &shvhed);
-#ifdef FILEC
     if (adrof(STRfilec) == 0)
 	filec = 0;
-#endif
     if (adrof(STRhistchars) == 0) {
 	HIST = '!';
 	HISTSUB = '^';
@@ -554,12 +505,10 @@ unset(v, t)
 }
 
 void
-unset1(v, head)
-    register Char *v[];
-    struct varent *head;
+unset1(Char *v[], struct varent *head)
 {
-    register struct varent *vp;
-    register int cnt;
+    struct varent *vp;
+    int cnt;
 
     while (*++v) {
 	cnt = 0;
@@ -571,10 +520,9 @@ unset1(v, head)
 }
 
 void
-unsetv(var)
-    Char   *var;
+unsetv(Char *var)
 {
-    register struct varent *vp;
+    struct varent *vp;
 
     if ((vp = adrof1(var, &shvhed)) == 0)
 	udvar(var);
@@ -582,17 +530,16 @@ unsetv(var)
 }
 
 static void
-unsetv1(p)
-    register struct varent *p;
+unsetv1(struct varent *p)
 {
-    register struct varent *c, *pp;
-    register f;
+    struct varent *c, *pp;
+    int f;
 
     /*
      * Free associated memory first to avoid complications.
      */
     blkfree(p->vec);
-    xfree((ptr_t) p->v_name);
+    xfree(p->v_name);
     /*
      * If p is missing one child, then we can move the other into where p is.
      * Otherwise, we find the predecessor of p, which is guaranteed to have no
@@ -620,25 +567,22 @@ unsetv1(p)
     /*
      * Free the deleted node, and rebalance.
      */
-    xfree((ptr_t) p);
+    xfree(p);
     balance(pp, f, 1);
 }
 
 void
-setNS(cp)
-    Char   *cp;
+setNS(Char *cp)
 {
     set(cp, Strsave(STRNULL));
 }
 
 void
 /*ARGSUSED*/
-shift(v, t)
-    Char **v;
-    struct command *t;
+shift(Char **v, struct command *t)
 {
-    register struct varent *argv;
-    register Char *name;
+    struct varent *argv;
+    Char *name;
 
     v++;
     name = *v;
@@ -655,8 +599,7 @@ shift(v, t)
 }
 
 static void
-exportpath(val)
-    Char  **val;
+exportpath(Char **val)
 {
     Char    exppath[BUFSIZ];
 
@@ -668,10 +611,10 @@ exportpath(val)
 			       "Warning: ridiculously long PATH truncated\n");
 		break;
 	    }
-	    (void) Strcat(exppath, *val++);
+	    (void) Strlcat(exppath, *val++, sizeof exppath/sizeof(Char));
 	    if (*val == 0 || eq(*val, STRRparen))
 		break;
-	    (void) Strcat(exppath, STRcolon);
+	    (void) Strlcat(exppath, STRcolon, sizeof exppath/sizeof(Char));
 	}
     Setenv(STRPATH, exppath);
 }
@@ -695,14 +638,12 @@ exportpath(val)
 	(p) = t)
 #else
 struct varent *
-rleft(p)
-    struct varent *p;
+rleft(struct varent *p)
 {
     return (p);
 }
 struct varent *
-rright(p)
-    struct varent *p;
+rright(struct varent *p)
 {
     return (p);
 }
@@ -716,17 +657,15 @@ rright(p)
  * D == 1 means we've just done a delete, otherwise an insert.
  */
 static void
-balance(p, f, d)
-    register struct varent *p;
-    register int f, d;
+balance(struct varent *p, int f, int d)
 {
-    register struct varent *pp;
+    struct varent *pp;
 
 #ifndef lint
-    register struct varent *t;	/* used by the rotate macros */
+    struct varent *t;	/* used by the rotate macros */
 
 #endif
-    register ff;
+    int ff;
 
     /*
      * Ok, from here on, p is the node we're operating on; pp is it's parent; f
@@ -745,7 +684,7 @@ balance(p, f, d)
 		break;
 	    case 1:		/* was already right heavy */
 		switch (p->v_right->v_bal) {
-		case 1:	/* sigle rotate */
+		case 1:	/* single rotate */
 		    pp->v_link[ff] = rleft(p);
 		    p->v_left->v_bal = 0;
 		    p->v_bal = 0;
@@ -783,7 +722,7 @@ balance(p, f, d)
 		    p->v_right->v_bal = 0;
 		    p->v_bal = 0;
 		    break;
-		case 0:	/* signle rotate */
+		case 0:	/* single rotate */
 		    pp->v_link[ff] = rright(p);
 		    p->v_right->v_bal = -1;
 		    p->v_bal = 1;
@@ -811,11 +750,10 @@ balance(p, f, d)
 }
 
 void
-plist(p)
-    register struct varent *p;
+plist(struct varent *p)
 {
-    register struct varent *c;
-    register len;
+    struct varent *c;
+    int len;
     sigset_t sigset;
 
     if (setintr) {

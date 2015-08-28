@@ -1,3 +1,4 @@
+/*	$OpenBSD: n_asincos.c,v 1.13 2013/01/13 03:44:59 martynas Exp $	*/
 /*	$NetBSD: n_asincos.c,v 1.1 1995/10/10 23:36:34 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,10 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)asincos.c	8.1 (Berkeley) 6/4/93";
-#endif /* not lint */
-
 /* ASIN(X)
  * RETURNS ARC SINE OF X
  * DOUBLE PRECISION (IEEE DOUBLE 53 bits, VAX D FORMAT 56 bits)
@@ -46,12 +39,12 @@ static char sccsid[] = "@(#)asincos.c	8.1 (Berkeley) 6/4/93";
  *	sqrt(x)
  *
  * Required kernel function:
- *	atan2(y,x) 
+ *	atan2(y,x)
  *
- * Method :                  
- *	asin(x) = atan2(x,sqrt(1-x*x)); for better accuracy, 1-x*x is 
+ * Method:
+ *	asin(x) = atan2(x,sqrt(1-x*x)); for better accuracy, 1-x*x is
  *		  computed as follows
- *			1-x*x                     if x <  0.5, 
+ *			1-x*x                     if x <  0.5,
  *			2*(1-|x|)-(1-|x|)*(1-|x|) if x >= 0.5.
  *
  * Special cases:
@@ -60,22 +53,22 @@ static char sccsid[] = "@(#)asincos.c	8.1 (Berkeley) 6/4/93";
  *
  * Accuracy:
  * 1)  If atan2() uses machine PI, then
- * 
+ *
  *	asin(x) returns (PI/pi) * (the exact arc sine of x) nearly rounded;
  *	and PI is the exact pi rounded to machine precision (see atan2 for
  *      details):
  *
  *	in decimal:
- *		pi = 3.141592653589793 23846264338327 ..... 
+ *		pi = 3.141592653589793 23846264338327 .....
  *    53 bits   PI = 3.141592653589793 115997963 ..... ,
- *    56 bits   PI = 3.141592653589793 227020265 ..... ,  
+ *    56 bits   PI = 3.141592653589793 227020265 ..... ,
  *
  *	in hexadecimal:
  *		pi = 3.243F6A8885A308D313198A2E....
  *    53 bits   PI = 3.243F6A8885A30  =  2 * 1.921FB54442D18	error=.276ulps
  *    56 bits   PI = 3.243F6A8885A308 =  4 * .C90FDAA22168C2    error=.206ulps
- *	
- *	In a test run with more than 200,000 random arguments on a VAX, the 
+ *
+ *	In a test run with more than 200,000 random arguments on a VAX, the
  *	maximum observed error in ulps (units in the last place) was
  *	2.06 ulps.      (comparing against (PI/pi)*(exact asin(x)));
  *
@@ -83,28 +76,32 @@ static char sccsid[] = "@(#)asincos.c	8.1 (Berkeley) 6/4/93";
  *
  *	asin(x) returns the exact asin(x) with error below about 2 ulps.
  *
- *	In a test run with more than 1,024,000 random arguments on a VAX, the 
+ *	In a test run with more than 1,024,000 random arguments on a VAX, the
  *	maximum observed error in ulps (units in the last place) was
  *      1.99 ulps.
  */
 
+#include <math.h>
+
 #include "mathimpl.h"
 
 double
-asin(x)
-	double x;
+asin(double x)
 {
-	double s,t,copysign(),atan2(),sqrt(),one=1.0;
-#if !defined(vax)&&!defined(tahoe)
-	if(x!=x) return(x);	/* x is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+	double s, t, one = 1.0;
+
+	if (isnan(x))
+		return (x);
+
 	s=copysign(x,one);
 	if(s <= 0.5)
 	    return(atan2(x,sqrt(one-x*x)));
-	else 
+	else
 	    { t=one-s; s=t+t; return(atan2(x,sqrt(s-t*t))); }
 
 }
+
+__strong_alias(asinl, asin);
 
 /* ACOS(X)
  * RETURNS ARC COS OF X
@@ -116,9 +113,9 @@ asin(x)
  *	sqrt(x)
  *
  * Required kernel function:
- *	atan2(y,x) 
+ *	atan2(y,x)
  *
- * Method :                  
+ * Method:
  *			      ________
  *                           / 1 - x
  *	acos(x) = 2*atan2(  / -------- , 1 ) .
@@ -130,22 +127,22 @@ asin(x)
  *
  * Accuracy:
  * 1)  If atan2() uses machine PI, then
- * 
+ *
  *	acos(x) returns (PI/pi) * (the exact arc cosine of x) nearly rounded;
  *	and PI is the exact pi rounded to machine precision (see atan2 for
  *      details):
  *
  *	in decimal:
- *		pi = 3.141592653589793 23846264338327 ..... 
+ *		pi = 3.141592653589793 23846264338327 .....
  *    53 bits   PI = 3.141592653589793 115997963 ..... ,
- *    56 bits   PI = 3.141592653589793 227020265 ..... ,  
+ *    56 bits   PI = 3.141592653589793 227020265 ..... ,
  *
  *	in hexadecimal:
  *		pi = 3.243F6A8885A308D313198A2E....
  *    53 bits   PI = 3.243F6A8885A30  =  2 * 1.921FB54442D18	error=.276ulps
  *    56 bits   PI = 3.243F6A8885A308 =  4 * .C90FDAA22168C2    error=.206ulps
- *	
- *	In a test run with more than 200,000 random arguments on a VAX, the 
+ *
+ *	In a test run with more than 200,000 random arguments on a VAX, the
  *	maximum observed error in ulps (units in the last place) was
  *	2.07 ulps.      (comparing against (PI/pi)*(exact acos(x)));
  *
@@ -153,22 +150,24 @@ asin(x)
  *
  *	acos(x) returns the exact acos(x) with error below about 2 ulps.
  *
- *	In a test run with more than 1,024,000 random arguments on a VAX, the 
+ *	In a test run with more than 1,024,000 random arguments on a VAX, the
  *	maximum observed error in ulps (units in the last place) was
  *	2.15 ulps.
  */
 
 double
-acos(x)
-	double x;
+acos(double x)
 {
-	double t,copysign(),atan2(),sqrt(),one=1.0;
-#if !defined(vax)&&!defined(tahoe)
-	if(x!=x) return(x);
-#endif	/* !defined(vax)&&!defined(tahoe) */
+	double t, one = 1.0;
+
+	if (isnan(x))
+		return (x);
+
 	if( x != -1.0)
 	    t=atan2(sqrt((one-x)/(one+x)),one);
 	else
 	    t=atan2(one,0.0);	/* t = PI/2 */
 	return(t+t);
 }
+
+__strong_alias(acosl, acos);

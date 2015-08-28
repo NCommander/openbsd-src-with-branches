@@ -1,3 +1,4 @@
+/*	$OpenBSD: dwc2.h,v 1.12 2015/06/08 08:47:38 jmatthew Exp $	*/
 /*	$NetBSD: dwc2.h,v 1.4 2014/12/23 16:20:06 macallan Exp $	*/
 
 /*-
@@ -35,12 +36,18 @@
 #include <sys/param.h>
 #include <sys/kernel.h>
 
-#include <sys/workqueue.h>
-#include <sys/callout.h>
+#include <sys/task.h>
+#include <sys/timeout.h>
 
-#include <linux/list.h>
+#include <lib/libkern/libkern.h>
 
+#if 0
 #include "opt_usb.h"
+#endif
+
+#define	STATIC_INLINE		static inline
+#define	STATIC
+
 // #define VERBOSE_DEBUG
 // #define DWC2_DUMP_FRREM
 // #define CONFIG_USB_DWC2_TRACK_MISSED_SOFS
@@ -56,11 +63,6 @@ typedef int irqreturn_t;
 #define	u64	uint64_t
 
 #define	dma_addr_t	bus_addr_t
-
-#define DWC2_READ_4(hsotg, reg) \
-    bus_space_read_4((hsotg)->hsotg_sc->sc_iot, (hsotg)->hsotg_sc->sc_ioh, (reg))
-#define DWC2_WRITE_4(hsotg, reg, data)  \
-    bus_space_write_4((hsotg)->hsotg_sc->sc_iot, (hsotg)->hsotg_sc->sc_ioh, (reg), (data));
 
 #ifdef DWC2_DEBUG
 extern int dwc2debug;
@@ -103,8 +105,8 @@ extern int dwc2debug;
 #define msecs_to_jiffies	mstohz
 
 #define gfp_t		int
-#define GFP_KERNEL	 KM_SLEEP
-#define GFP_ATOMIC	 KM_NOSLEEP
+#define GFP_KERNEL	 M_WAITOK
+#define GFP_ATOMIC	 M_NOWAIT
 
 enum usb_otg_state {
 	OTG_STATE_RESERVED = 0,
@@ -118,16 +120,16 @@ enum usb_otg_state {
 
 #define usleep_range(l, u)	do { DELAY(u); } while (0)
 
-#define spinlock_t		kmutex_t
-#define spin_lock_init(lock)	mutex_init(lock, MUTEX_DEFAULT, IPL_SCHED)
-#define	spin_lock(l)		do { mutex_spin_enter(l); } while (0)
-#define	spin_unlock(l)		do { mutex_spin_exit(l); } while (0)
+#define spinlock_t		struct mutex
+#define spin_lock_init(lock)	mtx_init(lock, IPL_SCHED)
+#define	spin_lock(l)		do { mtx_enter(l); } while (0)
+#define	spin_unlock(l)		do { mtx_leave(l); } while (0)
 
 #define	spin_lock_irqsave(l, f)		\
-	do { mutex_spin_enter(l); (void)(f); } while (0)
+	do { mtx_enter(l); (void)(f); } while (0)
 
 #define	spin_unlock_irqrestore(l, f)	\
-	do { mutex_spin_exit(l); (void)(f); } while (0)
+	do { mtx_leave(l); (void)(f); } while (0)
 
 #define	IRQ_RETVAL(r)	(r)
 
@@ -191,7 +193,7 @@ enum usb_otg_state {
 #define	USB_PORT_STAT_C_RESET		UPS_C_PORT_RESET
 #define	USB_PORT_STAT_C_L1		UPS_C_PORT_L1
 
-static inline void
+STATIC_INLINE void
 udelay(unsigned long usecs)
 {
 	DELAY(usecs);
@@ -202,26 +204,31 @@ udelay(unsigned long usecs)
 
 #define NS_TO_US(ns)	((ns + 500L) / 1000L)
 
-void dw_callout(void *);
-void dwc2_worker(struct work *, void *);
+void dw_timeout(void *);
+void dwc2_worker(struct task *, void *);
 
 struct delayed_work {
-	struct work work;
-	struct callout dw_timer;
+	struct task work;
+	struct timeout dw_timer;
 
-	struct workqueue *dw_wq;
+	struct taskq *dw_wq;
+	void (*dw_fn)(void *);
+	void *dw_arg;
 };
 
-static inline void
-INIT_DELAYED_WORK(struct delayed_work *dw, void (*fn)(struct work *))
+STATIC_INLINE void
+INIT_DELAYED_WORK(struct delayed_work *dw, void (*fn)(void *), void *arg)
 {
-	callout_init(&dw->dw_timer, CALLOUT_MPSAFE);
+	dw->dw_fn = fn;
+	dw->dw_arg = arg;
+	timeout_set(&dw->dw_timer, dw_timeout, dw);
 }
 
-static inline void
-queue_delayed_work(struct workqueue *wq, struct delayed_work *dw, int j)
+STATIC_INLINE void
+queue_delayed_work(struct taskq *wq, struct delayed_work *dw, int j)
 {
-	callout_reset(&dw->dw_timer, j, dw_callout, dw);
+	dw->dw_wq = wq;
+	timeout_add(&dw->dw_timer, j);
 }
 
 #endif

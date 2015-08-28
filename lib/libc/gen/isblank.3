@@ -1,4 +1,4 @@
-.\"	$NetBSD: isblank.3,v 1.3 1995/02/27 04:34:36 cgd Exp $
+.\"	$OpenBSD: isblank.3,v 1.11 2013/07/06 17:31:20 jmc Exp $
 .\"
 .\" Copyright (c) 1991 The Regents of the University of California.
 .\" All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,16 +31,14 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)isspace.3	5.3 (Berkeley) 7/31/91
-.\"
-.Dd September 14, 1993
+.Dd $Mdocdate: July 6 2013 $
 .Dt ISBLANK 3
 .Os
 .Sh NAME
 .Nm isblank
 .Nd blank-space character test
 .Sh SYNOPSIS
-.Fd #include <ctype.h>
+.In ctype.h
 .Ft int
 .Fn isblank "int c"
 .Sh DESCRIPTION
@@ -60,20 +54,18 @@ Space character.
 Horizontal tab.
 .El
 .Pp
-In the 
-.Em ``C''
-locale,
+In the C locale,
 .Fn isblank
 returns true only for the standard blank-space characters.
 .Sh RETURN VALUES
 The
 .Fn isblank
-macro returns zero if the character tests false and
-returns non-zero if the character tests true.
+function returns zero if the character tests false or
+non-zero if the character tests true.
 .Sh SEE ALSO
-.Xr isascii 3 ,
 .Xr isalnum 3 ,
 .Xr isalpha 3 ,
+.Xr isascii 3 ,
 .Xr iscntrl 3 ,
 .Xr isdigit 3 ,
 .Xr isgraph 3 ,
@@ -83,8 +75,21 @@ returns non-zero if the character tests true.
 .Xr isspace 3 ,
 .Xr isupper 3 ,
 .Xr isxdigit 3 ,
+.Xr stdio 3 ,
 .Xr toascii 3 ,
 .Xr tolower 3 ,
 .Xr toupper 3 ,
-.Xr stdio 3 ,
 .Xr ascii 7
+.Sh STANDARDS
+The
+.Fn isblank
+function conforms to
+.St -isoC-99 .
+.Sh CAVEATS
+The argument to
+.Fn isblank
+must be
+.Dv EOF
+or representable as an
+.Li unsigned char ;
+otherwise, the result is undefined.

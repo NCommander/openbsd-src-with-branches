@@ -1,3 +1,4 @@
+$OpenBSD: README,v 1.8 1995/03/21 09:05:18 cgd Exp $
 $NetBSD: README,v 1.8 1995/03/21 09:05:18 cgd Exp $
 
 The files in this directory with suffixes `.t', `.d', `.r' and `.err' are

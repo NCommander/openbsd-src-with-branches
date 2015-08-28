@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mainbus.c,v 1.11 2014/05/08 13:31:00 aoyama Exp $ */
 /* $NetBSD: mainbus.c,v 1.2 2000/01/07 05:13:08 nisimura Exp $ */
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -41,30 +34,41 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 
-#include <machine/cpu.h>
+#include <uvm/uvm_extern.h>
+
 #include <machine/autoconf.h>
+#include <machine/board.h>
+#include <machine/cmmu.h>
+#include <machine/cpu.h>
+
+#include "lcd.h"
+#include "pcex.h"
 
 static const struct mainbus_attach_args devs[] = {
-	{ "clock",  0x45000000, -1 },	/* Mostek/Dallas TimeKeeper */
-	{ "le",	    0xf1000000, 4 },	/* Am7990 */
-	{ "sio",    0x51000000, 5 },	/* uPD7201A */
-	{ "fb",	    0xc1100000, -1 },	/* BrookTree RAMDAC */
-	{ "spc",    0xe1000000, 3 },	/* MB89352 */
-	{ "spc",    0xe1000040, 3 },	/* ditto */
-#if NPCM > 0
-	{ "pcm",    0x91000000, 4 },	/* NEC-9801-86 Sound board (under testing) */
+	{ "clock", 0x45000000, 6,  LUNA_88K|LUNA_88K2 }, /* Mostek/Dallas TimeKeeper */
+#if NLCD > 0
+	{ "lcd",   0x4d000000, -1, LUNA_88K|LUNA_88K2 }, /* Sharp LM16X212 LCD module */
 #endif
+	{ "le",	   0xf1000000, 4,  LUNA_88K|LUNA_88K2 }, /* Am7990 */
+	{ "sio",   0x51000000, 5,  LUNA_88K|LUNA_88K2 }, /* uPD7201A */
+	{ "fb",	   0xc1100000, -1, LUNA_88K|LUNA_88K2 }, /* BrookTree RAMDAC */
+	{ "spc",   0xe1000000, 3,  LUNA_88K|LUNA_88K2 }, /* MB89352 */
+	{ "spc",   0xe1000040, 3,  LUNA_88K2 },          /* ditto, LUNA-88K2 only */
+	{ "cbus",  0x91000000, 4,  LUNA_88K2 },		 /* PC-9801 extension slot */
 };
 
-void mainbus_attach(struct device *, struct device *, void *);
-int  mainbus_match(struct device *, void *, void *);
-int  mainbus_print(void *, const char *);
+void	mainbus_attach(struct device *, struct device *, void *);
+int	mainbus_match(struct device *, void *, void *);
+int	mainbus_print(void *, const char *);
+#ifdef MULTIPROCESSOR
+extern void	cpu_setup_secondary_processors(void);	/* in machdep.c */
+#endif
 
 const struct cfattach mainbus_ca = {
 	sizeof(struct device), mainbus_match, mainbus_attach
 };
 
-const struct cfdriver mainbus_cd = {
+struct cfdriver mainbus_cd = {
         NULL, "mainbus", DV_DULL, 0
 };
 
@@ -87,10 +91,27 @@ mainbus_attach(parent, self, args)
 	void *args;
 {
 	int i;
-	
-	printf("\n");
+	extern int machtype;
+	extern char cpu_model[];
+
+	printf(": %s\n", cpu_model);
+
+	/*
+	 * Display cpu/mmu details for the main processor.
+	 */
+	cpu_configuration_print(1);
+
+#ifdef MULTIPROCESSOR
+	/*
+	 * Let secondary processors initialize further and print
+	 * their configuration information now.
+	 */
+	cpu_setup_secondary_processors();
+#endif
+
 	for (i = 0; i < sizeof(devs)/sizeof(devs[0]); i++)
-		config_found(self, (void *)&devs[i], mainbus_print);
+		if (devs[i].ma_machine & machtype)
+			config_found(self, (void *)&devs[i], mainbus_print);
 }
 
 int

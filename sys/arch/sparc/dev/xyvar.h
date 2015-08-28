@@ -1,7 +1,7 @@
-/* $NetBSD: xyvar.h,v 1.1 1995/09/25 20:35:17 chuck Exp $ */
+/*	$OpenBSD: xyvar.h,v 1.9 2014/07/11 16:35:40 jsg Exp $	*/
+/*	$NetBSD: xyvar.h,v 1.4 1996/03/31 22:39:04 pk Exp $	*/
 
 /*
- *
  * Copyright (c) 1995 Charles D. Cranor
  * All rights reserved.
  *
@@ -13,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Charles D. Cranor.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -32,9 +27,9 @@
  */
 
 /*
- * x y v a r . h 
+ * x y v a r . h
  *
- * this file defines the software structure we use to control the 
+ * this file defines the software structure we use to control the
  * 450/451.
  *
  * author: Chuck Cranor <chuck@ccrc.wustl.edu>
@@ -67,7 +62,7 @@ struct xy_iorq {
 #define XY_SUB_MASK 0xf0            /* mask bits for state */
 #define XY_SUB_FREE 0x00            /* free */
 #define XY_SUB_NORM 0x10            /* normal I/O request */
-#define XY_SUB_WAIT 0x20            /* normal I/O request in the 
+#define XY_SUB_WAIT 0x20            /* normal I/O request in the
                                              context of a process */
 #define XY_SUB_POLL 0x30            /* polled mode */
 #define XY_SUB_DONE 0x40            /* not active, but can't be free'd yet */
@@ -101,7 +96,7 @@ struct xy_iorq {
 
 struct xy_softc {
   struct device sc_dev;            /* device struct, reqd by autoconf */
-  struct dkdevice sc_dk;           /* dkdevice: hook for iostat */
+  struct disk sc_dk;               /* generic disk info */
   struct xyc_softc *parent;        /* parent */
   u_short flags;                   /* flags */
   u_short state;                   /* device state */
@@ -114,7 +109,8 @@ struct xy_softc {
   u_char nsect;                    /* number of sectors per track */
   u_char hw_spt;                   /* as above, but includes spare sectors */
   struct xy_iorq *xyrq;		   /* this disk's ioreq structure */
-  struct buf xyq;		   /* queue'd I/O requests */
+  void *xy_labeldata;              /* temporary sector buffer */
+  struct bufq xy_bufq;		   /* queue'd I/O requests */
   struct dkbad dkb;                /* bad144 sectors */
 };
 
@@ -122,7 +118,6 @@ struct xy_softc {
  * flags
  */
 
-#define XY_WLABEL 0x0001           /* write label */
 /*
  * state
  */
@@ -140,7 +135,6 @@ struct xy_softc {
 struct xyc_softc {
   struct device sc_dev;            /* device struct, reqd by autoconf */
   struct intrhand sc_ih;           /* interrupt info */
-  struct evcnt sc_intrcnt;         /* event counter (for vmstat -i) */
 
   struct xyc *xyc;                 /* vaddr of vme registers */
 
@@ -159,6 +153,7 @@ struct xyc_softc {
   struct xy_iorq *xy_chain[XYC_MAXIOPB];
 				   /* current chain */
   int no_ols;			   /* disable overlap seek for stupid 450s */
+  struct timeout xyc_tick_tmo;	   /* for xyc_tick() */   
 };
 
 /*

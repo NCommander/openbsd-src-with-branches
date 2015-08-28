@@ -18,33 +18,51 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Identify the compiler.  */
-#undef  VERSION_INFO1
-#define VERSION_INFO1 "Motorola m88k, "
+/* <m88k/m88k.h> provided wrong GLOBAL_ASM_OP and SET_ASM_OP */
+#undef SET_ASM_OP
+#define SET_ASM_OP	"\tequ\t"
+#undef GLOBAL_ASM_OP
+#define GLOBAL_ASM_OP	"\t.globl\t"
 
-/* Macros to be automatically defined.  */
-#define CPP_PREDEFINES \
-    "-D__m88k__ -D__unix__ -D__OpenBSD__ -D__CLASSIFY_TYPE__=2 -Asystem=unix -Asystem=OpenBSD -Acpu=m88k -Amachine=m88k"
+/* <m88k/m88k.h> provided wrong SUPPORTS_WEAK and SUPPORTS_ONE_ONLY values */
+#undef SUPPORTS_WEAK
+#undef SUPPORTS_ONE_ONLY
 
-/* If -m88000 is in effect, add -Dmc88000; similarly for -m88100 and -m88110.
-   However, reproduce the effect of -Dmc88100 previously in CPP_PREDEFINES.
-   Here, the CPU_DEFAULT is assumed to be -m88100.  */
-#undef	CPP_SPEC
-#define	CPP_SPEC "%{m88000:-D__mc88000__} \
-		  %{!m88000:%{m88100:%{m88110:-D__mc88000__}}} \
-		  %{!m88000:%{!m88100:%{m88110:-D__mc88110__}}} \
-		  %{!m88000:%{!m88110:-D__mc88100__ -D__mc88100}} \
-		  %{posix:-D_POSIX_SOURCE} \
-		  %{pthread:-D_POSIX_THREADS}"
+/* Run-time target specifications.  */
+#define TARGET_OS_CPP_BUILTINS()			\
+  do							\
+    {							\
+      OPENBSD_OS_CPP_BUILTINS_COMMON();			\
+      builtin_define ("__m88k");			\
+      builtin_define ("__m88k__");			\
+      builtin_assert ("cpu=m88k");			\
+      builtin_assert ("machine=m88k");			\
+      if (TARGET_88000)					\
+	builtin_define ("__mc88000__");			\
+      else						\
+	{						\
+	  if (TARGET_88100)				\
+	    builtin_define ("__mc88100__");		\
+	  if (TARGET_88110)				\
+	    builtin_define ("__mc88110__");		\
+	}						\
+    }							\
+  while (0)
 
 /* Layout of source language data types. */
 
-/* This must agree with <machine/ansi.h> */
+/* This must agree with <machine/_types.h> */
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "long int"
+
+#undef INTMAX_TYPE
+#define INTMAX_TYPE "long long int"
+
+#undef UINTMAX_TYPE
+#define UINTMAX_TYPE "long long unsigned int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
@@ -56,12 +74,31 @@ Boston, MA 02111-1307, USA.  */
 #undef STRUCTURE_SIZE_BOUNDARY
 #define STRUCTURE_SIZE_BOUNDARY 16 
 
-/* Stack & calling: aggregate returns. */
+/* Due to the split instruction and data caches, trampolines must cause the
+   data cache to be synced before attempting to execute the trampoline code.
+   Under OpenBSD, this is done by invoking trap #451 with r2 and r3 set to
+   the address of the trampoline area and its size, respectively.  */
+#undef FINALIZE_TRAMPOLINE
+#define FINALIZE_TRAMPOLINE(TRAMP)					\
+  emit_library_call(gen_rtx_SYMBOL_REF (Pmode, "__dcache_sync"),	\
+		    0, VOIDmode, 2, (TRAMP), Pmode,			\
+		    GEN_INT (TRAMPOLINE_SIZE), Pmode)
 
-/* Don't default to pcc-struct-return, because gcc is the only compiler, and
-   we want to retain compatibility with older gcc versions.  */
-#define DEFAULT_PCC_STRUCT_RETURN 0
+#if defined(CROSS_COMPILE) && !defined(ATTRIBUTE_UNUSED)
+#define ATTRIBUTE_UNUSED
+#endif
+#undef TRANSFER_FROM_TRAMPOLINE
+#define TRANSFER_FROM_TRAMPOLINE					\
+extern void __dcache_sync(int, int);					\
+void									\
+__dcache_sync (addr, len)						\
+     int addr ATTRIBUTE_UNUSED, len ATTRIBUTE_UNUSED;			\
+{									\
+  /* r2 and r3 are set by the caller and need not be modified */	\
+  __asm __volatile ("tb0 0, r0, 451");					\
+}
 
-#undef SET_ASM_OP
-#define SET_ASM_OP	"\t.def\t"
-
+/* All configurations that don't use elf must be explicit about not using
+   dwarf unwind information. egcs doesn't try too hard to check internal
+   configuration files...  */
+#define DWARF2_UNWIND_INFO 0

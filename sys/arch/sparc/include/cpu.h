@@ -1,4 +1,5 @@
-/*	$NetBSD: cpu.h,v 1.17 1995/06/28 02:56:05 cgd Exp $ */
+/*	$OpenBSD: cpu.h,v 1.34 2011/03/23 16:54:37 pirofti Exp $	*/
+/*	$NetBSD: cpu.h,v 1.24 1997/03/15 22:25:15 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,16 +41,24 @@
  *	@(#)cpu.h	8.4 (Berkeley) 1/5/94
  */
 
-#ifndef _CPU_H_
-#define _CPU_H_
+#ifndef _MACHINE_CPU_H_
+#define _MACHINE_CPU_H_
 
 /*
- * CTL_MACHDEP definitinos.
+ * CTL_MACHDEP definitions.
  */
-#define	CPU_MAXID	1	/* no valid machdep ids */
+#define CPU_LED_BLINK	1	/* int: twiddle the power LED */
+ 		/*	2	   formerly int: vsyncblank */
+#define CPU_CPUTYPE	3	/* int: cpu type */
+#define CPU_V8MUL	4
+#define CPU_MAXID	5	/* 4 valid machdep IDs */
 
 #define	CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \
+	{ "led_blink", CTLTYPE_INT }, \
+	{ 0, 0 }, \
+	{ "cputype", CTLTYPE_INT }, \
+	{ "v8mul", CTLTYPE_INT }, \
 }
 
 #ifdef _KERNEL
@@ -62,24 +67,10 @@
  */
 
 #include <machine/psl.h>
+#include <machine/reg.h>
+#include <machine/intr.h>
 #include <sparc/sparc/intreg.h>
-
-/*
- * definitions of cpu-dependent requirements
- * referenced in generic code
- */
-#define	cpu_swapin(p)	/* nothing */
-#define	cpu_swapout(p)	/* nothing */
-#define	cpu_wait(p)	/* nothing */
-
-/*
- * See syscall() for an explanation of the following.  Note that the
- * locore bootstrap code follows the syscall stack protocol.  The
- * framep argument is unused.
- */
-#define cpu_set_init_frame(p, fp) \
-	(p)->p_md.md_tf = (struct trapframe *) \
-	    ((caddr_t)(p)->p_addr + USPACE - sizeof(struct trapframe))
+#include <sparc/sparc/cpuvar.h>
 
 /*
  * Arguments to hardclock, softclock and gatherstats encapsulate the
@@ -99,40 +90,30 @@ typedef struct clockframe clockframe;
 extern int eintstack[];
 
 #define	CLKF_USERMODE(framep)	(((framep)->psr & PSR_PS) == 0)
-#define	CLKF_BASEPRI(framep)	(((framep)->psr & PSR_PIL) == 0)
 #define	CLKF_PC(framep)		((framep)->pc)
 #define	CLKF_INTR(framep)	((framep)->fp < (u_int)eintstack)
-
-/*
- * Software interrupt request `register'.
- */
-union sir {
-	int	sir_any;
-	char	sir_which[4];
-} sir;
-
-#define SIR_NET		0
-#define SIR_CLOCK	1
-
-#define	setsoftint()	ienab_bis(IE_L1)
-#define setsoftnet()	(sir.sir_which[SIR_NET] = 1, setsoftint())
-#define setsoftclock()	(sir.sir_which[SIR_CLOCK] = 1, setsoftint())
-
-int	want_ast;
 
 /*
  * Preempt the current process if in interrupt from user mode,
  * or after the current trap/syscall if in system mode.
  */
-int	want_resched;		/* resched() was called */
-#define	need_resched()		(want_resched = 1, want_ast = 1)
+extern int	want_resched;		/* resched() was called */
+#define	need_resched(ci)		(want_resched = 1, want_ast = 1)
+#define clear_resched(ci) 	want_resched = 0
+extern int	want_ast;
+
+/*
+ * This is used during profiling to integrate system time.
+ */
+#define	PROC_PC(p)		((p)->p_md.md_tf->tf_pc)
+#define	PROC_STACK(p)		((p)->p_md.md_tf->tf_out[6])
 
 /*
  * Give a profiling tick to the current process when the user profiling
- * buffer pages are invalid.  On the sparc, request an ast to send us 
+ * buffer pages are invalid.  On the sparc, request an ast to send us
  * through trap(), marking the proc as needing a profiling tick.
  */
-#define	need_proftick(p)	((p)->p_flag |= P_OWEUPC, want_ast = 1)
+#define	need_proftick(p)	do { want_ast = 1; } while (0)
 
 /*
  * Notify the current process (p) that it has a signal pending,
@@ -140,35 +121,67 @@ int	want_resched;		/* resched() was called */
  */
 #define	signotify(p)		(want_ast = 1)
 
-/*
- * Only one process may own the FPU state.
- *
- * XXX this must be per-cpu (eventually)
- */
-struct	proc *fpproc;		/* FPU owner */
-int	foundfpu;		/* true => we have an FPU */
+extern int	foundfpu;		/* true => we have an FPU */
 
-/*
- * Interrupt handler chains.  Interrupt handlers should return 0 for
- * ``not me'' or 1 (``I took care of it'').  intr_establish() inserts a
- * handler into the list.  The handler is called with its (single)
- * argument, or with a pointer to a clockframe if ih_arg is NULL.
- */
-struct intrhand {
-	int	(*ih_fun) __P((void *));
-	void	*ih_arg;
-	struct	intrhand *ih_next;
-} *intrhand[15];
-
-void	intr_establish __P((int level, struct intrhand *));
-void	vmeintr_establish __P((int vec, int level, struct intrhand *));
-
-/*
- * intr_fasttrap() is a lot like intr_establish, but is used for ``fast''
- * interrupt vectors (vectors that are not shared and are handled in the
- * trap window).  Such functions must be written in assembly.
- */
-void	intr_fasttrap __P((int level, void (*vec)(void)));
+/* auxreg.c */
+void led_blink(void *);
+/* scf.c */
+void scfblink(void *);
+/* disksubr.c */
+struct dkbad;
+int isbad(struct dkbad *bt, int, int, int);
+/* machdep.c */
+int	ldcontrolb(caddr_t);
+void	dumpconf(void);
+caddr_t	reserve_dumppages(caddr_t);
+/* clock.c */
+struct timeval;
+void	lo_microtime(struct timeval *);
+int	statintr(void *);
+int	clockintr(void *);/* level 10 (clock) interrupt code */
+int	statintr(void *);	/* level 14 (statclock) interrupt code */
+/* locore.s */
+struct fpstate;
+void	savefpstate(struct fpstate *);
+void	loadfpstate(struct fpstate *);
+int	probeget(caddr_t, int);
+void	write_all_windows(void);
+void	write_user_windows(void);
+void 	proc_trampoline(void);
+struct pcb;
+void	snapshot(struct pcb *);
+struct frame *getfp(void);
+int	xldcontrolb(caddr_t, struct pcb *);
+void	copywords(const void *, void *, size_t);
+void	qcopy(const void *, void *, size_t);
+void	qzero(void *, size_t);
+/* locore2.c */
+void	remrunqueue(struct proc *);
+/* trap.c */
+void	pmap_unuse_final(struct proc *);
+int	rwindow_save(struct proc *);
+/* amd7930intr.s */
+void	amd7930_trap(void);
+#ifdef KGDB
+/* zs_kgdb.c */
+void zs_kgdb_init(void);
+#endif
+/* fb.c */
+void	fb_unblank(void);
+/* cache.c */
+void cache_flush(caddr_t, u_int);
+/* kgdb_stub.c */
+#ifdef KGDB
+void kgdb_attach(int (*)(void *), void (*)(void *, int), void *);
+void kgdb_connect(int);
+void kgdb_panic(void);
+#endif
+/* iommu.c */
+void	iommu_enter(u_int, u_int);
+void	iommu_remove(u_int, u_int);
+/* emul.c */
+struct trapframe;
+int emulinstr(int, struct trapframe *);
 
 /*
  *
@@ -187,10 +200,7 @@ void	intr_fasttrap __P((int level, void (*vec)(void)));
 struct trapvec {
 	int	tv_instr[4];		/* the four instructions */
 };
-extern struct trapvec trapbase[256];	/* the 256 vectors */
-
-extern void wzero __P((void *, u_int));
-extern void wcopy __P((const void *, void *, u_int));
+extern struct trapvec *trapbase;	/* the 256 vectors */
 
 #endif /* _KERNEL */
-#endif /* _CPU_H_ */
+#endif /* _MACHINE_CPU_H_ */

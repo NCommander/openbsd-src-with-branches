@@ -1,10 +1,12 @@
-#	from: @(#)Makefile	8.1 (Berkeley) 6/6/93
-#	$Id: Makefile,v 1.8 1994/08/03 20:41:58 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.10 2009/07/08 16:04:00 millert Exp $
 
 PROG=	fstat
+SRCS=	fstat.c fuser.c
+MAN=	fstat.1 fuser.1
 DPADD=	${LIBKVM}
 LDADD=	-lkvm
-BINGRP=	kmem
-BINMODE=2555
+LINKS=  ${BINDIR}/fstat ${BINDIR}/fuser
+
+CFLAGS+=-DINET6
 
 .include <bsd.prog.mk>

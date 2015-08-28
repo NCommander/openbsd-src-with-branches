@@ -1,3 +1,5 @@
+/*	$OpenBSD: pty.c,v 1.18 2012/12/05 23:20:06 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,12 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/* from: static char sccsid[] = "@(#)pty.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: pty.c,v 1.5 1995/06/05 19:44:01 pk Exp $";
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -47,68 +39,48 @@ static char *rcsid = "$Id: pty.c,v 1.5 1995/06/05 19:44:01 pk Exp $";
 #include <stdio.h>
 #include <string.h>
 #include <grp.h>
+#include <sys/tty.h>
 
-int login_tty __P((int));
-int openpty __P((int *, int *, char *, struct termios *, struct winsize *));
-pid_t forkpty __P((int *, char *, struct termios *, struct winsize *));
+#include "util.h"
 
 int
-openpty(amaster, aslave, name, termp, winp)
-	int *amaster, *aslave;
-	char *name;
-	struct termios *termp;
-	struct winsize *winp;
+openpty(int *amaster, int *aslave, char *name, struct termios *termp,
+    struct winsize *winp)
 {
-	static char line[] = "/dev/ptyXX";
-	register const char *cp1, *cp2;
-	register int master, slave, ttygid;
-	struct group *gr;
+	int master, slave, fd;
+	struct ptmget ptm;
 
-	if ((gr = getgrnam("tty")) != NULL)
-		ttygid = gr->gr_gid;
-	else
-		ttygid = -1;
-
-	for (cp1 = "pqrstuvwxyzPQRST"; *cp1; cp1++) {
-		line[8] = *cp1;
-		for (cp2 = "0123456789abcdef"; *cp2; cp2++) {
-			line[9] = *cp2;
-			if ((master = open(line, O_RDWR, 0)) == -1) {
-				if (errno == ENOENT)
-					return (-1);	/* out of ptys */
-			} else {
-				line[5] = 't';
-				(void) chown(line, getuid(), ttygid);
-				(void) chmod(line, S_IRUSR|S_IWUSR|S_IWGRP);
-				(void) revoke(line);
-				if ((slave = open(line, O_RDWR, 0)) != -1) {
-					*amaster = master;
-					*aslave = slave;
-					if (name)
-						strcpy(name, line);
-					if (termp)
-						(void) tcsetattr(slave, 
-							TCSAFLUSH, termp);
-					if (winp)
-						(void) ioctl(slave, TIOCSWINSZ, 
-							(char *)winp);
-					return (0);
-				}
-				(void) close(master);
-				line[5] = 'p';
-			}
-		}
+	/*
+	 * Use /dev/ptm and the PTMGET ioctl to get a properly set up and
+	 * owned pty/tty pair.
+	 */
+	fd = open(PATH_PTMDEV, O_RDWR, 0);
+	if (fd == -1)
+		return (-1);
+	if ((ioctl(fd, PTMGET, &ptm) == -1)) {
+		close(fd);
+		return (-1);
 	}
-	errno = ENOENT;	/* out of ptys */
-	return (-1);
+	close(fd);
+	master = ptm.cfd;
+	slave = ptm.sfd;
+	if (name) {
+		/*
+		 * Manual page says "at least 16 characters".
+		 */
+		strlcpy(name, ptm.sn, 16);
+	}
+	*amaster = master;
+	*aslave = slave;
+	if (termp)
+		(void) tcsetattr(slave, TCSAFLUSH, termp);
+	if (winp)
+		(void) ioctl(slave, TIOCSWINSZ, winp);
+	return (0);
 }
 
 pid_t
-forkpty(amaster, name, termp, winp)
-	int *amaster;
-	char *name;
-	struct termios *termp;
-	struct winsize *winp;
+forkpty(int *amaster, char *name, struct termios *termp, struct winsize *winp)
 {
 	int master, slave;
 	pid_t pid;
@@ -117,9 +89,11 @@ forkpty(amaster, name, termp, winp)
 		return (-1);
 	switch (pid = fork()) {
 	case -1:
+		(void) close(master);
+		(void) close(slave);
 		return (-1);
 	case 0:
-		/* 
+		/*
 		 * child
 		 */
 		(void) close(master);

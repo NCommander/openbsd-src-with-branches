@@ -1,4 +1,5 @@
-/*	$NetBSD: icu.s,v 1.43 1995/10/11 04:20:31 mycroft Exp $	*/
+/*	$OpenBSD: icu.s,v 1.32 2015/06/28 01:11:27 guenther Exp $	*/
+/*	$NetBSD: icu.s,v 1.45 1996/01/07 03:59:34 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -29,33 +30,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <net/netisr.h>
-
 	.data
-	.globl	_imen,_cpl,_ipending,_astpending,_netisr
-_imen:
+	.globl	_C_LABEL(imen)
+_C_LABEL(imen):
 	.long	0xffff		# interrupt mask enable (all off)
 
 	.text
-
-#if defined(PROF) || defined(GPROF)
-	.globl	_splhigh, _splx
-
-	ALIGN_TEXT
-_splhigh:
-	movl	$-1,%eax
-	xchgl	%eax,_cpl
-	ret
-
-	ALIGN_TEXT
-_splx:
-	movl	4(%esp),%eax
-	movl	%eax,_cpl
-	testl	%eax,%eax
-	jnz	_Xspllower
-	ret
-#endif /* PROF || GPROF */
-	
 /*
  * Process pending interrupts.
  *
@@ -64,22 +44,26 @@ _splx:
  *   esi - address to resume loop at
  *   edi - scratch for Xsoftnet
  */
-ENTRY(spllower)
 IDTVEC(spllower)
 	pushl	%ebx
 	pushl	%esi
 	pushl	%edi
-	movl	_cpl,%ebx		# save priority
+	movl	CPL,%ebx		# save priority
 	movl	$1f,%esi		# address to resume loop at
-1:	movl	%ebx,%eax
-	notl	%eax
-	andl	_ipending,%eax
+1:	movl	%ebx,%eax		# get cpl
+	shrl	$4,%eax			# find its mask.
+	movl	_C_LABEL(iunmask)(,%eax,4),%eax
+	cli
+	andl	CPUVAR(IPENDING),%eax	# any non-masked bits left?
 	jz	2f
+	sti
 	bsfl	%eax,%eax
-	btrl	%eax,_ipending
+	btrl	%eax,CPUVAR(IPENDING)
 	jnc	1b
-	jmp	*_Xrecurse(,%eax,4)
-2:	popl	%edi
+	jmp	*_C_LABEL(Xrecurse)(,%eax,4)
+2:	movl	%ebx,CPL
+	sti
+	popl	%edi
 	popl	%esi
 	popl	%ebx
 	ret
@@ -94,19 +78,22 @@ IDTVEC(spllower)
  */
 IDTVEC(doreti)
 	popl	%ebx			# get previous priority
-	movl	%ebx,_cpl
 	movl	$1f,%esi		# address to resume loop at
 1:	movl	%ebx,%eax
-	notl	%eax
-	andl	_ipending,%eax
-	jz	2f
-	bsfl    %eax,%eax               # slow, but not worth optimizing
-	btrl    %eax,_ipending
-	jnc     1b			# some intr cleared the in-memory bit
-	jmp	*_Xresume(,%eax,4)
-2:	/* Check for ASTs on exit to user mode. */
+	shrl	$4,%eax
+	movl	_C_LABEL(iunmask)(,%eax,4),%eax
 	cli
-	cmpb	$0,_astpending
+	andl	CPUVAR(IPENDING),%eax
+	jz	2f
+	sti
+	bsfl    %eax,%eax               # slow, but not worth optimizing
+	btrl    %eax,CPUVAR(IPENDING)
+	jnc     1b			# some intr cleared the in-memory bit
+	cli
+	jmp	*_C_LABEL(Xresume)(,%eax,4)
+2:	/* Check for ASTs on exit to user mode. */
+	CHECK_ASTPENDING(%ecx)
+	movl	%ebx,CPL
 	je	3f
 	testb   $SEL_RPL,TF_CS(%esp)
 #ifdef VM86
@@ -114,10 +101,13 @@ IDTVEC(doreti)
 	testl	$PSL_VM,TF_EFLAGS(%esp)
 #endif
 	jz	3f
-4:	movb	$0,_astpending
+4:	CLEAR_ASTPENDING(%ecx)
 	sti
-	/* Pushed T_ASTFLT into tf_trapno on entry. */
-	call	_trap
+	pushl	%esp
+	call	_C_LABEL(ast)
+	addl	$4,%esp
+	cli
+	jmp	2b
 3:	INTRFASTEXIT
 
 
@@ -126,50 +116,30 @@ IDTVEC(doreti)
  */
 
 IDTVEC(softtty)
-	/* XXXX nothing for now */
-	jmp	%esi
-
-#define DONET(s, c) \
-	.globl  c		;\
-	testl	$(1 << s),%edi	;\
-	jz	1f		;\
-	call	c		;\
-1:
+	movl	$IPL_SOFTTTY,%eax
+	movl	%eax,CPL
+	sti
+	pushl	$I386_SOFTINTR_SOFTTTY
+	call	_C_LABEL(softintr_dispatch)
+	addl	$4,%esp
+	jmp	*%esi
 
 IDTVEC(softnet)
-	leal	SIR_NETMASK(%ebx),%eax
-	movl	%eax,_cpl
-	xorl	%edi,%edi
-	xchgl	_netisr,%edi
-#ifdef INET
-#include "ether.h"
-#if NETHER > 0
-	DONET(NETISR_ARP, _arpintr)
-#endif
-	DONET(NETISR_IP, _ipintr)
-#endif
-#ifdef IMP
-	DONET(NETISR_IMP, _impintr)
-#endif
-#ifdef NS
-	DONET(NETISR_NS, _nsintr)
-#endif
-#ifdef ISO
-	DONET(NETISR_ISO, _clnlintr)
-#endif
-#ifdef CCITT
-	DONET(NETISR_CCITT, _ccittintr)
-#endif
-#include "ppp.h"
-#if NPPP > 0
-	DONET(NETISR_PPP, _pppintr)
-#endif
-	movl	%ebx,_cpl
-	jmp	%esi
+	movl	$IPL_SOFTNET,%eax
+	movl	%eax,CPL
+	sti
+	pushl	$I386_SOFTINTR_SOFTNET
+	call	_C_LABEL(softintr_dispatch)
+	addl	$4,%esp
+	jmp	*%esi
+#undef DONETISR
 
 IDTVEC(softclock)
-	leal	SIR_CLOCKMASK(%ebx),%eax
-	movl	%eax,_cpl
-	call	_softclock
-	movl	%ebx,_cpl
-	jmp	%esi
+	movl	$IPL_SOFTCLOCK,%eax
+	movl	%eax,CPL
+	sti
+	pushl	$I386_SOFTINTR_SOFTCLOCK
+	call	_C_LABEL(softintr_dispatch)
+	addl	$4,%esp
+	jmp	*%esi
+

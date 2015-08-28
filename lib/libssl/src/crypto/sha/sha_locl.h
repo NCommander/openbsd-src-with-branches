@@ -1,4 +1,4 @@
-/* crypto/sha/sha_locl.h */
+/* $OpenBSD: sha_locl.h,v 1.18 2014/08/18 19:11:48 bcook Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -69,11 +69,11 @@
 #define HASH_CBLOCK             SHA_CBLOCK
 #define HASH_MAKE_STRING(c,s)   do {	\
 	unsigned long ll;		\
-	ll=(c)->h0; (void)HOST_l2c(ll,(s));	\
-	ll=(c)->h1; (void)HOST_l2c(ll,(s));	\
-	ll=(c)->h2; (void)HOST_l2c(ll,(s));	\
-	ll=(c)->h3; (void)HOST_l2c(ll,(s));	\
-	ll=(c)->h4; (void)HOST_l2c(ll,(s));	\
+	ll=(c)->h0; HOST_l2c(ll,(s));	\
+	ll=(c)->h1; HOST_l2c(ll,(s));	\
+	ll=(c)->h2; HOST_l2c(ll,(s));	\
+	ll=(c)->h3; HOST_l2c(ll,(s));	\
+	ll=(c)->h4; HOST_l2c(ll,(s));	\
 	} while (0)
 
 #if defined(SHA_0)
@@ -94,16 +94,9 @@ static void sha_block_data_order (SHA_CTX *c, const void *p,size_t num);
 # define HASH_FINAL              	SHA1_Final
 # define HASH_INIT			SHA1_Init
 # define HASH_BLOCK_DATA_ORDER   	sha1_block_data_order
-# if defined(__MWERKS__) && defined(__MC68K__)
-   /* Metrowerks for Motorola fails otherwise:-( <appro@fy.chalmers.se> */
-#  define Xupdate(a,ix,ia,ib,ic,id)	do { (a)=(ia^ib^ic^id);		\
-					     ix=(a)=ROTATE((a),1);	\
-					} while (0)
-# else
-#  define Xupdate(a,ix,ia,ib,ic,id)	( (a)=(ia^ib^ic^id),	\
+# define Xupdate(a,ix,ia,ib,ic,id)	( (a)=(ia^ib^ic^id),	\
 					  ix=(a)=ROTATE((a),1)	\
 					)
-# endif
 
 #ifndef SHA1_ASM
 static
@@ -123,9 +116,9 @@ void sha1_block_data_order (SHA_CTX *c, const void *p,size_t num);
 #define INIT_DATA_h4 0xc3d2e1f0UL
 
 #ifdef SHA_0
-fips_md_init(SHA)
+int SHA_Init(SHA_CTX *c)
 #else
-fips_md_init_ctx(SHA1, SHA)
+int SHA1_Init(SHA_CTX *c)
 #endif
 	{
 	memset (c,0,sizeof(*c));
@@ -209,10 +202,11 @@ fips_md_init_ctx(SHA1, SHA)
 #endif
 
 #if !defined(SHA_1) || !defined(SHA1_ASM)
+#include <machine/endian.h>
 static void HASH_BLOCK_DATA_ORDER (SHA_CTX *c, const void *p, size_t num)
 	{
 	const unsigned char *data=p;
-	register unsigned MD32_REG_T A,B,C,D,E,T,l;
+	unsigned MD32_REG_T A,B,C,D,E,T,l;
 #ifndef MD32_XARRAY
 	unsigned MD32_REG_T	XX0, XX1, XX2, XX3, XX4, XX5, XX6, XX7,
 				XX8, XX9,XX10,XX11,XX12,XX13,XX14,XX15;
@@ -228,9 +222,9 @@ static void HASH_BLOCK_DATA_ORDER (SHA_CTX *c, const void *p, size_t num)
 
 	for (;;)
 			{
-	const union { long one; char little; } is_endian = {1};
 
-	if (!is_endian.little && sizeof(SHA_LONG)==4 && ((size_t)p%4)==0)
+	if (BYTE_ORDER != LITTLE_ENDIAN &&
+	    sizeof(SHA_LONG)==4 && ((size_t)p%4)==0)
 		{
 		const SHA_LONG *W=(const SHA_LONG *)data;
 
@@ -256,21 +250,21 @@ static void HASH_BLOCK_DATA_ORDER (SHA_CTX *c, const void *p, size_t num)
 		}
 	else
 		{
-		(void)HOST_c2l(data,l); X( 0)=l;	(void)HOST_c2l(data,l); X( 1)=l;
-		BODY_00_15( 0,A,B,C,D,E,T,X( 0));	(void)HOST_c2l(data,l); X( 2)=l;
-		BODY_00_15( 1,T,A,B,C,D,E,X( 1));	(void)HOST_c2l(data,l); X( 3)=l;
-		BODY_00_15( 2,E,T,A,B,C,D,X( 2));	(void)HOST_c2l(data,l); X( 4)=l;
-		BODY_00_15( 3,D,E,T,A,B,C,X( 3));	(void)HOST_c2l(data,l); X( 5)=l;
-		BODY_00_15( 4,C,D,E,T,A,B,X( 4));	(void)HOST_c2l(data,l); X( 6)=l;
-		BODY_00_15( 5,B,C,D,E,T,A,X( 5));	(void)HOST_c2l(data,l); X( 7)=l;
-		BODY_00_15( 6,A,B,C,D,E,T,X( 6));	(void)HOST_c2l(data,l); X( 8)=l;
-		BODY_00_15( 7,T,A,B,C,D,E,X( 7));	(void)HOST_c2l(data,l); X( 9)=l;
-		BODY_00_15( 8,E,T,A,B,C,D,X( 8));	(void)HOST_c2l(data,l); X(10)=l;
-		BODY_00_15( 9,D,E,T,A,B,C,X( 9));	(void)HOST_c2l(data,l); X(11)=l;
-		BODY_00_15(10,C,D,E,T,A,B,X(10));	(void)HOST_c2l(data,l); X(12)=l;
-		BODY_00_15(11,B,C,D,E,T,A,X(11));	(void)HOST_c2l(data,l); X(13)=l;
-		BODY_00_15(12,A,B,C,D,E,T,X(12));	(void)HOST_c2l(data,l); X(14)=l;
-		BODY_00_15(13,T,A,B,C,D,E,X(13));	(void)HOST_c2l(data,l); X(15)=l;
+		HOST_c2l(data,l); X( 0)=l;		HOST_c2l(data,l); X( 1)=l;
+		BODY_00_15( 0,A,B,C,D,E,T,X( 0));	HOST_c2l(data,l); X( 2)=l;
+		BODY_00_15( 1,T,A,B,C,D,E,X( 1));	HOST_c2l(data,l); X( 3)=l;
+		BODY_00_15( 2,E,T,A,B,C,D,X( 2));	HOST_c2l(data,l); X( 4)=l;
+		BODY_00_15( 3,D,E,T,A,B,C,X( 3));	HOST_c2l(data,l); X( 5)=l;
+		BODY_00_15( 4,C,D,E,T,A,B,X( 4));	HOST_c2l(data,l); X( 6)=l;
+		BODY_00_15( 5,B,C,D,E,T,A,X( 5));	HOST_c2l(data,l); X( 7)=l;
+		BODY_00_15( 6,A,B,C,D,E,T,X( 6));	HOST_c2l(data,l); X( 8)=l;
+		BODY_00_15( 7,T,A,B,C,D,E,X( 7));	HOST_c2l(data,l); X( 9)=l;
+		BODY_00_15( 8,E,T,A,B,C,D,X( 8));	HOST_c2l(data,l); X(10)=l;
+		BODY_00_15( 9,D,E,T,A,B,C,X( 9));	HOST_c2l(data,l); X(11)=l;
+		BODY_00_15(10,C,D,E,T,A,B,X(10));	HOST_c2l(data,l); X(12)=l;
+		BODY_00_15(11,B,C,D,E,T,A,X(11));	HOST_c2l(data,l); X(13)=l;
+		BODY_00_15(12,A,B,C,D,E,T,X(12));	HOST_c2l(data,l); X(14)=l;
+		BODY_00_15(13,T,A,B,C,D,E,X(13));	HOST_c2l(data,l); X(15)=l;
 		BODY_00_15(14,E,T,A,B,C,D,X(14));
 		BODY_00_15(15,D,E,T,A,B,C,X(15));
 		}
@@ -397,7 +391,7 @@ static void HASH_BLOCK_DATA_ORDER (SHA_CTX *c, const void *p, size_t num)
 static void HASH_BLOCK_DATA_ORDER (SHA_CTX *c, const void *p, size_t num)
 	{
 	const unsigned char *data=p;
-	register unsigned MD32_REG_T A,B,C,D,E,T,l;
+	unsigned MD32_REG_T A,B,C,D,E,T,l;
 	int i;
 	SHA_LONG	X[16];
 

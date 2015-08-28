@@ -1,4 +1,5 @@
-/*	$NetBSD: ipc.h,v 1.14 1995/03/26 20:24:17 jtc Exp $	*/
+/*	$OpenBSD: ipc.h,v 1.12 2014/07/10 14:16:49 deraadt Exp $	*/
+/*	$NetBSD: ipc.h,v 1.15 1996/02/09 18:25:12 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -22,11 +23,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -51,14 +48,16 @@
 #ifndef _SYS_IPC_H_
 #define _SYS_IPC_H_
 
+#include <sys/types.h>
+
 struct ipc_perm {
-	ushort	cuid;	/* creator user id */
-	ushort	cgid;	/* creator group id */
-	ushort	uid;	/* user id */
-	ushort	gid;	/* group id */
-	ushort	mode;	/* r/w permission */
-	ushort	seq;	/* sequence # (to generate unique msg/sem/shm id) */
-	key_t	key;	/* user specified msg/sem/shm key */
+	uid_t		cuid;	/* creator user id */
+	gid_t		cgid;	/* creator group id */
+	uid_t		uid;	/* user id */
+	gid_t		gid;	/* group id */
+	mode_t		mode;	/* r/w permission */
+	unsigned short	seq;	/* sequence # (to generate unique msg/sem/shm id) */
+	key_t		key;	/* user specified msg/sem/shm key */
 };
 
 /* common mode bits */
@@ -82,13 +81,15 @@ struct ipc_perm {
 #define	IPCID_TO_IX(id)		((id) & 0xffff)
 #define	IPCID_TO_SEQ(id)	(((id) >> 16) & 0xffff)
 #define	IXSEQ_TO_IPCID(ix,perm)	(((perm.seq) << 16) | (ix & 0xffff))
-#endif /* _KERNEL */
 
-#ifndef _KERNEL
-#include <sys/cdefs.h>
+struct ucred;
+
+int ipcperm(struct ucred *, struct ipc_perm *, int);
+
+#else /* !_KERNEL */
 
 __BEGIN_DECLS
-key_t	ftok __P((const char *, char));
+key_t	ftok(const char *, int);
 __END_DECLS
 #endif
 #endif /* !_SYS_IPC_H_ */

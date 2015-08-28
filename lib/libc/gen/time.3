@@ -1,4 +1,4 @@
-.\"	$NetBSD: time.3,v 1.5 1995/02/27 05:53:51 cgd Exp $
+.\"	$OpenBSD: time.3,v 1.15 2013/07/17 05:42:11 schwarze Exp $
 .\"
 .\" Copyright (c) 1989, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,39 +31,34 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)time.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: July 17 2013 $
 .Dt TIME 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm time
 .Nd get time of day
 .Sh SYNOPSIS
-.Fd #include <time.h>
+.In time.h
 .Ft time_t
 .Fn time "time_t *tloc"
 .Sh DESCRIPTION
 The
 .Fn time
-function
-returns the value of time in seconds since 0 hours, 0 minutes,
-0 seconds, January 1, 1970, Coordinated Universal Time.
+function returns the value of time in seconds since 0 hours, 0 minutes,
+0 seconds, January 1, 1970, Coordinated Universal Time (UTC).
 .Pp
 A copy of the time value may be saved to the area indicated by the
 pointer
 .Fa tloc .
 If
 .Fa tloc
-is a NULL pointer, no value is stored.
-.Pp
+is a null pointer, no value is stored.
+.Sh RETURN VALUES
 Upon successful completion,
 .Fn time
 returns the value of time.
 Otherwise a value of
-.Po
-.Po Fa time_t Pc \-1
-.Pc
+.Po Fa time_t Pc Ns -1
 is returned and the global variable
 .Va errno
 is set to indicate the error.
@@ -77,11 +68,20 @@ The following error codes may be set in
 .Bl -tag -width Er
 .It Bq Er EFAULT
 An argument address referenced invalid memory.
+.El
 .Sh SEE ALSO
+.Xr clock_gettime 2 ,
 .Xr gettimeofday 2 ,
 .Xr ctime 3
 .Sh HISTORY
 A
 .Fn time
-function appeared in
-.At v6 .
+system call first appeared in
+.At v1
+and used to return time in sixtieths of a second in 32 bits,
+which was to guarantee a crisis every 2.26 years.
+Since
+.At v6 ,
+.Fn time
+scale was changed to seconds, extending the pre-crisis stagnation
+period up to a total of 68 years.

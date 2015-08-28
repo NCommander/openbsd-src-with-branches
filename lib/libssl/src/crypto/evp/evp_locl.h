@@ -1,4 +1,4 @@
-/* evp_locl.h */
+/* $OpenBSD$ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -65,7 +65,7 @@
 	bl = ctx->cipher->block_size;\
 	if(inl < bl) return 1;\
 	inl -= bl; \
-	for(i=0; i <= inl; i+=bl) 
+	for(i=0; i <= inl; i+=bl)
 
 #define BLOCK_CIPHER_func_ecb(cname, cprefix, kstruct, ksched) \
 static int cname##_ecb_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out, const unsigned char *in, size_t inl) \
@@ -263,8 +263,7 @@ const EVP_CIPHER *EVP_##cname##_ecb(void) { return &cname##_ecb; }
 			     EVP_CIPHER_get_asn1_iv, \
 			     NULL)
 
-struct evp_pkey_ctx_st
-	{
+										struct evp_pkey_ctx_st {
 	/* Method associated with this operation */
 	const EVP_PKEY_METHOD *pmeth;
 	/* Engine that implements this method or NULL if builtin */
@@ -284,12 +283,11 @@ struct evp_pkey_ctx_st
 	/* implementation specific keygen data */
 	int *keygen_info;
 	int keygen_info_count;
-	} /* EVP_PKEY_CTX */;
+} /* EVP_PKEY_CTX */;
 
 #define EVP_PKEY_FLAG_DYNAMIC	1
 
-struct evp_pkey_method_st
-	{
+struct evp_pkey_method_st {
 	int pkey_id;
 	int flags;
 
@@ -305,81 +303,64 @@ struct evp_pkey_method_st
 
 	int (*sign_init)(EVP_PKEY_CTX *ctx);
 	int (*sign)(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen,
-				const unsigned char *tbs, size_t tbslen);
+	    const unsigned char *tbs, size_t tbslen);
 
 	int (*verify_init)(EVP_PKEY_CTX *ctx);
 	int (*verify)(EVP_PKEY_CTX *ctx,
-				const unsigned char *sig, size_t siglen,
-				const unsigned char *tbs, size_t tbslen);
+	    const unsigned char *sig, size_t siglen,
+	    const unsigned char *tbs, size_t tbslen);
 
 	int (*verify_recover_init)(EVP_PKEY_CTX *ctx);
 	int (*verify_recover)(EVP_PKEY_CTX *ctx,
-				unsigned char *rout, size_t *routlen,
-				const unsigned char *sig, size_t siglen);
+	    unsigned char *rout, size_t *routlen,
+	    const unsigned char *sig, size_t siglen);
 
 	int (*signctx_init)(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
 	int (*signctx)(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen,
-					EVP_MD_CTX *mctx);
+	    EVP_MD_CTX *mctx);
 
 	int (*verifyctx_init)(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
-	int (*verifyctx)(EVP_PKEY_CTX *ctx, const unsigned char *sig,int siglen,
-					EVP_MD_CTX *mctx);
+	int (*verifyctx)(EVP_PKEY_CTX *ctx, const unsigned char *sig,
+	    int siglen, EVP_MD_CTX *mctx);
 
 	int (*encrypt_init)(EVP_PKEY_CTX *ctx);
 	int (*encrypt)(EVP_PKEY_CTX *ctx, unsigned char *out, size_t *outlen,
-					const unsigned char *in, size_t inlen);
+	    const unsigned char *in, size_t inlen);
 
 	int (*decrypt_init)(EVP_PKEY_CTX *ctx);
 	int (*decrypt)(EVP_PKEY_CTX *ctx, unsigned char *out, size_t *outlen,
-					const unsigned char *in, size_t inlen);
+	    const unsigned char *in, size_t inlen);
 
 	int (*derive_init)(EVP_PKEY_CTX *ctx);
 	int (*derive)(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen);
 
 	int (*ctrl)(EVP_PKEY_CTX *ctx, int type, int p1, void *p2);
 	int (*ctrl_str)(EVP_PKEY_CTX *ctx, const char *type, const char *value);
-
-
-	} /* EVP_PKEY_METHOD */;
+} /* EVP_PKEY_METHOD */;
 
 void evp_pkey_set_cb_translate(BN_GENCB *cb, EVP_PKEY_CTX *ctx);
 
 int PKCS5_v2_PBKDF2_keyivgen(EVP_CIPHER_CTX *ctx, const char *pass, int passlen,
-			     ASN1_TYPE *param,
-			     const EVP_CIPHER *c, const EVP_MD *md, int en_de);
+    ASN1_TYPE *param, const EVP_CIPHER *c, const EVP_MD *md, int en_de);
 
-#ifdef OPENSSL_FIPS
+/* EVP_AEAD represents a specific AEAD algorithm. */
+struct evp_aead_st {
+	unsigned char key_len;
+	unsigned char nonce_len;
+	unsigned char overhead;
+	unsigned char max_tag_len;
 
-#ifdef OPENSSL_DOING_MAKEDEPEND
-#undef SHA1_Init
-#undef SHA1_Update
-#undef SHA224_Init
-#undef SHA256_Init
-#undef SHA384_Init
-#undef SHA512_Init
-#undef DES_set_key_unchecked
-#endif
+	int (*init)(struct evp_aead_ctx_st*, const unsigned char *key,
+	    size_t key_len, size_t tag_len);
+	void (*cleanup)(struct evp_aead_ctx_st*);
 
-#define RIPEMD160_Init	private_RIPEMD160_Init
-#define WHIRLPOOL_Init	private_WHIRLPOOL_Init
-#define MD5_Init	private_MD5_Init
-#define MD4_Init	private_MD4_Init
-#define MD2_Init	private_MD2_Init
-#define MDC2_Init	private_MDC2_Init
-#define SHA_Init	private_SHA_Init
-#define SHA1_Init	private_SHA1_Init
-#define SHA224_Init	private_SHA224_Init
-#define SHA256_Init	private_SHA256_Init
-#define SHA384_Init	private_SHA384_Init
-#define SHA512_Init	private_SHA512_Init
+	int (*seal)(const struct evp_aead_ctx_st *ctx, unsigned char *out,
+	    size_t *out_len, size_t max_out_len, const unsigned char *nonce,
+	    size_t nonce_len, const unsigned char *in, size_t in_len,
+	    const unsigned char *ad, size_t ad_len);
 
-#define BF_set_key	private_BF_set_key
-#define CAST_set_key	private_CAST_set_key
-#define idea_set_encrypt_key	private_idea_set_encrypt_key
-#define SEED_set_key	private_SEED_set_key
-#define RC2_set_key	private_RC2_set_key
-#define RC4_set_key	private_RC4_set_key
-#define DES_set_key_unchecked	private_DES_set_key_unchecked
-#define Camellia_set_key	private_Camellia_set_key
-
-#endif
+	int (*open)(const struct evp_aead_ctx_st *ctx, unsigned char *out,
+	    size_t *out_len, size_t max_out_len, const unsigned char *nonce,
+	    size_t nonce_len, const unsigned char *in, size_t in_len,
+	    const unsigned char *ad, size_t ad_len);
+};

@@ -1,4 +1,5 @@
-/*	$NetBSD: bsd_openprom.h,v 1.3 1995/09/04 09:53:53 pk Exp $ */
+/*	$OpenBSD: bsd_openprom.h,v 1.11 2003/11/14 19:05:36 miod Exp $	*/
+/*	$NetBSD: bsd_openprom.h,v 1.11 1996/05/18 12:27:43 mrg Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,6 +33,12 @@
  * SUCH DAMAGE.
  *
  *	@(#)bsd_openprom.h	8.1 (Berkeley) 6/11/93
+ */
+
+/*
+ * Sun4m support by Aaron Brown, Harvard University.
+ * Changes Copyright (c) 1995 The President and Fellows of Harvard College.
+ * All rights reserved.
  */
 
 /*
@@ -70,12 +73,12 @@
 struct v0devops {
 	int	(*v0_open)(char *dev);
 	int	(*v0_close)(int d);
-	int	(*v0_rbdev)(int d, int nblks, int blkno, caddr_t addr);	
-	int	(*v0_wbdev)(int d, int nblks, int blkno, caddr_t addr);	
-	int	(*v0_wnet)(int d, int nbytes, caddr_t addr);
-	int	(*v0_rnet)(int d, int nbytes, caddr_t addr);
-	int	(*v0_rcdev)(int d, int nbytes, int, caddr_t addr);
-	int	(*v0_wcdev)(int d, int nbytes, int, caddr_t addr);
+	int	(*v0_rbdev)(int d, int nblks, int blkno, void *addr);
+	int	(*v0_wbdev)(int d, int nblks, int blkno, void *addr);
+	int	(*v0_wnet)(int d, int nbytes, void *addr);
+	int	(*v0_rnet)(int d, int nbytes, void *addr);
+	int	(*v0_rcdev)(int d, int nbytes, int, void *addr);
+	int	(*v0_wcdev)(int d, int nbytes, int, void *addr);
 	int	(*v0_seek)(int d, long offset, int whence);
 };
 
@@ -97,7 +100,7 @@ struct v2devops {
 	int	(*v2_fd_phandle)(int d);
 
 	/* Memory allocation and release. */
-	caddr_t	(*v2_malloc)(caddr_t va, u_int sz);
+	void	*(*v2_malloc)(caddr_t va, u_int sz);
 	void	(*v2_free)(caddr_t va, u_int sz);
 
 	/* Device memory mapper. */
@@ -107,12 +110,12 @@ struct v2devops {
 	/* Device open, close, etc. */
 	int	(*v2_open)(char *devpath);
 	void	(*v2_close)(int d);
-	int	(*v2_read)(int d, caddr_t buf, int nbytes);
-	int	(*v2_write)(int d, caddr_t buf, int nbytes);
+	int	(*v2_read)(int d, void *buf, int nbytes);
+	int	(*v2_write)(int d, void *buf, int nbytes);
 	void	(*v2_seek)(int d, int hi, int lo);
 
-	void	(*v2_xxx2)();		/* ??? */
-	void	(*v2_xxx3)();		/* ??? */
+	void	(*v2_chain)(void);	/* ??? */
+	void	(*v2_release)(void);	/* ??? */
 };
 
 /*
@@ -217,7 +220,7 @@ struct promvec {
 	void	(*pv_printf)(const char *fmt, ...);
 	void	(*pv_abort)(void);	/* L1-A abort */
 	int	*pv_ticks;		/* Ticks since last reset */
-	__dead void (*pv_halt)(void);	/* Halt! */
+	void	(*pv_halt)(void) __attribute__((__noreturn__));/* Halt! */
 	void	(**pv_synchook)(void);	/* "sync" command hook */
 
 	/*
@@ -251,6 +254,17 @@ struct promvec {
 	 * easily.
 	 */
 	void	(*pv_setctxt)(int ctxt, caddr_t va, int pmeg);
+#if (defined(SUN4D) || defined(SUN4M)) && defined(notyet)
+	/*
+	 * The following are V3 ROM functions to handle MP machines in the
+	 * Sun4m series. They have undefined results when run on a uniprocessor!
+	 */
+	int	(*pv_v3cpustart)(u_int module, u_int ctxtbl,
+				      int context, caddr_t pc);
+	int 	(*pv_v3cpustop)(u_int module);
+	int	(*pv_v3cpuidle)(u_int module);
+	int 	(*pv_v3cpuresume)(u_int module);
+#endif
 };
 
 /*
@@ -265,7 +279,7 @@ struct promvec {
  * A node property is simply a name/value pair.  The names are C strings
  * (NUL-terminated); the values are arbitrary byte strings (counted strings).
  * Many values are really just C strings.  Sometimes these are NUL-terminated,
- * sometimes not, depending on the the interface version; v0 seems to
+ * sometimes not, depending on the interface version; v0 seems to
  * terminate and v2 not.  Many others are simply integers stored as four
  * bytes in machine order: you just get them and go.  The third popular
  * format is an `address', which is made up of one or more sets of three
@@ -297,6 +311,26 @@ struct nodeops {
 	 */
 	int	(*no_proplen)(int node, caddr_t name);
 	int	(*no_getprop)(int node, caddr_t name, caddr_t val);
-	int	(*no_setprop)(int node, caddr_t name, caddr_t val, int len);
+	int	(*no_setprop)(int node, caddr_t name, caddr_t val,
+				   int len);
 	caddr_t	(*no_nextprop)(int node, caddr_t name);
 };
+
+__dead void	romhalt(void);
+__dead void	romboot(char *);
+
+extern struct promvec *promvec;
+
+/*
+ * Memory description arrays, matching version 2 memory information layout.
+ * Shared between boot blocks, pmap.c and autoconf.c; no one else should use
+ * this.
+ */
+struct memarr {
+	uint32_t	addr_hi;
+	uint32_t	addr_lo;
+	uint32_t	len;
+};
+int	makememarr(struct memarr *, u_int max, int which);
+#define	MEMARR_AVAILPHYS	0
+#define	MEMARR_TOTALPHYS	1

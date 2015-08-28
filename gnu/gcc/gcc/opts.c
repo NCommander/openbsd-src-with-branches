@@ -57,6 +57,11 @@ bool extra_warnings;
 bool warn_larger_than;
 HOST_WIDE_INT larger_than_size;
 
+/* Nonzero means warn about any function whose stack usage is larger
+   than N bytes.  The value N is in `stack_larger_than_size'.  */
+int warn_stack_larger_than;
+HOST_WIDE_INT stack_larger_than_size;
+
 /* Nonzero means warn about constructs which might not be
    strict-aliasing safe.  */
 int warn_strict_aliasing;
@@ -492,14 +497,14 @@ decode_options (unsigned int argc, const char **argv)
       flag_schedule_insns_after_reload = 1;
 #endif
       flag_regmove = 1;
-      flag_strict_aliasing = 1;
+#if !defined(OPENBSD_NATIVE) && !defined(OPENBSD_CROSS)
       flag_strict_overflow = 1;
       flag_delete_null_pointer_checks = 1;
+#endif
       flag_reorder_blocks = 1;
       flag_reorder_functions = 1;
       flag_tree_store_ccp = 1;
       flag_tree_store_copy_prop = 1;
-      flag_tree_vrp = 1;
 
       if (!optimize_size)
 	{
@@ -510,6 +515,7 @@ decode_options (unsigned int argc, const char **argv)
 
   if (optimize >= 3)
     {
+      flag_strict_aliasing = 1;
       flag_inline_functions = 1;
       flag_unswitch_loops = 1;
       flag_gcse_after_reload = 1;
@@ -564,6 +570,8 @@ decode_options (unsigned int argc, const char **argv)
 
   handle_options (argc, argv, lang_mask);
 
+  if (flag_pic || profile_flag)
+    flag_pie = 0;
   if (flag_pie)
     flag_pic = flag_pie;
   if (flag_pic && !flag_pie)
@@ -718,6 +726,12 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_Wlarger_than_:
       larger_than_size = value;
       warn_larger_than = value != -1;
+      break;
+
+    case OPT_Wframe_larger_than_:
+    case OPT_Wstack_larger_than_:
+      stack_larger_than_size = value;
+      warn_stack_larger_than = stack_larger_than_size != -1;
       break;
 
     case OPT_Wstrict_aliasing:

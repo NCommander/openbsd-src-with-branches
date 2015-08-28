@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_cancel.c,v 1.4 2001/01/16 21:47:12 brad Exp $	*/
+/*	$OpenBSD: cancel.c,v 1.6 2003/07/31 21:48:04 deraadt Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public Domain. */
 
 #include <pthread.h>
@@ -6,14 +6,18 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include "test.h"
 
 static pthread_cond_t cond;
 static pthread_mutex_t mutex;
 static struct timespec expiretime;
 
-static int pv_state = 0;
-void p() {
+static volatile int pv_state = 0;
+
+static void
+p(void)
+{
 	CHECKr(pthread_mutex_lock(&mutex));
 	if (pv_state <= 0) {
 		CHECKr(pthread_cond_timedwait(&cond, &mutex, &expiretime));
@@ -22,7 +26,9 @@ void p() {
 	CHECKr(pthread_mutex_unlock(&mutex));
 }
 
-void v() {
+static void
+v(void)
+{
 	int needsignal;
 
 	CHECKr(pthread_mutex_lock(&mutex));
@@ -33,16 +39,15 @@ void v() {
 	CHECKr(pthread_mutex_unlock(&mutex));
 }
 
-void
-c1handler(void *fd)
+static void
+c1handler(void *arg)
 {
-	CHECKe(close((int)fd));
+	CHECKe(close(*(int *)arg));
 	v();
 }
 
-void *
-child1fn(arg)
-	void *arg;
+static void *
+child1fn(void *arg)
 {
 	int fd;
 	char buf[1024];
@@ -52,18 +57,19 @@ child1fn(arg)
 	CHECKr(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL));
 	/* something that will block */
 	CHECKe(fd = open("/dev/tty", O_RDONLY));
-	pthread_cleanup_push(c1handler, (void *)fd);
+	pthread_cleanup_push(c1handler, (void *)&fd);
 	v();
 	while (1) {
 		CHECKe(len = read(fd, &buf, sizeof buf));
 		printf("child 1 read %d bytes\n", len);
 	}
+	pthread_cleanup_pop(0);
 	PANIC("child 1");
 }
 
 static int c2_in_test = 0;
 
-void
+static void
 c2handler(void *arg)
 {
 	ASSERT(c2_in_test);
@@ -71,9 +77,8 @@ c2handler(void *arg)
 }
 
 static int message_seen = 0;
-void *
-child2fn(arg)
-	void *arg;
+static void *
+child2fn(void *arg)
 {
 	SET_NAME("c2");
 
@@ -109,13 +114,15 @@ child2fn(arg)
 		message_seen++;
 		c2_in_test = 0;
 		ASSERT(message_seen == 1);
+		v();
 	}
+	pthread_cleanup_pop(0);
 	PANIC("child 2");
 }
 
 static int c3_cancel_survived;
 
-void
+static void
 c3handler(void *arg)
 {
 	printf("(fyi, cancellation of self %s instantaneous)\n",
@@ -123,9 +130,8 @@ c3handler(void *arg)
 	v();
 }
 
-void *
-child3fn(arg)
-	void *arg;
+static void *
+child3fn(void *arg)
 {
 	SET_NAME("c3");
 	pthread_cleanup_push(c3handler, NULL);
@@ -136,14 +142,51 @@ child3fn(arg)
 	pthread_cancel(pthread_self());
 	c3_cancel_survived = 1;
 	pthread_testcancel();
+	pthread_cleanup_pop(0);
 
 	PANIC("child 3");
 }
 
-int
-main()
+static int c4_cancel_early;
+
+static void
+c4handler(void *arg)
 {
-	pthread_t child1, child2, child3;
+	printf("early = %d\n", c4_cancel_early);
+	ASSERT(c4_cancel_early == 0);
+	v();
+}
+
+static void *
+child4fn(void *arg)
+{
+	SET_NAME("c4");
+	pthread_cleanup_push(c4handler, NULL);
+
+	/* Cancel myself */
+	CHECKr(pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL));
+
+	c4_cancel_early = 3;
+	pthread_cancel(pthread_self());
+
+	c4_cancel_early = 2;
+	pthread_testcancel();
+
+	c4_cancel_early = 1;
+	CHECKr(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL));
+
+	c4_cancel_early = 0;
+	pthread_testcancel();
+
+	pthread_cleanup_pop(0);
+
+	PANIC("child 4");
+}
+
+int
+main(int argc, char *argv[])
+{
+	pthread_t child1, child2, child3, child4;
 
 	/* Set up our control flow */
 	CHECKr(pthread_mutex_init(&mutex, NULL));
@@ -160,7 +203,7 @@ main()
 	p();
 
 	/* Give thread 2 a chance to go through its deferred loop once */
-	sleep(2);
+	p();
 	CHECKr(pthread_cancel(child2));
 	p();
 
@@ -168,7 +211,12 @@ main()
 	CHECKr(pthread_create(&child3, NULL, child3fn, NULL));
 	p();
 
+	/* Child 4 also cancels itself */
+	CHECKr(pthread_create(&child4, NULL, child4fn, NULL));
+	p();
+
 	/* Make sure they're all gone */
+	CHECKr(pthread_join(child4, NULL));
 	CHECKr(pthread_join(child3, NULL));
 	CHECKr(pthread_join(child2, NULL));
 	CHECKr(pthread_join(child1, NULL));

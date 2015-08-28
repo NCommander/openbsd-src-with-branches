@@ -1,6 +1,6 @@
-/*	$NetBSD: stdarg.h,v 1.1 1996/09/30 16:34:35 ws Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.1.1.1 2006/10/06 21:02:55 miod Exp $	*/
 
-/*-
+/*
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,19 +28,24 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)stdarg.h	8.1 (Berkeley) 6/10/93
+ *	from: @(#)stdarg.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef _PPC_STDARG_H_
-#define	_PPC_STDARG_H_
+#ifndef _POWERPC_STDARG_H_
+#define	_POWERPC_STDARG_H_
 
-#include <machine/ansi.h>
+#include <sys/cdefs.h>
+#include <machine/_types.h>
 
-#ifndef	_STDARG_H
-#define	_STDARG_H
+typedef __va_list	va_list;
+
+#ifdef __lint__
+#define va_start(ap, last)	((ap) = (ap))
+#define va_arg(ap, type)	(*(type *)(void *)&ap)
+#define va_end(ap)
+#define __va_copy(dst, src)	((dst) = (src))
+#else
+# error "Unsupported compiler"
 #endif
-#include <machine/va-ppc.h>
 
-typedef _BSD_VA_LIST_	va_list;
-
-#endif /* !_PPC_STDARG_H_ */
+#endif /* !_POWERPC_STDARG_H_ */

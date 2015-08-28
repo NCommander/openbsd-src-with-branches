@@ -1,3 +1,4 @@
+.\"	$OpenBSD: quotacheck.8,v 1.14 2007/05/31 19:19:47 jmc Exp $
 .\"	$NetBSD: quotacheck.8,v 1.4 1995/03/18 14:59:20 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1990, 1991, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,25 +33,19 @@
 .\"
 .\"     @(#)quotacheck.8	8.1 (Berkeley) 6/5/93
 .\"
-.Dd June 5, 1993
+.Dd $Mdocdate: May 31 2007 $
 .Dt QUOTACHECK 8
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm quotacheck
 .Nd filesystem quota consistency checker
 .Sh SYNOPSIS
 .Nm quotacheck
-.Op Fl g
-.Op Fl u
-.Op Fl v
-.Ar filesystem Ar ...
-.Nm quotacheck
-.Op Fl g
-.Op Fl u
-.Op Fl v
-.Fl a
+.Op Fl adguv
+.Op Fl l Ar maxparallel
+.Ar filesystem ...
 .Sh DESCRIPTION
-.Nm Quotacheck
+.Nm
 examines each filesystem,
 builds a table of current disk usage,
 and compares this table against that recorded
@@ -63,7 +54,7 @@ If any inconsistencies are detected, both the
 quota file and the current system copy of the
 incorrect quotas are updated (the latter only
 occurs if an active filesystem is checked).
-By default both user and group quotas are checked.
+By default, both user and group quotas are checked.
 .Pp
 Available options:
 .Bl -tag -width Ds
@@ -71,23 +62,31 @@ Available options:
 If the
 .Fl a
 flag is supplied in place of any filesystem names,
-.Nm quotacheck
+.Nm
 will check all the filesystems indicated in
 .Pa /etc/fstab
 to be read-write with disk quotas.
-By default only the types of quotas listed in
+By default, only the types of quotas listed in
 .Pa /etc/fstab
 are checked.
+.It Fl d
+Enable debugging mode.
+No actual data will be written on disk(s).
 .It Fl g
 Only group quotas listed in
 .Pa /etc/fstab
 are to be checked.
+.It Fl l Ar maxparallel
+Limit the number of parallel checks to the number
+.Ar maxparallel
+specified in the argument (see
+.Xr fsck 8 ) .
 .It Fl u
 Only user quotas listed in
 .Pa /etc/fstab
 are to be checked.
 .It Fl v
-.Nm quotacheck
+.Nm
 reports discrepancies between the
 calculated and recorded disk quotas.
 .El
@@ -104,36 +103,36 @@ in an identical fashion to
 .Xr fsck 8 .
 .Pp
 Normally
-.Nm quotacheck
+.Nm
 operates silently.
 .Pp
-.Nm Quotacheck
-expects each filesystem to be checked to have a
+.Nm
+expects each filesystem to be checked to have
 quota files named
 .Pa quota.user
 and
 .Pa quota.group
-which are located at the root of the associated file system.
+located at the root of the associated file system.
 These defaults may be overridden in
 .Pa /etc/fstab .
-If a file is not present, 
-.Nm quotacheck
+If a file is not present,
+.Nm
 will create it.
 .Pp
-.Nm Quotacheck
+.Nm
 is normally run at boot time from the
-.Pa /etc/rc.local
-file, see
-.Xr rc 8 ,
+.Pa /etc/rc
+file
+.Pq see Xr rc 8
 before enabling disk quotas with
 .Xr quotaon 8 .
 .Pp
-.Nm Quotacheck
+.Nm
 accesses the raw device in calculating the actual
 disk usage for each user.
 Thus, the filesystems
 checked should be quiescent while
-.Nm quotacheck
+.Nm
 is running.
 .Sh FILES
 .Bl -tag -width quota.group -compact

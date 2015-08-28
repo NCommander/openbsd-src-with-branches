@@ -1,5 +1,3 @@
-/*	$NetBSD: qdivrem.c,v 1.5 1995/10/07 09:26:40 mycroft Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -16,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,13 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#ifdef notdef
-static char sccsid[] = "@(#)qdivrem.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: qdivrem.c,v 1.5 1995/10/07 09:26:40 mycroft Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 /*
  * Multiprecision divide.  This algorithm is from Knuth vol. 2 (2nd ed),
  * section 4.3.1, pp. 257--259.
@@ -51,36 +38,35 @@ static char rcsid[] = "$NetBSD: qdivrem.c,v 1.5 1995/10/07 09:26:40 mycroft Exp 
 
 #include "quad.h"
 
-#define	B	((long)1 << HALF_BITS)	/* digit base */
+#define	B	((int)1 << HALF_BITS)	/* digit base */
 
 /* Combine two `digits' to make a single two-digit number. */
-#define	COMBINE(a, b) (((u_long)(a) << HALF_BITS) | (b))
+#define	COMBINE(a, b) (((u_int)(a) << HALF_BITS) | (b))
 
 /* select a type for digits in base B: use unsigned short if they fit */
-#if ULONG_MAX == 0xffffffff && USHRT_MAX >= 0xffff
+#if UINT_MAX == 0xffffffffU && USHRT_MAX >= 0xffff
 typedef unsigned short digit;
 #else
-typedef u_long digit;
+typedef u_int digit;
 #endif
 
-static void shl __P((digit *p, int len, int sh));
+static void shl(digit *p, int len, int sh);
 
 /*
  * __qdivrem(u, v, rem) returns u/v and, optionally, sets *rem to u%v.
  *
  * We do this in base 2-sup-HALF_BITS, so that all intermediate products
- * fit within u_long.  As a consequence, the maximum length dividend and
+ * fit within u_int.  As a consequence, the maximum length dividend and
  * divisor are 4 `digits' in this base (they are shorter if they have
  * leading zeros).
  */
 u_quad_t
-__qdivrem(uq, vq, arq)
-	u_quad_t uq, vq, *arq;
+__qdivrem(u_quad_t uq, u_quad_t vq, u_quad_t *arq)
 {
 	union uu tmp;
 	digit *u, *v, *q;
-	register digit v1, v2;
-	u_long qhat, rhat, t;
+	digit v1, v2;
+	u_int qhat, rhat, t;
 	int m, n, d, j, i;
 	digit uspace[5], vspace[5], qspace[5];
 
@@ -120,18 +106,18 @@ __qdivrem(uq, vq, arq)
 	 */
 	tmp.uq = uq;
 	u[0] = 0;
-	u[1] = HHALF(tmp.ul[H]);
-	u[2] = LHALF(tmp.ul[H]);
-	u[3] = HHALF(tmp.ul[L]);
-	u[4] = LHALF(tmp.ul[L]);
+	u[1] = (digit)HHALF(tmp.ul[H]);
+	u[2] = (digit)LHALF(tmp.ul[H]);
+	u[3] = (digit)HHALF(tmp.ul[L]);
+	u[4] = (digit)LHALF(tmp.ul[L]);
 	tmp.uq = vq;
-	v[1] = HHALF(tmp.ul[H]);
-	v[2] = LHALF(tmp.ul[H]);
-	v[3] = HHALF(tmp.ul[L]);
-	v[4] = LHALF(tmp.ul[L]);
+	v[1] = (digit)HHALF(tmp.ul[H]);
+	v[2] = (digit)LHALF(tmp.ul[H]);
+	v[3] = (digit)HHALF(tmp.ul[L]);
+	v[4] = (digit)LHALF(tmp.ul[L]);
 	for (n = 4; v[1] == 0; v++) {
 		if (--n == 1) {
-			u_long rbj;	/* r*B+u[j] (not root boy jim) */
+			u_int rbj;	/* r*B+u[j] (not root boy jim) */
 			digit q1, q2, q3, q4;
 
 			/*
@@ -143,13 +129,13 @@ __qdivrem(uq, vq, arq)
 			 * We unroll this completely here.
 			 */
 			t = v[2];	/* nonzero, by definition */
-			q1 = u[1] / t;
+			q1 = (digit)(u[1] / t);
 			rbj = COMBINE(u[1] % t, u[2]);
-			q2 = rbj / t;
+			q2 = (digit)(rbj / t);
 			rbj = COMBINE(rbj % t, u[3]);
-			q3 = rbj / t;
+			q3 = (digit)(rbj / t);
 			rbj = COMBINE(rbj % t, u[4]);
-			q4 = rbj / t;
+			q4 = (digit)(rbj / t);
 			if (arq)
 				*arq = rbj % t;
 			tmp.ul[H] = COMBINE(q1, q2);
@@ -189,7 +175,7 @@ __qdivrem(uq, vq, arq)
 	v1 = v[1];	/* for D3 -- note that v[1..n] are constant */
 	v2 = v[2];	/* for D3 */
 	do {
-		register digit uj0, uj1, uj2;
+		digit uj0, uj1, uj2;
 		
 		/*
 		 * D3: Calculate qhat (\^q, in TeX notation).
@@ -207,9 +193,9 @@ __qdivrem(uq, vq, arq)
 			rhat = uj1;
 			goto qhat_too_big;
 		} else {
-			u_long n = COMBINE(uj0, uj1);
-			qhat = n / v1;
-			rhat = n % v1;
+			u_int nn = COMBINE(uj0, uj1);
+			qhat = nn / v1;
+			rhat = nn % v1;
 		}
 		while (v2 * qhat > COMBINE(rhat, uj2)) {
 	qhat_too_big:
@@ -225,11 +211,11 @@ __qdivrem(uq, vq, arq)
 		 */
 		for (t = 0, i = n; i > 0; i--) {
 			t = u[i + j] - v[i] * qhat - t;
-			u[i + j] = LHALF(t);
+			u[i + j] = (digit)LHALF(t);
 			t = (B - HHALF(t)) & (B - 1);
 		}
 		t = u[j] - t;
-		u[j] = LHALF(t);
+		u[j] = (digit)LHALF(t);
 		/*
 		 * D5: test remainder.
 		 * There is a borrow if and only if HHALF(t) is nonzero;
@@ -240,12 +226,12 @@ __qdivrem(uq, vq, arq)
 			qhat--;
 			for (t = 0, i = n; i > 0; i--) { /* D6: add back. */
 				t += u[i + j] + v[i];
-				u[i + j] = LHALF(t);
+				u[i + j] = (digit)LHALF(t);
 				t = HHALF(t);
 			}
-			u[j] = LHALF(u[j] + t);
+			u[j] = (digit)LHALF(u[j] + t);
 		}
-		q[j] = qhat;
+		q[j] = (digit)qhat;
 	} while (++j <= m);		/* D7: loop on j. */
 
 	/*
@@ -256,8 +242,8 @@ __qdivrem(uq, vq, arq)
 	if (arq) {
 		if (d) {
 			for (i = m + n; i > m; --i)
-				u[i] = (u[i] >> d) |
-				    LHALF(u[i - 1] << (HALF_BITS - d));
+				u[i] = (digit)(((u_int)u[i] >> d) |
+				    LHALF((u_int)u[i - 1] << (HALF_BITS - d)));
 			u[i] = 0;
 		}
 		tmp.ul[H] = COMBINE(uspace[1], uspace[2]);
@@ -276,11 +262,12 @@ __qdivrem(uq, vq, arq)
  * We may assume len >= 0.  NOTE THAT THIS WRITES len+1 DIGITS.
  */
 static void
-shl(register digit *p, register int len, register int sh)
+shl(digit *p, int len, int sh)
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < len; i++)
-		p[i] = LHALF(p[i] << sh) | (p[i + 1] >> (HALF_BITS - sh));
-	p[i] = LHALF(p[i] << sh);
+		p[i] = (digit)(LHALF((u_int)p[i] << sh) |
+		    ((u_int)p[i + 1] >> (HALF_BITS - sh)));
+	p[i] = (digit)(LHALF((u_int)p[i] << sh));
 }

@@ -385,6 +385,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       set_Wunused (value);
       set_Wformat (value);
       set_Wimplicit (value);
+      warn_bounded = value;
       warn_char_subscripts = value;
       warn_missing_braces = value;
       warn_parentheses = value;
@@ -423,8 +424,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->warn_num_sign_change = value;
       cpp_opts->warn_multichar = value;	/* Was C++ only.  */
 
-      if (warn_pointer_sign == -1)
-	warn_pointer_sign = 1;
       break;
 
     case OPT_Wcomment:

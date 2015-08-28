@@ -10,10 +10,6 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_cos.c,v 1.7 1995/05/10 20:47:02 jtc Exp $";
-#endif
-
 /* cos(x)
  * Return cosine function of x.
  *
@@ -45,15 +41,13 @@ static char rcsid[] = "$NetBSD: s_cos.c,v 1.7 1995/05/10 20:47:02 jtc Exp $";
  *	TRIG(x) returns trig(x) nearly rounded 
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
-	double cos(double x)
-#else
-	double cos(x)
-	double x;
-#endif
+double
+cos(double x)
 {
 	double y[2],z=0.0;
 	int32_t n, ix;
@@ -80,3 +74,7 @@ static char rcsid[] = "$NetBSD: s_cos.c,v 1.7 1995/05/10 20:47:02 jtc Exp $";
 	    }
 	}
 }
+
+#if	LDBL_MANT_DIG == DBL_MANT_DIG
+__strong_alias(cosl, cos);
+#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */

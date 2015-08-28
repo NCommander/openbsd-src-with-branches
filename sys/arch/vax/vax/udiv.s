@@ -1,3 +1,4 @@
+/*	$OpenBSD: udiv.s,v 1.4 2005/05/06 18:55:02 miod Exp $	*/
 /*	$NetBSD: udiv.s,v 1.2 1994/10/26 08:03:34 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,6 +35,8 @@
  *	@(#)udiv.s      5.6 (Berkeley) 4/15/91
  */
 
+#include <machine/asm.h>
+
 /*
  * Unsigned division, PCC flavor.
  * udiv() takes an ordinary dividend/divisor pair;
@@ -45,27 +44,25 @@
  */
 
 
-#define	DIVIDEND	4(ap)
-#define	DIVISOR		8(ap)
+#define	DIVIDEND	4(%ap)
+#define	DIVISOR		8(%ap)
 
-	.globl 	udiv
-	.align	2
-udiv:	.word	0x0
-	movl	DIVISOR,r2
+ASENTRY(__udiv, 0)
+	movl	DIVISOR,%r2
 	jlss	Leasy		# big divisor: settle by comparison
-	movl	DIVIDEND,r0
+	movl	DIVIDEND,%r0
 	jlss	Lhard		# big dividend: extended division
-	divl2	r2,r0		# small divisor and dividend: signed division
+	divl2	%r2,%r0		# small divisor and dividend: signed division
 	ret
 Lhard:
-	clrl	r1
-	ediv	r2,r0,r0,r1
+	clrl	%r1
+	ediv	%r2,%r0,%r0,%r1
 	ret
 Leasy:
-	cmpl	DIVIDEND,r2
+	cmpl	DIVIDEND,%r2
 	jgequ	Lone		# if dividend is as big or bigger, return 1
-	clrl	r0		# else return 0
+	clrl	%r0		# else return 0
 	ret
 Lone:
-	movl	$1,r0
+	movl	$1,%r0
 	ret

@@ -1,4 +1,4 @@
-/*	$NetBSD: regex2.h,v 1.5 1995/02/27 13:29:40 cgd Exp $	*/
+/*	$OpenBSD: regex2.h,v 1.7 2004/11/30 17:04:23 otto Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
@@ -16,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,20 +35,6 @@
  *	@(#)regex2.h	8.4 (Berkeley) 3/20/94
  */
 
-/*
- * First, the stuff that ends up in the outside-world include file
- = typedef off_t regoff_t;
- = typedef struct {
- = 	int re_magic;
- = 	size_t re_nsub;		// number of parenthesized subexpressions
- = 	const char *re_endp;	// end pointer for REG_PEND
- = 	struct re_guts *re_g;	// none of your business :-)
- = } regex_t;
- = typedef struct {
- = 	regoff_t rm_so;		// start of match
- = 	regoff_t rm_eo;		// end of match
- = } regmatch_t;
- */
 /*
  * internals of regex_t
  */
@@ -79,34 +61,34 @@
  */
 typedef unsigned long sop;	/* strip operator */
 typedef long sopno;
-#define	OPRMASK	0xf8000000
-#define	OPDMASK	0x07ffffff
+#define	OPRMASK	0xf8000000LU
+#define	OPDMASK	0x07ffffffLU
 #define	OPSHIFT	((unsigned)27)
 #define	OP(n)	((n)&OPRMASK)
 #define	OPND(n)	((n)&OPDMASK)
 #define	SOP(op, opnd)	((op)|(opnd))
 /* operators			   meaning	operand			*/
 /*						(back, fwd are offsets)	*/
-#define	OEND	(1<<OPSHIFT)	/* endmarker	-			*/
-#define	OCHAR	(2<<OPSHIFT)	/* character	unsigned char		*/
-#define	OBOL	(3<<OPSHIFT)	/* left anchor	-			*/
-#define	OEOL	(4<<OPSHIFT)	/* right anchor	-			*/
-#define	OANY	(5<<OPSHIFT)	/* .		-			*/
-#define	OANYOF	(6<<OPSHIFT)	/* [...]	set number		*/
-#define	OBACK_	(7<<OPSHIFT)	/* begin \d	paren number		*/
-#define	O_BACK	(8<<OPSHIFT)	/* end \d	paren number		*/
-#define	OPLUS_	(9<<OPSHIFT)	/* + prefix	fwd to suffix		*/
-#define	O_PLUS	(10<<OPSHIFT)	/* + suffix	back to prefix		*/
-#define	OQUEST_	(11<<OPSHIFT)	/* ? prefix	fwd to suffix		*/
-#define	O_QUEST	(12<<OPSHIFT)	/* ? suffix	back to prefix		*/
-#define	OLPAREN	(13<<OPSHIFT)	/* (		fwd to )		*/
-#define	ORPAREN	(14<<OPSHIFT)	/* )		back to (		*/
-#define	OCH_	(15<<OPSHIFT)	/* begin choice	fwd to OOR2		*/
-#define	OOR1	(16<<OPSHIFT)	/* | pt. 1	back to OOR1 or OCH_	*/
-#define	OOR2	(17<<OPSHIFT)	/* | pt. 2	fwd to OOR2 or O_CH	*/
-#define	O_CH	(18<<OPSHIFT)	/* end choice	back to OOR1		*/
-#define	OBOW	(19<<OPSHIFT)	/* begin word	-			*/
-#define	OEOW	(20<<OPSHIFT)	/* end word	-			*/
+#define	OEND	(1LU<<OPSHIFT)	/* endmarker	-			*/
+#define	OCHAR	(2LU<<OPSHIFT)	/* character	unsigned char		*/
+#define	OBOL	(3LU<<OPSHIFT)	/* left anchor	-			*/
+#define	OEOL	(4LU<<OPSHIFT)	/* right anchor	-			*/
+#define	OANY	(5LU<<OPSHIFT)	/* .		-			*/
+#define	OANYOF	(6LU<<OPSHIFT)	/* [...]	set number		*/
+#define	OBACK_	(7LU<<OPSHIFT)	/* begin \d	paren number		*/
+#define	O_BACK	(8LU<<OPSHIFT)	/* end \d	paren number		*/
+#define	OPLUS_	(9LU<<OPSHIFT)	/* + prefix	fwd to suffix		*/
+#define	O_PLUS	(10LU<<OPSHIFT)	/* + suffix	back to prefix		*/
+#define	OQUEST_	(11LU<<OPSHIFT)	/* ? prefix	fwd to suffix		*/
+#define	O_QUEST	(12LU<<OPSHIFT)	/* ? suffix	back to prefix		*/
+#define	OLPAREN	(13LU<<OPSHIFT)	/* (		fwd to )		*/
+#define	ORPAREN	(14LU<<OPSHIFT)	/* )		back to (		*/
+#define	OCH_	(15LU<<OPSHIFT)	/* begin choice	fwd to OOR2		*/
+#define	OOR1	(16LU<<OPSHIFT)	/* | pt. 1	back to OOR1 or OCH_	*/
+#define	OOR2	(17LU<<OPSHIFT)	/* | pt. 2	fwd to OOR2 or O_CH	*/
+#define	O_CH	(18LU<<OPSHIFT)	/* end choice	back to OOR1		*/
+#define	OBOW	(19LU<<OPSHIFT)	/* begin word	-			*/
+#define	OEOW	(20LU<<OPSHIFT)	/* end word	-			*/
 
 /*
  * Structure for [] character-set representation.  Character sets are
@@ -167,7 +149,7 @@ struct re_guts {
 	int backrefs;		/* does it use back references? */
 	sopno nplus;		/* how deep does it nest +s? */
 	/* catspace must be last */
-	cat_t catspace[1];	/* actually [NC] */
+	cat_t catspace[NC];	/* actually [NC] */
 };
 
 /* misc utilities */

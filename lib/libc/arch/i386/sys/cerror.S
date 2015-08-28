@@ -1,3 +1,4 @@
+/*	$OpenBSD: cerror.S,v 1.8 2011/04/04 12:42:39 guenther Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,27 +29,22 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)cerror.s	5.1 (Berkeley) 4/23/90
- *	$Id: cerror.S,v 1.4 1994/04/02 05:36:52 cgd Exp $
  */
-
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: cerror.S,v 1.4 1994/04/02 05:36:52 cgd Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
 
 #include "SYS.h"
 
-	.globl	_errno
-cerror:
-#ifdef PIC
+	.globl	_C_LABEL(errno)
+
+WEAK_ALIAS(CERROR, _CERROR)
+
+_ENTRY(_CERROR)
+#ifdef __PIC__
 	PIC_PROLOGUE
-	movl	PIC_GOT(_errno),%ecx
+	movl	PIC_GOT(_C_LABEL(errno)),%ecx
 	PIC_EPILOGUE
 	movl	%eax,(%ecx)
 #else
-	movl	%eax,_errno
+	movl	%eax,_C_LABEL(errno)
 #endif
 	movl	$-1,%eax
 	movl	$-1,%edx

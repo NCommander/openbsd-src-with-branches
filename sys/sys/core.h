@@ -1,3 +1,4 @@
+/*	$OpenBSD: core.h,v 1.5 2013/01/15 01:34:27 deraadt Exp $	*/
 /*	$NetBSD: core.h,v 1.4 1994/10/29 08:20:14 cgd Exp $	*/
 
 /*
@@ -55,9 +56,11 @@
 #define CORE_DATA	2
 #define CORE_STACK	4
 
+#ifndef _KERNEL
 /*
+ * XXX OBSOLETE, NO LONGER USED
  * A core file consists of a header followed by a number of segments.
- * Each segment is preceeded by a `coreseg' structure giving the
+ * Each segment is preceded by a `coreseg' structure giving the
  * segment's type, the virtual address where the bits resided in
  * process address space and the size of the segment.
  *
@@ -85,3 +88,8 @@ struct coreseg {
 	u_long	c_addr;			/* Virtual address of segment */
 	u_long	c_size;			/* Size of this segment */
 };
+
+#else
+int	coredump_write(void *, enum uio_seg, const void *, size_t);
+void	coredump_unmap(void *, vaddr_t, vaddr_t);
+#endif

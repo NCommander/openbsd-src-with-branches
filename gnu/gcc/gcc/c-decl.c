@@ -1285,9 +1285,17 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
       if (DECL_IN_SYSTEM_HEADER (newdecl) || DECL_IN_SYSTEM_HEADER (olddecl))
 	return true;  /* Allow OLDDECL to continue in use.  */
 
-      error ("redefinition of typedef %q+D", newdecl);
-      locate_old_decl (olddecl, error);
-      return false;
+      if (pedantic)
+	{
+	  pedwarn ("redefinition of typedef %q+D", newdecl);
+	  if (flag_pedantic_errors)
+	    {
+	      locate_old_decl (olddecl, error);
+	      return false;
+	    }
+	}
+
+      return true;
     }
 
   /* Function declarations can either be 'static' or 'extern' (no
@@ -4256,6 +4264,8 @@ grokdeclarator (const struct c_declarator *declarator,
 			  pedwarn ("ISO C90 forbids variable-size array %qs",
 				   name);
 		      }
+		    if (warn_variable_decl)
+		      warning (0, "variable-sized array %qs", name);
 		  }
 
 		if (integer_zerop (size))

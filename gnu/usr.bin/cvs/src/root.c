@@ -16,7 +16,7 @@
    Watch out if the enum is changed in cvs.h! */
 
 char *method_names[] = {
-    "undefined", "local", "server (rsh)", "pserver", "kserver", "gserver", "ext", "fork"
+    "undefined", "local", "server (ssh)", "pserver", "kserver", "gserver", "ext", "fork"
 };
 
 #ifndef DEBUG
@@ -72,7 +72,7 @@ Name_Root (dir, update_dir)
      */
     fpin = open_file (tmp, "r");
 
-    if (getline (&root, &root_allocated, fpin) < 0)
+    if (get_line (&root, &root_allocated, fpin) < 0)
     {
 	/* FIXME: should be checking for end of file separately; errno
 	   is not set in that case.  */
@@ -361,6 +361,7 @@ parse_cvsroot (root_in)
 					 * [[user][:password]@]host[:[port]]
 					 */
     char *cvsroot_copy, *p, *q;		/* temporary pointers for parsing */
+    char *new_hostname;
     int check_hostname, no_port, no_password;
 
     /* allocate some space */
@@ -483,6 +484,20 @@ parse_cvsroot (root_in)
 	    cvsroot_copy = ++p;
 	}
 
+	new_hostname = NULL;
+	if (*cvsroot_copy == '[')
+	{
+		p = strchr(cvsroot_copy, ']');
+		if (p != NULL)
+		{
+			*p = '\0';
+			new_hostname = xstrdup (cvsroot_copy+1);
+			*p++ = ']';
+			if (*p == ':')
+				cvsroot_copy = p;
+		}
+	}
+
 	/* now deal with host[:[port]] */
 
 	/* the port */
@@ -502,6 +517,8 @@ parse_cvsroot (root_in)
 				p);
 			error(0, 0, "perhaps you entered a relative pathname?");
 			free (cvsroot_save);
+			if (new_hostname != NULL)
+			    free (new_hostname);
 			goto error_exit;
 		    }
 		}
@@ -511,6 +528,8 @@ parse_cvsroot (root_in)
 		    error(0, 0, "may only specify a positive, non-zero, integer port (not \"%s\").",
 			    p);
 		    error(0, 0, "perhaps you entered a relative pathname?");
+		    if (new_hostname != NULL)
+			free (new_hostname);
 		    free (cvsroot_save);
 		    goto error_exit;
 		}
@@ -518,7 +537,9 @@ parse_cvsroot (root_in)
 	}
 
 	/* copy host */
-	if (*cvsroot_copy != '\0')
+	if (new_hostname != NULL)
+	    newroot->hostname = new_hostname;
+	else if (*cvsroot_copy != '\0')
 	    /* blank hostnames are invalid, but for now leave the field NULL
 	     * and catch the error during the sanity checks later
 	     */

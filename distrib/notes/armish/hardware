@@ -1,0 +1,3 @@
+dnl	$OpenBSD: hardware,v 1.9 2009/04/09 16:02:24 jsg Exp $
+dnl When more than one model is supported, turn this into a list...
+OpenBSD/MACHINE runs on the Thecus N2100 and IOData HDL-G models at the moment.

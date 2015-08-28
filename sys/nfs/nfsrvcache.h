@@ -1,4 +1,5 @@
-/*	$NetBSD: nfsrvcache.h,v 1.8 1994/12/13 17:17:07 mycroft Exp $	*/
+/*	$OpenBSD: nfsrvcache.h,v 1.7 2007/10/29 11:16:49 thib Exp $	*/
+/*	$NetBSD: nfsrvcache.h,v 1.10 1996/02/18 11:54:08 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,27 +32,26 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)nfsrvcache.h	8.2 (Berkeley) 8/18/94
+ *	@(#)nfsrvcache.h	8.3 (Berkeley) 3/30/95
  */
 
-/*
- * Definitions for the server recent request cache
- */
+#ifndef _NFS_NFSRVCACHE_H_
+#define _NFS_NFSRVCACHE_H_
 
-#define	NFSRVCACHESIZ	256
+#define	NFSRVCACHESIZ	2048
 
 struct nfsrvcache {
-	TAILQ_ENTRY(nfsrvcache) rc_lru;		/* LRU chain */
-	LIST_ENTRY(nfsrvcache) rc_hash;		/* Hash chain */
-	u_long	rc_xid;				/* rpc id number */
+	TAILQ_ENTRY(nfsrvcache)	rc_lru;		/* LRU chain */
+	LIST_ENTRY(nfsrvcache)	rc_hash;	/* Hash chain */
+	u_int32_t		rc_xid;		/* rpc id number */
 	union {
-		struct mbuf *ru_repmb;		/* Reply mbuf list OR */
-		int ru_repstat;			/* Reply status */
+		struct mbuf *ru_repmb;	/* Reply mbuf list OR */
+		int ru_repstat;		/* Reply status */
 	} rc_un;
-	union nethostaddr rc_haddr;		/* Host address */
-	short	rc_proc;			/* rpc proc number */
-	u_char	rc_state;		/* Current state of request */
-	u_char	rc_flag;		/* Flag bits */
+	union nethostaddr	rc_haddr;	/* Host address */
+	u_int16_t		rc_proc;	/* rpc proc number */
+	u_char			rc_state;	/* Current state of request */
+	u_char			rc_flag;	/* Flag bits */
 };
 
 #define	rc_reply	rc_un.ru_repmb
@@ -79,6 +75,7 @@ struct nfsrvcache {
 #define	RC_WANTED	0x02
 #define	RC_REPSTATUS	0x04
 #define	RC_REPMBUF	0x08
-#define	RC_NQNFS	0x10
 #define	RC_INETADDR	0x20
 #define	RC_NAM		0x40
+
+#endif

@@ -1,11 +1,10 @@
-#	from: @(#)Makefile	5.4 (Berkeley) 6/24/90
-#	$Id: Makefile,v 1.11 1995/05/05 05:35:10 jtc Exp $
+#	$OpenBSD: Makefile,v 1.10 2010/10/17 22:54:37 schwarze Exp $
 #
 # By default, flex will be configured to generate 8-bit scanners only if the
 # -8 flag is given.  If you want it to always generate 8-bit scanners, add
 # "-DDEFAULT_CSIZE=256" to CFLAGS.  Note that doing so will double the size
 # of all uncompressed scanners.
-# 
+#
 # If on your system you have trouble building flex due to 8-bit character
 # problems, remove the -8 from FLEX_FLAGS and the "#define FLEX_8_BIT_CHARS"
 # from the beginning of flexdef.h.
@@ -25,10 +24,10 @@ MAN = flex.1
 
 LINKS=	${BINDIR}/lex ${BINDIR}/flex \
 	${BINDIR}/lex ${BINDIR}/flex++
-MLINKS=	flex.1 lex.1 
+MLINKS=	flex.1 lex.1 flex.1 flex++.1
 
 parse.h parse.c: parse.y
-	${YACC} -d ${.IMPSRC}
+	${YACC} -d ${.ALLSRC}
 	mv y.tab.c parse.c
 	mv y.tab.h parse.h
 
@@ -40,8 +39,12 @@ scan.c: scan.l
 
 scan.o: parse.c
 
-afterinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${.CURDIR}/FlexLexer.h \
+includes:
+.if !exists(${DESTDIR}/usr/include/g++)
+	${INSTALL} -d -o root -g bin -m 755 \
 		${DESTDIR}/usr/include/g++
+.endif
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 \
+		${.CURDIR}/FlexLexer.h ${DESTDIR}/usr/include/g++/
 
 .include <bsd.prog.mk>

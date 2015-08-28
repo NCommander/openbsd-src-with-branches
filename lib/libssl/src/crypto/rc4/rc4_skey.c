@@ -1,4 +1,4 @@
-/* crypto/rc4/rc4_skey.c */
+/* $OpenBSD: rc4_skey.c,v 1.12 2014/07/12 20:11:45 miod Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -60,8 +60,6 @@
 #include "rc4_locl.h"
 #include <openssl/opensslv.h>
 
-const char RC4_version[]="RC4" OPENSSL_VERSION_PTEXT;
-
 const char *RC4_options(void)
 	{
 #ifdef RC4_INDEX
@@ -85,11 +83,11 @@ const char *RC4_options(void)
  * Date: Wed, 14 Sep 1994 06:35:31 GMT
  */
 
-void private_RC4_set_key(RC4_KEY *key, int len, const unsigned char *data)
+void RC4_set_key(RC4_KEY *key, int len, const unsigned char *data)
 	{
-        register RC4_INT tmp;
-        register int id1,id2;
-        register RC4_INT *d;
+        RC4_INT tmp;
+        int id1,id2;
+        RC4_INT *d;
         unsigned int i;
         
         d= &(key->data[0]);

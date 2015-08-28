@@ -1,3 +1,4 @@
+/*	$OpenBSD: dfsqrt.c,v 1.6 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,67 +12,63 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/dfsqrt.c,v $
- * $Revision: 1.9.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:05:46 $
- */
+/* @(#)dfsqrt.c: Revision: 1.9.88.1 Date: 93/12/07 15:05:46 */
 
-#include "../spmath/float.h"
-#include "../spmath/dbl_float.h"
+#include "float.h"
+#include "dbl_float.h"
 
 /*
  *  Double Floating-point Square Root
  */
 
 /*ARGSUSED*/
-dbl_fsqrt(srcptr,nullptr,dstptr,status)
-
-dbl_floating_point *srcptr, *dstptr;
-unsigned int *nullptr, *status;
+int
+dbl_fsqrt(srcptr, null, dstptr, status)
+	dbl_floating_point *srcptr, *null, *dstptr;
+	unsigned int *status;
 {
 	register unsigned int srcp1, srcp2, resultp1, resultp2;
 	register unsigned int newbitp1, newbitp2, sump1, sump2;
 	register int src_exponent;
-	register boolean guardbit = FALSE, even_exponent;
+	register int guardbit = FALSE, even_exponent;
 
 	Dbl_copyfromptr(srcptr,srcp1,srcp2);
-        /*
-         * check source operand for NaN or infinity
-         */
-        if ((src_exponent = Dbl_exponent(srcp1)) == DBL_INFINITY_EXPONENT) {
-                /*
-                 * is signaling NaN?
-                 */
-                if (Dbl_isone_signaling(srcp1)) {
-                        /* trap if INVALIDTRAP enabled */
-                        if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
-                        /* make NaN quiet */
-                        Set_invalidflag();
-                        Dbl_set_quiet(srcp1);
-                }
-                /*
-                 * Return quiet NaN or positive infinity.
-		 *  Fall thru to negative test if negative infinity.
-                 */
-		if (Dbl_iszero_sign(srcp1) || 
-		    Dbl_isnotzero_mantissa(srcp1,srcp2)) {
-                	Dbl_copytoptr(srcp1,srcp2,dstptr);
-                	return(NOEXCEPTION);
+	/*
+	 * check source operand for NaN or infinity
+	 */
+	if ((src_exponent = Dbl_exponent(srcp1)) == DBL_INFINITY_EXPONENT) {
+		/*
+		 * is signaling NaN?
+		 */
+		if (Dbl_isone_signaling(srcp1)) {
+			/* trap if INVALIDTRAP enabled */
+			if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
+			/* make NaN quiet */
+			Set_invalidflag();
+			Dbl_set_quiet(srcp1);
 		}
-        }
+		/*
+		 * Return quiet NaN or positive infinity.
+		 *  Fall thru to negative test if negative infinity.
+		 */
+		if (Dbl_iszero_sign(srcp1) ||
+		    Dbl_isnotzero_mantissa(srcp1,srcp2)) {
+			Dbl_copytoptr(srcp1,srcp2,dstptr);
+			return(NOEXCEPTION);
+		}
+	}
 
-        /*
-         * check for zero source operand
-         */
+	/*
+	 * check for zero source operand
+	 */
 	if (Dbl_iszero_exponentmantissa(srcp1,srcp2)) {
 		Dbl_copytoptr(srcp1,srcp2,dstptr);
 		return(NOEXCEPTION);
 	}
 
-        /*
-         * check for negative source operand 
-         */
+	/*
+	 * check for negative source operand
+	 */
 	if (Dbl_isone_sign(srcp1)) {
 		/* trap if INVALIDTRAP enabled */
 		if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
@@ -103,7 +100,7 @@ unsigned int *nullptr, *status;
 	}
 	/*
 	 * Add comment here.  Explain following algorithm.
-	 * 
+	 *
 	 * Trust me, it works.
 	 *
 	 */
@@ -116,7 +113,7 @@ unsigned int *nullptr, *status;
 			Dbl_leftshiftby1(newbitp1,newbitp2);
 			/* update result */
 			Dbl_addition(resultp1,resultp2,newbitp1,newbitp2,
-			 resultp1,resultp2);  
+			 resultp1,resultp2);
 			Dbl_subtract(srcp1,srcp2,sump1,sump2,srcp1,srcp2);
 			Dbl_rightshiftby2(newbitp1,newbitp2);
 		}
@@ -144,7 +141,7 @@ unsigned int *nullptr, *status;
 		     Dbl_increment(resultp1,resultp2);
 		     break;
 		case ROUNDNEAREST:
-		     /* stickybit is always true, so guardbit 
+		     /* stickybit is always true, so guardbit
 		      * is enough to determine rounding */
 		     if (guardbit) {
 			    Dbl_increment(resultp1,resultp2);

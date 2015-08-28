@@ -477,7 +477,10 @@ unbound-event-install:
 	$(INSTALL) -m 755 -d $(DESTDIR)$(includedir)
 	$(LIBTOOL) --mode=install cp $(srcdir)/libunbound/unbound-event.h $(DESTDIR)$(includedir)/unbound-event.h
 
-install:	$(INSTALLTARGET)
+install:
+	# avoid mistakes made by people who forget "make -f Makefile.bsd-wrapper"
+
+orig-install:	$(INSTALLTARGET)
 
 install-lib:	lib $(UNBOUND_EVENT_INSTALL)
 	$(INSTALL) -m 755 -d $(DESTDIR)$(libdir)

@@ -1,9 +1,7 @@
-/*	$NetBSD: endian.h,v 1.2 1996/10/13 03:16:41 christos Exp $	*/
+/*	$OpenBSD: endian.h,v 1.20 2014/07/12 16:25:09 guenther Exp $ */
 
 /*-
- * Copyright (C) 1995 Wolfgang Solfrank.
- * Copyright (C) 1995 TooLs GmbH.
- * All rights reserved.
+ * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,72 +11,93 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by TooLs GmbH.
- * 4. The name of TooLs GmbH may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY TOOLS GMBH ``AS IS'' AND ANY EXPRESS OR
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL TOOLS GMBH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_PPC_ENDIAN_H_
-#define	_PPC_ENDIAN_H_
+#ifndef _POWERPC_ENDIAN_H_
+#define _POWERPC_ENDIAN_H_
 
-#ifndef	_POSIX_SOURCE
+#ifdef _KERNEL
 
-#define _QUAD_HIGHWORD	0
-#define _QUAD_LOWWORD	1
+static inline __uint16_t
+__mswap16(volatile const __uint16_t *m)
+{
+	__uint16_t v;
 
-/*
- * Definitions for byte order, according to byte significance from low
- * address to high.
- */
-#define	LITTLE_ENDIAN	1234	/* LSB first: i386, vax */
-#define	BIG_ENDIAN	4321	/* MSB first: 68000, ibm, net */
-#define	PDP_ENDIAN	3412	/* LSB first in word, MSW first in long */
+	__asm("lhbrx %0, 0, %1"
+	    : "=r" (v)
+            : "r" (m), "m" (*m));
 
-#define	BYTE_ORDER	BIG_ENDIAN	/* for now */
+	return (v);
+}
 
-#include <sys/cdefs.h>
+static inline __uint32_t
+__mswap32(volatile const __uint32_t *m)
+{
+	__uint32_t v;
 
-__BEGIN_DECLS
-unsigned long htonl __P((unsigned long));
-unsigned short htons __P((unsigned short));
-unsigned long ntohl __P((unsigned long));
-unsigned short ntohs __P((unsigned short));
-__END_DECLS
+	__asm("lwbrx %0, 0, %1"
+	    : "=r" (v)
+            : "r" (m), "m" (*m));
 
-/*
- * Macros for network/external number representation conversion.
- */
-#if BYTE_ORDER == BIG_ENDIAN && !defined(lint)
-#define	ntohl(x)	(x)
-#define	ntohs(x)	(x)
-#define	htonl(x)	(x)
-#define	htons(x)	(x)
+	return (v);
+}
 
-#define	NTOHL(x)	(void) (x)
-#define	NTOHS(x)	(void) (x)
-#define	HTONL(x)	(void) (x)
-#define	HTONS(x)	(void) (x)
+static inline __uint64_t
+__mswap64(volatile const __uint64_t *m)
+{
+	__uint32_t *a = (__uint32_t *)m;
+	__uint64_t v;
 
-#else
+	v = (__uint64_t)__mswap32(a + 1) << 32 |
+	    (__uint64_t)__mswap32(a);
 
-#define	NTOHL(x)	(x) = ntohl((in_addr_t)x)
-#define	NTOHS(x)	(x) = ntohs((in_port_t)x)
-#define	HTONL(x)	(x) = htonl((in_addr_t)x)
-#define	HTONS(x)	(x) = htons((in_port_t)x)
+	return (v);
+}
+
+static inline void
+__swapm16(volatile __uint16_t *m, __uint16_t v)
+{
+	__asm("sthbrx %1, 0, %2"
+	    : "=m" (*m)
+	    : "r" (v), "r" (m));
+}
+
+static inline void
+__swapm32(volatile __uint32_t *m, __uint32_t v)
+{
+	__asm("stwbrx %1, 0, %2"
+	    : "=m" (*m)
+	    : "r" (v), "r" (m));
+}
+
+static inline void
+__swapm64(volatile __uint64_t *m, __uint64_t v)
+{
+	__uint32_t *a = (__uint32_t *)m;
+
+	__swapm32(a + 1, v >> 32);
+	__swapm32(a, v);
+}
+
+#define __HAVE_MD_SWAPIO
+#endif /* _KERNEL */
+
+#undef _BIG_ENDIAN	/* XXX - gcc may define _BIG_ENDIAN too */
+#define _BYTE_ORDER _BIG_ENDIAN
+
+#ifndef __FROM_SYS__ENDIAN
+#include <sys/endian.h>
 #endif
 
-#endif	/* _POSIX_SOURCE */
-#endif	/* _PPC_ENDIAN_H_ */
+#endif /* _POWERPC_ENDIAN_H_ */

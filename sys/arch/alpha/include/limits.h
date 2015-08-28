@@ -1,4 +1,5 @@
-/*	$NetBSD: limits.h,v 1.1 1995/02/13 23:07:41 cgd Exp $	*/
+/*	$OpenBSD: limits.h,v 1.13 2009/11/27 19:54:35 guenther Exp $	*/
+/*	$NetBSD: limits.h,v 1.2 1996/04/12 01:38:25 cgd Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,50 +32,23 @@
  *	@(#)limits.h	8.3 (Berkeley) 1/4/94
  */
 
-#define	CHAR_BIT	8		/* number of bits in a char */
-#define	MB_LEN_MAX	6		/* Allow 31 bit UTF2 */
+#ifndef _MACHINE_LIMITS_H_
+#define _MACHINE_LIMITS_H_
 
-/*
- * According to ANSI (section 2.2.4.2), the values below must be usable by
- * #if preprocessing directives.  Additionally, the expression must have the
- * same type as would an expression that is an object of the corresponding
- * type converted according to the integral promotions.  The subtraction for
- * INT_MIN and LONG_MIN is so the value is not unsigned; 2147483648 is an
- * unsigned int for 32-bit two's complement ANSI compilers (section 3.1.3.2).
- * These numbers work for pcc as well.  The UINT_MAX and ULONG_MAX values
- * are written as hex so that GCC will be quiet about large integer constants.
- */
-#define	SCHAR_MAX	127		/* min value for a signed char */
-#define	SCHAR_MIN	(-128)		/* max value for a signed char */
+#include <sys/cdefs.h>
 
-#define	UCHAR_MAX	255		/* max value for an unsigned char */
-#define	CHAR_MAX	127		/* max value for a char */
-#define	CHAR_MIN	(-128)		/* min value for a char */
+#if __POSIX_VISIBLE || __XPG_VISIBLE
+#define	SSIZE_MAX	LONG_MAX	/* max value for a ssize_t */
+#endif
 
-#define	USHRT_MAX	65535		/* max value for an unsigned short */
-#define	SHRT_MAX	32767		/* max value for a short */
-#define	SHRT_MIN	(-32768)	/* min value for a short */
+#if __BSD_VISIBLE
+#define	SIZE_T_MAX	ULONG_MAX	/* max value for a size_t (historic) */
 
-#define	UINT_MAX	0xffffffff	/* max value for an unsigned int */
-#define	INT_MAX		2147483647	/* max value for an int */
-#define	INT_MIN		(-2147483647-1)	/* min value for an int */
+/* Quads and longs are the same on the alpha */
+#define	UQUAD_MAX	(ULONG_MAX)	/* max value for a uquad_t */
+#define	QUAD_MAX	(LONG_MAX)	/* max value for a quad_t */
+#define	QUAD_MIN	(LONG_MIN)	/* min value for a quad_t */
 
-#define	ULONG_MAX	0xffffffffffffffff /* max value for an unsigned long */
-					/* max value for a long */
-#define	LONG_MAX	0x7fffffffffffffff
-#define	LONG_MIN	(-LONG_MAX-1)	/* min value for a long */
+#endif /* __BSD_VISIBLE */
 
-#if !defined(_ANSI_SOURCE)
-#define	SSIZE_MAX	INT_MAX		/* max value for a ssize_t */
-
-#if !defined(_POSIX_SOURCE)
-#define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */
-
-/* GCC requires that quad constants be written as expressions. */
-#define	UQUAD_MAX	((u_quad_t)0-1)	/* max value for a uquad_t */
-					/* max value for a quad_t */
-#define	QUAD_MAX	((quad_t)(UQUAD_MAX >> 1))
-#define	QUAD_MIN	(-QUAD_MAX-1)	/* min value for a quad_t */
-
-#endif /* !_POSIX_SOURCE */
-#endif /* !_ANSI_SOURCE */
+#endif /* _MACHINE_LIMITS_H_ */
