@@ -1,2 +1,0 @@
-#	$OpenBSD: hosts.lpd,v 1.4 2014/04/20 18:06:37 tedu Exp $
-# As described in lpd(8), place one legal access hostname per line.

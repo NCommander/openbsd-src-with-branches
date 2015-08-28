@@ -1,8 +1,0 @@
-#	$OpenBSD$
-
-#------------------------------------------------------------------------------
-# OpenBSD ktrace(1) output data
-#
-0	belong			0x4b545200
->4	long			0xffffffff
->8	long			0xffffffff	OpenBSD kernel trace data
