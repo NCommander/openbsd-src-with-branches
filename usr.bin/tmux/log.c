@@ -1,4 +1,4 @@
-/* $OpenBSD: log.c,v 1.11 2014/10/20 23:57:13 nicm Exp $ */
+/* $OpenBSD: log.c,v 1.12 2014/11/26 18:34:51 millert Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -67,11 +67,13 @@ void
 log_vwrite(const char *msg, va_list ap)
 {
 	char	*fmt;
+	time_t	 t;
 
 	if (log_file == NULL)
 		return;
 
-	if (asprintf(&fmt, "%s\n", msg) == -1)
+	t = time(NULL);
+	if (asprintf(&fmt, "%lld %s\n", (long long)t, msg) == -1)
 		exit(1);
 	if (vfprintf(log_file, fmt, ap) == -1)
 		exit(1);
