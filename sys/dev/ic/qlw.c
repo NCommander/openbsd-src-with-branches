@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlw.c,v 1.27 2015/01/27 03:17:36 dlg Exp $ */
+/*	$OpenBSD: qlw.c,v 1.28 2015/03/14 03:38:47 jsg Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -1672,7 +1672,7 @@ free:
 destroy:
 	bus_dmamap_destroy(sc->sc_dmat, m->qdm_map);
 qdmfree:
-	free(m, M_DEVBUF, 0);
+	free(m, M_DEVBUF, sizeof(*m));
 
 	return (NULL);
 }
@@ -1684,7 +1684,7 @@ qlw_dmamem_free(struct qlw_softc *sc, struct qlw_dmamem *m)
 	bus_dmamem_unmap(sc->sc_dmat, m->qdm_kva, m->qdm_size);
 	bus_dmamem_free(sc->sc_dmat, &m->qdm_seg, 1);
 	bus_dmamap_destroy(sc->sc_dmat, m->qdm_map);
-	free(m, M_DEVBUF, 0);
+	free(m, M_DEVBUF, sizeof(*m));
 }
 
 int

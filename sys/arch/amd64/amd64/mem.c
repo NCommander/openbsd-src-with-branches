@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.24 2015/05/28 20:53:05 jcs Exp $ */
+/*	$OpenBSD: mem.c,v 1.25 2015/06/22 18:57:26 kettenis Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -285,7 +285,7 @@ mem_ioctl(dev_t dev, u_long cmd, caddr_t data, int flags, struct proc *p)
 			if (!error)
 				error = copyout(md, mo->mo_desc,
 					nd * sizeof(struct mem_range_desc));
-			free(md, M_MEMDESC, 0);
+			free(md, M_MEMDESC, nd * sizeof(struct mem_range_desc));
 		} else {
 			nd = mem_range_softc.mr_ndesc;
 		}
@@ -299,7 +299,7 @@ mem_ioctl(dev_t dev, u_long cmd, caddr_t data, int flags, struct proc *p)
 		md->mr_owner[sizeof(md->mr_owner) - 1] = 0;
 		if (error == 0)
 			error = mem_range_attr_set(md, &mo->mo_arg[0]);
-		free(md, M_MEMDESC, 0);
+		free(md, M_MEMDESC, nd * sizeof(struct mem_range_desc));
 		break;
 	}
 	return (error);
