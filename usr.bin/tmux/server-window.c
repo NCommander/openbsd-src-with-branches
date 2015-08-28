@@ -1,4 +1,4 @@
-/* $OpenBSD: server-window.c,v 1.34 2015/04/24 23:17:11 nicm Exp $ */
+/* $OpenBSD: server-window.c,v 1.35 2015/05/12 15:27:46 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -147,7 +147,7 @@ server_window_check_silence(struct session *s, struct winlink *wl)
 		 * from this window.
 		 */
 		if (gettimeofday(&w->silence_timer, NULL) != 0)
-			fatal("gettimeofday failed.");
+			fatal("gettimeofday failed");
 
 		return (0);
 	}
