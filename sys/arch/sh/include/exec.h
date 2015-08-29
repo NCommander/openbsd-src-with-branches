@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.2 2006/11/10 20:34:06 drahn Exp $	*/
+/*	$OpenBSD: exec.h,v 1.3 2012/09/11 15:44:18 deraadt Exp $	*/
 /*	$NetBSD: elf_machdep.h,v 1.8 2002/04/28 17:10:34 uch Exp $	*/
 
 #define __LDPGSZ	4096
@@ -13,7 +13,6 @@
 #define	ELF_TARG_MACH		EM_SH
 
 #define	_KERN_DO_ELF
-#define	_NLIST_DO_ELF
 
 /*
  * SuperH ELF header flags.

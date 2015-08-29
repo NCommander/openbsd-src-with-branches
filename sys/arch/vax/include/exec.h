@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.10 2013/10/17 08:02:17 deraadt Exp $	*/
+/*	$OpenBSD: exec.h,v 1.11 2014/03/18 19:23:42 guenther Exp $	*/
 /*	$NetBSD: exec.h,v 1.4 1995/09/23 14:57:40 ragge Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
 
 #define __LDPGSZ	4096
 
-#define _NLIST_DO_ELF
 #define _KERN_DO_ELF
 
 #define ARCH_ELFSIZE		32
