@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.79 2015/02/10 23:25:46 mpi Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.80 2015/03/14 03:38:47 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -396,7 +396,7 @@ rt2661_detach(void *xsc)
 	rt2661_free_rx_ring(sc, &sc->rxq);
 
 	if (sc->ucode != NULL)
-		free(sc->ucode, M_DEVBUF, 0);
+		free(sc->ucode, M_DEVBUF, sc->ucsize);
 
 	return 0;
 }
