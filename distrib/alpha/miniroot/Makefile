@@ -40,7 +40,7 @@ ofwboot:
 	    ${DESTDIR}/usr/mdec/boot /mnt/boot
 
 installboot:
-	installboot -v vnd0
+	/usr/mdec/installboot -v /mnt/boot ${DESTDRIR}/usr/mdec/bootxx /dev/rvnd0c
 
 blank_filesystem:
 	dd if=/dev/zero of=${TARGET} bs=512 count=5744
