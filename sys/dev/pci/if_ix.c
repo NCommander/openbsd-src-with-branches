@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.120 2015/05/21 07:39:52 gerhard Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.121 2015/06/24 09:40:54 mpi Exp $	*/
 
 /******************************************************************************
 
@@ -615,11 +615,10 @@ ixgbe_init(void *arg)
 	ixgbe_init_hw(&sc->hw);
 	ixgbe_initialize_transmit_units(sc);
 
-#ifdef __STRICT_ALIGNMENT
-	/* Use 4k clusters, even for jumbo frames */
-	sc->rx_mbuf_sz = 4096;
-#else
 	/* Use 2k clusters, even for jumbo frames */
+#ifdef __STRICT_ALIGNMENT
+	sc->rx_mbuf_sz = MCLBYTES + ETHER_ALIGN;
+#else
 	sc->rx_mbuf_sz = MCLBYTES;
 #endif
 
