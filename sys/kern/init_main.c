@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.242 2015/07/02 01:34:00 dlg Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.243 2015/07/09 19:45:37 miod Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -398,7 +398,6 @@ main(void *framep)
 	s = splnet();
 	netisr_init();
 	domaininit();
-	if_attachdomain();
 	splx(s);
 
 	initconsbuf();
