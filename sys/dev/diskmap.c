@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskmap.c,v 1.10 2015/03/14 03:38:46 jsg Exp $	*/
+/*	$OpenBSD: diskmap.c,v 1.11 2015/05/07 08:53:33 mpi Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Joel Sing <jsing@openbsd.org>
@@ -118,7 +118,7 @@ diskmapioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 
 	FRELE(fp, p);
 	fdpunlock(fdp);
-	free(devname, M_DEVBUF, 0);
+	free(devname, M_DEVBUF, PATH_MAX);
 
 	return 0;
 
@@ -131,7 +131,7 @@ bad:
 	fdpunlock(fdp);
 
 invalid:
-	free(devname, M_DEVBUF, 0);
+	free(devname, M_DEVBUF, PATH_MAX);
 
 	return (error);
 }
