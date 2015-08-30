@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.111 2015/05/01 04:17:51 djm Exp $ */
+/* $OpenBSD: auth.c,v 1.112 2015/08/06 14:53:21 deraadt Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -263,7 +263,7 @@ auth_root_allowed(const char *method)
 	case PERMIT_NO_PASSWD:
 		if (strcmp(method, "publickey") == 0 ||
 		    strcmp(method, "hostbased") == 0 ||
-		    strcmp(method, "gssapi-with-mic"))
+		    strcmp(method, "gssapi-with-mic") == 0)
 			return 1;
 		break;
 	case PERMIT_FORCED_ONLY:
