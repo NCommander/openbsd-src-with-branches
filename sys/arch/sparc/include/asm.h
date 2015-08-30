@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.6 2012/08/22 17:19:35 pascal Exp $	*/
+/*	$OpenBSD: asm.h,v 1.7 2013/03/28 17:41:04 martynas Exp $	*/
 /*	$NetBSD: asm.h,v 1.5 1997/07/16 15:16:43 christos Exp $ */
 
 /*
@@ -119,6 +119,7 @@
 #define ENTRY(name)		_ENTRY(_C_LABEL(name)); _PROF_PROLOGUE
 #define	ASENTRY(name)		_ENTRY(_ASM_LABEL(name)); _PROF_PROLOGUE
 #define	FUNC(name)		ASENTRY(name)
+#define	END(y)			.size y, . - y
 
 
 #define ASMSTR			.asciz
