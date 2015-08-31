@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptosoft.c,v 1.72 2014/12/28 10:02:37 tedu Exp $	*/
+/*	$OpenBSD: cryptosoft.c,v 1.73 2015/03/14 03:38:46 jsg Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -673,7 +673,7 @@ swcr_compdec(struct cryptodesc *crd, struct swcr_data *sw,
 	else
 		result = cxf->decompress(data, crd->crd_len, &out);
 
-	free(data, M_CRYPTO_DATA, 0);
+	free(data, M_CRYPTO_DATA, crd->crd_len);
 	if (result == 0)
 		return EINVAL;
 
@@ -764,7 +764,8 @@ swcr_newsession(u_int32_t *sid, struct cryptoini *cri)
 		if (swcr_sessions) {
 			bcopy(swcr_sessions, swd,
 			    (swcr_sesnum / 2) * sizeof(struct swcr_data *));
-			free(swcr_sessions, M_CRYPTO_DATA, 0);
+			free(swcr_sessions, M_CRYPTO_DATA,
+			    (swcr_sesnum / 2) * sizeof(struct swcr_data *));
 		}
 
 		swcr_sessions = swd;
