@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: efifb.4,v 1.1 2015/08/31 03:48:30 yasuoka Exp $
 .\"
 .\" Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
 .\"
@@ -16,20 +16,20 @@
 .\"
 .\" The following requests are required for all man pages.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: August 31 2015 $
 .Dt EFIFB 4 amd64
 .Os
 .Sh NAME
 .Nm efifb
-.Nd EFI frame buffer 
+.Nd EFI frame buffer
 .Sh SYNOPSIS
 .Cd "efifb* at mainbus?"
 .Cd "wsdisplay* at efifb?"
 .Sh DESCRIPTION
 The
 .Nm
-driver is to support the frame buffer passed from UEFI,
-Unified Extensible Firmware Interface.
+driver supports the frame buffer passed from UEFI,
+the Unified Extensible Firmware Interface.
 .Pp
 The
 .Nm
