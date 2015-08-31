@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: strlen.S,v 1.4 2015/05/29 07:21:09 uebayasi Exp $	*/
 /*	$NetBSD: strlen.S,v 1.6 2014/03/22 19:16:34 jakllsch Exp $	*/
 
 /*-
@@ -35,7 +35,7 @@
  * (Only the long comment really remains his work!)
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 /*
  * There are many well known branch-free sequences which are used
@@ -154,4 +154,4 @@ ENTRY(strlen)
 	dec	%rsi
 	or	%rsi,%rdx		/* low bytes now non-zero */
 	jmp	2b
-END(strlen)
+END_STRONG(strlen)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: memcpy.S,v 1.1.1.1 2006/10/10 22:07:10 miod Exp $	*/
+/*	$OpenBSD: memcpy.S,v 1.2 2014/11/30 19:43:56 deraadt Exp $	*/
 /*	$NetBSD: memcpy.S,v 1.2 2006/04/22 23:53:47 uwe Exp $	*/
 
 /*
@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 #define	REG_DST0	r3
 #define	REG_SRC		r5
@@ -137,3 +137,4 @@ no_align_delay:
 bcopy_return:
 	rts
 	mov	REG_DST0,r0
+END_STRONG(memcpy)

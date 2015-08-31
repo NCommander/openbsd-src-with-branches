@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfwprintf.c,v 1.11 2014/06/04 07:45:25 stsp Exp $ */
+/*	$OpenBSD: vfwprintf.c,v 1.12 2014/12/21 00:23:30 daniel Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -1072,6 +1072,7 @@ vfwprintf(FILE * __restrict fp, const wchar_t * __restrict fmt0, __va_list ap)
 
 	return (r);
 }
+DEF_STRONG(vfwprintf);
 
 /*
  * Type ids for argument type table.

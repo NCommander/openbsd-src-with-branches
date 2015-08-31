@@ -1,4 +1,4 @@
-/*	$OpenBSD: swprintf.c,v 1.4 2011/07/29 09:19:22 sthen Exp $ */
+/*	$OpenBSD: swprintf.c,v 1.5 2012/12/05 23:20:01 deraadt Exp $ */
 /*	$NetBSD: swprintf.c,v 1.1 2005/05/14 23:51:02 christos Exp $	*/
 
 /*-
@@ -43,3 +43,4 @@ swprintf(wchar_t * __restrict s, size_t n, const wchar_t * __restrict fmt, ...)
 
 	return (ret);
 }
+DEF_STRONG(swprintf);

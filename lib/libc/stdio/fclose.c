@@ -1,4 +1,4 @@
-/*	$OpenBSD: fclose.c,v 1.8 2009/10/22 01:23:16 guenther Exp $ */
+/*	$OpenBSD: fclose.c,v 1.9 2009/11/09 00:18:27 kurt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -61,3 +61,4 @@ fclose(FILE *fp)
 	FUNLOCKFILE(fp);
 	return (r);
 }
+DEF_STRONG(fclose);

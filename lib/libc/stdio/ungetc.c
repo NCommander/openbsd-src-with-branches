@@ -1,4 +1,4 @@
-/*	$OpenBSD: ungetc.c,v 1.12 2009/11/09 00:18:27 kurt Exp $ */
+/*	$OpenBSD: ungetc.c,v 1.13 2014/10/11 04:05:10 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -143,3 +143,4 @@ inc_ret:	fp->_r++;
 	FUNLOCKFILE(fp);
 	return (c);
 }
+DEF_STRONG(ungetc);

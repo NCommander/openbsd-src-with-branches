@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcopy.S,v 1.3 2005/08/07 16:40:15 espie Exp $ */
+/*	$OpenBSD: bcopy.S,v 1.4 2009/12/11 05:10:17 miod Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 /* bcopy(s1, s2, n) */
 
@@ -116,4 +116,4 @@ smallcpy:
 	j	ra
 	nop
 	.set	reorder
-END(bcopy)
+END_WEAK(bcopy)

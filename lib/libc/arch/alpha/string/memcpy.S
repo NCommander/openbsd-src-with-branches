@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcopy.S,v 1.6 2013/06/11 21:16:15 deraadt Exp $	*/
+/*	$OpenBSD: memcpy.S,v 1.5 2014/11/30 19:43:54 deraadt Exp $	*/
 /*	$NetBSD: bcopy.S,v 1.3 1996/10/17 03:08:11 cgd Exp $	*/
 
 /*
@@ -29,7 +29,7 @@
  * rights to redistribute these changes.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 #define	SRCREG		a1
 #define	DSTREG		a0
@@ -197,4 +197,4 @@ bcopy_da_finish:
 bcopy_done:
 	RET
 
-	END(memcpy)
+	END_STRONG(memcpy)

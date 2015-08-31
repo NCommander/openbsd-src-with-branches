@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: strcat.S,v 1.8 2005/08/07 11:30:38 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -71,3 +71,4 @@ L1:	movb	(%edx),%al		/* unroll loop, but not too much */
 L2:	popl	%eax			/* pop destination address */
 	popl	%edi			/* restore edi */
 	ret
+END(strcat)

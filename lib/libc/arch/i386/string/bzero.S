@@ -1,10 +1,10 @@
-/*	$OpenBSD: bzero.S,v 1.3 2005/08/07 11:30:38 espie Exp $ */
+/*	$OpenBSD: bzero.S,v 1.4 2007/05/25 20:32:29 krw Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 ENTRY(bzero)
 	pushl	%edi
@@ -41,3 +41,4 @@ L1:	movl	%edx,%ecx		/* zero remainder by bytes */
 
 	popl	%edi
 	ret
+END_WEAK(bzero)

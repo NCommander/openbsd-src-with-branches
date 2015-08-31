@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: funopen.c,v 1.8 2005/08/08 08:05:36 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -66,3 +66,4 @@ funopen(const void *cookie, int (*readfn)(void *, char *, int),
 	fp->_close = closefn;
 	return (fp);
 }
+DEF_WEAK(funopen);

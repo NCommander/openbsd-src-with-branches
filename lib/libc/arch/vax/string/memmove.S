@@ -1,4 +1,4 @@
-/*	$OpenBSD: memmove.S,v 1.5 2005/08/07 16:40:15 espie Exp $ */
+/*	$OpenBSD: memmove.S,v 1.6 2013/07/05 21:10:50 miod Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -84,3 +84,4 @@ ENTRY(memmove, R2|R3|R4|R5)
 	subl2	%r0,%r1
 	subl2	%r0,%r3
 	brb	5b
+END_STRONG(memmove)

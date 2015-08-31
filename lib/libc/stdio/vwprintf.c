@@ -1,4 +1,4 @@
-/*	$OpenBSD: vwprintf.c,v 1.1 2011/04/24 07:46:58 stsp Exp $ */
+/*	$OpenBSD: vwprintf.c,v 1.3 2011/04/28 17:38:46 stsp Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -40,3 +40,4 @@ vwprintf(const wchar_t * __restrict fmt, __va_list ap)
 {
 	return (vfwprintf(stdout, fmt, ap));
 }
+DEF_STRONG(vwprintf);

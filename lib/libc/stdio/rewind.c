@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rewind.c,v 1.5 2005/08/08 08:05:36 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -41,3 +41,4 @@ rewind(FILE *fp)
 	clearerr(fp);
 	errno = 0;      /* not required, but seems reasonable */
 }
+DEF_STRONG(rewind);

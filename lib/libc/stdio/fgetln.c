@@ -1,4 +1,4 @@
-/*	$OpenBSD: fgetln.c,v 1.12 2013/11/12 07:04:06 deraadt Exp $ */
+/*	$OpenBSD: fgetln.c,v 1.13 2015/01/05 21:58:52 millert Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -142,3 +142,4 @@ error:
 	*lenp = 0;
 	return (NULL);
 }
+DEF_WEAK(fgetln);

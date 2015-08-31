@@ -1,4 +1,4 @@
-/*	$OpenBSD: memmove.S,v 1.7 2014/11/29 18:51:23 tedu Exp $	*/
+/*	$OpenBSD: memmove.S,v 1.5 2014/12/02 03:07:13 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -33,8 +33,7 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/param.h>
-#include <machine/asm.h>
+#include "SYS.h"
 
 /*
  * Emulate bcopy() by swapping the first two arguments, and jumping
@@ -105,4 +104,5 @@ docopyf:
 	popl	%esi
 	cld
 	ret
-
+END_STRONG(memmove)
+END_WEAK(bcopy)

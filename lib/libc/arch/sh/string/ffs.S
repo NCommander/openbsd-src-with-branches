@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs.S,v 1.1.1.1 2006/10/10 22:07:10 miod Exp $	*/
+/*	$OpenBSD: ffs.S,v 1.2 2008/06/26 05:42:05 ray Exp $	*/
 /*	$NetBSD: ffs.S,v 1.1 2005/12/20 19:28:50 christos Exp $	*/
 
 /*-
@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 /*
  * ffs - find first bit set
@@ -91,3 +91,4 @@ L8bit:
 
 Lzero:	rts
 	 nop
+END_WEAK(ffs)

@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: tmpnam.c,v 1.10 2005/08/08 08:05:36 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -38,8 +38,6 @@
 
 __warn_references(tmpnam,
     "warning: tmpnam() possibly used unsafely; consider using mkstemp()");
-
-extern char *_mktemp(char *);
 
 char *
 tmpnam(char *s)

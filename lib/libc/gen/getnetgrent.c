@@ -1,4 +1,4 @@
-/*	$OpenBSD: getnetgrent.c,v 1.22 2009/11/11 18:41:57 jsg Exp $	*/
+/*	$OpenBSD: getnetgrent.c,v 1.23 2014/10/08 04:37:02 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -364,7 +364,7 @@ addgroup(char *ypdom, struct stringlist *sl, char *grp)
 #endif
 	/* check for cycles */
 	if (_ng_sl_find(sl, grp) != NULL) {
-		_warnx("netgroup: Cycle in group `%s'", grp);
+		warnx("netgroup: Cycle in group `%s'", grp);
 		free(grp);
 		return;
 	}
@@ -445,7 +445,7 @@ in_find(char *ypdom, struct stringlist *sl, char *grp, const char *host,
 #endif
 	/* check for cycles */
 	if (_ng_sl_find(sl, grp) != NULL) {
-		_warnx("netgroup: Cycle in group `%s'", grp);
+		warnx("netgroup: Cycle in group `%s'", grp);
 		free(grp);
 		return 0;
 	}

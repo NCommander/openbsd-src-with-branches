@@ -1,4 +1,4 @@
-/*	$OpenBSD: remove.c,v 1.6 2004/09/28 18:12:44 otto Exp $	*/
+/*	$OpenBSD: remove.c,v 1.7 2005/08/08 08:05:36 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -47,3 +47,4 @@ remove(const char *file)
 		return (rmdir(file));
 	return (unlink(file));
 }
+DEF_STRONG(remove);

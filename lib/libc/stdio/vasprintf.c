@@ -1,4 +1,4 @@
-/*	$OpenBSD: vasprintf.c,v 1.16 2009/11/09 00:18:27 kurt Exp $	*/
+/*	$OpenBSD: vasprintf.c,v 1.17 2015/08/20 21:49:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -56,3 +56,4 @@ err:
 	errno = ENOMEM;
 	return (-1);
 }
+DEF_WEAK(vasprintf);

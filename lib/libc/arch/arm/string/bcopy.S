@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcopy.S,v 1.2 2004/02/01 05:40:52 drahn Exp $	*/
+/*	$OpenBSD: bcopy.S,v 1.3 2008/06/26 05:42:04 ray Exp $	*/
 /*	$NetBSD: bcopy.S,v 1.2 2001/07/16 05:50:06 matt Exp $	*/
 
 /*-
@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 /* bcopy = memcpy/memmove with arguments reversed. */
 
@@ -40,3 +40,4 @@ ENTRY(bcopy)
 	eor     r1, r0, r1 
 	eor     r0, r1, r0 
 	b	PIC_SYM(_C_LABEL(_memcpy), PLT)
+END_WEAK(bcopy)

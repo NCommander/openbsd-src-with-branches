@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: fgetpos.c,v 1.6 2005/08/08 08:05:36 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -41,3 +41,4 @@ fgetpos(FILE *fp, fpos_t *pos)
 {
 	return((*pos = ftello(fp)) == (fpos_t)-1);
 }
+DEF_STRONG(fgetpos);

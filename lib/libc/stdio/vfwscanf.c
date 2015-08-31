@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfwscanf.c,v 1.3 2013/11/25 12:15:19 stsp Exp $ */
+/*	$OpenBSD: vfwscanf.c,v 1.4 2014/03/19 05:17:01 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -796,3 +796,4 @@ vfwscanf(FILE * __restrict fp, const wchar_t * __restrict fmt, __va_list ap)
 	FUNLOCKFILE(fp);
 	return (r);
 }
+DEF_STRONG(vfwscanf);

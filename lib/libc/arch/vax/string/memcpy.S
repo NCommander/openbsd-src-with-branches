@@ -1,4 +1,4 @@
-/*	$OpenBSD: memcpy.S,v 1.7 2014/11/30 19:43:56 deraadt Exp $ */
+/*	$OpenBSD: memcpy.S,v 1.8 2015/05/26 20:23:39 miod Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -56,3 +56,4 @@ ENTRY(memcpy, R2|R3|R4|R5)
 	movl	12(%ap),%r2
 	decw	%r0		/* from 0 to 65535 */
 	brb	1b		/* retry */
+END_STRONG(memcpy)

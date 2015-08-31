@@ -1,4 +1,4 @@
-/*	$OpenBSD: getdelim.c,v 1.2 2014/10/16 17:31:51 millert Exp $	*/
+/*	$OpenBSD: getdelim.c,v 1.3 2015/02/06 23:21:58 millert Exp $	*/
 /* $NetBSD: getdelim.c,v 1.13 2011/07/22 23:12:30 joerg Exp $ */
 
 /*
@@ -132,3 +132,4 @@ error:
 	FUNLOCKFILE(fp);
 	return -1;
 }
+DEF_WEAK(getdelim);

@@ -30,10 +30,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: SYS.h,v 1.16 2014/06/04 20:13:49 matthew Exp $
+ *	$OpenBSD: SYS.h,v 1.17 2015/04/07 01:27:07 guenther Exp $
  */
 
-#include <machine/asm.h>
+#include "DEFS.h"
 #include <sys/syscall.h>
 #include <machine/trap.h>
 

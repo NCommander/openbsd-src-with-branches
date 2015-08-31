@@ -1,4 +1,4 @@
-/*	$OpenBSD: fwrite.c,v 1.10 2009/11/21 09:53:44 guenther Exp $ */
+/*	$OpenBSD: fwrite.c,v 1.11 2014/05/01 16:40:36 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -86,3 +86,4 @@ fwrite(const void *buf, size_t size, size_t count, FILE *fp)
 		return (count);
 	return ((n - uio.uio_resid) / size);
 }
+DEF_STRONG(fwrite);

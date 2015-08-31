@@ -1,4 +1,4 @@
-/*	$OpenBSD: verr.c,v 1.8 2005/08/08 08:05:34 espie Exp $ */
+/*	$OpenBSD: verr.c,v 1.9 2012/12/05 23:20:00 deraadt Exp $ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -38,7 +38,7 @@
 extern char *__progname;		/* Program name, from crt0. */
 
 __dead void
-_verr(int eval, const char *fmt, va_list ap)
+verr(int eval, const char *fmt, va_list ap)
 {
 	int sverrno;
 
@@ -51,6 +51,4 @@ _verr(int eval, const char *fmt, va_list ap)
 	(void)fprintf(stderr, "%s\n", strerror(sverrno));
 	exit(eval);
 }
-
-__weak_alias(verr, _verr);
-
+DEF_WEAK(verr);

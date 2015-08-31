@@ -1,10 +1,10 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: memcmp.S,v 1.4 2005/08/07 11:30:38 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 ENTRY(memcmp)
 	pushl	%edi
@@ -41,3 +41,4 @@ L6:	movzbl  -1(%edi),%eax		/* Perform unsigned comparison	*/
 	popl	%esi
 	popl	%edi
 	ret
+END_STRONG(memcmp)

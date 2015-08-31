@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftell.c,v 1.9 2009/11/09 00:18:27 kurt Exp $ */
+/*	$OpenBSD: ftell.c,v 1.10 2012/05/21 22:24:19 matthew Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -83,6 +83,7 @@ ftello(FILE *fp)
 out:	FUNLOCKFILE(fp);
 	return (pos);
 }
+DEF_WEAK(ftello);
 
 long
 ftell(FILE *fp)
@@ -94,3 +95,4 @@ ftell(FILE *fp)
 	}
 	return ((long)offset);
 }
+DEF_STRONG(ftell);

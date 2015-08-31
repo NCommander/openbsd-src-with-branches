@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdopen.c,v 1.6 2008/04/21 12:28:35 otto Exp $ */
+/*	$OpenBSD: fdopen.c,v 1.7 2014/08/31 02:21:18 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -89,3 +89,4 @@ fdopen(int fd, const char *mode)
 	fp->_close = __sclose;
 	return (fp);
 }
+DEF_WEAK(fdopen);

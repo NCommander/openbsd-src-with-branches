@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: getline.c,v 1.1 2012/03/21 23:44:35 fgsch Exp $	*/
 /* $NetBSD: getline.c,v 1.3 2009/12/02 08:46:33 roy Exp $ */
 
 /*
@@ -35,3 +35,4 @@ getline(char **__restrict buf, size_t *__restrict buflen, FILE *__restrict fp)
 {
 	return getdelim(buf, buflen, '\n', fp);
 }
+DEF_WEAK(getline);

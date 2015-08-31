@@ -1,4 +1,4 @@
-/*	$OpenBSD: bzero.S,v 1.4 2005/08/07 16:40:15 espie Exp $ */
+/*	$OpenBSD: bzero.S,v 1.5 2009/12/11 05:10:17 miod Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 /* bzero(s1, n) */
 
@@ -63,4 +63,4 @@ smallclr:
 2:
 	j	ra
 	nop
-END(bzero)
+END_WEAK(bzero)

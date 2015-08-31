@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs.S,v 1.4 2005/08/07 16:40:15 espie Exp $ */
+/*	$OpenBSD: ffs.S,v 1.5 2013/07/05 21:10:50 miod Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,3 +39,4 @@ ENTRY(ffs, 0)
 1:
 	incl	%r0
 	ret
+END_WEAK(ffs)

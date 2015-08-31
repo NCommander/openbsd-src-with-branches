@@ -1,4 +1,4 @@
-/*	$OpenBSD: memset.S,v 1.5 2005/08/07 16:40:15 espie Exp $ */
+/*	$OpenBSD: memset.S,v 1.6 2013/07/05 21:10:50 miod Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -46,3 +46,4 @@ ENTRY(memset, R2|R3|R4|R5)
 	subl2	%r0,12(%ap)
 	movc5	$0,(%r3),%r1,%r0,(%r3)
 	jbr	1b
+END_STRONG(memset)

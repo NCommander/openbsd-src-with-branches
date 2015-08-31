@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfscanf.c,v 1.30 2013/04/17 17:40:35 tedu Exp $ */
+/*	$OpenBSD: vfscanf.c,v 1.31 2014/03/19 05:17:01 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -967,3 +967,4 @@ vfscanf(FILE *fp, const char *fmt0, __va_list ap)
 	FUNLOCKFILE(fp);
 	return (r);
 }
+DEF_STRONG(vfscanf);

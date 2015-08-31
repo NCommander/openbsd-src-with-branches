@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: putwchar.c,v 1.1 2005/06/17 20:40:32 espie Exp $	*/
 /* $NetBSD: putwchar.c,v 1.3 2003/01/18 11:29:56 thorpej Exp $ */
 
 /*-
@@ -43,3 +43,4 @@ putwchar(wchar_t wc)
 
 	return fputwc(wc, stdout);
 }
+DEF_STRONG(putwchar);

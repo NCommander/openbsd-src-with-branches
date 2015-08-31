@@ -1,4 +1,4 @@
-/*	$OpenBSD: _memcpy.S,v 1.3 2008/06/26 05:42:04 ray Exp $	*/
+/*	$OpenBSD: _memcpy.S,v 1.4 2015/06/08 14:22:05 jsg Exp $	*/
 /*	$NetBSD: _memcpy.S,v 1.4 2003/04/05 23:08:52 bjh21 Exp $	*/
 
 /*-
@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 /*
  * This is one fun bit of code ...
@@ -462,3 +462,4 @@ ENTRY(_memcpy)
 .Lmemcpy_bsrcul1l4:
 	add	r1, r1, #1
 	b	.Lmemcpy_bl4
+END(_memcpy)

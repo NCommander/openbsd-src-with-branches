@@ -1,4 +1,4 @@
-/*	$OpenBSD: vsnprintf.c,v 1.14 2009/10/22 01:23:16 guenther Exp $ */
+/*	$OpenBSD: vsnprintf.c,v 1.15 2009/11/09 00:18:28 kurt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -62,3 +62,4 @@ vsnprintf(char *str, size_t n, const char *fmt, __va_list ap)
 	*f._p = '\0';
 	return (ret);
 }
+DEF_STRONG(vsnprintf);
