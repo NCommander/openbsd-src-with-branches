@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: efifbvar.h,v 1.1 2015/08/30 10:05:09 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -16,4 +16,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef _MACHINE_EFIFB_H_
+#define _MACHINE_EFIFB_H_
+
+struct efifb_attach_args {
+	const char		*eaa_name;
+};
+
 int efifb_cnattach(void);
+
+#endif /* _MACHINE_EFIFB_H_ */
