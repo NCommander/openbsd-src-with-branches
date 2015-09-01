@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ipwvar.h,v 1.23 2013/12/06 21:03:04 deraadt Exp $	*/
+/*	$OpenBSD: if_ipwvar.h,v 1.24 2014/12/19 15:19:47 krw Exp $	*/
 
 /*-
  * Copyright (c) 2004-2006
@@ -19,6 +19,7 @@
 
 struct ipw_firmware {
 	u_char	*data;
+	size_t	size;
 	u_char	*main;
 	size_t	main_size;
 	u_char	*ucode;
