@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.39 2013/12/17 16:37:05 deraadt Exp $	*/
+/*	$OpenBSD: edit.c,v 1.40 2015/03/12 10:20:30 sthen Exp $	*/
 
 /*
  * Command line editing - common code
@@ -489,7 +489,7 @@ x_command_glob(int flags, const char *str, int slen, char ***wordsp)
 			path_order_cmp);
 		for (i = 0; i < nwords; i++)
 			words[i] = info[i].word;
-		afree((void *) info, ATEMP);
+		afree(info, ATEMP);
 	} else {
 		/* Sort and remove duplicate entries */
 		char **words = (char **) XPptrv(w);
