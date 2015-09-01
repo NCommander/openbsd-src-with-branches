@@ -1,4 +1,4 @@
-/* $OpenBSD: input.c,v 1.83 2015/08/29 08:30:54 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.84 2015/09/01 19:16:00 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -878,7 +878,7 @@ input_parse(struct window_pane *wp)
 		}
 		if (itr->first == -1 || itr->last == -1) {
 			/* No transition? Eh? */
-			fatalx("No transition from state!");
+			fatalx("no transition from state");
 		}
 
 		/*
