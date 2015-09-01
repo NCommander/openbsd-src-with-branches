@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.54 2013/11/28 10:33:37 sobrado Exp $	*/
+/*	$OpenBSD: main.c,v 1.55 2015/02/09 09:09:30 jsg Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -100,16 +100,7 @@ main(int argc, char *argv[])
 	struct env env;
 	pid_t ppid;
 
-	/* make sure argv[] is sane */
-	if (!*argv) {
-		static const char *empty_argv[] = {
-			"ksh", (char *) 0
-		};
-
-		argv = (char **) empty_argv;
-		argc = 1;
-	}
-	kshname = *argv;
+	kshname = argv[0];
 
 	ainit(&aperm);		/* initialize permanent Area */
 
