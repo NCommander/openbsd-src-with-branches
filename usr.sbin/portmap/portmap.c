@@ -1,4 +1,4 @@
-/*	$OpenBSD: portmap.c,v 1.41 2010/09/01 14:43:34 millert Exp $	*/
+/*	$OpenBSD: portmap.c,v 1.42 2014/03/16 18:38:30 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1996, 1997 Theo de Raadt (OpenBSD). All rights reserved.
@@ -256,14 +256,6 @@ main(int argc, char *argv[])
 	svc_run();
 	syslog(LOG_ERR, "svc_run returned unexpectedly");
 	abort();
-}
-
-/* need to override perror calls in rpc library */
-void
-perror(const char *what)
-{
-
-	syslog(LOG_ERR, "%s: %m", what);
 }
 
 struct pmaplist *
