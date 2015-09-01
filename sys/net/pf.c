@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.935 2015/07/21 02:32:04 sashan Exp $ */
+/*	$OpenBSD: pf.c,v 1.936 2015/08/19 21:22:41 sashan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -6622,6 +6622,10 @@ done:
 		action = PF_PASS;
 		break;
 #endif /* INET6 */
+	case PF_DROP:
+		m_freem(*m0);
+		*m0 = NULL;
+		break;
 	default:
 		/* pf_route can free the mbuf causing *m0 to become NULL */
 		if (r->rt) {
