@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_tame.c,v 1.34 2015/08/31 00:51:20 deraadt Exp $	*/
+/*	$OpenBSD: kern_tame.c,v 1.35 2015/08/31 16:17:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -569,9 +569,9 @@ tame_namei(struct proc *p, char *origpath)
 					error = 0;
 			}
 		}
-		free(canopath, M_TEMP, MAXPATHLEN);
 		if (error)
 			printf("bad path: %s\n", canopath);
+		free(canopath, M_TEMP, MAXPATHLEN);
 		return (error);			/* Don't hint why it failed */
 	}
 
