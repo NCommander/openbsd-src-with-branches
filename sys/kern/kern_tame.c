@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_tame.c,v 1.35 2015/08/31 16:17:53 deraadt Exp $	*/
+/*	$OpenBSD: kern_tame.c,v 1.36 2015/09/01 09:19:21 semarie Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -481,12 +481,12 @@ tame_namei(struct proc *p, char *origpath)
 		    strcmp(path, "/etc/localtime") == 0)
 			return (0);
 
-		/* /usr/share/nls/../libc.cat returns EPERM, for strerror(3). */
+		/* /usr/share/nls/../libc.cat has to succeed for strerror(3). */
 		if ((p->p_tamenote == TMN_RPATH) &&
 		    strncmp(path, "/usr/share/nls/",
 		    sizeof("/usr/share/nls/") - 1) == 0 &&
 		    strcmp(path + strlen(path) - 9, "/libc.cat") == 0)
-			return (EPERM);
+			return (0);
 		break;
 	case SYS_readlink:
 		/* Allow /etc/malloc.conf for malloc(3). */
