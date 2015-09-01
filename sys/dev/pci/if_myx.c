@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.81 2015/08/15 00:49:15 dlg Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.82 2015/08/15 01:17:01 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -486,7 +486,7 @@ myx_loadfirmware(struct myx_softc *sc, const char *filename)
 	ret = 0;
 
 err:
-	free(fw, M_DEVBUF, 0);
+	free(fw, M_DEVBUF, fwlen);
 	return (ret);
 }
 
