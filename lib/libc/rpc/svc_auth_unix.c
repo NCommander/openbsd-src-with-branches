@@ -1,4 +1,4 @@
-/*	$OpenBSD: svc_auth_unix.c,v 1.9 2005/08/08 08:05:35 espie Exp $ */
+/*	$OpenBSD: svc_auth_unix.c,v 1.10 2010/09/01 14:43:34 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -97,8 +97,6 @@ _svcauth_unix(struct svc_req *rqst, struct rpc_msg *msg)
 		 * timestamp, hostname len (0), uid, gid, and gids len (0).
 		 */
 		if ((5 + gid_len) * BYTES_PER_XDR_UNIT + str_len > auth_len) {
-			(void) printf("bad auth_len gid %u str %u auth %u\n",
-			    gid_len, str_len, auth_len);
 			stat = AUTH_BADCRED;
 			goto done;
 		}
