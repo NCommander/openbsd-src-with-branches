@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.13 2011/07/22 09:30:54 espie Exp $
+#	$OpenBSD: Makefile.inc,v 1.14 2014/03/05 14:47:33 deraadt Exp $
 
 KERNELS += GENERIC.MP bsd.mp
 
@@ -8,4 +8,4 @@ bootblocks:
 	cp ${DESTDIR}/usr/mdec/cdbr ${RELEASEDIR}
 
 MDEXT=	bsd.rd cd${OSrev}.iso floppy${OSrev}.fs miniroot${OSrev}.fs \
-	pxeboot cdboot cdbr
+	pxeboot cdboot cdbr BOOTX64.EFI BOOTX86.EFI
