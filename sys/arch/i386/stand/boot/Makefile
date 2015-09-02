@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.55 2014/07/12 21:54:58 jasper Exp $
+#	$OpenBSD: Makefile,v 1.56 2014/07/13 09:26:08 jasper Exp $
 
 COPTS?=
 MAN?=	boot.8
@@ -33,7 +33,7 @@ SRCS+=	boot.c bootarg.c cmd.c vars.c
 
 .PATH:	${SADIR}/libsa
 SRCS+=	debug_i386.S
-SRCS+=	alloca.S gidt.S random_i386.S
+SRCS+=	gidt.S random_i386.S
 SRCS+=	apmprobe.c debug.c pciprobe.c ps2probe.c
 SRCS+=	cmd_i386.c dev_i386.c exec_i386.c gateA20.c machdep.c
 SRCS+=	bioscons.c biosdev.c diskprobe.c memprobe.c time.c
