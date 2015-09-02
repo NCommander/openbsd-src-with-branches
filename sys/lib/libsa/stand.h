@@ -1,4 +1,4 @@
-/*	$OpenBSD: stand.h,v 1.59 2014/11/19 20:28:56 miod Exp $	*/
+/*	$OpenBSD: stand.h,v 1.60 2015/02/05 12:56:50 millert Exp $	*/
 /*	$NetBSD: stand.h,v 1.18 1996/11/30 04:35:51 gwr Exp $	*/
 
 /*-
@@ -125,7 +125,6 @@ extern struct open_file files[];
 	s = ((b) % ((nh) * (ns))) % (ns);
 
 void	*alloc(u_int);
-void	*alloca(size_t);
 void	free(void *, u_int);
 struct	disklabel;
 char	*getdisklabel(const char *, struct disklabel *);

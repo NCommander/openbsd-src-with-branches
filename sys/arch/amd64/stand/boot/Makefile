@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.28 2014/07/13 09:26:08 jasper Exp $
+#	$OpenBSD: Makefile,v 1.29 2014/07/13 21:18:44 jasper Exp $
 
 COPTS?=
 MAN?=	boot.8
@@ -25,7 +25,7 @@ LDFLAGS+=-melf_i386 -L/usr/libdata
 SRCS+=	boot.c bootarg.c cmd.c vars.c
 
 .PATH:	${SADIR}/libsa
-SRCS+=	alloca.S gidt.S random_i386.S
+SRCS+=	gidt.S random_i386.S
 SRCS+=	cmd_i386.c dev_i386.c exec_i386.c gateA20.c machdep.c
 SRCS+=	bioscons.c biosdev.c diskprobe.c memprobe.c time.c
 .if ${SOFTRAID:L} == "yes"
