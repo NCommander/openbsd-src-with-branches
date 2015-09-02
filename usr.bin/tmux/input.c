@@ -1,4 +1,4 @@
-/* $OpenBSD: input.c,v 1.84 2015/09/01 19:16:00 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.85 2015/09/01 19:50:09 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -862,8 +862,8 @@ input_parse(struct window_pane *wp)
 	notify_input(wp, evb);
 	off = 0;
 
-	log_debug("%s: %s, %zu bytes: %.*s", __func__, ictx->state->name, len,
-	    (int)len, buf);
+	log_debug("%s: %%%u %s, %zu bytes: %.*s", __func__, wp->id,
+	    ictx->state->name, len, (int)len, buf);
 
 	/* Parse the input. */
 	while (off < len) {
