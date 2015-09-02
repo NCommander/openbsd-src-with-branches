@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.185 2015/07/13 15:51:31 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.186 2015/09/02 17:37:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1711,10 +1711,4 @@ tty_default_colours(struct grid_cell *gc, const struct window_pane *wp)
 			gc->flags |= (wgc->flags & GRID_FLAG_BG256);
 		}
 	}
-}
-
-void
-tty_bell(struct tty *tty)
-{
-	tty_putcode(tty, TTYC_BEL);
 }
