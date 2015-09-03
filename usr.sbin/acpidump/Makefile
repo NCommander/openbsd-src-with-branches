@@ -1,8 +1,10 @@
-# $OpenBSD: Makefile,v 1.3 2005/06/04 02:25:53 cloder Exp $
+# $OpenBSD: Makefile,v 1.4 2010/08/05 17:30:28 marco Exp $
 
 .if (${MACHINE} == "i386") || (${MACHINE} == "amd64")
 PROG= acpidump
 SRCS= acpidump.c
+LDADD=	-lkvm
+DPADD=	${LIBKVM}
 .else
 NOPROG= yes
 .endif
