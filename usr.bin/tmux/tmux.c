@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.c,v 1.141 2015/08/30 22:56:36 nicm Exp $ */
+/* $OpenBSD: tmux.c,v 1.142 2015/09/01 10:10:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -321,8 +321,7 @@ main(int argc, char **argv)
 					free(path);
 					label = xstrdup("default");
 				}
-			}
-			else
+			} else
 				label = xstrdup("default");
 		}
 
