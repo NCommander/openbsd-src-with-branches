@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflow.c,v 1.55 2015/07/21 03:03:10 florian Exp $	*/
+/*	$OpenBSD: if_pflow.c,v 1.56 2015/09/04 08:17:06 mpi Exp $	*/
 
 /*
  * Copyright (c) 2011 Florian Obser <florian@narrans.de>
@@ -282,7 +282,6 @@ pflow_clone_destroy(struct ifnet *ifp)
 	error = 0;
 
 	s = splnet();
-	m_freem(sc->send_nam);
 	if (timeout_initialized(&sc->sc_tmo))
 		timeout_del(&sc->sc_tmo);
 	if (timeout_initialized(&sc->sc_tmo6))
@@ -290,6 +289,7 @@ pflow_clone_destroy(struct ifnet *ifp)
 	if (timeout_initialized(&sc->sc_tmo_tmpl))
 		timeout_del(&sc->sc_tmo_tmpl);
 	pflow_flush(sc);
+	m_freem(sc->send_nam);
 	if (sc->so != NULL) {
 		error = soclose(sc->so);
 		sc->so = NULL;
