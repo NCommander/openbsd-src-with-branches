@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.231 2015/05/12 09:30:35 mikeb Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.232 2015/07/16 18:17:27 claudio Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -154,6 +154,8 @@ vntblinit(void)
 	 * Initialize the filesystem syncer.
 	 */
 	vn_initialize_syncerd();
+
+	rn_init(sizeof(struct sockaddr_in));
 }
 
 /*
