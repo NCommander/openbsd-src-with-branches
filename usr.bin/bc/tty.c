@@ -1,4 +1,4 @@
-/*      $OpenBSD: tty.c,v 1.1 2013/09/19 16:12:01 otto Exp $	*/
+/*      $OpenBSD: tty.c,v 1.2 2013/11/12 13:54:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2013, Otto Moerbeek <otto@drijf.net>
@@ -29,7 +29,7 @@ settty(struct termios *t)
 {
 	int ret;
 
-	while ((ret = tcsetattr(0, TCSADRAIN,  t) == -1) && errno == EINTR)
+	while ((ret = tcsetattr(0, TCSADRAIN,  t)) == -1 && errno == EINTR)
 		continue;
 	return ret;
 }
@@ -39,7 +39,7 @@ gettty(struct termios *t)
 {
 	int ret;
 
-	while ((ret = tcgetattr(0, t) == -1) && errno == EINTR)
+	while ((ret = tcgetattr(0, t)) == -1 && errno == EINTR)
 		continue;
 	return ret;
 }
