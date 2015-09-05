@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.361 2015/05/18 14:59:42 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.362 2015/08/31 21:32:07 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -914,7 +914,7 @@ bind_lease(void)
 	/* Deleting the addresses also clears out arp entries. */
 	delete_addresses();
 	flush_routes();
- 
+
 	opt = &options[DHO_INTERFACE_MTU];
 	if (opt->len == sizeof(u_int16_t)) {
 		u_int16_t mtu;
