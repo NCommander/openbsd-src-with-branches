@@ -1,4 +1,4 @@
-/*	$OpenBSD: path.c,v 1.11 2004/12/20 11:34:26 otto Exp $	*/
+/*	$OpenBSD: path.c,v 1.12 2005/03/30 17:16:37 deraadt Exp $	*/
 
 #include "sh.h"
 #include <sys/stat.h>
@@ -116,7 +116,7 @@ simplify_path(char *path)
 	if (!*path)
 		return;
 
-	if ((isrooted = path[0] == '/'))
+	if ((isrooted = (path[0] == '/')))
 		very_start++;
 
 	/* Before			After
