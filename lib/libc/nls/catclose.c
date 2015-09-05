@@ -1,4 +1,4 @@
-/*	$OpenBSD: catclose.c,v 1.6 2005/08/05 13:03:00 espie Exp $ */
+/*	$OpenBSD: catclose.c,v 1.7 2008/06/26 05:42:05 ray Exp $ */
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -37,7 +37,7 @@
 #include <stdlib.h>
 
 int
-_catclose(nl_catd catd)
+catclose(nl_catd catd)
 {
 	if (catd == (nl_catd) -1) {
 		errno = EBADF;
@@ -51,3 +51,4 @@ _catclose(nl_catd catd)
 
 	return 0;
 }
+DEF_WEAK(catclose);
