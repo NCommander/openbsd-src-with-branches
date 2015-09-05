@@ -1,4 +1,4 @@
-/* $OpenBSD: pmsreg.h,v 1.10 2013/05/31 19:21:09 jcs Exp $ */
+/* $OpenBSD: pmsreg.h,v 1.11 2015/03/26 01:30:22 jsg Exp $ */
 /* $NetBSD: psmreg.h,v 1.1 1998/03/22 15:41:28 drochner Exp $ */
 
 #ifndef SYS_DEV_PCKBC_PMSREG_H
@@ -163,6 +163,10 @@
 #define ALPS_YSEC_BEZEL				512
 
 #define ALPS_Z_MAGIC				127
+
+/* ALPS "gesture" and "finger" bits */
+#define ALPS_TAP				0x01
+#define ALPS_DRAG				0x03
 
 /* Elantech queries */
 #define ELANTECH_QUE_FW_ID			0
