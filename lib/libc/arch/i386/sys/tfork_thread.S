@@ -1,4 +1,4 @@
-/*	$OpenBSD: tfork_thread.S,v 1.5 2012/12/22 21:07:50 kettenis Exp $ */
+/*	$OpenBSD: tfork_thread.S,v 1.6 2015/04/21 01:24:28 guenther Exp $ */
 /*-
  * Copyright (c) 2000 Peter Wemm <peter@FreeBSD.org>
  * All rights reserved.
@@ -120,3 +120,4 @@ ENTRY(__tfork_thread)
 #else
 	jmp	CERROR
 #endif
+END(__tfork_thread)

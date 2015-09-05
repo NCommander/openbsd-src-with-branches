@@ -1,4 +1,4 @@
-/*	$OpenBSD: tfork_thread.S,v 1.3 2015/08/23 15:51:28 kettenis Exp $	*/
+/*	$OpenBSD: tfork_thread.S,v 1.4 2015/08/27 07:24:17 guenther Exp $	*/
 
 /*
  * Copyright (c) 2005 Tim Wiess <tim@nop.cx>
@@ -47,3 +47,4 @@ ENTRY(__tfork_thread)
 	li	%r3, -1
 2:
 	b	_C_LABEL(___cerror)
+END(__tfork_thread)

@@ -1,4 +1,4 @@
-/* $OpenBSD: sigprocmask.S,v 1.7 2002/10/07 04:47:12 drahn Exp $ */
+/* $OpenBSD: sigprocmask.S,v 1.8 2015/08/23 15:51:28 kettenis Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -60,3 +60,4 @@ PREFIX(sigprocmask)
 	li	3, 0
 	addi	1, 1, 16
 	blr
+SYSCALL_END(sigprocmask)

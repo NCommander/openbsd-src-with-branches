@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigpending.S,v 1.1 2001/08/29 00:57:45 art Exp $	*/
+/*	$OpenBSD: sigpending.S,v 1.2 2003/06/02 20:18:33 millert Exp $	*/
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -45,3 +45,4 @@ SYSENTRY(sigpending)
 1:
 	retl				/* and return 0 */
 	 clr	%o0
+SYSCALL_END(sigpending)

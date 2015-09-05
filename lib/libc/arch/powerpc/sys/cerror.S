@@ -1,4 +1,4 @@
-/* $OpenBSD: cerror.S,v 1.9 2012/08/22 22:26:16 deraadt Exp $ */
+/* $OpenBSD: cerror.S,v 1.10 2015/08/23 15:51:28 kettenis Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -61,3 +61,4 @@ ASENTRY(___cerror)
 	addi 3, 0, -1
 	addi 4, 0, -1
 	blr
+END(___cerror)

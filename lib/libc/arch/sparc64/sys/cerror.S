@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.4 2011/04/04 12:42:39 guenther Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.5 2012/08/22 17:19:35 pascal Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -54,3 +54,4 @@ FUNC(___cerror)
 	mov	-1, %o0
 	retl
 	 mov	-1, %o1
+END(___cerror)
