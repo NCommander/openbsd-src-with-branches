@@ -1,4 +1,4 @@
-.\"	$OpenBSD: fdisk.8,v 1.80 2015/09/04 19:02:49 kettenis Exp $
+.\"	$OpenBSD: fdisk.8,v 1.81 2015/09/04 21:19:45 jmc Exp $
 .\"
 .\"
 .\" Copyright (c) 1997 Tobias Weingartner
@@ -24,6 +24,7 @@
 .Sh SYNOPSIS
 .Nm fdisk
 .Op Fl egy
+.Op Fl i | u
 .Op Fl b Ar blocks
 .Oo
 .Fl c Ar cylinders
@@ -31,7 +32,6 @@
 .Fl s Ar sectors
 .Oc
 .Op Fl f Ar mbrfile
-.Op Fl i | u
 .Op Fl l Ar blocks
 .Ar disk
 .Sh DESCRIPTION
