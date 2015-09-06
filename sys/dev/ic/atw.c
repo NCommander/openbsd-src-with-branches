@@ -1,4 +1,4 @@
-/*	$OpenBSD: atw.c,v 1.86 2015/02/10 23:25:46 mpi Exp $	*/
+/*	$OpenBSD: atw.c,v 1.87 2015/03/14 03:38:47 jsg Exp $	*/
 /*	$NetBSD: atw.c,v 1.69 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -419,7 +419,7 @@ atw_read_srom(struct atw_softc *sc)
 
 	if (!read_seeprom(&sd, sc->sc_srom, 0, sc->sc_sromsz/2)) {
 		printf("%s: could not read SROM\n", sc->sc_dev.dv_xname);
-		free(sc->sc_srom, M_DEVBUF, 0);
+		free(sc->sc_srom, M_DEVBUF, sc->sc_sromsz);
 		return -1;
 	}
 #ifdef ATW_DEBUG
@@ -2739,7 +2739,7 @@ atw_detach(struct atw_softc *sc)
 	bus_dmamem_free(sc->sc_dmat, &sc->sc_cdseg, sc->sc_cdnseg);
 
 	if (sc->sc_srom)
-		free(sc->sc_srom, M_DEVBUF, 0);
+		free(sc->sc_srom, M_DEVBUF, sc->sc_sromsz);
 
 	return (0);
 }
