@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.292 2015/08/20 20:50:10 kettenis Exp $ */
+/* $OpenBSD: acpi.c,v 1.293 2015/08/28 00:03:53 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -1187,7 +1187,7 @@ acpi_maptable(struct acpi_softc *sc, paddr_t addr, const char *sig,
 	}
 
 	/* Allocate copy */
-	entry = malloc(len + sizeof(*entry), M_DEVBUF, M_NOWAIT);
+	entry = malloc(sizeof(*entry) + len, M_DEVBUF, M_NOWAIT);
 	if (entry != NULL) {
 		memcpy(entry->q_data, handle.va, len);
 		entry->q_table = entry->q_data;
