@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.473 2015/01/20 17:37:54 deraadt Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.474 2015/04/19 20:29:12 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -529,6 +529,8 @@ struct listener {
 	char			 hostname[HOST_NAME_MAX+1];
 	char			 hostnametable[PATH_MAX];
 	TAILQ_ENTRY(listener)	 entry;
+
+	int			 local;		/* there must be a better way */
 };
 
 struct smtpd {
