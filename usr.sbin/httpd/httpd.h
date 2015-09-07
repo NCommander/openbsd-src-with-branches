@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.96 2015/08/03 11:45:17 florian Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.97 2015/08/20 13:00:23 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -454,7 +454,7 @@ struct server_config {
 
 	char			 auth_realm[NAME_MAX];
 	uint32_t		 auth_id;
-	struct auth		*auth;
+	const struct auth	*auth;
 
 	int			 return_code;
 	char			*return_uri;
