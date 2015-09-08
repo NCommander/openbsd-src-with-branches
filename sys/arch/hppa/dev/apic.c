@@ -1,4 +1,4 @@
-/*	$OpenBSD: apic.c,v 1.16 2014/12/09 06:58:28 doug Exp $	*/
+/*	$OpenBSD: apic.c,v 1.17 2015/08/12 05:39:36 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -175,7 +175,7 @@ apic_intr_establish(void *v, pci_intr_handle_t ih,
 
 	cnt = malloc(sizeof(struct evcount), M_DEVBUF, M_NOWAIT);
 	if (!cnt) {
-		free(aiv, M_DEVBUF, 0);
+		free(aiv, M_DEVBUF, sizeof *aiv);
 		return (NULL);
 	}
 
