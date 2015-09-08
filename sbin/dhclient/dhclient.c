@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.362 2015/08/31 21:32:07 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.363 2015/09/05 07:41:16 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -1923,13 +1923,13 @@ res_hnok(const char *name)
 int
 res_hnok_list(const char *names)
 {
-	char *hn, *inputstring;
+	char *dupnames, *hn, *inputstring;
 	int count;
 
 	if (strlen(names) >= 1024)
 		return (0);
 
-	inputstring = strdup(names);
+	dupnames = inputstring = strdup(names);
 	if (inputstring == NULL)
 		error("Cannot copy domain name list");
 
@@ -1944,7 +1944,7 @@ res_hnok_list(const char *names)
 			break;
 	}
 
-	free(inputstring);
+	free(dupnames);
 
 	return (count > 0 && count < 7 && hn == NULL);
 }
