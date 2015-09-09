@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.26 2015/07/18 22:15:14 goda Exp $	*/
+/*	$OpenBSD: if_vxlan.c,v 1.27 2015/07/20 22:54:30 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -194,6 +194,8 @@ vxlan_multicast_cleanup(struct ifnet *ifp)
 			    sc->sc_dhcookie);
 			sc->sc_dhcookie = NULL;
 		}
+
+		if_put(mifp);
 	}
 
 	if (imo->imo_num_memberships > 0) {
