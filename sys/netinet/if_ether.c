@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.161 2015/08/19 10:50:14 mpi Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.162 2015/08/19 11:05:33 mpi Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -600,7 +600,7 @@ in_arpinput(struct mbuf *m)
 		}
 	}
 
-	/* Third try: not one of our addresses, just find an usable ia */
+	/* Third try: not one of our addresses, just find a usable ia */
 	if (ifa == NULL) {
 		TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
 			if (ifa->ifa_addr->sa_family == AF_INET)
