@@ -1,4 +1,4 @@
-#	$OpenBSD: install.sub,v 1.855 2015/08/24 10:41:11 ajacoutot Exp $
+#	$OpenBSD: install.sub,v 1.856 2015/09/09 15:04:54 halex Exp $
 #
 # Copyright (c) 1997-2015 Todd Miller, Theo de Raadt, Ken Westerback
 # Copyright (c) 2015, Robert Peichaer <rpe@openbsd.org>
@@ -1397,7 +1397,7 @@ install_cdrom() {
 }
 
 # Ask for the disk device containing the set files, mount it and start the set
-# installation. 
+# installation.
 install_disk() {
 	if ! ask_yn "Is the disk partition already mounted?"; then
 		ask_which "disk" "contains the $MODE media" \
