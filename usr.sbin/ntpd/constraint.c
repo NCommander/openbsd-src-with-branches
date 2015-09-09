@@ -1,4 +1,4 @@
-/*	$OpenBSD: constraint.c,v 1.13 2015/07/18 20:32:38 bcook Exp $	*/
+/*	$OpenBSD: constraint.c,v 1.14 2015/07/18 21:50:47 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -768,6 +768,7 @@ tls_readline(struct tls *tls, size_t *lenp, size_t *maxlength,
 
 		if (maxlength != NULL && (*maxlength)-- == 0) {
 			log_warnx("maximum length exceeded");
+			free(buf);
 			return (NULL);
 		}
 
