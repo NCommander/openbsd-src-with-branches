@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: siginterrupt.c,v 1.6 2005/08/08 08:05:34 espie Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -37,7 +37,6 @@
 int
 siginterrupt(int sig, int flag)
 {
-	extern sigset_t __sigintr;
 	struct sigaction sa;
 	int ret;
 
