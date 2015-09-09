@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.64 2015/08/14 18:07:28 bluhm Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.65 2015/08/24 22:04:06 mpi Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -297,6 +297,8 @@ ipip_input(struct mbuf *m, int iphlen, struct ifnet *gifp, int proto)
 	    !(ifp->if_flags & IFF_LOOPBACK)) && ipip_allow != 2) {
 		struct sockaddr_storage ss;
 		struct rtentry *rt;
+
+		if_put(ifp);
 
 		memset(&ss, 0, sizeof(ss));
 
