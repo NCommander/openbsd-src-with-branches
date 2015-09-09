@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560.c,v 1.70 2015/02/10 23:25:46 mpi Exp $  */
+/*	$OpenBSD: rt2560.c,v 1.71 2015/03/14 03:38:47 jsg Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -476,7 +476,7 @@ rt2560_free_tx_ring(struct rt2560_softc *sc, struct rt2560_tx_ring *ring)
 			if (data->map != NULL)
 				bus_dmamap_destroy(sc->sc_dmat, data->map);
 		}
-		free(ring->data, M_DEVBUF, 0);
+		free(ring->data, M_DEVBUF, ring->count * sizeof *ring->data);
 	}
 }
 
@@ -631,7 +631,7 @@ rt2560_free_rx_ring(struct rt2560_softc *sc, struct rt2560_rx_ring *ring)
 			if (data->map != NULL)
 				bus_dmamap_destroy(sc->sc_dmat, data->map);
 		}
-		free(ring->data, M_DEVBUF, 0);
+		free(ring->data, M_DEVBUF, ring->count * sizeof *ring->data);
 	}
 }
 
