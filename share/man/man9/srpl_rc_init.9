@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: srpl_rc_init.9,v 1.1 2015/09/09 11:21:51 dlg Exp $
 .\"
 .\" Copyright (c) 2015 David Gwynne <dlg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: September 9 2015 $
 .Dt SRPL_RC_INIT 9
 .Os
 .Sh NAME
@@ -100,7 +100,6 @@ elements in the list.
 The insertion or removal of an element in an SRP list will increment
 the reference counts on elements within the list via calls to
 .Fa ref .
-.
 As these references are released by the SRP infrastructure, the
 reference counts will be decremented by calls to
 .Fa unref .
