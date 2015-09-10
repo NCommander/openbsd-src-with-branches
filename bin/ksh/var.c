@@ -1,4 +1,4 @@
-/*	$OpenBSD: var.c,v 1.41 2015/04/17 17:20:41 deraadt Exp $	*/
+/*	$OpenBSD: var.c,v 1.43 2015/09/01 13:12:31 tedu Exp $	*/
 
 #include "sh.h"
 #include <time.h>
@@ -829,7 +829,7 @@ is_wdvarassign(const char *s)
 char **
 makenv(void)
 {
-	struct block *l = e->loc;
+	struct block *l;
 	XPtrV env;
 	struct tbl *vp, **vpp;
 	int i;
