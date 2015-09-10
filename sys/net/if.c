@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.363 2015/09/01 04:56:55 dlg Exp $	*/
+/*	$OpenBSD: if.c,v 1.364 2015/09/09 16:01:10 dlg Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -1231,10 +1231,13 @@ if_get(unsigned int index)
 {
 	struct ifnet *ifp = NULL;
 
-	if (index < if_indexlim)
+	if (index < if_indexlim) {
 		ifp = ifindex2ifnet[index];
+		if (ifp != NULL)
+			if_ref(ifp);
+	}
 
-	return (if_ref(ifp));
+	return (ifp);
 }
 
 struct ifnet *
