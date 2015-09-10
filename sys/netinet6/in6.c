@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.170 2015/09/04 13:00:41 mpi Exp $	*/
+/*	$OpenBSD: in6.c,v 1.171 2015/09/09 15:51:40 mpi Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -1385,6 +1385,7 @@ in6_delmulti(struct in6_multi *in6m)
 			    ifma_list);
 			splx(s);
 		}
+		if_put(ifp);
 
 		free(in6m, M_IPMADDR, 0);
 	}
