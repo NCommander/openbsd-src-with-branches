@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sigprocmask.S,v 1.2 2004/02/01 05:40:52 drahn Exp $	*/
 /*	$NetBSD: sigprocmask.S,v 1.5 2003/08/07 16:42:05 agc Exp $	*/
 
 /*-
@@ -45,3 +45,4 @@ SYSENTRY(sigprocmask)
 	strne	r0, [r2]
 	mov	r0, #0x00000000
 	mov	r15, r14
+SYSCALL_END(sigprocmask)

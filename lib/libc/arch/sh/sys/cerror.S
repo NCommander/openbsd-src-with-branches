@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.3 2012/08/22 17:19:35 pascal Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.4 2013/12/31 23:31:13 kettenis Exp $	*/
 /*	$NetBSD: cerror.S,v 1.10 2006/01/06 05:14:39 uwe Exp $	*/
 
 /*-
@@ -62,3 +62,4 @@ L_errno:	.long	_C_LABEL(errno)@GOT
 #else
 L_errno:	.long	_C_LABEL(errno)
 #endif
+	SET_ENTRY_SIZE(_CERROR)

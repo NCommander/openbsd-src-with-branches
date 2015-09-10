@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.5 2012/08/22 17:19:34 pascal Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.6 2013/12/31 23:31:13 kettenis Exp $	*/
 /*	$NetBSD: cerror.S,v 1.5 2003/08/07 16:42:04 agc Exp $	*/
 
 /*-
@@ -62,3 +62,4 @@ ASENTRY(_CERROR)
 
 .Lerrno:
 	.word	PIC_SYM(_C_LABEL(errno), GOT)
+END(_CERROR)
