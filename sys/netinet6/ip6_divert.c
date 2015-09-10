@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip6_divert.c,v 1.35 2015/06/16 11:09:40 mpi Exp $ */
+/*      $OpenBSD: ip6_divert.c,v 1.36 2015/07/15 22:16:42 deraadt Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -226,6 +226,7 @@ divert6_packet(struct mbuf *m, int dir, u_int16_t divert_port)
 			addr.sin6_addr = satosin6(ifa->ifa_addr)->sin6_addr;
 			break;
 		}
+		if_put(ifp);
 	}
 
 	if (inp) {
