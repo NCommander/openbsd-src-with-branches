@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciidevar.h,v 1.19 2009/10/05 20:01:40 jsg Exp $	*/
+/*	$OpenBSD: pciidevar.h,v 1.20 2010/07/22 18:11:16 deraadt Exp $	*/
 /*	$NetBSD: pciidevar.h,v 1.6 2001/01/12 16:04:00 bouyer Exp $	*/
 
 /*
@@ -115,6 +115,7 @@ struct pciide_softc {
 
 	/* Chip-specific private data */
 	void *sc_cookie;
+	size_t sc_cookielen;
 
 	/* DMA registers access functions */
 	u_int8_t (*sc_dmacmd_read)(struct pciide_softc *, int);
