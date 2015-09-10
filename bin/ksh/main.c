@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.55 2015/02/09 09:09:30 jsg Exp $	*/
+/*	$OpenBSD: main.c,v 1.56 2015/09/01 17:46:31 tedu Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -510,7 +510,7 @@ shell(Source *volatile s, volatile int toplevel)
 		case LSHELL:
 			if (interactive) {
 				if (i == LINTR)
-					shellf(newline);
+					shellf("\n");
 				/* Reset any eof that was read as part of a
 				 * multiline command.
 				 */
