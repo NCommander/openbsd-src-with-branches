@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: err.h,v 1.1 2015/08/31 02:53:56 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -19,7 +19,6 @@
 #define	_LIBC_ERR_H_
 
 #include_next <err.h>
-#include "namespace.h"
 
 PROTO_NORMAL(err);
 PROTO_NORMAL(errc);

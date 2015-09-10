@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: db.h,v 1.1 2015/09/05 11:28:35 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -19,7 +19,6 @@
 #define	_LIBC_DB_H_
 
 #include_next <db.h>
-#include "namespace.h"
 
 __BEGIN_HIDDEN_DECLS
 DB	*__bt_open(const char *, int, int, const BTREEINFO *, int);

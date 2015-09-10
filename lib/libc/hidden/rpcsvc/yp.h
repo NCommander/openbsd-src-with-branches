@@ -1,4 +1,4 @@
-/*	$OpenBSD: string.h,v 1.1 2015/08/31 02:53:56 guenther Exp $	*/
+/*	$OpenBSD: yp.h,v 1.1 2015/09/09 15:33:18 deraadt Exp $	*/
 /*
  * Copyright (c) 2015 Theo de Raadt <deraadt@openbsd.org>
  *
@@ -19,7 +19,6 @@
 #define	_LIBC_RPCSVC_YP_H_
 
 #include_next <rpcsvc/yp.h>
-#include "namespace.h"
 
 PROTO_NORMAL(xdr_domainname);
 PROTO_NORMAL(xdr_keydat);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: posix_spawn.c,v 1.5 2014/09/02 00:21:00 guenther Exp $	*/
+/*	$OpenBSD: posix_spawn.c,v 1.6 2014/11/14 23:26:34 jmatthew Exp $	*/
 /*-
  * Copyright (c) 2008 Ed Schouten <ed@FreeBSD.org>
  * All rights reserved.
@@ -25,7 +25,6 @@
  * SUCH DAMAGE.
  */
 
-#include "namespace.h"
 #include <sys/queue.h>
 
 #include <errno.h>

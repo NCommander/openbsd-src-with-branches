@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdio.h,v 1.1 2015/08/31 02:53:56 guenther Exp $	*/
+/*	$OpenBSD: stdio.h,v 1.2 2015/09/06 20:26:20 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -22,7 +22,6 @@
 #define __SYS_ERRLIST
 
 #include_next <stdio.h>
-#include "namespace.h"
 
 __BEGIN_HIDDEN_DECLS
 char	*_mktemp(char *);
