@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.133 2015/06/16 11:09:40 mpi Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.134 2015/09/09 12:50:08 mpi Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -213,8 +213,8 @@ ipsec_common_input(struct mbuf *m, int skip, int protoff, int af, int sproto,
 		m_copydata(m, offsetof(struct ip6_hdr, ip6_dst),
 		    sizeof(struct in6_addr),
 		    (caddr_t) &(dst_address.sin6.sin6_addr));
-		in6_recoverscope(&dst_address.sin6, &dst_address.sin6.sin6_addr,
-		    NULL);
+		in6_recoverscope(&dst_address.sin6,
+		    &dst_address.sin6.sin6_addr);
 		break;
 #endif /* INET6 */
 
