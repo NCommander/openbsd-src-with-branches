@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.153 2015/09/01 21:24:04 bluhm Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.154 2015/09/09 20:18:03 dlg Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -734,6 +734,7 @@ tunread(dev_t dev, struct uio *uio, int ioflag)
 	TUNDEBUG(("%s: read\n", ifp->if_xname));
 	if ((tp->tun_flags & TUN_READY) != TUN_READY) {
 		TUNDEBUG(("%s: not ready %#x\n", ifp->if_xname, tp->tun_flags));
+		if_put(ifp);
 		return (EHOSTDOWN);
 	}
 
