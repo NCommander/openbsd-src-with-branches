@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsmux.c,v 1.29 2015/03/14 03:38:50 jsg Exp $	*/
+/*	$OpenBSD: wsmux.c,v 1.30 2015/08/28 00:03:53 deraadt Exp $	*/
 /*      $NetBSD: wsmux.c,v 1.37 2005/04/30 03:47:12 augustss Exp $      */
 
 /*
@@ -540,6 +540,16 @@ wsmuxpoll(dev_t dev, int events, struct proc *p)
 	}
 
 	return (wsevent_poll(sc->sc_base.me_evp, events, p));
+}
+
+int
+wsmuxkqfilter(dev_t dev, struct knote *kn)
+{
+	struct wsmux_softc *sc = wsmuxdevs[minor(dev)];
+
+	if (sc->sc_base.me_evp == NULL)
+		return (ENXIO);
+	return (wsevent_kqfilter(sc->sc_base.me_evp, kn));
 }
 
 /*

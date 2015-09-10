@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmouse.c,v 1.26 2014/10/27 13:55:05 mpi Exp $ */
+/* $OpenBSD: wsmouse.c,v 1.27 2015/03/14 03:38:50 jsg Exp $ */
 /* $NetBSD: wsmouse.c,v 1.35 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -684,6 +684,16 @@ wsmousepoll(dev_t dev, int events, struct proc *p)
 	if (sc->sc_base.me_evp == NULL)
 		return (POLLERR);
 	return (wsevent_poll(sc->sc_base.me_evp, events, p));
+}
+
+int
+wsmousekqfilter(dev_t dev, struct knote *kn)
+{
+	struct wsmouse_softc *sc = wsmouse_cd.cd_devs[minor(dev)];
+
+	if (sc->sc_base.me_evp == NULL)
+		return (ENXIO);
+	return (wsevent_kqfilter(sc->sc_base.me_evp, kn));
 }
 
 #if NWSMUX > 0
