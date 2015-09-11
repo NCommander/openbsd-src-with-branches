@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.3 2015/09/10 18:13:46 guenther Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -15,23 +15,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _LIBC_SIGNAL_H
-#define _LIBC_SIGNAL_H
+#ifndef _LIBC_TIME_H_
+#define	_LIBC_TIME_H_
 
-#include_next <signal.h>
+#include_next <time.h>
 
-__BEGIN_HIDDEN_DECLS
-extern sigset_t __sigintr;
-__END_HIDDEN_DECLS
+PROTO_NORMAL(clock_getres);
+PROTO_NORMAL(clock_gettime);
+PROTO_NORMAL(clock_settime);
 
-extern PROTO_NORMAL(sys_siglist);
-extern PROTO_NORMAL(sys_signame);
-
-PROTO_NORMAL(signal);
-
-PROTO_NORMAL(kill);             /* wrap to ban SIGTHR? */
-PROTO_NORMAL(sigaltstack);
-PROTO_NORMAL(sigpending);
-PROTO_NORMAL(sigreturn);
-
-#endif	/* !_LIBC_SIGNAL_H */
+#endif /* !_LIBC_TIME_H_ */
