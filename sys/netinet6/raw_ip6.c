@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.81 2015/09/09 15:51:40 mpi Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.82 2015/09/10 17:52:05 claudio Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -402,7 +402,7 @@ rip6_output(struct mbuf *m, ...)
 	/* KAME hack: embed scopeid */
 	origoptp = in6p->inp_outputopts6;
 	in6p->inp_outputopts6 = optp;
-	if (in6_embedscope(&ip6->ip6_dst, dstsock, in6p, &oifp) != 0) {
+	if (in6_embedscope(&ip6->ip6_dst, dstsock, in6p) != 0) {
 		error = EINVAL;
 		goto bad;
 	}
