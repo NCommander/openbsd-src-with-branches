@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2014/01/11 03:35:57 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.15 2015/08/31 04:08:31 deraadt Exp $
 
 .include <bsd.own.mk>
 LIB=    stubs
@@ -33,7 +33,8 @@ CFLAGS+=-D__DBINTERFACE_PRIVATE -DSHA2_SMALL -UYP -DNO_LOG_BAD_DNS_RESPONSES \
 	-DFLOATING_POINT -DASRNODEBUG \
 	-I${LIBCSRCDIR}/include -I${LIBCSRCDIR}/hidden \
 	-I${LIBCSRCDIR}/asr -I${LIBCSRCDIR}/locale -I${LIBCSRCDIR}/gdtoa \
-	-I${LIBCSRCDIR}/arch/${MACHINE_CPU}/gdtoa -I${LIBCSRCDIR}/stdio  
+	-I${LIBCSRCDIR}/arch/${MACHINE_CPU}/gdtoa -I${LIBCSRCDIR}/stdio \
+	-include namespace.h
 CFLAGS+=
 
 LIBCSRCDIR=${.CURDIR}/../../../lib/libc
