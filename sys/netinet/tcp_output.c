@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.112 2015/06/30 15:30:17 mpi Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.113 2015/07/13 23:11:37 bluhm Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -1116,7 +1116,7 @@ send:
 		}
 		error = ip6_output(m, tp->t_inpcb->inp_outputopts6,
 			  &tp->t_inpcb->inp_route6,
-			  0, NULL, NULL, tp->t_inpcb);
+			  0, NULL, tp->t_inpcb);
 		break;
 #endif /* INET6 */
 	}
