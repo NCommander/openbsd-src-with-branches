@@ -1,4 +1,4 @@
-/*	$OpenBSD: qle.c,v 1.36 2015/07/08 10:48:19 jmatthew Exp $ */
+/*	$OpenBSD: qle.c,v 1.37 2015/09/06 04:54:44 deraadt Exp $ */
 
 /*
  * Copyright (c) 2013, 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -1101,8 +1101,9 @@ qle_handle_resp(struct qle_softc *sc, u_int32_t id)
 				int sr;
 				data = status->data +
 				    lemtoh32(&status->fcp_rsp_len);
-				memcpy(&xs->sense, data,
-				    lemtoh32(&status->fcp_sense_len));
+				sr = MIN(lemtoh32(&status->fcp_sense_len),
+				    sizeof(xs->sense));
+				memcpy(&xs->sense, data, sr);
 				xs->error = XS_SENSE;
 				pp = (u_int32_t *)&xs->sense;
 				for (sr = 0; sr < sizeof(xs->sense)/4; sr++) {
