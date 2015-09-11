@@ -1,4 +1,4 @@
-/*	$OpenBSD: am.h,v 1.17 2015/01/21 09:51:23 guenther Exp $	*/
+/*	$OpenBSD: am.h,v 1.18 2015/03/14 23:02:21 millert Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -85,7 +85,8 @@ typedef enum {
 } serv_state;
 
 extern serv_state amd_state;	/* Should we go now */
-extern int immediate_abort;	/* Should close-down unmounts be retried */
+extern volatile sig_atomic_t immediate_abort;
+				/* Should close-down unmounts be retried */
 extern time_t do_mapc_reload;	/* Flush & reload mount map cache */
 
 /*
