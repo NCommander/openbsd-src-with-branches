@@ -1,4 +1,4 @@
-/*	$OpenBSD: xdr_rec.c,v 1.17 2013/11/26 20:33:08 deraadt Exp $ */
+/*	$OpenBSD: xdr_rec.c,v 1.18 2015/09/01 19:54:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -52,6 +52,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <rpc/types.h>
 #include <rpc/xdr.h>
 #include <rpc/auth.h>
