@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnxreg.h,v 1.44 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: if_bnxreg.h,v 1.45 2014/12/26 05:46:32 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -4799,7 +4799,7 @@ struct bnx_softc {
 	u_int32_t		bnx_shared_hw_cfg;
 	u_int32_t		bnx_port_hw_cfg;
 
-	int			bnx_flowflags;
+	uint64_t		bnx_flowflags;
 
 	u_int16_t		bus_speed_mhz;		/* PCI bus speed */
 	struct flash_spec	*bnx_flash_info;	/* Flash NVRAM settings */

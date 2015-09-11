@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_ledma.c,v 1.17 2013/09/24 20:11:04 miod Exp $	*/
+/*	$OpenBSD: if_le_ledma.c,v 1.18 2014/12/22 02:28:52 tedu Exp $	*/
 /*	$NetBSD: if_le_ledma.c,v 1.14 2001/05/30 11:46:35 mrg Exp $	*/
 
 /*-
@@ -85,7 +85,7 @@ void	leattach_ledma(struct device *, struct device *, void *);
 /*
  * Media types supported by the Sun4m.
  */
-static int lemedia[] = {
+static uint64_t lemedia[] = {
 	IFM_ETHER | IFM_10_T,
 	IFM_ETHER | IFM_10_5,
 	IFM_ETHER | IFM_AUTO

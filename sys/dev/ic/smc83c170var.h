@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc83c170var.h,v 1.2 2008/06/26 05:42:16 ray Exp $	*/
+/*	$OpenBSD: smc83c170var.h,v 1.3 2009/08/10 20:29:54 deraadt Exp $	*/
 /*	$NetBSD: smc83c170var.h,v 1.9 2005/02/04 02:10:37 perry Exp $	*/
 
 /*-
@@ -130,7 +130,7 @@ struct epic_softc {
 
 	int	sc_rxptr;		/* next ready RX descriptor */
 
-	u_int	sc_serinst;		/* ifmedia instance for serial mode */
+	uint64_t	sc_serinst;	/* ifmedia instance for serial mode */
 };
 
 #define	EPIC_CDTXADDR(sc, x)	((sc)->sc_cddma + EPIC_CDTXOFF((x)))

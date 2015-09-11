@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.161 2015/05/19 11:34:30 mpi Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.162 2015/06/24 09:40:54 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2672,9 +2672,9 @@ wi_get_id(struct wi_softc *sc)
 STATIC int
 wi_sync_media(struct wi_softc *sc, int ptype, int txrate)
 {
-	int media = sc->sc_media.ifm_cur->ifm_media;
-	int options = IFM_OPTIONS(media);
-	int subtype;
+	uint64_t media = sc->sc_media.ifm_cur->ifm_media;
+	uint64_t options = IFM_OPTIONS(media);
+	uint64_t subtype;
 
 	switch (txrate) {
 	case 1:

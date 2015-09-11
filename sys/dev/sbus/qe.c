@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.29 2015/06/24 09:40:54 mpi Exp $	*/
+/*	$OpenBSD: qe.c,v 1.30 2015/07/08 07:21:50 mpi Exp $	*/
 /*	$NetBSD: qe.c,v 1.16 2001/03/30 17:30:18 christos Exp $	*/
 
 /*-
@@ -1156,7 +1156,7 @@ qe_ifmedia_upd(ifp)
 	struct ifnet *ifp;
 {
 	struct qe_softc *sc = ifp->if_softc;
-	int media = sc->sc_ifmedia.ifm_media;
+	uint64_t media = sc->sc_ifmedia.ifm_media;
 
 	if (IFM_TYPE(media) != IFM_ETHER)
 		return (EINVAL);

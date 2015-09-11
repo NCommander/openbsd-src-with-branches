@@ -1,4 +1,4 @@
-/* $OpenBSD: lemac.c,v 1.19 2015/04/06 09:13:55 miod Exp $ */
+/* $OpenBSD: lemac.c,v 1.20 2015/06/24 09:40:54 mpi Exp $ */
 /* $NetBSD: lemac.c,v 1.20 2001/06/13 10:46:02 wiz Exp $ */
 
 /*-
@@ -1006,7 +1006,7 @@ lemac_ifattach(struct lemac_softc *sc)
 		| IFF_MULTICAST;
 
 	if (sc->sc_flags & LEMAC_ALIVE) {
-		int media;
+		uint64_t media;
 
 		IFQ_SET_READY(&ifp->if_snd);
 
