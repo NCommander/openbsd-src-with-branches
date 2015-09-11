@@ -277,6 +277,7 @@ struct ix_softc {
 	 * Receive rings:
 	 *	Allocated at run time, an array of rings.
 	 */
+	struct mutex		rx_mtx;
 	struct rx_ring		*rx_rings;
 	uint64_t		que_mask;
 	int			num_rx_desc;
