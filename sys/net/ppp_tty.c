@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp_tty.c,v 1.35 2015/07/08 07:21:50 mpi Exp $	*/
+/*	$OpenBSD: ppp_tty.c,v 1.36 2015/07/15 22:16:42 deraadt Exp $	*/
 /*	$NetBSD: ppp_tty.c,v 1.12 1997/03/24 21:23:10 christos Exp $	*/
 
 /*
@@ -381,7 +381,7 @@ pppwrite(struct tty *tp, struct uio *uio, int flag)
     bcopy(mtod(m0, u_char *), dst.sa_data, PPP_HDRLEN);
     m0->m_data += PPP_HDRLEN;
     m0->m_len -= PPP_HDRLEN;
-    return ((*sc->sc_if.if_output)(&sc->sc_if, m0, &dst, (struct rtentry *)0));
+    return if_output(&sc->sc_if, m0, &dst, NULL);
 }
 
 /*
