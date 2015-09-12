@@ -1,4 +1,4 @@
-.\"	$OpenBSD: lpd.8,v 1.25 2014/04/20 18:11:45 tedu Exp $
+.\"	$OpenBSD: lpd.8,v 1.26 2014/04/20 22:35:10 ajacoutot Exp $
 .\"	$NetBSD: lpd.8,v 1.23 2002/02/08 01:38:50 ross Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -42,7 +42,7 @@
 .Op Fl b Ar bind-address
 .Op Fl n Ar maxchild
 .Op Fl w Ar maxwait
-.Op port
+.Op Ar port
 .Sh DESCRIPTION
 .Nm
 is the line printer daemon (spool area handler) and is normally invoked
@@ -149,7 +149,7 @@ The default is 300 seconds.
 .El
 .Pp
 If the
-.Op port
+.Ar port
 parameter is passed,
 .Nm
 listens on this port instead of the usual
