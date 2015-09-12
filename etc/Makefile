@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.406 2015/08/04 04:24:08 jsg Exp $
+#	$OpenBSD: Makefile,v 1.407 2015/08/24 10:41:11 ajacoutot Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -52,12 +52,13 @@ EXAMPLES_600=bgpd.conf dvmrpd.conf hostapd.conf iked.conf ipsec.conf \
 	sasyncd.conf snmpd.conf ypldap.conf 
 
 # -r-xr-xr-x
-RCDAEMONS=amd apmd bgpd bootparamd cron dhcpd dhcrelay dvmrpd ftpd ftpproxy \
-	hostapd hotplugd httpd identd ifstated iked inetd isakmpd iscsid \
-	ldapd ldattach ldomd ldpd lockd lpd mopd mountd mrouted nfsd \
-	npppd nsd ntpd ospf6d ospfd pflogd portmap radiusd rarpd rbootd relayd \
-	ripd route6d rtadvd sasyncd sensorsd slowcgi smtpd sndiod \
-	snmpd spamd spamlogd sshd statd syslogd tftpd tftpproxy unbound \
+RCDAEMONS=amd apmd bgpd bootparamd cron dhcpd dhcrelay dvmrpd ftpd \
+	ftpproxy ftpproxy6 hostapd hotplugd httpd identd ifstated \
+	iked inetd isakmpd iscsid ldapd ldattach ldomd ldpd lockd \
+	lpd mopd mountd mrouted nfsd npppd nsd ntpd ospf6d ospfd \
+	pflogd portmap radiusd rarpd rbootd relayd ripd route6d \
+	rtadvd sasyncd sensorsd slowcgi smtpd sndiod snmpd spamd \
+	spamlogd sshd statd syslogd tftpd tftpproxy unbound \
 	watchdogd wsmoused xdm ypbind ypldap yppasswdd ypserv
 
 MISETS=	base${OSrev}.tgz comp${OSrev}.tgz man${OSrev}.tgz game${OSrev}.tgz
