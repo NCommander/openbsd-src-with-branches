@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys-bsd.c,v 1.25 2008/10/08 18:42:21 claudio Exp $	*/
+/*	$OpenBSD: sys-bsd.c,v 1.26 2009/10/27 23:59:53 deraadt Exp $	*/
 
 /*
  * sys-bsd.c - System-dependent procedures for setting up
@@ -1437,15 +1437,6 @@ GetMask(addr)
 
     freeifaddrs(ifap);
     return mask;
-}
-
-/*
- * Use the hostid as part of the random number seed.
- */
-int
-get_host_seed()
-{
-    return gethostid();
 }
 
 /*
