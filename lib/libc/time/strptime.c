@@ -1,4 +1,4 @@
-/*	$OpenBSD: strptime.c,v 1.19 2015/02/09 13:32:51 tedu Exp $ */
+/*	$OpenBSD: strptime.c,v 1.20 2015/04/07 01:49:11 millert Exp $ */
 /*	$NetBSD: strptime.c,v 1.12 1998/01/20 21:39:40 mycroft Exp $	*/
 /*-
  * Copyright (c) 1997, 1998, 2005, 2008 The NetBSD Foundation, Inc.
@@ -83,6 +83,7 @@ strptime(const char *buf, const char *fmt, struct tm *tm)
 {
 	return(_strptime(buf, fmt, tm, 1));
 }
+DEF_WEAK(strptime);
 
 static char *
 _strptime(const char *buf, const char *fmt, struct tm *tm, int initialize)
