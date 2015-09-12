@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.32 2015/07/08 07:21:50 mpi Exp $	*/
+/*	$OpenBSD: be.c,v 1.33 2015/09/11 13:02:28 stsp Exp $	*/
 /*	$NetBSD: be.c,v 1.26 2001/03/20 15:39:20 pk Exp $	*/
 
 /*-
@@ -113,7 +113,7 @@ struct be_softc {
 	 * for our internal transceiver.
 	 */
 	int		sc_mii_inst;	/* instance of internal phy */
-	int		sc_mii_active;	/* currently active medium */
+	uint64_t	sc_mii_active;	/* currently active medium */
 	int		sc_mii_ticks;	/* tick counter */
 	int		sc_mii_flags;	/* phy status flags */
 #define MIIF_HAVELINK	0x04000000
