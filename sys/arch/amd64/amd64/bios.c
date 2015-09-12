@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.32 2015/08/30 10:05:09 yasuoka Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2006 Gordon Willem Klok <gklok@cogeco.ca>
  *
@@ -107,8 +107,8 @@ bios_attach(struct device *parent, struct device *self, void *aux)
 		for (p = ISA_HOLE_VADDR(SMBIOS_START);
 		    p < (u_int8_t *)ISA_HOLE_VADDR(SMBIOS_END); p+= 16) {
 			hdr = smbios_find(p);
-			if (hdr == NULL)
-				continue;
+			if (hdr != NULL)
+				break;
 		}
 	}
 
