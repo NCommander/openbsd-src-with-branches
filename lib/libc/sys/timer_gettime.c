@@ -1,12 +1,11 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: timer_gettime.c,v 1.6 2005/08/08 08:05:37 espie Exp $ */
 
-#include <signal.h>
 #include <time.h>
 #include <errno.h>
 
-struct itimerspec;
+int	timer_gettime(timer_t, struct itimerspec *);
+PROTO_DEPRECATED(timer_gettime);
 
-/* ARGSUSED */
 int
 timer_gettime(timer_t timerid, struct itimerspec *value)
 {
