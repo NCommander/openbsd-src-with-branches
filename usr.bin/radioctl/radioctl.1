@@ -1,4 +1,4 @@
-.\"	$OpenBSD: radioctl.1,v 1.14 2008/10/16 02:21:26 jakemsr Exp $
+.\"	$OpenBSD: radioctl.1,v 1.15 2008/10/16 14:32:57 jmc Exp $
 .\"
 .\" Copyright (c) 2001 Vladimir Popov
 .\" All rights reserved.
@@ -40,7 +40,7 @@
 .Nm radioctl
 .Op Fl n
 .Op Fl f Ar file
-.Ar name Ns Li = Ns Ar value
+.Ar name Ns = Ns Ar value
 .Sh DESCRIPTION
 The
 .Nm
@@ -67,7 +67,7 @@ Specify an alternative radio tuner device.
 Suppress printing of the variable name.
 .It Fl v
 Show the possible values of queries.
-.It Ar name Ns Li = Ns Ar value
+.It Ar name Ns = Ns Ar value
 Attempt to set the specified variable
 .Ar name
 to
@@ -85,7 +85,7 @@ The exact set of controls that can be manipulated depends on
 the tuner.
 The general format (in both getting and setting a value) is:
 .Bd -filled -offset indent
-.Ar name Ns Li = Ns Ar value
+.Ar name Ns = Ns Ar value
 .Ed
 .Pp
 The
