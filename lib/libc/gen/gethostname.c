@@ -1,4 +1,4 @@
-/*	$OpenBSD: gethostname.c,v 1.7 2005/08/08 08:05:34 espie Exp $ */
+/*	$OpenBSD: gethostname.c,v 1.8 2015/01/14 23:03:50 deraadt Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -45,3 +45,4 @@ gethostname(char *name, size_t namelen)
 		return (-1);
 	return (0);
 }
+DEF_WEAK(gethostname);
