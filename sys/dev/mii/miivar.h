@@ -1,4 +1,4 @@
-/*	$OpenBSD: miivar.h,v 1.32 2013/12/28 03:30:41 deraadt Exp $	*/
+/*	$OpenBSD: miivar.h,v 1.33 2015/09/11 13:02:28 stsp Exp $	*/
 /*	$NetBSD: miivar.h,v 1.17 2000/03/06 20:56:57 thorpej Exp $	*/
 
 /*-
@@ -131,8 +131,8 @@ struct mii_softc {
 
 	struct timeout mii_phy_timo;	/* timeout handle */
 
-	int mii_media_active;		/* last active media */
-	int mii_media_status;		/* last active status */
+	uint64_t mii_media_active;		/* last active media */
+	uint64_t mii_media_status;		/* last active status */
 };
 typedef struct mii_softc mii_softc_t;
 
