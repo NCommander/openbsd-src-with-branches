@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbrlen.c,v 1.1 2010/07/27 16:59:04 stsp Exp $ */
+/*	$OpenBSD: mbrlen.c,v 1.2 2012/12/05 23:20:00 deraadt Exp $ */
 
 /*-
  * Copyright (c) 2002-2004 Tim J. Robbins.
@@ -37,3 +37,4 @@ mbrlen(const char * __restrict s, size_t n, mbstate_t * __restrict ps)
 		ps = &mbs;
 	return (mbrtowc(NULL, s, n, ps));
 }
+DEF_STRONG(mbrlen);

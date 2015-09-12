@@ -1,4 +1,4 @@
-/*	$OpenBSD: btowc.c,v 1.1 2010/07/27 16:59:03 stsp Exp $ */
+/*	$OpenBSD: btowc.c,v 1.2 2012/12/05 23:20:00 deraadt Exp $ */
 
 /*-
  * Copyright (c) 2002, 2003 Tim J. Robbins.
@@ -50,3 +50,4 @@ btowc(int c)
 		return (WEOF);
 	return (wc);
 }
+DEF_STRONG(btowc);
