@@ -1,4 +1,4 @@
-/*	$OpenBSD: readdir.c,v 1.20 2013/11/06 22:26:14 schwarze Exp $ */
+/*	$OpenBSD: readdir.c,v 1.21 2014/03/10 07:54:14 schwarze Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -79,3 +79,4 @@ readdir(DIR *dirp)
 
 	return (dp);
 }
+DEF_WEAK(readdir);

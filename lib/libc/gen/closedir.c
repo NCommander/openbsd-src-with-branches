@@ -1,4 +1,4 @@
-/*	$OpenBSD: closedir.c,v 1.8 2007/06/05 18:11:48 kurt Exp $ */
+/*	$OpenBSD: closedir.c,v 1.9 2013/08/13 05:52:12 guenther Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	Regents of the University of California.  All rights reserved.
@@ -52,3 +52,4 @@ closedir(DIR *dirp)
 	free(dirp);
 	return (close(fd));
 }
+DEF_WEAK(closedir);
