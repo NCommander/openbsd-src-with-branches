@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: md5.h,v 1.1 2015/09/11 09:18:27 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -19,7 +19,6 @@
 #define _LIBC_MD5_H_
 
 #include_next <md5.h>
-#include "namespace.h"
 
 PROTO_NORMAL(MD5Data);
 PROTO_NORMAL(MD5End);
