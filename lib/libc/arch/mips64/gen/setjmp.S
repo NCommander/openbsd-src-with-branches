@@ -1,4 +1,4 @@
-/*      $OpenBSD: setjmp.S,v 1.6 2009/12/11 05:10:15 miod Exp $ */
+/*      $OpenBSD: setjmp.S,v 1.7 2011/11/22 21:13:30 guenther Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -54,7 +54,7 @@ NON_LEAF(setjmp, FRAMESZ, ra)
 	REG_S	a0, A0OFF(sp)
 
 	move	a0, zero			# get current signal mask
-	jal	sigblock
+	jal	_libc_sigblock
 
 	REG_L	v1, A0OFF(sp)			# v1 = jmpbuf
 	REG_S	v0, SC_MASK(v1)			# save sc_mask = sigblock(0)
