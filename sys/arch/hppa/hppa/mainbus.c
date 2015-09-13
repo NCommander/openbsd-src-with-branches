@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.85 2014/07/12 18:44:41 tedu Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.86 2014/11/16 12:30:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -1283,7 +1283,7 @@ mbsubmatch(parent, match, aux)
 	int ret;
 
 	if (autoconf_verbose)
-		printf(">> hpa %lx off %lx cf_off %x\n",
+		printf(">> hpa %lx off %lx cf_off %lx\n",
 		    ca->ca_hpa, ca->ca_hpa & ~ca->ca_hpamask, cf->hppacf_off);
 
 	if (ca->ca_hpa && ~ca->ca_hpamask && cf->hppacf_off != -1 &&
