@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.43 2013/05/17 19:38:52 kettenis Exp $ */
+/*	$OpenBSD: intr.h,v 1.44 2015/07/08 13:37:31 dlg Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -167,6 +167,8 @@ struct intrhand {
 	int			 ih_flags;
 #define	IH_ALLOCATED		0x01
 };
+
+void	intr_barrier(void *);
 
 /*
  * Low level interrupt dispatcher registration data.
