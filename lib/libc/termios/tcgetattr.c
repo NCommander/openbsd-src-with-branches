@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: tcgetattr.c,v 1.5 2005/08/05 13:03:00 espie Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,3 +36,4 @@ tcgetattr(int fd, struct termios *t)
 {
 	return (ioctl(fd, TIOCGETA, t));
 }
+DEF_WEAK(tcgetattr);
