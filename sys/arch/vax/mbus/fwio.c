@@ -1,4 +1,4 @@
-/*	$OpenBSD: fwio.c,v 1.1 2008/08/18 23:19:25 miod Exp $	*/
+/*	$OpenBSD: fwio.c,v 1.2 2011/07/06 20:42:52 miod Exp $	*/
 
 /*
  * Copyright (c) 2008 Miodrag Vallat.
@@ -41,7 +41,7 @@
 
 struct fwio_softc {
 	struct device	sc_dev;
-	int		sc_loc[1];	/* locators override */
+	long		sc_loc[1];	/* locators override */
 };
 
 void	fwio_attach(struct device *, struct device *, void *);
