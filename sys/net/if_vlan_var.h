@@ -83,9 +83,8 @@ struct	ifvlan {
 		u_int16_t ifvm_type; /* non-standard ethertype or 0x8100 */
 	}	ifv_mib;
 	LIST_HEAD(__vlan_mchead, vlan_mc_entry)	vlan_mc_listhead;
-	struct srpl_entry ifv_list;
+	LIST_ENTRY(ifvlan) ifv_list;
 	int ifv_flags;
-	u_int ifv_refs;
 	void *lh_cookie;
 	void *dh_cookie;
 	struct ifih *ifv_ifih;
