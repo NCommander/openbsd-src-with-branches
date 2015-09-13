@@ -1,4 +1,4 @@
-/*	$OpenBSD: clnt_tcp.c,v 1.26 2014/11/11 04:51:49 guenther Exp $ */
+/*	$OpenBSD: clnt_tcp.c,v 1.27 2015/09/01 19:54:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -222,6 +222,7 @@ fooy:
 		mem_free((caddr_t)h, sizeof(CLIENT));
 	return (NULL);
 }
+DEF_WEAK(clnttcp_create);
 
 static enum clnt_stat
 clnttcp_call(CLIENT *h, u_long proc, xdrproc_t xdr_args, caddr_t args_ptr,

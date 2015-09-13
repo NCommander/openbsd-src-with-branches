@@ -1,4 +1,4 @@
-/*	$OpenBSD: svc_tcp.c,v 1.34 2015/09/01 17:31:39 deraadt Exp $ */
+/*	$OpenBSD: svc_tcp.c,v 1.35 2015/09/01 19:54:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -181,6 +181,7 @@ svctcp_create(int sock, u_int sendsize, u_int recvsize)
 	}
 	return (xprt);
 }
+DEF_WEAK(svctcp_create);
 
 /*
  * Like svtcp_create(), except the routine takes any *open* UNIX file

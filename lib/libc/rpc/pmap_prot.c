@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_prot.c,v 1.6 2005/08/08 08:05:35 espie Exp $ */
+/*	$OpenBSD: pmap_prot.c,v 1.7 2010/09/01 14:43:34 millert Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -51,3 +51,4 @@ xdr_pmap(XDR *xdrs, struct pmap *regs)
 		return (xdr_u_long(xdrs, &regs->pm_port));
 	return (FALSE);
 }
+DEF_WEAK(xdr_pmap);

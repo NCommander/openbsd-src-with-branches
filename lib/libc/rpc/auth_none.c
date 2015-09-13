@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_none.c,v 1.11 2010/09/01 14:43:34 millert Exp $ */
+/*	$OpenBSD: auth_none.c,v 1.12 2015/08/20 21:49:29 deraadt Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -93,6 +93,7 @@ authnone_create(void)
 	}
 	return (&ap->no_client);
 }
+DEF_WEAK(authnone_create);
 
 /*ARGSUSED*/
 static bool_t
