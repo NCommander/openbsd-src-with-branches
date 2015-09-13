@@ -1,4 +1,4 @@
-/*	$OpenBSD: yp_bind.c,v 1.22 2015/01/16 16:48:51 deraadt Exp $ */
+/*	$OpenBSD: yp_bind.c,v 1.23 2015/09/05 14:04:33 deraadt Exp $ */
 /*
  * Copyright (c) 1992, 1993, 1996 Theo de Raadt <deraadt@theos.com>
  * All rights reserved.
@@ -262,6 +262,7 @@ gotdata:
 		*ypdb = ysd;
 	return 0;
 }
+DEF_WEAK(_yp_dobind);
 
 void
 _yp_unbind(struct dom_binding *ypb)
@@ -276,6 +277,7 @@ yp_bind(const char *dom)
 {
 	return _yp_dobind(dom, NULL);
 }
+DEF_WEAK(yp_bind);
 
 void
 yp_unbind(const char *dom)
