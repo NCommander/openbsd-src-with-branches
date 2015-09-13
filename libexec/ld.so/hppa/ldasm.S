@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.14 2014/07/09 12:51:20 guenther Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.15 2014/07/14 03:54:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Michael Shalayeff
@@ -225,7 +225,7 @@ ENTRY(_dl_fstat,0)
 EXIT(_dl_fstat)
 
 ENTRY(_dl_sysctl,0)
-	SYSCALL(__sysctl)
+	SYSCALL(sysctl)
 	bv	r0(rp)
 	nop
 EXIT(_dl_issetugid)

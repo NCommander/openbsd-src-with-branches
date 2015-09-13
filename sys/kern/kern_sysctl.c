@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.292 2015/09/11 08:22:31 guenther Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.293 2015/09/11 15:29:47 deraadt Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -146,9 +146,9 @@ struct rwlock sysctl_lock = RWLOCK_INITIALIZER("sysctllk");
 struct rwlock sysctl_disklock = RWLOCK_INITIALIZER("sysctldlk");
 
 int
-sys___sysctl(struct proc *p, void *v, register_t *retval)
+sys_sysctl(struct proc *p, void *v, register_t *retval)
 {
-	struct sys___sysctl_args /* {
+	struct sys_sysctl_args /* {
 		syscallarg(const int *) name;
 		syscallarg(u_int) namelen;
 		syscallarg(void *) old;

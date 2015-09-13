@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.24 2014/07/09 12:51:21 guenther Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.25 2014/07/14 03:54:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -275,7 +275,7 @@ _dl_getdents:
 	.globl _dl_sysctl
 	.type _dl_sysctl,@function
 _dl_sysctl:
-	mov  SYS___sysctl | SYSCALL_G2RFLAG, %g1	! call sys___sysctl
+	mov  SYS_sysctl | SYSCALL_G2RFLAG, %g1		! call sys_sysctl
 	add %o7, 8, %g2					! just return on success
 	t ST_SYSCALL					! off to wonderland
 	retl

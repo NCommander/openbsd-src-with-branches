@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.76 2015/08/22 20:18:49 deraadt Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.77 2015/09/07 15:38:45 guenther Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -159,7 +159,7 @@ ktrsyscall(struct proc *p, register_t code, size_t argsize, register_t args[])
 	u_int nargs = 0;
 	int i;
 
-	if (code == SYS___sysctl && (p->p_p->ps_emul->e_flags & EMUL_NATIVE)) {
+	if (code == SYS_sysctl && (p->p_p->ps_emul->e_flags & EMUL_NATIVE)) {
 		/*
 		 * The native sysctl encoding stores the mib[]
 		 * array because it is interesting.
