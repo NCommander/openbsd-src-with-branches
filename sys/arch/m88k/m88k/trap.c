@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.101 2014/11/16 12:30:58 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.102 2015/02/10 10:15:30 miod Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -51,8 +51,8 @@
 #include <sys/signalvar.h>
 #include <sys/user.h>
 #include <sys/syscall.h>
-#include <sys/syscall_mi.h>
 #include <sys/systm.h>
+#include <sys/syscall_mi.h>
 
 #include <uvm/uvm_extern.h>
 
