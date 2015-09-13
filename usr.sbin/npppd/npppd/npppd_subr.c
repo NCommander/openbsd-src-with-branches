@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppd_subr.c,v 1.15 2014/11/13 04:18:27 yasuoka Exp $ */
+/*	$OpenBSD: npppd_subr.c,v 1.16 2015/01/19 01:48:59 deraadt Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -29,6 +29,7 @@
  * This file provides helper functions for npppd.
  */
 
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
@@ -216,6 +217,7 @@ in_route0(int type, struct in_addr *dest, struct in_addr *mask,
 		strlcpy(sdl->sdl_data, ifname, IFNAMSIZ);
 		sdl->sdl_family = AF_LINK;
 		sdl->sdl_len = offsetof(struct sockaddr_dl, sdl_data) +IFNAMSIZ;
+		sdl->sdl_index = if_nametoindex(ifname);
 		memcpy(cp, sdl, sdl->sdl_len);
 		cp += ROUNDUP(sdl->sdl_len);
 	}

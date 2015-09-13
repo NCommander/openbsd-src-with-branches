@@ -1,4 +1,4 @@
-/*	$OpenBSD: pppoe_session.c,v 1.8 2014/11/18 20:54:28 krw Exp $ */
+/*	$OpenBSD: pppoe_session.c,v 1.9 2015/01/19 01:48:59 deraadt Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -28,7 +28,7 @@
 
 /**@file
  * Session management of PPPoE protocol
- * $Id: pppoe_session.c,v 1.8 2014/11/18 20:54:28 krw Exp $
+ * $Id: pppoe_session.c,v 1.9 2015/01/19 01:48:59 deraadt Exp $
  */
 
 #include <sys/types.h>
@@ -503,6 +503,7 @@ pppoe_session_bind_ppp(pppoe_session *_this)
 	memset(&sdl, 0, sizeof(sdl));
 	sdl.sdl_len = sizeof(sdl);
 	sdl.sdl_family = AF_LINK;
+	sdl.sdl_index = if_nametoindex(pppoe_session_listen_ifname(_this));
 	len = strlen(pppoe_session_listen_ifname(_this));
 	memcpy(sdl.sdl_data, pppoe_session_listen_ifname(_this), len);
 	sdl.sdl_nlen = len;
