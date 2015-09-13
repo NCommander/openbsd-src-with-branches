@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.43 2015/02/09 11:37:31 claudio Exp $ */
+/*	$OpenBSD: pfkey.c,v 1.44 2015/02/10 05:18:39 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -464,14 +464,14 @@ pfkey_reply(int sd, u_int32_t *spip)
 	len = hdr.sadb_msg_len * PFKEY2_CHUNK;
 	if (read(sd, data, len) != len) {
 		log_warn("pfkey read");
-		bzero(data, len);
+		explicit_bzero(data, len);
 		free(data);
 		return (-1);
 	}
 
 	if (hdr.sadb_msg_type == SADB_GETSPI) {
 		if (spip == NULL) {
-			bzero(data, len);
+			explicit_bzero(data, len);
 			free(data);
 			return (0);
 		}
@@ -489,7 +489,7 @@ pfkey_reply(int sd, u_int32_t *spip)
 			}
 		}
 	}
-	bzero(data, len);
+	explicit_bzero(data, len);
 	free(data);
 	return (0);
 }
