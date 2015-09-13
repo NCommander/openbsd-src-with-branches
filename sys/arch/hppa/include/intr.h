@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.40 2014/06/03 13:30:24 kettenis Exp $	*/
+/*	$OpenBSD: intr.h,v 1.41 2015/02/11 01:55:40 dlg Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -86,6 +86,8 @@ void splassert_check(int, const char *);
 
 void	cpu_intr_init(void);
 void	cpu_intr(void *);
+
+void	intr_barrier(void *);
 
 static __inline int
 spllower(int ncpl)
