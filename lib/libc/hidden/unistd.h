@@ -1,4 +1,4 @@
-/*	$OpenBSD: unistd.h,v 1.2 2015/09/11 15:38:33 guenther Exp $	*/
+/*	$OpenBSD: unistd.h,v 1.3 2015/09/12 14:56:50 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -95,7 +95,7 @@ PROTO_NORMAL(link);
 PROTO_NORMAL(linkat);
 /*PROTO_CANCEL(lockf);*/
 PROTO_NORMAL(lseek);
-PROTO_NORMAL(mkdtemp);
+/*PROTO_DEPRECATED(mkdtemp);		use declaration from stdlib.h */
 PROTO_NORMAL(mkstemp);
 /*PROTO_DEPRECATED(mkstemps);		use declaration from stdlib.h */
 /*PROTO_DEPRECATED(mktemp);		use declaration from stdlib.h */
