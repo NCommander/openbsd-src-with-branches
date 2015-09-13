@@ -1,4 +1,4 @@
-/*	$OpenBSD: timesoftfloat.c,v 1.1 2006/11/06 15:11:37 drahn Exp $	*/
+/*	$OpenBSD: timesoftfloat.c,v 1.2 2012/12/05 23:20:01 deraadt Exp $	*/
 /* $NetBSD: timesoftfloat.c,v 1.1 2000/06/06 08:15:11 bjh21 Exp $ */
 
 /*
@@ -37,7 +37,7 @@ this code that are retained.
 #include <stdio.h>
 #include <time.h>
 #include "milieu.h"
-#include "softfloat.h"
+#include <softfloat.h>
 
 enum {
     minIterations = 1000
