@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.54 2014/11/16 12:30:59 deraadt Exp $     */
+/*	$OpenBSD: trap.c,v 1.55 2015/01/20 19:43:21 kettenis Exp $     */
 /*	$NetBSD: trap.c,v 1.47 1999/08/21 19:26:20 matt Exp $     */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden.
@@ -36,8 +36,8 @@
 #include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/syscall.h>
-#include <sys/syscall_mi.h>
 #include <sys/systm.h>
+#include <sys/syscall_mi.h>
 #include <sys/signalvar.h>
 #include <sys/exec.h>
 
@@ -122,7 +122,7 @@ if(faultdebug)printf("Trap: type %lx, code %lx, pc %lx, psl %lx\n",
 		frame->trap, frame->code, frame->pc, frame->psl);
 fram:
 #endif
-	switch(type){
+	switch (type){
 
 	default:
 #ifdef DDB
