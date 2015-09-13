@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-wait-for.c,v 1.7 2014/10/20 22:29:25 nicm Exp $ */
+/* $OpenBSD: cmd-wait-for.c,v 1.8 2015/09/04 12:02:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2013 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -97,7 +97,6 @@ cmd_wait_for_add(const char *name)
 void
 cmd_wait_for_remove(struct wait_channel *wc)
 {
-
 	if (wc->locked)
 		return;
 	if (!TAILQ_EMPTY(&wc->waiters) || !wc->woken)
@@ -241,7 +240,8 @@ cmd_wait_for_flush(void)
 			if (!cmdq_free(wq))
 				cmdq_continue(wq);
 		}
-		while ((wq = TAILQ_FIRST(&wc->lockers)) != NULL) {
+		wc->woken = 1;
+		TAILQ_FOREACH_SAFE(wq, &wc->lockers, waitentry, wq1) {
 			TAILQ_REMOVE(&wc->lockers, wq, waitentry);
 			if (!cmdq_free(wq))
 				cmdq_continue(wq);
