@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.51 2014/10/05 11:32:43 dlg Exp $	*/
+/*	$OpenBSD: intr.c,v 1.52 2014/10/05 11:40:37 dlg Exp $	*/
 /*	$NetBSD: intr.c,v 1.39 2001/07/19 23:38:11 eeh Exp $ */
 
 /*
@@ -310,6 +310,12 @@ intr_establish(int level, struct intrhand *ih)
 #endif
 
 	splx(s);
+}
+
+void
+intr_barrier(void *ih)
+{
+	sched_barrier(NULL);
 }
 
 void *
