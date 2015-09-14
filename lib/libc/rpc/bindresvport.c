@@ -1,4 +1,4 @@
-/*	$OpenBSD: bindresvport.c,v 1.16 2005/04/01 07:44:03 otto Exp $	*/
+/*	$OpenBSD: bindresvport.c,v 1.17 2005/12/21 01:40:22 millert Exp $	*/
 
 /*
  * Copyright 1996, Jason Downs.  All rights reserved.
@@ -39,6 +39,7 @@ bindresvport(int sd, struct sockaddr_in *sin)
 {
 	return bindresvport_sa(sd, (struct sockaddr *)sin);
 }
+DEF_WEAK(bindresvport);
 
 /*
  * Bind a socket to a privileged port for whatever protocol.
@@ -121,3 +122,4 @@ bindresvport_sa(int sd, struct sockaddr *sa)
 	}
 	return (error);
 }
+DEF_WEAK(bindresvport_sa);
