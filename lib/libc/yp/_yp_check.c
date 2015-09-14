@@ -1,4 +1,4 @@
-/*	$OpenBSD: _yp_check.c,v 1.6 2005/08/05 13:02:16 espie Exp $ */
+/*	$OpenBSD: _yp_check.c,v 1.7 2015/01/16 16:48:51 deraadt Exp $ */
 /*
  * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@theos.com>
  * All rights reserved.
@@ -49,3 +49,4 @@ _yp_check(char **dom)
 		return 1;
 	return 0;
 }
+DEF_WEAK(_yp_check);
