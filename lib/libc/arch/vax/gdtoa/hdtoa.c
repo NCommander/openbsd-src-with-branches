@@ -1,4 +1,4 @@
-/*	$OpenBSD: hdtoa.c,v 1.1 2008/09/07 20:36:08 martynas Exp $	*/
+/*	$OpenBSD: hdtoa.c,v 1.2 2011/06/08 22:14:17 martynas Exp $	*/
 /*-
  * Copyright (c) 2004, 2005 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
@@ -199,6 +199,7 @@ __hdtoa(double d, const char *xdigs, int ndigits, int *decpt, int *sign,
 
 	return (s0);
 }
+DEF_STRONG(__hdtoa);
 
 /*
  * This is the long double version of __hdtoa().
@@ -209,3 +210,4 @@ __hldtoa(long double e, const char *xdigs, int ndigits, int *decpt, int *sign,
 {
 	return (__hdtoa((double)e, xdigs, ndigits, decpt, sign, rve));
 }
+DEF_STRONG(__hldtoa);
