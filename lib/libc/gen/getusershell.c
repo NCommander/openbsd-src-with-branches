@@ -1,4 +1,4 @@
-/*	$OpenBSD: getusershell.c,v 1.14 2014/09/15 06:15:48 guenther Exp $ */
+/*	$OpenBSD: getusershell.c,v 1.15 2015/02/06 23:21:58 millert Exp $ */
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -67,11 +67,9 @@ void
 endusershell(void)
 {
 	
-	if (shells != NULL)
-		free(shells);
+	free(shells);
 	shells = NULL;
-	if (strings != NULL)
-		free(strings);
+	free(strings);
 	strings = NULL;
 	curshell = NULL;
 }
@@ -90,11 +88,9 @@ initshells(void)
 	FILE *fp;
 	struct stat statb;
 
-	if (shells != NULL)
-		free(shells);
+	free(shells);
 	shells = NULL;
-	if (strings != NULL)
-		free(strings);
+	free(strings);
 	strings = NULL;
 	if ((fp = fopen(_PATH_SHELLS, "re")) == NULL)
 		return (okshells);

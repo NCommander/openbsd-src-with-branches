@@ -1,4 +1,4 @@
-/*	$OpenBSD: getgrent.c,v 1.42 2015/01/16 16:48:51 deraadt Exp $ */
+/*	$OpenBSD: getgrent.c,v 1.43 2015/09/13 12:20:12 guenther Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -199,8 +199,7 @@ start_gr(void)
 		rewind(_gr_fp);
 #ifdef YP
 		__ypmode = 0;
-		if (__ypcurrent)
-			free(__ypcurrent);
+		free(__ypcurrent);
 		__ypcurrent = NULL;
 		if (__ypexhead)
 			__ypexclude_free(&__ypexhead);
@@ -251,8 +250,7 @@ endgrent_basic(void)
 		_gr_fp = NULL;
 #ifdef YP
 		__ypmode = 0;
-		if (__ypcurrent)
-			free(__ypcurrent);
+		free(__ypcurrent);
 		__ypcurrent = NULL;
 		if (__ypexhead)
 			__ypexclude_free(&__ypexhead);

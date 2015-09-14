@@ -1,4 +1,4 @@
-/*	$OpenBSD: glob.c,v 1.42 2015/02/05 12:59:57 millert Exp $ */
+/*	$OpenBSD: glob.c,v 1.43 2015/06/13 16:57:04 deraadt Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -954,15 +954,13 @@ globfree(glob_t *pglob)
 	if (pglob->gl_pathv != NULL) {
 		pp = pglob->gl_pathv + pglob->gl_offs;
 		for (i = pglob->gl_pathc; i--; ++pp)
-			if (*pp)
-				free(*pp);
+			free(*pp);
 		free(pglob->gl_pathv);
 		pglob->gl_pathv = NULL;
 	}
 	if (pglob->gl_statv != NULL) {
 		for (i = 0; i < pglob->gl_pathc; i++) {
-			if (pglob->gl_statv[i] != NULL)
-				free(pglob->gl_statv[i]);
+			free(pglob->gl_statv[i]);
 		}
 		free(pglob->gl_statv);
 		pglob->gl_statv = NULL;
