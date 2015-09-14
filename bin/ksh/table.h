@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.h,v 1.7 2005/12/11 20:31:21 otto Exp $	*/
+/*	$OpenBSD: table.h,v 1.8 2012/02/19 07:52:30 otto Exp $	*/
 
 /* $From: table.h,v 1.3 1994/05/31 13:34:34 michael Exp $ */
 
@@ -13,7 +13,7 @@ struct table {
 };
 
 struct tbl {			/* table item */
-	Tflag	flag;		/* flags */
+	int	flag;		/* flags */
 	int	type;		/* command type (see below), base (if INTEGER),
 				 * or offset from val.s of value (if EXPORT) */
 	Area	*areap;		/* area to allocate from */
