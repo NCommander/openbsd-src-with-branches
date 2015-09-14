@@ -1,4 +1,4 @@
-.\"	$OpenBSD: tsleep.9,v 1.8 2014/01/22 00:09:02 tedu Exp $
+.\"	$OpenBSD: tsleep.9,v 1.9 2014/01/22 07:32:47 jmc Exp $
 .\"	$NetBSD: sleep.9,v 1.11 1999/03/24 06:15:12 mycroft Exp $
 .\"
 .\" Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -42,15 +42,15 @@
 .In sys/param.h
 .In sys/systm.h
 .Ft int
-.Fn "tsleep" "void *ident" "int priority" "const char *wmesg" "int timo"
+.Fn tsleep "void *ident" "int priority" "const char *wmesg" "int timo"
 .Ft int
-.Fn "msleep" "void *ident" "struct mutex *mtx" "int priority" "const char *wmesg" "int timo"
+.Fn msleep "void *ident" "struct mutex *mtx" "int priority" "const char *wmesg" "int timo"
 .Ft void
-.Fn "wakeup" "void *ident"
+.Fn wakeup "void *ident"
 .Ft void
-.Fn "wakeup_n" "void *ident" "int count"
+.Fn wakeup_n "void *ident" "int count"
 .Ft void
-.Fn "wakeup_one" "void *ident"
+.Fn wakeup_one "void *ident"
 .Sh DESCRIPTION
 These functions implement voluntary context switching.
 .Fn tsleep
