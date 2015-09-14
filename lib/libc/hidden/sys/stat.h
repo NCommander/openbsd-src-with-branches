@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: stat.h,v 1.1 2015/09/11 15:38:33 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -28,6 +28,7 @@ PROTO_NORMAL(fchmodat);
 PROTO_NORMAL(fstat);
 PROTO_NORMAL(fstatat);
 PROTO_NORMAL(futimens);
+PROTO_DEPRECATED(isfdtype);
 PROTO_NORMAL(lstat);
 PROTO_NORMAL(mkdir);
 PROTO_NORMAL(mkdirat);

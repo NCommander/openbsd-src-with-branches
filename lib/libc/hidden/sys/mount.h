@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mount.h,v 1.1 2015/09/11 15:38:33 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -26,6 +26,7 @@ PROTO_NORMAL(fhstatfs);
 PROTO_NORMAL(fstatfs);
 PROTO_NORMAL(getfh);
 PROTO_NORMAL(getfsstat);
+PROTO_DEPRECATED(getmntinfo);
 PROTO_NORMAL(mount);
 PROTO_NORMAL(statfs);
 PROTO_NORMAL(unmount);
