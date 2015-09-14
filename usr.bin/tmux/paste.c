@@ -1,4 +1,4 @@
-/* $OpenBSD: paste.c,v 1.29 2015/08/29 09:36:46 nicm Exp $ */
+/* $OpenBSD: paste.c,v 1.30 2015/09/11 14:41:50 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -253,7 +253,6 @@ paste_set(char *data, size_t size, const char *name, char **cause)
 			*cause = xstrdup("empty buffer name");
 		return (-1);
 	}
-
 
 	pb = xmalloc(sizeof *pb);
 
