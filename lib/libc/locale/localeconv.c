@@ -1,4 +1,4 @@
-/*	$OpenBSD: localeconv.c,v 1.5 2005/08/08 08:05:35 espie Exp $ */
+/*	$OpenBSD: localeconv.c,v 1.6 2014/07/14 07:22:07 pelikan Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -63,3 +63,4 @@ localeconv(void)
 
     return (&ret);
 }
+DEF_STRONG(localeconv);
