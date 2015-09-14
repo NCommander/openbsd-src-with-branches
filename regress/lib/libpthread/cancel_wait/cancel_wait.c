@@ -1,4 +1,4 @@
-/* $OpenBSD: cancel2.c,v 1.2 2003/07/31 21:48:04 deraadt Exp $ */
+/* $OpenBSD: cancel_wait.c,v 1.1 2015/09/14 08:02:59 guenther Exp $ */
 /* PUBLIC DOMAIN <marc@snafu.org> */
 
 /*
@@ -52,7 +52,7 @@ int
 main(int argc, char *argv[])
 {
 	pthread_t thread;
-	void *ret;
+	void *ret = NULL;
 
 	child = fork();
 	if (child == -1)
