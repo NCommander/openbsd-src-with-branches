@@ -1,4 +1,4 @@
-/*	$OpenBSD: getrrsetbyname.c,v 1.4 2014/03/25 19:48:11 eric Exp $	*/
+/*	$OpenBSD: getrrsetbyname.c,v 1.5 2014/03/26 18:13:15 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -80,3 +80,4 @@ freerrset(struct rrsetinfo *rrset)
 		free(rrset->rri_name);
 	free(rrset);
 }
+DEF_WEAK(freerrset);

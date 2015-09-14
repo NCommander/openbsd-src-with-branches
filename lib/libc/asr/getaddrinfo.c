@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo.c,v 1.4 2014/03/25 19:48:11 eric Exp $	*/
+/*	$OpenBSD: getaddrinfo.c,v 1.5 2014/03/26 18:13:15 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -51,3 +51,4 @@ getaddrinfo(const char *hostname, const char *servname,
 
 	return (ar.ar_gai_errno);
 }
+DEF_WEAK(getaddrinfo);

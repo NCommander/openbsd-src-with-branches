@@ -1,4 +1,4 @@
-/*	$OpenBSD: gethostnamadr.c,v 1.11 2014/03/26 18:13:15 eric Exp $	*/
+/*	$OpenBSD: gethostnamadr.c,v 1.12 2015/01/16 16:48:51 deraadt Exp $	*/
 /*
  * Copyright (c) 2012,2013 Eric Faurot <eric@openbsd.org>
  *
@@ -142,6 +142,7 @@ gethostbyname(const char *name)
 
 	return gethostbyname2(name, AF_INET);
 }
+DEF_WEAK(gethostbyname);
 
 struct hostent *
 gethostbyname2(const char *name, int af)
@@ -162,6 +163,7 @@ gethostbyname2(const char *name, int af)
 
 	return (&_hostent);
 }
+DEF_WEAK(gethostbyname2);
 
 struct hostent *
 gethostbyaddr(const void *addr, socklen_t len, int af)
