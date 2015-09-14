@@ -1,4 +1,4 @@
-/*	$OpenBSD: readpassphrase.c,v 1.23 2010/05/14 13:30:34 millert Exp $	*/
+/*	$OpenBSD: readpassphrase.c,v 1.24 2013/11/24 23:51:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000-2002, 2007, 2010
@@ -171,6 +171,7 @@ restart:
 		errno = save_errno;
 	return(nr == -1 ? NULL : buf);
 }
+DEF_WEAK(readpassphrase);
 
 char *
 getpass(const char *prompt)
