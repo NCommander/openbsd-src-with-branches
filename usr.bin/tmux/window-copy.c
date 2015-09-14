@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.132 2015/08/29 09:25:00 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.133 2015/09/13 13:31:40 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -208,7 +208,7 @@ window_copy_init(struct window_pane *wp)
 }
 
 void
-window_copy_init_from_pane(struct window_pane *wp, u_int scroll_exit)
+window_copy_init_from_pane(struct window_pane *wp, int scroll_exit)
 {
 	struct window_copy_mode_data	*data = wp->modedata;
 	struct screen			*s = &data->screen;
