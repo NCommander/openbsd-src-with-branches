@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.38 2014/04/22 10:21:56 reyk Exp $
+#	$OpenBSD: Makefile,v 1.39 2014/11/20 14:53:15 tedu Exp $
 
 .include <bsd.own.mk>
 
@@ -19,6 +19,7 @@ BINMODE=4555
 BINOWN=root
 
 getpwent.o: getpwent.c
-	${COMPILE.c} -UYP ${.CURDIR}/../../lib/libc/gen/getpwent.c
+	${COMPILE.c} -UYP -D'DEF_WEAK(x)=asm("")' \
+	    ${.CURDIR}/../../lib/libc/gen/getpwent.c
 
 .include <bsd.prog.mk>

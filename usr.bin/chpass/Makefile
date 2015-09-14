@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2008/06/24 14:27:26 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2008/07/04 12:50:23 djm Exp $
 
 .include <bsd.own.mk>
 
@@ -19,4 +19,5 @@ LDADD+= -lrpcsvc -lutil
 .include <bsd.prog.mk>
 
 getpwent.o: getpwent.c
-	${COMPILE.c} -UYP ${.CURDIR}/../../lib/libc/gen/getpwent.c
+	${COMPILE.c} -UYP -D'DEF_WEAK(x)=asm("")' \
+	    ${.CURDIR}/../../lib/libc/gen/getpwent.c
