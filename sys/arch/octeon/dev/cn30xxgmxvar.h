@@ -1,4 +1,4 @@
-/*	$OpenBSD: cn30xxgmxvar.h,v 1.3 2014/08/11 18:29:56 miod Exp $	*/
+/*	$OpenBSD: cn30xxgmxvar.h,v 1.4 2014/08/11 18:52:54 miod Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -64,7 +64,7 @@ struct cn30xxgmx_port_softc {
 				*sc_port_ops;
 	struct cn30xxasx_softc	*sc_port_asx;
 	struct cn30xxipd_softc	*sc_ipd;
-	int			sc_port_flowflags;
+	uint64_t		sc_port_flowflags;
 };
 
 struct cn30xxgmx_softc {

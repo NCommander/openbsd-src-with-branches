@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sq.c,v 1.14 2015/06/24 09:40:53 mpi Exp $	*/
+/*	$OpenBSD: if_sq.c,v 1.15 2015/09/05 21:13:24 miod Exp $	*/
 /*	$NetBSD: if_sq.c,v 1.42 2011/07/01 18:53:47 dyoung Exp $	*/
 
 /*
@@ -193,7 +193,7 @@ sq_attach(struct device *parent, struct device *self, void *aux)
 	struct sq_softc *sc = (struct sq_softc *)self;
 	struct hpc_attach_args *haa = aux;
 	struct ifnet *ifp = &sc->sc_ac.ac_if;
-	int media;
+	uint64_t media;
 	int i, rc;
 
 	sc->sc_hpct = haa->ha_st;
