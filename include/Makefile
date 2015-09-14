@@ -117,9 +117,6 @@ copies:
 		${INSTALL} -d -o ${BINOWN} -g ${BINGRP} -m 755 \
 			${DESTDIR}/usr/include/$$i ; \
 	done
-	${MAKE} just-sys
-
-just-sys:
 	cd ../sys; \
 	pax -rw -pa -L \
 	    `find ${LDIRS} -follow -type f -name '*.h' '!' \
