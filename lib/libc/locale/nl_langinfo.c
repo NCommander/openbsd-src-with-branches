@@ -1,4 +1,4 @@
-/*	$OpenBSD: nl_langinfo.c,v 1.5 2005/08/08 08:05:35 espie Exp $ */
+/*	$OpenBSD: nl_langinfo.c,v 1.6 2005/11/16 16:48:15 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -112,3 +112,4 @@ nl_langinfo(nl_item item)
 
 	return (char *) s;
 }
+DEF_WEAK(nl_langinfo);
