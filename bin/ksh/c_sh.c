@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_sh.c,v 1.45 2014/08/27 08:26:04 jmc Exp $	*/
+/*	$OpenBSD: c_sh.c,v 1.46 2015/07/20 20:46:24 guenther Exp $	*/
 
 /*
  * built-in Bourne commands
@@ -223,8 +223,8 @@ c_wait(char **wp)
 	if (ksh_getopt(wp, &builtin_opt, null) == '?')
 		return 1;
 	wp += builtin_opt.optind;
-	if (*wp == (char *) 0) {
-		while (waitfor((char *) 0, &sig) >= 0)
+	if (*wp == NULL) {
+		while (waitfor(NULL, &sig) >= 0)
 			;
 		rv = sig;
 	} else {

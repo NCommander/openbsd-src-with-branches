@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.56 2015/09/01 17:46:31 tedu Exp $	*/
+/*	$OpenBSD: main.c,v 1.57 2015/09/10 22:48:58 nicm Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -141,7 +141,7 @@ main(int argc, char *argv[])
 
 	def_path = _PATH_DEFPATH;
 	{
-		size_t len = confstr(_CS_PATH, (char *) 0, 0);
+		size_t len = confstr(_CS_PATH, NULL, 0);
 		char *new;
 
 		if (len > 0) {
@@ -227,7 +227,7 @@ main(int argc, char *argv[])
 		    stat(pwd, &s_pwd) < 0 || stat(".", &s_dot) < 0 ||
 		    s_pwd.st_dev != s_dot.st_dev ||
 		    s_pwd.st_ino != s_dot.st_ino)
-			pwdx = (char *) 0;
+			pwdx = NULL;
 		set_current_wd(pwdx);
 		if (current_wd[0])
 			simplify_path(current_wd);
@@ -302,7 +302,7 @@ main(int argc, char *argv[])
 			/* The following only if isatty(0) */
 			s->flags |= SF_TTY;
 			s->u.shf->flags |= SHF_INTERRUPT;
-			s->file = (char *) 0;
+			s->file = NULL;
 		}
 	}
 
@@ -373,7 +373,7 @@ main(int argc, char *argv[])
 		static const char *const restr_com[] = {
 			"typeset", "-r", "PATH",
 			"ENV", "SHELL",
-			(char *) 0
+			NULL
 		};
 		shcomexec((char **) restr_com);
 		/* After typeset command... */

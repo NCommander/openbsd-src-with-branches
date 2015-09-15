@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_test.c,v 1.17 2005/03/30 17:16:37 deraadt Exp $	*/
+/*	$OpenBSD: c_test.c,v 1.18 2009/03/01 20:11:06 otto Exp $	*/
 
 /*
  * test(1); version 7-like  --  author Erik Baalbergen
@@ -161,7 +161,7 @@ c_test(char **wp)
 				if (!Flag(FPOSIX) && strcmp(opnd1, "-t") == 0)
 				    break;
 				res = (*te.eval)(&te, TO_STNZE, opnd1,
-				    (char *) 0, 1);
+				    NULL, 1);
 				if (invert & 1)
 					res = !res;
 				return !res;
