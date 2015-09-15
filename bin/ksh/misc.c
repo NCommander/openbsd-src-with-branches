@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.40 2015/03/18 15:12:36 tedu Exp $	*/
+/*	$OpenBSD: misc.c,v 1.41 2015/09/10 22:48:58 nicm Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -1039,7 +1039,7 @@ print_columns(struct shf *shf, int n, char *(*func) (void *, int, char *, int),
 				    col_width,
 				    (*func)(arg, i, str, max_width + 1));
 				if (c + 1 < cols)
-					shf_fprintf(shf, "%*s", nspace, null);
+					shf_fprintf(shf, "%*s", nspace, "");
 			}
 		}
 		shf_putchar('\n', shf);
