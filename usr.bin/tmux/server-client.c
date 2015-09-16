@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.152 2015/09/01 19:50:09 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.153 2015/09/14 10:25:52 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -214,7 +214,7 @@ server_client_lost(struct client *c)
 	free(c->prompt_string);
 	free(c->prompt_buffer);
 
-	c->cmdq->dead = 1;
+	c->cmdq->flags |= CMD_Q_DEAD;
 	cmdq_free(c->cmdq);
 	c->cmdq = NULL;
 
