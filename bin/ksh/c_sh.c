@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_sh.c,v 1.46 2015/07/20 20:46:24 guenther Exp $	*/
+/*	$OpenBSD: c_sh.c,v 1.47 2015/09/15 18:15:05 tedu Exp $	*/
 
 /*
  * built-in Bourne commands
@@ -614,7 +614,7 @@ c_set(char **wp)
 		while (*++wp != NULL)
 			*wp = str_save(*wp, &l->area);
 		l->argc = wp - owp - 1;
-		l->argv = (char **) alloc(sizeofN(char *, l->argc+2), &l->area);
+		l->argv = alloc(sizeofN(char *, l->argc+2), &l->area);
 		for (wp = l->argv; (*wp++ = *owp++) != NULL; )
 			;
 	}

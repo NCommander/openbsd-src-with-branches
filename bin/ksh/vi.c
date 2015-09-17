@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.30 2015/09/10 22:48:58 nicm Exp $	*/
+/*	$OpenBSD: vi.c,v 1.31 2015/09/15 18:15:05 tedu Exp $	*/
 
 /*
  *	vi command editing
@@ -1377,7 +1377,7 @@ save_edstate(struct edstate *old)
 {
 	struct edstate *new;
 
-	new = (struct edstate *)alloc(sizeof(struct edstate), APERM);
+	new = alloc(sizeof(struct edstate), APERM);
 	new->cbuf = alloc(old->cbufsize, APERM);
 	memcpy(new->cbuf, old->cbuf, old->linelen);
 	new->cbufsize = old->cbufsize;
