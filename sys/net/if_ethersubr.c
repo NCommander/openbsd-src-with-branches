@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.224 2015/09/12 13:34:12 mpi Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.225 2015/09/13 10:42:32 dlg Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -361,7 +361,7 @@ decapsulate:
 		if (ifp->if_flags & IFF_NOARP)
 			goto dropanyway;
 		inq = &rarpintrq;
-		return (1);
+		break;
 
 #ifdef INET6
 	/*
