@@ -1,4 +1,4 @@
-/*	$OpenBSD: shf.c,v 1.20 2015/09/15 20:59:05 nicm Exp $	*/
+/*	$OpenBSD: shf.c,v 1.21 2015/09/17 14:21:33 nicm Exp $	*/
 
 /*
  *  Shell file I/O routines
@@ -99,7 +99,7 @@ shf_fdopen(int fd, int sflags, struct shf *shf)
 			shf->buf = alloc(bsize, ATEMP);
 			sflags |= SHF_ALLOCB;
 		} else
-			shf->buf = (unsigned char *) 0;
+			shf->buf = NULL;
 	} else {
 		shf = alloc(sizeof(struct shf) + bsize, ATEMP);
 		shf->buf = (unsigned char *) &shf[1];

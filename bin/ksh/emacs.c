@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.51 2015/09/01 13:12:31 tedu Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.52 2015/09/10 22:48:58 nicm Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -1019,7 +1019,7 @@ x_redraw(int limit)
 		x_e_putc('\r');
 	x_flush();
 	if (xbp == xbuf) {
-		x_col = promptlen(prompt, (const char **) 0);
+		x_col = promptlen(prompt, NULL);
 		if (x_col > xx_cols)
 			truncate = (x_col / xx_cols) * xx_cols;
 		if (prompt_redraw)
