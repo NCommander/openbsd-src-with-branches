@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.5 2015/09/02 01:52:26 yasuoka Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.37 2015/09/02 04:09:24 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2004 Tom Cosgrove
@@ -38,7 +38,7 @@
 
 volatile struct BIOS_regs	BIOS_regs;
 
-#if defined(DEBUG) && !defined(_TEST)
+#if defined(DEBUG)
 #define CKPT(c)	(*(u_int16_t*)0xb8148 = 0x4700 + (c))
 #else
 #define CKPT(c) /* c */

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.44 2013/01/18 04:10:16 jsing Exp $
+#	$OpenBSD: Makefile.inc,v 1.45 2013/12/28 02:51:07 deraadt Exp $
 
 CFLAGS=${DEBUG} ${COPTS} -Os -Wall -Werror
 CFLAGS+=	-fno-stack-protector -DMDRANDOM
@@ -11,7 +11,6 @@ DEBUGFLAGS=
 # DEBUGFLAGS+=-DBIOS_DEBUG
 # DEBUGFLAGS+=-DEXEC_DEBUG
 # DEBUGFLAGS+=-DALLOC_TRACE
-# DEBUGFLAGS+=-g -D_TEST
 # DEBUGFLAGS+=-DUNIX_DEBUG
 # DEBUGFLAGS+=-DBOOTP_DEBUG -DNETIF_DEBUG -DETHER_DEBUG
 # DEBUGFLAGS+=-DNFS_DEBUG -DRPC_DEBUG -DRARP_DEBUG
@@ -23,9 +22,7 @@ BOOTMAGIC=0xc001d00d
 #ROM_SIZE=32768
 CLEANFILES+=	assym.h machine
 
-.if empty(DEBUGFLAGS:M-D_TEST)
 SACFLAGS+=-nostdinc -fno-builtin -fpack-struct
-.endif
 
 .if !make(libdep) && !make(sadep) && !make(salibdir) && !make(obj)
 .BEGIN:

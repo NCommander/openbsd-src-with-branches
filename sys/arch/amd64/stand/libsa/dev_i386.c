@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.14 2014/07/12 21:54:58 jasper Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.15 2014/07/13 09:26:08 jasper Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -106,15 +106,6 @@ devboot(dev_t bootdev, char *p)
 #endif
 	int sr_boot_vol = -1;
 	int part_type = FS_UNUSED;
-
-#ifdef _TEST
-	*p++ = '/';
-	*p++ = 'd';
-	*p++ = 'e';
-	*p++ = 'v';
-	*p++ = '/';
-	*p++ = 'r';
-#endif
 
 #ifdef SOFTRAID
 	/*

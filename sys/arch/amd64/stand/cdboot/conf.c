@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.26 2014/02/18 13:56:02 jsing Exp $	*/
+/*	$OpenBSD: conf.c,v 1.27 2015/09/02 04:09:24 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2004 Tom Cosgrove
@@ -39,7 +39,6 @@
 #include <lib/libsa/tftp.h>
 #include <lib/libsa/netif.h>
 #endif
-#include <lib/libsa/unixdev.h>
 #include <biosdev.h>
 #include <dev/cons.h>
 
