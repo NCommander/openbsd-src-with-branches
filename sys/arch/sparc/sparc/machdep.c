@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.172 2015/06/02 04:31:53 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.173 2015/09/08 10:21:16 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.85 1997/09/12 08:55:02 pk Exp $ */
 
 /*
@@ -171,7 +171,6 @@ cpu_startup()
 	printf("real mem = %lu (%luMB)\n", ptoa(physmem),
 	    ptoa(physmem)/1024/1024);
 
-#if !defined(SMALL_KERNEL)
 	/*
 	 * uvm_km_init() has allocated all the virtual memory below the
 	 * end of the kernel image. If VM_MIN_KERNEL_ADDRESS is below
@@ -180,7 +179,6 @@ cpu_startup()
 	if (vm_min_kernel_address < (vaddr_t)KERNBASE) {
 		uvm_unmap(kernel_map, vm_min_kernel_address, (vaddr_t)KERNBASE);
 	}
-#endif
 
 	/*
 	 * Allocate a submap for exec arguments.  This map effectively
