@@ -1,4 +1,4 @@
-.\" $OpenBSD: rtalloc.9,v 1.6 2015/09/11 19:27:05 mpi Exp $
+.\" $OpenBSD: rtalloc.9,v 1.7 2015/09/11 22:54:26 jmc Exp $
 .\"
 .\" Copyright (c) 2014-2015 Martin Pieuchot
 .\"
@@ -88,6 +88,11 @@ The
 function releases a reference to the routing entry
 .Fa rt ,
 freeing it if the reference count drops to 0.
+If
+.Fa rt
+is a
+.Dv NULL
+pointer, no action occurs.
 .Sh CONTEXT
 .Fn rtalloc ,
 .Fn rtalloc_mpath ,
