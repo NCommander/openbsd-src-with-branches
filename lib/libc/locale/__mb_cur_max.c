@@ -1,4 +1,4 @@
-/*	$OpenBSD: __mb_cur_max.c,v 1.2 2005/08/08 08:05:35 espie Exp $	*/
+/*	$OpenBSD: __mb_cur_max.c,v 1.3 2015/09/13 08:31:47 guenther Exp $	*/
 /*	$NetBSD: __mb_cur_max.c,v 1.2 2001/01/25 01:25:06 itojun Exp $	*/
 
 /*-
@@ -32,4 +32,6 @@
 
 size_t __mb_cur_max = 1;
 size_t __mb_len_max_runtime = MB_LEN_MAX;
+#if 0
 DEF_STRONG(__mb_cur_max);
+#endif

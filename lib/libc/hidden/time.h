@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.h,v 1.1 2015/09/11 15:38:33 guenther Exp $	*/
+/*	$OpenBSD: time.h,v 1.2 2015/09/12 14:35:40 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -20,7 +20,9 @@
 
 #include_next <time.h>
 
+#if 0
 extern PROTO_NORMAL(tzname);
+#endif
 
 PROTO_NORMAL(asctime);
 PROTO_NORMAL(asctime_r);

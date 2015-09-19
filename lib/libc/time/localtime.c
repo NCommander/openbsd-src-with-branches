@@ -1,4 +1,4 @@
-/*	$OpenBSD: localtime.c,v 1.52 2015/04/07 01:47:04 millert Exp $ */
+/*	$OpenBSD: localtime.c,v 1.53 2015/09/12 14:35:40 guenther Exp $ */
 /*
 ** This file is in the public domain, so clarified as of
 ** 1996-06-05 by Arthur David Olson.
@@ -195,7 +195,9 @@ char *			tzname[2] = {
 	wildabbr,
 	wildabbr
 };
+#if 0
 DEF_WEAK(tzname);
+#endif
 
 /*
 ** Section 4.12.3 of X3.159-1989 requires that
