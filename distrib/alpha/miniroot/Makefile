@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2015/03/12 21:41:56 naddy Exp $
+#	$OpenBSD: Makefile,v 1.2 2015/08/29 17:21:28 deraadt Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -29,13 +29,13 @@ vn_down:
 	-umount /mnt
 	-vnconfig -u vnd0
 
-install_files: bsd.rd ofwboot
+install_files: bsd.rd boot
 
 bsd.rd:
 	install -c -m 555 -o root -g wheel \
 	    ${.OBJDIR}/../bsd.rd/bsd.rd /mnt/bsd
 
-ofwboot:
+boot:
 	install -c -m 555 -o root -g wheel \
 	    ${DESTDIR}/usr/mdec/boot /mnt/boot
 
@@ -43,7 +43,7 @@ installboot:
 	/usr/mdec/installboot -v /mnt/boot ${DESTDRIR}/usr/mdec/bootxx /dev/rvnd0c
 
 blank_filesystem:
-	dd if=/dev/zero of=${TARGET} bs=512 count=5744
+	dd if=/dev/zero of=${TARGET} bs=512 count=5760
 
 .endif
 
