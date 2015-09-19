@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.336 2015/08/04 14:46:38 phessler Exp $ */
+/*	$OpenBSD: rde.c,v 1.337 2015/08/30 23:20:43 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -351,7 +351,7 @@ rde_dispatch_imsg_session(struct imsgbuf *ibuf)
 
 	while (ibuf) {
 		if ((n = imsg_get(ibuf, &imsg)) == -1)
-			fatal("rde_dispatch_imsg_session: imsg_read error");
+			fatal("rde_dispatch_imsg_session: imsg_get error");
 		if (n == 0)
 			break;
 
@@ -617,7 +617,7 @@ rde_dispatch_imsg_parent(struct imsgbuf *ibuf)
 
 	while (ibuf) {
 		if ((n = imsg_get(ibuf, &imsg)) == -1)
-			fatal("rde_dispatch_imsg_parent: imsg_read error");
+			fatal("rde_dispatch_imsg_parent: imsg_get error");
 		if (n == 0)
 			break;
 
