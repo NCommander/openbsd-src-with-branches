@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.7 2011/03/23 16:54:34 pirofti Exp $	*/
+/*	$OpenBSD: intr.h,v 1.8 2013/05/17 19:38:51 kettenis Exp $	*/
 /*	$NetBSD: intr.h,v 1.12 2003/06/16 20:00:59 thorpej Exp $	*/
 
 /*
@@ -95,6 +95,8 @@
 
 #define	splsched()	splhigh()
 #define	spllock()	splhigh()
+
+void	intr_barrier(void *);
 
 #endif /* ! _LOCORE */
 
