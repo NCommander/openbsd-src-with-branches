@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosdev.c,v 1.22 2014/03/29 18:09:28 guenther Exp $	*/
+/*	$OpenBSD: biosdev.c,v 1.23 2015/09/02 01:52:26 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -327,8 +327,7 @@ biosd_io(int rw, bios_diskinfo_t *bd, u_int off, int nsect, void *buf)
 
 	if (bb != buf && rw == F_READ)
 		bcopy(bb, buf, bbsize);
-	if (bb1 != NULL)
-		free(bb1, bbsize);
+	free(bb1, bbsize);
 
 #ifdef BIOS_DEBUG
 	if (debug) {
