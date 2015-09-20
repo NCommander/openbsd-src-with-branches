@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.137 2015/01/22 15:21:28 reyk Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.138 2015/01/22 17:42:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -546,12 +546,13 @@ parent_dispatch_ca(int fd, struct privsep_proc *p, struct imsg *imsg)
 }
 
 void
-purge_table(struct tablelist *head, struct table *table)
+purge_table(struct relayd *env, struct tablelist *head, struct table *table)
 {
 	struct host		*host;
 
 	while ((host = TAILQ_FIRST(&table->hosts)) != NULL) {
 		TAILQ_REMOVE(&table->hosts, host, entry);
+		TAILQ_REMOVE(&env->sc_hosts, host, globalentry);
 		if (event_initialized(&host->cte.ev)) {
 			event_del(&host->cte.ev);
 			close(host->cte.s);
@@ -766,18 +767,13 @@ kv_purge(struct kvtree *keys)
 void
 kv_free(struct kv *kv)
 {
-	if (kv->kv_type == KEY_TYPE_NONE)
-		return;
-	if (kv->kv_key != NULL) {
-		free(kv->kv_key);
-	}
-	kv->kv_key = NULL;
-	if (kv->kv_value != NULL) {
-		free(kv->kv_value);
-	}
-	kv->kv_value = NULL;
-	kv->kv_matchtree = NULL;
-	kv->kv_match = NULL;
+	/*
+	 * This function does not clear memory referenced by
+	 * kv_children or stuff on the tailqs. Use kv_delete() instead.
+	 */
+
+	free(kv->kv_key);
+	free(kv->kv_value);
 	memset(kv, 0, sizeof(*kv));
 }
 
