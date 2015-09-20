@@ -1,4 +1,4 @@
-/*	$OpenBSD: getaddrinfo_async.c,v 1.43 2015/09/14 11:52:49 guenther Exp $	*/
+/*	$OpenBSD: getaddrinfo_async.c,v 1.44 2015/09/20 12:18:47 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -24,7 +24,6 @@
 #include <netdb.h>
 
 #include <asr.h>
-#include <err.h>
 #include <errno.h>
 #include <ifaddrs.h>
 #include <resolv.h>

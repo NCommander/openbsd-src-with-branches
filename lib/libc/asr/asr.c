@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.c,v 1.41 2015/09/14 11:52:49 guenther Exp $	*/
+/*	$OpenBSD: asr.c,v 1.42 2015/09/20 12:50:58 eric Exp $	*/
 /*
  * Copyright (c) 2010-2012 Eric Faurot <eric@openbsd.org>
  *
@@ -24,7 +24,6 @@
 #include <netdb.h>
 
 #include <asr.h>
-#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <resolv.h>
