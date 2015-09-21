@@ -1,7 +1,7 @@
-# $OpenBSD: Makefile,v 1.10 2014/12/16 17:24:58 schwarze Exp $
+# $OpenBSD: Makefile,v 1.11 2015/09/04 21:24:26 schwarze Exp $
 
 REGRESS_TARGETS	 = badarg broken double eof fill literal longhead
-REGRESS_TARGETS	+= macrotag manyargs sameline width
+REGRESS_TARGETS	+= macrotag manyargs sameline spacing width
 
 LINT_TARGETS	 = broken double eof
 
