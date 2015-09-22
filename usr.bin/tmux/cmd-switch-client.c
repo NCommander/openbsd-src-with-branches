@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-switch-client.c,v 1.29 2015/08/28 13:01:03 nicm Exp $ */
+/* $OpenBSD: cmd-switch-client.c,v 1.30 2015/09/10 08:58:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -124,7 +124,7 @@ cmd_switch_client_exec(struct cmd *self, struct cmd_q *cmdq)
 		environ_update(update, &c->environ, &s->environ);
 	}
 
-	if (c->session != NULL)
+	if (c->session != NULL && c->session != s)
 		c->last_session = c->session;
 	c->session = s;
 	status_timer_start(c);
