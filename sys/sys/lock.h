@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock.h,v 1.24 2015/01/30 17:51:11 deraadt Exp $	*/
+/*	$OpenBSD: lock.h,v 1.25 2015/02/11 07:22:15 dlg Exp $	*/
 
 /* 
  * Copyright (c) 1995
@@ -60,7 +60,5 @@ struct lock {
 void	lockinit(struct lock *, int, char *, int, int);
 int	lockmgr(struct lock *, u_int flags, void *);
 int	lockstatus(struct lock *);
-
-#define	lockmgr_printinfo(lkp)
 
 #endif /* !_LOCK_H_ */
