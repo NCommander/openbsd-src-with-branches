@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: drm_cache.c,v 1.1 2013/08/12 04:11:52 jsg Exp $	*/
 /**************************************************************************
  *
  * Copyright (c) 2006-2007 Tungsten Graphics, Inc., Cedar Park, TX., USA
@@ -106,12 +106,11 @@ drm_clflush_sg(struct sg_table *st)
 {
 #if defined(CONFIG_X86)
 	if (cpu_has_clflush) {
-		struct scatterlist *sg;
-		int i;
+		struct sg_page_iter sg_iter;
 
 		mb();
-		for_each_sg(st->sgl, sg, st->nents, i)
-			drm_clflush_page(sg_page(sg));
+		for_each_sg_page(st->sgl, &sg_iter, st->nents, 0)
+			drm_clflush_page(sg_page_iter_page(&sg_iter));
 		mb();
 
 		return;

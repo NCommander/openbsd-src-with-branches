@@ -1,4 +1,4 @@
-/*	$OpenBSD: atom.c,v 1.7 2015/04/18 14:47:34 jsg Exp $	*/
+/*	$OpenBSD: atom.c,v 1.8 2015/07/11 04:00:46 jsg Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  *
@@ -672,7 +672,7 @@ static void atom_op_delay(atom_exec_context *ctx, int *ptr, int arg)
 	else if (!drm_can_sleep())
 		mdelay(count);
 	else
-		drm_msleep(count, "atomop");
+		drm_msleep(count);
 }
 
 static void atom_op_div(atom_exec_context *ctx, int *ptr, int arg)
