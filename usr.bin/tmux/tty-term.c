@@ -1,4 +1,4 @@
-/* $OpenBSD: tty-term.c,v 1.38 2015/07/28 15:18:10 nicm Exp $ */
+/* $OpenBSD: tty-term.c,v 1.39 2015/09/01 19:50:09 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -451,7 +451,7 @@ tty_term_find(char *name, int fd, char **cause)
 			if (n == -1)
 				break;
 			code->type = TTYCODE_FLAG;
-			code->value.number = n;
+			code->value.flag = n;
 			break;
 		}
 	}
