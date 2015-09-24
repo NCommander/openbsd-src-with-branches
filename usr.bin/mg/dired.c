@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.73 2015/09/21 06:59:54 lum Exp $	*/
+/*	$OpenBSD: dired.c,v 1.74 2015/09/23 05:03:03 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -413,6 +413,7 @@ d_expunge(int f, int n)
 		}
 	}
 	curwp->w_dotline = tmp;
+	d_warpdot(curwp->w_dotp, &curwp->w_doto);
 	return (TRUE);
 }
 
