@@ -1,4 +1,4 @@
-/*	$OpenBSD: diffdir.c,v 1.42 2014/05/20 01:25:23 guenther Exp $	*/
+/*	$OpenBSD: diffdir.c,v 1.43 2015/01/16 06:40:07 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, 2010 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -166,13 +166,13 @@ diffdir(char *p1, char *p2, int flags)
 closem:
 	if (dirp1 != NULL) {
 		for (dp1 = dirp1; dp1 < edp1; dp1++)
-			xfree(*dp1);
-		xfree(dirp1);
+			free(*dp1);
+		free(dirp1);
 	}
 	if (dirp2 != NULL) {
 		for (dp2 = dirp2; dp2 < edp2; dp2++)
-			xfree(*dp2);
-		xfree(dirp2);
+			free(*dp2);
+		free(dirp2);
 	}
 }
 
