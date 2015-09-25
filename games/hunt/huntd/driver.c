@@ -1,4 +1,4 @@
-/*	$OpenBSD: driver.c,v 1.20 2013/08/29 20:22:15 naddy Exp $	*/
+/*	$OpenBSD: driver.c,v 1.21 2014/03/23 02:42:47 tedu Exp $	*/
 /*	$NetBSD: driver.c,v 1.5 1997/10/20 00:37:16 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -125,7 +125,7 @@ main(ac, av)
 		  default:
 erred:
 			fprintf(stderr,
-			    "usage: %s [-bs] [-a addr] [-Dvar=value ...] "
+			    "usage: %s [-bs] [-a addr] [-D var=value] "
 			    "[-p port]\n",
 			    av[0]);
 			exit(2);
