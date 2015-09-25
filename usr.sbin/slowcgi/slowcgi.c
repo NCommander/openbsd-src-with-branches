@@ -1,4 +1,4 @@
-/*	$OpenBSD: slowcgi.c,v 1.43 2015/01/19 21:18:47 guenther Exp $ */
+/*	$OpenBSD: slowcgi.c,v 1.44 2015/01/22 18:22:27 florian Exp $ */
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
  * Copyright (c) 2013 Florian Obser <florian@openbsd.org>
@@ -760,6 +760,7 @@ parse_params(uint8_t *buf, uint16_t n, struct request *c, uint16_t id)
 		n -= val_len;
 
 		SLIST_INSERT_HEAD(&c->env, env_entry, entry);
+		ldebug("env[%d], %s", c->env_count, env_entry->val);
 		c->env_count++;
 	}
 }
