@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_km.c,v 1.126 2015/02/07 08:21:24 miod Exp $	*/
+/*	$OpenBSD: uvm_km.c,v 1.127 2015/09/17 18:04:49 kettenis Exp $	*/
 /*	$NetBSD: uvm_km.c,v 1.42 2001/01/14 02:10:01 thorpej Exp $	*/
 
 /* 
@@ -702,6 +702,8 @@ uvm_km_thread(void *arg)
 	int allocmore = 0;
 	int flags;
 	struct uvm_km_free_page *fp = NULL;
+
+	KERNEL_UNLOCK();
 
 	for (;;) {
 		mtx_enter(&uvm_km_pages.mtx);
