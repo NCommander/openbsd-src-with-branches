@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.147 2015/06/03 23:40:01 bcallah Exp $	*/
+/*	$OpenBSD: def.h,v 1.148 2015/09/24 07:07:59 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -588,6 +588,7 @@ int		 killpara(int, int);
 int		 fillword(int, int);
 int		 setfillcol(int, int);
 int		 markpara(int, int);
+int		 transposepara(int, int);
 
 /* word.c X */
 int		 backword(int, int);
