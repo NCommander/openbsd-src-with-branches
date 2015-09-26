@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.43 2015/09/17 14:21:33 nicm Exp $	*/
+/*	$OpenBSD: edit.c,v 1.44 2015/09/18 07:28:24 nicm Exp $	*/
 
 /*
  * Command line editing - common code
@@ -10,14 +10,13 @@
 
 #include "sh.h"
 #include "tty.h"
-#define EXTERN
 #include "edit.h"
-#undef EXTERN
 #include <sys/ioctl.h>
 #include <ctype.h>
 #include <libgen.h>
 #include <sys/stat.h>
 
+X_chars edchars;
 
 static void x_sigwinch(int);
 volatile sig_atomic_t got_sigwinch;
