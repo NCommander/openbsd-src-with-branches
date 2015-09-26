@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.55 2015/03/19 21:48:05 bcallah Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.56 2015/09/24 07:07:59 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -61,7 +61,7 @@ static PF cCsc[] = {
 	rescan,			/* o */
 	csprevmatch,		/* p */
 	rescan,			/* q */
-	rescan, 		/* r */	
+	rescan, 		/* r */
 	cssymbol,		/* s */
 	csfindtext		/* t */
 };

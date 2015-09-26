@@ -1,4 +1,4 @@
-/* $OpenBSD: autoexec.c,v 1.15 2014/10/11 03:03:44 doug Exp $ */
+/* $OpenBSD: autoexec.c,v 1.16 2015/03/19 21:22:15 bcallah Exp $ */
 /* this file is in the public domain */
 /* Author: Vincent Labrecque <vincent@openbsd.org>	April 2002 */
 
@@ -91,7 +91,7 @@ add_autoexec(const char *pattern, const char *func)
  * Register an auto-execute hook; that is, specify a filename pattern
  * (conforming to the shell's filename globbing rules) and an associated
  * function to execute when a file matching the specified pattern
- * is read into a buffer. 
+ * is read into a buffer.
 */
 /* ARGSUSED */
 int

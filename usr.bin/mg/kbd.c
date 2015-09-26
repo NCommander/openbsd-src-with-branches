@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.c,v 1.28 2015/03/25 12:29:03 bcallah Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.29 2015/03/25 20:53:31 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -414,7 +414,7 @@ static int
 mgwrap(PF funct, int f, int n)
 {
 	static	 PF ofp;
-	
+
 	if (funct != rescan &&
 	    funct != negative_argument &&
 	    funct != digit_argument &&
@@ -425,6 +425,6 @@ mgwrap(PF funct, int f, int n)
 			rptcount = 0;
 		ofp = funct;
 	}
-	
+
 	return ((*funct)(f, n));
 }

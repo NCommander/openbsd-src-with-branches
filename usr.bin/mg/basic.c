@@ -1,4 +1,4 @@
-/*	$OpenBSD: basic.c,v 1.44 2015/03/19 21:22:15 bcallah Exp $	*/
+/*	$OpenBSD: basic.c,v 1.45 2015/03/24 22:34:39 florian Exp $	*/
 
 /* This file is in the public domain */
 
@@ -133,7 +133,7 @@ int
 gotoeob(int f, int n)
 {
 	struct line	*lp;
-	
+
 	(void) setmark(f, n);
 	curwp->w_dotp = blastlp(curbp);
 	curwp->w_doto = llength(curwp->w_dotp);
