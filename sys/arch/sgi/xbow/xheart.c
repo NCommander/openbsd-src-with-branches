@@ -1,4 +1,4 @@
-/*	$OpenBSD: xheart.c,v 1.27 2014/09/30 06:51:58 jmatthew Exp $	*/
+/*	$OpenBSD: xheart.c,v 1.28 2015/09/08 10:21:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Miodrag Vallat.
@@ -401,9 +401,7 @@ xheart_splx(int newipl)
 	ci->ci_ipl = newipl;
 	mips_sync();
 	__asm__ (".set reorder\n");
-
-	if (CPU_IS_PRIMARY(ci))
-		xheart_setintrmask(newipl);
+	xheart_setintrmask(newipl);
 
 	/* If we still have softints pending trigger processing. */
 	if (ci->ci_softpending != 0 && newipl < IPL_SOFTINT)
