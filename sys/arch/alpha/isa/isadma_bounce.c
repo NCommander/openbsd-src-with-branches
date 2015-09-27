@@ -1,4 +1,4 @@
-/*	$OpenBSD: isadma_bounce.c,v 1.10 2010/11/20 20:58:49 miod Exp $	*/
+/*	$OpenBSD: isadma_bounce.c,v 1.11 2014/07/12 18:44:40 tedu Exp $	*/
 /* $NetBSD: isadma_bounce.c,v 1.3 2000/06/29 09:02:57 mrg Exp $ */
 
 /*-
@@ -170,8 +170,7 @@ isadma_bounce_dmamap_create(bus_dma_tag_t t, bus_size_t size, int nsegments,
 
  out:
 	if (error) {
-		if (map->_dm_cookie != NULL)
-			free(map->_dm_cookie, M_DEVBUF, 0);
+		free(map->_dm_cookie, M_DEVBUF, cookiesize);
 		_bus_dmamap_destroy(t, map);
 	}
 	return (error);

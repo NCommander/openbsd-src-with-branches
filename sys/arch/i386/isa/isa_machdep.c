@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.c,v 1.80 2015/07/13 17:45:01 mikeb Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.81 2015/09/01 06:01:26 deraadt Exp $	*/
 /*	$NetBSD: isa_machdep.c,v 1.22 1997/06/12 23:57:32 thorpej Exp $	*/
 
 /*-
@@ -715,8 +715,7 @@ _isa_bus_dmamap_create(bus_dma_tag_t t, bus_size_t size, int nsegments,
 
  out:
 	if (error) {
-		if (map->_dm_cookie != NULL)
-			free(map->_dm_cookie, M_DEVBUF, 0);
+		free(map->_dm_cookie, M_DEVBUF, cookiesize);
 		_bus_dmamap_destroy(t, map);
 	}
 	return (error);
