@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.invent.c,v 1.9 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: hack.invent.c,v 1.10 2014/03/11 08:05:15 guenther Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -607,7 +607,7 @@ askchain(struct obj *objchn, char *olets, int allflag, int (*fn)(struct obj *),
 		if(olets && *olets && !strchr(olets, otmp->olet)) continue;
 		if(ckfn && !(*ckfn)(otmp)) continue;
 		if(!allflag) {
-			pline(xprname(otmp, ilet));
+			pline("%s", xprname(otmp, ilet));
 			addtopl(" [nyaq]? ");
 			sym = readchar();
 		}
@@ -649,7 +649,7 @@ obj_to_let(struct obj *obj)
 void
 prinv(struct obj *obj)
 {
-	pline(xprname(obj, obj_to_let(obj)));
+	pline("%s", xprname(obj, obj_to_let(obj)));
 }
 
 static char *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.options.c,v 1.8 2003/07/06 02:07:45 avsm Exp $	*/
+/*	$OpenBSD: hack.options.c,v 1.9 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -261,7 +261,7 @@ doset()
 		char *eop = eos(buf);
 		if(*--eop == ',') *eop = 0;
 	    }
-	    pline(buf);
+	    pline("%s", buf);
 	} else
 	    parseoptions(buf, FALSE);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.tty.c,v 1.11 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: hack.tty.c,v 1.12 2015/01/15 17:13:37 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -178,12 +178,12 @@ setftty()
 
 /* fatal error */
 void
-error(char *s, ...)
+error(const char *s, ...)
 {
 	va_list ap;
 
 	if(settty_needed)
-		settty((char *) 0);
+		settty(NULL);
 	va_start(ap, s);
 	vprintf(s, ap);
 	va_end(ap);

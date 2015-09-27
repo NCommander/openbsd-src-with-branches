@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.apply.c,v 1.4 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: hack.apply.c,v 1.5 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -374,7 +374,7 @@ dig()
 		  digtxt = "Now what exactly was it that you were digging in?";
 		mnewsym(dpx, dpy);
 		prl(dpx, dpy);
-		pline(digtxt);		/* after mnewsym & prl */
+		pline("%s", digtxt);		/* after mnewsym & prl */
 		return(0);
 	} else {
 		if(IS_WALL(levl[dpx][dpy].typ)) {
