@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_var.h,v 1.42 2015/09/13 09:58:03 kettenis Exp $	*/
+/*	$OpenBSD: if_var.h,v 1.43 2015/09/13 17:53:44 mpi Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -330,15 +330,16 @@ do {									\
 		(err) = hfsc_enqueue(((struct ifqueue *)(ifq)), m);	\
 	else {								\
 		if (IF_QFULL((ifq))) {					\
-			m_freem((m));					\
 			(err) = ENOBUFS;				\
 		} else {						\
 			IF_ENQUEUE((ifq), (m));				\
 			(err) = 0;					\
 		}							\
 	}								\
-	if ((err))							\
+	if ((err)) {							\
+		m_freem((m));						\
 		(ifq)->ifq_drops++;					\
+	}								\
 } while (/* CONSTCOND */0)
 
 #define	IFQ_DEQUEUE(ifq, m)						\
