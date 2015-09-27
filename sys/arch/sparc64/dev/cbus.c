@@ -1,4 +1,4 @@
-/*	$OpenBSD: cbus.c,v 1.13 2014/11/24 12:47:14 kettenis Exp $	*/
+/*	$OpenBSD: cbus.c,v 1.14 2015/01/25 21:42:13 kettenis Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -187,8 +187,9 @@ cbus_intr_establish(bus_space_tag_t t, bus_space_tag_t t0, int ihandle,
 		evcount_attach(&ih->ih_count, "unknown", NULL);
 
 	ih->ih_ack = cbus_intr_ack;
+	ih->ih_cpu = cpus;
 
-	err = hv_vintr_settarget(devhandle, devino, cpus->ci_upaid);
+	err = hv_vintr_settarget(devhandle, devino, ih->ih_cpu->ci_upaid);
 	if (err != H_EOK) {
 		printf("hv_vintr_settarget: %d\n", err);
 		return (NULL);
