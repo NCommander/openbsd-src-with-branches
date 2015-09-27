@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_crtc.h,v 1.4 2015/07/11 04:00:46 jsg Exp $	*/
+/*	$OpenBSD: drm_crtc.h,v 1.5 2015/09/23 23:12:11 kettenis Exp $	*/
 /*
  * Copyright © 2006 Keith Packard
  * Copyright © 2007-2008 Dave Airlie
@@ -267,7 +267,7 @@ struct drm_framebuffer {
 	 * hold a ref to the fb even though it has already been removed from
 	 * userspace perspective.
 	 */
-	int refcount;
+	struct kref refcount;
 	/*
 	 * Place on the dev->mode_config.fb_list, access protected by
 	 * dev->mode_config.fb_lock.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttm_bo_driver.h,v 1.5 2015/04/18 14:47:35 jsg Exp $	*/
+/*	$OpenBSD: ttm_bo_driver.h,v 1.6 2015/07/11 04:00:46 jsg Exp $	*/
 /**************************************************************************
  *
  * Copyright (c) 2006-2009 Vmware, Inc., Palo Alto, CA., USA
@@ -475,12 +475,12 @@ struct ttm_bo_global_ref {
  */
 
 struct ttm_bo_global {
-	u_int kobj_ref;
 
 	/**
 	 * Constant after init.
 	 */
 
+	struct kobject kobj;
 	struct ttm_mem_global *mem_glob;
 	struct vm_page *dummy_read_page;
 	struct ttm_mem_shrink shrink;
