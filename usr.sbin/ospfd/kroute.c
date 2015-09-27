@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.101 2015/07/19 01:59:32 benno Exp $ */
+/*	$OpenBSD: kroute.c,v 1.102 2015/07/20 23:45:39 benno Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -883,7 +883,7 @@ kif_update(u_short ifindex, int flags, struct if_data *ifd,
 
 	kif->k.flags = flags;
 	kif->k.link_state = ifd->ifi_link_state;
-	kif->k.media_type = ifd->ifi_type;
+	kif->k.if_type = ifd->ifi_type;
 	kif->k.baudrate = ifd->ifi_baudrate;
 	kif->k.mtu = ifd->ifi_mtu;
 
