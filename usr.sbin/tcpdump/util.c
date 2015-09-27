@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.24 2008/09/19 08:52:16 mpf Exp $	*/
+/*	$OpenBSD: util.c,v 1.25 2009/10/27 23:59:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -204,7 +204,6 @@ tok2str(register const struct tok *lp, register const char *fmt,
 }
 
 
-/* VARARGS */
 __dead void
 error(const char *fmt, ...)
 {
@@ -219,7 +218,6 @@ error(const char *fmt, ...)
 	/* NOTREACHED */
 }
 
-/* VARARGS */
 void
 warning(const char *fmt, ...)
 {

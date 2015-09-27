@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.90 2015/01/30 04:45:45 tedu Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.91 2015/02/09 08:24:20 tedu Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -319,7 +319,6 @@ cmdabort(int signo)
 		longjmp(ptabort, 1);
 }
 
-/*VARARGS*/
 int
 command(const char *fmt, ...)
 {

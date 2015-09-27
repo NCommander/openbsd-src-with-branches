@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_alloc.c,v 1.103 2014/11/18 02:37:31 tedu Exp $	*/
+/*	$OpenBSD: ffs_alloc.c,v 1.104 2015/03/14 03:38:52 jsg Exp $	*/
 /*	$NetBSD: ffs_alloc.c,v 1.11 1996/05/11 18:27:09 mycroft Exp $	*/
 
 /*
@@ -1266,7 +1266,6 @@ ffs2_blkpref(struct inode *ip, daddr_t lbn, int indx, int64_t *bap)
  *   2) quadratically rehash on the cylinder group number.
  *   3) brute force search for a free block.
  */
-/*VARARGS5*/
 daddr_t
 ffs_hashalloc(struct inode *ip, int cg, daddr_t pref, int size,
     daddr_t (*allocator)(struct inode *, int, daddr_t, int))
