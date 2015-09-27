@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.18 2012/03/31 17:53:34 krw Exp $	*/
+/*	$OpenBSD: main.c,v 1.19 2014/06/16 18:33:33 tobias Exp $	*/
 /*	$NetBSD: main.c,v 1.8 1996/10/17 20:29:53 cgd Exp $	*/
 
 /*
@@ -98,7 +98,6 @@ main(int argc, char *argv[])
 	exit(ret);
 }
 
-/*VARARGS*/
 int
 ask(int def, const char *fmt, ...)
 {
