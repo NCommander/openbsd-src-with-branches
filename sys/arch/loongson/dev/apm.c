@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.27 2014/12/19 14:15:50 deraadt Exp $	*/
+/*	$OpenBSD: apm.c,v 1.28 2015/02/07 01:19:40 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -380,7 +380,7 @@ apm_suspend(int state)
 
 	s = splhigh();
 	(void)disableintr();
-	cold = 1;
+	cold = 2;
 
 	rv = config_suspend_all(DVACT_SUSPEND);
 
