@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.5 2015/09/24 06:52:22 semarie Exp $ */
+/*	$OpenBSD: main.c,v 1.6 2015/09/27 17:55:39 semarie Exp $ */
 /*
  * Copyright (c) 2015 Sebastien Marie <semarie@openbsd.org>
  *
@@ -234,7 +234,7 @@ main(int argc, char *argv[])
 	 */
 	start_test(&ret, "stdio rpath", NULL, test_wpaths);
 	start_test1(&ret, "stdio rpath", NULL, test_wpaths);
-	// XXX start_test1(&ret, "stdio rpath", "/", test_wpaths);
+	start_test1(&ret, "stdio rpath", "/", test_wpaths);
 	start_test1(&ret, "stdio rpath", "/etc", test_wpaths);
 	start_test1(&ret, "stdio rpath", "/etc/", test_wpaths);
 	start_test1(&ret, "stdio rpath", "/etc/passwd", test_wpaths);
