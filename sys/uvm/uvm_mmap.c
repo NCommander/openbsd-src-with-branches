@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.116 2015/09/26 15:37:28 tedu Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.117 2015/09/28 18:33:42 tedu Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -513,12 +513,8 @@ is_anon:	/* label for SunOS style /dev/zero */
 			}
 		}
 		maxprot = PROT_MASK;
-		if ((flags & (MAP_FIXED|__MAP_NOREPLACE)) == MAP_FIXED)
-			KERNEL_LOCK();
 		error = uvm_mmapanon(&p->p_vmspace->vm_map, &addr, size, prot, maxprot,
 		    flags, p->p_rlimit[RLIMIT_MEMLOCK].rlim_cur, p);
-		if ((flags & (MAP_FIXED|__MAP_NOREPLACE)) == MAP_FIXED)
-			KERNEL_UNLOCK();
 	}
 
 	if (error == 0)
