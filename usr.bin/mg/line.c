@@ -1,4 +1,4 @@
-/*	$OpenBSD: line.c,v 1.55 2015/03/19 21:22:15 bcallah Exp $	*/
+/*	$OpenBSD: line.c,v 1.56 2015/06/03 23:40:01 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -395,13 +395,11 @@ ldelete(RSIZE n, int kflag)
 		dotp->l_used -= (int)chunk;
 		for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
 			if (wp->w_dotp == dotp && wp->w_doto >= doto) {
-				/* NOSTRICT */
 				wp->w_doto -= chunk;
 				if (wp->w_doto < doto)
 					wp->w_doto = doto;
 			}
 			if (wp->w_markp == dotp && wp->w_marko >= doto) {
-				/* NOSTRICT */
 				wp->w_marko -= chunk;
 				if (wp->w_marko < doto)
 					wp->w_marko = doto;
