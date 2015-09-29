@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.84 2015/01/13 10:07:58 mpf Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.85 2015/03/14 03:38:50 jsg Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -894,7 +894,6 @@ reswitch:	switch (ch) {
 			 * defined manner.''
 			 *	-- ANSI X3J11
 			 */
-			/* NOSTRICT */
 			_uquad = (u_long)va_arg(ap, void *);
 			base = HEX;
 			xdigs = "0123456789abcdef";

@@ -1,4 +1,4 @@
-/*	$OpenBSD: random.c,v 1.34 2015/03/16 13:47:48 bcallah Exp $	*/
+/*	$OpenBSD: random.c,v 1.35 2015/03/19 21:22:15 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -68,7 +68,6 @@ showcpos(int f, int n)
 		++row;
 		clp = lforw(clp);
 	}
-	/* NOSTRICT */
 	ratio = nchar ? (100L * cchar) / nchar : 100;
 	ewprintf("Char: %c (0%o)  point=%ld(%d%%)  line=%d  row=%d  col=%d",
 	    cbyte, cbyte, cchar, ratio, cline, row, getcolpos(curwp));
