@@ -1,4 +1,4 @@
-/*	$OpenBSD: cradle.c,v 1.7 2014/10/25 03:17:45 lteo Exp $	*/
+/*	$OpenBSD: cradle.c,v 1.8 2014/11/26 18:34:51 millert Exp $	*/
 
 /*
  * Copyright (c) 2003 Marius Aamodt Eriksen <marius@monkey.org>
@@ -44,12 +44,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include <limits.h>
-#ifdef __linux__
-#include <bits/posix1_lim.h>
-#ifndef LOGIN_NAME_MAX
-#define LOGIN_NAME_MAX _POSIX_LOGIN_NAME_MAX
-#endif
-#endif /* __linux__ */
 
 #include "intercept.h"
 #include "systrace.h"
