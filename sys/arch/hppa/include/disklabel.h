@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.22 2009/06/14 00:09:39 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.23 2015/09/30 14:57:03 krw Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -123,7 +123,7 @@ struct hpux_label {
 #define LIF_FILESTART	8192
 
 #define	btolifs(b)	(((b) + (LIF_SECTSIZE - 1)) / LIF_SECTSIZE)
-#define	lifstob(s)	((s) * LIF_SECTSIZE) 
+#define	lifstob(s)	((s) * LIF_SECTSIZE)
 #define	lifstodb(s)	((s) * LIF_SECTSIZE / DEV_BSIZE)
 
 #define MAXLIFSPACE	256		/* 512 byte blocks */
