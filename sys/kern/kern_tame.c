@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_tame.c,v 1.43 2015/09/28 15:40:18 semarie Exp $	*/
+/*	$OpenBSD: kern_tame.c,v 1.44 2015/09/29 14:41:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -226,7 +226,8 @@ static const struct {
 	{ "proc",		TAME_PROC },
 	{ "cpath",		TAME_CPATH },
 	{ "abort",		TAME_ABORT },
-	{ "fattr",		TAME_FATTR }
+	{ "fattr",		TAME_FATTR },
+	{ "prot_exec",		TAME_PROTEXEC },
 };
 
 int
