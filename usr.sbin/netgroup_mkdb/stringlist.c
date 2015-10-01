@@ -1,4 +1,4 @@
-/*	$OpenBSD: getnetgrent.c,v 1.24 2015/08/31 02:53:57 guenther Exp $	*/
+/*	$OpenBSD: stringlist.c,v 1.1 2015/09/10 18:59:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -36,6 +36,7 @@
 #include <netgroup.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "stringlist.h"
 
 static const char _ngstar[] = "*";
