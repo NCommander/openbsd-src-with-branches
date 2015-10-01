@@ -1,4 +1,4 @@
-/*	$OpenBSD: upd.c,v 1.21 2015/05/14 13:50:34 mpi Exp $ */
+/*	$OpenBSD: upd.c,v 1.22 2015/06/17 08:31:55 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 David Higgs <higgsd@gmail.com>
@@ -277,10 +277,8 @@ upd_detach(struct device *self, int flags)
 	struct upd_sensor	*sensor;
 	int			 i;
 
-	if (sc->sc_sensortask != NULL) {
-		wakeup(&sc->sc_sensortask);
+	if (sc->sc_sensortask != NULL)
 		sensor_task_unregister(sc->sc_sensortask);
-	}
 
 	sensordev_deinstall(&sc->sc_sensordev);
 
