@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2015 Joerg Jung <jung@openbsd.org>
  *
@@ -503,7 +504,7 @@ asmc_motions(struct asmc_softc *sc, uint8_t *n)
 		printf(", read MOCN failed (0x%x)", s);
 		return 1;
 	}
-	if (s == ASMC_NOTFOUND);
+	if (s == ASMC_NOTFOUND)
 		return 0;
 
 	*n = 1;
