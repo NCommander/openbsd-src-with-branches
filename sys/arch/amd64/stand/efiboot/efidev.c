@@ -1,4 +1,4 @@
-/*	$OpenBSD: efidev.c,v 1.4 2015/09/07 05:10:52 yasuoka Exp $	*/
+/*	$OpenBSD: efidev.c,v 1.5 2015/09/12 21:55:14 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -353,15 +353,14 @@ efi_getdisklabel(efi_diskinfo_t ed, struct disklabel *label)
 			return (err);
 		return "no OpenBSD partition\n";
 	}
-	start = LABELSECTOR + start;
 
 	/* Load BSD disklabel */
 #ifdef BIOS_DEBUG
 	if (debug)
-		printf("loading disklabel @ %u\n", start);
+		printf("loading disklabel @ %u\n", start + DOS_LABELSECTOR);
 #endif
 	/* read disklabel */
-	error = efid_io(F_READ, ed, start, 1, buf);
+	error = efid_io(F_READ, ed, start + DOS_LABELSECTOR, 1, buf);
 
 	if (error)
 		return "failed to read disklabel";
