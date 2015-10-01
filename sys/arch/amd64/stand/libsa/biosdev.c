@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosdev.c,v 1.23 2015/09/02 01:52:26 yasuoka Exp $	*/
+/*	$OpenBSD: biosdev.c,v 1.24 2015/09/19 21:07:04 semarie Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -559,7 +559,7 @@ biosopen(struct open_file *f, ...)
 		return 0;
 	}
 #endif
- 
+
 	for (maj = 0; maj < nbdevs &&
 	    strncmp(dev, bdevs[maj], devlen); maj++);
 	if (maj >= nbdevs) {
