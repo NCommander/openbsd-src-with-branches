@@ -1,4 +1,4 @@
-/*	$OpenBSD: lka_session.c,v 1.66 2014/04/19 12:55:23 gilles Exp $	*/
+/*	$OpenBSD: lka_session.c,v 1.68 2014/07/08 13:49:09 eric Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@poolp.org>
@@ -797,6 +797,10 @@ lka_expand_format(char *buf, size_t len, const struct envelope *ep,
 		exptoklen = lka_expand_token(exptok, sizeof exptok, token, ep,
 		    ui);
 		if (exptoklen == 0)
+			return 0;
+
+		/* writing expanded token at ptmp will overflow tmpbuf */
+		if (sizeof (tmpbuf) - (ptmp - tmpbuf) <= exptoklen)
 			return 0;
 
 		memcpy(ptmp, exptok, exptoklen);
