@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.237 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.238 2015/01/20 17:37:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -349,7 +349,8 @@ parent_sig_handler(int sig, short event, void *p)
 				} else
 					asprintf(&cause, "exited okay");
 			} else
-				fatalx("smtpd: unexpected cause of SIGCHLD");
+				/* WIFSTOPPED or WIFCONTINUED */
+				continue;
 
 			if (pid == purge_pid)
 				purge_pid = -1;
@@ -1063,19 +1064,34 @@ offline_enqueue(char *name)
 
 	if (pid == 0) {
 		char	*envp[2], *p, *tmp;
+		int	 fd;
 		FILE	*fp;
 		size_t	 len;
 		arglist	 args;
 
+		if (closefrom(STDERR_FILENO + 1) == -1)
+			_exit(1);
+
 		memset(&args, 0, sizeof(args));
 
-		if (lstat(path, &sb) == -1) {
-			log_warn("warn: smtpd: lstat: %s", path);
+		if ((fd = open(path, O_RDONLY|O_NOFOLLOW|O_NONBLOCK)) == -1) {
+			log_warn("warn: smtpd: open: %s", path);
 			_exit(1);
 		}
 
-		if (chflags(path, 0) == -1) {
-			log_warn("warn: smtpd: chflags: %s", path);
+		if (fstat(fd, &sb) == -1) {
+			log_warn("warn: smtpd: fstat: %s", path);
+			_exit(1);
+		}
+
+		if (! S_ISREG(sb.st_mode)) {
+			log_warnx("warn: smtpd: file %s (uid %d) not regular",
+			    path, sb.st_uid);
+			_exit(1);
+		}
+
+		if (sb.st_nlink != 1) {
+			log_warnx("warn: smtpd: file %s is hard-link", path);
 			_exit(1);
 		}
 
@@ -1086,19 +1102,17 @@ offline_enqueue(char *name)
 			_exit(1);
 		}
 
-		if (! S_ISREG(sb.st_mode)) {
-			log_warnx("warn: smtpd: file %s (uid %d) not regular",
-			    path, sb.st_uid);
+		if (fchflags(fd, 0) == -1) {
+			log_warn("warn: smtpd: chflags: %s", path);
 			_exit(1);
 		}
 
 		if (setgroups(1, &pw->pw_gid) ||
 		    setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) ||
-		    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) ||
-		    closefrom(STDERR_FILENO + 1) == -1)
+		    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid))
 			_exit(1);
 
-		if ((fp = fopen(path, "r")) == NULL)
+		if ((fp = fdopen(fd, "r")) == NULL)
 			_exit(1);
 
 		if (chdir(pw->pw_dir) == -1 && chdir("/") == -1)
@@ -1198,7 +1212,7 @@ parent_forward_open(char *username, char *directory, uid_t uid, gid_t gid)
 	}
 
 	do {
-		fd = open(pathname, O_RDONLY);
+		fd = open(pathname, O_RDONLY|O_NOFOLLOW|O_NONBLOCK);
 	} while (fd == -1 && errno == EINTR);
 	if (fd == -1) {
 		if (errno == ENOENT)
@@ -1207,7 +1221,11 @@ parent_forward_open(char *username, char *directory, uid_t uid, gid_t gid)
 			errno = EAGAIN;
 			return -1;
 		}
-		log_warn("warn: smtpd: parent_forward_open: %s", pathname);
+		if (errno == ELOOP)
+			log_warnx("warn: smtpd: parent_forward_open: %s: "
+			    "cannot follow symbolic links", pathname);
+		else
+			log_warn("warn: smtpd: parent_forward_open: %s", pathname);
 		return -1;
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.111 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.112 2015/01/20 17:37:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Markus Friedl.  All rights reserved.
@@ -513,9 +513,6 @@ nextsub:
 	return 1;
 }
 
-/*
- * Check file for security. Based on usr.bin/ssh/auth.c.
- */
 int
 secure_file(int fd, char *path, char *userdir, uid_t uid, int mayread)
 {
@@ -533,7 +530,7 @@ secure_file(int fd, char *path, char *userdir, uid_t uid, int mayread)
 	/* Check the open file to avoid races. */
 	if (fstat(fd, &st) < 0 ||
 	    !S_ISREG(st.st_mode) ||
-	    (st.st_uid != 0 && st.st_uid != uid) ||
+	    st.st_uid != uid ||
 	    (st.st_mode & (mayread ? 022 : 066)) != 0)
 		return 0;
 
