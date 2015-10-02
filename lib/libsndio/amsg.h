@@ -1,4 +1,4 @@
-/*	$OpenBSD: amsg.h,v 1.7 2015/10/02 09:04:36 ratchov Exp $	*/
+/*	$OpenBSD: amsg.h,v 1.8 2015/10/02 09:21:46 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -29,6 +29,13 @@
  */
 #define SOCKPATH_DIR	"/tmp/aucat"
 #define SOCKPATH_FILE	"aucat"
+#define SOCKPATH_MAX	(1 +		\
+	sizeof(SOCKPATH_DIR) - 1 +	\
+	sizeof(char) +			\
+	sizeof(int) * 3 +		\
+	sizeof(char) +			\
+	sizeof(SOCKPATH_FILE) - 1 +	\
+	sizeof(int) * 3)
 
 /*
  * server TCP base port number
