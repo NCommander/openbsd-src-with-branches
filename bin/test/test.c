@@ -1,4 +1,4 @@
-/*	$OpenBSD: test.c,v 1.12 2013/11/21 15:54:46 deraadt Exp $	*/
+/*	$OpenBSD: test.c,v 1.13 2014/12/02 18:32:05 tedu Exp $	*/
 /*	$NetBSD: test.c,v 1.15 1995/03/21 07:04:06 cgd Exp $	*/
 
 /*
@@ -157,6 +157,9 @@ main(int argc, char *argv[])
 {
 	extern char *__progname;
 	int	res;
+
+	if (tame("stdio rpath", NULL) == -1)
+		err(1, "tame");
 
 	if (strcmp(__progname, "[") == 0) {
 		if (strcmp(argv[--argc], "]"))
