@@ -1,4 +1,4 @@
-/*	$OpenBSD: entry.c,v 1.39 2015/01/23 19:07:27 tedu Exp $	*/
+/*	$OpenBSD: entry.c,v 1.40 2015/02/09 22:35:08 deraadt Exp $	*/
 
 /*
  * Copyright 1988,1990,1993,1994 by Paul Vixie
@@ -293,21 +293,6 @@ load_entry(FILE *file, void (*error_func)(const char *), struct passwd *pw,
 			e->envp = tenvp;
 		}
 	}
-#ifndef LOGIN_CAP
-	/* If login.conf is in use we will get the default PATH later. */
-	if (!env_get("PATH", e->envp)) {
-		if (snprintf(envstr, sizeof envstr, "PATH=%s", _PATH_DEFPATH) >=
-		    sizeof(envstr))
-			log_it("CRON", getpid(), "error", "can't set PATH");
-		else {
-			if ((tenvp = env_set(e->envp, envstr)) == NULL) {
-				ecode = e_memory;
-				goto eof;
-			}
-			e->envp = tenvp;
-		}
-	}
-#endif /* LOGIN_CAP */
 	if (snprintf(envstr, sizeof envstr, "LOGNAME=%s", pw->pw_name) >=
 		sizeof(envstr))
 		log_it("CRON", getpid(), "error", "can't set LOGNAME");
