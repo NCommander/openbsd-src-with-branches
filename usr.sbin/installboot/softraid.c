@@ -1,4 +1,4 @@
-/*	$OpenBSD: softraid.c,v 1.2 2013/12/28 11:26:57 jsing Exp $	*/
+/*	$OpenBSD: softraid.c,v 1.3 2015/01/16 00:05:12 deraadt Exp $	*/
 /*
  * Copyright (c) 2012 Joel Sing <jsing@openbsd.org>
  *
@@ -38,7 +38,7 @@ sr_installboot(int devfd, char *dev)
 		md_installboot(devfd, dev);
 		return;
 	}
-	
+
 	/* Install boot loader in softraid volume. */
 	sr_install_bootldr(devfd, dev);
 
