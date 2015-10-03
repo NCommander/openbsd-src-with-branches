@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.107 2015/10/02 19:12:45 jmc Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.108 2015/10/03 05:15:36 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -1475,7 +1475,7 @@ ioctldecode(int cmd)
 		*dir++ = 'R';
 	*dir = '\0';
 
-	printf("_IO%s('%c',%lu",
+	printf("_IO%s('%c',%d",
 	    dirbuf, (int)((cmd >> 8) & 0xff), cmd & 0xff);
 	if ((cmd & IOC_VOID) == 0)
 		printf(decimal ? ",%u)" : ",%#x)", (cmd >> 16) & 0xff);
