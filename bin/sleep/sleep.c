@@ -1,4 +1,4 @@
-/*	$OpenBSD: sleep.c,v 1.20 2013/11/21 15:54:46 deraadt Exp $	*/
+/*	$OpenBSD: sleep.c,v 1.21 2015/09/22 15:37:06 tedu Exp $	*/
 /*	$NetBSD: sleep.c,v 1.8 1995/03/21 09:11:11 cgd Exp $	*/
 
 /*
@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <err.h>
 
 extern char *__progname;
 
@@ -52,6 +53,9 @@ main(int argc, char *argv[])
 	long nsecs = 0;
 	struct timespec rqtp;
 	int i;
+
+	if (tame("stdio", NULL) == -1)
+		err(1, "tame");
 
 	signal(SIGALRM, alarmh);
 
