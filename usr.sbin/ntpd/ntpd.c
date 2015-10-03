@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpd.c,v 1.93 2015/03/11 19:38:48 jmc Exp $ */
+/*	$OpenBSD: ntpd.c,v 1.94 2015/07/18 00:53:44 bcook Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -564,6 +564,9 @@ ctl_main(int argc, char *argv[])
 		errx(1, "ctl socket name too long");
 	if (connect(fd, (struct sockaddr *)&sa, sizeof(sa)) == -1)
 		err(1, "connect: %s", sockname);
+
+	if (tame("stdio", NULL) == -1)
+		err(1, "tame");
 
 	if ((ibuf_ctl = malloc(sizeof(struct imsgbuf))) == NULL)
 		err(1, NULL);
