@@ -1,4 +1,4 @@
-#	$OpenBSD: changelist,v 1.108 2015/08/03 04:19:25 yasuoka Exp $
+#	$OpenBSD: changelist,v 1.109 2015/09/27 14:19:26 naddy Exp $
 #
 # List of files which the security script backs up and checks
 # for modifications.
@@ -28,6 +28,7 @@
 /etc/distfile
 /etc/doas.conf
 /etc/dvmrpd.conf
+/etc/eigrpd.conf
 /etc/ethers
 /etc/exports
 /etc/fbtab
