@@ -1,4 +1,4 @@
-/*	$OpenBSD: patch.c,v 1.54 2014/12/13 10:31:07 tobias Exp $	*/
+/*	$OpenBSD: patch.c,v 1.55 2015/10/03 02:35:56 deraadt Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -147,7 +147,7 @@ main(int argc, char *argv[])
 	const	char *tmpdir;
 	char	*v;
 
-	if (tame("stdio rpath wpath cpath tmppath fattr", NULL) == -1)
+	if (tame("stdio rpath wpath cpath tmppath fattr proc", NULL) == -1)
 		perror("tame");
 
 	setvbuf(stdout, NULL, _IOLBF, 0);
