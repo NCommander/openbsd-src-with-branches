@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpidump.c,v 1.12 2015/09/04 05:58:40 jasper Exp $	*/
+/*	$OpenBSD: acpidump.c,v 1.13 2015/10/03 01:05:12 deraadt Exp $	*/
 /*
  * Copyright (c) 2000 Mitsuru IWASAKI <iwasaki@FreeBSD.org>
  * All rights reserved.
@@ -560,7 +560,7 @@ usage(void)
 {
 	extern char	*__progname;
 
-	fprintf(stderr, "%s -o prefix_for_output\n", __progname);
+	fprintf(stderr, "usage: %s -o prefix_for_output\n", __progname);
 	exit(1);
 }
 
