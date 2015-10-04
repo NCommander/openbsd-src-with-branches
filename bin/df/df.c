@@ -1,4 +1,4 @@
-/*	$OpenBSD: df.c,v 1.51 2014/05/20 21:11:16 krw Exp $	*/
+/*	$OpenBSD: df.c,v 1.52 2015/01/16 06:39:31 deraadt Exp $	*/
 /*	$NetBSD: df.c,v 1.21.2.1 1995/11/01 00:06:11 jtc Exp $	*/
 
 /*
@@ -78,6 +78,9 @@ main(int argc, char *argv[])
 	int ch, i;
 	int width, maxwidth;
 	char *mntpt;
+
+	if (tame("stdio rpath", NULL) == -1)
+		err(1, "tame");
 
 	while ((ch = getopt(argc, argv, "hiklnPt:")) != -1)
 		switch (ch) {
