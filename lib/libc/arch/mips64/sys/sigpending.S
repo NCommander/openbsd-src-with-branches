@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigpending.S,v 1.4 2005/08/07 16:40:15 espie Exp $ */
+/*	$OpenBSD: sigpending.S,v 1.5 2011/04/04 12:42:39 guenther Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -40,7 +40,7 @@ SYSLEAF(sigpending, FRAMESZ)
 	PTR_SUBU sp, FRAMESZ
 	SETUP_GP64(GPOFF, sigpending)
 	.set	reorder
-	li	v0, SYS_sigpending	# setlogin(name)
+	li	v0, SYS_sigpending
 	syscall
 	bne	a3, zero, 1f
 	sw	v0, 0(a0)
