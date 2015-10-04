@@ -1,4 +1,4 @@
-/*	$OpenBSD: dd.c,v 1.20 2015/01/05 13:52:47 tedu Exp $	*/
+/*	$OpenBSD: dd.c,v 1.21 2015/01/16 06:39:31 deraadt Exp $	*/
 /*	$NetBSD: dd.c,v 1.6 1996/02/20 19:29:06 jtc Exp $	*/
 
 /*-
@@ -148,6 +148,9 @@ setup(void)
 		pos_in();
 	if (out.offset)
 		pos_out();
+
+	if (tame("stdio", NULL) == -1)
+		err(1, "tame");
 
 	/*
 	 * Truncate the output file; ignore errors because it fails on some
