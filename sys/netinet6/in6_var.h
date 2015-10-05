@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_var.h,v 1.55 2015/09/09 15:51:40 mpi Exp $	*/
+/*	$OpenBSD: in6_var.h,v 1.56 2015/09/10 16:39:39 mpi Exp $	*/
 /*	$KAME: in6_var.h,v 1.55 2001/02/16 12:49:45 itojun Exp $	*/
 
 /*
@@ -275,7 +275,7 @@ struct	in6_aliasreq {
 
 /*
  * prefix related flags passed between kernel(NDP related part) and
- * user land command(ifconfig) and daemon(rtadvd).
+ * userland command(ifconfig) and daemon(rtadvd).
  */
 struct prf_ra {
 	u_int onlink : 1;
