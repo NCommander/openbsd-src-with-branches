@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_chpass.c,v 1.15 2006/03/09 19:14:09 millert Exp $	*/
+/*	$OpenBSD: login_chpass.c,v 1.16 2012/12/04 02:24:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995,1996 Berkeley Software Design, Inc. All rights reserved.
@@ -208,7 +208,7 @@ yp_chpass(char *username)
 			    pwd_gensalt(salt, sizeof(salt), lc, 'y') == 0)
 				strlcpy(salt, "xx", sizeof(salt));
 			crypt(p, salt);
-			memset(p, 0, strlen(p));
+			explicit_bzero(p, strlen(p));
 		}
 		warnx("YP passwd database unchanged.");
 		exit(1);
