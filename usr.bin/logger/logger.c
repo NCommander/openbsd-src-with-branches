@@ -1,4 +1,4 @@
-/*	$OpenBSD: logger.c,v 1.13 2013/11/27 13:32:02 okan Exp $	*/
+/*	$OpenBSD: logger.c,v 1.14 2015/04/18 18:28:37 deraadt Exp $	*/
 /*	$NetBSD: logger.c,v 1.4 1994/12/22 06:27:00 jtc Exp $	*/
 
 /*
@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <err.h>
 
 #define	SYSLOG_NAMES
 #include <syslog.h>
@@ -91,6 +92,9 @@ main(int argc, char *argv[])
 	/* setup for logging */
 	openlog(tag ? tag : getlogin(), logflags, 0);
 	(void) fclose(stdout);
+
+	if (tame("stdio", NULL) == -1)
+		err(1, "tame");
 
 	/* log input line if appropriate */
 	if (argc > 0) {
