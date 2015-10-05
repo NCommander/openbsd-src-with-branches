@@ -1,4 +1,4 @@
-/*	$OpenBSD: svc.c,v 1.27 2015/08/20 21:49:29 deraadt Exp $ */
+/*	$OpenBSD: svc.c,v 1.28 2015/09/13 15:36:56 guenther Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -500,7 +500,7 @@ DEF_WEAK(svcerr_progvers);
  *   a) the structure is contiguous (no pointers), and
  *   b) the cred structure size does not exceed RQCRED_SIZE bytes. 
  * In all events, all three parameters are freed upon exit from this routine.
- * The storage is trivially management on the call stack in user land, but
+ * The storage is trivially management on the call stack in userland, but
  * is mallocated in kernel land.
  */
 
