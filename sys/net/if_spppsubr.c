@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.138 2015/09/30 09:45:20 sthen Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Synchronous PPP link level subroutines.
  *
@@ -1024,7 +1024,6 @@ sppp_cp_send(struct sppp *sp, u_short proto, u_char type,
 	if (IF_QFULL (&sp->pp_cpq)) {
 		IF_DROP (&ifp->if_snd);
 		m_freem (m);
-		++ifp->if_oerrors;
 		m = NULL;
 	} else
 		IF_ENQUEUE (&sp->pp_cpq, m);
@@ -4131,7 +4130,6 @@ sppp_auth_send(const struct cp *cp, struct sppp *sp,
 	if (IF_QFULL (&sp->pp_cpq)) {
 		IF_DROP (&ifp->if_snd);
 		m_freem (m);
-		++ifp->if_oerrors;
 		m = NULL;
 	} else
 		IF_ENQUEUE (&sp->pp_cpq, m);

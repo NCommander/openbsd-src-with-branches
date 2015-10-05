@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.142 2015/09/13 10:02:36 dlg Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -249,7 +249,6 @@ vlan_start(struct ifnet *ifp)
 		if ((p->if_flags & (IFF_UP|IFF_RUNNING)) !=
 		    (IFF_UP|IFF_RUNNING)) {
 			IF_DROP(&p->if_snd);
-			ifp->if_oerrors++;
 			m_freem(m);
 			continue;
 		}
