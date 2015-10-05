@@ -1,4 +1,4 @@
-/*	$OpenBSD: banner.c,v 1.8 2003/06/10 22:20:44 deraadt Exp $	*/
+/*	$OpenBSD: banner.c,v 1.9 2009/10/27 23:59:35 deraadt Exp $	*/
 /*	$NetBSD: banner.c,v 1.2 1995/04/09 06:00:15 cgd Exp $	*/
 
 /*
@@ -53,6 +53,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
 
 #include "banner.h"
 
@@ -152,6 +153,8 @@ main(int argc, char *argv[])
 {
 	char word[10+1];			/* strings limited to 10 chars */
 	
+	if (tame("stdio", NULL) == -1)
+		err(1, "tame");
 	while (*++argv) {
 		(void)strlcpy(word, *argv, sizeof (word));
 		scan_out(1, word, '\0');
