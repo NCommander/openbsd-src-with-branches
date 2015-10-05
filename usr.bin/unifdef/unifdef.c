@@ -56,7 +56,7 @@
 
 static const char copyright[] =
     #include "version.h"
-    "@(#) $Author: tedu $\n"
+    "@(#) $Author: deraadt $\n"
     "@(#) $URL: http://dotat.at/prog/unifdef $\n"
 ;
 
@@ -264,6 +264,9 @@ main(int argc, char *argv[])
 {
 	const char *errstr;
 	int opt;
+
+	if (tame("stdio rpath wpath cpath fattr", NULL) == -1)
+		err(1, "tame");
 
 	while ((opt = getopt(argc, argv, "i:D:U:f:I:M:o:x:bBcdehKklmnsStV")) != -1)
 		switch (opt) {
