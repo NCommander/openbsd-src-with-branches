@@ -1,4 +1,4 @@
-/*	$OpenBSD: cut.c,v 1.18 2014/02/02 11:44:01 sobrado Exp $	*/
+/*	$OpenBSD: cut.c,v 1.19 2015/08/18 17:10:48 deraadt Exp $	*/
 /*	$NetBSD: cut.c,v 1.9 1995/09/02 05:59:23 jtc Exp $	*/
 
 /*
@@ -63,6 +63,9 @@ main(int argc, char *argv[])
 
 	setlocale (LC_ALL, "");
 
+	if (tame("stdio rpath", NULL) == -1)
+		err(1, "tame");
+
 	dchar = '\t';			/* default delimiter is \t */
 
 	/* Since we don't support multi-byte characters, the -c and -b 
@@ -117,8 +120,11 @@ main(int argc, char *argv[])
 				}
 			}
 		}
-	else
+	else {
+		if (tame("stdio rpath", NULL) == -1)
+			err(1, "tame");
 		fcn(stdin, "stdin");
+	}
 	exit(rval);
 }
 
