@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.69 2014/11/19 21:11:41 tedu Exp $ */
+/*	$OpenBSD: parser.c,v 1.70 2015/04/17 07:51:09 phessler Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -17,7 +17,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/socket.h>
 
 #include <err.h>
 #include <errno.h>
