@@ -249,6 +249,7 @@ vlan_start(struct ifnet *ifp)
 		if ((p->if_flags & (IFF_UP|IFF_RUNNING)) !=
 		    (IFF_UP|IFF_RUNNING)) {
 			IF_DROP(&p->if_snd);
+			ifp->if_oerrors++;
 			m_freem(m);
 			continue;
 		}

@@ -131,8 +131,7 @@ ieee80211_send_eapol_key(struct ieee80211com *ic, struct mbuf *m,
 		ifp->if_obytes += len;
 		if ((ifp->if_flags & IFF_OACTIVE) == 0)
 			(*ifp->if_start)(ifp);
-	} else
-		IF_DROP(&ifp->if_snd);
+	}
 	splx(s);
 
 	return error;

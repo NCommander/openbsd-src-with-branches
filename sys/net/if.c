@@ -542,8 +542,6 @@ if_start(struct ifnet *ifp)
 			CLR(ifp->if_xflags, IFXF_TXREADY);
 		}
 		ifp->if_start(ifp);
-		ifp->if_oqdrops += ifp->if_snd.ifq_drops;
-		ifp->if_snd.ifq_drops = 0;
 		return;
 	}
 
@@ -577,7 +575,6 @@ if_enqueue(struct ifnet *ifp, struct mbuf *m)
 	 */
 	IFQ_ENQUEUE(&ifp->if_snd, m, NULL, error);
 	if (error) {
-		IF_DROP(&ifp->if_snd);
 		splx(s);
 		return (error);
 	}

@@ -803,13 +803,11 @@ pppoutput(struct ifnet *ifp, struct mbuf *m0, struct sockaddr *dst,
 		IF_ENQUEUE(ifq, m0);
 		error = 0;
 	    }
-	} else {
+	} else
 	    IFQ_ENQUEUE(&sc->sc_if.if_snd, m0, NULL, error);
-	    if (error)
-		IF_DROP(&sc->sc_if.if_snd);
-	}
 	if (error) {
 	    splx(s);
+	    sc->sc_if.if_oerrors++;
 	    sc->sc_stats.ppp_oerrors++;
 	    return (error);
 	}
@@ -868,12 +866,10 @@ ppp_requeue(struct ppp_softc *sc)
 		    IF_ENQUEUE(ifq, m);
 		    error = 0;
 		}
-	    } else {
+	    } else
 		IFQ_ENQUEUE(&sc->sc_if.if_snd, m, NULL, error);
-		if (error)
-		    IF_DROP(&sc->sc_if.if_snd);
-	    }
 	    if (error) {
+		sc->sc_if.if_oerrors++;
 		sc->sc_stats.ppp_oerrors++;
 	    }
 	    break;
