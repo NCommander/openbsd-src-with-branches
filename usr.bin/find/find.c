@@ -1,4 +1,4 @@
-/*	$OpenBSD: find.c,v 1.16 2012/01/02 23:19:45 pascal Exp $	*/
+/*	$OpenBSD: find.c,v 1.17 2014/12/01 03:11:55 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -42,6 +42,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+int	mayexecve;
 
 #include "find.h"
 
@@ -150,6 +153,10 @@ find_execute(PLAN *plan,	/* search plan */
 	sigset_t fullset, oset;
 	int r, rval;
 	PLAN *p;
+
+	if (mayexecve == 0)
+		if (tame("stdio getpw rpath", NULL) == -1)
+			err(1, "tame");
 
 	rval = 0;
     
