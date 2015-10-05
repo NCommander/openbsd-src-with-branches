@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwmvar.h,v 1.8 2015/06/15 07:50:44 stsp Exp $	*/
+/*	$OpenBSD: if_iwmvar.h,v 1.9 2015/06/15 08:06:12 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -364,6 +364,9 @@ struct iwm_softc {
 	struct timeout sc_led_blink_to;
 
 	struct task		init_task;
+	struct task		newstate_task;
+	enum ieee80211_state	ns_nstate;
+	int			ns_arg;
 
 	bus_space_tag_t sc_st;
 	bus_space_handle_t sc_sh;
