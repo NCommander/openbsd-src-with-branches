@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstatd.c,v 1.26 2015/03/13 03:24:27 deraadt Exp $	*/
+/*	$OpenBSD: rstatd.c,v 1.27 2015/04/18 18:28:37 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993, John Brezak
@@ -66,7 +66,6 @@ main(int argc, char *argv[])
 	socklen_t fromlen;
 	struct passwd *pw;
 	struct sockaddr_storage from;
-	const char *errstr;
 	SVCXPRT *transp;
 
 	openlog("rpc.rstatd", LOG_NDELAY|LOG_CONS|LOG_PID, LOG_DAEMON);
