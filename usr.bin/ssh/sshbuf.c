@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshbuf.c,v 1.2 2014/06/25 14:16:09 deraadt Exp $	*/
+/*	$OpenBSD: sshbuf.c,v 1.3 2015/01/20 23:14:00 deraadt Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller
  *
@@ -175,7 +175,7 @@ sshbuf_free(struct sshbuf *buf)
 		return;
 	dont_free = buf->dont_free;
 	if (!buf->readonly) {
-		bzero(buf->d, buf->alloc);
+		explicit_bzero(buf->d, buf->alloc);
 		free(buf->d);
 	}
 	bzero(buf, sizeof(*buf));
