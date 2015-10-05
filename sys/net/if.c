@@ -577,6 +577,7 @@ if_enqueue(struct ifnet *ifp, struct mbuf *m)
 	 */
 	IFQ_ENQUEUE(&ifp->if_snd, m, NULL, error);
 	if (error) {
+		IF_DROP(&ifp->if_snd);
 		splx(s);
 		return (error);
 	}

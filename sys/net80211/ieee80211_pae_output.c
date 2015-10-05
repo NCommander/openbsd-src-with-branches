@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_pae_output.c,v 1.20 2015/03/14 03:38:51 jsg Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 2007,2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -131,7 +131,8 @@ ieee80211_send_eapol_key(struct ieee80211com *ic, struct mbuf *m,
 		ifp->if_obytes += len;
 		if ((ifp->if_flags & IFF_OACTIVE) == 0)
 			(*ifp->if_start)(ifp);
-	}
+	} else
+		IF_DROP(&ifp->if_snd);
 	splx(s);
 
 	return error;
