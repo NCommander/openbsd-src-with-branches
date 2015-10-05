@@ -1,4 +1,4 @@
-/* $OpenBSD: cu.h,v 1.5 2012/07/10 12:14:21 nicm Exp $ */
+/* $OpenBSD: cu.h,v 1.6 2012/07/10 12:47:23 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicm@openbsd.org>
@@ -27,6 +27,7 @@ extern FILE			*record_file;
 extern struct termios		 saved_tio;
 extern int			 line_fd;
 extern struct bufferevent	*line_ev;
+void				 set_blocking(int, int);
 int				 set_line(int);
 void				 set_termios(void);
 void				 restore_termios(void);
