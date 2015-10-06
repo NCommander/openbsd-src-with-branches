@@ -1,4 +1,4 @@
-/* $OpenBSD: magic-test.c,v 1.13 2015/08/12 09:39:43 nicm Exp $ */
+/* $OpenBSD: magic-test.c,v 1.14 2015/10/05 19:50:38 nicm Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1213,8 +1213,8 @@ magic_test_line(struct magic_line *ml, struct magic_state *ms)
 	if (ml->mimetype != NULL)
 		ms->mimetype = ml->mimetype;
 
-	magic_warn(ml, "test %s/%c matched at offset %zu: '%s'",
-	    ml->type_string, ml->test_operator, ms->offset,
+	magic_warn(ml, "test %s/%c matched at offset %lld (now %zu): '%s'",
+	    ml->type_string, ml->test_operator, offset, ms->offset,
 	    ml->result == NULL ? "" : ml->result);
 
 	offset = ms->offset;
