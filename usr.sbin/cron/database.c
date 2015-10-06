@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.24 2015/01/23 19:07:27 tedu Exp $	*/
+/*	$OpenBSD: database.c,v 1.25 2015/02/09 22:35:08 deraadt Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -15,9 +15,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
-
-/* vix 26jan87 [RCS has the log]
  */
 
 #include "cron.h"
