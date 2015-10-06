@@ -1,4 +1,4 @@
-/* 	$OpenBSD: test_sshkey.c,v 1.6 2015/07/07 14:53:30 markus Exp $ */
+/* 	$OpenBSD: test_sshkey.c,v 1.7 2015/08/05 05:27:33 djm Exp $ */
 /*
  * Regress test for sshkey.h key management API
  *
@@ -160,7 +160,7 @@ get_private(const char *n)
 	struct sshkey *ret;
 
 	b = load_file(n);
-	ASSERT_INT_EQ(sshkey_parse_private_fileblob(b, "", n, &ret, NULL), 0);
+	ASSERT_INT_EQ(sshkey_parse_private_fileblob(b, "", &ret, NULL), 0);
 	sshbuf_free(b);
 	return ret;
 }
