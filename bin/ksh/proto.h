@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.h,v 1.35 2013/09/04 15:49:19 millert Exp $	*/
+/*	$OpenBSD: proto.h,v 1.36 2015/09/14 16:08:50 nicm Exp $	*/
 
 /*
  * prototypes for PD-KSH
@@ -232,14 +232,6 @@ int	block_pipe(void);
 void	restore_pipe(int);
 int	setsig(Trap *, sig_t, int);
 void	setexecsig(Trap *, int);
-/* tree.c */
-void	fptreef(struct shf *, int, const char *, ...);
-char *	snptreef(char *, int, const char *, ...);
-struct op *	tcopy(struct op *, Area *);
-char *	wdcopy(const char *, Area *);
-char *	wdscan(const char *, int);
-char *	wdstrip(const char *);
-void	tfree(struct op *, Area *);
 /* var.c */
 void	newblock(void);
 void	popblock(void);
