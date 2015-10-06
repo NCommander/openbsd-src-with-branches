@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.239 2015/06/03 02:24:36 millert Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.240 2015/10/02 00:37:53 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -942,7 +942,7 @@ forkmda(struct mproc *p, uint64_t id, struct deliver *deliver)
 
 	/* prepare file which captures stdout and stderr */
 	(void)strlcpy(sfn, "/tmp/smtpd.out.XXXXXXXXXXX", sizeof(sfn));
-	omode = umask(7077);
+	omode = umask(07077);
 	allout = mkstemp(sfn);
 	umask(omode);
 	if (allout < 0) {
