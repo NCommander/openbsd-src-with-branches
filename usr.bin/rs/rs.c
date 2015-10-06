@@ -1,4 +1,4 @@
-/*	$OpenBSD: rs.c,v 1.24 2014/10/08 04:07:24 doug Exp $	*/
+/*	$OpenBSD: rs.c,v 1.25 2015/08/20 22:32:41 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -93,6 +93,9 @@ void	  putfile(void);
 int
 main(int argc, char *argv[])
 {
+	if (tame("stdio", NULL) == -1)
+		err(1, "tame");
+
 	getargs(argc, argv);
 	getfile();
 	if (flags & SHAPEONLY) {
