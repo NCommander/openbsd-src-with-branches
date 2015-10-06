@@ -38,6 +38,8 @@
 #define	_SYS_PARAM_H_
 
 #define	BSD	199306		/* System version (year & month). */
+#define BSD4_3	1
+#define BSD4_4	1
 
 #define OpenBSD	201510		/* OpenBSD version (year & month). */
 #define OpenBSD5_8 1		/* OpenBSD 5.8 */
