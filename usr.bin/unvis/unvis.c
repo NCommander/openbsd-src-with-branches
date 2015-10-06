@@ -1,4 +1,4 @@
-/*	$OpenBSD: unvis.c,v 1.11 2013/11/27 13:32:02 okan Exp $	*/
+/*	$OpenBSD: unvis.c,v 1.12 2014/01/22 09:45:21 jsg Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -43,6 +43,9 @@ main(int argc, char *argv[])
 	FILE *fp;
 	int ch;
 
+	if (tame("stdio rpath", NULL) == -1)
+		err(1, "tame");
+
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {
 		case '?':
@@ -62,8 +65,12 @@ main(int argc, char *argv[])
 				warn("%s", *argv);
 			argv++;
 		}
-	else
+	else {
+		if (tame("stdio", NULL) == -1)
+			err(1, "tame");
+
 		process(stdin, "<stdin>");
+	}
 	exit(0);
 }
 
