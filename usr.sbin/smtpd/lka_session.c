@@ -1,4 +1,4 @@
-/*	$OpenBSD: lka_session.c,v 1.69 2015/01/20 17:37:54 deraadt Exp $	*/
+/*	$OpenBSD: lka_session.c,v 1.70 2015/10/02 00:29:51 gilles Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@poolp.org>
@@ -623,19 +623,19 @@ lka_expand_token(char *dest, size_t len, const char *token,
 	/* token -> expanded token */
 	if (! strcasecmp("sender", rtoken)) {
 		if (snprintf(tmp, sizeof tmp, "%s@%s",
-			ep->sender.user, ep->sender.domain) <= 0)
+			ep->sender.user, ep->sender.domain) >= (int)sizeof tmp)
 			return 0;
 		string = tmp;
 	}
 	else if (! strcasecmp("dest", rtoken)) {
 		if (snprintf(tmp, sizeof tmp, "%s@%s",
-			ep->dest.user, ep->dest.domain) <= 0)
+			ep->dest.user, ep->dest.domain) >= (int)sizeof tmp)
 			return 0;
 		string = tmp;
 	}
 	else if (! strcasecmp("rcpt", rtoken)) {
 		if (snprintf(tmp, sizeof tmp, "%s@%s",
-			ep->rcpt.user, ep->rcpt.domain) <= 0)
+			ep->rcpt.user, ep->rcpt.domain) >= (int)sizeof tmp)
 			return 0;
 		string = tmp;
 	}
