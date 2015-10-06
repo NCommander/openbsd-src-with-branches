@@ -1,4 +1,4 @@
-/*	$OpenBSD: tbl_term.c,v 1.28 2015/03/09 17:41:36 schwarze Exp $ */
+/*	$OpenBSD: tbl_term.c,v 1.29 2015/09/26 00:53:15 schwarze Exp $ */
 /*
  * Copyright (c) 2009, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2011, 2012, 2014, 2015 Ingo Schwarze <schwarze@openbsd.org>
@@ -45,14 +45,14 @@ static size_t
 term_tbl_strlen(const char *p, void *arg)
 {
 
-	return(term_strlen((const struct termp *)arg, p));
+	return term_strlen((const struct termp *)arg, p);
 }
 
 static size_t
 term_tbl_len(size_t sz, void *arg)
 {
 
-	return(term_len((const struct termp *)arg, sz));
+	return term_len((const struct termp *)arg, sz);
 }
 
 void
