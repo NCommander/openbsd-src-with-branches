@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.340 2015/08/04 14:46:38 phessler Exp $ */
+/*	$OpenBSD: session.c,v 1.342 2015/10/06 15:36:21 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -219,7 +219,7 @@ session_main(int debug, int verbose)
 	    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid))
 		fatal("can't drop privileges");
 
-	if (tame("stdio inet cmsg", NULL) == -1)
+	if (tame("stdio inet recvfd", NULL) == -1)
 		err(1, "tame");
 
 	signal(SIGTERM, session_sighdlr);
