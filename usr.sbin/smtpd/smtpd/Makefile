@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.77 2014/12/14 15:26:56 gilles Exp $
+#	$OpenBSD: Makefile,v 1.78 2015/01/22 09:26:05 reyk Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -42,6 +42,8 @@ BINDIR=		/usr/sbin
 
 LDADD+=		-levent -lutil -lssl -lcrypto -lm -lz
 DPADD+=		${LIBEVENT} ${LIBUTIL} ${LIBSSL} ${LIBCRYPTO} ${LIBM} ${LIBZ}
+
+CFLAGS+=   -fstack-protector-all
 CFLAGS+=	-I${.CURDIR}/..
 CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations

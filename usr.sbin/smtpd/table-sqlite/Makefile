@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2014/01/18 05:54:51 martynas Exp $
+#	$OpenBSD: Makefile,v 1.3 2014/04/01 23:14:25 fgsch Exp $
 
 .PATH: ${.CURDIR}/..
 
@@ -16,6 +16,7 @@ BINDIR=	/usr/libexec/smtpd
 DPADD=	${LIBUTIL} ${LIBSQLITE3}
 LDADD=	-lutil -lsqlite3
 
+CFLAGS+=   -fstack-protector-all
 CFLAGS+=	-I${.CURDIR}/..
 CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
