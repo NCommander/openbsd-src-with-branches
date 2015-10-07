@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.c,v 1.44 2015/10/03 09:57:30 eric Exp $	*/
+/*	$OpenBSD: asr.c,v 1.45 2015/10/03 22:35:30 deraadt Exp $	*/
 /*
  * Copyright (c) 2010-2012 Eric Faurot <eric@openbsd.org>
  *
@@ -487,6 +487,12 @@ asr_ctx_create(void)
 	ac->ac_nsretries = 4;
 
 	return (ac);
+}
+
+struct asr_ctx *
+_asr_no_resolver(void)
+{
+	return asr_ctx_create();
 }
 
 /*
