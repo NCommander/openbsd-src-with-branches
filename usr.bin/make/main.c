@@ -192,9 +192,6 @@ MainParseArgs(int argc, char **argv)
 #define OPTFLAGS "BC:D:I:SV:d:ef:ij:km:npqrst"
 #define OPTLETTERS "BSiknpqrst"
 
-	if (tame("stdio rpath wpath cpath proc exec", NULL) == -1)
-		err(1, "tame");
-
 	optind = 1;	/* since we're called more than once */
 	optreset = 1;
 	optend = 0;
