@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.26 2015/08/30 10:39:16 mpi Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.27 2015/09/04 08:43:39 mpi Exp $	*/
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -269,8 +269,6 @@ struct domain pfkeydomain = {
 	NULL, /* dispose */
 	NULL, /* protosw */
 	NULL, /* protoswNPROTOSW */
-	NULL, /* dom_rtattach */
-	16 /* rtoffset */
 };
 
 static struct protosw pfkey_protosw_template = {

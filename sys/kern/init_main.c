@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.243 2015/07/09 19:45:37 miod Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.244 2015/08/30 10:39:16 mpi Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -86,6 +86,7 @@
 #include <ufs/ufs/quota.h>
 
 #include <net/if.h>
+#include <net/rtable.h>
 #include <net/netisr.h>
 
 #if defined(CRYPTO)
@@ -390,7 +391,9 @@ main(void *framep)
 	crypto_init();
 	swcr_init();
 #endif /* CRYPTO */
-	
+
+	rtable_init();
+
 	/*
 	 * Initialize protocols.  Block reception of incoming packets
 	 * until everything is ready.
