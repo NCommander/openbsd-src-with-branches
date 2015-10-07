@@ -1,4 +1,4 @@
-/*	$OpenBSD: script.c,v 1.28 2015/10/03 02:14:51 deraadt Exp $	*/
+/*	$OpenBSD: script.c,v 1.29 2015/10/04 04:56:50 deraadt Exp $	*/
 /*	$NetBSD: script.c,v 1.3 1994/12/21 08:55:43 jtc Exp $	*/
 
 /*
@@ -165,7 +165,7 @@ main(int argc, char *argv[])
 	sa.sa_handler = finish;
 	(void)sigaction(SIGCHLD, &sa, NULL);
 
-	if (tame("stdio ioctl", NULL) == -1)
+	if (tame("stdio tty", NULL) == -1)
 		err(1, "tame");
 
 	(void)fclose(fscript);
