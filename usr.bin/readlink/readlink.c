@@ -1,5 +1,5 @@
 /*
- * $OpenBSD: readlink.c,v 1.24 2007/09/10 07:42:26 sobrado Exp $
+ * $OpenBSD: readlink.c,v 1.25 2009/05/01 10:36:48 chl Exp $
  *
  * Copyright (c) 1997
  *	Kenneth Stailey (hereinafter referred to as the author)
@@ -43,6 +43,9 @@ main(int argc, char *argv[])
 	char buf[PATH_MAX];
 	int n, ch, nflag = 0, fflag = 0;
 	extern int optind;
+
+	if (tame("stdio rpath", NULL) == -1)
+		err(1, "tame");
 
 	while ((ch = getopt(argc, argv, "fn")) != -1)
 		switch (ch) {
