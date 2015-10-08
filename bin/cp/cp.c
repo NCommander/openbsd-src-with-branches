@@ -129,11 +129,6 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	/* unfortunately, -R will use mkfifo & mknod */
-	if (Rflag == 0)
-		if (tame("stdio rpath wpath cpath fattr", NULL) == -1)
-			err(1, "tame");
-
 	if (argc < 2)
 		usage();
 
