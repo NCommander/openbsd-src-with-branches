@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pdaemon.c,v 1.75 2014/12/17 19:42:15 tedu Exp $	*/
+/*	$OpenBSD: uvm_pdaemon.c,v 1.76 2015/08/21 16:04:35 visa Exp $	*/
 /*	$NetBSD: uvm_pdaemon.c,v 1.23 2000/08/20 10:24:14 bjh21 Exp $	*/
 
 /* 
@@ -237,7 +237,9 @@ uvm_pageout(void *arg)
 		if (uvmexp.free - BUFPAGES_DEFICIT < uvmexp.freetarg)
 			size += uvmexp.freetarg - (uvmexp.free -
 			    BUFPAGES_DEFICIT);
+		uvm_unlock_pageq();
 		(void) bufbackoff(&constraint, size * 2);
+		uvm_lock_pageq();
 
 		/* Scan if needed to meet our targets. */
 		if (pma != NULL ||
