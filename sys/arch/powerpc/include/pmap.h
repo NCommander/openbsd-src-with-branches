@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.57 2015/06/05 11:38:19 mpi Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.58 2015/09/11 22:02:18 kettenis Exp $	*/
 /*	$NetBSD: pmap.h,v 1.1 1996/09/30 16:34:29 ws Exp $	*/
 
 /*-
@@ -150,9 +150,10 @@ int reserve_dumppages(caddr_t p);
 
 #define	PMAP_STEAL_MEMORY
 
-#define PG_PMAP_MOD     PG_PMAP0
-#define PG_PMAP_REF     PG_PMAP1
-#define PG_PMAP_EXE     PG_PMAP2
+#define PG_PMAP_MOD	PG_PMAP0
+#define PG_PMAP_REF	PG_PMAP1
+#define PG_PMAP_EXE	PG_PMAP2
+#define PG_PMAP_UC	PG_PMAP3
 
 /*
  * MD flags that we use for pmap_enter (in the pa):
