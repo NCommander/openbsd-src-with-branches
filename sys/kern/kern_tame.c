@@ -1083,6 +1083,7 @@ tame_setsockopt_check(struct proc *p, int level, int optname)
 	if ((p->p_p->ps_flags & PS_TAMED) == 0)
 		return (0);
 
+	/* common case for TAME_UNIX and TAME_INET */
 	switch (level) {
 	case SOL_SOCKET:
 		switch (optname) {
@@ -1090,6 +1091,12 @@ tame_setsockopt_check(struct proc *p, int level, int optname)
 			return (EPERM);
 		}
 		return (0);
+	}
+
+	if ((p->p_p->ps_tame & TAME_INET) == 0)
+		return (EPERM);
+
+	switch (level) {
 	case IPPROTO_TCP:
 		switch (optname) {
 		case TCP_NODELAY:
