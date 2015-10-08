@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_trunk.c,v 1.118 2015/09/29 10:11:40 deraadt Exp $	*/
+/*	$OpenBSD: if_trunk.c,v 1.119 2015/10/05 13:00:04 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -968,6 +968,9 @@ trunk_hashmbuf(struct mbuf *m, SIPHASH_KEY *key)
 	struct ip6_hdr *ip6, ip6buf;
 #endif
 	SIPHASH_CTX ctx;
+
+	if (m->m_pkthdr.flowid & M_FLOWID_VALID)
+		return (m->m_pkthdr.flowid & M_FLOWID_MASK);
 
 	SipHash24_Init(&ctx, key);
 	off = sizeof(*eh);
