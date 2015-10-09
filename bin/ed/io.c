@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.15 2009/10/28 15:40:47 deraadt Exp $	*/
+/*	$OpenBSD: io.c,v 1.16 2014/04/14 22:12:01 tedu Exp $	*/
 /*	$NetBSD: io.c,v 1.2 1995/03/21 09:04:43 cgd Exp $	*/
 
 /* io.c: This file contains the i/o routines for the ed line editor */
@@ -58,8 +58,8 @@ read_file(char *fn, int n)
 }
 
 
-char *sbuf;			/* file i/o buffer */
-int sbufsz;			/* file i/o buffer size */
+static char *sbuf;		/* file i/o buffer */
+static int sbufsz;		/* file i/o buffer size */
 int newline_added;		/* if set, newline appended to input file */
 
 /* read_stream: read a stream into the editor buffer; return status */
