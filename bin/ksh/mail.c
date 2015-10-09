@@ -1,4 +1,4 @@
-/*	$OpenBSD: mail.c,v 1.18 2015/09/01 13:12:31 tedu Exp $	*/
+/*	$OpenBSD: mail.c,v 1.19 2015/09/17 14:21:33 nicm Exp $	*/
 
 /*
  * Mailbox checking code by Robert J. Gibson, adapted for PD ksh by
@@ -89,10 +89,8 @@ mbset(char *p)
 {
 	struct stat	stbuf;
 
-	if (mbox.mb_msg)
-		afree(mbox.mb_msg, APERM);
-	if (mbox.mb_path)
-		afree(mbox.mb_path, APERM);
+	afree(mbox.mb_msg, APERM);
+	afree(mbox.mb_path, APERM);
 	/* Save a copy to protect from export (which munges the string) */
 	mbox.mb_path = str_save(p, APERM);
 	mbox.mb_msg = NULL;

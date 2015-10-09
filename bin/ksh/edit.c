@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.44 2015/09/18 07:28:24 nicm Exp $	*/
+/*	$OpenBSD: edit.c,v 1.45 2015/09/26 23:49:37 nicm Exp $	*/
 
 /*
  * Command line editing - common code
@@ -672,8 +672,7 @@ x_free_words(int nwords, char **words)
 	int i;
 
 	for (i = 0; i < nwords; i++)
-		if (words[i])
-			afree(words[i], ATEMP);
+		afree(words[i], ATEMP);
 	afree(words, ATEMP);
 }
 

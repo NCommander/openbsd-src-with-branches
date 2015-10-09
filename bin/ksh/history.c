@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.45 2015/10/08 15:54:59 tedu Exp $	*/
+/*	$OpenBSD: history.c,v 1.46 2015/10/08 16:41:26 tedu Exp $	*/
 
 /*
  * command history
@@ -862,8 +862,7 @@ histinsert(Source *s, int lno, unsigned char *line)
 
 	if (lno >= s->line-(histptr-history) && lno <= s->line) {
 		hp = &histptr[lno-s->line];
-		if (*hp)
-			afree(*hp, APERM);
+		afree(*hp, APERM);
 		*hp = str_save((char *)line, APERM);
 	}
 }
