@@ -1,4 +1,4 @@
-/*	$OpenBSD: comsat.c,v 1.39 2015/04/18 18:28:37 deraadt Exp $	*/
+/*	$OpenBSD: comsat.c,v 1.40 2015/07/06 15:42:20 millert Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -275,14 +275,7 @@ jkfprintf(FILE *tp, char name[], off_t offset)
 	char visout[5], *s2;
 	FILE *fi;
 	int linecnt, charcnt, inheader;
-	struct passwd *p;
 	char line[BUFSIZ];
-
-	/* Set effective uid to user in case mail drop is on nfs */
-	if ((p = getpwnam(name)) != NULL) {
-		(void) seteuid(p->pw_uid);
-		(void) setuid(p->pw_uid);
-	}
 
 	if ((fi = fopen(name, "r")) == NULL)
 		return;
