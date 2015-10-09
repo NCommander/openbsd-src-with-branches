@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.41 2015/06/02 19:54:06 rpe Exp $
+#	$OpenBSD: install.md,v 1.42 2015/10/07 18:02:06 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -81,7 +81,11 @@ __EOT
 			echo "done."
 			return ;;
 		g*|G*)
-			[[ $MDEFI == y && $_disk == $ROOTDISK ]] || continue
+			if [[ $MDEFI != y || $_disk != $ROOTDISK ]]; then
+				echo "'$resp' is not a valid choice."
+				$AUTO && exit 1
+				continue
+			fi
 
 			echo -n "Setting OpenBSD GPT partition to whole $_disk..."
 			fdisk -i -g -b 960 -y $_disk >/dev/null
