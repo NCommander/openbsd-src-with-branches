@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigabrt.c,v 1.2 2015/08/23 04:59:31 semarie Exp $ */
+/*	$OpenBSD: sigkill.c,v 1.3 2015/09/10 11:16:08 semarie Exp $ */
 /*
  * Copyright (c) 2015 Sebastien Marie <semarie@openbsd.org>
  *
@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -23,22 +24,24 @@
 void
 handler(int sigraised)
 {
-	/* this handler shouldn't not be called */
-	printf("forbidden STDIO in SIGABRT handler\n");
+	/* the handler shouldn't not be called */
+	printf("forbidden STDIO in %d handler\n", sigraised);
 }
 
 int
 main(int argc, char *argv[])
 {
-	/* install SIGABRT handler */
+	/* install some handlers */
+	signal(SIGHUP, &handler);
 	signal(SIGABRT, &handler);
 
 	printf("permitted STDIO\n");
 	fflush(stdout);
 
-	tame("abort", NULL);
+	if (pledge("", NULL) == -1)
+		err(EXIT_FAILURE, "pledge");
 
-	/* this will triggered tame_fail() */
+	/* this will triggered pledge_fail() */
 	printf("forbidden STDIO 1\n");
 
 	/* shouldn't continue */
