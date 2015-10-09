@@ -1,4 +1,4 @@
-/*	$OpenBSD: mquery.c,v 1.8 2015/09/11 13:26:20 guenther Exp $	*/
+/*	$OpenBSD: tame.c,v 1.1 2015/10/09 01:24:57 deraadt Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> Public Domain
  */
@@ -14,4 +14,4 @@ tame(const char *req, const char **paths)
 {
 	return (pledge(req, paths));
 }
-DEF_WEAK(mquery);
+DEF_WEAK(tame);
