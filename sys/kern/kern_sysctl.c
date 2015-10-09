@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.294 2015/09/13 17:08:03 guenther Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.295 2015/09/28 16:59:35 deraadt Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -69,7 +69,7 @@
 #include <sys/socket.h>
 #include <sys/domain.h>
 #include <sys/protosw.h>
-#include <sys/tame.h>
+#include <sys/pledge.h>
 #include <sys/timetc.h>
 #include <sys/evcount.h>
 #include <sys/un.h>
@@ -174,8 +174,8 @@ sys_sysctl(struct proc *p, void *v, register_t *retval)
 	if (error)
 		return (error);
 
-	if (tame_sysctl_check(p, SCARG(uap, namelen), name, SCARG(uap, new)))
-		return (tame_fail(p, EPERM, TAME_SELF));
+	if (pledge_sysctl_check(p, SCARG(uap, namelen), name, SCARG(uap, new)))
+		return (pledge_fail(p, EPERM, PLEDGE_SELF));
 
 	switch (name[0]) {
 	case CTL_KERN:

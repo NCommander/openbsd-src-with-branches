@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lookup.c,v 1.55 2015/08/22 20:18:50 deraadt Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.56 2015/09/11 08:22:31 guenther Exp $	*/
 /*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
@@ -49,7 +49,7 @@
 #include <sys/pool.h>
 #include <sys/filedesc.h>
 #include <sys/proc.h>
-#include <sys/tame.h>
+#include <sys/pledge.h>
 #include <sys/file.h>
 #include <sys/fcntl.h>
 
@@ -166,8 +166,8 @@ fail:
 	 */
 	if ((ndp->ni_rootdir = fdp->fd_rdir) == NULL)
 		ndp->ni_rootdir = rootvnode;
-	if ((p->p_p->ps_flags & PS_TAMED)) {
-		error = tame_namei(p, cnp->cn_pnbuf);
+ 	if ((p->p_p->ps_flags & PS_PLEDGE)) {
+		error = pledge_namei(p, cnp->cn_pnbuf);
 		if (error)
 			goto fail;
 	}
