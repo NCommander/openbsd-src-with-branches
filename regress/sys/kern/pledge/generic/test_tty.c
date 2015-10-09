@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2015 Sebastien Marie <semarie@openbsd.org>
  *
