@@ -1,4 +1,4 @@
-/*	$OpenBSD: find.c,v 1.17 2014/12/01 03:11:55 millert Exp $	*/
+/*	$OpenBSD: find.c,v 1.18 2015/10/05 15:25:16 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -155,8 +155,8 @@ find_execute(PLAN *plan,	/* search plan */
 	PLAN *p;
 
 	if (mayexecve == 0)
-		if (tame("stdio getpw rpath", NULL) == -1)
-			err(1, "tame");
+		if (pledge("stdio getpw rpath", NULL) == -1)
+			err(1, "pledge");
 
 	rval = 0;
     

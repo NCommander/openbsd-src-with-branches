@@ -1,4 +1,4 @@
-/*	$OpenBSD: printenv.c,v 1.6 2009/10/27 23:59:41 deraadt Exp $	*/
+/*	$OpenBSD: printenv.c,v 1.7 2015/10/07 06:35:19 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1987 Regents of the University of California.
@@ -48,8 +48,8 @@ main(int argc, char *argv[])
 	char *cp, **ep;
 	int len;
 
-	if (tame("stdio", NULL) == -1)
-		err(1, "tame");
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	if (argc < 2) {
 		for (ep = environ; *ep; ep++)

@@ -1,4 +1,4 @@
-/*      $OpenBSD: whois.c,v 1.48 2015/08/17 10:48:10 sthen Exp $   */
+/*      $OpenBSD: whois.c,v 1.49 2015/10/03 01:33:20 deraadt Exp $   */
 
 /*
  * Copyright (c) 1980, 1993
@@ -138,8 +138,8 @@ main(int argc, char *argv[])
 	if (!argc || (country != NULL && host != NULL))
 		usage();
 
-	if (tame("stdio dns inet", NULL) == -1)
-		err(1, "tame");
+	if (pledge("stdio dns inet", NULL) == -1)
+		err(1, "pledge");
 
 	if (host == NULL && country == NULL && !(flags & WHOIS_QUICK))
 		flags |= WHOIS_RECURSE;

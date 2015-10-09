@@ -1,4 +1,4 @@
-/*	$OpenBSD: chmod.c,v 1.36 2015/10/03 05:05:06 deraadt Exp $	*/
+/*	$OpenBSD: chmod.c,v 1.37 2015/10/03 15:00:13 deraadt Exp $	*/
 /*	$NetBSD: chmod.c,v 1.12 1995/03/21 09:02:09 cgd Exp $	*/
 
 /*
@@ -153,8 +153,8 @@ done:
 		atflags = 0;
 
 	if (ischflags) {
-		if (tame("stdio rpath fattr", NULL) == -1)
-			err(1, "tame");
+		if (pledge("stdio rpath fattr", NULL) == -1)
+			err(1, "pledge");
 
 		flags = *argv;
 		if (*flags >= '0' && *flags <= '7') {

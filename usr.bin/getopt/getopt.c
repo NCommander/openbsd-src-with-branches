@@ -1,4 +1,4 @@
-/*	$OpenBSD: getopt.c,v 1.8 2009/10/27 23:59:38 deraadt Exp $	*/
+/*	$OpenBSD: getopt.c,v 1.9 2015/10/07 06:39:16 deraadt Exp $	*/
 
 /*
  * This material, written by Henry Spencer, was released by him
@@ -18,8 +18,8 @@ main(int argc, char *argv[])
 	int c;
 	int status = 0;
 
-	if (tame("stdio", NULL) == -1)
-		err(1, "tame");
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	optind = 2;	/* Past the program name and the option letters. */
 	while ((c = getopt(argc, argv, argv[1])) != -1)
