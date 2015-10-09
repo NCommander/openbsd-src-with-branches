@@ -1,4 +1,4 @@
-/*	$OpenBSD: window.c,v 1.32 2015/03/19 21:22:15 bcallah Exp $	*/
+/*	$OpenBSD: window.c,v 1.33 2015/03/25 20:53:31 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -167,6 +167,8 @@ onlywind(int f, int n)
 			wp->w_bufp->b_doto = wp->w_doto;
 			wp->w_bufp->b_markp = wp->w_markp;
 			wp->w_bufp->b_marko = wp->w_marko;
+			wp->w_bufp->b_dotline = wp->w_dotline;
+			wp->w_bufp->b_markline = wp->w_markline;
 		}
 		free(wp);
 	}
@@ -178,6 +180,8 @@ onlywind(int f, int n)
 			wp->w_bufp->b_doto = wp->w_doto;
 			wp->w_bufp->b_markp = wp->w_markp;
 			wp->w_bufp->b_marko = wp->w_marko;
+			wp->w_bufp->b_dotline = wp->w_dotline;
+			wp->w_bufp->b_markline = wp->w_markline;
 		}
 		free(wp);
 	}
