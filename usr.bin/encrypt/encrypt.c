@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.39 2015/02/24 18:45:51 tedu Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.40 2015/02/26 17:46:15 tedu Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -92,6 +92,9 @@ main(int argc, char **argv)
 	int prompt = 0;
 	char *extra = NULL;	/* Store login class or number of rounds */
 	const char *errstr;
+
+	if (pledge("stdio rpath tty", NULL) == -1)
+		err(1, "pledge");
 
 	while ((opt = getopt(argc, argv, "pb:c:")) != -1) {
 		switch (opt) {
