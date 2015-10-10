@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencat.c,v 1.16 2012/12/05 23:20:25 deraadt Exp $	*/
+/*	$OpenBSD: gencat.c,v 1.17 2014/11/18 20:54:28 krw Exp $	*/
 /*	$NetBSD: gencat.c,v 1.9 1998/10/09 17:00:56 itohy Exp $	*/
 
 /*-
@@ -133,6 +133,9 @@ main(int argc, char *argv[])
 	int     ofd, ifd;
 	char   *catfile = NULL;
 	int     c;
+
+	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+		err(1, "pledge");
 
 	while ((c = getopt(argc, argv, "")) != -1) {
 		switch (c) {
