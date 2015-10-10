@@ -1,4 +1,4 @@
-/*	$OpenBSD: getcap.c,v 1.4 2013/11/15 22:20:04 millert Exp $	*/
+/*	$OpenBSD: getcap.c,v 1.5 2015/09/25 16:23:18 schwarze Exp $	*/
 
 /*
  * Copyright (c) 2005 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -39,6 +39,9 @@ main(int argc, char *argv[])
 	enum captype type;
 	char *cp, *buf, *cap = NULL, **pathvec = NULL;
 	size_t n;
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
 
 	aflag = type = 0;
 	while ((ch = getopt(argc, argv, "ab:c:f:n:s:")) != -1) {
