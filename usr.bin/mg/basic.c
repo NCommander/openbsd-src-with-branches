@@ -1,4 +1,4 @@
-/*	$OpenBSD: basic.c,v 1.45 2015/03/24 22:34:39 florian Exp $	*/
+/*	$OpenBSD: basic.c,v 1.46 2015/09/26 21:51:58 jasper Exp $	*/
 
 /* This file is in the public domain */
 
@@ -28,6 +28,9 @@
 int
 gotobol(int f, int n)
 {
+	if (n == 0)
+		return (TRUE);
+
 	curwp->w_doto = 0;
 	return (TRUE);
 }
@@ -72,6 +75,9 @@ backchar(int f, int n)
 int
 gotoeol(int f, int n)
 {
+	if (n == 0)
+		return (TRUE);
+
 	curwp->w_doto = llength(curwp->w_dotp);
 	return (TRUE);
 }
