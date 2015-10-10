@@ -1,4 +1,4 @@
-/*	$OpenBSD: getent.c,v 1.10 2015/10/10 05:26:57 doug Exp $	*/
+/*	$OpenBSD: getent.c,v 1.11 2015/10/10 14:33:02 deraadt Exp $	*/
 /*	$NetBSD: getent.c,v 1.7 2005/08/24 14:31:02 ginsbach Exp $	*/
 
 /*-
@@ -79,9 +79,9 @@ static struct getentdb {
 	const char	*pledge;
 } databases[] = {
 	{	"ethers",	ethers,		"stdio rpath"	},
-	{	"group",	group,		"stdio rpath"	},
+	{	"group",	group,		"stdio getpw"	},
 	{	"hosts",	hosts,		"stdio dns"	},
-	{	"passwd",	passwd,		"stdio rpath"	},
+	{	"passwd",	passwd,		"stdio getpw"	},
 	{	"protocols",	protocols,	"stdio rpath"	},
 	{	"rpc",		rpc,		"stdio rpath"	},
 	{	"services",	services,	"stdio rpath"	},
