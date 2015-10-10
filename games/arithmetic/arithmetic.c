@@ -1,4 +1,4 @@
-/*	$OpenBSD: arithmetic.c,v 1.18 2013/08/29 20:22:09 naddy Exp $	*/
+/*	$OpenBSD: arithmetic.c,v 1.19 2015/08/22 14:47:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -100,6 +100,9 @@ main(int argc, char *argv[])
 	extern char *optarg;
 	extern int optind;
 	int ch, cnt;
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	while ((ch = getopt(argc, argv, "hr:o:")) != -1)
 		switch(ch) {
