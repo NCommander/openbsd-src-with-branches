@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.1 2003/09/19 17:58:25 otto Exp $
+#	$OpenBSD: Makefile,v 1.2 2006/11/26 11:31:09 deraadt Exp $
 
 PROG=	dc
-SRCS=	dc.c bcode.c inout.c mem.c stack.c
+SRCS=	main.c dc.c bcode.c inout.c mem.c stack.c
 COPTS+= -Wall
 LDADD=	-lcrypto
 DPADD=	${LIBCRYPTO}
