@@ -1,4 +1,4 @@
-/* $OpenBSD: main.c,v 1.25 2014/01/08 22:30:32 millert Exp $	 */
+/* $OpenBSD: main.c,v 1.26 2014/03/13 00:33:55 tedu Exp $	 */
 /* $NetBSD: main.c,v 1.5 1996/03/19 03:21:38 jtc Exp $	 */
 
 /*
@@ -347,6 +347,9 @@ open_files(void)
 int
 main(int argc, char *argv[])
 {
+	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+		fatal("pledge: invalid arguments");
+
 	set_signals();
 	getargs(argc, argv);
 	open_files();
