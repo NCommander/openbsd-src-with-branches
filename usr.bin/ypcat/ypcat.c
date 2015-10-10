@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypcat.c,v 1.15 2015/01/16 06:40:15 deraadt Exp $ */
+/*	$OpenBSD: ypcat.c,v 1.16 2015/02/08 23:40:35 deraadt Exp $ */
 
 /*
  * Copyright (c) 1992, 1993, 1996 Theo de Raadt <deraadt@theos.com>
@@ -87,6 +87,9 @@ main(int argc, char *argv[])
 	extern char *optarg;
 	extern int optind;
 	int notrans, c, r, i;
+
+	if (pledge("stdio rpath inet", NULL) == -1)
+		perror("pledge");
 
 	notrans = key = 0;
 	while ((c=getopt(argc, argv, "xd:kt")) != -1)
