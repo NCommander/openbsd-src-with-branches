@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayctl.c,v 1.52 2015/01/16 06:40:20 deraadt Exp $	*/
+/*	$OpenBSD: relayctl.c,v 1.53 2015/01/22 17:42:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2013 Reyk Floeter <reyk@openbsd.org>
@@ -123,6 +123,9 @@ main(int argc, char *argv[])
 		}
 		err(1, "connect: %s", RELAYD_SOCKET);
 	}
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "tame");
 
 	if ((ibuf = malloc(sizeof(struct imsgbuf))) == NULL)
 		err(1, NULL);
