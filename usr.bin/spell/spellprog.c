@@ -1,4 +1,4 @@
-/*	$OpenBSD: spellprog.c,v 1.10 2015/02/06 23:21:59 millert Exp $	*/
+/*	$OpenBSD: spellprog.c,v 1.11 2015/02/08 23:40:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -248,6 +248,9 @@ main(int argc, char **argv)
 	FILE *file, *found;
 
 	setlocale(LC_ALL, "");
+
+	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+		err(1, "pledge");
 
 	outfile = NULL;
 	while ((ch = getopt(argc, argv, "bvxo:")) != -1) {
