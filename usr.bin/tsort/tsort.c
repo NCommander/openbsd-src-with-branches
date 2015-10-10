@@ -1,4 +1,4 @@
-/* $OpenBSD: tsort.c,v 1.28 2015/08/31 09:36:02 espie Exp $ */
+/* $OpenBSD: tsort.c,v 1.29 2015/09/03 11:16:50 espie Exp $ */
 /* ex:ts=8 sw=4:
  *
  * Copyright (c) 1999-2004 Marc Espie <espie@openbsd.org>
@@ -976,6 +976,9 @@ int
 main(int argc, char *argv[])
 {
 	struct ohash 	pairs;
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
 
 	parse_args(argc, argv, &pairs);
 	return tsort(&pairs);
