@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.98 2015/03/23 12:31:19 bcallah Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.99 2015/09/26 21:51:58 jasper Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -408,7 +408,7 @@ listbuf_goto_buffer_helper(int f, int n, int only)
 	curwp = wp;
 
 	if (only)
-		ret = (onlywind(f, n));
+		ret = (onlywind(FFRAND, 1));
 	else
 		ret = TRUE;
 
