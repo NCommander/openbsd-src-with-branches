@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.h,v 1.14 2015/10/05 23:32:15 nicm Exp $	*/
+/*	$OpenBSD: lex.h,v 1.15 2015/10/09 19:49:08 millert Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -113,3 +113,10 @@ extern char   **histptr;	/* last history item */
 extern int	histsize;	/* history size */
 
 #endif /* HISTORY */
+
+int	yylex(int);
+void	yyerror(const char *, ...)
+	    __attribute__((__noreturn__, __format__ (printf, 1, 2)));
+Source * pushs(int, Area *);
+void	set_prompt(int, Source *);
+void	pprompt(const char *, int);
