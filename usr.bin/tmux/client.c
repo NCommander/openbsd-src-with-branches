@@ -1,4 +1,4 @@
-/* $OpenBSD: client.c,v 1.94 2015/09/09 12:09:21 nicm Exp $ */
+/* $OpenBSD: client.c,v 1.95 2015/09/24 12:06:20 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -119,7 +119,7 @@ retry:
 		fatal("socket failed");
 
 	log_debug("trying connect");
-	if (connect(fd, (struct sockaddr *) &sa, SUN_LEN(&sa)) == -1) {
+	if (connect(fd, (struct sockaddr *) &sa, sizeof(sa)) == -1) {
 		log_debug("connect failed: %s", strerror(errno));
 		if (errno != ECONNREFUSED && errno != ENOENT)
 			goto failed;
