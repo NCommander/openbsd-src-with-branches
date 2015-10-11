@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.207 2015/09/24 22:03:53 krw Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.208 2015/10/05 12:49:58 krw Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -244,6 +244,10 @@ main(int argc, char *argv[])
 		if (argc != 1)
 			usage();
 		readlabel(f);
+
+		if (pledge("stdio", NULL) == -1)
+			err(1, "pledge");
+
 		if (tflag)
 			makedisktab(stdout, &lab);
 		else
