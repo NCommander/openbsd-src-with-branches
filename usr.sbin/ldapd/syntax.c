@@ -1,4 +1,4 @@
-/*	$OpenBSD: syntax.c,v 1.1 2010/09/03 09:39:17 martinh Exp $ */
+/*	$OpenBSD: syntax.c,v 1.2 2013/11/23 18:02:44 deraadt Exp $ */
 
 /*
  * Copyright (c) 2010 Martin Hedenfalk <martin@bzero.se>
@@ -142,7 +142,7 @@ syntax_is_printable_string(struct schema *schema, char *value, size_t len)
 	char		*p;
 
 	for (p = value; len > 0 && *p != '\0'; p++, len--) {
-		if (!isalnum(*p) && strchr(special, *p) == NULL)
+		if (!isalnum((unsigned char)*p) && strchr(special, *p) == NULL)
 			return 0;
 	}
 
