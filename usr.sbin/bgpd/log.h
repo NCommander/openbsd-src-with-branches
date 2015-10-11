@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.h,v 1.14 2012/09/18 09:45:51 claudio Exp $ */
+/*	$OpenBSD: log.h,v 1.15 2013/03/07 21:26:28 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -68,7 +68,9 @@ static const char * const suberr_open_names[] = {
 	"optional parameter error",
 	"authentication error",
 	"unacceptable holdtime",
-	"unsupported capability"
+	"unsupported capability",
+	"group membership conflict",	/* draft-ietf-idr-bgp-multisession-07 */
+	"group membership required"	/* draft-ietf-idr-bgp-multisession-07 */
 };
 
 static const char * const suberr_fsm_names[] = {
