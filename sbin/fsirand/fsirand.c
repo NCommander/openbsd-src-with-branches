@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsirand.c,v 1.33 2015/02/07 02:09:13 deraadt Exp $	*/
+/*	$OpenBSD: fsirand.c,v 1.34 2015/03/20 01:53:05 millert Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -120,6 +120,9 @@ fsirand(char *device)
 		else
 			bsize = label.d_secsize;
 	}
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	/* Read in master superblock */
 	(void)memset(&sbuf, 0, sizeof(sbuf));
