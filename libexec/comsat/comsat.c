@@ -1,4 +1,4 @@
-/*	$OpenBSD: comsat.c,v 1.42 2015/10/09 17:09:06 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -83,9 +83,6 @@ main(int argc, char *argv[])
 	char msgbuf[100];
 	sigset_t sigset;
 
-	if (pledge("stdio rpath wpath proc tty", NULL) == -1)
-		err(1, "pledge");
-
 	/* verify proper invocation */
 	fromlen = sizeof(from);
 	if (getsockname(0, (struct sockaddr *)&from, &fromlen) == -1) {
@@ -93,6 +90,10 @@ main(int argc, char *argv[])
 		    "comsat: getsockname: %s.\n", strerror(errno));
 		exit(1);
 	}
+
+	if (pledge("stdio rpath wpath proc tty", NULL) == -1)
+		err(1, "pledge");
+
 	openlog("comsat", LOG_PID, LOG_DAEMON);
 	if (chdir(_PATH_MAILDIR)) {
 		syslog(LOG_ERR, "chdir: %s: %m", _PATH_MAILDIR);
