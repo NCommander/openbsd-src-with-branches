@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.26 2015/02/10 06:40:08 reyk Exp $ */
+/*	$OpenBSD: config.c,v 1.27 2015/07/18 00:53:44 bcook Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -203,6 +203,7 @@ new_constraint(void)
 	if ((p = calloc(1, sizeof(struct constraint))) == NULL)
 		fatal("new_constraint calloc");
 	p->id = ++constraint_maxid;
+	p->fd = -1;
 
 	return (p);
 }
