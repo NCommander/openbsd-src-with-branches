@@ -1,4 +1,4 @@
-.\" $OpenBSD: pledge.2,v 1.1 2015/10/09 01:24:57 deraadt Exp $
+.\" $OpenBSD: pledge.2,v 1.2 2015/10/12 01:17:08 schwarze Exp $
 .\"
 .\" Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: October 9 2015 $
+.Dd $Mdocdate: October 12 2015 $
 .Dt PLEDGE 2
 .Os
 .Sh NAME
@@ -453,8 +453,8 @@ The limit in the system as released is 262144 bytes
 .Sh HISTORY
 The
 .Fn pledge
-system call appeared in
-.Ox 5.8 .
+system call first appeared in
+.Ox 5.9 .
 .Sh CAVEATS
 It is not possible to
 .Xr systrace 4
