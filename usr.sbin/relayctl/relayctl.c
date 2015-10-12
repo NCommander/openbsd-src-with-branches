@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayctl.c,v 1.53 2015/01/22 17:42:09 reyk Exp $	*/
+/*	$OpenBSD: relayctl.c,v 1.54 2015/10/10 00:37:40 benno Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2013 Reyk Floeter <reyk@openbsd.org>
@@ -125,7 +125,7 @@ main(int argc, char *argv[])
 	}
 
 	if (pledge("stdio", NULL) == -1)
-		err(1, "tame");
+		err(1, "pledge");
 
 	if ((ibuf = malloc(sizeof(struct imsgbuf))) == NULL)
 		err(1, NULL);
