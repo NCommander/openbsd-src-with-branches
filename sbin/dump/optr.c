@@ -1,4 +1,4 @@
-/*	$OpenBSD: optr.c,v 1.37 2015/05/23 05:17:20 guenther Exp $	*/
+/*	$OpenBSD: optr.c,v 1.38 2015/08/20 22:02:20 deraadt Exp $	*/
 /*	$NetBSD: optr.c,v 1.11 1997/05/27 08:34:36 mrg Exp $	*/
 
 /*-
@@ -247,6 +247,7 @@ msgtail(const char *fmt, ...)
 	va_end(ap);
 }
 
+/* XXX signal races */
 void
 quit(const char *fmt, ...)
 {
