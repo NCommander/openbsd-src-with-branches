@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.13 2015/01/16 06:40:20 deraadt Exp $	*/
+/*	$OpenBSD: ca.c,v 1.14 2015/01/20 17:37:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -136,6 +136,9 @@ ca(void)
 
 	/* Ignore them until we get our config */
 	mproc_disable(p_pony);
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	if (event_dispatch() < 0)
 		fatal("event_dispatch");
