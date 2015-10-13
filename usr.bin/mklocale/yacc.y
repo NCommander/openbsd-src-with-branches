@@ -1,4 +1,4 @@
-/*	$OpenBSD: yacc.y,v 1.6 2014/10/14 15:35:40 deraadt Exp $	*/
+/*	$OpenBSD: yacc.y,v 1.7 2015/08/20 22:32:41 deraadt Exp $	*/
 /*	$NetBSD: yacc.y,v 1.24 2004/01/05 23:23:36 jmmv Exp $	*/
 
 %{
@@ -247,6 +247,9 @@ main(int ac, char *av[])
 
     extern char *optarg;
     extern int optind;
+
+    if (pledge("stdio rpath wpath cpath", NULL) == -1)
+	perror("pledge");
 
     while ((x = getopt(ac, av, "do:")) != -1) {
 	switch(x) {
