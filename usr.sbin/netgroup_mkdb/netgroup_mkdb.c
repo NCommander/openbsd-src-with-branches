@@ -1,4 +1,4 @@
-/*	$OpenBSD: netgroup_mkdb.c,v 1.18 2015/08/20 22:39:29 deraadt Exp $	*/
+/*	$OpenBSD: netgroup_mkdb.c,v 1.19 2015/09/10 18:59:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -96,6 +96,8 @@ main(int argc, char *argv[])
 	DB		 *db, *ndb, *hdb, *udb;
 	int               ch;
 
+	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+		err(1, "pledge");
 
 	while ((ch = getopt(argc, argv, "do:")) != -1)
 		switch (ch) {
