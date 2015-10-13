@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.77 2015/09/28 11:56:17 lum Exp $	*/
+/*	$OpenBSD: dired.c,v 1.78 2015/10/12 19:08:39 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -286,7 +286,7 @@ d_del(int f, int n)
 	if (n < 0)
 		return (FALSE);
 	while (n--) {
-		if (llength(curwp->w_dotp) > 0) {
+		if (d_warpdot(curwp->w_dotp, &curwp->w_doto) == TRUE) {
 			lputc(curwp->w_dotp, 0, DDELCHAR);
 			curbp->b_flag |= BFDIREDDEL;
 		}
