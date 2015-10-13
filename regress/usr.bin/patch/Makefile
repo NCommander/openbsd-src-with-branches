@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.7 2008/08/20 18:29:37 otto Exp $
+# $OpenBSD: Makefile,v 1.8 2014/11/25 16:01:08 tobias Exp $
 
 PATCH=patch
 PATCHOPTIONS=-sN
 
-REGRESS_TARGETS=t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16
+REGRESS_TARGETS=t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17
 
 # .in: input file
 # .diff: patch
@@ -23,6 +23,7 @@ REGRESS_TARGETS=t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16
 # t14: diff in normal diff format.
 # t15: diff in context diff format.
 # t16: diff in ed format.
+# t17: diff in ed format that inserts a dot-line
 
 all: clean ${REGRESS_TARGET}
 
