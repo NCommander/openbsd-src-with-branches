@@ -1,4 +1,4 @@
-/*	$OpenBSD: to.c,v 1.18 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: to.c,v 1.19 2015/01/20 17:37:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2009 Jacek Masiulaniec <jacekm@dobremiasto.net>
@@ -580,7 +580,7 @@ rule_to_text(struct rule *r)
 	case A_NONE:
 		break;
 	}
-	    
+
 	return buf;
 }
 
