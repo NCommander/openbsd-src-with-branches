@@ -1,4 +1,4 @@
-/*	$OpenBSD: portmap.c,v 1.46 2015/10/08 14:02:09 deraadt Exp $	*/
+/*	$OpenBSD: portmap.c,v 1.47 2015/10/09 01:37:09 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1996, 1997 Theo de Raadt (OpenBSD). All rights reserved.
@@ -84,6 +84,7 @@
 #include <netdb.h>
 #include <pwd.h>
 #include <errno.h>
+#include <err.h>
 
 void reg_service(struct svc_req *, SVCXPRT *);
 void reap(int);
