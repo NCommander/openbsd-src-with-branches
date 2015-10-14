@@ -1,4 +1,4 @@
-/*	$OpenBSD: lstFindFrom.c,v 1.17 2007/09/16 09:46:14 espie Exp $	*/
+/*	$OpenBSD: lstFindFrom.c,v 1.18 2010/07/19 19:46:44 espie Exp $	*/
 /*	$NetBSD: lstFindFrom.c,v 1.6 1996/11/06 17:59:40 christos Exp $ */
 
 /*
@@ -58,7 +58,7 @@ Lst_FindFrom(LstNode ln, FindProc cProc, void *d)
 	LstNode tln;
 
 	for (tln = ln; tln != NULL; tln = tln->nextPtr)
-		if ((*cProc)(tln->datum, d) == 0)
+		if (!(*cProc)(tln->datum, d))
 			return tln;
 
 	return NULL;

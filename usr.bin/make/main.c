@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.113 2015/10/08 14:49:27 deraadt Exp $ */
+/*	$OpenBSD: main.c,v 1.114 2015/10/09 01:37:08 deraadt Exp $ */
 /*	$NetBSD: main.c,v 1.34 1997/03/24 20:56:36 gwr Exp $	*/
 
 /*
@@ -113,7 +113,7 @@ static void setup_VPATH(void);
 
 static void read_all_make_rules(bool, bool, Lst, struct dirs *);
 static void read_makefile_list(Lst, struct dirs *);
-static int ReadMakefile(void *, void *);
+static bool ReadMakefile(void *, void *);
 
 static void
 record_option(int c, const char *arg)

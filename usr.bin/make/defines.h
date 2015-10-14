@@ -1,7 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-/*	$OpenBSD: defines.h,v 1.13 2012/10/09 19:45:34 espie Exp $ */
+/*	$OpenBSD: defines.h,v 1.14 2013/11/22 15:47:35 espie Exp $ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -28,13 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef HAS_STDBOOL_H
 # include <stdbool.h>
-#else
-typedef int bool;
-# define false 0
-# define true 1
-#endif
 
 /* define common types in an opaque way */
 struct GNode_;
