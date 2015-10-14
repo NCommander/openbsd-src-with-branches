@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_api.c,v 1.6 2014/09/01 20:58:42 doug Exp $	*/
+/*	$OpenBSD: queue_api.c,v 1.7 2015/01/20 17:37:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -111,7 +111,7 @@ queue_msg_dispatch(void)
 	uint64_t	 evpid;
 	uint32_t	 msgid, version;
 	size_t		 n, m;
-	char		 buffer[8192], path[SMTPD_MAXPATHLEN];
+	char		 buffer[8192], path[PATH_MAX];
 	int		 r, fd;
 	FILE		*ifile, *ofile;
 
