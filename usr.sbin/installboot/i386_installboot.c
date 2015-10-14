@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_installboot.c,v 1.11 2015/10/07 03:06:46 krw Exp $	*/
+/*	$OpenBSD: i386_installboot.c,v 1.12 2015/10/08 14:50:38 krw Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -65,6 +65,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <util.h>
+#include <uuid.h>
 
 #include "installboot.h"
 #include "i386_installboot.h"
