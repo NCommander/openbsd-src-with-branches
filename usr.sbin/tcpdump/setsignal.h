@@ -1,4 +1,4 @@
-/*	$OpenBSD: setsignal.h,v 1.2 2000/10/03 14:31:59 ho Exp $	*/
+/*	$OpenBSD: setsignal.h,v 1.3 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997
@@ -20,10 +20,10 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @(#) $Id$ (LBL)
+ * @(#) $Id: setsignal.h,v 1.3 2007/10/07 16:41:05 deraadt Exp $ (LBL)
  */
 #ifndef setsignal_h
 #define setsignal_h
 
-RETSIGTYPE (*setsignal(int, RETSIGTYPE (*)(int)))(int);
+void	setsignal(int, void (*)(int));
 #endif
