@@ -1,4 +1,4 @@
-/*	$OpenBSD: random.c,v 1.11 2008/04/13 00:22:16 djm Exp $	*/
+/*	$OpenBSD: random.c,v 1.12 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: random.c,v 1.3 1995/04/22 07:44:05 cgd Exp $	*/
 
 /*
@@ -53,6 +53,9 @@ main(int argc, char *argv[])
 	double denom;
 	int ch, random_exit, selected, unbuffer_output;
 	char *ep;
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	random_exit = unbuffer_output = 0;
 	while ((ch = getopt(argc, argv, "erh")) != -1)

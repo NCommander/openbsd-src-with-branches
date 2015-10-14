@@ -1,4 +1,4 @@
-/*	$OpenBSD: pig.c,v 1.10 2004/07/10 07:26:23 deraadt Exp $	*/
+/*	$OpenBSD: pig.c,v 1.11 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: pig.c,v 1.2 1995/03/23 08:41:40 cgd Exp $	*/
 
 /*-
@@ -48,6 +48,9 @@ main(int argc, char *argv[])
 	int len;
 	int ch;
 	char buf[1024];
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {

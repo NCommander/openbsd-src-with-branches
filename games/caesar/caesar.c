@@ -1,4 +1,4 @@
-/*	$OpenBSD: caesar.c,v 1.15 2010/02/22 18:57:42 otto Exp $	*/
+/*	$OpenBSD: caesar.c,v 1.16 2014/07/03 20:30:17 schwarze Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -72,6 +72,9 @@ main(int argc, char *argv[])
 	char *inbuf, *p, **av;
 	int obs[26], try, winner;
 	double dot, winnerdot;
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	/* check to see if we were called as rot13 */
 	av = argv;

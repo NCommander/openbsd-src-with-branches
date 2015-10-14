@@ -1,4 +1,4 @@
-/*	$OpenBSD: number.c,v 1.13 2005/11/05 22:55:37 jmc Exp $	*/
+/*	$OpenBSD: number.c,v 1.14 2009/10/27 23:59:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993, 1994
@@ -78,6 +78,9 @@ main(int argc, char *argv[])
 {
 	int ch, first;
 	char line[LINELEN];
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	lflag = 0;
 	while ((ch = getopt(argc, argv, "hl")) != -1)

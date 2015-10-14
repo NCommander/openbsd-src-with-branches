@@ -1,4 +1,4 @@
-/*	$OpenBSD: banner.c,v 1.16 2009/10/27 23:59:23 deraadt Exp $	*/
+/*	$OpenBSD: banner.c,v 1.17 2015/02/10 13:50:58 tedu Exp $	*/
 /*	$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $	*/
 
 /*
@@ -1016,6 +1016,9 @@ int
 main(int argc, char *argv[])
 { 
 	int ch;
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	while ((ch = getopt(argc, argv, "w:tdh")) != -1)
 		switch (ch) {
