@@ -1,4 +1,4 @@
-/*	$OpenBSD: rain.c,v 1.16 2012/05/27 10:09:33 sthen Exp $	*/
+/*	$OpenBSD: rain.c,v 1.17 2013/08/29 20:22:18 naddy Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -61,6 +61,9 @@ main(int argc, char *argv[])
 	int ch;
 	int xpos[5], ypos[5];
 
+	if (pledge("stdio rpath getpw tty", NULL) == -1)
+		err(1, "pledge");
+
 	/* set default delay based on terminal baud rate */
 	if (tcgetattr(STDOUT_FILENO, &term) == 0 &&
 	    (speed = cfgetospeed(&term)) > B9600)
@@ -85,6 +88,10 @@ main(int argc, char *argv[])
 	timespecadd(&sleeptime, &sleeptime, &sleeptime);
 
 	initscr();
+
+	if (pledge("stdio tty", NULL) == -1)
+		err(1, "pledge");
+
 	tcols = COLS - 4;
 	tlines = LINES - 4;
 
