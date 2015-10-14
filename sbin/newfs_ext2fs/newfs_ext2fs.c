@@ -296,10 +296,6 @@ main(int argc, char *argv[])
 		}
 
 		pp = getpartition(fsi, special, argv, &lp);
-
-		if (pledge("stdio", NULL) == -1)
-			err(1, "pledge");
-
 		if (!Iflag) {
 			static const char m[] =
 			    "%s partition type is not `%s' (or use -I)";
