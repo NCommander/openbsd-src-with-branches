@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: parser.c,v 1.1 2015/10/02 04:31:52 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -133,8 +133,8 @@ static const struct token t_show_topology[] = {
 	{KEYWORD,	"family",	NONE,		t_show_topology_af},
 	{KEYWORD,	"as",		NONE,		t_show_topology_as},
 	{PREFIX,	"",		NONE,		NULL},
-	{FLAG,		"active",	F_CTL_ACTIVE,	NONE},
-	{FLAG,		"all-links",	F_CTL_ALLLINKS,	NONE},
+	{FLAG,		"active",	F_CTL_ACTIVE,	NULL},
+	{FLAG,		"all-links",	F_CTL_ALLLINKS,	NULL},
 	{ENDTOKEN,	"",		NONE,		NULL}
 };
 
