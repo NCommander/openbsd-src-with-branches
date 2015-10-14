@@ -1,4 +1,4 @@
-/* $OpenBSD: esc.c,v 1.2 2014/04/19 17:32:58 gilles Exp $	 */
+/* $OpenBSD: esc.c,v 1.3 2015/01/20 17:37:54 deraadt Exp $	 */
 
 /*
  * Copyright (c) 2014 Gilles Chehade <gilles@poolp.org>
@@ -72,7 +72,7 @@ static struct escode {
 	{ ESC_DELIVERY_TIME_EXPIRED,			"Delivery time expired" },
 
 	/* 5.x */
-	{ ESC_OTHER_PROTOCOL_STATUS,			"Other/Undefined protocol status" },
+	{ ESC_INVALID_RECIPIENT,			"Invalid recipient" },
 	{ ESC_INVALID_COMMAND,				"Invalid command" },
 	{ ESC_SYNTAX_ERROR,				"Syntax error" },
 	{ ESC_TOO_MANY_RECIPIENTS,			"Too many recipients" },
