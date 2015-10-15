@@ -1,3 +1,0 @@
-flow ah from 1.1.1.1 to 3.3.3.0/24 peer 2.2.2.2 \
-	srcid host1.one.net \
-	dstid host2.two.net

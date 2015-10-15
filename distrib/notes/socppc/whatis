@@ -1,3 +1,0 @@
-dnl	$OpenBSD: whatis,v 1.2 2008/03/10 21:34:14 miod Exp $
-
-OpenBSD/MACHINE runs on the Thecus N1200 PowerPC-based network disk appliances.
