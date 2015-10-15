@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.42 2015/03/26 19:52:35 markus Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.43 2015/08/21 11:59:27 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -777,8 +777,7 @@ ikev2_msg_authverify(struct iked *env, struct iked_sa *sa,
 	}
 
  done:
-	if (psk != NULL)
-		free(psk);
+	free(psk);
 	dsa_free(dsa);
 
 	return (ret);
@@ -859,8 +858,7 @@ ikev2_msg_authsign(struct iked *env, struct iked_sa *sa,
 
 	ret = 0;
  done:
-	if (psk != NULL)
-		free(psk);
+	free(psk);
 	dsa_free(dsa);
 
 	return (ret);

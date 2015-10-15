@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_pld.c,v 1.53 2015/10/01 10:59:23 reyk Exp $	*/
+/*	$OpenBSD: ikev2_pld.c,v 1.54 2015/10/01 13:57:29 sthen Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -1482,10 +1482,8 @@ ikev2_pld_delete(struct iked *env, struct ikev2_payload *pld,
 	}
 
  done:
-	if (localspi)
-		free(localspi);
-	if (peersas)
-		free(peersas);
+	free(localspi);
+	free(peersas);
 	ibuf_release(resp);
 	return (ret);
 }

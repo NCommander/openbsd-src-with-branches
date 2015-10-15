@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.36 2015/07/07 19:13:31 markus Exp $	*/
+/*	$OpenBSD: config.c,v 1.37 2015/08/21 11:59:27 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -142,8 +142,7 @@ config_free_sa(struct iked *env, struct iked_sa *sa)
 	ibuf_release(sa->sa_rcert.id_buf);
 
 	ibuf_release(sa->sa_eap.id_buf);
-	if (sa->sa_eapid != NULL)
-		free(sa->sa_eapid);
+	free(sa->sa_eapid);
 	ibuf_release(sa->sa_eapmsk);
 
 	free(sa);
@@ -779,8 +778,7 @@ config_setocsp(struct iked *env)
 int
 config_getocsp(struct iked *env, struct imsg *imsg)
 {
-	if (env->sc_ocsp_url)
-		free(env->sc_ocsp_url);
+	free(env->sc_ocsp_url);
 	if (IMSG_DATA_SIZE(imsg) > 0)
 		env->sc_ocsp_url = get_string(imsg->data, IMSG_DATA_SIZE(imsg));
 	else
