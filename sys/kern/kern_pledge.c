@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.27 2015/10/14 23:15:37 sthen Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.28 2015/10/15 04:58:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1044,7 +1044,6 @@ pledge_ioctl_check(struct proc *p, long com, void *v)
 	 */
 	if ((p->p_p->ps_pledge & PLEDGE_IOCTL)) {
 		switch (com) {
-		case FIOASYNC:
 		case FIOSETOWN:
 		case FIOGETOWN:
 			return (0);
