@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_mkdb.c,v 1.13 2015/01/16 06:40:16 deraadt Exp $	*/
+/*	$OpenBSD: dev_mkdb.c,v 1.14 2015/10/12 16:01:53 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 	u_char buf[MAXNAMLEN + 1];
 	char dbtmp[PATH_MAX], dbname[PATH_MAX];
 
-	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+	if (pledge("stdio rpath wpath cpath flock", NULL) == -1)
 		err(1, "pledge");
 
 	while ((ch = getopt(argc, argv, "")) != -1)

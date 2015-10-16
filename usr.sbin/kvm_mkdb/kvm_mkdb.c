@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mkdb.c,v 1.22 2015/10/13 15:43:19 deraadt Exp $	*/
+/*	$OpenBSD: kvm_mkdb.c,v 1.23 2015/10/13 15:55:44 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -170,7 +170,7 @@ kvm_mkdb(int fd, const char *dbdir, char *nlistpath, char *nlistname,
 	}
 
 	/* rename() later */
-	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+	if (pledge("stdio rpath wpath cpath flock", NULL) == -1)
 		err(1, "pledge");
 
 	if (create_knlist(nlistpath, fd, db) != 0) {
