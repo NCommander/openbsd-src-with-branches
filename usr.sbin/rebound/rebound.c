@@ -1,4 +1,4 @@
-/* $OpenBSD: rebound.c,v 1.18 2015/10/16 01:58:28 tedu Exp $ */
+/* $OpenBSD: rebound.c,v 1.19 2015/10/16 02:09:31 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -177,6 +177,7 @@ newrequest(int ud, struct sockaddr *remoteaddr)
 		hit->req = malloc(r);
 		if (hit->req) {
 			memcpy(hit->req, dnsreq, r);
+			hit->reqlen = r;
 			hit->req->id = 0;
 		} else {
 			free(hit);
