@@ -1,4 +1,4 @@
-/*	$OpenBSD: fio.c,v 1.33 2014/01/17 18:42:30 okan Exp $	*/
+/*	$OpenBSD: fio.c,v 1.34 2014/12/16 18:31:06 millert Exp $	*/
 /*	$NetBSD: fio.c,v 1.8 1997/07/07 22:57:55 phil Exp $	*/
 
 /*
@@ -278,10 +278,9 @@ makemessage(FILE *f, int omsgCount)
 	struct message *nmessage;
 
 	size = (msgCount + 1) * sizeof(struct message);
-	nmessage = (struct message *)realloc(message, size);
+	nmessage = realloc(message, size);
 	if (nmessage == 0)
-		errx(1, "Insufficient memory for %d messages",
-		    msgCount);
+		err(1, "realloc");
 	if (omsgCount == 0 || message == NULL)
 		dot = nmessage;
 	else

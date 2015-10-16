@@ -1,4 +1,4 @@
-/*	$OpenBSD: strings.c,v 1.8 2003/06/03 02:56:11 millert Exp $	*/
+/*	$OpenBSD: strings.c,v 1.9 2009/10/27 23:59:40 deraadt Exp $	*/
 /*	$NetBSD: strings.c,v 1.5 1996/06/08 19:48:40 christos Exp $	*/
 
 /*
@@ -71,9 +71,9 @@ salloc(int size)
 		errx(1, "String too large");
 	if (sp->s_topFree == NULL) {
 		index = sp - &stringdope[0];
-		sp->s_topFree = (char *)malloc(STRINGSIZE << index);
+		sp->s_topFree = malloc(STRINGSIZE << index);
 		if (sp->s_topFree == NULL)
-			errx(1, "No room for space %d", index);
+			err(1, "malloc");
 		sp->s_nextFree = sp->s_topFree;
 		sp->s_nleft = STRINGSIZE << index;
 	}

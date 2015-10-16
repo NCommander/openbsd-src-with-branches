@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.37 2014/05/20 01:25:23 guenther Exp $	*/
+/*	$OpenBSD: lex.c,v 1.38 2014/10/26 20:38:13 guenther Exp $	*/
 /*	$NetBSD: lex.c,v 1.10 1997/05/17 19:55:13 pk Exp $	*/
 
 /*
@@ -528,7 +528,7 @@ setmsize(int n)
 
 	msize = (n + 1) * sizeof(*msgvec);
 	if ((msgvec2 = realloc(msgvec, msize)) == NULL)
-		errx(1, "Out of memory");
+		err(1, "realloc");
 	msgvec = msgvec2;
 	memset(msgvec, 0, msize);
 }

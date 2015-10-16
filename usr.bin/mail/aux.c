@@ -1,4 +1,4 @@
-/*	$OpenBSD: aux.c,v 1.27 2015/01/16 06:40:09 deraadt Exp $	*/
+/*	$OpenBSD: aux.c,v 1.28 2015/10/13 08:49:51 guenther Exp $	*/
 /*	$NetBSD: aux.c,v 1.5 1997/05/13 06:15:52 mikel Exp $	*/
 
 /*
@@ -417,8 +417,8 @@ skin(char *name)
 		return(name);
 
 	/* We assume that length(input) <= length(output) */
-	if ((nbuf = (char *)malloc(strlen(name) + 1)) == NULL)
-		errx(1, "Out of memory");
+	if ((nbuf = malloc(strlen(name) + 1)) == NULL)
+		err(1, "malloc");
 	gotlt = 0;
 	lastsp = 0;
 	bufend = nbuf;
@@ -502,7 +502,7 @@ skin(char *name)
 	}
 	*cp2 = 0;
 
-	if ((cp = (char *)realloc(nbuf, strlen(nbuf) + 1)) != NULL)
+	if ((cp = realloc(nbuf, strlen(nbuf) + 1)) != NULL)
 		nbuf = cp;
 	return(nbuf);
 }
