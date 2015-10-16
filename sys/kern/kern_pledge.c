@@ -1075,6 +1075,12 @@ pledge_ioctl_check(struct proc *p, long com, void *v)
 
 	if ((p->p_p->ps_pledge & PLEDGE_TTY)) {
 		switch (com) {
+#if notyet
+		case TIOCSTI:		/* ksh? csh? */
+			if (fp->f_type == DTYPE_VNODE && (vp->v_flag & VISTTY))
+				return (0);
+			break;
+#endif
 		case TIOCSPGRP:
 			if ((p->p_p->ps_pledge & PLEDGE_PROC) == 0)
 				break;
@@ -1085,12 +1091,6 @@ pledge_ioctl_check(struct proc *p, long com, void *v)
 			if (fp->f_type == DTYPE_VNODE && (vp->v_flag & VISTTY))
 				return (0);
 			return (ENOTTY);
-#if notyet
-		case TIOCSTI:		/* ksh? csh? */
-			if (fp->f_type == DTYPE_VNODE && (vp->v_flag & VISTTY))
-				return (0);
-			break;
-#endif
 		case TIOCSWINSZ:
 		case TIOCCBRK:		/* cu */
 		case TIOCSBRK:		/* cu */
