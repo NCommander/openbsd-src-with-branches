@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmt.c,v 1.15 2015/01/16 06:40:20 deraadt Exp $	*/
+/*	$OpenBSD: rmt.c,v 1.16 2015/09/20 10:05:48 halex Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -307,7 +307,7 @@ checkbuf(char *record, int size)
 	}
 	maxrecsize = size;
 	while (size > 1024 &&
-	       setsockopt(0, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size)) == -1)
+	    setsockopt(0, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size)) == -1)
 		size -= 1024;
 	return (record);
 }
