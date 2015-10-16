@@ -1,4 +1,4 @@
-/*	$OpenBSD: vipw.c,v 1.16 2011/08/19 20:53:36 millert Exp $	 */
+/*	$OpenBSD: vipw.c,v 1.17 2014/05/07 21:20:06 schwarze Exp $	 */
 
 /*
  * Copyright (c) 1987, 1993, 1994
@@ -63,6 +63,9 @@ main(int argc, char *argv[])
 
 	if (argc != 0)
 		usage();
+
+	if (pledge("stdio rpath wpath cpath fattr proc exec", NULL) == -1)
+		err(1, "pledge");
 
 	pw_init();
 	tfd = pw_lock(0);
