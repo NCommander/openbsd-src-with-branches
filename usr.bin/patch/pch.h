@@ -1,4 +1,10 @@
-/*	$OpenBSD: pch.h,v 1.8 2003/08/15 08:00:51 otto Exp $	*/
+void		next_intuit_at(off_t, LINENUM);
+LINENUM		strtolinenum(char *, char **);
+
+extern FILE	*pfp;
+extern LINENUM	p_input_line;
+char		*pgets(char *, int, FILE *);
+/*	$OpenBSD: pch.h,v 1.9 2003/10/31 20:20:45 millert Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -53,4 +59,3 @@ LINENUM		pch_context(void);
 LINENUM		pch_hunk_beg(void);
 char		pch_char(LINENUM);
 char		*pfetch(LINENUM);
-void		do_ed_script(void);
