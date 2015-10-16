@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.246 2015/10/14 09:14:11 sunil Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.247 2015/10/14 19:56:58 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -690,7 +690,7 @@ main(int argc, char *argv[])
 
 	purge_task();
 
-	if (pledge("stdio rpath wpath cpath tmppath getpw sendfd proc exec", NULL) == -1)
+	if (pledge("stdio rpath wpath cpath flock tmppath getpw sendfd proc exec", NULL) == -1)
 		err(1, "pledge");
 	
 	if (event_dispatch() < 0)
