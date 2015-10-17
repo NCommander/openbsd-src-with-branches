@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.36 2015/09/14 09:42:33 nicm Exp $	*/
+/*	$OpenBSD: sh.h,v 1.37 2015/09/14 16:08:50 nicm Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -25,8 +25,6 @@
 #include <limits.h>
 
 #include <signal.h>
-
-#include <paths.h>
 
 /* end of common headers */
 
