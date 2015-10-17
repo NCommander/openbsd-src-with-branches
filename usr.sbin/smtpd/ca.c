@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.15 2015/10/13 08:07:35 gilles Exp $	*/
+/*	$OpenBSD: ca.c,v 1.16 2015/10/14 21:05:31 gilles Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -22,15 +22,14 @@
 #include <sys/socket.h>
 #include <sys/tree.h>
 
-#include <signal.h>
-#include <string.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <limits.h>
-#include <imsg.h>
-#include <pwd.h>
 #include <err.h>
+#include <imsg.h>
+#include <limits.h>
+#include <pwd.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <openssl/ssl.h>
 #include <openssl/pem.h>
