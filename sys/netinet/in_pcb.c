@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.180 2015/09/22 09:34:38 vgross Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.181 2015/10/09 01:10:27 deraadt Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -456,7 +456,7 @@ in_pcbconnect(struct inpcb *inp, struct mbuf *nam)
 		return (EADDRNOTAVAIL);
 
 	if (pledge_dns_check(p, sin->sin_port))
-		return (pledge_fail(p, EPERM, PLEDGE_DNSPATH));
+		return (pledge_fail(p, EPERM, PLEDGE_DNS));
 
 	error = in_selectsrc(&ina, sin, inp->inp_moptions, &inp->inp_route,
 	    &inp->inp_laddr, inp->inp_rtableid);
