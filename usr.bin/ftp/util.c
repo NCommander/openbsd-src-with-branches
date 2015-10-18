@@ -390,7 +390,8 @@ remglob2(char *argv[], int doswitch, char **errbuf, FILE **ftemp, char *type)
 	if (*ftemp == NULL) {
 		int len;
 
-		cp = _PATH_TMP;
+		if ((cp = getenv("TMPDIR")) == NULL || *cp == '\0')
+		    cp = _PATH_TMP;
 		len = strlen(cp);
 		if (len + sizeof(TMPFILE) + (cp[len-1] != '/') > sizeof(temp)) {
 			warnx("unable to create temporary file: %s",
