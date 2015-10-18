@@ -171,6 +171,11 @@ main(int argc, char *argv[])
 	(void)time(&now);
 	kmem_setup();
 
+	if (pledge("stdio rpath wpath cpath", NULL) == -1) {
+		syslog(LOG_ERR, "pledge: %m");
+		exit(1);
+	}
+
 	if (clear) {
 		clear_dump();
 		return (0);
