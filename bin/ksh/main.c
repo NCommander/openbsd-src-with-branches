@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.64 2015/10/16 14:45:16 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.65 2015/10/17 18:26:24 mmcc Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -21,6 +21,14 @@ static void	reclaim(void);
 static void	remove_temps(struct temp *tp);
 static int	is_restricted(char *name);
 static void	init_username(void);
+
+const char *kshname;
+pid_t	kshpid;
+pid_t	procpid;
+uid_t	ksheuid;
+int	exstat;
+int	subst_exstat;
+const char *safe_prompt;
 
 /*
  * shell initialization
