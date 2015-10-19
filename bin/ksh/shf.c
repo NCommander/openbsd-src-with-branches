@@ -1,10 +1,12 @@
-/*	$OpenBSD: shf.c,v 1.22 2015/09/18 07:28:24 nicm Exp $	*/
+/*	$OpenBSD: shf.c,v 1.23 2015/10/19 02:15:45 mmcc Exp $	*/
 
 /*
  *  Shell file I/O routines
  */
 
 #include <sys/stat.h>
+
+#include <limits.h>
 
 #include "sh.h"
 

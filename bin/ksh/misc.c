@@ -1,10 +1,11 @@
-/*	$OpenBSD: misc.c,v 1.46 2015/09/22 21:50:40 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.47 2015/10/19 02:15:45 mmcc Exp $	*/
 
 /*
  * Miscellaneous functions
  */
 
 #include <ctype.h>
+#include <limits.h>
 
 #include "sh.h"
 #include "charclass.h"
