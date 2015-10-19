@@ -1,4 +1,4 @@
-/*	$OpenBSD: mandoc_aux.c,v 1.7 2015/10/12 21:09:08 schwarze Exp $ */
+/*	$OpenBSD: mandoc_ohash.c,v 1.1 2015/10/13 15:50:15 schwarze Exp $ */
 /*
  * Copyright (c) 2014, 2015 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -16,6 +16,7 @@
  */
 #include <sys/types.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "mandoc_aux.h"
