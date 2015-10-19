@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.16 2015/01/16 06:39:58 deraadt Exp $	*/
+/*	$OpenBSD: control.c,v 1.17 2015/10/19 11:25:35 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -311,7 +311,7 @@ control_imsg_forward(struct imsg *imsg)
 
 	TAILQ_FOREACH(c, &ctl_conns, entry)
 		if (c->flags & CTL_CONN_NOTIFY)
-			imsg_compose(&c->iev.ibuf, imsg->hdr.type,
+			imsg_compose_event(&c->iev, imsg->hdr.type,
 			    0, imsg->hdr.pid, -1, imsg->data,
 			    imsg->hdr.len - IMSG_HEADER_SIZE);
 }
