@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.33 2015/09/18 07:28:24 nicm Exp $	*/
+/*	$OpenBSD: vi.c,v 1.34 2015/10/15 19:36:50 mmcc Exp $	*/
 
 /*
  *	vi command editing
@@ -9,9 +9,11 @@
 #include "config.h"
 #ifdef VI
 
-#include "sh.h"
-#include <ctype.h>
 #include <sys/stat.h>		/* completion */
+
+#include <ctype.h>
+
+#include "sh.h"
 #include "edit.h"
 
 #define CMDLEN		2048

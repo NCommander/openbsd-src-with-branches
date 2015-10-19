@@ -1,11 +1,12 @@
-/*	$OpenBSD: misc.c,v 1.45 2015/09/18 07:28:24 nicm Exp $	*/
+/*	$OpenBSD: misc.c,v 1.46 2015/09/22 21:50:40 millert Exp $	*/
 
 /*
  * Miscellaneous functions
  */
 
-#include "sh.h"
 #include <ctype.h>
+
+#include "sh.h"
 #include "charclass.h"
 
 short ctypes [UCHAR_MAX+1];	/* type bits for unsigned char */

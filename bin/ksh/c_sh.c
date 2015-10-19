@@ -1,13 +1,14 @@
-/*	$OpenBSD: c_sh.c,v 1.49 2015/09/18 07:28:24 nicm Exp $	*/
+/*	$OpenBSD: c_sh.c,v 1.50 2015/10/10 00:10:07 deraadt Exp $	*/
 
 /*
  * built-in Bourne commands
  */
 
-#include "sh.h"
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/resource.h>
+
+#include "sh.h"
 
 static void p_time(struct shf *, int, struct timeval *, int, char *, char *);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mknod.c,v 1.1 2005/10/06 06:39:36 otto Exp $	*/
+/*	$OpenBSD: mknod.c,v 1.2 2009/10/27 23:59:21 deraadt Exp $	*/
 /*	$NetBSD: mknod.c,v 1.8 1995/08/11 00:08:18 jtc Exp $	*/
 
 /*
@@ -35,6 +35,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #include <errno.h>
 
 #include "sh.h"

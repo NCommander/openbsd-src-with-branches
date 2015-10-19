@@ -1,12 +1,14 @@
-/*	$OpenBSD: io.c,v 1.29 2015/09/18 07:28:24 nicm Exp $	*/
+/*	$OpenBSD: io.c,v 1.30 2015/09/22 21:50:40 millert Exp $	*/
 
 /*
  * shell buffered IO and formatted output
  */
 
-#include <ctype.h>
-#include "sh.h"
 #include <sys/stat.h>
+
+#include <ctype.h>
+
+#include "sh.h"
 
 static int initio_done;
 
