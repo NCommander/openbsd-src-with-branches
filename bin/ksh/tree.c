@@ -1,8 +1,10 @@
-/*	$OpenBSD: tree.c,v 1.24 2015/09/27 05:25:00 guenther Exp $	*/
+/*	$OpenBSD: tree.c,v 1.25 2015/10/09 19:36:27 tedu Exp $	*/
 
 /*
  * command tree climbing
  */
+
+#include <string.h>
 
 #include "sh.h"
 

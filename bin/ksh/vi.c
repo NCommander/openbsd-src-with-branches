@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.34 2015/10/15 19:36:50 mmcc Exp $	*/
+/*	$OpenBSD: vi.c,v 1.35 2015/10/19 02:15:45 mmcc Exp $	*/
 
 /*
  *	vi command editing
@@ -12,6 +12,7 @@
 #include <sys/stat.h>		/* completion */
 
 #include <ctype.h>
+#include <string.h>
 
 #include "sh.h"
 #include "edit.h"

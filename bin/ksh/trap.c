@@ -1,8 +1,10 @@
-/*	$OpenBSD: trap.c,v 1.25 2015/09/18 07:28:24 nicm Exp $	*/
+/*	$OpenBSD: trap.c,v 1.26 2015/10/09 19:36:27 tedu Exp $	*/
 
 /*
  * signal handling
  */
+
+#include <string.h>
 
 #include "sh.h"
 

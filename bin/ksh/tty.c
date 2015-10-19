@@ -1,4 +1,6 @@
-/*	$OpenBSD: tty.c,v 1.12 2015/09/25 11:58:14 nicm Exp $	*/
+/*	$OpenBSD: tty.c,v 1.13 2015/10/15 20:01:53 mmcc Exp $	*/
+
+#include <string.h>
 
 #include "sh.h"
 #include "tty.h"

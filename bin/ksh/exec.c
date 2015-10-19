@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.59 2015/10/17 18:43:22 mmcc Exp $	*/
+/*	$OpenBSD: exec.c,v 1.60 2015/10/19 02:15:45 mmcc Exp $	*/
 
 /*
  * execute command tree
@@ -8,6 +8,7 @@
 
 #include <ctype.h>
 #include <paths.h>
+#include <string.h>
 
 #include "sh.h"
 #include "c_test.h"
