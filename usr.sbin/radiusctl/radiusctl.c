@@ -1,4 +1,4 @@
-/*	$OpenBSD: radiusctl.c,v 1.3 2015/08/03 07:49:05 jmc Exp $	*/
+/*	$OpenBSD: radiusctl.c,v 1.4 2015/08/25 01:21:57 yasuoka Exp $	*/
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
  *
@@ -71,6 +71,8 @@ main(int argc, char *argv[])
 	case NONE:
 		break;
 	case TEST:
+		if (pledge("stdio dns inet", NULL) == -1)
+			err(EXIT_FAILURE, "pledge");
 		radius_test(result);
 		break;
 	}
