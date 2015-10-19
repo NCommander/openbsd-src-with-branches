@@ -1,4 +1,4 @@
-/*	$OpenBSD: inetd.c,v 1.143 2015/01/16 06:40:17 deraadt Exp $	*/
+/*	$OpenBSD: inetd.c,v 1.144 2015/10/18 16:11:19 jca Exp $	*/
 
 /*
  * Copyright (c) 1983,1991 The Regents of the University of California.
@@ -134,6 +134,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <err.h>
 #include <errno.h>
 #include <ctype.h>
 #include <signal.h>
