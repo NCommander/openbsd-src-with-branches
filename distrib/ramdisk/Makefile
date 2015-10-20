@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.43 2013/10/18 14:04:04 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.44 2015/10/20 16:18:23 miod Exp $
 
 REV=		${OSrev}
 
@@ -62,8 +62,16 @@ ${FLOPPY}:	bsd.gz ${BOOT} ${BOOTXX}
 	disklabel -w ${VND} ${FLOPPYTYPE}
 	newfs ${NEWFSOPTS_FD} ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}
+.if ${MACHINE} == "sparc"
+	cp ${BOOT} ${MOUNT_POINT}/
+.endif
 	cp bsd.gz ${MOUNT_POINT}/bsd
+.if ${MACHINE} == "sparc"
+	${INSTALLBOOT} -v ${BOOTIN} ${BOOTXX} \
+	    `echo ${VND_RDEV} | sed -e 's/a$$/c/'`
+.else
 	${INSTALLBOOT} -v -r ${MOUNT_POINT} ${VND} ${BOOTXX} ${BOOT}
+.endif
 	@echo ""
 	@df -i ${MOUNT_POINT}
 	@echo ""
