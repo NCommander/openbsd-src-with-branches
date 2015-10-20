@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmt.c,v 1.16 2015/09/20 10:05:48 halex Exp $	*/
+/*	$OpenBSD: rmt.c,v 1.17 2015/10/16 14:13:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -81,6 +81,9 @@ main(int argc, char *argv[])
 	char *dir = NULL;
 	char *devp;
 	size_t dirlen;
+
+	if (pledge("stdio rpath wpath cpath inet", NULL) == -1)
+		err(1, "pledge");
 
 	while ((ch = getopt(argc, argv, "d:rw")) != -1) {
 		switch (ch) {
