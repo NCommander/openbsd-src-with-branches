@@ -1,4 +1,4 @@
-/*	$OpenBSD: shf.h,v 1.5 2005/03/30 17:16:37 deraadt Exp $	*/
+/*	$OpenBSD: shf.h,v 1.6 2005/12/11 18:53:51 deraadt Exp $	*/
 
 #ifndef SHF_H
 # define SHF_H
@@ -9,8 +9,6 @@
 
 #define SHF_BSIZE	512
 
-#define shf_fileno(shf)	((shf)->fd)
-#define shf_setfileno(shf,nfd)	((shf)->fd = (nfd))
 #define shf_getc(shf) ((shf)->rnleft > 0 ? (shf)->rnleft--, *(shf)->rp++ : \
 			shf_getchar(shf))
 #define shf_putc(c, shf)	((shf)->wnleft == 0 ? shf_putchar((c), (shf)) : \
