@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.3 2015/10/05 01:59:33 renato Exp $ */
+/*	$OpenBSD: rde.c,v 1.4 2015/10/10 05:12:33 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -452,7 +452,7 @@ rde_dispatch_parent(int fd, short event, void *bula)
 void
 rde_instance_init(struct eigrp *eigrp)
 {
-	struct rde_nbr		nbr;
+	struct rde_nbr		 nbr;
 
 	memset(&nbr, 0, sizeof(nbr));
 	nbr.flags = F_RDE_NBR_SELF | F_RDE_NBR_REDIST;
