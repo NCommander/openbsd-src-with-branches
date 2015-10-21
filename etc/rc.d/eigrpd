@@ -1,4 +1,6 @@
 #!/bin/sh
+#
+# $OpenBSD$
 
 daemon="/usr/sbin/eigrpd"
 
