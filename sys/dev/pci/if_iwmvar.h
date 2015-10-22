@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwmvar.h,v 1.10 2015/10/05 13:05:08 stsp Exp $	*/
+/*	$OpenBSD: if_iwmvar.h,v 1.11 2015/10/11 10:22:28 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -222,9 +222,6 @@ struct iwm_host_cmd {
 /*
  * DMA glue is from iwn
  */
-
-typedef caddr_t iwm_caddr_t;
-typedef void *iwm_hookarg_t;
 
 struct iwm_dma_info {
 	bus_dma_tag_t		tag;
