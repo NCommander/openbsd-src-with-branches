@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2010/10/13 08:14:22 jsg Exp $
+#	$OpenBSD: Makefile,v 1.7 2014/04/22 10:21:56 reyk Exp $
 
 
 PROG=	login_chpass
@@ -13,7 +13,7 @@ CFLAGS+=-Wall
 
 .if (${YP:L} == "yes")
 CFLAGS+=-DYP
-SRCS+= yp_passwd.c pwd_check.c pwd_gensalt.c
+SRCS+= yp_passwd.c pwd_check.c
 DPADD+= ${LIBRPCSVC} ${LIBUTIL}
 LDADD+= -lrpcsvc -lutil
 .endif
