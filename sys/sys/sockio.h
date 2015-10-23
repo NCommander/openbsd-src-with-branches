@@ -1,4 +1,4 @@
-/*	$OpenBSD: sockio.h,v 1.59 2015/07/21 04:14:52 rzalamena Exp $	*/
+/*	$OpenBSD: sockio.h,v 1.60 2015/09/11 13:02:28 stsp Exp $	*/
 /*	$NetBSD: sockio.h,v 1.5 1995/08/23 00:40:47 thorpej Exp $	*/
 
 /*-
@@ -193,6 +193,8 @@
 
 #define SIOCSETMPWCFG	_IOW('i', 173, struct ifreq) /* set mpw config */
 #define SIOCGETMPWCFG	_IOWR('i', 174, struct ifreq) /* get mpw config */
+
+#define SIOCDVNETID	_IOW('i', 175, struct ifreq)	/* del virt net id */
 
 #define	SIOCSVH		_IOWR('i', 245, struct ifreq)	/* set carp param */
 #define	SIOCGVH		_IOWR('i', 246, struct ifreq)	/* get carp param */
