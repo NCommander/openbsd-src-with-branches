@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigprocmask.S,v 1.5 2011/04/04 12:42:39 guenther Exp $ */
+/*	$OpenBSD: sigprocmask.S,v 1.6 2015/09/05 06:22:47 guenther Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,9 +36,9 @@
 FRAMESZ= MKFSIZ(1,1)
 GPOFF= FRAMESZ-2*REGSZ
 
-SYSLEAF(sigprocmask, FRAMESZ)
+SYSLEAF_HIDDEN(sigprocmask, FRAMESZ)
 	PTR_SUBU sp, FRAMESZ
-	SETUP_GP64(GPOFF, sigprocmask)
+	SETUP_GP64(GPOFF, _HIDDEN(sigprocmask))
 	.set	reorder
 	bne	a1, zero, .Lgotptr	# if new sigset pointer not null
 	li	a0, 1			# how = SIG_BLOCK
@@ -61,4 +61,4 @@ SYSLEAF(sigprocmask, FRAMESZ)
 	RESTORE_GP64
 	PTR_ADDU sp, FRAMESZ
 	jr	t9
-SYSEND(sigprocmask)
+SYSCALL_END_HIDDEN(sigprocmask)

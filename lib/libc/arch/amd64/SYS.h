@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.15 2015/09/05 06:22:46 guenther Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.16 2015/10/17 22:40:54 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -114,6 +114,8 @@
 #define SYSCALL_NOERROR(x)						\
 	_SYSCALL_NOERROR(x,x)
 
+#define SYSCALL_HIDDEN(x)						\
+	_SYSCALL_HIDDEN(x,x)
 #define SYSCALL(x)							\
 	_SYSCALL(x,x)
 
