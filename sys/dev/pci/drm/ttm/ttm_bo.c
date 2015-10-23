@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttm_bo.c,v 1.17 2015/09/23 23:12:12 kettenis Exp $	*/
+/*	$OpenBSD: ttm_bo.c,v 1.18 2015/09/27 11:09:26 jsg Exp $	*/
 /**************************************************************************
  *
  * Copyright (c) 2006-2009 VMware, Inc., Palo Alto, CA., USA
@@ -1224,7 +1224,7 @@ int ttm_bo_init(struct ttm_bo_device *bdev,
 	}
 	bo->destroy = destroy;
 
-	uvm_objinit(&bo->uobj, NULL, 1);
+	uvm_objinit(&bo->uobj, NULL, 0);
 	kref_init(&bo->kref);
 	kref_init(&bo->list_kref);
 	atomic_set(&bo->cpu_writers, 0);

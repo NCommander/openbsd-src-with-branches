@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttm_bo_vm.c,v 1.7 2015/04/05 11:53:53 kettenis Exp $	*/
+/*	$OpenBSD: ttm_bo_vm.c,v 1.8 2015/09/27 11:09:26 jsg Exp $	*/
 /**************************************************************************
  *
  * Copyright (c) 2006-2009 VMware, Inc., Palo Alto, CA., USA
@@ -337,6 +337,8 @@ ttm_bo_mmap(voff_t off, vsize_t size, struct ttm_bo_device *bdev)
 
 	vma->vm_private_data = bo;
 	vma->vm_flags |= VM_IO | VM_MIXEDMAP | VM_DONTEXPAND | VM_DONTDUMP;
+#else
+	bo->uobj.uo_refs++;
 #endif
 	return &bo->uobj;
 out_unref:
