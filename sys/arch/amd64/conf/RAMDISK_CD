@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK_CD,v 1.154 2015/09/03 18:00:11 kettenis Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.155 2015/09/13 14:43:42 deraadt Exp $
 
 machine		amd64
 maxusers	4
@@ -273,6 +273,7 @@ ukphy*		at mii?			# "unknown" PHYs
 virtio*		at pci?			# Virtio PCI device
 vioblk*		at virtio?		# Virtio block device
 vio*		at virtio?		# Virtio network device
+viornd*		at virtio?		# Virtio entropy device
 vioscsi*	at virtio?		# Virtio SCSI device
 
 pseudo-device	loop 1
