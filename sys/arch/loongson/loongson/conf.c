@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.18 2014/08/20 06:14:42 mikeb Exp $ */
+/*	$OpenBSD: conf.c,v 1.19 2014/12/11 19:44:17 tedu Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -207,6 +207,7 @@ struct cdevsw	cdevsw[] =
 	cdev_pppx_init(NPPPX,pppx),	/* 71: pppx */
 	cdev_notdef(),			/* 72: was USB scanners */
 	cdev_fuse_init(NFUSE,fuse),	/* 73: fuse */
+	cdev_tun_init(NTUN,tap),	/* 74: Ethernet network tunnel */
 };
 
 int	nchrdev = nitems(cdevsw);

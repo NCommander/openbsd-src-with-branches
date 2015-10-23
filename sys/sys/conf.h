@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.133 2015/06/25 06:43:46 ratchov Exp $	*/
+/*	$OpenBSD: conf.h,v 1.134 2015/09/10 18:14:52 mpi Exp $	*/
 /*	$NetBSD: conf.h,v 1.33 1996/05/03 20:03:32 christos Exp $	*/
 
 /*-
@@ -565,6 +565,7 @@ cdev_decl(bpf);
 cdev_decl(pf);
 
 cdev_decl(tun);
+cdev_decl(tap);
 cdev_decl(pppx);
 
 cdev_decl(random);

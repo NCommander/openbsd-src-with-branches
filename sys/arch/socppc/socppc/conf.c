@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.22 2014/10/09 04:10:03 tedu Exp $ */
+/*	$OpenBSD: conf.c,v 1.23 2014/12/11 19:44:17 tedu Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -203,6 +203,7 @@ struct cdevsw cdevsw[] = {
 	cdev_pppx_init(NPPPX,pppx),	/* 83: pppx */
 	cdev_hotplug_init(NHOTPLUG,hotplug),	/* 84: devices hot plugging */
 	cdev_fuse_init(NFUSE,fuse),	/* 85: fuse */
+	cdev_tun_init(NTUN,tap),	/* 86: Ethernet network tunnel */
 };
 int nchrdev = nitems(cdevsw);
 

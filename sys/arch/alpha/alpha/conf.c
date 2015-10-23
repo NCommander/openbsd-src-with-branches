@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.77 2014/10/09 04:10:03 tedu Exp $	*/
+/*	$OpenBSD: conf.c,v 1.78 2014/12/11 19:44:16 tedu Exp $	*/
 /*	$NetBSD: conf.c,v 1.16 1996/10/18 21:26:57 cgd Exp $	*/
 
 /*-
@@ -200,6 +200,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 65: was urio */
 	cdev_notdef(),			/* 66: was USB scanners */
 	cdev_fuse_init(NFUSE,fuse),	/* 67: fuse */
+	cdev_tun_init(NTUN,tap),	/* 68: Ethernet network tunnel */
 };
 int	nchrdev = nitems(cdevsw);
 

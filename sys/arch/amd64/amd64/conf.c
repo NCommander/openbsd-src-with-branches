@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.49 2014/12/11 19:44:16 tedu Exp $	*/
+/*	$OpenBSD: conf.c,v 1.50 2015/03/14 03:38:46 jsg Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -279,6 +279,7 @@ struct cdevsw	cdevsw[] =
 	cdev_disk_init(1,diskmap),	/* 90: disk mapper */
 	cdev_pppx_init(NPPPX,pppx),     /* 91: pppx */
 	cdev_fuse_init(NFUSE,fuse),	/* 92: fuse */
+	cdev_tun_init(NTUN,tap),	/* 93: Ethernet network tunnel */
 };
 int	nchrdev = nitems(cdevsw);
 
