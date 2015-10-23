@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcd.c,v 1.20 2014/11/07 22:17:49 schwarze Exp $	*/
+/*	$OpenBSD: bcd.c,v 1.21 2015/10/14 08:12:12 doug Exp $	*/
 /*	$NetBSD: bcd.c,v 1.6 1995/04/24 12:22:23 cgd Exp $	*/
 
 /*
@@ -69,6 +69,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <err.h>
 
 u_short holes[256] = {
     0x0,	 0x0,	  0x0,	   0x0,	    0x0,     0x0,     0x0,     0x0,
