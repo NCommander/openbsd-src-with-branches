@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.61 2015/06/03 08:10:53 mpi Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.62 2015/08/23 14:12:05 naddy Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -488,6 +488,8 @@ delete(char *host)
 
 	bzero(&hints, sizeof(hints));
 	hints.ai_family = AF_INET6;
+	if (nflag)
+		hints.ai_flags = AI_NUMERICHOST;
 	gai_error = getaddrinfo(host, NULL, &hints, &res);
 	if (gai_error) {
 		fprintf(stderr, "ndp: %s: %s\n", host,
