@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.100 2015/07/18 00:05:02 phessler Exp $	*/
+/*	$OpenBSD: show.c,v 1.101 2015/09/11 20:08:40 mpi Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -143,6 +143,14 @@ p_rttables(int af, u_int tableid, int hastable, char prio)
 		}
 		lim = buf + needed;
 		break;
+	}
+
+	if (nflag) {
+		if (pledge("stdio rpath dns", NULL) == -1)
+			err(1, "pledge");
+	} else {
+		if (pledge("stdio rpath dns", NULL) == -1)
+			err(1, "pledge");
 	}
 
 	printf("Routing tables\n");
