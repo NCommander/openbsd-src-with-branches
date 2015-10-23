@@ -1,4 +1,4 @@
-/*      $OpenBSD: aestest.c,v 1.1 2008/06/12 19:42:48 djm Exp $  */
+/*      $OpenBSD: aestest.c,v 1.2 2014/08/15 14:36:20 mikeb Exp $  */
 
 /*
  * Copyright (c) 2002 Markus Friedl.  All rights reserved.
@@ -91,7 +91,7 @@ startswith(const char *line, const char *startswith)
 	if (strncmp(line, startswith, len) != 0)
 		return NULL;
 	line = line + len;
-	while (isspace(*line))
+	while (isspace((unsigned char)*line))
 		line++;
 	return line;
 }
