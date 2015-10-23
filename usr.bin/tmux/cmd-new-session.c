@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-new-session.c,v 1.70 2015/08/28 13:01:03 nicm Exp $ */
+/* $OpenBSD: cmd-new-session.c,v 1.71 2015/09/10 08:58:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -133,7 +133,7 @@ cmd_new_session_exec(struct cmd *self, struct cmd_q *cmdq)
 				    strerror(errno));
 				return (CMD_RETURN_ERROR);
 			}
-		} else if (cp != NULL)
+		} else
 			free(cp);
 		cwd = fd;
 	} else if (c != NULL && c->session == NULL)
