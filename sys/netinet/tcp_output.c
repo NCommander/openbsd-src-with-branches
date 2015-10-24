@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.113 2015/07/13 23:11:37 bluhm Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.114 2015/09/11 08:17:06 claudio Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -1108,7 +1108,7 @@ send:
 				sizeof(struct ip6_hdr);
 			packetlen = m->m_pkthdr.len;
 			ip6->ip6_nxt = IPPROTO_TCP;
-			ip6->ip6_hlim = in6_selecthlim(tp->t_inpcb, NULL);
+			ip6->ip6_hlim = in6_selecthlim(tp->t_inpcb);
 #ifdef TCP_ECN
 			if (needect)
 				ip6->ip6_flow |= htonl(IPTOS_ECN_ECT0 << 20);
