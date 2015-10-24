@@ -1,4 +1,4 @@
-.\" $OpenBSD: packages.7,v 1.38 2015/09/27 14:25:01 sthen Exp $
+.\" $OpenBSD: packages.7,v 1.39 2015/09/27 18:25:55 jmc Exp $
 .\"
 .\" Copyright (c) 2000 Marc Espie
 .\"
@@ -236,11 +236,12 @@ will automatically install required dependencies before installing a given
 package.
 Installs through
 .Xr ftp 1
-are supported:  pointing
+are supported: pointing
 .Ev PKG_PATH
 to a distant package repository, e.g.,
-.Pp
-.Dl # export PKG_PATH=ftp://ftp.openbsd.org/pub/OpenBSD/5.2/packages/i386/
+.Bd -literal -offset 1n
+# export PKG_PATH=ftp://ftp.openbsd.org/pub/OpenBSD/5.2/packages/i386/
+.Ed
 .Pp
 will let
 .Xr pkg_add 1
