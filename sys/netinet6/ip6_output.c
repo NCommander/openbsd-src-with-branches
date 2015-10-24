@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.189 2015/09/23 08:49:46 mpi Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.190 2015/10/19 12:11:28 mpi Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -553,7 +553,7 @@ reroute:
 		if (ISSET(rt->rt_flags, RTF_LOCAL))
 			ifp = if_ref(lo0ifp);
 		else
-			ifp = if_ref(rt->rt_ifp);
+			ifp = if_get(rt->rt_ifidx);
 	} else {
 		*dst = dstsock;
 	}
@@ -2382,7 +2382,7 @@ ip6_setmoptions(int optname, struct ip6_moptions **im6op, struct mbuf *m)
 				error = EADDRNOTAVAIL;
 				break;
 			}
-			ifp = if_ref(ro.ro_rt->rt_ifp);
+			ifp = if_get(ro.ro_rt->rt_ifidx);
 			rtfree(ro.ro_rt);
 		} else {
 			/*

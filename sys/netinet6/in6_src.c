@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_src.c,v 1.64 2015/10/19 12:11:28 mpi Exp $	*/
+/*	$OpenBSD: in6_src.c,v 1.65 2015/10/22 16:33:32 mpi Exp $	*/
 /*	$KAME: in6_src.c,v 1.36 2001/02/06 04:08:17 itojun Exp $	*/
 
 /*
@@ -457,7 +457,7 @@ in6_selectif(struct sockaddr_in6 *dstsock, struct ip6_pktopts *opts,
 		return (rt->rt_flags & RTF_HOST ? EHOSTUNREACH : ENETUNREACH);
 
 	if (rt != NULL)
-		*retifp = if_ref(rt->rt_ifp);
+		*retifp = if_get(rt->rt_ifidx);
 
 	return (0);
 }
