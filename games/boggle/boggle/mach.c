@@ -1,4 +1,4 @@
-/*	$OpenBSD: mach.c,v 1.13 2012/03/04 04:05:15 fgsch Exp $	*/
+/*	$OpenBSD: mach.c,v 1.14 2014/12/04 06:12:33 deraadt Exp $	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -687,7 +687,7 @@ tty_showboard(char *b)
 		if (ch == 'q')
 			printw("Qu");
 		else
-			printw("%c ", toupper(ch));
+			printw("%c ", toupper((unsigned char)ch));
 		if (HISET(b[i]))
 			attroff(A_BOLD);
 		if ((i + 1) % grid == 0) {
