@@ -1067,7 +1067,7 @@ tapkqfilter(dev_t dev, struct knote *kn)
 {
 	struct tun_softc *tp;
 
-	if ((tp = tun_lookup(minor(dev))) == NULL)
+	if ((tp = tap_lookup(minor(dev))) == NULL)
 		return (ENXIO);
 	return (tun_dev_kqfilter(tp, kn));
 }
