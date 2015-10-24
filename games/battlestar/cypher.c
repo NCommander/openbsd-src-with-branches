@@ -1,4 +1,4 @@
-/*	$OpenBSD: cypher.c,v 1.16 2007/09/09 17:10:02 ray Exp $	*/
+/*	$OpenBSD: cypher.c,v 1.17 2009/10/27 23:59:23 deraadt Exp $	*/
 /*	$NetBSD: cypher.c,v 1.3 1995/03/21 15:07:15 cgd Exp $	*/
 
 /*
@@ -472,7 +472,8 @@ inc_wordnumber(const char *v, const char *adv)
 {
 	wordnumber++;
 	if (wordnumber >= wordcount) {
-		printf("%c%s %s?\n", toupper(v[0]), v + 1, adv);
+		printf("%c%s %s?\n",
+		    toupper((unsigned char)v[0]), v + 1, adv);
 		return(-1);
 	}
 	return(0);
