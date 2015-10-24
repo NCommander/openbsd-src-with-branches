@@ -1,4 +1,4 @@
-/*	$OpenBSD: answer.c,v 1.13 2014/05/25 17:39:07 tedu Exp $	*/
+/*	$OpenBSD: answer.c,v 1.14 2015/08/22 14:47:41 deraadt Exp $	*/
 /*	$NetBSD: answer.c,v 1.3 1997/10/10 16:32:50 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -188,7 +188,7 @@ answer_next(sp)
 	 */
 	sp->name[NAMELEN] = '\0';
 	for (cp1 = cp2 = sp->name; *cp1 != '\0'; cp1++)
-		if (isprint(*cp1) || *cp1 == ' ')
+		if (isprint((unsigned char)*cp1) || *cp1 == ' ')
 			*cp2++ = *cp1;
 	*cp2 = '\0';
 
