@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rcctl.8,v 1.23 2015/10/06 18:35:55 schwarze Exp $
+.\"	$OpenBSD: rcctl.8,v 1.24 2015/10/06 18:46:05 schwarze Exp $
 .\"
 .\" Copyright (c) 2014 Antoine Jacoutot <ajacoutot@openbsd.org>
 .\"
@@ -28,7 +28,7 @@
 .Op Fl df
 .Ar action daemon ...
 .Nm rcctl
-.Cm order
+.Cm disable|enable|order
 .Op Ar daemon ...
 .Nm rcctl
 .Cm ls
@@ -71,6 +71,12 @@ Run the
 scripts with the
 .Ar action
 argument, passing through the specified options, if any.
+.It Cm disable Ar service ... | daemon ...
+Alias for
+.Dq Cm set Ar service | daemon Cm status off .
+.It Cm enable Ar service ... | daemon ...
+Alias for
+.Dq Cm set Ar service | daemon Cm status on .
 .It Cm get Ar service | daemon Op Ar variable
 Display the value of
 .Ar service
