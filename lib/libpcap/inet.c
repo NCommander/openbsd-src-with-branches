@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.19 2006/03/26 20:58:50 djm Exp $	*/
+/*	$OpenBSD: inet.c,v 1.20 2015/01/16 16:48:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996, 1997, 1998
@@ -140,7 +140,7 @@ pcap_lookupdev(errbuf)
 			continue;
 		if (ISLOOPBACK(ifa->ifa_name, ifa->ifa_flags))
 			continue;
-		for (cp = ifa->ifa_name; !isdigit(*cp); ++cp)
+		for (cp = ifa->ifa_name; !isdigit((unsigned char)*cp); ++cp)
 			continue;
 		n = atoi(cp);
 		if (n < minunit) {
@@ -224,7 +224,7 @@ pcap_lookupdev(errbuf)
 		    ISLOOPBACK(ifr.ifr_name, ifr.ifr_flags))
 			continue;
 
-		for (cp = ifrp->ifr_name; !isdigit(*cp); ++cp)
+		for (cp = ifrp->ifr_name; !isdigit((unsigned char)*cp); ++cp)
 			continue;
 		n = atoi(cp);
 		if (n < minunit) {
