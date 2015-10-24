@@ -1,4 +1,4 @@
-/*	$OpenBSD: move.c,v 1.12 2009/12/10 23:53:05 beck Exp $	*/
+/*	$OpenBSD: move.c,v 1.13 2014/11/16 04:49:48 guenther Exp $	*/
 /*	$NetBSD: move.c,v 1.4 1995/03/24 05:01:57 cgd Exp $	*/
 
 /*
@@ -345,9 +345,9 @@ getmove()
 		refresh();
 		while ((c = readch()) == killchar() || c == erasechar())
 			continue;
-		if (islower(c))
-			c = toupper(c);
-		if (isprint(c) && !isspace(c)) {
+		if (islower((unsigned char)c))
+			c = toupper((unsigned char)c);
+		if (isprint((unsigned char)c) && !isspace((unsigned char)c)) {
 			addch(c);
 			refresh();
 		}
