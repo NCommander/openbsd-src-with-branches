@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.83 2015/09/01 06:08:57 deraadt Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.84 2015/09/29 10:52:22 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -919,7 +919,6 @@ int
 myx_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 {
 	struct myx_softc	*sc = (struct myx_softc *)ifp->if_softc;
-	struct ifaddr		*ifa = (struct ifaddr *)data;
 	struct ifreq		*ifr = (struct ifreq *)data;
 	int			 s, error = 0;
 
@@ -928,8 +927,6 @@ myx_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	switch (cmd) {
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
-		if (ifa->ifa_addr->sa_family == AF_INET)
-			arp_ifinit(&sc->sc_ac, ifa);
 		/* FALLTHROUGH */
 
 	case SIOCSIFFLAGS:

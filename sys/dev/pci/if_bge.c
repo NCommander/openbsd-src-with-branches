@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.369 2015/07/19 06:28:12 yuo Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.370 2015/10/19 05:31:25 jmatthew Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -4410,7 +4410,6 @@ int
 bge_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 {
 	struct bge_softc *sc = ifp->if_softc;
-	struct ifaddr *ifa = (struct ifaddr *) data;
 	struct ifreq *ifr = (struct ifreq *) data;
 	int s, error = 0;
 	struct mii_data *mii;
@@ -4422,8 +4421,6 @@ bge_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if (!(ifp->if_flags & IFF_RUNNING))
 			bge_init(sc);
-		if (ifa->ifa_addr->sa_family == AF_INET)
-			arp_ifinit(&sc->arpcom, ifa);
 		break;
 
 	case SIOCSIFFLAGS:

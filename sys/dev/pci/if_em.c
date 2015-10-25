@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_em.c,v 1.307 2015/10/06 15:21:16 kettenis Exp $ */
+/* $OpenBSD: if_em.c,v 1.308 2015/10/08 09:21:26 kettenis Exp $ */
 /* $FreeBSD: if_em.c,v 1.46 2004/09/29 18:28:28 mlaier Exp $ */
 
 #include <dev/pci/if_em.h>
@@ -656,7 +656,6 @@ em_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 {
 	int		error = 0;
 	struct ifreq   *ifr = (struct ifreq *) data;
-	struct ifaddr  *ifa = (struct ifaddr *)data;
 	struct em_softc *sc = ifp->if_softc;
 	int s;
 
@@ -670,8 +669,6 @@ em_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 			ifp->if_flags |= IFF_UP;
 			em_init(sc);
 		}
-		if (ifa->ifa_addr->sa_family == AF_INET)
-			arp_ifinit(&sc->interface_data, ifa);
 		break;
 
 	case SIOCSIFFLAGS:

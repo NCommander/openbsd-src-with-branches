@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cas.c,v 1.41 2015/06/24 09:40:54 mpi Exp $	*/
+/*	$OpenBSD: if_cas.c,v 1.42 2015/09/11 13:02:28 stsp Exp $	*/
 
 /*
  *
@@ -1651,7 +1651,6 @@ int
 cas_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 {
 	struct cas_softc *sc = ifp->if_softc;
-	struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
 
@@ -1662,8 +1661,6 @@ cas_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if ((ifp->if_flags & IFF_RUNNING) == 0)
 			cas_init(ifp);
-		if (ifa->ifa_addr->sa_family == AF_INET)
-			arp_ifinit(&sc->sc_arpcom, ifa);
 		break;
 
 	case SIOCSIFFLAGS:
