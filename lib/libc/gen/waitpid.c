@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: waitpid.c,v 1.6 2005/08/08 08:05:34 espie Exp $ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,13 +28,12 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <sys/resource.h>
 
 pid_t
 waitpid(pid_t pid, int *istat, int options)
 {
-	return (wait4(pid, istat, options, (struct rusage *)0));
+	return (wait4(pid, istat, options, NULL));
 }
+DEF_WEAK(waitpid);
