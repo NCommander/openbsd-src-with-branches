@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.42 2014/07/04 22:39:31 guenther Exp $	*/
+/*	$OpenBSD: config.c,v 1.43 2015/01/16 06:40:20 deraadt Exp $	*/
 /*	$KAME: config.c,v 1.62 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -69,8 +69,7 @@ static int getinet6sysctl(int);
 extern struct ralist ralist;
 
 void
-getconfig(intface)
-	char *intface;
+getconfig(char *intface)
 {
 	int stat, i;
 	char tbuf[BUFSIZ];
@@ -606,11 +605,7 @@ get_prefix(struct rainfo *rai)
 }
 
 static void
-makeentry(buf, len, id, string)
-	char *buf;
-	size_t len;
-	int id;
-	char *string;
+makeentry(char *buf, size_t len, int id, char *string)
 {
 
 	if (id < 0)
