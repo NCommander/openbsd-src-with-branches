@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sq.c,v 1.16 2015/09/14 11:18:49 stsp Exp $	*/
+/*	$OpenBSD: if_sq.c,v 1.17 2015/09/18 20:50:02 miod Exp $	*/
 /*	$NetBSD: if_sq.c,v 1.42 2011/07/01 18:53:47 dyoung Exp $	*/
 
 /*
@@ -591,7 +591,6 @@ int
 sq_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 {
 	struct sq_softc *sc = ifp->if_softc;
-	struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
 
@@ -604,8 +603,6 @@ sq_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if (!(ifp->if_flags & IFF_RUNNING))
 			sq_init(ifp);
-		if (ifa->ifa_addr->sa_family == AF_INET)
-			arp_ifinit(&sc->sc_ac, ifa);
 		break;
 
 	case SIOCSIFMEDIA:
