@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.c,v 1.54 2015/08/18 20:25:28 miod Exp $	*/
+/*	$OpenBSD: rtadvd.c,v 1.55 2015/08/20 22:39:29 deraadt Exp $	*/
 /*	$KAME: rtadvd.c,v 1.66 2002/05/29 14:18:36 itojun Exp $	*/
 
 /*
@@ -55,7 +55,6 @@
 #include <err.h>
 #include <errno.h>
 #include <string.h>
-#include <util.h>
 #include <pwd.h>
 
 #include "rtadvd.h"
@@ -223,10 +222,6 @@ main(argc, argv)
 		daemon(1, 0);
 
 	sock_open();
-
-	/* record the current PID */
-	if (pidfile(NULL) < 0)
-		log_warnx("failed to open the pid log file, run anyway.");
 
 	if (sflag == 0) {
 		rtsock_open();
