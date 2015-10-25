@@ -1,4 +1,4 @@
-/*	$OpenBSD: ti.c,v 1.16 2015/08/12 08:04:20 semarie Exp $	*/
+/*	$OpenBSD: ti.c,v 1.17 2015/09/09 18:24:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2224,7 +2224,6 @@ int
 ti_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 {
 	struct ti_softc		*sc = ifp->if_softc;
-	struct ifaddr		*ifa = (struct ifaddr *)data;
 	struct ifreq		*ifr = (struct ifreq *)data;
 	int			s, error = 0;
 
@@ -2235,8 +2234,6 @@ ti_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		ifp->if_flags |= IFF_UP;
 		if ((ifp->if_flags & IFF_RUNNING) == 0)
 			ti_init(sc);
-		if (ifa->ifa_addr->sa_family == AF_INET)
-			arp_ifinit(&sc->arpcom, ifa);
 		break;
 
 	case SIOCSIFFLAGS:
