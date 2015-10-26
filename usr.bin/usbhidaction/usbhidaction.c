@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbhidaction.c,v 1.19 2015/01/18 17:18:08 mpi Exp $ */
+/*	$OpenBSD: usbhidaction.c,v 1.20 2015/10/26 09:57:55 deraadt Exp $ */
 /*      $NetBSD: usbhidaction.c,v 1.7 2002/01/18 14:38:59 augustss Exp $ */
 
 /*
@@ -43,7 +43,6 @@
 #include <dev/usb/usb.h>
 #include <dev/usb/usbhid.h>
 #include <usbhid.h>
-#include <util.h>
 #include <syslog.h>
 #include <signal.h>
 #include <paths.h>
