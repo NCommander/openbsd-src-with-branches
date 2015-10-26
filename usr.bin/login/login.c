@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.63 2015/01/16 06:40:09 deraadt Exp $	*/
+/*	$OpenBSD: login.c,v 1.64 2015/03/15 00:41:28 millert Exp $	*/
 /*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
@@ -323,20 +323,6 @@ main(int argc, char *argv[])
 	(void)signal(SIGINT, SIG_IGN);
 	(void)signal(SIGHUP, SIG_IGN);
 	(void)setpriority(PRIO_PROCESS, 0, 0);
-
-#ifdef notyet
-	/* XXX - we don't (yet) support per-tty auth stuff */
-	/* BSDi uses a ttys.conf file but we could just overload /etc/ttys */
-	/*
-	 * Classify the attempt.
-	 * By default we use the value in the ttys file.
-	 * If there is a classify script we run that as
-	 *
-	 *	classify [-f] [username]
-	 */
-	if (type = getttyauth(tty))
-		auth_setoption(as, "auth_type", type);
-#endif
 
 	/* get the default login class */
 	if ((lc = login_getclass(0)) == NULL) { /* get the default class */
