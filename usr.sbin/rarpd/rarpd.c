@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.61 2015/08/20 22:39:29 deraadt Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.62 2015/10/16 23:09:53 deraadt Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -151,7 +151,6 @@ main(int argc, char *argv[])
 	if ((!fflag) && (!dflag)) {
 		if (daemon(0, 0) == -1)
 			error(FATAL, "failed to daemonize: %s", strerror(errno));
-		pidfile(NULL);
 	}
 	rarp_loop();
 	exit(0);

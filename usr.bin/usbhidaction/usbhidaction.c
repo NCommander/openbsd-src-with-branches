@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbhidaction.c,v 1.18 2014/08/15 03:51:40 guenther Exp $ */
+/*	$OpenBSD: usbhidaction.c,v 1.19 2015/01/18 17:18:08 mpi Exp $ */
 /*      $NetBSD: usbhidaction.c,v 1.7 2002/01/18 14:38:59 augustss Exp $ */
 
 /*
@@ -162,7 +162,6 @@ main(int argc, char **argv)
 	if (demon) {
 		if (daemon(0, 0) < 0)
 			err(1, "daemon()");
-		pidfile(NULL);
 		isdemon = 1;
 	}
 
