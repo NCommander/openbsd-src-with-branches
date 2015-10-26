@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.170 2015/07/03 11:18:23 miod Exp $
+#	$OpenBSD: bsd.own.mk,v 1.171 2015/08/31 20:02:49 deraadt Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -86,11 +86,6 @@ LKMGRP?=	${BINGRP}
 LKMOWN?=	${BINOWN}
 LKMMODE?=	${NONBINMODE}
 
-NLSDIR?=	/usr/share/nls
-NLSGRP?=	bin
-NLSOWN?=	root
-NLSMODE?=	${NONBINMODE}
-
 LOCALEDIR?=	/usr/share/locale
 LOCALEGRP?=	wheel
 LOCALEOWN?=	root
@@ -156,5 +151,5 @@ BSD_OWN_MK=Done
 
 .PHONY: spell clean cleandir obj manpages print all \
 	depend beforedepend afterdepend cleandepend subdirdepend \
-	all cleanman nlsinstall cleannls includes \
+	all cleanman includes \
 	beforeinstall realinstall maninstall afterinstall install
