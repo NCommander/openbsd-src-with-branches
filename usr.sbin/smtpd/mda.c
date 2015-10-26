@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda.c,v 1.109 2015/01/20 17:37:54 deraadt Exp $	*/
+/*	$OpenBSD: mda.c,v 1.110 2015/10/11 12:09:06 sunil Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -511,6 +511,7 @@ mda_io(struct io *io, int evt)
 		}
 
 		free(ln);
+		ln = NULL;
 		if (ferror(s->datafp)) {
 			log_debug("debug: mda: ferror on session %016"PRIx64,
 			    s->id);
