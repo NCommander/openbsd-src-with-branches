@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.5 2015/01/19 15:30:52 krw Exp $ */
+/*	$OpenBSD: defs.h,v 1.6 2015/07/17 20:38:57 jasper Exp $ */
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -136,11 +136,9 @@ typedef struct {
 /*
  * Error severity codes:
  */
-#define	FATAL		0	/* Exit immediately with 1 */
-#define	ERROR		1	/* Continue, but change exit value */
-#define	WARNING		2	/* Just print the warning */
-#define	COMPILE		3	/* Print error, count and finish script */
-#define	COMPILE2	3	/* Print error, count and finish script */
+#define	WARNING		0	/* Just print the warning */
+#define	FATAL		1	/* Exit immediately with 1 */
+#define	COMPILE		2	/* Print error, count and finish script */
 
 /*
  * Round up to the nearest multiple of _POSIX2_LINE_MAX
