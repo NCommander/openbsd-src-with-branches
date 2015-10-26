@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2013/07/13 16:34:43 miod Exp $
+#	$OpenBSD: Makefile,v 1.12 2015/06/17 03:48:21 deraadt Exp $
 #
 # C Shell with process control; VM/UNIX VAX Makefile
 # Bill Joy UC Berkeley; Jim Kulp IIASA, Austria
@@ -6,10 +6,9 @@
 # To profile, put -DPROF in DEFS and -pg in CFLAGS, and recompile.
 
 PROG=	csh
-DFLAGS=-DBUILTIN -DNLS -DSHORT_STRINGS
 #CFLAGS+=-g
 #CFLAGS+=-Wall
-CFLAGS+=-I${.CURDIR} -I. ${DFLAGS}
+CFLAGS+=-I${.CURDIR} -I.
 SRCS=	alloc.c char.c const.c csh.c dir.c dol.c error.c exec.c exp.c file.c \
 	func.c glob.c hist.c init.c lex.c misc.c parse.c proc.c \
 	sem.c set.c str.c time.c

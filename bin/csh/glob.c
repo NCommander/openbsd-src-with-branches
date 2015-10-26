@@ -1,4 +1,4 @@
-/*	$OpenBSD: glob.c,v 1.17 2015/02/08 06:01:25 tedu Exp $	*/
+/*	$OpenBSD: glob.c,v 1.18 2015/06/17 03:48:21 deraadt Exp $	*/
 /*	$NetBSD: glob.c,v 1.10 1995/03/21 09:03:01 cgd Exp $	*/
 
 /*-
@@ -878,9 +878,7 @@ Gcat(Char *s1, Char *s2)
 int
 sortscmp(const void *a, const void *b)
 {
-#if defined(NLS) && !defined(NOSTRCOLL)
     char    buf[2048];
-#endif
 
     if (!a)			/* check for NULL */
 	return (b ? 1 : 0);
@@ -892,10 +890,6 @@ sortscmp(const void *a, const void *b)
     if (!*(Char **)b)
 	return (-1);
 
-#if defined(NLS) && !defined(NOSTRCOLL)
     (void) strlcpy(buf, short2str(*(Char **)a), sizeof buf);
     return ((int) strcoll(buf, short2str(*(Char **)b)));
-#else
-    return ((int) Strcmp(*(Char **)a, *(Char **)b));
-#endif
 }

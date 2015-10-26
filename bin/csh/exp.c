@@ -1,4 +1,4 @@
-/*	$OpenBSD: exp.c,v 1.11 2015/02/08 05:51:37 tedu Exp $	*/
+/*	$OpenBSD: exp.c,v 1.12 2015/02/08 06:09:50 tedu Exp $	*/
 /*	$NetBSD: exp.c,v 1.6 1995/03/21 09:02:51 cgd Exp $	*/
 
 /*-
@@ -35,9 +35,6 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
-#ifndef SHORT_STRINGS
-#include <string.h>
-#endif /* SHORT_STRINGS */
 #include <stdarg.h>
 
 #include "csh.h"
