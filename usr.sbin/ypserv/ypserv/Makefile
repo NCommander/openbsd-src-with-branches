@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2003/06/22 23:57:07 maja Exp $
+#	$OpenBSD: Makefile,v 1.11 2004/01/20 21:06:02 matthieu Exp $
 
 PROG=	ypserv
 MAN=	ypserv.acl.5 securenet.5 ypserv.8
@@ -12,8 +12,8 @@ SRCS+=	ypserv.c ypserv_proc.c ypserv_db.c acl.c yplog.c ypdb.c
 
 CLEANFILES+=	${TSRCS} ${HDRS}
 
-LDADD+=	-lutil -lrpcsvc
-DPADD+=	${LIBUTIL} ${LIBRPCSVC}
+LDADD+=	-lrpcsvc
+DPADD+=	${LIBRPCSVC}
 .PATH:	${.CURDIR}/../common
 CFLAGS+=-DDAEMON -DOPTDB -I${.CURDIR}/../common -I.
 #CFLAGS=-DDAEMON -I${.CURDIR}/../common  -DDEBUG -g

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.40 2014/10/11 02:29:24 doug Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.41 2015/01/15 00:40:26 deraadt Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -473,7 +473,6 @@ main(int argc, char *argv[])
 
 	(void)signal(SIGCHLD, sig_child);
 	(void)signal(SIGHUP, sig_hup);
-	pidfile(NULL);
 
 	if (_rpcfdtype == 0 || _rpcfdtype == SOCK_DGRAM) {
 		transp = svcudp_create(sock);
