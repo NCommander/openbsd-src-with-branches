@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.h,v 1.16 2015/03/17 21:42:15 krw Exp $	*/
+/*	$OpenBSD: cmd.h,v 1.17 2015/03/18 14:46:59 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -27,6 +27,7 @@
 
 struct cmd {
 	char *cmd;
+	int  gpt;
 	int (*fcn)(char *, struct mbr *);
 	char *help;
 };
