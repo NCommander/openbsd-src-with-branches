@@ -1,4 +1,4 @@
-/* $OpenBSD: key-string.c,v 1.25 2014/07/21 10:25:48 nicm Exp $ */
+/* $OpenBSD: key-string.c,v 1.26 2015/04/19 21:34:21 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -238,8 +238,10 @@ key_string_lookup_key(int key)
 	}
 
 	/* Invalid keys are errors. */
-	if (key == 127 || key > 255)
-		return (NULL);
+	if (key == 127 || key > 255) {
+		snprintf(out, sizeof out, "<INVALID#%04x>", key);
+		return (out);
+	}
 
 	/* Check for standard or control key. */
 	if (key >= 0 && key <= 32) {
