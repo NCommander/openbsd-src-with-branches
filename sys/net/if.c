@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.397 2015/10/25 13:52:45 mpi Exp $	*/
+/*	$OpenBSD: if.c,v 1.398 2015/10/25 21:58:04 deraadt Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -2341,6 +2341,7 @@ if_group_routechange(struct sockaddr *dst, struct sockaddr *mask)
 int
 if_group_egress_build(void)
 {
+	struct ifnet		*ifp;
 	struct ifg_group	*ifg;
 	struct ifg_member	*ifgm, *next;
 	struct sockaddr_in	 sa_in;
@@ -2364,8 +2365,11 @@ if_group_egress_build(void)
 	if (rt0 != NULL) {
 		rt = rt0;
 		do {
-			if (rt->rt_ifp)
-				if_addgroup(rt->rt_ifp, IFG_EGRESS);
+			ifp = if_get(rt->rt_ifidx);
+			if (ifp != NULL) {
+				if_addgroup(ifp, IFG_EGRESS);
+				if_put(ifp);
+			}
 #ifndef SMALL_KERNEL
 			rt = rt_mpath_next(rt);
 #else
@@ -2381,8 +2385,11 @@ if_group_egress_build(void)
 	if (rt0 != NULL) {
 		rt = rt0;
 		do {
-			if (rt->rt_ifp)
-				if_addgroup(rt->rt_ifp, IFG_EGRESS);
+			ifp = if_get(rt->rt_ifidx);
+			if (ifp != NULL) {
+				if_addgroup(ifp, IFG_EGRESS);
+				if_put(ifp);
+			}
 #ifndef SMALL_KERNEL
 			rt = rt_mpath_next(rt);
 #else
