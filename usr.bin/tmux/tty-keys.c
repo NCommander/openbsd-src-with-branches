@@ -1,4 +1,4 @@
-/* $OpenBSD: tty-keys.c,v 1.73 2015/06/05 15:10:13 nicm Exp $ */
+/* $OpenBSD: tty-keys.c,v 1.74 2015/09/02 17:37:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -564,7 +564,7 @@ partial_key:
 	}
 
 	/* Get the time period. */
-	delay = options_get_number(&global_options, "escape-time");
+	delay = options_get_number(global_options, "escape-time");
 	tv.tv_sec = delay / 1000;
 	tv.tv_usec = (delay % 1000) * 1000L;
 
