@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -84,6 +84,8 @@ usage()
 	printf("  stats_noreset			peek at statistics\n");
 	printf("  addzone <name> <pattern>	add a new zone\n");
 	printf("  delzone <name>		remove a zone\n");
+	printf("  addzones			add zone list on stdin {name space pattern newline}\n");
+	printf("  delzones			remove zone list on stdin {name newline}\n");
 	printf("  write [<zone>]		write changed zonefiles to disk\n");
 	printf("  notify [<zone>]		send NOTIFY messages to slave servers\n");
 	printf("  transfer [<zone>]		try to update slave zones to newer serial\n");
@@ -123,8 +125,12 @@ setup_ctx(nsd_options_t* cfg)
         ctx = SSL_CTX_new(SSLv23_client_method());
 	if(!ctx)
 		ssl_err("could not allocate SSL_CTX pointer");
-        if(!(SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2) & SSL_OP_NO_SSLv2))
+        if((SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2) & SSL_OP_NO_SSLv2)
+		!= SSL_OP_NO_SSLv2)
 		ssl_err("could not set SSL_OP_NO_SSLv2");
+        if((SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3) & SSL_OP_NO_SSLv3)
+		!= SSL_OP_NO_SSLv3)
+		ssl_err("could not set SSL_OP_NO_SSLv3");
 	if(!SSL_CTX_use_certificate_file(ctx,c_cert,SSL_FILETYPE_PEM) ||
 		!SSL_CTX_use_PrivateKey_file(ctx,c_key,SSL_FILETYPE_PEM)
 		|| !SSL_CTX_check_private_key(ctx))
@@ -251,10 +257,14 @@ setup_ssl(SSL_CTX* ctx, int fd)
 static void
 send_file(SSL* ssl, FILE* in, char* buf, size_t sz)
 {
+	char e[] = {0x04, 0x0a};
 	while(fgets(buf, (int)sz, in)) {
 		if(SSL_write(ssl, buf, (int)strlen(buf)) <= 0)
 			ssl_err("could not SSL_write contents");
 	}
+	/* send end-of-file marker */
+	if(SSL_write(ssl, e, (int)sizeof(e)) <= 0)
+		ssl_err("could not SSL_write end-of-file marker");
 }
 
 /** send command and display result */
@@ -279,8 +289,9 @@ go_cmd(SSL* ssl, int argc, char* argv[])
 	if(SSL_write(ssl, newline, (int)strlen(newline)) <= 0)
 		ssl_err("could not SSL_write");
 
-	/* TODO remove or use file upload */
-	if(argc == 1 && strcmp(argv[0], "load_cache") == 0) {
+	/* send contents to server */
+	if(argc == 1 && (strcmp(argv[0], "addzones") == 0 ||
+		strcmp(argv[0], "delzones") == 0)) {
 		send_file(ssl, stdin, buf, sizeof(buf));
 	}
 
