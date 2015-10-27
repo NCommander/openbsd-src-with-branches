@@ -1,6 +1,6 @@
-/*	$OpenBSD: fpclassify.c,v 1.6 2013/03/28 18:09:38 martynas Exp $	*/
+/*	$OpenBSD$	*/
 /*
- * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
+ * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,34 +15,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <machine/vaxfp.h>
-#include <math.h>
+#ifndef _LIBC_MATH_H_
+#define _LIBC_MATH_H_
 
-int
-__fpclassify(double d)
-{
-	struct vax_d_floating *p = (struct vax_d_floating *)&d;
+#include_next <math.h>
 
-	if (p->dflt_exp == 0) {
-		return FP_ZERO;
-	}
+/*
+ * This file only wraps the handful of functions that are both
+ * defined and used by libc.
+ */
 
-	return FP_NORMAL;
-}
-DEF_STRONG(__fpclassify);
+PROTO_NORMAL(__fpclassify);
+PROTO_NORMAL(__fpclassifyf);
+PROTO_NORMAL(__fpclassifyl);
+PROTO_NORMAL(ldexp);
 
-int
-__fpclassifyf(float f)
-{
-	struct vax_f_floating *p = (struct vax_f_floating *)&f;
-
-	if (p->fflt_exp == 0) {
-		return FP_ZERO;
-	}
-
-	return FP_NORMAL;
-}
-DEF_STRONG(__fpclassifyf);
-
-MAKE_CLONE(__fpclassifyl, __fpclassify);
-DEF_STRONG(__fpclassifyl);
+#endif /* !_LIBC_MATH_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: fpclassifyl.c,v 1.1 2008/09/07 20:36:08 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -42,3 +42,4 @@ __fpclassifyl(long double e)
 
 	return FP_NORMAL;
 }
+DEF_STRONG(__fpclassifyl);

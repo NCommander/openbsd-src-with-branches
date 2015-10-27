@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: ldexp.S,v 1.6 2005/08/07 16:40:15 espie Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 #define DEXP_INF	0x7ff
 #define DEXP_BIAS	1023
@@ -164,4 +164,4 @@ LEAF(ldexp, 0)
 9:
 	mov.d	$f0, $f12		# yes, result is just x
 	j	ra
-END(ldexp)
+END_STRONG(ldexp)

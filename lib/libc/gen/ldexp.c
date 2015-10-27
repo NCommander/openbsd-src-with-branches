@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldexp.c,v 1.8 2013/07/03 04:46:36 espie Exp $	*/
+/*	$OpenBSD: ldexp.c,v 1.9 2014/07/21 01:51:10 guenther Exp $	*/
 /* @(#)s_scalbn.c 5.1 93/09/24 */
 /* @(#)fdlibm.h 5.1 93/09/24 */
 /*
@@ -120,6 +120,7 @@ ldexp(double x, int n)
 	SET_HIGH_WORD(x,(hx&0x800fffff)|(k<<20));
         return x*twom54;
 }
+DEF_STRONG(ldexp);
 
 #if	LDBL_MANT_DIG == DBL_MANT_DIG
 __strong_alias(ldexpl, ldexp);

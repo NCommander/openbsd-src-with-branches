@@ -1,10 +1,10 @@
-/* $OpenBSD: flt_rounds.S,v 1.3 2005/08/07 11:30:38 espie Exp $ */
+/* $OpenBSD: flt_rounds.S,v 1.4 2012/08/22 17:19:34 pascal Exp $ */
 /*
  * Written by J.T. Conklin, Apr 4, 1995
  * Public domain.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 	.text
 	.align 2
@@ -30,3 +30,4 @@ ENTRY(__flt_rounds)
 #endif
 	addl $4,%esp
 	ret
+END_STRONG(__flt_rounds);

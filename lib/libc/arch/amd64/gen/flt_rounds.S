@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: flt_rounds.S,v 1.4 2015/05/29 08:50:12 uebayasi Exp $	*/
 /*	$NetBSD: flt_rounds.S,v 1.2 2002/06/06 23:04:35 fvdl Exp $	*/
 
 /*
@@ -6,7 +6,7 @@
  * Public domain.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 	.text
 	_ALIGN_TEXT
@@ -28,4 +28,4 @@ ENTRY(__flt_rounds)
 	movb _map(,%rax,1),%al
 #endif
 	ret
-END(__flt_rounds)
+END_STRONG(__flt_rounds)

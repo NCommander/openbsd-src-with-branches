@@ -1,4 +1,4 @@
-/* $OpenBSD: ldexp.S,v 1.9 2013/03/28 18:09:38 martynas Exp $ */
+/* $OpenBSD: ldexp.S,v 1.10 2013/07/05 21:10:50 miod Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -75,6 +75,7 @@ ENTRY(ldexp, R2)
 1:
 	movl	$ ERANGE,_C_LABEL(errno)
 	ret
+END_STRONG(ldexp);
 
 	.data
 huge:	.word	0x7fff		/* the largest number that can */

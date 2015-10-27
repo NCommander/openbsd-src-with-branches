@@ -1,4 +1,4 @@
-/*	$OpenBSD: flt_rounds.c,v 1.3 2012/06/25 17:01:11 deraadt Exp $	*/
+/*	$OpenBSD: flt_rounds.c,v 1.4 2014/04/18 15:09:52 guenther Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -39,3 +39,4 @@ __flt_rounds()
 	return rndmap[fpgetround()];
 #endif
 }
+DEF_STRONG(__flt_rounds);
