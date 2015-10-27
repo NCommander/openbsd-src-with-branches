@@ -1,4 +1,4 @@
-/* $OpenBSD: screen.c,v 1.33 2015/01/11 04:14:40 deraadt Exp $ */
+/* $OpenBSD: screen.c,v 1.34 2015/08/28 17:11:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -194,8 +194,6 @@ screen_resize_y(struct screen *s, u_int sy)
 		 * Now just increase the history size, if possible, to take
 		 * over the lines which are left. If history is off, delete
 		 * lines from the top.
-		 *
-		 * XXX Should apply history limit?
 		 */
 		available = s->cy;
 		if (gd->flags & GRID_HISTORY)
