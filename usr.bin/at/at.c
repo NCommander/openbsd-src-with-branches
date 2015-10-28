@@ -1,4 +1,4 @@
-/*	$OpenBSD: at.c,v 1.64 2014/10/08 03:56:52 doug Exp $	*/
+/*	$OpenBSD: at.c,v 1.65 2015/08/20 22:32:41 deraadt Exp $	*/
 
 /*
  *  at.c : Put file into atrun queue
@@ -929,6 +929,10 @@ main(int argc, char **argv)
 	int aflag = 0;
 	int cflag = 0;
 	int nflag = 0;
+
+	if (pledge("stdio rpath wpath cpath fattr getpw unix flock id",
+	    NULL) == -1)
+		perr("pledge");
 
 	if (argc < 1)
 		usage();
