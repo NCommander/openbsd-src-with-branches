@@ -1,4 +1,4 @@
-.\" $OpenBSD: 7.t,v 1.4 2002/06/08 01:53:43 millert Exp $
+.\" $OpenBSD: 7.t,v 1.5 2003/06/02 23:36:53 millert Exp $
 .\"
 .\" Copyright (c) 1983, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -74,7 +74,7 @@ restart
 .DE
 You can also check the state of the master printer daemon with the following.
 .DS
-% ps l`cat /var/run/lpd.pid`
+% pgrep -l lpd
 .DE
 .IP
 Another possibility is that the
