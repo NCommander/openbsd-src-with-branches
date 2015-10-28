@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_debug.c,v 1.20 2015/09/09 15:49:34 deraadt Exp $	*/
+/*	$OpenBSD: asr_debug.c,v 1.21 2015/10/03 09:57:30 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -263,10 +263,6 @@ _asr_dump_config(FILE *f, struct asr *a)
 	ac = a->a_ctx;
 
 	fprintf(f, "--------- ASR CONFIG ---------------\n");
-	if (a->a_path)
-		fprintf(f, "CONF FILE \"%s\"\n", a->a_path);
-	else
-		fprintf(f, "STATIC CONF\n");
 	fprintf(f, "DOMAIN \"%s\"\n", ac->ac_domain);
 	fprintf(f, "SEARCH\n");
 	for (i = 0; i < ac->ac_domcount; i++)
