@@ -87,6 +87,12 @@ sr_install_bootblk(int devfd, int vol, int disk)
 	if (dl.d_type == 0)
 		warnx("disklabel type unknown");
 
+	efipart = findgptefisys(diskfd, &dl);
+	if (efipart != -1) {
+		write_efisystem(&dl, (char)efipart);
+		return;
+	}
+
 	/* Determine poffset and set symbol value. */
 	pp = &dl.d_partitions[part - 'a'];
 	if (pp->p_offseth != 0)
