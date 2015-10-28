@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpctl.c,v 1.132 2015/10/16 13:37:44 millert Exp $	*/
+/*	$OpenBSD: smtpctl.c,v 1.133 2015/10/27 21:01:09 gilles Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -695,11 +695,6 @@ do_show_queue(int argc, struct parameter *argv)
 		}
 
 		fts_close(fts);
-		/*
-		while ((r = queue_envelope_walk(&evp)) != -1)
-			if (r)
-				show_queue_envelope(&evp, 0);
-		*/
 		return (0);
 	}
 
