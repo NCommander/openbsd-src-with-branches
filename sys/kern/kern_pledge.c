@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.90 2015/10/28 17:38:52 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.91 2015/10/29 12:51:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1216,6 +1216,18 @@ pledge_sockopt_check(struct proc *p, int set, int level, int optname)
 			return 0;
 		}
 		break;
+	}
+
+	/* DNS resolver may do these requests */
+	if ((p->p_p->ps_pledge & PLEDGE_DNS)) {
+		switch (level) {
+		case IPPROTO_IPV6:
+			switch (optname) {
+			case IPV6_RECVPKTINFO:
+			case IPV6_USE_MIN_MTU:
+				return (0);
+			}
+		}
 	}
 
 	if ((p->p_p->ps_pledge & (PLEDGE_INET|PLEDGE_UNIX)) == 0)
