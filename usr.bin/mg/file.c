@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.97 2015/03/25 12:25:36 bcallah Exp $	*/
+/*	$OpenBSD: file.c,v 1.98 2015/09/29 08:53:53 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -19,8 +19,6 @@
 #include "def.h"
 
 size_t xdirname(char *, const char *, size_t);
-
-static	int do_dired(char *);
 
 /*
  * Insert a file into the current buffer.  Real easy - just call the
