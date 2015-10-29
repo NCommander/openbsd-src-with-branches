@@ -22,21 +22,6 @@
 static int LogFD = -1;
 static int syslog_open = FALSE;
 
-int
-strcmp_until(const char *left, const char *right, char until)
-{
-	while (*left && *left != until && *left == *right) {
-		left++;
-		right++;
-	}
-
-	if ((*left=='\0' || *left == until) &&
-	    (*right=='\0' || *right == until)) {
-		return (0);
-	}
-	return (*left - *right);
-}
-
 void
 set_cron_cwd(void)
 {
