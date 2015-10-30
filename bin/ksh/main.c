@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.70 2015/10/21 14:30:43 mmcc Exp $	*/
+/*	$OpenBSD: main.c,v 1.71 2015/10/22 15:37:04 mmcc Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -97,7 +97,7 @@ static const char *initcoms [] = {
 	  "integer=typeset -i",
 	  "nohup=nohup ",
 	  "local=typeset",
-	  "r=fc -e -",
+	  "r=fc -s",
 	 /* Aliases that are builtin commands in at&t */
 	  "login=exec login",
 	  NULL,
