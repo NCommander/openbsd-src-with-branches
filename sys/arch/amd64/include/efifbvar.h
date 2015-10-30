@@ -1,4 +1,4 @@
-/*	$OpenBSD: efifbvar.h,v 1.1 2015/08/30 10:05:09 yasuoka Exp $	*/
+/*	$OpenBSD: efifbvar.h,v 1.2 2015/08/31 19:56:32 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -23,6 +23,10 @@ struct efifb_attach_args {
 	const char		*eaa_name;
 };
 
+struct pci_attach_args;
+
 int efifb_cnattach(void);
+int efifb_is_console(struct pci_attach_args *);
+void efifb_cndetach(void);
 
 #endif /* _MACHINE_EFIFB_H_ */
