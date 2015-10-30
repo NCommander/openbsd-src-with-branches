@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.h,v 1.116 2015/10/24 11:47:07 mpi Exp $	*/
+/*	$OpenBSD: route.h,v 1.117 2015/10/25 10:05:09 bluhm Exp $	*/
 /*	$NetBSD: route.h,v 1.9 1996/02/13 22:00:49 christos Exp $	*/
 
 /*
@@ -393,7 +393,7 @@ int	 rtioctl(u_long, caddr_t, struct proc *);
 void	 rtredirect(struct sockaddr *, struct sockaddr *,
 			 struct sockaddr *, int, struct sockaddr *,
 			 struct rtentry **, u_int);
-int	 rtrequest1(int, struct rt_addrinfo *, u_int8_t, struct rtentry **,
+int	 rtrequest(int, struct rt_addrinfo *, u_int8_t, struct rtentry **,
 	     u_int);
 void	 rt_if_remove(struct ifnet *);
 #ifndef SMALL_KERNEL
