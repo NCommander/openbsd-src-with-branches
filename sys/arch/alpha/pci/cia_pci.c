@@ -1,4 +1,4 @@
-/* $OpenBSD: cia_pci.c,v 1.11 2006/03/26 20:23:08 brad Exp $ */
+/* $OpenBSD: cia_pci.c,v 1.12 2010/12/04 17:06:31 miod Exp $ */
 /* $NetBSD: cia_pci.c,v 1.25 2000/06/29 08:58:46 mrg Exp $ */
 
 /*
@@ -144,7 +144,7 @@ cia_conf_read(cpv, tag, offset)
 	alpha_pal_draina();	
 
 	/* secondary if bus # != 0 */
-	pci_decompose_tag(&ccp->cc_pc, tag, &secondary, 0, 0);
+	pci_decompose_tag(&ccp->cc_pc, tag, &secondary, NULL, NULL);
 	if (secondary) {
 		s = splhigh();
 		old_cfg = REGVAL(CIA_CSR_CFG);
@@ -228,7 +228,7 @@ cia_conf_write(cpv, tag, offset, data)
 #endif
 
 	/* secondary if bus # != 0 */
-	pci_decompose_tag(&ccp->cc_pc, tag, &secondary, 0, 0);
+	pci_decompose_tag(&ccp->cc_pc, tag, &secondary, NULL, NULL);
 	if (secondary) {
 		s = splhigh();
 		old_cfg = REGVAL(CIA_CSR_CFG);
