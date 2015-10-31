@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.8 2003/02/20 20:38:08 millert Exp $
+#	$OpenBSD: Makefile,v 1.9 2015/01/23 01:58:20 tedu Exp $
 
 PROG=	at
-SRCS=	at.c misc.c parsetime.c
+SRCS=	at.c client.c common.c parsetime.c
 CRONDIR=${.CURDIR}/../../usr.sbin/cron
 CFLAGS+=-I${CRONDIR}
 MAN=	at.1 atrm.1 atq.1
