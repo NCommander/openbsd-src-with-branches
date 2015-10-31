@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.c,v 1.43 2015/10/28 15:45:51 mmcc Exp $	*/
+/*	$OpenBSD: httpd.c,v 1.44 2015/10/28 15:50:04 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -695,7 +695,7 @@ path_info(char *path)
 
 	for (p = end; p > start; p--) {
 		/* Scan every path component from the end and at each '/' */
-		if (p <= end && *p != '/')
+		if (p < end && *p != '/')
 			continue;
 
 		/* Temporarily cut the path component out */
