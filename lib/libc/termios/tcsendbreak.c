@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcsendbreak.c,v 1.7 2014/10/09 06:20:01 dlg Exp $ */
+/*	$OpenBSD: tcsendbreak.c,v 1.8 2014/10/10 00:39:38 millert Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,7 +32,6 @@
 #include <termios.h>
 #include <time.h>
 
-/* ARGSUSED */
 int
 tcsendbreak(int fd, int len)
 {

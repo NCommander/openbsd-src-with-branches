@@ -1,4 +1,4 @@
-/*	$OpenBSD: citrus_none.c,v 1.4 2012/12/05 23:19:59 deraadt Exp $ */
+/*	$OpenBSD: citrus_none.c,v 1.5 2013/03/07 18:12:31 stsp Exp $ */
 /*	$NetBSD: citrus_none.c,v 1.18 2008/06/14 16:01:07 tnozaki Exp $	*/
 
 /*-
@@ -56,7 +56,6 @@ wrapv(unsigned char ch)
 }
 
 size_t
-/*ARGSUSED*/
 _citrus_none_ctype_mbrtowc(wchar_t * __restrict pwc,
 			   const char * __restrict s, size_t n,
 			   void * __restrict pspriv)
@@ -75,14 +74,12 @@ _citrus_none_ctype_mbrtowc(wchar_t * __restrict pwc,
 }
 
 int
-/*ARGSUSED*/
 _citrus_none_ctype_mbsinit(const void * __restrict pspriv)
 {
 	return (1);  /* always initial state */
 }
 
 size_t
-/*ARGSUSED*/
 _citrus_none_ctype_mbsnrtowcs(wchar_t * __restrict dst,
 			      const char ** __restrict src,
 			      size_t nmc, size_t len,
@@ -107,7 +104,6 @@ _citrus_none_ctype_mbsnrtowcs(wchar_t * __restrict dst,
 }
 
 size_t
-/*ARGSUSED*/
 _citrus_none_ctype_wcrtomb(char * __restrict s,
 			   wchar_t wc, void * __restrict pspriv)
 {
@@ -127,7 +123,6 @@ _citrus_none_ctype_wcrtomb(char * __restrict s,
 }
 
 size_t
-/*ARGSUSED*/
 _citrus_none_ctype_wcsnrtombs(char * __restrict dst,
 			      const wchar_t ** __restrict src,
 			      size_t nwc, size_t len,

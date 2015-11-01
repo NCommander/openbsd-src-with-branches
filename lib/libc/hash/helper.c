@@ -1,4 +1,4 @@
-/*	$OpenBSD: helper.c,v 1.13 2015/01/16 16:48:51 deraadt Exp $ */
+/*	$OpenBSD: helper.c,v 1.14 2015/09/11 09:18:27 guenther Exp $ */
 
 /*
  * Copyright (c) 2000 Poul-Henning Kamp <phk@FreeBSD.org>
@@ -35,7 +35,6 @@
 
 #define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
-/* ARGSUSED */
 char *
 HASHEnd(HASH_CTX *ctx, char *buf)
 {
