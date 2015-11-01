@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.60 2015/10/19 02:15:45 mmcc Exp $	*/
+/*	$OpenBSD: lex.c,v 1.61 2015/10/19 14:42:16 mmcc Exp $	*/
 
 /*
  * lexical analysis and source input
@@ -1657,7 +1657,8 @@ getsc_bn(void)
 static Lex_state *
 push_state_(State_info *si, Lex_state *old_end)
 {
-	Lex_state	*new = alloc(sizeof(Lex_state) * STATE_BSIZE, ATEMP);
+	Lex_state *new = areallocarray(NULL, STATE_BSIZE,
+	    sizeof(Lex_state), ATEMP);
 
 	new[0].ls_info.base = old_end;
 	si->base = &new[0];
