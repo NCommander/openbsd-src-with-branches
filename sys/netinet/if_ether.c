@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.178 2015/10/27 10:54:52 mpi Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.179 2015/10/27 15:22:58 mpi Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -215,7 +215,7 @@ arp_rtrequest(struct ifnet *ifp, int req, struct rtentry *rt)
 		la = pool_get(&arp_pool, PR_NOWAIT | PR_ZERO);
 		rt->rt_llinfo = (caddr_t)la;
 		if (la == NULL) {
-			log(LOG_DEBUG, "%s: malloc failed\n", __func__);
+			log(LOG_DEBUG, "%s: pool get failed\n", __func__);
 			break;
 		}
 		arp_inuse++;
