@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.296 2015/10/09 01:10:27 deraadt Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.297 2015/10/25 20:39:54 deraadt Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -174,10 +174,10 @@ sys_sysctl(struct proc *p, void *v, register_t *retval)
 	if (error)
 		return (error);
 
-	error = pledge_sysctl_check(p, SCARG(uap, namelen),
+	error = pledge_sysctl(p, SCARG(uap, namelen),
 	    name, SCARG(uap, new));
 	if (error)
-		return (pledge_fail(p, error, PLEDGE_STDIO));
+		return (error);
 
 	switch (name[0]) {
 	case CTL_KERN:

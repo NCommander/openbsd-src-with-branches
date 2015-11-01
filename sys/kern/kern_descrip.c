@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.122 2015/10/21 16:09:13 bluhm Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.123 2015/10/28 12:17:20 deraadt Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -348,9 +348,9 @@ sys_fcntl(struct proc *p, void *v, register_t *retval)
 	struct flock fl;
 	int error = 0;
 
-	error = pledge_fcntl_check(p,  SCARG(uap, cmd));
-	if (error != 0)
-		return (pledge_fail(p, error, PLEDGE_PROC));
+	error = pledge_fcntl(p, SCARG(uap, cmd));
+	if (error)
+		return (error);
 
 restart:
 	if ((fp = fd_getfile(fdp, fd)) == NULL)
@@ -476,7 +476,7 @@ restart:
 		/* FALLTHROUGH */
 
 	case F_SETLK:
-		error = pledge_flock_check(p);
+		error = pledge_flock(p);
 		if (error != 0)
 			break;
 
@@ -543,7 +543,7 @@ restart:
 
 
 	case F_GETLK:
-		error = pledge_flock_check(p);
+		error = pledge_flock(p);
 		if (error != 0)
 			break;
 
