@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikeca.c,v 1.38 2015/11/02 10:27:44 jsg Exp $	*/
+/*	$OpenBSD: ikeca.c,v 1.39 2015/11/02 12:01:28 jsg Exp $	*/
 
 /*
  * Copyright (c) 2010 Jonathan Gray <jsg@openbsd.org>
@@ -421,6 +421,7 @@ ca_create(struct ca *ca)
 
 	snprintf(cmd, sizeof(cmd), "%s x509 -req -days 365"
 	    " -in %s/private/ca.csr -signkey %s/private/ca.key"
+	    " -sha256"
 	    " -extfile %s -extensions x509v3_CA -out %s/ca.crt -passin file:%s",
 	    PATH_OPENSSL, ca->sslpath, ca->sslpath, ca->extcnf, ca->sslpath,
 	    ca->passfile);
