@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.19 2013/06/13 04:13:47 brad Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.20 2015/09/12 16:07:56 guenther Exp $ */
 
 /*
  * Copyright (c) 2004 Dale Rahn
@@ -345,7 +345,7 @@ resolve_failed:
 
 /*
  *	Relocate the Global Offset Table (GOT).
- *	This is done by calling _dl_md_reloc on DT_JUMPREL for DL_BIND_NOW,
+ *	This is done by calling _dl_md_reloc on DT_JMPREL for DL_BIND_NOW,
  *	otherwise the lazy binding plt initialization is performed.
  */
 int
