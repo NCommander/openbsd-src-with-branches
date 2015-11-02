@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtable.h,v 1.7 2015/10/22 17:19:38 mpi Exp $ */
+/*	$OpenBSD: rtable.h,v 1.8 2015/10/25 14:48:51 mpi Exp $ */
 
 /*
  * Copyright (c) 2014-2015 Martin Pieuchot
@@ -54,7 +54,7 @@ unsigned int	 rtable_l2(unsigned int);
 void		 rtable_l2set(unsigned int, unsigned int);
 
 struct rtentry	*rtable_lookup(unsigned int, struct sockaddr *,
-		     struct sockaddr *);
+		     struct sockaddr *, struct sockaddr *, uint8_t);
 struct rtentry	*rtable_match(unsigned int, struct sockaddr *);
 int		 rtable_insert(unsigned int, struct sockaddr *,
 		     struct sockaddr *, struct sockaddr *, uint8_t,
