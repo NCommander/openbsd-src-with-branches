@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.13 2015/01/16 06:40:17 deraadt Exp $	*/
+/*	$OpenBSD: parser.c,v 1.14 2015/08/19 13:30:54 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -181,6 +181,7 @@ static const struct token t_ca_cert_extusage[] = {
 	{ NOTOKEN,	"",		NONE,		NULL},
 	{ KEYWORD,	"server",	CA_SERVER,	NULL },
 	{ KEYWORD,	"client",	CA_CLIENT,	NULL },
+	{ KEYWORD,	"ocsp",		CA_OCSP,	NULL },
 	{ ENDTOKEN,	"",		NONE,		NULL },
 };
 

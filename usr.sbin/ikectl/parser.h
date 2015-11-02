@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.12 2013/01/08 10:38:19 reyk Exp $	*/
+/*	$OpenBSD: parser.h,v 1.13 2015/06/11 18:49:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007-2013 Reyk Floeter <reyk@openbsd.org>
@@ -44,6 +44,7 @@ enum actions {
 	CA_CERT_CREATE,
 	CA_SERVER,
 	CA_CLIENT,
+	CA_OCSP,
 	CA_CERT_DELETE,
 	CA_CERT_INSTALL,
 	CA_CERT_EXPORT,
