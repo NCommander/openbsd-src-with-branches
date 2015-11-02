@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.c,v 1.24 2015/02/05 12:59:58 millert Exp $	*/
+/*	$OpenBSD: buf.c,v 1.25 2015/06/13 20:15:21 nicm Exp $	*/
 /*
  * Copyright (c) 2003 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -138,6 +138,8 @@ out:
 void
 buf_free(BUF *b)
 {
+	if (b == NULL)
+		return;
 	free(b->cb_buf);
 	free(b);
 }

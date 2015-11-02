@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsnum.c,v 1.16 2015/01/16 06:40:11 deraadt Exp $	*/
+/*	$OpenBSD: rcsnum.c,v 1.17 2015/06/13 20:15:21 nicm Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -105,6 +105,8 @@ rcsnum_parse(const char *str)
 void
 rcsnum_free(RCSNUM *rn)
 {
+	if (rn == NULL)
+		return;
 	free(rn->rn_id);
 	free(rn);
 }
