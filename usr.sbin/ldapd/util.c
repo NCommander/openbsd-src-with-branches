@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.4 2013/11/02 13:31:51 deraadt Exp $ */
+/*	$OpenBSD: util.c,v 1.5 2013/11/23 18:02:44 deraadt Exp $ */
 
 /*
  * Copyright (c) 2009 Martin Hedenfalk <martin@bzero.se>
@@ -210,5 +210,5 @@ accept_reserve(int sockfd, struct sockaddr *addr, socklen_t *addrlen,
 		return -1;
 	}
 
-	return accept(sockfd, addr, addrlen);
+	return accept4(sockfd, addr, addrlen, SOCK_NONBLOCK);
 }
