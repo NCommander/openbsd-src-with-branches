@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mpw.c,v 1.7 2015/10/22 15:37:47 bluhm Exp $ */
+/*	$OpenBSD: if_mpw.c,v 1.8 2015/10/22 17:48:34 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 Rafael Zalamena <rzalamena@openbsd.org>
@@ -512,7 +512,7 @@ mpw_start(struct ifnet *ifp)
 	((struct sockaddr *) &ss)->sa_family = AF_MPLS;
 
 	for (;;) {
-		IF_DEQUEUE(&ifp->if_snd, m);
+		IFQ_DEQUEUE(&ifp->if_snd, m);
 		if (m == NULL)
 			break;
 
