@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdef.h,v 1.31 2011/09/27 07:24:02 espie Exp $	*/
+/*	$OpenBSD: mdef.h,v 1.32 2014/12/21 09:33:12 espie Exp $	*/
 /*	$NetBSD: mdef.h,v 1.7 1996/01/13 23:25:27 pk Exp $	*/
 
 /*
@@ -105,10 +105,6 @@
 #define COMMA           ','
 #define SCOMMT          '#'
 #define ECOMMT          '\n'
-
-#ifdef msdos
-#define system(str)	(-1)
-#endif
 
 /*
  * other important constants

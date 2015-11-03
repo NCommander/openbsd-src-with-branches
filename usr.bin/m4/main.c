@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.84 2014/12/21 09:33:12 espie Exp $	*/
+/*	$OpenBSD: main.c,v 1.85 2015/11/01 18:17:59 espie Exp $	*/
 /*	$NetBSD: main.c,v 1.12 1997/02/08 23:54:49 cgd Exp $	*/
 
 /*-
@@ -131,13 +131,7 @@ struct keyblk keywrds[] = {	/* m4 keywords to be installed */
 	{ "traceon",	  TRACEONTYPE | NOARGS },
 	{ "traceoff",	  TRACEOFFTYPE | NOARGS },
 
-#if defined(unix) || defined(__unix__)
 	{ "unix",         SELFTYPE | NOARGS },
-#else
-#ifdef vms
-	{ "vms",          SELFTYPE | NOARGS },
-#endif
-#endif
 };
 
 #define MAXKEYS	(sizeof(keywrds)/sizeof(struct keyblk))
