@@ -1,4 +1,6 @@
-Policy: /usr/obj/regress/sys/kern/pledge/generic/generic, Emulation: native
+# $OpenBSD$
+
+Policy: ${OBJDIR}/generic, Emulation: native
 	native-issetugid: permit
 	native-mprotect: prot eq "PROT_READ" then permit
 	native-getentropy: permit
