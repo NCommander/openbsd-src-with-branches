@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2860.c,v 1.81 2015/08/29 20:55:34 deraadt Exp $	*/
+/*	$OpenBSD: rt2860.c,v 1.82 2015/10/25 12:48:46 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1748,7 +1748,7 @@ rt2860_start(struct ifnet *ifp)
 			break;
 		}
 		/* send pending management frames first */
-		IF_DEQUEUE(&ic->ic_mgtq, m);
+		m = mq_dequeue(&ic->ic_mgtq);
 		if (m != NULL) {
 			ni = m->m_pkthdr.ph_cookie;
 			goto sendit;
@@ -1757,7 +1757,7 @@ rt2860_start(struct ifnet *ifp)
 			break;
 
 		/* send buffered frames for power-save mode */
-		IF_DEQUEUE(&ic->ic_pwrsaveq, m);
+		m = mq_dequeue(&ic->ic_pwrsaveq);
 		if (m != NULL) {
 			ni = m->m_pkthdr.ph_cookie;
 			goto sendit;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtwvar.h,v 1.29 2010/08/29 16:46:58 deraadt Exp $	*/
+/*	$OpenBSD: rtwvar.h,v 1.30 2010/09/07 16:21:43 deraadt Exp $	*/
 /*	$NetBSD: rtwvar.h,v 1.10 2004/12/26 22:37:57 mycroft Exp $	*/
 
 /*-
@@ -423,7 +423,7 @@ struct rtw_softc {
 	} sc_txtapu;
 	union rtw_keys		sc_keys;
 	int			sc_txkey;
-	struct ifqueue		sc_beaconq;
+	struct mbuf_queue	sc_beaconq;
 	struct rtw_led_state	sc_led_state;
 	u_int			sc_hwverid;
 };

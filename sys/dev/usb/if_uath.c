@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.69 2015/07/15 13:27:41 mpi Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.70 2015/10/25 12:11:56 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -1477,13 +1477,13 @@ uath_start(struct ifnet *ifp)
 		return;
 
 	for (;;) {
-		IF_POLL(&ic->ic_mgtq, m0);
+		m0 = mq_dequeue(&ic->ic_mgtq);
 		if (m0 != NULL) {
 			if (sc->tx_queued >= UATH_TX_DATA_LIST_COUNT) {
+				mq_requeue(&ic->ic_mgtq, m0);
 				ifp->if_flags |= IFF_OACTIVE;
 				break;
 			}
-			IF_DEQUEUE(&ic->ic_mgtq, m0);
 
 			ni = m0->m_pkthdr.ph_cookie;
 #if NBPFILTER > 0

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_athn_usb.c,v 1.36 2015/07/09 16:33:42 stsp Exp $	*/
+/*	$OpenBSD: if_athn_usb.c,v 1.37 2015/10/25 12:11:56 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2011 Damien Bergamini <damien.bergamini@free.fr>
@@ -2065,7 +2065,7 @@ athn_usb_start(struct ifnet *ifp)
 			break;
 		}
 		/* Send pending management frames first. */
-		IF_DEQUEUE(&ic->ic_mgtq, m);
+		m = mq_dequeue(&ic->ic_mgtq);
 		if (m != NULL) {
 			ni = m->m_pkthdr.ph_cookie;
 			goto sendit;
