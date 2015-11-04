@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping6.c,v 1.136 2015/11/04 20:04:10 florian Exp $	*/
+/*	$OpenBSD: ping6.c,v 1.137 2015/11/04 20:10:15 florian Exp $	*/
 /*	$KAME: ping6.c,v 1.163 2002/10/25 02:19:06 itojun Exp $	*/
 
 /*
@@ -274,7 +274,7 @@ main(int argc, char *argv[])
 				errx(1, "Must be superuser to flood ping");
 			}
 			options |= F_FLOOD;
-			setbuf(stdout, (char *)NULL);
+			setvbuf(stdout, NULL, _IONBF, 0);
 			break;
 		case 'H':
 			options |= F_HOSTNAME;
