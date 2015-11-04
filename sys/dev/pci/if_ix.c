@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.125 2015/09/11 12:09:10 claudio Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.126 2015/10/25 13:04:28 mpi Exp $	*/
 
 /******************************************************************************
 
@@ -2983,8 +2983,7 @@ next_desc:
 	rxr->next_to_check = i;
 	mtx_leave(&sc->rx_mtx);
 
-	while ((mp = ml_dequeue(&free_ml)))
-		m_freem(mp);
+	ml_purge(&free_ml);
 
 	if_input(ifp, &ml);
 
