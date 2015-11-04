@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.1 2015/10/31 12:19:41 millert Exp $	*/
+/*	$OpenBSD: client.c,v 1.2 2015/11/03 04:16:36 guenther Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -17,7 +17,23 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "cron.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
+#include <bitstring.h>		/* for structs.h */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>		/* for structs.h */
+#include <unistd.h>
+#include <utime.h>
+
+#include "pathnames.h"
+#include "macros.h"
+#include "structs.h"
+#include "funcs.h"
+#include "globals.h"
 
 /* int in_file(const char *string, FILE *file, int error)
  *	return TRUE if one of the lines in file matches string exactly,

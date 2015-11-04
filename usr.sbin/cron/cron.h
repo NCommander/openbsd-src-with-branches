@@ -1,4 +1,4 @@
-/*	$OpenBSD: cron.h,v 1.10 2015/02/09 22:35:08 deraadt Exp $	*/
+/*	$OpenBSD: cron.h,v 1.11 2015/10/06 14:58:37 tedu Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -17,9 +17,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define CRON_VERSION "V5.0"
 #include "config.h"
-#include "externs.h"
 #include "pathnames.h"
 #include "macros.h"
 #include "structs.h"
