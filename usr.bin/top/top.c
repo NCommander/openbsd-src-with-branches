@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.85 2015/10/25 09:39:00 deraadt Exp $	*/
+/*	$OpenBSD: top.c,v 1.86 2015/10/30 13:57:33 deraadt Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -288,9 +288,9 @@ main(int argc, char *argv[])
 
 	/* set the buffer for stdout */
 #ifdef DEBUG
-	setbuffer(stdout, NULL, 0);
+	setvbuf(stdout, NULL, _IONBUF, 0);
 #else
-	setbuffer(stdout, stdoutbuf, sizeof stdoutbuf);
+	setvbuf(stdout, stdoutbuf, _IOFBF, sizeof stdoutbuf);
 #endif
 
 	/* initialize some selection options */
