@@ -1,4 +1,4 @@
-/*	$OpenBSD: radix.c,v 1.49 2015/10/07 10:50:35 mpi Exp $	*/
+/*	$OpenBSD: radix.c,v 1.50 2015/10/08 08:41:58 mpi Exp $	*/
 /*	$NetBSD: radix.c,v 1.20 2003/08/07 16:32:56 agc Exp $	*/
 
 /*
@@ -36,11 +36,16 @@
  * Routines to build and maintain radix trees for routing lookups.
  */
 
+#ifndef _KERNEL
+#include "kern_compat.h"
+#else
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/syslog.h>
 #include <sys/pool.h>
+#endif
+
 #include <net/radix.h>
 
 #ifndef SMALL_KERNEL
