@@ -1,4 +1,4 @@
-/*	$OpenBSD: globals.h,v 1.10 2015/01/23 15:56:04 millert Exp $	*/
+/*	$OpenBSD: globals.h,v 1.11 2015/10/06 14:58:37 tedu Exp $	*/
 
 /*
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -25,26 +25,5 @@
 # define INIT(x)
 #endif
 
-XTRN const char *MonthNames[]
-#ifdef MAIN_PROGRAM
-	= {
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-		NULL
-	}
-#endif
-	;
-
-XTRN const char *DowNames[]
-#ifdef MAIN_PROGRAM
-	= {
-		"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
-		NULL
-	}
-#endif
-	;
-
 XTRN char	*ProgramName INIT("amnesia");
 XTRN int	LineNumber INIT(0);
-XTRN time_t	StartTime INIT(0);
-XTRN int	NoFork INIT(0);
