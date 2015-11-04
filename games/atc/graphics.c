@@ -1,4 +1,4 @@
-/*	$OpenBSD: graphics.c,v 1.8 2009/10/27 23:59:23 deraadt Exp $	*/
+/*	$OpenBSD: graphics.c,v 1.9 2014/07/13 13:00:40 tedu Exp $	*/
 /*	$NetBSD: graphics.c,v 1.3 1995/03/21 15:04:04 cgd Exp $	*/
 
 /*-
@@ -117,7 +117,7 @@ setup_screen(const C_SCREEN *scp)
 		endwin();
 		errx(1, "screen too small.");
 	}
-	setbuf(stdout, buffer);
+	setvbuf(stdout, buffer, _IOFBF, sizeof buffer);
 	input = newwin(INPUT_LINES, COLS - PLANE_COLS, LINES - INPUT_LINES, 0);
 	credit = newwin(INPUT_LINES, PLANE_COLS, LINES - INPUT_LINES, 
 		COLS - PLANE_COLS);

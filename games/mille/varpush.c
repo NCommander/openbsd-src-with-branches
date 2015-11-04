@@ -1,4 +1,4 @@
-/*	$OpenBSD: varpush.c,v 1.7 2009/10/27 23:59:26 deraadt Exp $	*/
+/*	$OpenBSD: varpush.c,v 1.8 2015/01/19 00:47:01 deraadt Exp $	*/
 /*	$NetBSD: varpush.c,v 1.4 1995/03/24 05:02:35 cgd Exp $	*/
 
 /*
@@ -85,7 +85,7 @@ over:
 				goto over;
 			}
 			if (strcmp(buf, _PATH_DEVNULL) != 0)
-				setbuf(outf, (char *)NULL);
+				setvbuf(outf, NULL, _IONBF, 0);
 		}
 #endif
 	} else {
