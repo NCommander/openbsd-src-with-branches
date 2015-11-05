@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-null.c,v 1.20 2014/08/14 12:44:44 mpi Exp $	*/
+/*	$OpenBSD: print-null.c,v 1.21 2015/01/16 06:40:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993, 1994, 1995, 1996, 1997
@@ -179,7 +179,7 @@ null_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 					       etherproto_string(htons(extracted_ethertype)));
 				}
 				if (!xflag && !qflag)
-					default_print(p, caplen);
+					default_print(p, caplen - NULL_HDRLEN);
 			}
 		} else if (ether_encap_print(ether_type, p, length,
 		           caplen) == 0) {
@@ -188,7 +188,7 @@ null_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 				ether_print((u_char *)ep, length +
 				    sizeof(*ep));
 			if (!xflag && !qflag)
-				default_print(p, caplen);
+				default_print(p, caplen - NULL_HDRLEN);
 		}
 		break;
 #endif /* __OpenBSD__ */
