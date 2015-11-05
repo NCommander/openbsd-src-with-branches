@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping6.c,v 1.138 2015/11/04 21:26:30 tedu Exp $	*/
+/*	$OpenBSD: ping6.c,v 1.139 2015/11/05 21:30:45 florian Exp $	*/
 /*	$KAME: ping6.c,v 1.163 2002/10/25 02:19:06 itojun Exp $	*/
 
 /*
@@ -107,8 +107,8 @@
 #include <unistd.h>
 
 struct tv64 {
-	u_int64_t tv64_sec;
-	u_int64_t tv64_nsec;
+	u_int64_t	tv64_sec;
+	u_int64_t	tv64_nsec;
 };
 
 struct payload {
