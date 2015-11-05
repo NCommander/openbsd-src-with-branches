@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.c,v 1.44 2015/10/28 15:50:04 mmcc Exp $	*/
+/*	$OpenBSD: httpd.c,v 1.45 2015/10/31 10:10:44 jung Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -246,6 +246,10 @@ main(int argc, char *argv[])
 	proc_init(ps, procs, nitems(procs));
 
 	setproctitle("parent");
+
+	if (pledge("stdio rpath wpath cpath inet proc ioctl sendfd",
+	    NULL) == -1)
+		fatal("pledge");
 
 	event_init();
 

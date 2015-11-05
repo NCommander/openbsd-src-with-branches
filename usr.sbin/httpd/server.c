@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.79 2015/09/10 13:53:13 beck Exp $	*/
+/*	$OpenBSD: server.c,v 1.80 2015/09/11 13:21:09 jsing Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -243,6 +243,9 @@ server_init(struct privsep *ps, struct privsep_proc *p, void *arg)
 
 	/* Unlimited file descriptors (use system limits) */
 	socket_rlimit(-1);
+
+	if (pledge("stdio rpath inet unix recvfd", NULL) == -1)
+		fatal("pledge");
 
 #if 0
 	/* Schedule statistics timer */
