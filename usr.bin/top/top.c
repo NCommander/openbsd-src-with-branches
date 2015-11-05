@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.86 2015/10/30 13:57:33 deraadt Exp $	*/
+/*	$OpenBSD: top.c,v 1.87 2015/11/04 21:28:27 tedu Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -328,7 +328,7 @@ main(int argc, char *argv[])
 		preset_argc = 0;
 	} while (i != 0);
 
-	if (pledge("stdio rpath getpw tty id ps vminfo", NULL) == -1)
+	if (pledge("stdio rpath getpw tty proc ps vminfo", NULL) == -1)
 		err(1, "pledge");
 
 	/* set constants for username/uid display correctly */
