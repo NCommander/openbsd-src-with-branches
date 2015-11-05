@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd-api.h,v 1.22 2015/10/14 21:02:11 gilles Exp $	*/
+/*	$OpenBSD: smtpd-api.h,v 1.23 2015/10/29 10:25:36 sunil Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -351,6 +351,7 @@ void queue_api_on_message_commit(int(*)(uint32_t, const char*));
 void queue_api_on_message_delete(int(*)(uint32_t));
 void queue_api_on_message_fd_r(int(*)(uint32_t));
 void queue_api_on_message_corrupt(int(*)(uint32_t));
+void queue_api_on_message_uncorrupt(int(*)(uint32_t));
 void queue_api_on_envelope_create(int(*)(uint32_t, const char *, size_t, uint64_t *));
 void queue_api_on_envelope_delete(int(*)(uint64_t));
 void queue_api_on_envelope_update(int(*)(uint64_t, const char *, size_t));
