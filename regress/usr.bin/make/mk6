@@ -1,5 +1,0 @@
-A=bad
-a:
-.for B in $A
-	@echo $B
-.endfor
