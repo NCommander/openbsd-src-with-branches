@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfc2822.h,v 1.2 2015/08/15 16:49:23 gilles Exp $	*/
+/*	$OpenBSD: rfc2822.h,v 1.3 2015/09/07 15:36:53 gilles Exp $	*/
 
 /*
  * Copyright (c) 2014 Gilles Chehade <gilles@poolp.org>
@@ -68,6 +68,7 @@ struct rfc2822_parser {
 
 void	rfc2822_parser_init(struct rfc2822_parser *);
 int	rfc2822_parser_feed(struct rfc2822_parser *, const char *);
+void	rfc2822_parser_flush(struct rfc2822_parser *);
 void	rfc2822_parser_reset(struct rfc2822_parser *);
 void	rfc2822_parser_release(struct rfc2822_parser *);
 int	rfc2822_header_callback(struct rfc2822_parser *, const char *,
