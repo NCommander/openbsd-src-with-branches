@@ -1,4 +1,4 @@
-/*	$OpenBSD: modules.c,v 1.17 2014/01/08 13:23:55 okan Exp $	*/
+/*	$OpenBSD: modules.c,v 1.18 2015/01/16 06:40:07 deraadt Exp $	*/
 /*
  * Copyright (c) 2008 Joris Vink <joris@openbsd.org>
  *
@@ -207,9 +207,8 @@ modules_parse_line(char *line, int lineno)
 	return (0);
 
 bad:
-	if (prog != NULL)
-		xfree(prog);
-	xfree(bline);
+	free(prog);
+	free(bline);
 	cvs_log(LP_NOTICE, "malformed line in CVSROOT/modules: %d", lineno);
 	return (0);
 }

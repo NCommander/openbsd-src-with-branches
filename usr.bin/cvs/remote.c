@@ -1,4 +1,4 @@
-/*	$OpenBSD: remote.c,v 1.29 2010/07/23 21:46:05 ray Exp $	*/
+/*	$OpenBSD: remote.c,v 1.30 2015/01/16 06:40:07 deraadt Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -239,7 +239,7 @@ cvs_remote_send_file_buf(char *file, BUF *bp, mode_t mode)
 	    atomicio(vwrite, cvs_client_inlog_fd, data, len) != len)
 		fatal("failed to write to log file");
 
-	xfree(data);
+	free(data);
 }
 
 void
@@ -309,5 +309,5 @@ cvs_validate_directory(const char *path)
 			fatal("path validation failed!");
 	}
 
-	xfree(dir);
+	free(dir);
 }

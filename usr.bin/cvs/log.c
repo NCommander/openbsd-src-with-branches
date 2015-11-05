@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.45 2008/06/12 16:53:12 joris Exp $	*/
+/*	$OpenBSD: log.c,v 1.46 2011/12/27 13:59:01 nicm Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -26,6 +26,7 @@
  */
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "cvs.h"
@@ -162,7 +163,7 @@ cvs_printf(const char *fmt, ...)
 		dp = sp + 1;
 	}
 
-	xfree(nstr);
+	free(nstr);
 	va_end(vap);
 
 	return (ret);

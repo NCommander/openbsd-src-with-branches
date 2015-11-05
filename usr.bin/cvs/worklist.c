@@ -1,4 +1,4 @@
-/*	$OpenBSD: worklist.c,v 1.6 2007/02/22 06:42:10 otto Exp $	*/
+/*	$OpenBSD: worklist.c,v 1.7 2010/07/23 08:31:19 ray Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -24,6 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -68,7 +69,7 @@ worklist_run(struct wklhead *list, void (*cb)(struct worklist *))
 
 	while ((wkl = SLIST_FIRST(list)) != NULL) {
 		SLIST_REMOVE_HEAD(list, wkl_list);
-		xfree(wkl);
+		free(wkl);
 	}
 
 	sigprocmask(SIG_SETMASK, &old, NULL);
