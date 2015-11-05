@@ -1,4 +1,4 @@
-/*	$OpenBSD: res_init.c,v 1.5 2015/09/09 15:49:34 deraadt Exp $	*/
+/*	$OpenBSD: res_init.c,v 1.6 2015/10/05 02:57:16 guenther Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -39,7 +39,7 @@ res_init(void)
 {
 	_THREAD_PRIVATE_MUTEX(init);
 	struct asr_ctx	*ac;
-	int i;
+	int i, j;
 
 	ac = _asr_use_resolver(NULL);
 
@@ -58,9 +58,13 @@ res_init(void)
 			strlcpy(_res.lookups, ac->ac_db, sizeof(_res.lookups));
 
 		_res.nscount = ac->ac_nscount;
-		for (i = 0; i < ac->ac_nscount; i++) {
-			memcpy(&_res.nsaddr_list[i], ac->ac_ns[i],
+		for (i = 0, j = 0; i < ac->ac_nscount && j < MAXNS; i++) {
+			if (ac->ac_ns[i]->sa_family != AF_INET ||
+			    ac->ac_ns[i]->sa_len > sizeof(_res.nsaddr_list[j]))
+				continue;
+			memcpy(&_res.nsaddr_list[j], ac->ac_ns[i],
 			    ac->ac_ns[i]->sa_len);
+			j++;
 		}
 		_res.options |= RES_INIT;
 	}
