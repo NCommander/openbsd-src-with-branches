@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.147 2013/08/14 20:34:26 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.148 2015/03/14 03:52:42 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org> and
@@ -387,6 +387,7 @@ void		 rde_apply_set(struct rde_aspath *, struct filter_set_head *,
 		     u_int8_t, struct rde_peer *, struct rde_peer *);
 int		 rde_filter_equal(struct filter_head *, struct filter_head *,
 		     struct rde_peer *);
+void		 rde_filter_calc_skip_steps(struct filter_head *);
 
 /* rde_prefix.c */
 #define pt_empty(pt)	((pt)->refcnt == 0)
