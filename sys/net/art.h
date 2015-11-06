@@ -1,4 +1,4 @@
-/* $OpenBSD: art.h,v 1.3 2015/10/07 10:50:35 mpi Exp $ */
+/* $OpenBSD: art.h,v 1.4 2015/10/14 10:09:30 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -46,7 +46,7 @@ struct art_node {
 	struct sockaddr		*an_dst;	/* Destination address (key) */
 	int			 an_plen;	/* Prefix length */
 
-	LIST_HEAD(, rtentry)	 an_rtlist;	/* Route related to this node */
+	SLIST_HEAD(, rtentry)	 an_rtlist;	/* Route related to this node */
 };
 
 void		 art_init(void);
