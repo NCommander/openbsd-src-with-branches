@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.947 2015/10/13 19:32:31 sashan Exp $ */
+/*	$OpenBSD: pf.c,v 1.948 2015/10/27 10:52:17 mpi Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5405,7 +5405,7 @@ pf_routable(struct pf_addr *addr, sa_family_t af, struct pfi_kif *kif,
 			if (kif->pfik_ifp == ifp)
 				ret = 1;
 #ifndef SMALL_KERNEL
-			rt = rt_mpath_next(rt);
+			rt = rtable_mpath_next(rt);
 #else
 			rt = NULL;
 #endif
