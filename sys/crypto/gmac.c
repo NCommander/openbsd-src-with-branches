@@ -1,4 +1,4 @@
-/*	$OpenBSD: gmac.c,v 1.3 2011/01/11 15:44:23 deraadt Exp $	*/
+/*	$OpenBSD: gmac.c,v 1.4 2014/11/12 17:52:02 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010 Mike Belopuhov <mike@vantronix.net>
@@ -38,7 +38,7 @@ ghash_gfmul(uint32_t *X, uint32_t *Y, uint32_t *product)
 	uint32_t	v[4];
 	uint32_t	z[4] = { 0, 0, 0, 0};
 	uint8_t		*x = (uint8_t *)X;
-	uint32_t	mask, mul;
+	uint32_t	mask;
 	int		i;
 
 	v[0] = betoh32(Y[0]);
@@ -56,11 +56,11 @@ ghash_gfmul(uint32_t *X, uint32_t *Y, uint32_t *product)
 		z[3] ^= v[3] & mask;
 
 		/* update V */
-		mul = v[3] & 1;
+		mask = ~((v[3] & 1) - 1);
 		v[3] = (v[2] << 31) | (v[3] >> 1);
 		v[2] = (v[1] << 31) | (v[2] >> 1);
 		v[1] = (v[0] << 31) | (v[1] >> 1);
-		v[0] = (v[0] >> 1) ^ (0xe1000000 * mul);
+		v[0] = (v[0] >> 1) ^ (0xe1000000 & mask);
 	}
 
 	product[0] = htobe32(z[0]);
