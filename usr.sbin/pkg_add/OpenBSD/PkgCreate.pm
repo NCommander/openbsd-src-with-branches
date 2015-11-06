@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCreate.pm,v 1.116 2015/05/18 10:41:20 espie Exp $
+# $OpenBSD: PkgCreate.pm,v 1.117 2015/08/13 08:13:44 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -1023,6 +1023,11 @@ sub older_names
 }
 
 sub kept
+{
+	return ();
+}
+
+sub kept_names
 {
 	return ();
 }
