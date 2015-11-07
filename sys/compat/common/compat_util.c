@@ -1,4 +1,4 @@
-/* 	$OpenBSD: compat_util.c,v 1.16 2015/03/14 03:38:46 jsg Exp $	*/
+/* 	$OpenBSD: compat_util.c,v 1.17 2015/11/05 23:43:33 deraadt Exp $	*/
 /* 	$NetBSD: compat_util.c,v 1.4 1996/03/14 19:31:45 christos Exp $	*/
 
 /*
@@ -129,7 +129,7 @@ emul_find(struct proc *p, caddr_t *sgp, const char *prefix,
 		 */
 		/* XXX: prototype should have const here for NDINIT */
 		NDINIT(&ndroot, LOOKUP, FOLLOW, UIO_SYSSPACE, prefix, p);
-		nd.ni_pledge = PLEDGE_EXEC;
+		ndroot.ni_pledge = PLEDGE_EXEC;
 
 		if ((error = namei(&ndroot)) != 0)
 			goto bad2;
