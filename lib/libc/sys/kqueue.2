@@ -1,4 +1,4 @@
-.\"	$OpenBSD: kqueue.2,v 1.30 2015/01/20 11:56:33 reyk Exp $
+.\"	$OpenBSD: kqueue.2,v 1.31 2015/09/10 17:55:21 schwarze Exp $
 .\"
 .\" Copyright (c) 2000 Jonathan Lemon
 .\" All rights reserved.
@@ -26,12 +26,13 @@
 .\"
 .\" $FreeBSD: src/lib/libc/sys/kqueue.2,v 1.18 2001/02/14 08:48:35 guido Exp $
 .\"
-.Dd $Mdocdate: January 20 2015 $
+.Dd $Mdocdate: September 10 2015 $
 .Dt KQUEUE 2
 .Os
 .Sh NAME
 .Nm kqueue ,
-.Nm kevent
+.Nm kevent ,
+.Nm EV_SET
 .Nd kernel event notification mechanism
 .Sh SYNOPSIS
 .In sys/types.h
