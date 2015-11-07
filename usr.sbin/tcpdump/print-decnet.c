@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-decnet.c,v 1.14 2015/08/21 02:07:32 deraadt Exp $	*/
+/*	$OpenBSD: print-decnet.c,v 1.15 2015/10/24 16:32:52 sthen Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994, 1995, 1996, 1997
@@ -888,11 +888,11 @@ dnname_string(u_short dnaddr)
 static void
 pdata(u_char *dp, u_int maxlen)
 {
-	char c;
+	int c;
 	u_int x = maxlen;
 
 	while (x-- > 0) {
-	    c = *dp++;
+	    c = (unsigned char)*dp++;
 	    if (isprint(c))
 		putchar(c);
 	    else
