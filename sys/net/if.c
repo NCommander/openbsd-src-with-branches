@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.402 2015/11/03 12:25:37 mpi Exp $	*/
+/*	$OpenBSD: if.c,v 1.403 2015/11/06 17:55:55 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -790,17 +790,6 @@ if_input_process(void *xmq)
 			m_freem(m);
 			continue;
 		}
-
-#if NBRIDGE > 0
-		if (ifp->if_bridgeport && (m->m_flags & M_PROTO1) == 0) {
-			m = bridge_input(ifp, m);
-			if (m == NULL) {
-				if_put(ifp);
-				continue;
-			}
-		}
-		m->m_flags &= ~M_PROTO1;	/* Loop prevention */
-#endif
 
 		/*
 		 * Pass this mbuf to all input handlers of its
