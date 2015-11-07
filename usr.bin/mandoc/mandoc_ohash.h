@@ -1,4 +1,4 @@
-/*	$OpenBSD: mandoc_aux.h,v 1.5 2014/11/28 19:25:03 schwarze Exp $ */
+/*	$OpenBSD: mandoc_ohash.h,v 1.1 2015/10/13 15:50:15 schwarze Exp $ */
 /*
  * Copyright (c) 2015 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -16,8 +16,4 @@
  */
 #include <ohash.h>
 
-__BEGIN_DECLS
-
 void		  mandoc_ohash_init(struct ohash *, unsigned int, ptrdiff_t);
-
-__END_DECLS
