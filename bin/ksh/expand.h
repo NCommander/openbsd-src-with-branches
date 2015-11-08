@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.h,v 1.10 2015/11/01 16:03:11 mmcc Exp $	*/
+/*	$OpenBSD: expand.h,v 1.11 2015/11/05 18:39:34 mmcc Exp $	*/
 
 /*
  * Expanding strings
@@ -89,8 +89,8 @@ typedef struct XPtrV {
 #define	XPput(x, p) do { \
 			if ((x).cur >= (x).end) { \
 				int n = XPsize(x); \
-				(x).beg = areallocarray((x).beg, n*2, \
-						   sizeof(void *), ATEMP); \
+				(x).beg = areallocarray((x).beg, n, \
+						   2 * sizeof(void *), ATEMP); \
 				(x).cur = (x).beg + n; \
 				(x).end = (x).cur + n; \
 			} \
