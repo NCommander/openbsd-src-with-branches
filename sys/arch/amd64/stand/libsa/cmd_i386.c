@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd_i386.c,v 1.7 2015/09/02 01:52:26 yasuoka Exp $	*/
+/*	$OpenBSD: cmd_i386.c,v 1.8 2015/09/18 13:30:56 miod Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -39,6 +39,7 @@
 
 #ifdef EFIBOOT
 #include "efiboot.h"
+#include "efidev.h"
 #endif
 
 extern const char version[];
@@ -71,7 +72,11 @@ const struct cmd_table cmd_machine[] = {
 int
 Xdiskinfo(void)
 {
+#ifndef EFIBOOT
 	dump_diskinfo();
+#else
+	efi_dump_diskinfo();
+#endif
 	return 0;
 }
 
