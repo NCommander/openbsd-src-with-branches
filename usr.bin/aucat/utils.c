@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: utils.c,v 1.1 2015/01/21 08:43:55 ratchov Exp $	*/
 /*
  * Copyright (c) 2003-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -155,15 +155,6 @@ xmalloc(size_t size)
 		panic();
 	}
 	return p;
-}
-
-/*
- * free memory allocated with xmalloc()
- */
-void
-xfree(void *p)
-{
-	free(p);
 }
 
 /*
