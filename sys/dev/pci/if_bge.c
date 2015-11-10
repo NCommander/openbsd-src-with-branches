@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.370 2015/10/19 05:31:25 jmatthew Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.371 2015/10/25 13:04:28 mpi Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -3221,7 +3221,7 @@ bge_reset(struct bge_softc *sc)
 	 * When firmware finishes its initialization it will
 	 * write ~BGE_SRAM_FW_MB_MAGIC to the same location.
 	 */
-	bge_writemem_ind(sc, BGE_SOFTWARE_GENCOMM, BGE_MAGIC_NUMBER);
+	write_op(sc, BGE_SOFTWARE_GENCOMM, BGE_MAGIC_NUMBER);
 
 	reset = BGE_MISCCFG_RESET_CORE_CLOCKS | BGE_32BITTIME_66MHZ;
 
