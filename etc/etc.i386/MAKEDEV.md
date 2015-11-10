@@ -1,6 +1,6 @@
 define(MACHINE,i386)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.74 2014/12/11 19:48:03 tedu Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.75 2015/10/23 15:14:11 claudio Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -92,6 +92,7 @@ _DEV(tap, 94)
 _DEV(tuner, 49)
 _DEV(uk, 20)
 _DEV(vi, 44)
+_DEV(vmm, 10)
 _DEV(vscsi, 90)
 dnl
 divert(__mddivert)dnl
