@@ -1,4 +1,4 @@
-/*	$OpenBSD: stack_protector.c,v 1.16 2015/01/16 16:48:51 deraadt Exp $	*/
+/*	$OpenBSD: stack_protector.c,v 1.17 2015/09/10 18:13:46 guenther Exp $	*/
 
 /*
  * Copyright (c) 2002 Hiroaki Etoh, Federico G. Schwindt, and Miodrag Vallat.
@@ -31,6 +31,20 @@
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
+
+/*
+ * Note: test below is for PIC not __PIC__.  This code must only be included
+ * in the shared library and not in libc.a, but __PIC__ is set for libc.a
+ * objects where PIE is supported
+ *
+ * XXX would this work? #if defined(__PIC__) && !defined(__PIE__)
+ * XXX any archs which are always PIC (like mips64) but don't have PIE?
+ */
+#ifdef PIC
+#include <../csu/os-note-elf.h>
+
+long __guard_local __dso_hidden __attribute__((section(".openbsd.randomdata")));
+#endif /* PIC */
 
 void
 __stack_smash_handler(const char func[], int damaged)
