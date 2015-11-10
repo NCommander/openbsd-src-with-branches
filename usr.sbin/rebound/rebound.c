@@ -1,4 +1,4 @@
-/* $OpenBSD: rebound.c,v 1.40 2015/10/30 15:44:12 tedu Exp $ */
+/* $OpenBSD: rebound.c,v 1.41 2015/11/01 13:59:44 reyk Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -322,7 +322,7 @@ tcpphasetwo(struct request *req)
 	socklen_t len = sizeof(error);
 
 	req->tcp = 2;
-	
+
 	if (getsockopt(req->s, SOL_SOCKET, SO_ERROR, &error, &len) == -1 ||
 	    error != 0)
 		goto fail;
