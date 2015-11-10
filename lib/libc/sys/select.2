@@ -1,4 +1,4 @@
-.\"	$OpenBSD: select.2,v 1.38 2015/03/02 21:15:34 millert Exp $
+.\"	$OpenBSD: select.2,v 1.39 2015/09/21 06:06:54 guenther Exp $
 .\"	$NetBSD: select.2,v 1.5 1995/06/27 22:32:28 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -30,12 +30,16 @@
 .\"
 .\"     @(#)select.2	8.2 (Berkeley) 3/25/94
 .\"
-.Dd $Mdocdate: March 2 2015 $
+.Dd $Mdocdate: September 21 2015 $
 .Dt SELECT 2
 .Os
 .Sh NAME
 .Nm select ,
-.Nm pselect
+.Nm pselect ,
+.Nm FD_SET ,
+.Nm FD_CLR ,
+.Nm FD_ISSET ,
+.Nm FD_ZERO
 .Nd synchronous I/O multiplexing
 .Sh SYNOPSIS
 .In sys/select.h
