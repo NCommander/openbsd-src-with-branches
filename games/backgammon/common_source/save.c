@@ -1,4 +1,4 @@
-/*	$OpenBSD: save.c,v 1.11 2014/11/16 04:49:48 guenther Exp $	*/
+/*	$OpenBSD: save.c,v 1.12 2015/06/26 19:18:03 otto Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -86,7 +86,9 @@ save(n)
 		}
 		*fs = '\0';
 		if ((fdesc = open(fname, O_RDWR)) == -1 && errno == ENOENT) {
-			if ((fdesc = creat(fname, 0600)) != -1)
+			if ((fdesc = open(fname,
+					  O_CREAT | O_TRUNC | O_WRONLY,
+					  0600)) != -1)
 				break;
 		}
 		if (fdesc != -1) {
@@ -97,7 +99,9 @@ save(n)
 			close(fdesc);
 			if (yorn(0)) {
 				unlink(fname);
-				fdesc = creat(fname, 0600);
+				fdesc = open(fname,
+					     O_CREAT | O_TRUNC | O_WRONLY,
+					     0600);
 				break;
 			} else {
 				cflag = 1;

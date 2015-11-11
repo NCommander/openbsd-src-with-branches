@@ -1,4 +1,4 @@
-/*	$OpenBSD: quit.c,v 1.20 2009/10/27 23:59:40 deraadt Exp $	*/
+/*	$OpenBSD: quit.c,v 1.21 2014/11/24 20:01:43 millert Exp $	*/
 /*	$NetBSD: quit.c,v 1.6 1996/12/28 07:11:07 tls Exp $	*/
 
 /*
@@ -220,7 +220,7 @@ quit(void)
 			return(-1);
 		}
 		(void)Fclose(obuf);
-		(void)close(creat(mbox, 0600));
+		(void)close(open(mbox, O_CREAT | O_TRUNC | O_WRONLY, 0600));
 		if ((obuf = Fopen(mbox, "r+")) == NULL) {
 			warn("%s", mbox);
 			(void)Fclose(ibuf);

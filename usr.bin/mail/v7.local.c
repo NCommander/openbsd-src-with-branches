@@ -1,4 +1,4 @@
-/*	$OpenBSD: v7.local.c,v 1.14 2003/06/03 02:56:11 millert Exp $	*/
+/*	$OpenBSD: v7.local.c,v 1.15 2009/10/27 23:59:40 deraadt Exp $	*/
 /*	$NetBSD: v7.local.c,v 1.8 1997/05/13 06:15:58 mikel Exp $	*/
 
 /*
@@ -72,7 +72,7 @@ demail(void)
 {
 
 	if (value("keep") != NULL || rm(mailname) < 0)
-		(void)close(creat(mailname, 0600));
+		(void)close(open(mailname, O_CREAT | O_TRUNC | O_WRONLY, 0600));
 }
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.do.c,v 1.7 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: hack.do.c,v 1.8 2014/03/11 08:05:15 guenther Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -193,7 +193,7 @@ goto_level(int newlevel, boolean at_stairs)
 	if(newlevel == dlevel) return;	      /* this can happen */
 
 	glo(dlevel);
-	fd = creat(lock, FMASK);
+	fd = open(lock, O_CREAT | O_TRUNC | O_WRONLY, FMASK);
 	if(fd < 0) {
 		/*
 		 * This is not quite impossible: e.g., we may have
