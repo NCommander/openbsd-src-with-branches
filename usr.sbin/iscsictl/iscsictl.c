@@ -1,4 +1,4 @@
-/*	$OpenBSD: iscsictl.c,v 1.8 2014/04/21 20:20:37 claudio Exp $ */
+/*	$OpenBSD: iscsictl.c,v 1.9 2015/01/16 06:40:17 deraadt Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -103,6 +103,9 @@ main (int argc, char* argv[])
 
 	if (connect(control.fd, (struct sockaddr *)&sun, sizeof(sun)) == -1)
 		err(1, "connect: %s", sockname);
+
+	if (pledge("stdio rpath dns", NULL) == -1)
+		err(1, "pledge");
 
 	switch (res->action) {
 	case NONE:
