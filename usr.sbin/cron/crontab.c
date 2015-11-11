@@ -1,4 +1,4 @@
-/*	$OpenBSD: crontab.c,v 1.85 2015/11/09 16:37:07 millert Exp $	*/
+/*	$OpenBSD: crontab.c,v 1.86 2015/11/11 15:21:01 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -83,7 +83,7 @@ main(int argc, char *argv[])
 	user_gid = getgid();
 	crontab_gid = getegid();
 
-	if (pledge("stdio rpath wpath cpath fattr getpw unix flock id proc exec",
+	if (pledge("stdio rpath wpath cpath fattr getpw unix id proc exec",
 	    NULL) == -1) {
 		perror("pledge");
 		exit(EXIT_FAILURE);
