@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.268 2015/11/04 10:13:55 mpi Exp $	*/
+/*	$OpenBSD: route.c,v 1.269 2015/11/09 10:26:26 mpi Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -1666,11 +1666,6 @@ rt_if_remove_rtdelete(struct rtentry *rt, void *vifp, u_int id)
 		if (rtdeletemsg(rt, id) == 0 && cloning)
 			return (EAGAIN);
 	}
-
-	/*
-	 * XXX There should be no need to check for rt_ifa belonging to this
-	 * interface, because then rt_ifp is set, right?
-	 */
 
 	return (0);
 }
