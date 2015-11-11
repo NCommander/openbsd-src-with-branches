@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_wrap.h,v 1.26 2015/02/16 22:13:32 djm Exp $ */
+/* $OpenBSD: monitor_wrap.h,v 1.27 2015/05/01 03:23:51 djm Exp $ */
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -82,10 +82,6 @@ void mm_send_keystate(struct monitor*);
 /* bsdauth */
 int mm_bsdauth_query(void *, char **, char **, u_int *, char ***, u_int **);
 int mm_bsdauth_respond(void *, u_int, char **);
-
-/* skey */
-int mm_skey_query(void *, char **, char **, u_int *, char ***, u_int **);
-int mm_skey_respond(void *, u_int, char **);
 
 /* zlib allocation hooks */
 void mm_init_compression(struct mm_master *);
