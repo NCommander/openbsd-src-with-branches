@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.41 2015/09/14 11:18:49 stsp Exp $	*/
+/*	$OpenBSD: qe.c,v 1.42 2015/10/25 13:22:09 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998, 2000 Jason L. Wright.
@@ -201,11 +201,9 @@ qestart(ifp)
 	bix = sc->sc_last_td;
 
 	for (;;) {
-		IFQ_POLL(&ifp->if_snd, m);
+		IFQ_DEQUEUE(&ifp->if_snd, m);
 		if (m == NULL)
 			break;
-
-		IFQ_DEQUEUE(&ifp->if_snd, m);
 
 #if NBPFILTER > 0
 		/*
