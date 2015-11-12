@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.12 2010/06/29 21:25:37 kjell Exp $	*/
+/*	$OpenBSD: carp.c,v 1.13 2012/04/14 11:46:09 haesbaert Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -62,6 +62,7 @@ carp_map_state(u_char link_state)
 		state = SLAVE;
 		break;
 	case LINK_STATE_UNKNOWN:
+	case LINK_STATE_INVALID:
 		state = INIT;
 		break;
 	}
