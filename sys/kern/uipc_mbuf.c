@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.210 2015/10/30 19:47:40 bluhm Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.211 2015/11/02 09:21:48 dlg Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -1231,6 +1231,7 @@ m_print(void *v,
 		(*pr)("m_ptkhdr.tags: %p\tm_pkthdr.tagsset: %b\n",
 		    SLIST_FIRST(&m->m_pkthdr.tags),
 		    m->m_pkthdr.tagsset, MTAG_BITS);
+		(*pr)("m_pkthdr.ph_flowid: %u\n", m->m_pkthdr.ph_flowid);
 		(*pr)("m_pkthdr.csum_flags: %b\n",
 		    m->m_pkthdr.csum_flags, MCS_BITS);
 		(*pr)("m_pkthdr.ether_vtag: %u\tm_ptkhdr.ph_rtableid: %u\n",
