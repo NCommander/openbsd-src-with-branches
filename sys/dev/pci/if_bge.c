@@ -3221,7 +3221,7 @@ bge_reset(struct bge_softc *sc)
 	 * When firmware finishes its initialization it will
 	 * write ~BGE_SRAM_FW_MB_MAGIC to the same location.
 	 */
-	write_op(sc, BGE_SOFTWARE_GENCOMM, BGE_MAGIC_NUMBER);
+	bge_writemem_ind(sc, BGE_SOFTWARE_GENCOMM, BGE_MAGIC_NUMBER);
 
 	reset = BGE_MISCCFG_RESET_CORE_CLOCKS | BGE_32BITTIME_66MHZ;
 
