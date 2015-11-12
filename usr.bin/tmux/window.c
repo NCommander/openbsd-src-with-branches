@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.146 2015/10/27 15:58:43 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.147 2015/10/31 08:13:58 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1102,7 +1102,7 @@ window_pane_reset_mode(struct window_pane *wp)
 
 void
 window_pane_key(struct window_pane *wp, struct client *c, struct session *s,
-    int key, struct mouse_event *m)
+    key_code key, struct mouse_event *m)
 {
 	struct window_pane	*wp2;
 
