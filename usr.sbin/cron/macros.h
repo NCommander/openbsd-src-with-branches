@@ -1,4 +1,4 @@
-/*	$OpenBSD: macros.h,v 1.13 2015/10/26 14:27:41 millert Exp $	*/
+/*	$OpenBSD: macros.h,v 1.14 2015/11/04 20:28:17 millert Exp $	*/
 
 /*
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -24,7 +24,6 @@
 
 #define READ_PIPE	0	/* which end of a pipe pair do you read? */
 #define WRITE_PIPE	1	/*   or write to? */
-#define	MAX_FNAME	100	/* max length of internally generated fn */
 #define	MAX_COMMAND	1000	/* max length of internally generated cmd */
 #define	MAX_ENVSTR	1000	/* max length of envvar=value\0 strings */
 #define	MAX_TEMPSTR	100	/* obvious */
