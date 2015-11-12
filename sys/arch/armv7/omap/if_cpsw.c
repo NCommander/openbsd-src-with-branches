@@ -1,4 +1,4 @@
-/* $OpenBSD: if_cpsw.c,v 1.27 2015/08/25 13:13:12 bmercer Exp $ */
+/* $OpenBSD: if_cpsw.c,v 1.28 2015/10/27 15:07:56 mpi Exp $ */
 /*	$NetBSD: if_cpsw.c,v 1.3 2013/04/17 14:36:34 bouyer Exp $	*/
 
 /*
@@ -465,11 +465,9 @@ cpsw_start(struct ifnet *ifp)
 			break;
 		}
 
-		IFQ_POLL(&ifp->if_snd, m);
+		IFQ_DEQUEUE(&ifp->if_snd, m);
 		if (m == NULL)
 			break;
-
-		IFQ_DEQUEUE(&ifp->if_snd, m);
 
 		dm = rdp->tx_dm[sc->sc_txnext];
 		error = bus_dmamap_load_mbuf(sc->sc_bdt, dm, m, BUS_DMA_NOWAIT);
