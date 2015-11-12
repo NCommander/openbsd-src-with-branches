@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.49 2015/10/19 14:42:16 mmcc Exp $	*/
+/*	$OpenBSD: misc.c,v 1.50 2015/10/19 17:15:53 mmcc Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -44,7 +44,6 @@ initctypes(void)
 	for (c = 'A'; c <= 'Z'; c++)
 		ctypes[c] |= C_ALPHA;
 	ctypes['_'] |= C_ALPHA;
-	setctypes("0123456789", C_DIGIT);
 	setctypes(" \t\n|&;<>()", C_LEX1); /* \0 added automatically */
 	setctypes("*@#!$-?", C_VAR1);
 	setctypes(" \t\n", C_IFSWS);
