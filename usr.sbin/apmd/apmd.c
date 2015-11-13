@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmd.c,v 1.76 2015/08/28 16:13:58 tedu Exp $	*/
+/*	$OpenBSD: apmd.c,v 1.77 2015/10/11 20:23:49 guenther Exp $	*/
 
 /*
  *  Copyright (c) 1995, 1996 John T. Kohl
@@ -219,7 +219,7 @@ bind_socket(const char *sockname)
 
 	old_umask = umask(077);
 	if (bind(sock, (struct sockaddr *)&s_un, sizeof(s_un)) == -1)
-		error("cannot connect to APM socket", NULL);
+		error("cannot bind on APM socket", NULL);
 	umask(old_umask);
 	if (chmod(sockname, 0660) == -1 || chown(sockname, 0, 0) == -1)
 		error("cannot set socket mode/owner/group to 660/0/0", NULL);
