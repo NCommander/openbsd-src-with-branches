@@ -1,4 +1,4 @@
-/*	$OpenBSD: pvvar.h,v 1.3 2015/07/23 12:08:42 reyk Exp $	*/
+/*	$OpenBSD: pvvar.h,v 1.4 2015/07/28 09:48:52 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -25,6 +25,7 @@ enum {
 	PVBUS_VMWARE,
 	PVBUS_XEN,
 	PVBUS_BHYVE,
+	PVBUS_OPENBSD,
 
 	PVBUS_MAX
 };
