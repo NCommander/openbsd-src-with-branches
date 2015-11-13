@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.404 2015/11/07 12:42:19 mpi Exp $	*/
+/*	$OpenBSD: if.c,v 1.405 2015/11/11 10:23:23 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -887,8 +887,8 @@ if_detach(struct ifnet *ifp)
 	rt_if_remove(ifp);
 	rti_delete(ifp);
 #if NETHER > 0 && defined(NFSCLIENT)
-	if (ifp == revarp_ifp)
-		revarp_ifp = NULL;
+	if (ifp->if_index == revarp_ifidx)
+		revarp_ifidx = 0;
 #endif
 #ifdef MROUTING
 	vif_delete(ifp);
