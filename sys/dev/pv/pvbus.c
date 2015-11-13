@@ -1,4 +1,4 @@
-/*	$OpenBSD: pvbus.c,v 1.5 2015/07/29 17:08:46 mikeb Exp $	*/
+/*	$OpenBSD: pvbus.c,v 1.6 2015/11/13 07:52:20 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -31,7 +31,9 @@
 #include <sys/socket.h>
 
 #include <machine/specialreg.h>
+#ifdef __amd64__
 #include <machine/vmmvar.h>
+#endif
 
 #include <dev/rndvar.h>
 
@@ -78,7 +80,9 @@ struct pvbus_type {
 	{ "VMwareVMware",	"VMware",	NULL },
 	{ "XenVMMXenVMM",	"Xen",		pvbus_xen },
 	{ "bhyve bhyve ",	"bhyve",	NULL },
+#ifdef __amd64__
 	{ VMM_HV_SIGNATURE,	"OpenBSD",	NULL },
+#endif
 };
 
 int
