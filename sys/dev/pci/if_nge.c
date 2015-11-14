@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nge.c,v 1.85 2015/09/12 10:15:10 miod Exp $	*/
+/*	$OpenBSD: if_nge.c,v 1.86 2015/10/25 13:04:28 mpi Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -106,11 +106,6 @@
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-
-#if NVLAN > 0
-#include <net/if_types.h>
-#include <net/if_vlan_var.h>
-#endif
 
 #if NBPFILTER > 0
 #include <net/bpf.h>

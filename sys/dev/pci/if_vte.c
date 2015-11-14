@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vte.c,v 1.13 2015/06/24 09:40:54 mpi Exp $	*/
+/*	$OpenBSD: if_vte.c,v 1.14 2015/10/25 13:04:28 mpi Exp $	*/
 /*-
  * Copyright (c) 2010, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -51,9 +51,6 @@
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-
-#include <net/if_types.h>
-#include <net/if_vlan_var.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>

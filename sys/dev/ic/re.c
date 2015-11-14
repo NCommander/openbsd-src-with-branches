@@ -1,4 +1,4 @@
-/*	$OpenBSD: re.c,v 1.181 2015/10/25 12:48:46 mpi Exp $	*/
+/*	$OpenBSD: re.c,v 1.182 2015/11/02 00:08:50 dlg Exp $	*/
 /*	$FreeBSD: if_re.c,v 1.31 2004/09/04 07:54:05 ru Exp $	*/
 /*
  * Copyright (c) 1997, 1998-2003
@@ -131,11 +131,6 @@
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/if_ether.h>
-
-#if NVLAN > 0
-#include <net/if_types.h>
-#include <net/if_vlan_var.h>
-#endif
 
 #if NBPFILTER > 0
 #include <net/bpf.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.33 2015/09/20 22:26:18 dlg Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.34 2015/10/25 13:04:28 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -37,8 +37,6 @@
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
-
-#include <net/if_vlan_var.h>
 
 #include <machine/bus.h>
 

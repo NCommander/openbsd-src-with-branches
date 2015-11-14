@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_msk.c,v 1.116 2015/09/11 09:14:52 deraadt Exp $	*/
+/*	$OpenBSD: if_msk.c,v 1.117 2015/10/25 13:04:28 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -107,7 +107,6 @@
 #include <netinet/if_ether.h>
 
 #include <net/if_media.h>
-#include <net/if_vlan_var.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>

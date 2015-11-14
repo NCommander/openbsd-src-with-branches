@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_oce.c,v 1.87 2015/09/29 17:04:20 chris Exp $	*/
+/*	$OpenBSD: if_oce.c,v 1.88 2015/10/25 13:04:28 mpi Exp $	*/
 
 /*
  * Copyright (c) 2012 Mike Belopuhov
@@ -81,11 +81,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#endif
-
-#if NVLAN > 0
-#include <net/if_types.h>
-#include <net/if_vlan_var.h>
 #endif
 
 #include <dev/pci/pcireg.h>
