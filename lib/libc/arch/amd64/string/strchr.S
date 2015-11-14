@@ -1,4 +1,4 @@
-/*	$OpenBSD: strchr.S,v 1.6 2015/05/29 07:21:09 uebayasi Exp $	*/
+/*	$OpenBSD: strchr.S,v 1.7 2015/08/31 02:53:56 guenther Exp $	*/
 /*	$NetBSD: strchr.S,v 1.7 2014/03/22 19:16:34 jakllsch Exp $	*/
 
 /*-
@@ -32,7 +32,7 @@
 
 /* See comments in strlen.S about checking words for byte values */
 
-#include "SYS.h"
+#include "DEFS.h"
 
 WEAK_ALIAS(index, strchr)
 
