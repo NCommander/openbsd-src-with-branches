@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: term.h,v 1.14 2010/01/12 23:21:59 nicm Exp $ */
 
 /****************************************************************************
  * Copyright (c) 1998-2007,2008 Free Software Foundation, Inc.              *
@@ -34,7 +34,7 @@
 /*    and: Thomas E. Dickey                        1995-on                  */
 /****************************************************************************/
 
-/* $Id: MKterm.h.awk.in,v 1.50 2008/05/24 23:13:59 tom Exp $ */
+/* $Id: term.h,v 1.14 2010/01/12 23:21:59 nicm Exp $ */
 
 /*
 **	term.h -- Definition of struct term
@@ -42,10 +42,6 @@
 
 #ifndef NCURSES_TERM_H_incl
 #define NCURSES_TERM_H_incl 1
-
-#ifdef _USE_OLD_CURSES_
-#error Cannot mix ncurses term.h with old curses.h
-#endif
 
 #undef  NCURSES_VERSION
 #define NCURSES_VERSION "5.7"
