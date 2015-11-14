@@ -1,4 +1,4 @@
-/*	$OpenBSD: sgec.c,v 1.30 2015/10/27 15:20:13 mpi Exp $	*/
+/*	$OpenBSD: sgec.c,v 1.31 2015/11/07 12:01:22 dlg Exp $	*/
 /*      $NetBSD: sgec.c,v 1.5 2000/06/04 02:14:14 matt Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -63,7 +63,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/bus.h>

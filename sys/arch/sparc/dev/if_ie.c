@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.54 2015/10/25 13:22:09 mpi Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.55 2015/11/06 12:14:13 dlg Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.33 1997/07/29 17:55:38 fair Exp $	*/
 
 /*-
@@ -120,7 +120,6 @@ Mode of operation:
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <netinet/in.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mc.c,v 1.22 2015/07/08 07:21:49 mpi Exp $	*/
+/*	$OpenBSD: if_mc.c,v 1.23 2015/10/25 13:22:09 mpi Exp $	*/
 /*	$NetBSD: if_mc.c,v 1.9.16.1 2006/06/21 14:53:13 yamt Exp $	*/
 
 /*-
@@ -56,7 +56,6 @@
 #include "bpfilter.h"
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <dev/ofw/openfirm.h>

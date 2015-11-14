@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.71 2015/07/08 07:21:49 mpi Exp $	*/
+/*	$OpenBSD: hme.c,v 1.72 2015/10/25 13:22:09 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -61,7 +61,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/autoconf.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.52 2015/10/25 13:22:09 mpi Exp $	*/
+/*	$OpenBSD: be.c,v 1.53 2015/11/12 10:26:09 dlg Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -49,7 +49,6 @@
 #include "bpfilter.h"
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/autoconf.h>

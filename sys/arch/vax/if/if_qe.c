@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_qe.c,v 1.35 2015/07/04 10:12:52 dlg Exp $	*/
+/*	$OpenBSD: if_qe.c,v 1.36 2015/10/27 15:20:13 mpi Exp $	*/
 /*      $NetBSD: if_qe.c,v 1.51 2002/06/08 12:28:37 ragge Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -55,7 +55,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/bus.h>
