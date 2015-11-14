@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxxvar.h,v 1.26 2014/07/09 12:56:28 mpi Exp $	*/
+/*	$OpenBSD: aic7xxxvar.h,v 1.27 2015/07/17 21:42:49 krw Exp $	*/
 /*
  * Core definitions and data structures shareable across OS platforms.
  *
@@ -38,7 +38,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGES.
  *
- * $Id: aic7xxxvar.h,v 1.26 2014/07/09 12:56:28 mpi Exp $
+ * $Id: aic7xxxvar.h,v 1.27 2015/07/17 21:42:49 krw Exp $
  *
  * $FreeBSD: src/sys/dev/aic7xxx/aic7xxx.h,v 1.50 2003/12/17 00:02:09 gibbs Exp $
  */
@@ -780,7 +780,7 @@ struct ahc_syncrate {
 #define	AHC_ULTRA2_XFER_PERIOD 0x0a
 
 /*
- * Indexes into our table of syncronous transfer rates.
+ * Indexes into our table of synchronous transfer rates.
  */
 #define AHC_SYNCRATE_DT		0
 #define AHC_SYNCRATE_ULTRA2	1
