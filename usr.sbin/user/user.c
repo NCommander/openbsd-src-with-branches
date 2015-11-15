@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.102 2015/04/23 17:11:42 millert Exp $ */
+/* $OpenBSD: user.c,v 1.103 2015/04/24 08:08:29 dlg Exp $ */
 /* $NetBSD: user.c,v 1.69 2003/04/14 17:40:07 agc Exp $ */
 
 /*
@@ -372,7 +372,7 @@ creategid(char *group, gid_t gid, const char *name)
 		(void) unlink(f);
 		return 0;
 	}
-	(void) chmod(_PATH_GROUP, st.st_mode & 07777);
+	(void) chmod(_PATH_GROUP, st.st_mode & 0777);
 	syslog(LOG_INFO, "new group added: name=%s, gid=%u", group, gid);
 	return 1;
 }
@@ -467,7 +467,7 @@ modify_gid(char *group, char *newent)
 		(void) unlink(f);
 		return 0;
 	}
-	(void) chmod(_PATH_GROUP, st.st_mode & 07777);
+	(void) chmod(_PATH_GROUP, st.st_mode & 0777);
 	if (newent == NULL) {
 		syslog(LOG_INFO, "group deleted: name=%s", group);
 	} else {
@@ -594,7 +594,7 @@ append_group(char *user, int ngroups, const char **groups)
 		(void) unlink(f);
 		return 0;
 	}
-	(void) chmod(_PATH_GROUP, st.st_mode & 07777);
+	(void) chmod(_PATH_GROUP, st.st_mode & 0777);
 	return 1;
 }
 
@@ -1327,7 +1327,7 @@ rm_user_from_groups(char *login_name)
 			return 0;
 		}
 	}
-	(void) fchmod(fileno(to), st.st_mode & 07777);
+	(void) fchmod(fileno(to), st.st_mode & 0777);
 	(void) fclose(from);
 	if (fclose(to) == EOF) {
 		warn("can't remove gid for `%s': short write to `%s'",
