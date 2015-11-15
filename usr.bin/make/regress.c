@@ -1,4 +1,4 @@
-/* $OpenBSD: regress.c,v 1.6 2010/07/19 19:30:37 espie Exp $ */
+/* $OpenBSD: regress.c,v 1.7 2010/07/19 19:46:44 espie Exp $ */
 
 /*
  * Copyright (c) 1999 Marc Espie.
@@ -72,7 +72,7 @@ main(void)
 
     if (errors != 0)
 	printf("Errors: %d\n", errors);
-    exit(0);
+    return 0;
 }
 
 
