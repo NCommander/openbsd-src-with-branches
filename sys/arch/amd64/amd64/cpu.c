@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.88 2015/07/18 19:21:02 sf Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.89 2015/11/13 07:52:20 mlarkin Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -542,7 +542,7 @@ cpu_init_vmm(struct cpu_info *ci)
 		    M_DEVBUF, M_WAITOK | M_ZERO);
 		if (!pmap_extract(pmap_kernel(), (vaddr_t)ci->ci_vmxon_region,
 		    &ci->ci_vmxon_region_pa))
-			panic("Can't locate VMXON region in phys mem\n");	
+			panic("Can't locate VMXON region in phys mem\n");
 	}
 }
 #endif /* VMM */
