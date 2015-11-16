@@ -1,4 +1,4 @@
-/*	$OpenBSD: tput.c,v 1.20 2014/10/08 04:10:47 doug Exp $	*/
+/*	$OpenBSD: tput.c,v 1.21 2015/01/16 06:40:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -74,6 +74,9 @@ main(int argc, char *argv[])
 	size_t len;
 	char *p, *term, *str;
 	char **oargv;
+
+	if (pledge("stdio rpath wpath tty", NULL) == -1)
+		err(1, "pledge");
 
 	oargv = argv;
 	term = NULL;
