@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.24 2014/01/04 10:49:21 miod Exp $ */
+/*	$OpenBSD: boot.c,v 1.25 2014/02/19 22:13:53 miod Exp $ */
 /*	$NetBSD: boot.c,v 1.18 2002/05/31 15:58:26 ragge Exp $ */
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
@@ -154,7 +154,7 @@ Xmain(void)
 		char *c, *d;
 
 		printf("> ");
-		gets(line);
+		getln(line, sizeof line);
 
 		c = line;
 		while (*c == ' ')
