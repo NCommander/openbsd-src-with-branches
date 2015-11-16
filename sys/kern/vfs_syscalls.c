@@ -2825,6 +2825,7 @@ sys_revoke(struct proc *p, void *v, register_t *retval)
 	struct nameidata nd;
 
 	NDINIT(&nd, LOOKUP, FOLLOW, UIO_USERSPACE, SCARG(uap, path), p);
+	nd.ni_pledge = PLEDGE_RPATH | PLEDGE_TTY;
 	if ((error = namei(&nd)) != 0)
 		return (error);
 	vp = nd.ni_vp;
