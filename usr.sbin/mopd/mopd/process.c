@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.c,v 1.19 2009/11/12 16:52:22 maja Exp $ */
+/*	$OpenBSD: process.c,v 1.20 2013/07/05 21:02:07 miod Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -291,7 +291,7 @@ mopNextLoad(u_char *dst, u_char *src, u_char new_count, int trans)
 	} else {
 		if (len == 0) {
 			i = gethostname(hname, sizeof(hname));
-			p = index(hname, '.');
+			p = strchr(hname, '.');
 			if (p != NULL)
 				*p = 0;
 
