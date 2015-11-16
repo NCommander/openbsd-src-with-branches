@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-pflog.c,v 1.26 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: print-pflog.c,v 1.27 2015/01/20 18:26:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996
@@ -56,7 +56,7 @@ char *pf_reasons[PFRES_MAX+2] = PFRES_NAMES;
 
 void
 pflog_if_print(u_char *user, const struct pcap_pkthdr *h,
-     register const u_char *p)
+     const u_char *p)
 {
 	u_int length = h->len;
 	u_int hdrlen;

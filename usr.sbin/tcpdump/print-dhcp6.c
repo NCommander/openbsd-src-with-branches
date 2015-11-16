@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-dhcp6.c,v 1.7 2009/10/27 23:59:55 deraadt Exp $	*/
+/*	$OpenBSD: print-dhcp6.c,v 1.8 2015/01/16 06:40:21 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1998 and 1999 WIDE Project.
@@ -223,7 +223,7 @@ trunc:
  * Print dhcp6 requests
  */
 void
-dhcp6_print(register const u_char *cp, u_int length,
+dhcp6_print(const u_char *cp, u_int length,
 	    u_short sport, u_short dport)
 {
 	union dhcp6 *dh6;

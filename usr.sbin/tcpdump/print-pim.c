@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-pim.c,v 1.6 2014/08/14 12:44:44 mpi Exp $	*/
+/*	$OpenBSD: print-pim.c,v 1.7 2015/01/16 06:40:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1995, 1996
@@ -39,10 +39,10 @@
 #include "addrtoname.h"
 
 void
-pim_print(register const u_char *bp, register u_int len)
+pim_print(const u_char *bp, u_int len)
 {
-    register const u_char *ep;
-    register u_char type;
+    const u_char *ep;
+    u_char type;
 
     ep = (const u_char *)snapend;
     if (bp >= ep)

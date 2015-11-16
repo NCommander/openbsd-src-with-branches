@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ripng.c,v 1.3 2014/08/14 12:44:44 mpi Exp $	*/
+/*	$OpenBSD: print-ripng.c,v 1.4 2015/01/16 06:40:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989, 1990, 1991, 1993, 1994
@@ -43,7 +43,7 @@
 #include "addrtoname.h"
 
 static int
-rip6_entry_print(register const struct netinfo6 *ni, int metric)
+rip6_entry_print(const struct netinfo6 *ni, int metric)
 {
 	int l;
 	l = printf("%s/%d", ip6addr_string(&ni->rip6_dest), ni->rip6_plen);
@@ -57,10 +57,10 @@ rip6_entry_print(register const struct netinfo6 *ni, int metric)
 void
 ripng_print(const u_char *dat, int length)
 {
-	register const struct rip6 *rp = (struct rip6 *)dat;
-	register const struct netinfo6 *ni;
-	register int amt = snapend - dat;
-	register int i = min(length, amt) -
+	const struct rip6 *rp = (struct rip6 *)dat;
+	const struct netinfo6 *ni;
+	int amt = snapend - dat;
+	int i = min(length, amt) -
 			 (sizeof(struct rip6) - sizeof(struct netinfo6));
 	int j;
 	int trunc;

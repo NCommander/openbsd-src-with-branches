@@ -1,4 +1,4 @@
-/*	$OpenBSD: savestr.c,v 1.8 2015/04/05 17:02:57 guenther Exp $	*/
+/*	$OpenBSD: savestr.c,v 1.9 2015/08/21 02:07:32 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997
@@ -35,10 +35,10 @@
 
 /* A replacement for strdup() that cuts down on malloc() overhead */
 char *
-savestr(register const char *str)
+savestr(const char *str)
 {
-	register size_t size;
-	register char *p;
+	size_t size;
+	char *p;
 	static char *strptr = NULL;
 	static size_t strsize = 0;
 
