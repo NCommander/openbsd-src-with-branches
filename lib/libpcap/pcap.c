@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap.c,v 1.15 2014/06/26 04:03:33 lteo Exp $	*/
+/*	$OpenBSD: pcap.c,v 1.16 2015/01/16 03:19:57 lteo Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1997, 1998
@@ -62,7 +62,7 @@ pcap_dispatch(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 int
 pcap_loop(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 {
-	register int n;
+	int n;
 
 	for (;;) {
 		if (p->sf.rfile != NULL)

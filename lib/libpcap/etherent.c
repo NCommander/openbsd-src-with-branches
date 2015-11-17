@@ -1,4 +1,4 @@
-/*	$OpenBSD: etherent.c,v 1.7 2004/01/27 06:58:03 tedu Exp $	*/
+/*	$OpenBSD: etherent.c,v 1.8 2015/11/17 18:19:45 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993, 1994, 1995, 1996
@@ -41,7 +41,7 @@ static __inline int skip_line(FILE *);
 /* Hex digit to integer. */
 static __inline int
 xdtoi(c)
-	register int c;
+	int c;
 {
 	if (isdigit(c))
 		return c - '0';
@@ -80,7 +80,7 @@ skip_line(f)
 struct pcap_etherent *
 pcap_next_etherent(FILE *fp)
 {
-	register int c, d, i;
+	int c, d, i;
 	char *bp;
 	static struct pcap_etherent e;
 
