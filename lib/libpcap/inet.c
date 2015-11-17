@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.20 2015/01/16 16:48:51 deraadt Exp $	*/
+/*	$OpenBSD: inet.c,v 1.21 2015/10/24 05:26:00 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996, 1997, 1998
@@ -50,7 +50,6 @@ struct rtentry;
 
 #include <ctype.h>
 #include <errno.h>
-#include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
