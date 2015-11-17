@@ -1,4 +1,4 @@
-/* $OpenBSD: xmalloc.h,v 1.1 2015/04/24 16:24:11 nicm Exp $ */
+/* $OpenBSD: xmalloc.h,v 1.2 2015/07/20 08:51:41 nicm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -27,4 +27,4 @@ int	 xasprintf(char **, const char *, ...)
                 __attribute__((__format__ (printf, 2, 3)))
                 __attribute__((__nonnull__ (2)));
 
-#endif				/* XMALLOC_H */
+#endif	/* XMALLOC_H */
