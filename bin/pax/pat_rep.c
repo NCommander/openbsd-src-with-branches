@@ -1,4 +1,4 @@
-/*	$OpenBSD: pat_rep.c,v 1.38 2015/03/09 04:23:29 guenther Exp $	*/
+/*	$OpenBSD: pat_rep.c,v 1.39 2015/03/17 03:23:17 guenther Exp $	*/
 /*	$NetBSD: pat_rep.c,v 1.4 1995/03/21 09:07:33 cgd Exp $	*/
 
 /*-
@@ -294,7 +294,7 @@ pat_sel(ARCHD *arcn)
 {
 	PATTERN *pt;
 	PATTERN **ppt;
-	int len;
+	size_t len;
 
 	/*
 	 * if no patterns just return
