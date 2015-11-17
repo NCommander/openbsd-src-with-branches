@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.4 2001/12/06 03:12:30 ericj Exp $
+#	$OpenBSD: Makefile,v 1.5 2010/01/04 17:50:39 deraadt Exp $
 
-SUBDIR=	lpc lpd lpq lpr lprm lptest pac filters
+SUBDIR=	lpc lpd lpq lpr lprm filters
 
 CFLAGS+=	-Wall
 .include <bsd.subdir.mk>
