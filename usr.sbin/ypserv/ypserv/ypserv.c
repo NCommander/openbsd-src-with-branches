@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.42 2015/10/26 10:12:46 deraadt Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.43 2015/11/12 22:33:07 deraadt Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -42,9 +42,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <rpc/pmap_clnt.h>
-#include <memory.h>
+#include <ndbm.h>
 #include <syslog.h>
-#include <dbm.h>
 #include "acl.h"
 #include "yplog.h"
 #include "ypdef.h"

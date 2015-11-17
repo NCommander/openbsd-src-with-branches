@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppush_svc.c,v 1.13 2009/10/27 23:59:58 deraadt Exp $ */
+/*	$OpenBSD: yppush_svc.c,v 1.14 2015/01/15 00:40:23 deraadt Exp $ */
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <netdb.h>
-#include <memory.h>
+#include <string.h>
 #include <syslog.h>
 #include <rpcsvc/yp.h>
 
