@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwd.h,v 1.22 2014/05/12 19:13:51 tedu Exp $	*/
+/*	$OpenBSD: pwd.h,v 1.23 2014/05/16 21:28:15 tedu Exp $	*/
 /*	$NetBSD: pwd.h,v 1.9 1996/05/15 21:36:45 jtc Exp $	*/
 
 /*-
@@ -93,6 +93,8 @@ struct passwd {
 __BEGIN_DECLS
 struct passwd	*getpwuid(uid_t);
 struct passwd	*getpwnam(const char *);
+struct passwd	*getpwuid_shadow(uid_t);
+struct passwd	*getpwnam_shadow(const char *);
 int		getpwnam_r(const char *, struct passwd *, char *, size_t,
 		    struct passwd **result);
 int		getpwuid_r(uid_t uid, struct passwd *, char *buf, size_t buflen,
