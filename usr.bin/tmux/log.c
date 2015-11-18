@@ -1,4 +1,4 @@
-/* $OpenBSD: log.c,v 1.16 2015/09/14 12:12:24 nicm Exp $ */
+/* $OpenBSD: log.c,v 1.17 2015/09/24 12:03:58 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -102,7 +102,7 @@ log_debug(const char *msg, ...)
 
 /* Log a critical error with error string and die. */
 __dead void
-log_fatal(const char *msg, ...)
+fatal(const char *msg, ...)
 {
 	char	*fmt;
 	va_list	 ap;
@@ -116,7 +116,7 @@ log_fatal(const char *msg, ...)
 
 /* Log a critical error and die. */
 __dead void
-log_fatalx(const char *msg, ...)
+fatalx(const char *msg, ...)
 {
 	char	*fmt;
 	va_list	 ap;
