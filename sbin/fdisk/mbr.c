@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbr.c,v 1.60 2015/11/13 02:27:17 krw Exp $	*/
+/*	$OpenBSD: mbr.c,v 1.61 2015/11/18 15:31:15 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <memory.h>
+#include <string.h>
 
 #include "disk.h"
 #include "part.h"

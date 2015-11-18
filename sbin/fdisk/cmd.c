@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.84 2015/11/03 14:20:00 krw Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.85 2015/11/13 02:27:17 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -23,8 +23,8 @@
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
-#include <memory.h>
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 #include <unistd.h>
 #include <uuid.h>
