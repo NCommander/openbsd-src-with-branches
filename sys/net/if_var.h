@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_var.h,v 1.51 2015/10/25 11:58:11 mpi Exp $	*/
+/*	$OpenBSD: if_var.h,v 1.52 2015/11/11 10:23:23 mpi Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -425,6 +425,8 @@ struct	ifaddr *ifa_ifwithdstaddr(struct sockaddr *, u_int);
 struct	ifaddr *ifa_ifwithnet(struct sockaddr *, u_int);
 struct	ifaddr *ifaof_ifpforaddr(struct sockaddr *, struct ifnet *);
 void	ifafree(struct ifaddr *);
+
+int	if_isconnected(const struct ifnet *, unsigned int);
 
 void	if_clone_attach(struct if_clone *);
 void	if_clone_detach(struct if_clone *);
