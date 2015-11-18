@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_lchpass.c,v 1.16 2015/10/22 12:32:33 tedu Exp $	*/
+/*	$OpenBSD: login_lchpass.c,v 1.17 2015/10/25 08:39:26 ajacoutot Exp $	*/
 
 /*-
  * Copyright (c) 1995,1996 Berkeley Software Design, Inc. All rights reserved.
@@ -105,7 +105,7 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
-	pwd = getpwnam(username);
+	pwd = getpwnam_shadow(username);
 	if (pwd) {
 		if (pwd->pw_uid == 0) {
 			syslog(LOG_ERR, "attempted root password change");
