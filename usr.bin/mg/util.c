@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.36 2015/09/29 03:19:24 guenther Exp $	*/
+/*	$OpenBSD: util.c,v 1.37 2015/10/10 09:13:14 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -146,7 +146,7 @@ twiddle(int f, int n)
 			lnewline();
 			linsert(1, cr);
 			(void)backdel(FFRAND, 1);
-		} else {	/* twiddle is elsewhere in line */	
+		} else {	/* twiddle is elsewhere in line */
 			cr = lgetc(dotp, doto - 1);
 			(void)backdel(FFRAND, 1);
 			(void)forwchar(FFRAND, 1);
