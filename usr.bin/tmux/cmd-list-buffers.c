@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-list-buffers.c,v 1.24 2015/02/05 10:29:43 nicm Exp $ */
+/* $OpenBSD: cmd-list-buffers.c,v 1.25 2015/11/12 11:09:11 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -41,7 +41,7 @@ const struct cmd_entry cmd_list_buffers_entry = {
 };
 
 enum cmd_retval
-cmd_list_buffers_exec(unused struct cmd *self, struct cmd_q *cmdq)
+cmd_list_buffers_exec(struct cmd *self, struct cmd_q *cmdq)
 {
 	struct args		*args = self->args;
 	struct paste_buffer	*pb;

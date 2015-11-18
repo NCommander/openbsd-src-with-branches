@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.139 2015/11/12 11:09:11 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.140 2015/11/13 08:09:28 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -2232,7 +2232,7 @@ window_copy_rectangle_toggle(struct window_pane *wp)
 }
 
 void
-window_copy_start_drag(struct client *c, unused struct mouse_event *m)
+window_copy_start_drag(struct client *c, struct mouse_event *m)
 {
 	struct window_pane	*wp;
 	u_int			 x, y;
@@ -2253,7 +2253,7 @@ window_copy_start_drag(struct client *c, unused struct mouse_event *m)
 }
 
 void
-window_copy_drag_update(unused struct client *c, struct mouse_event *m)
+window_copy_drag_update(__unused struct client *c, struct mouse_event *m)
 {
 	struct window_pane		*wp;
 	struct window_copy_mode_data	*data;
@@ -2274,7 +2274,7 @@ window_copy_drag_update(unused struct client *c, struct mouse_event *m)
 }
 
 void
-window_copy_drag_release(unused struct client *c, struct mouse_event *m)
+window_copy_drag_release(__unused struct client *c, struct mouse_event *m)
 {
 	struct window_pane	*wp;
 

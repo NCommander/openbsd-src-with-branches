@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-pipe-pane.c,v 1.28 2015/02/01 23:43:23 nicm Exp $ */
+/* $OpenBSD: cmd-pipe-pane.c,v 1.29 2015/02/06 17:11:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -142,8 +142,8 @@ cmd_pipe_pane_exec(struct cmd *self, struct cmd_q *cmdq)
 }
 
 void
-cmd_pipe_pane_error_callback(
-    unused struct bufferevent *bufev, unused short what, void *data)
+cmd_pipe_pane_error_callback(__unused struct bufferevent *bufev,
+    __unused short what, void *data)
 {
 	struct window_pane	*wp = data;
 

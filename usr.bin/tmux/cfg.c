@@ -1,4 +1,4 @@
-/* $OpenBSD: cfg.c,v 1.41 2015/09/01 10:10:59 nicm Exp $ */
+/* $OpenBSD: cfg.c,v 1.42 2015/09/09 12:09:21 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -133,7 +133,7 @@ load_cfg(const char *path, struct cmd_q *cmdq, char **cause)
 }
 
 void
-cfg_default_done(unused struct cmd_q *cmdq)
+cfg_default_done(__unused struct cmd_q *cmdq)
 {
 	if (--cfg_references != 0)
 		return;
