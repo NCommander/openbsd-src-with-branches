@@ -1,4 +1,4 @@
-/*	$OpenBSD: parsenfsfh.c,v 1.10 2009/10/27 23:59:55 deraadt Exp $	*/
+/*	$OpenBSD: parsenfsfh.c,v 1.11 2015/11/15 20:35:36 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Jeffrey C. Mogul, Digital Equipment Corporation,
@@ -46,7 +46,6 @@
 #include <sys/time.h>
 
 #include <ctype.h>
-#include <memory.h>
 #include <stdio.h>
 #include <string.h>
 

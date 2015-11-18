@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-bootp.c,v 1.19 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: print-bootp.c,v 1.20 2015/11/15 20:35:36 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -33,7 +33,6 @@ struct rtentry;
 #include <netinet/if_ether.h>
 
 #include <ctype.h>
-#include <memory.h>
 #include <stdio.h>
 #include <string.h>
 
