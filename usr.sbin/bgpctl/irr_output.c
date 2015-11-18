@@ -1,4 +1,4 @@
-/*	$OpenBSD: irr_output.c,v 1.18 2015/04/26 11:32:54 phessler Exp $ */
+/*	$OpenBSD: irr_output.c,v 1.19 2015/10/05 14:18:33 deraadt Exp $ */
 
 /*
  * Copyright (c) 2007 Henning Brauer <henning@openbsd.org>
@@ -159,7 +159,7 @@ action_torule(char *s)
 	char		 ebuf[2048];
 
 	if ((tmp = strdup(s)) == NULL)
-		err(1, "foo");
+		err(1, NULL);
 	abuf[0] = '\0';
 	while ((val = strsep(&tmp, ";")) != NULL && *val) {
 		key = strsep(&val, "=");
