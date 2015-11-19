@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: buf.c,v 1.1 2015/11/19 19:43:40 tedu Exp $ */
 
 /* flex - tool to generate fast lexical analyzers */
 
@@ -273,5 +273,3 @@ struct Buf *buf_append (buf, ptr, n_elem)
 
 	return buf;
 }
-
-/* vim:set tabstop=8 softtabstop=4 shiftwidth=4: */
