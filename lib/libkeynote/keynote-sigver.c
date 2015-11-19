@@ -1,4 +1,4 @@
-/* $OpenBSD: keynote-sigver.c,v 1.14 2004/06/25 05:06:49 msf Exp $ */
+/* $OpenBSD: keynote-sigver.c,v 1.15 2004/06/29 11:35:56 msf Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -75,8 +75,8 @@ keynote_sigver(int argc, char *argv[])
 	exit(1);
     }
 
-    buf = (char *) calloc(sb.st_size + 1, sizeof(char));
-    if (buf == (char *) NULL)
+    buf = calloc(sb.st_size + 1, sizeof(char));
+    if (buf == NULL)
     {
 	perror("calloc()");
 	exit(1);
