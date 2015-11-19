@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_init.c,v 1.13 2014/11/12 16:29:04 millert Exp $	*/
+/*	$OpenBSD: ex_init.c,v 1.14 2015/01/16 06:40:14 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -50,7 +50,6 @@ ex_screen_copy(SCR *orig, SCR *sp)
 	/* Initialize queues. */
 	TAILQ_INIT(&nexp->tq);
 	TAILQ_INIT(&nexp->tagfq);
-	LIST_INIT(&nexp->cscq);
 
 	if (orig == NULL) {
 	} else {
