@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.266 2015/11/15 22:26:49 jcs Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.267 2015/11/19 01:09:38 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -424,6 +424,8 @@ ssh_connect_direct(const char *host, struct addrinfo *aitop,
 	struct addrinfo *ai;
 
 	debug2("%s: needpriv %d", __func__, needpriv);
+	memset(ntop, 0, sizeof(ntop));
+	memset(strport, 0, sizeof(strport));
 
 	for (attempt = 0; attempt < connection_attempts; attempt++) {
 		if (attempt > 0) {

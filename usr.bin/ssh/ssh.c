@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.428 2015/10/16 18:40:49 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.429 2015/10/25 23:42:00 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1066,6 +1066,9 @@ main(int ac, char **av)
 		    "disabling");
 		options.update_hostkeys = 0;
 	}
+	if (options.connection_attempts <= 0)
+		fatal("Invalid number of ConnectionAttempts");
+
 	if (original_effective_uid != 0)
 		options.use_privileged_port = 0;
 
