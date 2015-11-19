@@ -112,6 +112,9 @@ main(int argc, char *argv[])
 	int		 ch, check_period = CHECK_PERIOD;
 	const char	*errstr;
 
+	if (pledge("stdio rpath proc exec", NULL) == -1)
+		err(1, "pledge");
+
 	while ((ch = getopt(argc, argv, "c:d")) != -1) {
 		switch (ch) {
 		case 'c':
