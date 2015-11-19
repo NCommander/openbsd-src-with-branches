@@ -1,5 +1,5 @@
 %{
-/* $OpenBSD: keynote.l,v 1.21 2015/02/04 20:35:51 bluhm Exp $ */
+/* $OpenBSD: keynote.l,v 1.22 2015/11/19 02:35:24 mmcc Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -746,7 +746,6 @@ keynote_get_envlist(char *buf, char *bufend, int whichfield)
     if (0)
     {
 	yyunput(0, NULL);
-	yy_flex_realloc(0, 0);
     }
 
     return en;
