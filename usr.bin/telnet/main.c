@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.33 2015/11/13 17:13:59 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.34 2015/11/13 18:05:37 schwarze Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1996/02/28 21:04:05 thorpej Exp $	*/
 
 /*
@@ -169,7 +169,7 @@ main(int argc, char *argv[])
 			exit(1);
 		}
 
-	if (pledge("stdio rpath wpath getpw inet tty", NULL) == -1) {
+	if (pledge("stdio rpath wpath getpw dns inet tty", NULL) == -1) {
 		perror("pledge");
 		exit(1);
 	}
