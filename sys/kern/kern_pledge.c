@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.114 2015/11/17 15:03:53 sthen Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.115 2015/11/18 08:24:22 semarie Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1329,6 +1329,8 @@ pledge_socket(struct proc *p, int domain, int state)
 	}
 
 	switch (domain) {
+	case -1:		/* accept on any domain */
+		return (0);
 	case AF_INET:
 	case AF_INET6:
 		if (ISSET(p->p_p->ps_pledge, PLEDGE_INET) ||
