@@ -112,19 +112,18 @@ struct ifqueue;
 struct pf_queuespec;
 struct hfsc_if;
 
-#define	HFSC_ENABLED(ifq)	((ifq)->ifq_hfsc != NULL)
+extern const struct ifq_ops * const ifq_hfsc_ops;
+
+#define	HFSC_ENABLED(ifq)	((ifq)->ifq_ops == ifq_hfsc_ops)
 #define	HFSC_DEFAULT_QLIMIT	50
 
+struct hfsc_if	*hfsc_pf_alloc(struct ifnet *);
+int		 hfsc_pf_addqueue(struct hfsc_if *, struct pf_queuespec *);
+void		 hfsc_pf_free(struct hfsc_if *);
+int		 hfsc_pf_qstats(struct pf_queuespec *, void *, int *);
+
 void		 hfsc_initialize(void);
-int		 hfsc_attach(struct ifnet *);
-int		 hfsc_detach(struct ifnet *);
-void		 hfsc_purge(struct ifqueue *);
-int		 hfsc_enqueue(struct ifqueue *, struct mbuf *);
-struct mbuf	*hfsc_dequeue(struct ifqueue *, int);
 u_int64_t	 hfsc_microuptime(void);
-int		 hfsc_addqueue(struct pf_queuespec *);
-int		 hfsc_delqueue(struct pf_queuespec *);
-int		 hfsc_qstats(struct pf_queuespec *, void *, int *);
 
 #endif /* _KERNEL */
 #endif /* _HFSC_H_ */

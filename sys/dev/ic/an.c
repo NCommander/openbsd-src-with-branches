@@ -1,4 +1,4 @@
-/*	$OpenBSD: an.c,v 1.65 2015/06/21 21:22:27 krw Exp $	*/
+/*	$OpenBSD: an.c,v 1.66 2015/10/25 12:48:46 mpi Exp $	*/
 /*	$NetBSD: an.c,v 1.34 2005/06/20 02:49:18 atatat Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1097,18 +1097,19 @@ an_start(struct ifnet *ifp)
 			DPRINTF(("an_start: not running %d\n", ic->ic_state));
 			break;
 		}
-		IFQ_POLL(&ifp->if_snd, m);
+		m = ifq_deq_begin(&ifp->if_snd);
 		if (m == NULL) {
 			DPRINTF2(("an_start: no pending mbuf\n"));
 			break;
 		}
 		if (sc->sc_txd[cur].d_inuse) {
+			ifq_deq_rollback(&ifp->if_snd, m);
 			DPRINTF2(("an_start: %x/%d busy\n",
 			    sc->sc_txd[cur].d_fid, cur));
 			ifp->if_flags |= IFF_OACTIVE;
 			break;
 		}
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		ifq_deq_commit(&ifp->if_snd, m);
 		ifp->if_opackets++;
 #if NBPFILTER > 0
 		if (ifp->if_bpf)

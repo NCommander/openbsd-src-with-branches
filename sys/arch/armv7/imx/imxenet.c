@@ -1,4 +1,4 @@
-/* $OpenBSD: imxenet.c,v 1.16 2015/06/24 09:40:53 mpi Exp $ */
+/* $OpenBSD: imxenet.c,v 1.17 2015/10/27 15:07:56 mpi Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -816,16 +816,17 @@ imxenet_start(struct ifnet *ifp)
 		return;
 
 	for (;;) {
-		IFQ_POLL(&ifp->if_snd, m_head);
+		m_head = ifq_deq_begin(&ifp->if_snd);
 		if (m_head == NULL)
 			break;
 
 		if (imxenet_encap(sc, m_head)) {
+			ifq_deq_rollback(&ifp->if_snd, m_head);
 			ifp->if_flags |= IFF_OACTIVE;
 			break;
 		}
 
-		IFQ_DEQUEUE(&ifp->if_snd, m_head);
+		ifq_deq_commit(&ifp->if_snd, m_head);
 
 		ifp->if_opackets++;
 
