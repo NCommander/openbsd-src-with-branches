@@ -1,4 +1,4 @@
-/*      $OpenBSD: tag.h,v 1.5 2015/07/28 18:38:05 schwarze Exp $    */
+/*      $OpenBSD: tag.h,v 1.6 2015/11/07 13:57:55 schwarze Exp $    */
 /*
  * Copyright (c) 2015 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -20,6 +20,8 @@ struct	tag_files {
 	char	 tfn[20];
 	int	 ofd;
 	int	 tfd;
+	pid_t	 tcpgid;
+	pid_t	 pager_pid;
 };
 
 
