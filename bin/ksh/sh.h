@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.52 2015/11/07 20:48:28 mmcc Exp $	*/
+/*	$OpenBSD: sh.h,v 1.53 2015/11/12 04:04:31 mmcc Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -393,7 +393,6 @@ void *	areallocarray(void *, size_t, size_t, Area *);
 void *	aresize(void *, size_t, Area *);
 void	afree(void *, Area *);
 /* c_ksh.c */
-int	c_hash(char **);
 int	c_cd(char **);
 int	c_pwd(char **);
 int	c_print(char **);
