@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.159 2015/10/25 12:05:40 mpi Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.160 2015/11/20 03:35:23 dlg Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -814,7 +814,7 @@ tun_dev_read(struct tun_softc *tp, struct uio *uio, int ioflag)
 	if (tp->tun_flags & TUN_LAYER2) {
 #if NBPFILTER > 0
 		if (ifp->if_bpf)
-			bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_OUT);
+			bpf_mtap(ifp->if_bpf, m0, BPF_DIRECTION_OUT);
 #endif
 		ifp->if_opackets++;
 	}
