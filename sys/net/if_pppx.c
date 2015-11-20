@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppx.c,v 1.44 2015/10/25 11:58:11 mpi Exp $ */
+/*	$OpenBSD: if_pppx.c,v 1.45 2015/11/03 12:02:59 dlg Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -972,8 +972,6 @@ pppx_if_start(struct ifnet *ifp)
 	struct mbuf *m;
 	int proto, s;
 
-	if (ISSET(ifp->if_flags, IFF_OACTIVE))
-		return;
 	if (!ISSET(ifp->if_flags, IFF_RUNNING))
 		return;
 
