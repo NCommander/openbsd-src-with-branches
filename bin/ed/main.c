@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.54 2015/10/21 16:06:57 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.55 2015/10/25 03:40:58 guenther Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/03/21 09:04:44 cgd Exp $	*/
 
 /* main.c: This file contains the main control and user-interface routines
@@ -130,7 +130,7 @@ top:
 	while ((c = getopt(argc, argv, "p:sx")) != -1)
 		switch (c) {
 		case 'p':				/* set prompt */
-			prompt = optarg;
+			dps = prompt = optarg;
 			break;
 		case 's':				/* run script */
 			scripted = 1;
