@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyinit.c,v 1.60 2015/10/06 15:09:08 tim Exp $	*/
+/*	$OpenBSD: skeyinit.c,v 1.61 2015/10/09 21:59:34 tim Exp $	*/
 
 /* OpenBSD S/Key (skeyinit.c)
  *
@@ -54,6 +54,9 @@ main(int argc, char **argv)
 	const char *errstr;
 	struct skey skey;
 	struct passwd *pp;
+
+	if (pledge("stdio rpath wpath cpath fattr flock tty", NULL) == -1)
+		err(1, "pledge");
 
 	n = rmkey = hexmode = enable = 0;
 	defaultsetup = 1;
