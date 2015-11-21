@@ -1,4 +1,4 @@
-/*	$OpenBSD: worm.c,v 1.32 2015/08/26 01:25:57 rzalamena Exp $	*/
+/*	$OpenBSD: worm.c,v 1.33 2015/11/04 21:22:10 tedu Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -91,6 +91,9 @@ main(int argc, char **argv)
 	struct pollfd pfd[1];
 	const char *errstr;
 	struct timespec t, tn, tdiff;
+
+	if (pledge("stdio rpath tty", NULL) == -1)
+		err(1, "pledge");
 
 	timespecclear(&t);
 
