@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_var.h,v 1.54 2015/11/20 03:35:23 dlg Exp $	*/
+/*	$OpenBSD: if_var.h,v 1.55 2015/11/20 11:15:07 dlg Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -109,8 +109,6 @@ struct ifq_ops {
 	int			 (*ifqop_enq)(struct ifqueue *, struct mbuf *);
 	struct mbuf 		*(*ifqop_deq_begin)(struct ifqueue *, void **);
 	void			 (*ifqop_deq_commit)(struct ifqueue *,
-				    struct mbuf *, void *);
-	void			 (*ifqop_deq_rollback)(struct ifqueue *,
 				    struct mbuf *, void *);
 	void	 		 (*ifqop_purge)(struct ifqueue *,
 				    struct mbuf_list *);
