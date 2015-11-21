@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sq.c,v 1.18 2015/10/25 13:22:09 mpi Exp $	*/
+/*	$OpenBSD: if_sq.c,v 1.19 2015/11/20 03:35:22 dlg Exp $	*/
 /*	$NetBSD: if_sq.c,v 1.42 2011/07/01 18:53:47 dyoung Exp $	*/
 
 /*
@@ -671,7 +671,7 @@ sq_start(struct ifnet *ifp)
 		/*
 		 * Grab a packet off the queue.
 		 */
-		m0 = ifq_deq_begin(&ifp->if_snd, m0);
+		m0 = ifq_deq_begin(&ifp->if_snd);
 		if (m0 == NULL)
 			break;
 		m = NULL;
