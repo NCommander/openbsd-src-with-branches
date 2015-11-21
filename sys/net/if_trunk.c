@@ -295,10 +295,6 @@ trunk_port_create(struct trunk_softc *tr, struct ifnet *ifp)
 	if (tr->tr_count >= TRUNK_MAX_PORTS)
 		return (ENOSPC);
 
-	/* New trunk port has to be in an idle state */
-	if (ifp->if_flags & IFF_OACTIVE)
-		return (EBUSY);
-
 	/* Check if port has already been associated to a trunk */
 	if (trunk_port_get(NULL, ifp) != NULL)
 		return (EBUSY);
