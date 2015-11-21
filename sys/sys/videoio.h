@@ -1,4 +1,4 @@
-/*	$OpenBSD: videoio.h,v 1.7 2013/11/22 07:49:26 mpi Exp $	*/
+/*	$OpenBSD: videoio.h,v 1.8 2014/10/23 07:34:48 brad Exp $	*/
 /*
  *  Video for Linux Two header file
  *
@@ -360,6 +360,7 @@ struct v4l2_fmtdesc {
 };
 
 #define V4L2_FMT_FLAG_COMPRESSED 0x0001
+#define V4L2_FMT_FLAG_EMULATED   0x0002
 
 /*
  *      F R A M E   S I Z E   E N U M E R A T I O N
