@@ -1,4 +1,4 @@
-.\" $OpenBSD$
+.\" $OpenBSD: vmm.conf.5,v 1.1 2015/11/22 20:55:18 reyk Exp $
 .\"
 .\" Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
 .\" Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -15,7 +15,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: November 22 2015 $
 .Dt VMM.CONF 5
 .Os
 .Sh NAME
@@ -23,7 +23,7 @@
 .Nd virtual machine configuration
 .Sh DESCRIPTION
 .Nm
-is the configuration file to configure the the virtual machine monitor
+is the configuration file to configure the virtual machine monitor
 (VMM) subsystem.
 A VMM manages virtual machines (VMs) on a
 .Ar host .
@@ -150,7 +150,6 @@ vm "vm2.example.com" {
 	kernel "/bsd"
 }
 .Ed
-.Pp
 .Sh SEE ALSO
 .Xr vmm 4 ,
 .Xr vmd 8 ,
