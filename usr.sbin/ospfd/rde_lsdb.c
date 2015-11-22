@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_lsdb.c,v 1.48 2013/01/17 10:07:56 markus Exp $ */
+/*	$OpenBSD: rde_lsdb.c,v 1.49 2013/08/14 20:16:09 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -118,10 +118,6 @@ void
 vertex_nexthop_add(struct vertex *dst, struct vertex *parent, u_int32_t nexthop)
 {
 	struct v_nexthop	*vn;
-
-	if (nexthop == 0)
-		/* invalid nexthop, skip it */
-		return;
 
 	if ((vn = calloc(1, sizeof(*vn))) == NULL)
 		fatal("vertex_nexthop_add");
