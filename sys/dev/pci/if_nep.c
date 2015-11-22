@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nep.c,v 1.20 2015/10/25 13:04:28 mpi Exp $	*/
+/*	$OpenBSD: if_nep.c,v 1.21 2015/11/20 03:35:23 dlg Exp $	*/
 /*
  * Copyright (c) 2014, 2015 Mark Kettenis
  *
@@ -977,7 +977,7 @@ nep_rx_proc(struct nep_softc *sc)
 	struct mbuf_list ml = MBUF_LIST_INITIALIZER();
 	uint64_t val;
 	uint16_t count;
-	uint16_t pktread, ptrread;
+	uint16_t pktread = 0, ptrread = 0;
 	uint64_t rxd;
 	uint64_t addr;
 	bus_addr_t page;
