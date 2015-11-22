@@ -1,4 +1,4 @@
-/* $OpenBSD: grid.c,v 1.47 2015/11/12 14:50:57 nicm Exp $ */
+/* $OpenBSD: grid.c,v 1.48 2015/11/13 08:09:28 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -368,11 +368,8 @@ grid_clear_lines(struct grid *gd, u_int py, u_int ny)
 	for (yy = py; yy < py + ny; yy++) {
 		gl = &gd->linedata[yy];
 		free(gl->celldata);
-		memset(gl, 0, sizeof *gl);
-
 		free(gl->extddata);
-		gl->extddata = NULL;
-		gl->extdsize = 0;
+		memset(gl, 0, sizeof *gl);
 	}
 }
 
