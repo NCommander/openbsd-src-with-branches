@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.h,v 1.5 2012/11/30 22:26:34 ratchov Exp $	*/
+/*	$OpenBSD: midi.h,v 1.6 2013/11/18 17:37:45 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -87,6 +87,7 @@ struct port {
 #define PORT_INIT	1
 #define PORT_DRAIN	2
 	unsigned int state;
+	unsigned int num;		/* port serial number */
 	char *path;			/* hold the port open ? */
 	int hold;
 	struct midi *midi;
