@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.c,v 1.18 2015/09/05 11:19:20 ratchov Exp $	*/
+/*	$OpenBSD: dev.c,v 1.19 2015/11/23 10:02:42 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -1213,6 +1213,8 @@ dev_done(struct dev *d)
 		log_puts(": draining\n");
 	}
 #endif
+	if (d->tstate != MMC_STOP)
+		dev_mmcstop(d);
 	if (d->hold)
 		dev_unref(d);
 }
