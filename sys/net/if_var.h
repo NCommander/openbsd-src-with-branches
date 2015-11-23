@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_var.h,v 1.55 2015/11/20 11:15:07 dlg Exp $	*/
+/*	$OpenBSD: if_var.h,v 1.56 2015/11/21 01:08:50 dlg Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -40,9 +40,6 @@
 #include <sys/mbuf.h>
 #include <sys/srp.h>
 #include <sys/refcnt.h>
-#ifdef _KERNEL
-#include <net/hfsc.h>
-#endif
 
 /*
  * Structures defining a network interface, providing a packet
