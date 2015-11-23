@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.375 2015/11/17 01:47:08 dlg Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.376 2015/11/17 12:30:42 jmatthew Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -84,6 +84,7 @@
 #include <sys/device.h>
 #include <sys/timeout.h>
 #include <sys/socket.h>
+#include <sys/atomic.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>

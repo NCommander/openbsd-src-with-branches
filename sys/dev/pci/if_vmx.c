@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.34 2015/10/25 13:04:28 mpi Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.35 2015/11/14 17:54:57 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -25,6 +25,7 @@
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/systm.h>
+#include <sys/atomic.h>
 
 #include <net/bpf.h>
 #include <net/if.h>
