@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumpfs.c,v 1.31 2015/01/16 06:39:57 deraadt Exp $	*/
+/*	$OpenBSD: dumpfs.c,v 1.32 2015/01/20 18:22:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002 Networks Associates Technology, Inc.
@@ -99,6 +99,9 @@ main(int argc, char *argv[])
 
 	if (argc < 1)
 		usage();
+
+	if (pledge("stdio rpath disklabel", NULL) == -1)
+		err(1, "pledge");
 
 	for (; *argv != NULL; argv++) {
 		if ((fs = getfsfile(*argv)) != NULL)

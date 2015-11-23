@@ -1,4 +1,4 @@
-/* $OpenBSD: newfs_ext2fs.c,v 1.15 2015/01/16 06:40:00 deraadt Exp $ */
+/* $OpenBSD: newfs_ext2fs.c,v 1.17 2015/10/14 15:54:49 deraadt Exp $ */
 /*	$NetBSD: newfs_ext2fs.c,v 1.8 2009/03/02 10:38:13 tsutsui Exp $	*/
 
 /*
@@ -121,6 +121,9 @@ main(int argc, char *argv[])
 	uint blocks;			/* number of blocks */
 	struct partition *pp = NULL;
 	struct disklabel *lp;
+
+	if (pledge("stdio rpath wpath disklabel", NULL) == -1)
+		err(1, "pledge");
 
 	cp = NULL;
 	fsi = fso = -1;

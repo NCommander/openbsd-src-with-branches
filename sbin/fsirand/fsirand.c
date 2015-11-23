@@ -106,6 +106,9 @@ fsirand(char *device)
 	u_int32_t bsize = DEV_BSIZE;
 	struct disklabel label;
 
+	if (pledge("stdio rpath wpath disklabel", NULL) == -1)
+		err(1, "pledge");
+
 	if ((devfd = opendev(device, printonly ? O_RDONLY : O_RDWR,
 	    0, &devpath)) < 0) {
 		warn("Can't open %s", devpath);
