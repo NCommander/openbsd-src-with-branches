@@ -1,4 +1,4 @@
-.\"     $OpenBSD: ifq_enqueue.9,v 1.1 2015/11/20 11:15:07 dlg Exp $
+.\"     $OpenBSD: ifq_enqueue.9,v 1.2 2015/11/23 10:45:26 mpi Exp $
 .\"
 .\"  Copyright (c) 2015 David Gwynne <dlg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: November 20 2015 $
+.Dd $Mdocdate: November 23 2015 $
 .Dt IFQ_ENQUEUE 9
 .Os
 .Sh NAME
@@ -86,7 +86,7 @@ can be called during autoconf, from process context, or from interrupt context.
 returns 0 if the mbuf was successfully queued, or non-zero if mbuf was freed.
 .Pp
 .Fn ifq_dequeue
-return the next mbuf to be transmitted by the interface.
+returns the next mbuf to be transmitted by the interface.
 If no packet is available for transmission,
 .Dv NULL
 is returned.
