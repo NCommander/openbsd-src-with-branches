@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vte.c,v 1.14 2015/10/25 13:04:28 mpi Exp $	*/
+/*	$OpenBSD: if_vte.c,v 1.15 2015/11/14 17:54:57 mpi Exp $	*/
 /*-
  * Copyright (c) 2010, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -29,7 +29,6 @@
 /* Driver for DM&P Electronics, Inc, Vortex86 RDC R6040 FastEthernet. */
 
 #include "bpfilter.h"
-#include "vlan.h"
 
 #include <sys/param.h>
 #include <sys/endian.h>

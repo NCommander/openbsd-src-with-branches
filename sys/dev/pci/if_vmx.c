@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.37 2015/11/24 13:33:17 mpi Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.38 2015/11/24 13:45:06 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -17,7 +17,6 @@
  */
 
 #include "bpfilter.h"
-#include "vlan.h"
 
 #include <sys/param.h>
 #include <sys/device.h>

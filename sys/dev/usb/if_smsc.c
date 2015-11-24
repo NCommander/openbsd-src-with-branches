@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_smsc.c,v 1.21 2015/10/25 12:11:56 mpi Exp $	*/
+/*	$OpenBSD: if_smsc.c,v 1.22 2015/11/20 03:35:23 dlg Exp $	*/
 /* $FreeBSD: src/sys/dev/usb/net/if_smsc.c,v 1.1 2012/08/15 04:03:55 gonzo Exp $ */
 /*-
  * Copyright (c) 2012
@@ -59,7 +59,6 @@
  */
 
 #include "bpfilter.h"
-#include "vlan.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>

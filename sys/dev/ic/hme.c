@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.75 2015/10/25 12:48:46 mpi Exp $	*/
+/*	$OpenBSD: hme.c,v 1.76 2015/11/20 03:35:22 dlg Exp $	*/
 /*	$NetBSD: hme.c,v 1.21 2001/07/07 15:59:37 thorpej Exp $	*/
 
 /*-
@@ -35,7 +35,6 @@
  */
 
 #include "bpfilter.h"
-#include "vlan.h"
 
 #undef HMEDEBUG
 
