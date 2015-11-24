@@ -1,4 +1,4 @@
-/*	$OpenBSD: externs.h,v 1.28 2014/07/22 07:30:24 jsg Exp $	*/
+/*	$OpenBSD: externs.h,v 1.29 2014/09/09 03:41:08 guenther Exp $	*/
 /* $KTH: externs.h,v 1.16 1997/11/29 02:28:35 joda Exp $ */
 
 /*
@@ -41,6 +41,7 @@ extern int
     binary,
     family,		/* address family of peer */
     flushout,		/* flush output */
+    connections,
     connected,		/* Are we connected to the other side? */
     globalmode,		/* Mode tty should be in */
     telnetport,		/* Are we connected to the telnet port? */

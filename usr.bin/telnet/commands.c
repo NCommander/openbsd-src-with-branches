@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.79 2015/11/13 17:04:48 deraadt Exp $	*/
+/*	$OpenBSD: commands.c,v 1.80 2015/11/20 12:43:37 jca Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -1751,6 +1751,10 @@ tn(int argc, char *argv[])
 
     if (connected) {
 	printf("?Already connected to %s\r\n", hostname);
+	return 0;
+    }
+    if (connections) {
+	printf("Repeated connections not supported\r\n");
 	return 0;
     }
     if (argc < 2) {
