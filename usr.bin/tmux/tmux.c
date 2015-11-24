@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.c,v 1.160 2015/11/24 22:27:22 nicm Exp $ */
+/* $OpenBSD: tmux.c,v 1.161 2015/11/24 23:22:51 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -273,7 +273,7 @@ main(int argc, char **argv)
 	for (var = environ; *var != NULL; var++)
 		environ_put(global_environ, *var);
 	if (getcwd(tmp, sizeof tmp) != NULL)
-		environ_set(global_environ, "PWD", tmp);
+		environ_set(global_environ, "PWD", "%s", tmp);
 
 	global_options = options_create(NULL);
 	options_table_populate_tree(OPTIONS_TABLE_SERVER, global_options);
