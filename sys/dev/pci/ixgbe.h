@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe.h,v 1.17 2014/11/18 02:37:30 tedu Exp $	*/
+/*	$OpenBSD: ixgbe.h,v 1.18 2015/11/24 12:32:53 mpi Exp $	*/
 
 /******************************************************************************
 
@@ -54,7 +54,6 @@
 #include <sys/rwlock.h>
 
 #include <net/if.h>
-#include <net/if_arp.h>
 #include <net/bpf.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>

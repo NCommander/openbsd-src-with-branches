@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.72 2015/11/11 10:07:25 mpi Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.73 2015/11/24 13:33:18 mpi Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -35,7 +35,6 @@
 #include <net/bpf.h>
 #endif
 #include <net/if.h>
-#include <net/if_arp.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
 

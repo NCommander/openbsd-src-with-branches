@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto_ccmp.c,v 1.16 2015/07/15 22:16:42 deraadt Exp $	*/
+/*	$OpenBSD: ieee80211_crypto_ccmp.c,v 1.17 2015/11/15 01:43:21 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -32,7 +32,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_arp.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

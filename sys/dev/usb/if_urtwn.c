@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urtwn.c,v 1.54 2015/11/04 12:12:00 dlg Exp $	*/
+/*	$OpenBSD: if_urtwn.c,v 1.55 2015/11/24 13:33:18 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -40,7 +40,6 @@
 #include <net/bpf.h>
 #endif
 #include <net/if.h>
-#include <net/if_arp.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
 
