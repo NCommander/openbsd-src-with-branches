@@ -1,4 +1,4 @@
-/*	$OpenBSD: trunklacp.c,v 1.25 2015/09/24 14:01:20 mikeb Exp $ */
+/*	$OpenBSD: trunklacp.c,v 1.26 2015/10/05 13:00:04 mikeb Exp $ */
 /*	$NetBSD: ieee8023ad_lacp.c,v 1.3 2005/12/11 12:24:54 christos Exp $ */
 /*	$FreeBSD:ieee8023ad_lacp.c,v 1.15 2008/03/16 19:25:30 thompsa Exp $ */
 
@@ -47,7 +47,6 @@
 #include <net/if.h>
 #include <net/ethertypes.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_raw.c,v 1.11 2015/04/10 13:58:20 dlg Exp $	*/
+/*	$OpenBSD: mpls_raw.c,v 1.12 2015/07/20 21:16:39 rzalamena Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -42,7 +42,6 @@
 
 #include <net/if.h>
 #include <net/if_var.h>
-#include <net/if_types.h>
 
 #include <netmpls/mpls.h>
 
