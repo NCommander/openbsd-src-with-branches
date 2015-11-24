@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vio.c,v 1.34 2015/10/25 13:04:28 mpi Exp $	*/
+/*	$OpenBSD: if_vio.c,v 1.35 2015/11/20 03:35:23 dlg Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch, Alexander Fiveg.
@@ -53,7 +53,6 @@
 #include <netinet/udp.h>
 
 #if NVLAN > 0
-#include <net/if_types.h>
 #include <net/if_vlan_var.h>
 #endif
 

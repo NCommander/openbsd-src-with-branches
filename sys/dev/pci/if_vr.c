@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.144 2015/10/25 13:04:28 mpi Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.145 2015/11/09 00:22:57 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -80,7 +80,6 @@
 #include <net/if_media.h>
 
 #if NVLAN > 0
-#include <net/if_types.h>
 #include <net/if_vlan_var.h>
 #endif
 

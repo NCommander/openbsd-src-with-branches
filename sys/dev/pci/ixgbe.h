@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe.h,v 1.16 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: ixgbe.h,v 1.17 2014/11/18 02:37:30 tedu Exp $	*/
 
 /******************************************************************************
 
@@ -68,7 +68,6 @@
 #endif
 
 #if NVLAN > 0
-#include <net/if_types.h>
 #include <net/if_vlan_var.h>
 #endif
 
