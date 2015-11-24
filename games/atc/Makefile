@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2003/04/10 16:31:02 millert Exp $
+#	$OpenBSD: Makefile,v 1.14 2006/06/30 19:10:23 otto Exp $
 
 PROG=	atc
 CFLAGS+=-I${.CURDIR} -I.
@@ -10,7 +10,6 @@ DPADD=	${LIBL} ${LIBM} ${LIBCURSES}
 GAMES=	Game_List Killer crossover default easy game_2 \
 	Atlantis OHare Tic-Tac-Toe airports box crosshatch game_3 \
 	game_4 novice two-corners
-BINMODE=2555
 
 beforeinstall: 
 	@if [ ! -d ${DESTDIR}/usr/share/games/atc ]; then \
