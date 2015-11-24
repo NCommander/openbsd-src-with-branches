@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tsec.c,v 1.39 2015/11/06 11:35:48 mpi Exp $	*/
+/*	$OpenBSD: if_tsec.c,v 1.40 2015/11/20 03:35:22 dlg Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -38,7 +38,6 @@
 
 #include <net/if.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <dev/ofw/openfirm.h>
 

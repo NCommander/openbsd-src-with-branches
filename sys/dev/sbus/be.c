@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.34 2015/09/12 10:15:10 miod Exp $	*/
+/*	$OpenBSD: be.c,v 1.35 2015/10/25 13:13:06 mpi Exp $	*/
 /*	$NetBSD: be.c,v 1.26 2001/03/20 15:39:20 pk Exp $	*/
 
 /*-
@@ -71,7 +71,6 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
-#include <net/if_types.h>
 #include <net/netisr.h>
 #include <net/if_media.h>
 

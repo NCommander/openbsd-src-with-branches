@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82596.c,v 1.44 2015/09/18 09:54:08 miod Exp $	*/
+/*	$OpenBSD: i82596.c,v 1.45 2015/10/25 12:48:46 mpi Exp $	*/
 /*	$NetBSD: i82586.c,v 1.18 1998/08/15 04:42:42 mycroft Exp $	*/
 
 /*-
@@ -147,7 +147,6 @@ Mode of operation:
 
 #include <net/if.h>
 #include <net/if_dl.h>
-#include <net/if_types.h>
 #include <net/if_media.h>
 
 #if NBPFILTER > 0

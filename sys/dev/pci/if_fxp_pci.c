@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_pci.c,v 1.62 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: if_fxp_pci.c,v 1.63 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 1995, David Greenman
@@ -50,7 +50,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 

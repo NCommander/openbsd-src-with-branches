@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnet.c,v 1.47 2015/10/25 13:22:09 mpi Exp $	*/
+/*	$OpenBSD: vnet.c,v 1.48 2015/11/20 03:35:22 dlg Exp $	*/
 /*
  * Copyright (c) 2009, 2015 Mark Kettenis
  *
@@ -35,7 +35,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

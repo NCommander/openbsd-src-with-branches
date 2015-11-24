@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_se.c,v 1.14 2015/10/25 13:04:28 mpi Exp $	*/
+/*	$OpenBSD: if_se.c,v 1.15 2015/11/20 03:35:23 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2009, 2010 Christopher Zimmermann <madroach@zakweb.de>
@@ -66,7 +66,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

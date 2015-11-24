@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.71 2015/11/04 12:12:00 dlg Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.72 2015/11/11 10:07:25 mpi Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -38,7 +38,6 @@
 #include <net/if_arp.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

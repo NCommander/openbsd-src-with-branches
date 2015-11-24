@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.62 2015/09/11 13:02:28 stsp Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.63 2015/10/25 13:04:28 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -100,7 +100,6 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

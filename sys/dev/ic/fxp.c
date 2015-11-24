@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxp.c,v 1.123 2015/10/25 12:48:46 mpi Exp $	*/
+/*	$OpenBSD: fxp.c,v 1.124 2015/11/20 03:35:22 dlg Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -50,7 +50,6 @@
 
 #include <net/if.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/ip.h>

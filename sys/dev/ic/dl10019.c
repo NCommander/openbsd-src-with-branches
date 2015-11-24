@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl10019.c,v 1.6 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: dl10019.c,v 1.7 2015/03/14 03:38:47 jsg Exp $	*/
 /*	$NetBSD$	*/
 
 /*-
@@ -39,7 +39,6 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
-#include <net/if_types.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xe.c,v 1.53 2015/10/25 13:13:06 mpi Exp $	*/
+/*	$OpenBSD: if_xe.c,v 1.54 2015/11/20 03:35:23 dlg Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist, Brandon Creighton, Job de Haas
@@ -58,7 +58,6 @@
 
 #include <net/if.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

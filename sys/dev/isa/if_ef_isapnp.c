@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ef_isapnp.c,v 1.31 2015/10/25 13:13:06 mpi Exp $	*/
+/*	$OpenBSD: if_ef_isapnp.c,v 1.32 2015/11/20 03:35:23 dlg Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -43,7 +43,6 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
-#include <net/if_types.h>
 #include <net/netisr.h>
 #include <net/if_media.h>
 

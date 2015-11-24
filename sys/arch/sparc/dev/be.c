@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.53 2015/11/12 10:26:09 dlg Exp $	*/
+/*	$OpenBSD: be.c,v 1.54 2015/11/14 17:26:40 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -39,7 +39,6 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
-#include <net/if_types.h>
 #include <net/netisr.h>
 #include <net/if_media.h>
 

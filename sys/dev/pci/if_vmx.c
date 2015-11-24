@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.35 2015/11/14 17:54:57 mpi Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.36 2015/11/23 10:52:43 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -31,7 +31,6 @@
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

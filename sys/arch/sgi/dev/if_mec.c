@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mec.c,v 1.31 2015/10/25 13:22:09 mpi Exp $ */
+/*	$OpenBSD: if_mec.c,v 1.32 2015/11/20 03:35:22 dlg Exp $ */
 /*	$NetBSD: if_mec_mace.c,v 1.5 2004/08/01 06:36:36 tsutsui Exp $ */
 
 /*
@@ -80,7 +80,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_isa.c,v 1.27 2013/11/15 16:46:27 brad Exp $	*/
+/*	$OpenBSD: if_ep_isa.c,v 1.28 2014/08/11 12:45:45 mpi Exp $	*/
 /*	$NetBSD: if_ep_isa.c,v 1.5 1996/05/12 23:52:36 mycroft Exp $	*/
 
 /*
@@ -52,7 +52,6 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
-#include <net/if_types.h>
 #include <net/netisr.h>
 #include <net/if_media.h>
 

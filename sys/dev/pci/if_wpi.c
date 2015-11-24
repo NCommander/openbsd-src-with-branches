@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpi.c,v 1.129 2015/10/25 13:04:28 mpi Exp $	*/
+/*	$OpenBSD: if_wpi.c,v 1.130 2015/11/04 12:11:59 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -48,7 +48,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

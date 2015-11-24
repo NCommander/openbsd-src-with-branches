@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9285.c,v 1.21 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: ar9285.c,v 1.22 2014/12/19 22:44:58 guenther Exp $	*/
 
 /*-
  * Copyright (c) 2009-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -48,7 +48,6 @@
 #include <net/if_arp.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

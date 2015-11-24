@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie_gsc.c,v 1.26 2014/03/29 18:09:29 guenther Exp $	*/
+/*	$OpenBSD: if_ie_gsc.c,v 1.27 2015/09/14 11:18:48 stsp Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -42,7 +42,6 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
-#include <net/if_types.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

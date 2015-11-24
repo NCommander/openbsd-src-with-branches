@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vic.c,v 1.92 2015/10/25 13:04:28 mpi Exp $	*/
+/*	$OpenBSD: if_vic.c,v 1.93 2015/11/20 03:35:23 dlg Exp $	*/
 
 /*
  * Copyright (c) 2006 Reyk Floeter <reyk@openbsd.org>
@@ -38,7 +38,6 @@
 
 #include <net/if.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>

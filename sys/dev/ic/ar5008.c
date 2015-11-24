@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5008.c,v 1.29 2015/03/14 03:38:47 jsg Exp $	*/
+/*	$OpenBSD: ar5008.c,v 1.30 2015/11/04 12:11:59 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -47,7 +47,6 @@
 #include <net/if_arp.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
-#include <net/if_types.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
