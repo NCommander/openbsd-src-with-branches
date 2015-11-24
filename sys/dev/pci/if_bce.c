@@ -1,4 +1,4 @@
-/* $OpenBSD: if_bce.c,v 1.47 2015/10/25 13:04:28 mpi Exp $ */
+/* $OpenBSD: if_bce.c,v 1.48 2015/11/20 03:35:23 dlg Exp $ */
 /* $NetBSD: if_bce.c,v 1.3 2003/09/29 01:53:02 mrg Exp $	 */
 
 /*
@@ -48,7 +48,6 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

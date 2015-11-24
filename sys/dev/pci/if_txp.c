@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.119 2015/11/20 03:35:23 dlg Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.120 2015/11/24 13:33:17 mpi Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -45,7 +45,6 @@
 #include <sys/timeout.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

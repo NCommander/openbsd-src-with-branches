@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_atw_pci.c,v 1.16 2014/12/19 22:44:58 guenther Exp $	*/
+/*	$OpenBSD: if_atw_pci.c,v 1.17 2014/12/22 02:28:51 tedu Exp $	*/
 /*	$NetBSD: if_atw_pci.c,v 1.7 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -49,7 +49,6 @@
 #include <sys/endian.h>
  
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

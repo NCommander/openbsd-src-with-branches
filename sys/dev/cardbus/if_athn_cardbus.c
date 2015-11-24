@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_athn_cardbus.c,v 1.12 2010/12/31 14:52:47 damien Exp $	*/
+/*	$OpenBSD: if_athn_cardbus.c,v 1.13 2011/01/08 10:02:32 damien Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -36,7 +36,6 @@
 #include <machine/intr.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

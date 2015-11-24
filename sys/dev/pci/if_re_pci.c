@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_pci.c,v 1.47 2015/03/08 01:54:04 tobiasu Exp $	*/
+/*	$OpenBSD: if_re_pci.c,v 1.48 2015/03/14 03:38:48 jsg Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -32,7 +32,6 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

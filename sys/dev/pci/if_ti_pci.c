@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti_pci.c,v 1.3 2014/07/22 13:12:11 mpi Exp $	*/
+/*	$OpenBSD: if_ti_pci.c,v 1.4 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -77,7 +77,6 @@
 #include <sys/systm.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

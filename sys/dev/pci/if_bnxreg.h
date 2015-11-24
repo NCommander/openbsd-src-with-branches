@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnxreg.h,v 1.46 2015/09/11 13:02:28 stsp Exp $	*/
+/*	$OpenBSD: if_bnxreg.h,v 1.47 2015/11/14 17:54:57 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -52,7 +52,6 @@
 #include <sys/task.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_hme_pci.c,v 1.19 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_hme_pci.c,v 1.20 2015/03/14 03:38:48 jsg Exp $	*/
 /*	$NetBSD: if_hme_pci.c,v 1.3 2000/12/28 22:59:13 sommerfeld Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

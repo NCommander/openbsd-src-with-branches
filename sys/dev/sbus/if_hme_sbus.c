@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_hme_sbus.c,v 1.14 2013/08/07 01:06:40 bluhm Exp $	*/
+/*	$OpenBSD: if_hme_sbus.c,v 1.15 2014/08/11 12:45:45 mpi Exp $	*/
 /*	$NetBSD: if_hme_sbus.c,v 1.6 2001/02/28 14:52:48 mrg Exp $	*/
 
 /*-
@@ -42,7 +42,6 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

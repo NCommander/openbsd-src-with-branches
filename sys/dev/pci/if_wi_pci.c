@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_pci.c,v 1.50 2013/12/06 21:03:04 deraadt Exp $	*/
+/*	$OpenBSD: if_wi_pci.c,v 1.51 2014/12/22 02:28:52 tedu Exp $	*/
 
 /*
  * Copyright (c) 2001-2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -48,7 +48,6 @@
 #include <sys/tree.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

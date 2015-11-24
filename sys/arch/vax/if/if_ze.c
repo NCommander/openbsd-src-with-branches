@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ze.c,v 1.9 2010/09/20 06:33:47 matthew Exp $	*/
+/*	$OpenBSD: if_ze.c,v 1.10 2014/11/05 07:09:04 jsg Exp $	*/
 /*      $NetBSD: if_ze.c,v 1.3 2000/01/24 02:54:03 matt Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -37,7 +37,6 @@
 #include <sys/sockio.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

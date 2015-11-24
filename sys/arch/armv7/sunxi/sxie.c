@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxie.c,v 1.10 2015/10/27 15:07:56 mpi Exp $	*/
+/*	$OpenBSD: sxie.c,v 1.11 2015/11/20 03:35:22 dlg Exp $	*/
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2013 Artturi Alm
@@ -34,7 +34,6 @@
 #include "bpfilter.h"
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 #if NBPFILTER > 0
 #include <net/bpf.h>

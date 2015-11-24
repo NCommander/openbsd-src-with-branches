@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vio.c,v 1.36 2015/11/24 12:32:53 mpi Exp $	*/
+/*	$OpenBSD: if_vio.c,v 1.37 2015/11/24 13:33:17 mpi Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch, Alexander Fiveg.
@@ -42,7 +42,6 @@
 #include <dev/pci/virtiovar.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

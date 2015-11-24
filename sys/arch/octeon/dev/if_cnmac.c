@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnmac.c,v 1.32 2015/11/20 15:16:06 visa Exp $	*/
+/*	$OpenBSD: if_cnmac.c,v 1.33 2015/11/21 05:11:32 visa Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -54,7 +54,6 @@
 #endif
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

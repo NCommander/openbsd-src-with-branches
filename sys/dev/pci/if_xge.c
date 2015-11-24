@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.64 2015/11/14 17:54:57 mpi Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.65 2015/11/20 03:35:23 dlg Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -53,7 +53,6 @@
 #include <sys/endian.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

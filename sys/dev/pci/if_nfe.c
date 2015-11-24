@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfe.c,v 1.113 2015/11/14 17:54:57 mpi Exp $	*/
+/*	$OpenBSD: if_nfe.c,v 1.114 2015/11/20 03:35:23 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2006, 2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -37,7 +37,6 @@
 #include <machine/bus.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

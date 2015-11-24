@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gem_sbus.c,v 1.7 2013/08/07 01:06:40 bluhm Exp $	*/
+/*	$OpenBSD: if_gem_sbus.c,v 1.8 2014/08/11 12:45:45 mpi Exp $	*/
 /*	$NetBSD: if_gem_sbus.c,v 1.1 2006/11/24 13:23:32 martin Exp $	*/
 
 /*-
@@ -42,7 +42,6 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

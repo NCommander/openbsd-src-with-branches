@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_acx_cardbus.c,v 1.20 2014/12/22 02:28:51 tedu Exp $  */
+/*	$OpenBSD: if_acx_cardbus.c,v 1.21 2015/03/14 03:38:47 jsg Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -38,7 +38,6 @@
 #include <machine/intr.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

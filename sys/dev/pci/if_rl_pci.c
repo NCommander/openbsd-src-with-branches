@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rl_pci.c,v 1.31 2015/03/14 03:38:48 jsg Exp $ */
+/*	$OpenBSD: if_rl_pci.c,v 1.32 2015/11/24 13:33:17 mpi Exp $ */
 
 /*
  * Copyright (c) 1997, 1998
@@ -45,7 +45,6 @@
 #include <sys/timeout.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>

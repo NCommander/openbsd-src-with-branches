@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie_gsc.c,v 1.27 2015/09/14 11:18:48 stsp Exp $	*/
+/*	$OpenBSD: if_ie_gsc.c,v 1.28 2015/11/24 13:33:18 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -41,7 +41,6 @@
 #include <sys/sockio.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

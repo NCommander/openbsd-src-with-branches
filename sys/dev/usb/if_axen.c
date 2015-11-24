@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axen.c,v 1.17 2015/10/25 12:11:56 mpi Exp $	*/
+/*	$OpenBSD: if_axen.c,v 1.18 2015/11/20 03:35:23 dlg Exp $	*/
 
 /*
  * Copyright (c) 2013 Yojiro UO <yuo@openbsd.org>
@@ -36,7 +36,6 @@
 #include <machine/bus.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #if NBPFILTER > 0

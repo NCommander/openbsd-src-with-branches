@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_cardbus.c,v 1.38 2015/05/04 03:59:42 jsg Exp $	*/
+/*	$OpenBSD: if_dc_cardbus.c,v 1.39 2015/11/24 13:33:17 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -45,7 +45,6 @@
 #include <sys/device.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vge.c,v 1.66 2015/11/14 17:54:57 mpi Exp $	*/
+/*	$OpenBSD: if_vge.c,v 1.67 2015/11/16 04:02:34 dlg Exp $	*/
 /*	$FreeBSD: if_vge.c,v 1.3 2004/09/11 22:13:25 wpaul Exp $	*/
 /*
  * Copyright (c) 2004
@@ -96,7 +96,6 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

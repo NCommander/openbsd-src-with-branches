@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.31 2015/10/27 15:20:13 mpi Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.32 2015/11/06 07:08:42 dlg Exp $	*/
 /*	$NetBSD: if_de.c,v 1.27 1997/04/19 15:02:29 ragge Exp $	*/
 
 /*
@@ -57,7 +57,6 @@
 #include <machine/sid.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 
 #include <netinet/in.h>
 #include <netinet/ip.h>

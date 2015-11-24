@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl10019.c,v 1.7 2015/03/14 03:38:47 jsg Exp $	*/
+/*	$OpenBSD: dl10019.c,v 1.8 2015/11/24 13:33:17 mpi Exp $	*/
 /*	$NetBSD$	*/
 
 /*-
@@ -38,7 +38,6 @@
 #include <sys/syslog.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_ixgb.h,v 1.17 2014/12/26 05:46:32 tedu Exp $ */
+/* $OpenBSD: if_ixgb.h,v 1.18 2015/11/14 17:54:57 mpi Exp $ */
 
 #ifndef _IXGB_H_DEFINED_
 #define _IXGB_H_DEFINED_
@@ -50,7 +50,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <sys/timeout.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

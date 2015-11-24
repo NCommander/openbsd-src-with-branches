@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ne_isa.c,v 1.15 2014/08/11 12:45:45 mpi Exp $	*/
+/*	$OpenBSD: if_ne_isa.c,v 1.16 2014/11/24 02:03:37 brad Exp $	*/
 /*	$NetBSD: if_ne_isa.c,v 1.6 1998/07/05 06:49:13 jonathan Exp $	*/
 
 /*-
@@ -44,7 +44,6 @@
 #include <sys/device.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: ixgb_ee.c,v 1.5 2014/12/22 02:28:52 tedu Exp $ */
+/* $OpenBSD: ixgb_ee.c,v 1.6 2015/03/14 03:38:48 jsg Exp $ */
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -43,7 +43,6 @@
 #include <sys/socket.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>

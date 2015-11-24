@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ste.c,v 1.60 2015/10/25 13:04:28 mpi Exp $ */
+/*	$OpenBSD: if_ste.c,v 1.61 2015/11/24 13:33:17 mpi Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -47,7 +47,6 @@
 #include <sys/timeout.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
