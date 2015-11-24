@@ -1,4 +1,4 @@
-/*	$OpenBSD: table_static.c,v 1.10 2015/01/20 17:37:54 deraadt Exp $	*/
+/*	$OpenBSD: table_static.c,v 1.11 2015/10/11 12:50:00 sunil Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -49,7 +49,7 @@ static void  table_static_close(void *);
 static int table_static_parse(struct table *, const char *, enum table_type);
 
 struct table_backend table_backend_static = {
-	K_ALIAS|K_CREDENTIALS|K_DOMAIN|K_NETADDR|K_USERINFO|K_SOURCE|K_MAILADDR|K_ADDRNAME,
+	K_ALIAS|K_CREDENTIALS|K_DOMAIN|K_NETADDR|K_USERINFO|K_SOURCE|K_MAILADDR|K_ADDRNAME|K_MAILADDRMAP,
 	table_static_config,
 	table_static_open,
 	table_static_update,
