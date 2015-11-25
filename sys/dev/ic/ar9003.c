@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9003.c,v 1.36 2015/11/24 13:45:06 mpi Exp $	*/
+/*	$OpenBSD: ar9003.c,v 1.37 2015/11/24 17:11:39 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1164,7 +1164,7 @@ ar9003_tx_intr(struct athn_softc *sc)
 	while (ar9003_tx_process(sc) == 0);
 
 	if (!SIMPLEQ_EMPTY(&sc->txbufs)) {
-		ifp->if_flags &= ~IFF_OACTIVE;
+		ifq_clr_oactive(&ifp->if_snd);
 		ifp->if_start(ifp);
 	}
 }
