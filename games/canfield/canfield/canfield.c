@@ -1,4 +1,4 @@
-/*	$OpenBSD: canfield.c,v 1.17 2015/11/24 02:53:39 tedu Exp $	*/
+/*	$OpenBSD: canfield.c,v 1.18 2015/11/24 16:54:22 tedu Exp $	*/
 /*	$NetBSD: canfield.c,v 1.7 1995/05/13 07:28:35 jtc Exp $	*/
 
 /*
@@ -1727,8 +1727,6 @@ askquit(int dummy)
 int
 main(int argc, char *argv[])
 {
-	gid_t gid;
-
 	signal(SIGINT, askquit);
 	signal(SIGHUP, cleanup);
 	signal(SIGTERM, cleanup);
