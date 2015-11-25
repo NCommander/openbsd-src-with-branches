@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.5 2015/11/23 20:18:33 reyk Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.6 2015/11/23 21:07:29 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -173,7 +173,7 @@ sighdlr(int sig)
 	case SIGCHLD:
 		do {
 			pid = waitpid(WAIT_ANY, NULL, WNOHANG);
-		} while(pid != -1 || (pid != -1 && errno == EINTR));
+		} while (pid != -1 || (pid == -1 && errno == EINTR));
 		break;
 	}
 }
