@@ -988,7 +988,6 @@ dev_new(char *path, struct aparams *par,
 	 */
 	d->midi = midi_new(&dev_midiops, d, MODE_MIDIIN | MODE_MIDIOUT);
 	midi_tag(d->midi, d->num);
-	d->path = path;
 	d->reqpar = *par;
 	d->reqmode = mode;
 	d->reqpchan = d->reqrchan = 0;
