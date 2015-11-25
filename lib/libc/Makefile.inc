@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.25 2015/09/10 18:13:46 guenther Exp $
+#	$OpenBSD: Makefile.inc,v 1.26 2015/10/25 10:22:09 bluhm Exp $
 #
 # This file contains make rules used to build libc
 #
@@ -10,6 +10,10 @@ all:
 
 CFLAGS+=-I${LIBCSRCDIR}/include -I${LIBCSRCDIR}/hidden \
 	-Werror-implicit-function-declaration -include namespace.h
+
+.if ${COMPILER_VERSION:L} != "gcc3"
+CFLAGS+=-Werror=deprecated-declarations
+.endif
 
 # Include link-time warnings about unsafe API uses (ie. strcpy)
 CFLAGS+=-DAPIWARN
