@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.75 2015/11/24 17:11:38 mpi Exp $	*/
+/*	$OpenBSD: hme.c,v 1.76 2015/11/25 03:09:58 dlg Exp $	*/
 
 /*
  * Copyright (c) 1998 Jason L. Wright (jason@thought.net)
@@ -51,7 +51,6 @@
 #include <sys/malloc.h>
 
 #include <net/if.h>
-#include <net/netisr.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>
