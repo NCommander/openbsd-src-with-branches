@@ -1,4 +1,4 @@
-/*	$OpenBSD: chpass.h,v 1.9 2003/06/25 22:41:35 deraadt Exp $	*/
+/*	$OpenBSD: chpass.h,v 1.10 2009/03/05 20:53:13 millert Exp $	*/
 /*	$NetBSD: chpass.h,v 1.4 1996/05/15 21:50:44 jtc Exp $	*/
 
 /*
@@ -73,9 +73,3 @@ int	 p_shell(char *, struct passwd *, ENTRY *);
 int	 p_uid(char *, struct passwd *, ENTRY *);
 char    *ttoa(char *, size_t, time_t);
 int	 verify(char *, struct passwd *);
-struct passwd
-	*ypgetpwnam(char *);
-struct passwd
-	*ypgetpwuid(uid_t uid);
-int	_yp_check(char **);
-int	pw_yp(struct passwd *, uid_t);
