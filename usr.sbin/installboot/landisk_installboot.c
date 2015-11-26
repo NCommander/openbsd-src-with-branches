@@ -1,4 +1,4 @@
-/*	$OpenBSD: landisk_installboot.c,v 1.4 2015/10/11 15:36:58 deraadt Exp $	*/
+/*	$OpenBSD: landisk_installboot.c,v 1.5 2015/10/15 19:27:30 miod Exp $	*/
 
 /*
  * Copyright (c) 2013 Joel Sing <jsing@openbsd.org>
@@ -40,8 +40,7 @@ md_loadboot(void)
 void
 md_installboot(int devfd, char *dev)
 {
-	/* XXX - is this necessary? */
-	sync();
+	fsync(devfd);
 
 	bootldr = fileprefix(root, bootldr);
 	if (bootldr == NULL)

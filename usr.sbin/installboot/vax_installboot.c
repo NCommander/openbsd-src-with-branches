@@ -1,4 +1,4 @@
-/*	$OpenBSD: vax_installboot.c,v 1.1 2014/01/19 02:58:50 jsing Exp $	*/
+/*	$OpenBSD: vax_installboot.c,v 1.2 2015/10/15 19:27:30 miod Exp $	*/
 
 /*
  * Copyright (c) 2013 Joel Sing <jsing@openbsd.org>
@@ -40,8 +40,7 @@ md_loadboot(void)
 void
 md_installboot(int devfd, char *dev)
 {
-	/* XXX - is this necessary? */
-	sync();
+	fsync(devfd);
 
 	bootldr = fileprefix(root, bootldr);
 	if (bootldr == NULL)
