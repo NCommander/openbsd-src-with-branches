@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: main.c,v 1.1 2015/11/22 20:55:18 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -251,7 +251,7 @@ int
 parse_size(struct parse_result *res, char *word,
     long long val)
 {
-	char		*s;
+	char		*s = "";
 
 	if (word != NULL) {
 		val = strtol(word, &s, 10);
