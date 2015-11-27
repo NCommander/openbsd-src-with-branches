@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.123 2015/11/24 23:59:22 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.124 2015/11/25 15:53:01 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1178,7 +1178,9 @@ pledge_ioctl(struct proc *p, long com, struct file *fp)
 		case DIOCGPDINFO:
 		case DIOCRLDINFO:
 		case DIOCWDINFO:
+		case BIOCDISK:
 		case BIOCINQ:
+		case BIOCINSTALLBOOT:
 		case BIOCVOL:
 			if (fp->f_type == DTYPE_VNODE &&
 			    ((vp->v_type == VCHR &&
