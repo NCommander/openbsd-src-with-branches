@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.179 2015/10/25 09:37:08 deraadt Exp $	*/
+/*	$OpenBSD: route.c,v 1.180 2015/11/20 17:26:56 jca Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -226,13 +226,8 @@ main(int argc, char **argv)
 		break;
 	}
 		
-	if (nflag) {
-		if (pledge("stdio rpath dns", NULL) == -1)
-			err(1, "pledge");
-	} else {
-		if (pledge("stdio rpath dns", NULL) == -1)
-			err(1, "pledge");
-	}
+	if (pledge("stdio rpath dns", NULL) == -1)
+		err(1, "pledge");
 
 	switch (kw) {
 	case K_GET:
@@ -329,13 +324,8 @@ flushroutes(int argc, char **argv)
 		break;
 	}
 
-	if (nflag) {
-		if (pledge("stdio rpath dns", NULL) == -1)
-			err(1, "pledge");
-	} else {
-		if (pledge("stdio rpath dns", NULL) == -1)
-			err(1, "pledge");
-	}
+	if (pledge("stdio rpath dns", NULL) == -1)
+		err(1, "pledge");
 
 	if (verbose) {
 		printf("Examining routing table from sysctl\n");
