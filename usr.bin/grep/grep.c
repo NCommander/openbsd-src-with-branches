@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.c,v 1.53 2015/10/03 05:36:34 deraadt Exp $	*/
+/*	$OpenBSD: grep.c,v 1.54 2015/10/09 01:37:07 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -239,7 +239,7 @@ main(int argc, char *argv[])
 	const char *errstr;
 
 	if (pledge("stdio rpath", NULL) == -1)
-		err(1, "pledge");
+		err(2, "pledge");
 
 	SLIST_INIT(&patfilelh);
 	switch (__progname[0]) {
