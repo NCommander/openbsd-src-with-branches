@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_inode.c,v 1.73 2014/07/14 08:11:34 beck Exp $	*/
+/*	$OpenBSD: ffs_inode.c,v 1.74 2015/03/14 03:38:52 jsg Exp $	*/
 /*	$NetBSD: ffs_inode.c,v 1.10 1996/05/11 18:27:19 mycroft Exp $	*/
 
 /*
@@ -262,7 +262,7 @@ ffs_truncate(struct inode *oip, off_t length, int flags, struct ucred *cred)
 		(void) uvm_vnp_uncache(ovp);
 		if (ovp->v_type != VDIR)
 			memset(bp->b_data + offset, 0, size - offset);
-		bp->b_bcount = size;
+		buf_adjcnt(bp, size);
 		if (aflags & B_SYNC)
 			bwrite(bp);
 		else
