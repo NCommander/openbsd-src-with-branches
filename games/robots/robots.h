@@ -1,4 +1,4 @@
-/*	$OpenBSD: robots.h,v 1.8 2014/11/16 04:49:48 guenther Exp $	*/
+/*	$OpenBSD: robots.h,v 1.9 2015/08/26 00:29:24 rzalamena Exp $	*/
 /*	$NetBSD: robots.h,v 1.5 1995/04/24 12:24:54 cgd Exp $	*/
 
 /*
@@ -87,8 +87,6 @@ typedef struct {
 	int	s_score;
 	char	s_name[LOGIN_NAME_MAX];
 } SCORE;
-
-typedef struct passwd	PASSWD;
 
 /*
  * global variables
