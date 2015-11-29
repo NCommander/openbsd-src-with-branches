@@ -1,4 +1,4 @@
-/*	$OpenBSD: instr.c,v 1.10 2004/07/10 07:26:23 deraadt Exp $	*/
+/*	$OpenBSD: instr.c,v 1.11 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: instr.c,v 1.5 1997/07/10 06:47:30 mikel Exp $	*/
 
 /*-
@@ -64,7 +64,6 @@ instructions(void)
 		err(1, "vfork");
 		/* NOTREACHED */
 	case 0:
-		setgid(getgid());
 		if (!isatty(1))
 			pager = "/bin/cat";
 		else {
