@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe.c,v 1.79 2015/02/08 01:39:06 blambert Exp $	*/
+/*	$OpenBSD: pfe.c,v 1.80 2015/04/21 01:46:57 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -24,6 +24,7 @@
 #include <event.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <imsg.h>
 
 #include "relayd.h"
@@ -62,6 +63,9 @@ pfe_init(struct privsep *ps, struct privsep_proc *p, void *arg)
 		fatal("failed to initialize configuration");
 
 	snmp_init(env, PROC_PARENT);
+
+	if (pledge("stdio recvfd unix pf", NULL) == -1)
+		fatal("pledge");
 
 	p->p_shutdown = pfe_shutdown;
 }
