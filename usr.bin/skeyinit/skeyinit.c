@@ -55,7 +55,7 @@ main(int argc, char **argv)
 	struct skey skey;
 	struct passwd *pp;
 
-	if (pledge("stdio rpath wpath cpath fattr flock tty", NULL) == -1)
+	if (pledge("stdio rpath wpath cpath fattr flock tty proc exec", NULL) == -1)
 		err(1, "pledge");
 
 	n = rmkey = hexmode = enable = 0;
