@@ -1,4 +1,4 @@
-/*	$OpenBSD: pathnames.h,v 1.2 1998/09/21 07:36:06 pjanzen Exp $	*/
+/*	$OpenBSD: pathnames.h,v 1.3 2003/06/03 03:01:38 millert Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.3 1995/03/21 15:04:28 cgd Exp $	*/
 
 /*-
@@ -35,4 +35,3 @@
 #include <paths.h>
 
 #define	_PATH_GAMES	"/usr/share/games/atc/"
-#define	_PATH_SCORE	"/var/games/atc_score"
