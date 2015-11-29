@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.115 2015/10/14 13:50:22 espie Exp $ */
+/*	$OpenBSD: main.c,v 1.116 2015/11/15 06:19:22 daniel Exp $ */
 /*	$NetBSD: main.c,v 1.34 1997/03/24 20:56:36 gwr Exp $	*/
 
 /*
@@ -626,6 +626,7 @@ read_all_make_rules(bool noBuiltins, bool read_depend,
 
 	if (read_depend)
 		(void)ReadMakefile(".depend", d);
+	Parse_End();
 }
 
 
