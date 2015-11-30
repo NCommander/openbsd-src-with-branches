@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.c,v 1.7 2006/03/27 00:10:14 tedu Exp $	*/
+/*	$OpenBSD: table.c,v 1.8 2009/10/27 23:59:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -70,8 +70,7 @@ static const struct state atmata[] = {
 };
 
 int
-checkmove(ist)
-	int     ist;
+checkmove(int ist)
 {
 	int     curr, curc;
 	int     j, n;
@@ -154,9 +153,7 @@ dochar:
 }
 
 int
-dotable(c, i)
-	char    c;
-	int     i;
+dotable(char c, int i)
 {
 	int     a;
 	int     test;
@@ -236,7 +233,7 @@ dotable(c, i)
 }
 
 int
-rsetbrd()
+rsetbrd(void)
 {
 	int     i, j, n;
 

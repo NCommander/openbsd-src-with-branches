@@ -1,4 +1,4 @@
-/*	$OpenBSD: check.c,v 1.5 2003/06/03 03:01:38 millert Exp $	*/
+/*	$OpenBSD: check.c,v 1.6 2009/10/27 23:59:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -32,7 +32,7 @@
 #include "back.h"
 
 void
-getmove()
+getmove(void)
 {
 	int     i, c;
 
@@ -77,8 +77,7 @@ getmove()
 }
 
 int
-movokay(mv)
-	int     mv;
+movokay(int mv)
 {
 	int     i, m;
 
