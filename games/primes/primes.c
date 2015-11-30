@@ -1,4 +1,4 @@
-/*	$OpenBSD: primes.c,v 1.16 2015/09/07 00:49:20 tedu Exp $	*/
+/*	$OpenBSD: primes.c,v 1.17 2015/10/24 17:34:16 mmcc Exp $	*/
 /*	$NetBSD: primes.c,v 1.5 1995/04/24 12:24:47 cgd Exp $	*/
 
 /*
@@ -102,6 +102,9 @@ main(int argc, char *argv[])
 	ubig stop;		/* don't generate at or above this value */
 	int ch;
 	char *p;
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	while ((ch = getopt(argc, argv, "")) != -1) {
 		switch (ch) {
