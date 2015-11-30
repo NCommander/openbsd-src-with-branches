@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda.c,v 1.112 2015/10/27 21:20:11 jung Exp $	*/
+/*	$OpenBSD: mda.c,v 1.113 2015/11/30 12:26:55 sunil Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -281,8 +281,17 @@ mda_imsg(struct mproc *p, struct imsg *imsg)
 				deliver.userinfo = *userinfo;
 				(void)strlcpy(deliver.user, userinfo->username,
 				    sizeof(deliver.user));
-				(void)strlcpy(deliver.to, e->buffer,
-				    sizeof(deliver.to));
+				if (strlcpy(deliver.to, e->buffer,
+					sizeof(deliver.to))
+				    >= sizeof(deliver.to)) {
+					mda_queue_tempfail(e->id,
+					    "mda command too long",
+					    ESC_OTHER_MAIL_SYSTEM_STATUS);
+					mda_log(e, "TempFail",
+					    "mda command too long");
+					mda_done(s);
+					return;
+				}
 				break;
 
 			case A_MBOX:
