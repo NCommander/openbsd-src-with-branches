@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfscores.c,v 1.18 2015/11/24 16:54:22 tedu Exp $	*/
+/*	$OpenBSD: cfscores.c,v 1.19 2015/11/26 13:28:22 tb Exp $	*/
 /*	$NetBSD: cfscores.c,v 1.3 1995/03/21 15:08:37 cgd Exp $	*/
 
 /*
@@ -61,6 +61,9 @@ main(int argc, char *argv[])
 {
 	char *home, *name;
 	int ret;
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
 	
 	home = getenv("HOME");
 	if (home == NULL || *home == '\0')
