@@ -1,4 +1,4 @@
-/*	$OpenBSD: wump.c,v 1.25 2009/10/27 23:59:28 deraadt Exp $	*/
+/*	$OpenBSD: wump.c,v 1.26 2013/08/29 20:22:22 naddy Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -135,6 +135,9 @@ main(int argc, char *argv[])
 {
 	int c;
 
+	if (pledge("stdio rpath proc exec", NULL) == -1)
+		err(1, "pledge");
+
 #ifdef DEBUG
 	while ((c = getopt(argc, argv, "a:b:hop:r:t:d")) != -1)
 #else
@@ -220,6 +223,10 @@ main(int argc, char *argv[])
 "the wumpus refused to enter the cave, claiming it was too dangerous!");
 
 	instructions();
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
 	if (oldstyle)
 		dodecahedral_cave_init();
 	else
