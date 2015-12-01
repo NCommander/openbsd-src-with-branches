@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.3 2015/11/26 08:34:25 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.4 2015/11/27 09:11:39 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007-2015 Reyk Floeter <reyk@openbsd.org>
@@ -164,7 +164,7 @@ vm_opts		: disable			{
 			res.path = $2;
 		}
 		| NIFS NUMBER			{
-			if (res.nifs) {
+			if (res.nifs != -1) {
 				yyerror("argument specified more than once");
 				YYERROR;
 			}
