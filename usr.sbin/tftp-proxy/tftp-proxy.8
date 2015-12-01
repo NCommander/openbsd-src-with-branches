@@ -1,4 +1,4 @@
-.\"	$OpenBSD: tftp-proxy.8,v 1.4 2013/12/23 13:06:53 florian Exp $
+.\"	$OpenBSD: tftp-proxy.8,v 1.5 2013/12/23 13:07:47 florian Exp $
 .\"
 .\" Copyright (c) 2005 joshua stein <jcs@openbsd.org>
 .\"
@@ -136,10 +136,3 @@ pass out quick on $ext_if inet proto udp from $lan to port tftp \e
 .Xr ftp-proxy 8 ,
 .Xr syslogd 8 ,
 .Xr tftpd 8
-.Sh CAVEATS
-.Nm
-chroots to
-.Pa /var/empty
-and changes to user
-.Dq proxy
-to drop privileges.
