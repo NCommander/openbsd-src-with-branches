@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstatd.c,v 1.27 2015/04/18 18:28:37 deraadt Exp $	*/
+/*	$OpenBSD: rstatd.c,v 1.28 2015/10/05 15:50:01 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993, John Brezak
@@ -80,13 +80,11 @@ main(int argc, char *argv[])
 	}
 	chdir("/");
 
-	if (pw) {
-		setgroups(1, &pw->pw_gid);
-		setegid(pw->pw_gid);
-		setgid(pw->pw_gid);
-		seteuid(pw->pw_uid);
-		setuid(pw->pw_uid);
-	}
+	setgroups(1, &pw->pw_gid);
+	setegid(pw->pw_gid);
+	setgid(pw->pw_gid);
+	seteuid(pw->pw_uid);
+	setuid(pw->pw_uid);
 
 	if (argc == 2)
 		closedown = strtonum(argv[1], 1, INT_MAX, NULL);
