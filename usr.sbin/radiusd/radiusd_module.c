@@ -1,4 +1,4 @@
-/*	$OpenBSD: radiusd_module.c,v 1.6 2015/10/19 09:47:37 yasuoka Exp $	*/
+/*	$OpenBSD: radiusd_module.c,v 1.7 2015/10/27 04:18:36 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -373,13 +373,13 @@ module_imsg_handler(struct module_base *base, struct imsg *imsg)
 			module_start_module(base->ctx);
 			if (!base->priv_dropped) {
 				syslog(LOG_ERR, "Module tried to start with "
-				    "root priviledge");
+				    "root privileges");
 				abort();
 			}
 		} else {
 			if (!base->priv_dropped) {
 				syslog(LOG_ERR, "Module tried to start with "
-				    "root priviledge");
+				    "root privileges");
 				abort();
 			}
 			module_send_message(base, IMSG_OK, NULL);
