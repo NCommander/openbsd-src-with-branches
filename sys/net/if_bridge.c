@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.269 2015/11/07 12:37:18 mpi Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.270 2015/11/07 12:42:19 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -1337,18 +1337,21 @@ bridge_process(struct ifnet *ifp, struct mbuf *m)
 		if (mc == NULL)
 	    		goto reenqueue;
 
-		bridge_ifinput(ifp, mc);
 #if NGIF > 0
 		if (ifp->if_type == IFT_GIF) {
 			TAILQ_FOREACH(ifl, &sc->sc_iflist, next) {
 				if (ifl->ifp->if_type != IFT_ETHER)
 					continue;
 
-				bridge_ifinput(ifl->ifp, m);
-				return;
+				bridge_ifinput(ifl->ifp, mc);
+				break;
 			}
-		}
+			if (!ifl)
+				m_freem(mc);
+		} else
 #endif /* NGIF */
+		bridge_ifinput(ifp, mc);
+		
 		bridgeintr_frame(sc, ifp, m);
 		return;
 	}
