@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.193 2015/12/02 13:29:26 claudio Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.194 2015/12/02 16:35:53 bluhm Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -401,11 +401,6 @@ arpresolve(struct ifnet *ifp, struct rtentry *rt0, struct mbuf *m,
 				arprequest(ifp,
 				    &satosin(rt->rt_ifa->ifa_addr)->sin_addr.s_addr,
 				    &satosin(dst)->sin_addr.s_addr,
-#if NCARP > 0
-				    (rt->rt_ifp->if_type == IFT_CARP) ?
-					((struct arpcom *) rt->rt_ifp->if_softc
-					)->ac_enaddr :
-#endif
 				    ac->ac_enaddr);
 			else {
 				rt->rt_flags |= RTF_REJECT;
