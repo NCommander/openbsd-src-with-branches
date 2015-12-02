@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.219 2015/11/29 01:20:33 benno Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.220 2015/12/02 13:41:27 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -76,6 +76,7 @@
 #define RELAY_BACKLOG		10
 #define RELAY_MAXLOOKUPLEVELS	5
 #define RELAY_OUTOF_FD_RETRIES	5
+#define RELAY_MAX_HASH_RETRIES	5
 
 #define CONFIG_RELOAD		0x00
 #define CONFIG_TABLES		0x01
