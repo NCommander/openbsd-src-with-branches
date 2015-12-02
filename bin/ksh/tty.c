@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.13 2015/10/15 20:01:53 mmcc Exp $	*/
+/*	$OpenBSD: tty.c,v 1.14 2015/10/19 14:42:16 mmcc Exp $	*/
 
 #include <string.h>
 
@@ -18,7 +18,7 @@ tty_close(void)
 	}
 }
 
-/* Initialize tty_fd.  Used for saving/reseting tty modes upon
+/* Initialize tty_fd.  Used for saving/resetting tty modes upon
  * foreground job completion and for setting up tty process group.
  */
 void
