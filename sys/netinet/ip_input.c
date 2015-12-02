@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.261 2015/11/14 15:40:40 mpi Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.262 2015/11/23 15:54:45 mpi Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -1243,7 +1243,7 @@ ip_rtaddr(struct in_addr dst, u_int rtableid)
 		sin->sin_addr = dst;
 
 		ipforward_rt.ro_rt = rtalloc(&ipforward_rt.ro_dst,
-		    RT_REPORT|RT_RESOLVE, rtableid);
+		    RT_RESOLVE, rtableid);
 	}
 	if (ipforward_rt.ro_rt == 0)
 		return (NULL);
