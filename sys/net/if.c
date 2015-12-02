@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.414 2015/11/27 11:52:44 mpi Exp $	*/
+/*	$OpenBSD: if.c,v 1.415 2015/12/01 16:57:34 vgross Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -663,7 +663,7 @@ if_input_local(struct ifnet *ifp, struct mbuf *m, sa_family_t af)
 	case AF_MPLS:
 		ifp->if_ipackets++;
 		ifp->if_ibytes += m->m_pkthdr.len;
-		mpls_input(ifp, m);
+		mpls_input(m);
 		return (0);
 #endif /* MPLS */
 	default:

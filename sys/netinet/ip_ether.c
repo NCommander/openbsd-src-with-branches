@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.c,v 1.78 2015/07/31 15:38:10 rzalamena Exp $  */
+/*	$OpenBSD: ip_ether.c,v 1.79 2015/11/07 12:42:19 mpi Exp $  */
 /*
  * The author of this code is Angelos D. Keromytis (kermit@adk.gr)
  *
@@ -293,7 +293,7 @@ mplsip_decap(struct mbuf *m, int iphlen)
 	pf_pkt_addr_changed(m);
 #endif
 
-	mpls_input(&sc->gif_if, m);
+	mpls_input(m);
 }
 #endif
 
