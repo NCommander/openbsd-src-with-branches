@@ -1129,7 +1129,8 @@ handlew(struct con *cp, int one)
 				goto handled;
 			} else if (n < 0) {
 				if (debug > 0)
-					warn("tls_read unexpected POLLIN/POLLOUT");
+					warn("tls_write unexpected "
+					    "POLLIN/POLLOUT");
 				closecon(cp);
 				goto handled;
 			}
@@ -1152,7 +1153,7 @@ handlew(struct con *cp, int one)
 			closecon(cp);
 		} else if (n < 0) {
 			if (debug > 0)
-				warn("tls_read unexpected POLLIN/POLLOUT");
+				warn("tls_write unexpected POLLIN/POLLOUT");
 			closecon(cp);
 		} else {
 			cp->op += n;
