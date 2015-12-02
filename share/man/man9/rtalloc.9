@@ -1,4 +1,4 @@
-.\" $OpenBSD: rtalloc.9,v 1.9 2015/10/30 09:48:03 bluhm Exp $
+.\" $OpenBSD: rtalloc.9,v 1.10 2015/12/02 13:30:01 claudio Exp $
 .\"
 .\" Copyright (c) 2014-2015 Martin Pieuchot
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: October 30 2015 $
+.Dd $Mdocdate: December 2 2015 $
 .Dt RTALLOC 9
 .Os
 .Sh NAME
@@ -61,7 +61,7 @@ function does the same as
 .Fn rtalloc
 with the
 .Dv RT_RESOLVE
-.Fa flags ,
+.Fa flag ,
 but selects a multipath routing entry corresponding to
 .Fa src
 when possible.
