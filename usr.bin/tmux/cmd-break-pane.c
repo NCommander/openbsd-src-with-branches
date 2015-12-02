@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-break-pane.c,v 1.28 2015/09/17 14:11:55 nicm Exp $ */
+/* $OpenBSD: cmd-break-pane.c,v 1.29 2015/10/27 15:58:42 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -82,6 +82,7 @@ cmd_break_pane_exec(struct cmd *self, struct cmd_q *cmdq)
 	window_set_name(w, name);
 	free(name);
 	layout_init(w, wp);
+	wp->flags |= PANE_CHANGED;
 
 	if (idx == -1)
 		idx = -1 - options_get_number(dst_s->options, "base-index");
