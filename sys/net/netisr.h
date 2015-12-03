@@ -1,4 +1,4 @@
-/*	$OpenBSD: netisr.h,v 1.41 2015/05/26 11:36:26 dlg Exp $	*/
+/*	$OpenBSD: netisr.h,v 1.42 2015/07/20 21:16:39 rzalamena Exp $	*/
 /*	$NetBSD: netisr.h,v 1.12 1995/08/12 23:59:24 mycroft Exp $	*/
 
 /*
@@ -64,7 +64,6 @@
 #ifdef _KERNEL
 extern int	netisr;			/* scheduling bits for network */
 
-void	nettxintr(void);
 void	arpintr(void);
 void	ipintr(void);
 void	ip6intr(void);
