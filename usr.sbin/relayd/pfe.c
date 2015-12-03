@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe.c,v 1.81 2015/11/29 01:20:33 benno Exp $	*/
+/*	$OpenBSD: pfe.c,v 1.82 2015/12/02 13:41:27 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -156,6 +156,8 @@ pfe_dispatch_hce(int fd, struct privsep_proc *p, struct imsg *imsg)
 			table->conf.flags |= F_CHANGED;
 			host->flags |= F_DEL;
 			host->flags &= ~(F_ADD);
+			host->up = st.up;
+			pfe_sync();
 		}
 
 		host->up = st.up;
