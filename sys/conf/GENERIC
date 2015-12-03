@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.221 2015/10/23 15:10:53 claudio Exp $
+#	$OpenBSD: GENERIC,v 1.222 2015/10/24 10:52:05 reyk Exp $
 #
 #	Machine-independent option; used by all architectures for their
 #	GENERIC kernel
@@ -91,6 +91,7 @@ pseudo-device	systrace 1	# system call tracing device
 pseudo-device	bpfilter	# packet filter
 pseudo-device	bridge		# network bridging support
 pseudo-device	carp		# CARP protocol support
+pseudo-device	etherip		# EtherIP (RFC 3378)
 pseudo-device	gif		# IPv[46] over IPv[46] tunnel (RFC1933)
 pseudo-device	gre		# GRE encapsulation interface
 pseudo-device	loop		# network loopback
