@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.127 2015/11/29 01:15:49 benno Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.128 2015/11/29 03:23:19 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1214,6 +1214,7 @@ pledge_ioctl(struct proc *p, long com, struct file *fp)
 		case DIOCRSETADDRS:
 		case DIOCXBEGIN:
 		case DIOCXCOMMIT:
+		case DIOCKILLSRCNODES:
 			if ((fp->f_type == DTYPE_VNODE) &&
 			    (vp->v_type == VCHR) &&
 			    (cdevsw[major(vp->v_rdev)].d_open == pfopen))
