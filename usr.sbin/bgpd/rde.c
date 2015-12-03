@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.342 2015/10/25 18:45:04 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.343 2015/11/06 16:23:26 phessler Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -187,7 +187,7 @@ rde_main(int debug, int verbose)
 	    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid))
 		fatal("can't drop privileges");
 
-	if (pledge("stdio unix route recvfd", NULL) == -1)
+	if (pledge("stdio route recvfd", NULL) == -1)
 		fatal("pledge");
 
 	signal(SIGTERM, rde_sighdlr);
