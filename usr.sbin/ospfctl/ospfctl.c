@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfctl.c,v 1.61 2015/10/09 23:33:54 deraadt Exp $ */
+/*	$OpenBSD: ospfctl.c,v 1.62 2015/11/22 13:11:26 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -253,7 +253,7 @@ main(int argc, char *argv[])
 			err(1, "write error");
 
 	while (!done) {
-		if ((n = imsg_read(ibuf)) == -1)
+		if ((n = imsg_read(ibuf)) == -1 && errno != EAGAIN)
 			errx(1, "imsg_read error");
 		if (n == 0)
 			errx(1, "pipe closed");
