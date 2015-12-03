@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.c,v 1.51 2015/12/02 15:13:00 reyk Exp $	*/
+/*	$OpenBSD: httpd.c,v 1.52 2015/12/03 07:01:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -1197,8 +1197,8 @@ void
 media_delete(struct mediatypes *types, struct media_type *media)
 {
 	RB_REMOVE(mediatypes, types, media);
-	if (media->media_encoding != NULL)
-		free(media->media_encoding);
+
+	free(media->media_encoding);
 	free(media);
 }
 
