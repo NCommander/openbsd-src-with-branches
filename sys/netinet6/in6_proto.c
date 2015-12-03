@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_proto.c,v 1.82 2015/10/07 10:50:35 mpi Exp $	*/
+/*	$OpenBSD: in6_proto.c,v 1.83 2015/12/03 12:42:03 goda Exp $	*/
 /*	$KAME: in6_proto.c,v 1.66 2000/10/10 15:35:47 itojun Exp $	*/
 
 /*
@@ -259,7 +259,7 @@ struct domain inet6domain =
       (struct protosw *)inet6sw,
       (struct protosw *)&inet6sw[nitems(inet6sw)],
       sizeof(struct sockaddr_in6),
-      offsetof(struct sockaddr_in6, sin6_addr),
+      offsetof(struct sockaddr_in6, sin6_addr), 128,
       in6_domifattach, in6_domifdetach, };
 
 /*
