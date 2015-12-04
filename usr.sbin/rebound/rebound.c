@@ -1,4 +1,4 @@
-/* $OpenBSD: rebound.c,v 1.50 2015/12/04 09:13:05 tedu Exp $ */
+/* $OpenBSD: rebound.c,v 1.51 2015/12/04 10:59:36 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -667,9 +667,6 @@ main(int argc, char **argv)
 	tzset();
 	openlog("rebound", LOG_PID | LOG_NDELAY, LOG_DAEMON);
 
-	if (!debug)
-		daemon(0, 0);
-
 	RB_INIT(&reqtree);
 	TAILQ_INIT(&reqfifo);
 	TAILQ_INIT(&cachefifo);
@@ -700,6 +697,8 @@ main(int argc, char **argv)
 		launch(conffile, ud, ld, -1);
 		return 1;
 	}
+
+	daemon(0, 0);
 
 	kq = kqueue();
 
