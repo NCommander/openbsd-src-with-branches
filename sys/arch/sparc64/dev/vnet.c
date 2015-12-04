@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnet.c,v 1.50 2015/11/24 17:11:38 mpi Exp $	*/
+/*	$OpenBSD: vnet.c,v 1.51 2015/11/25 03:09:58 dlg Exp $	*/
 /*
  * Copyright (c) 2009, 2015 Mark Kettenis
  *
@@ -1435,6 +1435,9 @@ vnet_stop(struct ifnet *ifp)
 
 	cbus_intr_setenabled(sc->sc_bustag, sc->sc_tx_ino, INTR_DISABLED);
 	cbus_intr_setenabled(sc->sc_bustag, sc->sc_rx_ino, INTR_DISABLED);
+
+	intr_barrier(sc->sc_tx_ih);
+	intr_barrier(sc->sc_rx_ih);
 
 	hv_ldc_tx_qconf(lc->lc_id, 0, 0);
 	hv_ldc_rx_qconf(lc->lc_id, 0, 0);
