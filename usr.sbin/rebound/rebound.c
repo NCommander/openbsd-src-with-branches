@@ -1,4 +1,4 @@
-/* $OpenBSD: rebound.c,v 1.47 2015/12/01 23:43:55 gsoares Exp $ */
+/* $OpenBSD: rebound.c,v 1.48 2015/12/03 08:19:25 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -613,7 +613,7 @@ launch(const char *confname, int ud, int ld, int kq)
 static void __dead
 usage(void)
 {
-	fprintf(stderr, "usage: rebound [-c config]\n");
+	fprintf(stderr, "usage: rebound [-d] [-c config]\n");
 	exit(1);
 }
 
