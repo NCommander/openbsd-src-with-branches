@@ -1,3 +1,0 @@
-dnl	$OpenBSD: hardware,v 1.2 2008/08/06 18:23:56 miod Exp $
-dnl When more than one model is supported, turn this into a list...
-OpenBSD/MACHINE runs on the Thecus N1200 and RouterBoard RB600A.
