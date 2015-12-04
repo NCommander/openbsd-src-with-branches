@@ -1,4 +1,4 @@
-/*	$OpenBSD: cap_mkdb.c,v 1.20 2015/10/29 02:58:00 deraadt Exp $	*/
+/*	$OpenBSD: cap_mkdb.c,v 1.21 2015/12/04 13:58:09 nicm Exp $	*/
 /*	$NetBSD: cap_mkdb.c,v 1.5 1995/09/02 05:47:12 jtc Exp $	*/
 
 /*-
@@ -288,6 +288,6 @@ void
 usage(void)
 {
 	(void)fprintf(stderr,
-	    "usage: cap_mkdb [-iv] [-f outfile] file1 [file2 ...]\n");
+	    "usage: cap_mkdb [-v] [-f outfile] file1 [file2 ...]\n");
 	exit(1);
 }
