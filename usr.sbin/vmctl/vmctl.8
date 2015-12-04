@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vmctl.8,v 1.1 2015/12/03 21:45:45 reyk Exp $
+.\"	$OpenBSD: vmctl.8,v 1.2 2015/12/03 23:32:32 reyk Exp $
 .\"
 .\" Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
 .\"
@@ -60,12 +60,12 @@ Starts a VM defined by the specified name and parameters:
 .Bl -tag -width "memory size"
 .It Fl d Ar path
 Disk image file (may be specified multiple times to add multiple disk images).
+.It Fl i Ar count
+Number of network interfaces to add to the VM.
 .It Fl k Ar path
 Kernel to load when booting the VM.
 .It Fl m Ar bytes
 Memory size of the VM, in bytes, rounded to megabytes.
-.It Fl i Ar count
-Number of network interfaces to add to the VM.
 .El
 .It Cm status Op Ar id
 Lists VMs running on the host, optionally listing just the selected VM
