@@ -1,2 +1,0 @@
-mandoc: if.in:14:1: WARNING: conditional request controls empty scope: if
-mandoc: if.in:16:1: WARNING: conditional request controls empty scope: if
