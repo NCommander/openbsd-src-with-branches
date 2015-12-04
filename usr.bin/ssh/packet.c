@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.c,v 1.216 2015/10/21 11:33:03 gsoares Exp $ */
+/* $OpenBSD: packet.c,v 1.217 2015/11/08 21:59:11 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1204,7 +1204,8 @@ ssh_packet_send2(struct ssh *ssh)
 		if ((type < SSH2_MSG_TRANSPORT_MIN) ||
 		    (type > SSH2_MSG_TRANSPORT_MAX) ||
 		    (type == SSH2_MSG_SERVICE_REQUEST) ||
-		    (type == SSH2_MSG_SERVICE_ACCEPT)) {
+		    (type == SSH2_MSG_SERVICE_ACCEPT) ||
+		    (type == SSH2_MSG_EXT_INFO)) {
 			debug("enqueue packet: %u", type);
 			p = calloc(1, sizeof(*p));
 			if (p == NULL)
