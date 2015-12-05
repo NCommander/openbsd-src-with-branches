@@ -1,4 +1,4 @@
-/* $OpenBSD: if_mpe.c,v 1.50 2015/11/06 11:45:42 mpi Exp $ */
+/* $OpenBSD: if_mpe.c,v 1.51 2015/12/02 13:29:25 claudio Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -272,7 +272,6 @@ out:
 	return (error);
 }
 
-/* ARGSUSED */
 int
 mpeioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 {

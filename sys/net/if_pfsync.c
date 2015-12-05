@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.222 2015/11/10 06:36:14 dlg Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.223 2015/12/03 09:49:15 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1226,7 +1226,6 @@ pfsyncoutput(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 	return (0);
 }
 
-/* ARGSUSED */
 int
 pfsyncioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 {

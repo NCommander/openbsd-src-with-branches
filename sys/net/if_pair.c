@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pair.c,v 1.4 2015/10/25 12:59:57 mpi Exp $	*/
+/*	$OpenBSD: if_pair.c,v 1.5 2015/10/30 12:54:36 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -196,7 +196,6 @@ pairstart(struct ifnet *ifp)
 	}
 }
 
-/* ARGSUSED */
 int
 pairioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.33 2015/10/25 12:05:40 mpi Exp $	*/
+/*	$OpenBSD: if_vxlan.c,v 1.34 2015/11/27 16:17:52 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -342,7 +342,6 @@ vxlan_config(struct ifnet *ifp, struct sockaddr *src, struct sockaddr *dst)
 	return (0);
 }
 
-/* ARGSUSED */
 int
 vxlanioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 {

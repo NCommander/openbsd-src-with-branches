@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.147 2015/11/10 06:34:35 dlg Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.148 2015/12/03 16:27:32 mpi Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -106,7 +106,6 @@ void vlan_unref(void *, void *);
 
 struct srpl_rc vlan_tagh_rc = SRPL_RC_INITIALIZER(vlan_ref, vlan_unref, NULL);
 
-/* ARGSUSED */
 void
 vlanattach(int count)
 {

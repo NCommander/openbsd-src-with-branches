@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.287 2015/12/03 21:57:59 mpi Exp $	*/
+/*	$OpenBSD: route.c,v 1.288 2015/12/04 13:42:48 mpi Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -1538,7 +1538,6 @@ rt_timer_add(struct rtentry *rt, void (*func)(struct rtentry *,
 	return (0);
 }
 
-/* ARGSUSED */
 void
 rt_timer_timer(void *arg)
 {

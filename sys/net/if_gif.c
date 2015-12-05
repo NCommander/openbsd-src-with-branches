@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.81 2015/10/25 11:58:11 mpi Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.82 2015/11/20 05:29:53 dlg Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -95,7 +95,6 @@ struct gif_softc_head gif_softc_list;
 struct if_clone gif_cloner =
     IF_CLONE_INITIALIZER("gif", gif_clone_create, gif_clone_destroy);
 
-/* ARGSUSED */
 void
 gifattach(int count)
 {
