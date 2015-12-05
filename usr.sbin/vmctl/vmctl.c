@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *

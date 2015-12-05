@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 .if ${MACHINE} == "amd64"
 
