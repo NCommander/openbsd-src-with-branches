@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta_session.c,v 1.75 2015/11/30 12:49:35 gilles Exp $	*/
+/*	$OpenBSD: mta_session.c,v 1.76 2015/12/01 15:30:42 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -439,8 +439,7 @@ mta_free(struct mta_session *s)
 		fatalx("current task should have been deleted already");
 	if (s->datafp)
 		fclose(s->datafp);
-	if (s->helo)
-		free(s->helo);
+	free(s->helo);
 
 	relay = s->relay;
 	route = s->route;

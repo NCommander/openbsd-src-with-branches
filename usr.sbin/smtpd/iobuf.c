@@ -1,4 +1,4 @@
-/*	$OpenBSD: iobuf.c,v 1.6 2015/09/03 06:26:17 jsg Exp $	*/
+/*	$OpenBSD: iobuf.c,v 1.7 2015/10/15 08:29:41 gilles Exp $	*/
 /*      
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -67,8 +67,7 @@ iobuf_clear(struct iobuf *io)
 {
 	struct ioqbuf	*q;
 
-	if (io->buf)
-		free(io->buf);
+	free(io->buf);
 
 	while ((q = io->outq)) {
 		io->outq = q->next;
