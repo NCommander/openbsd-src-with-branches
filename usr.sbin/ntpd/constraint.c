@@ -1,4 +1,4 @@
-/*	$OpenBSD: constraint.c,v 1.21 2015/11/19 21:32:53 mmcc Exp $	*/
+/*	$OpenBSD: constraint.c,v 1.22 2015/11/24 01:03:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -27,6 +27,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -526,7 +527,7 @@ priv_constraint_dispatch(struct pollfd *pfd)
 	if (!(pfd->revents & POLLIN))
 		return (0);
 
-	if ((n = imsg_read(&cstr->ibuf)) == -1 || n == 0) {
+	if (((n = imsg_read(&cstr->ibuf)) == -1 && errno != EAGAIN) || n == 0) {
 		priv_constraint_close(pfd->fd, 1);
 		return (1);
 	}
