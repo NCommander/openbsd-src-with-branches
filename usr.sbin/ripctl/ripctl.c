@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripctl.c,v 1.14 2015/09/27 17:32:36 stsp Exp $
+/*	$OpenBSD: ripctl.c,v 1.15 2015/10/09 07:54:28 deraadt Exp $
  *
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -175,7 +175,7 @@ main(int argc, char *argv[])
 			err(1, "write error");
 
 	while (!done) {
-		if ((n = imsg_read(ibuf)) == -1)
+		if ((n = imsg_read(ibuf)) == -1 && errno != EAGAIN)
 			errx(1, "imsg_read error");
 		if (n == 0)
 			errx(1, "pipe closed");
