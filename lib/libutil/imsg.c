@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.10 2015/07/19 07:18:59 nicm Exp $	*/
+/*	$OpenBSD: imsg.c,v 1.11 2015/11/27 01:57:59 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -80,11 +80,9 @@ again:
 	}
 
 	if ((n = recvmsg(ibuf->fd, &msg, 0)) == -1) {
-		if (errno == EMSGSIZE)
-			goto fail;
-		if (errno != EINTR && errno != EAGAIN)
-			goto fail;
-		goto again;
+		if (errno == EINTR)
+			goto again;
+		goto fail;
 	}
 
 	ibuf->r.wpos += n;
