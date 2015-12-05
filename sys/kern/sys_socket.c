@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_socket.c,v 1.19 2014/07/13 15:52:38 tedu Exp $	*/
+/*	$OpenBSD: sys_socket.c,v 1.20 2015/05/13 10:42:46 jsg Exp $	*/
 /*	$NetBSD: sys_socket.c,v 1.13 1995/08/12 23:59:09 mycroft Exp $	*/
 
 /*
@@ -52,7 +52,6 @@ struct	fileops socketops = {
 	soo_stat, soo_close
 };
 
-/* ARGSUSED */
 int
 soo_read(struct file *fp, off_t *poff, struct uio *uio, struct ucred *cred)
 {
@@ -62,7 +61,6 @@ soo_read(struct file *fp, off_t *poff, struct uio *uio, struct ucred *cred)
 		(socklen_t)0));
 }
 
-/* ARGSUSED */
 int
 soo_write(struct file *fp, off_t *poff, struct uio *uio, struct ucred *cred)
 {
@@ -183,7 +181,6 @@ soo_stat(struct file *fp, struct stat *ub, struct proc *p)
 	return (0);
 }
 
-/* ARGSUSED */
 int
 soo_close(struct file *fp, struct proc *p)
 {

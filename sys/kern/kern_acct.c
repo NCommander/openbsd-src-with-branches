@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_acct.c,v 1.28 2014/03/30 21:54:48 guenther Exp $	*/
+/*	$OpenBSD: kern_acct.c,v 1.29 2014/12/10 02:44:46 tedu Exp $	*/
 /*	$NetBSD: kern_acct.c,v 1.42 1996/02/04 02:15:12 christos Exp $	*/
 
 /*-
@@ -279,7 +279,6 @@ acct_start(void)
  * has been vgone()'d out from underneath us, e.g. when the file
  * system containing the accounting file has been forcibly unmounted.
  */
-/* ARGSUSED */
 void
 acct_thread(void *arg)
 {

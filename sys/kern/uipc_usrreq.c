@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.93 2015/11/02 16:31:55 semarie Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.94 2015/11/03 20:33:30 deraadt Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -97,7 +97,6 @@ uipc_setaddr(const struct unpcb *unp, struct mbuf *nam)
 	}
 }
 
-/*ARGSUSED*/
 int
 uipc_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
     struct mbuf *control, struct proc *p)

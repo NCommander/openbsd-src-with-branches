@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.125 2015/10/28 11:17:24 deraadt Exp $	*/
+/*	$OpenBSD: tty.c,v 1.126 2015/11/02 16:31:55 semarie Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -716,7 +716,6 @@ ttyoutput(int c, struct tty *tp)
  * has been called to do discipline-specific functions and/or reject any
  * of these ioctl commands.
  */
-/* ARGSUSED */
 int
 ttioctl(struct tty *tp, u_long cmd, caddr_t data, int flag, struct proc *p)
 {

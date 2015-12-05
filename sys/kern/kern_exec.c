@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.171 2015/10/28 11:13:41 deraadt Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.172 2015/11/02 16:31:55 semarie Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -234,7 +234,6 @@ bad1:
 /*
  * exec system call
  */
-/* ARGSUSED */
 int
 sys_execve(struct proc *p, void *v, register_t *retval)
 {
