@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.35 2015/11/23 19:31:52 reyk Exp $	*/
+/*	$OpenBSD: control.c,v 1.36 2015/12/05 06:42:18 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -236,7 +236,8 @@ control_dispatch_imsg(int fd, short event, void *arg)
 	int			 n, v, i;
 
 	if (event & EV_READ) {
-		if ((n = imsg_read_nofd(&c->iev.ibuf)) == -1 || n == 0) {
+		if (((n = imsg_read_nofd(&c->iev.ibuf)) == -1 &&
+		    errno != EAGAIN) || n == 0) {
 			control_close(c, "could not read imsg", NULL);
 			return;
 		}
