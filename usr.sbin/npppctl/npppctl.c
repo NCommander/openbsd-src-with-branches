@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppctl.c,v 1.4 2014/07/22 02:02:59 yasuoka Exp $	*/
+/*	$OpenBSD: npppctl.c,v 1.5 2015/01/19 01:48:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 Internet Initiative Japan Inc.
@@ -519,7 +519,8 @@ imsg_wait_command_completion(void)
 			return (-1);
 		if (n != 0)
 			break;
-		if ((n = imsg_read(&ctl_ibuf)) == -1 || n == 0)
+		if (((n = imsg_read(&ctl_ibuf)) == -1 && errno != EAGAIN) ||
+		    n == 0)
 			return (-1);
 	} while (1);
 

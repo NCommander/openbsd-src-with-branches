@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.2 2014/07/22 02:03:00 yasuoka Exp $	*/
+/*	$OpenBSD: control.c,v 1.3 2015/01/19 01:48:59 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -262,12 +262,12 @@ control_dispatch_imsg(int fd, short event, void *arg)
 			return;
 	}
 	if (event & EV_READ) {
-		if ((n = imsg_read(&c->iev.ibuf)) == -1 || n == 0) {
+		if (((n = imsg_read(&c->iev.ibuf)) == -1 && errno != EAGAIN) ||
+		    n == 0) {
 			control_close(fd, cs);
 			return;
 		}
-	} else
-		fatalx("unknown event");
+	}
 
 	for (;;) {
 		if ((n = imsg_get(&c->iev.ibuf, &imsg)) == -1) {

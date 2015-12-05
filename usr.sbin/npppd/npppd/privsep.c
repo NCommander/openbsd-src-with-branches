@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.17 2015/07/20 18:55:35 yasuoka Exp $ */
+/*	$OpenBSD: privsep.c,v 1.18 2015/10/11 07:32:06 guenther Exp $ */
 
 /*
  * Copyright (c) 2010 Yasuoka Masahiko <yasuoka@openbsd.org>
@@ -956,7 +956,7 @@ imsg_read_and_get(struct imsgbuf *ibuf, struct imsg *imsg)
 
 	for (;;) {
 		if ((n = imsg_read(ibuf)) <= 0) {
-			if (n == 0 && (errno == EAGAIN || errno == EINTR))
+			if (n == -1 && (errno == EAGAIN || errno == EINTR))
 				continue;
 			return (-1);
 		}
