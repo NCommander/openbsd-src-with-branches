@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.365 2015/10/26 16:32:33 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.366 2015/11/12 18:46:14 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -2014,7 +2014,7 @@ fork_privchld(int fd, int fd2)
 		if (nfds == 0 || !(pfd[0].revents & POLLIN))
 			continue;
 
-		if ((n = imsg_read(priv_ibuf)) == -1) {
+		if ((n = imsg_read(priv_ibuf)) == -1 && errno != EAGAIN) {
 			warning("imsg_read(priv_ibuf): %s", strerror(errno));
 			quit = INTERNALSIG;
 			continue;
