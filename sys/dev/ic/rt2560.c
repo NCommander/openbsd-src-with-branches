@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560.c,v 1.77 2015/11/24 13:33:17 mpi Exp $  */
+/*	$OpenBSD: rt2560.c,v 1.78 2015/11/25 03:09:58 dlg Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -1947,7 +1947,6 @@ rt2560_start(struct ifnet *ifp)
 
 		} else {
 			if (sc->txq.queued >= RT2560_TX_RING_COUNT - 1) {
-				ifq_deq_rollback(&ifp->if_snd, m0);
 				ifq_set_oactive(&ifp->if_snd);
 				sc->sc_flags |= RT2560_DATA_OACTIVE;
 				break;
