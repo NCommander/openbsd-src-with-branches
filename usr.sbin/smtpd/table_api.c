@@ -1,4 +1,4 @@
-/*	$OpenBSD: table_api.c,v 1.6 2014/08/11 09:50:51 gilles Exp $	*/
+/*	$OpenBSD: table_api.c,v 1.7 2015/01/20 17:37:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -24,6 +24,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#include <errno.h>
 #include <event.h>
 #include <fcntl.h>
 #include <imsg.h>
@@ -333,7 +334,7 @@ table_api_dispatch(void)
 		}
 
 		n = imsg_read(&ibuf);
-		if (n == -1) {
+		if (n == -1 && errno != EAGAIN) {
 			log_warn("warn: table-api: imsg_read");
 			break;
 		}
