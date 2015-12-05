@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtiovar.h,v 1.4 2013/03/10 21:58:02 sf Exp $	*/
+/*	$OpenBSD: virtiovar.h,v 1.5 2014/06/15 11:18:39 sf Exp $	*/
 /*	$NetBSD: virtiovar.h,v 1.1 2011/10/30 12:12:21 hannken Exp $	*/
 
 /*
@@ -201,7 +201,7 @@ int virtio_enqueue_reserve(struct virtqueue*, int, int);
 int virtio_enqueue(struct virtqueue*, int, bus_dmamap_t, int);
 int virtio_enqueue_p(struct virtqueue*, int, bus_dmamap_t, bus_addr_t,
 		     bus_size_t, int);
-int virtio_enqueue_commit(struct virtio_softc*, struct virtqueue*, int, int);
+void virtio_enqueue_commit(struct virtio_softc*, struct virtqueue*, int, int);
 #define		virtio_notify(sc,vq)	virtio_enqueue_commit(sc, vq, -1, 1)
 
 int virtio_enqueue_abort(struct virtqueue*, int);
