@@ -1,4 +1,4 @@
-/*	$OpenBSD: pppoe.h,v 1.5 2012/09/18 13:14:08 yasuoka Exp $ */
+/*	$OpenBSD: pppoe.h,v 1.6 2014/07/21 01:51:11 guenther Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -159,7 +159,7 @@ typedef struct _pppoe_session {
 	/** Pointer to the PPP context */
 	void 		*ppp;
 	/** Session id */
-	int		session_id;
+	uint16_t	session_id;
 	/** Cookie number */
 	int		acookie;
 	/** Peer ethernet address */

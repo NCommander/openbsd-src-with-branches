@@ -1,4 +1,4 @@
-/*	$OpenBSD: pptp_call.c,v 1.7 2012/09/18 13:14:08 yasuoka Exp $	*/
+/*	$OpenBSD: pptp_call.c,v 1.8 2015/01/19 01:48:59 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Id: pptp_call.c,v 1.7 2012/09/18 13:14:08 yasuoka Exp $ */
+/* $Id: pptp_call.c,v 1.8 2015/01/19 01:48:59 deraadt Exp $ */
 /**@file PPTP Call */
 /* currently it supports PAC mode only */
 #include <sys/types.h>
@@ -744,6 +744,7 @@ pptp_call_bind_ppp(pptp_call *_this)
 
 	ppp->phy_context = _this;
 	ppp->tunnel_type = NPPPD_TUNNEL_PPTP;
+	ppp->tunnel_session_id = _this->id;
 	ppp->send_packet = pptp_call_ppp_output;
 	ppp->phy_close = pptp_call_closed_by_ppp;
 
