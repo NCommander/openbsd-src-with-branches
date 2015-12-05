@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.ioctl.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: hack.ioctl.c,v 1.7 2015/01/15 17:14:04 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -67,6 +67,7 @@
 #include <stdio.h>
 #include <termios.h>
 #include "config.h"
+#include "hack.h"
 struct termios termios;
 
 void
