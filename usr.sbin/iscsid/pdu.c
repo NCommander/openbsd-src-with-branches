@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdu.c,v 1.9 2014/04/21 12:26:50 claudio Exp $ */
+/*	$OpenBSD: pdu.c,v 1.10 2014/11/23 13:05:51 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -27,7 +27,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "iscsid.h"
