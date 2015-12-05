@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.6 2008/09/10 15:00:01 tobias Exp $ */
+/*	$OpenBSD: carp.c,v 1.7 2009/09/30 11:59:00 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Henning Brauer <henning@openbsd.org>
@@ -162,7 +162,7 @@ carp_demote_ioctl(char *group, int demote)
 	struct ifgroupreq	ifgr;
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-		log_warn("carp_demote_get: socket");
+		log_warn("%s: socket", __func__);
 		return (-1);
 	}
 
