@@ -1,4 +1,4 @@
-/* $OpenBSD: file.c,v 1.54 2015/11/13 08:30:18 nicm Exp $ */
+/* $OpenBSD: file.c,v 1.55 2015/11/13 08:32:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -289,7 +289,9 @@ read_message(struct imsgbuf *ibuf, struct imsg *imsg, pid_t from)
 {
 	int	n;
 
-	if ((n = imsg_read(ibuf)) == -1)
+	while ((n = imsg_read(ibuf)) == -1 && errno == EAGAIN)
+		/* nothing */ ;
+	if (n == -1)
 		err(1, "imsg_read");
 	if (n == 0)
 		return (0);
