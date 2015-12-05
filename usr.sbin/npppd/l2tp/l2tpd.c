@@ -1,4 +1,4 @@
-/*	$OpenBSD: l2tpd.c,v 1.15 2014/05/07 01:16:15 tedu Exp $ */
+/*	$OpenBSD: l2tpd.c,v 1.16 2015/06/23 06:59:54 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -26,7 +26,7 @@
  * SUCH DAMAGE.
  */
 /**@file L2TP(Layer Two Tunneling Protocol "L2TP") / RFC2661 */
-/* $Id: l2tpd.c,v 1.15 2014/05/07 01:16:15 tedu Exp $ */
+/* $Id: l2tpd.c,v 1.16 2015/06/23 06:59:54 yasuoka Exp $ */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -186,8 +186,7 @@ l2tpd_add_listener(l2tpd *_this, int idx, struct l2tp_conf *conf,
 	}
 	return 0;
 fail:
-	if (plistener != NULL)
-		free(plistener);
+	free(plistener);
 	return 1;
 }
 
@@ -377,10 +376,8 @@ l2tpd_listener_start(l2tpd_listener *_this)
 			    "setsockopt(,,IP_IPSEC_POLICY(out)) failed "
 			    "in %s(): %m", __func__);
 		}
-		if (ipsec_policy_in != NULL)
-			free(ipsec_policy_in);
-		if (ipsec_policy_out != NULL)
-			free(ipsec_policy_out);
+		free(ipsec_policy_in);
+		free(ipsec_policy_out);
 #elif defined(IP_ESP_TRANS_LEVEL)
 		opt = (af == AF_INET)
 		    ? IP_ESP_TRANS_LEVEL : IPV6_ESP_TRANS_LEVEL;
