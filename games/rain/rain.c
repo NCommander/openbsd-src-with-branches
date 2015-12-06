@@ -1,4 +1,4 @@
-/*	$OpenBSD: rain.c,v 1.17 2013/08/29 20:22:18 naddy Exp $	*/
+/*	$OpenBSD: rain.c,v 1.18 2015/10/14 07:19:23 semarie Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 	int ch;
 	int xpos[5], ypos[5];
 
-	if (pledge("stdio rpath getpw tty", NULL) == -1)
+	if (pledge("stdio rpath tty", NULL) == -1)
 		err(1, "pledge");
 
 	/* set default delay based on terminal baud rate */
