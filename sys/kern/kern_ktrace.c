@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.84 2015/11/11 02:57:48 deraadt Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.85 2015/12/05 10:11:53 tedu Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -400,7 +400,7 @@ ktrexec(struct proc *p, int type, const char *data, ssize_t len)
 }
 
 void
-ktrpledge(struct proc *p, int error, int code, int syscall)
+ktrpledge(struct proc *p, int error, uint64_t code, int syscall)
 {
 	struct ktr_header kth;
 	struct ktr_pledge kp;

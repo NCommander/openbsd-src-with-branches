@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.211 2015/11/02 16:31:55 semarie Exp $	*/
+/*	$OpenBSD: proc.h,v 1.212 2015/11/03 16:14:14 deraadt Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -212,7 +212,7 @@ struct process {
 
 	u_short	ps_acflag;		/* Accounting flags. */
 
-	u_int	ps_pledge;
+	uint64_t ps_pledge;
 	struct whitepaths *ps_pledgepaths;
 
 	int64_t ps_kbind_cookie;
