@@ -1,4 +1,4 @@
-/*	$OpenBSD: eigrpctl.c,v 1.4 2015/10/29 02:54:29 deraadt Exp $ */
+/*	$OpenBSD: eigrpctl.c,v 1.5 2015/12/05 15:48:40 claudio Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -607,10 +607,8 @@ show_topology_detail_msg(struct imsg *imsg, struct parse_result *res)
 		}
 
 		printf("\n");
-		if (dstnet)
-			free(dstnet);
-		if (state)
-			free(state);
+		free(dstnet);
+		free(state);
 		free(type);
 		free(nexthop);
 		break;
