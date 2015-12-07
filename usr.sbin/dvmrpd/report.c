@@ -1,4 +1,4 @@
-/*	$OpenBSD: report.c,v 1.9 2014/10/25 03:23:49 lteo Exp $ */
+/*	$OpenBSD: report.c,v 1.10 2015/05/05 01:26:37 jsg Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -23,7 +23,7 @@
 #include <arpa/inet.h>
 
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 #include "igmp.h"
 #include "dvmrpd.h"
