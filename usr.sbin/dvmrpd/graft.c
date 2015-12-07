@@ -1,4 +1,4 @@
-/*	$OpenBSD: graft.c,v 1.3 2014/10/25 03:23:49 lteo Exp $ */
+/*	$OpenBSD: graft.c,v 1.4 2015/05/05 01:26:37 jsg Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -23,7 +23,6 @@
 #include <arpa/inet.h>
 
 #include <stdlib.h>
-#include <strings.h>
 
 #include "igmp.h"
 #include "dvmrpd.h"
