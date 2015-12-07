@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.143 2015/07/02 01:33:59 dlg Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.144 2015/07/13 17:45:01 mikeb Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -121,7 +121,8 @@ struct cpu_info {
 	u_int32_t	ci_family;		/* extended cpuid family */
 	u_int32_t	ci_model;		/* extended cpuid model */
 	u_int32_t	ci_feature_flags;	/* X86 CPUID feature bits */
-	u_int32_t	ci_feature_sefflags;	/* more CPUID feature bits */
+	u_int32_t	ci_feature_sefflags_ebx;/* more CPUID feature bits */
+	u_int32_t	ci_feature_sefflags_ecx;/* more CPUID feature bits */
 	u_int32_t	ci_feature_tpmflags;	/* thermal & power bits */
 	u_int32_t	cpu_class;		/* CPU class */
 	u_int32_t	ci_cflushsz;		/* clflush cache-line size */
