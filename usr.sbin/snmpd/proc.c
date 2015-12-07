@@ -474,9 +474,9 @@ proc_dispatch(int fd, short event, void *arg)
 			break;
 
 #if DEBUG > 1
-		log_debug("%s: %s %d got imsg %d from %s %d",
+		log_debug("%s: %s %d got imsg %d peerid %d from %s %d",
 		    __func__, title, ps->ps_instance + 1,
-		    imsg.hdr.type, p->p_title, p->p_instance);
+		    imsg.hdr.type, imsg.hdr.peerid, p->p_title, p->p_instance);
 #endif
 
 		/*
@@ -498,9 +498,11 @@ proc_dispatch(int fd, short event, void *arg)
 			log_verbose(verbose);
 			break;
 		default:
-			log_warnx("%s: %s %d got invalid imsg %d from %s %d",
+			log_warnx("%s: %s %d got invalid imsg %d peerid %d "
+			    "from %s %d",
 			    __func__, title, ps->ps_instance + 1,
-			    imsg.hdr.type, p->p_title, p->p_instance);
+			    imsg.hdr.type, imsg.hdr.peerid,
+			    p->p_title, p->p_instance);
 			fatalx(__func__);
 		}
 		imsg_free(&imsg);
