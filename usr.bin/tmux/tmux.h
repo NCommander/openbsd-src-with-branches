@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.592 2015/11/24 23:46:15 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.593 2015/11/27 15:06:43 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1757,6 +1757,7 @@ const char	*key_string_lookup_key(key_code);
 /* alerts.c */
 void	alerts_reset_all(void);
 void	alerts_queue(struct window *, int);
+void	alerts_check_session(struct session *);
 
 /* server.c */
 extern struct tmuxproc *server_proc;
