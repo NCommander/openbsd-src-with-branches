@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_mfc.c,v 1.8 2009/09/22 16:24:21 michele Exp $ */
+/*	$OpenBSD: rde_mfc.c,v 1.9 2011/04/06 11:36:26 miod Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -251,7 +251,7 @@ mfc_send_prune(struct rt_node *rn, struct mfc_node *mn)
 {
 	struct prune	p;
 
-	bzero(&p, sizeof(p));
+	memset(&p, 0, sizeof(p));
 
 	p.origin.s_addr = (mn->origin.s_addr &
 	    htonl(prefixlen2mask(rn->prefixlen)));
