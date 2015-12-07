@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_screen.c,v 1.22 2014/11/12 16:29:04 millert Exp $	*/
+/*	$OpenBSD: cl_screen.c,v 1.23 2015/04/10 18:05:51 brynet Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -502,7 +502,7 @@ cl_getcap(SCR *sp, char *name, char **elementp)
 
 	if ((t = tigetstr(name)) != NULL &&
 	    t != (char *)-1 && (len = strlen(t)) != 0) {
-		MALLOC_RET(sp, *elementp, char *, len + 1);
+		MALLOC_RET(sp, *elementp, len + 1);
 		memmove(*elementp, t, len + 1);
 	}
 	return (0);

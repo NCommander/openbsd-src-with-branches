@@ -1,4 +1,4 @@
-/*	$OpenBSD: mark.c,v 1.8 2009/10/27 23:59:47 deraadt Exp $	*/
+/*	$OpenBSD: mark.c,v 1.9 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -160,7 +160,7 @@ mark_set(SCR *sp, ARG_CHAR_T key, MARK *value, int userset)
 	 */
 	lmp = mark_find(sp, key);
 	if (lmp == NULL || lmp->name != key) {
-		MALLOC_RET(sp, lmt, LMARK *, sizeof(LMARK));
+		MALLOC_RET(sp, lmt, sizeof(LMARK));
 		if (lmp == NULL) {
 			LIST_INSERT_HEAD(&sp->ep->marks, lmt, q);
 		} else

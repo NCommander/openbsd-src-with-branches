@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_source.c,v 1.8 2013/05/03 20:43:25 kili Exp $	*/
+/*	$OpenBSD: ex_source.c,v 1.9 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -58,7 +58,7 @@ ex_sourcefd(SCR *sp, EXCMD *cmdp, int fd)
 		goto err;
 	}
 
-	MALLOC(sp, bp, char *, (size_t)sb.st_size + 1);
+	MALLOC(sp, bp, (size_t)sb.st_size + 1);
 	if (bp == NULL) {
 		(void)close(fd);
 		return (1);
