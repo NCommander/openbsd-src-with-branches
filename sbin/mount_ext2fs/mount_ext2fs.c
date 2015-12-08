@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_ext2fs.c,v 1.16 2012/07/09 12:58:01 krw Exp $	*/
+/*	$OpenBSD: mount_ext2fs.c,v 1.17 2015/01/16 06:39:59 deraadt Exp $	*/
 /*	$NetBSD: mount_ffs.c,v 1.3 1996/04/13 01:31:19 jtc Exp $	*/
 
 /*-
@@ -75,7 +75,7 @@ main(int argc, char *argv[])
 	if (argc != 2)
 		ext2fs_usage();
 
-        args.fspec = argv[0];		/* The name of the device file. */
+	args.fspec = argv[0];		/* The name of the device file. */
 	if (realpath(argv[1], fs_name) == NULL)	/* The mount point. */
 		err(1, "realpath %s", argv[1]);
 
