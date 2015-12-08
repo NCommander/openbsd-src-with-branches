@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.10 2014/09/17 16:39:45 ajacoutot Exp $
+# $OpenBSD: Makefile,v 1.11 2015/05/26 14:34:59 naddy Exp $
 #
 # Generate the various .db versions from their source files.
 
 DB_FILES= aliases.db
-MAKEMAP= /usr/libexec/smtpd/makemap
+MAKEMAP= /usr/sbin/makemap
 
 all: ${DB_FILES}
 
