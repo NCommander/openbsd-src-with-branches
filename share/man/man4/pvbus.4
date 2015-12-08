@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pvbus.4,v 1.1 2015/07/21 03:40:01 reyk Exp $
+.\"	$OpenBSD: pvbus.4,v 1.2 2015/07/21 07:01:21 schwarze Exp $
 .\"
 .\" Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
 .\" Copyright (c) 2006 Jason McIntyre <jmc@openbsd.org>
@@ -39,6 +39,10 @@ checking the capabilities, and attaching the paravirtual devices.
 Kernel-based Virtual Machine
 .It Hyper-V
 Microsoft Hyper-V
+.It Xr vmm 4
+.Ox
+virtual machine monitor
+(VMM)
 .It VMware
 VMware vSphere Hypervisor and ESXi
 .It Xen
@@ -55,7 +59,8 @@ VMware Tools driver
 .Sh SEE ALSO
 .Xr autoconf 4 ,
 .Xr intro 4 ,
-.Xr mainbus 4
+.Xr mainbus 4 ,
+.Xr vmm 4
 .Sh HISTORY
 The
 .Nm
