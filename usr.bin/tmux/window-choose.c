@@ -1,4 +1,4 @@
-/* $OpenBSD: window-choose.c,v 1.69 2015/11/12 11:09:11 nicm Exp $ */
+/* $OpenBSD: window-choose.c,v 1.70 2015/11/18 14:27:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -186,7 +186,7 @@ window_choose_data_create(int type, struct client *c, struct session *s)
 	wcd = xmalloc(sizeof *wcd);
 	wcd->type = type;
 
-	wcd->ft = format_create();
+	wcd->ft = format_create(0);
 	wcd->ft_template = NULL;
 
 	wcd->command = NULL;

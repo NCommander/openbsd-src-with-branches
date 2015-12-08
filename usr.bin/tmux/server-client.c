@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.173 2015/12/01 09:41:03 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.174 2015/12/08 01:10:31 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -933,7 +933,7 @@ server_client_set_title(struct client *c)
 
 	template = options_get_string(s->options, "set-titles-string");
 
-	ft = format_create();
+	ft = format_create(0);
 	format_defaults(ft, c, NULL, NULL, NULL);
 
 	title = format_expand_time(ft, template, time(NULL));

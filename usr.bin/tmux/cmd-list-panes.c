@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-list-panes.c,v 1.20 2015/02/05 10:29:43 nicm Exp $ */
+/* $OpenBSD: cmd-list-panes.c,v 1.21 2015/09/16 22:40:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -125,7 +125,7 @@ cmd_list_panes_window(struct cmd *self, struct session *s, struct winlink *wl,
 
 	n = 0;
 	TAILQ_FOREACH(wp, &wl->window->panes, entry) {
-		ft = format_create();
+		ft = format_create(0);
 		format_add(ft, "line", "%u", n);
 		format_defaults(ft, NULL, s, wl, wp);
 
