@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.148 2015/12/03 16:27:32 mpi Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.149 2015/12/05 10:07:55 tedu Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -597,16 +597,6 @@ vlan_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			ifp->if_flags |= IFF_UP;
 		else
 			error = EINVAL;
-		break;
-
-	case SIOCGIFADDR:
-		{
-			struct sockaddr	*sa;
-
-			sa = (struct sockaddr *)&ifr->ifr_data;
-			bcopy(((struct arpcom *)ifp->if_softc)->ac_enaddr,
-			    (caddr_t) sa->sa_data, ETHER_ADDR_LEN);
-		}
 		break;
 
 	case SIOCSIFMTU:
