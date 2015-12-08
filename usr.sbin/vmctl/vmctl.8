@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vmctl.8,v 1.6 2015/12/05 04:40:05 deraadt Exp $
+.\"	$OpenBSD: vmctl.8,v 1.7 2015/12/05 22:34:31 sobrado Exp $
 .\"
 .\" Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
 .\"
@@ -42,6 +42,9 @@ using the format described in
 .Sh VM COMMANDS
 The options are as follows:
 .Bl -tag -width Ds
+.It Cm console Ar id
+Connect to the console of the VM with the specified
+.Ar id .
 .It Cm create Ar path Fl s Ar size
 Creates a VM disk image file with the specified
 .Ar path
