@@ -1,4 +1,4 @@
-/*	$OpenBSD: atw.c,v 1.90 2015/11/04 12:11:59 dlg Exp $	*/
+/*	$OpenBSD: atw.c,v 1.91 2015/11/25 03:09:58 dlg Exp $	*/
 /*	$NetBSD: atw.c,v 1.69 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -786,8 +786,7 @@ atw_attach(struct atw_softc *sc)
 
 	memcpy(ifp->if_xname, sc->sc_dev.dv_xname, IFNAMSIZ);
 	ifp->if_softc = sc;
-	ifp->if_flags = IFF_SIMPLEX | IFF_BROADCAST | IFF_MULTICAST |
-	    IFF_NOTRAILERS;
+	ifp->if_flags = IFF_SIMPLEX | IFF_BROADCAST | IFF_MULTICAST;
 	ifp->if_ioctl = atw_ioctl;
 	ifp->if_start = atw_start;
 	ifp->if_watchdog = atw_watchdog;

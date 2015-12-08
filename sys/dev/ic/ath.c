@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.107 2015/11/04 12:11:59 dlg Exp $  */
+/*      $OpenBSD: ath.c,v 1.108 2015/11/25 03:09:58 dlg Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -350,8 +350,7 @@ ath_attach(u_int16_t devid, struct ath_softc *sc)
 	}
 
 	ifp->if_softc = sc;
-	ifp->if_flags = IFF_SIMPLEX | IFF_BROADCAST | IFF_MULTICAST
-	    | IFF_NOTRAILERS;
+	ifp->if_flags = IFF_SIMPLEX | IFF_BROADCAST | IFF_MULTICAST;
 	ifp->if_start = ath_start;
 	ifp->if_watchdog = ath_watchdog;
 	ifp->if_ioctl = ath_ioctl;

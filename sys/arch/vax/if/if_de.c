@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.33 2015/11/24 17:11:38 mpi Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.34 2015/11/25 03:09:58 dlg Exp $	*/
 /*	$NetBSD: if_de.c,v 1.27 1997/04/19 15:02:29 ragge Exp $	*/
 
 /*
@@ -160,7 +160,7 @@ deattach(parent, self, aux)
 	ds->ds_vaddr = addr;
 	bcopy(ds->ds_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
 	ifp->if_softc = ds;
-	ifp->if_flags = IFF_BROADCAST | IFF_NOTRAILERS;
+	ifp->if_flags = IFF_BROADCAST;
 
 	/*
 	 * What kind of a board is this?

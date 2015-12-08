@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.132 2015/11/25 11:20:38 mpi Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.133 2015/12/08 06:12:56 dlg Exp $	*/
 /*	$NetBSD: if_de.c,v 1.58 1998/01/12 09:39:58 thorpej Exp $	*/
 
 /*-
@@ -4571,7 +4571,7 @@ tulip_attach(struct device * const parent, struct device * const self, void * co
 		   intrstr, ether_sprintf(sc->tulip_enaddr));
 	}
 
-	ifp->if_flags = IFF_BROADCAST|IFF_SIMPLEX|IFF_NOTRAILERS|IFF_MULTICAST;
+	ifp->if_flags = IFF_BROADCAST|IFF_SIMPLEX|IFF_MULTICAST;
 	ifp->if_ioctl = tulip_ifioctl;
 	ifp->if_start = tulip_ifstart;
 	ifp->if_watchdog = tulip_ifwatchdog;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.59 2015/11/25 03:09:58 dlg Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.60 2015/11/25 11:20:38 mpi Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.33 1997/07/29 17:55:38 fair Exp $	*/
 
 /*-
@@ -639,7 +639,7 @@ ieattach(parent, self, aux)
 	ifp->if_ioctl = ieioctl;
 	ifp->if_watchdog = iewatchdog;
 	ifp->if_flags =
-	    IFF_BROADCAST | IFF_SIMPLEX | IFF_NOTRAILERS | IFF_MULTICAST;
+	    IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
 
 	/* Attach the interface. */
 	if_attach(ifp);

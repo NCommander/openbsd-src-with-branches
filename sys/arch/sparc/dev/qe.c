@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.47 2015/11/25 03:09:58 dlg Exp $	*/
+/*	$OpenBSD: qe.c,v 1.48 2015/11/25 11:20:38 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998, 2000 Jason L. Wright.
@@ -149,7 +149,7 @@ qeattach(parent, self, aux)
 	ifp->if_start = qestart;
 	ifp->if_ioctl = qeioctl;
 	ifp->if_watchdog = qewatchdog;
-	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_NOTRAILERS |
+	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX |
 	    IFF_MULTICAST;
 
 	ifmedia_init(&sc->sc_ifmedia, IFM_IMASK,
