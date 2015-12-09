@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.11 2015/11/27 01:57:59 mmcc Exp $	*/
+/*	$OpenBSD: imsg.c,v 1.12 2015/12/05 13:06:52 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -72,7 +72,7 @@ imsg_read(struct imsgbuf *ibuf)
 
 again:
 	if (getdtablecount() + imsg_fd_overhead +
-	    (CMSG_SPACE(sizeof(int))-CMSG_SPACE(0))/sizeof(int)
+	    (int)((CMSG_SPACE(sizeof(int))-CMSG_SPACE(0))/sizeof(int))
 	    >= getdtablesize()) {
 		errno = EAGAIN;
 		free(ifd);
