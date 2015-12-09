@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_var.h,v 1.65 2015/12/08 10:06:12 dlg Exp $	*/
+/*	$OpenBSD: if_var.h,v 1.64 2015/12/05 16:24:59 mpi Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -42,6 +42,7 @@
 #include <sys/mbuf.h>
 #include <sys/srp.h>
 #include <sys/refcnt.h>
+#include <sys/task.h>
 #include <sys/time.h>
 
 #include <net/ifq.h>
