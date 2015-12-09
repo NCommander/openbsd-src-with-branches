@@ -1,4 +1,5 @@
 /*
+  February 2013(Wouter) patch defines for BSD endianness, from Brad Smith.
   January 2012(Wouter) added randomised initial value, fallout from 28c3.
   March 2007(Wouter) adapted from lookup3.c original, add config.h include.
      added #ifdef VALGRIND to remove 298,384,660 'unused variable k8' warnings.
@@ -49,12 +50,22 @@ on 1 byte), but shoehorning those bytes into integers efficiently is messy.
 #include <time.h>       /* defines time_t for timings in the test */
 /*#include <stdint.h>     defines uint32_t etc  (from config.h) */
 #include <sys/param.h>  /* attempt to define endianness */
-#ifdef linux
-# include <endian.h>    /* attempt to define endianness */
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h> /* attempt to define endianness (solaris) */
+#endif
+#if defined(linux) || defined(__OpenBSD__)
+#  ifdef HAVE_ENDIAN_H
+#    include <endian.h>    /* attempt to define endianness */
+#  else
+#    include <machine/endian.h> /* on older OpenBSD */
+#  endif
+#endif
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
+#include <sys/endian.h> /* attempt to define endianness */
 #endif
 
 /* random initial value */
-static uint32_t raninit = 0xdeadbeef;
+static uint32_t raninit = (uint32_t)0xdeadbeef;
 
 void
 hash_set_raninit(uint32_t v)
@@ -69,14 +80,24 @@ hash_set_raninit(uint32_t v)
 #if (defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && \
      __BYTE_ORDER == __LITTLE_ENDIAN) || \
     (defined(i386) || defined(__i386__) || defined(__i486__) || \
-     defined(__i586__) || defined(__i686__) || defined(vax) || defined(MIPSEL))
+     defined(__i586__) || defined(__i686__) || defined(vax) || defined(MIPSEL) || defined(__x86))
 # define HASH_LITTLE_ENDIAN 1
 # define HASH_BIG_ENDIAN 0
 #elif (defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && \
        __BYTE_ORDER == __BIG_ENDIAN) || \
-      (defined(sparc) || defined(POWERPC) || defined(mc68000) || defined(sel))
+      (defined(sparc) || defined(__sparc) || defined(__sparc__) || defined(POWERPC) || defined(mc68000) || defined(sel))
 # define HASH_LITTLE_ENDIAN 0
 # define HASH_BIG_ENDIAN 1
+#elif defined(_MACHINE_ENDIAN_H_)
+/* test for machine_endian_h protects failure if some are empty strings */
+# if defined(_BYTE_ORDER) && defined(_BIG_ENDIAN) && _BYTE_ORDER == _BIG_ENDIAN
+#  define HASH_LITTLE_ENDIAN 0
+#  define HASH_BIG_ENDIAN 1
+# endif
+# if defined(_BYTE_ORDER) && defined(_LITTLE_ENDIAN) && _BYTE_ORDER == _LITTLE_ENDIAN
+#  define HASH_LITTLE_ENDIAN 1
+#  define HASH_BIG_ENDIAN 0
+# endif /* _MACHINE_ENDIAN_H_ */
 #else
 # define HASH_LITTLE_ENDIAN 0
 # define HASH_BIG_ENDIAN 0
@@ -335,7 +356,7 @@ uint32_t hashlittle( const void *key, size_t length, uint32_t initval)
      * rest of the string.  Every machine with memory protection I've seen
      * does it on word boundaries, so is OK with this.  But VALGRIND will
      * still catch it and complain.  The masking trick does make the hash
-     * noticably faster for short strings (like English words).
+     * noticeably faster for short strings (like English words).
      */
 #ifndef VALGRIND
 
@@ -523,7 +544,7 @@ void hashlittle2(
      * rest of the string.  Every machine with memory protection I've seen
      * does it on word boundaries, so is OK with this.  But VALGRIND will
      * still catch it and complain.  The masking trick does make the hash
-     * noticably faster for short strings (like English words).
+     * noticeably faster for short strings (like English words).
      */
 #ifndef VALGRIND
 
@@ -704,7 +725,7 @@ uint32_t hashbig( const void *key, size_t length, uint32_t initval)
      * rest of the string.  Every machine with memory protection I've seen
      * does it on word boundaries, so is OK with this.  But VALGRIND will
      * still catch it and complain.  The masking trick does make the hash
-     * noticably faster for short strings (like English words).
+     * noticeably faster for short strings (like English words).
      */
 #ifndef VALGRIND
 
@@ -837,7 +858,7 @@ void driver2()
     {
       for (j=0; j<8; ++j)   /*------------------------ for each input bit, */
       {
-	for (m=1; m<8; ++m) /*------------ for serveral possible initvals, */
+	for (m=1; m<8; ++m) /*------------ for several possible initvals, */
 	{
 	  for (l=0; l<HASHSTATE; ++l)
 	    e[l]=f[l]=g[l]=h[l]=x[l]=y[l]=~((uint32_t)0);

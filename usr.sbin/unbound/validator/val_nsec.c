@@ -1,5 +1,5 @@
 /*
- * validator/val_nsec.c - validator NSEC denial of existance functions.
+ * validator/val_nsec.c - validator NSEC denial of existence functions.
  *
  * Copyright (c) 2007, NLnet Labs. All rights reserved.
  *
@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -38,10 +38,9 @@
  *
  * This file contains helper functions for the validator module.
  * The functions help with NSEC checking, the different NSEC proofs
- * for denial of existance, and proofs for presence of types.
+ * for denial of existence, and proofs for presence of types.
  */
 #include "config.h"
-#include <ldns/packet.h>
 #include "validator/val_nsec.h"
 #include "validator/val_utils.h"
 #include "util/data/msgreply.h"
@@ -197,7 +196,7 @@ nsec_verify_rrset(struct module_env* env, struct val_env* ve,
 enum sec_status 
 val_nsec_prove_nodata_dsreply(struct module_env* env, struct val_env* ve, 
 	struct query_info* qinfo, struct reply_info* rep, 
-	struct key_entry_key* kkey, uint32_t* proof_ttl, char** reason)
+	struct key_entry_key* kkey, time_t* proof_ttl, char** reason)
 {
 	struct ub_packed_rrset_key* nsec = reply_find_rrset_section_ns(
 		rep, qinfo->qname, qinfo->qname_len, LDNS_RR_TYPE_NSEC, 
@@ -280,7 +279,7 @@ val_nsec_prove_nodata_dsreply(struct module_env* env, struct val_env* ve,
 		return sec_status_insecure;
 	}
 
-	/* NSEC proof did not conlusively point to DS or no DS */
+	/* NSEC proof did not conclusively point to DS or no DS */
 	return sec_status_unchecked;
 }
 
@@ -368,8 +367,8 @@ int nsec_proves_nodata(struct ub_packed_rrset_key* nsec,
 		!nsec_has_type(nsec, LDNS_RR_TYPE_SOA)) {
 		return 0;
 	} else if(qinfo->qtype == LDNS_RR_TYPE_DS &&
-		nsec_has_type(nsec, LDNS_RR_TYPE_SOA &&
-		!dname_is_root(qinfo->qname))) {
+		nsec_has_type(nsec, LDNS_RR_TYPE_SOA) &&
+		!dname_is_root(qinfo->qname)) {
 		return 0;
 	}
 
