@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgplg.c,v 1.13 2015/01/16 06:40:06 deraadt Exp $	*/
+/*	$OpenBSD: bgplg.c,v 1.14 2015/10/18 22:37:30 benno Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Reyk Floeter <reyk@openbsd.org>
@@ -219,8 +219,7 @@ lg_argextra(char **argv, int argc, struct cmd *cmdp)
 
 	new_argv[c] = NULL;
 
-	if (argv != NULL)
-		free(argv);
+	free(argv);
 
 	return (new_argv);
 }
@@ -371,8 +370,7 @@ main(void)
  err:
 	fflush(stdout);
 
-	if (argv != NULL)
-		free(argv);
+	free(argv);
 
 	printf("</pre>\n");
 
