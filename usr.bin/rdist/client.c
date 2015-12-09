@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.33 2015/01/20 09:00:16 guenther Exp $	*/
+/*	$OpenBSD: client.c,v 1.34 2015/01/21 03:18:31 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -305,12 +305,9 @@ checkfilename(char *name)
 void
 freelinkinfo(struct linkbuf *lp)
 {
-	if (lp->pathname)
-		free(lp->pathname);
-	if (lp->src)
-		free(lp->src);
-	if (lp->target)
-		free(lp->target);
+	free(lp->pathname);
+	free(lp->src);
+	free(lp->target);
 	free(lp);
 }
 

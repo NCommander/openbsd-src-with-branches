@@ -1,4 +1,4 @@
-/*	$OpenBSD: paste.c,v 1.20 2015/10/07 14:12:42 deraadt Exp $	*/
+/*	$OpenBSD: paste.c,v 1.21 2015/10/09 01:37:08 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -212,8 +212,7 @@ sequential(char **argv)
 		}
 		if (fp != stdin)
 			(void)fclose(fp);
-		if (lbuf)
-			free(lbuf);
+		free(lbuf);
 	}
 }
 
