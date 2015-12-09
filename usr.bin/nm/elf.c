@@ -1,4 +1,4 @@
-/*	$OpenBSD: elf.c,v 1.32 2015/06/23 15:16:34 semarie Exp $	*/
+/*	$OpenBSD: elf.c,v 1.33 2015/08/13 19:13:28 miod Exp $	*/
 
 /*
  * Copyright (c) 2003 Michael Shalayeff
@@ -590,10 +590,8 @@ elf_symload(const char *name, FILE *fp, off_t foff, Elf_Ehdr *eh,
 	free(shstr);
 	if (stab == NULL) {
 		warnx("%s: no name list", name);
-		if (*pnames)
-			free(*pnames);
-		if (*psnames)
-			free(*psnames);
+		free(*pnames);
+		free(*psnames);
 		return (1);
 	}
 
