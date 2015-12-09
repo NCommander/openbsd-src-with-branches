@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.134 2015/07/15 22:16:42 deraadt Exp $ */
+/*	$OpenBSD: ip_esp.c,v 1.135 2015/11/03 01:50:36 mikeb Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -109,10 +109,6 @@ esp_init(struct tdb *tdbp, struct xformsw *xsp, struct ipsecinit *ii)
 		switch (ii->ii_encalg) {
 		case SADB_EALG_NULL:
 			txform = &enc_xform_null;
-			break;
-
-		case SADB_EALG_DESCBC:
-			txform = &enc_xform_des;
 			break;
 
 		case SADB_EALG_3DESCBC:
