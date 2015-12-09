@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.73 2015/10/18 03:04:11 mmcc Exp $	*/
+/*	$OpenBSD: util.c,v 1.75 2015/10/18 03:41:14 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.12 1997/08/18 10:20:27 lukem Exp $	*/
 
 /*-
@@ -899,10 +899,8 @@ progressmeter(int flag, const char *filename)
 	} else if (flag == 1) {
 		alarmtimer(0);
 		(void)putc('\n', ttyout);
-		if (title != NULL) {
-			free(title);
-			title = NULL;
-		}
+		free(title);
+		title = NULL;
 	}
 	fflush(ttyout);
 }

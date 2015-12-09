@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.102 2015/01/16 06:40:07 deraadt Exp $	*/
+/*	$OpenBSD: server.c,v 1.103 2015/11/05 09:48:21 nicm Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -366,8 +366,7 @@ cvs_server_directory(char *data)
 		free(entry);
 	}
 
-	if (server_currentdir != NULL)
-		free(server_currentdir);
+	free(server_currentdir);
 	server_currentdir = p;
 
 	free(dir);
