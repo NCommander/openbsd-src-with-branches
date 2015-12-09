@@ -172,7 +172,7 @@ dname_label(const dname_type *dname, uint8_t label)
 
 
 /*
- * Compare two domain names.  The comparison defines a lexographical
+ * Compare two domain names.  The comparison defines a lexicographical
  * ordering based on the domain name's labels, starting with the most
  * significant label.
  *
@@ -185,7 +185,7 @@ int dname_compare(const dname_type *left, const dname_type *right);
 
 
 /*
- * Compare two labels.  The comparison defines a lexographical
+ * Compare two labels.  The comparison defines a lexicographical
  * ordering based on the characters in the labels.
  *
  * Return < 0 if LEFT < RIGHT, 0 if LEFT == RIGHT, and > 0 if LEFT >
@@ -217,7 +217,7 @@ static inline size_t
 dname_total_size(const dname_type *dname)
 {
 	return (sizeof(dname_type)
-		+ ((dname->label_count + dname->name_size)
+		+ ((((size_t)dname->label_count) + ((size_t)dname->name_size))
 		   * sizeof(uint8_t)));
 }
 
@@ -373,5 +373,12 @@ const dname_type *dname_replace(region_type* region,
 				const dname_type* name,
 				const dname_type* src,
 				const dname_type* dest);
+
+/** Convert uncompressed wireformat dname to a string */
+char* wiredname2str(const uint8_t* dname);
+/** convert uncompressed label to string */
+char* wirelabel2str(const uint8_t* label);
+/** check if two uncompressed dnames of the same total length are equal */
+int dname_equal_nocase(uint8_t* a, uint8_t* b, uint16_t len);
 
 #endif /* _DNAME_H_ */
