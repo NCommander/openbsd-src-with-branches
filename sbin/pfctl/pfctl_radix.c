@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_radix.c,v 1.31 2014/05/07 14:59:11 tedu Exp $ */
+/*	$OpenBSD: pfctl_radix.c,v 1.32 2015/01/21 21:50:33 deraadt Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -490,8 +490,7 @@ pfr_buf_clear(struct pfr_buffer *b)
 {
 	if (b == NULL)
 		return;
-	if (b->pfrb_caddr != NULL)
-		free(b->pfrb_caddr);
+	free(b->pfrb_caddr);
 	b->pfrb_caddr = NULL;
 	b->pfrb_size = b->pfrb_msize = 0;
 }

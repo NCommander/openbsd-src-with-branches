@@ -1,4 +1,4 @@
-/*	$OpenBSD: swaplist.c,v 1.10 2015/01/16 06:40:01 deraadt Exp $	*/
+/*	$OpenBSD: swaplist.c,v 1.11 2015/08/20 22:02:21 deraadt Exp $	*/
 /*	$NetBSD: swaplist.c,v 1.8 1998/10/08 10:00:31 mrg Exp $	*/
 
 /*
@@ -120,6 +120,5 @@ list_swap(int pri, int kflag, int pflag, int dolong)
 		    (long)(dbtoqb(totalinuse) / blocksize),
 		    (long)(dbtoqb(totalsize - totalinuse) / blocksize),
 		    (double)(totalinuse) / (double)totalsize * 100.0);
-	if (fsep)
-		free(fsep);
+	free(fsep);
 }

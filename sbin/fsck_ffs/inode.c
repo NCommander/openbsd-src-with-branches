@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.c,v 1.45 2015/01/16 06:39:57 deraadt Exp $	*/
+/*	$OpenBSD: inode.c,v 1.46 2015/01/20 18:22:21 deraadt Exp $	*/
 /*	$NetBSD: inode.c,v 1.23 1996/10/11 20:15:47 thorpej Exp $	*/
 
 /*
@@ -378,8 +378,7 @@ void
 freeinodebuf(void)
 {
 
-	if (inodebuf != NULL)
-		free(inodebuf);
+	free(inodebuf);
 	inodebuf = NULL;
 }
 

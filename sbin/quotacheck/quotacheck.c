@@ -1,4 +1,4 @@
-/*	$OpenBSD: quotacheck.c,v 1.37 2015/02/07 02:09:14 deraadt Exp $	*/
+/*	$OpenBSD: quotacheck.c,v 1.38 2015/04/18 18:28:37 deraadt Exp $	*/
 /*	$NetBSD: quotacheck.c,v 1.12 1996/03/30 22:34:25 mark Exp $	*/
 
 /*
@@ -728,8 +728,7 @@ void
 freeinodebuf(void)
 {
 
-	if (inodebuf != NULL)
-		free(inodebuf);
+	free(inodebuf);
 	inodebuf = NULL;
 }
 
