@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sq.c,v 1.23 2015/11/25 03:09:58 dlg Exp $	*/
+/*	$OpenBSD: if_sq.c,v 1.24 2015/12/08 13:34:22 tedu Exp $	*/
 /*	$NetBSD: if_sq.c,v 1.42 2011/07/01 18:53:47 dyoung Exp $	*/
 
 /*
@@ -407,7 +407,7 @@ sq_attach(struct device *parent, struct device *self, void *aux)
 			    IFM_ETHER | IFM_10_T, 0, NULL);
 
 			/*
-			 * Force autoselect, and set the the 10BaseT port
+			 * Force autoselect, and set the 10BaseT port
 			 * to use UTP cable.
 			 */
 			media = IFM_ETHER | IFM_AUTO;
