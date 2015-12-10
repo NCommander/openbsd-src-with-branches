@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.460 2015/11/16 22:51:05 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.461 2015/12/04 16:41:28 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1204,8 +1204,7 @@ server_accept_loop(int *sock_in, int *sock_out, int *newsock, int *config_s)
 	for (;;) {
 		if (received_sighup)
 			sighup_restart();
-		if (fdset != NULL)
-			free(fdset);
+		free(fdset);
 		fdset = xcalloc(howmany(maxfd + 1, NFDBITS),
 		    sizeof(fd_mask));
 

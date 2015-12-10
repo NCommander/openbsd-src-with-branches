@@ -1,4 +1,4 @@
-/* $OpenBSD: cipher.c,v 1.99 2014/06/24 01:13:21 djm Exp $ */
+/* $OpenBSD: cipher.c,v 1.100 2015/01/14 10:29:45 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -347,8 +347,7 @@ cipher_init(struct sshcipher_ctx *cc, const struct sshcipher *cipher,
 	if (cipher->discard_len > 0) {
 		if ((junk = malloc(cipher->discard_len)) == NULL ||
 		    (discard = malloc(cipher->discard_len)) == NULL) {
-			if (junk != NULL)
-				free(junk);
+			free(junk);
 			ret = SSH_ERR_ALLOC_FAIL;
 			goto bad;
 		}

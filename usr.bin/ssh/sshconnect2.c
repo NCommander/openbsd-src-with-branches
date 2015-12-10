@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.230 2015/12/04 00:24:55 djm Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.231 2015/12/04 16:41:28 markus Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -1249,8 +1249,7 @@ load_identity_file(Identity *id)
 			explicit_bzero(passphrase, strlen(passphrase));
 			free(passphrase);
 		}
-		if (comment)
-			free(comment);
+		free(comment);
 		if (private != NULL || quit)
 			break;
 	}

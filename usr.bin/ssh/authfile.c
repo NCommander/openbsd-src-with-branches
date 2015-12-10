@@ -1,4 +1,4 @@
-/* $OpenBSD: authfile.c,v 1.116 2015/07/09 09:49:46 markus Exp $ */
+/* $OpenBSD: authfile.c,v 1.117 2015/09/13 14:39:16 tim Exp $ */
 /*
  * Copyright (c) 2000, 2013 Markus Friedl.  All rights reserved.
  *
@@ -421,8 +421,7 @@ sshkey_load_cert(const char *filename, struct sshkey **keyp)
 	r = 0;
 
  out:
-	if (file != NULL)
-		free(file);
+	free(file);
 	if (pub != NULL)
 		sshkey_free(pub);
 	return r;
