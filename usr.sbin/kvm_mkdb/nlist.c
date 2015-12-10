@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.47 2015/01/18 04:48:24 deraadt Exp $	*/
+/*	$OpenBSD: nlist.c,v 1.48 2015/08/20 22:39:29 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -297,8 +297,7 @@ done:
 			munmap(strtab, symstrsize);
 	}
 	(void)fclose(fp);
-	if (sh)
-		free(sh);
+	free(sh);
 	return (error);
 }
 
