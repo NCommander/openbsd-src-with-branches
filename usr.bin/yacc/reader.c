@@ -1,4 +1,4 @@
-/* $OpenBSD: reader.c,v 1.30 2014/12/02 15:56:22 millert Exp $	 */
+/* $OpenBSD: reader.c,v 1.31 2014/12/05 04:03:57 jsg Exp $	 */
 /* $NetBSD: reader.c,v 1.5 1996/03/19 03:21:43 jtc Exp $	 */
 
 /*
@@ -137,8 +137,7 @@ get_line(void)
 		return;
 	}
 	if (line == NULL || linesize != (LINESIZE + 1)) {
-		if (line)
-			free(line);
+		free(line);
 		linesize = LINESIZE + 1;
 		line = malloc(linesize);
 		if (line == NULL)
