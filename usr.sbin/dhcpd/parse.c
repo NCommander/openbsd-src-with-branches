@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.17 2013/12/18 20:37:04 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.18 2015/05/18 17:51:21 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -267,6 +267,8 @@ parse_lease_time(FILE *cfile, time_t *timep)
 		skip_to_semi(cfile);
 		return;
 	}
+
+	*timep = value;
 
 	parse_semi(cfile);
 }
