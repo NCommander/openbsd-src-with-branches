@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-dss.c,v 1.32 2014/06/24 01:13:21 djm Exp $ */
+/* $OpenBSD: ssh-dss.c,v 1.33 2015/12/10 17:08:40 mmcc Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -116,8 +116,7 @@ ssh_dss_sign(const struct sshkey *key, u_char **sigp, size_t *lenp,
 	explicit_bzero(digest, sizeof(digest));
 	if (sig != NULL)
 		DSA_SIG_free(sig);
-	if (b != NULL)
-		sshbuf_free(b);
+	sshbuf_free(b);
 	return ret;
 }
 
@@ -203,8 +202,7 @@ ssh_dss_verify(const struct sshkey *key,
 	explicit_bzero(digest, sizeof(digest));
 	if (sig != NULL)
 		DSA_SIG_free(sig);
-	if (b != NULL)
-		sshbuf_free(b);
+	sshbuf_free(b);
 	free(ktype);
 	if (sigblob != NULL) {
 		explicit_bzero(sigblob, len);
