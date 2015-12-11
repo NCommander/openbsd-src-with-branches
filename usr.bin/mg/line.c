@@ -1,4 +1,4 @@
-/*	$OpenBSD: line.c,v 1.56 2015/06/03 23:40:01 bcallah Exp $	*/
+/*	$OpenBSD: line.c,v 1.57 2015/09/29 02:07:49 guenther Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -99,8 +99,7 @@ lfree(struct line *lp)
 	}
 	lp->l_bp->l_fp = lp->l_fp;
 	lp->l_fp->l_bp = lp->l_bp;
-	if (lp->l_text != NULL)
-		free(lp->l_text);
+	free(lp->l_text);
 	free(lp);
 }
 
