@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-add.c,v 1.125 2015/09/13 14:39:16 tim Exp $ */
+/* $OpenBSD: ssh-add.c,v 1.126 2015/10/15 23:51:40 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -142,10 +142,8 @@ delete_file(int agent_fd, const char *filename, int key_only)
 		    certpath, ssh_err(r));
 
  out:
-	if (cert != NULL)
-		sshkey_free(cert);
-	if (public != NULL)
-		sshkey_free(public);
+	sshkey_free(cert);
+	sshkey_free(public);
 	free(certpath);
 	free(comment);
 

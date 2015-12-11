@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.284 2015/11/28 06:50:52 deraadt Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.285 2015/12/04 16:41:28 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2152,8 +2152,7 @@ do_gen_krl(struct passwd *pw, int updating, int argc, char **argv)
 	close(fd);
 	sshbuf_free(kbuf);
 	ssh_krl_free(krl);
-	if (ca != NULL)
-		sshkey_free(ca);
+	sshkey_free(ca);
 }
 
 static void
