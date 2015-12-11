@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_mem.c,v 1.6 2015/01/21 22:26:52 deraadt Exp $	*/
+/*	$OpenBSD: tmpfs_mem.c,v 1.7 2015/03/14 03:38:52 jsg Exp $	*/
 /*	$NetBSD: tmpfs_mem.c,v 1.4 2011/05/24 01:09:47 rmind Exp $	*/
 
 /*
@@ -151,7 +151,7 @@ tmpfs_dirent_get(struct tmpfs_mount *mp)
 	if (!tmpfs_mem_incr(mp, sizeof(struct tmpfs_dirent))) {
 		return NULL;
 	}
-	return pool_get(&tmpfs_dirent_pool, PR_WAITOK);
+	return pool_get(&tmpfs_dirent_pool, PR_ZERO|PR_WAITOK);
 }
 
 void
