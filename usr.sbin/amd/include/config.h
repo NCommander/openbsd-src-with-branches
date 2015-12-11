@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)config.h	8.1 (Berkeley) 6/6/93
- *	$Id: config.h,v 1.10 2014/10/26 01:16:49 guenther Exp $
+ *	$Id: config.h,v 1.11 2014/10/26 02:32:51 guenther Exp $
  */
 
 /*
@@ -71,10 +71,6 @@ extern int orig_umask;		/* umask() on startup */
 
 #ifdef DEBUG
 #define	D_ALL	(~0)
-
-#ifdef DEBUG_MEM
-#define free(x) xfree(__FILE__,__LINE__,x)
-#endif /* DEBUG_MEM */
 
 #define Debug(x) if (!(debug_flags & (x))) ; else
 #define dlog Debug(D_FULL) dplog
