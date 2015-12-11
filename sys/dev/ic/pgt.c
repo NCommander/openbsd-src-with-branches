@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.83 2015/11/24 17:11:39 mpi Exp $  */
+/*	$OpenBSD: pgt.c,v 1.84 2015/11/25 03:09:58 dlg Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -554,9 +554,9 @@ trying_again:
 }
 
 void
-pgt_attach(void *xsc)
+pgt_attach(struct device *self)
 {
-	struct pgt_softc *sc = xsc;
+	struct pgt_softc *sc = (struct pgt_softc *)self;
 	int error;
 
 	/* debug flags */
