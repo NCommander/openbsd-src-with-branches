@@ -16,7 +16,6 @@
  *
  *   NETIO_EVENT_READ: reading will not block.
  *   NETIO_EVENT_WRITE: writing will not block.
- *   NETIO_EVENT_EXCEPT: an exception occurred.
  *   NETIO_EVENT_TIMEOUT: the timeout expired.
  *
  * A file descriptor must be specified if the handler is interested in
@@ -58,8 +57,7 @@ enum netio_event_types {
 	NETIO_EVENT_NONE    = 0,
 	NETIO_EVENT_READ    = 1,
 	NETIO_EVENT_WRITE   = 2,
-	NETIO_EVENT_EXCEPT  = 4,
-	NETIO_EVENT_TIMEOUT = 8
+	NETIO_EVENT_TIMEOUT = 4,
 };
 typedef enum netio_event_types netio_event_types_type;
 
@@ -105,6 +103,9 @@ struct netio_handler
 	 */
 	int fd;
 
+	/** index of the pollfd array for this handler */
+	int pfd;
+
 	/*
 	 * The time when no events should be checked for and the
 	 * handler should be called with the NETIO_EVENT_TIMEOUT
@@ -131,6 +132,13 @@ struct netio_handler
 	 * The event handler SHOULD NOT block.
 	 */
 	netio_event_handler_type event_handler;
+};
+
+
+struct netio_handler_list
+{
+	netio_handler_list_type *next;
+	netio_handler_type      *handler;
 };
 
 
