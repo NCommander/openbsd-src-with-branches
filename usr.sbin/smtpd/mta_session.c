@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta_session.c,v 1.76 2015/12/01 15:30:42 gilles Exp $	*/
+/*	$OpenBSD: mta_session.c,v 1.77 2015/12/05 21:27:42 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -1572,8 +1572,8 @@ mta_verify_certificate(struct mta_session *s)
 		pkiname = s->relay->pki_name;
 	else
 		pkiname = s->helo;
-	if (strlcpy(req_ca_vrfy.pkiname, pkiname, sizeof req_ca_vrfy.pkiname)
-	    >= sizeof req_ca_vrfy.pkiname)
+	if (strlcpy(req_ca_vrfy.name, pkiname, sizeof req_ca_vrfy.name)
+	    >= sizeof req_ca_vrfy.name)
 		return 0;
 
 	x = SSL_get_peer_certificate(s->io.ssl);
