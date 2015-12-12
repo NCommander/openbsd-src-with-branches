@@ -1,4 +1,4 @@
-/*	$OpenBSD: pvreg.h,v 1.2 2015/07/28 09:48:52 reyk Exp $	*/
+/*	$OpenBSD: pvreg.h,v 1.3 2015/07/29 17:08:46 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -87,6 +87,8 @@
  * Xen
  */
 #define CPUID_OFFSET_XEN_VERSION		0x1
+#define CPUID_OFFSET_XEN_HYPERCALL		0x2
+
 #define XEN_VERSION_MAJOR_S			16
 #define XEN_VERSION_MINOR_M			0xffff
 

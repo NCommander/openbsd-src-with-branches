@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.576 2015/10/21 07:59:18 mpi Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.577 2015/12/07 06:34:14 jsg Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -2041,11 +2041,6 @@ identifycpu(struct cpu_info *ci)
 #ifndef SMALL_KERNEL
 		if (ci->ci_feature_sefflags_ebx & SEFF0EBX_SMAP)
 			replacesmap();
-#endif
-
-#if NPVBUS > 0
-		if (cpu_ecxfeature & CPUIDECX_HV)
-			has_hv_cpuid = 1;
 #endif
 	}
 

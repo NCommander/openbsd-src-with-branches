@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.52 2015/07/23 06:21:37 reyk Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.53 2015/08/20 04:41:46 mlarkin Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.21 1997/06/06 23:14:20 thorpej Exp $	*/
 
 /*
@@ -36,6 +36,7 @@
 #include <sys/device.h>
 
 #include <machine/bus.h>
+#include <machine/specialreg.h>
 
 #include <dev/isa/isavar.h>
 #include <dev/eisa/eisavar.h>
@@ -141,6 +142,12 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 	extern void			(*cpusensors_setup)(struct cpu_info *);
 
 	printf("\n");
+
+#if NPVBUS > 0
+	/* Detect hypervisors early, attach the paravirtual bus later */
+	if (cpu_ecxfeature & CPUIDECX_HV)
+		pvbus_identify();
+#endif
 
 #if NBIOS > 0
 	{
