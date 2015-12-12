@@ -1,4 +1,4 @@
-/*	$OpenBSD: hub.h,v 1.6 2009/10/22 22:08:54 miod Exp $	*/
+/*	$OpenBSD: hub.h,v 1.7 2009/11/08 22:44:16 miod Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -145,10 +145,13 @@
 /* 35-0 available */
 
 /** Level 0 interrupt */
-/* 63-7 available */
+/* 63-9 available */
 /* IPI interrupts */
-#define	HUBPI_ISR0_IPI_B		6
-#define	HUBPI_ISR0_IPI_A		5
+#define	HUBPI_ISR0_IPI_B		8
+#define	HUBPI_ISR0_IPI_A		7
+/* ? */
+#define	HUBPI_CC_PEND_B			6
+#define	HUBPI_CC_PEND_A			5
 /* ? */
 #define	HUBPI_ISR0_UART			4
 /* page migration interrupt */
@@ -161,7 +164,7 @@
 #define	HUBPI_INTR1_WIDGET_MAX		35
 #define	HUBPI_INTR1_WIDGET_MIN		0
 #define	HUBPI_INTR0_WIDGET_MAX		63
-#define	HUBPI_INTR0_WIDGET_MIN		7
+#define	HUBPI_INTR0_WIDGET_MIN		9
 
 #define	HUBPI_NINTS			64	/* per register */
 
