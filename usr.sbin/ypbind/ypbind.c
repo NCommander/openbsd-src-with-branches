@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypbind.c,v 1.63 2015/01/16 06:40:22 deraadt Exp $ */
+/*	$OpenBSD: ypbind.c,v 1.64 2015/08/20 22:39:30 deraadt Exp $ */
 
 /*
  * Copyright (c) 1992, 1993, 1996, 1997, 1998 Theo de Raadt <deraadt@openbsd.org>
@@ -536,8 +536,7 @@ main(int argc, char *argv[])
 		extern void *__svc_fdset;
 
 		if (fdsrp == NULL || fdsrl != __svc_fdsetsize) {
-			if (fdsrp)
-				free(fdsrp);
+			free(fdsrp);
 
 			fdsrl = __svc_fdsetsize;
 			width = __svc_fdsetsize;
