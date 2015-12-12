@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.96 2015/12/01 06:25:43 krw Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.97 2015/12/11 21:57:31 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -168,7 +168,7 @@ main(int argc, char *argv[])
 		usage();
 
 	disk.name = argv[0];
-	DISK_open();
+	DISK_open(i_flag + u_flag + e_flag);
 
 	error = MBR_read(0, &dos_mbr);
 	if (error)
