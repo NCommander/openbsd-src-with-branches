@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.151 2015/08/19 17:52:10 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.152 2015/10/26 16:32:33 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -102,8 +102,9 @@ struct client_lease {
 	char			*server_name;
 	char			*filename;
 	char			*resolv_conf;
-	unsigned int		 is_static : 1;
-	unsigned int		 is_bootp : 1;
+	unsigned int		 is_static;
+	unsigned int		 is_bootp;
+	unsigned int		 is_invalid;
 	struct option_data	 options[256];
 };
 
