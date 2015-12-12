@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl.c,v 1.82 2015/12/12 17:16:56 gilles Exp $	*/
+/*	$OpenBSD: ssl.c,v 1.83 2015/12/12 18:30:39 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -321,10 +321,10 @@ ssl_load_keyfile(struct pki *p, const char *pathname, const char *pkiname)
 }
 
 int
-ssl_load_cafile(struct pki *p, const char *pathname)
+ssl_load_cafile(struct ca *c, const char *pathname)
 {
-	p->pki_ca = ssl_load_file(pathname, &p->pki_ca_len, 0755);
-	if (p->pki_ca == NULL)
+	c->ca_cert = ssl_load_file(pathname, &c->ca_cert_len, 0755);
+	if (c->ca_cert == NULL)
 		return 0;
 	return 1;
 }
