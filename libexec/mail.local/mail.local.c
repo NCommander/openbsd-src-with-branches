@@ -1,4 +1,4 @@
-/*	$OpenBSD: mail.local.c,v 1.33 2015/01/16 06:39:50 deraadt Exp $	*/
+/*	$OpenBSD: mail.local.c,v 1.34 2015/07/06 15:02:51 millert Exp $	*/
 
 /*-
  * Copyright (c) 1996-1998 Theo de Raadt <deraadt@theos.com>
@@ -155,8 +155,7 @@ storemail(char *from)
 		if (ferror(fp))
 			break;
 	}
-	if (tbuf)
-		free(tbuf);
+	free(tbuf);
 
 	/* Output a newline; note, empty messages are allowed. */
 	(void)putc('\n', fp);

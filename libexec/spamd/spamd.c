@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.135 2015/12/08 03:21:09 beck Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.136 2015/12/10 16:06:29 beck Exp $	*/
 
 /*
  * Copyright (c) 2015 Henning Brauer <henning@openbsd.org>
@@ -777,10 +777,8 @@ closecon(struct con *cp)
 	if (debug > 0)
 		printf("%s connected for %lld seconds.\n", cp->addr,
 		    (long long)(tt - cp->s));
-	if (cp->lists != NULL) {
-		free(cp->lists);
-		cp->lists = NULL;
-	}
+	free(cp->lists);
+	cp->lists = NULL;
 	if (cp->blacklists != NULL) {
 		blackcount--;
 		free(cp->blacklists);
