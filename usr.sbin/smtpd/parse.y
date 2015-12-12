@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.165 2015/12/11 08:19:03 gilles Exp $	*/
+/*	$OpenBSD: parse.y,v 1.166 2015/12/11 08:27:04 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -563,7 +563,7 @@ opt_listen     	: INET4			{
 			}
 			listen_opts.options |= LO_TAG;
 
-			if (strlen($2) >= MAX_TAG_SIZE) {
+			if (strlen($2) >= SMTPD_TAG_SIZE) {
        				yyerror("tag name too long");
 				free($2);
 				YYERROR;
