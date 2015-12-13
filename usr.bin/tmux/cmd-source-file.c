@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-source-file.c,v 1.20 2014/10/20 22:29:25 nicm Exp $ */
+/* $OpenBSD: cmd-source-file.c,v 1.21 2014/10/27 22:23:47 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Tiago Cunha <me@tiagocunha.org>
@@ -45,8 +45,7 @@ cmd_source_file_exec(struct cmd *self, struct cmd_q *cmdq)
 	struct cmd_q	*cmdq1;
 	char		*cause;
 
-	cmdq1 = cmdq_new(NULL);
-	cmdq1->client = cmdq->client;
+	cmdq1 = cmdq_new(cmdq->client);
 	cmdq1->emptyfn = cmd_source_file_done;
 	cmdq1->data = cmdq;
 
