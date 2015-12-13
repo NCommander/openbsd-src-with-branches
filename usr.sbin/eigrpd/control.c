@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.1 2015/10/02 04:26:47 renato Exp $ */
+/*	$OpenBSD: control.c,v 1.2 2015/12/05 15:49:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -277,6 +277,9 @@ control_dispatch_imsg(int fd, short event, void *bula)
 			break;
 		case IMSG_CTL_SHOW_NBR:
 			eigrpe_nbr_ctl(c);
+			break;
+		case IMSG_CTL_SHOW_STATS:
+			eigrpe_stats_ctl(c);
 			break;
 		case IMSG_CTL_LOG_VERBOSE:
 			if (imsg.hdr.len != IMSG_HEADER_SIZE +
