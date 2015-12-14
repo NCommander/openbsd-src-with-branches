@@ -1,4 +1,4 @@
-/*	$OpenBSD: listen.c,v 1.2 2013/03/13 08:28:33 ratchov Exp $	*/
+/*	$OpenBSD: listen.c,v 1.3 2015/11/18 08:36:20 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -218,7 +218,8 @@ listen_pollfd(void *arg, struct pollfd *pfd)
 {
 	struct listen *f = arg;
 
-	if (file_slowaccept)
+	f->slowaccept = file_slowaccept;
+	if (f->slowaccept)
 		return 0;
 	pfd->fd = f->fd;
 	pfd->events = POLLIN;
@@ -228,6 +229,10 @@ listen_pollfd(void *arg, struct pollfd *pfd)
 int
 listen_revents(void *arg, struct pollfd *pfd)
 {
+	struct listen *f = arg;
+
+	if (f->slowaccept)
+		return 0;
 	return pfd->revents;
 }
 
