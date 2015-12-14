@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.52 2015/11/01 15:38:53 mmcc Exp $	*/
+/*	$OpenBSD: history.c,v 1.53 2015/11/02 16:38:35 mmcc Exp $	*/
 
 /*
  * command history
@@ -253,7 +253,7 @@ c_fc(char **wp)
 		}
 		if (n < 0) {
 			bi_errorf("error reading temp file %s - %s",
-			    tf->name, strerror(shf_errno(shf)));
+			    tf->name, strerror(shf->errno_));
 			shf_close(shf);
 			return 1;
 		}
