@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.138 2015/07/29 21:13:32 ratchov Exp $	*/
+/*	$OpenBSD: audio.c,v 1.139 2015/09/04 16:02:19 ratchov Exp $	*/
 /*
  * Copyright (c) 2015 Alexandre Ratchov <alex@caoua.org>
  *
@@ -95,7 +95,7 @@ struct audio_softc {
 	int quiesce;			/* device suspended */
 	struct audio_buf play, rec;
 	unsigned int sw_enc;		/* user exposed AUDIO_ENCODING_* */
-	unsigned int hw_enc;		/* harware AUDIO_ENCODING_* */
+	unsigned int hw_enc;		/* hardware AUDIO_ENCODING_* */
 	unsigned int bits;		/* bits per sample */
 	unsigned int bps;		/* bytes-per-sample */
 	unsigned int msb;		/* sample are MSB aligned */
