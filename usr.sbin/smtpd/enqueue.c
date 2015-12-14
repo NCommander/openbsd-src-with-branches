@@ -1,4 +1,4 @@
-/*	$OpenBSD: enqueue.c,v 1.106 2015/12/05 13:14:21 claudio Exp $	*/
+/*	$OpenBSD: enqueue.c,v 1.107 2015/12/07 12:29:19 sunil Exp $	*/
 
 /*
  * Copyright (c) 2005 Henning Brauer <henning@bulabula.org>
@@ -399,7 +399,7 @@ enqueue(int argc, char *argv[], FILE *ofp)
 			if (strncasecmp("return-path: ", line, 13) == 0)
 				continue;
 		}
-		
+
 		if (msg.saw_content_transfer_encoding || msg.noheader ||
 		    inheaders || !msg.need_linesplit) {
 			send_line(fout, 0, "%.*s", (int)len, line);
@@ -870,7 +870,7 @@ savedeadletter(struct passwd *pw, FILE *in)
 
 	if (fseek(in, 0, SEEK_SET) != 0)
 		return 0;
-	
+
 	if ((fp = fopen(buffer, "w")) == NULL)
 		return 0;
 

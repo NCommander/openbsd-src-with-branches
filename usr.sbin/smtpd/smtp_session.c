@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.209 2014/04/29 12:18:27 reyk Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.262 2015/12/13 10:54:11 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1953,7 +1953,7 @@ smtp_parse_rcpt_args(struct smtp_session *s, char *args)
 	while ((b = strsep(&args, " "))) {
 		if (*b == '\0')
 			continue;
-		
+
 		if (ADVERTISE_EXT_DSN(s) && strncasecmp(b, "NOTIFY=", 7) == 0) {
 			b += 7;
 			while ((p = strsep(&b, ","))) {

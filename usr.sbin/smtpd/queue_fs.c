@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_fs.c,v 1.10 2015/10/29 10:25:36 sunil Exp $	*/
+/*	$OpenBSD: queue_fs.c,v 1.11 2015/11/05 09:14:31 sunil Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@poolp.org>
@@ -294,7 +294,7 @@ queue_fs_envelope_create(uint32_t msgid, const char *buf, size_t len,
 		log_warnx("warn: queue-fs: msgid=0, evpid=%016"PRIx64, *evpid);
 		goto done;
 	}
-	
+
 	fsqueue_message_incoming_path(msgid, path, sizeof(path));
 	if (stat(path, &sb) == -1)
 		queued = 1;
