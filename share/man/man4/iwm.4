@@ -1,4 +1,4 @@
-.\" $OpenBSD: iwm.4,v 1.13 2015/09/27 16:58:09 stsp Exp $
+.\" $OpenBSD: iwm.4,v 1.14 2015/12/14 11:19:34 stsp Exp $
 .\"
 .\" Copyright (c) 2007,2008
 .\"	Damien Bergamini <damien.bergamini@free.fr>. All rights reserved.
@@ -15,7 +15,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 27 2015 $
+.Dd $Mdocdate: December 14 2015 $
 .Dt IWM 4
 .Os
 .Sh NAME
@@ -134,9 +134,11 @@ The driver will reset the hardware.
 .Xr hostname.if 5 ,
 .Xr ifconfig 8
 .Sh CAVEATS
+802.11n operation is currently limited to data rates MCS 0 to MCS 7.
+.Pp
 The
 .Nm
-driver does not support any of the 802.11n and 802.11ac capabilities offered by
+driver does not support any of the 802.11ac capabilities offered by
 the adapters.
 Additional work is required in
 .Xr ieee80211 9
