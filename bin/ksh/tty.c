@@ -1,6 +1,9 @@
-/*	$OpenBSD: tty.c,v 1.14 2015/10/19 14:42:16 mmcc Exp $	*/
+/*	$OpenBSD: tty.c,v 1.15 2015/12/02 05:06:26 mmcc Exp $	*/
 
+#include <errno.h>
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "sh.h"
 #include "tty.h"

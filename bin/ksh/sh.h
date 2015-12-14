@@ -10,19 +10,10 @@
 
 /* Start of common headers */
 
-#include <sys/types.h>
-
-#include <stdio.h>
 #include <setjmp.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <stdarg.h>
-
-#include <errno.h>
-#include <fcntl.h>
-
 #include <signal.h>
+#include <stdbool.h>
 
 /* end of common headers */
 

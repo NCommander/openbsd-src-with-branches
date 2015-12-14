@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.32 2015/10/19 14:42:16 mmcc Exp $	*/
+/*	$OpenBSD: io.c,v 1.33 2015/11/07 20:48:28 mmcc Exp $	*/
 
 /*
  * shell buffered IO and formatted output
@@ -7,7 +7,10 @@
 #include <sys/stat.h>
 
 #include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "sh.h"
 
