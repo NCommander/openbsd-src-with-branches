@@ -1,4 +1,4 @@
-/*	$OpenBSD: mountd.c,v 1.81 2015/08/20 22:16:35 millert Exp $	*/
+/*	$OpenBSD: mountd.c,v 1.82 2015/12/10 17:27:00 mmcc Exp $	*/
 /*	$NetBSD: mountd.c,v 1.31 1996/02/18 11:57:53 fvdl Exp $	*/
 
 /*
@@ -960,7 +960,8 @@ get_exportlist(void)
 
 			for (i = 0; i < num; i++) {
 				if ((fstbl[i].mntonname != NULL) &&
-				    (strcmp (dirp, fstbl[i].mntonname) == 0) &&
+				    (strcmp(fsb.f_mntonname,
+				    fstbl[i].mntonname) == 0) &&
 				    (fstbl[i].exflags & MNT_DELEXPORT)) {
 					exflags |= MNT_DELEXPORT;
 					fstbl[i].exflags = 0;
@@ -1035,6 +1036,7 @@ nextline:
 			fprintf(stderr, "unexporting %s %s\n",
 			    fsp->f_mntonname, fstbl[i].mntonname);
 		bzero(&targs, sizeof(targs));
+		targs.ua.export_info.ex_flags = MNT_DELEXPORT;
 		if (mount(fsp->f_fstypename, fsp->f_mntonname,
 		    fsp->f_flags | MNT_UPDATE, &targs) < 0)
 			syslog(LOG_ERR, "Can't delete exports for %s: %m",
