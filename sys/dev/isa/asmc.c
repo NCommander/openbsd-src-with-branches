@@ -1,4 +1,4 @@
-/*	$OpenBSD: asmc.c,v 1.16 2015/12/11 20:36:32 jung Exp $	*/
+/*	$OpenBSD: asmc.c,v 1.17 2015/12/12 12:34:05 jung Exp $	*/
 /*
  * Copyright (c) 2015 Joerg Jung <jung@openbsd.org>
  *
@@ -585,7 +585,7 @@ static int
 asmc_fan(struct asmc_softc *sc, uint8_t idx)
 {
 	char key[5];
-	uint8_t buf[16], *end;
+	uint8_t buf[17], *end;
 	int r;
 
 	snprintf(key, sizeof(key), "F%dAc", idx);
@@ -600,6 +600,7 @@ asmc_fan(struct asmc_softc *sc, uint8_t idx)
 	snprintf(key, sizeof(key), "F%dID", idx);
 	if ((r = asmc_try(sc, ASMC_READ, key, buf, 16)))
 		return r;
+	buf[16] = '\0';
 	end = buf + 4 + strlen((char *)buf + 4) - 1;
 	while (buf + 4 < end && *end == ' ') /* trim trailing spaces */
 		*end-- = '\0';
