@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-list-keys.c,v 1.31 2015/11/27 15:06:43 nicm Exp $ */
+/* $OpenBSD: cmd-list-keys.c,v 1.32 2015/12/13 21:53:57 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -39,7 +39,7 @@ const struct cmd_entry cmd_list_keys_entry = {
 	.args = { "t:T:", 0, 0 },
 	.usage = "[-t mode-table] [-T key-table]",
 
-	.flags = 0,
+	.flags = CMD_STARTSERVER,
 	.exec = cmd_list_keys_exec
 };
 
@@ -50,7 +50,7 @@ const struct cmd_entry cmd_list_commands_entry = {
 	.args = { "", 0, 0 },
 	.usage = "",
 
-	.flags = 0,
+	.flags = CMD_STARTSERVER,
 	.exec = cmd_list_keys_exec
 };
 
