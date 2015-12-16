@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.end.c,v 1.12 2014/03/11 08:05:15 guenther Exp $	*/
+/*	$OpenBSD: hack.end.c,v 1.13 2015/10/24 18:26:13 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -613,7 +613,7 @@ charcat(char *s, char c)
 void
 prscore(int argc, char **argv)
 {
-	extern char *hname;
+	extern char *__progname;
 	char **players;
 	int playerct;
 	int rank;
@@ -699,7 +699,7 @@ prscore(int argc, char **argv)
 		  if(playerct > 1) printf("any of ");
 		  for(i=0; i<playerct; i++)
 			printf("%s%s", players[i], (i<playerct-1)?", ":".\n");
-		  printf("Call is: %s -s [playernames]\n", hname);
+		  printf("Call is: %s -s [playernames]\n", __progname);
 		}
 	    }
 	    return;
