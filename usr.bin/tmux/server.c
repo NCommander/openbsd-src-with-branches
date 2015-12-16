@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.154 2015/11/24 23:01:51 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.155 2015/12/15 00:00:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -387,7 +387,7 @@ server_child_exited(pid_t pid, int status)
 		TAILQ_FOREACH(wp, &w->panes, entry) {
 			if (wp->pid == pid) {
 				wp->status = status;
-				server_destroy_pane(wp);
+				server_destroy_pane(wp, 1);
 				break;
 			}
 		}

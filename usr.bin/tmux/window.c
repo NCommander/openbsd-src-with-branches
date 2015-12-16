@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.151 2015/12/02 23:09:22 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.152 2015/12/15 00:00:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -974,7 +974,7 @@ window_pane_error_callback(__unused struct bufferevent *bufev,
 {
 	struct window_pane *wp = data;
 
-	server_destroy_pane(wp);
+	server_destroy_pane(wp, 1);
 }
 
 void
