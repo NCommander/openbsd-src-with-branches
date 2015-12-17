@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /* adapted from ipsec-tools 0.6 src/racoon/sockmisc.c */
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.

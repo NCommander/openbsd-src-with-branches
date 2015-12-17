@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 #ifndef GENERIC_USE
 #define GENERIC_USE
 #endif
