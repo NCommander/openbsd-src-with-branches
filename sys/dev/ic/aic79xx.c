@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx.c,v 1.57 2015/07/17 21:42:49 krw Exp $	*/
+/*	$OpenBSD: aic79xx.c,v 1.58 2015/12/06 02:41:23 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -6068,9 +6068,7 @@ ahd_alloc_scbs(struct ahd_softc *ahd)
 	for (i = 0; i < newcount; i++) {
 		struct scb_platform_data *pdata = NULL;
 		u_int col_tag;
-#ifndef __linux__
 		int error;
-#endif
 
 		next_scb = (struct scb *)malloc(sizeof(*next_scb),
 						M_DEVBUF, M_NOWAIT);
