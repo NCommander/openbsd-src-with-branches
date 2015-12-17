@@ -1,4 +1,4 @@
-/* $OpenBSD: prebind.c,v 1.31 2015/10/14 17:29:44 tobias Exp $ */
+/* $OpenBSD: prebind.c,v 1.32 2015/12/12 20:09:28 mmcc Exp $ */
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
  *
@@ -257,7 +257,7 @@ load_dir(char *name)
 
 	dirp = opendir(name);
 
-	/* if dir failes to open, skip */
+	/* if dir failed to open, skip */
 	if (dirp == NULL)
 		return;
 
