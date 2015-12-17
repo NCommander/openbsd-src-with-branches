@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.33 2014/11/16 12:30:57 deraadt Exp $	*/
+/*	$OpenBSD: bus_dma.c,v 1.34 2015/01/24 15:13:55 kettenis Exp $	*/
 /*-
  * Copyright (c) 1996, 1997 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -131,8 +131,11 @@ _bus_dmamap_create(bus_dma_tag_t t, bus_size_t size, int nsegments,
 void
 _bus_dmamap_destroy(bus_dma_tag_t t, bus_dmamap_t map)
 {
-
-	free(map, M_DEVBUF, 0);
+	size_t mapsize;
+	
+	mapsize = sizeof(struct bus_dmamap) +
+		(sizeof(bus_dma_segment_t) * (map->_dm_segcnt - 1));
+	free(map, M_DEVBUF, mapsize);
 }
 
 /*
