@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_csqrtf.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
+/*	$OpenBSD: s_csqrtf.c,v 1.2 2010/07/18 18:42:26 guenther Exp $	*/
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -72,7 +72,7 @@ csqrtf(float complex z)
 
 	if(y == 0.0f) {
 		if (x < 0.0f) {
-			w = 0.0f + sqrtf(-x) * I;
+			w = 0.0f + copysign(sqrtf(-x), y) * I;
 			return (w);
 		}
 		else if (x == 0.0f) {
