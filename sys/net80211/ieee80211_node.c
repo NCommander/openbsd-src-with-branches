@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.92 2015/11/24 13:45:06 mpi Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.93 2015/12/12 11:25:46 stsp Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -556,7 +556,7 @@ ieee80211_end_scan(struct ifnet *ifp)
 		 * The passive scan to look for existing AP's completed,
 		 * select a channel to camp on.  Identify the channels
 		 * that already have one or more AP's and try to locate
-		 * an unnoccupied one.  If that fails, pick a random
+		 * an unoccupied one.  If that fails, pick a random
 		 * channel from the active set.
 		 */
 		memset(occupied, 0, sizeof(occupied));
