@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/lib/libgcc/Makefile,v 1.58.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD: Makefile,v 1.25 2013/05/08 15:30:38 miod Exp $
+# $OpenBSD: Makefile,v 1.26 2014/04/08 23:18:21 martynas Exp $
 
 .include <bsd.own.mk>
 
@@ -157,6 +157,10 @@ LIB1ASMFUNCS =	__divxf3 __divdf3 __divsf3 \
 	__nonlocal_goto __restore_stack_nonlocal __trampoline \
 	_fixtfdi _fixunstfdi _floatditf
 LIB2ADDEH = unwind-ia64.c unwind-sjlj.c unwind-c.c
+.endif
+
+.if ${TARGET_ARCH} == "mips64" || ${TARGET_ARCH} == "mips64el"
+LIB2FUNCS_EXTRA = sync.S
 .endif
 
 .if ${TARGET_ARCH} == "sh"
