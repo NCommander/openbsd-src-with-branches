@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdformat.c,v 1.19 2014/10/08 04:55:03 deraadt Exp $	*/
+/*	$OpenBSD: fdformat.c,v 1.20 2015/04/18 18:28:38 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1992-1994 by Joerg Wunsch, Dresden
@@ -108,8 +108,7 @@ verify_track(int fd, int track, int tracksize)
 	}
 	
 	if (bufsz < tracksize) {
-		if (buf)
-			free (buf);
+		free(buf);
 		bufsz = tracksize;
 		buf = 0;
 	}
