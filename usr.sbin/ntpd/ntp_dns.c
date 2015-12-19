@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntp_dns.c,v 1.14 2015/10/25 10:52:48 deraadt Exp $ */
+/*	$OpenBSD: ntp_dns.c,v 1.15 2015/12/05 13:12:16 claudio Exp $ */
 
 /*
  * Copyright (c) 2003-2008 Henning Brauer <henning@openbsd.org>
@@ -27,6 +27,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <unistd.h>
 
 #include "ntpd.h"
@@ -66,14 +67,15 @@ ntp_dns(int pipe_ntp[2], struct ntpd_conf *nconf, struct passwd *pw)
 	}
 
 	if (setpriority(PRIO_PROCESS, 0, 0) == -1)
-		warn("could not set priority");
+		log_warn("could not set priority");
 
 	/* in this case the parent didn't init logging and didn't daemonize */
 	if (nconf->settime && !nconf->debug) {
-		log_init(nconf->debug);
+		log_init(nconf->debug, LOG_DAEMON);
 		if (setsid() == -1)
 			fatal("setsid");
 	}
+	log_procinit("dns");
 
 	if ((nullfd = open("/dev/null", O_RDWR, 0)) == -1)
 		fatal(NULL);
@@ -86,6 +88,7 @@ ntp_dns(int pipe_ntp[2], struct ntpd_conf *nconf, struct passwd *pw)
 	close(nullfd);
 
 	setproctitle("dns engine");
+
 	close(pipe_ntp[0]);
 
 	if (setgroups(1, &pw->pw_gid) ||
