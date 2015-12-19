@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.h,v 1.5 2014/07/08 10:30:52 eric Exp $	*/
+/*	$OpenBSD: log.h,v 1.1 2015/01/08 00:30:08 bcook Exp $	*/
 
 /*
  * Copyright (c) 2010 Gilles Chehade <gilles@poolp.org>
@@ -32,4 +32,3 @@ __dead void	fatal(const char *, ...)
     __attribute__((format (printf, 1, 2)));
 __dead void	fatalx(const char *, ...)
     __attribute__((format (printf, 1, 2)));
-const char *	log_sockaddr(struct sockaddr *sa);

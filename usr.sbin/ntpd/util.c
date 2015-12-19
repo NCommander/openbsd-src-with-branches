@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.18 2015/02/10 11:46:39 reyk Exp $ */
+/*	$OpenBSD: util.c,v 1.19 2015/03/28 03:49:01 bcook Exp $ */
 
 /*
  * Copyright (c) 2004 Alexander Guy <alexander.guy@andern.org>
@@ -138,4 +138,16 @@ print_rtable(int r)
 		snprintf(b, sizeof(b), "rtable %d", r);
 
 	return (b);
+}
+
+const char *
+log_sockaddr(struct sockaddr *sa)
+{
+	static char	buf[NI_MAXHOST];
+
+	if (getnameinfo(sa, SA_LEN(sa), buf, sizeof(buf), NULL, 0,
+	    NI_NUMERICHOST))
+		return ("(unknown)");
+	else
+		return (buf);
 }

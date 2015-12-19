@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.10 2015/01/08 00:30:08 bcook Exp $	*/
+/*	$OpenBSD: log.c,v 1.16 2014/07/08 10:30:52 eric Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -16,10 +16,12 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/types.h>
+#include <sys/queue.h>
+#include <sys/tree.h>
 #include <sys/socket.h>
 
 #include <errno.h>
-#include <netdb.h>
 #include <pwd.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -197,16 +199,4 @@ fatalx(const char *emsg, ...)
 	fatal_arg(emsg, ap);
 	va_end(ap);
 	exit(1);
-}
-
-const char *
-log_sockaddr(struct sockaddr *sa)
-{
-	static char	buf[NI_MAXHOST];
-
-	if (getnameinfo(sa, SA_LEN(sa), buf, sizeof(buf), NULL, 0,
-	    NI_NUMERICHOST))
-		return ("(unknown)");
-	else
-		return (buf);
 }
