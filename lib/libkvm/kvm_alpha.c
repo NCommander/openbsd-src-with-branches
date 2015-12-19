@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_alpha.c,v 1.14 2006/03/20 15:11:48 mickey Exp $	*/
+/*	$OpenBSD: kvm_alpha.c,v 1.15 2013/11/01 15:57:56 deraadt Exp $	*/
 /*	$NetBSD: kvm_alpha.c,v 1.5 1996/10/01 21:12:05 cgd Exp $	*/
 
 /*
@@ -58,10 +58,8 @@ _kvm_freevtop(kvm_t *kd)
 {
 
 	/* Not actually used for anything right now, but safe. */
-	if (kd->vmst != NULL) {
-		free(kd->vmst);
-		kd->vmst = NULL;
-	}
+	free(kd->vmst);
+	kd->vmst = NULL;
 }
 
 int

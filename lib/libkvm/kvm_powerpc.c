@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_powerpc.c,v 1.8 2013/11/01 15:57:56 deraadt Exp $	*/
+/*	$OpenBSD: kvm_powerpc.c,v 1.9 2014/11/18 20:51:00 krw Exp $	*/
 
 /*-
  * Copyright (C) 1996 Wolfgang Solfrank.
@@ -56,10 +56,8 @@
 void
 _kvm_freevtop(kvm_t *kd)
 {
-	if (kd->vmst != NULL) {
-		free(kd->vmst);
-		kd->vmst = NULL;
-	}
+	free(kd->vmst);
+	kd->vmst = NULL;
 }
 
 /*ARGSUSED*/
