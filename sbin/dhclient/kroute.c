@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.75 2015/02/10 04:20:26 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.76 2015/12/18 22:17:46 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -363,8 +363,6 @@ priv_delete_address(struct imsg_delete_address *imsg)
 		if (errno != EADDRNOTAVAIL)
 			warning("SIOCDIFADDR failed (%s): %s",
 			    inet_ntoa(imsg->addr), strerror(errno));
-		close(s);
-		return;
 	}
 
 	close(s);
