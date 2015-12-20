@@ -1,4 +1,4 @@
-/* $OpenBSD: drm_drv.c,v 1.139 2015/11/21 15:23:44 kettenis Exp $ */
+/* $OpenBSD: drm_drv.c,v 1.140 2015/11/22 15:35:49 kettenis Exp $ */
 /*-
  * Copyright 2007-2009 Owain G. Ainsworth <oga@openbsd.org>
  * Copyright © 2008 Intel Corporation
@@ -1180,7 +1180,7 @@ drm_setclientcap(struct drm_device *dev, void *data, struct drm_file *file_priv)
 }
 
 #define DRM_IF_MAJOR	1
-#define DRM_IF_MINOR	2
+#define DRM_IF_MINOR	4
 
 int
 drm_version(struct drm_device *dev, void *data, struct drm_file *file_priv)
