@@ -557,8 +557,6 @@ main(int argc, char **argv)
 		while (file_poll())
 			; /* nothing */
 		midi_done();
-
-		rmdir(base);
 	}
 	while (opt_list != NULL)
 		opt_del(opt_list);
