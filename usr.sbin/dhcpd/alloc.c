@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.11 2010/01/01 20:46:19 krw Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.12 2010/01/02 04:21:16 krw Exp $	*/
 
 /* Memory allocation... */
 
@@ -88,8 +88,7 @@ new_lease_state(char *name)
 void
 free_lease_state(struct lease_state *ptr, char *name)
 {
-	if (ptr->prl)
-		free(ptr->prl);
+	free(ptr->prl);
 	ptr->next = free_lease_states;
 	free_lease_states = ptr;
 }
