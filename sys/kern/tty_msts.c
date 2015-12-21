@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_msts.c,v 1.18 2014/09/14 14:17:26 jsg Exp $ */
+/*	$OpenBSD: tty_msts.c,v 1.19 2014/11/03 03:08:00 deraadt Exp $ */
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -37,9 +37,6 @@ int mstsdebug = 0;
 #endif
 #define DPRINTF(x)	DPRINTFN(0, x)
 
-int	mstsopen(dev_t, struct tty *, struct proc *);
-int	mstsclose(struct tty *, int, struct proc *);
-int	mstsinput(int, struct tty *);
 void	mstsattach(int);
 
 #define MSTSMAX	32

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_endrun.c,v 1.5 2014/09/14 14:17:26 jsg Exp $ */
+/*	$OpenBSD: tty_endrun.c,v 1.6 2014/11/03 03:08:00 deraadt Exp $ */
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -65,9 +65,6 @@ int endrundebug = 0;
 #endif
 #define DPRINTF(x)	DPRINTFN(0, x)
 
-int	endrunopen(dev_t, struct tty *, struct proc *p);
-int	endrunclose(struct tty *, int, struct proc *p);
-int	endruninput(int, struct tty *);
 void	endrunattach(int);
 
 #define ENDRUNLEN	27 /* strlen("6 2009 018 20:41:17 +00 U\r\n") */
