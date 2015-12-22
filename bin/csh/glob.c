@@ -1,4 +1,4 @@
-/*	$OpenBSD: glob.c,v 1.19 2015/10/26 15:01:15 naddy Exp $	*/
+/*	$OpenBSD: glob.c,v 1.20 2015/10/26 22:03:06 naddy Exp $	*/
 /*	$NetBSD: glob.c,v 1.10 1995/03/21 09:03:01 cgd Exp $	*/
 
 /*-
@@ -865,7 +865,7 @@ Gcat(Char *s1, Char *s2)
 	gargv = xreallocarray(gargv, gargsiz, sizeof(Char *));
     }
     gargv[gargc] = 0;
-    p = gargv[gargc - 1] = (Char *) xreallocarray(NULL, n, sizeof(Char));
+    p = gargv[gargc - 1] = xreallocarray(NULL, n, sizeof(Char));
     for (q = s1; (*p++ = *q++) != '\0';)
 	continue;
     for (p--, q = s2; (*p++ = *q++) != '\0';)
