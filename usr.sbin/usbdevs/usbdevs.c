@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbdevs.c,v 1.23 2015/02/09 23:00:15 deraadt Exp $	*/
+/*	$OpenBSD: usbdevs.c,v 1.24 2015/03/31 13:38:27 mpi Exp $	*/
 /*	$NetBSD: usbdevs.c,v 1.19 2002/02/21 00:34:31 christos Exp $	*/
 
 /*
@@ -182,7 +182,7 @@ main(int argc, char **argv)
 {
 	int ch, i, f;
 	char buf[50];
-	char *dev = 0;
+	char *dev = NULL;
 	const char *errstr;
 	int addr = 0;
 	int ncont;
