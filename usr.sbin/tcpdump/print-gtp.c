@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-gtp.c,v 1.7 2015/01/16 06:40:21 deraadt Exp $ */
+/*	$OpenBSD: print-gtp.c,v 1.8 2015/11/16 00:16:39 mmcc Exp $ */
 /*
  * Copyright (c) 2009, 2010 Joel Sing <jsing@openbsd.org>
  *
@@ -882,7 +882,7 @@ void
 gtp_v1_print(const u_char *cp, u_int length, u_short sport, u_short dport)
 {
 	struct gtp_v1_hdr *gh = (struct gtp_v1_hdr *)cp;
-	struct gtp_v1_hdr_ext *ghe = 0;
+	struct gtp_v1_hdr_ext *ghe = NULL;
 	int nexthdr, hlen;
 	u_char *p = (u_char *)cp;
 

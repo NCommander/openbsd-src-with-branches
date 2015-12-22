@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpdump.c,v 1.76 2015/10/28 12:28:14 jca Exp $	*/
+/*	$OpenBSD: tcpdump.c,v 1.77 2015/11/16 00:16:39 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -474,7 +474,7 @@ main(int argc, char **argv)
 		pcap_userdata = (u_char *)p;
 	} else {
 		printer = lookup_printer(pcap_datalink(pd));
-		pcap_userdata = 0;
+		pcap_userdata = NULL;
 		priv_init_done();
 		/* state: STATE_RUN */
 	}

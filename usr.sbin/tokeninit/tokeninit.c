@@ -1,4 +1,4 @@
-/*	$OpenBSD: tokeninit.c,v 1.8 2015/01/16 06:40:22 deraadt Exp $	*/
+/*	$OpenBSD: tokeninit.c,v 1.9 2015/02/09 23:00:14 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -65,7 +65,7 @@ main(int argc, char **argv)
 	char	seed[80];
 	unsigned char	secret[9];
 	char	*optstr;
-	char	*p = 0;
+	char	*p = NULL;
 
 	struct rlimit cds;
 
