@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.81 2015/01/16 06:40:07 deraadt Exp $	*/
+/*	$OpenBSD: tag.c,v 1.82 2015/11/05 09:48:21 nicm Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -357,14 +357,14 @@ cvs_tag_local(struct cvs_file *cf)
 	case FILE_ADDED:
 		if (verbosity > 1) {
 			cvs_log(LP_NOTICE,
-			    "couldn't tag added but un-commited file `%s'",
+			    "couldn't tag added but un-committed file `%s'",
 			    cf->file_path);
 		}
 		break;
 	case FILE_REMOVED:
 		if (verbosity > 1) {
 			cvs_log(LP_NOTICE,
-			    "skipping removed but un-commited file `%s'",
+			    "skipping removed but un-committed file `%s'",
 			    cf->file_path);
 		}
 		break;
