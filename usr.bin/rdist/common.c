@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.35 2015/01/20 04:45:43 guenther Exp $	*/
+/*	$OpenBSD: common.c,v 1.36 2015/01/20 09:00:16 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -113,7 +113,7 @@ init(int argc, char **argv, char **envp)
 	 * Save a copy of our argc and argv before setargs() overwrites them
 	 */
 	realargc = argc;
-	realargv = (char **) xmalloc(sizeof(char *) * (argc+1));
+	realargv = xmalloc(sizeof(char *) * (argc+1));
 	for (i = 0; i < argc; i++)
 		realargv[i] = xstrdup(argv[i]);
 
