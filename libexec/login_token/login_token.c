@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_token.c,v 1.13 2015/10/17 19:50:47 bluhm Exp $	*/
+/*	$OpenBSD: login_token.c,v 1.14 2015/11/19 18:37:01 millert Exp $	*/
 
 /*-
  * Copyright (c) 1995, 1996 Berkeley Software Design, Inc. All rights reserved.
@@ -56,11 +56,11 @@ int
 main(int argc, char *argv[])
 {
 	FILE *back = NULL;
-	char *username = 0;
+	char *username = NULL;
 	char *instance;
 	char challenge[1024];
 	char response[1024];
-	char *pp = 0;
+	char *pp = NULL;
 	int c;
 	int mode = 0;
 	struct rlimit cds;

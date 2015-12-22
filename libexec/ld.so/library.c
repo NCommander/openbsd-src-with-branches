@@ -1,4 +1,4 @@
-/*	$OpenBSD: library.c,v 1.71 2015/01/16 16:18:07 deraadt Exp $ */
+/*	$OpenBSD: library.c,v 1.72 2015/11/06 05:12:30 guenther Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -101,7 +101,7 @@ _dl_tryload_shlib(const char *libname, int type, int flags)
 	Elf_Addr libaddr, loff, align = _dl_pagesz - 1;
 	elf_object_t *object;
 	char	hbuf[4096];
-	Elf_Dyn *dynp = 0;
+	Elf_Dyn *dynp = NULL;
 	Elf_Ehdr *ehdr;
 	Elf_Phdr *phdp;
 	struct stat sb;
