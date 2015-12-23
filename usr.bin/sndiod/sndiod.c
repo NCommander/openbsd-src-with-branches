@@ -475,9 +475,8 @@ main(int argc, char **argv)
 		wpw_gid = pw->pw_gid;		
 		wpw_dir = xstrdup(pw->pw_dir);
 	} else {
-		//hpw_uid = wpw_uid = 0;
-		//hpw_gid = wpw_gid = 0;
-		//wpw_dir = NULL;
+		hpw_uid = wpw_uid = hpw_gid = wpw_gid = 0xdeadbeef;
+		wpw_dir = NULL;
 	}
 
 	/* start subprocesses */
