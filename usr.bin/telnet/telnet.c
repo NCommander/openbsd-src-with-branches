@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnet.c,v 1.32 2015/11/13 17:13:59 deraadt Exp $	*/
+/*	$OpenBSD: telnet.c,v 1.33 2015/11/24 05:06:24 beck Exp $	*/
 /*	$NetBSD: telnet.c,v 1.7 1996/02/28 21:04:15 thorpej Exp $	*/
 
 /*
@@ -1841,7 +1841,7 @@ telnet(char *user)
     connections++;
     sys_telnet_init();
 
-    if (pledge("stdio tty", NULL) == -1) {
+    if (pledge("stdio rpath tty", NULL) == -1) {
 	perror("pledge");
 	exit(1);
     }
