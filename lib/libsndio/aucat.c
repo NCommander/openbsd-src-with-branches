@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.68 2015/10/05 07:18:03 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.69 2015/11/22 12:01:23 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -288,10 +288,8 @@ bad_gen:
 		unlink(tmp);
 	}
 done:
-	if (tmp)
-		free(tmp);
-	if (path)
-		free(path);
+	free(tmp);
+	free(path);
 	return 1;
 }
 
