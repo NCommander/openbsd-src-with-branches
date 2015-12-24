@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.220 2015/09/25 11:56:21 krw Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.221 2015/12/24 18:03:03 krw Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -615,7 +615,7 @@ gpt_chk_mbr(struct dos_partition *dp, u_int64_t dsize)
 	if (found == 1 && efi == 1)
 		return (0);
 
-	return (EINVAL);
+	return (1);
 }
 
 int
