@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_installboot.c,v 1.21 2015/12/10 18:40:46 mmcc Exp $	*/
+/*	$OpenBSD: i386_installboot.c,v 1.22 2015/12/20 18:04:34 rpe Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -90,6 +90,7 @@ static void	devread(int, void *, daddr_t, size_t, char *);
 static u_int	findopenbsd(int, struct disklabel *);
 static int	getbootparams(char *, int, struct disklabel *);
 static char	*loadproto(char *, long *);
+static int	gpt_chk_mbr(struct dos_partition *, struct disklabel *);
 
 /*
  * Read information about /boot's inode and filesystem parameters, then
@@ -454,7 +455,7 @@ again:
  *
  * NOTE: MS always uses a size of UINT32_MAX for the EFI partition!**
  */
-int
+static int
 gpt_chk_mbr(struct dos_partition *dp, struct disklabel *lp)
 {
 	struct dos_partition *dp2;
