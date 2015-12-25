@@ -1,4 +1,4 @@
-/*	$OpenBSD: strfile.c,v 1.22 2015/09/16 16:32:11 tedu Exp $	*/
+/*	$OpenBSD: strfile.c,v 1.23 2015/10/24 18:33:22 mmcc Exp $	*/
 /*	$NetBSD: strfile.c,v 1.4 1995/04/24 12:23:09 cgd Exp $	*/
 
 /*-
@@ -114,7 +114,7 @@ void do_order(void);
 void getargs(int, char **);
 void randomize(void);
 char *unctrl(char);
-void usage(void);
+__dead void usage(void);
 
 /*
  * main:

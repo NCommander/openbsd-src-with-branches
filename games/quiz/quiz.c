@@ -1,4 +1,4 @@
-/*	$OpenBSD: quiz.c,v 1.21 2013/08/29 20:22:18 naddy Exp $	*/
+/*	$OpenBSD: quiz.c,v 1.23 2015/12/06 09:55:58 tb Exp $	*/
 /*	$NetBSD: quiz.c,v 1.9 1995/04/22 10:16:58 cgd Exp $	*/
 
 /*-
@@ -58,7 +58,7 @@ const char	*next_cat(const char *);
 void	 quiz(void);
 void	 score(u_int, u_int, u_int);
 void	 show_index(void);
-void	 usage(void);
+__dead void	usage(void);
 
 int
 main(int argc, char *argv[])

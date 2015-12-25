@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.7 2012/03/04 04:05:15 fgsch Exp $	*/
+/*	$OpenBSD: extern.h,v 1.8 2014/12/04 06:12:33 deraadt Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1995/04/24 12:22:37 cgd Exp $	*/
 
 /*-
@@ -66,5 +66,5 @@ void	 starttime(void);
 void	 startwords(void);
 void	 stoptime(void);
 int	 timerch(void);
-void	 usage(void);
+__dead void	 usage(void);
 int	 validword(char *);

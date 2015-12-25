@@ -1,4 +1,4 @@
-/*	$OpenBSD: wump.c,v 1.26 2013/08/29 20:22:22 naddy Exp $	*/
+/*	$OpenBSD: wump.c,v 1.27 2015/11/30 09:00:02 tb Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -123,7 +123,7 @@ void	pit_survive(void);
 int	shoot(char *);
 void	shoot_self(void);
 int	take_action(void);
-void	usage(void);
+__dead void	usage(void);
 void	wump_kill(void);
 void	wump_bat_kill(void);
 void	wump_walk_kill(void);
