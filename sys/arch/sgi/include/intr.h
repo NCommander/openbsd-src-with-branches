@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.44 2015/07/08 13:37:31 dlg Exp $ */
+/*	$OpenBSD: intr.h,v 1.45 2015/09/13 20:38:45 kettenis Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -192,6 +192,8 @@ void	dosoftint(void);
 #ifdef MULTIPROCESSOR
 #if defined (TGT_OCTANE)
 #define ENABLEIPI() updateimask(~CR_INT_2) /* enable IPI interrupt level */
+#elif defined (TGT_ORIGIN)
+#define ENABLEIPI() updateimask(~CR_INT_0) /* enable IPI interrupt level */
 #else
 #error MULTIPROCESSOR kernel not supported on this configuration
 #endif
