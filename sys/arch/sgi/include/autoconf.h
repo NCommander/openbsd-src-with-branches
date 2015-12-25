@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.37 2012/05/29 17:37:09 mikeb Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.38 2012/06/24 16:26:04 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -56,6 +56,7 @@ extern struct sys_rec sys_config;
 struct mainbus_attach_args {
 	const char	*maa_name;
 	int16_t		 maa_nasid;
+	int16_t		 maa_physid;
 };
 
 /*
