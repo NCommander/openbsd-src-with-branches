@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.h,v 1.8 2003/06/11 08:45:33 pjanzen Exp $	*/
+/*	$OpenBSD: server.h,v 1.9 2004/01/16 00:13:19 espie Exp $	*/
 /*	$NetBSD: hunt.h,v 1.5 1998/09/13 15:27:28 hubertf Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -230,7 +230,7 @@ void	message(PLAYER *, char *);
 /* driver.c */
 int	rand_num(int);
 void	checkdam(PLAYER *, PLAYER *, IDENT *, int, char);
-void	cleanup(int);
+__dead void	cleanup(int);
 
 /* execute.c */
 void	mon_execute(PLAYER *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hangman.h,v 1.8 2015/02/07 01:37:30 miod Exp $	*/
+/*	$OpenBSD: hangman.h,v 1.9 2015/02/07 03:30:08 tedu Exp $	*/
 /*	$NetBSD: hangman.h,v 1.5 1995/04/24 12:23:44 cgd Exp $	*/
 
 /*
@@ -89,7 +89,7 @@ extern int syms;
 extern int symfd;
 extern off_t symoffs, symsize;
 
-void	die(int);
+__dead void	die(int);
 void	endgame(void);
 void	getguess(void);
 void	getword(void);

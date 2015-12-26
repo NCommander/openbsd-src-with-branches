@@ -1,4 +1,4 @@
-/*	$OpenBSD: worm.c,v 1.33 2015/11/04 21:22:10 tedu Exp $	*/
+/*	$OpenBSD: worm.c,v 1.34 2015/11/21 05:29:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -72,7 +72,7 @@ char outbuf[BUFSIZ];
 volatile sig_atomic_t wantleave = 0;
 volatile sig_atomic_t wantsuspend = 0;
 
-void	crash(void);
+__dead void	crash(void);
 void	display(struct body *, char);
 void	leave(int);
 void	life(void);

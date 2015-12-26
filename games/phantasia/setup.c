@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.12 2013/08/29 20:22:17 naddy Exp $	*/
+/*	$OpenBSD: setup.c,v 1.13 2014/11/16 04:49:48 guenther Exp $	*/
 /*	$NetBSD: setup.c,v 1.4 1995/04/24 12:24:41 cgd Exp $	*/
 
 /*
@@ -10,7 +10,7 @@
 #include <limits.h>
 #include <fcntl.h>
 
-void Error(char *, char *);
+__dead void Error(char *, char *);
 
 /**/
 /************************************************************************

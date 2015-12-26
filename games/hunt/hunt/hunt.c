@@ -1,4 +1,4 @@
-/*	$OpenBSD: hunt.c,v 1.14 2014/11/16 04:49:48 guenther Exp $	*/
+/*	$OpenBSD: hunt.c,v 1.15 2015/10/24 18:35:08 mmcc Exp $	*/
 /*	$NetBSD: hunt.c,v 1.8 1998/09/13 15:27:28 hubertf Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -81,7 +81,7 @@ static int	in_visual;
 static void	dump_scores(void);
 static long	env_init(long);
 static void	fill_in_blanks(void);
-static void	leave(int, char *) __attribute__((__noreturn__));
+__dead static void	leave(int, char *);
 static void	sigterm(int);
 static int	find_driver(void);
 
