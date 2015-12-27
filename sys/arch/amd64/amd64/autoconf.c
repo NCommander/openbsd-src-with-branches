@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.43 2015/07/17 21:53:56 mlarkin Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.44 2015/11/07 01:37:26 naddy Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*-
@@ -91,6 +91,7 @@ void		viac3_rnd(void *);
 
 extern struct timeout rdrand_tmo;
 extern int	has_rdrand;
+extern int	has_rdseed;
 void		rdrand(void *);
 
 #ifdef CRYPTO
@@ -138,7 +139,7 @@ cpu_configure(void)
 		timeout_set(&viac3_rnd_tmo, viac3_rnd, &viac3_rnd_tmo);
 		viac3_rnd(&viac3_rnd_tmo);
 	}
-	if (has_rdrand) {
+	if (has_rdrand || has_rdseed) {
 		timeout_set(&rdrand_tmo, rdrand, &rdrand_tmo);
 		rdrand(&rdrand_tmo);
 	}
