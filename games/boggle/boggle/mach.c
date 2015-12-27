@@ -1,4 +1,4 @@
-/*	$OpenBSD: mach.c,v 1.15 2015/10/24 18:51:40 mmcc Exp $	*/
+/*	$OpenBSD: mach.c,v 1.16 2015/11/05 08:40:34 guenther Exp $	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -458,7 +458,7 @@ doword(int pause, int r, int c)
 void
 findword(void)
 {
-	int c, col, found, i, r, row;
+	int c, found, i, r;
 	char buf[MAXWORDLEN + 1];
 	extern int usedbits, wordpath[];
 	extern char **mword, **pword;
