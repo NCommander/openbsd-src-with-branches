@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.36 2015/06/02 19:54:06 rpe Exp $
+#	$OpenBSD: install.md,v 1.37 2015/12/27 16:31:08 deraadt Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -40,7 +40,7 @@ SANESETS="bsd.$IPARCH"
 # Since we do not provide bsd.mp on IP27 yet, do not add bsd.mp.IP27 to the
 # sets, as this will cause a warning in sane_install()
 if ((NCPU > 1)) && [[ $IPARCH == IP30 ]]; then
-	MDSETS="$MDSETS bsd.mp.$IPARCH}"
+	MDSETS="$MDSETS bsd.mp.$IPARCH"
 	SANESETS="$SANESETS bsd.mp.$IPARCH"
 fi
 DEFAULTSETS=$MDSETS
