@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootstrap.c,v 1.7 2015/10/15 19:27:30 miod Exp $	*/
+/*	$OpenBSD: bootstrap.c,v 1.8 2015/10/19 19:07:59 krw Exp $	*/
 
 /*
  * Copyright (c) 2013 Joel Sing <jsing@openbsd.org>
@@ -120,13 +120,11 @@ bootstrap(int devfd, char *dev, char *bootfile, unsigned int overlap_allowance)
 	memcpy(lp, &dl, sizeof(dl));
 
 	/* Write the bootstrap out to the disk. */
-	if (lseek(devfd, 0, SEEK_SET) != 0)
-		err(1, "lseek");
 	if (verbose)
 		fprintf(stderr, "%s bootstrap to disk\n",
 		    (nowrite ? "would write" : "writing"));
 	if (nowrite)
 		return;
-	if (write(devfd, boot, bootsize) != (ssize_t)bootsize)
-		err(1, "write");
+	if (pwrite(devfd, boot, bootsize, 0) != (ssize_t)bootsize)
+		err(1, "pwrite");
 }
