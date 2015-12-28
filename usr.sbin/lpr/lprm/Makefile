@@ -1,5 +1,5 @@
 #	@(#)Makefile	8.1 (Berkeley) 6/6/93
-#	$OpenBSD: Makefile,v 1.5 2002/06/11 22:47:07 millert Exp $
+#	$OpenBSD: Makefile,v 1.6 2003/03/11 04:36:55 millert Exp $
 
 PROG=	lprm
 CFLAGS+=-I${.CURDIR}/../common_source
@@ -10,4 +10,5 @@ BINMODE=6555
 BINDIR=	/usr/bin
 .PATH:	${.CURDIR}/../common_source
 
+.include "../../Makefile.inc"
 .include <bsd.prog.mk>
