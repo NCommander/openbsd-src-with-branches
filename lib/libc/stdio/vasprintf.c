@@ -1,4 +1,4 @@
-/*	$OpenBSD: vasprintf.c,v 1.17 2015/08/20 21:49:29 deraadt Exp $	*/
+/*	$OpenBSD: vasprintf.c,v 1.18 2015/08/31 02:53:57 guenther Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -48,10 +48,8 @@ vasprintf(char **str, const char *fmt, __va_list ap)
 	return (ret);
 
 err:
-	if (f._bf._base) {
-		free(f._bf._base);
-		f._bf._base = NULL;
-	}
+	free(f._bf._base);
+	f._bf._base = NULL;
 	*str = NULL;
 	errno = ENOMEM;
 	return (-1);

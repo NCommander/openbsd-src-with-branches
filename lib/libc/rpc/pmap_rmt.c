@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_rmt.c,v 1.32 2015/08/20 21:49:29 deraadt Exp $ */
+/*	$OpenBSD: pmap_rmt.c,v 1.33 2015/09/13 15:36:56 guenther Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -373,8 +373,7 @@ clnt_broadcast(u_long prog,	/* program number */
 		}
 	}
 done_broad:
-	if (addrs)
-		free(addrs);
+	free(addrs);
 	if (sock >= 0)
 		(void)close(sock);
 	if (unix_auth != NULL)
