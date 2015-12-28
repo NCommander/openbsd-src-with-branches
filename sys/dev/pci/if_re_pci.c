@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_pci.c,v 1.48 2015/03/14 03:38:48 jsg Exp $	*/
+/*	$OpenBSD: if_re_pci.c,v 1.49 2015/11/24 17:11:39 mpi Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -156,8 +156,8 @@ re_pci_attach(struct device *parent, struct device *self, void *aux)
 		return;
 	}
 	intrstr = pci_intr_string(pc, ih);
-	psc->sc_ih = pci_intr_establish(pc, ih, IPL_NET, re_intr, sc,
-	    sc->sc_dev.dv_xname);
+	psc->sc_ih = pci_intr_establish(pc, ih, IPL_NET | IPL_MPSAFE, re_intr,
+	    sc, sc->sc_dev.dv_xname);
 	if (psc->sc_ih == NULL) {
 		printf(": couldn't establish interrupt");
 		if (intrstr != NULL)
