@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.158 2015/10/10 20:35:01 deraadt Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.159 2015/10/16 13:37:44 millert Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -129,7 +129,7 @@ main(int argc, char **argv)
 	int ret, cmd_argc;
 
 	if (pledge("stdio rpath wpath cpath fattr flock getpw", NULL) == -1)
-		err(1, "pledge");
+		err(2, "pledge");
 
 	ret = -1;
 	rcs_optind = 1;
