@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.56 2015/09/24 07:07:59 lum Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.57 2015/09/26 21:51:58 jasper Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -282,7 +282,7 @@ static PF metal[] = {
 	fillpara,		/* q */
 	backsearch,		/* r */
 	forwsearch,		/* s */
-	rescan,			/* t */
+	transposeword,		/* t */
 	upperword,		/* u */
 	backpage,		/* v */
 	copyregion,		/* w */
