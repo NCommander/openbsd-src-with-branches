@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.53 2015/11/12 04:04:31 mmcc Exp $	*/
+/*	$OpenBSD: sh.h,v 1.55 2015/12/14 13:59:42 tb Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -53,7 +53,7 @@ typedef struct Area {
 
 extern	Area	aperm;		/* permanent object space */
 #define	APERM	&aperm
-#define	ATEMP	&e->area
+#define	ATEMP	&genv->area
 
 #ifdef KSH_DEBUG
 # define kshdebug_init()	kshdebug_init_()
@@ -78,7 +78,7 @@ struct env {
 	sigjmp_buf jbuf;		/* long jump back to env creator */
 	struct temp *temps;		/* temp files */
 };
-extern	struct env	*e;
+extern	struct env	*genv;
 
 /* struct env.type values */
 #define	E_NONE	0		/* dummy environment */

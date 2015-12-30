@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.30 2015/10/19 14:03:21 mmcc Exp $	*/
+/*	$OpenBSD: expr.c,v 1.31 2015/10/19 14:42:16 mmcc Exp $	*/
 
 /*
  * Korn expression evaluation
@@ -180,7 +180,7 @@ v_evaluate(struct tbl *vp, const char *expr, volatile int error_ok,
 	curstate.val = NULL;
 
 	newenv(E_ERRH);
-	i = sigsetjmp(e->jbuf, 0);
+	i = sigsetjmp(genv->jbuf, 0);
 	if (i) {
 		/* Clear EXPRINEVAL in of any variables we were playing with */
 		if (curstate.evaling)
