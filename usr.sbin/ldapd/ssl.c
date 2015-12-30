@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl.c,v 1.8 2015/01/16 16:04:38 deraadt Exp $	*/
+/*	$OpenBSD: ssl.c,v 1.9 2015/12/10 18:40:46 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -392,8 +392,7 @@ ssl_setup(struct ldapd_config *env, struct listener *l)
 	return;
 
 err:
-	if (l->ssl_ctx != NULL)
-		SSL_CTX_free(l->ssl_ctx);
+	SSL_CTX_free(l->ssl_ctx);
 	ssl_error("ssl_setup");
 	fatal("ssl_setup: cannot set SSL up");
 }
@@ -501,8 +500,7 @@ ssl_session_init(struct conn *s)
 	return;
 
  err:
-	if (ssl != NULL)
-		SSL_free(ssl);
+	SSL_free(ssl);
 	ssl_error("ssl_session_init");
 }
 
