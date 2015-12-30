@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.34 2013/11/21 15:54:46 deraadt Exp $	*/
+/*	$OpenBSD: policy.c,v 1.35 2015/01/16 00:19:12 deraadt Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -346,16 +346,16 @@ systrace_modifypolicy(int fd, int policynr, const char *name, short action)
 }
 
 char *
-systrace_policyfilename(char *dirname, const char *name)
+systrace_policyfilename(char *dir, const char *name)
 {
 	static char file[2*PATH_MAX];
 	const char *p;
 	int i, plen;
 
-	if (strlen(name) + strlen(dirname) + 1 >= sizeof(file))
+	if (strlen(name) + strlen(dir) + 1 >= sizeof(file))
 		return (NULL);
 
-	strlcpy(file, dirname, sizeof(file));
+	strlcpy(file, dir, sizeof(file));
 	i = strlen(file);
 	file[i++] = '/';
 	plen = i;

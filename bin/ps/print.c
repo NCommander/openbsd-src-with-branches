@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.63 2015/10/09 01:37:06 deraadt Exp $	*/
+/*	$OpenBSD: print.c,v 1.64 2015/10/25 15:26:53 czarkoff Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -212,7 +212,7 @@ logname(const struct kinfo_proc *kp, VARENT *ve)
 #define pgtok(a)	(((unsigned long long)(a)*getpagesize())/1024)
 
 void
-state(const struct kinfo_proc *kp, VARENT *ve)
+printstate(const struct kinfo_proc *kp, VARENT *ve)
 {
 	int flag;
 	char *cp, state = '\0';
