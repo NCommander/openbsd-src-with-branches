@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.17 2014/07/29 02:57:09 miod Exp $
+dnl	$OpenBSD: contents,v 1.18 2014/11/10 07:15:42 jsg Exp $
 TopPart
 
 OpenBSDdistsets
@@ -21,7 +21,7 @@ OpenBSDrd
 			CompactFlash to allow installing OpenBSD OSREV on the
 			RouterBOARD RB600A.
 
-DistributionDescription(ten)
+DistributionDescription(eight)
 
 OpenBSDbase(67293249,190200855)
 

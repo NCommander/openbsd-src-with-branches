@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.8 2015/08/01 00:44:06 jsg Exp $
+dnl	$OpenBSD: contents,v 1.9 2015/09/08 18:53:34 miod Exp $
 TopPart
 
 	miniroot-am335x-{:--:}OSrev.fs
@@ -37,7 +37,7 @@ OpenBSDrd
 dnl not yet...
 dnl OpenBSDcd
 
-DistributionDescription(ten)
+DistributionDescription(eight)
 
 OpenBSDbase(59810834,166146114)
 
