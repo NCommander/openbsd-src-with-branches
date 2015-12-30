@@ -1,4 +1,4 @@
-/*	$OpenBSD: tokenadm.c,v 1.9 2007/03/15 22:31:14 jmc Exp $	*/
+/*	$OpenBSD: tokenadm.c,v 1.10 2015/01/16 06:40:22 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -102,6 +102,9 @@ main(int argc, char **argv)
 	cds.rlim_max = 0;
 	if (setrlimit(RLIMIT_CORE, &cds) < 0)
 		syslog(LOG_ERR, "couldn't set core dump size to 0: %m");
+
+	if (pledge("stdio rpath wpath cpath fattr flock getpw", NULL) == -1)
+		err(1, "pledge");
 
 	while ((c = getopt(argc, argv, "BDERT1dem:r")) != -1)
 		switch (c) {
