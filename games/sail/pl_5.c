@@ -1,4 +1,4 @@
-/*	$OpenBSD: pl_5.c,v 1.6 2009/10/27 23:59:27 deraadt Exp $	*/
+/*	$OpenBSD: pl_5.c,v 1.7 2015/10/24 18:14:09 mmcc Exp $	*/
 /*	$NetBSD: pl_5.c,v 1.4 1995/04/24 12:25:21 cgd Exp $	*/
 
 /*
@@ -30,6 +30,12 @@
  * SUCH DAMAGE.
  */
 
+#include <ctype.h>
+#include <signal.h>
+#include <string.h>
+
+#include "extern.h"
+#include "machdep.h"
 #include "player.h"
 
 #define turnfirst(x) (*x == 'r' || *x == 'l')

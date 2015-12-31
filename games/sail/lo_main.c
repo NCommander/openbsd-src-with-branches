@@ -1,4 +1,4 @@
-/*	$OpenBSD: lo_main.c,v 1.7 2009/10/27 23:59:27 deraadt Exp $	*/
+/*	$OpenBSD: lo_main.c,v 1.8 2014/11/16 04:49:48 guenther Exp $	*/
 /*	$NetBSD: lo_main.c,v 1.3 1995/04/22 10:36:59 cgd Exp $	*/
 
 /*
@@ -35,10 +35,11 @@
  *
  * -l force a long listing (print out real usernames)
  */
-#include <sys/types.h>
 #include <limits.h>
 #include <pwd.h>
+#include <stdio.h>
 #include <stdlib.h>
+
 #include "extern.h"
 #include "pathnames.h"
 

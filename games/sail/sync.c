@@ -1,4 +1,4 @@
-/*	$OpenBSD: sync.c,v 1.11 2014/11/16 04:49:48 guenther Exp $	*/
+/*	$OpenBSD: sync.c,v 1.12 2015/09/27 05:09:01 guenther Exp $	*/
 /*	$NetBSD: sync.c,v 1.9 1998/08/30 09:19:40 veego Exp $	*/
 
 /*
@@ -30,17 +30,18 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/stat.h>
 
-#include <fcntl.h>
 #include <errno.h>
-#include <stdarg.h>
+#include <signal.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <time.h>
+
 #include "extern.h"
+#include "machdep.h"
 #include "pathnames.h"
+#include "player.h"
 
 #define BUFSIZE 4096
 
