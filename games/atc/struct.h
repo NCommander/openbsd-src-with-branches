@@ -1,4 +1,4 @@
-/*	$OpenBSD: struct.h,v 1.4 2003/06/03 03:01:38 millert Exp $	*/
+/*	$OpenBSD: struct.h,v 1.5 2014/11/16 04:49:48 guenther Exp $	*/
 /*	$NetBSD: struct.h,v 1.3 1995/03/21 15:04:31 cgd Exp $	*/
 
 /*-
@@ -43,6 +43,8 @@
  *
  * For more info on this and all of my stuff, mail edjames@berkeley.edu.
  */
+
+#include <limits.h>
 
 typedef struct {
 	int	x, y;
