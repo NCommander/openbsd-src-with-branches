@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.14 2007/11/24 12:59:28 jmc Exp $	*/
+/*	$OpenBSD: parse.c,v 1.15 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: parse.c,v 1.3 1995/03/21 15:07:48 cgd Exp $	*/
 
 /*
@@ -29,6 +29,9 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include <stdio.h>
+#include <string.h>
 
 #include "extern.h"
 

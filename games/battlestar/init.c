@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.14 2013/08/29 20:22:10 naddy Exp $	*/
+/*	$OpenBSD: init.c,v 1.15 2015/11/29 15:31:06 tb Exp $	*/
 /*	$NetBSD: init.c,v 1.4 1995/03/21 15:07:35 cgd Exp $	*/
 
 /*
@@ -29,6 +29,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include <err.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "extern.h"
 

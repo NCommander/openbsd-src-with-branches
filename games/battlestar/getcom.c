@@ -1,4 +1,4 @@
-/*	$OpenBSD: getcom.c,v 1.14 2009/10/27 23:59:24 deraadt Exp $	*/
+/*	$OpenBSD: getcom.c,v 1.15 2015/10/24 17:20:17 mmcc Exp $	*/
 /*	$NetBSD: getcom.c,v 1.3 1995/03/21 15:07:30 cgd Exp $	*/
 
 /*
@@ -29,6 +29,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "extern.h"
 
