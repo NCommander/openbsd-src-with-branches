@@ -1,4 +1,4 @@
-/*	$OpenBSD: prword.c,v 1.4 2004/11/29 08:52:28 jsg Exp $	*/
+/*	$OpenBSD: prword.c,v 1.5 2009/10/27 23:59:25 deraadt Exp $	*/
 /*	$NetBSD: prword.c,v 1.3 1995/03/23 08:32:58 cgd Exp $	*/
 
 /*-
@@ -30,7 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#include	"hangman.h"
+#include <curses.h>
+
+#include "hangman.h"
 
 /*
  * prword:

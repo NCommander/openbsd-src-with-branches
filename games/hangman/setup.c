@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.11 2013/08/29 20:22:14 naddy Exp $	*/
+/*	$OpenBSD: setup.c,v 1.12 2015/02/07 01:37:30 miod Exp $	*/
 /*	$NetBSD: setup.c,v 1.3 1995/03/23 08:32:59 cgd Exp $	*/
 
 /*-
@@ -30,8 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#include	<time.h>
-#include	"hangman.h"
+#include <sys/stat.h>
+
+#include <curses.h>
+#include <err.h>
+
+#include "hangman.h"
 
 /*
  * setup:
