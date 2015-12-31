@@ -1,4 +1,4 @@
-/*	$OpenBSD: cards.c,v 1.5 2009/10/27 23:59:24 deraadt Exp $	*/
+/*	$OpenBSD: cards.c,v 1.6 2013/10/25 18:31:29 millert Exp $	*/
 /*	$NetBSD: cards.c,v 1.3 1995/03/21 15:08:41 cgd Exp $	*/
 
 /*-
@@ -30,14 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#include <curses.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
-#include "deck.h"
 #include "cribbage.h"
-
 
 /*
  * Initialize a deck of cards to contain one of each type.

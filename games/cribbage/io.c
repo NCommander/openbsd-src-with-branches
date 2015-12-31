@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.19 2014/05/09 23:56:26 schwarze Exp $	*/
+/*	$OpenBSD: io.c,v 1.20 2015/10/24 18:04:06 mmcc Exp $	*/
 /*	$NetBSD: io.c,v 1.9 1997/07/09 06:25:47 phil Exp $	*/
 
 /*-
@@ -31,15 +31,11 @@
  */
 
 #include <ctype.h>
-#include <curses.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <termios.h>
 #include <unistd.h>
-#include <stdarg.h>
 
-#include "deck.h"
 #include "cribbage.h"
 #include "cribcur.h"
 
