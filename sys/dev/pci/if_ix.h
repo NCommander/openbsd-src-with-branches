@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.h,v 1.29 2015/09/11 13:02:28 stsp Exp $	*/
+/*	$OpenBSD: if_ix.h,v 1.30 2015/12/18 19:08:36 kettenis Exp $	*/
 
 /******************************************************************************
 
@@ -80,7 +80,7 @@
  * Thise parameter controls the minimum number of available transmit
  * descriptors needed before we attempt transmission of a packet.
  */
-#define IXGBE_TX_OP_THRESHOLD		(sc->num_tx_desc / 32)
+#define IXGBE_TX_OP_THRESHOLD	(sc->num_segs + 2)
 
 #define IXGBE_MAX_FRAME_SIZE	9216
 
