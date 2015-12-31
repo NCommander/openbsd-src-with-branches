@@ -1,4 +1,4 @@
-/*	$OpenBSD: tags.c,v 1.10 2014/11/16 00:59:25 guenther Exp $	*/
+/*	$OpenBSD: tags.c,v 1.11 2015/03/19 21:22:15 bcallah Exp $	*/
 
 /*
  * This file is in the public domain.
@@ -395,7 +395,7 @@ addctag(char *l)
 cleanup:
 	free(t);
 	free(l);
-	return (TRUE);
+	return (FALSE);
 }
 
 /*
