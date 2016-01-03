@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.c,v 1.6 2014/12/09 05:01:14 deraadt Exp $	*/
+/*	$OpenBSD: extern.c,v 1.7 2015/12/31 16:50:29 mestre Exp $	*/
 /*	$NetBSD: extern.c,v 1.4 1995/04/27 21:22:19 mycroft Exp $	*/
 
 /*-
@@ -44,7 +44,6 @@
 
 #include <stdio.h>
 #include <termios.h>
-#include <time.h>
 
 #include "def.h"
 #include "extern.h"

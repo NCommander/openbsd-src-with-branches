@@ -1,4 +1,4 @@
-/*	$OpenBSD: bs.c,v 1.33 2015/12/25 03:20:57 mestre Exp $	*/
+/*	$OpenBSD: bs.c,v 1.34 2015/12/26 00:26:39 mestre Exp $	*/
 /*
  * Copyright (c) 1986, Bruce Holloway
  * All rights reserved.
@@ -47,7 +47,6 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 
 typedef struct {

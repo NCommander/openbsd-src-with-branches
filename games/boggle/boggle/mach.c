@@ -1,4 +1,4 @@
-/*	$OpenBSD: mach.c,v 1.16 2015/11/05 08:40:34 guenther Exp $	*/
+/*	$OpenBSD: mach.c,v 1.17 2015/12/27 01:28:02 chl Exp $	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -49,7 +49,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h>
-#include <time.h>
 
 #include "bog.h"
 #include "extern.h"

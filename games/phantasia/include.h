@@ -1,4 +1,4 @@
-/*	$OpenBSD: include.h,v 1.4 2013/08/29 20:22:17 naddy Exp $	*/
+/*	$OpenBSD: include.h,v 1.5 2014/11/16 04:49:48 guenther Exp $	*/
 /*	$NetBSD: include.h,v 1.3 1995/04/24 12:24:31 cgd Exp $	*/
 
 /*
@@ -16,7 +16,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "macros.h"

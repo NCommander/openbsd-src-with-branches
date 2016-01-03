@@ -1,4 +1,4 @@
-/*	$OpenBSD: bog.c,v 1.25 2015/10/24 17:23:14 mmcc Exp $	*/
+/*	$OpenBSD: bog.c,v 1.26 2015/11/30 08:27:46 tb Exp $	*/
 /*	$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $	*/
 
 /*-
@@ -39,7 +39,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "bog.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: wizard.c,v 1.16 2014/11/16 04:49:48 guenther Exp $	*/
+/*	$OpenBSD: wizard.c,v 1.17 2014/12/31 15:45:57 tedu Exp $	*/
 /*	$NetBSD: wizard.c,v 1.3 1995/04/24 12:21:41 cgd Exp $	*/
 
 /*-
@@ -39,11 +39,11 @@
 
 #include <limits.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <time.h>
-#include "hdr.h"
+#include <string.h>
+
 #include "extern.h"
+#include "hdr.h"
 
 #if 0
 void
