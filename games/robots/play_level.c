@@ -1,4 +1,4 @@
-/*	$OpenBSD: play_level.c,v 1.8 2004/11/29 08:52:28 jsg Exp $	*/
+/*	$OpenBSD: play_level.c,v 1.9 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: play_level.c,v 1.3 1995/04/22 10:09:03 cgd Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-# include	"robots.h"
+#include "robots.h"
 
 /*
  * play_level:

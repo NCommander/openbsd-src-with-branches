@@ -1,4 +1,4 @@
-/*	$OpenBSD: bdinit.c,v 1.5 2003/06/03 03:01:39 millert Exp $	*/
+/*	$OpenBSD: bdinit.c,v 1.6 2009/10/27 23:59:24 deraadt Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -31,8 +31,9 @@
  * SUCH DAMAGE.
  */
 
-#include "gomoku.h"
 #include <string.h>
+
+#include "gomoku.h"
 
 void
 bdinit(bp)

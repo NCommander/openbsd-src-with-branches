@@ -1,4 +1,4 @@
-/*	$OpenBSD: rain.c,v 1.18 2015/10/14 07:19:23 semarie Exp $	*/
+/*	$OpenBSD: rain.c,v 1.19 2015/12/06 11:22:37 tb Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -34,11 +34,9 @@
  * cc rain.c -o rain -O -ltermlib
  */
 
-#include <sys/types.h>
 #include <curses.h>
 #include <err.h>
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>

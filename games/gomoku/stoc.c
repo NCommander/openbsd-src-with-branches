@@ -1,4 +1,4 @@
-/*	$OpenBSD: stoc.c,v 1.8 2009/10/27 23:59:24 deraadt Exp $	*/
+/*	$OpenBSD: stoc.c,v 1.9 2015/10/24 17:36:06 mmcc Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -31,10 +31,11 @@
  * SUCH DAMAGE.
  */
 
-#include "gomoku.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+
+#include "gomoku.h"
 
 char	*letters	= "<ABCDEFGHJKLMNOPQRST>";
 

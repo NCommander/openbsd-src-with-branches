@@ -1,4 +1,4 @@
-/*	$OpenBSD: shapes.c,v 1.8 2004/07/10 07:26:24 deraadt Exp $	*/
+/*	$OpenBSD: shapes.c,v 1.9 2010/07/20 00:15:20 deraadt Exp $	*/
 /*	$NetBSD: shapes.c,v 1.2 1995/04/22 07:42:44 cgd Exp $	*/
 
 /*-
@@ -42,6 +42,7 @@
  */
 
 #include <unistd.h>
+
 #include "tetris.h"
 
 #define	TL	-B_COLS-1	/* top left */

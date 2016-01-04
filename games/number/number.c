@@ -1,4 +1,4 @@
-/*	$OpenBSD: number.c,v 1.16 2015/10/24 18:37:23 mmcc Exp $	*/
+/*	$OpenBSD: number.c,v 1.17 2015/12/25 20:59:09 mestre Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993, 1994
@@ -28,8 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <sys/types.h>
 
 #include <ctype.h>
 #include <err.h>

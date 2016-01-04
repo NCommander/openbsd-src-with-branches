@@ -1,4 +1,4 @@
-/*	$OpenBSD: query.c,v 1.5 2004/11/29 08:52:29 jsg Exp $	*/
+/*	$OpenBSD: query.c,v 1.6 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: query.c,v 1.3 1995/04/22 10:09:05 cgd Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include	"robots.h"
+#include "robots.h"
 
 /*
  * query:

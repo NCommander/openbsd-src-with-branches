@@ -1,4 +1,4 @@
-/*	$OpenBSD: scores.c,v 1.17 2015/12/27 01:24:27 chl Exp $	*/
+/*	$OpenBSD: scores.c,v 1.18 2016/01/03 14:38:17 mestre Exp $	*/
 /*	$NetBSD: scores.c,v 1.2 1995/04/22 07:42:38 cgd Exp $	*/
 
 /*-
@@ -42,9 +42,6 @@
  *
  * Major whacks since then.
  */
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
