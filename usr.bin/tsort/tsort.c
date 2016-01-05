@@ -1,4 +1,4 @@
-/* $OpenBSD: tsort.c,v 1.33 2015/12/04 17:58:05 espie Exp $ */
+/* $OpenBSD: tsort.c,v 1.34 2015/12/31 18:00:41 millert Exp $ */
 /* ex:ts=8 sw=4:
  *
  * Copyright (c) 1999-2004 Marc Espie <espie@openbsd.org>
@@ -879,7 +879,8 @@ parse_args(int argc, char *argv[], struct ohash *pairs)
 
 	files[i] = NULL;
 
-	if (pledge("stdio rpath", files) == -1)
+/*	if (pledge("stdio rpath", files) == -1) */
+	if (pledge("stdio rpath", NULL) == -1)
 		err(1, "pledge");
 
 	nodes_init(pairs);
