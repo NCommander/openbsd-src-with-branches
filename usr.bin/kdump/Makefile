@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.28 2014/07/11 13:08:03 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.29 2014/08/20 11:23:42 mikeb Exp $
 
 LDSTATIC=${STATIC}
 PROG=	kdump
@@ -16,7 +16,7 @@ ioctl.c: ${.CURDIR}/Makefile ${.CURDIR}/mkioctls
 	    ${SYS_DIR}/dev/systrace.h \
 	    ${SYS_DIR}/dev/wscons/wsconsio.h \
 	    ${SYS_DIR}/dev/vndioctl.h \
-	    ${SYS_DIR}/dev/pci/drm/drm.h \
+	    ${SYS_DIR}/dev/pci/drm/i915_drm.h \
 	    ${SYS_DIR}/dev/usb/usb.h \
 	    ${SYS_DIR}/net/bpf.h \
 	    ${SYS_DIR}/net/if_ppp.h \
