@@ -1,4 +1,4 @@
-/*	$OpenBSD: efidev.c,v 1.14 2015/12/24 21:37:25 krw Exp $	*/
+/*	$OpenBSD: efidev.c,v 1.15 2016/01/03 15:01:31 krw Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -387,8 +387,12 @@ findopenbsd_gpt(efi_diskinfo_t ed, const char **err)
 				found = 1;
 		}
 	}
-	if (found && new_csum == letoh32(gh.gh_part_csum))
-		return letoh64(gp.gp_lba_start);
+	if (new_csum != letoh32(gh.gh_part_csum)) {
+		*err = "bad GPT entries checksum\n";
+		return (-1);
+	}
+	if (found)
+		return (letoh64(gp.gp_lba_start));
 
 	return (-1);
 }
