@@ -1,4 +1,4 @@
-#	$OpenBSD: LAYOUT,v 1.5 2014/11/06 11:35:02 bentley Exp $
+#	$OpenBSD: LAYOUT,v 1.6 2014/11/20 08:50:53 bentley Exp $
 
 #	@(#)LAYOUT	8.12 (Berkeley) 10/10/96
 
@@ -17,10 +17,6 @@ README
 build/
 	The build/configuration directory for nvi.  See build/README for
 	more information.
-
-catalog/
-	Support for message catalogs for nvi.  See catalog/README for more
-	information.
 
 cl/
 	Source files for nvi's curses screen support.
