@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_subst.c,v 1.24 2015/12/07 20:39:19 mmcc Exp $	*/
+/*	$OpenBSD: ex_subst.c,v 1.25 2016/01/06 22:28:52 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -626,8 +626,7 @@ nextmatch:	match[0].rm_so = 0;
 				if (vs_refresh(sp, 1))
 					goto err;
 
-				vs_update(sp, msg_cat(sp,
-				    "Confirm change? [n]", NULL), NULL);
+				vs_update(sp, "Confirm change? [n]", NULL);
 
 				if (v_event_get(sp, &ev, 0, 0))
 					goto err;
