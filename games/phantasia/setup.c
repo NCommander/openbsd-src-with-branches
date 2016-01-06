@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.13 2014/11/16 04:49:48 guenther Exp $	*/
+/*	$OpenBSD: setup.c,v 1.14 2015/12/26 00:26:39 mestre Exp $	*/
 /*	$NetBSD: setup.c,v 1.4 1995/04/24 12:24:41 cgd Exp $	*/
 
 /*
@@ -173,8 +173,7 @@ main(argc, argv)
 	    }
 	}
 
-    exit(0);
-    /*NOTREACHED*/
+    return 0;
 }
 /**/
 /************************************************************************
