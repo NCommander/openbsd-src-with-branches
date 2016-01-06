@@ -4,7 +4,8 @@
 #define	minusminus	plusplus
 #define	minusplus	plusminus
 
-main()
+int
+main(int argc, char *argv[])
 {
     /* Set up */
 
@@ -128,9 +129,9 @@ main()
     return 0;
 }
 
-plusplus(s, x, y)	/* draw strings in plus plus quadrant */
-char	*s;
-int	x, y;
+/* draw strings in plus plus quadrant */
+void
+plusplus(char *s, int x, int y)
 {
 char	s1[2];
 
@@ -145,9 +146,9 @@ char	s1[2];
 	}
 }
 
-plusminus(s, x, y)	/* draw strings in plus minus quadrant */
-char	*s;
-int	x, y;
+/* draw strings in plus minus quadrant */
+void
+plusminus(char *s, int x, int y)
 {
 char	s1[2];
 
