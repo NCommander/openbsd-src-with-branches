@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_global.c,v 1.13 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: ex_global.c,v 1.14 2015/12/07 20:39:19 mmcc Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -77,7 +77,7 @@ ex_g_setup(SCR *sp, EXCMD *cmdp, enum which cmd)
 
 	if (F_ISSET(sp, SC_EX_GLOBAL)) {
 		msgq(sp, M_ERR,
-	"124|The %s command can't be used as part of a global or v command",
+	"The %s command can't be used as part of a global or v command",
 		    cmdp->cmd->name);
 		return (1);
 	}

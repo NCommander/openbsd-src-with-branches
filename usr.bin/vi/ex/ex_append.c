@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_append.c,v 1.9 2013/11/25 23:27:11 krw Exp $	*/
+/*	$OpenBSD: ex_append.c,v 1.10 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -219,7 +219,7 @@ ex_aci(SCR *sp, EXCMD *cmdp, enum which cmd)
 		 * it.  Give them an informational message.
 		 */
 		(void)ex_puts(sp,
-		    msg_cat(sp, "273|Entering ex input mode.", NULL));
+		    msg_cat(sp, "Entering ex input mode.", NULL));
 		(void)ex_puts(sp, "\n");
 		(void)ex_fflush(sp);
 	}

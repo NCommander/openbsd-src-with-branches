@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_init.c,v 1.15 2015/11/19 07:53:31 bentley Exp $	*/
+/*	$OpenBSD: ex_init.c,v 1.16 2015/12/07 20:39:19 mmcc Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -383,16 +383,16 @@ denied:	a = msg_print(sp, path, &nf1);
 		switch (etype) {
 		case ROOTOWN:
 			msgq(sp, M_ERR,
-			    "125|%s/%s: not sourced: not owned by you or root",
+			    "%s/%s: not sourced: not owned by you or root",
 			    b, a);
 			break;
 		case OWN:
 			msgq(sp, M_ERR,
-			    "126|%s/%s: not sourced: not owned by you", b, a);
+			    "%s/%s: not sourced: not owned by you", b, a);
 			break;
 		case WRITER:
 			msgq(sp, M_ERR,
-    "127|%s/%s: not sourced: writable by a user other than the owner", b, a);
+    "%s/%s: not sourced: writable by a user other than the owner", b, a);
 			break;
 		}
 		if (nf2)
@@ -401,15 +401,15 @@ denied:	a = msg_print(sp, path, &nf1);
 		switch (etype) {
 		case ROOTOWN:
 			msgq(sp, M_ERR,
-			    "128|%s: not sourced: not owned by you or root", a);
+			    "%s: not sourced: not owned by you or root", a);
 			break;
 		case OWN:
 			msgq(sp, M_ERR,
-			    "129|%s: not sourced: not owned by you", a);
+			    "%s: not sourced: not owned by you", a);
 			break;
 		case WRITER:
 			msgq(sp, M_ERR,
-	    "130|%s: not sourced: writable by a user other than the owner", a);
+	    "%s: not sourced: writable by a user other than the owner", a);
 			break;
 		}
 

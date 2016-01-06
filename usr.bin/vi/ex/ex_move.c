@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_move.c,v 1.9 2013/11/25 23:27:11 krw Exp $	*/
+/*	$OpenBSD: ex_move.c,v 1.10 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -100,7 +100,7 @@ ex_move(SCR *sp, EXCMD *cmdp)
 	fm1 = cmdp->addr1;
 	fm2 = cmdp->addr2;
 	if (cmdp->lineno >= fm1.lno && cmdp->lineno <= fm2.lno) {
-		msgq(sp, M_ERR, "139|Destination line is inside move range");
+		msgq(sp, M_ERR, "Destination line is inside move range");
 		return (1);
 	}
 

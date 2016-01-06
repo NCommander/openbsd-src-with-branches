@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_visual.c,v 1.8 2009/10/27 23:59:47 deraadt Exp $	*/
+/*	$OpenBSD: ex_visual.c,v 1.9 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -42,7 +42,7 @@ ex_visual(SCR *sp, EXCMD *cmdp)
 	/* If open option off, disallow visual command. */
 	if (!O_ISSET(sp, O_OPEN)) {
 		msgq(sp, M_ERR,
-	    "175|The visual command requires that the open option be set");
+	    "The visual command requires that the open option be set");
 		return (1);
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_shift.c,v 1.6 2009/10/27 23:59:47 deraadt Exp $	*/
+/*	$OpenBSD: ex_shift.c,v 1.7 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -62,7 +62,7 @@ shift(SCR *sp, EXCMD *cmdp, enum which rl)
 	NEEDFILE(sp, cmdp);
 
 	if (O_VAL(sp, O_SHIFTWIDTH) == 0) {
-		msgq(sp, M_INFO, "152|shiftwidth option set to 0");
+		msgq(sp, M_INFO, "shiftwidth option set to 0");
 		return (0);
 	}
 

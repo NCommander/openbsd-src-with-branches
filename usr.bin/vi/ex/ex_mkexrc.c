@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_mkexrc.c,v 1.5 2009/10/27 23:59:47 deraadt Exp $	*/
+/*	$OpenBSD: ex_mkexrc.c,v 1.6 2014/11/12 04:28:41 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -56,7 +56,7 @@ ex_mkexrc(SCR *sp, EXCMD *cmdp)
 
 	if (!FL_ISSET(cmdp->iflags, E_C_FORCE) && !stat(fname, &sb)) {
 		msgq_str(sp, M_ERR, fname,
-		    "137|%s exists, not written; use ! to override");
+		    "%s exists, not written; use ! to override");
 		return (1);
 	}
 
@@ -86,7 +86,7 @@ ex_mkexrc(SCR *sp, EXCMD *cmdp)
 		goto e2;
 	}
 
-	msgq_str(sp, M_INFO, fname, "138|New exrc file: %s");
+	msgq_str(sp, M_INFO, fname, "New exrc file: %s");
 	return (0);
 
 e1:	sverrno = errno;
