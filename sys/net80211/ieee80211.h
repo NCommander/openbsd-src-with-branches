@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211.h,v 1.54 2015/11/15 01:05:25 stsp Exp $	*/
+/*	$OpenBSD: ieee80211.h,v 1.55 2016/01/04 12:32:06 stsp Exp $	*/
 /*	$NetBSD: ieee80211.h,v 1.6 2004/04/30 23:51:53 dyoung Exp $	*/
 
 /*-
@@ -588,6 +588,14 @@ enum {
  */
 #define IEEE80211_AMPDU_PARAM_LE	0x03
 #define IEEE80211_AMPDU_PARAM_SS	0x1c
+#define IEEE80211_AMPDU_PARAM_SS_NONE	(0 << 2)
+#define IEEE80211_AMPDU_PARAM_SS_0_25	(1 << 2)
+#define IEEE80211_AMPDU_PARAM_SS_0_5	(2 << 2)
+#define IEEE80211_AMPDU_PARAM_SS_1	(3 << 2)
+#define IEEE80211_AMPDU_PARAM_SS_2	(4 << 2)
+#define IEEE80211_AMPDU_PARAM_SS_4	(5 << 2)
+#define IEEE80211_AMPDU_PARAM_SS_8	(6 << 2)
+#define IEEE80211_AMPDU_PARAM_SS_16	(7 << 2)
 /* bits 5-7 reserved */
 
 /*
