@@ -1,4 +1,4 @@
-/*	$OpenBSD: gs.h,v 1.13 2014/11/20 08:50:53 bentley Exp $	*/
+/*	$OpenBSD: gs.h,v 1.14 2015/03/27 04:11:25 brynet Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -74,7 +74,6 @@ struct _gs {
 #define	GO_TERM		3		/* Global options: terminal type. */
 	OPTION	 opts[GO_TERM + 1];
 
-	DB	*msg;			/* Message catalog DB. */
 	MSGH	 msgq;			/* User message list. */
 #define	DEFAULT_NOPRINT	'\1'		/* Emergency non-printable character. */
 	CHAR_T	 noprint;		/* Cached, unprintable character. */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.30 2015/11/20 04:12:19 bentley Exp $	*/
+/*	$OpenBSD: main.c,v 1.31 2015/12/07 20:39:19 mmcc Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -493,9 +493,6 @@ v_end(GS *gp)
 
 	/* Free default buffer storage. */
 	(void)text_lfree(&gp->dcb_store.textq);
-
-	/* Close message catalogs. */
-	msg_close(gp);
 #endif
 
 	/* Ring the bell if scheduled. */
