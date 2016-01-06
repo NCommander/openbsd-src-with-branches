@@ -1,11 +1,23 @@
-/*	$OpenBSD: io.c,v 1.6 2014/07/12 03:41:04 deraadt Exp $	*/
+/*	$OpenBSD: io.c,v 1.7 2016/01/06 09:39:51 tb Exp $	*/
 /*	$NetBSD: io.c,v 1.2 1995/03/24 03:58:50 cgd Exp $	*/
 
 /*
  * io.c - input/output routines for Phantasia
  */
 
-#include "include.h"
+#include <ctype.h>
+#include <curses.h>
+#include <math.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "macros.h"
+#include "phantdefs.h"
+#include "phantglobs.h"
+
+static jmp_buf Timeoenv;	/* used for timing out waiting for input */
 
 /************************************************************************
 /
