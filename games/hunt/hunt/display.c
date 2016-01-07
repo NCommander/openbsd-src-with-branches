@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.5 2012/12/05 23:19:50 deraadt Exp $	*/
+/*	$OpenBSD: display.c,v 1.6 2014/11/19 18:55:09 krw Exp $	*/
 
 /*
  * Display abstraction.
@@ -6,9 +6,6 @@
  */
 
 #include <curses.h>
-
-#include "display.h"
-#include "hunt.h"
 
 void
 display_open()

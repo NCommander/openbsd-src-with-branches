@@ -1,4 +1,4 @@
-/*	$OpenBSD: expl.c,v 1.10 2015/08/22 14:47:41 deraadt Exp $	*/
+/*	$OpenBSD: expl.c,v 1.11 2015/09/27 07:06:41 guenther Exp $	*/
 /*	$NetBSD: expl.c,v 1.2 1997/10/10 16:33:18 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -34,9 +34,10 @@
 #include <stdlib.h>
 #include <syslog.h>
 #include <string.h>
+
+#include "conf.h"
 #include "hunt.h"
 #include "server.h"
-#include "conf.h"
 
 static	void	remove_wall(int, int);
 static	void	init_removed(void);

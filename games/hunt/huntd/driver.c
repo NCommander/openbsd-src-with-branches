@@ -31,25 +31,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/ioctl.h>
 #include <sys/stat.h>
-#include <sys/time.h>
+
+#include <arpa/inet.h>
+
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <paths.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <stdio.h>
 #include <syslog.h>
-#include <netdb.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <paths.h>
-#include <fcntl.h>
-#include "hunt.h"
+#include <unistd.h>
+
 #include "conf.h"
+#include "hunt.h"
 #include "server.h"
 
 u_int16_t Server_port;
@@ -126,7 +124,7 @@ erred:
 			    "usage: %s [-bs] [-a addr] [-D var=value] "
 			    "[-p port]\n",
 			    __progname);
-			return 2;
+			exit(2);
 		}
 	}
 	if (optind < ac)
@@ -315,7 +313,7 @@ again:
 
 	/* Fin: */
 	cleanup(0);
-	return 0;
+	exit(0);
 }
 
 /*

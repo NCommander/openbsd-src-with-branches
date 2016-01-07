@@ -1,17 +1,15 @@
-/*	$OpenBSD: conf.c,v 1.7 2007/03/20 03:43:50 tedu Exp $	*/
+/*	$OpenBSD: conf.c,v 1.8 2015/10/24 18:10:47 mmcc Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public domain. */
 
-#include <stdio.h>
-#include <string.h>
-#include <dirent.h>
-#include <stdlib.h>
 #include <ctype.h>
-#include <syslog.h>
+#include <dirent.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <syslog.h>
 
 #include "hunt.h"
 #include "server.h"
-#include "conf.h"
 
 /* Configuration option variables for the server: */
 

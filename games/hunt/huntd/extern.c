@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.c,v 1.3 1999/01/29 07:30:35 d Exp $	*/
+/*	$OpenBSD: extern.c,v 1.4 2003/06/11 08:45:33 pjanzen Exp $	*/
 /*	$NetBSD: extern.c,v 1.2 1997/10/10 16:33:24 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -31,8 +31,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-# include	"hunt.h"
-# include	"server.h"
+#include "hunt.h"
+#include "server.h"
 
 FLAG	Am_monitor = FALSE;		/* current process is a monitor */
 
