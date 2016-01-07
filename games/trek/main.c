@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.15 2016/01/07 14:30:32 mestre Exp $	*/
+/*	$OpenBSD: main.c,v 1.16 2016/01/07 14:37:51 mestre Exp $	*/
 /*	$NetBSD: main.c,v 1.4 1995/04/22 10:59:10 cgd Exp $	*/
 
 /*
@@ -152,7 +152,7 @@ main(int argc, char **argv)
 	if (setjmp(env))
 	{
 		if ( !getynpar("Another game") )
-			exit(0);
+			return 0;
 	}
 	do
 	{

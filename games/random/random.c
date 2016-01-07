@@ -1,4 +1,4 @@
-/*	$OpenBSD: random.c,v 1.16 2016/01/03 14:38:17 mestre Exp $	*/
+/*	$OpenBSD: random.c,v 1.17 2016/01/04 11:58:35 mestre Exp $	*/
 /*	$NetBSD: random.c,v 1.3 1995/04/22 07:44:05 cgd Exp $	*/
 
 /*
@@ -118,7 +118,7 @@ main(int argc, char *argv[])
 	}
 	if (ferror(stdin))
 		err(2, "stdin");
-	exit (0);
+	return 0;
 }
 
 void

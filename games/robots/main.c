@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.22 2015/12/04 16:40:09 tb Exp $	*/
+/*	$OpenBSD: main.c,v 1.23 2016/01/04 17:33:24 mestre Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
@@ -130,7 +130,7 @@ main(int ac, char *av[])
 
 	if (show_only) {
 		show_score();
-		exit(0);
+		return 0;
 	}
 
 	if (score_wfd < 0) {
@@ -165,7 +165,6 @@ main(int ac, char *av[])
 		score(score_wfd);
 	} while (another());
 	quit(0);
-	/* NOT REACHED */
 }
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rain.c,v 1.19 2015/12/06 11:22:37 tb Exp $	*/
+/*	$OpenBSD: rain.c,v 1.20 2016/01/04 17:33:24 mestre Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -77,7 +77,7 @@ main(int argc, char *argv[])
 		case 'h':
 		default:
 			(void)fprintf(stderr, "usage: rain [-d delay]\n");
-			exit(1);
+			return 1;
 		}
 
 	/* Convert delay from ms -> ns */
@@ -108,7 +108,7 @@ main(int argc, char *argv[])
 	for (j = 0;;) {
 		if (sig_caught) {
 			endwin();
-			exit(0);
+			return 0;
 		}
 		x = arc4random_uniform(tcols) + 2;
 		y = arc4random_uniform(tlines) + 2;

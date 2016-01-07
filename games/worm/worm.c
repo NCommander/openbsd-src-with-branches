@@ -1,4 +1,4 @@
-/*	$OpenBSD: worm.c,v 1.36 2016/01/03 14:38:17 mestre Exp $	*/
+/*	$OpenBSD: worm.c,v 1.37 2016/01/04 17:33:24 mestre Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -136,7 +136,7 @@ main(int argc, char **argv)
 	while (1) {
 		if (wantleave) {
 			endwin();
-			exit(0);
+			return 0;
 		}
 		if (wantsuspend) {
 			move(LINES-1, 0);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: factor.c,v 1.24 2015/12/30 14:07:53 tb Exp $	*/
+/*	$OpenBSD: factor.c,v 1.25 2016/01/04 11:58:35 mestre Exp $	*/
 /*	$NetBSD: factor.c,v 1.5 1995/03/23 08:28:07 cgd Exp $	*/
 
 /*
@@ -104,7 +104,7 @@ main(int argc, char *argv[])
 			if (fgets(buf, sizeof(buf), stdin) == NULL) {
 				if (ferror(stdin))
 					err(1, "stdin");
-				exit (0);
+				return 0;
 			}
 			buf[strcspn(buf, "\n")] = '\0';
 			for (p = buf; isblank((unsigned char)*p); ++p)
@@ -137,7 +137,7 @@ main(int argc, char *argv[])
 			pr_fact(val);
 		}
 	}
-	exit(0);
+	return 0;
 }
 
 /*

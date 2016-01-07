@@ -1,4 +1,4 @@
-/*	$OpenBSD: quiz.c,v 1.25 2016/01/03 14:38:17 mestre Exp $	*/
+/*	$OpenBSD: quiz.c,v 1.26 2016/01/04 17:33:24 mestre Exp $	*/
 /*	$NetBSD: quiz.c,v 1.9 1995/04/22 10:16:58 cgd Exp $	*/
 
 /*-
@@ -98,7 +98,7 @@ main(int argc, char *argv[])
 	default:
 		usage();
 	}
-	exit(0);
+	return 0;
 }
 
 void

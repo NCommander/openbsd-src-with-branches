@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.29 2015/11/30 08:44:51 tb Exp $	*/
+/*	$OpenBSD: main.c,v 1.30 2015/12/06 12:00:16 tobias Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -113,7 +113,7 @@ main(argc, argv)
 			fprintf(stderr,
 			    "usage: %s [-bcdu] [-D debugfile] [inputfile]\n",
 			    __progname);
-			exit(1);
+			return 1;
 		}
 	}
 	argc -= optind;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.main.c,v 1.18 2015/11/04 21:22:10 tedu Exp $	*/
+/*	$OpenBSD: hack.main.c,v 1.19 2015/12/16 14:21:50 tb Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -166,7 +166,7 @@ main(int argc, char **argv)
 		chdirx(dir,0);
 #endif
 		prscore(argc, argv);
-		exit(0);
+		return 0;
 	}
 
 	/*
