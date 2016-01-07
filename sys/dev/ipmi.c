@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi.c,v 1.76 2015/06/21 00:15:12 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -1112,7 +1112,8 @@ get_sdr_partial(struct ipmi_softc *sc, u_int16_t recordId, u_int16_t reserveId,
 	}
 	if (nxtRecordId)
 		*nxtRecordId = *(uint16_t *) cmd;
-	memcpy(buffer, cmd + 2, len - 2);
+	if (len > 2)
+		memcpy(buffer, cmd + 2, len - 2);
 
 	return (0);
 }
