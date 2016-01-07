@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.163 2015/11/20 12:20:30 mpi Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.164 2015/12/05 16:09:09 yasuoka Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -361,6 +361,8 @@ tun_dev_open(struct tun_softc *tp, int flag, int mode, struct proc *p)
 
 	ifp = &tp->tun_if;
 	tp->tun_flags |= TUN_OPEN;
+	if (flag & FNONBLOCK)
+		tp->tun_flags |= TUN_NBIO;
 
 	/* automatically mark the interface running on open */
 	s = splnet();
