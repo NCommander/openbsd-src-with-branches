@@ -1,4 +1,4 @@
-/*	$OpenBSD: softraid.c,v 1.14 2015/10/08 12:54:30 krw Exp $	*/
+/*	$OpenBSD: softraid.c,v 1.15 2015/10/28 13:33:42 jsing Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Sing <jsing@openbsd.org>
@@ -413,8 +413,10 @@ sr_getdisklabel(struct sr_boot_volume *bv, struct disklabel *label)
 			dp = &mbr.dmbr_parts[i];
 			if (!dp->dp_size)
 				continue;
-			if (dp->dp_typ == DOSPTYP_OPENBSD)
+			if (dp->dp_typ == DOSPTYP_OPENBSD) {
 				start = dp->dp_start;
+				break;
+			}
 		}
 	}
 
