@@ -1,4 +1,4 @@
-/*	$OpenBSD: klmove.c,v 1.5 2009/10/27 23:59:27 deraadt Exp $	*/
+/*	$OpenBSD: klmove.c,v 1.6 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: klmove.c,v 1.3 1995/04/22 10:59:07 cgd Exp $	*/
 
 /*
@@ -58,8 +58,7 @@
 */
 
 void
-klmove(fl)
-int	fl;
+klmove(int fl)
 {
 	int		n;
 	struct kling	*k;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: systemname.c,v 1.5 2003/06/03 03:01:42 millert Exp $	*/
+/*	$OpenBSD: systemname.c,v 1.6 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: systemname.c,v 1.3 1995/04/22 10:59:32 cgd Exp $	*/
 
 /*
@@ -44,8 +44,7 @@
 */
 
 const char *
-systemname(q1)
-     const struct quad	*q1;
+systemname(const struct quad *q1)
 {
 	const struct quad	*q;
 	int			i;

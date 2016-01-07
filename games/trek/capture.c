@@ -1,4 +1,4 @@
-/*	$OpenBSD: capture.c,v 1.5 2009/10/27 23:59:27 deraadt Exp $	*/
+/*	$OpenBSD: capture.c,v 1.6 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: capture.c,v 1.3 1995/04/22 10:58:32 cgd Exp $	*/
 
 /*
@@ -48,8 +48,7 @@
 **	etc.
 */
 void
-capture(v)
-	int v;
+capture(int v)
 {
 	int		i;
 	struct kling	*k;
@@ -117,7 +116,7 @@ capture(v)
 */
 
 struct kling *
-selectklingon()
+selectklingon(void)
 {
 	int		i;
 

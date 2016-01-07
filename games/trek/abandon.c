@@ -1,4 +1,4 @@
-/*	$OpenBSD: abandon.c,v 1.6 2009/10/27 23:59:27 deraadt Exp $	*/
+/*	$OpenBSD: abandon.c,v 1.7 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: abandon.c,v 1.3 1995/04/22 10:58:24 cgd Exp $	*/
 
 /*
@@ -58,8 +58,7 @@
 */
 
 void
-abandon(v)
-	int v;
+abandon(int v)
 {
 	struct quad	*q;
 	int		i;
