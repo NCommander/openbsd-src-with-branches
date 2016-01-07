@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwnreg.h,v 1.49 2014/09/09 18:56:24 sthen Exp $	*/
+/*	$OpenBSD: if_iwnreg.h,v 1.50 2016/01/04 13:54:19 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2007, 2008
@@ -710,6 +710,9 @@ struct iwn_cmd_link_quality {
 	uint16_t	ampdu_limit;
 	uint8_t		ampdu_threshold;
 	uint8_t		ampdu_max;
+#define IWN_AMPDU_MAX_UNLIMITED	0
+#define IWN_AMPDU_MAX_NO_AGG	1
+#define IWN_AMPDU_MAX		63
 	uint32_t	reserved2;
 	struct {
 		uint8_t		plcp;
