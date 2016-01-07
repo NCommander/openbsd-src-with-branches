@@ -1,4 +1,4 @@
-/*	$OpenBSD: computer.c,v 1.9 2009/10/27 23:59:27 deraadt Exp $	*/
+/*	$OpenBSD: computer.c,v 1.10 2013/06/02 04:28:39 schwarze Exp $	*/
 /*	$NetBSD: computer.c,v 1.4 1995/04/24 12:25:51 cgd Exp $	*/
 
 /*
@@ -30,11 +30,12 @@
  * SUCH DAMAGE.
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include "trek.h"
+
 #include "getpar.h"
+#include "trek.h"
 
 /*
 **  On-Board Computer

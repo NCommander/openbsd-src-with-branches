@@ -1,4 +1,4 @@
-/*	$OpenBSD: ranf.c,v 1.4 2003/06/03 03:01:42 millert Exp $	*/
+/*	$OpenBSD: ranf.c,v 1.5 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: ranf.c,v 1.3 1995/04/22 10:59:21 cgd Exp $	*/
 
 /*
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 
 int

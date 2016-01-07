@@ -1,4 +1,4 @@
-/*	$OpenBSD: shield.c,v 1.6 2003/06/03 03:01:42 millert Exp $	*/
+/*	$OpenBSD: shield.c,v 1.7 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: shield.c,v 1.4 1995/04/24 12:26:09 cgd Exp $	*/
 
 /*
@@ -31,8 +31,9 @@
  */
 
 #include <stdio.h>
-#include "trek.h"
+
 #include "getpar.h"
+#include "trek.h"
 
 /*
 **  SHIELD AND CLOAKING DEVICE CONTROL

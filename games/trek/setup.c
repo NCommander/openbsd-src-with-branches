@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.9 2013/08/29 14:35:49 naddy Exp $	*/
+/*	$OpenBSD: setup.c,v 1.10 2014/12/08 21:56:28 deraadt Exp $	*/
 /*	$NetBSD: setup.c,v 1.4 1995/04/24 12:26:06 cgd Exp $	*/
 
 /*
@@ -30,14 +30,14 @@
  * SUCH DAMAGE.
  */
 
-#include <stdio.h>
+#include <err.h>
 #include <math.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <err.h>
-#include "trek.h"
+
 #include "getpar.h"
+#include "trek.h"
 
 /*
 **  INITIALIZE THE GAME

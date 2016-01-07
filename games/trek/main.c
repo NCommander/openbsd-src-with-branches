@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.13 2014/12/08 21:56:28 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.14 2015/11/30 08:55:26 tb Exp $	*/
 /*	$NetBSD: main.c,v 1.4 1995/04/22 10:59:10 cgd Exp $	*/
 
 /*
@@ -30,15 +30,14 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
-#include <stdio.h>
+#include <err.h>
 #include <setjmp.h>
-#include <termios.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <err.h>
-#include "trek.h"
+
 #include "getpar.h"
+#include "trek.h"
 
 /*
 **	 ####  #####	#    ####	   #####  ####	 #####	#   #

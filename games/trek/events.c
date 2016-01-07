@@ -1,4 +1,4 @@
-/*	$OpenBSD: events.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: events.c,v 1.6 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: events.c,v 1.3 1995/04/22 10:58:50 cgd Exp $	*/
 
 /*
@@ -30,9 +30,10 @@
  * SUCH DAMAGE.
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
+
 #include "getpar.h"
 #include "trek.h"
 

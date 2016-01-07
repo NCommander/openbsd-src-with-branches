@@ -1,4 +1,4 @@
-/*	$OpenBSD: abandon.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: abandon.c,v 1.6 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: abandon.c,v 1.3 1995/04/22 10:58:24 cgd Exp $	*/
 
 /*
@@ -31,6 +31,7 @@
  */
 
 #include <stdio.h>
+
 #include "trek.h"
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ram.c,v 1.4 2003/06/03 03:01:42 millert Exp $	*/
+/*	$OpenBSD: ram.c,v 1.5 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: ram.c,v 1.3 1995/04/22 10:59:19 cgd Exp $	*/
 
 /*
@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+
 #include "trek.h"
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: attack.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: attack.c,v 1.6 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: attack.c,v 1.3 1995/04/22 10:58:26 cgd Exp $	*/
 
 /*
@@ -30,8 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
+
 #include "trek.h"
 
 /*

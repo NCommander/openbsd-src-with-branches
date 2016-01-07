@@ -1,4 +1,4 @@
-/*	$OpenBSD: snova.c,v 1.5 2003/06/03 03:01:42 millert Exp $	*/
+/*	$OpenBSD: snova.c,v 1.6 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: snova.c,v 1.3 1995/04/22 10:59:29 cgd Exp $	*/
 
 /*
@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+
 #include "trek.h"
 
 /*
