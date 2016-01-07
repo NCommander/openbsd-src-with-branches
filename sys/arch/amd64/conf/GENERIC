@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.405 2015/12/21 22:15:53 sf Exp $
+#	$OpenBSD: GENERIC,v 1.406 2015/12/31 13:06:49 kettenis Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -69,6 +69,7 @@ ipmi0	at mainbus? disable	# IPMI
 vmt0	at pvbus?		# VMware Tools
 
 #xen0	at pvbus?		# Xen HVM domU
+#xnf*	at xen?			# Xen Netfront
 
 option		PCIVERBOSE
 option		USBVERBOSE
