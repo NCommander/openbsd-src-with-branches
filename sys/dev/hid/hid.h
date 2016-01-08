@@ -35,6 +35,8 @@
 #ifndef _HIDHID_H_
 #define _HIDHID_H_
 
+#ifdef _KERNEL
+
 enum hid_kind {
 	hid_input,
 	hid_output,
@@ -90,6 +92,8 @@ int	hid_locate(const void *, int, int32_t, uint8_t, enum hid_kind,
 	    struct hid_location *, uint32_t *);
 int32_t	hid_get_data(const uint8_t *buf, int, struct hid_location *);
 int	hid_is_collection(const void *, int, uint8_t, int32_t);
+
+#endif /* _KERNEL */
 
 /* Usage pages */
 #define HUP_UNDEFINED		0x0000
