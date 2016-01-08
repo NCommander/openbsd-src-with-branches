@@ -1,6 +1,5 @@
-/*	$OpenBSD: hid.h,v 1.10 2008/06/26 05:42:18 ray Exp $ */
-/*	$NetBSD: hid.h,v 1.8 2002/07/11 21:14:25 augustss Exp $	*/
-/*	$FreeBSD: src/sys/dev/usb/hid.h,v 1.7 1999/11/17 22:33:40 n_hibma Exp $ */
+/*	$OpenBSD: hidkbdvar.h,v 1.1 2010/07/31 16:04:50 miod Exp $	*/
+/*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -32,58 +31,4 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-enum hid_kind {
-	hid_input,
-	hid_output,
-	hid_feature,
-	hid_collection,
-	hid_endcollection,
-	hid_none
-};
-
-struct hid_location {
-	u_int32_t size;
-	u_int32_t count;
-	u_int32_t pos;
-};
-
-struct hid_item {
-	/* Global */
-	int32_t _usage_page;
-	int32_t logical_minimum;
-	int32_t logical_maximum;
-	int32_t physical_minimum;
-	int32_t physical_maximum;
-	int32_t unit_exponent;
-	int32_t unit;
-	int32_t report_ID;
-	/* Local */
-	int32_t usage;
-	int32_t usage_minimum;
-	int32_t usage_maximum;
-	int32_t designator_index;
-	int32_t designator_minimum;
-	int32_t designator_maximum;
-	int32_t string_index;
-	int32_t string_minimum;
-	int32_t string_maximum;
-	int32_t set_delimiter;
-	/* Misc */
-	int32_t collection;
-	int collevel;
-	enum hid_kind kind;
-	u_int32_t flags;
-	/* Location */
-	struct hid_location loc;
-	/* */
-	struct hid_item *next;
-};
-
-struct	hid_data *hid_start_parse(const void *, int, enum hid_kind);
-void	hid_end_parse(struct hid_data *);
-int	hid_get_item(struct hid_data *, struct hid_item *);
-int	hid_report_size(const void *, int, enum hid_kind, uint8_t);
-int	hid_locate(const void *, int, int32_t, uint8_t, enum hid_kind,
-	    struct hid_location *, uint32_t *);
-int32_t	hid_get_data(const uint8_t *buf, int, struct hid_location *);
-int	hid_is_collection(const void *, int, uint8_t, int32_t);
+void	hidkbd_hookup_bell(void (*)(void *, u_int, u_int, u_int, int), void *);

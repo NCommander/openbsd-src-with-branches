@@ -1,4 +1,4 @@
-/*	$OpenBSD: utwitch.c,v 1.13 2014/07/12 18:48:53 tedu Exp $ */
+/*	$OpenBSD: utwitch.c,v 1.14 2014/12/11 18:39:28 mpi Exp $ */
 
 /*
  * Copyright (c) 2010 Yojiro UO <yuo@nui.org>
@@ -33,7 +33,8 @@
 #include <dev/usb/usbdi_util.h>
 #include <dev/usb/usbdevs.h>
 #include <dev/usb/uhidev.h>
-#include <dev/usb/hid.h>
+
+#include <dev/hid/hid.h>
 
 #define	CMD_NONE	0xf0
 #define CMD_EOF		0x0d

@@ -1,4 +1,4 @@
-#	$OpenBSD: files.amd64,v 1.83 2015/11/13 07:52:20 mlarkin Exp $
+#	$OpenBSD: files.amd64,v 1.84 2015/11/23 22:57:12 deraadt Exp $
 
 maxpartitions 16
 maxusers 2 16 128
@@ -203,6 +203,11 @@ file	arch/amd64/amd64/pctr.c		pctr needs-flag
 
 pseudo-device	nvram
 file	arch/amd64/amd64/nvram.c	nvram needs-flag
+
+#
+# Machine-independent HID support
+#
+include	"dev/hid/files.hid"
 
 #
 # USB

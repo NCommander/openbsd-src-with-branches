@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhid.c,v 1.60 2015/02/10 21:56:09 miod Exp $ */
+/*	$OpenBSD: uhid.c,v 1.61 2015/03/14 03:38:50 jsg Exp $ */
 /*	$NetBSD: uhid.c,v 1.57 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -56,9 +56,10 @@
 #include <dev/usb/usbdevs.h>
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdi_util.h>
-#include <dev/usb/hid.h>
 
 #include <dev/usb/uhidev.h>
+
+#include <dev/hid/hid.h>
 
 #ifdef UHID_DEBUG
 #define DPRINTF(x)	do { if (uhiddebug) printf x; } while (0)

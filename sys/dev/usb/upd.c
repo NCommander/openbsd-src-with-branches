@@ -1,4 +1,4 @@
-/*	$OpenBSD: upd.c,v 1.22 2015/06/17 08:31:55 mpi Exp $ */
+/*	$OpenBSD: upd.c,v 1.23 2015/10/01 14:03:44 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 David Higgs <higgsd@gmail.com>
@@ -27,13 +27,14 @@
 #include <sys/queue.h>
 #include <sys/sensors.h>
 
-#include <dev/usb/hid.h>
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdevs.h>
 #include <dev/usb/usbhid.h>
 #include <dev/usb/uhidev.h>
 #include <dev/usb/usbdi_util.h>
+
+#include <dev/hid/hid.h>
 
 #ifdef UPD_DEBUG
 #define DPRINTF(x)	do { printf x; } while (0)

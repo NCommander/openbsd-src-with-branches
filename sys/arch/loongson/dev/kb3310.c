@@ -1,4 +1,4 @@
-/*	$OpenBSD: kb3310.c,v 1.18 2012/10/03 21:44:51 miod Exp $	*/
+/*	$OpenBSD: kb3310.c,v 1.19 2013/12/24 01:11:04 dlg Exp $	*/
 /*
  * Copyright (c) 2010 Otto Moerbeek <otto@drijf.net>
  *
@@ -39,7 +39,7 @@
 #if NPCKBD > 0 || NHIDKBD > 0
 #include <dev/ic/pckbcvar.h>
 #include <dev/pckbc/pckbdvar.h>
-#include <dev/usb/hidkbdvar.h>
+#include <dev/hid/hidkbdvar.h>
 #endif
 
 struct cfdriver ykbec_cd = {
