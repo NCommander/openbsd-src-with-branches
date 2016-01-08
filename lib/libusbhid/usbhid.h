@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbhid.h,v 1.5 2012/07/16 19:57:17 jasper Exp $	*/
+/*	$OpenBSD: usbhid.h,v 1.6 2014/05/12 17:03:28 mpi Exp $	*/
 /*	$NetBSD: usbhid.h,v 1.1 2001/12/28 17:45:27 augustss Exp $	*/
 
 /*
@@ -26,6 +26,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include <dev/hid/hid.h>
 
 typedef struct report_desc *report_desc_t;
 
