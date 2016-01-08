@@ -69,7 +69,6 @@ listen_close(struct listen *f)
 	*pf = f->next;
 
 	if (f->path != NULL) {
-		unlink(f->path);
 		xfree(f->path);
 	}
 	file_del(f->file);
