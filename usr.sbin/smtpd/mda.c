@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda.c,v 1.114 2015/11/30 13:10:13 gilles Exp $	*/
+/*	$OpenBSD: mda.c,v 1.115 2015/12/14 10:38:40 sunil Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -267,8 +267,8 @@ mda_imsg(struct mproc *p, struct imsg *imsg)
 					 * if any
 					 */
 					n = iobuf_fqueue(&s->iobuf,
-					    "Return-Path: %s\nDelivered-To:"
-					    "%s\n",
+					    "Return-Path: %s\n"
+					    "Delivered-To: %s\n",
 					    e->sender,
 					    e->rcpt ? e->rcpt : e->dest);
 				else
