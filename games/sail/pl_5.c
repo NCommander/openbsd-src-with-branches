@@ -1,4 +1,4 @@
-/*	$OpenBSD: pl_5.c,v 1.7 2015/10/24 18:14:09 mmcc Exp $	*/
+/*	$OpenBSD: pl_5.c,v 1.8 2015/12/31 16:44:22 mestre Exp $	*/
 /*	$NetBSD: pl_5.c,v 1.4 1995/04/24 12:25:21 cgd Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #define turnfirst(x) (*x == 'r' || *x == 'l')
 
 void
-acceptmove()
+acceptmove(void)
 {
 	int ta;
 	int ma;
@@ -143,7 +143,7 @@ acceptmove()
 }
 
 void
-acceptboard()
+acceptboard(void)
 {
 	struct ship *sp;
 	int n;
@@ -196,11 +196,7 @@ acceptboard()
 }
 
 void
-parties(crew, to, isdefense, buf)
-	struct ship *to;
-	int crew[3];
-	char isdefense;
-	char buf;
+parties(int crew[3], struct ship *to, int isdefense, int buf)
 {
 	int k, j, men; 
 	struct BP *ptr;

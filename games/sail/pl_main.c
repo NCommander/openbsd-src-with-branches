@@ -1,4 +1,4 @@
-/*	$OpenBSD: pl_main.c,v 1.14 2015/08/22 14:47:41 deraadt Exp $	*/
+/*	$OpenBSD: pl_main.c,v 1.15 2015/12/31 16:44:22 mestre Exp $	*/
 /*	$NetBSD: pl_main.c,v 1.5 1995/04/24 12:25:25 cgd Exp $	*/
 
 /*
@@ -40,9 +40,8 @@
 #include "extern.h"
 #include "player.h"
 
-/*ARGSUSED*/
 void
-pl_main()
+pl_main(void)
 {
 	initialize();
 	Msg("Aye aye, Sir");
@@ -50,7 +49,7 @@ pl_main()
 }
 
 void
-initialize()
+initialize(void)
 {
 	struct File *fp;
 	struct ship *sp;

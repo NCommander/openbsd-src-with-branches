@@ -1,4 +1,4 @@
-/*	$OpenBSD: dr_main.c,v 1.6 2015/08/22 14:47:41 deraadt Exp $	*/
+/*	$OpenBSD: dr_main.c,v 1.7 2015/12/31 16:44:22 mestre Exp $	*/
 /*	$NetBSD: dr_main.c,v 1.4 1995/04/22 10:36:52 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@
 #include "player.h"
 
 int
-dr_main()
+dr_main(void)
 {
 	int n;
 	struct ship *sp;
