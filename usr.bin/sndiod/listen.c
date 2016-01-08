@@ -165,21 +165,6 @@ listen_new_tcp(char *addr, unsigned int port)
 			log_puts(": failed to set SO_REUSEADDR\n");
 			goto bad_close;
 		}
-		if (ai->ai_family == AF_INET6) {
-			/*
-			 * make sure IPv6 sockets are restricted to IPv6
-			 * addresses because we already use a IP socket
-			 * for IP addresses
-			 */
-			opt = 1;
-			if (setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY,
-				&opt, sizeof(int)) < 0) {
-				log_puts(addr);
-				log_puts(": failed to set IPV6_V6ONLY\n");
-				goto bad_close;
-			}
-		}
-
 		if (bind(s, ai->ai_addr, ai->ai_addrlen) < 0) {
 			log_puts(addr);
 			log_puts(": failed to bind socket\n");
