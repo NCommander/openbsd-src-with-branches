@@ -520,9 +520,12 @@ main(int argc, char **argv)
 		snprintf(path,
 		    SOCKPATH_MAX, "%s/" SOCKPATH_FILE "%u",
 		    base, unit);
-		listen_new_un(path);
-		if (tcpaddr)
-			listen_new_tcp(tcpaddr, AUCAT_PORT + unit);
+		if (!listen_new_un(path))
+			return 1;
+		if (tcpaddr) {
+			if (!listen_new_tcp(tcpaddr, AUCAT_PORT + unit))
+				return 1;
+		}
 		for (l = listen_list; l != NULL; l = l->next) {
 			if (!listen_init(l))
 				return 1;
