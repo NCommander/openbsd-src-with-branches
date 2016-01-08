@@ -1,4 +1,4 @@
-/*	$OpenBSD: getinp.c,v 1.9 2009/10/27 23:59:26 deraadt Exp $	*/
+/*	$OpenBSD: getinp.c,v 1.10 2015/10/24 18:39:05 mmcc Exp $	*/
 /*	$NetBSD: getinp.c,v 1.4 1995/04/24 12:24:20 cgd Exp $	*/
 
 /*
@@ -30,10 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#include	<stdio.h>
-#include	<string.h>
-#include	<ctype.h>
-#include	"monop.ext"
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "monop.ext"
 
 #define	LINE	70
 

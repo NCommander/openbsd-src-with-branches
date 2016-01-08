@@ -1,4 +1,4 @@
-/*	$OpenBSD: monop.c,v 1.13 2015/08/22 14:47:41 deraadt Exp $	*/
+/*	$OpenBSD: monop.c,v 1.14 2015/11/21 03:20:30 deraadt Exp $	*/
 /*	$NetBSD: monop.c,v 1.3 1995/03/23 08:34:52 cgd Exp $	*/
 
 /*
@@ -30,10 +30,13 @@
  * SUCH DAMAGE.
  */
 
-#include	<err.h>
-#include	<stdlib.h>
-#include	<unistd.h>
-#include	"monop.def"
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "monop.def"
 
 static void	getplayers(void);
 static void	init_players(void);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: jail.c,v 1.4 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: jail.c,v 1.5 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: jail.c,v 1.3 1995/03/23 08:34:44 cgd Exp $	*/
 
 /*
@@ -30,7 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#include	"monop.ext"
+#include <stdio.h>
+
+#include "monop.ext"
 
 /*
  *	This routine uses a get-out-of-jail-free card to get the
