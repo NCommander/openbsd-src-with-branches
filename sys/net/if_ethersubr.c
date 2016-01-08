@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.230 2015/10/25 11:58:11 mpi Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.231 2015/12/02 08:47:00 claudio Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -372,14 +372,14 @@ decapsulate:
 	case ETHERTYPE_ARP:
 		if (ifp->if_flags & IFF_NOARP)
 			goto dropanyway;
-		inq = &arpintrq;
-		break;
+		arpinput(m);
+		return (1);
 
 	case ETHERTYPE_REVARP:
 		if (ifp->if_flags & IFF_NOARP)
 			goto dropanyway;
-		inq = &rarpintrq;
-		break;
+		revarpinput(m);
+		return (1);
 
 #ifdef INET6
 	/*
