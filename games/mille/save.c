@@ -1,4 +1,4 @@
-/*	$OpenBSD: save.c,v 1.10 2016/01/03 14:38:17 mestre Exp $	*/
+/*	$OpenBSD: save.c,v 1.11 2016/01/08 18:05:58 mestre Exp $	*/
 /*	$NetBSD: save.c,v 1.4 1995/03/24 05:02:13 cgd Exp $	*/
 
 /*
@@ -51,7 +51,7 @@ typedef	struct stat	STAT;
  *	Returns FALSE if it couldn't be done.
  */
 bool
-save()
+save(void)
 {
 	char	*sp;
 	int	outf;
@@ -136,8 +136,7 @@ over:
  * be cleaned up before the game starts.
  */
 bool
-rest_f(file)
-	const char	*file;
+rest_f(const char *file)
 {
 	char	*sp;
 	int	inf;
