@@ -298,7 +298,7 @@ fdpass_in_helper(void *arg)
 	struct port *p;
 
 	if (!fdpass_recv(f, &cmd, &num, &mode, &fd))
-		return;	
+		return;
 	switch (cmd) {
 	case FDPASS_OPEN_SND:
 		d = dev_bynum(num);

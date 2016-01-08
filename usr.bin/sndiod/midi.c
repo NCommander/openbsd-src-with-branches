@@ -249,7 +249,7 @@ midi_tickets(struct midi *iep)
 	}
 
 	/*
-	 * in the worst case output message is twice the 
+	 * in the worst case output message is twice the
 	 * input message (2-byte messages with running status)
 	 */
 	tickets = maxavail / 2 - iep->tickets;
@@ -332,14 +332,14 @@ midi_in(struct midi *iep, unsigned char *idata, int icount)
  * store the given message in the output buffer
  */
 void
-midi_out(struct midi *oep, unsigned char *idata, int icount)	
+midi_out(struct midi *oep, unsigned char *idata, int icount)
 {
 	unsigned char *odata;
 	int ocount;
 #ifdef DEBUG
 	int i;
 #endif
-	
+
 	while (icount > 0) {
 		if (oep->obuf.used == oep->obuf.len) {
 #ifdef DEBUG
@@ -531,9 +531,9 @@ port_close(struct port *c)
 		panic();
 	}
 #endif
-	c->state = PORT_CFG;	
+	c->state = PORT_CFG;
 	port_mio_close(c);
-	
+
 	for (i = 0; i < MIDI_NEP; i++) {
 		ep = midi_ep + i;
 		if ((ep->txmask & c->midi->self) ||
