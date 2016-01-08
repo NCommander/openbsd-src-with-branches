@@ -1,4 +1,4 @@
-/*	$OpenBSD: bs.c,v 1.35 2016/01/03 14:38:17 mestre Exp $	*/
+/*	$OpenBSD: bs.c,v 1.36 2016/01/07 16:00:32 tb Exp $	*/
 /*
  * Copyright (c) 1986, Bruce Holloway
  * All rights reserved.
@@ -39,9 +39,8 @@
  * v2.2 with bugfixes and strategical improvements, March 1998.
  */
 
-#include <sys/types.h>
-#include <curses.h>
 #include <ctype.h>
+#include <curses.h>
 #include <err.h>
 #include <limits.h>
 #include <signal.h>
