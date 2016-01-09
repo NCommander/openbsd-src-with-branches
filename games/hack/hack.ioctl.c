@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.ioctl.c,v 1.8 2015/12/05 13:37:43 tb Exp $	*/
+/*	$OpenBSD: hack.ioctl.c,v 1.9 2016/01/09 18:33:15 mestre Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -90,7 +90,7 @@ dosuspend(void)
 {
 #ifdef SIGTSTP
 	if(signal(SIGTSTP, SIG_IGN) == SIG_DFL) {
-		settty((char *) 0);
+		settty(NULL);
 		(void) signal(SIGTSTP, SIG_DFL);
 		(void) kill(0, SIGTSTP);
 		gettty();

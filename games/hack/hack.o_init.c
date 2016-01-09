@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.o_init.c,v 1.6 2014/03/11 08:05:15 guenther Exp $	*/
+/*	$OpenBSD: hack.o_init.c,v 1.7 2016/01/09 18:33:15 mestre Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -220,9 +220,9 @@ dodiscovered(void)				/* free after Robert Viduya */
     }
     if (ct == 0) {
 	pline ("You haven't discovered anything yet...");
-	cornline(3, (char *) 0);
+	cornline(3, NULL);
     } else
-	cornline(2, (char *) 0);
+	cornline(2, NULL);
 
     return(0);
 }
