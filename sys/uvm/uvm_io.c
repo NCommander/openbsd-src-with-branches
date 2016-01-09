@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_io.c,v 1.24 2015/02/10 21:56:10 miod Exp $	*/
+/*	$OpenBSD: uvm_io.c,v 1.25 2015/03/14 03:38:53 jsg Exp $	*/
 /*	$NetBSD: uvm_io.c,v 1.12 2000/06/27 17:29:23 mrg Exp $	*/
 
 /*
@@ -109,7 +109,7 @@ uvm_io(vm_map_t map, struct uio *uio, int flags)
 		sz = chunksz - pageoffset;
 		if (sz > togo)
 			sz = togo;
-		error = uiomovei((caddr_t) (kva + pageoffset), sz, uio);
+		error = uiomove((caddr_t) (kva + pageoffset), sz, uio);
 		togo -= sz;
 		baseva += chunksz;
 
