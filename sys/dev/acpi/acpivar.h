@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.78 2014/11/22 18:31:46 mlarkin Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.79 2014/12/08 07:12:37 mlarkin Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -213,6 +213,7 @@ struct acpi_softc {
 #if NACPIPWRRES > 0
 	acpi_pwrreshead_t	 sc_pwrresdevs;
 #endif /* NACPIPWRRES > 0 */
+	int			 sc_hw_reduced;
 
 	/*
 	 * Second-level information from FADT
