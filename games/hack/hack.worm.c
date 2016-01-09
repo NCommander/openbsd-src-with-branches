@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.worm.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: hack.worm.c,v 1.7 2014/03/11 08:05:15 guenther Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,7 +62,9 @@
  */
 
 #include <stdlib.h>
+
 #include "hack.h"
+
 #ifndef NOWORM
 struct wseg *wsegs[32];	/* linked list, tail first */
 struct wseg *wheads[32];

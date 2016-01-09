@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.timeout.c,v 1.5 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: hack.timeout.c,v 1.6 2015/09/27 05:13:11 guenther Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -61,12 +61,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include	"hack.h"
+#include "hack.h"
 
 static void stoned_dialogue(void);
 
 void
-hacktimeout()
+hacktimeout(void)
 {
 	struct prop *upp;
 
@@ -115,7 +115,7 @@ char *stoned_texts[] = {
 };
 
 static void
-stoned_dialogue()
+stoned_dialogue(void)
 {
 	long i = (Stoned & TIMEOUT);
 

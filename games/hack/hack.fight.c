@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.fight.c,v 1.8 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: hack.fight.c,v 1.9 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -61,8 +61,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include	<stdio.h>
-#include	"hack.h"
+#include <stdio.h>
+
+#include "hack.h"
+
 extern struct permonst li_dog, dog, la_dog;
 
 static boolean far_noise;

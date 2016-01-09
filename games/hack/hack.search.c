@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.search.c,v 1.4 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: hack.search.c,v 1.5 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -63,8 +63,9 @@
 
 #include "hack.h"
 
+/* returns number of things found */
 int
-findit()	/* returns number of things found */
+findit(void)
 {
 	int num;
 	xchar zx,zy;
@@ -108,7 +109,7 @@ findit()	/* returns number of things found */
 }
 
 int
-dosearch()
+dosearch(void)
 {
 	xchar x,y;
 	struct trap *trap;
@@ -158,7 +159,7 @@ dosearch()
 }
 
 int
-doidtrap()
+doidtrap(void)
 {
 	struct trap *trap;
 	int x,y;

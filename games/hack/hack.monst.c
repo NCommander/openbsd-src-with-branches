@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.monst.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: hack.monst.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -63,6 +63,7 @@
 
 #include "hack.h"
 #include "def.eshk.h"
+
 extern char plname[PL_NSIZ];
 
 struct permonst mons[CMNUM+2] = {

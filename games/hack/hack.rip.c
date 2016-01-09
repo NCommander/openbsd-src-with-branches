@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.rip.c,v 1.7 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: hack.rip.c,v 1.8 2015/09/27 05:13:11 guenther Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,6 +62,7 @@
  */
 
 #include <stdio.h>
+
 #include "hack.h"
 
 extern char plname[];
@@ -83,7 +84,7 @@ static const char ripbot[] = "\
 static void center(int, char *);
 
 void
-outrip()
+outrip(void)
 {
 	char buf[BUFSZ];
 

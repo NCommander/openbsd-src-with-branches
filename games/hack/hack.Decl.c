@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.Decl.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: hack.Decl.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -61,7 +61,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include	"hack.h"
+#include "hack.h"
+
 char nul[40];			/* contains zeros */
 char plname[PL_NSIZ];		/* player name */
 char lock[PL_NSIZ+4] = "1lock";	/* long enough for login name .99 */

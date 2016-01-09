@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.monst.h,v 1.3 2001/08/06 22:59:13 pjanzen Exp $*/
+/*	$OpenBSD: def.monst.h,v 1.4 2003/03/16 21:22:35 camield Exp $*/
 /*	$NetBSD: def.monst.h,v 1.3 1995/03/23 08:29:30 cgd Exp $*/
 
 /*
@@ -110,7 +110,7 @@ struct monst {
 
 extern struct monst *fmon;
 extern struct monst *fallen_down;
-struct monst *m_at();
+struct monst *m_at(int, int);
 
 /* these are in mspeed */
 #define MSLOW 1 /* slow monster */

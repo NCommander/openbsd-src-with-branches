@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.main.c,v 1.19 2015/12/16 14:21:50 tb Exp $	*/
+/*	$OpenBSD: hack.main.c,v 1.20 2016/01/07 16:00:32 tb Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -61,13 +61,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <stdlib.h>
+
 #include <stdio.h>
-#include <stdarg.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+
 #include "hack.h"
 
 #ifdef QUEST
@@ -476,7 +476,7 @@ glo(int foo)
  * It may still contain a suffix denoting pl_character.
  */
 void
-askname()
+askname(void)
 {
 	int c,ct;
 
@@ -555,7 +555,7 @@ chdirx(char *dir, boolean wr)
 #endif
 
 void
-stop_occupation()
+stop_occupation(void)
 {
 	if(occupation) {
 		pline("You stop %s.", occtxt);

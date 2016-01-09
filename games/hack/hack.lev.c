@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.lev.c,v 1.8 2014/03/11 08:05:15 guenther Exp $	*/
+/*	$OpenBSD: hack.lev.c,v 1.9 2015/09/27 05:13:11 guenther Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -61,9 +61,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
 #include "hack.h"
 
 extern struct obj *billobjs;
@@ -322,7 +322,7 @@ mread(int fd, char *buf, unsigned len)
 }
 
 void
-mklev()
+mklev(void)
 {
 	extern boolean in_mklev;
 

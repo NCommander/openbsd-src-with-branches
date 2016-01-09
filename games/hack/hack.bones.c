@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.bones.c,v 1.8 2009/10/27 23:59:25 deraadt Exp $	*/
+/*	$OpenBSD: hack.bones.c,v 1.9 2015/11/11 01:12:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,7 +62,9 @@
  */
 
 #include <unistd.h>
+
 #include "hack.h"
+
 extern char plname[PL_NSIZ];
 extern struct permonst pm_ghost;
 
@@ -70,7 +72,7 @@ char bones[] = "bones_xx";
 
 /* save bones and possessions of a deceased adventurer */
 void
-savebones()
+savebones(void)
 {
 	int fd;
 	struct obj *otmp;
@@ -135,7 +137,7 @@ savebones()
 }
 
 int
-getbones()
+getbones(void)
 {
 	int fd,x,y,ok;
 

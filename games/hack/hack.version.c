@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.version.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: hack.version.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -61,11 +61,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include	"date.h"
-#include	"hack.h"
+#include "date.h"
+#include "hack.h"
 
 int
-doversion()
+doversion(void)
 {
 	pline("%s 1.0.3 - last edit %s.", (
 #ifdef QUEST

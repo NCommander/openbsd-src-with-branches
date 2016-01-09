@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.6 2006/03/14 22:06:10 deraadt Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.7 2009/10/27 23:59:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,6 +62,7 @@
  */
 
 #include <stdlib.h>
+
 #include "hack.h"
 
 void *
