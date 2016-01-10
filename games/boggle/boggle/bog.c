@@ -1,4 +1,4 @@
-/*	$OpenBSD: bog.c,v 1.27 2016/01/03 14:38:16 mestre Exp $	*/
+/*	$OpenBSD: bog.c,v 1.28 2016/01/07 16:00:31 tb Exp $	*/
 /*	$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $	*/
 
 /*-
@@ -36,6 +36,7 @@
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,7 +69,6 @@ int nmwords, maxmwords = MAXMWORDS, maxmspace = MAXMSPACE;
 int ngames = 0;
 int tnmwords = 0, tnpwords = 0;
 
-#include <setjmp.h>
 jmp_buf env;
 
 time_t start_t;

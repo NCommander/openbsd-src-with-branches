@@ -1,4 +1,4 @@
-/*	$OpenBSD: timer.c,v 1.11 2013/09/12 23:06:43 krw Exp $	*/
+/*	$OpenBSD: timer.c,v 1.12 2014/11/16 04:49:48 guenther Exp $	*/
 /*	$NetBSD: timer.c,v 1.3 1995/04/24 12:22:45 cgd Exp $	*/
 
 /*-
@@ -33,15 +33,10 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/time.h>
-
 #include <curses.h>
 #include <setjmp.h>
-#include <stdio.h>
 #include <unistd.h>
-#include <string.h>
 
-#include "bog.h"
 #include "extern.h"
 
 extern int TIMER_LINE, TIMER_COL;

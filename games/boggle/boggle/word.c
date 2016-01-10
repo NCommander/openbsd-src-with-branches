@@ -1,4 +1,4 @@
-/*	$OpenBSD: word.c,v 1.6 2006/03/27 00:10:14 tedu Exp $	*/
+/*	$OpenBSD: word.c,v 1.7 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: word.c,v 1.2 1995/03/21 12:14:45 cgd Exp $	*/
 
 /*-
@@ -33,7 +33,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <err.h>
@@ -42,7 +41,6 @@
 #include <string.h>
 
 #include "bog.h"
-#include "extern.h"
 
 static char *dictspace, *dictend;
 static char *sp;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: help.c,v 1.4 2004/07/10 07:26:22 deraadt Exp $	*/
+/*	$OpenBSD: help.c,v 1.5 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: help.c,v 1.2 1995/03/21 12:14:38 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,6 @@
  */
 
 #include <curses.h>
-#include <stdio.h>
 
 #include "bog.h"
 #include "extern.h"
