@@ -1,4 +1,4 @@
-/*	$OpenBSD: random.c,v 1.17 2016/01/04 11:58:35 mestre Exp $	*/
+/*	$OpenBSD: random.c,v 1.18 2016/01/07 16:00:33 tb Exp $	*/
 /*	$NetBSD: random.c,v 1.3 1995/04/22 07:44:05 cgd Exp $	*/
 
 /*
@@ -63,7 +63,6 @@ main(int argc, char *argv[])
 		default:
 		case '?': case 'h':
 			usage();
-			/* NOTREACHED */
 		}
 
 	argc -= optind;
@@ -83,7 +82,6 @@ main(int argc, char *argv[])
 		break;
 	default:
 		usage(); 
-		/* NOTREACHED */
 	}
 
 	/* Compute a random exit status between 0 and denom - 1. */

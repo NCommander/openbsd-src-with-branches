@@ -1,4 +1,4 @@
-/*	$OpenBSD: quiz.c,v 1.26 2016/01/04 17:33:24 mestre Exp $	*/
+/*	$OpenBSD: quiz.c,v 1.27 2016/01/07 16:00:33 tb Exp $	*/
 /*	$NetBSD: quiz.c,v 1.9 1995/04/22 10:16:58 cgd Exp $	*/
 
 /*-
@@ -312,7 +312,6 @@ next_cat(const char *s)
 			esc = 0;
 			break;
 		}
-	/* NOTREACHED */
 }
 
 char *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.20 2015/10/24 18:04:06 mmcc Exp $	*/
+/*	$OpenBSD: io.c,v 1.21 2015/12/31 18:10:20 mestre Exp $	*/
 /*	$NetBSD: io.c,v 1.9 1997/07/09 06:25:47 phil Exp $	*/
 
 /*-
@@ -196,7 +196,6 @@ infrom(CARD hand[], int n, char *prompt)
 			} else
 				msg("Sorry, I missed that");
 	}
-	/* NOTREACHED */
 }
 
 /*

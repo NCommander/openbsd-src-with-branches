@@ -1,4 +1,4 @@
-/*	$OpenBSD: answer.c,v 1.16 2016/01/07 21:29:31 mestre Exp $	*/
+/*	$OpenBSD: answer.c,v 1.17 2016/01/07 21:37:53 mestre Exp $	*/
 /*	$NetBSD: answer.c,v 1.3 1997/10/10 16:32:50 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -429,7 +429,6 @@ rand_dir(void)
 	  case 3:
 		return ABOVE;
 	}
-	/* NOTREACHED */
 	return(-1);
 }
 
