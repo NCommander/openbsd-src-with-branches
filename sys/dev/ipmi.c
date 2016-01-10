@@ -1749,6 +1749,8 @@ ipmi_activate(struct device *self, int act)
 	return (0);
 }
 
+#define		MIN_PERIOD	10
+
 int
 ipmi_watchdog(void *arg, int period)
 {
@@ -1770,8 +1772,8 @@ ipmi_watchdog(void *arg, int period)
 		return (period);
 	}
 
-	if (period < 10 && period > 0)
-		period = 10;
+	if (period < MIN_PERIOD && period > 0)
+		period = MIN_PERIOD;
 
 	s = splsoftclock();
 	sc->sc_poll = 1;
@@ -1798,5 +1800,7 @@ ipmi_watchdog(void *arg, int period)
 	splx(s);
 
 	sc->sc_wdog_period = period;
+	printf("%s: watchdog %sabled\n", DEVNAME(sc),
+	    (period == 0) ? "dis" : "en");
 	return (period);
 }
