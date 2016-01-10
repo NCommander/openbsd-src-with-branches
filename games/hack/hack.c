@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.c,v 1.9 2014/03/11 07:41:10 guenther Exp $	*/
+/*	$OpenBSD: hack.c,v 1.10 2016/01/09 18:33:15 mestre Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,6 +62,9 @@
  */
 
 #include <stdio.h>
+#ifdef QUEST
+#include <stdlib.h>
+#endif
 
 #include "hack.h"
 
