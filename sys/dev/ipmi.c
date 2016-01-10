@@ -1784,6 +1784,8 @@ ipmi_watchdog(void *arg, int period)
 	uint16_t timo = htole16(period * 10);
 
 	memcpy(&wdog[IPMI_SET_WDOG_TIMOL], &timo, 2);
+	wdog[IPMI_SET_WDOG_TIMER] &= ~IPMI_WDOG_DONTSTOP;
+	wdog[IPMI_SET_WDOG_TIMER] |= (period == 0) ? 0 : IPMI_WDOG_DONTSTOP;
 	wdog[IPMI_SET_WDOG_ACTION] &= ~IPMI_WDOG_MASK;
 	wdog[IPMI_SET_WDOG_ACTION] |= (period == 0) ? IPMI_WDOG_DISABLED :
 	    IPMI_WDOG_REBOOT;

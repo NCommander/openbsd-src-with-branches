@@ -1,4 +1,4 @@
-/* $OpenBSD: ipmivar.h,v 1.18 2007/03/22 16:55:31 deraadt Exp $ */
+/* $OpenBSD$ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -113,6 +113,8 @@ struct ipmi_thread {
 	struct ipmi_softc   *sc;
 	volatile int	    running;
 };
+
+#define IPMI_WDOG_DONTSTOP	0x40
 
 #define IPMI_WDOG_MASK		0x03
 #define IPMI_WDOG_DISABLED	0x00
