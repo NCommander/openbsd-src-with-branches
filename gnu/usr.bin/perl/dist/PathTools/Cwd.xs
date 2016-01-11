@@ -197,7 +197,7 @@ bsd_realpath(const char *path, char resolved[MAXPATHLEN])
 						symlink[slen] = '/';
 						symlink[slen + 1] = 0;
 					}
-					left_len = my_strlcat(symlink, left, sizeof(left));
+					left_len = my_strlcat(symlink, left, sizeof(symlink));
 					if (left_len >= sizeof(left)) {
 						errno = ENAMETOOLONG;
 						return (NULL);
@@ -512,6 +512,7 @@ THX_unix_canonpath(pTHX_ SV *path)
     *o = 0;
     SvPOK_on(retval);
     SvCUR_set(retval, o - SvPVX(retval));
+    SvTAINT(retval);
     return retval;
 }
 
