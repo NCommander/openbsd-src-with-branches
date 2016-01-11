@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: errors.c,v 1.9 2016/01/11 07:54:07 jasper Exp $	*/
 
 //
 // errors.c - error & help routines
@@ -74,7 +74,7 @@ extern char *__progname;
 void
 do_help()
 {
-    printf("usage: %s [-hilrv] disk\n", __progname);
+    printf("usage: %s [-hilr] disk\n", __progname);
 /*
 	{"debug",	no_argument,		0,	'd'},
 	{"abbr",	no_argument,		0,	'a'},
