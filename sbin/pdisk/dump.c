@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dump.c,v 1.12 2016/01/11 07:54:07 jasper Exp $	*/
 
 //
 // dump.c - dumping partition maps
@@ -41,7 +41,6 @@
 #include <errno.h>
 
 #include "dump.h"
-#include "pathname.h"
 #include "io.h"
 #include "errors.h"
 
