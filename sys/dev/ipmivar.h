@@ -44,6 +44,7 @@
 
 struct ipmi_thread;
 struct ipmi_softc;
+struct ipmi_cmd;
 
 struct ipmi_bmc_args{
 	int			offset;
@@ -69,8 +70,7 @@ struct ipmi_attach_args {
 struct ipmi_if {
 	const char	*name;
 	int		nregs;
-	void		*(*buildmsg)(struct ipmi_softc *, int, int, int,
-			    const void *, int *);
+	void		*(*buildmsg)(struct ipmi_cmd *);
 	int		(*sendmsg)(struct ipmi_softc *, int, const u_int8_t *);
 	int		(*recvmsg)(struct ipmi_softc *, int, int *, u_int8_t *);
 	int		(*reset)(struct ipmi_softc *);
