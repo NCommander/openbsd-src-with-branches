@@ -105,8 +105,6 @@ struct ipmi_softc {
 
 	struct ipmi_sensor	*current_sensor;
 	struct ksensordev	sc_sensordev;
-
-	int			sc_poll;
 };
 
 struct ipmi_thread {
