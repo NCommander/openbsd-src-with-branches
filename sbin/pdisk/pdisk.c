@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pdisk.c,v 1.20 2016/01/11 07:54:07 jasper Exp $	*/
 
 //
 // pdisk - an editor for Apple format partition tables
@@ -149,7 +149,7 @@ main(int argc, char **argv)
 		fatal(-1, "Version string static form (%s) does not match dynamic form (%s)\n",
 		    VERSION, versionstr);
 	}
-	free(versionstr); 
+	free(versionstr);
     }
 
     name_index = get_options(argc, argv);
