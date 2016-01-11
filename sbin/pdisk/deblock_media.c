@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * deblock_media.c -
  *

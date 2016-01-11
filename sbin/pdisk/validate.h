@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // validate.h -
 //

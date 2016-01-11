@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // pdisk.h - general header for pdisk program
 //

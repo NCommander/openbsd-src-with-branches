@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * version.h - version number for pdisk program
  *

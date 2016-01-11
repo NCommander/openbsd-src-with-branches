@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * file_media.h -
  *

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // bitfield.h - extract and set bit fields
 //

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // dpme.h - Disk Partition Map Entry (dpme)
 //

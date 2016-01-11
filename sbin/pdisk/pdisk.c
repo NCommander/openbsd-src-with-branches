@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // pdisk - an editor for Apple format partition tables
 //

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // errors.c - error & help routines
 //

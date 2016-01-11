@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // errors.h - error & help routines
 //

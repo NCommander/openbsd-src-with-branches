@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // io.h - simple io and input parsing routines
 //

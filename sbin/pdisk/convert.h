@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // convert.h - Little-endian conversion
 //

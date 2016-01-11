@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // partition_map.c - partition map routines
 //

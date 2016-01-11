@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // dump.h - dumping partition maps
 //

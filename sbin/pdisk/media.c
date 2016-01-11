@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * media.c -
  *

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 //
 // hfs_misc.c - hfs routines
 //
