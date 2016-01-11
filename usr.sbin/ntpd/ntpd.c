@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpd.c,v 1.101 2015/12/19 17:55:29 reyk Exp $ */
+/*	$OpenBSD: ntpd.c,v 1.102 2015/12/29 18:23:28 millert Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -528,7 +528,7 @@ readfreq(void)
 		freqfp = fopen(DRIFTFILE, "w");
 		return;
 	}
-	
+
 	freqfp = fdopen(fd, "r+");
 
 	/* if we're adjusting frequency already, don't override */
