@@ -1,4 +1,4 @@
-/*	$OpenBSD: newsyslog.c,v 1.98 2015/11/19 08:23:48 sthen Exp $	*/
+/*	$OpenBSD: newsyslog.c,v 1.99 2015/12/09 19:28:34 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1999, 2002, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -117,7 +117,7 @@
 #define CE_FOLLOW	0x10		/* Follow symbolic links */
 #define CE_TRIMAT	0x20		/* Trim at a specific time */
 
-#define	MIN_PID		4		/* Don't touch pids lower than this */
+#define	MIN_PID		2		/* Don't touch pids lower than this */
 #define	MIN_SIZE	256		/* Don't rotate if smaller (in bytes) */
 
 #define	DPRINTF(x)	do { if (verbose) printf x ; } while (0)
