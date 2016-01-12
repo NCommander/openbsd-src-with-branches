@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.66 2015/10/25 11:44:30 deraadt Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.67 2015/10/28 12:14:25 florian Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -1055,6 +1055,8 @@ plist(void)
 		err(1, "sysctl(ICMPV6CTL_ND6_PRLIST)");
 		/*NOTREACHED*/
 	}
+	if (l == 0)
+		return;
 	buf = malloc(l);
 	if (buf == NULL) {
 		err(1, "malloc");
