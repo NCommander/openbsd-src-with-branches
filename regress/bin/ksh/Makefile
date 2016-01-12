@@ -1,4 +1,6 @@
-# $OpenBSD: Makefile,v 1.7 2013/06/09 13:27:27 millert Exp $
+# $OpenBSD: Makefile,v 1.8 2013/12/02 20:39:44 millert Exp $
+
+SUBDIR += vi
 
 REGRESS_TARGETS=check
 KSH=/bin/ksh
