@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_extern.h,v 1.39 2013/06/11 16:42:18 deraadt Exp $	*/
+/*	$OpenBSD: ffs_extern.h,v 1.40 2014/01/25 23:31:12 guenther Exp $	*/
 /*	$NetBSD: ffs_extern.h,v 1.4 1996/02/09 22:22:22 christos Exp $	*/
 
 /*
@@ -55,8 +55,8 @@
 
 #define FFS_NAMES { \
 	{ 0, 0 }, \
-	{ "doclusterread", CTLTYPE_INT }, \
-	{ "doclusterwrite", CTLTYPE_INT }, \
+	{ 0, 0 }, \
+	{ 0, 0 }, \
 	{ "doreallocblks", CTLTYPE_INT }, \
 	{ "doasyncfree", CTLTYPE_INT }, \
 	{ "max_softdeps", CTLTYPE_INT }, \
