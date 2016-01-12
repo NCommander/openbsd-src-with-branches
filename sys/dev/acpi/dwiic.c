@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: dwiic.c,v 1.1 2016/01/12 01:11:15 jcs Exp $ */
 /*
  * Synopsys DesignWare I2C controller
  *
@@ -548,8 +548,8 @@ dwiic_acpi_foundhid(struct aml_node *node, void *arg)
 		return 0;
 	}
 
-	ia.ia_irq = crs.irq_int;
-	ia.ia_irq_flags = crs.irq_flags;
+	ia.ia_int = crs.irq_int;
+	ia.ia_int_flags = crs.irq_flags;
 
 	if (config_found(sc->sc_iic, &ia, dwiic_i2c_print))
 		return 0;
