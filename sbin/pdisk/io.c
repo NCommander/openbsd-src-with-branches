@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.10 2016/01/11 07:57:54 jasper Exp $	*/
+/*	$OpenBSD: io.c,v 1.11 2016/01/12 20:09:39 krw Exp $	*/
 
 //
 // io.c - simple io and input parsing routines
@@ -50,8 +50,6 @@
 #define BAD_DIGIT 17	/* must be greater than any base */
 #define	STRING_CHUNK	16
 #define UNGET_MAX_COUNT 10
-#define loff_t long
-#define llseek lseek
 
 
 //
