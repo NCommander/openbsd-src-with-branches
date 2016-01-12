@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.84 2015/11/25 03:09:58 dlg Exp $  */
+/*	$OpenBSD: pgt.c,v 1.85 2015/12/11 16:07:01 mpi Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -2635,8 +2635,6 @@ badopmode:
 		preamble = PGT_OID_PREAMBLE_MODE_SHORT;
 		DPRINTF(("IEEE80211_MODE_11G\n"));
 		break;
-	case IEEE80211_MODE_TURBO: /* not handled */
-		/* FALLTHROUGH */
 	case IEEE80211_MODE_AUTO:
 		profile = PGT_PROFILE_MIXED_G_WIFI;
 		preamble = PGT_OID_PREAMBLE_MODE_DYNAMIC;
