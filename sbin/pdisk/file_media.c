@@ -1,4 +1,4 @@
-/*	$OpenBSD: file_media.c,v 1.17 2016/01/12 20:09:39 krw Exp $	*/
+/*	$OpenBSD: file_media.c,v 1.18 2016/01/12 23:48:42 krw Exp $	*/
 
 /*
  * file_media.c -
@@ -71,13 +71,6 @@ struct file_media_globals {
 int potential_block_sizes[] = {
     1, 512, 1024, 2048,
     0
-};
-
-enum {
-    kSCSI_Disks = 0,
-    kATA_Devices = 1,
-    kSCSI_CDs = 2,
-    kMaxStyle = 2
 };
 
 
