@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.154 2015/10/20 23:24:25 mmcc Exp $ */
+/* $OpenBSD: monitor.c,v 1.155 2015/12/04 16:41:28 markus Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -77,7 +77,6 @@
 #include "monitor_fdpass.h"
 #include "compat.h"
 #include "ssh2.h"
-#include "roaming.h"
 #include "authfd.h"
 #include "match.h"
 #include "ssherr.h"
