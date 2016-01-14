@@ -1,6 +1,6 @@
 #!/bin/ksh -
 #
-# $OpenBSD: sysmerge.sh,v 1.218 2015/12/21 10:54:49 ajacoutot Exp $
+# $OpenBSD: sysmerge.sh,v 1.219 2015/12/23 10:01:58 ajacoutot Exp $
 #
 # Copyright (c) 2008-2014 Antoine Jacoutot <ajacoutot@openbsd.org>
 # Copyright (c) 1998-2003 Douglas Barton <DougB@FreeBSD.org>
@@ -240,7 +240,6 @@ sm_run() {
 	# files we don't want/need to deal with
 	_ignorefiles="/etc/group
 		      /etc/localtime
-		      /etc/mail/aliases.db
 		      /etc/master.passwd
 		      /etc/motd
 		      /etc/passwd
