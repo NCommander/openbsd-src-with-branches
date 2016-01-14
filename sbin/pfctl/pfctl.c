@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.332 2015/12/10 17:27:00 mmcc Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.333 2016/01/05 22:51:38 benno Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1117,6 +1117,16 @@ pfctl_add_queue(struct pfctl *pf, struct pf_queuespec *q)
 	if (pf->anchor->name[0]) {
 		printf("must not have queue definitions in an anchor\n");
 		return (1);
+	}
+
+	if (q->parent[0] == '\0') {
+		TAILQ_FOREACH(qi, &rootqs, entries) {
+			if (strcmp(q->ifname, qi->qs.ifname))
+			    continue;
+			printf("A root queue is already defined on %s\n",
+			    qi->qs.ifname);
+			return (1);
+		}
 	}
 
 	if ((qi = calloc(1, sizeof(*qi))) == NULL)
