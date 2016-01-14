@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.301 2016/01/12 01:11:15 jcs Exp $ */
+/* $OpenBSD: acpi.c,v 1.302 2016/01/12 07:42:39 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -2808,7 +2808,8 @@ acpi_foundhid(struct aml_node *node, void *arg)
 	} else if (!strcmp(dev, ACPI_DEV_DWIIC1) ||
 	    !strcmp(dev, ACPI_DEV_DWIIC2) ||
 	    !strcmp(dev, ACPI_DEV_DWIIC3) ||
-	    !strcmp(dev, ACPI_DEV_DWIIC4)) {
+	    !strcmp(dev, ACPI_DEV_DWIIC4) ||
+	    !strcmp(dev, ACPI_DEV_DWIIC5)) {
 		aaa.aaa_name = "dwiic";
 	}
 
