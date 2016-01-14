@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.420 2015/07/30 00:01:34 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.420.2.1 2016/01/14 11:50:37 sthen Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1876,9 +1876,6 @@ ssh_session2(void)
 		} else
 			fork_postauth();
 	}
-
-	if (options.use_roaming)
-		request_roaming();
 
 	return client_loop(tty_flag, tty_flag ?
 	    options.escape_char : SSH_ESCAPECHAR_NONE, id);
