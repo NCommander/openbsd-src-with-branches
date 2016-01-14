@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.82 2015/11/20 05:29:53 dlg Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.83 2015/12/05 10:07:55 tedu Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -164,13 +164,9 @@ gif_start(struct ifnet *ifp)
 {
 	struct gif_softc *sc = (struct gif_softc*)ifp;
 	struct mbuf *m;
-	int s;
 
-	while (1) {
-		s = splnet();
+	for (;;) {
 		IFQ_DEQUEUE(&ifp->if_snd, m);
-		splx(s);
-
 		if (m == NULL)
 			break;
 
