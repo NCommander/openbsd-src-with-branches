@@ -1,4 +1,4 @@
-/*	$OpenBSD: interrupt.c,v 1.14 2014/07/12 18:44:42 tedu Exp $	*/
+/*	$OpenBSD: interrupt.c,v 1.15 2015/09/01 05:47:14 deraadt Exp $	*/
 /*	$NetBSD: interrupt.c,v 1.18 2006/01/25 00:02:57 uwe Exp $	*/
 
 /*-
@@ -638,6 +638,11 @@ softintr_establish(int ipl, void (*func)(void *), void *arg)
 	}
 
 	return (sih);
+}
+
+void
+intr_barrier(void *cookie)
+{
 }
 
 /* Unregister a software interrupt handler. */
