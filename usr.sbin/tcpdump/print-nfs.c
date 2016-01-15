@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-nfs.c,v 1.20 2015/10/15 02:33:25 lteo Exp $	*/
+/*	$OpenBSD: print-nfs.c,v 1.21 2015/11/16 00:16:39 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -719,7 +719,7 @@ nfs_printfh(const u_int32_t *dp, const u_int len)
 	ino_t ino;
 	char *sfsname = NULL;
 
-	Parse_fh((caddr_t *)dp, &fsid, &ino, NULL, &sfsname, 0);
+	Parse_fh((caddr_t *)dp, &fsid, &ino, NULL, &sfsname);
 
 	if (sfsname) {
 		/* file system ID is ASCII, not numeric, for this server OS */

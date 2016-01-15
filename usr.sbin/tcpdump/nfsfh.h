@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsfh.h,v 1.7 2000/10/03 14:31:56 ho Exp $	*/
+/*	$OpenBSD: nfsfh.h,v 1.8 2001/06/15 01:11:26 itojun Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Jeffrey C. Mogul, Digital Equipment Corporation,
@@ -64,4 +64,4 @@ typedef	struct {
 #define	fsid_eq(a,b)	((a.fsid_code == b.fsid_code) &&\
 			 dev_eq(a.Fsid_dev, b.Fsid_dev))
 
-extern void Parse_fh(caddr_t *, my_fsid *, ino_t *, char **, char **, int);
+extern void Parse_fh(caddr_t *, my_fsid *, ino_t *, char **, char **);
