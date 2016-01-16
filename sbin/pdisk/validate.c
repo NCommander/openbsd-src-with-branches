@@ -1,4 +1,4 @@
-/*	$OpenBSD: validate.c,v 1.10 2016/01/12 20:09:39 krw Exp $	*/
+/*	$OpenBSD: validate.c,v 1.11 2016/01/15 23:05:00 krw Exp $	*/
 
 //
 // validate.c -
@@ -42,7 +42,6 @@
 #include <errno.h>
 
 #include "validate.h"
-#include "deblock_media.h"
 #include "convert.h"
 #include "io.h"
 #include "file_media.h"
@@ -360,7 +359,6 @@ validate_map(partition_map_header *map)
 	if (g < DEV_BSIZE) {
 	    g = DEV_BSIZE;
 	}
-   	the_media = open_deblock_media(DEV_BSIZE, the_media);
 
 	buffer = malloc(DEV_BSIZE);
 	if (buffer == NULL) {
