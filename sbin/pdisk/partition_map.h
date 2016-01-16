@@ -1,4 +1,4 @@
-/*	$OpenBSD: partition_map.h,v 1.6 2016/01/14 04:17:40 krw Exp $	*/
+/*	$OpenBSD: partition_map.h,v 1.7 2016/01/15 23:05:00 krw Exp $	*/
 
 //
 // partition_map.h - partition map routines
@@ -31,7 +31,7 @@
 #define __partition_map__
 
 #include "dpme.h"
-#include "media.h"
+#include "file_media.h"
 
 
 //
@@ -43,7 +43,7 @@
 // Types
 //
 struct partition_map_header {
-    MEDIA m;
+    FILE_MEDIA m;
     char *name;
     struct partition_map * disk_order;
     struct partition_map * base_order;
