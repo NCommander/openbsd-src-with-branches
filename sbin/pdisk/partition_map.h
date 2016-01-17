@@ -1,4 +1,4 @@
-/*	$OpenBSD: partition_map.h,v 1.10 2016/01/17 15:57:12 krw Exp $	*/
+/*	$OpenBSD: partition_map.h,v 1.11 2016/01/17 16:07:06 krw Exp $	*/
 
 //
 // partition_map.h - partition map routines
@@ -47,7 +47,7 @@ struct partition_map_header {
     char *name;
     struct partition_map * disk_order;
     struct partition_map * base_order;
-    Block0 *misc;
+    struct block0 *misc;
     int writable;
     int changed;
     int written;
