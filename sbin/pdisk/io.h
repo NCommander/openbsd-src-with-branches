@@ -1,10 +1,10 @@
-/*	$OpenBSD: io.h,v 1.5 2016/01/17 18:57:52 krw Exp $	*/
+/*	$OpenBSD: io.h,v 1.6 2016/01/17 19:39:20 krw Exp $	*/
 
-//
-// io.h - simple io and input parsing routines
-//
-// Written by Eryk Vershen
-//
+/*
+ * io.h - simple io and input parsing routines
+ *
+ * Written by Eryk Vershen
+ */
 
 /*
  * Copyright 1996,1997,1998 by Apple Computer, Inc.
