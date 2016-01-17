@@ -1,4 +1,4 @@
-/*	$OpenBSD: dump.c,v 1.29 2016/01/17 17:44:05 krw Exp $	*/
+/*	$OpenBSD: dump.c,v 1.30 2016/01/17 18:44:59 krw Exp $	*/
 
 //
 // dump.c - dumping partition maps
@@ -31,17 +31,10 @@
 
 #include <err.h>
 
-// for *printf()
 #include <stdio.h>
-
-// for malloc() & free()
 #include <stdlib.h>
-
-// for strcmp()
 #include <string.h>
-// for O_RDONLY
 #include <fcntl.h>
-// for errno
 #include <errno.h>
 
 #include "file_media.h"
