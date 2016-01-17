@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.302 2016/01/12 07:42:39 kettenis Exp $ */
+/* $OpenBSD: acpi.c,v 1.303 2016/01/14 21:37:18 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -124,7 +124,6 @@ void	acpi_create_thread(void *);
 int	acpi_thinkpad_enabled;
 int	acpi_toshiba_enabled;
 int	acpi_asus_enabled;
-int	acpi_saved_boothowto;
 
 void	acpi_indicator(struct acpi_softc *, int);
 
