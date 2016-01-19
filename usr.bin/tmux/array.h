@@ -1,7 +1,7 @@
-/* $OpenBSD: array.h,v 1.6 2012/07/10 11:53:01 nicm Exp $ */
+/* $OpenBSD: array.h,v 1.7 2014/10/08 17:35:58 nicm Exp $ */
 
 /*
- * Copyright (c) 2006 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2006 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

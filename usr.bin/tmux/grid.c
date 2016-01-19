@@ -1,7 +1,7 @@
-/* $OpenBSD: grid.c,v 1.48 2015/11/13 08:09:28 nicm Exp $ */
+/* $OpenBSD: grid.c,v 1.49 2015/11/22 19:42:57 nicm Exp $ */
 
 /*
- * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

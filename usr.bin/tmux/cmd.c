@@ -1,7 +1,7 @@
-/* $OpenBSD: cmd.c,v 1.118 2015/12/14 00:31:54 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.119 2015/12/14 23:30:58 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

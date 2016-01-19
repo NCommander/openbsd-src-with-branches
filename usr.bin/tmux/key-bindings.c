@@ -1,7 +1,7 @@
-/* $OpenBSD: key-bindings.c,v 1.54 2015/11/05 11:05:30 nicm Exp $ */
+/* $OpenBSD: key-bindings.c,v 1.55 2015/11/12 11:05:34 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

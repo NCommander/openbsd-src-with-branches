@@ -1,7 +1,7 @@
-/* $OpenBSD: resize.c,v 1.17 2015/04/24 23:17:11 nicm Exp $ */
+/* $OpenBSD: resize.c,v 1.18 2015/10/27 15:58:42 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

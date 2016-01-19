@@ -1,7 +1,7 @@
-/* $OpenBSD: screen.c,v 1.35 2015/10/27 09:28:31 nicm Exp $ */
+/* $OpenBSD: screen.c,v 1.36 2015/12/28 14:02:52 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

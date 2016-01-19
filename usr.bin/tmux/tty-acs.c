@@ -1,7 +1,7 @@
-/* $OpenBSD: tty-acs.c,v 1.2 2013/11/24 19:38:32 nicm Exp $ */
+/* $OpenBSD: tty-acs.c,v 1.3 2014/10/02 08:36:26 nicm Exp $ */
 
 /*
- * Copyright (c) 2010 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2010 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

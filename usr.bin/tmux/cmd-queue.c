@@ -1,7 +1,7 @@
-/* $OpenBSD: cmd-queue.c,v 1.32 2015/12/13 16:11:42 nicm Exp $ */
+/* $OpenBSD: cmd-queue.c,v 1.33 2015/12/16 21:50:37 nicm Exp $ */
 
 /*
- * Copyright (c) 2013 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2013 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

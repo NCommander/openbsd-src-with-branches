@@ -1,7 +1,7 @@
-/* $OpenBSD: colour.c,v 1.10 2015/06/05 22:33:39 nicm Exp $ */
+/* $OpenBSD: colour.c,v 1.11 2015/06/05 22:50:27 nicm Exp $ */
 
 /*
- * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

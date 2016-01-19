@@ -1,7 +1,7 @@
-/* $OpenBSD: cmd-kill-server.c,v 1.14 2015/11/18 14:27:44 nicm Exp $ */
+/* $OpenBSD: cmd-kill-server.c,v 1.15 2015/12/13 21:53:57 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

@@ -1,7 +1,7 @@
-/* $OpenBSD: cmd-send-keys.c,v 1.26 2015/12/14 00:31:54 nicm Exp $ */
+/* $OpenBSD: cmd-send-keys.c,v 1.27 2015/12/16 22:05:35 nicm Exp $ */
 
 /*
- * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

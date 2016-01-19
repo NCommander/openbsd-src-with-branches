@@ -1,7 +1,7 @@
-/* $OpenBSD: signal.c,v 1.7 2014/10/20 23:27:14 nicm Exp $ */
+/* $OpenBSD: signal.c,v 1.8 2015/10/27 13:23:24 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  * Copyright (c) 2010 Romain Francoise <rfrancoise@debian.org>
  *
  * Permission to use, copy, modify, and distribute this software for any

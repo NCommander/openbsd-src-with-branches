@@ -1,7 +1,7 @@
-/* $OpenBSD: session.c,v 1.60 2015/11/18 14:27:44 nicm Exp $ */
+/* $OpenBSD: session.c,v 1.61 2015/12/08 01:10:31 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

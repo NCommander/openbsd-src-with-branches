@@ -1,7 +1,7 @@
-/* $OpenBSD: options.c,v 1.16 2015/12/08 08:14:04 nicm Exp $ */
+/* $OpenBSD: options.c,v 1.17 2015/12/11 15:46:57 nicm Exp $ */
 
 /*
- * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

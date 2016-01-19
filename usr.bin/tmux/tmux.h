@@ -1,7 +1,7 @@
-/* $OpenBSD: tmux.h,v 1.615 2016/01/15 11:31:47 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.616 2016/01/16 00:36:53 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

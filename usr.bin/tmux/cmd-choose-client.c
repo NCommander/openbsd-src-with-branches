@@ -1,7 +1,7 @@
-/* $OpenBSD: cmd-choose-client.c,v 1.27 2015/12/13 21:53:57 nicm Exp $ */
+/* $OpenBSD: cmd-choose-client.c,v 1.28 2015/12/14 00:31:54 nicm Exp $ */
 
 /*
- * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

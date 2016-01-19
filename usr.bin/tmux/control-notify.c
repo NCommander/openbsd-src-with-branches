@@ -1,7 +1,7 @@
-/* $OpenBSD: control-notify.c,v 1.14 2015/12/08 08:34:18 nicm Exp $ */
+/* $OpenBSD: control-notify.c,v 1.15 2015/12/11 12:27:36 nicm Exp $ */
 
 /*
- * Copyright (c) 2012 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2012 Nicholas Marriott <nicholas.marriott@gmail.com>
  * Copyright (c) 2012 George Nachman <tmux@georgester.com>
  *
  * Permission to use, copy, modify, and distribute this software for any

@@ -1,7 +1,7 @@
-/* $OpenBSD: alerts.c,v 1.8 2015/12/07 09:47:41 nicm Exp $ */
+/* $OpenBSD: alerts.c,v 1.9 2016/01/16 00:36:53 nicm Exp $ */
 
 /*
- * Copyright (c) 2015 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2015 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

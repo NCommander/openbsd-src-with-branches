@@ -1,7 +1,7 @@
-/* $OpenBSD: input.c,v 1.97 2015/12/16 22:05:35 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.98 2016/01/15 11:31:47 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

@@ -1,7 +1,7 @@
-/* $OpenBSD: job.c,v 1.38 2015/10/31 08:13:58 nicm Exp $ */
+/* $OpenBSD: job.c,v 1.39 2015/11/18 14:27:44 nicm Exp $ */
 
 /*
- * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

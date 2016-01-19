@@ -1,7 +1,7 @@
-/* $OpenBSD: arguments.c,v 1.11 2015/08/29 23:19:52 nicm Exp $ */
+/* $OpenBSD: arguments.c,v 1.12 2015/11/27 15:06:43 nicm Exp $ */
 
 /*
- * Copyright (c) 2010 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2010 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

@@ -1,7 +1,7 @@
-/* $OpenBSD: key-string.c,v 1.32 2015/11/14 11:45:43 nicm Exp $ */
+/* $OpenBSD: key-string.c,v 1.33 2015/12/12 18:19:00 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

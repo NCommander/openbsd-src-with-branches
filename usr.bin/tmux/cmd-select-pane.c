@@ -1,7 +1,7 @@
-/* $OpenBSD: cmd-select-pane.c,v 1.30 2015/12/15 00:00:01 nicm Exp $ */
+/* $OpenBSD: cmd-select-pane.c,v 1.31 2015/12/31 18:34:47 nicm Exp $ */
 
 /*
- * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

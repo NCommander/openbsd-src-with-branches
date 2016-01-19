@@ -1,7 +1,7 @@
-/* $OpenBSD: options-table.c,v 1.69 2015/11/24 09:34:55 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.70 2015/12/12 18:32:24 nicm Exp $ */
 
 /*
- * Copyright (c) 2011 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

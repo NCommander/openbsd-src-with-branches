@@ -1,7 +1,7 @@
-/* $OpenBSD: cmd-list-sessions.c,v 1.22 2015/12/11 12:27:36 nicm Exp $ */
+/* $OpenBSD: cmd-list-sessions.c,v 1.23 2015/12/13 21:53:57 nicm Exp $ */
 
 /*
- * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
+ * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
