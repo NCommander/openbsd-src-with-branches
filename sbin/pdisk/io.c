@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.16 2016/01/17 23:18:19 krw Exp $	*/
+/*	$OpenBSD: io.c,v 1.17 2016/01/18 15:03:18 krw Exp $	*/
 
 /*
  * io.c - simple io and input parsing routines
@@ -45,7 +45,6 @@ const long	kDefault = -1;
 
 short		unget_buf[UNGET_MAX_COUNT + 1];
 int		unget_count;
-char		io_buffer[MAXIOSIZE];
 
 long		get_number(int);
 char           *get_string(int);
