@@ -1083,7 +1083,11 @@ audio_attach(struct device *parent, struct device *self, void *aux)
 	}
 
 	/* set defaults */
-	sc->sw_enc = AUDIO_ENCODING_SLINEAR;
+#if BYTE_ORDER == LITTLE_ENDIAN
+	sc->sw_enc = AUDIO_ENCODING_SLINEAR_LE;
+#else
+	sc->sw_enc = AUDIO_ENCODING_SLINEAR_BE;
+#endif
 	sc->bits = 16;
 	sc->bps = 2;
 	sc->msb = 1;
