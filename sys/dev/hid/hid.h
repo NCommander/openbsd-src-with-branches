@@ -123,8 +123,10 @@ int	hid_is_collection(const void *, int, uint8_t, int32_t);
 #define HUP_SCALE		0x008c
 #define HUP_CAMERA_CONTROL	0x0090
 #define HUP_ARCADE		0x0091
-#define HUP_APPLE		0x00ff
+#define HUP_VENDOR		0x00ff
 #define HUP_MICROSOFT		0xff00
+/* XXX compat */
+#define HUP_APPLE		0x00ff
 
 /* Usages, Power Device */
 #define HUP_INAME		0x0001
@@ -348,6 +350,7 @@ int	hid_is_collection(const void *, int, uint8_t, int32_t);
 #define HUD_PEN			0x0002
 #define HUD_TOUCHSCREEN		0x0004
 #define HUD_TOUCHPAD		0x0005
+#define HUD_CONFIG		0x000e
 #define HUD_FINGER		0x0022
 #define HUD_TIP_PRESSURE	0x0030
 #define HUD_BARREL_PRESSURE	0x0031
@@ -372,6 +375,16 @@ int	hid_is_collection(const void *, int, uint8_t, int32_t);
 #define HUD_BARREL_SWITCH	0x0044
 #define HUD_ERASER		0x0045
 #define HUD_TABLET_PICK		0x0046
+#define HUD_CONFIDENCE		0x0047
+#define HUD_WIDTH		0x0048
+#define HUD_HEIGHT		0x0049
+#define HUD_CONTACTID		0x0051
+#define HUD_INPUT_MODE		0x0052
+#define HUD_DEVICE_INDEX	0x0053
+#define HUD_CONTACTCOUNT	0x0054
+#define HUD_CONTACT_MAX		0x0055
+#define HUD_SCAN_TIME		0x0056
+#define HUD_BUTTON_TYPE		0x0059
 
 /* Usages, LED */
 #define HUL_NUM_LOCK		0x0001
