@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_ch.c,v 1.6 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: v_ch.c,v 1.7 2016/01/06 22:28:52 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -23,7 +23,7 @@
 #include "../common/common.h"
 #include "vi.h"
 
-static void notfound(SCR *, ARG_CHAR_T);
+static void notfound(SCR *, CHAR_T);
 static void noprev(SCR *);
 
 /*
@@ -272,7 +272,7 @@ noprev(SCR *sp)
 }
 
 static void
-notfound(SCR *sp, ARG_CHAR_T ch)
+notfound(SCR *sp, CHAR_T ch)
 {
 	msgq(sp, M_BERR, "%s not found", KEY_NAME(sp, ch));
 }
