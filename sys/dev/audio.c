@@ -1584,7 +1584,11 @@ audio_ioctl(struct audio_softc *sc, unsigned long cmd, void *addr)
 		error = audio_getinfo(sc, (struct audio_info *)addr);
 		break;
 	case AUDIO_GETDEV:
-		error = sc->ops->getdev(sc->arg, (audio_device_t *)addr);
+		memset(addr, 0, sizeof(struct audio_device));
+		if (sc->dev.dv_parent)
+			strlcpy(((struct audio_device *)addr)->name,
+			    sc->dev.dv_parent->dv_xname,
+			    MAX_AUDIO_DEV_LEN);
 		break;
 	case AUDIO_GETENC:
 		error = sc->ops->query_encoding(sc->arg,
