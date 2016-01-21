@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.17 2016/01/18 15:03:18 krw Exp $	*/
+/*	$OpenBSD: io.c,v 1.18 2016/01/19 17:55:19 krw Exp $	*/
 
 /*
  * io.c - simple io and input parsing routines
@@ -28,12 +28,10 @@
  */
 
 #include <err.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <errno.h>
 
 #include "io.h"
 
@@ -49,7 +47,6 @@ int		unget_count;
 long		get_number(int);
 char           *get_string(int);
 int		my_getch  (void);
-void		my_ungetch(int);
 
 int
 my_getch()
