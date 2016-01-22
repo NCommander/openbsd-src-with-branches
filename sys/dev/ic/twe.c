@@ -1,4 +1,4 @@
-/*	$OpenBSD: twe.c,v 1.44 2014/09/14 14:17:25 jsg Exp $	*/
+/*	$OpenBSD: twe.c,v 1.45 2015/03/14 03:38:47 jsg Exp $	*/
 
 /*
  * Copyright (c) 2000-2002 Michael Shalayeff.  All rights reserved.
@@ -451,7 +451,6 @@ twe_thread(v)
 	u_int32_t status;
 	int err;
 
-	splbio();
 	for (;;) {
 		lock = TWE_LOCK(sc);
 
