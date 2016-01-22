@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.35 2015/12/05 10:07:55 tedu Exp $	*/
+/*	$OpenBSD: if_vxlan.c,v 1.36 2016/01/14 09:20:31 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -507,7 +507,7 @@ vxlan_lookup(struct mbuf *m, struct udphdr *uh, int iphlen,
 		return (0);
 
 	vni = ntohl(v.vxlan_id) >> VXLAN_VNI_S;
-	if ((v.vxlan_flags & htonl(VXLAN_FLAGS_VNI)) != 0) {
+	if ((v.vxlan_flags & htonl(VXLAN_FLAGS_VNI)) == 0) {
 		if (vni != 0)
 			return (0);
 
