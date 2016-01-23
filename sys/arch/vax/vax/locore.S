@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.8 2013/11/24 22:08:25 miod Exp $   */
+/*	$OpenBSD: locore.S,v 1.9 2015/02/01 10:50:01 miod Exp $   */
 /*	$NetBSD: intvec.s,v 1.39 1999/06/28 08:20:48 itojun Exp $   */
 
 /*
@@ -293,7 +293,7 @@ SCBENTRY(hardclock)
 /*
  * Main routine for traps; all go through this.
  * Note that we put USP on the frame here, which sometimes should
- * be KSP to be correct, but because we only alters it when we are
+ * be KSP to be correct, but because we only alter it when we are
  * called from user space it doesn't care.
  * _sret is used in cpu_set_kpc to jump out to user space first time.
  */
