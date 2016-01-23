@@ -1,4 +1,4 @@
-/*	$OpenBSD: file_media.c,v 1.37 2016/01/21 15:33:21 krw Exp $	*/
+/*	$OpenBSD: file_media.c,v 1.38 2016/01/22 12:31:04 krw Exp $	*/
 
 /*
  * file_media.c -
@@ -36,11 +36,11 @@
 #include "file_media.h"
 
 int
-read_block(int fd, off_t offset, void *address)
+read_block(int fd, uint64_t sector, void *address)
 {
 	ssize_t off;
 
-	off = pread(fd, address, DEV_BSIZE, offset);
+	off = pread(fd, address, DEV_BSIZE, sector * DEV_BSIZE);
 	if (off == DEV_BSIZE)
 		return (1);
 
@@ -55,11 +55,11 @@ read_block(int fd, off_t offset, void *address)
 }
 
 int
-write_block(int fd, off_t offset, void *address)
+write_block(int fd, uint64_t sector, void *address)
 {
 	ssize_t off;
 
-	off = pwrite(fd, address, DEV_BSIZE, offset);
+	off = pwrite(fd, address, DEV_BSIZE, sector * DEV_BSIZE);
 	if (off == DEV_BSIZE)
 		return (1);
 
