@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.20 2016/01/23 19:14:04 krw Exp $	*/
+/*	$OpenBSD: io.c,v 1.21 2016/01/23 22:55:23 krw Exp $	*/
 
 /*
  * io.c - simple io and input parsing routines
@@ -39,12 +39,12 @@
 #define	STRING_CHUNK	16
 #define UNGET_MAX_COUNT 10
 
-short		unget_buf[UNGET_MAX_COUNT + 1];
-int		unget_count;
+short	unget_buf[UNGET_MAX_COUNT + 1];
+int	unget_count;
 
-long		get_number(int);
-char           *get_string(int);
-int		my_getch  (void);
+long	get_number(int);
+char   *get_string(int);
+int	my_getch (void);
 
 int
 my_getch()
