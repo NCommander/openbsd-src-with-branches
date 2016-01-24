@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.73 2015/09/19 20:56:47 guenther Exp $ */
+/*	$OpenBSD: resolve.h,v 1.74 2015/11/02 07:02:53 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -143,9 +143,8 @@ struct elf_object {
 	dev_t	dev;
 	ino_t inode;
 
-	/* last symbol lookup on this object, to avoid mutiple searches */
-	int lastlookup_head;
-	int lastlookup;
+	/* generation number of last grpsym insert on this object */
+	unsigned int grpsym_gen;
 
 	char **rpath;
 
@@ -294,10 +293,5 @@ extern int _dl_symcachestat_hits;
 extern int _dl_symcachestat_lookups;
 TAILQ_HEAD(dlochld, dep_node);
 extern struct dlochld _dlopened_child_list;
-
-/* variables used to avoid duplicate node checking */
-extern int _dl_searchnum;
-extern uint32_t _dl_skipnum;
-void _dl_newsymsearch(void);
 
 #endif /* _RESOLVE_H_ */
