@@ -1,4 +1,4 @@
-/*	$OpenBSD: xenvar.h,v 1.21 2016/01/15 18:20:41 mikeb Exp $	*/
+/*	$OpenBSD: xenvar.h,v 1.22 2016/01/18 19:06:48 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Belopuhov
@@ -68,7 +68,6 @@ struct xen_softc {
 #define  XSF_UNPLUG_IDESEC	 0x0008		/* disable emul. sec. IDE */
 
 	uint64_t		 sc_irq;	/* IDT vector number */
-	struct evcount		 sc_evcnt;	/* upcall counter */
 	SLIST_HEAD(, xen_intsrc) sc_intrs;
 
 	SLIST_HEAD(, xen_gntent) sc_gnts;	/* grant table entries */
