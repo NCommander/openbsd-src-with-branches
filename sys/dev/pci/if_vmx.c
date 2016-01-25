@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.40 2015/11/25 03:09:59 dlg Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.41 2016/01/04 16:16:56 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -1065,16 +1065,16 @@ vmxnet3_start(struct ifnet *ifp)
 		if (m == NULL)
 			break;
 
+#if NBPFILTER > 0
+		if (ifp->if_bpf)
+			bpf_mtap_ether(ifp->if_bpf, m, BPF_DIRECTION_OUT);
+#endif
+
 		n = vmxnet3_load_mbuf(sc, ring, &m);
 		if (n == -1) {
 			ifp->if_oerrors++;
 			continue;
 		}
-
-#if NBPFILTER > 0
-		if (ifp->if_bpf)
-			bpf_mtap_ether(ifp->if_bpf, m, BPF_DIRECTION_OUT);
-#endif
 
 		ifp->if_opackets++;
 		used += n;
