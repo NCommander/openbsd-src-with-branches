@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.36 2015/12/05 06:42:18 mmcc Exp $	*/
+/*	$OpenBSD: control.c,v 1.37 2015/12/05 13:14:40 claudio Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -635,6 +635,7 @@ control_dispatch_agentx(int fd, short event, void *arg)
 		if (varcpy) {
 			snmp_agentx_raw(pdu, varcpy, vcpylen); /* XXX */
 			free(varcpy);
+			varcpy = NULL;
 		}
 		snmp_agentx_send(h, pdu);
 
