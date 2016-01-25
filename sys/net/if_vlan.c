@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.134 2015/07/02 09:40:02 mpi Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.135 2015/07/20 22:16:41 rzalamena Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -347,6 +347,7 @@ vlan_input(struct ifnet *ifp, struct mbuf *m)
 int
 vlan_config(struct ifvlan *ifv, struct ifnet *p, u_int16_t tag)
 {
+	struct ifih		*vlan_ifih;
 	struct sockaddr_dl	*sdl1, *sdl2;
 	struct vlan_taghash	*tagh;
 	u_int			 flags;
@@ -358,15 +359,17 @@ vlan_config(struct ifvlan *ifv, struct ifnet *p, u_int16_t tag)
 		return (0);
 
 	/* Can we share an ifih between multiple vlan(4) instances? */
-	ifv->ifv_ifih = SLIST_FIRST(&p->if_inputs);
-	if (ifv->ifv_ifih->ifih_input != vlan_input) {
-		ifv->ifv_ifih = malloc(sizeof(*ifv->ifv_ifih), M_DEVBUF,
+	vlan_ifih = SLIST_FIRST(&p->if_inputs);
+	if (vlan_ifih->ifih_input != vlan_input) {
+		vlan_ifih = malloc(sizeof(*vlan_ifih), M_DEVBUF,
 		    M_NOWAIT);
-		if (ifv->ifv_ifih == NULL)
+		if (vlan_ifih == NULL)
 			return (ENOMEM);
-		ifv->ifv_ifih->ifih_input = vlan_input;
-		ifv->ifv_ifih->ifih_refcnt = 0;
+		vlan_ifih->ifih_input = vlan_input;
+		vlan_ifih->ifih_refcnt = 0;
 	}
+	/* Do not free our reference during vlan_unconfig() */
+	++vlan_ifih->ifih_refcnt;
 
 	/* Remember existing interface flags and reset the interface */
 	flags = ifv->ifv_flags;
@@ -437,8 +440,9 @@ vlan_config(struct ifvlan *ifv, struct ifnet *p, u_int16_t tag)
 
 	s = splnet();
 	/* Change input handler of the physical interface. */
-	if (++ifv->ifv_ifih->ifih_refcnt == 1)
-		SLIST_INSERT_HEAD(&p->if_inputs, ifv->ifv_ifih, ifih_next);
+	ifv->ifv_ifih = vlan_ifih;
+	if (vlan_ifih->ifih_refcnt == 1)
+		SLIST_INSERT_HEAD(&p->if_inputs, vlan_ifih, ifih_next);
 
 	LIST_INSERT_HEAD(&tagh[TAG_HASH(tag)], ifv, ifv_list);
 	splx(s);
