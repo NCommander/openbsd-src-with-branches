@@ -1,4 +1,4 @@
-/*	$OpenBSD: arithmetic.c,v 1.23 2016/01/03 14:38:16 mestre Exp $	*/
+/*	$OpenBSD: arithmetic.c,v 1.24 2016/01/10 13:35:09 mestre Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -60,7 +60,6 @@
  * properly.
  */
 
-#include <sys/types.h>
 #include <err.h>
 #include <ctype.h>
 #include <signal.h>
