@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.h,v 1.9 2011/05/30 17:14:35 martynas Exp $	*/
+/*	$OpenBSD: edit.h,v 1.10 2015/09/26 23:49:37 nicm Exp $	*/
 
 /* NAME:
  *      edit.h - globals for edit modes
@@ -54,10 +54,3 @@ void	x_init_emacs(void);
 void	x_emacs_keys(X_chars *);
 /* vi.c */
 int	x_vi(char *, size_t);
-
-
-#ifdef DEBUG
-# define D__(x) x
-#else
-# define D__(x)
-#endif
