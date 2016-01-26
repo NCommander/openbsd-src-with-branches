@@ -1,4 +1,4 @@
-/*	$OpenBSD: fputwc.c,v 1.5 2015/08/31 02:53:57 guenther Exp $	*/
+/*	$OpenBSD: fputwc.c,v 1.6 2015/10/01 02:32:07 guenther Exp $	*/
 /* $NetBSD: fputwc.c,v 1.3 2003/03/07 07:11:37 tshiozak Exp $ */
 
 /*-
@@ -62,7 +62,7 @@ __fputwc_unlock(wchar_t wc, FILE *fp)
 
 	size = wcrtomb(buf, wc, st);
 	if (size == (size_t)-1) {
-		errno = EILSEQ;
+		fp->_flags |= __SERR;
 		return WEOF;
 	}
 
