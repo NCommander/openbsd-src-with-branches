@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.67 2015/10/28 12:14:25 florian Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.68 2016/01/12 09:47:13 mpi Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -879,7 +879,7 @@ rtget(struct sockaddr_in6 **sinp, struct sockaddr_dl **sdlp)
 	struct sockaddr_dl *sdl = NULL;
 	struct sockaddr *sa;
 	char *cp;
-	int i;
+	unsigned int i;
 
 	if (rtmsg(RTM_GET) < 0)
 		return (1);
