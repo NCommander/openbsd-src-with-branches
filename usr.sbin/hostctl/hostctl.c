@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: hostctl.c,v 1.2 2016/01/27 12:33:02 reyk Exp $	*/
 
 /*
  * Copyright (c) 2016 Reyk Floeter <reyk@openbsd.org>
@@ -44,7 +44,7 @@ __dead void
 usage(void)
 {
 	extern char	*__progname;
-	fprintf(stderr, "usage: %s [-t] [-f device] "
+	fprintf(stderr, "usage: %s [-qt] [-f device] "
 	    "[-i input] [-o output] key [value]\n", __progname);
 	exit(1);
 }
