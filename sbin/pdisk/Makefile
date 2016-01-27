@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.21 2016/01/17 14:13:57 jasper Exp $
+#	$Id: Makefile,v 1.22 2016/01/25 23:43:20 krw Exp $
 
 .if ${MACHINE} == "macppc"
 PROG=	pdisk
@@ -6,9 +6,7 @@ LDADD=  -lutil
 DPADD=  ${LIBUTIL}
 CFLAGS+=-Wall
 
-SRCS=	dump.c \
-	file_media.c io.c partition_map.c \
-	pdisk.c validate.c
+SRCS=	dump.c file_media.c io.c partition_map.c pdisk.c
 
 .else
 NOPROG=yes
