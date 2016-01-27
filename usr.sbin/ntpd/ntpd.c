@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpd.c,v 1.103 2016/01/11 15:30:56 deraadt Exp $ */
+/*	$OpenBSD: ntpd.c,v 1.104 2016/01/27 21:36:25 bcook Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -412,6 +412,9 @@ dispatch_imsg(struct ntpd_conf *lconf, const char *pw_dir,
 			priv_constraint_msg(imsg.hdr.peerid,
 			    imsg.data, imsg.hdr.len - IMSG_HEADER_SIZE,
 			    pw_dir, pw_uid, pw_gid);
+			break;
+		case IMSG_CONSTRAINT_KILL:
+			priv_constraint_kill(imsg.hdr.peerid);
 			break;
 		default:
 			break;
