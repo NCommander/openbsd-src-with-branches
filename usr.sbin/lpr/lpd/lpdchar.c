@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpdchar.c,v 1.5 2003/06/02 23:36:53 millert Exp $	*/
+/*	$OpenBSD: lpdchar.c,v 1.6 2009/10/27 23:59:52 deraadt Exp $	*/
 /*	$NetBSD: lpdchar.c,v 1.5 1997/07/17 05:44:32 mikel Exp $	*/
 
 /*
@@ -1017,7 +1017,7 @@ const char scnkey[][HEIGHT] =	/* this is relatively easy to modify */
 	  c__1____,
 	  c__1____,
 	  c__1____,
-	  c___11__ },			/* } */
+	  c___11__ },			/* { */
 
 	{ c___1___,
 	  c___1___,
