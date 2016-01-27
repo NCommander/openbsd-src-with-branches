@@ -1,3 +1,0 @@
-# $OpenBSD$
-# used to cause a crash with malloc 'J', fixed in targequiv.c rev 1.6
-! / 
