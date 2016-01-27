@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: accept.c,v 1.1 2011/09/13 23:50:17 fgsch Exp $	*/
 /*
  * Federico G. Schwindt <fgsch@openbsd.org>, 2011. Public Domain.
  */
@@ -27,6 +27,7 @@ thr_accept(void *arg)
 
 	CHECKe(s = socket(AF_INET, SOCK_STREAM, 0));
 	bzero(&sa, sizeof(sa));
+	sa.sin_family = AF_INET;
 	sa.sin_port = htons(6543);
 	CHECKe(bind(s, (const void*)&sa, sizeof(sa)));
 	CHECKe(listen(s, 10));
