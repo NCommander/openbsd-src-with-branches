@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_fork.c,v 1.13 2015/05/19 20:50:06 guenther Exp $ */
+/*	$OpenBSD: rthread_fork.c,v 1.14 2015/10/18 08:02:58 guenther Exp $ */
 
 /*
  * Copyright (c) 2008 Kurt Miller <kurt@openbsd.org>
@@ -82,7 +82,10 @@ _dofork(int is_vfork)
 	newid = sys_fork();
 
 	_thread_arc4_unlock();
-	_thread_malloc_unlock();
+	if (newid == 0)
+		_thread_malloc_reinit();
+	else
+		_thread_malloc_unlock();
 	_thread_atexit_unlock();
 
 	if (newid == 0) {
