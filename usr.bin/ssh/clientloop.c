@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.272 2015/02/25 19:54:02 djm Exp $ */
+/* $OpenBSD: clientloop.c,v 1.272.2.1 2016/01/14 11:53:20 sthen Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -349,9 +349,9 @@ client_x11_get_proto(const char *display, const char *xauth_path,
 				return -1;
 			}
 			do_unlink = 1;
-			if ((r = snprintf(xauthfile, sizeof(xauthfile),
+			if ((r = snprintf(xauthfile, PATH_MAX,
 			    "%s/xauthfile", xauthdir)) < 0 ||
-			    (size_t)r >= sizeof(xauthfile)) {
+			    (size_t)r >= PATH_MAX) {
 				error("%s: xauthfile path too long", __func__);
 				unlink(xauthfile);
 				rmdir(xauthdir);
