@@ -1,4 +1,4 @@
-/*	$OpenBSD: xen.c,v 1.38 2016/01/26 15:35:21 mikeb Exp $	*/
+/*	$OpenBSD: xen.c,v 1.39 2016/01/26 15:51:07 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Belopuhov
@@ -155,6 +155,10 @@ xen_attach(struct device *parent, struct device *self, void *aux)
 
 
 	xen_probe_devices(sc);
+
+	/* pvbus(4) key/value interface */
+	hv->hv_kvop = xs_kvop;
+	hv->hv_arg = sc;
 
 	xen_disable_emulated_devices(sc);
 
