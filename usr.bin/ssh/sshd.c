@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.462 2015/12/10 17:08:40 mmcc Exp $ */
+/* $OpenBSD: sshd.c,v 1.463 2016/01/14 16:17:40 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2386,7 +2386,7 @@ do_ssh2_kex(void)
 	}
 
 	if (options.rekey_limit || options.rekey_interval)
-		packet_set_rekey_limits((u_int32_t)options.rekey_limit,
+		packet_set_rekey_limits(options.rekey_limit,
 		    (time_t)options.rekey_interval);
 
 	myproposal[PROPOSAL_SERVER_HOST_KEY_ALGS] = compat_pkalg_proposal(
