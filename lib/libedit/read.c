@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.14 2011/07/07 05:40:42 okan Exp $	*/
+/*	$OpenBSD: read.c,v 1.15 2014/10/17 06:07:50 deraadt Exp $	*/
 /*	$NetBSD: read.c,v 1.57 2010/07/21 18:18:52 christos Exp $	*/
 
 /*-
@@ -262,8 +262,8 @@ read_getcmd(EditLine *el, el_action_t *cmdnum, Char *ch)
 #endif
                         cmd = el->el_map.current[(unsigned char) *ch];
 		if (cmd == ED_SEQUENCE_LEAD_IN) {
-			key_value_t val;
-			switch (key_get(el, ch, &val)) {
+			keymacro_value_t val;
+			switch (keymacro_get(el, ch, &val)) {
 			case XK_CMD:
 				cmd = val.cmd;
 				break;
