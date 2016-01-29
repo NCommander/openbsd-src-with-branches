@@ -73,6 +73,9 @@ Attempt to set the specified variable
 to
 .Ar value .
 .El
+.Pp
+Variables may only be changed if the device is not opened for
+playback or recording by another process.
 .Sh ENVIRONMENT
 .Bl -tag -width AUDIOCTLDEVICE
 .It Ev AUDIOCTLDEVICE
@@ -87,19 +90,6 @@ default audio control device
 To set the playing sampling rate to 11025 you can enter:
 .Pp
 .Dl $ audioctl play.rate=11025
-.Pp
-Note that many of the variables that can be inspected and changed
-are reset when the
-.Pa /dev/audio
-device is opened.
-This can be circumvented like so:
-.Pp
-.Dl $ (cat file.au; audioctl -f /dev/audioctl) \*(Gt /dev/audio
-or
-.Bd -literal -offset indent -compact
-$ (audioctl -f /dev/audioctl play.block_size=1024; cat file.au) \e
-	\*(Gt /dev/audio
-.Ed
 .Sh SEE ALSO
 .Xr aucat 1 ,
 .Xr cdio 1 ,
