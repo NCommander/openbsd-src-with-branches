@@ -1,4 +1,4 @@
-/*	$OpenBSD: term.c,v 1.16 2014/01/19 11:48:54 tobias Exp $	*/
+/*	$OpenBSD: term.c,v 1.17 2014/10/17 06:07:50 deraadt Exp $	*/
 /*	$NetBSD: term.c,v 1.57 2009/12/30 22:37:40 christos Exp $	*/
 
 /*-

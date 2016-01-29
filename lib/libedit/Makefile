@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2012/09/04 03:10:42 okan Exp $
+#	$OpenBSD: Makefile,v 1.14 2014/10/09 00:30:39 deraadt Exp $
 #	$NetBSD: Makefile,v 1.41 2010/02/03 15:34:43 roy Exp $
 #	@(#)Makefile	8.1 (Berkeley) 6/4/93
 
@@ -7,8 +7,8 @@ LIB=	edit
 WIDECHAR=	yes
 
 OSRCS=	chared.c common.c el.c emacs.c fcns.c filecomplete.c help.c \
-	hist.c key.c map.c chartype.c \
-	parse.c prompt.c read.c refresh.c search.c sig.c term.c tty.c vi.c
+	hist.c keymacro.c map.c chartype.c \
+	parse.c prompt.c read.c refresh.c search.c sig.c terminal.c tty.c vi.c
 
 MAN=	editline.3 editrc.5
 
