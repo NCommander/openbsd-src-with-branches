@@ -1,4 +1,4 @@
-/*	$OpenBSD: file_media.c,v 1.46 2016/01/30 14:24:47 krw Exp $	*/
+/*	$OpenBSD: file_media.c,v 1.47 2016/01/30 17:09:11 krw Exp $	*/
 
 /*
  * file_media.c -
@@ -36,7 +36,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "dpme.h"
 #include "partition_map.h"
 #include "file_media.h"
 

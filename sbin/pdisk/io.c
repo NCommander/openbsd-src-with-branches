@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.28 2016/01/28 13:01:33 krw Exp $	*/
+/*	$OpenBSD: io.c,v 1.29 2016/01/29 18:40:08 krw Exp $	*/
 
 /*
  * io.c - simple io and input parsing routines
@@ -27,13 +27,15 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/queue.h>
+
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 
-#include "dpme.h"
+#include "partition_map.h"
 #include "io.h"
 
 #define UNGET_MAX_COUNT 10
