@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.15 2016/01/29 19:32:34 schwarze Exp $	*/
+/*	$OpenBSD: tty.c,v 1.16 2016/01/30 00:06:39 schwarze Exp $	*/
 /*	$NetBSD: tty.c,v 1.34 2011/01/27 23:11:40 christos Exp $	*/
 
 /*-
@@ -547,10 +547,6 @@ tty_setup(EditLine *el)
 			return (-1);
 		}
 	}
-#ifdef notdef
-	else
-		tty__setchar(&el->el_tty.t_ex, el->el_tty.t_c[EX_IO]);
-#endif
 
 	tty_setup_flags(el, &el->el_tty.t_ed, ED_IO);
 
