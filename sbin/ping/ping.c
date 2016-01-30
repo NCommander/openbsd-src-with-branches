@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.136 2015/11/29 22:41:20 florian Exp $	*/
+/*	$OpenBSD: ping.c,v 1.137 2015/11/29 22:42:13 florian Exp $	*/
 /*	$NetBSD: ping.c,v 1.20 1995/08/11 22:37:58 cgd Exp $	*/
 
 /*
@@ -544,6 +544,12 @@ main(int argc, char *argv[])
 		if (seenalrm) {
 			retransmit();
 			seenalrm = 0;
+			if (ntransmitted - nreceived - 1 > nmissedmax) {
+				nmissedmax = ntransmitted - nreceived - 1;
+				if (!(options & F_FLOOD) &&
+				    (options & F_AUD_MISS))
+					(void)fputc('\a', stderr);
+			}
 			continue;
 		}
 		if (seenint) {
@@ -591,12 +597,6 @@ main(int argc, char *argv[])
 
 		if (npackets && nreceived >= npackets)
 			break;
-		if (ntransmitted - nreceived - 1 > nmissedmax) {
-			nmissedmax = ntransmitted - nreceived - 1;
-			if (!(options & F_FLOOD) && (options & F_AUD_MISS))
-				(void)fputc('\a', stderr);
-		}
-
 	}
 	summary(0);
 	exit(nreceived == 0);
