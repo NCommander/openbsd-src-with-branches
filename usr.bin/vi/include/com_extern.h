@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_extern.h,v 1.10 2016/01/06 22:35:29 millert Exp $	*/
+/*	$OpenBSD: com_extern.h,v 1.11 2016/01/20 08:43:27 bentley Exp $	*/
 
 int cut(SCR *, CHAR_T *, MARK *, MARK *, int);
 int cut_line(SCR *, recno_t, size_t, size_t, CB *);
@@ -105,7 +105,6 @@ int seq_save(SCR *, FILE *, char *, seq_t);
 int e_memcmp(CHAR_T *, EVENT *, size_t);
 void *binc(SCR *, void *, size_t *, size_t);
 int nonblank(SCR *, recno_t, size_t *);
-char *tail(char *);
 CHAR_T *v_strdup(SCR *, const CHAR_T *, size_t);
 enum nresult nget_uslong(u_long *, const char *, char **, int);
 enum nresult nget_slong(long *, const char *, char **, int);
