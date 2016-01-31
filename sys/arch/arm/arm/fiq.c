@@ -1,4 +1,4 @@
-/*	$OpenBSD: fiq.c,v 1.5 2014/04/03 10:17:34 mpi Exp $	*/
+/*	$OpenBSD: fiq.c,v 1.6 2014/11/16 12:30:56 deraadt Exp $	*/
 /*	$NetBSD: fiq.c,v 1.5 2002/04/03 23:33:27 thorpej Exp $	*/
 
 /*
@@ -48,8 +48,8 @@ TAILQ_HEAD(, fiqhandler) fiqhandler_stack =
 extern char fiqvector[];
 extern char fiq_nullhandler[], fiq_nullhandler_end[];
 
-#define	IRQ_BIT		I32_bit
-#define	FIQ_BIT		F32_bit
+#define	IRQ_BIT		PSR_I
+#define	FIQ_BIT		PSR_F
 
 /*
  * fiq_installhandler:
