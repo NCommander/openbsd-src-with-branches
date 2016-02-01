@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ldapd.8,v 1.12 2014/08/11 08:21:55 jmc Exp $
+.\"	$OpenBSD: ldapd.8,v 1.13 2016/02/01 20:00:18 landry Exp $
 .\"
 .\" Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: August 11 2014 $
+.Dd $Mdocdate: February 1 2016 $
 .Dt LDAPD 8
 .Os
 .Sh NAME
@@ -27,6 +27,7 @@
 .Fl D Ar macro Ns = Ns Ar value
 .Oc
 .Op Fl f Ar file
+.Op Fl r Ar directory
 .Op Fl s Ar file
 .Sh DESCRIPTION
 .Nm
@@ -57,14 +58,14 @@ Use
 .Ar file
 as the configuration file, instead of the default
 .Pa /etc/ldapd.conf .
-.It Fl r Ar directory
-Store and read database files in
-.Ar directory
-, instead of the default
-.Pa /var/db/ldap .
 .It Fl n
 Configtest mode.
 Only check the configuration file for validity.
+.It Fl r Ar directory
+Store and read database files in
+.Ar directory ,
+instead of the default
+.Pa /var/db/ldap .
 .It Fl s Ar file
 Specify an alternative location for the socket file.
 .It Fl v
