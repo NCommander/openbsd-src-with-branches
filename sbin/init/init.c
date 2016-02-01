@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.56 2015/12/10 17:27:00 mmcc Exp $	*/
+/*	$OpenBSD: init.c,v 1.57 2015/12/23 02:41:12 mmcc Exp $	*/
 /*	$NetBSD: init.c,v 1.22 1996/05/15 23:29:33 jtc Exp $	*/
 
 /*-
@@ -517,7 +517,7 @@ f_single_user(void)
 	struct passwd *pp;
 	static const char banner[] =
 		"Enter root password, or ^D to go multi-user\n";
-	char *clear, *password;
+	char *clear;
 #endif
 
 	/* Init shell and name */
