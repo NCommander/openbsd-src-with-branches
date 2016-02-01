@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctl_transact.c,v 1.11 2009/10/27 23:59:44 deraadt Exp $	*/
+/*	$OpenBSD: ctl_transact.c,v 1.12 2010/08/12 23:31:29 tedu Exp $	*/
 /*	$NetBSD: ctl_transact.c,v 1.3 1994/12/09 02:14:12 jtc Exp $	*/
 
 /*
@@ -30,11 +30,13 @@
  * SUCH DAMAGE.
  */
 
-#include "talk.h"
-#include <sys/time.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 #include <errno.h>
-#include <unistd.h>
 #include <poll.h>
+
+#include "talk.h"
 #include "talk_ctl.h"
 
 #define CTL_WAIT 2	/* time to wait for a response, in seconds */

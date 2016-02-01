@@ -1,4 +1,4 @@
-/*	$OpenBSD: talk.c,v 1.8 2004/03/02 21:04:42 tedu Exp $	*/
+/*	$OpenBSD: talk.c,v 1.9 2009/10/27 23:59:44 deraadt Exp $	*/
 /*	$NetBSD: talk.c,v 1.3 1994/12/09 02:14:25 jtc Exp $	*/
 
 /*
@@ -30,6 +30,10 @@
  * SUCH DAMAGE.
  */
 
+#include <err.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "talk.h"
 
 /*
@@ -59,6 +63,5 @@ main(int argc, char *argv[])
 	end_msgs();
 	set_edit_chars();
 	talk();
-	/* NOTREACHED */
 	return (0);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.17 2009/10/27 23:59:44 deraadt Exp $	*/
+/*	$OpenBSD: io.c,v 1.18 2010/08/12 23:31:29 tedu Exp $	*/
 /*	$NetBSD: io.c,v 1.4 1994/12/09 02:14:20 jtc Exp $	*/
 
 /*
@@ -36,13 +36,13 @@
  * ctl.c
  */
 
-#include "talk.h"
 #include <sys/ioctl.h>
-#include <sys/time.h>
-#include <stdio.h>
-#include <poll.h>
+
 #include <errno.h>
+#include <poll.h>
 #include <unistd.h>
+
+#include "talk.h"
 
 #define A_LONG_TIME 1000000
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: look_up.c,v 1.11 2009/10/27 23:59:44 deraadt Exp $	*/
+/*	$OpenBSD: look_up.c,v 1.12 2010/08/12 23:31:29 tedu Exp $	*/
 /*	$NetBSD: look_up.c,v 1.3 1994/12/09 02:14:21 jtc Exp $	*/
 
 /*
@@ -30,9 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#include "talk.h"
+#include <sys/socket.h>
+
 #include <errno.h>
 #include <unistd.h>
+
+#include "talk.h"
 #include "talk_ctl.h"
 
 /*
@@ -81,7 +84,6 @@ check_local(void)
 		return (0);
 	}
 	quit("Unable to connect with initiator", 1);
-	/*NOTREACHED*/
 	return (0);
 }
 

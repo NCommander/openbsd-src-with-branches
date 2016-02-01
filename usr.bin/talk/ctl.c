@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctl.c,v 1.11 2009/10/27 23:59:44 deraadt Exp $	*/
+/*	$OpenBSD: ctl.c,v 1.12 2010/08/12 23:31:29 tedu Exp $	*/
 /*	$NetBSD: ctl.c,v 1.3 1994/12/09 02:14:10 jtc Exp $	*/
 
 /*
@@ -36,9 +36,10 @@
  * the progress
  */
 
-#include "talk.h"
+#include <sys/socket.h>
 #include <arpa/inet.h>
-#include "talk_ctl.h"
+
+#include "talk.h"
 
 struct	sockaddr_in daemon_addr = { sizeof(daemon_addr), AF_INET };
 struct	sockaddr_in ctl_addr = { sizeof(ctl_addr), AF_INET };
