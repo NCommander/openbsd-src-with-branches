@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_iopl.c,v 1.6 2012/12/05 23:19:58 deraadt Exp $	*/
+/*	$OpenBSD: i386_iopl.c,v 1.7 2014/11/15 02:23:28 tedu Exp $	*/
 /*	$NetBSD: i386_iopl.c,v 1.2 1996/02/27 22:57:29 jtc Exp $	*/
 
 /*-
@@ -36,8 +36,7 @@
 #include <machine/sysarch.h>
 
 int
-i386_iopl(iopl)
-	int iopl;
+i386_iopl(int iopl)
 {
 	struct i386_iopl_args p;
 
