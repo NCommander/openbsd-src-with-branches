@@ -1,4 +1,4 @@
-/* $OpenBSD: sunxi.c,v 1.6 2015/05/20 00:14:56 jsg Exp $ */
+/* $OpenBSD: sunxi.c,v 1.7 2016/01/31 04:39:05 jsg Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  *
@@ -146,10 +146,8 @@ sunxi_board_name(void)
 	int i;
 
 	for (i = 0; sunxi_boards[i].name != NULL; i++) {
-		if (sunxi_boards[i].board_id == board_id) {
+		if (sunxi_boards[i].board_id == board_id)
 			return (sunxi_boards[i].name);
-			break;
-		}
 	}
 	return (NULL);
 }
