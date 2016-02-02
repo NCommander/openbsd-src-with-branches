@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.c,v 1.87 2015/12/03 11:41:06 claudio Exp $ */
+/*	$OpenBSD: ospfd.c,v 1.88 2015/12/05 12:20:13 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -242,9 +242,6 @@ main(int argc, char *argv[])
 	    pipe_parent2ospfe);
 	ospfe_pid = ospfe(ospfd_conf, pipe_parent2ospfe, pipe_ospfe2rde,
 	    pipe_parent2rde);
-
-	/* show who we are */
-	setproctitle("parent");
 
 	event_init();
 

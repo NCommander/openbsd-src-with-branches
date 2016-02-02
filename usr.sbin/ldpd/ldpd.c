@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.26 2015/07/21 05:04:12 renato Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.27 2015/12/05 13:11:48 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -205,9 +205,6 @@ main(int argc, char *argv[])
 	    pipe_parent2ldpe);
 	ldpe_pid = ldpe(ldpd_conf, pipe_parent2ldpe, pipe_ldpe2lde,
 	    pipe_parent2lde);
-
-	/* show who we are */
-	setproctitle("parent");
 
 	event_init();
 

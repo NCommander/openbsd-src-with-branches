@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpd.c,v 1.104 2016/01/27 21:36:25 bcook Exp $ */
+/*	$OpenBSD: ntpd.c,v 1.105 2016/01/27 21:48:34 reyk Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -210,7 +210,6 @@ main(int argc, char *argv[])
 	/* fork child process */
 	chld_pid = ntp_main(pipe_chld, fd_ctl, &lconf, pw);
 
-	setproctitle("[priv]");
 	log_procinit("[priv]");
 	readfreq();
 

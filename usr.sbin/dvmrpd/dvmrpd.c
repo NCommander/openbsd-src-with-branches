@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpd.c,v 1.19 2015/02/10 08:49:30 claudio Exp $ */
+/*	$OpenBSD: dvmrpd.c,v 1.20 2015/12/05 13:11:00 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -230,9 +230,6 @@ main(int argc, char *argv[])
 
 	if (mrt_init(conf->mroute_socket))
 		fatal("multicast routing not enabled in kernel");
-
-	/* show who we are */
-	setproctitle("parent");
 
 	event_init();
 
