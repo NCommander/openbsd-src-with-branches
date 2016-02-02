@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.108 2015/11/05 09:14:31 sunil Exp $	*/
+/*	$OpenBSD: control.c,v 1.109 2015/12/28 22:08:30 jung Exp $	*/
 
 /*
  * Copyright (c) 2012 Gilles Chehade <gilles@poolp.org>
@@ -150,6 +150,8 @@ control_imsg(struct mproc *p, struct imsg *imsg)
 		m_get_string(&m, &key);
 		m_get_data(&m, &data, &sz);
 		m_end(&m);
+		if (sz != sizeof(val))
+			fatalx("control: IMSG_STAT_INCREMENT size mismatch");
 		memmove(&val, data, sz);
 		if (stat_backend)
 			stat_backend->increment(key, val.u.counter);
@@ -160,6 +162,8 @@ control_imsg(struct mproc *p, struct imsg *imsg)
 		m_get_string(&m, &key);
 		m_get_data(&m, &data, &sz);
 		m_end(&m);
+		if (sz != sizeof(val))
+			fatalx("control: IMSG_STAT_DECREMENT size mismatch");
 		memmove(&val, data, sz);
 		if (stat_backend)
 			stat_backend->decrement(key, val.u.counter);
@@ -170,6 +174,8 @@ control_imsg(struct mproc *p, struct imsg *imsg)
 		m_get_string(&m, &key);
 		m_get_data(&m, &data, &sz);
 		m_end(&m);
+		if (sz != sizeof(val))
+			fatalx("control: IMSG_STAT_SET size mismatch");
 		memmove(&val, data, sz);
 		if (stat_backend)
 			stat_backend->set(key, &val);
