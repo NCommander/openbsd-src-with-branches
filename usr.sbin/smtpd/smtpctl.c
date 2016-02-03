@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpctl.c,v 1.143 2015/12/22 21:50:22 gilles Exp $	*/
+/*	$OpenBSD: smtpctl.c,v 1.144 2015/12/28 22:08:30 jung Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -1248,7 +1248,7 @@ display(const char *s)
 	if (is_encrypted_fp(fp)) {
 		int	i;
 		int	fd;
-		FILE   *ofp;
+		FILE   *ofp = NULL;
 		char	sfn[] = "/tmp/smtpd.XXXXXXXXXX";
 
 		if ((fd = mkstemp(sfn)) == -1 ||
