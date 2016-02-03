@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.263 2015/12/14 10:22:12 jung Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.264 2015/12/28 22:08:30 jung Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1091,6 +1091,7 @@ smtp_filter_response(uint64_t id, int query, int status, uint32_t code,
 
 	case QUERY_MAIL:
 		if (status != FILTER_OK) {
+			smtp_filter_rollback(s);
 			code = code ? code : 530;
 			line = line ? line : "Sender rejected";
 			smtp_reply(s, "%d %s", code, line);
@@ -1149,6 +1150,7 @@ smtp_filter_response(uint64_t id, int query, int status, uint32_t code,
 
 	case QUERY_EOM:
 		if (status != FILTER_OK) {
+			smtp_filter_rollback(s);
 			code = code ? code : 530;
 			line = line ? line : "Message rejected";
 			smtp_reply(s, "%d %s", code, line);
