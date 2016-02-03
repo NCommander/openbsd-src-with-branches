@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.69 2015/12/07 06:34:14 jsg Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.70 2015/12/27 04:31:34 jsg Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -784,7 +784,7 @@ cpu_init_mwait(struct device *dv)
 {
 	unsigned int smallest, largest, extensions, c_substates;
 
-	if ((cpu_ecxfeature & CPUIDECX_MWAIT) == 0)
+	if ((cpu_ecxfeature & CPUIDECX_MWAIT) == 0 || cpuid_level < 0x5)
 		return;
 
 	/* get the monitor granularity */
