@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.272 2016/01/27 12:46:03 sunil Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.273 2016/02/02 17:51:11 sthen Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -484,7 +484,7 @@ main(int argc, char *argv[])
 				    optarg);
 			break;
 		case 'h':
-			log_info("version: OpenSMTPD " SMTPD_VERSION);
+			log_info("version: " SMTPD_NAME " " SMTPD_VERSION);
 			usage();
 			break;
 		case 'n':
