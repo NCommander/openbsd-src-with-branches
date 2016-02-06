@@ -1,4 +1,4 @@
-/*	$OpenBSD: sync.c,v 1.15 2013/10/18 15:19:40 krw Exp $	*/
+/*	$OpenBSD: sync.c,v 1.16 2015/01/16 06:40:16 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Bob Beck <beck@openbsd.org>
@@ -17,33 +17,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/stdint.h>
-#include <sys/file.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
-#include <sys/resource.h>
-#include <sys/uio.h>
+#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/queue.h>
-
+#include <sys/socket.h>
 
 #include <net/if.h>
-#include <netinet/in.h>
+
 #include <arpa/inet.h>
 
-#include <err.h>
-#include <errno.h>
-#include <pwd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sha1.h>
-
-#include <netdb.h>
+#include <netinet/in.h>
 
 #include <openssl/hmac.h>
 
+#include <errno.h>
+#include <netdb.h>
+#include <sha1.h>
+#include <string.h>
+#include <syslog.h>
+#include <unistd.h>
+
+#include "dhcp.h"
+#include "tree.h"
 #include "dhcpd.h"
 #include "sync.h"
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.9 2005/04/18 16:39:25 moritz Exp $ */
+/*	$OpenBSD: print.c,v 1.10 2005/11/13 20:25:59 deraadt Exp $ */
 
 /* Turn data structures into printable text. */
 
@@ -40,6 +40,18 @@
  * Enterprises, see ``http://www.vix.com''.
  */
 
+#include <sys/types.h>
+#include <sys/socket.h>
+
+#include <net/if.h>
+
+#include <netinet/in.h>
+
+#include <stdio.h>
+#include <string.h>
+
+#include "dhcp.h"
+#include "tree.h"
 #include "dhcpd.h"
 
 char *
