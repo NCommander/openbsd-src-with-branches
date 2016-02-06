@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.h,v 1.27 2015/02/07 10:08:06 krw Exp $ */
+/*	$OpenBSD: privsep.h,v 1.28 2015/02/10 04:20:26 krw Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -15,10 +15,6 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE, ABUSE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#include <arpa/inet.h>
-
-#include <imsg.h>
 
 enum imsg_code {
 	IMSG_NONE,
