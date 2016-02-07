@@ -1,4 +1,4 @@
-/*	$OpenBSD: errwarn.c,v 1.4 2005/04/19 16:13:44 moritz Exp $	*/
+/*	$OpenBSD: errwarn.c,v 1.5 2006/12/18 01:08:58 stevesk Exp $	*/
 
 /* Errors and warnings... */
 
@@ -40,8 +40,22 @@
  * with Vixie Laboratories.
  */
 
-#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
+#include <net/if.h>
+
+#include <netinet/in.h>
+
+#include <errno.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <syslog.h>
+#include <unistd.h>
+
+#include "dhcp.h"
 #include "dhcpd.h"
 
 static void do_percentm(char *obuf, size_t size, char *ibuf);
