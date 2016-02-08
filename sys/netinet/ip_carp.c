@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.263 2015/06/30 13:54:42 mpi Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.264 2015/07/02 09:40:03 mpi Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -1655,6 +1655,7 @@ carp_multicast_cleanup(struct carp_softc *sc)
 int
 carp_set_ifp(struct carp_softc *sc, struct ifnet *ifp)
 {
+	struct ifih *carp_ifih;
 	struct carp_if *cif, *ncif = NULL;
 	struct carp_softc *vr, *after = NULL;
 	int myself = 0, error = 0;
@@ -1687,16 +1688,18 @@ carp_set_ifp(struct carp_softc *sc, struct ifnet *ifp)
 	}
 
 	/* Can we share an ifih between multiple carp(4) instances? */
-	sc->sc_ifih = SLIST_FIRST(&ifp->if_inputs);
-	if (sc->sc_ifih->ifih_input != carp_input) {
-		sc->sc_ifih = malloc(sizeof(*sc->sc_ifih), M_DEVBUF, M_NOWAIT);
-		if (sc->sc_ifih == NULL) {
+	carp_ifih = SLIST_FIRST(&ifp->if_inputs);
+	if (carp_ifih->ifih_input != carp_input) {
+		carp_ifih = malloc(sizeof(*carp_ifih), M_DEVBUF, M_NOWAIT);
+		if (carp_ifih == NULL) {
 			free(ncif, M_IFADDR, sizeof(*ncif));
 			return (ENOMEM);
 		}
-		sc->sc_ifih->ifih_input = carp_input;
-		sc->sc_ifih->ifih_refcnt = 0;
+		carp_ifih->ifih_input = carp_input;
+		carp_ifih->ifih_refcnt = 0;
 	}
+	/* Do not free our reference during carpdetach() */
+	++carp_ifih->ifih_refcnt;
 
 	/* detach from old interface */
 	if (sc->sc_carpdev != NULL)
@@ -1736,8 +1739,9 @@ carp_set_ifp(struct carp_softc *sc, struct ifnet *ifp)
 
 	s = splnet();
 	/* Change input handler of the physical interface. */
-	if (++sc->sc_ifih->ifih_refcnt == 1)
-		SLIST_INSERT_HEAD(&ifp->if_inputs, sc->sc_ifih, ifih_next);
+	sc->sc_ifih = carp_ifih;
+	if (carp_ifih->ifih_refcnt == 1)
+		SLIST_INSERT_HEAD(&ifp->if_inputs, carp_ifih, ifih_next);
 
 	carp_carpdev_state(ifp);
 	splx(s);
