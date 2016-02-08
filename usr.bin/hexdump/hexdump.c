@@ -1,4 +1,4 @@
-/*	$OpenBSD: hexdump.c,v 1.18 2015/10/05 06:36:18 deraadt Exp $	*/
+/*	$OpenBSD: hexdump.c,v 1.19 2015/10/09 01:37:07 deraadt Exp $	*/
 /*	$NetBSD: hexdump.c,v 1.7 1997/10/19 02:34:06 lukem Exp $	*/
 
 /*
@@ -45,8 +45,6 @@ int exitval;				/* final exit value */
 long length = -1;			/* max bytes to read */
 char *iobuf;				/* stdio I/O buffer */
 size_t iobufsiz;			/* size of stdio I/O buffer */
-
-int	main(int, char **);
 
 int
 main(int argc, char *argv[])
