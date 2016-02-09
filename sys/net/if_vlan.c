@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.135 2015/07/20 22:16:41 rzalamena Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.135.4.1 2016/01/25 12:39:00 bluhm Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -351,6 +351,7 @@ vlan_config(struct ifvlan *ifv, struct ifnet *p, u_int16_t tag)
 	struct sockaddr_dl	*sdl1, *sdl2;
 	struct vlan_taghash	*tagh;
 	u_int			 flags;
+	int			 insert = 0;
 	int			 s;
 
 	if (p->if_type != IFT_ETHER)
@@ -367,6 +368,7 @@ vlan_config(struct ifvlan *ifv, struct ifnet *p, u_int16_t tag)
 			return (ENOMEM);
 		vlan_ifih->ifih_input = vlan_input;
 		vlan_ifih->ifih_refcnt = 0;
+		insert = 1;
 	}
 	/* Do not free our reference during vlan_unconfig() */
 	++vlan_ifih->ifih_refcnt;
@@ -441,7 +443,7 @@ vlan_config(struct ifvlan *ifv, struct ifnet *p, u_int16_t tag)
 	s = splnet();
 	/* Change input handler of the physical interface. */
 	ifv->ifv_ifih = vlan_ifih;
-	if (vlan_ifih->ifih_refcnt == 1)
+	if (insert)
 		SLIST_INSERT_HEAD(&p->if_inputs, vlan_ifih, ifih_next);
 
 	LIST_INSERT_HEAD(&tagh[TAG_HASH(tag)], ifv, ifv_list);

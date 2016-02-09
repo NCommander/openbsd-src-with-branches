@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.264 2015/07/02 09:40:03 mpi Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.264.4.1 2016/02/08 21:57:46 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -1658,7 +1658,7 @@ carp_set_ifp(struct carp_softc *sc, struct ifnet *ifp)
 	struct ifih *carp_ifih;
 	struct carp_if *cif, *ncif = NULL;
 	struct carp_softc *vr, *after = NULL;
-	int myself = 0, error = 0;
+	int myself = 0, error = 0, insert = 0;
 	int s;
 
 	if (ifp == sc->sc_carpdev)
@@ -1697,6 +1697,7 @@ carp_set_ifp(struct carp_softc *sc, struct ifnet *ifp)
 		}
 		carp_ifih->ifih_input = carp_input;
 		carp_ifih->ifih_refcnt = 0;
+		insert = 1;
 	}
 	/* Do not free our reference during carpdetach() */
 	++carp_ifih->ifih_refcnt;
@@ -1740,7 +1741,7 @@ carp_set_ifp(struct carp_softc *sc, struct ifnet *ifp)
 	s = splnet();
 	/* Change input handler of the physical interface. */
 	sc->sc_ifih = carp_ifih;
-	if (carp_ifih->ifih_refcnt == 1)
+	if (insert)
 		SLIST_INSERT_HEAD(&ifp->if_inputs, carp_ifih, ifih_next);
 
 	carp_carpdev_state(ifp);
