@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.61 2014/12/23 07:54:13 tedu Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.62 2015/03/14 03:38:52 jsg Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -76,10 +76,9 @@ RB_PROTOTYPE(nfs_nodetree, nfsnode, n_entry, nfsnode_cmp);
 RB_GENERATE(nfs_nodetree, nfsnode, n_entry, nfsnode_cmp);
 
 /*
- * Look up a vnode/nfsnode by file handle.
+ * Look up a vnode/nfsnode by file handle and store the pointer in *npp.
  * Callers must check for mount points!!
- * In all cases, a pointer to a
- * nfsnode structure is returned.
+ * An error number is returned.
  */
 int
 nfs_nget(struct mount *mnt, nfsfh_t *fh, int fhsize, struct nfsnode **npp)
