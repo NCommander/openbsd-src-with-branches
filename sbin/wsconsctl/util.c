@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.61 2013/10/20 22:07:57 miod Exp $ */
+/*	$OpenBSD: util.c,v 1.62 2013/11/17 13:41:26 kettenis Exp $ */
 /*	$NetBSD: util.c,v 1.8 2000/03/14 08:11:53 sato Exp $ */
 
 /*-
@@ -419,37 +419,37 @@ rd_field(struct field *f, char *val, int merge)
 		val = (void *)strtok(val, ",");
 		if (val != NULL) {
 			wmcoords.minx = (int)strtonum(val,
-			    0, 32768, &errstr);
+			    -32768, 32767, &errstr);
 			val = (void *)strtok(NULL, ",");
 		}
 		if (!errstr && val != NULL) {
 			wmcoords.maxx = (int)strtonum(val,
-			    0, 32768, &errstr);
+			    -32768, 32767, &errstr);
 			val = (void *)strtok(NULL, ",");
 		}
 		if (!errstr && val != NULL) {
 			wmcoords.miny = (int)strtonum(val,
-			    0, 32768, &errstr);
+			    -32768, 32767, &errstr);
 			val = (void *)strtok(NULL, ",");
 		}
 		if (!errstr && val != NULL) {
 			wmcoords.maxy = (int)strtonum(val,
-			    0, 32768, &errstr);
+			    -32768, 32767, &errstr);
 			val = (void *)strtok(NULL, ",");
 		}
 		if (!errstr && val != NULL) {
 			wmcoords.swapxy = (int)strtonum(val,
-			    0, 32768, &errstr);
+			    -32768, 32767, &errstr);
 			val = (void *)strtok(NULL, ",");
 		}
 		if (!errstr && val != NULL) {
 			wmcoords.resx = (int)strtonum(val,
-			    0, 32768, &errstr);
+			    0, 32767, &errstr);
 			val = (void *)strtok(NULL, ",");
 		}
 		if (!errstr && val != NULL) {
 			wmcoords.resy = (int)strtonum(val,
-			    0, 32768, &errstr);
+			    0, 32767, &errstr);
 			val = (void *)strtok(NULL, ",");
 		}
 		if (errstr)
