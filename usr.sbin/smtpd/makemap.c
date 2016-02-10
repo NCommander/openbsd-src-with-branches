@@ -1,4 +1,4 @@
-/*	$OpenBSD: makemap.c,v 1.60 2015/12/15 06:05:15 guenther Exp $	*/
+/*	$OpenBSD: makemap.c,v 1.61 2015/12/28 22:08:30 jung Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -191,7 +191,7 @@ makemap(int argc, char *argv[])
 	if ((fd = mkstemp(dbname)) == -1)
 		err(1, "mkstemp");
 
-	db = dbopen(dbname, O_RDWR, 0644, dbtype, NULL);
+	db = dbopen(dbname, O_TRUNC|O_RDWR, 0644, dbtype, NULL);
 	if (db == NULL) {
 		warn("dbopen: %s", dbname);
 		goto bad;
