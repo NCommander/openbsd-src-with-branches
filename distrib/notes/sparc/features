@@ -1,4 +1,4 @@
-dnl	$OpenBSD: features,v 1.1 2009/05/12 21:06:51 miod Exp $
+dnl	$OpenBSD: features,v 1.2 2009/10/10 18:40:43 miod Exp $
 dnl
 dnl This file lists almost all the conditional features of this port,
 dnl which are used to provide accurate installation notes.
@@ -6,7 +6,7 @@ dnl
 dnl Information about the installer script features should be in sync with
 dnl	src/distrib/sparc/install.md
 dnl and the list files in
-dnl	src/distrib/sparc/{miniroot,ramdisk}/list
+dnl	src/distrib/sparc/ramdisk/list.local
 dnl
 dnl ====
 dnl
