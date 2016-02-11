@@ -1504,9 +1504,9 @@ server_log_http(struct client *clt, unsigned int code, size_t len)
 			goto done;
 
 		ret = evbuffer_add_printf(clt->clt_log,
-		    "%s:%u %s - %s [%s] \"%s %s%s%s%s%s\" %03d %zu\n",
-		    srv_conf->name, htons(srv_conf->port), ip,
-		    clt->clt_remote_user == NULL ? "-" : user, tstamp,
+		    "%s %s - %s [%s] \"%s %s%s%s%s%s\" %03d %zu\n",
+		    srv_conf->name, ip, clt->clt_remote_user == NULL ? "-" :
+		    user, tstamp,
 		    server_httpmethod_byid(desc->http_method),
 		    desc->http_path == NULL ? "" : path,
 		    desc->http_query == NULL ? "" : "?",
@@ -1551,10 +1551,10 @@ server_log_http(struct client *clt, unsigned int code, size_t len)
 			goto done;
 
 		ret = evbuffer_add_printf(clt->clt_log,
-		    "%s:%u %s - %s [%s] \"%s %s%s%s%s%s\""
+		    "%s %s - %s [%s] \"%s %s%s%s%s%s\""
 		    " %03d %zu \"%s\" \"%s\"\n",
-		    srv_conf->name, htons(srv_conf->port), ip,
-		    clt->clt_remote_user == NULL ? "-" : user, tstamp,
+		    srv_conf->name, ip, clt->clt_remote_user == NULL ? "-" :
+		    user, tstamp,
 		    server_httpmethod_byid(desc->http_method),
 		    desc->http_path == NULL ? "" : path,
 		    desc->http_query == NULL ? "" : "?",
