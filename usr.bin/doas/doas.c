@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.c,v 1.49 2016/01/24 13:19:21 gsoares Exp $ */
+/* $OpenBSD: doas.c,v 1.50 2016/02/07 20:01:58 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -425,7 +425,7 @@ main(int argc, char **argv, char **envp)
 			if (gethostname(host, sizeof(host)))
 				snprintf(host, sizeof(host), "?");
 			snprintf(cbuf, sizeof(cbuf),
-			    "doas (%.32s@%.32s) password: ", myname, host);
+			    "\rdoas (%.32s@%.32s) password: ", myname, host);
 			challenge = cbuf;
 		}
 		response = readpassphrase(challenge, rbuf, sizeof(rbuf),
