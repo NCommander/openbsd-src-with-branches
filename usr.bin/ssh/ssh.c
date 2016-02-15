@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.434 2016/01/14 14:34:34 deraadt Exp $ */
+/* $OpenBSD: ssh.c,v 1.435 2016/01/14 16:17:40 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -512,6 +512,7 @@ main(int ac, char **av)
 	struct ssh_digest_ctx *md;
 	u_char conn_hash[SSH_DIGEST_MAX_LENGTH];
 
+	ssh_malloc_init();	/* must be called before any mallocs */
 	/* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
 	sanitise_stdfd();
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keysign.c,v 1.50 2015/11/29 22:18:37 djm Exp $ */
+/* $OpenBSD: ssh-keysign.c,v 1.51 2015/12/04 16:41:28 markus Exp $ */
 /*
  * Copyright (c) 2002 Markus Friedl.  All rights reserved.
  *
@@ -169,6 +169,7 @@ main(int argc, char **argv)
 	char *host, *fp;
 	size_t slen, dlen;
 
+	ssh_malloc_init();	/* must be called before any mallocs */
 	if (pledge("stdio rpath getpw dns id", NULL) != 0)
 		fatal("%s: pledge: %s", __progname, strerror(errno));
 

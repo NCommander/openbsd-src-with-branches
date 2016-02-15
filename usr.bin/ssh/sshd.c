@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.463 2016/01/14 16:17:40 markus Exp $ */
+/* $OpenBSD: sshd.c,v 1.464 2016/01/29 02:54:45 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1407,6 +1407,7 @@ main(int ac, char **av)
 	Authctxt *authctxt;
 	struct connection_info *connection_info = get_connection_info(0, 0);
 
+	ssh_malloc_init();	/* must be called before any mallocs */
 	/* Save argv. */
 	saved_argv = av;
 	rexec_argc = ac;
