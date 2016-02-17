@@ -1,5 +1,5 @@
 
-/* $OpenBSD: servconf.c,v 1.283 2015/11/13 04:38:06 djm Exp $ */
+/* $OpenBSD: servconf.c,v 1.284 2016/01/29 02:54:45 dtucker Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -339,9 +339,9 @@ fill_default_server_options(ServerOptions *options)
 
 	assemble_algorithms(options);
 
-	/* Turn privilege separation on by default */
+	/* Turn privilege separation and sandboxing on by default */
 	if (use_privsep == -1)
-		use_privsep = PRIVSEP_NOSANDBOX;
+		use_privsep = PRIVSEP_ON;
 
 #define CLEAR_ON_NONE(v) \
 	do { \
