@@ -1,4 +1,4 @@
-#	$OpenBSD: proxy-connect.sh,v 1.7 2014/05/03 18:46:14 dtucker Exp $
+#	$OpenBSD: proxy-connect.sh,v 1.8 2015/03/03 22:35:19 markus Exp $
 #	Placed in the Public Domain.
 
 tid="proxy connect"
@@ -18,7 +18,8 @@ for ps in no yes; do
 		fail "ssh proxyconnect protocol $p privsep=$ps comp=$c failed"
 	fi
 	if [ "$SSH_CONNECTION" != "UNKNOWN 65535 UNKNOWN 65535" ]; then
-		fail "bad SSH_CONNECTION protocol $p privsep=$ps comp=$c"
+		fail "bad SSH_CONNECTION protocol $p privsep=$ps comp=$c: " \
+		    "$SSH_CONNECTION"
 	fi
     done
   done
