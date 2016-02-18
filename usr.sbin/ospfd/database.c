@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.31 2014/10/25 03:23:49 lteo Exp $ */
+/*	$OpenBSD: database.c,v 1.32 2015/03/13 02:31:29 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -167,7 +167,7 @@ recv_db_description(struct nbr *nbr, char *buf, u_int16_t len)
 	int			 dupe = 0;
 
 	if (len < sizeof(dd_hdr)) {
-		log_warnx("recv_db_description: neighbor ID %s: ",
+		log_warnx("recv_db_description: neighbor ID %s: "
 		    "bad packet size", inet_ntoa(nbr->id));
 		return;
 	}
