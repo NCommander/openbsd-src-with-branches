@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/lib/libstdc++/Makefile,v 1.63.2.1 2009/08/03 08:13:06 kensmith Exp $
-# $OpenBSD: Makefile,v 1.7 2013/06/21 17:07:30 robert Exp $
+# $OpenBSD: Makefile,v 1.8 2015/05/14 02:56:01 jsg Exp $
 
 .include "${.CURDIR}/Makefile.common"
 
@@ -17,6 +17,9 @@ CFLAGS+=	-frandom-seed=RepeatabilityConsideredGood
 CXXFLAGS+=	-frandom-seed=RepeatabilityConsideredGood
 CXXFLAGS+=	-fno-implicit-templates -ffunction-sections -fdata-sections \
 		-Wno-deprecated
+.if ${MACHINE_ARCH} == "arm"
+CXXFLAGS+=	-fno-stack-protector
+.endif
 
 DPADD=		${LIBM}
 LDADD=		-lm
