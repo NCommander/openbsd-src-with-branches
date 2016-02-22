@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.h,v 1.36 2015/02/15 21:34:33 miod Exp $ */
+/* $OpenBSD: pmap.h,v 1.37 2015/10/01 16:03:48 kettenis Exp $ */
 /* $NetBSD: pmap.h,v 1.37 2000/11/19 03:16:35 thorpej Exp $ */
 
 /*-
@@ -71,6 +71,7 @@
 #define	_PMAP_MACHINE_
 
 #include <machine/pte.h>
+#include <sys/mutex.h>
 
 #ifdef _KERNEL
 
