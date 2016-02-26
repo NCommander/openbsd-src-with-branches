@@ -1,4 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.4 2008/06/26 05:42:09 ray Exp $	*/
+/*	$OpenBSD: frame.h,v 1.5 2011/03/23 16:54:34 pirofti Exp $	*/
 /*	$NetBSD: frame.h,v 1.1 2003/04/26 18:39:40 fvdl Exp $	*/
 
 /*-
@@ -158,6 +158,12 @@ struct switchframe {
 	int64_t sf_rbp;
 	int64_t	sf_rbx;
 	int64_t	sf_rip;
+};
+
+struct callframe {
+	struct callframe	*f_frame;
+	long			f_retaddr;
+	long			f_arg0;
 };
 
 #endif  /* _MACHINE_FRAME_H_ */
