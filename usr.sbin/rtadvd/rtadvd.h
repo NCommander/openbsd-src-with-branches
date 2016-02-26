@@ -168,8 +168,5 @@ SLIST_HEAD(ralist, rainfo);
 void ra_timeout(void *);
 void ra_timer_update(void *, struct timeval *);
 
-int prefix_match(struct in6_addr *, int, struct in6_addr *, int);
 struct rainfo *if_indextorainfo(int);
 struct prefix *find_prefix(struct rainfo *, struct in6_addr *, int);
-
-extern struct in6_addr in6a_site_allrouters;
