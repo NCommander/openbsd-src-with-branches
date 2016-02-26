@@ -686,44 +686,11 @@ delete_prefix(struct rainfo *rai, struct prefix *prefix)
 static int
 init_prefix(struct in6_prefixreq *ipr)
 {
-#if 0
-	int s;
-
-	if ((s = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
-		log_warn("socket");
-		exit(1);
-	}
-
-	if (ioctl(s, SIOCGIFPREFIX_IN6, (caddr_t)ipr) < 0) {
-		log_warn("ioctl:SIOCGIFFLAGS: failed for %s", ifr.ifr_name);
-
-		ipr->ipr_vltime = DEF_ADVVALIDLIFETIME;
-		ipr->ipr_pltime = DEF_ADVPREFERREDLIFETIME;
-		ipr->ipr_raf_onlink = 1;
-		ipr->ipr_raf_auto = 1;
-		/* omit other field initialization */
-	}
-	else if (ipr->ipr_origin < PR_ORIG_RR) {
-		u_char ntopbuf[INET6_ADDRSTRLEN];
-
-		log_warn("Added prefix(%s)'s origin %d is"
-		    " lower than PR_ORIG_RR(router renumbering)."
-		    " This should not happen if I am router",
-		    inet_ntop(AF_INET6, &ipr->ipr_prefix.sin6_addr, ntopbuf,
-			sizeof(ntopbuf)), ipr->ipr_origin);
-		close(s);
-		return 1;
-	}
-
-	close(s);
-	return 0;
-#else
 	ipr->ipr_vltime = DEF_ADVVALIDLIFETIME;
 	ipr->ipr_pltime = DEF_ADVPREFERREDLIFETIME;
 	ipr->ipr_raf_onlink = 1;
 	ipr->ipr_raf_auto = 1;
 	return 0;
-#endif
 }
 
 void
