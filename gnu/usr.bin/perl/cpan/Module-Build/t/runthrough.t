@@ -6,7 +6,6 @@ use MBTest tests => 29;
 
 blib_load('Module::Build');
 blib_load('Module::Build::ConfigData');
-my $have_yaml = Module::Build::ConfigData->feature('YAML_support');
 
 #########################
 
@@ -106,18 +105,16 @@ ok grep {$_ eq 'save_out'     } $mb->cleanup;
   }
 }
 
-SKIP: {
-  skip( 'YAML_support feature is not enabled', 7 ) unless $have_yaml;
-
+{
   my $output = eval {
-    stdout_of( sub { $mb->dispatch('disttest') } )
+    stdout_stderr_of( sub { $mb->dispatch('disttest') } )
   };
   is $@, '';
 
   # After a test, the distdir should contain a blib/ directory
   ok -e File::Spec->catdir('Simple-0.01', 'blib');
 
-  eval {$mb->dispatch('distdir')};
+  stdout_stderr_of ( sub { eval {$mb->dispatch('distdir')} } );
   is $@, '';
 
   # The 'distdir' should contain a lib/ directory
@@ -128,7 +125,7 @@ SKIP: {
   ok ! -e File::Spec->catdir('Simple-0.01', 'blib');
 
   # Make sure all of the above was done by the new version of Module::Build
-  my $fh = IO::File->new(File::Spec->catfile($dist->dirname, 'META.yml'));
+  open(my $fh, '<', File::Spec->catfile($dist->dirname, 'META.yml'));
   my $contents = do {local $/; <$fh>};
   $contents =~ /Module::Build version ([0-9_.]+)/m;
   cmp_ok $1, '==', $mb->VERSION, "Check version used to create META.yml: $1 == " . $mb->VERSION;
@@ -154,7 +151,7 @@ SKIP: {
 
  SKIP: {
     skip("We do not rewrite shebang on VMS", 1) if $^O eq 'VMS';
-    my $fh = IO::File->new($blib_script);
+    open(my $fh, '<', $blib_script);
     my $first_line = <$fh>;
     isnt $first_line, "#!perl -w\n", "should rewrite the shebang line";
   }

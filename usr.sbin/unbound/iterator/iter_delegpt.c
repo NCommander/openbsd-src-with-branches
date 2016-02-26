@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -47,6 +47,8 @@
 #include "util/data/packed_rrset.h"
 #include "util/data/msgreply.h"
 #include "util/net_help.h"
+#include "sldns/rrdef.h"
+#include "sldns/sbuffer.h"
 
 struct delegpt* 
 delegpt_create(struct regional* region)
@@ -71,7 +73,7 @@ struct delegpt* delegpt_copy(struct delegpt* dp, struct regional* region)
 	copy->bogus = dp->bogus;
 	copy->has_parent_side_NS = dp->has_parent_side_NS;
 	for(ns = dp->nslist; ns; ns = ns->next) {
-		if(!delegpt_add_ns(copy, region, ns->name, (int)ns->lame))
+		if(!delegpt_add_ns(copy, region, ns->name, ns->lame))
 			return NULL;
 		copy->nslist->resolved = ns->resolved;
 		copy->nslist->got4 = ns->got4;
@@ -90,6 +92,7 @@ struct delegpt* delegpt_copy(struct delegpt* dp, struct regional* region)
 int 
 delegpt_set_name(struct delegpt* dp, struct regional* region, uint8_t* name)
 {
+	log_assert(!dp->dp_type_mlc);
 	dp->namelabs = dname_count_size_labels(name, &dp->namelen);
 	dp->name = regional_alloc_init(region, name, dp->namelen);
 	return dp->name != 0;
@@ -97,11 +100,12 @@ delegpt_set_name(struct delegpt* dp, struct regional* region, uint8_t* name)
 
 int 
 delegpt_add_ns(struct delegpt* dp, struct regional* region, uint8_t* name,
-	int lame)
+	uint8_t lame)
 {
 	struct delegpt_ns* ns;
 	size_t len;
 	(void)dname_count_size_labels(name, &len);
+	log_assert(!dp->dp_type_mlc);
 	/* slow check for duplicates to avoid counting failures when
 	 * adding the same server as a dependency twice */
 	if(delegpt_find_ns(dp, name, len))
@@ -117,10 +121,10 @@ delegpt_add_ns(struct delegpt* dp, struct regional* region, uint8_t* name,
 	ns->resolved = 0;
 	ns->got4 = 0;
 	ns->got6 = 0;
-	ns->lame = (uint8_t)lame;
+	ns->lame = lame;
 	ns->done_pside4 = 0;
 	ns->done_pside6 = 0;
-	return 1;
+	return ns->name != 0;
 }
 
 struct delegpt_ns*
@@ -143,7 +147,9 @@ delegpt_find_addr(struct delegpt* dp, struct sockaddr_storage* addr,
 {
 	struct delegpt_addr* p = dp->target_list;
 	while(p) {
-		if(sockaddr_cmp_addr(addr, addrlen, &p->addr, p->addrlen)==0) {
+		if(sockaddr_cmp_addr(addr, addrlen, &p->addr, p->addrlen)==0
+			&& ((struct sockaddr_in*)addr)->sin_port ==
+			   ((struct sockaddr_in*)&p->addr)->sin_port) {
 			return p;
 		}
 		p = p->next_target;
@@ -154,9 +160,10 @@ delegpt_find_addr(struct delegpt* dp, struct sockaddr_storage* addr,
 int 
 delegpt_add_target(struct delegpt* dp, struct regional* region, 
 	uint8_t* name, size_t namelen, struct sockaddr_storage* addr, 
-	socklen_t addrlen, int bogus, int lame)
+	socklen_t addrlen, uint8_t bogus, uint8_t lame)
 {
 	struct delegpt_ns* ns = delegpt_find_ns(dp, name, namelen);
+	log_assert(!dp->dp_type_mlc);
 	if(!ns) {
 		/* ignore it */
 		return 1;
@@ -173,10 +180,11 @@ delegpt_add_target(struct delegpt* dp, struct regional* region,
 
 int 
 delegpt_add_addr(struct delegpt* dp, struct regional* region, 
-	struct sockaddr_storage* addr, socklen_t addrlen, int bogus, 
-	int lame)
+	struct sockaddr_storage* addr, socklen_t addrlen, uint8_t bogus, 
+	uint8_t lame)
 {
 	struct delegpt_addr* a;
+	log_assert(!dp->dp_type_mlc);
 	/* check for duplicates */
 	if((a = delegpt_find_addr(dp, addr, addrlen))) {
 		if(bogus)
@@ -200,6 +208,7 @@ delegpt_add_addr(struct delegpt* dp, struct regional* region,
 	a->attempts = 0;
 	a->bogus = bogus;
 	a->lame = lame;
+	a->dnsseclame = 0;
 	return 1;
 }
 
@@ -372,17 +381,18 @@ delegpt_from_message(struct dns_msg* msg, struct regional* region)
 
 int 
 delegpt_rrset_add_ns(struct delegpt* dp, struct regional* region,
-        struct ub_packed_rrset_key* ns_rrset, int lame)
+        struct ub_packed_rrset_key* ns_rrset, uint8_t lame)
 {
 	struct packed_rrset_data* nsdata = (struct packed_rrset_data*)
 		ns_rrset->entry.data;
 	size_t i;
+	log_assert(!dp->dp_type_mlc);
 	if(nsdata->security == sec_status_bogus)
 		dp->bogus = 1;
 	for(i=0; i<nsdata->count; i++) {
 		if(nsdata->rr_len[i] < 2+1) continue; /* len + root label */
 		if(dname_valid(nsdata->rr_data[i]+2, nsdata->rr_len[i]-2) !=
-			(size_t)ldns_read_uint16(nsdata->rr_data[i]))
+			(size_t)sldns_read_uint16(nsdata->rr_data[i]))
 			continue; /* bad format */
 		/* add rdata of NS (= wirefmt dname), skip rdatalen bytes */
 		if(!delegpt_add_ns(dp, region, nsdata->rr_data[i]+2, lame))
@@ -393,12 +403,13 @@ delegpt_rrset_add_ns(struct delegpt* dp, struct regional* region,
 
 int 
 delegpt_add_rrset_A(struct delegpt* dp, struct regional* region,
-	struct ub_packed_rrset_key* ak, int lame)
+	struct ub_packed_rrset_key* ak, uint8_t lame)
 {
         struct packed_rrset_data* d=(struct packed_rrset_data*)ak->entry.data;
         size_t i;
         struct sockaddr_in sa;
         socklen_t len = (socklen_t)sizeof(sa);
+	log_assert(!dp->dp_type_mlc);
         memset(&sa, 0, len);
         sa.sin_family = AF_INET;
         sa.sin_port = (in_port_t)htons(UNBOUND_DNS_PORT);
@@ -416,12 +427,13 @@ delegpt_add_rrset_A(struct delegpt* dp, struct regional* region,
 
 int 
 delegpt_add_rrset_AAAA(struct delegpt* dp, struct regional* region,
-	struct ub_packed_rrset_key* ak, int lame)
+	struct ub_packed_rrset_key* ak, uint8_t lame)
 {
         struct packed_rrset_data* d=(struct packed_rrset_data*)ak->entry.data;
         size_t i;
         struct sockaddr_in6 sa;
         socklen_t len = (socklen_t)sizeof(sa);
+	log_assert(!dp->dp_type_mlc);
         memset(&sa, 0, len);
         sa.sin6_family = AF_INET6;
         sa.sin6_port = (in_port_t)htons(UNBOUND_DNS_PORT);
@@ -439,7 +451,7 @@ delegpt_add_rrset_AAAA(struct delegpt* dp, struct regional* region,
 
 int 
 delegpt_add_rrset(struct delegpt* dp, struct regional* region,
-        struct ub_packed_rrset_key* rrset, int lame)
+        struct ub_packed_rrset_key* rrset, uint8_t lame)
 {
 	if(!rrset)
 		return 1;
@@ -491,4 +503,145 @@ void delegpt_no_ipv4(struct delegpt* dp)
 		if(ns->got6)
 			ns->resolved = 1;
 	}
+}
+
+struct delegpt* delegpt_create_mlc(uint8_t* name)
+{
+	struct delegpt* dp=(struct delegpt*)calloc(1, sizeof(*dp));
+	if(!dp)
+		return NULL;
+	dp->dp_type_mlc = 1;
+	if(name) {
+		dp->namelabs = dname_count_size_labels(name, &dp->namelen);
+		dp->name = memdup(name, dp->namelen);
+		if(!dp->name) {
+			free(dp);
+			return NULL;
+		}
+	}
+	return dp;
+}
+
+void delegpt_free_mlc(struct delegpt* dp)
+{
+	struct delegpt_ns* n, *nn;
+	struct delegpt_addr* a, *na;
+	if(!dp) return;
+	log_assert(dp->dp_type_mlc);
+	n = dp->nslist;
+	while(n) {
+		nn = n->next;
+		free(n->name);
+		free(n);
+		n = nn;
+	}
+	a = dp->target_list;
+	while(a) {
+		na = a->next_target;
+		free(a);
+		a = na;
+	}
+	free(dp->name);
+	free(dp);
+}
+
+int delegpt_set_name_mlc(struct delegpt* dp, uint8_t* name)
+{
+	log_assert(dp->dp_type_mlc);
+	dp->namelabs = dname_count_size_labels(name, &dp->namelen);
+	dp->name = memdup(name, dp->namelen);
+	return (dp->name != NULL);
+}
+
+int delegpt_add_ns_mlc(struct delegpt* dp, uint8_t* name, uint8_t lame)
+{
+	struct delegpt_ns* ns;
+	size_t len;
+	(void)dname_count_size_labels(name, &len);
+	log_assert(dp->dp_type_mlc);
+	/* slow check for duplicates to avoid counting failures when
+	 * adding the same server as a dependency twice */
+	if(delegpt_find_ns(dp, name, len))
+		return 1;
+	ns = (struct delegpt_ns*)malloc(sizeof(struct delegpt_ns));
+	if(!ns)
+		return 0;
+	ns->namelen = len;
+	ns->name = memdup(name, ns->namelen);
+	if(!ns->name) {
+		free(ns);
+		return 0;
+	}
+	ns->next = dp->nslist;
+	dp->nslist = ns;
+	ns->resolved = 0;
+	ns->got4 = 0;
+	ns->got6 = 0;
+	ns->lame = (uint8_t)lame;
+	ns->done_pside4 = 0;
+	ns->done_pside6 = 0;
+	return 1;
+}
+
+int delegpt_add_addr_mlc(struct delegpt* dp, struct sockaddr_storage* addr,
+	socklen_t addrlen, uint8_t bogus, uint8_t lame)
+{
+	struct delegpt_addr* a;
+	log_assert(dp->dp_type_mlc);
+	/* check for duplicates */
+	if((a = delegpt_find_addr(dp, addr, addrlen))) {
+		if(bogus)
+			a->bogus = bogus;
+		if(!lame)
+			a->lame = 0;
+		return 1;
+	}
+
+	a = (struct delegpt_addr*)malloc(sizeof(struct delegpt_addr));
+	if(!a)
+		return 0;
+	a->next_target = dp->target_list;
+	dp->target_list = a;
+	a->next_result = 0;
+	a->next_usable = dp->usable_list;
+	dp->usable_list = a;
+	memcpy(&a->addr, addr, addrlen);
+	a->addrlen = addrlen;
+	a->attempts = 0;
+	a->bogus = bogus;
+	a->lame = lame;
+	a->dnsseclame = 0;
+	return 1;
+}
+
+int delegpt_add_target_mlc(struct delegpt* dp, uint8_t* name, size_t namelen,
+	struct sockaddr_storage* addr, socklen_t addrlen, uint8_t bogus,
+	uint8_t lame)
+{
+	struct delegpt_ns* ns = delegpt_find_ns(dp, name, namelen);
+	log_assert(dp->dp_type_mlc);
+	if(!ns) {
+		/* ignore it */
+		return 1;
+	}
+	if(!lame) {
+		if(addr_is_ip6(addr, addrlen))
+			ns->got6 = 1;
+		else	ns->got4 = 1;
+		if(ns->got4 && ns->got6)
+			ns->resolved = 1;
+	}
+	return delegpt_add_addr_mlc(dp, addr, addrlen, bogus, lame);
+}
+
+size_t delegpt_get_mem(struct delegpt* dp)
+{
+	struct delegpt_ns* ns;
+	size_t s;
+	if(!dp) return 0;
+	s = sizeof(*dp) + dp->namelen +
+		delegpt_count_targets(dp)*sizeof(struct delegpt_addr);
+	for(ns=dp->nslist; ns; ns=ns->next)
+		s += sizeof(*ns)+ns->namelen;
+	return s;
 }

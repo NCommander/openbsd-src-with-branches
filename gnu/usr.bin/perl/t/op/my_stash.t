@@ -3,17 +3,18 @@
 package Foo;
 
 BEGIN {
+    chdir 't' if -d 't';
     @INC = '../lib';
+    require './test.pl';
 }
 
-use Test;
-
-plan tests => 7;
+plan 9;
 
 use constant MyClass => 'Foo::Bar::Biz::Baz';
 
 {
     package Foo::Bar::Biz::Baz;
+    1;
 }
 
 for (qw(Foo Foo:: MyClass __PACKAGE__)) {
@@ -29,3 +30,10 @@ for (qw(Nope Nope:: NoClass)) {
     ok $@;
 #    print $@ if $@;
 }
+
+is runperl(prog => 'my main $r; sub FIELDS; $$r{foo}; print qq-ok\n-'),
+  "ok\n",
+  'no crash with hash element when FIELDS sub stub exists';
+is runperl(prog => 'my main $r; sub FIELDS; @$r{f,b}; print qq-ok\n-'),
+  "ok\n",
+  'no crash with hash slice when FIELDS sub stub exists';

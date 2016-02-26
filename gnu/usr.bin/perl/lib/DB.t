@@ -3,6 +3,11 @@
 BEGIN {
         chdir 't' if -d 't';
         @INC = '../lib';
+	require Config;
+	if (($Config::Config{'extensions'} !~ m!\bList/Util\b!) ){
+		print "1..0 # Skip -- Perl configured without List::Util module\n";
+		exit 0;
+	}
 }
 
 # symbolic references used later
@@ -81,7 +86,7 @@ BEGIN {
 # test DB::_clientname()
 is( DB::_clientname('foo=A(1)'), 'foo',
     'DB::_clientname should return refname');
-cmp_ok( DB::_clientname('bar'), 'eq', '',
+is( DB::_clientname('bar'), undef,
         'DB::_clientname should not return non refname');
 
 # test DB::next() and DB::step()
@@ -121,7 +126,7 @@ cmp_ok( DB::_clientname('bar'), 'eq', '',
         my @ret = eval { DB->backtrace() };
         like( $ret[0], qr/file.+\Q$0\E/, 'DB::backtrace() should report current file');
         like( $ret[0], qr/line $line/, '... should report calling line number' );
-        like( $ret[0], qr/eval {...}/, '... should catch eval BLOCK' );
+        like( $ret[0], qr/eval\Q {...}/, '... should catch eval BLOCK' );
 
         @ret = eval "one(2)";
         is( scalar @ret, 1, '... should report from provided stack frame number' );

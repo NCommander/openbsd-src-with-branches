@@ -68,32 +68,38 @@ PerlIOVia_method(pTHX_ PerlIO * f, const char *method, CV ** save, int flags,
 		 ...)
 {
     PerlIOVia *s = PerlIOSelf(f, PerlIOVia);
+    SV *result = Nullsv;
     CV *cv =
 	(*save) ? *save : PerlIOVia_fetchmethod(aTHX_ s, method, save);
-    SV *result = Nullsv;
-    va_list ap;
-    va_start(ap, flags);
     if (cv != (CV *) - 1) {
 	IV count;
 	dSP;
 	SV *arg;
+        va_list ap;
+
+        va_start(ap, flags);
 	PUSHSTACKi(PERLSI_MAGIC);
 	ENTER;
-	SPAGAIN;
 	PUSHMARK(sp);
 	XPUSHs(s->obj);
 	while ((arg = va_arg(ap, SV *))) {
 	    XPUSHs(arg);
 	}
+        va_end(ap);
 	if (*PerlIONext(f)) {
 	    if (!s->fh) {
-		GV *gv = newGVgen(HvNAME_get(s->stash));
+		GV *gv;
+		char *package = HvNAME_get(s->stash);
+
+                if (!package)
+                    return Nullsv; /* can this ever happen? */
+		gv = newGVgen(package);
 		GvIOp(gv) = newIO();
 		s->fh = newRV((SV *) gv);
 		s->io = GvIOp(gv);
 		if (gv) {
 		    /* shamelessly stolen from IO::File's new_tmpfile() */
-		    hv_delete(GvSTASH(gv), GvNAME(gv), GvNAMELEN(gv), G_DISCARD);
+		    (void) hv_delete(GvSTASH(gv), GvNAME(gv), GvNAMELEN(gv), G_DISCARD);
 		}
 	    }
 	    IoIFP(s->io) = PerlIONext(f);
@@ -117,7 +123,6 @@ PerlIOVia_method(pTHX_ PerlIO * f, const char *method, CV ** save, int flags,
 	LEAVE;
 	POPSTACK;
     }
-    va_end(ap);
     return result;
 }
 
@@ -138,14 +143,14 @@ PerlIOVia_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg,
 	else {
 	    STRLEN pkglen = 0;
 	    const char *pkg = SvPV(arg, pkglen);
-	    s->obj = SvREFCNT_inc(arg);
-	    s->stash = gv_stashpvn(pkg, pkglen, 0);
+	    s->obj =
+		newSVpvn(Perl_form(aTHX_ "PerlIO::via::%s", pkg),
+			 pkglen + 13);
+	    s->stash = gv_stashpvn(SvPVX_const(s->obj), pkglen + 13, 0);
 	    if (!s->stash) {
 		SvREFCNT_dec(s->obj);
-		s->obj =
-		    newSVpvn(Perl_form(aTHX_ "PerlIO::via::%s", pkg),
-			     pkglen + 13);
-		s->stash = gv_stashpvn(SvPVX_const(s->obj), pkglen + 13, 0);
+		s->obj = SvREFCNT_inc(arg);
+		s->stash = gv_stashpvn(pkg, pkglen, 0);
 	    }
 	    if (s->stash) {
 		char lmode[8];
@@ -155,7 +160,7 @@ PerlIOVia_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg,
 		    /* binmode() passes NULL - so find out what mode is */
 		    mode = PerlIO_modestr(f,lmode);
 		}
-		modesv = sv_2mortal(newSVpvn(mode, strlen(mode)));
+		modesv = newSVpvn_flags(mode, strlen(mode), SVs_TEMP);
 		result = PerlIOVia_method(aTHX_ f, MYMethod(PUSHED), G_SCALAR,
 				     modesv, Nullsv);
 		if (result) {
@@ -395,7 +400,7 @@ SSize_t
 PerlIOVia_unread(pTHX_ PerlIO * f, const void *vbuf, Size_t count)
 {
     PerlIOVia *s = PerlIOSelf(f, PerlIOVia);
-    SV *buf = sv_2mortal(newSVpvn((char *) vbuf, count));
+    SV *buf = newSVpvn_flags((char *) vbuf, count, SVs_TEMP);
     SV *result =
 	PerlIOVia_method(aTHX_ f, MYMethod(UNREAD), G_SCALAR, buf, Nullsv);
     if (result)
@@ -536,6 +541,7 @@ void
 PerlIOVia_set_ptrcnt(pTHX_ PerlIO * f, STDCHAR * ptr, SSize_t cnt)
 {
     PerlIOVia *s = PerlIOSelf(f, PerlIOVia);
+    PERL_UNUSED_ARG(ptr);
     s->cnt = cnt;
 }
 
@@ -577,6 +583,8 @@ SV *
 PerlIOVia_getarg(pTHX_ PerlIO * f, CLONE_PARAMS * param, int flags)
 {
     PerlIOVia *s = PerlIOSelf(f, PerlIOVia);
+    PERL_UNUSED_ARG(param);
+    PERL_UNUSED_ARG(flags);
     return PerlIOVia_method(aTHX_ f, MYMethod(GETARG), G_SCALAR, Nullsv);
 }
 

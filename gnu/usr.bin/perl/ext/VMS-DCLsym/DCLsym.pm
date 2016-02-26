@@ -7,7 +7,7 @@ use strict;
 
 # Package globals
 @ISA = ( 'DynaLoader' );
-$VERSION = '1.03';
+$VERSION = '1.05_01';
 my(%Locsyms) = ( ':ID' => 'LOCAL' );
 my(%Gblsyms) = ( ':ID' => 'GLOBAL');
 my $DoCache = 1;
@@ -18,6 +18,8 @@ my $Cache_set = 0;
 
 sub new {
   my($pkg,$type) = @_;
+  $type ||= 'LOCAL';
+  $type = 'LOCAL' unless $type eq 'GLOBAL';
   bless { TYPE => $type }, $pkg;
 }
 
@@ -73,7 +75,7 @@ sub clearcache {
 #====> TIEHASH methods
 
 sub TIEHASH {
-  $_[0]->new(@_);
+  shift->new(@_);
 }
 
 sub FETCH {
@@ -159,8 +161,9 @@ VMS::DCLsym - Perl extension to manipulate DCL symbols
 
   $handle = new VMS::DCLsym;
   $value = $handle->getsym($name);
-  $handle->setsym($name,$value,'GLOBAL') or die "Can't create symbol: $!\n";
-  $handle->delsym($name,'LOCAL') or die "Can't delete symbol: $!\n";
+  $handle->setsym($name, $value, 'GLOBAL')
+      or die "Can't create symbol: $!\n";
+  $handle->delsym($name, 'LOCAL') or die "Can't delete symbol: $!\n";
   $handle->clearcache();
 
 =head1 DESCRIPTION
@@ -262,7 +265,7 @@ Charles Bailey  bailey@newman.upenn.edu
 
 =head1 VERSION
 
-1.01  08-Dec-1996
+1.05_01  16-Jun-2013
 
 =head1 BUGS
 

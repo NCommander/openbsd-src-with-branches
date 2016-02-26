@@ -16,11 +16,7 @@ BEGIN {
 }
 
 sub test_data_directory {
-	return(
-		$ENV{PERL_CORE}
-		? File::Spec->catdir(File::Spec->updir, qw(lib Parse CPAN Meta t data))
-		: File::Spec->catdir(qw(t data))
-	);
+	return( File::Spec->catdir(qw(t data)) );
 }
 
 # 22 tests per call to yaml_ok
@@ -59,7 +55,7 @@ sub yaml_ok {
 sub yaml_error {
 	my $string = shift;
 	my $yaml   = eval { Parse::CPAN::Meta::Load( $string ); };
-	Test::More::like( $@, qr/$_[0]/, "YAML::Tiny throws expected error" );
+	Test::More::like( $@, qr/$_[0]/, "CPAN::Meta::YAML throws expected error" );
 }
 
 sub slurp {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.162 2016/02/26 02:23:07 mlarkin Exp $	*/
+/*	$OpenBSD: locore.s,v 1.160 2015/08/12 06:19:25 mlarkin Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -41,6 +41,7 @@
 #include "apm.h"
 #include "lapic.h"
 #include "ioapic.h"
+#include "pctr.h"
 #include "ksyms.h"
 #include "acpi.h"
 
@@ -506,7 +507,7 @@ try586:	/* Use the `cpuid' instruction. */
 
 	/* Find end of kernel image. */
 	movl	$RELOC(_C_LABEL(end)),%edi
-#if (NKSYMS || defined(DDB))
+#if (defined(DDB) || NKSYMS > 0) && !defined(SYMTAB_SPACE)
 	/* Save the symbols (if loaded). */
 	movl	RELOC(_C_LABEL(esym)),%eax
 	testl	%eax,%eax

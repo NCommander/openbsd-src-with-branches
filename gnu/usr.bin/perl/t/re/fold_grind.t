@@ -6,7 +6,12 @@ BEGIN {
     chdir 't' if -d 't';
     @INC = '../lib';
     require './test.pl';
+    require Config; import Config;
     skip_all_if_miniperl("no dynamic loading on miniperl, no Encode nor POSIX");
+    if ($^O eq 'dec_osf') {
+      skip_all("$^O cannot handle this test");
+    }
+    require './loc_tools.pl';
 }
 
 use charnames ":full";
@@ -74,22 +79,30 @@ sub numerically {
     return $a <=> $b
 }
 
+my $list_all_tests = $ENV{PERL_DEBUG_FULL_TEST} || $DEBUG;
+$| = 1 if $list_all_tests;
+
 # Significant time is saved by not outputting each test but grouping the
 # output into subtests
 my $okays;          # Number of ok's in current subtest
 my $this_iteration; # Number of possible tests in current subtest
-my $count=0;        # Number of subtests = number of total tests
+my $count = 0;      # Number of subtests = number of total tests
 
-sub run_test($$$) {
-    my ($test, $todo, $debug) = @_;
+sub run_test($$$$) {
+    my ($test, $todo, $do_we_output_locale_name, $debug) = @_;
 
     $debug = "" unless $DEBUG;
     my $res = eval $test;
 
-    if (!$res || $ENV{PERL_DEBUG_FULL_TEST}) {
+    if ($do_we_output_locale_name) {
+        $do_we_output_locale_name = 'setlocale(LC_CTYPE, "'
+                         .  POSIX::setlocale(&POSIX::LC_CTYPE)
+                         . '"); ';
+    }
+    if (!$res || $list_all_tests) {
       # Failed or debug; output the result
       $count++;
-      ok($res, "$test; $debug");
+      ok($res, "$do_we_output_locale_name$test; $debug");
     } else {
       # Just count the test as passed
       $okays++;
@@ -127,6 +140,8 @@ my %tests; # The set of tests.
 #          7838 # LATIN_CAPITAL_LETTER_SHARP_S
 #        ],
 
+my %folds;          # keys are code points that fold;
+                    # values are each a list of code points the key folds to
 my %inverse_folds;  # keys are strings of the folded-to;
                     # values are lists of characters that fold to them
 
@@ -235,28 +250,65 @@ sub add_test($@) {
     push @{$tests{$ord_smallest_from}}, map { ord $_ } @from;
 }
 
-# Read the Unicode rules file and construct inverse mappings from it
+# Get the Unicode rules and construct inverse mappings from them
 
+use Unicode::UCD;
 my $file="../lib/unicore/CaseFolding.txt";
-open my $fh, "<", $file or die "Failed to read '$file': $!";
 
-while (<$fh>) {
-    chomp;
+# Use the Unicode data file if we are on an ASCII platform (which its data is
+# for), and it is in the modern format (starting in Unicode 3.1.0) and it is
+# available.  This avoids being affected by potential bugs introduced by other
+# layers of Perl
+if (ord('A') == 65
+    && pack("C*", split /\./, Unicode::UCD::UnicodeVersion()) ge v3.1.0
+    && open my $fh, "<", $file)
+{
+    while (<$fh>) {
+        chomp;
 
-    # Lines look like (though without the initial '#')
-    #0130; F; 0069 0307; # LATIN CAPITAL LETTER I WITH DOT ABOVE
+        # Lines look like (though without the initial '#')
+        #0130; F; 0069 0307; # LATIN CAPITAL LETTER I WITH DOT ABOVE
 
-    # Get rid of comments, ignore blank or comment-only lines
-    my $line = $_ =~ s/ (?: \s* \# .* )? $ //rx;
-    next unless length $line;
-    my ($hex_from, $fold_type, @hex_folded) = split /[\s;]+/, $line;
+        # Get rid of comments, ignore blank or comment-only lines
+        my $line = $_ =~ s/ (?: \s* \# .* )? $ //rx;
+        next unless length $line;
+        my ($hex_from, $fold_type, @hex_folded) = split /[\s;]+/, $line;
 
-    next if $fold_type eq 'T';  # Perl doesn't do Turkish folding
-    next if $fold_type eq 'S';  # If Unicode's tables are correct, the F
-                                # should be a superset of S
+        next if $fold_type =~ / ^ [IT] $/x; # Perl doesn't do Turkish folding
+        next if $fold_type eq 'S';  # If Unicode's tables are correct, the F
+                                    # should be a superset of S
 
-    my $folded_str = pack ("U0U*", map { hex $_ } @hex_folded);
-    push @{$inverse_folds{$folded_str}}, chr hex $hex_from;
+        my $from = hex $hex_from;
+        my @to = map { hex $_ } @hex_folded;
+        @{$folds{$from}} = @to;
+        my $folded_str = pack ("U0U*", @to);
+        push @{$inverse_folds{$folded_str}}, chr $from;
+    }
+}
+else {  # Here, can't use the .txt file: read the Unicode rules file and
+        # construct inverse mappings from it
+
+    my ($invlist_ref, $invmap_ref, undef, $default)
+                                    = Unicode::UCD::prop_invmap('Case_Folding');
+    for my $i (0 .. @$invlist_ref - 1 - 1) {
+        next if $invmap_ref->[$i] == $default;
+
+        # Make into an array if not so already, so can treat uniformly below
+        $invmap_ref->[$i] = [ $invmap_ref->[$i] ] if ! ref $invmap_ref->[$i];
+
+        # Each subsequent element of the range requires adjustment of +1 from
+        # the previous element
+        my $adjust = -1;
+        for my $j ($invlist_ref->[$i] .. $invlist_ref->[$i+1] -1) {
+            $adjust++;
+            my @to = map { $_ + $adjust } @{$invmap_ref->[$i]};
+            push @{$folds{$j}}, @to;
+            my $folded_str = pack "U0U*", @to;
+            #note (sprintf "%d: %04X: %s", __LINE__, $j, join " ",
+            #    map { sprintf "%04X", $_  + $adjust } @{$invmap_ref->[$i]});
+            push @{$inverse_folds{$folded_str}}, chr $j;
+        }
+    }
 }
 
 # Analyze the data and generate tests to get adequate test coverage.  We sort
@@ -265,7 +317,8 @@ TO:
 foreach my $to (sort { (length $a == length $b)
                         ? $a cmp $b
                         : length $a <=> length $b
-                    } keys %inverse_folds) {
+                    } keys %inverse_folds)
+{
 
     # Within each fold, sort so that the smallest code points are done first
     @{$inverse_folds{$to}} = sort { $a cmp $b } @{$inverse_folds{$to}};
@@ -363,23 +416,35 @@ sub prefix {
 # It doesn't return pairs like (a, a), (b, b).  Change the slice to an array
 # to do that.  This was just to have fewer tests.
 sub pairs (@) {
-    #print __LINE__, ": ", join(" XXX ", @_), "\n";
+    #print __LINE__, ": ", join(" XXX ", map { sprintf "%04X", $_ } @_), "\n";
     map { prefix $_[$_], @_[0..$_-1, $_+1..$#_] } 0..$#_
 }
 
-my @charsets = qw(d u a aa);
-my $current_locale = POSIX::setlocale( &POSIX::LC_ALL, "C") // "";
-if ($current_locale eq 'C') {
-    use locale;
+my $utf8_locale;
 
-    # Some locale implementations don't have the range 128-255 characters all
-    # mean nothing.  Skip the locale tests in that situation.
-    for my $i (128 .. 255) {
-        my $char = chr($i);
-        goto bad_locale if uc($char) ne $char || lc($char) ne $char;
+my @charsets = qw(d u a aa);
+if($Config{d_setlocale}) {
+    my $current_locale = POSIX::setlocale( &POSIX::LC_CTYPE, "C") // "";
+    if ($current_locale eq 'C') {
+        require locale; import locale;
+
+        # Some implementations don't have the 128-255 range characters all
+        # mean nothing under the C locale (an example being VMS).  This is
+        # legal, but since we don't know what the right answers should be,
+        # skip the locale tests in that situation.
+        for my $i (128 .. 255) {
+            my $char = chr($i);
+            goto skip_C_locale_tests if uc($char) ne $char || lc($char) ne $char;
+        }
+        push @charsets, 'l';
+
+      skip_C_locale_tests:
+
+        # Look for utf8 locale.  We use the pseudo-modifier 'L' to indicate
+        # that we really want /l, but change to a UTF-8 locale.
+        $utf8_locale = find_utf8_ctype_locale();
+        push @charsets, 'L' if defined $utf8_locale;
     }
-    push @charsets, 'l';
-bad_locale:
 }
 
 # Finally ready to do the tests
@@ -447,6 +512,15 @@ foreach my $test (sort { numerically } keys %tests) {
 
     # Now grind out tests, using various combinations.
     foreach my $charset (@charsets) {
+      my $charset_mod = lc $charset;
+      my $current_locale = "";
+      if ($charset_mod eq 'l') {
+        $current_locale = POSIX::setlocale(&POSIX::LC_CTYPE,
+                          ($charset eq 'L')
+                           ? $utf8_locale
+                           : 'C');
+        $current_locale = 'C locale' if $current_locale eq 'C';
+      }
       $okays = 0;
       $this_iteration = 0;
 
@@ -460,6 +534,34 @@ foreach my $test (sort { numerically } keys %tests) {
         # it on one set in the other ranges just to make sure it doesn't break
         # them.
         if ($charset eq 'aa') {
+
+          # It may be that this $pair of code points to test are both
+          # non-ascii, but if either of them actually fold to ascii, that is
+          # suspect and should be tested.  So for /aa, use whether their folds
+          # are ascii or not
+          my $target_has_ascii = $target_has_ascii;
+          my $pattern_has_ascii = $pattern_has_ascii;
+          if (! $target_has_ascii) {
+            foreach my $cp (@target) {
+              if (exists $folds{$cp}
+                  && grep { ord_native_to_latin1($_) < 128 } @{$folds{$cp}} )
+              {
+                  $target_has_ascii = 1;
+                  last;
+              }
+            }
+          }
+          if (! $pattern_has_ascii) {
+            foreach my $cp (@pattern) {
+              if (exists $folds{$cp}
+                  && grep { ord_native_to_latin1($_) < 128 } @{$folds{$cp}} )
+              {
+                  $pattern_has_ascii = 1;
+                  last;
+              }
+            }
+          }
+
           if (! $target_has_ascii && ! $pattern_has_ascii) {
             if ($target_above_latin1 || $pattern_above_latin1) {
               next if defined $has_tested_aa_above_latin1
@@ -486,7 +588,31 @@ foreach my $test (sort { numerically } keys %tests) {
 
           # For l, don't need to test beyond one set those things that are
           # all above latin1, because unlikely to have different successes
-          # than /u
+          # than /u.  But, for the same reason as described in the /aa above,
+          # it is suspect and should be tested, if either of the folds are to
+          # latin1.
+          my $target_has_latin1 = $target_has_latin1;
+          my $pattern_has_latin1 = $pattern_has_latin1;
+          if (! $target_has_latin1) {
+            foreach my $cp (@target) {
+              if (exists $folds{$cp}
+                  && grep { $_ < 256 } @{$folds{$cp}} )
+              {
+                $target_has_latin1 = 1;
+                last;
+              }
+            }
+          }
+          if (! $pattern_has_latin1) {
+            foreach my $cp (@pattern) {
+              if (exists $folds{$cp}
+                  && grep { $_ < 256 } @{$folds{$cp}} )
+              {
+                $pattern_has_latin1 = 1;
+                last;
+              }
+            }
+          }
           if (! $target_has_latin1 && ! $pattern_has_latin1) {
             next if defined $has_tested_above_latin1_l
                     && $has_tested_above_latin1_l != $test;
@@ -564,7 +690,7 @@ foreach my $test (sort { numerically } keys %tests) {
           next if $pattern_above_latin1 && ! $utf8_pattern;
 
           # Our testing of 'l' uses the POSIX locale, which is ASCII-only
-          my $uni_semantics = $charset ne 'l' && ($utf8_target || $charset eq 'u' || ($charset eq 'd' && $utf8_pattern) || $charset =~ /a/);
+          my $uni_semantics = $charset ne 'l' && ($utf8_target || $charset eq 'u' || $charset eq 'L' || ($charset eq 'd' && $utf8_pattern) || $charset =~ /a/);
           my $upgrade_pattern = "";
           $upgrade_pattern = ' utf8::upgrade($p);' if ! $pattern_above_latin1 && $utf8_pattern;
 
@@ -582,165 +708,220 @@ foreach my $test (sort { numerically } keys %tests) {
           $op = '!~' if $should_fail;
 
           my $todo = 0;  # No longer any todo's
-          my $eval = "my \$c = \"$lhs$rhs\"; my \$p = qr/(?$charset:^($rhs)\\1\$)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
-          run_test($eval, $todo, "");
+          my $eval = "my \$c = \"$lhs$rhs\"; my \$p = qr/(?$charset_mod:^($rhs)\\1\$)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
+          run_test($eval, $todo, ($charset_mod eq 'l'), "");
 
-          $eval = "my \$c = \"$lhs$rhs\"; my \$p = qr/(?$charset:^(?<grind>$rhs)\\k<grind>\$)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
-          run_test($eval, $todo, "");
+          $eval = "my \$c = \"$lhs$rhs\"; my \$p = qr/(?$charset_mod:^(?<grind>$rhs)\\k<grind>\$)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
+          run_test($eval, $todo, ($charset_mod eq 'l'), "");
 
           if ($lhs ne $rhs) {
-            $eval = "my \$c = \"$rhs$lhs\"; my \$p = qr/(?$charset:^($rhs)\\1\$)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
-            run_test($eval, "", "");
+            $eval = "my \$c = \"$rhs$lhs\"; my \$p = qr/(?$charset_mod:^($rhs)\\1\$)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
+            run_test($eval, "", ($charset_mod eq 'l'), "");
 
-            $eval = "my \$c = \"$rhs$lhs\"; my \$p = qr/(?$charset:^(?<grind>$rhs)\\k<grind>\$)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
-            run_test($eval, "", "");
+            $eval = "my \$c = \"$rhs$lhs\"; my \$p = qr/(?$charset_mod:^(?<grind>$rhs)\\k<grind>\$)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
+            run_test($eval, "", ($charset_mod eq 'l'), "");
           }
 
           # See if works on what could be a simple trie.
-          $eval = "my \$c = \"$lhs\"; my \$p = qr/$rhs|xyz/i$charset;$upgrade_target$upgrade_pattern \$c $op \$p";
-          run_test($eval, "", "");
+          my $alternate;
+          {
+            # Keep the alternate | branch the same length as the tested one so
+            # that it's length doesn't influence things
+            my $evaled = eval "\"$rhs\"";   # Convert e.g. \x{foo} into its
+                                            # chr equivalent
+            use bytes;
+            $alternate = 'q' x length $evaled;
+          }
+          $eval = "my \$c = \"$lhs\"; my \$p = qr/$rhs|$alternate/i$charset_mod;$upgrade_target$upgrade_pattern \$c $op \$p";
+          run_test($eval, "", ($charset_mod eq 'l'), "");
+
+          # Check that works when the folded character follows something that
+          # is quantified.  This test knows the regex code internals to the
+          # extent that it knows this is a potential problem, and that there
+          # are three different types of quantifiers generated: 1) The thing
+          # being quantified matches a single character; 2) it matches more
+          # than one character, but is fixed width; 3) it can match a variable
+          # number of characters.  (It doesn't know that case 3 shouldn't
+          # matter, since it doesn't do anything special for the character
+          # following the quantifier; nor that some of the different
+          # quantifiers execute the same underlying code, as these tests are
+          # quick, and this insulates these tests from changes in the
+          # implementation.)
+          for my $quantifier ('?', '??', '*', '*?', '+', '+?', '{1,2}', '{1,2}?') {
+            $eval = "my \$c = \"_$lhs\"; my \$p = qr/(?$charset_mod:.$quantifier$rhs)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
+            run_test($eval, "", ($charset_mod eq 'l'), "");
+            $eval = "my \$c = \"__$lhs\"; my \$p = qr/(?$charset_mod:(?:..)$quantifier$rhs)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
+            run_test($eval, "", ($charset_mod eq 'l'), "");
+            $eval = "my \$c = \"__$lhs\"; my \$p = qr/(?$charset_mod:(?:.|\\R)$quantifier$rhs)/i;$upgrade_target$upgrade_pattern \$c $op \$p";
+            run_test($eval, "", ($charset_mod eq 'l'), "");
+          }
 
           foreach my $bracketed (0, 1) {   # Put rhs in [...], or not
             next if $bracketed && @pattern != 1;    # bracketed makes these
                                                     # or's instead of a sequence
-            foreach my $inverted (0,1) {
-                next if $inverted && ! $bracketed;  # inversion only valid in [^...]
-                next if $inverted && @target != 1;  # [perl #89750] multi-char
-                                                    # not valid in [^...]
+            foreach my $optimize_bracketed (0, 1) {
+              next if $optimize_bracketed && ! $bracketed;
+              foreach my $inverted (0,1) {
+                  next if $inverted && ! $bracketed;  # inversion only valid
+                                                      # in [^...]
+                  next if $inverted && @target != 1;  # [perl #89750] multi-char
+                                                      # not valid in [^...]
 
-              # In some cases, add an extra character that doesn't fold, and
-              # looks ok in the output.
-              my $extra_char = "_";
-              foreach my $prepend ("", $extra_char) {
-                foreach my $append ("", $extra_char) {
+                # In some cases, add an extra character that doesn't fold, and
+                # looks ok in the output.
+                my $extra_char = "_";
+                foreach my $prepend ("", $extra_char) {
+                  foreach my $append ("", $extra_char) {
 
-                  # Assemble the rhs.  Put each character in a separate
-                  # bracketed if using charclasses.  This creates a stress on
-                  # the code to span a match across multiple elements
-                  my $rhs = "";
-                  foreach my $rhs_char (@rhs) {
-                      $rhs .= '[' if $bracketed;
-                      $rhs .= '^' if $inverted;
-                      $rhs .=  $rhs_char;
+                    # Assemble the rhs.  Put each character in a separate
+                    # bracketed if using charclasses.  This creates a stress on
+                    # the code to span a match across multiple elements
+                    my $rhs = "";
+                    foreach my $rhs_char (@rhs) {
+                        $rhs .= '[' if $bracketed;
+                        $rhs .= '^' if $inverted;
+                        $rhs .=  $rhs_char;
 
-                      # Add a character to the class, so class doesn't get
-                      # optimized out
-                      $rhs .= '_]' if $bracketed;
-                  }
+                        # Add a character to the class, so class doesn't get
+                        # optimized out, unless we are testing that optimization
+                        $rhs .= '_' if $optimize_bracketed;
+                        $rhs .= ']' if $bracketed;
+                    }
 
-                  # Add one of: no capturing parens
-                  #             a single set
-                  #             a nested set
-                  # Use quantifiers and extra variable width matches inside
-                  # them to keep some optimizations from happening
-                  foreach my $parend (0, 1, 2) {
-                    my $interior = (! $parend)
-                                    ? $rhs
-                                    : ($parend == 1)
-                                        ? "(${rhs},?)"
-                                        : "((${rhs})+,?)";
-                    foreach my $quantifier ("", '?', '*', '+', '{1,3}') {
+                    # Add one of: no capturing parens
+                    #             a single set
+                    #             a nested set
+                    # Use quantifiers and extra variable width matches inside
+                    # them to keep some optimizations from happening
+                    foreach my $parend (0, 1, 2) {
+                      my $interior = (! $parend)
+                                      ? $rhs
+                                      : ($parend == 1)
+                                          ? "(${rhs},?)"
+                                          : "((${rhs})+,?)";
+                      foreach my $quantifier ("", '?', '*', '+', '{1,3}') {
 
-                      # Perhaps should be TODOs, as are unimplemented, but
-                      # maybe will never be implemented
-                      next if @pattern != 1 && $quantifier;
+                        # Perhaps should be TODOs, as are unimplemented, but
+                        # maybe will never be implemented
+                        next if @pattern != 1 && $quantifier;
 
-                      # A ? or * quantifier normally causes the thing to be
-                      # able to match a null string
-                      my $quantifier_can_match_null = $quantifier eq '?' || $quantifier eq '*';
+                        # A ? or * quantifier normally causes the thing to be
+                        # able to match a null string
+                        my $quantifier_can_match_null = $quantifier eq '?'
+                                                     || $quantifier eq '*';
 
-                      # But since we only quantify the last character in a
-                      # multiple fold, the other characters will have width,
-                      # except if we are quantifying the whole rhs
-                      my $can_match_null = $quantifier_can_match_null && (@rhs == 1 || $parend);
+                        # But since we only quantify the last character in a
+                        # multiple fold, the other characters will have width,
+                        # except if we are quantifying the whole rhs
+                        my $can_match_null = $quantifier_can_match_null
+                                             && (@rhs == 1 || $parend);
 
-                      foreach my $l_anchor ("", '^') { # '\A' didn't change result)
-                        foreach my $r_anchor ("", '$') { # '\Z', '\z' didn't change result)
+                        foreach my $l_anchor ("", '^') { # '\A' didn't change
+                                                         # result)
+                          foreach my $r_anchor ("", '$') { # '\Z', '\z' didn't
+                                                           # change result)
+                            # The folded part can match the null string if it
+                            # isn't required to have width, and there's not
+                            # something on one or both sides that force it to.
+                            my $both_sides = ($l_anchor && $r_anchor)
+                                              || ($l_anchor && $append)
+                                              || ($r_anchor && $prepend)
+                                              || ($prepend && $append);
+                            my $must_match = ! $can_match_null || $both_sides;
+                            # for performance, but doing this missed many failures
+                            #next unless $must_match;
+                            my $quantified = "(?$charset_mod:$l_anchor$prepend$interior${quantifier}$append$r_anchor)";
+                            my $op;
+                            if ($must_match && $should_fail)  {
+                                $op = 0;
+                            } else {
+                                $op = 1;
+                            }
+                            $op = ! $op if $must_match && $inverted;
 
-                          # The folded part can match the null string if it
-                          # isn't required to have width, and there's not
-                          # something on one or both sides that force it to.
-                          my $both_sides = ($l_anchor && $r_anchor) || ($l_anchor && $append) || ($r_anchor && $prepend) || ($prepend && $append);
-                          my $must_match = ! $can_match_null || $both_sides;
-                          # for performance, but doing this missed many failures
-                          #next unless $must_match;
-                          my $quantified = "(?$charset:$l_anchor$prepend$interior${quantifier}$append$r_anchor)";
-                          my $op;
-                          if ($must_match && $should_fail)  {
-                              $op = 0;
-                          } else {
-                              $op = 1;
+                            if ($inverted && @target > 1) {
+                              # When doing an inverted match against a
+                              # multi-char target, and there is not something on
+                              # the left to anchor the match, if it shouldn't
+                              # succeed, skip, as what will happen (when working
+                              # correctly) is that it will match the first
+                              # position correctly, and then be inverted to not
+                              # match; then it will go to the second position
+                              # where it won't match, but get inverted to match,
+                              # and hence succeeding.
+                              next if ! ($l_anchor || $prepend) && ! $op;
+
+                              # Can't ever match for latin1 code points non-uni
+                              # semantics that have a inverted multi-char fold
+                              # when there is something on both sides and the
+                              # quantifier isn't such as to span the required
+                              # width, which is 2 or 3.
+                              $op = 0 if $ord < 255
+                                        && ! $uni_semantics
+                                        && $both_sides
+                                        && ( ! $quantifier || $quantifier eq '?')
+                                        && $parend < 2;
+
+                              # Similarly can't ever match when inverting a
+                              # multi-char fold for /aa and the quantifier
+                              # isn't sufficient to allow it to span to both
+                              # sides.
+                              $op = 0 if $target_has_ascii
+                                         && $charset eq 'aa'
+                                         && $both_sides
+                                         && ( ! $quantifier || $quantifier eq '?')
+                                         && $parend < 2;
+
+                              # Or for /l
+                              $op = 0 if $target_has_latin1 && $charset eq 'l'
+                                      && $both_sides
+                                      && ( ! $quantifier || $quantifier eq '?')
+                                      && $parend < 2;
+                            }
+
+
+                            my $desc = "";
+                            if ($charset_mod eq 'l') {
+                                $desc .= 'setlocale(LC_CTYPE, "'
+                                        . POSIX::setlocale(&POSIX::LC_CTYPE)
+                                        . '"); '
+                            }
+                            $desc .= "my \$c = \"$prepend$lhs$append\"; "
+                                    . "my \$p = qr/$quantified/i;"
+                                    . "$upgrade_target$upgrade_pattern "
+                                    . "\$c " . ($op ? "=~" : "!~") . " \$p; ";
+                            if ($DEBUG) {
+                              $desc .= (
+                              "; uni_semantics=$uni_semantics, "
+                              . "should_fail=$should_fail, "
+                              . "bracketed=$bracketed, "
+                              . "prepend=$prepend, "
+                              . "append=$append, "
+                              . "parend=$parend, "
+                              . "quantifier=$quantifier, "
+                              . "l_anchor=$l_anchor, "
+                              . "r_anchor=$r_anchor; "
+                              . "pattern_above_latin1=$pattern_above_latin1; "
+                              . "utf8_pattern=$utf8_pattern"
+                              );
+                            }
+
+                            my $c = "$prepend$lhs_str$append";
+                            my $p = qr/$quantified/i;
+                            utf8::upgrade($c) if length($upgrade_target);
+                            utf8::upgrade($p) if length($upgrade_pattern);
+                            my $res = $op ? ($c =~ $p): ($c !~ $p);
+
+                            if (!$res || $list_all_tests) {
+                              # Failed or debug; output the result
+                              $count++;
+                              ok($res, "test $count - $desc");
+                            } else {
+                              # Just count the test as passed
+                              $okays++;
+                            }
+                            $this_iteration++;
                           }
-                          $op = ! $op if $must_match && $inverted;
-
-                          if ($inverted && @target > 1) {
-                            # When doing an inverted match against a
-                            # multi-char target, and there is not something on
-                            # the left to anchor the match, if it shouldn't
-                            # succeed, skip, as what will happen (when working
-                            # correctly) is that it will match the first
-                            # position correctly, and then be inverted to not
-                            # match; then it will go to the second position
-                            # where it won't match, but get inverted to match,
-                            # and hence succeeding.
-                            next if ! ($l_anchor || $prepend) && ! $op;
-
-                            # Can't ever match for latin1 code points non-uni
-                            # semantics that have a inverted multi-char fold
-                            # when there is something on both sides and the
-                            # quantifier isn't such as to span the required
-                            # width, which is 2 or 3.
-                            $op = 0 if $ord < 255
-                                       && ! $uni_semantics
-                                       && $both_sides
-                                       && ( ! $quantifier || $quantifier eq '?')
-                                       && $parend < 2;
-
-                            # Similarly can't ever match when inverting a multi-char
-                            # fold for /aa and the quantifier isn't sufficient
-                            # to allow it to span to both sides.
-                            $op = 0 if $target_has_ascii && $charset eq 'aa' && $both_sides && ( ! $quantifier || $quantifier eq '?') && $parend < 2;
-
-                            # Or for /l
-                            $op = 0 if $target_has_latin1 && $charset eq 'l' && $both_sides && ( ! $quantifier || $quantifier eq '?') && $parend < 2;
-                          }
-
-
-                          my $desc = "my \$c = \"$prepend$lhs$append\"; "
-                                   . "my \$p = qr/$quantified/i;"
-                                   . "$upgrade_target$upgrade_pattern "
-                                   . "\$c " . ($op ? "=~" : "!~") . " \$p; ";
-                          if ($DEBUG) {
-                            $desc .= (
-                             "; uni_semantics=$uni_semantics, "
-                             . "should_fail=$should_fail, "
-                             . "bracketed=$bracketed, "
-                             . "prepend=$prepend, "
-                             . "append=$append, "
-                             . "parend=$parend, "
-                             . "quantifier=$quantifier, "
-                             . "l_anchor=$l_anchor, "
-                             . "r_anchor=$r_anchor; "
-                             . "pattern_above_latin1=$pattern_above_latin1; "
-                             . "utf8_pattern=$utf8_pattern"
-                            );
-                          }
-
-                          my $c = "$prepend$lhs_str$append";
-                          my $p = qr/$quantified/i;
-                          utf8::upgrade($c) if length($upgrade_target);
-                          utf8::upgrade($p) if length($upgrade_pattern);
-                          my $res = $op ? ($c =~ $p): ($c !~ $p);
-
-                          if (!$res || $ENV{PERL_DEBUG_FULL_TEST}) {
-                            # Failed or debug; output the result
-                            $count++;
-                            ok($res, "test $count - $desc");
-                          } else {
-                            # Just count the test as passed
-                            $okays++;
-                          }
-                          $this_iteration++;
                         }
                       }
                     }
@@ -751,11 +932,12 @@ foreach my $test (sort { numerically } keys %tests) {
           }
         }
       }
-      unless($ENV{PERL_DEBUG_FULL_TEST}) {
+      unless($list_all_tests) {
         $count++;
         is $okays, $this_iteration, "$okays subtests ok for"
-          . " /$charset,"
-          . ' target="' . join("", @x_target) . '",'
+          . " /$charset_mod"
+          . (($charset_mod eq 'l') ? " ($current_locale)" : "")
+          . ', target="' . join("", @x_target) . '",'
           . ' pat="' . join("", @x_pattern) . '"';
       }
     }

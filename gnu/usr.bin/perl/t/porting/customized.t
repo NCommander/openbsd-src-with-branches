@@ -10,7 +10,8 @@ BEGIN {
         # XXX that should be fixed
 
     chdir '..' unless -d 't';
-    @INC = qw(lib Porting);
+    @INC = qw(lib Porting t);
+    require 'test.pl';
 }
 
 use strict;
@@ -70,10 +71,10 @@ EOF
 my $data_fh;
 
 if ( $regen ) {
-  open $data_fh, '>:bytes', $customised or die "Can't open $customised";
+  open $data_fh, '>:raw', $customised or die "Can't open $customised";
 }
 else {
-  open $data_fh, '<:bytes', $customised or die "Can't open $customised";
+  open $data_fh, '<:raw', $customised or die "Can't open $customised";
   while (<$data_fh>) {
     chomp;
     my ($module,$file,$sha) = split ' ';
@@ -82,7 +83,7 @@ else {
   close $data_fh;
 }
 
-foreach my $module ( keys %Modules ) {
+foreach my $module ( sort keys %Modules ) {
   next unless my $files = $Modules{ $module }{CUSTOMIZED};
   my @perl_files = my_get_module_files( $module );
   foreach my $file ( @perl_files ) {
@@ -99,21 +100,16 @@ foreach my $module ( keys %Modules ) {
       next;
     }
     my $should_be = $customised{ $module }->{ $file };
-    if ( $id ne $should_be ) {
-       print  "not ok ".++$TestCounter." - SHA for $file does not match stashed SHA\n";
-    }
-    else {
-       print  "ok ".++$TestCounter." - SHA for $file matched\n";
-    }
+    is( $id, $should_be, "SHA for $file matches stashed SHA" );
   }
 }
 
 if ( $regen ) {
-  print "ok ".++$TestCounter." - regenerated data file\n";
+  pass( "regenerated data file" );
   close $data_fh;
 }
 
-print "1..".$TestCounter."\n";
+done_testing();
 
 =pod
 

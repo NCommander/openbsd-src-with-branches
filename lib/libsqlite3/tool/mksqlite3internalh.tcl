@@ -58,10 +58,12 @@ foreach hdr {
    hash.h
    hwtime.h
    keywordhash.h
+   msvc.h
    opcodes.h
    os_common.h
+   os_setup.h
+   os_win.h
    os.h
-   os_os2.h
    pager.h
    parse.h
    sqlite3ext.h

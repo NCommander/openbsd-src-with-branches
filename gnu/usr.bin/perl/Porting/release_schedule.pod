@@ -1,7 +1,44 @@
-=head1 Release schedule
+=encoding utf8
 
-This document lists the release engineers for at least the next
-four months of releases of bleadperl. If there are fewer than 
+=head1 NAME
+
+release_schedule - Perl 5 release schedule
+
+=head1 STABLE RELEASE SCHEDULE
+
+This schedule lists the projected or historical development and
+release schedules for the next, current and previous stable versions
+of Perl.  Dates with two or more question marks will only be releases if
+deemed necessary by the Pumpking.
+
+=head2 Perl 5.22
+
+Code freezes (which happen in the 5.21.X series)
+
+  2015-01-20  5.21.8          Contentious changes freeze
+  2015-02-20  5.21.9          User-visible changes freeze
+  2015-03-20  5.21.10         Full code freeze
+  2015-05-20  5.22.0          Stable release!
+
+=head2 Perl 5.20
+
+  2014-05-27  5.20.0 ✓        Ricardo Signes
+  2014-09-14  5.20.1 ✓        Steve Hay
+  2015-01-??  5.20.2          Steve Hay
+
+=head2 Perl 5.18
+
+  2013-05-18  5.18.0 ✓        Ricardo Signes
+  2013-08-12  5.18.1 ✓        Ricardo Signes
+  2014-01-06  5.18.2 ✓        Ricardo Signes
+  2014-10-01  5.18.3 ✓        Ricardo Signes
+  2014-10-01  5.18.4 ✓        Ricardo Signes
+  2015-??-??  5.18.5          ??
+
+=head1 DEVELOPMENT RELEASE SCHEDULE
+
+This schedule lists the release engineers for at least the next
+four months of releases of bleadperl. If there are fewer than
 four months listed as you make a release, it's important
 that you extend the schedule AND B<identify the next release engineer>.
 
@@ -12,24 +49,23 @@ When shipping a release, you should include the schedule for (at least)
 the next four releases. If a stable version of Perl is released,
 you should reset the version numbers to the next blead series.
 
-=head2 2009
+=head2 Perl 5.21
 
- October 2       -   Jesse Vincent
- October 20      -   Jesse Vincent
- November 20     -   Leon Brocard
- December 20     -   Jesse Vincent
+  2014-05-20  5.21.0 ✓        Ricardo Signes
+  2014-06-20  5.21.1 ✓        Matthew Horsfall
+  2014-07-20  5.21.2 ✓        Abigail
+  2014-08-20  5.21.3 ✓        Peter Martini
+  2014-09-20  5.21.4 ✓        Steve Hay
+  2014-10-20  5.21.5 ✓        Abigail
+  2014-11-20  5.21.6 ✓        Chris "BinGOs" Williams
+  2014-12-20  5.21.7 ✓        Max Maischein
+  2015-01-20  5.21.8 ✓        Matthew Horsfall
+  2015-02-20  5.21.9          ?
+  2015-03-20  5.21.10         ?
+  2015-04-20  5.21.11         ?
 
-=head2 2010
-
- January 20      -   Ricardo Signes
- February 20     -   Steve Hay
- March 20        -   Ask Bjørn Hansen (skipped due to 5.12.0-RC1)
- April 20        -   Leon Brocard
- May 20          -   Ricardo Signes
- June 20         -   Matt Trout
- July 20         -   David Golden
- August 20       -   Florian Ragwitz
- September 20    -   Steve Hay
+(RC0 for 5.22.0 will be released once we think that all the blockers have been
+addressed.  This typically means some time in April or May.)
 
 =head1 VICTIMS
 
@@ -37,26 +73,36 @@ The following porters have all consented to do at least
 one release of bleadperl.  If you can't do a release
 and can't find a substitute amongst this list, mail p5p.
 
-Jesse Vincent <F<jesse@cpan.org>>
-Leon Brocard <F<acme@astray.com>>
-Yves Orton <F<demerphq@gmail.com>>
-Ricardo Signes <F<rjbs@cpan.org>>
-Steve Hay <F<steve.m.hay@googlemail.com>>
-Ask Bjørn Hansen <F<ask@perl.org>>
-David Golden <F<dagolden@cpan.org>>
-Philippe Bruhat <F<book@cpan.org>>
-Matt Trout <F<mst@shadowcat.co.uk>>
-Florian Ragwitz <F<rafl@debian.org>>
+(Please do not add any names to this list without prior
+consent of the Pumpking.)
 
-=head2 Reticent victims
-
-These folks have said that they'd be willing to release Perl but would
-prefer that others have the opportunity before they pitch in:
-
-
+Abigail <abigail@abigail.be>
+Aristotle Pagaltzis <pagaltzis@gmx.de>
+Ask Bjørn Hansen <ask@perl.org>
+Chris Williams <bingos@cpan.org>
+Dave Cross <dave@perlhacks.com>
+Dave Rolsky <autarch@urth.org>
+David Golden <dagolden@cpan.org>
+Florian Ragwitz <rafl@debian.org>
+Jesse Luehrs <doy@cpan.org>
+Jesse Vincent <jesse@cpan.org>
+Leon Brocard <acme@astray.com>
+Matt Trout <mst@shadowcat.co.uk>
+Matthew Horsfall <wolfsage@gmail.com>
+Max Maischein <corion@cpan.org>
+Peter Martini <petercmartini@gmail.com>
+Philippe Bruhat <book@cpan.org>
+Ricardo Signes <rjbs@cpan.org>
+Stevan Little <stevan.little@iinteractive.com>
+Steve Hay <steve.m.hay@googlemail.com>
+Tatsuhiko Miyagawa <miyagawa@bulknews.net>
+Tony Cook <tony@develop-help.com>
+Yves Orton <demerphq@gmail.com>
+Zefram <zefram@fysh.org>
+Ævar Arnfjörð Bjarmason <avar@cpan.org>
 
 =head1 AUTHOR
 
-Jesse Vincent <F<jesse@cpan.org>>
+Jesse Vincent <jesse@cpan.org>
 
 =cut

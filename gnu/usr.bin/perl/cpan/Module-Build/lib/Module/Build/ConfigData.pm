@@ -21,7 +21,6 @@ sub config_names  { keys %$config }
 
 sub write {
   my $me = __FILE__;
-  require IO::File;
 
   # Can't use Module::Build::Dumper here because M::B is only a
   # build-time prereq of this module
@@ -29,7 +28,7 @@ sub write {
 
   my $mode_orig = (stat $me)[2] & 07777;
   chmod($mode_orig | 0222, $me); # Make it writeable
-  my $fh = IO::File->new($me, 'r+') or die "Can't rewrite $me: $!";
+  open(my $fh, '+<', $me) or die "Can't rewrite $me: $!";
   seek($fh, 0, 0);
   while (<$fh>) {
     last if /^__DATA__$/;
@@ -38,11 +37,11 @@ sub write {
 
   seek($fh, tell($fh), 0);
   my $data = [$config, $features, $auto_features];
-  $fh->print( 'do{ my '
+  print($fh 'do{ my '
 	      . Data::Dumper->new([$data],['x'])->Purity(1)->Dump()
 	      . '$x; }' );
   truncate($fh, tell($fh));
-  $fh->close;
+  close $fh;
 
   chmod($mode_orig, $me)
     or warn "Couldn't restore permissions on $me: $!";
@@ -168,24 +167,21 @@ do{ my $x = [
        {},
        {},
        {
-         'license_creation' => {
-                                 'requires' => {
-                                                 'Software::License' => 0
-                                               },
-                                 'description' => 'Create licenses automatically in distributions'
-                               },
-         'inc_bundling_support' => {
-                                     'requires' => {
-                                                     'ExtUtils::Installed' => '1.999',
-                                                     'ExtUtils::Install' => '1.54'
-                                                   },
-                                     'description' => 'Bundle Module::Build in inc/'
-                                   },
-         'YAML_support' => {
+         'dist_authoring' => {
+                               'requires' => {
+                                               'Archive::Tar' => '1.09'
+                                             },
+                               'description' => 'Create new distributions',
+                               'recommends' => {
+                                                 'Pod::Readme' => '0.04',
+                                                 'Module::Signature' => '0.21'
+                                               }
+                             },
+         'HTML_support' => {
                              'requires' => {
-                                             'YAML::Tiny' => '1.38'
+                                             'Pod::Html' => 0
                                            },
-                             'description' => 'Use YAML::Tiny to write META.yml files'
+                             'description' => 'Create HTML documentation'
                            },
          'manpage_support' => {
                                 'requires' => {
@@ -193,28 +189,22 @@ do{ my $x = [
                                               },
                                 'description' => 'Create Unix man pages'
                               },
+         'license_creation' => {
+                                 'requires' => {
+                                                 'Software::License' => '0.103009'
+                                               },
+                                 'description' => 'Create licenses automatically in distributions'
+                               },
          'PPM_support' => {
-                            'requires' => {
-                                            'IO::File' => '1.13'
-                                          },
                             'description' => 'Generate PPM files for distributions'
                           },
-         'dist_authoring' => {
-                               'requires' => {
-                                               'Archive::Tar' => '1.09'
-                                             },
-                               'recommends' => {
-                                                 'Module::Signature' => '0.21',
-                                                 'Pod::Readme' => '0.04'
-                                               },
-                               'description' => 'Create new distributions'
-                             },
-         'HTML_support' => {
-                             'requires' => {
-                                             'Pod::Html' => 0
-                                           },
-                             'description' => 'Create HTML documentation'
-                           }
+         'inc_bundling_support' => {
+                                     'requires' => {
+                                                     'ExtUtils::Installed' => '1.999',
+                                                     'ExtUtils::Install' => '1.54'
+                                                   },
+                                     'description' => 'Bundle Module::Build in inc/'
+                                   }
        }
      ];
 $x; }

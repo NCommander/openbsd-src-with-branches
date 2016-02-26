@@ -12,9 +12,10 @@
  * 'Perilous to us all are the devices of an art deeper than we possess
  *  ourselves.'                                            --Gandalf
  *
- *     [p.597 of _The Lord of the Rings_, III/xi: "The Palantír"]
+ *     [p.597 of _The Lord of the Rings_, III/xi: "The PalantÃ­r"]
  */
 
+#define PERL_NO_GET_CONTEXT
 
 #include "EXTERN.h"
 #include "perl.h"
@@ -47,10 +48,15 @@ modify_SV_attributes(pTHX_ SV *sv, SV **retlist, SV **attrlist, int numattrs)
 		switch (name[3]) {
 		case 'l':
 		    if (memEQ(name, "lvalue", 6)) {
+			bool warn =
+			    !CvISXSUB(MUTABLE_CV(sv))
+			 && CvROOT(MUTABLE_CV(sv))
+			 && !CvLVALUE(MUTABLE_CV(sv)) != negated;
 			if (negated)
 			    CvFLAGS(MUTABLE_CV(sv)) &= ~CVf_LVALUE;
 			else
 			    CvFLAGS(MUTABLE_CV(sv)) |= CVf_LVALUE;
+			if (warn) break;
 			continue;
 		    }
 		    break;
@@ -65,10 +71,33 @@ modify_SV_attributes(pTHX_ SV *sv, SV **retlist, SV **attrlist, int numattrs)
 		    break;
 		}
 		break;
+	    default:
+		if (len > 10 && memEQ(name, "prototype(", 10)) {
+		    SV * proto = newSVpvn(name+10,len-11);
+		    HEK *const hek = CvNAME_HEK((CV *)sv);
+		    SV *subname;
+		    if (name[len-1] != ')')
+			Perl_croak(aTHX_ "Unterminated attribute parameter in attribute list");
+		    if (hek)
+			subname = sv_2mortal(newSVhek(hek));
+		    else
+			subname=(SV *)CvGV((const CV *)sv);
+		    if (ckWARN(WARN_ILLEGALPROTO))
+			Perl_validate_proto(aTHX_ subname, proto, TRUE);
+		    Perl_cv_ckproto_len_flags(aTHX_ (const CV *)sv,
+		                                    (const GV *)subname,
+		                                    name+10,
+		                                    len-11,
+		                                    SvUTF8(attr));
+		    sv_setpvn(MUTABLE_SV(sv), name+10, len-11);
+		    if (SvUTF8(attr)) SvUTF8_on(MUTABLE_SV(sv));
+		    continue;
+		}
+		break;
 	    }
 	    break;
 	default:
-	    if (memEQs(name, 6, "shared")) {
+	    if (memEQs(name, len, "shared")) {
 			if (negated)
 			    Perl_croak(aTHX_ "A variable may not be unshared");
 			SvSHARE(sv);
@@ -156,7 +185,7 @@ usage:
     sv = SvRV(rv);
 
     if (SvOBJECT(sv))
-	sv_setpvn(TARG, HvNAME_get(SvSTASH(sv)), HvNAMELEN_get(SvSTASH(sv)));
+	Perl_sv_sethek(aTHX_ TARG, HvNAME_HEK(SvSTASH(sv)));
 #if 0	/* this was probably a bad idea */
     else if (SvPADMY(sv))
 	sv_setsv(TARG, &PL_sv_no);	/* unblessed lexical */
@@ -178,7 +207,7 @@ usage:
 	    break;
 	}
 	if (stash)
-	    sv_setpvn(TARG, HvNAME_get(stash), HvNAMELEN_get(stash));
+	    Perl_sv_sethek(aTHX_ TARG, HvNAME_HEK(stash));
     }
 
     SvSETMAGIC(TARG);
@@ -210,8 +239,8 @@ usage:
  * Local variables:
  * c-indentation-style: bsd
  * c-basic-offset: 4
- * indent-tabs-mode: t
+ * indent-tabs-mode: nil
  * End:
  *
- * ex: set ts=8 sts=4 sw=4 noet:
+ * ex: set ts=8 sts=4 sw=4 et:
  */
