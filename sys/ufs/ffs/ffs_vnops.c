@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vnops.c,v 1.81 2016/01/12 11:41:00 mpi Exp $	*/
+/*	$OpenBSD: ffs_vnops.c,v 1.82 2016/02/16 17:56:12 stefan Exp $	*/
 /*	$NetBSD: ffs_vnops.c,v 1.7 1996/05/11 18:27:24 mycroft Exp $	*/
 
 /*
@@ -207,7 +207,7 @@ ffs_read(void *v)
 		panic("ffs_read: mode");
 
 	if (vp->v_type == VLNK) {
-		if ((int)DIP(ip, size) < vp->v_mount->mnt_maxsymlinklen ||
+		if (DIP(ip, size) < vp->v_mount->mnt_maxsymlinklen ||
 		    (vp->v_mount->mnt_maxsymlinklen == 0 &&
 		     DIP(ip, blocks) == 0))
 			panic("ffs_read: short symlink");
