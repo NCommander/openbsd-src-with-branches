@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.3 2014/03/29 18:09:29 guenther Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.4 2014/07/13 12:11:01 jasper Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -156,10 +156,10 @@ kdbprinttrap(int type, int code)
 }
 
 /*
- *  kdb_trap - field a BPT trap
+ *  db_ktrap - field a BPT trap
  */
 int
-kdb_trap(int type, int code, db_regs_t *regs)
+db_ktrap(int type, int code, db_regs_t *regs)
 {
 	extern label_t *db_recover;
 	int s;
