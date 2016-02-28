@@ -1,4 +1,4 @@
-/*	$OpenBSD: compat_linux.h,v 1.7 2005/05/24 20:38:20 uwe Exp $	*/
+/*	$OpenBSD: compat_linux.h,v 1.8 2007/06/16 00:26:33 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@bsdx.de>
@@ -66,7 +66,7 @@ struct proc;
 #define CS8			LINUX_CS8
 
 #define TIOCGETA		LINUX_TCGETS
-#define TIOCSETA		LINUX_TCGETS
+#define TIOCSETA		LINUX_TCSETS
 #define TIOCSETAW		LINUX_TCSETSW
 #define TIOCSETAF		LINUX_TCSETSF
 
