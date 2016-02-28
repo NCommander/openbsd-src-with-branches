@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.17 2015/07/29 18:52:44 miod Exp $	*/
+/*	$OpenBSD: locore.S,v 1.18 2015/11/15 17:10:53 miod Exp $	*/
 /*	$NetBSD: locore.S,v 1.2 1996/10/16 19:33:09 ws Exp $	*/
 
 /*
@@ -1310,7 +1310,7 @@ ddbtrap:
 	FRAME_SETUP(CI_DDBSAVE)
 /* Call C trap code: */
 	addi	%r3,%r1,8
-	bl	_C_LABEL(ddb_trap_glue)
+	bl	_C_LABEL(db_trap_glue)
 	or.	%r3,%r3,%r3
 	bne	ddbleave
 /* This wasn't for DDB, so switch to real trap: */

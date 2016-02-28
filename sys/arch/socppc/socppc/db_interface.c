@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: db_interface.c,v 1.1 2008/05/10 12:02:21 kettenis Exp $	*/
 /*      $NetBSD: db_interface.c,v 1.12 2001/07/22 11:29:46 wiz Exp $ */
 
 #include <sys/param.h>
@@ -10,7 +10,7 @@
 #include <machine/db_machdep.h>
 #include <ddb/db_extern.h>
 
-int ddb_trap_glue(struct trapframe *frame); /* called from locore */
+int db_trap_glue(struct trapframe *frame); /* called from locore */
 
 void
 Debugger()
@@ -19,7 +19,7 @@ Debugger()
 }
 
 int
-ddb_trap_glue(struct trapframe *frame)
+db_trap_glue(struct trapframe *frame)
 {
 	if (!(frame->srr1 & PSL_PR)
 	    && (frame->exc == EXC_TRC
