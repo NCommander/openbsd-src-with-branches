@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.118 2015/10/28 11:59:08 deraadt Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.119 2015/11/02 16:31:55 semarie Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -92,18 +92,11 @@
 #include <machine/reg.h>
 #include <machine/exec.h>
 
-#ifdef COMPAT_LINUX
-#include <compat/linux/linux_exec.h>
-#endif
-
 struct ELFNAME(probe_entry) {
 	int (*func)(struct proc *, struct exec_package *, char *,
 	    u_long *);
 } ELFNAME(probes)[] = {
 	/* XXX - bogus, shouldn't be size independent.. */
-#ifdef COMPAT_LINUX
-	{ linux_elf_probe },
-#endif
 	{ NULL }
 };
 
