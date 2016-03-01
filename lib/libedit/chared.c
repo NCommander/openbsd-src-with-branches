@@ -1,4 +1,4 @@
-/*	$OpenBSD: chared.c,v 1.15 2016/01/30 12:22:20 schwarze Exp $	*/
+/*	$OpenBSD: chared.c,v 1.16 2016/01/30 17:32:52 schwarze Exp $	*/
 /*	$NetBSD: chared.c,v 1.28 2009/12/30 22:37:40 christos Exp $	*/
 
 /*-
@@ -677,6 +677,7 @@ c_gets(EditLine *el, Char *buf, const Char *prompt)
 				len = -1;
 				break;
 			}
+			len--;
 			cp--;
 			continue;
 
