@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.h,v 1.21 2016/02/09 00:39:13 jca Exp $	*/
+/*	$OpenBSD: rtadvd.h,v 1.23 2016/02/26 12:34:30 jca Exp $	*/
 /*	$KAME: rtadvd.h,v 1.20 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -34,9 +34,6 @@
 
 #define ALLNODES "ff02::1"
 #define ALLROUTERS_LINK "ff02::2"
-#define ALLROUTERS_SITE "ff05::2"
-#define ANY "::"
-#define RTSOLLEN 8
 
 /* protocol constants and default values */
 #define DEF_MAXRTRADVINTERVAL 600
