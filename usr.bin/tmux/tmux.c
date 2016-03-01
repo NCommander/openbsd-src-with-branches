@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.c,v 1.163 2015/12/08 01:10:31 nicm Exp $ */
+/* $OpenBSD: tmux.c,v 1.164 2016/01/19 15:59:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -188,7 +188,10 @@ main(int argc, char **argv)
 	const char	*s;
 	int		 opt, flags, keys;
 
+
+	setlocale(LC_CTYPE, "en_US.UTF-8");
 	setlocale(LC_TIME, "");
+
 	tzset();
 
 	if (**argv == '-')
