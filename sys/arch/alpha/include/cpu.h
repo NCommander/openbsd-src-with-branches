@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.54 2014/12/17 15:23:42 deraadt Exp $ */
+/* $OpenBSD: cpu.h,v 1.55 2015/07/02 01:33:59 dlg Exp $ */
 /* $NetBSD: cpu.h,v 1.45 2000/08/21 02:03:12 thorpej Exp $ */
 
 /*-
@@ -320,7 +320,7 @@ do {									\
 #define signotify(p)	aston(p)
 #endif
 
-#define	aston(p)	(p)->p_md.md_astpending = 1
+#define	aston(p)	((p)->p_md.md_astpending = 1)
 #endif /* _KERNEL */
 
 /*
