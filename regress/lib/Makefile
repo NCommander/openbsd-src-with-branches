@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.17 2014/07/14 01:05:36 jsing Exp $
+#	$OpenBSD: Makefile,v 1.18 2014/10/31 14:10:55 jsing Exp $
 
-SUBDIR+= csu libc libcrypto libevent libm libpthread libskey libssl libtls \
-	 libutil
+SUBDIR+= csu libc libcrypto libedit libevent libm libpthread \
+	 libskey libssl libtls libutil
 
 install:
 
