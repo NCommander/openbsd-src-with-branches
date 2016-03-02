@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.174 2015/12/03 12:22:51 dlg Exp $	*/
+/*	$OpenBSD: if.h,v 1.175 2015/12/05 19:04:37 deraadt Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -442,6 +442,12 @@ struct if_laddrreq {
 struct if_afreq {
 	char		ifar_name[IFNAMSIZ];
 	sa_family_t	ifar_af;
+};
+
+/* SIOC[SG]IFPARENT */
+struct if_parent {
+	char		ifp_name[IFNAMSIZ];
+	char		ifp_parent[IFNAMSIZ];
 };
 
 #include <net/if_arp.h>
