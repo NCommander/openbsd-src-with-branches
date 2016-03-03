@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay_compat_usl.c,v 1.27 2015/03/14 03:38:50 jsg Exp $ */
+/* $OpenBSD: wsdisplay_compat_usl.c,v 1.28 2015/09/08 11:13:20 deraadt Exp $ */
 /* $NetBSD: wsdisplay_compat_usl.c,v 1.12 2000/03/23 07:01:47 thorpej Exp $ */
 
 /*
@@ -328,11 +328,6 @@ wsdisplay_usl_ioctl1(struct wsdisplay_softc *sc, u_long cmd, caddr_t data,
 		id->rmajor = 3;
 		id->rminor = 32;
 #undef id
-		return (0);
-#endif
-#ifdef WSDISPLAY_COMPAT_SYSCONS
-	    case CONS_GETVERS:
-		*(int *)data = 0x200;    /* version 2.0 */
 		return (0);
 #endif
 

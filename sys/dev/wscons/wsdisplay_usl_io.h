@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay_usl_io.h,v 1.1 2000/05/16 23:49:11 mickey Exp $ */
+/* $OpenBSD: wsdisplay_usl_io.h,v 1.2 2006/07/06 18:20:45 miod Exp $ */
 /* $NetBSD: wsdisplay_usl_io.h,v 1.1 1998/06/11 22:00:04 drochner Exp $ */
 
 #define VT_OPENQRY	_IOR('v', 1, int)
@@ -78,6 +78,3 @@ struct pcvtid {
 	int rmajor;			/* revision number, major	*/
 	int rminor;			/* revision number, minor	*/
 };
-
-/* syscons compatibility */
-#define CONS_GETVERS	_IOR('c', 74, int)
