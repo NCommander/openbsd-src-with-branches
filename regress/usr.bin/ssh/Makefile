@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile,v 1.82 2015/09/24 06:16:53 djm Exp $
+#	$OpenBSD: Makefile,v 1.83 2016/02/18 02:37:25 djm Exp $
 
 .ifndef SKIP_UNIT
 SUBDIR=		unittests
 .endif
+SUBDIR+=	misc
 
 REGRESS_FAIL_EARLY=	yes
 REGRESS_TARGETS=	t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12
