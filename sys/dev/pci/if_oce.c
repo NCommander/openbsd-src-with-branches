@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_oce.c,v 1.86 2015/09/11 13:02:28 stsp Exp $	*/
+/*	$OpenBSD: if_oce.c,v 1.92 2016/01/06 06:41:57 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2012 Mike Belopuhov
@@ -3071,7 +3071,7 @@ oce_config_rss(struct oce_softc *sc, int enable)
 
 	if (enable)
 		cmd.params.req.enable_rss = RSS_ENABLE_IPV4 | RSS_ENABLE_IPV6 |
-		    RSS_ENABLE_TCP_IPV4 | RSS_ENABLE_TCP_IPV6);
+		    RSS_ENABLE_TCP_IPV4 | RSS_ENABLE_TCP_IPV6;
 	cmd.params.req.flush = OCE_FLUSH;
 	cmd.params.req.if_id = htole32(sc->sc_if_id);
 
