@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.26 2015/11/24 13:33:18 mpi Exp $*/
+/*	$OpenBSD: db_machdep.h,v 1.27 2016/03/05 17:24:27 mpi Exp $*/
 /*	$NetBSD: db_machdep.h,v 1.13 1996/04/29 20:50:08 leo Exp $	*/
 
 /*
@@ -97,6 +97,11 @@ extern struct mutex ddb_mp_mutex;
 #define DDB_STATE_NOT_RUNNING	0
 #define DDB_STATE_RUNNING	1
 #define DDB_STATE_EXITING	2
+
+/*
+ * We define some of our own commands
+ */
+#define DB_MACHINE_COMMANDS
 
 #endif /* _KERNEL */
 
