@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-new-session.c,v 1.85 2016/01/31 09:52:01 nicm Exp $ */
+/* $OpenBSD: cmd-new-session.c,v 1.86 2016/02/04 14:11:20 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -142,7 +142,7 @@ cmd_new_session_exec(struct cmd *self, struct cmd_q *cmdq)
 		format_defaults(ft, c, NULL, NULL, NULL);
 		to_free = cwd = format_expand(ft, args_get(args, 'c'));
 		format_free(ft);
-	} else if (c != NULL && c->session == NULL)
+	} else if (c != NULL && c->session == NULL && c->cwd != NULL)
 		cwd = c->cwd;
 	else
 		cwd = ".";
