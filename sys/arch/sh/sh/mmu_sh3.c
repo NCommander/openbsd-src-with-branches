@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmu_sh3.c,v 1.1.1.1 2006/10/06 21:02:55 miod Exp $	*/
+/*	$OpenBSD: mmu_sh3.c,v 1.2 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: mmu_sh3.c,v 1.11 2006/03/04 01:13:35 uwe Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #include <sh/mmu_sh3.h>
 
 void
-sh3_mmu_start()
+sh3_mmu_start(void)
 {
 	/* Zero clear all TLB entry */
 	sh3_tlb_invalidate_all();
@@ -89,7 +89,7 @@ sh3_tlb_invalidate_asid(int asid)
 }
 
 void
-sh3_tlb_invalidate_all()
+sh3_tlb_invalidate_all(void)
 {
 	uint32_t aw, a;
 	int e, w;
