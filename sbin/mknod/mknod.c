@@ -1,4 +1,4 @@
-/*	$OpenBSD: mknod.c,v 1.24 2016/03/05 19:29:41 natano Exp $	*/
+/*	$OpenBSD: mknod.c,v 1.25 2016/03/05 21:15:41 espie Exp $	*/
 /*	$NetBSD: mknod.c,v 1.8 1995/08/11 00:08:18 jtc Exp $	*/
 
 /*
@@ -52,7 +52,7 @@ main(int argc, char *argv[])
 	void *set;
 	int ch;
 
-	if (pledge("stdio rpath wpath cpath dpath fattr", NULL) == -1)
+	if (pledge("stdio rpath dpath", NULL) == -1)
 		err(1, "pledge");
 
 	setlocale(LC_ALL, "");
