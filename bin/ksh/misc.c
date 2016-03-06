@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.52 2015/12/14 13:59:42 tb Exp $	*/
+/*	$OpenBSD: misc.c,v 1.53 2015/12/21 04:57:50 mmcc Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -240,8 +240,10 @@ printoptions(int verbose)
 		/* short version ala ksh93 */
 		shprintf("set");
 		for (i = 0; i < NELEM(options); i++)
-			if (Flag(i) && options[i].name)
-				shprintf(" -o %s", options[i].name);
+			if (options[i].name)
+				shprintf(" %co %s",
+					 Flag(i) ? '-' : '+',
+					 options[i].name);
 		shprintf("\n");
 	}
 }
