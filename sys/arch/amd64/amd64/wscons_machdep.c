@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_machdep.c,v 1.10 2011/06/28 20:19:18 matthieu Exp $ */
+/*	$OpenBSD: wscons_machdep.c,v 1.11 2015/08/30 10:05:09 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell
@@ -137,7 +137,7 @@ wscnpollc(dev_t dev, int on)
  * Configure the display part of the console.
  */
 int
-wscn_video_init()
+wscn_video_init(void)
 {
 #if (NEFIFB > 0)
 	if (efifb_cnattach() == 0)

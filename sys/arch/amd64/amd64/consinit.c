@@ -1,4 +1,4 @@
-/*	$OpenBSD: consinit.c,v 1.4 2008/04/30 13:59:32 dlg Exp $	*/
+/*	$OpenBSD: consinit.c,v 1.5 2015/03/14 03:38:46 jsg Exp $	*/
 /*	$NetBSD: consinit.c,v 1.2 2003/03/02 18:27:14 fvdl Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
 #include <machine/bus.h>
 
 void
-consinit()
+consinit(void)
 {
 	/* already done in machdep.c */
 }
