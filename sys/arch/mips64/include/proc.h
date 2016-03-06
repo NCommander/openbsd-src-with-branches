@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.7 2010/11/24 21:16:26 miod Exp $	*/
+/*	$OpenBSD: proc.h,v 1.8 2011/03/23 16:54:36 pirofti Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -41,7 +41,7 @@
  * Machine-dependent part of the proc structure.
  */
 struct mdproc {
-	struct trap_frame *md_regs;	/* registers on current frame */
+	struct trapframe *md_regs;	/* registers on current frame */
 	volatile int md_astpending;	/* AST pending for this process */
 	int	md_flags;		/* machine-dependent flags */
 	vaddr_t	md_uarea;		/* allocated uarea virtual addr */

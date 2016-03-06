@@ -1,4 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.5 2009/10/22 22:08:52 miod Exp $ */
+/*	$OpenBSD: frame.h,v 1.6 2014/07/09 12:58:08 miod Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -32,7 +32,7 @@
  *  The layout of this *must* match with regnum.h or bad things
  *  will happen. libc setjmp/longjmp depends on this as well.
  */
-struct trap_frame {
+struct trapframe {
 	register_t	zero;
 	register_t	ast;
 	register_t	v0;

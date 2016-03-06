@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.14 2014/03/16 20:31:46 guenther Exp $ */
+/*	$OpenBSD: db_machdep.h,v 1.15 2014/03/21 23:05:41 miod Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -35,7 +35,7 @@
 
 #define DB_MACHINE_COMMANDS	/* We have machine specific commands */
 
-typedef struct trap_frame db_regs_t;
+typedef struct trapframe db_regs_t;
 extern db_regs_t	ddb_regs;
 
 typedef	long		db_expr_t;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.31 2014/12/16 18:30:03 tedu Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.32 2015/05/05 02:13:47 guenther Exp $	*/
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1992, 1993
@@ -136,7 +136,7 @@ cpu_fork(p1, p2, stack, stacksize, func, arg)
 	}
 	pcb->pcb_context.val[10] = (register_t)proc_trampoline;
 	pcb->pcb_context.val[8] = (register_t)pcb +
-	    USPACE - sizeof(struct trap_frame);
+	    USPACE - sizeof(struct trapframe);
 	pcb->pcb_context.val[1] = (register_t)arg;
 	pcb->pcb_context.val[0] = (register_t)func;
 }

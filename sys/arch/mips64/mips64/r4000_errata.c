@@ -1,4 +1,4 @@
-/*	$OpenBSD: r4000_errata.c,v 1.4 2014/04/04 20:52:05 miod Exp $	*/
+/*	$OpenBSD: r4000_errata.c,v 1.5 2014/11/16 12:30:58 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2014 Miodrag Vallat.
@@ -147,7 +147,7 @@ eop_tlb_flush_addr(struct pmap *pmap, vaddr_t va, u_long asid)
  * further processing in the trap handler is necessary.
  */
 int
-eop_tlb_miss_handler(struct trap_frame *trapframe, struct cpu_info *ci,
+eop_tlb_miss_handler(struct trapframe *trapframe, struct cpu_info *ci,
     struct proc *p)
 {
 	struct pcb *pcb;
@@ -266,7 +266,7 @@ eop_tlb_miss_handler(struct trap_frame *trapframe, struct cpu_info *ci,
  * current pc is no longer in an errata vulnerable page.
  */
 void
-eop_cleanup(struct trap_frame *trapframe, struct proc *p)
+eop_cleanup(struct trapframe *trapframe, struct proc *p)
 {
 	struct pcb *pcb;
 
