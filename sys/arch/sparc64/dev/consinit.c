@@ -1,4 +1,4 @@
-/*	$OpenBSD: consinit.c,v 1.13 2008/01/23 16:37:57 jsing Exp $	*/
+/*	$OpenBSD: consinit.c,v 1.14 2011/04/13 00:56:25 deraadt Exp $	*/
 /*	$NetBSD: consinit.c,v 1.9 2000/10/20 05:32:35 mrg Exp $	*/
 
 /*-
@@ -174,7 +174,7 @@ prom_cnpollc(dev_t dev, int on)
  * the PROM "input source" and "output sink".
  */
 void
-consinit()
+consinit(void)
 {
 	register int chosen;
 	char buffer[128];

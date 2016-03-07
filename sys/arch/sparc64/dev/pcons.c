@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcons.c,v 1.19 2013/10/18 17:38:33 miod Exp $	*/
+/*	$OpenBSD: pcons.c,v 1.20 2013/10/20 20:07:27 miod Exp $	*/
 /*	$NetBSD: pcons.c,v 1.7 2001/05/02 10:32:20 scw Exp $	*/
 
 /*-
@@ -394,7 +394,7 @@ pcons_poll(aux)
 }
 
 int
-pconsprobe()
+pconsprobe(void)
 {
 	if (!stdin) stdin = OF_stdin();
 	if (!stdout) stdout = OF_stdout();
