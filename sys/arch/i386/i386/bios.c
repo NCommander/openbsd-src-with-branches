@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.113 2015/09/16 04:18:52 daniel Exp $	*/
+/*	$OpenBSD: bios.c,v 1.114 2016/02/20 19:59:01 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -496,7 +496,7 @@ biosattach(struct device *parent, struct device *self, void *aux)
 }
 
 void
-bios_getopt()
+bios_getopt(void)
 {
 	bootarg_t *q;
 	bios_ddb_t *bios_ddb;
