@@ -1,4 +1,4 @@
-/*	$OpenBSD: random.c,v 1.18 2016/01/07 16:00:33 tb Exp $	*/
+/*	$OpenBSD: random.c,v 1.19 2016/01/10 13:35:10 mestre Exp $	*/
 /*	$NetBSD: random.c,v 1.3 1995/04/22 07:44:05 cgd Exp $	*/
 
 /*
@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 			unbuffer_output = 1;
 			break;
 		default:
-		case '?': case 'h':
+		case 'h':
 			usage();
 		}
 
@@ -123,6 +123,6 @@ void
 usage(void)
 {
 
-	(void)fprintf(stderr, "usage: random [-er] [denominator]\n");
+	(void)fprintf(stderr, "usage: %s [-er] [denominator]\n", getprogname());
 	exit(1);
 }

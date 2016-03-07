@@ -1,4 +1,4 @@
-/*	$OpenBSD: grdc.c,v 1.24 2016/01/04 17:33:24 mestre Exp $	*/
+/*	$OpenBSD: grdc.c,v 1.25 2016/01/07 16:00:32 tb Exp $	*/
 /*
  *
  * Copyright 2002 Amos Shapir.  Public domain.
@@ -79,7 +79,6 @@ main(int argc, char *argv[])
 			scrol = 1;
 			break;
 		case 'h':
-		case '?':
 		default:
 			usage();
 		}
@@ -233,7 +232,8 @@ main(int argc, char *argv[])
 			clear();
 			refresh();
 			endwin();
-			fprintf(stderr, "grdc terminated by signal %d\n", sigtermed);
+			fprintf(stderr, "%s terminated by signal %d\n",
+			    getprogname(), sigtermed);
 			return 1;
 		}
 	} while (n == 0 || nowtv.tv_sec < endtv.tv_sec);
@@ -293,6 +293,6 @@ getwinsize(int *wid, int *ht)
 void
 usage(void)
 {
-	(void)fprintf(stderr, "usage: grdc [-s] [number]\n");
+	(void)fprintf(stderr, "usage: %s [-s] [number]\n", getprogname());
 	exit(1);
 }

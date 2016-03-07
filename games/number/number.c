@@ -1,4 +1,4 @@
-/*	$OpenBSD: number.c,v 1.18 2016/01/04 17:33:24 mestre Exp $	*/
+/*	$OpenBSD: number.c,v 1.19 2016/01/07 16:00:33 tb Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993, 1994
@@ -85,7 +85,6 @@ main(int argc, char *argv[])
 		case 'l':
 			lflag = 1;
 			break;
-		case '?':
 		case 'h':
 		default:
 			usage();
@@ -328,6 +327,6 @@ pfract(int len)
 void
 usage(void)
 {
-	(void)fprintf(stderr, "usage: number [-l] [--] [# ...]\n");
+	(void)fprintf(stderr, "usage: %s [-l] [--] [# ...]\n", getprogname());
 	exit(1);
 }

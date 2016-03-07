@@ -1,4 +1,4 @@
-/*	$OpenBSD: strfile.c,v 1.26 2016/01/04 11:58:35 mestre Exp $	*/
+/*	$OpenBSD: strfile.c,v 1.27 2016/01/07 16:00:32 tb Exp $	*/
 /*	$NetBSD: strfile.c,v 1.4 1995/04/24 12:23:09 cgd Exp $	*/
 
 /*-
@@ -257,7 +257,7 @@ getargs(int argc, char *argv[])
 	extern int	optind;
 	int	ch;
 
-	while ((ch = getopt(argc, argv, "c:iorsx")) != -1) {
+	while ((ch = getopt(argc, argv, "c:hiorsx")) != -1) {
 		switch(ch) {
 		case 'c':			/* new delimiting char */
 			Delimch = *optarg;
@@ -281,7 +281,7 @@ getargs(int argc, char *argv[])
 		case 'x':			/* set the rotated bit */
 			Xflag++;
 			break;
-		case '?':
+		case 'h':
 		default:
 			usage();
 		}
@@ -308,7 +308,7 @@ void
 usage(void)
 {
 	(void) fprintf(stderr,
-	    "strfile [-iorsx] [-c char] sourcefile [datafile]\n");
+	    "%s [-iorsx] [-c char] sourcefile [datafile]\n", getprogname());
 	exit(1);
 }
 
