@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.67 2015/09/11 07:42:35 claudio Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.68 2016/01/22 11:14:58 jsg Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -592,7 +592,7 @@ ipip_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int dummy,
 
 #ifdef IPSEC
 int
-ipe4_attach()
+ipe4_attach(void)
 {
 	return 0;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_timer.c,v 1.47 2013/08/08 14:29:29 mpi Exp $	*/
+/*	$OpenBSD: tcp_timer.c,v 1.48 2014/07/22 11:06:10 mpi Exp $	*/
 /*	$NetBSD: tcp_timer.c,v 1.14 1996/02/13 23:44:09 christos Exp $	*/
 
 /*
@@ -129,7 +129,7 @@ tcp_delack(void *arg)
  * causes finite state machine actions if timers expire.
  */
 void
-tcp_slowtimo()
+tcp_slowtimo(void)
 {
 	int s;
 

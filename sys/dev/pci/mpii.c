@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpii.c,v 1.100 2015/03/14 03:38:48 jsg Exp $	*/
+/*	$OpenBSD: mpii.c,v 1.101 2015/03/18 12:23:25 mikeb Exp $	*/
 /*
  * Copyright (c) 2010, 2012 Mike Belopuhov
  * Copyright (c) 2009 James Giannoules
@@ -2983,9 +2983,9 @@ mpii_scsi_cmd_done(struct mpii_ccb *ccb)
 
 	mpii_push_reply(sc, ccb->ccb_rcb);
 done:
-KERNEL_LOCK();
+	KERNEL_LOCK();
 	scsi_done(xs);
-KERNEL_UNLOCK();
+	KERNEL_UNLOCK();
 }
 
 int
