@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_file.c,v 1.59 2015/07/20 11:38:19 semarie Exp $	*/
+/*	$OpenBSD: server_file.c,v 1.60 2015/08/03 11:45:17 florian Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -484,6 +484,8 @@ server_file_index(struct httpd *env, struct client *clt, struct stat *st)
 	    "<!DOCTYPE html>\n"
 	    "<html>\n"
 	    "<head>\n"
+	    "<meta http-equiv=\"Content-Type\" content=\"text/html; "
+	    "charset=utf-8\"/>\n"
 	    "<title>Index of %s</title>\n"
 	    "<style type=\"text/css\"><!--\n%s\n--></style>\n"
 	    "</head>\n"
