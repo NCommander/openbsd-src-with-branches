@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppd_local.h,v 1.14 2015/01/19 01:48:59 deraadt Exp $ */
+/*	$OpenBSD: npppd_local.h,v 1.15 2015/07/23 09:04:06 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -186,9 +186,5 @@ struct _npppd {
 	    ? (interval)				\
 	    : (interval) + NPPPD_TIMER_TICK_IVAL	\
 		- ((interval) % NPPPD_TIMER_TICK_IVAL))
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
