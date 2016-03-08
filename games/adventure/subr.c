@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr.c,v 1.9 2004/07/09 15:59:26 deraadt Exp $	*/
+/*	$OpenBSD: subr.c,v 1.10 2009/10/27 23:59:23 deraadt Exp $	*/
 /*	$NetBSD: subr.c,v 1.2 1995/03/21 12:05:11 cgd Exp $	*/
 
 /*-
@@ -39,8 +39,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "hdr.h"
+
 #include "extern.h"
+#include "hdr.h"
 
 /*		Statement functions	*/
 int

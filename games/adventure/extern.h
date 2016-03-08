@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.8 2015/12/26 00:26:39 mestre Exp $	*/
+/*	$OpenBSD: extern.h,v 1.9 2016/01/01 15:56:04 tedu Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1997/10/11 01:55:27 lukem Exp $	*/
 
 /*
@@ -31,6 +31,7 @@
  */
 
 #include <sys/types.h>
+
 #include <string.h>
 
 /* crc.c */

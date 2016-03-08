@@ -1,4 +1,4 @@
-/*	$OpenBSD: save.c,v 1.9 2014/07/13 19:40:57 tedu Exp $	*/
+/*	$OpenBSD: save.c,v 1.10 2014/12/08 21:56:27 deraadt Exp $	*/
 /*	$NetBSD: save.c,v 1.2 1995/03/21 12:05:08 cgd Exp $	*/
 
 /*-
@@ -37,8 +37,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "hdr.h"
+
 #include "extern.h"
+#include "hdr.h"
 
 struct savestruct
 {
