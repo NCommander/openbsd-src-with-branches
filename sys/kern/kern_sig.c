@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.191 2015/12/05 10:11:53 tedu Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.192 2016/01/09 06:13:43 semarie Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -896,7 +896,7 @@ ptsignal(struct proc *p, int signum, enum signal_type type)
 		panic("psignal signal number");
 #endif
 
-	/* Ignore signal if we are exiting */
+	/* Ignore signal if the target process is exiting */
 	if (pr->ps_flags & PS_EXITING)
 		return;
 
@@ -980,7 +980,7 @@ ptsignal(struct proc *p, int signum, enum signal_type type)
 		} else {
 			action = SIG_DFL;
 
-			if (prop & SA_KILL &&  pr->ps_nice > NZERO)
+			if (prop & SA_KILL && pr->ps_nice > NZERO)
 				 pr->ps_nice = NZERO;
 
 			/*
