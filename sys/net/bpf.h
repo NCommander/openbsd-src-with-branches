@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.h,v 1.48 2015/02/10 00:53:55 pelikan Exp $	*/
+/*	$OpenBSD: bpf.h,v 1.49 2015/06/16 11:09:39 mpi Exp $	*/
 /*	$NetBSD: bpf.h,v 1.15 1996/12/13 07:57:33 mikel Exp $	*/
 
 /*
@@ -154,7 +154,7 @@ struct bpf_hdr {
 #ifdef _KERNEL
 #if defined(__arm__) || defined(__i386__) || defined(__m68k__) || \
     defined(__mips__) || defined(__ns32k__) || defined(__sparc__) || \
-    defined(__sparc64__) || defined(__vax__)
+    defined(__sparc64__)
 #define SIZEOF_BPF_HDR 18
 #else
 #define SIZEOF_BPF_HDR sizeof(struct bpf_hdr)
