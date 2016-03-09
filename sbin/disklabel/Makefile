@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.59 2015/10/15 19:31:15 miod Exp $
+#	$OpenBSD: Makefile,v 1.60 2015/12/01 08:13:30 deraadt Exp $
 
 PROG=	disklabel
 SRCS=	disklabel.c dkcksum.c editor.c manual.c
@@ -35,10 +35,6 @@ CFLAGS+= -DSEEALSO="\"fdisk(8), installboot(8)\""
 
 .if (${MACHINE} == "armish") || (${MACHINE} == "loongson")
 CFLAGS+= -DSEEALSO="\"fdisk(8)\""
-.endif
-
-.if (${MACHINE} == "vax")
-CFLAGS+= -DSEEALSO="\"installboot(8)\""
 .endif
 
 .if (${MACHINE} == "landisk")

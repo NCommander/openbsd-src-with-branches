@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldtoa.c,v 1.2 2014/08/10 02:15:18 guenther Exp $	*/
+/*	$OpenBSD: ldtoa.c,v 1.3 2015/09/14 12:49:33 guenther Exp $	*/
 /*-
  * Copyright (c) 2003 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
@@ -26,9 +26,7 @@
  */
 
 #include <sys/types.h>
-#ifndef __vax__
 #include <machine/ieee.h>
-#endif /* !__vax__ */
 #include <float.h>
 #include <stdint.h>
 #include <limits.h>

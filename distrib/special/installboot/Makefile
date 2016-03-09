@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2014/03/18 22:36:28 miod Exp $
+#	$OpenBSD: Makefile,v 1.4 2015/12/01 07:50:07 deraadt Exp $
 
 .PATH: ${.CURDIR}/../../../usr.sbin/installboot
 
@@ -82,11 +82,6 @@ SRCS += stubs.c
 CFLAGS += -DSOFTRAID
 SRCS += sparc64_installboot.c
 SRCS += sparc64_softraid.c
-.endif
-
-.if ${MACHINE} == "vax"
-CFLAGS += -DBOOTSTRAP
-SRCS += vax_installboot.c
 .endif
 
 .if ${MACHINE} == "zaurus"
