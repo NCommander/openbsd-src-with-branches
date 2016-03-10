@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: flt_rounds.c,v 1.4 2014/04/18 15:09:52 guenther Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -17,7 +17,7 @@
  */
 
 #include <sys/types.h>
-#include <machine/float.h>
+#include <float.h>
 #include <machine/ieeefp.h>
 
 static const int rndmap[] = {
@@ -30,8 +30,13 @@ static const int rndmap[] = {
 int
 __flt_rounds()
 {
+#if !defined(SOFTFLOAT)
 	register_t fpscr;
 
-	__asm__ __volatile__ ("sts fpscr, %0" : "=r" (fpscr));
+	__asm__ volatile ("sts fpscr, %0" : "=r" (fpscr));
 	return rndmap[fpscr & 0x03];
+#else
+	return rndmap[fpgetround()];
+#endif
 }
+DEF_STRONG(__flt_rounds);

@@ -1,3 +1,5 @@
+/*	$OpenBSD: rup.c,v 1.29 2015/01/16 06:40:11 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1993, John Brezak
  * All rights reserved.
@@ -10,13 +12,8 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
+ *  3. The name of the author may not be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,26 +28,23 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$Id: rup.c,v 1.10 1994/02/05 14:58:14 pk Exp $";
-#endif /* not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <rpc/rpc.h>
+#include <rpc/pmap_clnt.h>
 #include <arpa/inet.h>
 #include <err.h>
+#include <unistd.h>
 
 #undef FSHIFT			/* Use protocol's shift and scale values */
 #undef FSCALE
 #include <rpcsvc/rstat.h>
 
-#define HOST_WIDTH 24
+#define HOST_WIDTH 27
 
 int printtime;			/* print the remote host(s)'s time */
 
@@ -59,12 +53,14 @@ struct host_list {
 	struct in_addr addr;
 } *hosts;
 
-int
-search_host(addr)
-	struct in_addr addr;
+void usage(void);
+int print_rup_data(char *, statstime *host_stat);
+
+static int
+search_host(struct in_addr addr)
 {
 	struct host_list *hp;
-	
+
 	if (!hosts)
 		return(0);
 
@@ -75,13 +71,12 @@ search_host(addr)
 	return(0);
 }
 
-void
-remember_host(addr)
-	struct in_addr addr;
+static void
+remember_host(struct in_addr addr)
 {
 	struct host_list *hp;
 
-	if (!(hp = (struct host_list *)malloc(sizeof(struct host_list)))) {
+	if (!(hp = malloc(sizeof(struct host_list)))) {
 		err(1, NULL);
 		/* NOTREACHED */
 	}
@@ -91,7 +86,6 @@ remember_host(addr)
 }
 
 
-
 struct rup_data {
 	char *host;
 	struct statstime statstime;
@@ -100,7 +94,7 @@ struct rup_data *rup_data;
 int rup_data_idx = 0;
 int rup_data_max = 0;
 
-enum sort_type { 
+enum sort_type {
 	SORT_NONE,
 	SORT_HOST,
 	SORT_LDAV,
@@ -108,18 +102,20 @@ enum sort_type {
 };
 enum sort_type sort_type;
 
-compare(d1, d2)
-	struct rup_data *d1;
-	struct rup_data *d2;
+static int
+compare(const void *v1, const void *v2)
 {
+	const struct rup_data *d1 = v1;
+	const struct rup_data *d2 = v2;
+
 	switch(sort_type) {
 	case SORT_HOST:
 		return strcmp(d1->host, d2->host);
 	case SORT_LDAV:
-		return d1->statstime.avenrun[0] 
+		return d1->statstime.avenrun[0]
 			- d2->statstime.avenrun[0];
 	case SORT_UPTIME:
-		return d1->statstime.boottime.tv_sec 
+		return d1->statstime.boottime.tv_sec
 			- d2->statstime.boottime.tv_sec;
 	default:
 		/* something's really wrong here */
@@ -127,31 +123,33 @@ compare(d1, d2)
 	}
 }
 
-void
-remember_rup_data(host, st)
-	char *host;
-	struct statstime *st;
+static void
+remember_rup_data(char *host, struct statstime *st)
 {
-        if (rup_data_idx >= rup_data_max) {
-                rup_data_max += 16;
-                rup_data = realloc (rup_data, 
-				rup_data_max * sizeof(struct rup_data));
-                if (rup_data == NULL) {
-                        err (1, NULL);
+	if (rup_data_idx >= rup_data_max) {
+		int newsize;
+		struct rup_data *newrup;
+
+		newsize = rup_data_max + 16;
+		newrup = reallocarray(rup_data, newsize,
+		    sizeof(struct rup_data));
+		if (newrup == NULL) {
+			err(1, NULL);
 			/* NOTREACHED */
-                }
-        }
-	
-	rup_data[rup_data_idx].host = strdup(host);
+		}
+		rup_data = newrup;
+		rup_data_max = newsize;
+	}
+
+	if ((rup_data[rup_data_idx].host = strdup(host)) == NULL)
+		err(1, NULL);
 	rup_data[rup_data_idx].statstime = *st;
 	rup_data_idx++;
 }
 
 
-int
-rstat_reply(replyp, raddrp)
-	char *replyp;
-	struct sockaddr_in *raddrp;
+static int
+rstat_reply(char *replyp, struct sockaddr_in *raddrp)
 {
 	struct hostent *hp;
 	char *host;
@@ -159,8 +157,7 @@ rstat_reply(replyp, raddrp)
 
 	if (!search_host(raddrp->sin_addr)) {
 		hp = gethostbyaddr((char *)&raddrp->sin_addr.s_addr,
-			sizeof(struct in_addr), AF_INET);
-
+		    sizeof(struct in_addr), AF_INET);
 		if (hp)
 			host = hp->h_name;
 		else
@@ -168,11 +165,10 @@ rstat_reply(replyp, raddrp)
 
 		remember_host(raddrp->sin_addr);
 
-		if (sort_type != SORT_NONE) {
+		if (sort_type != SORT_NONE)
 			remember_rup_data(host, host_stat);
-		} else {
+		else
 			print_rup_data(host, host_stat);
-		}
 	}
 
 	return (0);
@@ -180,116 +176,121 @@ rstat_reply(replyp, raddrp)
 
 
 int
-print_rup_data(host, host_stat)
-	char *host;
-	statstime *host_stat;
+print_rup_data(char *host, statstime *host_stat)
 {
-	struct tm *tmp_time;
-	struct tm host_time;
-	struct tm host_uptime;
-	char days_buf[16];
-	char hours_buf[16];
+	unsigned int ups = 0, upm = 0, uph = 0, upd = 0;
+	struct tm *tmp_time, host_time;
+	char days_buf[16], hours_buf[16];
+	time_t tim;
 
-	printf("%-*.*s", HOST_WIDTH, HOST_WIDTH, host);
+	if (printtime)
+		printf("%-*.*s", HOST_WIDTH-8, HOST_WIDTH-8, host);
+	else
+		printf("%-*.*s", HOST_WIDTH, HOST_WIDTH, host);
 
-	tmp_time = localtime((time_t *)&host_stat->curtime.tv_sec);
+	tim = host_stat->curtime.tv_sec;
+	tmp_time = localtime(&tim);
 	host_time = *tmp_time;
 
 	host_stat->curtime.tv_sec -= host_stat->boottime.tv_sec;
 
-	tmp_time = gmtime((time_t *)&host_stat->curtime.tv_sec);
-	host_uptime = *tmp_time;
+	if (host_stat->curtime.tv_sec > 0)
+		ups = host_stat->curtime.tv_sec;
+	upd = ups / (3600 * 24);
+	ups -= upd * 3600 * 24;
+	uph = ups / 3600;
+	ups -= uph * 3600;
+	upm = ups / 60;
 
-	if (host_uptime.tm_yday != 0)
-		sprintf(days_buf, "%3d day%s, ", host_uptime.tm_yday,
-			(host_uptime.tm_yday > 1) ? "s" : "");
+	if (upd != 0)
+		snprintf(days_buf, sizeof days_buf, "%3u day%s, ", upd,
+		    (upd > 1) ? "s" : "");
 	else
 		days_buf[0] = '\0';
 
-	if (host_uptime.tm_hour != 0)
-		sprintf(hours_buf, "%2d:%02d, ",
-			host_uptime.tm_hour, host_uptime.tm_min);
+	if (uph != 0)
+		snprintf(hours_buf, sizeof hours_buf, "%2u:%02u, ",
+		    uph, upm);
 	else
-		if (host_uptime.tm_min != 0)
-			sprintf(hours_buf, "%2d mins, ", host_uptime.tm_min);
+		if (upm != 0)
+			snprintf(hours_buf, sizeof hours_buf, "%2u min%s ",
+			    upm, (upm == 1) ? ", " : "s,");
 		else
 			hours_buf[0] = '\0';
 
 	if (printtime)
-		printf(" %2d:%02d%cm", host_time.tm_hour % 12,
-			host_time.tm_min,
-			(host_time.tm_hour >= 12) ? 'p' : 'a');
+		printf(" %2d:%02d%cm",
+		    (host_time.tm_hour % 12) ? (host_time.tm_hour % 12) : 12,
+		    host_time.tm_min,
+		    (host_time.tm_hour >= 12) ? 'p' : 'a');
 
 	printf(" up %9.9s%9.9s load average: %.2f %.2f %.2f\n",
-		days_buf, hours_buf,
-		(double)host_stat->avenrun[0]/FSCALE,
-		(double)host_stat->avenrun[1]/FSCALE,
-		(double)host_stat->avenrun[2]/FSCALE);
+	    days_buf, hours_buf,
+	    (double)host_stat->avenrun[0] / FSCALE,
+	    (double)host_stat->avenrun[1] / FSCALE,
+	    (double)host_stat->avenrun[2] / FSCALE);
 
 	return(0);
 }
 
 
-void
-onehost(host)
-	char *host;
+static void
+onehost(char *host)
 {
 	CLIENT *rstat_clnt;
 	statstime host_stat;
 	static struct timeval timeout = {25, 0};
-	
+	extern char *__progname;
+
 	rstat_clnt = clnt_create(host, RSTATPROG, RSTATVERS_TIME, "udp");
 	if (rstat_clnt == NULL) {
-		warnx("%s", clnt_spcreateerror(host));
+		fprintf(stderr, "%s: %s", __progname,
+		    clnt_spcreateerror(host));
 		return;
 	}
 
 	bzero((char *)&host_stat, sizeof(host_stat));
-	if (clnt_call(rstat_clnt, RSTATPROC_STATS, xdr_void, NULL, xdr_statstime, &host_stat, timeout) != RPC_SUCCESS) {
-		warnx("%s",  clnt_sperror(rstat_clnt, host));
+	if (clnt_call(rstat_clnt, RSTATPROC_STATS, xdr_void, NULL,
+	    xdr_statstime, &host_stat, timeout) != RPC_SUCCESS) {
+		fprintf(stderr, "%s: %s", __progname,
+		    clnt_sperror(rstat_clnt, host));
+		clnt_destroy(rstat_clnt);
 		return;
 	}
 
-	print_rup_data(host, &host_stat);
+	if (sort_type != SORT_NONE)
+		remember_rup_data(host, &host_stat);
+	else
+		print_rup_data(host, &host_stat);
+
 	clnt_destroy(rstat_clnt);
 }
 
-void
-allhosts()
+static void
+allhosts(void)
 {
 	statstime host_stat;
 	enum clnt_stat clnt_stat;
-	size_t i;
+	extern char *__progname;
 
 	if (sort_type != SORT_NONE) {
-		printf("collecting responses...");
+		printf("collecting responses...\n");
 		fflush(stdout);
 	}
 
 	clnt_stat = clnt_broadcast(RSTATPROG, RSTATVERS_TIME, RSTATPROC_STATS,
-				   xdr_void, NULL,
-				   xdr_statstime, &host_stat, rstat_reply);
+	    xdr_void, NULL, xdr_statstime, (char *)&host_stat, rstat_reply);
 	if (clnt_stat != RPC_SUCCESS && clnt_stat != RPC_TIMEDOUT) {
-		warnx("%s", clnt_sperrno(clnt_stat));
+		fprintf(stderr, "%s: %s\n", __progname, clnt_sperrno(clnt_stat));
 		exit(1);
-	}
-
-	if (sort_type != SORT_NONE) {
-		putchar('\n');
-		qsort(rup_data, rup_data_idx, sizeof(struct rup_data), compare);
-
-		for (i = 0; i < rup_data_idx; i++) {
-			print_rup_data(rup_data[i].host, &rup_data[i].statstime);
-		}
 	}
 }
 
-
-main(argc, argv)
-	int argc;
-	char *argv[];
+int
+main(int argc, char *argv[])
 {
 	int ch;
+	size_t i;
 	extern int optind;
 
 	sort_type = SORT_NONE;
@@ -311,8 +312,8 @@ main(argc, argv)
 			usage();
 			/*NOTREACHED*/
 		}
-	
-	setlinebuf(stdout);
+
+	setvbuf(stdout, NULL, _IOLBF, 0);
 
 	if (argc == optind)
 		allhosts();
@@ -321,12 +322,23 @@ main(argc, argv)
 			onehost(argv[optind]);
 	}
 
+	if (sort_type != SORT_NONE) {
+		qsort(rup_data, rup_data_idx, sizeof(struct rup_data),
+		    compare);
+
+		for (i = 0; i < rup_data_idx; i++) {
+			print_rup_data(rup_data[i].host,
+			    &rup_data[i].statstime);
+		}
+	}
+
 	exit(0);
 }
 
 
-usage()
+void
+usage(void)
 {
-	fprintf(stderr, "Usage: rup [-dhlt] [hosts ...]\n");
+	fprintf(stderr, "usage: rup [-dhlt] [host ...]\n");
 	exit(1);
 }

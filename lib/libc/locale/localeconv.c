@@ -1,22 +1,19 @@
+/*	$OpenBSD: localeconv.c,v 1.6 2014/07/14 07:22:07 pelikan Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$Id: localeconv.c,v 1.6 1995/04/28 23:19:32 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/localedef.h>
 #include <locale.h>
 
-/* 
+/*
  * The localeconv() function constructs a struct lconv from the current
  * monetary and numeric locales.
  *
  * Because localeconv() may be called many times (especially by library
- * routines like printf() & strtod()), the approprate members of the 
- * lconv structure are computed only when the monetary or numeric 
+ * routines like printf() & strtod()), the approprate members of the
+ * lconv structure are computed only when the monetary or numeric
  * locale has been changed.
  */
 int __mlocale_changed = 1;
@@ -26,7 +23,7 @@ int __nlocale_changed = 1;
  * Return the current locale conversion.
  */
 struct lconv *
-localeconv()
+localeconv(void)
 {
     static struct lconv ret;
 
@@ -47,6 +44,12 @@ localeconv()
 	ret.n_sep_by_space	= _CurrentMonetaryLocale->n_sep_by_space;
 	ret.p_sign_posn		= _CurrentMonetaryLocale->p_sign_posn;
 	ret.n_sign_posn		= _CurrentMonetaryLocale->n_sign_posn;
+	ret.int_p_cs_precedes	= _CurrentMonetaryLocale->int_p_cs_precedes;
+	ret.int_p_sep_by_space	= _CurrentMonetaryLocale->int_p_sep_by_space;
+	ret.int_n_cs_precedes	= _CurrentMonetaryLocale->int_n_cs_precedes;
+	ret.int_n_sep_by_space	= _CurrentMonetaryLocale->int_n_sep_by_space;
+	ret.int_p_sign_posn	= _CurrentMonetaryLocale->int_p_sign_posn;
+	ret.int_n_sign_posn	= _CurrentMonetaryLocale->int_n_sign_posn;
 	__mlocale_changed = 0;
     }
 
@@ -60,3 +63,4 @@ localeconv()
 
     return (&ret);
 }
+DEF_STRONG(localeconv);

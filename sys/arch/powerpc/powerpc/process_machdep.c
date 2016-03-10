@@ -1,3 +1,4 @@
+/*	$OpenBSD: process_machdep.c,v 1.12 2007/03/20 20:59:53 kettenis Exp $	*/
 /*	$NetBSD: process_machdep.c,v 1.1 1996/09/30 16:34:53 ws Exp $	*/
 
 /*
@@ -31,26 +32,81 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/ptrace.h>
+#include <sys/user.h>
+
+#include <machine/fpu.h>
+#include <machine/pcb.h>
+#include <machine/psl.h>
+#include <machine/reg.h>
+
+int
+process_read_regs(struct proc *p, struct reg *regs)
+{
+	struct cpu_info *ci = curcpu();
+	struct trapframe *tf = trapframe(p);
+	struct pcb *pcb = &p->p_addr->u_pcb;
+
+	bcopy(tf->fixreg, regs->gpr, sizeof(regs->gpr));
+
+	if (!(pcb->pcb_flags & PCB_FPU)) {
+		bzero(regs->fpr, sizeof(regs->fpr));
+	} else {
+		/* XXX What if the state is on the other cpu? */
+		if (p == ci->ci_fpuproc)
+			save_fpu();
+		bcopy(pcb->pcb_fpu.fpr, regs->fpr, sizeof(regs->fpr));
+	}
+
+	regs->pc  = tf->srr0;
+	regs->ps  = tf->srr1; /* is this the correct value for this ? */
+	regs->cnd = tf->cr;
+	regs->lr  = tf->lr;
+	regs->cnt = tf->ctr;
+	regs->xer = tf->xer;
+	regs->mq  = 0; /*  what should this really be? */
+
+	return (0);
+}
+
+int
+process_read_fpregs(struct proc *p, struct fpreg *regs)
+{
+	struct cpu_info *ci = curcpu();
+	struct pcb *pcb = &p->p_addr->u_pcb;
+
+	if (!(pcb->pcb_flags & PCB_FPU)) {
+		bzero(regs->fpr, sizeof(regs->fpr));
+		regs->fpscr = 0;
+	} else {
+		/* XXX What if the state is on the other cpu? */
+		if (p == ci->ci_fpuproc)
+			save_fpu();
+		bcopy(pcb->pcb_fpu.fpr, regs->fpr, sizeof(regs->fpr));
+		regs->fpscr = *(u_int64_t *)&pcb->pcb_fpu.fpcsr;
+	}
+
+	return (0);
+}
+
+#ifdef PTRACE
 
 /*
  * Set the process's program counter.
  */
 int
-process_set_pc(p, addr)
-	struct proc *p;
-	caddr_t addr;
+process_set_pc(struct proc *p, caddr_t addr)
 {
 	struct trapframe *tf = trapframe(p);
 	
-	tf->srr0 = (int)addr;
+	tf->srr0 = (u_int32_t)addr;
 	return 0;
 }
 
 int
-process_sstep(p, sstep)
-	struct proc *p;
-	int sstep;
+process_sstep(struct proc *p, int sstep)
 {
 	struct trapframe *tf = trapframe(p);
 	
@@ -60,3 +116,60 @@ process_sstep(p, sstep)
 		tf->srr1 &= ~PSL_SE;
 	return 0;
 }
+
+int
+process_write_regs(struct proc *p, struct reg *regs)
+{
+	struct cpu_info *ci = curcpu();
+	struct trapframe *tf = trapframe(p);
+	struct pcb *pcb = &p->p_addr->u_pcb;
+
+	if ((regs->ps ^ tf->srr1) & PSL_USERSTATIC)
+		return EINVAL;
+
+	bcopy(regs->gpr, tf->fixreg, sizeof(regs->gpr));
+
+	/* XXX What if the state is on the other cpu? */
+	if (p == ci->ci_fpuproc) {	/* release the fpu */
+		save_fpu();
+		ci->ci_fpuproc = NULL;
+	}
+
+	bcopy(regs->fpr, pcb->pcb_fpu.fpr, sizeof(regs->fpr));
+	if (!(pcb->pcb_flags & PCB_FPU)) {
+		pcb->pcb_fpu.fpcsr = 0;
+		pcb->pcb_flags |= PCB_FPU;
+	}
+
+	tf->srr0 = regs->pc;
+	tf->srr1 = regs->ps;  /* is this the correct value for this ? */
+	tf->cr   = regs->cnd;
+	tf->lr   = regs->lr;
+	tf->ctr  = regs->cnt;
+	tf->xer  = regs->xer;
+	/*  regs->mq = 0; what should this really be? */
+
+	return (0);
+}
+
+int
+process_write_fpregs(struct proc *p, struct fpreg *regs)
+{
+	struct cpu_info *ci = curcpu();
+	struct pcb *pcb = &p->p_addr->u_pcb;
+	u_int64_t fpscr = regs->fpscr;
+
+	/* XXX What if the state is on the other cpu? */
+	if (p == ci->ci_fpuproc) {	/* release the fpu */
+		save_fpu();
+		ci->ci_fpuproc = NULL;
+	}
+
+	bcopy(regs->fpr, pcb->pcb_fpu.fpr, sizeof(regs->fpr));
+	pcb->pcb_fpu.fpcsr = *(double *)&fpscr;
+	pcb->pcb_flags |= PCB_FPU;
+
+	return (0);
+}
+
+#endif	/* PTRACE */

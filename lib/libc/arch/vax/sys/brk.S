@@ -1,3 +1,4 @@
+/*	$OpenBSD: brk.S,v 1.10 2015/08/26 01:54:09 guenther Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,27 +28,30 @@
  * SUCH DAMAGE.
  */
 
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)brk.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: brk.S,v 1.1 1995/04/17 12:23:58 ragge Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
-
 #include "SYS.h"
 
-	.globl	curbrk
-	.globl	minbrk
-ENTRY(_brk)
-	jbr	ok
+	.data
+__minbrk:
+	.long	_end
+	END(__minbrk)
+	.type	__minbrk,@object
 
-ENTRY(brk)
-	cmpl	4(ap),minbrk
-	bgeq	ok
-	movl	minbrk,4(ap)
-ok:
+	.text
+
+	.globl	__curbrk
+
+	.weak	brk
+
+ENTRY(brk, 0)
+	cmpl	__minbrk,4(%ap)
+	blequ	1f
+	movl	__minbrk,4(%ap)
+1:
 	chmk	$ SYS_break
-	jcs	err
-	movl	4(ap),curbrk
-	clrl	r0
+	jcs	2f
+	movl	4(%ap),__curbrk
+	clrl	%r0
 	ret
-err:
-	jmp	cerror
+2:
+	jmp	_C_LABEL(__cerror)
+END(brk)

@@ -1,24 +1,47 @@
-#	$NetBSD: Makefile,v 1.4.2.1 1995/10/13 19:55:36 pk Exp $
+#	$OpenBSD: Makefile,v 1.12 2013/11/03 21:36:44 deraadt Exp $
+#	$NetBSD: Makefile,v 1.2 1995/09/30 21:43:38 pk Exp $
 
-R=	..
-.PATH:	${.CURDIR}/${R}
+.PATH:	${.CURDIR}/../common
+
 PROG=	bootxx
-SRCS=	srt0.S bootxx.c promdev.c dvma.c
-KOBJS=	__main.o bzero.o urem.o udiv.o
-NOMAN=	1
-STRIP=
-BINDIR=	/usr/mdec
-CFLAGS= -DBOOTXX
 
-LIBS!=	cd ${.CURDIR}/${R}; ${MAKE} sadep
-KOBJDIR!= cd ${.CURDIR}/${R}; ${MAKE} kernlibdir
-_KOBJS=${KOBJS:S,^,${KOBJDIR}/,g}
+NOMAN=	noman
+INSTALL_STRIP=
+S=	${.CURDIR}/../../../..
 
-${PROG}:${OBJS} ${_KOBJS} ${LIBS}
-	${LD} -N -T ${RELOC} -e start ${OBJS} ${_KOBJS} ${LIBS}
-	# convert to Sun magic
-	(echo -n 01 | tr 01 '\01\03'; tail +3c a.out) > ${.TARGET}
-	@rm a.out
-	@size ${.TARGET}
+SRCS=	srt0.S bootxx.c closeall.c dvma.c promdev.c
+CLEANFILES+=${PROG}.aout ${PROG}.elf elfclean
+
+.PATH:	${S}/lib/libkern/arch/sparc ${S}/lib/libkern
+SRCS+=	__main.o bzero.o urem.o udiv.o
+
+.PATH:	${S}/lib/libsa
+SRCS+=	printf.c
+
+# pre-built bits of libsa
+SOBJS=	alloc.o exit.o memcpy.o memset.o
+_SOBJS=${SOBJS:S,^,${LIBSAOBJDIR}/,g}
+
+CFLAGS= -fno-pie -O2 -I${.CURDIR}/../common -I${.CURDIR}/../../../../arch \
+	-I${.CURDIR}/../../../.. -I${.CURDIR}/../../../../lib/libsa -DBOOTXX \
+	${DEFS}
+AFLAGS+=-fno-pie
+
+elfclean: clean-elf.c
+	${HOSTCC} -o elfclean ${.ALLSRC}
+
+${PROG}: ${OBJS} elfclean
+	${LD} -nopie -N -Ttext ${RELOC} -e start ${OBJS} ${_SOBJS} \
+	    -o ${.TARGET}.elf
+	./elfclean ${.TARGET}.elf
+	objcopy -j .text -j .data -j .bss -O a.out-sparc-netbsd \
+	    ${.TARGET}.elf ${.TARGET}.aout
+	(echo -n 01 | tr 01 '\01\03'; tail +3c ${.TARGET}.aout) > ${.TARGET}
+	@rm ${.TARGET}.aout ${.TARGET}.elf
+
+srt0.o: srt0.S
+	${CC} ${CFLAGS} -D_LOCORE -c ${.IMPSRC}
 
 .include <bsd.prog.mk>
+# for libsa printf
+DEFS+=	-DSTRIPPED

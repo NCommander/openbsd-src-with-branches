@@ -1,3 +1,4 @@
+/*	$OpenBSD: fork.S,v 1.6 2015/03/31 04:32:01 guenther Exp $	*/
 /*	$NetBSD: fork.S,v 1.1 1995/02/10 17:50:34 cgd Exp $	*/
 
 /*
@@ -29,7 +30,5 @@
 
 #include "SYS.h"
 
-SYSCALL(fork)
-	cmovne	a4, zero, v0		/* a4 (rv[1]) != 0, child */
-	RET
-END(fork)
+RSYSCALL_HIDDEN(fork)
+WEAK_ALIAS(_thread_fork,_thread_sys_fork)

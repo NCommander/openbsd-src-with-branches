@@ -1,19 +1,62 @@
-#	$NetBSD: Makefile,v 1.8 1995/06/14 15:18:37 christos Exp $
-#	@(#)Makefile	5.2 (Berkeley) 12/28/90
+#	$OpenBSD: Makefile,v 1.59 2015/01/23 22:35:57 espie Exp $
 
 PROG=	make
-CFLAGS+= -I${.CURDIR} -DPOSIX
-SRCS=	arch.c buf.c compat.c cond.c dir.c for.c hash.c job.c main.c \
-	make.c parse.c str.c suff.c targ.c var.c
-SRCS+=	lstAppend.c lstAtEnd.c lstAtFront.c lstClose.c lstConcat.c \
-	lstDatum.c lstDeQueue.c lstDestroy.c lstDupl.c lstEnQueue.c \
-	lstFind.c lstFindFrom.c lstFirst.c lstForEach.c lstForEachFrom.c \
-	lstInit.c lstInsert.c lstIsAtEnd.c lstIsEmpty.c lstLast.c \
-	lstMember.c lstNext.c lstOpen.c lstRemove.c lstReplace.c lstSucc.c
-.PATH:	${.CURDIR}/lst.lib
+CFLAGS+= -I${.OBJDIR} -I${.CURDIR}
+HOSTCFLAGS+= -I${.OBJDIR} -I${.CURDIR}
+CDIAGFLAGS=-Wall -W -Wno-char-subscripts -Wstrict-prototypes -pedantic \
+	-Wmissing-prototypes -Wdeclaration-after-statement -std=c99
 
-.if make(install)
-SUBDIR+= PSD.doc
-.endif
+CDEFS+=-DHAS_PATHS_H
+CDEFS+=-DHAS_EXTENDED_GETCWD
+#CDEFS+=-DHAS_STATS
+
+DPADD += ${LIBUTIL}
+LDADD += -lutil
+CFLAGS+=${CDEFS}
+HOSTCFLAGS+=${CDEFS}
+
+SRCS=	arch.c buf.c cmd_exec.c compat.c cond.c dir.c direxpand.c dump.c \
+	engine.c \
+	error.c for.c init.c job.c lowparse.c main.c make.c memory.c parse.c \
+	parsevar.c str.c stats.c suff.c targ.c targequiv.c timestamp.c \
+	var.c varmodifiers.c varname.c
+
+.include "${.CURDIR}/lst.lib/Makefile.inc"
+
+CLEANFILES+=generate generate.o regress.o check
+
+CLEANFILES+= varhashconsts.h condhashconsts.h nodehashconsts.h
+
+beforedepend: varhashconsts.h condhashconsts.h nodehashconsts.h
+# may need tweaking if you add variable synonyms or change the hash function
+MAGICVARSLOTS=77
+MAGICCONDSLOTS=65
+
+varhashconsts.h: generate
+	${.OBJDIR}/generate 1 ${MAGICVARSLOTS} >$@.tmp && mv $@.tmp $@
+
+condhashconsts.h: generate
+	${.OBJDIR}/generate 2 ${MAGICCONDSLOTS} >$@.tmp && mv $@.tmp $@
+
+nodehashconsts.h: generate
+	${.OBJDIR}/generate 3 0 >$@.tmp && mv $@.tmp $@
+
+generate: generate.c stats.c memory.c ${DPADD}
+	${HOSTCC} ${HOSTCFLAGS} ${LDSTATIC} -o ${.TARGET} ${.ALLSRC} ${LDFLAGS} ${LDADD}
+
+CHECKOBJS = regress.o str.o memory.o buf.o
+
+check: ${CHECKOBJS} ${DPADD}
+	${CC} -o ${.TARGET} ${CFLAGS} ${CHECKOBJS} ${LDADD}
+
+regress: check
+	${.OBJDIR}/check
+
+# kludge for people who forget to make depend
+var.o: varhashconsts.h
+cond.o: condhashconsts.h
+targ.o parse.o: nodehashconsts.h
+
+.PHONY:		regress
 
 .include <bsd.prog.mk>

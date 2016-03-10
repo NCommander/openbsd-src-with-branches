@@ -1,3 +1,4 @@
+/*	$OpenBSD: setup.c,v 1.11 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: setup.c,v 1.4 1995/04/24 12:26:06 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,16 +30,14 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)setup.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: setup.c,v 1.4 1995/04/24 12:26:06 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <err.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-# include	"trek.h"
-# include	"getpar.h"
+#include "getpar.h"
+#include "trek.h"
 
 /*
 **  INITIALIZE THE GAME
@@ -55,36 +50,36 @@ static char rcsid[] = "$NetBSD: setup.c,v 1.4 1995/04/24 12:26:06 cgd Exp $";
 **	Game restart and tournament games are handled here.
 */
 
-struct cvntab	Lentab[] =
+const struct cvntab	Lentab[] =
 {
-	"s",		"hort",			(int (*)())1,		0,
-	"m",		"edium",		(int (*)())2,		0,
-	"l",		"ong",			(int (*)())4,		0,
-	"restart",	"",			0,		0,
-	0
+	{ "s",		"hort",		(cmdfun)1,	0 },
+	{ "m",		"edium",	(cmdfun)2,	0 },
+	{ "l",		"ong",		(cmdfun)4,	0 },
+	{ "restart",	"",		(cmdfun)0,	0 },
+	{ NULL,		NULL,		NULL,		0 }
 };
 
-struct cvntab	Skitab[] =
+const struct cvntab	Skitab[] =
 {
-	"n",		"ovice",		(int (*)())1,		0,
-	"f",		"air",			(int (*)())2,		0,
-	"g",		"ood",			(int (*)())3,		0,
-	"e",		"xpert",		(int (*)())4,		0,
-	"c",		"ommodore",		(int (*)())5,		0,
-	"i",		"mpossible",		(int (*)())6,		0,
-	0
+	{ "n",		"ovice",	(cmdfun)1,	0 },
+	{ "f",		"air",		(cmdfun)2,	0 },
+	{ "g",		"ood",		(cmdfun)3,	0 },
+	{ "e",		"xpert",	(cmdfun)4,	0 },
+	{ "c",		"ommodore",	(cmdfun)5,	0 },
+	{ "i",		"mpossible",	(cmdfun)6,	0 },
+	{ NULL,		NULL,		NULL,		0 }
 };
 
-setup()
+void
+setup(void)
 {
-	struct cvntab		*r;
-	register int		i, j;
+	const struct cvntab	*r;
+	int			i, j;
 	double			f;
 	int			d;
-	int			fd;
 	int			klump;
 	int			ix, iy;
-	register struct quad	*q;
+	struct quad		*q;
 	struct event		*e;
 
 	while (1)
@@ -103,14 +98,14 @@ setup()
 	Game.skill = (long) r->value;
 	Game.tourn = 0;
 	getstrpar("Enter a password", Game.passwd, 14, 0);
-	if (sequal(Game.passwd, "tournament"))
+	if (strcmp(Game.passwd, "tournament") == 0)
 	{
 		getstrpar("Enter tournament code", Game.passwd, 14, 0);
 		Game.tourn = 1;
 		d = 0;
 		for (i = 0; Game.passwd[i]; i++)
 			d += Game.passwd[i] << i;
-		srand(d);
+		srandom_deterministic(d);
 	}
 	Param.bases = Now.bases = ranf(6 - Game.skill) + 2;
 	if (Game.skill == 6)
@@ -165,7 +160,7 @@ setup()
 	for (i = j = 0; i < NDEV; i++)
 		j += Param.damprob[i];
 	if (j != 1000)
-		syserr("Device probabilities sum to %d", j);
+		errx(1, "Device probabilities sum to %d", j);
 	Param.dockfac = 0.5;
 	Param.regenfac = (5 - Game.skill) * 0.05;
 	if (Param.regenfac < 0.0)
@@ -236,6 +231,8 @@ setup()
 			q->scanned = -1;
 			q->stars = ranf(9) + 1;
 			q->holes = ranf(3) - q->stars / 5;
+			if (q->holes < 0)
+				q->holes = 0;
 			q->qsystemname = 0;
 		}
 

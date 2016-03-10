@@ -1,13 +1,10 @@
+/*	$OpenBSD: ffs.S,v 1.3 2005/08/07 11:30:38 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: ffs.S,v 1.7 1995/04/28 22:58:00 jtc Exp $")
-#endif
+#include "SYS.h"
 
 ENTRY(ffs)
 	bsfl	4(%esp),%eax
@@ -18,3 +15,4 @@ ENTRY(ffs)
 	.align 2
 L1:	xorl	%eax,%eax		/* clear result */
 	ret
+END_WEAK(ffs)

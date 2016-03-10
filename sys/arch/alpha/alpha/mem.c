@@ -1,4 +1,5 @@
-/*	$NetBSD: mem.c,v 1.4 1995/06/28 02:45:13 cgd Exp $	*/
+/* $OpenBSD: mem.c,v 1.27 2015/02/10 22:44:35 miod Exp $ */
+/* $NetBSD: mem.c,v 1.26 2000/03/29 03:48:20 simonb Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,51 +42,92 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/buf.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
+#include <sys/msgbuf.h>
+#include <sys/mman.h>
+#include <sys/conf.h>
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
+
+#define mmread  mmrw
+#define mmwrite mmrw
+cdev_decl(mm);
 
 caddr_t zeropage;
-extern int firstusablepage, lastusablepage;
+
+/* open counter for aperture */
+#ifdef APERTURE
+static int ap_open_count = 0;
+extern int allowaperture;
+#endif
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
+	switch (minor(dev)) {
+	case 0:
+	case 1:
+	case 2:
+		return (0);
+#ifdef APERTURE
+	case 4:
+	        if (suser(p, 0) != 0 || !allowaperture)
+			return (EPERM);
+
+		/* authorize only one simultaneous open() unless
+		 * allowaperture=3 */
+		if (ap_open_count > 0 && allowaperture < 3)
+			return(EPERM);
+		ap_open_count++;
+		return (0);
+#endif
+	case 12:
+		return (0);
+	default:
+		return (ENXIO);
+	}
+}
+
+/*ARGSUSED*/
+int
+mmclose(dev, flag, mode, p)
+	dev_t dev;
+	int flag, mode;
+	struct proc *p;
+{
+
+#ifdef APERTURE
+	if (minor(dev) == 4)
+		ap_open_count = 0;
+#endif
 	return (0);
 }
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
-	dev_t dev;
-	int flag, mode;
-{
-
-	return (0);
-}
-
-/*ARGSUSED*/
 mmrw(dev, uio, flags)
 	dev_t dev;
 	struct uio *uio;
 	int flags;
 {
-	register vm_offset_t o, v;
-	register int c;
-	register struct iovec *iov;
-	int error = 0;
+	vaddr_t o, v;
+	size_t c;
+	struct iovec *iov;
+	int error = 0, rw;
+	extern int msgbufmapped;
 
-	while (uio->uio_resid > 0 && error == 0) {
+	while (uio->uio_resid > 0 && !error) {
 		iov = uio->uio_iov;
 		if (iov->iov_len == 0) {
 			uio->uio_iov++;
@@ -103,28 +141,45 @@ mmrw(dev, uio, flags)
 /* minor device 0 is physical memory */
 		case 0:
 			v = uio->uio_offset;
-#ifndef DEBUG
-			/* allow reads only in RAM (except for DEBUG) */
-			if (v < ctob(firstusablepage) ||
-			    v >= ctob(lastusablepage + 1))
-				return (EFAULT);
-#endif
+kmemphys:
+			if (v >= ALPHA_K0SEG_TO_PHYS((vaddr_t)msgbufp)) {
+				if (msgbufmapped == 0) {
+					printf("Message Buf not Mapped\n");
+					error = EFAULT;
+					break;
+				}
+			}
+
+			/* Allow reads only in RAM. */
+			rw = (uio->uio_rw == UIO_READ) ? PROT_READ : PROT_WRITE;
+			if ((alpha_pa_access(v) & rw) != rw) {
+				error = EFAULT;
+				break;
+			}
+
 			o = uio->uio_offset & PGOFSET;
-			c = min(uio->uio_resid, (int)(NBPG - o));
-			error = uiomove(phystok0seg(v), c, uio);
-			continue;
+			c = ulmin(uio->uio_resid, PAGE_SIZE - o);
+			error =
+			    uiomove((caddr_t)ALPHA_PHYS_TO_K0SEG(v), c, uio);
+			break;
 
 /* minor device 1 is kernel memory */
 		case 1:
 			v = uio->uio_offset;
-			c = min(iov->iov_len, MAXPHYS);
-			if (!kernacc((caddr_t)v, c,
+
+			if (v >= ALPHA_K0SEG_BASE && v <= ALPHA_K0SEG_END) {
+				v = ALPHA_K0SEG_TO_PHYS(v);
+				goto kmemphys;
+			}
+
+			c = ulmin(iov->iov_len, MAXPHYS);
+			if (!uvm_kernacc((caddr_t)v, c,
 			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
 				return (EFAULT);
 			error = uiomove((caddr_t)v, c, uio);
-			continue;
+			break;
 
-/* minor device 2 is EOF/RATHOLE */
+/* minor device 2 is EOF/rathole */
 		case 2:
 			if (uio->uio_rw == UIO_WRITE)
 				uio->uio_resid = 0;
@@ -133,49 +188,35 @@ mmrw(dev, uio, flags)
 /* minor device 12 (/dev/zero) is source of nulls on read, rathole on write */
 		case 12:
 			if (uio->uio_rw == UIO_WRITE) {
-				c = iov->iov_len;
-				break;
+				uio->uio_resid = 0;
+				return (0);
 			}
 			/*
 			 * On the first call, allocate and zero a page
 			 * of memory for use with /dev/zero.
-			 *
-			 * XXX on the alpha we already know where there
-			 * is a global zeroed page, the null segment table.
 			 */
-			if (zeropage == NULL) {
-#if CLBYTES == NBPG
-				extern caddr_t Segtabzero;
-				zeropage = Segtabzero;
-#else
-				zeropage = (caddr_t)
-				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
-#endif
-			}
-			c = min(iov->iov_len, CLBYTES);
+			if (zeropage == NULL)
+				zeropage = malloc(PAGE_SIZE, M_TEMP,
+				    M_WAITOK | M_ZERO);
+			c = ulmin(iov->iov_len, PAGE_SIZE);
 			error = uiomove(zeropage, c, uio);
-			continue;
+			break;
 
 		default:
 			return (ENXIO);
 		}
-		if (error)
-			break;
-		iov->iov_base += c;
-		iov->iov_len -= c;
-		uio->uio_offset += c;
-		uio->uio_resid -= c;
 	}
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
 	dev_t dev;
-	vm_offset_t off;
+	off_t off;
 	int prot;
 {
+	switch (minor(dev)) {
+	case 0:
 	/*
 	 * /dev/mem is the only one that makes sense through this
 	 * interface.  For /dev/kmem any physaddr we return here
@@ -184,13 +225,38 @@ mmmmap(dev, off, prot)
 	 * and /dev/zero is a hack that is handled via the default
 	 * pager in mmap().
 	 */
-	if (minor(dev) != 0)
-		return (-1);
+
 	/*
 	 * Allow access only in RAM.
 	 */
-	if (off < ctob(firstusablepage) ||
-	    off >= ctob(lastusablepage + 1))
-		return (-1);
-	return (alpha_btop(off));
+		if ((prot & alpha_pa_access(atop(off))) != prot)
+			return (-1);
+		return off;
+		
+#ifdef APERTURE
+	case 4:
+		/* minor device 4 is aperture driver */
+		switch (allowaperture) {
+		case 1:
+			if ((prot & alpha_pa_access(atop(off))) != prot)
+				return (-1);
+			return off;
+		default:
+			return -1;
+		}
+#endif
+	default:
+		return -1;
+	}
+}
+
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
+	return (EOPNOTSUPP);
 }

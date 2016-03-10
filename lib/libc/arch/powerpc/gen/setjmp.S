@@ -1,3 +1,29 @@
+/*	$OpenBSD: setjmp.S,v 1.7 2015/08/23 15:42:01 kettenis Exp $ */
+/*
+ * Copyright (c) 1996 Dale Rahn. All rights reserved.
+ *
+ *   
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */  
+
 #include "SYS.h"
 #include <machine/asm.h>
 
@@ -29,19 +55,29 @@
 #define JMP_sig	0x60
 
 
-.extern sigblock
+.extern _libc_sigblock
 
 ENTRY(setjmp)
 	/* r31, mask */
 	stw 31, JMP_r31(3)
 	mflr 0
 	stw 0, JMP_lr(3)
+#ifdef __PIC__
+	stw 30, JMP_r30(3)
+	bcl 20, 31, 1f
+1:	mflr 30
+	addis 30, 30, _GLOBAL_OFFSET_TABLE_-1b@ha
+	addi 30, 30, _GLOBAL_OFFSET_TABLE_-1b@l
+#endif
 	mr 31, 3
 	li 3, 0
-	bl sigblock
+	bl PIC_PLT(_libc_sigblock)
 	stw 3, JMP_sig(31)
-	/* should sigstack be checked and saved */
+	/* should sigaltstack be checked and saved */
 	mr 3, 31
+#ifdef __PIC__
+	lwz 30, JMP_r30(3)
+#endif
 	lwz 0, JMP_lr(3)
 	mtlr 0
 	lwz 31, JMP_r31(3)
@@ -80,16 +116,24 @@ ENTRY(_setjmp)
 	blr
 
 
-.extern sigsetmask
+.extern _libc_sigsetmask
 ENTRY(longjmp)
 	/* r31, mask */
-	mr 30, 3
+	mr 29, 3
 	mr 31, 4
+#ifdef __PIC__
+	mflr 0
+	bcl 20, 31, 1f
+1:	mflr 30
+	addis 30, 30, _GLOBAL_OFFSET_TABLE_-1b@ha
+	addi 30, 30, _GLOBAL_OFFSET_TABLE_-1b@l
+	mtlr 0
+#endif
 	lwz 3, JMP_sig(3)
-	bl sigsetmask
+	bl PIC_PLT(_libc_sigsetmask)
 	/* should we deal with sigonstack here ?? */
 	mr 4, 31
-	mr 3, 30
+	mr 3, 29
 ENTRY(_longjmp)
 	lwz 31, JMP_r31(3)
 	/* r1, r14-r30 */
@@ -121,5 +165,11 @@ ENTRY(_longjmp)
 	lwz 0, JMP_xer(3)
 	mtxer 0
 	/* f14-f31, fpscr */
-	mr 3, 4
+
+	/* if r4 == 0, return 1, not 0 */
+	mr	3, 4
+	cmpwi	4,0
+	bne	1f
+	li	3, 1
+1:
 	blr

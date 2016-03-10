@@ -685,9 +685,13 @@ int sqlite3_backup_pagecount(sqlite3_backup *p){
 ** corresponding to the source database is held when this function is
 ** called.
 */
-void sqlite3BackupUpdate(sqlite3_backup *pBackup, Pgno iPage, const u8 *aData){
-  sqlite3_backup *p;                   /* Iterator variable */
-  for(p=pBackup; p; p=p->pNext){
+static SQLITE_NOINLINE void backupUpdate(
+  sqlite3_backup *p,
+  Pgno iPage,
+  const u8 *aData
+){
+  assert( p!=0 );
+  do{
     assert( sqlite3_mutex_held(p->pSrc->pBt->mutex) );
     if( !isFatalError(p->rc) && iPage<p->iNext ){
       /* The backup process p has already copied page iPage. But now it
@@ -704,7 +708,10 @@ void sqlite3BackupUpdate(sqlite3_backup *pBackup, Pgno iPage, const u8 *aData){
         p->rc = rc;
       }
     }
-  }
+  }while( (p = p->pNext)!=0 );
+}
+void sqlite3BackupUpdate(sqlite3_backup *pBackup, Pgno iPage, const u8 *aData){
+  if( pBackup ) backupUpdate(pBackup, iPage, aData);
 }
 
 /*
@@ -761,6 +768,10 @@ int sqlite3BtreeCopyFile(Btree *pTo, Btree *pFrom){
   b.pSrc = pFrom;
   b.pDest = pTo;
   b.iNext = 1;
+
+#ifdef SQLITE_HAS_CODEC
+  sqlite3PagerAlignReserve(sqlite3BtreePager(pTo), sqlite3BtreePager(pFrom));
+#endif
 
   /* 0x7FFFFFFF is the hard limit for the number of pages in a database
   ** file. By passing this as the number of pages to copy to

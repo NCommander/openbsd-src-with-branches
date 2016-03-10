@@ -1,3 +1,5 @@
+/*	$OpenBSD: file.c,v 1.16 2014/11/30 13:47:42 miod Exp $ */
+
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -27,17 +24,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINT
-static char rcsid[] = "$Id: file.c,v 1.4 1996/08/16 22:39:22 moj Exp $";
-#endif
-
 #include "os.h"
-#include "common/common.h"
-#include "common/mopdef.h"
+#include "common.h"
+#include "file.h"
+#include "mopdef.h"
+#include <stddef.h>
 
 #ifndef NOAOUT
-#if defined(__NetBSD__) || defined(__OpenBSD__)
-#include <sys/exec_aout.h>
+#if defined(__OpenBSD__)
+#include <sys/exec.h>
 #endif
 #if defined(__bsdi__)
 #define NOAOUT
@@ -45,86 +40,159 @@ static char rcsid[] = "$Id: file.c,v 1.4 1996/08/16 22:39:22 moj Exp $";
 #if defined(__FreeBSD__)
 #include <sys/imgact_aout.h>
 #endif
+#if !defined(MID_I386)
+#define MID_I386 134
+#endif
+#if !defined(MID_SPARC)
+#define MID_SPARC 138
+#endif
 #if !defined(MID_VAX)
 #define MID_VAX 140
 #endif
 #endif
 
+#ifndef NOELF
+#if defined(__OpenBSD__)
+#include <sys/exec_elf.h>
+#else
+#define NOELF
+#endif
+#endif
+
+#ifndef NOELF
+#if !defined(_LP64)
+#define NOELF64
+#endif
+#endif
+
+#ifndef NOAOUT
+static int	getCLBYTES(int);
+static int	getMID(int, int);
+#endif
+
+const char *
+FileTypeName(mopd_imagetype type)
+{
+
+	switch (type) {
+	case IMAGE_TYPE_MOP:
+		return ("MOP");
+
+	case IMAGE_TYPE_ELF32:
+		return ("Elf32");
+
+	case IMAGE_TYPE_ELF64:
+		return ("Elf64");
+
+	case IMAGE_TYPE_AOUT:
+		return ("a.out");
+	}
+
+	abort();
+}
+
 void
-mopFilePutLX(buf, index, value, cnt)
-	u_char	*buf;
-	int	index, cnt;
-	u_long	value;
+mopFilePutLX(u_char *buf, int idx, u_int32_t value, int cnt)
 {
 	int i;
 	for (i = 0; i < cnt; i++) {
-		buf[index+i] = value % 256;
+		buf[idx+i] = value % 256;
 		value = value / 256;
 	}
 }
 
 void
-mopFilePutBX(buf, index, value, cnt)
-	u_char	*buf;
-	int	index, cnt;
-	u_long	value;
+mopFilePutBX(u_char *buf, int idx, u_int32_t value, int cnt)
 {
 	int i;
 	for (i = 0; i < cnt; i++) {
-		buf[index+cnt-1-i] = value % 256;
+		buf[idx+cnt-1-i] = value % 256;
 		value = value / 256;
 	}
 }
 
-u_long
-mopFileGetLX(buf, index, cnt)
-	u_char	*buf;
-	int	index, cnt;
+u_int32_t
+mopFileGetLX(u_char *buf, int idx, int cnt)
 {
-	u_long ret = 0;
+	u_int32_t ret = 0;
 	int i;
 
 	for (i = 0; i < cnt; i++) {
-		ret = ret*256 + buf[index+cnt-1-i];
+		int j = idx + cnt - 1 - i;
+		if (j < 0)
+			abort();
+		ret = ret * 256 + buf[j];
 	}
 
 	return(ret);
 }
 
-u_long
-mopFileGetBX(buf, index, cnt)
-	u_char	*buf;
-	int	index, cnt;
+u_int32_t
+mopFileGetBX(u_char *buf, int idx, int cnt)
 {
-	u_long ret = 0;
+	u_int32_t ret = 0;
 	int i;
 
 	for (i = 0; i < cnt; i++) {
-		ret = ret*256 + buf[index+i];
+		int j = idx + i;
+		if (j < 0)
+			abort();
+		ret = ret * 256 + buf[j];
 	}
 
 	return(ret);
 }
+
+#if !defined(NOELF) && !defined(NOELF64)
+u_int64_t
+mopFileGetLXX(u_char *buf, int idx, int cnt)
+{
+	u_int64_t ret = 0;
+	int i;
+
+	for (i = 0; i < cnt; i++) {
+		int j = idx + cnt - 1 - i;
+		if (j < 0)
+			abort();
+		ret = ret * 256 + buf[j];
+	}
+
+	return(ret);
+}
+
+u_int64_t
+mopFileGetBXX(u_char *buf, int idx, int cnt)
+{
+	u_int64_t ret = 0;
+	int i;
+
+	for (i = 0; i < cnt; i++) {
+		int j = idx + i;
+		if (j < 0)
+			abort();
+		ret = ret * 256 + buf[j];
+	}
+
+	return(ret);
+}
+#endif
 
 void
-mopFileSwapX(buf, index, cnt)
-	u_char	*buf;
-	int	index, cnt;
+mopFileSwapX(u_char *buf, int idx, int cnt)
 {
 	int i;
 	u_char c;
 
 	for (i = 0; i < (cnt / 2); i++) {
-		c = buf[index+i];
-		buf[index+i] = buf[index+cnt-1-i];
-		buf[index+cnt-1-i] = c;
+		c = buf[idx+i];
+		buf[idx+i] = buf[idx+cnt-1-i];
+		buf[idx+cnt-1-i] = c;
 	}
 
 }
 
 int
-CheckMopFile(fd)
-	int	fd;
+CheckMopFile(int fd)
 {
 	u_char	header[512];
 	short	image_type;
@@ -134,162 +202,154 @@ CheckMopFile(fd)
 
 	(void)lseek(fd, (off_t) 0, SEEK_SET);
 
-	image_type = (u_short)(header[IHD_W_ALIAS+1]*256 +
-			       header[IHD_W_ALIAS]);
+	image_type = (u_short)(header[IHD_W_ALIAS+1]*256 + header[IHD_W_ALIAS]);
 
 	switch(image_type) {
-		case IHD_C_NATIVE:		/* Native mode image (VAX)   */
-		case IHD_C_RSX:			/* RSX image produced by TKB */
-		case IHD_C_BPA:			/* BASIC plus analog         */
-		case IHD_C_ALIAS:		/* Alias		     */
-		case IHD_C_CLI:			/* Image is CLI		     */
-		case IHD_C_PMAX:		/* PMAX system image	     */
-		case IHD_C_ALPHA:		/* ALPHA system image	     */
-			break;
-		default:
-			return(-1);
+	case IHD_C_NATIVE:		/* Native mode image (VAX)   */
+	case IHD_C_RSX:			/* RSX image produced by TKB */
+	case IHD_C_BPA:			/* BASIC plus analog         */
+	case IHD_C_ALIAS:		/* Alias		     */
+	case IHD_C_CLI:			/* Image is CLI		     */
+	case IHD_C_PMAX:		/* PMAX system image	     */
+	case IHD_C_ALPHA:		/* ALPHA system image	     */
+		break;
+	default:
+		return(-1);
 	}
 
 	return(0);
 }
 
 int
-GetMopFileInfo(fd, load, xfr)
-	int	fd;
-	u_long	*load, *xfr;
+GetMopFileInfo(struct dllist *dl, int info)
 {
-	u_char	header[512];
-	short	image_type;
-	u_long	load_addr, xfr_addr, isd, iha, hbcnt, isize;
+	u_char		header[512];
+	short		image_type;
+	u_int32_t	load_addr, xfr_addr, isd, iha, hbcnt, isize;
 
-	if (read(fd, header, 512) != 512)
+	if (read(dl->ldfd, header, 512) != 512)
 		return(-1);
 
 	image_type = (u_short)(header[IHD_W_ALIAS+1]*256 +
 			       header[IHD_W_ALIAS]);
 
-	switch(image_type) {
-		case IHD_C_NATIVE:		/* Native mode image (VAX)   */
-			isd = (header[IHD_W_SIZE+1]*256 +
-			       header[IHD_W_SIZE]);
-			iha = (header[IHD_W_ACTIVOFF+1]*256 +
-			       header[IHD_W_ACTIVOFF]);
-			hbcnt = (header[IHD_B_HDRBLKCNT]);
-			isize = (header[isd+ISD_W_PAGCNT+1]*256 +
-				 header[isd+ISD_W_PAGCNT]) * 512;
-			load_addr = ((header[isd+ISD_V_VPN+1]*256 +
-				      header[isd+ISD_V_VPN]) & ISD_M_VPN)
-					* 512;
-			xfr_addr = (header[iha+IHA_L_TFRADR1+3]*0x1000000 +
-				    header[iha+IHA_L_TFRADR1+2]*0x10000 +
-				    header[iha+IHA_L_TFRADR1+1]*0x100 +
-				    header[iha+IHA_L_TFRADR1]) & 0x7fffffff;
-#ifdef INFO
+	switch (image_type) {
+	case IHD_C_NATIVE:		/* Native mode image (VAX)   */
+		isd = (header[IHD_W_SIZE+1]*256 +
+		       header[IHD_W_SIZE]);
+		iha = (header[IHD_W_ACTIVOFF+1]*256 +
+		       header[IHD_W_ACTIVOFF]);
+		hbcnt = (header[IHD_B_HDRBLKCNT]);
+		isize = (header[isd+ISD_W_PAGCNT+1]*256 +
+			 header[isd+ISD_W_PAGCNT]) * 512;
+		load_addr = ((header[isd+ISD_V_VPN+1]*256 +
+			      header[isd+ISD_V_VPN]) & ISD_M_VPN)
+				* 512;
+		xfr_addr = (header[iha+IHA_L_TFRADR1+3]*0x1000000 +
+			    header[iha+IHA_L_TFRADR1+2]*0x10000 +
+			    header[iha+IHA_L_TFRADR1+1]*0x100 +
+			    header[iha+IHA_L_TFRADR1]) & 0x7fffffff;
+		if (info == INFO_PRINT) {
 			printf("Native Image (VAX)\n");
 			printf("Header Block Count: %d\n",hbcnt);
 			printf("Image Size:         %08x\n",isize);
 			printf("Load Address:       %08x\n",load_addr);
 			printf("Transfer Address:   %08x\n",xfr_addr);
-#endif
-			break;
-		case IHD_C_RSX:			/* RSX image produced by TKB */
-			hbcnt = header[L_BBLK+1]*256 + header[L_BBLK];
-			isize = (header[L_BLDZ+1]*256 + header[L_BLDZ]) * 64;
-			load_addr = header[L_BSA+1]*256 + header[L_BSA];
-			xfr_addr  = header[L_BXFR+1]*256 + header[L_BXFR];
-#ifdef INFO
+		}
+		break;
+	case IHD_C_RSX:			/* RSX image produced by TKB */
+		hbcnt = header[L_BBLK+1]*256 + header[L_BBLK];
+		isize = (header[L_BLDZ+1]*256 + header[L_BLDZ]) * 64;
+		load_addr = header[L_BSA+1]*256 + header[L_BSA];
+		xfr_addr  = header[L_BXFR+1]*256 + header[L_BXFR];
+		if (info == INFO_PRINT) {
 			printf("RSX Image\n");
 			printf("Header Block Count: %d\n",hbcnt);
 			printf("Image Size:         %08x\n",isize);
 			printf("Load Address:       %08x\n",load_addr);
 			printf("Transfer Address:   %08x\n",xfr_addr);
-#endif
-			break;
-		case IHD_C_BPA:			/* BASIC plus analog         */
-#ifdef INFO
+		}
+		break;
+	case IHD_C_BPA:			/* BASIC plus analog         */
+		if (info == INFO_PRINT) {
 			printf("BASIC-Plus Image, not supported\n");
-#endif
-			return(-1);
-			break;
-		case IHD_C_ALIAS:		/* Alias		     */
-#ifdef INFO
+		}
+		return(-1);
+		break;
+	case IHD_C_ALIAS:		/* Alias		     */
+		if (info == INFO_PRINT) {
 			printf("Alias, not supported\n");
-#endif
-			return(-1);
-			break;
-		case IHD_C_CLI:			/* Image is CLI		     */
-#ifdef INFO
+		}
+		return(-1);
+		break;
+	case IHD_C_CLI:			/* Image is CLI		     */
+		if (info == INFO_PRINT) {
 			printf("CLI, not supported\n");
-#endif
-			return(-1);
-			break;
-		case IHD_C_PMAX:		/* PMAX system image	     */
-			isd = (header[IHD_W_SIZE+1]*256 +
-			       header[IHD_W_SIZE]);
-			iha = (header[IHD_W_ACTIVOFF+1]*256 +
-			       header[IHD_W_ACTIVOFF]);
-			hbcnt = (header[IHD_B_HDRBLKCNT]);
-			isize = (header[isd+ISD_W_PAGCNT+1]*256 +
-				 header[isd+ISD_W_PAGCNT]) * 512;
-			load_addr = (header[isd+ISD_V_VPN+1]*256 +
-				     header[isd+ISD_V_VPN]) * 512;
-			xfr_addr = (header[iha+IHA_L_TFRADR1+3]*0x1000000 +
-				    header[iha+IHA_L_TFRADR1+2]*0x10000 +
-				    header[iha+IHA_L_TFRADR1+1]*0x100 +
-				    header[iha+IHA_L_TFRADR1]);
-#ifdef INFO
+		}
+		return(-1);
+		break;
+	case IHD_C_PMAX:		/* PMAX system image	     */
+		isd = (header[IHD_W_SIZE+1]*256 +
+		       header[IHD_W_SIZE]);
+		iha = (header[IHD_W_ACTIVOFF+1]*256 +
+		       header[IHD_W_ACTIVOFF]);
+		hbcnt = (header[IHD_B_HDRBLKCNT]);
+		isize = (header[isd+ISD_W_PAGCNT+1]*256 +
+			 header[isd+ISD_W_PAGCNT]) * 512;
+		load_addr = (header[isd+ISD_V_VPN+1]*256 +
+			     header[isd+ISD_V_VPN]) * 512;
+		xfr_addr = (header[iha+IHA_L_TFRADR1+3]*0x1000000 +
+			    header[iha+IHA_L_TFRADR1+2]*0x10000 +
+			    header[iha+IHA_L_TFRADR1+1]*0x100 +
+			    header[iha+IHA_L_TFRADR1]);
+		if (info == INFO_PRINT) {
 			printf("PMAX Image \n");
 			printf("Header Block Count: %d\n",hbcnt);
 			printf("Image Size:         %08x\n",isize);
 			printf("Load Address:       %08x\n",load_addr);
 			printf("Transfer Address:   %08x\n",xfr_addr);
-#endif
-			break;
-		case IHD_C_ALPHA:		/* ALPHA system image	     */
-			isd = (header[EIHD_L_ISDOFF+3]*0x1000000 +
-			       header[EIHD_L_ISDOFF+2]*0x10000 +
-			       header[EIHD_L_ISDOFF+1]*0x100 +
-			       header[EIHD_L_ISDOFF]);
-			hbcnt = (header[EIHD_L_HDRBLKCNT+3]*0x1000000 +
-				 header[EIHD_L_HDRBLKCNT+2]*0x10000 +
-				 header[EIHD_L_HDRBLKCNT+1]*0x100 +
-				 header[EIHD_L_HDRBLKCNT]);
-			isize = (header[isd+EISD_L_SECSIZE+3]*0x1000000 +
-				 header[isd+EISD_L_SECSIZE+2]*0x10000 +
-				 header[isd+EISD_L_SECSIZE+1]*0x100 +
-				 header[isd+EISD_L_SECSIZE]);
-			load_addr = 0;
-			xfr_addr = 0;
-#ifdef INFO
+		}
+		break;
+	case IHD_C_ALPHA:		/* ALPHA system image	     */
+		isd = (header[EIHD_L_ISDOFF+3]*0x1000000 +
+		       header[EIHD_L_ISDOFF+2]*0x10000 +
+		       header[EIHD_L_ISDOFF+1]*0x100 +
+		       header[EIHD_L_ISDOFF]);
+		hbcnt = (header[EIHD_L_HDRBLKCNT+3]*0x1000000 +
+			 header[EIHD_L_HDRBLKCNT+2]*0x10000 +
+			 header[EIHD_L_HDRBLKCNT+1]*0x100 +
+			 header[EIHD_L_HDRBLKCNT]);
+		isize = (header[isd+EISD_L_SECSIZE+3]*0x1000000 +
+			 header[isd+EISD_L_SECSIZE+2]*0x10000 +
+			 header[isd+EISD_L_SECSIZE+1]*0x100 +
+			 header[isd+EISD_L_SECSIZE]);
+		load_addr = 0;
+		xfr_addr = 0;
+		if (info == INFO_PRINT) {
 			printf("Alpha Image \n");
 			printf("Header Block Count: %d\n",hbcnt);
 			printf("Image Size:         %08x\n",isize);
 			printf("Load Address:       %08x\n",load_addr);
 			printf("Transfer Address:   %08x\n",xfr_addr);
-#endif
-			break;
-		default:
-#ifdef INFO
+		}
+		break;
+	default:
+		if (info == INFO_PRINT) {
 			printf("Unknown Image (%d)\n",image_type);
-#endif
-			return(-1);
+		}
+		return(-1);
 	}
 
-	if (load != NULL) {
-		*load = load_addr;
-	}
-
-	if (xfr != NULL) {
-		*xfr  = xfr_addr;
-	}
+	dl->image_type = IMAGE_TYPE_MOP;
+	dl->loadaddr = load_addr;
+	dl->xferaddr = xfr_addr;
 
 	return(0);
 }
 
 #ifndef NOAOUT
-int
-getMID(old_mid,new_mid)
-	int	old_mid, new_mid;
+static int
+getMID(int old_mid, int new_mid)
 {
 	int	mid;
 
@@ -314,9 +374,6 @@ getMID(old_mid,new_mid)
 		mid = MID_NS32532;
 		break;
 #endif
-/*###323 [cc] for each function it appears in.)%%%*/
-/*###323 [cc] (Each undeclared identifier is reported only once%%%*/
-/*###323 [cc] `MID_SPARC' undeclared (first use this function)%%%*/
 	case MID_SPARC:
 		mid = MID_SPARC;
 		break;
@@ -346,15 +403,14 @@ getMID(old_mid,new_mid)
 		break;
 #endif
 	default:
-/*###352 [cc] syntax error before `}'%%%*/
+		break;
 	}
 
 	return(mid);
 }
 
-int
-getCLBYTES(mid)
-	int	mid;
+static int
+getCLBYTES(int mid)
 {
 	int	clbytes;
 
@@ -364,14 +420,15 @@ getCLBYTES(mid)
 		clbytes = 1024;
 		break;
 #endif
+#ifdef MID_I386
 	case MID_I386:
+#endif
 #ifdef MID_M68K4K
 	case MID_M68K4K:
 #endif
 #ifdef MID_NS32532
 	case MID_NS32532:
 #endif
-	case MID_SPARC:				/* It might be 8192 */
 #ifdef MID_PMAX
 	case MID_PMAX:
 #endif
@@ -381,15 +438,21 @@ getCLBYTES(mid)
 #ifdef MID_ARM6
 	case MID_ARM6:
 #endif
+#if defined(MID_I386) || defined(MID_M68K4K) || defined(MID_NS32532) || \
+    defined(MID_PMAX) || defined(MID_MIPS) || defined(MID_ARM6)
 		clbytes = 4096;
 		break;
+#endif
 #ifdef MID_M68K
 	case MID_M68K:
 #endif
 #ifdef MID_ALPHA
 	case MID_ALPHA:
 #endif
-#if defined(MID_M68K) || defined(MID_ALPHA)
+#ifdef MID_SPARC
+	case MID_SPARC:
+#endif
+#if defined(MID_M68K) || defined(MID_ALPHA) || defined(MID_SPARC)
 		clbytes = 8192;
 		break;
 #endif
@@ -401,10 +464,422 @@ getCLBYTES(mid)
 }
 #endif
 
-/*###406 [cc] syntax error before `int'%%%*/
 int
-CheckAOutFile(fd)
-	int	fd;
+CheckElfFile(int fd)
+{
+#ifdef NOELF
+	return(-1);
+#else
+	Elf32_Ehdr ehdr;
+
+	(void)lseek(fd, (off_t) 0, SEEK_SET);
+
+	if (read(fd, (char *)&ehdr, sizeof(ehdr)) != sizeof(ehdr))
+		return(-1);
+
+	if (ehdr.e_ident[0] != ELFMAG0 ||
+	    ehdr.e_ident[1] != ELFMAG1 ||
+	    ehdr.e_ident[2] != ELFMAG2 ||
+	    ehdr.e_ident[3] != ELFMAG3)
+		return(-1);
+
+	/* Must be Elf32 or Elf64... */
+	if (ehdr.e_ident[EI_CLASS] != ELFCLASS32 &&
+	    ehdr.e_ident[EI_CLASS] != ELFCLASS64)
+		return(-1);
+
+	return(0);
+#endif /* NOELF */
+}
+
+int
+GetElf32FileInfo(struct dllist *dl, int info)
+{
+#ifdef NOELF
+	return(-1);
+#else
+	Elf32_Ehdr ehdr;
+	Elf32_Phdr phdr;
+	uint32_t e_machine, e_entry;
+	uint32_t e_phoff, e_phentsize, e_phnum;
+	int ei_data, i;
+
+	(void)lseek(dl->ldfd, (off_t) 0, SEEK_SET);
+
+	if (read(dl->ldfd, (char *)&ehdr, sizeof(ehdr)) != sizeof(ehdr))
+		return(-1);
+
+	if (ehdr.e_ident[0] != ELFMAG0 ||
+	    ehdr.e_ident[1] != ELFMAG1 ||
+	    ehdr.e_ident[2] != ELFMAG2 ||
+	    ehdr.e_ident[3] != ELFMAG3)
+		return(-1);
+
+	/* Must be Elf32... */
+	if (ehdr.e_ident[EI_CLASS] != ELFCLASS32)
+		return(-1);
+
+	ei_data = ehdr.e_ident[EI_DATA];
+
+	switch (ei_data) {
+	case ELFDATA2LSB:
+		e_machine = mopFileGetLX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_machine),
+		    sizeof(ehdr.e_machine));
+		e_entry = mopFileGetLX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_entry),
+		    sizeof(ehdr.e_entry));
+
+		e_phoff = mopFileGetLX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_phoff),
+		    sizeof(ehdr.e_phoff));
+		e_phentsize = mopFileGetLX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_phentsize),
+		    sizeof(ehdr.e_phentsize));
+		e_phnum = mopFileGetLX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_phnum),
+		    sizeof(ehdr.e_phnum));
+		break;
+
+	case ELFDATA2MSB:
+		e_machine = mopFileGetBX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_machine),
+		    sizeof(ehdr.e_machine));
+		e_entry = mopFileGetBX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_entry),
+		    sizeof(ehdr.e_entry));
+
+		e_phoff = mopFileGetBX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_phoff),
+		    sizeof(ehdr.e_phoff));
+		e_phentsize = mopFileGetBX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_phentsize),
+		    sizeof(ehdr.e_phentsize));
+		e_phnum = mopFileGetBX((u_char *) &ehdr,
+		    offsetof(Elf32_Ehdr, e_phnum),
+		    sizeof(ehdr.e_phnum));
+		break;
+
+	default:
+		return(-1);
+	}
+
+	if (e_phnum > SEC_MAX)
+		return(-1);
+	dl->e_nsec = e_phnum;
+	for (i = 0; i < dl->e_nsec; i++) {
+		if (lseek(dl->ldfd, (off_t) e_phoff + (i * e_phentsize),
+		    SEEK_SET) == (off_t) -1)
+			return(-1);
+		if (read(dl->ldfd, (char *) &phdr, sizeof(phdr)) !=
+		    sizeof(phdr))
+			return(-1);
+
+		switch (ei_data) {
+		case ELFDATA2LSB:
+			dl->e_sections[i].s_foff =
+			    mopFileGetLX((u_char *) &phdr,
+			    offsetof(Elf32_Phdr, p_offset),
+			    sizeof(phdr.p_offset));
+			dl->e_sections[i].s_vaddr =
+			    mopFileGetLX((u_char *) &phdr,
+			    offsetof(Elf32_Phdr, p_vaddr),
+			    sizeof(phdr.p_vaddr));
+			dl->e_sections[i].s_fsize =
+			    mopFileGetLX((u_char *) &phdr,
+			    offsetof(Elf32_Phdr, p_filesz),
+			    sizeof(phdr.p_filesz));
+			dl->e_sections[i].s_msize =
+			    mopFileGetLX((u_char *) &phdr,
+			    offsetof(Elf32_Phdr, p_memsz),
+			    sizeof(phdr.p_memsz));
+			break;
+
+		case ELFDATA2MSB:
+			dl->e_sections[i].s_foff =
+			    mopFileGetBX((u_char *) &phdr,
+			    offsetof(Elf32_Phdr, p_offset),
+			    sizeof(phdr.p_offset));
+			dl->e_sections[i].s_vaddr =
+			    mopFileGetBX((u_char *) &phdr,
+			    offsetof(Elf32_Phdr, p_vaddr),
+			    sizeof(phdr.p_vaddr));
+			dl->e_sections[i].s_fsize =
+			    mopFileGetBX((u_char *) &phdr,
+			    offsetof(Elf32_Phdr, p_filesz),
+			    sizeof(phdr.p_filesz));
+			dl->e_sections[i].s_msize =
+			    mopFileGetBX((u_char *) &phdr,
+			    offsetof(Elf32_Phdr, p_memsz),
+			    sizeof(phdr.p_memsz));
+			break;
+
+		default:
+			return(-1);
+		}
+	}
+	/*
+	 * In addition to padding between segments, this also
+	 * takes care of memsz > filesz.
+	 */
+	for (i = 0; i < dl->e_nsec - 1; i++) {
+		dl->e_sections[i].s_pad =
+		    dl->e_sections[i + 1].s_vaddr -
+		    (dl->e_sections[i].s_vaddr + dl->e_sections[i].s_fsize);
+	}
+	dl->e_sections[dl->e_nsec - 1].s_pad =
+	    dl->e_sections[dl->e_nsec - 1].s_msize -
+	    dl->e_sections[dl->e_nsec - 1].s_fsize;
+	/*
+	 * Now compute the logical offsets for each section.
+	 */
+	dl->e_sections[0].s_loff = 0;
+	for (i = 1; i < dl->e_nsec; i++) {
+		dl->e_sections[i].s_loff =
+		    dl->e_sections[i - 1].s_loff +
+		    dl->e_sections[i - 1].s_fsize +
+		    dl->e_sections[i - 1].s_pad;
+	}
+
+	dl->image_type = IMAGE_TYPE_ELF32;
+	dl->loadaddr = 0;
+#if 0
+	dl->xferaddr = e_entry;		/* will relocate itself if necessary */
+#else
+	dl->xferaddr = e_entry - dl->e_sections[0].s_vaddr;
+#endif
+
+	/* Print info about the image. */
+	if (info == INFO_PRINT) {
+		printf("Elf32 image (");
+		switch (e_machine) {
+#ifdef EM_VAX
+		case EM_VAX:
+			printf("VAX");
+			break;
+#endif
+		default:
+			printf("machine %d", e_machine);
+			break;
+		}
+		printf(")\n");
+		printf("Transfer Address:   %08x\n", dl->xferaddr);
+		printf("Program Sections:   %d\n", dl->e_nsec);
+		for (i = 0; i < dl->e_nsec; i++) {
+			printf(" S%d File Size:      %08x\n", i,
+			    dl->e_sections[i].s_fsize);
+			printf(" S%d Pad Size:       %08x\n", i,
+			    dl->e_sections[i].s_pad);
+		}
+	}
+
+	dl->e_machine = e_machine;
+
+	dl->e_curpos = 0;
+	dl->e_cursec = 0;
+
+	return(0);
+#endif /* NOELF */
+}
+
+int
+GetElf64FileInfo(struct dllist *dl, int info)
+{
+#if defined(NOELF) || defined(NOELF64)
+	return(-1);
+#else
+	Elf64_Ehdr ehdr;
+	Elf64_Phdr phdr;
+	uint32_t e_machine;
+	uint32_t e_phentsize, e_phnum;
+	uint64_t e_entry, e_phoff;
+	int ei_data, i;
+
+	(void)lseek(dl->ldfd, (off_t) 0, SEEK_SET);
+
+	if (read(dl->ldfd, (char *)&ehdr, sizeof(ehdr)) != sizeof(ehdr))
+		return(-1);
+
+	if (ehdr.e_ident[0] != ELFMAG0 ||
+	    ehdr.e_ident[1] != ELFMAG1 ||
+	    ehdr.e_ident[2] != ELFMAG2 ||
+	    ehdr.e_ident[3] != ELFMAG3)
+		return(-1);
+
+	/* Must be Elf64... */
+	if (ehdr.e_ident[EI_CLASS] != ELFCLASS64)
+		return(-1);
+
+	ei_data = ehdr.e_ident[EI_DATA];
+
+	switch (ei_data) {
+	case ELFDATA2LSB:
+		e_machine = mopFileGetLX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_machine),
+		    sizeof(ehdr.e_machine));
+		e_entry = mopFileGetLXX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_entry),
+		    sizeof(ehdr.e_entry));
+
+		e_phoff = mopFileGetLXX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_phoff),
+		    sizeof(ehdr.e_phoff));
+		e_phentsize = mopFileGetLX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_phentsize),
+		    sizeof(ehdr.e_phentsize));
+		e_phnum = mopFileGetLX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_phnum),
+		    sizeof(ehdr.e_phnum));
+		break;
+
+	case ELFDATA2MSB:
+		e_machine = mopFileGetBX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_machine),
+		    sizeof(ehdr.e_machine));
+		e_entry = mopFileGetBXX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_entry),
+		    sizeof(ehdr.e_entry));
+
+		e_phoff = mopFileGetBXX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_phoff),
+		    sizeof(ehdr.e_phoff));
+		e_phentsize = mopFileGetBX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_phentsize),
+		    sizeof(ehdr.e_phentsize));
+		e_phnum = mopFileGetBX((u_char *) &ehdr,
+		    offsetof(Elf64_Ehdr, e_phnum),
+		    sizeof(ehdr.e_phnum));
+		break;
+
+	default:
+		return(-1);
+	}
+
+	if (e_phnum > SEC_MAX)
+		return(-1);
+	dl->e_nsec = e_phnum;
+	for (i = 0; i < dl->e_nsec; i++) {
+		if (lseek(dl->ldfd, (off_t) e_phoff + (i * e_phentsize),
+		    SEEK_SET) == (off_t) -1)
+			return(-1);
+		if (read(dl->ldfd, (char *) &phdr, sizeof(phdr)) !=
+		    sizeof(phdr))
+			return(-1);
+
+		switch (ei_data) {
+		case ELFDATA2LSB:
+			dl->e_sections[i].s_foff =
+			    mopFileGetLX((u_char *) &phdr,
+			    offsetof(Elf64_Phdr, p_offset),
+			    sizeof(phdr.p_offset));
+			dl->e_sections[i].s_vaddr =
+			    mopFileGetLX((u_char *) &phdr,
+			    offsetof(Elf64_Phdr, p_vaddr),
+			    sizeof(phdr.p_vaddr));
+			dl->e_sections[i].s_fsize =
+			    mopFileGetLX((u_char *) &phdr,
+			    offsetof(Elf64_Phdr, p_filesz),
+			    sizeof(phdr.p_filesz));
+			dl->e_sections[i].s_msize =
+			    mopFileGetLX((u_char *) &phdr,
+			    offsetof(Elf64_Phdr, p_memsz),
+			    sizeof(phdr.p_memsz));
+			break;
+
+		case ELFDATA2MSB:
+			dl->e_sections[i].s_foff =
+			    mopFileGetBX((u_char *) &phdr,
+			    offsetof(Elf64_Phdr, p_offset),
+			    sizeof(phdr.p_offset));
+			dl->e_sections[i].s_vaddr =
+			    mopFileGetBX((u_char *) &phdr,
+			    offsetof(Elf64_Phdr, p_vaddr),
+			    sizeof(phdr.p_vaddr));
+			dl->e_sections[i].s_fsize =
+			    mopFileGetBX((u_char *) &phdr,
+			    offsetof(Elf64_Phdr, p_filesz),
+			    sizeof(phdr.p_filesz));
+			dl->e_sections[i].s_msize =
+			    mopFileGetBX((u_char *) &phdr,
+			    offsetof(Elf64_Phdr, p_memsz),
+			    sizeof(phdr.p_memsz));
+			break;
+
+		default:
+			return(-1);
+		}
+	}
+	/*
+	 * In addition to padding between segments, this also
+	 * takes care of memsz > filesz.
+	 */
+	for (i = 0; i < dl->e_nsec - 1; i++) {
+		dl->e_sections[i].s_pad =
+		    dl->e_sections[i + 1].s_vaddr -
+		    (dl->e_sections[i].s_vaddr + dl->e_sections[i].s_fsize);
+	}
+	dl->e_sections[dl->e_nsec - 1].s_pad =
+	    dl->e_sections[dl->e_nsec - 1].s_msize -
+	    dl->e_sections[dl->e_nsec - 1].s_fsize;
+	/*
+	 * Now compute the logical offsets for each section.
+	 */
+	dl->e_sections[0].s_loff = 0;
+	for (i = 1; i < dl->e_nsec; i++) {
+		dl->e_sections[i].s_loff =
+		    dl->e_sections[i - 1].s_loff +
+		    dl->e_sections[i - 1].s_fsize +
+		    dl->e_sections[i - 1].s_pad;
+	}
+
+	dl->image_type = IMAGE_TYPE_ELF64;
+	dl->loadaddr = 0;
+#if 0
+	dl->xferaddr = e_entry;		/* will relocate itself if necessary */
+#else
+	dl->xferaddr = e_entry - dl->e_sections[0].s_vaddr;
+#endif
+
+	/* Print info about the image. */
+	if (info == INFO_PRINT) {
+		printf("Elf64 image (");
+		switch (e_machine) {
+#ifdef EM_ALPHA
+		case EM_ALPHA:
+#endif
+#ifdef EM_ALPHA_EXP
+		case EM_ALPHA_EXP:
+#endif
+#if defined(EM_ALPHA) || defined(EM_ALPHA_EXP)
+			printf("ALPHA");
+			break;
+#endif
+		default:
+			printf("machine %d", e_machine);
+			break;
+		}
+		printf(")\n");
+		printf("Transfer Address:   %08x\n", dl->xferaddr);
+		printf("Program Sections:   %d\n", dl->e_nsec);
+		for (i = 0; i < dl->e_nsec; i++) {
+			printf(" S%d File Size:      %08x\n", i,
+			    dl->e_sections[i].s_fsize);
+			printf(" S%d Pad Size:       %08x\n", i,
+			    dl->e_sections[i].s_pad);
+		}
+	}
+
+	dl->e_machine = e_machine;
+
+	dl->e_curpos = 0;
+	dl->e_cursec = 0;
+
+	return(0);
+#endif /* NOELF || NOELF64 */
+}
+
+int
+CheckAOutFile(int fd)
 {
 #ifdef NOAOUT
 	return(-1);
@@ -412,7 +887,6 @@ CheckAOutFile(fd)
 	struct exec ex, ex_swap;
 	int	mid = -1;
 
-/*###416 [cc] `fd' undeclared (first use this function)%%%*/
 	if (read(fd, (char *)&ex, sizeof(ex)) != sizeof(ex))
 		return(-1);
 
@@ -434,44 +908,40 @@ CheckAOutFile(fd)
 	} else {
 		return(-1);
 	}
-#endif NOAOUT
+#endif /* NOAOUT */
 }
 
-/*###440 [cc] syntax error before `int'%%%*/
 int
-GetAOutFileInfo(fd, load, xfr, a_text, a_text_fill,
-		a_data, a_data_fill, a_bss, a_bss_fill, aout)
-	int	fd, *aout;
-	u_long	*load, *xfr, *a_text, *a_text_fill;
-	u_long	*a_data, *a_data_fill, *a_bss, *a_bss_fill;
+GetAOutFileInfo(struct dllist *dl, int info)
 {
 #ifdef NOAOUT
 	return(-1);
 #else
 	struct exec ex, ex_swap;
-	int	mid = -1;
-	u_long	magic, clbytes, clofset;
+	u_int32_t	mid = -1;
+	u_int32_t	magic, clbytes, clofset;
 
-	if (read(fd, (char *)&ex, sizeof(ex)) != sizeof(ex))
+	if (read(dl->ldfd, (char *)&ex, sizeof(ex)) != sizeof(ex))
 		return(-1);
 
-	(void)lseek(fd, (off_t) 0, SEEK_SET);
+	(void)lseek(dl->ldfd, (off_t) 0, SEEK_SET);
 
-	if (read(fd, (char *)&ex_swap, sizeof(ex_swap)) != sizeof(ex_swap))
+	if (read(dl->ldfd, (char *)&ex_swap,
+		 sizeof(ex_swap)) != sizeof(ex_swap))
 		return(-1);
 
 	mopFileSwapX((u_char *)&ex_swap, 0, 4);
 
 	mid = getMID(mid, N_GETMID (ex));
 
-	if (mid == -1) {
+	if (mid == (uint32_t)-1) {
 		mid = getMID(mid, N_GETMID (ex_swap));
-		if (mid != -1) {
+		if (mid != (uint32_t)-1) {
 			mopFileSwapX((u_char *)&ex, 0, 4);
 		}
 	}
 
-	if (mid == -1) {
+	if (mid == (uint32_t)-1) {
 		return(-1);
 	}
 
@@ -523,217 +993,235 @@ GetAOutFileInfo(fd, load, xfr, a_text, a_text_fill,
 		ex.a_drsize= mopFileGetBX((u_char *)&ex_swap, 28, 4);
 		break;
 	default:
-/*###525 [cc] syntax error before `}'%%%*/
+		break;
 	}
 
-#ifdef INFO
-	printf("a.out image (");
-	switch (N_GETMID (ex)) {
-	case MID_I386:
-		printf("i386");
-		break;
+	if (info == INFO_PRINT) {
+		printf("a.out image (");
+		switch (N_GETMID (ex)) {
+		case MID_I386:
+			printf("i386");
+			break;
 #ifdef MID_M68K
-	case MID_M68K:
-		printf("m68k");
-		break;
+		case MID_M68K:
+			printf("m68k");
+			break;
 #endif
 #ifdef MID_M68K4K
-	case MID_M68K4K:
-		printf("m68k 4k");
-		break;
+		case MID_M68K4K:
+			printf("m68k 4k");
+			break;
 #endif
 #ifdef MID_NS32532
-	case MID_NS32532:
-		printf("pc532");
-		break;
+		case MID_NS32532:
+			printf("pc532");
+			break;
 #endif
-	case MID_SPARC:
-		printf("sparc");
-		break;
+		case MID_SPARC:
+			printf("sparc");
+			break;
 #ifdef MID_PMAX
-	case MID_PMAX:
-		printf("pmax");
-		break;
+		case MID_PMAX:
+			printf("pmax");
+			break;
 #endif
 #ifdef MID_VAX
-	case MID_VAX:
-		printf("vax");
-		break;
+		case MID_VAX:
+			printf("vax");
+			break;
 #endif
 #ifdef MID_ALPHA
-	case MID_ALPHA:
-		printf("alpha");
-		break;
+		case MID_ALPHA:
+			printf("alpha");
+			break;
 #endif
 #ifdef MID_MIPS
-	case MID_MIPS:
-		printf("mips");
-		break;
+		case MID_MIPS:
+			printf("mips");
+			break;
 #endif
 #ifdef MID_ARM6
-	case MID_ARM6:
-		printf("arm32");
-		break;
+		case MID_ARM6:
+			printf("arm32");
+			break;
 #endif
-	default:
+		default:
+			break;
+		}
+		printf(") Magic: ");
+		switch (N_GETMAGIC (ex)) {
+		case OMAGIC:
+			printf("OMAGIC");
+			break;
+		case NMAGIC:
+			printf("NMAGIC");
+			break;
+		case ZMAGIC:
+			printf("ZMAGIC");
+			break;
+		case QMAGIC:
+			printf("QMAGIC");
+			break;
+		default:
+			printf("Unknown %ld", (long) N_GETMAGIC (ex));
+		}
+		printf("\n");
+		printf("Size of text:       %08lx\n", (long)ex.a_text);
+		printf("Size of data:       %08lx\n", (long)ex.a_data);
+		printf("Size of bss:        %08lx\n", (long)ex.a_bss);
+		printf("Size of symbol tab: %08lx\n", (long)ex.a_syms);
+		printf("Transfer Address:   %08lx\n", (long)ex.a_entry);
+		printf("Size of reloc text: %08lx\n", (long)ex.a_trsize);
+		printf("Size of reloc data: %08lx\n", (long)ex.a_drsize);
 	}
-	printf(") Magic: ");
-	switch (N_GETMAGIC (ex)) {
-	case OMAGIC:
-		printf("OMAGIC");
-		break;
-	case NMAGIC:
-		printf("NMAGIC");
-		break;
-	case ZMAGIC:
-		printf("ZMAGIC");
-		break;
-	case QMAGIC:
-		printf("QMAGIC");
-		break;
-	default:
-		printf("Unknown %d",N_GETMAGIC (ex));
-	}
-	printf("\n");
-	printf("Size of text:       %08x\n",ex.a_text);
-	printf("Size of data:       %08x\n",ex.a_data);
-	printf("Size of bss:        %08x\n",ex.a_bss);
-	printf("Size of symbol tab: %08x\n",ex.a_syms);
-	printf("Transfer Address:   %08x\n",ex.a_entry);
-	printf("Size of reloc text: %08x\n",ex.a_trsize);
-	printf("Size of reloc data: %08x\n",ex.a_drsize);
-#endif
+
 	magic = N_GETMAGIC (ex);
 	clbytes = getCLBYTES(mid);
 	clofset = clbytes - 1;
 
-/*###608 [cc] `load' undeclared (first use this function)%%%*/
-	if (load != NULL) {
-		*load   = 0;
-	}
+	dl->image_type = IMAGE_TYPE_AOUT;
+	dl->loadaddr = 0;
+	dl->xferaddr = ex.a_entry;
 
-/*###612 [cc] `xfr' undeclared (first use this function)%%%*/
-	if (xfr != NULL) {
-		*xfr    = ex.a_entry;
+	dl->a_text = ex.a_text;
+	if (magic == ZMAGIC || magic == NMAGIC) {
+		dl->a_text_fill = clbytes - (ex.a_text & clofset);
+		if (dl->a_text_fill == clbytes)
+			dl->a_text_fill = 0;
+	} else
+		dl->a_text_fill = 0;
+	dl->a_data = ex.a_data;
+	if (magic == ZMAGIC || magic == NMAGIC) {
+		dl->a_data_fill = clbytes - (ex.a_data & clofset);
+		if (dl->a_data_fill == clbytes)
+			dl->a_data_fill = 0;
+	} else
+		dl->a_data_fill = 0;
+	dl->a_bss = ex.a_bss;
+	if (magic == ZMAGIC || magic == NMAGIC) {
+		dl->a_bss_fill = clbytes - (ex.a_bss & clofset);
+		if (dl->a_bss_fill == clbytes)
+			dl->a_bss_fill = 0;
+	} else {
+		dl->a_bss_fill = clbytes -
+		    ((ex.a_text+ex.a_data+ex.a_bss) & clofset);
+		if (dl->a_bss_fill == clbytes)
+			dl->a_bss_fill = 0;
 	}
-
-/*###616 [cc] `a_text' undeclared (first use this function)%%%*/
-	if (a_text != NULL) {
-		*a_text = ex.a_text;
-	}
-
-/*###620 [cc] `a_text_fill' undeclared (first use this function)%%%*/
-	if (a_text_fill != NULL) {
-		if (magic == ZMAGIC || magic == NMAGIC) {
-			*a_text_fill = clbytes - (ex.a_text & clofset);
-			if (*a_text_fill == clbytes) {
-				*a_text_fill = 0;
-			}
-		} else {
-			*a_text_fill = 0;
-	        }
-	}
-
-/*###631 [cc] `a_data' undeclared (first use this function)%%%*/
-	if (a_data != NULL) {
-		*a_data = ex.a_data;
-	}
-
-/*###635 [cc] `a_data_fill' undeclared (first use this function)%%%*/
-	if (a_data_fill != NULL) {
-		if (magic == ZMAGIC || magic == NMAGIC) {
-			*a_data_fill = clbytes - (ex.a_data & clofset);
-			if (*a_data_fill == clbytes) {
-				*a_data_fill = 0;
-			}
-		} else {
-			*a_data_fill = 0;
-	        }
-	}
-
-/*###646 [cc] `a_bss' undeclared (first use this function)%%%*/
-	if (a_bss != NULL) {
-		*a_bss  = ex.a_bss;
-	}
-
-/*###650 [cc] `a_bss_fill' undeclared (first use this function)%%%*/
-	if (a_bss_fill != NULL) {
-		if (magic == ZMAGIC || magic == NMAGIC) {
-			*a_bss_fill = clbytes - (ex.a_bss & clofset);
-			if (*a_bss_fill == clbytes) {
-				*a_bss_fill = 0;
-			}
-		} else {
-			*a_bss_fill = clbytes -
-				((ex.a_text+ex.a_data+ex.a_bss) & clofset);
-			if (*a_text_fill == clbytes) {
-				*a_text_fill = 0;
-			}
-	        }
-	}
-
-/*###665 [cc] `aout' undeclared (first use this function)%%%*/
-	if (aout != NULL) {
-		*aout = mid;
-	}
+	dl->a_mid = mid;
 
 	return(0);
-#endif NOAOUT
+#endif /* NOAOUT */
 }
 
-/*###673 [cc] syntax error before `int'%%%*/
 int
-GetFileInfo(fd, load, xfr, aout,
-	    a_text, a_text_fill, a_data, a_data_fill, a_bss, a_bss_fill)
-	int	fd, *aout;
-	u_long	*load, *xfr, *a_text, *a_text_fill;
-	u_long	*a_data, *a_data_fill, *a_bss, *a_bss_fill;
+GetFileInfo(struct dllist *dl, int info)
 {
-	int	err;
+	int error;
 
-	err = CheckAOutFile(fd);
-
-	if (err == 0) {
-		err = GetAOutFileInfo(fd, load, xfr,
-				      a_text, a_text_fill,
-				      a_data, a_data_fill,
-				      a_bss, a_bss_fill,
-				      aout);
-		if (err != 0) {
+	error = CheckElfFile(dl->ldfd);
+	if (error == 0) {
+		error = GetElf32FileInfo(dl, info);
+		if (error != 0)
+			error = GetElf64FileInfo(dl, info);
+		if (error != 0) {
 			return(-1);
 		}
-	} else {
-		err = CheckMopFile(fd);
-		
-		if (err == 0) {
-			err = GetMopFileInfo(fd, load, xfr);
-			if (err != 0) {
-				return(-1);
-			}
-			*aout = -1;
-		} else {
-			return(-1);
-		}
+		return (0);
 	}
 
-	return(0);
+	error = CheckAOutFile(dl->ldfd);
+	if (error == 0) {
+		error = GetAOutFileInfo(dl, info);
+		if (error != 0) {
+			return(-1);
+		}
+		return (0);
+	}
+
+	error = CheckMopFile(dl->ldfd);
+	if (error == 0) {
+		error = GetMopFileInfo(dl, info);
+		if (error != 0) {
+			return(-1);
+		}
+		return (0);
+	}
+
+	/* Unknown file format. */
+	return(-1);
 }
 
 ssize_t
-/*###711 [cc] syntax error before `mopFileRead'%%%*/
-mopFileRead(dlslot, buf)
-	struct dllist *dlslot;
-	u_char	*buf;
+mopFileRead(struct dllist *dlslot, u_char *buf)
 {
 	ssize_t len, outlen;
-	int	bsz;
-	long	pos, notdone, total;
+	int	bsz, sec;
+	int32_t	pos, notdone, total;
+	uint32_t secoff;
 
-/*###719 [cc] `dlslot' undeclared (first use this function)%%%*/
-	if (dlslot->aout == -1) {
-/*###720 [cc] `buf' undeclared (first use this function)%%%*/
+	switch (dlslot->image_type) {
+	case IMAGE_TYPE_MOP:
 		len = read(dlslot->ldfd,buf,dlslot->dl_bsz);
-	} else {
+		break;
+
+	case IMAGE_TYPE_ELF32:
+	case IMAGE_TYPE_ELF64:
+		sec = dlslot->e_cursec;
+
+		/*
+		 * We're pretty simplistic here.  We do only file-backed
+		 * or only zero-fill.
+		 */
+
+		/* Determine offset into section. */
+		secoff = dlslot->e_curpos - dlslot->e_sections[sec].s_loff;
+
+		/*
+		 * If we're in the file-backed part of the section,
+		 * transmit some of the file.
+		 */
+		if (secoff < dlslot->e_sections[sec].s_fsize) {
+			bsz = dlslot->e_sections[sec].s_fsize - secoff;
+			if (bsz > dlslot->dl_bsz)
+				bsz = dlslot->dl_bsz;
+			if (lseek(dlslot->ldfd,
+			    dlslot->e_sections[sec].s_foff + secoff,
+			    SEEK_SET) == (off_t) -1)
+				return (-1);
+			len = read(dlslot->ldfd, buf, bsz);
+		}
+		/*
+		 * Otherwise, if we're in the zero-fill part of the
+		 * section, transmit some zeros.
+		 */
+		else if (secoff < (dlslot->e_sections[sec].s_fsize +
+				   dlslot->e_sections[sec].s_pad)) {
+			bsz = dlslot->e_sections[sec].s_pad -
+			    (secoff - dlslot->e_sections[sec].s_fsize);
+			if (bsz > dlslot->dl_bsz)
+				bsz = dlslot->dl_bsz;
+			memset(buf, 0, (len = bsz));
+		}
+		/*
+		 * ...and if we haven't hit either of those cases,
+		 * that's the end of the image.
+		 */
+		else {
+			return (0);
+		}
+		/*
+		 * Advance the logical image pointer.
+		 */
+		dlslot->e_curpos += bsz;
+		if (dlslot->e_curpos >= (dlslot->e_sections[sec].s_loff +
+					 dlslot->e_sections[sec].s_fsize +
+					 dlslot->e_sections[sec].s_pad))
+			if (++sec != dlslot->e_nsec)
+				dlslot->e_cursec = sec;
+		break;
+
+	case IMAGE_TYPE_AOUT:
 		bsz = dlslot->dl_bsz;
 		pos = dlslot->a_lseek;
 		len = 0;
@@ -743,10 +1231,8 @@ mopFileRead(dlslot, buf)
 		if (pos < total) {
 			notdone = total - pos;
 			if (notdone <= bsz) {
-/*###731 [cc] subscripted value is neither array nor pointer%%%*/
 				outlen = read(dlslot->ldfd,&buf[len],notdone);
 			} else {
-/*###733 [cc] subscripted value is neither array nor pointer%%%*/
 				outlen = read(dlslot->ldfd,&buf[len],bsz);
 			}
 			len = len + outlen;
@@ -763,8 +1249,7 @@ mopFileRead(dlslot, buf)
 			} else {
 				outlen = bsz;
 			}
-/*###749 [cc] subscripted value is neither array nor pointer%%%*/
-			bzero(&buf[len],outlen);
+			memset(&buf[len], 0, outlen);
 			len = len + outlen;
 			pos = pos + outlen;
 			bsz = bsz - outlen;
@@ -775,10 +1260,8 @@ mopFileRead(dlslot, buf)
 		if ((bsz > 0) && (pos < total)) {
 			notdone = total - pos;
 			if (notdone <= bsz) {
-/*###760 [cc] subscripted value is neither array nor pointer%%%*/
 				outlen = read(dlslot->ldfd,&buf[len],notdone);
 			} else {
-/*###762 [cc] subscripted value is neither array nor pointer%%%*/
 				outlen = read(dlslot->ldfd,&buf[len],bsz);
 			}
 			len = len + outlen;
@@ -795,8 +1278,7 @@ mopFileRead(dlslot, buf)
 			} else {
 				outlen = bsz;
 			}
-/*###778 [cc] subscripted value is neither array nor pointer%%%*/
-			bzero(&buf[len],outlen);
+			memset(&buf[len], 0, outlen);
 			len = len + outlen;
 			pos = pos + outlen;
 			bsz = bsz - outlen;
@@ -811,8 +1293,7 @@ mopFileRead(dlslot, buf)
 			} else {
 				outlen = bsz;
 			}
-/*###793 [cc] subscripted value is neither array nor pointer%%%*/
-			bzero(&buf[len],outlen);
+			memset(&buf[len], 0, outlen);
 			len = len + outlen;
 			pos = pos + outlen;
 			bsz = bsz - outlen;
@@ -827,17 +1308,18 @@ mopFileRead(dlslot, buf)
 			} else {
 				outlen = bsz;
 			}
-/*###808 [cc] subscripted value is neither array nor pointer%%%*/
-			bzero(&buf[len],outlen);
+			memset(&buf[len], 0, outlen);
 			len = len + outlen;
 			pos = pos + outlen;
 			bsz = bsz - outlen;
 		}
 		
 		dlslot->a_lseek = pos;
+		break;
 
+	default:
+		abort();
 	}
 
 	return(len);
 }
-/*###820 [cc] syntax error at end of input%%%*/

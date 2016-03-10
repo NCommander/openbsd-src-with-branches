@@ -1,4 +1,4 @@
-/* crypto/dsa/dsa.h */
+/* $OpenBSD: dsa.h,v 1.18 2014/07/12 16:03:37 miod Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -65,7 +65,7 @@
 #ifndef HEADER_DSA_H
 #define HEADER_DSA_H
 
-#include <openssl/e_os2.h>
+#include <openssl/opensslconf.h>
 
 #ifdef OPENSSL_NO_DSA
 #error DSA is disabled.
@@ -206,7 +206,7 @@ int	DSA_set_method(DSA *dsa, const DSA_METHOD *);
 
 DSA *	DSA_new(void);
 DSA *	DSA_new_method(ENGINE *engine);
-void	DSA_free (DSA *r);
+void	DSA_free(DSA *r);
 /* "up" the DSA object's reference count */
 int	DSA_up_ref(DSA *r);
 int	DSA_size(const DSA *);
@@ -221,9 +221,17 @@ int DSA_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
 int DSA_set_ex_data(DSA *d, int idx, void *arg);
 void *DSA_get_ex_data(DSA *d, int idx);
 
-DSA *	d2i_DSAPublicKey(DSA **a, const unsigned char **pp, long length);
-DSA *	d2i_DSAPrivateKey(DSA **a, const unsigned char **pp, long length);
-DSA * 	d2i_DSAparams(DSA **a, const unsigned char **pp, long length);
+DSA *d2i_DSAPublicKey(DSA **a, const unsigned char **pp, long length);
+int i2d_DSAPublicKey(const DSA *a, unsigned char **pp);
+extern const ASN1_ITEM DSAPublicKey_it;
+
+DSA *d2i_DSAPrivateKey(DSA **a, const unsigned char **pp, long length);
+int i2d_DSAPrivateKey(const DSA *a, unsigned char **pp);
+extern const ASN1_ITEM DSAPrivateKey_it;
+
+DSA *d2i_DSAparams(DSA **a, const unsigned char **pp, long length);
+int i2d_DSAparams(const DSA *a,unsigned char **pp);
+extern const ASN1_ITEM DSAparams_it;
 
 /* Deprecated version */
 #ifndef OPENSSL_NO_DEPRECATED
@@ -239,18 +247,13 @@ int	DSA_generate_parameters_ex(DSA *dsa, int bits,
 		int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
 
 int	DSA_generate_key(DSA *a);
-int	i2d_DSAPublicKey(const DSA *a, unsigned char **pp);
-int 	i2d_DSAPrivateKey(const DSA *a, unsigned char **pp);
-int	i2d_DSAparams(const DSA *a,unsigned char **pp);
 
 #ifndef OPENSSL_NO_BIO
 int	DSAparams_print(BIO *bp, const DSA *x);
 int	DSA_print(BIO *bp, const DSA *x, int off);
 #endif
-#ifndef OPENSSL_NO_FP_API
 int	DSAparams_print_fp(FILE *fp, const DSA *x);
 int	DSA_print_fp(FILE *bp, const DSA *x, int off);
-#endif
 
 #define DSS_prime_checks 50
 /* Primality test according to FIPS PUB 186[-1], Appendix 2.1:

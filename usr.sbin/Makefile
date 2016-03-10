@@ -1,38 +1,28 @@
-#	from: @(#)Makefile	5.6.1.2 (Berkeley) 5/8/91
-#	$Id: Makefile,v 1.56 1995/10/09 03:43:55 chopps Exp $
+#	$OpenBSD: Makefile,v 1.191 2015/12/03 22:29:35 deraadt Exp $
 
-# not yet done: catman
+.include <bsd.own.mk>
 
-SUBDIR=	ac accton arp bootpd bootpgw bootpef bootptest \
-	chown chroot config cron dev_mkdb \
-	diskpart edquota gettable gspa htable inetd iostat kgmon \
-	kvm_mkdb lpr map-mbone mrinfo mrouted mtrace mtree named \
-	netgroup_mkdb portmap pppd pstat pwd_mkdb quot quotaon \
-	rarpd rbootd rdconfig rdate repquota rmt \
-	rpc.bootparamd rpc.pcnfsd rwhod \
-	sa sendmail sliplogin slstats spray sysctl \
-	syslogd tcpdump timed traceroute trpt trsp update \
-	vipw vnconfig ypbind yppoll ypset zdump zic
+SUBDIR=	ac accton acpidump adduser amd apm apmd arp \
+	authpf bgpctl bgpd bind chroot config cron crunchgen dev_mkdb \
+	dhcpd dhcrelay dvmrpctl dvmrpd edquota eeprom eigrpd eigrpctl \
+	fdformat ftp-proxy gpioctl hostapd hostctl hotplugd httpd identd \
+	ifstated ikectl inetd installboot iostat iscsictl iscsid kgmon \
+	kvm_mkdb ldapd ldapctl ldomctl ldomd ldpd ldpctl lpr mailwrapper \
+	map-mbone memconfig mksuncd mkuboot mopd mrinfo mrouted \
+	mtrace mtree ndp netgroup_mkdb \
+	npppctl npppd nsd ntpd ospfctl ospfd ospf6d ospf6ctl \
+	pcidump pkg_add portmap pppd procmap pstat pwd_mkdb \
+	quot quotaon radiusctl radiusd rarpd rbootd \
+	rcctl rdate rebound relayctl relayd repquota ripctl ripd \
+	rmt route6d rpc.bootparamd rpc.lockd rpc.statd rtadvd \
+	sa sasyncd sensorsd slowcgi smtpd \
+	snmpctl snmpd spamdb syslogc syslogd sysmerge tcpdrop tcpdump \
+	tftp-proxy tftpd tokenadm tokeninit traceroute trpt \
+	unbound usbdevs user vmd vmctl vipw watchdogd wsconscfg \
+	wsfontload wsmoused zdump zic ztsscale
 
-# should be listed above, but doesn't work on the Alpha.
-.if   (${MACHINE_ARCH} != "alpha") || make(clean) || make(cleandir)
-SUBDIR+=amd
-.endif
-
-.if   make(clean) || make(cleandir)
-SUBDIR+=bad144 config.old dbsym eeprom grfinfo hilinfo iteconfig screenblank
-.elif ${MACHINE} == "amiga" || ${MACHINE} == "atari"
-SUBDIR+=grfconfig iteconfig videomode
-.elif ${MACHINE} == "hp300"
-SUBDIR+=config.old grfinfo hilinfo
-.elif ${MACHINE} == "i386"
-SUBDIR+=bad144 
-.elif ${MACHINE} == "pmax"
-SUBDIR+=config.old
-.elif ${MACHINE} == "sun3"
-SUBDIR+=dbsym eeprom screenblank
-.elif ${MACHINE} == "sparc"
-SUBDIR+=eeprom screenblank
+.if (${YP:L} == "yes")
+SUBDIR+=ypbind ypldap yppoll ypset ypserv
 .endif
 
 .include <bsd.subdir.mk>

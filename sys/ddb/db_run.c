@@ -1,29 +1,30 @@
-/*	$NetBSD: db_run.c,v 1.7 1994/10/09 08:30:08 mycroft Exp $	*/
+/*	$OpenBSD: db_run.c,v 1.25 2015/03/14 03:38:46 jsg Exp $	*/
+/*	$NetBSD: db_run.c,v 1.8 1996/02/05 01:57:12 christos Exp $	*/
 
-/* 
+/*
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
- * 
+ *
  * Permission to use, copy, modify and distribute this software and its
  * documentation is hereby granted, provided that both the copyright
  * notice and this permission notice appear in all copies of the
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
- * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ *
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- * 
+ *
  * Carnegie Mellon requests users of this software to return to
- * 
+ *
  *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
  *  School of Computer Science
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
- * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ *
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  * 	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -33,14 +34,27 @@
  * Commands to run process.
  */
 #include <sys/param.h>
-#include <sys/proc.h>
+#include <sys/systm.h>
 
 #include <machine/db_machdep.h>
 
 #include <ddb/db_run.h>
-#include <ddb/db_lex.h>
 #include <ddb/db_break.h>
 #include <ddb/db_access.h>
+
+#ifdef SOFTWARE_SSTEP
+db_breakpoint_t	db_not_taken_bkpt = 0;
+db_breakpoint_t	db_taken_bkpt = 0;
+#endif
+
+int		db_inst_count;
+
+#ifndef KGDB
+
+#include <ddb/db_watch.h>
+#include <ddb/db_output.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
 
 int	db_run_mode;
 #define	STEP_NONE	0
@@ -56,61 +70,73 @@ int		db_loop_count;
 int		db_call_depth;
 
 boolean_t
-db_stop_at_pc(regs, is_breakpoint)
-	db_regs_t *regs;
-	boolean_t	*is_breakpoint;
+db_stop_at_pc(db_regs_t *regs, boolean_t *is_breakpoint)
 {
-	register db_addr_t	pc;
-	register db_breakpoint_t bkpt;
+	db_addr_t	pc, old_pc;
+	db_breakpoint_t	bkpt;
 
-	db_clear_single_step(regs);
 	db_clear_breakpoints();
 	db_clear_watchpoints();
-	pc = PC_REGS(regs);
+	old_pc = pc = PC_REGS(regs);
 
 #ifdef	FIXUP_PC_AFTER_BREAK
 	if (*is_breakpoint) {
-	    /*
-	     * Breakpoint trap.  Fix up the PC if the
-	     * machine requires it.
-	     */
-	    FIXUP_PC_AFTER_BREAK
-	    pc = PC_REGS(regs);
+		/*
+		 * Breakpoint trap.  Fix up the PC if the
+		 * machine requires it.
+		 */
+		FIXUP_PC_AFTER_BREAK(regs);
+		pc = PC_REGS(regs);
 	}
 #endif
 
 	/*
 	 * Now check for a breakpoint at this address.
 	 */
-	bkpt = db_find_breakpoint_here(pc);
+	bkpt = db_find_breakpoint(pc);
 	if (bkpt) {
-	    if (--bkpt->count == 0) {
-		bkpt->count = bkpt->init_count;
-		*is_breakpoint = TRUE;
-		return (TRUE);	/* stop here */
-	    }
-	} else if (*is_breakpoint) {
-		PC_REGS(regs) += BKPT_SIZE;
+		if (--bkpt->count == 0) {
+			db_clear_single_step(regs);
+			bkpt->count = bkpt->init_count;
+			*is_breakpoint = TRUE;
+			return (TRUE);	/* stop here */
+		}
+	} else if (*is_breakpoint
+#ifdef SOFTWARE_SSTEP
+	    && !((db_taken_bkpt && db_taken_bkpt->address == pc) ||
+	    (db_not_taken_bkpt && db_not_taken_bkpt->address == pc))
+#endif
+	    ) {
+#ifdef PC_ADVANCE
+		PC_ADVANCE(regs);
+#else
+# ifdef SET_PC_REGS
+		SET_PC_REGS(regs, old_pc);
+# else
+		PC_REGS(regs) = old_pc;
+# endif
+#endif
 	}
-		
+	db_clear_single_step(regs);
+
 	*is_breakpoint = FALSE;
 
 	if (db_run_mode == STEP_INVISIBLE) {
-	    db_run_mode = STEP_CONTINUE;
-	    return (FALSE);	/* continue */
+		db_run_mode = STEP_CONTINUE;
+		return (FALSE);	/* continue */
 	}
 	if (db_run_mode == STEP_COUNT) {
-	    return (FALSE); /* continue */
+		return (FALSE); /* continue */
 	}
 	if (db_run_mode == STEP_ONCE) {
-	    if (--db_loop_count > 0) {
-		if (db_sstep_print) {
-		    db_printf("\t\t");
-		    db_print_loc_and_inst(pc);
-		    db_printf("\n");
+		if (--db_loop_count > 0) {
+			if (db_sstep_print) {
+				db_printf("\t\t");
+				db_print_loc_and_inst(pc);
+				db_printf("\n");
+			}
+			return (FALSE);	/* continue */
 		}
-		return (FALSE);	/* continue */
-	    }
 	}
 	if (db_run_mode == STEP_RETURN) {
 	    db_expr_t ins = db_get_value(pc, sizeof(int), FALSE);
@@ -121,7 +147,7 @@ db_stop_at_pc(regs, is_breakpoint)
 		(!inst_return(ins) || --db_call_depth != 0)) {
 		if (db_sstep_print) {
 		    if (inst_call(ins) || inst_return(ins)) {
-			register int i;
+			int i;
 
 			db_printf("[after %6d]     ", db_inst_count);
 			for (i = db_call_depth; --i > 0; )
@@ -140,8 +166,7 @@ db_stop_at_pc(regs, is_breakpoint)
 
 	    /* continue until call or return */
 
-	    if (!inst_call(ins) &&
-		!inst_return(ins) &&
+	    if (!inst_call(ins) && !inst_return(ins) &&
 		!inst_trap_return(ins)) {
 		return (FALSE);	/* continue */
 	    }
@@ -151,57 +176,48 @@ db_stop_at_pc(regs, is_breakpoint)
 }
 
 void
-db_restart_at_pc(regs, watchpt)
-	db_regs_t *regs;
-	boolean_t watchpt;
+db_restart_at_pc(db_regs_t *regs, boolean_t watchpt)
 {
-	register db_addr_t pc = PC_REGS(regs);
+	db_addr_t pc = PC_REGS(regs);
 
-	if ((db_run_mode == STEP_COUNT) ||
-	    (db_run_mode == STEP_RETURN) ||
+	if ((db_run_mode == STEP_COUNT) || (db_run_mode == STEP_RETURN) ||
 	    (db_run_mode == STEP_CALLT)) {
-	    db_expr_t		ins;
+		db_expr_t	ins;
 
-	    /*
-	     * We are about to execute this instruction,
-	     * so count it now.
-	     */
-
-	    ins = db_get_value(pc, sizeof(int), FALSE);
-	    db_inst_count++;
-	    db_load_count += inst_load(ins);
-	    db_store_count += inst_store(ins);
-#ifdef	SOFTWARE_SSTEP
-	    /* XXX works on mips, but... */
-	    if (inst_branch(ins) || inst_call(ins)) {
-		ins = db_get_value(next_instr_address(pc,1),
-				   sizeof(int), FALSE);
+		/*
+		 * We are about to execute this instruction,
+		 * so count it now.
+		 */
+		ins = db_get_value(pc, sizeof(int), FALSE);
 		db_inst_count++;
-		db_load_count += inst_load(ins);
-		db_store_count += inst_store(ins);
-	    }
-#endif	SOFTWARE_SSTEP
+#ifdef	SOFTWARE_SSTEP
+		/* XXX works on mips, but... */
+		if (inst_branch(ins) || inst_call(ins)) {
+			ins = db_get_value(next_instr_address(pc, 1),
+			    sizeof(int), FALSE);
+			db_inst_count++;
+		}
+#endif	/* SOFTWARE_SSTEP */
 	}
 
 	if (db_run_mode == STEP_CONTINUE) {
-	    if (watchpt || db_find_breakpoint_here(pc)) {
-		/*
-		 * Step over breakpoint/watchpoint.
-		 */
-		db_run_mode = STEP_INVISIBLE;
-		db_set_single_step(regs);
-	    } else {
-		db_set_breakpoints();
-		db_set_watchpoints();
-	    }
+		if (watchpt || db_find_breakpoint(pc)) {
+			/*
+			 * Step over breakpoint/watchpoint.
+			 */
+			db_run_mode = STEP_INVISIBLE;
+			db_set_single_step(regs);
+		} else {
+			db_set_breakpoints();
+			db_set_watchpoints();
+		}
 	} else {
-	    db_set_single_step(regs);
+		db_set_single_step(regs);
 	}
 }
 
 void
-db_single_step(regs)
-	db_regs_t *regs;
+db_single_step(db_regs_t *regs)
 {
 	if (db_run_mode == STEP_CONTINUE) {
 	    db_run_mode = STEP_INVISIBLE;
@@ -209,92 +225,10 @@ db_single_step(regs)
 	}
 }
 
-#ifdef	SOFTWARE_SSTEP
-/*
- *	Software implementation of single-stepping.
- *	If your machine does not have a trace mode
- *	similar to the vax or sun ones you can use
- *	this implementation, done for the mips.
- *	Just define the above conditional and provide
- *	the functions/macros defined below.
- *
- * extern boolean_t
- *	inst_branch(),		returns true if the instruction might branch
- * extern unsigned
- *	branch_taken(),		return the address the instruction might
- *				branch to
- *	db_getreg_val();	return the value of a user register,
- *				as indicated in the hardware instruction
- *				encoding, e.g. 8 for r8
- *			
- * next_instr_address(pc,bd)	returns the address of the first
- *				instruction following the one at "pc",
- *				which is either in the taken path of
- *				the branch (bd==1) or not.  This is
- *				for machines (mips) with branch delays.
- *
- *	A single-step may involve at most 2 breakpoints -
- *	one for branch-not-taken and one for branch taken.
- *	If one of these addresses does not already have a breakpoint,
- *	we allocate a breakpoint and save it here.
- *	These breakpoints are deleted on return.
- */			
-db_breakpoint_t	db_not_taken_bkpt = 0;
-db_breakpoint_t	db_taken_bkpt = 0;
-
-void
-db_set_single_step(regs)
-	register db_regs_t *regs;
-{
-	db_addr_t pc = PC_REGS(regs);
-	register unsigned	 inst, brpc;
-
-	/*
-	 *	User was stopped at pc, e.g. the instruction
-	 *	at pc was not executed.
-	 */
-	inst = db_get_value(pc, sizeof(int), FALSE);
-	if (inst_branch(inst) || inst_call(inst)) {
-	    extern unsigned getreg_val();
-
-	    brpc = branch_taken(inst, pc, getreg_val, regs);
-	    if (brpc != pc) {	/* self-branches are hopeless */
-		db_taken_bkpt = db_set_temp_breakpoint(brpc);
-	    }
-	    pc = next_instr_address(pc,1);
-	}
-	pc = next_instr_address(pc,0);
-	db_not_taken_bkpt = db_set_temp_breakpoint(pc);
-}
-
-void
-db_clear_single_step(regs)
-	db_regs_t *regs;
-{
-	register db_breakpoint_t	bkpt;
-
-	if (db_taken_bkpt != 0) {
-	    db_delete_temp_breakpoint(db_taken_bkpt);
-	    db_taken_bkpt = 0;
-	}
-	if (db_not_taken_bkpt != 0) {
-	    db_delete_temp_breakpoint(db_not_taken_bkpt);
-	    db_not_taken_bkpt = 0;
-	}
-}
-
-#endif	SOFTWARE_SSTEP
-
-extern int	db_cmd_loop_done;
-
 /* single-step */
 /*ARGSUSED*/
 void
-db_single_step_cmd(addr, have_addr, count, modif)
-	db_expr_t	addr;
-	int		have_addr;
-	db_expr_t	count;
-	char *		modif;
+db_single_step_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 {
 	boolean_t	print = FALSE;
 
@@ -308,8 +242,6 @@ db_single_step_cmd(addr, have_addr, count, modif)
 	db_loop_count = count;
 	db_sstep_print = print;
 	db_inst_count = 0;
-	db_load_count = 0;
-	db_store_count = 0;
 
 	db_cmd_loop_done = 1;
 }
@@ -317,11 +249,8 @@ db_single_step_cmd(addr, have_addr, count, modif)
 /* trace and print until call/return */
 /*ARGSUSED*/
 void
-db_trace_until_call_cmd(addr, have_addr, count, modif)
-	db_expr_t	addr;
-	int		have_addr;
-	db_expr_t	count;
-	char *		modif;
+db_trace_until_call_cmd(db_expr_t addr, int have_addr, db_expr_t count,
+    char *modif)
 {
 	boolean_t	print = FALSE;
 
@@ -331,19 +260,14 @@ db_trace_until_call_cmd(addr, have_addr, count, modif)
 	db_run_mode = STEP_CALLT;
 	db_sstep_print = print;
 	db_inst_count = 0;
-	db_load_count = 0;
-	db_store_count = 0;
 
 	db_cmd_loop_done = 1;
 }
 
 /*ARGSUSED*/
 void
-db_trace_until_matching_cmd(addr, have_addr, count, modif)
-	db_expr_t	addr;
-	int		have_addr;
-	db_expr_t	count;
-	char *		modif;
+db_trace_until_matching_cmd(db_expr_t addr, int have_addr, db_expr_t count,
+    char *modif)
 {
 	boolean_t	print = FALSE;
 
@@ -354,8 +278,6 @@ db_trace_until_matching_cmd(addr, have_addr, count, modif)
 	db_call_depth = 1;
 	db_sstep_print = print;
 	db_inst_count = 0;
-	db_load_count = 0;
-	db_store_count = 0;
 
 	db_cmd_loop_done = 1;
 }
@@ -363,19 +285,89 @@ db_trace_until_matching_cmd(addr, have_addr, count, modif)
 /* continue */
 /*ARGSUSED*/
 void
-db_continue_cmd(addr, have_addr, count, modif)
-	db_expr_t	addr;
-	int		have_addr;
-	db_expr_t	count;
-	char *		modif;
+db_continue_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 {
 	if (modif[0] == 'c')
 	    db_run_mode = STEP_COUNT;
 	else
 	    db_run_mode = STEP_CONTINUE;
 	db_inst_count = 0;
-	db_load_count = 0;
-	db_store_count = 0;
 
 	db_cmd_loop_done = 1;
 }
+#endif /* NO KGDB */
+
+#ifdef	SOFTWARE_SSTEP
+/*
+ *	Software implementation of single-stepping.
+ *	If your machine does not have a trace mode
+ *	similar to the vax or sun ones you can use
+ *	this implementation, done for the mips.
+ *	Just define the above conditional and provide
+ *	the functions/macros defined below.
+ *
+ * extern boolean_t
+ *	inst_branch(ins),	returns true if the instruction might branch
+ * extern unsigned
+ *	branch_taken(ins, pc, getreg_val, regs),
+ *				return the address the instruction might
+ *				branch to
+ *	getreg_val(regs, reg),	return the value of a user register,
+ *				as indicated in the hardware instruction
+ *				encoding, e.g. 8 for r8
+ *
+ * next_instr_address(pc, bd)	returns the address of the first
+ *				instruction following the one at "pc",
+ *				which is either in the taken path of
+ *				the branch (bd==1) or not.  This is
+ *				for machines (mips) with branch delays.
+ *
+ *	A single-step may involve at most 2 breakpoints -
+ *	one for branch-not-taken and one for branch taken.
+ *	If one of these addresses does not already have a breakpoint,
+ *	we allocate a breakpoint and save it here.
+ *	These breakpoints are deleted on return.
+ */
+
+void
+db_set_single_step(db_regs_t *regs)
+{
+	db_addr_t pc = PC_REGS(regs);
+#ifndef SOFTWARE_SSTEP_EMUL
+	db_addr_t brpc;
+	u_int inst;
+
+	/*
+	 * User was stopped at pc, e.g. the instruction
+	 * at pc was not executed.
+	 */
+	inst = db_get_value(pc, sizeof(int), FALSE);
+	if (inst_branch(inst) || inst_call(inst) || inst_return(inst)) {
+	    brpc = branch_taken(inst, pc, getreg_val, regs);
+	    if (brpc != pc) {	/* self-branches are hopeless */
+		db_taken_bkpt = db_set_temp_breakpoint(brpc);
+	    }
+#if 0
+	    /* XXX this seems like a true bug, no?  */
+	    pc = next_instr_address(pc, 1);
+#endif
+	}
+#endif /*SOFTWARE_SSTEP_EMUL*/
+	pc = next_instr_address(pc, 0);
+	db_not_taken_bkpt = db_set_temp_breakpoint(pc);
+}
+
+void
+db_clear_single_step(db_regs_t *regs)
+{
+	if (db_taken_bkpt != 0) {
+	    db_delete_temp_breakpoint(db_taken_bkpt);
+	    db_taken_bkpt = 0;
+	}
+	if (db_not_taken_bkpt != 0) {
+	    db_delete_temp_breakpoint(db_not_taken_bkpt);
+	    db_not_taken_bkpt = 0;
+	}
+}
+
+#endif	/* SOFTWARE_SSTEP */

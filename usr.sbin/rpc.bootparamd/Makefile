@@ -1,6 +1,6 @@
-#	$Id: Makefile,v 1.10 1995/06/24 15:03:49 pk Exp $
+#	$OpenBSD: Makefile,v 1.11 2007/03/24 05:36:54 deraadt Exp $
 
-CFLAGS+=-DYP
+.include <bsd.own.mk>
 
 PROG=	rpc.bootparamd
 SRCS=	bootparamd.c bootparam_prot_svc.c
@@ -11,12 +11,9 @@ DPADD=	${LIBRPCSVC}
 LDADD=	-lrpcsvc
 
 bootparam_prot_svc.c: ${DESTDIR}/usr/include/rpcsvc/bootparam_prot.x
-	rm -f bootparam_prot.x
-	ln -s ${DESTDIR}/usr/include/rpcsvc/bootparam_prot.x .
-	rm -f bootparam_prot.h
-	ln -s ${DESTDIR}/usr/include/rpcsvc/bootparam_prot.h .
-	rpcgen -m -o $@ bootparam_prot.x
+	ln -fs ${DESTDIR}/usr/include/rpcsvc/bootparam_prot.h .
+	rpcgen -C -m -o $@ $>
 
-CLEANFILES += bootparam_prot_svc.c bootparam_prot.x bootparam_prot.h
+CLEANFILES += bootparam_prot_svc.c bootparam_prot.h
 
 .include <bsd.prog.mk>

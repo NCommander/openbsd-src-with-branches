@@ -1,13 +1,10 @@
+/*	$OpenBSD: strcmp.S,v 1.3 2005/08/07 11:30:38 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: strcmp.S,v 1.11 1995/04/28 22:58:10 jtc Exp $")
-#endif
+#include "SYS.h"
 
 /*
  * NOTE: I've unrolled the loop eight times: large enough to make a
@@ -82,3 +79,4 @@ L3:	movzbl	(%eax),%eax		/* unsigned comparison */
 	movzbl	(%edx),%edx
 	subl	%edx,%eax
 	ret
+END_STRONG(strcmp)

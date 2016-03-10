@@ -1,3 +1,4 @@
+/*	$OpenBSD: initdeck.c,v 1.16 2016/01/08 18:19:47 mestre Exp $	*/
 /*	$NetBSD: initdeck.c,v 1.3 1995/03/23 08:34:43 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,90 +30,114 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)initdeck.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: initdeck.c,v 1.3 1995/03/23 08:34:43 cgd Exp $";
-#endif
-#endif /* not lint */
-
-# include	<stdio.h>
-# include	"deck.h"
+#include "deck.h"
 
 /*
  *	This program initializes the card files for monopoly.
  * It reads in a data file with Com. Chest cards, followed by
- * the Chance card.  The two are seperated by a line of "%-".
- * All other cards are seperated by lines of "%%".  In the front
+ * the Chance card.  The two are separated by a line of "%-".
+ * All other cards are separated by lines of "%%".  In the front
  * of the file is the data for the decks in the same order.
  * This includes the seek pointer for the start of each card.
  * All cards start with their execution code, followed by the
  * string to print, terminated with a null byte.
  */
 
-# define	TRUE	1
-# define	FALSE	0
+#define	TRUE	1
+#define	FALSE	0
 
-# define	bool	char
-# define	reg	register
+#define	bool	int8_t
 
 char	*infile		= "cards.inp",		/* input file		*/
 	*outfile	= "cards.pck";		/* "packed" file	*/
-
-extern long	ftell();
-extern char *calloc();
 
 DECK	deck[2];
 
 FILE	*inf, *outf;
 
-main(ac, av)
-int	ac;
-char	*av[]; {
+static void	getargs(int, char *[]);
+static void	count(void);
+static void	putem(void);
+
+int
+main(int ac, char *av[])
+{
+	int n;
+
+	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+		err(1, "pledge");
 
 	getargs(ac, av);
-	if ((inf = fopen(infile, "r")) == NULL) {
-		perror(infile);
-		exit(1);
-	}
+	if ((inf = fopen(infile, "r")) == NULL)
+		err(1, "%s", infile);
 	count();
 	/*
 	 * allocate space for pointers.
 	 */
-	CC_D.offsets = (long *)calloc(CC_D.num_cards + 1, sizeof (long));
-	CH_D.offsets = (long *)calloc(CH_D.num_cards + 1, sizeof (long));
-	fseek(inf, 0L, 0);
-	if ((outf = fopen(outfile, "w")) == NULL) {
-		perror(outfile);
-		exit(0);
-	}
+	if ((CC_D.offsets = calloc(CC_D.num_cards + 1,
+			sizeof (int32_t))) == NULL ||
+	    (CH_D.offsets = calloc(CH_D.num_cards + 1,
+			sizeof (int32_t))) == NULL)
+		err(1, NULL);
+	fseek(inf, 0L, SEEK_SET);
+	if ((outf = fopen(outfile, "w")) == NULL)
+		err(1, "%s", outfile);
 
-	fwrite(deck, sizeof (DECK), 2, outf);
-	fwrite(CC_D.offsets, sizeof (long), CC_D.num_cards, outf);
-	fwrite(CH_D.offsets, sizeof (long), CH_D.num_cards, outf);
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
+	fwrite(&deck[0].num_cards, sizeof(deck[0].num_cards), 1, outf);
+	fwrite(&deck[0].top_card, sizeof(deck[0].top_card), 1, outf);
+	fwrite(&deck[0].gojf_used, sizeof(deck[0].gojf_used), 1, outf);
+
+	fwrite(&deck[0].num_cards, sizeof(deck[0].num_cards), 1, outf);
+	fwrite(&deck[0].top_card, sizeof(deck[0].top_card), 1, outf);
+	fwrite(&deck[0].gojf_used, sizeof(deck[0].gojf_used), 1, outf);
+
+	fwrite(CC_D.offsets, sizeof(CC_D.offsets[0]), CC_D.num_cards, outf);
+	fwrite(CH_D.offsets, sizeof(CH_D.offsets[0]), CH_D.num_cards, outf);
 	putem();
 
 	fclose(inf);
-	fseek(outf, 0, 0L);
-	fwrite(deck, sizeof (DECK), 2, outf);
-	fwrite(CC_D.offsets, sizeof (long), CC_D.num_cards, outf);
-	fwrite(CH_D.offsets, sizeof (long), CH_D.num_cards, outf);
+	fseek(outf, 0L, SEEK_SET);
+
+	deck[0].num_cards = htons(deck[0].num_cards);
+	fwrite(&deck[0].num_cards, sizeof(deck[0].num_cards), 1, outf);
+	deck[0].top_card = htons(deck[0].top_card);
+	fwrite(&deck[0].top_card, sizeof(deck[0].top_card), 1, outf);
+	fwrite(&deck[0].gojf_used, sizeof(deck[0].gojf_used), 1, outf);
+	deck[0].num_cards = ntohs(deck[0].num_cards);
+
+	deck[1].num_cards = htons(deck[1].num_cards);
+	fwrite(&deck[1].num_cards, sizeof(deck[1].num_cards), 1, outf);
+	deck[1].top_card = htons(deck[1].top_card);
+	fwrite(&deck[1].top_card, sizeof(deck[1].top_card), 1, outf);
+	fwrite(&deck[1].gojf_used, sizeof(deck[1].gojf_used), 1, outf);
+	deck[1].num_cards = ntohs(deck[1].num_cards);
+
+	for (n = 0 ; n < CC_D.num_cards ; n++) {
+		CC_D.offsets[n] = htonl(CC_D.offsets[n]);
+		fwrite(&CC_D.offsets[n], sizeof(CC_D.offsets[n]), 1, outf);
+	}
+	for (n = 0 ; n < CH_D.num_cards ; n++) {
+		CH_D.offsets[n] = htonl(CH_D.offsets[n]);
+		fwrite(&CH_D.offsets[n], sizeof(CH_D.offsets[n]), 1, outf);
+	}
+
 	fclose(outf);
-	printf("There were %d com. chest and %d chance cards\n", CC_D.num_cards, CH_D.num_cards);
-	exit(0);
+	printf("There were %d com. chest and %d chance cards\n", CC_D.num_cards,
+	    CH_D.num_cards);
+	return 0;
 }
 
-getargs(ac, av)
-int	ac;
-char	*av[]; {
-
+static void
+getargs(int ac, char *av[])
+{
 	if (ac > 1)
 		infile = av[1];
 	if (ac > 2)
@@ -126,11 +147,12 @@ char	*av[]; {
 /*
  * count the cards
  */
-count() {
-
-	reg bool	newline;
-	reg DECK	*in_deck;
-	reg char	c;
+static void
+count(void)
+{
+	bool	newline;
+	DECK	*in_deck;
+	int	c;
 
 	newline = TRUE;
 	in_deck = &CC_D;
@@ -148,12 +170,13 @@ count() {
 /*
  *	put strings in the file
  */
-putem() {
-
-	reg bool	newline;
-	reg DECK	*in_deck;
-	reg char	c;
-	reg int		num;
+static void
+putem(void)
+{
+	bool	newline;
+	DECK	*in_deck;
+	int	c;
+	int16_t	num;
 
 	in_deck = &CC_D;
 	CC_D.num_cards = 1;
@@ -163,7 +186,8 @@ putem() {
 	putc(getc(inf), outf);
 	for (num = 0; (c=getc(inf)) != '\n'; )
 		num = num * 10 + (c - '0');
-	putw(num, outf);
+	num = htons(num);
+	fwrite(&num, sizeof(num), 1, outf);
 	newline = FALSE;
 	while ((c=getc(inf)) != EOF)
 		if (newline && c == '%') {
@@ -180,7 +204,8 @@ putem() {
 			putc(c = getc(inf), outf);
 			for (num = 0; (c=getc(inf)) != EOF && c != '\n'; )
 				num = num * 10 + (c - '0');
-			putw(num, outf);
+			num = htons(num);
+			fwrite(&num, sizeof(num), 1, outf);
 		}
 		else {
 			putc(c, outf);

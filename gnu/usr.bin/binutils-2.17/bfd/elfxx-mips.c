@@ -2782,7 +2782,8 @@ mips_elf_sort_hash_table_f (struct mips_elf_link_hash_entry *h, void *data)
   /* Global symbols that need GOT entries that are not explicitly
      referenced are marked with got offset 2.  Those that are
      referenced get a 1, and those that don't need GOT entries get
-     -1.  */
+     -1.  Forced local symbols may also be marked with got offset 1,
+     but are never given global GOT entries.  */
   if (h->root.got.offset == 2)
     {
       BFD_ASSERT (h->tls_type == GOT_NORMAL);
@@ -2791,7 +2792,7 @@ mips_elf_sort_hash_table_f (struct mips_elf_link_hash_entry *h, void *data)
 	hsd->low = (struct elf_link_hash_entry *) h;
       h->root.dynindx = hsd->max_unref_got_dynindx++;
     }
-  else if (h->root.got.offset != 1)
+  else if (h->root.got.offset != 1 || h->forced_local)
     h->root.dynindx = hsd->max_non_got_dynindx++;
   else
     {
@@ -3248,6 +3249,7 @@ mips_elf_set_global_got_offset (void **entryp, void *p)
 
   if (entry->abfd != NULL && entry->symndx == -1
       && entry->d.h->root.dynindx != -1
+      && !entry->d.h->forced_local
       && entry->d.h->tls_type == GOT_NORMAL)
     {
       if (g)
@@ -4766,7 +4768,7 @@ mips_elf_create_dynamic_relocation (bfd *output_bfd,
   /* We must now calculate the dynamic symbol table index to use
      in the relocation.  */
   if (h != NULL
-      && (!h->root.def_regular
+      && (sec == NULL || !h->root.def_regular
 	  || (info->shared && !info->symbolic && !h->root.forced_local)))
     {
       indx = h->root.dynindx;
@@ -7204,9 +7206,9 @@ _bfd_mips_elf_always_size_sections (bfd *output_bfd,
        not include R_MIPS_GOT_PAGE.  */
     local_gotno = 0;
   else
-    /* Assume there are two loadable segments consisting of contiguous
-       sections.  Is 5 enough?  */
-    local_gotno = (loadable_size >> 16) + 5;
+    /* Assume there are four loadable segments consisting of contiguous
+       sections.  Is 7 enough?  */
+    local_gotno = (loadable_size >> 16) + 7;
 
   g->local_gotno += local_gotno;
   s->size += g->local_gotno * MIPS_ELF_GOT_SIZE (output_bfd);
@@ -7263,7 +7265,7 @@ _bfd_mips_elf_size_dynamic_sections (bfd *output_bfd,
   if (elf_hash_table (info)->dynamic_sections_created)
     {
       /* Set the contents of the .interp section to the interpreter.  */
-      if (info->executable)
+      if (info->executable && !info->static_link)
 	{
 	  s = bfd_get_section_by_name (dynobj, ".interp");
 	  BFD_ASSERT (s != NULL);
@@ -8862,11 +8864,16 @@ _bfd_mips_elf_finish_dynamic_sections (bfd *output_bfd,
 		 decided not to make.  This is for the n64 irix rld,
 		 which doesn't seem to apply any relocations if there
 		 are trailing null entries.  */
-	      s = mips_elf_rel_dyn_section (info, FALSE);
-	      dyn.d_un.d_val = (s->reloc_count
-				* (ABI_64_P (output_bfd)
-				   ? sizeof (Elf64_Mips_External_Rel)
-				   : sizeof (Elf32_External_Rel)));
+	      if (SGI_COMPAT (output_bfd))
+		{
+		  s = mips_elf_rel_dyn_section (info, FALSE);
+		  dyn.d_un.d_val = (s->reloc_count
+				    * (ABI_64_P (output_bfd)
+				       ? sizeof (Elf64_Mips_External_Rel)
+				       : sizeof (Elf32_External_Rel)));
+		}
+	      else
+		swap_out_p = FALSE;
 	      break;
 
 	    default:
@@ -11127,4 +11134,12 @@ bfd_boolean
 _bfd_mips_elf_ignore_undef_symbol (struct elf_link_hash_entry *h)
 {
   return ELF_MIPS_IS_OPTIONAL (h->other) ? TRUE : FALSE;
+}
+
+bfd_boolean
+_bfd_mips_elf_common_definition (Elf_Internal_Sym *sym)
+{
+  return (sym->st_shndx == SHN_COMMON
+	  || sym->st_shndx == SHN_MIPS_ACOMMON
+	  || sym->st_shndx == SHN_MIPS_SCOMMON);
 }

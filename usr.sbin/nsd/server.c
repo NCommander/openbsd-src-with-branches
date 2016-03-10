@@ -301,6 +301,12 @@ restart_child_servers(struct nsd *nsd, region_type* region, netio_type* netio,
 				/* the child need not be able to access the
 				 * nsd.db file */
 				namedb_close_udb(nsd->db);
+
+				if (pledge("stdio rpath inet", NULL) == -1) {
+					log_msg(LOG_ERR, "pledge");
+					exit(1);
+				}
+
 				nsd->pid = 0;
 				nsd->child_count = 0;
 				nsd->server_kind = nsd->children[i].kind;
@@ -754,6 +760,11 @@ server_init_ifs(struct nsd *nsd, size_t from, size_t to, int* reuseport_works)
 			continue;
 		}
 		nsd->tcp[i].fam = (int)addr->ai_family;
+		/* turn off REUSEPORT for TCP by copying the socket fd */
+		if(i >= nsd->ifs) {
+			nsd->tcp[i].s = nsd->tcp[i%nsd->ifs].s;
+			continue;
+		}
 		if ((nsd->tcp[i].s = socket(addr->ai_family, addr->ai_socktype, 0)) == -1) {
 #if defined(INET6)
 			if (addr->ai_family == AF_INET6 &&

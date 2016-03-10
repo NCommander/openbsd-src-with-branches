@@ -1,6 +1,6 @@
-#	$OpenBSD: Proc.pm,v 1.3 2012/07/09 14:23:17 bluhm Exp $
+#	$OpenBSD: Proc.pm,v 1.2 2013/01/08 21:20:00 bluhm Exp $
 
-# Copyright (c) 2010-2012 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -19,6 +19,7 @@ use warnings;
 
 package Proc;
 use Carp;
+use IO::File;
 use List::Util qw(first);
 use POSIX;
 use Time::HiRes qw(time alarm sleep);
@@ -58,7 +59,7 @@ sub run {
 	my $self = shift;
 
 	defined(my $pid = fork())
-	    or die ref($self), " fork child failed";
+	    or die ref($self), " fork child failed: $!";
 	if ($pid) {
 		$CHILDREN{$pid} = 1;
 		$self->{pid} = $pid;
@@ -80,9 +81,9 @@ sub run {
 	alarm($self->{alarm}) if $self->{alarm};
 	$self->{func}->($self);
 	print STDERR "Shutdown", "\n";
+
 	IO::Handle::flush(\*STDOUT);
 	IO::Handle::flush(\*STDERR);
-
 	POSIX::_exit(0);
 }
 
@@ -142,7 +143,7 @@ sub up {
 	my $self = shift;
 	my $timeout = shift || 10;
 	$self->loggrep(qr/$self->{up}/, $timeout)
-	    or croak ref($self), " no $self->{up} in $self->{logfile} ".
+	    or croak ref($self), " no '$self->{up}' in $self->{logfile} ".
 		"after $timeout seconds";
 	return $self;
 }
@@ -151,7 +152,7 @@ sub down {
 	my $self = shift;
 	my $timeout = shift || 30;
 	$self->loggrep(qr/$self->{down}/, $timeout)
-	    or croak ref($self), " no $self->{down} in $self->{logfile} ".
+	    or croak ref($self), " no '$self->{down}' in $self->{logfile} ".
 		"after $timeout seconds";
 	return $self;
 }

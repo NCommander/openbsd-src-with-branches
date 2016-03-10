@@ -1,3 +1,6 @@
+/*	$OpenBSD: externs.h,v 1.29 2014/09/09 03:41:08 guenther Exp $	*/
+/* $KTH: externs.h,v 1.16 1997/11/29 02:28:35 joda Exp $ */
+
 /*
  * Copyright (c) 1988, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,102 +29,26 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)externs.h	8.1 (Berkeley) 6/6/93
- *	$Id: externs.h,v 1.5 1995/03/17 18:03:06 mycroft Exp $
+ *	@(#)externs.h	8.3 (Berkeley) 5/30/95
  */
-
-#ifndef	BSD
-# define BSD 43
-#endif
-
-/*
- * ucb stdio.h defines BSD as something wierd
- */
-#if defined(sun) && defined(__svr4__)
-#define BSD 43
-#endif
-
-#ifndef	USE_TERMIO
-# if BSD > 43 || defined(SYSV_TERMIO)
-#  define USE_TERMIO
-# endif
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <setjmp.h>
-#if defined(CRAY) && !defined(NO_BSD_SETJMP)
-#include <bsdsetjmp.h>
-#endif
-#ifndef	FILIO_H
-#include <sys/ioctl.h>
-#else
-#include <sys/filio.h>
-#endif
-#ifdef CRAY
-# include <errno.h>
-#endif /* CRAY */
-#ifdef	USE_TERMIO
-# ifndef	VINTR
-#  ifdef SYSV_TERMIO
-#   include <sys/termio.h>
-#  else
-#   include <sys/termios.h>
-#   define termio termios
-#  endif
-# endif
-#endif
-#if defined(NO_CC_T) || !defined(USE_TERMIO)
-# if !defined(USE_TERMIO)
-typedef char cc_t;
-# else
-typedef unsigned char cc_t;
-# endif
-#endif
-
-#ifndef	NO_STRING_H
-#include <string.h>
-#endif
-#include <strings.h>
-
-#ifndef	_POSIX_VDISABLE
-# ifdef sun
-#  include <sys/param.h>	/* pick up VDISABLE definition, mayby */
-# endif
-# ifdef VDISABLE
-#  define _POSIX_VDISABLE VDISABLE
-# else
-#  define _POSIX_VDISABLE ((cc_t)'\377')
-# endif
-#endif
 
 #define	SUBBUFSIZE	256
-
-#ifndef CRAY
-extern int errno;		/* outside this world */
-#endif /* !CRAY */
-
-#if	!defined(P)
-# ifdef	__STDC__
-#  define	P(x)	x
-# else
-#  define	P(x)	()
-# endif
-#endif
 
 extern int
     autologin,		/* Autologin enabled */
     skiprc,		/* Don't process the ~/.telnetrc file */
     eight,		/* use eight bit mode (binary in and/or out */
+    binary,
+    family,		/* address family of peer */
     flushout,		/* flush output */
+    connections,
     connected,		/* Are we connected to the other side? */
     globalmode,		/* Mode tty should be in */
-    In3270,			/* Are we in 3270 mode? */
     telnetport,		/* Are we connected to the telnet port? */
     localflow,		/* Flow control handled locally */
     restartany,		/* If flow control, restart output on any character */
     localchars,		/* we recognize interrupt/quit */
-    donelclchars,		/* the user has set "localchars" */
+    donelclchars,	/* the user has set "localchars" */
     showoptions,
     net,		/* Network file descriptor */
     tin,		/* Terminal input file descriptor */
@@ -139,15 +62,12 @@ extern int
     crmod,
     netdata,		/* Print out network data flow */
     prettydump,		/* Print "netdata" output in user readable format */
-#if	defined(unix)
-#if	defined(TN3270)
-    cursesdata,		/* Print out curses data flow */
-    apitrace,		/* Trace API transactions */
-#endif	/* defined(TN3270) */
     termdata,		/* Print out terminal data flow */
-#endif	/* defined(unix) */
-    debug,			/* Debug level */
-    clienteof;		/* Client received EOF */
+    resettermname,
+    linemode,
+    kludgelinemode,
+    want_status_response,
+    debug;		/* Debug level */
 
 extern cc_t escape;	/* Escape to command mode */
 extern cc_t rlogin;	/* Rlogin mode escape character */
@@ -163,8 +83,12 @@ extern char
     dont[],
     will[],
     wont[],
+    will_wont_resp[],
+    do_dont_resp[],
     options[],		/* All the little options */
     *hostname;		/* Who are we connected to? */
+
+extern int	rtableid;	/* routing table to use */
 
 /*
  * We keep track of each side of the option negotiation.
@@ -200,7 +124,7 @@ extern char
 #define	set_my_want_state_wont(opt)	{options[opt] &= ~MY_WANT_STATE_WILL;}
 
 /*
- * Make everything symetrical
+ * Make everything symmetrical
  */
 
 #define	HIS_STATE_WILL			MY_STATE_DO
@@ -229,138 +153,131 @@ extern char
 #define	set_his_want_state_wont		set_my_want_state_dont
 
 
-extern FILE
-    *NetTrace;		/* Where debugging output goes */
-extern unsigned char
-    NetTraceFile[];	/* Name of file where debugging output goes */
-extern void
-    SetNetTrace P((char *));	/* Function to change where debugging goes */
-
 extern jmp_buf
     peerdied,
     toplevel;		/* For error conditions. */
 
-extern void
-    command P((int, char *, int)),
-    Dump P((int, unsigned char *, int)),
-    init_3270 P((void)),
-    printoption P((char *, int, int)),
-    printsub P((int, unsigned char *, int)),
-    sendnaws P((void)),
-    setconnmode P((int)),
-    setcommandmode P((void)),
-    setneturg P((void)),
-    sys_telnet_init P((void)),
-    telnet P((char *)),
-    tel_enter_binary P((int)),
-    TerminalFlushOutput P((void)),
-    TerminalNewMode P((int)),
-    TerminalRestoreState P((void)),
-    TerminalSaveState P((void)),
-    tninit P((void)),
-    upcase P((char *)),
-    willoption P((int)),
-    wontoption P((int));
+/* commands.c */
 
-extern void
-    send_do P((int, int)),
-    send_dont P((int, int)),
-    send_will P((int, int)),
-    send_wont P((int, int));
+struct	env_lst *env_define (const char *, const char *);
+void	env_init (void);
+char	*env_default(int init, int welldefined);
+char	*env_getvalue(const char *var, int exported_only);
 
-extern void
-    lm_will P((unsigned char *, int)),
-    lm_wont P((unsigned char *, int)),
-    lm_do P((unsigned char *, int)),
-    lm_dont P((unsigned char *, int)),
-    lm_mode P((unsigned char *, int, int));
+void set_escape_char(char *s);
 
-extern void
-    slc_init P((void)),
-    slcstate P((void)),
-    slc_mode_export P((void)),
-    slc_mode_import P((int)),
-    slc_import P((int)),
-    slc_export P((void)),
-    slc P((unsigned char *, int)),
-    slc_check P((void)),
-    slc_start_reply P((void)),
-    slc_add_reply P((int, int, int)),
-    slc_end_reply P((void));
-extern int
-    slc_update P((void));
+#ifdef SIGINFO
+void ayt_status(int sig);
+#endif
+int tn(int argc, char **argv);
+void command(int top, char *tbuf, int cnt);
 
-extern void
-    env_opt P((unsigned char *, int)),
-    env_opt_start P((void)),
-    env_opt_start_info P((void)),
-    env_opt_add P((unsigned char *)),
-    env_opt_end P((int));
+/* main.c */
 
-extern unsigned char
-    *env_default P((int, int)),
-    *env_getvalue P((unsigned char *));
+void tninit(void);
 
-extern int
-    get_status P((void)),
-    dosynch P((void));
+/* network.c */
 
-extern cc_t
-    *tcval P((int));
+void init_network(void);
+int stilloob(void);
+void setneturg(void);
+int netflush(void);
 
-#ifndef	USE_TERMIO
+/* sys_bsd.c */
 
-extern struct	tchars ntc;
-extern struct	ltchars nltc;
-extern struct	sgttyb nttyb;
+void init_sys(void);
+int TerminalSpecialChars(int c);
+void TerminalDefaultChars(void);
+cc_t *tcval(int func);
+void TerminalSpeeds(long *input_speed, long *output_speed);
+int TerminalWindowSize(long *rows, long *cols);
+void TerminalNewMode(int);
+void TerminalSaveState(void);
+void sys_telnet_init(void);
+int process_rings(int netin, int netout, int netex, int ttyin, int ttyout,
+		  int poll);
 
-# define termEofChar		ntc.t_eofc
-# define termEraseChar		nttyb.sg_erase
-# define termFlushChar		nltc.t_flushc
-# define termIntChar		ntc.t_intrc
-# define termKillChar		nttyb.sg_kill
-# define termLiteralNextChar	nltc.t_lnextc
-# define termQuitChar		ntc.t_quitc
-# define termSuspChar		nltc.t_suspc
-# define termRprntChar		nltc.t_rprntc
-# define termWerasChar		nltc.t_werasc
-# define termStartChar		ntc.t_startc
-# define termStopChar		ntc.t_stopc
-# define termForw1Char		ntc.t_brkc
-extern cc_t termForw2Char;
-extern cc_t termAytChar;
+/* telnet.c */
 
-# define termEofCharp		(cc_t *)&ntc.t_eofc
-# define termEraseCharp		(cc_t *)&nttyb.sg_erase
-# define termFlushCharp		(cc_t *)&nltc.t_flushc
-# define termIntCharp		(cc_t *)&ntc.t_intrc
-# define termKillCharp		(cc_t *)&nttyb.sg_kill
-# define termLiteralNextCharp	(cc_t *)&nltc.t_lnextc
-# define termQuitCharp		(cc_t *)&ntc.t_quitc
-# define termSuspCharp		(cc_t *)&nltc.t_suspc
-# define termRprntCharp		(cc_t *)&nltc.t_rprntc
-# define termWerasCharp		(cc_t *)&nltc.t_werasc
-# define termStartCharp		(cc_t *)&ntc.t_startc
-# define termStopCharp		(cc_t *)&ntc.t_stopc
-# define termForw1Charp		(cc_t *)&ntc.t_brkc
-# define termForw2Charp		(cc_t *)&termForw2Char
-# define termAytCharp		(cc_t *)&termAytChar
+void init_telnet(void);
 
-# else
+void tel_leave_binary(int rw);
+void tel_enter_binary(int rw);
+int opt_welldefined(const char *ep);
+void telnet(char *);
+int telrcv(void);
+int rlogin_susp(void);
+void intp(void);
+void sendbrk(void);
+void sendabort(void);
+void sendsusp(void);
+void sendeof(void);
+void sendayt(void);
+void sendnaws(void);
 
-extern struct	termio new_tc;
+void xmitAO(void);
+void xmitEL(void);
+void xmitEC(void);
+
+void     send_do (int, int);
+void     send_dont (int, int);
+void     send_will (int, int);
+void     send_wont (int, int);
+
+void     lm_mode (unsigned char *, int, int);
+
+void     slcstate (void);
+void     slc_mode_export (int);
+void     slc_mode_import (int);
+void     slc_check (void);
+
+void     env_opt_start_info (void);
+void     env_opt_add (char *);
+void     env_opt_end (int);
+
+int get_status (void);
+int dosynch (void);
+
+cc_t *tcval (int);
+
+__dead void quit(void);
+
+/* genget.c */
+
+char	**genget(char *name, char **table, int stlen);
+int	isprefix(char *s1, char *s2);
+int	Ambiguous(void *s);
+
+/* terminal.c */
+
+void init_terminal(void);
+int ttyflush(int drop);
+int getconnmode(void);
+void setconnmode(int);
+void setcommandmode(void);
+
+/* utilities.c */
+
+extern char NetTraceFile[];
+void SetNetTrace(const char *file);
+void Dump(char direction, unsigned char *buffer, int length);
+void printoption(char *direction, int cmd, int option);
+void optionstatus(void);
+void printsub(char direction, unsigned char *pointer, int length);
+void EmptyTerminal(void);
+void SetForExit(void);
+__dead void Exit(int returnCode);
+__dead void ExitString(char *string, int returnCode);
+
+extern struct	termios new_tc;
 
 # define termEofChar		new_tc.c_cc[VEOF]
 # define termEraseChar		new_tc.c_cc[VERASE]
 # define termIntChar		new_tc.c_cc[VINTR]
 # define termKillChar		new_tc.c_cc[VKILL]
 # define termQuitChar		new_tc.c_cc[VQUIT]
+# define termSuspChar		new_tc.c_cc[VSUSP]
 
-# ifndef	VSUSP
-extern cc_t termSuspChar;
-# else
-#  define termSuspChar		new_tc.c_cc[VSUSP]
-# endif
 # if	defined(VFLUSHO) && !defined(VDISCARD)
 #  define VDISCARD VFLUSHO
 # endif
@@ -410,43 +327,6 @@ extern cc_t termAytChar;
 #  define termAytChar		new_tc.c_cc[VSTATUS]
 #endif
 
-# if !defined(CRAY) || defined(__STDC__)
-#  define termEofCharp		&termEofChar
-#  define termEraseCharp	&termEraseChar
-#  define termIntCharp		&termIntChar
-#  define termKillCharp		&termKillChar
-#  define termQuitCharp		&termQuitChar
-#  define termSuspCharp		&termSuspChar
-#  define termFlushCharp	&termFlushChar
-#  define termWerasCharp	&termWerasChar
-#  define termRprntCharp	&termRprntChar
-#  define termLiteralNextCharp	&termLiteralNextChar
-#  define termStartCharp	&termStartChar
-#  define termStopCharp		&termStopChar
-#  define termForw1Charp	&termForw1Char
-#  define termForw2Charp	&termForw2Char
-#  define termAytCharp		&termAytChar
-# else
-	/* Work around a compiler bug */
-#  define termEofCharp		0
-#  define termEraseCharp	0
-#  define termIntCharp		0
-#  define termKillCharp		0
-#  define termQuitCharp		0
-#  define termSuspCharp		0
-#  define termFlushCharp	0
-#  define termWerasCharp	0
-#  define termRprntCharp	0
-#  define termLiteralNextCharp	0
-#  define termStartCharp	0
-#  define termStopCharp		0
-#  define termForw1Charp	0
-#  define termForw2Charp	0
-#  define termAytCharp		0
-# endif
-#endif
-
-
 /* Ring buffer structures which are shared */
 
 extern Ring
@@ -454,27 +334,3 @@ extern Ring
     netiring,
     ttyoring,
     ttyiring;
-
-/* Tn3270 section */
-#if	defined(TN3270)
-
-extern int
-    HaveInput,		/* Whether an asynchronous I/O indication came in */
-    noasynchtty,	/* Don't do signals on I/O (SIGURG, SIGIO) */
-    noasynchnet,	/* Don't do signals on I/O (SIGURG, SIGIO) */
-    sigiocount,		/* Count of SIGIO receptions */
-    shell_active;	/* Subshell is active */
-
-extern char
-    *Ibackp,		/* Oldest byte of 3270 data */
-    Ibuf[],		/* 3270 buffer */
-    *Ifrontp,		/* Where next 3270 byte goes */
-    tline[],
-    *transcom;		/* Transparent command */
-
-extern int
-    settranscom P((int, char**));
-
-extern void
-    inputAvailable P((int));
-#endif	/* defined(TN3270) */

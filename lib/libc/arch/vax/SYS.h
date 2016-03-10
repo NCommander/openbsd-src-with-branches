@@ -1,4 +1,6 @@
-/*	$NetBSD: SYS.h,v 1.1 1995/04/17 12:23:34 ragge Exp $ */
+/*	$OpenBSD: SYS.h,v 1.19 2015/09/10 13:29:09 guenther Exp $ */
+/*	$NetBSD: SYS.h,v 1.4 1997/05/02 18:15:32 kleink Exp $ */
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,23 +28,61 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)SYS.h	8.1 (Berkeley) 6/4/93
  */
 
+#include "DEFS.h"
 #include <sys/syscall.h>
 
-#ifdef PROF
-#define	ENTRY(x)	.globl _ ## x; .align 2; _ ## x ## : .word 0; \
-			.data; 1:; .long 0; .text; moval 1b,r0; jsb mcount
-#else
-#define	ENTRY(x)	.globl _ ## x; .align 2; _ ## x ## : .word 0
-#endif PROF
-#define	SYSCALL(x)	err: jmp cerror; ENTRY(x); chmk $ SYS_ ## x; jcs err
-#define	RSYSCALL(x)	SYSCALL(x); ret
-#define	PSEUDO(x,y)	ENTRY(x); chmk $ SYS_ ## y; ret
-#define	CALL(x,y)	calls $ ## x, _ ## y
+#define	_CAT(x,y)	x##y
+#define	__ENTRY(p,x)	ENTRY(p##x,0)
+#define	__DO_SYSCALL(x)	chmk $ SYS_ ## x
 
-#define	ASMSTR		.asciz
+#define	__END(p,x)	END(p##x); _HIDDEN_FALIAS(x, p##x); END(_HIDDEN(x))
 
-	.globl	cerror
+#define	__SYSCALL(p,x,y)						\
+	99:	jmp _C_LABEL(__cerror);					\
+	__ENTRY(p,x);							\
+		__DO_SYSCALL(y);					\
+		jcs 99b
+
+#define	__PSEUDO(p,x,y)							\
+	__ENTRY(p,x);							\
+		__DO_SYSCALL(y);					\
+		jcs 1f;						\
+		ret;							\
+	1:	jmp _C_LABEL(__cerror);					\
+	__END(p,x)
+
+#define	__PSEUDO_NOERROR(p,x,y)						\
+	__ENTRY(p,x);							\
+		__DO_SYSCALL(y);					\
+		ret;							\
+	__END(p,x)
+
+#define	__ALIAS(prefix,name)						\
+	WEAK_ALIAS(name,prefix##name);
+
+/*
+ * For the thread_safe versions, we prepend _thread_sys_ to the function
+ * name so that the 'C' wrapper can go around the real name.
+ */
+#define	SYSCALL(x)		__ALIAS(_thread_sys_,x)		\
+				__SYSCALL(_thread_sys_,x,x)
+#define	SYSCALL_END_HIDDEN(x)	__END(_thread_sys_,x)
+#define	SYSCALL_END(x)		SYSCALL_END_HIDDEN(x); END(x)
+#define	RSYSCALL(x)		__ALIAS(_thread_sys_,x)		\
+				__PSEUDO(_thread_sys_,x,x);	\
+				END(x)
+#define	RSYSCALL_HIDDEN(x)	__PSEUDO(_thread_sys_,x,x)
+#define	PSEUDO(x,y)		__ALIAS(_thread_sys_,x)		\
+				__PSEUDO(_thread_sys_,x,y);	\
+				END(x)
+#define	PSEUDO_NOERROR(x,y)	__ALIAS(_thread_sys_,x)		\
+				__PSEUDO_NOERROR(_thread_sys_,x,y); \
+				END(x)
+#define	SYSENTRY_HIDDEN(x)	__ENTRY(_thread_sys_,x)
+#define	SYSENTRY(x)		__ALIAS(_thread_sys_,x)		\
+				SYSENTRY_HIDDEN(x)
+#define	SYSNAME(x)		_CAT(__thread_sys_,x)
+
+	.globl	_C_LABEL(__cerror)

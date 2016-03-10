@@ -1,3 +1,4 @@
+/*	$OpenBSD: getword.c,v 1.9 2015/10/24 17:55:02 mmcc Exp $	*/
 /*	$NetBSD: getword.c,v 1.4 1995/03/23 08:32:45 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,43 +30,57 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)getword.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: getword.c,v 1.4 1995/03/23 08:32:45 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <ctype.h>
+#include <curses.h>
+#include <err.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "hangman.h"
-#include <stdlib.h>
+#include "pathnames.h"
 
 /*
  * getword:
  *	Get a valid word out of the dictionary file
  */
-getword()
+void
+getword(void)
 {
-	register FILE		*inf;
-	register char		*wp, *gp;
-	register long		 pos;
+	FILE		*inf;
+	char		*wp, *gp;
+	long		 pos;
+	int		badwords, countwords;
+	size_t		wordlen;
 
 	inf = Dict;
-	for (;;) {
-		pos = (double)rand() / (RAND_MAX + 1.0) * (double)Dict_size;
-		fseek(inf, pos, 0);
+	badwords = 0;
+	/* Make sure the dictionary file is valid if it's not the default */
+	countwords = strcmp(Dict_name, _PATH_DICT);
+	while (badwords < MAXBADWORDS) {
+		if (countwords)
+			badwords++;
+		pos = arc4random_uniform(Dict_size);
+		fseek(inf, pos, SEEK_SET);
 		if (fgets(Word, BUFSIZ, inf) == NULL)
 			continue;
 		if (fgets(Word, BUFSIZ, inf) == NULL)
 			continue;
-		Word[strlen(Word) - 1] = '\0';
-		if (strlen(Word) < MINLEN)
+		wordlen = strlen(Word);
+		if (wordlen > 0 && Word[wordlen - 1] == '\n')
+			Word[wordlen - 1] = '\0';
+		if (wordlen < MINLEN || wordlen > MAXLEN)
 			continue;
 		for (wp = Word; *wp; wp++)
-			if (!islower(*wp))
+			if (!islower((unsigned char)*wp))
 				goto cont;
 		break;
 cont:		;
+	}
+	if (badwords >= MAXBADWORDS) {
+		mvcur(0, COLS - 1, LINES - 1, 0);
+		endwin();
+		errx(1, "file %s appears to be incorrectly formatted\n(Need one lower-case word per line)",
+			Dict_name);
 	}
 	gp = Known;
 	wp = Word;

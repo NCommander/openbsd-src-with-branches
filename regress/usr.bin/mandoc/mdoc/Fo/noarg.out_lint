@@ -1,0 +1,10 @@
+mandoc: noarg.in:23:2: WARNING: skipping empty macro: Fa
+mandoc: noarg.in:27:2: WARNING: skipping empty macro: Fn
+mandoc: noarg.in:29:2: WARNING: skipping empty macro: Ft
+mandoc: noarg.in:32:2: WARNING: skipping empty macro: Ft
+mandoc: noarg.in:34:2: WARNING: skipping empty macro: Ft
+mandoc: noarg.in:37:2: WARNING: skipping empty macro: Ft
+mandoc: noarg.in:39:2: WARNING: skipping empty macro: Fa
+mandoc: noarg.in:42:2: WARNING: skipping empty macro: Ft
+mandoc: noarg.in:43:2: WARNING: skipping empty macro: Fn
+mandoc: noarg.in:12:10: ERROR: skipping excess arguments: Fo ... bogus

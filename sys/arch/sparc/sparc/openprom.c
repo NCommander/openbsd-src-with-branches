@@ -1,4 +1,5 @@
-/*	$NetBSD: openprom.c,v 1.5 1995/01/10 16:47:03 pk Exp $ */
+/*	$OpenBSD: openprom.c,v 1.6 2014/07/12 18:44:43 tedu Exp $	*/
+/*	$NetBSD: openprom.c,v 1.8 1996/03/31 23:45:34 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -50,32 +47,39 @@
 #include <sys/fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
+#include <sys/conf.h>
 
 #include <machine/bsd_openprom.h>
 #include <machine/openpromio.h>
+#include <machine/autoconf.h>
+#include <machine/conf.h>
 
 static	int lastnode;			/* speed hack */
 extern	int optionsnode;		/* node ID of ROM's options */
-extern	int findroot();			/* returns node ID of top node */
 extern	struct promvec *promvec;
 
+static int openpromcheckid(int, int);
+static int openpromgetstr(int, char *, char **);
+
 int
-openpromopen(dev, flags, mode)
+openpromopen(dev, flags, mode, p)
 	dev_t dev;
 	int flags, mode;
+	struct proc *p;
 {
 #if defined(SUN4)
 	if (cputyp==CPU_SUN4)
 		return (ENODEV);
-#endif	
+#endif
 
 	return (0);
 }
 
 int
-openpromclose(dev, flags, mode)
+openpromclose(dev, flags, mode, p)
 	dev_t dev;
 	int flags, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -241,10 +245,8 @@ openpromioctl(dev, cmd, data, flags, p)
 		return (ENOTTY);
 	}
 
-	if (name)
-		free(name, M_TEMP);
-	if (value)
-		free(value, M_TEMP);
+	free(name, M_TEMP, 0);
+	free(value, M_TEMP, 0);
 
 	return (error);
 }

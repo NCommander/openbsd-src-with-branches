@@ -1,3 +1,4 @@
+/*	$OpenBSD: tetris.h,v 1.10 2008/08/10 12:23:25 krw Exp $	*/
 /*	$NetBSD: tetris.h,v 1.2 1995/04/22 07:42:48 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -58,7 +55,7 @@
 #define	B_SIZE	(B_ROWS * B_COLS)
 
 typedef unsigned char cell;
-cell	board[B_SIZE];		/* 1 => occupied, 0 => empty */
+extern cell	board[B_SIZE];	/* 1 => occupied, 0 => empty */
 
 	/* the displayed area (rows) */
 #define	D_FIRST	1
@@ -74,11 +71,11 @@ cell	board[B_SIZE];		/* 1 => occupied, 0 => empty */
 #define	MINROWS	23
 #define	MINCOLS	40
 
-int	Rows, Cols;		/* current screen size */
+extern int	Rows, Cols;	/* current screen size */
 
 /*
  * Translations from board coordinates to display coordinates.
- * As with board coordinates, display coordiates are zero origin.
+ * As with board coordinates, display coordinates are zero origin.
  */
 #define	RTOD(x)	((x) - 1)
 #define	CTOD(x)	((x) * 2 + (((Cols - 2 * B_COLS) >> 1) - 1))
@@ -126,11 +123,14 @@ int	Rows, Cols;		/* current screen size */
  */
 struct shape {
 	int	rot;	/* index of rotated version of this shape */
+	int	rotc;	/* -- " -- in classic version  */
 	int	off[3];	/* offsets to other blots if center is at (0,0) */
 };
 
-extern struct shape shapes[];
-#define	randshape() (&shapes[random() % 7])
+extern const struct shape shapes[];
+
+extern const struct shape *curshape;
+extern const struct shape *nextshape;
 
 /*
  * Shapes fall at a rate faster than once per second.
@@ -142,7 +142,7 @@ extern struct shape shapes[];
  * The value eventually reaches a limit, and things stop going faster,
  * but by then the game is utterly impossible.
  */
-long	fallrate;		/* less than 1 million; smaller => faster */
+extern long	fallrate;	/* less than 1 million; smaller => faster */
 #define	faster() (fallrate -= fallrate / 3000)
 
 /*
@@ -161,11 +161,17 @@ long	fallrate;		/* less than 1 million; smaller => faster */
  * and we score a point for each row it falls (plus one more as soon as
  * we find that it is at rest and integrate it---until then, it can
  * still be moved or rotated).
+ *
+ * If previewing has been turned on, the score is multiplied by PRE_PENALTY.
  */
-int	score;			/* the obvious thing */
+#define PRE_PENALTY 0.75
 
-char	key_msg[100];
+extern int	score;		/* the obvious thing */
 
-int	fits_in __P((struct shape *, int));
-void	place __P((struct shape *, int, int));
-void	stop __P((char *));
+extern char	key_msg[100];
+extern int	showpreview;
+extern int	classic;
+
+int	fits_in(const struct shape *, int);
+void	place(const struct shape *, int, int);
+void	stop(char *);

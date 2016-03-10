@@ -1,7 +1,7 @@
-/*	$NetBSD: print-atalk.c,v 1.3 1995/03/06 19:11:04 mycroft Exp $	*/
+/*	$OpenBSD: print-atalk.c,v 1.29 2015/08/21 02:07:32 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,41 +22,37 @@
  *
  * Format and print AppleTalk packets.
  */
-#ifndef lint
-static  char rcsid[] =
-	"@(#)Header: print-atalk.c,v 1.36 94/06/20 19:44:34 leres Exp (LBL)";
-#endif
 
-#include <sys/param.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 
+struct mbuf;
+struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/if_ether.h>
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 
+#include <inttypes.h>
 #include <stdio.h>
-#ifdef __STDC__
 #include <stdlib.h>
-#endif
 #include <string.h>
+#include <limits.h>
 
 #include "interface.h"
 #include "addrtoname.h"
 #include "ethertype.h"
 #include "extract.h"			/* must come after interface.h */
 #include "appletalk.h"
+#include "savestr.h"
+#include "privsep.h"
 
-static struct token type2str[] = {
+static struct tok type2str[] = {
 	{ ddpRTMP,		"rtmp" },
 	{ ddpRTMPrequest,	"rtmpReq" },
 	{ ddpECHO,		"echo" },
@@ -67,20 +63,20 @@ static struct token type2str[] = {
 };
 
 struct aarp {
-	u_short htype, ptype;
-	u_char	halen, palen;
-	u_short op;
-	u_char	hsaddr[6];
-	u_char	psaddr[4];
-	u_char	hdaddr[6];
-	u_char	pdaddr[4];
+	u_int16_t	htype, ptype;
+	u_int8_t	halen, palen;
+	u_int16_t	op;
+	u_int8_t	hsaddr[6];
+	u_int8_t	psaddr[4];
+	u_int8_t	hdaddr[6];
+	u_int8_t	pdaddr[4];
 };
 
 static char tstr[] = "[|atalk]";
 
-static void atp_print(const struct atATP *, int);
+static void atp_print(const struct atATP *, u_int);
 static void atp_bitmap_print(u_char);
-static void nbp_print(const struct atNBP *, int, u_short, u_char, u_char);
+static void nbp_print(const struct atNBP *, u_int, u_short, u_char, u_char);
 static const char *print_cstring(const char *, const u_char *);
 static const struct atNBPtuple *nbp_tuple_print(const struct atNBPtuple *,
 						const u_char *,
@@ -88,18 +84,48 @@ static const struct atNBPtuple *nbp_tuple_print(const struct atNBPtuple *,
 static const struct atNBPtuple *nbp_name_print(const struct atNBPtuple *,
 					       const u_char *);
 static const char *ataddr_string(u_short, u_char);
-static void ddp_print(const u_char *, int, int, u_short, u_char, u_char);
+static void ddp_print(const u_char *, u_int, int, u_short, u_char, u_char);
 static const char *ddpskt_string(int);
 
 /*
- * Print AppleTalk Datagram Delivery Protocol packets.
+ * Print AppleTalk Datagram Delivery Protocol packets
+ * without the LLAP encapsulating header (i.e.
+ * from Ethertalk)
  */
 void
-atalk_print(register const u_char *bp, int length)
+atalk_print(const u_char *bp, u_int length)
 {
-	register const struct LAP *lp;
-	register const struct atDDP *dp;
-	register const struct atShortDDP *sdp;
+	const struct atDDP *dp;
+	u_short snet;
+
+	if (length < ddpSize) {
+		(void)printf(" [|ddp %d]", length);
+		return;
+	}
+	dp = (const struct atDDP *)bp;
+	snet = EXTRACT_16BITS(&dp->srcNet);
+	printf("%s.%s", ataddr_string(snet, dp->srcNode),
+	    ddpskt_string(dp->srcSkt));
+	printf(" > %s.%s:",
+	    ataddr_string(EXTRACT_16BITS(&dp->dstNet), dp->dstNode),
+	    ddpskt_string(dp->dstSkt));
+	bp += ddpSize;
+	length -= ddpSize;
+	ddp_print(bp, length, dp->type, snet, dp->srcNode, dp->srcSkt);
+}
+
+/*
+ * Print AppleTalk Datagram Delivery Protocol packets
+ * from localtalk (i.e. the 230 Kbps net built into
+ * every Macintosh). We can get these from a localtalk
+ * interface if we have one, or from UDP encapsulated tunnels.
+ */
+void
+atalk_print_llap(const u_char *bp, u_int length)
+{
+	const struct LAP *lp;
+	const struct atDDP *dp;
+	const struct atShortDDP *sdp;
 	u_short snet;
 
 	lp = (struct LAP *)bp;
@@ -128,11 +154,11 @@ atalk_print(register const u_char *bp, int length)
 			return;
 		}
 		dp = (const struct atDDP *)bp;
-		snet = EXTRACT_SHORT(&dp->srcNet);
+		snet = EXTRACT_16BITS(&dp->srcNet);
 		printf("%s.%s", ataddr_string(snet, dp->srcNode),
 		    ddpskt_string(dp->srcSkt));
 		printf(" > %s.%s:",
-		    ataddr_string(EXTRACT_SHORT(&dp->dstNet), dp->dstNode),
+		    ataddr_string(EXTRACT_16BITS(&dp->dstNet), dp->dstNode),
 		    ddpskt_string(dp->dstSkt));
 		bp += ddpSize;
 		length -= ddpSize;
@@ -154,17 +180,17 @@ atalk_print(register const u_char *bp, int length)
 
 /* XXX should probably pass in the snap header and do checks like arp_print() */
 void
-aarp_print(register const u_char *bp, int length)
+aarp_print(const u_char *bp, u_int length)
 {
-	register const struct aarp *ap;
+	const struct aarp *ap;
 
 #define AT(member) ataddr_string((ap->member[1]<<8)|ap->member[2],ap->member[3])
 
 	printf("aarp ");
 	ap = (const struct aarp *)bp;
-	if (ap->htype == 1 && ap->ptype == ETHERTYPE_ATALK &&
+	if (ntohs(ap->htype) == 1 && ntohs(ap->ptype) == ETHERTYPE_ATALK &&
 	    ap->halen == 6 && ap->palen == 4 )
-		switch (ap->op) {
+		switch (ntohs(ap->op)) {
 
 		case 1:				/* request */
 			(void)printf("who-has %s tell %s",
@@ -181,14 +207,32 @@ aarp_print(register const u_char *bp, int length)
 			    AT(pdaddr), AT(psaddr));
 			return;
 		}
-	(void)printf("len %d op %d htype %d ptype %#x halen %d palen %d",
-	    length, ap->op, ap->htype, ap->ptype, ap->halen, ap->palen );
+	(void)printf("len %u op %u htype %u ptype %#x halen %u palen %u",
+	    length, ntohs(ap->op), ntohs(ap->htype), ntohs(ap->ptype),
+	    ap->halen, ap->palen);
 }
 
 static void
-ddp_print(register const u_char *bp, register int length, register int t,
-	  register u_short snet, register u_char snode, u_char skt)
+ddp_print(const u_char *bp, u_int length, int t,
+	  u_short snet, u_char snode, u_char skt)
 {
+
+	if ((intptr_t)bp & (sizeof(long)-1)) {
+		static u_char *abuf = NULL;
+		int clen = snapend - bp;
+		if (clen > snaplen)
+			clen = snaplen;
+
+		if (abuf == NULL) {
+			abuf = malloc(snaplen);
+			if (abuf == NULL)
+				error("ddp_print: malloc");
+		}
+		memmove((char *)abuf, (char *)bp, min(length, clen));
+		snapend = abuf + clen;
+		packetp = abuf;
+		bp = abuf;
+	}
 
 	switch (t) {
 
@@ -207,10 +251,10 @@ ddp_print(register const u_char *bp, register int length, register int t,
 }
 
 static void
-atp_print(register const struct atATP *ap, int length)
+atp_print(const struct atATP *ap, u_int length)
 {
 	char c;
-	u_int32 data;
+	u_int32_t data;
 
 	if ((const u_char *)(ap + 1) > snapend) {
 		/* Just bail if we don't have the whole chunk. */
@@ -223,7 +267,7 @@ atp_print(register const struct atATP *ap, int length)
 	case atpReqCode:
 		(void)printf(" atp-req%s %d",
 			     ap->control & atpXO? " " : "*",
-			     EXTRACT_SHORT(&ap->transID));
+			     EXTRACT_16BITS(&ap->transID));
 
 		atp_bitmap_print(ap->bitmap);
 
@@ -246,7 +290,7 @@ atp_print(register const struct atATP *ap, int length)
 	case atpRspCode:
 		(void)printf(" atp-resp%s%d:%d (%d)",
 			     ap->control & atpEOM? "*" : " ",
-			     EXTRACT_SHORT(&ap->transID), ap->bitmap, length);
+			     EXTRACT_16BITS(&ap->transID), ap->bitmap, length);
 		switch (ap->control & (atpXO|atpSTS)) {
 		case atpXO:
 			(void)printf(" [XO]");
@@ -261,7 +305,7 @@ atp_print(register const struct atATP *ap, int length)
 		break;
 
 	case atpRelCode:
-		(void)printf(" atp-rel  %d", EXTRACT_SHORT(&ap->transID));
+		(void)printf(" atp-rel  %d", EXTRACT_16BITS(&ap->transID));
 
 		atp_bitmap_print(ap->bitmap);
 
@@ -290,19 +334,19 @@ atp_print(register const struct atATP *ap, int length)
 
 	default:
 		(void)printf(" atp-0x%x  %d (%d)", ap->control,
-			     EXTRACT_SHORT(&ap->transID), length);
+			     EXTRACT_16BITS(&ap->transID), length);
 		break;
 	}
-	data = EXTRACT_LONG(&ap->userData);
+	data = EXTRACT_32BITS(&ap->userData);
 	if (data != 0)
 		(void)printf(" 0x%x", data);
 }
 
 static void
-atp_bitmap_print(register u_char bm)
+atp_bitmap_print(u_char bm)
 {
-	register char c;
-	register int i;
+	char c;
+	int i;
 
 	/*
 	 * The '& 0xff' below is needed for compilers that want to sign
@@ -330,18 +374,31 @@ atp_bitmap_print(register u_char bm)
 }
 
 static void
-nbp_print(register const struct atNBP *np, int length, register u_short snet,
-	  register u_char snode, register u_char skt)
+nbp_print(const struct atNBP *np, u_int length, u_short snet,
+	  u_char snode, u_char skt)
 {
-	register const struct atNBPtuple *tp =
+	const struct atNBPtuple *tp =
 			(struct atNBPtuple *)((u_char *)np + nbpHeaderSize);
-	int i = length;
+	int i;
 	const u_char *ep;
+
+	if (length < nbpHeaderSize) {
+		(void)printf(" truncated-nbp %d", length);
+		return;
+	}
 
 	length -= nbpHeaderSize;
 	if (length < 8) {
 		/* must be room for at least one tuple */
-		(void)printf(" truncated-nbp %d", length + nbpHeaderSize);
+		if (np->control == nbpNATLKerr) {
+			(void)printf(" nbp-netatalk_err");
+			return;
+		} else if (np->control == nbpNATLKok) {
+			(void)printf(" nbp-netatalk_ok");
+			return;
+		}
+		(void)printf(" truncated-nbp nbp-0x%x  %d (%d)",
+			np->control, np->id, length + nbpHeaderSize);
 		return;
 	}
 	/* ep points to end of available data */
@@ -370,10 +427,10 @@ nbp_print(register const struct atNBP *np, int length, register u_short snet,
 			(void)printf(" [ntup=%d]", np->control & 0xf);
 		if (tp->enumerator)
 			(void)printf(" [enum=%d]", tp->enumerator);
-		if (EXTRACT_SHORT(&tp->net) != snet ||
+		if (EXTRACT_16BITS(&tp->net) != snet ||
 		    tp->node != snode || tp->skt != skt)
 			(void)printf(" [addr=%s.%d]",
-			    ataddr_string(EXTRACT_SHORT(&tp->net),
+			    ataddr_string(EXTRACT_16BITS(&tp->net),
 			    tp->node), tp->skt);
 		break;
 
@@ -381,6 +438,16 @@ nbp_print(register const struct atNBP *np, int length, register u_short snet,
 		(void)printf(" nbp-reply %d:", np->id);
 
 		/* print each of the tuples in the reply */
+		for (i = np->control & 0xf; --i >= 0 && tp; )
+			tp = nbp_tuple_print(tp, ep, snet, snode, skt);
+		break;
+
+	case nbpNATLKrgstr:
+	case nbpNATLKunrgstr:
+		(void)printf((i == nbpNATLKrgstr) ?
+			" nbp-netatalk_rgstr %d:" :
+			" nbp-netatalk_unrgstr %d:",
+			np->id);
 		for (i = np->control & 0xf; --i >= 0 && tp; )
 			tp = nbp_tuple_print(tp, ep, snet, snode, skt);
 		break;
@@ -394,9 +461,9 @@ nbp_print(register const struct atNBP *np, int length, register u_short snet,
 
 /* print a counted string */
 static const char *
-print_cstring(register const char *cp, register const u_char *ep)
+print_cstring(const char *cp, const u_char *ep)
 {
-	register int length;
+	u_int length;
 
 	if (cp >= (const char *)ep) {
 		fputs(tstr, stdout);
@@ -409,7 +476,7 @@ print_cstring(register const char *cp, register const u_char *ep)
 		(void)printf("[len=%d]", length);
 		return (0);
 	}
-	while (--length >= 0) {
+	while ((int)--length >= 0) {
 		if (cp >= (char *)ep) {
 			fputs(tstr, stdout);
 			return (0);
@@ -420,12 +487,12 @@ print_cstring(register const char *cp, register const u_char *ep)
 }
 
 static const struct atNBPtuple *
-nbp_tuple_print(register const struct atNBPtuple *tp,
-		register const u_char *ep,
-		register u_short snet, register u_char snode,
-		register u_char skt)
+nbp_tuple_print(const struct atNBPtuple *tp,
+		const u_char *ep,
+		u_short snet, u_char snode,
+		u_char skt)
 {
-	register const struct atNBPtuple *tpn;
+	const struct atNBPtuple *tpn;
 
 	if ((const u_char *)(tp + 1) > ep) {
 		fputs(tstr, stdout);
@@ -442,17 +509,17 @@ nbp_tuple_print(register const struct atNBPtuple *tp,
 		(void)printf(" %d", tp->skt);
 
 	/* if the address doesn't match the src address, it's an anomaly */
-	if (EXTRACT_SHORT(&tp->net) != snet || tp->node != snode)
+	if (EXTRACT_16BITS(&tp->net) != snet || tp->node != snode)
 		(void)printf(" [addr=%s]",
-		    ataddr_string(EXTRACT_SHORT(&tp->net), tp->node));
+		    ataddr_string(EXTRACT_16BITS(&tp->net), tp->node));
 
 	return (tpn);
 }
 
 static const struct atNBPtuple *
-nbp_name_print(const struct atNBPtuple *tp, register const u_char *ep)
+nbp_name_print(const struct atNBPtuple *tp, const u_char *ep)
 {
-	register const char *cp = (const char *)tp + nbpTupleSize;
+	const char *cp = (const char *)tp + nbpTupleSize;
 
 	putchar(' ');
 
@@ -482,48 +549,51 @@ struct hnamemem {
 
 static struct hnamemem hnametable[HASHNAMESIZE];
 
+/*
+ * see if there's an AppleTalk number to name map file.
+ */
+static void
+init_atalk(void)
+{
+	struct hnamemem *tp;
+	char nambuf[HOST_NAME_MAX+1 + 20];
+	char line[BUFSIZ];
+	int i1, i2, i3;
+
+	priv_getlines(FTAB_APPLETALK);
+	while (priv_getline(line, sizeof(line)) > 0) {
+		if (line[0] == '\n' || line[0] == 0 || line[0] == '#')
+			continue;
+		if (sscanf(line, "%d.%d.%d %255s", &i1, &i2, &i3, nambuf) == 4)
+			/* got a hostname. */
+			i3 |= ((i1 << 8) | i2) << 8;
+		else if (sscanf(line, "%d.%d %255s", &i1, &i2, nambuf) == 3)
+			/* got a net name */
+			i3 = (((i1 << 8) | i2) << 8) | 255;
+		else
+			continue;
+		
+		for (tp = &hnametable[i3 & (HASHNAMESIZE-1)];
+		     tp->nxt; tp = tp->nxt)
+			;
+		tp->addr = i3;
+		tp->nxt = newhnamemem();
+		tp->name = savestr(nambuf);
+	}
+}
+
 static const char *
 ataddr_string(u_short atnet, u_char athost)
 {
-	register struct hnamemem *tp, *tp2;
-	register int i = (atnet << 8) | athost;
-	char nambuf[256];
+	struct hnamemem *tp, *tp2;
+	int i = (atnet << 8) | athost;
+	char nambuf[HOST_NAME_MAX+1 + 20];
 	static int first = 1;
-	FILE *fp;
 
-	/*
-	 * if this is the first call, see if there's an AppleTalk
-	 * number to name map file.
-	 */
-	if (first && (first = 0, !nflag)
-	    && (fp = fopen("/etc/atalk.names", "r"))) {
-		char line[256];
-		int i1, i2, i3;
-
-		while (fgets(line, sizeof(line), fp)) {
-			if (line[0] == '\n' || line[0] == 0 || line[0] == '#')
-				continue;
-			if (sscanf(line, "%d.%d.%d %s", &i1, &i2, &i3,
-				     nambuf) == 4)
-				/* got a hostname. */
-				i3 |= ((i1 << 8) | i2) << 8;
-			else if (sscanf(line, "%d.%d %s", &i1, &i2,
-					nambuf) == 3)
-				/* got a net name */
-				i3 = (((i1 << 8) | i2) << 8) | 255;
-			else
-				continue;
-
-			for (tp = &hnametable[i3 & (HASHNAMESIZE-1)];
-			     tp->nxt; tp = tp->nxt)
-				;
-			tp->addr = i3;
-			tp->nxt = (struct hnamemem *)calloc(1, sizeof(*tp));
-			tp->name = savestr(nambuf);
-		}
-		fclose(fp);
+	if (first) {
+		first = 0;
+		init_atalk();
 	}
-
 	for (tp = &hnametable[i & (HASHNAMESIZE-1)]; tp->nxt; tp = tp->nxt)
 		if (tp->addr == i)
 			return (tp->name);
@@ -533,26 +603,27 @@ ataddr_string(u_short atnet, u_char athost)
 	for (tp2 = &hnametable[i & (HASHNAMESIZE-1)]; tp2->nxt; tp2 = tp2->nxt)
 		if (tp2->addr == i) {
 			tp->addr = (atnet << 8) | athost;
-			tp->nxt = (struct hnamemem *)calloc(1, sizeof(*tp));
-			(void)sprintf(nambuf, "%s.%d", tp2->name, athost);
+			tp->nxt = newhnamemem();
+			(void)snprintf(nambuf, sizeof nambuf, "%s.%d",
+			    tp2->name, athost);
 			tp->name = savestr(nambuf);
 			return (tp->name);
 		}
 
 	tp->addr = (atnet << 8) | athost;
-	tp->nxt = (struct hnamemem *)calloc(1, sizeof(*tp));
+	tp->nxt = newhnamemem();
 	if (athost != 255)
-		(void)sprintf(nambuf, "%d.%d.%d",
-		    atnet >> 8, atnet & 0xff, athost);
+		(void)snprintf(nambuf, sizeof nambuf, "%d.%d.%d",
+			atnet >> 8, atnet & 0xff, athost);
 	else
-		(void)sprintf(nambuf, "%d.%d", atnet >> 8, atnet & 0xff);
-	i = strlen(nambuf) + 1;
-	tp->name = strcpy(malloc((u_int) i), nambuf);
+		(void)snprintf(nambuf, sizeof nambuf, "%d.%d",
+			atnet >> 8, atnet & 0xff);
+	tp->name = savestr(nambuf);
 
 	return (tp->name);
 }
 
-static struct token skt2str[] = {
+static struct tok skt2str[] = {
 	{ rtmpSkt,	"rtmp" },	/* routing table maintenance */
 	{ nbpSkt,	"nis" },	/* name info socket */
 	{ echoSkt,	"echo" },	/* AppleTalk echo protocol */
@@ -561,12 +632,12 @@ static struct token skt2str[] = {
 };
 
 static const char *
-ddpskt_string(register int skt)
+ddpskt_string(int skt)
 {
-	static char buf[8];
+	static char buf[12];
 
 	if (nflag) {
-		(void)sprintf(buf, "%d", skt);
+		(void)snprintf(buf, sizeof buf, "%d", skt);
 		return (buf);
 	}
 	return (tok2str(skt2str, "%d", skt));

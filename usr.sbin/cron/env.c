@@ -1,178 +1,256 @@
+/*	$OpenBSD: env.c,v 1.31 2015/10/29 21:24:09 millert Exp $	*/
+
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
- * All rights reserved
+ * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *
- * Distribute freely, except: don't remove my name from the source or
- * documentation (don't take credit for my work), mark your changes (don't
- * get me blamed for your possible bugs), don't alter or remove this
- * notice.  May be sold if buildable source is provided to buyer.  No
- * warrantee of any kind, express or implied, is included with this
- * software; use at your own risk, responsibility for damages (if any) to
- * anyone resulting from the use of this software rests entirely with the
- * user.
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * Send bug reports, bug fixes, enhancements, requests, flames, etc., and
- * I'll try to keep a version up to date.  I can be reached as follows:
- * Paul Vixie          <paul@vix.com>          uunet!decwrl!vixie!paul
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: env.c,v 1.1.1.5 1994/01/26 19:09:39 jtc Exp $";
-#endif
+#include <sys/types.h>
 
+#include <bitstring.h>		/* for structs.h */
+#include <ctype.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>		/* for structs.h */
 
-#include "cron.h"
-
+#include "macros.h"
+#include "structs.h"
+#include "funcs.h"
+#include "globals.h"
 
 char **
-env_init()
+env_init(void)
 {
-	register char	**p = (char **) malloc(sizeof(char **));
+	char **p = malloc(sizeof(char *));
 
-	p[0] = NULL;
+	if (p != NULL)
+		p[0] = NULL;
 	return (p);
 }
 
-
 void
-env_free(envp)
-	char	**envp;
+env_free(char **envp)
 {
-	char	**p;
+	char **p;
 
-	for (p = envp;  *p;  p++)
+	for (p = envp; *p != NULL; p++)
 		free(*p);
 	free(envp);
 }
 
+char **
+env_copy(char **envp)
+{
+	int count, i, save_errno;
+	char **p;
+
+	for (count = 0; envp[count] != NULL; count++)
+		continue;
+	p = reallocarray(NULL, count+1, sizeof(char *));  /* 1 for the NULL */
+	if (p != NULL) {
+		for (i = 0; i < count; i++)
+			if ((p[i] = strdup(envp[i])) == NULL) {
+				save_errno = errno;
+				while (--i >= 0)
+					free(p[i]);
+				free(p);
+				errno = save_errno;
+				return (NULL);
+			}
+		p[count] = NULL;
+	}
+	return (p);
+}
+
+static char *
+env_find(char *name, char **envp, size_t *count)
+{
+	char **ep, *p, *q;
+	size_t len;
+
+	/*
+	 * Find name in envp and return its value along with the
+	 * index it was found at or the length of envp if not found.
+	 * We treat a '=' in name as end of string for env_set().
+	 */
+	for (p = name; *p && *p != '='; p++)
+		continue;
+	len = (size_t)(p - name);
+	for (ep = envp; (p = *ep) != NULL; ep++) {
+		if ((q = strchr(p, '=')) == NULL)
+			continue;
+		if ((size_t)(q - p) == len && strncmp(p, name, len) == 0) {
+			p = q + 1;
+			break;
+		}
+	}
+	*count = (size_t)(ep - envp);
+	return (p);
+}
+
+char *
+env_get(char *name, char **envp)
+{
+	size_t count;
+
+	return (env_find(name, envp, &count));
+}
 
 char **
-env_copy(envp)
-	register char	**envp;
+env_set(char **envp, char *envstr)
 {
-	register int	count, i;
-	register char	**p;
+	size_t count;
+	char **p, *envcopy;
 
-	for (count = 0;  envp[count] != NULL;  count++)
-		;
-	p = (char **) malloc((count+1) * sizeof(char *));  /* 1 for the NULL */
-	for (i = 0;  i < count;  i++)
-		p[i] = strdup(envp[i]);
+	if ((envcopy = strdup(envstr)) == NULL)
+		return (NULL);
+
+	/* Replace existing name if found. */
+	if (env_find(envstr, envp, &count) != NULL) {
+		free(envp[count]);
+		envp[count] = envcopy;
+		return (envp);
+	}
+
+	/* Realloc envp and append new variable. */
+	p = reallocarray(envp, count + 2, sizeof(char **));
+	if (p == NULL) {
+		free(envcopy);
+		return (NULL);
+	}
+	p[count++] = envcopy;
 	p[count] = NULL;
 	return (p);
 }
 
+/* The following states are used by load_env(), traversed in order: */
+enum env_state {
+	NAMEI,		/* First char of NAME, may be quote */
+	NAME,		/* Subsequent chars of NAME */
+	EQ1,		/* After end of name, looking for '=' sign */
+	EQ2,		/* After '=', skipping whitespace */
+	VALUEI,		/* First char of VALUE, may be quote */
+	VALUE,		/* Subsequent chars of VALUE */
+	FINI,		/* All done, skipping trailing whitespace */
+	ERROR		/* Error */
+};
 
-char **
-env_set(envp, envstr)
-	char	**envp;
-	char	*envstr;
-{
-	register int	count, found;
-	register char	**p;
-
-	/*
-	 * count the number of elements, including the null pointer;
-	 * also set 'found' to -1 or index of entry if already in here.
-	 */
-	found = -1;
-	for (count = 0;  envp[count] != NULL;  count++) {
-		if (!strcmp_until(envp[count], envstr, '='))
-			found = count;
-	}
-	count++;	/* for the NULL */
-
-	if (found != -1) {
-		/*
-		 * it exists already, so just free the existing setting,
-		 * save our new one there, and return the existing array.
-		 */
-		free(envp[found]);
-		envp[found] = strdup(envstr);
-		return (envp);
-	}
-
-	/*
-	 * it doesn't exist yet, so resize the array, move null pointer over
-	 * one, save our string over the old null pointer, and return resized
-	 * array.
-	 */
-	p = (char **) realloc((void *) envp,
-			      (unsigned) ((count+1) * sizeof(char **)));
-	p[count] = p[count-1];
-	p[count-1] = strdup(envstr);
-	return (p);
-}
-
-
-/* return	ERR = end of file
+/* return	-1 = end of file
  *		FALSE = not an env setting (file was repositioned)
  *		TRUE = was an env setting
  */
 int
-load_env(envstr, f)
-	char	*envstr;
-	FILE	*f;
+load_env(char *envstr, FILE *f)
 {
-	long	filepos;
-	int	fileline;
-	char	name[MAX_TEMPSTR], val[MAX_ENVSTR];
-	int	fields;
+	long filepos;
+	int fileline;
+	enum env_state state;
+	char name[MAX_ENVSTR], val[MAX_ENVSTR];
+	char quotechar, *c, *str;
 
 	filepos = ftell(f);
 	fileline = LineNumber;
 	skip_comments(f);
 	if (EOF == get_string(envstr, MAX_ENVSTR, f, "\n"))
-		return (ERR);
+		return (-1);
 
-	Debug(DPARS, ("load_env, read <%s>\n", envstr))
-
-	name[0] = val[0] = '\0';
-	fields = sscanf(envstr, "%[^ =] = %[^\n#]", name, val);
-	if (fields != 2) {
-		Debug(DPARS, ("load_env, not 2 fields (%d)\n", fields))
-		fseek(f, filepos, 0);
+	bzero(name, sizeof name);
+	bzero(val, sizeof val);
+	str = name;
+	state = NAMEI;
+	quotechar = '\0';
+	c = envstr;
+	while (state != ERROR && *c) {
+		switch (state) {
+		case NAMEI:
+		case VALUEI:
+			if (*c == '\'' || *c == '"')
+				quotechar = *c++;
+			state++;
+			/* FALLTHROUGH */
+		case NAME:
+		case VALUE:
+			if (quotechar) {
+				if (*c == quotechar) {
+					state++;
+					c++;
+					break;
+				}
+				if (state == NAME && *c == '=') {
+					state = ERROR;
+					break;
+				}
+			} else {
+				if (state == NAME) {
+					if (isspace((unsigned char)*c)) {
+						c++;
+						state++;
+						break;
+					}
+					if (*c == '=') {
+						state++;
+						break;
+					}
+				}
+			}
+			*str++ = *c++;
+			break;
+		case EQ1:
+			if (*c == '=') {
+				state++;
+				str = val;
+				quotechar = '\0';
+			} else {
+				if (!isspace((unsigned char)*c))
+					state = ERROR;
+			}
+			c++;
+			break;
+		case EQ2:
+		case FINI:
+			if (isspace((unsigned char)*c))
+				c++;
+			else
+				state++;
+			break;
+		case ERROR:
+			/* handled below */
+			break;
+		}
+	}
+	if (state != FINI && !(state == VALUE && !quotechar)) {
+		fseek(f, filepos, SEEK_SET);
 		Set_LineNum(fileline);
 		return (FALSE);
 	}
+	if (state == VALUE) {
+		/* End of unquoted value: trim trailing whitespace */
+		c = val + strlen(val);
+		while (c > val && isspace((unsigned char)c[-1]))
+			*(--c) = '\0';
+	}
 
-	/* 2 fields from scanf; looks like an env setting
-	 */
+	/* 2 fields from parser; looks like an env setting */
 
 	/*
-	 * process value string
+	 * This can't overflow because get_string() limited the size of the
+	 * name and val fields.  Still, it doesn't hurt to be careful...
 	 */
-	/*local*/{
-		int	len = strdtb(val);
-
-		if (len >= 2) {
-			if (val[0] == '\'' || val[0] == '"') {
-				if (val[len-1] == val[0]) {
-					val[len-1] = '\0';
-					(void) strcpy(val, val+1);
-				}
-			}
-		}
-	}
-
-	(void) sprintf(envstr, "%s=%s", name, val);
-	Debug(DPARS, ("load_env, <%s> <%s> -> <%s>\n", name, val, envstr))
+	if (snprintf(envstr, MAX_ENVSTR, "%s=%s", name, val) >= MAX_ENVSTR)
+		return (FALSE);
 	return (TRUE);
-}
-
-
-char *
-env_get(name, envp)
-	register char	*name;
-	register char	**envp;
-{
-	register int	len = strlen(name);
-	register char	*p, *q;
-
-	while (p = *envp++) {
-		if (!(q = strchr(p, '=')))
-			continue;
-		if ((q - p) == len && !strncmp(p, name, len))
-			return (q+1);
-	}
-	return (NULL);
 }

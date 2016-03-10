@@ -1,0 +1,37 @@
+dnl	$OpenBSD: contents,v 1.32 2014/11/10 07:15:41 jsg Exp $
+TopPart
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDbsdmp
+
+OpenBSDrd
+
+OpenBSDinstalliso
+
+OpenBSDcd
+
+	lif{:--:}OSrev.fs	A LIF bootable bsd.rd image, suitable for
+			network boot.
+
+	xxboot		The OpenBSD/MACHINE LIF boot block.
+
+DistributionDescription(eight)
+
+OpenBSDbase(65434867,178212628)
+
+OpenBSDcomp(46113250,137902005)
+
+OpenBSDgame(2918228,6590061)
+
+OpenBSDman(9187849,35917754)
+
+OpenBSDxbase(16875312,45366607)
+
+OpenBSDxfont(39933997,52169245)
+
+OpenBSDxserv(6953528,17157981)
+
+OpenBSDxshare(4557948,25735496)

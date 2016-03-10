@@ -209,7 +209,7 @@ command for more information.
 
 send the protocol-specific message(s) to switch to TLS for communication.
 B<protocol> is a keyword for the intended protocol.  Currently, the only
-supported keywords are "smtp", "pop3", "imap", and "ftp".
+supported keywords are "smtp", "lmtp", "pop3", "imap", and "ftp".
 
 =item B<-tlsextdebug>
 
@@ -217,7 +217,7 @@ print out a hex dump of any TLS extensions received from the server.
 
 =item B<-no_ticket>
 
-disable RFC4507bis session ticket support. 
+disable RFC4507bis session ticket support.
 
 =item B<-sess_out filename>
 
@@ -282,7 +282,7 @@ for an appropriate page.
 
 If a certificate is specified on the command line using the B<-cert>
 option it will not be used unless the server specifically requests
-a client certificate. Therefor merely including a client certificate
+a client certificate. Therefore merely including a client certificate
 on the command line is no guarantee that the certificate works.
 
 If there are problems verifying a server certificate then the

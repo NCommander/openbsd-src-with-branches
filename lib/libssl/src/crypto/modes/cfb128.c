@@ -1,3 +1,4 @@
+/* $OpenBSD: cfb128.c,v 1.3 2014/06/12 15:49:30 deraadt Exp $ */
 /* ====================================================================
  * Copyright (c) 2008 The OpenSSL Project.  All rights reserved.
  *
@@ -57,7 +58,6 @@
 #  define NDEBUG
 # endif
 #endif
-#include <assert.h>
 
 /* The input and output encrypted as though 128bit cfb mode is being
  * used.  The extra state information to record how much of the
@@ -71,8 +71,6 @@ void CRYPTO_cfb128_encrypt(const unsigned char *in, unsigned char *out,
     unsigned int n;
     size_t l = 0;
 
-    assert(in && out && key && ivec && num);
-
     n = *num;
 
     if (enc) {
@@ -83,7 +81,7 @@ void CRYPTO_cfb128_encrypt(const unsigned char *in, unsigned char *out,
 			--len;
 			n = (n+1) % 16;
 		}
-#if defined(STRICT_ALIGNMENT)
+#ifdef __STRICT_ALIGNMENT
 		if (((size_t)in|(size_t)out|(size_t)ivec)%sizeof(size_t) != 0)
 			break;
 #endif
@@ -128,7 +126,7 @@ void CRYPTO_cfb128_encrypt(const unsigned char *in, unsigned char *out,
 			--len;
 			n = (n+1) % 16;
  		}
-#if defined(STRICT_ALIGNMENT)
+#ifdef __STRICT_ALIGNMENT
 		if (((size_t)in|(size_t)out|(size_t)ivec)%sizeof(size_t) != 0)
 			break;
 #endif
@@ -214,9 +212,6 @@ void CRYPTO_cfb128_1_encrypt(const unsigned char *in, unsigned char *out,
     size_t n;
     unsigned char c[1],d[1];
 
-    assert(in && out && key && ivec && num);
-    assert(*num == 0);
-
     for(n=0 ; n<bits ; ++n)
 	{
 	c[0]=(in[n/8]&(1 << (7-n%8))) ? 0x80 : 0;
@@ -232,9 +227,6 @@ void CRYPTO_cfb128_8_encrypt(const unsigned char *in, unsigned char *out,
 			int enc, block128_f block)
 {
     size_t n;
-
-    assert(in && out && key && ivec && num);
-    assert(*num == 0);
 
     for(n=0 ; n<length ; ++n)
 	cfbr_encrypt_block(&in[n],&out[n],8,key,ivec,enc,block);

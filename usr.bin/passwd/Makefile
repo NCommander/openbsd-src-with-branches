@@ -1,33 +1,22 @@
-#	from: @(#)Makefile	5.11 (Berkeley) 2/19/91
-#	$Id: Makefile,v 1.11 1995/03/31 05:49:37 hpeyerl Exp $
+#	$OpenBSD: Makefile,v 1.40 2015/09/14 07:19:41 guenther Exp $
+
+.include <bsd.own.mk>
 
 PROG=	passwd
-SRCS=	local_passwd.c yp_passwd.c passwd.c pw_copy.c pw_util.c getpwent.c
-.PATH:  ${.CURDIR}/../../usr.bin/chpass ${.CURDIR}/../../usr.sbin/vipw \
-	${.CURDIR}/../rlogin ${.CURDIR}/../../lib/libc/gen
-DPADD+= ${LIBRPCSVC} ${LIBCRYPT}
-LDADD+= -lrpcsvc -lcrypt
-CFLAGS+=-I${.CURDIR} -I${.CURDIR}/../../usr.sbin/vipw -DYP
+SRCS=	local_passwd.c passwd.c getpwent.c \
+	pwd_check.c
+.PATH:  ${.CURDIR}/../../lib/libc/gen
+DPADD+= ${LIBRPCSVC} ${LIBUTIL}
+LDADD+= -lrpcsvc -lutil
+CFLAGS+= -I${.CURDIR}
 
-.if defined(KERBEROS5)
-SRCS+= krb5_passwd.c
-CFLAGS+= -DKERBEROS5
-DPADD+=	${LIBKRB5} ${LIBCRYPTO}
-LDADD+=	-lkrb5 -lcrypto
-.elif defined(KERBEROS)
-SRCS+= krb_passwd.c des_rw.c
-CFLAGS+= -DKERBEROS -DCRYPT
-DPADD+=	${LIBKRB} ${LIBDES}
-LDADD+=	-lkrb -ldes
-.endif
+CFLAGS+=-I${.CURDIR}/../../lib/libc/include
 
-LINKS=	${BINDIR}/passwd ${BINDIR}/yppasswd
-MLINKS=	passwd.1 yppasswd.1
-
-BINOWN=	root
 BINMODE=4555
-
-.include <bsd.prog.mk>
+BINOWN=root
 
 getpwent.o: getpwent.c
-	${COMPILE.c} -UYP ${.IMPSRC}
+	${COMPILE.c} -UYP -D'DEF_WEAK(x)=asm("")' \
+	    ${.CURDIR}/../../lib/libc/gen/getpwent.c
+
+.include <bsd.prog.mk>

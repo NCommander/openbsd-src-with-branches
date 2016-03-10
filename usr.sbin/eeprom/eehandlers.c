@@ -1,8 +1,12 @@
-/*	$NetBSD: eehandlers.c,v 1.1 1995/07/13 18:10:29 thorpej Exp $	*/
+/*	$OpenBSD: eehandlers.c,v 1.20 2015/01/15 20:48:51 miod Exp $	*/
+/*	$NetBSD: eehandlers.c,v 1.2 1996/02/28 01:13:22 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,24 +16,18 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <sys/types.h>
@@ -40,14 +38,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
 #include <machine/eeprom.h>
-#ifdef __sparc__
 #include <machine/openpromio.h>
-#endif /* __sparc__ */
 
 #include "defs.h"
 
@@ -59,13 +54,12 @@ extern	int fix_checksum;
 extern	int cksumfail;
 extern	u_short writecount;
 
-struct	timeb;
-extern	time_t get_date __P((char *, struct timeb *));
+extern	time_t get_date(char *);
 
 static	char err_str[BUFSIZE];
 
-static	void badval __P((struct keytabent *, char *));
-static	int doio __P((struct keytabent *, u_char *, ssize_t, int));
+static	void badval(struct keytabent *, char *);
+static	int doio(struct keytabent *, u_char *, ssize_t, int);
 
 #define BARF(kt) {							\
 	badval((kt), arg);						\
@@ -74,23 +68,22 @@ static	int doio __P((struct keytabent *, u_char *, ssize_t, int));
 }
 
 #define FAILEDREAD(kt) {						\
-	warnx(err_str);							\
+	warnx("%s", err_str);						\
 	warnx("failed to read field `%s'", (kt)->kt_keyword);		\
 	++eval;								\
 	return;								\
 }
 
 #define FAILEDWRITE(kt) {						\
-	warnx(err_str);							\
+	warnx("%s", err_str);						\
 	warnx("failed to update field `%s'", (kt)->kt_keyword);		\
 	++eval;								\
 	return;								\
 }
 
+#ifndef SMALL
 void
-ee_hwupdate(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_hwupdate(struct keytabent *ktent, char *arg)
 {
 	time_t t;
 	char *cp, *cp2;
@@ -104,7 +97,7 @@ ee_hwupdate(ktent, arg)
 				return;
 			}
 		} else
-			if ((t = get_date(arg, NULL)) == (time_t)(-1))
+			if ((t = get_date(arg)) == (time_t)(-1))
 				BARF(ktent);
 
 		if (doio(ktent, (u_char *)&t, sizeof(t), IO_WRITE))
@@ -117,13 +110,12 @@ ee_hwupdate(ktent, arg)
 	if ((cp2 = strrchr(cp, '\n')) != NULL)
 		*cp2 = '\0';
 
-	printf("%s=%d (%s)\n", ktent->kt_keyword, t, cp);
+	printf("%s=%lld (%s)\n", ktent->kt_keyword, (long long)t, cp);
 }
+#endif
 
 void
-ee_num8(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_num8(struct keytabent *ktent, char *arg)
 {
 	u_char num8 = 0;
 	u_int num32;
@@ -131,7 +123,7 @@ ee_num8(ktent, arg)
 
 	if (arg) {
 		for (i = 0; i < (strlen(arg) - 1); ++i)
-			if (!isdigit(arg[i]))
+			if (!isdigit((unsigned char)arg[i]))
 				BARF(ktent);
 		num32 = atoi(arg);
 		if (num32 > 0xff)
@@ -147,9 +139,7 @@ ee_num8(ktent, arg)
 }
 
 void
-ee_num16(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_num16(struct keytabent *ktent, char *arg)
 {
 	u_int16_t num16 = 0;
 	u_int num32;
@@ -157,7 +147,7 @@ ee_num16(ktent, arg)
 
 	if (arg) {
 		for (i = 0; i < (strlen(arg) - 1); ++i)
-			if (!isdigit(arg[i]))
+			if (!isdigit((unsigned char)arg[i]))
 				BARF(ktent);
 		num32 = atoi(arg);
 		if (num32 > 0xffff)
@@ -173,17 +163,17 @@ ee_num16(ktent, arg)
 }
 
 static	struct strvaltabent scrsizetab[] = {
-	{ "1152x900",		EE_SCR_1152X900 },
-	{ "1024x1024",		EE_SCR_1024X1024 },
-	{ "1600x1280",		EE_SCR_1600X1280 },
-	{ "1440x1440",		EE_SCR_1440X1440 },
+	{ "640x480",		EED_SCR_640X480 },
+	{ "1152x900",		EED_SCR_1152X900 },
+	{ "1024x1024",		EED_SCR_1024X1024 },
+	{ "1600x1280",		EED_SCR_1600X1280 },
+	{ "1280x1024",		EED_SCR_1280X1024 },
+	{ "1440x1440",		EED_SCR_1440X1440 },
 	{ NULL,			0 },
 };
 
 void
-ee_screensize(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_screensize(struct keytabent *ktent, char *arg)
 {
 	struct strvaltabent *svp;
 	u_char scsize;
@@ -194,7 +184,7 @@ ee_screensize(ktent, arg)
 				break;
 		if (svp->sv_str == NULL)
 			BARF(ktent);
-		
+
 		scsize = svp->sv_val;
 		if (doio(ktent, &scsize, sizeof(scsize), IO_WRITE))
 			FAILEDWRITE(ktent);
@@ -221,9 +211,7 @@ static	struct strvaltabent truthtab[] = {
 };
 
 void
-ee_truefalse(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_truefalse(struct keytabent *ktent, char *arg)
 {
 	struct strvaltabent *svp;
 	u_char truth;
@@ -255,9 +243,7 @@ ee_truefalse(ktent, arg)
 }
 
 void
-ee_bootdev(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_bootdev(struct keytabent *ktent, char *arg)
 {
 	u_char dev[5];
 	int i;
@@ -327,9 +313,7 @@ ee_bootdev(ktent, arg)
 }
 
 void
-ee_kbdtype(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_kbdtype(struct keytabent *ktent, char *arg)
 {
 	u_char kbd = 0;
 	u_int kbd2;
@@ -337,7 +321,7 @@ ee_kbdtype(ktent, arg)
 
 	if (arg) {
 		for (i = 0; i < (strlen(arg) - 1); ++i)
-			if (!isdigit(arg[i]))
+			if (!isdigit((unsigned char)arg[i]))
 				BARF(ktent);
 		kbd2 = atoi(arg);
 		if (kbd2 > 0xff)
@@ -353,18 +337,16 @@ ee_kbdtype(ktent, arg)
 }
 
 static	struct strvaltabent constab[] = {
-	{ "b&w",		EE_CONS_BW },
-	{ "ttya",		EE_CONS_TTYA },
-	{ "ttyb",		EE_CONS_TTYB },
-	{ "color",		EE_CONS_COLOR },
-	{ "p4opt",		EE_CONS_P4OPT },
+	{ "b&w",		EED_CONS_BW },
+	{ "ttya",		EED_CONS_TTYA },
+	{ "ttyb",		EED_CONS_TTYB },
+	{ "color",		EED_CONS_COLOR },
+	{ "p4opt",		EED_CONS_P4 },
 	{ NULL,			0 },
 };
 
 void
-ee_constype(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_constype(struct keytabent *ktent, char *arg)
 {
 	struct strvaltabent *svp;
 	u_char cons;
@@ -393,21 +375,18 @@ ee_constype(ktent, arg)
 		}
 	}
 	printf("%s=%s\n", ktent->kt_keyword, svp->sv_str);
-		
+
 }
 
 void
-ee_diagpath(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_diagpath(struct keytabent *ktent, char *arg)
 {
 	char path[40];
 
 	bzero(path, sizeof(path));
 	if (arg) {
-		if (strlen(arg) > sizeof(path))
+		if (strlcpy(path, arg, sizeof(path)) >= sizeof(path))
 			BARF(ktent);
-		sprintf(path, arg);
 		if (doio(ktent, (u_char *)&path[0], sizeof(path), IO_WRITE))
 			FAILEDWRITE(ktent);
 	} else
@@ -418,9 +397,7 @@ ee_diagpath(ktent, arg)
 }
 
 void
-ee_banner(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_banner(struct keytabent *ktent, char *arg)
 {
 	char string[80];
 	u_char enable;
@@ -432,11 +409,11 @@ ee_banner(ktent, arg)
 
 	bzero(string, sizeof(string));
 	if (arg) {
-		if (strlen(arg) > sizeof(string))
-			BARF(ktent);
 		if (*arg != '\0') {
 			enable = EE_TRUE;
-			sprintf(string, arg);
+			if (strlcpy(string, arg, sizeof(string)) >=
+			    sizeof(string))
+				BARF(ktent);
 			if (doio(ktent, (u_char *)string,
 			    sizeof(string), IO_WRITE))
 				FAILEDWRITE(ktent);
@@ -461,18 +438,14 @@ ee_banner(ktent, arg)
 
 /* ARGSUSED */
 void
-ee_notsupp(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+ee_notsupp(struct keytabent *ktent, char *arg)
 {
 
 	warnx("field `%s' not yet supported", ktent->kt_keyword);
 }
 
 static void
-badval(ktent, arg)
-	struct keytabent *ktent;
-	char *arg;
+badval(struct keytabent *ktent, char *arg)
 {
 
 	warnx("inappropriate value `%s' for field `%s'", arg,
@@ -480,39 +453,35 @@ badval(ktent, arg)
 }
 
 static int
-doio(ktent, buf, len, wr)
-	struct keytabent *ktent;
-	u_char *buf;
-	ssize_t len;
-	int wr;
+doio(struct keytabent *ktent, u_char *buf, ssize_t len, int wr)
 {
 	int fd, rval = 0;
 	u_char *buf2;
 
-	buf2 = (u_char *)calloc(1, len);
+	buf2 = calloc(1, len);
 	if (buf2 == NULL) {
-		sprintf(err_str, "memory allocation failed");
+		snprintf(err_str, sizeof err_str, "memory allocation failed");
 		return (1);
 	}
 
 	fd = open(path_eeprom, wr == IO_WRITE ? O_RDWR : O_RDONLY, 0640);
 	if (fd < 0) {
-		sprintf(err_str, "open: %s: %s", path_eeprom,
+		snprintf(err_str, sizeof err_str, "open: %s: %s", path_eeprom,
 		    strerror(errno));
 		free(buf2);
 		return (1);
 	}
 
 	if (lseek(fd, (off_t)ktent->kt_offset, SEEK_SET) < (off_t)0) {
-		sprintf(err_str, "lseek: %s:", path_eeprom,
+		snprintf(err_str, sizeof err_str, "lseek: %s: %s", path_eeprom,
 		    strerror(errno));
 		rval = 1;
 		goto done;
 	}
 
 	if (read(fd, buf2, len) != len) {
-		sprintf(err_str, "read: %s: %s", path_eeprom,
-		     strerror(errno));
+		snprintf(err_str, sizeof err_str, "read: %s: %s", path_eeprom,
+		    strerror(errno));
 		return (1);
 	}
 
@@ -521,16 +490,16 @@ doio(ktent, buf, len, wr)
 			goto done;
 
 		if (lseek(fd, (off_t)ktent->kt_offset, SEEK_SET) < (off_t)0) {
-			sprintf(err_str, "lseek: %s: %s", path_eeprom,
-			     strerror(errno));
+			snprintf(err_str, sizeof err_str, "lseek: %s: %s",
+			    path_eeprom, strerror(errno));
 			rval = 1;
 			goto done;
 		}
 
 		++update_checksums;
 		if (write(fd, buf, len) < 0) {
-			sprintf(err_str, "write: %s: %s", path_eeprom,
-			     strerror(errno));
+			snprintf(err_str, sizeof err_str, "write: %s: %s",
+			    path_eeprom, strerror(errno));
 			rval = 1;
 			goto done;
 		}
@@ -550,7 +519,7 @@ doio(ktent, buf, len, wr)
  * of it sequentially starting at eeWriteCount[0].
  */
 void
-ee_updatechecksums()
+ee_updatechecksums(void)
 {
 	struct keytabent kt;
 	u_char checkme[EE_SIZE - EE_HWUPDATE_LOC];
@@ -589,7 +558,7 @@ ee_updatechecksums()
 }
 
 void
-ee_verifychecksums()
+ee_verifychecksums(void)
 {
 	struct keytabent kt;
 	u_char checkme[EE_SIZE - EE_HWUPDATE_LOC];
@@ -603,7 +572,7 @@ ee_verifychecksums()
 	kt.kt_keyword = "eeprom writecount";
 	kt.kt_offset = EE_WC_LOC;
 	kt.kt_handler = ee_notsupp;
-	
+
 	if (doio(&kt, (u_char *)&owritecount, sizeof(owritecount), IO_READ)) {
 		cksumfail = 1;
 		FAILEDREAD(&kt);
@@ -674,9 +643,7 @@ ee_verifychecksums()
 }
 
 u_char
-ee_checksum(area, len)
-	u_char *area;
-	size_t len;
+ee_checksum(u_char *area, size_t len)
 {
 	u_char sum = 0;
 

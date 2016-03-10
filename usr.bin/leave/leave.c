@@ -1,3 +1,4 @@
+/*	$OpenBSD: leave.c,v 1.16 2015/10/03 05:13:23 deraadt Exp $	*/
 /*	$NetBSD: leave.c,v 1.4 1995/07/03 16:50:13 phil Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,23 +30,20 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1988, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)leave.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: leave.c,v 1.4 1995/07/03 16:50:13 phil Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/time.h>
-#include <stdio.h>
 #include <ctype.h>
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+static __dead void	usage(void);
+static void		doalarm(u_int secs);
+
+#define SECOND  1
+#define MINUTE  (SECOND * 60)
+#define	FIVEMIN	(5 * MINUTE)
+#define HOUR    (MINUTE * 60)
 
 /*
  * leave [[+]hhmm]
@@ -58,110 +52,123 @@ static char rcsid[] = "$NetBSD: leave.c,v 1.4 1995/07/03 16:50:13 phil Exp $";
  * Leave prompts for input and goes away if you hit return.
  * It nags you like a mother hen.
  */
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char *argv[])
 {
-	register u_int secs;
-	register int hours, minutes;
-	register char c, *cp;
-	struct tm *t, *localtime();
-	time_t now, time();
-	int plusnow;
+	u_int secs;
+	int hours, minutes;
+	char c, *cp;
+	struct tm *t;
+	time_t now;
+	int plusnow = 0, twentyfour;
 	char buf[50];
 
+	if (pledge("stdio proc", NULL) == -1)
+		err(1, "pledge");
+
+	if (setvbuf(stdout, NULL, _IOLBF, 0) != 0)
+		errx(1, "Cannot set stdout to line buffered.");
+
 	if (argc < 2) {
-#define	MSG1	"When do you have to leave? "
-		(void)write(1, MSG1, sizeof(MSG1) - 1);
+		(void)fputs("When do you have to leave? ", stdout);
 		cp = fgets(buf, sizeof(buf), stdin);
 		if (cp == NULL || *cp == '\n')
 			exit(0);
-	} else
+	} else if (argc > 2)
+		usage();
+	else
 		cp = argv[1];
 
 	if (*cp == '+') {
 		plusnow = 1;
 		++cp;
-	} else {
-		plusnow = 0;
-		(void)time(&now);
-		t = localtime(&now);
 	}
 
 	for (hours = 0; (c = *cp) && c != '\n'; ++cp) {
-		if (!isdigit(c))
+		if (!isdigit((unsigned char)c))
 			usage();
 		hours = hours * 10 + (c - '0');
 	}
 	minutes = hours % 100;
 	hours /= 100;
+	/* determine 24 hours mode */
+	twentyfour = hours > 12;
 
 	if (minutes < 0 || minutes > 59)
 		usage();
 	if (plusnow)
-		secs = hours * 60 * 60 + minutes * 60;
+		secs = (hours * HOUR) + (minutes * MINUTE);
 	else {
-		if (hours > 23 || t->tm_hour > hours ||
-		    t->tm_hour == hours && minutes <= t->tm_min)
+		if (hours > 23)
 			usage();
-		secs = (hours - t->tm_hour) * 60 * 60;
-		secs += (minutes - t->tm_min) * 60;
+		(void)time(&now);
+		t = localtime(&now);
+		while (t->tm_hour > hours || 
+		    (t->tm_hour == hours && t->tm_min >= minutes)) {
+			if (twentyfour)
+				hours += 24;
+			else
+				hours += 12;
+		}
+
+		secs = (hours - t->tm_hour) * HOUR;
+		secs += (minutes - t->tm_min) * MINUTE;
 	}
 	doalarm(secs);
 	exit(0);
 }
 
-doalarm(secs)
-	u_int secs;
+static void
+doalarm(u_int secs)
 {
-	register int bother;
-	time_t daytime, time();
-	int pid;
-	char *ctime();
+	int bother;
+	time_t daytime;
+	pid_t pid;
 
-	if (pid = fork()) {
+	switch (pid = fork()) {
+	case 0:
+		break;
+	case -1:
+		err(1, "Fork failed");
+		/* NOTREACHED */
+	default:
 		(void)time(&daytime);
 		daytime += secs;
-		printf("Alarm set for %.16s. (pid %d)\n",
-		    ctime(&daytime), pid);
+		printf("Alarm set for %.16s. (pid %ld)\n",
+		    ctime(&daytime), (long)pid);
 		exit(0);
 	}
-	sleep((u_int)2);		/* let parent print set message */
+	sleep(2);			/* let parent print set message */
 
 	/*
 	 * if write fails, we've lost the terminal through someone else
 	 * causing a vhangup by logging in.
 	 */
-#define	FIVEMIN	(5 * 60)
-#define	MSG2	"\07\07You have to leave in 5 minutes.\n"
 	if (secs >= FIVEMIN) {
 		sleep(secs - FIVEMIN);
-		if (write(1, MSG2, sizeof(MSG2) - 1) != sizeof(MSG2) - 1)
+		if (puts("\a\aYou have to leave in 5 minutes.") == EOF)
 			exit(0);
 		secs = FIVEMIN;
 	}
 
-#define	ONEMIN	(60)
-#define	MSG3	"\07\07Just one more minute!\n"
-	if (secs >= ONEMIN) {
-		sleep(secs - ONEMIN);
-		if (write(1, MSG3, sizeof(MSG3) - 1) != sizeof(MSG3) - 1)
+	if (secs >= MINUTE) {
+		sleep(secs - MINUTE);
+		if (puts("\a\aJust one more minute!") == EOF)
 			exit(0);
 	}
 
-#define	MSG4	"\07\07Time to leave!\n"
 	for (bother = 10; bother--;) {
-		sleep((u_int)ONEMIN);
-		if (write(1, MSG4, sizeof(MSG4) - 1) != sizeof(MSG4) - 1)
+		sleep(MINUTE);
+		if (puts("\a\aTime to leave!") == EOF)
 			exit(0);
 	}
 
-#define	MSG5	"\07\07That was the last time I'll tell you.  Bye.\n"
-	(void)write(1, MSG5, sizeof(MSG5) - 1);
+	puts("\a\aThat was the last time I'll tell you.  Bye.");
 	exit(0);
 }
 
-usage()
+static __dead void
+usage(void)
 {
 	fprintf(stderr, "usage: leave [[+]hhmm]\n");
 	exit(1);

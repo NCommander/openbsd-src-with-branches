@@ -1,5 +1,4 @@
-#	from: @(#)Makefile	8.1 (Berkeley) 6/4/93
-#	$NetBSD: Makefile,v 1.4 1995/08/21 17:05:08 thorpej Exp $
+#	$OpenBSD: Makefile,v 1.4 2015/10/26 10:08:14 jung Exp $
 
 PROG=	rbootd
 SRCS=	bpf.c conf.c parseconf.c rbootd.c rmpproto.c utils.c

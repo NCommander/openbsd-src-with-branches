@@ -38,6 +38,7 @@ extern "C" {
 
 #include "ansidecl.h"
 #include "symcat.h"
+#include <time.h>	/* time_t */
 #if defined (__STDC__) || defined (ALMOST_STDC) || defined (HAVE_STRINGIZE)
 #ifndef SABER
 /* This hack is to avoid a problem with some strict ANSI C preprocessors.
@@ -1068,7 +1069,7 @@ bfd_boolean bfd_fill_in_gnu_debuglink_section
 
 
 /* Extracted from bfdio.c.  */
-long bfd_get_mtime (bfd *abfd);
+time_t bfd_get_mtime (bfd *abfd);
 
 long bfd_get_size (bfd *abfd);
 
@@ -2326,6 +2327,8 @@ displacement is used on the Alpha.  */
   BFD_RELOC_32_PCREL_S2,
   BFD_RELOC_16_PCREL_S2,
   BFD_RELOC_23_PCREL_S2,
+  BFD_RELOC_18_PCREL_S2,
+  BFD_RELOC_28_PCREL_S2,
 
 /* High 22 bits and low 10 bits of 32-bit value, placed into lower bits of
 the target word.  These are used on the SPARC.  */
@@ -4372,7 +4375,7 @@ struct bfd
   bfd_boolean mtime_set;
 
   /* File modified time, if mtime_set is TRUE.  */
-  long mtime;
+  time_t mtime;
 
   /* Reserved for an unimplemented file locking extension.  */
   int ifd;

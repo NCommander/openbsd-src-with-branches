@@ -1,3 +1,4 @@
+/*	$OpenBSD: unpcb.h,v 1.11 2015/08/24 15:55:53 bluhm Exp $	*/
 /*	$NetBSD: unpcb.h,v 1.6 1994/06/29 06:46:08 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,7 +38,7 @@
  *
  * A socket may be associated with an vnode in the
  * file system.  If so, the unp_vnode pointer holds
- * a reference count to this vnode, which should be irele'd
+ * a reference count to this vnode, which should be vrele'd
  * when the socket goes away.
  *
  * A socket may be connected to another socket, in which
@@ -60,16 +57,48 @@
  * so that changes in the sockbuf may be computed to modify
  * back pressure on the sender accordingly.
  */
+
 struct	unpcb {
 	struct	socket *unp_socket;	/* pointer back to socket */
 	struct	vnode *unp_vnode;	/* if associated with file */
-	ino_t	unp_ino;		/* fake inode number */
+	struct	file *unp_file;		/* backpointer for unp_gc() */
 	struct	unpcb *unp_conn;	/* control block of connected socket */
-	struct	unpcb *unp_refs;	/* referencing socket linked list */
-	struct 	unpcb *unp_nextref;	/* link in unp_refs list */
+	ino_t	unp_ino;		/* fake inode number */
+	SLIST_HEAD(,unpcb) unp_refs;	/* referencing socket linked list */
+	SLIST_ENTRY(unpcb) unp_nextref;	/* link in unp_refs list */
 	struct	mbuf *unp_addr;		/* bound address of socket */
-	int	unp_cc;			/* copy of rcv.sb_cc */
-	int	unp_mbcnt;		/* copy of rcv.sb_mbcnt */
+	long	unp_msgcount;		/* references from socket rcv buf */
+	int	unp_flags;		/* this unpcb contains peer eids */
+	struct	sockpeercred unp_connid;/* id of peer process */
+	struct	timespec unp_ctime;	/* holds creation time */
+	LIST_ENTRY(unpcb) unp_link;	/* link in per-AF list of sockets */
 };
 
+/*
+ * flag bits in unp_flags
+ */
+#define UNP_FEIDS	0x01		/* unp_connid contains information */
+#define UNP_FEIDSBIND	0x02		/* unp_connid was set by a bind */
+#define UNP_GCMARK	0x04		/* mark during unp_gc() */
+#define UNP_GCDEFER	0x08		/* ref'd, but not marked in this pass */
+#define UNP_GCDEAD	0x10		/* unref'd in this pass */
+
 #define	sotounpcb(so)	((struct unpcb *)((so)->so_pcb))
+
+#ifdef _KERNEL
+int	unp_attach(struct socket *);
+int	unp_bind(struct unpcb *, struct mbuf *, struct proc *);
+int	unp_connect(struct socket *, struct mbuf *, struct proc *);
+int	unp_connect2(struct socket *, struct socket *);
+void	unp_detach(struct unpcb *);
+void	unp_discard(struct file **, int);
+void	unp_disconnect(struct unpcb *);
+void	unp_drop(struct unpcb *, int);
+void	unp_gc(void *);
+void	unp_mark(struct file **, int);
+void	unp_scan(struct mbuf *, void (*)(struct file **, int));
+void	unp_shutdown(struct unpcb *);
+int 	unp_externalize(struct mbuf *, socklen_t, int);
+int	unp_internalize(struct mbuf *, struct proc *);
+void 	unp_dispose(struct mbuf *);
+#endif /* _KERNEL */

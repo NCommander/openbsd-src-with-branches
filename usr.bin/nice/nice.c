@@ -1,3 +1,4 @@
+/*	$OpenBSD: nice.c,v 1.14 2014/02/13 20:51:10 tedu Exp $	*/
 /*	$NetBSD: nice.c,v 1.9 1995/08/31 23:30:58 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,25 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1989 The Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)nice.c	5.4 (Berkeley) 6/1/90";
-#endif
-static char rcsid[] = "$NetBSD: nice.c,v 1.9 1995/08/31 23:30:58 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/types.h>
-#include <sys/time.h>
 #include <sys/resource.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <locale.h>
 #include <ctype.h>
 #include <errno.h>
@@ -60,61 +41,68 @@ static char rcsid[] = "$NetBSD: nice.c,v 1.9 1995/08/31 23:30:58 jtc Exp $";
 
 #define	DEFNICE	10
 
-static void usage();
+int	main(int, char **);
+static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	int niceness = DEFNICE;
+	const char *errstr;
+	int prio = DEFNICE;
 	int c;
 
 	setlocale(LC_ALL, "");
 
-        /* handle obsolete -number syntax */
-        if (argc > 1 && argv[1][0] == '-' && isdigit(argv[1][1])) {
-		niceness = atoi (argv[1] + 1);
-                argc--; argv++;
-        }
+	if (pledge("stdio exec proc", NULL) == -1)
+		err(1, "pledge");
+
+	/* handle obsolete -number syntax */
+	if (argc > 1 && argv[1][0] == '-' &&
+	    isdigit((unsigned char)argv[1][1])) {
+		prio = strtonum(argv[1] + 1, PRIO_MIN, PRIO_MAX, &errstr);
+		if (errstr)
+			errx(1, "increment is %s", errstr);
+		argc--;
+		argv++;
+	}
 
 	while ((c = getopt (argc, argv, "n:")) != -1) {
 		switch (c) {
 		case 'n':
-			niceness = atoi (optarg);
+			prio = strtonum(optarg, PRIO_MIN, PRIO_MAX, &errstr);
+			if (errstr)
+				errx(1, "increment is %s", errstr);
 			break;
-
-		case '?':
 		default:
 			usage();
 			break;
 		}
 	}
-	argc -= optind; argv += optind;
+	argc -= optind;
+	argv += optind;
 
 	if (argc == 0)
 		usage();
 
 	errno = 0;
-	niceness += getpriority(PRIO_PROCESS, 0);
-	if (errno) {
-		err (1, "getpriority");
-		/* NOTREACHED */
-	}
-	if (setpriority(PRIO_PROCESS, 0, niceness)) {
-		warn ("setpriority");
-	}
+	prio += getpriority(PRIO_PROCESS, 0);
+	if (errno)
+		err(1, "getpriority");
+	if (setpriority(PRIO_PROCESS, 0, prio))
+		warn("setpriority");
+
+	if (pledge("stdio exec", NULL) == -1)
+		err(1, "pledge");
 
 	execvp(argv[0], &argv[0]);
-	err ((errno == ENOENT) ? 127 : 126, "%s", argv[0]);
-	/* NOTREACHED */
+	err((errno == ENOENT) ? 127 : 126, "%s", argv[0]);
 }
 
 static void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr,
-	    "usage: nice [ -n increment ] utility [ argument ...]\n");
-	
+	extern char *__progname;
+	fprintf(stderr, "usage: %s [-n increment] utility [argument ...]\n",
+	    __progname);
 	exit(1);
 }

@@ -355,7 +355,7 @@ static void computeYMD(DateTime *p){
     A = Z + 1 + A - (A/4);
     B = A + 1524;
     C = (int)((B - 122.1)/365.25);
-    D = (36525*C)/100;
+    D = (36525*(C&32767))/100;
     E = (int)((B-D)/30.6001);
     X1 = (int)(30.6001*E);
     p->D = B - D - X1;
@@ -1115,14 +1115,14 @@ static void currentTimeFunc(
 void sqlite3RegisterDateTimeFunctions(void){
   static SQLITE_WSD FuncDef aDateTimeFuncs[] = {
 #ifndef SQLITE_OMIT_DATETIME_FUNCS
-    FUNCTION(julianday,        -1, 0, 0, juliandayFunc ),
-    FUNCTION(date,             -1, 0, 0, dateFunc      ),
-    FUNCTION(time,             -1, 0, 0, timeFunc      ),
-    FUNCTION(datetime,         -1, 0, 0, datetimeFunc  ),
-    FUNCTION(strftime,         -1, 0, 0, strftimeFunc  ),
-    FUNCTION(current_time,      0, 0, 0, ctimeFunc     ),
-    FUNCTION(current_timestamp, 0, 0, 0, ctimestampFunc),
-    FUNCTION(current_date,      0, 0, 0, cdateFunc     ),
+    DFUNCTION(julianday,        -1, 0, 0, juliandayFunc ),
+    DFUNCTION(date,             -1, 0, 0, dateFunc      ),
+    DFUNCTION(time,             -1, 0, 0, timeFunc      ),
+    DFUNCTION(datetime,         -1, 0, 0, datetimeFunc  ),
+    DFUNCTION(strftime,         -1, 0, 0, strftimeFunc  ),
+    DFUNCTION(current_time,      0, 0, 0, ctimeFunc     ),
+    DFUNCTION(current_timestamp, 0, 0, 0, ctimestampFunc),
+    DFUNCTION(current_date,      0, 0, 0, cdateFunc     ),
 #else
     STR_FUNCTION(current_time,      0, "%H:%M:%S",          0, currentTimeFunc),
     STR_FUNCTION(current_date,      0, "%Y-%m-%d",          0, currentTimeFunc),

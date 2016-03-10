@@ -1,4 +1,5 @@
-/*	$NetBSD: expr.c,v 1.3 1995/04/28 23:27:15 jtc Exp $	*/
+/*	$OpenBSD: expr.c,v 1.24 2016/01/06 17:53:14 tedu Exp $	*/
+/*	$NetBSD: expr.c,v 1.3.6.1 1996/06/04 20:41:47 cgd Exp $	*/
 
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
@@ -6,13 +7,32 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <locale.h>
 #include <ctype.h>
+#include <unistd.h>
 #include <regex.h>
 #include <err.h>
 
+struct val	*make_int(int64_t);
+struct val	*make_str(char *);
+void		 free_value(struct val *);
+int		 is_integer(struct val *, int64_t *);
+int		 to_integer(struct val *);
+void		 to_string(struct val *);
+int		 is_zero_or_null(struct val *);
+void		 nexttoken(int);
+__dead void	 error(void);
+struct val	*eval6(void);
+struct val	*eval5(void);
+struct val	*eval4(void);
+struct val	*eval3(void);
+struct val	*eval2(void);
+struct val	*eval1(void);
+struct val	*eval0(void);
 
 enum token {
 	OR, AND, EQ, LT, GT, ADD, SUB, MUL, DIV, MOD, MATCH, RP, LP,
@@ -26,25 +46,23 @@ struct val {
 	} type;
 
 	union {
-		char           *s;
-		int             i;
+		char	       *s;
+		int64_t		i;
 	} u;
 };
 
 enum token	token;
 struct val     *tokval;
-char          **av;
-
+char	      **av;
 
 struct val *
-make_int(i)
-	int             i;
+make_int(int64_t i)
 {
 	struct val     *vp;
 
-	vp = (struct val *) malloc(sizeof(*vp));
+	vp = malloc(sizeof(*vp));
 	if (vp == NULL) {
-		err(2, NULL);
+		err(3, NULL);
 	}
 	vp->type = integer;
 	vp->u.i = i;
@@ -53,14 +71,13 @@ make_int(i)
 
 
 struct val *
-make_str(s)
-	char           *s;
+make_str(char *s)
 {
 	struct val     *vp;
 
-	vp = (struct val *) malloc(sizeof(*vp));
+	vp = malloc(sizeof(*vp));
 	if (vp == NULL || ((vp->u.s = strdup(s)) == NULL)) {
-		err(2, NULL);
+		err(3, NULL);
 	}
 	vp->type = string;
 	return vp;
@@ -68,8 +85,7 @@ make_str(s)
 
 
 void
-free_value(vp)
-	struct val     *vp;
+free_value(struct val *vp)
 {
 	if (vp->type == string)
 		free(vp->u.s);
@@ -79,13 +95,11 @@ free_value(vp)
 
 /* determine if vp is an integer; if so, return it's value in *r */
 int
-is_integer(vp, r)
-	struct val     *vp;
-	int	       *r;
+is_integer(struct val *vp, int64_t *r)
 {
-	char           *s;
-	int             neg;
-	int             i;
+	char	       *s;
+	int		neg;
+	int64_t		i;
 
 	if (vp->type == integer) {
 		*r = vp->u.i;
@@ -93,7 +107,7 @@ is_integer(vp, r)
 	}
 
 	/*
-	 * POSIX.2 defines an "integer" as an optional unary minus 
+	 * POSIX.2 defines an "integer" as an optional unary minus
 	 * followed by digits.
 	 */
 	s = vp->u.s;
@@ -104,7 +118,7 @@ is_integer(vp, r)
 		s++;
 
 	while (*s) {
-		if (!isdigit(*s))
+		if (!isdigit((unsigned char)*s))
 			return 0;
 
 		i *= 10;
@@ -123,10 +137,9 @@ is_integer(vp, r)
 
 /* coerce to vp to an integer */
 int
-to_integer(vp)
-	struct val     *vp;
+to_integer(struct val *vp)
 {
-	int             r;
+	int64_t		r;
 
 	if (vp->type == integer)
 		return 1;
@@ -144,26 +157,22 @@ to_integer(vp)
 
 /* coerce to vp to an string */
 void
-to_string(vp)
-	struct val     *vp;
+to_string(struct val *vp)
 {
-	char           *tmp;
+	char	       *tmp;
 
 	if (vp->type == string)
 		return;
 
-	tmp = malloc(25);
-	if (tmp == NULL) {
-		err(2, NULL);
-	}
-	sprintf(tmp, "%d", vp->u.i);
+	if (asprintf(&tmp, "%lld", vp->u.i) == -1)
+		err(3, NULL);
+
 	vp->type = string;
 	vp->u.s = tmp;
 }
 
 int
-is_zero_or_null(vp)
-	struct val     *vp;
+is_zero_or_null(struct val *vp)
 {
 	if (vp->type == integer) {
 		return (vp->u.i == 0);
@@ -174,9 +183,9 @@ is_zero_or_null(vp)
 }
 
 void
-nexttoken()
+nexttoken(int pat)
 {
-	char           *p;
+	char	       *p;
 
 	if ((p = *av) == NULL) {
 		token = EOI;
@@ -184,10 +193,11 @@ nexttoken()
 	}
 	av++;
 
-	if (p[0] != '\0') {
+	
+	if (pat == 0 && p[0] != '\0') {
 		if (p[1] == '\0') {
 			const char     *x = "|&=<>+-*/%:()";
-			char           *i;	/* index */
+			char	       *i;	/* index */
 
 			if ((i = strchr(x, *p)) != NULL) {
 				token = i - x;
@@ -212,32 +222,31 @@ nexttoken()
 	return;
 }
 
-void
-error()
+__dead void
+error(void)
 {
 	errx(2, "syntax error");
 	/* NOTREACHED */
 }
 
 struct val *
-eval6()
+eval6(void)
 {
-	struct val     *eval0 __P((void));
 	struct val     *v;
 
 	if (token == OPERAND) {
-		nexttoken();
+		nexttoken(0);
 		return tokval;
 
 	} else if (token == RP) {
-		nexttoken();
+		nexttoken(0);
 		v = eval0();
 
 		if (token != LP) {
 			error();
 			/* NOTREACHED */
 		}
-		nexttoken();
+		nexttoken(0);
 		return v;
 	} else {
 		error();
@@ -247,18 +256,18 @@ eval6()
 
 /* Parse and evaluate match (regex) expressions */
 struct val *
-eval5()
+eval5(void)
 {
-	regex_t         rp;
-	regmatch_t      rm[2];
-	char            errbuf[256];
-	int             eval;
+	regex_t		rp;
+	regmatch_t	rm[2];
+	char		errbuf[256];
+	int		eval;
 	struct val     *l, *r;
 	struct val     *v;
 
 	l = eval6();
 	while (token == MATCH) {
-		nexttoken();
+		nexttoken(1);
 		r = eval6();
 
 		/* coerce to both arguments to strings */
@@ -271,7 +280,7 @@ eval5()
 			errx(2, "%s", errbuf);
 		}
 
-		/* compare string against pattern --  remember that patterns 
+		/* compare string against pattern --  remember that patterns
 		   are anchored to the beginning of the line */
 		if (regexec(&rp, l->u.s, 2, rm, 0) == 0 && rm[0].rm_so == 0) {
 			if (rm[1].rm_so >= 0) {
@@ -279,7 +288,7 @@ eval5()
 				v = make_str(l->u.s + rm[1].rm_so);
 
 			} else {
-				v = make_int((int)(rm[0].rm_eo - rm[0].rm_so));
+				v = make_int(rm[0].rm_eo - rm[0].rm_so);
 			}
 		} else {
 			if (rp.re_nsub == 0) {
@@ -302,14 +311,14 @@ eval5()
 
 /* Parse and evaluate multiplication and division expressions */
 struct val *
-eval4()
+eval4(void)
 {
 	struct val     *l, *r;
 	enum token	op;
 
 	l = eval5();
 	while ((op = token) == MUL || op == DIV || op == MOD) {
-		nexttoken();
+		nexttoken(0);
 		r = eval5();
 
 		if (!to_integer(l) || !to_integer(r)) {
@@ -323,9 +332,13 @@ eval4()
 				errx(2, "division by zero");
 			}
 			if (op == DIV) {
-				l->u.i /= r->u.i;
+				if (l->u.i != INT64_MIN || r->u.i != -1)
+					l->u.i /= r->u.i;
 			} else {
-				l->u.i %= r->u.i;
+				if (l->u.i != INT64_MIN || r->u.i != -1)
+					l->u.i %= r->u.i;
+				else
+					l->u.i = 0;
 			}
 		}
 
@@ -337,14 +350,14 @@ eval4()
 
 /* Parse and evaluate addition and subtraction expressions */
 struct val *
-eval3()
+eval3(void)
 {
 	struct val     *l, *r;
 	enum token	op;
 
 	l = eval4();
 	while ((op = token) == ADD || op == SUB) {
-		nexttoken();
+		nexttoken(0);
 		r = eval4();
 
 		if (!to_integer(l) || !to_integer(r)) {
@@ -365,15 +378,16 @@ eval3()
 
 /* Parse and evaluate comparison expressions */
 struct val *
-eval2()
+eval2(void)
 {
 	struct val     *l, *r;
 	enum token	op;
-	int             v, li, ri;
+	int64_t		v = 0, li, ri;
 
 	l = eval3();
-	while ((op = token) == EQ || op == NE || op == LT || op == GT || op == LE || op == GE) {
-		nexttoken();
+	while ((op = token) == EQ || op == NE || op == LT || op == GT ||
+	    op == LE || op == GE) {
+		nexttoken(0);
 		r = eval3();
 
 		if (is_integer(l, &li) && is_integer(r, &ri)) {
@@ -395,6 +409,8 @@ eval2()
 				break;
 			case NE:
 				v = (li != ri);
+				break;
+			default:
 				break;
 			}
 		} else {
@@ -420,8 +436,10 @@ eval2()
 			case NE:
 				v = (strcoll(l->u.s, r->u.s) != 0);
 				break;
+			default:
+				break;
 			}
-		} 
+		}
 
 		free_value(l);
 		free_value(r);
@@ -433,13 +451,13 @@ eval2()
 
 /* Parse and evaluate & expressions */
 struct val *
-eval1()
+eval1(void)
 {
 	struct val     *l, *r;
 
 	l = eval2();
 	while (token == AND) {
-		nexttoken();
+		nexttoken(0);
 		r = eval2();
 
 		if (is_zero_or_null(l) || is_zero_or_null(r)) {
@@ -456,13 +474,13 @@ eval1()
 
 /* Parse and evaluate | expressions */
 struct val *
-eval0()
+eval0(void)
 {
 	struct val     *l, *r;
 
 	l = eval1();
 	while (token == OR) {
-		nexttoken();
+		nexttoken(0);
 		r = eval1();
 
 		if (is_zero_or_null(l)) {
@@ -478,19 +496,21 @@ eval0()
 
 
 int
-main(argc, argv)
-	int             argc;
-	char          **argv;
+main(int argc, char *argv[])
 {
 	struct val     *vp;
 
-	if (!setlocale(LC_ALL, "")) {
-		fprintf(stderr,
-			"setlocale failed, continuing with \"C\" locale.");
-	}
+	(void) setlocale(LC_ALL, "");
+
+	if (pledge("stdio", NULL) == -1)
+		err(2, "pledge");
+
+	if (argc > 1 && !strcmp(argv[1], "--"))
+		argv++;
+
 	av = argv + 1;
 
-	nexttoken();
+	nexttoken(0);
 	vp = eval0();
 
 	if (token != EOI) {
@@ -499,7 +519,7 @@ main(argc, argv)
 	}
 
 	if (vp->type == integer)
-		printf("%d\n", vp->u.i);
+		printf("%lld\n", vp->u.i);
 	else
 		printf("%s\n", vp->u.s);
 

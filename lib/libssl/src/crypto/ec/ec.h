@@ -1,4 +1,4 @@
-/* crypto/ec/ec.h */
+/* $OpenBSD: ec.h,v 1.10 2015/06/20 13:26:08 jsing Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -83,7 +83,6 @@
 #endif
 
 #include <openssl/asn1.h>
-#include <openssl/symhacks.h>
 #ifndef OPENSSL_NO_DEPRECATED
 #include <openssl/bn.h>
 #endif
@@ -396,6 +395,8 @@ typedef struct {
  * are filled with the data of the first nitems internal groups */
 size_t EC_get_builtin_curves(EC_builtin_curve *r, size_t nitems);
 
+const char *EC_curve_nid2nist(int nid);
+int EC_curve_nist2nid(const char *name);
 
 /********************************************************************/
 /*                    EC_POINT functions                            */
@@ -696,9 +697,7 @@ int i2d_ECPKParameters(const EC_GROUP *, unsigned char **out);
 #ifndef OPENSSL_NO_BIO
 int     ECPKParameters_print(BIO *bp, const EC_GROUP *x, int off);
 #endif
-#ifndef OPENSSL_NO_FP_API
 int     ECPKParameters_print_fp(FILE *fp, const EC_GROUP *x, int off);
-#endif
 
 
 /********************************************************************/
@@ -931,7 +930,6 @@ int	ECParameters_print(BIO *bp, const EC_KEY *key);
 int	EC_KEY_print(BIO *bp, const EC_KEY *key, int off);
 
 #endif
-#ifndef OPENSSL_NO_FP_API
 /** Prints out the ec parameters on human readable form.
  *  \param  fp   file descriptor to which the information is printed
  *  \param  key  EC_KEY object
@@ -947,9 +945,7 @@ int	ECParameters_print_fp(FILE *fp, const EC_KEY *key);
  */
 int	EC_KEY_print_fp(FILE *fp, const EC_KEY *key, int off);
 
-#endif
-
-#define ECParameters_dup(x) ASN1_dup_of(EC_KEY,i2d_ECParameters,d2i_ECParameters,x)
+EC_KEY *ECParameters_dup(EC_KEY *key);
 
 #ifndef __cplusplus
 #if defined(__SUNPRO_C)

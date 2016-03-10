@@ -27,17 +27,13 @@
  * 
  */
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #include <machine/segments.h>
 #include <machine/sysarch.h>
 
 int
-i386_get_ldt(start, desc, num)
-	int start;
-	union descriptor *desc;
-	int num;
+i386_get_ldt(int start, union descriptor *desc, int num)
 {
 	struct i386_get_ldt_args p;
 
@@ -45,5 +41,5 @@ i386_get_ldt(start, desc, num)
 	p.desc = desc;
 	p.num = num;
 
-	return sysarch(I386_GET_LDT, (char *)&p);
+	return sysarch(I386_GET_LDT, &p);
 }

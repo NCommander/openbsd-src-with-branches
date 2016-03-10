@@ -1,0 +1,10 @@
+__end
+__floatundidf
+__plt_end
+__plt_start
+_mcount
+end
+fabsl
+frexpl
+ldexpl
+modfl

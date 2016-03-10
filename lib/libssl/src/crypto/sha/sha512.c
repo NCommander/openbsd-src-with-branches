@@ -1,10 +1,17 @@
-/* crypto/sha/sha512.c */
+/* $OpenBSD: sha512.c,v 1.13 2014/07/11 08:44:49 jsing Exp $ */
 /* ====================================================================
  * Copyright (c) 2004 The OpenSSL Project.  All rights reserved
  * according to the OpenSSL license [found in ../../LICENSE].
  * ====================================================================
  */
+
+#include <machine/endian.h>
+
+#include <stdlib.h>
+#include <string.h>
+
 #include <openssl/opensslconf.h>
+
 #if !defined(OPENSSL_NO_SHA) && !defined(OPENSSL_NO_SHA512)
 /*
  * IMPLEMENTATION NOTES.
@@ -41,25 +48,16 @@
  * 16-bit platforms.
  *					<appro@fy.chalmers.se>
  */
-#include <stdlib.h>
-#include <string.h>
 
 #include <openssl/crypto.h>
-#include <openssl/sha.h>
 #include <openssl/opensslv.h>
+#include <openssl/sha.h>
 
-#include "cryptlib.h"
-
-const char SHA512_version[]="SHA-512" OPENSSL_VERSION_PTEXT;
-
-#if defined(__i386) || defined(__i386__) || defined(_M_IX86) || \
-    defined(__x86_64) || defined(_M_AMD64) || defined(_M_X64) || \
-    defined(__s390__) || defined(__s390x__) || \
-    defined(SHA512_ASM)
+#if !defined(__STRICT_ALIGNMENT) || defined(SHA512_ASM)
 #define SHA512_BLOCK_CAN_MANAGE_UNALIGNED_DATA
 #endif
 
-fips_md_init_ctx(SHA384, SHA512)
+int SHA384_Init(SHA512_CTX *c)
 	{
 	c->h[0]=U64(0xcbbb9d5dc1059ed8);
 	c->h[1]=U64(0x629a292a367cd507);
@@ -75,7 +73,7 @@ fips_md_init_ctx(SHA384, SHA512)
         return 1;
 	}
 
-fips_md_init(SHA512)
+int SHA512_Init(SHA512_CTX *c)
 	{
 	c->h[0]=U64(0x6a09e667f3bcc908);
 	c->h[1]=U64(0xbb67ae8584caa73b);
@@ -108,7 +106,7 @@ int SHA512_Final (unsigned char *md, SHA512_CTX *c)
 		sha512_block_data_order (c,p,1);
 
 	memset (p+n,0,sizeof(c->u)-16-n);
-#ifdef	B_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	c->u.d[SHA_LBLOCK-2] = c->Nh;
 	c->u.d[SHA_LBLOCK-1] = c->Nl;
 #else
@@ -250,7 +248,7 @@ unsigned char *SHA384(const unsigned char *d, size_t n, unsigned char *md)
 	SHA384_Init(&c);
 	SHA512_Update(&c,d,n);
 	SHA512_Final(md,&c);
-	OPENSSL_cleanse(&c,sizeof(c));
+	explicit_bzero(&c,sizeof(c));
 	return(md);
 	}
 
@@ -263,7 +261,7 @@ unsigned char *SHA512(const unsigned char *d, size_t n, unsigned char *md)
 	SHA512_Init(&c);
 	SHA512_Update(&c,d,n);
 	SHA512_Final(md,&c);
-	OPENSSL_cleanse(&c,sizeof(c));
+	explicit_bzero(&c,sizeof(c));
 	return(md);
 	}
 
@@ -310,23 +308,20 @@ static const SHA_LONG64 K512[80] = {
         U64(0x4cc5d4becb3e42b6),U64(0x597f299cfc657e2a),
         U64(0x5fcb6fab3ad6faec),U64(0x6c44198c4a475817) };
 
-#ifndef PEDANTIC
-# if defined(__GNUC__) && __GNUC__>=2 && !defined(OPENSSL_NO_ASM) && !defined(OPENSSL_NO_INLINE_ASM)
-#  if defined(__x86_64) || defined(__x86_64__)
-#   define ROTR(a,n)	({ SHA_LONG64 ret;		\
+#if defined(__GNUC__) && __GNUC__>=2 && !defined(OPENSSL_NO_ASM) && !defined(OPENSSL_NO_INLINE_ASM)
+# if defined(__x86_64) || defined(__x86_64__)
+#  define ROTR(a,n)	({ SHA_LONG64 ret;		\
 				asm ("rorq %1,%0"	\
 				: "=r"(ret)		\
 				: "J"(n),"0"(a)		\
 				: "cc"); ret;		})
-#   if !defined(B_ENDIAN)
-#    define PULL64(x) ({ SHA_LONG64 ret=*((const SHA_LONG64 *)(&(x)));	\
+#   define PULL64(x) ({ SHA_LONG64 ret=*((const SHA_LONG64 *)(&(x)));	\
 				asm ("bswapq	%0"		\
 				: "=r"(ret)			\
 				: "0"(ret)); ret;		})
-#   endif
-#  elif (defined(__i386) || defined(__i386__)) && !defined(B_ENDIAN)
-#   if defined(I386_ONLY)
-#    define PULL64(x) ({ const unsigned int *p=(const unsigned int *)(&(x));\
+# elif (defined(__i386) || defined(__i386__))
+#  if defined(I386_ONLY)
+#   define PULL64(x) ({ const unsigned int *p=(const unsigned int *)(&(x));\
 			 unsigned int hi=p[0],lo=p[1];		\
 				asm("xchgb %%ah,%%al;xchgb %%dh,%%dl;"\
 				    "roll $16,%%eax; roll $16,%%edx; "\
@@ -334,50 +329,19 @@ static const SHA_LONG64 K512[80] = {
 				: "=a"(lo),"=d"(hi)		\
 				: "0"(lo),"1"(hi) : "cc");	\
 				((SHA_LONG64)hi)<<32|lo;	})
-#   else
-#    define PULL64(x) ({ const unsigned int *p=(const unsigned int *)(&(x));\
+#  else
+#   define PULL64(x) ({ const unsigned int *p=(const unsigned int *)(&(x));\
 			 unsigned int hi=p[0],lo=p[1];		\
 				asm ("bswapl %0; bswapl %1;"	\
 				: "=r"(lo),"=r"(hi)		\
 				: "0"(lo),"1"(hi));		\
 				((SHA_LONG64)hi)<<32|lo;	})
-#   endif
-#  elif (defined(_ARCH_PPC) && defined(__64BIT__)) || defined(_ARCH_PPC64)
-#   define ROTR(a,n)	({ SHA_LONG64 ret;		\
+#  endif
+# elif (defined(_ARCH_PPC) && defined(__64BIT__)) || defined(_ARCH_PPC64)
+#  define ROTR(a,n)	({ SHA_LONG64 ret;		\
 				asm ("rotrdi %0,%1,%2"	\
 				: "=r"(ret)		\
 				: "r"(a),"K"(n)); ret;	})
-#  endif
-# elif defined(_MSC_VER)
-#  if defined(_WIN64)	/* applies to both IA-64 and AMD64 */
-#   pragma intrinsic(_rotr64)
-#   define ROTR(a,n)	_rotr64((a),n)
-#  endif
-#  if defined(_M_IX86) && !defined(OPENSSL_NO_ASM) && !defined(OPENSSL_NO_INLINE_ASM)
-#   if defined(I386_ONLY)
-    static SHA_LONG64 __fastcall __pull64be(const void *x)
-    {	_asm	mov	edx, [ecx + 0]
-	_asm	mov	eax, [ecx + 4]
-	_asm	xchg	dh,dl
-	_asm	xchg	ah,al
-	_asm	rol	edx,16
-	_asm	rol	eax,16
-	_asm	xchg	dh,dl
-	_asm	xchg	ah,al
-    }
-#   else
-    static SHA_LONG64 __fastcall __pull64be(const void *x)
-    {	_asm	mov	edx, [ecx + 0]
-	_asm	mov	eax, [ecx + 4]
-	_asm	bswap	edx
-	_asm	bswap	eax
-    }
-#   endif
-#   define PULL64(x) __pull64be(&(x))
-#   if _MSC_VER<=1200
-#    pragma inline_depth(0)
-#   endif
-#  endif
 # endif
 #endif
 
@@ -421,11 +385,7 @@ static void sha512_block_data_order (SHA512_CTX *ctx, const void *in, size_t num
 
 	for (i=0;i<16;i++,F--)
 		{
-#ifdef B_ENDIAN
-		T = W[i];
-#else
 		T = PULL64(W[i]);
-#endif
 		F[0] = A;
 		F[4] = E;
 		F[8] = T;
@@ -473,7 +433,7 @@ static void sha512_block_data_order (SHA512_CTX *ctx, const void *in, size_t num
 
 	for (i=0;i<16;i++)
 		{
-#ifdef B_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 		T1 = X[i] = W[i];
 #else
 		T1 = X[i] = PULL64(W[i]);
@@ -528,7 +488,7 @@ static void sha512_block_data_order (SHA512_CTX *ctx, const void *in, size_t num
 	a = ctx->h[0];	b = ctx->h[1];	c = ctx->h[2];	d = ctx->h[3];
 	e = ctx->h[4];	f = ctx->h[5];	g = ctx->h[6];	h = ctx->h[7];
 
-#ifdef B_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	T1 = X[0] = W[0];	ROUND_00_15(0,a,b,c,d,e,f,g,h);
 	T1 = X[1] = W[1];	ROUND_00_15(1,h,a,b,c,d,e,f,g);
 	T1 = X[2] = W[2];	ROUND_00_15(2,g,h,a,b,c,d,e,f);
@@ -594,11 +554,5 @@ static void sha512_block_data_order (SHA512_CTX *ctx, const void *in, size_t num
 #endif
 
 #endif /* SHA512_ASM */
-
-#else /* !OPENSSL_NO_SHA512 */
-
-#if defined(PEDANTIC) || defined(__DECC) || defined(OPENSSL_SYS_MACOSX)
-static void *dummy=&dummy;
-#endif
 
 #endif /* !OPENSSL_NO_SHA512 */

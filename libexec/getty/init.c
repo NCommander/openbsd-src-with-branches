@@ -1,3 +1,5 @@
+/*	$OpenBSD: init.c,v 1.9 2013/12/10 20:56:59 naddy Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)init.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$Id: init.c,v 1.6 1994/08/17 20:10:35 pk Exp $";
-#endif /* not lint */
 
 /*
  * Getty table initializations.
@@ -55,10 +48,10 @@ struct	gettystrs gettystrs[] = {
 	{ "lm", "login: " },		/* login message */
 	{ "er", &tmode.c_cc[VERASE] },	/* erase character */
 	{ "kl", &tmode.c_cc[VKILL] },	/* kill character */
-	{ "et", &tmode.c_cc[VEOF] },	/* eof chatacter (eot) */
+	{ "et", &tmode.c_cc[VEOF] },	/* eof character (eot) */
 	{ "pc", "" },			/* pad character */
 	{ "tt" },			/* terminal type */
-	{ "ev" },			/* enviroment */
+	{ "ev" },			/* environment */
 	{ "lo", _PATH_LOGIN },		/* login program */
 	{ "hn", hostname },		/* host name */
 	{ "he" },			/* host name edit */
@@ -86,9 +79,6 @@ struct	gettynums gettynums[] = {
 	{ "fd" },			/* form-feed delay */
 	{ "bd" },			/* backspace delay */
 	{ "to" },			/* timeout */
-	{ "f0" },			/* output flags */
-	{ "f1" },			/* input flags */
-	{ "f2" },			/* user mode flags */
 	{ "pf" },			/* delay before flush at 1st prompt */
 	{ "c0" },			/* output c_flags */
 	{ "c1" },			/* input c_flags */
@@ -114,12 +104,12 @@ struct	gettyflags gettyflags[] = {
 	{ "ec",	1 },			/* no echo */
 	{ "co",	0 },			/* console special */
 	{ "cb",	0 },			/* crt backspace */
-	{ "ck",	0 },			/* crt kill */
-	{ "ce",	0 },			/* crt erase */
+	{ "ck",	1 },			/* crt kill */
+	{ "ce",	1 },			/* crt erase */
 	{ "pe",	0 },			/* printer erase */
 	{ "rw",	1 },			/* don't use raw */
 	{ "xc",	1 },			/* don't ^X ctl chars */
-	{ "lc",	0 },			/* terminal las lower case */
+	{ "lc",	0 },			/* terminal has lower case */
 	{ "uc",	0 },			/* terminal has no lower case */
 	{ "ig",	0 },			/* ignore garbage */
 	{ "ps",	0 },			/* do port selector speed select */

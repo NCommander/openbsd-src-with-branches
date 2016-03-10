@@ -1,6 +1,9 @@
+/*	$OpenBSD: util.c,v 1.31 2015/08/20 22:32:41 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
+ * Portions Copyright (c) 1983, 1995, 1996 Eric P. Allman (woof!)
  *
  * This code is derived from software contributed to Berkeley by
  * Tony Nardo of the Johns Hopkins University/Applied Physics Lab.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,34 +33,38 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)util.c	5.14 (Berkeley) 1/17/91";*/
-static char rcsid[] = "$Id: util.c,v 1.6 1995/09/27 01:10:48 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/uio.h>
 #include <sys/stat.h>
-#include <sys/file.h>
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <paths.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <vis.h>
 #include "finger.h"
+#include "extern.h"
 
-find_idle_and_ttywrite(w)
-	register WHERE *w;
+char	*estrdup(char *);
+WHERE	*walloc(PERSON *pn);
+void	find_idle_and_ttywrite(WHERE *);
+void	userinfo(PERSON *, struct passwd *);
+
+void
+find_idle_and_ttywrite(WHERE *w)
 {
-	extern time_t now;
-	extern int errno;
 	struct stat sb;
-	char *strerror();
 
-	(void)sprintf(tbuf, "%s/%s", _PATH_DEV, w->tty);
+	(void)snprintf(tbuf, sizeof(tbuf), "%s%s", _PATH_DEV, w->tty);
 	if (stat(tbuf, &sb) < 0) {
-		(void)fprintf(stderr,
-		    "finger: %s: %s\n", tbuf, strerror(errno));
+		/* Don't bitch about it, just handle it... */
+		w->idletime = 0;
+		w->writable = 0;
+
 		return;
 	}
 	w->idletime = now < sb.st_atime ? 0 : now - sb.st_atime;
@@ -70,110 +73,135 @@ find_idle_and_ttywrite(w)
 	w->writable = ((sb.st_mode & TALKABLE) == TALKABLE);
 }
 
-userinfo(pn, pw)
-	register PERSON *pn;
-	register struct passwd *pw;
+char *
+estrdup(char *s)
 {
-	extern time_t now;
-	register char *p, *t;
-	struct stat sb;
-	extern int errno;
+	char *p = strdup(s);
+	if (!p)
+		err(1, "strdup");
+	return (p);
+}
+
+void
+userinfo(PERSON *pn, struct passwd *pw)
+{
+	char *p;
 	char *bp, name[1024];
+	struct stat sb;
+	int len;
 
 	pn->realname = pn->office = pn->officephone = pn->homephone = NULL;
+	pn->mailrecv = -1;		/* -1 == not_valid */
 
 	pn->uid = pw->pw_uid;
-	pn->name = strdup(pw->pw_name);
-	pn->dir = strdup(pw->pw_dir);
-	pn->shell = strdup(pw->pw_shell);
+	pn->name = estrdup(pw->pw_name);
+	pn->dir = estrdup(pw->pw_dir);
+	pn->shell = estrdup(pw->pw_shell);
 
-	/* why do we skip asterisks!?!? */
-	(void)strcpy(bp = tbuf, pw->pw_gecos);
-	if (*bp == '*')
-		++bp;
+	(void)strlcpy(bp = tbuf, pw->pw_gecos, sizeof(tbuf));
 
 	/* ampersands get replaced by the login name */
 	if (!(p = strsep(&bp, ",")))
 		return;
-	for (t = name; *t = *p; ++p)
-		if (*t == '&') {
-			(void)strcpy(t, pw->pw_name);
-			if (islower(*t))
-				*t = toupper(*t);
-			while (*++t);
+	expandusername(p, pw->pw_name, name, sizeof(name));
+	if (stravis(&pn->realname, p, VIS_SAFE|VIS_NOSLASH) == -1)
+		err(1, "stravis");
+	if ((p = strsep(&bp, ",")) && *p) {
+		if (stravis(&pn->office, p, VIS_SAFE|VIS_NOSLASH) == -1)
+			err(1, "stravis");
+	}
+	if ((p = strsep(&bp, ",")) && *p) {
+		if (stravis(&pn->officephone, p, VIS_SAFE|VIS_NOSLASH) == -1)
+			err(1, "stravis");
+	}
+	if ((p = strsep(&bp, ",")) && *p) {
+		if (stravis(&pn->homephone, p, VIS_SAFE|VIS_NOSLASH) == -1)
+			err(1, "stravis");
+	}
+	len = snprintf(tbuf, sizeof(tbuf), "%s/%s", _PATH_MAILSPOOL,
+	    pw->pw_name);
+	if (len != -1 && len < sizeof(tbuf)) {
+		if (stat(tbuf, &sb) < 0) {
+			if (errno != ENOENT) {
+				warn("%s", tbuf);
+				return;
+			}
+		} else if (sb.st_size != 0) {
+			pn->mailrecv = sb.st_mtime;
+			pn->mailread = sb.st_atime;
 		}
-		else
-			++t;
-	pn->realname = strdup(name);
-	pn->office = ((p = strsep(&bp, ",")) && *p) ?
-	    strdup(p) : NULL;
-	pn->officephone = ((p = strsep(&bp, ",")) && *p) ?
-	    strdup(p) : NULL;
-	pn->homephone = ((p = strsep(&bp, ",")) && *p) ?
-	    strdup(p) : NULL;
-	(void)sprintf(tbuf, "%s/%s", _PATH_MAILSPOOL, pw->pw_name);
-	pn->mailrecv = -1;		/* -1 == not_valid */
-	if (stat(tbuf, &sb) < 0) {
-		if (errno != ENOENT) {
-			(void)fprintf(stderr,
-			    "finger: %s: %s\n", tbuf, strerror(errno));
-			return;
-		}
-	} else if (sb.st_size != 0) {
-		pn->mailrecv = sb.st_mtime;
-		pn->mailread = sb.st_atime;
 	}
 }
 
-match(pw, user)
-	struct passwd *pw;
-	char *user;
+int
+match(struct passwd *pw, char *user)
 {
-	register char *p, *t;
+	char *p, *t;
 	char name[1024];
 
-	/* why do we skip asterisks!?!? */
-	(void)strcpy(p = tbuf, pw->pw_gecos);
-	if (*p == '*')
-		++p;
+	(void)strlcpy(p = tbuf, pw->pw_gecos, sizeof(tbuf));
 
 	/* ampersands get replaced by the login name */
 	if (!(p = strtok(p, ",")))
-		return(0);
-	for (t = name; *t = *p; ++p)
-		if (*t == '&') {
-			(void)strcpy(t, pw->pw_name);
-			while (*++t);
-		}
-		else
-			++t;
-	for (t = name; p = strtok(t, "\t "); t = (char *)NULL)
+		return (0);
+	expandusername(p, pw->pw_name, name, sizeof(name));
+	for (t = name; (p = strtok(t, "\t ")) != NULL; t = NULL)
 		if (!strcasecmp(p, user))
-			return(1);
-	return(0);
+			return (1);
+	return (0);
 }
 
-enter_lastlog(pn)
-	register PERSON *pn;
+/* inspired by usr.sbin/sendmail/util.c::buildfname */
+void
+expandusername(char *gecos, char *login, char *buf, int buflen)
 {
-	register WHERE *w;
+	char *p, *bp;
+
+	/* why do we skip asterisks!?!? */
+	if (*gecos == '*')
+		gecos++;
+	bp = buf;
+
+	/* copy gecos, interpolating & to be full name */
+	for (p = gecos; *p != '\0'; p++) {
+		if (bp >= &buf[buflen - 1]) {
+			/* buffer overflow - just use login name */
+			strlcpy(buf, login, buflen);
+			buf[buflen - 1] = '\0';
+			return;
+		}
+		if (*p == '&') {
+			/* interpolate full name */
+			strlcpy(bp, login, buflen - (bp - buf));
+			*bp = toupper((unsigned char)*bp);
+			bp += strlen(bp);
+		}
+		else
+			*bp++ = *p;
+	}
+	*bp = '\0';
+}
+
+void
+enter_lastlog(PERSON *pn)
+{
+	WHERE *w;
 	static int opened, fd;
 	struct lastlog ll;
 	char doit = 0;
 
 	/* some systems may not maintain lastlog, don't report errors. */
 	if (!opened) {
-		fd = open(_PATH_LASTLOG, O_RDONLY, 0);
+		fd = open(_PATH_LASTLOG, O_RDONLY);
 		opened = 1;
 	}
 	if (fd == -1 ||
-	    lseek(fd, (off_t)(pn->uid * sizeof(ll)), SEEK_SET) !=
-	    (long)pn->uid * sizeof(ll) ||
-	    read(fd, (char *)&ll, sizeof(ll)) != sizeof(ll)) {
-			/* as if never logged in */
-			ll.ll_line[0] = ll.ll_host[0] = NULL;
-			ll.ll_time = 0;
-		}
+	    pread(fd, &ll, sizeof(ll), (off_t)pn->uid * sizeof(ll)) !=
+	    sizeof(ll)) {
+		/* as if never logged in */
+		ll.ll_line[0] = ll.ll_host[0] = '\0';
+		ll.ll_time = 0;
+	}
 	if ((w = pn->whead) == NULL)
 		doit = 1;
 	else if (ll.ll_time != 0) {
@@ -202,11 +230,10 @@ enter_lastlog(pn)
 	}
 }
 
-enter_where(ut, pn)
-	struct utmp *ut;
-	PERSON *pn;
+void
+enter_where(struct utmp *ut, PERSON *pn)
 {
-	register WHERE *w = walloc(pn);
+	WHERE *w = walloc(pn);
 
 	w->info = LOGGEDIN;
 	bcopy(ut->ut_line, w->tty, UT_LINESIZE);
@@ -218,14 +245,13 @@ enter_where(ut, pn)
 }
 
 PERSON *
-enter_person(pw)
-	register struct passwd *pw;
+enter_person(struct passwd *pw)
 {
-	register PERSON *pn, **pp;
+	PERSON *pn, **pp;
 
 	for (pp = htab + hash(pw->pw_name);
-	     *pp != NULL && strcmp((*pp)->name, pw->pw_name) != 0;
-	     pp = &(*pp)->hlink)
+	    *pp != NULL && strcmp((*pp)->name, pw->pw_name) != 0;
+	    pp = &(*pp)->hlink)
 		;
 	if ((pn = *pp) == NULL) {
 		pn = palloc();
@@ -242,57 +268,51 @@ enter_person(pw)
 		userinfo(pn, pw);
 		pn->whead = NULL;
 	}
-	return(pn);
+	return (pn);
 }
 
 PERSON *
-find_person(name)
-	char *name;
+find_person(char *name)
 {
-	register PERSON *pn;
+	PERSON *pn;
 
 	/* name may be only UT_NAMESIZE long and not terminated */
 	for (pn = htab[hash(name)];
-	     pn != NULL && strncmp(pn->name, name, UT_NAMESIZE) != 0;
-	     pn = pn->hlink)
+	    pn != NULL && strncmp(pn->name, name, UT_NAMESIZE) != 0;
+	    pn = pn->hlink)
 		;
-	return(pn);
+	return (pn);
 }
 
-hash(name)
-	register char *name;
+int
+hash(char *name)
 {
-	register int h, i;
+	int h, i;
 
 	h = 0;
 	/* name may be only UT_NAMESIZE long and not terminated */
 	for (i = UT_NAMESIZE; --i >= 0 && *name;)
-		h = ((h << 2 | h >> HBITS - 2) ^ *name++) & HMASK;
-	return(h);
+		h = ((h << 2 | h >> (HBITS - 2)) ^ *name++) & HMASK;
+	return (h);
 }
 
 PERSON *
-palloc()
+palloc(void)
 {
 	PERSON *p;
 
-	if ((p = (PERSON *)malloc((u_int) sizeof(PERSON))) == NULL) {
-		(void)fprintf(stderr, "finger: out of space.\n");
-		exit(1);
-	}
-	return(p);
+	if ((p = malloc((u_int) sizeof(PERSON))) == NULL)
+		err(1, "malloc");
+	return (p);
 }
 
 WHERE *
-walloc(pn)
-	register PERSON *pn;
+walloc(PERSON *pn)
 {
-	register WHERE *w;
+	WHERE *w;
 
-	if ((w = (WHERE *)malloc((u_int) sizeof(WHERE))) == NULL) {
-		(void)fprintf(stderr, "finger: out of space.\n");
-		exit(1);
-	}
+	if ((w = malloc((u_int) sizeof(WHERE))) == NULL)
+		err(1, "malloc");
 	if (pn->whead == NULL)
 		pn->whead = pn->wtail = w;
 	else {
@@ -300,24 +320,23 @@ walloc(pn)
 		pn->wtail = w;
 	}
 	w->next = NULL;
-	return(w);
+	return (w);
 }
 
 char *
-prphone(num)
-	char *num;
+prphone(char *num)
 {
-	register char *p;
+	char *p;
 	int len;
 	static char pbuf[15];
 
 	/* don't touch anything if the user has their own formatting */
 	for (p = num; *p; ++p)
-		if (!isdigit(*p))
-			return(num);
+		if (!isdigit((unsigned char)*p))
+			return (num);
 	len = p - num;
 	p = pbuf;
-	switch(len) {
+	switch (len) {
 	case 11:			/* +0-123-456-7890 */
 		*p++ = '+';
 		*p++ = *num++;
@@ -340,7 +359,7 @@ prphone(num)
 		*p++ = *num++;
 		break;
 	default:
-		return(num);
+		return (num);
 	}
 	if (len != 4) {
 		*p++ = '-';
@@ -350,5 +369,5 @@ prphone(num)
 	*p++ = *num++;
 	*p++ = *num++;
 	*p = '\0';
-	return(pbuf);
+	return (pbuf);
 }

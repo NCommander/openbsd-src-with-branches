@@ -1,3 +1,4 @@
+/*	$OpenBSD: SYS.h,v 1.19 2015/09/05 06:22:47 guenther Exp $	*/
 /*-
  * Copyright (c) 1994
  *	Andrew Cagney.  All rights reserved.
@@ -34,7 +35,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)SYS.h	8.1 (Berkeley) 6/4/93
- *      $Id: SYS.h,v 1.1.1.1 1996/09/30 05:09:55 drahn Exp $ 
  */
 
 #include <sys/syscall.h>
@@ -44,29 +44,67 @@
 
 #include "machine/asm.h"
 
-#ifdef __STDC__
-#define PSEUDO_PREFIX(x,y)	.globl _C_LABEL(x) ; \
-				.align 2; \
-				.extern cerror ; \
-			_C_LABEL(x):	li 0, SYS_##y ; \
+/*
+ * We define a hidden alias with the prefix "_libc_" for each global symbol
+ * that may be used internally.  By referencing _libc_x instead of x, other
+ * parts of libc prevent overriding by the application and avoid unnecessary
+ * relocations.
+ */
+#define _HIDDEN(x)		_libc_##x
+#define _HIDDEN_ALIAS(x,y)			\
+	STRONG_ALIAS(_HIDDEN(x),y);		\
+	.hidden _HIDDEN(x)
+#define _HIDDEN_FALIAS(x,y)			\
+	_HIDDEN_ALIAS(x,y);			\
+	.type _HIDDEN(x),@function
+
+/*
+ * For functions implemented in ASM that aren't syscalls.
+ *   END_STRONG(x)	Like DEF_STRONG() in C; for standard/reserved C names
+ *   END_WEAK(x)	Like DEF_WEAK() in C; for non-ISO C names
+ */
+#define	END_STRONG(x)	END(x); _HIDDEN_FALIAS(x,x); END(_HIDDEN(x))
+#define	END_WEAK(x)	END_STRONG(x); .weak x
+
+
+#define _CONCAT(x,y)	x##y
+#define PSEUDO_PREFIX(p,x,y)	.extern _ASM_LABEL(___cerror) ; \
+			ENTRY(p##x) \
+				li 0, SYS_##y ; \
 				/* sc */
-#else /* !__STDC__ */
-#define PSEUDO_PREFIX(x,y)	.globl _C_LABEL(x) ; \
-				.align 2; \
-				.extern cerror ; \
-			_C_LABEL(x):	li 0, SYS_/**/y ; \
-				/* sc */
-#endif /* !__STDC__ */
 #define PSEUDO_SUFFIX		cmpwi 0, 0 ; \
 				beqlr+ ; \
-				b cerror
+				b _ASM_LABEL(___cerror)
 
-#define PREFIX(x)		PSEUDO_PREFIX(x,x)
+#define PSEUDO_NOERROR_SUFFIX	blr
 
-#define SUFFIX			PSEUDO_SUFFIX
+#define __END_HIDDEN(p,x)	END(p##x);			\
+				_HIDDEN_FALIAS(x,p##x);		\
+				END(_HIDDEN(x))
+#define __END(p,x)		__END_HIDDEN(p,x); END(x)
 
-#define	PSEUDO(x,y)		PSEUDO_PREFIX(x,y) ; \
+
+#define ALIAS(x,y)		WEAK_ALIAS(y,_CONCAT(x,y));
+		
+#define PREFIX_HIDDEN(x)	PSEUDO_PREFIX(_thread_sys_,x,x)
+#define PREFIX(x)		ALIAS(_thread_sys_,x) \
+				PREFIX_HIDDEN(x)
+#define	PSEUDO_NOERROR(x,y)	ALIAS(_thread_sys_,x) \
+				PSEUDO_PREFIX(_thread_sys_,x,y) ; \
 				sc ; \
-				PSEUDO_SUFFIX
+				PSEUDO_NOERROR_SUFFIX; \
+				__END(_thread_sys_,x)
+
+#define	PSEUDO_HIDDEN(x,y)	PSEUDO_PREFIX(_thread_sys_,x,y) ; \
+				sc ; \
+				PSEUDO_SUFFIX; \
+				__END_HIDDEN(_thread_sys_,x)
+#define	PSEUDO(x,y)		ALIAS(_thread_sys_,x) \
+				PSEUDO_HIDDEN(x,y); \
+				__END(_thread_sys_,x)
 
 #define RSYSCALL(x)		PSEUDO(x,x)
+#define RSYSCALL_HIDDEN(x)	PSEUDO_HIDDEN(x,x)
+#define SYSCALL_END_HIDDEN(x)	__END_HIDDEN(_thread_sys_,x)
+#define SYSCALL_END(x)		__END(_thread_sys_,x)
+

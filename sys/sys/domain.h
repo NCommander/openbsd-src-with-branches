@@ -1,4 +1,5 @@
-/*	$NetBSD: domain.h,v 1.8 1995/03/26 20:24:03 jtc Exp $	*/
+/*	$OpenBSD: domain.h,v 1.16 2015/10/07 10:50:35 mpi Exp $	*/
+/*	$NetBSD: domain.h,v 1.10 1996/02/09 18:25:07 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,28 +36,43 @@
  * Structure per communications domain.
  */
 
+#ifndef	_SOCKLEN_T_DEFINED_
+#define	_SOCKLEN_T_DEFINED_
+typedef	__socklen_t	socklen_t;	/* length type for network syscalls */
+#endif
+
 /*
  * Forward structure declarations for function prototypes [sic].
  */
 struct	mbuf;
+struct	ifnet;
 
 struct	domain {
 	int	dom_family;		/* AF_xxx */
 	char	*dom_name;
-	void	(*dom_init)		/* initialize domain data structures */
-		__P((void));
-	int	(*dom_externalize)	/* externalize access rights */
-		__P((struct mbuf *));
-	int	(*dom_dispose)		/* dispose of internalized rights */
-		__P((struct mbuf *));
+	void	(*dom_init)(void);	/* initialize domain data structures */
+					/* externalize access rights */
+	int	(*dom_externalize)(struct mbuf *, socklen_t, int);
+					/* dispose of internalized rights */
+	void	(*dom_dispose)(struct mbuf *);
 	struct	protosw *dom_protosw, *dom_protoswNPROTOSW;
-	struct	domain *dom_next;
-	int	(*dom_rtattach)		/* initialize routing table */
-		__P((void **, int));
-	int	dom_rtoffset;		/* an arg to rtattach, in bits */
-	int	dom_maxrtkey;		/* for routing layer */
+					/* initialize routing table */
+	unsigned int	dom_rtkeylen;	/* maximum size of the key */
+	unsigned int	dom_rtoffset;	/* offset of the key, in bytes */
+	unsigned int	dom_maxplen;	/* maxium prefix length, in bits */
+	void	*(*dom_ifattach)(struct ifnet *);
+	void	(*dom_ifdetach)(struct ifnet *, void *);
+					/* af-dependent data on ifnet */
 };
 
 #ifdef _KERNEL
-struct	domain *domains;
+extern struct domain *domains[];
+void domaininit(void);
+
+extern struct domain inetdomain;
+
+#ifdef INET6
+extern struct domain inet6domain;
 #endif
+
+#endif /* _KERNEL */

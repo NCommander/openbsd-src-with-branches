@@ -1,14 +1,71 @@
+/*	$OpenBSD: hack.topl.c,v 1.11 2015/09/27 05:13:11 guenther Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.topl.c,v 1.3 1995/03/23 08:31:40 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "hack.h"
-#include <stdio.h>
-extern char *eos();
+
 extern int CO;
 
 char toplines[BUFSZ];
@@ -20,21 +77,29 @@ struct topl {
 } *old_toplines, *last_redone_topl;
 #define	OTLMAX	20		/* max nr of old toplines remembered */
 
-doredotopl(){
+static void redotoplin(void);
+static void xmore(char *);
+
+
+int
+doredotopl(void)
+{
 	if(last_redone_topl)
 		last_redone_topl = last_redone_topl->next_topl;
 	if(!last_redone_topl)
 		last_redone_topl = old_toplines;
 	if(last_redone_topl){
-		(void) strcpy(toplines, last_redone_topl->topl_text);
+		(void) strlcpy(toplines, last_redone_topl->topl_text, sizeof toplines);
 	}
 	redotoplin();
 	return(0);
 }
 
-redotoplin() {
+static void
+redotoplin(void)
+{
 	home();
-	if(index(toplines, '\n')) cl_end();
+	if(strchr(toplines, '\n')) cl_end();
 	putstr(toplines);
 	cl_end();
 	tlx = curx;
@@ -44,31 +109,38 @@ redotoplin() {
 		more();
 }
 
-remember_topl() {
-register struct topl *tl;
-register int cnt = OTLMAX;
+void
+remember_topl(void)
+{
+	struct topl *tl;
+	int cnt = OTLMAX;
+	size_t slen;
+
 	if(last_redone_topl &&
 	   !strcmp(toplines, last_redone_topl->topl_text)) return;
 	if(old_toplines &&
 	   !strcmp(toplines, old_toplines->topl_text)) return;
 	last_redone_topl = 0;
+	slen = strlen(toplines) + 1;
 	tl = (struct topl *)
-		alloc((unsigned)(strlen(toplines) + sizeof(struct topl) + 1));
+		alloc(sizeof(struct topl) + slen);
 	tl->next_topl = old_toplines;
 	tl->topl_text = (char *)(tl + 1);
-	(void) strcpy(tl->topl_text, toplines);
+	(void) strlcpy(tl->topl_text, toplines, slen);
 	old_toplines = tl;
 	while(cnt && tl){
 		cnt--;
 		tl = tl->next_topl;
 	}
 	if(tl && tl->next_topl){
-		free((char *) tl->next_topl);
+		free(tl->next_topl);
 		tl->next_topl = 0;
 	}
 }
 
-addtopl(s) char *s; {
+void
+addtopl(char *s)
+{
 	curs(tlx,tly);
 	if(tlx + strlen(s) > CO) putsym('\n');
 	putstr(s);
@@ -77,8 +149,8 @@ addtopl(s) char *s; {
 	flags.toplin = 1;
 }
 
-xmore(s)
-char *s;	/* allowed chars besides space/return */
+static void
+xmore(char *s)
 {
 	if(flags.toplin) {
 		curs(tlx, tly);
@@ -100,17 +172,21 @@ char *s;	/* allowed chars besides space/return */
 	flags.toplin = 0;
 }
 
-more(){
+void
+more(void)
+{
 	xmore("");
 }
 
-cmore(s)
-register char *s;
+void
+cmore(char *s)
 {
 	xmore(s);
 }
 
-clrlin(){
+void
+clrlin(void)
+{
 	if(flags.toplin) {
 		home();
 		cl_end();
@@ -120,17 +196,25 @@ clrlin(){
 	flags.toplin = 0;
 }
 
-/*VARARGS1*/
-pline(line,arg1,arg2,arg3,arg4,arg5,arg6)
-register char *line,*arg1,*arg2,*arg3,*arg4,*arg5,*arg6;
+void
+pline(const char *line, ...)
+{
+	va_list ap;
+
+	va_start(ap, line);
+	vpline(line, ap);
+	va_end(ap);
+}
+
+void
+vpline(const char *line, va_list ap)
 {
 	char pbuf[BUFSZ];
-	register char *bp = pbuf, *tl;
-	register int n,n0;
+	char *bp = pbuf, *tl;
+	int n,n0;
 
 	if(!line || !*line) return;
-	if(!index(line, '%')) (void) strcpy(pbuf,line); else
-	(void) sprintf(pbuf,line,arg1,arg2,arg3,arg4,arg5,arg6);
+	(void) vsnprintf(pbuf, sizeof pbuf, line, ap);
 	if(flags.toplin == 1 && !strcmp(pbuf, toplines)) return;
 	nscr();		/* %% */
 
@@ -140,8 +224,8 @@ register char *line,*arg1,*arg2,*arg3,*arg4,*arg5,*arg6;
 	if(flags.toplin == 1 && tly == 1 &&
 	    n0 + strlen(toplines) + 3 < CO-8 &&  /* leave room for --More-- */
 	    strncmp(bp, "You ", 4)) {
-		(void) strcat(toplines, "  ");
-		(void) strcat(toplines, bp);
+		(void) strlcat(toplines, "  ", sizeof toplines);
+		(void) strlcat(toplines, bp, sizeof toplines);
 		tlx += 2;
 		addtopl(bp);
 		return;
@@ -160,7 +244,7 @@ register char *line,*arg1,*arg2,*arg3,*arg4,*arg5,*arg6;
 			if(!n0) n0 = CO-2;
 		}
 		(void) strncpy((tl = eos(toplines)), bp, n0);
-		tl[n0] = 0;
+		tl[n0] = '\0';
 		bp += n0;
 
 		/* remove trailing spaces, but leave one */
@@ -168,12 +252,16 @@ register char *line,*arg1,*arg2,*arg3,*arg4,*arg5,*arg6;
 			tl[--n0] = 0;
 
 		n0 = strlen(bp);
-		if(n0 && tl[0]) (void) strcat(tl, "\n");
+		if(n0 && tl[0])
+			(void) strlcat(tl, "\n",
+			    toplines + sizeof toplines - tl);
 	}
 	redotoplin();
 }
 
-putsym(c) char c; {
+void
+putsym(char c)
+{
 	switch(c) {
 	case '\b':
 		backsp();
@@ -192,6 +280,8 @@ putsym(c) char c; {
 	(void) putchar(c);
 }
 
-putstr(s) register char *s; {
+void
+putstr(char *s)
+{
 	while(*s) putsym(*s++);
 }

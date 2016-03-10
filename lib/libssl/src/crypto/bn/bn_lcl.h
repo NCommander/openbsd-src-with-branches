@@ -1,25 +1,25 @@
-/* crypto/bn/bn_lcl.h */
+/* $OpenBSD: bn_lcl.h,v 1.21 2014/10/28 07:35:58 jsg Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
  * This package is an SSL implementation written
  * by Eric Young (eay@cryptsoft.com).
  * The implementation was written so as to conform with Netscapes SSL.
- * 
+ *
  * This library is free for commercial and non-commercial use as long as
  * the following conditions are aheared to.  The following conditions
  * apply to all code found in this distribution, be it the RC4, RSA,
  * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
  * included with this distribution is covered by the same copyright terms
  * except that the holder is Tim Hudson (tjh@cryptsoft.com).
- * 
+ *
  * Copyright remains Eric Young's, and as such any Copyright notices in
  * the code are not to be removed.
  * If this package is used in a product, Eric Young should be given attribution
  * as the author of the parts of the library used.
  * This can be in the form of a textual message at program startup or
  * in documentation (online or textual) provided with the package.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -34,10 +34,10 @@
  *     Eric Young (eay@cryptsoft.com)"
  *    The word 'cryptographic' can be left out if the rouines from the library
  *    being used are not cryptographic related :-).
- * 4. If you include any Windows specific code (or a derivative thereof) from 
+ * 4. If you include any Windows specific code (or a derivative thereof) from
  *    the apps directory (application code) you must include an acknowledgement:
  *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -49,7 +49,7 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- * 
+ *
  * The licence and distribution terms for any publically available version or
  * derivative of this code cannot be changed.  i.e. this code cannot simply be
  * copied and put under another distribution licence
@@ -63,7 +63,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -112,6 +112,8 @@
 #ifndef HEADER_BN_LCL_H
 #define HEADER_BN_LCL_H
 
+#include <openssl/opensslconf.h>
+
 #include <openssl/bn.h>
 
 #ifdef  __cplusplus
@@ -144,26 +146,14 @@ extern "C" {
  * (with draws in between).  Very small exponents are often selected
  * with low Hamming weight, so we use  w = 1  for b <= 23.
  */
-#if 1
 #define BN_window_bits_for_exponent_size(b) \
 		((b) > 671 ? 6 : \
 		 (b) > 239 ? 5 : \
 		 (b) >  79 ? 4 : \
 		 (b) >  23 ? 3 : 1)
-#else
-/* Old SSLeay/OpenSSL table.
- * Maximum window size was 5, so this table differs for b==1024;
- * but it coincides for other interesting values (b==160, b==512).
- */
-#define BN_window_bits_for_exponent_size(b) \
-		((b) > 255 ? 5 : \
-		 (b) > 127 ? 4 : \
-		 (b) >  17 ? 3 : 1)
-#endif	 
 
 
-
-/* BN_mod_exp_mont_conttime is based on the assumption that the
+/* BN_mod_exp_mont_consttime is based on the assumption that the
  * L1 data cache line width of the target processor is at least
  * the following value.
  */
@@ -175,7 +165,7 @@ extern "C" {
  *
  * To achieve the security goals of BN_mode_exp_mont_consttime, the
  * maximum size of the window must not exceed
- * log_2(MOD_EXP_CTIME_MIN_CACHE_LINE_WIDTH). 
+ * log_2(MOD_EXP_CTIME_MIN_CACHE_LINE_WIDTH).
  *
  * Window size thresholds are defined for cache line sizes of 32 and 64,
  * cache line sizes where log_2(32)=5 and log_2(64)=6 respectively. A
@@ -210,7 +200,7 @@ extern "C" {
 #define BN_MUL_LOW_RECURSIVE_SIZE_NORMAL	(32) /* 32 */
 #define BN_MONT_CTX_SET_SIZE_WORD		(64) /* 32 */
 
-#if !defined(OPENSSL_NO_ASM) && !defined(OPENSSL_NO_INLINE_ASM) && !defined(PEDANTIC)
+#if !defined(OPENSSL_NO_ASM) && !defined(OPENSSL_NO_INLINE_ASM)
 /*
  * BN_UMULT_HIGH section.
  *
@@ -234,32 +224,28 @@ extern "C" {
  *
  *					<appro@fy.chalmers.se>
  */
-# if defined(__alpha) && (defined(SIXTY_FOUR_BIT_LONG) || defined(SIXTY_FOUR_BIT))
-#  if defined(__DECC)
-#   include <c_asm.h>
-#   define BN_UMULT_HIGH(a,b)	(BN_ULONG)asm("umulh %a0,%a1,%v0",(a),(b))
-#  elif defined(__GNUC__) && __GNUC__>=2
+# if defined(__alpha)
+#  if defined(__GNUC__) && __GNUC__>=2
 #   define BN_UMULT_HIGH(a,b)	({	\
-	register BN_ULONG ret;		\
+	BN_ULONG ret;		\
 	asm ("umulh	%1,%2,%0"	\
 	     : "=r"(ret)		\
 	     : "r"(a), "r"(b));		\
 	ret;			})
 #  endif	/* compiler */
-# elif defined(_ARCH_PPC) && defined(__64BIT__) && defined(SIXTY_FOUR_BIT_LONG)
+# elif defined(_ARCH_PPC) && defined(_LP64)
 #  if defined(__GNUC__) && __GNUC__>=2
 #   define BN_UMULT_HIGH(a,b)	({	\
-	register BN_ULONG ret;		\
+	BN_ULONG ret;		\
 	asm ("mulhdu	%0,%1,%2"	\
 	     : "=r"(ret)		\
 	     : "r"(a), "r"(b));		\
 	ret;			})
 #  endif	/* compiler */
-# elif (defined(__x86_64) || defined(__x86_64__)) && \
-       (defined(SIXTY_FOUR_BIT_LONG) || defined(SIXTY_FOUR_BIT))
+# elif defined(__x86_64) || defined(__x86_64__)
 #  if defined(__GNUC__) && __GNUC__>=2
 #   define BN_UMULT_HIGH(a,b)	({	\
-	register BN_ULONG ret,discard;	\
+	BN_ULONG ret,discard;	\
 	asm ("mulq	%3"		\
 	     : "=a"(discard),"=d"(ret)	\
 	     : "a"(a), "g"(b)		\
@@ -271,25 +257,16 @@ extern "C" {
 		: "a"(a),"g"(b)		\
 		: "cc");
 #  endif
-# elif (defined(_M_AMD64) || defined(_M_X64)) && defined(SIXTY_FOUR_BIT)
-#  if defined(_MSC_VER) && _MSC_VER>=1400
-    unsigned __int64 __umulh	(unsigned __int64 a,unsigned __int64 b);
-    unsigned __int64 _umul128	(unsigned __int64 a,unsigned __int64 b,
-				 unsigned __int64 *h);
-#   pragma intrinsic(__umulh,_umul128)
-#   define BN_UMULT_HIGH(a,b)		__umulh((a),(b))
-#   define BN_UMULT_LOHI(low,high,a,b)	((low)=_umul128((a),(b),&(high)))
-#  endif
-# elif defined(__mips) && (defined(SIXTY_FOUR_BIT) || defined(SIXTY_FOUR_BIT_LONG))
+# elif defined(__mips) && defined(_LP64)
 #  if defined(__GNUC__) && __GNUC__>=2
-#   if __GNUC__>=4 && __GNUC_MINOR__>=4 /* "h" constraint is no more since 4.4 */
+#   if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4) /* "h" constraint is no more since 4.4 */
 #     define BN_UMULT_HIGH(a,b)		 (((__uint128_t)(a)*(b))>>64)
 #     define BN_UMULT_LOHI(low,high,a,b) ({	\
 	__uint128_t ret=(__uint128_t)(a)*(b);	\
 	(high)=ret>>64; (low)=ret;	 })
 #   else
 #     define BN_UMULT_HIGH(a,b)	({	\
-	register BN_ULONG ret;		\
+	BN_ULONG ret;		\
 	asm ("dmultu	%1,%2"		\
 	     : "=h"(ret)		\
 	     : "r"(a), "r"(b) : "l");	\
@@ -409,10 +386,6 @@ extern "C" {
 #define HBITS(a)	(((a)>>BN_BITS4)&BN_MASK2l)
 #define	L2HBITS(a)	(((a)<<BN_BITS4)&BN_MASK2)
 
-#define LLBITS(a)	((a)&BN_MASKl)
-#define LHBITS(a)	(((a)>>BN_BITS2)&BN_MASKl)
-#define	LL2HBITS(a)	((BN_ULLONG)((a)&BN_MASKl)<<BN_BITS2)
-
 #define mul64(l,h,bl,bh) \
 	{ \
 	BN_ULONG m,m1,lt,ht; \
@@ -479,34 +452,30 @@ extern "C" {
 	}
 #endif /* !BN_LLONG */
 
-#if defined(OPENSSL_DOING_MAKEDEPEND) && defined(OPENSSL_FIPS)
-#undef bn_div_words
-#endif
-
-void bn_mul_normal(BN_ULONG *r,BN_ULONG *a,int na,BN_ULONG *b,int nb);
-void bn_mul_comba8(BN_ULONG *r,BN_ULONG *a,BN_ULONG *b);
-void bn_mul_comba4(BN_ULONG *r,BN_ULONG *a,BN_ULONG *b);
+	void bn_mul_normal(BN_ULONG *r, BN_ULONG *a, int na, BN_ULONG *b, int nb);
+void bn_mul_comba8(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b);
+void bn_mul_comba4(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b);
 void bn_sqr_normal(BN_ULONG *r, const BN_ULONG *a, int n, BN_ULONG *tmp);
-void bn_sqr_comba8(BN_ULONG *r,const BN_ULONG *a);
-void bn_sqr_comba4(BN_ULONG *r,const BN_ULONG *a);
-int bn_cmp_words(const BN_ULONG *a,const BN_ULONG *b,int n);
+void bn_sqr_comba8(BN_ULONG *r, const BN_ULONG *a);
+void bn_sqr_comba4(BN_ULONG *r, const BN_ULONG *a);
+int bn_cmp_words(const BN_ULONG *a, const BN_ULONG *b, int n);
 int bn_cmp_part_words(const BN_ULONG *a, const BN_ULONG *b,
-	int cl, int dl);
-void bn_mul_recursive(BN_ULONG *r,BN_ULONG *a,BN_ULONG *b,int n2,
-	int dna,int dnb,BN_ULONG *t);
-void bn_mul_part_recursive(BN_ULONG *r,BN_ULONG *a,BN_ULONG *b,
-	int n,int tna,int tnb,BN_ULONG *t);
-void bn_sqr_recursive(BN_ULONG *r,const BN_ULONG *a, int n2, BN_ULONG *t);
-void bn_mul_low_normal(BN_ULONG *r,BN_ULONG *a,BN_ULONG *b, int n);
-void bn_mul_low_recursive(BN_ULONG *r,BN_ULONG *a,BN_ULONG *b,int n2,
-	BN_ULONG *t);
-void bn_mul_high(BN_ULONG *r,BN_ULONG *a,BN_ULONG *b,BN_ULONG *l,int n2,
-	BN_ULONG *t);
+    int cl, int dl);
+void bn_mul_recursive(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b, int n2,
+    int dna, int dnb, BN_ULONG *t);
+void bn_mul_part_recursive(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b,
+    int n, int tna, int tnb, BN_ULONG *t);
+void bn_sqr_recursive(BN_ULONG *r, const BN_ULONG *a, int n2, BN_ULONG *t);
+void bn_mul_low_normal(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b, int n);
+void bn_mul_low_recursive(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b, int n2,
+    BN_ULONG *t);
+void bn_mul_high(BN_ULONG *r, BN_ULONG *a, BN_ULONG *b, BN_ULONG *l, int n2,
+    BN_ULONG *t);
 BN_ULONG bn_add_part_words(BN_ULONG *r, const BN_ULONG *a, const BN_ULONG *b,
-	int cl, int dl);
+    int cl, int dl);
 BN_ULONG bn_sub_part_words(BN_ULONG *r, const BN_ULONG *a, const BN_ULONG *b,
-	int cl, int dl);
-int bn_mul_mont(BN_ULONG *rp, const BN_ULONG *ap, const BN_ULONG *bp, const BN_ULONG *np,const BN_ULONG *n0, int num);
+    int cl, int dl);
+int bn_mul_mont(BN_ULONG *rp, const BN_ULONG *ap, const BN_ULONG *bp, const BN_ULONG *np, const BN_ULONG *n0, int num);
 
 #ifdef  __cplusplus
 }

@@ -1,74 +1,75 @@
+/*	$OpenBSD: rpc_hout.c,v 1.20 2011/04/06 11:36:26 miod Exp $	*/
 /*	$NetBSD: rpc_hout.c,v 1.4 1995/06/11 21:49:55 pk Exp $	*/
-/*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user or with the express written consent of
- * Sun Microsystems, Inc.
- *
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- *
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- *
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- *
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- *
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
- */
-
-#ifndef lint
-static char sccsid[] = "@(#)rpc_hout.c 1.12 89/02/22 (C) 1987 SMI";
-#endif
 
 /*
- * rpc_hout.c, Header file outputter for the RPC protocol compiler 
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <sys/cdefs.h>
+
+/*
+ * rpc_hout.c, Header file outputter for the RPC protocol compiler
+ */
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include "rpc_parse.h"
 #include "rpc_util.h"
 
-static pconstdef __P((definition *));
-static pargdef __P((definition *));
-static pstructdef __P((definition *));
-static puniondef __P((definition *));
-static pprogramdef __P((definition *));
-static penumdef __P((definition *));
-static ptypedef __P((definition *));
-static pdefine __P((char *, char *));
-static puldefine __P((char *, char *));
-static define_printed __P((proc_list *, version_list *));
-static undefined2 __P((char *, char *));
-static parglist __P((proc_list *, char *));
+static void pconstdef(definition *);
+static void pargdef(definition *);
+static void pstructdef(definition *);
+static void puniondef(definition *);
+static void pprogramdef(definition *);
+static void penumdef(definition *);
+static void ptypedef(definition *);
+static void pdefine(char *, char *);
+static void puldefine(char *, char *);
+static int define_printed(proc_list *, version_list *);
+static int undefined2(char *, char *);
+static void parglist(proc_list *, char *);
+void pxdrfuncdecl(char *, int);
+void pprocdef(proc_list *, version_list *, char *, int, int);
+void pdeclaration(char *, declaration *, int, char *);
 
 /*
- * Print the C-version of an xdr definition 
+ * Print the C-version of an xdr definition
  */
 void
 print_datadef(def)
 	definition *def;
 {
 
-	if (def->def_kind == DEF_PROGRAM )  /* handle data only */
-	        return;
+	if (def->def_kind == DEF_PROGRAM)  /* handle data only */
+		return;
 
-	if (def->def_kind != DEF_CONST) {
-		f_print(fout, "\n");
-	}
+	if (def->def_kind != DEF_CONST)
+		fprintf(fout, "\n");
 	switch (def->def_kind) {
 	case DEF_STRUCT:
 		pstructdef(def);
@@ -90,10 +91,9 @@ print_datadef(def)
 		break;
 	}
 	if (def->def_kind != DEF_PROGRAM && def->def_kind != DEF_CONST) {
-	  pxdrfuncdecl( def->def_name,
-		       def->def_kind != DEF_TYPEDEF ||
-		       !isvectordef(def->def.ty.old_type, def->def.ty.rel));
-
+		pxdrfuncdecl(def->def_name,
+		    def->def_kind != DEF_TYPEDEF ||
+		    !isvectordef(def->def.ty.old_type, def->def.ty.rel));
 	}
 }
 
@@ -104,42 +104,42 @@ print_funcdef(def)
 {
 	switch (def->def_kind) {
 	case DEF_PROGRAM:
-		f_print(fout, "\n");
+		fprintf(fout, "\n");
 		pprogramdef(def);
 		break;
-	      }
+	}
 }
 
-pxdrfuncdecl( name, pointerp )
-char* name;
-int pointerp;
+void
+pxdrfuncdecl(name, pointerp)
+	char *name;
+	int pointerp;
 {
 
-  f_print(fout,"#ifdef __cplusplus \n");
-    f_print(fout, "extern \"C\" bool_t xdr_%s(XDR *, %s%s);\n",
-	name,
-	name, pointerp ? ("*") : "");
-  f_print(fout,"#elif __STDC__ \n");
-    f_print(fout, "extern  bool_t xdr_%s(XDR *, %s%s);\n",
-	name,
-	name, pointerp ? ("*") : "");
-  f_print(fout,"#else /* Old Style C */ \n");
-    f_print(fout, "bool_t xdr_%s();\n", name);
-  f_print(fout,"#endif /* Old Style C */ \n\n");
+	fprintf(fout,"#ifdef __cplusplus\n");
+	fprintf(fout, "extern \"C\" bool_t xdr_%s(XDR *, %s %s);\n",
+	    name, name, pointerp ? ("*") : "");
+	fprintf(fout,"#elif defined(__STDC__)\n");
+	fprintf(fout, "extern bool_t xdr_%s(XDR *, %s %s);\n",
+	    name, name, pointerp ? ("*") : "");
+	fprintf(fout,"#else /* Old Style C */\n");
+	fprintf(fout, "bool_t xdr_%s();\n", name);
+	fprintf(fout,"#endif /* Old Style C */\n\n");
 }
 
 
-static
+static void
 pconstdef(def)
 	definition *def;
 {
 	pdefine(def->def_name, def->def.co);
 }
 
-/* print out the definitions for the arguments of functions in the 
-   header file 
-*/
-static 
+/*
+ * print out the definitions for the arguments of functions in the
+ * header file
+ */
+static void
 pargdef(def)
 	definition *def;
 {
@@ -148,46 +148,41 @@ pargdef(def)
 	char *name;
 	proc_list *plist;
 
-	
 	for (vers = def->def.pr.versions; vers != NULL; vers = vers->next) {
-			for(plist = vers->procs; plist != NULL; 
-			    plist = plist->next) {
-				
-				if (!newstyle || plist->arg_num < 2) {
-					continue; /* old style or single args */
-				}
-				name = plist->args.argname;
-				f_print(fout, "struct %s {\n", name);
-				for (l = plist->args.decls; 
-				     l != NULL; l = l->next) {
-					pdeclaration(name, &l->decl, 1, ";\n" );
-				}
-				f_print(fout, "};\n");
-				f_print(fout, "typedef struct %s %s;\n", name, name);
-				pxdrfuncdecl( name,NULL );
-				f_print( fout, "\n" );
+		for (plist = vers->procs; plist != NULL;
+		    plist = plist->next) {
+			if (!newstyle || plist->arg_num < 2) {
+				continue; /* old style or single args */
 			}
+			name = plist->args.argname;
+			fprintf(fout, "struct %s {\n", name);
+			for (l = plist->args.decls;
+			    l != NULL; l = l->next) {
+				pdeclaration(name, &l->decl, 1, ";\n");
+			}
+			fprintf(fout, "};\n");
+			fprintf(fout, "typedef struct %s %s;\n", name, name);
+			pxdrfuncdecl(name, 0);
+			fprintf(fout, "\n");
 		}
-
+	}
 }
 
-
-static 
+static void
 pstructdef(def)
 	definition *def;
 {
-	decl_list *l;
 	char *name = def->def_name;
+	decl_list *l;
 
-	f_print(fout, "struct %s {\n", name);
-	for (l = def->def.st.decls; l != NULL; l = l->next) {
+	fprintf(fout, "struct %s {\n", name);
+	for (l = def->def.st.decls; l != NULL; l = l->next)
 		pdeclaration(name, &l->decl, 1, ";\n");
-	}
-	f_print(fout, "};\n");
-	f_print(fout, "typedef struct %s %s;\n", name, name);
+	fprintf(fout, "};\n");
+	fprintf(fout, "typedef struct %s %s;\n", name, name);
 }
 
-static
+static void
 puniondef(def)
 	definition *def;
 {
@@ -195,44 +190,44 @@ puniondef(def)
 	char *name = def->def_name;
 	declaration *decl;
 
-	f_print(fout, "struct %s {\n", name);
+	fprintf(fout, "struct %s {\n", name);
 	decl = &def->def.un.enum_decl;
 	if (streq(decl->type, "bool")) {
-		f_print(fout, "\tbool_t %s;\n", decl->name);
+		fprintf(fout, "\tbool_t %s;\n", decl->name);
 	} else {
-		f_print(fout, "\t%s %s;\n", decl->type, decl->name);
+		fprintf(fout, "\t%s %s;\n", decl->type, decl->name);
 	}
-	f_print(fout, "\tunion {\n");
+	fprintf(fout, "\tunion {\n");
 	for (l = def->def.un.cases; l != NULL; l = l->next) {
-	  if(l->contflag == 0)
-		pdeclaration(name, &l->case_decl, 2, ";\n" );
+	  if (l->contflag == 0)
+		pdeclaration(name, &l->case_decl, 2, ";\n");
 	}
 	decl = def->def.un.default_decl;
 	if (decl && !streq(decl->type, "void")) {
-		pdeclaration(name, decl, 2, ";\n" );
+		pdeclaration(name, decl, 2, ";\n");
 	}
-	f_print(fout, "\t} %s_u;\n", name);
-	f_print(fout, "};\n");
-	f_print(fout, "typedef struct %s %s;\n", name, name);
+	fprintf(fout, "\t} %s_u;\n", name);
+	fprintf(fout, "};\n");
+	fprintf(fout, "typedef struct %s %s;\n", name, name);
 }
 
-static
+static void
 pdefine(name, num)
 	char *name;
 	char *num;
 {
-	f_print(fout, "#define %s %s\n", name, num);
+	fprintf(fout, "#define %s %s\n", name, num);
 }
 
-static
+static void
 puldefine(name, num)
 	char *name;
 	char *num;
 {
-	f_print(fout, "#define %s ((u_long)%s)\n", name, num);
+	fprintf(fout, "#define %s ((u_long)%s)\n", name, num);
 }
 
-static
+static int
 define_printed(stop, start)
 	proc_list *stop;
 	version_list *start;
@@ -253,7 +248,7 @@ define_printed(stop, start)
 	/* NOTREACHED */
 }
 
-static
+static void
 pprogramdef(def)
 	definition *def;
 {
@@ -261,105 +256,98 @@ pprogramdef(def)
 	proc_list *proc;
 	int i;
 	char *ext;
-	
+
 	pargdef(def);
 
 	puldefine(def->def_name, def->def.pr.prog_num);
 	for (vers = def->def.pr.versions; vers != NULL; vers = vers->next) {
 		if (tblflag) {
-			f_print(fout, "extern struct rpcgen_table %s_%s_table[];\n",
-				locase(def->def_name), vers->vers_num);
-			f_print(fout, "extern %s_%s_nproc;\n",
-				locase(def->def_name), vers->vers_num);
+			fprintf(fout, "extern struct rpcgen_table %s_%s_table[];\n",
+			    locase(def->def_name), vers->vers_num);
+			fprintf(fout, "extern %s_%s_nproc;\n",
+			    locase(def->def_name), vers->vers_num);
 		}
 		puldefine(vers->vers_name, vers->vers_num);
 
-		/* 
-		 * Print out 3 definitions, one for ANSI-C, another for C++, 
-		 * a third for old style C 
+		/*
+		 * Print out 3 definitions, one for ANSI-C, another for C++,
+		 * a third for old style C
 		 */
-		   
-		for(i=0;i<3;i++){
-			if(i==0){
-				f_print(fout,"\n#ifdef __cplusplus\n");
-				ext="extern \"C\" ";
-			}else if ( i== 1){
-				f_print(fout,"\n#elif __STDC__\n");
-				ext="extern  "  ;
-			}else{
-				f_print(fout,"\n#else /* Old Style C */ \n");
-				ext="extern  ";
-			}
-			
-			
-			for (proc = vers->procs; proc != NULL; proc = proc->next) {
-				if (!define_printed(proc, def->def.pr.versions)) {
-					puldefine(proc->proc_name, proc->proc_num);
-				}
-				f_print(fout,"%s",ext);
-				pprocdef(proc, vers, "CLIENT *", 0,i);
-				f_print(fout,"%s",ext);
-				pprocdef(proc, vers, "struct svc_req *", 1,i);
-				
+		for (i=0; i<3; i++) {
+			if (i==0) {
+				fprintf(fout,"\n#ifdef __cplusplus\n");
+				ext = "extern \"C\" ";
+			} else if (i==1) {
+				fprintf(fout,"\n#elif defined(__STDC__)\n");
+				ext = "extern ";
+			} else {
+				fprintf(fout,"\n#else /* Old Style C */\n");
+				ext = "extern ";
 			}
 
+			for (proc = vers->procs; proc != NULL; proc = proc->next) {
+				if (!define_printed(proc, def->def.pr.versions))
+					puldefine(proc->proc_name, proc->proc_num);
+				fprintf(fout,"%s",ext);
+				pprocdef(proc, vers, "CLIENT *", 0,i);
+				fprintf(fout,"%s",ext);
+				pprocdef(proc, vers, "struct svc_req *", 1,i);
+			}
 		}
-		f_print(fout,"#endif /* Old Style C */ \n");
+		fprintf(fout,"#endif /* Old Style C */\n");
 	}
 }
 
+void
 pprocdef(proc, vp, addargtype, server_p,mode)
 	proc_list *proc;
 	version_list *vp;
-	char* addargtype;
+	char *addargtype;
 	int server_p;
 	int mode;
 {
 
-	ptype( proc->res_prefix, proc->res_type, 1 );
-	f_print( fout, "* " );
-	if( server_p )
+	ptype(proc->res_prefix, proc->res_type, 1);
+	fprintf(fout, "* ");
+	if (server_p)
 		pvname_svc(proc->proc_name, vp->vers_num);
 	else
 		pvname(proc->proc_name, vp->vers_num);
 
 	/*
-	 * mode  0 == cplusplus, mode  1 = ANSI-C, mode 2 = old style C 
+	 * mode  0 == cplusplus, mode  1 = ANSI-C, mode 2 = old style C
 	 */
-	if(mode == 0 || mode ==1) 
-		parglist( proc, addargtype );
+	if (mode == 0 || mode == 1)
+		parglist(proc, addargtype);
 	else
-		f_print(fout, "();\n");
+		fprintf(fout, "();\n");
 }
 
-
 /* print out argument list of procedure */
-static 
+static void
 parglist(proc, addargtype)
 	proc_list *proc;
-	char* addargtype;
+	char *addargtype;
 {
 	decl_list *dl;
 
-	f_print(fout,"(");
+	fprintf(fout,"(");
 
-	if( proc->arg_num < 2 && newstyle &&
-	   streq( proc->args.decls->decl.type, "void")) {
+	if (proc->arg_num < 2 && newstyle &&
+	   streq(proc->args.decls->decl.type, "void")) {
 		/* 0 argument in new style:  do nothing */
 	} else {
 		for (dl = proc->args.decls; dl != NULL; dl = dl->next) {
-			ptype( dl->decl.prefix, dl->decl.type, 1 );
-			if( !newstyle )
-				f_print( fout, "*" ); /* old style passes by reference */
-
-			f_print( fout, ", " );
+			ptype(dl->decl.prefix, dl->decl.type, 1);
+			if (!newstyle)
+				fprintf(fout, "*"); /* old style passes by reference */
+			fprintf(fout, ", ");
 		}
 	}
-
-	f_print(fout, "%s);\n", addargtype);
+	fprintf(fout, "%s);\n", addargtype);
 }
 
-static
+static void
 penumdef(def)
 	definition *def;
 {
@@ -368,27 +356,30 @@ penumdef(def)
 	char *last = NULL;
 	int count = 0;
 
-	f_print(fout, "enum %s {\n", name);
+	fprintf(fout, "enum %s {\n", name);
 	for (l = def->def.en.vals; l != NULL; l = l->next) {
-		f_print(fout, "\t%s", l->name);
+		fprintf(fout, "\t%s", l->name);
 		if (l->assignment) {
-			f_print(fout, " = %s", l->assignment);
+			fprintf(fout, " = %s", l->assignment);
 			last = l->assignment;
 			count = 1;
 		} else {
 			if (last == NULL) {
-				f_print(fout, " = %d", count++);
+				fprintf(fout, " = %d", count++);
 			} else {
-				f_print(fout, " = %s + %d", last, count++);
+				fprintf(fout, " = %s + %d", last, count++);
 			}
 		}
-		f_print(fout, ",\n");
+		if (l->next)
+			fprintf(fout, ",\n");
+		else
+			fprintf(fout, "\n");
 	}
-	f_print(fout, "};\n");
-	f_print(fout, "typedef enum %s %s;\n", name, name);
+	fprintf(fout, "};\n");
+	fprintf(fout, "typedef enum %s %s;\n", name, name);
 }
 
-static
+static void
 ptypedef(def)
 	definition *def;
 {
@@ -396,7 +387,6 @@ ptypedef(def)
 	char *old = def->def.ty.old_type;
 	char prefix[8];	/* enough to contain "struct ", including NUL */
 	relation rel = def->def.ty.rel;
-
 
 	if (!streq(name, old)) {
 		if (streq(old, "string")) {
@@ -408,52 +398,52 @@ ptypedef(def)
 			old = "bool_t";
 		}
 		if (undefined2(old, name) && def->def.ty.old_prefix) {
-			s_print(prefix, "%s ", def->def.ty.old_prefix);
+			snprintf(prefix, sizeof prefix, "%s ", def->def.ty.old_prefix);
 		} else {
 			prefix[0] = 0;
 		}
-		f_print(fout, "typedef ");
+		fprintf(fout, "typedef ");
 		switch (rel) {
 		case REL_ARRAY:
-			f_print(fout, "struct {\n");
-			f_print(fout, "\tu_int %s_len;\n", name);
-			f_print(fout, "\t%s%s *%s_val;\n", prefix, old, name);
-			f_print(fout, "} %s", name);
+			fprintf(fout, "struct {\n");
+			fprintf(fout, "\tu_int %s_len;\n", name);
+			fprintf(fout, "\t%s%s *%s_val;\n", prefix, old, name);
+			fprintf(fout, "} %s", name);
 			break;
 		case REL_POINTER:
-			f_print(fout, "%s%s *%s", prefix, old, name);
+			fprintf(fout, "%s%s *%s", prefix, old, name);
 			break;
 		case REL_VECTOR:
-			f_print(fout, "%s%s %s[%s]", prefix, old, name,
+			fprintf(fout, "%s%s %s[%s]", prefix, old, name,
 				def->def.ty.array_max);
 			break;
 		case REL_ALIAS:
-			f_print(fout, "%s%s %s", prefix, old, name);
+			fprintf(fout, "%s%s %s", prefix, old, name);
 			break;
 		}
-		f_print(fout, ";\n");
+		fprintf(fout, ";\n");
 	}
 }
 
+void
 pdeclaration(name, dec, tab, separator)
 	char *name;
 	declaration *dec;
 	int tab;
-        char *separator;
+	char *separator;
 {
 	char buf[8];	/* enough to hold "struct ", include NUL */
 	char *prefix;
 	char *type;
 
-	if (streq(dec->type, "void")) {
+	if (streq(dec->type, "void"))
 		return;
-	}
 	tabify(fout, tab);
 	if (streq(dec->type, name) && !dec->prefix) {
-		f_print(fout, "struct ");
+		fprintf(fout, "struct ");
 	}
 	if (streq(dec->type, "string")) {
-		f_print(fout, "char *%s", dec->name);
+		fprintf(fout, "char *%s", dec->name);
 	} else {
 		prefix = "";
 		if (streq(dec->type, "bool")) {
@@ -462,37 +452,37 @@ pdeclaration(name, dec, tab, separator)
 			type = "char";
 		} else {
 			if (dec->prefix) {
-				s_print(buf, "%s ", dec->prefix);
+				snprintf(buf, sizeof buf, "%s ", dec->prefix);
 				prefix = buf;
 			}
 			type = dec->type;
 		}
 		switch (dec->rel) {
 		case REL_ALIAS:
-			f_print(fout, "%s%s %s", prefix, type, dec->name);
+			fprintf(fout, "%s%s %s", prefix, type, dec->name);
 			break;
 		case REL_VECTOR:
-			f_print(fout, "%s%s %s[%s]", prefix, type, dec->name,
+			fprintf(fout, "%s%s %s[%s]", prefix, type, dec->name,
 				dec->array_max);
 			break;
 		case REL_POINTER:
-			f_print(fout, "%s%s *%s", prefix, type, dec->name);
+			fprintf(fout, "%s%s *%s", prefix, type, dec->name);
 			break;
 		case REL_ARRAY:
-			f_print(fout, "struct {\n");
+			fprintf(fout, "struct {\n");
 			tabify(fout, tab);
-			f_print(fout, "\tu_int %s_len;\n", dec->name);
+			fprintf(fout, "\tu_int %s_len;\n", dec->name);
 			tabify(fout, tab);
-			f_print(fout, "\t%s%s *%s_val;\n", prefix, type, dec->name);
+			fprintf(fout, "\t%s%s *%s_val;\n", prefix, type, dec->name);
 			tabify(fout, tab);
-			f_print(fout, "} %s", dec->name);
+			fprintf(fout, "} %s", dec->name);
 			break;
 		}
 	}
-	f_print(fout, separator );
+	fprintf(fout, "%s", separator);
 }
 
-static
+static int
 undefined2(type, stop)
 	char *type;
 	char *stop;

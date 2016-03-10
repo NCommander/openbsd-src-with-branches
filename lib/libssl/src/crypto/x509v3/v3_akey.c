@@ -1,4 +1,4 @@
-/* v3_akey.c */
+/* $OpenBSD: v3_akey.c,v 1.16 2015/09/30 17:30:16 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,45 +57,54 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
-#include <openssl/conf.h>
+#include <string.h>
+
 #include <openssl/asn1.h>
 #include <openssl/asn1t.h>
+#include <openssl/conf.h>
+#include <openssl/err.h>
 #include <openssl/x509v3.h>
 
 static STACK_OF(CONF_VALUE) *i2v_AUTHORITY_KEYID(X509V3_EXT_METHOD *method,
-			AUTHORITY_KEYID *akeyid, STACK_OF(CONF_VALUE) *extlist);
+    AUTHORITY_KEYID *akeyid, STACK_OF(CONF_VALUE) *extlist);
 static AUTHORITY_KEYID *v2i_AUTHORITY_KEYID(X509V3_EXT_METHOD *method,
-			X509V3_CTX *ctx, STACK_OF(CONF_VALUE) *values);
+    X509V3_CTX *ctx, STACK_OF(CONF_VALUE) *values);
 
-const X509V3_EXT_METHOD v3_akey_id =
-	{
-	NID_authority_key_identifier,
-	X509V3_EXT_MULTILINE, ASN1_ITEM_ref(AUTHORITY_KEYID),
-	0,0,0,0,
-	0,0,
-	(X509V3_EXT_I2V)i2v_AUTHORITY_KEYID,
-	(X509V3_EXT_V2I)v2i_AUTHORITY_KEYID,
-	0,0,
-	NULL
-	};
+const X509V3_EXT_METHOD v3_akey_id = {
+	.ext_nid = NID_authority_key_identifier,
+	.ext_flags = X509V3_EXT_MULTILINE,
+	.it = ASN1_ITEM_ref(AUTHORITY_KEYID),
+	.ext_new = NULL,
+	.ext_free = NULL,
+	.d2i = NULL,
+	.i2d = NULL,
+	.i2s = NULL,
+	.s2i = NULL,
+	.i2v = (X509V3_EXT_I2V)i2v_AUTHORITY_KEYID,
+	.v2i = (X509V3_EXT_V2I)v2i_AUTHORITY_KEYID,
+	.i2r = NULL,
+	.r2i = NULL,
+	.usr_data = NULL,
+};
 
-static STACK_OF(CONF_VALUE) *i2v_AUTHORITY_KEYID(X509V3_EXT_METHOD *method,
-	     AUTHORITY_KEYID *akeyid, STACK_OF(CONF_VALUE) *extlist)
+static
+STACK_OF(CONF_VALUE) *i2v_AUTHORITY_KEYID(X509V3_EXT_METHOD *method,
+    AUTHORITY_KEYID *akeyid, STACK_OF(CONF_VALUE) *extlist)
 {
 	char *tmp;
-	if(akeyid->keyid) {
+
+	if (akeyid->keyid) {
 		tmp = hex_to_string(akeyid->keyid->data, akeyid->keyid->length);
 		X509V3_add_value("keyid", tmp, &extlist);
-		OPENSSL_free(tmp);
+		free(tmp);
 	}
-	if(akeyid->issuer) 
+	if (akeyid->issuer)
 		extlist = i2v_GENERAL_NAMES(NULL, akeyid->issuer, extlist);
-	if(akeyid->serial) {
+	if (akeyid->serial) {
 		tmp = hex_to_string(akeyid->serial->data,
-						 akeyid->serial->length);
+		    akeyid->serial->length);
 		X509V3_add_value("serial", tmp, &extlist);
-		OPENSSL_free(tmp);
+		free(tmp);
 	}
 	return extlist;
 }
@@ -108,91 +117,86 @@ static STACK_OF(CONF_VALUE) *i2v_AUTHORITY_KEYID(X509V3_EXT_METHOD *method,
  * this is always included.
  */
 
-static AUTHORITY_KEYID *v2i_AUTHORITY_KEYID(X509V3_EXT_METHOD *method,
-	     X509V3_CTX *ctx, STACK_OF(CONF_VALUE) *values)
-	{
-	char keyid=0, issuer=0;
+static AUTHORITY_KEYID *
+v2i_AUTHORITY_KEYID(X509V3_EXT_METHOD *method, X509V3_CTX *ctx,
+    STACK_OF(CONF_VALUE) *values)
+{
+	char keyid = 0, issuer = 0;
 	int i;
 	CONF_VALUE *cnf;
 	ASN1_OCTET_STRING *ikeyid = NULL;
 	X509_NAME *isname = NULL;
-	GENERAL_NAMES * gens = NULL;
+	STACK_OF(GENERAL_NAME) *gens = NULL;
 	GENERAL_NAME *gen = NULL;
 	ASN1_INTEGER *serial = NULL;
 	X509_EXTENSION *ext;
 	X509 *cert;
-	AUTHORITY_KEYID *akeyid;
+	AUTHORITY_KEYID *akeyid = NULL;
 
-	for(i = 0; i < sk_CONF_VALUE_num(values); i++)
-		{
+	for (i = 0; i < sk_CONF_VALUE_num(values); i++) {
 		cnf = sk_CONF_VALUE_value(values, i);
-		if(!strcmp(cnf->name, "keyid"))
-			{
+		if (!strcmp(cnf->name, "keyid")) {
 			keyid = 1;
-			if(cnf->value && !strcmp(cnf->value, "always"))
+			if (cnf->value && !strcmp(cnf->value, "always"))
 				keyid = 2;
-			}
-		else if(!strcmp(cnf->name, "issuer"))
-			{
+		}
+		else if (!strcmp(cnf->name, "issuer")) {
 			issuer = 1;
-			if(cnf->value && !strcmp(cnf->value, "always"))
+			if (cnf->value && !strcmp(cnf->value, "always"))
 				issuer = 2;
-			}
-		else
-			{
-			X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,X509V3_R_UNKNOWN_OPTION);
-			ERR_add_error_data(2, "name=", cnf->name);
+		} else {
+			X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,
+			    X509V3_R_UNKNOWN_OPTION);
+			ERR_asprintf_error_data("name=%s", cnf->name);
 			return NULL;
-			}
 		}
+	}
 
-	if(!ctx || !ctx->issuer_cert)
-		{
-		if(ctx && (ctx->flags==CTX_TEST))
+	if (!ctx || !ctx->issuer_cert) {
+		if (ctx && (ctx->flags == CTX_TEST))
 			return AUTHORITY_KEYID_new();
-		X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,X509V3_R_NO_ISSUER_CERTIFICATE);
+		X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,
+		    X509V3_R_NO_ISSUER_CERTIFICATE);
 		return NULL;
-		}
+	}
 
 	cert = ctx->issuer_cert;
 
-	if(keyid)
-		{
+	if (keyid) {
 		i = X509_get_ext_by_NID(cert, NID_subject_key_identifier, -1);
-		if((i >= 0)  && (ext = X509_get_ext(cert, i)))
+		if ((i >= 0)  && (ext = X509_get_ext(cert, i)))
 			ikeyid = X509V3_EXT_d2i(ext);
-		if(keyid==2 && !ikeyid)
-			{
-			X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,X509V3_R_UNABLE_TO_GET_ISSUER_KEYID);
+		if (keyid == 2 && !ikeyid) {
+			X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,
+			    X509V3_R_UNABLE_TO_GET_ISSUER_KEYID);
 			return NULL;
-			}
 		}
+	}
 
-	if((issuer && !ikeyid) || (issuer == 2))
-		{
+	if ((issuer && !ikeyid) || (issuer == 2)) {
 		isname = X509_NAME_dup(X509_get_issuer_name(cert));
-		serial = M_ASN1_INTEGER_dup(X509_get_serialNumber(cert));
-		if(!isname || !serial)
-			{
-			X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,X509V3_R_UNABLE_TO_GET_ISSUER_DETAILS);
+		serial = ASN1_INTEGER_dup(X509_get_serialNumber(cert));
+		if (!isname || !serial) {
+			X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,
+			    X509V3_R_UNABLE_TO_GET_ISSUER_DETAILS);
 			goto err;
-			}
 		}
+	}
 
-	if(!(akeyid = AUTHORITY_KEYID_new())) goto err;
+	if (!(akeyid = AUTHORITY_KEYID_new()))
+		goto err;
 
-	if(isname)
-		{
-		if(!(gens = sk_GENERAL_NAME_new_null())
-			|| !(gen = GENERAL_NAME_new())
-			|| !sk_GENERAL_NAME_push(gens, gen))
-			{
-			X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,ERR_R_MALLOC_FAILURE);
+	if (isname) {
+		if (!(gens = sk_GENERAL_NAME_new_null()) ||
+		    !(gen = GENERAL_NAME_new()) ||
+		    !sk_GENERAL_NAME_push(gens, gen)) {
+			X509V3err(X509V3_F_V2I_AUTHORITY_KEYID,
+			    ERR_R_MALLOC_FAILURE);
 			goto err;
-			}
+		}
 		gen->type = GEN_DIRNAME;
 		gen->d.dirn = isname;
-		}
+	}
 
 	akeyid->issuer = gens;
 	akeyid->serial = serial;
@@ -200,9 +204,12 @@ static AUTHORITY_KEYID *v2i_AUTHORITY_KEYID(X509V3_EXT_METHOD *method,
 
 	return akeyid;
 
- err:
+err:
+	AUTHORITY_KEYID_free(akeyid);
+	GENERAL_NAME_free(gen);
+	sk_GENERAL_NAME_free(gens);
 	X509_NAME_free(isname);
-	M_ASN1_INTEGER_free(serial);
-	M_ASN1_OCTET_STRING_free(ikeyid);
+	ASN1_INTEGER_free(serial);
+	ASN1_OCTET_STRING_free(ikeyid);
 	return NULL;
-	}
+}

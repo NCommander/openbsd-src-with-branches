@@ -1,29 +1,29 @@
-/*	$NetBSD: db_sym.h,v 1.6 1994/10/09 08:19:41 mycroft Exp $	*/
+/*	$NetBSD: db_sym.h,v 1.13 2000/05/25 19:57:36 jhawk Exp $	*/
 
-/* 
+/*
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
- * 
+ *
  * Permission to use, copy, modify and distribute this software and its
  * documentation is hereby granted, provided that both the copyright
  * notice and this permission notice appear in all copies of the
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
- * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ *
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- * 
+ *
  * Carnegie Mellon requests users of this software to return to
- * 
+ *
  *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
  *  School of Computer Science
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
- * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ *
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  * 	Author: Alessandro Forin, Carnegie Mellon University
  *	Date:	8/90
@@ -33,7 +33,7 @@
  * This module can handle multiple symbol tables
  */
 typedef struct {
-	char		*name;		/* symtab name */
+	const char	*name;		/* symtab name */
 	char		*start;		/* symtab location */
 	char		*end;
 	char		*private;	/* optional machdep pointer */
@@ -61,27 +61,41 @@ typedef int		db_strategy_t;	/* search strategy */
 #define DB_STGY_XTRN	1			/* only external symbols */
 #define DB_STGY_PROC	2			/* only procedures */
 
-extern boolean_t	db_qualify_ambiguous_names;
-					/* if TRUE, check across symbol tables
-					 * for multiple occurrences of a name.
-					 * Might slow down quite a bit */
 
+/*
+ * Internal db_forall function calling convention:
+ *
+ * (*db_forall_func)(stab, sym, name, suffix, prefix, arg);
+ *
+ * stab is the symbol table, symbol the (opaque) symbol pointer,
+ * name the name of the symbol, suffix a string representing
+ * the type, prefix an initial ignorable function prefix (e.g. "_"
+ * in a.out), and arg an opaque argument to be passed in.
+ */
+typedef void (db_forall_func_t)(db_symtab_t *, db_sym_t, char *, char *, int, void *);
+
+extern unsigned int db_maxoff;		/* like gdb's "max-symbolic-offset" */
 /*
  * Functions exported by the symtable module
  */
-int db_add_symbol_table __P((char *, char *, char *, char *));
+int db_add_symbol_table(char *, char *, const char *, char *);
 					/* extend the list of symbol tables */
 
-void db_del_symbol_table __P((char *));
+void db_del_symbol_table(char *);
 					/* remove a symbol table from list */
 
-int db_value_of_name __P((char *, db_expr_t *));
+boolean_t db_eqname(char *, char *, int);
+					/* strcmp, modulo leading char */
+
+int db_value_of_name(char *, db_expr_t *);
 					/* find symbol value given name */
 
-db_sym_t db_search_symbol __P((db_addr_t, db_strategy_t, db_expr_t *));
+db_sym_t db_lookup(char *);
+
+db_sym_t db_search_symbol(db_addr_t, db_strategy_t, db_expr_t *);
 					/* find symbol given value */
 
-void db_symbol_values __P((db_sym_t, char **, db_expr_t *));
+void db_symbol_values(db_sym_t, char **, db_expr_t *);
 					/* return name and value of symbol */
 
 #define db_find_sym_and_offset(val,namep,offp)	\
@@ -92,8 +106,16 @@ void db_symbol_values __P((db_sym_t, char **, db_expr_t *));
 	db_symbol_values(db_search_symbol(val,DB_STGY_XTRN,offp),namep,0)
 					/* ditto, but no locals */
 
-int db_eqname __P((char *, char *, char));
-					/* strcmp, modulo leading char */
-
-void db_printsym __P((db_expr_t, db_strategy_t));
+void db_printsym(db_expr_t, db_strategy_t, int (*)(const char *, ...));
 					/* print closest symbol to a value */
+
+#define db_sym_numargs(sym, nargp, argnames) (FALSE)
+
+char *db_qualify(db_sym_t, const char *);
+
+boolean_t db_elf_sym_init(int, void *, void *, const char *);
+db_sym_t db_elf_sym_lookup(db_symtab_t *, char *);
+void db_elf_sym_values(db_symtab_t *, db_sym_t, char **, db_expr_t *);
+db_sym_t db_elf_sym_search(db_symtab_t *, db_addr_t, db_strategy_t, db_expr_t *);
+boolean_t db_elf_line_at_pc(db_symtab_t *, db_sym_t, char **, int *, db_expr_t);
+void db_elf_sym_forall(db_symtab_t *, db_forall_func_t db_forall_func, void *);
