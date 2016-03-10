@@ -1,4 +1,4 @@
-/* $OpenBSD: exchange.c,v 1.136 2015/04/20 17:22:18 mikeb Exp $	 */
+/* $OpenBSD: exchange.c,v 1.137 2015/12/10 17:27:00 mmcc Exp $	 */
 /* $EOM: exchange.c,v 1.143 2000/12/04 00:02:25 angelos Exp $	 */
 
 /*
@@ -328,6 +328,15 @@ exchange_run(struct message *msg)
 				/* FALLTHROUGH */
 
 			case 0:
+				/*
+				 * Don't retransmit responses for
+				 * unauthenticated messages.
+				 */
+				if ((exchange->type == ISAKMP_EXCH_ID_PROT ||
+				    exchange->type == ISAKMP_EXCH_AGGRESSIVE) &&
+				    exchange->phase == 1 && exchange->step == 1)
+					msg->flags |= MSG_DONTRETRANSMIT;
+
 				/* XXX error handling.  */
 				message_send(msg);
 				break;
