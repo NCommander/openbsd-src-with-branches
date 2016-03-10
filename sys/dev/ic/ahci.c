@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci.c,v 1.22 2015/08/27 18:47:29 deraadt Exp $ */
+/*	$OpenBSD: ahci.c,v 1.23 2015/10/04 07:56:50 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -3221,7 +3221,7 @@ ahci_hibernate_io(dev_t dev, daddr_t blkno, vaddr_t addr, size_t size,
 		/* find the scsi_link for the device, which has the port */
 		port = -1;
 		bus_sc = (struct scsibus_softc *)scsibus;
-		SLIST_FOREACH(link, &bus_sc->sc_link, bus_list) {
+		SLIST_FOREACH(link, &bus_sc->sc_link_list, bus_list) {
 			if (link->device_softc == disk) {
 				/* link->adapter_softc == sc->sc_atascsi */
 				port = link->target;
