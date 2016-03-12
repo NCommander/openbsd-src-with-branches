@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.h,v 1.13 2015/09/19 20:11:22 kettenis Exp $ */
+/*	$OpenBSD: boot.h,v 1.14 2015/12/06 23:36:12 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -49,6 +49,13 @@
 #include "sod.h"
 #include "stdlib.h"
 #include "dl_prebind.h"
+
+/*
+ * Use the internal, hidden name for any syscalls we need, to avoid
+ * accidental override by application code
+ */
+#define REDIRECT_SYSCALL(x)	typeof(x) x asm("_libc_"#x) __dso_hidden
+REDIRECT_SYSCALL(mprotect);
 
 #ifdef RCRT0
 
