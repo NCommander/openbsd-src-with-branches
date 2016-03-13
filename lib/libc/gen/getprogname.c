@@ -1,4 +1,4 @@
-/* $OpenBSD: getprogname.c,v 1.2 2013/05/31 21:19:01 tedu Exp $ */
+/* $OpenBSD: getprogname.c,v 1.3 2013/11/12 06:09:48 deraadt Exp $ */
 /*
  * Copyright (c) 2013 Antoine Jacoutot <ajacoutot@openbsd.org>
  *
@@ -16,8 +16,6 @@
  */
 
 #include <stdlib.h>
-
-extern const char *__progname;
 
 const char *
 getprogname(void)

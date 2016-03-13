@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.21 2013/09/30 12:02:33 millert Exp $ */
+/*	$OpenBSD: exec.c,v 1.22 2015/09/12 14:56:50 guenther Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -39,8 +39,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-extern char **environ;
 
 int
 execl(const char *name, const char *arg, ...)
