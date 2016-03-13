@@ -1,4 +1,4 @@
-/* $OpenBSD: md_init.h,v 1.10 2015/02/07 04:57:22 miod Exp $ */
+/* $OpenBSD: md_init.h,v 1.11 2015/09/01 05:40:06 guenther Exp $ */
 
 /*-
  * Copyright (c) 2001 Ross Harvey
@@ -165,7 +165,7 @@ struct kframe {
 						\
 	argc = kfp->kargc;			\
 	argv = &kfp->kargv[0];			\
-	environ = envp = argv + argc + 1;
+	envp = argv + argc + 1;
 
 #include <sys/syscall.h>
 #define	MD_DISABLE_KBIND						\
