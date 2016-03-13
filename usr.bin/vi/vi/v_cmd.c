@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_cmd.c,v 1.3 2004/11/29 21:51:08 jmc Exp $	*/
+/*	$OpenBSD: v_cmd.c,v 1.4 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -128,7 +128,7 @@ VIKEYS const vikeys [MAXVIKEY + 1] = {
 /* 034  ^\ */
 	{v_exmode,	0,
 	    "^\\",
-	    " ^\\ switch to ex mode"},
+	    "^\\ switch to ex mode"},
 /* 035  ^] */
 	{v_tagpush,	V_ABS|V_KEYW|VM_RCM_SET,
 	    "^]",
