@@ -1,4 +1,4 @@
-/* $OpenBSD: extern.h,v 1.2 2010/02/16 12:25:35 otto Exp $ */
+/* $OpenBSD: extern.h,v 1.3 2012/07/08 11:48:20 deraadt Exp $ */
 /*	$NetBSD: extern.h,v 1.4 2009/10/21 01:07:46 snj Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #endif
 
 /* prototypes */
-void mke2fs(const char *, int, int);
+void mke2fs(const char *, int);
 
 /* variables set up by front end. */
 extern int	Nflag;		/* run mkfs without writing file system */
