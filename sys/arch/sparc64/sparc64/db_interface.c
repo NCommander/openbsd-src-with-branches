@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.40 2016/02/27 13:08:07 mpi Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.41 2016/03/07 13:21:51 naddy Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.61 2001/07/31 06:55:47 eeh Exp $ */
 
 /*
@@ -1295,7 +1295,7 @@ struct db_command db_machine_command_table[] = {
 	{ "stopcpu",	db_stopproc_cmd,	0,	0 },
 	{ "ddbcpu",	db_ddbproc_cmd,		0,	0 },
 #endif
-	{ (char *)0, }
+	{ NULL, }
 };
 
 /*

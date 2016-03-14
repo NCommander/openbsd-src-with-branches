@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.7 2014/12/11 10:52:07 stsp Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.8 2015/09/14 17:34:03 semarie Exp $	*/
 /*	$NetBSD: alloc.c,v 1.1 2000/08/20 14:58:37 mrg Exp $	*/
 
 /*
@@ -115,7 +115,7 @@ alloc(unsigned size)
 		if (f->size >= size)
 			break;
 	bestf = f;
-	failed = (bestf == (struct fl *)0);
+	failed = (bestf == NULL);
 #else
 	/* scan freelist */
 	LIST_FOREACH(f, &freelist, list) {

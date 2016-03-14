@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vnops.c,v 1.106 2016/01/27 17:09:41 stefan Exp $	*/
+/*	$OpenBSD: msdosfs_vnops.c,v 1.107 2016/02/05 19:27:02 stefan Exp $	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.63 1997/10/17 11:24:19 ws Exp $	*/
 
 /*-
@@ -1153,7 +1153,7 @@ abortit:
 		bcopy(toname, ip->de_Name, 11);	/* update denode */
 		dp->de_fndoffset = to_diroffset;
 		dp->de_fndcnt = to_count;
-		error = createde(ip, dp, (struct denode **)0, tcnp);
+		error = createde(ip, dp, NULL, tcnp);
 		if (error) {
 			bcopy(oldname, ip->de_Name, 11);
 			if (newparent)

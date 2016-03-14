@@ -1,4 +1,4 @@
-/*	$OpenBSD: bktr_core.c,v 1.36 2015/03/14 03:38:49 jsg Exp $	*/
+/*	$OpenBSD: bktr_core.c,v 1.37 2016/02/15 19:21:46 stefan Exp $	*/
 /* $FreeBSD: src/sys/dev/bktr/bktr_core.c,v 1.114 2000/10/31 13:09:56 roger Exp $ */
 
 /*
@@ -880,7 +880,7 @@ video_open( bktr_ptr_t bktr )
 	bktr->frames_captured = 0;
 	bktr->even_fields_captured = 0;
 	bktr->odd_fields_captured = 0;
-	bktr->proc = (struct proc *)0;
+	bktr->proc = NULL;
 	set_fps(bktr, frame_rate);
 	bktr->video.addr = 0;
 	bktr->video.width = 0;

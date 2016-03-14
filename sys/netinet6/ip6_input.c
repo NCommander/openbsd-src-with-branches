@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.153 2016/01/06 10:02:42 sthen Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.154 2016/01/21 11:23:48 mpi Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -156,7 +156,7 @@ ip6_init(void)
 	ip6_randomid_init();
 	nd6_init();
 	frag6_init();
-	ip6_init2((void *)0);
+	ip6_init2(NULL);
 
 	mq_init(&ip6send_mq, 64, IPL_SOFTNET);
 }

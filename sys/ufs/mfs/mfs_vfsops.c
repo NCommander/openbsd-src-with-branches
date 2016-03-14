@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_vfsops.c,v 1.47 2013/12/12 19:00:10 tedu Exp $	*/
+/*	$OpenBSD: mfs_vfsops.c,v 1.48 2015/03/14 03:38:52 jsg Exp $	*/
 /*	$NetBSD: mfs_vfsops.c,v 1.10 1996/02/09 22:31:28 christos Exp $	*/
 
 /*
@@ -128,7 +128,7 @@ mfs_mount(struct mount *mp, const char *path, void *data,
 	if (error)
 		return (error);
 	devvp->v_type = VBLK;
-	if (checkalias(devvp, makedev(255, mfs_minor), (struct mount *)0))
+	if (checkalias(devvp, makedev(255, mfs_minor), NULL))
 		panic("mfs_mount: dup dev");
 	mfs_minor++;
 	mfsp = malloc(sizeof *mfsp, M_MFSNODE, M_WAITOK | M_ZERO);

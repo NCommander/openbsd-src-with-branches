@@ -1,4 +1,4 @@
-/*	$OpenBSD: deflate.c,v 1.11 2009/10/27 23:59:31 deraadt Exp $	*/
+/*	$OpenBSD: deflate.c,v 1.2 2011/07/16 07:25:29 jsing Exp $	*/
 /* deflate.c -- compress data using the deflation algorithm
  * Copyright (C) 1995-2005 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -807,7 +807,7 @@ int ZEXPORT deflate (strm, flush)
             if (flush == Z_PARTIAL_FLUSH) {
                 _tr_align(s);
             } else { /* FULL_FLUSH or SYNC_FLUSH */
-                _tr_stored_block(s, (char*)0, 0L, 0);
+                _tr_stored_block(s, NULL, 0L, 0);
                 /* For a full flush, this empty block will be recognized
                  * as a special marker by inflate_sync().
                  */
