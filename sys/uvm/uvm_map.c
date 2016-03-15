@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.c,v 1.207 2016/03/06 08:56:16 stefan Exp $	*/
+/*	$OpenBSD: uvm_map.c,v 1.208 2016/03/09 16:45:43 deraadt Exp $	*/
 /*	$NetBSD: uvm_map.c,v 1.86 2000/11/27 08:40:03 chs Exp $	*/
 
 /*
@@ -4549,7 +4549,7 @@ uvm_map_vmspace_update(struct vm_map *map,
  *
  * This function is only called for kernel maps when an allocation fails.
  *
- * If the map has a gap that is large enough to accomodate alloc_sz, this
+ * If the map has a gap that is large enough to accommodate alloc_sz, this
  * function will make sure map->free will include it.
  */
 void
