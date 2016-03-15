@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe.h,v 1.20 2015/11/24 17:11:40 mpi Exp $	*/
+/*	$OpenBSD: ixgbe.h,v 1.21 2015/12/18 19:08:36 kettenis Exp $	*/
 
 /******************************************************************************
 
@@ -64,10 +64,6 @@
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#endif
-
-#if NVLAN > 0
-#include <net/if_vlan_var.h>
 #endif
 
 typedef int	boolean_t;
