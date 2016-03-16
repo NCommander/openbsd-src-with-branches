@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsm.c,v 1.5 2012/12/05 23:20:26 deraadt Exp $ */
+/*	$OpenBSD: fsm.c,v 1.6 2014/11/18 20:54:28 krw Exp $ */
 
 /**@file
  * This file was adapted from NetBSD:/usr/src/usr.sbin/pppd/pppd/fsm.c
@@ -646,6 +646,7 @@ fsm_rtermack(f)
 	if (f->callbacks->down)
 	    (*f->callbacks->down)(f);	/* Inform upper layers */
 	fsm_sconfreq(f, 0);
+	f->state = REQSENT;
 	break;
     }
 }
