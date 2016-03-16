@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdformat.c,v 1.20 2015/04/18 18:28:38 deraadt Exp $	*/
+/*	$OpenBSD: fdformat.c,v 1.21 2015/12/19 20:38:35 mmcc Exp $	*/
 
 /*
  * Copyright (C) 1992-1994 by Joerg Wunsch, Dresden
@@ -224,7 +224,7 @@ main(int argc, char *argv[])
 			break;
 
 		case 'F':       /* fill byte, C-like notation allowed */
-			fill = (int)strtol(optarg, (char **)0, 0);
+			fill = (int)strtol(optarg, NULL, 0);
 			break;
 
 		case 't':       /* steps per track */

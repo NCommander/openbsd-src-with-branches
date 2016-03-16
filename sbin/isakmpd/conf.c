@@ -1,4 +1,4 @@
-/* $OpenBSD: conf.c,v 1.104 2015/08/20 22:02:21 deraadt Exp $	 */
+/* $OpenBSD: conf.c,v 1.105 2015/12/09 21:41:50 naddy Exp $	 */
 /* $EOM: conf.c,v 1.48 2000/12/04 02:04:29 angelos Exp $	 */
 
 /*
@@ -975,7 +975,7 @@ conf_report(void)
 {
 	struct conf_binding *cb, *last = 0;
 	unsigned int	i;
-	char           *current_section = (char *)0;
+	char           *current_section = NULL;
 	struct dumper  *dumper, *dnode;
 
 	dumper = dnode = calloc(1, sizeof *dumper);

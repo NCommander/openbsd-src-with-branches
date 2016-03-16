@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.25 2015/11/23 23:01:20 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.26 2015/11/25 00:29:15 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.1 1997/06/11 11:21:50 bouyer Exp $	*/
 
 /*
@@ -248,9 +248,9 @@ checkfilesys(char *filesys, char *mntpt, long auxdata, int child)
 			printf("\n");
 		}
 	}
-	zlnhead = (struct zlncnt *)0;
-	duplist = (struct dups *)0;
-	muldup = (struct dups *)0;
+	zlnhead = NULL;
+	duplist = NULL;
+	muldup = NULL;
 	inocleanup();
 	if (fsmodified) {
 		time_t t;

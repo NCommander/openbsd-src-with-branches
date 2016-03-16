@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)sfs_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: sfs_ops.c,v 1.4 2014/10/26 02:43:50 guenther Exp $
+ *	$Id: sfs_ops.c,v 1.5 2015/12/05 21:15:01 mmcc Exp $
  */
 
 #include "am.h"
@@ -84,7 +84,7 @@ sfs_match(am_opts *fo)
 			if (*link == '/')
 				fullpath = strdup(link);
 			else
-				fullpath = str3cat((char *)0, fo->opt_fs, "/", link);
+				fullpath = str3cat(NULL, fo->opt_fs, "/", link);
 		} else {
 			fullpath = strdup(fo->opt_fs);
 		}

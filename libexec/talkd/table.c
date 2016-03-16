@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.c,v 1.16 2015/01/16 06:39:51 deraadt Exp $	*/
+/*	$OpenBSD: table.c,v 1.17 2016/02/01 07:25:51 mestre Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -107,7 +107,7 @@ find_match(CTL_MSG *request)
 	if (debug)
 		syslog(LOG_DEBUG, "find_match: not found");
 
-	return ((CTL_MSG *)0);
+	return (NULL);
 }
 
 /*
@@ -149,7 +149,7 @@ find_request(CTL_MSG *request)
 			return (&ptr->request);
 		}
 	}
-	return ((CTL_MSG *)0);
+	return (NULL);
 }
 
 void

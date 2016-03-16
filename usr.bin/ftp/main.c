@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.104 2015/10/18 03:39:37 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.105 2015/11/04 17:54:06 jca Exp $	*/
 /*	$NetBSD: main.c,v 1.24 1997/08/18 10:20:26 lukem Exp $	*/
 
 /*
@@ -852,7 +852,7 @@ OUT:
 		default:
 			break;
 	}
-	return ((char *)0);
+	return (NULL);
 }
 
 /*
@@ -887,7 +887,7 @@ help(int argc, char *argv[])
 		c = getcmd(arg);
 		if (c == (struct cmd *)-1)
 			fprintf(ttyout, "?Ambiguous help command %s\n", arg);
-		else if (c == (struct cmd *)0)
+		else if (c == NULL)
 			fprintf(ttyout, "?Invalid help command %s\n", arg);
 		else
 			fprintf(ttyout, "%-*s\t%s\n", HELPINDENT,

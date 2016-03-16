@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.81 2015/11/24 05:06:24 beck Exp $	*/
+/*	$OpenBSD: commands.c,v 1.82 2015/12/09 19:39:10 mmcc Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -2078,7 +2078,7 @@ help(int argc, char *argv[])
 		c = getcmd(arg);
 		if (Ambiguous(c))
 			printf("?Ambiguous help command %s\r\n", arg);
-		else if (c == (Command *)0)
+		else if (c == NULL)
 			printf("?Invalid help command %s\r\n", arg);
 		else
 			printf("%s\r\n", c->help);

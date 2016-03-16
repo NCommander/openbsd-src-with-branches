@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.91 2015/09/19 20:56:47 guenther Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.92 2015/12/22 08:54:16 mmcc Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -599,7 +599,7 @@ dladdr(const void *addr, Dl_info *info)
 	info->dli_fname = (char *)object->load_name;
 	info->dli_fbase = (void *)object->load_base;
 	info->dli_sname = NULL;
-	info->dli_saddr = (void *)0;
+	info->dli_saddr = NULL;
 
 	/*
 	 * Walk the symbol list looking for the symbol whose address is

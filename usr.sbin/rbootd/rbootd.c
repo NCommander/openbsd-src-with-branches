@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbootd.c,v 1.28 2015/10/26 10:08:14 jung Exp $	*/
+/*	$OpenBSD: rbootd.c,v 1.29 2016/01/25 21:31:38 gsoares Exp $	*/
 /*	$NetBSD: rbootd.c,v 1.5 1995/10/06 05:12:17 thorpej Exp $	*/
 
 /*
@@ -289,7 +289,7 @@ DoTimeout(void)
 	RMPCONN *rtmp;
 	struct timeval now;
 
-	(void) gettimeofday(&now, (struct timezone *)0);
+	(void) gettimeofday(&now, NULL);
 
 	/*
 	 *  For each active connection, if RMP_TIMEOUT seconds have passed
