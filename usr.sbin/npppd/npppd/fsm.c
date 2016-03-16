@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsm.c,v 1.6 2014/11/18 20:54:28 krw Exp $ */
+/*	$OpenBSD: fsm.c,v 1.7 2016/03/16 04:55:41 yasuoka Exp $ */
 
 /**@file
  * This file was adapted from NetBSD:/usr/src/usr.sbin/pppd/pppd/fsm.c
@@ -463,7 +463,7 @@ fsm_rconfreq(f, id, inp, len)
 	f->nakloops = 0;
 
     } else {
-	/* we sent CONFACK or CONFREJ */
+	/* we sent CONFNAK or CONFREJ */
 	if (f->state != ACKRCVD)
 	    f->state = REQSENT;
 	if( code == CONFNAK )
