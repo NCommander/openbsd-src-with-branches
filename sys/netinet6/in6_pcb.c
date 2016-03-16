@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_pcb.c,v 1.66 2014/11/18 02:37:31 tedu Exp $	*/
+/*	$OpenBSD: in6_pcb.c,v 1.67 2014/12/05 15:50:04 mpi Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -262,7 +262,16 @@ in6_pcbbind(struct inpcb *inp, struct mbuf *nam, struct proc *p)
 			if (ntohs(lport) < IPPORT_RESERVED &&
 			    (error = suser(p, 0)))
 				return error;
-
+			if (so->so_euid) {
+				t = in_pcblookup(head,
+				    (struct in_addr *)&zeroin6_addr, 0,
+				    (struct in_addr *)&sin6->sin6_addr, lport,
+				    INPLOOKUP_WILDCARD | INPLOOKUP_IPV6,
+				    inp->inp_rtableid);
+				if (t &&
+				    (so->so_euid != t->inp_socket->so_euid))
+					return EADDRINUSE;
+			}
 			t = in_pcblookup(head,
 			    (struct in_addr *)&zeroin6_addr, 0,
 			    (struct in_addr *)&sin6->sin6_addr, lport,
