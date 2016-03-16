@@ -1170,6 +1170,10 @@ pledge_ioctl(struct proc *p, long com, struct file *fp)
 #if NAUDIO > 0
 		switch (com) {
 		case AUDIO_GETPOS:
+		case AUDIO_GETPAR:
+		case AUDIO_SETPAR:
+		case AUDIO_START:
+		case AUDIO_STOP:
 		case AUDIO_SETINFO:
 		case AUDIO_GETINFO:
 		case AUDIO_GETENC:
