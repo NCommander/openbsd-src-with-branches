@@ -1,4 +1,4 @@
-/*	$OpenBSD: growfs.c,v 1.48 2015/11/28 19:59:15 deraadt Exp $	*/
+/*	$OpenBSD: growfs.c,v 1.49 2016/01/29 11:50:40 tb Exp $	*/
 /*
  * Copyright (c) 2000 Christoph Herrmann, Thomas-Henning von Kamptz
  * Copyright (c) 1980, 1989, 1993 The Regents of the University of California.
@@ -1666,15 +1666,13 @@ charsperline(void)
 	struct winsize	ws;
 
 	columns = 0;
-	if (ioctl(0, TIOCGWINSZ, &ws) != -1) {
-		columns = ws.ws_col;
-	}
-	if (columns == 0 && (cp = getenv("COLUMNS"))) {
+	if ((cp = getenv("COLUMNS")) != NULL)
 		columns = strtonum(cp, 1, INT_MAX, NULL);
-	}
-	if (columns == 0) {
-		columns = 80;	/* last resort */
-	}
+	if (columns == 0 && ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 &&
+	    ws.ws_col > 0)
+		columns = ws.ws_col;
+	if (columns == 0)
+		columns = 80;
 
 	return columns;
 }

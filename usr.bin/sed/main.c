@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.30 2015/10/26 22:22:56 jca Exp $	*/
+/*	$OpenBSD: main.c,v 1.31 2016/01/01 20:55:13 tb Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -150,14 +150,14 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if ((p = getenv("COLUMNS")))
+	termwidth = 0;
+	if ((p = getenv("COLUMNS")) != NULL)
 		termwidth = strtonum(p, 0, INT_MAX, NULL);
-	if (termwidth == 0 &&
-	    ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) == 0 &&
+	if (termwidth == 0 && ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) == 0 &&
 	    win.ws_col > 0)
 		termwidth = win.ws_col;
 	if (termwidth == 0)
-		termwidth = 60;
+		termwidth = 80;
 
 	if (inplace != NULL) {
 		if (pledge("stdio rpath wpath cpath fattr", NULL) == -1)
