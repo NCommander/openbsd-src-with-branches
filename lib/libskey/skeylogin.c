@@ -10,7 +10,7 @@
  *
  * S/Key verification check, lookups, and authentication.
  *
- * $OpenBSD: skeylogin.c,v 1.56 2015/01/16 16:48:52 deraadt Exp $
+ * $OpenBSD: skeylogin.c,v 1.57 2015/04/18 18:28:37 deraadt Exp $
  */
 
 #ifdef	QUOTA
@@ -605,7 +605,7 @@ tgetline(int fd, char *buf, size_t bufsiz, int timeout)
 	 * Timeout of <= 0 means no timeout.
 	 */
 	if (timeout > 0) {
-		timeout *= 1000;		/* convert to miliseconds */
+		timeout *= 1000;		/* convert to milliseconds */
 
 		pfd[0].fd = fd;
 		pfd[0].events = POLLIN;
