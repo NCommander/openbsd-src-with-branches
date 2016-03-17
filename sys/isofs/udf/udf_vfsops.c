@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vfsops.c,v 1.45 2015/03/14 03:38:50 jsg Exp $	*/
+/*	$OpenBSD: udf_vfsops.c,v 1.46 2015/08/31 06:56:25 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -495,7 +495,7 @@ udf_unmount(struct mount *mp, int mntflags, struct proc *p)
 
 	free(ump, M_UDFMOUNT, 0);
 
-	mp->mnt_data = (qaddr_t)0;
+	mp->mnt_data = NULL;
 	mp->mnt_flag &= ~MNT_LOCAL;
 
 	return (0);
