@@ -1,4 +1,4 @@
-/*	$OpenBSD: jobs.c,v 1.53 2015/12/14 13:59:42 tb Exp $	*/
+/*	$OpenBSD: jobs.c,v 1.54 2015/12/30 09:07:00 tedu Exp $	*/
 
 /*
  * Process and job control
@@ -1144,7 +1144,6 @@ j_waitj(Job *j,
  *
  * If jobs are compiled in then this routine expects sigchld to be blocked.
  */
-/* ARGSUSED */
 static void
 j_sigchld(int sig)
 {
