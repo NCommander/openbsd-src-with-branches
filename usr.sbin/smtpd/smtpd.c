@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.273 2016/02/02 17:51:11 sthen Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.274 2016/02/05 19:15:15 jung Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -836,7 +836,7 @@ fork_proc_backend(const char *key, const char *conf, const char *procname)
 		if (procname == NULL)
 			procname = name;
 
-		execl(path, procname, arg, NULL);
+		execl(path, procname, arg, (char *)NULL);
 		err(1, "execl: %s", path);
 	}
 
