@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.72 2015/12/29 04:46:28 mmcc Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.73 2016/03/14 06:37:31 guenther Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
@@ -1188,7 +1188,7 @@ acpicpu_idle(void)
 #endif
 
 		/* something already queued? */
-		if (ci->ci_schedstate.spc_whichqs != 0)
+		if (!cpu_is_idle(ci))
 			return;
 
 		/*
@@ -1204,7 +1204,7 @@ acpicpu_idle(void)
 		hints = (unsigned)best->address;
 		microuptime(&start);
 		atomic_setbits_int(&ci->ci_mwait, MWAIT_IDLING);
-		if (ci->ci_schedstate.spc_whichqs == 0) {
+		if (cpu_is_idle(ci)) {
 			/* intel errata AAI65: cflush before monitor */
 			if (ci->ci_cflushsz != 0) {
 				membar_sync();
