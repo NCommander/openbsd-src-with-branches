@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.621 2016/03/01 12:02:08 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.622 2016/03/02 15:36:02 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -135,6 +135,9 @@ enum {
 	KEYC_MOUSE_KEY(MOUSEDRAG1),
 	KEYC_MOUSE_KEY(MOUSEDRAG2),
 	KEYC_MOUSE_KEY(MOUSEDRAG3),
+	KEYC_MOUSE_KEY(MOUSEDRAGEND1),
+	KEYC_MOUSE_KEY(MOUSEDRAGEND2),
+	KEYC_MOUSE_KEY(MOUSEDRAGEND3),
 	KEYC_MOUSE_KEY(WHEELUP),
 	KEYC_MOUSE_KEY(WHEELDOWN),
 
