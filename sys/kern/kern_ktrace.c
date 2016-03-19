@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.86 2015/12/06 17:50:21 deraadt Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.87 2016/03/06 20:25:27 guenther Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -428,7 +428,7 @@ sys_ktrace(struct proc *p, void *v, register_t *retval)
 			goto done;
 		vp = nd.ni_vp;
 
-		VOP_UNLOCK(vp, 0, p);
+		VOP_UNLOCK(vp, p);
 		if (vp->v_type != VREG) {
 			error = EACCES;
 			goto done;

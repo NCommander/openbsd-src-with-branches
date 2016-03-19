@@ -1,4 +1,4 @@
-.\" $OpenBSD: VOP_LOOKUP.9,v 1.31 2015/12/02 10:20:46 jmc Exp $
+.\" $OpenBSD: VOP_LOOKUP.9,v 1.32 2015/12/02 11:03:40 schwarze Exp $
 .\"
 .\" Copyright (c) 2003 Ted Unangst
 .\" All rights reserved.
@@ -283,7 +283,6 @@
 .Ft int
 .Fo VOP_UNLOCK
 .Fa "struct vnode *vp"
-.Fa "int flags"
 .Fa "struct proc *p"
 .Fc
 .Ft int
@@ -564,7 +563,7 @@ returned.
 .Pp
 .It Fn VOP_ISLOCKED vp
 .It Fn VOP_LOCK vp flags p
-.It Fn VOP_UNLOCK vp flags p
+.It Fn VOP_UNLOCK vp p
 .Fn VOP_LOCK
 is used internally by
 .Xr vn_lock 9
@@ -572,8 +571,6 @@ to lock a vnode.
 It should not be used by other file system code.
 .Fn VOP_UNLOCK
 unlocks a vnode.
-.Fa flags
-should be zero in most cases.
 .Fn VOP_ISLOCKED
 returns 1 if
 .Fa vp

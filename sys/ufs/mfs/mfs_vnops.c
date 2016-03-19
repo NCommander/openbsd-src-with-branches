@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_vnops.c,v 1.45 2014/07/12 18:44:01 tedu Exp $	*/
+/*	$OpenBSD: mfs_vnops.c,v 1.46 2015/03/14 03:38:52 jsg Exp $	*/
 /*	$NetBSD: mfs_vnops.c,v 1.8 1996/03/17 02:16:32 christos Exp $	*/
 
 /*
@@ -235,7 +235,7 @@ mfs_inactive(void *v)
 	if (mfsp->mfs_shutdown && bufq_peek(&mfsp->mfs_bufq))
 		panic("mfs_inactive: not inactive");
 #endif
-	VOP_UNLOCK(ap->a_vp, 0, ap->a_p);
+	VOP_UNLOCK(ap->a_vp, ap->a_p);
 	return (0);
 }
 

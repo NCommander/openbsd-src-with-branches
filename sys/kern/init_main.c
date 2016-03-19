@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.247 2015/12/11 16:07:02 mpi Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.248 2016/01/03 00:15:59 jsg Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -477,7 +477,7 @@ main(void *framep)
 		panic("cannot find root vnode");
 	p->p_fd->fd_cdir = rootvnode;
 	vref(p->p_fd->fd_cdir);
-	VOP_UNLOCK(rootvnode, 0, p);
+	VOP_UNLOCK(rootvnode, p);
 	p->p_fd->fd_rdir = NULL;
 
 	/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vops.c,v 1.13 2015/05/01 01:30:58 millert Exp $	*/
+/*	$OpenBSD: vfs_vops.c,v 1.14 2015/07/19 16:21:11 beck Exp $	*/
 /*
  * Copyright (c) 2010 Thordur I. Bjornsson <thib@openbsd.org> 
  *
@@ -517,11 +517,10 @@ VOP_LOCK(struct vnode *vp, int flags, struct proc *p)
 }
 
 int
-VOP_UNLOCK(struct vnode *vp, int flags, struct proc *p)
+VOP_UNLOCK(struct vnode *vp, struct proc *p)
 {
 	struct vop_unlock_args a;
 	a.a_vp = vp;
-	a.a_flags = flags;
 	a.a_p = p;
 
 	if (vp->v_op->vop_unlock == NULL)
