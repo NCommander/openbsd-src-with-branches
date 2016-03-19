@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex.c,v 1.19 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: ex.c,v 1.20 2016/01/06 22:28:52 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -1488,7 +1488,7 @@ addr_verify:
 
 		ecp->save_cmd -= arg1_len;
 		ecp->save_cmdlen += arg1_len;
-		memcpy(ecp->save_cmd, arg1, arg1_len);
+		memmove(ecp->save_cmd, arg1, arg1_len);
 
 		/*
 		 * Any commands executed from a +cmd are executed starting at
