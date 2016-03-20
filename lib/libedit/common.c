@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.10 2016/01/30 12:22:20 schwarze Exp $	*/
+/*	$OpenBSD: common.c,v 1.11 2016/03/20 20:35:38 schwarze Exp $	*/
 /*	$NetBSD: common.c,v 1.24 2009/12/30 22:37:40 christos Exp $	*/
 
 /*-
@@ -39,6 +39,9 @@
  * common.c: Common Editor functions
  */
 #include "el.h"
+#include "common.h"
+#include "parse.h"
+#include "vi.h"
 
 /* ed_end_of_file():
  *	Indicate end of file

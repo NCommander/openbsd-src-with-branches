@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.14 2016/01/30 12:22:20 schwarze Exp $	*/
+/*	$OpenBSD: parse.c,v 1.15 2016/03/20 20:35:38 schwarze Exp $	*/
 /*	$NetBSD: parse.c,v 1.23 2009/12/30 22:37:40 christos Exp $	*/
 
 /*-
@@ -48,8 +48,10 @@
  *	settc
  *	setty
  */
-#include "el.h"
 #include <stdlib.h>
+
+#include "el.h"
+#include "parse.h"
 
 private const struct {
 	const Char *name;
