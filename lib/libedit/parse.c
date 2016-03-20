@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.13 2016/01/30 00:06:39 schwarze Exp $	*/
+/*	$OpenBSD: parse.c,v 1.14 2016/01/30 12:22:20 schwarze Exp $	*/
 /*	$NetBSD: parse.c,v 1.23 2009/12/30 22:37:40 christos Exp $	*/
 
 /*-
@@ -133,7 +133,7 @@ protected int
 parse__escape(const Char **ptr)
 {
 	const Char *p;
-	Int c;
+	wint_t c;
 
 	p = *ptr;
 
