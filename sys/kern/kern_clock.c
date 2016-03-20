@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.87 2014/09/15 19:08:21 miod Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.88 2015/06/11 16:03:04 mikeb Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -191,6 +191,7 @@ hardclock(struct clockframe *frame)
 		return;
 
 	tc_ticktock();
+	ticks++;
 
 	/*
 	 * Update real-time timeout queue.
