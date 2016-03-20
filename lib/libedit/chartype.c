@@ -1,4 +1,4 @@
-/*	$OpenBSD: chartype.c,v 1.5 2013/05/22 00:31:38 yasuoka Exp $	*/
+/*	$OpenBSD: chartype.c,v 1.6 2014/10/17 06:07:50 deraadt Exp $	*/
 /*	$NetBSD: chartype.c,v 1.6 2011/07/28 00:48:21 christos Exp $	*/
 
 /*-
@@ -199,6 +199,21 @@ ct_encode_char(char *dst, size_t len, Char c)
 		l = 0;
 	}
 	return l;
+}
+
+#else
+
+size_t
+/*ARGSUSED*/
+ct_mbrtowc(char *wc, const char *s, size_t n,
+    void *mbs __attribute__((__unused__))) {
+	if (s == NULL)
+		return 0;
+	if (n == 0)
+		return (size_t)-2;
+	if (wc != NULL)
+		*wc = *s;
+	return *s != '\0';
 }
 #endif
 
