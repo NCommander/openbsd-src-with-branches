@@ -1,4 +1,4 @@
-/*	$OpenBSD: hist.c,v 1.11 2016/01/30 12:22:20 schwarze Exp $	*/
+/*	$OpenBSD: hist.c,v 1.12 2016/01/30 17:32:52 schwarze Exp $	*/
 /*	$NetBSD: hist.c,v 1.17 2009/12/30 23:54:52 christos Exp $	*/
 
 /*-
@@ -39,6 +39,8 @@
  * hist.c: History access functions
  */
 #include <stdlib.h>
+#include <string.h>
+
 #include "el.h"
 
 /* hist_init():
