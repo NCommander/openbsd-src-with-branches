@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: strlen.S,v 1.4 2014/12/09 15:13:57 reyk Exp $	*/
 /*	$NetBSD: strlen.S,v 1.6 2014/03/22 19:16:34 jakllsch Exp $	*/
 
 /*-
@@ -97,7 +97,7 @@
  * presented above, code that uses it will be faster as long as
  * the rate of false positives is low.
  *
- * This is likely, because the the false positive can only occur
+ * This is likely, because the false positive can only occur
  * if the most siginificant bit of a byte within the word is set.
  * The expression will never fail for typical 7-bit ASCII strings.
  *
