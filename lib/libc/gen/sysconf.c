@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysconf.c,v 1.22 2015/01/16 18:18:58 millert Exp $ */
+/*	$OpenBSD: sysconf.c,v 1.23 2015/09/12 14:56:50 guenther Exp $ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -131,6 +131,8 @@ sysconf(int name)
 
 /* 1003.1b */
 	case _SC_PAGESIZE:
+		if (_pagesize != 0)
+			return (_pagesize);
 		mib[0] = CTL_HW;
 		mib[1] = HW_PAGESIZE;
 		break;

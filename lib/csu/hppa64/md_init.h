@@ -1,4 +1,4 @@
-/* $OpenBSD: md_init.h,v 1.6 2015/09/01 05:40:06 guenther Exp $ */
+/* $OpenBSD: md_init.h,v 1.7 2016/03/13 18:35:02 guenther Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -63,8 +63,6 @@
 
 /* XXX no cleanup() callback passed to __start yet? */
 #define	MD_NO_CLEANUP
-/* kbind disabled in the kernel for hppa64 until we do dynamic linking */
-#define	MD_DISABLE_KBIND	do { } while (0)
 
 #define	MD_CRT0_START						\
 	__asm(							\
