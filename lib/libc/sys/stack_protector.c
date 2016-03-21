@@ -1,4 +1,4 @@
-/*	$OpenBSD: stack_protector.c,v 1.21 2015/12/01 17:05:25 canacar Exp $	*/
+/*	$OpenBSD: stack_protector.c,v 1.22 2016/03/13 18:34:21 guenther Exp $	*/
 
 /*
  * Copyright (c) 2002 Hiroaki Etoh, Federico G. Schwindt, and Miodrag Vallat.
@@ -68,7 +68,7 @@ __stack_smash_handler(const char func[], int damaged)
 	strlcat(buf, ": stack overflow in function ", sizeof buf);
 	strlcat(buf, func, sizeof buf);
 
-	sendsyslog2(buf, strlen(buf), LOG_CONS);
+	sendsyslog(buf, strlen(buf), LOG_CONS);
 
 	memset(&sa, 0, sizeof(sa));
 	sigemptyset(&sa.sa_mask);
