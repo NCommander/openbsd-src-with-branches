@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.143 2015/06/21 12:11:13 claudio Exp $	*/
+/*	$OpenBSD: inet.c,v 1.144 2015/08/20 22:32:41 deraadt Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -455,6 +455,7 @@ tcp_stats(char *name)
 	p(tcps_sc_dupesyn, "\t%qd duplicate SYN%s received for entries "
 		"already in the cache\n");
 	p(tcps_sc_dropped, "\t%qd SYN%s dropped (no route or no space)\n");
+	p(tcps_sc_seedrandom, "\t%qd SYN cache seed%s with new random\n");
 
 	p(tcps_sack_recovery_episode, "\t%qd SACK recovery episode%s\n");
 	p(tcps_sack_rexmits,

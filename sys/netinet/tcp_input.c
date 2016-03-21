@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.313 2016/01/22 11:10:17 jsg Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.314 2016/03/07 18:44:00 naddy Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -3371,8 +3371,10 @@ syn_cache_insert(struct syn_cache *sc, struct tcpcb *tp)
 	 * If there are no entries in the hash table, reinitialize
 	 * the hash secrets.
 	 */
-	if (tcp_syn_cache_count == 0)
+	if (tcp_syn_cache_count == 0) {
 		arc4random_buf(tcp_syn_hash, sizeof(tcp_syn_hash));
+		tcpstat.tcps_sc_seedrandom++;
+	}
 
 	SYN_HASHALL(sc->sc_hash, &sc->sc_src.sa, &sc->sc_dst.sa);
 	sc->sc_bucketidx = sc->sc_hash % tcp_syn_cache_size;
