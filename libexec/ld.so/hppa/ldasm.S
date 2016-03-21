@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.17 2015/09/19 20:56:47 guenther Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.18 2015/11/15 03:41:24 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Michael Shalayeff
@@ -272,11 +272,11 @@ ENTRY(_dl_getentropy,0)
 	nop
 EXIT(_dl_getentropy)
 
-ENTRY(_dl_sendsyslog,0)
-	SYSCALL(sendsyslog)
+ENTRY(_dl_sendsyslog2,0)
+	SYSCALL(sendsyslog2)
 	bv	r0(rp)
 	nop
-EXIT(_dl_sendsyslog)
+EXIT(_dl_sendsyslog2)
 
 ENTRY(_dl_pledge,0)
 	SYSCALL(pledge)

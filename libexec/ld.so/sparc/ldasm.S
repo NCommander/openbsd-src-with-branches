@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.27 2015/09/19 20:56:47 guenther Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.28 2015/11/15 03:41:24 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -355,10 +355,10 @@ _dl_getentropy:
 
 	.section ".text"
 	.align 4
-	.global _dl_sendsyslog
-	.type _dl_sendsyslog,@function
-_dl_sendsyslog:
-	mov SYS_sendsyslog | SYSCALL_G2RFLAG, %g1	! calling sys_sendsyslog
+	.global _dl_sendsyslog2
+	.type _dl_sendsyslog2,@function
+_dl_sendsyslog2:
+	mov SYS_sendsyslog2 | SYSCALL_G2RFLAG, %g1	! calling sys_sendsyslog
 	add %o7, 8, %g2				! just return on success
 	t ST_SYSCALL				! off to wonderland
 	retl
