@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.27 2015/09/04 08:43:39 mpi Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.28 2015/10/07 10:50:35 mpi Exp $	*/
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -145,7 +145,7 @@ pfkey_sendup(struct socket *socket, struct mbuf *packet, int more)
 		if (!(packet2 = m_copym2(packet, 0, M_COPYALL, M_DONTWAIT)))
 			return (ENOMEM);
 	} else
-	  packet2 = packet;
+		packet2 = packet;
 
 	s = splsoftnet();
 	if (!sbappendaddr(&socket->so_rcv, &pfkey_addr, packet2, NULL)) {
@@ -190,7 +190,7 @@ pfkey_output(struct mbuf *mbuf, struct socket *socket)
 
 ret:
 	if (mbuf)
-		m_freem (mbuf);
+		m_freem(mbuf);
 	return (error);
 }
 
