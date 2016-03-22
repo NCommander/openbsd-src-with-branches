@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.17 2015/10/09 19:47:02 millert Exp $	*/
+/*	$OpenBSD: io.c,v 1.18 2015/10/09 20:27:28 tobias Exp $	*/
 /*	$NetBSD: io.c,v 1.2 1995/03/21 09:04:43 cgd Exp $	*/
 
 /* io.c: This file contains the i/o routines for the ed line editor */
@@ -27,6 +27,12 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include <regex.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "ed.h"
 
