@@ -1,4 +1,4 @@
-/*	$OpenBSD: eln.c,v 1.11 2016/03/21 17:28:10 schwarze Exp $	*/
+/*	$OpenBSD: eln.c,v 1.12 2016/03/21 18:40:25 schwarze Exp $	*/
 /*	$NetBSD: eln.c,v 1.9 2010/11/04 13:53:12 christos Exp $	*/
 
 /*-
@@ -72,7 +72,8 @@ el_gets(EditLine *el, int *nread)
 	const wchar_t *tmp;
 	wchar_t *rd, *wr;
 
-	tmp = el_wgets(el, nread);
+	if ((tmp = el_wgets(el, nread)) == NULL)
+		return NULL;
 
 	/*
 	 * Temporary until the libedit audit is complete:
