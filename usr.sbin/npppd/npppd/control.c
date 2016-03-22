@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.4 2015/12/05 13:19:32 claudio Exp $	*/
+/*	$OpenBSD: control.c,v 1.5 2016/03/22 00:36:06 krw Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -131,8 +131,14 @@ control_listen(struct control_sock *cs)
 void
 control_cleanup(struct control_sock *cs)
 {
+	struct ctl_conn *c, *nc;
+
 	if (cs->cs_name == NULL)
 		return;
+
+	TAILQ_FOREACH_SAFE(c, &ctl_conns, entry, nc)
+		control_close(c->iev.ibuf.fd, cs);
+
 	event_del(&cs->cs_ev);
 	event_del(&cs->cs_evt);
 	(void)unlink(cs->cs_name);
