@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.70 2015/12/08 14:20:24 tedu Exp $ */
+/*	$OpenBSD: arp.c,v 1.71 2016/01/26 18:26:19 mmcc Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -568,7 +568,6 @@ print_entry(struct sockaddr_dl *sdl, struct sockaddr_inarp *sin,
 
 	printf(" %s%s%s\n",
 	    (rtm->rtm_flags & RTF_LOCAL) ? "l" : "",
-	    (sin->sin_other & SIN_PROXY) ? "P" : "",
 	    (rtm->rtm_flags & RTF_ANNOUNCE) ? "p" : "");
 }
 
