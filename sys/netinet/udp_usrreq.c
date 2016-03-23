@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.208 2015/12/03 14:05:28 bluhm Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.209 2016/03/07 18:44:00 naddy Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -1094,12 +1094,7 @@ udp_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *addr,
 		break;
 
 	case PRU_BIND:
-#ifdef INET6
-		if (inp->inp_flags & INP_IPV6)
-			error = in6_pcbbind(inp, addr, p);
-		else
-#endif
-			error = in_pcbbind(inp, addr, p);
+		error = in_pcbbind(inp, addr, p);
 		break;
 
 	case PRU_LISTEN:

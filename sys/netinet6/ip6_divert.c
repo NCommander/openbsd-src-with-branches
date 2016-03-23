@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip6_divert.c,v 1.38 2015/09/11 08:17:06 claudio Exp $ */
+/*      $OpenBSD: ip6_divert.c,v 1.39 2016/03/07 18:44:00 naddy Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -292,7 +292,7 @@ divert6_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *addr,
 
 	case PRU_BIND:
 		s = splsoftnet();
-		error = in6_pcbbind(inp, addr, p);
+		error = in_pcbbind(inp, addr, p);
 		splx(s);
 		break;
 
