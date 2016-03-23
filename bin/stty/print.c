@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.12 2006/06/04 01:35:05 deraadt Exp $	*/
+/*	$OpenBSD: print.c,v 1.13 2009/10/27 23:59:22 deraadt Exp $	*/
 /*	$NetBSD: print.c,v 1.11 1996/05/07 18:20:10 jtc Exp $	*/
 
 /*-
@@ -35,6 +35,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include <termios.h>
 
 #include "stty.h"
 #include "extern.h"

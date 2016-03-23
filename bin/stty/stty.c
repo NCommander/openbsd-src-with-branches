@@ -1,4 +1,4 @@
-/*	$OpenBSD: stty.c,v 1.17 2015/10/11 15:27:19 deraadt Exp $	*/
+/*	$OpenBSD: stty.c,v 1.18 2015/11/20 15:58:28 deraadt Exp $	*/
 /*	$NetBSD: stty.c,v 1.11 1995/03/21 09:11:30 cgd Exp $	*/
 
 /*-
@@ -31,15 +31,17 @@
  */
 
 #include <sys/types.h>
+#include <sys/ioctl.h>
 
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
 #include <string.h>
+#include <termios.h>
 #include <unistd.h>
 
 #include "stty.h"
