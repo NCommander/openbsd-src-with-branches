@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.88 2015/06/11 16:03:04 mikeb Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.89 2016/03/20 07:56:08 uebayasi Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -114,6 +114,8 @@ initclocks(void)
 	softclock_si = softintr_establish(IPL_SOFTCLOCK, softclock, NULL);
 	if (softclock_si == NULL)
 		panic("initclocks: unable to register softclock intr");
+
+	ticks = INT_MAX - (15 * 60 * hz);
 
 	/*
 	 * Set divisors to 1 (normal case) and let the machine-specific
