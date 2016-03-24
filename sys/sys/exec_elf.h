@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.h,v 1.55 2015/08/24 21:09:43 jca Exp $	*/
+/*	$OpenBSD: exec_elf.h,v 1.56 2015/10/13 04:29:50 guenther Exp $	*/
 /*
  * Copyright (c) 1995, 1996 Erik Theisen.  All rights reserved.
  *
@@ -619,7 +619,7 @@ typedef struct {
 
 typedef struct {
 	Elf64_Shalf	au_id;				/* 32-bit id */
-	Elf64_Xword	au_v;				/* 64-bit id */
+	Elf64_Xword	au_v;				/* 64-bit value */
 } Aux64Info;
 
 enum AuxID {
