@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.124 2015/12/28 22:08:30 jung Exp $	*/
+/*	$OpenBSD: util.c,v 1.125 2016/01/12 17:29:43 sunil Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Markus Friedl.  All rights reserved.
@@ -662,33 +662,6 @@ generate_uid(void)
 		;
 
 	return (uid);
-}
-
-void
-session_socket_blockmode(int fd, enum blockmodes bm)
-{
-	int	flags;
-
-	if ((flags = fcntl(fd, F_GETFL, 0)) == -1)
-		fatal("fcntl F_GETFL");
-
-	if (bm == BM_NONBLOCK)
-		flags |= O_NONBLOCK;
-	else
-		flags &= ~O_NONBLOCK;
-
-	if ((flags = fcntl(fd, F_SETFL, flags)) == -1)
-		fatal("fcntl F_SETFL");
-}
-
-void
-session_socket_no_linger(int fd)
-{
-	struct linger	 lng;
-
-	memset(&lng, 0, sizeof(lng));
-	if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &lng, sizeof(lng)) == -1)
-		fatal("session_socket_no_linger");
 }
 
 int

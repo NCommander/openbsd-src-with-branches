@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda.c,v 1.116 2016/01/08 19:31:29 chrisz Exp $	*/
+/*	$OpenBSD: mda.c,v 1.117 2016/02/02 05:45:27 sunil Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -431,7 +431,7 @@ mda_imsg(struct mproc *p, struct imsg *imsg)
 			    "for session %016"PRIx64 " evpid %016"PRIx64,
 			    imsg->fd, s->id, s->evp->id);
 
-			io_set_blocking(imsg->fd, 0);
+			io_set_nonblocking(imsg->fd);
 			io_init(&s->io, imsg->fd, s, mda_io, &s->iobuf);
 			io_set_write(&s->io);
 			return;

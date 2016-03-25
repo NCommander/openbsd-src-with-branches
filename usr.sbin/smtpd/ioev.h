@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioev.h,v 1.4 2014/07/08 07:59:31 sobrado Exp $	*/
+/*	$OpenBSD: ioev.h,v 1.5 2014/12/24 13:51:31 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -52,8 +52,8 @@ struct io {
 	const char	*error; /* only valid immediately on callback */
 };
 
-void io_set_blocking(int, int);
-void io_set_linger(int, int);
+void io_set_nonblocking(int);
+void io_set_nolinger(int);
 
 void io_init(struct io*, int, void*, void(*)(struct io*, int), struct iobuf*);
 void io_clear(struct io*);
