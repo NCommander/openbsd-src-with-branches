@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.159 2016/03/21 22:41:29 bluhm Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.160 2016/03/22 05:59:17 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1633,7 +1633,7 @@ resolvpath(struct proc *p,
 {
 	int error;
 	char *abspath = NULL, *canopath = NULL, *fullpath = NULL;
-	size_t abspathlen, canopathlen, fullpathlen, canopathlen_exact;
+	size_t abspathlen, canopathlen = 0, fullpathlen = 0, canopathlen_exact;
 
 	/* 1. get an absolute path (inside any chroot) : path -> abspath */
 	if (path[0] != '/') {
