@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi.c,v 1.94 2016/02/07 12:19:14 uebayasi Exp $ */
+/*	$OpenBSD: ipmi.c,v 1.95 2016/02/11 04:02:22 uebayasi Exp $ */
 
 /*
  * Copyright (c) 2015 Masao Uebayashi
@@ -1576,7 +1576,7 @@ ipmi_poll_thread(void *arg)
 			printf("%s: no SDRs IPMI disabled\n", DEVNAME(sc));
 			goto done;
 		}
-		while (tsleep(sc, PUSER + 1, "ipmirun", 1) != EWOULDBLOCK)
+		while (tsleep(sc, PWAIT, "ipmirun", 1) != EWOULDBLOCK)
 			continue;
 	}
 
