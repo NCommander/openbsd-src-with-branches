@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vfsops.c,v 1.47 2016/03/17 18:52:31 bluhm Exp $	*/
+/*	$OpenBSD: udf_vfsops.c,v 1.48 2016/03/19 12:04:15 natano Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -476,10 +476,8 @@ udf_unmount(struct mount *mp, int mntflags, struct proc *p)
 
 	vn_lock(devvp, LK_EXCLUSIVE | LK_RETRY, p);
 	vinvalbuf(devvp, V_SAVE, NOCRED, p, 0, 0);
-	error = VOP_CLOSE(devvp, FREAD, NOCRED, p);
+	(void)VOP_CLOSE(devvp, FREAD, NOCRED, p);
 	VOP_UNLOCK(devvp, p);
-	if (error)
-		return (error);
 
 	devvp->v_specmountpoint = NULL;
 	vrele(devvp);
