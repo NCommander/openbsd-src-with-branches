@@ -1,4 +1,4 @@
-/*	$OpenBSD: answer.c,v 1.18 2016/01/10 13:35:09 mestre Exp $	*/
+/*	$OpenBSD: answer.c,v 1.19 2016/03/21 00:49:36 guenther Exp $	*/
 /*	$NetBSD: answer.c,v 1.3 1997/10/10 16:32:50 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -63,7 +63,6 @@ answer_first(void)
 	struct sockaddr		sockstruct;
 	int			newsock;
 	socklen_t		socklen;
-	int			flags;
 	struct spawn *sp;
 
 	/*
