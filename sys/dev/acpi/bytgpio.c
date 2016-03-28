@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bytgpio.c,v 1.1 2016/03/28 17:29:11 kettenis Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -60,7 +60,7 @@ struct cfdriver bytgpio_cd = {
 
 const char *bytgpio_hids[] = {
 	"INT33FC",
-	0
+	NULL
 };
 
 /*

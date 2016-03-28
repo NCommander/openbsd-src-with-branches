@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdhc_acpi.c,v 1.1 2016/01/11 07:36:10 kettenis Exp $	*/
+/*	$OpenBSD: sdhc_acpi.c,v 1.2 2016/03/28 17:53:26 kettenis Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -63,7 +63,7 @@ const char *sdhc_hids[] = {
 	"INT33BB",
 	"80860F14",
 	"PNP0FFF",
-	0
+	NULL
 };
 
 int	sdhc_acpi_parse_resources(union acpi_resource *, void *);
