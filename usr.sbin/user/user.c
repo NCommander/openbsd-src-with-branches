@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.104 2015/11/15 23:13:20 deraadt Exp $ */
+/* $OpenBSD: user.c,v 1.105 2016/03/28 19:09:08 mestre Exp $ */
 /* $NetBSD: user.c,v 1.69 2003/04/14 17:40:07 agc Exp $ */
 
 /*
@@ -822,7 +822,7 @@ read_defaults(user_t *up)
 					memsave(&up->u_expire, cp, strlen(cp));
 				}
 			}
-			(void) free(s);
+			free(s);
 		}
 		(void) fclose(fp);
 	}
