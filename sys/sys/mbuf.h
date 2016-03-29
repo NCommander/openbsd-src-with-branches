@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.207 2016/01/31 00:18:07 sashan Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.208 2016/02/23 01:39:14 dlg Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -316,6 +316,7 @@ struct mbuf {
 	(to)->m_pkthdr = (from)->m_pkthdr;				\
 	(from)->m_flags &= ~M_PKTHDR;					\
 	SLIST_INIT(&(from)->m_pkthdr.ph_tags);				\
+	(from)->m_pkthdr.pf.statekey = NULL;				\
 } while (/* CONSTCOND */ 0)
 
 /*
