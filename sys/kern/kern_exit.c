@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.154 2015/10/09 01:10:27 deraadt Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.155 2016/03/06 05:20:26 guenther Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -127,8 +127,7 @@ exit1(struct proc *p, int rv, int flags)
 	pr = p->p_p;
 
 	/* single-threaded? */
-	if (TAILQ_FIRST(&pr->ps_threads) == p &&
-	    TAILQ_NEXT(p, p_thr_link) == NULL) {
+	if (!P_HASSIBLING(p)) {
 		flags = EXIT_NORMAL;
 	} else {
 		/* nope, multi-threaded */
