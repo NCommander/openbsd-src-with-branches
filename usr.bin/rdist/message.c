@@ -1,4 +1,4 @@
-/*	$OpenBSD: message.c,v 1.26 2015/01/20 07:03:21 guenther Exp $	*/
+/*	$OpenBSD: message.c,v 1.27 2015/01/20 09:00:16 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -591,11 +591,13 @@ message(int lvl, const char *fmt, ...)
 	static char buf[MSGBUFSIZ];
 	va_list args;
 
-	va_start(args, fmt);
-	(void) vsnprintf(buf, sizeof(buf), fmt, args);
-	va_end(args);
+	if (fmt != NULL) {
+		va_start(args, fmt);
+		(void) vsnprintf(buf, sizeof(buf), fmt, args);
+		va_end(args);
+	}
 
-	_message(lvl, buf);
+	_message(lvl, fmt ? buf : NULL);
 }
 
 /*
