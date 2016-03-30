@@ -1,11 +1,10 @@
-#	$OpenBSD: Makefile,v 1.11 2007/03/24 05:36:54 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2015/11/26 19:00:40 deraadt Exp $
 
 .include <bsd.own.mk>
 
 PROG=	rpc.bootparamd
 SRCS=	bootparamd.c bootparam_prot_svc.c
 MAN=	bootparams.5 rpc.bootparamd.8
-MLINKS=	rpc.bootparamd.8 bootparamd.8
 
 DPADD=	${LIBRPCSVC}
 LDADD=	-lrpcsvc

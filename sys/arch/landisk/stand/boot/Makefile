@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.10 2014/07/13 09:26:08 jasper Exp $
+#	$OpenBSD: Makefile,v 1.11 2015/06/14 19:08:59 miod Exp $
 
 MAN=	boot.8
-MLINKS=	boot.8 boot.conf.5
 
 .if ${MACHINE} == "landisk"
 PROG=	boot

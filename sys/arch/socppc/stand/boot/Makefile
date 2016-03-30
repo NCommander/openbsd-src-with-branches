@@ -1,9 +1,8 @@
-#	$OpenBSD: Makefile,v 1.14 2014/07/12 21:54:58 jasper Exp $
+#	$OpenBSD: Makefile,v 1.15 2014/07/13 09:26:08 jasper Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
 MAN=	boot.8
-MLINKS=	boot.8 boot.conf.5
 
 .if ${MACHINE} == "socppc"
 PROG=		boot

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2000/02/26 04:06:23 hugh Exp $
+#	$OpenBSD: Makefile,v 1.3 2010/12/29 12:14:41 stsp Exp $
 #	$NetBSD: Makefile,v 1.2 1997/06/12 16:18:50 mrg Exp $
 
 PROG=	swapctl
@@ -8,6 +8,5 @@ DPADD=	${LIBUTIL}
 MAN=	swapctl.8
 
 LINKS=	${BINDIR}/swapctl ${BINDIR}/swapon
-MLINKS=	swapctl.8 swapon.8
 
 .include <bsd.prog.mk>
