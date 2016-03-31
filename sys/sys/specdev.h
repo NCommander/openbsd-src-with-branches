@@ -1,4 +1,4 @@
-/*	$OpenBSD: specdev.h,v 1.33 2013/08/06 08:22:37 kettenis Exp $	*/
+/*	$OpenBSD: specdev.h,v 1.34 2013/11/02 00:16:31 deraadt Exp $	*/
 /*	$NetBSD: specdev.h,v 1.12 1996/02/13 13:13:01 mycroft Exp $	*/
 
 /*
@@ -46,7 +46,7 @@ struct specinfo {
 	daddr_t si_lastr;
 	union {
 		struct vnode *ci_parent; /* pointer back to parent device */
-		u_int8_t ci_bitmap[8]; /* bitmap of devices cloned off us */
+		u_int8_t *ci_bitmap; /* bitmap of devices cloned off us */
 	} si_ci;
 };
 
@@ -71,6 +71,7 @@ struct cloneinfo {
  * This gives us 8 bits for encoding the real minor number.
  */
 #define CLONE_SHIFT	8
+#define CLONE_MAP_SZ	128
 
 /*
  * Special device management
