@@ -1,13 +1,6 @@
-#	$OpenBSD: Makefile,v 1.35 2015/05/26 02:01:53 jsg Exp $
+#	$OpenBSD: Makefile,v 1.36 2016/03/09 16:28:50 deraadt Exp $
 
-.if ${MACHINE} == "alpha" || ${MACHINE} == "amd64" || \
-    ${MACHINE} == "armish" || ${MACHINE} == "armv7" || \
-    ${MACHINE} == "hppa" || ${MACHINE} == "hppa64" || \
-    ${MACHINE} == "i386" || ${MACHINE} == "landisk" || \
-    ${MACHINE} == "loongson" || ${MACHINE} == "luna88k" || \
-    ${MACHINE} == "macppc" || ${MACHINE} == "sgi" || \
-    ${MACHINE} == "socppc" || ${MACHINE} == "sparc" || \
-    ${MACHINE} == "sparc64" || ${MACHINE} == "zaurus"
+.if ${MACHINE} != "hppa64" && ${MACHINE} != "octeon"
 
 PROG=	wsconscfg
 SRCS=	wsconscfg.c
