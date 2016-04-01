@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rcctl.8,v 1.29 2016/01/30 12:14:08 schwarze Exp $
+.\"	$OpenBSD: rcctl.8,v 1.30 2016/01/30 18:57:31 ajacoutot Exp $
 .\"
 .\" Copyright (c) 2014 Antoine Jacoutot <ajacoutot@openbsd.org>
 .\"
@@ -103,7 +103,7 @@ which can be one of:
 .Bl -tag -width started -offset indent -compact
 .It Cm all
 all services and daemons
-.It Cm faulty
+.It Cm failed
 enabled but stopped daemons
 .It Cm off
 disabled services and daemons
@@ -171,7 +171,7 @@ exits with 0 if the daemon or service is enabled and 1 if it is not.
 .Nm Cm getdef Ar daemon | service Op Cm status
 exits with 0 if the daemon or service is enabled by default
 and 1 if it is not.
-.Nm Cm ls faulty
+.Nm Cm ls failed
 exits with 1 if an enabled daemon is not running.
 Otherwise, the
 .Nm
