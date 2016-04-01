@@ -46,7 +46,7 @@ struct specinfo {
 	daddr_t si_lastr;
 	union {
 		struct vnode *ci_parent; /* pointer back to parent device */
-		u_int8_t *ci_bitmap; /* bitmap of devices cloned off us */
+		u_int8_t ci_bitmap[8]; /* bitmap of devices cloned off us */
 	} si_ci;
 };
 
@@ -71,7 +71,6 @@ struct cloneinfo {
  * This gives us 8 bits for encoding the real minor number.
  */
 #define CLONE_SHIFT	8
-#define CLONE_MAP_SZ	128
 
 /*
  * Special device management
