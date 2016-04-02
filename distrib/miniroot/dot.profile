@@ -1,4 +1,4 @@
-#	$OpenBSD: dot.profile,v 1.29 2015/07/03 18:29:08 rpe Exp $
+#	$OpenBSD: dot.profile,v 1.30 2016/01/26 22:26:54 rpe Exp $
 #	$NetBSD: dot.profile,v 1.1 1995/12/18 22:54:43 pk Exp $
 #
 # Copyright (c) 2009 Kenneth R. Westerback
@@ -107,7 +107,7 @@ __EOT
 		fi
 
 		case $REPLY in
-		[aA]*)	/install -a && break
+		[aA]*)	/autoinstall && break
 			;;
 		[iI]*)	/install && break
 			;;
