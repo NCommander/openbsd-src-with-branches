@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_fork.c,v 1.14 2015/10/18 08:02:58 guenther Exp $ */
+/*	$OpenBSD: rthread_fork.c,v 1.15 2016/01/27 08:40:05 kettenis Exp $ */
 
 /*
  * Copyright (c) 2008 Kurt Miller <kurt@openbsd.org>
@@ -44,6 +44,8 @@
 #include "thread_private.h"	/* in libc/include */
 
 #include "rthread.h"
+
+REDIRECT_SYSCALL(getthrid);
 
 pid_t   _thread_sys_fork(void);
 pid_t   _thread_sys_vfork(void);
