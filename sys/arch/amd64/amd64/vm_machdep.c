@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.32 2015/05/18 19:59:27 guenther Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.33 2015/06/28 18:54:54 guenther Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.1 2003/04/26 18:39:33 fvdl Exp $	*/
 
 /*-
@@ -231,5 +231,6 @@ void
 tcb_set(struct proc *p, void *tcb)
 {
 	KASSERT(p == curproc);
-	reset_segs(&p->p_addr->u_pcb, (u_int64_t)tcb);
+	reset_segs();
+	p->p_addr->u_pcb.pcb_fsbase = (u_int64_t)tcb;
 }

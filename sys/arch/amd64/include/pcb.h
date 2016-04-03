@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.13 2015/05/05 02:13:46 guenther Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.14 2015/05/18 19:59:27 guenther Exp $	*/
 /*	$NetBSD: pcb.h,v 1.1 2003/04/26 18:39:45 fvdl Exp $	*/
 
 /*-
@@ -90,7 +90,7 @@ struct pcb {
 };
 
 #ifdef _KERNEL
-void	reset_segs(struct pcb *_pcb, u_int64_t _fsbase);
+void	reset_segs(void);
 #endif
 
 #endif /* _MACHINE_PCB_H_ */
