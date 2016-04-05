@@ -1,4 +1,4 @@
-/*	$OpenBSD: i915_gem.c,v 1.104 2015/10/19 19:54:35 kettenis Exp $	*/
+/*	$OpenBSD: i915_gem.c,v 1.105 2016/04/05 08:22:50 kettenis Exp $	*/
 /*
  * Copyright (c) 2008-2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -5288,11 +5288,7 @@ int i915_gem_open(struct drm_device *dev, struct drm_file *file)
 	INIT_DELAYED_WORK(&file_priv->mm.idle_work,
 			  i915_gem_file_idle_work_handler);
 
-#ifdef __linux__
 	idr_init(&file_priv->context_idr);
-#else
-	SPLAY_INIT(&file_priv->ctx_tree);
-#endif
 
 	return 0;
 }
