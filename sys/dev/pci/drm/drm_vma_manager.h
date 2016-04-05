@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 #ifndef __DRM_VMA_MANAGER_H__
 #define __DRM_VMA_MANAGER_H__
 
