@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.220 2016/03/22 06:17:00 dlg Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.221 2016/03/29 10:34:42 sashan Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -1241,7 +1241,7 @@ m_dup_pkt(struct mbuf *m0, unsigned int adj, int wait)
 	if (len > MAXMCLBYTES) /* XXX */
 		return (NULL);
 
-	m = m_get(m0->m_type, wait);
+	m = m_get(wait, m0->m_type);
 	if (m == NULL)
 		return (NULL);
 
