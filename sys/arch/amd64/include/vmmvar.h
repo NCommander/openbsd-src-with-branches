@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmvar.h,v 1.10 2016/03/09 08:06:59 mlarkin Exp $	*/
+/*	$OpenBSD: vmmvar.h,v 1.11 2016/03/13 13:11:47 stefan Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -281,6 +281,8 @@ struct vm_intr_params {
 #define VMX_FAIL_LAUNCH_UNKNOWN 1
 #define VMX_FAIL_LAUNCH_INVALID_VMCS 2
 #define VMX_FAIL_LAUNCH_VALID_VMCS 3
+
+#define VMX_NUM_MSR_STORE 7
 
 enum {
 	VMM_MODE_UNKNOWN,
