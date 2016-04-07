@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.966 2016/03/04 22:38:23 sashan Exp $ */
+/*	$OpenBSD: pf.c,v 1.967 2016/03/29 10:34:42 sashan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -99,6 +99,10 @@
 #include <netinet6/ip6_divert.h>
 #endif /* INET6 */
 
+#ifdef DDB
+#include <machine/db_machdep.h>
+#include <ddb/db_interface.h>
+#endif
 
 /*
  * Global variables
@@ -6561,11 +6565,19 @@ done:
 		pd.m->m_pkthdr.pf.qid = qid;
 	if (pd.dir == PF_IN && s && s->key[PF_SK_STACK]) {
 		/*
-		 * ASSERT() below fires whenever caller forgets to call
-		 * pf_pkt_addr_changed(). This might happen when we deal with
-		 * IP tunnels.
+		 * Check below fires whenever caller forgets to call
+		 * pf_pkt_addr_changed(). This might happen when we
+		 * deal with IP tunnels.
 		 */
-		KASSERT(pd.m->m_pkthdr.pf.statekey == NULL);
+		if (pd.m->m_pkthdr.pf.statekey != NULL) {
+			printf("WARNING incoming mbuf already has a statekey:");
+#ifdef DDB
+			m_print(pd.m, printf);
+#else
+			printf("%p\n", pd.m);
+#endif
+			pf_pkt_unlink_state_key(pd.m);
+		}
 		pd.m->m_pkthdr.pf.statekey =
 		    pf_state_key_ref(s->key[PF_SK_STACK]);
 	}
