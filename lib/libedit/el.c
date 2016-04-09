@@ -1,4 +1,4 @@
-/*	$OpenBSD: el.c,v 1.28 2016/03/20 23:48:27 schwarze Exp $	*/
+/*	$OpenBSD: el.c,v 1.29 2016/03/21 17:28:10 schwarze Exp $	*/
 /*	$NetBSD: el.c,v 1.61 2011/01/27 23:11:40 christos Exp $	*/
 
 /*-
@@ -40,14 +40,12 @@
  */
 #include <sys/types.h>
 #include <ctype.h>
+#include <langinfo.h>
 #include <limits.h>
+#include <locale.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef WIDECHAR
-#include <locale.h>
-#include <langinfo.h>
-#endif
 
 #include "el.h"
 #include "parse.h"
@@ -131,12 +129,10 @@ el_end(EditLine *el)
 	sig_end(el);
 
 	free(el->el_prog);
-#ifdef WIDECHAR
 	free(el->el_scratch.cbuff);
 	free(el->el_scratch.wbuff);
 	free(el->el_lgcyconv.cbuff);
 	free(el->el_lgcyconv.wbuff);
-#endif
 	free(el);
 }
 
