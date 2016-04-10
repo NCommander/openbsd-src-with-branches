@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.300 2016/01/08 09:48:42 mpi Exp $
+#	$OpenBSD: GENERIC,v 1.301 2016/03/30 01:28:51 deraadt Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -111,7 +111,7 @@ malo*	at cardbus?		# Marvell Libertas
 malo*	at pcmcia?		# Marvell 88W8385
 
 # PCI SCSI
-ahc*	at pci?			# Adaptec 2940 SCSI controllers
+#ahc*	at pci?			# Adaptec 2940 SCSI controllers
 siop*	at pci?			# NCR 538XX SCSI controllers
 qlw*	at pci?			# QLogic ISP SCSI
 qla*	at pci?			# QLogic ISP 2[123]xx FibreChannel
