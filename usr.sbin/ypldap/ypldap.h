@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypldap.h,v 1.15 2014/11/03 20:15:31 bluhm Exp $ */
+/*	$OpenBSD: ypldap.h,v 1.16 2015/01/16 06:40:22 deraadt Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -41,9 +41,10 @@ enum imsg_type {
 };
 
 struct ypldap_addr {
-	struct ypldap_addr              *next;
+	TAILQ_ENTRY(ypldap_addr)	 next;
 	struct sockaddr_storage          ss;
 };
+TAILQ_HEAD(ypldap_addr_list, ypldap_addr);
 
 enum {
 	PROC_MAIN,
@@ -90,7 +91,7 @@ struct idm {
 	enum client_state		 idm_state;
 	u_int32_t			 idm_flags; /* lower 20 reserved */
 	u_int32_t			 idm_list;
-	struct ypldap_addr		*idm_addr;
+	struct ypldap_addr_list		 idm_addr;
 	in_port_t			 idm_port;
 	char				 idm_binddn[LINE_WIDTH];
 	char				 idm_bindcred[LINE_WIDTH];
