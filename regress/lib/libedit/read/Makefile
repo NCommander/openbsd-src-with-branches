@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2016/03/01 16:12:11 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.3 2016/03/20 17:19:48 schwarze Exp $
 #
 # Author: Ingo Schwarze <schwarze@openbsd.org>, 2016.  Public Domain.
 #
@@ -6,7 +6,6 @@
 
 REGRESS_TARGETS = getcmd read_char
 
-CPPFLAGS +=	-DWIDECHAR
 CPPFLAGS +=	-I${.CURDIR}/../../../../lib/libedit
 CPPFLAGS +=	-I${.OBJDIR}/../../../../lib/libedit
 CLEANFILES +=	test_read_char test_getcmd out_getcmd.txt
