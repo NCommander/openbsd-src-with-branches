@@ -1,4 +1,4 @@
-/*	$OpenBSD: chartype.c,v 1.12 2016/04/09 20:15:26 schwarze Exp $	*/
+/*	$OpenBSD: chartype.c,v 1.13 2016/04/11 20:43:33 schwarze Exp $	*/
 /*	$NetBSD: chartype.c,v 1.6 2011/07/28 00:48:21 christos Exp $	*/
 
 /*-
@@ -40,7 +40,9 @@
 
 #define CT_BUFSIZ 1024
 
-protected void
+private void ct_conv_buff_resize(ct_buffer_t *, size_t, size_t);
+
+private void
 ct_conv_buff_resize(ct_buffer_t *conv, size_t mincsize, size_t minwsize)
 {
 	void *p;
