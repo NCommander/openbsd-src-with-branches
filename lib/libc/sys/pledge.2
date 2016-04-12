@@ -1,4 +1,4 @@
-.\" $OpenBSD: pledge.2,v 1.28 2016/04/10 18:52:07 tb Exp $
+.\" $OpenBSD: pledge.2,v 1.29 2016/04/12 12:47:46 semarie Exp $
 .\"
 .\" Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: April 10 2016 $
+.Dd $Mdocdate: April 12 2016 $
 .Dt PLEDGE 2
 .Os
 .Sh NAME
@@ -297,6 +297,21 @@ domains:
 .Pp
 .Xr setsockopt 2
 has been reduced in functionality substantially.
+.It Va "mcast"
+Allows to configure an interface from which multicast packets will
+be sent and to join or leave a multicast group.
+The following options of
+.Xr getsockopt 2
+and
+.Xr setsockopt 2
+are permitted:
+.Pp
+.Dv IP_MULTICAST_IF ,
+.Dv IP_ADD_MEMBERSHIP ,
+.Dv IP_DROP_MEMBERSHIP ,
+.Dv IPV6_MULTICAST_IF ,
+.Dv IPV6_JOIN_GROUP ,
+.Dv IPV6_LEAVE_GROUP .
 .It Va "fattr"
 The following system calls are allowed to make explicit changes
 to fields in
