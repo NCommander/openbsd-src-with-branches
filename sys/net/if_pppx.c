@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppx.c,v 1.49 2016/01/14 09:20:31 mpi Exp $ */
+/*	$OpenBSD: if_pppx.c,v 1.50 2016/01/31 13:54:13 stefan Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -844,7 +844,6 @@ pppx_add_session(struct pppx_dev *pxd, struct pipex_session_req *req)
 	ifp->if_rtrequest = p2p_rtrequest;
 	ifp->if_type = IFT_PPP;
 	IFQ_SET_MAXLEN(&ifp->if_snd, 1);
-	IFQ_SET_READY(&ifp->if_snd);
 	ifp->if_softc = pxi;
 	/* ifp->if_rdomain = req->pr_rdomain; */
 

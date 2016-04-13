@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pair.c,v 1.5 2015/10/30 12:54:36 reyk Exp $	*/
+/*	$OpenBSD: if_pair.c,v 1.6 2015/12/05 10:07:55 tedu Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -121,7 +121,6 @@ pair_clone_create(struct if_clone *ifc, int unit)
 	ifp->if_ioctl = pairioctl;
 	ifp->if_start = pairstart;
 	IFQ_SET_MAXLEN(&ifp->if_snd, IFQ_MAXLEN);
-	IFQ_SET_READY(&ifp->if_snd);
 
 	ifp->if_hardmtu = 0xffff;
 	ifp->if_capabilities = IFCAP_VLAN_MTU;
