@@ -375,7 +375,7 @@ nvme_poll(struct nvme_softc *sc, struct nvme_queue *q, struct nvme_ccb *ccb,
 
 	nvme_q_submit(sc, q, ccb, nvme_poll_fill);
 	while (!ISSET(state.c.flags, htole16(NVME_CQE_PHASE))) {
-		if (nvme_intr(sc) == 0)
+		if (nvme_q_complete(sc, q) == 0)
 			delay(10);
 
 		/* XXX no timeout? */
