@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bm.c,v 1.38 2015/11/25 03:09:58 dlg Exp $	*/
+/*	$OpenBSD: if_bm.c,v 1.39 2015/12/08 13:34:22 tedu Exp $	*/
 /*	$NetBSD: if_bm.c,v 1.1 1999/01/01 01:27:52 tsubai Exp $	*/
 
 /*-
@@ -270,7 +270,6 @@ bmac_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_flags =
 		IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
 	ifp->if_watchdog = bmac_watchdog;
-	IFQ_SET_READY(&ifp->if_snd);
 
 	mii->mii_ifp = ifp;
 	mii->mii_readreg = bmac_mii_readreg;

@@ -1,4 +1,4 @@
-/* $OpenBSD: imxenet.c,v 1.19 2015/11/24 17:11:38 mpi Exp $ */
+/* $OpenBSD: imxenet.c,v 1.20 2015/11/25 03:09:57 dlg Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -357,8 +357,6 @@ imxenet_attach(struct device *parent, struct device *self, void *args)
 
 	/* initialize the chip */
 	imxenet_chip_init(sc);
-
-	IFQ_SET_READY(&ifp->if_snd);
 
 	/* Initialize MII/media info. */
 	mii = &sc->sc_mii;
