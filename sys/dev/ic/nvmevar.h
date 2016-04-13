@@ -72,6 +72,11 @@ struct nvme_softc {
 	size_t			sc_mdts;
 	u_int			sc_max_sgl;
 
+	struct nvm_identify_controller
+				sc_identify;
+
+	u_int                   sc_nn;
+
 	struct nvme_queue	*sc_admin_q;
 	struct nvme_queue	*sc_q;
 
