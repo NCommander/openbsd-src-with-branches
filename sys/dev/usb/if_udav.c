@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_udav.c,v 1.76 2015/11/24 17:11:40 mpi Exp $ */
+/*	$OpenBSD: if_udav.c,v 1.77 2015/11/25 03:10:00 dlg Exp $ */
 /*	$NetBSD: if_udav.c,v 1.3 2004/04/23 17:25:25 itojun Exp $	*/
 /*	$nabe: if_udav.c,v 1.3 2003/08/21 16:57:19 nabe Exp $	*/
 /*
@@ -256,8 +256,6 @@ udav_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_start = udav_start;
 	ifp->if_ioctl = udav_ioctl;
 	ifp->if_watchdog = udav_watchdog;
-
-	IFQ_SET_READY(&ifp->if_snd);
 
 	/*
 	 * Do ifmedia setup.

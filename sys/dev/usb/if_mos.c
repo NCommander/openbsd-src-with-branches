@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mos.c,v 1.34 2015/11/24 17:11:40 mpi Exp $	*/
+/*	$OpenBSD: if_mos.c,v 1.35 2015/11/25 03:10:00 dlg Exp $	*/
 
 /*
  * Copyright (c) 2008 Johann Christian Rode <jcrode@gmx.net>
@@ -715,8 +715,6 @@ mos_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_start = mos_start;
 	ifp->if_watchdog = mos_watchdog;
 	strlcpy(ifp->if_xname, sc->mos_dev.dv_xname, IFNAMSIZ);
-
-	IFQ_SET_READY(&ifp->if_snd);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU;
 
