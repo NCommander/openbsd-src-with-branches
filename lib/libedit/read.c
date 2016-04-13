@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.36 2016/04/12 09:04:02 schwarze Exp $	*/
+/*	$OpenBSD: read.c,v 1.37 2016/04/12 09:07:21 schwarze Exp $	*/
 /*	$NetBSD: read.c,v 1.92 2016/04/12 00:16:06 christos Exp $	*/
 
 /*-
@@ -468,7 +468,7 @@ el_wgets(EditLine *el, int *nread)
 
 #ifdef FIONREAD
 	if (el->el_tty.t_mode == EX_IO && el->el_chared.c_macro.level < 0) {
-		long chrs = 0;
+		int chrs = 0;
 
 		(void) ioctl(el->el_infd, FIONREAD, &chrs);
 		if (chrs == 0) {
