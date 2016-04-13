@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nxe.c,v 1.71 2015/11/25 03:09:59 dlg Exp $ */
+/*	$OpenBSD: if_nxe.c,v 1.72 2015/12/11 16:07:02 mpi Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -920,7 +920,6 @@ nxe_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_hardmtu = MCLBYTES - ETHER_HDR_LEN - ETHER_CRC_LEN;
 	strlcpy(ifp->if_xname, DEVNAME(sc), IFNAMSIZ);
 	IFQ_SET_MAXLEN(&ifp->if_snd, 512); /* XXX */
-	IFQ_SET_READY(&ifp->if_snd);
 
 	ifmedia_init(&sc->sc_media, 0, nxe_media_change, nxe_media_status);
 	ifmedia_add(&sc->sc_media, IFM_ETHER|IFM_AUTO, 0, NULL);

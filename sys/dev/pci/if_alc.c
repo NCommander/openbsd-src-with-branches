@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_alc.c,v 1.37 2015/11/25 03:09:59 dlg Exp $	*/
+/*	$OpenBSD: if_alc.c,v 1.38 2016/03/15 16:45:52 naddy Exp $	*/
 /*-
  * Copyright (c) 2009, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -837,7 +837,6 @@ alc_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_start = alc_start;
 	ifp->if_watchdog = alc_watchdog;
 	IFQ_SET_MAXLEN(&ifp->if_snd, ALC_TX_RING_CNT - 1);
-	IFQ_SET_READY(&ifp->if_snd);
 	bcopy(sc->alc_eaddr, sc->sc_arpcom.ac_enaddr, ETHER_ADDR_LEN);
 	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
 

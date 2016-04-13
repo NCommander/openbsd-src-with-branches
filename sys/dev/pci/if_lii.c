@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lii.c,v 1.41 2015/11/24 17:11:39 mpi Exp $	*/
+/*	$OpenBSD: if_lii.c,v 1.42 2015/11/25 03:09:59 dlg Exp $	*/
 
 /*
  *  Copyright (c) 2007 The NetBSD Foundation.
@@ -266,7 +266,6 @@ lii_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_ioctl = lii_ioctl;
 	ifp->if_start = lii_start;
 	ifp->if_watchdog = lii_watchdog;
-	IFQ_SET_READY(&ifp->if_snd);
 
 	if_attach(ifp);
 	ether_ifattach(ifp);

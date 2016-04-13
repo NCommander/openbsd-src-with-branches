@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sk.c,v 1.182 2015/11/24 17:11:39 mpi Exp $	*/
+/*	$OpenBSD: if_sk.c,v 1.183 2015/11/25 03:09:59 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -995,7 +995,6 @@ sk_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_watchdog = sk_watchdog;
 	ifp->if_hardmtu = SK_JUMBO_MTU;
 	IFQ_SET_MAXLEN(&ifp->if_snd, SK_TX_RING_CNT - 1);
-	IFQ_SET_READY(&ifp->if_snd);
 	bcopy(sc_if->sk_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU;

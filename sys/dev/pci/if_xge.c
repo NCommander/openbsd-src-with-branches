@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.66 2015/11/24 17:11:40 mpi Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.67 2015/11/25 03:09:59 dlg Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -623,7 +623,6 @@ xge_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_hardmtu = XGE_MAX_MTU;
 #endif
 	IFQ_SET_MAXLEN(&ifp->if_snd, NTXDESCS - 1);
-	IFQ_SET_READY(&ifp->if_snd);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU | IFCAP_CSUM_IPv4 |
 			       IFCAP_CSUM_TCPv4 | IFCAP_CSUM_UDPv4;

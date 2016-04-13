@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sis.c,v 1.132 2015/11/25 03:09:59 dlg Exp $ */
+/*	$OpenBSD: if_sis.c,v 1.133 2016/01/08 11:23:30 mpi Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -1186,7 +1186,6 @@ sis_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_start = sis_start;
 	ifp->if_watchdog = sis_watchdog;
 	IFQ_SET_MAXLEN(&ifp->if_snd, SIS_TX_LIST_CNT - 1);
-	IFQ_SET_READY(&ifp->if_snd);
 	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
 	ifp->if_hardmtu = 1518; /* determined experimentally on DP83815 */
 

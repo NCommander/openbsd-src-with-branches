@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.133 2015/12/08 06:12:56 dlg Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.134 2015/12/08 13:34:22 tedu Exp $	*/
 /*	$NetBSD: if_de.c,v 1.58 1998/01/12 09:39:58 thorpej Exp $	*/
 
 /*-
@@ -4585,7 +4585,6 @@ tulip_attach(struct device * const parent, struct device * const self, void * co
 
 	tulip_reset(sc);
 
-	IFQ_SET_READY(&ifp->if_snd);
 	if_attach(ifp);
 	ether_ifattach(ifp);
     }
