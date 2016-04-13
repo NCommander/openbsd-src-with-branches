@@ -344,6 +344,8 @@ nvme_attach(struct nvme_softc *sc)
 		goto free_q;
 	}
 
+	nvme_write4(sc, NVME_INTMC, 1);
+
 	sc->sc_namespaces = mallocarray(sc->sc_nn, sizeof(*sc->sc_namespaces),
 	    M_DEVBUF, M_WAITOK|M_ZERO);
 
