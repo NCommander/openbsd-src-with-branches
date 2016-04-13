@@ -90,6 +90,9 @@ struct scsi_adapter nvme_switch = {
 	NULL,			/* ioctl */
 };
 
+void	nvme_scsi_inq(struct scsi_xfer *);
+void	nvme_scsi_inquiry(struct scsi_xfer *);
+
 #define nvme_read4(_s, _r) \
 	bus_space_read_4((_s)->sc_iot, (_s)->sc_ioh, (_r))
 #define nvme_write4(_s, _r, _v) \
@@ -409,7 +412,62 @@ done:
 void
 nvme_scsi_cmd(struct scsi_xfer *xs)
 {
+	switch (xs->cmd->opcode) {
+	case INQUIRY:
+		nvme_scsi_inq(xs);
+		return;
+	default:
+		break;
+	}
+
 	xs->error = XS_DRIVER_STUFFUP;
+	scsi_done(xs);
+}
+
+void
+nvme_scsi_inq(struct scsi_xfer *xs)
+{
+	struct scsi_inquiry *inq = (struct scsi_inquiry *)xs->cmd;
+
+	if (!ISSET(inq->flags, SI_EVPD)) {
+		nvme_scsi_inquiry(xs);
+		return;
+	}
+
+	switch (inq->pagecode) {
+	default:
+		/* printf("%s: %d\n", __func__, inq->pagecode); */
+		break;
+	}
+
+	xs->error = XS_DRIVER_STUFFUP;
+	scsi_done(xs);
+}
+
+void
+nvme_scsi_inquiry(struct scsi_xfer *xs)
+{
+	struct scsi_inquiry_data inq;
+	struct scsi_link *link = xs->sc_link;
+	struct nvme_softc *sc = link->adapter_softc;
+	struct nvm_identify_namespace *ns;
+
+	ns = sc->sc_namespaces[link->target].ident;
+
+	memset(&inq, 0, sizeof(inq));
+
+	inq.device = T_DIRECT;
+	inq.version = 0x06; /* SPC-4 */
+	inq.response_format = 2;
+	inq.additional_length = 32;
+	inq.flags |= SID_CmdQue;
+	memcpy(inq.vendor, "NVMe    ", sizeof(inq.vendor));
+	memcpy(inq.product, sc->sc_identify.mn, sizeof(inq.product));
+	memcpy(inq.revision, sc->sc_identify.fr, sizeof(inq.revision));
+
+	memcpy(xs->data, &inq, MIN(sizeof(inq), xs->datalen));
+
+	xs->error = XS_NOERROR;
 	scsi_done(xs);
 }
 
