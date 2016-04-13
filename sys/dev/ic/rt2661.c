@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.88 2015/11/25 03:09:58 dlg Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.89 2015/12/11 16:07:01 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -342,7 +342,6 @@ rt2661_attachhook(struct device *self)
 	ifp->if_ioctl = rt2661_ioctl;
 	ifp->if_start = rt2661_start;
 	ifp->if_watchdog = rt2661_watchdog;
-	IFQ_SET_READY(&ifp->if_snd);
 	memcpy(ifp->if_xname, sc->sc_dev.dv_xname, IFNAMSIZ);
 
 	if_attach(ifp);

@@ -1,4 +1,4 @@
-/* $OpenBSD: lemac.c,v 1.27 2015/11/25 11:20:38 mpi Exp $ */
+/* $OpenBSD: lemac.c,v 1.28 2015/12/08 13:34:22 tedu Exp $ */
 /* $NetBSD: lemac.c,v 1.20 2001/06/13 10:46:02 wiz Exp $ */
 
 /*-
@@ -993,8 +993,6 @@ lemac_ifattach(struct lemac_softc *sc)
 
 	if (sc->sc_flags & LEMAC_ALIVE) {
 		uint64_t media;
-
-		IFQ_SET_READY(&ifp->if_snd);
 
 		if_attach(ifp);
 		ether_ifattach(ifp);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xe.c,v 1.56 2015/11/25 03:09:59 dlg Exp $	*/
+/*	$OpenBSD: if_xe.c,v 1.57 2015/12/08 13:34:22 tedu Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist, Brandon Creighton, Job de Haas
@@ -362,7 +362,6 @@ xe_pcmcia_attach(parent, self, aux)
 	ifp->if_ioctl = xe_ioctl;
 	ifp->if_start = xe_start;
 	ifp->if_watchdog = xe_watchdog;
-	IFQ_SET_READY(&ifp->if_snd);
 
 	/* Establish the interrupt. */
 	sc->sc_ih = pcmcia_intr_establish(pa->pf, IPL_NET, xe_intr, sc,

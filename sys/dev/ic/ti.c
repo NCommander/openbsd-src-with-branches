@@ -1,4 +1,4 @@
-/*	$OpenBSD: ti.c,v 1.22 2015/11/25 03:09:58 dlg Exp $	*/
+/*	$OpenBSD: ti.c,v 1.23 2016/03/10 23:18:56 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1444,7 +1444,6 @@ ti_attach(struct ti_softc *sc)
 	ifp->if_watchdog = ti_watchdog;
 	ifp->if_hardmtu = TI_JUMBO_FRAMELEN - ETHER_HDR_LEN;
 	IFQ_SET_MAXLEN(&ifp->if_snd, TI_TX_RING_CNT - 1);
-	IFQ_SET_READY(&ifp->if_snd);
 	bcopy(sc->sc_dv.dv_xname, ifp->if_xname, IFNAMSIZ);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.85 2015/12/11 16:07:01 mpi Exp $  */
+/*	$OpenBSD: pgt.c,v 1.86 2016/01/12 09:28:09 stsp Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -1878,7 +1878,6 @@ pgt_net_attach(struct pgt_softc *sc)
 	strlcpy(ifp->if_xname, sc->sc_dev.dv_xname, IFNAMSIZ);
 
 	IFQ_SET_MAXLEN(&ifp->if_snd, IFQ_MAXLEN);
-	IFQ_SET_READY(&ifp->if_snd);
 
 	/*
 	 * Set channels
