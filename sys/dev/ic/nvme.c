@@ -425,6 +425,13 @@ nvme_scsi_cmd(struct scsi_xfer *xs)
 		nvme_scsi_capacity(xs);
 		return;
 
+	case TEST_UNIT_READY:
+	case PREVENT_ALLOW:
+	case START_STOP:
+		xs->error = XS_NOERROR;
+		scsi_done(xs);
+		return;
+
 	default:
 		break;
 	}
