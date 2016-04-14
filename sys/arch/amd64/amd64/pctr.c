@@ -1,4 +1,4 @@
-/*	$OpenBSD: pctr.c,v 1.5 2014/03/29 18:09:28 guenther Exp $	*/
+/*	$OpenBSD: pctr.c,v 1.6 2015/03/14 03:38:46 jsg Exp $	*/
 
 /*
  * Copyright (c) 2007 Mike Belopuhov
@@ -38,13 +38,16 @@
 
 #define PCTR_AMD_NUM	PCTR_NUM
 #define PCTR_INTEL_NUM	2		/* Intel supports only 2 counters */
+#define PCTR_INTEL_VERSION_MASK 0xff
 
 #define usetsc		(cpu_feature & CPUID_TSC)
-#define usepctr		((pctr_isamd || pctr_isintel) && \
-			    ((cpu_id >> 8) & 15) >= 6)
+#define usepctr		((pctr_isamd && ((cpu_id >> 8) & 15) >= 6) || \
+			    (pctr_isintel && \
+			    (pctr_intel_cap & PCTR_INTEL_VERSION_MASK) >= 1))
 
 int			pctr_isamd;
 int			pctr_isintel;
+uint32_t		pctr_intel_cap;
 
 static void		pctrrd(struct pctrst *);
 static int		pctrsel(int, u_int32_t, u_int32_t);
@@ -68,13 +71,16 @@ pctrrd(struct pctrst *st)
 void
 pctrattach(int num)
 {
+	uint32_t dummy;
 
 	if (num > 1)
 		return;
 
 	pctr_isamd = (strcmp(cpu_vendor, "AuthenticAMD") == 0);
-	if (!pctr_isamd)
+	if (!pctr_isamd) {
 		pctr_isintel = (strcmp(cpu_vendor, "GenuineIntel") == 0);
+		CPUID(0xa, pctr_intel_cap, dummy, dummy, dummy);
+	}
 
 	if (usepctr) {
 		/* Enable RDTSC and RDPMC instructions from user-level. */
