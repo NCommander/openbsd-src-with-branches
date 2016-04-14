@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.50 2015/01/18 19:50:15 djm Exp $
+#	$OpenBSD: test-exec.sh,v 1.51 2015/03/03 22:35:19 markus Exp $
 #	Placed in the Public Domain.
 
 USER=`id -un`
@@ -269,6 +269,13 @@ cat << EOF > $OBJ/sshd_config
 	AcceptEnv		_XXX_TEST
 	Subsystem	sftp	$SFTPSERVER
 EOF
+
+# This may be necessary if /usr/src and/or /usr/obj are group-writable,
+# but if you aren't careful with permissions then the unit tests could
+# be abused to locally escalate privileges.
+if [ ! -z "$TEST_SSH_UNSAFE_PERMISSIONS" ]; then
+	echo "StrictModes no" >> $OBJ/sshd_config
+fi
 
 if [ ! -z "$TEST_SSH_SSHD_CONFOPTS" ]; then
 	trace "adding sshd_config option $TEST_SSH_SSHD_CONFOPTS"
