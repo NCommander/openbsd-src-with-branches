@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvme.c,v 1.36 2016/04/14 00:26:38 dlg Exp $ */
+/*	$OpenBSD: nvme.c,v 1.37 2016/04/14 03:04:36 dlg Exp $ */
 
 /*
  * Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
@@ -451,7 +451,7 @@ nvme_scsi_cmd(struct scsi_xfer *xs)
 	case WRITE_12:
 	case WRITE_16:
 		nvme_scsi_io(xs, nvme_scsi_wr_fill);
-		break;
+		return;
 
 	case INQUIRY:
 		nvme_scsi_inq(xs);
