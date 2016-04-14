@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvme.c,v 1.40 2016/04/14 06:16:36 dlg Exp $ */
+/*	$OpenBSD: nvme.c,v 1.39 2016/04/14 06:10:49 dlg Exp $ */
 
 /*
  * Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
@@ -344,6 +344,15 @@ nvme_attach(struct nvme_softc *sc)
 	if (nvme_identify(sc, NVME_CAP_MPSMIN(cap)) != 0) {
 		printf("%s: unable to identify controller\n", DEVNAME(sc));
 		goto disable;
+	}
+
+	/* we know how big things are now */
+	sc->sc_max_sgl = sc->sc_mdts / sc->sc_mps;
+
+	nvme_ccbs_free(sc);
+	if (nvme_ccbs_alloc(sc, 64) != 0) {
+		printf("%s: unable to allocate ccbs\n", DEVNAME(sc));
+		goto free_admin_q;
 	}
 
 	sc->sc_q = nvme_q_alloc(sc, 1, 128, dstrd);
