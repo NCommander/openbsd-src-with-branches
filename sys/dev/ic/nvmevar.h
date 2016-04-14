@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvmevar.h,v 1.5 2016/04/13 12:21:15 dlg Exp $ */
+/*	$OpenBSD: nvmevar.h,v 1.2 2014/04/15 10:28:07 dlg Exp $ */
 
 /*
  * Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
@@ -79,8 +79,8 @@ struct nvme_softc {
 	struct nvm_identify_controller
 				sc_identify;
 
-	u_int                   sc_nn;
-	struct nvme_namespace   *sc_namespaces;
+	u_int			sc_nn;
+	struct nvme_namespace	*sc_namespaces;
 
 	struct nvme_queue	*sc_admin_q;
 	struct nvme_queue	*sc_q;
