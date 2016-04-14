@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.6 2014/03/13 02:17:13 yasuoka Exp $ */
+/*	$OpenBSD: locore.S,v 1.7 2015/08/19 13:14:09 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -54,10 +54,11 @@ start:
 	dmtc0	t0, COP_0_CVMCTL
 
 /* initialize cvmmemctl */
+#if 0
 	dli	t0, 0x1846104 # If you want to skip write buffer, use this
-/*
+#else
 	dli	t0, 0x46104
-*/
+#endif
 	dmtc0	t0, COP_0_CVMMEMCTL
 
 /* initialize pagegrain */
