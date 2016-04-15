@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_sync.c,v 1.39 2013/06/01 23:06:26 tedu Exp $ */
+/*	$OpenBSD: rthread_sync.c,v 1.40 2016/04/02 19:56:53 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2012 Philip Guenther <guenther@openbsd.org>
@@ -619,6 +619,7 @@ pthread_cond_signal(pthread_cond_t *condp)
 
 	return (0);
 }
+DEF_STD(pthread_cond_signal);
 
 int
 pthread_cond_broadcast(pthread_cond_t *condp)
