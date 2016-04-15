@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.11 2016/02/21 18:56:49 renato Exp $ */
+/*	$OpenBSD: rde.c,v 1.12 2016/04/15 13:21:45 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -407,6 +407,7 @@ rde_dispatch_parent(int fd, short event, void *bula)
 				fatal(NULL);
 			memcpy(niface, imsg.data, sizeof(struct iface));
 
+			TAILQ_INIT(&niface->ei_list);
 			TAILQ_INIT(&niface->addr_list);
 			TAILQ_INSERT_TAIL(&nconf->iface_list, niface, entry);
 			break;
