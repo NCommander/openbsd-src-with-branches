@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.204 2016/04/12 14:42:54 krw Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.205 2016/04/13 06:06:04 vgross Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -473,7 +473,7 @@ in_pcbpickport(u_int16_t *lport, void *laddr, int wild, struct inpcb *inp,
 		if (candidate < lower || candidate > higher)
 			candidate = lower;
 		localport = htons(candidate);
-	} while (in_baddynamic(localport, so->so_proto->pr_protocol) ||
+	} while (in_baddynamic(candidate, so->so_proto->pr_protocol) ||
 	    in_pcblookup_local(table, laddr, localport, wild,
 	    inp->inp_rtableid));
 	*lport = localport;
