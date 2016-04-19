@@ -1,4 +1,4 @@
-/*	$OpenBSD: xenvar.h,v 1.29 2016/02/02 17:52:46 mikeb Exp $	*/
+/*	$OpenBSD: xenvar.h,v 1.30 2016/04/19 12:39:31 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Belopuhov
@@ -89,6 +89,7 @@ struct xen_attach_args {
 	char			 xa_name[16];
 	char			 xa_node[64];
 	char			 xa_backend[128];
+	int			 xa_domid;
 	bus_dma_tag_t		 xa_dmat;
 };
 
