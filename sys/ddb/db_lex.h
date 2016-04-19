@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_lex.h,v 1.7 2002/07/01 21:56:55 miod Exp $	*/
+/*	$OpenBSD: db_lex.h,v 1.8 2016/01/25 14:30:30 mpi Exp $	*/
 /*	$NetBSD: db_lex.h,v 1.7 1996/02/05 01:57:07 christos Exp $	*/
 
 /*
@@ -34,9 +34,6 @@
  * Lexical analyzer.
  */
 int db_read_line(void);
-void db_flush_line(void);
-int db_read_char(void);
-void db_unread_char(int);
 void db_unread_token(int);
 int db_read_token(void);
 void db_flush_lex(void);
