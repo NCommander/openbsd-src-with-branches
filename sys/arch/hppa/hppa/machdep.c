@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.241 2015/01/20 19:43:20 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.242 2015/10/21 07:59:18 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -392,6 +392,7 @@ hppa_init(paddr_t start)
 	proc0paddr->u_pcb.pcb_fpstate = &proc0fpstate;
 	pool_init(&hppa_fppl, sizeof(struct hppa_fpstate), 16, 0, 0,
 	    "hppafp", NULL);
+	pool_setipl(&hppa_fppl, IPL_NONE);
 }
 
 void
