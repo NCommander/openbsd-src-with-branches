@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.274 2016/02/05 19:15:15 jung Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.275 2016/03/17 19:40:43 krw Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -728,10 +728,6 @@ load_pki_tree(void)
 
 		if (!ssl_load_certificate(pki, pki->pki_cert_file))
 			fatalx("load_pki_tree: failed to load certificate file");
-
-		if (pki->pki_dhparams_file)
-			if (!ssl_load_dhparams(pki, pki->pki_dhparams_file))
-				fatalx("load_pki_tree: failed to load dhparams file");
 	}
 
 	log_debug("debug: init ca-tree");
