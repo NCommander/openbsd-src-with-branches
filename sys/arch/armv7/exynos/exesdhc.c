@@ -1,4 +1,4 @@
-/*	$OpenBSD: exesdhc.c,v 1.3 2015/05/30 02:17:36 jsg Exp $	*/
+/*	$OpenBSD: exesdhc.c,v 1.4 2016/01/10 14:11:43 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -18,8 +18,6 @@
  */
 
 /* i.MX SD/MMC support derived from /sys/dev/sdmmc/sdhc.c */
-
-#include "fdt.h"
 
 #include <sys/param.h>
 #include <sys/device.h>

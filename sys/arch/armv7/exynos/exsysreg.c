@@ -1,4 +1,4 @@
-/* $OpenBSD: exsysreg.c,v 1.1 2015/01/26 02:48:24 bmercer Exp $ */
+/* $OpenBSD: exsysreg.c,v 1.2 2015/05/27 00:06:14 jsg Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -14,8 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#include "fdt.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
