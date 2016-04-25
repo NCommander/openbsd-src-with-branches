@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.128 2016/01/06 17:59:30 tedu Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.129 2016/03/19 12:04:15 natano Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -1036,13 +1036,12 @@ fdcopy(struct process *pr)
 			 * XXX Gruesome hack. If count gets too high, fail
 			 * to copy an fd, since fdcopy()'s callers do not
 			 * permit it to indicate failure yet.
-			 * Meanwhile, kqueue and systrace files have to be
+			 * Meanwhile, kqueue files have to be
 			 * tied to the process that opened them to enforce
 			 * their internal consistency, so close them here.
 			 */
 			if ((*fpp)->f_count == LONG_MAX-2 ||
-			    (*fpp)->f_type == DTYPE_KQUEUE ||
-			    (*fpp)->f_type == DTYPE_SYSTRACE)
+			    (*fpp)->f_type == DTYPE_KQUEUE)
 				fdremove(newfdp, i);
 			else
 				(*fpp)->f_count++;
