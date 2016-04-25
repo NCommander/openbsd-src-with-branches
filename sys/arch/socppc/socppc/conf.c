@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.24 2015/10/23 15:10:52 claudio Exp $ */
+/*	$OpenBSD: conf.c,v 1.25 2016/02/26 09:10:05 natano Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -96,8 +96,6 @@ cdev_decl(pci);
 
 #include "pf.h"
 
-#include "systrace.h"
-
 #include "ksyms.h"
 #include "usb.h"
 #include "uhid.h"
@@ -161,7 +159,7 @@ struct cdevsw cdevsw[] = {
 	cdev_notdef(),			/* 47: was: /dev/crypto */
 	cdev_notdef(),			/* 48 */
 	cdev_notdef(),			/* 49 */
-	cdev_systrace_init(NSYSTRACE,systrace),	/* 50 system call tracing */
+	cdev_notdef(),			/* 50 */
 	cdev_notdef(),			/* 51 */
 	cdev_notdef(),			/* 52 */
 	cdev_notdef(),			/* 53 */
