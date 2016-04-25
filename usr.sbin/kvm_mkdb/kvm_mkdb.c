@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mkdb.c,v 1.26 2015/11/08 17:48:48 millert Exp $	*/
+/*	$OpenBSD: kvm_mkdb.c,v 1.27 2015/11/23 21:06:14 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -78,7 +78,7 @@ main(int argc, char *argv[])
 		warn("can't find kmem group");
 	} else {
 		kvm_gid = gr->gr_gid;
-		if (setegid(kvm_gid) == -1)
+		if (setresgid(kvm_gid, kvm_gid, kvm_gid) == -1)
 			err(1, "setegid");
 	}
 
