@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ps.1,v 1.103 2016/03/17 05:27:10 bentley Exp $
+.\"	$OpenBSD: ps.1,v 1.104 2016/03/17 07:18:33 jmc Exp $
 .\"	$NetBSD: ps.1,v 1.16 1996/03/21 01:36:28 jtc Exp $
 .\"
 .\" Copyright (c) 1980, 1990, 1991, 1993, 1994
@@ -230,7 +230,6 @@ P_TIMEOUT       0x400 timing out during sleep
 P_WEXIT        0x2000 working on exiting
 P_OWEUPC       0x8000 profiling sample needs recording
 P_SUSPSINGLE  0x80000 need to suspend for single threading
-P_SYSTRACE   0x400000 systrace(4) policy is active
 P_CONTINUED  0x800000 thread has continued after a stop
 P_THREAD    0x4000000 not the original thread
 P_SUSPSIG   0x8000000 stopped because of a signal
@@ -473,8 +472,6 @@ The process is suspended during a
 .It X
 The process is being traced or debugged.
 .It x
-The process is being monitored by
-.Xr systrace 1 .
 .It / Ns Ar n
 On multiprocessor machines, specifies processor number
 .Ar n .
