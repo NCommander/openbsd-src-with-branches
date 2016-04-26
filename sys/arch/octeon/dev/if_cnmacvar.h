@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnmacvar.h,v 1.6 2015/06/11 12:30:42 jmatthew Exp $	*/
+/*	$OpenBSD: if_cnmacvar.h,v 1.7 2015/10/08 14:24:32 visa Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -33,10 +33,6 @@
 #define GATHER_QUEUE_SIZE	(1024)
 #define FREE_QUEUE_SIZE		GATHER_QUEUE_SIZE
 #define RECV_QUEUE_SIZE		(GATHER_QUEUE_SIZE * 2)
-
-#ifdef OCTEON_ETH_FIXUP_ODD_NIBBLE_DYNAMIC
-#define PROC_NIBBLE_SOFT_THRESHOLD 2000
-#endif
 
 struct _send_queue_entry;
 struct cn30xxpow_softc;
