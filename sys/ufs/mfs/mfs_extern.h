@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_extern.h,v 1.17 2010/09/10 16:34:09 thib Exp $	*/
+/*	$OpenBSD: mfs_extern.h,v 1.18 2010/12/21 20:14:44 thib Exp $	*/
 /*	$NetBSD: mfs_extern.h,v 1.4 1996/02/09 22:31:27 christos Exp $	*/
 
 /*-
@@ -49,7 +49,6 @@ extern struct vops mfs_vops;
 int mfs_mount(struct mount *, const char *, void *, struct nameidata *,
     struct proc *);
 int mfs_start(struct mount *, int, struct proc *);
-int mfs_statfs(struct mount *, struct statfs *, struct proc *);
 int mfs_init(struct vfsconf *);
 int mfs_checkexp(struct mount *, struct mbuf *, int *, struct ucred **);
 
