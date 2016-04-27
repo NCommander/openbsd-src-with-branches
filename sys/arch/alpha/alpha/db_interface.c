@@ -1,4 +1,4 @@
-/* $OpenBSD: db_interface.c,v 1.20 2014/03/29 18:09:28 guenther Exp $ */
+/* $OpenBSD: db_interface.c,v 1.21 2014/07/13 12:11:01 jasper Exp $ */
 /* $NetBSD: db_interface.c,v 1.8 1999/10/12 17:08:57 jdolecek Exp $ */
 
 /* 
@@ -496,7 +496,7 @@ next_instr_address(pc, branch)
 {
 	if (!branch)
 		return (pc + sizeof(int));
-	return (branch_taken(*(u_int *)pc, pc, getreg_val, DDB_REGS));
+	return (branch_taken(*(u_int *)pc, pc, getreg_val, &ddb_regs));
 }
 
 #if defined(MULTIPROCESSOR)
