@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.211 2016/04/08 03:13:38 dlg Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.212 2016/04/15 05:05:21 dlg Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -34,6 +34,8 @@
 
 #ifndef _SYS_MBUF_H_
 #define _SYS_MBUF_H_
+
+#include <sys/queue.h>
 
 /*
  * Constants related to network buffer management.
