@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.60 2016/04/26 15:57:09 mlarkin Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.61 2016/04/26 16:11:27 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -4613,7 +4613,7 @@ vmm_decode_efer_value(uint64_t efer)
 		{ EFER_SCE, "SCE ", "sce "},
 		{ EFER_LME, "LME ", "lme "},
 		{ EFER_LMA, "LMA ", "lma "},
-		{ EFER_NXE, "NXE ", "nxe "},
+		{ EFER_NXE, "NXE", "nxe"},
 	};
 
 	uint8_t i;
