@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.139 2016/03/25 16:31:32 mestre Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.140 2016/04/10 03:04:21 tedu Exp $	*/
 
 /*
  * Copyright (c) 2015 Henning Brauer <henning@openbsd.org>
@@ -1374,9 +1374,6 @@ main(int argc, char *argv[])
 
 	if (!greylist) {
 		maxblack = maxcon;
-
-		if (pledge("stdio rpath inet proc id", NULL) == -1)
-			err(1, "pledge");
 	} else if (maxblack > maxcon)
 		usage();
 
