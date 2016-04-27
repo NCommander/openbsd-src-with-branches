@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.c,v 1.49 2015/12/14 01:08:50 krw Exp $ */
+/*	$OpenBSD: dhcpd.c,v 1.50 2016/02/06 23:50:10 krw Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -240,12 +240,8 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (udpsockmode) {
+	if (udpsockmode)
 		udpsock_startup(udpaddr);
-	} else {
-		if (pledge("stdio rpath inet sendfd proc id", NULL) == -1)
-			err(1, "pledge");
-	}
 
 	icmp_startup(1, lease_pinged);
 
