@@ -155,15 +155,15 @@ rc_start() {
 }
 
 rc_check() {
-	pgrep -T "${daemon_rtable}" -q -xf "${pexp}"
+	pgrep -T "${daemon_rtable}" -U "${daemon_user}" -q -xf "${pexp}"
 }
 
 rc_reload() {
-	pkill -T "${daemon_rtable}" -HUP -xf "${pexp}"
+	pkill -T "${daemon_rtable}" -U "${daemon_user}" -HUP -xf "${pexp}"
 }
 
 rc_stop() {
-	pkill -T "${daemon_rtable}" -xf "${pexp}"
+	pkill -T "${daemon_rtable}" -U "${daemon_user}" -xf "${pexp}"
 }
 
 rc_cmd() {
