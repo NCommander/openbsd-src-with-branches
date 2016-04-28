@@ -1,4 +1,4 @@
-/*	$OpenBSD: net80211.c,v 1.13 2015/01/16 06:40:10 deraadt Exp $	*/
+/*	$OpenBSD: net80211.c,v 1.14 2016/04/27 11:59:03 stsp Exp $	*/
 
 /*
  * Copyright (c) 2005 Reyk Floeter <reyk@openbsd.org>
@@ -128,6 +128,7 @@ net80211_ifstats(char *ifname)
 	    "\t%lu input frame%s below block ack window start\n");
 	p(is_ht_rx_frame_above_ba_winend,
 	    "\t%lu input frame%s above block ack window end\n");
+	p(is_ht_rx_ba_window_slide, "\t%lu input block ack window slide%s\n");
 	p(is_ht_rx_ba_window_jump, "\t%lu input block ack window jump%s\n");
 	p(is_ht_rx_ba_no_buf, "\t%lu duplicate input block ack frame%s\n");
 	p(is_ht_rx_ba_frame_lost,
