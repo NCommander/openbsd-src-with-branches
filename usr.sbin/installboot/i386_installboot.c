@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_installboot.c,v 1.25 2015/12/24 20:14:07 krw Exp $	*/
+/*	$OpenBSD: i386_installboot.c,v 1.26 2015/12/28 23:00:29 krw Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -793,6 +793,8 @@ getbootparams(char *boot, int devfd, struct disklabel *dl)
 		    ino_to_fsba(fs, fsb.st_ino),
 		    (unsigned int)((((char *)ap) - buf) + INODEOFF));
 	}
+
+	free (buf);
 
 	return 0;
 }
