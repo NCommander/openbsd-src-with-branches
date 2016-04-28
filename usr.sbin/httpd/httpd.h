@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.101 2015/11/23 20:56:14 reyk Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.102 2015/12/02 15:13:00 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -464,9 +464,6 @@ TAILQ_HEAD(serverhosts, server_config);
 
 struct tls_config {
 	uint32_t		 id;
-
-	in_port_t		 port;
-	struct sockaddr_storage	 ss;
 
 	size_t			 tls_cert_len;
 	size_t			 tls_key_len;
