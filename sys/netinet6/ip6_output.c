@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.204 2016/01/21 11:23:48 mpi Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.205 2016/04/27 21:14:29 markus Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -1424,7 +1424,12 @@ do { \
 					error = EINVAL;
 					break;
 				}
+				if (inp->inp_lport) {
+					error = EBUSY;
+					break;
+				}
 				inp->inp_rtableid = rtid;
+				in_pcbrehash(inp);
 				break;
 			case IPV6_PIPEX:
 				if (m != NULL && m->m_len == sizeof(int))
