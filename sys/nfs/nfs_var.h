@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_var.h,v 1.59 2010/04/12 16:37:38 beck Exp $	*/
+/*	$OpenBSD: nfs_var.h,v 1.60 2013/06/11 16:42:17 deraadt Exp $	*/
 /*	$NetBSD: nfs_var.h,v 1.3 1996/02/18 11:53:54 fvdl Exp $	*/
 
 /*
@@ -95,7 +95,8 @@ int nfs_mkdir(void *);
 int nfs_rmdir(void *);
 int nfs_readdir(void *);
 int nfs_readdirrpc(struct vnode *, struct uio *, struct ucred *, int *);
-int nfs_readdirplusrpc(struct vnode *, struct uio *, struct ucred *, int *);
+int nfs_readdirplusrpc(struct vnode *, struct uio *, struct ucred *, int *,
+    struct proc *);
 int nfs_sillyrename(struct vnode *, struct vnode *,
 			 struct componentname *);
 int nfs_lookitup(struct vnode *, char *, int, struct ucred *,
