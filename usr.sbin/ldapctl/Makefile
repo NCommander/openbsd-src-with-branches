@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2010/09/03 14:34:02 martinh Exp $
+#	$OpenBSD: Makefile,v 1.5 2010/11/03 14:17:01 martinh Exp $
 
 .PATH:		${.CURDIR}/../ldapd
 
@@ -7,8 +7,8 @@ MAN=		ldapctl.8
 SRCS=		ldapctl.c parse.y btree.c log.c ber.c util.c \
 		index.c attributes.c schema.c syntax.c matching.c
 
-LDADD=		-levent -lcrypto -lz -lutil
-DPADD=		${LIBEVENT} ${LIBCRYPTO} ${LIBZ} ${LIBUTIL}
+LDADD=		-ltls -levent -lz -lutil
+DPADD=		${LIBTLS} ${LIBEVENT} ${LIBZ} ${LIBUTIL}
 CFLAGS+=	-I${.CURDIR}/../ldapd
 CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
