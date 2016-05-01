@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc.c,v 1.40 2016/04/30 11:32:23 kettenis Exp $	*/
+/*	$OpenBSD: sdmmc.c,v 1.41 2016/05/01 16:04:39 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -98,6 +98,18 @@ sdmmc_attach(struct device *parent, struct device *self, void *aux)
 	struct sdmmcbus_attach_args *saa = aux;
 	int error;
 
+	if (ISSET(saa->caps, SMC_CAPS_8BIT_MODE))
+		printf(": 8-bit");
+	else if (ISSET(saa->caps, SMC_CAPS_4BIT_MODE))
+		printf(": 4-bit");
+	else
+		printf(": 1-bit");
+	if (ISSET(saa->caps, SMC_CAPS_SD_HIGHSPEED))
+		printf(", sd high-speed");
+	if (ISSET(saa->caps, SMC_CAPS_MMC_HIGHSPEED))
+		printf(", mmc high-speed");
+	if (ISSET(saa->caps, SMC_CAPS_DMA))
+		printf(", dma");
 	printf("\n");
 
 	sc->sct = saa->sct;
