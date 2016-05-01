@@ -1,4 +1,4 @@
-/*	$OpenBSD: ommmc.c,v 1.14 2015/05/30 02:17:36 jsg Exp $	*/
+/*	$OpenBSD: ommmc.c,v 1.15 2016/01/10 14:11:43 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2009 Dale Rahn <drahn@openbsd.org>
@@ -260,6 +260,7 @@ struct sdmmc_chip_functions ommmc_functions = {
 	/* bus power and clock frequency */
 	ommmc_bus_power,
 	ommmc_bus_clock,
+	NULL,
 	/* command execution */
 	ommmc_exec_command,
 	/* card interrupt */
