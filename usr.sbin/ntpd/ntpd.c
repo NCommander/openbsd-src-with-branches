@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpd.c,v 1.105 2016/01/27 21:48:34 reyk Exp $ */
+/*	$OpenBSD: ntpd.c,v 1.106 2016/02/02 17:51:11 sthen Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -230,8 +230,10 @@ main(int argc, char *argv[])
 	 * Constraint processes are forked with certificates in memory,
 	 * then privdrop into chroot before speaking to the outside world.
 	 */
+#if 0	
 	if (pledge("stdio rpath inet settime proc id", NULL) == -1)
 		err(1, "pledge");
+#endif
 
 	while (quit == 0) {
 		new_cnt = PFD_MAX + constraint_cnt;
