@@ -1,4 +1,4 @@
-/* $OpenBSD: sshkey.h,v 1.11 2015/11/19 01:08:55 djm Exp $ */
+/* $OpenBSD: sshkey.h,v 1.12 2015/12/04 16:41:28 markus Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -131,7 +131,7 @@ int	 sshkey_type_is_cert(int);
 int	 sshkey_type_plain(int);
 int	 sshkey_to_certified(struct sshkey *);
 int	 sshkey_drop_cert(struct sshkey *);
-int	 sshkey_certify(struct sshkey *, struct sshkey *);
+int	 sshkey_certify(struct sshkey *, struct sshkey *, const char *);
 int	 sshkey_cert_copy(const struct sshkey *, struct sshkey *);
 int	 sshkey_cert_check_authority(const struct sshkey *, int, int,
     const char *, const char **);
