@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.7 2016/01/08 09:48:41 mpi Exp $
+#	$OpenBSD: GENERIC,v 1.8 2016/04/24 17:30:31 matthieu Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -28,6 +28,7 @@ config		bsd	swap generic
 
 # The main bus device
 mainbus0	at root
+simplebus*	at fdt?
 cpu0		at mainbus?
 
 # Cortex-A9

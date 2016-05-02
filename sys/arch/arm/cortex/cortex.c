@@ -1,4 +1,4 @@
-/*	$OpenBSD: cortex.c,v 1.3 2015/05/29 05:48:07 jsg Exp $	*/
+/*	$OpenBSD: cortex.c,v 1.4 2016/04/08 12:08:54 patrick Exp $	*/
 /* $NetBSD: mainbus.c,v 1.3 2001/06/13 17:52:43 nathanw Exp $ */
 
 /*
@@ -97,7 +97,7 @@ struct cfdriver cortex_cd = {
 int
 cortexmatch(struct device *parent, void *cfdata, void *aux)
 {
-	struct mainbus_attach_args *ma = aux;
+	union mainbus_attach_args *ma = aux;
 	struct cfdata *cf = (struct cfdata *)cfdata;
 	int cputype = cpufunc_id();
 
