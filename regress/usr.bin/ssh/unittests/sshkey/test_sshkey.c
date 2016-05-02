@@ -1,4 +1,4 @@
-/* 	$OpenBSD: test_sshkey.c,v 1.8 2015/10/06 01:20:59 djm Exp $ */
+/* 	$OpenBSD: test_sshkey.c,v 1.9 2015/12/07 02:20:46 djm Exp $ */
 /*
  * Regress test for sshkey.h key management API
  *
@@ -432,7 +432,7 @@ sshkey_tests(void)
 	put_opt(k1->cert->extensions, "permit-X11-forwarding", NULL);
 	put_opt(k1->cert->extensions, "permit-agent-forwarding", NULL);
 	ASSERT_INT_EQ(sshkey_from_private(k2, &k1->cert->signature_key), 0);
-	ASSERT_INT_EQ(sshkey_certify(k1, k2), 0);
+	ASSERT_INT_EQ(sshkey_certify(k1, k2, NULL), 0);
 	b = sshbuf_new();
 	ASSERT_PTR_NE(b, NULL);
 	ASSERT_INT_EQ(sshkey_putb(k1, b), 0);
