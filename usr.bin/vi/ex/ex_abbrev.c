@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_abbrev.c,v 1.6 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: ex_abbrev.c,v 1.7 2016/01/06 22:28:52 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -34,7 +34,7 @@
 int
 ex_abbr(SCR *sp, EXCMD *cmdp)
 {
-	CHAR_T *p;
+	char *p;
 	size_t len;
 
 	switch (cmdp->argc) {

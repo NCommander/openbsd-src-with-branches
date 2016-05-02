@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_print.c,v 1.10 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: ex_print.c,v 1.11 2016/01/06 22:29:38 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -196,7 +196,7 @@ static int
 ex_prchars(SCR *sp, const char *p, size_t *colp, size_t len, u_int flags,
     int repeatc)
 {
-	CHAR_T ch, *kp;
+	char ch, *kp;
 	size_t col, tlen, ts;
 
 	if (O_ISSET(sp, O_LIST))

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_append.c,v 1.11 2016/01/06 22:28:52 millert Exp $	*/
+/*	$OpenBSD: ex_append.c,v 1.12 2016/01/06 22:29:38 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -71,7 +71,7 @@ ex_insert(SCR *sp, EXCMD *cmdp)
 static int
 ex_aci(SCR *sp, EXCMD *cmdp, enum which cmd)
 {
-	CHAR_T *p, *t;
+	char *p, *t;
 	GS *gp;
 	TEXT *tp;
 	TEXTH tiq;

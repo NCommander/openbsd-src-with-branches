@@ -1,4 +1,4 @@
-/*	$OpenBSD: screen.h,v 1.7 2014/11/20 08:50:53 bentley Exp $	*/
+/*	$OpenBSD: screen.h,v 1.8 2015/11/19 07:53:31 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -82,7 +82,7 @@ struct _scr {
 	recno_t	 defscroll;		/* Vi: ^D, ^U scroll information. */
 
 					/* Display character. */
-	CHAR_T	 cname[MAX_CHARACTER_COLUMNS + 1];
+	char	 cname[MAX_CHARACTER_COLUMNS + 1];
 	size_t	 clen;			/* Length of display character. */
 
 	enum {				/* Vi editor mode. */
@@ -95,7 +95,7 @@ struct _scr {
 /* PARTIALLY OR COMPLETELY COPIED FROM PREVIOUS SCREEN. */
 	char	*alt_name;		/* Ex/vi: alternate file name. */
 
-	CHAR_T	 at_lbuf;		/* Ex/vi: Last executed at buffer. */
+	char	 at_lbuf;		/* Ex/vi: Last executed at buffer. */
 
 					/* Ex/vi: re_compile flags. */
 #define	RE_C_SEARCH	0x0002		/* Compile search replacement. */

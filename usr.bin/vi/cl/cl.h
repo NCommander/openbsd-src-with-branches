@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.h,v 1.7 2006/01/08 21:05:39 miod Exp $	*/
+/*	$OpenBSD: cl.h,v 1.8 2014/11/12 16:29:04 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -12,7 +12,7 @@
  */
 
 typedef struct _cl_private {
-	CHAR_T	 ibuf[256];	/* Input keys. */
+	char	 ibuf[256];	/* Input keys. */
 
 	int	 eof_count;	/* EOF count. */
 

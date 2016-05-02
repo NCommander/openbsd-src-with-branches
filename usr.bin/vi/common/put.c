@@ -1,4 +1,4 @@
-/*	$OpenBSD: put.c,v 1.13 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: put.c,v 1.14 2016/01/06 22:28:52 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -27,17 +27,16 @@
  * put --
  *	Put text buffer contents into the file.
  *
- * PUBLIC: int put(SCR *, CB *, CHAR_T *, MARK *, MARK *, int);
+ * PUBLIC: int put(SCR *, CB *, char *, MARK *, MARK *, int);
  */
 int
-put(SCR *sp, CB *cbp, CHAR_T *namep, MARK *cp, MARK *rp, int append)
+put(SCR *sp, CB *cbp, char *namep, MARK *cp, MARK *rp, int append)
 {
-	CHAR_T name;
 	TEXT *ltp, *tp;
 	recno_t lno;
 	size_t blen, clen, len;
 	int rval;
-	char *bp, *p, *t;
+	char name, *bp, *p, *t;
 
 	if (cbp == NULL) {
 		if (namep == NULL) {
