@@ -1,4 +1,4 @@
-#	$OpenBSD: Proc.pm,v 1.10 2014/08/18 22:58:19 bluhm Exp $
+#	$OpenBSD: Proc.pm,v 1.1 2015/07/16 16:35:57 reyk Exp $
 
 # Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -147,7 +147,8 @@ sub loggrep {
 	my $self = shift;
 	my($regex, $timeout) = @_;
 
-	my $end = time() + $timeout if $timeout;
+	my $end;
+	$end = time() + $timeout if $timeout;
 
 	do {
 		my($kid, $status, $code) = $self->wait(WNOHANG);
