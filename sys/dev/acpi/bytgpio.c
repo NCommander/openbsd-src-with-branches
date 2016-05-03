@@ -1,4 +1,4 @@
-/*	$OpenBSD: bytgpio.c,v 1.5 2016/04/02 00:34:47 jsg Exp $	*/
+/*	$OpenBSD: bytgpio.c,v 1.6 2016/04/30 16:27:58 kettenis Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -152,6 +152,7 @@ bytgpio_attach(struct device *parent, struct device *self, void *aux)
 		sc->sc_npins = nitems(byt_sus_pins);
 		break;
 	default:
+		printf("\n");
 		return;
 	}
 
