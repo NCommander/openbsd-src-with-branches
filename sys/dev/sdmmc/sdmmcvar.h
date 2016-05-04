@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmcvar.h,v 1.23 2016/04/30 11:32:23 kettenis Exp $	*/
+/*	$OpenBSD: sdmmcvar.h,v 1.24 2016/05/01 16:04:39 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -36,6 +36,7 @@ struct sdmmc_csd {
 	int	capacity;	/* total number of sectors */
 	int	sector_size;	/* sector size in bytes */
 	int	read_bl_len;	/* block length for reads */
+	int	ccc;		/* Card Command Class for SD */
 	/* ... */
 };
 
