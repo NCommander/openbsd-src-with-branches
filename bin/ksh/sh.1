@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sh.1,v 1.131 2016/03/21 13:35:00 tb Exp $
+.\"	$OpenBSD: sh.1,v 1.132 2016/05/04 06:20:42 jmc Exp $
 .\"
 .\" Copyright (c) 2015 Jason McIntyre <jmc@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: March 21 2016 $
+.Dd $Mdocdate: May 4 2016 $
 .Dt SH 1
 .Os
 .Sh NAME
@@ -1380,7 +1380,7 @@ greater than, and greater than or equal to, respectively.
 The result is 1 if true, or 0 otherwise.
 .It == !=
 Equal (the result is 1 if both arguments are equal, and 0 otherwise)
-and not equal (the result is 1 if both arguments are non-zero, and 0 otherwise),
+and not equal (the result is 0 if both arguments are equal, and 1 otherwise),
 respectively.
 .It &
 Bitwise AND.
