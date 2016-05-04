@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.9 2014/02/21 18:30:15 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.10 2015/11/14 21:49:16 deraadt Exp $
 
-CFLAGS+=-DSMALL -DINET6
+CFLAGS+=-DSMALL
 
 PROG=	ftp
 SRCS=	fetch.c ftp.c main.c small.c util.c

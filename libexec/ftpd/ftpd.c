@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.214 2016/04/06 07:14:17 semarie Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.215 2016/04/25 15:43:34 deraadt Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -2318,9 +2318,7 @@ epsvproto2af(int proto)
 
 	switch (proto) {
 	case 1:	return AF_INET;
-#ifdef INET6
 	case 2:	return AF_INET6;
-#endif
 	default: return -1;
 	}
 }
@@ -2331,9 +2329,7 @@ af2epsvproto(int af)
 
 	switch (af) {
 	case AF_INET:	return 1;
-#ifdef INET6
 	case AF_INET6:	return 2;
-#endif
 	default:	return -1;
 	}
 }
