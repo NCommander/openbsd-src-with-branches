@@ -1,4 +1,4 @@
-/* $OpenBSD: ttymodes.c,v 1.28 2008/07/07 00:31:41 stevesk Exp $ */
+/* $OpenBSD: ttymodes.c,v 1.29 2008/11/02 00:16:16 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -52,7 +52,6 @@
 
 #include "packet.h"
 #include "log.h"
-#include "ssh1.h"
 #include "compat.h"
 #include "buffer.h"
 

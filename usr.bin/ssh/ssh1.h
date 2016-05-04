@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh1.h,v 1.5 2004/10/20 11:48:53 markus Exp $ */
+/* $OpenBSD: ssh1.h,v 1.6 2006/03/25 22:22:43 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -22,7 +22,6 @@
 #define SSH_MSG_MIN				1
 #define SSH_MSG_MAX				254
 /* Message name */			/* msg code */	/* arguments */
-#define SSH_MSG_NONE				0	/* no message */
 #define SSH_MSG_DISCONNECT			1	/* cause (string) */
 #define SSH_SMSG_PUBLIC_KEY			2	/* ck,msk,srvk,hostk */
 #define SSH_CMSG_SESSION_KEY			3	/* key (BIGNUM) */
