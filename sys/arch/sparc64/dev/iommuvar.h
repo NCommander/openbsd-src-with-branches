@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommuvar.h,v 1.15 2009/05/04 16:48:37 oga Exp $	*/
+/*	$OpenBSD: iommuvar.h,v 1.16 2014/01/22 10:52:35 kettenis Exp $	*/
 /*	$NetBSD: iommuvar.h,v 1.9 2001/10/07 20:30:41 eeh Exp $	*/
 
 /*
@@ -116,6 +116,8 @@ struct iommu_state {
 #define IOMMU_FLUSH_CACHE	0x00000001
 
 	struct strbuf_ctl	*is_sb[2];	/* Streaming buffers if any */
+
+	paddr_t			is_scratch;	/* Scratch page */
 
 	/* copies of our parents state, to allow us to be self contained */
 	bus_space_tag_t		is_bustag;	/* our bus tag */
