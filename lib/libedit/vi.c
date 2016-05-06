@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.23 2016/04/11 20:43:33 schwarze Exp $	*/
+/*	$OpenBSD: vi.c,v 1.24 2016/04/11 21:17:29 schwarze Exp $	*/
 /*	$NetBSD: vi.c,v 1.33 2011/02/17 16:44:48 joerg Exp $	*/
 
 /*-
@@ -48,6 +48,7 @@
 #include "el.h"
 #include "common.h"
 #include "emacs.h"
+#include "fcns.h"
 #include "vi.h"
 
 static el_action_t	cv_action(EditLine *, wint_t);

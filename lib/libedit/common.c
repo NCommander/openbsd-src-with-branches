@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.19 2016/04/11 20:43:33 schwarze Exp $	*/
+/*	$OpenBSD: common.c,v 1.20 2016/04/18 20:13:07 schwarze Exp $	*/
 /*	$NetBSD: common.c,v 1.24 2009/12/30 22:37:40 christos Exp $	*/
 
 /*-
@@ -43,6 +43,7 @@
 
 #include "el.h"
 #include "common.h"
+#include "fcns.h"
 #include "parse.h"
 #include "vi.h"
 

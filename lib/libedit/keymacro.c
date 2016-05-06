@@ -1,5 +1,5 @@
-/*	$OpenBSD: keymacro.c,v 1.13 2016/04/11 21:17:29 schwarze Exp $	*/
-/*	$NetBSD: keymacro.c,v 1.20 2016/04/12 00:16:06 christos Exp $	*/
+/*	$OpenBSD: keymacro.c,v 1.14 2016/04/12 09:04:02 schwarze Exp $	*/
+/*	$NetBSD: keymacro.c,v 1.21 2016/04/18 17:01:19 christos Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -61,6 +61,7 @@
 #include <string.h>
 
 #include "el.h"
+#include "fcns.h"
 
 /*
  * The Nodes of the el->el_keymacro.map.  The el->el_keymacro.map is a

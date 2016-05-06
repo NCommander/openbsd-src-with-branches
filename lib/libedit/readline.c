@@ -1,4 +1,4 @@
-/*	$OpenBSD: readline.c,v 1.19 2016/03/21 17:28:10 schwarze Exp $	*/
+/*	$OpenBSD: readline.c,v 1.20 2016/04/09 19:31:55 schwarze Exp $	*/
 /*	$NetBSD: readline.c,v 1.91 2010/08/28 15:44:59 christos Exp $	*/
 
 /*-
@@ -53,6 +53,7 @@
 #endif
 #include "readline/readline.h"
 #include "el.h"
+#include "fcns.h"
 #include "filecomplete.h"
 
 void rl_prep_terminal(int);

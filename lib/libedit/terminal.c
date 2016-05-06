@@ -1,4 +1,4 @@
-/*	$OpenBSD: terminal.c,v 1.15 2016/04/11 20:43:33 schwarze Exp $	*/
+/*	$OpenBSD: terminal.c,v 1.16 2016/04/11 21:17:29 schwarze Exp $	*/
 /*	$NetBSD: terminal.c,v 1.17 2016/02/15 15:35:03 christos Exp $	*/
 
 /*-
@@ -67,6 +67,7 @@
 #endif
 
 #include "el.h"
+#include "fcns.h"
 
 /*
  * IMPORTANT NOTE: these routines are allowed to look at the current screen
