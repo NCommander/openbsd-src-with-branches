@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.22 2016/03/21 01:32:48 guenther Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.23 2016/03/21 22:41:29 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2002,2004 Dale Rahn
@@ -87,6 +87,7 @@ DL_SYSCALL(read)
 DL_SYSCALL(write)
 DL_SYSCALL(close)
 DL_SYSCALL(issetugid)
+DL_SYSCALL(getthrid)
 DL_SYSCALL(getdents)
 DL_SYSCALL(mprotect)
 DL_SYSCALL(munmap)

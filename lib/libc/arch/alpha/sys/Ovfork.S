@@ -1,4 +1,4 @@
-/*	$OpenBSD: Ovfork.S,v 1.5 2005/08/07 16:40:13 espie Exp $	*/
+/*	$OpenBSD: Ovfork.S,v 1.6 2015/03/31 04:32:01 guenther Exp $	*/
 /*	$NetBSD: Ovfork.S,v 1.1 1995/02/10 17:50:29 cgd Exp $	*/
 
 /*
@@ -30,4 +30,4 @@
 
 #include "SYS.h"
 
-RSYSCALL(vfork)
+RSYSCALL_HIDDEN(vfork)

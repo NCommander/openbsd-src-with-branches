@@ -29,7 +29,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *      $OpenBSD: SYS.h,v 1.10 2015/09/05 17:32:18 miod Exp $ 
+ *      $OpenBSD: SYS.h,v 1.11 2015/10/23 04:39:24 guenther Exp $ 
  */
 
 #include <sys/syscall.h>
@@ -60,8 +60,8 @@
 #define	END_WEAK(x)	END_STRONG(x); .weak x
 
 
-#define CERROR		_C_LABEL(__cerror)
-#define _CERROR		_C_LABEL(___cerror)
+#define CERROR		__cerror
+	.hidden	CERROR
 
 # define __ENTRY(p,x)		ENTRY(p ## x)
 

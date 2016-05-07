@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.27 2015/11/25 05:01:44 guenther Exp $
+#	$OpenBSD: Makefile.inc,v 1.28 2016/03/09 16:28:46 deraadt Exp $
 #
 # This file contains make rules used to build libc
 #
@@ -8,7 +8,7 @@ all:
 	@echo "need to define LIBCSRCDIR" >&2; exit 1
 .endif
 
-CFLAGS+=-I${LIBCSRCDIR}/include -I${LIBCSRCDIR}/hidden \
+CFLAGS+=-I${LIBCSRCDIR}/include -I${LIBCSRCDIR}/hidden -D__LIBC__ \
 	-Werror-implicit-function-declaration -include namespace.h
 
 .if ${COMPILER_VERSION:L} != "gcc3"

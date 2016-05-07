@@ -1,4 +1,4 @@
-/* $OpenBSD: brk.S,v 1.10 2015/08/26 01:54:09 guenther Exp $ */
+/* $OpenBSD: brk.S,v 1.11 2015/09/05 06:22:47 guenther Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -66,7 +66,7 @@ PSEUDO_PREFIX(,brk,break)
 	/* check for error */
 	cmpwi	0, 0
 	beq+	.L_brk_ok	/* OK so this is stupid but I haven't read b */
-	b	_ASM_LABEL(___cerror)
+	b	_ASM_LABEL(__cerror)
 
 	/* update, __curbrk and return */
 .L_brk_ok:

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigsuspend.S,v 1.5 2011/04/04 12:42:39 guenther Exp $ */
+/*	$OpenBSD: sigsuspend.S,v 1.6 2015/10/23 04:39:24 guenther Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,7 +36,7 @@
 FRAMESZ= MKFSIZ(1,1)
 GPOFF= FRAMESZ-2*REGSZ
 
-SYSLEAF(sigsuspend, FRAMESZ)
+SYSLEAF_HIDDEN(sigsuspend, FRAMESZ)
 	PTR_SUBU sp, FRAMESZ
 	SETUP_GP64(GPOFF, _HIDDEN(sigsuspend))
 	.set	reorder
@@ -53,4 +53,4 @@ SYSLEAF(sigsuspend, FRAMESZ)
 	RESTORE_GP64
 	PTR_ADDU sp, FRAMESZ
 	jr	t9
-SYSCALL_END(sigsuspend)
+SYSCALL_END_HIDDEN(sigsuspend)

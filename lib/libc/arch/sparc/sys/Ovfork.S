@@ -1,4 +1,4 @@
-/*	$OpenBSD: Ovfork.S,v 1.4 2005/08/07 16:40:15 espie Exp $ */
+/*	$OpenBSD: Ovfork.S,v 1.5 2015/03/31 04:32:02 guenther Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,4 +34,4 @@
 
 #include "SYS.h"
 
-RSYSCALL(vfork)
+RSYSCALL_HIDDEN(vfork)
