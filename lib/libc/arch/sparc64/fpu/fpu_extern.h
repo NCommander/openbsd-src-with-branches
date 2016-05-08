@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_extern.h,v 1.2 2004/09/28 18:03:36 otto Exp $	*/
+/*	$OpenBSD: fpu_extern.h,v 1.3 2008/06/26 05:42:05 ray Exp $	*/
 
 /*-
  * Copyright (c) 1995 The NetBSD Foundation, Inc.
@@ -40,6 +40,7 @@ union instr;
 struct fpemu;
 struct fpn;
 
+__BEGIN_HIDDEN_DECLS
 /* fpu.c */
 int __fpu_exception(struct utrapframe *tf);
 
@@ -86,5 +87,6 @@ int __fpu_shr(register struct fpn *, register int);
 void __fpu_norm(register struct fpn *);
 /* Build a new Quiet NaN (sign=0, frac=all 1's). */
 struct fpn *__fpu_newnan(register struct fpemu *);
+__END_HIDDEN_DECLS
 
 #endif /* !_SPARC64_FPU_FPU_EXTERN_H_ */
