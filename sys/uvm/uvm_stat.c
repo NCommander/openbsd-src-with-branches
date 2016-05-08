@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_stat.c,v 1.27 2014/07/11 16:35:40 jsg Exp $	 */
+/*	$OpenBSD: uvm_stat.c,v 1.28 2014/10/25 12:54:16 miod Exp $	 */
 /*	$NetBSD: uvm_stat.c,v 1.18 2001/03/09 01:02:13 chs Exp $	 */
 
 /*
@@ -69,9 +69,9 @@ uvmexp_print(int (*pr)(const char *, ...))
 	    uvmexp.softs, uvmexp.syscalls, uvmexp.kmapent);
 
 	(*pr)("  fault counts:\n");
-	(*pr)("    noram=%d, noanon=%d, pgwait=%d, pgrele=%d\n",
-	    uvmexp.fltnoram, uvmexp.fltnoanon, uvmexp.fltpgwait,
-	    uvmexp.fltpgrele);
+	(*pr)("    noram=%d, noanon=%d, noamap=%d, pgwait=%d, pgrele=%d\n",
+	    uvmexp.fltnoram, uvmexp.fltnoanon, uvmexp.fltnoamap,
+	    uvmexp.fltpgwait, uvmexp.fltpgrele);
 	(*pr)("    ok relocks(total)=%d(%d), anget(retries)=%d(%d), "
 	    "amapcopy=%d\n", uvmexp.fltrelckok, uvmexp.fltrelck,
 	    uvmexp.fltanget, uvmexp.fltanretry, uvmexp.fltamcopy);

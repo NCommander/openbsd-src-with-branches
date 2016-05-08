@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_anon.c,v 1.44 2015/08/21 16:04:35 visa Exp $	*/
+/*	$OpenBSD: uvm_anon.c,v 1.45 2016/03/29 12:04:26 chl Exp $	*/
 /*	$NetBSD: uvm_anon.c,v 1.10 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -121,6 +121,19 @@ uvm_anfree(struct vm_anon *anon)
 	KASSERT(anon->an_page == NULL);
 	KASSERT(anon->an_swslot == 0);
 
+	pool_put(&uvm_anon_pool, anon);
+}
+
+/*
+ * uvm_anwait: wait for memory to become available to allocate an anon.
+ */
+void
+uvm_anwait(void)
+{
+	struct vm_anon *anon;
+
+	/* XXX: Want something like pool_wait()? */
+	anon = pool_get(&uvm_anon_pool, PR_WAITOK);
 	pool_put(&uvm_anon_pool, anon);
 }
 
