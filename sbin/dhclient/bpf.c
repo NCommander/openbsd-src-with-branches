@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.38 2016/02/06 19:30:52 krw Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.39 2016/05/03 07:47:26 natano Exp $	*/
 
 /* BPF socket interface code, originally contributed by Archie Cobbs. */
 
@@ -77,13 +77,13 @@ if_register_bpf(void)
 	struct ifreq ifr;
 	int sock;
 
-	if ((sock = open("/dev/bpf", O_RDWR | O_CLOEXEC)) == -1)
+	if ((sock = open("/dev/bpf0", O_RDWR | O_CLOEXEC)) == -1)
 		error("Can't open bpf: %s", strerror(errno));
 
 	/* Set the BPF device to point at this interface. */
 	strlcpy(ifr.ifr_name, ifi->name, IFNAMSIZ);
 	if (ioctl(sock, BIOCSETIF, &ifr) < 0)
-		error("Can't attach interface %s to /dev/bpf: %s",
+		error("Can't attach interface %s to /dev/bpf0: %s",
 		    ifi->name, strerror(errno));
 
 	return (sock);
