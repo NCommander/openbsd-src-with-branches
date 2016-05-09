@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.23 2015/11/10 04:30:59 guenther Exp $	*/
+/*	$OpenBSD: signal.h,v 1.24 2016/02/04 22:04:34 millert Exp $	*/
 /*	$NetBSD: signal.h,v 1.8 1996/02/29 00:04:57 jtc Exp $	*/
 
 /*-
@@ -122,7 +122,6 @@ int	sigaltstack(const struct sigaltstack *__restrict,
 	    struct sigaltstack *__restrict);
 #if __BSD_VISIBLE
 int	sigblock(int);
-int	sigreturn(struct sigcontext *);
 int	sigsetmask(int);
 int	sigvec(int, struct sigvec *, struct sigvec *);
 int	thrkill(pid_t _tid, int _signum, void *_tcb);
