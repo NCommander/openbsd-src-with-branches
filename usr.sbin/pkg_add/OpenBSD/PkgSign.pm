@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgSign.pm,v 1.6 2014/01/25 10:18:38 espie Exp $
+# $OpenBSD: PkgSign.pm,v 1.7 2014/10/11 08:41:06 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -97,7 +97,7 @@ sub sign_existing_package
 	$plist->set_infodir($dir);
 	$state->add_signature($plist);
 	$plist->save;
-	my $tmp = OpenBSD::Temp::permanent_file($output, "pkg");
+	my (undef, $tmp) = OpenBSD::Temp::permanent_file($output, "pkg");
 	my $wrarc = $state->create_archive($tmp, ".");
 
 	my $fh;
