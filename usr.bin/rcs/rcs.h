@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.h,v 1.15 2011/07/06 15:36:52 nicm Exp $	*/
+/*	$OpenBSD: rcs.h,v 1.16 2013/06/03 17:04:35 jcs Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -69,6 +69,7 @@
 #define RCS_KW_SOURCE		0x0400
 #define RCS_KW_STATE		0x0800
 #define RCS_KW_FULLPATH		0x0010
+#define RCS_KW_MDOCDATE		0x0020
 #define RCS_KW_LOCKER		0x10000
 
 #define RCS_KW_ID \
