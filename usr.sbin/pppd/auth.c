@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth.c,v 1.34 2015/01/16 06:40:19 deraadt Exp $	*/
+/*	$OpenBSD: auth.c,v 1.35 2015/12/26 20:51:35 guenther Exp $	*/
 
 /*
  * auth.c - PPP authentication and phase control.
@@ -879,7 +879,7 @@ plogin(user, passwd, msg, msglen)
     struct spwd *getspnam();
 #endif
 
-    pw = getpwnam(user);
+    pw = getpwnam_shadow(user);
     endpwent();
     if (pw == NULL) {
 	return (UPAP_AUTHNAK);
