@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.180 2015/06/24 18:41:58 miod Exp $	*/
+/*	$OpenBSD: locore.s,v 1.181 2015/08/28 23:28:39 kettenis Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -5429,6 +5429,8 @@ _C_LABEL(sigcode):
 	restore	%g0, SYS_sigreturn, %g1 ! get registers back & set syscall #
 	add	%sp, BIAS + 128 + 16, %o0	! compute scp
 !	andn	%o0, 0x0f, %o0
+	.globl  _C_LABEL(sigcoderet)
+_C_LABEL(sigcoderet):
 	t	ST_SYSCALL		! sigreturn(scp)
 	! sigreturn does not return unless it fails
 	mov	SYS_exit, %g1		! exit(errno)

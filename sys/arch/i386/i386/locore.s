@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.166 2016/03/09 13:46:14 mpi Exp $	*/
+/*	$OpenBSD: locore.s,v 1.167 2016/03/15 03:17:51 guenther Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -697,6 +697,8 @@ NENTRY(sigcode)
 	pushl	%eax			# junk to fake return address
 	movl	$SYS_sigreturn,%eax
 	int	$0x80			# enter kernel with args on stack
+	.globl  _C_LABEL(sigcoderet)
+_C_LABEL(sigcoderet):
 	movl	$SYS_exit,%eax
 	int	$0x80			# exit if sigreturn fails
 	.globl	_C_LABEL(esigcode)
