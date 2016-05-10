@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.87 2014/07/11 10:53:07 uebayasi Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.88 2015/07/02 01:33:59 dlg Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -212,7 +212,7 @@ extern int cpu_hvers;
 #define	CLKF_SYSCALL(framep)	((framep)->tf_flags & TFF_SYS)
 
 #define	need_proftick(p)	setsoftast(p)
-#define	PROC_PC(p)		((p)->p_md.md_regs->tf_iioq_head)
+#define	PROC_PC(p)		((p)->p_md.md_regs->tf_iioq_head & ~HPPA_PC_PRIV_MASK)
 #define	PROC_STACK(p)		((p)->p_md.md_regs->tf_sp)
 
 #ifndef _LOCORE
