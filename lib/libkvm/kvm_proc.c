@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_proc.c,v 1.51 2014/10/15 02:03:05 deraadt Exp $	*/
+/*	$OpenBSD: kvm_proc.c,v 1.52 2014/10/22 04:13:35 guenther Exp $	*/
 /*	$NetBSD: kvm_proc.c,v 1.30 1999/03/24 05:50:50 mrg Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -490,7 +490,7 @@ kvm_ureadm(kvm_t *kd, const struct kinfo_proc *p, u_long uva, char *buf,
 			return (0);
 		}
 		cc = (size_t)MIN(cnt, len);
-		bcopy(dp, cp, cc);
+		memcpy(cp, dp, cc);
 		cp += cc;
 		uva += cc;
 		len -= cc;
