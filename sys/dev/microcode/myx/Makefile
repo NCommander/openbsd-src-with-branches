@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2011/06/26 20:50:35 deraadt Exp $
+# $OpenBSD: Makefile,v 1.3 2011/07/08 03:58:27 dlg Exp $
 
 NOPROG=
 NOMAN=
@@ -9,7 +9,7 @@ DPADD=${LIBZ}
 # full-size PCI capable systems only
 .if (${MACHINE} == "macppc") || (${MACHINE} == "alpha") || \
     (${MACHINE} == "amd64") || (${MACHINE} == "hppa") || \
-    (${MACHINE} == "hppa64") || (${MACHINE} == "i386") || \
+    (${MACHINE} == "i386") || \
     (${MACHINE} == "sgi") || (${MACHINE} == "sparc64")
 
 FIRM=	myx-ethp_z8e myx-eth_z8e

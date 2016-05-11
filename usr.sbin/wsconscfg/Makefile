@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.36 2016/03/09 16:28:50 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.37 2016/03/31 01:28:01 jsg Exp $
 
-.if ${MACHINE} != "hppa64" && ${MACHINE} != "octeon"
+.if ${MACHINE} != "octeon"
 
 PROG=	wsconscfg
 SRCS=	wsconscfg.c
