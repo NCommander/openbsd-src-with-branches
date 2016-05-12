@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.39 2016/03/09 16:28:47 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.40 2016/03/31 01:28:01 jsg Exp $
 
-.if ${MACHINE} != "hppa64" && ${MACHINE} != "octeon"
+.if ${MACHINE} != "octeon"
 
 PROG=	wsconsctl
 SRCS=	display.c keyboard.c keysym.c map_parse.y map_scan.l \
