@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211.h,v 1.56 2016/01/06 19:56:50 stsp Exp $	*/
+/*	$OpenBSD: ieee80211.h,v 1.57 2016/01/25 12:51:14 stsp Exp $	*/
 /*	$NetBSD: ieee80211.h,v 1.6 2004/04/30 23:51:53 dyoung Exp $	*/
 
 /*-
@@ -468,7 +468,7 @@ enum {
 	IEEE80211_CATEG_SELF_PROT		= 15,
 	/* 16-125 reserved */
 	IEEE80211_CATEG_PROT_VENDOR		= 126,
-	IEEE80211_CATEG_VENDOR			= 127,
+	IEEE80211_CATEG_VENDOR			= 127
 	/* 128-255 error */
 };
 
@@ -838,7 +838,7 @@ enum {
 	IEEE80211_STATUS_BAD_AKMP		= 43,
 	IEEE80211_STATUS_RSN_IE_VER_UNSUP	= 44,
 
-	IEEE80211_STATUS_CIPHER_REJ_POLICY	= 46,
+	IEEE80211_STATUS_CIPHER_REJ_POLICY	= 46
 };
 
 #define	IEEE80211_WEP_KEYLEN			5	/* 40bit */
@@ -1019,7 +1019,7 @@ enum ieee80211_htprot {
 	IEEE80211_HTPROT_NONE = 0,	/* only 20/40MHz HT STAs exist */
 	IEEE80211_HTPROT_NONMEMBER,	/* non-HT STA overlaps our channel */ 
 	IEEE80211_HTPROT_20MHZ,		/* 20MHz HT STA on a 40MHz channel */
-	IEEE80211_HTPROT_NONHT_MIXED,	/* non-HT STA associated to our BSS */
+	IEEE80211_HTPROT_NONHT_MIXED	/* non-HT STA associated to our BSS */
 };
 
 #endif /* _NET80211_IEEE80211_H_ */
