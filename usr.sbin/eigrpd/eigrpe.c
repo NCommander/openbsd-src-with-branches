@@ -1,4 +1,4 @@
-/*	$OpenBSD: eigrpe.c,v 1.20 2016/04/18 13:14:27 renato Exp $ */
+/*	$OpenBSD: eigrpe.c,v 1.21 2016/05/12 00:15:24 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -323,6 +323,7 @@ eigrpe_dispatch_main(int fd, short event, void *bula)
 			    &ka->addr.v6)) {
 				memset(&iface->linklocal, 0,
 				    sizeof(iface->linklocal));
+				if_update(iface, AF_INET6);
 				break;
 			}
 
