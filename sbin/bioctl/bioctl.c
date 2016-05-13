@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.129 2015/07/18 23:23:20 halex Exp $       */
+/* $OpenBSD: bioctl.c,v 1.130 2016/02/04 08:31:26 uebayasi Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -1299,7 +1299,7 @@ derive_key_pkcs(int rounds, u_int8_t *key, size_t keysz, u_int8_t *salt,
 	} else {
 		if (readpassphrase(prompt, passphrase, sizeof(passphrase),
 		    rpp_flag) == NULL)
-			errx(1, "unable to read passphrase");
+			err(1, "unable to read passphrase");
 	}
 
 	if (verify && !password) {
@@ -1307,7 +1307,7 @@ derive_key_pkcs(int rounds, u_int8_t *key, size_t keysz, u_int8_t *salt,
 		if (readpassphrase("Re-type passphrase: ", verifybuf,
 		    sizeof(verifybuf), rpp_flag) == NULL) {
 			explicit_bzero(passphrase, sizeof(passphrase));
-			errx(1, "unable to read passphrase");
+			err(1, "unable to read passphrase");
 		}
 		if ((strlen(passphrase) != strlen(verifybuf)) ||
 		    (strcmp(passphrase, verifybuf) != 0)) {
