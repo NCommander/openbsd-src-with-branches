@@ -1238,7 +1238,7 @@ maestro_trigger_output(void *hdl, void *start, void *end, int blksize,
 	mtx_enter(&audio_lock);
 	sc->play.mode |= MAESTRO_RUNNING;
 	sc->play.wpwa = APU_USE_SYSMEM | (offset >> 8);
-	DPRINTF(("maestro_trigger_output: start=%x, end=%x, blksize=%x ",
+	DPRINTF(("maestro_trigger_output: start=%p, end=%p, blksize=%x ",
 		start, end, blksize));
     	DPRINTF(("offset = %x, size=%x\n", offset, size));
 
