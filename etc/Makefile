@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.422 2016/04/25 20:38:10 tedu Exp $
+#	$OpenBSD: Makefile,v 1.423 2016/05/11 21:52:48 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -208,15 +208,9 @@ distribution-etc-root-var: distrib-dirs
 		    ${DESTDIR}/etc/rc.d
 	cd ${DESTDIR}/var; ln -fs ../tmp
 	touch ${DESTDIR}/var/sysmerge/etcsum
-	touch ${DESTDIR}/var/sysmerge/examplessum
 	cd ${DESTDIR}/ && \
 		sort ${.CURDIR}/../distrib/sets/lists/etc/{mi,md.${MACHINE}} | \
 		xargs sha256 -h ${DESTDIR}/var/sysmerge/etcsum || true
-	cd ${DESTDIR}/ && \
-		grep -h '/etc/examples/' \
-		    ${.CURDIR}/../distrib/sets/lists/base/{mi,md.${MACHINE}} | \
-		sort | \
-		xargs sha256 -h ${DESTDIR}/var/sysmerge/examplessum || true
 	cd ${DESTDIR}/ && \
 		sort ${.CURDIR}/../distrib/sets/lists/etc/{mi,md.${MACHINE}} | \
 	    	pax -w -d | gzip -9 > ${DESTDIR}/var/sysmerge/etc.tgz
