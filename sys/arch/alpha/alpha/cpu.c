@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.c,v 1.38 2015/01/04 18:52:46 miod Exp $ */
+/* $OpenBSD: cpu.c,v 1.39 2015/08/15 19:04:31 miod Exp $ */
 /* $NetBSD: cpu.c,v 1.44 2000/05/23 05:12:53 thorpej Exp $ */
 
 /*-
@@ -347,7 +347,7 @@ recognized:
 	 * Initialize the idle stack pointer, reserving space for an
 	 * (empty) trapframe (XXX is the trapframe really necessary?)
 	 */
-	pcb->pcb_hw.apcb_ksp = pcb->pcb_hw.apcb_backup_ksp =
+	pcb->pcb_hw.apcb_ksp =
 	    (u_int64_t)pcb + USPACE - sizeof(struct trapframe);
 
 	/*
