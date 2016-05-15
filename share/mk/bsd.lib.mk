@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.lib.mk,v 1.74 2015/10/26 10:43:42 bluhm Exp $
+#	$OpenBSD: bsd.lib.mk,v 1.75 2016/04/26 14:49:15 deraadt Exp $
 #	$NetBSD: bsd.lib.mk,v 1.67 1996/01/17 20:39:26 mycroft Exp $
 #	@(#)bsd.lib.mk	5.26 (Berkeley) 5/2/91
 
@@ -253,7 +253,7 @@ clean: _SUBDIRUSE
 	rm -f lib${LIB}.a ${OBJS}
 	rm -f lib${LIB}_g.a ${GOBJS}
 	rm -f lib${LIB}_p.a ${POBJS}
-	rm -f lib${LIB}.so.*.* ${SOBJS}
+	rm -f lib${LIB}.so.*.* ${SOBJS} .ldadd
 	rm -f ${DIST_LIB} ${DOBJS}
 .endif
 
