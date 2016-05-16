@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: simplebus.c,v 1.1 2016/05/02 08:15:55 patrick Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -52,16 +52,11 @@ int
 simplebus_match(struct device *parent, void *cfdata, void *aux)
 {
 	struct fdt_attach_args *fa = (struct fdt_attach_args *)aux;
-	char buffer[128];
 
 	if (fa->fa_node == 0)
 		return (0);
 
-	if (!OF_getprop(fa->fa_node, "compatible", buffer,
-	    sizeof(buffer)))
-		return (0);
-
-	if (strcmp(buffer, "simple-bus"))
+	if (!OF_is_compatible(fa->fa_node, "simple-bus"))
 		return (0);
 
 	return (1);
