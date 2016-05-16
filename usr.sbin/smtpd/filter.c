@@ -1,4 +1,4 @@
-/*	$OpenBSD: filter.c,v 1.15 2016/01/29 12:43:38 eric Exp $	*/
+/*	$OpenBSD: filter.c,v 1.16 2016/02/03 11:14:08 eric Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@poolp.org>
@@ -297,6 +297,8 @@ filter_event(uint64_t id, int event)
 	if (event == EVENT_DISCONNECT) {
 		io_clear(&s->iev);
 		iobuf_clear(&s->ibuf);
+		if (s->ofile)
+			fclose(s->ofile);
 		free(s);
 	}
 }
