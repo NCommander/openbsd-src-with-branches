@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.218 2016/04/03 17:48:33 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.219 2016/05/10 18:39:42 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -1232,6 +1232,9 @@ map_tramps(void)
 
 	pmap_kenter_pa(MP_TRAMP_DATA, MP_TRAMP_DATA,
 	    PROT_READ | PROT_WRITE);
+
+	memset((caddr_t)MP_TRAMPOLINE, 0xcc, PAGE_SIZE);
+	memset((caddr_t)MP_TRAMP_DATA, 0xcc, PAGE_SIZE);
 
 	memcpy((caddr_t)MP_TRAMPOLINE,
 	    cpu_spinup_trampoline,
