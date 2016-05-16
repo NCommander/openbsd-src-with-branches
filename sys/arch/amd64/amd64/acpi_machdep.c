@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.71 2015/08/30 10:05:09 yasuoka Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.72 2016/01/10 16:59:42 kettenis Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -297,6 +297,11 @@ acpi_attach_machdep(struct acpi_softc *sc)
 	pmap_kenter_pa(ACPI_TRAMP_DATA, ACPI_TRAMP_DATA,
 	    PROT_READ | PROT_WRITE);
 
+	/* Fill the trampoline pages with int3 */
+	memset((caddr_t)ACPI_TRAMPOLINE, 0xcc, PAGE_SIZE);
+	memset((caddr_t)ACPI_TRAMP_DATA, 0xcc, PAGE_SIZE);
+
+	/* Copy over real trampoline pages (code and data) */
 	memcpy((caddr_t)ACPI_TRAMPOLINE, acpi_real_mode_resume,
 	    acpi_resume_end - acpi_real_mode_resume);
 	memcpy((caddr_t)ACPI_TRAMP_DATA, acpi_tramp_data_start,
