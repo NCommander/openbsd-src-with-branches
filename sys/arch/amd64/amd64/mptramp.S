@@ -1,4 +1,4 @@
-/*	$OpenBSD: mptramp.S,v 1.11 2014/12/08 07:49:17 mlarkin Exp $	*/
+/*	$OpenBSD: mptramp.S,v 1.12 2015/04/19 19:45:21 sf Exp $	*/
 /*	$NetBSD: mptramp.S,v 1.1 2003/04/26 18:39:30 fvdl Exp $	*/
 
 /*-
@@ -105,7 +105,7 @@
 	.global	gdt64
 
 	.text
-	.align 4,0x0
+	.align 4, 0xcc
 	.code16
 _C_LABEL(cpu_spinup_trampoline):
 	cli
