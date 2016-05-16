@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pcf8523.c,v 1.1 2016/05/16 14:57:21 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Kimihiro Nonaka
@@ -166,6 +166,12 @@ pcfrtc_attach(struct device *parent, struct device *self, void *arg)
 	reg = pcfrtc_reg_read(sc, PCF8523_CONTROL3);
 	printf(": battery %s\n", (reg & PCF8523_CONTROL3_BLF) ? "low" : "ok");
 
+	/* Clear OS flag.  */
+	reg = pcfrtc_reg_read(sc, PCF8523_SECONDS);
+	if (reg & PCF8523_SECONDS_OS) {
+		reg &= ~PCF8523_SECONDS_OS;
+		pcfrtc_reg_write(sc, PCF8523_SECONDS, reg);
+	}
 }
 
 int
