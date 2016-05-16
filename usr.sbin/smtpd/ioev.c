@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioev.c,v 1.24 2015/12/28 22:08:30 jung Exp $	*/
+/*	$OpenBSD: ioev.c,v 1.25 2016/03/25 15:06:58 krw Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -140,7 +140,7 @@ io_set_nonblocking(int fd)
 
 	flags |= O_NONBLOCK;
 
-	if ((flags = fcntl(fd, F_SETFL, flags)) == -1)
+	if (fcntl(fd, F_SETFL, flags) == -1)
 		err(1, "io_set_blocking:fcntl(F_SETFL)");
 }
 
