@@ -667,6 +667,8 @@ struct XML_ParserStruct {
 #endif /* XML_DTD */
 #define hash_secret_salt (parser->m_hash_secret_salt)
 
+#define MAXLEN 0x7fffffff
+
 XML_Parser XMLCALL
 XML_ParserCreate(const XML_Char *encodingName)
 {
@@ -1513,6 +1515,11 @@ XML_Parse(XML_Parser parser, const char *s, int len, int isFinal)
     ps_parsing = XML_PARSING;
   }
 
+  /* Avoid integer overflow */
+  if (len > MAXLEN / 2) {
+    errorCode = XML_ERROR_NO_MEMORY;
+    return XML_STATUS_ERROR; 
+  }
   if (len == 0) {
     ps_finalBuffer = (XML_Bool)isFinal;
     if (!isFinal)
@@ -1676,6 +1683,10 @@ XML_ParseBuffer(XML_Parser parser, int len, int isFinal)
 void * XMLCALL
 XML_GetBuffer(XML_Parser parser, int len)
 {
+  if (len < 0 || len > MAXLEN - (bufferEnd - bufferPtr)) {
+    errorCode = XML_ERROR_NO_MEMORY;
+    return NULL;
+  }
   switch (ps_parsing) {
   case XML_SUSPENDED:
     errorCode = XML_ERROR_SUSPENDED;
@@ -1687,8 +1698,11 @@ XML_GetBuffer(XML_Parser parser, int len)
   }
 
   if (len > bufferLim - bufferEnd) {
-    /* FIXME avoid integer overflow */
     int neededSize = len + (int)(bufferEnd - bufferPtr);
+    if (neededSize < 0) {
+      errorCode = XML_ERROR_NO_MEMORY;
+      return NULL;
+    }
 #ifdef XML_CONTEXT_BYTES
     int keep = (int)(bufferPtr - buffer);
 
@@ -1716,6 +1730,10 @@ XML_GetBuffer(XML_Parser parser, int len)
       if (bufferSize == 0)
         bufferSize = INIT_BUFFER_SIZE;
       do {
+        if (bufferSize > MAXLEN / 2) {
+          errorCode = XML_ERROR_NO_MEMORY;
+          return NULL;
+        }
         bufferSize *= 2;
       } while (bufferSize < neededSize);
       newBuf = (char *)MALLOC(bufferSize);
@@ -2909,6 +2927,8 @@ storeAtts(XML_Parser parser, const ENCODING *enc,
         unsigned long uriHash = hash_secret_salt;
         ((XML_Char *)s)[-1] = 0;  /* clear flag */
         id = (ATTRIBUTE_ID *)lookup(parser, &dtd->attributeIds, s, 0);
+        if (!id || !id->prefix)
+          return XML_ERROR_NO_MEMORY;
         b = id->prefix->binding;
         if (!b)
           return XML_ERROR_UNBOUND_PREFIX;
@@ -5473,6 +5493,8 @@ getAttributeId(XML_Parser parser, const ENCODING *enc,
             return NULL;
           id->prefix = (PREFIX *)lookup(parser, &dtd->prefixes, poolStart(&dtd->pool),
                                         sizeof(PREFIX));
+          if (!id->prefix)
+            return NULL;
           if (id->prefix->name == poolStart(&dtd->pool))
             poolFinish(&dtd->pool);
           else
