@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: libsa.h,v 1.1 2016/05/14 17:55:15 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -25,3 +25,6 @@
 #else
 #define DPRINTF(x)
 #endif
+
+void machdep(void);
+void devboot(dev_t, char *);

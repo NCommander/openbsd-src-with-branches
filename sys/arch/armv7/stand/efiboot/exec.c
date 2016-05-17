@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.5 2016/05/17 21:26:32 kettenis Exp $	*/
+/*	$OpenBSD: exec.c,v 1.6 2016/05/17 22:41:20 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006, 2016 Mark Kettenis
@@ -21,6 +21,7 @@
 #include <machine/bootconfig.h>
 #include <dev/cons.h>
 
+#include <lib/libkern/libkern.h>
 #include <lib/libsa/loadfile.h>
 #include <sys/exec_elf.h>
 
@@ -28,6 +29,7 @@
 #include <stand/boot/cmd.h>
 
 #include "efiboot.h"
+#include "libsa.h"
 
 extern void *fdt;
 
