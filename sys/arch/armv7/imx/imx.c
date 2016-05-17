@@ -1,4 +1,4 @@
-/* $OpenBSD: imx.c,v 1.9 2016/02/02 03:31:22 jsg Exp $ */
+/* $OpenBSD: imx.c,v 1.10 2016/05/02 15:27:24 patrick Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
@@ -49,6 +49,7 @@ struct board_dev hummingboard_devs[] = {
 	{ "imxgpio",	4 },
 	{ "imxgpio",	5 },
 	{ "imxgpio",	6 },
+	{ "imxiic",	2 },
 	{ "imxesdhc",	1 },
 	{ "ehci",	0 },
 	{ "ehci",	1 },
