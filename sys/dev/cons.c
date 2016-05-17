@@ -1,4 +1,4 @@
-/*	$OpenBSD: cons.c,v 1.24 2014/09/14 14:17:24 jsg Exp $	*/
+/*	$OpenBSD: cons.c,v 1.25 2015/03/14 03:38:46 jsg Exp $	*/
 /*	$NetBSD: cons.c,v 1.30 1996/04/08 19:57:30 jonathan Exp $	*/
 
 /*
@@ -50,9 +50,8 @@
 
 #include <dev/cons.h>
 
-struct	tty *constty = NULL;	/* virtual console output device */
-struct	vnode *cn_devvp;	/* vnode for underlying device. */
-extern struct consdev *cn_tab;	/* physical console device info */
+struct	tty *constty = NULL;		/* virtual console output device */
+struct	vnode *cn_devvp = NULLVP;	/* vnode for underlying device. */
 
 int
 cnopen(dev_t dev, int flag, int mode, struct proc *p)

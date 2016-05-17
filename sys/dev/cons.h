@@ -1,4 +1,4 @@
-/*	$OpenBSD: cons.h,v 1.16 2008/01/23 16:37:55 jsing Exp $	*/
+/*	$OpenBSD: cons.h,v 1.17 2013/09/29 12:56:31 kettenis Exp $	*/
 /*	$NetBSD: cons.h,v 1.14 1996/03/14 19:08:35 christos Exp $	*/
 
 /*
@@ -70,6 +70,8 @@ struct consdev {
 
 extern	struct consdev constab[];
 extern	struct consdev *cn_tab;
+extern	struct tty *constty;
+extern	struct vnode *cn_devvp;
 
 struct knote;
 
