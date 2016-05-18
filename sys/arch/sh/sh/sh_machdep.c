@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh_machdep.c,v 1.43 2016/05/10 18:39:47 deraadt Exp $	*/
+/*	$OpenBSD: sh_machdep.c,v 1.44 2016/05/11 22:33:11 deraadt Exp $	*/
 /*	$NetBSD: sh3_machdep.c,v 1.59 2006/03/04 01:13:36 uwe Exp $	*/
 
 /*
@@ -581,6 +581,10 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
 	p->p_md.md_flags &= ~MDP_USEDFPU;
 
 	tf = p->p_md.md_regs;
+
+	tf->tf_gbr = 0;
+	tf->tf_macl = 0;
+	tf->tf_mach = 0;
 
 	tf->tf_r0 = 0;
 	tf->tf_r1 = 0;
