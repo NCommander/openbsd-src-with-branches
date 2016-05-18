@@ -1,4 +1,4 @@
-/*	$OpenBSD: platform.c,v 1.3 2015/06/08 06:33:16 jsg Exp $	*/
+/*	$OpenBSD: platform.c,v 1.4 2015/07/15 21:09:40 jsg Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -89,6 +89,13 @@ void
 platform_init_cons(void)
 {
 	platform->init_cons();
+}
+
+void
+platform_init_mainbus(struct device *self)
+{
+	if (platform->init_mainbus)
+		platform->init_mainbus(self);
 }
 
 void
