@@ -1,4 +1,4 @@
-.\"	$OpenBSD: port-modules.5,v 1.204 2016/04/26 16:22:46 tsg Exp $
+.\"	$OpenBSD: port-modules.5,v 1.205 2016/04/26 16:25:09 jmc Exp $
 .\"
 .\" Copyright (c) 2008 Marc Espie
 .\"
@@ -1852,11 +1852,13 @@ as the global qt directory location,
 as standard GNU configure-style parameters to locate the include and libraries.
 .Pp
 The location of qt specific tools
+.Nm lrelease ,
 .Nm moc ,
 .Nm qmake
 and
 .Nm uic
 is available through
+.Ev MODQT*_LRELEASE ,
 .Ev MODQT*_MOC ,
 .Ev MODQT*_QMAKE
 and
