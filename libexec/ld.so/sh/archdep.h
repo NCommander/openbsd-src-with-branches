@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.4 2014/12/30 19:26:38 miod Exp $ */
+/*	$OpenBSD: archdep.h,v 1.5 2015/12/06 23:36:12 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -51,11 +51,10 @@
  */
 
 static inline void *
-_dl_mmap(void *addr, unsigned int len, unsigned int prot,
-	unsigned int flags, int fd, off_t offset)
+_dl_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
 	return((void *)(long)_dl__syscall((quad_t)SYS_mmap, addr, len, prot,
-		flags, fd, 0, offset));
+	    flags, fd, 0, offset));
 }
 
 static inline void
