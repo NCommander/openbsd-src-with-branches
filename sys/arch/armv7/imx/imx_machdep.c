@@ -1,4 +1,4 @@
-/*	$OpenBSD: imx_machdep.c,v 1.15 2015/05/19 03:30:54 jsg Exp $	*/
+/*	$OpenBSD: imx_machdep.c,v 1.16 2016/05/18 22:55:23 kettenis Exp $	*/
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -67,7 +67,6 @@ imx_platform_init_cons(void)
 		paddr = 0x021e8000;
 		break;
 	/* UART4 */
-	case BOARD_ID_IMX6_PHYFLEX:
 	case BOARD_ID_IMX6_UTILITE:
 		paddr = 0x021f0000;
 		break;
