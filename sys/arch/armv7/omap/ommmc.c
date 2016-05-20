@@ -1,4 +1,4 @@
-/*	$OpenBSD: ommmc.c,v 1.19 2016/05/05 11:01:08 kettenis Exp $	*/
+/*	$OpenBSD: ommmc.c,v 1.20 2016/05/07 00:18:23 jsg Exp $	*/
 
 /*
  * Copyright (c) 2009 Dale Rahn <drahn@openbsd.org>
@@ -1041,7 +1041,18 @@ ommmc_soft_reset(struct ommmc_softc *sc, int mask)
 	DPRINTF(1,("%s: software reset reg=%#x\n", DEVNAME(sc), mask));
 
 	HSET4(sc, MMCHS_SYSCTL, mask);
-	delay(10);
+	/*
+	 * If we read the software reset register too fast after writing it we
+	 * can get back a zero that means the reset hasn't started yet rather
+	 * than that the reset is complete. Per TI recommendations, work around
+	 * it by reading until we see the reset bit asserted, then read until
+	 * it's clear.
+	 */
+	for (timo = 1000; timo > 0; timo--) {
+		if (ISSET(HREAD4(sc, MMCHS_SYSCTL), mask))
+			break;
+		delay(1);
+	}
 	for (timo = 1000; timo > 0; timo--) {
 		if (!ISSET(HREAD4(sc, MMCHS_SYSCTL), mask))
 			break;
