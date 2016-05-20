@@ -1,4 +1,4 @@
-/*	$ OpenBSD $ */
+/*	$OpenBSD$ */
 
 /*-
  * Copyright (c) 2009-2011 Nathan Whitehorn
