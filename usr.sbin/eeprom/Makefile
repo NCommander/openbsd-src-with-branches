@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.12 2007/11/14 20:38:32 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.13 2015/03/11 18:12:27 deraadt Exp $
 
-.if ${MACHINE} == "macppc" || ${MACHINE} == "sparc" || ${MACHINE} == "sparc64"
+.if ${MACHINE} == "armv7" || ${MACHINE} == "macppc" || \
+    ${MACHINE} == "sparc" || ${MACHINE} == "sparc64"
 PROG=	eeprom
 
 SRCS=	getdate.c main.c
@@ -16,6 +17,6 @@ NOPROG=yes
 .endif
 
 MAN=	eeprom.8
-MANSUBDIR=macppc sparc sparc64
+MANSUBDIR=armv7 macppc sparc sparc64
 
 .include <bsd.prog.mk>
