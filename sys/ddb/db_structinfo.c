@@ -1,4 +1,4 @@
-/* $OpenBSD: db_structinfo.c,v 1.12 2015/01/27 10:12:45 dlg Exp $ */
+/* $OpenBSD: db_structinfo.c,v 1.13 2015/05/05 02:13:46 guenther Exp $ */
 /* public domain */
 /*
  * This file is intended to be compiled with debug information,
@@ -33,7 +33,6 @@
 #include <sys/kcore.h>
 #include <sys/kthread.h>
 #include <sys/ktrace.h>
-#include <sys/localedef.h>
 #include <sys/lock.h>
 #include <sys/lockf.h>
 #include <sys/malloc.h>
