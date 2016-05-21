@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.h,v 1.122 2016/02/26 08:56:10 natano Exp $	*/
+/*	$OpenBSD: mount.h,v 1.123 2016/02/27 18:50:38 natano Exp $	*/
 /*	$NetBSD: mount.h,v 1.48 1996/02/18 11:55:47 fvdl Exp $	*/
 
 /*
@@ -218,7 +218,6 @@ struct msdosfs_args {
 #define	MSDOSFSMNT_SHORTNAME	0x01	/* Force old DOS short names only */
 #define	MSDOSFSMNT_LONGNAME	0x02	/* Force Win'95 long names */
 #define	MSDOSFSMNT_NOWIN95	0x04	/* Completely ignore Win95 entries */
-#define MSDOSFSMNT_ALLOWDIRX	0x10	/* dir is mode +x if r */
 
 /*
  * Arguments to mount ntfs filesystems
