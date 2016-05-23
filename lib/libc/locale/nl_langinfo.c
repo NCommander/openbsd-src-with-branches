@@ -1,13 +1,14 @@
-/*	$OpenBSD: nl_langinfo.c,v 1.6 2005/11/16 16:48:15 espie Exp $ */
+/*	$OpenBSD: nl_langinfo.c,v 1.7 2015/09/14 12:22:49 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <sys/localedef.h>
 #include <locale.h>
 #include <nl_types.h>
 #include <langinfo.h>
+
+#include "localedef.h"
 #include "rune.h"
 #include "runetype.h"
 

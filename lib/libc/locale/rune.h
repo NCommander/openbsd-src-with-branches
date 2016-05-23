@@ -1,4 +1,4 @@
-/*	$OpenBSD: rune.h,v 1.1 2005/08/07 10:16:23 espie Exp $ */
+/*	$OpenBSD: rune.h,v 1.2 2011/03/15 22:27:48 stsp Exp $ */
 /*	$NetBSD: rune.h,v 1.9 2003/08/07 16:43:04 agc Exp $	*/
 
 /*-
@@ -73,8 +73,9 @@
 /*
  * global variables
  */
-extern size_t __mb_len_max_runtime;
+__BEGIN_HIDDEN_DECLS
 extern _RuneLocale _DefaultRuneLocale;
 extern _RuneLocale *_CurrentRuneLocale;
+__END_HIDDEN_DECLS
 
 #endif	/*! _RUNE_H_ */

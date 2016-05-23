@@ -1,11 +1,11 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: _def_messages.c,v 1.5 2005/08/08 08:05:35 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <sys/localedef.h>
 #include <locale.h>
+#include "localedef.h"
 
 const _MessagesLocale _DefaultMessagesLocale =
 {
