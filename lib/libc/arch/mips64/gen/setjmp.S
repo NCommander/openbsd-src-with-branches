@@ -1,4 +1,4 @@
-/*	$OpenBSD: setjmp.S,v 1.8 2015/09/13 07:36:58 guenther Exp $ */
+/*	$OpenBSD: setjmp.S,v 1.9 2016/05/08 21:50:58 guenther Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -172,8 +172,6 @@ LEAF(longjmp, FRAMESZ)
 	move	v0, a4
 
 botch:
-	jal	longjmperror
-	nop
 	jal	_libc_abort
 	nop
 	RESTORE_GP64
