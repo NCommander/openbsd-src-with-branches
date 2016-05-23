@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.31 2015/09/27 17:30:38 stsp Exp $ */
+/*	$OpenBSD: parse.y,v 1.32 2016/05/23 15:28:39 renato Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2008 Esben Norby <norby@openbsd.org>
@@ -1310,7 +1310,7 @@ get_rtr_id(void)
 		cur = ((struct sockaddr_in *)ifa->ifa_addr)->sin_addr.s_addr;
 		if ((cur & localnet) == localnet)	/* skip 127/8 */
 			continue;
-		if (cur > ip || ip == 0)
+		if (ntohl(cur) < ntohl(ip) || ip == 0)
 			ip = cur;
 	}
 	freeifaddrs(ifap);
