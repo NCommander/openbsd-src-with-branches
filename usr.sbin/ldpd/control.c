@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.17 2015/12/05 13:11:48 claudio Exp $ */
+/*	$OpenBSD: control.c,v 1.18 2016/05/23 14:49:56 renato Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -100,6 +100,8 @@ control_listen(void)
 void
 control_cleanup(void)
 {
+	accept_del(control_fd);
+	close(control_fd);
 	unlink(LDPD_SOCKET);
 }
 
