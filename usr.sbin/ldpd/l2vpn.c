@@ -1,4 +1,4 @@
-/*	$OpenBSD: l2vpn.c,v 1.1 2015/07/21 04:52:29 renato Exp $ */
+/*	$OpenBSD: l2vpn.c,v 1.2 2016/05/23 15:47:24 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -198,8 +198,8 @@ l2vpn_pw_reset(struct l2vpn_pw *pw)
 {
 	pw->remote_group = 0;
 	pw->remote_mtu = 0;
-	if (!(pw->flags & F_PW_CONTROLWORD_CONF))
-		pw->flags &= ~F_PW_CONTROLWORD;
+	if (!(pw->flags & F_PW_CWORD_CONF))
+		pw->flags &= ~F_PW_CWORD;
 	if (!(pw->flags & F_PW_STATUSTLV_CONF))
 		pw->flags &= ~F_PW_STATUSTLV;
 }

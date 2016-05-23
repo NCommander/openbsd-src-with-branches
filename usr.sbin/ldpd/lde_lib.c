@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde_lib.c,v 1.41 2016/05/23 15:14:07 renato Exp $ */
+/*	$OpenBSD: lde_lib.c,v 1.42 2016/05/23 16:12:28 renato Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -390,7 +390,7 @@ lde_check_mapping(struct map *map, struct lde_nbr *ln)
 	struct fec_node		*fn;
 	struct fec_nh		*fnh;
 	struct lde_req		*lre;
-	struct lde_nbr_address	*addr;
+	struct lde_addr		*addr;
 	struct lde_map		*me;
 	struct l2vpn_pw		*pw;
 	int			 msgsource = 0;
