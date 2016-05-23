@@ -1,4 +1,4 @@
-/*	$OpenBSD: maci2c.c,v 1.9 2006/02/14 20:54:45 kettenis Exp $	*/
+/*	$OpenBSD: maci2c.c,v 1.10 2010/04/09 17:01:30 jasper Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -42,6 +42,7 @@ maciic_scan(struct device *self, struct i2cbus_attach_args *iba, void *aux)
 		bzero(&ia, sizeof ia);
 		ia.ia_tag = iba->iba_tag;
 		ia.ia_addr = (reg >> 1);
+		ia.ia_cookie = &node;
 		bzero(name, sizeof name);
 		if (OF_getprop(node, "compatible", &name,
 		    sizeof name) && name[0])
