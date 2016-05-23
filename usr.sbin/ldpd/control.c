@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.21 2016/05/23 15:14:07 renato Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -53,7 +53,7 @@ control_init(void)
 		return (-1);
 	}
 
-	bzero(&sun, sizeof(sun));
+	memset(&sun, 0, sizeof(sun));
 	sun.sun_family = AF_UNIX;
 	strlcpy(sun.sun_path, LDPD_SOCKET, sizeof(sun.sun_path));
 

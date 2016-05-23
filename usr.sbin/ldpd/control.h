@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.h,v 1.3 2010/04/15 15:04:23 claudio Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: accept.c,v 1.3 2013/10/31 16:56:22 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2012 Claudio Jeker <claudio@openbsd.org>
