@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.28 2016/02/02 17:51:11 sthen Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.29 2016/05/23 15:14:07 renato Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -719,6 +719,7 @@ merge_config(struct ldpd_conf *conf, struct ldpd_conf *xconf)
 		}
 
 		/* update existing nbrps */
+		nbrp->keepalive = xn->keepalive;
 		nbrp->auth.method = xn->auth.method;
 		strlcpy(nbrp->auth.md5key, xn->auth.md5key,
 		    sizeof(nbrp->auth.md5key));
