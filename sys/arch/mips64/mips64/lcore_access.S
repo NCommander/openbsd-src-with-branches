@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcore_access.S,v 1.24 2012/10/03 11:18:23 miod Exp $ */
+/*	$OpenBSD: lcore_access.S,v 1.25 2016/05/10 18:39:47 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -82,6 +82,18 @@ _C_LABEL(sigcoderet):
 	break	0			# just in case sigreturn fails
 	.globl	esigcode
 esigcode:
+
+	.globl	sigfill
+sigfill:
+	break	0
+esigfill:
+
+	.data
+	.globl	sigfillsiz
+sigfillsiz:
+	.long	esigfill - sigfill
+
+	.text
 
 /*
  * Copy a null terminated string within the kernel address space.
