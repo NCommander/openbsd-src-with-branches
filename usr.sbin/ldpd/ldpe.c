@@ -1,6 +1,7 @@
-/*	$OpenBSD: ldpe.c,v 1.58 2016/05/23 19:09:25 renato Exp $ */
+/*	$OpenBSD: ldpe.c,v 1.59 2016/05/23 19:11:42 renato Exp $ */
 
 /*
+ * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2004, 2008 Esben Norby <norby@openbsd.org>
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
