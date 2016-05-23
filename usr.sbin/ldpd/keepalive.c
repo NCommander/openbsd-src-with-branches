@@ -1,4 +1,4 @@
-/*	$OpenBSD: keepalive.c,v 1.11 2013/10/15 20:27:40 renato Exp $ */
+/*	$OpenBSD: keepalive.c,v 1.12 2014/10/25 03:23:49 lteo Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -43,7 +43,7 @@ send_keepalive(struct nbr *nbr)
 	u_int16_t	 size;
 
 	if ((buf = ibuf_open(LDP_MAX_LEN)) == NULL)
-		fatal("send_keepalive");
+		fatal(__func__);
 
 	size = LDP_HDR_SIZE + sizeof(struct ldp_msg);
 
