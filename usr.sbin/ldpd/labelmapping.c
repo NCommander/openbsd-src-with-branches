@@ -1,4 +1,4 @@
-/*	$OpenBSD: labelmapping.c,v 1.34 2015/07/21 05:02:57 renato Exp $ */
+/*	$OpenBSD: labelmapping.c,v 1.35 2016/05/23 15:14:07 renato Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -389,7 +389,7 @@ recv_labelmessage(struct nbr *nbr, char *buf, u_int16_t len, u_int16_t type)
 		free(me);
 	}
 
-	return (ntohs(lm.length));
+	return (0);
 
 err:
 	mapping_list_clr(&mh);
