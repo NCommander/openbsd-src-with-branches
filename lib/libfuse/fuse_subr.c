@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_subr.c,v 1.8 2014/04/28 13:08:34 syl Exp $ */
+/* $OpenBSD: fuse_subr.c,v 1.9 2015/06/03 19:51:16 reyk Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -143,9 +143,13 @@ char *
 build_realname(struct fuse *f, ino_t ino)
 {
 	struct fuse_vnode *vn;
-	char *name = strdup("/");
+	char *name;
 	char *tmp = NULL;
 	int firstshot = 0, ret;
+
+	name = strdup("/");
+	if (name == NULL)
+		return (NULL);
 
 	vn = tree_get(&f->vnode_tree, ino);
 	if (!vn || !name) {
