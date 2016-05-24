@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnmac.c,v 1.45 2016/05/21 11:04:38 visa Exp $	*/
+/*	$OpenBSD: if_cnmac.c,v 1.46 2016/05/23 15:22:45 tedu Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -138,6 +138,7 @@ void	octeon_eth_send_queue_del(struct octeon_eth_softc *,
 	    struct mbuf **, uint64_t **);
 int	octeon_eth_buf_free_work(struct octeon_eth_softc *,
 	    uint64_t *, uint64_t);
+void	octeon_eth_buf_ext_free(caddr_t, u_int, void *);
 
 int	octeon_eth_ioctl(struct ifnet *, u_long, caddr_t);
 void	octeon_eth_watchdog(struct ifnet *);
