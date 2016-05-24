@@ -250,7 +250,7 @@ proto_spec(const char *spec)
 
 /*
  * Filters a proposal string, excluding any algorithm matching the 'filter'
- * pattern list.  Returns a new string and frees the original proposal.
+ * pattern list.
  */
 static char *
 filter_proposal(char *proposal, const char *filter)
@@ -273,7 +273,6 @@ filter_proposal(char *proposal, const char *filter)
 	fix_prop = xstrdup((char *)buffer_ptr(&b));
 	buffer_free(&b);
 	free(orig_prop);
-	free(proposal);
 
 	return fix_prop;
 }
