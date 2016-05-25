@@ -354,10 +354,6 @@ dev_sio_run(void *arg)
 			n = sio_read(d->sio.hdl, data, d->sio.todo);
 			d->sio.todo -= n;
 #ifdef DEBUG
-			if (n == 0 && data == base && !sio_eof(d->sio.hdl)) {
-				dev_log(d);
-				log_puts(": read blocked at cycle start\n");
-			}
 			if (log_level >= 4) {
 				dev_log(d);
 				log_puts(": read ");
@@ -437,10 +433,6 @@ dev_sio_run(void *arg)
 			n = sio_write(d->sio.hdl, data, d->sio.todo);
 			d->sio.todo -= n;
 #ifdef DEBUG
-			if (n == 0 && data == base && !sio_eof(d->sio.hdl)) {
-				dev_log(d);
-				log_puts(": write blocked at cycle start\n");
-			}
 			if (log_level >= 4) {
 				dev_log(d);
 				log_puts(": wrote ");
