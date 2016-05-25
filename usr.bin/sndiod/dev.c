@@ -1005,7 +1005,7 @@ dev_new(char *path, struct aparams *par,
 		d->slot[i].vol = MIDI_MAXCTL;
 		d->slot[i].tstate = MMC_OFF;
 		d->slot[i].serial = d->serial++;
-		d->slot[i].name[0] = '\0';
+		strlcpy(d->slot[i].name, "prog", SLOT_NAMEMAX);
 	}
 	d->slot_list = NULL;
 	d->master = MIDI_MAXCTL;
