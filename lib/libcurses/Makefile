@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.66 2015/12/03 11:29:55 nicm Exp $
+#	$OpenBSD: Makefile,v 1.67 2016/03/30 06:38:42 jmc Exp $
 
 # Uncomment this to enable tracing in libcurses
 #CURSESTRACE=-DTRACE
@@ -118,7 +118,7 @@ fallback.c: ${.CURDIR}/tinfo/MKfallback.sh
 	sh ${.CURDIR}/tinfo/MKfallback.sh $(FALLBACK_LIST) > ${.TARGET}
 
 lib_gen.c: ${.CURDIR}/base/MKlib_gen.sh
-	sh ${.CURDIR}/base/MKlib_gen.sh "${CPP} -I${.CURDIR}" \
+	sh ${.CURDIR}/base/MKlib_gen.sh "${CC} -E -P -I${.CURDIR}" \
 		"${AWK}" generated < ${.CURDIR}/curses.h > lib_gen.c
 
 init_keytry.h: make_keys keys.list
@@ -135,7 +135,7 @@ make_hash: ${.CURDIR}/tinfo/comp_hash.c ${.CURDIR}/curses.priv.h \
 
 expanded.c: ${.CURDIR}/term.h ${.CURDIR}/curses.priv.h \
 		${.CURDIR}/ncurses_cfg.h ${.CURDIR}/tty/MKexpanded.sh
-	sh ${.CURDIR}/tty/MKexpanded.sh "${CPP}" ${CPPFLAGS} > ${.TARGET}
+	sh ${.CURDIR}/tty/MKexpanded.sh "${CC} -E -P" ${CPPFLAGS} > ${.TARGET}
 
 comp_captab.c: make_hash
 	sh ${.CURDIR}/tinfo/MKcaptab.sh ${AWK} 1 \
