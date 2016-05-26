@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2013/07/01 00:36:12 fgsch Exp $
+# $OpenBSD: Makefile,v 1.11 2016/03/20 15:45:40 jca Exp $
 # $NetBSD: Makefile,v 1.20 2005/02/10 18:03:02 tnozaki Exp $
 
 NOMAN=	# defined
@@ -9,8 +9,7 @@ NOMAN=	# defined
 all: UTF-8.out
 
 UTF-8.out: en_US.UTF-8.src
-	${CPP} < ${.CURDIR}/en_US.UTF-8.src | \
-	    sed -e '/^#/d' | mklocale -o ${.TARGET}
+	mklocale -o ${.TARGET} ${.CURDIR}/en_US.UTF-8.src
 
 CLEANFILES+=	UTF-8.out
 
