@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.106 2016/03/08 09:33:15 florian Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.107 2016/05/22 19:20:03 jung Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -296,8 +296,10 @@ server_read_http(struct bufferevent *bev, void *arg)
 				goto fail;
 
 			desc->http_version = strchr(desc->http_path, ' ');
-			if (desc->http_version == NULL)
-				goto fail;
+			if (desc->http_version == NULL) {
+				server_abort_http(clt, 400, "malformed");
+				goto abort;
+			}
 
 			*desc->http_version++ = '\0';
 			desc->http_query = strchr(desc->http_path, '?');
