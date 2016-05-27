@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.629 2016/05/01 13:39:05 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.630 2016/05/12 16:05:33 tim Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -36,7 +36,6 @@
 
 #include "xmalloc.h"
 
-extern char    *__progname;
 extern char   **environ;
 
 struct client;
