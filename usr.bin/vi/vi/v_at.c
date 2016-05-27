@@ -33,7 +33,7 @@ int
 v_at(SCR *sp, VICMD *vp)
 {
 	CB *cbp;
-	char name;
+	CHAR_T name;
 	TEXT *tp;
 	size_t len;
 	char nbuf[20];

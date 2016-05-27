@@ -425,7 +425,7 @@ argv_alloc(SCR *sp, size_t len)
 	ap->len = 0;
 	if (ap->blen < len + 1) {
 		ap->blen = len + 1;
-		REALLOC(sp, ap->bp, ap->blen);
+		REALLOCARRAY(sp, ap->bp, ap->blen, sizeof(CHAR_T));
 		if (ap->bp == NULL) {
 			ap->bp = NULL;
 			ap->blen = 0;

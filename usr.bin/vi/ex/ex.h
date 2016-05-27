@@ -110,7 +110,7 @@ struct _excmd {
 	F_SET((cmdp), L__f);						\
 }
 
-	char	  buffer;		/* Command: named buffer. */
+	CHAR_T	  buffer;		/* Command: named buffer. */
 	recno_t	  lineno;		/* Command: line number. */
 	long	  count;		/* Command: signed count. */
 	long	  flagoff;		/* Command: signed flag offset. */
@@ -163,7 +163,7 @@ typedef struct _ex_private {
 	TAILQ_HEAD(_tagfh, _tagf) tagfq;/* Tag file list. */
 	char	*tag_last;		/* Saved last tag string. */
 
-	char	*lastbcomm;		/* Last bang command. */
+	CHAR_T	*lastbcomm;		/* Last bang command. */
 
 	ARGS   **args;			/* Command: argument list. */
 	int	 argscnt;		/* Command: argument list count. */

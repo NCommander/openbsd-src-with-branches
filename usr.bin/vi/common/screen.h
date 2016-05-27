@@ -82,7 +82,7 @@ struct _scr {
 	recno_t	 defscroll;		/* Vi: ^D, ^U scroll information. */
 
 					/* Display character. */
-	char	 cname[MAX_CHARACTER_COLUMNS + 1];
+	CHAR_T	 cname[MAX_CHARACTER_COLUMNS + 1];
 	size_t	 clen;			/* Length of display character. */
 
 	enum {				/* Vi editor mode. */
@@ -95,7 +95,7 @@ struct _scr {
 /* PARTIALLY OR COMPLETELY COPIED FROM PREVIOUS SCREEN. */
 	char	*alt_name;		/* Ex/vi: alternate file name. */
 
-	char	 at_lbuf;		/* Ex/vi: Last executed at buffer. */
+	CHAR_T	 at_lbuf;		/* Ex/vi: Last executed at buffer. */
 
 					/* Ex/vi: re_compile flags. */
 #define	RE_C_SEARCH	0x0002		/* Compile search replacement. */

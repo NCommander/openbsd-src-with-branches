@@ -23,7 +23,7 @@
 #include "../common/common.h"
 #include "vi.h"
 
-static void notfound(SCR *, char);
+static void notfound(SCR *, CHAR_T);
 static void noprev(SCR *);
 
 /*
@@ -272,7 +272,7 @@ noprev(SCR *sp)
 }
 
 static void
-notfound(SCR *sp, char ch)
+notfound(SCR *sp, CHAR_T ch)
 {
 	msgq(sp, M_BERR, "%s not found", KEY_NAME(sp, ch));
 }

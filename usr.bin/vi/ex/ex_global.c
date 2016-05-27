@@ -61,7 +61,7 @@ ex_v(SCR *sp, EXCMD *cmdp)
 static int
 ex_g_setup(SCR *sp, EXCMD *cmdp, enum which cmd)
 {
-	char *ptrn, *p, *t;
+	CHAR_T *ptrn, *p, *t;
 	EXCMD *ecp;
 	MARK abs_mark;
 	RANGE *rp;

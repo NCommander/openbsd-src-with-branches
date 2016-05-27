@@ -23,7 +23,7 @@
 
 #include "common.h"
 
-static LMARK *mark_find(SCR *, char);
+static LMARK *mark_find(SCR *, CHAR_T);
 
 /*
  * Marks are maintained in a key sorted doubly linked list.  We can't
@@ -101,10 +101,10 @@ mark_end(SCR *sp, EXF *ep)
  * mark_get --
  *	Get the location referenced by a mark.
  *
- * PUBLIC: int mark_get(SCR *, char, MARK *, mtype_t);
+ * PUBLIC: int mark_get(SCR *, CHAR_T, MARK *, mtype_t);
  */
 int
-mark_get(SCR *sp, char key, MARK *mp, mtype_t mtype)
+mark_get(SCR *sp, CHAR_T key, MARK *mp, mtype_t mtype)
 {
 	LMARK *lmp;
 
@@ -142,10 +142,10 @@ mark_get(SCR *sp, char key, MARK *mp, mtype_t mtype)
  * mark_set --
  *	Set the location referenced by a mark.
  *
- * PUBLIC: int mark_set(SCR *, char, MARK *, int);
+ * PUBLIC: int mark_set(SCR *, CHAR_T, MARK *, int);
  */
 int
-mark_set(SCR *sp, char key, MARK *value, int userset)
+mark_set(SCR *sp, CHAR_T key, MARK *value, int userset)
 {
 	LMARK *lmp, *lmt;
 
@@ -183,7 +183,7 @@ mark_set(SCR *sp, char key, MARK *value, int userset)
  *	where it would go.
  */
 static LMARK *
-mark_find(SCR *sp, char key)
+mark_find(SCR *sp, CHAR_T key)
 {
 	LMARK *lmp, *lastlmp;
 

@@ -104,7 +104,7 @@ v_put(SCR *sp, VICMD *vp)
 static void
 inc_buf(SCR *sp, VICMD *vp)
 {
-	char v;
+	CHAR_T v;
 
 	switch (vp->buffer) {
 	case '1':

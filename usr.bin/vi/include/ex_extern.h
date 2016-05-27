@@ -100,7 +100,7 @@ int tagq_free(SCR *, TAGQ *);
 void tag_msg(SCR *, tagmsg_t, char *);
 int ex_tagf_alloc(SCR *, char *);
 int ex_tag_free(SCR *);
-int ex_txt(SCR *, TEXTH *, char, u_int32_t);
+int ex_txt(SCR *, TEXTH *, CHAR_T, u_int32_t);
 int ex_undo(SCR *, EXCMD *);
 int ex_help(SCR *, EXCMD *);
 int ex_usage(SCR *, EXCMD *);

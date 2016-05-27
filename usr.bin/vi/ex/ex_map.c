@@ -43,7 +43,7 @@ int
 ex_map(SCR *sp, EXCMD *cmdp)
 {
 	seq_t stype;
-	char *input, *p;
+	CHAR_T *input, *p;
 
 	stype = FL_ISSET(cmdp->iflags, E_C_FORCE) ? SEQ_INPUT : SEQ_COMMAND;
 

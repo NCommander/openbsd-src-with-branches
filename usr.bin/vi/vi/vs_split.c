@@ -278,10 +278,10 @@ vs_discard(SCR *sp, SCR **spp)
  * vs_fg --
  *	Background the current screen, and foreground a new one.
  *
- * PUBLIC: int vs_fg(SCR *, SCR **, char *, int);
+ * PUBLIC: int vs_fg(SCR *, SCR **, CHAR_T *, int);
  */
 int
-vs_fg(SCR *sp, SCR **nspp, char *name, int newscreen)
+vs_fg(SCR *sp, SCR **nspp, CHAR_T *name, int newscreen)
 {
 	GS *gp;
 	SCR *nsp;

@@ -24,7 +24,7 @@
 #include "tag.h"
 
 static int	bdisplay(SCR *);
-static void	db(SCR *, CB *, char *);
+static void	db(SCR *, CB *, CHAR_T *);
 
 /*
  * ex_display -- :display b[uffers] | s[creens] | t[ags]
@@ -107,9 +107,9 @@ bdisplay(SCR *sp)
  *	Display a buffer.
  */
 static void
-db(SCR *sp, CB *cbp, char *name)
+db(SCR *sp, CB *cbp, CHAR_T *name)
 {
-	char *p;
+	CHAR_T *p;
 	TEXT *tp;
 	size_t len;
 

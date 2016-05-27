@@ -32,7 +32,7 @@
 int
 ex_file(SCR *sp, EXCMD *cmdp)
 {
-	char *p;
+	CHAR_T *p;
 	FREF *frp;
 
 	NEEDFILE(sp, cmdp);

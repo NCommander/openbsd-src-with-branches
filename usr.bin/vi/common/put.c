@@ -27,16 +27,17 @@
  * put --
  *	Put text buffer contents into the file.
  *
- * PUBLIC: int put(SCR *, CB *, char *, MARK *, MARK *, int);
+ * PUBLIC: int put(SCR *, CB *, CHAR_T *, MARK *, MARK *, int);
  */
 int
-put(SCR *sp, CB *cbp, char *namep, MARK *cp, MARK *rp, int append)
+put(SCR *sp, CB *cbp, CHAR_T *namep, MARK *cp, MARK *rp, int append)
 {
+	CHAR_T name;
 	TEXT *ltp, *tp;
 	recno_t lno;
 	size_t blen, clen, len;
 	int rval;
-	char name, *bp, *p, *t;
+	char *bp, *p, *t;
 
 	if (cbp == NULL) {
 		if (namep == NULL) {

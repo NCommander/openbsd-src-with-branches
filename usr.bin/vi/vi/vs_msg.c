@@ -393,12 +393,13 @@ ret:	(void)gp->scr_move(sp, oldy, oldx);
 static void
 vs_output(SCR *sp, mtype_t mtype, const char *line, int llen)
 {
+	CHAR_T *kp;
 	GS *gp;
 	VI_PRIVATE *vip;
 	size_t chlen, notused;
 	int ch, len, tlen;
 	const char *p, *t;
-	char *kp, *cbp, *ecbp, cbuf[128];
+	char *cbp, *ecbp, cbuf[128];
 
 	gp = sp->gp;
 	vip = VIP(sp);

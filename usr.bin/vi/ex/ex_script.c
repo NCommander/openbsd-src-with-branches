@@ -185,7 +185,7 @@ err:		if (sc->sh_master != -1)
 static int
 sscr_getprompt(SCR *sp)
 {
-	char *endp, *p, *t, buf[1024];
+	CHAR_T *endp, *p, *t, buf[1024];
 	SCRIPT *sc;
 	struct pollfd pfd[1];
 	recno_t lline;
@@ -481,7 +481,7 @@ done:
 static int
 sscr_insert(SCR *sp)
 {
-	char *endp, *p, *t;
+	CHAR_T *endp, *p, *t;
 	SCRIPT *sc;
 	struct pollfd pfd[1];
 	recno_t lno;

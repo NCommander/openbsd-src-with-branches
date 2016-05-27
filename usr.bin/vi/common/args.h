@@ -22,7 +22,7 @@
  * is found.
  */
 typedef struct _args {
-	char	*bp;		/* Argument. */
+	CHAR_T	*bp;		/* Argument. */
 	size_t	 blen;		/* Buffer length. */
 	size_t	 len;		/* Argument length. */
 

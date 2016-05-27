@@ -196,7 +196,7 @@ static int
 ex_prchars(SCR *sp, const char *p, size_t *colp, size_t len, u_int flags,
     int repeatc)
 {
-	char ch, *kp;
+	CHAR_T ch, *kp;
 	size_t col, tlen, ts;
 
 	if (O_ISSET(sp, O_LIST))

@@ -33,7 +33,7 @@ struct _lmark {
 	LIST_ENTRY(_lmark) q;		/* Linked list of marks. */
 	recno_t	 lno;			/* Line number. */
 	size_t	 cno;			/* Column number. */
-	char	 name;			/* Mark name. */
+	CHAR_T	 name;			/* Mark name. */
 
 #define	MARK_DELETED	0x01		/* Mark was deleted. */
 #define	MARK_USERSET	0x02		/* User set this mark. */

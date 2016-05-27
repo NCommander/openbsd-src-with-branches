@@ -35,7 +35,7 @@ int
 ex_at(SCR *sp, EXCMD *cmdp)
 {
 	CB *cbp;
-	char name;
+	CHAR_T name;
 	EXCMD *ecp;
 	RANGE *rp;
 	TEXT *tp;

@@ -1245,7 +1245,7 @@ re_sub(SCR *sp, char *ip, char **lbp, size_t *lbclenp, size_t *lblenp,
 	 * all escaping characters.  This (hopefully) matches historic practice.
 	 */
 #define	OUTCH(ch, nltrans) {						\
-	char __ch = (ch);						\
+	CHAR_T __ch = (ch);						\
 	u_int __value = KEY_VAL(sp, __ch);				\
 	if ((nltrans) && (__value == K_CR || __value == K_NL)) {	\
 		NEEDNEWLINE(sp);					\

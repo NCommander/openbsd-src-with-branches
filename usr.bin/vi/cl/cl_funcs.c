@@ -370,10 +370,10 @@ cl_insertln(SCR *sp)
  * cl_keyval --
  *	Return the value for a special key.
  *
- * PUBLIC: int cl_keyval(SCR *, scr_keyval_t, unsigned char *, int *);
+ * PUBLIC: int cl_keyval(SCR *, scr_keyval_t, CHAR_T *, int *);
  */
 int
-cl_keyval(SCR *sp, scr_keyval_t val, unsigned char *chp, int *dnep)
+cl_keyval(SCR *sp, scr_keyval_t val, CHAR_T *chp, int *dnep)
 {
 	CL_PRIVATE *clp;
 

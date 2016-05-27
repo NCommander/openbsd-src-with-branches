@@ -31,11 +31,11 @@
 struct _seq {
 	LIST_ENTRY(_seq) q;		/* Linked list of all sequences. */
 	seq_t	 stype;			/* Sequence type. */
-	char	*name;			/* Sequence name (if any). */
+	CHAR_T	*name;			/* Sequence name (if any). */
 	size_t	 nlen;			/* Name length. */
-	char	*input;			/* Sequence input keys. */
+	CHAR_T	*input;			/* Sequence input keys. */
 	size_t	 ilen;			/* Input keys length. */
-	char	*output;		/* Sequence output keys. */
+	CHAR_T	*output;		/* Sequence output keys. */
 	size_t	 olen;			/* Output keys length. */
 
 #define	SEQ_FUNCMAP	0x01		/* If unresolved function key.*/

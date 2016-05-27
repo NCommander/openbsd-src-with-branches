@@ -12,7 +12,7 @@
  */
 
 typedef struct _cl_private {
-	char	 ibuf[256];	/* Input keys. */
+	CHAR_T	 ibuf[256];	/* Input keys. */
 
 	int	 eof_count;	/* EOF count. */
 

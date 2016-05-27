@@ -34,7 +34,7 @@
 int
 ex_abbr(SCR *sp, EXCMD *cmdp)
 {
-	char *p;
+	CHAR_T *p;
 	size_t len;
 
 	switch (cmdp->argc) {

@@ -42,7 +42,7 @@ ex_read(SCR *sp, EXCMD *cmdp)
 {
 	enum { R_ARG, R_EXPANDARG, R_FILTER } which;
 	struct stat sb;
-	char *arg, *name;
+	CHAR_T *arg, *name;
 	EX_PRIVATE *exp;
 	FILE *fp;
 	FREF *frp;

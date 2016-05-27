@@ -71,7 +71,7 @@ ex_insert(SCR *sp, EXCMD *cmdp)
 static int
 ex_aci(SCR *sp, EXCMD *cmdp, enum which cmd)
 {
-	char *p, *t;
+	CHAR_T *p, *t;
 	GS *gp;
 	TEXT *tp;
 	TEXTH tiq;
