@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_ffs.c,v 1.21 2015/01/16 06:39:59 deraadt Exp $	*/
+/*	$OpenBSD: mount_ffs.c,v 1.22 2015/12/08 15:56:42 tedu Exp $	*/
 /*	$NetBSD: mount_ffs.c,v 1.3 1996/04/13 01:31:19 jtc Exp $	*/
 
 /*-
@@ -47,6 +47,7 @@ void	ffs_usage(void);
 
 static const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
+	MOPT_WXALLOWED,
 	MOPT_ASYNC,
 	MOPT_SYNC,
 	MOPT_UPDATE,
