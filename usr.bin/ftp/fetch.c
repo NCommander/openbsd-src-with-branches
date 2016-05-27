@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.145 2016/01/28 21:31:50 martijn Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.146 2016/05/06 22:06:09 jca Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -603,10 +603,6 @@ again:
 			sslhost = strdup(host);
 			if (sslhost == NULL)
 				errx(1, "Can't allocate memory for https host.");
-		}
-		if (tls_init() != 0) {
-			fprintf(ttyout, "SSL initialisation failed\n");
-			goto cleanup_url_get;
 		}
 		if ((tls = tls_client()) == NULL) {
 			fprintf(ttyout, "failed to create SSL client\n");
