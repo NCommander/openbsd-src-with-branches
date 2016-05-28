@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_screen.c,v 1.25 2016/01/06 22:28:52 millert Exp $	*/
+/*	$OpenBSD: cl_screen.c,v 1.26 2016/02/11 16:34:12 tim Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -165,7 +165,8 @@ cl_quit(GS *gp)
 	 * implementations get it wrong.  It may discard type-ahead characters
 	 * from the tty queue.
 	 */
-	(void)tcsetattr(STDIN_FILENO, TCSADRAIN | TCSASOFT, &clp->orig);
+	if (F_ISSET(clp, CL_STDIN_TTY))
+		(void)tcsetattr(STDIN_FILENO, TCSADRAIN | TCSASOFT, &clp->orig);
 
 	F_CLR(clp, CL_SCR_EX_INIT | CL_SCR_VI_INIT);
 	return (rval);
