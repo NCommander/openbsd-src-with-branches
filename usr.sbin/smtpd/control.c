@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.111 2016/02/09 10:38:02 gilles Exp $	*/
+/*	$OpenBSD: control.c,v 1.112 2016/03/25 15:06:58 krw Exp $	*/
 
 /*
  * Copyright (c) 2012 Gilles Chehade <gilles@poolp.org>
@@ -241,23 +241,12 @@ control_create_socket(void)
 	return fd;
 }
 
-pid_t
+int
 control(void)
 {
-	pid_t			 pid;
 	struct passwd		*pw;
 	struct event		 ev_sigint;
 	struct event		 ev_sigterm;
-
-	switch (pid = fork()) {
-	case -1:
-		fatal("control: cannot fork");
-	case 0:
-		post_fork(PROC_CONTROL);
-		break;
-	default:
-		return (pid);
-	}
 
 	purge_config(PURGE_EVERYTHING);
 
