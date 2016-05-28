@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsirand.c,v 1.35 2015/10/11 04:37:23 deraadt Exp $	*/
+/*	$OpenBSD: fsirand.c,v 1.37 2015/11/23 19:19:30 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -105,9 +105,6 @@ fsirand(char *device)
 	char *devpath, *ib;
 	u_int32_t bsize = DEV_BSIZE;
 	struct disklabel label;
-
-	if (pledge("stdio rpath wpath disklabel", NULL) == -1)
-		err(1, "pledge");
 
 	if ((devfd = opendev(device, printonly ? O_RDONLY : O_RDWR,
 	    0, &devpath)) < 0) {
