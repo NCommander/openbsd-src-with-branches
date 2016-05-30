@@ -1,4 +1,4 @@
-.\" $OpenBSD: video.4,v 1.14 2016/01/05 17:29:32 feinerer Exp $
+.\" $OpenBSD: video.4,v 1.15 2016/01/05 19:20:36 jmc Exp $
 .\"
 .\" Copyright (c) 2008 Marcus Glocker <mglocker@openbsd.org>
 .\"
@@ -413,11 +413,11 @@ If the queue is empty
 the ioctl will block until a buffer gets queued or an error occurs
 (e.g. a timeout).
 .It
+Process video data.
+.It
 Requeue the buffer via the
 .Dv VIDIOC_QBUF
-ioctl command.
-.It
-Process video data and start over again with step 6.
+ioctl command and start over again with step 6.
 .It
 When finished stop the video stream via the
 .Dv VIDIOC_STREAMOFF
