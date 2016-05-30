@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2016/05/26 19:14:25 schwarze Exp $
 
-TEST_ENV=	"MALLOC_OPTIONS=AFGJPRX"
+TEST_ENV=	"MALLOC_OPTIONS=CFGJPRSUX"
 
 PROG=test_utf8
 SRCS=tests.c
