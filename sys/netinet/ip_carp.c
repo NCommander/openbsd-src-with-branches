@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.288 2016/04/13 11:41:15 mpi Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.289 2016/05/18 03:46:03 dlg Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -78,6 +78,10 @@
 #include "bpfilter.h"
 #if NBPFILTER > 0
 #include <net/bpf.h>
+#endif
+
+#if NVLAN > 0
+#include <net/if_vlan_var.h>
 #endif
 
 #include <netinet/ip_carp.h>
@@ -1398,6 +1402,15 @@ carp_input(struct ifnet *ifp0, struct mbuf *m, void *cookie)
 	struct carp_if *cif;
 	struct carp_softc *sc;
 	struct srp_ref sr;
+
+#if NVLAN > 0
+	/*
+	 * If the underlying interface removed the VLAN header itself,
+	 * it's not for us.
+	 */
+	if (ISSET(m->m_flags, M_VLANTAG))
+		return (0);
+#endif
 
 	eh = mtod(m, struct ether_header *);
 	cif = (struct carp_if *)cookie;
