@@ -76,7 +76,6 @@
 #include <sys/namei.h>
 #include <sys/vnode.h>
 #include <sys/core.h>
-#include <sys/syslog.h>
 #include <sys/exec.h>
 #include <sys/exec_elf.h>
 #include <sys/file.h>
@@ -879,23 +878,6 @@ ELFNAME(os_pt_note)(struct proc *p, struct exec_package *epp, Elf_Ehdr *eh,
 	if ((error = ELFNAME(read_from)(p, epp->ep_vp, eh->e_phoff,
 	    (caddr_t)hph, phsize)) != 0)
 		goto out1;
-
-	for (ph = hph;  ph < &hph[eh->e_phnum]; ph++) {
-		if (ph->p_type == PT_OPENBSD_WXNEEDED) {
-			int wxallowed = (epp->ep_vp->v_mount &&
-			    (epp->ep_vp->v_mount->mnt_flag & MNT_WXALLOWED));
-			
-			if (!wxallowed) {
-				log(LOG_NOTICE,
-				    "%s(%d): W^X binary outside wxallowed mountpoint\n",
-				    epp->ep_name, p->p_pid);
-				error = ENOEXEC;
-				goto out1;
-			}
-			epp->ep_flags |= EXEC_WXNEEDED;
-			break;
-		}
-	}
 
 	for (ph = hph;  ph < &hph[eh->e_phnum]; ph++) {
 		if (ph->p_type != PT_NOTE ||

@@ -707,9 +707,6 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 	if ((pack.ep_flags & EXEC_HASFD) && pack.ep_fd < 255)
 		p->p_descfd = pack.ep_fd;
 
-	if (pack.ep_flags & EXEC_WXNEEDED)
-		p->p_p->ps_flags |= PS_WXNEEDED;
-
 	/*
 	 * Call exec hook. Emulation code may NOT store reference to anything
 	 * from &pack.
