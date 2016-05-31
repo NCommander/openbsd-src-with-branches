@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.161 2015/07/21 03:30:51 krw Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.162 2016/04/04 18:48:39 krw Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -687,6 +687,7 @@ struct sr_workunit	*sr_scsi_wu_get(struct sr_discipline *, int);
 void			sr_scsi_wu_put(struct sr_discipline *,
 			    struct sr_workunit *);
 int			sr_chunk_in_use(struct sr_softc *, dev_t);
+int			sr_rebuild_percent(struct sr_discipline *);
 
 /* discipline functions */
 int			sr_raid_inquiry(struct sr_workunit *);
