@@ -1,4 +1,4 @@
-/*	$OpenBSD: constraint.c,v 1.26 2016/03/05 16:09:20 naddy Exp $	*/
+/*	$OpenBSD: constraint.c,v 1.28 2016/05/21 13:46:10 jsing Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -866,7 +866,7 @@ httpsdate_request(struct httpsdate *httpsdate, struct timeval *when)
 
 	if (tls_connect_servername(httpsdate->tls_ctx, httpsdate->tls_addr,
 	    httpsdate->tls_port, httpsdate->tls_hostname) == -1) {
-		log_warnx("tls connect failed: %s (%s): %s",
+		log_debug("tls connect failed: %s (%s): %s",
 		    httpsdate->tls_addr, httpsdate->tls_hostname,
 		    tls_error(httpsdate->tls_ctx));
 		goto fail;
