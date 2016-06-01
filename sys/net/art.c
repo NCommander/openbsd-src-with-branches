@@ -1,4 +1,4 @@
-/*	$OpenBSD: art.c,v 1.13 2016/04/12 06:40:44 mpi Exp $ */
+/*	$OpenBSD: art.c,v 1.14 2016/04/13 08:04:14 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -803,6 +803,7 @@ art_get(struct sockaddr *dst, uint8_t plen)
 
 	an->an_dst = dst;
 	an->an_plen = plen;
+	SRPL_INIT(&an->an_rtlist);
 
 	return (an);
 }
