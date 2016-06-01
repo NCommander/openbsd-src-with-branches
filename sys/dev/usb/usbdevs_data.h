@@ -9662,6 +9662,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "MC8355",
 	},
 	{
+	    USB_VENDOR_SIERRA, USB_PRODUCT_SIERRA_AIRCARD_340U,
+	    "Aircard 340U",
+	},
+	{
 	    USB_VENDOR_SIERRA, USB_PRODUCT_SIERRA_AIRCARD_770S,
 	    "Aircard 770S",
 	},
