@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: utvfu.c,v 1.1 2016/06/01 09:48:20 mglocker Exp $ */
 /*
  * Copyright (c) 2013 Lubomir Rintel
  * Copyright (c) 2013 Federico Simoncelli
@@ -50,6 +50,7 @@
 #include <sys/kernel.h>
 #include <sys/kthread.h>
 #include <sys/malloc.h>
+#include <sys/device.h>
 #include <sys/audioio.h>
 #include <sys/videoio.h>
 
