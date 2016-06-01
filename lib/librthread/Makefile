@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.41 2016/04/02 19:56:53 guenther Exp $
+#	$OpenBSD: Makefile,v 1.42 2016/05/07 19:05:22 guenther Exp $
 
 LIB=pthread
 LIBCSRCDIR=	${.CURDIR}/../libc
 
 CFLAGS+=-Wall -g -Werror -Wshadow
-CFLAGS+=-Wmissing-prototypes -Wstrict-prototypes
+CFLAGS+=-Werror-implicit-function-declaration
 CFLAGS+=-Wsign-compare
 CFLAGS+=-I${.CURDIR} -include namespace.h \
 	-I${LIBCSRCDIR}/arch/${MACHINE_CPU} -I${LIBCSRCDIR}/include
