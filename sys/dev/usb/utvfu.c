@@ -1,4 +1,4 @@
-/*	$OpenBSD: utvfu.c,v 1.1 2016/06/01 09:48:20 mglocker Exp $ */
+/*	$OpenBSD: utvfu.c,v 1.2 2016/06/01 23:54:09 deraadt Exp $ */
 /*
  * Copyright (c) 2013 Lubomir Rintel
  * Copyright (c) 2013 Federico Simoncelli
@@ -346,7 +346,7 @@ utvfu_setup_capture(struct utvfu_softc *sc)
  * Copy data from chunk into a frame buffer, deinterlacing the data
  * into every second line. Unfortunately, they don't align nicely into
  * 720 pixel lines, as the chunk is 240 words long, which is 480 pixels.
- * Therefore, we break down the chunk into two halves before copyting,
+ * Therefore, we break down the chunk into two halves before copying,
  * so that we can interleave a line if needed.
  *
  * Each "chunk" is 240 words; a word in this context equals 4 bytes.
