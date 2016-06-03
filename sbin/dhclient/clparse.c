@@ -1,4 +1,4 @@
-/*	$OpenBSD: clparse.c,v 1.93 2015/10/26 16:32:33 krw Exp $	*/
+/*	$OpenBSD: clparse.c,v 1.94 2016/02/06 19:30:52 krw Exp $	*/
 
 /* Parser for dhclient config and lease files. */
 
@@ -86,7 +86,7 @@ read_client_conf(void)
 	config->link_timeout = 10;
 	config->timeout = 60;
 	config->select_interval = 0;
-	config->reboot_timeout = 10;
+	config->reboot_timeout = 1;
 	config->retry_interval = 300;
 	config->backoff_cutoff = 15;
 	config->initial_interval = 3;
