@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftree.c,v 1.37 2015/03/09 04:23:29 guenther Exp $	*/
+/*	$OpenBSD: ftree.c,v 1.38 2015/03/19 05:14:24 guenther Exp $	*/
 /*	$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $	*/
 
 /*-
@@ -548,7 +548,7 @@ getpathname(char *buf, int buflen)
 		term = '\n';
 	}
 	while ((ch = getchar()) != term && ch != EOF)
-		;
+		continue;
 	paxwarn(1, "Ignoring too-long pathname: %s", buf);
 	return(NULL);
 }
