@@ -1,4 +1,4 @@
-/*	$OpenBSD: lunaws.c,v 1.10 2014/01/26 17:48:07 miod Exp $	*/
+/*	$OpenBSD: lunaws.c,v 1.11 2014/06/07 11:55:35 aoyama Exp $	*/
 /* $NetBSD: lunaws.c,v 1.6 2002/03/17 19:40:42 atatat Exp $ */
 
 /*-
@@ -260,9 +260,8 @@ wsintr(int chan)
 			else if (sc->sc_msreport == 2) {
 				sc->dy = (signed char)code;
 				if (sc->sc_wsmousedev != NULL)
-					wsmouse_input(sc->sc_wsmousedev,
-					    sc->buttons, sc->dx, sc->dy, 0, 0,
-					    WSMOUSE_INPUT_DELTA);
+					WSMOUSE_INPUT(sc->sc_wsmousedev,
+					    sc->buttons, sc->dx, sc->dy, 0, 0);
 				sc->sc_msreport = 0;
 			}
 #else

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sunms.c,v 1.1 2009/05/20 18:22:33 miod Exp $	*/
 
 /*
  * Copyright (c) 2002, 2009, Miodrag Vallat
@@ -220,8 +220,8 @@ sunms_input(struct sunms_softc *sc, int c)
 	if (sc->sc_byteno == sc->sc_pktlen) {
 		timeout_del(&sc->sc_abort_tmo);
 		sc->sc_byteno = -1;
-		wsmouse_input(sc->sc_wsmousedev, sc->sc_mb,
-		    sc->sc_dx, sc->sc_dy, 0, 0, WSMOUSE_INPUT_DELTA);
+		WSMOUSE_INPUT(sc->sc_wsmousedev,
+		    sc->sc_mb, sc->sc_dx, sc->sc_dy, 0, 0);
 		sc->sc_dx = sc->sc_dy = 0;
 	}
 }
