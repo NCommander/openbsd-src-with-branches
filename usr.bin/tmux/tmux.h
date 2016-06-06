@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.632 2016/05/30 09:50:20 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.633 2016/06/06 07:24:31 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -642,6 +642,7 @@ enum utf8_state {
 #define GRID_FLAG_EXTENDED 0x8
 #define GRID_FLAG_FGRGB 0x10
 #define GRID_FLAG_BGRGB 0x20
+#define GRID_FLAG_SELECTED 0x40
 
 /* Grid line flags. */
 #define GRID_LINE_WRAPPED 0x1
