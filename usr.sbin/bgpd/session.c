@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.346 2015/11/17 09:15:21 benno Exp $ */
+/*	$OpenBSD: session.c,v 1.347 2015/11/20 23:26:08 florian Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -2017,7 +2017,7 @@ parse_open(struct peer *peer)
 
 	/* check bgpid for validity - just disallow 0 */
 	if (ntohl(bgpid) == 0) {
-		log_peer_warnx(&peer->conf, "peer BGPID %lu unacceptable",
+		log_peer_warnx(&peer->conf, "peer BGPID %u unacceptable",
 		    ntohl(bgpid));
 		session_notification(peer, ERR_OPEN, ERR_OPEN_BGPID,
 		    NULL, 0);
