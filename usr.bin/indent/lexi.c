@@ -1,4 +1,4 @@
-/*	$OpenBSD: lexi.c,v 1.18 2015/01/22 05:35:27 jsg Exp $	*/
+/*	$OpenBSD: lexi.c,v 1.19 2015/08/20 22:32:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -68,7 +68,7 @@ struct templ specialsinit[] = {
 	{ "double", 4 },
 	{ "long", 4 },
 	{ "short", 4 },
-	{ "typdef", 4 },
+	{ "typedef", 4 },
 	{ "unsigned", 4 },
 	{ "register", 4 },
 	{ "static", 4 },
