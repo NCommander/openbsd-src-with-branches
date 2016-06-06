@@ -1,5 +1,0 @@
-# $OpenBSD$
-# should produce similar error message with -j and without -j
-
-thing.o: $<.vis
-	@echo trythis

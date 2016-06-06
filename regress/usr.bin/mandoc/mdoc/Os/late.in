@@ -1,9 +1,0 @@
-.Dd August 5, 2014
-.Dt OS-LATE 1
-.Sh NAME
-.Nm Os-late
-.Nd late operating system macro
-.Sh DESCRIPTION
-initial text
-.Os OpenBSD
-final text
