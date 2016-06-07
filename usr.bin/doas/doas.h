@@ -8,7 +8,6 @@ struct rule {
 	const char *cmd;
 	const char **cmdargs;
 	const char **envlist;
-	const char **setenvlist;
 };
 
 extern struct rule **rules;
@@ -22,4 +21,3 @@ size_t arraylen(const char **);
 
 #define NOPASS		0x1
 #define KEEPENV		0x2
-#define SETENV		0x4
