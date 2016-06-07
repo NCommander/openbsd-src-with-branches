@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmvar.h,v 1.12 2016/04/06 06:15:06 mlarkin Exp $	*/
+/*	$OpenBSD: vmmvar.h,v 1.13 2016/04/25 15:24:55 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -179,6 +179,7 @@ struct vcpu_init_state {
 
 struct vm_mem_range {
 	paddr_t	vmr_gpa;
+	vaddr_t vmr_va;
 	size_t	vmr_size;
 };
 
