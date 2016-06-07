@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrstruct.c,v 1.18 2016/03/24 05:05:42 guenther Exp $	*/
+/*	$OpenBSD: ktrstruct.c,v 1.19 2016/05/22 23:02:28 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -147,7 +147,8 @@ print_time(time_t t, int relative, int have_subsec)
 	} else
 		printf("%jd", (intmax_t)t);
 
-	if (!relative) {
+	/* 1970s times are probably relative */
+	if (!relative && t > (10 * 365 * 24 * 3600)) {
 		tm = localtime(&t);
 		if (tm != NULL) {
 			(void)strftime(timestr, sizeof(timestr), TIME_FORMAT,
