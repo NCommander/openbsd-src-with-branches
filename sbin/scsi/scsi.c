@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi.c,v 1.28 2013/11/12 04:59:02 deraadt Exp $	*/
+/*	$OpenBSD: scsi.c,v 1.29 2014/11/20 15:22:39 tedu Exp $	*/
 /*	$FreeBSD: scsi.c,v 1.11 1996/04/06 11:00:28 joerg Exp $	*/
 
 /*
@@ -442,11 +442,11 @@ skipwhite(FILE *f)
 skip_again:
 
 	while (isspace(c = getc(f)))
-		;
+		continue;
 
 	if (c == '#') {
 		while ((c = getc(f)) != '\n' && c != EOF)
-			;
+			continue;
 		goto skip_again;
 	}
 

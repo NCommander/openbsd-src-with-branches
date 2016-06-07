@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsdb.c,v 1.28 2015/01/16 06:39:58 deraadt Exp $	*/
+/*	$OpenBSD: fsdb.c,v 1.29 2015/01/20 18:22:21 deraadt Exp $	*/
 /*	$NetBSD: fsdb.c,v 1.7 1997/01/11 06:50:53 lukem Exp $	*/
 
 /*-
@@ -451,7 +451,7 @@ CMDFUNCSTART(focusname)
 	}
 	for (p = argv[1]; p != NULL;) {
 		while ((val = strsep(&p, "/")) != NULL && *val == '\0')
-			;
+			continue;
 		if (val) {
 			printf("component `%s': ", val);
 			fflush(stdout);
