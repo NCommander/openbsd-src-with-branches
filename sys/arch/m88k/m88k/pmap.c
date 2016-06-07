@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.81 2015/07/29 17:54:35 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.82 2015/09/08 21:28:36 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2001-2004, 2010, Miodrag Vallat.
@@ -867,7 +867,9 @@ pmap_init(void)
 	DPRINTF(CD_INIT, ("pmap_init()\n"));
 	pool_init(&pmappool, sizeof(struct pmap), 0, 0, 0, "pmappl",
 	    &pool_allocator_single);
+	pool_setipl(&pmappool, IPL_NONE);
 	pool_init(&pvpool, sizeof(pv_entry_t), 0, 0, 0, "pvpl", NULL);
+	pool_setipl(&pvpool, IPL_VM);
 }
 
 /*
