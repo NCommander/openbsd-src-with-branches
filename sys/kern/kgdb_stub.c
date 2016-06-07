@@ -1,4 +1,4 @@
-/*	$OpenBSD: kgdb_stub.c,v 1.9 2010/10/30 04:17:07 tedu Exp $	*/
+/*	$OpenBSD: kgdb_stub.c,v 1.10 2016/03/07 18:43:59 naddy Exp $	*/
 /*	$NetBSD: kgdb_stub.c,v 1.6 1998/08/30 20:30:57 scottr Exp $	*/
 
 /*
@@ -240,7 +240,7 @@ kgdb_recv(u_char *bp, int maxlen)
 		p = bp;
 		csum = len = 0;
 		while ((c = GETC()) != KGDB_START)
-			;
+			continue;
 
 		while ((c = GETC()) != KGDB_END && len < maxlen) {
 			c &= 0x7f;

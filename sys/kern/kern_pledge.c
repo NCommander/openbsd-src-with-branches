@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.168 2016/05/31 22:12:26 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.169 2016/05/31 22:14:43 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1599,7 +1599,7 @@ canonpath(const char *input, char *buf, size_t bufsize)
 			p += 3;
 			if (q != buf)	/* "/../" at start of buf */
 				while (*--q != '/')
-					;
+					continue;
 
 		} else {
 			*q++ = *p++;
