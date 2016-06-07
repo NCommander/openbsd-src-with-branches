@@ -1,4 +1,4 @@
-/*	$OpenBSD: refcnt.h,v 1.2 2015/09/13 09:05:33 dlg Exp $ */
+/*	$OpenBSD: refcnt.h,v 1.3 2015/11/23 10:56:20 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 David Gwynne <dlg@openbsd.org>
@@ -23,9 +23,9 @@ struct refcnt {
 	unsigned int refs;
 };
 
-#ifdef _KERNEL
-
 #define REFCNT_INITIALIZER()	{ .refs = 1 }
+
+#ifdef _KERNEL
 
 void	refcnt_init(struct refcnt *);
 void	refcnt_take(struct refcnt *);
