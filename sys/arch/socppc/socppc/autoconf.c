@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.4 2009/10/01 20:19:19 kettenis Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.5 2014/04/01 20:42:39 mpi Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -68,7 +68,6 @@ struct nam2blk nam2blk[] = {
 	{ "wd",		0 },
 	{ "sd",		2 },
 	{ "rd",		17 },
-	{ "raid",	19 },
 	{ "vnd",	14 },
 	{ NULL,		-1 }
 };
