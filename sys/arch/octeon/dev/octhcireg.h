@@ -1,4 +1,4 @@
-/*	$OpenBSD: octhcireg.h,v 1.1 2014/07/09 23:03:22 pirofti Exp $	*/
+/*	$OpenBSD: octhcireg.h,v 1.2 2014/08/11 18:29:56 miod Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -38,10 +38,6 @@
 
 #ifndef _OCTHCIREGREG_H_
 #define _OCTHCIREGREG_H_
-
-#include <sys/stdint.h>
-
-typedef u_int32_t octhci_physaddr_t;
 
 /*
  * USBN Registers - interface with the USB core
