@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.131 2016/06/02 17:05:58 schwarze Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.132 2016/06/04 16:43:43 sthen Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -314,10 +314,6 @@ int	uvm_wxabort;
 static inline int
 uvm_wxcheck(struct proc *p, char *call)
 {
-#if (defined(__mips64__) || defined(__hppa))
-	/* XXX got/plt repairs still needed */
-	return 0;
-#endif
 	int wxallowed = (p->p_p->ps_textvp->v_mount &&
 	    (p->p_p->ps_textvp->v_mount->mnt_flag & MNT_WXALLOWED));
 
