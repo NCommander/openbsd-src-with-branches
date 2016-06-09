@@ -1,4 +1,4 @@
-#	$OpenBSD: files.imx,v 1.5 2016/05/21 12:37:28 kettenis Exp $
+#	$OpenBSD: files.imx,v 1.6 2016/06/03 01:36:46 jsg Exp $
 
 define imx {}
 device imx: imx
@@ -47,5 +47,5 @@ device imxesdhc: sdmmcbus
 attach imxesdhc at imx
 file	arch/armv7/imx/imxesdhc.c		imxesdhc
 
-attach ahci at imx with imxahci
+attach ahci at fdt with imxahci
 file	arch/armv7/imx/imxahci.c		imxahci
