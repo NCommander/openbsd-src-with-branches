@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.43 2016/05/23 19:11:42 renato Exp $ */
+/*	$OpenBSD: interface.c,v 1.44 2016/05/23 19:14:03 renato Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -278,7 +278,7 @@ if_reset(struct iface *iface, int af)
 	if_stop_hello_timer(ia);
 
 	while ((adj = LIST_FIRST(&ia->adj_list)) != NULL)
-		adj_del(adj);
+		adj_del(adj, 1, S_SHUTDOWN);
 
 	/* try to cleanup */
 	switch (af) {

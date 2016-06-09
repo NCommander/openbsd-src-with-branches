@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpe.c,v 1.62 2016/06/06 16:42:41 renato Exp $ */
+/*	$OpenBSD: ldpe.c,v 1.63 2016/06/08 23:30:07 renato Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -179,7 +179,7 @@ ldpe_shutdown(void)
 		free(if_addr);
 	}
 	while ((adj = LIST_FIRST(&global.adj_list)) != NULL)
-		adj_del(adj);
+		adj_del(adj, 1, S_SHUTDOWN);
 
 	/* clean up */
 	msgbuf_write(&iev_lde->ibuf.w);
