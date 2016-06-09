@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.317 2016/03/29 18:13:20 bluhm Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.318 2016/03/31 13:11:14 bluhm Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -3373,7 +3373,7 @@ syn_cache_insert(struct syn_cache *sc, struct tcpcb *tp)
 	/*
 	 * If there are no entries in the hash table, reinitialize
 	 * the hash secrets.  To avoid useless cache swaps and
-	 * and reinitialization, use it until the limit is reached.
+	 * reinitialization, use it until the limit is reached.
 	 */
 	if (set->scs_count == 0 && set->scs_use <= 0) {
 		arc4random_buf(set->scs_random, sizeof(set->scs_random));
