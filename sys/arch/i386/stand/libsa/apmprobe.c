@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmprobe.c,v 1.17 2014/03/29 18:09:29 guenther Exp $	*/
+/*	$OpenBSD: apmprobe.c,v 1.18 2014/07/08 13:31:30 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Michael Shalayeff
@@ -27,7 +27,7 @@
  */
 /*
  * APM derived from: apm_init.S, LP (Laptop Package)
- * wich contained this:
+ * which contained this:
  * Copyright (C) 1994 by HOSOKAWA, Tatsumi <hosokawa@mt.cs.keio.ac.jp>
  *
  */
