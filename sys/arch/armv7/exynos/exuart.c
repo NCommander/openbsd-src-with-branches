@@ -1,4 +1,4 @@
-/* $OpenBSD: exuart.c,v 1.3 2016/04/24 00:57:23 patrick Exp $ */
+/* $OpenBSD: exuart.c,v 1.4 2016/06/08 15:27:05 jsg Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@motorola.com>
  *
@@ -144,6 +144,10 @@ exuart_init_cons(void)
 		return;
 	if (fdt_get_memory_address(node, 0, &mem))
 		return;
+
+	/* dtb uses serial2, qemu uses serial0 */
+	if (board_id == BOARD_ID_EXYNOS4_SMDKC210)
+		mem.addr = 0x13800000;
 
 	exuartcnattach(&armv7_bs_tag, mem.addr, comcnspeed, comcnmode);
 }
