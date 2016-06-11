@@ -1,4 +1,4 @@
-#	$OpenBSD: files.imx,v 1.7 2016/06/09 12:39:17 kettenis Exp $
+#	$OpenBSD: files.imx,v 1.8 2016/06/09 15:38:30 kettenis Exp $
 
 define imx {}
 device imx: imx
@@ -9,7 +9,7 @@ file	arch/armv7/imx/imx6.c
 
 # serial ports
 device imxuart
-attach	imxuart at imx
+attach	imxuart at fdt
 file	arch/armv7/imx/imxuart.c		imxuart
 
 device imxccm
