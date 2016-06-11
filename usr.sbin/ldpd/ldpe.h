@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpe.h,v 1.57 2016/05/23 19:20:55 renato Exp $ */
+/*	$OpenBSD: ldpe.h,v 1.58 2016/06/09 17:26:32 renato Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -155,8 +155,8 @@ int	 recv_keepalive(struct nbr *, char *, uint16_t);
 /* notification.c */
 void	 send_notification_full(struct tcp_conn *, struct notify_msg *);
 void	 send_notification(uint32_t, struct tcp_conn *, uint32_t,
-	    uint32_t);
-void	 send_notification_nbr(struct nbr *, uint32_t, uint32_t, uint32_t);
+	    uint16_t);
+void	 send_notification_nbr(struct nbr *, uint32_t, uint32_t, uint16_t);
 int	 recv_notification(struct nbr *, char *, uint16_t);
 
 /* address.c */
