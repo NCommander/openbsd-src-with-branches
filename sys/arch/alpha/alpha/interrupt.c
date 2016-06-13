@@ -1,4 +1,4 @@
-/* $OpenBSD: interrupt.c,v 1.36 2015/09/02 14:07:41 deraadt Exp $ */
+/* $OpenBSD: interrupt.c,v 1.37 2015/09/13 20:37:28 kettenis Exp $ */
 /* $NetBSD: interrupt.c,v 1.46 2000/06/03 20:47:36 thorpej Exp $ */
 
 /*-
@@ -602,7 +602,7 @@ intr_barrier(void *cookie)
 }
 
 int
-_splraise(int s)
+splraise(int s)
 {
 	int cur = alpha_pal_rdps() & ALPHA_PSL_IPL_MASK;
 	return (s > cur ? alpha_pal_swpipl(s) : cur);
