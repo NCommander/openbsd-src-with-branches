@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.S,v 1.13 2014/02/02 20:31:10 kettenis Exp $	*/
+/*	$OpenBSD: mutex.S,v 1.14 2015/07/03 15:12:49 miod Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat.
@@ -55,7 +55,7 @@ ENTRY(mtx_enter)
 enter_again:
 	ld	%r2,  %r2,  MTX_WANTIPL
 	bcnd	eq0,  %r2,  1f
-	bsr	_C_LABEL(raiseipl)	/* raiseipl(mtx->mtx_wantipl) */
+	bsr	_C_LABEL(splraise)	/* splraise(mtx->mtx_wantipl) */
 1:
 	ld	%r4,  %r31, 0
 	or	%r3,  %r0,  1
@@ -112,7 +112,7 @@ enter_panic:
 	st	%r2,  %r31, 0		/* save mtx */
 	ld	%r2,  %r2,  MTX_WANTIPL
 	bcnd	eq0,  %r2,  1f
-	bsr	_C_LABEL(raiseipl)	/* raiseipl(mtx->mtx_wantipl) */
+	bsr	_C_LABEL(splraise)	/* splraise(mtx->mtx_wantipl) */
 1:
 	ld	%r4,  %r31, 0
 	ldcr	%r3,  CPU
@@ -148,7 +148,7 @@ ENTRY(mtx_enter_try)
 enter_try_again:
 	ld	%r2,  %r2,  MTX_WANTIPL
 	bcnd	eq0,  %r2,  1f
-	bsr	_C_LABEL(raiseipl)	/* raiseipl(mtx->mtx_wantipl) */
+	bsr	_C_LABEL(splraise)	/* splraise(mtx->mtx_wantipl) */
 1:
 	ld	%r4,  %r31, 0
 	or	%r3,  %r0,  1
@@ -205,7 +205,7 @@ enter_try_panic:
 	st	%r2,  %r31, 0		/* save mtx */
 	ld	%r2,  %r2,  MTX_WANTIPL
 	bcnd	eq0,  %r2,  1f
-	bsr	_C_LABEL(raiseipl)	/* raiseipl(mtx->mtx_wantipl) */
+	bsr	_C_LABEL(splraise)	/* splraise(mtx->mtx_wantipl) */
 1:
 	ld	%r4,  %r31, 0
 	ldcr	%r3,  CPU
