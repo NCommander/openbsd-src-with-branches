@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.189 2016/06/01 12:06:49 mpi Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.190 2016/06/03 02:56:59 dlg Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -695,7 +695,7 @@ report:
 			ifp = if_get(rt->rt_ifidx);
 			if (ifp != NULL && rtm->rtm_addrs & (RTA_IFP|RTA_IFA)) {
 				info.rti_info[RTAX_IFP] = sdltosa(ifp->if_sadl);
-				info.rti_info[RTAX_IFA] = rt->rt_ifa->ifa_addr;
+				info.rti_info[RTAX_IFA] = rt->rt_addr;
 				if (ifp->if_flags & IFF_POINTOPOINT)
 					info.rti_info[RTAX_BRD] =
 					    rt->rt_ifa->ifa_dstaddr;
@@ -1279,7 +1279,7 @@ sysctl_dumpentry(struct rtentry *rt, void *v, unsigned int id)
 	ifp = if_get(rt->rt_ifidx);
 	if (ifp != NULL) {
 		info.rti_info[RTAX_IFP] = sdltosa(ifp->if_sadl);
-		info.rti_info[RTAX_IFA] = rt->rt_ifa->ifa_addr;
+		info.rti_info[RTAX_IFA] = rt->rt_addr;
 		if (ifp->if_flags & IFF_POINTOPOINT)
 			info.rti_info[RTAX_BRD] = rt->rt_ifa->ifa_dstaddr;
 	}
