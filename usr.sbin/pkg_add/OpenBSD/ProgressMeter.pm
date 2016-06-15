@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: ProgressMeter.pm,v 1.46 2015/05/18 10:25:10 espie Exp $
+# $OpenBSD: ProgressMeter.pm,v 1.47 2015/05/18 10:41:20 espie Exp $
 #
 # Copyright (c) 2010 Marc Espie <espie@openbsd.org>
 #
@@ -83,6 +83,8 @@ sub for_list
 # stub class when no actual progressmeter that still prints out.
 package OpenBSD::ProgressMeter::Stub;
 our @ISA = qw(OpenBSD::ProgressMeter);
+
+sub forked {}
 
 sub clear {}
 
