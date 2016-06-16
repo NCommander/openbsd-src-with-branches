@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.21 2015/09/10 13:29:09 guenther Exp $*/
+/*	$OpenBSD: SYS.h,v 1.22 2015/10/23 04:39:24 guenther Exp $*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -121,6 +121,7 @@
 
 #define	__PSEUDO_NOERROR(p,x,y)						\
 	__SYSCALL__NOERROR(p,x,y);					\
+	or %r0, %r0, %r0;						\
 	jmp %r1;							\
 	__END(p,x); END(x)
 
