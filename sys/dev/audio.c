@@ -1161,6 +1161,15 @@ audio_ioc_setpar(struct audio_softc *sc, struct audio_swpar *p)
 }
 
 int
+audio_ioc_getstatus(struct audio_softc *sc, struct audio_status *p)
+{
+	p->mode = sc->mode;
+	p->pause = sc->pause;
+	p->active = sc->active;
+	return 0;
+}
+
+int
 audio_match(struct device *parent, void *match, void *aux)
 {
 	struct audio_attach_args *sa = aux;
@@ -1742,6 +1751,9 @@ audio_ioctl(struct audio_softc *sc, unsigned long cmd, void *addr)
 		break;
 	case AUDIO_GETPAR:
 		error = audio_ioc_getpar(sc, (struct audio_swpar *)addr);
+		break;
+	case AUDIO_GETSTATUS:
+		error = audio_ioc_getstatus(sc, (struct audio_status *)addr);
 		break;
 	case AUDIO_SETINFO:
 		error = audio_setinfo(sc, (struct audio_info *)addr);
