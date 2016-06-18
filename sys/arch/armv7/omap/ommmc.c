@@ -1,4 +1,4 @@
-/*	$OpenBSD: ommmc.c,v 1.22 2016/06/05 07:56:07 jsg Exp $	*/
+/*	$OpenBSD: ommmc.c,v 1.23 2016/06/18 05:59:26 jsg Exp $	*/
 
 /*
  * Copyright (c) 2009 Dale Rahn <drahn@openbsd.org>
@@ -434,7 +434,6 @@ ommmc_attach(struct device *parent, struct device *self, void *aux)
 	saa.saa_busname = "sdmmc";
 	saa.sct = &ommmc_functions;
 	saa.sch = sc;
-	saa.caps = SMC_CAPS_4BIT_MODE;
 	if (caps & MMCHS_CAPA_HSS)
 		saa.caps |= SMC_CAPS_MMC_HIGHSPEED;
 
