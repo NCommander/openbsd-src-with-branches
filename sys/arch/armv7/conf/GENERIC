@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.20 2016/06/12 13:02:06 kettenis Exp $
+#	$OpenBSD: GENERIC,v 1.21 2016/06/13 23:43:58 kettenis Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -74,7 +74,7 @@ dmtimer*	at omap?		# am335x dual mode timers
 omusbtll*	at omap?
 cpsw*		at omap?
 com*		at omap?		# onboard uarts
-ommmc*		at omap?		# SD/MMC card controller
+ommmc*		at fdt?			# SD/MMC card controller
 sdmmc*		at ommmc?		# SD/MMC bus
 
 ehci*		at omap?		# EHCI (shim)
