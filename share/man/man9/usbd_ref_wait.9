@@ -1,4 +1,4 @@
-.\" $OpenBSD$
+.\" $OpenBSD: usbd_ref_wait.9,v 1.1 2016/06/17 13:23:21 mglocker Exp $
 .\"
 .\" Copyright (c) 2016 Marcus Glocker <mglocker@openbsd.org>
 .\"
@@ -33,7 +33,7 @@
 The
 .Fn usbd_ref_wait
 function is used on a device level to
-.Fn tsleep
+.Xr tsleep 9
 until the reference counter has reached zero.
 .Pp
 To increase the reference counter use
@@ -46,9 +46,9 @@ will call
 .Fn wakeup
 to interrupt the
 .Fn tsleep
-at the point where you have set the
+at the point where
 .Fn usbd_ref_wait
-before.
+was previously set.
 .Pp
 Typical use cases to wait for tasks to complete is at device closing
 or detachment.
@@ -59,6 +59,6 @@ and
 .Fn usbd_ref_wait
 can be called during autoconf or from process context.
 .Sh SEE ALSO
-.Xr tsleep 9 ,
 .Xr usb 4 ,
+.Xr tsleep 9 ,
 .Xr wakeup 9
