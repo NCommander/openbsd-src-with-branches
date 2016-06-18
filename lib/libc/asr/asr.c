@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.c,v 1.52 2016/05/26 06:59:42 jmatthew Exp $	*/
+/*	$OpenBSD: asr.c,v 1.53 2016/05/27 11:25:57 sthen Exp $	*/
 /*
  * Copyright (c) 2010-2012 Eric Faurot <eric@openbsd.org>
  *
@@ -732,7 +732,6 @@ asr_ctx_envopts(struct asr_ctx *ac)
 	if ((e = getenv("RES_OPTIONS")) != NULL) {
 		strlcpy(buf, "options ", sizeof buf);
 		strlcat(buf, e, sizeof buf);
-		s = strlcat(buf, "\n", sizeof buf);
 		s = strlcat(buf, "\n", sizeof buf);
 		if (s < sizeof buf)
 			asr_ctx_parse(ac, buf);
