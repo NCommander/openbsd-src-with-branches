@@ -1,4 +1,4 @@
-/* $OpenBSD: ufs_dirhash.c,v 1.35 2016/03/23 19:39:48 natano Exp $	*/
+/* $OpenBSD: ufs_dirhash.c,v 1.36 2016/04/03 17:05:51 natano Exp $	*/
 /*
  * Copyright (c) 2001, 2002 Ian Dowse.  All rights reserved.
  *
@@ -1049,6 +1049,7 @@ ufsdirhash_init(void)
 {
 	pool_init(&ufsdirhash_pool, DH_NBLKOFF * sizeof(doff_t), 0, 0,
 	    PR_WAITOK, "dirhash", NULL);
+	pool_setipl(&ufsdirhash_pool, IPL_NONE);
 	mtx_init(&ufsdirhash_mtx, IPL_NONE);
 	arc4random_buf(&ufsdirhash_key, sizeof(ufsdirhash_key));
 	TAILQ_INIT(&ufsdirhash_list);
