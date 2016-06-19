@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf.h,v 1.19 2013/09/17 04:31:56 mlarkin Exp $	*/
+/*	$OpenBSD: udf.h,v 1.20 2014/11/18 10:42:15 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -41,7 +41,7 @@ struct unode {
 	struct vnode *u_vnode;
 	struct vnode *u_devvp;
 	struct umount *u_ump;
-	struct lock u_lock;
+	struct rrwlock u_lock;
 	dev_t u_dev;
 	udfino_t u_ino;
 	union {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_node.h,v 1.18 2013/05/30 17:35:01 guenther Exp $	*/
+/*	$OpenBSD: cd9660_node.h,v 1.19 2013/06/02 01:07:39 deraadt Exp $	*/
 /*	$NetBSD: cd9660_node.h,v 1.15 1997/04/11 21:52:01 kleink Exp $	*/
 
 /*-
@@ -66,7 +66,7 @@ struct iso_node {
 	doff_t	i_diroff;	/* offset in dir, where we found last entry */
 	doff_t	i_offset;	/* offset of free space in directory */
 	cdino_t	i_ino;		/* inode number of found directory */
-	struct  lock i_lock;    /* node lock */
+	struct	rrwlock i_lock;	/* node lock */
 
 	doff_t	iso_extent;	/* extent of file */
 	doff_t	i_size;

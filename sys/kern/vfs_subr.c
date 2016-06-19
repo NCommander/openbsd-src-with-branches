@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.246 2016/04/26 18:23:07 natano Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.247 2016/05/26 16:03:29 natano Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -957,7 +957,7 @@ vclean(struct vnode *vp, int flags, struct proc *p)
 	 * For active vnodes, it ensures that no other activity can
 	 * occur while the underlying object is being cleaned out.
 	 */
-	VOP_LOCK(vp, LK_DRAIN, p);
+	VOP_LOCK(vp, LK_DRAIN | LK_EXCLUSIVE, p);
 
 	/*
 	 * Clean out any VM data associated with the vnode.
