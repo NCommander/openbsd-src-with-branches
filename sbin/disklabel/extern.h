@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.26 2015/04/29 09:58:16 henning Exp $	*/
+/*	$OpenBSD: extern.h,v 1.27 2015/10/17 13:27:08 krw Exp $	*/
 
 /*
  * Copyright (c) 2003 Theo de Raadt <deraadt@openbsd.org>
@@ -28,6 +28,7 @@ void	display_partition(FILE *, struct disklabel *, int, char);
 int	duid_parse(struct disklabel *, char *);
 
 void	readlabel(int);
+void	parselabel(void);
 struct disklabel *makebootarea(char *, struct disklabel *);
 int	editor(int);
 void	editor_allocspace(struct disklabel *);
