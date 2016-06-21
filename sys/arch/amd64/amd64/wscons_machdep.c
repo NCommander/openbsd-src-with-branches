@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_machdep.c,v 1.11 2015/08/30 10:05:09 yasuoka Exp $ */
+/*	$OpenBSD: wscons_machdep.c,v 1.12 2016/03/06 22:41:24 naddy Exp $ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell
@@ -145,6 +145,10 @@ wscn_video_init(void)
 #endif
 #if (NVGA > 0)
 	if (vga_cnattach(X86_BUS_SPACE_IO, X86_BUS_SPACE_MEM, -1, 1) == 0)
+		return (0);
+#endif
+#if (NEFIFB > 0)
+	if (efifb_cb_cnattach() == 0)
 		return (0);
 #endif
 #if (NPCDISPLAY > 0)
