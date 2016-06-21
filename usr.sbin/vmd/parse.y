@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.5 2015/12/07 13:30:06 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.6 2016/03/13 13:11:47 stefan Exp $	*/
 
 /*
  * Copyright (c) 2007-2015 Reyk Floeter <reyk@openbsd.org>
@@ -129,6 +129,14 @@ include		: INCLUDE string		{
 		;
 
 varset		: STRING '=' STRING		{
+			char *s = $1;
+			while (*s++) {
+				if (isspace((unsigned char)*s)) {
+					yyerror("macro name cannot contain "
+					    "whitespace");
+					YYERROR;
+				}
+			}
 			if (symset($1, $3, 0) == -1)
 				fatalx("cannot store variable");
 			free($1);

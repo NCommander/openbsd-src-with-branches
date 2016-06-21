@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.6 2014/11/03 03:42:12 doug Exp $ */
+/*	$OpenBSD: parse.y,v 1.7 2014/11/20 05:51:20 jsg Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -155,6 +155,14 @@ string		: string STRING	{
 		;
 
 varset		: STRING '=' string		{
+			char *s = $1;
+			while (*s++) {
+				if (isspace((unsigned char)*s)) {
+					yyerror("macro name cannot contain "
+					    "whitespace");
+					YYERROR;
+				}
+			}
 			if (symset($1, $3, 0) == -1)
 				err(1, "cannot store variable");
 			free($1);
