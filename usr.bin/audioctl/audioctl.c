@@ -62,7 +62,10 @@ struct field {
 	{NULL,			NULL,			0}
 };
 
-const char usagestr[] = "usage: audioctl [-nq] [-f path] [name=[value]] ...\n";
+const char usagestr[] =
+	"usage: audioctl [-f path]\n"
+	"       audioctl [-n] [-f path] name ...\n"
+	"       audioctl [-nq] [-f path] name=value ...\n";
 
 /*
  * parse encoding string (examples: s8, u8, s16, s16le, s24be ...)
