@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ppp.c,v 1.98 2016/04/13 11:41:15 mpi Exp $	*/
+/*	$OpenBSD: if_ppp.c,v 1.99 2016/05/23 15:22:44 tedu Exp $	*/
 /*	$NetBSD: if_ppp.c,v 1.39 1997/05/17 21:11:59 christos Exp $	*/
 
 /*
@@ -169,13 +169,12 @@ struct mbuf	*ppp_pkt_mbuf(struct ppp_pkt *);
 #ifdef PPP_COMPRESS
 /*
  * List of compressors we know about.
- * We leave some space so maybe we can modload compressors.
  */
 
 extern struct compressor ppp_bsd_compress;
 extern struct compressor ppp_deflate, ppp_deflate_draft;
 
-struct compressor *ppp_compressors[8] = {
+struct compressor *ppp_compressors[] = {
 #if DO_BSD_COMPRESS && defined(PPP_BSDCOMP)
 	&ppp_bsd_compress,
 #endif
