@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.586 2016/05/20 02:30:41 mlarkin Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.587 2016/05/21 01:06:53 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1080,6 +1080,7 @@ const struct cpu_cpuid_feature cpu_seff0_ebxfeatures[] = {
 
 const struct cpu_cpuid_feature cpu_seff0_ecxfeatures[] = {
 	{ SEFF0ECX_PREFETCHWT1,	"PREFETCHWT1" },
+	{ SEFF0ECX_UMIP,	"UMIP" },
 	{ SEFF0ECX_AVX512VBMI,	"AVX512VBMI" },
 	{ SEFF0ECX_PKU,		"PKU" },
 };

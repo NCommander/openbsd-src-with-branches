@@ -1,4 +1,4 @@
-/*	$OpenBSD: identcpu.c,v 1.71 2015/12/27 04:31:34 jsg Exp $	*/
+/*	$OpenBSD: identcpu.c,v 1.72 2016/02/03 03:25:08 guenther Exp $	*/
 /*	$NetBSD: identcpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*
@@ -193,6 +193,7 @@ const struct {
 }, cpu_seff0_ecxfeatures[] = {
 	{ SEFF0ECX_PREFETCHWT1,	"PREFETCHWT1" },
 	{ SEFF0ECX_AVX512VBMI,	"AVX512VBMI" },
+	{ SEFF0ECX_UMIP,	"UMIP" },
 	{ SEFF0ECX_PKU,		"PKU" },
 }, cpu_tpm_eaxfeatures[] = {
 	{ TPM_SENSOR,		"SENSOR" },
