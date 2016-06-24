@@ -40,9 +40,12 @@
 typedef struct udb_base udb_base;
 typedef struct udb_alloc udb_alloc;
 
+/** these checks are very slow, disabled by default */
+#if 0
 /** perform extra checks (when --enable-checking is used) */
 #ifndef NDEBUG
 #define UDB_CHECK 1
+#endif
 #endif
 
 /** pointers are stored like this */
@@ -141,7 +144,7 @@ struct udb_glob_d {
 	uint64_t hsize;
 	/** version number of this file */
 	uint8_t version;
-	/** was the file not cleanly closed, 0 is ok */
+	/** was the file cleanly closed, 0 is not clean, 1 is clean */
 	uint8_t clean_close;
 	/** an allocation operation was in progress, file needs to be salvaged
 	 * type enum udb_dirty_alloc */
@@ -201,6 +204,11 @@ struct udb_base {
 	udb_walk_relptr_func* walkfunc;
 	/** user data for walkfunc */
 	void* walkarg;
+
+	/** compaction is inhibited */
+	int inhibit_compact;
+	/** compaction is useful; deletions performed. */
+	int useful_compact;
 };
 
 typedef enum udb_chunk_type udb_chunk_type;
@@ -334,7 +342,7 @@ struct udb_alloc {
 /** magic string that starts an UDB file, uint64_t, note first byte=0, to mark
  * header start as a chunk. */
 #define UDB_MAGIC (((uint64_t)'u'<<48)|((uint64_t)'d'<<40)|((uint64_t)'b' \
-	<<32)|((uint64_t)'v'<<24)|((uint64_t)'0'<<16)|((uint64_t)'a'<<8))
+	<<32)|((uint64_t)'v'<<24)|((uint64_t)'0'<<16)|((uint64_t)'b'<<8))
 
 /* UDB BASE */
 /**
@@ -545,6 +553,22 @@ udb_void udb_alloc_realloc(udb_alloc* alloc, udb_void r, size_t osz,
  * @return false on failure to grow or re-mmap.
  */
 int udb_alloc_grow(udb_alloc* alloc, size_t sz, size_t num);
+
+/** 
+ * attempt to compact the data and move free space to the end
+ * can shrink the db, which calls sync on the db (for portability).
+ * @param udb: the udb base.
+ * @return 0 on failure (to remap the (possibly) changed udb base).
+ */
+int udb_compact(udb_base* udb);
+
+/** 
+ * set the udb to inhibit or uninhibit compaction.  Does not perform
+ * the compaction itself if enabled, for that call udb_compact.
+ * @param udb: the udb base
+ * @param inhibit: 0 or 1.
+ */
+void udb_compact_inhibited(udb_base* udb, int inhibit);
 
 /**
  * Set the alloc type for a newly alloced piece of data
