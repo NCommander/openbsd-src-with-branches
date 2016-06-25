@@ -1,1 +1,0 @@
-: warning: strcat() is almost always misused, please use strlcat()
