@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.c,v 1.64 2016/05/27 19:45:04 deraadt Exp $	*/
+/*	$OpenBSD: mount.c,v 1.65 2016/06/20 08:36:36 ajacoutot Exp $	*/
 /*	$NetBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
 
 /*
@@ -608,10 +608,10 @@ prmount(struct statfs *sf)
 			    "mode", tmpfs_args->ta_root_mode & 07777);
 		if (verbose || tmpfs_args->ta_size_max)
 			(void)printf("%s%s=%lu", !f++ ? " (" : ", ",
-			    "size", tmpfs_args->ta_size_max);
+			    "size", (unsigned long)tmpfs_args->ta_size_max);
 		if (verbose || tmpfs_args->ta_nodes_max)
 			(void)printf("%s%s=%lu", !f++ ? " (" : ", ",
-			    "inodes", tmpfs_args->ta_nodes_max);
+			    "inodes", (unsigned long)tmpfs_args->ta_nodes_max);
 	}
 	(void)printf(f ? ")\n" : "\n");
 }
