@@ -1,4 +1,4 @@
-/*	$OpenBSD: i2s.c,v 1.30 2015/09/08 08:29:35 deraadt Exp $	*/
+/*	$OpenBSD: i2s.c,v 1.31 2016/06/26 06:48:39 mglocker Exp $	*/
 /*	$NetBSD: i2s.c,v 1.1 2003/12/27 02:19:34 grant Exp $	*/
 
 /*-
@@ -46,7 +46,6 @@
 #include <macppc/dev/i2sreg.h>
 #include <macppc/pci/macobio.h>
 
-#define I2S_DEBUG
 #ifdef I2S_DEBUG
 # define DPRINTF(x) printf x 
 #else
