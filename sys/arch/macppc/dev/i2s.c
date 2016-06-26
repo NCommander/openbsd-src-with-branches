@@ -1,4 +1,4 @@
-/*	$OpenBSD: i2s.c,v 1.29 2015/07/17 22:30:58 mpi Exp $	*/
+/*	$OpenBSD: i2s.c,v 1.30 2015/09/08 08:29:35 deraadt Exp $	*/
 /*	$NetBSD: i2s.c,v 1.1 2003/12/27 02:19:34 grant Exp $	*/
 
 /*-
@@ -46,6 +46,7 @@
 #include <macppc/dev/i2sreg.h>
 #include <macppc/pci/macobio.h>
 
+#define I2S_DEBUG
 #ifdef I2S_DEBUG
 # define DPRINTF(x) printf x 
 #else
@@ -150,7 +151,7 @@ i2s_intr(v)
 		mtx_leave(&audio_lock);
 		return (0);
 	}
-	DPRINTF(("i2s_intr: cmd %x\n", cmd));
+	DPRINTF(("i2s_intr: cmd %p\n", cmd));
 
 	c = in16rb(&cmd->d_command);
 	status = in16rb(&cmd->d_status);
@@ -185,7 +186,7 @@ i2s_iintr(v)
 		mtx_leave(&audio_lock);
 		return (0);
 	}
-	DPRINTF(("i2s_intr: cmd %x\n", cmd));
+	DPRINTF(("i2s_intr: cmd %p\n", cmd));
 
 	c = in16rb(&cmd->d_command);
 	status = in16rb(&cmd->d_status);
