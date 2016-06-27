@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.321 2016/06/27 15:59:51 bluhm Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.322 2016/06/27 16:33:48 jca Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -637,6 +637,7 @@ findpcb:
 	case AF_INET:
 		if (inp->inp_ip_minttl && inp->inp_ip_minttl > ip->ip_ttl)
 			goto drop;
+		break;
 #ifdef INET6
 	case AF_INET6:
 		if (inp->inp_ip6_minhlim &&
