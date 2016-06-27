@@ -260,7 +260,7 @@ OCSP_basic_sign(OCSP_BASICRESP *brsp, X509 *signer, EVP_PKEY *key,
 	}
 
 	if (!(flags & OCSP_NOTIME) &&
-	    !ASN1_GENERALIZEDTIME_set(brsp->tbsResponseData->producedAt, time(NULL)))
+	    !X509_gmtime_adj(brsp->tbsResponseData->producedAt, 0))
 		goto err;
 
 	/* Right now, I think that not doing double hashing is the right
