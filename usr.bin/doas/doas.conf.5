@@ -1,4 +1,4 @@
-.\" $OpenBSD: doas.conf.5,v 1.26 2016/06/11 17:17:10 tedu Exp $
+.\" $OpenBSD: doas.conf.5,v 1.27 2016/06/27 15:41:17 tedu Exp $
 .\"
 .\"Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
 .\"
@@ -13,7 +13,7 @@
 .\"WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 .\"ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\"OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.Dd $Mdocdate: June 11 2016 $
+.Dd $Mdocdate: June 27 2016 $
 .Dt DOAS.CONF 5
 .Os
 .Sh NAME
@@ -136,7 +136,7 @@ permit nopass setenv { \e
         MULTI_PACKAGES NOMAN OKAY_FILES OWNER PKG_DBDIR \e
         PKG_DESTDIR PKG_TMPDIR PORTSDIR RELEASEDIR SHARED_ONLY \e
         SUBPACKAGE WRKOBJDIR SUDO_PORT_V1 } :wsrc
-permit nopass setenv { -ENV PS1=$DOAS_PS1 SSH_AUTH_SOCK } :wheel
+permit setenv { -ENV PS1=$DOAS_PS1 SSH_AUTH_SOCK } :wheel
 permit nopass tedu as root cmd /usr/sbin/procmap
 permit nopass keepenv root as root
 .Ed
