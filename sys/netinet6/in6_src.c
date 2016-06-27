@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_src.c,v 1.71 2015/12/02 13:29:26 claudio Exp $	*/
+/*	$OpenBSD: in6_src.c,v 1.72 2015/12/05 13:21:00 vgross Exp $	*/
 /*	$KAME: in6_src.c,v 1.36 2001/02/06 04:08:17 itojun Exp $	*/
 
 /*
@@ -380,13 +380,6 @@ in6_selectif(struct sockaddr_in6 *dstsock, struct ip6_pktopts *opts,
 	return (0);
 }
 
-/*
- * Default hop limit selection. The precedence is as follows:
- * 1. Hoplimit value specified via ioctl.
- * 2. (If the outgoing interface is detected) the current
- *     hop limit of the interface specified by router advertisement.
- * 3. The system default hoplimit.
-*/
 int
 in6_selecthlim(struct inpcb *in6p)
 {
