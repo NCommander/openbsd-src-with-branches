@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.106 2014/11/24 02:03:37 brad Exp $
+#	$OpenBSD: RAMDISK,v 1.107 2015/07/17 22:52:28 tedu Exp $
 
 machine		hppa
 maxusers	4
@@ -98,6 +98,7 @@ wskbd*		at ukbd? mux 1
 uhid*		at uhidev?		# USB generic HID support
 aue*		at uhub?		# ADMtek AN986 Pegasus Ethernet
 url*		at uhub?		# Realtek RTL8150L based adapters
+ure*		at uhub?		# Realtek RTL8152 based adapters
 atu*		at uhub?		# Atmel AT76c50x based 802.11b
 axe*		at uhub?		# ASIX Electronics AX88172 USB Ethernet
 axen*		at uhub?		# ASIX Electronics AX88179 USB Ethernet
