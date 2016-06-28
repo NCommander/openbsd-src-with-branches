@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.59 2015/10/20 12:40:19 bluhm Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.60 2016/04/02 19:55:10 krw Exp $	*/
 
 /*
  * Copyright (c) 2003 Anil Madhavapeddy <anil@recoil.org>
@@ -433,7 +433,7 @@ open_pipe(char *cmd)
 	/* skip over leading | and whitespace */
 	if (cmd[0] != '|')
 		return (-1);
-	for(cmd++; *cmd && *cmd == ' '; cmd++)
+	for (cmd++; *cmd && *cmd == ' '; cmd++)
 		; /* nothing */
 	if (!*cmd)
 		return (-1);
