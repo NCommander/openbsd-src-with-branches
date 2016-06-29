@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.11 2015/12/01 12:11:31 jca Exp $	*/
+/*	$OpenBSD: if.h,v 1.12 2016/02/08 23:19:00 jca Exp $	*/
 /*	$KAME: if.h,v 1.6 2001/01/21 15:37:14 itojun Exp $	*/
 
 /*
@@ -33,8 +33,6 @@
 #define RTADV_TYPE2BITMASK(type) (0x1 << type)
 
 extern struct if_msghdr **iflist;
-extern size_t ifblock_size;
-extern char *ifblock;
 
 struct nd_opt_hdr;
 struct sockaddr_dl *if_nametosdl(char *);
