@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde.h,v 1.41 2016/06/18 17:13:05 renato Exp $ */
+/*	$OpenBSD: lde.h,v 1.42 2016/07/01 23:33:46 renato Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -55,8 +55,8 @@ RB_PROTOTYPE(fec_tree, fec, entry, fec_compare)
 
 /* request entries */
 struct lde_req {
-	struct fec		fec;
-	uint32_t		msgid;
+	struct fec		 fec;
+	uint32_t		 msg_id;
 };
 
 /* mapping entries */
