@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.184 2016/04/21 14:27:41 jsing Exp $	*/
+/*	$OpenBSD: parse.y,v 1.185 2016/06/21 21:35:25 benno Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -2093,6 +2093,7 @@ create_sock_listener(struct listen_opts *lo)
 	lo->hostname = conf->sc_hostname;
 	l->ss.ss_family = AF_LOCAL;
 	l->ss.ss_len = sizeof(struct sockaddr *);
+	l->local = 1;
 	config_listener(l, lo);
 
 	return (l);
