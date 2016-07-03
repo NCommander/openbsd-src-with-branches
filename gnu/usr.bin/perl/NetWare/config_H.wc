@@ -26,6 +26,12 @@
  */
 #define LOC_SED 	""	/**/
 
+/* HAS_AINTL:
+ *	This symbol, if defined, indicates that the aintl routine is
+ *	available.  If copysignl is also present we can emulate modfl.
+ */
+/*#define HAS_AINTL		/ **/
+
 /* HAS_ALARM:
  *	This symbol, if defined, indicates that the alarm routine is
  *	available.
@@ -38,6 +44,9 @@
  */
 /*#define HASATTRIBUTE 	/**/
 #ifndef HASATTRIBUTE
+#ifdef __attribute__
+#undef __attribute__
+#endif
 #define __attribute__(_arg_)
 #endif
 
@@ -126,6 +135,12 @@
  *	available to duplicate file descriptors.
  */
 #define HAS_DUP2	/**/
+
+/* HAS_FAST_STDIO:
+ *	This symbol, if defined, indicates that the "fast stdio"
+ *	is available to manipulate the stdio buffers directly.
+ */
+/*#define HAS_FAST_STDIO		/**/
 
 /* HAS_FCHDIR:
  *	This symbol, if defined, indicates that the fchdir routine is
@@ -671,6 +686,12 @@
  */
 #define	I_ARPA_INET		/**/
 
+/* I_ASSERT:
+ *	This symbol, if defined, indicates to the C program that it could
+ *	include <assert.h> to get the assert() macro.
+ */
+#define	I_ASSERT		/**/
+
 /* I_DBM:
  *	This symbol, if defined, indicates that <dbm.h> exists and should
  *	be included.
@@ -762,12 +783,6 @@
  *	include <netinet/in.h>. Otherwise, you may try <sys/in.h>.
  */
 #define I_NETINET_IN	/**/
-
-/* I_SFIO:
- *	This symbol, if defined, indicates to the C program that it should
- *	include <sfio.h>.
- */
-/*#define	I_SFIO		/**/
 
 /* I_STDDEF:
  *	This symbol, if defined, indicates that <stddef.h> exists and should
@@ -952,7 +967,7 @@
 
 /* HAS_QUAD:
  *	This symbol, if defined, tells that there's a 64-bit integer type,
- *	Quad_t, and its unsigned counterpar, Uquad_t. QUADKIND will be one
+ *	Quad_t, and its unsigned counterpart, Uquad_t. QUADKIND will be one
  *	of QUAD_IS_INT, QUAD_IS_LONG, QUAD_IS_LONG_LONG, or QUAD_IS_INT64_T.
  */
 /*#define HAS_QUAD	/**/
@@ -1008,7 +1023,7 @@
  *	double, or a long double when applicable. Usual values are 2,
  *	4 and 8. The default is eight, for safety.
  */
-#if defined(USE_CROSS_COMPILE) || defined(MULTIARCH)
+#if defined(MULTIARCH)
 #  define MEM_ALIGNBYTES 8
 #else
 #define MEM_ALIGNBYTES 8
@@ -1027,7 +1042,7 @@
  *	This symbol contains the ~name expanded version of ARCHLIB, to be used
  *	in programs that are not prepared to deal with ~ expansion at run-time.
  */
-#define ARCHLIB "c:\\perl\\5.8.0\\lib\\NetWare-x86-multi-thread"		/**/
+#define ARCHLIB "c:\\perl\\5.20.3\\lib\\NetWare-x86-multi-thread"		/**/
 /*#define ARCHLIB_EXP ""	/**/
 
 /* ARCHNAME:
@@ -1058,8 +1073,8 @@
  *	This symbol is the filename expanded version of the BIN symbol, for
  *	programs that do not want to deal with that at run-time.
  */
-#define BIN "c:\\perl\\5.8.0\\bin\\NetWare-x86-multi-thread"	/**/
-#define BIN_EXP "c:\\perl\\5.8.0\\bin\\NetWare-x86-multi-thread"	/**/
+#define BIN "c:\\perl\\5.20.3\\bin\\NetWare-x86-multi-thread"	/**/
+#define BIN_EXP "c:\\perl\\5.20.3\\bin\\NetWare-x86-multi-thread"	/**/
 
 /* BYTEORDER:
  *	This symbol holds the hexadecimal constant defined in byteorder,
@@ -1077,7 +1092,7 @@
  *	so the default case (for NeXT) is big endian to catch them. 
  *	This might matter for NeXT 3.0.
  */
-#if defined(USE_CROSS_COMPILE) || defined(MULTIARCH)
+#if defined(MULTIARCH)
 #  ifdef __LITTLE_ENDIAN__
 #    if LONGSIZE == 4
 #      define BYTEORDER 0x1234
@@ -1125,7 +1140,7 @@
 #define STRINGIFY(a)	PeRl_StGiFy(a)
 #endif
 #if 42 != 1 && 42 != 42
-#   include "Bletch: How does this C preprocessor catenate tokens?"
+#   include "Bletch: How does this C preprocessor concatenate tokens?"
 #endif
 
 /* CPPSTDIN:
@@ -1354,7 +1369,7 @@
 
 /* HAS_GETESPWNAM:
  *	This symbol, if defined, indicates that the getespwnam system call is
- *	available to retrieve enchanced (shadow) password entries by name.
+ *	available to retrieve enhanced (shadow) password entries by name.
  */
 /*#define HAS_GETESPWNAM		/**/
 
@@ -1596,6 +1611,12 @@
 #define HAS_NTOHL		/**/
 #define HAS_NTOHS		/**/
 
+/* HAS_ILOGBL:
+ *	This symbol, if defined, indicates that the ilogbl routine is
+ *	available.  If scalbnl is also present we can emulate frexpl.
+ */
+/*#define HAS_ILOGBL		/**/
+
 /* HAS_INT64_T:
  *     This symbol will defined if the C compiler supports int64_t.
  *     Usually the <inttypes.h> needs to be included, but sometimes
@@ -1698,7 +1719,7 @@
 
 /* HAS_MKSTEMPS:
  *	This symbol, if defined, indicates that the mkstemps routine is
- *	available to excluslvely create and open a uniquely named
+ *	available to exclusively create and open a uniquely named
  *	(with a suffix) temporary file.
  */
 /*#define HAS_MKSTEMPS		/**/
@@ -1788,6 +1809,13 @@
 #define SCHED_YIELD		/**/
 /*#define HAS_SCHED_YIELD	/**/
 
+/* HAS_PTHREAD_ATTR_SETSCOPE:
+ *	This symbol, if defined, indicates that the pthread_attr_setscope
+ *	system call is available to set the contention scope attribute of
+ *	a thread attribute object.
+ */
+/*#define HAS_PTHREAD_ATTR_SETSCOPE		/ **/
+
 /* HAS_READV:
  *	This symbol, if defined, indicates that the readv routine is
  *	available to do gather reads.  You will also need <sys/uio.h>
@@ -1838,6 +1866,12 @@
  *	supported.
  */
 /*#define HAS_SEM		/**/
+
+/* HAS_SCALBNL:
+ *	This symbol, if defined, indicates that the scalbnl routine is
+ *	available.  If ilogbl is also present we can emulate frexpl.
+ */
+/*#define HAS_SCALBNL		/**/
 
 /* HAS_SENDMSG:
  *	This symbol, if defined, indicates that the sendmsg routine is
@@ -1919,12 +1953,6 @@
  */
 #define HAS_SETVBUF		/**/
 
-/* USE_SFIO:
- *	This symbol, if defined, indicates that sfio should
- *	be used.
- */
-/*#define	USE_SFIO		/**/
-
 /* HAS_SHM:
  *	This symbol, if defined, indicates that the entire shm*(2) library is
  *	supported.
@@ -1967,6 +1995,27 @@
 #define Sigsetjmp(buf,save_mask) setjmp((buf))
 #define Siglongjmp(buf,retval) longjmp((buf),(retval))
 #endif
+
+/* HAS_STATIC_INLINE:
+ *	This symbol, if defined, indicates that the C compiler supports
+ *	C99-style static inline.  That is, the function can't be called
+ *	from another translation unit.
+ */
+/* PERL_STATIC_INLINE:
+ *	This symbol gives the best-guess incantation to use for static
+ *	inline functions.  If HAS_STATIC_INLINE is defined, this will
+ *	give C99-style inline.  If HAS_STATIC_INLINE is not defined,
+ *	this will give a plain 'static'.  It will always be defined
+ *	to something that gives static linkage.
+ *	Possibilities include
+ *		static inline       (c99)
+ *		static __inline__   (gcc -ansi)
+ *		static __inline     (MSVC)
+ *		static _inline      (older MSVC)
+ *		static              (c89 compilers)
+ */
+/*#define HAS_STATIC_INLINE				/ **/
+#define PERL_STATIC_INLINE static           	/**/
 
 /* HAS_SOCKET:
  *	This symbol, if defined, indicates that the BSD socket interface is
@@ -2806,6 +2855,10 @@
  *	This symbol contains the number of bits a variable of type NVTYPE
  *	can preserve of a variable of type UVTYPE.
  */
+/* NV_ZERO_IS_ALLBITS_ZERO:
+ *	This symbol, if defined, indicates that a variable of type NVTYPE
+ *	stores 0.0 in memory as all bits zero.
+ */
 #define	IVTYPE		long		/**/
 #define	UVTYPE		unsigned long		/**/
 #define	I8TYPE		char		/**/
@@ -2834,6 +2887,7 @@
 #define	NVSIZE		8		/**/
 #define	NV_PRESERVES_UV
 #define	NV_PRESERVES_UV_BITS	undef
+#undef	NV_ZERO_IS_ALLBITS_ZERO
 
 /* IVdf:
  *	This symbol defines the format string used for printing a Perl IV
@@ -2975,8 +3029,8 @@
  *	the sig_name list.
  */
 /* SIG_SIZE:
- *	This variable contains the number of elements of the sig_name
- *	and sig_num arrays, excluding the final NULL entry.
+ *	This variable contains the number of elements of the SIG_NAME
+ *	and SIG_NUM arrays, excluding the final NULL entry.
  */
 #define SIG_NAME "ZERO", "NUM01", "INT", "QUIT", "ILL", "NUM05", "NUM06", "NUM07", "FPE", "KILL", "NUM10", "SEGV", "NUM12", "PIPE", "ALRM", "TERM", "NUM16", "NUM17", "NUM18", "NUM19", "CHLD", "BREAK", "ABRT", "STOP", "NUM24", "CONT", "CLD", 0		/**/
 #define SIG_NUM  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 20, 0		/**/
@@ -2997,7 +3051,7 @@
  *	This symbol contains the ~name expanded version of SITEARCH, to be used
  *	in programs that are not prepared to deal with ~ expansion at run-time.
  */
-#define SITEARCH "c:\\perl\\site\\5.8.0\\lib\\NetWare-x86-multi-thread"		/**/
+#define SITEARCH "c:\\perl\\site\\5.20.3\\lib\\NetWare-x86-multi-thread"		/**/
 /*#define SITEARCH_EXP ""	/**/
 
 /* SITELIB:
@@ -3020,8 +3074,8 @@
  *	removed.  The elements in inc_version_list (inc_version_list.U) can
  *	be tacked onto this variable to generate a list of directories to search.
  */
-#define SITELIB "c:\\perl\\site\\5.8.0\\lib"		/**/
-#define SITELIB_EXP (nw_get_sitelib("5.8.0"))	/**/
+#define SITELIB "c:\\perl\\site\\5.20.3\\lib"		/**/
+/*#define SITELIB_EXP ""	/**/
 #define SITELIB_STEM ""		/**/
 
 /* Size_t_size:
@@ -3035,7 +3089,7 @@
  *	unsigned long, int, etc.  It may be necessary to include
  *	<sys/types.h> to get any typedef'ed information.
  */
-#define Size_t size_t	 /* length paramater for string functions */
+#define Size_t size_t	 /* length parameter for string functions */
 
 /* Sock_size_t:
  *	This symbol holds the type used for the size argument of
@@ -3126,6 +3180,15 @@
 /*#define	USE_64_BIT_ALL		/**/
 #endif
 
+/* USE_FAST_STDIO:
+ *	This symbol, if defined, indicates that Perl should
+ *	be built to use 'fast stdio'.
+ *	Defaults to define in Perls 5.8 and earlier, to undef later.
+ */
+#ifndef USE_FAST_STDIO
+/*#define	USE_FAST_STDIO		/ **/
+#endif
+
 /* USE_LARGE_FILES:
  *	This symbol, if defined, indicates that large file support
  *	should be used when available.
@@ -3179,10 +3242,6 @@
  *	This symbol, if defined, indicates that Perl should be built to
  *	use the interpreter-based threading implementation.
  */
-/* USE_5005THREADS:
- *	This symbol, if defined, indicates that Perl should be built to
- *	use the 5.005-based threading implementation.
- */
 /* OLD_PTHREADS_API:
  *	This symbol, if defined, indicates that Perl should
  *	be built to use the old draft POSIX threads API.
@@ -3192,11 +3251,7 @@
  *	try to use the various _r versions of library functions.
  *	This is extremely experimental.
  */
-/*#define	USE_5005THREADS		/**/
 #define	USE_ITHREADS		/**/
-#if defined(USE_5005THREADS) && !defined(USE_ITHREADS)
-#define		USE_5005THREADS		/* until src is revised*/
-#endif
 /*#define	OLD_PTHREADS_API		/**/
 /*#define	USE_REENTRANT_API	/**/
 
@@ -3229,66 +3284,6 @@
  */
 /*#define PERL_VENDORLIB_EXP ""		/**/
 /*#define PERL_VENDORLIB_STEM ""		/**/
-
-/* VOIDFLAGS:
- *	This symbol indicates how much support of the void type is given by this
- *	compiler.  What various bits mean:
- *
- *	    1 = supports declaration of void
- *	    2 = supports arrays of pointers to functions returning void
- *	    4 = supports comparisons between pointers to void functions and
- *		    addresses of void functions
- *	    8 = suports declaration of generic void pointers
- *
- *	The package designer should define VOIDUSED to indicate the requirements
- *	of the package.  This can be done either by #defining VOIDUSED before
- *	including config.h, or by defining defvoidused in Myinit.U.  If the
- *	latter approach is taken, only those flags will be tested.  If the
- *	level of void support necessary is not present, defines void to int.
- */
-#ifndef VOIDUSED
-#define VOIDUSED 15
-#endif
-#define VOIDFLAGS 15
-#if (VOIDFLAGS & VOIDUSED) != VOIDUSED
-#define void int		/* is void to be avoided? */
-#define M_VOID			/* Xenix strikes again */
-#endif
-
-/* PERL_XS_APIVERSION:
- *	This variable contains the version of the oldest perl binary
- *	compatible with the present perl.  perl.c:incpush() and
- *	lib/lib.pm will automatically search in c:\\perl\\site\\5.8.0\\lib\\NetWare-x86-multi-thread for older
- *	directories across major versions back to xs_apiversion.
- *	This is only useful if you have a perl library directory tree
- *	structured like the default one.
- *	See INSTALL for how this works.
- *	The versioned site_perl directory was introduced in 5.005,
- *	so that is the lowest possible value.
- *	Since this can depend on compile time options
- *	it is set by Configure.  Other non-default sources
- *	of potential incompatibility, such as multiplicity, threads,
- *	debugging, 64bits, sfio, etc., are not checked for currently,
- *	though in principle we could go snooping around in old
- *	Config.pm files.
- */
-/* PERL_PM_APIVERSION:
- *	This variable contains the version of the oldest perl
- *	compatible with the present perl.  (That is, pure perl modules
- *	written for pm_apiversion will still work for the current
- *	version).  perl.c:incpush() and lib/lib.pm will automatically
- *	search in c:\\perl\\site\\5.8.0\\lib for older directories across major versions
- *	back to pm_apiversion.  This is only useful if you have a perl
- *	library directory tree structured like the default one.  The
- *	versioned site_perl library was introduced in 5.005, so that's
- *	the default setting for this variable.  It's hard to imagine
- *	it changing before Perl6.  It is included here for symmetry
- *	with xs_apiveprsion -- the searching algorithms will
- *	(presumably) be similar.
- *	See the INSTALL file for how this works.
- */
-#define PERL_XS_APIVERSION "5.8.0"
-#define PERL_PM_APIVERSION "5.005"
 
 /* SETUID_SCRIPTS_ARE_SECURE_NOW:
  *	This symbol, if defined, indicates that the bug that prevents
@@ -3332,6 +3327,12 @@
 /*#define	USE_CROSS_COMPILE	/**/
 #define	PERL_TARGETARCH	"undef"	/**/
 #endif
+
+/* HAS_COPYSIGNL:
+ *	This symbol, if defined, indicates that the copysignl routine is
+ *	available.  If aintl is also present we can emulate modfl.
+ */
+/*#define HAS_COPYSIGNL		/**/
 
 /* HAS_DBMINIT_PROTO:
  *	This symbol, if defined, indicates that the system provides
@@ -3398,6 +3399,18 @@
  */
 #define HAS_STRFTIME		/**/
 
+/* HAS_STRLCAT
+ *      This symbol, if defined, indicates that the strlcat routine is
+ *      available to do string concatenation.
+ */
+/*#define HAS_STRLCAT			/**/
+
+/* HAS_STRLCPY:
+ *      This symbol, if defined, indicates that the strlcpy routine is
+ *      available to do string copying.
+ */
+/*#define HAS_STRLCPY			/**/
+
 /* HAS_SYSCALL_PROTO:
  *	This symbol, if defined, indicates that the system provides
  *	a prototype for the syscall() function.  Otherwise, it is up
@@ -3423,7 +3436,7 @@
 
 /* HAS_PTHREAD_ATFORK:
  *	This symbol, if defined, indicates that the pthread_atfork routine
- *	is available setup fork handlers.
+ *	is available to setup fork handlers.
  */
 /*#define HAS_PTHREAD_ATFORK		/**/
 

@@ -93,7 +93,7 @@
  */
 
 #if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__) \
-  || defined(_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
+  || defined(_MSC_VER) || defined (__TURBOC__)
 #define U8TO16_LE(d) (*((const U16 *) (d)))
 #endif
 
@@ -257,7 +257,7 @@ S_perl_hash_siphash_2_4(const unsigned char * const seed, const unsigned char *i
 
 PERL_STATIC_INLINE U32
 S_perl_hash_superfast(const unsigned char * const seed, const unsigned char *str, STRLEN len) {
-    U32 hash = *((U32*)seed) + len;
+    U32 hash = *((U32*)seed) + (U32)len;
     U32 tmp;
     int rem= len & 3;
     len >>= 2;
@@ -367,7 +367,7 @@ S_perl_hash_murmur3(const unsigned char * const seed, const unsigned char *ptr, 
 
     const unsigned char *end;
     int bytes_in_carry = 0; /* bytes in carry */
-    I32 total_length= len;
+    I32 total_length= (I32)len;
 
 #if defined(UNALIGNED_SAFE)
     /* Handle carry: commented out as its only used in incremental mode - it never fires for us
@@ -390,7 +390,7 @@ S_perl_hash_murmur3(const unsigned char * const seed, const unsigned char *ptr, 
     /* Consume enough so that the next data byte is word aligned */
     STRLEN i = -PTR2IV(ptr) & 3;
     if(i && i <= len) {
-      MURMUR_DOBYTES(i, h1, carry, bytes_in_carry, ptr, len);
+      MURMUR_DOBYTES((int)i, h1, carry, bytes_in_carry, ptr, len);
     }
 
     /* We're now aligned. Process in aligned blocks. Specialise for each possible carry count */
@@ -431,7 +431,7 @@ S_perl_hash_murmur3(const unsigned char * const seed, const unsigned char *ptr, 
     len -= len/4*4;
 
     /* Append any remaining bytes into carry */
-    MURMUR_DOBYTES(len, h1, carry, bytes_in_carry, ptr, len);
+    MURMUR_DOBYTES((int)len, h1, carry, bytes_in_carry, ptr, len);
 
     if (bytes_in_carry) {
         k1 = carry >> ( 4 - bytes_in_carry ) * 8;
@@ -455,7 +455,7 @@ S_perl_hash_murmur3(const unsigned char * const seed, const unsigned char *ptr, 
 PERL_STATIC_INLINE U32
 S_perl_hash_djb2(const unsigned char * const seed, const unsigned char *str, const STRLEN len) {
     const unsigned char * const end = (const unsigned char *)str + len;
-    U32 hash = *((U32*)seed + len);
+    U32 hash = *((U32*)seed) + (U32)len;
     while (str < end) {
         hash = ((hash << 5) + hash) + *str++;
     }
@@ -465,13 +465,23 @@ S_perl_hash_djb2(const unsigned char * const seed, const unsigned char *str, con
 PERL_STATIC_INLINE U32
 S_perl_hash_sdbm(const unsigned char * const seed, const unsigned char *str, const STRLEN len) {
     const unsigned char * const end = (const unsigned char *)str + len;
-    U32 hash = *((U32*)seed + len);
+    U32 hash = *((U32*)seed) + (U32)len;
     while (str < end) {
         hash = (hash << 6) + (hash << 16) - hash + *str++;
     }
     return hash;
 }
 
+/* - ONE_AT_A_TIME_HARD is the 5.17+ recommend ONE_AT_A_TIME algorithm
+ * - ONE_AT_A_TIME_OLD is the unmodified 5.16 and older algorithm
+ * - ONE_AT_A_TIME is a 5.17+ tweak of ONE_AT_A_TIME_OLD to
+ *   prevent strings of only \0 but different lengths from colliding
+ *
+ * Security-wise, from best to worst,
+ * ONE_AT_A_TIME_HARD > ONE_AT_A_TIME > ONE_AT_A_TIME_OLD
+ * There is a big drop-off in security between ONE_AT_A_TIME_HARD and
+ * ONE_AT_A_TIME
+ * */
 
 /* This is the "One-at-a-Time" algorithm by Bob Jenkins
  * from requirements by Colin Plumb.
@@ -481,7 +491,7 @@ S_perl_hash_sdbm(const unsigned char * const seed, const unsigned char *str, con
 PERL_STATIC_INLINE U32
 S_perl_hash_one_at_a_time(const unsigned char * const seed, const unsigned char *str, const STRLEN len) {
     const unsigned char * const end = (const unsigned char *)str + len;
-    U32 hash = *((U32*)seed) + len;
+    U32 hash = *((U32*)seed) + (U32)len;
     while (str < end) {
         hash += *str++;
         hash += (hash << 10);
@@ -496,7 +506,7 @@ S_perl_hash_one_at_a_time(const unsigned char * const seed, const unsigned char 
 PERL_STATIC_INLINE U32
 S_perl_hash_one_at_a_time_hard(const unsigned char * const seed, const unsigned char *str, const STRLEN len) {
     const unsigned char * const end = (const unsigned char *)str + len;
-    U32 hash = *((U32*)seed) + len;
+    U32 hash = *((U32*)seed) + (U32)len;
     
     while (str < end) {
         hash += (hash << 10);

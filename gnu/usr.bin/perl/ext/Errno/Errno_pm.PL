@@ -2,30 +2,72 @@ use ExtUtils::MakeMaker;
 use Config;
 use strict;
 
-use vars qw($VERSION);
-
-$VERSION = "1.111";
+our $VERSION = "1.20_06";
 
 my %err = ();
 
+# Symbian cross-compiling environment.
+my $IsSymbian = exists $ENV{SDK} && -d "$ENV{SDK}\\epoc32";
+
+my $IsMSWin32 = $^O eq 'MSWin32' && !$IsSymbian;
+
 unlink "Errno.pm" if -f "Errno.pm";
-open OUT, ">Errno.pm" or die "Cannot open Errno.pm: $!";
+unlink "Errno.tmp" if -f "Errno.tmp";
+open OUT, ">Errno.tmp" or die "Cannot open Errno.tmp: $!";
 select OUT;
 my $file;
-foreach $file (get_files()) {
-    process_file($file);
+my @files = get_files();
+if ($Config{gccversion} ne '' && $^O eq 'MSWin32') {
+    # MinGW complains "warning: #pragma system_header ignored outside include
+    # file" if the header files are processed individually, so include them
+    # all in .c file and process that instead.
+    open INCS, '>includes.c' or
+	die "Cannot open includes.c";
+    foreach $file (@files) {
+	next if $file eq 'errno.c';
+	next unless -f $file;
+	print INCS qq[#include "$file"\n];
+    }
+    close INCS;
+    process_file('includes.c');
+    unlink 'includes.c';
+}
+else {
+    foreach $file (@files) {
+	process_file($file);
+    }
 }
 write_errno_pm();
 unlink "errno.c" if -f "errno.c";
+close OUT or die "Error closing Errno.tmp: $!";
+select STDOUT;
+rename "Errno.tmp", "Errno.pm" or die "Cannot rename Errno.tmp to Errno.pm: $!";
 
 sub process_file {
     my($file) = @_;
 
+    # for win32 perl under cygwin, we need to get a windows pathname
+    if ($^O eq 'MSWin32' && $Config{cc} =~ /\B-mno-cygwin\b/ &&
+        defined($file) && !-f $file) {
+        chomp($file = `cygpath -w "$file"`);
+    }
+
     return unless defined $file and -f $file;
+#    warn "Processing $file\n";
 
     local *FH;
     if (($^O eq 'VMS') && ($Config{vms_cc_type} ne 'gnuc')) {
 	unless(open(FH," LIBRARY/EXTRACT=ERRNO/OUTPUT=SYS\$OUTPUT $file |")) {
+            warn "Cannot open '$file'";
+            return;
+	}     
+    } elsif ($Config{gccversion} ne ''
+             # OpenSTEP has gcc 2.7.2.1 which recognizes but
+	     # doesn't implement the -dM flag.
+	     && $^O ne 'openstep' && $^O ne 'next' && $^O ne 'darwin'
+	     ) { 
+	# With the -dM option, gcc outputs every #define it finds
+	unless(open(FH,"$Config{cc} -E -dM $Config{cppflags} $file |")) {
             warn "Cannot open '$file'";
             return;
 	}     
@@ -37,11 +79,13 @@ sub process_file {
             return;
 	}
     }
+    
     while(<FH>) {
 	$err{$1} = 1
 	    if /^\s*#\s*define\s+(E\w+)\s+/;
-   }
-   close(FH);
+    }
+
+    close(FH);
 }
 
 my $cppstdin;
@@ -76,19 +120,54 @@ sub get_files {
     } elsif ($^O eq 'os390') {
 	# OS/390 C compiler doesn't generate #file or #line directives
 	$file{'/usr/include/errno.h'} = 1;
-    } elsif ($^O eq 'vmesa') {
-	# OS/390 C compiler doesn't generate #file or #line directives
-	$file{'../../vmesa/errno.h'} = 1;
+    } elsif ($Config{archname} eq 'arm-riscos') {
+	# Watch out for cross compiling for RISC OS
+	my $dep = `echo "#include <errno.h>" | gcc -E -M -`;
+	if ($dep =~ /(\S+errno\.h)/) {
+	     $file{$1} = 1;
+	}
+    } elsif ($^O eq 'linux' &&
+	      $Config{gccversion} ne '' && 
+	      $Config{gccversion} !~ /intel/i
+	      # might be using, say, Intel's icc
+	     ) {
+    # When cross-compiling we may store a path for gcc's "sysroot" option:
+    my $sysroot = $Config{sysroot} || '';
+	# Some Linuxes have weird errno.hs which generate
+	# no #file or #line directives
+	my ($linux_errno_h) = grep { -e $_ } map { "$_/errno.h" }
+	    "$sysroot/usr/include", "$sysroot/usr/local/include",
+	    split / / => $Config{locincpth} or
+		die "Cannot find errno.h";
+	$file{$linux_errno_h} = 1;
+    } elsif ($^O eq 'haiku') {
+	# hidden in a special place
+	$file{'/boot/develop/headers/posix/errno.h'} = 1;
+
+    } elsif ($^O eq 'vos') {
+	# avoid problem where cpp returns non-POSIX pathnames
+	$file{'/system/include_library/errno.h'} = 1;
+    } elsif ($IsSymbian) {
+        my $SDK = $ENV{SDK};
+        $SDK =~ s!\\!/!g;
+	$file{"$SDK/epoc32/include/libc/sys/errno.h"} = 1;
     } else {
 	open(CPPI,"> errno.c") or
 	    die "Cannot open errno.c";
 
-	print CPPI "#include <errno.h>\n";
+	if ($^O eq 'NetWare') {
+	    print CPPI "#include <nwerrno.h>\n";
+	} else {
+	    print CPPI "#include <errno.h>\n";
+	    if ($IsMSWin32) {
+		print CPPI qq[#include "../../win32/include/sys/errno2.h"\n];
+	    }
+	}
 
 	close(CPPI);
 
 	# invoke CPP and read the output
-	if ($^O eq 'MSWin32') {
+	if ($IsMSWin32 || $^O eq 'NetWare') {
 	    open(CPPO,"$Config{cpprun} $Config{cppflags} errno.c |") or
 		die "Cannot run '$Config{cpprun} $Config{cppflags} errno.c'";
 	} else {
@@ -97,15 +176,9 @@ sub get_files {
 		die "Cannot exec $cpp";
 	}
 
-	my $pat;
-	if ($^O eq 'MSWin32' and $Config{cc} =~ /^bcc/i) {
-	    $pat = '^/\*\s+(.+)\s+\d+\s*:\s+\*/';
-	}
-	else {
-	    $pat = '^#(?:line)?\s*\d+\s+"([^"]+)"';
-	}
+	my $pat = '^#\s*(?:line)?\s*\d+\s+"([^"]+)"';
 	while(<CPPO>) {
-	    if ($^O eq 'os2' or $^O eq 'MSWin32') {
+	    if ($^O eq 'os2' or $IsMSWin32 or $^O eq 'NetWare') {
 		if (/$pat/o) {
 		   my $f = $1;
 		   $f =~ s,\\\\,/,g;
@@ -133,71 +206,138 @@ sub write_errno_pm {
     open(CPPI,"> errno.c") or
 	die "Cannot open errno.c";
 
-    print CPPI "#include <errno.h>\n";
-
+    if ($^O eq 'NetWare') {
+	print CPPI "#include <nwerrno.h>\n";
+	} 
+    else {
+	print CPPI "#include <errno.h>\n";
+    }
+    if ($IsMSWin32) {
+	print CPPI qq[#include "../../win32/include/sys/errno2.h"\n];
+    }
+ 
     foreach $err (keys %err) {
 	print CPPI '"',$err,'" [[',$err,']]',"\n";
     }
 
     close(CPPI);
 
+    {	# BeOS (support now removed) did not enter this block
     # invoke CPP and read the output
 
-    if ($^O eq 'VMS') {
-	my $cpp = "$Config{cppstdin} $Config{cppflags} $Config{cppminus}";
-	$cpp =~ s/sys\$input//i;
-	open(CPPO,"$cpp  errno.c |") or
-          die "Cannot exec $Config{cppstdin}";
-    } elsif ($^O eq 'MSWin32') {
-	open(CPPO,"$Config{cpprun} $Config{cppflags} errno.c |") or
-	    die "Cannot run '$Config{cpprun} $Config{cppflags} errno.c'";
-    } else {
-	my $cpp = default_cpp();
-	open(CPPO,"$cpp < errno.c |")
-	    or die "Cannot exec $cpp";
+	my $inhibit_linemarkers = '';
+	if ($Config{gccversion} =~ /\A(\d+)\./ and $1 >= 5) {
+	    # GCC 5.0 interleaves expanded macros with line numbers breaking
+	    # each line into multiple lines. RT#123784
+	    $inhibit_linemarkers = ' -P';
+	}
+
+	if ($^O eq 'VMS') {
+	    my $cpp = "$Config{cppstdin} $Config{cppflags}" .
+		$inhibit_linemarkers . " $Config{cppminus}";
+	    $cpp =~ s/sys\$input//i;
+	    open(CPPO,"$cpp  errno.c |") or
+		die "Cannot exec $Config{cppstdin}";
+	} elsif ($IsMSWin32 || $^O eq 'NetWare') {
+	    my $cpp = "$Config{cpprun} $Config{cppflags}" .
+		$inhibit_linemarkers;
+	    open(CPPO,"$cpp errno.c |") or
+		die "Cannot run '$cpp errno.c'";
+	} elsif ($IsSymbian) {
+            my $cpp = "gcc -E -I$ENV{SDK}\\epoc32\\include\\libc" .
+		$inhibit_linemarkers ." -";
+	    open(CPPO,"$cpp < errno.c |")
+		or die "Cannot exec $cpp";
+        } else {
+	    my $cpp = default_cpp() . $inhibit_linemarkers;
+	    open(CPPO,"$cpp < errno.c |")
+		or die "Cannot exec $cpp";
+	}
+
+	%err = ();
+
+	while(<CPPO>) {
+	    my($name,$expr);
+	    next unless ($name, $expr) = /"(.*?)"\s*\[\s*\[\s*(.*?)\s*\]\s*\]/;
+	    next if $name eq $expr;
+	    $expr =~ s/\(?\(\s*[a-z_]\w*\s*\)\(?([^\)]+)\)?\)?/$1/i; # ((type)0xcafebabe) at alia
+	    $expr =~ s/\b((?:0x)?[0-9a-f]+)[LU]+\b/$1/gi; # 2147483647L et alia
+	    next if $expr =~ m/\b[a-z_]\w*\b/i; # skip expressions containing function names etc
+	    if($expr =~ m/^0[xX]/) {
+		$err{$name} = hex $expr;
+	    }
+	    else {
+		$err{$name} = eval $expr;
+	    }
+	    delete $err{$name} unless defined $err{$name};
+	}
+	close(CPPO);
     }
 
-    %err = ();
-
-    while(<CPPO>) {
-	my($name,$expr);
-	next unless ($name, $expr) = /"(.*?)"\s*\[\s*\[\s*(.*?)\s*\]\s*\]/;
-	next if $name eq $expr;
-	$err{$name} = eval $expr;
-    }
-    close(CPPO);
+    # escape $Config{'archname'}
+    my $archname = $Config{'archname'};
+    $archname =~ s/([@%\$])/\\$1/g;
 
     # Write Errno.pm
 
     print <<"EDQ";
+# -*- buffer-read-only: t -*-
 #
 # This file is auto-generated. ***ANY*** changes here will be lost
 #
 
 package Errno;
-use vars qw(\@EXPORT_OK \%EXPORT_TAGS \@ISA \$VERSION \%errno \$AUTOLOAD);
-use Exporter ();
+require Exporter;
 use Config;
 use strict;
 
-\$Config{'myarchname'} eq "$Config{'myarchname'}" or
-	die "Errno architecture ($Config{'myarchname'}) does not match executable architecture (\$Config{'myarchname'})";
+"\$Config{'archname'}-\$Config{'osvers'}" eq
+"$archname-$Config{'osvers'}" or
+	die "Errno architecture ($archname-$Config{'osvers'}) does not match executable architecture (\$Config{'archname'}-\$Config{'osvers'})";
 
-\$VERSION = "$VERSION";
-\@ISA = qw(Exporter);
+our \$VERSION = "$VERSION";
+\$VERSION = eval \$VERSION;
+our \@ISA = 'Exporter';
 
+my %err;
+
+BEGIN {
+    %err = (
 EDQ
-   
-    my $len = 0;
-    my @err = sort { $err{$a} <=> $err{$b} } keys %err;
-    map { $len = length if length > $len } @err;
 
-    my $j = "\@EXPORT_OK = qw(" . join(" ",keys %err) . ");\n";
-    $j =~ s/(.{50,70})\s/$1\n\t/g;
-    print $j,"\n";
+    my @err = sort { $err{$a} <=> $err{$b} || $a cmp $b }
+	grep { $err{$_} =~ /-?\d+$/ } keys %err;
+
+    foreach $err (@err) {
+	print "\t$err => $err{$err},\n";
+    }
 
 print <<'ESQ';
-%EXPORT_TAGS = (
+    );
+    # Generate proxy constant subroutines for all the values.
+    # Well, almost all the values. Unfortunately we can't assume that at this
+    # point that our symbol table is empty, as code such as if the parser has
+    # seen code such as C<exists &Errno::EINVAL>, it will have created the
+    # typeglob.
+    # Doing this before defining @EXPORT_OK etc means that even if a platform is
+    # crazy enough to define EXPORT_OK as an error constant, everything will
+    # still work, because the parser will upgrade the PCS to a real typeglob.
+    # We rely on the subroutine definitions below to update the internal caches.
+    # Don't use %each, as we don't want a copy of the value.
+    foreach my $name (keys %err) {
+        if ($Errno::{$name}) {
+            # We expect this to be reached fairly rarely, so take an approach
+            # which uses the least compile time effort in the common case:
+            eval "sub $name() { $err{$name} }; 1" or die $@;
+        } else {
+            $Errno::{$name} = \$err{$name};
+        }
+    }
+}
+
+our @EXPORT_OK = keys %err;
+
+our %EXPORT_TAGS = (
     POSIX => [qw(
 ESQ
 
@@ -219,57 +359,39 @@ ESQ
     $k =~ s/(.{50,70})\s/$1\n\t/g;
     print "\t",$k,"\n    )]\n);\n\n";
 
-    foreach $err (@err) {
-	printf "sub %s () { %d }\n",,$err,$err{$err};
-    }
-
     print <<'ESQ';
-
-sub TIEHASH { bless [] }
+sub TIEHASH { bless \%err }
 
 sub FETCH {
-    my ($self, $errname) = @_;
-    my $proto = prototype("Errno::$errname");
-    if (defined($proto) && $proto eq "") {
-	no strict 'refs';
-        return $! == &$errname;
-    }
-    require Carp;
-    Carp::confess("No errno $errname");
-} 
+    my (undef, $errname) = @_;
+    return "" unless exists $err{$errname};
+    my $errno = $err{$errname};
+    return $errno == $! ? $errno : 0;
+}
 
 sub STORE {
     require Carp;
     Carp::confess("ERRNO hash is read only!");
 }
 
-*CLEAR = \&STORE;
-*DELETE = \&STORE;
+*CLEAR = *DELETE = \*STORE; # Typeglob aliasing uses less space
 
 sub NEXTKEY {
-    my($k,$v);
-    while(($k,$v) = each %Errno::) {
-	my $proto = prototype("Errno::$k");
-	last if (defined($proto) && $proto eq "");
-	
-    }
-    $k
+    each %err;
 }
 
 sub FIRSTKEY {
-    my $s = scalar keys %Errno::;
-    goto &NEXTKEY;
+    my $s = scalar keys %err;	# initialize iterator
+    each %err;
 }
 
 sub EXISTS {
-    my ($self, $errname) = @_;
-    my $proto = prototype($errname);
-    defined($proto) && $proto eq "";
+    my (undef, $errname) = @_;
+    exists $err{$errname};
 }
 
-tie %!, __PACKAGE__;
+tie %!, __PACKAGE__; # Returns an object, objects are true.
 
-1;
 __END__
 
 =head1 NAME
@@ -286,11 +408,11 @@ C<Errno> defines and conditionally exports all the error constants
 defined in your system C<errno.h> include file. It has a single export
 tag, C<:POSIX>, which will export all POSIX defined error numbers.
 
-C<Errno> also makes C<%!> magic such that each element of C<%!> has a non-zero
-value only if C<$!> is set to that value, eg
+C<Errno> also makes C<%!> magic such that each element of C<%!> has a
+non-zero value only if C<$!> is set to that value. For example:
 
     use Errno;
-    
+
     unless (open(FH, "/fangorn/spouse")) {
         if ($!{ENOENT}) {
             warn "Get a wife!\n";
@@ -298,6 +420,20 @@ value only if C<$!> is set to that value, eg
             warn "This path is barred: $!";
         } 
     } 
+
+If a specified constant C<EFOO> does not exist on the system, C<$!{EFOO}>
+returns C<"">.  You may use C<exists $!{EFOO}> to check whether the
+constant is available on the system.
+
+=head1 CAVEATS
+
+Importing a particular constant may not be very portable, because the
+import will fail on platforms that do not have that constant.  A more
+portable way to set C<$!> to a valid value is to use:
+
+    if (exists &Errno::EFOO) {
+        $! = &Errno::EFOO;
+    }
 
 =head1 AUTHOR
 
@@ -311,6 +447,7 @@ under the same terms as Perl itself.
 
 =cut
 
+# ex: set ro:
 ESQ
 
 }

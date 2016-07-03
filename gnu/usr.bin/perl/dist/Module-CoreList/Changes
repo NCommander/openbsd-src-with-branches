@@ -1,3 +1,312 @@
+5.20150912
+  - Updated for v5.20.3
+
+5.20150820
+  - Updated for v5.23.2
+
+5.20150720
+  - Updated for v5.23.1
+
+5.20150520
+  - Updated for v5.22.0
+
+5.20150420
+  - Updated for v5.21.11
+  - fixes a fencepost error in is_core()
+  - copes with versions that do not match x.yyyzzz
+
+5.20150320
+  - Updated for v5.21.10
+
+5.20150220
+  - Updated for v5.21.9
+
+5.20150214
+  - Updated for v5.20.2
+
+5.20150120
+  - Updated for v5.21.8
+
+5.20141220
+  - Updated for v5.21.7
+
+5.20141120
+  - Updated for v5.21.6
+
+5.20141020
+  - Updated for v5.21.5
+
+5.20141002
+  - Updated for v5.18.3 and v5.18.4
+
+5.20140920
+  - Updated for v5.21.4
+
+5.20140914
+  - Updated for v5.20.1
+
+5.021003
+  - Prepared for v5.21.3
+
+5.021002
+  - Prepared for v5.21.2
+
+5.021001_01
+  - Prepared for v5.21.1
+
+3.11
+  - Prepared for v5.20.0
+  - Fix regression in corelist with -v output listing the same perl
+    multiple times
+  - Fix regression in corelist with v5.x.10 appearing twice in -a output
+
+3.10
+  - Updated for v5.19.11
+
+3.09
+  - updated for v5.19.10
+
+3.08
+  - prepared for v5.19.10
+
+3.07 Fri Feb 21 2014
+ - fix for is_core tests and perls ending in 0
+
+3.06 Thu Feb 20 2014
+ - updated for 5.19.9
+ - fix Module::CoreList::is_core default perl version
+ - fix Module::CoreList::is_core version comparison
+
+3.05
+  - Prepared for v5.19.9
+
+3.04
+  - Prepared for v5.19.8
+
+3.03 Mon Jan  6 2014
+  - Updated for v5.18.2
+
+3.02 Fri Dec 20 2013
+  - Prepared for v5.19.7
+  - Added CGI et al deprecation status
+  - Finalised for v5.19.7
+
+3.01 Wed Nov 20 2013
+  - Finalised for v5.19.6
+
+3.00 Sun Oct 20 2013
+  - Updated for v5.19.5
+  - exported %delta
+  - fixed bug in is_core(): it was naively assuming a linear sequence of releases,
+    rather than the tree with multiple branches.
+
+2.99 Fri Sep 20 2013
+  - Updated for v5.19.4
+  - fixed Module::Build core deprecation
+  - changes_between now has the same API as all other functions
+  - added is_core() which returns true if a module is/was core
+    in a specific version of Perl. Can optionally specify minimum
+    version of the module.
+
+2.98 Wed Aug 21 2013
+  - Prepared for v5.19.4
+
+2.97 Tue Aug 20 2013
+  - Updated for v5.19.3
+
+2.96 Mon Aug 12 2013
+  - Utils module listing all utilities released with core
+  - Updated for v5.18.1
+
+2.95 Mon Jun 22 2013
+  - Prepared for v5.19.3
+
+2.94 Sun Jun 21 2013
+  - Updated for v5.19.2
+
+2.93 Thu 20 Jun 2013
+  - Updated for v5.19.1
+
+2.92 Thu Jun 21 2013
+  - Make switches case-sensitive (keep -d and -D distinct)
+  - correct omission of Text::Soundex and File::CheckTree from deprecations
+  - switch %deprecated to a delta hash
+
+2.91 Mon May 20 2013
+  - Updated for v5.19.0
+
+2.90 Mon May 18 2013
+  - Updated for v5.18.0
+
+2.88 Tue Apr 23 2013
+  - Include deprecations for v5.17.10 and v5.17.11
+
+2.87 Sat Apr 20 2013
+  - Updated for v5.17.11
+2.85 Thu Mar 19 2013
+  - Updated for v5.17.10
+
+2.84 Mon Mar 11 2013
+  - Updated for v5.16.3
+
+2.83 Sun Mar 10 2013
+  - Updated for v5.14.4
+
+2.82 Wed Feb 20 2013
+  - --feature switch added
+  - --upstream switch added
+  - Updated for v5.17.9
+
+2.81 Sun Jan 27 2013
+  - Add modules deprecated with v5.17.9
+
+2.80 Sun Jan 20 2013
+  - Updated for v5.17.8
+
+  - v5.17.7 contained Module::CoreList::TieHashDelta 2.79, not 2.78
+
+2.79 Tue Dec 18 2012
+  - Updated for v5.17.7
+
+  - Errno was added in 5.5, not in 5.5.4
+
+2.78 Sat Nov 12 2012
+  - Updated for v5.17.6
+
+  - Fix hash order dependency bug in deprecated_in().
+    Tests would would fail or succeed depending on what order keys()
+    would return the version list in. List::Utils::min() considers
+    '5.011' and '5.011000' to be equivalent, and returns the first
+    whichever it encounters. Changing to List::Utils::minstr() fixes
+    this.
+
+2.77 Sat Nov 10 2012
+  - Updated for v5.12.5
+  - deprecated_in() function added
+  - corelist reports deprecated data
+
+2.76 Fri Nov  1 2012
+  - Updated for v5.16.2
+
+2.75 Fri Oct 20 2012
+  - Updated for v5.17.5
+
+2.74 Fri Oct 12 2012
+  - Updated for v5.14.3
+
+2.73 Thu Sep 20 2012
+  - Updated for v.5.17.4
+
+2.72 Tue aug 21 2012
+  - Fix for older perls
+
+2.71 Mon Aug 20 2012
+  - Updated for v5.17.3
+
+2.70 Thu Aug 9 2012
+  - Updated for v5.16.1
+
+2.69 Fri Jul 20 2012
+  - Updated for v5.17.2
+
+2.68 Tue Jun 19 2012
+  - Updated for v5.17.1
+
+2.67 Sat May 26 2012
+  - Updated for v5.17.0
+
+2.66 ??
+  - Add the --diff option to compare two perl core modlibs
+
+2.65 Tue Mar 20 2012
+  - Update of lib/charnames
+
+2.64 Tue Mar 20 2012
+  - Update of Data::Dumper and XS::APItest
+
+2.63 Tue Mar 20 2012
+  - Update for v5.15.9
+
+2.62 Thu Mar 15 2012
+  - Separate the POD (bingos)
+
+2.61 Fri Feb 20 2012
+  - Updated for v5.15.8
+
+2.60 Fri Jan 20 2012
+  - Updated for v5.15.7
+
+2.59 Sun Dec 20 2011
+  - Updated for v5.15.6
+
+2.58 Sun Nov 20 2011
+  - Updated for v5.15.5
+
+2.57 Thu Oct 20 2011
+  - Updated for v5.15.4
+
+2.56 Tues Sept 20 2011
+  - Updated for v5.15.3
+  - Corrected version of Module::CoreList shipped
+    with v5.10.0
+  - Corrected Errno being shipped with v5.6.0 and v5.6.1
+  - Corrected VMS::Filespec being shipped with v5.12.3
+  - Corrected DB_File being shipped with v5.8.2
+  - Added http://perlpunks.de/corelist to SEE ALSO
+
+2.55 Sat Aug 20 2011
+  - Updated for v5.15.2
+
+2.54 Wed Jul 20 2011
+  - Updated for v5.15.1
+
+2.53 Thu Jul 14 2011
+  - Added release date option '-r' to corelist
+
+2.52 Mon Jul 4  2011
+  - [rt.cpan.org #69108] Extraneous modules listed
+    reported by Dee Newcum
+
+2.51
+  - Updated for v5.15.0
+
+2.50
+  - Updated for v5.12.4
+
+2.49
+  - Updated for v5.14.0
+
+2.46 Sun Mar 20 2011
+  - Resolved RT #59511
+  - Updated for v5.13.11
+
+2.45 Sun Feb 20 2011
+  - Bumped the version number and data for the 5.13.10 release
+
+2.44    Sat Jan 22 2011
+  - Merged v5.12.3 and v5.13.9
+
+2.43    Sat Jan 22 2011
+  - Updated for v5.12.3
+
+2.42_01 Thu Jan 20 2011
+  - Updated for v5.13.9
+
+2.42    Mon Dec 20 2010
+  - Updated for v5.13.8
+
+2.41    Sat Nov 20 2010
+  - Updated for v5.13.7
+
+2.40    Wed Oct 20 2010
+  - Updated for v5.13.6
+
+2.39    Sun Sep 19 2010
+  - Updated for v5.13.5
+
+2.38    Mon Sep 07 2010
+  - Updated for v5.12.2
+
 2.37    Tue Jul 20 2010
   - Updated for 5.13.4
   - Remove 'Filespec' module. It never existed in the core and is supposed to be
@@ -176,7 +485,7 @@
         - Fix from Mark Fowler - XSLoader is autogenerated too
 
 1.9     22nd April 2003
-        - incorported PodMaster's corelist script
+        - incorporated PodMaster's corelist script
 
 1.8	13th February 2003
 	- reformatted Changes file to use makereadme

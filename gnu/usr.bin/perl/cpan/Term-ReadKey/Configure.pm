@@ -8,7 +8,7 @@
 #  merging into the original, please contact me at kjahds@kjahds.com or
 #  CIS:70705,126
 #
-#  $Id: Configure.pm,v 1.1.1.1 2016/05/07 16:03:09 espie Exp $
+#  $Id: Configure.pm,v 2.21 2004/03/02 20:28:11 jonathan Exp $
 # 
 
 # Todo: clean up redudant code in CPP, Compile, Link, and Execute
@@ -48,7 +48,6 @@ require Exporter;
               GetNumericSymbol 
               GetConstants);
 
-#use Cwd;
 use Config;
 
 my ($C_usrinc, $C_libpth, $C_cppstdin, $C_cppflags, $C_cppminus,

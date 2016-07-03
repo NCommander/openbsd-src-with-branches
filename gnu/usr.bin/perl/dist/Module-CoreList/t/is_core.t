@@ -1,9 +1,13 @@
 #!perl -w
 use strict;
 use Module::CoreList;
-use Test::More tests => 33;
+use Test::More tests => 38;
 
 BEGIN { require_ok('Module::CoreList'); }
+
+# Check default perl
+
+ok(Module::CoreList::is_core('IO::File', $Module::CoreList::version{$]}{'IO::File'}), "is_core is self-consistent");
 
 ok(!Module::CoreList::is_core('Module::Path'), 'Module::Path has never been in core');
 ok(!Module::CoreList::is_core('Module::Path', undef, '5.016003'), 'Module::Path has never been in core');
@@ -65,3 +69,9 @@ ok(Module::CoreList->is_core('Text::Soundex', '3.03', '5.01'), "5.01 had Text::S
 ok(Module::CoreList->is_core('DB_File', '1.01', '5.002'), "DB_File 1.01 was included in 5.002");
 ok(!Module::CoreList->is_core('DB_File', '1.03', '5.002'), "DB_File 1.03 wasn't included in 5.002");
 ok(Module::CoreList->is_core('DB_File', '1.03', '5.00307'), "DB_File 1.03 was included in 5.00307");
+
+ok(! Module::CoreList->is_core("CGI", undef, 5.021), "CGI not in 5.021");
+ok(! Module::CoreList->is_core("CGI", undef, 5.021001), "CGI not in 5.021001");
+
+ok(  Module::CoreList::is_core("Config", 0, "5.020"), "Config v0+ is in core in 5.020");
+ok(  Module::CoreList::is_core("Config", undef, "5.020"), "Config v(undef) is in core in 7.020");
