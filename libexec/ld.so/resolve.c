@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.c,v 1.71 2016/01/24 03:54:34 guenther Exp $ */
+/*	$OpenBSD: resolve.c,v 1.72 2016/03/20 02:29:51 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -37,7 +37,6 @@
 #include "archdep.h"
 #include "path.h"
 #include "resolve.h"
-#include "dl_prebind.h"
 
 /* substitution types */
 typedef enum {
@@ -498,8 +497,6 @@ _dl_find_symbol_bysym(elf_object_t *req_obj, unsigned int symidx,
 		*this = _dl_symcache[symidx].sym;
 		if (pobj)
 			*pobj = sobj;
-		if (_dl_prebind_validate) /* XXX */
-			prebind_validate(req_obj, symidx, flags, ref_sym);
 		return sobj->obj_base;
 	}
 
