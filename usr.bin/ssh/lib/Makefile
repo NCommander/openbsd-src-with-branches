@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.84 2016/01/14 16:17:40 markus Exp $
+#	$OpenBSD: Makefile,v 1.85 2016/05/25 23:48:45 schwarze Exp $
 
 .PATH:		${.CURDIR}/..
 .include "${.CURDIR}/../Makefile.inc"
@@ -64,7 +64,6 @@ umac128.c: umac.c Makefile
 	    -e s/umac_delete/umac128_delete/g \
 	    < ${.CURDIR}/../umac.c > ${.TARGET}
 
-DEBUGLIBS= no
 NOPROFILE= yes
 NOPIC=	yes
 

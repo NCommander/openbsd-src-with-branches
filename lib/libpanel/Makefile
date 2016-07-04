@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2012/08/02 13:38:39 okan Exp $
+# $OpenBSD: Makefile,v 1.11 2016/03/30 06:38:42 jmc Exp $
 
 LIB=	panel
 SRCS=	p_above.c p_below.c p_bottom.c p_delete.c p_hidden.c p_hide.c p_move.c \
@@ -20,9 +20,5 @@ afterinstall:
 	for i in ${_LIBS}; do \
 	    ln -f $$i `echo $$i | sed 's/panel/panelw/'`; \
 	done
-.if (${DEBUGLIBS:L} == "yes")
-	-cd ${DESTDIR}${LIBDIR}/debug; \
-	    ln -f lib${LIB}.a lib`echo ${LIB} | sed 's/panel/panelw/'`.a
-.endif
 
 .include <bsd.lib.mk>

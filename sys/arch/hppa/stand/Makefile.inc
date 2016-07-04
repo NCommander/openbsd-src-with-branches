@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.18 2012/08/21 14:46:18 pascal Exp $
+#	$OpenBSD: Makefile.inc,v 1.19 2012/08/31 16:13:20 pascal Exp $
 
 CFLAGS=${DEBUG} -Os -Wall -Werror
 CPPFLAGS+=-I${S} -I. -I${.CURDIR}
@@ -14,7 +14,6 @@ LINKADDR=0xf80000
 LOADADDR=0xf80000
 HEAP_LIMIT=0xff8000
 CLEANFILES+=	machine
-DEBUGLIBS=	no
 
 .if !make(libdep) && !make(sadep) && !make(salibdir) && !make(obj) && !(defined(PROG) && ${PROG} == "mkboot")
 .BEGIN:
