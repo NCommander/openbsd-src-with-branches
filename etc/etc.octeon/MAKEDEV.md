@@ -1,6 +1,6 @@
 define(MACHINE,octeon)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.9 2016/04/25 20:38:11 tedu Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.10 2016/04/28 18:17:31 natano Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -86,6 +86,7 @@ dnl
 divert(__mddivert)dnl
 dnl
 _std(2, 3, 35, 6)
+	M openprom	c 20 0 600
 	;;
 dnl
 dnl *** octeon specific targets
