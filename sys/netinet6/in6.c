@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.186 2016/03/03 12:57:15 jca Exp $	*/
+/*	$OpenBSD: in6.c,v 1.187 2016/06/13 10:34:40 mpi Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -1637,7 +1637,8 @@ in6_ifawithscope(struct ifnet *oifp, struct in6_addr *dst, u_int rdomain)
 			 * Don't use an address before completing DAD
 			 * nor a duplicated address.
 			 */
-			if (ifatoia6(ifa)->ia6_flags & IN6_IFF_NOTREADY)
+			if (ifatoia6(ifa)->ia6_flags &
+			    (IN6_IFF_TENTATIVE|IN6_IFF_DUPLICATED))
 				continue;
 
 			/* XXX: is there any case to allow anycasts? */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_var.h,v 1.62 2016/03/03 12:57:15 jca Exp $	*/
+/*	$OpenBSD: in6_var.h,v 1.63 2016/06/13 10:34:40 mpi Exp $	*/
 /*	$KAME: in6_var.h,v 1.55 2001/02/16 12:49:45 itojun Exp $	*/
 
 /*
@@ -327,9 +327,6 @@ struct	in6_aliasreq {
 #define IN6_IFF_DEPRECATED	0x10	/* deprecated address */
 #define IN6_IFF_AUTOCONF	0x40	/* autoconfigurable address. */
 #define IN6_IFF_PRIVACY		0x80	/* RFC 4941 temporary address */
-
-/* do not input/output */
-#define IN6_IFF_NOTREADY (IN6_IFF_TENTATIVE|IN6_IFF_DUPLICATED)
 
 #ifdef _KERNEL
 #define IN6_ARE_SCOPE_CMP(a,b) ((a)-(b))

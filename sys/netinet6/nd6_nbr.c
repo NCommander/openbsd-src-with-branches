@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_nbr.c,v 1.103 2016/06/01 23:45:19 dlg Exp $	*/
+/*	$OpenBSD: nd6_nbr.c,v 1.104 2016/06/15 11:49:35 mpi Exp $	*/
 /*	$KAME: nd6_nbr.c,v 1.61 2001/02/10 16:06:14 jinmei Exp $	*/
 
 /*
@@ -238,8 +238,8 @@ nd6_ns_input(struct mbuf *m, int off, int icmp6len)
 			/*
 			 * proxy NDP for single entry
 			 */
-			ifa = &in6ifa_ifpforlinklocal(ifp,
-			    IN6_IFF_NOTREADY | IN6_IFF_ANYCAST)->ia_ifa;
+			ifa = &in6ifa_ifpforlinklocal(ifp, IN6_IFF_TENTATIVE|
+			    IN6_IFF_DUPLICATED|IN6_IFF_ANYCAST)->ia_ifa;
 			if (ifa) {
 				proxy = 1;
 				proxydl = satosdl(rt->rt_gateway);
