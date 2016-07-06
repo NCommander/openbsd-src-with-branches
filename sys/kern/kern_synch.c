@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.131 2016/03/29 02:43:47 jsg Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.132 2016/07/04 16:12:52 tedu Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*
@@ -491,7 +491,7 @@ thrsleep(struct proc *p, struct sys___thrsleep_args *v)
 	long ident = (long)SCARG(uap, ident);
 	struct timespec *tsp = (struct timespec *)SCARG(uap, tp);
 	void *lock = SCARG(uap, lock);
-	unsigned long long to_ticks = 0;
+	uint64_t to_ticks = 0;
 	int abort, error;
 	clockid_t clock_id = SCARG(uap, clock_id) & 0x7;
 	int lockflags = SCARG(uap, clock_id) & 0x8;
@@ -516,7 +516,7 @@ thrsleep(struct proc *p, struct sys___thrsleep_args *v)
 		}
 
 		timespecsub(tsp, &now, tsp);
-		to_ticks = (long long)hz * tsp->tv_sec +
+		to_ticks = (uint64_t)hz * tsp->tv_sec +
 		    (tsp->tv_nsec + tick * 1000 - 1) / (tick * 1000) + 1;
 		if (to_ticks > INT_MAX)
 			to_ticks = INT_MAX;
