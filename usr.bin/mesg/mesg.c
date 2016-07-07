@@ -1,4 +1,4 @@
-/*	$OpenBSD: mesg.c,v 1.10 2015/10/12 20:03:24 deraadt Exp $	*/
+/*	$OpenBSD: mesg.c,v 1.11 2016/01/25 21:59:36 gsoares Exp $	*/
 /*	$NetBSD: mesg.c,v 1.4 1994/12/23 07:16:32 jtc Exp $	*/
 
 /*
@@ -68,6 +68,8 @@ main(int argc, char *argv[])
 		err(2, "ttyname");
 	if (stat(tty, &sb) < 0)
 		err(2, "%s", tty);
+
+	sb.st_mode &= ACCESSPERMS;
 
 	if (*argv == NULL) {
 		if (sb.st_mode & S_IWGRP) {
