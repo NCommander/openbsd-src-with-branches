@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.171 2016/04/13 12:26:21 schwarze Exp $ */
+/*	$OpenBSD: main.c,v 1.172 2016/04/14 20:54:15 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2012, 2014-2016 Ingo Schwarze <schwarze@openbsd.org>
@@ -438,7 +438,7 @@ main(int argc, char *argv[])
 				    conf.output.synopsisonly);
 
 			if (argc > 1 && curp.outtype <= OUTT_UTF8)
-				ascii_sepline(curp.outdata);
+				terminal_sepline(curp.outdata);
 		} else if (rc < MANDOCLEVEL_ERROR)
 			rc = MANDOCLEVEL_ERROR;
 
