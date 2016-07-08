@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdt.c,v 1.14 2016/06/14 14:35:27 kettenis Exp $	*/
+/*	$OpenBSD: fdt.c,v 1.15 2016/06/29 13:39:03 visa Exp $	*/
 
 /*
  * Copyright (c) 2009 Dariusz Swiderski <sfires@sfires.net>
@@ -845,7 +845,7 @@ OF_nextprop(int handle, char *prop, void *nextprop)
 	void *node = (char *)tree.header + handle;
 	char *data;
 
-	if (fdt_node_property(node, "name", &data) == 0) {
+	if (fdt_node_property(node, "name", &data) == -1) {
 		if (strcmp(prop, "") == 0)
 			return strlcpy(nextprop, "name", OPROMMAXPARAM);
 		if (strcmp(prop, "name") == 0)
