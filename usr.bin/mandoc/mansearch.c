@@ -1,4 +1,4 @@
-/*	$OpenBSD: mansearch.c,v 1.48 2015/11/26 07:41:38 schwarze Exp $ */
+/*	$OpenBSD: mansearch.c,v 1.49 2016/01/08 15:01:58 schwarze Exp $ */
 /*
  * Copyright (c) 2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2013, 2014, 2015 Ingo Schwarze <schwarze@openbsd.org>
@@ -23,7 +23,6 @@
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <getopt.h>
 #include <glob.h>
 #include <limits.h>
 #include <regex.h>
