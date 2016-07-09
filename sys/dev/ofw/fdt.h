@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdt.h,v 1.2 2016/04/03 12:32:13 patrick Exp $	*/
+/*	$OpenBSD: fdt.h,v 1.3 2016/06/08 15:27:05 jsg Exp $	*/
 
 /*
  * Copyright (c) 2009 Dariusz Swiderski <sfires@sfires.net>
@@ -60,6 +60,7 @@ char	*fdt_node_name(void *);
 void	*fdt_find_node(char *);
 int	 fdt_node_property(void *, char *, char **);
 void	*fdt_parent_node(void *);
+void	*fdt_find_phandle(uint32_t);
 int	 fdt_get_memory_address(void *, int, struct fdt_memory *);
 int	 fdt_is_compatible(void *, const char *);
 #ifdef DEBUG
