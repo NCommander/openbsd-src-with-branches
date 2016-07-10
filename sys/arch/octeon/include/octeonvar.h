@@ -1,4 +1,4 @@
-/*	$OpenBSD: octeonvar.h,v 1.28 2016/06/22 13:09:35 visa Exp $	*/
+/*	$OpenBSD: octeonvar.h,v 1.29 2016/07/01 15:12:37 visa Exp $	*/
 /*	$NetBSD: maltavar.h,v 1.3 2002/03/18 10:10:16 simonb Exp $	*/
 
 /*-
@@ -426,6 +426,16 @@ octeon_get_cycles(void)
 		_ASM_EPILOGUE
 		: [tmp]"=&r"(tmp));
 	return tmp;
+}
+
+static inline void
+octeon_synciobdma(void)
+{
+	__asm volatile (
+		_ASM_PROLOGUE_OCTEON
+		"	synciobdma\n"
+		_ASM_EPILOGUE
+		: : : "memory");
 }
 
 #endif	/* _MIPS_OCTEON_OCTEONVAR_H_ */
