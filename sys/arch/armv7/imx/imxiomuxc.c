@@ -1,7 +1,7 @@
-/* $OpenBSD: imxiomuxc.c,v 1.2 2013/11/06 19:03:07 syl Exp $ */
+/* $OpenBSD: imxiomuxc.c,v 1.3 2016/07/10 11:46:28 kettenis Exp $ */
 /*
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
- * Copyright (c) 2016 Mark Kettenus <kettenis@openbsd.org>
+ * Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
