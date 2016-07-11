@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.192 2016/06/14 09:48:52 mpi Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.193 2016/07/11 09:23:06 mpi Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -748,7 +748,8 @@ report:
 				ifa = info.rti_ifa;
 			}
 			if (info.rti_info[RTAX_GATEWAY] != NULL && (error =
-			    rt_setgate(rt, info.rti_info[RTAX_GATEWAY])))
+			    rt_setgate(rt, info.rti_info[RTAX_GATEWAY],
+			    tableid)))
 				goto flush;
 			if (ifa) {
 				if (rt->rt_ifa != ifa) {
