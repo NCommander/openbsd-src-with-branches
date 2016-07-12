@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.433 2016/05/18 03:46:03 dlg Exp $	*/
+/*	$OpenBSD: if.c,v 1.434 2016/06/10 20:33:29 vgross Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -618,9 +618,18 @@ if_input(struct ifnet *ifp, struct mbuf_list *ml)
 #if NBPFILTER > 0
 	if_bpf = ifp->if_bpf;
 	if (if_bpf) {
-		MBUF_LIST_FOREACH(ml, m)
-			if (bpf_mtap_ether(if_bpf, m, BPF_DIRECTION_IN) != 0)
-				m->m_flags |= M_FILDROP;
+		struct mbuf_list ml0;
+
+		ml_init(&ml0);
+		ml_enlist(&ml0, ml);
+		ml_init(ml);
+
+		while ((m = ml_dequeue(&ml0)) != NULL) {
+			if (bpf_mtap_ether(if_bpf, m, BPF_DIRECTION_IN))
+				m_freem(m);
+			else
+				ml_enqueue(ml, m);
+		}
 	}
 #endif
 
