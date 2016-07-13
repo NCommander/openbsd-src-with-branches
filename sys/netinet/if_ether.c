@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.216 2016/06/28 17:18:24 chris Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.217 2016/07/11 09:23:06 mpi Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -139,7 +139,7 @@ arp_rtrequest(struct ifnet *ifp, int req, struct rtentry *rt)
 		timeout_add_sec(&arptimer_to, 1);
 	}
 
-	if (rt->rt_flags & (RTF_GATEWAY|RTF_BROADCAST))
+	if (ISSET(rt->rt_flags, RTF_GATEWAY|RTF_BROADCAST|RTF_MULTICAST))
 		return;
 
 	switch (req) {
