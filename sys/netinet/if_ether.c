@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.200 2016/01/14 12:41:02 mpi Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.201 2016/01/21 03:34:05 dlg Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -83,6 +83,8 @@ void arptimer(void *);
 struct rtentry *arplookup(u_int32_t, int, int, u_int);
 void in_arpinput(struct mbuf *);
 void in_revarpinput(struct mbuf *);
+
+struct niqueue arpinq = NIQUEUE_INITIALIZER(50, NETISR_ARP);
 
 LIST_HEAD(, llinfo_arp) arp_list;
 struct	pool arp_pool;		/* pool for llinfo_arp structures */
@@ -438,7 +440,19 @@ arpinput(struct mbuf *m)
 	if (m->m_len < len && (m = m_pullup(m, len)) == NULL)
 		return;
 
-	in_arpinput(m);
+	niq_enqueue(&arpinq, m);
+}
+
+void
+arpintr(void)
+{
+	struct mbuf_list ml;
+	struct mbuf *m;
+
+	niq_delist(&arpinq, &ml);
+
+	while ((m = ml_dequeue(&ml)) != NULL)
+		in_arpinput(m);
 }
 
 /*
@@ -790,7 +804,7 @@ in_revarpinput(struct mbuf *m)
 	switch (op) {
 	case ARPOP_REQUEST:
 	case ARPOP_REPLY:	/* per RFC */
-		in_arpinput(m);
+		niq_enqueue(&arpinq, m);
 		return;
 	case ARPOP_REVREPLY:
 		break;
