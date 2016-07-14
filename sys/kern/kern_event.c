@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_event.c,v 1.71 2016/01/06 17:58:46 tedu Exp $	*/
+/*	$OpenBSD: kern_event.c,v 1.72 2016/05/13 19:05:07 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000,2001 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -572,6 +572,8 @@ kqueue_register(struct kqueue *kq, struct kevent *kev, struct proc *p)
 
 	if (fops->f_isfd) {
 		/* validate descriptor */
+		if (kev->ident > INT_MAX)
+			return (EBADF);
 		if ((fp = fd_getfile(fdp, kev->ident)) == NULL)
 			return (EBADF);
 		FREF(fp);
