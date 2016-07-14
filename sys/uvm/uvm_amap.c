@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_amap.c,v 1.58 2014/12/23 04:56:47 tedu Exp $	*/
+/*	$OpenBSD: uvm_amap.c,v 1.59 2015/08/21 16:04:35 visa Exp $	*/
 /*	$NetBSD: uvm_amap.c,v 1.27 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -35,6 +35,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/stdint.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/pool.h>
@@ -165,15 +166,29 @@ static inline struct vm_amap *
 amap_alloc1(int slots, int padslots, int waitf)
 {
 	struct vm_amap *amap;
-	int totalslots;
+	size_t totalslots = (size_t)slots + padslots;
 
 	amap = pool_get(&uvm_amap_pool, (waitf == M_WAITOK) ? PR_WAITOK
 	    : PR_NOWAIT);
 	if (amap == NULL)
 		return(NULL);
 
-	totalslots = malloc_roundup((slots + padslots) * MALLOC_SLOT_UNIT) /
+	/*
+	 * Make sure that totalslots * MALLOC_SLOT_UNIT is within
+	 * a size_t, AND: since malloc_roundup may round its argument
+	 * to a multiple of the PAGE_SIZE, make sure that malloc_roundup
+	 * cannot wrap totalslots * MALLOC_SLOT_UNIT to zero.
+	 */
+	if (totalslots >= (trunc_page(SIZE_MAX) / MALLOC_SLOT_UNIT))
+		return (NULL);
+
+	totalslots = malloc_roundup(totalslots * MALLOC_SLOT_UNIT) /
 	    MALLOC_SLOT_UNIT;
+	if (totalslots > INT_MAX)
+		return (NULL);
+
+	KASSERT(totalslots > 0);
+
 	amap->am_ref = 1;
 	amap->am_flags = 0;
 #ifdef UVM_AMAP_PPREF
@@ -183,7 +198,7 @@ amap_alloc1(int slots, int padslots, int waitf)
 	amap->am_nslot = slots;
 	amap->am_nused = 0;
 
-	amap->am_slots = malloc(totalslots * MALLOC_SLOT_UNIT, M_UVMAMAP,
+	amap->am_slots = mallocarray(totalslots, MALLOC_SLOT_UNIT, M_UVMAMAP,
 	    waitf);
 	if (amap->am_slots == NULL)
 		goto fail1;
@@ -210,10 +225,14 @@ struct vm_amap *
 amap_alloc(vaddr_t sz, vaddr_t padsz, int waitf)
 {
 	struct vm_amap *amap;
-	int slots, padslots;
+	size_t slots, padslots;
 
 	AMAP_B2SLOT(slots, sz);		/* load slots */
 	AMAP_B2SLOT(padslots, padsz);
+
+	/* Ensure that slots + padslots <= INT_MAX */
+	if (slots > INT_MAX || padslots > INT_MAX - slots)
+		return (NULL);
 
 	amap = amap_alloc1(slots, padslots, waitf);
 	if (amap) {
