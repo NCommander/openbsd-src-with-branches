@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.111 2015/07/20 05:49:30 jsg Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.112 2015/07/20 22:41:41 miod Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -486,7 +486,7 @@ sys_mmap(struct proc *p, void *v, register_t *retval)
 			/* MAP_PRIVATE mappings can always write to */
 			maxprot |= PROT_WRITE;
 		}
-		if ((flags & MAP_ANON) != 0 ||
+		if ((flags & MAP_ANON) != 0 || (flags & __MAP_NOFAULT) != 0 ||
 		    ((flags & MAP_PRIVATE) != 0 && (prot & PROT_WRITE) != 0)) {
 			if (size >
 			    (p->p_rlimit[RLIMIT_DATA].rlim_cur - ptoa(p->p_vmspace->vm_dused))) {
@@ -505,7 +505,7 @@ sys_mmap(struct proc *p, void *v, register_t *retval)
 
 is_anon:	/* label for SunOS style /dev/zero */
 
-		if ((flags & MAP_ANON) != 0 ||
+		if ((flags & MAP_ANON) != 0 || (flags & __MAP_NOFAULT) != 0 ||
 		    ((flags & MAP_PRIVATE) != 0 && (prot & PROT_WRITE) != 0)) {
 			if (size >
 			    (p->p_rlimit[RLIMIT_DATA].rlim_cur - ptoa(p->p_vmspace->vm_dused))) {
