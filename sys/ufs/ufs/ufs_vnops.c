@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.124 2016/02/04 12:45:03 mikeb Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.125 2016/02/16 17:56:12 stefan Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -1441,7 +1441,7 @@ ufs_readdir(void *v)
 	 */
 
 	/* read from disk, stopping on a block boundary, max 64kB */
-	readcnt = max(count, 64*1024) - entries;
+	readcnt = min(count, 64*1024) - entries;
 
 	auio = *uio;
 	auio.uio_iov = &aiov;
