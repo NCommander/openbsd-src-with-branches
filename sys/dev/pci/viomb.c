@@ -1,4 +1,4 @@
-/* $OpenBSD: viomb.c,v 1.13 2015/03/14 03:38:49 jsg Exp $	 */
+/* $OpenBSD: viomb.c,v 1.14 2015/06/11 04:38:23 jsg Exp $	 */
 /* $NetBSD: viomb.c,v 1.1 2011/10/30 12:12:21 hannken Exp $	 */
 
 /*
@@ -156,7 +156,6 @@ viomb_attach(struct device *parent, struct device *self, void *aux)
 	vsc->sc_child = self;
 	vsc->sc_ipl = IPL_BIO;
 	vsc->sc_config_change = viomb_config_change;
-	vsc->sc_intrhand = virtio_vq_intr;
 
 	/* negotiate features */
 	features = VIRTIO_F_RING_INDIRECT_DESC;
