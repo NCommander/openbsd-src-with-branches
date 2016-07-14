@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.191 2015/12/05 10:11:53 tedu Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.192 2016/01/09 06:13:43 semarie Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1716,7 +1716,7 @@ sys___thrsigdivert(struct proc *p, void *v, register_t *retval)
 	sigset_t *m;
 	sigset_t mask = SCARG(uap, sigmask) &~ sigcantmask;
 	siginfo_t si;
-	long long to_ticks = 0;
+	uint64_t to_ticks = 0;
 	int timeinvalid = 0;
 	int error = 0;
 
@@ -1733,7 +1733,7 @@ sys___thrsigdivert(struct proc *p, void *v, register_t *retval)
 		if (ts.tv_nsec < 0 || ts.tv_nsec >= 1000000000)
 			timeinvalid = 1;
 		else {
-			to_ticks = (long long)hz * ts.tv_sec +
+			to_ticks = (uint64_t)hz * ts.tv_sec +
 			    ts.tv_nsec / (tick * 1000);
 			if (to_ticks > INT_MAX)
 				to_ticks = INT_MAX;
