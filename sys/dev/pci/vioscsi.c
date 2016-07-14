@@ -250,7 +250,7 @@ vioscsi_scsi_cmd(struct scsi_xfer *xs)
 		DPRINTF("vioscsi_scsi_cmd: polling...\n");
 		int timeout = 1000;
 		do {
-			vsc->sc_ops->intr(vsc);
+			virtio_poll_intr(vsc);
 			if (vr->vr_xs != xs)
 				break;
 			delay(1000);

@@ -460,7 +460,7 @@ vioblk_scsi_cmd(struct scsi_xfer *xs)
 
 	timeout = 1000;
 	do {
-		if (vsc->sc_ops->intr(vsc) && vr->vr_len == VIOBLK_DONE)
+		if (virtio_poll_intr(vsc) && vr->vr_len == VIOBLK_DONE)
 			break;
 
 		delay(1000);
