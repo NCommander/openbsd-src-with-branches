@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.207 2016/01/31 00:18:07 sashan Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.208 2016/02/23 01:39:14 dlg Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -130,6 +130,7 @@ struct	pkthdr {
 	u_int16_t		 ether_vtag;	/* Ethernet 802.1p+Q vlan tag */
 	u_int			 ph_rtableid;	/* routing table id */
 	u_int			 ph_ifidx;	/* rcv interface index */
+	u_int8_t		 ph_loopcnt;	/* mbuf is looping in kernel */
 	struct pkthdr_pf	 pf;
 };
 
@@ -485,6 +486,9 @@ struct m_tag *m_tag_next(struct mbuf *, struct m_tag *);
  * has payload larger than the value below.
  */
 #define PACKET_TAG_MAXSIZE		52
+
+/* Detect mbufs looping in the kernel when spliced too often. */
+#define M_MAXLOOP	128
 
 /*
  * mbuf lists
