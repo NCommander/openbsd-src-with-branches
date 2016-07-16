@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.176 2016/05/10 18:39:49 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.177 2016/05/21 01:12:35 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -382,7 +382,7 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 {
 	int oldval, ret;
 
-	/* all sysctl names are this level are terminal */
+	/* all sysctl names at this level are terminal */
 	if (namelen != 1)
 		return (ENOTDIR);	/* overloaded */
 

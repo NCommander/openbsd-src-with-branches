@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.118 2015/10/21 07:59:18 mpi Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.119 2016/06/13 23:51:58 dlg Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -924,7 +924,7 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 {
 	dev_t consdev;
 
-	/* all sysctl names are this level are terminal */
+	/* all sysctl names at this level are terminal */
 	if (namelen != 1)
 		return (ENOTDIR); /* overloaded */
 
