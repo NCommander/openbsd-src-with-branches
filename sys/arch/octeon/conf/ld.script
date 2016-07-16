@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 OUTPUT_FORMAT("elf64-tradbigmips")
 OUTPUT_ARCH(mips)
 ENTRY(__start)

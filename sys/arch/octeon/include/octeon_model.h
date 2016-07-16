@@ -1,4 +1,4 @@
-/*	$Id: octeon_model.h,v 1.2 2014/06/17 01:33:04 jmatthew Exp $	*/
+/*	$OpenBSD: octeon_model.h,v 1.3 2014/10/26 15:10:15 jasper Exp $	*/
 
 /*
  * Copyright (c) 2007

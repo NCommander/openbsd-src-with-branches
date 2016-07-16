@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2000-2004 Opsycon AB  (www.opsycon.se)
  *
