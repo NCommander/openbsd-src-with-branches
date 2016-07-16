@@ -1,4 +1,4 @@
-/* $OpenBSD: apicvec.s,v 1.30 2015/06/28 01:11:27 guenther Exp $ */
+/* $OpenBSD: apicvec.s,v 1.31 2015/07/16 05:10:14 guenther Exp $ */
 /* $NetBSD: apicvec.s,v 1.1.2.2 2000/02/21 21:54:01 sommerfeld Exp $ */
 
 /*-
@@ -31,6 +31,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "ioapic.h"
 
 #include <machine/i82093reg.h>
 #include <machine/i82489reg.h>

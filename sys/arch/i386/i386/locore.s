@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.168 2016/05/10 18:39:45 deraadt Exp $	*/
+/*	$OpenBSD: locore.s,v 1.169 2016/05/23 20:11:49 deraadt Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -40,9 +40,7 @@
 #include "assym.h"
 #include "apm.h"
 #include "lapic.h"
-#include "ioapic.h"
 #include "ksyms.h"
-#include "acpi.h"
 
 #include <sys/errno.h>
 #include <sys/syscall.h>
