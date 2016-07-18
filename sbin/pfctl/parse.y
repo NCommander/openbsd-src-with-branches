@@ -181,7 +181,7 @@ struct node_queue {
 	int			 scheduler;
 	struct node_queue	*next;
 	struct node_queue	*tail;
-}	*oqueues = NULL;
+};
 
 struct node_qassign {
 	char		*qname;
