@@ -1381,18 +1381,6 @@ struct pf_queuespec {
 	u_int32_t			 parent_qid;
 };
 
-struct cbq_opts {
-	u_int		minburst;
-	u_int		maxburst;
-	u_int		pktsize;
-	u_int		maxpktsize;
-	u_int		ns_per_byte;
-	u_int		maxidle;
-	int		minidle;
-	u_int		offtime;
-	int		flags;
-};
-
 struct priq_opts {
 	int		flags;
 };
