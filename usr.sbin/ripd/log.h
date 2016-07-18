@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.h,v 1.2 2009/11/02 20:28:49 claudio Exp $ */
+/*	$OpenBSD: log.h,v 1.3 2014/11/03 20:15:31 bluhm Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -23,14 +23,22 @@
 
 void		 log_init(int);
 void		 log_verbose(int);
-void		 logit(int, const char *, ...);
-void		 vlog(int, const char *, va_list);
-void		 log_warn(const char *, ...);
-void		 log_warnx(const char *, ...);
-void		 log_info(const char *, ...);
-void		 log_debug(const char *, ...);
-void		 fatal(const char *) __dead;
-void		 fatalx(const char *) __dead;
+void		 logit(int, const char *, ...)
+			__attribute__((__format__ (printf, 2, 3)));
+void		 vlog(int, const char *, va_list)
+			 __attribute__((__format__ (printf, 2, 0)));
+void		 log_warn(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		 log_warnx(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		 log_info(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		 log_debug(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		 fatal(const char *) __dead
+			__attribute__((__format__ (printf, 1, 0)));
+void		 fatalx(const char *) __dead
+			__attribute__((__format__ (printf, 1, 0)));
 const char	*if_type_name(enum iface_type);
 const char	*nbr_state_name(int);
 
