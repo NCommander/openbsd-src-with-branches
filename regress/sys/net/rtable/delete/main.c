@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.2 2015/11/12 14:32:02 mpi Exp $ */
+/*	$OpenBSD: main.c,v 1.3 2015/12/03 15:15:04 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -68,7 +68,7 @@ main(int argc, char *argv[])
 	struct art_root *ar;
 	ar = rtable_get(0, AF_INET6);
 	assert(ar != NULL);
-	assert(ar->ar_root == NULL);
+	assert(ar->ar_root.ref == NULL);
 #endif /* ART */
 
 	return (0);
