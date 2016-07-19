@@ -1,4 +1,4 @@
-.\"     $OpenBSD: mbuf.9,v 1.98 2016/04/08 03:23:13 dlg Exp $
+.\"     $OpenBSD: mbuf.9,v 1.99 2016/04/08 10:01:12 dlg Exp $
 .\"
 .\" Copyright (c) 2001 Jean-Jacques Bernard-Gundol <jjbg@openbsd.org>
 .\" All rights reserved.
@@ -294,10 +294,8 @@ protocol-specific.
 variable is valid.
 .It Dv M_LOOP
 for mbuf statistics.
-.It Dv M_FILDROP
-dropped by
-.Xr bpf 4
-filter.
+.It Dv M_ACAST
+received as IPv6 anycast.
 .It Dv M_BCAST
 packet send/received as link-level broadcast.
 .It Dv M_MCAST
