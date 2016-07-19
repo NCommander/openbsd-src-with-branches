@@ -91,11 +91,6 @@
 #include <netinet/icmp6.h>
 #endif /* INET6 */
 
-
-/*
- * Global variables
- */
-
 u_int64_t		 pf_hash(struct pf_addr *, struct pf_addr *,
 			    struct pf_poolhashkey *, sa_family_t);
 int			 pf_get_sport(struct pf_pdesc *, struct pf_rule *,
