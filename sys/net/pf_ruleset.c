@@ -38,8 +38,8 @@
 #include <sys/param.h>
 #include <sys/socket.h>
 #ifdef _KERNEL
-# include <sys/systm.h>
-# include <sys/mbuf.h>
+#include <sys/systm.h>
+#include <sys/mbuf.h>
 #endif /* _KERNEL */
 #include <sys/syslog.h>
 
@@ -62,17 +62,17 @@
 #else	/* !_KERNEL */
 /* Userland equivalents so we can lend code to pfctl et al. */
 
-# include <arpa/inet.h>
-# include <errno.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <string.h>
-# define rs_malloc(x)		 calloc(1, x)
-# define rs_free(x)		 free(x)
+#include <arpa/inet.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define rs_malloc(x)		 calloc(1, x)
+#define rs_free(x)		 free(x)
 
-# ifdef PFDEBUG
-#  include <sys/stdarg.h>	/* for DPFPRINTF() */
-# endif	/* PFDEBUG */
+#ifdef PFDEBUG
+#include <sys/stdarg.h>	/* for DPFPRINTF() */
+#endif	/* PFDEBUG */
 #endif /* _KERNEL */
 
 
