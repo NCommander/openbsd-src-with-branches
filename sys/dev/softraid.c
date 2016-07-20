@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.375 2016/04/29 14:01:37 krw Exp $ */
+/* $OpenBSD: softraid.c,v 1.376 2016/05/31 15:19:12 jsing Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -3313,7 +3313,7 @@ sr_ioctl_createraid(struct sr_softc *sc, struct bioc_createraid *bc,
 	struct scsi_link	*link;
 	struct device		*dev;
 	char			*uuid, devname[32];
-	dev_t			*dt;
+	dev_t			*dt = NULL;
 	int			i, no_chunk, rv = EINVAL, target, vol;
 	int			no_meta;
 
@@ -3586,9 +3586,13 @@ sr_ioctl_createraid(struct sr_softc *sc, struct bioc_createraid *bc,
 
 	sd->sd_ready = 1;
 
+	free(dt, M_DEVBUF, bc->bc_dev_list_len);
+
 	return (rv);
 
 unwind:
+	free(dt, M_DEVBUF, bc->bc_dev_list_len);
+
 	sr_discipline_shutdown(sd, 0);
 
 	if (rv == EAGAIN)
