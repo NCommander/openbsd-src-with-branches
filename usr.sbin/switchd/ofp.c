@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofp.c,v 1.3 2016/07/20 14:15:08 reyk Exp $	*/
+/*	$OpenBSD: ofp.c,v 1.4 2016/07/20 21:01:06 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -83,7 +83,7 @@ ofp_run(struct privsep *ps, struct privsep_proc *p, void *arg)
 	struct switch_server	*srv = &sc->sc_server;
 
 	/*
-	 * pledge in the control process:
+	 * pledge in the ofp process:
  	 * stdio - for malloc and basic I/O including events.
 	 * inet - for handling tcp connections with OpenFlow peers.
 	 * recvfd - for receiving new sockets on reload.
