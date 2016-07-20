@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.54 2015/12/09 21:41:49 naddy Exp $	*/
+/*	$OpenBSD: parse.y,v 1.55 2016/06/21 21:35:24 benno Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -811,15 +811,19 @@ ipcomp		: /* empty */			{ $$ = 0; }
 
 ikeauth		: /* empty */			{
 			$$.auth_method = IKEV2_AUTH_RSA_SIG;
+			$$.auth_eap = 0;
 			$$.auth_length = 0;
 		}
 		| RSA				{
 			$$.auth_method = IKEV2_AUTH_RSA_SIG;
+			$$.auth_eap = 0;
 			$$.auth_length = 0;
 		}
 		| PSK keyspec			{
 			memcpy(&$$, &$2, sizeof($$));
 			$$.auth_method = IKEV2_AUTH_SHARED_KEY_MIC;
+			$$.auth_eap = 0;
+			$$.auth_length = 0;
 		}
 		| EAP STRING			{
 			unsigned int i;
