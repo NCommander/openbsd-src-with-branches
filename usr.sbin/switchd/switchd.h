@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchd.h,v 1.5 2016/07/20 21:01:06 reyk Exp $	*/
+/*	$OpenBSD: switchd.h,v 1.6 2016/07/21 07:58:44 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -134,8 +134,9 @@ int		 switchd_tap(void);
 int		 switchd_open_device(struct privsep *, const char *, size_t);
 
 /* packet.c */
-uint32_t	 packet_input(struct switchd *, struct switch_control *,
-		    uint32_t, struct ibuf *, size_t, struct packet *);
+int		 packet_input(struct switchd *, struct switch_control *,
+		    uint32_t, uint32_t *, struct ibuf *, size_t,
+		    struct packet *);
 
 /* switch.c */
 void		 switch_init(struct switchd *);
