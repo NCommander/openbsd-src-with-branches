@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.140 2015/06/30 15:30:17 mpi Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.141 2015/07/08 07:21:50 mpi Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -1195,7 +1195,7 @@ somove(struct socket *so, int wait)
 		goto release;
 	}
 	if (sosp->so_error && sosp->so_error != ETIMEDOUT &&
-	    sosp->so_error != EFBIG) {
+	    sosp->so_error != EFBIG && sosp->so_error != ELOOP) {
 		error = sosp->so_error;
 		goto release;
 	}
@@ -1250,6 +1250,15 @@ somove(struct socket *so, int wait)
 			(so->so_proto->pr_usrreq)(so, PRU_RCVD, NULL,
 			    (struct mbuf *)0L, NULL, NULL);
 		goto nextpkt;
+	}
+
+	/*
+	 * By splicing sockets connected to localhost, userland might create a
+	 * loop.  Dissolve splicing with error if loop is detected by counter.
+	 */
+	if ((m->m_flags & M_PKTHDR) && m->m_pkthdr.ph_loopcnt++ >= M_MAXLOOP) {
+		error = ELOOP;
+		goto release;
 	}
 
 	if (so->so_proto->pr_flags & PR_ATOMIC) {
@@ -1324,10 +1333,12 @@ somove(struct socket *so, int wait)
 		goto release;
 	m->m_nextpkt = NULL;
 	if (m->m_flags & M_PKTHDR) {
+		u_int8_t loopcnt = m->m_pkthdr.ph_loopcnt;
 		m_tag_delete_chain(m);
 		memset(&m->m_pkthdr, 0, sizeof(m->m_pkthdr));
 		m->m_pkthdr.len = len;
 		m->m_pkthdr.pf.prio = IFQ_DEFPRIO;
+		m->m_pkthdr.ph_loopcnt = loopcnt;
 	}
 
 	/* Send window update to source peer as receive buffer has changed. */
