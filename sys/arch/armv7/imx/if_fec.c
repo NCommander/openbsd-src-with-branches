@@ -1,4 +1,4 @@
-/* $OpenBSD: if_fec.c,v 1.7 2016/07/14 14:05:51 kettenis Exp $ */
+/* $OpenBSD: if_fec.c,v 1.8 2016/07/21 02:32:23 jsg Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -303,7 +303,7 @@ fec_attach(struct device *parent, struct device *self, void *aux)
 
 	if (OF_getpropintarray(faa->fa_node, "interrupts-extended",
 	    intr, sizeof(intr)) < sizeof(intr))
-		return;
+		intr[2] = 0x76;
 
 	sc->sc_node = faa->fa_node;
 	sc->sc_iot = faa->fa_iot;
