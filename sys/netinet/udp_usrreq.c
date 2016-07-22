@@ -989,7 +989,8 @@ udp_output(struct inpcb *inp, struct mbuf *m, struct mbuf *addr,
 			goto release;
 		}
 
-		error = in_pcbselsrc(&laddr, sin, inp);
+		error = in_selectsrc(&laddr, sin, inp->inp_moptions,
+		    &inp->inp_route, &inp->inp_laddr, inp->inp_rtableid);
 		if (error)
 			goto release;
 

@@ -1259,7 +1259,7 @@ icmp6_reflect(struct mbuf *m, size_t off)
 		 * source address of the erroneous packet.
 		 */
 		bzero(&ro, sizeof(ro));
-		error = in6_selectsrc(&src, &sa6_src, NULL, &ro,
+		error = in6_selectsrc(&src, &sa6_src, NULL, NULL, &ro, NULL,
 		    m->m_pkthdr.ph_rtableid);
 		if (ro.ro_rt)
 			rtfree(ro.ro_rt); /* XXX: we could use this */

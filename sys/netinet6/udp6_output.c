@@ -154,7 +154,9 @@ udp6_output(struct inpcb *in6p, struct mbuf *m, struct mbuf *addr6,
 			goto release;
 		}
 
-		error = in6_pcbselsrc(&laddr, sin6, in6p, optp);
+		error = in6_selectsrc(&laddr, sin6, optp,
+		    in6p->inp_moptions6, &in6p->inp_route6,
+		    &in6p->inp_laddr6, in6p->inp_rtableid);
 		if (error)
 			goto release;
 

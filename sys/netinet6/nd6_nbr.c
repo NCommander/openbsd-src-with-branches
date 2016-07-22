@@ -471,8 +471,8 @@ nd6_ns_output(struct ifnet *ifp, struct in6_addr *daddr6,
 			int error;
 
 			bcopy(&dst_sa, &ro.ro_dst, sizeof(dst_sa));
-			error = in6_selectsrc(&src0, &dst_sa, NULL, &ro,
-			    m->m_pkthdr.ph_rtableid);
+			error = in6_selectsrc(&src0, &dst_sa, NULL, NULL, &ro,
+			    NULL, m->m_pkthdr.ph_rtableid);
 			if (error) {
 				char addr[INET6_ADDRSTRLEN];
 
@@ -990,7 +990,7 @@ nd6_na_output(struct ifnet *ifp, struct in6_addr *daddr6,
 	 * Select a source whose scope is the same as that of the dest.
 	 */
 	bcopy(&dst_sa, &ro.ro_dst, sizeof(dst_sa));
-	error = in6_selectsrc(&src0, &dst_sa, NULL, &ro,
+	error = in6_selectsrc(&src0, &dst_sa, NULL, NULL, &ro, NULL,
 	    m->m_pkthdr.ph_rtableid);
 	if (error) {
 		char addr[INET6_ADDRSTRLEN];

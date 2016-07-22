@@ -289,7 +289,8 @@ void	 in_setpeeraddr(struct inpcb *, struct mbuf *);
 void	 in_setsockaddr(struct inpcb *, struct mbuf *);
 int	 in_baddynamic(u_int16_t, u_int16_t);
 int	 in_rootonly(u_int16_t, u_int16_t);
-int	 in_pcbselsrc(struct in_addr **, struct sockaddr_in *, struct inpcb *);
+int	 in_selectsrc(struct in_addr **, struct sockaddr_in *,
+	    struct ip_moptions *, struct route *, struct in_addr *, u_int);
 struct rtentry *
 	in_pcbrtentry(struct inpcb *);
 

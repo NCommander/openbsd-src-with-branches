@@ -281,7 +281,9 @@ in6_pcbconnect(struct inpcb *inp, struct mbuf *nam)
 	 * with the address specified by setsockopt(IPV6_PKTINFO).
 	 * Is it the intended behavior?
 	 */
-	error = in6_pcbselsrc(&in6a, sin6, inp, inp->inp_outputopts6);
+	error = in6_selectsrc(&in6a, sin6, inp->inp_outputopts6,
+	    inp->inp_moptions6, &inp->inp_route6, &inp->inp_laddr6,
+	    inp->inp_rtableid);
 	if (error)
 		return (error);
 
