@@ -1,4 +1,4 @@
-/* $OpenBSD: imx.c,v 1.22 2016/07/09 18:14:18 kettenis Exp $ */
+/* $OpenBSD: imx.c,v 1.23 2016/07/10 14:01:10 kettenis Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
@@ -49,6 +49,7 @@ const char *imx_compatible[] = {
 	"fsl,imx6sx",
 	"fsl,imx6dl",
 	"fsl,imx6q",
+	"fsl,imx6qp",
 	NULL
 };
 
