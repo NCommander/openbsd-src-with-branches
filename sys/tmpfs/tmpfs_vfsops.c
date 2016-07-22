@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_vfsops.c,v 1.8 2016/01/13 13:01:40 gsoares Exp $	*/
+/*	$OpenBSD: tmpfs_vfsops.c,v 1.9 2016/07/11 22:36:25 tedu Exp $	*/
 /*	$NetBSD: tmpfs_vfsops.c,v 1.52 2011/09/27 01:10:43 christos Exp $	*/
 
 /*
@@ -373,6 +373,6 @@ struct vfsops tmpfs_vfsops = {
 	tmpfs_fhtovp,			/* vfs_fhtovp */
 	tmpfs_vptofh,			/* vfs_vptofh */
 	tmpfs_init,			/* vfs_init */
-	NULL,				/* vfs_sysctl */
+	(void *)eopnotsupp,		/* vfs_sysctl */
 	(void *)eopnotsupp,
 };
