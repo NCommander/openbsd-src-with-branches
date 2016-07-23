@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_http.c,v 1.51 2015/07/18 16:01:28 benno Exp $	*/
+/*	$OpenBSD: relay_http.c,v 1.52 2015/07/28 10:24:26 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -361,10 +361,20 @@ relay_read_http(struct bufferevent *bev, void *arg)
 		}
 
 		action = relay_test(proto, cre);
-		if (action == RES_FAIL) {
+		switch (action) {
+		case RES_FAIL:
 			relay_close(con, "filter rule failed");
 			return;
-		} else if (action != RES_PASS) {
+		case RES_BAD:
+			relay_abort_http(con, 400, "Bad Request",
+			    con->se_label);
+			return;
+		case RES_INTERNAL:
+			relay_abort_http(con, 500, "Internal Server Error",
+			    con->se_label);
+			return;
+		}
+		if (action != RES_PASS) {
 			relay_abort_http(con, 403, "Forbidden", con->se_label);
 			return;
 		}
@@ -711,7 +721,6 @@ _relay_lookup_url(struct ctl_relay_event *cre, char *host, char *path,
 int
 relay_lookup_url(struct ctl_relay_event *cre, const char *host, struct kv *kv)
 {
-	struct rsession		*con = cre->con;
 	struct http_descriptor	*desc = (struct http_descriptor *)cre->desc;
 	int			 i, j, dots;
 	char			*hi[RELAY_MAXLOOKUPLEVELS], *p, *pp, *c, ch;
@@ -727,13 +736,12 @@ relay_lookup_url(struct ctl_relay_event *cre, const char *host, struct kv *kv)
 	 *     developers_guide.html#PerformingLookups
 	 */
 
-	DPRINTF("%s: session %d: host '%s', path '%s', query '%s'",
-	    __func__, con->se_id, host, desc->http_path,
+	DPRINTF("%s: host '%s', path '%s', query '%s'",
+	    __func__, host, desc->http_path,
 	    desc->http_query == NULL ? "" : desc->http_query);
 
 	if (canonicalize_host(host, ph, sizeof(ph)) == NULL) {
-		relay_abort_http(con, 400, "invalid host name", 0);
-		return (RES_FAIL);
+		return (RES_BAD);
 	}
 
 	bzero(hi, sizeof(hi));
@@ -748,8 +756,7 @@ relay_lookup_url(struct ctl_relay_event *cre, const char *host, struct kv *kv)
 	hi[dots] = ph;
 
 	if ((pp = strdup(desc->http_path)) == NULL) {
-		relay_abort_http(con, 500, "failed to allocate path", 0);
-		return (RES_FAIL);
+		return (RES_INTERNAL);
 	}
 	for (i = (RELAY_MAXLOOKUPLEVELS - 1); i >= 0; i--) {
 		if (hi[i] == NULL)
@@ -791,13 +798,11 @@ int
 relay_lookup_cookie(struct ctl_relay_event *cre, const char *str,
     struct kv *kv)
 {
-	struct rsession		*con = cre->con;
 	char			*val, *ptr, *key, *value;
 	int			 ret;
 
 	if ((val = strdup(str)) == NULL) {
-		relay_abort_http(con, 500, "failed to allocate cookie", 0);
-		return (RES_FAIL);
+		return (RES_INTERNAL);
 	}
 
 	for (ptr = val; ptr != NULL && strlen(ptr);) {
@@ -823,9 +828,8 @@ relay_lookup_cookie(struct ctl_relay_event *cre, const char *str,
 		if (value[strlen(value) - 1] == '"')
 			value[strlen(value) - 1] = '\0';
 
-		DPRINTF("%s: session %d: %s = %s, %s = %s : %d",
-		    __func__, con->se_id,
-		    key, value, kv->kv_key, kv->kv_value,
+		DPRINTF("%s: key %s = %s, %s = %s : %d",
+		    __func__, key, value, kv->kv_key, kv->kv_value,
 		    strcasecmp(kv->kv_key, key));
 
 		if (strcasecmp(kv->kv_key, key) == 0 &&
@@ -855,8 +859,7 @@ relay_lookup_query(struct ctl_relay_event *cre, struct kv *kv)
 	if (desc->http_query == NULL)
 		return (-1);
 	if ((val = strdup(desc->http_query)) == NULL) {
-		relay_abort_http(cre->con, 500, "failed to allocate query", 0);
-		return (-1);
+		return (RES_INTERNAL);
 	}
 
 	ptr = val;
@@ -1241,13 +1244,14 @@ relay_httpquery_test(struct ctl_relay_event *cre, struct relay_rule *rule,
 	struct http_descriptor	*desc = cre->desc;
 	struct kv		*match = &desc->http_matchquery;
 	struct kv		*kv = &rule->rule_kv[KEY_TYPE_QUERY];
+	int			 res = 0;
 
 	if (cre->dir == RELAY_DIR_RESPONSE || kv->kv_type != KEY_TYPE_QUERY)
 		return (0);
 	else if (kv->kv_key == NULL)
 		return (0);
-	else if (relay_lookup_query(cre, kv))
-		return (-1);
+	else if ((res = relay_lookup_query(cre, kv)) != 0)
+		return (res);
 
 	relay_match(actions, kv, match, NULL);
 
@@ -1322,6 +1326,7 @@ relay_httpurl_test(struct ctl_relay_event *cre, struct relay_rule *rule,
 	struct kv		*host, key;
 	struct kv		*kv = &rule->rule_kv[KEY_TYPE_URL];
 	struct kv		*match = &desc->http_pathquery;
+	int			 res;
 
 	if (cre->dir == RELAY_DIR_RESPONSE || kv->kv_type != KEY_TYPE_URL ||
 	    kv->kv_key == NULL)
@@ -1336,9 +1341,8 @@ relay_httpurl_test(struct ctl_relay_event *cre, struct relay_rule *rule,
 	    kv->kv_option == KEY_OPTION_LOG &&
 	    fnmatch(kv->kv_key, match->kv_key, FNM_CASEFOLD) != FNM_NOMATCH) {
 		/* fnmatch url only for logging */
-	} else if (relay_lookup_url(cre, host->kv_value, kv) != 0)
-		return (-1);
-
+	} else if ((res = relay_lookup_url(cre, host->kv_value, kv)) != 0)
+		return (res);
 	relay_match(actions, kv, match, NULL);
 
 	return (0);
@@ -1351,6 +1355,7 @@ relay_httpcookie_test(struct ctl_relay_event *cre, struct relay_rule *rule,
 	struct http_descriptor	*desc = cre->desc;
 	struct kv		*kv = &rule->rule_kv[KEY_TYPE_COOKIE], key;
 	struct kv		*match = NULL;
+	int			 res;
 
 	if (kv->kv_type != KEY_TYPE_COOKIE)
 		return (0);
@@ -1377,8 +1382,9 @@ relay_httpcookie_test(struct ctl_relay_event *cre, struct relay_rule *rule,
 			return (-1);
 		if (kv->kv_key == NULL || match->kv_value == NULL)
 			return (0);
-		else if (relay_lookup_cookie(cre, match->kv_value, kv) != 0)
-			return (-1);
+		else if ((res = relay_lookup_cookie(cre, match->kv_value,
+		    kv)) != 0)
+			return (res);
 	}
 
 	relay_match(actions, kv, match, &desc->http_headers);
@@ -1653,6 +1659,7 @@ relay_test(struct protocol *proto, struct ctl_relay_event *cre)
 	u_int			 action = RES_PASS;
 	struct kvlist		 actions, matches;
 	struct kv		*kv;
+	int			 res = 0;
 
 	con = cre->con;
 	TAILQ_INIT(&actions);
@@ -1660,8 +1667,10 @@ relay_test(struct protocol *proto, struct ctl_relay_event *cre)
 	r = TAILQ_FIRST(&proto->rules);
 	while (r != NULL) {
 		cnt++;
+
 		TAILQ_INIT(&matches);
 		TAILQ_INIT(&r->rule_kvlist);
+
 		if (r->rule_dir && r->rule_dir != cre->dir)
 			RELAY_GET_SKIP_STEP(RULE_SKIP_DIR);
 		else if (proto->type != r->rule_proto)
@@ -1682,13 +1691,13 @@ relay_test(struct protocol *proto, struct ctl_relay_event *cre)
 			RELAY_GET_NEXT_STEP;
 		else if (relay_httpheader_test(cre, r, &matches) != 0)
 			RELAY_GET_NEXT_STEP;
-		else if (relay_httpquery_test(cre, r, &matches) != 0)
+		else if ((res = relay_httpquery_test(cre, r, &matches)) != 0)
 			RELAY_GET_NEXT_STEP;
 		else if (relay_httppath_test(cre, r, &matches) != 0)
 			RELAY_GET_NEXT_STEP;
-		else if (relay_httpurl_test(cre, r, &matches) != 0)
+		else if ((res = relay_httpurl_test(cre, r, &matches)) != 0)
 			RELAY_GET_NEXT_STEP;
-		else if (relay_httpcookie_test(cre, r, &matches) != 0)
+		else if ((res = relay_httpcookie_test(cre, r, &matches)) != 0)
 			RELAY_GET_NEXT_STEP;
 		else {
 			DPRINTF("%s: session %d: matched rule %d",
@@ -1721,12 +1730,16 @@ relay_test(struct protocol *proto, struct ctl_relay_event *cre)
 
  nextrule:
 			/* Continue to find last matching policy */
-			r = TAILQ_NEXT(r, rule_entry);
+			DPRINTF("%s: session %d, res %d", __func__,
+			    con->se_id, res);
+			if (res == RES_BAD || res == RES_INTERNAL)
+				return(res);
+			res = 0;
+	       		r = TAILQ_NEXT(r, rule_entry);
 		}
 	}
 
-	if (rule != NULL &&
-	    relay_match_actions(cre, rule, NULL, &actions) != 0) {
+	if (rule != NULL && relay_match_actions(cre, rule, NULL, &actions) != 0) {
 		/* Something bad happened, drop */
 		action = RES_DROP;
 	}

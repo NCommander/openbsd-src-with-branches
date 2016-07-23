@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.212 2015/06/12 14:40:55 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.213 2015/07/18 16:01:28 benno Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -580,7 +580,9 @@ enum prototype {
 enum relay_result {
 	RES_DROP		= 0,
 	RES_PASS		= 1,
-	RES_FAIL		= -1
+	RES_FAIL		= -1,
+	RES_BAD			= -2,
+	RES_INTERNAL		= -3
 };
 
 enum rule_action {
