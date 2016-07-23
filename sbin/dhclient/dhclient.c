@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.377 2016/07/21 09:58:55 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.378 2016/07/22 13:23:38 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -603,7 +603,6 @@ main(int argc, char *argv[])
 		error("setsockopt(ROUTE_TABLEFILTER): %s", strerror(errno));
 
 	/* Register the interface. */
-	get_hw_address();
 	if_register_receive();
 	if_register_send();
 
