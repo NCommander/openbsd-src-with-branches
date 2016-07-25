@@ -1,11 +1,9 @@
 package TAP::Formatter::Session;
 
 use strict;
-use TAP::Base;
+use warnings;
 
-use vars qw($VERSION @ISA);
-
-@ISA = qw(TAP::Base);
+use base 'TAP::Base';
 
 my @ACCESSOR;
 
@@ -25,11 +23,11 @@ TAP::Formatter::Session - Abstract base class for harness output delegate
 
 =head1 VERSION
 
-Version 3.17
+Version 3.30
 
 =cut
 
-$VERSION = '3.17';
+our $VERSION = '3.30_01';
 
 =head1 METHODS
 
@@ -178,6 +176,11 @@ sub _output_test_failure {
     }
 
     $formatter->_output("\n");
+}
+
+sub _make_ok_line {
+    my ( $self, $suffix ) = @_;
+    return "ok$suffix\n";
 }
 
 1;

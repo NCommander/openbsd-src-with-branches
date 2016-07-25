@@ -2,13 +2,17 @@ package CPAN::Version;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = "5.5";
+$VERSION = "5.5003_01";
 
 # CPAN::Version::vcmp courtesy Jost Krieger
 sub vcmp {
     my($self,$l,$r) = @_;
     local($^W) = 0;
     CPAN->debug("l[$l] r[$r]") if $CPAN::DEBUG;
+
+    # treat undef as zero
+    $l = 0 if $l eq 'undef';
+    $r = 0 if $r eq 'undef';
 
     return 0 if $l eq $r; # short circuit for quicker success
 
@@ -57,7 +61,7 @@ sub vgt {
 
 sub vlt {
     my($self,$l,$r) = @_;
-    0 + ($self->vcmp($l,$r) < 0);
+    $self->vcmp($l,$r) < 0;
 }
 
 sub vge {
@@ -67,7 +71,7 @@ sub vge {
 
 sub vle {
     my($self,$l,$r) = @_;
-    0 + ($self->vcmp($l,$r) <= 0);
+    $self->vcmp($l,$r) <= 0;
 }
 
 sub vstring {

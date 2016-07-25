@@ -1,12 +1,11 @@
 package TAP::Parser::YAMLish::Writer;
 
 use strict;
-use vars qw($VERSION @ISA);
+use warnings;
 
-use TAP::Object ();
+use base 'TAP::Object';
 
-@ISA     = 'TAP::Object';
-$VERSION = '3.17';
+our $VERSION = '3.30_01';
 
 my $ESCAPE_CHAR = qr{ [ \x00-\x1f \" ] }x;
 my $ESCAPE_KEY  = qr{ (?: ^\W ) | $ESCAPE_CHAR }x;
@@ -147,7 +146,7 @@ TAP::Parser::YAMLish::Writer - Write YAMLish data
 
 =head1 VERSION
 
-Version 3.17
+Version 3.30
 
 =head1 SYNOPSIS
 
@@ -243,7 +242,7 @@ L<http://use.perl.org/~Alias/journal/29427>
 
 =head1 COPYRIGHT
 
-Copyright 2007-2008 Andy Armstrong.
+Copyright 2007-2011 Andy Armstrong.
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.

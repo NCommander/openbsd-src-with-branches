@@ -1,13 +1,12 @@
 package TAP::Parser::Grammar;
 
 use strict;
-use vars qw($VERSION @ISA);
+use warnings;
 
-use TAP::Object                  ();
 use TAP::Parser::ResultFactory   ();
 use TAP::Parser::YAMLish::Reader ();
 
-@ISA = qw(TAP::Object);
+use base 'TAP::Object';
 
 =head1 NAME
 
@@ -15,27 +14,27 @@ TAP::Parser::Grammar - A grammar for the Test Anything Protocol.
 
 =head1 VERSION
 
-Version 3.17
+Version 3.30
 
 =cut
 
-$VERSION = '3.17';
+our $VERSION = '3.30_01';
 
 =head1 SYNOPSIS
 
   use TAP::Parser::Grammar;
   my $grammar = $self->make_grammar({
-    stream  => $tap_parser_stream,
-    parser  => $tap_parser,
-    version => 12,
+    iterator => $tap_parser_iterator,
+    parser   => $tap_parser,
+    version  => 12,
   });
 
   my $result = $grammar->tokenize;
 
 =head1 DESCRIPTION
 
-C<TAP::Parser::Grammar> tokenizes lines from a TAP stream and constructs
-L<TAP::Parser::Result> subclasses to represent the tokens.
+C<TAP::Parser::Grammar> tokenizes lines from a L<TAP::Parser::Iterator> and
+constructs L<TAP::Parser::Result> subclasses to represent the tokens.
 
 Do not attempt to use this class directly.  It won't make sense.  It's mainly
 here to ensure that we will be able to have pluggable grammars when TAP is
@@ -49,22 +48,24 @@ parser).
 =head3 C<new>
 
   my $grammar = TAP::Parser::Grammar->new({
-      stream  => $stream,
-      parser  => $parser,
-      version => $version,
+      iterator => $iterator,
+      parser   => $parser,
+      version  => $version,
   });
 
-Returns L<TAP::Parser> grammar object that will parse the specified stream.
-Both C<stream> and C<parser> are required arguments.  If C<version> is not set
-it defaults to C<12> (see L</set_version> for more details).
+Returns L<TAP::Parser> grammar object that will parse the TAP stream from the
+specified iterator.  Both C<iterator> and C<parser> are required arguments.
+If C<version> is not set it defaults to C<12> (see L</set_version> for more
+details).
 
 =cut
 
 # new() implementation supplied by TAP::Object
 sub _initialize {
     my ( $self, $args ) = @_;
-    $self->{stream} = $args->{stream};    # TODO: accessor
-    $self->{parser} = $args->{parser};    # TODO: accessor
+    $self->{iterator} = $args->{iterator};    # TODO: accessor
+    $self->{iterator} ||= $args->{stream};    # deprecated
+    $self->{parser} = $args->{parser};        # TODO: accessor
     $self->set_version( $args->{version} || 12 );
     return $self;
 }
@@ -162,7 +163,7 @@ my %language_for;
             },
         },
         bailout => {
-            syntax  => qr/^Bail out!\s*(.*)/,
+            syntax  => qr/^\s*Bail out!\s*(.*)/,
             handler => sub {
                 my ( $self, $line ) = @_;
                 my $explanation = $1;
@@ -218,7 +219,7 @@ my %language_for;
         '13' => {
             tokens => \%v13,
             setup  => sub {
-                shift->{stream}->handle_unicode;
+                shift->{iterator}->handle_unicode;
             },
         },
     );
@@ -284,7 +285,7 @@ current line of TAP.
 sub tokenize {
     my $self = shift;
 
-    my $line = $self->{stream}->next;
+    my $line = $self->{iterator}->next;
     unless ( defined $line ) {
         delete $self->{parser};    # break circular ref
         return;
@@ -292,7 +293,7 @@ sub tokenize {
 
     my $token;
 
-    foreach my $token_data ( @{ $self->{ordered_tokens} } ) {
+    for my $token_data ( @{ $self->{ordered_tokens} } ) {
         if ( $line =~ $token_data->{syntax} ) {
             my $handler = $token_data->{handler};
             $token = $self->$handler($line);
@@ -351,7 +352,7 @@ TAP parsing loop looks similar to the following:
  my @tokens;
  my $grammar = TAP::Grammar->new;
  LINE: while ( defined( my $line = $parser->_next_chunk_of_tap ) ) {
-     foreach my $type ( $grammar->token_types ) {
+     for my $type ( $grammar->token_types ) {
          my $syntax  = $grammar->syntax_for($type);
          if ( $line =~ $syntax ) {
              my $handler = $grammar->handler_for($type);
@@ -403,7 +404,10 @@ sub _make_test_token {
     my ( $self, $line, $ok, $num, $desc, $dir, $explanation ) = @_;
     return {
         ok          => $ok,
-        test_num    => $num,
+
+        # forcing this to be an integer (and not a string) reduces memory
+        # consumption. RT #84939
+        test_num    => ( defined $num ? 0 + $num : undef ),
         description => _trim($desc),
         directive   => ( defined $dir ? uc $dir : '' ),
         explanation => _trim($explanation),
@@ -443,7 +447,7 @@ sub _make_yaml_token {
 
     my $yaml = TAP::Parser::YAMLish::Reader->new;
 
-    my $stream = $self->{stream};
+    my $iterator = $self->{iterator};
 
     # Construct a reader that reads from our input stripping leading
     # spaces from each line.
@@ -452,7 +456,7 @@ sub _make_yaml_token {
     my @extra  = ($marker);
     my $reader = sub {
         return shift @extra if @extra;
-        my $line = $stream->next;
+        my $line = $iterator->next;
         return $2 if $line =~ $strip;
         return;
     };
@@ -502,7 +506,7 @@ stream-based protocol.  In fact, it's quite legal to have an infinite stream.
 For the same reason that we don't apply regexes to streams, we're not using a
 formal grammar here.  Instead, we parse the TAP in lines.
 
-For purposes for forward compatability, any result which does not match the
+For purposes for forward compatibility, any result which does not match the
 following grammar is currently referred to as
 L<TAP::Parser::Result::Unknown>.  It is I<not> a parse error.
 

@@ -1,11 +1,9 @@
 package TAP::Formatter::Console::Session;
 
 use strict;
-use TAP::Formatter::Session;
+use warnings;
 
-use vars qw($VERSION @ISA);
-
-@ISA = qw(TAP::Formatter::Session);
+use base 'TAP::Formatter::Session';
 
 my @ACCESSOR;
 
@@ -28,11 +26,11 @@ TAP::Formatter::Console::Session - Harness output delegate for default console o
 
 =head1 VERSION
 
-Version 3.17
+Version 3.30
 
 =cut
 
-$VERSION = '3.17';
+our $VERSION = '3.30_01';
 
 =head1 DESCRIPTION
 
@@ -200,7 +198,7 @@ sub _closures {
                     }
                 }
 
-                $formatter->_output("ok$time_report\n");
+                $formatter->_output( $self->_make_ok_line($time_report) );
             }
         },
     };

@@ -1,11 +1,8 @@
 package TAP::Formatter::File::Session;
 
 use strict;
-use TAP::Formatter::Session;
-
-use vars qw($VERSION @ISA);
-
-@ISA = qw(TAP::Formatter::Session);
+use warnings;
+use base 'TAP::Formatter::Session';
 
 =head1 NAME
 
@@ -13,11 +10,11 @@ TAP::Formatter::File::Session - Harness output delegate for file output
 
 =head1 VERSION
 
-Version 3.17
+Version 3.30
 
 =cut
 
-$VERSION = '3.17';
+our $VERSION = '3.30_01';
 
 =head1 DESCRIPTION
 
@@ -103,7 +100,7 @@ sub close_test {
 
         $formatter->_output( $pretty
               . ( $self->{results} ? "\n" . $self->{results} : "" )
-              . "ok$time_report\n" );
+              . $self->_make_ok_line($time_report) );
     }
 }
 

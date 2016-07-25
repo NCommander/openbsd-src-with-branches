@@ -3,18 +3,18 @@ package IO::Uncompress::RawInflate ;
 
 use strict ;
 use warnings;
-use bytes;
+#use bytes;
 
-use Compress::Raw::Zlib  2.024 ;
-use IO::Compress::Base::Common  2.024 qw(:Status createSelfTiedObject);
+use Compress::Raw::Zlib  2.064 ;
+use IO::Compress::Base::Common  2.064 qw(:Status );
 
-use IO::Uncompress::Base  2.024 ;
-use IO::Uncompress::Adapter::Inflate  2.024 ;
+use IO::Uncompress::Base  2.064 ;
+use IO::Uncompress::Adapter::Inflate  2.064 ;
 
 require Exporter ;
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, %DEFLATE_CONSTANTS, $RawInflateError);
 
-$VERSION = '2.024';
+$VERSION = '2.064_01';
 $RawInflateError = '';
 
 @ISA    = qw( Exporter IO::Uncompress::Base );
@@ -45,13 +45,13 @@ Exporter::export_ok_tags('all');
 sub new
 {
     my $class = shift ;
-    my $obj = createSelfTiedObject($class, \$RawInflateError);
+    my $obj = IO::Compress::Base::Common::createSelfTiedObject($class, \$RawInflateError);
     $obj->_create(undef, 0, @_);
 }
 
 sub rawinflate
 {
-    my $obj = createSelfTiedObject(undef, \$RawInflateError);
+    my $obj = IO::Compress::Base::Common::createSelfTiedObject(undef, \$RawInflateError);
     return $obj->_inf(@_);
 }
 
@@ -74,9 +74,9 @@ sub mkUncomp
     my $got = shift ;
 
     my ($obj, $errstr, $errno) = IO::Uncompress::Adapter::Inflate::mkUncompObject(
-                                                                $got->value('CRC32'),
-                                                                $got->value('ADLER32'),
-                                                                $got->value('Scan'),
+                                                                $got->getValue('crc32'),
+                                                                $got->getValue('adler32'),
+                                                                $got->getValue('scan'),
                                                             );
 
     return $self->saveErrorString(undef, $errstr, $errno)
@@ -332,8 +332,8 @@ sub createDeflate
     my ($def, $status) = *$self->{Uncomp}->createDeflateStream(
                                     -AppendOutput   => 1,
                                     -WindowBits => - MAX_WBITS,
-                                    -CRC32      => *$self->{Params}->value('CRC32'),
-                                    -ADLER32    => *$self->{Params}->value('ADLER32'),
+                                    -CRC32      => *$self->{Params}->getValue('crc32'),
+                                    -ADLER32    => *$self->{Params}->getValue('adler32'),
                                 );
     
     return wantarray ? ($status, $def) : $def ;                                
@@ -410,19 +410,20 @@ section.
 
     use IO::Uncompress::RawInflate qw(rawinflate $RawInflateError) ;
 
-    rawinflate $input => $output [,OPTS] 
+    rawinflate $input_filename_or_reference => $output_filename_or_reference [,OPTS] 
         or die "rawinflate failed: $RawInflateError\n";
 
 The functional interface needs Perl5.005 or better.
 
-=head2 rawinflate $input => $output [, OPTS]
+=head2 rawinflate $input_filename_or_reference => $output_filename_or_reference [, OPTS]
 
-C<rawinflate> expects at least two parameters, C<$input> and C<$output>.
+C<rawinflate> expects at least two parameters,
+C<$input_filename_or_reference> and C<$output_filename_or_reference>.
 
-=head3 The C<$input> parameter
+=head3 The C<$input_filename_or_reference> parameter
 
-The parameter, C<$input>, is used to define the source of
-the compressed data. 
+The parameter, C<$input_filename_or_reference>, is used to define the
+source of the compressed data. 
 
 It can take one of the following forms:
 
@@ -430,25 +431,25 @@ It can take one of the following forms:
 
 =item A filename
 
-If the C<$input> parameter is a simple scalar, it is assumed to be a
-filename. This file will be opened for reading and the input data
-will be read from it.
+If the <$input_filename_or_reference> parameter is a simple scalar, it is
+assumed to be a filename. This file will be opened for reading and the
+input data will be read from it.
 
 =item A filehandle
 
-If the C<$input> parameter is a filehandle, the input data will be
-read from it.
-The string '-' can be used as an alias for standard input.
+If the C<$input_filename_or_reference> parameter is a filehandle, the input
+data will be read from it.  The string '-' can be used as an alias for
+standard input.
 
 =item A scalar reference 
 
-If C<$input> is a scalar reference, the input data will be read
-from C<$$input>.
+If C<$input_filename_or_reference> is a scalar reference, the input data
+will be read from C<$$input_filename_or_reference>.
 
 =item An array reference 
 
-If C<$input> is an array reference, each element in the array must be a
-filename.
+If C<$input_filename_or_reference> is an array reference, each element in
+the array must be a filename.
 
 The input data will be read from each file in turn. 
 
@@ -457,64 +458,71 @@ contains valid filenames before any data is uncompressed.
 
 =item An Input FileGlob string
 
-If C<$input> is a string that is delimited by the characters "<" and ">"
-C<rawinflate> will assume that it is an I<input fileglob string>. The
-input is the list of files that match the fileglob.
-
-If the fileglob does not match any files ...
+If C<$input_filename_or_reference> is a string that is delimited by the
+characters "<" and ">" C<rawinflate> will assume that it is an 
+I<input fileglob string>. The input is the list of files that match the 
+fileglob.
 
 See L<File::GlobMapper|File::GlobMapper> for more details.
 
 =back
 
-If the C<$input> parameter is any other type, C<undef> will be returned.
+If the C<$input_filename_or_reference> parameter is any other type,
+C<undef> will be returned.
 
-=head3 The C<$output> parameter
+=head3 The C<$output_filename_or_reference> parameter
 
-The parameter C<$output> is used to control the destination of the
-uncompressed data. This parameter can take one of these forms.
+The parameter C<$output_filename_or_reference> is used to control the
+destination of the uncompressed data. This parameter can take one of
+these forms.
 
 =over 5
 
 =item A filename
 
-If the C<$output> parameter is a simple scalar, it is assumed to be a
-filename.  This file will be opened for writing and the uncompressed
-data will be written to it.
+If the C<$output_filename_or_reference> parameter is a simple scalar, it is
+assumed to be a filename.  This file will be opened for writing and the 
+uncompressed data will be written to it.
 
 =item A filehandle
 
-If the C<$output> parameter is a filehandle, the uncompressed data
-will be written to it.
-The string '-' can be used as an alias for standard output.
+If the C<$output_filename_or_reference> parameter is a filehandle, the
+uncompressed data will be written to it.  The string '-' can be used as
+an alias for standard output.
 
 =item A scalar reference 
 
-If C<$output> is a scalar reference, the uncompressed data will be
-stored in C<$$output>.
+If C<$output_filename_or_reference> is a scalar reference, the
+uncompressed data will be stored in C<$$output_filename_or_reference>.
 
 =item An Array Reference
 
-If C<$output> is an array reference, the uncompressed data will be
-pushed onto the array.
+If C<$output_filename_or_reference> is an array reference, 
+the uncompressed data will be pushed onto the array.
 
 =item An Output FileGlob
 
-If C<$output> is a string that is delimited by the characters "<" and ">"
-C<rawinflate> will assume that it is an I<output fileglob string>. The
-output is the list of files that match the fileglob.
+If C<$output_filename_or_reference> is a string that is delimited by the
+characters "<" and ">" C<rawinflate> will assume that it is an
+I<output fileglob string>. The output is the list of files that match the
+fileglob.
 
-When C<$output> is an fileglob string, C<$input> must also be a fileglob
-string. Anything else is an error.
+When C<$output_filename_or_reference> is an fileglob string,
+C<$input_filename_or_reference> must also be a fileglob string. Anything
+else is an error.
+
+See L<File::GlobMapper|File::GlobMapper> for more details.
 
 =back
 
-If the C<$output> parameter is any other type, C<undef> will be returned.
+If the C<$output_filename_or_reference> parameter is any other type,
+C<undef> will be returned.
 
 =head2 Notes
 
-When C<$input> maps to multiple compressed files/buffers and C<$output> is
-a single file/buffer, after uncompression C<$output> will contain a
+When C<$input_filename_or_reference> maps to multiple compressed
+files/buffers and C<$output_filename_or_reference> is
+a single file/buffer, after uncompression C<$output_filename_or_reference> will contain a
 concatenation of all the uncompressed data from each of the input
 files/buffers.
 
@@ -576,8 +584,8 @@ data to the output data stream.
 
 So when the output is a filehandle it will carry out a seek to the eof
 before writing any uncompressed data. If the output is a filename, it will be opened for
-appending. If the output is a buffer, all uncompressed data will be appened to
-the existing buffer.
+appending. If the output is a buffer, all uncompressed data will be
+appended to the existing buffer.
 
 Conversely when C<Append> is not specified, or it is present and is set to
 false, it will operate as follows.
@@ -709,7 +717,7 @@ The string '-' can be used as an alias for standard input.
 =item A scalar reference 
 
 If C<$input> is a scalar reference, the compressed data will be read from
-C<$$output>.
+C<$$input>.
 
 =back
 
@@ -764,7 +772,7 @@ the module will allow reading of it anyway.
 
 In addition, if the input file/buffer does contain compressed data and
 there is non-compressed data immediately following it, setting this option
-will make this module treat the whole file/bufffer as a single data stream.
+will make this module treat the whole file/buffer as a single data stream.
 
 This option defaults to 1.
 
@@ -819,7 +827,7 @@ Usage is
 
     $status = $z->read($buffer)
 
-Reads a block of compressed data (the size the the compressed block is
+Reads a block of compressed data (the size of the compressed block is
 determined by the C<Buffer> option in the constructor), uncompresses it and
 writes any uncompressed data into C<$buffer>. If the C<Append> parameter is
 set in the constructor, the uncompressed data will be appended to the
@@ -857,7 +865,7 @@ Usage is
 
 Reads a single line. 
 
-This method fully supports the use of of the variable C<$/> (or
+This method fully supports the use of the variable C<$/> (or
 C<$INPUT_RECORD_SEPARATOR> or C<$RS> when C<English> is in use) to
 determine what constitutes an end of line. Paragraph mode, record mode and
 file slurp mode are all supported. 
@@ -922,6 +930,13 @@ Provides a sub-set of the C<seek> functionality, with the restriction
 that it is only legal to seek forward in the input file/buffer.
 It is a fatal error to attempt to seek backward.
 
+Note that the implementation of C<seek> in this module does not provide
+true random access to a compressed file/buffer. It  works by uncompressing
+data from the current offset in the file/buffer until it reaches the
+uncompressed offset specified in the parameters to C<seek>. For very small
+files this may be acceptable behaviour. For large files it may cause an
+unacceptable delay.
+
 The C<$whence> parameter takes one the usual values, namely SEEK_SET,
 SEEK_CUR or SEEK_END.
 
@@ -967,7 +982,7 @@ Returns the current uncompressed line number. If C<EXPR> is present it has
 the effect of setting the line number. Note that setting the line number
 does not change the current position within the file/buffer being read.
 
-The contents of C<$/> are used to to determine what constitutes a line
+The contents of C<$/> are used to determine what constitutes a line
 terminator.
 
 =head2 fileno
@@ -979,7 +994,7 @@ If the C<$z> object is associated with a file or a filehandle, C<fileno>
 will return the underlying file descriptor. Once the C<close> method is
 called C<fileno> will return C<undef>.
 
-If the C<$z> object is is associated with a buffer, this method will return
+If the C<$z> object is associated with a buffer, this method will return
 C<undef>.
 
 =head2 close
@@ -1068,13 +1083,13 @@ Same as doing this
 
 =head2 Working with Net::FTP
 
-See L<IO::Uncompress::RawInflate::FAQ|IO::Uncompress::RawInflate::FAQ/"Compressed files and Net::FTP">
+See L<IO::Compress::FAQ|IO::Compress::FAQ/"Compressed files and Net::FTP">
 
 =head1 SEE ALSO
 
 L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
-L<Compress::Zlib::FAQ|Compress::Zlib::FAQ>
+L<IO::Compress::FAQ|IO::Compress::FAQ>
 
 L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
@@ -1103,7 +1118,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2010 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2014 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

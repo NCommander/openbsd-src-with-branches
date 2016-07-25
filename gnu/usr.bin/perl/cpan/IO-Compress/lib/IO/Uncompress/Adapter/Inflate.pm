@@ -2,13 +2,13 @@ package IO::Uncompress::Adapter::Inflate;
 
 use strict;
 use warnings;
-use bytes;
+#use bytes;
 
-use IO::Compress::Base::Common  2.024 qw(:Status);
-use Compress::Raw::Zlib  2.024 qw(Z_OK Z_BUF_ERROR Z_STREAM_END Z_FINISH MAX_WBITS);
+use IO::Compress::Base::Common  2.064 qw(:Status);
+use Compress::Raw::Zlib  2.064 qw(Z_OK Z_BUF_ERROR Z_STREAM_END Z_FINISH MAX_WBITS);
 
 our ($VERSION);
-$VERSION = '2.024';
+$VERSION = '2.064_01';
 
 
 

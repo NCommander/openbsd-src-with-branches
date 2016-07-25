@@ -1,29 +1,24 @@
 package TAP::Parser::Iterator::Stream;
 
 use strict;
-use vars qw($VERSION @ISA);
+use warnings;
 
-use TAP::Parser::Iterator ();
-
-@ISA = 'TAP::Parser::Iterator';
+use base 'TAP::Parser::Iterator';
 
 =head1 NAME
 
-TAP::Parser::Iterator::Stream - Internal TAP::Parser Iterator
+TAP::Parser::Iterator::Stream - Iterator for filehandle-based TAP sources
 
 =head1 VERSION
 
-Version 3.17
+Version 3.30
 
 =cut
 
-$VERSION = '3.17';
+our $VERSION = '3.30_01';
 
 =head1 SYNOPSIS
 
-  # see TAP::Parser::IteratorFactory for preferred usage
-
-  # to use directly:
   use TAP::Parser::Iterator::Stream;
   open( TEST, 'test.tap' );
   my $it   = TAP::Parser::Iterator::Stream->new(\*TEST);
@@ -32,8 +27,8 @@ $VERSION = '3.17';
 =head1 DESCRIPTION
 
 This is a simple iterator wrapper for reading from filehandles, used by
-L<TAP::Parser>.  Unless you're subclassing, you probably won't need to use
-this module directly.
+L<TAP::Parser>.  Unless you're writing a plugin or subclassing, you probably
+won't need to use this module directly.
 
 =head1 METHODS
 
@@ -106,7 +101,6 @@ Originally ripped off from L<Test::Harness>.
 L<TAP::Object>,
 L<TAP::Parser>,
 L<TAP::Parser::Iterator>,
-L<TAP::Parser::IteratorFactory>,
 
 =cut
 

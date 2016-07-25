@@ -1,12 +1,11 @@
 package TAP::Parser::YAMLish::Reader;
 
 use strict;
-use vars qw($VERSION @ISA);
+use warnings;
 
-use TAP::Object ();
+use base 'TAP::Object';
 
-@ISA     = 'TAP::Object';
-$VERSION = '3.17';
+our $VERSION = '3.30_01';
 
 # TODO:
 #   Handle blessed object syntax
@@ -270,7 +269,7 @@ TAP::Parser::YAMLish::Reader - Read YAMLish data from iterator
 
 =head1 VERSION
 
-Version 3.17
+Version 3.30
 
 =head1 SYNOPSIS
 
@@ -294,7 +293,7 @@ C<TAP::Parser::YAMLish::Reader> object.
 
 =head3 C<read>
 
- my $got = $reader->read($stream);
+ my $got = $reader->read($iterator);
 
 Read YAMLish from a L<TAP::Parser::Iterator> and return the data structure it
 represents.
@@ -319,7 +318,7 @@ L<http://use.perl.org/~Alias/journal/29427>
 
 =head1 COPYRIGHT
 
-Copyright 2007-2008 Andy Armstrong.
+Copyright 2007-2011 Andy Armstrong.
 
 Portions copyright 2006-2008 Adam Kennedy.
 

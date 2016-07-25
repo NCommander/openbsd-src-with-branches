@@ -4,7 +4,7 @@ use strict;
 use vars qw($VERSION @ISA $BUGHUNTING);
 use CPAN::Debug;
 use File::Basename qw(basename);
-$VERSION = "5.5011";
+$VERSION = "5.5012_01";
 # module is internal to CPAN.pm
 
 @ISA = qw(CPAN::Debug); ## no critic
@@ -73,6 +73,7 @@ sub gzip {
         my $cwd = `pwd`;
         my $gz = Compress::Zlib::gzopen($write, "wb")
             or $CPAN::Frontend->mydie("Cannot gzopen $write: $! (pwd is $cwd)\n");
+        binmode($fhw);
         $gz->gzwrite($buffer)
             while read($fhw,$buffer,4096) > 0 ;
         $gz->gzclose() ;
@@ -94,8 +95,9 @@ sub gunzip {
             or $CPAN::Frontend->mydie("Could not open >$write: $!");
         my $gz = Compress::Zlib::gzopen($read, "rb")
             or $CPAN::Frontend->mydie("Cannot gzopen $read: $!\n");
+        binmode($fhw);
         $fhw->print($buffer)
-        while $gz->gzread($buffer) > 0 ;
+            while $gz->gzread($buffer) > 0 ;
         $CPAN::Frontend->mydie("Error reading from $read: $!\n")
             if $gz->gzerror != Compress::Zlib::Z_STREAM_END();
         $gz->gzclose() ;
@@ -103,7 +105,7 @@ sub gunzip {
         return 1;
     } else {
         my $command = CPAN::HandleConfig->safe_quote($self->{UNGZIPPRG});
-        system(qq{$command -dc "$read" > "$write"})==0;
+        system(qq{$command -d -c "$read" > "$write"})==0;
     }
 }
 
@@ -188,7 +190,7 @@ sub TIEHANDLE {
         $class->debug("via Compress::Zlib");
     } else {
         my $gzip = CPAN::HandleConfig->safe_quote($self->{UNGZIPPRG});
-        my $pipe = "$gzip -dc $file |";
+        my $pipe = "$gzip -d -c $file |";
         my $fh = FileHandle->new($pipe) or $CPAN::Frontend->mydie("Could not pipe[$pipe]: $!");
         binmode $fh;
         $self->{FH} = $fh;
@@ -253,14 +255,21 @@ sub untar {
     if (0) { # makes changing order easier
     } elsif ($BUGHUNTING) {
         $prefer=2;
-    } elsif ($exttar && $extgzip && $file =~ /\.(?:bz2|tbz)$/i) {
-        # until Archive::Tar handles bzip2
+    } elsif ($CPAN::Config->{prefer_external_tar}) {
         $prefer = 1;
     } elsif (
              $CPAN::META->has_usable("Archive::Tar")
              &&
              $CPAN::META->has_inst("Compress::Zlib") ) {
-        $prefer = 2;
+        my $prefer_external_tar = $CPAN::Config->{prefer_external_tar};
+        unless (defined $prefer_external_tar) {
+            if ($^O =~ /(MSWin32|solaris)/) {
+                $prefer_external_tar = 0;
+            } else {
+                $prefer_external_tar = 1;
+            }
+        }
+        $prefer = $prefer_external_tar ? 1 : 2;
     } elsif ($exttar && $extgzip) {
         # no modules and not bz2
         $prefer = 1;
@@ -315,7 +324,7 @@ Can't continue cutting file '$file'.
         my $tarcommand = CPAN::HandleConfig->safe_quote($exttar);
         if ($is_compressed) {
             my $command = CPAN::HandleConfig->safe_quote($extgzip);
-            $system = qq{$command -dc }.
+            $system = qq{$command -d -c }.
                 qq{< "$file" | $tarcommand x${tar_verb}f -};
         } else {
             $system = qq{$tarcommand x${tar_verb}f "$file"};
@@ -336,10 +345,20 @@ Can't continue cutting file '$file'.
             }
             $system = qq{$tarcommand x${tar_verb}f "$file"};
             $CPAN::Frontend->myprint(qq{Using Tar:$system:\n});
-            if (system($system)==0) {
+            my $ret = system($system);
+            if ($ret==0) {
                 $CPAN::Frontend->myprint(qq{Untarred $file successfully\n});
             } else {
-                $CPAN::Frontend->mydie(qq{Couldn\'t untar $file\n});
+                if ($? == -1) {
+                    $CPAN::Frontend->mydie(sprintf qq{Couldn\'t untar %s: '%s'\n},
+                                           $file, $!);
+                } elsif ($? & 127) {
+                    $CPAN::Frontend->mydie(sprintf qq{Couldn\'t untar %s: child died with signal %d, %s coredump\n},
+                                           $file, ($? & 127),  ($? & 128) ? 'with' : 'without');
+                } else {
+                    $CPAN::Frontend->mydie(sprintf qq{Couldn\'t untar %s: child exited with value %d\n},
+                                           $file, $? >> 8);
+                }
             }
             return 1;
         } else {
@@ -442,6 +461,10 @@ END
 1;
 
 __END__
+
+=head1 NAME
+
+CPAN::Tarzip - internal handling of tar archives for CPAN.pm
 
 =head1 LICENSE
 

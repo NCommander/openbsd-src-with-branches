@@ -26,12 +26,12 @@ BEGIN
 our ($Error);
 
 our ($VERSION, @EXPORT_OK);
-$VERSION = '1.000';
+$VERSION = '1.000_01';
 @EXPORT_OK = qw( globmap );
 
 
 our ($noPreBS, $metachars, $matchMetaRE, %mapping, %wildCount);
-$noPreBS = '(?<!\\\)' ; # no preceeding backslash
+$noPreBS = '(?<!\\\)' ; # no preceding backslash
 $metachars = '.*?[](){}';
 $matchMetaRE = '[' . quotemeta($metachars) . ']';
 
@@ -309,7 +309,7 @@ sub _parseOutputGlob
             if $1 > $maxwild ;
     }
 
-    my $noPreBS = '(?<!\\\)' ; # no preceeding backslash
+    my $noPreBS = '(?<!\\\)' ; # no preceding backslash
     #warn "noPreBS = '$noPreBS'\n";
 
     #$string =~ s/${noPreBS}\$(\d)/\${$1}/g;

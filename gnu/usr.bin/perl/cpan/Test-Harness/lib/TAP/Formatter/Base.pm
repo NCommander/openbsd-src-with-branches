@@ -1,17 +1,14 @@
 package TAP::Formatter::Base;
 
 use strict;
-use TAP::Base ();
+use warnings;
+use base 'TAP::Base';
 use POSIX qw(strftime);
-
-use vars qw($VERSION @ISA);
 
 my $MAX_ERRORS = 5;
 my %VALIDATION_FOR;
 
 BEGIN {
-    @ISA = qw(TAP::Base);
-
     %VALIDATION_FOR = (
         directives => sub { shift; shift },
         verbosity  => sub { shift; shift },
@@ -25,12 +22,26 @@ BEGIN {
         show_count => sub { shift; shift },
         stdout     => sub {
             my ( $self, $ref ) = @_;
+
             $self->_croak("option 'stdout' needs a filehandle")
-              unless ( ref $ref || '' ) eq 'GLOB'
-              or eval { $ref->can('print') };
+              unless $self->_is_filehandle($ref);
+
             return $ref;
         },
     );
+
+    sub _is_filehandle {
+        my ( $self, $ref ) = @_;
+
+        return 0 if !defined $ref;
+
+        return 1 if ref $ref eq 'GLOB';    # lexical filehandle
+        return 1 if !ref $ref && ref \$ref eq 'GLOB'; # bare glob like *STDOUT
+
+        return 1 if eval { $ref->can('print') };
+
+        return 0;
+    }
 
     my @getter_setters = qw(
       _longest
@@ -43,15 +54,15 @@ BEGIN {
 
 =head1 NAME
 
-TAP::Formatter::Console - Harness output delegate for default console output
+TAP::Formatter::Base - Base class for harness output delegates
 
 =head1 VERSION
 
-Version 3.17
+Version 3.30
 
 =cut
 
-$VERSION = '3.17';
+our $VERSION = '3.30_01';
 
 =head1 DESCRIPTION
 
@@ -206,7 +217,7 @@ sub prepare {
 
     my $longest = 0;
 
-    foreach my $test (@tests) {
+    for my $test (@tests) {
         $longest = length $test if length $test > $longest;
     }
 
@@ -257,13 +268,15 @@ sub _output_success {
 
   $harness->summary( $aggregate );
 
-C<summary> prints the summary report after all tests are run.  The argument is
-an aggregate.
+C<summary> prints the summary report after all tests are run. The first
+argument is an aggregate to summarise. An optional second argument may
+be set to a true value to indicate that the summary is being output as a
+result of an interrupted test run.
 
 =cut
 
 sub summary {
-    my ( $self, $aggregate ) = @_;
+    my ( $self, $aggregate, $interrupted ) = @_;
 
     return if $self->silent;
 
@@ -279,6 +292,9 @@ sub summary {
         $self->_output( $self->_format_now(), "\n" );
     }
 
+    $self->_failure_output("Test run interrupted!\n")
+      if $interrupted;
+
     # TODO: Check this condition still works when all subtests pass but
     # the exit status is nonzero
 
@@ -290,7 +306,7 @@ sub summary {
     if ( $total != $passed or $aggregate->has_problems ) {
         $self->_output("\nTest Summary Report");
         $self->_output("\n-------------------\n");
-        foreach my $test (@$tests) {
+        for my $test (@$tests) {
             $self->_printed_summary_header(0);
             my ($parser) = $aggregate->parsers($test);
             $self->_output_summary_failure(
@@ -330,7 +346,7 @@ sub summary {
                     sprintf "  Parse errors: %s\n",
                     shift @errors
                 );
-                foreach my $error (@errors) {
+                for my $error (@errors) {
                     my $spaces = ' ' x 16;
                     $self->_failure_output("$spaces$error\n");
                 }
@@ -370,9 +386,11 @@ sub _summary_test_header {
     my $spaces = ' ' x ( $self->_longest - length $test );
     $spaces = ' ' unless $spaces;
     my $output = $self->_get_output_method($parser);
+    my $wait   = $parser->wait;
+    defined $wait or $wait = '(none)';
     $self->$output(
-        sprintf "$test$spaces(Wstat: %d Tests: %d Failed: %d)\n",
-        $parser->wait, $parser->tests_run, scalar $parser->failed
+        sprintf "$test$spaces(Wstat: %s Tests: %d Failed: %d)\n",
+        $wait, $parser->tests_run, scalar $parser->failed
     );
     $self->_printed_summary_header(1);
 }
@@ -422,7 +440,7 @@ sub _range {
     @numbers = sort { $a <=> $b } @numbers;
     my ( $min, @range );
 
-    foreach my $i ( 0 .. $#numbers ) {
+    for my $i ( 0 .. $#numbers ) {
         my $num  = $numbers[$i];
         my $next = $numbers[ $i + 1 ];
         if ( defined $next && $next == $num + 1 ) {
