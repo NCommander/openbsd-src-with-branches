@@ -7,13 +7,15 @@
  *
  */
 
-#include <config.h>
+#include "config.h"
 
 #include <string.h>
 
 #include "packet.h"
 #include "query.h"
 #include "rdata.h"
+
+int round_robin = 0;
 
 static void
 encode_dname(query_type *q, domain_type *domain)
@@ -22,7 +24,7 @@ encode_dname(query_type *q, domain_type *domain)
 		query_put_dname_offset(q, domain, buffer_position(q->packet));
 		DEBUG(DEBUG_NAME_COMPRESSION, 2,
 		      (LOG_INFO, "dname: %s, number: %lu, offset: %u\n",
-		       dname_to_string(domain_dname(domain), NULL),
+		       domain_to_string(domain),
 		       (unsigned long) domain->number,
 		       query_get_dname_offset(q, domain)));
 		buffer_write(q->packet, dname_name(domain_dname(domain)),
@@ -32,7 +34,7 @@ encode_dname(query_type *q, domain_type *domain)
 	if (domain->parent) {
 		DEBUG(DEBUG_NAME_COMPRESSION, 2,
 		      (LOG_INFO, "dname: %s, number: %lu, pointer: %u\n",
-		       dname_to_string(domain_dname(domain), NULL),
+		       domain_to_string(domain),
 		       (unsigned long) domain->number,
 		       query_get_dname_offset(q, domain)));
 		assert(query_get_dname_offset(q, domain) <= MAX_COMPRESSION_OFFSET);
@@ -44,7 +46,7 @@ encode_dname(query_type *q, domain_type *domain)
 }
 
 int
-packet_encode_rr(query_type *q, domain_type *owner, rr_type *rr)
+packet_encode_rr(query_type *q, domain_type *owner, rr_type *rr, uint32_t ttl)
 {
 	size_t truncation_mark;
 	uint16_t rdlength = 0;
@@ -64,7 +66,7 @@ packet_encode_rr(query_type *q, domain_type *owner, rr_type *rr)
 	encode_dname(q, owner);
 	buffer_write_u16(q->packet, rr->type);
 	buffer_write_u16(q->packet, rr->klass);
-	buffer_write_u32(q->packet, rr->ttl);
+	buffer_write_u32(q->packet, ttl);
 
 	/* Reserve space for rdlength. */
 	rdlength_pos = buffer_position(q->packet);
@@ -108,22 +110,54 @@ int
 packet_encode_rrset(query_type *query,
 		    domain_type *owner,
 		    rrset_type *rrset,
-		    int section)
+		    int section,
+#ifdef MINIMAL_RESPONSES
+		    size_t minimal_respsize,
+		    int* done)
+#else
+		    size_t ATTR_UNUSED(minimal_respsize),
+		    int* ATTR_UNUSED(done))
+#endif
 {
 	uint16_t i;
 	size_t truncation_mark;
 	uint16_t added = 0;
 	int all_added = 1;
+#ifdef MINIMAL_RESPONSES
+	int minimize_response = (section >= OPTIONAL_AUTHORITY_SECTION);
 	int truncate_rrset = (section == ANSWER_SECTION ||
-							section == AUTHORITY_SECTION);
+				section == AUTHORITY_SECTION);
+#else
+	int truncate_rrset = (section == ANSWER_SECTION ||
+				section == AUTHORITY_SECTION ||
+				section == OPTIONAL_AUTHORITY_SECTION);
+#endif
+	static int round_robin_off = 0;
+	int do_robin = (round_robin && section == ANSWER_SECTION &&
+		query->qtype != TYPE_AXFR && query->qtype != TYPE_IXFR);
+	uint16_t start;
 	rrset_type *rrsig;
 
 	assert(rrset->rr_count > 0);
 
 	truncation_mark = buffer_position(query->packet);
 
-	for (i = 0; i < rrset->rr_count; ++i) {
-		if (packet_encode_rr(query, owner, &rrset->rrs[i])) {
+	if(do_robin && rrset->rr_count)
+		start = (uint16_t)(round_robin_off++ % rrset->rr_count);
+	else	start = 0;
+	for (i = start; i < rrset->rr_count; ++i) {
+		if (packet_encode_rr(query, owner, &rrset->rrs[i],
+			rrset->rrs[i].ttl)) {
+			++added;
+		} else {
+			all_added = 0;
+			start = 0;
+			break;
+		}
+	}
+	for (i = 0; i < start; ++i) {
+		if (packet_encode_rr(query, owner, &rrset->rrs[i],
+			rrset->rrs[i].ttl)) {
 			++added;
 		} else {
 			all_added = 0;
@@ -142,7 +176,8 @@ packet_encode_rrset(query_type *query,
 			    == rrset_rrtype(rrset))
 			{
 				if (packet_encode_rr(query, owner,
-						     &rrsig->rrs[i]))
+					&rrsig->rrs[i],
+					rrset_rrtype(rrset)==TYPE_SOA?rrset->rrs[0].ttl:rrsig->rrs[i].ttl))
 				{
 					++added;
 				} else {
@@ -152,6 +187,17 @@ packet_encode_rrset(query_type *query,
 			}
 		}
 	}
+
+#ifdef MINIMAL_RESPONSES
+	if ((!all_added || buffer_position(query->packet) > minimal_respsize)
+	    && !query->tcp && minimize_response) {
+		/* Truncate entire RRset. */
+		buffer_set_position(query->packet, truncation_mark);
+		query_clear_dname_offsets(query, truncation_mark);
+		added = 0;
+		*done = 1;
+	}
+#endif
 
 	if (!all_added && truncate_rrset) {
 		/* Truncate entire RRset and set truncate flag. */
@@ -295,4 +341,58 @@ int packet_read_query_section(buffer_type *packet,
 	*qtype = buffer_read_u16(packet);
 	*qclass = buffer_read_u16(packet);
 	return 1;
+}
+
+int packet_find_notify_serial(buffer_type *packet, uint32_t* serial)
+{
+	size_t saved_position = buffer_position(packet);
+	/* count of further RRs after question section */
+	size_t rrcount = ANCOUNT(packet) + NSCOUNT(packet) + ARCOUNT(packet);
+	size_t i;
+	buffer_set_position(packet, QHEADERSZ);
+
+	/* skip all question RRs */
+	for (i = 0; i < QDCOUNT(packet); ++i) {
+		if (!packet_skip_rr(packet, 1)) {
+			buffer_set_position(packet, saved_position);
+			return 0;
+		}
+	}
+
+	/* Find the SOA RR */
+	for(i = 0; i < rrcount; i++) {
+		uint16_t rdata_size;
+		if (!packet_skip_dname(packet))
+			break;
+		/* check length available for type,class,ttl,rdatalen */
+		if (!buffer_available(packet, 10))
+			break;
+		/* check type, class */
+		if(buffer_read_u16(packet) == TYPE_SOA) {
+			if(buffer_read_u16(packet) != CLASS_IN)
+				break;
+			buffer_skip(packet, 4); /* skip ttl */
+			rdata_size = buffer_read_u16(packet);
+			if (!buffer_available(packet, rdata_size))
+				break;
+			/* skip two dnames, then serial */
+			if (!packet_skip_dname(packet) ||
+				!packet_skip_dname(packet))
+				break;
+			if (!buffer_available(packet, 4))
+				break;
+			*serial = buffer_read_u32(packet);
+			buffer_set_position(packet, saved_position);
+			return 1;
+		}
+		/* continue to next RR */
+		buffer_skip(packet, 6);
+		rdata_size = buffer_read_u16(packet);
+		if (!buffer_available(packet, rdata_size))
+			break;
+		buffer_skip(packet, rdata_size);
+	}
+	/* failed to find SOA */
+	buffer_set_position(packet, saved_position);
+	return 0;
 }

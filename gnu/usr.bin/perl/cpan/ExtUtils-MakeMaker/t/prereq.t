@@ -8,7 +8,8 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 13;
+use Test::More tests => 16;
+use File::Temp qw[tempdir];
 
 use TieOut;
 use MakeMaker::Test::Utils;
@@ -16,7 +17,8 @@ use MakeMaker::Test::Setup::BFD;
 
 use ExtUtils::MakeMaker;
 
-chdir 't';
+my $tmpdir = tempdir( DIR => 't', CLEANUP => 1 );
+chdir $tmpdir;
 
 perl_lib();
 
@@ -35,6 +37,8 @@ ok( chdir 'Big-Dummy', "chdir'd to Big-Dummy" ) ||
     local $SIG{__WARN__} = sub {
         $warnings .= join '', @_;
     };
+    # prerequisite warnings are disabled while building the perl core:
+    local $ENV{PERL_CORE} = 0;
 
     WriteMakefile(
         NAME            => 'Big::Dummy',
@@ -51,7 +55,7 @@ ok( chdir 'Big-Dummy', "chdir'd to Big-Dummy" ) ||
             strict  => 99999
         }
     );
-    is $warnings, 
+    is $warnings,
     sprintf("Warning: prerequisite strict 99999 not found. We have %s.\n",
             $strict::VERSION);
 
@@ -62,8 +66,22 @@ ok( chdir 'Big-Dummy', "chdir'd to Big-Dummy" ) ||
             "I::Do::Not::Exist" => 0,
         }
     );
-    is $warnings, 
+    is $warnings,
     "Warning: prerequisite I::Do::Not::Exist 0 not found.\n";
+
+
+    $warnings = '';
+    WriteMakefile(
+        NAME            => 'Big::Dummy',
+        PREREQ_PM       => {
+            "I::Do::Not::Exist" => "",
+        }
+    );
+    my @warnings = split /\n/, $warnings;
+    is @warnings, 2;
+    like $warnings[0], qr{^Unparsable version '' for prerequisite I::Do::Not::Exist\b};
+    is $warnings[1], "Warning: prerequisite I::Do::Not::Exist 0 not found.";
+
 
     $warnings = '';
     WriteMakefile(
@@ -73,11 +91,11 @@ ok( chdir 'Big-Dummy', "chdir'd to Big-Dummy" ) ||
             "strict"            => 99999,
         }
     );
-    is $warnings, 
+    is $warnings,
     "Warning: prerequisite I::Do::Not::Exist 0 not found.\n".
     sprintf("Warning: prerequisite strict 99999 not found. We have %s.\n",
             $strict::VERSION);
-    
+
     $warnings = '';
     eval {
         WriteMakefile(
@@ -90,7 +108,7 @@ ok( chdir 'Big-Dummy', "chdir'd to Big-Dummy" ) ||
             PREREQ_FATAL    => 1,
         );
     };
-    
+
     is $warnings, '';
     is $@, <<'END', "PREREQ_FATAL";
 MakeMaker FATAL: prerequisites not found.
@@ -115,7 +133,7 @@ END
             PREREQ_FATAL    => 1,
         );
     };
-    
+
     is $warnings, '';
     is $@, <<'END', "PREREQ_FATAL happens before CONFIGURE";
 MakeMaker FATAL: prerequisites not found.

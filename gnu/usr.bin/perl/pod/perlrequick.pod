@@ -19,7 +19,7 @@ contains that word:
     "Hello World" =~ /World/;  # matches
 
 In this statement, C<World> is a regex and the C<//> enclosing
-C</World/> tells perl to search a string for a match.  The operator
+C</World/> tells Perl to search a string for a match.  The operator
 C<=~> associates the string with the regex match and produces a true
 value if the regex matched, or false if the regex did not match.  In
 our case, C<World> matches the second word in C<"Hello World">, so the
@@ -58,7 +58,7 @@ statement to be true:
     "Hello World" =~ /o W/;    # matches, ' ' is an ordinary char
     "Hello World" =~ /World /; # doesn't match, no ' ' at end
 
-perl will always match at the earliest possible point in the string:
+Perl will always match at the earliest possible point in the string:
 
     "Hello World" =~ /o/;       # matches 'o' in 'Hello'
     "That hat is red" =~ /hat/; # matches 'hat' in 'That'
@@ -74,7 +74,7 @@ A metacharacter can be matched by putting a backslash before it:
     "2+2=4" =~ /2+2/;    # doesn't match, + is a metacharacter
     "2+2=4" =~ /2\+2/;   # matches, \+ is treated like an ordinary +
     'C:\WIN32' =~ /C:\\WIN/;                       # matches
-    "/usr/bin/perl" =~ /\/usr\/local\/bin\/perl/;  # matches
+    "/usr/bin/perl" =~ /\/usr\/bin\/perl/;  # matches
 
 In the last regex, the forward slash C<'/'> is also backslashed,
 because it is used to delimit the regex.
@@ -85,10 +85,11 @@ for a carriage return.  Arbitrary bytes are represented by octal
 escape sequences, e.g., C<\033>, or hexadecimal escape sequences,
 e.g., C<\x1B>:
 
-    "1000\t2000" =~ m(0\t2)        # matches
-    "cat"        =~ /\143\x61\x74/ # matches, but a weird way to spell cat
+    "1000\t2000" =~ m(0\t2)  # matches
+    "cat" =~ /\143\x61\x74/  # matches in ASCII, but 
+                             # a weird way to spell cat
 
-Regexes are treated mostly as double quoted strings, so variable
+Regexes are treated mostly as double-quoted strings, so variable
 substitution works:
 
     $foo = 'house';
@@ -161,33 +162,48 @@ character, or the match fails.  Then
     /[^0-9]/;  # matches a non-numeric character
     /[a^]at/;  # matches 'aat' or '^at'; here '^' is ordinary
 
-Perl has several abbreviations for common character classes:
+Perl has several abbreviations for common character classes. (These
+definitions are those that Perl uses in ASCII-safe mode with the C</a> modifier.
+Otherwise they could match many more non-ASCII Unicode characters as
+well.  See L<perlrecharclass/Backslash sequences> for details.)
 
 =over 4
 
 =item *
 
-\d is a digit and represents [0-9]
+\d is a digit and represents
+
+    [0-9]
 
 =item *
 
-\s is a whitespace character and represents [\ \t\r\n\f]
+\s is a whitespace character and represents
+
+    [\ \t\r\n\f]
 
 =item *
 
-\w is a word character (alphanumeric or _) and represents [0-9a-zA-Z_]
+\w is a word character (alphanumeric or _) and represents
+
+    [0-9a-zA-Z_]
 
 =item *
 
-\D is a negated \d; it represents any character but a digit [^0-9]
+\D is a negated \d; it represents any character but a digit
+
+    [^0-9]
 
 =item *
 
-\S is a negated \s; it represents any non-whitespace character [^\s]
+\S is a negated \s; it represents any non-whitespace character
+
+    [^\s]
 
 =item *
 
-\W is a negated \w; it represents any non-word character [^\w]
+\W is a negated \w; it represents any non-word character
+
+    [^\w]
 
 =item *
 
@@ -219,13 +235,13 @@ boundary.
 
 =head2 Matching this or that
 
-We can match match different character strings with the B<alternation>
+We can match different character strings with the B<alternation>
 metacharacter C<'|'>.  To match C<dog> or C<cat>, we form the regex
-C<dog|cat>.  As before, perl will try to match the regex at the
+C<dog|cat>.  As before, Perl will try to match the regex at the
 earliest possible point in the string.  At each character position,
-perl will first try to match the the first alternative, C<dog>.  If
-C<dog> doesn't match, perl will then try the next alternative, C<cat>.
-If C<cat> doesn't match either, then the match fails and perl moves to
+Perl will first try to match the first alternative, C<dog>.  If
+C<dog> doesn't match, Perl will then try the next alternative, C<cat>.
+If C<cat> doesn't match either, then the match fails and Perl moves to
 the next position in the string.  Some examples:
 
     "cats and dogs" =~ /cat|dog|bird/;  # matches "cat"
@@ -238,8 +254,8 @@ C<cat> is able to match earlier in the string.
     "cats"          =~ /cats|cat|ca|c/; # matches "cats"
 
 At a given character position, the first alternative that allows the
-regex match to succeed wil be the one that matches. Here, all the
-alternatives match at the first string position, so th first matches.
+regex match to succeed will be the one that matches. Here, all the
+alternatives match at the first string position, so the first matches.
 
 =head2 Grouping things and hierarchical matching
 
@@ -286,13 +302,13 @@ indicated below it:
      1  2      34
 
 Associated with the matching variables C<$1>, C<$2>, ... are
-the B<backreferences> C<\1>, C<\2>, ...  Backreferences are
+the B<backreferences> C<\g1>, C<\g2>, ...  Backreferences are
 matching variables that can be used I<inside> a regex:
 
-    /(\w\w\w)\s\1/; # find sequences like 'the the' in string
+    /(\w\w\w)\s\g1/; # find sequences like 'the the' in string
 
-C<$1>, C<$2>, ... should only be used outside of a regex, and C<\1>,
-C<\2>, ... only inside a regex.
+C<$1>, C<$2>, ... should only be used outside of a regex, and C<\g1>,
+C<\g2>, ... only inside a regex.
 
 =head2 Matching repetitions
 
@@ -335,10 +351,10 @@ Here are some examples:
 
     /[a-z]+\s+\d*/;  # match a lowercase word, at least some space, and
                      # any number of digits
-    /(\w+)\s+\1/;    # match doubled words of arbitrary length
-    $year =~ /\d{2,4}/;  # make sure year is at least 2 but not more
-                         # than 4 digits
-    $year =~ /\d{4}|\d{2}/;    # better match; throw out 3 digit dates
+    /(\w+)\s+\g1/;    # match doubled words of arbitrary length
+    $year =~ /^\d{2,4}$/;  # make sure year is at least 2 but not more
+                           # than 4 digits
+    $year =~ /^\d{4}$|^\d{2}$/; # better match; throw out 3 digit dates
 
 These quantifiers will try to match as much of the string as possible,
 while still allowing the regex to match.  So we have
@@ -356,21 +372,7 @@ no string left to it, so it matches 0 times.
 =head2 More matching
 
 There are a few more things you might want to know about matching
-operators.  In the code
-
-    $pattern = 'Seuss';
-    while (<>) {
-        print if /$pattern/;
-    }
-
-perl has to re-evaluate C<$pattern> each time through the loop.  If
-C<$pattern> won't be changing, use the C<//o> modifier, to only
-perform variable substitutions once.  If you don't want any
-substitutions at all, use the special delimiter C<m''>:
-
-    $pattern = 'Seuss';
-    m'$pattern'; # matches '$pattern', not 'Seuss'
-
+operators.
 The global modifier C<//g> allows the matching operator to match
 within a string as many times as possible.  In scalar context,
 successive matches against a string will have C<//g> jump from match
@@ -404,11 +406,11 @@ there are no groupings, a list of matches to the whole regex.  So
 =head2 Search and replace
 
 Search and replace is performed using C<s/regex/replacement/modifiers>.
-The C<replacement> is a Perl double quoted string that replaces in the
+The C<replacement> is a Perl double-quoted string that replaces in the
 string whatever is matched with the C<regex>.  The operator C<=~> is
 also used here to associate a string with C<s///>.  If matching
-against C<$_>, the S<C<$_ =~> > can be dropped.  If there is a match,
-C<s///> returns the number of substitutions made, otherwise it returns
+against C<$_>, the S<C<$_ =~>> can be dropped.  If there is a match,
+C<s///> returns the number of substitutions made; otherwise it returns
 false.  Here are a few examples:
 
     $x = "Time to feed the cat!";
@@ -427,6 +429,22 @@ of the regex in the string:
     $x = "I batted 4 for 4";
     $x =~ s/4/four/g;  # $x contains "I batted four for four"
 
+The non-destructive modifier C<s///r> causes the result of the substitution
+to be returned instead of modifying C<$_> (or whatever variable the
+substitute was bound to with C<=~>):
+
+    $x = "I like dogs.";
+    $y = $x =~ s/dogs/cats/r;
+    print "$x $y\n"; # prints "I like dogs. I like cats."
+
+    $x = "Cats are great.";
+    print $x =~ s/Cats/Dogs/r =~ s/Dogs/Frogs/r =~
+        s/Frogs/Hedgehogs/r, "\n";
+    # prints "Hedgehogs are great."
+
+    @foo = map { s/[a-z]/X/r } qw(a b c 1 2 3);
+    # @foo is now qw(X X X 1 2 3)
+
 The evaluation modifier C<s///e> wraps an C<eval{...}> around the
 replacement string and the evaluated result is substituted for the
 matched substring.  Some examples:
@@ -441,7 +459,7 @@ matched substring.  Some examples:
 
 The last example shows that C<s///> can use other delimiters, such as
 C<s!!!> and C<s{}{}>, and even C<s{}//>.  If single quotes are used
-C<s'''>, then the regex and replacement are treated as single quoted
+C<s'''>, then the regex and replacement are treated as single-quoted
 strings.
 
 =head2 The split operator
@@ -464,7 +482,7 @@ To extract a comma-delimited list of numbers, use
                                 # $const[2] = '3.142'
 
 If the empty regex C<//> is used, the string is split into individual
-characters.  If the regex has groupings, then list produced contains
+characters.  If the regex has groupings, then the list produced contains
 the matched substrings from the groupings as well:
 
     $x = "/usr/bin";

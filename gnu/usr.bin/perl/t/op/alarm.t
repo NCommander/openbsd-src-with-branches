@@ -13,39 +13,52 @@ BEGIN {
     }
 }
 
-plan tests => 4;
+plan tests => 5;
 my $Perl = which_perl();
 
-my $start_time = time;
+my ($start_time, $end_time);
+
 eval {
-    local $SIG{ALRM} = sub { die "ALARM!\n" };
+    local $SIG{ALRM} = sub { $end_time = time; die "ALARM!\n" };
+    $start_time = time;
     alarm 3;
 
     # perlfunc recommends against using sleep in combination with alarm.
-    1 while (time - $start_time < 6);
+    1 while (($end_time = time) - $start_time < 6);
+    alarm 0;
 };
 alarm 0;
-my $diff = time - $start_time;
+my $diff = $end_time - $start_time;
 
 # alarm time might be one second less than you said.
 is( $@, "ALARM!\n",             'alarm w/$SIG{ALRM} vs inf loop' );
-ok( abs($diff - 3) <= 1,   "   right time" );
+ok( abs($diff - 3) <= 1,   "   right time (waited $diff secs for 3-sec alarm)" );
 
 
-my $start_time = time;
 eval {
-    local $SIG{ALRM} = sub { die "ALARM!\n" };
+    local $SIG{ALRM} = sub { $end_time = time; die "ALARM!\n" };
+    $start_time = time;
     alarm 3;
     system(qq{$Perl -e "sleep 6"});
+    $end_time = time;
+    alarm 0;
 };
 alarm 0;
-$diff = time - $start_time;
+$diff = $end_time - $start_time;
 
 # alarm time might be one second less than you said.
 is( $@, "ALARM!\n",             'alarm w/$SIG{ALRM} vs system()' );
 
 {
     local $TODO = "Why does system() block alarm() on $^O?"
-		if $^O eq 'VMS' || $^O eq'MacOS' || $^O eq 'dos';
+		if $^O eq 'VMS' || $^O eq 'dos';
     ok( abs($diff - 3) <= 1,   "   right time (waited $diff secs for 3-sec alarm)" );
+}
+
+
+{
+    local $SIG{"ALRM"} = sub { die };
+    eval { alarm(1); my $x = qx($Perl -e "sleep 3"); alarm(0); };
+    chomp (my $foo = "foo\n");
+    ok($foo eq "foo", '[perl #33928] chomp() fails after alarm(), `sleep`');
 }

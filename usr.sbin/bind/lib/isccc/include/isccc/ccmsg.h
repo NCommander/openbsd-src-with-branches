@@ -1,4 +1,5 @@
 /*
+ * Portions Copyright (C) 2004, 2005  Internet Systems Consortium, Inc. ("ISC")
  * Portions Copyright (C) 2001  Internet Software Consortium.
  * Portions Copyright (C) 2001  Nominum, Inc.
  *
@@ -6,25 +7,27 @@
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM AND
- * NOMINUM DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING
- * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT
- * SHALL INTERNET SOFTWARE CONSORTIUM OR NOMINUM BE LIABLE FOR ANY
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC AND NOMINUM DISCLAIMS ALL
+ * WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY
  * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: ccmsg.h,v 1.3 2001/03/27 20:08:06 bwelling Exp $ */
+/* $ISC: ccmsg.h,v 1.4.18.2 2005/04/29 00:17:13 marka Exp $ */
 
 #ifndef ISCCC_CCMSG_H
 #define ISCCC_CCMSG_H 1
+
+/*! \file */
 
 #include <isc/buffer.h>
 #include <isc/lang.h>
 #include <isc/socket.h>
 
+/*% ISCCC Message Structure */
 typedef struct isccc_ccmsg {
 	/* private (don't touch!) */
 	unsigned int		magic;
@@ -46,56 +49,56 @@ ISC_LANG_BEGINDECLS
 
 void
 isccc_ccmsg_init(isc_mem_t *mctx, isc_socket_t *sock, isccc_ccmsg_t *ccmsg);
-/*
+/*%
  * Associate a cc message state with a given memory context and
  * TCP socket.
  *
  * Requires:
  *
- *	"mctx" and "sock" be non-NULL and valid types.
+ *\li	"mctx" and "sock" be non-NULL and valid types.
  *
- *	"sock" be a read/write TCP socket.
+ *\li	"sock" be a read/write TCP socket.
  *
- *	"ccmsg" be non-NULL and an uninitialized or invalidated structure.
+ *\li	"ccmsg" be non-NULL and an uninitialized or invalidated structure.
  *
  * Ensures:
  *
- *	"ccmsg" is a valid structure.
+ *\li	"ccmsg" is a valid structure.
  */
 
 void
 isccc_ccmsg_setmaxsize(isccc_ccmsg_t *ccmsg, unsigned int maxsize);
-/*
+/*%
  * Set the maximum packet size to "maxsize"
  *
  * Requires:
  *
- *	"ccmsg" be valid.
+ *\li	"ccmsg" be valid.
  *
- *	512 <= "maxsize" <= 4294967296
+ *\li	512 <= "maxsize" <= 4294967296
  */
 
 isc_result_t
 isccc_ccmsg_readmessage(isccc_ccmsg_t *ccmsg,
 		       isc_task_t *task, isc_taskaction_t action, void *arg);
-/*
+/*%
  * Schedule an event to be delivered when a command channel message is
  * readable, or when an error occurs on the socket.
  *
  * Requires:
  *
- *	"ccmsg" be valid.
+ *\li	"ccmsg" be valid.
  *
- *	"task", "taskaction", and "arg" be valid.
+ *\li	"task", "taskaction", and "arg" be valid.
  *
  * Returns:
  *
- *	ISC_R_SUCCESS		-- no error
- *	Anything that the isc_socket_recv() call can return.  XXXMLG
+ *\li	#ISC_R_SUCCESS		-- no error
+ *\li	Anything that the isc_socket_recv() call can return.  XXXMLG
  *
  * Notes:
  *
- *	The event delivered is a fully generic event.  It will contain no
+ *\li	The event delivered is a fully generic event.  It will contain no
  *	actual data.  The sender will be a pointer to the isccc_ccmsg_t.
  *	The result code inside that structure should be checked to see
  *	what the final result was.
@@ -103,27 +106,27 @@ isccc_ccmsg_readmessage(isccc_ccmsg_t *ccmsg,
 
 void
 isccc_ccmsg_cancelread(isccc_ccmsg_t *ccmsg);
-/*
+/*%
  * Cancel a readmessage() call.  The event will still be posted with a
  * CANCELED result code.
  *
  * Requires:
  *
- *	"ccmsg" be valid.
+ *\li	"ccmsg" be valid.
  */
 
 void
 isccc_ccmsg_invalidate(isccc_ccmsg_t *ccmsg);
-/*
+/*%
  * Clean up all allocated state, and invalidate the structure.
  *
  * Requires:
  *
- *	"ccmsg" be valid.
+ *\li	"ccmsg" be valid.
  *
  * Ensures:
  *
- *	"ccmsg" is invalidated and disassociated with all memory contexts,
+ *\li	"ccmsg" is invalidated and disassociated with all memory contexts,
  *	sockets, etc.
  */
 

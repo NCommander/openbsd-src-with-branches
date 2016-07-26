@@ -3,6 +3,7 @@
 # vim:ts=8:sw=2:et:sta:sts=2
 
 use strict;
+use warnings;
 use lib 't/lib';
 use IO::File;
 use MBTest;
@@ -27,6 +28,15 @@ our $VERSION = '1.23';
 package Simple;
 our $VERSION;
 $VERSION = '1.23';
+---
+  '1.23' => <<'---', # commented & defined on same line
+package Simple;
+our $VERSION = '1.23'; # our $VERSION = '4.56';
+---
+  '1.23' => <<'---', # commented & defined on separate lines
+package Simple;
+# our $VERSION = '4.56';
+our $VERSION = '1.23';
 ---
   '1.23' => <<'---', # use vars
 package Simple;
@@ -200,10 +210,56 @@ package Simple v1.2.3_4 {
   1;
 }
 ---
+  '0' => <<'---', # set from separately-initialised variable
+package Simple;
+  our $CVSVERSION   = '$Revision: 1.7 $';
+  our ($VERSION)    = ($CVSVERSION =~ /(\d+\.\d+)/);
+}
+---
 );
 my %modules = reverse @modules;
 
-plan tests => 42 + 2 * keys( %modules );
+my @pkg_names = (
+  [ 'Simple' ] => <<'---', # package NAME
+package Simple;
+---
+  [ 'Simple::Edward' ] => <<'---', # package NAME::SUBNAME
+package Simple::Edward;
+---
+  [ 'Simple::Edward::' ] => <<'---', # package NAME::SUBNAME::
+package Simple::Edward::;
+---
+  [ "Simple'Edward" ] => <<'---', # package NAME'SUBNAME
+package Simple'Edward;
+---
+  [ "Simple'Edward::" ] => <<'---', # package NAME'SUBNAME::
+package Simple'Edward::;
+---
+  [ 'Simple::::Edward' ] => <<'---', # package NAME::::SUBNAME
+package Simple::::Edward;
+---
+  [ '::Simple::Edward' ] => <<'---', # package ::NAME::SUBNAME
+package ::Simple::Edward;
+---
+  [ 'main' ] => <<'---', # package NAME:SUBNAME (fail)
+package Simple:Edward;
+---
+  [ 'main' ] => <<'---', # package NAME' (fail)
+package Simple';
+---
+  [ 'main' ] => <<'---', # package NAME::SUBNAME' (fail)
+package Simple::Edward';
+---
+  [ 'main' ] => <<'---', # package NAME''SUBNAME (fail)
+package Simple''Edward;
+---
+  [ 'main' ] => <<'---', # package NAME-SUBNAME (fail)
+package Simple-Edward;
+---
+);
+my %pkg_names = reverse @pkg_names;
+
+plan tests => 54 + (2 * keys( %modules )) + (2 * keys( %pkg_names ));
 
 require_ok('Module::Metadata');
 
@@ -246,7 +302,7 @@ $pm_info = Module::Metadata->new_from_handle( $handle, $file );
 ok( defined( $pm_info ), 'new_from_handle() succeeds' );
 $pm_info = Module::Metadata->new_from_handle( $handle );
 is( $pm_info, undef, "new_from_handle() without filename returns undef" );
-
+close($handle);
 
 # construct from module name, using custom include path
 $pm_info = Module::Metadata->new_from_module(
@@ -284,6 +340,29 @@ foreach my $module ( sort keys %modules ) {
     is( $warnings, '', 'no warnings from parsing' ) or $errs++;
     diag "Got: '$got'\nModule contents:\n$module" if $errs;
   }
+}
+
+# revert to pristine state
+$dist->regen( clean => 1 );
+
+foreach my $pkg_name ( sort keys %pkg_names ) {
+    my $expected = $pkg_names{$pkg_name};
+
+    $dist->change_file( 'lib/Simple.pm', $pkg_name );
+    $dist->regen;
+
+    my $warnings = '';
+    local $SIG{__WARN__} = sub { $warnings .= $_ for @_ };
+    my $pm_info = Module::Metadata->new_from_file( $file );
+
+    # Test::Builder will prematurely numify objects, so use this form
+    my $errs;
+    my @got = $pm_info->packages_inside();
+    is_deeply( \@got, $expected,
+               "correct package names (expected '" . join(', ', @$expected) . "')" )
+            or $errs++;
+    is( $warnings, '', 'no warnings from parsing' ) or $errs++;
+    diag "Got: '" . join(', ', @got) . "'\nModule contents:\n$pkg_name" if $errs;
 }
 
 # revert to pristine state
@@ -420,6 +499,9 @@ Simple - It's easy.
 
 Simple Simon
 
+You can find me on the IRC channel
+#simon on irc.perl.org.
+
 =cut
 ---
 $dist->regen;
@@ -459,13 +541,59 @@ is( $pm_info->pod('NAME'), undef,
 $pm_info = Module::Metadata->new_from_module(
              $dist->name, inc => [ 'lib', @INC ], collect_pod => 1 );
 
-my $name = $pm_info->pod('NAME');
-if ( $name ) {
-  $name =~ s/^\s+//;
-  $name =~ s/\s+$//;
-}
-is( $name, q|Simple - It's easy.|, 'collected pod section' );
+{
+  my %pod;
+  for my $section (qw(NAME AUTHOR)) {
+    my $content = $pm_info->pod( $section );
+    if ( $content ) {
+      $content =~ s/^\s+//;
+      $content =~ s/\s+$//;
+    }
+    $pod{$section} = $content;
+  }
+  my %expected = (
+    NAME   => q|Simple - It's easy.|,
+    AUTHOR => <<'EXPECTED'
+Simple Simon
 
+You can find me on the IRC channel
+#simon on irc.perl.org.
+EXPECTED
+  );
+  for my $text (values %expected) {
+    $text =~ s/^\s+//;
+    $text =~ s/\s+$//;
+  }
+  is( $pod{NAME},   $expected{NAME},   'collected NAME pod section' );
+  is( $pod{AUTHOR}, $expected{AUTHOR}, 'collected AUTHOR pod section' );
+}
+
+{
+  # test things that look like POD, but aren't
+$dist->change_file( 'lib/Simple.pm', <<'---' );
+package Simple;
+
+=YES THIS STARTS POD
+
+our $VERSION = '999';
+
+=cute
+
+our $VERSION = '666';
+
+=cut
+
+*foo
+=*no_this_does_not_start_pod;
+
+our $VERSION = '1.23';
+
+---
+  $dist->regen;
+  $pm_info = Module::Metadata->new_from_file('lib/Simple.pm');
+  is( $pm_info->name, 'Simple', 'found default package' );
+  is( $pm_info->version, '1.23', 'version for default package' );
+}
 
 {
   # Make sure processing stops after __DATA__
@@ -581,4 +709,36 @@ is_deeply( $got_pvfd, $exp_pvfd, "package_version_from_directory()" )
 
   is_deeply( $got_provides, $exp_provides, "provides()" )
     or diag explain $got_provides;
+}
+
+# Check package_versions_from_directory with regard to case-sensitivity
+{
+  $dist->change_file( 'lib/Simple.pm', <<'---' );
+package simple;
+$VERSION = '0.01';
+---
+  $dist->regen;
+
+  $pm_info = Module::Metadata->new_from_file('lib/Simple.pm');
+  is( $pm_info->name, undef, 'no default package' );
+  is( $pm_info->version, undef, 'version for default package' );
+  is( $pm_info->version('simple'), '0.01', 'version for lower-case package' );
+  is( $pm_info->version('Simple'), undef, 'version for capitalized package' );
+
+  $dist->change_file( 'lib/Simple.pm', <<'---' );
+package simple;
+$VERSION = '0.01';
+package Simple;
+$VERSION = '0.02';
+package SiMpLe;
+$VERSION = '0.03';
+---
+  $dist->regen;
+
+  $pm_info = Module::Metadata->new_from_file('lib/Simple.pm');
+  is( $pm_info->name, 'Simple', 'found default package' );
+  is( $pm_info->version, '0.02', 'version for default package' );
+  is( $pm_info->version('simple'), '0.01', 'version for lower-case package' );
+  is( $pm_info->version('Simple'), '0.02', 'version for capitalized package' );
+  is( $pm_info->version('SiMpLe'), '0.03', 'version for mixed-case package' );
 }

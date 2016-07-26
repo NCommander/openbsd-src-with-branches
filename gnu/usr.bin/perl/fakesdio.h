@@ -1,6 +1,6 @@
 /*    fakestdio.h
  *
- *    Copyright (c) 2000-2002, Larry Wall
+ *    Copyright (C) 2000, by Larry Wall and others
  *
  *    You may distribute under the terms of either the GNU General Public
  *    License or the Artistic License, as specified in the README file.
@@ -55,6 +55,17 @@
 #undef tmpfile
 #undef ungetc
 #undef vfprintf
+#undef printf
+
+/* printf used to live in perl.h like this - more sophisticated 
+   than the rest 
+ */
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) && !defined(PERL_GCC_PEDANTIC)
+#define printf(fmt,args...) PerlIO_stdoutf(fmt,##args)
+#else
+#define printf PerlIO_stdoutf
+#endif
+
 #define fprintf			PerlIO_printf
 #define stdin			PerlIO_stdin()
 #define stdout			PerlIO_stdout()
@@ -111,3 +122,12 @@
 #define fscanf			_CANNOT _fscanf_
 #define fgets(s,n,f)		_CANNOT _fgets_
 
+/*
+ * Local variables:
+ * c-indentation-style: bsd
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ *
+ * ex: set ts=8 sts=4 sw=4 et:
+ */

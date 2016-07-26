@@ -12,7 +12,7 @@ use strict;
 
 ## These "variables" are used as local "glob aliases" for performance
 use vars qw($VERSION @ISA %myData %myOpts @input_stack);
-$VERSION = '1.37';  ## Current version of this package
+$VERSION = '1.62';  ## Current version of this package
 require  5.005;    ## requires this Perl version or later
 
 #############################################################################
@@ -80,6 +80,10 @@ perl5.005, Pod::InputObjects, Exporter, Symbol, Carp
 Nothing.
 
 =head1 DESCRIPTION
+
+B<NOTE: This module is considered legacy; modern Perl releases (5.18 and
+higher) are going to remove Pod-Parser from core and use L<Pod-Simple>
+for all things POD.>
 
 B<Pod::Parser> is a base class for creating POD filters and translators.
 It handles most of the effort involved with parsing the POD sections
@@ -778,11 +782,11 @@ sub parse_text {
     ## Iterate over all sequence starts text (NOTE: split with
     ## capturing parens keeps the delimiters)
     $_ = $text;
-    my @tokens = split /([A-Z]<(?:<+\s)?)/;
+    my @tokens = split /([A-Z]<(?:<+(?:\r?\n|[ \t]))?)/;
     while ( @tokens ) {
         $_ = shift @tokens;
         ## Look for the beginning of a sequence
-        if ( /^([A-Z])(<(?:<+\s)?)$/ ) {
+        if ( /^([A-Z])(<(?:<+(?:\r?\n|[ \t]))?)$/ ) {
             ## Push a new sequence onto the stack of those "in-progress"
             my $ldelim_orig;
             ($cmd, $ldelim_orig) = ($1, $2);
@@ -812,7 +816,7 @@ sub parse_text {
             }
             if (length) {
                 ## In the middle of a sequence, append this text to it, and
-                ## dont forget to "expand" it if that's what the caller wanted
+                ## don't forget to "expand" it if that's what the caller wanted
                 $seq->append($expand_text ? &$xtext_sub($self,$_,$seq) : $_);
                 $_ .= $seq_end;
             }
@@ -836,11 +840,11 @@ sub parse_text {
         }
         elsif (length) {
             ## In the middle of a sequence, append this text to it, and
-            ## dont forget to "expand" it if that's what the caller wanted
+            ## don't forget to "expand" it if that's what the caller wanted
             $seq->append($expand_text ? &$xtext_sub($self,$_,$seq) : $_);
         }
         ## Keep track of line count
-        $line += s/\r*\n//;
+        $line += /\n/;
         ## Remember the "current" sequence
         $seq = $seq_stack[-1];
     }
@@ -940,12 +944,12 @@ sub parse_paragraph {
     ## but that is more overhead than I want to incur)
     ##-----------------------------------------------------------------
 
-    ## Ignore this block if it isnt in one of the selected sections
+    ## Ignore this block if it isn't in one of the selected sections
     if (exists $myData{_SELECTED_SECTIONS}) {
         $self->is_selected($text)  or  return ($myData{_CUTTING} = 1);
     }
 
-    ## If we havent already, perform any desired preprocessing and
+    ## If we haven't already, perform any desired preprocessing and
     ## then re-check the "cutting" state
     unless ($wantNonPods) {
        $text = $self->preprocess_paragraph($text, $line_num);
@@ -963,7 +967,9 @@ sub parse_paragraph {
         $pfx = $1;
         $_ = substr($text, length $pfx);
         ($cmd, $sep, $text) = split /(\s+)/, $_, 2;
-        ## If this is a "cut" directive then we dont need to do anything
+        $sep = '' unless defined $sep;
+        $text = '' unless defined $text;
+        ## If this is a "cut" directive then we don't need to do anything
         ## except return to "cutting" mode.
         if ($cmd eq 'cut') {
            $myData{_CUTTING} = 1;
@@ -1016,7 +1022,8 @@ sub parse_paragraph {
     }
 
     # Update the whitespace for the next time around
-    $myData{_WHITESPACE} = $text =~ /^[^\S\r\n]+\Z/m ? 1 : 0;
+    #$myData{_WHITESPACE} = $text =~ /^[^\S\r\n]+\Z/m ? 1 : 0;
+    $myData{_WHITESPACE} = $text =~ /^[^\S\r\n]+\r*\Z/m ? 1 : 0;
 
     return  1;
 }
@@ -1095,8 +1102,8 @@ sub parse_from_filehandle {
         }
 
         ## See if this line is blank and ends the current paragraph.
-        ## If it isnt, then keep iterating until it is.
-        next unless (($textline =~ /^([^\S\r\n]*)[\r\n]*$/)
+        ## If it isn't, then keep iterating until it is.
+        next unless (($textline =~ /^[^\S\r\n]*[\r\n]*$/)
                                      && (length $paragraph));
 
         ## Now process the paragraph
@@ -1104,7 +1111,7 @@ sub parse_from_filehandle {
         $paragraph = '';
         $plines = 0;
     }
-    ## Dont forget about the last paragraph in the file
+    ## Don't forget about the last paragraph in the file
     if (length $paragraph) {
        parse_paragraph($self, $paragraph, ($nlines - $plines) + 1)
     }
@@ -1139,7 +1146,7 @@ closes the input and output files.
 
 =back
 
-If the special input filename "-" or "<&STDIN" is given then the STDIN
+If the special input filename "", "-" or "<&STDIN" is given then the STDIN
 filehandle is used for input (and no open or close is performed). If no
 input filename is specified then "-" is implied. Filehandle references,
 or objects that support the regular IO operations (like C<E<lt>$fhE<gt>>
@@ -1604,7 +1611,7 @@ sub _pop_input_stream {
     my $old_top = pop(@input_stack);
     $myData{_CUTTING} = $old_top->was_cutting();
 
-    ## Dont forget to reset the input indicators
+    ## Don't forget to reset the input indicators
     my $input_top = undef;
     if (@input_stack > 0) {
        $input_top = $myData{_TOP_STREAM} = $input_stack[-1];

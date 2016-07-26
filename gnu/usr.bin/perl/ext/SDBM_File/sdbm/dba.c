@@ -4,14 +4,14 @@
 
 #include <stdio.h>
 #include <sys/file.h>
+#include "EXTERN.h"
 #include "sdbm.h"
 
 char *progname;
 extern void oops();
 
 int
-main(argc, argv)
-char **argv;
+main(int argc, char **argv)
 {
 	int n;
 	char *p;
@@ -22,6 +22,9 @@ char **argv;
 
 	if (p = argv[1]) {
 		name = (char *) malloc((n = strlen(p)) + 5);
+		if (!name)
+		    oops("cannot get memory");
+
 		strcpy(name, p);
 		strcpy(name + n, ".pag");
 
@@ -36,14 +39,14 @@ char **argv;
 	return 0;
 }
 
-sdump(pagf)
-int pagf;
+void
+sdump(int pagf)
 {
-	register b;
-	register n = 0;
-	register t = 0;
-	register o = 0;
-	register e;
+	int b;
+	int n = 0;
+	int t = 0;
+	int o = 0;
+	int e;
 	char pag[PBLKSIZ];
 
 	while ((b = read(pagf, pag, PBLKSIZ)) > 0) {
@@ -66,12 +69,12 @@ int pagf;
 		oops("read failed: block %d", n);
 }
 
-pagestat(pag)
-char *pag;
+int
+pagestat(char *pag)
 {
-	register n;
-	register free;
-	register short *ino = (short *) pag;
+	int n;
+	int free;
+	short *ino = (short *) pag;
 
 	if (!(n = ino[0]))
 		printf("no entries.\n");

@@ -35,26 +35,17 @@
 BEGIN {
     chdir 't' if -d 't';
     @INC = '../lib';
-    use Config;
-    if (!$Config{'d_fcntl'}) {
-        print("1..0 # Skip: fcntl() is not available\n");
-        exit(0);
-    }
     require './test.pl';
+    skip_all_without_config('d_fcntl');
 }
 
 use strict;
 
 $|=1;
 
-my $Is_VMS      = $^O eq 'VMS';
-my $Is_MacOS    = $^O eq 'MacOS';
-my $Is_Win32    = $^O eq 'MSWin32';
-
 # When in doubt, skip.
-skip_all("MacOS")    if $Is_MacOS;
-skip_all("VMS")      if $Is_VMS;
-skip_all("Win32")    if $Is_Win32;
+skip_all($^O)
+    if $^O eq 'VMS' or $^O eq 'MSWin32';
 
 sub make_tmp_file {
     my ($fname, $fcontents) = @_;
@@ -65,11 +56,11 @@ sub make_tmp_file {
 }
 
 my $Perl = which_perl();
-my $quote = $Is_VMS || $Is_Win32 ? '"' : "'";
+my $quote = "'";
 
-my $tmperr             = 'cloexece.tmp';
-my $tmpfile1           = 'cloexec1.tmp';
-my $tmpfile2           = 'cloexec2.tmp';
+my $tmperr             = tempfile();
+my $tmpfile1           = tempfile();
+my $tmpfile2           = tempfile();
 my $tmpfile1_contents  = "tmpfile1 line 1\ntmpfile1 line 2\n";
 my $tmpfile2_contents  = "tmpfile2 line 1\ntmpfile2 line 2\n";
 make_tmp_file($tmpfile1, $tmpfile1_contents);
@@ -164,9 +155,3 @@ cmp_ok( $parentfd1, '<=', $^F, "parent open fd=$parentfd1 (\$^F=$^F)" );
 test_inherited($parentfd1);
 close FHPARENT1 or die "close '$tmpfile1': $!";
 close FHPARENT2 or die "close '$tmpfile2': $!";
-
-END {
-    defined $tmperr   and unlink($tmperr);
-    defined $tmpfile1 and unlink($tmpfile1);
-    defined $tmpfile2 and unlink($tmpfile2);
-}

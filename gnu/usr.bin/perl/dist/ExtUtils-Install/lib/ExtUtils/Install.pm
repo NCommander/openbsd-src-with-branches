@@ -38,11 +38,11 @@ ExtUtils::Install - install files from here to there
 
 =head1 VERSION
 
-1.55
+1.67
 
 =cut
 
-$VERSION = '1.55';  # <---- dont forget to update the POD section just above this line!
+$VERSION = '1.67';  # <-- do not forget to update the POD section just above this line!
 $VERSION = eval $VERSION;
 
 =pod
@@ -57,7 +57,7 @@ ExtUtils::MakeMaker handles the installation and deinstallation of
 perl modules. They are not designed as general purpose tools.
 
 On some operating systems such as Win32 installation may not be possible
-until after a reboot has occured. This can have varying consequences:
+until after a reboot has occurred. This can have varying consequences:
 removing an old DLL does not impact programs using the new one, but if
 a new DLL cannot be installed properly until reboot then anything
 depending on it must wait. The package variable
@@ -66,16 +66,16 @@ depending on it must wait. The package variable
 
 is used to store this status.
 
-If this variable is true then such an operation has occured and
+If this variable is true then such an operation has occurred and
 anything depending on this module cannot proceed until a reboot
-has occured.
+has occurred.
 
 If this value is defined but false then such an operation has
 ocurred, but should not impact later operations.
 
-=begin _private
-
 =over
+
+=begin _private
 
 =item _chmod($$;$)
 
@@ -96,33 +96,10 @@ Dies with a special message.
 =cut
 
 my $Is_VMS     = $^O eq 'VMS';
-my $Is_VMS_noefs = $Is_VMS;
 my $Is_MacPerl = $^O eq 'MacOS';
 my $Is_Win32   = $^O eq 'MSWin32';
 my $Is_cygwin  = $^O eq 'cygwin';
 my $CanMoveAtBoot = ($Is_Win32 || $Is_cygwin);
-
-    if( $Is_VMS ) {
-        my $vms_unix_rpt;
-        my $vms_efs;
-        my $vms_case;
-
-        if (eval { local $SIG{__DIE__}; require VMS::Feature; }) {
-            $vms_unix_rpt = VMS::Feature::current("filename_unix_report");
-            $vms_efs = VMS::Feature::current("efs_charset");
-            $vms_case = VMS::Feature::current("efs_case_preserve");
-        } else {
-            my $unix_rpt = $ENV{'DECC$FILENAME_UNIX_REPORT'} || '';
-            my $efs_charset = $ENV{'DECC$EFS_CHARSET'} || '';
-            my $efs_case = $ENV{'DECC$EFS_CASE_PRESERVE'} || '';
-            $vms_unix_rpt = $unix_rpt =~ /^[ET1]/i;
-            $vms_efs = $efs_charset =~ /^[ET1]/i;
-            $vms_case = $efs_case =~ /^[ET1]/i;
-        }
-        $Is_VMS_noefs = 0 if ($vms_efs);
-    }
-
-
 
 # *note* CanMoveAtBoot is only incidentally the same condition as below
 # this needs not hold true in the future.
@@ -185,7 +162,7 @@ $target should be a ref to an array if the file is to be deleted
 otherwise it should be a filespec for a rename. If the file is existing
 it will be replaced.
 
-Sets $MUST_REBOOT to 0 to indicate a deletion operation has occured
+Sets $MUST_REBOOT to 0 to indicate a deletion operation has occurred
 and sets it to 1 to indicate that a move operation has been requested.
 
 returns 1 on success, on failure if $moan is false errors are fatal.
@@ -269,8 +246,6 @@ a derivative of the original in the same directory) so that the caller can
 use it to install under. In all other cases of success returns $file.
 On failure throws a fatal error.
 
-=back
-
 =end _private
 
 =cut
@@ -280,7 +255,14 @@ On failure throws a fatal error.
 sub _unlink_or_rename { #XXX OS-SPECIFIC
     my ( $file, $tryhard, $installing )= @_;
 
-    _chmod( 0666, $file );
+    # this chmod was originally unconditional. However, its not needed on
+    # POSIXy systems since permission to unlink a file is specified by the
+    # directory rather than the file; and in fact it screwed up hard- and
+    # symlinked files. Keep it for other platforms in case its still
+    # needed there.
+    if ($^O =~ /^(dos|os2|MSWin32|VMS)$/) {
+        _chmod( 0666, $file );
+    }
     my $unlink_count = 0;
     while (unlink $file) { $unlink_count++; }
     return $file if $unlink_count > 0;
@@ -297,7 +279,7 @@ sub _unlink_or_rename { #XXX OS-SPECIFIC
          "Going to try to rename it to '$tmp'.\n";
 
     if ( rename $file, $tmp ) {
-        warn "Rename succesful. Scheduling '$tmp'\nfor deletion at reboot.\n";
+        warn "Rename successful. Scheduling '$tmp'\nfor deletion at reboot.\n";
         # when $installing we can set $moan to true.
         # IOW, if we cant delete the renamed file at reboot its
         # not the end of the world. The other cases are more serious
@@ -310,13 +292,15 @@ sub _unlink_or_rename { #XXX OS-SPECIFIC
         _move_file_at_boot( $tmp, $file );
         return $tmp;
     } else {
-        _choke("Rename failed:$!", "Cannot procede.");
+        _choke("Rename failed:$!", "Cannot proceed.");
     }
 
 }
 
 
 =pod
+
+=back
 
 =head2 Functions
 
@@ -415,7 +399,7 @@ be created first.
 
 Returns a list, containing: C<($writable, $determined_by, @create)>
 
-C<$writable> says whether whether the directory is (hypothetically) writable
+C<$writable> says whether the directory is (hypothetically) writable
 
 C<$determined_by> is the directory the status was determined from. It will be
 either the C<$dir>, or one of its parents.
@@ -440,9 +424,7 @@ sub _can_write_dir {
     my $path='';
     my @make;
     while (@dirs) {
-        if ($Is_VMS_noefs) {
-            # There is a bug in catdir that is fixed when the EFS character
-            # set is enabled, which requires this VMS specific code.
+        if ($Is_VMS) {
             $dir = File::Spec->catdir($vol,@dirs);
         }
         else {
@@ -520,7 +502,7 @@ sub _mkpath {
 
 Wrapper around File::Copy::copy to handle errors.
 
-If $verbose is true and >1 then additional dignostics will be emitted.
+If $verbose is true and >1 then additional diagnostics will be emitted.
 
 If $dry_run is true then the copy will not actually occur.
 
@@ -565,7 +547,11 @@ sub _chdir {
 
 =pod
 
+=back
+
 =end _private
+
+=over
 
 =item B<install>
 
@@ -631,7 +617,7 @@ As of version 1.47 the following additions were made to the install interface.
 Note that the new argument style and use of the %result hash is recommended.
 
 The $always_copy parameter which when true causes files to be updated
-regardles as to whether they have changed, if it is defined but false then
+regardless as to whether they have changed, if it is defined but false then
 copies are made only if the files have changed, if it is undefined then the
 value of the environment variable EU_INSTALL_ALWAYS_COPY is used as default.
 
@@ -666,7 +652,7 @@ B<NEW ARGUMENT STYLE>
 If there is only one argument and it is a reference to an array then
 the array is assumed to contain a list of key-value pairs specifying
 the options. In this case the option "from_to" is mandatory. This style
-means that you dont have to supply a cryptic list of arguments and can
+means that you do not have to supply a cryptic list of arguments and can
 use a self documenting argument list that is easier to understand.
 
 This is now the recommended interface to install().
@@ -790,7 +776,7 @@ sub install { #XXX OS-SPECIFIC
 
                 ];
             #restore the original directory we were in when File::Find
-            #called us so that it doesnt get horribly confused.
+            #called us so that it doesn't get horribly confused.
             _chdir($save_cwd);
         }, $current_directory );
         _chdir($cwd);
@@ -863,7 +849,7 @@ sub install { #XXX OS-SPECIFIC
 
 =item _do_cleanup
 
-Standardize finish event for after another instruction has occured.
+Standardize finish event for after another instruction has occurred.
 Handles converting $MUST_REBOOT to a die for instance.
 
 =end _private
@@ -1056,7 +1042,7 @@ sub uninstall {
 
 Remove shadowed files. If $ignore is true then it is assumed to hold
 a filename to ignore. This is used to prevent spurious warnings from
-occuring when doing an install at reboot.
+occurring when doing an install at reboot.
 
 We now only die when failing to remove a file that has precedence over
 our own, when our install has precedence we only warn.

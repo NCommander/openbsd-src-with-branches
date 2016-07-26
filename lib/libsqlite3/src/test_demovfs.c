@@ -115,7 +115,7 @@
 
 #if !defined(SQLITE_TEST) || SQLITE_OS_UNIX
 
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 #include <assert.h>
 #include <string.h>
@@ -536,7 +536,7 @@ static int demoFullPathname(
   if( zPath[0]=='/' ){
     zDir[0] = '\0';
   }else{
-    getcwd(zDir, sizeof(zDir));
+    if( getcwd(zDir, sizeof(zDir))==0 ) return SQLITE_IOERR;
   }
   zDir[MAXPATHNAME] = '\0';
 

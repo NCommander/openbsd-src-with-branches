@@ -11,6 +11,8 @@ BEGIN {
 
 require q(./test.pl); plan(tests => 1);
 
+require mro;
+
 =pod
 
 This example is take from: http://www.python.org/2.3/mro.html
@@ -44,4 +46,5 @@ except TypeError:
 }
 
 eval { mro::get_linear_isa('Z', 'c3') };
-like($@, qr/^Inconsistent /, '... got the right error with an inconsistent hierarchy');
+like($@, qr/^Inconsistent hierarchy during C3 merge of class 'Z'/,
+     '... got the right error with an inconsistent hierarchy');

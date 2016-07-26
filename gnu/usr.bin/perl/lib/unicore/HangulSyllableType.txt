@@ -1,37 +1,50 @@
-# HangulSyllableType-4.0.0.txt
-# Date: 2003-03-20, 20:08:09 GMT [MD]
+# HangulSyllableType-6.3.0.txt
+# Date: 2012-12-20, 22:18:29 GMT [MD]
 #
-# Unicode Character Database: Extended Properties
-# For documentation, see UCD.html
-# Note: Unassigned and Noncharacter codepoints may be omitted
-#       if they have default property values.
-# ================================================
-
-
-# ================================================
-# Hangul Syllable Type
-#	All code points not explicitly listed in this file have the property
-#	value:   NA.
-# ================================================
-
-1100..1159    ; L # Lo  [90] HANGUL CHOSEONG KIYEOK..HANGUL CHOSEONG YEORINHIEUH
-115F          ; L # Lo       HANGUL CHOSEONG FILLER
-
-# Total code points: 91
+# Unicode Character Database
+# Copyright (c) 1991-2013 Unicode, Inc.
+# For terms of use, see http://www.unicode.org/terms_of_use.html
+# For documentation, see http://www.unicode.org/reports/tr44/
 
 # ================================================
 
-1160..11A2    ; V # Lo  [67] HANGUL JUNGSEONG FILLER..HANGUL JUNGSEONG SSANGARAEA
+# Property:	Hangul_Syllable_Type
 
-# Total code points: 67
+#  All code points not explicitly listed for Hangul_Syllable_Type
+#  have the value Not_Applicable (NA).
+
+# @missing: 0000..10FFFF; Not_Applicable
+
+# ================================================
+
+# Hangul_Syllable_Type=Leading_Jamo
+
+1100..115F    ; L # Lo  [96] HANGUL CHOSEONG KIYEOK..HANGUL CHOSEONG FILLER
+A960..A97C    ; L # Lo  [29] HANGUL CHOSEONG TIKEUT-MIEUM..HANGUL CHOSEONG SSANGYEORINHIEUH
+
+# Total code points: 125
 
 # ================================================
 
-11A8..11F9    ; T # Lo  [82] HANGUL JONGSEONG KIYEOK..HANGUL JONGSEONG YEORINHIEUH
+# Hangul_Syllable_Type=Vowel_Jamo
 
-# Total code points: 82
+1160..11A7    ; V # Lo  [72] HANGUL JUNGSEONG FILLER..HANGUL JUNGSEONG O-YAE
+D7B0..D7C6    ; V # Lo  [23] HANGUL JUNGSEONG O-YEO..HANGUL JUNGSEONG ARAEA-E
+
+# Total code points: 95
 
 # ================================================
+
+# Hangul_Syllable_Type=Trailing_Jamo
+
+11A8..11FF    ; T # Lo  [88] HANGUL JONGSEONG KIYEOK..HANGUL JONGSEONG SSANGNIEUN
+D7CB..D7FB    ; T # Lo  [49] HANGUL JONGSEONG NIEUN-RIEUL..HANGUL JONGSEONG PHIEUPH-THIEUTH
+
+# Total code points: 137
+
+# ================================================
+
+# Hangul_Syllable_Type=LV_Syllable
 
 AC00          ; LV # Lo       HANGUL SYLLABLE GA
 AC1C          ; LV # Lo       HANGUL SYLLABLE GAE
@@ -437,6 +450,8 @@ D788          ; LV # Lo       HANGUL SYLLABLE HI
 
 # ================================================
 
+# Hangul_Syllable_Type=LVT_Syllable
+
 AC01..AC1B    ; LVT # Lo  [27] HANGUL SYLLABLE GAG..HANGUL SYLLABLE GAH
 AC1D..AC37    ; LVT # Lo  [27] HANGUL SYLLABLE GAEG..HANGUL SYLLABLE GAEH
 AC39..AC53    ; LVT # Lo  [27] HANGUL SYLLABLE GYAG..HANGUL SYLLABLE GYAH
@@ -839,3 +854,4 @@ D789..D7A3    ; LVT # Lo  [27] HANGUL SYLLABLE HIG..HANGUL SYLLABLE HIH
 
 # Total code points: 10773
 
+# EOF

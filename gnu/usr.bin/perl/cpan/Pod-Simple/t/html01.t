@@ -9,7 +9,7 @@ BEGIN {
 
 use strict;
 use Test;
-BEGIN { plan tests => 11 };
+BEGIN { plan tests => 12 };
 
 #use Pod::Simple::Debug (10);
 
@@ -78,6 +78,13 @@ ok(x(
   "heading building"
 );
 
+ok(x(
+'=head2 Yada Yada Operator
+X<...> X<... operator> X<yada yada operator>')
+ => q{/name="Yada_Yada_Operator"/},
+  "heading anchor name"
+);
+
 ok(
     x("=over 4\n\n=item one\n\n=item two\n\nHello\n\n=back\n"),
     q{
@@ -108,7 +115,7 @@ SUBCLASS: {
 ok(
     My::Pod::HTML->_out(
         sub{  $_[0]->bare_output(1)  },
-        "=pod\n\n=over\n\n=item Foo\n\n",
+        "=pod\n\n=over\n\n=item Foo\n\n=back\n",
     ),
     "\n<dl>\n<dt><a name=\"howdy\"\n>Foo</a></dt>\n</dl>\n",
 );

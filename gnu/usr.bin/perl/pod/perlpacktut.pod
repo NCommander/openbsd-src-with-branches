@@ -73,20 +73,19 @@ remains.
 The inverse operation - packing byte contents from a string of hexadecimal
 digits - is just as easily written. For instance:
 
-   my $s = pack( 'H2' x 10, map { "3$_" } ( 0..9 ) );
+   my $s = pack( 'H2' x 10, 30..39 );
    print "$s\n";
 
 Since we feed a list of ten 2-digit hexadecimal strings to C<pack>, the
 pack template should contain ten pack codes. If this is run on a computer
 with ASCII character coding, it will print C<0123456789>.
 
-
 =head1 Packing Text
 
 Let's suppose you've got to read in a data file like this:
 
     Date      |Description                | Income|Expenditure
-    01/24/2001 Ahmed's Camel Emporium                  1147.99
+    01/24/2001 Zed's Camel Emporium                    1147.99
     01/28/2001 Flea spray                                24.99
     01/29/2001 Camel rides to tourists      235.00
 
@@ -177,7 +176,8 @@ template doesn't match the incoming data, Perl will scream and die.
 
 Hence, putting it all together:
 
-    my($date,$description,$income,$expend) = unpack("A10xA27xA7A*", $_);
+    my ($date, $description, $income, $expend) =
+        unpack("A10xA27xA7xA*", $_);
 
 Now, that's our data parsed. I suppose what we might want to do now is
 total up our income and expenditure, and add another line to the end of
@@ -185,7 +185,8 @@ our ledger - in the same format - saying how much we've brought in and
 how much we've spent:
 
     while (<>) {
-        my($date, $desc, $income, $expend) = unpack("A10xA27xA7xA*", $_);
+        my ($date, $desc, $income, $expend) =
+            unpack("A10xA27xA7xA*", $_);
         $tot_income += $income;
         $tot_expend += $expend;
     }
@@ -197,11 +198,12 @@ how much we've spent:
 
     # OK, let's go:
 
-    print pack("A10xA27xA7xA*", $date, "Totals", $tot_income, $tot_expend);
+    print pack("A10xA27xA7xA*", $date, "Totals",
+        $tot_income, $tot_expend);
 
 Oh, hmm. That didn't quite work. Let's see what happened:
 
-    01/24/2001 Ahmed's Camel Emporium                   1147.99
+    01/24/2001 Zed's Camel Emporium                     1147.99
     01/28/2001 Flea spray                                 24.99
     01/29/2001 Camel rides to tourists     1235.00
     03/23/2001Totals                     1235.001172.98
@@ -220,13 +222,14 @@ What we actually need to do is expand the width of the fields. The C<A>
 format pads any non-existent characters with spaces, so we can use the
 additional spaces to line up our fields, like this:
 
-    print pack("A11 A28 A8 A*", $date, "Totals", $tot_income, $tot_expend);
+    print pack("A11 A28 A8 A*", $date, "Totals",
+        $tot_income, $tot_expend);
 
 (Note that you can put spaces in the template to make it more readable,
 but they don't translate to spaces in the output.) Here's what we got
 this time:
 
-    01/24/2001 Ahmed's Camel Emporium                   1147.99
+    01/24/2001 Zed's Camel Emporium                     1147.99
     01/28/2001 Flea spray                                 24.99
     01/29/2001 Camel rides to tourists     1235.00
     03/23/2001 Totals                      1235.00 1172.98
@@ -239,7 +242,8 @@ can get C<sprintf> to do it:
     $tot_income = sprintf("%.2f", $tot_income); 
     $tot_expend = sprintf("%12.2f", $tot_expend);
     $date = POSIX::strftime("%m/%d/%Y", localtime); 
-    print pack("A11 A28 A8 A*", $date, "Totals", $tot_income, $tot_expend);
+    print pack("A11 A28 A8 A*", $date, "Totals",
+        $tot_income, $tot_expend);
 
 This time we get the right answer:
 
@@ -373,7 +377,7 @@ you have to import it with C<use Config>.)
      s!     S!      sizeof(short)      $Config{shortsize}
      i!     I!      sizeof(int)        $Config{intsize}
      l!     L!      sizeof(long)       $Config{longsize}
-     q!     Q!      sizeof(longlong)   $Config{longlongsize}
+     q!     Q!      sizeof(long long)  $Config{longlongsize}
 
 The C<i!> and C<I!> codes aren't different from C<i> and C<I>; they are
 tolerated for completeness' sake.
@@ -400,7 +404,7 @@ containing a stack frame as it happens on an Intel 8086:
 
 First, we note that this time-honored 16-bit CPU uses little-endian order,
 and that's why the low order byte is stored at the lower address. To
-unpack such a (signed) short we'll have to use code C<v>. A repeat
+unpack such a (unsigned) short we'll have to use code C<v>. A repeat
 count unpacks all 12 shorts:
 
    my( $ip, $cs, $flags, $ax, $bx, $cd, $dx, $si, $di, $bp, $ds, $es ) =
@@ -422,6 +426,8 @@ together, we may now write:
        $ax,$al,$ah, $bx,$bl,$bh, $cx,$cl,$ch, $dx,$dl,$dh, 
        $si, $di, $bp, $ds, $es ) =
    unpack( 'v2' . ('vXXCC' x 5) . 'v5', $frame );
+
+(The clumsy construction of the template can be avoided - just read on!)  
 
 We've taken some pains to construct the template so that it matches
 the contents of our frame buffer. Otherwise we'd either get undefined values,
@@ -457,16 +463,47 @@ to the data length. (But make sure to read L<"Lengths and Widths"> before
 you really code this!)
 
 
+=head2 Byte-order modifiers
+
+In the previous sections we've learned how to use C<n>, C<N>, C<v> and
+C<V> to pack and unpack integers with big- or little-endian byte-order.
+While this is nice, it's still rather limited because it leaves out all
+kinds of signed integers as well as 64-bit integers. For example, if you
+wanted to unpack a sequence of signed big-endian 16-bit integers in a
+platform-independent way, you would have to write:
+
+   my @data = unpack 's*', pack 'S*', unpack 'n*', $buf;
+
+This is ugly. As of Perl 5.9.2, there's a much nicer way to express your
+desire for a certain byte-order: the C<E<gt>> and C<E<lt>> modifiers.
+C<E<gt>> is the big-endian modifier, while C<E<lt>> is the little-endian
+modifier. Using them, we could rewrite the above code as:
+
+   my @data = unpack 's>*', $buf;
+
+As you can see, the "big end" of the arrow touches the C<s>, which is a
+nice way to remember that C<E<gt>> is the big-endian modifier. The same
+obviously works for C<E<lt>>, where the "little end" touches the code.
+
+You will probably find these modifiers even more useful if you have
+to deal with big- or little-endian C structures. Be sure to read
+L<"Packing and Unpacking C Structures"> for more on that.
+
 
 =head2 Floating point Numbers
 
 For packing floating point numbers you have the choice between the
-pack codes C<f> and C<d> which pack into (or unpack from) single-precision or
-double-precision representation as it is provided by your system. (There
+pack codes C<f>, C<d>, C<F> and C<D>. C<f> and C<d> pack into (or unpack
+from) single-precision or double-precision representation as it is provided
+by your system. If your systems supports it, C<D> can be used to pack and
+unpack extended-precision floating point values (C<long double>), which
+can offer even more resolution than C<f> or C<d>. C<F> packs an C<NV>,
+which is the floating point type used by Perl internally. (There
 is no such thing as a network representation for reals, so if you want
 to send your real numbers across computer boundaries, you'd better stick
 to ASCII representation, unless you're absolutely sure what's on the other
-end of the line.)
+end of the line. For the even more adventuresome, you can use the byte-order
+modifiers from the previous section also on floating point codes.)
 
 
 
@@ -520,7 +557,7 @@ into individual characters. Bit values from the "reserved" positions are
 simply assigned to C<undef>, a convenient notation for "I don't care where
 this goes".
 
-   ($carry, undef, $parity, undef, $auxcarry, undef, $sign,
+   ($carry, undef, $parity, undef, $auxcarry, undef, $zero, $sign,
     $trace, $interrupt, $direction, $overflow) =
       split( //, unpack( 'b16', $status ) );
 
@@ -530,7 +567,7 @@ last 4 bits can be ignored anyway.
 
 =head2 Uuencoding
 
-Another odd-man-out in the template alphabet is C<u>, which packs an
+Another odd-man-out in the template alphabet is C<u>, which packs a
 "uuencoded string". ("uu" is short for Unix-to-Unix.) Chances are that
 you won't ever need this encoding technique which was invented to overcome
 the shortcomings of old-fashioned transmission mediums that do not support
@@ -590,7 +627,7 @@ characters that are used in several European languages is in the next
 range, up to 255. After some more Latin extensions we find the character
 sets from languages using non-Roman alphabets, interspersed with a
 variety of symbol sets such as currency symbols, Zapf Dingbats or Braille.
-(You might want to visit L<www.unicode.org> for a look at some of
+(You might want to visit L<http://www.unicode.org/> for a look at some of
 them - my personal favourites are Telugu and Kannada.)
 
 The Unicode character sets associates characters with integers. Encoding
@@ -600,17 +637,24 @@ The UTF-8 encoding avoids this by storing the most common (from a western
 point of view) characters in a single byte while encoding the rarer
 ones in three or more bytes.
 
-So what has this got to do with C<pack>? Well, if you want to convert
-between a Unicode number and its UTF-8 representation you can do so by
-using template code C<U>. As an example, let's produce the UTF-8
-representation of the Euro currency symbol (code number 0x20AC):
+Perl uses UTF-8, internally, for most Unicode strings.
+
+So what has this got to do with C<pack>? Well, if you want to compose a
+Unicode string (that is internally encoded as UTF-8), you can do so by
+using template code C<U>. As an example, let's produce the Euro currency
+symbol (code number 0x20AC):
 
    $UTF8{Euro} = pack( 'U', 0x20AC );
+   # Equivalent to: $UTF8{Euro} = "\x{20ac}";
 
-Inspecting C<$UTF8{Euro}> shows that it contains 3 bytes: "\xe2\x82\xac". The
-round trip can be completed with C<unpack>:
+Inspecting C<$UTF8{Euro}> shows that it contains 3 bytes:
+"\xe2\x82\xac". However, it contains only 1 character, number 0x20AC.
+The round trip can be completed with C<unpack>:
 
    $Unicode{Euro} = unpack( 'U', $UTF8{Euro} );
+
+Unpacking using the C<U> template code also works on UTF-8 encoded byte
+strings.
 
 Usually you'll want to pack or unpack UTF-8 strings:
 
@@ -618,12 +662,17 @@ Usually you'll want to pack or unpack UTF-8 strings:
    my $alefbet = pack( 'U*', 0x05d0..0x05ea );
    my @hebrew = unpack( 'U*', $utf );
 
+Please note: in the general case, you're better off using
+Encode::decode_utf8 to decode a UTF-8 encoded byte string to a Perl
+Unicode string, and Encode::encode_utf8 to encode a Perl Unicode string
+to UTF-8 bytes. These functions provide means of handling invalid byte
+sequences and generally have a friendlier interface.
 
 =head2 Another Portable Binary Encoding
 
 The pack code C<w> has been added to support a portable binary data
 encoding scheme that goes way beyond simple integers. (Details can
-be found at L<Casbah.org>, the Scarab project.)  A BER (Binary Encoded
+be found at L<http://Casbah.org/>, the Scarab project.)  A BER (Binary Encoded
 Representation) compressed unsigned integer stores base 128
 digits, most significant digit first, with as few digits as possible.
 Bit eight (the high bit) is set on each byte except the last. There
@@ -634,6 +683,54 @@ is no size limit to BER encoding, but Perl won't go to extremes.
 A hex dump of C<$berbuf>, with spaces inserted at the right places,
 shows 01 8100 8101 81807F. Since the last byte is always less than
 128, C<unpack> knows where to stop.
+
+
+=head1 Template Grouping
+
+Prior to Perl 5.8, repetitions of templates had to be made by
+C<x>-multiplication of template strings. Now there is a better way as
+we may use the pack codes C<(> and C<)> combined with a repeat count.
+The C<unpack> template from the Stack Frame example can simply
+be written like this:
+
+   unpack( 'v2 (vXXCC)5 v5', $frame )
+
+Let's explore this feature a little more. We'll begin with the equivalent of
+
+   join( '', map( substr( $_, 0, 1 ), @str ) )
+
+which returns a string consisting of the first character from each string.
+Using pack, we can write
+
+   pack( '(A)'.@str, @str )
+
+or, because a repeat count C<*> means "repeat as often as required",
+simply
+
+   pack( '(A)*', @str )
+
+(Note that the template C<A*> would only have packed C<$str[0]> in full
+length.)
+
+To pack dates stored as triplets ( day, month, year ) in an array C<@dates>
+into a sequence of byte, byte, short integer we can write
+
+   $pd = pack( '(CCS)*', map( @$_, @dates ) );
+
+To swap pairs of characters in a string (with even length) one could use
+several techniques. First, let's use C<x> and C<X> to skip forward and back:
+
+   $s = pack( '(A)*', unpack( '(xAXXAx)*', $s ) );
+
+We can also use C<@> to jump to an offset, with 0 being the position where
+we were when the last C<(> was encountered:
+
+   $s = pack( '(A)*', unpack( '(@1A @0A @2)*', $s ) );
+
+Finally, there is also an entirely different approach by unpacking big
+endian shorts and packing them in the reverse byte order:
+
+   $s = pack( '(v)*', unpack( '(n)*', $s );
 
 
 =head1 Lengths and Widths
@@ -699,7 +796,8 @@ C</> is not implemented in Perls before 5.6, so if your code is required to
 work on older Perls you'll need to C<unpack( 'Z* Z* C')> to get the length,
 then use it to make a new unpack string. For example
 
-   # pack a message: ASCIIZ, ASCIIZ, length, string, byte (5.005 compatible)
+   # pack a message: ASCIIZ, ASCIIZ, length, string, byte
+   # (5.005 compatible)
    my $msg = pack( 'Z* Z* C A* C', $src, $dst, length $sm, $sm, $prio );
 
    # unpack
@@ -713,20 +811,20 @@ string for the template. So maybe we should introduce...
 
 So far, we've seen literals used as templates. If the list of pack
 items doesn't have fixed length, an expression constructing the
-template has to be used. Here's an example:
-To store named string values in a way that can be conveniently parsed
-by a C program, we create a sequence of names and null terminated ASCII
-strings, with C<=> between the name and the value, followed by an
-additional delimiting null byte. Here's how:
+template is required (whenever, for some reason, C<()*> cannot be used).
+Here's an example: To store named string values in a way that can be
+conveniently parsed by a C program, we create a sequence of names and
+null terminated ASCII strings, with C<=> between the name and the value,
+followed by an additional delimiting null byte. Here's how:
 
-   my $env = pack( 'A*A*Z*' x keys( %Env ) . 'C',
+   my $env = pack( '(A*A*Z*)' . keys( %Env ) . 'C',
                    map( { ( $_, '=', $Env{$_} ) } keys( %Env ) ), 0 );
 
 Let's examine the cogs of this byte mill, one by one. There's the C<map>
 call, creating the items we intend to stuff into the C<$env> buffer:
 to each key (in C<$_>) it adds the C<=> separator and the hash entry value.
 Each triplet is packed with the template code sequence C<A*A*Z*> that
-is multiplied with the number of keys. (Yes, that's what the C<keys>
+is repeated according to the number of keys. (Yes, that's what the C<keys>
 function returns in scalar context.) To get the very last null byte,
 we add a C<0> at the end of the C<pack> list, to be packed with C<C>.
 (Attentive readers may have noticed that we could have omitted the 0.)
@@ -735,10 +833,74 @@ For the reverse operation, we'll have to determine the number of items
 in the buffer before we can let C<unpack> rip it apart:
 
    my $n = $env =~ tr/\0// - 1;
-   my %env = map( split( /=/, $_ ), unpack( 'Z*' x $n, $env ) );
+   my %env = map( split( /=/, $_ ), unpack( "(Z*)$n", $env ) );
 
 The C<tr> counts the null bytes. The C<unpack> call returns a list of
 name-value pairs each of which is taken apart in the C<map> block. 
+
+
+=head2 Counting Repetitions
+
+Rather than storing a sentinel at the end of a data item (or a list of items),
+we could precede the data with a count. Again, we pack keys and values of
+a hash, preceding each with an unsigned short length count, and up front
+we store the number of pairs:
+
+   my $env = pack( 'S(S/A* S/A*)*', scalar keys( %Env ), %Env );
+
+This simplifies the reverse operation as the number of repetitions can be
+unpacked with the C</> code:
+
+   my %env = unpack( 'S/(S/A* S/A*)', $env );
+
+Note that this is one of the rare cases where you cannot use the same
+template for C<pack> and C<unpack> because C<pack> can't determine
+a repeat count for a C<()>-group.
+
+
+=head2 Intel HEX
+
+Intel HEX is a file format for representing binary data, mostly for
+programming various chips, as a text file. (See
+L<http://en.wikipedia.org/wiki/.hex> for a detailed description, and
+L<http://en.wikipedia.org/wiki/SREC_(file_format)> for the Motorola
+S-record format, which can be unravelled using the same technique.)
+Each line begins with a colon (':') and is followed by a sequence of
+hexadecimal characters, specifying a byte count I<n> (8 bit),
+an address (16 bit, big endian), a record type (8 bit), I<n> data bytes
+and a checksum (8 bit) computed as the least significant byte of the two's
+complement sum of the preceding bytes. Example: C<:0300300002337A1E>.
+
+The first step of processing such a line is the conversion, to binary,
+of the hexadecimal data, to obtain the four fields, while checking the
+checksum. No surprise here: we'll start with a simple C<pack> call to 
+convert everything to binary:
+
+   my $binrec = pack( 'H*', substr( $hexrec, 1 ) );
+
+The resulting byte sequence is most convenient for checking the checksum.
+Don't slow your program down with a for loop adding the C<ord> values
+of this string's bytes - the C<unpack> code C<%> is the thing to use
+for computing the 8-bit sum of all bytes, which must be equal to zero:
+
+   die unless unpack( "%8C*", $binrec ) == 0;
+
+Finally, let's get those four fields. By now, you shouldn't have any
+problems with the first three fields - but how can we use the byte count
+of the data in the first field as a length for the data field? Here
+the codes C<x> and C<X> come to the rescue, as they permit jumping
+back and forth in the string to unpack.
+
+   my( $addr, $type, $data ) = unpack( "x n C X4 C x3 /a", $bin ); 
+
+Code C<x> skips a byte, since we don't need the count yet. Code C<n> takes
+care of the 16-bit big-endian integer address, and C<C> unpacks the
+record type. Being at offset 4, where the data begins, we need the count.
+C<X4> brings us back to square one, which is the byte at offset 0.
+Now we pick up the count, and zoom forth to offset 4, where we are
+now fully furnished to extract the exact number of data bytes, leaving
+the trailing checksum byte alone.
+
 
 
 =head1 Packing and Unpacking C Structures
@@ -748,6 +910,12 @@ strings. If it were not for a couple of snags we could conclude this
 section right away with the terse remark that C structures don't
 contain anything else, and therefore you already know all there is to it.
 Sorry, no: read on, please.
+
+If you have to deal with a lot of C structures, and don't want to
+hack all your template strings manually, you'll probably want to have
+a look at the CPAN module C<Convert::Binary::C>. Not only can it parse
+your C source directly, but it also has built-in support for all the
+odds and ends described further on in this section.
 
 =head2 The Alignment Pit
 
@@ -836,7 +1004,7 @@ program? Here's a C program that does the trick:
    #define Pt(struct,field,tchar) \
      printf( "@%d%s ", offsetof(struct,field), # tchar );
 
-   int main(){
+   int main() {
      Pt( gappy_t, fc1, c  );
      Pt( gappy_t, fs,  s! );
      Pt( gappy_t, fc2, c  );
@@ -854,6 +1022,48 @@ of the pack buffer to the next item: This is just the value
 the C<offsetof> macro (defined in C<E<lt>stddef.hE<gt>>) returns when
 given a C<struct> type and one of its field names ("member-designator" in 
 C standardese).
+
+Neither using offsets nor adding C<x>'s to bridge the gaps is satisfactory.
+(Just imagine what happens if the structure changes.) What we really need
+is a way of saying "skip as many bytes as required to the next multiple of N".
+In fluent Templatese, you say this with C<x!N> where N is replaced by the
+appropriate value. Here's the next version of our struct packaging:
+
+  my $gappy = pack( 'c x!2 s c x!4 l!', $c1, $s, $c2, $l );
+
+That's certainly better, but we still have to know how long all the
+integers are, and portability is far away. Rather than C<2>,
+for instance, we want to say "however long a short is". But this can be
+done by enclosing the appropriate pack code in brackets: C<[s]>. So, here's
+the very best we can do:
+
+  my $gappy = pack( 'c x![s] s c x![l!] l!', $c1, $s, $c2, $l );
+
+
+=head2 Dealing with Endian-ness
+
+Now, imagine that we want to pack the data for a machine with a
+different byte-order. First, we'll have to figure out how big the data
+types on the target machine really are. Let's assume that the longs are
+32 bits wide and the shorts are 16 bits wide. You can then rewrite the
+template as:
+
+  my $gappy = pack( 'c x![s] s c x![l] l', $c1, $s, $c2, $l );
+
+If the target machine is little-endian, we could write:
+
+  my $gappy = pack( 'c x![s] s< c x![l] l<', $c1, $s, $c2, $l );
+
+This forces the short and the long members to be little-endian, and is
+just fine if you don't have too many struct members. But we could also
+use the byte-order modifier on a group and write the following:
+
+  my $gappy = pack( '( c x![s] s c x![l] l )<', $c1, $s, $c2, $l );
+
+This is not as short as before, but it makes it more obvious that we
+intend to have little-endian byte-order for a whole group, not only
+for individual template codes. It can also be more readable and easier
+to maintain.
 
 
 =head2 Alignment, Take 2
@@ -932,7 +1142,7 @@ where a pointer is expected. The read(2) system call comes to mind:
 After reading L<perlfunc> explaining how to use C<syscall> we can write
 this Perl function copying a file to standard output:
 
-    require 'syscall.ph';
+    require 'syscall.ph'; # run h2ph to generate this file
     sub cat($){
         my $path = shift();
         my $size = -s $path;
@@ -1038,8 +1248,8 @@ many pairs of hex digits, and use C<map> to handle the traditional
 spacing - 16 bytes to a line:
 
     my $i;
-    print map { ++$i % 16 ? "$_ " : "$_\n" }
-          unpack( 'H2' x length( $mem ), $mem ),
+    print map( ++$i % 16 ? "$_ " : "$_\n",
+               unpack( 'H2' x length( $mem ), $mem ) ),
           length( $mem ) % 16 ? "\n" : '';
 
 
