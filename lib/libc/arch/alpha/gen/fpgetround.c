@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpgetround.c,v 1.3 1996/11/13 21:20:13 niklas Exp $	*/
+/*	$OpenBSD: fpgetround.c,v 1.4 2005/08/07 16:40:13 espie Exp $	*/
 /*	$NetBSD: fpgetround.c,v 1.1 1995/04/29 05:09:55 cgd Exp $	*/
 
 /*
@@ -36,7 +36,7 @@
 #include <ieeefp.h>
 
 fp_rnd
-fpgetround()
+fpgetround(void)
 {
 	double fpcrval;
 	u_int64_t old;
@@ -48,3 +48,4 @@ fpgetround()
 
 	return ((old >> 58) & 0x3);
 }
+DEF_WEAK(fpgetround);
