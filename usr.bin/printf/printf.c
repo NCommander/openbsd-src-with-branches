@@ -1,4 +1,4 @@
-/*	$OpenBSD: printf.c,v 1.23 2015/10/06 23:01:43 deraadt Exp $	*/
+/*	$OpenBSD: printf.c,v 1.24 2015/10/09 01:37:08 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -439,7 +439,7 @@ getlong(void)
 		return(0L);
 
 	if (**gargv == '\"' || **gargv == '\'')
-		return (long) *((*gargv++)+1);
+		return (unsigned char) *((*gargv++)+1);
 
 	errno = 0;
 	val = strtol (*gargv, &ep, 0);
@@ -457,7 +457,7 @@ getulong(void)
 		return(0UL);
 
 	if (**gargv == '\"' || **gargv == '\'')
-		return (unsigned long) *((*gargv++)+1);
+		return (unsigned char) *((*gargv++)+1);
 
 	errno = 0;
 	val = strtoul (*gargv, &ep, 0);
@@ -475,7 +475,7 @@ getdouble(void)
 		return(0.0);
 
 	if (**gargv == '\"' || **gargv == '\'')
-		return (double) *((*gargv++)+1);
+		return (unsigned char) *((*gargv++)+1);
 
 	errno = 0;
 	val = strtod (*gargv, &ep);
