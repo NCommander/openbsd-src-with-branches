@@ -1,4 +1,4 @@
-/* $OpenBSD: main.c,v 1.26 2014/03/13 00:33:55 tedu Exp $	 */
+/* $OpenBSD: main.c,v 1.27 2015/10/10 14:23:47 deraadt Exp $	 */
 /* $NetBSD: main.c,v 1.5 1996/03/19 03:21:38 jtc Exp $	 */
 
 /*
@@ -234,8 +234,7 @@ create_file_names(void)
 	size_t len;
 	char *tmpdir;
 
-	if ((tmpdir = getenv("TMPDIR")) == NULL || *tmpdir == '\0')
-		tmpdir = _PATH_TMP;
+	tmpdir = _PATH_TMP;
 
 	len = strlen(tmpdir);
 	if (tmpdir[len - 1] == '/')
