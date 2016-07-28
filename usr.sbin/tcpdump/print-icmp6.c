@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-icmp6.c,v 1.19 2016/05/06 17:16:24 jca Exp $	*/
+/*	$OpenBSD: print-icmp6.c,v 1.20 2016/05/07 19:36:45 jca Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994
@@ -452,7 +452,7 @@ icmp6_print(const u_char *bp, u_int length, const u_char *bp2)
 					mode = FQDN;
 			}
 		}
-		if (mode == UNKNOWN && 2 < abs(buf[12] - (ep - buf - 13)))
+		if (mode == UNKNOWN && 2 < labs(buf[12] - (ep - buf - 13)))
 			mode = WRU;
 		if (mode == UNKNOWN)
 			mode = FQDN;
