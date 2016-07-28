@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.73 2016/03/14 06:37:31 guenther Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.74 2016/03/17 13:18:47 mpi Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
@@ -675,7 +675,7 @@ acpicpu_attach(struct device *parent, struct device *self, void *aux)
 
 	/* link in the matching cpu_info */
 	CPU_INFO_FOREACH(cii, ci)
-		if (ci->ci_cpuid == sc->sc_dev.dv_unit) {
+		if (ci->ci_acpi_proc_id == sc->sc_cpu) {
 			ci->ci_acpicpudev = self;
 			sc->sc_ci = ci;
 			break;
