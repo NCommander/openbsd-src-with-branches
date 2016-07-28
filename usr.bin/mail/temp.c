@@ -1,4 +1,4 @@
-/*	$OpenBSD: temp.c,v 1.15 2009/10/27 23:59:40 deraadt Exp $	*/
+/*	$OpenBSD: temp.c,v 1.16 2015/10/16 17:56:07 mmcc Exp $	*/
 /*	$NetBSD: temp.c,v 1.5 1996/06/08 19:48:42 christos Exp $	*/
 
 /*
@@ -46,8 +46,7 @@ tinit(void)
 {
 	char *cp;
 
-	if ((tmpdir = getenv("TMPDIR")) == NULL || *tmpdir == '\0')
-		tmpdir = _PATH_TMP;
+	tmpdir = _PATH_TMP;
 	if ((tmpdir = strdup(tmpdir)) == NULL)
 		err(1, "strdup");
 
