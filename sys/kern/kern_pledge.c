@@ -382,7 +382,7 @@ static const struct {
 	{ "rpath",		PLEDGE_RPATH },
 	{ "sendfd",		PLEDGE_SENDFD },
 	{ "settime",		PLEDGE_SETTIME },
-	{ "stdio",		PLEDGE_STDIO|PLEDGE_RECVFD },
+	{ "stdio",		PLEDGE_STDIO },
 	{ "tmppath",		PLEDGE_TMPPATH },
 	{ "tty",		PLEDGE_TTY },
 	{ "unix",		PLEDGE_UNIX },
