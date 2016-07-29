@@ -1,4 +1,4 @@
-/*	$OpenBSD: thermal.c,v 1.3 2016/05/23 04:52:50 mglocker Exp $ */
+/*	$OpenBSD: thermal.c,v 1.4 2016/05/23 11:28:57 mglocker Exp $ */
 
 /*-
  * Copyright (c) 2009-2011 Nathan Whitehorn
@@ -157,16 +157,18 @@ thermal_manage_fans(void)
 			average_excess += frac_excess;
 			nsens++;
 		}
-		average_excess /= nsens;
 
-		/* If there are no sensors in this zone, use the average */
-		if (nsens_zone == 0)
-			max_excess_zone = average_excess;
 		/* No sensors at all? Use default */
 		if (nsens == 0) {
 			fan->fan->set(fan->fan, fan->fan->default_rpm);
 			continue;
 		}
+
+		average_excess /= nsens;
+
+		/* If there are no sensors in this zone, use the average */
+		if (nsens_zone == 0)
+			max_excess_zone = average_excess;
 
 		/*
 		 * Scale the fan linearly in the max temperature in its
