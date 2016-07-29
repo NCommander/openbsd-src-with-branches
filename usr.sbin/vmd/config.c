@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.8 2015/12/07 14:43:24 reyk Exp $	*/
+/*	$OpenBSD: config.c,v 1.9 2015/12/07 15:57:53 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -135,6 +135,7 @@ config_getvm(struct privsep *ps, struct vm_create_params *vcp,
 		goto fail;
 
 	memcpy(&vm->vm_params, vcp, sizeof(vm->vm_params));
+	vm->vm_pid = -1;
 
 	for (i = 0; i < vcp->vcp_ndisks; i++)
 		vm->vm_disks[i] = -1;
