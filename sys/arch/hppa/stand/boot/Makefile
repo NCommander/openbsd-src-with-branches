@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.24 2013/08/16 08:16:45 otto Exp $
+#	$OpenBSD: Makefile,v 1.25 2016/03/30 06:38:45 jmc Exp $
 
 MAN=	boot.8
 MANSUBDIR=hppa
@@ -17,7 +17,7 @@ SRCS+=	milli.S ashrdi3.c memcmp.c memcpy.c memset.c moddi3.c muldi3.c \
 	qdivrem.c strcmp.c strlcpy.c strlen.c strncmp.c strncpy.c divdi3.c
 
 LD?=	ld
-LDFLAGS+=-Bstatic -nostartfiles -nostdlib -N -Ttext $(LINKADDR) -nopie
+LDFLAGS+=-Bstatic -nostartfiles -nostdlib -N -Ttext $(LINKADDR) -nopie -znorelro
 LDFLAGS+=-T ${.CURDIR}/ld.script -Map boot.map
 SIZE?=	size
 STRIP?=	strip

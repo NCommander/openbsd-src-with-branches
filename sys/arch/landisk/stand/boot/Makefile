@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.11 2015/06/14 19:08:59 miod Exp $
+#	$OpenBSD: Makefile,v 1.12 2016/03/30 06:38:45 jmc Exp $
 
 MAN=	boot.8
 
 .if ${MACHINE} == "landisk"
 PROG=	boot
 SRCS=	srt0.S conf.c devs.c getsecs.c scifcons.c delay.c
-LDFLAGS=-nostdlib -Ttext 0x8ff00000 -N -x -Bstatic -e start -nopie
+LDFLAGS=-nostdlib -Ttext 0x8ff00000 -N -x -Bstatic -e start -nopie -znorelro
 OBJCOPY?=objcopy
 
 INSTALL_STRIP=

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2013/01/18 03:45:23 jsing Exp $
+#	$OpenBSD: Makefile,v 1.6 2014/07/15 22:14:37 deraadt Exp $
 #
 
 S=	${.CURDIR}/../../../..
@@ -12,7 +12,7 @@ AFLAGS+=-DMACH=\"${MACHINE}\" -DMACH_U=\"${MACHINE:U}\"
 AFLAGS+=-fno-pie
 LD=ld
 ORG=	0x0000
-LDFLAGS=-nostdlib -Ttext ${ORG} -x -N -s -Bstatic -e start -nopie
+LDFLAGS=-nostdlib -Ttext ${ORG} -x -N -s -Bstatic -e start -nopie -znorelro
 
 NOMAN=
 #MAN+=	cdbr.8

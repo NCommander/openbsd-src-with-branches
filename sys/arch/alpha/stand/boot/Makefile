@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.19 2012/09/01 15:10:06 pascal Exp $
+#	$OpenBSD: Makefile,v 1.20 2015/10/22 18:54:41 miod Exp $
 #	$NetBSD: Makefile,v 1.17 1997/04/17 07:27:46 thorpej Exp $
 
 S=	${.CURDIR}/../../../..
@@ -60,6 +60,6 @@ LIBSA=		${SALIB}
 ${PROG}.sym: ${OBJS} ${LIBSA} ${LIBZ}
 	sh ${.CURDIR}/newvers.sh ${.CURDIR}/version
 	${COMPILE.c} vers.c
-	${LD} -nopie -Ttext ${BOOT_RELOC} -N -e start -o ${PROG}.sym \
-	    ${OBJS} vers.o ${LIBSA} ${LIBZ} ${LIBSA}
+	${LD} -nopie -znorelro -Ttext ${BOOT_RELOC} -N -e start \
+	    -o ${PROG}.sym ${OBJS} vers.o ${LIBSA} ${LIBZ} ${LIBSA}
 	size ${PROG}.sym

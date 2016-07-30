@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2013/10/15 22:49:03 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.9 2014/07/13 21:18:26 miod Exp $
 
 NOMAN=	no man
 S	=${.CURDIR}/../../../..
@@ -21,7 +21,7 @@ CPPFLAGS+=-DCONSPEED=9600
 SRCS+=	milli.S strlen.c strlcpy.c
 
 LD?=	ld
-LDFLAGS+=-Bstatic -nostartfiles -nostdlib -N -Ttext $(LINKADDR) -nopie
+LDFLAGS+=-Bstatic -nostartfiles -nostdlib -N -Ttext $(LINKADDR) -nopie -znorelro
 LDFLAGS+=-T ${.CURDIR}/ld.script -Map cdboot.map
 SIZE?=	size
 STRIP?=	strip

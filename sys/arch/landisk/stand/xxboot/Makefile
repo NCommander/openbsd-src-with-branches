@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.8 2015/06/14 19:08:59 miod Exp $
+#	$OpenBSD: Makefile,v 1.9 2015/10/05 04:38:27 miod Exp $
 
 MAN=	xxboot.8
 
 .if ${MACHINE} == "landisk"
 PROG=	xxboot
 SRCS=	pbr.S xxboot.S boot1.c
-LDFLAGS=-nostdlib -Ttext 0x8c201000 -N -x -Bstatic -e start -nopie
+LDFLAGS=-nostdlib -Ttext 0x8c201000 -N -x -Bstatic -e start -nopie -znorelro
 
 INSTALL_STRIP=
 

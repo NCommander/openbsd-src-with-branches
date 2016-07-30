@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2013/01/18 21:09:04 espie Exp $
+#	$OpenBSD: Makefile,v 1.10 2014/07/13 21:18:44 jasper Exp $
 
 MAN=	biosboot.8
 
@@ -9,7 +9,7 @@ SADIR=	${.CURDIR}/..
 PROG=	biosboot
 SRCS=	biosboot.S
 LD=ld
-LDFLAGS=-nostdlib -Ttext 0 -N -x -Bstatic -nopie
+LDFLAGS=-nostdlib -Ttext 0 -N -x -Bstatic -nopie -znorelro
 LDFLAGS+=-melf_i386 -L/usr/libdata
 INSTALL_STRIP=
 

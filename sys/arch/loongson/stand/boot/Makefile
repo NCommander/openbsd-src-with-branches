@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2012/11/04 16:30:44 matthieu Exp $
+#	$OpenBSD: Makefile,v 1.5 2016/03/30 06:38:45 jmc Exp $
 
 NOMAN=
 #MAN=		boot.8
@@ -10,6 +10,6 @@ NOPROG=
 .endif
 CFLAGS+=-fno-pie
 AFLAGS+=-fno-pie
-LDFLAGS+=-nopie
+LDFLAGS+=-nopie -znorelro
 
 .include <bsd.prog.mk>

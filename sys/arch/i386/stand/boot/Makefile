@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.58 2015/09/18 13:30:56 miod Exp $
+#	$OpenBSD: Makefile,v 1.59 2016/03/30 06:38:45 jmc Exp $
 
 COPTS?=
 MAN?=	boot.8
@@ -16,7 +16,7 @@ SADIR=	${.CURDIR}/..
 PROG?=	boot
 LD?=	ld
 SIZE?=	size
-LDFLAGS+=-nostdlib -Bstatic -nopie
+LDFLAGS+=-nostdlib -Bstatic -nopie -znorelro
 
 CLEANFILES+=	crt0.o
 SRCS=	srt0.S conf.c

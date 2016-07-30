@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 2013/01/18 04:10:16 jsing Exp $
+#	$OpenBSD: Makefile,v 1.26 2013/01/18 21:09:04 espie Exp $
 
 MAN=	biosboot.8
 
@@ -9,7 +9,7 @@ SADIR=	${.CURDIR}/..
 PROG=	biosboot
 SRCS=	biosboot.S
 LD=ld
-LDFLAGS=-nostdlib -Ttext 0 -N -x -Bstatic -nopie
+LDFLAGS=-nostdlib -Ttext 0 -N -x -Bstatic -nopie -znorelro
 INSTALL_STRIP=
 
 .depend biosboot.o: assym.h

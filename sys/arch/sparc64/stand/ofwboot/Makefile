@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.18 2012/08/30 19:29:14 pascal Exp $
+#	$OpenBSD: Makefile,v 1.19 2014/11/26 20:30:41 stsp Exp $
 #	$NetBSD: Makefile,v 1.2 2001/03/04 14:50:05 mrg Exp $
 
 CURDIR=	${.CURDIR}
@@ -73,7 +73,7 @@ CPPFLAGS+=	-DSOFTRAID
 .endif
 
 ${PROG}: ${OBJS} ${LIBSA} ${LIBZ}
-	${LD} -N -Ttext ${RELOC} -e ${ENTRY} -o ${PROG} -nopie \
+	${LD} -N -Ttext ${RELOC} -e ${ENTRY} -o ${PROG} -nopie -znorelro \
 	    ${OBJS} -L${LIBSADIR} ${LIBSA} \
 	    -L${LIBZDIR} ${LIBZ}
 

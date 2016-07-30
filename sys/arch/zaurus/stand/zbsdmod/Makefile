@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2012/08/21 14:46:20 pascal Exp $
+#	$OpenBSD: Makefile,v 1.5 2012/09/11 17:12:06 deraadt Exp $
 
 OBJS= zbsdmod.o
 SRCS= zbsdmod.c
@@ -18,4 +18,4 @@ afterinstall:
 CFLAGS= -fno-stack-protector -Wall
 CFLAGS+= -DMACHINE=\"${MACHINE}\" -DUTS_RELEASE=\"2.4.20\"
 CPPFLAGS= -I${.CURDIR}/../include -fno-pie
-LDFLAGS+= -nopie
+LDFLAGS+= -nopie -znorelro

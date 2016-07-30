@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2014/07/15 22:14:37 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.24 2015/09/02 04:09:24 yasuoka Exp $
 
 MAN=	cdboot.8
 
@@ -10,7 +10,7 @@ PROG=	cdboot
 SRCS=	srt0.S boot.c conf.c
 LD?=	ld
 SIZE?=	size
-LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -nopie
+LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -nopie -znorelro
 INSTALL_STRIP=
 BINMODE=644
 

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.30 2015/09/02 01:52:25 yasuoka Exp $
+#	$OpenBSD: Makefile,v 1.31 2016/03/30 06:38:45 jmc Exp $
 
 COPTS?=
 MAN?=	boot.8
@@ -17,7 +17,7 @@ PROG?=	boot
 SRCS=	srt0.S conf.c
 LD?=	ld
 SIZE?=	size
-LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -nopie
+LDFLAGS+=-nostdlib -Bstatic -Ttext $(LINKADDR) -N -x -nopie -znorelro
 LDFLAGS+=-melf_i386 -L/usr/libdata
 
 .PATH:	${S}/stand/boot
