@@ -1,4 +1,4 @@
-.\"	$OpenBSD: acpi.4,v 1.44 2016/03/28 20:08:56 jmc Exp $
+.\"	$OpenBSD: acpi.4,v 1.45 2016/05/07 23:16:09 kettenis Exp $
 .\"
 .\" Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: March 28 2016 $
+.Dd $Mdocdate: May 7 2016 $
 .Dt ACPI 4
 .Os
 .Sh NAME
@@ -40,6 +40,8 @@ The following devices can attach to
 .Bl -tag -width "acpithinkpad(4)XXX" -offset indent -compact
 .It Xr acpiac 4
 ACPI AC adapter
+.It Xr acpials 4
+ACPI ambient light sensor
 .It Xr acpiasus 4
 ASUS ACPI hotkeys
 .It Xr acpibat 4
