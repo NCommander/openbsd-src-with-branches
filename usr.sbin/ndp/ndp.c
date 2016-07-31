@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.71 2016/04/05 18:09:30 jca Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.72 2016/07/31 19:12:26 jca Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -152,13 +152,12 @@ static char *rtpref_str[] = {
 	"low"			/* 11 */
 };
 
-int mode = 0;
-char *arg = NULL;
-
 int
 main(int argc, char *argv[])
 {
 	int		 ch;
+	int		 mode = 0;
+	char		*arg = NULL;
 	const char	*errstr;
 
 	pid = getpid();
