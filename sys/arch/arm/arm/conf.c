@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.45 2016/05/21 21:24:36 kettenis Exp $	*/
+/*	$OpenBSD: conf.c,v 1.46 2016/05/23 00:05:34 deraadt Exp $	*/
 /*	$NetBSD: conf.c,v 1.10 2002/04/19 01:04:38 wiz Exp $	*/
 
 /*
@@ -403,8 +403,7 @@ dev_t	swapdev = makedev(1, 0);
  * Returns true if dev is /dev/mem or /dev/kmem.
  */
 int
-iskmemdev(dev)
-	dev_t dev;
+iskmemdev(dev_t dev)
 {
 	return (major(dev) == mem_no && minor(dev) < 2);
 }
@@ -413,8 +412,7 @@ iskmemdev(dev)
  * Returns true if dev is /dev/zero.
  */
 int
-iszerodev(dev)
-	dev_t dev;
+iszerodev(dev_t dev)
 {
 	return (major(dev) == mem_no && minor(dev) == 3);
 }
@@ -453,7 +451,7 @@ int chrtoblktbl[] = {
 int nchrtoblktbl = nitems(chrtoblktbl);
 
 dev_t
-getnulldev()
+getnulldev(void)
 {
 	return makedev(mem_no, 2);
 }
