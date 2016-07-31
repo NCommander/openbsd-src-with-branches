@@ -1,4 +1,4 @@
-/*	$OpenBSD: armreg.h,v 1.29 2016/04/04 00:41:36 jsg Exp $	*/
+/*	$OpenBSD: armreg.h,v 1.30 2016/04/04 09:06:28 patrick Exp $	*/
 /*	$NetBSD: armreg.h,v 1.27 2003/09/06 08:43:02 rearnsha Exp $	*/
 
 /*
@@ -180,6 +180,13 @@
 #define CPU_ID_CORTEX_A72	0x410fd080
 #define CPU_ID_CORTEX_A72_R1	0x411fd080
 #define CPU_ID_CORTEX_A72_MASK	0xff0ffff0
+
+/* CPUID on >= v7 */
+#define ID_MMFR0_VMSA_MASK	0x0000000f
+
+#define VMSA_V7			3
+#define VMSA_V7_PXN		4
+#define VMSA_V7_LDT		5
 
 /*
  * Post-ARM3 CP15 registers:
