@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_dl.h,v 1.9 2015/09/15 09:13:33 guenther Exp $	*/
 /*	$NetBSD: if_dl.h,v 1.8 1995/03/26 20:30:13 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -53,30 +50,46 @@
  * expected that all drivers for an interface of a given if_type will agree.
  */
 
+#ifndef _NET_IF_DL_H_
+#define _NET_IF_DL_H_
+
 /*
  * Structure of a Link-Level sockaddr:
  */
 struct sockaddr_dl {
 	u_char	  sdl_len;	/* Total length of sockaddr */
-	u_char	  sdl_family;	/* AF_DLI */
+	u_char	  sdl_family;	/* AF_LINK */
 	u_int16_t sdl_index;	/* if != 0, system given index for interface */
 	u_char	  sdl_type;	/* interface type */
 	u_char	  sdl_nlen;	/* interface name length, no trailing 0 reqd. */
 	u_char	  sdl_alen;	/* link level address length */
-	u_char	  sdl_slen;	/* link layer selector length */
-	char	  sdl_data[12];	/* minimum work area, can be larger;
-				   contains both if name and ll address */
+	u_char	  sdl_slen;	/* link layer selector length, mostly 0 */
+	char	  sdl_data[24];	/* minimum work area, can be larger;
+				   contains both if name and ll address;
+				   big enough for IFNAMSIZ plus 8byte ll addr */
 };
 
 #define LLADDR(s) ((caddr_t)((s)->sdl_data + (s)->sdl_nlen))
 
-#ifndef _KERNEL
+#ifdef _KERNEL
 
-#include <sys/cdefs.h>
+static __inline struct sockaddr_dl *
+satosdl(struct sockaddr *sa)
+{
+	return ((struct sockaddr_dl *)(sa));
+}
+
+static __inline struct sockaddr *
+sdltosa(struct sockaddr_dl *sdl)
+{
+	return ((struct sockaddr *)(sdl));
+}
+
+#else /* _KERNEL */
 
 __BEGIN_DECLS
-void	link_addr __P((const char *, struct sockaddr_dl *));
-char	*link_ntoa __P((const struct sockaddr_dl *));
+char	*link_ntoa(const struct sockaddr_dl *);
 __END_DECLS
 
-#endif /* !_KERNEL */
+#endif /* _KERNEL */
+#endif /* _NET_IF_DL_H_ */

@@ -1,7 +1,7 @@
-/*	$OpenBSD: machdep.c,v 1.76 2009/08/02 16:28:39 beck Exp $ */
+/*	$OpenBSD: machdep.c,v 1.63 2015/05/07 01:55:43 jsg Exp $ */
 
 /*
- * Copyright (c) 2009 Miodrag Vallat.
+ * Copyright (c) 2009, 2010, 2014 Miodrag Vallat.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -63,50 +63,62 @@
 #include <sys/sem.h>
 #endif
 
+#include <net/if.h>
+
 #include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>
 #include <ddb/db_interface.h>
 
 #include <machine/autoconf.h>
+#include <mips64/cache.h>
 #include <machine/cpu.h>
+#include <mips64/mips_cpu.h>
 #include <machine/memconf.h>
 #include <machine/pmon.h>
 
+#ifdef HIBERNATE
+#include <machine/hibernate_var.h>
+#endif /* HIBERNATE */
+
 #include <dev/cons.h>
 
-#include <mips64/archtype.h>
-
-#include <loongson/dev/bonitoreg.h>
+#include <dev/pci/pcireg.h>
+#include <dev/pci/pcivar.h>
+#include <dev/pci/pcidevs.h>
 
 /* The following is used externally (sysctl_hw) */
 char	machine[] = MACHINE;		/* Machine "architecture" */
 char	cpu_model[30];
+char	pmon_bootp[80];
 
 /*
- * Declare these as initialized data so we can patch them.
+ * Even though the system is 64bit, 2E- and 2F-based hardware is constrained
+ * to up to 2G of contigous physical memory (direct 2GB DMA area). 2Gq- and
+ * 3A-based hardware only supports 32-bit DMA addresses, even though
+ * physical memory may exist beyond 4GB.
  */
-#ifndef	BUFCACHEPERCENT
-#define	BUFCACHEPERCENT	5	/* Can be changed in config. */
-#endif
-#ifndef	BUFPAGES
-#define BUFPAGES 0		/* Can be changed in config. */
-#endif
-int	bufpages = BUFPAGES;
-int	bufcachepercent = BUFCACHEPERCENT;
+struct uvm_constraint_range  dma_constraint = { 0x0, 0xffffffffUL };
+struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
 
 vm_map_t exec_map;
 vm_map_t phys_map;
 
+/*
+ * safepri is a safe priority for sleep to set for a spin-wait
+ * during autoconfiguration or after a panic.
+ */
+int   safepri = 0;
+
 caddr_t	msgbufbase;
-vaddr_t	uncached_base;
 
 int	physmem;		/* Max supported memory, changes to actual. */
 int	ncpu = 1;		/* At least one CPU in the system. */
 struct	user *proc0paddr;
-int	kbd_reset;
 
-struct sys_rec sys_config;
+const struct platform *sys_platform;
+struct cpu_hwinfo bootcpu_hwinfo;
+uint loongson_ver;
 
 /* Pointers to the start and end of the symbol table. */
 caddr_t	ssym;
@@ -115,16 +127,23 @@ caddr_t	ekern;
 
 struct phys_mem_desc mem_layout[MAXMEMSEGS];
 
+pcitag_t (*pci_make_tag_early)(int, int, int);
+pcireg_t (*pci_conf_read_early)(pcitag_t, int);
+bus_space_tag_t early_mem_t;
+bus_space_tag_t early_io_t;
+
 static u_long atoi(const char *, uint);
 static void dobootopts(int);
 
-void	build_trampoline(vaddr_t, vaddr_t);
 void	dumpsys(void);
 void	dumpconf(void);
-vaddr_t	mips_init(int32_t, int32_t, int32_t, int32_t);
+extern	void parsepmonbp(void);
+const struct platform *loongson_identify(const char *, int);
+vaddr_t	mips_init(uint64_t, uint64_t, uint64_t, uint64_t, char *);
 
 extern	void loongson2e_setup(u_long, u_long);
 extern	void loongson2f_setup(u_long, u_long);
+extern	void loongson3a_setup(u_long, u_long);
 
 cons_decl(pmon);
 
@@ -140,14 +159,172 @@ struct consdev pmoncons = {
 };
 
 /*
+ * List of supported system types, from the ``Version'' environment
+ * variable.
+ */
+
+struct bonito_flavour {
+	const char *prefix;
+	const struct platform *platform;
+};
+
+extern const struct platform ebenton_platform;
+extern const struct platform fuloong_platform;
+extern const struct platform gdium_platform;
+extern const struct platform generic2e_platform;
+extern const struct platform lemote3a_platform;
+extern const struct platform lynloong_platform;
+extern const struct platform yeeloong_platform;
+
+const struct bonito_flavour bonito_flavours[] = {
+#ifdef CPU_LOONGSON2
+	/* eBenton EBT700 netbook */
+	{ "EBT700",	&ebenton_platform },	/* prefix added by user */
+	/* Lemote Fuloong 2F mini-PC */
+	{ "LM6002",	&fuloong_platform },	/* dual Ethernet,
+						   prefix added by user */
+	{ "LM6003",	&fuloong_platform },
+	{ "LM6004",	&fuloong_platform },
+	/* EMTEC Gdium Liberty 1000 */
+	{ "Gdium",	&gdium_platform },
+	/* Lemote Yeeloong 8.9" netbook */
+	{ "LM8089",	&yeeloong_platform },
+	/* supposedly Lemote Yeeloong 10.1" netbook, but those found so far
+	   report themselves as LM8089 */
+	{ "LM8101",	&yeeloong_platform },
+	/* Lemote Lynloong all-in-one computer */
+	{ "LM9001",	&lynloong_platform },
+#endif
+#ifdef CPU_LOONGSON3
+	/* Laptops */
+	{ "A1004",	&lemote3a_platform },	/* 3A */
+	{ "A1201",	&lemote3a_platform },	/* 2Gq */
+	/* Lemote Xinghuo 6100 (mini-ITX PC) */
+	{ "A1101",	&lemote3a_platform },	/* 3A */
+	/* All-in-one PC */
+	{ "A1205",	&lemote3a_platform },	/* 2Gq */
+#endif
+	{ NULL }
+};
+
+/*
+ * Try to figure out what particular machine we run on, depending on the
+ * scarce PMON version information and whatever else we can figure.
+ */
+const struct platform *
+loongson_identify(const char *version, int envtype)
+{
+	const struct bonito_flavour *f;
+
+	switch (envtype) {
+	case PMON_ENVTYPE_EFI:
+		return NULL;
+		break;
+
+	default:
+	case PMON_ENVTYPE_ENVP:
+		if (version == NULL) {
+			/*
+		 	 * If there is no `Version' variable, we expect to be
+			 * running on a 2E system, use the generic code and
+			 * hope for the best.
+		 	 */
+			if (loongson_ver == 0x2e) {
+				return &generic2e_platform;
+			} else {
+				pmon_printf("Unable to figure out model!\n");
+				return NULL;
+			}
+		}
+
+		for (f = bonito_flavours; f->prefix != NULL; f++)
+			if (strncmp(version, f->prefix, strlen(f->prefix)) == 0)
+				return f->platform;
+
+		/*
+	 	 * Early Lemote designs shipped without a model prefix.
+	 	 *
+	 	 * We can reasonably expect these to be close enough to either
+		 * the first generation Fuloong 2F design (LM6002), or the 7
+		 * inch first netbook model; we can tell them apart by looking
+		 * at which video chip they embed.
+	 	 *
+	 	 * Note that this is only worth doing if the version string is
+	 	 * 1.2.something (1.3 onwards are expected to have a model
+		 * prefix, and there are currently no reports of 1.1 and
+	 	 * below being 2F systems).
+	 	 *
+	 	 * LM6002 users are encouraged to add the system model prefix to
+	 	 * the `Version' variable.
+	 	 */
+		if (strncmp(version, "1.2.", 4) == 0) {
+			const struct platform *p = NULL;
+			pcitag_t tag;
+			pcireg_t id, class;
+			int dev;
+
+			pmon_printf("No model prefix "
+			    "in version string \"%s\".\n", version);
+
+			if (loongson_ver == 0x2f)
+				for (dev = 0; dev < 32; dev++) {
+					tag = pci_make_tag_early(0, dev, 0);
+					id = pci_conf_read_early(tag,
+					    PCI_ID_REG);
+					if (id == 0 || PCI_VENDOR(id) ==
+					    PCI_VENDOR_INVALID)
+						continue;
+
+					/*
+					 * No need to check for
+					 * DEVICE_IS_VGA_PCI here, since we
+					 * expect a linear framebuffer.
+					 */
+					class = pci_conf_read_early(tag,
+					    PCI_CLASS_REG);
+					if (PCI_CLASS(class) !=
+					    PCI_CLASS_DISPLAY ||
+					    (PCI_SUBCLASS(class) !=
+					     PCI_SUBCLASS_DISPLAY_VGA &&
+					     PCI_SUBCLASS(class) !=
+					     PCI_SUBCLASS_DISPLAY_MISC))
+						continue;
+
+					switch (id) {
+					case PCI_ID_CODE(PCI_VENDOR_SIS,
+				    	    PCI_PRODUCT_SIS_315PRO_VGA):
+						p = &fuloong_platform;
+						break;
+					case PCI_ID_CODE(PCI_VENDOR_SMI,
+			    		    PCI_PRODUCT_SMI_SM712):
+						p = &ebenton_platform;
+						break;
+					}
+				}
+
+			if (p != NULL) {
+				pmon_printf("Attempting to match as "
+				    "%s %s\n", p->vendor, p->product);
+				return p;
+			}
+		}
+	}
+
+	pmon_printf("This kernel doesn't support model \"%s\"." "\n", version);
+	return NULL;
+}
+
+
+/*
  * Do all the stuff that locore normally does before calling main().
  * Reset mapping and set up mapping to hardware and init "wired" reg.
  */
 
 vaddr_t
-mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
+mips_init(uint64_t argc, uint64_t argv, uint64_t envp, uint64_t cv,
+    char *boot_esym)
 {
-	uint prid, loongson_ver;
+	uint32_t prid;
 	u_long memlo, memhi, cpuspeed;
 	vaddr_t xtlb_handler;
 	const char *envvar;
@@ -157,6 +334,13 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 	extern char exception[], e_exception[];
 	extern char *hw_vendor, *hw_prod;
 	extern void xtlb_miss;
+
+	/*
+	 * Make sure we can access the extended address space.
+	 * This is not necessary on real hardware, but some emulators
+	 * are not aware of this.
+	 */
+	setsr(getsr() | SR_KX | SR_UX);
 
 	/*
 	 * Clear the compiled BSS segment in OpenBSD code.
@@ -169,58 +353,72 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 	 * Set up early console output.
 	 */
 
-	pmon_init(argc, argv, envp, cv);
+	prid = cp0_get_prid();
+	pmon_init((int32_t)argc, (int32_t)argv, (int32_t)envp, (int32_t)cv,
+	    prid);
 	cn_tab = &pmoncons;
 
 	/*
-	 * Attempt to locate ELF header and symbol table after kernel,
-	 * and reserve space for the symbol table, if it exists.
+	 * Reserve space for the symbol table, if it exists.
 	 */
 
-	ssym = (char *)(vaddr_t)*(int32_t *)end;
-	if (((long)ssym - (long)end) >= 0 &&
-	    ((long)ssym - (long)end) <= 0x1000 &&
-	    ssym[0] == ELFMAG0 && ssym[1] == ELFMAG1 &&
-	    ssym[2] == ELFMAG2 && ssym[3] == ELFMAG3 ) {
-		/* Pointers exist directly after kernel. */
-		esym = (char *)(vaddr_t)*((int32_t *)end + 1);
+	/* Attempt to locate ELF header and symbol table after kernel. */
+	if (end[0] == ELFMAG0 && end[1] == ELFMAG1 &&
+	    end[2] == ELFMAG2 && end[3] == ELFMAG3) {
+		/* ELF header exists directly after kernel. */
+		ssym = end;
+		esym = boot_esym;
 		ekern = esym;
 	} else {
-		/* Pointers aren't setup either... */
-		ssym = esym = NULL;
-		ekern = end;
-	}
-
-	/*
-	 * Try and figure out what kind of hardware we are.
-	 */
-
-	envvar = pmon_getenv("systype");
-	if (envvar == NULL) {
-		pmon_printf("Unable to figure out system type!\n");
-		goto unsupported;
-	}
-	if (strcmp(envvar, "Bonito") != 0) {
-		pmon_printf("This kernel doesn't support system type \"%s\".\n",
-		    envvar);
-		goto unsupported;
+		ssym = (char *)(vaddr_t)*(int32_t *)end;
+		if (((long)ssym - (long)end) >= 0 &&
+		    ((long)ssym - (long)end) <= 0x1000 &&
+		    ssym[0] == ELFMAG0 && ssym[1] == ELFMAG1 &&
+		    ssym[2] == ELFMAG2 && ssym[3] == ELFMAG3) {
+			/* Pointers exist directly after kernel. */
+			esym = (char *)(vaddr_t)*((int32_t *)end + 1);
+			ekern = esym;
+		} else {
+			/* Pointers aren't setup either... */
+			ssym = NULL;
+			esym = NULL;
+			ekern = end;
+		}
 	}
 
 	/*
 	 * While the kernel supports other processor types than Loongson,
-	 * we are not expecting a Bonito-based system with a different
-	 * processor.  Just to be on the safe side, refuse to run on
-	 * non Loongson2 processors for now.
+	 * we are currently not expecting to run on a system with a
+	 * different processor.  Just to be on the safe side, refuse to
+	 * run on non-Loongson2 processors for now.
 	 */
 
-	prid = cp0_get_prid();
 	switch ((prid >> 8) & 0xff) {
 	case MIPS_LOONGSON2:
-		loongson_ver = 0x2c + (prid & 0xff);
-		if (loongson_ver == 0x2e || loongson_ver == 0x2f)
+		switch (prid & 0xff) {
+#ifdef CPU_LOONGSON2
+#ifdef CPU_LOONGSON2C
+		case 0x00:
+			loongson_ver = 0x2c;
 			break;
-		/* FALLTHROUGH */
-	default:
+#endif
+		case 0x02:
+			loongson_ver = 0x2e;
+			break;
+		case 0x03:
+			loongson_ver = 0x2f;
+			break;
+#endif
+#ifdef CPU_LOONGSON3
+		case 0x05:
+			loongson_ver = 0x3a;
+			break;
+#endif
+		default:
+			break;
+		}
+	}
+	if (loongson_ver == 0) {
 		pmon_printf("This kernel doesn't support processor type 0x%x"
 		    ", version %d.%d.\n",
 		    (prid >> 8) & 0xff, (prid >> 4) & 0x0f, prid & 0x0f);
@@ -228,36 +426,46 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 	}
 
 	/*
+	 * Try and figure out what kind of hardware we are.
+	 */
+
+	switch (pmon_getenvtype()) {
+	default:
+		pmon_printf("Unable to figure out "
+		    "firmware environment information!\n");
+		goto unsupported;
+
+	case PMON_ENVTYPE_EFI:
+		/*
+		 * We can reasonably expect to be running on a beast we can
+		 * tame, here.
+		 */
+		break;
+
+	case PMON_ENVTYPE_ENVP:
+		envvar = pmon_getenv("systype");
+		if (envvar == NULL) {
+			pmon_printf("Unable to figure out system type!\n");
+			goto unsupported;
+		}
+		if (strcmp(envvar, "Bonito") != 0) {
+			pmon_printf("This kernel doesn't support system type \"%s\".\n",
+		    	envvar);
+			goto unsupported;
+		}
+	}
+
+	/*
 	 * Try to figure out what particular machine we run on, depending
 	 * on the PMON version information.
 	 */
 
-	envvar = pmon_getenv("Version");
-	if (envvar == NULL) {
-		pmon_printf("Unable to figure out model!\n");
+	if ((sys_platform = loongson_identify(pmon_getenv("Version"),
+	    pmon_getenvtype())) == NULL)
 		goto unsupported;
-	}
 
-	/* Lemote Yeelong 8089 */
-	if (strncmp(envvar, "LM8089", 6) == 0) {
-		sys_config.system_type = LOONGSON_YEELONG;
-	}
-
-	if (sys_config.system_type == 0) {
-		pmon_printf("This kernel doesn't support model \"%s\".\n",
-		    envvar);
-		goto unsupported;
-	}
-
-	switch (sys_config.system_type) {
-	case LOONGSON_YEELONG:
-		hw_vendor = "Lemote";
-		hw_prod = "Yeelong";
-		break;
-	default:	/* won't happen */
-		goto unsupported;
-	}
-
+	hw_vendor = sys_platform->vendor;
+	hw_prod = sys_platform->product;
 	pmon_printf("Found %s %s, setting up.\n", hw_vendor, hw_prod);
 
 	snprintf(cpu_model, sizeof cpu_model, "Loongson %X", loongson_ver);
@@ -274,7 +482,7 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 		cpuspeed = atoi(envvar, 10);	/* speed in Hz */
 	if (cpuspeed < 100 * 1000000)
 		cpuspeed = 797000000;  /* Reasonable default */
-	sys_config.cpu[0].clock = cpuspeed;
+	bootcpu_hwinfo.clock = cpuspeed;
 
 	/*
 	 * Look at arguments passed to us and compute boothowto.
@@ -302,7 +510,8 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 		goto unsupported;
 	}
 
-	if (memlo == 256) {
+	/* 3A PMON only reports up to 240MB as low memory */
+	if (memlo >= 240) {
 		envvar = pmon_getenv("highmemsize");
 		if (envvar == NULL)
 			memhi = 0;
@@ -314,23 +523,31 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 			/* better expose the problem than limit to 256MB */
 			goto unsupported;
 		}
-	}
-
-	uncached_base = PHYS_TO_XKPHYS(0, CCA_NC);
+	} else
+		memhi = 0;
 
 	switch (loongson_ver) {
+	default:
+#ifdef CPU_LOONGSON2
 	case 0x2e:
 		loongson2e_setup(memlo, memhi);
 		break;
-	default:
 	case 0x2f:
 		loongson2f_setup(memlo, memhi);
 		break;
+#endif
+#ifdef CPU_LOONGSON3
+	case 0x3a:
+		loongson3a_setup(memlo, memhi);
+		break;
+#endif
 	}
 
+	if (sys_platform->setup != NULL)
+		(*(sys_platform->setup))();
+
 	/*
-	 * The above call might have altered address mappings,
-	 * so pmon_printf() should no longer be used from now on.
+	 * PMON functions should no longer be used from now on.
 	 */
 
 	/*
@@ -344,30 +561,29 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 	for (i = 0; i < MAXMEMSEGS && mem_layout[i].mem_last_page != 0; i++) {
 		uint64_t fp, lp;
 		uint64_t firstkernpage, lastkernpage;
-		unsigned int freelist;
 		paddr_t firstkernpa, lastkernpa;
 
 		/* kernel is linked in CKSEG0 */
 		firstkernpa = CKSEG0_TO_PHYS((vaddr_t)start);
 		lastkernpa = CKSEG0_TO_PHYS((vaddr_t)ekern);
-		if (loongson_ver == 0x2f) {
-			firstkernpa |= 0x80000000;
-			lastkernpa |= 0x80000000;
-		}
 
-		firstkernpage = atop(trunc_page(firstkernpa));
-		lastkernpage = atop(round_page(lastkernpa));
+		firstkernpage = atop(trunc_page(firstkernpa)) +
+		    mem_layout[0].mem_first_page - 1;
+#ifdef HIBERNATE
+		firstkernpage -= HIBERNATE_RESERVED_PAGES;
+#endif
+		lastkernpage = atop(round_page(lastkernpa)) +
+		    mem_layout[0].mem_first_page - 1;
 
 		fp = mem_layout[i].mem_first_page;
 		lp = mem_layout[i].mem_last_page;
-		freelist = mem_layout[i].mem_freelist;
 
 		/* Account for kernel and kernel symbol table. */
 		if (fp >= firstkernpage && lp < lastkernpage)
 			continue;	/* In kernel. */
 
 		if (lp < firstkernpage || fp > lastkernpage) {
-			uvm_page_physload(fp, lp, fp, lp, freelist);
+			uvm_page_physload(fp, lp, fp, lp, 0);
 			continue;	/* Outside kernel. */
 		}
 
@@ -377,37 +593,47 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 			lp = firstkernpage;
 		else { /* Need to split! */
 			uint64_t xp = firstkernpage;
-			uvm_page_physload(fp, xp, fp, xp, freelist);
+			uvm_page_physload(fp, xp, fp, xp, 0);
 			fp = lastkernpage;
 		}
 		if (lp > fp) {
-			uvm_page_physload(fp, lp, fp, lp, freelist);
+			uvm_page_physload(fp, lp, fp, lp, 0);
 		}
 	}
 
-	sys_config.cpu[0].type = (prid >> 8) & 0xff;
-	sys_config.cpu[0].vers_maj = (prid >> 4) & 0x0f;
-	sys_config.cpu[0].vers_min = prid & 0x0f;
+	bootcpu_hwinfo.c0prid = prid;
+	bootcpu_hwinfo.type = (prid >> 8) & 0xff;
 	/* FPU reports itself as type 5, version 0.1... */
-	sys_config.cpu[0].fptype = sys_config.cpu[0].type;
-	sys_config.cpu[0].fpvers_maj = sys_config.cpu[0].vers_maj;
-	sys_config.cpu[0].fpvers_min = sys_config.cpu[0].vers_min;
-
-	sys_config.cpu[0].tlbsize = 64;
+	bootcpu_hwinfo.c1prid = bootcpu_hwinfo.c0prid;
 
 	/*
-	 * Configure cache.
-	 * Note that the caches being physically tagged, there is no
-	 * need to invalidate or flush it.
+	 * Configure cache and tlb.
 	 */
 
-	Loongson2_ConfigCache();
+	switch (loongson_ver) {
+	default:
+#ifdef CPU_LOONGSON2
+#ifdef CPU_LOONGSON2C
+	case 0x2c:
+#endif
+	case 0x2e:
+	case 0x2f:
+		bootcpu_hwinfo.tlbsize = 64;
+		Loongson2_ConfigCache(curcpu());
+		Loongson2_SyncCache(curcpu());
+		break;
+#endif
+#ifdef CPU_LOONGSON3
+	case 0x3a:
+		bootcpu_hwinfo.tlbsize =
+		    1 + ((cp0_get_config_1() >> 25) & 0x3f);
+		Loongson3_ConfigCache(curcpu());
+		Loongson3_SyncCache(curcpu());
+		break;
+#endif
+	}
 
-	sys_config.cpu[0].tlbwired = UPAGES / 2;
-	tlb_set_page_mask(TLB_PAGE_MASK);
-	tlb_set_wired(0);
-	tlb_flush(sys_config.cpu[0].tlbsize);
-	tlb_set_wired(sys_config.cpu[0].tlbwired);
+	tlb_init(bootcpu_hwinfo.tlbsize);
 
 	/*
 	 * Get a console, very early but after initial mapping setup.
@@ -417,10 +643,40 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 	printf("Initial setup done, switching console.\n");
 
 	/*
-	 * Init message buffer.
+	 * Init message buffer. This is similar to pmap_steal_memory(), but
+	 * without zeroing the area, to keep the message buffer from the
+	 * previous kernel run intact, if any.
 	 */
+	for (i = 0; i < vm_nphysseg; i++) {
+		struct vm_physseg *vps = &vm_physmem[i];
+		uint npg = atop(round_page(MSGBUFSIZE));
+		int j;
 
-	msgbufbase = (caddr_t)pmap_steal_memory(MSGBUFSIZE, NULL,NULL);
+		if (vps->avail_start != vps->start ||
+		    vps->avail_start >= vps->avail_end) {
+			continue;
+		}
+
+		if ((vps->avail_end - vps->avail_start) < npg)
+			continue;
+
+		msgbufbase = (caddr_t)PHYS_TO_XKPHYS(ptoa(vps->avail_start),
+		    CCA_CACHED);
+		vps->avail_start += npg;
+		vps->start += npg;
+
+		if (vps->avail_start == vps->end) {
+			/* don't bother panicing if nphysseg becomes zero, */
+			/* the next pmap_steal_memory() call will. */
+			vm_nphysseg--;
+			for (j = i; j < vm_nphysseg; j++)
+				vm_physmem[j] = vm_physmem[j + 1];
+		}
+
+		break;
+	}
+	if (msgbufbase == NULL)
+		panic("not enough contiguous memory for message buffer");
 	initmsgbuf(msgbufbase, MSGBUFSIZE);
 
 	/*
@@ -429,8 +685,8 @@ mips_init(int32_t argc, int32_t argv, int32_t envp, int32_t cv)
 
 	proc0.p_addr = proc0paddr = curcpu()->ci_curprocpaddr =
 	    (struct user *)pmap_steal_memory(USPACE, NULL, NULL);
-	proc0.p_md.md_regs = (struct trap_frame *)&proc0paddr->u_pcb.pcb_regs;
-	tlb_set_pid(1);
+	proc0.p_md.md_regs = (struct trapframe *)&proc0paddr->u_pcb.pcb_regs;
+	tlb_set_pid(MIN_USER_ASID);
 
 	/*
 	 * Bootstrap VM system.
@@ -479,73 +735,6 @@ unsupported:
 }
 
 /*
- * Build a tlb trampoline
- */
-void
-build_trampoline(vaddr_t addr, vaddr_t dest)
-{
-	const uint32_t insns[] = {
-		0x3c1a0000,	/* lui k0, imm16 */
-		0x675a0000,	/* daddiu k0, k0, imm16 */
-		0x001ad438,	/* dsll k0, k0, 0x10 */
-		0x675a0000,	/* daddiu k0, k0, imm16 */
-		0x001ad438,	/* dsll k0, k0, 0x10 */
-		0x675a0000,	/* daddiu k0, k0, imm16 */
-		0x03400008,	/* jr k0 */
-		0x00000000	/* nop */
-	};
-	uint32_t *dst = (uint32_t *)addr;
-	const uint32_t *src = insns;
-	uint32_t a, b, c, d;
-
-	/*
-	 * Decompose the handler address in the four components which,
-	 * added with sign extension, will produce the correct address.
-	 */
-	d = dest & 0xffff;
-	dest >>= 16;
-	if (d & 0x8000)
-		dest++;
-	c = dest & 0xffff;
-	dest >>= 16;
-	if (c & 0x8000)
-		dest++;
-	b = dest & 0xffff;
-	dest >>= 16;
-	if (b & 0x8000)
-		dest++;
-	a = dest & 0xffff;
-
-	/*
-	 * Build the trampoline, skipping noop computations.
-	 */
-	*dst++ = *src++ | a;
-	if (b != 0)
-		*dst++ = *src++ | b;
-	else
-		src++;
-	*dst++ = *src++;
-	if (c != 0)
-		*dst++ = *src++ | c;
-	else
-		src++;
-	*dst++ = *src++;
-	if (d != 0)
-		*dst++ = *src++ | d;
-	else
-		src++;
-	*dst++ = *src++;
-	*dst++ = *src++;
-
-	/*
-	 * Note that we keep the delay slot instruction a nop, instead
-	 * of branching to the second instruction of the handler and
-	 * having its first instruction in the delay slot, so that the
-	 * tlb handler is free to use k0 immediately.
-	 */
-}
-
-/*
  * Decode boot options.
  */
 static void
@@ -566,18 +755,31 @@ dobootopts(int argc)
 	 * boot file has been found.
 	 */
 
+	if (argc != 0) {
+		arg = pmon_getarg(0);
+		if (arg == NULL)
+			return;
+		/* if `go', not `boot', then no path and command options */
+		if (*arg == 'g')
+			ignore = 0;
+	}
 	for (i = 1; i < argc; i++) {
 		arg = pmon_getarg(i);
 		if (arg == NULL)
 			continue;
 
-		if (*arg != '-') {
-			/* found filename or non-option argument */
-			ignore = 0;
+		/* device path */
+		if (*arg == '/' || strncmp(arg, "tftp://", 7) == 0) {
+			if (*pmon_bootp == '\0') {
+				strlcpy(pmon_bootp, arg, sizeof pmon_bootp);
+				parsepmonbp();
+			}
+			ignore = 0;	/* further options are for the kernel */
 			continue;
 		}
 
-		if (ignore)
+		/* not an option, or not a kernel option */
+		if (*arg != '-' || ignore)
 			continue;
 
 		for (cp = arg + 1; *cp != '\0'; cp++)
@@ -618,13 +820,14 @@ consinit()
 	static int console_ok = 0;
 
 	if (console_ok == 0) {
+		cn_tab = NULL;
 		cninit();
 		console_ok = 1;
 	}
 }
 
 /*
- * cpu_startup: allocate memory for variable-sized tables, initialize CPU, and 
+ * cpu_startup: allocate memory for variable-sized tables, initialize CPU, and
  * do auto-configuration.
  */
 void
@@ -636,8 +839,8 @@ cpu_startup()
 	 * Good {morning,afternoon,evening,night}.
 	 */
 	printf(version);
-	printf("real mem = %u (%uMB)\n", ptoa(physmem),
-	    ptoa(physmem)/1024/1024);
+	printf("real mem = %lu (%luMB)\n", ptoa((psize_t)physmem),
+	    ptoa((psize_t)physmem)/1024/1024);
 
 	/*
 	 * Allocate a submap for exec arguments. This map effectively
@@ -650,7 +853,7 @@ cpu_startup()
 	phys_map = uvm_km_suballoc(kernel_map, &minaddr, &maxaddr,
 	    VM_PHYS_SIZE, 0, FALSE, NULL);
 
-	printf("avail mem = %u (%uMB)\n", ptoa(uvmexp.free),
+	printf("avail mem = %lu (%luMB)\n", ptoa(uvmexp.free),
 	    ptoa(uvmexp.free)/1024/1024);
 
 	/*
@@ -688,62 +891,20 @@ cpu_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 		return ENOTDIR;		/* Overloaded */
 
 	switch (name[0]) {
-	case CPU_KBDRESET:
-		if (securelevel > 0)
-			return (sysctl_rdint(oldp, oldlenp, newp, kbd_reset));
-		return (sysctl_int(oldp, oldlenp, newp, newlen, &kbd_reset));
 	default:
 		return EOPNOTSUPP;
 	}
 }
 
-/*
- * Set registers on exec for native exec format. For o64/64.
- */
-void
-setregs(p, pack, stack, retval)
-	struct proc *p;
-	struct exec_package *pack;
-	u_long stack;
-	register_t *retval;
-{
-	extern struct proc *machFPCurProcPtr;
-
-	bzero((caddr_t)p->p_md.md_regs, sizeof(struct trap_frame));
-	p->p_md.md_regs->sp = stack;
-	p->p_md.md_regs->pc = pack->ep_entry & ~3;
-	p->p_md.md_regs->t9 = pack->ep_entry & ~3; /* abicall req */
-	p->p_md.md_regs->sr = SR_FR_32 | SR_XX | SR_KSU_USER | SR_KX | SR_UX |
-	    SR_EXL | SR_INT_ENAB;
-	p->p_md.md_regs->sr |= idle_mask & SR_INT_MASK;
-	p->p_md.md_regs->ic = (idle_mask << 8) & IC_INT_MASK;
-	p->p_md.md_flags &= ~MDP_FPUSED;
-	if (machFPCurProcPtr == p)
-		machFPCurProcPtr = NULL;
-	p->p_md.md_ss_addr = 0;
-	p->p_md.md_pc_ctrl = 0;
-	p->p_md.md_watch_1 = 0;
-	p->p_md.md_watch_2 = 0;
-
-	retval[1] = 0;
-}
-
-
 int	waittime = -1;
 
-void
+__dead void
 boot(int howto)
 {
-
-	/* Take a snapshot before clobbering any registers. */
 	if (curproc)
 		savectx(curproc->p_addr, 0);
 
 	if (cold) {
-		/*
-		 * If the system is cold, just halt, unless the user
-		 * explicitly asked for reboot.
-		 */
 		if ((howto & RB_USERREQ) == 0)
 			howto |= RB_HALT;
 		goto haltsys;
@@ -751,51 +912,52 @@ boot(int howto)
 
 	boothowto = howto;
 	if ((howto & RB_NOSYNC) == 0 && waittime < 0) {
-		extern struct proc proc0;
-		/* fill curproc with live object */
-		if (curproc == NULL)
-			curproc = &proc0;
-		/*
-		 * Synchronize the disks...
-		 */
 		waittime = 0;
 		vfs_shutdown();
 
-		/*
-		 * If we've been adjusting the clock, the todr will be out of
-		 * sync; adjust it now.
-		 */
 		if ((howto & RB_TIMEBAD) == 0) {
 			resettodr();
 		} else {
 			printf("WARNING: not updating battery clock\n");
 		}
 	}
+	if_downall();
 
 	uvm_shutdown();
-	(void) splhigh();		/* Extreme priority. */
+	splhigh();
+	cold = 1;
 
-	if (howto & RB_DUMP)
+	if ((howto & RB_DUMP) != 0)
 		dumpsys();
 
 haltsys:
-	doshutdownhooks();
+	pci_dopm = 0;
+	config_suspend_all(DVACT_POWERDOWN);
 
-	if (howto & RB_HALT) {
-		if (howto & RB_POWERDOWN) {
-			printf("System Power Down.\n");
-			REGVAL(BONITO_GPIODATA) &= ~0x00000001;
-			REGVAL(BONITO_GPIOIE) &= ~0x00000001;
+	if ((howto & RB_HALT) != 0) {
+		if ((howto & RB_POWERDOWN) != 0) {
+			if (sys_platform->powerdown != NULL) {
+				printf("System Power Down.\n");
+				(*(sys_platform->powerdown))();
+			} else {
+				printf("System Power Down not supported,"
+				    " halting system.\n");
+			}
 		} else
 			printf("System Halt.\n");
 	} else {
 		void (*__reset)(void) = (void (*)(void))RESET_EXC_VEC;
 		printf("System restart.\n");
+		if (sys_platform->reset != NULL)
+			(*(sys_platform->reset))();
+		(void)disableintr();
+		tlb_set_wired(0);
+		tlb_flush(bootcpu_hwinfo.tlbsize);
 		__reset();
 	}
 
 	for (;;) ;
-	/*NOTREACHED*/
+	/* NOTREACHED */
 }
 
 u_long	dumpmag = 0x8fca0101;	/* Magic number for savecore. */
@@ -820,7 +982,7 @@ dumpconf(void)
 		dumplo = nblks - btodb(ptoa(physmem));
 
 	/*
-	 * Don't dump on the first page in case the dump device includes a 
+	 * Don't dump on the first page in case the dump device includes a
 	 * disk label.
 	 */
 	if (dumplo < btodb(PAGE_SIZE))
@@ -909,6 +1071,10 @@ pmoncngetc(dev_t dev)
 	 * PMON does not give us a getc routine.  So try to get a whole line
 	 * and return it char by char, trying not to lose the \n.  Kind
 	 * of ugly but should work.
+	 *
+	 * Note that one could theoretically use pmon_read(STDIN, &c, 1)
+	 * but the value of STDIN within PMON is not a constant and there
+	 * does not seem to be a way of letting us know which value to use.
 	 */
 	static char buf[1 + PMON_MAXLN];
 	static char *bufpos = buf;

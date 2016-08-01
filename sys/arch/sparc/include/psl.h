@@ -1,4 +1,5 @@
-/*	$NetBSD: psl.h,v 1.7 1995/08/13 00:29:56 mycroft Exp $ */
+/*	$OpenBSD: psl.h,v 1.28 2014/03/29 18:09:30 guenther Exp $	*/
+/*	$NetBSD: psl.h,v 1.12 1997/03/10 21:49:11 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -75,121 +72,113 @@
 
 #define	PSR_BITS "\20\16EC\15EF\10S\7PS\6ET"
 
-#define	PIL_CLOCK	10
+/*
+ * Various interrupt levels.
+ */
+#define IPL_NONE	0
+#define IPL_SOFTINT	1
+#define IPL_SOFTCLOCK	1		/* softclock() interrupts */
+#define IPL_SOFTNET	1		/* soft network interrupts */
+#define IPL_AUSOFT	4		/* audio soft interrupts */
+#define IPL_FDSOFT	4		/* floppy soft interrupts */
+#define IPL_BIO		5		/* block devices are at 5 and below */
+#define IPL_TTY		6		/* MD tty soft interrupts */
+#define	IPL_SOFTTTY	IPL_TTY
+#define IPL_NET		7		/* network hardware at 7 or below */
+#define IPL_VM		7		/* max(BIO, NET, TTY) */
+#define	IPL_FB		9		/* framebuffer interrupts */
+#define	IPL_CLOCK	10		/* hardclock() */
+#define IPL_FD		11		/* hard floppy interrupts. */
+#define IPL_ZS		12		/* zs interrupts */
+/*
+ * XXX - this is called AUHARD instead of AUDIO because of some confusion
+ * with how MI audio code handles this. Stay tuned for a change in the future
+ */
+#define IPL_AUHARD	13		/* hard audio interrupts */
+#define IPL_AUDIO	IPL_AUHARD
+#define IPL_STATCLOCK	14		/* statclock() */
+#define IPL_SCHED	IPL_STATCLOCK
+#define IPL_HIGH	15		/* splhigh() */
 
-#if defined(_KERNEL) && !defined(LOCORE)
+#define	IPL_MPSAFE	0	/* no "mpsafe" interrupts */
+
+#if defined(_KERNEL) && !defined(_LOCORE)
+
+static __inline int getpsr(void);
+static __inline void setpsr(int);
+static __inline int getmid(void);
+
 /*
  * GCC pseudo-functions for manipulating PSR (primarily PIL field).
  */
-static __inline int getpsr() {
+static __inline int
+getpsr()
+{
 	int psr;
 
-	__asm __volatile("rd %%psr,%0" : "=r" (psr));
+	__asm volatile("rd %%psr,%0" : "=r" (psr));
 	return (psr);
 }
 
-static __inline void setpsr(int newpsr) {
-	__asm __volatile("wr %0,0,%%psr" : : "r" (newpsr));
-	__asm __volatile("nop");
-	__asm __volatile("nop");
-	__asm __volatile("nop");
+static __inline int
+getmid()
+{
+	int mid;
+
+	__asm volatile("rd %%tbr,%0" : "=r" (mid));
+	return ((mid >> 20) & 0x3);
 }
 
-static __inline int spl0() {
-	int psr, oldipl;
-
-	/*
-	 * wrpsr xors two values: we choose old psr and old ipl here,
-	 * which gives us the same value as the old psr but with all
-	 * the old PIL bits turned off.
-	 */
-	__asm __volatile("rd %%psr,%0" : "=r" (psr));
-	oldipl = psr & PSR_PIL;
-	__asm __volatile("wr %0,%1,%%psr" : : "r" (psr), "r" (oldipl));
-
-	/*
-	 * Three instructions must execute before we can depend
-	 * on the bits to be changed.
-	 */
-	__asm __volatile("nop; nop; nop");
-	return (oldipl);
+static __inline void
+setpsr(newpsr)
+	int newpsr;
+{
+	__asm volatile("wr %0,0,%%psr" : : "r" (newpsr));
+	__asm volatile("nop");
+	__asm volatile("nop");
+	__asm volatile("nop");
 }
 
+#ifdef DIAGNOSTIC
 /*
- * PIL 1 through 14 can use this macro.
- * (spl0 and splhigh are special since they put all 0s or all 1s
- * into the ipl field.)
+ * Although this function is implemented in MI code, it must be in this MD
+ * header because we don't want this header to include MI includes.
  */
-#define	SPL(name, newipl) \
-static __inline int name() { \
-	int psr, oldipl; \
-	__asm __volatile("rd %%psr,%0" : "=r" (psr)); \
-	oldipl = psr & PSR_PIL; \
-	psr &= ~oldipl; \
-	__asm __volatile("wr %0,%1,%%psr" : : \
-	    "r" (psr), "n" ((newipl) << 8)); \
-	__asm __volatile("nop; nop; nop"); \
-	return (oldipl); \
-}
+void splassert_fail(int, int, const char *);
+extern int splassert_ctl;
+void splassert_check(int, const char *);
+#define splassert(__wantipl) do {			\
+	if (splassert_ctl > 0) {			\
+		splassert_check(__wantipl, __func__);	\
+	}						\
+} while (0)
+#define splsoftassert(wantipl) splassert(wantipl)
+#else
+#define splassert(wantipl)	do { /* nada */ } while (0)
+#define splsoftassert(wantipl)	do { /* nada */ } while (0)
+#endif
 
-SPL(splsoftint, 1)
-#define	splsoftclock	splsoftint
-#define	splsoftnet	splsoftint
+int	spl0(void);
+int	splraise(int);
+int	splhigh(void);
+void	splx(int);
 
-/* network hardware interrupts are at level 6 */
-#define	PIL_NET	6
-SPL(splnet, PIL_NET)
+#define splsoftint()	splraise(IPL_SOFTINT)
+#define splsoftclock()	splraise(IPL_SOFTCLOCK)
+#define splsoftnet()	splraise(IPL_SOFTNET)
+#define splausoft()	splraise(IPL_AUSOFT)
+#define splfdsoft()	splraise(IPL_FDSOFT)
+#define splbio()	splraise(IPL_BIO)
+#define splnet()	splraise(IPL_NET)
+#define spltty()	splraise(IPL_TTY)
+#define splvm()		splraise(IPL_VM)
+#define splclock()	splraise(IPL_CLOCK)
+#define splfd()		splraise(IPL_FD)
+#define splzs()		splraise(IPL_ZS)
+#define splaudio()	splraise(IPL_AUDIO)
+#define splsched()	splraise(IPL_SCHED)
+#define splstatclock()	splraise(IPL_STATCLOCK)
 
-/* tty input runs at software level 6 */
-#define	PIL_TTY	6
-SPL(spltty, PIL_TTY)
-
-/* Memory allocation (must be as high as highest network or tty device) */
-SPL(splimp, 7)
-
-/* audio software interrupts are at software level 4 */
-#define	PIL_AUSOFT	4
-SPL(splausoft, PIL_AUSOFT)
-
-/* floppy software interrupts are at software level 4 too */
-#define PIL_FDSOFT	4
-SPL(splfdsoft, PIL_FDSOFT)
-
-SPL(splbio, 9)
-
-SPL(splclock, PIL_CLOCK)
-
-/* fd hardware interrupts are at level 11 */
-SPL(splfd, 11)
-
-/* zs hardware interrupts are at level 12 */
-SPL(splzs, 12)
-
-/* audio hardware interrupts are at level 13 */
-SPL(splaudio, 13)
-
-/* second sparc timer interrupts at level 14 */
-SPL(splstatclock, 14)
-
-static __inline int splhigh() {
-	int psr, oldipl;
-
-	__asm __volatile("rd %%psr,%0" : "=r" (psr));
-	__asm __volatile("wr %0,0,%%psr" : : "r" (psr | PSR_PIL));
-	__asm __volatile("and %1,%2,%0; nop; nop" : "=r" (oldipl) : \
-	    "r" (psr), "n" (PSR_PIL));
-	return (oldipl);
-}
-
-/* splx does not have a return value */
-static __inline void splx(int newipl) {
-	int psr;
-
-	__asm __volatile("rd %%psr,%0" : "=r" (psr));
-	__asm __volatile("wr %0,%1,%%psr" : : \
-	    "r" (psr & ~PSR_PIL), "rn" (newipl));
-	__asm __volatile("nop; nop; nop");
-}
-#endif /* KERNEL && !LOCORE */
+#endif /* KERNEL && !_LOCORE */
 
 #endif /* PSR_IMPL */

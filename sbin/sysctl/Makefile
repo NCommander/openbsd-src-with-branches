@@ -1,7 +1,11 @@
-#	$NetBSD: Makefile,v 1.3 1995/09/30 07:12:43 thorpej Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.10 2010/01/10 03:37:50 guenther Exp $
 
 PROG=	sysctl
 MAN=	sysctl.8
+
+CPPFLAGS+=	-D_LIBKVM
+
+afterinstall:
+	ln -sf ../../sbin/sysctl ${DESTDIR}/usr/sbin
 
 .include <bsd.prog.mk>

@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Server.pm,v 1.7 2015/12/04 13:49:42 bluhm Exp $
 
-# Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -33,27 +33,36 @@ sub new {
 	$args{logfile} ||= "server.log";
 	$args{up} ||= "Accepted";
 	my $self = Proc::new($class, %args);
-	$self->{listenprotocol} ||= "udp";
-	$self->{listendomain}
+	$self->{listenproto} ||= "udp";
+	defined($self->{listendomain})
 	    or croak "$class listen domain not given";
+	return $self->listen();
+}
+
+sub listen {
+	my $self = shift;
 	$SSL_ERROR = "";
-	my $iosocket = $self->{listenprotocol} eq "tls" ?
+	my $iosocket = $self->{listenproto} eq "tls" ?
 	    "IO::Socket::SSL" : "IO::Socket::INET6";
-	my $proto = $self->{listenprotocol};
+	my $proto = $self->{listenproto};
 	$proto = "tcp" if $proto eq "tls";
 	my $ls = $iosocket->new(
 	    Proto		=> $proto,
 	    ReuseAddr		=> 1,
 	    Domain		=> $self->{listendomain},
-	    $self->{listenaddr} ? (LocalAddr => $self->{listenaddr}) : (),
-	    $self->{listenport} ? (LocalPort => $self->{listenport}) : (),
-	    SSL_key_file	=> "server-key.pem",
-	    SSL_cert_file	=> "server-cert.pem",
-	    SSL_verify_mode	=> SSL_VERIFY_NONE,
-	) or die ref($self), " $iosocket socket listen failed: $!,$SSL_ERROR";
-	if ($self->{listenprotocol} eq "tcp") {
+	    $self->{listenaddr}	? (LocalAddr => $self->{listenaddr}) : (),
+	    $self->{listenport}	? (LocalPort => $self->{listenport}) : (),
+	    SSL_key_file	=> "server.key",
+	    SSL_cert_file	=> "server.crt",
+	    SSL_ca_file		=> ($self->{cacrt} || "ca.crt"),
+	    $self->{sslverify}	? (SSL_verify_mode => SSL_VERIFY_PEER) : (),
+	    $self->{sslverify}	? (SSL_verifycn_scheme => "none") : (),
+	    $self->{sslversion}	? (SSL_version => $self->{sslversion}) : (),
+	    $self->{sslciphers}	? (SSL_cipher_list => $self->{sslciphers}) : (),
+	) or die ref($self), " $iosocket socket failed: $!,$SSL_ERROR";
+	if ($self->{listenproto} ne "udp") {
 		listen($ls, 1)
-		    or die ref($self), " socket failed: $!";
+		    or die ref($self), " socket listen failed: $!";
 	}
 	my $log = $self->{log};
 	print $log "listen sock: ",$ls->sockhost()," ",$ls->sockport(),"\n";
@@ -63,18 +72,39 @@ sub new {
 	return $self;
 }
 
+sub close {
+	my $self = shift;
+	$self->{ls}->close()
+	    or die ref($self)," ",ref($self->{ls}),
+	    " socket close failed: $!,$SSL_ERROR";
+	delete $self->{ls};
+	return $self;
+}
+
+sub run {
+	my $self = shift;
+	Proc::run($self, @_);
+	return $self->close();
+}
+
 sub child {
 	my $self = shift;
 
-	my $iosocket = $self->{ssl} ? "IO::Socket::SSL" : "IO::Socket::INET6";
 	my $as = $self->{ls};
-	if ($self->{listenprotocol} ne "udp") {
+	if ($self->{listenproto} ne "udp") {
 		$as = $self->{ls}->accept()
-		    or die ref($self), " $iosocket socket accept failed: $!";
+		    or die ref($self)," ",ref($self->{ls}),
+		    " socket accept failed: $!,$SSL_ERROR";
 		print STDERR "accept sock: ",$as->sockhost()," ",
 		    $as->sockport(),"\n";
 		print STDERR "accept peer: ",$as->peerhost()," ",
 		    $as->peerport(),"\n";
+	}
+	if ($self->{listenproto} eq "tls") {
+		print STDERR "ssl version: ",$as->get_sslversion(),"\n";
+		print STDERR "ssl cipher: ",$as->get_cipher(),"\n";
+		print STDERR "ssl subject: ", $as->peer_certificate("subject")
+		    ,"\n" if $self->{sslverify};
 	}
 
 	*STDIN = *STDOUT = $self->{as} = $as;

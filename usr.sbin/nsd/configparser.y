@@ -51,6 +51,7 @@ extern config_parser_state_t* cfg_parser;
 %token VAR_CHROOT VAR_USERNAME VAR_ZONESDIR VAR_XFRDFILE VAR_DIFFFILE
 %token VAR_XFRD_RELOAD_TIMEOUT VAR_TCP_QUERY_COUNT VAR_TCP_TIMEOUT
 %token VAR_IPV4_EDNS_SIZE VAR_IPV6_EDNS_SIZE VAR_DO_IP4 VAR_DO_IP6
+%token VAR_TCP_MSS VAR_OUTGOING_TCP_MSS VAR_IP_FREEBIND
 %token VAR_ZONEFILE 
 %token VAR_ZONE
 %token VAR_ALLOW_NOTIFY VAR_REQUEST_XFR VAR_NOTIFY VAR_PROVIDE_XFR 
@@ -67,7 +68,7 @@ extern config_parser_state_t* cfg_parser;
 %token VAR_RRL_IPV4_PREFIX_LENGTH VAR_RRL_IPV6_PREFIX_LENGTH
 %token VAR_RRL_WHITELIST_RATELIMIT VAR_RRL_WHITELIST
 %token VAR_ZONEFILES_CHECK VAR_ZONEFILES_WRITE VAR_LOG_TIME_ASCII
-%token VAR_ROUND_ROBIN VAR_ZONESTATS VAR_REUSEPORT
+%token VAR_ROUND_ROBIN VAR_ZONESTATS VAR_REUSEPORT VAR_VERSION
 
 %%
 toplevelvars: /* empty */ | toplevelvars toplevelvar ;
@@ -93,11 +94,12 @@ content_server: server_ip_address | server_ip_transparent | server_debug_mode | 
 	server_tcp_query_count | server_tcp_timeout | server_ipv4_edns_size |
 	server_ipv6_edns_size | server_verbosity | server_hide_version |
 	server_zonelistfile | server_xfrdir |
+	server_tcp_mss | server_outgoing_tcp_mss |
 	server_rrl_size | server_rrl_ratelimit | server_rrl_slip | 
 	server_rrl_ipv4_prefix_length | server_rrl_ipv6_prefix_length | server_rrl_whitelist_ratelimit |
 	server_zonefiles_check | server_do_ip4 | server_do_ip6 |
 	server_zonefiles_write | server_log_time_ascii | server_round_robin |
-	server_reuseport;
+	server_reuseport | server_version | server_ip_freebind;
 server_ip_address: VAR_IP_ADDRESS STRING 
 	{ 
 		OUTYY(("P(server_ip_address:%s)\n", $2)); 
@@ -126,6 +128,14 @@ server_ip_transparent: VAR_IP_TRANSPARENT STRING
 		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
 			yyerror("expected yes or no.");
 		else cfg_parser->opt->ip_transparent = (strcmp($2, "yes")==0);
+	}
+	;
+server_ip_freebind: VAR_IP_FREEBIND STRING 
+	{ 
+		OUTYY(("P(server_ip_freebind:%s)\n", $2)); 
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else cfg_parser->opt->ip_freebind = (strcmp($2, "yes")==0);
 	}
 	;
 server_debug_mode: VAR_DEBUG_MODE STRING 
@@ -213,6 +223,12 @@ server_identity: VAR_IDENTITY STRING
 	{ 
 		OUTYY(("P(server_identity:%s)\n", $2)); 
 		cfg_parser->opt->identity = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
+server_version: VAR_VERSION STRING
+	{ 
+		OUTYY(("P(server_version:%s)\n", $2)); 
+		cfg_parser->opt->version = region_strdup(cfg_parser->opt->region, $2);
 	}
 	;
 server_nsid: VAR_NSID STRING
@@ -373,6 +389,22 @@ server_tcp_timeout: VAR_TCP_TIMEOUT STRING
 		if(atoi($2) == 0 && strcmp($2, "0") != 0)
 			yyerror("number expected");
 		cfg_parser->opt->tcp_timeout = atoi($2);
+	}
+	;
+server_tcp_mss: VAR_TCP_MSS STRING
+	{
+		OUTYY(("P(server_tcp_mss:%s)\n", $2));
+		if(atoi($2) == 0 && strcmp($2, "0") != 0)
+			yyerror("number expected");
+		cfg_parser->opt->tcp_mss = atoi($2);
+	}
+	;
+server_outgoing_tcp_mss: VAR_OUTGOING_TCP_MSS STRING
+	{
+		OUTYY(("P(server_outgoing_tcp_mss:%s)\n", $2));
+		if(atoi($2) == 0 && strcmp($2, "0") != 0)
+			yyerror("number expected");
+		cfg_parser->opt->outgoing_tcp_mss = atoi($2);
 	}
 	;
 server_ipv4_edns_size: VAR_IPV4_EDNS_SIZE STRING
@@ -837,7 +869,7 @@ key_secret: VAR_SECRET STRING
 		assert(cfg_parser->current_key);
 #endif
 		cfg_parser->current_key->secret = region_strdup(cfg_parser->opt->region, $2);
-		size = b64_pton($2, data, sizeof(data));
+		size = __b64_pton($2, data, sizeof(data));
 		if(size == -1) {
 			c_error_msg("Cannot base64 decode tsig secret %s",
 				cfg_parser->current_key->name?

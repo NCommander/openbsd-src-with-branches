@@ -1,5 +1,38 @@
+/*	$OpenBSD: chap.h,v 1.7 2002/02/16 21:28:07 millert Exp $	*/
+
 /*
- * chap.h - Cryptographic Handshake Authentication Protocol definitions.
+ * chap.h - Challenge Handshake Authentication Protocol definitions.
+ *
+ * Copyright (c) 1989-2002 Paul Mackerras. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The name(s) of the authors of this software must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission.
+ *
+ * 4. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by Paul Mackerras
+ *     <paulus@samba.org>".
+ *
+ * THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
+ * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Copyright (c) 1991 Gregory M. Christy
  * All rights reserved.
@@ -14,8 +47,6 @@
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- *
- * $Id: chap.h,v 1.5 1995/07/04 23:47:37 paulus Exp $
  */
 
 #ifndef __CHAP_INCLUDE__
@@ -29,6 +60,8 @@
 
 #define CHAP_DIGEST_MD5		5	/* use MD5 algorithm */
 #define MD5_SIGNATURE_SIZE	16	/* 16 bytes in a MD5 message digest */
+#define CHAP_MICROSOFT		0x80	/* use Microsoft-compatible alg. */
+#define MS_CHAP_RESPONSE_LEN	49	/* Response length for MS-CHAP */
 
 #define CHAP_CHALLENGE		1
 #define CHAP_RESPONSE		2
@@ -40,7 +73,7 @@
  */
 #define MIN_CHALLENGE_LENGTH	32
 #define MAX_CHALLENGE_LENGTH	64
-#define MAX_RESPONSE_LENGTH	16	/* sufficient for MD5 */
+#define MAX_RESPONSE_LENGTH	64	/* sufficient for MD5 or MS-CHAP */
 
 /*
  * Each interface is described by a chap structure.
@@ -98,15 +131,10 @@ typedef struct chap_state {
 
 extern chap_state chap[];
 
-void ChapInit __P((int));
-void ChapAuthWithPeer __P((int, char *, int));
-void ChapAuthPeer __P((int, char *, int));
-void ChapLowerUp __P((int));
-void ChapLowerDown __P((int));
-void ChapInput __P((int, u_char *, int));
-void ChapProtocolReject __P((int));
-int  ChapPrintPkt __P((u_char *, int,
-		       void (*) __P((void *, char *, ...)), void *));
+void ChapAuthWithPeer(int, char *, int);
+void ChapAuthPeer(int, char *, int);
+
+extern struct protent chap_protent;
 
 #define __CHAP_INCLUDE__
 #endif /* __CHAP_INCLUDE__ */

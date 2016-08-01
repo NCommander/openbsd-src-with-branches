@@ -1,3 +1,5 @@
+.\"	$OpenBSD: rdate.8,v 1.36 2013/04/19 19:14:46 millert Exp $
+.\"	$NetBSD: rdate.8,v 1.4 1996/04/08 20:55:17 jtc Exp $
 .\"
 .\" Copyright (c) 1994 Christos Zoulas
 .\" All rights reserved.
@@ -27,9 +29,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: rdate.8,v 1.1 1994/11/17 17:39:54 glass Exp $
-.\"
-.Dd April 30, 1994
+.Dd $Mdocdate: April 19 2013 $
 .Dt RDATE 8
 .Os
 .Sh NAME
@@ -37,21 +37,76 @@
 .Nd set the system's date from a remote host
 .Sh SYNOPSIS
 .Nm rdate
-.Op Fl ps
-.Ar host 
+.Op Fl 46acnopsv
+.Ar host
 .Sh DESCRIPTION
-.Nm Rdate
+.Nm
 displays and sets the local date and time from the
-host name or address given as the argument. It uses the RFC868
-protocol which is usually implemented as a built-in service of
-.Xr inetd(1).
+host name or address given as the argument.
+The time source may be an RFC 5905 protocol SNTP/NTP server
+or an RFC 868 TCP protocol server,
+which is usually implemented as a built-in service of
+.Xr inetd 8 .
+By default,
+.Nm
+uses the RFC 5905 SNTP/NTP protocol.
 .Pp
-Available options:
-.Pp
-.Bl -tag -width indent
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl 4
+Forces
+.Nm
+to use IPv4 addresses only.
+.It Fl 6
+Forces
+.Nm
+to use IPv6 addresses only.
+.It Fl a
+Use the
+.Xr adjtime 2
+call to gradually skew the local time to the
+remote time rather than just hopping.
+.It Fl c
+Correct leap seconds.
+This should be used only when synchronizing to a server
+which does not correctly account for leap seconds.
+.It Fl n
+Use SNTP (RFC 5905) instead of the RFC 868 time protocol.
+This is the default.
+This protocol counts 32 bits of seconds from January 1, 1900
+and will rollover in March 2036.
+.It Fl o
+Use an RFC 868 TCP protocol server instead of SNTP.
+This protocol is obsolete as it is not capable of representing
+dates past January 19, 2038 03:14:07 GMT.
 .It Fl p
-Do not set, just print the remote time
+Do not set, just print the remote time.
 .It Fl s
 Do not print the time.
+.It Fl v
+Verbose output.
+Always show the adjustment.
+.El
+.Sh FILES
+.Bl -tag -width /var/log/wtmp -compact
+.It Pa /var/log/wtmp
+record of date resets and time changes
+.El
+.Sh EXAMPLES
+To get the legal time in Germany, set the
+.Pa /etc/localtime
+symlink to
+.Pa /usr/share/zoneinfo/right/Europe/Berlin
+and issue the following command:
+.Pp
+.D1 Li "# rdate -v ptbtime1.ptb.de"
+.Pp
+The command of course assumes you have a working internet connection
+and DNS set up to connect to the server at
+.Sy Physikalisch-Technische Bundesanstalt
+in Braunschweig, Germany.
 .Sh SEE ALSO
-.Xr inetd 1
+.Xr date 1 ,
+.Xr adjtime 2 ,
+.Xr inetd 8 ,
+.Xr ntpd 8

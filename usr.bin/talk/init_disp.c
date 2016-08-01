@@ -1,3 +1,4 @@
+/*	$OpenBSD: init_disp.c,v 1.21 2013/12/11 14:28:20 naddy Exp $	*/
 /*	$NetBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,63 +30,62 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)init_disp.c	8.2 (Berkeley) 2/16/94";
-#endif
-static char rcsid[] = "$NetBSD: init_disp.c,v 1.6 1994/12/09 02:14:17 jtc Exp $";
-#endif /* not lint */
-
 /*
  * Initialization code for the display package,
  * as well as the signal handling routines.
  */
 
 #include <sys/ioctl.h>
-#include <sys/ioctl_compat.h>
 
-#include <termios.h>
-#include <signal.h>
 #include <err.h>
+#include <stdlib.h>
+#include <termios.h>
+#include <unistd.h>
+
 #include "talk.h"
 
-/* 
+/*
  * Set up curses, catch the appropriate signals,
  * and build the various windows.
  */
-init_display()
+void
+init_display(void)
 {
-	void sig_sent();
-	struct sigvec sigv;
+	struct sigaction sa;
 
 	if (initscr() == NULL)
 		errx(1, "Terminal type unset or lacking necessary features.");
-	(void) sigvec(SIGTSTP, (struct sigvec *)0, &sigv);
-	sigv.sv_mask |= sigmask(SIGALRM);
-	(void) sigvec(SIGTSTP, &sigv, (struct sigvec *)0);
+	(void) sigaction(SIGTSTP, NULL, &sa);
+	sigaddset(&sa.sa_mask, SIGALRM);
+	(void) sigaction(SIGTSTP, &sa, NULL);
 	curses_initialized = 1;
 	clear();
 	refresh();
 	noecho();
-	crmode();
+	cbreak();
 	signal(SIGINT, sig_sent);
 	signal(SIGPIPE, sig_sent);
+	signal(SIGWINCH, sig_winch);
 	/* curses takes care of ^Z */
 	my_win.x_nlines = LINES / 2;
 	my_win.x_ncols = COLS;
 	my_win.x_win = newwin(my_win.x_nlines, my_win.x_ncols, 0, 0);
-	scrollok(my_win.x_win, FALSE);
+	scrollok(my_win.x_win, smooth_scroll);
 	wclear(my_win.x_win);
 
 	his_win.x_nlines = LINES / 2 - 1;
 	his_win.x_ncols = COLS;
 	his_win.x_win = newwin(his_win.x_nlines, his_win.x_ncols,
 	    my_win.x_nlines+1, 0);
-	scrollok(his_win.x_win, FALSE);
+	scrollok(his_win.x_win, smooth_scroll);
 	wclear(his_win.x_win);
 
 	line_win = newwin(1, COLS, my_win.x_nlines, 0);
+#if defined(NCURSES_VERSION) || defined(whline)
+	whline(line_win, '-', COLS);
+#else
 	box(line_win, '-', '-');
+#endif
 	wrefresh(line_win);
 	/* let them know we are working on it */
 	current_state = "No connection yet";
@@ -100,45 +96,50 @@ init_display()
  * the first three characters each talk transmits after
  * connection are the three edit characters.
  */
-set_edit_chars()
+void
+set_edit_chars(void)
 {
-	char buf[3];
+	u_char buf[3];
 	int cc;
 	struct termios tty;
 	
-	tcgetattr(0, &tty);
-	my_win.cerase = tty.c_cc[VERASE];
-	my_win.kill = tty.c_cc[VKILL];
-	if (tty.c_cc[VWERASE] == (unsigned char) -1)
-		my_win.werase = '\027';	 /* control W */
-	else
-		my_win.werase = tty.c_cc[VWERASE];
-	buf[0] = my_win.cerase;
-	buf[1] = my_win.kill;
-	buf[2] = my_win.werase;
+	tcgetattr(STDIN_FILENO, &tty);
+	buf[0] = my_win.cerase = (tty.c_cc[VERASE] == (u_char)_POSIX_VDISABLE)
+	    ? CERASE : tty.c_cc[VERASE];
+	buf[1] = my_win.kill = (tty.c_cc[VKILL] == (u_char)_POSIX_VDISABLE)
+	    ? CKILL : tty.c_cc[VKILL];
+	buf[2] = my_win.werase = (tty.c_cc[VWERASE] == (u_char)_POSIX_VDISABLE)
+	    ? CWERASE : tty.c_cc[VWERASE];
 	cc = write(sockt, buf, sizeof(buf));
 	if (cc != sizeof(buf) )
-		p_error("Lost the connection");
+		quit("Lost the connection", 1);
 	cc = read(sockt, buf, sizeof(buf));
 	if (cc != sizeof(buf) )
-		p_error("Lost the connection");
+		quit("Lost the connection", 1);
 	his_win.cerase = buf[0];
 	his_win.kill = buf[1];
 	his_win.werase = buf[2];
 }
 
 void
-sig_sent()
+sig_sent(int dummy)
 {
 
-	message("Connection closing. Exiting");
-	quit();
+	quit("Connection closing.  Exiting", 0);
+}
+
+void
+sig_winch(int dummy)
+{
+
+	gotwinch = 1;
 }
 
 /*
  * All done talking...hang up the phone and reset terminal thingy's
  */
-quit()
+void
+quit(char *warning, int do_perror)
 {
 
 	if (curses_initialized) {
@@ -149,5 +150,57 @@ quit()
 	}
 	if (invitation_waiting)
 		send_delete();
+	if (warning) {
+		if (do_perror)
+			warn("%s", warning);
+		else
+			warnx("%s", warning);
+	}
 	exit(0);
+}
+
+/*
+ * If we get SIGWINCH, recompute both window sizes and refresh things.
+ */
+void
+resize_display(void)
+{
+	struct winsize ws;
+
+	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &ws) < 0 ||
+	    (ws.ws_row == LINES && ws.ws_col == COLS))
+		return;
+
+	/* Update curses' internal state with new window size. */
+	resizeterm(ws.ws_row, ws.ws_col);
+
+	/*
+	 * Resize each window but wait to refresh the screen until
+	 * everything has been drawn so the cursor is in the right spot.
+	 */
+	my_win.x_nlines = LINES / 2;
+	my_win.x_ncols = COLS;
+	wresize(my_win.x_win, my_win.x_nlines, my_win.x_ncols);
+	mvwin(my_win.x_win, 0, 0);
+	clearok(my_win.x_win, TRUE);
+
+	his_win.x_nlines = LINES / 2 - 1;
+	his_win.x_ncols = COLS;
+	wresize(his_win.x_win, his_win.x_nlines, his_win.x_ncols);
+	mvwin(his_win.x_win, my_win.x_nlines + 1, 0);
+	clearok(his_win.x_win, TRUE);
+
+	wresize(line_win, 1, COLS);
+	mvwin(line_win, my_win.x_nlines, 0);
+#if defined(NCURSES_VERSION) || defined(whline)
+	whline(line_win, '-', COLS);
+#else
+	wmove(line_win, my_win.x_nlines, 0);
+	box(line_win, '-', '-');
+#endif
+
+	/* Now redraw the screen. */
+	wrefresh(his_win.x_win);
+	wrefresh(line_win);
+	wrefresh(my_win.x_win);
 }

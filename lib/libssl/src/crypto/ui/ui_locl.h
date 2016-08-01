@@ -1,4 +1,5 @@
-/* crypto/ui/ui.h -*- mode:C; c-file-style: "eay" -*- */
+/* $OpenBSD$ */
+
 /* Written by Richard Levitte (richard@levitte.org) for the OpenSSL
  * project 2001.
  */
@@ -10,7 +11,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -66,8 +67,7 @@
 #undef _
 #endif
 
-struct ui_method_st
-	{
+struct ui_method_st {
 	char *name;
 
 	/* All the functions return 1 or non-NULL for success and 0 or NULL
@@ -94,13 +94,12 @@ struct ui_method_st
 	   and object_name is the name of the object (might be a card name or
 	   a file name.
 	   The returned string shall always be allocated on the heap with
-	   OPENSSL_malloc(), and need to be free'd with OPENSSL_free(). */
+	   malloc(), and need to be free'd with free(). */
 	char *(*ui_construct_prompt)(UI *ui, const char *object_desc,
-		const char *object_name);
-	};
+	    const char *object_name);
+};
 
-struct ui_string_st
-	{
+struct ui_string_st {
 	enum UI_string_types type; /* Input */
 	const char *out_string;	/* Input */
 	int input_flags;	/* Flags from the user */
@@ -111,10 +110,8 @@ struct ui_string_st
 				   with size in result_maxsize.  Otherwise, it
 				   may be allocated by the UI routine, meaning
 				   result_minsize is going to be overwritten.*/
-	union
-		{
-		struct
-			{
+	union {
+		struct {
 			int result_minsize;	/* Input: minimum required
 						   size of the result.
 						*/
@@ -123,21 +120,19 @@ struct ui_string_st
 
 			const char *test_buf;	/* Input: test string to verify
 						   against */
-			} string_data;
-		struct
-			{
+		} string_data;
+		struct {
 			const char *action_desc; /* Input */
 			const char *ok_chars; /* Input */
 			const char *cancel_chars; /* Input */
-			} boolean_data;
-		} _;
+		} boolean_data;
+	} _;
 
 #define OUT_STRING_FREEABLE 0x01
 	int flags;		/* flags for internal use */
-	};
+};
 
-struct ui_st
-	{
+struct ui_st {
 	const UI_METHOD *meth;
 	STACK_OF(UI_STRING) *strings; /* We might want to prompt for more
 					 than one thing at a time, and
@@ -148,6 +143,6 @@ struct ui_st
 #define UI_FLAG_REDOABLE	0x0001
 #define UI_FLAG_PRINT_ERRORS	0x0100
 	int flags;
-	};
+};
 
 #endif

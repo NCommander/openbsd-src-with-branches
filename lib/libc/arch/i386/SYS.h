@@ -13,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,16 +29,119 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)SYS.h	5.5 (Berkeley) 5/7/91
- *	$Id: SYS.h,v 1.7 1994/10/26 19:49:42 mycroft Exp $
+ *	$OpenBSD: SYS.h,v 1.24 2015/10/23 04:39:24 guenther Exp $
  */
 
 #include <machine/asm.h>
 #include <sys/syscall.h>
 
-#define	SYSCALL(x)	.text; .align 2; 2: jmp PIC_PLT(cerror); ENTRY(x); movl $(SYS_/**/x),%eax; int $0x80; jc 2b
-#define	RSYSCALL(x)	SYSCALL(x); ret
-#define	PSEUDO(x,y)	ENTRY(x); movl $(SYS_/**/y),%eax; int $0x80; ret
-#define	CALL(x,y)	call PIC_PLT(_/**/y); addl $4*x,%esp
+#define TCB_OFFSET_ERRNO	16
 
-	.globl	cerror
+/*
+ * We define a hidden alias with the prefix "_libc_" for each global symbol
+ * that may be used internally.  By referencing _libc_x instead of x, other
+ * parts of libc prevent overriding by the application and avoid unnecessary
+ * relocations.
+ */
+#define _HIDDEN(x)		_libc_##x
+#define _HIDDEN_ALIAS(x,y)			\
+	STRONG_ALIAS(_HIDDEN(x),y);		\
+	.hidden _HIDDEN(x)
+#define _HIDDEN_FALIAS(x,y)			\
+	_HIDDEN_ALIAS(x,y);			\
+	.type _HIDDEN(x),@function
+
+/*
+ * For functions implemented in ASM that aren't syscalls.
+ *   END_STRONG(x)	Like DEF_STRONG() in C; for standard/reserved C names
+ *   END_WEAK(x)	Like DEF_WEAK() in C; for non-ISO C names
+ */
+#define	END_STRONG(x)	END(x); _HIDDEN_FALIAS(x,x); END(_HIDDEN(x))
+#define	END_WEAK(x)	END_STRONG(x); .weak x
+
+
+/*
+ * Design note:
+ *
+ * System calls entry points are really named _thread_sys_{syscall},
+ * and weakly aliased to the name {syscall}. This allows the thread
+ * library to replace system calls at link time.
+ */
+
+/* Use both _thread_sys_{syscall} and [weak] {syscall}. */
+
+#define	SYSENTRY(x)					\
+			ENTRY(_thread_sys_##x);		\
+			WEAK_ALIAS(x, _thread_sys_##x)
+#define	SYSENTRY_HIDDEN(x)				\
+			ENTRY(_thread_sys_ ## x)
+#define	__END_HIDDEN(x)	END(_thread_sys_ ## x);			\
+			_HIDDEN_FALIAS(x,_thread_sys_ ## x);	\
+			END(_HIDDEN(x))
+#define	__END(x)	__END_HIDDEN(x); END(x)
+
+#define	__DO_SYSCALL(x)					\
+			movl $(SYS_ ## x),%eax;		\
+			int $0x80
+
+#define SET_ERRNO()					\
+	movl	%eax,%gs:(TCB_OFFSET_ERRNO);		\
+	movl	$-1, %eax;				\
+	movl	$-1, %edx	/* for lseek */
+#define HANDLE_ERRNO()					\
+	jnc,pt	99f;					\
+	SET_ERRNO();					\
+	99:
+
+/* perform a syscall */
+#define	_SYSCALL_NOERROR(x,y)				\
+		SYSENTRY(x);				\
+			__DO_SYSCALL(y);
+#define	_SYSCALL_HIDDEN_NOERROR(x,y)			\
+		SYSENTRY_HIDDEN(x);			\
+			__DO_SYSCALL(y);
+
+#define	SYSCALL_NOERROR(x)				\
+		_SYSCALL_NOERROR(x,x)
+
+/* perform a syscall, set errno */
+#define	_SYSCALL(x,y)					\
+			.text;				\
+			.align 2;			\
+		_SYSCALL_NOERROR(x,y)			\
+			HANDLE_ERRNO()
+#define	_SYSCALL_HIDDEN(x,y)				\
+			.text;				\
+			.align 2;			\
+		_SYSCALL_HIDDEN_NOERROR(x,y)		\
+			HANDLE_ERRNO()
+
+#define	SYSCALL(x)					\
+		_SYSCALL(x,x)
+#define	SYSCALL_HIDDEN(x)				\
+		_SYSCALL_HIDDEN(x,y)
+
+/* perform a syscall, return */
+#define	PSEUDO_NOERROR(x,y)				\
+		_SYSCALL_NOERROR(x,y);			\
+			ret;				\
+		__END(x)
+
+/* perform a syscall, set errno, return */
+#define	PSEUDO(x,y)					\
+		_SYSCALL(x,y);				\
+			ret;				\
+		__END(x)
+#define	PSEUDO_HIDDEN(x,y)				\
+		_SYSCALL_HIDDEN(x,y);			\
+			ret;				\
+		__END_HIDDEN(x)
+
+/* perform a syscall with the same name, set errno, return */
+#define	RSYSCALL(x)					\
+			PSEUDO(x,x);
+#define	RSYSCALL_HIDDEN(x)				\
+			PSEUDO_HIDDEN(x,x)
+#define	SYSCALL_END(x)	__END(x)
+#define	SYSCALL_END_HIDDEN(x)				\
+			__END_HIDDEN(x)

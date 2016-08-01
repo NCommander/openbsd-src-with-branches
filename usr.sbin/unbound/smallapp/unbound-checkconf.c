@@ -335,7 +335,9 @@ morechecks(struct config_file* cfg, const char* fname)
 	if(cfg->edns_buffer_size > cfg->msg_buffer_size)
 		fatal_exit("edns-buffer-size larger than msg-buffer-size, "
 			"answers will not fit in processing buffer");
-
+#ifdef UB_ON_WINDOWS
+	w_config_adjust_directory(cfg);
+#endif
 	if(cfg->chrootdir && cfg->chrootdir[0] && 
 		cfg->chrootdir[strlen(cfg->chrootdir)-1] == '/')
 		fatal_exit("chootdir %s has trailing slash '/' please remove.",
@@ -409,6 +411,21 @@ morechecks(struct config_file* cfg, const char* fname)
 		&& strcmp(cfg->module_conf, "dns64 validator python iterator") != 0
 		&& strcmp(cfg->module_conf, "python dns64 iterator") != 0 
 		&& strcmp(cfg->module_conf, "python dns64 validator iterator") != 0 
+#endif
+#ifdef USE_CACHEDB
+		&& strcmp(cfg->module_conf, "validator cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "dns64 validator cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "dns64 cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "python dns64 cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "python dns64 validator cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "dns64 python cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "dns64 python validator cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "python cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "python validator cachedb iterator") != 0
+		&& strcmp(cfg->module_conf, "cachedb python iterator") != 0
+		&& strcmp(cfg->module_conf, "validator cachedb python iterator") != 0
+		&& strcmp(cfg->module_conf, "validator python cachedb iterator") != 0
 #endif
 		) {
 		fatal_exit("module conf '%s' is not known to work",

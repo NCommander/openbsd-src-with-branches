@@ -1,3 +1,4 @@
+/*	$OpenBSD: dwc2_core.c,v 1.5 2015/02/12 11:38:42 uebayasi Exp $	*/
 /*	$NetBSD: dwc2_core.c,v 1.6 2014/04/03 06:34:58 skrll Exp $	*/
 
 /*
@@ -42,30 +43,33 @@
  * Driver and the Peripheral Controller Driver.
  */
 
+#if 0
 #include <sys/cdefs.h>
 __KERNEL_RCSID(0, "$NetBSD: dwc2_core.c,v 1.6 2014/04/03 06:34:58 skrll Exp $");
+#endif
 
+#include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/types.h>
-#include <sys/bus.h>
+#include <sys/signal.h>
 #include <sys/proc.h>
-#include <sys/callout.h>
+#include <sys/timeout.h>
 #include <sys/mutex.h>
 #include <sys/pool.h>
-#include <sys/workqueue.h>
+#include <sys/task.h>
+
+#include <machine/bus.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdivar.h>
 #include <dev/usb/usb_mem.h>
 
-#include <linux/kernel.h>
-#include <linux/list.h>
+#include <dev/usb/dwc2/dwc2.h>
+#include <dev/usb/dwc2/dwc2var.h>
 
-#include <dwc2/dwc2.h>
-#include <dwc2/dwc2var.h>
-
-#include "dwc2_core.h"
-#include "dwc2_hcd.h"
+#include <dev/usb/dwc2/dwc2_core.h>
+#include <dev/usb/dwc2/dwc2_hcd.h>
 
 /**
  * dwc2_enable_common_interrupts() - Initializes the commmon interrupts,
@@ -73,7 +77,7 @@ __KERNEL_RCSID(0, "$NetBSD: dwc2_core.c,v 1.6 2014/04/03 06:34:58 skrll Exp $");
  *
  * @hsotg: Programming view of the DWC_otg controller
  */
-static void dwc2_enable_common_interrupts(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_enable_common_interrupts(struct dwc2_hsotg *hsotg)
 {
 	u32 intmsk;
 
@@ -99,7 +103,7 @@ static void dwc2_enable_common_interrupts(struct dwc2_hsotg *hsotg)
  * Initializes the FSLSPClkSel field of the HCFG register depending on the
  * PHY type
  */
-static void dwc2_init_fs_ls_pclk_sel(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_init_fs_ls_pclk_sel(struct dwc2_hsotg *hsotg)
 {
 	u32 hcfg, val;
 
@@ -125,7 +129,7 @@ static void dwc2_init_fs_ls_pclk_sel(struct dwc2_hsotg *hsotg)
  * Do core a soft reset of the core.  Be careful with this because it
  * resets all the internal state machines of the core.
  */
-static int dwc2_core_reset(struct dwc2_hsotg *hsotg)
+STATIC int dwc2_core_reset(struct dwc2_hsotg *hsotg)
 {
 	u32 greset;
 	int count = 0;
@@ -168,7 +172,7 @@ static int dwc2_core_reset(struct dwc2_hsotg *hsotg)
 	return 0;
 }
 
-static int dwc2_fs_phy_init(struct dwc2_hsotg *hsotg, bool select_phy)
+STATIC int dwc2_fs_phy_init(struct dwc2_hsotg *hsotg, bool select_phy)
 {
 	u32 usbcfg, i2cctl;
 	int retval = 0;
@@ -221,7 +225,7 @@ static int dwc2_fs_phy_init(struct dwc2_hsotg *hsotg, bool select_phy)
 	return retval;
 }
 
-static int dwc2_hs_phy_init(struct dwc2_hsotg *hsotg, bool select_phy)
+STATIC int dwc2_hs_phy_init(struct dwc2_hsotg *hsotg, bool select_phy)
 {
 	u32 usbcfg;
 	int retval = 0;
@@ -270,7 +274,7 @@ static int dwc2_hs_phy_init(struct dwc2_hsotg *hsotg, bool select_phy)
 	return retval;
 }
 
-static int dwc2_phy_init(struct dwc2_hsotg *hsotg, bool select_phy)
+STATIC int dwc2_phy_init(struct dwc2_hsotg *hsotg, bool select_phy)
 {
 	u32 usbcfg;
 	int retval = 0;
@@ -306,14 +310,19 @@ static int dwc2_phy_init(struct dwc2_hsotg *hsotg, bool select_phy)
 	return retval;
 }
 
-static int dwc2_gahbcfg_init(struct dwc2_hsotg *hsotg)
+STATIC int dwc2_gahbcfg_init(struct dwc2_hsotg *hsotg)
 {
 	u32 ahbcfg = DWC2_READ_4(hsotg, GAHBCFG);
 
 	switch (hsotg->hw_params.arch) {
 	case GHWCFG2_EXT_DMA_ARCH:
-		dev_err(hsotg->dev, "External DMA Mode not supported\n");
-		return -EINVAL;
+		dev_err(hsotg->dev, "External DMA Mode\n");
+		if (hsotg->core_params->ahbcfg != -1) {
+			ahbcfg &= GAHBCFG_CTRL_MASK;
+			ahbcfg |= hsotg->core_params->ahbcfg &
+				  ~GAHBCFG_CTRL_MASK;
+		}
+		break;
 
 	case GHWCFG2_INT_DMA_ARCH:
 		dev_dbg(hsotg->dev, "Internal DMA Mode\n");
@@ -352,7 +361,7 @@ static int dwc2_gahbcfg_init(struct dwc2_hsotg *hsotg)
 	return 0;
 }
 
-static void dwc2_gusbcfg_init(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_gusbcfg_init(struct dwc2_hsotg *hsotg)
 {
 	u32 usbcfg;
 
@@ -508,7 +517,7 @@ void dwc2_disable_host_interrupts(struct dwc2_hsotg *hsotg)
 	DWC2_WRITE_4(hsotg, GINTMSK, intmsk);
 }
 
-static void dwc2_config_fifos(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_config_fifos(struct dwc2_hsotg *hsotg)
 {
 	struct dwc2_core_params *params = hsotg->core_params;
 	u32 nptxfsiz, hptxfsiz, dfifocfg, grxfsiz;
@@ -693,7 +702,7 @@ void dwc2_core_host_init(struct dwc2_hsotg *hsotg)
 	dwc2_enable_host_interrupts(hsotg);
 }
 
-static void dwc2_hc_enable_slave_ints(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_enable_slave_ints(struct dwc2_hsotg *hsotg,
 				      struct dwc2_host_chan *chan)
 {
 	u32 hcintmsk = HCINTMSK_CHHLTD;
@@ -771,7 +780,7 @@ static void dwc2_hc_enable_slave_ints(struct dwc2_hsotg *hsotg,
 		dev_vdbg(hsotg->dev, "set HCINTMSK to %08x\n", hcintmsk);
 }
 
-static void dwc2_hc_enable_dma_ints(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_enable_dma_ints(struct dwc2_hsotg *hsotg,
 				    struct dwc2_host_chan *chan)
 {
 	u32 hcintmsk = HCINTMSK_CHHLTD;
@@ -808,7 +817,7 @@ static void dwc2_hc_enable_dma_ints(struct dwc2_hsotg *hsotg,
 		dev_vdbg(hsotg->dev, "set HCINTMSK to %08x\n", hcintmsk);
 }
 
-static void dwc2_hc_enable_ints(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_enable_ints(struct dwc2_hsotg *hsotg,
 				struct dwc2_host_chan *chan)
 {
 	u32 intmsk;
@@ -1136,7 +1145,7 @@ void dwc2_hc_cleanup(struct dwc2_hsotg *hsotg, struct dwc2_host_chan *chan)
  *
  * This function has no effect on non-periodic transfers
  */
-static void dwc2_hc_set_even_odd_frame(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_set_even_odd_frame(struct dwc2_hsotg *hsotg,
 				       struct dwc2_host_chan *chan, u32 *hcchar)
 {
 	if (chan->ep_type == USB_ENDPOINT_XFER_INT ||
@@ -1147,7 +1156,7 @@ static void dwc2_hc_set_even_odd_frame(struct dwc2_hsotg *hsotg,
 	}
 }
 
-static void dwc2_set_pid_isoc(struct dwc2_host_chan *chan)
+STATIC void dwc2_set_pid_isoc(struct dwc2_host_chan *chan)
 {
 	/* Set up the initial PID for the transfer */
 	if (chan->speed == USB_SPEED_HIGH) {
@@ -1183,7 +1192,7 @@ static void dwc2_set_pid_isoc(struct dwc2_host_chan *chan)
  * Upon return the xfer_buf and xfer_count fields in chan are incremented by
  * the number of bytes written to the Tx FIFO.
  */
-static void dwc2_hc_write_packet(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_write_packet(struct dwc2_hsotg *hsotg,
 				 struct dwc2_host_chan *chan)
 {
 	u32 i;
@@ -1396,10 +1405,21 @@ void dwc2_hc_start_transfer(struct dwc2_hsotg *hsotg,
 		} else {
 			dma_addr = chan->xfer_dma;
 		}
-		DWC2_WRITE_4(hsotg, HCDMA(chan->hc_num), (u32)dma_addr);
-		if (dbg_hc(chan))
-			dev_vdbg(hsotg->dev, "Wrote %08lx to HCDMA(%d)\n",
-				 (unsigned long)dma_addr, chan->hc_num);
+		struct dwc2_core_dma_config *dma_config =
+		    hsotg->core_dma_config;
+		if (dma_config == NULL) {
+			DWC2_WRITE_4(hsotg, HCDMA(chan->hc_num),
+			    (u32)dma_addr);
+			if (dbg_hc(chan))
+				dev_vdbg(hsotg->dev,
+				    "Wrote %08lx to HCDMA(%d)\n",
+				     (unsigned long)dma_addr,
+				    chan->hc_num);
+		} else {
+			(void)(*dma_config->set_dma_addr)(
+			    dma_config->set_dma_addr_data, dma_addr,
+			    chan->hc_num);
+		}
 	}
 
 	/* Start the split */
@@ -2244,7 +2264,7 @@ void dwc2_set_param_phy_type(struct dwc2_hsotg *hsotg, int val)
 	hsotg->core_params->phy_type = val;
 }
 
-static int dwc2_get_param_phy_type(struct dwc2_hsotg *hsotg)
+STATIC int dwc2_get_param_phy_type(struct dwc2_hsotg *hsotg)
 {
 	return hsotg->core_params->phy_type;
 }
@@ -2510,7 +2530,7 @@ void dwc2_set_param_otg_ver(struct dwc2_hsotg *hsotg, int val)
 	hsotg->core_params->otg_ver = val;
 }
 
-static void dwc2_set_param_uframe_sched(struct dwc2_hsotg *hsotg, int val)
+STATIC void dwc2_set_param_uframe_sched(struct dwc2_hsotg *hsotg, int val)
 {
 	if (DWC2_OUT_OF_BOUNDS(val, 0, 1)) {
 		if (val >= 0) {

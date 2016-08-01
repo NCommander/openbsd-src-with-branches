@@ -1,3 +1,5 @@
+.\"	$OpenBSD: strcat.3,v 1.17 2014/04/19 11:30:40 deraadt Exp $
+.\"
 .\" Copyright (c) 1990, 1991 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -13,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,62 +31,48 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)strcat.3	5.6 (Berkeley) 6/29/91
-.\"	$Id: strcat.3,v 1.2 1993/08/01 07:43:54 mycroft Exp $
-.\"
-.Dd June 29, 1991
+.Dd $Mdocdate: April 19 2014 $
 .Dt STRCAT 3
 .Os
 .Sh NAME
 .Nm strcat
-.Nd concatenate strings
+.Nd concatenate two strings without bounds checking
 .Sh SYNOPSIS
-.Fd #include <string.h>
+.In string.h
 .Ft char *
-.Fn strcat "char *s" "const char *append"
-.Ft char *
-.Fn strncat "char *s" "const char *append" "size_t count"
+.Fn strcat "char *dst" "const char *append"
 .Sh DESCRIPTION
 The
 .Fn strcat
-and
-.Fn strncat
-functions
-append a copy of the null-terminated string
+function appends a copy of the NUL-terminated string
 .Fa append
-to the end of the null-terminated string
-.Fa s ,
-then add a terminating
+to the end of the NUL-terminated string
+.Fa dst ,
+then adds a terminating
 .Ql \e0 .
-The string
-.Fa s
-must have sufficient space to hold the result.
 .Pp
-The
-.Fn strncat
-function
-appends not more than
-.Fa count
-characters.
+No bounds checking is performed.
+If the buffer
+.Fa dst
+is not large enough to hold the result,
+subsequent memory will be damaged.
 .Sh RETURN VALUES
 The
 .Fn strcat
-and
-.Fn strncat
-functions
-return the pointer
-.Fa s .
+function return the pointer
+.Fa dst .
 .Sh SEE ALSO
-.Xr bcopy 3 ,
-.Xr memccpy 3 ,
-.Xr memcpy 3 ,
-.Xr memmove 3 ,
-.Xr strcpy 3
+.Xr strlcpy 3 ,
+.Xr wcscat 3 ,
+.Xr wcslcpy 3
 .Sh STANDARDS
 The
 .Fn strcat
-and
-.Fn strncat
-functions
-conform to
+function conforms to
 .St -ansiC .
+.Sh HISTORY
+The
+.Fn strcat
+function first appeared in the Programmer's Workbench (PWB/UNIX)
+and was ported to
+.At v7 .

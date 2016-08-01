@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.8 2006/02/11 16:16:34 espie Exp $
 #	$NetBSD: Makefile,v 1.14 1995/04/22 12:10:17 cgd Exp $
 
 # Change the line below for your time zone (after finding the zone you want in
@@ -35,10 +36,11 @@ TZDIR=	${DESTDIR}/usr/share/zoneinfo
 #	REDO=		right_posix
 # below.
 
-REDO=		posix_only
+REDO=		posix_right
 
 # Since "." may not be in PATH...
 YEARISTYPE=	${.CURDIR}/datfiles/yearistype.sh
+YEARISTYPECOPY=	${.OBJDIR}/yearistypecopy
 
 YDATA=		africa antarctica asia australasia \
 		europe northamerica southamerica pacificnew etcetera factory \
@@ -46,34 +48,50 @@ YDATA=		africa antarctica asia australasia \
 NDATA=		systemv
 SDATA=		solar87 solar88 solar89
 TDATA=		$(YDATA) $(NDATA) $(SDATA)
-DATA=		$(YDATA) $(NDATA) $(SDATA) leapseconds # yearistype.sh
-USNO=		usno1988 usno1989
+TABDATA=	iso3166.tab zone.tab zone1970.tab
+DATA=		$(YDATA) $(NDATA) $(SDATA) $(TABDATA) leapseconds # yearistype.sh
+USNO=		usno1988 usno1989 usno1989a usno1995 usno1997
 
 ZIC=zic
 
-posix_only: ${TDATA}
-	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR} -L /dev/null ${TDATA})
+all:	${YEARISTYPECOPY}
 
-right_only: leapseconds ${TDATA}
-	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR} -L leapseconds ${TDATA})
+${YEARISTYPECOPY}:
+	cp ${YEARISTYPE} yearistypecopy
+	chmod u+x yearistypecopy
 
-other_two: leapseconds ${TDATA}
+posix_only: ${TDATA} ${YEARISTYPECOPY}
 	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR}/posix -L /dev/null ${TDATA})
+	    ${ZIC} -y ${YEARISTYPECOPY} -d ${TZDIR} -L /dev/null ${TDATA})
+
+right_only: leapseconds ${TDATA} ${YEARISTYPECOPY}
 	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR}/right -L leapseconds ${TDATA})
+	    ${ZIC} -y ${YEARISTYPECOPY} -d ${TZDIR} -L leapseconds ${TDATA})
+
+other_two: leapseconds ${TDATA} ${YEARISTYPECOPY}
+	(cd ${.CURDIR}/datfiles; \
+	    ${ZIC} -y ${YEARISTYPECOPY} -d ${TZDIR}/posix -L /dev/null ${TDATA})
+	(cd ${.CURDIR}/datfiles; \
+	    ${ZIC} -y ${YEARISTYPECOPY} -d ${TZDIR}/right -L leapseconds ${TDATA})
 
 posix_right: posix_only other_two
 
 right_posix: right_only other_two
 
-realinstall: ${DATA} ${REDO}
+realinstall: ${DATA} ${REDO} ${YEARISTYPECOPY}
 	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR} -p ${POSIXRULES})
+	    ${ZIC} -y ${YEARISTYPECOPY} -d ${TZDIR} -p ${POSIXRULES})
 	chown -R ${BINOWN}:${BINGRP} ${TZDIR}
-	find ${TZDIR} -type f | xargs chmod a=r
+	find ${TZDIR} -type f -print0 | xargs -0r chmod a=r
+	${INSTALL} -c -o root -g bin -m 644 ${.CURDIR}/datfiles/iso3166.tab \
+	    ${DESTDIR}/usr/share/misc
+	${INSTALL} -c -o root -g bin -m 644 ${.CURDIR}/datfiles/zone.tab \
+	    ${DESTDIR}/usr/share/zoneinfo
+	${INSTALL} -c -o root -g bin -m 644 ${.CURDIR}/datfiles/zone1970.tab \
+	    ${DESTDIR}/usr/share/zoneinfo
+
+
+CLEANFILES+= yearistypecopy
 
 .PATH:	${.CURDIR}/datfiles
 .include <bsd.prog.mk>

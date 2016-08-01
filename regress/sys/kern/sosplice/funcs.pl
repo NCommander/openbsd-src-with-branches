@@ -1,4 +1,4 @@
-#	$OpenBSD: funcs.pl,v 1.10 2012/07/09 14:23:17 bluhm Exp $
+#	$OpenBSD: funcs.pl,v 1.7 2014/08/18 21:51:45 bluhm Exp $
 
 # Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -16,6 +16,7 @@
 
 use strict;
 use warnings;
+no warnings 'experimental::smartmatch';
 use feature 'switch';
 use Errno;
 use Digest::MD5;
@@ -52,9 +53,8 @@ sub write_stream {
 		}
 	}
 	if ($len) {
-		$char = "\n";
-		$ctx->add($char);
-		print $char
+		$ctx->add("\n");
+		print "\n"
 		    or die ref($self), " print failed: $!";
 		print STDERR ".\n";
 	}
@@ -98,9 +98,8 @@ sub write_oob {
 		}
 	}
 	if ($len) {
-		$char = "\n";
-		$msg .= $char;
-		$ctx->add($char);
+		$msg .= "\n";
+		$ctx->add("\n");
 		send(STDOUT, $msg, 0)
 		    or die ref($self), " send failed: $!";
 		print STDERR ".\n";
@@ -135,9 +134,8 @@ sub write_datagram {
 			}
 		}
 		if ($l) {
-			$char = "\n";
-			$ctx->add($char);
-			$string .= $char;
+			$ctx->add("\n");
+			$string .= "\n";
 		}
 		defined(my $write = syswrite(STDOUT, $string))
 		    or die ref($self), " syswrite number $num failed: $!";
@@ -207,6 +205,7 @@ sub relay_copy_stream {
 		}
 		my $read = sysread(STDIN, $buf,
 		    $max && $max < $size ? $max : $size);
+		next if !defined($read) && $!{EAGAIN};
 		defined($read)
 		    or die ref($self), " sysread at $len failed: $!";
 		if ($read == 0) {
@@ -241,6 +240,7 @@ sub relay_copy_stream {
 		}
 		if ($max && $len == $max) {
 			print STDERR "\n";
+			print STDERR "Big\n";
 			print STDERR "Max\n";
 			last;
 		}
@@ -287,7 +287,7 @@ sub relay_copy_datagram {
 			select(undef, $win, undef, undef)
 			    or die ref($self), " select write failed: $!";
 		}
-		defined(my $write = syswrite(STDOUT, $buf)) || $!{EMSGSIZE}
+		defined(my $write = syswrite(STDOUT, $buf))
 		    or die ref($self), " syswrite number $num failed: $!";
 		if (defined($write)) {
 			$read == $write
@@ -298,6 +298,7 @@ sub relay_copy_datagram {
 
 		if ($max && $len == $max) {
 			print STDERR "\n";
+			print STDERR "Big\n";
 			print STDERR "Max\n";
 			last;
 		}
@@ -317,7 +318,7 @@ sub relay_copy {
 	}
 }
 
-sub relay_splice {
+sub relay_splice_stream {
 	my $self = shift;
 	my $max = $self->{max};
 	my $idle = $self->{idle};
@@ -353,7 +354,7 @@ sub relay_splice {
 
 		defined($error = geterror(\*STDIN))
 		    or die ref($self), " get error from stdin failed: $!";
-		($! = $error) && ! $!{ETIMEDOUT} && ! $!{EMSGSIZE}
+		($! = $error) && ! $!{ETIMEDOUT} && ! $!{EFBIG}
 		    and die ref($self), " splice failed: $!";
 
 		defined($splicelen = getsplice(\*STDIN))
@@ -365,14 +366,61 @@ sub relay_splice {
 		$len += $splicelen;
 	} while ($max && $max > $len && !$shortsplice++);
 
+	relay_splice_check($self, $idle, $max, $len, $error);
+	print STDERR "LEN: $len\n";
+}
+
+sub relay_splice_datagram {
+	my $self = shift;
+	my $max = $self->{max};
+	my $idle = $self->{idle};
+
+	my $splicemax = $max || 0;
+	setsplice(\*STDIN, \*STDOUT, $splicemax, $idle)
+	    or die ref($self), " splice stdin to stdout failed: $!";
+
+	my $rin = '';
+	vec($rin, fileno(STDIN), 1) = 1;
+	select($rin, undef, undef, undef)
+	    or die ref($self), " select failed: $!";
+
+	defined(my $error = geterror(\*STDIN))
+	    or die ref($self), " get error from stdin failed: $!";
+	($! = $error) && ! $!{ETIMEDOUT} && ! $!{EFBIG}
+	    and die ref($self), " splice failed: $!";
+
+	defined(my $splicelen = getsplice(\*STDIN))
+	    or die ref($self), " get splice len from stdin failed: $!";
+	print STDERR "SPLICELEN: $splicelen\n";
+	!$max || $splicelen <= $splicemax
+	    or die ref($self), " splice len $splicelen ".
+	    "greater than max $splicemax";
+	my $len = $splicelen;
+
+	if ($max && $max > $len) {
+		defined(my $read = sysread(STDIN, my $buf, $max - $len))
+		    or die ref($self), " sysread stdin max failed: $!";
+		$len += $read;
+	}
+	relay_splice_check($self, $idle, $max, $len, $error);
+	print STDERR "LEN: $splicelen\n";
+}
+
+sub relay_splice_check {
+	my $self = shift;
+	my ($idle, $max, $len, $error) = @_;
+
 	if ($idle && $error == Errno::ETIMEDOUT) {
 		print STDERR "Timeout\n";
+	}
+	if ($max && $error == Errno::EFBIG) {
+		print STDERR "Big\n";
 	}
 	if ($max && $max == $len) {
 		print STDERR "Max\n";
 	} elsif ($max && $max < $len) {
 		die ref($self), " max $max less than len $len";
-	} elsif ($max && $max > $len && $splicelen) {
+	} elsif ($max && $max > $len && $error == Errno::EFBIG) {
 		die ref($self), " max $max greater than len $len";
 	} elsif (!$error) {
 		defined(my $read = sysread(STDIN, my $buf, 2**16))
@@ -381,7 +429,17 @@ sub relay_splice {
 		    and die ref($self), " sysread stdin has data: $read";
 		print STDERR "End\n";
 	}
-	print STDERR "LEN: $len\n";
+}
+
+sub relay_splice {
+	my $self = shift;
+	my $protocol = $self->{protocol} || "tcp";
+
+	given ($protocol) {
+		when (/tcp/)	{ relay_splice_stream($self, @_) }
+		when (/udp/)	{ relay_splice_datagram($self, @_) }
+		default	{ die ref($self), " unknown protocol name: $protocol" }
+	}
 }
 
 sub relay {
@@ -420,12 +478,13 @@ sub errignore {
 	$SIG{PIPE} = 'IGNORE';
 	$SIG{__DIE__} = sub {
 		die @_ if $^S;
-		warn @_;
+		warn "Error ignored";
 		my $soerror;
 		$soerror = getsockopt(STDIN, SOL_SOCKET, SO_ERROR);
 		print STDERR "ERROR IN: ", unpack('i', $soerror), "\n";
 		$soerror = getsockopt(STDOUT, SOL_SOCKET, SO_ERROR);
 		print STDERR "ERROR OUT: ", unpack('i', $soerror), "\n";
+		warn @_;
 		IO::Handle::flush(\*STDERR);
 		POSIX::_exit(0);
 	};
@@ -515,16 +574,27 @@ sub read_oob {
 
 sub read_datagram {
 	my $self = shift;
-	my $num = $self->{num} // 1;
 	my $max = $self->{max};
+	my $idle = $self->{idle};
 	my $size = $self->{size} || 2**16;
 
 	my $ctx = Digest::MD5->new();
 	my $len = 0;
 	my @lengths;
-	for (my $i = 0; $i < $num; $i++) {
+	for (my $num = 0;; $num++) {
+		if ($idle) {
+			my $rin = '';
+			vec($rin, fileno(STDIN), 1) = 1;
+			defined(my $n = select($rin, undef, undef, $idle))
+			    or die ref($self), " select idle failed: $!";
+			if ($n == 0) {
+				print STDERR "\n";
+				print STDERR "Timeout";
+				last;
+			}
+		}
 		defined(my $read = sysread(STDIN, my $buf, $size))
-		    or die ref($self), " sysread number $i failed: $!";
+		    or die ref($self), " sysread number $num failed: $!";
 		$len += $read;
 		push @lengths, $read;
 		$ctx->add($buf);
@@ -557,25 +627,43 @@ sub check_logs {
 
 	return if $args{nocheck};
 
-	$r->loggrep(qr/^Timeout$/) or die "no relay timeout"
-	    if $r && $args{relay}{timeout};
-	$r->loggrep(qr/^Max$/) or die "no relay max"
-	    if $r && $args{relay}{max} && $args{len};
-
+	check_relay($c, $r, $s, %args);
 	check_len($c, $r, $s, %args);
 	check_lengths($c, $r, $s, %args);
 	check_md5($c, $r, $s, %args);
 	check_error($c, $r, $s, %args);
 }
 
+sub check_relay {
+	my ($c, $r, $s, %args) = @_;
+
+	return unless $r;
+
+	if (defined $args{relay}{timeout}) {
+		my $lg = $r->loggrep(qr/^Timeout$/);
+		die "no relay timeout"  if !$lg && $args{relay}{timeout};
+		die "relay has timeout" if $lg && !$args{relay}{timeout};
+	}
+	if (defined $args{relay}{big}) {
+		my $lg = $r->loggrep(qr/^Big$/);
+		die "no relay big"  if !$lg && $args{relay}{big};
+		die "relay has big" if $lg && !$args{relay}{big};
+	}
+	$r->loggrep(qr/^Max$/) or die "no relay max"
+	    if $args{relay}{max} && !$args{relay}{nomax};
+	$r->loggrep(qr/^End$/) or die "no relay end"
+	    if $args{relay}{end};
+}
+
 sub check_len {
 	my ($c, $r, $s, %args) = @_;
 
-	my $clen = $c->loggrep(qr/^LEN: /) // die "no client len"
+	my ($clen, $rlen, $slen);
+	$clen = $c->loggrep(qr/^LEN: /) // die "no client len"
 	    unless $args{client}{nocheck};
-	my $rlen = $r->loggrep(qr/^LEN: /) // die "no relay len"
+	$rlen = $r->loggrep(qr/^LEN: /) // die "no relay len"
 	    if $r && ! $args{relay}{nocheck};
-	my $slen = $s->loggrep(qr/^LEN: /) // die "no server len"
+	$slen = $s->loggrep(qr/^LEN: /) // die "no server len"
 	    unless $args{server}{nocheck};
 	!$clen || !$rlen || $clen eq $rlen
 	    or die "client: $clen", "relay: $rlen", "len mismatch";
@@ -594,9 +682,10 @@ sub check_len {
 sub check_lengths {
 	my ($c, $r, $s, %args) = @_;
 
-	my $clengths = $c->loggrep(qr/^LENGTHS: /)
+	my ($clengths, $slengths);
+	$clengths = $c->loggrep(qr/^LENGTHS: /)
 	    unless $args{client}{nocheck};
-	my $slengths = $s->loggrep(qr/^LENGTHS: /)
+	$slengths = $s->loggrep(qr/^LENGTHS: /)
 	    unless $args{server}{nocheck};
 	!$clengths || !$slengths || $clengths eq $slengths
 	    or die "client: $clengths", "server: $slengths", "lengths mismatch";
@@ -611,8 +700,9 @@ sub check_lengths {
 sub check_md5 {
 	my ($c, $r, $s, %args) = @_;
 
-	my $cmd5 = $c->loggrep(qr/^MD5: /) unless $args{client}{nocheck};
-	my $smd5 = $s->loggrep(qr/^MD5: /) unless $args{server}{nocheck};
+	my ($cmd5, $smd5);
+	$cmd5 = $c->loggrep(qr/^MD5: /) unless $args{client}{nocheck};
+	$smd5 = $s->loggrep(qr/^MD5: /) unless $args{server}{nocheck};
 	!$cmd5 || !$smd5 || ref($args{md5}) eq 'ARRAY' || $cmd5 eq $smd5
 	    or die "client: $cmd5", "server: $smd5", "md5 mismatch";
 	my $md5 = ref($args{md5}) eq 'ARRAY' ?
@@ -637,14 +727,14 @@ sub check_error {
 			my $ein = $p->loggrep(qr/^ERROR IN: /);
 			defined($ein) &&
 			    $ein eq "ERROR IN: $args{$name}{errorin}\n"
-			    or die "$name: $ein",
+			    or die "$name: $ein ",
 			    "error in $args{$name}{errorin} expected";
 		}
 		if (defined($args{$name}{errorout})) {
 			my $eout = $p->loggrep(qr/^ERROR OUT: /);
 			defined($eout) &&
 			    $eout eq "ERROR OUT: $args{$name}{errorout}\n"
-			    or die "$name: $eout",
+			    or die "$name: $eout ",
 			    "error out $args{$name}{errorout} expected";
 		}
 	}

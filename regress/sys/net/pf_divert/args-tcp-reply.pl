@@ -1,11 +1,11 @@
-# test divert-reply
-# swap client and server
-# server is local
-# client diverts packets with reply-to
+# test divert-reply with tcp
 
 use strict;
 use warnings;
 
 our %args = (
-	divert => "reply",
+    protocol => "tcp",
+    client => { func => \&write_read_stream },
+    server => { func => \&write_read_stream },
+    divert => "reply",
 );

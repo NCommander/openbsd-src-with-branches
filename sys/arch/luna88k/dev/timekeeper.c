@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: timekeeper.c,v 1.8 2013/11/12 13:56:23 aoyama Exp $ */
 /* $NetBSD: timekeeper.c,v 1.1 2000/01/05 08:48:56 nisimura Exp $ */
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -41,23 +34,25 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
+#include <sys/evcount.h>
 
+#include <machine/autoconf.h>
 #include <machine/board.h>	/* machtype value */
 #include <machine/cpu.h>
 
 #include <dev/clock_subr.h>
+
 #include <luna88k/luna88k/clockvar.h>
 #include <luna88k/dev/timekeeper.h>
-#include <machine/autoconf.h>
 
-#define	MK_YEAR0	1970	/* year offset of MK*/
-#define	DS_YEAR0	1990	/* year offset of DS*/
+#define	MK_YEAR0	1970	/* year offset of MK */
+#define	DS_YEAR0	1990	/* year offset of DS */
 
 struct timekeeper_softc {
 	struct device sc_dev;
 	void *sc_clock, *sc_nvram;
 	int sc_nvramsize;
-	u_int8_t sc_image[2040];
+	struct evcount sc_count;
 };
 
 /*
@@ -91,9 +86,7 @@ const struct clockfns dsclock_clockfns = {
 };
 
 int
-clock_match(parent, match, aux)
-        struct device *parent;
-        void *match, *aux;
+clock_match(struct device *parent, void *match, void *aux)
 {
 	struct mainbus_attach_args *ma = aux;
 
@@ -105,9 +98,7 @@ clock_match(parent, match, aux)
 extern int machtype; /* in machdep.c */
 
 void
-clock_attach(parent, self, aux)
-        struct device *parent, *self;
-        void *aux;
+clock_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct timekeeper_softc *sc = (void *)self;
 	struct mainbus_attach_args *ma = aux;
@@ -116,9 +107,9 @@ clock_attach(parent, self, aux)
 	switch (machtype) {
 	default:
 	case LUNA_88K:	/* Mostek MK48T02 */
-		sc->sc_clock = (void *)(ma->ma_addr + 2040);
+		sc->sc_clock = (void *)(ma->ma_addr + MK_NVRAM_SPACE);
 		sc->sc_nvram = (void *)ma->ma_addr;
-		sc->sc_nvramsize = 2040;
+		sc->sc_nvramsize = MK_NVRAM_SPACE;
 		clockwork = &mkclock_clockfns;
 		printf(": MK48T02\n");
 		break;
@@ -130,38 +121,49 @@ clock_attach(parent, self, aux)
 		printf(": DS1397\n");
 		break;
 	}
-	clockattach(&sc->sc_dev, clockwork);
-	memcpy(sc->sc_image, sc->sc_nvram, sc->sc_nvramsize);
+
+	evcount_attach(&sc->sc_count, self->dv_xname, &ma->ma_ilvl);
+
+	clockattach(&sc->sc_dev, clockwork, &sc->sc_count);
 }
 
 /*
+ * On LUNA-88K, NVRAM contents and Timekeeper registers are mapped on the
+ * most significant byte of each 32bit word. (i.e. 4-bytes stride)
+ *
  * Get the time of day, based on the clock's value and/or the base value.
  */
 void
-mkclock_get(dev, base, dt)
-	struct device *dev;
-	time_t base;
-	struct clock_ymdhms *dt;
+mkclock_get(struct device *dev, time_t base, struct clock_ymdhms *dt)
 {
 	struct timekeeper_softc *sc = (void *)dev;
-	volatile u_int8_t *chiptime = (void *)sc->sc_clock;
+	volatile u_int32_t *chiptime = (void *)sc->sc_clock;
 	int s;
 
 	s = splclock();
-	chiptime[MK_CSR] |= MK_CSR_READ;	/* enable read (stop time) */
-	dt->dt_sec = FROMBCD(chiptime[MK_SEC]);
-	dt->dt_min = FROMBCD(chiptime[MK_MIN]);
-	dt->dt_hour = FROMBCD(chiptime[MK_HOUR]);
-	dt->dt_wday = FROMBCD(chiptime[MK_DOW]);
-	dt->dt_day = FROMBCD(chiptime[MK_DOM]);
-	dt->dt_mon = FROMBCD(chiptime[MK_MONTH]);
-	dt->dt_year = FROMBCD(chiptime[MK_YEAR]) + MK_YEAR0;
-	chiptime[MK_CSR] &= ~MK_CSR_READ;	/* time wears on */
+
+	/* enable read (stop time) */
+	chiptime[MK_CSR] |= (MK_CSR_READ << 24);
+
+	dt->dt_sec  = FROMBCD(chiptime[MK_SEC]   >> 24);
+	dt->dt_min  = FROMBCD(chiptime[MK_MIN]   >> 24);
+	dt->dt_hour = FROMBCD(chiptime[MK_HOUR]  >> 24);
+	dt->dt_wday = FROMBCD(chiptime[MK_DOW]   >> 24);
+	dt->dt_day  = FROMBCD(chiptime[MK_DOM]   >> 24);
+	dt->dt_mon  = FROMBCD(chiptime[MK_MONTH] >> 24);
+	dt->dt_year = FROMBCD(chiptime[MK_YEAR]  >> 24);
+
+	chiptime[MK_CSR] &= (~MK_CSR_READ << 24);	/* time wears on */
+
+	/* UniOS-Mach doesn't set the correct BCD year after Y2K */
+	if (dt->dt_year > 100) dt->dt_year -= (MK_YEAR0 % 100);
+
+	dt->dt_year += MK_YEAR0;
 	splx(s);
 #ifdef TIMEKEEPER_DEBUG
-	printf("get %d/%d/%d %d:%d:%d\n",
-	dt->dt_year, dt->dt_mon, dt->dt_day,
-	dt->dt_hour, dt->dt_min, dt->dt_sec);
+	printf("get %02d/%02d/%02d %02d:%02d:%02d\n",
+	    dt->dt_year, dt->dt_mon, dt->dt_day,
+	    dt->dt_hour, dt->dt_min, dt->dt_sec);
 #endif
 }
 
@@ -169,44 +171,47 @@ mkclock_get(dev, base, dt)
  * Reset the TODR based on the time value.
  */
 void
-mkclock_set(dev, dt)
-	struct device *dev;
-	struct clock_ymdhms *dt;
+mkclock_set(struct device *dev, struct clock_ymdhms *dt)
 {
 	struct timekeeper_softc *sc = (void *)dev;
-	volatile u_int8_t *chiptime = (void *)sc->sc_clock;
-	volatile u_int8_t *stamp = (u_int8_t *)sc->sc_nvram + 0x10;
+	volatile u_int32_t *chiptime = (void *)sc->sc_clock;
+	volatile u_int32_t *stamp = (void *)(sc->sc_nvram + (4 * 0x10));
 	int s;
 
 	s = splclock();
-	chiptime[MK_CSR] |= MK_CSR_WRITE;	/* enable write */
-	chiptime[MK_SEC] = TOBCD(dt->dt_sec);
-	chiptime[MK_MIN] = TOBCD(dt->dt_min);
-	chiptime[MK_HOUR] = TOBCD(dt->dt_hour);
-	chiptime[MK_DOW] = TOBCD(dt->dt_wday);
-	chiptime[MK_DOM] = TOBCD(dt->dt_day);
-	chiptime[MK_MONTH] = TOBCD(dt->dt_mon);
-	chiptime[MK_YEAR] = TOBCD(dt->dt_year - MK_YEAR0);
-	chiptime[MK_CSR] &= ~MK_CSR_WRITE;	/* load them up */
+	chiptime[MK_CSR]  |= (MK_CSR_WRITE << 24);	/* enable write */
+
+	chiptime[MK_SEC]   = TOBCD(dt->dt_sec)  << 24;
+	chiptime[MK_MIN]   = TOBCD(dt->dt_min)  << 24;
+	chiptime[MK_HOUR]  = TOBCD(dt->dt_hour) << 24;
+	chiptime[MK_DOW]   = TOBCD(dt->dt_wday) << 24;
+	chiptime[MK_DOM]   = TOBCD(dt->dt_day)  << 24;
+	chiptime[MK_MONTH] = TOBCD(dt->dt_mon)  << 24;
+	/* XXX: We don't consider UniOS-Mach Y2K problem */
+	chiptime[MK_YEAR]  = TOBCD(dt->dt_year - MK_YEAR0) << 24;
+
+	chiptime[MK_CSR]  &= (~MK_CSR_WRITE << 24);	/* load them up */
 	splx(s);
 #ifdef TIMEKEEPER_DEBUG
-	printf("set %d/%d/%d %d:%d:%d\n",
-	dt->dt_year, dt->dt_mon, dt->dt_day,
-	dt->dt_hour, dt->dt_min, dt->dt_sec);
+	printf("set %02d/%02d/%02d %02d:%02d:%02d\n",
+	    dt->dt_year, dt->dt_mon, dt->dt_day,
+	    dt->dt_hour, dt->dt_min, dt->dt_sec);
 #endif
 
-	stamp[0] = 'R'; stamp[1] = 'T'; stamp[2] = 'C'; stamp[3] = '\0';
+	/* Write a stamp at NVRAM address 0x10-0x13 */
+	stamp[0] = 'R' << 24; stamp[1] = 'T' << 24;
+	stamp[2] = 'C' << 24; stamp[3] = '\0' << 24;
 }
 
 #define _DS_GET(off, data) \
-	do { *chiptime = (off); (u_int8_t)(data) = (*chipdata); } while (0)
+	do { *chiptime = (off); (data) = (*chipdata); } while (0)
 #define _DS_SET(off, data) \
 	do { *chiptime = (off); *chipdata = (u_int8_t)(data); } while (0)
 #define _DS_GET_BCD(off, data) \
 	do { \
 		u_int8_t c; \
 		*chiptime = (off); \
-		c = *chipdata; (u_int8_t)(data) = FROMBCD(c); \
+		c = *chipdata; (data) = FROMBCD(c); \
 	} while (0)
 #define _DS_SET_BCD(off, data) \
 	do { \
@@ -218,10 +223,7 @@ mkclock_set(dev, dt)
  * Get the time of day, based on the clock's value and/or the base value.
  */
 void
-dsclock_get(dev, base, dt)
-	struct device *dev;
-	time_t base;
-	struct clock_ymdhms *dt;
+dsclock_get(struct device *dev, time_t base, struct clock_ymdhms *dt)
 {
 	struct timekeeper_softc *sc = (void *)dev;
 	volatile u_int8_t *chiptime = (void *)sc->sc_clock;
@@ -238,25 +240,30 @@ dsclock_get(dev, base, dt)
 	_DS_SET(DS_REGB, c);
 
 	/* update in progress; spin loop */
-	*chiptime = DS_REGA;
-	while (*chipdata & DS_REGA_UIP)
-		;
+	for (;;) {
+		*chiptime = DS_REGA;
+		if ((*chipdata & DS_REGA_UIP) == 0)
+			break;
+	}
 
-	_DS_GET_BCD(DS_SEC, dt->dt_sec);
-	_DS_GET_BCD(DS_MIN, dt->dt_min);
-	_DS_GET_BCD(DS_HOUR, dt->dt_hour);
-	_DS_GET_BCD(DS_DOW, dt->dt_wday);
-	_DS_GET_BCD(DS_DOM, dt->dt_day);
+	_DS_GET_BCD(DS_SEC,   dt->dt_sec);
+	_DS_GET_BCD(DS_MIN,   dt->dt_min);
+	_DS_GET_BCD(DS_HOUR,  dt->dt_hour);
+	_DS_GET_BCD(DS_DOW,   dt->dt_wday);
+	_DS_GET_BCD(DS_DOM,   dt->dt_day);
 	_DS_GET_BCD(DS_MONTH, dt->dt_mon);
-	_DS_GET_BCD(DS_YEAR, dt->dt_year);
-	dt->dt_year += DS_YEAR0;
+	_DS_GET_BCD(DS_YEAR,  dt->dt_year);
 
+	/* UniOS-Mach doesn't set the correct BCD year after Y2K */
+	if (dt->dt_year > 100) dt->dt_year -= (DS_YEAR0 % 100);
+
+	dt->dt_year += DS_YEAR0;
 	splx(s);
 
 #ifdef TIMEKEEPER_DEBUG
-	printf("get %d/%d/%d %d:%d:%d\n",
-	dt->dt_year, dt->dt_mon, dt->dt_day,
-	dt->dt_hour, dt->dt_min, dt->dt_sec);
+	printf("get %02d/%02d/%02d %02d:%02d:%02d\n",
+	    dt->dt_year, dt->dt_mon, dt->dt_day,
+	    dt->dt_hour, dt->dt_min, dt->dt_sec);
 #endif
 }
 
@@ -264,9 +271,7 @@ dsclock_get(dev, base, dt)
  * Reset the TODR based on the time value.
  */
 void
-dsclock_set(dev, dt)
-	struct device *dev;
-	struct clock_ymdhms *dt;
+dsclock_set(struct device *dev, struct clock_ymdhms *dt)
 {
 	struct timekeeper_softc *sc = (void *)dev;
 	volatile u_int8_t *chiptime = (void *)sc->sc_clock;
@@ -281,13 +286,14 @@ dsclock_set(dev, dt)
 	c |= DS_REGB_SET;
 	_DS_SET(DS_REGB, c);
 
-	_DS_SET_BCD(DS_SEC, dt->dt_sec);
-	_DS_SET_BCD(DS_MIN, dt->dt_min);
-	_DS_SET_BCD(DS_HOUR, dt->dt_hour);
-	_DS_SET_BCD(DS_DOW, dt->dt_wday);
-	_DS_SET_BCD(DS_DOM, dt->dt_day);
+	_DS_SET_BCD(DS_SEC,   dt->dt_sec);
+	_DS_SET_BCD(DS_MIN,   dt->dt_min);
+	_DS_SET_BCD(DS_HOUR,  dt->dt_hour);
+	_DS_SET_BCD(DS_DOW,   dt->dt_wday);
+	_DS_SET_BCD(DS_DOM,   dt->dt_day);
 	_DS_SET_BCD(DS_MONTH, dt->dt_mon);
-	_DS_SET_BCD(DS_YEAR, dt->dt_year - DS_YEAR0);
+	/* XXX: We don't consider UniOS-Mach Y2K problem */
+	_DS_SET_BCD(DS_YEAR,  dt->dt_year - DS_YEAR0);
 
 	_DS_GET(DS_REGB, c);
 	c &= ~DS_REGB_SET;
@@ -296,8 +302,8 @@ dsclock_set(dev, dt)
 	splx(s);
 
 #ifdef TIMEKEEPER_DEBUG
-	printf("set %d/%d/%d %d:%d:%d\n",
-	dt->dt_year, dt->dt_mon, dt->dt_day,
-	dt->dt_hour, dt->dt_min, dt->dt_sec);
+	printf("set %02d/%02d/%02d %02d:%02d:%02d\n",
+	    dt->dt_year, dt->dt_mon, dt->dt_day,
+	    dt->dt_hour, dt->dt_min, dt->dt_sec);
 #endif
 }

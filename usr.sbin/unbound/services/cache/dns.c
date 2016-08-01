@@ -656,8 +656,9 @@ fill_any(struct module_env* env,
 	time_t now = *env->now;
 	struct dns_msg* msg = NULL;
 	uint16_t lookup[] = {LDNS_RR_TYPE_A, LDNS_RR_TYPE_AAAA,
-		LDNS_RR_TYPE_MX, LDNS_RR_TYPE_SOA, LDNS_RR_TYPE_NS, 0};
-	int i, num=5; /* number of RR types to look up */
+		LDNS_RR_TYPE_MX, LDNS_RR_TYPE_SOA, LDNS_RR_TYPE_NS,
+		LDNS_RR_TYPE_DNAME, 0};
+	int i, num=6; /* number of RR types to look up */
 	log_assert(lookup[num] == 0);
 
 	for(i=0; i<num; i++) {
@@ -794,6 +795,12 @@ dns_cache_lookup(struct module_env* env,
 		dname_remove_label(&k.qname, &k.qname_len);
 		h = query_info_hash(&k, flags);
 		e = slabhash_lookup(env->msg_cache, h, &k, 0);
+		if(!e && k.qtype != LDNS_RR_TYPE_NS &&
+			env->cfg->qname_minimisation) {
+			k.qtype = LDNS_RR_TYPE_NS;
+			h = query_info_hash(&k, flags);
+			e = slabhash_lookup(env->msg_cache, h, &k, 0);
+		}
 		if(e) {
 			struct reply_info* data = (struct reply_info*)e->data;
 			struct dns_msg* msg;
@@ -809,6 +816,7 @@ dns_cache_lookup(struct module_env* env,
 			}
 			lock_rw_unlock(&e->lock);
 		}
+		k.qtype = qtype;
 	}
 
 	/* fill common RR types for ANY response to avoid requery */

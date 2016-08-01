@@ -1,21 +1,35 @@
+/*	$OpenBSD: popen.c,v 1.29 2015/11/04 20:28:17 millert Exp $	*/
+
 /*
- * Copyright (c) 1988 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1993, 1994
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software written by Ken Arnold and
  * published in UNIX Review, Vol. 6, No. 8.
  *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * advertising materials, and other materials related to such
- * distribution and use acknowledge that the software was developed
- * by the University of California, Berkeley.  The name of the
- * University may not be used to endorse or promote products derived
- * from this software without specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  *
  */
 
@@ -23,105 +37,88 @@
  * globbing stuff since we don't need it.  also execvp instead of execv.
  */
 
-#ifndef lint
-static char rcsid[] = "$Id: popen.c,v 1.2 1995/04/14 19:49:35 mycroft Exp $";
-static char sccsid[] = "@(#)popen.c	5.7 (Berkeley) 2/14/89";
-#endif /* not lint */
+#include <sys/types.h>
+#include <sys/wait.h>
 
-#include "cron.h"
-#include <sys/signal.h>
+#include <bitstring.h>		/* for structs.h */
+#include <err.h>
+#include <errno.h>
+#include <login_cap.h>
+#include <pwd.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <syslog.h>
+#include <unistd.h>
+#include <time.h>		/* for structs.h */
 
+#include "macros.h"
+#include "structs.h"
+#include "funcs.h"
 
-#define MAX_ARGS 100
-#define WANT_GLOBBING 0
+#define MAX_ARGV	100
+#define MAX_GARGV	1000
 
 /*
- * Special version of popen which avoids call to shell.  This insures noone
- * may create a pipe to a hidden program as a side effect of a list or dir
- * command.
+ * Special version of popen which avoids call to shell
  */
-static PID_T *pids;
-static int fds;
-
 FILE *
-cron_popen(program, type)
-	char *program, *type;
+cron_popen(char *program, char *type, struct passwd *pw, pid_t *pidptr)
 {
-	register char *cp;
+	char *cp;
 	FILE *iop;
 	int argc, pdes[2];
-	PID_T pid;
-	char *argv[MAX_ARGS + 1];
-#if WANT_GLOBBING
-	char **pop, *vv[2];
-	int gargc;
-	char *gargv[1000];
-	extern char **glob(), **copyblk();
-#endif
+	pid_t pid;
+	char *argv[MAX_ARGV];
 
-	if (*type != 'r' && *type != 'w' || type[1])
-		return(NULL);
+	if ((*type != 'r' && *type != 'w') || type[1] != '\0')
+		return (NULL);
 
-	if (!pids) {
-		if ((fds = getdtablesize()) <= 0)
-			return(NULL);
-		if (!(pids = (PID_T *)malloc((u_int)(fds * sizeof(PID_T)))))
-			return(NULL);
-		bzero((char *)pids, fds * sizeof(PID_T));
-	}
 	if (pipe(pdes) < 0)
-		return(NULL);
+		return (NULL);
 
 	/* break up string into pieces */
-	for (argc = 0, cp = program; argc < MAX_ARGS; cp = NULL)
+	for (argc = 0, cp = program; argc < MAX_ARGV - 1; cp = NULL)
 		if (!(argv[argc++] = strtok(cp, " \t\n")))
 			break;
+	argv[MAX_ARGV-1] = NULL;
 
-#if WANT_GLOBBING
-	/* glob each piece */
-	gargv[0] = argv[0];
-	for (gargc = argc = 1; argv[argc]; argc++) {
-		if (!(pop = glob(argv[argc]))) {	/* globbing failed */
-			vv[0] = argv[argc];
-			vv[1] = NULL;
-			pop = copyblk(vv);
-		}
-		argv[argc] = (char *)pop;		/* save to free later */
-		while (*pop && gargc < 1000)
-			gargv[gargc++] = *pop++;
-	}
-	gargv[gargc] = NULL;
-#endif
-
-	iop = NULL;
-	switch(pid = vfork()) {
+	switch (pid = fork()) {
 	case -1:			/* error */
 		(void)close(pdes[0]);
 		(void)close(pdes[1]);
-		goto pfree;
+		return (NULL);
 		/* NOTREACHED */
 	case 0:				/* child */
+		if (pw) {
+			if (setusercontext(0, pw, pw->pw_uid, LOGIN_SETALL) < 0) {
+				syslog(LOG_ERR,
+				    "(%s) SETUSERCONTEXT FAILED (%m)",
+				    pw->pw_name);
+				warn("setusercontext failed for %s",
+				    pw->pw_name);
+				_exit(EXIT_FAILURE);
+			}
+		}
 		if (*type == 'r') {
-			if (pdes[1] != 1) {
-				dup2(pdes[1], 1);
-				dup2(pdes[1], 2);	/* stderr, too! */
+			if (pdes[1] != STDOUT_FILENO) {
+				dup2(pdes[1], STDOUT_FILENO);
 				(void)close(pdes[1]);
 			}
+			dup2(STDOUT_FILENO, STDERR_FILENO);
 			(void)close(pdes[0]);
 		} else {
-			if (pdes[0] != 0) {
-				dup2(pdes[0], 0);
+			if (pdes[0] != STDIN_FILENO) {
+				dup2(pdes[0], STDIN_FILENO);
 				(void)close(pdes[0]);
 			}
 			(void)close(pdes[1]);
 		}
-#if WANT_GLOBBING
-		execvp(gargv[0], gargv);
-#else
 		execvp(argv[0], argv);
-#endif
 		_exit(1);
 	}
+
 	/* parent; assume fdopen can't fail...  */
 	if (*type == 'r') {
 		iop = fdopen(pdes[0], type);
@@ -130,38 +127,30 @@ cron_popen(program, type)
 		iop = fdopen(pdes[1], type);
 		(void)close(pdes[0]);
 	}
-	pids[fileno(iop)] = pid;
+	*pidptr = pid;
 
-pfree:
-#if WANT_GLOBBING
-	for (argc = 1; argv[argc] != NULL; argc++) {
-/*		blkfree((char **)argv[argc]);	*/
-		free((char *)argv[argc]);
-	}
-#endif
-	return(iop);
+	return (iop);
 }
 
 int
-cron_pclose(iop)
-	FILE *iop;
+cron_pclose(FILE *iop, pid_t pid)
 {
-	register int fdes;
-	int omask;
-	WAIT_T stat_loc;
-	PID_T pid;
+	int rv;
+	int status;
+	sigset_t sigset, osigset;
 
-	/*
-	 * pclose returns -1 if stream is not associated with a
-	 * `popened' command, or, if already `pclosed'.
-	 */
-	if (pids == 0 || pids[fdes = fileno(iop)] == 0)
-		return(-1);
 	(void)fclose(iop);
-	omask = sigblock(sigmask(SIGINT)|sigmask(SIGQUIT)|sigmask(SIGHUP));
-	while ((pid = wait(&stat_loc)) != pids[fdes] && pid != -1)
-		;
-	(void)sigsetmask(omask);
-	pids[fdes] = 0;
-	return (pid == -1 ? -1 : WEXITSTATUS(stat_loc));
+	sigemptyset(&sigset);
+	sigaddset(&sigset, SIGINT);
+	sigaddset(&sigset, SIGQUIT);
+	sigaddset(&sigset, SIGHUP);
+	sigprocmask(SIG_BLOCK, &sigset, &osigset);
+	while ((rv = waitpid(pid, &status, 0)) < 0 && errno == EINTR)
+		continue;
+	sigprocmask(SIG_SETMASK, &osigset, NULL);
+	if (rv < 0)
+		return (rv);
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	return (1);
 }

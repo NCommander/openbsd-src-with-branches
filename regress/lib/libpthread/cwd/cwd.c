@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_cwd.c,v 1.3 2000/01/06 06:53:09 d Exp $	*/
+/*	$OpenBSD: cwd.c,v 1.1.1.1 2001/08/15 14:37:10 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -38,6 +38,7 @@
 
 #include <stdio.h>
 #include <sys/param.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "test.h"
 

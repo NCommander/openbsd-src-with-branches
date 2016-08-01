@@ -333,7 +333,7 @@ zparser_conv_algorithm(region_type *region, const char *text)
 uint16_t *
 zparser_conv_certificate_type(region_type *region, const char *text)
 {
-	/* convert a algoritm string to integer */
+	/* convert an algorithm string to integer */
 	const lookup_table_type *type;
 	uint16_t id;
 
@@ -639,7 +639,7 @@ zparser_conv_b64(region_type *region, const char *b64)
 	uint16_t *r = NULL;
 	int i;
 
-	i = b64_pton(b64, buffer, B64BUFSIZE);
+	i = __b64_pton(b64, buffer, B64BUFSIZE);
 	if (i == -1) {
 		zc_error_prev_line("invalid base64 data");
 	} else {
@@ -1434,7 +1434,10 @@ process_rr(void)
 		rr_type* o;
 		if (rr->type != TYPE_RRSIG && rrset->rrs[0].ttl != rr->ttl) {
 			zc_warning_prev_line(
-				"TTL does not match the TTL of the RRset");
+				"%s TTL %u does not match the TTL %u of the %s RRset",
+				domain_to_string(rr->owner), (unsigned)rr->ttl,
+				(unsigned)rrset->rrs[0].ttl,
+				rrtype_to_string(rr->type));
 		}
 
 		/* Search for possible duplicates... */

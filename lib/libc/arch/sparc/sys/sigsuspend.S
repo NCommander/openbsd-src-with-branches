@@ -1,3 +1,4 @@
+/*	$OpenBSD: sigsuspend.S,v 1.6 2015/09/10 13:29:09 guenther Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,19 +30,13 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * from: Header: sigsuspend.s,v 1.1 91/07/06 13:06:01 torek Exp
- * $Id: sigsuspend.S,v 1.1 1993/10/07 00:22:30 cgd Exp $
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "@(#)sigsuspend.s	8.1 (Berkeley) 6/4/93"
-#endif /* LIBC_SCCS and not lint */
 
 #include "SYS.h"
 
-ENTRY(sigsuspend)
+SYSENTRY_HIDDEN(sigsuspend)
 	ld	[%o0], %o0		! indirect to mask argument
 	mov	SYS_sigsuspend, %g1
 	t	ST_SYSCALL
 	ERROR()				! always terminates with EINTR
+SYSCALL_END_HIDDEN(sigsuspend)

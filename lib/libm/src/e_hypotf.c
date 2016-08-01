@@ -13,21 +13,13 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_hypotf.c,v 1.5 1995/05/12 04:57:30 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
-	float __ieee754_hypotf(float x, float y)
-#else
-	float __ieee754_hypot(x,y)
-	float x, y;
-#endif
+float
+hypotf(float x, float y)
 {
-	float a=x,b=y,t1,t2,y1,y2,w;
+	float a=x,b=y,t1,t2,yy1,y2,w;
 	int32_t j,k,ha,hb;
 
 	GET_FLOAT_WORD(ha,x);
@@ -46,22 +38,22 @@ static char rcsid[] = "$NetBSD: e_hypotf.c,v 1.5 1995/05/12 04:57:30 jtc Exp $";
 	       if(hb == 0x7f800000) w = b;
 	       return w;
 	   }
-	   /* scale a and b by 2**-60 */
-	   ha -= 0x5d800000; hb -= 0x5d800000;	k += 60;
+	   /* scale a and b by 2**-68 */
+	   ha -= 0x22000000; hb -= 0x22000000;	k += 68;
 	   SET_FLOAT_WORD(a,ha);
 	   SET_FLOAT_WORD(b,hb);
 	}
 	if(hb < 0x26800000) {	/* b < 2**-50 */
 	    if(hb <= 0x007fffff) {	/* subnormal b or 0 */	
 	        if(hb==0) return a;
-		SET_FLOAT_WORD(t1,0x3f000000);	/* t1=2^126 */
+		SET_FLOAT_WORD(t1,0x7e800000);	/* t1=2^126 */
 		b *= t1;
 		a *= t1;
 		k -= 126;
-	    } else {		/* scale a and b by 2^60 */
-	        ha += 0x5d800000; 	/* a *= 2^60 */
-		hb += 0x5d800000;	/* b *= 2^60 */
-		k -= 60;
+	    } else {		/* scale a and b by 2^68 */
+	        ha += 0x22000000; 	/* a *= 2^68 */
+		hb += 0x22000000;	/* b *= 2^68 */
+		k -= 68;
 		SET_FLOAT_WORD(a,ha);
 		SET_FLOAT_WORD(b,hb);
 	    }
@@ -71,14 +63,14 @@ static char rcsid[] = "$NetBSD: e_hypotf.c,v 1.5 1995/05/12 04:57:30 jtc Exp $";
 	if (w>b) {
 	    SET_FLOAT_WORD(t1,ha&0xfffff000);
 	    t2 = a-t1;
-	    w  = __ieee754_sqrtf(t1*t1-(b*(-b)-t2*(a+t1)));
+	    w  = sqrtf(t1*t1-(b*(-b)-t2*(a+t1)));
 	} else {
 	    a  = a+a;
-	    SET_FLOAT_WORD(y1,hb&0xfffff000);
-	    y2 = b - y1;
+	    SET_FLOAT_WORD(yy1,hb&0xfffff000);
+	    y2 = b - yy1;
 	    SET_FLOAT_WORD(t1,ha+0x00800000);
 	    t2 = a - t1;
-	    w  = __ieee754_sqrtf(t1*y1-(w*(-w)-(t1*y2+t2*b)));
+	    w  = sqrtf(t1*yy1-(w*(-w)-(t1*y2+t2*b)));
 	}
 	if(k!=0) {
 	    SET_FLOAT_WORD(t1,0x3f800000+(k<<23));

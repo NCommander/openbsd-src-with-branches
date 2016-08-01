@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: proc.h,v 1.2 2006/11/28 18:52:23 kettenis Exp $	*/
 /*	$NetBSD: proc.h,v 1.10 2005/12/11 12:18:58 christos Exp $	*/
 
 /*
@@ -57,8 +57,11 @@ struct mdproc {
 	struct md_upte md_upte[UPAGES * 2];
 };
 
+#define __HAVE_MD_TCB
+
 /* md_flags */
 #define	MDP_USEDFPU	0x0001	/* has used the FPU */
+#define	MDP_STEP	0x0002	/* single step */
 
 #ifdef _KERNEL
 #ifndef _LOCORE

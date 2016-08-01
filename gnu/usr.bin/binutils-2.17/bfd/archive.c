@@ -175,6 +175,22 @@ _bfd_ar_spacepad (char *p, size_t n, const char *fmt, long val)
     memcpy (p, buf, n);
 }
 
+void
+_bfd_ar_spacepadll (char *p, size_t n, const char *fmt, long long val)
+{
+  static char buf[20];
+  size_t len;
+  snprintf (buf, sizeof (buf), fmt, val);
+  len = strlen (buf);
+  if (len < n)
+    {
+      memcpy (p, buf, len);
+      memset (p + len, ' ', n - len);
+    }
+  else
+    memcpy (p, buf, n);
+}
+
 bfd_boolean
 _bfd_generic_mkarchive (bfd *abfd)
 {
@@ -1390,7 +1406,7 @@ bfd_ar_hdr_from_filesystem (bfd *abfd, const char *filename, bfd *member)
   /* ar headers are space padded, not null padded!  */
   memset (hdr, ' ', sizeof (struct ar_hdr));
 
-  _bfd_ar_spacepad (hdr->ar_date, sizeof (hdr->ar_date), "%-12ld",
+  _bfd_ar_spacepadll (hdr->ar_date, sizeof (hdr->ar_date), "%-12lld",
                     status.st_mtime);
 #ifdef HPUX_LARGE_AR_IDS
   /* HP has a very "special" way to handle UID/GID's with numeric values
@@ -1412,7 +1428,7 @@ bfd_ar_hdr_from_filesystem (bfd *abfd, const char *filename, bfd *member)
                       status.st_gid);
   _bfd_ar_spacepad (hdr->ar_mode, sizeof (hdr->ar_mode), "%-8lo",
                     status.st_mode);
-  _bfd_ar_spacepad (hdr->ar_size, sizeof (hdr->ar_size), "%-10ld",
+  _bfd_ar_spacepadll (hdr->ar_size, sizeof (hdr->ar_size), "%-10lld",
                     status.st_size);
   memcpy (hdr->ar_fmag, ARFMAG, 2);
   ared->parsed_size = status.st_size;
@@ -1458,6 +1474,11 @@ bfd_generic_stat_arch_elt (bfd *abfd, struct stat *buf)
   if (aloser == hdr->arelt)	      			\
     return -1;
 
+#define fooll(arelt, stelt, size)			\
+  buf->stelt = strtoll (hdr->arelt, &aloser, size);	\
+  if (aloser == hdr->arelt)	      			\
+    return -1;
+
   /* Some platforms support special notations for large IDs.  */
 #ifdef HPUX_LARGE_AR_IDS
 # define foo2(arelt, stelt, size)					\
@@ -1484,7 +1505,7 @@ bfd_generic_stat_arch_elt (bfd *abfd, struct stat *buf)
 # define foo2(arelt, stelt, size) foo (arelt, stelt, size)
 #endif
 
-  foo (ar_date, st_mtime, 10);
+  fooll (ar_date, st_mtime, 10);
   foo2 (ar_uid, st_uid, 10);
   foo2 (ar_gid, st_gid, 10);
   foo (ar_mode, st_mode, 8);
@@ -1940,7 +1961,7 @@ bsd_write_armap (bfd *arch,
   bfd_ardata (arch)->armap_timestamp = statbuf.st_mtime + ARMAP_TIME_OFFSET;
   bfd_ardata (arch)->armap_datepos = (SARMAG
 				      + offsetof (struct ar_hdr, ar_date[0]));
-  _bfd_ar_spacepad (hdr.ar_date, sizeof (hdr.ar_date), "%ld",
+  _bfd_ar_spacepadll (hdr.ar_date, sizeof (hdr.ar_date), "%lld",
                     bfd_ardata (arch)->armap_timestamp);
   _bfd_ar_spacepad (hdr.ar_uid, sizeof (hdr.ar_uid), "%ld", getuid ());
   _bfd_ar_spacepad (hdr.ar_gid, sizeof (hdr.ar_gid), "%ld", getgid ());
@@ -2030,7 +2051,7 @@ _bfd_archive_bsd_update_armap_timestamp (bfd *arch)
 
   /* Prepare an ASCII version suitable for writing.  */
   memset (hdr.ar_date, ' ', sizeof (hdr.ar_date));
-  _bfd_ar_spacepad (hdr.ar_date, sizeof (hdr.ar_date), "%ld",
+  _bfd_ar_spacepadll (hdr.ar_date, sizeof (hdr.ar_date), "%lld",
                     bfd_ardata (arch)->armap_timestamp);
 
   /* Write it into the file.  */
@@ -2094,7 +2115,7 @@ coff_write_armap (bfd *arch,
   hdr.ar_name[0] = '/';
   _bfd_ar_spacepad (hdr.ar_size, sizeof (hdr.ar_size), "%-10ld",
                     mapsize);
-  _bfd_ar_spacepad (hdr.ar_date, sizeof (hdr.ar_date), "%ld",
+  _bfd_ar_spacepadll (hdr.ar_date, sizeof (hdr.ar_date), "%lld",
                     time (NULL));
   /* This, at least, is what Intel coff sets the values to.  */
   _bfd_ar_spacepad (hdr.ar_uid, sizeof (hdr.ar_uid), "%ld", 0);

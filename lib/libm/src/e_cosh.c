@@ -10,11 +10,7 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_cosh.c,v 1.7 1995/05/10 20:44:58 jtc Exp $";
-#endif
-
-/* __ieee754_cosh(x)
+/* cosh(x)
  * Method : 
  * mathematically cosh(x) if defined to be (exp(x)+exp(-x))/2
  *	1. Replace x by |x| (cosh(x) = cosh(-x)). 
@@ -35,21 +31,15 @@ static char rcsid[] = "$NetBSD: e_cosh.c,v 1.7 1995/05/10 20:44:58 jtc Exp $";
  *	only cosh(0)=1 is exact for finite x.
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
 static const double one = 1.0, half=0.5, huge = 1.0e300;
-#else
-static double one = 1.0, half=0.5, huge = 1.0e300;
-#endif
 
-#ifdef __STDC__
-	double __ieee754_cosh(double x)
-#else
-	double __ieee754_cosh(x)
-	double x;
-#endif
+double
+cosh(double x)
 {	
 	double t,w;
 	int32_t ix;
@@ -72,18 +62,18 @@ static double one = 1.0, half=0.5, huge = 1.0e300;
 
     /* |x| in [0.5*ln2,22], return (exp(|x|)+1/exp(|x|)/2; */
 	if (ix < 0x40360000) {
-		t = __ieee754_exp(fabs(x));
+		t = exp(fabs(x));
 		return half*t+half/t;
 	}
 
     /* |x| in [22, log(maxdouble)] return half*exp(|x|) */
-	if (ix < 0x40862E42)  return half*__ieee754_exp(fabs(x));
+	if (ix < 0x40862E42)  return half*exp(fabs(x));
 
     /* |x| in [log(maxdouble), overflowthresold] */
 	GET_LOW_WORD(lx,x);
 	if (ix<0x408633CE || 
-	      (ix==0x408633ce)&&(lx<=(u_int32_t)0x8fb9f87d)) {
-	    w = __ieee754_exp(half*fabs(x));
+	      ((ix==0x408633ce)&&(lx<=(u_int32_t)0x8fb9f87d))) {
+	    w = exp(half*fabs(x));
 	    t = half*w;
 	    return t*w;
 	}
@@ -91,3 +81,7 @@ static double one = 1.0, half=0.5, huge = 1.0e300;
     /* |x| > overflowthresold, cosh(x) overflow */
 	return huge*huge;
 }
+
+#if	LDBL_MANT_DIG == DBL_MANT_DIG
+__strong_alias(coshl, cosh);
+#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */

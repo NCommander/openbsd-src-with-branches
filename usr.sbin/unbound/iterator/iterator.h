@@ -54,13 +54,30 @@ struct iter_priv;
 struct rbtree_t;
 
 /** max number of targets spawned for a query and its subqueries */
-#define MAX_TARGET_COUNT	32
+#define MAX_TARGET_COUNT	64
 /** max number of query restarts. Determines max number of CNAME chain. */
 #define MAX_RESTART_COUNT       8
 /** max number of referrals. Makes sure resolver does not run away */
 #define MAX_REFERRAL_COUNT	130
 /** max number of queries-sent-out.  Make sure large NS set does not loop */
 #define MAX_SENT_COUNT		32
+/** max number of queries for which to perform dnsseclameness detection,
+ * (rrsigs misssing detection) after that, just pick up that response */
+#define DNSSEC_LAME_DETECT_COUNT 4
+/**
+ * max number of QNAME minimisation iterations. Limits number of queries for
+ * QNAMEs with a lot of labels.
+*/
+#define MAX_MINIMISE_COUNT	10
+/* max number of time-outs for minimised query. Prevents resolving failures
+ * when the QNAME minimisation QTYPE is blocked. */
+#define MAX_MINIMISE_TIMEOUT_COUNT 3
+/**
+ * number of labels from QNAME that are always send individually when using
+ * QNAME minimisation, even when the number of labels of the QNAME is bigger
+ * tham MAX_MINIMISE_COUNT */
+#define MINIMISE_ONE_LAB	4
+#define MINIMISE_MULTIPLE_LABS	(MAX_MINIMISE_COUNT - MINIMISE_ONE_LAB)
 /** at what query-sent-count to stop target fetch policy */
 #define TARGET_FETCH_STOP	3
 /** how nice is a server without further information, in msec 
@@ -112,6 +129,32 @@ struct iter_env {
 	 * array of max_dependency_depth+1 size.
 	 */
 	int* target_fetch_policy;
+
+	/** ip6.arpa dname in wireformat, used for qname-minimisation */
+	uint8_t* ip6arpa_dname;
+};
+
+/**
+ * QNAME minimisation state
+ */
+enum minimisation_state {
+	/**
+	 * (Re)start minimisation. Outgoing QNAME should be set to dp->name.
+	 * State entered on new query or after following refferal or CNAME.
+	 */
+	INIT_MINIMISE_STATE = 0,
+	/**
+	 * QNAME minimisataion ongoing. Increase QNAME on every iteration.
+	 */
+	MINIMISE_STATE,
+	/**
+	 * Don't increment QNAME this iteration
+	 */
+	SKIP_MINIMISE_STATE,
+	/**
+	 * Send out full QNAME + original QTYPE
+	 */
+	DONOT_MINIMISE_STATE,
 };
 
 /**
@@ -322,6 +365,26 @@ struct iter_qstate {
 
 	/** list of pending queries to authoritative servers. */
 	struct outbound_list outlist;
+
+	/** QNAME minimisation state, RFC7816 */
+	enum minimisation_state minimisation_state;
+
+	/**
+	 * The query info that is sent upstream. Will be a subset of qchase
+	 * when qname minimisation is enabled.
+	 */
+	struct query_info qinfo_out;
+
+	/**
+	 * Count number of QNAME minisation iterations. Used to limit number of
+	 * outgoing queries when QNAME minimisation is enabled.
+	 */
+	int minimise_count;
+
+	/**
+	 * Count number of time-outs. Used to prevent resolving failures when
+	 * the QNAME minimisation QTYPE is blocked. */
+	int minimise_timeout_count;
 };
 
 /**

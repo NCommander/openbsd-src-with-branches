@@ -1,3 +1,4 @@
+/*	$OpenBSD: netisr.h,v 1.45 2016/05/03 14:52:39 mpi Exp $	*/
 /*	$NetBSD: netisr.h,v 1.12 1995/08/12 23:59:24 mycroft Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +32,9 @@
  *	@(#)netisr.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NET_NETISR_H_
+#define _NET_NETISR_H_
+
 /*
  * The networking code runs off software interrupts.
  *
@@ -42,9 +42,6 @@
  * The software interrupt level for the network is higher than the software
  * level for the clock (so you can enter the network in routines called
  * at timeout time).
- *
- * The routine to request a network software interrupt, setsoftnet(),
- * is defined in the machine-specific include files.
  */
 
 /*
@@ -54,17 +51,39 @@
  * on the lowest level routine of each protocol.
  */
 #define	NETISR_IP	2		/* same as AF_INET */
-#define	NETISR_IMP	3		/* same as AF_IMPLINK */
-#define	NETISR_NS	6		/* same as AF_NS */
-#define	NETISR_ISO	7		/* same as AF_ISO */
-#define	NETISR_CCITT	10		/* same as AF_CCITT */
+#define	NETISR_TX	3		/* for if_snd processing */
+#define	NETISR_PFSYNC	5		/* for pfsync "immediate" tx */
 #define	NETISR_ARP	18		/* same as AF_LINK */
-#define NETISR_PPP	26		/* for PPP processing */
+#define	NETISR_IPV6	24		/* same as AF_INET6 */
+#define	NETISR_ISDN	26		/* same as AF_E164 */
+#define	NETISR_PPP	28		/* for PPP processing */
+#define	NETISR_BRIDGE	29		/* for bridge processing */
+#define	NETISR_PPPOE	30		/* for pppoe processing */
 
-#define	schednetisr(anisr)	{ netisr |= 1<<(anisr); setsoftnet(); }
-
-#ifndef LOCORE
+#ifndef _LOCORE
 #ifdef _KERNEL
-int	netisr;				/* scheduling bits for network */
-#endif
-#endif
+
+#include <sys/task.h>
+#include <sys/atomic.h>
+
+extern int	netisr;			/* scheduling bits for network */
+extern struct task if_input_task_locked;
+
+void	arpintr(void);
+void	ipintr(void);
+void	ip6intr(void);
+void	pppintr(void);
+void	bridgeintr(void);
+void	pppoeintr(void);
+void	pfsyncintr(void);
+
+#define	schednetisr(anisr)						\
+do {									\
+	atomic_setbits_int(&netisr, (1 << (anisr)));			\
+	task_add(softnettq, &if_input_task_locked);			\
+} while (/* CONSTCOND */0)
+
+#endif /* _KERNEL */
+#endif /*_LOCORE */
+
+#endif /* _NET_NETISR_H_ */

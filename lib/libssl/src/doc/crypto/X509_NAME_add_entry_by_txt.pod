@@ -2,8 +2,9 @@
 
 =head1 NAME
 
-X509_NAME_add_entry_by_txt, X509_NAME_add_entry_by_OBJ, X509_NAME_add_entry_by_NID,
-X509_NAME_add_entry, X509_NAME_delete_entry - X509_NAME modification functions
+X509_NAME_add_entry_by_txt, X509_NAME_add_entry_by_OBJ,
+X509_NAME_add_entry_by_NID, X509_NAME_add_entry, X509_NAME_delete_entry -
+X509_NAME modification functions
 
 =head1 SYNOPSIS
 
@@ -44,7 +45,7 @@ B<loc>. The deleted entry is returned and must be freed up.
 =head1 NOTES
 
 The use of string types such as B<MBSTRING_ASC> or B<MBSTRING_UTF8>
-is strongly recommened for the B<type> parameter. This allows the
+is strongly recommended for the B<type> parameter. This allows the
 internal code to correctly determine the type of the field and to
 apply length checks according to the relevant standards. This is
 done using ASN1_STRING_set_by_NID().
@@ -61,7 +62,7 @@ to 0. This adds a new entry to the end of B<name> as a single valued
 RelativeDistinguishedName (RDN).
 
 B<loc> actually determines the index where the new entry is inserted:
-if it is -1 it is appended. 
+if it is -1 it is appended.
 
 B<set> determines how the new type is added. If it is zero a
 new RDN is created.

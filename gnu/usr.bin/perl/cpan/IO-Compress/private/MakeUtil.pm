@@ -6,7 +6,7 @@ use strict ;
 use Config qw(%Config);
 use File::Copy;
 
-my $VERSION = '1.0';
+my $VERSION = '1.0_01';
 
 
 BEGIN
@@ -35,7 +35,8 @@ sub MY::libscan
     my $path = shift;
 
     return undef
-        if $path =~ /(~|\.bak|_bak)$/ ||
+        if $path =~ /^(?:RCS|CVS|SCCS|\.svn|_darcs)$/ ||
+           $path =~ /(~|\.bak|_bak)$/ ||
            $path =~ /\..*\.sw(o|p)$/  ||
            $path =~ /\B\.svn\b/;
 

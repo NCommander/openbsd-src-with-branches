@@ -1,18 +1,31 @@
-/*	$NetBSD: print-snmp.c,v 1.3 1995/03/06 19:11:30 mycroft Exp $	*/
+/*	$OpenBSD: print-snmp.c,v 1.20 2015/11/18 15:36:20 mmcc Exp $	*/
 
 /*
- * Copyright (c) 1990, 1991, 1993, 1994
- *    John Robert LoVerso.  All rights reserved.
+ * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
+ *     John Robert LoVerso. All rights reserved.
  *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * advertising materials, and other materials related to such
- * distribution and use acknowledge that the software was developed
- * by John Robert LoVerso.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  *
  * This implementation has been influenced by the CMU SNMP release,
  * by Steve Waldbusser.  However, this shares no code with that system.
@@ -28,7 +41,7 @@
  *
  #			Los Alamos National Laboratory
  #
- #	Copyright, 1990.  The Regents of the University of California.
+ #	Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
  #	This software was produced under a U.S. Government contract
  #	(W-7405-ENG-36) by Los Alamos National Laboratory, which is
  #	operated by the	University of California for the U.S. Department
@@ -41,17 +54,11 @@
  #	responsibility for the use of this software.
  #	@(#)snmp.awk.x	1.1 (LANL) 1/15/90
  */
-#ifndef lint
-static char rcsid[] =
-    "@(#) Id: print-snmp.c,v 3.10 91/01/17 01:18:13 loverso Exp Locker: loverso (jlv)";
-#endif
 
-#include <sys/param.h>
 #include <sys/time.h>
-#include <sys/types.h>
 
-#include <stdio.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "interface.h"
@@ -93,7 +100,14 @@ char *Application[] = {
 #define GAUGE 2
 	"TimeTicks",
 #define TIMETICKS 3
-	"Opaque"
+	"Opaque",
+#define OPAQUE 4
+	"NsapAddress",
+#define NSAPADDR 5
+	"Counter64",
+#define COUNTER64 6
+	"UInteger32"
+#define UINTEGER32 7
 };
 
 /*
@@ -108,8 +122,16 @@ char *Context[] = {
 #define GETRESP 2
 	"SetRequest",
 #define SETREQ 3
-	"Trap"
+	"Trap",
 #define TRAP 4
+	"GetBulkReq",
+#define GETBULKREQ 5
+	"InformReq",
+#define INFORMREQ 6
+	"TrapV2",
+#define TRAPV2 7
+	"Report"
+#define REPORT 8
 };
 
 /*
@@ -129,11 +151,24 @@ char *ErrorStatus[] = {
 	"noSuchName",
 	"badValue",
 	"readOnly",
-	"genErr"
+	"genErr",
+	"noAccess",
+	"wrongType",
+	"wrongLength",
+	"wrongEnc",
+	"wrongValue",
+	"noCreation",
+	"inconValue",
+	"resUnavail",
+	"commitFailed",
+	"undoFailed",
+	"authError",
+	"notWritable",
+	"inconName"
 };
 #define DECODE_ErrorStatus(e) \
 	( e >= 0 && e <= sizeof(ErrorStatus)/sizeof(ErrorStatus[0]) \
-	? ErrorStatus[e] : (sprintf(errbuf, "err=%d", e), errbuf))
+	? ErrorStatus[e] : (snprintf(errbuf, sizeof(errbuf), "err=%u", e), errbuf))
 
 /*
  * generic-trap values in the SNMP Trap-PDU
@@ -146,11 +181,11 @@ char *GenericTrap[] = {
 	"authenticationFailure",
 	"egpNeighborLoss",
 	"enterpriseSpecific"
-#define GT_ENTERPRISE 7
+#define GT_ENTERPRISE 6
 };
 #define DECODE_GenericTrap(t) \
-	( t >= 0 && t <= sizeof(GenericTrap)/sizeof(GenericTrap[0]) \
-	? GenericTrap[t] : (sprintf(buf, "gt=%d", t), buf))
+	( t >= 0 && t < sizeof(GenericTrap)/sizeof(GenericTrap[0]) \
+	? GenericTrap[t] : (snprintf(buf, sizeof(buf), "gt=%d", t), buf))
 
 /*
  * ASN.1 type class table
@@ -161,8 +196,8 @@ char *GenericTrap[] = {
 struct {
 	char	*name;
 	char	**Id;
-	int	numIDs;
-} Class[] = {
+	    int	numIDs;
+    } Class[] = {
 	defineCLASS(Universal),
 #define	UNIVERSAL	0
 	defineCLASS(Application),
@@ -189,7 +224,7 @@ char *Form[] = {
  */
 struct obj {
 	char	*desc;			/* name of object */
-	u_char	oid;			/* sub-id following parent */
+	u_int	oid;			/* sub-id following parent */
 	u_char	type;			/* object type (unused) */
 	struct obj *child, *next;	/* child and next sibling pointers */
 } *objp = NULL;
@@ -226,6 +261,10 @@ struct obj_abrev {
 	/* .iso.org.dod.internet.experimental */
 	{ "X:",	&_experimental_obj,	"\53\6\1\3" },
 #endif
+#ifndef NO_ABREV_SNMPMIBOBJECTS
+	/* .iso.org.dod.internet.snmpV2.snmpModules.snmpMIB.snmpMIBObjects */
+	{ "S:", &_snmpmibobjects_obj,	"\53\6\1\6\3\1\1" },
+#endif
 	{ 0,0,0 }
 };
 
@@ -253,14 +292,16 @@ struct obj_abrev {
  * temporary internal representation while decoding an ASN.1 data stream.
  */
 struct be {
-	u_long asnlen;
+	u_int32_t asnlen;
 	union {
 		caddr_t raw;
-		long integer;
-		u_long uns;
+		int32_t integer;
+		u_int32_t uns;
+		u_int64_t uns64;
 		const u_char *str;
 	} data;
-	u_char form, class, id;		/* tag info */
+	u_short id;
+	u_char form, class;		/* tag info */
 	u_char type;
 #define BE_ANY		255
 #define BE_NONE		0
@@ -273,13 +314,14 @@ struct be {
 #define BE_SEQ		7
 #define BE_INETADDR	8
 #define BE_PDU		9
+#define BE_UNS64	10
 };
 
 /*
  * Defaults for SNMP PDU components
  */
 #define DEF_COMMUNITY "public"
-#define DEF_VERSION 0
+#define DEF_VERSION 1
 
 /*
  * constants for ASN.1 decoding
@@ -304,7 +346,6 @@ struct be {
  * it to decode.
  */
 static int truncated;
-#define ifNotTruncated if (truncated) fputs("[|snmp]", stdout); else
 
 /*
  * This decodes the next ASN.1 object in the stream pointed to by "p"
@@ -315,7 +356,7 @@ static int truncated;
  * O/w, this returns the number of bytes parsed from "p".
  */
 static int
-asn1_parse(register const u_char *p, int len, struct be *elem)
+asn1_parse(const u_char *p, u_int len, struct be *elem)
 {
 	u_char form, class, id;
 	int i, hdr;
@@ -323,7 +364,10 @@ asn1_parse(register const u_char *p, int len, struct be *elem)
 	elem->asnlen = 0;
 	elem->type = BE_ANY;
 	if (len < 1) {
-		ifNotTruncated puts("[nothing to parse], stdout");
+		if (truncated)
+			fputs("[|snmp]", stdout);
+		else
+			fputs("[nothing to parse]", stdout);
 		return -1;
 	}
 
@@ -340,8 +384,8 @@ asn1_parse(register const u_char *p, int len, struct be *elem)
 	class = form >> 1;		/* bits 7&6 -> bits 1&0, range 0-3 */
 	form &= 0x1;			/* bit 5 -> bit 0, range 0-1 */
 #else
-	form = (*p & ASN_FORM_BITS) >> ASN_FORM_SHIFT;
-	class = (*p & ASN_CLASS_BITS) >> ASN_CLASS_SHIFT;
+	form = (u_char)(*p & ASN_FORM_BITS) >> ASN_FORM_SHIFT;
+	class = (u_char)(*p & ASN_CLASS_BITS) >> ASN_CLASS_SHIFT;
 #endif
 	elem->form = form;
 	elem->class = class;
@@ -354,15 +398,25 @@ asn1_parse(register const u_char *p, int len, struct be *elem)
 		for (id = 0; *p & ASN_BIT8 && len > 0; len--, hdr++, p++) {
 			if (vflag)
 				printf("|%.2x", *p);
-			id += *p & ~ASN_BIT8;
+			id = (id << 7) | (*p & ~ASN_BIT8);
 		}
 		if (len == 0 && *p & ASN_BIT8) {
-			ifNotTruncated fputs("[Xtagfield?]", stdout);
+			if (truncated)
+				fputs("[|snmp]", stdout);
+			else 
+				fputs("[Xtagfield?]", stdout);
 			return -1;
 		}
+		elem->id = id = (id << 7) | *p;
+		--len;
+		++hdr;
+		++p;
 	}
 	if (len < 1) {
-		ifNotTruncated fputs("[no asnlen]", stdout);
+		if (truncated)
+			fputs("[|snmp]", stdout);
+		else
+			fputs("[no asnlen]", stdout);
 		return -1;
 	}
 	elem->asnlen = *p;
@@ -373,7 +427,10 @@ asn1_parse(register const u_char *p, int len, struct be *elem)
 		int noct = elem->asnlen % ASN_BIT8;
 		elem->asnlen = 0;
 		if (len < noct) {
-			ifNotTruncated printf("[asnlen? %d<%d]", len, noct);
+			if (truncated)
+				fputs("[|snmp]", stdout);
+			else
+				printf("[asnlen? %d<%d]", len, noct);
 			return -1;
 		}
 		for (; noct-- > 0; len--, hdr++) {
@@ -391,16 +448,25 @@ asn1_parse(register const u_char *p, int len, struct be *elem)
 		elem->asnlen = len;
 	}
 	if (form >= sizeof(Form)/sizeof(Form[0])) {
-		ifNotTruncated printf("[form?%d]", form);
+		if (truncated)
+			fputs("[|snmp]", stdout);
+		else
+			printf("[form?%d]", form);
 		return -1;
 	}
 	if (class >= sizeof(Class)/sizeof(Class[0])) {
-		ifNotTruncated printf("[class?%c/%d]", *Form[form], class);
+		if (truncated)
+			fputs("[|snmp]", stdout);
+		else
+			printf("[class?%c/%d]", *Form[form], class);
 		return -1;
 	}
-	if (id >= Class[class].numIDs) {
-		ifNotTruncated printf("[id?%c/%s/%d]", *Form[form],
-			Class[class].name, id);
+	if ((int)id >= Class[class].numIDs) {
+		if (truncated)
+			fputs("[|snmp]", stdout);
+		else
+			printf("[id?%c/%s/%d]", *Form[form],
+			    Class[class].name, id);
 		return -1;
 	}
 
@@ -415,7 +481,7 @@ asn1_parse(register const u_char *p, int len, struct be *elem)
 				break;
 
 			case INTEGER: {
-				register long data;
+				int32_t data;
 				elem->type = BE_INT;
 				data = 0;
 
@@ -455,13 +521,26 @@ asn1_parse(register const u_char *p, int len, struct be *elem)
 
 			case COUNTER:
 			case GAUGE:
-			case TIMETICKS: {
-				register u_long data;
+			case TIMETICKS:
+			case OPAQUE:
+			case NSAPADDR:
+			case UINTEGER32: {
+				u_int32_t data;
 				elem->type = BE_UNS;
 				data = 0;
 				for (i = elem->asnlen; i-- > 0; p++)
 					data = (data << 8) + *p;
 				elem->data.uns = data;
+				break;
+			}
+
+			case COUNTER64: {
+				u_int64_t data;
+				elem->type = BE_UNS64;
+				data = 0;
+				for (i = elem->asnlen; i-- > 0; p++)
+					data = (data << 8) + *p;
+				elem->data.uns64 = data;
 				break;
 			}
 
@@ -528,13 +607,13 @@ static void
 asn1_print(struct be *elem)
 {
 	u_char *p = (u_char *)elem->data.raw;
-	u_long asnlen = elem->asnlen;
+	u_int32_t asnlen = elem->asnlen;
 	int i;
 
 	switch (elem->type) {
 
 	case BE_OCTET:
-		for (i = asnlen; i-- > 0; p++);
+		for (i = asnlen; i-- > 0; p++)
 			printf("_%.2x", *p);
 		break;
 
@@ -547,7 +626,8 @@ asn1_print(struct be *elem)
 		if (!nflag && asnlen > 2) {
 			struct obj_abrev *a = &obj_abrev_list[0];
 			for (; a->node; a++) {
-				if (!bcmp(a->oid, (char *)p, strlen(a->oid))) {
+				if (!memcmp(a->oid, (char *)p,
+				    strlen(a->oid))) {
 					objp = a->node->child;
 					i -= strlen(a->oid);
 					p += strlen(a->oid);
@@ -581,22 +661,28 @@ asn1_print(struct be *elem)
 	}
 
 	case BE_INT:
-		printf("%ld", elem->data.integer);
+		printf("%d", elem->data.integer);
 		break;
 
 	case BE_UNS:
-		printf("%ld", elem->data.uns);
+		printf("%d", elem->data.uns);
+		break;
+
+	case BE_UNS64:
+		printf("%lld", elem->data.uns64);
 		break;
 
 	case BE_STR: {
-		register int printable = 1, first = 1;
+		int printable = 1, first = 1;
 		const u_char *p = elem->data.str;
 		for (i = asnlen; printable && i-- > 0; p++)
 			printable = isprint(*p) || isspace(*p);
 		p = elem->data.str;
-		if (printable)
+		if (printable) {
+			putchar('"');
 			(void)fn_print(p, p + asnlen);
-		else
+			putchar('"');
+		} else
 			for (i = asnlen; i-- > 0; p++) {
 				printf(first ? "%.2x" : "_%.2x", *p);
 				first = 0;
@@ -605,7 +691,7 @@ asn1_print(struct be *elem)
 	}
 
 	case BE_SEQ:
-		printf("Seq(%d)", elem->asnlen);
+		printf("Seq(%u)", elem->asnlen);
 		break;
 
 	case BE_INETADDR: {
@@ -622,7 +708,7 @@ asn1_print(struct be *elem)
 	}
 
 	case BE_PDU:
-		printf("%s(%d)",
+		printf("%s(%u)",
 			Class[CONTEXT].Id[elem->id], elem->asnlen);
 		break;
 
@@ -647,7 +733,7 @@ asn1_print(struct be *elem)
  * This is not currently used.
  */
 static void
-asn1_decode(u_char *p, int length)
+asn1_decode(u_char *p, u_int length)
 {
 	struct be elem;
 	int i = 0;
@@ -706,7 +792,7 @@ asn1_decode(u_char *p, int length)
  * Decode SNMP varBind
  */
 static void
-varbind_print(u_char pduid, const u_char *np, int length, int error)
+varbind_print(u_char pduid, const u_char *np, u_int length, int error)
 {
 	struct be elem;
 	int count = 0, ind;
@@ -727,7 +813,7 @@ varbind_print(u_char pduid, const u_char *np, int length, int error)
 
 	for (ind = 1; length > 0; ind++) {
 		const u_char *vbend;
-		int vblength;
+		u_int vblength;
 
 		if (!error || ind == error)
 			fputs(" ", stdout);
@@ -765,7 +851,7 @@ varbind_print(u_char pduid, const u_char *np, int length, int error)
 		/* objVal (ANY) */
 		if ((count = asn1_parse(np, length, &elem)) < 0)
 			return;
-		if (pduid == GETREQ || pduid == GETNEXTREQ) {
+		if (pduid == GETREQ || pduid == GETNEXTREQ || pduid == GETBULKREQ) {
 			if (elem.type != BE_NULL) {
 				fputs("[objVal!=NULL]", stdout);
 				asn1_print(&elem);
@@ -785,7 +871,7 @@ varbind_print(u_char pduid, const u_char *np, int length, int error)
  * Decode SNMP PDUs: GetRequest, GetNextRequest, GetResponse, and SetRequest
  */
 static void
-snmppdu_print(u_char pduid, const u_char *np, int length)
+snmppdu_print(u_char pduid, const u_char *np, u_int length)
 {
 	struct be elem;
 	int count = 0, error;
@@ -813,11 +899,13 @@ snmppdu_print(u_char pduid, const u_char *np, int length)
 	error = 0;
 	if ((pduid == GETREQ || pduid == GETNEXTREQ)
 	    && elem.data.integer != 0) {
-		char errbuf[10];
+		char errbuf[20];
 		printf("[errorStatus(%s)!=0]",
 			DECODE_ErrorStatus(elem.data.integer));
-	} else if (elem.data.integer != 0) {
-		char errbuf[10];
+	} else if (pduid == GETBULKREQ)
+		printf(" non-repeaters=%d", elem.data.integer);
+	else if (elem.data.integer != 0) {
+		char errbuf[20];
 		printf(" %s", DECODE_ErrorStatus(elem.data.integer));
 		error = elem.data.integer;
 	}
@@ -835,6 +923,8 @@ snmppdu_print(u_char pduid, const u_char *np, int length)
 	if ((pduid == GETREQ || pduid == GETNEXTREQ)
 	    && elem.data.integer != 0)
 		printf("[errorIndex(%d)!=0]", elem.data.integer);
+	else if (pduid == GETBULKREQ)
+		printf(" max-repetitions=%d", elem.data.integer);
 	else if (elem.data.integer != 0) {
 		if (!error)
 			printf("[errorIndex(%d) w/o errorStatus]",
@@ -858,7 +948,7 @@ snmppdu_print(u_char pduid, const u_char *np, int length)
  * Decode SNMP Trap PDU
  */
 static void
-trap_print(const u_char *np, int length)
+trap_print(const u_char *np, u_int length)
 {
 	struct be elem;
 	int count = 0, generic;
@@ -901,7 +991,7 @@ trap_print(const u_char *np, int length)
 	}
 	generic = elem.data.integer;
 	{
-		char buf[10];
+		char buf[20];
 		printf(" %s", DECODE_GenericTrap(generic));
 	}
 	length -= count;
@@ -945,7 +1035,7 @@ trap_print(const u_char *np, int length)
  * Decode SNMP header and pass on to PDU printing routines
  */
 void
-snmp_print(const u_char *np, int length)
+snmp_print(const u_char *np, u_int length)
 {
 	struct be elem, pdu;
 	int count = 0;
@@ -981,9 +1071,9 @@ snmp_print(const u_char *np, int length)
 		asn1_print(&elem);
 		return;
 	}
-	/* only handle version==0 */
-	if (elem.data.integer != DEF_VERSION) {
-		printf("[version(%d)!=0]", elem.data.integer);
+	/* only handle version 1 and 2 */
+	if (elem.data.integer > DEF_VERSION) {
+		printf("[version(%d)>%d]", elem.data.integer, DEF_VERSION);
 		return;
 	}
 	length -= count;
@@ -1027,6 +1117,10 @@ snmp_print(const u_char *np, int length)
 	case GETNEXTREQ:
 	case GETRESP:
 	case SETREQ:
+	case GETBULKREQ:
+	case INFORMREQ:
+	case TRAPV2:
+	case REPORT:
 		snmppdu_print(pdu.id, np, length);
 		break;
 	}

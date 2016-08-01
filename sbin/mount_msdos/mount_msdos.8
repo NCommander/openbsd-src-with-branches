@@ -1,4 +1,5 @@
-.\"	$NetBSD: mount_msdos.8,v 1.7 1995/03/18 14:57:36 cgd Exp $
+.\"	$OpenBSD: mount_msdos.8,v 1.28 2016/05/21 18:11:36 natano Exp $
+.\"	$NetBSD: mount_msdos.8,v 1.10 1996/01/19 21:14:43 leo Exp $
 .\"
 .\" Copyright (c) 1993,1994 Christopher G. Demetriou
 .\" All rights reserved.
@@ -14,7 +15,7 @@
 .\" 3. All advertising materials mentioning features or use of this software
 .\"    must display the following acknowledgement:
 .\"      This product includes software developed by Christopher G. Demetriou.
-.\" 3. The name of the author may not be used to endorse or promote products
+.\" 4. The name of the author may not be used to endorse or promote products
 .\"    derived from this software without specific prior written permission
 .\"
 .\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
@@ -28,29 +29,44 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd April 7, 1994
+.Dd $Mdocdate: May 21 2016 $
 .Dt MOUNT_MSDOS 8
-.Os NetBSD 0.9a
+.Os
 .Sh NAME
 .Nm mount_msdos
 .Nd mount an MS-DOS file system
 .Sh SYNOPSIS
 .Nm mount_msdos
-.Op Fl o Ar options
-.Op Fl u Ar uid
+.Op Fl 9ls
 .Op Fl g Ar gid
 .Op Fl m Ar mask
-.Pa special
-.Pa node
+.Op Fl o Ar options
+.Op Fl u Ar uid
+.Ar special
+.Ar node
 .Sh DESCRIPTION
 The
-.Nm mount_msdos
-command attaches the MS-DOS filesystem residing on
+.Nm
+command attaches the MS-DOS file system residing on
 the device
-.Pa special
-to the global filesystem namespace at the location
+.Ar special
+to the global file system namespace at the location
 indicated by
-.Pa node .
+.Ar node .
+This command is invoked by
+.Xr mount 8
+when using the syntax
+.Bd -ragged -offset 4n
+.Nm mount Op options
+-t msdos
+.Ar special Ar node
+.Ed
+.Pp
+The
+.Ar special
+device must correspond to a partition registered in the
+.Xr disklabel 5 .
+.Pp
 This command is normally executed by
 .Xr mount 8
 at boot time, but can be used by any user to mount an
@@ -60,58 +76,140 @@ contains the file system).
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl o Ar options
-Use the specified mount
-.Ar options ,
-as described in
-.Xr mount 8 .
-.It Fl u Ar uid
-Set the owner of the files in the file system to
-.Ar uid .
-The default owner is the owner of the directory
-on which the file system is being mounted.
+.It Fl 9
+Ignore the special Windows 95/98 directory entries even
+if deleting or renaming a file.
+This forces
+.Fl s .
 .It Fl g Ar gid
 Set the group of the files in the file system to
 .Ar gid .
 The default group is the group of the directory
 on which the file system is being mounted.
+.It Fl l
+Force listing and generation of
+Windows 95/98 long filenames
+and separate creation/modification/access dates.
+.Pp
+If neither
+.Fl s
+nor
+.Fl l
+are given,
+.Nm
+searches the root directory of the file system to
+be mounted for any existing Windows 95/98 long filenames.
+If no such entries are found,
+.Fl s
+is the default.
+Otherwise
+.Fl l
+is assumed.
 .It Fl m Ar mask
-Specify the maximum file permissions for files
+Specify the maximum permissions for files and directories
 in the file system.
-(For example, a mask of
-.Li 755
-specifies that, by default, the owner should have
-read, write, and execute permissions for files, but
-others should only have read and execute permissions.
-See
-.Xr chmod 1
-for more information about octal file modes.)
 Only the nine low-order bits of
 .Ar mask
 are used.
-The default mask is taken from the
-directory on which the file system is being mounted.
-.El
-.Sh SEE ALSO
-.Xr mount 2 ,
-.Xr unmount 2 ,
-.Xr fstab 5 ,
-.Xr mount 8
-.Sh CAVEATS
-The
-.Nm msdos
-filesystem is not known to work reliably with filesystems created by versions
-of MS-DOS later than version 3.3.
+.It Fl o Ar options
+Use the specified mount
+.Ar options ,
+as described in
+.Xr mount 8 .
+.It Fl s
+Force behaviour to
+ignore and not generate Windows 95/98 long filenames.
 .Pp
-The limitations on file names imposed by MS-DOS are strange, at best.
-For instance, they are
-limited to single-case, 8 character names with 3 character extensions.
+If neither
+.Fl s
+nor
+.Fl l
+are given,
+.Nm
+searches the root directory of the file system to
+be mounted for any existing Windows 95/98 long filenames.
+If no such entries are found,
+.Fl s
+is the default.
+Otherwise
+.Fl l
+is assumed.
+.It Fl u Ar uid
+Set the owner of the files in the file system to
+.Ar uid .
+The default owner is the owner of the directory
+on which the file system is being mounted.
+.El
+.Pp
+File permissions for FAT file systems are imitated,
+since the file system has no real concept of permissions.
+The default mask is taken from the
+directory on which the file system is being mounted,
+except when the
+.Fl m
+option is used.
+FAT does have a
+.Dq read only
+mode,
+in which the writable bit is unset.
+If such files are found,
+they are marked non-writable;
+it can be set using
+.Li chmod -w
+or unset using
+.Li chmod +w .
+.Pp
+File modes work the same way for directories.
+However a directory will inherit the executable bit if it is readable.
+See
+.Xr chmod 1
+for more information about octal file modes.
+.Sh SEE ALSO
+.Xr chmod 1 ,
+.Xr mount 2 ,
+.Xr disklabel 5 ,
+.Xr fstab 5 ,
+.Xr disklabel 8 ,
+.Xr mount 8 ,
+.Xr umount 8
 .Sh HISTORY
 The
-.Nm mount_msdos
-utility first appeared in NetBSD 0.9.
+.Nm
+utility first appeared in
+.Nx 0.9 .
 Its predecessor, the
 .Nm mount_pcfs
-utility appeared in NetBSD 0.8, and was abandoned in favor
-of the more aptly-named
+utility, appeared in
+.Nx 0.8 ,
+and was abandoned in favor
+of the more aptly named
 .Nm mount_msdos .
+.Sh CAVEATS
+The maximum file size supported by the MS-DOS file system is
+one byte less than 4GB.
+This is a FAT file system limitation, documented by Microsoft
+in Knowledge Base article 314463.
+.Pp
+The MS-DOS file system (even with long filenames) does not support
+filenames with trailing dots or spaces.
+Any such characters will be silently removed before the directory entry
+is written.
+This too is a FAT file system limitation.
+.Pp
+The use of the
+.Fl 9
+flag could result in damaged file systems,
+albeit the damage is in part taken care of by
+procedures similar to the ones used in Windows 95/98.
+.Pp
+The default handling for
+.Fl s
+and
+.Fl l
+will result in empty file systems being populated
+with short filenames only.
+To generate long filenames on empty DOS file systems use
+.Fl l .
+.Pp
+Note that Windows 95/98 handles only access dates,
+but not access times.

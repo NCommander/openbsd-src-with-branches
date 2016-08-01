@@ -1,18 +1,32 @@
-#	$NetBSD: Makefile,v 1.24 1995/09/27 12:46:07 cgd Exp $
+#	$OpenBSD: Makefile,v 1.55 2014/07/16 01:23:39 deraadt Exp $
+#	$NetBSD: Makefile,v 1.35 1996/04/03 21:20:52 chuck Exp $
 
-SUBDIR+=	bc cpio dc diff diff3 gawk grep groff
-SUBDIR+=	gzip rcs sdiff send-pr sort tar
+.include <bsd.own.mk>
 
-# some ports don't use the tool chain in /usr/src
-.if (${MACHINE_ARCH} != "alpha") && (${MACHINE_ARCH} != "mips")
-SUBDIR+=	gas gcc2 gdb ld
+.if make(obj)
+SUBDIR+=	cc gcc
+.else
+.  if ${COMPILER_VERSION:L} == "gcc3"
+SUBDIR+=	gcc
+.  else
+SUBDIR+=	cc
+.  endif
 .endif
 
-# XXX alpha still needs the /usr/bin/cpp script.
-.if (${MACHINE_ARCH} == "alpha")
-afterinstall:
-	install -c -o $(BINOWN) -g $(BINGRP) -m $(BINMODE) \
-	    $(.CURDIR)/gcc2/cpp/usr.bin.cpp.sh $(DESTDIR)/usr/bin/cpp
+SUBDIR+=	cxxfilt cvs
+# binutils-2.17 needs to build gdb in binutils at the moment
+SUBDIR+=	binutils
+SUBDIR+=	binutils-2.17
+
+# Do these last; texinfo builds the info 'dir' file, perl must be after binutils
+SUBDIR+=	perl texinfo
+
+.if ${COMPILER_VERSION:L} == "gcc4"
+maninstall:
+	${INSTALL} ${INSTALL_COPY} -o ${MANOWN} -g ${MANGRP} -m ${MANMODE} \
+		gcc/protoize.1 ${DESTDIR}${MANDIR}1/protoize.1
+	@rm -f ${DESTDIR}${MANDIR}1/unprotoize.1
+	ln ${DESTDIR}${MANDIR}1/protoize.1 ${DESTDIR}${MANDIR}1/unprotoize.1
 .endif
 
 .include <bsd.subdir.mk>

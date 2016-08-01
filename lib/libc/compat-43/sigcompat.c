@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,18 +27,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)sigcompat.c	5.3 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: sigcompat.c,v 1.6 1994/02/24 06:10:57 cgd Exp $";
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
 #include <signal.h>
 
 int
-sigvec(signo, sv, osv)
-	int signo;
-	struct sigvec *sv, *osv;
+sigvec(int signo, struct sigvec *sv, struct sigvec *osv)
 {
 	int ret;
 	struct sigvec nsv;
@@ -51,7 +39,7 @@ sigvec(signo, sv, osv)
 		nsv = *sv;
 		nsv.sv_flags ^= SV_INTERRUPT;	/* !SA_INTERRUPT */
 	}
-	ret = sigaction(signo, sv ? (struct sigaction *)&nsv : NULL,
+	ret = WRAP(sigaction)(signo, sv ? (struct sigaction *)&nsv : NULL,
 	    (struct sigaction *)osv);
 	if (ret == 0 && osv)
 		osv->sv_flags ^= SV_INTERRUPT;	/* !SA_INTERRUPT */
@@ -59,32 +47,33 @@ sigvec(signo, sv, osv)
 }
 
 int
-sigsetmask(mask)
-	int mask;
+sigsetmask(int mask)
 {
 	int omask, n;
 
-	n = sigprocmask(SIG_SETMASK, (sigset_t *) &mask, (sigset_t *) &omask);
+	n = WRAP(sigprocmask)(SIG_SETMASK, (sigset_t *) &mask,
+	    (sigset_t *) &omask);
 	if (n)
 		return (n);
 	return (omask);
 }
+DEF_WEAK(sigsetmask);
 
 int
-sigblock(mask)
-	int mask;
+sigblock(int mask)
 {
 	int omask, n;
 
-	n = sigprocmask(SIG_BLOCK, (sigset_t *) &mask, (sigset_t *) &omask);
+	n = WRAP(sigprocmask)(SIG_BLOCK, (sigset_t *) &mask,
+	    (sigset_t *) &omask);
 	if (n)
 		return (n);
 	return (omask);
 }
+DEF_WEAK(sigblock);
 
 int
-sigpause(mask)
-	int mask;
+sigpause(int mask)
 {
 	return (sigsuspend((sigset_t *)&mask));
 }

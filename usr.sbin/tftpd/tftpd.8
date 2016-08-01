@@ -1,4 +1,4 @@
-.\"   $OpenBSD: tftpd.8,v 1.26 2008/11/14 07:34:59 stevesk Exp $
+.\"   $OpenBSD: tftpd.8,v 1.4 2012/03/04 07:26:51 jmc Exp $
 .\"
 .\" Copyright (c) 1983, 1991 The Regents of the University of California.
 .\" All rights reserved.
@@ -29,20 +29,18 @@
 .\"
 .\"	from: @(#)tftpd.8	6.7 (Berkeley) 5/13/91
 .\"
-.Dd $Mdocdate: November 14 2008 $
+.Dd $Mdocdate: March 4 2012 $
 .Dt TFTPD 8
 .Os
 .Sh NAME
 .Nm tftpd
-.Nd
-.Tn DARPA
-Trivial File Transfer Protocol daemon
+.Nd DARPA Trivial File Transfer Protocol daemon
 .Sh SYNOPSIS
 .Nm tftpd
 .Op Fl 46cdv
 .Op Fl l Ar address
 .Op Fl p Ar port
-.Op Fl r socket
+.Op Fl r Ar socket
 .Ar directory
 .Sh DESCRIPTION
 .Nm
@@ -72,6 +70,15 @@ The server must be started as root, but will chroot to the
 .Ar directory
 specified on the command line and drop privileges to the _tftpd user.
 .Pp
+.Nm tftpd
+always provides random data at the path
+.Pa /etc/random.seed ,
+and therefore this path will be ignored inside the
+.Ar directory .
+.Ox
+network bootloaders access this path to harvest entropy during
+kernel load.
+.Pp
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl 4
@@ -91,12 +98,8 @@ allowing anyone to read or write to them.
 Do not daemonize.
 If this option is specified,
 .Nm
-will run in the foreground and log to stderr.
-.It Fl v
-Log the client IP, type of request, and filename.
-.Fl d
-implies
-.Fl v .
+will run in the foreground and log
+the client IP, type of request, and filename to stderr.
 .It Fl l Ar address
 Listen on the specified address.
 By default
@@ -112,9 +115,19 @@ service description; see
 .Xr services 5 .
 .It Fl r Ar socket
 Issue filename rewrite requests to the specified UNIX domain socket.
+.Nm
+will write lines in the format "IP OP filename", terminated by a newline,
+where IP is the client's IP address, and OP is one of "read" or "write".
+.Nm
+expects replies in the format "filename" terminated by a newline.
+All rewrite requests from the daemon must be answered
+(even if it is with the original filename)
+before the TFTP request will continue.
 By default
 .Nm
 does not use filename rewriting.
+.It Fl v
+Log the client IP, type of request, and filename.
 .It Ar directory
 .Xr chroot 2
 to

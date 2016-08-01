@@ -1,29 +1,46 @@
+/*	$OpenBSD$	*/
+/****************************************************************************
+ * Copyright (c) 1998-2003,2007 Free Software Foundation, Inc.              *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
 
-/***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
+/****************************************************************************
+ *   Author:  Juergen Pfeifer, 1995,1997                                    *
+ ****************************************************************************/
+
+/* $Id: menu.h,v 1.8 2010/01/12 23:22:08 nicm Exp $ */
 
 #ifndef ETI_MENU
 #define ETI_MENU
 
+#ifdef AMIGA
+#define TEXT TEXT_ncurses
+#endif
+
 #include <curses.h>
-#include <term.h>
 #include <eti.h>
 
 #ifdef __cplusplus
@@ -46,7 +63,7 @@ typedef int Item_Options;
 
 typedef struct
 {
-  char*          str;
+  const char* str;
   unsigned short length;
 } TEXT;
 
@@ -62,7 +79,7 @@ typedef struct tagITEM
   short          x;
   bool           value;       /* Selection value                           */
                              
-  struct tagITEM *left;       /* neighbour items                           */
+  struct tagITEM *left;       /* neighbor items                            */
   struct tagITEM *right;
   struct tagITEM *up;
   struct tagITEM *down;
@@ -79,10 +96,14 @@ typedef struct tagMENU
   short          cols;                  /* Nr. of items wide               */
   short          frows;                 /* Nr. of formatted items high     */
   short          fcols;                 /* Nr. of formatted items wide     */
+  short          arows;                 /* Nr. of items high (actual)      */
   short          namelen;               /* Max. name length                */
   short          desclen;               /* Max. description length         */
   short          marklen;               /* Length of mark, if any          */
   short          itemlen;               /* Length of one item              */
+  short          spc_desc;              /* Spacing for descriptor          */
+  short          spc_cols;              /* Spacing for columns             */
+  short          spc_rows;              /* Spacing for rows                */ 
   char          *pattern;               /* Buffer to store match chars     */
   short          pindex;                /* Index into pattern buffer       */
   WINDOW        *win;                   /* Window containing menu          */
@@ -131,86 +152,103 @@ typedef struct tagMENU
 #define REQ_BACK_PATTERN        (KEY_MAX + 15)
 #define REQ_NEXT_MATCH          (KEY_MAX + 16)
 #define REQ_PREV_MATCH          (KEY_MAX + 17)
+
+#define MIN_MENU_COMMAND        (KEY_MAX + 1)
 #define MAX_MENU_COMMAND        (KEY_MAX + 17)
 
 /*
  * Some AT&T code expects MAX_COMMAND to be out-of-band not
- * just for meny commands but for forms ones as well.
+ * just for menu commands but for forms ones as well.
  */
-#define MAX_COMMAND             (KEY_MAX + 128)
+#if defined(MAX_COMMAND)
+#  if (MAX_MENU_COMMAND > MAX_COMMAND)
+#    error Something is wrong -- MAX_MENU_COMMAND is greater than MAX_COMMAND
+#  elif (MAX_COMMAND != (KEY_MAX + 128))
+#    error Something is wrong -- MAX_COMMAND is already inconsistently defined.
+#  endif
+#else
+#  define MAX_COMMAND (KEY_MAX + 128)
+#endif
+
 
 /* --------- prototypes for libmenu functions ----------------------------- */
 
-extern ITEM     **menu_items(const MENU *),
-                *current_item(const MENU *),
-                *new_item(char *,char *);
+extern NCURSES_EXPORT(ITEM **)	menu_items (const MENU *);
+extern NCURSES_EXPORT(ITEM *)	current_item (const MENU *);
+extern NCURSES_EXPORT(ITEM *)	new_item (const char *,const char *);
 
-extern MENU     *new_menu(ITEM **);
+extern NCURSES_EXPORT(MENU *)	new_menu (ITEM **);
 
-extern Item_Options  item_opts(const ITEM *);
-extern Menu_Options  menu_opts(const MENU *);
+extern NCURSES_EXPORT(Item_Options)	item_opts (const ITEM *);
+extern NCURSES_EXPORT(Menu_Options)	menu_opts (const MENU *);
 
-Menu_Hook       item_init(const MENU *),
-                item_term(const MENU *),
-                menu_init(const MENU *),
-                menu_term(const MENU *);
+extern NCURSES_EXPORT(Menu_Hook)	item_init (const MENU *);
+extern NCURSES_EXPORT(Menu_Hook)	item_term (const MENU *);
+extern NCURSES_EXPORT(Menu_Hook)	menu_init (const MENU *);
+extern NCURSES_EXPORT(Menu_Hook)	menu_term (const MENU *);
 
-extern WINDOW   *menu_sub(const MENU *),
-                *menu_win(const MENU *);
+extern NCURSES_EXPORT(WINDOW *)	menu_sub (const MENU *);
+extern NCURSES_EXPORT(WINDOW *)	menu_win (const MENU *);
 
-extern char     *item_description(const ITEM *),
-                *item_name(const ITEM *),
-                *menu_mark(const MENU *),
-                *menu_pattern(const MENU *);
+extern NCURSES_EXPORT(const char *)	item_description (const ITEM *);
+extern NCURSES_EXPORT(const char *)	item_name (const ITEM *);
+extern NCURSES_EXPORT(const char *)	menu_mark (const MENU *);
+extern NCURSES_EXPORT(const char *)	menu_request_name (int);
 
-extern char     *item_userptr(const ITEM *),
-                *menu_userptr(const MENU *);
-  
-extern chtype   menu_back(const MENU *),
-                menu_fore(const MENU *),
-                menu_grey(const MENU *);
+extern NCURSES_EXPORT(char *)	menu_pattern (const MENU *);
 
-extern int      free_item(ITEM *),
-                free_menu(MENU *),
-                item_count(const MENU *),
-                item_index(const ITEM *),
-                item_opts_off(ITEM *,Item_Options),
-                item_opts_on(ITEM *,Item_Options),
-                menu_driver(MENU *,int),
-                menu_opts_off(MENU *,Menu_Options),
-                menu_opts_on(MENU *,Menu_Options),
-                menu_pad(const MENU *),
-                pos_menu_cursor(const MENU *),
-                post_menu(MENU *),
-                scale_menu(const MENU *,int *,int *),
-                set_current_item(MENU *menu,ITEM *item),
-                set_item_init(MENU *,void(*)(MENU *)),
-                set_item_opts(ITEM *,Item_Options),
-                set_item_term(MENU *,void(*)(MENU *)),
-                set_item_userptr(ITEM *, char *),
-                set_item_value(ITEM *,bool),
-                set_menu_back(MENU *,chtype),
-                set_menu_fore(MENU *,chtype),
-                set_menu_format(MENU *,int,int),
-                set_menu_grey(MENU *,chtype),
-                set_menu_init(MENU *,void(*)(MENU *)),
-                set_menu_items(MENU *,ITEM **),
-                set_menu_mark(MENU *, char *),
-                set_menu_opts(MENU *,Menu_Options),
-                set_menu_pad(MENU *,int),
-                set_menu_pattern(MENU *,const char *),
-                set_menu_sub(MENU *,WINDOW *),
-                set_menu_term(MENU *,void(*)(MENU *)),
-                set_menu_userptr(MENU *,char *),
-                set_menu_win(MENU *,WINDOW *),
-                set_top_row(MENU *,int),
-                top_row(const MENU *),
-                unpost_menu(MENU *);
+extern NCURSES_EXPORT(void *)	menu_userptr (const MENU *);
+extern NCURSES_EXPORT(void *)	item_userptr (const ITEM *);
 
-extern bool     item_value(const ITEM *),
-                item_visible(const ITEM *);
+extern NCURSES_EXPORT(chtype)	menu_back (const MENU *);
+extern NCURSES_EXPORT(chtype)	menu_fore (const MENU *);
+extern NCURSES_EXPORT(chtype)	menu_grey (const MENU *);
 
-void            menu_format(const MENU *,int *,int *);
+extern NCURSES_EXPORT(int)	free_item (ITEM *);
+extern NCURSES_EXPORT(int)	free_menu (MENU *);
+extern NCURSES_EXPORT(int)	item_count (const MENU *);
+extern NCURSES_EXPORT(int)	item_index (const ITEM *);
+extern NCURSES_EXPORT(int)	item_opts_off (ITEM *,Item_Options);
+extern NCURSES_EXPORT(int)	item_opts_on (ITEM *,Item_Options);
+extern NCURSES_EXPORT(int)	menu_driver (MENU *,int);
+extern NCURSES_EXPORT(int)	menu_opts_off (MENU *,Menu_Options);
+extern NCURSES_EXPORT(int)	menu_opts_on (MENU *,Menu_Options);
+extern NCURSES_EXPORT(int)	menu_pad (const MENU *);
+extern NCURSES_EXPORT(int)	pos_menu_cursor (const MENU *);
+extern NCURSES_EXPORT(int)	post_menu (MENU *);
+extern NCURSES_EXPORT(int)	scale_menu (const MENU *,int *,int *);
+extern NCURSES_EXPORT(int)	set_current_item (MENU *menu,ITEM *item);
+extern NCURSES_EXPORT(int)	set_item_init (MENU *, Menu_Hook);
+extern NCURSES_EXPORT(int)	set_item_opts (ITEM *,Item_Options);
+extern NCURSES_EXPORT(int)	set_item_term (MENU *, Menu_Hook);
+extern NCURSES_EXPORT(int)	set_item_userptr (ITEM *, void *);
+extern NCURSES_EXPORT(int)	set_item_value (ITEM *,bool);
+extern NCURSES_EXPORT(int)	set_menu_back (MENU *,chtype);
+extern NCURSES_EXPORT(int)	set_menu_fore (MENU *,chtype);
+extern NCURSES_EXPORT(int)	set_menu_format (MENU *,int,int);
+extern NCURSES_EXPORT(int)	set_menu_grey (MENU *,chtype);
+extern NCURSES_EXPORT(int)	set_menu_init (MENU *, Menu_Hook);
+extern NCURSES_EXPORT(int)	set_menu_items (MENU *,ITEM **);
+extern NCURSES_EXPORT(int)	set_menu_mark (MENU *, const char *);
+extern NCURSES_EXPORT(int)	set_menu_opts (MENU *,Menu_Options);
+extern NCURSES_EXPORT(int)	set_menu_pad (MENU *,int);
+extern NCURSES_EXPORT(int)	set_menu_pattern (MENU *,const char *);
+extern NCURSES_EXPORT(int)	set_menu_sub (MENU *,WINDOW *);
+extern NCURSES_EXPORT(int)	set_menu_term (MENU *, Menu_Hook);
+extern NCURSES_EXPORT(int)	set_menu_userptr (MENU *,void *);
+extern NCURSES_EXPORT(int)	set_menu_win (MENU *,WINDOW *);
+extern NCURSES_EXPORT(int)	set_top_row (MENU *,int);
+extern NCURSES_EXPORT(int)	top_row (const MENU *);
+extern NCURSES_EXPORT(int)	unpost_menu (MENU *);
+extern NCURSES_EXPORT(int)	menu_request_by_name (const char *);
+extern NCURSES_EXPORT(int)	set_menu_spacing (MENU *,int,int,int);
+extern NCURSES_EXPORT(int)	menu_spacing (const MENU *,int *,int *,int *);
+
+
+extern NCURSES_EXPORT(bool)	item_value (const ITEM *);
+extern NCURSES_EXPORT(bool)	item_visible (const ITEM *);
+
+extern NCURSES_EXPORT(void)	menu_format (const MENU *,int *,int *);
 
 #ifdef __cplusplus
   }

@@ -13,18 +13,10 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_lgammaf_r.c,v 1.3 1995/05/10 20:45:47 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const float 
-#else
-static float 
-#endif
 two23=  8.3886080000e+06, /* 0x4b000000 */
 half=  5.0000000000e-01, /* 0x3f000000 */
 one =  1.0000000000e+00, /* 0x3f800000 */
@@ -92,18 +84,10 @@ w4  = -5.9518753551e-04, /* 0xba1c065c */
 w5  =  8.3633989561e-04, /* 0x3a5b3dd2 */
 w6  = -1.6309292987e-03; /* 0xbad5c4e8 */
 
-#ifdef __STDC__
 static const float zero=  0.0000000000e+00;
-#else
-static float zero=  0.0000000000e+00;
-#endif
 
-#ifdef __STDC__
-	static float sin_pif(float x)
-#else
-	static float sin_pif(x)
-	float x;
-#endif
+static float
+sin_pif(float x)
 {
 	float y,z;
 	int n,ix;
@@ -148,12 +132,8 @@ static float zero=  0.0000000000e+00;
 }
 
 
-#ifdef __STDC__
-	float __ieee754_lgammaf_r(float x, int *signgamp)
-#else
-	float __ieee754_lgammaf_r(x,signgamp)
-	float x; int *signgamp;
-#endif
+float
+lgammaf_r(float x, int *signgamp)
 {
 	float t,y,z,nadj,p,p1,p2,p3,q,r,w;
 	int i,hx,ix;
@@ -164,19 +144,23 @@ static float zero=  0.0000000000e+00;
 	*signgamp = 1;
 	ix = hx&0x7fffffff;
 	if(ix>=0x7f800000) return x*x;
-	if(ix==0) return one/zero;
+	if(ix==0) {
+	    if(hx<0)
+		*signgamp = -1;
+	    return one/zero;
+	}
 	if(ix<0x1c800000) {	/* |x|<2**-70, return -log(|x|) */
 	    if(hx<0) {
 	        *signgamp = -1;
-	        return -__ieee754_logf(-x);
-	    } else return -__ieee754_logf(x);
+	        return - logf(-x);
+	    } else return - logf(x);
 	}
 	if(hx<0) {
 	    if(ix>=0x4b000000) 	/* |x|>=2**23, must be -integer */
 		return one/zero;
 	    t = sin_pif(x);
 	    if(t==zero) return one/zero; /* -integer */
-	    nadj = __ieee754_logf(pi/fabsf(t*x));
+	    nadj = logf(pi/fabsf(t*x));
 	    if(t<zero) *signgamp = -1;
 	    x = -x;
 	}
@@ -186,7 +170,7 @@ static float zero=  0.0000000000e+00;
     /* for x < 2.0 */
 	else if(ix<0x40000000) {
 	    if(ix<=0x3f666666) { 	/* lgamma(x) = lgamma(x+1)-log(x) */
-		r = -__ieee754_logf(x);
+		r = - logf(x);
 		if(ix>=0x3f3b4a20) {y = one-x; i= 0;}
 		else if(ix>=0x3e6d3308) {y= x-(tc-one); i=1;}
 	  	else {y = x; i=2;}
@@ -231,18 +215,18 @@ static float zero=  0.0000000000e+00;
 	    case 5: z *= (y+(float)4.0);	/* FALLTHRU */
 	    case 4: z *= (y+(float)3.0);	/* FALLTHRU */
 	    case 3: z *= (y+(float)2.0);	/* FALLTHRU */
-		    r += __ieee754_logf(z); break;
+		    r += logf(z); break;
 	    }
     /* 8.0 <= x < 2**58 */
 	} else if (ix < 0x5c800000) {
-	    t = __ieee754_logf(x);
+	    t = logf(x);
 	    z = one/x;
 	    y = z*z;
 	    w = w0+z*(w1+y*(w2+y*(w3+y*(w4+y*(w5+y*w6)))));
 	    r = (x-half)*(t-one)+w;
 	} else 
     /* 2**58 <= x <= inf */
-	    r =  x*(__ieee754_logf(x)-one);
+	    r =  x*(logf(x)-one);
 	if(hx<0) r = nadj - r;
 	return r;
 }

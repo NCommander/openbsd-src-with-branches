@@ -109,9 +109,21 @@ extern char *_rl_strpbrk PARAMS((const char *, const char *));
 #  define KEYMAP_TO_FUNCTION(data)	(rl_command_func_t *)(data)
 #endif
 
-#ifndef savestring
-#define savestring(x) strcpy ((char *)xmalloc (1 + strlen (x)), (x))
-#endif
+#if !defined (savestring)
+#include <stdio.h>
+static char *
+xstrdup(const char *s) 
+{
+	char * cp;
+	cp = strdup(s);
+	if (cp == NULL) {
+		fprintf (stderr, "xstrdup: out of virtual memory\n"); 
+		exit (2);
+	}
+	return(cp);
+}
+#define savestring(x) xstrdup(x)
+#endif /* !savestring */
 
 /* Possible values for _rl_bell_preference. */
 #define NO_BELL 0

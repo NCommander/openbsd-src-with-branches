@@ -1,3 +1,5 @@
+/*	$OpenBSD: rmt.c,v 1.18 2015/10/20 18:47:21 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,38 +29,32 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1983 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)rmt.c	5.6 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: rmt.c,v 1.6 1995/04/13 02:07:23 mycroft Exp $";
-#endif /* not lint */
-
 /*
  * rmt
  */
-#include <stdio.h>
-#include <sgtty.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include <sys/mtio.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <err.h>
 #include <errno.h>
 #include <string.h>
+#include <limits.h>
 
 int	tape = -1;
 
 char	*record;
 int	maxrecsize = -1;
-char	*checkbuf();
 
-#define	SSIZE	64
-char	device[SSIZE];
-char	count[SSIZE], mode[SSIZE], pos[SSIZE], op[SSIZE];
+#define	STRSIZE	64
+char	device[PATH_MAX];
+char	lastdevice[PATH_MAX] = "";
+char	count[STRSIZE], mode[STRSIZE], pos[STRSIZE], op[STRSIZE];
 
 char	resp[BUFSIZ];
 
@@ -71,62 +63,164 @@ FILE	*debug;
 #define	DEBUG1(f,a)	if (debug) fprintf(debug, f, a)
 #define	DEBUG2(f,a1,a2)	if (debug) fprintf(debug, f, a1, a2)
 
-main(argc, argv)
-	int argc;
-	char **argv;
+char		*checkbuf(char *, int);
+void		getstring(char *, int);
+void		error(int);
+__dead void	usage(void);
+
+int
+main(int argc, char *argv[])
 {
+	off_t orval;
 	int rval;
 	char c;
 	int n, i, cc;
+	int ch, rflag = 0, wflag = 0;
+	int f, acc;
+	mode_t m;
+	char *dir = NULL;
+	char *devp;
+	size_t dirlen;
 
-	argc--, argv++;
+	if (pledge("stdio rpath wpath cpath inet", NULL) == -1)
+		err(1, "pledge");
+
+	while ((ch = getopt(argc, argv, "d:rw")) != -1) {
+		switch (ch) {
+		case 'd':
+			dir = optarg;
+			if (*dir != '/')
+				errx(1, "directory must be absolute");
+			break;
+		case 'r':
+			rflag = 1;
+			break;
+		case 'w':
+			wflag = 1;
+			break;
+		default:
+			usage();
+			/* NOTREACHED */
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	if (rflag && wflag)
+		usage();
+
 	if (argc > 0) {
 		debug = fopen(*argv, "w");
 		if (debug == 0)
-			exit(1);
-		(void) setbuf(debug, (char *)0);
+			err(1, "cannot open debug file");
+		setvbuf(debug, NULL, _IONBF, 0);
 	}
+
+	if (dir) {
+		if (chdir(dir) != 0)
+			err(1, "chdir");
+		dirlen = strlen(dir);
+	}
+
 top:
 	errno = 0;
 	rval = 0;
-	if (read(0, &c, 1) != 1)
+	if (read(STDIN_FILENO, &c, 1) != 1)
 		exit(0);
 	switch (c) {
 
 	case 'O':
 		if (tape >= 0)
 			(void) close(tape);
-		getstring(device); getstring(mode);
+		getstring(device, sizeof(device));
+		getstring(mode, sizeof(mode));
 		DEBUG2("rmtd: O %s %s\n", device, mode);
-		tape = open(device, atoi(mode),
-		    S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-		if (tape < 0)
+
+		devp = device;
+		f = atoi(mode);
+		m = S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH;
+		acc = f & O_ACCMODE;
+		if (dir) {
+			/* Strip away valid directory prefix. */
+			if (strncmp(dir, devp, dirlen) == 0 &&
+			    (devp[dirlen - 1] == '/' ||
+			     devp[dirlen] == '/')) {
+			     devp += dirlen;
+			     while (*devp == '/')
+				devp++;
+			}
+			/* Don't allow directory traversal. */
+			if (strchr(devp, '/')) {
+				errno = EACCES;
+				goto ioerror;
+			}
+			f |= O_NOFOLLOW;
+		}
+		if (rflag) {
+			/*
+			 * Only allow readonly open and ignore file
+			 * creation requests.
+			 */
+			if (acc != O_RDONLY) {
+				errno = EPERM;
+				goto ioerror;
+			}
+			f &= ~O_CREAT;
+		} else if (wflag) {
+			/*
+			 * Require, and force creation of, a nonexistant file,
+			 * unless we are reopening the last opened file again,
+			 * in which case it is opened read-only.
+			 */
+			if (strcmp(devp, lastdevice) != 0) {
+				/*
+				 * Disallow read-only open since that would
+				 * only result in an empty file.
+				 */
+				if (acc == O_RDONLY) {
+					errno = EPERM;
+					goto ioerror;
+				}
+				f |= O_CREAT | O_EXCL;
+			} else {
+				acc = O_RDONLY;
+			}
+			/* Create readonly file */
+			m = S_IRUSR|S_IRGRP|S_IROTH;
+		}
+		/* Apply new access mode. */
+		f = (f & ~O_ACCMODE) | acc;
+
+		tape = open(devp, f, m);
+		if (tape == -1)
 			goto ioerror;
+		(void)strlcpy(lastdevice, devp, sizeof(lastdevice));
 		goto respond;
 
 	case 'C':
 		DEBUG("rmtd: C\n");
-		getstring(device);		/* discard */
-		if (close(tape) < 0)
+		getstring(device, sizeof(device));	/* discard */
+		if (close(tape) == -1)
 			goto ioerror;
 		tape = -1;
 		goto respond;
 
 	case 'L':
-		getstring(count); getstring(pos);
+		getstring(count, sizeof(count));
+		getstring(pos, sizeof(pos));
 		DEBUG2("rmtd: L %s %s\n", count, pos);
-		rval = lseek(tape, atoi(count), atoi(pos));
-		if (rval < 0)
+		orval = lseek(tape, strtoq(count, NULL, 0), atoi(pos));
+		if (orval == -1)
 			goto ioerror;
 		goto respond;
 
 	case 'W':
-		getstring(count);
+		getstring(count, sizeof(count));
 		n = atoi(count);
 		DEBUG1("rmtd: W %s\n", count);
 		record = checkbuf(record, n);
 		for (i = 0; i < n; i += cc) {
-			cc = read(0, &record[i], n - i);
+			cc = read(STDIN_FILENO, &record[i], n - i);
 			if (cc <= 0) {
 				DEBUG("rmtd: premature eof\n");
 				exit(2);
@@ -138,25 +232,26 @@ top:
 		goto respond;
 
 	case 'R':
-		getstring(count);
+		getstring(count, sizeof(count));
 		DEBUG1("rmtd: R %s\n", count);
 		n = atoi(count);
 		record = checkbuf(record, n);
 		rval = read(tape, record, n);
 		if (rval < 0)
 			goto ioerror;
-		(void) sprintf(resp, "A%d\n", rval);
-		(void) write(1, resp, strlen(resp));
-		(void) write(1, record, rval);
+		(void) snprintf(resp, sizeof resp, "A%d\n", rval);
+		(void) write(STDOUT_FILENO, resp, strlen(resp));
+		(void) write(STDOUT_FILENO, record, rval);
 		goto top;
 
 	case 'I':
-		getstring(op); getstring(count);
+		getstring(op, sizeof(op));
+		getstring(count, sizeof(count));
 		DEBUG2("rmtd: I %s %s\n", op, count);
 		{ struct mtop mtop;
 		  mtop.mt_op = atoi(op);
 		  mtop.mt_count = atoi(count);
-		  if (ioctl(tape, MTIOCTOP, (char *)&mtop) < 0)
+		  if (ioctl(tape, MTIOCTOP, (char *)&mtop) == -1)
 			goto ioerror;
 		  rval = mtop.mt_count;
 		}
@@ -165,12 +260,12 @@ top:
 	case 'S':		/* status */
 		DEBUG("rmtd: S\n");
 		{ struct mtget mtget;
-		  if (ioctl(tape, MTIOCGET, (char *)&mtget) < 0)
+		  if (ioctl(tape, MTIOCGET, (char *)&mtget) == -1)
 			goto ioerror;
 		  rval = sizeof (mtget);
-		  (void) sprintf(resp, "A%d\n", rval);
-		  (void) write(1, resp, strlen(resp));
-		  (void) write(1, (char *)&mtget, sizeof (mtget));
+		  (void) snprintf(resp, sizeof resp, "A%d\n", rval);
+		  (void) write(STDOUT_FILENO, resp, strlen(resp));
+		  (void) write(STDOUT_FILENO, (char *)&mtget, sizeof (mtget));
 		  goto top;
 		}
 
@@ -180,36 +275,30 @@ top:
 	}
 respond:
 	DEBUG1("rmtd: A %d\n", rval);
-	(void) sprintf(resp, "A%d\n", rval);
-	(void) write(1, resp, strlen(resp));
+	(void) snprintf(resp, sizeof resp, "A%d\n", rval);
+	(void) write(STDOUT_FILENO, resp, strlen(resp));
 	goto top;
 ioerror:
 	error(errno);
 	goto top;
 }
 
-getstring(bp)
-	char *bp;
+void
+getstring(char *bp, int size)
 {
-	int i;
 	char *cp = bp;
+	char *ep = bp + size - 1;
 
-	for (i = 0; i < SSIZE; i++) {
-		if (read(0, cp+i, 1) != 1)
+	do {
+		if (read(STDIN_FILENO, cp, 1) != 1)
 			exit(0);
-		if (cp[i] == '\n')
-			break;
-	}
-	cp[i] = '\0';
+	} while (*cp != '\n' && ++cp < ep);
+	*cp = '\0';
 }
 
 char *
-checkbuf(record, size)
-	char *record;
-	int size;
+checkbuf(char *record, int size)
 {
-	extern char *malloc();
-
 	if (size <= maxrecsize)
 		return (record);
 	if (record != 0)
@@ -221,16 +310,26 @@ checkbuf(record, size)
 	}
 	maxrecsize = size;
 	while (size > 1024 &&
-	       setsockopt(0, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size)) < 0)
+	    setsockopt(0, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size)) == -1)
 		size -= 1024;
 	return (record);
 }
 
-error(num)
-	int num;
+void
+error(int num)
 {
 
 	DEBUG2("rmtd: E %d (%s)\n", num, strerror(num));
-	(void) sprintf(resp, "E%d\n%s\n", num, strerror(num));
-	(void) write(1, resp, strlen(resp));
+	(void) snprintf(resp, sizeof (resp), "E%d\n%s\n", num, strerror(num));
+	(void) write(STDOUT_FILENO, resp, strlen(resp));
+}
+
+__dead void
+usage(void)
+{
+	extern char *__progname;
+
+	(void)fprintf(stderr, "usage: %s [-r | -w] [-d directory]\n",
+	    __progname);
+	exit(1);
 }

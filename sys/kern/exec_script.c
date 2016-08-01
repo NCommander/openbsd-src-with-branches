@@ -1,4 +1,5 @@
-/*	$NetBSD: exec_script.c,v 1.12 1995/04/10 18:27:59 mycroft Exp $	*/
+/*	$OpenBSD: exec_script.c,v 1.38 2016/03/19 12:04:15 natano Exp $	*/
+/*	$NetBSD: exec_script.c,v 1.13 1996/02/04 02:15:06 christos Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -30,29 +31,26 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(SETUIDSCRIPTS) && !defined(FDSCRIPTS)
-#define FDSCRIPTS		/* Need this for safe set-id scripts. */
-#endif
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/malloc.h>
+#include <sys/pool.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/namei.h>
 #include <sys/file.h>
 #include <sys/filedesc.h>
 #include <sys/exec.h>
-#include <sys/resourcevar.h>
-#include <vm/vm.h>
 
 #include <sys/exec_script.h>
+
 
 /*
  * exec_script_makecmds(): Check if it's an executable shell script.
  *
  * Given a proc pointer and an exec package pointer, see if the referent
- * of the epp is in shell script.  If it is, then set thing up so that
+ * of the epp is in shell script.  If it is, then set things up so that
  * the script can be run.  This involves preparing the address space
  * and arguments for the shell which will run the script.
  *
@@ -61,20 +59,23 @@
  * into the exec package.
  */
 int
-exec_script_makecmds(p, epp)
-	struct proc *p;
-	struct exec_package *epp;
+exec_script_makecmds(struct proc *p, struct exec_package *epp)
 {
 	int error, hdrlinelen, shellnamelen, shellarglen;
 	char *hdrstr = epp->ep_hdr;
 	char *cp, *shellname, *shellarg, *oldpnbuf;
-	char **shellargp, **tmpsap;
+	char **shellargp = NULL, **tmpsap;
 	struct vnode *scriptvp;
-#ifdef SETUIDSCRIPTS
-	uid_t script_uid;
-	gid_t script_gid;
+	uid_t script_uid = -1;
+	gid_t script_gid = -1;
 	u_short script_sbits;
-#endif
+
+	/*
+	 * remember the old vp and pnbuf for later, so we can restore
+	 * them if check_exec() fails.
+	 */
+	scriptvp = epp->ep_vp;
+	oldpnbuf = epp->ep_ndp->ni_cnd.cn_pnbuf;
 
 	/*
 	 * if the magic isn't that of a shell script, or we've already
@@ -105,13 +106,14 @@ exec_script_makecmds(p, epp)
 
 	shellname = NULL;
 	shellarg = NULL;
+	shellarglen = 0;
 
 	/* strip spaces before the shell name */
 	for (cp = hdrstr + EXEC_SCRIPT_MAGICLEN; *cp == ' ' || *cp == '\t';
 	    cp++)
 		;
 
-	/* collect the shell name; remember it's length for later */
+	/* collect the shell name; remember its length for later */
 	shellname = cp;
 	shellnamelen = 0;
 	if (*cp == '\0')
@@ -134,13 +136,11 @@ exec_script_makecmds(p, epp)
 	 * behaviour.
 	 */
 	shellarg = cp;
-	shellarglen = 0;
 	for ( /* cp = cp */ ; *cp != '\0'; cp++)
 		shellarglen++;
 	*cp++ = '\0';
 
 check_shell:
-#ifdef SETUIDSCRIPTS
 	/*
 	 * MNT_NOSUID and STRC are already taken care of by check_exec,
 	 * so we don't need to worry about them now or later.
@@ -150,68 +150,64 @@ check_shell:
 		script_uid = epp->ep_vap->va_uid;
 		script_gid = epp->ep_vap->va_gid;
 	}
-#endif
-#ifdef FDSCRIPTS
 	/*
 	 * if the script isn't readable, or it's set-id, then we've
 	 * gotta supply a "/dev/fd/..." for the shell to read.
 	 * Note that stupid shells (csh) do the wrong thing, and
-	 * close all open fd's when the start.  That kills this
+	 * close all open fd's when they start.  That kills this
 	 * method of implementing "safe" set-id and x-only scripts.
 	 */
-	if (VOP_ACCESS(epp->ep_vp, VREAD, p->p_ucred, p) == EACCES
-#ifdef SETUIDSCRIPTS
-	    || script_sbits
-#endif
-	    ) {
+	vn_lock(scriptvp, LK_EXCLUSIVE|LK_RETRY, p);
+	error = VOP_ACCESS(scriptvp, VREAD, p->p_ucred, p);
+	VOP_UNLOCK(scriptvp, p);
+	if (error == EACCES || script_sbits) {
 		struct file *fp;
-		extern struct fileops vnops;
 
-#if defined(DIAGNOSTIC) && defined(FDSCRIPTS)
+#ifdef DIAGNOSTIC
 		if (epp->ep_flags & EXEC_HASFD)
 			panic("exec_script_makecmds: epp already has a fd");
 #endif
 
-		if (error = falloc(p, &fp, &epp->ep_fd))
+		fdplock(p->p_fd);
+		error = falloc(p, &fp, &epp->ep_fd);
+		fdpunlock(p->p_fd);
+		if (error)
 			goto fail;
 
 		epp->ep_flags |= EXEC_HASFD;
 		fp->f_type = DTYPE_VNODE;
 		fp->f_ops = &vnops;
-		fp->f_data = (caddr_t) epp->ep_vp;
+		fp->f_data = (caddr_t) scriptvp;
 		fp->f_flag = FREAD;
+		FILE_SET_MATURE(fp, p);
 	}
-#endif
 
 	/* set up the parameters for the recursive check_exec() call */
+	epp->ep_ndp->ni_dirfd = AT_FDCWD;
 	epp->ep_ndp->ni_dirp = shellname;
 	epp->ep_ndp->ni_segflg = UIO_SYSSPACE;
 	epp->ep_flags |= EXEC_INDIR;
 
 	/* and set up the fake args list, for later */
-	MALLOC(shellargp, char **, 4 * sizeof(char *), M_EXEC, M_WAITOK);
+	shellargp = mallocarray(4, sizeof(char *), M_EXEC, M_WAITOK);
 	tmpsap = shellargp;
-	MALLOC(*tmpsap, char *, shellnamelen + 1, M_EXEC, M_WAITOK);
-	strcpy(*tmpsap++, shellname);
+	*tmpsap = malloc(shellnamelen + 1, M_EXEC, M_WAITOK);
+	strlcpy(*tmpsap++, shellname, shellnamelen + 1);
 	if (shellarg != NULL) {
-		MALLOC(*tmpsap, char *, shellarglen + 1, M_EXEC, M_WAITOK);
-		strcpy(*tmpsap++, shellarg);
+		*tmpsap = malloc(shellarglen + 1, M_EXEC, M_WAITOK);
+		strlcpy(*tmpsap++, shellarg, shellarglen + 1);
 	}
-	MALLOC(*tmpsap, char *, MAXPATHLEN, M_EXEC, M_WAITOK);
-#ifdef FDSCRIPTS
+	*tmpsap = malloc(MAXPATHLEN, M_EXEC, M_WAITOK);
 	if ((epp->ep_flags & EXEC_HASFD) == 0) {
-#endif
-		/* normally can't fail, but check for it if diagnostic */
-		error = copyinstr(epp->ep_name, *tmpsap++, MAXPATHLEN,
-		    (size_t *)0);
-#ifdef DIAGNOSTIC
-		if (error != 0)
-			panic("exec_script: copyinstr couldn't fail\n");
-#endif
-#ifdef FDSCRIPTS
+		error = copyinstr(epp->ep_name, *tmpsap, MAXPATHLEN,
+		    NULL);
+		if (error != 0) {
+			*(tmpsap + 1) = NULL;
+			goto fail;
+		}
 	} else
-		sprintf(*tmpsap++, "/dev/fd/%d", epp->ep_fd);
-#endif
+		snprintf(*tmpsap, MAXPATHLEN, "/dev/fd/%d", epp->ep_fd);
+	tmpsap++;
 	*tmpsap = NULL;
 
 	/*
@@ -219,15 +215,6 @@ check_shell:
 	 * the header from the new executable
 	 */
 	epp->ep_hdrvalid = 0;
-
-	/*
-	 * remember the old vp and pnbuf for later, so we can restore
-	 * them if check_exec() fails.
-	 */
-	scriptvp = epp->ep_vp;
-	oldpnbuf = epp->ep_ndp->ni_cnd.cn_pnbuf;
-
-	VOP_UNLOCK(scriptvp);
 
 	if ((error = check_exec(p, epp)) == 0) {
 		/* note that we've clobbered the header */
@@ -243,13 +230,12 @@ check_shell:
 			vn_close(scriptvp, FREAD, p->p_ucred, p);
 
 		/* free the old pathname buffer */
-		FREE(oldpnbuf, M_NAMEI);
+		pool_put(&namei_pool, oldpnbuf);
 
 		epp->ep_flags |= (EXEC_HASARGL | EXEC_SKIPARG);
 		epp->ep_fa = shellargp;
-#ifdef SETUIDSCRIPTS
 		/*
-		 * set thing up so that set-id scripts will be
+		 * set things up so that set-id scripts will be
 		 * handled appropriately
 		 */
 		epp->ep_vap->va_mode |= script_sbits;
@@ -257,7 +243,6 @@ check_shell:
 			epp->ep_vap->va_uid = script_uid;
 		if (script_sbits & VSGID)
 			epp->ep_vap->va_gid = script_gid;
-#endif
 		return (0);
 	}
 
@@ -268,27 +253,30 @@ fail:
 	epp->ep_flags |= EXEC_DESTR;
 
 	/* kill the opened file descriptor, else close the file */
-        if (epp->ep_flags & EXEC_HASFD) {
-                epp->ep_flags &= ~EXEC_HASFD;
-                (void) fdrelease(p, epp->ep_fd);
-        } else
+	if (epp->ep_flags & EXEC_HASFD) {
+		epp->ep_flags &= ~EXEC_HASFD;
+		fdplock(p->p_fd);
+		(void) fdrelease(p, epp->ep_fd);
+		fdpunlock(p->p_fd);
+	} else
 		vn_close(scriptvp, FREAD, p->p_ucred, p);
 
-        FREE(epp->ep_ndp->ni_cnd.cn_pnbuf, M_NAMEI);
+	pool_put(&namei_pool, epp->ep_ndp->ni_cnd.cn_pnbuf);
 
 	/* free the fake arg list, because we're not returning it */
-	tmpsap = shellargp;
-	while (*tmpsap != NULL) {
-		FREE(*tmpsap, M_EXEC);
-		tmpsap++;
+	if ((tmpsap = shellargp) != NULL) {
+		while (*tmpsap != NULL) {
+			free(*tmpsap, M_EXEC, 0);
+			tmpsap++;
+		}
+		free(shellargp, M_EXEC, 4 * sizeof(char *));
 	}
-	FREE(shellargp, M_EXEC);
 
-        /*
-         * free any vmspace-creation commands,
-         * and release their references
-         */
-        kill_vmcmds(&epp->ep_vmcmds);
+	/*
+	 * free any vmspace-creation commands,
+	 * and release their references
+	 */
+	kill_vmcmds(&epp->ep_vmcmds);
 
-        return error;
+	return error;
 }

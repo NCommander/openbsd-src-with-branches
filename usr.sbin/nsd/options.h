@@ -56,10 +56,11 @@ struct nsd_options {
 	/* rbtree of keys defined, by name */
 	rbtree_t* keys;
 
-	/* list of ip adresses to bind to (or NULL for all) */
+	/* list of ip addresses to bind to (or NULL for all) */
 	ip_address_option_t* ip_addresses;
 
 	int ip_transparent;
+	int ip_freebind;
 	int debug_mode;
 	int verbosity;
 	int hide_version;
@@ -67,11 +68,14 @@ struct nsd_options {
 	int do_ip6;
 	const char* database;
 	const char* identity;
+	const char* version;
 	const char* logfile;
 	int server_count;
 	int tcp_count;
 	int tcp_query_count;
 	int tcp_timeout;
+	int tcp_mss;
+	int outgoing_tcp_mss;
 	size_t ipv4_edns_size;
 	size_t ipv6_edns_size;
 	const char* pidfile;
@@ -201,7 +205,7 @@ struct acl_options {
 	union acl_addr_storage addr;
 	union acl_addr_storage range_mask;
 	enum {
-		acl_range_single = 0,	/* single adress */
+		acl_range_single = 0,	/* single address */
 		acl_range_mask = 1,	/* 10.20.30.40&255.255.255.0 */
 		acl_range_subnet = 2,	/* 10.20.30.40/28 */
 		acl_range_minmax = 3	/* 10.20.30.40-10.20.30.60 (mask=max) */

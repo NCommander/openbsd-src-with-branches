@@ -1,4 +1,5 @@
-/*	$NetBSD: input.c,v 1.2 1995/04/22 07:42:34 cgd Exp $	*/
+/*	$OpenBSD: input.c,v 1.16 2016/01/04 17:33:24 mestre Exp $	*/
+/*    $NetBSD: input.c,v 1.3 1996/02/06 22:47:33 jtc Exp $    */
 
 /*-
  * Copyright (c) 1992, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,10 +39,8 @@
  * Tetris input.
  */
 
-#include <sys/types.h>
-#include <sys/time.h>
-
 #include <errno.h>
+#include <poll.h>
 #include <unistd.h>
 
 #include "input.h"
@@ -65,46 +60,39 @@
 	}
 
 /*
- * Do a `read wait': select for reading from stdin, with timeout *tvp.
+ * Do a `read wait': poll for reading from stdin, with timeout *tvp.
  * On return, modify *tvp to reflect the amount of time spent waiting.
  * It will be positive only if input appeared before the time ran out;
  * otherwise it will be zero or perhaps negative.
  *
- * If tvp is nil, wait forever, but return if select is interrupted.
+ * If tvp is nil, wait forever, but return if poll is interrupted.
  *
  * Return 0 => no input, 1 => can read() from stdin
  */
 int
-rwait(tvp)
-	register struct timeval *tvp;
+rwait(struct timeval *tvp)
 {
-	int i;
-	struct timeval starttv, endtv, *s;
-	extern int errno;
+	int	timo = INFTIM;
+	struct timeval starttv, endtv;
+	struct pollfd pfd[1];
+
 #define	NILTZ ((struct timezone *)0)
 
-	/*
-	 * Someday, select() will do this for us.
-	 * Just in case that day is now, and no one has
-	 * changed this, we use a temporary.
-	 */
 	if (tvp) {
 		(void) gettimeofday(&starttv, NILTZ);
 		endtv = *tvp;
-		s = &endtv;
-	} else
-		s = 0;
+		timo = endtv.tv_sec * 1000 + endtv.tv_usec / 1000;
+	}
 again:
-	i = 1;
-	switch (select(1, (fd_set *)&i, (fd_set *)0, (fd_set *)0, s)) {
-
+	pfd[0].fd = STDIN_FILENO;
+	pfd[0].events = POLLIN;
+	switch (poll(pfd, 1, timo)) {
 	case -1:
 		if (tvp == 0)
 			return (-1);
 		if (errno == EINTR)
 			goto again;
-		stop("select failed, help");
-		/* NOTREACHED */
+		stop("poll failed, help");
 
 	case 0:	/* timed out */
 		tvp->tv_sec = 0;
@@ -121,11 +109,11 @@ again:
 }
 
 /*
- * `sleep' for the current turn time (using select).
+ * `sleep' for the current turn time (using poll).
  * Eat any input that might be available.
  */
 void
-tsleep()
+tsleep(void)
 {
 	struct timeval tv;
 	char c;
@@ -133,29 +121,15 @@ tsleep()
 	tv.tv_sec = 0;
 	tv.tv_usec = fallrate;
 	while (TV_POS(&tv))
-		if (rwait(&tv) && read(0, &c, 1) != 1)
+		if (rwait(&tv) && read(STDIN_FILENO, &c, 1) != 1)
 			break;
-}
-
-/*
- * Eat up any input (used at end of game).
- */
-void
-eat_input()
-{
-	struct timeval tv;
-	char c;
-
-	do {
-		tv.tv_sec = tv.tv_usec = 0;
-	} while (rwait(&tv) && read(0, &c, 1) == 1);
 }
 
 /*
  * getchar with timeout.
  */
 int
-tgetchar()
+tgetchar(void)
 {
 	static struct timeval timeleft;
 	char c;
@@ -176,7 +150,7 @@ tgetchar()
 	}
 	if (!rwait(&timeleft))
 		return (-1);
-	if (read(0, &c, 1) != 1)
+	if (read(STDIN_FILENO, &c, 1) != 1)
 		stop("end of file, help");
 	return ((int)(unsigned char)c);
 }

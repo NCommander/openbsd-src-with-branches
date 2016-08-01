@@ -1,3 +1,4 @@
+.\"	$OpenBSD: uniq.1,v 1.17 2010/09/03 11:09:29 jmc Exp $
 .\"	$NetBSD: uniq.1,v 1.5 1994/12/06 07:51:15 jtc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,7 +33,7 @@
 .\"
 .\"     @(#)uniq.1	8.1 (Berkeley) 6/6/93
 .\"
-.Dd June 6, 1993
+.Dd $Mdocdate: September 3 2010 $
 .Dt UNIQ 1
 .Os
 .Sh NAME
@@ -44,7 +41,8 @@
 .Nd report or filter out repeated lines in a file
 .Sh SYNOPSIS
 .Nm uniq
-.Op Fl c | Fl d | Fl u
+.Op Fl c
+.Op Fl d | u
 .Op Fl f Ar fields
 .Op Fl s Ar chars
 .Oo
@@ -53,28 +51,28 @@
 .Oc
 .Sh DESCRIPTION
 The
-.Nm uniq
-utility reads the standard input comparing adjacent lines, and writes
+.Nm
+utility reads the standard input comparing adjacent lines and writes
 a copy of each unique input line to the standard output.
 The second and succeeding copies of identical adjacent input lines are
 not written.
 Repeated lines in the input will not be detected if they are not adjacent,
 so it may be necessary to sort the files first.
 .Pp
-The following options are available:
+The options are as follows:
 .Bl -tag -width Ds
 .It Fl c
 Precede each output line with the count of the number of times the line
 occurred in the input, followed by a single space.
 .It Fl d
-Don't output lines that are not repeated in the input.
+Only output lines which have duplicates.
 .It Fl f Ar fields
 Ignore the first
 .Ar fields
 in each input line when doing comparisons.
 A field is a string of non-blank characters separated from adjacent fields
-by blanks.
-Field numbers are one based, i.e. the first field is field one.
+by blanks, with blanks considered part of the following field.
+Field numbers are one based, i.e., the first field is field one.
 .It Fl s Ar chars
 Ignore the first
 .Ar chars
@@ -86,9 +84,9 @@ option, the first
 characters after the first
 .Ar fields
 fields will be ignored.
-Character numbers are one based, i.e. the first character is character one.
+Character numbers are one based, i.e., the first character is character one.
 .It Fl u
-Don't output lines that are repeated in the input.
+Only output lines which are unique.
 .\".It Fl Ns Ar n
 .\"(Deprecated; replaced by
 .\".Fl f ) .
@@ -112,21 +110,39 @@ Don't output lines that are repeated in the input.
 If additional arguments are specified on the command line, the first
 such argument is used as the name of an input file, the second is used
 as the name of an output file.
-.Pp
-The
-.Nm uniq
-utility exits 0 on success, and >0 if an error occurs.
-.Sh COMPATIBILITY
-The historic
-.Cm \&\(pl Ns Ar number
-and
-.Fl Ns Ar number
-options have been deprecated but are still supported in this implementation.
+A file name of
+.Ql -
+denotes the standard input or the standard output
+.Pq depending on its position on the command line .
+.Sh ENVIRONMENT
+.Bl -tag -width LC_CTYPE
+.It Ev LC_CTYPE
+The character set
+.Xr locale 1 .
+Determines which groups of bytes are treated as characters
+and which characters are considered blank.
+.El
+.Sh EXIT STATUS
+.Ex -std uniq
 .Sh SEE ALSO
 .Xr sort 1
 .Sh STANDARDS
 The
-.Nm uniq
-utility is expected to be
-.St -p1003.2
-compatible.
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+The use of
+.Fl c
+in conjunction with
+.Fl d
+or
+.Fl u
+is an extension to that specification.
+.Pp
+The historic
+.Cm + Ns Ar number
+and
+.Fl Ns Ar number
+options have been deprecated but are still supported in this implementation.

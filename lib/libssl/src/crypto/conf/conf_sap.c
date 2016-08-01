@@ -1,4 +1,4 @@
-/* conf_sap.c */
+/* $OpenBSD: conf_sap.c,v 1.10 2014/07/11 08:44:48 jsing Exp $ */
 /* Written by Stephen Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,12 +57,15 @@
  */
 
 #include <stdio.h>
-#include <openssl/crypto.h>
-#include "cryptlib.h"
-#include <openssl/conf.h>
-#include <openssl/dso.h>
-#include <openssl/x509.h>
+
+#include <openssl/opensslconf.h>
+
 #include <openssl/asn1.h>
+#include <openssl/conf.h>
+#include <openssl/crypto.h>
+#include <openssl/err.h>
+#include <openssl/x509.h>
+
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
@@ -74,8 +77,9 @@
 
 static int openssl_configured = 0;
 
-void OPENSSL_config(const char *config_name)
-	{
+void
+OPENSSL_config(const char *config_name)
+{
 	if (openssl_configured)
 		return;
 
@@ -86,26 +90,24 @@ void OPENSSL_config(const char *config_name)
 #endif
 	/* Add others here? */
 
-
 	ERR_clear_error();
 	if (CONF_modules_load_file(NULL, config_name,
-	CONF_MFLAGS_DEFAULT_SECTION|CONF_MFLAGS_IGNORE_MISSING_FILE) <= 0)
-		{
+	    CONF_MFLAGS_DEFAULT_SECTION|CONF_MFLAGS_IGNORE_MISSING_FILE) <= 0) {
 		BIO *bio_err;
 		ERR_load_crypto_strings();
-		if ((bio_err=BIO_new_fp(stderr, BIO_NOCLOSE)) != NULL)
-			{
-			BIO_printf(bio_err,"Auto configuration failed\n");
+		if ((bio_err = BIO_new_fp(stderr, BIO_NOCLOSE)) != NULL) {
+			BIO_printf(bio_err, "Auto configuration failed\n");
 			ERR_print_errors(bio_err);
 			BIO_free(bio_err);
-			}
-		exit(1);
 		}
+		exit(1);
+	}
 
 	return;
-	}
+}
 
-void OPENSSL_no_config()
-	{
+void
+OPENSSL_no_config(void)
+{
 	openssl_configured = 1;
-	}
+}

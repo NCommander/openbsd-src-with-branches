@@ -1,16 +1,75 @@
+/*	$OpenBSD: hack.wizard.c,v 1.6 2009/10/27 23:59:25 deraadt Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.wizard.c,v 1.3 1995/03/23 08:32:09 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /* wizard code - inspired by rogue code from Merlyn Leroy (digi-g!brian) */
 
+#include <stdlib.h>
+
 #include "hack.h"
+
 extern struct permonst pm_wizard;
-extern struct monst *makemon();
+
+static void clonewiz(struct monst *);
 
 #define	WIZSHOT	    6	/* one chance in WIZSHOT that wizard will try magic */
 #define	BOLT_LIM    8	/* from this distance D and 1 will try to hit you */
@@ -18,9 +77,11 @@ extern struct monst *makemon();
 char wizapp[] = "@DNPTUVXcemntx";
 
 /* If he has found the Amulet, make the wizard appear after some time */
-amulet(){
-	register struct obj *otmp;
-	register struct monst *mtmp;
+void
+amulet(void)
+{
+	struct obj *otmp;
+	struct monst *mtmp;
 
 	if(!flags.made_amulet || !flags.no_of_wizards)
 		return;
@@ -38,8 +99,8 @@ amulet(){
 		    }
 }
 
-wiz_hit(mtmp)
-register struct monst *mtmp;
+int
+wiz_hit(struct monst *mtmp)
 {
 	/* if we have stolen or found the amulet, we disappear */
 	if(mtmp->minvent && mtmp->minvent->olet == AMULET_SYM &&
@@ -51,7 +112,7 @@ register struct monst *mtmp;
 
 	/* if it is lying around someplace, we teleport to it */
 	if(!carrying(AMULET_OF_YENDOR)) {
-	    register struct obj *otmp;
+	    struct obj *otmp;
 
 	    for(otmp = fobj; otmp; otmp = otmp->nobj)
 		if(otmp->olet == AMULET_SYM && !otmp->spe) {
@@ -84,10 +145,10 @@ hithim:
 	return(0);
 }
 
-inrange(mtmp)
-register struct monst *mtmp;
+void
+inrange(struct monst *mtmp)
 {
-	register schar tx,ty;
+	schar tx,ty;
 
 	/* do nothing if cancelled (but make '1' say something) */
 	if(mtmp->data->mlet != '1' && mtmp->mcan)
@@ -169,9 +230,10 @@ register struct monst *mtmp;
 	}
 }
 
-aggravate()
+void
+aggravate(void)
 {
-	register struct monst *mtmp;
+	struct monst *mtmp;
 
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
 		mtmp->msleep = 0;
@@ -180,12 +242,12 @@ aggravate()
 	}
 }
 
-clonewiz(mtmp)
-register struct monst *mtmp;
+static void
+clonewiz(struct monst *mtmp)
 {
-	register struct monst *mtmp2;
+	struct monst *mtmp2;
 
-	if(mtmp2 = makemon(PM_WIZARD, mtmp->mx, mtmp->my)) {
+	if ((mtmp2 = makemon(PM_WIZARD, mtmp->mx, mtmp->my))) {
 		flags.no_of_wizards = 2;
 		unpmon(mtmp2);
 		mtmp2->mappearance = wizapp[rn2(sizeof(wizapp)-1)];

@@ -1,4 +1,5 @@
-/*	$NetBSD: radix.h,v 1.7 1995/05/17 15:50:08 mycroft Exp $	*/
+/*	$OpenBSD: radix.h,v 1.27 2015/10/08 08:41:58 mpi Exp $	*/
+/*	$NetBSD: radix.h,v 1.8 1996/02/13 22:00:37 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -62,12 +59,7 @@ struct radix_node {
 			struct	radix_node *rn_L;/* progeny */
 			struct	radix_node *rn_R;/* progeny */
 		} rn_node;
-	}	rn_u;
-#ifdef RN_DEBUG
-	int rn_info;
-	struct radix_node *rn_twin;
-	struct radix_node *rn_ybro;
-#endif
+	} rn_u;
 };
 
 #define rn_dupedkey rn_u.rn_leaf.rn_Dupedkey
@@ -81,7 +73,7 @@ struct radix_node {
  * Annotations to tree concerning potential routes applying to subtrees.
  */
 
-extern struct radix_mask {
+struct radix_mask {
 	short	rm_b;			/* bit offset; -1-index(netmask) */
 	char	rm_unused;		/* cf. rn_bmask */
 	u_char	rm_flags;		/* cf. rn_flags */
@@ -91,75 +83,35 @@ extern struct radix_mask {
 		struct	radix_node *rmu_leaf;	/* for normal routes */
 	}	rm_rmu;
 	int	rm_refs;		/* # of references to this struct */
-} *rn_mkfreelist;
+};
 
 #define rm_mask rm_rmu.rmu_mask
 #define rm_leaf rm_rmu.rmu_leaf		/* extra field would make 32 bytes */
-
-#define MKGet(m) {\
-	if (rn_mkfreelist) {\
-		m = rn_mkfreelist; \
-		rn_mkfreelist = (m)->rm_mklist; \
-	} else \
-		R_Malloc(m, struct radix_mask *, sizeof (*(m))); }\
-
-#define MKFree(m) { (m)->rm_mklist = rn_mkfreelist; rn_mkfreelist = (m);}
 
 struct radix_node_head {
 	struct	radix_node *rnh_treetop;
 	int	rnh_addrsize;		/* permit, but not require fixed keys */
 	int	rnh_pktsize;		/* permit, but not require fixed keys */
-	struct	radix_node *(*rnh_addaddr)	/* add based on sockaddr */
-		__P((void *v, void *mask,
-		     struct radix_node_head *head, struct radix_node nodes[]));
-	struct	radix_node *(*rnh_addpkt)	/* add based on packet hdr */
-		__P((void *v, void *mask,
-		     struct radix_node_head *head, struct radix_node nodes[]));
-	struct	radix_node *(*rnh_deladdr)	/* remove based on sockaddr */
-		__P((void *v, void *mask, struct radix_node_head *head));
-	struct	radix_node *(*rnh_delpkt)	/* remove based on packet hdr */
-		__P((void *v, void *mask, struct radix_node_head *head));
-	struct	radix_node *(*rnh_matchaddr)	/* locate based on sockaddr */
-		__P((void *v, struct radix_node_head *head));
-	struct	radix_node *(*rnh_lookup)	/* locate based on sockaddr */
-		__P((void *v, void *mask, struct radix_node_head *head));
-	struct	radix_node *(*rnh_matchpkt)	/* locate based on packet hdr */
-		__P((void *v, struct radix_node_head *head));
-	int	(*rnh_walktree)			/* traverse tree */
-		__P((struct radix_node_head *head, int (*f)(), void *w));
-	struct	radix_node rnh_nodes[3];	/* empty tree for common case */
+	struct	radix_node rnh_nodes[3];/* empty tree for common case */
+	int	rnh_multipath;		/* multipath? */
+	u_int	rnh_rtableid;
 };
 
+void	rn_init(unsigned int);
+int	rn_inithead(void **, int);
+int	rn_inithead0(struct radix_node_head *, int);
+int	rn_refines(void *, void *);
+void	rn_link_dupedkey(struct radix_node *, struct radix_node *, int);
 
-#ifndef _KERNEL
-#define Bcmp(a, b, n) bcmp(((char *)(a)), ((char *)(b)), (n))
-#define Bcopy(a, b, n) bcopy(((char *)(a)), ((char *)(b)), (unsigned)(n))
-#define Bzero(p, n) bzero((char *)(p), (int)(n));
-#define R_Malloc(p, t, n) (p = (t) malloc((unsigned int)(n)))
-#define Free(p) free((char *)p);
-#else
-#define Bcmp(a, b, n) bcmp(((caddr_t)(a)), ((caddr_t)(b)), (unsigned)(n))
-#define Bcopy(a, b, n) bcopy(((caddr_t)(a)), ((caddr_t)(b)), (unsigned)(n))
-#define Bzero(p, n) bzero((caddr_t)(p), (unsigned)(n));
-#define R_Malloc(p, t, n) (p = (t) malloc((unsigned long)(n), M_RTABLE, M_DONTWAIT))
-#define Free(p) free((caddr_t)p, M_RTABLE);
+int	rn_walktree(struct radix_node_head *,
+	    int (*)(struct radix_node *, void *, u_int), void *);
 
-void	 rn_init __P((void));
-int	 rn_inithead __P((void **, int));
-int	 rn_refines __P((void *, void *));
-int	 rn_walktree __P((struct radix_node_head *, int (*)(), void *));
-struct radix_node
-	 *rn_addmask __P((void *, int, int)),
-	 *rn_addroute __P((void *, void *, struct radix_node_head *,
-			struct radix_node [2])),
-	 *rn_delete __P((void *, void *, struct radix_node_head *)),
-	 *rn_insert __P((void *, struct radix_node_head *, int *,
-			struct radix_node [2])),
-	 *rn_lookup __P((void *, void *, struct radix_node_head *)),
-	 *rn_match __P((void *, struct radix_node_head *)),
-	 *rn_newpair __P((void *, int, struct radix_node[2])),
-	 *rn_search __P((void *, struct radix_node *)),
-	 *rn_search_m __P((void *, struct radix_node *, void *));
-#endif /* !_KERNEL */
+struct radix_node	*rn_addmask(void *, int, int);
+struct radix_node	*rn_addroute(void *, void *, struct radix_node_head *,
+			    struct radix_node [2], u_int8_t);
+struct radix_node	*rn_delete(void *, void *, struct radix_node_head *,
+			    struct radix_node *);
+struct radix_node	*rn_lookup(void *, void *, struct radix_node_head *);
+struct radix_node	*rn_match(void *, struct radix_node_head *);
 
-#endif /* !_NET_RADIX_H_ */
+#endif /* _NET_RADIX_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* the point of this library is to not define function ad() */
 ad_notdefine()
 {

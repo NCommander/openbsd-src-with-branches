@@ -1,46 +1,40 @@
-/*	$NetBSD: svc_udp.c,v 1.6 1995/06/03 22:37:28 mycroft Exp $	*/
+/*	$OpenBSD: svc_udp.c,v 1.24 2015/09/13 15:36:56 guenther Exp $ */
 
 /*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user.
- * 
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- * 
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- * 
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- * 
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_udp.c 1.24 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_udp.c	2.2 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_udp.c,v 1.6 1995/06/03 22:37:28 mycroft Exp $";
-#endif
 
 /*
  * svc_udp.c,
  * Server side for UDP/IP based RPC.  (Does some caching in the hopes of
  * achieving execute-at-most-once semantics.)
- *
- * Copyright (C) 1984, Sun Microsystems, Inc.
  */
 
 #include <stdio.h>
@@ -48,18 +42,23 @@ static char *rcsid = "$NetBSD: svc_udp.c,v 1.6 1995/06/03 22:37:28 mycroft Exp $
 #include <string.h>
 #include <rpc/rpc.h>
 #include <sys/socket.h>
+#include <stdint.h>
 #include <errno.h>
+#include <unistd.h>
 
 
 #define rpc_buffer(xprt) ((xprt)->xp_p1)
 #define MAX(a, b)     ((a > b) ? a : b)
 
-static bool_t		svcudp_recv();
-static bool_t		svcudp_reply();
-static enum xprt_stat	svcudp_stat();
-static bool_t		svcudp_getargs();
-static bool_t		svcudp_freeargs();
-static void		svcudp_destroy();
+static bool_t		svcudp_recv(SVCXPRT *, struct rpc_msg *);
+static enum xprt_stat	svcudp_stat(SVCXPRT *);
+static bool_t		svcudp_getargs(SVCXPRT *, xdrproc_t, caddr_t);
+static bool_t		svcudp_reply(SVCXPRT *, struct rpc_msg *);
+static bool_t		svcudp_freeargs(SVCXPRT *, xdrproc_t, caddr_t);
+static void		svcudp_destroy(SVCXPRT *);
+static void		cache_set(SVCXPRT *, u_long);
+static int		cache_get(SVCXPRT *, struct rpc_msg *, char **,
+			    u_long *);
 
 static struct xp_ops svcudp_op = {
 	svcudp_recv,
@@ -96,21 +95,17 @@ struct svcudp_data {
  * The routines returns NULL if a problem occurred.
  */
 SVCXPRT *
-svcudp_bufcreate(sock, sendsz, recvsz)
-	register int sock;
-	u_int sendsz, recvsz;
+svcudp_bufcreate(int sock, u_int sendsz, u_int recvsz)
 {
 	bool_t madesock = FALSE;
-	register SVCXPRT *xprt;
-	register struct svcudp_data *su;
+	SVCXPRT *xprt;
+	struct svcudp_data *su;
 	struct sockaddr_in addr;
-	int len = sizeof(struct sockaddr_in);
+	socklen_t len = sizeof(struct sockaddr_in);
 
 	if (sock == RPC_ANYSOCK) {
-		if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-			perror("svcudp_create: socket creation problem");
-			return ((SVCXPRT *)NULL);
-		}
+		if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+			return (NULL);
 		madesock = TRUE;
 	}
 	memset(&addr, 0, sizeof (addr));
@@ -121,65 +116,74 @@ svcudp_bufcreate(sock, sendsz, recvsz)
 		(void)bind(sock, (struct sockaddr *)&addr, len);
 	}
 	if (getsockname(sock, (struct sockaddr *)&addr, &len) != 0) {
-		perror("svcudp_create - cannot getsockname");
 		if (madesock)
 			(void)close(sock);
-		return ((SVCXPRT *)NULL);
-	}
-	xprt = (SVCXPRT *)mem_alloc(sizeof(SVCXPRT));
-	if (xprt == NULL) {
-		(void)fprintf(stderr, "svcudp_create: out of memory\n");
 		return (NULL);
 	}
-	su = (struct svcudp_data *)mem_alloc(sizeof(*su));
+	xprt = malloc(sizeof(SVCXPRT));
+	if (xprt == NULL) {
+		if (madesock)
+			(void)close(sock);
+		return (NULL);
+	}
+	su = malloc(sizeof(*su));
 	if (su == NULL) {
-		(void)fprintf(stderr, "svcudp_create: out of memory\n");
+		if (madesock)
+			(void)close(sock);
+		free(xprt);
 		return (NULL);
 	}
 	su->su_iosz = ((MAX(sendsz, recvsz) + 3) / 4) * 4;
-	if ((rpc_buffer(xprt) = mem_alloc(su->su_iosz)) == NULL) {
-		(void)fprintf(stderr, "svcudp_create: out of memory\n");
+	if ((rpc_buffer(xprt) = malloc(su->su_iosz)) == NULL) {
+		if (madesock)
+			(void)close(sock);
+		free(xprt);
+		free(su);
 		return (NULL);
 	}
-	xdrmem_create(
-	    &(su->su_xdrs), rpc_buffer(xprt), su->su_iosz, XDR_DECODE);
+	xdrmem_create(&(su->su_xdrs), rpc_buffer(xprt), su->su_iosz,
+	    XDR_DECODE);
 	su->su_cache = NULL;
 	xprt->xp_p2 = (caddr_t)su;
 	xprt->xp_verf.oa_base = su->su_verfbody;
 	xprt->xp_ops = &svcudp_op;
 	xprt->xp_port = ntohs(addr.sin_port);
 	xprt->xp_sock = sock;
-	xprt_register(xprt);
+	if (__xprt_register(xprt) == 0) {
+		if (madesock)
+			(void)close(sock);
+		free(rpc_buffer(xprt));
+		free(xprt);
+		free(su);
+		return (NULL);
+	}
 	return (xprt);
 }
+DEF_WEAK(svcudp_bufcreate);
 
 SVCXPRT *
-svcudp_create(sock)
-	int sock;
+svcudp_create(int sock)
 {
 
 	return(svcudp_bufcreate(sock, UDPMSGSIZE, UDPMSGSIZE));
 }
+DEF_WEAK(svcudp_create);
 
 static enum xprt_stat
-svcudp_stat(xprt)
-	SVCXPRT *xprt;
+svcudp_stat(SVCXPRT *xprt)
 {
 
 	return (XPRT_IDLE); 
 }
 
 static bool_t
-svcudp_recv(xprt, msg)
-	register SVCXPRT *xprt;
-	struct rpc_msg *msg;
+svcudp_recv(SVCXPRT *xprt, struct rpc_msg *msg)
 {
-	register struct svcudp_data *su = su_data(xprt);
-	register XDR *xdrs = &(su->su_xdrs);
-	register int rlen;
+	struct svcudp_data *su = su_data(xprt);
+	XDR *xdrs = &(su->su_xdrs);
+	int rlen;
 	char *reply;
 	u_long replylen;
-	static int cache_get();
 
     again:
 	xprt->xp_addrlen = sizeof(struct sockaddr_in);
@@ -197,7 +201,8 @@ svcudp_recv(xprt, msg)
 	if (su->su_cache != NULL) {
 		if (cache_get(xprt, msg, &reply, &replylen)) {
 			(void) sendto(xprt->xp_sock, reply, (int) replylen, 0,
-			  (struct sockaddr *) &xprt->xp_raddr, xprt->xp_addrlen);
+			    (struct sockaddr *) &xprt->xp_raddr,
+			    xprt->xp_addrlen);
 			return (TRUE);
 		}
 	}
@@ -205,15 +210,12 @@ svcudp_recv(xprt, msg)
 }
 
 static bool_t
-svcudp_reply(xprt, msg)
-	register SVCXPRT *xprt; 
-	struct rpc_msg *msg; 
+svcudp_reply(SVCXPRT *xprt, struct rpc_msg *msg)
 {
-	register struct svcudp_data *su = su_data(xprt);
-	register XDR *xdrs = &(su->su_xdrs);
-	register int slen;
-	register bool_t stat = FALSE;
-	static void cache_set();
+	struct svcudp_data *su = su_data(xprt);
+	XDR *xdrs = &(su->su_xdrs);
+	int slen;
+	bool_t stat = FALSE;
 
 	xdrs->x_op = XDR_ENCODE;
 	XDR_SETPOS(xdrs, 0);
@@ -233,43 +235,35 @@ svcudp_reply(xprt, msg)
 }
 
 static bool_t
-svcudp_getargs(xprt, xdr_args, args_ptr)
-	SVCXPRT *xprt;
-	xdrproc_t xdr_args;
-	caddr_t args_ptr;
+svcudp_getargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 {
 
 	return ((*xdr_args)(&(su_data(xprt)->su_xdrs), args_ptr));
 }
 
 static bool_t
-svcudp_freeargs(xprt, xdr_args, args_ptr)
-	SVCXPRT *xprt;
-	xdrproc_t xdr_args;
-	caddr_t args_ptr;
+svcudp_freeargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 {
-	register XDR *xdrs = &(su_data(xprt)->su_xdrs);
+	XDR *xdrs = &(su_data(xprt)->su_xdrs);
 
 	xdrs->x_op = XDR_FREE;
 	return ((*xdr_args)(xdrs, args_ptr));
 }
 
 static void
-svcudp_destroy(xprt)
-	register SVCXPRT *xprt;
+svcudp_destroy(SVCXPRT *xprt)
 {
-	register struct svcudp_data *su = su_data(xprt);
+	struct svcudp_data *su = su_data(xprt);
 
 	xprt_unregister(xprt);
-	(void)close(xprt->xp_sock);
+	if (xprt->xp_sock != -1)
+		(void)close(xprt->xp_sock);
+	xprt->xp_sock = -1;
 	XDR_DESTROY(&(su->su_xdrs));
 	mem_free(rpc_buffer(xprt), su->su_iosz);
 	mem_free((caddr_t)su, sizeof(struct svcudp_data));
 	mem_free((caddr_t)xprt, sizeof(SVCXPRT));
 }
-
-
-/***********this could be a separate file*********************/
 
 /*
  * Fifo cache for udp server
@@ -278,15 +272,6 @@ svcudp_destroy(xprt)
  */
 
 #define SPARSENESS 4	/* 75% sparse */
-
-#define CACHE_PERROR(msg)	\
-	(void) fprintf(stderr,"%s\n", msg)
-
-#define ALLOC(type, size)	\
-	(type *) mem_alloc((unsigned) (sizeof(type) * (size)))
-
-#define BZERO(addr, type, size)	 \
-	memset((char *) addr, 0, sizeof(type) * (int) (size)) 
 
 /*
  * An entry in the cache
@@ -311,8 +296,6 @@ struct cache_node {
 	 */
 	cache_ptr cache_next;	
 };
-
-
 
 /*
  * The entire cache
@@ -340,36 +323,30 @@ struct udp_cache {
  * Enable use of the cache. 
  * Note: there is no disable.
  */
-svcudp_enablecache(transp, size)
-	SVCXPRT *transp;
-	u_long size;
+int
+svcudp_enablecache(SVCXPRT *transp, u_long size)
 {
 	struct svcudp_data *su = su_data(transp);
 	struct udp_cache *uc;
 
-	if (su->su_cache != NULL) {
-		CACHE_PERROR("enablecache: cache already enabled");
+	if (su->su_cache != NULL)
 		return(0);	
-	}
-	uc = ALLOC(struct udp_cache, 1);
-	if (uc == NULL) {
-		CACHE_PERROR("enablecache: could not allocate cache");
+	uc = malloc(sizeof(*uc));
+	if (uc == NULL)
 		return(0);
-	}
 	uc->uc_size = size;
 	uc->uc_nextvictim = 0;
-	uc->uc_entries = ALLOC(cache_ptr, size * SPARSENESS);
-	if (uc->uc_entries == NULL) {
-		CACHE_PERROR("enablecache: could not allocate cache data");
+	if (size > SIZE_MAX / (sizeof(cache_ptr) * SPARSENESS) ||
+	    (uc->uc_entries = calloc(size, sizeof(cache_ptr) * SPARSENESS)) == NULL) {
+		free(uc);
 		return(0);
 	}
-	BZERO(uc->uc_entries, cache_ptr, size * SPARSENESS);
-	uc->uc_fifo = ALLOC(cache_ptr, size);
+	uc->uc_fifo = calloc(sizeof(cache_ptr), size);
 	if (uc->uc_fifo == NULL) {
-		CACHE_PERROR("enablecache: could not allocate cache fifo");
+		free(uc->uc_entries);
+		free(uc);
 		return(0);
 	}
-	BZERO(uc->uc_fifo, cache_ptr, size);
 	su->su_cache = (char *) uc;
 	return(1);
 }
@@ -379,13 +356,11 @@ svcudp_enablecache(transp, size)
  * Set an entry in the cache
  */
 static void
-cache_set(xprt, replylen)
-	SVCXPRT *xprt;
-	u_long replylen;	
+cache_set(SVCXPRT *xprt, u_long replylen)
 {
-	register cache_ptr victim;	
-	register cache_ptr *vicp;
-	register struct svcudp_data *su = su_data(xprt);
+	cache_ptr victim;	
+	cache_ptr *vicp;
+	struct svcudp_data *su = su_data(xprt);
 	struct udp_cache *uc = (struct udp_cache *) su->su_cache;
 	u_int loc;
 	char *newbuf;
@@ -402,20 +377,18 @@ cache_set(xprt, replylen)
 		  vicp = &(*vicp)->cache_next) 
 				;
 		if (*vicp == NULL) {
-			CACHE_PERROR("cache_set: victim not found");
 			return;
 		}
 		*vicp = victim->cache_next;	/* remote from cache */
 		newbuf = victim->cache_reply;
 	} else {
-		victim = ALLOC(struct cache_node, 1);
+		victim = malloc(sizeof(struct cache_node));
 		if (victim == NULL) {
-			CACHE_PERROR("cache_set: victim alloc failed");
 			return;
 		}
-		newbuf = mem_alloc(su->su_iosz);
+		newbuf = malloc(su->su_iosz);
 		if (newbuf == NULL) {
-			CACHE_PERROR("cache_set: could not allocate new rpc_buffer");
+			free(victim);
 			return;
 		}
 	}
@@ -443,17 +416,13 @@ cache_set(xprt, replylen)
  * Try to get an entry from the cache
  * return 1 if found, 0 if not found
  */
-static
-cache_get(xprt, msg, replyp, replylenp)
-	SVCXPRT *xprt;
-	struct rpc_msg *msg;
-	char **replyp;
-	u_long *replylenp;
+static int
+cache_get(SVCXPRT *xprt, struct rpc_msg *msg, char **replyp, u_long *replylenp)
 {
 	u_int loc;
-	register cache_ptr ent;
-	register struct svcudp_data *su = su_data(xprt);
-	register struct udp_cache *uc = (struct udp_cache *) su->su_cache;
+	cache_ptr ent;
+	struct svcudp_data *su = su_data(xprt);
+	struct udp_cache *uc = (struct udp_cache *) su->su_cache;
 
 #	define EQADDR(a1, a2)	(memcmp(&a1, &a2, sizeof(a1)) == 0)
 

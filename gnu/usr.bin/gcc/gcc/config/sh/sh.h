@@ -401,109 +401,7 @@ do {									\
 
 extern int assembler_dialect;
 
-#define OVERRIDE_OPTIONS 						\
-do {									\
-  int regno;								\
-									\
-  sh_cpu = CPU_SH1;							\
-  assembler_dialect = 0;						\
-  if (TARGET_SH2)							\
-    sh_cpu = CPU_SH2;							\
-  if (TARGET_SH3)							\
-    sh_cpu = CPU_SH3;							\
-  if (TARGET_SH3E)							\
-    sh_cpu = CPU_SH3E;							\
-  if (TARGET_SH4)							\
-    {									\
-      assembler_dialect = 1;						\
-      sh_cpu = CPU_SH4;							\
-    }									\
-  if (TARGET_SH5)							\
-    {									\
-      sh_cpu = CPU_SH5;							\
-      target_flags |= DALIGN_BIT;					\
-      if (TARGET_FPU_ANY						\
-	  && ! (TARGET_SHCOMPACT && TARGET_LITTLE_ENDIAN))		\
-	target_flags |= FMOVD_BIT;					\
-      if (TARGET_SHMEDIA)						\
-	{								\
-	  /* There are no delay slots on SHmedia.  */			\
-	  flag_delayed_branch = 0;					\
-	  /* Relaxation isn't yet supported for SHmedia */		\
-	  target_flags &= ~RELAX_BIT;					\
-	}								\
-      if (profile_flag || profile_arc_flag)				\
-	{								\
-	  warning ("Profiling is not supported on this target.");	\
-	  profile_flag = profile_arc_flag = 0;				\
-	}								\
-    }									\
-  else									\
-    {									\
-       /* Only the sh64-elf assembler fully supports .quad properly.  */\
-       targetm.asm_out.aligned_op.di = NULL;				\
-       targetm.asm_out.unaligned_op.di = NULL;				\
-    }									\
-  if (TARGET_FMOVD)							\
-    reg_class_from_letter['e'] = NO_REGS;				\
-									\
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)		\
-    if (! VALID_REGISTER_P (regno))					\
-      sh_register_names[regno][0] = '\0';				\
-									\
-  for (regno = 0; regno < ADDREGNAMES_SIZE; regno++)			\
-    if (! VALID_REGISTER_P (ADDREGNAMES_REGNO (regno)))			\
-      sh_additional_register_names[regno][0] = '\0';			\
-									\
-  if (flag_omit_frame_pointer < 0)					\
-   {									\
-     /* The debugging information is sufficient,			\
-        but gdb doesn't implement this yet */				\
-     if (0)								\
-      flag_omit_frame_pointer						\
-        = (PREFERRED_DEBUGGING_TYPE == DWARF_DEBUG			\
-	   || PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);		\
-     else								\
-      flag_omit_frame_pointer = 0;					\
-   }									\
-									\
-  if (flag_pic && ! TARGET_PREFERGOT)					\
-    flag_no_function_cse = 1;						\
-									\
-  /* Never run scheduling before reload, since that can			\
-     break global alloc, and generates slower code anyway due		\
-     to the pressure on R0.  */						\
-  flag_schedule_insns = 0;						\
-									\
-  if (align_loops == 0)							\
-    align_loops =  1 << (TARGET_SH5 ? 3 : 2);				\
-  if (align_jumps == 0)							\
-    align_jumps = 1 << CACHE_LOG;					\
-  else if (align_jumps < (TARGET_SHMEDIA ? 4 : 2))			\
-    align_jumps = TARGET_SHMEDIA ? 4 : 2;				\
-									\
-  /* Allocation boundary (in *bytes*) for the code of a function.	\
-     SH1: 32 bit alignment is faster, because instructions are always	\
-     fetched as a pair from a longword boundary.			\
-     SH2 .. SH5 : align to cache line start.  */			\
-  if (align_functions == 0)						\
-    align_functions							\
-      = TARGET_SMALLCODE ? FUNCTION_BOUNDARY/8 : (1 << CACHE_LOG);	\
-  /* The linker relaxation code breaks when a function contains		\
-     alignments that are larger than that at the start of a		\
-     compilation unit.  */						\
-  if (TARGET_RELAX)							\
-    {									\
-      int min_align							\
-	= align_loops > align_jumps ? align_loops : align_jumps;	\
-									\
-      /* Also take possible .long constants / mova tables int account.	*/\
-      if (min_align < 4)						\
-	min_align = 4;							\
-      if (align_functions < min_align)					\
-	align_functions = min_align;					\
-    }									\
-} while (0)
+#define OVERRIDE_OPTIONS sh_override_options ()
 
 /* Target machine storage layout.  */
 
@@ -1048,7 +946,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 /* Given FROM and TO register numbers, say whether this elimination
    is allowed.  */
 #define CAN_ELIMINATE(FROM, TO) \
-  (!((FROM) == FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED))
+  (!((FROM) == FRAME_POINTER_REGNUM && ! frame_pointer_needed))
 
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
@@ -2140,9 +2038,7 @@ while (0)
    can ignore COUNT.  */
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
-  (((COUNT) == 0)				\
-   ? get_hard_reg_initial_val (Pmode, TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG) \
-   : (rtx) 0)
+  (((COUNT) == 0) ? sh_get_pr_initial_val () : (rtx) 0)
 
 /* A C expression whose value is RTL representing the location of the
    incoming return address at the beginning of any function, before the
@@ -2989,7 +2885,7 @@ while (0)
 #define ASM_OUTPUT_LABELREF(FILE, NAME)			\
   do							\
     {							\
-      char * lname;					\
+      const char * lname;				\
 							\
       STRIP_DATALABEL_ENCODING (lname, (NAME));		\
       if (lname[0] == '*')				\
@@ -3231,6 +3127,7 @@ extern int rtx_equal_function_value_matters;
   {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_VECTOR}},	\
   {"binary_float_operator", {PLUS, MINUS, MULT, DIV}},			\
   {"binary_logical_operator", {AND, IOR, XOR}},				\
+  {"cmpsi_operand", {SUBREG, REG, CONST_INT}},				\
   {"commutative_float_operator", {PLUS, MULT}},				\
   {"equality_comparison_operator", {EQ,NE}},				\
   {"extend_reg_operand", {SUBREG, REG, TRUNCATE}},			\
@@ -3349,10 +3246,7 @@ extern int rtx_equal_function_value_matters;
   (REGNO (hard_reg) == (TARGET_SH5 ? PR_MEDIA_REG : PR_REG) \
    ? (current_function_is_leaf && ! sh_pr_n_sets () \
       ? (hard_reg) \
-      : gen_rtx_MEM (Pmode, TARGET_SH5 \
-			    ? (plus_constant (arg_pointer_rtx, \
-					      TARGET_SHMEDIA64 ? -8 : -4)) \
-			    : frame_pointer_rtx)) \
+      : gen_rtx_MEM (Pmode, return_address_pointer_rtx)) \
    : NULL_RTX)
 
 #endif /* ! GCC_SH_H */

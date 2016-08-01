@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.18 2015/12/30 14:59:10 tedu Exp $	*/
 /*	$NetBSD: extern.h,v 1.10 1995/05/21 13:38:27 mycroft Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,54 +32,53 @@
  *	@(#)extern.h	8.3 (Berkeley) 4/2/94
  */
 
-struct kinfo;
 struct nlist;
 struct var;
 struct varent;
 
 extern fixpt_t ccpu;
-extern int eval, fscale, mempages, nlistread, rawcpu;
-extern int sumrusage, termwidth, totwidth;
+extern int eval, fscale, nlistread, maxslp;
+extern u_int mempages;
+extern int sumrusage, termwidth, totwidth, kvm_sysctl_only, needheader;
 extern VAR var[];
 extern VARENT *vhead;
 
 __BEGIN_DECLS
-void	 command __P((KINFO *, VARENT *));
-void	 cputime __P((KINFO *, VARENT *));
-int	 donlist __P((void));
-void	 evar __P((KINFO *, VARENT *));
-void	 fmt_puts __P((char *, int *));
-void	 fmt_putc __P((int, int *));
-double	 getpcpu __P((KINFO *));
-double	 getpmem __P((KINFO *));
-void	 logname __P((KINFO *, VARENT *));
-void	 longtname __P((KINFO *, VARENT *));
-void	 lstarted __P((KINFO *, VARENT *));
-void	 maxrss __P((KINFO *, VARENT *));
-void	 nlisterr __P((struct nlist *));
-void	 p_rssize __P((KINFO *, VARENT *));
-void	 pagein __P((KINFO *, VARENT *));
-void	 parsefmt __P((char *));
-void	 pcpu __P((KINFO *, VARENT *));
-void	 pmem __P((KINFO *, VARENT *));
-void	 pri __P((KINFO *, VARENT *));
-void	 printheader __P((void));
-void	 pvar __P((KINFO *, VARENT *));
-void	 rssize __P((KINFO *, VARENT *));
-void	 runame __P((KINFO *, VARENT *));
-void	 rvar __P((KINFO *, VARENT *));
-void	 showkey __P((void));
-void	 started __P((KINFO *, VARENT *));
-void	 state __P((KINFO *, VARENT *));
-void	 tdev __P((KINFO *, VARENT *));
-void	 tname __P((KINFO *, VARENT *));
-#ifndef NEWVM
-void	 trss __P((KINFO *, VARENT *));
-#endif
-void	 tsize __P((KINFO *, VARENT *));
-void	 ucomm __P((KINFO *, VARENT *));
-void	 uname __P((KINFO *, VARENT *));
-void	 uvar __P((KINFO *, VARENT *));
-void	 vsize __P((KINFO *, VARENT *));
-void	 wchan __P((KINFO *, VARENT *));
+void	 command(const struct kinfo_proc *, VARENT *);
+void	 cputime(const struct kinfo_proc *, VARENT *);
+int	 donlist(void);
+void	 emulname(const struct kinfo_proc *, VARENT *);
+double	 getpcpu(const struct kinfo_proc *);
+double	 getpmem(const struct kinfo_proc *);
+void	 gname(const struct kinfo_proc *, VARENT *);
+void	 logname(const struct kinfo_proc *, VARENT *);
+void	 longtname(const struct kinfo_proc *, VARENT *);
+void	 lstarted(const struct kinfo_proc *, VARENT *);
+void	 maxrss(const struct kinfo_proc *, VARENT *);
+void	 nlisterr(struct nlist *);
+void	 p_rssize(const struct kinfo_proc *, VARENT *);
+void	 pagein(const struct kinfo_proc *, VARENT *);
+void	 parsefmt(char *);
+void	 pcpu(const struct kinfo_proc *, VARENT *);
+void	 pmem(const struct kinfo_proc *, VARENT *);
+void	 pri(const struct kinfo_proc *, VARENT *);
+void	 printheader(void);
+void	 pvar(const struct kinfo_proc *kp, VARENT *);
+void	 pnice(const struct kinfo_proc *kp, VARENT *);
+void	 rgname(const struct kinfo_proc *, VARENT *);
+void	 rssize(const struct kinfo_proc *, VARENT *);
+void	 runame(const struct kinfo_proc *, VARENT *);
+void	 showkey(void);
+void	 started(const struct kinfo_proc *, VARENT *);
+void	 printstate(const struct kinfo_proc *, VARENT *);
+void	 tdev(const struct kinfo_proc *, VARENT *);
+void	 tname(const struct kinfo_proc *, VARENT *);
+void	 tsize(const struct kinfo_proc *, VARENT *);
+void	 dsize(const struct kinfo_proc *, VARENT *);
+void	 ssize(const struct kinfo_proc *, VARENT *);
+void	 ucomm(const struct kinfo_proc *, VARENT *);
+void	 curwd(const struct kinfo_proc *, VARENT *);
+void	 euname(const struct kinfo_proc *, VARENT *);
+void	 vsize(const struct kinfo_proc *, VARENT *);
+void	 wchan(const struct kinfo_proc *, VARENT *);
 __END_DECLS

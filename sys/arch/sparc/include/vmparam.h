@@ -1,4 +1,5 @@
-/*	$NetBSD: vmparam.h,v 1.6 1995/07/05 18:04:48 pk Exp $ */
+/*	$OpenBSD: vmparam.h,v 1.47 2015/09/18 12:50:27 miod Exp $	*/
+/*	$NetBSD: vmparam.h,v 1.13 1997/07/12 16:20:03 perry Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,46 +41,37 @@
  *	@(#)vmparam.h	8.1 (Berkeley) 6/11/93
  */
 
-/*
- * Machine dependent constants for Sun-4c SPARC
- */
+#ifndef _MACHINE_VMPARAM_H_
+#define _MACHINE_VMPARAM_H_
 
 /*
- * USRTEXT is the start of the user text/data space, while USRSTACK
- * is the top (end) of the user stack.
+ * Machine dependent constants for SPARC
  */
-#define	USRTEXT		0x2000			/* Start of user text */
-#define	USRSTACK	KERNBASE		/* Start of user stack */
 
 /*
  * Virtual memory related constants, all in bytes
  */
 #ifndef MAXTSIZ
-#define	MAXTSIZ		(8*1024*1024)		/* max text size */
+#define	MAXTSIZ		(64*1024*1024)		/* max text size */
 #endif
 #ifndef DFLDSIZ
-#define	DFLDSIZ		(16*1024*1024)		/* initial data size limit */
+#define	DFLDSIZ		(64*1024*1024)		/* initial data size limit */
 #endif
 #ifndef MAXDSIZ
-#define	MAXDSIZ		(64*1024*1024)		/* max data size */
+#define	MAXDSIZ		(256*1024*1024)		/* max data size */
+#endif
+#ifndef BRKSIZ
+#define	BRKSIZ		MAXDSIZ			/* heap gap size */
 #endif
 #ifndef	DFLSSIZ
-#define	DFLSSIZ		(512*1024)		/* initial stack size limit */
+#define	DFLSSIZ		(2*1024*1024)		/* initial stack size limit */
 #endif
 #ifndef	MAXSSIZ
-#define	MAXSSIZ		MAXDSIZ			/* max stack size */
+#define	MAXSSIZ		(32*1024*1024)		/* max stack size */
 #endif
 
-/*
- * Default sizes of swap allocation chunks (see dmap.h).
- * The actual values may be changed in vminit() based on MAXDSIZ.
- * With MAXDSIZ of 16Mb and NDMAP of 38, dmmax will be 1024.
- * DMMIN should be at least ctod(1) so that vtod() works.
- * vminit() insures this.
- */
-#define	DMMIN	32			/* smallest swap allocation */
-#define	DMMAX	NBPG			/* largest potential swap allocation */
-#define	DMTEXT	1024			/* swap allocation for text */
+#define STACKGAP_RANDOM	64*1024
+#define STACKGAP_RANDOM_SUN4M 256*1024
 
 /*
  * Size of shared memory map
@@ -93,49 +81,52 @@
 #endif
 
 /*
- * The time for a process to be blocked before being very swappable.
- * This is a number of seconds which the system takes as being a non-trivial
- * amount of real time.  You probably shouldn't change this;
- * it is used in subtle ways (fractions and multiples of it are, that is, like
- * half of a ``long time'', almost a long time, etc.)
- * It is related to human patience and other factors which don't really
- * change over time.
- */
-#define	MAXSLP 		20
-
-/*
- * A swapped in process is given a small amount of core without being bothered
- * by the page replacement algorithm.  Basically this says that if you are
- * swapped in you deserve some resources.  We protect the last SAFERSS
- * pages against paging and will just swap you out rather than paging you.
- * Note that each process has at least UPAGES+CLSIZE pages which are not
- * paged anyways (this is currently 8+2=10 pages or 5k bytes), so this
- * number just means a swapped in process is given around 25k bytes.
- * Just for fun: current memory prices are 4600$ a megabyte on VAX (4/22/81),
- * so we loan each swapped in process memory worth 100$, or just admit
- * that we don't consider it worthwhile and swap it out to disk which costs
- * $30/mb or about $0.75.
- */
-#define	SAFERSS		4		/* nominal ``small'' resident set size
-					   protected against replacement */
-
-/*
- * Mach derived constants
- */
-
-/*
  * User/kernel map constants.  Note that sparc/vaddrs.h defines the
  * IO space virtual base, which must be the same as VM_MAX_KERNEL_ADDRESS:
  * tread with care.
  */
-#define VM_MIN_ADDRESS		((vm_offset_t)0)
-#define VM_MAX_ADDRESS		((vm_offset_t)KERNBASE)
-#define VM_MAXUSER_ADDRESS	((vm_offset_t)KERNBASE)
-#define VM_MIN_KERNEL_ADDRESS	((vm_offset_t)KERNBASE)
-#define VM_MAX_KERNEL_ADDRESS	((vm_offset_t)0xfe000000)
 
-/* virtual sizes (bytes) for various kernel submaps */
-#define VM_MBUF_SIZE		(NMBCLUSTERS*MCLBYTES)
-#define VM_KMEM_SIZE		(NKMEMCLUSTERS*CLBYTES)
+#define	VM_MIN_KERNEL_ADDRESS_OLD	((vaddr_t)KERNBASE)
+#define	VM_MIN_KERNEL_ADDRESS_SUN4	((vaddr_t)0xf0000000)
+#define	VM_MIN_KERNEL_ADDRESS_SRMMU	((vaddr_t)0xc0000000)
 
-#define MACHINE_NONCONTIG	/* VM <=> pmap interface modifier */
+#if (defined(SUN4) || defined(SUN4C) || defined(SUN4E)) && \
+      (defined(SUN4D) || defined(SUN4M))
+/* user/kernel bound will de determined at run time */
+extern vsize_t vm_kernel_space_size;
+#define	VM_KERNEL_SPACE_SIZE	vm_kernel_space_size
+#define VM_MAXUSER_ADDRESS	vm_min_kernel_address
+#define VM_MAX_ADDRESS		vm_min_kernel_address
+#define	USRSTACK		vm_min_kernel_address
+#elif (defined(SUN4) || defined(SUN4C) || defined(SUN4E))
+/* old Sun MMU with address hole */
+#define	VM_MIN_KERNEL_ADDRESS	VM_MIN_KERNEL_ADDRESS_SUN4
+#define VM_MAXUSER_ADDRESS	VM_MIN_KERNEL_ADDRESS
+#define VM_MAX_ADDRESS		VM_MIN_KERNEL_ADDRESS
+#define	USRSTACK		VM_MIN_KERNEL_ADDRESS
+#else
+/* SRMMU without address hole */
+#define	VM_MIN_KERNEL_ADDRESS	VM_MIN_KERNEL_ADDRESS_SRMMU
+#define VM_MAXUSER_ADDRESS	VM_MIN_KERNEL_ADDRESS
+#define VM_MAX_ADDRESS		VM_MIN_KERNEL_ADDRESS
+#define	USRSTACK		VM_MIN_KERNEL_ADDRESS
+#endif
+
+#define VM_MIN_ADDRESS		((vaddr_t)0x2000)
+#define VM_MAX_KERNEL_ADDRESS	((vaddr_t)0xfe000000)
+
+extern vaddr_t vm_pie_max_addr;
+#define	VM_PIE_MAX_ADDR vm_pie_max_addr
+
+#define	IOSPACE_BASE		VM_MAX_KERNEL_ADDRESS
+#define	IOSPACE_LEN		0x01000000		/* 16 MB of iospace */
+
+#define VM_PHYSSEG_MAX		32	/* we only have one "hole" */
+#define VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
+#define VM_PHYSSEG_NOADD		/* can't add RAM after vm_mem_init */
+
+#if defined (_KERNEL)
+void		dvma_mapout(vaddr_t, vaddr_t, int);
+#endif
+
+#endif /* _MACHINE_VMPARAM_H_ */

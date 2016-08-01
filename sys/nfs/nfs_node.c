@@ -1,4 +1,5 @@
-/*	$NetBSD: nfs_node.c,v 1.13 1994/08/18 22:47:46 mycroft Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.63 2016/02/09 00:56:04 mmcc Exp $	*/
+/*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,248 +32,219 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)nfs_node.c	8.2 (Berkeley) 12/30/93
+ *	@(#)nfs_node.c	8.6 (Berkeley) 5/22/95
  */
+
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
+#include <sys/timeout.h>
 #include <sys/mount.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
+#include <sys/pool.h>
+#include <sys/rwlock.h>
+#include <sys/queue.h>
 
 #include <nfs/rpcv2.h>
-#include <nfs/nfsv2.h>
-#include <nfs/nfs.h>
+#include <nfs/nfsproto.h>
 #include <nfs/nfsnode.h>
 #include <nfs/nfsmount.h>
-#include <nfs/nqnfs.h>
+#include <nfs/nfs_var.h>
 
-#define	NFSNOHASH(fhsum) \
-	(&nfsnodehashtbl[(fhsum) & nfsnodehash])
-LIST_HEAD(nfsnodehashhead, nfsnode) *nfsnodehashtbl;
-u_long nfsnodehash;
+struct pool nfs_node_pool;
+extern int prtactive;
 
-#define TRUE	1
-#define	FALSE	0
+struct rwlock nfs_hashlock = RWLOCK_INITIALIZER("nfshshlk");
 
-/*
- * Initialize hash links for nfsnodes
- * and build nfsnode free list.
- */
-nfs_nhinit()
+/* XXX */
+extern struct vops nfs_vops;
+
+/* filehandle to node lookup. */
+static __inline int
+nfsnode_cmp(const struct nfsnode *a, const struct nfsnode *b)
 {
-
-#ifndef lint
-	if ((sizeof(struct nfsnode) - 1) & sizeof(struct nfsnode))
-		printf("nfs_nhinit: bad size %d\n", sizeof(struct nfsnode));
-#endif /* not lint */
-	nfsnodehashtbl = hashinit(desiredvnodes, M_NFSNODE, &nfsnodehash);
+	if (a->n_fhsize != b->n_fhsize)
+		return (a->n_fhsize - b->n_fhsize);
+	return (memcmp(a->n_fhp, b->n_fhp, a->n_fhsize));
 }
 
-/*
- * Compute an entry in the NFS hash table structure
- */
-struct nfsnodehashhead *
-nfs_hash(fhp)
-	register nfsv2fh_t *fhp;
-{
-	register u_char *fhpp;
-	register u_long fhsum;
-	int i;
-
-	fhpp = &fhp->fh_bytes[0];
-	fhsum = 0;
-	for (i = 0; i < NFSX_FH; i++)
-		fhsum += *fhpp++;
-	return (NFSNOHASH(fhsum));
-}
+RB_PROTOTYPE(nfs_nodetree, nfsnode, n_entry, nfsnode_cmp);
+RB_GENERATE(nfs_nodetree, nfsnode, n_entry, nfsnode_cmp);
 
 /*
- * Look up a vnode/nfsnode by file handle.
+ * Look up a vnode/nfsnode by file handle and store the pointer in *npp.
  * Callers must check for mount points!!
- * In all cases, a pointer to a
- * nfsnode structure is returned.
+ * An error number is returned.
  */
-nfs_nget(mntp, fhp, npp)
-	struct mount *mntp;
-	register nfsv2fh_t *fhp;
-	struct nfsnode **npp;
+int
+nfs_nget(struct mount *mnt, nfsfh_t *fh, int fhsize, struct nfsnode **npp)
 {
-	register struct nfsnode *np;
-	struct nfsnodehashhead *nhpp;
-	register struct vnode *vp;
-	extern int (**nfsv2_vnodeop_p)();
-	struct vnode *nvp;
-	int error;
+	struct nfsmount		*nmp;
+	struct nfsnode		*np, find, *np2;
+	struct vnode		*vp, *nvp;
+	struct proc		*p = curproc;		/* XXX */
+	int			 error;
 
-	nhpp = nfs_hash(fhp);
+	nmp = VFSTONFS(mnt);
+
 loop:
-	for (np = nhpp->lh_first; np != 0; np = np->n_hash.le_next) {
-		if (mntp != NFSTOV(np)->v_mount ||
-		    bcmp((caddr_t)fhp, (caddr_t)&np->n_fh, NFSX_FH))
-			continue;
+	rw_enter_write(&nfs_hashlock);
+	find.n_fhp = fh;
+	find.n_fhsize = fhsize;
+	np = RB_FIND(nfs_nodetree, &nmp->nm_ntree, &find);
+	if (np != NULL) {
+		rw_exit_write(&nfs_hashlock);
 		vp = NFSTOV(np);
-		if (vget(vp, 1))
+		error = vget(vp, LK_EXCLUSIVE, p);
+		if (error)
 			goto loop;
 		*npp = np;
-		return(0);
+		return (0);
 	}
-	if (error = getnewvnode(VT_NFS, mntp, nfsv2_vnodeop_p, &nvp)) {
-		*npp = 0;
+
+	/*
+	 * getnewvnode() could recycle a vnode, potentially formerly
+	 * owned by NFS. This will cause a VOP_RECLAIM() to happen,
+	 * which will cause recursive locking, so we unlock before
+	 * calling getnewvnode() lock again afterwards, but must check
+	 * to see if this nfsnode has been added while we did not hold
+	 * the lock.
+	 */
+	rw_exit_write(&nfs_hashlock);
+	error = getnewvnode(VT_NFS, mnt, &nfs_vops, &nvp);
+	/* note that we don't have this vnode set up completely yet */
+	rw_enter_write(&nfs_hashlock);
+	if (error) {
+		*npp = NULL;
+		rw_exit_write(&nfs_hashlock);
 		return (error);
 	}
-	vp = nvp;
-	MALLOC(np, struct nfsnode *, sizeof *np, M_NFSNODE, M_WAITOK);
-	vp->v_data = np;
-	np->n_vnode = vp;
-	/*
-	 * Insert the nfsnode in the hash queue for its new file handle
-	 */
-	np->n_flag = 0;
-	LIST_INSERT_HEAD(nhpp, np, n_hash);
-	bcopy((caddr_t)fhp, (caddr_t)&np->n_fh, NFSX_FH);
-	np->n_attrstamp = 0;
-	np->n_direofoffset = 0;
-	np->n_sillyrename = (struct sillyrename *)0;
-	np->n_size = 0;
-	np->n_mtime = 0;
-	np->n_lockf = 0;
-	if (VFSTONFS(mntp)->nm_flag & NFSMNT_NQNFS) {
-		np->n_brev = 0;
-		np->n_lrev = 0;
-		np->n_expiry = (time_t)0;
-		np->n_timer.cqe_next = (struct nfsnode *)0;
+	nvp->v_flag |= VLARVAL;
+	np = RB_FIND(nfs_nodetree, &nmp->nm_ntree, &find);
+	if (np != NULL) {
+		vgone(nvp);
+		rw_exit_write(&nfs_hashlock);
+		goto loop;
 	}
+
+	vp = nvp;
+	np = pool_get(&nfs_node_pool, PR_WAITOK | PR_ZERO);
+	vp->v_data = np;
+	/* we now have an nfsnode on this vnode */
+	vp->v_flag &= ~VLARVAL;
+	np->n_vnode = vp;
+
+	rw_init(&np->n_commitlock, "nfs_commitlk");
+
+	/* 
+	 * Are we getting the root? If so, make sure the vnode flags
+	 * are correct 
+	 */
+	if ((fhsize == nmp->nm_fhsize) && !bcmp(fh, nmp->nm_fh, fhsize)) {
+		if (vp->v_type == VNON)
+			vp->v_type = VDIR;
+		vp->v_flag |= VROOT;
+	}
+
+	np->n_fhp = &np->n_fh;
+	bcopy(fh, np->n_fhp, fhsize);
+	np->n_fhsize = fhsize;
+	np2 = RB_INSERT(nfs_nodetree, &nmp->nm_ntree, np);
+	KASSERT(np2 == NULL);
+	np->n_accstamp = -1;
+	rw_exit(&nfs_hashlock);
 	*npp = np;
+
 	return (0);
 }
 
-nfs_inactive(ap)
-	struct vop_inactive_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
+int
+nfs_inactive(void *v)
 {
-	register struct nfsnode *np;
-	register struct sillyrename *sp;
-	struct proc *p = curproc;	/* XXX */
-	extern int prtactive;
+	struct vop_inactive_args	*ap = v;
+	struct nfsnode			*np;
+	struct sillyrename		*sp;
 
-	np = VTONFS(ap->a_vp);
+#ifdef DIAGNOSTIC
 	if (prtactive && ap->a_vp->v_usecount != 0)
 		vprint("nfs_inactive: pushing active", ap->a_vp);
-	sp = np->n_sillyrename;
-	np->n_sillyrename = (struct sillyrename *)0;
+#endif
+	if (ap->a_vp->v_flag & VLARVAL)
+		/*
+		 * vnode was incompletely set up, just return
+		 * as we are throwing it away.
+		 */
+		return(0);
+#ifdef DIAGNOSTIC
+	if (ap->a_vp->v_data == NULL)
+		panic("NULL v_data (no nfsnode set up?) in vnode %p",
+		    ap->a_vp);
+#endif
+	np = VTONFS(ap->a_vp);
+	if (ap->a_vp->v_type != VDIR) {
+		sp = np->n_sillyrename;
+		np->n_sillyrename = NULL;
+	} else
+		sp = NULL;
 	if (sp) {
 		/*
 		 * Remove the silly file that was rename'd earlier
 		 */
-		(void) nfs_vinvalbuf(ap->a_vp, 0, sp->s_cred, p, 1);
+		nfs_vinvalbuf(ap->a_vp, 0, sp->s_cred, curproc);
 		nfs_removeit(sp);
 		crfree(sp->s_cred);
 		vrele(sp->s_dvp);
-#ifdef SILLYSEPARATE
-		free((caddr_t)sp, M_NFSREQ);
-#endif
+		free(sp, M_NFSREQ, sizeof(*sp));
 	}
-	np->n_flag &= (NMODIFIED | NFLUSHINPROG | NFLUSHWANT | NQNFSEVICTED |
-		NQNFSNONCACHE | NQNFSWRITE);
+	np->n_flag &= (NMODIFIED | NFLUSHINPROG | NFLUSHWANT);
+
+	VOP_UNLOCK(ap->a_vp, ap->a_p);
 	return (0);
 }
 
 /*
  * Reclaim an nfsnode so that it can be used for other purposes.
  */
-nfs_reclaim(ap)
-	struct vop_reclaim_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
+int
+nfs_reclaim(void *v)
 {
-	register struct vnode *vp = ap->a_vp;
-	register struct nfsnode *np = VTONFS(vp);
-	register struct nfsmount *nmp = VFSTONFS(vp->v_mount);
-	extern int prtactive;
+	struct vop_reclaim_args	*ap = v;
+	struct vnode		*vp = ap->a_vp;
+	struct nfsmount		*nmp;
+	struct nfsnode		*np = VTONFS(vp);
 
+#ifdef DIAGNOSTIC
 	if (prtactive && vp->v_usecount != 0)
 		vprint("nfs_reclaim: pushing active", vp);
-	LIST_REMOVE(np, n_hash);
+#endif
+	if (ap->a_vp->v_flag & VLARVAL)
+		/*
+		 * vnode was incompletely set up, just return
+		 * as we are throwing it away.
+		 */
+		return(0);
+#ifdef DIAGNOSTIC
+	if (ap->a_vp->v_data == NULL)
+		panic("NULL v_data (no nfsnode set up?) in vnode %p",
+		    ap->a_vp);
+#endif
+	nmp = VFSTONFS(vp->v_mount);
+	rw_enter_write(&nfs_hashlock);
+	RB_REMOVE(nfs_nodetree, &nmp->nm_ntree, np);
+	rw_exit_write(&nfs_hashlock);
 
-	/*
-	 * For nqnfs, take it off the timer queue as required.
-	 */
-	if ((nmp->nm_flag & NFSMNT_NQNFS) && np->n_timer.cqe_next != 0) {
-		CIRCLEQ_REMOVE(&nmp->nm_timerhead, np, n_timer);
-	}
+	if (np->n_rcred)
+		crfree(np->n_rcred);
+	if (np->n_wcred)
+		crfree(np->n_wcred);
+
 	cache_purge(vp);
-	FREE(vp->v_data, M_NFSNODE);
-	vp->v_data = (void *)0;
-	return (0);
-}
+	pool_put(&nfs_node_pool, vp->v_data);
+	vp->v_data = NULL;
 
-/*
- * Lock an nfsnode
- */
-nfs_lock(ap)
-	struct vop_lock_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
-{
-	register struct vnode *vp = ap->a_vp;
-
-	/*
-	 * Ugh, another place where interruptible mounts will get hung.
-	 * If you make this sleep interruptible, then you have to fix all
-	 * the VOP_LOCK() calls to expect interruptibility.
-	 */
-	while (vp->v_flag & VXLOCK) {
-		vp->v_flag |= VXWANT;
-		sleep((caddr_t)vp, PINOD);
-	}
-	if (vp->v_tag == VT_NON)
-		return (ENOENT);
-	return (0);
-}
-
-/*
- * Unlock an nfsnode
- */
-nfs_unlock(ap)
-	struct vop_unlock_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
-{
-
-	return (0);
-}
-
-/*
- * Check for a locked nfsnode
- */
-nfs_islocked(ap)
-	struct vop_islocked_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
-{
-
-	return (0);
-}
-
-/*
- * Nfs abort op, called after namei() when a CREATE/DELETE isn't actually
- * done. Currently nothing to do.
- */
-/* ARGSUSED */
-int
-nfs_abortop(ap)
-	struct vop_abortop_args /* {
-		struct vnode *a_dvp;
-		struct componentname *a_cnp;
-	} */ *ap;
-{
-
-	if ((ap->a_cnp->cn_flags & (HASBUF | SAVESTART)) == HASBUF)
-		FREE(ap->a_cnp->cn_pnbuf, M_NAMEI);
 	return (0);
 }

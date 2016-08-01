@@ -162,6 +162,9 @@ uint16_fromregion(isc_region_t *region);
 static isc_uint8_t
 uint8_fromregion(isc_region_t *region);
 
+static isc_uint8_t
+uint8_consume_fromregion(isc_region_t *region);
+
 static isc_result_t
 mem_tobuffer(isc_buffer_t *target, void *base, unsigned int length);
 
@@ -200,6 +203,9 @@ warn_badname(dns_name_t *name, isc_lex_t *lexer,
 static void
 warn_badmx(isc_token_t *token, isc_lex_t *lexer,
 	   dns_rdatacallbacks_t *callbacks);
+
+static isc_uint16_t
+uint16_consume_fromregion(isc_region_t *region);
 
 static inline int
 getquad(const void *src, struct in_addr *dst,
@@ -334,8 +340,8 @@ dns_rdata_compare(const dns_rdata_t *rdata1, const dns_rdata_t *rdata2) {
 
 	REQUIRE(rdata1 != NULL);
 	REQUIRE(rdata2 != NULL);
-	REQUIRE(rdata1->data != NULL);
-	REQUIRE(rdata2->data != NULL);
+	REQUIRE(rdata1->length == 0 || rdata1->data != NULL);
+	REQUIRE(rdata2->length == 0 || rdata2->data != NULL);
 	REQUIRE(DNS_RDATA_VALIDFLAGS(rdata1));
 	REQUIRE(DNS_RDATA_VALIDFLAGS(rdata2));
 
@@ -913,8 +919,7 @@ dns_rdatatype_fromtext(dns_rdatatype_t *typep, isc_textregion_t *source) {
 		char *endp;
 		unsigned int val;
 
-		strncpy(buf, source->base + 4, source->length - 4);
-		buf[source->length - 4] = '\0';
+		strlcpy(buf, source->base + 4, sizeof(buf));
 		val = strtoul(buf, &endp, 10);
 		if (*endp == '\0' && val <= 0xffff) {
 			*typep = (dns_rdatatype_t)val;
@@ -1234,6 +1239,14 @@ uint32_fromregion(isc_region_t *region) {
 }
 
 static isc_uint16_t
+uint16_consume_fromregion(isc_region_t *region) {
+	isc_uint16_t r = uint16_fromregion(region);
+
+	isc_region_consume(region, 2);
+	return r;
+}
+
+static isc_uint16_t
 uint16_fromregion(isc_region_t *region) {
 
 	REQUIRE(region->length >= 2);
@@ -1247,6 +1260,14 @@ uint8_fromregion(isc_region_t *region) {
 	REQUIRE(region->length >= 1);
 
 	return (region->base[0]);
+}
+
+static isc_uint8_t
+uint8_consume_fromregion(isc_region_t *region) {
+	isc_uint8_t r = uint8_fromregion(region);
+
+	isc_region_consume(region, 1);
+	return r;
 }
 
 static isc_result_t

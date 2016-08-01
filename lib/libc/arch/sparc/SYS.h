@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,57 +30,74 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)SYS.h	8.1 (Berkeley) 6/4/93
- *
- *	from: Header: SYS.h,v 1.2 92/07/03 18:57:00 torek Exp
- *	$Id: SYS.h,v 1.3 1994/02/10 20:15:31 pk Exp $
+ *	$OpenBSD: SYS.h,v 1.20 2015/10/23 04:39:25 guenther Exp $
  */
 
-#include <machine/asm.h>
+#include "DEFS.h"
 #include <sys/syscall.h>
 #include <machine/trap.h>
 
-#ifdef __STDC__
+/* offsetof(struct tib, tib_errno) - offsetof(struct tib, __tib_tcb) */
+#define	TCB_OFFSET_ERRNO	12
+
 #define _CAT(x,y) x##y
-#else
-#define _CAT(x,y) x/**/y
-#endif
+
+#define __ENTRY(p,x)		ENTRY(_CAT(p,x)) ; .weak x ; x = _CAT(p,x)
+#define __ENTRY_HIDDEN(p,x)	ENTRY(_CAT(p,x))
+
+#define __END_HIDDEN(p,x)	END(_CAT(p,x));				\
+				_HIDDEN_FALIAS(x, _CAT(p,x));		\
+				END(_HIDDEN(x))
+#define __END(p,x)		__END_HIDDEN(p,x); END(x)
 
 /*
- * ERROR branches to cerror.  This is done with a macro so that I can
- * change it to be position independent later, if need be.
+ * ERROR sets the thread's errno and returns
  */
-#ifdef PIC
-#define	ERROR() \
-	PIC_PROLOGUE(%g1,%g2); \
-	ld [%g1+cerror],%g2; jmp %g2; nop
-#else
-#define	ERROR() \
-	sethi %hi(cerror),%g1; or %lo(cerror),%g1,%g1; jmp %g1; nop
-#endif
+#define	ERROR()						\
+	st	%o0, [%g7 + TCB_OFFSET_ERRNO];		\
+	mov	-1, %o0;				\
+	retl;						\
+	 mov	-1, %o1
 
 /*
  * SYSCALL is used when further action must be taken before returning.
  * Note that it adds a `nop' over what we could do, if we only knew what
  * came at label 1....
  */
-#define	SYSCALL(x) \
-	ENTRY(x); mov _CAT(SYS_,x),%g1; t ST_SYSCALL; bcc 1f; nop; ERROR(); 1:
+#define	__SYSCALL(p,x) \
+	__ENTRY(p,x); mov _CAT(SYS_,x),%g1; t ST_SYSCALL; bcc 1f; nop; ERROR(); 1:
+#define	__SYSCALL_HIDDEN(p,x) \
+	__ENTRY_HIDDEN(p,x); mov _CAT(SYS_,x),%g1; t ST_SYSCALL; bcc 1f; nop; ERROR(); 1:
 
 /*
  * RSYSCALL is used when the system call should just return.  Here
  * we use the SYSCALL_G2RFLAG to put the `success' return address in %g2
  * and avoid a branch.
  */
-#define	RSYSCALL(x) \
-	ENTRY(x); mov (_CAT(SYS_,x))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
-	t ST_SYSCALL; ERROR()
+#define	__RSYSCALL(p,x) \
+	__ENTRY(p,x); mov (_CAT(SYS_,x))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
+	t ST_SYSCALL; ERROR(); __END(p,x)
 
 /*
  * PSEUDO(x,y) is like RSYSCALL(y) except that the name is x.
  */
-#define	PSEUDO(x,y) \
-	ENTRY(x); mov (_CAT(SYS_,y))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
-	t ST_SYSCALL; ERROR()
+#define	__PSEUDO(p,x,y) \
+	__ENTRY(p,x); mov (_CAT(SYS_,y))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
+	t ST_SYSCALL; ERROR(); __END(p,x)
 
-	.globl	cerror
+/*
+ * PSEUDO_NOERROR(x,y) is like PSEUDO(x,y) except that errno is not set.
+ */
+#define	__PSEUDO_NOERROR(p,x,y) \
+	__ENTRY(p,x); mov (_CAT(SYS_,y))|SYSCALL_G2RFLAG,%g1; add %o7,8,%g2; \
+	t ST_SYSCALL; __END(p,x)
+
+# define SYSCALL(x)		__SYSCALL(_thread_sys_,x)
+# define RSYSCALL(x)		__RSYSCALL(_thread_sys_,x)
+# define RSYSCALL_HIDDEN(x)	__RSYSCALL(_thread_sys_,x)
+# define PSEUDO(x,y)		__PSEUDO(_thread_sys_,x,y)
+# define PSEUDO_NOERROR(x,y)	__PSEUDO_NOERROR(_thread_sys_,x,y)
+# define SYSENTRY(x)		__ENTRY(_thread_sys_,x)
+# define SYSENTRY_HIDDEN(x)	__ENTRY_HIDDEN(_thread_sys_,x)
+# define SYSCALL_END(x)		__END(_thread_sys_,x)
+# define SYSCALL_END_HIDDEN(x)	__END_HIDDEN(_thread_sys_,x)

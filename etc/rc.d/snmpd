@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# $OpenBSD: snmpd,v 1.2 2014/08/25 12:08:55 halex Exp $
+
+daemon="/usr/sbin/snmpd"
+
+. /etc/rc.d/rc.subr
+
+rc_reload=NO
+
+rc_cmd $1

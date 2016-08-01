@@ -1,3 +1,4 @@
+/*	$OpenBSD: rm.c,v 1.38 2016/06/28 15:20:13 tedu Exp $	*/
 /*	$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,22 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1990, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)rm.c	8.8 (Berkeley) 4/27/95";
-#else
-static char rcsid[] = "$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/mount.h>
 
 #include <locale.h>
 #include <err.h>
@@ -59,15 +43,23 @@ static char rcsid[] = "$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
+#include <pwd.h>
+#include <grp.h>
 
-int dflag, eval, fflag, iflag, Pflag, Wflag, stdin_ok;
+#define MAXIMUM(a, b)	(((a) > (b)) ? (a) : (b))
 
-int	check __P((char *, char *, struct stat *));
-void	checkdot __P((char **));
-void	rm_file __P((char **));
-void	rm_overwrite __P((char *, struct stat *));
-void	rm_tree __P((char **));
-void	usage __P((void));
+extern char *__progname;
+
+int dflag, eval, fflag, iflag, Pflag, stdin_ok;
+
+int	check(char *, char *, struct stat *);
+void	checkdot(char **);
+void	rm_file(char **);
+int	rm_overwrite(char *, struct stat *);
+int	pass(int, off_t, char *, size_t);
+void	rm_tree(char **);
+void	usage(void);
 
 /*
  * rm --
@@ -77,16 +69,14 @@ void	usage __P((void));
  * 	file removal.
  */
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch, rflag;
 
 	setlocale(LC_ALL, "");
 
 	Pflag = rflag = 0;
-	while ((ch = getopt(argc, argv, "dfiPRrW")) != -1)
+	while ((ch = getopt(argc, argv, "dfiPRr")) != -1)
 		switch(ch) {
 		case 'd':
 			dflag = 1;
@@ -106,17 +96,21 @@ main(argc, argv)
 		case 'r':			/* Compatibility. */
 			rflag = 1;
 			break;
-		case 'W':
-			Wflag = 1;
-			break;
-		case '?':
 		default:
 			usage();
 		}
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 1)
+	if (Pflag) {
+		if (pledge("stdio rpath wpath cpath getpw", NULL) == -1)
+			err(1, "pledge");
+	} else {
+		if (pledge("stdio rpath cpath getpw", NULL) == -1)
+			err(1, "pledge");
+	}
+
+	if (argc < 1 && fflag == 0)
 		usage();
 
 	checkdot(argv);
@@ -130,12 +124,11 @@ main(argc, argv)
 			rm_file(argv);
 	}
 
-	exit (eval);
+	exit(eval);
 }
 
 void
-rm_tree(argv)
-	char **argv;
+rm_tree(char **argv)
 {
 	FTS *fts;
 	FTSENT *p;
@@ -157,9 +150,7 @@ rm_tree(argv)
 	flags = FTS_PHYSICAL;
 	if (!needstat)
 		flags |= FTS_NOSTAT;
-	if (Wflag)
-		flags |= FTS_WHITEOUT;
-	if (!(fts = fts_open(argv, flags, (int (*)())NULL)))
+	if (!(fts = fts_open(argv, flags, NULL)))
 		err(1, NULL);
 	while ((p = fts_read(fts)) != NULL) {
 		switch (p->fts_info) {
@@ -171,7 +162,7 @@ rm_tree(argv)
 			}
 			continue;
 		case FTS_ERR:
-			errx(1, "%s: %s", p->fts_path, strerror(p->fts_errno));
+			errc(1, p->fts_errno, "%s", p->fts_path);
 		case FTS_NS:
 			/*
 			 * FTS_NS: assume that if can't stat the file, it
@@ -212,20 +203,20 @@ rm_tree(argv)
 		switch (p->fts_info) {
 		case FTS_DP:
 		case FTS_DNR:
-			if (!rmdir(p->fts_accpath) || fflag && errno == ENOENT)
+			if (!rmdir(p->fts_accpath) ||
+			    (fflag && errno == ENOENT))
 				continue;
 			break;
 
-		case FTS_W:
-			if (!undelete(p->fts_accpath) ||
-			    fflag && errno == ENOENT)
-				continue;
-			break;
-
-		default:
+		case FTS_F:
+		case FTS_NSOK:
 			if (Pflag)
-				rm_overwrite(p->fts_accpath, NULL);
-			if (!unlink(p->fts_accpath) || fflag && errno == ENOENT)
+				rm_overwrite(p->fts_accpath, p->fts_info ==
+				    FTS_NSOK ? NULL : p->fts_statp);
+			/* FALLTHROUGH */
+		default:
+			if (!unlink(p->fts_accpath) ||
+			    (fflag && errno == ENOENT))
 				continue;
 		}
 		warn("%s", p->fts_path);
@@ -233,11 +224,11 @@ rm_tree(argv)
 	}
 	if (errno)
 		err(1, "fts_read");
+	fts_close(fts);
 }
 
 void
-rm_file(argv)
-	char **argv;
+rm_file(char **argv)
 {
 	struct stat sb;
 	int rval;
@@ -250,18 +241,10 @@ rm_file(argv)
 	while ((f = *argv++) != NULL) {
 		/* Assume if can't stat the file, can't unlink it. */
 		if (lstat(f, &sb)) {
-			if (Wflag) {
-				sb.st_mode = S_IFWHT|S_IWUSR|S_IRUSR;
-			} else {
-				if (!fflag || errno != ENOENT) {
-					warn("%s", f);
-					eval = 1;
-				}
-				continue;
+			if (!fflag || errno != ENOENT) {
+				warn("%s", f);
+				eval = 1;
 			}
-		} else if (Wflag) {
-			warnx("%s: %s", f, strerror(EEXIST));
-			eval = 1;
 			continue;
 		}
 
@@ -270,10 +253,8 @@ rm_file(argv)
 			eval = 1;
 			continue;
 		}
-		if (!fflag && !S_ISWHT(sb.st_mode) && !check(f, f, &sb))
+		if (!fflag && !check(f, f, &sb))
 			continue;
-		if (S_ISWHT(sb.st_mode))
-			rval = undelete(f);
 		else if (S_ISDIR(sb.st_mode))
 			rval = rmdir(f);
 		else {
@@ -290,7 +271,7 @@ rm_file(argv)
 
 /*
  * rm_overwrite --
- *	Overwrite the file 3 times with varying bit patterns.
+ *	Overwrite the file with varying bit patterns.
  *
  * XXX
  * This is a cheap way to *really* delete files.  Note that only regular
@@ -298,16 +279,16 @@ rm_file(argv)
  * Also, this assumes a fixed-block file system (like FFS, or a V7 or a
  * System V file system).  In a logging file system, you'll have to have
  * kernel support.
+ * Returns 1 for success.
  */
-void
-rm_overwrite(file, sbp)
-	char *file;
-	struct stat *sbp;
+int
+rm_overwrite(char *file, struct stat *sbp)
 {
-	struct stat sb;
-	off_t len;
-	int fd, wlen;
-	char buf[8 * 1024];
+	struct stat sb, sb2;
+	struct statfs fsb;
+	size_t bsize;
+	int fd;
+	char *buf = NULL;
 
 	fd = -1;
 	if (sbp == NULL) {
@@ -316,37 +297,59 @@ rm_overwrite(file, sbp)
 		sbp = &sb;
 	}
 	if (!S_ISREG(sbp->st_mode))
-		return;
-	if ((fd = open(file, O_WRONLY, 0)) == -1)
+		return (1);
+	if (sbp->st_nlink > 1) {
+		warnx("%s (inode %llu): not overwritten due to multiple links",
+		    file, (unsigned long long)sbp->st_ino);
+		return (0);
+	}
+	if ((fd = open(file, O_WRONLY|O_NONBLOCK|O_NOFOLLOW, 0)) == -1)
 		goto err;
+	if (fstat(fd, &sb2))
+		goto err;
+	if (sb2.st_dev != sbp->st_dev || sb2.st_ino != sbp->st_ino ||
+	    !S_ISREG(sb2.st_mode)) {
+		errno = EPERM;
+		goto err;
+	}
+	if (fstatfs(fd, &fsb) == -1)
+		goto err;
+	bsize = MAXIMUM(fsb.f_iosize, 1024U);
+	if ((buf = malloc(bsize)) == NULL)
+		err(1, "%s: malloc", file);
 
-#define	PASS(byte) {							\
-	memset(buf, byte, sizeof(buf));					\
-	for (len = sbp->st_size; len > 0; len -= wlen) {		\
-		wlen = len < sizeof(buf) ? len : sizeof(buf);		\
-		if (write(fd, buf, wlen) != wlen)			\
-			goto err;					\
-	}								\
-}
-	PASS(0xff);
-	if (fsync(fd) || lseek(fd, (off_t)0, SEEK_SET))
+	if (!pass(fd, sbp->st_size, buf, bsize))
 		goto err;
-	PASS(0x00);
-	if (fsync(fd) || lseek(fd, (off_t)0, SEEK_SET))
+	if (fsync(fd))
 		goto err;
-	PASS(0xff);
-	if (!fsync(fd) && !close(fd))
-		return;
+	close(fd);
+	free(buf);
+	return (1);
 
-err:	eval = 1;
+err:
 	warn("%s", file);
+	close(fd);
+	eval = 1;
+	free(buf);
+	return (0);
 }
-
 
 int
-check(path, name, sp)
-	char *path, *name;
-	struct stat *sp;
+pass(int fd, off_t len, char *buf, size_t bsize)
+{
+	size_t wlen;
+
+	for (; len > 0; len -= wlen) {
+		wlen = len < bsize ? len : bsize;
+		arc4random_buf(buf, wlen);
+		if (write(fd, buf, wlen) != wlen)
+			return (0);
+	}
+	return (1);
+}
+
+int
+check(char *path, char *name, struct stat *sp)
 {
 	int ch, first;
 	char modep[15];
@@ -361,7 +364,8 @@ check(path, name, sp)
 		 * because their permissions are meaningless.  Check stdin_ok
 		 * first because we may not have stat'ed the file.
 		 */
-		if (!stdin_ok || S_ISLNK(sp->st_mode) || !access(name, W_OK))
+		if (!stdin_ok || S_ISLNK(sp->st_mode) || !access(name, W_OK) ||
+		    errno != EACCES)
 			return (1);
 		strmode(sp->st_mode, modep);
 		(void)fprintf(stderr, "override %s%s%s/%s for %s? ",
@@ -385,18 +389,25 @@ check(path, name, sp)
  * Since POSIX.2 defines basename as the final portion of a path after
  * trailing slashes have been removed, we'll remove them here.
  */
-#define ISDOT(a)	((a)[0] == '.' && (!(a)[1] || (a)[1] == '.' && !(a)[2]))
+#define ISDOT(a)	((a)[0] == '.' && (!(a)[1] || ((a)[1] == '.' && !(a)[2])))
 void
-checkdot(argv)
-	char **argv;
+checkdot(char **argv)
 {
 	char *p, **save, **t;
 	int complained;
+	struct stat sb, root;
 
+	stat("/", &root);
 	complained = 0;
 	for (t = argv; *t;) {
+		if (lstat(*t, &sb) == 0 &&
+		    root.st_ino == sb.st_ino && root.st_dev == sb.st_dev) {
+			if (!complained++)
+				warnx("\"/\" may not be removed");
+			goto skip;
+		}
 		/* strip trailing slashes */
-		p = strrchr (*t, '\0');
+		p = strrchr(*t, '\0');
 		while (--p > *t && *p == '/')
 			*p = '\0';
 
@@ -409,6 +420,7 @@ checkdot(argv)
 		if (ISDOT(p)) {
 			if (!complained++)
 				warnx("\".\" and \"..\" may not be removed");
+skip:
 			eval = 1;
 			for (save = t; (t[0] = t[1]) != NULL; ++t)
 				continue;
@@ -419,9 +431,8 @@ checkdot(argv)
 }
 
 void
-usage()
+usage(void)
 {
-
-	(void)fprintf(stderr, "usage: rm [-dfiPRrW] file ...\n");
+	(void)fprintf(stderr, "usage: %s [-dfiPRr] file ...\n", __progname);
 	exit(1);
 }

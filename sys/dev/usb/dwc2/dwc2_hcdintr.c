@@ -1,3 +1,4 @@
+/*	$OpenBSD: dwc2_hcdintr.c,v 1.5 2015/02/12 06:46:23 uebayasi Exp $	*/
 /*	$NetBSD: dwc2_hcdintr.c,v 1.11 2014/11/24 10:14:14 skrll Exp $	*/
 
 /*
@@ -39,29 +40,31 @@
 /*
  * This file contains the interrupt handlers for Host mode
  */
+#if 0
 #include <sys/cdefs.h>
 __KERNEL_RCSID(0, "$NetBSD: dwc2_hcdintr.c,v 1.11 2014/11/24 10:14:14 skrll Exp $");
+#endif
 
+#include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/types.h>
 #include <sys/pool.h>
+
+#include <machine/bus.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdivar.h>
 #include <dev/usb/usb_mem.h>
 
-#include <machine/param.h>
+#include <dev/usb/dwc2/dwc2.h>
+#include <dev/usb/dwc2/dwc2var.h>
 
-#include <linux/kernel.h>
-
-#include <dwc2/dwc2.h>
-#include <dwc2/dwc2var.h>
-
-#include "dwc2_core.h"
-#include "dwc2_hcd.h"
+#include <dev/usb/dwc2/dwc2_core.h>
+#include <dev/usb/dwc2/dwc2_hcd.h>
 
 /* This function is for debug only */
-static void dwc2_track_missed_sofs(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_track_missed_sofs(struct dwc2_hsotg *hsotg)
 {
 #ifdef CONFIG_USB_DWC2_TRACK_MISSED_SOFS
 	u16 curr_frame_number = hsotg->frame_number;
@@ -91,7 +94,7 @@ static void dwc2_track_missed_sofs(struct dwc2_hsotg *hsotg)
 #endif
 }
 
-static void dwc2_hc_handle_tt_clear(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_handle_tt_clear(struct dwc2_hsotg *hsotg,
 				    struct dwc2_host_chan *chan,
 				    struct dwc2_qtd *qtd)
 {
@@ -119,10 +122,9 @@ static void dwc2_hc_handle_tt_clear(struct dwc2_hsotg *hsotg,
  * (micro)frame. Periodic transactions may be queued to the controller
  * for the next (micro)frame.
  */
-static void dwc2_sof_intr(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_sof_intr(struct dwc2_hsotg *hsotg)
 {
-	struct list_head *qh_entry;
-	struct dwc2_qh *qh;
+	struct dwc2_qh *qh, *qhn;
 	enum dwc2_transaction_type tr_type;
 
 #ifdef DEBUG_SOF
@@ -134,17 +136,18 @@ static void dwc2_sof_intr(struct dwc2_hsotg *hsotg)
 	dwc2_track_missed_sofs(hsotg);
 
 	/* Determine whether any periodic QHs should be executed */
-	qh_entry = hsotg->periodic_sched_inactive.next;
-	while (qh_entry != &hsotg->periodic_sched_inactive) {
-		qh = list_entry(qh_entry, struct dwc2_qh, qh_list_entry);
-		qh_entry = qh_entry->next;
-		if (dwc2_frame_num_le(qh->sched_frame, hsotg->frame_number))
+	qh = TAILQ_FIRST(&hsotg->periodic_sched_inactive);
+	while (qh != NULL) {
+		qhn = TAILQ_NEXT(qh, qh_list_entry);
+		if (dwc2_frame_num_le(qh->sched_frame, hsotg->frame_number)) {
 			/*
 			 * Move QH to the ready list to be executed next
 			 * (micro)frame
 			 */
-			list_move(&qh->qh_list_entry,
-				  &hsotg->periodic_sched_ready);
+			TAILQ_REMOVE(&hsotg->periodic_sched_inactive, qh, qh_list_entry);
+			TAILQ_INSERT_TAIL(&hsotg->periodic_sched_ready, qh, qh_list_entry);
+		}
+		qh = qhn;
 	}
 	tr_type = dwc2_hcd_select_transactions(hsotg);
 	if (tr_type != DWC2_TRANSACTION_NONE)
@@ -159,7 +162,7 @@ static void dwc2_sof_intr(struct dwc2_hsotg *hsotg)
  * at least one packet in the Rx FIFO. The packets are moved from the FIFO to
  * memory if the DWC_otg controller is operating in Slave mode.
  */
-static void dwc2_rx_fifo_level_intr(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_rx_fifo_level_intr(struct dwc2_hsotg *hsotg)
 {
 	u32 grxsts, chnum, bcnt, pktsts;
 	struct dwc2_host_chan *chan;
@@ -217,7 +220,7 @@ static void dwc2_rx_fifo_level_intr(struct dwc2_hsotg *hsotg)
  * may be written to the non-periodic request queue for IN transfers. This
  * interrupt is enabled only in Slave mode.
  */
-static void dwc2_np_tx_fifo_empty_intr(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_np_tx_fifo_empty_intr(struct dwc2_hsotg *hsotg)
 {
 	dev_vdbg(hsotg->dev, "--Non-Periodic TxFIFO Empty Interrupt--\n");
 	dwc2_hcd_queue_transactions(hsotg, DWC2_TRANSACTION_NON_PERIODIC);
@@ -229,14 +232,14 @@ static void dwc2_np_tx_fifo_empty_intr(struct dwc2_hsotg *hsotg)
  * written to the periodic request queue for IN transfers. This interrupt is
  * enabled only in Slave mode.
  */
-static void dwc2_perio_tx_fifo_empty_intr(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_perio_tx_fifo_empty_intr(struct dwc2_hsotg *hsotg)
 {
 	if (dbg_perio())
 		dev_vdbg(hsotg->dev, "--Periodic TxFIFO Empty Interrupt--\n");
 	dwc2_hcd_queue_transactions(hsotg, DWC2_TRANSACTION_PERIODIC);
 }
 
-static void dwc2_hprt0_enable(struct dwc2_hsotg *hsotg, u32 hprt0,
+STATIC void dwc2_hprt0_enable(struct dwc2_hsotg *hsotg, u32 hprt0,
 			      u32 *hprt0_modify)
 {
 	struct dwc2_core_params *params = hsotg->core_params;
@@ -332,7 +335,7 @@ static void dwc2_hprt0_enable(struct dwc2_hsotg *hsotg, u32 hprt0,
  * determines which interrupt conditions have occurred and handles them
  * appropriately.
  */
-static void dwc2_port_intr(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_port_intr(struct dwc2_hsotg *hsotg)
 {
 	u32 hprt0;
 	u32 hprt0_modify;
@@ -409,7 +412,7 @@ static void dwc2_port_intr(struct dwc2_hsotg *hsotg)
  * transferred. short_read may also be NULL on entry, in which case it remains
  * unchanged.
  */
-static u32 dwc2_get_actual_xfer_length(struct dwc2_hsotg *hsotg,
+STATIC u32 dwc2_get_actual_xfer_length(struct dwc2_hsotg *hsotg,
 				       struct dwc2_host_chan *chan, int chnum,
 				       struct dwc2_qtd *qtd,
 				       enum dwc2_halt_status halt_status,
@@ -457,7 +460,7 @@ static u32 dwc2_get_actual_xfer_length(struct dwc2_hsotg *hsotg,
  * Return: 1 if the data transfer specified by the URB is completely finished,
  * 0 otherwise
  */
-static int dwc2_update_urb_state(struct dwc2_hsotg *hsotg,
+STATIC int dwc2_update_urb_state(struct dwc2_hsotg *hsotg,
 				 struct dwc2_host_chan *chan, int chnum,
 				 struct dwc2_hcd_urb *urb,
 				 struct dwc2_qtd *qtd)
@@ -544,7 +547,7 @@ void dwc2_hcd_save_data_toggle(struct dwc2_hsotg *hsotg,
  * Return: DWC2_HC_XFER_COMPLETE if there are more frames remaining to be
  * transferred in the URB. Otherwise return DWC2_HC_XFER_URB_COMPLETE.
  */
-static enum dwc2_halt_status dwc2_update_isoc_urb_state(
+STATIC enum dwc2_halt_status dwc2_update_isoc_urb_state(
 		struct dwc2_hsotg *hsotg, struct dwc2_host_chan *chan,
 		int chnum, struct dwc2_qtd *qtd,
 		enum dwc2_halt_status halt_status)
@@ -646,7 +649,7 @@ static enum dwc2_halt_status dwc2_update_isoc_urb_state(
  * non-periodic schedule. For periodic QHs, removes the QH from the periodic
  * schedule if no more QTDs are linked to the QH.
  */
-static void dwc2_deactivate_qh(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
+STATIC void dwc2_deactivate_qh(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 			       int free_qtd)
 {
 	int continue_split = 0;
@@ -656,12 +659,12 @@ static void dwc2_deactivate_qh(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 		dev_vdbg(hsotg->dev, "  %s(%p,%p,%d)\n", __func__,
 			 hsotg, qh, free_qtd);
 
-	if (list_empty(&qh->qtd_list)) {
+	if (TAILQ_EMPTY(&qh->qtd_list)) {
 		dev_dbg(hsotg->dev, "## QTD list empty ##\n");
 		goto no_qtd;
 	}
 
-	qtd = list_first_entry(&qh->qtd_list, struct dwc2_qtd, qtd_list_entry);
+	qtd = TAILQ_FIRST(&qh->qtd_list);
 
 	if (qtd->complete_split)
 		continue_split = 1;
@@ -677,8 +680,8 @@ static void dwc2_deactivate_qh(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 no_qtd:
 	if (qh->channel)
 		qh->channel->align_buf = 0;
-	qh->channel = NULL;
 	dwc2_hcd_qh_deactivate(hsotg, qh, continue_split);
+	qh->channel = NULL;
 }
 
 /**
@@ -694,7 +697,7 @@ no_qtd:
  * Also attempts to select and queue more transactions since at least one host
  * channel is available.
  */
-static void dwc2_release_channel(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_release_channel(struct dwc2_hsotg *hsotg,
 				 struct dwc2_host_chan *chan,
 				 struct dwc2_qtd *qtd,
 				 enum dwc2_halt_status halt_status)
@@ -749,10 +752,11 @@ cleanup:
 	 * function clears the channel interrupt enables and conditions, so
 	 * there's no need to clear the Channel Halted interrupt separately.
 	 */
-	if (!list_empty(&chan->hc_list_entry))
-		list_del(&chan->hc_list_entry);
+	if (chan->in_freelist != 0)
+		LIST_REMOVE(chan, hc_list_entry);
 	dwc2_hc_cleanup(hsotg, chan);
-	list_add_tail(&chan->hc_list_entry, &hsotg->free_hc_list);
+	LIST_INSERT_HEAD(&hsotg->free_hc_list, chan, hc_list_entry);
+	chan->in_freelist = 1;
 
 	if (hsotg->core_params->uframe_sched > 0) {
 		hsotg->available_host_channels++;
@@ -793,7 +797,7 @@ cleanup:
  * simply released since the core always halts the channel automatically in
  * DMA mode.
  */
-static void dwc2_halt_channel(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_halt_channel(struct dwc2_hsotg *hsotg,
 			      struct dwc2_host_chan *chan, struct dwc2_qtd *qtd,
 			      enum dwc2_halt_status halt_status)
 {
@@ -833,8 +837,8 @@ static void dwc2_halt_channel(struct dwc2_hsotg *hsotg,
 			 * halt to be queued when the periodic schedule is
 			 * processed.
 			 */
-			list_move(&chan->qh->qh_list_entry,
-				  &hsotg->periodic_sched_assigned);
+			TAILQ_REMOVE(&hsotg->periodic_sched_queued, chan->qh, qh_list_entry);
+			TAILQ_INSERT_TAIL(&hsotg->periodic_sched_assigned, chan->qh, qh_list_entry);
 
 			/*
 			 * Make sure the Periodic Tx FIFO Empty interrupt is
@@ -853,7 +857,7 @@ static void dwc2_halt_channel(struct dwc2_hsotg *hsotg,
  * Complete interrupt. This function should be called after any endpoint type
  * specific handling is finished to release the host channel.
  */
-static void dwc2_complete_non_periodic_xfer(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_complete_non_periodic_xfer(struct dwc2_hsotg *hsotg,
 					    struct dwc2_host_chan *chan,
 					    int chnum, struct dwc2_qtd *qtd,
 					    enum dwc2_halt_status halt_status)
@@ -903,7 +907,7 @@ static void dwc2_complete_non_periodic_xfer(struct dwc2_hsotg *hsotg,
  * interrupt. This function should be called after any endpoint type specific
  * handling is finished to release the host channel.
  */
-static void dwc2_complete_periodic_xfer(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_complete_periodic_xfer(struct dwc2_hsotg *hsotg,
 					struct dwc2_host_chan *chan, int chnum,
 					struct dwc2_qtd *qtd,
 					enum dwc2_halt_status halt_status)
@@ -920,7 +924,7 @@ static void dwc2_complete_periodic_xfer(struct dwc2_hsotg *hsotg,
 		dwc2_halt_channel(hsotg, chan, qtd, halt_status);
 }
 
-static int dwc2_xfercomp_isoc_split_in(struct dwc2_hsotg *hsotg,
+STATIC int dwc2_xfercomp_isoc_split_in(struct dwc2_hsotg *hsotg,
 				       struct dwc2_host_chan *chan, int chnum,
 				       struct dwc2_qtd *qtd)
 {
@@ -976,7 +980,7 @@ static int dwc2_xfercomp_isoc_split_in(struct dwc2_hsotg *hsotg,
  * Handles a host channel Transfer Complete interrupt. This handler may be
  * called in either DMA mode or Slave mode.
  */
-static void dwc2_hc_xfercomp_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_xfercomp_intr(struct dwc2_hsotg *hsotg,
 				  struct dwc2_host_chan *chan, int chnum,
 				  struct dwc2_qtd *qtd)
 {
@@ -1108,7 +1112,7 @@ handle_xfercomp_done:
  * Handles a host channel STALL interrupt. This handler may be called in
  * either DMA mode or Slave mode.
  */
-static void dwc2_hc_stall_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_stall_intr(struct dwc2_hsotg *hsotg,
 			       struct dwc2_host_chan *chan, int chnum,
 			       struct dwc2_qtd *qtd)
 {
@@ -1158,7 +1162,7 @@ handle_stall_done:
  * actual_length field of the URB to reflect the number of bytes that have
  * actually been transferred via the host channel.
  */
-static void dwc2_update_urb_state_abn(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_update_urb_state_abn(struct dwc2_hsotg *hsotg,
 				      struct dwc2_host_chan *chan, int chnum,
 				      struct dwc2_hcd_urb *urb,
 				      struct dwc2_qtd *qtd,
@@ -1202,7 +1206,7 @@ static void dwc2_update_urb_state_abn(struct dwc2_hsotg *hsotg,
  * Handles a host channel NAK interrupt. This handler may be called in either
  * DMA mode or Slave mode.
  */
-static void dwc2_hc_nak_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_nak_intr(struct dwc2_hsotg *hsotg,
 			     struct dwc2_host_chan *chan, int chnum,
 			     struct dwc2_qtd *qtd)
 {
@@ -1289,7 +1293,7 @@ handle_nak_done:
  * performing the PING protocol in Slave mode, when errors occur during
  * either Slave mode or DMA mode, and during Start Split transactions.
  */
-static void dwc2_hc_ack_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_ack_intr(struct dwc2_hsotg *hsotg,
 			     struct dwc2_host_chan *chan, int chnum,
 			     struct dwc2_qtd *qtd)
 {
@@ -1368,7 +1372,7 @@ static void dwc2_hc_ack_intr(struct dwc2_hsotg *hsotg,
  * handled in the xfercomp interrupt handler, not here. This handler may be
  * called in either DMA mode or Slave mode.
  */
-static void dwc2_hc_nyet_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_nyet_intr(struct dwc2_hsotg *hsotg,
 			      struct dwc2_host_chan *chan, int chnum,
 			      struct dwc2_qtd *qtd)
 {
@@ -1451,7 +1455,7 @@ handle_nyet_done:
  * Handles a host channel babble interrupt. This handler may be called in
  * either DMA mode or Slave mode.
  */
-static void dwc2_hc_babble_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_babble_intr(struct dwc2_hsotg *hsotg,
 				struct dwc2_host_chan *chan, int chnum,
 				struct dwc2_qtd *qtd)
 {
@@ -1485,7 +1489,7 @@ disable_int:
  * Handles a host channel AHB error interrupt. This handler is only called in
  * DMA mode.
  */
-static void dwc2_hc_ahberr_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_ahberr_intr(struct dwc2_hsotg *hsotg,
 				struct dwc2_host_chan *chan, int chnum,
 				struct dwc2_qtd *qtd)
 {
@@ -1587,7 +1591,7 @@ handle_ahberr_done:
  * Handles a host channel transaction error interrupt. This handler may be
  * called in either DMA mode or Slave mode.
  */
-static void dwc2_hc_xacterr_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_xacterr_intr(struct dwc2_hsotg *hsotg,
 				 struct dwc2_host_chan *chan, int chnum,
 				 struct dwc2_qtd *qtd)
 {
@@ -1646,7 +1650,7 @@ handle_xacterr_done:
  * Handles a host channel frame overrun interrupt. This handler may be called
  * in either DMA mode or Slave mode.
  */
-static void dwc2_hc_frmovrun_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_frmovrun_intr(struct dwc2_hsotg *hsotg,
 				  struct dwc2_host_chan *chan, int chnum,
 				  struct dwc2_qtd *qtd)
 {
@@ -1679,7 +1683,7 @@ static void dwc2_hc_frmovrun_intr(struct dwc2_hsotg *hsotg,
  * Handles a host channel data toggle error interrupt. This handler may be
  * called in either DMA mode or Slave mode.
  */
-static void dwc2_hc_datatglerr_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_datatglerr_intr(struct dwc2_hsotg *hsotg,
 				    struct dwc2_host_chan *chan, int chnum,
 				    struct dwc2_qtd *qtd)
 {
@@ -1704,7 +1708,7 @@ static void dwc2_hc_datatglerr_intr(struct dwc2_hsotg *hsotg,
  *
  * Return: true if halt status is ok, false otherwise
  */
-static bool dwc2_halt_status_ok(struct dwc2_hsotg *hsotg,
+STATIC bool dwc2_halt_status_ok(struct dwc2_hsotg *hsotg,
 				struct dwc2_host_chan *chan, int chnum,
 				struct dwc2_qtd *qtd)
 {
@@ -1764,7 +1768,7 @@ static bool dwc2_halt_status_ok(struct dwc2_hsotg *hsotg,
  * Handles a host Channel Halted interrupt in DMA mode. This handler
  * determines the reason the channel halted and proceeds accordingly.
  */
-static void dwc2_hc_chhltd_intr_dma(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_chhltd_intr_dma(struct dwc2_hsotg *hsotg,
 				    struct dwc2_host_chan *chan, int chnum,
 				    struct dwc2_qtd *qtd)
 {
@@ -1930,7 +1934,7 @@ error:
  * processing a transfer on a channel. Other host channel interrupts (except
  * ahberr) are disabled in DMA mode.
  */
-static void dwc2_hc_chhltd_intr(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_hc_chhltd_intr(struct dwc2_hsotg *hsotg,
 				struct dwc2_host_chan *chan, int chnum,
 				struct dwc2_qtd *qtd)
 {
@@ -1948,7 +1952,7 @@ static void dwc2_hc_chhltd_intr(struct dwc2_hsotg *hsotg,
 }
 
 /* Handles interrupt for a specific Host Channel */
-static void dwc2_hc_n_intr(struct dwc2_hsotg *hsotg, int chnum)
+STATIC void dwc2_hc_n_intr(struct dwc2_hsotg *hsotg, int chnum)
 {
 	struct dwc2_qtd *qtd;
 	struct dwc2_host_chan *chan;
@@ -1996,7 +2000,7 @@ static void dwc2_hc_n_intr(struct dwc2_hsotg *hsotg, int chnum)
 		return;
 	}
 
-	if (list_empty(&chan->qh->qtd_list)) {
+	if (TAILQ_EMPTY(&chan->qh->qtd_list)) {
 		/*
 		 * TODO: Will this ever happen with the
 		 * DWC2_HC_XFER_URB_DEQUEUE handling above?
@@ -2012,8 +2016,7 @@ static void dwc2_hc_n_intr(struct dwc2_hsotg *hsotg, int chnum)
 		return;
 	}
 
-	qtd = list_first_entry(&chan->qh->qtd_list, struct dwc2_qtd,
-			       qtd_list_entry);
+	qtd = TAILQ_FIRST(&chan->qh->qtd_list);
 
 	if (hsotg->core_params->dma_enable <= 0) {
 		if ((hcint & HCINTMSK_CHHLTD) && hcint != HCINTMSK_CHHLTD)
@@ -2059,7 +2062,7 @@ static void dwc2_hc_n_intr(struct dwc2_hsotg *hsotg, int chnum)
  * interrupt. This function determines which conditions have occurred for each
  * host channel interrupt and handles them appropriately.
  */
-static void dwc2_hc_intr(struct dwc2_hsotg *hsotg)
+STATIC void dwc2_hc_intr(struct dwc2_hsotg *hsotg)
 {
 	u32 haint;
 	int i;
@@ -2088,7 +2091,7 @@ irqreturn_t dwc2_handle_hcd_intr(struct dwc2_hsotg *hsotg)
 		return retval;
 	}
 
-	KASSERT(mutex_owned(&hsotg->lock));
+	KASSERT(mtx_owned(&hsotg->lock));
 
 	/* Check if HOST Mode */
 	if (dwc2_is_host_mode(hsotg)) {

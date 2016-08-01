@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_pthread_join.c,v 1.4 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: pthread_join.c,v 1.3 2003/07/31 21:48:05 deraadt Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -44,14 +44,16 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "test.h"
 
 /* This thread yields so the creator has a live thread to wait on */
-void* new_thread_1(void * new_buf)
+static void *
+new_thread_1(void * new_buf)
 {
 	int i;
 
-	sprintf((char *)new_buf, "New thread %%d stack at %p\n", &i);
+	snprintf((char *)new_buf, 512, "New thread %%d stack at %p\n", &i);
 	pthread_yield();	/* (ensure parent can wait on live thread) */
 	sleep(1);
 	return(new_buf);
@@ -59,17 +61,18 @@ void* new_thread_1(void * new_buf)
 }
 
 /* This thread doesn't yield so the creator has a dead thread to wait on */
-void* new_thread_2(void * new_buf)
+static void *
+new_thread_2(void * new_buf)
 {
 	int i;
 
-	sprintf((char *)new_buf, "New thread %%d stack at %p\n", &i);
+	snprintf((char *)new_buf, 512, "New thread %%d stack at %p\n", &i);
 	return(new_buf);
 	PANIC("return");
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	char buf[256], *status;
 	pthread_t thread;

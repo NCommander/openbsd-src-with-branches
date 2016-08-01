@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: util.c,v 1.14 2014/05/18 09:29:54 espie Exp $	*/
+/*	$NetBSD: util.c,v 1.5 1996/08/31 20:58:29 mycroft Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -19,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,54 +39,61 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)util.c	8.1 (Berkeley) 6/6/93
- *	$Id: util.c,v 1.1 1995/04/28 06:55:28 cgd Exp $
  */
 
+#include <sys/types.h>
+
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-#include <sys/types.h>
+
 #include "config.h"
 
-static void nomem __P((void));
-static void vxerror __P((const char *, int, const char *, va_list));
+static void nomem(void);
+static void vxerror(const char *, int, const char *, va_list);
 
-/* 
+/*
  * Malloc, with abort on error.
  */
 void *
-emalloc(size)
-	size_t size;
+emalloc(size_t size)
 {
 	void *p;
 
-	if ((p = malloc(size)) == NULL)
+	if ((p = calloc(1, size)) == NULL)
 		nomem();
 	return (p);
 }
 
-/* 
- * Realloc, with abort on error.
+/*
+ * Reallocarray, with abort on error.
  */
 void *
-erealloc(p, size)
-	void *p;
-	size_t size;
+ereallocarray(void *p, size_t sz1, size_t sz2)
 {
 
-	if ((p = realloc(p, size)) == NULL)
+	if ((p = reallocarray(p, sz1, sz2)) == NULL)
+		nomem();
+	return (p);
+}
+
+/*
+ * Calloc, with abort on error.
+ */
+void *
+ecalloc(size_t sz1, size_t sz2)
+{
+	void *p;
+
+	if ((p = calloc(sz1, sz2)) == NULL)
 		nomem();
 	return (p);
 }
 
 static void
-nomem()
+nomem(void)
 {
 
 	(void)fprintf(stderr, "config: out of memory\n");
@@ -95,42 +101,32 @@ nomem()
 }
 
 /*
- * Prepend the compilation directory to a file name.
+ * Prepend the source path to a file name.
  */
 char *
-path(file)
-	const char *file;
+sourcepath(const char *file)
 {
-	register char *cp;
-#define	CDIR "../compile/"
+	char *cp;
+	int len = strlen(srcdir) + 1 + strlen(file) + 1;
 
-	if (file == NULL) {
-		cp = emalloc(sizeof(CDIR) + strlen(confdirbase));
-		(void)sprintf(cp, "%s%s", CDIR, confdirbase);
-	} else {
-		cp = emalloc(sizeof(CDIR) + strlen(confdirbase) + 1 +
-		    strlen(file));
-		(void)sprintf(cp, "%s%s/%s", CDIR, confdirbase, file);
-	}
+	cp = emalloc(len);
+	(void)snprintf(cp, len, "%s/%s", srcdir, file);
 	return (cp);
 }
 
 static struct nvlist *nvhead;
 
 struct nvlist *
-newnv(name, str, ptr, i)
-	const char *name, *str;
-	void *ptr;
-	int i;
+newnv(const char *name, const char *str, void *ptr, int i, struct nvlist *next)
 {
-	register struct nvlist *nv;
+	struct nvlist *nv;
 
 	if ((nv = nvhead) == NULL)
 		nv = emalloc(sizeof(*nv));
 	else
 		nvhead = nv->nv_next;
-	nv->nv_next = NULL;
-	nv->nv_name = name;
+	nv->nv_next = next;
+	nv->nv_name = (char *)name;
 	if (ptr == NULL)
 		nv->nv_str = str;
 	else {
@@ -146,8 +142,7 @@ newnv(name, str, ptr, i)
  * Free an nvlist structure (just one).
  */
 void
-nvfree(nv)
-	register struct nvlist *nv;
+nvfree(struct nvlist *nv)
 {
 
 	nv->nv_next = nvhead;
@@ -158,10 +153,9 @@ nvfree(nv)
  * Free an nvlist (the whole list).
  */
 void
-nvfreel(nv)
-	register struct nvlist *nv;
+nvfreel(struct nvlist *nv)
 {
-	register struct nvlist *next;
+	struct nvlist *next;
 
 	for (; nv != NULL; nv = next) {
 		next = nv->nv_next;
@@ -175,22 +169,12 @@ nvfreel(nv)
  * and line number.
  */
 void
-#if __STDC__
 error(const char *fmt, ...)
-#else
-error(fmt, va_alist)
-	const char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
 	extern const char *yyfile;
 
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	vxerror(yyfile, currentline(), fmt, ap);
 	va_end(ap);
 }
@@ -200,23 +184,11 @@ error(fmt, va_alist)
  * find out about it until later).
  */
 void
-#if __STDC__
 xerror(const char *file, int line, const char *fmt, ...)
-#else
-xerror(file, line, fmt, va_alist)
-	const char *file;
-	int line;
-	const char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
 
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	vxerror(file, line, fmt, ap);
 	va_end(ap);
 }
@@ -225,11 +197,7 @@ xerror(file, line, fmt, va_alist)
  * Internal form of error() and xerror().
  */
 static void
-vxerror(file, line, fmt, ap)
-	const char *file;
-	int line;
-	const char *fmt;
-	va_list ap;
+vxerror(const char *file, int line, const char *fmt, va_list ap)
 {
 
 	(void)fprintf(stderr, "%s:%d: ", file, line);
@@ -242,21 +210,11 @@ vxerror(file, line, fmt, ap)
  * Internal error, abort.
  */
 __dead void
-#if __STDC__
 panic(const char *fmt, ...)
-#else
-panic(fmt, va_alist)
-	const char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
 
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	(void)fprintf(stderr, "config: panic: ");
 	(void)vfprintf(stderr, fmt, ap);
 	(void)putc('\n', stderr);

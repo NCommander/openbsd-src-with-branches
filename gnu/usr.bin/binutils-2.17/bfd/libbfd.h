@@ -76,8 +76,7 @@ struct artdata {
   symindex symdef_count;	/* how many there are */
   char *extended_names;		/* clever intel extension */
   bfd_size_type extended_names_size; /* Size of extended names */
-  /* when more compilers are standard C, this can be a time_t */
-  long  armap_timestamp;	/* Timestamp value written into armap.
+  time_t  armap_timestamp;	/* Timestamp value written into armap.
 				   This is used for BSD archives to check
 				   that the timestamp is recent enough
 				   for the BSD linker to not complain,
@@ -202,6 +201,8 @@ extern void *_bfd_generic_read_ar_hdr
   (bfd *);
 extern void _bfd_ar_spacepad
   (char *, size_t, const char *, long);
+extern void _bfd_ar_spacepadll
+  (char *, size_t, const char *, long long);
 
 extern void *_bfd_generic_read_ar_hdr_mag
   (bfd *, const char *);
@@ -412,7 +413,7 @@ extern bfd_boolean _bfd_generic_set_section_contents
 #define _bfd_nolink_bfd_link_split_section \
   ((bfd_boolean (*) (bfd *, struct bfd_section *)) bfd_false)
 #define _bfd_nolink_section_already_linked \
-  ((void (*) (bfd *, struct bfd_section *)) bfd_void)
+  ((void (*) (bfd *, struct bfd_section *, struct bfd_link_info *)) bfd_void)
 
 /* Routines to use for BFD_JUMP_TABLE_DYNAMIC for targets which do not
    have dynamic symbols or relocs.  Use BFD_JUMP_TABLE_DYNAMIC
@@ -526,7 +527,7 @@ extern bfd_boolean _bfd_generic_link_split_section
   (bfd *, struct bfd_section *);
 
 extern void _bfd_generic_section_already_linked
-  (bfd *, struct bfd_section *);
+  (bfd *, struct bfd_section *, struct bfd_link_info *);
 
 /* Generic reloc_link_order processing routine.  */
 extern bfd_boolean _bfd_generic_reloc_link_order
@@ -828,6 +829,8 @@ static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
   "BFD_RELOC_32_PCREL_S2",
   "BFD_RELOC_16_PCREL_S2",
   "BFD_RELOC_23_PCREL_S2",
+  "BFD_RELOC_18_PCREL_S2",
+  "BFD_RELOC_28_PCREL_S2",
   "BFD_RELOC_HI22",
   "BFD_RELOC_LO10",
   "BFD_RELOC_GPREL16",

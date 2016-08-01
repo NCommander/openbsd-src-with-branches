@@ -1,4 +1,5 @@
-/*	$NetBSD: audioio.h,v 1.3 1995/07/07 01:43:35 brezak Exp $	*/
+/*	$OpenBSD: audioio.h,v 1.22 2015/06/25 06:43:46 ratchov Exp $	*/
+/*	$NetBSD: audioio.h,v 1.24 1998/08/13 06:28:41 mrg Exp $	*/
 
 /*
  * Copyright (c) 1991-1993 Regents of the University of California.
@@ -34,8 +35,38 @@
  *
  */
 
-#ifndef _AUDIOIO_H_
-#define _AUDIOIO_H_
+#ifndef _SYS_AUDIOIO_H_
+#define _SYS_AUDIOIO_H_
+
+#define AUDIO_INITPAR(p) \
+	(void)memset((void *)(p), 0xff, sizeof(struct audio_swpar))
+
+/*
+ * argument to AUDIO_SETPAR and AUDIO_GETPAR ioctls
+ */
+struct audio_swpar {
+	unsigned int sig;		/* if 1, encoding is signed */
+	unsigned int le;		/* if 1, encoding is little-endian */
+	unsigned int bits;		/* bits per sample */
+	unsigned int bps;		/* bytes per sample */
+	unsigned int msb;		/* if 1, bits are msb-aligned */
+	unsigned int rate;		/* common play & rec sample rate */
+	unsigned int pchan;		/* play channels */
+	unsigned int rchan;		/* rec channels */
+	unsigned int nblks;		/* number of blocks in play buffer */
+	unsigned int round;		/* common frames per block */
+	unsigned int _spare[6];
+};
+
+/*
+ * argument to AUDIO_GETSTATUS
+ */
+struct audio_status {
+	int mode;
+	int pause;
+	int active;
+	int _spare[5];
+};
 
 /*
  * Audio device
@@ -44,19 +75,17 @@ struct audio_prinfo {
 	u_int	sample_rate;	/* sample rate in bit/s */
 	u_int	channels;	/* number of channels, usually 1 or 2 */
 	u_int	precision;	/* number of bits/sample */
-	u_int	encoding;	/* data encoding (AUDIO_ENCODING_* above) */
-	u_int	gain;		/* volume level */
-	u_int	port;		/* selected I/O port */
-	u_long	seek;		/* BSD extension */
-	u_int	ispare[3];
+	u_int	bps;		/* number of bytes/sample */
+	u_int	msb;		/* data alignment */
+	u_int	encoding;	/* data encoding (AUDIO_ENCODING_* below) */
+	u_int	ispare2[4];
+	u_int	buffer_size;	/* total size audio buffer */
+	u_int	block_size;	/* size a block */
 	/* Current state of device: */
 	u_int	samples;	/* number of samples */
-	u_int	eof;		/* End Of File (zero-size writes) counter */
+	u_int	ispare[1];
 	u_char	pause;		/* non-zero if paused, zero to resume */
-	u_char	error;		/* non-zero if underflow/overflow ocurred */
-	u_char	waiting;	/* non-zero if another process hangs in open */
-	u_char	cspare[3];
-	u_char	open;		/* non-zero if currently open */
+	u_char	cspare2[6];
 	u_char	active;		/* non-zero if I/O is currently active */
 };
 typedef struct audio_prinfo audio_prinfo_t;
@@ -64,49 +93,75 @@ typedef struct audio_prinfo audio_prinfo_t;
 struct audio_info {
 	struct	audio_prinfo play;	/* Info for play (output) side */
 	struct	audio_prinfo record;	/* Info for record (input) side */
-	u_int	__spare;
-	/* BSD extensions */
-	u_int	blocksize;	/* input blocking threshold */
+	u_int	ispare[2];	/* H/W read/write block size */
 	u_int	hiwat;		/* output high water mark */
 	u_int	lowat;		/* output low water mark */
-	u_int	backlog;	/* samples of output backlog to gen. */
+	u_char	cspare[4];
 	u_int	mode;		/* current device mode */
 #define AUMODE_PLAY	0x01
 #define AUMODE_RECORD	0x02
 };
 typedef struct audio_info audio_info_t;
 
-#define AUDIO_INITINFO(p)\
+#define AUDIO_INITINFO(p) \
 	(void)memset((void *)(p), 0xff, sizeof(struct audio_info))
 
 /*
  * Parameter for the AUDIO_GETDEV ioctl to determine current
  * audio devices.
  */
-#define MAX_AUDIO_DEV_LEN       16
+#define MAX_AUDIO_DEV_LEN	16
 typedef struct audio_device {
-        char name[MAX_AUDIO_DEV_LEN];
-        char version[MAX_AUDIO_DEV_LEN];
-        char config[MAX_AUDIO_DEV_LEN];
+	char name[MAX_AUDIO_DEV_LEN];
+	char version[MAX_AUDIO_DEV_LEN];
+	char config[MAX_AUDIO_DEV_LEN];
 } audio_device_t;
+
+typedef struct audio_offset {
+	u_int	samples;	/* Total number of bytes transferred */
+	u_int	unused[2];
+} audio_offset_t;
+
+struct audio_pos {
+	unsigned int play_pos;	/* total bytes played */
+	unsigned int play_xrun;	/* bytes of silence inserted */
+	unsigned int rec_pos;	/* total bytes recorded */
+	unsigned int rec_xrun;	/* bytes dropped */
+};
 
 /*
  * Supported audio encodings
  */
 /* Encoding ID's */
-#define	AUDIO_ENCODING_NONE	0 /* no encoding assigned */
-#define AUDIO_ENCODING_ULAW	1
-#define AUDIO_ENCODING_ALAW	2
-#define AUDIO_ENCODING_PCM16	3
-#define AUDIO_ENCODING_LINEAR	AUDIO_ENCODING_PCM16
-#define AUDIO_ENCODING_PCM8	4
-#define AUDIO_ENCODING_ADPCM	5
+#define	AUDIO_ENCODING_NONE		0 /* no encoding assigned */
+#define	AUDIO_ENCODING_ULAW		1 /* ITU G.711 mu-law */
+#define	AUDIO_ENCODING_ALAW		2 /* ITU G.711 A-law */
+#define	AUDIO_ENCODING_ADPCM		5 /* adaptive differential PCM */
+#define AUDIO_ENCODING_SLINEAR_LE	6
+#define AUDIO_ENCODING_SLINEAR_BE	7
+#define AUDIO_ENCODING_ULINEAR_LE	8
+#define AUDIO_ENCODING_ULINEAR_BE	9
+#define AUDIO_ENCODING_SLINEAR		10
+#define AUDIO_ENCODING_ULINEAR		11
 
 typedef struct audio_encoding {
-	int index;
-	char name[MAX_AUDIO_DEV_LEN];
-	int format_id;
+	int	index;
+	char	name[MAX_AUDIO_DEV_LEN];
+	int	encoding;
+	int	precision;
+	int	bps;
+	int	msb;
+	int	flags;
+#define AUDIO_ENCODINGFLAG_EMULATED 1 /* software emulation mode */
 } audio_encoding_t;
+
+/*
+ * Balance settings.
+ */
+#define	AUDIO_LEFT_BALANCE	0	/* left channel only	*/
+#define	AUDIO_MID_BALANCE	32	/* equal left/right channel */
+#define	AUDIO_RIGHT_BALANCE	64	/* right channel only	*/
+#define	AUDIO_BALANCE_SHIFT	3
 
 /*
  * Audio device operations
@@ -114,15 +169,26 @@ typedef struct audio_encoding {
 #define AUDIO_GETINFO	_IOR('A', 21, struct audio_info)
 #define AUDIO_SETINFO	_IOWR('A', 22, struct audio_info)
 #define AUDIO_DRAIN	_IO('A', 23)
-#define AUDIO_FLUSH	_IO('A', 24)
-#define AUDIO_WSEEK	_IOR('A', 25, u_long)
 #define AUDIO_RERROR	_IOR('A', 26, int)
 #define AUDIO_GETDEV	_IOR('A', 27, struct audio_device)
 #define AUDIO_GETENC	_IOWR('A', 28, struct audio_encoding)
 #define AUDIO_GETFD	_IOR('A', 29, int)
 #define AUDIO_SETFD	_IOWR('A', 30, int)
+#define AUDIO_PERROR	_IOR('A', 31, int)
+#define AUDIO_GETIOFFS	_IOR('A', 32, struct audio_offset)
+#define AUDIO_GETOOFFS	_IOR('A', 33, struct audio_offset)
+#define AUDIO_GETPROPS	_IOR('A', 34, int)
+#define AUDIO_GETPOS	_IOR('A', 35, struct audio_pos)
+#define AUDIO_GETPAR	_IOR('A', 36, struct audio_swpar)
+#define AUDIO_SETPAR	_IOWR('A', 37, struct audio_swpar)
+#define AUDIO_START	_IO('A', 38)
+#define AUDIO_STOP	_IO('A', 39)
+#define AUDIO_GETSTATUS	_IOR('A', 40, struct audio_status)
+#define  AUDIO_PROP_FULLDUPLEX	0x01
+#define  AUDIO_PROP_MMAP	0x02
+#define  AUDIO_PROP_INDEPENDENT	0x04
 
-/* 
+/*
  * Mixer device
  */
 #define AUDIO_MIN_GAIN	0
@@ -174,6 +240,7 @@ typedef struct mixer_devinfo {
 		struct audio_mixer_value {
 			audio_mixer_name_t units;
 			int num_channels;
+			int delta;
 		} v;
 	} un;
 } mixer_devinfo_t;
@@ -201,25 +268,30 @@ typedef struct mixer_ctrl {
  */
 #define AudioNmicrophone	"mic"
 #define AudioNline	"line"
-#define AudioNcd	"CD"
-#define AudioNdac	"DAC"
+#define AudioNcd	"cd"
+#define AudioNdac	"dac"
+#define AudioNaux	"aux"
 #define AudioNrecord	"record"
 #define AudioNvolume	"volume"
 #define AudioNmonitor	"monitor"
 #define AudioNtreble	"treble"
+#define AudioNmid	"mid"
 #define AudioNbass	"bass"
-#define AudioNspeaker	"speaker"
-#define AudioNheadphone	"headphones"
+#define AudioNbassboost	"bassboost"
+#define AudioNspeaker	"spkr"
+#define AudioNheadphone	"hp"
 #define AudioNoutput	"output"
 #define AudioNinput	"input"
 #define AudioNmaster	"master"
 #define AudioNstereo	"stereo"
 #define AudioNmono	"mono"
+#define AudioNloudness	"loudness"
 #define AudioNspatial	"spatial"
 #define AudioNsurround	"surround"
 #define AudioNpseudo	"pseudo"
 #define AudioNmute	"mute"
 #define AudioNenhanced	"enhanced"
+#define AudioNpreamp	"preamp"
 #define AudioNon	"on"
 #define AudioNoff	"off"
 #define AudioNmode	"mode"
@@ -228,18 +300,36 @@ typedef struct mixer_ctrl {
 #define AudioNwave	"wave"
 #define AudioNmidi	"midi"
 #define AudioNmixerout	"mixerout"
+#define AudioNswap	"swap"	/* swap left and right channels */
+#define AudioNagc	"agc"
+#define AudioNdelay	"delay"
+#define AudioNselect	"select" /* select destination */
+#define AudioNvideo	"video"
+#define AudioNcenter	"center"
+#define AudioNdepth	"depth"
+#define AudioNlfe	"lfe"
+#define AudioNextamp	"extamp"
 
-#define AudioElinear "linear"
-#define AudioEmulaw "mulaw"
-#define AudioEalaw "alaw"
-#define AudioEpcm16 "PCM-16"
-#define AudioEpcm8 "PCM-8"
-#define AudioEadpcm "ADPCM"
+#define AudioEmulaw		"mulaw"
+#define AudioEalaw		"alaw"
+#define AudioEadpcm 		"adpcm"
+#define AudioEslinear		"slinear"
+#define AudioEslinear_le	"slinear_le"
+#define AudioEslinear_be	"slinear_be"
+#define AudioEulinear		"ulinear"
+#define AudioEulinear_le	"ulinear_le"
+#define AudioEulinear_be	"ulinear_be"
+#define AudioEmpeg_l1_stream	"mpeg_l1_stream"
+#define AudioEmpeg_l1_packets	"mpeg_l1_packets"
+#define AudioEmpeg_l1_system	"mpeg_l1_system"
+#define AudioEmpeg_l2_stream	"mpeg_l2_stream"
+#define AudioEmpeg_l2_packets	"mpeg_l2_packets"
+#define AudioEmpeg_l2_system	"mpeg_l2_system"
 
-#define AudioCInputs	"Inputs"
-#define AudioCOutputs	"Outputs"
-#define AudioCRecord	"Record"
-#define AudioCMonitor	"Monitor"
-#define AudioCEqualization	"Equalization"
+#define AudioCinputs	"inputs"
+#define AudioCoutputs	"outputs"
+#define AudioCrecord	"record"
+#define AudioCmonitor	"monitor"
+#define AudioCequalization	"equalization"
 
-#endif /* _AUDIOIO_H_ */
+#endif /* !_SYS_AUDIOIO_H_ */

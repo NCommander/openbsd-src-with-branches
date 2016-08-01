@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: board.h,v 1.11 2012/02/28 13:40:53 aoyama Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -26,8 +26,8 @@
  * rights to redistribute these changes.
  */
 
-#ifndef __LUNA88K_BOARD_H__
-#define __LUNA88K_BOARD_H__
+#ifndef _MACHINE_BOARD_H_
+#define _MACHINE_BOARD_H_
 
 /*
  *      OMRON SX9100DT CPU board constants
@@ -46,12 +46,9 @@
 #endif
 #define UDEFINED
 
-#define MAX_CPUS	4		/* maximum cpus on the board */
-#define MAX_CMMUS	8		/* maximum cmmus on the board */
-
 /* machtype values */
-#define LUNA_88K	1
-#define LUNA_88K2	2
+#define LUNA_88K	0x1
+#define LUNA_88K2	0x2
 
 #define	SYSV_BASE	U(0x00000000) 	/* system virtual base */
 #define VEQR_ADDR	U(0x00000000)
@@ -69,9 +66,6 @@
 #define	MAXU_ADDR	U(0x40000000) 	/* size of user virtual space */
 #define MAXPHYSMEM	U(0x10000000) 	/* max physical memory */
 
-/* #define ILLADDRESS	U(0x0F000000) */ 	/* any faulty address */
-/* #define ILLADDRESS	U(0x3FFFFFF0) */	/* any faulty address for LUNA-88K2 */
-
 #define PROM_ADDR	U(0x41000000) 	/* PROM */
 #define PROM_SPACE	U(0x00040000) 
 #define NVRAM_ADDR	U(0x45000000) 	/* Non Volatile */
@@ -86,6 +80,7 @@
 #define OBIO_CAL_DAY	U(0x45001FF4) 	/* days */
 #define OBIO_CAL_MON	U(0x45001FF8) 	/* months */
 #define OBIO_CAL_YEAR	U(0x45001FFC) 	/* years */
+#define NVRAM_ADDR_88K2	U(0x47000000)	/* Non Volatile RAM area for LUNA-88K2 */
 #define OBIO_PIO0_BASE	U(0x49000000) 	/* PIO-0 */
 #define OBIO_PIO0_SPACE	U(0x0000000C) 
 #define OBIO_PIO0A	U(0x49000000) 	/* PIO-0 port A */
@@ -109,33 +104,17 @@
 #define INT_ST_MASK1	U(0x65000004) 	/* interrupt status register CPU 1 */
 #define INT_ST_MASK2	U(0x65000008) 	/* interrupt status register CPU 2 */
 #define INT_ST_MASK3	U(0x6500000C) 	/* interrupt status register CPU 3 */
-#define  INT_LEVEL	           8	/* # of intrrupt level + 1 */
+#define  INT_LEVEL	           8	/* # of interrupt level + 1 */
 #define  INT_SET_LV7	U(0x00000000) 	/* disable interrupts */
 #define  INT_SET_LV6	U(0x00000000) 	/* enable level 7 */
-#define  INT_SET_LV5	U(0x80000000) 	/* enable level 7-6 */
-#define  INT_SET_LV4	U(0xC0000000) 	/* enable level 7-5 */
-#define  INT_SET_LV3	U(0xE0000000) 	/* enable level 7-4 */
-#define  INT_SET_LV2	U(0xF0000000) 	/* enable level 7-3 */
-#define  INT_SET_LV1	U(0xF8000000) 	/* enable level 7-2 */
+#define  INT_SET_LV5	U(0x84000000) 	/* enable level 7-6 */
+#define  INT_SET_LV4	U(0xC4000000) 	/* enable level 7-5 */
+#define  INT_SET_LV3	U(0xE4000000) 	/* enable level 7-4 */
+#define  INT_SET_LV2	U(0xF4000000) 	/* enable level 7-3 */
+#define  INT_SET_LV1	U(0xFC000000) 	/* enable level 7-2 */
 #define  INT_SET_LV0	U(0xFC000000) 	/* enable interrupts */
 #define  INT_SLAVE_MASK	U(0x84000000) 	/* slave can only enable 6 and 1 */
 #define	 INT_CLOCK_MASK	0xBFFFFFFF 	/* mask clock */
-#define  INT_LV6	U(0x00800000) 	/* level 6 enebled */
-#define  INT_LV5	U(0x00400000) 	/* level 5 enebled */
-#define  INT_LV4	U(0x00200000) 	/* level 4 enebled */
-#define  INT_LV3	U(0x00100000) 	/* level 3 enebled */
-#define  INT_LV2	U(0x00080000) 	/* level 2 enebled */
-#define  INT_LV1	U(0x00040000) 	/* level 1 enebled */
-#define  INT_ST		U(0xE0000000) 	/* interrupt status */
-#define  INT_MASK_LV0	INT_LV6 | INT_LV5 | INT_LV4 | INT_LV3 | INT_LV2 | INT_LV1
-#define  INT_MASK_LV1	INT_LV6 | INT_LV5 | INT_LV4 | INT_LV3 | INT_LV2
-#define  INT_MASK_LV2	INT_LV6 | INT_LV5 | INT_LV4 | INT_LV3
-#define  INT_MASK_LV3	INT_LV6 | INT_LV5 | INT_LV4
-#define  INT_MASK_LV4	INT_LV6 | INT_LV5
-#define  INT_MASK_LV5	INT_LV6
-#define  INT_MASK_LV6	0
-#define  INT_MASK_LV7	0
-#define  SLAVE_MASK     INT_LV6 | INT_LV1
 
 #define NON_MASKABLE_LEVEL 7		/* non-maskable-interrupt (abort) */
 #define	CLOCK_INT_LEVEL	6		/* clock interrupt level */
@@ -144,10 +123,10 @@
 #define SOFT_INT1	U(0x69000004) 	/* software interrupt CPU 1 */
 #define SOFT_INT2	U(0x69000008) 	/* software interrupt CPU 2 */
 #define SOFT_INT3	U(0x6900000C)	/* software interrupt CPU 3 */
-#define SOFT_INT_FLAG0	U(0x6B000000) 	/* sfotware interrupt flag CPU 0 */
-#define SOFT_INT_FLAG1	U(0x6B000000) 	/* sfotware interrupt flag CPU 1 */
-#define SOFT_INT_FLAG2	U(0x6B000000) 	/* sfotware interrupt flag CPU 2 */
-#define SOFT_INT_FLAG3	U(0x6B000000) 	/* sfotware interrupt flag CPU 3  */
+#define SOFT_INT_FLAG0	U(0x6B000000) 	/* software interrupt flag CPU 0 */
+#define SOFT_INT_FLAG1	U(0x6B000000) 	/* software interrupt flag CPU 1 */
+#define SOFT_INT_FLAG2	U(0x6B000000) 	/* software interrupt flag CPU 2 */
+#define SOFT_INT_FLAG3	U(0x6B000000) 	/* software interrupt flag CPU 3  */
 #define  SOFT_INT_BIT	31		/* software interrupt flag bit */
 #define RESET_CPU0	U(0x6D000000) 	/* reset CPU 0 */
 #define RESET_CPU1	U(0x6D000004) 	/* reset CPU 1 */
@@ -194,8 +173,8 @@
 #define BMAP_PALLET1	U(0xC1000000) 	/* color pallet */
 #define BMAP_PALLET2	U(0xC1100000) 	/* color pallet */
 #define BOARD_CHECK_REG	U(0xD0000000) 	/* board check register */
-#define BMAP_CRTC	U(0xD1000000) 	/* CTRC-II */
-#define BMAP_IDENTROM   U(0xD1800000)   /* bitmap-boad identify ROM */
+#define BMAP_CRTC	U(0xD1000000) 	/* CRTC-II */
+#define BMAP_IDENTROM   U(0xD1800000)   /* bitmap-board identify ROM */
 #define SCSI_ADDR	U(0xE1000000) 	/* SCSI address */
 #define LANCE_ADDR	U(0xF1000000) 	/* LANCE */
 #define	EXT_IACK_ADDR	0xFFFFFFF7 	/* IACK Space for Extended Board */
@@ -211,4 +190,4 @@
 #define CMMU_I3		U(0xFFF01000) 	/* CMMU instruction cpu 3 */
 #define CMMU_D3		U(0xFFF00000) 	/* CMMU data cpu 3 */
 
-#endif /* __LUNA88K_BOARD_H__ */
+#endif /* _MACHINE_BOARD_H_ */

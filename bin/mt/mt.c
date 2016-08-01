@@ -1,4 +1,5 @@
-/*	$NetBSD: mt.c,v 1.8 1995/09/28 07:18:20 tls Exp $	*/
+/*	$OpenBSD: mt.c,v 1.37 2015/12/06 12:00:16 tobias Exp $	*/
+/*	$NetBSD: mt.c,v 1.14.2.1 1996/05/27 15:12:11 mrg Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,20 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)mt.c	8.2 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$NetBSD: mt.c,v 1.8 1995/09/28 07:18:20 tls Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * mt --
  *   magnetic tape manipulation program
@@ -54,105 +37,211 @@ static char rcsid[] = "$NetBSD: mt.c,v 1.8 1995/09/28 07:18:20 tls Exp $";
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
-#include <fcntl.h>
-#include <err.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/disklabel.h>
+
 #include <ctype.h>
+#include <err.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <paths.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <util.h>
+
+#include "mt.h"
 
 struct commands {
 	char *c_name;
 	int c_code;
 	int c_ronly;
+	int c_mincount;
 } com[] = {
-	{ "bsf",	MTBSF,	1 },
-	{ "bsr",	MTBSR,	1 },
-	{ "eof",	MTWEOF,	0 },
-	{ "eom",	MTEOM,	1 },
-	{ "erase",	MTERASE, 0 },
-	{ "fsf",	MTFSF,	1 },
-	{ "fsr",	MTFSR,	1 },
-	{ "offline",	MTOFFL,	1 },
-	{ "rewind",	MTREW,	1 },
-	{ "rewoffl",	MTOFFL,	1 },
-	{ "status",	MTNOP,	1 },
-	{ "retension",	MTRETEN, 1 },
-	{ "weof",	MTWEOF,	0 },
+	{ "blocksize",	MTSETBSIZ,  1, 0 },
+	{ "bsf",	MTBSF,      1, 1 },
+	{ "bsr",	MTBSR,      1, 1 },
+	{ "density",	MTSETDNSTY, 1, 1 },
+	{ "eof",	MTWEOF,     0, 1 },
+	{ "eom",	MTEOM,      1, 1 },
+	{ "erase",	MTERASE,    0, 1 },
+	{ "fsf",	MTFSF,      1, 1 },
+	{ "fsr",	MTFSR,      1, 1 },
+	{ "offline",	MTOFFL,     1, 1 },
+#define COM_EJECT	9	/* element in the above array */
+	{ "rewind",	MTREW,      1, 1 },
+	{ "rewoffl",	MTOFFL,     1, 1 },
+	{ "status",	MTNOP,      1, 1 },
+	{ "retension",	MTRETEN,    1, 1 },
+#define COM_RETEN	13	/* element in the above array */
+	{ "weof",	MTWEOF,     0, 1 },
 	{ NULL }
 };
 
-void printreg __P((char *, u_int, char *));
-void status __P((struct mtget *));
-void usage __P((void));
+void printreg(char *, u_int, char *);
+void status(struct mtget *);
+void usage(void);
+
+int		_rmtopendev(char *path, int oflags, int dflags, char **realp);
+int		_rmtmtioctop(int fd, struct mtop *cmd);
+struct mtget	*_rmtstatus(int fd);
+void		_rmtclose(void);
+
+extern char	*__progname;
+
+char	*host = NULL;	/* remote host (if any) */
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+_rmtopendev(char *path, int oflags, int dflags, char **realp)
 {
-	register struct commands *comp;
-	struct mtget mt_status;
+#ifdef RMT
+	if (host)
+		return rmtopen(path, oflags);
+#endif
+	return opendev(path, oflags, dflags, realp);
+}
+
+int
+_rmtmtioctop(int fd, struct mtop *cmd)
+{
+#ifdef RMT
+	if (host)
+		return rmtioctl(cmd->mt_op, cmd->mt_count);
+#endif
+	return ioctl(fd, MTIOCTOP, cmd);
+}
+
+struct mtget *
+_rmtstatus(int fd)
+{
+	static struct mtget mt_status;
+
+#ifdef RMT
+	if (host)
+		return rmtstatus();
+#endif
+	if (ioctl(fd, MTIOCGET, &mt_status) < 0)
+		err(2, "ioctl MTIOCGET");
+	return &mt_status;
+}
+
+void
+_rmtclose(void)
+{
+#ifdef RMT
+	if (host)
+		rmtclose();
+#endif
+}
+
+int	eject = 0;
+
+int
+main(int argc, char *argv[])
+{
+	struct commands *comp;
 	struct mtop mt_com;
-	int ch, len, mtfd;
-	char *p, *tape;
+	int ch, mtfd, flags, insert = 0;
+	char *p, *tape, *realtape, *opts;
+	size_t len;
 
-	if ((tape = getenv("TAPE")) == NULL)
-		tape = DEFTAPE;
+	if (strcmp(__progname, "eject") == 0) {
+		opts = "t";
+		eject = 1;
+		tape = NULL;
+	} else {
+		opts = "f:";
+		if ((tape = getenv("TAPE")) == NULL)
+			tape = _PATH_DEFTAPE;
+	}
 
-	while ((ch = getopt(argc, argv, "f:t:")) != -1)
+	while ((ch = getopt(argc, argv, opts)) != -1) {
 		switch (ch) {
-		case 'f':
 		case 't':
+			insert = 1;
+			break;
+		case 'f':
 			tape = optarg;
 			break;
-		case '?':
 		default:
 			usage();
 		}
+	}
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 1 || argc > 2)
+	if (eject) {
+		if (argc == 1) {
+			tape = *argv++;
+			argc--;
+		}
+		if (argc != 0)
+			usage();
+	} else if (argc < 1 || argc > 2)
 		usage();
 
-	len = strlen(p = *argv++);
-	for (comp = com;; comp++) {
-		if (comp->c_name == NULL)
-			errx(1, "%s: unknown command", p);
-		if (strncmp(p, comp->c_name, len) == 0)
-			break;
+	if (tape == NULL)
+		usage();
+
+	if (strchr(tape, ':')) {
+#ifdef RMT
+		host = tape;
+		tape = strchr(host, ':');
+		*tape++ = '\0';
+		if (rmthost(host) == 0)
+			exit(X_ABORT);
+#else
+		err(1, "no remote support");
+#endif
 	}
-	if ((mtfd = open(tape, comp->c_ronly ? O_RDONLY : O_RDWR)) < 0)
-		err(2, "%s", tape);
+
+	if (eject) {
+		if (insert)
+			comp = &com[COM_RETEN];
+		else
+			comp = &com[COM_EJECT];
+	} else {
+		len = strlen(p = *argv++);
+		for (comp = com;; comp++) {
+			if (comp->c_name == NULL)
+				errx(1, "%s: unknown command", p);
+			if (strncmp(p, comp->c_name, len) == 0)
+				break;
+		}
+	}
+
+	flags = comp->c_ronly ? O_RDONLY : O_WRONLY | O_CREAT;
+	/* NOTE: OPENDEV_PART required since cd(4) devices go through here. */
+	if ((mtfd = _rmtopendev(tape, flags, OPENDEV_PART, &realtape)) < 0) {
+		if (errno != 0)
+			warn("%s", host ? tape : realtape);
+		exit(2);
+	}
 	if (comp->c_code != MTNOP) {
 		mt_com.mt_op = comp->c_code;
 		if (*argv) {
 			mt_com.mt_count = strtol(*argv, &p, 10);
-			if (mt_com.mt_count <= 0 || *p)
+			if (mt_com.mt_count < comp->c_mincount || *p)
 				errx(2, "%s: illegal count", *argv);
 		}
 		else
 			mt_com.mt_count = 1;
-		if (ioctl(mtfd, MTIOCTOP, &mt_com) < 0)
-			err(2, "%s: %s", tape, comp->c_name);
+		if (_rmtmtioctop(mtfd, &mt_com) < 0) {
+			if (eject)
+				err(2, "%s", tape);
+			else
+				err(2, "%s: %s", tape, comp->c_name);
+		}
 	} else {
-		if (ioctl(mtfd, MTIOCGET, &mt_status) < 0)
-			err(2, "ioctl MTIOCGET");
-		status(&mt_status);
+		status(_rmtstatus(mtfd));
 	}
-	exit (0);
+
+	_rmtclose();
+
+	exit(X_FINOK);
 	/* NOTREACHED */
 }
-
-#ifdef sun
-#include <sundev/tmreg.h>
-#include <sundev/arreg.h>
-#endif
-
-#ifdef tahoe
-#include <tahoe/vba/cyreg.h>
-#endif
 
 struct tape_desc {
 	short	t_type;		/* type of magtape device */
@@ -160,13 +249,8 @@ struct tape_desc {
 	char	*t_dsbits;	/* "drive status" register */
 	char	*t_erbits;	/* "error" register */
 } tapes[] = {
-#ifdef sun
-	{ MT_ISCPC,	"TapeMaster",	TMS_BITS,	0 },
-	{ MT_ISAR,	"Archive",	ARCH_CTRL_BITS,	ARCH_BITS },
-#endif
-#ifdef tahoe
-	{ MT_ISCY,	"cipher",	CYS_BITS,	CYCW_BITS },
-#endif
+#define SCSI_DS_BITS	"\20\5WriteProtect\2Mounted"
+	{ 0x7,		"SCSI",		SCSI_DS_BITS,	"76543210" },
 	{ 0 }
 };
 
@@ -174,10 +258,9 @@ struct tape_desc {
  * Interpret the status buffer returned
  */
 void
-status(bp)
-	register struct mtget *bp;
+status(struct mtget *bp)
 {
-	register struct tape_desc *mt;
+	struct tape_desc *mt;
 
 	for (mt = tapes;; mt++) {
 		if (mt->t_type == 0) {
@@ -192,28 +275,29 @@ status(bp)
 	printreg("ds", bp->mt_dsreg, mt->t_dsbits);
 	printreg("\ner", bp->mt_erreg, mt->t_erbits);
 	(void)putchar('\n');
+	(void)printf("blocksize: %d (%d)\n", bp->mt_blksiz, bp->mt_mblksiz);
+	(void)printf("density: %d (%d)\n", bp->mt_density, bp->mt_mdensity);
 }
 
 /*
  * Print a register a la the %b format of the kernel's printf.
  */
 void
-printreg(s, v, bits)
-	char *s;
-	register u_int v;
-	register char *bits;
+printreg(char *s, u_int v, char *bits)
 {
-	register int i, any = 0;
-	register char c;
+	int i, any = 0;
+	char c;
 
 	if (bits && *bits == 8)
 		printf("%s=%o", s, v);
 	else
 		printf("%s=%x", s, v);
+	if (!bits)
+		return;
 	bits++;
-	if (v && bits) {
+	if (v && *bits) {
 		putchar('<');
-		while (i = *bits++) {
+		while ((i = *bits++)) {
 			if (v & (1 << (i-1))) {
 				if (any)
 					putchar(',');
@@ -229,8 +313,12 @@ printreg(s, v, bits)
 }
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr, "usage: mt [-f device] command [ count ]\n");
-	exit(1);
+	if (eject)
+		(void)fprintf(stderr, "usage: %s [-t] device\n", __progname);
+	else
+		(void)fprintf(stderr,
+		    "usage: %s [-f device] command [count]\n", __progname);
+	exit(X_USAGE);
 }

@@ -662,6 +662,9 @@ main(int argc, char *argv[])
 		if(nsd.options->identity)
 			nsd.identity = nsd.options->identity;
 	}
+	if(nsd.options->version) {
+		nsd.version = nsd.options->version;
+	}
 	if (nsd.options->logfile && !nsd.log_filename) {
 		nsd.log_filename = nsd.options->logfile;
 	}
@@ -678,6 +681,8 @@ main(int argc, char *argv[])
 	}
 	nsd.tcp_timeout = nsd.options->tcp_timeout;
 	nsd.tcp_query_count = nsd.options->tcp_query_count;
+	nsd.tcp_mss = nsd.options->tcp_mss;
+	nsd.outgoing_tcp_mss = nsd.options->outgoing_tcp_mss;
 	nsd.ipv4_edns_size = nsd.options->ipv4_edns_size;
 	nsd.ipv6_edns_size = nsd.options->ipv6_edns_size;
 
@@ -906,6 +911,7 @@ main(int argc, char *argv[])
 			VERBOSITY(2, (LOG_WARNING, "chown %s failed: %s",
 				nsd.log_filename, strerror(errno)));
 	}
+	log_msg(LOG_NOTICE, "%s starting (%s)", argv0, PACKAGE_STRING);
 
 	/* Do we have a running nsd? */
 	if ((oldpid = readpid(nsd.pidfile)) == -1) {
@@ -1111,6 +1117,10 @@ main(int argc, char *argv[])
 			nsd.username));
 	}
 #endif /* HAVE_GETPWNAM */
+
+	if (pledge("stdio rpath wpath cpath dns inet proc", NULL) == -1)
+		error("pledge");
+
 	xfrd_make_tempdir(&nsd);
 #ifdef USE_ZONE_STATS
 	options_zonestatnames_create(nsd.options);

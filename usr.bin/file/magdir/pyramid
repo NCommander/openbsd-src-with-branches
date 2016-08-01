@@ -1,6 +1,7 @@
+#	$OpenBSD$
 
 #------------------------------------------------------------------------------
-# compress:  file(1) magic for Pyramids
+# pyramid:  file(1) magic for Pyramids
 #
 # XXX - byte order?
 #

@@ -1,3 +1,4 @@
+/*	$OpenBSD: defs.h,v 1.6 2015/07/17 20:38:57 jasper Exp $ */
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +32,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)defs.h	8.1 (Berkeley) 6/6/93
- *	$Id: defs.h,v 1.6 1995/03/09 11:19:28 mycroft Exp $
  */
 
 /*
@@ -132,6 +128,7 @@ typedef struct {
 	char *space;		/* Current space pointer. */
 	size_t len;		/* Current length. */
 	int deleted;		/* If deleted. */
+	int append_newline;	/* If originally terminated by \n. */
 	char *back;		/* Backing memory. */
 	size_t blen;		/* Backing memory length. */
 } SPACE;
@@ -139,8 +136,12 @@ typedef struct {
 /*
  * Error severity codes:
  */
-#define	FATAL		0	/* Exit immediately with 1 */
-#define	ERROR		1	/* Continue, but change exit value */
-#define	WARNING		2	/* Just print the warning */
-#define	COMPILE		3	/* Print error, count and finish script */
-#define	COMPILE2	3	/* Print error, count and finish script */
+#define	WARNING		0	/* Just print the warning */
+#define	FATAL		1	/* Exit immediately with 1 */
+#define	COMPILE		2	/* Print error, count and finish script */
+
+/*
+ * Round up to the nearest multiple of _POSIX2_LINE_MAX
+ */
+#define ROUNDLEN(x) \
+    (((x) + _POSIX2_LINE_MAX - 1) & ~(_POSIX2_LINE_MAX - 1))

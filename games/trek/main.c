@@ -1,3 +1,4 @@
+/*	$OpenBSD: main.c,v 1.16 2016/01/07 14:37:51 mestre Exp $	*/
 /*	$NetBSD: main.c,v 1.4 1995/04/22 10:59:10 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,35 +30,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
+#include <err.h>
+#include <setjmp.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: main.c,v 1.4 1995/04/22 10:59:10 cgd Exp $";
-#endif
-#endif /* not lint */
-
-# include	"trek.h"
-# include	<stdio.h>
-# include	<setjmp.h>
-# include	<termios.h>
-
-# define	PRIO		00	/* default priority */
-
-int	Mother	= 51 + (51 << 8);
+#include "getpar.h"
+#include "trek.h"
 
 /*
-**	 ####  #####    #    ####          #####  ####   #####  #   #
-**	#        #     # #   #   #           #    #   #  #      #  #
-**	 ###     #    #####  ####            #    ####   ###    ###
-**	    #    #    #   #  #  #            #    #  #   #      #  #
-**	####     #    #   #  #   #           #    #   #  #####  #   #
+**	 ####  #####	#    ####	   #####  ####	 #####	#   #
+**	#	 #     # #   #	 #	     #	  #   #	 #	#  #
+**	 ###	 #    #####  ####	     #	  ####	 ###	###
+**	    #	 #    #	  #  #	#	     #	  #  #	 #	#  #
+**	####	 #    #	  #  #	 #	     #	  #   #	 #####	#   #
 **
 **	C version by Eric P. Allman 5/76 (U.C. Berkeley) with help
 **		from Jeff Poskanzer and Pete Rubinstein.
@@ -124,114 +107,52 @@ int	Mother	= 51 + (51 << 8);
 **  NOTES TO THE MAINTAINER:
 **
 **	There is a compilation option xTRACE which must be set for any
-**	trace information to be generated.  It is probably defined in
-**	the version that you get.  It can be removed, however, if you
-**	have trouble finding room in core.
-**
-**	Many things in trek are not as clear as they might be, but are
-**	done to reduce space.  I compile with the -f and -O flags.  I
-**	am constrained to running with non-seperated I/D space, since
-**	we don't have doubleing point hardware here; even if we did, I
-**	would like trek to be available to the large number of people
-**	who either have an 11/40 or do not have FP hardware.  I also
-**	found it desirable to make the code run reentrant, so this
-**	added even more space constraints.
-**
-**	I use the portable C library to do my I/O.  This is done be-
-**	cause I wanted the game easily transportable to other C
-**	implementations, and because I was too lazy to do the doubleing
-**	point input myself.  Little did I know.  The portable C library
-**	released by Bell Labs has more bugs than you would believe, so
-**	I ended up rewriting the whole blessed thing.  Trek excercises
-**	many of the bugs in it, as well as bugs in some of the section
-**	III UNIX routines.  We have fixed them here.  One main problem
-**	was a bug in alloc() that caused it to always ask for a large
-**	hunk of memory, which worked fine unless you were almost out,
-**	which I inevitably was.  If you want the code for all of this
-**	stuff, it is also available through me.
+**	trace information to be generated (the -t option must also be
+**	set on the command line).  It is no longer defined by default.
 **
 ***********************************************************************
 */
 
 jmp_buf env;
 
-main(argc, argv)
-int	argc;
-char	**argv;
+int
+main(int argc, char **argv)
 {
-	long			vect;
-	/* extern FILE		*f_log; */
-	register char		opencode;
-	int			prio;
-	register int		ac;
-	register char		**av;
-	struct	termios		argp;
+	int		ac;
+	char		**av;
+
+	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+		err(1, "pledge");
 
 	av = argv;
 	ac = argc;
 	av++;
-	time(&vect);
-	srand(vect);
-	opencode = 'w';
-	prio = PRIO;
 
-	if (tcgetattr(1, &argp) == 0)
-	{
-		if (cfgetispeed(&argp) < B1200)
-			Etc.fast++;
-	}
-
+#ifdef xTRACE
+	Trace = 0;
 	while (ac > 1 && av[0][0] == '-')
 	{
 		switch (av[0][1])
 		{
-		  case 'a':	/* append to log file */
-			opencode = 'a';
-			break;
-
-		  case 'f':	/* set fast mode */
-			Etc.fast++;
-			break;
-
-		  case 's':	/* set slow mode */
-			Etc.fast = 0;
-			break;
-
-#		ifdef xTRACE
 		  case 't':	/* trace */
-			if (getuid() != Mother)
-				goto badflag;
 			Trace++;
-			break;
-#		endif
-
-		  case 'p':	/* set priority */
-			if (getuid() != Mother)
-				goto badflag;
-			prio = atoi(av[0] + 2);
 			break;
 
 		  default:
-		  badflag:
 			printf("Invalid option: %s\n", av[0]);
 
 		}
 		ac--;
 		av++;
 	}
-	if (ac > 2)
-		syserr(0, "arg count");
-		/*
-	if (ac > 1)
-		f_log = fopen(av[0], opencode);
-		*/
+#endif
 
 	printf("\n   * * *   S T A R   T R E K   * * *\n\nPress return to continue.\n");
 
 	if (setjmp(env))
 	{
 		if ( !getynpar("Another game") )
-			exit(0);
+			return 0;
 	}
 	do
 	{
@@ -240,4 +161,5 @@ char	**argv;
 	} while (getynpar("Another game"));
 
 	fflush(stdout);
+	return 0;
 }

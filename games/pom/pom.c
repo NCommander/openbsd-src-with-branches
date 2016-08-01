@@ -1,4 +1,5 @@
-/*	$NetBSD: pom.c,v 1.5 1995/06/07 16:30:46 cgd Exp $	*/
+/*	$OpenBSD: pom.c,v 1.21 2016/01/07 16:00:33 tb Exp $	*/
+/*    $NetBSD: pom.c,v 1.6 1996/02/06 22:47:29 jtc Exp $      */
 
 /*
  * Copyright (c) 1989, 1993
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,20 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pom.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: pom.c,v 1.5 1995/06/07 16:30:46 cgd Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * Phase of the Moon.  Calculates the current phase of the moon.
  * Based on routines from `Practical Astronomy with Your Calculator',
@@ -57,46 +40,71 @@ static char rcsid[] = "$NetBSD: pom.c,v 1.5 1995/06/07 16:30:46 cgd Exp $";
  *
  * -- Keith E. Brandt  VIII 1984
  *
+ * Updated to the Third Edition of Duffett-Smith's book, IX 1998
+ *
  */
 
-#include <sys/time.h>
-#include <stdio.h>
-#include <string.h>
-#include <tzfile.h>
+#include <ctype.h>
+#include <err.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#define	PI	  3.141592654
-#define	EPOCH	  85
-#define	EPSILONg  279.611371	/* solar ecliptic long at EPOCH */
-#define	RHOg	  282.680403	/* solar ecliptic long of perigee at EPOCH */
-#define	ECCEN	  0.01671542	/* solar orbit eccentricity */
-#define	lzero	  18.251907	/* lunar mean long at EPOCH */
-#define	Pzero	  192.917585	/* lunar mean long of perigee at EPOCH */
-#define	Nzero	  55.204723	/* lunar mean long of node at EPOCH */
+#ifndef M_PI
+#define	M_PI	  3.14159265358979323846
+#endif
 
-double dtor(), potm(), adj360();
+#define	EPOCH	  90
+#define	EPSILONg  279.403303	/* solar ecliptic long at EPOCH */
+#define	RHOg	  282.768422	/* solar ecliptic long of perigee at EPOCH */
+#define	ECCEN	  0.016713	/* solar orbit eccentricity */
+#define	lzero	  318.351648	/* lunar mean long at EPOCH */
+#define	Pzero	  36.340410	/* lunar mean long of perigee at EPOCH */
+#define	Nzero	  318.510107	/* lunar mean long of node at EPOCH */
 
-main()
+#define	isleap(y) (((y) % 4) == 0 && (((y) % 100) != 0 || ((y) % 400) == 0))
+
+void	adj360(double *);
+double	dtor(double);
+double	potm(double);
+time_t	parsetime(char *);
+__dead void	badformat(void);
+
+int
+main(int argc, char *argv[])
 {
-	extern int errno;
 	struct timeval tp;
 	struct timezone tzp;
-	struct tm *GMT, *gmtime();
+	struct tm *GMT;
 	time_t tmpt;
 	double days, today, tomorrow;
 	int cnt;
+	char buf[1024];
 
-	if (gettimeofday(&tp,&tzp)) {
-		(void)fprintf(stderr, "pom: %s\n", strerror(errno));
-		exit(1);
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
+	if (argc > 1) {
+		tmpt = parsetime(argv[1]);
+		strftime(buf, sizeof(buf), "%a %Y %b %e %H:%M:%S (%Z)",
+			localtime(&tmpt));
+		printf("%s:  ", buf);
+	} else {
+		if (gettimeofday(&tp,&tzp))
+			err(1, "gettimeofday");
+		tmpt = tp.tv_sec;
 	}
-	tmpt = tp.tv_sec;
 	GMT = gmtime(&tmpt);
 	days = (GMT->tm_yday + 1) + ((GMT->tm_hour +
 	    (GMT->tm_min / 60.0) + (GMT->tm_sec / 3600.0)) / 24.0);
 	for (cnt = EPOCH; cnt < GMT->tm_year; ++cnt)
-		days += isleap(cnt) ? 366 : 365;
-	today = potm(days) + .5;
+		days += isleap(cnt + 1900) ? 366 : 365;
+	/* Selected time could be before EPOCH */
+	for (cnt = GMT->tm_year; cnt < EPOCH; ++cnt)
+		days -= isleap(cnt + 1900) ? 366 : 365;
+	today = potm(days) + 0.5;
 	(void)printf("The Moon is ");
 	if ((int)today == 100)
 		(void)printf("Full\n");
@@ -107,7 +115,11 @@ main()
 		if ((int)today == 50)
 			(void)printf("%s\n", tomorrow > today ?
 			    "at the First Quarter" : "at the Last Quarter");
+			/* today is 0.5 too big, but it doesn't matter here
+			 * since the phase is changing fast enough
+			 */
 		else {
+			today -= 0.5;		/* Now it might matter */
 			(void)printf("%s ", tomorrow > today ?
 			    "Waxing" : "Waning");
 			if (today > 50)
@@ -118,7 +130,7 @@ main()
 				    today);
 		}
 	}
-	exit(0);
+	return 0;
 }
 
 /*
@@ -126,36 +138,35 @@ main()
  *	return phase of the moon
  */
 double
-potm(days)
-	double days;
+potm(double days)
 {
 	double N, Msol, Ec, LambdaSol, l, Mm, Ev, Ac, A3, Mmprime;
 	double A4, lprime, V, ldprime, D, Nm;
 
-	N = 360 * days / 365.2422;				/* sec 42 #3 */
+	N = 360.0 * days / 365.242191;				/* sec 46 #3 */
 	adj360(&N);
-	Msol = N + EPSILONg - RHOg;				/* sec 42 #4 */
+	Msol = N + EPSILONg - RHOg;				/* sec 46 #4 */
 	adj360(&Msol);
-	Ec = 360 / PI * ECCEN * sin(dtor(Msol));		/* sec 42 #5 */
-	LambdaSol = N + Ec + EPSILONg;				/* sec 42 #6 */
+	Ec = 360 / M_PI * ECCEN * sin(dtor(Msol));		/* sec 46 #5 */
+	LambdaSol = N + Ec + EPSILONg;				/* sec 46 #6 */
 	adj360(&LambdaSol);
-	l = 13.1763966 * days + lzero;				/* sec 61 #4 */
+	l = 13.1763966 * days + lzero;				/* sec 65 #4 */
 	adj360(&l);
-	Mm = l - (0.1114041 * days) - Pzero;			/* sec 61 #5 */
+	Mm = l - (0.1114041 * days) - Pzero;			/* sec 65 #5 */
 	adj360(&Mm);
-	Nm = Nzero - (0.0529539 * days);			/* sec 61 #6 */
+	Nm = Nzero - (0.0529539 * days);			/* sec 65 #6 */
 	adj360(&Nm);
-	Ev = 1.2739 * sin(dtor(2*(l - LambdaSol) - Mm));	/* sec 61 #7 */
-	Ac = 0.1858 * sin(dtor(Msol));				/* sec 61 #8 */
+	Ev = 1.2739 * sin(dtor(2*(l - LambdaSol) - Mm));	/* sec 65 #7 */
+	Ac = 0.1858 * sin(dtor(Msol));				/* sec 65 #8 */
 	A3 = 0.37 * sin(dtor(Msol));
-	Mmprime = Mm + Ev - Ac - A3;				/* sec 61 #9 */
-	Ec = 6.2886 * sin(dtor(Mmprime));			/* sec 61 #10 */
-	A4 = 0.214 * sin(dtor(2 * Mmprime));			/* sec 61 #11 */
-	lprime = l + Ev + Ec - Ac + A4;				/* sec 61 #12 */
-	V = 0.6583 * sin(dtor(2 * (lprime - LambdaSol)));	/* sec 61 #13 */
-	ldprime = lprime + V;					/* sec 61 #14 */
-	D = ldprime - LambdaSol;				/* sec 63 #2 */
-	return(50 * (1 - cos(dtor(D))));			/* sec 63 #3 */
+	Mmprime = Mm + Ev - Ac - A3;				/* sec 65 #9 */
+	Ec = 6.2886 * sin(dtor(Mmprime));			/* sec 65 #10 */
+	A4 = 0.214 * sin(dtor(2 * Mmprime));			/* sec 65 #11 */
+	lprime = l + Ev + Ec - Ac + A4;				/* sec 65 #12 */
+	V = 0.6583 * sin(dtor(2 * (lprime - LambdaSol)));	/* sec 65 #13 */
+	ldprime = lprime + V;					/* sec 65 #14 */
+	D = ldprime - LambdaSol;				/* sec 67 #2 */
+	return(50.0 * (1 - cos(dtor(D))));			/* sec 67 #3 */
 }
 
 /*
@@ -163,25 +174,94 @@ potm(days)
  *	convert degrees to radians
  */
 double
-dtor(deg)
-	double deg;
+dtor(double deg)
 {
-	return(deg * PI / 180);
+	return(deg * M_PI / 180);
 }
 
 /*
  * adj360 --
  *	adjust value so 0 <= deg <= 360
  */
-double
-adj360(deg)
-	double *deg;
+void
+adj360(double *deg)
 {
 	for (;;)
-		if (*deg < 0)
-			*deg += 360;
-		else if (*deg > 360)
-			*deg -= 360;
+		if (*deg < 0.0)
+			*deg += 360.0;
+		else if (*deg > 360.0)
+			*deg -= 360.0;
 		else
 			break;
+}
+
+#define	ATOI2(ar)	((ar)[0] - '0') * 10 + ((ar)[1] - '0'); (ar) += 2;
+time_t
+parsetime(char *p)
+{
+	struct tm *lt;
+	int bigyear;
+	int yearset = 0;
+	time_t tval;
+	char *t;
+	
+	for (t = p; *t; ++t) {
+		if (isdigit((unsigned char)*t))
+			continue;
+		badformat();
+	}
+
+	tval = time(NULL);
+	lt = localtime(&tval);
+	lt->tm_sec = 0;
+	lt->tm_min = 0;
+
+	switch (strlen(p)) {
+	case 10:				/* yyyy */
+		bigyear = ATOI2(p);
+		lt->tm_year = (bigyear * 100) - 1900;
+		yearset = 1;
+		/* FALLTHROUGH */
+	case 8:					/* yy */
+		if (yearset) {
+			lt->tm_year += ATOI2(p);
+		} else {
+			lt->tm_year = ATOI2(p);
+			if (lt->tm_year < 69)		/* hack for 2000 */
+				lt->tm_year += 100;
+		}
+		/* FALLTHROUGH */
+	case 6:					/* mm */
+		lt->tm_mon = ATOI2(p);
+		if ((lt->tm_mon > 12) || !lt->tm_mon)
+			badformat();
+		--lt->tm_mon;			/* time struct is 0 - 11 */
+		/* FALLTHROUGH */
+	case 4:					/* dd */
+		lt->tm_mday = ATOI2(p);
+		if ((lt->tm_mday > 31) || !lt->tm_mday)
+			badformat();
+		/* FALLTHROUGH */
+	case 2:					/* HH */
+		lt->tm_hour = ATOI2(p);
+		if (lt->tm_hour > 23)
+			badformat();
+		break;
+	default:
+		badformat();
+	}
+	/* The calling code needs a valid tm_ydays and this is the easiest
+	 * way to get one */
+	if ((tval = mktime(lt)) == -1)
+		errx(1, "specified date is outside allowed range");
+	return (tval);
+}
+
+void
+badformat(void)
+{
+	warnx("illegal time format");
+	(void)fprintf(stderr, "usage: %s [[[[[cc]yy]mm]dd]HH]\n",
+	    getprogname());
+	exit(1);
 }

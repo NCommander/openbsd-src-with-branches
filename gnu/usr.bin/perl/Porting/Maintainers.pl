@@ -844,7 +844,7 @@ use File::Glob qw(:case);
     },
 
     'Module::CoreList' => {
-        'DISTRIBUTION' => 'BINGOS/Module-CoreList-3.10.tar.gz',
+        'DISTRIBUTION' => 'BINGOS/Module-CoreList-5.20150720.tar.gz',
         'FILES'        => q[dist/Module-CoreList],
     },
 
@@ -1506,6 +1506,9 @@ use File::Glob qw(:case);
                 lib/vars{.pm,.t,_carp.t}
                 lib/vmsish.{pm,t}
                 ],
+    },
+    'openbsd' => {
+        'FILES'      => q[lib/Config_git.pl],
     },
 );
 

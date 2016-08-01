@@ -1,3 +1,4 @@
+/*	$OpenBSD: column.c,v 1.22 2015/11/03 04:55:44 mmcc Exp $	*/
 /*	$NetBSD: column.c,v 1.4 1995/09/02 05:53:03 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,19 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)column.c	8.4 (Berkeley) 5/4/95";
-#endif
-static char rcsid[] = "$NetBSD: column.c,v 1.4 1995/09/02 05:53:03 jtc Exp $";
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
@@ -57,15 +41,16 @@ static char rcsid[] = "$NetBSD: column.c,v 1.4 1995/09/02 05:53:03 jtc Exp $";
 #include <string.h>
 #include <unistd.h>
 
-void  c_columnate __P((void));
-void *emalloc __P((int));
-void  input __P((FILE *));
-void  maketbl __P((void));
-void  print __P((void));
-void  r_columnate __P((void));
-void  usage __P((void));
+void  c_columnate(void);
+void *ereallocarray(void *, size_t, size_t);
+void *ecalloc(size_t, size_t);
+void  input(FILE *);
+void  maketbl(void);
+void  print(void);
+void  r_columnate(void);
+void  usage(void);
 
-int termwidth = 80;		/* default terminal width */
+int termwidth;			/* default terminal width */
 
 int entries;			/* number of records */
 int eval;			/* exit value */
@@ -74,26 +59,33 @@ char **list;			/* array of pointers to records */
 char *separator = "\t ";	/* field separator for table option */
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	struct winsize win;
 	FILE *fp;
 	int ch, tflag, xflag;
 	char *p;
+	const char *errstr;
 
-	if (ioctl(1, TIOCGWINSZ, &win) == -1 || !win.ws_col) {
-		if (p = getenv("COLUMNS"))
-			termwidth = atoi(p);
-	} else
+	termwidth = 0;
+	if ((p = getenv("COLUMNS")) != NULL)
+		termwidth = strtonum(p, 1, INT_MAX, NULL);
+	if (termwidth == 0 && ioctl(STDOUT_FILENO, TIOCGWINSZ, &win) == 0 &&
+	    win.ws_col > 0)
 		termwidth = win.ws_col;
+	if (termwidth == 0)
+		termwidth = 80;
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
 
 	tflag = xflag = 0;
-	while ((ch = getopt(argc, argv, "c:s:tx")) != EOF)
+	while ((ch = getopt(argc, argv, "c:s:tx")) != -1)
 		switch(ch) {
 		case 'c':
-			termwidth = atoi(optarg);
+			termwidth = strtonum(optarg, 1, INT_MAX, &errstr);
+			if (errstr != NULL)
+				errx(1, "%s: %s", errstr, optarg);
 			break;
 		case 's':
 			separator = optarg;
@@ -111,16 +103,22 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	if (!*argv)
+	if (!*argv) {
 		input(stdin);
-	else for (; *argv; ++argv)
-		if (fp = fopen(*argv, "r")) {
-			input(fp);
-			(void)fclose(fp);
-		} else {
-			warn("%s", *argv);
-			eval = 1;
+	} else {
+		for (; *argv; ++argv) {
+			if ((fp = fopen(*argv, "r"))) {
+				input(fp);
+				(void)fclose(fp);
+			} else {
+				warn("%s", *argv);
+				eval = 1;
+			}
 		}
+	}
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	if (!entries)
 		exit(eval);
@@ -138,7 +136,7 @@ main(argc, argv)
 
 #define	TAB	8
 void
-c_columnate()
+c_columnate(void)
 {
 	int chcnt, col, cnt, endcol, numcols;
 	char **lp;
@@ -155,7 +153,7 @@ c_columnate()
 			endcol = maxlength;
 			putchar('\n');
 		} else {
-			while ((cnt = (chcnt + TAB & ~(TAB - 1))) <= endcol) {
+			while ((cnt = ((chcnt + TAB) & ~(TAB - 1))) <= endcol) {
 				(void)putchar('\t');
 				chcnt = cnt;
 			}
@@ -167,12 +165,14 @@ c_columnate()
 }
 
 void
-r_columnate()
+r_columnate(void)
 {
 	int base, chcnt, cnt, col, endcol, numcols, numrows, row;
 
 	maxlength = (maxlength + TAB) & ~(TAB - 1);
 	numcols = termwidth / maxlength;
+	if (numcols == 0)
+		numcols = 1;
 	numrows = entries / numcols;
 	if (entries % numcols)
 		++numrows;
@@ -183,7 +183,7 @@ r_columnate()
 			chcnt += printf("%s", list[base]);
 			if ((base += numrows) >= entries)
 				break;
-			while ((cnt = (chcnt + TAB & ~(TAB - 1))) <= endcol) {
+			while ((cnt = ((chcnt + TAB) & ~(TAB - 1))) <= endcol) {
 				(void)putchar('\t');
 				chcnt = cnt;
 			}
@@ -194,7 +194,7 @@ r_columnate()
 }
 
 void
-print()
+print(void)
 {
 	int cnt;
 	char **lp;
@@ -210,33 +210,33 @@ typedef struct _tbl {
 #define	DEFCOLS	25
 
 void
-maketbl()
+maketbl(void)
 {
 	TBL *t;
 	int coloff, cnt;
 	char *p, **lp;
-	int *lens, maxcols;
+	int *lens, maxcols = DEFCOLS;
 	TBL *tbl;
 	char **cols;
 
-	t = tbl = emalloc(entries * sizeof(TBL));
-	cols = emalloc((maxcols = DEFCOLS) * sizeof(char *));
-	lens = emalloc(maxcols * sizeof(int));
+	t = tbl = ecalloc(entries, sizeof(TBL));
+	cols = ereallocarray(NULL, maxcols, sizeof(char *));
+	lens = ecalloc(maxcols, sizeof(int));
 	for (cnt = 0, lp = list; cnt < entries; ++cnt, ++lp, ++t) {
-		for (coloff = 0, p = *lp; cols[coloff] = strtok(p, separator);
+		for (coloff = 0, p = *lp; (cols[coloff] = strtok(p, separator));
 		    p = NULL)
 			if (++coloff == maxcols) {
-				if (!(cols = realloc(cols, (u_int)maxcols +
-				    DEFCOLS * sizeof(char *))) ||
-				    !(lens = realloc(lens,
-				    (u_int)maxcols + DEFCOLS * sizeof(int))))
-					err(1, NULL);
-				memset((char *)lens + maxcols * sizeof(int),
-				    0, DEFCOLS * sizeof(int));
 				maxcols += DEFCOLS;
+				cols = ereallocarray(cols, maxcols, 
+				    sizeof(char *));
+				lens = ereallocarray(lens, maxcols,
+				    sizeof(int));
+				memset(lens + coloff, 0, DEFCOLS * sizeof(int));
 			}
-		t->list = emalloc(coloff * sizeof(char *));
-		t->len = emalloc(coloff * sizeof(int));
+		if (coloff == 0)
+			continue;
+		t->list = ecalloc(coloff, sizeof(char *));
+		t->len = ecalloc(coloff, sizeof(int));
 		for (t->cols = coloff; --coloff >= 0;) {
 			t->list[coloff] = cols[coloff];
 			t->len[coloff] = strlen(cols[coloff]);
@@ -245,28 +245,32 @@ maketbl()
 		}
 	}
 	for (cnt = 0, t = tbl; cnt < entries; ++cnt, ++t) {
-		for (coloff = 0; coloff < t->cols  - 1; ++coloff)
-			(void)printf("%s%*s", t->list[coloff],
-			    lens[coloff] - t->len[coloff] + 2, " ");
-		(void)printf("%s\n", t->list[coloff]);
+		if (t->cols > 0) {
+			for (coloff = 0; coloff < t->cols - 1; ++coloff)
+				(void)printf("%s%*s", t->list[coloff],
+				    lens[coloff] - t->len[coloff] + 2, " ");
+			(void)printf("%s\n", t->list[coloff]);
+		}
 	}
+	free(tbl);
+	free(lens);
+	free(cols);
 }
 
 #define	DEFNUM		1000
 #define	MAXLINELEN	(LINE_MAX + 1)
 
 void
-input(fp)
-	FILE *fp;
+input(FILE *fp)
 {
-	static int maxentry;
+	static size_t maxentry = DEFNUM;
 	int len;
 	char *p, buf[MAXLINELEN];
 
 	if (!list)
-		list = emalloc((maxentry = DEFNUM) * sizeof(char *));
+		list = ecalloc(maxentry, sizeof(char *));
 	while (fgets(buf, MAXLINELEN, fp)) {
-		for (p = buf; *p && isspace(*p); ++p);
+		for (p = buf; isspace((unsigned char)*p); ++p);
 		if (!*p)
 			continue;
 		if (!(p = strchr(p, '\n'))) {
@@ -280,31 +284,39 @@ input(fp)
 			maxlength = len;
 		if (entries == maxentry) {
 			maxentry += DEFNUM;
-			if (!(list = realloc(list,
-			    (u_int)maxentry * sizeof(char *))))
-				err(1, NULL);
+			list = ereallocarray(list, maxentry, sizeof(char *));
+			memset(list + entries, 0, DEFNUM * sizeof(char *));
 		}
-		list[entries++] = strdup(buf);
+		if (!(list[entries++] = strdup(buf)))
+			err(1, NULL);
 	}
 }
 
 void *
-emalloc(size)
-	int size;
+ereallocarray(void *oldp, size_t sz1, size_t sz2)
 {
-	char *p;
+	void *p;
 
-	if (!(p = malloc(size)))
+	if (!(p = reallocarray(oldp, sz1, sz2)))
 		err(1, NULL);
-	memset(p, 0, size);
+	return (p);
+}
+
+void *
+ecalloc(size_t sz1, size_t sz2)
+{
+	void *p;
+
+	if (!(p = calloc(sz1, sz2)))
+		err(1, NULL);
 	return (p);
 }
 
 void
-usage()
+usage(void)
 {
 
 	(void)fprintf(stderr,
-	    "usage: column [-tx] [-c columns] [file ...]\n");
+	    "usage: column [-tx] [-c columns] [-s sep] [file ...]\n");
 	exit(1);
 }

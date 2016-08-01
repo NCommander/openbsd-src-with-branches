@@ -1,3 +1,4 @@
+/*	$OpenBSD: n_tanh.c,v 1.8 2008/07/17 15:36:28 martynas Exp $	*/
 /*	$NetBSD: n_tanh.c,v 1.1 1995/10/10 23:37:08 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +29,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)tanh.c	8.1 (Berkeley) 6/4/93";
-#endif /* not lint */
+#include "math.h"
 
 /* TANH(X)
  * RETURN THE HYPERBOLIC TANGENT OF X
  * DOUBLE PRECISION (VAX D FORMAT 56 BITS, IEEE DOUBLE 53 BITS)
- * CODED IN C BY K.C. NG, 1/8/85; 
+ * CODED IN C BY K.C. NG, 1/8/85;
  * REVISED BY K.C. NG on 2/8/85, 2/11/85, 3/7/85, 3/24/85.
  *
  * Required system supported functions :
@@ -73,26 +68,26 @@ static char sccsid[] = "@(#)tanh.c	8.1 (Berkeley) 6/4/93";
  *	observed error was 2.22 ulps (units in the last place).
  */
 
-double tanh(x)
-double x;
+double
+tanh(double x)
 {
 	static double one=1.0, two=2.0, small = 1.0e-10, big = 1.0e10;
-	double expm1(), t, copysign(), sign;
-	int finite();
+	double t, sign;
 
-#if !defined(vax)&&!defined(tahoe)
-	if(x!=x) return(x);	/* x is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+	if (isnan(x))
+		return (x);
 
 	sign=copysign(one,x);
 	x=copysign(x,one);
-	if(x < 22.0) 
+	if(x < 22.0)
 	    if( x > one )
 		return(copysign(one-two/(expm1(x+x)+two),sign));
 	    else if ( x > small )
 		{t= -expm1(-(x+x)); return(copysign(t/(two-t),sign));}
-	    else		/* raise the INEXACT flag for non-zero x */
-		{big+x; return(copysign(x,sign));}
+	    else {		/* raise the INEXACT flag for non-zero x */
+		t = big + x;
+		return(copysign(x,sign) - (t-(big+x)));
+	    }
 	else if(finite(x))
 	    return (sign+1.0E-37); /* raise the INEXACT flag */
 	else

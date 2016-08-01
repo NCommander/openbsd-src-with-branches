@@ -166,7 +166,8 @@ fi
 
 # Sort remaining files by INFO-DIR-SECTION.
 prevsect=
-filesectdata=`(cd ${INFODIR}; fgrep INFO-DIR-SECTION /dev/null ${infofiles} | \
+filesectdata=`(cd ${INFODIR}; \
+	      fgrep -a INFO-DIR-SECTION /dev/null ${infofiles} | \
 	      fgrep -v 'INFO-DIR-SECTION Miscellaneous' | \
 	      sort -t: -k2 -k1 | tr ' ' '_')`
 for sectdata in ${filesectdata}; do

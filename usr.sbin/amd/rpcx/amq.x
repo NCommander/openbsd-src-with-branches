@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amq.x	8.1 (Berkeley) 6/6/93
- *	$Id: amq.x,v 1.2 1994/06/13 20:50:46 mycroft Exp $
+ *	$Id: amq.x,v 1.5 2003/11/08 19:17:29 jmc Exp $
  *
  */
 
@@ -54,15 +50,15 @@ typedef string amq_string<AMQ_STRLEN>;
 /*
  * The type time_type should correspond to the system time_t
  */
-typedef long time_type;
+typedef int64_t time_type;
 
 /*
  * A tree of what is mounted
  */
 struct amq_mount_tree {
 	amq_string	mt_mountinfo;	/* Mounted filesystem */
-	amq_string 	mt_directory;	/* Virtual mount */
-	amq_string 	mt_mountpoint;	/* Mount point */
+	amq_string	mt_directory;	/* Virtual mount */
+	amq_string	mt_mountpoint;	/* Mount point */
 	amq_string	mt_type;	/* Filesystem type */
 	time_type	mt_mounttime;	/* Mount time */
 	u_short		mt_mountuid;	/* Mounter */
@@ -101,7 +97,7 @@ typedef amq_mount_tree_p amq_mount_tree_list<>;
 struct amq_mount_stats {
 	int	as_drops;	/* Dropped requests */
 	int	as_stale;	/* Stale NFS handles */
-	int	as_mok;		/* Succesful mounts */
+	int	as_mok;		/* Successful mounts */
 	int	as_merr;	/* Failed mounts */
 	int	as_uerr;	/* Failed unmounts */
 };
@@ -170,15 +166,9 @@ program AMQ_PROGRAM {
 		AMQPROC_GETMNTFS(void) = 6;
 
 		/*
-		 * Mount a filesystem
-		 */
-		int
-		AMQPROC_MOUNT(amq_string) = 7;
-
-		/*
 		 * Get version info
 		 */
 		amq_string
-		AMQPROC_GETVERS(void) = 8;
-	} = 1;
+		AMQPROC_GETVERS(void) = 7;
+	} = 57;
 } = 300019;	/* Allocated by Sun, 89/8/29 */

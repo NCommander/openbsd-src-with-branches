@@ -103,6 +103,7 @@ history_filename (filename)
   char *return_val;
   const char *home;
   int home_len;
+  char dot;
 
   return_val = filename ? savestring (filename) : (char *)NULL;
 
@@ -111,23 +112,19 @@ history_filename (filename)
   
   home = sh_get_env_value ("HOME");
 
-  if (home == 0)
-    {
-      home = ".";
-      home_len = 1;
-    }
-  else
-    home_len = strlen (home);
+  if (home == 0 || *home == '\0') {
+    errno = ENOENT;
+    return (NULL);
+  }
+  home_len = strlen (home);
 
-  return_val = (char *)xmalloc (2 + home_len + 8); /* strlen(".history") == 8 */
-  strcpy (return_val, home);
-  return_val[home_len] = '/';
 #if defined (__MSDOS__)
-  strcpy (return_val + home_len + 1, "_history");
+  dot = '_';
 #else
-  strcpy (return_val + home_len + 1, ".history");
+  dot = '.';
 #endif
-
+  if (asprintf(&return_val, "%s/%c%s", home, dot, "history") == -1)
+	  memory_error_and_abort("asprintf");
   return (return_val);
 }
 
@@ -158,8 +155,10 @@ read_history_range (filename, from, to)
   size_t file_size;
 
   buffer = (char *)NULL;
-  input = history_filename (filename);
-  file = open (input, O_RDONLY|O_BINARY, 0666);
+  if ((input = history_filename (filename)))
+    file = open (input, O_RDONLY|O_BINARY, 0666);
+  else
+    file = -1;
 
   if ((file < 0) || (fstat (file, &finfo) == -1))
     goto error_and_exit;
@@ -265,8 +264,10 @@ history_truncate_file (fname, lines)
   size_t file_size;
 
   buffer = (char *)NULL;
-  filename = history_filename (fname);
-  file = open (filename, O_RDONLY|O_BINARY, 0666);
+  if ((filename = history_filename (fname)))
+    file = open (filename, O_RDONLY|O_BINARY, 0666);
+  else
+    file = -1;
   rv = 0;
 
   /* Don't try to truncate non-regular files. */
@@ -384,7 +385,7 @@ history_do_write (filename, nelements, overwrite)
   output = history_filename (filename);
   rv = 0;
 
-  if ((file = open (output, mode, 0600)) == -1)
+  if (!output || (file = open (output, mode, 0600)) == -1)
     {
       FREE (output);
       return (errno);
@@ -401,13 +402,12 @@ history_do_write (filename, nelements, overwrite)
      Suggested by Peter Ho (peter@robosts.oxford.ac.uk). */
   {
     HIST_ENTRY **the_history;	/* local */
-    register int j;
     int buffer_size;
     char *buffer;
 
     the_history = history_list ();
     /* Calculate the total number of bytes to write. */
-    for (buffer_size = 0, i = history_length - nelements; i < history_length; i++)
+    for (buffer_size = 1, i = history_length - nelements; i < history_length; i++)
       buffer_size += 1 + strlen (the_history[i]->line);
 
     /* Allocate the buffer, and fill it. */
@@ -433,19 +433,19 @@ mmap_error:
 	return rv;
       }
 #endif
+    buffer[0] = '\0';
 
-    for (j = 0, i = history_length - nelements; i < history_length; i++)
+    for (i = history_length - nelements; i < history_length; i++)
       {
-	strcpy (buffer + j, the_history[i]->line);
-	j += strlen (the_history[i]->line);
-	buffer[j++] = '\n';
+	strlcat (buffer, the_history[i]->line, buffer_size);
+	strlcat (buffer, "\n", buffer_size);
       }
 
 #ifdef HAVE_MMAP
     if (msync (buffer, buffer_size, 0) != 0 || munmap (buffer, buffer_size) != 0)
       rv = errno;
 #else
-    if (write (file, buffer, buffer_size) < 0)
+    if (write (file, buffer, buffer_size - 1) < 0)
       rv = errno;
     free (buffer);
 #endif

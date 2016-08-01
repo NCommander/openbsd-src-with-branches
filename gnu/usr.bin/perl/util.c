@@ -1877,7 +1877,10 @@ Perl_vwarner(pTHX_ U32  err, const char* pat, va_list* args)
 {
     dVAR;
     PERL_ARGS_ASSERT_VWARNER;
-    if (PL_warnhook == PERL_WARNHOOK_FATAL || ckDEAD(err)) {
+    if (
+        (PL_warnhook == PERL_WARNHOOK_FATAL || ckDEAD(err)) &&
+        !(PL_in_eval & EVAL_KEEPERR)
+    ) {
 	SV * const msv = vmess(pat, args);
 
 	invoke_exception_hook(msv, FALSE);
@@ -4408,6 +4411,9 @@ Perl_parse_unicode_opts(pTHX_ const char **popt)
 U32
 Perl_seed(pTHX)
 {
+#if defined(__OpenBSD__)
+	return arc4random();
+#else
     dVAR;
     /*
      * This is really just a quick hack which grabs various garbage
@@ -4484,6 +4490,7 @@ Perl_seed(pTHX)
     u += SEED_C5 * (U32)PTR2UV(&when);
 #endif
     return u;
+#endif
 }
 
 void

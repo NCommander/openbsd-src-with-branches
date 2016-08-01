@@ -1,7 +1,8 @@
-/*	$Id: app.c,v 1.2 1998/09/27 21:36:42 niklas Exp $	*/
+/* $OpenBSD: app.c,v 1.12 2005/05/04 10:05:01 hshoexer Exp $	 */
+/* $EOM: app.c,v 1.6 1999/05/01 20:21:06 niklas Exp $	 */
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -41,25 +37,27 @@
 
 #include "app.h"
 #include "log.h"
-#include "sysdep.h"
+#include "monitor.h"
+#include "pf_key_v2.h"
 
 int app_socket;
 
 /* Set this to not get any applications setup.  */
 int app_none = 0;
 
+/* Initialize applications.  */
 void
-app_init ()
+app_init(void)
 {
-  if (app_none)
-    return;
-  app_socket = sysdep_app_open ();
-  if (app_socket == -1)
-    log_fatal ("app_init: cannot open connection to application");
+	if (app_none)
+		return;
+	app_socket = monitor_pf_key_v2_open();
+	if (app_socket == -1)
+		log_fatal("app_init: cannot open connection to application");
 }
 
 void
-app_handler ()
+app_handler(void)
 {
-  sysdep_app_handler (app_socket);
+	pf_key_v2_handler(app_socket);
 }

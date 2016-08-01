@@ -1,3 +1,4 @@
+/*	$OpenBSD: login.c,v 1.10 2005/08/02 21:46:23 espie Exp $	*/
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/* from: static char sccsid[] = "@(#)login.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: login.c,v 1.5 1995/06/05 19:43:53 pk Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 
 #include <fcntl.h>
@@ -43,24 +35,38 @@ static char *rcsid = "$Id: login.c,v 1.5 1995/06/05 19:43:53 pk Exp $";
 #include <stdlib.h>
 #include <utmp.h>
 #include <stdio.h>
+#include <string.h>
 
-void login __P((struct utmp *));
+#include "util.h"
 
 void
-login(ut)
-	struct utmp *ut;
+login(struct utmp *utp)
 {
-	register int fd;
-	int tty;
+	struct utmp old_ut;
+	int fd, tty;
+	off_t pos;
 
 	tty = ttyslot();
-	if (tty > 0 && (fd = open(_PATH_UTMP, O_WRONLY|O_CREAT, 0644)) >= 0) {
-		(void)lseek(fd, (off_t)(tty * sizeof(struct utmp)), L_SET);
-		(void)write(fd, ut, sizeof(struct utmp));
+	if (tty > 0 && (fd = open(_PATH_UTMP, O_RDWR|O_CREAT|O_CLOEXEC, 0644))
+	    >= 0) {
+		/*
+		 * Prevent luser from zero'ing out ut_host.
+		 * If the new ut_line is empty but the old one is not
+		 * and ut_line and ut_name match, preserve the old ut_line.
+		 */
+		pos = (off_t)tty * sizeof(struct utmp);
+		if (utp->ut_host[0] == '\0' &&
+		    pread(fd, &old_ut, sizeof(struct utmp), pos) ==
+		    sizeof(struct utmp) &&
+		    old_ut.ut_host[0] != '\0' &&
+		    strncmp(old_ut.ut_line, utp->ut_line, UT_LINESIZE) == 0 &&
+		    strncmp(old_ut.ut_name, utp->ut_name, UT_NAMESIZE) == 0)
+			(void)memcpy(utp->ut_host, old_ut.ut_host, UT_HOSTSIZE);
+		(void)pwrite(fd, utp, sizeof(struct utmp), pos);
 		(void)close(fd);
 	}
-	if ((fd = open(_PATH_WTMP, O_WRONLY|O_APPEND, 0)) >= 0) {
-		(void)write(fd, ut, sizeof(struct utmp));
+	if ((fd = open(_PATH_WTMP, O_WRONLY|O_APPEND|O_CLOEXEC)) >= 0) {
+		(void)write(fd, utp, sizeof(struct utmp));
 		(void)close(fd);
 	}
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: tables.h,v 1.15 2015/03/09 04:23:29 guenther Exp $	*/
 /*	$NetBSD: tables.h,v 1.3 1995/03/21 09:07:47 cgd Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,23 +43,25 @@
 /*
  * Hash Table Sizes MUST BE PRIME, if set too small performance suffers.
  * Probably safe to expect 500000 inodes per tape. Assuming good key
- * distribution (inodes) chains of under 50 long (worse case) is ok.
+ * distribution (inodes) chains of under 50 long (worst case) is ok.
  */
 #define L_TAB_SZ	2503		/* hard link hash table size */
 #define F_TAB_SZ	50503		/* file time hash table size */
 #define N_TAB_SZ	541		/* interactive rename hash table */
 #define D_TAB_SZ	317		/* unique device mapping table */
 #define A_TAB_SZ	317		/* ftree dir access time reset table */
+#define SL_TAB_SZ	317		/* escape symlink tables */
 #define MAXKEYLEN	64		/* max number of chars for hash */
+#define DIRP_SIZE	64		/* initial size of created dir table */
 
 /*
  * file hard link structure (hashed by dev/ino and chained) used to find the
  * hard links in a file system or with some archive formats (cpio)
  */
 typedef struct hrdlnk {
+	ino_t		ino;	/* files inode number */
 	char		*name;	/* name of first file seen with this ino/dev */
 	dev_t		dev;	/* files device number */
-	ino_t		ino;	/* files inode number */
 	u_long		nlink;	/* expected link count */
 	struct hrdlnk	*fow;
 } HRDLNK;
@@ -79,10 +78,10 @@ typedef struct hrdlnk {
  * handle is greatly increased).
  */
 typedef struct ftm {
-	int		namelen;	/* file name length */
-	time_t		mtime;		/* files last modification time */
-	off_t		seek;		/* loacation in scratch file */
+	off_t		seek;		/* location in scratch file */
+	struct timespec	mtim;		/* files last modification time */
 	struct ftm	*fow;
+	int		namelen;	/* file name length */
 } FTM;
 
 /*
@@ -107,7 +106,7 @@ typedef struct namt {
  * this table. (When the inode field in the archive header are too small, we
  * remap the dev on writes to remove accidental collisions).
  *
- * The list is hashed by device number using chain collision resolution. Off of 
+ * The list is hashed by device number using chain collision resolution. Off of
  * each DEVT are linked the various remaps for this device based on those bits
  * in the inode which were truncated. For example if we are just remapping to
  * avoid a device number during an update append, off the DEVT we would have
@@ -137,7 +136,7 @@ typedef struct dlist {
 } DLIST;
 
 /*
- * ftree directory access time reset table. When we are done with with a
+ * ftree directory access time reset table. When we are done with a
  * subtree we reset the access and mod time of the directory when the tflag is
  * set. Not really explicitly specified in the pax spec, but easy and fast to
  * do (and this may have even been intended in the spec, it is not clear).
@@ -145,11 +144,7 @@ typedef struct dlist {
  */
 
 typedef struct atdir {
-	char *name;	/* name of directory to reset */
-	dev_t dev;	/* dev and inode for fast lookup */
-	ino_t ino;
-	time_t mtime;	/* access and mod time to reset to */
-	time_t atime;
+	struct file_times ft;
 	struct atdir *fow;
 } ATDIR;
 
@@ -160,15 +155,11 @@ typedef struct atdir {
  * times and/or modes). We must reset time in the reverse order of creation,
  * because entries are added  from the top of the file tree to the bottom.
  * We MUST reset times from leaf to root (it will not work the other
- * direction).  Entries are recorded into a spool file to make reverse
- * reading faster.
+ * direction).
  */
 
 typedef struct dirdata {
-	int nlen;	/* length of the directory name (includes \0) */
-	off_t npos;	/* position in file where this dir name starts */
-	mode_t mode;	/* file mode to restore */
-	time_t mtime;	/* mtime to set */
-	time_t atime;	/* atime to set */
-	int frc_mode;	/* do we force mode settings? */
+	struct file_times ft;
+	u_int16_t mode;		/* file mode to restore */
+	u_int16_t frc_mode;	/* do we force mode settings? */
 } DIRDATA;

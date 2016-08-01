@@ -48,7 +48,6 @@ struct tube;
 struct tube_res_list;
 #ifdef USE_WINSOCK
 #include "util/locks.h"
-#include "util/winsock_event.h"
 #endif
 
 /**
@@ -83,7 +82,7 @@ struct tube {
 
 	/** background write queue, commpoint to write results back */
 	struct comm_point* res_com;
-	/** are we curently writing a result, 0 if not, else bytecount into
+	/** are we currently writing a result, 0 if not, else bytecount into
 	 * the res_list first entry. */
 	size_t res_write;
 	/** list of outstanding results to be written back */
@@ -99,7 +98,7 @@ struct tube {
 	/** the windows sockets event (signaled if items in pipe) */
 	WSAEVENT event;
 	/** winsock event storage when registered with event base */
-	struct event ev_listen;
+	struct ub_event* ev_listen;
 
 	/** lock on the list of outstanding items */
 	lock_basic_t res_lock;

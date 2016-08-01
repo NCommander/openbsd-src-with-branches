@@ -1,3 +1,4 @@
+/*	$OpenBSD: bpfdesc.h,v 1.29 2015/12/03 16:27:32 mpi Exp $	*/
 /*	$NetBSD: bpfdesc.h,v 1.11 1995/09/27 18:30:42 thorpej Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,13 +37,18 @@
  *	@(#)bpfdesc.h	8.1 (Berkeley) 6/10/93
  */
 
-#include <sys/select.h>
+#ifndef _NET_BPFDESC_H_
+#define _NET_BPFDESC_H_
+
+#ifdef _KERNEL
+
+#include <sys/selinfo.h>
 
 /*
  * Descriptor associated with each open bpf file.
  */
 struct bpf_d {
-	struct bpf_d	*bd_next;	/* Linked list of descriptors */
+	SRPL_ENTRY(bpf_d) bd_next;	/* Linked list of descriptors */
 	/*
 	 * Buffer slots: two mbuf clusters buffer the incoming packets.
 	 *   The model has three slots.  Sbuf is always occupied.
@@ -59,31 +61,35 @@ struct bpf_d {
 	caddr_t		bd_sbuf;	/* store slot */
 	caddr_t		bd_hbuf;	/* hold slot */
 	caddr_t		bd_fbuf;	/* free slot */
-	int 		bd_slen;	/* current length of store buffer */
-	int 		bd_hlen;	/* current length of hold buffer */
+	int		bd_slen;	/* current length of store buffer */
+	int		bd_hlen;	/* current length of hold buffer */
 
 	int		bd_bufsize;	/* absolute length of buffers */
 
 	struct bpf_if *	bd_bif;		/* interface descriptor */
 	u_long		bd_rtout;	/* Read timeout in 'ticks' */
-	struct bpf_insn *bd_filter; 	/* filter code */
+	u_long		bd_rdStart;	/* when the read started */
+	struct srp	bd_rfilter;	/* read filter code */
+	struct srp	bd_wfilter; 	/* write filter code */
 	u_long		bd_rcount;	/* number of packets received */
 	u_long		bd_dcount;	/* number of packets dropped */
 
 	u_char		bd_promisc;	/* true if listening promiscuously */
 	u_char		bd_state;	/* idle, waiting, or timed out */
 	u_char		bd_immediate;	/* true to return on packet arrival */
+	u_char		bd_locked;	/* true if descriptor is locked */
+	u_char		bd_fildrop;	/* true if filtered packets will be dropped */
+	u_char		bd_dirfilt;	/* direction filter */
+	int		bd_hdrcmplt;	/* false to fill in src lladdr automatically */
 	int		bd_async;	/* non-zero if packet reception should generate signal */
 	int		bd_sig;		/* signal to send upon packet reception */
 	pid_t		bd_pgid;	/* process or group id for signal */
-#if BSD < 199103
-	u_char		bd_selcoll;	/* true if selects collide */
-	int		bd_timedout;
-	struct proc *	bd_selproc;	/* process that last selected us */
-#else
-	u_char		bd_pad;		/* explicit alignment */
+	uid_t		bd_siguid;	/* uid for process that set pgid */
+	uid_t		bd_sigeuid;	/* euid for process that set pgid */
+	u_int		bd_ref;		/* reference count */
 	struct selinfo	bd_sel;		/* bsd select info */
-#endif
+	int		bd_unit;	/* logical unit number */
+	LIST_ENTRY(bpf_d) bd_list;	/* descriptor list */
 };
 
 /*
@@ -91,13 +97,13 @@ struct bpf_d {
  */
 struct bpf_if {
 	struct bpf_if *bif_next;	/* list of all interfaces */
-	struct bpf_d *bif_dlist;	/* descriptor list */
+	SRPL_HEAD(, bpf_d) bif_dlist;		/* descriptor list */
 	struct bpf_if **bif_driverp;	/* pointer into softc */
 	u_int bif_dlt;			/* link layer type */
 	u_int bif_hdrlen;		/* length of header (with padding) */
-	struct ifnet *bif_ifp;		/* correspoding interface */
+	struct ifnet *bif_ifp;		/* corresponding interface */
 };
 
-#ifdef _KERNEL
-int	 bpf_setf __P((struct bpf_d *, struct bpf_program *));
-#endif
+int	 bpf_setf(struct bpf_d *, struct bpf_program *, int);
+#endif /* _KERNEL */
+#endif /* _NET_BPFDESC_H_ */

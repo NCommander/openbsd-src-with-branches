@@ -1,40 +1,40 @@
-#	$NetBSD: bsd.obj.mk,v 1.7 1995/06/10 20:46:35 mycroft Exp $
+#	$OpenBSD: bsd.obj.mk,v 1.13 2007/05/01 08:31:13 espie Exp $
+#	$NetBSD: bsd.obj.mk,v 1.9 1996/04/10 21:08:05 thorpej Exp $
 
 .if !target(obj)
-.if defined(NOOBJ)
+.  if defined(NOOBJ)
 obj:
-.else
+.  else
 
-.if defined(OBJMACHINE)
-__objdir=	obj.${MACHINE}
-.else
+.  if defined(MAKEOBJDIR)
+__objdir=	${MAKEOBJDIR}
+.  else
 __objdir=	obj
-.endif
+.  endif
 
-.if defined(USR_OBJMACHINE)
-__usrobjdir=	${BSDOBJDIR}.${MACHINE}
-__usrobjdirpf=	
-.else
-__usrobjdir=	${BSDOBJDIR}
-.if defined(OBJMACHINE)
-__usrobjdirpf=	.${MACHINE}
-.else
-__usrobjdirpf=
-.endif
-.endif
+_SUBDIRUSE:
 
-obj: _SUBDIRUSE
-	@cd ${.CURDIR}; rm -f ${__objdir} > /dev/null 2>&1 || true; \
-	here=`pwd`; subdir=`echo $$here | sed 's,^${BSDSRCDIR}/,,'`; \
+obj! _SUBDIRUSE
+	@cd ${.CURDIR}; \
+	here=`/bin/pwd`; bsdsrcdir=`cd ${BSDSRCDIR}; /bin/pwd`; \
+	subdir=$${here#$${bsdsrcdir}/}; \
 	if test $$here != $$subdir ; then \
-		dest=${__usrobjdir}/$$subdir${__usrobjdirpf} ; \
+		dest=${BSDOBJDIR}/$$subdir ; \
 		echo "$$here/${__objdir} -> $$dest"; \
-		rm -rf ${__objdir}; \
-		ln -s $$dest ${__objdir}; \
-		if test -d ${__usrobjdir} -a ! -d $$dest; then \
-			mkdir -p $$dest; \
+		if test ! -L ${__objdir} -o \
+		    X`readlink ${__objdir}` != X$$dest; \
+		    then \
+			if test -e ${__objdir}; then rm -rf ${__objdir}; fi; \
+			ln -sf $$dest ${__objdir}; \
+		fi; \
+		if test -d ${BSDOBJDIR}; then \
+			test -d $$dest || mkdir -p $$dest; \
 		else \
-			true; \
+			if test -e ${BSDOBJDIR}; then \
+				echo "${BSDOBJDIR} is not a directory"; \
+			else \
+				echo "${BSDOBJDIR} does not exist"; \
+			fi; \
 		fi; \
 	else \
 		true ; \
@@ -44,5 +44,5 @@ obj: _SUBDIRUSE
 			mkdir $$dest; \
 		fi ; \
 	fi;
-.endif
+.  endif
 .endif

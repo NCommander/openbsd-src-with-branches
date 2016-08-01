@@ -705,7 +705,7 @@ rl_read_init_file (filename)
       filename = last_readline_init_file;
       if (filename == 0)
         filename = sh_get_env_value ("INPUTRC");
-      if (filename == 0)
+      if (filename == 0 || *filename == '\0')
 	filename = DEFAULT_INPUTRC;
     }
 
@@ -1803,19 +1803,20 @@ rl_invoking_keyseqs_in_map (function, map)
 
 	    for (i = 0; seqs[i]; i++)
 	      {
-		char *keyname = (char *)xmalloc (6 + strlen (seqs[i]));
+		int len = 6 + strlen(seqs[i]);
+		char *keyname = (char *)xmalloc (len);
 
 		if (key == ESC)
 #if 0
-		  sprintf (keyname, "\\e");
+		  snprintf(keyname, len, "\\e");
 #else
 		/* XXX - experimental */
-		  sprintf (keyname, "\\M-");
+		  snprintf(keyname, len, "\\M-");
 #endif
 		else if (CTRL_CHAR (key))
-		  sprintf (keyname, "\\C-%c", _rl_to_lower (UNCTRL (key)));
+		  snprintf(keyname, len, "\\C-%c", _rl_to_lower (UNCTRL (key)));
 		else if (key == RUBOUT)
-		  sprintf (keyname, "\\C-?");
+		  snprintf(keyname, len, "\\C-?");
 		else if (key == '\\' || key == '"')
 		  {
 		    keyname[0] = '\\';
@@ -1828,7 +1829,7 @@ rl_invoking_keyseqs_in_map (function, map)
 		    keyname[1] = '\0';
 		  }
 		
-		strcat (keyname, seqs[i]);
+		strlcat (keyname, seqs[i], len);
 		free (seqs[i]);
 
 		if (result_index + 2 > result_size)
@@ -1977,9 +1978,10 @@ _rl_macro_dumper_internal (print_readably, map, prefix)
 	  prefix_len = prefix ? strlen (prefix) : 0;
 	  if (key == ESC)
 	    {
-	      keyname = (char *)xmalloc (3 + prefix_len);
+	      int len = 3 + prefix_len;
+	      keyname = (char *)xmalloc (len);
 	      if (prefix)
-		strcpy (keyname, prefix);
+		strlcpy (keyname, prefix, len);
 	      keyname[prefix_len] = '\\';
 	      keyname[prefix_len + 1] = 'e';
 	      keyname[prefix_len + 2] = '\0';
@@ -1989,9 +1991,8 @@ _rl_macro_dumper_internal (print_readably, map, prefix)
 	      keyname = _rl_get_keyname (key);
 	      if (prefix)
 		{
-		  out = (char *)xmalloc (strlen (keyname) + prefix_len + 1);
-		  strcpy (out, prefix);
-		  strcpy (out + prefix_len, keyname);
+		  if (asprintf(&out, "%s%s", prefix, keyname) == -1)
+		    memory_error_and_abort("asprintf");
 		  free (keyname);
 		  keyname = out;
 		}

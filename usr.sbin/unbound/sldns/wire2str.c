@@ -165,6 +165,7 @@ static sldns_lookup_table sldns_edns_options_data[] = {
 	{ 6, "DHU" },
 	{ 7, "N3U" },
 	{ 8, "edns-client-subnet" },
+	{ 12, "Padding" },
 	{ 0, NULL}
 };
 sldns_lookup_table* sldns_edns_options = sldns_edns_options_data;
@@ -696,6 +697,9 @@ int sldns_wire2str_rdata_scan(uint8_t** d, size_t* dlen, char** s,
 				s, slen);
 		}
 		w += n;
+	}
+	if(*dlen != 0) {
+		goto failed;
 	}
 	return w;
 }
@@ -1860,6 +1864,9 @@ int sldns_wire2str_edns_option_print(char** s, size_t* sl,
 		break;
 	case LDNS_EDNS_CLIENT_SUBNET:
 		w += sldns_wire2str_edns_subnet_print(s, sl, optdata, optlen);
+		break;
+	case LDNS_EDNS_PADDING:
+		w += print_hex_buf(s, sl, optdata, optlen);
 		break;
 	default:
 		/* unknown option code */

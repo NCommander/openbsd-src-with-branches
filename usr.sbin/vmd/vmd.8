@@ -1,0 +1,111 @@
+.\"	$OpenBSD: vmd.8,v 1.5 2015/12/03 21:45:45 reyk Exp $
+.\"
+.\" Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd $Mdocdate: December 3 2015 $
+.Dt VMD 8
+.Os
+.Sh NAME
+.Nm vmd
+.Nd virtual machine daemon
+.Sh SYNOPSIS
+.Nm vmd
+.Op Fl dnv
+.Op Fl D Ar macro Ns = Ns Ar value
+.Op Fl f Ar file
+.Sh DESCRIPTION
+.Nm
+is a daemon responsible for the execution of virtual machines (VMs) on a
+host.
+.Nm
+is typically started at boot time and is controlled via
+.Xr vmctl 8 .
+.Pp
+.Nm
+can be enabled during system boot by setting the following in
+.Pa /etc/rc.conf.local :
+.Pp
+.Dl vmd_flags=\&"\&"
+.Pp
+.Nm
+interfaces with the virtual machine monitor (VMM) built into the kernel.
+One instance of
+.Nm
+will be spawned for each VM running on the host, plus an extra instance
+for control operations.
+Each child
+.Nm
+will in turn create one or more VCPU (virtual CPU) threads responsible for
+driving the VM's operations using
+.Xr vmm 4 .
+.Pp
+.Nm
+is also responsible for proxying various other commands/requests from
+.Xr vmctl 8 ,
+such as stopping VMs, and retrieving information from
+.Xr vmm 4
+about running VMs.
+.Pp
+The options are as follows:
+.Bl -tag -width Dssmacro=value
+.It Fl D Ar macro Ns = Ns Ar value
+Define
+.Ar macro
+to be set to
+.Ar value
+on the command line.
+Overrides the definition of
+.Ar macro
+in the configuration file.
+.It Fl d
+Do not daemonize and log to
+.Em stderr .
+.It Fl f Ar file
+Specify an alternative configuration file.
+The default is
+.Pa /etc/vm.conf .
+.It Fl n
+Configtest mode.
+Only check the configuration file for validity.
+.It Fl v
+Verbose mode.
+Multiple
+.Fl v
+options increase the verbosity.
+.El
+.Sh FILES
+.Bl -tag -width "/var/run/vmd.sockXX" -compact
+.It Pa /etc/vm.conf
+Default configuration file.
+This is optional.
+.It Pa /var/run/vmd.sock
+.Ux Ns -domain
+socket used for communication with
+.Xr vmctl 8 .
+.El
+.Sh SEE ALSO
+.Xr vmm 4 ,
+.Xr vm.conf 5 ,
+.Xr rc.conf 8 ,
+.Xr vmctl 8
+.Sh HISTORY
+The
+.Nm
+command first appeared in
+.Ox 5.9 .
+.Sh AUTHORS
+.An Mike Larkin Aq Mt mlarkin@openbsd.org
+and
+.An Reyk Floeter Aq Mt reyk@openbsd.org

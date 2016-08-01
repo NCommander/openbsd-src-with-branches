@@ -1,4 +1,5 @@
-/*	$NetBSD: instr.h,v 1.2 1994/11/20 20:53:11 deraadt Exp $ */
+/*	$OpenBSD: instr.h,v 1.3 2003/06/02 23:27:54 millert Exp $	*/
+/*	$NetBSD: instr.h,v 1.3 1997/03/14 23:54:07 christos Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -222,6 +219,7 @@ union instr {
 		u_int	:2;		/* 11 only */
 		u_int	i_rd:5;		/* destination register */
 		u_int	i_op3:6;	/* second-level decode (see IOP3_mem) */
+		u_int	i_rs1:5;	/* source register 1 */
 		u_int	i_i:1;		/* immediate vs asi */
 		u_int	i_low13:13;	/* depend on i bit */
 	} i_loadstore;
@@ -244,6 +242,7 @@ union instr {
 		u_int	i_rd:5;		/* destination register */
 		u_int	i_op3:6;	/* second-level decode */
 		u_int	i_rs1:5;	/* source register 1 */
+		u_int	i_i:1;		/* immediate vs asi */
 		u_int	i_asi:8;	/* asi */
 		u_int	i_rs2:5;	/* source register 2 */
 	} i_asi;

@@ -4,7 +4,8 @@
 
 RSA_set_default_method, RSA_get_default_method, RSA_set_method,
 RSA_get_method, RSA_PKCS1_SSLeay, RSA_null_method, RSA_flags,
-RSA_new_method - select RSA method
+RSA_new_method, RSA_get_default_openssl_method,
+RSA_set_default_openssl_method - select RSA method
 
 =head1 SYNOPSIS
 
@@ -43,7 +44,7 @@ been set as a default for RSA, so this function is no longer recommended.
 
 RSA_get_default_method() returns a pointer to the current default
 RSA_METHOD. However, the meaningfulness of this result is dependent on
-whether the ENGINE API is being used, so this function is no longer 
+whether the ENGINE API is being used, so this function is no longer
 recommended.
 
 RSA_set_method() selects B<meth> to perform all operations using the key
@@ -140,8 +141,6 @@ the default method is used.
 
 RSA_PKCS1_SSLeay(), RSA_PKCS1_null_method(), RSA_get_default_method()
 and RSA_get_method() return pointers to the respective RSA_METHODs.
-
-RSA_set_default_method() returns no value.
 
 RSA_set_method() returns a pointer to the old RSA_METHOD implementation
 that was replaced. However, this return value should probably be ignored

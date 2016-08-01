@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.9 2003/06/02 23:32:08 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.5 1995/03/21 09:06:24 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,20 +32,23 @@
  *	@(#)extern.h	8.1 (Berkeley) 5/31/93
  */
 
-int	 acccmp __P((const FTSENT *, const FTSENT *));
-int	 revacccmp __P((const FTSENT *, const FTSENT *));
-int	 modcmp __P((const FTSENT *, const FTSENT *));
-int	 revmodcmp __P((const FTSENT *, const FTSENT *));
-int	 namecmp __P((const FTSENT *, const FTSENT *));
-int	 revnamecmp __P((const FTSENT *, const FTSENT *));
-int	 statcmp __P((const FTSENT *, const FTSENT *));
-int	 revstatcmp __P((const FTSENT *, const FTSENT *));
-int	 sizecmp __P((const FTSENT *, const FTSENT *));
-int	 revsizecmp __P((const FTSENT *, const FTSENT *));
+extern char *__progname;
 
-char	*flags_to_string __P((u_long, char *));
-void	 prcopy __P((char *, char *, int));
-void	 printcol __P((DISPLAY *));
-void	 printlong __P((DISPLAY *));
-void	 printscol __P((DISPLAY *));
-void	 usage __P((void));
+int	 acccmp(const FTSENT *, const FTSENT *);
+int	 revacccmp(const FTSENT *, const FTSENT *);
+int	 modcmp(const FTSENT *, const FTSENT *);
+int	 revmodcmp(const FTSENT *, const FTSENT *);
+int	 namecmp(const FTSENT *, const FTSENT *);
+int	 revnamecmp(const FTSENT *, const FTSENT *);
+int	 statcmp(const FTSENT *, const FTSENT *);
+int	 revstatcmp(const FTSENT *, const FTSENT *);
+int	 sizecmp(const FTSENT *, const FTSENT *);
+int	 revsizecmp(const FTSENT *, const FTSENT *);
+
+int	 mbsprint(const char *, int);
+void	 printcol(DISPLAY *);
+void	 printacol(DISPLAY *);
+void	 printlong(DISPLAY *);
+void	 printscol(DISPLAY *);
+void	 printstream(DISPLAY *);
+void	 usage(void);

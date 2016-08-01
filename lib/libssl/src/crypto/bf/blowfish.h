@@ -1,4 +1,4 @@
-/* crypto/bf/blowfish.h */
+/* $OpenBSD: blowfish.h,v 1.13 2014/06/12 15:49:28 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -59,7 +59,7 @@
 #ifndef HEADER_BLOWFISH_H
 #define HEADER_BLOWFISH_H
 
-#include <openssl/e_os2.h>
+#include <openssl/opensslconf.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -79,21 +79,7 @@ extern "C" {
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
 
-#if defined(__LP32__)
-#define BF_LONG unsigned long
-#elif defined(OPENSSL_SYS_CRAY) || defined(__ILP64__)
-#define BF_LONG unsigned long
-#define BF_LONG_LOG2 3
-/*
- * _CRAY note. I could declare short, but I have no idea what impact
- * does it have on performance on none-T3E machines. I could declare
- * int, but at least on C90 sizeof(int) can be chosen at compile time.
- * So I've chosen long...
- *					<appro@fy.chalmers.se>
- */
-#else
 #define BF_LONG unsigned int
-#endif
 
 #define BF_ROUNDS	16
 #define BF_BLOCK	8
@@ -104,9 +90,6 @@ typedef struct bf_key_st
 	BF_LONG S[4*256];
 	} BF_KEY;
 
-#ifdef OPENSSL_FIPS 
-void private_BF_set_key(BF_KEY *key, int len, const unsigned char *data);
-#endif
 void BF_set_key(BF_KEY *key, int len, const unsigned char *data);
 
 void BF_encrypt(BF_LONG *data,const BF_KEY *key);

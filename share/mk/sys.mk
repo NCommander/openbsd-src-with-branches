@@ -1,40 +1,53 @@
-#	$NetBSD: sys.mk,v 1.22 1995/09/24 23:49:09 christos Exp $
+#	$OpenBSD: sys.mk,v 1.75 2016/05/11 18:01:33 deraadt Exp $
+#	$NetBSD: sys.mk,v 1.27 1996/04/10 05:47:19 mycroft Exp $
 #	@(#)sys.mk	5.11 (Berkeley) 3/13/91
 
-unix=		We run NetBSD.
+.if defined(EXTRA_SYS_MK_INCLUDES)
+.for __SYS_MK_INCLUDE in ${EXTRA_SYS_MK_INCLUDES}
+.include ${__SYS_MK_INCLUDE}
+.endfor
+.endif
 
-.SUFFIXES: .out .a .ln .o .c .cc .C .F .f .r .y .l .s .S .cl .p .h .sh .m4
+unix=		We run OpenBSD.
+OSMAJOR=	6
+OSMINOR=	0
+OSREV=		$(OSMAJOR).$(OSMINOR)
+OSrev=		$(OSMAJOR)$(OSMINOR)
 
-.LIBS:		.a
+.SUFFIXES: .out .a .o .c .cc .C .cxx .cpp .F .f .r .y .l .s .S .cl .p .h .sh .m4
 
 AR?=		ar
-ARFLAGS?=	rl
+ARFLAGS?=	r
 RANLIB?=	ranlib
+LORDER?=	lorder
 
 AS?=		as
-AFLAGS?=
-COMPILE.s?=	${AS} ${AFLAGS}
+AFLAGS?=	${DEBUG}
+COMPILE.s?=	${CC} ${AFLAGS} -c
 LINK.s?=	${CC} ${AFLAGS} ${LDFLAGS}
 COMPILE.S?=	${CC} ${AFLAGS} ${CPPFLAGS} -c
 LINK.S?=	${CC} ${AFLAGS} ${CPPFLAGS} ${LDFLAGS}
 
 CC?=		cc
-CFLAGS?=	-O
+
+PIPE?=		-pipe
+
+CFLAGS?=	-O2 ${PIPE} ${DEBUG}
 COMPILE.c?=	${CC} ${CFLAGS} ${CPPFLAGS} -c
 LINK.c?=	${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS}
 
-CXX?=		g++
-CXXFLAGS?=	${CFLAGS}
+HOSTCC?=	cc
+
+CXX?=		c++
+CXXFLAGS?=	-O2 ${PIPE} ${DEBUG}
 COMPILE.cc?=	${CXX} ${CXXFLAGS} ${CPPFLAGS} -c
 LINK.cc?=	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS}
 
 CPP?=		cpp
-.if defined(DESTDIR)
-CPPFLAGS+=	-nostdinc -idirafter ${DESTDIR}/usr/include
-.endif
+CPPFLAGS?=	
 
 FC?=		f77
-FFLAGS?=		-O
+FFLAGS?=	-O2
 RFLAGS?=
 COMPILE.f?=	${FC} ${FFLAGS} -c
 LINK.f?=	${FC} ${FFLAGS} ${LDFLAGS}
@@ -48,10 +61,7 @@ LFLAGS?=
 LEX.l?=		${LEX} ${LFLAGS}
 
 LD?=		ld
-LDFLAGS?=
-
-LINT?=		lint
-LINTFLAGS?=	-chapbx
+LDFLAGS+=	${DEBUG}
 
 MAKE?=		make
 
@@ -66,6 +76,10 @@ YACC?=		yacc
 YFLAGS?=	-d
 YACC.y?=	${YACC} ${YFLAGS}
 
+INSTALL?=	install
+
+CTAGS?=		/usr/bin/ctags
+
 # C
 .c:
 	${LINK.c} -o ${.TARGET} ${.IMPSRC} ${LDLIBS}
@@ -75,8 +89,6 @@ YACC.y?=	${YACC} ${YFLAGS}
 	${COMPILE.c} ${.IMPSRC}
 	${AR} ${ARFLAGS} $@ $*.o
 	rm -f $*.o
-.c.ln:
-	${LINT} ${LINTFLAGS} ${CFLAGS:M-[IDU]*} -i ${.IMPSRC}
 
 # C++
 .cc:
@@ -93,6 +105,24 @@ YACC.y?=	${YACC} ${YFLAGS}
 .C.o:
 	${COMPILE.cc} ${.IMPSRC}
 .C.a:
+	${COMPILE.cc} ${.IMPSRC}
+	${AR} ${ARFLAGS} $@ $*.o
+	rm -f $*.o
+
+.cxx:
+	${LINK.cc} -o ${.TARGET} ${.IMPSRC} ${LDLIBS}
+.cxx.o:
+	${COMPILE.cc} ${.IMPSRC}
+.cxx.a:
+	${COMPILE.cc} ${.IMPSRC}
+	${AR} ${ARFLAGS} $@ $*.o
+	rm -f $*.o
+
+.cpp:
+	${LINK.cc} -o ${.TARGET} ${.IMPSRC} ${LDLIBS}
+.cpp.o:
+	${COMPILE.cc} ${.IMPSRC}
+.cpp.a:
 	${COMPILE.cc} ${.IMPSRC}
 	${AR} ${ARFLAGS} $@ $*.o
 	rm -f $*.o

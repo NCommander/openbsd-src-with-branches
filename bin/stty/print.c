@@ -1,4 +1,5 @@
-/*	$NetBSD: print.c,v 1.10 1995/03/21 09:11:24 cgd Exp $	*/
+/*	$OpenBSD: print.c,v 1.13 2009/10/27 23:59:22 deraadt Exp $	*/
+/*	$NetBSD: print.c,v 1.11 1996/05/07 18:20:10 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,35 +30,24 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)print.c	8.6 (Berkeley) 4/16/94";
-#else
-static char rcsid[] = "$NetBSD: print.c,v 1.10 1995/03/21 09:11:24 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include <termios.h>
 
 #include "stty.h"
 #include "extern.h"
 
-static void  binit __P((char *));
-static void  bput __P((char *));
-static char *ccval __P((struct cchar *, int));
+static void  binit(char *);
+static void  bput(char *);
+static char *ccval(const struct cchar *, int);
 
 void
-print(tp, wp, ldisc, fmt)
-	struct termios *tp;
-	struct winsize *wp;
-	int ldisc;
-	enum FMT fmt;
+print(struct termios *tp, struct winsize *wp, int ldisc, enum FMT fmt)
 {
-	struct cchar *p;
+	const struct cchar *p;
 	long tmp;
 	u_char *cc;
 	int cnt, ispeed, ospeed;
@@ -72,16 +58,22 @@ print(tp, wp, ldisc, fmt)
 	/* Line discipline. */
 	if (ldisc != TTYDISC) {
 		switch(ldisc) {
-		case TABLDISC:	
+		case TABLDISC:
 			cnt += printf("tablet disc; ");
 			break;
-		case SLIPDISC:	
+		case SLIPDISC:
 			cnt += printf("slip disc; ");
 			break;
-		case PPPDISC:	
+		case PPPDISC:
 			cnt += printf("ppp disc; ");
 			break;
-		default:	
+		case STRIPDISC:
+			cnt += printf("strip disc; ");
+			break;
+		case NMEADISC:
+			cnt += printf("nmea disc; ");
+			break;
+		default:
 			cnt += printf("#%d disc; ", ldisc);
 			break;
 		}
@@ -125,6 +117,7 @@ print(tp, wp, ldisc, fmt)
 	put("-pendin", PENDIN, 0);
 	put("-nokerninfo", NOKERNINFO, 0);
 	put("-extproc", EXTPROC, 0);
+	put("-xcase", XCASE, 0);
 
 	/* input flags */
 	tmp = tp->c_iflag;
@@ -133,6 +126,7 @@ print(tp, wp, ldisc, fmt)
 	put("-icrnl", ICRNL, 1);
 	put("-inlcr", INLCR, 0);
 	put("-igncr", IGNCR, 0);
+	put("-iuclc", IUCLC, 0);
 	put("-ixon", IXON, 1);
 	put("-ixoff", IXOFF, 0);
 	put("-ixany", IXANY, 1);
@@ -148,7 +142,12 @@ print(tp, wp, ldisc, fmt)
 	binit("oflags");
 	put("-opost", OPOST, 1);
 	put("-onlcr", ONLCR, 1);
+	put("-ocrnl", OCRNL, 0);
+	put("-onocr", ONOCR, 0);
+	put("-onlret", ONLRET, 0);
+	put("-olcuc", OLCUC, 0);
 	put("-oxtabs", OXTABS, 1);
+	put("-onoeot", ONOEOT, 0);
 
 	/* control flags (hardware state) */
 	tmp = tp->c_cflag;
@@ -192,8 +191,10 @@ print(tp, wp, ldisc, fmt)
 			if (fmt != BSD && cc[p->sub] == p->def)
 				continue;
 #define	WD	"%-8s"
-			(void)sprintf(buf1 + cnt * 8, WD, p->name);
-			(void)sprintf(buf2 + cnt * 8, WD, ccval(p, cc[p->sub]));
+			(void)snprintf(buf1 + cnt * 8, sizeof(buf1) - cnt * 8,
+			    WD, p->name);
+			(void)snprintf(buf2 + cnt * 8, sizeof(buf2) - cnt * 8,
+			    WD, ccval(p, cc[p->sub]));
 			if (++cnt == LINELENGTH / 8) {
 				cnt = 0;
 				(void)printf("%s\n", buf1);
@@ -211,8 +212,7 @@ static int col;
 static char *label;
 
 static void
-binit(lb)
-	char *lb;
+binit(char *lb)
 {
 
 	if (col) {
@@ -223,8 +223,7 @@ binit(lb)
 }
 
 static void
-bput(s)
-	char *s;
+bput(char *s)
 {
 
 	if (col == 0) {
@@ -240,20 +239,17 @@ bput(s)
 }
 
 static char *
-ccval(p, c)
-	struct cchar *p;
-	int c;
+ccval(const struct cchar *p, int c)
 {
 	static char buf[5];
 	char *bp;
-
-	if (c == _POSIX_VDISABLE)
-		return ("<undef>");
 
 	if (p->sub == VMIN || p->sub == VTIME) {
 		(void)snprintf(buf, sizeof(buf), "%d", c);
 		return (buf);
 	}
+	if (c == _POSIX_VDISABLE)
+		return ("<undef>");
 	bp = buf;
 	if (c & 0200) {
 		*bp++ = 'M';

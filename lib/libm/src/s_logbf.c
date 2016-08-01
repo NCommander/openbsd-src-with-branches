@@ -13,19 +13,11 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_logbf.c,v 1.4 1995/05/10 20:47:51 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
-	float logbf(float x)
-#else
-	float logbf(x)
-	float x;
-#endif
+float
+logbf(float x)
 {
 	int32_t ix;
 	GET_FLOAT_WORD(ix,x);

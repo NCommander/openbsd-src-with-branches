@@ -1,0 +1,583 @@
+.\" $OpenBSD: pledge.2,v 1.32 2016/04/13 14:24:30 tb Exp $
+.\"
+.\" Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd $Mdocdate: April 13 2016 $
+.Dt PLEDGE 2
+.Os
+.Sh NAME
+.Nm pledge
+.Nd restrict system operations
+.Sh SYNOPSIS
+.In unistd.h
+.Ft int
+.Fn pledge "const char *promises" "const char *paths[]"
+.Sh DESCRIPTION
+The current process is forced into a restricted-service operating mode.
+A few subsets are available, roughly described as computation, memory
+management, read-write operations on file descriptors, opening of files,
+networking.
+In general, these modes were selected by studying the operation
+of many programs using libc and other such interfaces, and setting
+.Ar promises
+or
+.Ar paths .
+.Pp
+Use of
+.Fn pledge
+in an application will require at least some study and understanding
+of the interfaces called.
+Subsequent calls to
+.Fn pledge
+can reduce the abilities further, but abilities can never be regained.
+.Pp
+A process which attempts a restricted operation is killed with an uncatchable
+.Dv SIGABRT ,
+delivering a core file if possible.
+.Pp
+A
+.Fa promises
+value of "" restricts the process to the
+.Xr _exit 2
+system call.
+This can be used for pure computation operating on memory shared
+with another process.
+.Pp
+Passing
+.Dv NULL
+to
+.Fa promises
+or
+.Fa paths
+specifies to not change the current value.
+.Pp
+Some system calls, when allowed, have restrictions applied to them:
+.Pp
+.Bl -tag -width "readlink(2)" -offset indent -compact
+.It Xr access 2
+May check for existence of
+.Pa /etc/localtime .
+.Pp
+.It Xr adjtime 2
+Read-only, for
+.Xr ntpd 8 .
+.Pp
+.It Xr ioctl 2
+Only the
+.Dv FIONREAD
+and
+.Dv FIONBIO
+operations are allowed by default.
+Use of the "tty" and "ioctl" promises receive more ioctl requests.
+.Pp
+.It Xr chmod 2
+.It Xr fchmod 2
+.It Xr fchmodat 2
+.It Xr chown 2
+.It Xr lchown 2
+.It Xr fchown 2
+.It Xr fchownat 2
+.It Xr mkfifo 2
+.It Xr mknod 2
+Setuid/setgid/sticky bits are ignored.
+The user or group cannot be changed on a file.
+.Pp
+.It Xr mmap 2
+.It Xr mprotect 2
+.Dv PROT_EXEC
+isn't allowed.
+.Pp
+.It Xr open 2
+May open
+.Pa /etc/localtime
+and any files below
+.Pa /usr/share/zoneinfo .
+.Pp
+.It Xr readlink 2
+May operate on
+.Pa /etc/malloc.conf .
+.Pp
+.It Xr sysctl 3
+A small set of read-only operations are allowed, sufficient to
+support:
+.Xr getdomainname 3 ,
+.Xr gethostname 3 ,
+.Xr getifaddrs 3 ,
+.Xr uname 3 ,
+system sensor readings.
+.Pp
+.It Xr pledge 2
+Can only reduce permissions; can only set a list of
+.Pa paths
+once.
+.El
+.Pp
+The
+.Ar promises
+is specified as a string, with space separate keywords:
+.Bl -tag -width "tmppath" -offset indent
+.It Va "stdio"
+The following system calls are permitted to allow most basic functions
+in libc, including memory allocation, most types of IO operations on
+previously allocated file descriptors:
+.Pp
+.Xr clock_getres 2 ,
+.Xr clock_gettime 2 ,
+.Xr close 2 ,
+.Xr closefrom 2 ,
+.Xr dup 2 ,
+.Xr dup2 2 ,
+.Xr dup3 2 ,
+.Xr fchdir 2 ,
+.Xr fcntl 2 ,
+.Xr fstat 2 ,
+.Xr fsync 2 ,
+.Xr ftruncate 2 ,
+.Xr getdents 2 ,
+.Xr getdtablecount 2 ,
+.Xr getegid 2 ,
+.Xr getentropy 2 ,
+.Xr geteuid 2 ,
+.Xr getgid 2 ,
+.Xr getgroups 2 ,
+.Xr getitimer 2 ,
+.Xr getlogin 2 ,
+.Xr getpgid 2 ,
+.Xr getpgrp 2 ,
+.Xr getpid 2 ,
+.Xr getppid 2 ,
+.Xr getresgid 2 ,
+.Xr getresuid 2 ,
+.Xr getrlimit 2 ,
+.Xr getsid 2 ,
+.Xr getthrid 2 ,
+.Xr gettimeofday 2 ,
+.Xr getuid 2 ,
+.Xr getuid 2 ,
+.Xr issetugid 2 ,
+.Xr kevent 2 ,
+.Xr kqueue 2 ,
+.Xr lseek 2 ,
+.Xr madvise 2 ,
+.Xr minherit 2 ,
+.Xr mmap 2 ,
+.Xr mprotect 2 ,
+.Xr mquery 2 ,
+.Xr munmap 2 ,
+.Xr nanosleep 2 ,
+.Xr pipe 2 ,
+.Xr pipe2 2 ,
+.Xr poll 2 ,
+.Xr pread 2 ,
+.Xr preadv 2 ,
+.Xr pwrite 2 ,
+.Xr pwritev 2 ,
+.Xr read 2 ,
+.Xr readv 2 ,
+.Xr recvfrom 2 ,
+.Xr recvmsg 2 ,
+.Xr select 2 ,
+.Xr sendmsg 2 ,
+.Xr sendsyslog 2 ,
+.Xr sendto 2 ,
+.Xr setitimer 2 ,
+.Xr shutdown 2 ,
+.Xr sigaction 2 ,
+.Xr sigprocmask 2 ,
+.Xr sigreturn 2 ,
+.Xr socketpair 2 ,
+.Xr umask 2 ,
+.Xr wait4 2 ,
+.Xr write 2 ,
+.Xr writev 2 .
+.Pp
+Note that
+.Xr sendto 2
+is only permitted if its destination socket address is
+.Dv NULL .
+As a result, all the expected functionalities of libc stdio work.
+.It Va "rpath"
+A number of system calls are allowed if they only cause
+read-only effects on the filesystem:
+.Pp
+.Xr chdir 2 ,
+.Xr getcwd 3 ,
+.Xr openat 2 ,
+.Xr fstatat 2 ,
+.Xr faccessat 2 ,
+.Xr readlinkat 2 ,
+.Xr lstat 2 ,
+.Xr chmod 2 ,
+.Xr fchmod 2 ,
+.Xr fchmodat 2 ,
+.Xr chflags 2 ,
+.Xr chflagsat 2 ,
+.Xr chown 2 ,
+.Xr fchown 2 ,
+.Xr fchownat 2 ,
+.Xr fstat 2 ,
+.Xr getfsstat 2 .
+.It Va "wpath"
+A number of system calls are allowed and may cause
+write-effects on the filesystem:
+.Pp
+.Xr getcwd 3 ,
+.Xr openat 2 ,
+.Xr fstatat 2 ,
+.Xr faccessat 2 ,
+.Xr readlinkat 2 ,
+.Xr lstat 2 ,
+.Xr chmod 2 ,
+.Xr fchmod 2 ,
+.Xr fchmodat 2 ,
+.Xr chflags 2 ,
+.Xr chflagsat 2 ,
+.Xr chown 2 ,
+.Xr fchown 2 ,
+.Xr fchownat 2 ,
+.Xr fstat 2 .
+.It Va "cpath"
+A number of system calls and sub-modes are allowed, which may
+create new files or directories in the filesystem:
+.Pp
+.Xr rename 2 ,
+.Xr rmdir 2 ,
+.Xr renameat 2 ,
+.Xr link 2 ,
+.Xr linkat 2 ,
+.Xr symlink 2 ,
+.Xr unlink 2 ,
+.Xr unlinkat 2 ,
+.Xr mkdir 2 ,
+.Xr mkdirat 2 .
+.It Va "dpath"
+A number of system calls are allowed to create special files:
+.Pp
+.Xr mkfifo 2 ,
+.Xr mknod 2 .
+.It Va "tmppath"
+A number of system calls are allowed to do operations in the
+.Pa /tmp
+directory, including create, read, or write:
+.Pp
+.Xr lstat 2 ,
+.Xr chmod 2 ,
+.Xr chflags 2 ,
+.Xr chown 2 ,
+.Xr unlink 2 ,
+.Xr fstat 2 .
+.It Va "inet"
+The following system calls are allowed to operate in the
+.Dv AF_INET
+and
+.Dv AF_INET6
+domains:
+.Pp
+.Xr socket 2 ,
+.Xr listen 2 ,
+.Xr bind 2 ,
+.Xr connect 2 ,
+.Xr accept4 2 ,
+.Xr accept 2 ,
+.Xr getpeername 2 ,
+.Xr getsockname 2 ,
+.Xr setsockopt 2 ,
+.Xr getsockopt 2 .
+.Pp
+.Xr setsockopt 2
+has been reduced in functionality substantially.
+.It Va "fattr"
+The following system calls are allowed to make explicit changes
+to fields in
+.Va struct stat
+relating to a file:
+.Pp
+.Xr utimes 2 ,
+.Xr futimes 2 ,
+.Xr utimensat 2 ,
+.Xr futimens 2 ,
+.Xr chmod 2 ,
+.Xr fchmod 2 ,
+.Xr fchmodat 2 ,
+.Xr chflags 2 ,
+.Xr chflagsat 2 ,
+.Xr chown 2 ,
+.Xr fchownat 2 ,
+.Xr lchown 2 ,
+.Xr fchown 2 ,
+.Xr utimes 2 .
+.It Va "chown"
+The
+.Xr chown 2
+family is allowed to change the user or group on a file.
+.It Va "flock"
+File locking via
+.Xr fcntl 2 ,
+.Xr flock 2 ,
+.Xr lockf 3 ,
+and
+.Xr open 2
+is allowed.
+No distinction is made between shared and exclusive locks.
+This promise is required for unlock as well as lock.
+.It Va "unix"
+The following system calls are allowed to operate in the
+.Dv AF_UNIX
+domain:
+.Pp
+.Xr socket 2 ,
+.Xr listen 2 ,
+.Xr bind 2 ,
+.Xr connect 2 ,
+.Xr accept4 2 ,
+.Xr accept 2 ,
+.Xr getpeername 2 ,
+.Xr getsockname 2 ,
+.Xr setsockopt 2 ,
+.Xr getsockopt 2 .
+.It Va "dns"
+Subsequent to a successful
+.Xr open 2
+of
+.Pa /etc/resolv.conf ,
+a few system calls become able to allow DNS network transactions:
+.Pp
+.Xr sendto 2 ,
+.Xr recvfrom 2 ,
+.Xr socket 2 ,
+.Xr connect 2 .
+.It Va "getpw"
+This allows read-only opening of files in
+.Pa /etc
+for the
+.Xr getpwnam 3 ,
+.Xr getgrnam 3 ,
+.Xr getgrouplist 3 ,
+and
+.Xr initgroups 3
+family of functions.
+They may also need to operate in a
+.Xr yp 8
+environment, so a successful
+.Xr open 2
+of
+.Pa /var/run/ypbind.lock
+enables
+.Va "inet"
+operations.
+.It Va "sendfd"
+Allows sending of file descriptors using
+.Xr sendmsg 2 .
+File descriptors referering to directories may not be passed.
+.It Va "recvfd"
+Allows receiving of file descriptors using
+.Xr recvmsg 2 .
+File descriptors referering to directories may not be passed.
+.It Va "ioctl"
+Allows a subset of
+.Xr ioctl 2
+operations:
+.Pp
+.Dv FIOCLEX ,
+.Dv FIONCLEX ,
+.Dv FIOASYNC ,
+.Dv FIOGETOWN ,
+and
+.Dv FIOSETOWN .
+On a tty device
+.Dv TIOCGETA will succeed otherwise fail with
+.Er EPERM .
+On a tty device,
+.Dv TIOCGPGRP
+and
+.Dv TIOCGWINSZ
+are allowed.
+A few other operations are allowed, but not listed here.
+.It Va "tty"
+In addition to allowing read-write operations on
+.Pa /dev/tty ,
+this opens up a variety of
+.Xr ioctl 2
+requests used by tty devices.
+The following
+.Xr ioctl 2
+requests are permitted:
+.Dv TIOCSPGRP ,
+.Dv TIOCGETA ,
+.Dv TIOCGPGRP ,
+.Dv TIOCGWINSZ ,
+.Dv TIOCSWINSZ ,
+.Dv TIOCSBRK ,
+.Dv TIOCCDTR ,
+.Dv TIOCSETA ,
+.Dv TIOCSETAW
+and
+.Dv TIOCSETAF .
+.Pp
+If
+.Va "tty"
+is accompanied with
+.Va "rpath" ,
+.Xr revoke 2
+is permitted.
+.It Va "proc"
+Allows the following process relationship operations:
+.Pp
+.Xr fork 2 ,
+.Xr vfork 2 ,
+.Xr kill 2 ,
+.Xr getpriority 2 ,
+.Xr setpriority 2 ,
+.Xr setrlimit 2 ,
+.Xr setpgid 2 ,
+.Xr setsid 2 .
+.It Va "exec"
+Allows a process to call
+.Xr execve 2 .
+Coupled with the
+.Va "proc"
+promise, this allows a process to fork and execute another program.
+The new program starts running without pledge active and hopefully
+makes a new
+.Fn pledge .
+.It Va "prot_exec"
+Allows the use of
+.Dv PROT_EXEC
+with
+.Xr mmap 2
+and
+.Xr mprotect 2 .
+.It Va "settime"
+Allows the setting of system time, via the
+.Xr settimeofday 2 ,
+.Xr adjtime 2 ,
+and
+.Xr adjfreq 2
+system calls.
+.It Va "ps"
+Allows enough
+.Xr sysctl 3
+interfaces to allow inspection of processes operating on the system using
+programs like
+.Xr ps 1 .
+.It Va "vminfo"
+Allows enough
+.Xr sysctl 3
+interfaces to allow inspection of the system's virtual memory by
+programs like
+.Xr top 1
+and
+.Xr vmstat 8 .
+.It Va "id"
+Allows the following system calls which can change the rights of a
+process:
+.Pp
+.Xr setuid 2 ,
+.Xr seteuid 2 ,
+.Xr setreuid 2 ,
+.Xr setresuid 2 ,
+.Xr setgid 2 ,
+.Xr setegid 2 ,
+.Xr setregid 2 ,
+.Xr setresgid 2 ,
+.Xr setgroups 2 ,
+.Xr setlogin 2 ,
+.Xr setrlimit 2 ,
+.Xr getpriority 2 ,
+.Xr setpriority 2 .
+.It Va "pf"
+Allows a subset of
+.Xr ioctl 2
+operations on the
+.Xr pf 4
+device:
+.Pp
+.Dv DIOCADDRULE ,
+.Dv DIOCGETSTATUS ,
+.Dv DIOCNATLOOK ,
+.Dv DIOCRADDTABLES ,
+.Dv DIOCRCLRADDRS ,
+.Dv DIOCRCLRTABLES ,
+.Dv DIOCRCLRTSTATS ,
+.Dv DIOCRGETTSTATS ,
+.Dv DIOCRSETADDRS ,
+.Dv DIOCXBEGIN ,
+.Dv DIOCXCOMMIT .
+.It Va "audio"
+Allows a subset of
+.Xr ioctl 2
+operations on
+.Xr audio 4
+devices:
+.Pp
+.Dv AUDIO_GETPOS ,
+.Dv AUDIO_SETINFO ,
+.Dv AUDIO_GETINFO ,
+.Dv AUDIO_GETENC ,
+.Dv AUDIO_SETFD ,
+.Dv AUDIO_GETPROPS .
+.Pp
+See
+.Xr sio_open 3
+for more information on using the sndio API in combination with
+.Fn pledge .
+.El
+.Pp
+A whitelist of permitted paths may be provided in
+.Ar paths .
+All other paths will return
+.Er ENOENT .
+At least one promise is required to be pledged in order to activate a whitelist.
+.Sh RETURN VALUES
+.Rv -std
+.Sh ERRORS
+.Fn pledge
+will fail if:
+.Bl -tag -width Er
+.It Bq Er EFAULT
+.Fa paths
+or one of its elements, or
+.Fa promises
+points outside the process's allocated address space.
+.It Bq Er EINVAL
+.Ar request
+is malformed or contains invalid keywords.
+.It Bq Er ENAMETOOLONG
+An element of
+.Fa paths
+is too large, prepending
+.Fa cwd
+to it would exceed
+.Dv PATH_MAX
+bytes, or
+.Fa promises
+is too long.
+.It Bq Er EPERM
+This process is attempting to increase permissions.
+.It Bq Er E2BIG
+The
+.Ar paths
+array is too large, or the total number of bytes exceeds a
+system-imposed limit.
+The limit in the system as released is 262144 bytes
+.Pf ( Dv ARG_MAX ) .
+.El
+.Sh HISTORY
+The
+.Fn pledge
+system call first appeared in
+.Ox 5.9 .
+.Sh BUGS
+The path whitelist feature is not available at this time.

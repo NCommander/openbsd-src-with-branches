@@ -1,3 +1,4 @@
+/*	$OpenBSD: asm.h,v 1.11 2013/10/17 15:58:23 deraadt Exp $	*/
 /*	$NetBSD: asm.h,v 1.1 1996/09/30 16:34:20 ws Exp $	*/
 
 /*
@@ -31,21 +32,21 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _PPC_ASM_H_
-#define _PPC_ASM_H_
+#ifndef _POWERPC_ASM_H_
+#define _POWERPC_ASM_H_
 
 /* XXX */
 #define TARGET_ELF
 
-#ifdef PIC
+#ifdef __PIC__
 #define PIC_PROLOGUE	XXX
 #define PIC_EPILOGUE	XXX
 #ifdef	__STDC__
-#define PIC_PLT(x)	XXX
+#define PIC_PLT(x)	x ## @plt
 #define PIC_GOT(x)	XXX
 #define PIC_GOTOFF(x)	XXX
 #else	/* not __STDC__ */
-#define PIC_PLT(x)	XXX
+#define PIC_PLT(x)	x/**/@plt
 #define PIC_GOT(x)	XXX
 #define PIC_GOTOFF(x)	XXX
 #endif	/* __STDC__ */
@@ -57,33 +58,47 @@
 #define PIC_GOTOFF(x)	x
 #endif
 
-#ifdef TARGET_AOUT
-#ifdef __STDC__
-# define _C_LABEL(x)	_ ## x
-#else
-# define _C_LABEL(x)	_/**/x
-#endif
-#endif
-
 #ifdef TARGET_ELF
 # define _C_LABEL(x)	x
 #endif
 #define	_ASM_LABEL(x)	x
 
+#ifdef __STDC__
+# define _TMP_LABEL(x)	.L_ ## x
+#else
+# define _TMP_LABEL(x)	.L_/**/x
+#endif
+
 #define _ENTRY(x) \
 	.text; .align 2; .globl x; .type x,@function; x:
 
 #ifdef PROF
-# define _PROF_PROLOGUE	XXX
+# define _PROF_PROLOGUE(y)	\
+	.section ".data"; \
+	.align 2; \
+_TMP_LABEL(y):; \
+	.long 0; \
+	.section ".text"; \
+	mflr 0; \
+	addis 11, 11, _TMP_LABEL(y)@ha; \
+	stw 0, 4(1); \
+	addi 0, 11,_TMP_LABEL(y)@l; \
+	bl _mcount; 
 #else
-# define _PROF_PROLOGUE
+# define _PROF_PROLOGUE(y)
 #endif
 
-#define	ENTRY(y)	_ENTRY(_C_LABEL(y)); _PROF_PROLOGUE
-#define	ASENTRY(y)	_ENTRY(_ASM_LABEL(y)); _PROF_PROLOGUE
+#define	ENTRY(y)	_ENTRY(_C_LABEL(y)); _PROF_PROLOGUE(y)
+#define	ASENTRY(y)	_ENTRY(_ASM_LABEL(y)); _PROF_PROLOGUE(y)
+#define	END(y)		.size y, . - y
 
 #define	ASMSTR		.asciz
 
 #define RCSID(x)	.text; .asciz x
 
-#endif /* !_PPC_ASM_H_ */
+#define STRONG_ALIAS(alias,sym) \
+	.global alias; .set alias,sym
+#define WEAK_ALIAS(alias,sym) \
+	.weak alias; .set alias,sym
+
+#endif /* !_POWERPC_ASM_H_ */

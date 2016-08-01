@@ -1,4 +1,4 @@
-/* crypto/rsa/rsa_prn.c */
+/* $OpenBSD: rsa_prn.c,v 1.5 2014/07/09 19:51:38 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,37 +57,37 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
-#include <openssl/rsa.h>
-#include <openssl/evp.h>
 
-#ifndef OPENSSL_NO_FP_API
-int RSA_print_fp(FILE *fp, const RSA *x, int off)
-	{
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/rsa.h>
+
+int
+RSA_print_fp(FILE *fp, const RSA *x, int off)
+{
 	BIO *b;
 	int ret;
 
-	if ((b=BIO_new(BIO_s_file())) == NULL)
-		{
-		RSAerr(RSA_F_RSA_PRINT_FP,ERR_R_BUF_LIB);
-		return(0);
-		}
-	BIO_set_fp(b,fp,BIO_NOCLOSE);
-	ret=RSA_print(b,x,off);
-	BIO_free(b);
-	return(ret);
+	if ((b = BIO_new(BIO_s_file())) == NULL) {
+		RSAerr(RSA_F_RSA_PRINT_FP, ERR_R_BUF_LIB);
+		return 0;
 	}
-#endif
+	BIO_set_fp(b, fp, BIO_NOCLOSE);
+	ret = RSA_print(b, x, off);
+	BIO_free(b);
+	return ret;
+}
 
-int RSA_print(BIO *bp, const RSA *x, int off)
-	{
+int
+RSA_print(BIO *bp, const RSA *x, int off)
+{
 	EVP_PKEY *pk;
 	int ret;
+
 	pk = EVP_PKEY_new();
 	if (!pk || !EVP_PKEY_set1_RSA(pk, (RSA *)x))
 		return 0;
 	ret = EVP_PKEY_print_private(bp, pk, off, NULL);
 	EVP_PKEY_free(pk);
 	return ret;
-	}
-
+}

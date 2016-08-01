@@ -481,7 +481,8 @@ BFD_JUMP_TABLE macros.
 .
 .  {* Check if SEC has been already linked during a reloceatable or
 .     final link.  *}
-.  void (*_section_already_linked) (bfd *, struct bfd_section *);
+.  void (*_section_already_linked) (bfd *, struct bfd_section *,
+.				    struct bfd_link_info *);
 .
 .  {* Routines to handle dynamic symbols and relocs.  *}
 .#define BFD_JUMP_TABLE_DYNAMIC(NAME) \
@@ -551,6 +552,7 @@ extern const bfd_target armpei_little_vec;
 extern const bfd_target b_out_vec_big_host;
 extern const bfd_target b_out_vec_little_host;
 extern const bfd_target bfd_efi_app_ia32_vec;
+extern const bfd_target bfd_efi_app_x86_64_vec;
 extern const bfd_target bfd_efi_app_ia64_vec;
 extern const bfd_target bfd_elf32_avr_vec;
 extern const bfd_target bfd_elf32_bfin_vec;
@@ -632,7 +634,9 @@ extern const bfd_target bfd_elf32_shl_vec;
 extern const bfd_target bfd_elf32_shl_symbian_vec;
 extern const bfd_target bfd_elf32_shlin_vec;
 extern const bfd_target bfd_elf32_shlnbsd_vec;
+extern const bfd_target bfd_elf32_shlobsd_vec;
 extern const bfd_target bfd_elf32_shnbsd_vec;
+extern const bfd_target bfd_elf32_shobsd_vec;
 extern const bfd_target bfd_elf32_sparc_vec;
 extern const bfd_target bfd_elf32_sparc_vxworks_vec;
 extern const bfd_target bfd_elf32_tradbigmips_vec;
@@ -851,6 +855,7 @@ static const bfd_target * const _bfd_target_vector[] = {
 	&b_out_vec_big_host,
 	&b_out_vec_little_host,
 	&bfd_efi_app_ia32_vec,
+	&bfd_efi_app_x86_64_vec,
 #ifdef BFD64
 	&bfd_efi_app_ia64_vec,
 #endif
@@ -939,7 +944,9 @@ static const bfd_target * const _bfd_target_vector[] = {
         &bfd_elf32_shl_symbian_vec,
         &bfd_elf32_shlin_vec,
 	&bfd_elf32_shlnbsd_vec,
+	&bfd_elf32_shlobsd_vec,
 	&bfd_elf32_shnbsd_vec,
+	&bfd_elf32_shobsd_vec,
 #ifdef BFD64
 	&bfd_elf32_sh64_vec,
 	&bfd_elf32_sh64l_vec,

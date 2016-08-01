@@ -1,3 +1,4 @@
+/*	$OpenBSD: netgroup.h,v 1.7 2015/01/19 15:30:52 krw Exp $ */
 /*
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
@@ -28,7 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: netgroup.h,v 1.1 1994/12/03 00:00:58 christos Exp $
  */
 #ifndef _NETGROUP_H_
 #define	_NETGROUP_H_
@@ -58,11 +58,10 @@ struct netgroup {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void	setnetgrent	__P((const char *));
-int	getnetgrent	__P((const char **, const char **, const char **));
-void	endnetgrent	__P((void));
-int	innetgr		__P((const char *, const char *, const char *,
-			     const char *));
+void	setnetgrent(const char *);
+int	getnetgrent(const char **, const char **, const char **);
+void	endnetgrent(void);
+int	innetgr(const char *, const char *, const char *, const char *);
 __END_DECLS
 
 #endif /* !_NETGROUP_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: finger.h,v 1.7 2015/01/19 15:30:52 krw Exp $ */
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,13 +31,15 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)finger.h	5.5 (Berkeley) 6/1/90
- *	$Id: finger.h,v 1.3 1993/10/07 19:58:30 brezak Exp $
  */
 
 #include <pwd.h>
 #include <utmp.h>
 
 #define _PATH_MAILSPOOL "/var/mail"
+
+#define	SECSPERDAY	(24 * 60 * 60)
+#define	SIXMONTHS	(SECSPERDAY * 365 / 2)
 
 /*
  * All unique persons are linked in a list headed by "head" and linkd
@@ -79,12 +78,5 @@ typedef struct where {
 #define	HSIZE	(1 << 8)		/* hash table size */
 #define	HMASK	(HSIZE - 1)		/* hash code mask */
 
-PERSON *htab[HSIZE];			/* the buckets */
-PERSON *phead, *ptail;			/* the linked list of all people */
-
-int entries;				/* number of people */
-
-PERSON *enter_person(), *find_person(), *palloc();
-WHERE *walloc();
-
-extern char tbuf[1024];			/* temp buffer for anybody */
+extern PERSON *htab[HSIZE];		/* the buckets */
+extern PERSON *phead, *ptail;		/* the linked list of all people */

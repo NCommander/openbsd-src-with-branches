@@ -1,3 +1,4 @@
+/*	$OpenBSD: vm_machdep.c,v 1.47 2014/11/16 12:30:58 deraadt Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.1 1996/09/30 16:34:57 ws Exp $	*/
 
 /*
@@ -31,38 +32,53 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <sys/param.h>
-#include <sys/core.h>
 #include <sys/exec.h>
+#include <sys/pool.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/user.h>
 #include <sys/vnode.h>
+#include <sys/ptrace.h>
 
-#include <vm/vm.h>
-#include <vm/vm_kern.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/pcb.h>
+#include <machine/fpu.h>
 
 /*
  * Finish a fork operation, with process p2 nearly set up.
  */
 void
-cpu_fork(p1, p2)
-	struct proc *p1, *p2;
+cpu_fork(struct proc *p1, struct proc *p2, void *stack, size_t stacksize,
+    void (*func)(void *), void *arg)
 {
 	struct trapframe *tf;
 	struct callframe *cf;
 	struct switchframe *sf;
 	caddr_t stktop1, stktop2;
-	extern void fork_trampoline __P((void));
-	extern void child_return __P((struct proc *));
+	extern void fork_trampoline(void);
 	struct pcb *pcb = &p2->p_addr->u_pcb;
+	struct cpu_info *ci = curcpu();
 
-	if (p1 == fpuproc)
-		save_fpu(p1);
+	if (p1 == ci->ci_fpuproc)
+		save_fpu();
 	*pcb = p1->p_addr->u_pcb;
 	
-	pcb->pcb_pm = &p2->p_vmspace->vm_pmap;
-	pcb->pcb_pmreal = (struct pmap *)pmap_extract(pmap_kernel(), (vm_offset_t)pcb->pcb_pm);
+#ifdef ALTIVEC
+	if (p1->p_addr->u_pcb.pcb_vr != NULL) {
+		if (p1 == ci->ci_vecproc)
+			save_vec(p1);
+		pcb->pcb_vr = pool_get(&ppc_vecpl, PR_WAITOK);
+		*pcb->pcb_vr = *p1->p_addr->u_pcb.pcb_vr;
+	} else
+		pcb->pcb_vr = NULL;
+
+#endif /* ALTIVEC */
+
+	pcb->pcb_pm = p2->p_vmspace->vm_map.pmap;
+
+	pmap_extract(pmap_kernel(),
+	    (vaddr_t)pcb->pcb_pm, (paddr_t *)&pcb->pcb_pmreal);
 	
 	/*
 	 * Setup the trap frame for the new process
@@ -70,7 +86,16 @@ cpu_fork(p1, p2)
 	stktop1 = (caddr_t)trapframe(p1);
 	stktop2 = (caddr_t)trapframe(p2);
 	bcopy(stktop1, stktop2, sizeof(struct trapframe));
-	stktop2 = (caddr_t)((u_long)stktop2 & ~15);	/* Align stack pointer */
+
+	/*
+	 * If specified, give the child a different stack.
+	 */
+	if (stack != NULL) {
+		tf = trapframe(p2);
+		tf->fixreg[1] = (register_t)stack + stacksize;
+	}
+
+	stktop2 = (caddr_t)((u_long)stktop2 & ~15);  /* Align stack pointer */
 	
 	/*
 	 * There happens to be a callframe, too.
@@ -83,64 +108,20 @@ cpu_fork(p1, p2)
 	 */
 	stktop2 -= 16;
 	cf = (struct callframe *)stktop2;
-	cf->r31 = (register_t)child_return;
-	cf->r30 = (register_t)p2;
+	cf->r31 = (register_t)func;
+	cf->r30 = (register_t)arg;
 	
 	/*
 	 * Below that, we allocate the switch frame:
 	 */
-	stktop2 -= roundup(sizeof *sf, 16);	/* must match SFRAMELEN in genassym */
+	/* must match SFRAMELEN in genassym */
+	stktop2 -= roundup(sizeof *sf, 16);
+
 	sf = (struct switchframe *)stktop2;
 	bzero((void *)sf, sizeof *sf);		/* just in case */
 	sf->sp = (int)cf;
-	sf->user_sr = pmap_kernel()->pm_sr[USER_SR]; /* again, just in case */
+	sf->user_sr = pmap_kernel()->pm_sr[PPC_USER_SR]; /* just in case */
 	pcb->pcb_sp = (int)stktop2;
-	pcb->pcb_spl = 0;
-}
-
-/*
- * Set initial pc of process forked by above.
- */
-void
-cpu_set_kpc(p, pc)
-	struct proc *p;
-	u_long pc;
-{
-	struct switchframe *sf = (struct switchframe *)p->p_addr->u_pcb.pcb_sp;
-	struct callframe *cf = (struct callframe *)sf->sp;
-	
-	cf->r30 = (int)p;
-	cf->r31 = pc;
-	cf++->lr = pc;
-}
-
-void
-cpu_swapin(p)
-	struct proc *p;
-{
-	struct pcb *pcb = &p->p_addr->u_pcb;
-	
-	pcb->pcb_pmreal = (struct pmap *)pmap_extract(pmap_kernel(), (vm_offset_t)pcb->pcb_pm);
-}
-
-/*
- * Move pages from one kernel virtual address to another.
- */
-void
-pagemove(from, to, size)
-	caddr_t from, to;
-	size_t size;
-{
-	vm_offset_t pa, va;
-	
-	for (va = (vm_offset_t)from; size > 0; size -= NBPG) {
-		pa = pmap_extract(pmap_kernel(), va);
-		pmap_remove(pmap_kernel(), va, va + NBPG);
-		pmap_enter(pmap_kernel(), (vm_offset_t)to, pa,
-			   VM_PROT_READ | VM_PROT_WRITE, 1);
-		va += NBPG;
-		to += NBPG;
-	}
 }
 
 /*
@@ -153,105 +134,76 @@ pagemove(from, to, size)
  * Not sure whether we can get away with this in the single proc version.		XXX
  */
 void
-cpu_exit(p)
-	struct proc *p;
+cpu_exit(struct proc *p)
 {
-	if (p == fpuproc)	/* release the fpu */
-		fpuproc = 0;
+	struct cpu_info *ci = curcpu();
+#ifdef ALTIVEC
+	struct pcb *pcb = &p->p_addr->u_pcb;
+#endif /* ALTIVEC */
 	
-	vmspace_free(p->p_vmspace);
-	switchexit(kernel_map, p->p_addr, USPACE);
-}
+	/* XXX What if the state is on the other cpu? */
+	if (p == ci->ci_fpuproc) 	/* release the fpu */
+		ci->ci_fpuproc = NULL;
 
-/*
- * Write the machine-dependent part of a core dump.
- */
-int
-cpu_coredump(p, vp, cred, chdr)
-	struct proc *p;
-	struct vnode *vp;
-	struct ucred *cred;
-	struct core *chdr;
-{
-	struct coreseg cseg;
-	struct md_coredump md_core;
-	struct trapframe *tf;
-	int error;
+#ifdef ALTIVEC
+	/* XXX What if the state is on the other cpu? */
+	if (p == ci->ci_vecproc)
+		ci->ci_vecproc = NULL; 	/* release the Altivec Unit */
+	if (pcb->pcb_vr != NULL)
+		pool_put(&ppc_vecpl, pcb->pcb_vr);
+#endif /* ALTIVEC */
 	
-#if 0
-	CORE_SETMAGIC(*chdr, COREMAGIC, MID_POWERPC, 0);
-	chdr->c_hdrsize = ALIGN(sizeof *chdr);
-	chdr->c_seghdrsize = ALIGN(sizeof cseg);
-	chdr->c_cpusize = sizeof md_core;
-
-	tf = trapframe(p);
-	bcopy(tf, &md_core.frame, sizeof md_core.frame);
-	
-	CORE_SETMAGIC(cseg, CORESEGMAGIC, MID_POWERPC, CORE_CPU);
-	cseg.c_addr = 0;
-	cseg.c_size = chdr->c_cpusize;
-
-	if (error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&cseg, chdr->c_seghdrsize,
-			    (off_t)chdr->c_hdrsize, UIO_SYSSPACE,
-			    IO_NODELOCKED|IO_UNIT, cred, NULL, p))
-		return error;
-	if (error = vn_rdwr(UIO_WRITE, vp, (caddr_t)&md_core, sizeof md_core,
-			    (off_t)(chdr->c_hdrsize + chdr->c_seghdrsize), UIO_SYSSPACE,
-			    IO_NODELOCKED|IO_UNIT, cred, NULL, p))
-		return error;
-
-	chdr->c_nseg++;
-#endif
-	return 0;
+	pmap_deactivate(p);
+	sched_exit(p);
 }
 
 /*
  * Map an IO request into kernel virtual address space.
  */
 void
-vmapbuf(bp, len)
-	struct buf *bp;
-	vm_size_t len;
+vmapbuf(struct buf *bp, vsize_t len)
 {
-	vm_offset_t faddr, taddr, off;
-	vm_offset_t pa;
+	vaddr_t faddr, taddr, off;
+	paddr_t pa;
 	
 #ifdef	DIAGNOSTIC
 	if (!(bp->b_flags & B_PHYS))
 		panic("vmapbuf");
 #endif
-	faddr = trunc_page(bp->b_saveaddr = bp->b_data);
-	off = (vm_offset_t)bp->b_data - faddr;
+	faddr = trunc_page((vaddr_t)(bp->b_saveaddr = bp->b_data));
+	off = (vaddr_t)bp->b_data - faddr;
 	len = round_page(off + len);
-	taddr = kmem_alloc_wait(phys_map, len);
+	taddr = uvm_km_valloc_wait(phys_map, len);
 	bp->b_data = (caddr_t)(taddr + off);
 	for (; len > 0; len -= NBPG) {
-		pa = pmap_extract(vm_map_pmap(&bp->b_proc->p_vmspace->vm_map), faddr);
+		pmap_extract(vm_map_pmap(&bp->b_proc->p_vmspace->vm_map),
+		    faddr, &pa);
 		pmap_enter(vm_map_pmap(phys_map), taddr, pa,
-			   VM_PROT_READ | VM_PROT_WRITE, 1);
+		    PROT_READ | PROT_WRITE, PMAP_WIRED);
 		faddr += NBPG;
 		taddr += NBPG;
 	}
+	pmap_update(vm_map_pmap(phys_map));
 }
 
 /*
  * Free the io map addresses associated with this IO operation.
  */
 void
-vunmapbuf(bp, len)
-	struct buf *bp;
-	vm_size_t len;
+vunmapbuf(struct buf *bp, vsize_t len)
 {
-	vm_offset_t addr, off;
+	vaddr_t addr, off;
 	
 #ifdef	DIAGNOSTIC
 	if (!(bp->b_flags & B_PHYS))
 		panic("vunmapbuf");
 #endif
-	addr = trunc_page(bp->b_data);
-	off = (vm_offset_t)bp->b_data - addr;
+	addr = trunc_page((vaddr_t)bp->b_data);
+	off = (vaddr_t)bp->b_data - addr;
 	len = round_page(off + len);
-	kmem_free_wakeup(phys_map, addr, len);
+	pmap_remove(vm_map_pmap(phys_map), addr, addr + len);
+	pmap_update(vm_map_pmap(phys_map));
+	uvm_km_free_wakeup(phys_map, addr, len);
 	bp->b_data = bp->b_saveaddr;
 	bp->b_saveaddr = 0;
 }

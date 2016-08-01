@@ -1,4 +1,5 @@
-/*	$NetBSD: exec_conf.c,v 1.14 1995/10/10 01:26:50 mycroft Exp $	*/
+/*	$OpenBSD: exec_conf.c,v 1.33 2015/07/18 00:15:10 mpi Exp $	*/
+/*	$NetBSD: exec_conf.c,v 1.16 1995/12/09 05:34:47 cgd Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -30,82 +31,40 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define	EXEC_SCRIPT			/* XXX */
-#define EXEC_AOUT			/* XXX */
-
-#if defined(COMPAT_ULTRIX) || defined(COMPAT_OSF1)
-#define EXEC_ECOFF
-#endif
-
-#if defined(COMPAT_SVR4) || defined(COMPAT_LINUX)
-#define EXEC_ELF
-#endif
-
 #include <sys/param.h>
 #include <sys/exec.h>
-
-#ifdef EXEC_SCRIPT
 #include <sys/exec_script.h>
-#endif
 
-#ifdef EXEC_AOUT
-/*#include <sys/exec_aout.h> -- automatically pulled in */
-#endif
-
-#ifdef EXEC_ECOFF
-#include <sys/exec_ecoff.h>
-#endif
-
-#ifdef EXEC_ELF
+#if defined(_KERN_DO_ELF) || defined(_KERN_DO_ELF64)
 #include <sys/exec_elf.h>
 #endif
 
-#ifdef COMPAT_SVR4
-#include <compat/svr4/svr4_exec.h>
-#endif
-
-#ifdef COMPAT_IBCS2
-#include <compat/ibcs2/ibcs2_exec.h>
-#endif
-
-#ifdef COMPAT_LINUX
-#include <compat/linux/linux_exec.h>
-#endif
-
-#ifdef COMPAT_FREEBSD
-#include <compat/freebsd/freebsd_exec.h>
-#endif
+extern struct emul emul_native;
 
 struct execsw execsw[] = {
-#ifdef LKM
-	{ 0, NULL, },					/* entries for LKMs */
-	{ 0, NULL, },
-	{ 0, NULL, },
-	{ 0, NULL, },
-	{ 0, NULL, },
+	{ EXEC_SCRIPT_HDRSZ, exec_script_makecmds, &emul_native, },	/* shell scripts */
+#ifdef _KERN_DO_ELF
+	{ sizeof(Elf32_Ehdr), exec_elf32_makecmds, &emul_native },	/* elf binaries */
 #endif
-#ifdef EXEC_SCRIPT
-	{ MAXINTERP, exec_script_makecmds, },		/* shell scripts */
-#endif
-#ifdef EXEC_AOUT
-	{ sizeof(struct exec), exec_aout_makecmds, },	/* a.out binaries */
-#endif
-#ifdef EXEC_ECOFF
-	{ ECOFF_HDR_SIZE, exec_ecoff_makecmds, },	/* ecoff binaries */
-#endif
-#ifdef EXEC_ELF
-	{ ELF_HDR_SIZE, exec_elf_makecmds, },	/* elf binaries */
-#endif
-#ifdef COMPAT_LINUX
-	{ LINUX_AOUT_HDR_SIZE, exec_linux_aout_makecmds, }, /* linux a.out */
-#endif
-#ifdef COMPAT_IBCS2
-	{ COFF_HDR_SIZE, exec_ibcs2_coff_makecmds, },	/* coff binaries */
-	{ XOUT_HDR_SIZE, exec_ibcs2_xout_makecmds, },	/* x.out binaries */
-#endif
-#ifdef COMPAT_FREEBSD
-	{ FREEBSD_AOUT_HDR_SIZE, exec_freebsd_aout_makecmds, },	/* a.out */
-#endif
+#ifdef _KERN_DO_ELF64
+	{ sizeof(Elf64_Ehdr), exec_elf64_makecmds, &emul_native },	/* elf binaries */
+#endif /* ELF64 */
 };
 int nexecs = (sizeof execsw / sizeof(*execsw));
 int exec_maxhdrsz;
+
+void	init_exec(void);
+
+void
+init_exec(void)
+{
+	int i;
+
+	/*
+	 * figure out the maximum size of an exec header.
+	 */
+	for (i = 0; i < nexecs; i++)
+		if (execsw[i].es_check != NULL &&
+		    execsw[i].es_hdrsz > exec_maxhdrsz)
+			exec_maxhdrsz = execsw[i].es_hdrsz;
+}

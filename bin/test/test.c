@@ -1,3 +1,4 @@
+/*	$OpenBSD: test.c,v 1.15 2015/10/09 01:37:06 deraadt Exp $	*/
 /*	$NetBSD: test.c,v 1.15 1995/03/21 07:04:06 cgd Exp $	*/
 
 /*
@@ -9,10 +10,6 @@
  *
  * This program is in the Public Domain.
  */
-
-#ifndef lint
-static char rcsid[] = "$NetBSD: test.c,v 1.15 1995/03/21 07:04:06 cgd Exp $";
-#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -141,27 +138,30 @@ struct t_op {
 char **t_wp;
 struct t_op const *t_wp_op;
 
-static enum token t_lex();
-static int oexpr();
-static int aexpr();
-static int nexpr();
-static int binop();
-static int primary();
-static int filstat();
-static int getn();
-static int newerf();
-static int olderf();
-static int equalf();
-static void syntax();
+static enum token t_lex(char *);
+static enum token t_lex_type(char *);
+static int oexpr(enum token n);
+static int aexpr(enum token n);
+static int nexpr(enum token n);
+static int binop(void);
+static int primary(enum token n);
+static int filstat(char *nm, enum token mode);
+static int getn(const char *s);
+static int newerf(const char *, const char *);
+static int olderf(const char *, const char *);
+static int equalf(const char *, const char *);
+static void syntax(const char *op, char *msg);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
+	extern char *__progname;
 	int	res;
 
-	if (strcmp(argv[0], "[") == 0) {
+	if (pledge("stdio rpath", NULL) == -1)
+		err(2, "pledge");
+
+	if (strcmp(__progname, "[") == 0) {
 		if (strcmp(argv[--argc], "]"))
 			errx(2, "missing ]");
 		argv[argc] = NULL;
@@ -180,7 +180,7 @@ main(argc, argv)
 		break;
 	case 4:
 		if (argv[1][0] != '!' || argv[1][1] != '\0') {
-			if (t_lex(argv[2]), 
+			if (t_lex(argv[2]),
 			    t_wp_op && t_wp_op->op_type == BINOP) {
 				t_wp = &argv[1];
 				return (binop() == 0);
@@ -189,7 +189,7 @@ main(argc, argv)
 		break;
 	case 5:
 		if (argv[1][0] == '!' && argv[1][1] == '\0') {
-			if (t_lex(argv[3]), 
+			if (t_lex(argv[3]),
 			    t_wp_op && t_wp_op->op_type == BINOP) {
 				t_wp = &argv[2];
 				return !(binop() == 0);
@@ -207,10 +207,8 @@ main(argc, argv)
 	return res;
 }
 
-static void
-syntax(op, msg)
-	char	*op;
-	char	*msg;
+static __dead void
+syntax(const char *op, char *msg)
 {
 	if (op && *op)
 		errx(2, "%s: %s", op, msg);
@@ -219,8 +217,7 @@ syntax(op, msg)
 }
 
 static int
-oexpr(n)
-	enum token n;
+oexpr(enum token n)
 {
 	int res;
 
@@ -232,8 +229,7 @@ oexpr(n)
 }
 
 static int
-aexpr(n)
-	enum token n;
+aexpr(enum token n)
 {
 	int res;
 
@@ -245,8 +241,7 @@ aexpr(n)
 }
 
 static int
-nexpr(n)
-	enum token n;			/* token */
+nexpr(enum token n)
 {
 	if (n == UNOT)
 		return !nexpr(t_lex(*++t_wp));
@@ -254,8 +249,7 @@ nexpr(n)
 }
 
 static int
-primary(n)
-	enum token n;
+primary(enum token n)
 {
 	int res;
 
@@ -267,6 +261,16 @@ primary(n)
 			syntax(NULL, "closing paren expected");
 		return res;
 	}
+	/*
+	 * We need this, if not binary operations with more than 4
+	 * arguments will always fall into unary.
+	 */
+	if(t_lex_type(t_wp[1]) == BINOP) {
+		t_lex(t_wp[1]);
+		if (t_wp_op && t_wp_op->op_type == BINOP)
+			return binop();
+	}
+
 	if (t_wp_op && t_wp_op->op_type == UNOP) {
 		/* unary expression */
 		if (*++t_wp == NULL)
@@ -283,26 +287,22 @@ primary(n)
 		}
 	}
 
-	if (t_lex(t_wp[1]), t_wp_op && t_wp_op->op_type == BINOP) {
-		return binop();
-	}	  
-
 	return strlen(*t_wp) > 0;
 }
 
 static int
-binop()
+binop(void)
 {
-	register const char *opnd1, *opnd2;
+	const char *opnd1, *opnd2;
 	struct t_op const *op;
 
 	opnd1 = *t_wp;
 	(void) t_lex(*++t_wp);
 	op = t_wp_op;
 
-	if ((opnd2 = *++t_wp) == (char *)0)
+	if ((opnd2 = *++t_wp) == NULL)
 		syntax(op->op_text, "argument expected");
-		
+
 	switch (op->op_num) {
 	case STREQ:
 		return strcmp(opnd1, opnd2) == 0;
@@ -325,22 +325,36 @@ binop()
 	case INTLT:
 		return getn(opnd1) < getn(opnd2);
 	case FILNT:
-		return newerf (opnd1, opnd2);
+		return newerf(opnd1, opnd2);
 	case FILOT:
-		return olderf (opnd1, opnd2);
+		return olderf(opnd1, opnd2);
 	case FILEQ:
-		return equalf (opnd1, opnd2);
+		return equalf(opnd1, opnd2);
 	}
 	/* NOTREACHED */
 }
 
+static enum token
+t_lex_type(char *s)
+{
+	struct t_op const *op = ops;
+
+	if (s == NULL)
+		return -1;
+
+	while (op->op_text) {
+		if (strcmp(s, op->op_text) == 0)
+			return op->op_type;
+		op++;
+	}
+	return -1;
+}
+
 static int
-filstat(nm, mode)
-	char *nm;
-	enum token mode;
+filstat(char *nm, enum token mode)
 {
 	struct stat s;
-	int i;
+	mode_t i;
 
 	if (mode == FILSYM) {
 #ifdef S_IFLNK
@@ -352,7 +366,7 @@ filstat(nm, mode)
 		return 0;
 	}
 
-	if (stat(nm, &s) != 0) 
+	if (stat(nm, &s) != 0)
 		return 0;
 
 	switch (mode) {
@@ -417,13 +431,12 @@ filebit:
 }
 
 static enum token
-t_lex(s)
-	register char *s;
+t_lex(char *s)
 {
-	register struct t_op const *op = ops;
+	struct t_op const *op = ops;
 
 	if (s == 0) {
-		t_wp_op = (struct t_op *)0;
+		t_wp_op = NULL;
 		return EOI;
 	}
 	while (op->op_text) {
@@ -433,14 +446,13 @@ t_lex(s)
 		}
 		op++;
 	}
-	t_wp_op = (struct t_op *)0;
+	t_wp_op = NULL;
 	return OPERAND;
 }
 
 /* atoi with error detection */
 static int
-getn(s)
-	char *s;
+getn(const char *s)
 {
 	char *p;
 	long r;
@@ -449,47 +461,44 @@ getn(s)
 	r = strtol(s, &p, 10);
 
 	if (errno != 0)
-	  errx(2, "%s: out of range", s);
+		errx(2, "%s: out of range", s);
 
-	while (isspace(*p))
-	  p++;
-	
+	while (isspace((unsigned char)*p))
+		p++;
+
 	if (*p)
-	  errx(2, "%s: bad number", s);
+		errx(2, "%s: bad number", s);
 
 	return (int) r;
 }
 
 static int
-newerf (f1, f2)
-char *f1, *f2;
+newerf(const char *f1, const char *f2)
 {
 	struct stat b1, b2;
 
-	return (stat (f1, &b1) == 0 &&
-		stat (f2, &b2) == 0 &&
-		b1.st_mtime > b2.st_mtime);
+	return (stat(f1, &b1) == 0 &&
+	    stat(f2, &b2) == 0 &&
+	    b1.st_mtime > b2.st_mtime);
 }
 
 static int
-olderf (f1, f2)
-char *f1, *f2;
+olderf(const char *f1, const char *f2)
 {
 	struct stat b1, b2;
 
-	return (stat (f1, &b1) == 0 &&
-		stat (f2, &b2) == 0 &&
-		b1.st_mtime < b2.st_mtime);
+	return (stat(f1, &b1) == 0 &&
+	    stat(f2, &b2) == 0 &&
+	    b1.st_mtime < b2.st_mtime);
 }
 
 static int
-equalf (f1, f2)
-char *f1, *f2;
+equalf(const char *f1, const char *f2)
 {
 	struct stat b1, b2;
 
-	return (stat (f1, &b1) == 0 &&
-		stat (f2, &b2) == 0 &&
-		b1.st_dev == b2.st_dev &&
-		b1.st_ino == b2.st_ino);
+	return (stat(f1, &b1) == 0 &&
+	    stat(f2, &b2) == 0 &&
+	    b1.st_dev == b2.st_dev &&
+	    b1.st_ino == b2.st_ino);
 }

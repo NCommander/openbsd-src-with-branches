@@ -1,3 +1,4 @@
+/*	$OpenBSD: ktrace.c,v 1.32 2015/04/18 18:28:37 deraadt Exp $	*/
 /*	$NetBSD: ktrace.c,v 1.4 1995/08/31 23:01:44 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,93 +30,126 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1988, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)ktrace.c	8.2 (Berkeley) 4/28/95";
-#endif
-static char *rcsid = "$NetBSD: ktrace.c,v 1.4 1995/08/31 23:01:44 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXCOMLEN */
+#include <sys/signal.h>
 #include <sys/stat.h>
-#include <sys/file.h>
 #include <sys/time.h>
-#include <sys/errno.h>
 #include <sys/uio.h>
 #include <sys/ktrace.h>
 
 #include <err.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "ktrace.h"
+#include "extern.h"
 
-void no_ktrace __P((int));
-void usage __P((void));
+extern char *__progname;
 
-main(argc, argv)
-	int argc;
-	char **argv;
+static int rpid(const char *);
+static void no_ktrace(int);
+static void usage(void);
+
+int	is_ltrace;
+
+int
+main(int argc, char *argv[])
 {
 	enum { NOTSET, CLEAR, CLEARALL } clear;
-	int append, ch, fd, inherit, ops, pid, pidset, trpoints;
-	char *tracefile;
+	int append, ch, fd, inherit, ops, pidset, trpoints;
+	pid_t pid;
+	char *tracefile, *tracespec;
+	mode_t omask;
+	struct stat sb;
+
+	is_ltrace = strcmp(__progname, "ltrace") == 0;
 
 	clear = NOTSET;
-	append = ops = pidset = inherit = 0;
-	trpoints = DEF_POINTS;
+	append = ops = pidset = inherit = pid = 0;
+	trpoints = is_ltrace ? KTRFAC_USER : DEF_POINTS;
 	tracefile = DEF_TRACEFILE;
-	while ((ch = getopt(argc,argv,"aCcdf:g:ip:t:")) != EOF)
-		switch((char)ch) {
-		case 'a':
-			append = 1;
-			break;
-		case 'C':
-			clear = CLEARALL;
-			pidset = 1;
-			break;
-		case 'c':
-			clear = CLEAR;
-			break;
-		case 'd':
-			ops |= KTRFLAG_DESCEND;
-			break;
-		case 'f':
-			tracefile = optarg;
-			break;
-		case 'g':
-			pid = -rpid(optarg);
-			pidset = 1;
-			break;
-		case 'i':
-			inherit = 1;
-			break;
-		case 'p':
-			pid = rpid(optarg);
-			pidset = 1;
-			break;
-		case 't':
-			trpoints = getpoints(optarg);
-			if (trpoints < 0) {
-				warnx("unknown facility in %s", optarg);
+	tracespec = NULL;
+
+	if (is_ltrace) {
+		while ((ch = getopt(argc, argv, "af:it:u:")) != -1)
+			switch ((char)ch) {
+			case 'a':
+				append = 1;
+				break;
+			case 'f':
+				tracefile = optarg;
+				break;
+			case 'i':
+				inherit = 1;
+				break;
+			case 't':
+				trpoints = getpoints(optarg, KTRFAC_USER);
+				if (trpoints < 0) {
+					warnx("unknown facility in %s", optarg);
+					usage();
+				}
+				break;
+			case 'u':
+				tracespec = optarg;
+				break;
+			default:
 				usage();
 			}
-			break;
-		default:
-			usage();
-		}
+	} else {
+		while ((ch = getopt(argc, argv, "aBCcdf:g:ip:t:")) != -1)
+			switch ((char)ch) {
+			case 'a':
+				append = 1;
+				break;
+			case 'B':
+				putenv("LD_BIND_NOW=");
+				break;
+			case 'C':
+				clear = CLEARALL;
+				pidset = 1;
+				break;
+			case 'c':
+				clear = CLEAR;
+				break;
+			case 'd':
+				ops |= KTRFLAG_DESCEND;
+				break;
+			case 'f':
+				tracefile = optarg;
+				break;
+			case 'g':
+				pid = -rpid(optarg);
+				pidset = 1;
+				break;
+			case 'i':
+				inherit = 1;
+				break;
+			case 'p':
+				pid = rpid(optarg);
+				pidset = 1;
+				break;
+			case 't':
+				trpoints = getpoints(optarg, DEF_POINTS);
+				if (trpoints < 0) {
+					warnx("unknown facility in %s", optarg);
+					usage();
+				}
+				break;
+			default:
+				usage();
+			}
+	}
+
 	argv += optind;
 	argc -= optind;
 	
-	if (pidset && *argv || !pidset && !*argv)
+	if ((pidset && *argv) || (!pidset && !*argv && clear != CLEAR))
 		usage();
-			
+
 	if (inherit)
 		trpoints |= KTRFAC_INHERIT;
 
@@ -132,31 +162,58 @@ main(argc, argv)
 		} else
 			ops |= pid ? KTROP_CLEAR : KTROP_CLEARFILE;
 
-		if (ktrace(tracefile, ops, trpoints, pid) < 0)
-			err(1, tracefile);
+		if (ktrace(tracefile, ops, trpoints, pid) < 0) {
+			if (errno == ESRCH)
+				err(1, "%d", pid);
+			err(1, "%s", tracefile);
+		}
 		exit(0);
 	}
 
-	if ((fd = open(tracefile, O_CREAT | O_WRONLY | (append ? 0 : O_TRUNC),
-	    DEFFILEMODE)) < 0)
-		err(1, tracefile);
+	omask = umask(S_IRWXG|S_IRWXO);
+	if (append) {
+		if ((fd = open(tracefile, O_CREAT | O_WRONLY, DEFFILEMODE)) < 0)
+			err(1, "%s", tracefile);
+		if (fstat(fd, &sb) != 0 || sb.st_uid != getuid())
+			errx(1, "Refuse to append to %s: not owned by you.",
+			    tracefile);
+	} else {
+		if (unlink(tracefile) == -1 && errno != ENOENT)
+			err(1, "unlink %s", tracefile);
+		if ((fd = open(tracefile, O_CREAT | O_EXCL | O_WRONLY,
+		    DEFFILEMODE)) < 0)
+			err(1, "%s", tracefile);
+	}
+	(void)umask(omask);
 	(void)close(fd);
 
 	if (*argv) { 
+		if (is_ltrace) {
+			if (setenv("LD_TRACE_PLT", inherit ? "i" : "", 1) < 0)
+				err(1, "setenv(LD_TRACE_PLT)");
+			if (tracespec &&
+			    setenv("LD_TRACE_PLTSPEC", tracespec, 1) < 0)
+				err(1, "setenv(LD_TRACE_PLTSPEC)");
+		}
 		if (ktrace(tracefile, ops, trpoints, getpid()) < 0)
-			err(1, tracefile);
+			err(1, "%s", tracefile);
 		execvp(argv[0], &argv[0]);
 		err(1, "exec of '%s' failed", argv[0]);
 	}
-	else if (ktrace(tracefile, ops, trpoints, pid) < 0)
-		err(1, tracefile);
+	else if (ktrace(tracefile, ops, trpoints, pid) < 0) {
+		if (errno == ESRCH)
+			err(1, "%d", pid);
+		err(1, "%s", tracefile);
+	}
 	exit(0);
 }
 
-rpid(p)
-	char *p;
+static int
+rpid(const char *p)
 {
+	const char *errstr;
 	static int first;
+	pid_t pid;
 
 	if (first++) {
 		warnx("only one -g or -p flag is permitted.");
@@ -166,22 +223,37 @@ rpid(p)
 		warnx("illegal process id.");
 		usage();
 	}
-	return(atoi(p));
+	pid = strtonum(p, 1, INT_MAX, &errstr);
+	if (errstr) {
+		warnx("illegal process id: %s", errstr);
+		usage();
+	}
+	return pid;
 }
 
-void
-usage()
+static void
+usage(void)
 {
-	(void)fprintf(stderr,
-"usage:\tktrace [-aCcid] [-f trfile] [-g pgid] [-p pid] [-t [acgn]\n\tktrace [-aCcid] [-f trfile] [-t [acgn] command\n");
+	if (is_ltrace)
+		fprintf(stderr, "usage: %s [-ai] [-f trfile] [-t trstr]"
+		    " [-u trspec] command\n",
+		    __progname);
+	else
+		fprintf(stderr, "usage: %s [-aBCcdi] [-f trfile] [-g pgid]"
+		    " [-p pid] [-t trstr]\n"
+		    "       %s [-adi] [-f trfile] [-t trstr] command\n",
+		    __progname, __progname);
 	exit(1);
 }
 
-void
-no_ktrace(sig)
-        int sig;
+/* ARGSUSED */
+static void
+no_ktrace(int signo)
 {
-        (void)fprintf(stderr,
-"error:\tktrace() system call not supported in the running kernel\n\tre-compile kernel with 'options KTRACE'\n");
-        exit(1);
+	char buf[8192];
+
+	snprintf(buf, sizeof(buf),
+"error:\tktrace() system call not supported in the running kernel\n\tre-compile kernel with 'option KTRACE'\n");
+	write(STDERR_FILENO, buf, strlen(buf));
+	_exit(1);
 }

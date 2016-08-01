@@ -1,3 +1,4 @@
+/*	$OpenBSD: mkdict.c,v 1.12 2015/10/24 17:27:06 mmcc Exp $	*/
 /*	$NetBSD: mkdict.c,v 1.2 1995/03/21 12:14:49 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,56 +33,49 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)mkdict.c	8.1 (Berkeley) 6/11/93";
-#else
-static char rcsid[] = "$NetBSD: mkdict.c,v 1.2 1995/03/21 12:14:49 cgd Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * Filter out words that:
  *	1) Are not completely made up of lower case letters
  *	2) Contain a 'q' not immediately followed by a 'u'
- *	3) Are less that 3 characters long
+ *	3) Are less than 3 characters long
  *	4) Are greater than MAXWORDLEN characters long
  */
 
 #include <ctype.h>
+#include <err.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "bog.h"
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register char *p, *q;
-	register int ch, common, n, nwords;
+	char *p, *q;
+	const char *errstr;
+	int ch, common, n, nwords;
 	int current, len, prev, qcount;
 	char buf[2][MAXWORDLEN + 1];
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	prev = 0;
 	current = 1;
 	buf[prev][0] = '\0';
-	if (argc == 2)
-		n = atoi(argv[1]);
+	if (argc == 2) {
+		n = strtonum(argv[1], 1, INT_MAX, &errstr);
+		if (errstr)
+			errx(1, "%s: %s", argv[1], errstr);
+	}
 
 	for (nwords = 1;
 	    fgets(buf[current], MAXWORDLEN + 1, stdin) != NULL; ++nwords) {
-		if ((p = index(buf[current], '\n')) == NULL) {
-			fprintf(stderr,
-			    "mkdict: word too long: %s\n", buf[current]);
+		if ((p = strchr(buf[current], '\n')) == NULL) {
+			warnx("word too long: %s", buf[current]);
 			while ((ch = getc(stdin)) != EOF && ch != '\n')
 				;
 			if (ch == EOF)
@@ -94,14 +84,14 @@ main(argc, argv)
 		}
 		len = 0;
 		for (p = buf[current]; *p != '\n'; p++) {
-			if (!islower(*p))
+			if (!islower((unsigned char)*p))
 				break;
 			if (*p == 'q') {
 				q = p + 1;
 				if (*q != 'u')
 					break;
 				else {
-					while (*q = *(q + 1))
+					while ((*q = *(q + 1)))
 						q++;
 				}
 				len++;
@@ -125,6 +115,6 @@ main(argc, argv)
 		prev = !prev;
 		current = !current;
 	}
-	fprintf(stderr, "%d words\n", nwords);
-	exit(0);
+	warnx("%d words", nwords);
+	return 0;
 }

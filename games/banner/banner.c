@@ -1,3 +1,4 @@
+/*	$OpenBSD: banner.c,v 1.20 2016/01/07 16:00:31 tb Exp $	*/
 /*	$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,20 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)banner.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * banner - prints large signs
@@ -64,7 +47,7 @@ static char rcsid[] = "$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $";
 #define NBYTES 9271
 
 /* Pointers into data_table for each ASCII char */
-int asc_ptr[NCHARS] = {
+const int asc_ptr[NCHARS] = {
 /* ^@ */   0,      0,      0,      0,      0,      0,      0,      0,
 /* ^H */   0,      0,      0,      0,      0,      0,      0,      0,
 /* ^P */   0,      0,      0,      0,      0,      0,      0,      0,
@@ -91,7 +74,7 @@ int asc_ptr[NCHARS] = {
  * is the next elt in array) and goto second
  * next element in array.
  */
-char data_table[NBYTES] = {
+const char data_table[NBYTES] = {
 /*             0     1     2     3     4     5     6     7     8     9 */
 /*    0 */   129,  227,  130,   34,    6,   90,   19,  129,   32,   10, 
 /*   10 */    74,   40,  129,   31,   12,   64,   53,  129,   30,   14, 
@@ -757,7 +740,7 @@ char data_table[NBYTES] = {
 /* 6610 */    32,   49,  129,   31,   49,  129,   30,   49,  129,   30, 
 /* 6620 */    47,  129,   30,   45,  129,   30,   41,  129,   30,    6, 
 /* 6630 */   129,   30,    4,  129,   30,    3,  129,   30,    2,  129, 
-/* 6640 */   193,  129,   30,    4,  117,    4,  130,   31,   90,  136, 
+/* 6640 */   193,  129,   30,    4,  117,    4,  130,   30,   91,  136, 
 /* 6650 */    37,    5,   72,    5,  129,   35,    5,   74,    5,  129, 
 /* 6660 */    33,    5,   76,    5,  129,   32,    5,   77,    5,  129, 
 /* 6670 */    31,    5,   78,    5,  129,   31,    4,   79,    4,  129, 
@@ -1030,53 +1013,58 @@ int	debug, i, j, linen, max, nchars, pc, term, trace, x, y;
 int	width = DWIDTH;	/* -w option: scrunch letters to 80 columns */
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 { 
 	int ch;
+	const char *errstr;
 
-	while ((ch = getopt(argc, argv, "w:td")) != EOF)
-		switch(ch) {
-		case 'w':
-			width = atoi(optarg);
-			if (width <= 0)
-				width = 80;
-			break;
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
+	while ((ch = getopt(argc, argv, "w:tdh")) != -1)
+		switch (ch) {
 		case 'd':
 			debug = 1;
 			break;
 		case 't':
 			trace = 1;
 			break;
-		case '?':
+		case 'w':
+			width = strtonum(optarg, 1, DWIDTH, &errstr);
+			if (errstr)
+				errx(1, "width is %s: %s", errstr, optarg);
+			break;
+		case 'h':
 		default:
-			fprintf(stderr, "usage: banner [-w width]\n");
-			exit(1);
+			(void)fprintf(stderr,
+			    "usage: %s [-w width] message ...\n",
+			    getprogname());
+			return 1;
 		}
 	argc -= optind;
 	argv += optind;
 
 	for (i = 0; i < width; i++) {
-		j = i * 132 / width;
+		j = i * DWIDTH / width;
 		print[j] = 1;
 	}
 
 	/* Have now read in the data. Next get the message to be printed. */
 	if (*argv) {
-		strcpy(message, *argv);
+		strlcpy(message, *argv, sizeof message);
 		while (*++argv) {
-			strcat(message, " ");
-			strcat(message, *argv);
+			strlcat(message, " ", sizeof message);
+			strlcat(message, *argv, sizeof message);
 		}
-		nchars = strlen(message);
 	} else {
 		if (isatty(fileno(stdin)))
 			fprintf(stderr,"Message: ");
-		(void)fgets(message, sizeof(message), stdin);
-		nchars = strlen(message);
-		message[nchars--] = '\0';	/* get rid of newline */
+		if (fgets(message, sizeof(message), stdin) == NULL)
+			errx(1, "error reading message");
+		/* get rid of newline */
+		message[strcspn(message, "\n")] = '\0';
 	}
+	nchars = strlen(message);
 
 	/* some debugging print statements */
 	if (debug) {
@@ -1107,11 +1095,11 @@ main(argc, argv)
 		if ((u_char) message[i] >= NCHARS ||
 		    asc_ptr[(u_char) message[i]] == 0) {
 			warnx("The character '%c' is not in my character set",
-				message[i]);
+			    message[i]);
 			j++;
 		}
 	if (j)
-		exit(1);
+		return 1;
 
 	if (trace)
 		printf("Message '%s' is OK\n",message);
@@ -1126,9 +1114,9 @@ main(argc, argv)
 		max = 0;
 		linen = 0;
 		while (!term) {
-			if (pc < 0 || pc > NBYTES) {
+			if (pc < 0 || pc >= NBYTES) {
 				printf("bad pc: %d\n",pc);
-				exit(1);
+				return 1;
 			}
 			x = data_table[pc] & 0377;
 			if (trace)
@@ -1163,5 +1151,5 @@ main(argc, argv)
 		}
 	}
 
-	exit(0);
+	return 0;
 }

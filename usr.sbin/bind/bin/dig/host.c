@@ -21,6 +21,7 @@
 
 #include <config.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <limits.h>
 
 #ifdef HAVE_LOCALE_H
@@ -447,9 +448,8 @@ printmessage(dig_query_t *query, dns_message_t *msg, isc_boolean_t headers) {
 		dns_name_format(name, namestr, sizeof(namestr));
 		lookup = clone_lookup(query->lookup, ISC_FALSE);
 		if (lookup != NULL) {
-			strncpy(lookup->textname, namestr,
+			strlcpy(lookup->textname, namestr,
 				sizeof(lookup->textname));
-			lookup->textname[sizeof(lookup->textname)-1] = 0;
 			lookup->rdtype = dns_rdatatype_aaaa;
                         lookup->rdtypeset = ISC_TRUE;
 			lookup->origin = NULL;
@@ -458,9 +458,8 @@ printmessage(dig_query_t *query, dns_message_t *msg, isc_boolean_t headers) {
 		}
 		lookup = clone_lookup(query->lookup, ISC_FALSE);
 		if (lookup != NULL) {
-			strncpy(lookup->textname, namestr,
+			strlcpy(lookup->textname, namestr,
 				sizeof(lookup->textname));
-			lookup->textname[sizeof(lookup->textname)-1] = 0;
 			lookup->rdtype = dns_rdatatype_mx;
                         lookup->rdtypeset = ISC_TRUE;
 			lookup->origin = NULL;
@@ -801,8 +800,7 @@ parse_args(isc_boolean_t is_batchfile, int argc, char **argv) {
 	if (isc_commandline_index >= argc)
 		show_usage();
 
-	strncpy(hostname, argv[isc_commandline_index], sizeof(hostname));
-	hostname[sizeof(hostname)-1]=0;
+	strlcpy(hostname, argv[isc_commandline_index], sizeof(hostname));
 	if (argc > isc_commandline_index + 1) {
 		set_nameserver(argv[isc_commandline_index+1]);
 		debug("server is %s", argv[isc_commandline_index+1]);
@@ -813,14 +811,12 @@ parse_args(isc_boolean_t is_batchfile, int argc, char **argv) {
 	lookup->pending = ISC_FALSE;
 	if (get_reverse(store, sizeof(store), hostname,
 			lookup->ip6_int, ISC_TRUE) == ISC_R_SUCCESS) {
-		strncpy(lookup->textname, store, sizeof(lookup->textname));
-		lookup->textname[sizeof(lookup->textname)-1] = 0;
+		strlcpy(lookup->textname, store, sizeof(lookup->textname));
 		lookup->rdtype = dns_rdatatype_ptr;
 		lookup->rdtypeset = ISC_TRUE;
 		default_lookups = ISC_FALSE;
 	} else {
-		strncpy(lookup->textname, hostname, sizeof(lookup->textname));
-		lookup->textname[sizeof(lookup->textname)-1]=0;
+		strlcpy(lookup->textname, hostname, sizeof(lookup->textname));
 	}
 	lookup->new_search = ISC_TRUE;
 	ISC_LIST_APPEND(lookup_list, lookup, link);
@@ -843,6 +839,11 @@ main(int argc, char **argv) {
 	idnoptions = IDN_ASCCHECK;
 #endif
 
+	if (pledge("stdio rpath dns inet", NULL) == -1) {
+		perror("pledge");
+		exit(1);
+	}
+
 	debug("main()");
 	progname = argv[0];
 	pre_parse_args(argc, argv);
@@ -850,6 +851,12 @@ main(int argc, char **argv) {
 	check_result(result, "isc_app_start");
 	setup_libs();
 	parse_args(ISC_FALSE, argc, argv);
+
+	if (pledge("stdio dns", NULL) == -1) {
+		perror("pledge");
+		exit(1);
+	}
+
 	setup_system();
 	result = isc_app_onrun(mctx, global_task, onrun_callback, NULL);
 	check_result(result, "isc_app_onrun");

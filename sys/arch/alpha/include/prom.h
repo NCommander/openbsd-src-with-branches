@@ -1,7 +1,8 @@
-/*	$NetBSD: prom.h,v 1.1 1995/02/13 23:07:48 cgd Exp $	*/
+/* $OpenBSD: prom.h,v 1.9 2009/09/30 19:41:54 miod Exp $ */
+/* $NetBSD: prom.h,v 1.12 2000/06/08 03:10:06 thorpej Exp $ */
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Keith Bostic, Chris G. Demetriou
@@ -29,8 +30,8 @@
 
 #ifndef	ASSEMBLER
 struct prom_vec {
-	int	(*routine)();
-	struct crd *routine_arg;
+	u_int64_t	routine;
+	void		*routine_arg;
 };
 
 /* The return value from a prom call. */
@@ -46,13 +47,16 @@ typedef union {
 	u_int64_t bits;
 } prom_return_t;
 
-#ifdef STANDALONE
-int	getchar __P((void));
-int	prom_open __P((char *, int));
-void	putchar __P((int));
+#ifdef _STANDALONE
+int	getchar(void);
+void	putchar(int);
 #endif
 
-int	prom_getenv __P((int, char *, int));
+void	prom_halt(int) __attribute__((__noreturn__));
+int	prom_getenv(int, char *, int);
+
+void	hwrpb_primary_init(void);
+void	hwrpb_restart_setup(void);
 #endif
 
 /* Prom operation values. */
@@ -62,19 +66,57 @@ int	prom_getenv __P((int, char *, int));
 #define	PROM_R_OPEN		0x10
 #define	PROM_R_PUTS		0x02
 #define	PROM_R_READ		0x13
+#define	PROM_R_WRITE		0x14
+#define	PROM_R_IOCTL		0x12
+
+/* Prom IOCTL operation subcodes */
+#define	PROM_I_SKIP2IRG		1
+#define	PROM_I_SKIP2MARK	2
+#define	PROM_I_REWIND		3
+#define	PROM_I_WRITEMARK	4
 
 /* Environment variable values. */
 #define	PROM_E_BOOTED_DEV	0x4
 #define	PROM_E_BOOTED_FILE	0x6
 #define	PROM_E_BOOTED_OSFLAGS	0x8
 #define	PROM_E_TTY_DEV		0xf
+#define	PROM_E_SCSIID		0x42
+#define	PROM_E_SCSIFAST		0x43
 
+#if defined(_STANDALONE) || defined(ENABLEPROM)
 /*
+ * These can't be called from the kernel without great care.
+ *
  * There have to be stub routines to do the copying that ensures that the
  * PROM doesn't get called with an address larger than 32 bits.  Calls that
  * either don't need to copy anything, or don't need the copy because it's
  * already being done elsewhere, are defined here.
  */
-#define	prom_close(chan)	prom_dispatch(PROM_R_CLOSE, chan)
-#define	prom_read(chan, len, buf, blkno) \
-	prom_dispatch(PROM_R_READ, chan, len, buf, blkno)
+#define	prom_open(dev, len)						\
+	prom_dispatch(PROM_R_OPEN, (dev), (len), 0, 0)
+#define	prom_close(chan)						\
+	prom_dispatch(PROM_R_CLOSE, chan, 0, 0, 0)
+#define	prom_read(chan, len, buf, blkno)				\
+	prom_dispatch(PROM_R_READ, chan, len, (u_int64_t)buf, blkno)
+#define	prom_write(chan, len, buf, blkno)				\
+	prom_dispatch(PROM_R_WRITE, chan, len, (u_int64_t)buf, blkno)
+#define	prom_ioctl(chan, op, count)					\
+	prom_dispatch(PROM_R_IOCTL, chan, op, (int64_t)count, 0, 0)
+#define	prom_putstr(chan, str, len)					\
+	prom_dispatch(PROM_R_PUTS, chan, (u_int64_t)str, len, 0)
+#define	prom_getc(chan)							\
+	prom_dispatch(PROM_R_GETC, chan, 0, 0, 0)
+#define prom_getenv_disp(id, buf, len)					\
+	prom_dispatch(PROM_R_GETENV, id, (u_int64_t)buf, len, 0)
+#endif
+
+#ifndef ASSEMBLER
+#ifdef _KERNEL
+void	promcnputc(dev_t, int);
+int	promcngetc(dev_t);
+int	promcnlookc(dev_t, char *);
+
+u_int64_t	prom_dispatch(u_int64_t, u_int64_t, u_int64_t, u_int64_t,
+		    u_int64_t);
+#endif /* _KERNEL */
+#endif /* ASSEMBLER */

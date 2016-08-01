@@ -1,4 +1,4 @@
-/* bn_x931p.c */
+/* $OpenBSD: bn_x931p.c,v 1.7 2015/02/14 15:07:54 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2005.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -66,16 +66,16 @@
  * integers.
  */
 
-static int bn_x931_derive_pi(BIGNUM *pi, const BIGNUM *Xpi, BN_CTX *ctx,
-			BN_GENCB *cb)
-	{
+static int
+bn_x931_derive_pi(BIGNUM *pi, const BIGNUM *Xpi, BN_CTX *ctx, BN_GENCB *cb)
+{
 	int i = 0;
+
 	if (!BN_copy(pi, Xpi))
 		return 0;
 	if (!BN_is_odd(pi) && !BN_add_word(pi, 1))
 		return 0;
-	for(;;)
-		{
+	for (;;) {
 		i++;
 		BN_GENCB_call(cb, 0, i);
 		/* NB 27 MR is specificed in X9.31 */
@@ -83,20 +83,21 @@ static int bn_x931_derive_pi(BIGNUM *pi, const BIGNUM *Xpi, BN_CTX *ctx,
 			break;
 		if (!BN_add_word(pi, 2))
 			return 0;
-		}
+	}
 	BN_GENCB_call(cb, 2, i);
 	return 1;
-	}
+}
 
 /* This is the main X9.31 prime derivation function. From parameters
  * Xp1, Xp2 and Xp derive the prime p. If the parameters p1 or p2 are
  * not NULL they will be returned too: this is needed for testing.
  */
 
-int BN_X931_derive_prime_ex(BIGNUM *p, BIGNUM *p1, BIGNUM *p2,
-			const BIGNUM *Xp, const BIGNUM *Xp1, const BIGNUM *Xp2,
-			const BIGNUM *e, BN_CTX *ctx, BN_GENCB *cb)
-	{
+int
+BN_X931_derive_prime_ex(BIGNUM *p, BIGNUM *p1, BIGNUM *p2, const BIGNUM *Xp,
+    const BIGNUM *Xp1, const BIGNUM *Xp2, const BIGNUM *e, BN_CTX *ctx,
+    BN_GENCB *cb)
+{
 	int ret = 0;
 
 	BIGNUM *t, *p1p2, *pm1;
@@ -106,17 +107,21 @@ int BN_X931_derive_prime_ex(BIGNUM *p, BIGNUM *p1, BIGNUM *p2,
 		return 0;
 
 	BN_CTX_start(ctx);
-	if (!p1)
-		p1 = BN_CTX_get(ctx);
+	if (p1 == NULL) {
+		if ((p1 = BN_CTX_get(ctx)) == NULL)
+			goto err;
+	}
+	if (p2 == NULL) {
+		if ((p2 = BN_CTX_get(ctx)) == NULL)
+			goto err;
+	}
 
-	if (!p2)
-		p2 = BN_CTX_get(ctx);
-
-	t = BN_CTX_get(ctx);
-
-	p1p2 = BN_CTX_get(ctx);
-
-	pm1 = BN_CTX_get(ctx);
+	if ((t = BN_CTX_get(ctx)) == NULL)
+		goto err;
+	if ((p1p2 = BN_CTX_get(ctx)) == NULL)
+		goto err;
+	if ((pm1 = BN_CTX_get(ctx)) == NULL)
+		goto err;
 
 	if (!bn_x931_derive_pi(p1, Xp1, ctx, cb))
 		goto err;
@@ -157,8 +162,7 @@ int BN_X931_derive_prime_ex(BIGNUM *p, BIGNUM *p1, BIGNUM *p2,
 
 	/* p now equals Yp0 */
 
-	for (;;)
-		{
+	for (;;) {
 		int i = 1;
 		BN_GENCB_call(cb, 0, i++);
 		if (!BN_copy(pm1, p))
@@ -169,34 +173,37 @@ int BN_X931_derive_prime_ex(BIGNUM *p, BIGNUM *p1, BIGNUM *p2,
 			goto err;
 		if (BN_is_one(t)
 		/* X9.31 specifies 8 MR and 1 Lucas test or any prime test
-		 * offering similar or better guarantees 50 MR is considerably 
+		 * offering similar or better guarantees 50 MR is considerably
 		 * better.
 		 */
-			&& BN_is_prime_fasttest_ex(p, 50, ctx, 1, cb))
+		    && BN_is_prime_fasttest_ex(p, 50, ctx, 1, cb))
 			break;
 		if (!BN_add(p, p, p1p2))
 			goto err;
-		}
+	}
 
 	BN_GENCB_call(cb, 3, 0);
 
 	ret = 1;
 
-	err:
+err:
 
 	BN_CTX_end(ctx);
 
 	return ret;
-	}
+}
 
 /* Generate pair of paramters Xp, Xq for X9.31 prime generation.
  * Note: nbits paramter is sum of number of bits in both.
  */
 
-int BN_X931_generate_Xpq(BIGNUM *Xp, BIGNUM *Xq, int nbits, BN_CTX *ctx)
-	{
+int
+BN_X931_generate_Xpq(BIGNUM *Xp, BIGNUM *Xq, int nbits, BN_CTX *ctx)
+{
 	BIGNUM *t;
 	int i;
+	int ret = 0;
+
 	/* Number of bits for each prime is of the form
 	 * 512+128s for s = 0, 1, ...
 	 */
@@ -211,26 +218,26 @@ int BN_X931_generate_Xpq(BIGNUM *Xp, BIGNUM *Xq, int nbits, BN_CTX *ctx)
 		return 0;
 
 	BN_CTX_start(ctx);
-	t = BN_CTX_get(ctx);
+	if ((t = BN_CTX_get(ctx)) == NULL)
+		goto err;
 
-	for (i = 0; i < 1000; i++)
-		{
+	for (i = 0; i < 1000; i++) {
 		if (!BN_rand(Xq, nbits, 1, 0))
-			return 0;
+			goto err;
 		/* Check that |Xp - Xq| > 2^(nbits - 100) */
 		BN_sub(t, Xp, Xq);
 		if (BN_num_bits(t) > (nbits - 100))
 			break;
-		}
-
-	BN_CTX_end(ctx);
+	}
 
 	if (i < 1000)
-		return 1;
+		ret = 1;
 
-	return 0;
+err:
+	BN_CTX_end(ctx);
 
-	}
+	return ret;
+}
 
 /* Generate primes using X9.31 algorithm. Of the values p, p1, p2, Xp1
  * and Xp2 only 'p' needs to be non-NULL. If any of the others are not NULL
@@ -240,19 +247,21 @@ int BN_X931_generate_Xpq(BIGNUM *Xp, BIGNUM *Xq, int nbits, BN_CTX *ctx)
  * are generated using the previous function and supplied as input.
  */
 
-int BN_X931_generate_prime_ex(BIGNUM *p, BIGNUM *p1, BIGNUM *p2,
-			BIGNUM *Xp1, BIGNUM *Xp2,
-			const BIGNUM *Xp,
-			const BIGNUM *e, BN_CTX *ctx,
-			BN_GENCB *cb)
-	{
+int
+BN_X931_generate_prime_ex(BIGNUM *p, BIGNUM *p1, BIGNUM *p2, BIGNUM *Xp1,
+    BIGNUM *Xp2, const BIGNUM *Xp, const BIGNUM *e, BN_CTX *ctx, BN_GENCB *cb)
+{
 	int ret = 0;
 
 	BN_CTX_start(ctx);
-	if (!Xp1)
-		Xp1 = BN_CTX_get(ctx);
-	if (!Xp2)
-		Xp2 = BN_CTX_get(ctx);
+	if (Xp1 == NULL) {
+		if ((Xp1 = BN_CTX_get(ctx)) == NULL)
+			goto error;
+	}
+	if (Xp2 == NULL) {
+		if ((Xp2 = BN_CTX_get(ctx)) == NULL)
+			goto error;
+	}
 
 	if (!BN_rand(Xp1, 101, 0, 0))
 		goto error;
@@ -263,10 +272,8 @@ int BN_X931_generate_prime_ex(BIGNUM *p, BIGNUM *p1, BIGNUM *p2,
 
 	ret = 1;
 
-	error:
+error:
 	BN_CTX_end(ctx);
 
 	return ret;
-
-	}
-
+}

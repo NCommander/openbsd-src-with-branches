@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.20 2009/06/03 18:32:24 jasper Exp $ */
+/*	$OpenBSD: conf.c,v 1.20 2015/10/23 15:10:52 claudio Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -43,7 +43,8 @@
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/tty.h>
-#include <sys/conf.h>
+
+#include <machine/conf.h>
 
 /*
  *	Block devices.
@@ -55,7 +56,6 @@
 #include "st.h"
 #include "wd.h"
 bdev_decl(wd);
-#include "ccd.h"
 #include "rd.h"
 #include "hotplug.h"
 
@@ -67,7 +67,7 @@ struct bdevsw	bdevsw[] =
 	bdev_disk_init(NCD,cd),		/* 3: SCSI CD-ROM */
 	bdev_disk_init(NWD,wd),		/* 4: ST506/ESDI/IDE disk */
 	bdev_notdef(),			/* 5:  */
-	bdev_disk_init(NCCD,ccd),	/* 6: concatenated disk driver */
+	bdev_notdef(),			/* 6: was: concatenated disk driver */
 	bdev_notdef(),			/* 7:  */
 	bdev_disk_init(NRD,rd),		/* 8: RAM disk (for install) */
 	bdev_notdef(),			/* 9:  */
@@ -79,17 +79,11 @@ struct bdevsw	bdevsw[] =
 	bdev_notdef(),			/* 15:  */
 };
 
-int	nblkdev = sizeof (bdevsw) / sizeof (bdevsw[0]);
+int	nblkdev = nitems(bdevsw);
 
 /*
  *	Character devices.
  */
-
-/* open, close, write, ioctl */
-#define	cdev_lpt_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
-	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
-	0, seltrue, (dev_type_mmap((*))) enodev }
 
 #define mmread mmrw
 #define mmwrite mmrw
@@ -101,20 +95,16 @@ cdev_decl(fd);
 #include "st.h"
 #include "bpfilter.h"
 #include "tun.h"
+#include "apm.h"
 #include "com.h"
 cdev_decl(com);
 #include "lpt.h"
 cdev_decl(lpt);
 #include "ch.h"
-#include "ss.h"
 #include "uk.h"
 cdev_decl(wd);
 #include "audio.h"
 #include "video.h"
-#ifdef NNPFS
-#include <nnpfs/nnnpfs.h>
-cdev_decl(nnpfs_dev);
-#endif
 #include "ksyms.h"
 
 #include "wsdisplay.h"
@@ -124,22 +114,22 @@ cdev_decl(nnpfs_dev);
 #include "pci.h"
 cdev_decl(pci);
 
-#include "inet.h"
-
 #include "pf.h"
-#include "systrace.h"
 
 #include "usb.h"
 #include "uhid.h"
 #include "ugen.h"
 #include "ulpt.h"
-#include "urio.h"
 #include "ucom.h"
+
+#include "vscsi.h"
+#include "pppx.h"
+#include "fuse.h"
 
 struct cdevsw	cdevsw[] =
 {
 	cdev_cn_init(1,cn),		/* 0: virtual console */
-	cdev_notdef(),			/* 1 was /dev/drum */
+	cdev_notdef(),			/* 1: was /dev/drum */
 	cdev_ctty_init(1,ctty),		/* 2: controlling terminal */
 	cdev_mm_init(1,mm),		/* 3: /dev/{null,mem,kmem,...} */
 	cdev_tty_init(NPTY,pts),	/* 4: pseudo-tty slave */
@@ -152,7 +142,7 @@ struct cdevsw	cdevsw[] =
 	cdev_disk_init(NVND,vnd),	/* 11: vnode disk */
 	cdev_bpf_init(NBPFILTER,bpf),	/* 12: berkeley packet filter */
 	cdev_tun_init(NTUN,tun),	/* 13: network tunnel */
-	cdev_notdef(),			/* 14 */
+	cdev_apm_init(NAPM,apm),	/* 14: apm */
 	cdev_notdef(),			/* 15: */
 	cdev_lpt_init(NLPT,lpt),	/* 16: Parallel printer interface */
 	cdev_tty_init(NCOM,com),	/* 17: 16C450 serial interface */
@@ -161,7 +151,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 20: */
 	cdev_notdef(),			/* 21: */
 	cdev_disk_init(NRD,rd),		/* 22: ramdisk device */
-	cdev_disk_init(NCCD,ccd),	/* 23: concatenated disk driver */
+	cdev_notdef(),			/* 23: was: concatenated disk driver */
 	cdev_notdef(),			/* 24: */
 	cdev_wsdisplay_init(NWSDISPLAY, wsdisplay),	/* 25: */
 	cdev_mouse_init(NWSKBD, wskbd),	/* 26: */
@@ -176,7 +166,7 @@ struct cdevsw	cdevsw[] =
 	cdev_pf_init(NPF,pf),		/* 31: packet filter */
 	cdev_uk_init(NUK,uk),		/* 32: unknown SCSI */
 	cdev_random_init(1,random),	/* 33: random data source */
-	cdev_ss_init(NSS,ss),		/* 34: SCSI scanner */
+	cdev_notdef(),			/* 34: */
 	cdev_ksyms_init(NKSYMS,ksyms),	/* 35: Kernel symbols device */
 	cdev_ch_init(NCH,ch),		/* 36: SCSI autochanger */
 	cdev_notdef(),			/* 37: */
@@ -189,15 +179,11 @@ struct cdevsw	cdevsw[] =
 	cdev_audio_init(NAUDIO,audio),	/* 44: /dev/audio */
 	cdev_video_init(NVIDEO,video),	/* 45: generic video I/O */
 	cdev_notdef(),			/* 46: */
-	cdev_crypto_init(NCRYPTO,crypto),	/* 47: /dev/crypto */
+	cdev_notdef(),			/* 47: was: /dev/crypto */
 	cdev_notdef(),			/* 48: */
 	cdev_bio_init(NBIO,bio),	/* 49: ioctl tunnel */
-	cdev_systrace_init(NSYSTRACE,systrace),	/* 50: system call tracing */
-#ifdef NNPFS
-	cdev_nnpfs_init(NNNPFS,nnpfs_dev),	/* 51: nnpfs communication device */
-#else
+	cdev_notdef(),			/* 50: */
 	cdev_notdef(),			/* 51: */
-#endif
 	cdev_ptm_init(NPTY,ptm),	/* 52: pseudo-tty ptm device */
 	cdev_notdef(),			/* 53: */
 	cdev_notdef(),			/* 54: */
@@ -211,12 +197,19 @@ struct cdevsw	cdevsw[] =
 	cdev_usbdev_init(NUHID,uhid),	/* 62: USB generic HID */
 	cdev_usbdev_init(NUGEN,ugen),	/* 63: USB generic driver */
 	cdev_ulpt_init(NULPT,ulpt),	/* 64: USB printers */
-	cdev_urio_init(NURIO,urio),	/* 65: USB Diamond Rio 500 */
+	cdev_notdef(),			/* 65: */
 	cdev_tty_init(NUCOM,ucom),	/* 66: USB tty */
-	cdev_hotplug_init(NHOTPLUG,hotplug) /* 67: devices hotplugging */
+	cdev_hotplug_init(NHOTPLUG,hotplug), /* 67: devices hotplugging */
+	cdev_notdef(),
+	cdev_vscsi_init(NVSCSI,vscsi),	/* 69: vscsi */
+	cdev_disk_init(1,diskmap),	/* 70: disk mapper */
+	cdev_pppx_init(NPPPX,pppx),	/* 71: pppx */
+	cdev_notdef(),			/* 72: was USB scanners */
+	cdev_fuse_init(NFUSE,fuse),	/* 73: fuse */
+	cdev_tun_init(NTUN,tap),	/* 74: Ethernet network tunnel */
 };
 
-int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);
+int	nchrdev = nitems(cdevsw);
 
 /*
  * Swapdev is a fake device implemented
@@ -285,18 +278,11 @@ int chrtoblktbl[] =  {
 	/* 19 */	NODEV,
 	/* 20 */	NODEV,
 	/* 21 */	NODEV,
-	/* 22 */	8,		/* rd */
-	/* 23 */	6		/* ccd */
+	/* 22 */	8		/* rd */
 };
 
-int nchrtoblktbl = sizeof(chrtoblktbl) / sizeof(int);
+int nchrtoblktbl = nitems(chrtoblktbl);
 
-/*
- * This entire table could be autoconfig()ed but that would mean that
- * the kernel's idea of the console would be out of sync with that of
- * the standalone boot.  I think it best that they both use the same
- * known algorithm unless we see a pressing need otherwise.
- */
 #include <dev/cons.h>
 
 cons_decl(ws);

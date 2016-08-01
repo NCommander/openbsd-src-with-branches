@@ -1,3 +1,4 @@
+/*	$OpenBSD: save.c,v 1.12 2015/08/22 14:47:41 deraadt Exp $	*/
 /*	$NetBSD: save.c,v 1.3 1995/03/21 15:07:57 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,35 +30,27 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)save.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: save.c,v 1.3 1995/03/21 15:07:57 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "externs.h"
+#include "extern.h"
 
-restore()
+void
+restore(const char *filename)
 {
-	char *getenv();
-	char *home;
-	char home1[100];
-	register int n;
-	int tmp;
-	register FILE *fp;
+	int     n;
+	int     tmp;
+	FILE   *fp;
 
-	home = getenv("HOME");
-	strcpy(home1, home);
-	strcat(home1, "/Bstar");
-	if ((fp = fopen(home1, "r")) == 0) {
-		perror(home1);
-		return;
-	}
+	if (filename == NULL)
+		exit(1); /* Error determining save file name.  */
+	if ((fp = fopen(filename, "r")) == NULL)
+		err(1, "can't open %s for reading", filename);
 	fread(&WEIGHT, sizeof WEIGHT, 1, fp);
 	fread(&CUMBER, sizeof CUMBER, 1, fp);
-	fread(&clock, sizeof clock, 1, fp);
+	fread(&ourclock, sizeof ourclock, 1, fp);
 	fread(&tmp, sizeof tmp, 1, fp);
 	location = tmp ? dayfile : nightfile;
 	for (n = 1; n <= NUMOFROOMS; n++) {
@@ -74,7 +63,7 @@ restore()
 	fread(notes, sizeof notes, 1, fp);
 	fread(&direction, sizeof direction, 1, fp);
 	fread(&position, sizeof position, 1, fp);
-	fread(&time, sizeof time, 1, fp);
+	fread(&ourtime, sizeof ourtime, 1, fp);
 	fread(&fuel, sizeof fuel, 1, fp);
 	fread(&torps, sizeof torps, 1, fp);
 	fread(&carrying, sizeof carrying, 1, fp);
@@ -93,29 +82,28 @@ restore()
 	fread(&loved, sizeof loved, 1, fp);
 	fread(&pleasure, sizeof pleasure, 1, fp);
 	fread(&power, sizeof power, 1, fp);
-	fread(&ego, sizeof ego, 1, fp);
+	/* Check the final read in case file was truncated */
+	if (fread(&ego, sizeof ego, 1, fp) < 1)
+		errx(1, "save file %s is truncated", filename);
+	fclose(fp);
 }
 
-save()
+void
+save(const char *filename)
 {
-	char *getenv();
-	char *home;
-	char home1[100];
-	register int n;
-	int tmp;
-	FILE *fp;
+	int     n;
+	int     tmp;
+	FILE   *fp;
 
-	home = getenv("HOME");
-	strcpy(home1, home);
-	strcat(home1, "/Bstar");
-	if ((fp = fopen(home1, "w")) == 0) {
-		perror(home1);
+	if (filename == NULL)
+		return; /* Error determining save file name.  */
+	if ((fp = fopen(filename, "w")) == NULL) {
+		warn("can't open %s for writing", filename);
 		return;
 	}
-	printf("Saved in %s.\n", home1);
 	fwrite(&WEIGHT, sizeof WEIGHT, 1, fp);
 	fwrite(&CUMBER, sizeof CUMBER, 1, fp);
-	fwrite(&clock, sizeof clock, 1, fp);
+	fwrite(&ourclock, sizeof ourclock, 1, fp);
 	tmp = location == dayfile;
 	fwrite(&tmp, sizeof tmp, 1, fp);
 	for (n = 1; n <= NUMOFROOMS; n++) {
@@ -128,7 +116,7 @@ save()
 	fwrite(notes, sizeof notes, 1, fp);
 	fwrite(&direction, sizeof direction, 1, fp);
 	fwrite(&position, sizeof position, 1, fp);
-	fwrite(&time, sizeof time, 1, fp);
+	fwrite(&ourtime, sizeof ourtime, 1, fp);
 	fwrite(&fuel, sizeof fuel, 1, fp);
 	fwrite(&torps, sizeof torps, 1, fp);
 	fwrite(&carrying, sizeof carrying, 1, fp);
@@ -148,4 +136,53 @@ save()
 	fwrite(&pleasure, sizeof pleasure, 1, fp);
 	fwrite(&power, sizeof power, 1, fp);
 	fwrite(&ego, sizeof ego, 1, fp);
+	fflush(fp);
+	if (ferror(fp))
+		warn("fwrite %s", filename);
+	else
+		printf("Saved in %s.\n", filename);
+	fclose(fp);
+}
+
+/*
+ * Given a save file name (possibly from fgetln, so without terminating NUL),
+ * determine the name of the file to be saved to by adding the HOME
+ * directory if the name does not contain a slash.  Name will be allocated
+ * with malloc(3).
+ */
+char *
+save_file_name(const char *filename, size_t len)
+{
+	char   *home;
+	char   *newname;
+	size_t	tmpl;
+
+	if (memchr(filename, '/', len)) {
+		if ((newname = malloc(len + 1)) == NULL) {
+			warnx("out of memory");
+			return NULL;
+		}
+		memcpy(newname, filename, len);
+		newname[len] = 0;
+	} else {
+		if ((home = getenv("HOME")) != NULL) {
+			tmpl = strlen(home);
+			if ((newname = malloc(tmpl + len + 2)) == NULL) {
+				warnx("out of memory");
+				return NULL;
+			}
+			memcpy(newname, home, tmpl);
+			newname[tmpl] = '/';
+			memcpy(newname + tmpl + 1, filename, len);
+			newname[tmpl + len + 1] = 0;
+		} else {
+			if ((newname = malloc(len + 1)) == NULL) {
+				warnx("out of memory");
+				return NULL;
+			}
+			memcpy(newname, filename, len);
+			newname[len] = 0;
+		}
+	}
+	return(newname);
 }

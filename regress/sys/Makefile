@@ -1,11 +1,13 @@
+#	$OpenBSD: Makefile,v 1.20 2015/10/14 12:47:07 vgross Exp $
 #	$NetBSD: Makefile,v 1.4 1995/04/20 22:41:08 cgd Exp $
 
-SUBDIR+= kern
-.if exists(arch/${MACHINE})
+SUBDIR+= copy crypto ddb fifofs kern net netinet netinet6 ptrace sys uvm dev
+.if exists(arch/${MACHINE}/Makefile)
 SUBDIR+= arch/${MACHINE}
 .endif
-
-regress: _SUBDIRUSE
+.if exists(arch/${MACHINE_ARCH}/Makefile) && ${MACHINE} != ${MACHINE_ARCH}
+SUBDIR+= arch/${MACHINE_ARCH}
+.endif
 
 install:
 

@@ -1,268 +1,110 @@
-# $OpenBSD: PackageLocator.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# ex:ts=8 sw=4:
+# $OpenBSD: PackageLocator.pm,v 1.104 2016/01/27 20:49:45 sthen Exp $
 #
-# Copyright (c) 2003 Marc Espie.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
-# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
-# PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 use strict;
 use warnings;
 
-# XXX we don't want to load Ustar all the time
-package OpenBSD::Ustar;
-
-our $AUTOLOAD;
-
-sub AUTOLOAD {
-	eval { require OpenBSD::Ustar;
-	};
-	goto &$AUTOLOAD;
-}
-
-package OpenBSD::PackageLocation;
-
-sub _new
-{
-	my ($class, $location) = @_;
-	bless { location => $location }, $class;
-}
-
-sub new
-{
-	my ($class, $location) = @_;
-	if ($location =~ m/^ftp\:/i) {
-		return OpenBSD::PackageLocation::FTP->_new($location);
-	} elsif ($location =~ m/^http\:/i) {
-		return OpenBSD::PackageLocation::HTTP->_new($location);
-	} elsif ($location =~ m/^scp\:/i) {
-		return OpenBSD::PackageLocation::SCP->_new($location);
-	} else {
-		return OpenBSD::PackageLocation::Local->_new($location);
-	}
-}
-
-package OpenBSD::PackageLocation::SCP;
-our @ISA=qw(OpenBSD::PackageLocation OpenBSD::PackageLocation::FTPorSCP);
-
-sub _new
-{
-	my ($class, $location) = @_;
-	$location =~ s/scp\:\/\///i;
-	$location =~ m/\//;
-	bless {	host => $`, path => "/$'" }, $class;
-}
-
-sub open
-{
-	my ($self, $name) = @_;
-	my $host = $self->{host};
-	my $path = $self->{path};
-	open(my $fh, '-|', "scp $host:$path$name /dev/stdout 2> /dev/null|gzip -d -c -q - 2> /dev/null") or return undef;
-	return $fh;
-}
-
-sub list
-{
-	my ($self) = @_;
-	my $host = $self->{host};
-	my $path = $self->{path};
-	return _list("ssh $host ls -l $path");
-}
-
-package OpenBSD::PackageLocation::Local;
-our @ISA=qw(OpenBSD::PackageLocation);
-
-sub open
-{
-	my ($self, $name) = @_;
-	my $fullname = $self->{location}.$name;
-	open(my $fh, '-|', "gzip -d -c -q 2>/dev/null $fullname") or return undef;
-	return $fh;
-}
-
-sub list
-{
-	my $self = shift;
-	my @l = ();
-	opendir(my $dir, $self->{location}) or return undef;
-	while (my $e = readdir $dir) {
-		next unless -f "$dir/$e";
-		next unless $e = ~ m/\.tgz$/;
-		push(@l, $`);
-	}
-	close($dir);
-	return @l;
-}
-
-package OpenBSD::PackageLocation::FTPorSCP;
-
-sub _list
-{
-	my ($self, $cmd) = @_;
-	my @l =();
-	local $_;
-	open(my $fh, '-|', "$cmd") or return undef;
-	while(<$fh>) {
-		chomp;
-		next if m/^d.*\s+\S/;
-		next unless m/([^\s]+)\.tgz\s*$/;
-		push(@l, $1);
-	}
-	close($fh);
-	return @l;
-}
-
-package OpenBSD::PackageLocation::HTTPorFTP;
-sub open
-{
-	my ($self, $name) = @_;
-	my $fullname = $self->{location}.$name;
-	open(my $fh, '-|', "ftp -o - $fullname 2>/dev/null|gzip -d -c -q - 2>/dev/null") or return undef;
-	return $fh;
-}
-
-package OpenBSD::PackageLocation::HTTP;
-our @ISA=qw(OpenBSD::PackageLocation::HTTPorFTP OpenBSD::PackageLocation);
-sub list
-{
-	my ($self) = @_;
-	my $fullname = $self->{location};
-	my @l =();
-	local $_;
-	open(my $fh, '-|', "echo ls|ftp -o - $fullname 2>/dev/null") or return undef;
-	# XXX assumes a pkg HREF won't cross a line. Is this the case ?
-	while(<$fh>) {
-		chomp;
-		for my $pkg (m/\<A\s+HREF=\"(.*?)\.tgz\"\>/gi) {
-			next if $pkg =~ m|/|;
-			push(@l, $pkg);
-		}
-	}
-	close($fh);
-	return @l;
-}
-
-package OpenBSD::PackageLocation::FTP;
-our @ISA=qw(OpenBSD::PackageLocation::HTTPorFTP OpenBSD::PackageLocation OpenBSD::PackageLocation::FTPorSCP);
-
-sub list
-{
-	my ($self) = @_;
-	my $fullname = $self->{location};
-	return _list("echo ls|ftp -o - $fullname 2>/dev/null");
-}
-
-
 package OpenBSD::PackageLocator;
 
-# this returns an archive handle from an uninstalled package name, currently
-# There is a cache available.
+use OpenBSD::PackageRepositoryList;
+use OpenBSD::PackageRepository;
 
-use OpenBSD::PackageInfo;
-use OpenBSD::Temp;
+my $default_path;
 
-my %packages;
-my @pkgpath;
+sub build_default_path
+{
+	my ($self, $state) = @_;
+	$default_path = OpenBSD::PackageRepositoryList->new($state);
 
-if (defined $ENV{PKG_PATH}) {
-	my @tentative = split /\:/, $ENV{PKG_PATH};
-	@pkgpath = ();
-	while (my $i = shift @tentative) {
-		if ($i =~ m/^(?:ftp|http|scp)$/i) {
-			$i.= ":".(shift @tentative);
+	if (defined $ENV{PKG_PATH}) {
+		my $v = $ENV{PKG_PATH};
+		$v =~ s/^\:+//o;
+		$v =~ s/\:+$//o;
+		while (my $o = OpenBSD::PackageRepository->parse(\$v, $state)) {
+			$default_path->add($o);
 		}
-		$i =~ m|/$| or $i.='/';
-		unshift @pkgpath, OpenBSD::PackageLocation->new($i);
+		return;
 	}
+	$default_path->add(OpenBSD::PackageRepository->new("./", $state)->can_be_empty);
+	return if $state->defines('NOINSTALLPATH');
+
+	return unless defined $state->config->value('installpath');
+	for my $i ($state->config->value("installpath")) {
+		$default_path->add(OpenBSD::PackageRepository->new($i, $state));
+	}
+}
+
+sub default_path
+{
+	if (!defined $default_path) {
+		&build_default_path;
+	}
+	return $default_path;
+}
+
+sub path_parse
+{
+	my ($self, $pkgname, $state, $path) = (@_, './');
+	if ($pkgname =~ m/^(.*[\/\:])(.*)/) {
+		($pkgname, $path) = ($2, $1);
+	}
+
+	return (OpenBSD::PackageRepository->new($path, $state), $pkgname);
 }
 
 sub find
 {
-	my $class = shift;
-	local $_ = shift;
-	$_.=".tgz" unless m/\.tgz$/;
-	if (exists $packages{$_}) {
-		return $packages{$_};
-	}
+	my ($self, $url, $state) = @_;
+
 	my $package;
-	if (m/\//) {
-		my $location = OpenBSD::PackageLocation->new($_);
-		$package = openAbsolute($location, '');
-	} else {
-		for my $p (@pkgpath) {
-			$package = openAbsolute($p, $_);
-			last if defined $package;
+	if ($url =~ m/[\/\:]/o) {
+		my ($repository, $pkgname) = $self->path_parse($url, $state);
+		$package = $repository->find($pkgname);
+		if (defined $package) {
+			$self->default_path($state)->add($repository);
 		}
-	}
-	return $package unless defined $package;
-	$packages{$_} = $package;
-	bless $package, $class;
-}
-
-sub info
-{
-	my $self = shift;
-	return $self->{dir};
-}
-
-sub close
-{
-	my $self = shift;
-	close($self->{fh});
-	$self->{fh} = undef;
-	$self->{archive} = undef;
-}
-
-sub openAbsolute
-{
-	my ($location, $name) = @_;
-	my $fh = $location->open($name);
-	if (!defined $fh) {
-		return undef;
-	}
-	my $archive = new OpenBSD::Ustar $fh;
-	my $dir = OpenBSD::Temp::dir();
-
-	my $self = { name => $_, fh => $fh, archive => $archive, dir => $dir };
-	# check that Open worked
-	while (my $e = $archive->next()) {
-		if ($e->isFile() && is_info_name($e->{name})) {
-			$e->{name}=$dir.$e->{name};
-			$e->create();
-		} else {
-			$archive->unput();
-			last;
-		}
-	}
-	if (-f $dir.CONTENTS) {
-		return $self;
 	} else {
-		CORE::close($fh);
-		return undef;
+		$package = $self->default_path($state)->find($url);
 	}
+	return $package;
 }
 
-# allows the autoloader to work correctly
-sub DESTROY
+sub grabPlist
 {
+	my ($self, $url, $code, $state) = @_;
+
+	my $plist;
+	if ($url =~ m/[\/\:]/o) {
+		my ($repository, $pkgname) = $self->path_parse($url, $state);
+		$plist = $repository->grabPlist($pkgname, $code);
+		if (defined $plist) {
+			$self->default_path($state)->add($repository);
+		}
+	} else {
+		$plist = $self->default_path($state)->grabPlist($url, $code);
+	}
+	return $plist;
+}
+
+sub match_locations
+{
+	my ($self, @search) = @_;
+	my $state = pop @search;
+	return $self->default_path($state)->match_locations(@search);
 }
 
 1;

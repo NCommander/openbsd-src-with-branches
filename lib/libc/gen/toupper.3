@@ -1,4 +1,4 @@
-.\"	$NetBSD: toupper.3,v 1.3 1995/02/27 05:54:43 cgd Exp $
+.\"	$OpenBSD: toupper.3,v 1.14 2012/11/23 22:54:08 guenther Exp $
 .\"
 .\" Copyright (c) 1989, 1991 The Regents of the University of California.
 .\" All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,29 +31,41 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	@(#)toupper.3	5.2 (Berkeley) 6/29/91
-.\"
-.Dd June 29, 1991
+.Dd $Mdocdate: November 23 2012 $
 .Dt TOUPPER 3
 .Os
 .Sh NAME
-.Nm toupper
+.Nm toupper ,
+.Nm _toupper
 .Nd lower case to upper case letter conversion
 .Sh SYNOPSIS
-.Fd #include <ctype.h>
+.In ctype.h
 .Ft int
 .Fn toupper "int c"
+.Ft int
+.Fn _toupper "int c"
 .Sh DESCRIPTION
 The
 .Fn toupper
-function converts a lower-case letter to the corresponding 
+function converts a lower-case letter to the corresponding
 upper-case letter.
-.SH RETURN VALUES
-If the argument is a lower-case letter, the
+The
+.Fn _toupper
+function is identical to
 .Fn toupper
-function returns the corresponding upper-case letter if there is
-one; otherwise the argument is returned unchanged.
-.\" In the 
+except that
+.Ar c
+must be a lower-case letter.
+.Sh RETURN VALUES
+If the argument to the
+.Fn toupper
+function is a lower-case letter, the corresponding upper-case letter
+is returned if there is one; otherwise the argument is returned unchanged.
+If the argument to the
+.Fn _toupper
+function is a lower-case letter, the corresponding upper-case letter
+is returned; otherwise the output is undefined.
+.\" In the
 .\" .Em ``C''
 .\" locale,
 .\" .Fn toupper
@@ -65,11 +73,12 @@ one; otherwise the argument is returned unchanged.
 .\" .Xr islower
 .\" is true to the corresponding characters for which
 .\" .Xr isupper
-.\" is true.	
+.\" is true.
 .Sh SEE ALSO
-.Xr isascii 3 ,
 .Xr isalnum 3 ,
 .Xr isalpha 3 ,
+.Xr isascii 3 ,
+.Xr isblank 3 ,
 .Xr iscntrl 3 ,
 .Xr isdigit 3 ,
 .Xr isgraph 3 ,
@@ -79,12 +88,20 @@ one; otherwise the argument is returned unchanged.
 .Xr isspace 3 ,
 .Xr isupper 3 ,
 .Xr isxdigit 3 ,
+.Xr stdio 3 ,
 .Xr toascii 3 ,
-.Xr toupper 3 ,
-.Xr stdio 3
+.Xr tolower 3 ,
 .Xr ascii 7
 .Sh STANDARDS
 The
-.Fn tolower
+.Fn toupper
 function conforms to
 .St -ansiC .
+.Sh CAVEATS
+The argument to
+.Nm
+must be
+.Dv EOF
+or representable as an
+.Li unsigned char ;
+otherwise, the result is undefined.

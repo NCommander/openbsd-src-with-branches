@@ -1,4 +1,5 @@
-.\"	$NetBSD: lam.1,v 1.2 1994/11/14 20:27:40 jtc Exp $
+.\"	$OpenBSD: lam.1,v 1.8 2009/08/16 09:41:08 sobrado Exp $
+.\"	$NetBSD: lam.1,v 1.4 2002/02/08 01:36:25 ross Exp $
 .\"
 .\" Copyright (c) 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,97 +30,102 @@
 .\"
 .\"	@(#)lam.1	8.1 (Berkeley) 6/6/93
 .\"
-.TH LAM 1 "June 6, 1993"
-.UC 4
-.SH NAME
-lam \- laminate files
-.SH SYNOPSIS
-.B lam [ \-[fp]
-min.max
-.B ] [ \-s
-sepstring
-.B ] [ \-t
-c
-.B ]
-file ...
-.SH DESCRIPTION
-.I Lam
+.Dd $Mdocdate: August 16 2009 $
+.Dt LAM 1
+.Os
+.Sh NAME
+.Nm lam
+.Nd laminate files
+.Sh SYNOPSIS
+.Nm
+.Op Fl f Ar min.max
+.Op Fl p Ar min.max
+.Op Fl s Ar sepstring
+.Op Fl t Ar c
+.Ar
+.Sh DESCRIPTION
+.Nm
 copies the named files side by side onto the standard output.
 The
-.IR n -th
+.Em n Ns -th
 input lines from the input
-.IR file s
+.Ar files
 are considered fragments of the single long
-.IR n -th
+.Em n Ns -th
 output line into which they are assembled.
-The name `\fB\-\fP' means the standard input, and may be repeated.
-.PP
+The name
+.Dq \&-
+means the standard input, and may be repeated.
+.Pp
 Normally, each option affects only the
-.I file
+.Ar file
 after it.
 If the option letter is capitalized it affects all subsequent files
 until it appears again uncapitalized.
 The options are described below.
-.IP \fB\-f\fP\ min.max
+.Bl -tag -width "-s sepstring"
+.It Fl f Ar min.max
 Print line fragments according to the format string
-.IR min.max ,
+.Ar min.max ,
 where
-.I min
+.Ar min
 is the minimum field width and
-.I max
+.Ar max
 the maximum field width.
 If
-.I min
+.Ar min
 begins with a zero, zeros will be added to make up the field width,
-and if it begins with a `\-', the fragment will be left-adjusted
+and if it begins with a
+.Sq \&- ,
+the fragment will be left-adjusted
 within the field.
-.IP \fB\-p\fP\ min.max
-Like \fB\-f\fP,
+.It Fl p Ar min.max
+Like
+.Fl f ,
 but pad this file's field when end-of-file is reached
 and other files are still active.
-.IP \fB\-s\fP\ sepstring
+.It Fl s Ar sepstring
 Print
-.I sepstring
+.Ar sepstring
 before printing line fragments from the next file.
 This option may appear after the last file.
-.IP \fB\-t\fP\ c
+.It Fl t Ar c
 The input line terminator is
-.I c
+.Ar c
 instead of a newline.
 The newline normally appended to each output line is omitted.
-.PP
+.El
+.Pp
 To print files simultaneously for easy viewing use
-.IR pr (1).
-.SH EXAMPLES
-.de IC
-.IP
-.ss 36
-.ft B
-..
-.de NC
-.br
-.ss 12
-.PP
-..
-.PP
-The command
-.IC
-lam file1 file2 file3 file4
-.NC
-joins 4 files together along each line.
-To merge the lines from four different files use
-.IC
-lam file1 \-S "\\
-.br
+.Xr pr 1 .
+.Sh EXAMPLES
+Join four files together along each line:
+.Pp
+.Dl $ lam file1 file2 file3 file4
+.Pp
+Merge the lines from four different files:
+.Bd -literal -offset indent
+$ lam file1 \-S "\e
 " file2 file3 file4
-.NC
-Every 2 lines of a file may be joined on one line with
-.IC
-lam \- \- < file
-.NC
-and a form letter with substitutions keyed by `@' can be done with
-.IC
-lam \-t @ letter changes
-.NC
-.SH SEE ALSO
-join(1), pr(1), printf(3)
+.Ed
+.Pp
+Join every two lines of a file:
+.Pp
+.Dl $ lam \- \- \*(Lt file
+.Pp
+A form letter with substitutions keyed by
+.Sq \&@
+can be done with:
+.Pp
+.Dl $ lam \-t @ letter changes
+.Sh SEE ALSO
+.Xr join 1 ,
+.Xr pr 1 ,
+.Xr printf 1
+.Sh HISTORY
+The
+.Nm
+utility first appeared in
+.Bx 4.2 .
+.Sh AUTHORS
+.An John A. Kunze

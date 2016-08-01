@@ -1,4 +1,5 @@
-/*	$NetBSD: netif.c,v 1.5 1995/09/18 21:19:34 pk Exp $	*/
+/*	$OpenBSD: netif.c,v 1.10 2014/07/13 15:31:20 mpi Exp $	*/
+/*	$NetBSD: netif.c,v 1.7 1996/10/13 02:29:03 christos Exp $	*/
 
 /*
  * Copyright (c) 1993 Adam Glass
@@ -33,13 +34,9 @@
 
 #include <sys/param.h>
 #include <sys/types.h>
-#include <sys/cdefs.h>
 #include <sys/mount.h>
-#include <time.h>
-#include <string.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 
 #include "stand.h"
 #include "net.h"
@@ -57,11 +54,11 @@ int netif_debug = 0;
  */
 
 void
-netif_init()
+netif_init(void)
 {
 	struct netif_driver *drv;
 	int d, i;
-    
+
 #ifdef NETIF_DEBUG
 	if (netif_debug)
 		printf("netif_init: called\n");
@@ -73,10 +70,8 @@ netif_init()
 	}
 }
 
-int
-netif_match(nif, machdep_hint)
-	struct netif *nif;
-	void *machdep_hint;
+static int
+netif_match(struct netif *nif, void *machdep_hint)
 {
 	struct netif_driver *drv = nif->nif_driver;
 
@@ -89,8 +84,7 @@ netif_match(nif, machdep_hint)
 }
 
 struct netif *
-netif_select(machdep_hint)
-	void *machdep_hint;
+netif_select(void *machdep_hint)
 {
 	int d, u, unit_done, s;
 	struct netif_driver *drv;
@@ -114,7 +108,7 @@ netif_select(machdep_hint)
 		for (u = 0; u < drv->netif_nifs; u++) {
 			cur_if.nif_unit = u;
 			unit_done = 0;
-		
+
 #ifdef NETIF_DEBUG
 			if (netif_debug)
 				printf("\t%s%d:", drv->netif_bname,
@@ -152,22 +146,20 @@ netif_select(machdep_hint)
 	if (best_if.nif_driver == NULL)
 		return NULL;
 
-	best_if.nif_driver->
-	    netif_ifs[best_if.nif_unit].dif_used |= (1 << best_if.nif_sel);
+	best_if.nif_driver->netif_ifs[best_if.nif_unit].dif_used |=
+	    (1 << best_if.nif_sel);
 
 #ifdef NETIF_DEBUG
 	if (netif_debug)
 		printf("netif_select: %s%d(%d) wins\n",
-			best_if.nif_driver->netif_bname,
-			best_if.nif_unit, best_if.nif_sel);
+		    best_if.nif_driver->netif_bname,
+		    best_if.nif_unit, best_if.nif_sel);
 #endif
 	return &best_if;
 }
 
 int
-netif_probe(nif, machdep_hint)
-	struct netif *nif;
-	void *machdep_hint;
+netif_probe(struct netif *nif, void *machdep_hint)
 {
 	struct netif_driver *drv = nif->nif_driver;
 
@@ -179,10 +171,7 @@ netif_probe(nif, machdep_hint)
 }
 
 void
-netif_attach(nif, desc, machdep_hint)
-	struct netif *nif;
-	struct iodesc *desc;
-	void *machdep_hint;
+netif_attach(struct netif *nif, struct iodesc *desc, void *machdep_hint)
 {
 	struct netif_driver *drv = nif->nif_driver;
 
@@ -190,20 +179,19 @@ netif_attach(nif, desc, machdep_hint)
 	if (netif_debug)
 		printf("%s%d: netif_attach\n", drv->netif_bname, nif->nif_unit);
 #endif
-	desc->io_netif = nif; 
+	desc->io_netif = nif;
 #ifdef PARANOID
 	if (drv->netif_init == NULL)
-		panic("%s%d: no netif_init support\n", drv->netif_bname,
+		panic("%s%d: no netif_init support", drv->netif_bname,
 		    nif->nif_unit);
 #endif
 	drv->netif_init(desc, machdep_hint);
-	bzero(drv->netif_ifs[nif->nif_unit].dif_stats, 
+	bzero(drv->netif_ifs[nif->nif_unit].dif_stats,
 	    sizeof(struct netif_stats));
 }
 
 void
-netif_detach(nif)
-	struct netif *nif;
+netif_detach(struct netif *nif)
 {
 	struct netif_driver *drv = nif->nif_driver;
 
@@ -213,20 +201,18 @@ netif_detach(nif)
 #endif
 #ifdef PARANOID
 	if (drv->netif_end == NULL)
-		panic("%s%d: no netif_end support\n", drv->netif_bname,
+		panic("%s%d: no netif_end support", drv->netif_bname,
 		    nif->nif_unit);
 #endif
 	drv->netif_end(nif);
 }
 
 ssize_t
-netif_get(desc, pkt, len, timo)
-	struct iodesc *desc;
-	void *pkt;
-	size_t len;
-	time_t timo;
+netif_get(struct iodesc *desc, void *pkt, size_t len, time_t timo)
 {
+#ifdef NETIF_DEBUG
 	struct netif *nif = desc->io_netif;
+#endif
 	struct netif_driver *drv = desc->io_netif->nif_driver;
 	ssize_t rv;
 
@@ -236,7 +222,7 @@ netif_get(desc, pkt, len, timo)
 #endif
 #ifdef PARANOID
 	if (drv->netif_get == NULL)
-		panic("%s%d: no netif_get support\n", drv->netif_bname,
+		panic("%s%d: no netif_get support", drv->netif_bname,
 		    nif->nif_unit);
 #endif
 	rv = drv->netif_get(desc, pkt, len, timo);
@@ -249,12 +235,11 @@ netif_get(desc, pkt, len, timo)
 }
 
 ssize_t
-netif_put(desc, pkt, len)
-	struct iodesc *desc;
-	void *pkt;
-	size_t len;
+netif_put(struct iodesc *desc, void *pkt, size_t len)
 {
+#ifdef NETIF_DEBUG
 	struct netif *nif = desc->io_netif;
+#endif
 	struct netif_driver *drv = desc->io_netif->nif_driver;
 	ssize_t rv;
 
@@ -264,7 +249,7 @@ netif_put(desc, pkt, len)
 #endif
 #ifdef PARANOID
 	if (drv->netif_put == NULL)
-		panic("%s%d: no netif_put support\n", drv->netif_bname,
+		panic("%s%d: no netif_put support", drv->netif_bname,
 		    nif->nif_unit);
 #endif
 	rv = drv->netif_put(desc, pkt, len);
@@ -288,16 +273,15 @@ socktodesc(sock)
 }
 
 int
-netif_open(machdep_hint)
-	void *machdep_hint;
+netif_open(void *machdep_hint)
 {
 	int fd;
-	register struct iodesc *s;
+	struct iodesc *s;
 	struct netif *nif;
-	
+
 	/* find a free socket */
 	for (fd = 0, s = sockets; fd < SOPEN_MAX; fd++, s++)
-		if (s->io_netif == (struct netif *)0)
+		if (s->io_netif == NULL)
 			goto fnd;
 	errno = EMFILE;
 	return (-1);
@@ -306,11 +290,11 @@ fnd:
 	bzero(s, sizeof(*s));
 	netif_init();
 	nif = netif_select(machdep_hint);
-	if (!nif) 
+	if (!nif)
 		panic("netboot: no interfaces left untried");
 	if (netif_probe(nif, machdep_hint)) {
 		printf("netboot: couldn't probe %s%d\n",
-			nif->nif_driver->netif_bname, nif->nif_unit);
+		    nif->nif_driver->netif_bname, nif->nif_unit);
 		errno = EINVAL;
 		return(-1);
 	}
@@ -320,15 +304,14 @@ fnd:
 }
 
 int
-netif_close(sock)
-	int sock;
+netif_close(int sock)
 {
 	if (sock >= SOPEN_MAX) {
 		errno = EBADF;
 		return(-1);
 	}
 	netif_detach(sockets[sock].io_netif);
-	sockets[sock].io_netif = (struct netif *)0;
+	sockets[sock].io_netif = NULL;
 
 	return(0);
 }

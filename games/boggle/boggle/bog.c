@@ -1,3 +1,4 @@
+/*	$OpenBSD: bog.c,v 1.29 2016/01/10 13:18:07 mestre Exp $	*/
 /*	$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,79 +33,42 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)bog.c	8.1 (Berkeley) 6/11/93";
-#else
-static char rcsid[] = "$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <ctype.h>
 #include <err.h>
+#include <errno.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <unistd.h>
 
 #include "bog.h"
 #include "extern.h"
 
-static int	compar __P((const void *, const void *));
+static void	init(void);
+static void	init_adjacencies(void);
+static int	compar(const void *, const void *);
 
 struct dictindex dictindex[26];
 
-/*
- * Cube position numbering:
- *
- *	0 1 2 3
- *	4 5 6 7
- *	8 9 A B
- *	C D E F
- */
-static int adjacency[16][16] = {
-/*        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
-	{ 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 0 */
-	{ 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 1 */
-	{ 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 2 */
-	{ 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 3 */
-	{ 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0 },		/* 4 */
-	{ 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0 },		/* 5 */
-	{ 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0 },		/* 6 */
-	{ 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0 },		/* 7 */
-	{ 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0 },		/* 8 */
-	{ 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0 },		/* 9 */
-	{ 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1 },		/* A */
-	{ 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1 },		/* B */
-	{ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0 },		/* C */
-	{ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0 },		/* D */
-	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1 },		/* E */
-	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0 }		/* F */
-};
+static int **adjacency, **letter_map;
 
-static int letter_map[26][16];
-
-char board[17];
+char *board;
 int wordpath[MAXWORDLEN + 1];
 int wordlen;		/* Length of last word returned by nextword() */
 int usedbits;
+int ncubes;
+int grid = 4;
 
-char *pword[MAXPWORDS], pwords[MAXPSPACE], *pwordsp;
-int npwords;
+char **pword, *pwords, *pwordsp;
+int npwords, maxpwords = MAXPWORDS, maxpspace = MAXPSPACE;
 
-char *mword[MAXMWORDS], mwords[MAXMSPACE], *mwordsp;
-int nmwords;
+char **mword, *mwords, *mwordsp;
+int nmwords, maxmwords = MAXMWORDS, maxmspace = MAXMSPACE;
 
 int ngames = 0;
 int tnmwords = 0, tnpwords = 0;
 
-#include <setjmp.h>
 jmp_buf env;
 
 time_t start_t;
@@ -116,36 +76,40 @@ time_t start_t;
 static FILE *dictfp;
 
 int batch;
+int challenge;
 int debug;
 int minlength;
 int reuse;
+int selfuse;
 int tlimit;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	long seed;
-	int ch, done, i, selfuse, sflag;
+	int ch, done;
 	char *bspec, *p;
 
-	batch = debug = reuse = selfuse = sflag = 0;
+	if (pledge("stdio rpath tty", NULL) == -1)
+		err(1, "pledge");
+
+	batch = debug = reuse = selfuse;
 	bspec = NULL;
-	minlength = 3;
+	minlength = -1;
 	tlimit = 180;		/* 3 minutes is standard */
 
-	while ((ch = getopt(argc, argv, "bds:t:w:")) != EOF)
+	while ((ch = getopt(argc, argv, "Bbcdht:w:")) != -1)
 		switch(ch) {
+		case 'B':
+			grid = 5;
+			break;
 		case 'b':
 			batch = 1;
 			break;
+		case 'c':
+			challenge = 1;
+			break;
 		case 'd':
 			debug = 1;
-			break;
-		case 's':
-			sflag = 1;
-			seed = atol(optarg);
 			break;
 		case 't':
 			if ((tlimit = atoi(optarg)) < 1)
@@ -155,7 +119,7 @@ main(argc, argv)
 			if ((minlength = atoi(optarg)) < 3)
 				errx(1, "min word length must be > 2");
 			break;
-		case '?':
+		case 'h':
 		default:
 			usage();
 		}
@@ -163,20 +127,21 @@ main(argc, argv)
 	argv += optind;
 
 	/* process final arguments */
-	if (argc > 0)
+	if (argc > 0) {
 		if (strcmp(argv[0], "+") == 0)
 			reuse = 1;
 		else if (strcmp(argv[0], "++") == 0)
 			selfuse = 1;
+	}
 
 	if (reuse || selfuse) {
 		argc -= 1;
 		argv += 1;
 	}
 
-	if (argc > 0)
-		if (islower(argv[0][0])) {
-			if (strlen(argv[0]) != 16) {
+	if (argc > 0) {
+		if (islower((unsigned char)argv[0][0])) {
+			if (strlen(argv[0]) != ncubes) {
 				usage();
 			} else {
 				/* This board is assumed to be valid... */
@@ -185,32 +150,30 @@ main(argc, argv)
 		} else {
 		  	usage();
 		}
+	}
 
 	if (batch && bspec == NULL)
 		errx(1, "must give both -b and a board setup");
 
-	if (selfuse)
-		for (i = 0; i < 16; i++)
-			adjacency[i][i] = 1;
-
+	init();
 	if (batch) {
 		newgame(bspec);
 		while ((p = batchword(stdin)) != NULL)
 			(void) printf("%s\n", p);
-		exit (0);
+		return 0;
 	}
-	setup(sflag, seed);
+	setup();
 	prompt("Loading the dictionary...");
 	if ((dictfp = opendict(DICT)) == NULL) {
 		warn("%s", DICT);
 		cleanup();
-		exit(1);
+		return 1;
 	}
 #ifdef LOADDICT
 	if (loaddict(dictfp) < 0) {
 		warnx("can't load %s", DICT);
 		cleanup();
-		exit(1);
+		return 1;
 	}
 	(void)fclose(dictfp);
 	dictfp = NULL;
@@ -218,7 +181,7 @@ main(argc, argv)
 	if (loadindex(DICTINDEX) < 0) {
 		warnx("can't load %s", DICTINDEX);
 		cleanup();
-		exit(1);
+		return 1;
 	}
 
 	prompt("Type <space> to begin...");
@@ -229,7 +192,7 @@ main(argc, argv)
 		bspec = NULL;	/* reset for subsequent games */
 		playgame();
 		prompt("Type <space> to continue, any cap to quit...");
-		delay(50);	/* wait for user to quit typing */
+		delay(10);	/* wait for user to quit typing */
 		flushin(stdin);
 		for (;;) {
 			ch = inputch();
@@ -248,7 +211,7 @@ main(argc, argv)
 		}
 	}
 	cleanup();
-	exit (0);
+	return 0;
 }
 
 /*
@@ -256,11 +219,10 @@ main(argc, argv)
  * Return a pointer to a legal word or a null pointer when EOF is reached
  */
 char *
-batchword(fp)
-	FILE *fp;
+batchword(FILE *fp)
 {
-	register int *p, *q;
-	register char *w;
+	int *p, *q;
+	char *w;
 
 	q = &wordpath[MAXWORDLEN + 1];
 	p = wordpath;
@@ -285,9 +247,8 @@ batchword(fp)
  * Keep track of the running stats
  */
 void
-playgame()
+playgame(void)
 {
-	/* Can't use register variables if setjmp() is used! */
 	int i, *p, *q;
 	time_t t;
 	char buf[MAXWORDLEN + 1];
@@ -312,7 +273,7 @@ playgame()
 	}
 
 	while (1) {
-		if (getline(buf) == NULL) {
+		if (get_line(buf) == NULL) {
 			if (feof(stdin))
 				clearerr(stdin);
 			break;
@@ -331,7 +292,7 @@ playgame()
 			showstr(buf, 1);
 			continue;
 		}
-		if (strlen(buf) < minlength) {
+		if (strlen(buf) < (size_t)minlength) {
 			badword();
 			continue;
 		}
@@ -363,15 +324,26 @@ playgame()
 			else {
 				int len;
 
+				if (npwords == maxpwords - 1) {
+					maxpwords += MAXPWORDS;
+					pword = reallocarray(pword, maxpwords,
+					    sizeof(char *));
+					if (pword == NULL) {
+						cleanup();
+						errx(1, "%s", strerror(ENOMEM));
+					}
+				}
 				len = strlen(buf) + 1;
-				if (npwords == MAXPWORDS - 1 ||
-				    pwordsp + len >= &pwords[MAXPSPACE]) {
-					warnx("Too many words!");
-					cleanup();
-					exit(1);
+				if (pwordsp + len >= &pwords[maxpspace]) {
+					maxpspace += MAXPSPACE;
+					pwords = realloc(pwords, maxpspace);
+					if (pwords == NULL) {
+						cleanup();
+						errx(1, "%s", strerror(ENOMEM));
+					}
 				}
 				pword[npwords++] = pwordsp;
-				(void) strcpy(pwordsp, buf);
+				memcpy(pwordsp, buf, len);
 				pwordsp += len;
 				addword(buf);
 			}
@@ -407,12 +379,10 @@ timesup: ;
  * Return 1 on success, -1 on failure
  */
 int
-checkword(word, prev, path)
-	char *word;
-	int prev, *path;
+checkword(char *word, int prev, int *path)
 {
-	register char *p, *q;
-	register int i, *lm;
+	char *p, *q;
+	int i, *lm;
 
 	if (debug) {
 		(void) printf("checkword(%s, %d, [", word, prev);
@@ -471,7 +441,7 @@ checkword(word, prev, path)
 			 * If necessary, check if the square has already
 			 * been used.
 			 */
-			if (!reuse && (usedbits & used))
+			if (!reuse && !selfuse && (usedbits & used))
 					continue;
 			*path = lm[i];
 			usedbits |= used;
@@ -490,17 +460,15 @@ checkword(word, prev, path)
  * the current board
  */
 int
-validword(word)
-	char *word;
+validword(char *word)
 {
-	register int j;
-	register char *q, *w;
+	int j;
+	char *q, *w;
 
 	j = word[0] - 'a';
-	if (dictseek(dictfp, dictindex[j].start, 0) < 0) {
-		(void) fprintf(stderr, "Seek error\n");
+	if (dictseek(dictfp, dictindex[j].start, SEEK_SET) < 0) {
 		cleanup();
-		exit(1);
+		errx(1, "seek error in validword()");
 	}
 
 	while ((w = nextword(dictfp)) != NULL) {
@@ -525,10 +493,10 @@ validword(word)
  * Assume both the dictionary and the player's words are already sorted
  */
 void
-checkdict()
+checkdict(void)
 {
-	register char *p, **pw, *w;
-	register int i;
+	char **pw, *w;
+	int i;
 	int prevch, previndex, *pi, *qi, st;
 
 	mwordsp = mwords;
@@ -537,7 +505,7 @@ checkdict()
 	prevch ='a';
 	qi = &wordpath[MAXWORDLEN + 1];
 
-	(void) dictseek(dictfp, 0L, 0);
+	(void) dictseek(dictfp, 0L, SEEK_SET);
 	while ((w = nextword(dictfp)) != NULL) {
 		if (wordlen < minlength)
 			continue;
@@ -564,10 +532,9 @@ checkdict()
 			 */
 			if (i != previndex + 1) {
 				if (dictseek(dictfp,
-				    dictindex[i].start, 0) < 0) {
-					warnx("seek error in checkdict()");
+				    dictindex[i].start, SEEK_SET) < 0) {
 					cleanup();
-					exit(1);
+					errx(1, "seek error in checkdict()");
 				}
 				continue;
 			}
@@ -585,15 +552,25 @@ checkdict()
 			pw++;
 		if (st == 0)			/* found it */
 			continue;
-		if (nmwords == MAXMWORDS ||
-		    mwordsp + wordlen + 1 >= &mwords[MAXMSPACE]) {
-			warnx("too many words!");
-			cleanup();
-			exit(1);
+		if (nmwords == maxmwords - 1) {
+			maxmwords += MAXMWORDS;
+			mword = reallocarray(mword, maxmwords, sizeof(char *));
+			if (mword == NULL) {
+				cleanup();
+				errx(1, "%s", strerror(ENOMEM));
+			}
+		}
+		if (mwordsp + wordlen + 1 >= &mwords[maxmspace]) {
+			maxmspace += MAXMSPACE;
+			mwords = realloc(mwords, maxmspace);
+			if (mwords == NULL) {
+				cleanup();
+				errx(1, "%s", strerror(ENOMEM));
+			}
 		}
 		mword[nmwords++] = mwordsp;
-		p = w;
-		while (*mwordsp++ = *p++);
+		memcpy(mwordsp, w, wordlen + 1);
+		mwordsp += wordlen + 1;
 	}
 }
 
@@ -603,44 +580,54 @@ checkdict()
  * in ascending cube order, oth. make a random board
  */
 void
-newgame(b)
-	char *b;
+newgame(char *b)
 {
-	register int i, p, q;
-	char *tmp;
+	int i, p, q;
+	char *tmp, **cubes;
 	int *lm[26];
-	static char *cubes[16] = {
+	char chal_cube[] = "iklmqu";	/* challenge cube */
+	static char *cubes4[] = {
 		"ednosw", "aaciot", "acelrs", "ehinps",
 		"eefhiy", "elpstu", "acdemp", "gilruw",
 		"egkluy", "ahmors", "abilty", "adenvz",
 		"bfiorx", "dknotu", "abjmoq", "egintv"
 	};
+	static char *cubes5[] = {
+		"aaafrs", "aaeeee", "aafirs", "adennn", "aeeeem",
+		"aeegmu", "aegmnn", "afirsy", "bjkqxz", "ccnstw",
+		"ceiilt", "ceilpt", "ceipst", "ddlnor", "dhhlor",
+		"dhhnot", "dhlnor", "eiiitt", "emottt", "ensssu",
+		"fiprsy", "gorrvw", "hiprry", "nootuw", "ooottu"
+	};
 
+	cubes = grid == 4 ? cubes4 : cubes5;
 	if (b == NULL) {
-		/*
-		 * Shake the cubes and make the board
-		 */
-		i = 0;
-		while (i < 100) {
-			p = (int) (random() % 16);
-			q = (int) (random() % 16);
-			if (p != q) {
-				tmp = cubes[p];
-				cubes[p] = cubes[q];
-				cubes[q] = tmp;
-				i++;
-			}
-			/* else try again */
+		/* Shuffle the cubes using Fisher-Yates (aka Knuth P). */
+		p = ncubes;
+		while (--p) {
+			q = (int)arc4random_uniform(p + 1);
+			tmp = cubes[p];
+			cubes[p] = cubes[q];
+			cubes[q] = tmp;
 		}
 
-		for (i = 0; i < 16; i++)
-			board[i] = cubes[i][random() % 6];
-	}
-	else {
-		for (i = 0; i < 16; i++)
+		/* Build the board by rolling each cube. */
+		for (i = 0; i < ncubes; i++)
+			board[i] = cubes[i][arc4random_uniform(6)];
+
+		/*
+		 * For challenge mode, roll chal_cube and replace a random
+		 * cube with its value.  Set the high bit to distinguish it.
+		 */
+		if (challenge) {
+			i = arc4random_uniform(ncubes);
+			board[i] = SETHI(chal_cube[arc4random_uniform(6)]);
+		}
+	} else {
+		for (i = 0; i < ncubes; i++)
 			board[i] = b[i];
 	}
-	board[16] = '\0';
+	board[ncubes] = '\0';
 
 	/*
 	 * Set up the map from letter to location(s)
@@ -651,10 +638,10 @@ newgame(b)
 		*lm[i] = -1;
 	}
 
-	for (i = 0; i < 16; i++) {
-		register int j;
+	for (i = 0; i < ncubes; i++) {
+		int j;
 
-		j = (int) (board[i] - 'a');
+		j = (int) (SEVENBIT(board[i]) - 'a');
 		*lm[j] = i;
 		*(++lm[j]) = -1;
 	}
@@ -672,17 +659,103 @@ newgame(b)
 
 }
 
-int
-compar(p, q)
-	const void *p, *q;
+static int
+compar(const void *p, const void *q)
 {
 	return (strcmp(*(char **)p, *(char **)q));
 }
 
-void
-usage()
+/*
+ * Allocate and initialize data structures.
+ */
+static void
+init(void)
 {
-	(void) fprintf(stderr,
-	    "usage: bog [-bd] [-s#] [-t#] [-w#] [+[+]] [boardspec]\n");
+	int i;
+
+	ncubes = grid * grid;
+	if (minlength == -1)
+		minlength = grid - 1;
+	init_adjacencies();
+	board = malloc(ncubes + 1);
+	if (board == NULL)
+		err(1, NULL);
+	letter_map = calloc(26, sizeof(int *));
+	if (letter_map == NULL)
+		err(1, NULL);
+	for (i = 0; i < 26; i++) {
+		letter_map[i] = calloc(ncubes, sizeof(int));
+		if (letter_map[i] == NULL)
+			err(1, NULL);
+	}
+	pword = calloc(maxpwords, sizeof(char *));
+	if (pword == NULL)
+		err(1, NULL);
+	pwords = malloc(maxpspace);
+	if (pwords == NULL)
+		err(1, NULL);
+	mword = calloc(maxmwords, sizeof(char *));
+	if (mword == NULL)
+		err(1, NULL);
+	mwords = malloc(maxmspace);
+	if (mwords == NULL)
+		err(1, NULL);
+}
+
+#define SET_ADJ(r) do {							\
+	if (col > 0)							\
+		adj[r - 1] = 1;						\
+	adj[r] = 1;							\
+	if (col + 1 < grid)						\
+		adj[r + 1] = 1;						\
+} while(0)
+
+/*
+ * Compute adjacency matrix for the grid
+ */
+static void
+init_adjacencies(void)
+{
+	int cube, row, col, *adj;
+
+	adjacency = calloc(ncubes, sizeof(int *));
+	if (adjacency == NULL)
+		err(1, NULL);
+
+	/*
+	 * Fill in adjacencies.  This is an ncubes x ncubes matrix where
+	 * the position X,Y is set to 1 if cubes X and Y are adjacent.
+	 */
+	for (cube = 0; cube < ncubes; cube++) {
+		adj = adjacency[cube] = calloc(ncubes, sizeof(int));
+		if (adj == NULL)
+			err(1, NULL);
+
+		row = cube / grid;
+		col = cube % grid;
+	     
+		/* this row */
+		SET_ADJ(cube);
+		if (!selfuse)
+			adj[cube] = 0;
+
+		/* prev row */
+		if (row > 0)
+			SET_ADJ(cube - grid);
+
+		/* next row */
+		if (row + 1 < grid)
+			SET_ADJ(cube + grid);
+	}
+}
+
+void
+usage(void)
+{
+	extern char *__progname;
+
+	(void) fprintf(stderr, "usage: "
+	    "%s [-Bbcd] [-t time] [-w length] [+[+]] [boardspec]\n",
+	    __progname);
 	exit(1);
 }

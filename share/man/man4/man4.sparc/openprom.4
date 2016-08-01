@@ -1,3 +1,4 @@
+.\"	$OpenBSD: openprom.4,v 1.8 2013/09/15 20:02:34 schwarze Exp $
 .\" Copyright (c) 1992, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -13,11 +14,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -34,19 +31,18 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)openprom.4	8.1 (Berkeley) 6/5/93
-.\"	$Id: openprom.4,v 1.1 1994/07/01 20:47:56 deraadt Exp $
 .\"
-.Dd June 5, 1993
+.Dd $Mdocdate: September 15 2013 $
 .Dt OPENPROM 4 sparc
 .Os
 .Sh NAME
 .Nm openprom
 .Nd OPENPROM and EEPROM interface
 .Sh SYNOPSIS
-.Fd #include <machine/openpromio.h>
+.In machine/openpromio.h
 .Sh DESCRIPTION
 The file
-.Nm /dev/openprom
+.Pa /dev/openprom
 is an interface to the SPARC OPENPROM,
 including the EEPROM area.
 This interface is highly stylized;
@@ -66,7 +62,7 @@ The calls that take and/or return a node
 use a pointer to an
 .Li int
 variable for this purpose;
-others use a pointer to an
+others use a pointer to a
 .Li struct opiocdesc
 descriptor,
 which contains a node and two counted strings.
@@ -133,7 +129,7 @@ the next name after the empty string is the first name.
 .Pa /dev/openprom
 .Sh ERRORS
 The following may result in rejection of an operation:
-.Bl -tag -width Er
+.Bl -tag -width "[ENAMETOOLONG]"
 .It Bq Er EINVAL
 The given node number
 is not zero
@@ -147,7 +143,8 @@ The given name or value field
 exceeds the maximum allowed length (8191 bytes).
 .El
 .Sh SEE ALSO
-.Xr ioctl 2
+.Xr ioctl 2 ,
+.Xr eeprom 8
 .Sh BUGS
 Due to limitations within the OPENPROM itself,
 these functions run at elevated priority

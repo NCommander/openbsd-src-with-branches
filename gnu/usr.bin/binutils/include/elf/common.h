@@ -290,6 +290,9 @@
 #define PT_GNU_EH_FRAME	(PT_LOOS + 0x474e550)
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
 
+#define PT_OPENBSD_RANDOMIZE	0x65a3dbe6
+
+
 /* Program segment permissions, in program header p_flags field.  */
 
 #define PF_X		(1 << 0)	/* Segment is executable */
@@ -384,6 +387,17 @@
 
 #define NT_NETBSDCORE_PROCINFO	1	/* Has a struct procinfo */
 #define NT_NETBSDCORE_FIRSTMACH	32	/* start of machdep note types */
+
+
+/* Note segments for core files on OpenBSD systems.  Note name is
+   "OpenBSD".  */
+
+#define NT_OPENBSD_PROCINFO	10
+#define NT_OPENBSD_AUXV		11
+#define NT_OPENBSD_REGS		20
+#define NT_OPENBSD_FPREGS	21
+#define NT_OPENBSD_XFPREGS	22
+#define NT_OPENBSD_WCOOKIE	23
 
 
 /* Values of note segment descriptor types for object files.  */

@@ -1,37 +1,43 @@
-#	$NetBSD: Makefile.inc,v 1.4 1995/10/01 06:00:38 phil Exp $
+#	$OpenBSD: Makefile.inc,v 1.13 2013/01/01 00:58:25 miod Exp $
+#	$NetBSD: Makefile.inc,v 1.5 1996/09/30 16:01:18 ws Exp $
 #
 #	NOTE: $S must correspond to the top of the 'sys' tree
 SADIR=	$S/lib/libsa
 
-SADST=	lib/sa
+SADST?=	lib/sa
 SAREL?=	../../
 SALIB?=	${SADST}/libsa.a
 
-${SALIB}:		.NOTMAIN __always_make_salib
-	@echo making sure the stand-alone library is up to date...
-.if !defined(NO_NET)
-	@(cd ${SADST} && ${MAKE} -f ${SAREL}${SADIR}/Makefile \
-	  KERNCC="${CC}" \
-	  KERNCFLAGS="${CFLAGS}" \
-	  SAREL="${SAREL}" \
-	  SADIR="${SADIR}" libsa.a)
-.else
-	@(cd ${SADST} && ${MAKE} -f ${SAREL}${SADIR}/Makefile \
-	  KERNCC="${CC}" \
-	  KERNCFLAGS="${CFLAGS}" \
+SAMAKE= \
+	cd ${SADST} && ${MAKE} -f ${SAREL}${SADIR}/Makefile \
+	  CC="${CC}" XCFLAGS="${CFLAGS}" \
+	  AS='${AS}' XAFLAGS='${AFLAGS}' \
+	  LD='${LD}' \
 	  SAREL="${SAREL}" \
 	  SADIR="${SADIR}" \
-	  NO_NET="" libsa.a)
+	  EXTRACFLAGS="${EXTRACFLAGS}"
+.if defined(NO_NET)
+SAMAKE+= NO_NET=""
+.endif
+.if defined(SA_ZLIB)
+SAMAKE+= SA_ZLIB=""
+.endif
+.if defined(USE_LOADFILE)
+SAMAKE+= USE_LOADFILE=""
 .endif
 
-clean:: 		.NOTMAIN __always_make_salib
+${SALIB}:		.NOTMAIN __always_make_salib
+	@echo making sure the stand-alone library is up to date...
+	@${SAMAKE} libsa.a
+
+clean::			.NOTMAIN __always_make_salib
 	@echo cleaning the stand-alone library objects
-	@(cd ${SADST} && ${MAKE} -f ${SAREL}${SADIR}/Makefile \
-	  KERNCC="${CC}" \
-	  KERNCFLAGS="${CFLAGS}" \
-	  SAREL="${SAREL}" \
-	  SADIR="${SADIR}" clean)
+	@${SAMAKE} clean
+	-rmdir -p ${SADST}
+
+depend::		.NOTMAIN __always_make_salib
+	@echo depending the standalone library objects
+	@${SAMAKE} depend
 
 __always_make_salib:	.NOTMAIN
-	@([ -d ${SADST} ] || mkdir -p ${SADST})
-
+	-mkdir -p ${SADST}

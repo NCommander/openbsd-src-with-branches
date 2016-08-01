@@ -1,3 +1,4 @@
+/*	$OpenBSD: exec.h,v 1.15 2015/05/29 19:12:26 miod Exp $	*/
 /*	$NetBSD: exec.h,v 1.1 1995/02/13 23:07:37 cgd Exp $	*/
 
 /*
@@ -27,12 +28,23 @@
  * rights to redistribute these changes.
  */
 
-#ifndef _ALPHA_EXEC_H_
-#define	_ALPHA_EXEC_H_
-
-#define cpu_exec_aout_makecmds(p, epp)	ENOEXEC
+#ifndef _MACHINE_EXEC_H_
+#define	_MACHINE_EXEC_H_
 
 /* Size of a page in an object file. */
 #define	__LDPGSZ	8192
 
-#endif /* !_ALPHA_EXEC_H_ */
+#define ARCH_ELFSIZE		64
+
+#define ELF_TARG_CLASS		ELFCLASS64
+#define ELF_TARG_DATA		ELFDATA2LSB
+#define ELF_TARG_MACH		EM_ALPHA_EXP
+
+#define _KERN_DO_ELF64
+
+/* Processor specific dynamic tag values.  */
+#define	DT_ALPHA_PLTRO		0x70000000
+
+#define	DT_PROCNUM		(DT_ALPHA_PLTRO + 1 - DT_LOPROC)
+
+#endif /* !_MACHINE_EXEC_H_ */

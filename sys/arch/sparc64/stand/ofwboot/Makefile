@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.18 2012/08/30 19:29:14 pascal Exp $
 #	$NetBSD: Makefile,v 1.2 2001/03/04 14:50:05 mrg Exp $
 
 CURDIR=	${.CURDIR}
@@ -10,32 +11,49 @@ S=	${CURDIR}/../../../..
 WARNS=		0
 
 PROG?=		ofwboot
-SRCS=		srt0.s Locore.c boot.c ofdev.c alloc.c net.c netif_of.c vers.c
+NOMAN=		ja, man!
+
+.if ${PROG} == "ofwboot"
+SOFTRAID?=	yes
+.else
+SOFTRAID?=	no
+.endif
+
 .PATH:		${S}/arch/sparc64/sparc64
+SRCS=		srt0.s Locore.c alloc.c boot.c elf64_exec.c net.c netif_of.c \
+		ofdev.c vers.c
+.if ${SOFTRAID:L} == "yes"
+SRCS+=		diskprobe.c softraid.c
+.endif
+
+.PATH:		${S}/lib/libkern/arch/sparc64 ${S}/lib/libkern
+SRCS+=		strlcpy.c strcmp.c strlcat.c strlen.c
+
+.if ${SOFTRAID:L} == "yes"
+.PATH:		${S}/lib/libsa
+SRCS+=		aes_xts.c explicit_bzero.c hmac_sha1.c sha1.c pbkdf2.c \
+		rijndael.c
+.endif
 
 CWARNFLAGS+=	-Wno-main
-CFLAGS+=	${COPTS} ${CEXTRAFLAGS}
-CPPFLAGS+=	-D_STANDALONE -DSUN4U
+AFLAGS+=	-Wa,-Av9a
+AFLAGS+=	-x assembler-with-cpp -D_LOCORE -D__ELF__ -fno-pie
+CFLAGS+=	${COPTS} -fno-pie
+CPPFLAGS+=	-D_STANDALONE -DSUN4U -nostdinc
 #CPPFLAGS+=	-DNETIF_DEBUG 
 
-MKMAN=		no
-STRIPFLAG=
 BINMODE=	444
-OBJCOPY?=	objcopy
 
 NEWVERSWHAT=	"OpenFirmware Boot"
 
 #
-# Elf64 defaults to 1MB
+# ELF64 defaults to 1MB
 #
-# We may get address conflicts with other bootloaders, say
-# Sun's ufsboot, so we'll pick a reasonably empty address.
-#
-RELOC=		800000
+RELOC=		100000
 
 ENTRY=		_start
 
-CLEANFILES+=	vers.c sparc machine
+CLEANFILES+=	sparc machine
 
 CPPFLAGS+=	-I${CURDIR}/../../.. -I${CURDIR}/../../../.. -I${CURDIR} -I.
 CPPFLAGS+=	-DRELOC=0x${RELOC}
@@ -43,50 +61,24 @@ CPPFLAGS+=	-DRELOC=0x${RELOC}
 #
 # XXXXX FIXME
 #
-CPPFLAGS+=	-DSPARC_BOOT_AOUT
-CPPFLAGS+=	-DSPARC_BOOT_ELF
 CPPFLAGS+=	-DSPARC_BOOT_UFS
-CPPFLAGS+=	-DSPARC_BOOT_NFS
 #CPPFLAGS+=	-DSPARC_BOOT_HSFS
+.if ${SOFTRAID:L} == "yes"
+CPPFLAGS+=	-DSOFTRAID
+.endif
 
-.NOPATH: machine sparc64
-${SRCS}: machine sparc64
+.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(obj)
+.BEGIN:
+	@([ -h machine ] || ln -s ${.CURDIR}/../../include machine)
+.endif
 
-machine:
-	rm -f machine
-	ln -s sparc64 machine
-
-sparc64:
-	rm -f sparc64
-	ln -s ${.CURDIR}/../../../sparc64/include sparc64
-
-vers.c: version
-	sh ${S}/conf/newvers.sh ${CURDIR}/version "sparc64" ${NEWVERSWHAT}
-
-${PROG}: ${OBJS} ${LIBSA} ${LIBZ} ${LIBKERN}
-	${LD} -N -p -Ttext ${RELOC} -e ${ENTRY} >lderr -o ${PROG} \
-	    ${OBJS} -L${LIBSADIR} ${LIBSA} -L${LIBKERNDIR} ${LIBKERN} \
+${PROG}: ${OBJS} ${LIBSA} ${LIBZ}
+	${LD} -N -Ttext ${RELOC} -e ${ENTRY} -o ${PROG} -nopie \
+	    ${OBJS} -L${LIBSADIR} ${LIBSA} \
 	    -L${LIBZDIR} ${LIBZ}
-
-.include <bsd.prog.mk>
-
-.if ${MACHINE_ARCH} == "sparc64"
-AFLAGS+=		-Wa,-Av9a
-CEXTRAFLAGS?=		-D_LP64
-.else
-AFLAGS+=		-Wa,-Av8plusa
-.endif
-
-.if CROSS
-AFLAGS+=		-x assembler-with-cpp -traditional-cpp -D_LOCORE -D__ELF__
-CEXTRAFLAGS?=		-D_LP64
-.else
-AFLAGS+=		-x assembler-with-cpp -traditional-cpp -D_LOCORE -D__ELF__ ${CEXTRAFLAGS}
-.endif
 
 NORMAL_S=	${CC} ${AFLAGS} ${CPPFLAGS} -c $<
 srt0.o: srt0.s
 	${NORMAL_S}
 
-# Explicit dependency for this.
-boot.o: boot.c elfXX_exec.c
+.include <bsd.prog.mk>

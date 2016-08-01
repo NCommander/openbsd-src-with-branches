@@ -422,7 +422,7 @@ bn_mul_add_words:
 
 // This loop spins in 3*(n+10) ticks on Itanium and in 2*(n+10) on
 // Itanium 2. Yes, unlike previous versions it scales:-) Previous
-// version was peforming *all* additions in IALU and was starving
+// version was performing *all* additions in IALU and was starving
 // for those even on Itanium 2. In this version one addition is
 // moved to FPU and is folded with multiplication. This is at cost
 // of propogating the result from previous call to this subroutine
@@ -493,7 +493,7 @@ bn_sqr_words:
 // possible to compress the epilogue (I'm getting tired to write this
 // comment over and over) and get down to 2*n+16 at the cost of
 // scalability. The decision will very likely be reconsidered after the
-// benchmark program is profiled. I.e. if perfomance gain on Itanium
+// benchmark program is profiled. I.e. if performance gain on Itanium
 // will appear larger than loss on "wider" IA-64, then the loop should
 // be explicitely split and the epilogue compressed.
 .L_bn_sqr_words_ctop:

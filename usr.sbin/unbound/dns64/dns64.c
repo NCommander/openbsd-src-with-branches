@@ -521,13 +521,14 @@ handle_event_moddone(struct module_qstate* qstate, int id)
      *   - An internal query.
      *   - A query for a record type other than AAAA.
      *   - CD FLAG was set on querier
-     *   - An AAAA query for which an error was returned.
+     *   - An AAAA query for which an error was returned.(qstate.return_rcode)
+     *     -> treated as servfail thus synthesize (sec 5.1.3 6147), thus
+     *        synthesize in (sec 5.1.2 of RFC6147).
      *   - A successful AAAA query with an answer.
      */
 	if ( (enum dns64_qstate)qstate->minfo[id] == DNS64_INTERNAL_QUERY
             || qstate->qinfo.qtype != LDNS_RR_TYPE_AAAA
 	    || (qstate->query_flags & BIT_CD)
-	    || qstate->return_rcode != LDNS_RCODE_NOERROR  
 	    || (qstate->return_msg &&
 		    qstate->return_msg->rep &&
 		    reply_find_answer_rrset(&qstate->qinfo,
@@ -618,8 +619,10 @@ dns64_synth_aaaa_data(const struct ub_packed_rrset_key* fk,
 	dd->rr_ttl = (time_t*)&dd->rr_data[dd->count];
 	for(i = 0; i < fd->count; ++i) {
 		if (fd->rr_len[i] != 6 || fd->rr_data[i][0] != 0
-		    || fd->rr_data[i][1] != 4)
+		    || fd->rr_data[i][1] != 4) {
+			*dd_out = NULL;
 			return;
+		}
 		dd->rr_len[i] = 18;
 		dd->rr_data[i] =
 		    (uint8_t*)&dd->rr_ttl[dd->count] + 18*i;
@@ -638,6 +641,7 @@ dns64_synth_aaaa_data(const struct ub_packed_rrset_key* fk,
 	 */
 	if(!dk) {
 		log_err("no key");
+		*dd_out = NULL;
 		return;
 	}
 
@@ -646,6 +650,7 @@ dns64_synth_aaaa_data(const struct ub_packed_rrset_key* fk,
 
 	if(!dk->rk.dname) {
 		log_err("out of memory");
+		*dd_out = NULL;
 		return;
 	}
 

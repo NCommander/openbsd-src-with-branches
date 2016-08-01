@@ -1,3 +1,4 @@
+/*	$OpenBSD: lockf.h,v 1.8 2008/09/19 12:24:55 art Exp $	*/
 /*	$NetBSD: lockf.h,v 1.5 1994/06/29 06:44:33 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,6 +41,8 @@
  * the inode structure. Locks are sorted by the starting byte of the lock for
  * efficiency.
  */
+TAILQ_HEAD(locklist, lockf);
+
 struct lockf {
 	short	lf_flags;	 /* Lock semantics: F_POSIX, F_FLOCK, F_WAIT */
 	short	lf_type;	 /* Lock type: F_RDLCK, F_WRLCK */
@@ -52,32 +51,38 @@ struct lockf {
 	caddr_t	lf_id;		 /* The id of the resource holding the lock */
 	struct	lockf **lf_head; /* Back pointer to the head of lockf list */
 	struct	lockf *lf_next;	 /* A pointer to the next lock on this inode */
-	struct	lockf *lf_block; /* The list of blocked locks */
+	struct	locklist lf_blkhd;	/* The list of blocked locks */
+	TAILQ_ENTRY(lockf) lf_block; /* A request waiting for a lock */
+	uid_t	lf_uid;		/* User ID responsible */
+	pid_t	lf_pid;		/* POSIX - owner pid */
 };
 
 /* Maximum length of sleep chains to traverse to try and detect deadlock. */
 #define MAXDEPTH 50
 
+#ifdef _KERNEL
 __BEGIN_DECLS
-void	 lf_addblock __P((struct lockf *, struct lockf *));
-int	 lf_advlock __P((struct lockf **,
-	    off_t, caddr_t, int, struct flock *, int));
-int	 lf_clearlock __P((struct lockf *));
-int	 lf_findoverlap __P((struct lockf *,
-	    struct lockf *, int, struct lockf ***, struct lockf **));
+void	 lf_init(void);
+int	 lf_advlock(struct lockf **,
+	    off_t, caddr_t, int, struct flock *, int);
+int	 lf_clearlock(struct lockf *);
+int	 lf_findoverlap(struct lockf *,
+	    struct lockf *, int, struct lockf ***, struct lockf **);
 struct lockf *
-	 lf_getblock __P((struct lockf *));
-int	 lf_getlock __P((struct lockf *, struct flock *));
-int	 lf_setlock __P((struct lockf *));
-void	 lf_split __P((struct lockf *, struct lockf *));
-void	 lf_wakelock __P((struct lockf *));
+	 lf_getblock(struct lockf *);
+int	 lf_getlock(struct lockf *, struct flock *);
+int	 lf_setlock(struct lockf *);
+void	 lf_split(struct lockf *, struct lockf *);
+void	 lf_wakelock(struct lockf *);
 __END_DECLS
 
 #ifdef LOCKF_DEBUG
 extern int lockf_debug;
 
 __BEGIN_DECLS
-void	lf_print __P((char *, struct lockf *));
-void	lf_printlist __P((char *, struct lockf *));
+void	lf_print(char *, struct lockf *);
+void	lf_printlist(char *, struct lockf *);
 __END_DECLS
-#endif
+#endif /* LOCKF_DEBUG */
+
+#endif /* _KERNEL */

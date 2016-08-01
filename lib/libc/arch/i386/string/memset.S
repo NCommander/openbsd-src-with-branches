@@ -1,13 +1,10 @@
+/*	$OpenBSD: memset.S,v 1.4 2007/05/25 20:32:29 krw Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: memset.S,v 1.8 1995/04/28 22:58:05 jtc Exp $")
-#endif
+#include "SYS.h"
 
 ENTRY(memset)
 	pushl	%edi
@@ -21,7 +18,7 @@ ENTRY(memset)
 
 	/*
 	 * if the string is too short, it's really not worth the overhead
-	 * of aligning to word boundries, etc.  So we jump to a plain
+	 * of aligning to word boundaries, etc.  So we jump to a plain
 	 * unaligned set.
 	 */
 	cmpl	$0x0f,%ecx
@@ -56,3 +53,4 @@ L1:	rep
 	popl	%ebx
 	popl	%edi
 	ret
+END_STRONG(memset)

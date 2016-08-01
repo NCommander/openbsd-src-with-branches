@@ -2,12 +2,12 @@
 
 =head1 NAME
 
-dgst, md5, md4, md2, sha1, sha, mdc2, ripemd160 - message digests
+dgst, md5, md4, md2, sha1, sha, ripemd160 - message digests
 
 =head1 SYNOPSIS
 
-B<openssl> B<dgst> 
-[B<-md5|-md4|-md2|-sha1|-sha|-mdc2|-ripemd160|-dss1>]
+B<openssl> B<dgst>
+[B<-md5|-md4|-md2|-sha1|-sha|-ripemd160|-dss1>]
 [B<-c>]
 [B<-d>]
 [B<-hex>]
@@ -22,7 +22,7 @@ B<openssl> B<dgst>
 [B<-hmac key>]
 [B<file...>]
 
-[B<md5|md4|md2|sha1|sha|mdc2|ripemd160>]
+[B<md5|md4|md2|sha1|sha|ripemd160>]
 [B<-c>]
 [B<-d>]
 [B<file...>]
@@ -86,7 +86,7 @@ see the B<PASS PHRASE ARGUMENTS> section in L<openssl(1)|openssl(1)>.
 
 =item B<-verify filename>
 
-verify the signature using the the public key in "filename".
+verify the signature using the public key in "filename".
 The output is either "Verification OK" or "Verification Failure".
 
 =item B<-prverify filename>
@@ -117,7 +117,7 @@ Following options are supported by both by B<HMAC> and B<gost-mac>:
 =over 8
 
 =item B<key:string>
-	
+
 Specifies MAC key as alphnumeric string (use if key contain printable
 characters only). String length must conform to any restrictions of
 the MAC algorithm for example exactly 32 chars for gost-mac.
@@ -136,7 +136,7 @@ a file or files containing random data used to seed the random number
 generator, or an EGD socket (see L<RAND_egd(3)|RAND_egd(3)>).
 Multiple files can be specified separated by a OS-dependent character.
 The separator is B<;> for MS-Windows, B<,> for OpenVMS, and B<:> for
-all others. 
+all others.
 
 =item B<file...>
 

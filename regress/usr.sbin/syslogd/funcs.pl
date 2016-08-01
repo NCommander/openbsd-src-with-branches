@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: funcs.pl,v 1.29 2015/12/30 13:15:52 bluhm Exp $
 
-# Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -16,16 +16,44 @@
 
 use strict;
 use warnings;
+no warnings 'experimental::smartmatch';
+use feature 'switch';
 use Errno;
 use List::Util qw(first);
 use Socket;
 use Socket6;
 use Sys::Syslog qw(:standard :extended :macros);
+use Time::HiRes 'sleep';
 use IO::Socket;
 use IO::Socket::INET6;
 
+my $firstlog = "syslogd regress test first message";
+my $secondlog = "syslogd regress test second message";
+my $thirdlog = "syslogd regress test third message";
 my $testlog = "syslogd regress test log message";
 my $downlog = "syslogd regress client shutdown";
+my $charlog = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+sub find_ports {
+	my %args = @_;
+	my $num    = delete $args{num}    // 1;
+	my $domain = delete $args{domain} // AF_INET;
+	my $addr   = delete $args{addr}   // "127.0.0.1";
+	my $proto  = delete $args{proto}  // "udp";
+	$proto = "tcp" if $proto eq "tls";
+
+	my @sockets = (1..$num);
+	foreach my $s (@sockets) {
+		$s = IO::Socket::INET6->new(
+		    Domain    => $domain,
+		    LocalAddr => $addr,
+		    Proto     => $proto,
+		) or die "find_ports: create and bind socket failed: $!";
+	}
+	my @ports = map { $_->sockport() } @sockets;
+
+	return wantarray ? @ports : $ports[0];
+}
 
 ########################################################################
 # Client funcs
@@ -34,13 +62,54 @@ my $downlog = "syslogd regress client shutdown";
 sub write_log {
 	my $self = shift;
 
-	if ($self->{connectdomain}) {
-		print $testlog;
-		print STDERR $testlog, "\n";
+	write_message($self, $testlog);
+	IO::Handle::flush(\*STDOUT);
+	${$self->{syslogd}}->loggrep($testlog, 2);
+	write_shutdown($self);
+}
+
+sub write_between2logs {
+	my $self = shift;
+	my $func = shift;
+
+	write_message($self, $firstlog);
+	$func->($self, @_);
+	write_message($self, $testlog);
+	IO::Handle::flush(\*STDOUT);
+	${$self->{syslogd}}->loggrep($testlog, 2);
+	write_shutdown($self);
+}
+
+sub write_message {
+	my $self = shift;
+
+	if (defined($self->{connectdomain})) {
+		my $msg = join("", @_);
+		if ($self->{connectdomain} eq "sendsyslog") {
+			my $flags = $self->{connect}{flags} || 0;
+			sendsyslog($msg, $flags) or die ref($self),
+			    " sendsyslog failed: $!";
+		} elsif ($self->{connectproto} eq "udp") {
+			# writing UDP packets works only with syswrite()
+			defined(my $n = syswrite(STDOUT, $msg))
+			    or die ref($self), " write log line failed: $!";
+			$n == length($msg)
+			    or die ref($self), " short UDP write";
+		} else {
+			print $msg;
+			print "\n" if $self->{connectproto} =~ /^(tcp|tls)$/;
+		}
+		print STDERR "<<< $msg\n";
 	} else {
-		syslog(LOG_INFO, $testlog);
+		syslog(LOG_INFO, @_);
 	}
-	write_shutdown($self, @_);
+}
+
+sub sendsyslog {
+	my $msg = shift;
+	my $flags = shift;
+	require 'sys/syscall.ph';
+	return syscall(&SYS_sendsyslog, $msg, length($msg), $flags) != -1;
 }
 
 sub write_shutdown {
@@ -51,6 +120,79 @@ sub write_shutdown {
 	syslog(LOG_NOTICE, $downlog);
 }
 
+sub write_lines {
+	my $self = shift;
+	my ($lines, $lenght) = @_;
+
+	foreach (1..$lines) {
+		write_chars($self, $lenght, " $_");
+	}
+}
+
+sub write_lengths {
+	my $self = shift;
+	my ($lenghts, $tail) = ref $_[0] ? @_ : [@_];
+
+	write_chars($self, $lenghts, $tail);
+}
+
+sub generate_chars {
+	my ($len) = @_;
+
+	my $msg = "";
+	my $char = '0';
+	for (my $i = 0; $i < $len; $i++) {
+		$msg .= $char;
+		given ($char) {
+			when(/9/)       { $char = 'A' }
+			when(/Z/)       { $char = 'a' }
+			when(/z/)       { $char = '0' }
+			default         { $char++ }
+		}
+	}
+	return $msg;
+}
+
+sub write_chars {
+	my $self = shift;
+	my ($length, $tail) = @_;
+
+	foreach my $len (ref $length ? @$length : $length) {
+		my $t = $tail // "";
+		substr($t, 0, length($t) - $len, "")
+		    if length($t) && length($t) > $len;
+		my $msg = generate_chars($len - length($t));
+		$msg .= $t if length($t);
+		write_message($self, $msg);
+		# if client is sending too fast, syslogd will not see everything
+		sleep .01;
+	}
+}
+
+sub write_unix {
+	my $self = shift;
+	my $path = shift || "/dev/log";
+	my $id = shift // $path;
+
+	my $u = IO::Socket::UNIX->new(
+	    Type  => SOCK_DGRAM,
+	    Peer => $path,
+	) or die ref($self), " connect to $path unix socket failed: $!";
+	my $msg = "id $id unix socket: $testlog";
+	print $u $msg;
+	print STDERR "<<< $msg\n";
+}
+
+sub write_tcp {
+	my $self = shift;
+	my $fh = shift || \*STDOUT;
+	my $id = shift // $fh;
+
+	my $msg = "id $id tcp socket: $testlog";
+	print $fh "$msg\n";
+	print STDERR "<<< $msg\n";
+}
+
 ########################################################################
 # Server funcs
 ########################################################################
@@ -58,12 +200,41 @@ sub write_shutdown {
 sub read_log {
 	my $self = shift;
 
+	read_message($self, $downlog);
+}
+
+sub read_between2logs {
+	my $self = shift;
+	my $func = shift;
+
+	unless ($self->{redo}) {
+		read_message($self, $firstlog);
+	}
+	$func->($self, @_);
+	unless ($self->{redo}) {
+		read_message($self, $testlog);
+		read_message($self, $downlog);
+	}
+}
+
+sub read_message {
+	my $self = shift;
+	my $regex = shift;
+
+	local $_;
 	for (;;) {
-		defined(sysread(STDIN, my $line, 8194))
-		    or die ref($self), " read log line failed: $!";
-		chomp $line;
-		print STDERR ">>> $line\n";
-		last if $line =~ /$downlog/;
+		if ($self->{listenproto} eq "udp") {
+			# reading UDP packets works only with sysread()
+			defined(my $n = sysread(STDIN, $_, 8194))
+			    or die ref($self), " read log line failed: $!";
+			last if $n == 0;
+		} else {
+			defined($_ = <STDIN>)
+			    or last;
+		}
+		chomp;
+		print STDERR ">>> $_\n";
+		last if /$regex/;
 	}
 }
 
@@ -71,19 +242,74 @@ sub read_log {
 # Script funcs
 ########################################################################
 
-sub get_log {
+sub get_testlog {
 	return $testlog;
 }
 
+sub get_testgrep {
+	return qr/$testlog\r*$/;
+}
+
+sub get_firstlog {
+	return $firstlog;
+}
+
+sub get_secondlog {
+	return $secondlog;
+}
+
+sub get_thirdlog {
+	return $thirdlog;
+}
+
+sub get_charlog {
+	# add a space so that we match at the beginning of the message
+	return " $charlog";
+}
+
+sub get_between2loggrep {
+	return (
+	    qr/$firstlog/ => 1,
+	    qr/$testlog/ => 1,
+	);
+}
+
+sub get_downlog {
+	return $downlog;
+}
+
 sub check_logs {
-	my ($c, $r, $s, %args) = @_;
+	my ($c, $r, $s, $m, %args) = @_;
 
 	return if $args{nocheck};
 
-	check_log($c, $r, $s, %args);
+	check_log($c, $r, $s, @$m);
 	check_out($r, %args);
-	check_stat($r, %args);
-	check_kdump($c, $s, %args);
+	check_fstat($c, $r, $s);
+	check_ktrace($c, $r, $s);
+	if (my $file = $s->{"outfile"}) {
+		my $pattern = $s->{filegrep} || get_testgrep();
+		check_pattern(ref $s, $file, $pattern, \&filegrep);
+	}
+	check_multifile(@{$args{multifile} || []});
+}
+
+sub compare($$) {
+	local $_ = $_[1];
+	if (/^\d+/) {
+		return $_[0] == $_;
+	} elsif (/^==(\d+)/) {
+		return $_[0] == $1;
+	} elsif (/^!=(\d+)/) {
+		return $_[0] != $1;
+	} elsif (/^>=(\d+)/) {
+		return $_[0] >= $1;
+	} elsif (/^<=(\d+)/) {
+		return $_[0] <= $1;
+	} elsif (/^~(\d+)/) {
+		return $1 * 0.8 <= $_[0] && $_[0] <= $1 * 1.2;
+	}
+	die "bad compare operator: $_";
 }
 
 sub check_pattern {
@@ -92,9 +318,10 @@ sub check_pattern {
 	$pattern = [ $pattern ] unless ref($pattern) eq 'ARRAY';
 	foreach my $pat (@$pattern) {
 		if (ref($pat) eq 'HASH') {
-			while (my($re, $num) = each %$pat) {
+			foreach my $re (sort keys %$pat) {
+				my $num = $pat->{$re};
 				my @matches = $func->($proc, $re);
-				@matches == $num
+				compare(@matches, $num)
 				    or die "$name matches '@matches': ",
 				    "'$re' => $num";
 			}
@@ -106,14 +333,10 @@ sub check_pattern {
 }
 
 sub check_log {
-	my ($c, $r, $s, %args) = @_;
-
-	my %name2proc = (client => $c, syslogd => $r, server => $s);
-	foreach my $name (qw(client syslogd server)) {
-		next if $args{$name}{nocheck};
-		my $p = $name2proc{$name} or next;
-		my $pattern = $args{$name}{loggrep} || $testlog;
-		check_pattern($name, $p, $pattern, \&loggrep);
+	foreach my $proc (@_) {
+		next unless $proc && !$proc->{nocheck};
+		my $pattern = $proc->{loggrep} || get_testgrep();
+		check_pattern(ref $proc, $proc, $pattern, \&loggrep);
 	}
 }
 
@@ -126,22 +349,35 @@ sub loggrep {
 sub check_out {
 	my ($r, %args) = @_;
 
-	foreach my $name (qw(file pipe)) {
+	unless ($args{pipe}{nocheck}) {
+		$r->loggrep("bytes transferred", 1) or sleep 1;
+	}
+	foreach my $dev (qw(console user)) {
+		$args{$dev}{nocheck} ||= $args{tty}{nocheck};
+		$args{$dev}{loggrep} ||= $args{tty}{loggrep};
+		next if $args{$dev}{nocheck};
+		my $ctl = $r->{"ctl$dev"};
+		close($ctl);
+		my $file = $r->{"out$dev"};
+		open(my $fh, '<', $file)
+		    or die "Open file $file for reading failed: $!";
+		grep { /^logout/ or /^console .* off/ } <$fh> or sleep 1;
+		close($fh);
+	}
+
+	foreach my $name (qw(file pipe console user)) {
 		next if $args{$name}{nocheck};
-		my $file = $r->{"out$name"} or next;
-		my $pattern = $args{$name}{loggrep} || $testlog;
+		my $file = $r->{"out$name"} or die;
+		my $pattern = $args{$name}{loggrep} || get_testgrep();
 		check_pattern($name, $file, $pattern, \&filegrep);
 	}
 }
 
-sub check_stat {
-	my ($r, %args) = @_;
-
-	foreach my $name (qw(fstat)) {
-		next if $args{$name}{nocheck};
-		my $file = $r->{$name} && $r->{"${name}file"} or next;
-		my $pattern = $args{$name}{loggrep} or next;
-		check_pattern($name, $file, $pattern, \&filegrep);
+sub check_fstat {
+	foreach my $proc (@_) {
+		my $pattern = $proc && $proc->{fstat} or next;
+		my $file = $proc->{fstatfile} or die;
+		check_pattern("fstat", $file, $pattern, \&filegrep);
 	}
 }
 
@@ -154,23 +390,19 @@ sub filegrep {
 	    grep { /$pattern/ } <$fh> : first { /$pattern/ } <$fh>;
 }
 
-sub check_kdump {
-	my ($c, $s, %args) = @_;
-
-	my %name2proc = (client => $c, server => $s);
-	foreach my $name (qw(client server)) {
-		next unless $args{$name}{ktrace};
-		my $p = $name2proc{$name} or next;
-		my $file = $p->{ktracefile} or next;
-		my $pattern = $args{$name}{kdump} or next;
-		check_pattern($name, $file, $pattern, \&kdumpgrep);
+sub check_ktrace {
+	foreach my $proc (@_) {
+		my $pattern = $proc && $proc->{ktrace} or next;
+		my $file = $proc->{ktracefile} or die;
+		check_pattern("ktrace", $file, $pattern, \&kdumpgrep);
 	}
 }
 
 sub kdumpgrep {
 	my ($file, $pattern) = @_;
 
-	my @cmd = ("kdump", "-f", $file);
+	my @sudo = ! -r $file && $ENV{SUDO} ? $ENV{SUDO} : ();
+	my @cmd = (@sudo, "kdump", "-f", $file);
 	open(my $fh, '-|', @cmd)
 	    or die "Open pipe from '@cmd' failed: $!";
 	my @matches = grep { /$pattern/ } <$fh>;
@@ -178,6 +410,22 @@ sub kdumpgrep {
 	    "Close pipe from '@cmd' failed: $!" :
 	    "Command '@cmd' failed: $?";
 	return wantarray ? @matches : $matches[0];
+}
+
+sub create_multifile {
+	for (my $i = 0; $i < @_; $i++) {
+		my $file = "file-$i.log";
+		open(my $fh, '>', $file)
+		    or die "Create $file failed: $!";
+	}
+}
+
+sub check_multifile {
+	for (my $i = 0; $i < @_; $i++) {
+		my $file = "file-$i.log";
+		my $pattern = $_[$i]{loggrep} or die;
+		check_pattern("multifile $i", $file, $pattern, \&filegrep);
+	}
 }
 
 1;

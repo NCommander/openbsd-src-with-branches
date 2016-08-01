@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.18 2009/06/13 21:48:03 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.10 2014/03/27 22:16:03 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -35,34 +35,61 @@
 
 #include <machine/bus.h>
 
+struct bonito_config;
+struct mips_isa_chipset;
+
 /*
- * Structure holding all misc config information.
+ * List of legacy I/O ranges.
  */
-#define MAX_CPUS	1
-
-struct sys_rec {
-	int	system_type;
-
-	struct cpuinfo {
-		u_int16_t type;
-		u_int8_t  vers_maj;
-		u_int8_t  vers_min;
-		u_int16_t fptype;
-		u_int8_t  fpvers_maj;
-		u_int8_t  fpvers_min;
-		u_int32_t clock;
-		u_int32_t tlbsize;
-		u_int32_t tlbwired;
-	} cpu[MAX_CPUS];
-
-	/* Serial console configuration. */
-	struct mips_bus_space console_io;
+struct legacy_io_range {
+	bus_addr_t	start;
+	bus_size_t	end;	/* inclusive */
 };
 
-extern struct sys_rec sys_config;
+/*
+ * Per platform information.
+ */
+struct platform {
+	int				 system_type;
+#define	LOONGSON_2E		0x0000	/* Generic Loongson 2E system */
+#define	LOONGSON_YEELOONG	0x0001	/* Lemote Yeeloong */
+#define	LOONGSON_GDIUM		0x0002	/* EMTEC Gdium Liberty */
+#define	LOONGSON_FULOONG	0x0003	/* Lemote Fuloong */
+#define	LOONGSON_LYNLOONG	0x0004	/* Lemote Lynloong */
+#define	LOONGSON_EBT700		0x0005	/* eBenton EBT700 */
+#define	LOONGSON_3A		0x0066	/* Loongson 2Gq or 3A based system */
+
+	char				*vendor;
+	char				*product;
+
+	const struct bonito_config	*bonito_config;
+	struct mips_isa_chipset		*isa_chipset;
+	const struct legacy_io_range	*legacy_io_ranges;
+
+	void				(*setup)(void);
+	void				(*device_register)(struct device *,
+					    void *);
+
+	void				(*powerdown)(void);
+	void				(*reset)(void);
+	int				(*suspend)(void);
+	int				(*resume)(void);
+};
+
+extern const struct platform *sys_platform;
+extern uint loongson_ver;
 
 struct mainbus_attach_args {
 	const char	*maa_name;
 };
+
+extern struct device *bootdv;
+extern char bootdev[];
+extern enum devclass bootdev_class;
+
+extern bus_space_tag_t early_mem_t;
+extern bus_space_tag_t early_io_t;
+
+#include <mips64/autoconf.h>
 
 #endif /* _MACHINE_AUTOCONF_H_ */

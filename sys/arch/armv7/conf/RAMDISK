@@ -1,0 +1,186 @@
+#	$OpenBSD: RAMDISK,v 1.27 2016/07/12 19:04:53 kettenis Exp $
+
+machine		armv7 arm
+
+makeoptions	KERNEL_BASE_VIRT="0xc0300000"
+
+maxusers	4			# estimated number of users
+option		CPU_ARMv7		# Support the ARMv7
+
+option		TIMEZONE=0
+option		DST=0
+option		SMALL_KERNEL
+option		NO_PROPOLICE
+option		BOOT_CONFIG
+
+option		MINIROOTSIZE=15360
+option		RAMDISK_HOOKS
+
+option		FFS
+option		MSDOSFS
+option		INET6
+option		EXT2FS
+
+option		USBVERBOSE
+
+config		bsd root on rd0a swap on rd0b
+
+# The main bus device
+mainbus0	at root
+simplebus*	at fdt?
+cpu0		at mainbus?
+
+# Cortex-A9
+cortex0		at mainbus?
+ampintc*	at cortex?
+amptimer*	at cortex?
+agtimer*	at cortex?
+armliicc*	at cortex?
+
+# iMX
+imx0		at mainbus?		# iMX SoC
+imxccm*		at imx?			# clock control module
+imxiomuxc*	at imx?			# iomux controller
+imxdog*		at fdt?			# watchdog timer
+imxocotp*	at imx?			# on-chip otp controller
+imxgpio*	at fdt?			# user-visible GPIO pins?
+fec*		at fdt?			# Ethernet
+imxuart*	at fdt?			# onboard uarts
+imxiic*		at fdt?			# i2c
+iic*		at imxiic?
+imxesdhc*	at fdt?			# SDHC controller
+sdmmc*		at imxesdhc?		# SD/MMC bus
+imxahci*	at fdt?			# AHCI/SATA
+imxehci*	at fdt?			# EHCI
+usb*		at imxehci?
+
+# OMAP3xxx/OMAP4xxx SoC
+omap0		at mainbus?
+omapid*		at omap?
+
+# OMAP on-chip devices
+intc*		at omap?		# OMAP3 interrupt controller
+edma*		at omap?		# OMAP3 dma controller
+prcm*		at omap?		# power/clock controller
+sitaracm*	at omap?		# sitara control module
+omdog*		at fdt?			# watchdog timer
+omgpio*		at omap?		# user-visible GPIO pins?
+gpio*		at omgpio?
+tiiic*		at fdt?
+iic*		at tiiic?
+gptimer*	at omap?		# general purpose timers
+dmtimer*	at omap?		# am335x dual mode timers
+omusbtll*	at omap?
+cpsw*		at fdt?
+com*		at fdt?			# onboard uarts
+ommmc*		at fdt?			# SD/MMC card controller
+sdmmc*		at ommmc?		# SD/MMC bus
+
+ehci*		at omap?		# EHCI (shim)
+usb*		at ehci?
+
+# Sunxi A1x/A20 SoC
+sunxi0		at mainbus?
+
+# Sunxi on-chip devices
+a1xintc*	at sunxi?		# A1x interrupt controller
+sxipio*		at sunxi?		# GPIO pins for leds & PHYs
+gpio*		at sxipio?
+sxiccmu*	at sunxi?		# Clock Control Module/Unit
+sxitimer*	at sunxi?
+sxidog*		at sunxi?		# watchdog timer
+sxirtc*		at sunxi?		# Real Time Clock
+sxiuart*	at fdt?			# onboard UARTs
+sxie*		at fdt?
+ahci*		at sunxi?		# AHCI/SATA (shim)
+ehci*		at sunxi?		# EHCI (shim)
+usb*		at ehci?	#flags 0x1
+#ohci*		at sunxi?
+#usb*		at ohci?
+
+# ARM Versatile Express
+vexpress0	at mainbus?
+sysreg*		at vexpress?
+pluart*		at vexpress?
+plrtc*		at vexpress?
+virtio*		at vexpress?
+
+# Exynos
+exynos0		at mainbus?
+exdisplay*	at exynos?
+wsdisplay*	at exdisplay? console ?
+exclock*	at exynos?
+expower*	at exynos?
+exsysreg*	at exynos?
+exmct*		at exynos?
+exdog*		at exynos?
+exgpio*		at exynos?
+exiic*		at exynos?
+iic*		at exiic?
+exehci*		at exynos?
+ehci*		at exehci?
+exesdhc*	at exynos?
+sdmmc*		at exesdhc?
+exuart*		at exynos?
+
+crosec*		at iic?
+wskbd*		at crosec? mux 1
+pcfrtc*		at iic?
+tpspmic*	at iic?
+
+# virtio devices
+vioblk*		at virtio?
+vio*		at virtio?
+viomb*		at virtio?
+viornd*		at virtio?
+vioscsi*	at virtio?
+
+# USB bus support
+usb*		at ehci?	flags 0x1
+
+uhub*		at usb?
+uhub*		at uhub?
+uhidev*		at uhub?
+ukbd*		at uhidev?
+wskbd*		at ukbd? mux 1
+umass*		at uhub?
+aue*		at uhub?		# ADMtek AN986 Pegasus Ethernet
+atu*		at uhub?		# Atmel AT76c50x based 802.11b
+axe*		at uhub?		# ASIX Electronics AX88172 USB Ethernet
+axen*		at uhub?		# ASIX Electronics AX88179 USB Ethernet
+cue*		at uhub?		# CATC USB-EL1201A based Ethernet
+kue*		at uhub?		# Kawasaki KL5KUSB101B based Ethernet
+smsc*		at uhub?		# SMSC LAN95xx Ethernet
+cdce*		at uhub?		# CDC Ethernet
+udav*		at uhub?		# Davicom DM9601 based Ethernet
+mos*		at uhub?		# MOSCHIP MCS7730/7830 10/100 Ethernet
+url*		at uhub?		# Realtek RTL8150L based adapters
+ure*		at uhub?		# Realtek RTL8152 based adapters
+wi*		at uhub?		# WaveLAN IEEE 802.11DS
+upl*		at uhub?		# Prolific PL2301/PL2302 host-to-host
+ugl*		at uhub?		# Genesys Logic GL620USB-A host-to-host
+ural*		at uhub?		# Ralink RT2500
+rum*		at uhub?		# Ralink RT2501USB/RT2601USB
+run*		at uhub?		# Ralink RT2700U/RT2800U/RT3000U
+zyd*		at uhub?		# Zydas ZD1211
+upgt*		at uhub?		# Conexant/Intersil PrismGT SoftMAC USB
+urtw*		at uhub?		# Realtek 8187
+urtwn*		at uhub?		# Realtek RTL8188CU/RTL8192CU
+rsu*		at uhub?		# Realtek RTL8188SU/RTL8191SU/RTL8192SU
+uath*		at uhub?		# Atheros AR5005UG/AR5005UX
+otus*		at uhub?		# Atheros AR9001U
+athn*		at uhub?		# Atheros AR9002U
+
+atphy*		at mii?			# Attansic F1 PHYs
+rgephy*		at mii?			# Realtek 8169S/8110S PHY
+rlphy*		at mii?			# Realtek 8139 internal PHYs
+ukphy*		at mii?			# "unknown" PHYs
+
+scsibus*	at scsi?
+sd*		at scsibus?
+cd*		at scsibus?
+
+pseudo-device	openprom
+pseudo-device	loop 1
+pseudo-device	bpfilter 1
+pseudo-device	rd 1

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: select.2,v 1.40 2015/11/10 23:48:18 jmc Exp $
 .\"	$NetBSD: select.2,v 1.5 1995/06/27 22:32:28 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,24 +30,29 @@
 .\"
 .\"     @(#)select.2	8.2 (Berkeley) 3/25/94
 .\"
-.Dd March 25, 1994
+.Dd $Mdocdate: November 10 2015 $
 .Dt SELECT 2
-.Os BSD 4.2
+.Os
 .Sh NAME
-.Nm select
+.Nm select ,
+.Nm pselect ,
+.Nm FD_SET ,
+.Nm FD_CLR ,
+.Nm FD_ISSET ,
+.Nm FD_ZERO
 .Nd synchronous I/O multiplexing
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <sys/time.h>
-.Fd #include <unistd.h>
+.In sys/select.h
 .Ft int
 .Fn select "int nfds" "fd_set *readfds" "fd_set *writefds" "fd_set *exceptfds" "struct timeval *timeout"
+.Ft int
+.Fn pselect "int nfds" "fd_set *readfds" "fd_set *writefds" "fd_set *exceptfds" "const struct timespec *timeout" "const sigset_t *mask"
 .Fn FD_SET fd &fdset
 .Fn FD_CLR fd &fdset
 .Fn FD_ISSET fd &fdset
 .Fn FD_ZERO &fdset
 .Sh DESCRIPTION
-.Fn Select
+.Fn select
 examines the I/O descriptor sets whose addresses are passed in
 .Fa readfds ,
 .Fa writefds ,
@@ -59,18 +61,20 @@ and
 to see if some of their descriptors
 are ready for reading, are ready for writing, or have an exceptional
 condition pending, respectively.
+Exceptional conditions include the presence of out-of-band data
+on a socket.
 The first
 .Fa nfds
 descriptors are checked in each set;
 i.e., the descriptors from 0 through
-.Fa nfds Ns No -1
+.Fa nfds Ns -1
 in the descriptor sets are examined.
 On return,
 .Fn select
 replaces the given descriptor sets
 with subsets consisting of those descriptors that are ready
 for the requested operation.
-.Fn Select
+.Fn select
 returns the total number of ready descriptors in all the sets.
 .Pp
 The descriptor sets are stored as bit fields in arrays of integers.
@@ -103,83 +107,189 @@ to the maximum number of descriptors supported by the system.
 .Pp
 If
 .Fa timeout
-is a non-nil pointer, it specifies a maximum interval to wait for the
-selection to complete.  If 
+is a non-null pointer, it specifies a maximum interval to wait for the
+selection to complete.
+If
 .Fa timeout
-is a nil pointer, the select blocks indefinitely.  To affect a poll, the
+is a null pointer, the select blocks indefinitely.
+To effect a poll, the
 .Fa timeout
-argument should be non-nil, pointing to a zero-valued timeval structure.
+argument should be non-null, pointing to a zero-valued timeval structure.
+.Fa timeout
+is not changed by
+.Fn select ,
+and may be reused on subsequent calls; however, it is good style to
+re-initialize it before each invocation of
+.Fn select .
 .Pp
 Any of
 .Fa readfds ,
 .Fa writefds ,
 and
 .Fa exceptfds
-may be given as nil pointers if no descriptors are of interest.
+may be given as null pointers if no descriptors are of interest.
+.Pp
+The
+.Fn pselect
+function is similar to
+.Fn select
+except that it specifies the timeout using a timespec structure.
+Also, if
+.Fa mask
+is a non-null pointer,
+.Fn pselect
+atomically sets the calling thread's signal mask to the signal set
+pointed to by
+.Fa mask
+for the duration of the function call.
+In this case, the original signal mask will be restored before
+.Fn pselect
+returns.
 .Sh RETURN VALUES
-.Fn Select
-returns the number of ready descriptors that are contained in
-the descriptor sets,
-or -1 if an error occurred.
-If the time limit expires,
+If successful,
 .Fn select
-returns 0.
-If
+and
+.Fn pselect
+return the number of ready descriptors that are contained in
+the descriptor sets.
+If a descriptor is included in multiple descriptor sets,
+each inclusion is counted separately.
+If the time limit expires before any descriptors become ready,
+they return 0.
+.Pp
+Otherwise, if
 .Fn select
-returns with an error,
-including one due to an interrupted call,
-the descriptor sets will be unmodified.
+or
+.Fn pselect
+return with an error, including one due to an interrupted call,
+they return \-1,
+and the descriptor sets will be unmodified.
 .Sh ERRORS
 An error return from
 .Fn select
+or
+.Fn pselect
 indicates:
 .Bl -tag -width Er
+.It Bq Er EFAULT
+One or more of
+.Fa readfds ,
+.Fa writefds ,
+or
+.Fa exceptfds
+points outside the process's allocated address space.
 .It Bq Er EBADF
 One of the descriptor sets specified an invalid descriptor.
 .It Bq Er EINTR
 A signal was delivered before the time limit expired and
-before any of the selected events occurred.
+before any of the selected descriptors became ready.
 .It Bq Er EINVAL
-The specified time limit is invalid.  One of its components is
-negative or too large.
+The specified time limit is invalid.
+One of its components is negative or too large.
+.It Bq Er EINVAL
+.Fa nfds
+was less than 0.
 .El
 .Sh SEE ALSO
 .Xr accept 2 ,
+.Xr clock_gettime 2 ,
 .Xr connect 2 ,
-.Xr getdtablesize 2 ,
 .Xr gettimeofday 2 ,
+.Xr poll 2 ,
 .Xr read 2 ,
 .Xr recv 2 ,
 .Xr send 2 ,
-.Xr write 2
+.Xr write 2 ,
+.Xr getdtablesize 3
+.Sh STANDARDS
+The
+.Fn select
+and
+.Fn pselect
+functions conform to
+.St -p1003.1-2008 .
+.Sh HISTORY
+The
+.Fn select
+system call first appeared in
+.Bx 4.1c .
+The
+.Fn pselect
+system call has been available since
+.Ox 5.4 .
 .Sh BUGS
 Although the provision of
-.Xr getdtablesize 2
+.Xr getdtablesize 3
 was intended to allow user programs to be written independent
 of the kernel limit on the number of open files, the dimension
 of a sufficiently large bit field for select remains a problem.
-The default size
+The default bit size of
+.Ft fd_set
+is based on the symbol
 .Dv FD_SETSIZE
-(currently 256) is somewhat larger than
-the current kernel limit to the number of open files.
+(currently 1024),
+but that is somewhat smaller than the current kernel limit
+to the number of open files.
 However, in order to accommodate programs which might potentially
 use a larger number of open files with select, it is possible
 to increase this size within a program by providing
 a larger definition of
 .Dv FD_SETSIZE
-before the inclusion of
-.Aq Pa sys/types.h .
+before the inclusion of any headers.
+The kernel will cope, and the userland libraries provided with the
+system are also ready for large numbers of file descriptors.
 .Pp
-.Fn Select
-should probably return the time remaining from the original timeout,
-if any, by modifying the time value in place.
-This may be implemented in future versions of the system.
-Thus, it is unwise to assume that the timeout value will be unmodified
-by the
+Alternatively, to be really safe, it is possible to allocate
+.Ft fd_set
+bit-arrays dynamically.
+The idea is to permit a program to work properly even if it is
+.Xr execve 2 Ns 'd
+with 4000 file descriptors pre-allocated.
+The following illustrates the technique which is used by
+userland libraries:
+.Bd -literal -offset indent
+fd_set *fdsr;
+int max = fd;
+
+fdsr = calloc(howmany(max+1, NFDBITS), sizeof(fd_mask));
+if (fdsr == NULL) {
+	...
+	return (-1);
+}
+FD_SET(fd, fdsr);
+n = select(max+1, fdsr, NULL, NULL, &tv);
+\&...
+free(fdsr);
+.Ed
+.Pp
+Alternatively, it is possible to use the
+.Xr poll 2
+interface.
+.Xr poll 2
+is more efficient when the size of
+.Fn select Ns 's
+.Ft fd_set
+bit-arrays are very large, and for fixed numbers of
+file descriptors one need not size and dynamically allocate a
+memory object.
+.Pp
 .Fn select
-call.
-.Sh HISTORY
-The
+should probably have been designed to return the time remaining from the
+original timeout, if any, by modifying the time value in place.
+Even though some systems stupidly act in this different way, it is
+unlikely this semantic will ever be commonly implemented, as the
+change causes massive source code compatibility problems.
+Furthermore, recent new standards have dictated the current behaviour.
+In general, due to the existence of those brain-damaged
+non-conforming systems, it is unwise to assume that the timeout
+value will be unmodified by the
 .Fn select
-function call appeared in
-.Bx 4.2 .
+call, and the caller should reinitialize it on each invocation.
+Calculating the delta is easily done by calling
+.Xr gettimeofday 2
+before and after the call to
+.Fn select ,
+and using
+.Fn timersub
+(as described in
+.Xr getitimer 2 ) .

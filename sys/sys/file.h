@@ -1,3 +1,4 @@
+/*	$OpenBSD: file.h,v 1.36 2016/04/25 20:18:31 tedu Exp $	*/
 /*	$NetBSD: file.h,v 1.11 1995/03/26 20:24:13 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,13 +33,29 @@
  */
 
 #include <sys/fcntl.h>
-#include <sys/unistd.h>
 
 #ifdef _KERNEL
 #include <sys/queue.h>
 
 struct proc;
 struct uio;
+struct knote;
+struct stat;
+struct file;
+struct ucred;
+
+struct	fileops {
+	int	(*fo_read)(struct file *, off_t *, struct uio *,
+		    struct ucred *);
+	int	(*fo_write)(struct file *, off_t *, struct uio *,
+		    struct ucred *);
+	int	(*fo_ioctl)(struct file *, u_long, caddr_t,
+		    struct proc *);
+	int	(*fo_poll)(struct file *, int, struct proc *);
+	int	(*fo_kqfilter)(struct file *, struct knote *);
+	int	(*fo_stat)(struct file *, struct stat *, struct proc *);
+	int	(*fo_close)(struct file *, struct proc *);
+};
 
 /*
  * Kernel descriptor table.
@@ -53,28 +66,42 @@ struct file {
 	short	f_flag;		/* see fcntl.h */
 #define	DTYPE_VNODE	1	/* file */
 #define	DTYPE_SOCKET	2	/* communications endpoint */
+#define	DTYPE_PIPE	3	/* pipe */
+#define	DTYPE_KQUEUE	4	/* event queue */
 	short	f_type;		/* descriptor type */
-	short	f_count;	/* reference count */
-	short	f_msgcount;	/* references from message queue */
+	long	f_count;	/* reference count */
 	struct	ucred *f_cred;	/* credentials associated with descriptor */
-	struct	fileops {
-		int	(*fo_read)	__P((struct file *fp, struct uio *uio,
-					    struct ucred *cred));
-		int	(*fo_write)	__P((struct file *fp, struct uio *uio,
-					    struct ucred *cred));
-		int	(*fo_ioctl)	__P((struct file *fp, u_long com,
-					    caddr_t data, struct proc *p));
-		int	(*fo_select)	__P((struct file *fp, int which,
-					    struct proc *p));
-		int	(*fo_close)	__P((struct file *fp, struct proc *p));
-	} *f_ops;
+	struct	fileops *f_ops;
 	off_t	f_offset;
-	caddr_t	f_data;		/* vnode or socket */
+	void 	*f_data;	/* private data */
+	int	f_iflags;	/* internal flags */
+	u_int64_t f_rxfer;	/* total number of read transfers */
+	u_int64_t f_wxfer;	/* total number of write transfers */
+	u_int64_t f_seek;	/* total independent seek operations */
+	u_int64_t f_rbytes;	/* total bytes read */
+	u_int64_t f_wbytes;	/* total bytes written */
 };
+
+#define FIF_HASLOCK		0x01	/* descriptor holds advisory lock */
+#define FIF_LARVAL		0x02	/* not fully constructed, don't use */
+
+#define FILE_IS_USABLE(fp) \
+	(((fp)->f_iflags & FIF_LARVAL) == 0)
+
+#define FREF(fp)	do { (fp)->f_count++; } while (0)
+#define FRELE(fp,p)	(--(fp)->f_count == 0 ? fdrop(fp, p) : 0)
+
+#define FILE_SET_MATURE(fp,p) do {				\
+	(fp)->f_iflags &= ~FIF_LARVAL;				\
+	FRELE(fp, p);						\
+} while (0)
+
+int	fdrop(struct file *, struct proc *);
 
 LIST_HEAD(filelist, file);
 extern struct filelist filehead;	/* head of list of open files */
 extern int maxfiles;			/* kernel limit on number of open files */
 extern int nfiles;			/* actual number of open files */
+extern struct fileops vnops;		/* vnode operations for files */
 
 #endif /* _KERNEL */

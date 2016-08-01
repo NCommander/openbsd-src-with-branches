@@ -1,19 +1,50 @@
+/*	$OpenBSD$	*/
+/****************************************************************************
+ * Copyright (c) 1998-2006,2007 Free Software Foundation, Inc.              *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
 
-/*
- * THIS CODE IS SPECIFICALLY EXEMPTED FROM THE NCURSES PACKAGE COPYRIGHT.
- * You may freely copy it for use as a template for your own field types.
- * If you develop a field type that might be of general use, please send
- * it back to the ncurses maintainers for inclusion in the next version.
- */
+/***************************************************************************
+*                                                                          *
+*  Author : Juergen Pfeifer                                                *
+*                                                                          *
+***************************************************************************/
 
 #include "form.priv.h"
 
-typedef struct {
-  char **kwds;
-  int  count;
-  bool checkcase;
-  bool checkunique;
-} enumARG;
+MODULE_ID("$Id: fty_enum.c,v 1.10 2010/01/12 23:22:07 nicm Exp $")
+
+typedef struct
+  {
+    char **kwds;
+    int count;
+    bool checkcase;
+    bool checkunique;
+  }
+enumARG;
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
@@ -23,23 +54,28 @@ typedef struct {
 |
 |   Return Values :  Pointer to argument structure or NULL on error
 +--------------------------------------------------------------------------*/
-static void *Make_Enum_Type(va_list * ap)
+static void *
+Make_Enum_Type(va_list *ap)
 {
-  enumARG *argp = (enumARG *)malloc(sizeof(enumARG));
-  char **kp;
-  int cnt=0;
+  enumARG *argp = typeMalloc(enumARG, 1);
 
   if (argp)
     {
+      int cnt = 0;
+      char **kp = (char **)0;
       int ccase, cunique;
-      argp->kwds        = va_arg(*ap,char **);
-      ccase             = va_arg(*ap,int);
-      cunique           = va_arg(*ap,int);
-      argp->checkcase   = ccase   ? TRUE : FALSE;
+
+      T((T_CREATE("enumARG %p"), argp));
+      argp->kwds = va_arg(*ap, char **);
+      ccase = va_arg(*ap, int);
+      cunique = va_arg(*ap, int);
+
+      argp->checkcase = ccase ? TRUE : FALSE;
       argp->checkunique = cunique ? TRUE : FALSE;
-    
+
       kp = argp->kwds;
-      while( (*kp++) ) cnt++;
+      while (kp && (*kp++))
+	cnt++;
       argp->count = cnt;
     }
   return (void *)argp;
@@ -53,18 +89,24 @@ static void *Make_Enum_Type(va_list * ap)
 |
 |   Return Values :  Pointer to argument structure or NULL on error.
 +--------------------------------------------------------------------------*/
-static void *Copy_Enum_Type(const void * argp)
+static void *
+Copy_Enum_Type(const void *argp)
 {
-  enumARG *ap  = (enumARG *)argp;
-  enumARG *new = (enumARG *)0;
+  enumARG *result = (enumARG *)0;
 
   if (argp)
     {
-      new = (enumARG *)malloc(sizeof(enumARG));
-      if (new)
-	*new = *ap;
+      const enumARG *ap = (const enumARG *)argp;
+
+      result = typeMalloc(enumARG, 1);
+
+      if (result)
+	{
+	  T((T_CREATE("enumARG %p"), result));
+	  *result = *ap;
+	}
     }
-  return (void *)new;
+  return (void *)result;
 }
 
 /*---------------------------------------------------------------------------
@@ -75,9 +117,10 @@ static void *Copy_Enum_Type(const void * argp)
 |
 |   Return Values :  -
 +--------------------------------------------------------------------------*/
-static void Free_Enum_Type(void * argp)
+static void
+Free_Enum_Type(void *argp)
 {
-  if (argp) 
+  if (argp)
     free(argp);
 }
 
@@ -92,38 +135,40 @@ static void Free_Enum_Type(void * argp)
 |                                       const unsigned char * buf,
 |                                       bool  ccase )
 |   
-|   Description   :  Check wether or not the text in 'buf' matches the
+|   Description   :  Check whether or not the text in 'buf' matches the
 |                    text in 's', at least partial.
 |
 |   Return Values :  NOMATCH   - buffer doesn't match
 |                    PARTIAL   - buffer matches partially
 |                    EXACT     - buffer matches exactly
 +--------------------------------------------------------------------------*/
-static int Compare(const unsigned char *s, const unsigned char *buf, 
-		   bool ccase)
+static int
+Compare(const unsigned char *s, const unsigned char *buf,
+	bool ccase)
 {
-  SKIP_SPACE(buf); /* Skip leading spaces in both texts */
+  SKIP_SPACE(buf);		/* Skip leading spaces in both texts */
   SKIP_SPACE(s);
 
-  if (*buf=='\0')
+  if (*buf == '\0')
     {
-      return (((*s)!='\0') ? NOMATCH : EXACT);
-    } 
-  else 
+      return (((*s) != '\0') ? NOMATCH : EXACT);
+    }
+  else
     {
       if (ccase)
 	{
-	  while(*s++ == *buf)
+	  while (*s++ == *buf)
 	    {
-	      if (*buf++=='\0') return EXACT;
-	    } 
-	} 
-      else 
+	      if (*buf++ == '\0')
+		return EXACT;
+	    }
+	}
+      else
 	{
-	  while(toupper(*s)==toupper(*buf))
+	  while (toupper(*s++) == toupper(*buf))
 	    {
-	      s++;
-	      if (*buf++=='\0') return EXACT;
+	      if (*buf++ == '\0')
+		return EXACT;
 	    }
 	}
     }
@@ -131,12 +176,12 @@ static int Compare(const unsigned char *s, const unsigned char *buf,
      matches with s. So if only blanks are following, we have a partial
      match otherwise there is no match */
   SKIP_SPACE(buf);
-  if (*buf) 
+  if (*buf)
     return NOMATCH;
 
   /* If it happens that the reference buffer is at its end, the partial
      match is actually an exact match. */
-  return ((s[-1]!='\0') ? PARTIAL : EXACT);
+  return ((s[-1] != '\0') ? PARTIAL : EXACT);
 }
 
 /*---------------------------------------------------------------------------
@@ -150,46 +195,51 @@ static int Compare(const unsigned char *s, const unsigned char *buf,
 |   Return Values :  TRUE  - field is valid
 |                    FALSE - field is invalid
 +--------------------------------------------------------------------------*/
-static bool Check_Enum_Field(FIELD * field, const void  * argp)
+static bool
+Check_Enum_Field(FIELD *field, const void *argp)
 {
-  char **kwds       = ((enumARG *)argp)->kwds;
-  bool ccase        = ((enumARG *)argp)->checkcase;
-  bool unique       = ((enumARG *)argp)->checkunique;
-  unsigned char *bp = (unsigned char *)field_buffer(field,0);
+  char **kwds = ((const enumARG *)argp)->kwds;
+  bool ccase = ((const enumARG *)argp)->checkcase;
+  bool unique = ((const enumARG *)argp)->checkunique;
+  unsigned char *bp = (unsigned char *)field_buffer(field, 0);
   char *s, *t, *p;
   int res;
-  
-  while( (s=(*kwds++)) )
+
+  while (kwds && (s = (*kwds++)))
     {
-      if ((res=Compare((unsigned char *)s,bp,ccase))!=NOMATCH)
+      if ((res = Compare((unsigned char *)s, bp, ccase)) != NOMATCH)
 	{
-	  t=s;
-	  if ((unique && res!=EXACT)) 
+	  p = t = s;		/* t is at least a partial match */
+	  if ((unique && res != EXACT))
 	    {
-	      while( (p = *kwds++) )
+	      while (kwds && (p = *kwds++))
 		{
-		  if ((res=Compare((unsigned char *)p,bp,ccase))!=NOMATCH)
+		  if ((res = Compare((unsigned char *)p, bp, ccase)) != NOMATCH)
 		    {
-		      if (res==EXACT)
+		      if (res == EXACT)
 			{
 			  t = p;
 			  break;
-			}	
-		      t = (char *)0;
+			}
+		      else
+			t = (char *)0;
 		    }
 		}
 	    }
 	  if (t)
 	    {
-	      set_field_buffer(field,0,t);
+	      set_field_buffer(field, 0, t);
 	      return TRUE;
 	    }
+	  if (!p)
+	    break;
 	}
     }
   return FALSE;
 }
 
-static const char *dummy[] = { (char *)0 };
+static const char *dummy[] =
+{(char *)0};
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnform  
@@ -201,25 +251,29 @@ static const char *dummy[] = { (char *)0 };
 |   Return Values :  TRUE  - next value found and loaded
 |                    FALSE - no next value loaded
 +--------------------------------------------------------------------------*/
-static bool Next_Enum(FIELD * field, const void * argp)
+static bool
+Next_Enum(FIELD *field, const void *argp)
 {
-  enumARG *args     = (enumARG *)argp;
-  char **kwds       = args->kwds;
-  bool ccase        = args->checkcase;
-  int cnt           = args->count;
-  unsigned char *bp = (unsigned char *)field_buffer(field,0);
+  const enumARG *args = (const enumARG *)argp;
+  char **kwds = args->kwds;
+  bool ccase = args->checkcase;
+  int cnt = args->count;
+  unsigned char *bp = (unsigned char *)field_buffer(field, 0);
 
-  while(cnt--)
+  if (kwds)
     {
-      if (Compare((unsigned char *)(*kwds++),bp,ccase)==EXACT) 
-	break;
-    }
-  if (cnt<=0)
-    kwds = args->kwds;
-  if ((cnt>=0) || (Compare((unsigned char *)dummy,bp,ccase)==EXACT))
-    {
-      set_field_buffer(field,0,*kwds);
-      return TRUE;
+      while (cnt--)
+	{
+	  if (Compare((unsigned char *)(*kwds++), bp, ccase) == EXACT)
+	    break;
+	}
+      if (cnt <= 0)
+	kwds = args->kwds;
+      if ((cnt >= 0) || (Compare((const unsigned char *)dummy, bp, ccase) == EXACT))
+	{
+	  set_field_buffer(field, 0, *kwds);
+	  return TRUE;
+	}
     }
   return FALSE;
 }
@@ -235,35 +289,39 @@ static bool Next_Enum(FIELD * field, const void * argp)
 |   Return Values :  TRUE  - previous value found and loaded
 |                    FALSE - no previous value loaded
 +--------------------------------------------------------------------------*/
-static bool Previous_Enum(FIELD * field, const void * argp)
+static bool
+Previous_Enum(FIELD *field, const void *argp)
 {
-  enumARG *args = (enumARG *)argp;
-  int cnt       = args->count;
-  char **kwds   = &args->kwds[cnt-1];
-  bool ccase    = args->checkcase;
-  unsigned char *bp = (unsigned char *)field_buffer(field,0);
+  const enumARG *args = (const enumARG *)argp;
+  int cnt = args->count;
+  char **kwds = &args->kwds[cnt - 1];
+  bool ccase = args->checkcase;
+  unsigned char *bp = (unsigned char *)field_buffer(field, 0);
 
-  while(cnt--)
+  if (kwds)
     {
-      if (Compare((unsigned char *)(*kwds--),bp,ccase)==EXACT) 
-	break;
-    }
+      while (cnt--)
+	{
+	  if (Compare((unsigned char *)(*kwds--), bp, ccase) == EXACT)
+	    break;
+	}
 
-  if (cnt<=0)
-    kwds  = &args->kwds[args->count-1];
+      if (cnt <= 0)
+	kwds = &args->kwds[args->count - 1];
 
-  if ((cnt>=0) || (Compare((unsigned char *)dummy,bp,ccase)==EXACT))
-    {
-      set_field_buffer(field,0,*kwds);
-      return TRUE;
+      if ((cnt >= 0) || (Compare((const unsigned char *)dummy, bp, ccase) == EXACT))
+	{
+	  set_field_buffer(field, 0, *kwds);
+	  return TRUE;
+	}
     }
   return FALSE;
 }
 
-
-static FIELDTYPE typeENUM = {
+static FIELDTYPE typeENUM =
+{
   _HAS_ARGS | _HAS_CHOICE | _RESIDENT,
-  1,                           /* this is mutable, so we can't be const */
+  1,				/* this is mutable, so we can't be const */
   (FIELDTYPE *)0,
   (FIELDTYPE *)0,
   Make_Enum_Type,
@@ -275,6 +333,7 @@ static FIELDTYPE typeENUM = {
   Previous_Enum
 };
 
-FIELDTYPE* TYPE_ENUM = &typeENUM;
+NCURSES_EXPORT_VAR(FIELDTYPE *)
+TYPE_ENUM = &typeENUM;
 
 /* fty_enum.c ends here */

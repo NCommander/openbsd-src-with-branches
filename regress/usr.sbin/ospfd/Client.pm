@@ -1,5 +1,7 @@
-# Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
-# Copyright (c) 2014 Florian Riehm <mail@friehm.de>
+#	$OpenBSD: Client.pm,v 1.3 2014/08/18 22:58:19 bluhm Exp $
+
+# Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2014-2015 Florian Riehm <mail@friehm.de>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -15,6 +17,7 @@
 
 use strict;
 use warnings;
+use feature "state";
 
 package Client;
 use parent 'Proc';
@@ -82,6 +85,8 @@ sub handle_ip {
 	"ospfd area is $ospf{area_id_str}: expected $area");
     if ($ospf{type} == 1) {
 	handle_hello();
+    } elsif ($ospf{type} == 2) {
+	handle_dd();
     } else {
 	warn "ospf type is not supported: $ospf{type}";
     }
@@ -121,7 +126,43 @@ sub handle_hello {
     }
     if ($reason) {
 	print "wait for hello because of: $reason\n";
-    } else {
+    } elsif (!$wait || $wait->{dr} || $wait->{bdr} || $wait->{nbrs}) {
+	$cv->send();
+    }
+}
+
+sub handle_dd {
+    my %dd = consume_dd(\$handle->{rbuf});
+
+    my $compare = sub {
+	my $expect = shift;
+	foreach my $key (qw(options bits)) {
+	    if ($expect->{"dd_$key"}) {
+		$dd{$key} == $expect->{"dd_$key"} or
+		    return sprintf("dd key '%s' is 0x%x: expected 0x%x\n",
+			$key, $dd{$key}, $expect->{"dd_$key"});
+	    }
+	}
+	if ($expect->{dd_seq}) {
+	    $dd{dd_sequence_number} == $expect->{dd_seq} or
+		return sprintf("dd_sequence_number is 0x%x: expected 0x%x\n",
+		    $dd{dd_sequence_number}, $expect->{dd_seq});
+	}
+	return "";
+    };
+
+    my $error = $compare->($check);
+    return $cv->croak("check: $error") if $error;
+    print "check dd successful\n";
+
+    my $reason;
+    if ($wait) {
+	$reason = $compare->($wait);
+    }
+    if ($reason) {
+	print "wait for dd because of: $reason\n";
+    } elsif (!$wait || $wait->{dd_bits} || $wait->{dd_options} ||
+	$wait->{dd_seq}) {
 	$cv->send();
     }
 }
@@ -191,6 +232,51 @@ sub interface_state_machine {
     return \%state;
 }
 
+sub send_dd {
+    my $state = shift;
+    my $ip_number = unpack("N", pack("C4", split(/\./, $ism_ip)));
+    my $ip = join(".", unpack("C4", pack("N", $ip_number)));
+    my $rtrid_number = unpack("N", pack("C4", split(/\./, $ism_rtrid)));
+    my $rtrid = join(".", unpack("C4", pack("N", $rtrid_number)));
+    state $dd_count = 0;
+
+    my %ether = (
+	src_str => $ism_mac,
+	dst_str => "01:00:5e:00:00:05",  # don't know the real dst mac
+	type    => 0x0800,               # ipv4
+    );
+    my %ip = (
+	v       => 4,               # ipv4
+	hlen    => 20,
+	tos     => 0xc0,
+	id      => $dd_count++,	    # increment for debugging
+	off     => 0,               # no fragment
+	ttl     => 1,               # only for direct connected
+	p       => 89,              # protocol ospf
+	src_str => $ip,
+	dst_str => $ospfd_ip,
+    );
+    my %ospf = (
+	version       => 2,           # ospf v2
+	type	      => 2,           # dd
+	router_id_str => $rtrid,
+	area_id_str   => $area,
+	autype        => 0,           # no authentication
+    );
+    my %dd = (
+	interface_mtu => 1500,
+	options => 0x02,
+	bits => $state->{dd_bits},
+	dd_sequence_number => 999,	# some value
+    );
+    $handle->push_write(
+	construct_ether(\%ether,
+	construct_ip(\%ip,
+	construct_ospf(\%ospf,
+	construct_dd(\%dd))))
+    );
+}
+
 sub ism_set_state {
     my $state = shift;
 
@@ -198,6 +284,10 @@ sub ism_set_state {
     for (my $i = 0; $i < @states; $i++) {
 	$isms[$i] ||= interface_state_machine();
 	%{$isms[$i]} = (%{$isms[$i]}, %{$states[$i]});
+	if ($states[$i]{dd_bits}) {
+	    send_dd($states[$i]);
+	    delete $states[$i]{dd_bits};
+	}
     }
 }
 
@@ -242,21 +332,22 @@ sub new {
 sub child {
     my $self = shift;
 
-    $area = $self->{area} or die "area id missing";
+    $area = $self->{area}
+	or croak ref($self), " area id missing";
     $hello_interval = $self->{hello_intervall}
-	or die "hello_interval missing";
+	or croak ref($self), " hello_interval missing";
     $ism_mac = $self->{mac_address}
-	or die "client mac address missing";
+	or croak ref($self), " client mac address missing";
     $ism_ip = $self->{ospf_address}
-	or die "client ospf address missing";
+	or croak ref($self), " client ospf address missing";
     $ism_rtrid = $self->{router_id}
-	or die "client router id missing";
+	or croak ref($self), " client router id missing";
     $tun_number =  $self->{tun_number}
-	or die "tun device number missing";
+	or croak ref($self), " tun device number missing";
     $ospfd_ip = $self->{ospfd_ip}
-	or die "ospfd ip missing";
+	or croak ref($self), " ospfd ip missing";
     $ospfd_rtrid = $self->{ospfd_rtrid}
-	or die "ospfd router id missing";
+	or croak ref($self), " ospfd router id missing";
 
     my $tun = opentun($tun_number);
 

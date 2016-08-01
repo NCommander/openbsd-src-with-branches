@@ -1,7 +1,7 @@
-/* $NetBSD: xdvar.h,v 1.1 1995/06/26 23:07:19 pk Exp $ */
+/*	$OpenBSD: xdvar.h,v 1.9 2015/01/14 21:13:46 miod Exp $	*/
+/*	$NetBSD: xdvar.h,v 1.5 1996/03/31 22:38:56 pk Exp $	*/
 
 /*
- *
  * Copyright (c) 1995 Charles D. Cranor
  * All rights reserved.
  *
@@ -13,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Charles D. Cranor.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -32,9 +27,9 @@
  */
 
 /*
- * x d v a r . h 
+ * x d v a r . h
  *
- * this file defines the software structure we use to control the 
+ * this file defines the software structure we use to control the
  * 753/7053.
  *
  * author: Chuck Cranor <chuck@ccrc.wustl.edu>
@@ -67,7 +62,7 @@ struct xd_iorq {
 #define XD_SUB_MASK 0xf0            /* mask bits for state */
 #define XD_SUB_FREE 0x00            /* free */
 #define XD_SUB_NORM 0x10            /* normal I/O request */
-#define XD_SUB_WAIT 0x20            /* normal I/O request in the 
+#define XD_SUB_WAIT 0x20            /* normal I/O request in the
                                              context of a process */
 #define XD_SUB_POLL 0x30            /* polled mode */
 #define XD_SUB_DONE 0x40            /* not active, but can't be free'd yet */
@@ -101,7 +96,7 @@ struct xd_iorq {
 
 struct xd_softc {
   struct device sc_dev;            /* device struct, reqd by autoconf */
-  struct dkdevice sc_dk;           /* dkdevice: hook for iostat */
+  struct disk sc_dk;		   /* generic disk info */
   struct xdc_softc *parent;        /* parent */
   u_short flags;                   /* flags */
   u_short state;                   /* device state */
@@ -112,6 +107,7 @@ struct xd_softc {
   u_char nhead;                    /* number of heads */
   u_char nsect;                    /* number of sectors per track */
   u_char hw_spt;                   /* as above, but includes spare sectors */
+  void *xd_labeldata;              /* temporary sector buffer */
   struct dkbad dkb;                /* bad144 sectors */
 };
 
@@ -119,7 +115,6 @@ struct xd_softc {
  * flags
  */
 
-#define XD_WLABEL 0x0001           /* write label */
 /*
  * state
  */
@@ -137,7 +132,6 @@ struct xd_softc {
 struct xdc_softc {
   struct device sc_dev;            /* device struct, reqd by autoconf */
   struct intrhand sc_ih;           /* interrupt info */
-  struct evcnt sc_intrcnt;         /* event counter (for vmstat -i) */
 
   struct xdc *xdc;                 /* vaddr of vme registers */
 
@@ -148,15 +142,16 @@ struct xdc_softc {
   struct xd_iorq *reqs;            /* i/o requests */
   struct xd_iopb *iopbase;         /* iopb base addr (maps iopb->iorq) */
   struct xd_iopb *dvmaiopb;        /* iopb base in DVMA space, not kvm */
-  struct buf sc_wq;                /* queue'd IOPBs for this controller */
+  struct bufq sc_bufq;             /* queue'd IOPBs for this controller */
   char freereq[XDC_MAXIOPB];       /* free list (stack) */
   char waitq[XDC_MAXIOPB];         /* wait queue */
-  char nfree;                      /* number of iopbs free */
-  char nrun;                       /* number running */
-  char nwait;                      /* number of waiting iopbs */
-  char ndone;                      /* number of done IORQs */
-  char waithead;                   /* head of queue */
-  char waitend;                    /* end of queue */
+  u_char nfree;                    /* number of iopbs free */
+  u_char nrun;                     /* number running */
+  u_char nwait;                    /* number of waiting iopbs */
+  u_char ndone;                    /* number of done IORQs */
+  u_char waithead;                 /* head of queue */
+  u_char waitend;		   /* end of queue */
+  struct timeout xdc_tick_tmo;	   /* for xdc_tick() */
 };
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: mntopts.h,v 1.16 2014/07/13 12:01:30 claudio Exp $	*/
 /*	$NetBSD: mntopts.h,v 1.3 1995/03/18 14:56:59 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,38 +32,58 @@
  *	@(#)mntopts.h	8.3 (Berkeley) 3/27/94
  */
 
+#define MFLAG_INVERSE		0x01	/* if a negative option, eg "dev" */
+#define MFLAG_SET		0x02	/* 1 => set bit in mntflags,
+					   0 => return flag */
+#define MFLAG_STRVAL		0x04	/* option needs a string value */
+#define MFLAG_INTVAL		0x08	/* option needs an int value */
+#define MFLAG_OPT		0x10	/* value is optional */
+
 struct mntopt {
 	const char *m_option;	/* option name */
-	int m_inverse;		/* if a negative option, eg "dev" */
 	int m_flag;		/* bit to set, eg. MNT_RDONLY */
+	int m_oflags;
+};
+
+union mntval {
+	char *strval;
+	int ival;
 };
 
 /* User-visible MNT_ flags. */
-#define MOPT_ASYNC		{ "async",	0, MNT_ASYNC }
-#define MOPT_NODEV		{ "dev",	1, MNT_NODEV }
-#define MOPT_NOEXEC		{ "exec",	1, MNT_NOEXEC }
-#define MOPT_NOSUID		{ "suid",	1, MNT_NOSUID }
-#define MOPT_RDONLY		{ "rdonly",	0, MNT_RDONLY }
-#define MOPT_SYNC		{ "sync",	0, MNT_SYNCHRONOUS }
-#define MOPT_UNION		{ "union",	0, MNT_UNION }
-#define MOPT_USERQUOTA		{ "userquota",	0, 0 }
-#define MOPT_GROUPQUOTA		{ "groupquota",	0, 0 }
+#define MOPT_ASYNC	{ "async",	MNT_ASYNC, MFLAG_SET }
+#define MOPT_NOACCESSTIME	{ "accesstime", MNT_NOATIME,		\
+					MFLAG_INVERSE | MFLAG_SET }
+#define MOPT_NOATIME	{ "atime",      MNT_NOATIME, MFLAG_INVERSE | MFLAG_SET }
+#define MOPT_NODEV	{ "dev",	MNT_NODEV, MFLAG_INVERSE | MFLAG_SET }
+#define MOPT_NOEXEC	{ "exec",	MNT_NOEXEC, MFLAG_INVERSE | MFLAG_SET }
+#define MOPT_NOSUID	{ "suid",	MNT_NOSUID, MFLAG_INVERSE | MFLAG_SET }
+#define MOPT_WXALLOWED	{ "wxallowed",	MNT_WXALLOWED, MFLAG_SET }
+#define MOPT_RDONLY	{ "rdonly",	MNT_RDONLY, MFLAG_SET }
+#define MOPT_SYNC	{ "sync",	MNT_SYNCHRONOUS, MFLAG_SET }
+#define MOPT_USERQUOTA	{ "userquota",	0, MFLAG_SET | MFLAG_STRVAL \
+					    | MFLAG_OPT }
+#define MOPT_GROUPQUOTA	{ "groupquota",	0, MFLAG_SET | MFLAG_STRVAL \
+					    | MFLAG_OPT }
+#define MOPT_SOFTDEP	{ "softdep",	MNT_SOFTDEP, MFLAG_SET }
 
 /* Control flags. */
-#define MOPT_FORCE		{ "force",	1, MNT_FORCE }
-#define MOPT_UPDATE		{ "update",	0, MNT_UPDATE }
-#define MOPT_RELOAD		{ "reload",	0, MNT_RELOAD }
+#define MOPT_FORCE	{ "force",	MNT_FORCE, MFLAG_SET }
+#define MOPT_UPDATE	{ "update",	MNT_UPDATE, MFLAG_SET }
+#define MOPT_RELOAD	{ "reload",	MNT_RELOAD, MFLAG_SET }
 
 /* Support for old-style "ro", "rw" flags. */
-#define MOPT_RO			{ "ro",		0, MNT_RDONLY }
-#define MOPT_RW			{ "rw",		1, MNT_RDONLY }
+#define MOPT_RO		{ "ro",		MNT_RDONLY, MFLAG_SET }
+#define MOPT_RW		{ "rw",		MNT_RDONLY, MFLAG_INVERSE | MFLAG_SET }
 
-/* This is parse by mount(8), but is ignored by specific mount_*(8)s. */
-#define MOPT_AUTO		{ "auto",	0, 0 }
+/* These are parsed by mount(8), but are ignored by specific mount_*(8)s. */
+#define MOPT_AUTO		{ "auto",	0, MFLAG_SET }
+#define MOPT_NET		{ "net",	0, MFLAG_SET }
 
 #define MOPT_FSTAB_COMPAT						\
 	MOPT_RO,							\
 	MOPT_RW,							\
+	MOPT_NET,							\
 	MOPT_AUTO
 
 /* Standard options which all mounts can understand. */
@@ -74,10 +91,12 @@ struct mntopt {
 	MOPT_USERQUOTA,							\
 	MOPT_GROUPQUOTA,						\
 	MOPT_FSTAB_COMPAT,						\
+	MOPT_NOACCESSTIME,						\
+	MOPT_NOATIME,							\
 	MOPT_NODEV,							\
 	MOPT_NOEXEC,							\
 	MOPT_NOSUID,							\
-	MOPT_RDONLY,							\
-	MOPT_UNION
+	MOPT_RDONLY
 
-void getmntopts __P((const char *, const struct mntopt *, int *));
+int getmntopts(const char *, const struct mntopt *, int *);
+int getmntopt(char **, union mntval *, const struct mntopt *, int *);

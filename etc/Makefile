@@ -1,147 +1,271 @@
-#	from: @(#)Makefile	5.11 (Berkeley) 5/21/91
-#	$Id: Makefile,v 1.49 1995/10/08 04:09:06 tls Exp $
+#	$OpenBSD: Makefile,v 1.424 2016/05/14 14:44:35 ajacoutot Exp $
 
 TZDIR=		/usr/share/zoneinfo
-LOCALTIME=	US/Pacific
+LOCALTIME=	Canada/Mountain
+MTREEDIR=	/etc/mtree
 
-NOOBJ=	oobj
+NOOBJ=
+
+KERNELS = GENERIC bsd
 
 .if exists(etc.${MACHINE}/Makefile.inc)
 .include "etc.${MACHINE}/Makefile.inc"
 .endif
 
-# disktab may be wrong -- hcx9 is a tahoe, but gets its own.
+.for CONF K in ${KERNELS}
+.  if !target($K)
+$K:
+	cd ../sys/arch/${MACHINE}/conf && config ${CONF}
+	cd ../sys/arch/${MACHINE}/compile/${CONF} && \
+	    ${MAKE} clean && exec ${MAKE}
+.  endif
+ALL_KERNELS += $K
+.endfor
+
+kernels: bootblocks ${ALL_KERNELS}
+.for CONF K in ${KERNELS}
+	cp ../sys/arch/${MACHINE}/compile/${CONF}/bsd ${RELEASEDIR}/$K
+.endfor
+
 # -rw-r--r--
 BINOWN= root
 BINGRP= wheel
-BIN1=	aliases bootptab changelist csh.cshrc csh.login csh.logout daily \
-	dm.conf ftpusers ftpchroot gettytab group hosts hosts.equiv hosts.lpd \
-	inetd.conf man.conf monthly motd myname netstart newsyslog.conf \
-	phones printcap protocols rc rc.local remote rpc security services \
-	shells syslog.conf weekly etc.${MACHINE}/ttys etc.${MACHINE}/disktab
+MUTABLE=changelist csh.cshrc csh.login csh.logout daily \
+	etc.${MACHINE}/disktab etc.${MACHINE}/login.conf ftpusers \
+	gettytab group ksh.kshrc locate.rc mailer.conf \
+	moduli monthly netstart networks newsyslog.conf ntpd.conf \
+	pf.os protocols rc rc.conf rpc services shells syslog.conf weekly
 
-# -rw-rw-r--
-BIN2=	motd
+# -rw-r--r--
+EXAMPLES=chio.conf dhclient.conf dhcpd.conf exports \
+	httpd.conf ifstated.conf inetd.conf \
+	man.conf mixerctl.conf mrouted.conf \
+	ntpd.conf pkg.conf printcap rbootd.conf \
+	remote sensorsd.conf wsconsctl.conf
 
-NAMEDB=	localhost.rev named.boot root.cache
-PCS=	pcs750.bin
-WCS1=	wcs fppwcs poc poc1 poc2 fppoc
-WCS2=	fpevent fppwcs fppwcs_dual hdcwcs load_diags start_fpp wcs wcs_dual
+# -rw-------
+EXAMPLES_600=bgpd.conf dvmrpd.conf eigrpd.conf hostapd.conf iked.conf \
+	ipsec.conf ldapd.conf ldpd.conf ospf6d.conf ospfd.conf pf.conf \
+	radiusd.conf rc.local rc.securelevel rc.shutdown relayd.conf \
+	ripd.conf sasyncd.conf snmpd.conf vm.conf ypldap.conf
+
+# -r-xr-xr-x
+RCDAEMONS=amd apmd bgpd bootparamd cron dhcpd dhcrelay dvmrpd eigrpd ftpd \
+	ftpproxy ftpproxy6 hostapd hotplugd httpd identd ifstated \
+	iked inetd isakmpd iscsid ldapd ldattach ldomd ldpd lockd \
+	lpd mopd mountd mrouted nfsd npppd nsd ntpd ospf6d ospfd \
+	pflogd portmap radiusd rarpd rbootd rebound relayd ripd route6d \
+	rtadvd sasyncd sensorsd slowcgi smtpd sndiod snmpd spamd \
+	spamlogd sshd statd syslogd tftpd tftpproxy unbound \
+	vmd watchdogd wsmoused xdm ypbind ypldap ypserv
+
+MISETS=	base${OSrev}.tgz comp${OSrev}.tgz man${OSrev}.tgz game${OSrev}.tgz
 
 all clean cleandir depend etc install lint:
 
+install-mtree:
+	${INSTALL} -c -o root -g wheel -m 600 mtree/special \
+	    ${DESTDIR}${MTREEDIR}
+	${INSTALL} -c -o root -g wheel -m 444 mtree/4.4BSD.dist \
+	    ${DESTDIR}${MTREEDIR}
+	${INSTALL} -c -o root -g wheel -m 444 mtree/BSD.x11.dist \
+	    ${DESTDIR}${MTREEDIR}
+
 .ifndef DESTDIR
-distribution distrib-dirs snapshot:
+distribution-etc-root-var distribution distrib-dirs release:
 	@echo setenv DESTDIR before doing that!
 	@false
 .else
-distribution: distrib-dirs
-	(cd ..; ${MAKE} install)
-	install -c -o ${BINOWN} -g ${BINGRP} -m 644 ${BIN1} ${DESTDIR}/etc
-	install -c -o ${BINOWN} -g ${BINGRP} -m 664 ${BIN2} ${DESTDIR}/etc
-	install -c -o root -g wheel -m 600 crontab ${DESTDIR}/var/cron/tabs/root
-	install -c -o root -g wheel -m 600 master.passwd ${DESTDIR}/etc
-	chroot ${DESTDIR}/ pwd_mkdb -p /etc/master.passwd
-	install -c -o ${BINOWN} -g ${BINGRP} -m 555 \
-	     MAKEDEV.local etc.${MACHINE}/MAKEDEV ${DESTDIR}/dev
-	(cd root; \
-		install -c -o root -g wheel -m 644 dot.cshrc \
+distribution-etc-root-var: distrib-dirs
+	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 644 ${MUTABLE} ${DESTDIR}/etc
+	sh ttys.pty | cat etc.${MACHINE}/ttys - > ${DESTDIR}/etc/ttys && \
+	    chown ${BINOWN} ${DESTDIR}/etc/ttys && \
+	    chgrp ${BINGRP} ${DESTDIR}/etc/ttys && \
+	    chmod 644 ${DESTDIR}/etc/ttys
+	cat examples/sysctl.conf etc.${MACHINE}/sysctl.conf > \
+	    ${DESTDIR}/etc/examples/sysctl.conf && \
+	    chown ${BINOWN} ${DESTDIR}/etc/examples/sysctl.conf && \
+	    chgrp ${BINGRP} ${DESTDIR}/etc/examples/sysctl.conf && \
+	    chmod 644 ${DESTDIR}/etc/examples/sysctl.conf
+	cat fbtab.head etc.${MACHINE}/fbtab fbtab.tail > ${DESTDIR}/etc/fbtab && \
+	    chown ${BINOWN} ${DESTDIR}/etc/fbtab && \
+	    chgrp ${BINGRP} ${DESTDIR}/etc/fbtab && \
+	    chmod 644 ${DESTDIR}/etc/fbtab
+	${INSTALL} -c -o ${BINOWN} -g operator -m 664 motd ${DESTDIR}/etc
+	${INSTALL} -c -o root -g crontab -m 600 crontab ${DESTDIR}/var/cron/tabs/root
+	${INSTALL} -c -o root -g wheel -m 600 master.passwd ${DESTDIR}/etc
+	pwd_mkdb -p -d ${DESTDIR}/etc /etc/master.passwd
+	${INSTALL} -c -o root -g wheel -m 600 pf.conf ${DESTDIR}/etc
+	${INSTALL} -c -o root -g _nsd -m 640 nsd.conf ${DESTDIR}/var/nsd/etc
+	${INSTALL} -c -o root -g wheel -m 644 unbound.conf ${DESTDIR}/var/unbound/etc
+	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 555 \
+	    etc.${MACHINE}/MAKEDEV ${DESTDIR}/dev
+	cd root; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.cshrc \
 		    ${DESTDIR}/root/.cshrc; \
-		install -c -o root -g wheel -m 644 dot.klogin \
-		    ${DESTDIR}/root/.klogin; \
-		install -c -o root -g wheel -m 644 dot.login \
+		${INSTALL} -c -o root -g wheel -m 644 dot.login \
 		    ${DESTDIR}/root/.login; \
-		install -c -o root -g wheel -m 644 dot.profile \
+		${INSTALL} -c -o root -g wheel -m 644 dot.profile \
 		    ${DESTDIR}/root/.profile; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.Xdefaults \
+		    ${DESTDIR}/root/.Xdefaults; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.cvsrc \
+		    ${DESTDIR}/root/.cvsrc; \
 		rm -f ${DESTDIR}/.cshrc ${DESTDIR}/.profile; \
-		ln ${DESTDIR}/root/.cshrc ${DESTDIR}/.cshrc; \
-		ln ${DESTDIR}/root/.profile ${DESTDIR}/.profile)
-	(cd mtree; \
-		install -c -o root -g wheel -m 600 special \
-		    ${DESTDIR}/etc/mtree; \
-		install -c -o root -g wheel -m 444 4.4BSD.dist \
-		    ${DESTDIR}/etc/mtree)
-	cd namedb; install -c -o ${BINOWN} -g ${BINGRP} -m 644 ${NAMEDB} \
-	    ${DESTDIR}/etc/namedb
-	/bin/rm -f ${DESTDIR}/etc/localtime
-	ln -s ${TZDIR}/${LOCALTIME} ${DESTDIR}/etc/localtime
-	/bin/rm -f ${DESTDIR}/etc/rmt
-	ln -s /usr/sbin/rmt ${DESTDIR}/etc/rmt
-	install -c -o ${BINOWN} -g operator -m 664 /dev/null \
-		${DESTDIR}/etc/dumpdates
-	install -c -o ${BINOWN} -g operator -m 644 /dev/null \
-		${DESTDIR}/etc/skeykeys
-	install -c -o root -g wheel -m 600 /dev/null \
-		${DESTDIR}/var/cron/log
-	install -c -o nobody -g ${BINGRP} -m 664 /dev/null \
-		${DESTDIR}/var/db/locate.database
-	install -c -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
-		${DESTDIR}/var/log/lastlog
-	install -c -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
-		${DESTDIR}/var/log/lpd-errs
-	install -c -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
-		${DESTDIR}/var/log/maillog
-	install -c -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
-		${DESTDIR}/var/log/messages
-	install -c -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
-		${DESTDIR}/var/log/wtmp
-	install -c -o daemon -g staff -m 664 /dev/null \
-		${DESTDIR}/var/msgs/bounds
-	install -c -o ${BINOWN} -g ${BINGRP} -m 664 /dev/null \
-		${DESTDIR}/var/run/utmp
-	(cd etc.${MACHINE}; install -c -o ${BINOWN} -g ${BINGRP} -m 444 \
-	    fstab.* ${DESTDIR}/etc)
-	(cd ${DESTDIR}/dev; ./MAKEDEV all)
-.if ${MACHINE} == "tahoe"
-	(cd etc.tahoe; install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${WCS1} \
-	    ${DESTDIR}/)
-.endif
-.if ${MACHINE} == "vax"
-	(cd etc.vax; install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${PCS} \
-	    ${DESTDIR}/)
-.endif
-	(cd ../usr.sbin/sendmail/cf/cf; ${MAKE} distribution)
+		${INSTALL} -c -o root -g wheel -m 644 dot.cshrc \
+		    ${DESTDIR}/.cshrc; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.profile \
+		    ${DESTDIR}/.profile
+	cd skel; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.cshrc \
+		    ${DESTDIR}/etc/skel/.cshrc; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.login \
+		    ${DESTDIR}/etc/skel/.login; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.mailrc \
+		    ${DESTDIR}/etc/skel/.mailrc; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.profile \
+		    ${DESTDIR}/etc/skel/.profile; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.Xdefaults \
+		    ${DESTDIR}/etc/skel/.Xdefaults; \
+		${INSTALL} -c -o root -g wheel -m 644 dot.cvsrc \
+		    ${DESTDIR}/etc/skel/.cvsrc; \
+		${INSTALL} -c -o root -g wheel -m 600 /dev/null \
+		    ${DESTDIR}/etc/skel/.ssh/authorized_keys
+	cd amd; \
+		${INSTALL} -c -o root -g wheel -m 644 master.sample \
+		    ${DESTDIR}/etc/amd
+	cd ppp; \
+		${INSTALL} -c -o root -g wheel -m 600 chap-secrets \
+		    ${DESTDIR}/etc/ppp; \
+		${INSTALL} -c -o root -g wheel -m 600 options \
+		    ${DESTDIR}/etc/ppp; \
+		${INSTALL} -c -o root -g wheel -m 600 options.sample \
+		    ${DESTDIR}/etc/ppp; \
+		${INSTALL} -c -o root -g wheel -m 600 chatscript.sample \
+		    ${DESTDIR}/etc/ppp; \
+		${INSTALL} -c -o root -g wheel -m 600 pap-secrets \
+		    ${DESTDIR}/etc/ppp
+	cd examples; \
+		${INSTALL} -c -o root -g wheel -m 644 ${EXAMPLES} \
+		    ${DESTDIR}/etc/examples; \
+		${INSTALL} -c -o root -g wheel -m 600 ${EXAMPLES_600} \
+		    ${DESTDIR}/etc/examples; \
+		chgrp operator ${DESTDIR}/etc/examples/chio.conf
+	cd signify; \
+		${INSTALL} -c -o root -g wheel -m 644 *.pub \
+		    ${DESTDIR}/etc/signify
+	ln -fs ${TZDIR}/${LOCALTIME} ${DESTDIR}/etc/localtime
+	ln -fs /usr/sbin/rmt ${DESTDIR}/etc/rmt
+	${INSTALL} -c -o root -g wheel -m 644 minfree \
+	    ${DESTDIR}/var/crash
+	${INSTALL} -c -o ${BINOWN} -g operator -m 664 /dev/null \
+	    ${DESTDIR}/etc/dumpdates
+	${INSTALL} -c -o root -g crontab -m 660 /dev/null \
+	    ${DESTDIR}/var/cron/at.deny
+	${INSTALL} -c -o root -g crontab -m 660 /dev/null \
+	    ${DESTDIR}/var/cron/cron.deny
+	${INSTALL} -c -o root -g wheel -m 600 /dev/null \
+	    ${DESTDIR}/var/cron/log
+	${INSTALL} -c -o root -g wheel -m 444 /dev/null \
+	    ${DESTDIR}/var/db/locate.database
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 640 /dev/null \
+	    ${DESTDIR}/var/log/authlog
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 640 /dev/null \
+	    ${DESTDIR}/var/log/daemon
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 600 /dev/null \
+	    ${DESTDIR}/var/log/failedlogin
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 640 /dev/null \
+	    ${DESTDIR}/var/log/ftpd
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 644 /dev/null \
+	    ${DESTDIR}/var/log/lastlog
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 640 /dev/null \
+	    ${DESTDIR}/var/log/lpd-errs
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 640 /dev/null \
+	    ${DESTDIR}/var/log/maillog
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 644 /dev/null \
+	    ${DESTDIR}/var/log/messages
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 600 /dev/null \
+	    ${DESTDIR}/var/log/secure
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 644 /dev/null \
+	    ${DESTDIR}/var/log/wtmp
+	${INSTALL} -c -o ${BINOWN} -g wheel -m 640 /dev/null \
+	    ${DESTDIR}/var/log/xferlog
+	cd ../usr.sbin/ypserv/ypinit && exec ${MAKE} distribution
+	cd ../usr.bin/ssh && exec ${MAKE} distribution
+	cd ../lib/libcrypto && exec ${MAKE} distribution
+	cd ../usr.bin/bgplg && exec ${MAKE} distribution
+	cd ../usr.bin/mail && exec ${MAKE} distribution
+	cd ../usr.sbin/ikectl && exec ${MAKE} distribution
+	cd ../usr.sbin/ldapd && exec ${MAKE} distribution
+	cd ../usr.sbin/npppd && exec ${MAKE} distribution
+	cd mail && exec ${MAKE} distribution
+	${INSTALL} -c -o root -g wheel -m 600 root/root.mail \
+	    ${DESTDIR}/var/mail/root
+	cd rc.d; \
+		${INSTALL} -c -o root -g wheel -m 644 rc.subr \
+		    ${DESTDIR}/etc/rc.d && \
+		${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 555 ${RCDAEMONS} \
+		    ${DESTDIR}/etc/rc.d
+	cd ${DESTDIR}/var; ln -fs ../tmp
+	touch ${DESTDIR}/var/sysmerge/etcsum
+	cd ${DESTDIR}/ && \
+		sort ${.CURDIR}/../distrib/sets/lists/etc/{mi,md.${MACHINE}} | \
+		xargs sha256 -h ${DESTDIR}/var/sysmerge/etcsum || true
+	cd ${DESTDIR}/ && \
+		sort ${.CURDIR}/../distrib/sets/lists/etc/{mi,md.${MACHINE}} | \
+		pax -w -d | gzip -9 > ${DESTDIR}/var/sysmerge/etc.tgz
 
-hcx9-distribution:
-	(cd etc.tahoe; install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${WCS2} \
-	    ${DESTDIR}/)
+distribution:
+	exec ${SUDO} ${MAKE} distribution-etc-root-var
+	cd .. && exec ${SUDO} ${MAKE} install
 
 distrib-dirs:
-	install -d -o root -g wheel -m 755 ${DESTDIR}
-	-mtree -def mtree/4.4BSD.dist -p ${DESTDIR}/ -u
-	cd ${DESTDIR}; rm -f sys; ln -s usr/src/sys sys
+	if [ ! -d ${DESTDIR}/. ]; then \
+		${INSTALL} -d -o root -g wheel -m 755 ${DESTDIR}; \
+	fi
+	mtree -qdef mtree/4.4BSD.dist -p ${DESTDIR}/ -U
+	if [ ! -d ${DESTDIR}/usr/src ]; then \
+		${INSTALL} -d -o root -g wsrc -m 775 ${DESTDIR}/usr/src; \
+	fi
+	cd ${DESTDIR}/; ln -fhs usr/src/sys sys
 
-snapshot: distribution snap_pre snap_tar snap_md
-	cd ${DESTDIR}/snapshot && cksum * > CKSUMS
+.ifndef RELEASEDIR
+release:
+	@echo setenv RELEASEDIR before building a release.
+	@false
+.else
 
-snap_pre:
-	/bin/rm -rf ${DESTDIR}/snapshot
-	install -d -o root -g wheel -m 755 ${DESTDIR}/snapshot
+release-sets:
+	cd ${RELEASEDIR} && rm -f SHA256
+	cd ../distrib/sets && exec ${SUDO} sh maketars ${OSrev}
 
-snap_tar:
-	cd ${DESTDIR} && tar cf - bin | gzip -9 > snapshot/bin.tar.gz
-	cd ${DESTDIR} && tar cf - dev | gzip -9 > snapshot/dev.tar.gz
-	cd ${DESTDIR} && tar cf - .profile .cshrc etc mnt root sys tmp | \
-	    gzip -9 > snapshot/etc.tar.gz
-	cd ${DESTDIR} && tar cf - sbin | gzip -9 > snapshot/sbin.tar.gz
-	cd ${DESTDIR} && tar cf - usr/bin | gzip -9 > snapshot/usr.bin.tar.gz
-	cd ${DESTDIR} && tar cf - usr/games | gzip -9 > \
-	    snapshot/usr.games.tar.gz
-	cd ${DESTDIR} && tar cf - usr/include | gzip -9 > \
-	    snapshot/usr.include.tar.gz
-	cd ${DESTDIR} && tar cf - usr/lib | gzip -9 > snapshot/usr.lib.tar.gz
-	cd ${DESTDIR} && tar cf - usr/libexec | gzip -9 > \
-	    snapshot/usr.libexec.tar.gz
-	cd ${DESTDIR} && tar cf - usr/mdec usr/local usr/src usr/obj | \
-	    gzip -9 > snapshot/usr.misc.tar.gz
-	cd ${DESTDIR} && tar cf - usr/sbin | gzip -9 > snapshot/usr.sbin.tar.gz
-	cd ${DESTDIR} && tar cf - usr/share | gzip -9 > \
-	    snapshot/usr.share.tar.gz
-	cd ${DESTDIR} && tar cf - var | gzip -9 > snapshot/var.tar.gz
+sha:
+	-cd ${RELEASEDIR}; \
+	    date -u "+Build date: %s - %+" > BUILDINFO; \
+	    cksum -a sha256 BUILDINFO INSTALL.`arch -ks` \
+	    ${ALL_KERNELS} ${MDEXT} ${MISETS} | sort > SHA256
 
-snap_md:
-# nothing here -- look in the machine-dependent Makefile.inc
+release: sha
+sha: distrib
+distrib: release-sets kernels
+release-sets: distribution kernels
+
+.endif
 
 .endif	# DESTDIR check
 
+distrib:
+	cd ../distrib && \
+	    ${MAKE} && exec ${SUDO} ${MAKE} install
+
+.PHONY: distribution-etc-root-var distribution distrib-dirs \
+	release allarchs kernels release-sets m4 install-mtree \
+	bootblocks ${ALL_KERNELS}
+
+SUBDIR+= etc.alpha etc.amd64 etc.armish etc.armv7
+SUBDIR+= etc.hppa etc.i386 etc.landisk etc.loongson etc.luna88k
+SUBDIR+= etc.macppc etc.octeon
+SUBDIR+= etc.sgi etc.socppc etc.sparc etc.sparc64 etc.zaurus
+
+.include <bsd.subdir.mk>
 .include <bsd.prog.mk>

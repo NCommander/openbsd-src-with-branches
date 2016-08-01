@@ -1,7 +1,7 @@
-/*	$NetBSD: print-sl.c,v 1.5 1995/03/06 19:11:29 mycroft Exp $	*/
+/*	$OpenBSD: print-sl.c,v 1.18 2015/01/16 06:40:21 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1989, 1990, 1991, 1993, 1994
+ * Copyright (c) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -21,56 +21,104 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#ifndef lint
-static  char rcsid[] =
-	"@(#)Header: print-sl.c,v 1.28 94/06/10 17:01:38 mccanne Exp (LBL)";
-#endif
-
-#ifdef CSLIP
-#include <sys/param.h>
+#ifdef HAVE_NET_SLIP_H
 #include <sys/time.h>
-#include <sys/timeb.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
-#include <sys/mbuf.h>
 #include <sys/socket.h>
 
+struct rtentry;
 #include <net/if.h>
+
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#include <netinet/ip_var.h>
 #include <netinet/udp.h>
-#include <netinet/udp_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 
 #include <net/slcompress.h>
 #include <net/slip.h>
 
 #include <ctype.h>
-#include <errno.h>
 #include <netdb.h>
 #include <pcap.h>
-#include <signal.h>
 #include <stdio.h>
+#include <limits.h>
 
 #include "interface.h"
 #include "addrtoname.h"
+#include "extract.h"			/* must come after interface.h */
 
-static int lastlen[2][256];
-static int lastconn = 255;
+static u_int lastlen[2][256];
+static u_int lastconn = 255;
 
-static void sliplink_print(const u_char *, const struct ip *, int);
-static void compressed_sl_print(const u_char *, const struct ip *, int, int);
+static void sliplink_print(const u_char *, const struct ip *, u_int);
+static void compressed_sl_print(const u_char *, const struct ip *, u_int, int);
+
+/* XXX BSD/OS 2.1 compatibility */
+#if !defined(SLIP_HDRLEN) && defined(SLC_BPFHDR)
+#define SLIP_HDRLEN SLC_BPFHDR
+#define SLX_DIR 0
+#define SLX_CHDR (SLC_BPFHDRLEN - 1)
+#define CHDR_LEN (SLC_BPFHDR - SLC_BPFHDRLEN)
+#endif
+
+/* XXX needs more hacking to work right */
 
 void
 sl_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 {
-	register int caplen = h->caplen;
-	register int length = h->len;
-	register const struct ip *ip;
+	u_int caplen = h->caplen;
+	u_int length = h->len;
+	const struct ip *ip;
+
+	ts_print(&h->ts);
+
+	if (caplen < SLIP_HDRLEN || length < SLIP_HDRLEN) {
+		printf("[|slip]");
+		goto out;
+	}
+	/*
+	 * Some printers want to get back at the link level addresses,
+	 * and/or check that they're not walking off the end of the packet.
+	 * Rather than pass them all the way down, we set these globals.
+	 */
+	packetp = p;
+	snapend = p + caplen;
+
+	length -= SLIP_HDRLEN;
+
+	ip = (struct ip *)(p + SLIP_HDRLEN);
+
+	if (eflag)
+		sliplink_print(p, ip, length);
+
+	switch (ip->ip_v) {
+	case 4:
+		ip_print((u_char *)ip, length);
+		break;
+#ifdef INET6
+	case 6:
+		ip6_print((u_char *)ip, length);
+		break;
+#endif
+	default:
+		printf ("ip v%d", ip->ip_v);
+	}
+
+	if (xflag)
+		default_print((u_char *)ip, caplen - SLIP_HDRLEN);
+ out:
+	putchar('\n');
+}
+
+
+void
+sl_bsdos_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
+{
+	u_int caplen = h->caplen;
+	u_int length = h->len;
+	const struct ip *ip;
 
 	ts_print(&h->ts);
 
@@ -90,8 +138,10 @@ sl_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 
 	ip = (struct ip *)(p + SLIP_HDRLEN);
 
+#ifdef notdef
 	if (eflag)
 		sliplink_print(p, ip, length);
+#endif
 
 	ip_print((u_char *)ip, length);
 
@@ -102,11 +152,10 @@ sl_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 }
 
 static void
-sliplink_print(register const u_char *p, register const struct ip *ip,
-	       register int length)
+sliplink_print(const u_char *p, const struct ip *ip, u_int length)
 {
 	int dir;
-	int hlen;
+	u_int hlen;
 
 	dir = p[SLX_DIR];
 	putchar(dir == SLIPDIR_IN ? 'I' : 'O');
@@ -116,9 +165,9 @@ sliplink_print(register const u_char *p, register const struct ip *ip,
 		/* XXX just dump the header */
 		int i;
 
-		for (i = 0; i < 15; ++i)
-			printf("%02x.", p[SLX_CHDR + i]);
-		printf("%02x: ", p[SLX_CHDR + 15]);
+		for (i = SLX_CHDR; i < SLX_CHDR + CHDR_LEN - 1; ++i)
+			printf("%02x.", p[i]);
+		printf("%02x: ", p[SLX_CHDR + CHDR_LEN - 1]);
 		return;
 	}
 	switch (p[SLX_CHDR] & 0xf0) {
@@ -129,9 +178,11 @@ sliplink_print(register const u_char *p, register const struct ip *ip,
 
 	case TYPE_UNCOMPRESSED_TCP:
 		/*
-		 * The connection id is stode in the IP protcol field.
+		 * The connection id is stored in the IP protocol field.
+		 * Get it from the link layer since sl_uncompress_tcp()
+		 * has restored the IP header copy to IPPROTO_TCP.
 		 */
-		lastconn = ip->ip_p;
+		lastconn = ((struct ip *)&p[SLX_CHDR])->ip_p;
 		hlen = ip->ip_hl;
 		hlen += ((struct tcphdr *)&((int *)ip)[hlen])->th_off;
 		lastlen[dir][lastconn] = length - (hlen << 2);
@@ -149,12 +200,12 @@ sliplink_print(register const u_char *p, register const struct ip *ip,
 }
 
 static const u_char *
-print_sl_change(const char *str, register const u_char *cp)
+print_sl_change(const char *str, const u_char *cp)
 {
-	register u_int i;
+	u_int i;
 
 	if ((i = *cp++) == 0) {
-		i = (cp[0] << 8) | cp[1];
+		i = EXTRACT_16BITS(cp);
 		cp += 2;
 	}
 	printf(" %s%d", str, i);
@@ -162,12 +213,12 @@ print_sl_change(const char *str, register const u_char *cp)
 }
 
 static const u_char *
-print_sl_winchange(register const u_char *cp)
+print_sl_winchange(const u_char *cp)
 {
-	register short i;
+	short i;
 
 	if ((i = *cp++) == 0) {
-		i = (cp[0] << 8) | cp[1];
+		i = EXTRACT_16BITS(cp);
 		cp += 2;
 	}
 	if (i >= 0)
@@ -179,11 +230,10 @@ print_sl_winchange(register const u_char *cp)
 
 static void
 compressed_sl_print(const u_char *chdr, const struct ip *ip,
-		    int length, int dir)
+		    u_int length, int dir)
 {
-	register const u_char *cp = chdr;
-	register u_int flags;
-	int hlen;
+	const u_char *cp = chdr;
+	u_int flags, hlen;
 
 	flags = *cp++;
 	if (flags & NEW_C) {
@@ -224,19 +274,29 @@ compressed_sl_print(const u_char *chdr, const struct ip *ip,
 	 * 'length - hlen' is the amount of data in the packet.
 	 */
 	hlen = ip->ip_hl;
-	hlen += ((struct tcphdr *)&((int32 *)ip)[hlen])->th_off;
+	hlen += ((struct tcphdr *)&((int32_t *)ip)[hlen])->th_off;
 	lastlen[dir][lastconn] = length - (hlen << 2);
-	printf(" %d (%d)", lastlen[dir][lastconn], cp - chdr);
+	printf(" %d (%d)", lastlen[dir][lastconn], (int)(cp - chdr));
 }
 #else
 #include <sys/types.h>
 #include <sys/time.h>
 
+#include <pcap.h>
 #include <stdio.h>
 
 #include "interface.h"
+
 void
 sl_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
+{
+
+	error("not configured for slip");
+	/* NOTREACHED */
+}
+
+void
+sl_bsdos_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 {
 
 	error("not configured for slip");

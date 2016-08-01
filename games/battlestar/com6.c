@@ -1,3 +1,4 @@
+/*	$OpenBSD: com6.c,v 1.21 2015/12/04 17:34:40 tb Exp $	*/
 /*	$NetBSD: com6.c,v 1.5 1995/04/27 21:30:23 mycroft Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,165 +30,182 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)com6.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: com6.c,v 1.5 1995/04/27 21:30:23 mycroft Exp $";
-#endif
-#endif /* not lint */
+#include <err.h>
+#include <errno.h>
+#include <limits.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include "externs.h"
-#include "pathnames.h"
+#include "extern.h"
 
-launch()
+int
+launch(void)
 {
-	if (testbit(location[position].objects,VIPER) && !notes[CANTLAUNCH]){
-		if (fuel > 4){
-			clearbit(location[position].objects,VIPER);
+	if (TestBit(location[position].objects, VIPER) && !notes[CANTLAUNCH]) {
+		if (fuel > 4) {
+			ClearBit(location[position].objects, VIPER);
 			position = location[position].up;
 			notes[LAUNCHED] = 1;
-			time++;
+			ourtime++;
 			fuel -= 4;
 			puts("You climb into the viper and prepare for launch.");
 			puts("With a touch of your thumb the turbo engines ignite, thrusting you back into\nyour seat.");
-			return(1);
-		}
-		else
+			return (1);
+		} else
 			puts("Not enough fuel to launch.");
-	 }
-	 else
+	} else
 		puts("Can't launch.");
-	 return(0);
+	return (0);
 }
 
-land()
+int
+land(void)
 {
-	if (notes[LAUNCHED] && testbit(location[position].objects,LAND) && location[position].down){
+	if (notes[LAUNCHED] && TestBit(location[position].objects, LAND) &&
+	    location[position].down) {
 		notes[LAUNCHED] = 0;
 		position = location[position].down;
-		setbit(location[position].objects,VIPER);
+		SetBit(location[position].objects, VIPER);
 		fuel -= 2;
-		time++;
+		ourtime++;
 		puts("You are down.");
-		return(1);
-	}
-	else
+		return (1);
+	} else
 		puts("You can't land here.");
-	return(0);
+	return (0);
 }
 
-die() 		/* endgame */
+/* endgame */
+void
+die(int sigraised)
 {
 	printf("bye.\nYour rating was %s.\n", rate());
 	post(' ');
 	exit(0);
 }
 
-live()
+void
+live(void)
 {
 	puts("\nYou win!");
 	post('!');
 	exit(0);
 }
 
-/*
- * sigh -- this program thinks "time" is an int.  It's easier to not load
- * <time.h> than try and fix it.
- */
-#define _KERNEL
-#include <sys/time.h>
-#undef _KERNEL
+static FILE *score_fp;
 
-post(ch)
-char ch;
+void
+open_score_file(void)
 {
-	FILE *fp;
-	struct timeval tv;
-	char *date, *ctime();
+	char		 scorefile[PATH_MAX];
+	const char	*home;
+	int		 ret;
+
+	home = getenv("HOME");
+	if (home == NULL || *home == '\0')
+		err(1, "getenv");
+	ret = snprintf(scorefile, sizeof(scorefile), "%s/%s", home,
+	    ".battlestar.scores");
+	if (ret < 0 || ret >= PATH_MAX)
+		errc(1, ENAMETOOLONG, "%s/%s", home, ".battlestar.scores");
+	if ((score_fp = fopen(scorefile, "a")) == NULL)
+		warn("can't append to high scores file (%s)", scorefile);
+}
+
+void
+post(char ch)
+{
+	time_t tv;
+	char   *date;
 	sigset_t sigset, osigset;
 
 	sigemptyset(&sigset);
 	sigaddset(&sigset, SIGINT);
 	sigprocmask(SIG_BLOCK, &sigset, &osigset);
-	gettimeofday(&tv, (struct timezone *)0);	/* can't call time */
-	date = ctime(&tv.tv_sec);
+	tv = time(NULL);
+	date = ctime(&tv);
 	date[24] = '\0';
-	if (fp = fopen(_PATH_SCORE,"a")) {
-		fprintf(fp, "%s  %8s  %c%20s", date, uname, ch, rate());
+
+	if (score_fp != NULL) {
+		fprintf(score_fp, "%s  %31s  %c%20s", date, username, ch, rate());
 		if (wiz)
-			fprintf(fp, "   wizard\n");
-		else if (tempwiz)
-			fprintf(fp, "   WIZARD!\n");
+			fprintf(score_fp, "   wizard\n");
 		else
-			fprintf(fp, "\n");
-	} else
-		perror(_PATH_SCORE);
+			if (tempwiz)
+				fprintf(score_fp, "   WIZARD!\n");
+			else
+				fprintf(score_fp, "\n");
+	}
 	sigprocmask(SIG_SETMASK, &osigset, (sigset_t *)0);
 }
 
-char *
-rate()
+const char   *
+rate(void)
 {
-	int score;
+	int     score;
 
-	score = max(max(pleasure,power),ego);
-	if (score == pleasure){
+	score = max(max(pleasure, power), ego);
+	if (score == pleasure) {
 		if (score < 5)
-			return("novice");
+			return ("novice");
 		else if (score < 20)
-			return("junior voyeur");
+			return ("junior voyeur");
 		else if (score < 35)
-			return("Don Juan");
-		else return("Marquis De Sade");
-	}
-	else if (score == power){
-		if (score < 5)
-			return("serf");
-		else if (score < 8)
-			return("Samurai");
-		else if (score < 13)
-			return("Klingon");
-		else if (score < 22)
-			return("Darth Vader");
-		else return("Sauron the Great");
-	}
-	else{
-		if (score < 5)
-			return("Polyanna");
-		else if (score < 10)
-			return("philanthropist");
-		else if (score < 20)
-			return("Tattoo");
-		else return("Mr. Roarke");
-	}
+			return ("Don Juan");
+		else
+			return ("Marquis De Sade");
+	} else
+		if (score == power) {
+			if (score < 5)
+				return ("serf");
+			else if (score < 8)
+				return ("Samurai");
+			else if (score < 13)
+				return ("Klingon");
+			else if (score < 22)
+				return ("Darth Vader");
+			else
+				return ("Sauron the Great");
+		} else{
+			if (score < 5)
+				return ("Polyanna");
+			else if (score < 10)
+				return ("philanthropist");
+			else if (score < 20)
+				return ("Tattoo");
+			else
+				return ("Mr. Roarke");
+		}
 }
 
-drive()
+int
+drive(void)
 {
-	if (testbit(location[position].objects,CAR)){
+	if (TestBit(location[position].objects, CAR)) {
 		puts("You hop in the car and turn the key.  There is a perceptible grating noise,");
 		puts("and an explosion knocks you unconscious...");
-		clearbit(location[position].objects,CAR);
-		setbit(location[position].objects,CRASH);
+		ClearBit(location[position].objects, CAR);
+		SetBit(location[position].objects, CRASH);
 		injuries[5] = injuries[6] = injuries[7] = injuries[8] = 1;
-		time += 15;
+		ourtime += 15;
 		zzz();
-		return(0);
-	}
-	else
+		return (0);
+	} else
 		puts("There is nothing to drive here.");
-	return(-1);
+	return (-1);
 }
 
-ride()
+int
+ride(void)
 {
-	if (testbit(location[position].objects,HORSE)){
+	if (TestBit(location[position].objects, HORSE)) {
 		puts("You climb onto the stallion and kick it in the guts.  The stupid steed launches");
-		puts("forward through bush and fern.  You are thrown and the horse gallups off.");
-		clearbit(location[position].objects,HORSE);
-		while (!(position = rnd(NUMOFROOMS+1)) || !OUTSIDE || !beenthere[position] || location[position].flyhere);
-		setbit(location[position].objects,HORSE);
+		puts("forward through bush and fern.  You are thrown and the horse gallops off.");
+		ClearBit(location[position].objects, HORSE);
+		while (!(position = rnd(NUMOFROOMS + 1)) || !OUTSIDE || !beenthere[position] || location[position].flyhere)
+			;
+		SetBit(location[position].objects, HORSE);
 		if (location[position].north)
 			position = location[position].north;
 		else if (location[position].south)
@@ -200,23 +214,57 @@ ride()
 			position = location[position].east;
 		else
 			position = location[position].west;
-		return(0);
+		return (0);
 	}
 	else puts("There is no horse here.");
-	return(-1);
+	return (-1);
 }
 
-light()		/* synonyms = {strike, smoke} */
-{		/* for matches, cigars */
-	if (testbit(inven,MATCHES) && matchcount){
+void
+light(void)
+{				/* synonyms = {strike, smoke} */
+	if (TestBit(inven, MATCHES) && matchcount) {
 		puts("Your match splutters to life.");
-		time++;
+		ourtime++;
 		matchlight = 1;
 		matchcount--;
-		if (position == 217){
+		if (position == 217) {
 			puts("The whole bungalow explodes with an intense blast.");
-			die();
+			die(0);
 		}
-	}
-	else puts("You're out of matches.");
+	} else
+		puts("You're out of matches.");
+}
+
+void
+dooropen(void)
+{				/* synonyms = {open, unlock} */
+	wordnumber++;
+	if (wordnumber <= wordcount && wordtype[wordnumber] == NOUNS
+	    && wordvalue[wordnumber] == DOOR) {
+		switch(position) {
+		case 189:
+		case 231:
+			if (location[189].north == 231)
+				puts("The door is already open.");
+			else
+				puts("The door does not budge.");
+			break;
+		case 30:
+			if (location[30].west == 25)
+				puts("The door is gone.");
+			else
+				puts("The door is locked tight.");
+			break;
+		case 31:
+			puts("That's one immovable door.");
+			break;
+		case 20:
+			puts("The door is already ajar.");
+			break;
+		default:
+			puts("What door?");
+		}
+	} else
+		puts("That doesn't open.");
 }

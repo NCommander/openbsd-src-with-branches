@@ -83,7 +83,7 @@ static Key_schedule sched;
 /* This is needed for GSSAPI encryption.  */
 static gss_ctx_id_t gcontext;
 
-static int connect_to_gserver PROTO((int, struct hostent *));
+static int connect_to_gserver PROTO((int, const char *));
 
 #endif /* HAVE_GSSAPI */
 
@@ -251,6 +251,13 @@ arg_should_not_be_sent_to_server (arg)
 	    this_root = Name_Root ((char *) NULL, (char *) NULL);
 	}
 
+	/*
+	 * This is so bogus!  Means if you have checked out from
+	 * a replica of a repository, and then when you want to
+	 * check it in to the real (read/write) repository, the
+	 * file will be skipped!
+	 */
+#if 0
 	/* Now check the value for root. */
 	if (this_root && current_parsed_root
 	    && (strcmp (this_root, current_parsed_root->original) != 0))
@@ -259,6 +266,7 @@ arg_should_not_be_sent_to_server (arg)
 	    free (this_root);
 	    return 1;
 	}
+#endif
 	free (this_root);
     }
     
@@ -995,6 +1003,20 @@ call_in_directory (pathname, func, data)
     char *rdirp;
     int reposdirname_absolute;
 
+    /*
+     * For security reasons, if PATHNAME is absolute or attempts to
+     * ascend outside of the current sandbox, we abort.  The server should not
+     * send us anything but relative paths which remain inside the sandbox
+     * here.  Anything less means a trojan CVS server could create and edit
+     * arbitrary files on the client.
+     */
+    if (isabsolute (pathname) || pathname_levels (pathname) > 0)
+    {
+        error (0, 0,
+               "Server attempted to update a file via an invalid pathname:");
+        error (1, 0, "`%s'.", pathname);
+    }
+
     reposname = NULL;
     read_line (&reposname);
     assert (reposname != NULL);
@@ -1556,7 +1578,7 @@ handle_mod_time (args, len)
 {
     if (stored_modtime_valid)
 	error (0, 0, "protocol error: duplicate Mod-time");
-    stored_modtime = get_date (args, NULL);
+    stored_modtime = get_date (args);
     if (stored_modtime == (time_t) -1)
 	error (0, 0, "protocol error: cannot parse date %s", args);
     else
@@ -3708,7 +3730,7 @@ get_port_number (envname, portname, defaultport)
 	if (port <= 0)
 	{
 	    error (0, 0, "%s must be a positive integer!  If you", envname);
-	    error (0, 0, "are trying to force a connection via rsh, please");
+	    error (0, 0, "are trying to force a connection via ssh, please");
 	    error (0, 0, "put \":server:\" at the beginning of your CVSROOT");
 	    error (1, 0, "variable.");
 	}
@@ -3864,35 +3886,60 @@ connect_to_pserver (tofdp, fromfdp, verify_only, do_gssapi)
 #endif
     int port_number;
     char *username;			/* the username we use to connect */
-    struct sockaddr_in client_sai;
-    struct hostent *hostinfo;
+    struct addrinfo hints, *res, *res0 = NULL;
+    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
     char no_passwd = 0;			/* gets set if no password found */
+    int e;
 
-    sock = socket (AF_INET, SOCK_STREAM, 0);
-    if (sock == -1)
-    {
-	error (1, 0, "cannot create socket: %s", SOCK_STRERROR (SOCK_ERRNO));
-    }
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
     port_number = get_cvs_port_number (current_parsed_root);
-    hostinfo = init_sockaddr (&client_sai, current_parsed_root->hostname, port_number);
-    if (trace)
+    snprintf(sbuf, sizeof(sbuf), "%d", port_number);
+    e = getaddrinfo(current_parsed_root->hostname, sbuf, &hints, &res0);
+    if (e)
     {
-	fprintf (stderr, " -> Connecting to %s(%s):%d\n",
-		 current_parsed_root->hostname,
-		 inet_ntoa (client_sai.sin_addr), port_number);
+	error (1, 0, "%s", gai_strerror(e));
     }
-    if (connect (sock, (struct sockaddr *) &client_sai, sizeof (client_sai))
-	< 0)
-	error (1, 0, "connect to %s(%s):%d failed: %s",
-	       current_parsed_root->hostname,
-	       inet_ntoa (client_sai.sin_addr),
-	       port_number, SOCK_STRERROR (SOCK_ERRNO));
+    sock = -1;
+    for (res = res0; res; res = res->ai_next)
+    {
+	sock = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
+	if (sock < 0)
+	{
+	    continue;
+	}
+
+	if (trace)
+	{
+	    getnameinfo(res->ai_addr, res->ai_addrlen, hbuf, sizeof(hbuf),
+		sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
+	    fprintf (stderr, " -> Connecting to %s(%s):%s\n",
+		     current_parsed_root->hostname, hbuf, sbuf);
+	}
+	if (connect(sock, res->ai_addr, res->ai_addrlen) < 0)
+	{
+	    close(sock);
+	    sock = -1;
+	    continue;
+	}
+	break;
+    }
+    if (sock < 0)
+    {
+	getnameinfo(res0->ai_addr, res0->ai_addrlen, hbuf, sizeof(hbuf),
+	    sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
+	error (1, 0, "connect to %s(%s):%s failed: %s",
+	       current_parsed_root->hostname, hbuf, sbuf,
+	       SOCK_STRERROR (SOCK_ERRNO));
+    }
 
     /* Run the authorization mini-protocol before anything else. */
     if (do_gssapi)
     {
 #ifdef HAVE_GSSAPI
-	if (! connect_to_gserver (sock, hostinfo))
+	if (! connect_to_gserver (sock, res0->ai_canonname ?
+	    res0->ai_canonname : current_parsed_root->hostname))
 	{
 	    error (0, 0,
 		    "authorization failed: server %s rejected access to %s",
@@ -4047,6 +4094,8 @@ connect_to_pserver (tofdp, fromfdp, verify_only, do_gssapi)
 	if (shutdown (sock, 2) < 0)
 	    error (0, 0, "shutdown() failed, server %s: %s", current_parsed_root->hostname,
 		   SOCK_STRERROR (SOCK_ERRNO));
+	if (res0)
+	    freeaddrinfo(res0);
 	return;
     }
     else
@@ -4067,6 +4116,8 @@ connect_to_pserver (tofdp, fromfdp, verify_only, do_gssapi)
 #endif /* NO_SOCKET_TO_FD */
     }
 
+    if (res0)
+	freeaddrinfo(res0);
     return;
 
   rejected:
@@ -4099,7 +4150,7 @@ start_tcp_server (tofdp, fromfdp)
     const char *portenv;
     int port;
     struct hostent *hp;
-    struct sockaddr_in sin;
+    struct sockaddr_in client_sai;
     char *hname;
 
     s = socket (AF_INET, SOCK_STREAM, 0);
@@ -4108,7 +4159,7 @@ start_tcp_server (tofdp, fromfdp)
 
     port = get_cvs_port_number (current_parsed_root);
 
-    hp = init_sockaddr (&sin, current_parsed_root->hostname, port);
+    hp = init_sockaddr (&client_sai, current_parsed_root->hostname, port);
 
     hname = xmalloc (strlen (hp->h_name) + 1);
     strcpy (hname, hp->h_name);
@@ -4120,7 +4171,7 @@ start_tcp_server (tofdp, fromfdp)
 		 inet_ntoa (client_sai.sin_addr), port);
     }
 
-    if (connect (s, (struct sockaddr *) &sin, sizeof sin) < 0)
+    if (connect (s, (struct sockaddr *) &client_sai, sizeof client_sai) < 0)
 	error (1, 0, "connect to %s(%s):%d failed: %s",
 	       current_parsed_root->hostname,
 	       inet_ntoa (client_sai.sin_addr),
@@ -4144,7 +4195,7 @@ start_tcp_server (tofdp, fromfdp)
 	/* We don't care about the checksum, and pass it as zero.  */
 	status = krb_sendauth (KOPT_DO_MUTUAL, s, &ticket, "rcmd",
 			       hname, realm, (unsigned long) 0, &msg_data,
-			       &cred, sched, &laddr, &sin, "KCVSV1.0");
+			       &cred, sched, &laddr, &client_sai, "KCVSV1.0");
 	if (status != KSUCCESS)
 	    error (1, 0, "kerberos authentication failed: %s",
 		   krb_get_err_text (status));
@@ -4190,9 +4241,9 @@ recv_bytes (sock, buf, need)
 /* Connect to the server using GSSAPI authentication.  */
 
 static int
-connect_to_gserver (sock, hostinfo)
+connect_to_gserver (sock, hostname)
      int sock;
-     struct hostent *hostinfo;
+     const char *hostname;
 {
     char *str;
     char buf[1024];
@@ -4205,7 +4256,7 @@ connect_to_gserver (sock, hostinfo)
     if (send (sock, str, strlen (str), 0) < 0)
 	error (1, 0, "cannot send: %s", SOCK_STRERROR (SOCK_ERRNO));
 
-    sprintf (buf, "cvs@%s", hostinfo->h_name);
+    sprintf (buf, "cvs@%s", hostname);
     tok_in.length = strlen (buf);
     tok_in.value = buf;
     gss_import_name (&stat_min, &tok_in, GSS_C_NT_HOSTBASED_SERVICE,
@@ -4806,8 +4857,11 @@ start_rsh_server (tofdp, fromfdp)
 	   remain "rsh", and tell HPUX users to specify remsh, for
 	   example in CVS_RSH or other such mechanisms to be devised,
 	   if that is what they want (the manual already tells them
-	   that).  */
-	cvs_rsh = "rsh";
+	   that).
+	   Nowadays, however, ssh is pretty much everywhere, so we start
+	   to default to ssh instead.
+        */
+	cvs_rsh = "ssh";
     if (!cvs_server)
 	cvs_server = "cvs";
 
@@ -4844,7 +4898,7 @@ start_rsh_server (tofdp, fromfdp)
     /* Do the deed. */
     rsh_pid = popenRW (rsh_argv, pipes);
     if (rsh_pid < 0)
-	error (1, errno, "cannot start server via rsh");
+	error (1, errno, "cannot start server via ssh");
 
     /* Give caller the file descriptors. */
     *tofdp   = pipes[0];
@@ -4866,7 +4920,7 @@ start_rsh_server (tofdp, fromfdp)
     char *command;
 
     if (!cvs_rsh)
-	cvs_rsh = "rsh";
+	cvs_rsh = "ssh";
     if (!cvs_server)
 	cvs_server = "cvs";
 
@@ -4915,7 +4969,7 @@ start_rsh_server (tofdp, fromfdp)
 	rsh_pid = piped_child (argv, tofdp, fromfdp);
 
 	if (rsh_pid < 0)
-	    error (1, errno, "cannot start server via rsh");
+	    error (1, errno, "cannot start server via ssh");
     }
     free (command);
 }
@@ -5764,7 +5818,7 @@ notified_a_file (data, ent_list, short_pathname, filename)
     char *p;
 
     fp = open_file (CVSADM_NOTIFY, "r");
-    if (getline (&line, &line_len, fp) < 0)
+    if (get_line (&line, &line_len, fp) < 0)
     {
 	if (feof (fp))
 	    error (0, 0, "cannot read %s: end of file", CVSADM_NOTIFY);
@@ -5785,7 +5839,7 @@ notified_a_file (data, ent_list, short_pathname, filename)
 	       line + 1);
     }
 
-    if (getline (&line, &line_len, fp) < 0)
+    if (get_line (&line, &line_len, fp) < 0)
     {
 	if (feof (fp))
 	{

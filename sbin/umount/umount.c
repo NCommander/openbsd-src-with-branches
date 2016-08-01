@@ -1,4 +1,5 @@
-/*	$NetBSD: umount.c,v 1.15 1995/09/22 02:03:48 mycroft Exp $	*/
+/*	$OpenBSD: umount.c,v 1.25 2014/02/21 19:00:01 deraadt Exp $	*/
+/*	$NetBSD: umount.c,v 1.16 1996/05/11 14:13:55 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1989, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,21 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1989, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)umount.c	8.3 (Berkeley) 2/20/94";
-#else
-static char rcsid[] = "$NetBSD: umount.c,v 1.15 1995/09/22 02:03:48 mycroft Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/mount.h>
 #include <sys/time.h>
@@ -61,31 +43,30 @@ static char rcsid[] = "$NetBSD: umount.c,v 1.15 1995/09/22 02:03:48 mycroft Exp 
 #include <nfs/rpcv2.h>
 
 #include <err.h>
-#include <fstab.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
+#include <util.h>
 
 typedef enum { MNTON, MNTFROM } mntwhat;
 
-int	fake, fflag, verbose;
+int	fflag, verbose;
 char	**typelist = NULL;
 char	*nfshost;
 
-char	*getmntname __P((char *, mntwhat, char *));
-void	 maketypelist __P((char *));
-int	 selected __P((const char *));
-int	 namematch __P((struct hostent *));
-int	 umountall __P((void));
-int	 umountfs __P((char *));
-void	 usage __P((void));
-int	 xdr_dir __P((XDR *, char *));
+char	*getmntname(char *, mntwhat, char *);
+void	 maketypelist(char *);
+int	 selected(const char *);
+int	 namematch(struct hostent *);
+int	 umountall(void);
+int	 umountfs(char *);
+void	 usage(void);
+int	 xdr_dir(XDR *, char *);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int all, ch, errs;
 
@@ -93,13 +74,10 @@ main(argc, argv)
 	sync();
 
 	all = 0;
-	while ((ch = getopt(argc, argv, "aFfh:t:v")) != EOF)
+	while ((ch = getopt(argc, argv, "afh:t:v")) != -1)
 		switch (ch) {
 		case 'a':
 			all = 1;
-			break;
-		case 'F':
-			fake = 1;
 			break;
 		case 'f':
 			fflag = MNT_FORCE;
@@ -123,103 +101,93 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	if (argc == 0 && !all || argc != 0 && all)
+	if ((argc == 0 && !all) || (argc != 0 && all))
 		usage();
 
 	/* -h implies "-t nfs" if no -t flag. */
 	if ((nfshost != NULL) && (typelist == NULL))
-		maketypelist("nfs");
-		
-	if (all) {
-		if (setfsent() == 0)
-			err(1, "%s", _PATH_FSTAB);
+		maketypelist(MOUNT_NFS);
+
+	if (all)
 		errs = umountall();
-	} else
+	else
 		for (errs = 0; *argv != NULL; ++argv)
 			if (umountfs(*argv) != 0)
 				errs = 1;
-	exit(errs);
+	return (errs);
 }
 
 int
-umountall()
+umountall(void)
 {
-	struct fstab *fs;
+	struct statfs *fs;
+	int n;
 	int rval;
-	char *cp;
 
-	while ((fs = getfsent()) != NULL) {
+	n = getmntinfo(&fs, MNT_NOWAIT);
+	if (n == 0)
+		err(1, NULL);
+
+	rval = 0;
+	while (--n >= 0) {
 		/* Ignore the root. */
-		if (strcmp(fs->fs_file, "/") == 0)
+		if (strncmp(fs[n].f_mntonname, "/", MNAMELEN) == 0)
 			continue;
-		/*
-		 * !!!
-		 * Historic practice: ignore unknown FSTAB_* fields.
-		 */
-		if (strcmp(fs->fs_type, FSTAB_RW) &&
-		    strcmp(fs->fs_type, FSTAB_RO) &&
-		    strcmp(fs->fs_type, FSTAB_RQ))
+		if (!selected(fs[n].f_fstypename))
 			continue;
-
-		if (!selected(fs->fs_vfstype))
-			continue;
-
-		/* 
-		 * We want to unmount the file systems in the reverse order
-		 * that they were mounted.  So, we save off the file name
-		 * in some allocated memory, and then call recursively.
-		 */
-		if ((cp = malloc((size_t)strlen(fs->fs_file) + 1)) == NULL)
-			err(1, NULL);
-		(void)strcpy(cp, fs->fs_file);
-		rval = umountall();
-		return (umountfs(cp) || rval);
+		if (umountfs(fs[n].f_mntonname))
+			rval = 1;
 	}
-	return (0);
+	return (rval);
 }
 
 int
-umountfs(name)
-	char *name;
+umountfs(char *oname)
 {
-	enum clnt_stat clnt_stat;
 	struct hostent *hp;
 	struct sockaddr_in saddr;
 	struct stat sb;
 	struct timeval pertry, try;
 	CLIENT *clp;
 	int so;
-	char *delimp, *hostp, *mntpt, rname[MAXPATHLEN], type[MFSNAMELEN];
+	char *delimp, *hostp, *mntpt;
+	char *name, *newname, rname[PATH_MAX], type[MFSNAMELEN];
 
-	if (realpath(name, rname) == NULL) {
-		warn("%s", rname);
-		return (1);
-	}
+	if (isduid(oname, 0) || realpath(oname, rname) == NULL)
+		mntpt = name = oname;
+	else
+		mntpt = name = rname;
+	newname = NULL;
 
-	mntpt = name = rname;
-
-	if (stat(name, &sb) < 0) {
-		if ((name = getmntname(mntpt, MNTFROM, type)) == NULL) {
-			name = rname;
-			if ((mntpt = getmntname(name, MNTON, type)) == NULL) {
-				warnx("%s: not currently mounted", name);
-				return (1);
-			}
-		}
-	} else if (S_ISBLK(sb.st_mode)) {
+	/* If we can stat the file, check to see if it is a device or non-dir */
+	if (stat(name, &sb) == 0) {
+	    if (S_ISBLK(sb.st_mode)) {
 		if ((mntpt = getmntname(name, MNTON, type)) == NULL) {
 			warnx("%s: not currently mounted", name);
 			return (1);
 		}
-	} else if (S_ISDIR(sb.st_mode)) {
-		if ((name = getmntname(mntpt, MNTFROM, type)) == NULL) {
-			warnx("%s: not currently mounted", mntpt);
-			return (1);
-		}
-	} else {
+	    } else if (!S_ISDIR(sb.st_mode)) {
 		warnx("%s: not a directory or special device", name);
 		return (1);
+	    }
 	}
+
+	/*
+	 * Look up the name in the mount table.
+	 * 99.9% of the time the path in the kernel is the one
+	 * realpath() returns but check the original just in case...
+	 */
+	if (!(newname = getmntname(name, MNTFROM, type)) &&
+	    !(mntpt = getmntname(name, MNTON, type)) ) {
+		mntpt = oname;
+		if (!(newname = getmntname(oname, MNTFROM, type)) &&
+		    !(mntpt = getmntname(oname, MNTON, type))) {
+			warnx("%s: not currently mounted", oname);
+			return (1);
+		}
+	}
+	if (newname)
+		name = newname;
 
 	if (!selected(type))
 		return (1);
@@ -243,17 +211,18 @@ umountfs(name)
 	}
 
 	if (verbose)
-		(void)printf("%s: unmount from %s\n", name, mntpt);
-	if (fake)
-		return (0);
+		printf("%s: unmount from %s\n", name, mntpt);
 
 	if (unmount(mntpt, fflag) < 0) {
 		warn("%s", mntpt);
 		return (1);
 	}
 
+#ifndef NO_NFS
 	if (!strncmp(type, MOUNT_NFS, MFSNAMELEN) &&
 	    (hp != NULL) && !(fflag & MNT_FORCE)) {
+		enum clnt_stat clnt_stat;
+
 		*delimp = '\0';
 		memset(&saddr, 0, sizeof(saddr));
 		saddr.sin_family = AF_INET;
@@ -264,7 +233,7 @@ umountfs(name)
 		so = RPC_ANYSOCK;
 		if ((clp = clntudp_create(&saddr,
 		    RPCPROG_MNT, RPCMNT_VER1, pertry, &so)) == NULL) {
-			clnt_pcreateerror("Cannot MNT PRC");
+			clnt_pcreateerror("Cannot MNT RPC");
 			return (1);
 		}
 		clp->cl_auth = authunix_create_default();
@@ -279,34 +248,35 @@ umountfs(name)
 		auth_destroy(clp->cl_auth);
 		clnt_destroy(clp);
 	}
+#endif
 	return (0);
 }
 
 char *
-getmntname(name, what, type)
-	char *name;
-	mntwhat what;
-	char *type;
+getmntname(char *name, mntwhat what, char *type)
 {
 	struct statfs *mntbuf;
-	int i, mntsize;
+	int n;
 
-	if ((mntsize = getmntinfo(&mntbuf, MNT_NOWAIT)) == 0) {
+	if ((n = getmntinfo(&mntbuf, MNT_NOWAIT)) == 0) {
 		warn("getmntinfo");
 		return (NULL);
 	}
-	for (i = 0; i < mntsize; i++) {
-		if ((what == MNTON) && !strcmp(mntbuf[i].f_mntfromname, name)) {
+	while (--n >= 0) {
+		if ((what == MNTON) &&
+		    (strncmp(mntbuf[n].f_mntfromname, name, MNAMELEN) == 0 ||
+		     strncmp(mntbuf[n].f_mntfromspec, name, MNAMELEN) == 0)) {
 			if (type)
-				memcpy(type, mntbuf[i].f_fstypename,
-				    sizeof(mntbuf[i].f_fstypename));
-			return (mntbuf[i].f_mntonname);
+				memcpy(type, mntbuf[n].f_fstypename,
+				    sizeof(mntbuf[n].f_fstypename));
+			return (mntbuf[n].f_mntonname);
 		}
-		if ((what == MNTFROM) && !strcmp(mntbuf[i].f_mntonname, name)) {
+		if ((what == MNTFROM) &&
+		    (strncmp(mntbuf[n].f_mntonname, name, MNAMELEN) == 0)) {
 			if (type)
-				memcpy(type, mntbuf[i].f_fstypename,
-				    sizeof(mntbuf[i].f_fstypename));
-			return (mntbuf[i].f_mntfromname);
+				memcpy(type, mntbuf[n].f_fstypename,
+				    sizeof(mntbuf[n].f_fstypename));
+			return (mntbuf[n].f_mntfromname);
 		}
 	}
 	return (NULL);
@@ -315,8 +285,7 @@ getmntname(name, what, type)
 static enum { IN_LIST, NOT_IN_LIST } which;
 
 int
-selected(type)
-	const char *type;
+selected(const char *type)
 {
 	char **av;
 
@@ -330,8 +299,7 @@ selected(type)
 }
 
 void
-maketypelist(fslist)
-	char *fslist;
+maketypelist(char *fslist)
 {
 	int i;
 	char *nextcp, **av;
@@ -342,7 +310,7 @@ maketypelist(fslist)
 	/*
 	 * XXX
 	 * Note: the syntax is "noxxx,yyy" for no xxx's and
-	 * no yyy's, not the more intuitive "noyyy,noyyy".
+	 * no yyy's, not the more intuitive "noxxx,noyyy".
 	 */
 	if (fslist[0] == 'n' && fslist[1] == 'o') {
 		fslist += 2;
@@ -351,14 +319,14 @@ maketypelist(fslist)
 		which = IN_LIST;
 
 	/* Count the number of types. */
-	for (i = 1, nextcp = fslist; nextcp = strchr(nextcp, ','); i++)
+	for (i = 1, nextcp = fslist; (nextcp = strchr(nextcp, ',')); i++)
 		++nextcp;
 
 	/* Build an array of that many types. */
-	if ((av = typelist = malloc((i + 1) * sizeof(char *))) == NULL)
+	if ((av = typelist = calloc(i + 1, sizeof(char *))) == NULL)
 		err(1, NULL);
 	av[0] = fslist;
-	for (i = 1, nextcp = fslist; nextcp = strchr(nextcp, ','); i++) {
+	for (i = 1, nextcp = fslist; (nextcp = strchr(nextcp, ',')); i++) {
 		*nextcp = '\0';
 		av[i] = ++nextcp;
 	}
@@ -367,8 +335,7 @@ maketypelist(fslist)
 }
 
 int
-namematch(hp)
-	struct hostent *hp;
+namematch(struct hostent *hp)
 {
 	char *cp, **np;
 
@@ -395,23 +362,23 @@ namematch(hp)
 	return (0);
 }
 
+#ifndef NO_NFS
 /*
  * xdr routines for mount rpc's
  */
 int
-xdr_dir(xdrsp, dirp)
-	XDR *xdrsp;
-	char *dirp;
+xdr_dir(XDR *xdrsp, char *dirp)
 {
 	return (xdr_string(xdrsp, &dirp, RPCMNT_PATHLEN));
 }
+#endif
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr,
+	fprintf(stderr,
 	    "usage: %s\n       %s\n",
-	    "umount [-fv] [-t fstypelist] special | node",
-	    "umount -a[fv] [-h host] [-t fstypelist]");
+	    "umount [-fv] special | node",
+	    "umount -a [-fv] [-h host] [-t type]");
 	exit(1);
 }

@@ -1,5 +1,4 @@
-/*	$NetBSD: makebuf.c,v 1.5 1995/02/02 02:10:08 jtc Exp $	*/
-
+/*	$OpenBSD: makebuf.c,v 1.8 2005/12/28 18:50:22 millert Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,13 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)makebuf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: makebuf.c,v 1.5 1995/02/02 02:10:08 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -58,11 +46,10 @@ static char rcsid[] = "$NetBSD: makebuf.c,v 1.5 1995/02/02 02:10:08 jtc Exp $";
  * optimisation) right after the fstat() that finds the buffer size.
  */
 void
-__smakebuf(fp)
-	register FILE *fp;
+__smakebuf(FILE *fp)
 {
-	register void *p;
-	register int flags;
+	void *p;
+	int flags;
 	size_t size;
 	int couldbetty;
 
@@ -78,7 +65,6 @@ __smakebuf(fp)
 		fp->_bf._size = 1;
 		return;
 	}
-	__cleanup = _cleanup;
 	flags |= __SMBF;
 	fp->_bf._base = fp->_p = p;
 	fp->_bf._size = size;
@@ -91,10 +77,7 @@ __smakebuf(fp)
  * Internal routine to determine `proper' buffering for a file.
  */
 int
-__swhatbuf(fp, bufsize, couldbetty)
-	register FILE *fp;
-	size_t *bufsize;
-	int *couldbetty;
+__swhatbuf(FILE *fp, size_t *bufsize, int *couldbetty)
 {
 	struct stat st;
 
@@ -105,8 +88,8 @@ __swhatbuf(fp, bufsize, couldbetty)
 	}
 
 	/* could be a tty iff it is a character device */
-	*couldbetty = (st.st_mode & S_IFMT) == S_IFCHR;
-	if (st.st_blksize <= 0) {
+	*couldbetty = S_ISCHR(st.st_mode);
+	if (st.st_blksize == 0) {
 		*bufsize = BUFSIZ;
 		return (__SNPT);
 	}

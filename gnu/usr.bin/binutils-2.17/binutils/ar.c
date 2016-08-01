@@ -362,6 +362,9 @@ main (int argc, char **argv)
   program_name = argv[0];
   xmalloc_set_program_name (program_name);
 
+  if (pledge ("stdio rpath wpath cpath fattr", NULL) == -1)
+    fatal (_("pledge: %s"), strerror (errno));
+
   expandargv (&argc, &argv);
 
   if (is_ranlib < 0)
@@ -900,7 +903,7 @@ extract_file (bfd *abfd)
   output_file = NULL;
   output_filename = NULL;
 
-  chmod (bfd_get_filename (abfd), buf.st_mode);
+  chmod (bfd_get_filename (abfd), buf.st_mode & 0777);
 
   if (preserve_dates)
     {
@@ -922,7 +925,7 @@ write_archive (bfd *iarch)
 
   old_name = xmalloc (strlen (bfd_get_filename (iarch)) + 1);
   strcpy (old_name, bfd_get_filename (iarch));
-  new_name = make_tempname (old_name);
+  new_name = make_tempname (old_name, 0);
 
   output_filename = new_name;
 

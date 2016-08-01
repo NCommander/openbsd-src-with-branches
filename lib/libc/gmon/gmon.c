@@ -1,5 +1,4 @@
-/*	$NetBSD: gmon.c,v 1.3 1995/02/27 12:54:39 cgd Exp $	*/
-
+/*	$OpenBSD: gmon.c,v 1.28 2016/03/14 14:48:02 mmcc Exp $ */
 /*-
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,24 +28,17 @@
  * SUCH DAMAGE.
  */
 
-#if !defined(lint) && defined(LIBC_SCCS)
-#if 0
-static char sccsid[] = "@(#)gmon.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: gmon.c,v 1.3 1995/02/27 12:54:39 cgd Exp $";
-#endif
-#endif
-
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/gmon.h>
+#include <sys/mman.h>
 #include <sys/sysctl.h>
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <unistd.h>
-
-extern char *minbrk asm ("minbrk");
 
 struct gmonparam _gmonparam = { GMON_PROF_OFF };
 
@@ -58,18 +46,17 @@ static int	s_scale;
 /* see profil(2) where this is describe (incorrectly) */
 #define		SCALE_1_TO_1	0x10000L
 
-#define ERR(s) write(2, s, sizeof(s))
+#define ERR(s) write(STDERR_FILENO, s, sizeof(s))
 
-void	moncontrol __P((int));
-static int hertz __P((void));
+PROTO_NORMAL(moncontrol);
+PROTO_DEPRECATED(monstartup);
+static int hertz(void);
 
 void
-monstartup(lowpc, highpc)
-	u_long lowpc;
-	u_long highpc;
+monstartup(u_long lowpc, u_long highpc)
 {
-	register int o;
-	char *cp;
+	int o;
+	void *addr;
 	struct gmonparam *p = &_gmonparam;
 
 	/*
@@ -81,7 +68,7 @@ monstartup(lowpc, highpc)
 	p->textsize = p->highpc - p->lowpc;
 	p->kcountsize = p->textsize / HISTFRACTION;
 	p->hashfraction = HASHFRACTION;
-	p->fromssize = p->textsize / HASHFRACTION;
+	p->fromssize = p->textsize / p->hashfraction;
 	p->tolimit = p->textsize * ARCDENSITY / 100;
 	if (p->tolimit < MINARCS)
 		p->tolimit = MINARCS;
@@ -89,21 +76,23 @@ monstartup(lowpc, highpc)
 		p->tolimit = MAXARCS;
 	p->tossize = p->tolimit * sizeof(struct tostruct);
 
-	cp = sbrk(p->kcountsize + p->fromssize + p->tossize);
-	if (cp == (char *)-1) {
-		ERR("monstartup: out of memory\n");
-		return;
-	}
-#ifdef notdef
-	bzero(cp, p->kcountsize + p->fromssize + p->tossize);
-#endif
-	p->tos = (struct tostruct *)cp;
-	cp += p->tossize;
-	p->kcount = (u_short *)cp;
-	cp += p->kcountsize;
-	p->froms = (u_short *)cp;
+	addr = mmap(NULL, p->kcountsize,  PROT_READ|PROT_WRITE,
+	    MAP_ANON|MAP_PRIVATE, -1, (off_t)0);
+	if (addr == MAP_FAILED)
+		goto mapfailed;
+	p->kcount = addr;
 
-	minbrk = sbrk(0);
+	addr = mmap(NULL, p->fromssize,  PROT_READ|PROT_WRITE,
+	    MAP_ANON|MAP_PRIVATE, -1, (off_t)0);
+	if (addr == MAP_FAILED)
+		goto mapfailed;
+	p->froms = addr;
+
+	addr = mmap(NULL, p->tossize,  PROT_READ|PROT_WRITE,
+	    MAP_ANON|MAP_PRIVATE, -1, (off_t)0);
+	if (addr == MAP_FAILED)
+		goto mapfailed;
+	p->tos = addr;
 	p->tos[0].link = 0;
 
 	o = p->highpc - p->lowpc;
@@ -112,7 +101,7 @@ monstartup(lowpc, highpc)
 		s_scale = ((float)p->kcountsize / o ) * SCALE_1_TO_1;
 #else /* avoid floating point */
 		int quot = o / p->kcountsize;
-		
+
 		if (quot >= 0x10000)
 			s_scale = 1;
 		else if (quot >= 0x100)
@@ -126,10 +115,27 @@ monstartup(lowpc, highpc)
 		s_scale = SCALE_1_TO_1;
 
 	moncontrol(1);
+	return;
+
+mapfailed:
+	if (p->kcount != NULL) {
+		munmap(p->kcount, p->kcountsize);
+		p->kcount = NULL;
+	}
+	if (p->froms != NULL) {
+		munmap(p->froms, p->fromssize);
+		p->froms = NULL;
+	}
+	if (p->tos != NULL) {
+		munmap(p->tos, p->tossize);
+		p->tos = NULL;
+	}
+	ERR("monstartup: out of memory\n");
 }
+__strong_alias(_monstartup,monstartup);
 
 void
-_mcleanup()
+_mcleanup(void)
 {
 	int fd;
 	int fromindex;
@@ -142,9 +148,12 @@ _mcleanup()
 	struct clockinfo clockinfo;
 	int mib[2];
 	size_t size;
+	char *profdir;
+	char *proffile;
+	char  buf[PATH_MAX];
 #ifdef DEBUG
 	int log, len;
-	char buf[200];
+	char dbuf[200];
 #endif
 
 	if (p->state == GMON_PROF_ERROR)
@@ -166,22 +175,69 @@ _mcleanup()
 	}
 
 	moncontrol(0);
-	fd = open("gmon.out", O_CREAT|O_TRUNC|O_WRONLY, 0666);
+
+	if (issetugid() == 0 && (profdir = getenv("PROFDIR")) != NULL) {
+		char *s, *t, *limit;
+		pid_t pid;
+		long divisor;
+
+		/* If PROFDIR contains a null value, no profiling
+		   output is produced */
+		if (*profdir == '\0') {
+			return;
+		}
+
+		limit = buf + sizeof buf - 1 - 10 - 1 -
+		    strlen(__progname) - 1;
+		t = buf;
+		s = profdir;
+		while((*t = *s) != '\0' && t < limit) {
+			t++;
+			s++;
+		}
+		*t++ = '/';
+
+		/*
+		 * Copy and convert pid from a pid_t to a string.  For
+		 * best performance, divisor should be initialized to
+		 * the largest power of 10 less than PID_MAX.
+		 */
+		pid = getpid();
+		divisor=10000;
+		while (divisor > pid) divisor /= 10;	/* skip leading zeros */
+		do {
+			*t++ = (pid/divisor) + '0';
+			pid %= divisor;
+		} while (divisor /= 10);
+		*t++ = '.';
+
+		s = __progname;
+		while ((*t++ = *s++) != '\0')
+			;
+
+		proffile = buf;
+	} else {
+		proffile = "gmon.out";
+	}
+
+	fd = open(proffile , O_CREAT|O_TRUNC|O_WRONLY, 0664);
 	if (fd < 0) {
-		perror("mcount: gmon.out");
+		perror( proffile );
 		return;
 	}
 #ifdef DEBUG
 	log = open("gmon.log", O_CREAT|O_TRUNC|O_WRONLY, 0664);
 	if (log < 0) {
 		perror("mcount: gmon.log");
+		close(fd);
 		return;
 	}
-	len = sprintf(buf, "[mcleanup1] kcount 0x%x ssiz %d\n",
+	snprintf(dbuf, sizeof dbuf, "[mcleanup1] kcount 0x%x ssiz %d\n",
 	    p->kcount, p->kcountsize);
-	write(log, buf, len);
+	write(log, dbuf, strlen(dbuf));
 #endif
 	hdr = (struct gmonhdr *)&gmonhdr;
+	bzero(hdr, sizeof(*hdr));
 	hdr->lpc = p->lowpc;
 	hdr->hpc = p->highpc;
 	hdr->ncnt = p->kcountsize + sizeof(gmonhdr);
@@ -199,11 +255,11 @@ _mcleanup()
 		for (toindex = p->froms[fromindex]; toindex != 0;
 		     toindex = p->tos[toindex].link) {
 #ifdef DEBUG
-			len = sprintf(buf,
+			(void) snprintf(dbuf, sizeof dbuf,
 			"[mcleanup2] frompc 0x%x selfpc 0x%x count %d\n" ,
 				frompc, p->tos[toindex].selfpc,
 				p->tos[toindex].count);
-			write(log, buf, len);
+			write(log, dbuf, strlen(dbuf));
 #endif
 			rawarc.raw_frompc = frompc;
 			rawarc.raw_selfpc = p->tos[toindex].selfpc;
@@ -212,6 +268,20 @@ _mcleanup()
 		}
 	}
 	close(fd);
+#ifdef notyet
+	if (p->kcount != NULL) {
+		munmap(p->kcount, p->kcountsize);
+		p->kcount = NULL;
+	}
+	if (p->froms != NULL) {
+		munmap(p->froms, p->fromssize);
+		p->froms = NULL;
+	}
+	if (p->tos != NULL) {
+		munmap(p->tos, p->tossize);
+		p->tos = NULL;
+	}
+#endif
 }
 
 /*
@@ -220,32 +290,32 @@ _mcleanup()
  *	all the data structures are ready.
  */
 void
-moncontrol(mode)
-	int mode;
+moncontrol(int mode)
 {
 	struct gmonparam *p = &_gmonparam;
 
 	if (mode) {
 		/* start */
-		profil((char *)p->kcount, p->kcountsize, (int)p->lowpc,
+		profil((char *)p->kcount, p->kcountsize, p->lowpc,
 		    s_scale);
 		p->state = GMON_PROF_ON;
 	} else {
 		/* stop */
-		profil((char *)0, 0, 0, 0);
+		profil(NULL, 0, 0, 0);
 		p->state = GMON_PROF_OFF;
 	}
 }
+DEF_WEAK(moncontrol);
 
 /*
  * discover the tick frequency of the machine
  * if something goes wrong, we return 0, an impossible hertz.
  */
 static int
-hertz()
+hertz(void)
 {
 	struct itimerval tim;
-	
+
 	tim.it_interval.tv_sec = 0;
 	tim.it_interval.tv_usec = 1;
 	tim.it_value.tv_sec = 0;
@@ -256,5 +326,3 @@ hertz()
 		return(0);
 	return (1000000 / tim.it_interval.tv_usec);
 }
-
-

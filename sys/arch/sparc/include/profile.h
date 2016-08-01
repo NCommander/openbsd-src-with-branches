@@ -1,4 +1,5 @@
-/*	$NetBSD: profile.h,v 1.4 1995/08/14 15:44:36 pk Exp $ */
+/*	$OpenBSD: profile.h,v 1.9 2012/08/22 17:19:35 pascal Exp $	*/
+/*	$NetBSD: profile.h,v 1.8 1997/02/01 20:56:40 mrg Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,28 +41,37 @@
  *	@(#)profile.h	8.1 (Berkeley) 6/11/93
  */
 
-#ifdef PIC
+/*
+ * Can't use _C_LABEL here.
+ */
+
+#define _MCOUNT_SYM "__mcount"
+#define _MCOUNT_ENTRY "_mcount"
+
+#ifdef __PIC__
 /* Inline expansion of PICCY_SET() (see <machine/asm.h>). */
 #define MCOUNT \
-	asm(".global mcount");\
-	asm("mcount:");\
-	asm("add %o7, 8, %o1");\
-	asm("1: call 2f; nop; 2:");\
-	asm("add %o7,__mcount-1b, %o2");\
-	asm("ld [%o2], %o2");\
-	asm("jmpl %o2, %g0");\
-	asm("add %i7, 8, %o0");
+	__asm__(".global " _MCOUNT_ENTRY);\
+	__asm__(".text");\
+	__asm__(_MCOUNT_ENTRY ":");\
+	__asm__("add %o7, 8, %o1");\
+	__asm__("1: call 2f; nop; 2:");\
+	__asm__("add %o7," _MCOUNT_SYM "-1b, %o2");\
+	__asm__("ld [%o2], %o2");\
+	__asm__("jmpl %o2, %g0");\
+	__asm__("add %i7, 8, %o0");
 #else
 #define MCOUNT \
-	asm(".global mcount");\
-	asm("mcount:");\
-	asm("add %i7, 8, %o0");\
-	asm("sethi %hi(__mcount), %o2");\
-	asm("jmpl %o2 + %lo(__mcount), %g0");\
-	asm("add %o7, 8, %o1");
+	__asm__(".global " _MCOUNT_ENTRY);\
+	__asm__(".text");\
+	__asm__(_MCOUNT_ENTRY ":");\
+	__asm__("add %i7, 8, %o0");\
+	__asm__("sethi %hi(" _MCOUNT_SYM "), %o2");\
+	__asm__("jmpl %o2 + %lo(" _MCOUNT_SYM "), %g0");\
+	__asm__("add %o7, 8, %o1");
 #endif
 
-#define	_MCOUNT_DECL	static void _mcount
+#define	_MCOUNT_DECL	static void __mcount
 
 #ifdef _KERNEL
 /*

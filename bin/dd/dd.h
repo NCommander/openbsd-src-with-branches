@@ -1,3 +1,4 @@
+/*	$OpenBSD: dd.h,v 1.5 2003/06/02 23:32:07 millert Exp $	*/
 /*	$NetBSD: dd.h,v 1.4 1995/03/21 09:04:08 cgd Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,9 +40,9 @@
 typedef struct {
 	u_char	*db;			/* buffer address */
 	u_char	*dbp;			/* current buffer I/O address */
-	u_long	dbcnt;			/* current buffer byte count */
-	int	dbrcnt;			/* last read byte count */
-	u_long	dbsz;			/* buffer size */
+	size_t	dbcnt;			/* current buffer byte count */
+	size_t	dbrcnt;			/* last read byte count */
+	size_t	dbsz;			/* buffer size */
 
 #define	ISCHR		0x01		/* character device (warn on short) */
 #define	ISPIPE		0x02		/* pipe (not truncatable) */
@@ -55,23 +52,23 @@ typedef struct {
 
 	char 	*name;			/* name */
 	int	fd;			/* file descriptor */
-	u_long	offset;			/* # of blocks to skip */
+	off_t	offset;			/* # of blocks to skip */
 
-	u_long	f_stats;		/* # of full blocks processed */
-	u_long	p_stats;		/* # of partial blocks processed */
-	u_long	s_stats;		/* # of odd swab blocks */
-	u_long	t_stats;		/* # of truncations */
+	size_t	f_stats;		/* # of full blocks processed */
+	size_t	p_stats;		/* # of partial blocks processed */
+	size_t	s_stats;		/* # of odd swab blocks */
+	size_t	t_stats;		/* # of truncations */
 } IO;
 
 typedef struct {
-	u_long	in_full;		/* # of full input blocks */
-	u_long	in_part;		/* # of partial input blocks */
-	u_long	out_full;		/* # of full output blocks */
-	u_long	out_part;		/* # of partial output blocks */
-	u_long	trunc;			/* # of truncated records */
-	u_long	swab;			/* # of odd-length swab blocks */
-	u_long	bytes;			/* # of bytes written */
-	time_t	start;			/* start time of dd */
+	size_t	in_full;		/* # of full input blocks */
+	size_t	in_part;		/* # of partial input blocks */
+	size_t	out_full;		/* # of full output blocks */
+	size_t	out_part;		/* # of partial output blocks */
+	size_t	trunc;			/* # of truncated records */
+	size_t	swab;			/* # of odd-length swab blocks */
+	off_t	bytes;			/* # of bytes written */
+	struct	timeval	startv;		/* start time of dd */
 } STAT;
 
 /* Flags (in ddflags). */
@@ -96,3 +93,6 @@ typedef struct {
 #define	C_UCASE		0x40000
 #define	C_UNBLOCK	0x80000
 #define	C_OSYNC		0x100000
+#define	C_STATUS	0x200000
+#define	C_NOXFER	0x400000
+#define	C_NOINFO	0x800000

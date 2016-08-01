@@ -1,7 +1,7 @@
-/*	$NetBSD: nametoaddr.c,v 1.3 1995/04/29 05:42:23 cgd Exp $	*/
+/*	$OpenBSD: nametoaddr.c,v 1.18 2015/11/17 18:19:45 mmcc Exp $	*/
 
 /*
- * Copyright (c) 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,13 +24,14 @@
  * These functions are not time critical.
  */
 
-#ifndef lint
-static char rcsid[] =
-    "@(#) Header: nametoaddr.c,v 1.21 94/06/20 19:07:54 leres Exp (LBL)";
-#endif
-
 #include <sys/param.h>
+#include <sys/types.h>				/* concession to AIX */
 #include <sys/socket.h>
+#include <sys/time.h>
+
+struct mbuf;
+struct rtentry;
+
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
@@ -38,19 +39,18 @@ static char rcsid[] =
 
 #include <ctype.h>
 #include <errno.h>
-#include <netdb.h>
-#include <pcap.h>
-#include <pcap-namedb.h>
-#include <stdio.h>
-#ifdef __NetBSD__
 #include <stdlib.h>
+#include <netdb.h>
+#include <stdio.h>
 #include <string.h>
-#endif
+
+#include "pcap-int.h"
 
 #include "gencode.h"
+#include <pcap-namedb.h>
 
-#ifndef __GNUC__
-#define inline
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
 #endif
 
 #ifndef NTOHL
@@ -58,41 +58,59 @@ static char rcsid[] =
 #define NTOHS(x) (x) = ntohs(x)
 #endif
 
-static inline int xdtoi(int);
+static __inline int xdtoi(int);
 
 /*
  *  Convert host name to internet address.
  *  Return 0 upon failure.
  */
-u_long **
+bpf_u_int32 **
 pcap_nametoaddr(const char *name)
 {
 #ifndef h_addr
-	static u_long *hlist[2];
+	static bpf_u_int32 *hlist[2];
 #endif
-	u_long **p;
+	bpf_u_int32 **p;
 	struct hostent *hp;
 
 	if ((hp = gethostbyname(name)) != NULL) {
 #ifndef h_addr
-		hlist[0] = (u_long *)hp->h_addr;
+		hlist[0] = (bpf_u_int32 *)hp->h_addr;
 		NTOHL(hp->h_addr);
 		return hlist;
 #else
-		for (p = (u_long **)hp->h_addr_list; *p; ++p)
+		for (p = (bpf_u_int32 **)hp->h_addr_list; *p; ++p)
 			NTOHL(**p);
-		return (u_long **)hp->h_addr_list;
+		return (bpf_u_int32 **)hp->h_addr_list;
 #endif
 	}
 	else
 		return 0;
 }
 
+#ifdef INET6
+struct addrinfo *
+pcap_nametoaddrinfo(const char *name)
+{
+	struct addrinfo hints, *res;
+	int error;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;	/*not really*/
+	error = getaddrinfo(name, NULL, &hints, &res);
+	if (error)
+		return NULL;
+	else
+		return res;
+}
+#endif /*INET6*/
+
 /*
  *  Convert net name to internet address.
  *  Return 0 upon failure.
  */
-u_long
+bpf_u_int32
 pcap_nametonetaddr(const char *name)
 {
 	struct netent *np;
@@ -133,14 +151,12 @@ pcap_nametoport(const char *name, int *port, int *proto)
 		sp = getservbyname(name, other);
 		if (sp != 0) {
 			NTOHS(sp->s_port);
+#ifdef notdef
 			if (*port != sp->s_port)
 				/* Can't handle ambiguous names that refer
 				   to different port numbers. */
-#ifdef notdef
 				warning("ambiguous port %s in /etc/services",
 					name);
-#else
-			;
 #endif
 			*proto = PROTO_UNDEF;
 		}
@@ -181,6 +197,9 @@ struct eproto eproto_db[] = {
 	{ "pup", ETHERTYPE_PUP },
 	{ "xns", ETHERTYPE_NS },
 	{ "ip", ETHERTYPE_IP },
+#ifdef INET6
+	{ "ip6", ETHERTYPE_IPV6 },
+#endif
 	{ "arp", ETHERTYPE_ARP },
 	{ "rarp", ETHERTYPE_REVARP },
 	{ "sprite", ETHERTYPE_SPRITE },
@@ -188,6 +207,7 @@ struct eproto eproto_db[] = {
 	{ "moprc", ETHERTYPE_MOPRC },
 	{ "decnet", ETHERTYPE_DN },
 	{ "lat", ETHERTYPE_LAT },
+	{ "sca", ETHERTYPE_SCA },
 	{ "lanbridge", ETHERTYPE_LANBRIDGE },
 	{ "vexp", ETHERTYPE_VEXP },
 	{ "vprod", ETHERTYPE_VPROD },
@@ -212,10 +232,31 @@ pcap_nametoeproto(const char *s)
 	return PROTO_UNDEF;
 }
 
+#include "llc.h"
+
+/* Static data base of LLC values. */
+static struct eproto llc_db[] = {
+	{ "stp", LLCSAP_8021D },
+	{ (char *)0, 0 }
+};
+
+int
+pcap_nametollc(const char *s)
+{
+	struct eproto *p = llc_db;
+
+	while (p->s != 0) {
+		if (strcmp(p->s, s) == 0)
+			return p->p;
+		p += 1;
+	}
+	return PROTO_UNDEF;
+}
+
 /* Hex digit to integer. */
-static inline int
+static __inline int
 xdtoi(c)
-	register int c;
+	int c;
 {
 	if (isdigit(c))
 		return c - '0';
@@ -225,42 +266,44 @@ xdtoi(c)
 		return c - 'A' + 10;
 }
 
-u_long
-__pcap_atoin(const char *s)
+int
+__pcap_atoin(const char *s, bpf_u_int32 *addr)
 {
-	u_long addr = 0;
 	u_int n;
+	int len;
 
+	*addr = 0;
+	len = 0;
 	while (1) {
 		n = 0;
 		while (*s && *s != '.')
 			n = n * 10 + *s++ - '0';
-		addr <<= 8;
-		addr |= n & 0xff;
+		*addr <<= 8;
+		*addr |= n & 0xff;
+		len += 8;
 		if (*s == '\0')
-			return addr;
+			return len;
 		++s;
 	}
 	/* NOTREACHED */
 }
 
-u_long
-__pcap_atodn(const char *s)
+int
+__pcap_atodn(const char *s, bpf_u_int32 *addr)
 {
 #define AREASHIFT 10
 #define AREAMASK 0176000
 #define NODEMASK 01777
 
-	u_long addr = 0;
 	u_int node, area;
 
 	if (sscanf((char *)s, "%d.%d", &area, &node) != 2)
 		bpf_error("malformed decnet address '%s'", s);
 
-	addr = (area << AREASHIFT) & AREAMASK;
-	addr |= (node & NODEMASK);
+	*addr = (area << AREASHIFT) & AREAMASK;
+	*addr |= (node & NODEMASK);
 
-	return(addr);
+	return(32);
 }
 
 /*
@@ -270,16 +313,18 @@ __pcap_atodn(const char *s)
 u_char *
 pcap_ether_aton(const char *s)
 {
-	register u_char *ep, *e;
-	register u_int d;
+	u_char *ep, *e;
+	u_int d;
 
-	e = ep = (u_char *)malloc(6);
+	e = ep = malloc(6);
+	if (e == NULL)
+		bpf_error("malloc");
 
 	while (*s) {
 		if (*s == ':')
 			s += 1;
 		d = xdtoi(*s++);
-		if (isxdigit(*s)) {
+		if (isxdigit((unsigned char)*s)) {
 			d <<= 4;
 			d |= xdtoi(*s++);
 		}
@@ -289,13 +334,13 @@ pcap_ether_aton(const char *s)
 	return (e);
 }
 
-#ifndef ETHER_SERVICE
+#ifndef HAVE_ETHER_HOSTTON
 /* Roll our own */
 u_char *
 pcap_ether_hostton(const char *name)
 {
-	register struct pcap_etherent *ep;
-	register u_char *ap;
+	struct pcap_etherent *ep;
+	u_char *ap;
 	static FILE *fp = NULL;
 	static init = 0;
 
@@ -311,7 +356,7 @@ pcap_ether_hostton(const char *name)
 	
 	while ((ep = pcap_next_etherent(fp)) != NULL) {
 		if (strcmp(ep->name, name) == 0) {
-			ap = (u_char *)malloc(6);
+			ap = malloc(6);
 			if (ap != NULL) {
 				memcpy(ap, ep->addr, 6);
 				return (ap);
@@ -322,21 +367,19 @@ pcap_ether_hostton(const char *name)
 	return (NULL);
 }
 #else
+
 /* Use the os supplied routines */
 u_char *
 pcap_ether_hostton(const char *name)
 {
-	register u_char *ap;
+	u_char *ap;
 	u_char a[6];
-#ifndef sgi
-	extern int ether_hostton(char *, struct ether_addr *);
-#endif
 
 	ap = NULL;
-	if (ether_hostton((char*)name, (struct ether_addr *)a) == 0) {
-		ap = (u_char *)malloc(6);
+	if (ether_hostton(name, (struct ether_addr *)a) == 0) {
+		ap = malloc(6);
 		if (ap != NULL)
-			memcpy(ap, a, 6);
+			memcpy((char *)ap, (char *)a, 6);
 	}
 	return (ap);
 }
@@ -359,5 +402,6 @@ __pcap_nametodnaddr(const char *name)
 #else
 	bpf_error("decnet name support not included, '%s' cannot be translated\n",
 		name);
+	/* NOTREACHED */
 #endif
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: rxp.c,v 1.7 2004/07/10 07:26:23 deraadt Exp $	*/
 /*	$NetBSD: rxp.c,v 1.5 1995/04/22 10:17:00 cgd Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +33,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)rxp.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: rxp.c,v 1.5 1995/04/22 10:17:00 cgd Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * regular expression parser
@@ -84,28 +73,30 @@ typedef short Rxp_t;			/* type for regexp tokens */
 static Rxp_t rxpbuf[RXP_LINE_SZ];	/* compiled regular expression buffer */
 char rxperr[128];			/* parser error message */
 
-static int	 rxp__compile __P((char *, int));
-static char	*rxp__expand __P((int));
-static int	 rxp__match __P((char *, int, Rxp_t *, Rxp_t *, char *));
+static int	 rxp__compile(const char *, int);
+static char	*rxp__expand(int);
+static int	 rxp__match(const char *, int, Rxp_t *, Rxp_t *, const char *);
 
 int
-rxp_compile(s)
-	register char *	s;
+rxp_compile(const char *s)
 {
 	return (rxp__compile(s, TRUE));
 }
 
 static int
-rxp__compile(s, first)
-	register char *s;
-	int first;
+rxp__compile(const char *s, int first)
 {
 	static Rxp_t *rp;
-	static char *sp;
+	static const char *sp;
 	Rxp_t *grp_ptr;
 	Rxp_t *alt_ptr;
 	int esc, err;
 
+	if (s == NULL) {
+		(void)snprintf(rxperr, sizeof(rxperr),
+		    "null string sent to rxp_compile");
+		return(FALSE);
+	}
 	esc = 0;
 	if (first) {
 		rp = rxpbuf;
@@ -194,24 +185,24 @@ rxp__compile(s, first)
  * match string against compiled regular expression
  */
 int
-rxp_match(s)
-	register char *	s;
+rxp_match(const char *s)
 {
 	return (rxp__match(s, TRUE, NULL, NULL, NULL));
 }
 
+/*
+ * j_succ : jump here on successful alt match
+ * j_fail : jump here on failed match
+ * sp_fail: reset sp to here on failed match
+ */
 static int
-rxp__match(s, first, j_succ, j_fail, sp_fail)
-	char *s;
-	int first;
-	Rxp_t *j_succ;		/* jump here on successful alt match */
-	Rxp_t *j_fail;		/* jump here on failed match */
-	char *sp_fail;		/* reset sp to here on failed match */
+rxp__match(const char *s, int first, Rxp_t *j_succ, Rxp_t *j_fail,
+           const char *sp_fail)
 {
 	static Rxp_t *rp;
-	static char *sp;
-	register int ch;
-	Rxp_t *grp_end;
+	static const char *sp;
+	int ch;
+	Rxp_t *grp_end = NULL;
 	int err;
 
 	if (first) {
@@ -264,14 +255,13 @@ rxp__match(s, first, j_succ, j_fail, sp_fail)
  * Reverse engineer the regular expression, by picking first of all alternates.
  */
 char *
-rxp_expand()
+rxp_expand(void)
 {
 	return (rxp__expand(TRUE));
 }
 
 static char *
-rxp__expand(first)
-	int first;
+rxp__expand(int first)
 {
 	static char buf[RXP_LINE_SZ/2];
 	static Rxp_t *rp;

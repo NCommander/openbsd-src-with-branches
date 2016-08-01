@@ -49,6 +49,7 @@ nsd_options_create(region_type* region)
 	opt->keys = rbtree_create(region, rbtree_strcmp);
 	opt->ip_addresses = NULL;
 	opt->ip_transparent = 0;
+	opt->ip_freebind = 0;
 	opt->debug_mode = 0;
 	opt->verbosity = 0;
 	opt->hide_version = 0;
@@ -56,6 +57,7 @@ nsd_options_create(region_type* region)
 	opt->do_ip6 = 1;
 	opt->database = DBFILE;
 	opt->identity = 0;
+	opt->version = 0;
 	opt->nsid = 0;
 	opt->logfile = 0;
 	opt->log_time_ascii = 1;
@@ -64,16 +66,14 @@ nsd_options_create(region_type* region)
 	opt->tcp_count = 100;
 	opt->tcp_query_count = 0;
 	opt->tcp_timeout = TCP_TIMEOUT;
+	opt->tcp_mss = 0;
+	opt->outgoing_tcp_mss = 0;
 	opt->ipv4_edns_size = EDNS_MAX_MESSAGE_LEN;
 	opt->ipv6_edns_size = EDNS_MAX_MESSAGE_LEN;
 	opt->pidfile = PIDFILE;
 	opt->port = UDP_PORT;
 /* deprecated?	opt->port = TCP_PORT; */
-#ifdef REUSEPORT_BY_DEFAULT
-	opt->reuseport = 1;
-#else
 	opt->reuseport = 0;
-#endif
 	opt->statistics = 0;
 	opt->chroot = 0;
 	opt->username = USER;
@@ -83,11 +83,16 @@ nsd_options_create(region_type* region)
 	opt->zonelistfile = ZONELISTFILE;
 #ifdef RATELIMIT
 	opt->rrl_size = RRL_BUCKETS;
-	opt->rrl_ratelimit = RRL_LIMIT/2;
 	opt->rrl_slip = RRL_SLIP;
 	opt->rrl_ipv4_prefix_length = RRL_IPV4_PREFIX_LENGTH;
 	opt->rrl_ipv6_prefix_length = RRL_IPV6_PREFIX_LENGTH;
+#  ifdef RATELIMIT_DEFAULT_OFF
+	opt->rrl_ratelimit = 0;
+	opt->rrl_whitelist_ratelimit = 0;
+#  else
+	opt->rrl_ratelimit = RRL_LIMIT/2;
 	opt->rrl_whitelist_ratelimit = RRL_WLIST_LIMIT/2;
+#  endif
 #endif
 	opt->zonefiles_check = 1;
 	if(opt->database == NULL || opt->database[0] == 0)
@@ -1224,7 +1229,7 @@ key_options_setup(region_type* region, key_options_t* key)
 		key->tsig_key->size = 0;
 		key->tsig_key->data = NULL;
 	}
-	size = b64_pton(key->secret, data, sizeof(data));
+	size = __b64_pton(key->secret, data, sizeof(data));
 	if(size == -1) {
 		log_msg(LOG_ERR, "Failed to parse tsig key data %s",
 			key->name);
@@ -1507,7 +1512,7 @@ acl_key_matches(acl_options_t* acl, struct query* q)
 	}
 	if(!acl->key_options->tsig_key) {
 		DEBUG(DEBUG_XFRD,2, (LOG_INFO, "keymatch fail no config"));
-		return 0; /* key not properly configged */
+		return 0; /* key not properly configured */
 	}
 	if(dname_compare(q->tsig.key_name,
 		acl->key_options->tsig_key->name) != 0) {

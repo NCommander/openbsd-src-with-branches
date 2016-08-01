@@ -1,102 +1,291 @@
 #!/bin/sh -
 #
-#	$NetBSD: netstart,v 1.21 1995/10/08 18:11:40 thorpej Exp $
-#	@(#)netstart	5.9 (Berkeley) 3/30/91
+#	$OpenBSD: netstart,v 1.168 2016/03/27 20:32:42 sthen Exp $
 
-# set these to "NO" to turn them off.  otherwise, they're used as flags
-routed_flags=-q
-rarpd_flags=NO		# for 'normal' use: rarpd_flags="-a"
-bootparamd_flags=NO	# for 'normal' use: bootparamd_flags=""
-rbootd_flags=NO		# for 'normal' use: rbootd_flags=""
-sendmail_flags=NO	# for 'normal' use: sendmail_flags="-bd -q30m"
-named_flags=NO		# for 'normal' use: named_flags=""
-timed_flags=
+# Turn off Strict Bourne shell mode.
+set +o sh
 
-# set the following to "YES" to turn them on
-rwhod=NO
-nfs_server=NO
-nfs_client=NO
-gated=NO
-kerberos_server=NO
-amd=NO
+# Strip comment lines from a file.
+# Strip leading and trailing whitespace if IFS is set.
+# Usage: stripcom /path/to/file
+stripcom() {
+	local _file=$1 _line
 
-# miscellaneous other flags
-# only used if the appropriate server is marked YES above
-gated_flags=
-amd_dir=/amd			# AMD's mount directory
-amd_master=/etc/amd/master	# AMD 'master' map
+	[[ -f $_file ]] || return
 
-# /etc/myname contains my symbolic name
-#
-hostname=`cat /etc/myname`
-hostname $hostname
-if [ -f /etc/defaultdomain ]; then
-	domainname `cat /etc/defaultdomain`
+	while read _line; do
+		[[ -n ${_line%%#*} ]] && print -r -- "$_line"
+	done <$_file
+}
+
+# Start a single interface.
+# Usage: ifstart if1
+ifstart() {
+	if=$1
+	# Interface names must be alphanumeric only.  We check to avoid
+	# configuring backup or temp files, and to catch the "*" case.
+	[[ $if != +([[:alpha:]])+([[:digit:]]) ]] && return
+
+	file=/etc/hostname.$if
+	if ! [ -f $file ]; then
+		echo "netstart: $file: No such file or directory"
+		return
+	fi
+	# Not using stat(1), we can't rely on having /usr yet.
+	set -A stat -- $(ls -nL $file)
+	if [ "${stat[0]#???????} ${stat[2]} ${stat[3]}" != "--- 0 0" ]; then
+		echo "WARNING: $file is insecure, fixing permissions"
+		chmod -LR o-rwx $file
+		chown -LR root.wheel $file
+	fi
+	# Check for ifconfig'able interface.
+	(ifconfig $if || ifconfig $if create) >/dev/null 2>&1 || return
+
+	# Now parse the hostname.* file.
+	while :; do
+		if [ "$cmd2" ]; then
+			# We are carrying over from the 'read dt dtaddr'
+			# last time.
+			set -- $cmd2
+			af="$1" name="$2" mask="$3" bcaddr="$4" ext1="$5" cmd2=
+			# Make sure and get any remaining args in ext2,
+			# like the read below.
+			i=1
+			while [ $i -lt 6 -a -n "$1" ]; do shift; let i=i+1; done
+			ext2="$@"
+		else
+			# Read the next line or exit the while loop.
+			read af name mask bcaddr ext1 ext2 || break
+		fi
+		# $af can be "dhcp", "up", "rtsol", an address family, commands,
+		# or a comment.
+		case "$af" in
+		"#"*|"") # Skip comments and empty lines.
+			continue
+			;;
+		"!"*) # Parse commands.
+			cmd="${af#*!} ${name} ${mask} ${bcaddr} ${ext1} ${ext2}"
+			;;
+		"dhcp")
+			[ "$name" = "NONE" ] && name=
+			[ "$mask" = "NONE" ] && mask=
+			[ "$bcaddr" = "NONE" ] && bcaddr=
+			cmd="ifconfig $if $name $mask $bcaddr $ext1 $ext2 down"
+			cmd="$cmd;dhclient $if"
+			dhcpif="$dhcpif $if"
+			;;
+		"rtsol")
+			rtsolif="$rtsolif $if"
+			cmd="ifconfig $if $name $mask $bcaddr $ext1 $ext2 up"
+			;;
+		*)
+			read dt dtaddr
+			if [ "$name"  = "alias" ]; then
+				# Perform a 'shift' of sorts.
+				alias=$name
+				name=$mask
+				mask=$bcaddr
+				bcaddr=$ext1
+				ext1=$ext2
+				ext2=
+			else
+				alias=
+			fi
+			cmd="ifconfig $if $af $alias $name"
+			case "$dt" in
+			dest)
+				cmd="$cmd $dtaddr"
+				;;
+			*)
+				cmd2="$dt $dtaddr"
+				;;
+			esac
+			case $af in
+			inet)
+				if [ ! -n "$name" ]; then
+					echo "/etc/hostname.$if: inet alone is invalid"
+					return
+				fi
+				[ "$mask" ] && cmd="$cmd netmask $mask"
+				if [ "$bcaddr" -a "X$bcaddr" != "XNONE" ]; then
+					cmd="$cmd broadcast $bcaddr"
+				fi
+				;;
+			inet6)
+				if [ ! -n "$name" ]; then
+					echo "/etc/hostname.$if: inet6 alone is invalid"
+					return
+				fi
+				[ "$mask" ] && cmd="$cmd prefixlen $mask"
+				cmd="$cmd $bcaddr"
+				;;
+			*)
+				cmd="$cmd $mask $bcaddr"
+				;;
+			esac
+			cmd="$cmd $ext1 $ext2"
+			;;
+		esac
+		eval "$cmd"
+	done </etc/hostname.$if
+}
+
+# Start multiple interfaces by driver name.
+# Usage: ifmstart "em iwm" "trunk vlan"
+#   Start "$1" interfaces in order or all interfaces if empty.
+#   Don't start "$2" interfaces. "$2" is optional.
+ifmstart() {
+	local _sifs=$1 _xifs=$2 _hn _if _sif _xif
+
+	for _sif in ${_sifs:-ALL}; do
+		for _hn in /etc/hostname.*; do
+			_if=${_hn#/etc/hostname.}
+			[[ $_if == '*' ]] && continue
+
+			# Skip unwanted ifs.
+			for _xif in $_xifs; do
+				[[ $_xif == ${_if%%[0-9]*} ]] && continue 2
+			done
+
+			# Start wanted ifs.
+			[[ $_sif == @(ALL|${_if%%[0-9]*}) ]] && ifstart $_if
+		done
+	done
+}
+
+# IPv6 autoconf the interfaces in the $rtsolif list.
+# Usage: ifv6autoconf
+ifv6autoconf() {
+	local _if
+
+	# $ip6kernel will not have been set if we were invoked with a
+	# list of interface names
+	ifconfig lo0 inet6 >/dev/null 2>&1 || return 0
+
+	for _if in $rtsolif; do
+		ifconfig $_if inet6 autoconf
+	done
+}
+
+# Get network related vars from rc.conf using the parsing routine from rc.subr.
+FUNCS_ONLY=1 . /etc/rc.d/rc.subr
+_rc_parse_conf
+
+# If we were invoked with a list of interface names, just reconfigure these
+# interfaces (or bridges) and return.
+if (($# > 0)); then
+	for _if; do ifstart $_if; done
+	ifv6autoconf
+	return
 fi
 
-# configure all of the interfaces which we know about.
-# do this by reading /etc/hostname.* files, where * is the name
-# of a given interface.
-#
-# these files are formatted like the following, but with no # at the
-# beginning of the line
-#
-# addr_family hostname netmask broadcast_addr options
-# dest dest_addr
-#
-# addr_family is the address family of the interface, generally inet
-# hostname is the host name that belongs to the interface, in /etc/hosts.
-# netmask is the network mask for the interface.
-# broadcast_addr is the broadcast address for the interface
-# options are misc. options to ifconfig for the interface.
-#
-# dest is simply the string "dest" (no quotes, though) if the interface
-# has a "destination" (i.e. it's a point-to-point link, like SLIP).
-# dest_addr is the hostname of the other end of the link, in /etc/hosts
-#
-# the only required contents of the file are the addr_family field
-# and the hostname.
+# Otherwise, process with the complete network initialization.
 
-(
-    tmp="$IFS"
-    IFS="$IFS."
-    set -- `echo /etc/hostname*`
-    IFS=$tmp
-    unset tmp
+# /etc/myname contains my symbolic name.
+[[ -f /etc/myname ]] && hostname "$(stripcom /etc/myname)"
 
-    while [ $# -ge 2 ] ; do
-        shift            # get rid of "hostname"
-        (
-            read af name mask bcaddr extras
-            read dt dtaddr 
+# Set the address for the loopback interface.  Bringing the interface up,
+# automatically invokes the IPv6 address ::1.
+ifconfig lo0 inet 127.0.0.1/8
 
-            if [ ! -n "$name" ]; then
-                echo "/etc/hostname.$1: invalid network configuration file"
-                exit
-            fi
+if ifconfig lo0 inet6 >/dev/null 2>&1; then
+	# IPv6 configurations.
+	ip6kernel=YES
 
-	    cmd="ifconfig $1 $af $name "
-	    if [ "${dt}" = "dest" ]; then cmd="$cmd $dtaddr"; fi
-	    if [ -n "$mask" ]; then cmd="$cmd netmask $mask"; fi
-	    if [ -n "$bcaddr" -a "X$bcaddr" != "XNONE" ]; then
-		cmd="$cmd broadcast $bcaddr";
-	    fi
-	    cmd="$cmd $extras"
+	# Disallow link-local unicast dest without outgoing scope identifiers.
+	route -qn add -inet6 fe80:: -prefixlen 10 ::1 -reject >/dev/null
 
-	    $cmd
-        ) < /etc/hostname.$1
-        shift
-    done
-)
+	# Disallow site-local unicast dest without outgoing scope identifiers.
+	# If you configure site-locals without scope id (it is permissible
+	# config for routers that are not on scope boundary), you may want
+	# to comment the line out.
+	route -qn add -inet6 fec0:: -prefixlen 10 ::1 -reject >/dev/null
 
-# set the address for the loopback interface
-ifconfig lo0 inet localhost
+	# Disallow "internal" addresses to appear on the wire.
+	route -qn add -inet6 ::ffff:0.0.0.0 -prefixlen 96 ::1 -reject >/dev/null
 
-# use loopback, not the wire
-route add $hostname localhost
+	# Disallow packets to malicious IPv4 compatible prefix.
+	route -qn add -inet6 ::224.0.0.0 -prefixlen 100 ::1 -reject >/dev/null
+	route -qn add -inet6 ::127.0.0.0 -prefixlen 104 ::1 -reject >/dev/null
+	route -qn add -inet6 ::0.0.0.0 -prefixlen 104 ::1 -reject >/dev/null
+	route -qn add -inet6 ::255.0.0.0 -prefixlen 104 ::1 -reject >/dev/null
 
-# /etc/mygate, if it exists, contains the name of my gateway host
-# that name must be in /etc/hosts.
-if [ -f /etc/mygate ]; then
-	route add default `cat /etc/mygate`
+	# Disallow packets to malicious 6to4 prefix.
+	route -qn add -inet6 2002:e000:: -prefixlen 20 ::1 -reject >/dev/null
+	route -qn add -inet6 2002:7f00:: -prefixlen 24 ::1 -reject >/dev/null
+	route -qn add -inet6 2002:0000:: -prefixlen 24 ::1 -reject >/dev/null
+	route -qn add -inet6 2002:ff00:: -prefixlen 24 ::1 -reject >/dev/null
+
+	# Disallow packets without scope identifier.
+	route -qn add -inet6 ff01:: -prefixlen 16 ::1 -reject >/dev/null
+	route -qn add -inet6 ff02:: -prefixlen 16 ::1 -reject >/dev/null
+
+	# Completely disallow packets to IPv4 compatible prefix.
+	#
+	# This may conflict with RFC1933 under following circumstances:
+	# (1) An IPv6-only KAME node tries to originate packets to IPv4
+	#     compatible destination.  The KAME node has no IPv4 compatible
+	#     support.  Under RFC1933, it should transmit native IPv6
+	#     packets toward IPv4 compatible destination, hoping it would
+	#     reach a router that forwards the packet toward auto-tunnel
+	#     interface.
+	# (2) An IPv6-only node originates a packet to an IPv4 compatible
+	#     destination.  A KAME node is acting as an IPv6 router, and
+	#     asked to forward it.
+	#
+	# Due to rare use of IPv4 compatible addresses, and security issues
+	# with it, we disable it by default.
+	route -qn add -inet6 ::0.0.0.0 -prefixlen 96 ::1 -reject >/dev/null
+
+	rtsolif=""
+else
+	ip6kernel=NO
+fi
+
+
+# Configure all the non-loopback interfaces which we know about, but
+# do not start interfaces which must be delayed. Refer to hostname.if(5)
+ifmstart "" "trunk svlan vlan carp gif gre pfsync pppoe tun bridge pflow"
+
+# The trunk interfaces need to come up first in this list.
+# The (s)vlan interfaces need to come up after trunk.
+# Configure all the carp interfaces which we know about before default route.
+ifmstart "trunk svlan vlan carp"
+
+# Now that $rtsolif has been populated, IPv6 autoconf those interfaces
+ifv6autoconf
+
+# Look for default routes in /etc/mygate.
+[[ -z $dhcpif ]] && stripcom /etc/mygate | while read gw; do
+		[[ $gw == @(*:*) ]] && continue
+		route -qn delete default >/dev/null 2>&1
+		route -qn add -host default $gw && break
+done
+[[ -z $rtsolif ]] && stripcom /etc/mygate | while read gw; do
+		[[ $gw == !(*:*) ]] && continue
+		route -qn delete -inet6 default >/dev/null 2>&1
+		route -qn add -host -inet6 default $gw && break
+done
+
+# Multicast routing.
+if [[ $multicast != YES ]]; then
+	route -qn delete 224.0.0.0/4 >/dev/null 2>&1
+	route -qn add -net 224.0.0.0/4 -interface 127.0.0.1 -reject >/dev/null
+fi
+
+# Configure PPPoE, GIF, GRE, TUN and PFLOW interfaces, delayed because they
+# require routes to be set. TUN might depend on PPPoE, and GIF or GRE may
+# depend on either of them. PFLOW might bind to ip addresses configured
+# on either of them.
+ifmstart "pppoe tun gif gre bridge pflow"
+
+# Reject 127/8 other than 127.0.0.1.
+route -qn add -net 127 127.0.0.1 -reject >/dev/null
+
+if [[ $ip6kernel == YES ]]; then
+	# This is to make sure DAD is completed before going further.
+	count=0
+	while ((count++ < 10 && $(sysctl -n net.inet6.ip6.dad_pending) != 0)); do
+		sleep 1
+	done
 fi

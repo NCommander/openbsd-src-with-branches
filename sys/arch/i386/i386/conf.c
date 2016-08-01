@@ -1,4 +1,5 @@
-/*	$NetBSD: conf.c,v 1.67 1995/08/17 17:40:50 thorpej Exp $	*/
+/*	$OpenBSD: conf.c,v 1.154 2016/02/26 09:10:04 natano Exp $	*/
+/*	$NetBSD: conf.c,v 1.75 1996/05/03 19:40:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -32,199 +33,264 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
+#include <sys/device.h>
+#include <sys/disklabel.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
-#include <sys/conf.h>
 #include <sys/vnode.h>
 
-int	ttselect	__P((dev_t, int, struct proc *));
+#include <machine/conf.h>
 
-#ifndef LKM
-#define	lkmenodev	enodev
-#else
-int	lkmenodev();
-#endif
-
-#include "wdc.h"
+#include "wd.h"
 bdev_decl(wd);
-bdev_decl(sw);
 #include "fdc.h"
-#define	fdopen	Fdopen	/* conflicts with fdopen() in kern_descrip.c */
+#include "fd.h"
 bdev_decl(fd);
-#undef	fdopen
-#include "wt.h"
-bdev_decl(wt);
 #include "sd.h"
-bdev_decl(sd);
 #include "st.h"
-bdev_decl(st);
 #include "cd.h"
-bdev_decl(cd);
-#include "mcd.h"
-bdev_decl(mcd);
+#include "uk.h"
 #include "vnd.h"
-bdev_decl(vnd);
-#include "scd.h"
-bdev_decl(scd);
-#include "ccd.h"
-bdev_decl(ccd);
+#include "rd.h"
 
 struct bdevsw	bdevsw[] =
 {
-	bdev_disk_init(NWDC,wd),	/* 0: ST506/ESDI/IDE disk */
+	bdev_disk_init(NWD,wd),		/* 0: ST506/ESDI/IDE disk */
 	bdev_swap_init(1,sw),		/* 1: swap pseudo-device */
-#define	fdopen	Fdopen
-	bdev_disk_init(NFDC,fd),	/* 2: floppy diskette */
-#undef	fdopen
-	bdev_tape_init(NWT,wt),		/* 3: QIC-02/QIC-36 tape */
+	bdev_disk_init(NFD,fd),		/* 2: floppy diskette */
+	bdev_notdef(),			/* 3 */
 	bdev_disk_init(NSD,sd),		/* 4: SCSI disk */
 	bdev_tape_init(NST,st),		/* 5: SCSI tape */
 	bdev_disk_init(NCD,cd),		/* 6: SCSI CD-ROM */
-	bdev_disk_init(NMCD,mcd),	/* 7: Mitsumi CD-ROM */
-	bdev_lkm_dummy(),		/* 8 */
-	bdev_lkm_dummy(),		/* 9 */
-	bdev_lkm_dummy(),		/* 10 */
-	bdev_lkm_dummy(),		/* 11 */
-	bdev_lkm_dummy(),		/* 12 */
-	bdev_lkm_dummy(),		/* 13 */
+	bdev_notdef(),			/* 7 */
+	bdev_notdef(),			/* 8 */
+	bdev_notdef(),			/* 9 */
+	bdev_notdef(),			/* 10 */
+	bdev_notdef(),			/* 11 */
+	bdev_notdef(),			/* 12 */
+	bdev_notdef(),			/* 13 */
 	bdev_disk_init(NVND,vnd),	/* 14: vnode disk driver */
-	bdev_disk_init(NSCD,scd),	/* 15: Sony CD-ROM */
-	bdev_disk_init(NCCD,ccd),	/* 16: concatenated disk driver */
+	bdev_notdef(),			/* 15 */
+	bdev_notdef(),			/* 16: was: concatenated disk driver */
+	bdev_disk_init(NRD,rd),		/* 17: ram disk driver */
+	bdev_notdef(),			/* 18 */
+	bdev_notdef(),			/* 19 was: RAIDframe disk driver */
 };
-int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
+int	nblkdev = nitems(bdevsw);
 
 /* open, close, read, write, ioctl, tty, mmap */
 #define cdev_pc_init(c,n) { \
 	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
 	dev_init(c,n,write), dev_init(c,n,ioctl), dev_init(c,n,stop), \
-	dev_init(c,n,tty), ttselect, dev_init(c,n,mmap), D_TTY }
+	dev_init(c,n,tty), ttpoll, dev_init(c,n,mmap), D_TTY }
 
-/* open, close, write, ioctl */
-#define	cdev_lpt_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
-	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
-	0, seltrue, (dev_type_mmap((*))) enodev }
+/* open, close, read, ioctl */
+#define cdev_joy_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
+	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+	(dev_type_stop((*))) enodev, 0, seltrue, \
+	(dev_type_mmap((*))) enodev }
 
-/* open, close, write, ioctl */
-#define	cdev_spkr_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
-	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
-	0, seltrue, (dev_type_mmap((*))) enodev }
+/* open, close, ioctl, poll -- XXX should be a generic device */
+#define cdev_ocis_init(c,n) { \
+        dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
+        (dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+        (dev_type_stop((*))) enodev, 0,  dev_init(c,n,poll), \
+        (dev_type_mmap((*))) enodev, 0 }
 
-cdev_decl(cn);
-cdev_decl(ctty);
+/* open, close, read */
+#define cdev_nvram_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
+	(dev_type_write((*))) enodev, (dev_type_ioctl((*))) enodev, \
+	(dev_type_stop((*))) enodev, 0, seltrue, \
+	(dev_type_mmap((*))) enodev, 0 }
+
+
 #define	mmread	mmrw
 #define	mmwrite	mmrw
 cdev_decl(mm);
 cdev_decl(wd);
-cdev_decl(sw);
+#include "bio.h"
 #include "pty.h"
-#define	ptstty		ptytty
-#define	ptsioctl	ptyioctl
-cdev_decl(pts);
-#define	ptctty		ptytty
-#define	ptcioctl	ptyioctl
-cdev_decl(ptc);
-cdev_decl(log);
 #include "com.h"
 cdev_decl(com);
-#define	fdopen	Fdopen
 cdev_decl(fd);
-#undef	fdopen
-cdev_decl(wt);
-cdev_decl(scd);
-#include "pc.h"
-#include "vt.h"
-cdev_decl(pc);
-cdev_decl(sd);
-cdev_decl(st);
-cdev_decl(cd);
 #include "lpt.h"
 cdev_decl(lpt);
 #include "ch.h"
-cdev_decl(ch);
-dev_decl(fd,open);
 #include "bpfilter.h"
-cdev_decl(bpf);
-#include "speaker.h"
-cdev_decl(spkr);
-#ifdef LKM
-#define	NLKM	1
-#else
-#define	NLKM	0
+#if 0
+#include "pcmcia.h"
+cdev_decl(pcmcia);
 #endif
-cdev_decl(lkm);
+#include "spkr.h"
+cdev_decl(spkr);
+#if 0 /* old (non-wsmouse) drivers */
 #include "mms.h"
 cdev_decl(mms);
 #include "lms.h"
 cdev_decl(lms);
-#include "pms.h"
+#include "opms.h"
 cdev_decl(pms);
+#endif
 #include "cy.h"
 cdev_decl(cy);
-cdev_decl(mcd);
 #include "tun.h"
-cdev_decl(tun);
-cdev_decl(vnd);
 #include "audio.h"
-cdev_decl(audio);
-cdev_decl(svr4_net);
-cdev_decl(ccd);
+#include "video.h"
+#include "midi.h"
+#include "joy.h"
+#include "pctr.h"
+#include "bios.h"
+#include "bktr.h"
+#include "ksyms.h"
+#include "usb.h"
+#include "uhid.h"
+#include "ugen.h"
+#include "ulpt.h"
+#include "ucom.h"
+#include "cz.h"
+cdev_decl(cztty);
+#include "radio.h"
+#include "gpr.h"
+#include "nvram.h"
+cdev_decl(nvram);
+#include "drm.h"
+cdev_decl(drm);
+
+#include "wsdisplay.h"
+#include "wskbd.h"
+#include "wsmouse.h"
+#include "wsmux.h"
+
+#ifdef USER_PCICONF
+#include "pci.h"
+cdev_decl(pci);
+#endif
+
+#include "pf.h"
+#include "hotplug.h"
+#include "gpio.h"
+#include "amdmsr.h"
+#include "vscsi.h"
+#include "pppx.h"
+#include "fuse.h"
+#include "pvbus.h"
+#include "ipmi.h"
 
 struct cdevsw	cdevsw[] =
 {
 	cdev_cn_init(1,cn),		/* 0: virtual console */
 	cdev_ctty_init(1,ctty),		/* 1: controlling terminal */
 	cdev_mm_init(1,mm),		/* 2: /dev/{null,mem,kmem,...} */
-	cdev_disk_init(NWDC,wd),	/* 3: ST506/ESDI/IDE disk */
-	cdev_swap_init(1,sw),		/* 4: /dev/drum (swap pseudo-device) */
+	cdev_disk_init(NWD,wd),		/* 3: ST506/ESDI/IDE disk */
+	cdev_notdef(),			/* 4 was /dev/drum */
 	cdev_tty_init(NPTY,pts),	/* 5: pseudo-tty slave */
 	cdev_ptc_init(NPTY,ptc),	/* 6: pseudo-tty master */
 	cdev_log_init(1,log),		/* 7: /dev/klog */
 	cdev_tty_init(NCOM,com),	/* 8: serial port */
-#define	fdopen	Fdopen
-	cdev_disk_init(NFDC,fd),	/* 9: floppy disk */
-#undef	fdopen
-	cdev_tape_init(NWT,wt),		/* 10: QIC-02/QIC-36 tape */
-	cdev_disk_init(NSCD,scd),	/* 11: Sony CD-ROM */
-	cdev_pc_init(NPC + NVT,pc),	/* 12: PC console */
+	cdev_disk_init(NFD,fd),		/* 9: floppy disk */
+	cdev_notdef(),			/* 10 */
+	cdev_notdef(),			/* 11 */
+	cdev_wsdisplay_init(NWSDISPLAY,	/* 12: frame buffers, etc. */
+	    wsdisplay),
 	cdev_disk_init(NSD,sd),		/* 13: SCSI disk */
 	cdev_tape_init(NST,st),		/* 14: SCSI tape */
 	cdev_disk_init(NCD,cd),		/* 15: SCSI CD-ROM */
 	cdev_lpt_init(NLPT,lpt),	/* 16: parallel printer */
 	cdev_ch_init(NCH,ch),		/* 17: SCSI autochanger */
-	cdev_disk_init(NCCD,ccd),	/* 18: concatenated disk driver */
+	cdev_notdef(),			/* 18: was: concatenated disk driver */
 	cdev_notdef(),			/* 19 */
-	cdev_notdef(),			/* 20 */
-	cdev_notdef(),			/* 21 */
-	cdev_fd_init(1,fd),		/* 22: file descriptor pseudo-device */
-	cdev_bpftun_init(NBPFILTER,bpf),/* 23: Berkeley packet filter */
+	cdev_uk_init(NUK,uk),		/* 20: unknown SCSI */
+	cdev_acpiapm_init(1,acpiapm),	/* 21: Power Management stuff */
+	cdev_fd_init(1,filedesc),	/* 22: file descriptor pseudo-device */
+	cdev_bpf_init(NBPFILTER,bpf),	/* 23: Berkeley packet filter */
 	cdev_notdef(),			/* 24 */
+#if 0
+	cdev_ocis_init(NPCMCIA,pcmcia), /* 25: PCMCIA Bus */
+#else
 	cdev_notdef(),			/* 25 */
-	cdev_notdef(),			/* 26 */
-	cdev_spkr_init(NSPEAKER,spkr),	/* 27: PC speaker */
-	cdev_lkm_init(NLKM,lkm),	/* 28: loadable module driver */
-	cdev_lkm_dummy(),		/* 29 */
-	cdev_lkm_dummy(),		/* 30 */
-	cdev_lkm_dummy(),		/* 31 */
-	cdev_lkm_dummy(),		/* 32 */
-	cdev_lkm_dummy(),		/* 33 */
-	cdev_lkm_dummy(),		/* 34 */
-	cdev_mouse_init(NMMS,mms),	/* 35: Microsoft mouse */
-	cdev_mouse_init(NLMS,lms),	/* 36: Logitech mouse */
-	cdev_mouse_init(NPMS,pms),	/* 37: PS/2 mouse */
+#endif
+	cdev_joy_init(NJOY,joy),        /* 26: joystick */
+	cdev_spkr_init(NSPKR,spkr),	/* 27: PC speaker */
+	cdev_notdef(),			/* 28: was LKM */
+	cdev_notdef(),			/* 29 */
+	cdev_notdef(),			/* 30 */
+	cdev_notdef(),			/* 31 */
+	cdev_notdef(),			/* 32 */
+	cdev_notdef(),			/* 33 */
+	cdev_notdef(),			/* 34 */
+	cdev_notdef(),			/* 35: Microsoft mouse */
+	cdev_notdef(),			/* 36: Logitech mouse */
+	cdev_notdef(),			/* 37: Extended PS/2 mouse */
 	cdev_tty_init(NCY,cy),		/* 38: Cyclom serial port */
-	cdev_disk_init(NMCD,mcd),	/* 39: Mitsumi CD-ROM */
-	cdev_bpftun_init(NTUN,tun),	/* 40: network tunnel */
+	cdev_notdef(),			/* 39: Mitsumi CD-ROM */
+	cdev_tun_init(NTUN,tun),	/* 40: network tunnel */
 	cdev_disk_init(NVND,vnd),	/* 41: vnode disk driver */
 	cdev_audio_init(NAUDIO,audio),	/* 42: generic audio I/O */
-#ifdef COMPAT_SVR4
-	cdev_svr4_net_init(1,svr4_net),	/* 43: svr4 net pseudo-device */
-#else
 	cdev_notdef(),			/* 43 */
+	cdev_video_init(NVIDEO,video),	/* 44: generic video I/O */
+	cdev_random_init(1,random),	/* 45: random data source */
+	cdev_ocis_init(NPCTR,pctr),	/* 46: pentium performance counters */
+	cdev_disk_init(NRD,rd),		/* 47: ram disk driver */
+	cdev_ocis_init(NBIOS,bios),	/* 48: onboard BIOS PROM */
+	cdev_bktr_init(NBKTR,bktr),     /* 49: Bt848 video capture device */
+	cdev_ksyms_init(NKSYMS,ksyms),	/* 50: Kernel symbols device */
+	cdev_notdef(),			/* 51 */
+	cdev_midi_init(NMIDI,midi),	/* 52: MIDI I/O */
+	cdev_notdef(),			/* 53 was: sequencer I/O */
+	cdev_notdef(),			/* 54 was: RAIDframe disk driver */
+	cdev_notdef(),			/* 55: */
+	/* The following slots are reserved for isdn4bsd. */
+	cdev_notdef(),			/* 56: i4b main device */
+	cdev_notdef(),			/* 57: i4b control device */
+	cdev_notdef(),			/* 58: i4b raw b-channel access */
+	cdev_notdef(),			/* 59: i4b trace device */
+	cdev_notdef(),			/* 60: i4b phone device */
+	/* End of reserved slots for isdn4bsd. */
+	cdev_usb_init(NUSB,usb),	/* 61: USB controller */
+	cdev_usbdev_init(NUHID,uhid),	/* 62: USB generic HID */
+	cdev_usbdev_init(NUGEN,ugen),	/* 63: USB generic driver */
+	cdev_ulpt_init(NULPT,ulpt), 	/* 64: USB printers */
+	cdev_notdef(),			/* 65: was urio */
+	cdev_tty_init(NUCOM,ucom),	/* 66: USB tty */
+	cdev_mouse_init(NWSKBD, wskbd),	/* 67: keyboards */
+	cdev_mouse_init(NWSMOUSE,	/* 68: mice */
+	    wsmouse),
+	cdev_mouse_init(NWSMUX, wsmux),	/* 69: ws multiplexor */
+	cdev_notdef(),			/* 70: was: /dev/crypto */
+	cdev_tty_init(NCZ,cztty),	/* 71: Cyclades-Z serial port */
+#ifdef USER_PCICONF
+	cdev_pci_init(NPCI,pci),        /* 72: PCI user */
+#else
+	cdev_notdef(),
 #endif
+	cdev_pf_init(NPF,pf),		/* 73: packet filter */
+	cdev_notdef(),			/* 74: ALTQ (deprecated) */
+	cdev_notdef(),
+	cdev_radio_init(NRADIO, radio), /* 76: generic radio I/O */
+	cdev_notdef(),			/* 77: was USB scanners */
+	cdev_notdef(),			/* 78: */
+ 	cdev_bio_init(NBIO,bio),	/* 79: ioctl tunnel */
+	cdev_ch_init(NGPR,gpr),		/* 80: GPR400 SmartCard reader */
+	cdev_ptm_init(NPTY,ptm),	/* 81: pseudo-tty ptm device */
+	cdev_hotplug_init(NHOTPLUG,hotplug), /* 82: devices hot plugging */
+	cdev_gpio_init(NGPIO,gpio),	/* 83: GPIO interface */
+	cdev_nvram_init(NNVRAM,nvram),	/* 84: NVRAM interface */
+	cdev_notdef(),			/* 85: ACPI (deprecated) */
+	cdev_notdef(),
+	cdev_notdef(),			/* 87 */
+	cdev_drm_init(NDRM,drm),	/* 88: drm */
+	cdev_amdmsr_init(NAMDMSR,amdmsr),	/* 89: amdmsr */
+	cdev_vscsi_init(NVSCSI,vscsi),	/* 90: vscsi */
+	cdev_disk_init(1,diskmap),	/* 91: disk mapper */
+	cdev_pppx_init(NPPPX,pppx),     /* 92: pppx */
+	cdev_fuse_init(NFUSE,fuse),	/* 93: fuse */ 
+	cdev_tun_init(NTUN,tap),	/* 94: Ethernet network tunnel */
+	cdev_pvbus_init(NPVBUS,pvbus),	/* 95: pvbus(4) control interface */
+	cdev_ipmi_init(NIPMI,ipmi),	/* 96: ipmi */
 };
-int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
+int	nchrdev = nitems(cdevsw);
 
 int	mem_no = 2; 	/* major device number of memory special file */
 
@@ -242,45 +308,48 @@ dev_t	swapdev = makedev(1, 0);
 /*
  * Returns true if dev is /dev/mem or /dev/kmem.
  */
-iskmemdev(dev)
-	dev_t dev;
+int
+iskmemdev(dev_t dev)
 {
-
-	return (major(dev) == mem_no && minor(dev) < 2);
+	return (major(dev) == mem_no && (minor(dev) < 2 || minor(dev) == 14));
 }
 
 /*
  * Returns true if dev is /dev/zero.
  */
-iszerodev(dev)
-	dev_t dev;
+int
+iszerodev(dev_t dev)
 {
-
 	return (major(dev) == mem_no && minor(dev) == 12);
 }
 
-static int chrtoblktbl[] = {
-	/* XXXX This needs to be dynamic for LKMs. */
+dev_t
+getnulldev(void)
+{
+	return makedev(mem_no, 2);
+}
+
+int chrtoblktbl[] = {
 	/*VCHR*/	/*VBLK*/
 	/*  0 */	NODEV,
 	/*  1 */	NODEV,
 	/*  2 */	NODEV,
-	/*  3 */	0,
+	/*  3 */	0,		/* wd */
 	/*  4 */	NODEV,
 	/*  5 */	NODEV,
 	/*  6 */	NODEV,
 	/*  7 */	NODEV,
 	/*  8 */	NODEV,
-	/*  9 */	2,
+	/*  9 */	2,		/* fd */
 	/* 10 */	3,
-	/* 11 */	15,
+	/* 11 */	NODEV,
 	/* 12 */	NODEV,
-	/* 13 */	4,
-	/* 14 */	5,
-	/* 15 */	6,
+	/* 13 */	4,		/* sd */
+	/* 14 */	5,		/* st */
+	/* 15 */	6,		/* cd */
 	/* 16 */	NODEV,
 	/* 17 */	NODEV,
-	/* 18 */	16,
+	/* 18 */	NODEV,
 	/* 19 */	NODEV,
 	/* 20 */	NODEV,
 	/* 21 */	NODEV,
@@ -301,33 +370,47 @@ static int chrtoblktbl[] = {
 	/* 36 */	NODEV,
 	/* 37 */	NODEV,
 	/* 38 */	NODEV,
-	/* 39 */	7,
+	/* 39 */	NODEV,
 	/* 40 */	NODEV,
-	/* 41 */	14,
+	/* 41 */	14,		/* vnd */
 	/* 42 */	NODEV,
 	/* 43 */	NODEV,
 	/* 44 */	NODEV,
 	/* 45 */	NODEV,
 	/* 46 */	NODEV,
-	/* 47 */	NODEV,
-	/* 48 */	NODEV,
-	/* 49 */	NODEV,
+	/* 47 */	17,		/* rd */
 };
+int nchrtoblktbl = nitems(chrtoblktbl);
 
 /*
- * Convert a character device number to a block device number.
+ * In order to map BSD bdev numbers of disks to their BIOS equivalents
+ * we use several heuristics, one being using checksums of the first
+ * few blocks of a disk to get a signature we can match with /boot's
+ * computed signatures.  To know where from to read, we must provide a
+ * disk driver name -> bdev major number table, which follows.
+ * Note: floppies are not included as those are differentiated by the BIOS.
  */
-chrtoblk(dev)
-	dev_t dev;
-{
-	int blkmaj;
+int findblkmajor(struct device *dv);
+dev_t dev_rawpart(struct device *);	/* XXX */
 
-	if (major(dev) >= nchrdev)
-		return (NODEV);
-	blkmaj = chrtoblktbl[major(dev)];
-	if (blkmaj == NODEV)
-		return (NODEV);
-	return (makedev(blkmaj, minor(dev)));
+dev_t
+dev_rawpart(struct device *dv)
+{
+	int majdev;
+
+	majdev = findblkmajor(dv);
+
+	switch (majdev) {
+	/* add here any device you want to be checksummed on boot */
+	case 0:		/* wd */
+	case 4:		/* sd */
+		return (MAKEDISKDEV(majdev, dv->dv_unit, RAW_PART));
+		break;
+	default:
+		;
+	}
+
+	return (NODEV);
 }
 
 /*
@@ -338,14 +421,14 @@ chrtoblk(dev)
  */
 #include <dev/cons.h>
 
-cons_decl(pc);
 cons_decl(com);
+cons_decl(ws);
 
 struct	consdev constab[] = {
-#if NPC + NVT > 0
-	cons_init(pc),
+#if NWSDISPLAY > 0
+	cons_init(ws),
 #endif
-#if NCOM > 0
+#if NCOM
 	cons_init(com),
 #endif
 	{ 0 },

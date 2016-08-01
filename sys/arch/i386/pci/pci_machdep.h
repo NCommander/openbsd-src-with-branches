@@ -1,6 +1,8 @@
-/*	$NetBSD: pci_machdep.h,v 1.3 1995/04/17 12:08:00 cgd Exp $	*/
+/*	$OpenBSD: pci_machdep.h,v 1.27 2015/07/17 22:42:09 kettenis Exp $	*/
+/*	$NetBSD: pci_machdep.h,v 1.7 1997/06/06 23:29:18 thorpej Exp $	*/
 
 /*
+ * Copyright (c) 1996 Christopher G. Demetriou.  All rights reserved.
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,34 +33,102 @@
 
 /*
  * Machine-specific definitions for PCI autoconfiguration.
- *
- * See the comments in pci_machdep.c for more explanation.
  */
 
 /*
+ * i386-specific PCI structure and type definitions.
+ * NOT TO BE USED DIRECTLY BY MACHINE INDEPENDENT CODE.
+ *
  * Configuration tag; created from a {bus,device,function} triplet by
  * pci_make_tag(), and passed to pci_conf_read() and pci_conf_write().
  * We could instead always pass the {bus,device,function} triplet to
  * the read and write routines, but this would cause extra overhead.
  *
- * Machines other than PCs are likely to use the equivalent of mode 1
- * tags always.  Mode 2 is historical and deprecated by the Revision
- * 2.0 specification.
+ * Mode 2 is historical and deprecated by the Revision 2.0 specification.
  */
-typedef union {
-	u_long mode1;
+union i386_pci_tag_u {
+	u_int32_t mode1;
 	struct {
-		u_short port;
-		u_char enable;
-		u_char forward;
+		u_int16_t port;
+		u_int8_t enable;
+		u_int8_t forward;
 	} mode2;
-} pcitag_t;
+};
+
+extern struct bus_dma_tag pci_bus_dma_tag;
 
 /*
- * Type of a value read from or written to a configuration register.
- * Always 32 bits.
+ * Types provided to machine-independent PCI code
  */
-typedef u_int32_t pcireg_t;
+typedef void *pci_chipset_tag_t;
+typedef union i386_pci_tag_u pcitag_t;
 
+typedef
+struct {
+	pcitag_t tag;
+	int line, pin;
+	void *link;
+} pci_intr_handle_t;
+
+/*
+ * i386-specific PCI variables and functions.
+ * NOT TO BE USED DIRECTLY BY MACHINE INDEPENDENT CODE.
+ */
 extern int pci_mode;
-extern int pci_mode_detect __P((void));
+extern bus_addr_t pci_mcfg_addr;
+extern int pci_mcfg_min_bus, pci_mcfg_max_bus;
+
+int		pci_mode_detect(void);
+
+extern struct extent *pciio_ex;
+extern struct extent *pcimem_ex;
+extern struct extent *pcibus_ex;
+void		pci_init_extents(void);
+
+/*
+ * Functions provided to machine-independent PCI code.
+ */
+void		pci_attach_hook(struct device *, struct device *,
+		    struct pcibus_attach_args *);
+int		pci_bus_maxdevs(pci_chipset_tag_t, int);
+pcitag_t	pci_make_tag(pci_chipset_tag_t, int, int, int);
+int		pci_conf_size(pci_chipset_tag_t, pcitag_t);
+pcireg_t	pci_conf_read(pci_chipset_tag_t, pcitag_t, int);
+void		pci_conf_write(pci_chipset_tag_t, pcitag_t, int,
+		    pcireg_t);
+struct pci_attach_args;
+int		pci_intr_map_msi(struct pci_attach_args *, pci_intr_handle_t *);
+int		pci_intr_map(struct pci_attach_args *, pci_intr_handle_t *);
+#define		pci_intr_map_msix(p, vec, ihp)	(-1)
+#define		pci_intr_line(c, ih)	((ih).line)
+const char	*pci_intr_string(pci_chipset_tag_t, pci_intr_handle_t);
+void		*pci_intr_establish(pci_chipset_tag_t, pci_intr_handle_t,
+		    int, int (*)(void *), void *, const char *);
+void		pci_intr_disestablish(pci_chipset_tag_t, void *);
+void		pci_decompose_tag(pci_chipset_tag_t, pcitag_t,
+		    int *, int *, int *);
+#define	pci_probe_device_hook(c, a)	(0)
+
+void 		pci_dev_postattach(struct device *, struct pci_attach_args *);
+
+pcireg_t	pci_min_powerstate(pci_chipset_tag_t, pcitag_t);
+void		pci_set_powerstate_md(pci_chipset_tag_t, pcitag_t, int, int);
+
+/*
+ * Section 6.2.4, `Miscellaneous Functions' of the PIC Specification,
+ * says that 255 means `unknown' or `no connection' to the interrupt
+ * controller on a PC.
+ */
+#define	I386_PCI_INTERRUPT_LINE_NO_CONNECTION	0xff
+
+/*
+ * PCI address space is shared with ISA, so avoid legacy ISA I/O
+ * registers.
+ */
+#define PCI_IO_START	0x400
+#define PCI_IO_END	0xffff
+
+/*
+ * Avoid the DOS Compatibility Memory area.
+ */
+#define PCI_MEM_START	0x100000

@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "nsd.h"
 #include "xfrd-tcp.h"
 #include "buffer.h"
 #include "packet.h"
@@ -23,7 +24,7 @@
 #include "xfrd-disk.h"
 #include "util.h"
 
-/* sort tcppipe, first on IP address, for an IPadresss, sort on num_unused */
+/* sort tcppipe, first on IP address, for an IPaddresss, sort on num_unused */
 static int
 xfrd_pipe_cmp(const void* a, const void* b)
 {
@@ -524,6 +525,19 @@ xfrd_tcp_open(xfrd_tcp_set_t* set, struct xfrd_tcp_pipeline* tp,
 		return 0;
 	}
 
+	if(xfrd->nsd->outgoing_tcp_mss > 0) {
+#if defined(IPPROTO_TCP) && defined(TCP_MAXSEG)
+		if(setsockopt(fd, IPPROTO_TCP, TCP_MAXSEG,
+			(void*)&xfrd->nsd->outgoing_tcp_mss,
+			sizeof(xfrd->nsd->outgoing_tcp_mss)) < 0) {
+			log_msg(LOG_ERR, "xfrd: setsockopt(TCP_MAXSEG)"
+					"failed: %s", strerror(errno));
+		}
+#else
+		log_msg(LOG_ERR, "setsockopt(TCP_MAXSEG) unsupported");
+#endif
+	}
+
 	tp->ip_len = xfrd_acl_sockaddr_to(zone->master, &tp->ip);
 
 	/* bind it */
@@ -908,7 +922,7 @@ xfrd_tcp_release(xfrd_tcp_set_t* set, xfrd_zone_t* zone)
 		socklen_t to_len = xfrd_acl_sockaddr_to(
 			set->tcp_waiting_first->master, &to);
 		if(to_len == tp->ip_len && memcmp(&to, &tp->ip, to_len) == 0) {
-			/* use this connnection for the waiting zone */
+			/* use this connection for the waiting zone */
 			zone = set->tcp_waiting_first;
 			assert(zone->tcp_conn == -1);
 			zone->tcp_conn = conn;

@@ -1,101 +1,189 @@
-#	$NetBSD: SUN4C,v 1.3 1995/06/02 17:53:59 pk Exp $
+#	$OpenBSD: SUN4C,v 1.69 2015/03/30 20:30:20 miod Exp $
+#	$NetBSD: GENERIC,v 1.48 1997/08/23 19:19:01 mjacob Exp $
 
-# Kernel for Theo's wimpy sparcstation IPC
-
+# Machine architecture; required by config(8)
 machine		sparc
-options		"SUN4C"
 
-# obsolete timezone spec
-options		TIMEZONE=0, DST=0
+include "../../../conf/GENERIC"
 
-# Standard system options
-options		SWAPPAGER, VNODEPAGER, DEVPAGER	# paging
-#options	DEBUG, DIAGNOSTIC	# extra kernel debugging
-options		KTRACE			# system call tracing support
-#options	KGDB			# support for kernel gdb
-#options	KGDBDEV=0xc01, KGDBRATE=38400	# device & baud rate
-options		RCONSOLE		# fast rasterop console
-options		SYSVMSG,SYSVSEM,SYSVSHM
-options		"COMPAT_09", "COMPAT_10"
 
-# Filesystem options
-options		FFS
-options		NFSSERVER	# Sun NFS-compatible filesystem
-options		NFSCLIENT	# Sun NFS-compatible filesystem
-options		KERNFS		# kernel data-structure filesystem
-#options	FIFO		# POSIX fifo support (in all filesystems)
-#options	QUOTA		# fast filesystem with user and group quotas
-#options	MFS		# memory-based filesystem
-#options	LOFS		# Loop-back filesystem
-#options	FDESC		# user file descriptor filesystem
-#options	UMAPFS		# uid/gid remapping filesystem
-#options	LFS		# Log-based filesystem (still experimental)
-#options	PORTAL		# portal filesystem (still experimental)
+option		SUN4C		# sun4c - SS1, 1+, 2, ELC, SLC, IPC, IPX, etc.
 
-# Networking options
-options		INET
-options		TCP_COMPAT_42	# compatibility with 4.2BSD TCP/IP
-#options	GATEWAY		# IP packet forwarding
-#options	ISO		# OSI networking
-#options	TPIP
-#options	EON
-options		COMPAT_43
-
-options		LKM
+#option		KGDB		# support for kernel gdb
+#option		KGDBDEV=0xc01	# kgdb device number (dev_t)
+#option		KGDBRATE=38400	# baud rate
 
 # Options for SPARCstation hardware
-options		COMPAT_SUNOS		# compatibility with SunOS binaries
+option		WSEMUL_SUN	# provide sun terminal emulation; required
+option		WSEMUL_NO_VT100	# do not provide vt100 terminal emulation
+option		WSDISPLAY_COMPAT_RAWKBD # provide raw scancodes; needed for X11
 
-config		netbsd	root on sd0 swap on sd0
+maxusers	18		# estimated number of users
 
+# Generic swap; second partition of root disk or network.
+config		bsd	swap generic
+
+# Main bus and CPU .. all systems.
 mainbus0 at root
 cpu0	at mainbus0
 
-sbus0	at mainbus0
+# Bus types found on SPARC systems.
+sbus0	at mainbus0				# sun4c
 
-audio0	at mainbus0
-auxreg0	at mainbus0
-clock0	at mainbus0
-memreg0	at mainbus0
-timer0	at mainbus0
+audioamd0 at mainbus0				# sun4c
+audio*	at audioamd?
 
-zs0	at mainbus0
-zs1	at mainbus0
+auxreg*	at mainbus0				# sun4c
 
-# FSBE/S or sun4m
-espdma0	at sbus0 slot ? offset ?
-espdma*	at sbus0 slot ? offset ?
-esp0	at espdma? slot ? offset ?
-esp*	at espdma? slot ? offset ?
+# Mostek clock found on 4/300, sun4c, and sun4m systems.
+# The Mostek clock NVRAM is the "eeprom" on sun4/300 systems.
+clock0	at mainbus0				# sun4c
 
-# old sun4c SCSI
-dma0	at sbus0 slot ? offset ?
-dma*	at sbus0 slot ? offset ?
-esp0	at sbus0 slot ? offset ?
-esp*	at sbus0 slot ? offset ?
+# Memory error registers.
+memreg0	at mainbus0				# sun4c
 
-# old sun4c
-le0	at sbus? slot ? offset ?
-le*	at sbus? slot ? offset ?
+# Timer chip found on 4/300, sun4c, and sun4m systems.
+timer0	at mainbus0				# sun4c
 
-bwtwo0	at sbus? slot ? offset ?
-bwtwo*	at sbus? slot ? offset ?
-cgthree0 at sbus? slot ? offset ?
-cgthree* at sbus? slot ? offset ?
-cgsix0 at sbus? slot ? offset ?
-cgsix* at sbus? slot ? offset ?
+# Zilog 8530 serial chips.  Each has two-channels.
+# zs0 is ttya and ttyb.  zs1 is the keyboard and mouse.
+zs0	at mainbus0					# sun4c
+zs1	at mainbus0					# sun4c
 
-scsibus* at esp?
+zstty* at zs?
+zskbd* at zs?
+wskbd* at zskbd?
+zsms*  at zs?
+wsmouse* at zsms?
 
-sd*	at scsibus? target ? lun ?
-st*	at scsibus? target ? lun ?
-cd*	at scsibus? target ? lun ?
+# Magma serial/parallel port devices
+magma*	at sbus?					# magma serial cards
+mtty*	at magma?
+mbpp*	at magma?
 
-pseudo-device	loop
-pseudo-device	pty	32
-pseudo-device	sl	2
-pseudo-device	kbd
-pseudo-device	ppp	2
-pseudo-device	tun	4
-pseudo-device	vnd	3
-pseudo-device	bpfilter 16
+# SUNW,spif serial/parallel port devices
+spif*	at sbus?					# spif serial cards
+stty*	at spif?
+sbpp*	at spif?
+
+bpp*	at sbus?					# parallel port
+
+# SUNW,xbox SBus Expansion Subsystem
+xbox*	at sbus?					# SBus Expansion box
+sbus*	at xbox?
+
+#
+# Note the flags on the esp entries below, that work around
+# deficiencies in the current driver:
+#	bits 0-7:  disable disconnect/reselect for the corresponding target
+#	bits 8-15: disable synch negotiation for target [bit-8]
+#	Note: targets 4-7 have disconnect/reselect enabled on the premise
+#	      that tape devices normally have one of these targets. Tape
+#	      devices should be allowed to disconnect for the SCSI bus
+#	      to operate acceptably.
+#
+
+# sun4c or sun4m SCSI - an NCR53c94 or equivalent behind
+# specialized DMA glue
+dma0	at sbus0					# on-board SCSI
+esp0	at sbus0 flags 0x00ff000f			# sun4c
+
+# FSBE/S SCSI - an NCR53c94 or equivalent behind
+dma*	at sbus?					# SBus SCSI
+esp*	at sbus? flags 0x00ff000f			# two flavours
+esp*	at dma? flags 0x00ff000f			# depending on model
+
+#sun4c, sun4m
+qlw*	at sbus?
+#qla*	at sbus?
+
+# sun4/300 and sun4c Ethernet - an AMD 7990 LANCE
+le0	at sbus0					# sun4c on-board
+le*	at sbus?
+
+# Additional SBus LANCE devices - glued on by lebuffer
+lebuffer0	at sbus0				# sun4m SBus
+lebuffer*	at sbus?				# sun4m SBus
+le0	at lebuffer0					#
+le*	at lebuffer?					#
+
+# Quad-ethernet glue device, and sub-devices
+qec*	at sbus?
+qe*	at qec?
+be*	at qec?
+
+# Sun "bwtwo" black and white framebuffer, found on sun4, sun4c, and sun4m
+# systems.
+bwtwo0	at sbus0					# sun4c on-board
+bwtwo*	at sbus?					# sun4c and sun4m
+wsdisplay* at bwtwo?
+
+# Sun "cgthree" SBus color framebuffer.
+cgthree* at sbus?
+wsdisplay* at cgthree?
+
+# Sun "cgsix" accelerated color framebuffer.
+cgsix0	at sbus?
+cgsix*	at sbus?
+wsdisplay* at cgsix?
+
+# Sun "cgtwelve" (GS) accelerated 24-bit framebuffer.
+cgtwelve*	at sbus?
+wsdisplay* at cgtwelve?
+
+# Vigra VS10 or VS12 framebuffer.
+vigra*	at sbus?
+wsdisplay* at vigra?
+
+# Parallax XVideo and PowerVideo
+tvtwo* at sbus?
+wsdisplay* at tvtwo?
+
+# Fujitsu AG-10e framebuffer.
+agten* at sbus?
+wsdisplay* at agten?
+
+# Southland Media Systems MGX/MGXPlus framebuffer.
+mgx* at sbus?
+wsdisplay* at mgx?
+
+# Vitec/Connectware/AP&D RasterFlex framebuffer series.
+rfx* at sbus?
+wsdisplay* at rfx?
+
+# Sun PCMCIA bridge
+stp*	at sbus?
+pcmcia*	at stp?
+
+# PCMCIA devices
+wi*	at pcmcia?		# WaveLAN IEEE 802.11DS
+#an*	at pcmcia?		# Aironet IEEE 802.11DS
+ne*	at pcmcia?		# NE2000-compat ethernet
+ep*	at pcmcia?		# PCMCIA based 3C5xx ethernet
+#com*	at pcmcia?		# PCMCIA modems/serial ports
+
+# Media Independent Interface (mii) drivers (required by ne and ep)
+bmtphy*	at mii?			# Broadcom 10/100 PHYs
+lxtphy*	at mii?			# Level1 LXT970 PHYs
+nsphy* at mii?			# NS and compatible PHYs
+nsphyter* at mii?
+tqphy* at mii?			# TDK 78Q212x PHYs
+ukphy*	at mii?
+
+# SCSI bus layer.  SCSI devices attach to the SCSI bus, which attaches
+# to the underlying hardware controller.
+
+# These entries find devices on all SCSI busses and assign
+# unit numers dynamically.
+scsibus* at scsi?
+sd*	at scsibus?		# SCSI disks
+st*	at scsibus?		# SCSI tapes
+cd*	at scsibus?		# SCSI CD-ROMs
+ch*	at scsibus?		# SCSI changer devices
+uk*	at scsibus?		# unknown SCSI devices
+
+# Floppy controller and drive found on SPARCstations.
+fdc0	at mainbus0				# sun4c controller
+fd*	at fdc0					# the drive itself
+
+pseudo-device	wsmux	2	# mouse & keyboard multiplexor

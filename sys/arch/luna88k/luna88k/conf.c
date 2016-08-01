@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.30 2004/02/10 01:31:21 millert Exp $	*/
+/*	$OpenBSD: conf.c,v 1.27 2015/10/23 15:10:52 claudio Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -37,68 +37,39 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/vnode.h>
-#include <sys/conf.h>
 
-#define mmread  mmrw
-#define mmwrite mmrw
-cdev_decl(mm);
+#include <machine/conf.h>
 
+#include "bio.h"
 #include "pty.h"
 #include "bpfilter.h"
 #include "tun.h"
 #include "vnd.h"
-#include "ccd.h"
 #include "rd.h"
 #include "cd.h"
 #include "ch.h"
 #include "sd.h"
-#include "ss.h"
 #include "st.h"
 #include "uk.h"
+#include "wd.h"
 
-#ifdef XFS
-#include <xfs/nxfs.h>
-cdev_decl(xfs_dev);
-#endif
 #include "ksyms.h"
 
-#ifdef notyet
-#include "xd.h"
-bdev_decl(xd);
-cdev_decl(xd);
-#endif /* notyet */
-
+#include "audio.h"
+#include "com.h"
+#include "lcd.h"
+#include "pcex.h"
 #include "siotty.h"
-cdev_decl(sio);
 
 #include "wsdisplay.h"
 #include "wskbd.h"
 #include "wsmouse.h"
 #include "wsmux.h"
 
-/* open, close, write, ioctl */
-#define	cdev_lp_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
-	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) enodev, \
-	0, seltrue, (dev_type_mmap((*))) enodev }
-
-/* open, close, ioctl, mmap, ioctl */
-#define	cdev_mdev_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
-	dev_init(c,n,write), dev_init(c,n,ioctl), \
-	(dev_type_stop((*))) enodev, 0, (dev_type_poll((*))) enodev, \
-	dev_init(c,n,mmap) }
-
-#if notyet
-#include "lp.h"
-cdev_decl(lp);
-#include "lptwo.h"
-cdev_decl(lptwo);
-#endif /* notyet */
-
 #include "pf.h"
-
-#include "systrace.h"
+#include "vscsi.h"
+#include "pppx.h"
+#include "fuse.h"
 
 struct bdevsw	bdevsw[] =
 {
@@ -111,32 +82,32 @@ struct bdevsw	bdevsw[] =
 	bdev_disk_init(NCD,cd),		/* 6: SCSI CD-ROM */
 	bdev_disk_init(NRD,rd),		/* 7: ramdisk */
 	bdev_disk_init(NVND,vnd),	/* 8: vnode disk driver */
-	bdev_disk_init(NCCD,ccd),	/* 9: concatenated disk driver */
+	bdev_disk_init(NWD,wd),		/* 9: IDE disk (on PCMCIA) */
 	bdev_notdef(),			/* 10 */
 	bdev_notdef(),			/* 11 */
 	bdev_notdef(),			/* 12 */
-	bdev_lkm_dummy(),		/* 13 */
-	bdev_lkm_dummy(),		/* 14 */
-	bdev_lkm_dummy(),		/* 15 */
-	bdev_lkm_dummy(),		/* 16 */
-	bdev_lkm_dummy(),		/* 17 */
-	bdev_lkm_dummy(),		/* 18 */
+	bdev_notdef(),			/* 13 */
+	bdev_notdef(),			/* 14 */
+	bdev_notdef(),			/* 15 */
+	bdev_notdef(),			/* 16 */
+	bdev_notdef(),			/* 17 */
+	bdev_notdef(),			/* 18 */
 };
-int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
+int	nblkdev = nitems(bdevsw);
 
 struct cdevsw	cdevsw[] =
 {
 	cdev_cn_init(1,cn),		/* 0: virtual console */
 	cdev_ctty_init(1,ctty),		/* 1: controlling terminal */
 	cdev_mm_init(1,mm),		/* 2: /dev/{null,mem,kmem,...} */
-	cdev_swap_init(1,sw),		/* 3: /dev/drum (swap pseudo-device) */
+	cdev_notdef(),			/* 3 was /dev/drum */
 	cdev_tty_init(NPTY,pts),	/* 4: pseudo-tty slave */
 	cdev_ptc_init(NPTY,ptc),	/* 5: pseudo-tty master */
 	cdev_log_init(1,log),		/* 6: /dev/klog */
-	cdev_notdef(),			/* 7: */
+	cdev_notdef(),			/* 7 */
 	cdev_disk_init(NSD,sd),		/* 8: SCSI disk */
 	cdev_disk_init(NCD,cd),		/* 9: SCSI CD-ROM */
-	cdev_notdef(),			/* 10 */
+	cdev_lcd_init(NLCD,lcd),	/* 10: /dev/lcd */
 	cdev_notdef(),			/* 11 */
 	cdev_tty_init(NSIOTTY,sio),	/* 12: on-board UART (ttya) */
 	cdev_wsdisplay_init(NWSDISPLAY,	/* 13: frame buffers, etc. */
@@ -145,48 +116,48 @@ struct cdevsw	cdevsw[] =
 	cdev_mouse_init(NWSMOUSE,	/* 15: mouse */
 		wsmouse),
 	cdev_mouse_init(NWSMUX,wsmux),	/* 16: ws multiplexor */
-	cdev_disk_init(NCCD,ccd),	/* 17: concatenated disk */
+	cdev_notdef(),			/* 17: was: concatenated disk */
 	cdev_disk_init(NRD,rd),		/* 18: ramdisk disk */
 	cdev_disk_init(NVND,vnd),	/* 19: vnode disk */
 	cdev_tape_init(NST,st),		/* 20: SCSI tape */
 	cdev_fd_init(1,filedesc),	/* 21: file descriptor pseudo-dev */
-	cdev_bpftun_init(NBPFILTER,bpf),/* 22: berkeley packet filter */
-	cdev_bpftun_init(NTUN,tun),	/* 23: network tunnel */
-	cdev_lkm_init(NLKM,lkm),	/* 24: loadable module driver */
-	cdev_notdef(),			/* 25 */
-	cdev_notdef(),			/* 26 */
-	cdev_notdef(),			/* 27 */
-	cdev_notdef(),			/* 28 */
+	cdev_bpf_init(NBPFILTER,bpf),	/* 22: berkeley packet filter */
+	cdev_tun_init(NTUN,tun),	/* 23: network tunnel */
+	cdev_notdef(),			/* 24 was LKM */
+	cdev_pcex_init(NPCEX, pcex),	/* 25: PC-9801 extension board slot */
+	cdev_audio_init(NAUDIO, audio),	/* 26: generic audio I/O */
+	cdev_tty_init(NCOM, com),	/* 27: serial port (on PCMCIA) */
+	cdev_disk_init(NWD,wd),		/* 28: IDE disk (on PCMCIA) */
 	cdev_notdef(),			/* 29 */
 	cdev_notdef(),			/* 30 */
 	cdev_notdef(),			/* 31 */
 	cdev_notdef(),			/* 32 */
-	cdev_lkm_dummy(),		/* 33 */
-	cdev_lkm_dummy(),		/* 34 */
-	cdev_lkm_dummy(),		/* 35 */
-	cdev_lkm_dummy(),		/* 36 */
-	cdev_lkm_dummy(),		/* 37 */
-	cdev_lkm_dummy(),		/* 38 */
+	cdev_notdef(),			/* 33 */
+	cdev_notdef(),			/* 34 */
+	cdev_notdef(),			/* 35 */
+	cdev_notdef(),			/* 36 */
+	cdev_notdef(),			/* 37 */
+	cdev_notdef(),			/* 38 */
 	cdev_pf_init(NPF,pf),		/* 39: packet filter */
 	cdev_random_init(1,random),	/* 40: random data source */
 	cdev_uk_init(NUK,uk),		/* 41 */
-	cdev_ss_init(NSS,ss),		/* 42 */
+	cdev_notdef(),			/* 42 */
 	cdev_ksyms_init(NKSYMS,ksyms),	/* 43: Kernel symbols device */
 	cdev_ch_init(NCH,ch),		/* 44: SCSI autochanger */
-	cdev_notdef(),			/* 45 */
+	cdev_fuse_init(NFUSE,fuse),	/* 45: fuse */
 	cdev_notdef(),			/* 46 */
 	cdev_notdef(),			/* 47 */
 	cdev_notdef(),			/* 48 */
-	cdev_notdef(),			/* 49 */
-	cdev_systrace_init(NSYSTRACE,systrace),	/* 50 system call tracing */
-#ifdef XFS
-	cdev_xfs_init(NXFS,xfs_dev),	/* 51: xfs communication device */
-#else
+	cdev_bio_init(NBIO,bio),	/* 49: ioctl tunnel */
+	cdev_notdef(),			/* 50 */
 	cdev_notdef(),			/* 51 */
-#endif
 	cdev_ptm_init(NPTY,ptm),	/* 52: pseudo-tty ptm device */
+	cdev_vscsi_init(NVSCSI,vscsi),	/* 53: vscsi */
+	cdev_disk_init(1,diskmap),	/* 54: disk mapper */
+	cdev_pppx_init(NPPPX,pppx),	/* 55: pppx */
+	cdev_tun_init(NTUN,tap),	/* 56: Ethernet network tunnel */
 };
-int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
+int	nchrdev = nitems(cdevsw);
 
 int	mem_no = 2;	/* major device number of memory special file */
 
@@ -230,7 +201,6 @@ getnulldev()
 }
 
 int chrtoblktbl[] = {
-	/* XXXX This needs to be dynamic for LKMs. */
 	/*VCHR*/	/*VBLK*/
 	/*  0 */	NODEV,
 	/*  1 */	NODEV,
@@ -240,8 +210,8 @@ int chrtoblktbl[] = {
 	/*  5 */	NODEV,
 	/*  6 */	NODEV,
 	/*  7 */	NODEV,
-	/*  8 */	4,	/* SCSI disk */
-	/*  9 */	6,	/* SCSI CD-ROM */
+	/*  8 */	4,	/* sd */
+	/*  9 */	6,	/* cd */
 	/* 10 */	NODEV,
 	/* 11 */	NODEV,
 	/* 12 */	NODEV,
@@ -250,25 +220,8 @@ int chrtoblktbl[] = {
 	/* 15 */	NODEV,
 	/* 16 */	NODEV,
 	/* 17 */	NODEV,
-	/* 18 */	7,	/* ram disk */
-	/* 19 */	8,	/* vnode disk */
+	/* 18 */	7,	/* rd */
+	/* 19 */	8,	/* vnd */
+	/* 20 */	5,	/* st */
 };
-int nchrtoblktbl = sizeof(chrtoblktbl) / sizeof(chrtoblktbl[0]);
-
-/*
- * This entire table could be autoconfig()ed but that would mean that
- * the kernel's idea of the console would be out of sync with that of
- * the standalone boot.  I think it best that they both use the same
- * known algorithm unless we see a pressing need otherwise.
- */
-#include <dev/cons.h>
-
-#define romttycnpollc	nullcnpollc
-cons_decl(romtty);
-
-struct	consdev constab[] = {
-#if 0
-	cons_init(romtty),
-#endif
-	{ 0 },
-};
+int nchrtoblktbl = nitems(chrtoblktbl);

@@ -269,6 +269,8 @@ timeval_to_timespec(struct timespec *left,
 	left->tv_nsec = 1000 * right->tv_usec;
 }
 
+/* get the time */
+void get_time(struct timespec* t);
 
 /*
  * Converts a string representation of a period of time into
@@ -310,7 +312,7 @@ int b32_ntop(uint8_t const *src, size_t srclength, char *target,
 void strip_string(char *str);
 
 /*
- * Convert a single (hexidecimal) digit to its integer value.
+ * Convert a single (hexadecimal) digit to its integer value.
  */
 int hexdigit_to_int(char ch);
 

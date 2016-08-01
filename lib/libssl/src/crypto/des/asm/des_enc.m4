@@ -130,7 +130,7 @@ changequote({,})
 !
 ! Loads key first round from address in parameter 5 to out0, out1.
 !
-! After the the original LibDES initial permutation, the resulting left
+! After the original LibDES initial permutation, the resulting left
 ! is in the variable initially used for right and vice versa. The macro
 ! implements the possibility to keep the halfs in the original registers.
 !
@@ -1536,7 +1536,7 @@ DES_ncbc_encrypt:
 	xor	global4, local1, out5     ! iv xor next block
 
 	ba	.ncbc.enc.next.block_2
-	add	in1, 8, in1               ! output adress
+	add	in1, 8, in1               ! output address
 
 .ncbc.enc.next.block_fp:
 

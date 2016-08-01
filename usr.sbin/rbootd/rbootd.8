@@ -1,3 +1,4 @@
+.\"	$OpenBSD: rbootd.8,v 1.15 2015/10/28 10:02:59 jmc Exp $
 .\"	$NetBSD: rbootd.8,v 1.3 1995/08/21 17:05:16 thorpej Exp $
 .\"
 .\" Copyright (c) 1988, 1992 The University of Utah and the Center
@@ -19,11 +20,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -44,7 +41,7 @@
 .\" Utah Hdr: rbootd.man 3.1 92/07/06
 .\" Author: Jeff Forys, University of Utah CSS
 .\"
-.Dd "December 11, 1993"
+.Dd $Mdocdate: October 28 2015 $
 .Dt RBOOTD 8
 .Os
 .Sh NAME
@@ -54,42 +51,44 @@
 .Nm rbootd
 .Op Fl ad
 .Op Fl i Ar interface
-.Op config_file
+.Op Ar config_file
 .Sh DESCRIPTION
 The
-.Nm rbootd
+.Nm
 utility services boot requests from Hewlett-Packard workstations over a
 local area network.
 All boot files must reside in the boot file directory; further, if a
 client supplies path information in its boot request, it will be silently
 stripped away before processing.
 By default,
-.Nm rbootd
+.Nm
 only responds to requests from machines listed in its configuration file.
 .Pp
 The options are as follows:
-.Bl -tag -width Fl
+.Bl -tag -width Ds
 .It Fl a
 Respond to boot requests from any machine.
 The configuration file is ignored if this option is specified.
 .It Fl d
 Run
-.Nm rbootd
+.Nm
 in debug mode.
 Packets sent and received are displayed to the terminal.
 .It Fl i Ar interface
-Service boot requests on specified interface.
+Service boot requests on specified
+.Ar interface .
 If unspecified,
-.Nm rbootd
+.Nm
 searches the system interface list for the lowest numbered, configured
-``up'' interface (excluding loopback).
+.Dq up
+interface (excluding loopback).
 Ties are broken by choosing the earliest match.
 .El
 .Pp
 Specifying
 .Ar config_file
 on the command line causes
-.Nm rbootd
+.Nm
 to use a different configuration file from the default.
 .Pp
 The configuration file is a text file where each line describes a particular
@@ -99,34 +98,34 @@ list of boot file names.
 An Ethernet address is specified in hexadecimal with each of its six octets
 separated by a colon.
 The boot file names come from the boot file directory.
-The ethernet address and boot file(s) must be separated by white-space
+The Ethernet address and boot file(s) must be separated by whitespace
 and/or comma characters.
 A pound sign causes the remainder of a line to be ignored.
 .Pp
 Here is a sample configuration file:
-.Bl -column 08:00:09:0:66:ad SYSHPBSD,SYSHPUX "# vandy (anything)"
-.It #
-.It # ethernet addr	boot file(s)	comments
-.It #
-.It 08:00:09:0:66:ad	SYSHPBSD	# snake (4.3BSD)
-.It 08:00:09:0:59:5b		# vandy (anything)
-.It 8::9:1:C6:75	SYSHPBSD,SYSHPUX	# jaguar (either)
-.El
+.Bd -literal -offset indent
+#
+# Ethernet addr		boot file(s)		comments
+#
+08:00:09:0:66:ad	SYSHPBSD		# snake (4.3BSD)
+08:00:09:0:59:5b				# vandy (anything)
+8::9:1:C6:75		SYSHPBSD,SYSHPUX	# jaguar (either)
+.Ed
 .Pp
-.Nm Rbootd
+.Nm
 logs status and error messages via
 .Xr syslog 3 .
 A startup message is always logged, and in the case of fatal errors (or
 deadly signals) a message is logged announcing the server's termination.
 In general, a non-fatal error is handled by ignoring the event that caused
-it (e.g. an invalid Ethernet address in the config file causes that line
+it (e.g., an invalid Ethernet address in the config file causes that line
 to be invalidated).
 .Pp
 The following signals have the specified effect when sent to the server
 process using the
 .Xr kill 1
 command:
-.Bl -tag -width SIGUSR1 -offset -compact
+.Bl -tag -width SIGUSR1 -offset indent -compact
 .It SIGHUP
 Drop all active connections and reconfigure.
 .It SIGUSR1
@@ -134,25 +133,22 @@ Turn on debugging, do nothing if already on.
 .It SIGUSR2
 Turn off debugging, do nothing if already off.
 .El
-.Sh "FILES"
+.Sh FILES
 .Bl -tag -width /usr/libexec/rbootd -compact
-.It /dev/bpf#
+.It Pa /dev/bpf0
 packet-filter device
-.It /etc/rbootd.conf
+.It Pa /etc/rbootd.conf
 configuration file
-.It /tmp/rbootd.dbg
+.It Pa /tmp/rbootd.dbg
 debug output
-.It /usr/mdec/rbootd
+.It Pa /usr/mdec/rbootd
 directory containing boot files
-.It /var/run/rbootd.pid
-process id
 .El
 .Sh SEE ALSO
 .Xr kill 1 ,
 .Xr socket 2 ,
 .Xr signal 3 ,
-.Xr syslog 3 ,
-.Xr rmp 4
+.Xr syslog 3
 .Sh BUGS
 If multiple servers are started on the same interface, each will receive
 and respond to the same boot packets.

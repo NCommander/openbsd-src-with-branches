@@ -1,3 +1,4 @@
+/*	$OpenBSD: pcb.h,v 1.6 2011/03/23 16:54:37 pirofti Exp $	*/
 /*	$NetBSD: pcb.h,v 1.4 1995/03/28 18:19:56 jtc Exp $ */
 
 /*
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,6 +40,9 @@
  *
  *	@(#)pcb.h	8.1 (Berkeley) 6/11/93
  */
+
+#ifndef _MACHINE_PCB_H_
+#define _MACHINE_PCB_H_
 
 #include <machine/reg.h>
 
@@ -101,23 +101,14 @@ struct pcb {
 	int	pcb_winof;	/* number of window overflow traps */
 	int	pcb_winuf;	/* number of window underflow traps */
 #endif
-	int	pcb_pad;	/* pad to doubleword boundary */
+	u_int32_t pcb_wcookie;	/* StackGhost cookie (must be unsigned) */
 
 	/* the following MUST be aligned on a doubleword boundary */
 	struct	rwindow pcb_rw[PCB_MAXWIN];	/* saved windows */
 };
 
-/*
- * The pcb is augmented with machine-dependent additional data for
- * core dumps.  Note that the trapframe here is a copy of the one
- * from the top of the kernel stack (included here so that the kernel
- * stack itself need not be dumped).
- */
-struct md_coredump {
-	struct	trapframe md_tf;
-	struct	fpstate md_fpstate;
-};
-
 #ifdef _KERNEL
 extern struct pcb *cpcb;
 #endif /* _KERNEL */
+
+#endif

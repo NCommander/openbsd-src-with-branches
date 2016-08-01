@@ -71,7 +71,7 @@ enum rid
   /* C extensions */
   RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
-  RID_TYPES_COMPATIBLE_P,
+  RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
   /* Too many ways of getting the name of a function as a string */
@@ -414,7 +414,6 @@ extern int warn_unknown_pragmas; /* Tri state variable.  */
 
 extern int warn_format;
 
-
 /* C/ObjC language option variables.  */
 
 
@@ -633,7 +632,9 @@ extern void check_function_arguments_recurse (void (*)
 					      void *, tree,
 					      unsigned HOST_WIDE_INT);
 extern void check_function_format (tree, tree);
+extern void check_function_bounded (int *, tree, tree);
 extern void set_Wformat (int);
+extern tree handle_bounded_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
 extern int c_common_handle_option (size_t code, const char *arg, int value);

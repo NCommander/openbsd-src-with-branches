@@ -1,3 +1,4 @@
+/*	$OpenBSD: setup.c,v 1.12 2014/12/31 15:45:57 tedu Exp $	*/
 /*	$NetBSD: setup.c,v 1.2 1995/03/21 12:05:10 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,24 +33,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1991, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)setup.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: setup.c,v 1.2 1995/03/21 12:05:10 cgd Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * Setup: keep the structure of the original Adventure port, but use an
  * internal copy of the data file, serving as a sort of virtual disk.  It's
- * lightly encrypted to prevent casual snooping of the executable.
+ * lightly obfuscated to prevent casual snooping of the executable.
  *
  * Also do appropriate things to tabs so that bogus editors will do the right
  * thing with the data file.
@@ -63,69 +46,70 @@ static char rcsid[] = "$NetBSD: setup.c,v 1.2 1995/03/21 12:05:10 cgd Exp $";
 #define SIG1 " *      Jim Gillogly"
 #define SIG2 " *      Sterday, 6 Thrimidge S.R. 1993, 15:24"
 
+#include <err.h>
 #include <stdio.h>
-#include "hdr.h"        /* SEED lives in there; keep them coordinated. */
+#include <stdlib.h>
+#include <unistd.h>
 
 #define USAGE "Usage: setup file > data.c (file is typically glorkz)\n"
 
 #define YES 1
 #define NO  0
 
-void fatal();
+#define LINE 10		/* How many values do we get on a line? */
 
-#define LINE 10         /* How many values do we get on a line? */
-
-main(argc, argv)
-int argc;
-char *argv[];
+int
+main(int argc, char *argv[])
 {
-	FILE *infile;
-	int c, count, linestart;
+	FILE	*infile;
+	int	c, count, linestart;
 
-	if (argc != 2) fatal(USAGE);
+	if (pledge("stdio rpath", NULL) == -1)
+	    err(1, "pledge");
+
+	if (argc != 2) {
+		fprintf(stderr, USAGE);
+		return 1;
+	}
 
 	if ((infile = fopen(argv[1], "r")) == NULL)
-		fatal("Can't read file %s.\n", argv[1]);
+		err(1, "Can't read file %s", argv[1]);
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
 	puts("/*\n * data.c: created by setup from the ascii data file.");
 	puts(SIG1);
 	puts(SIG2);
 	puts(" */");
 	printf("\n\nchar data_file[] =\n{");
-	srandom(SEED);
 	count = 0;
 	linestart = YES;
 
-	while ((c = getc(infile)) != EOF)
-	{
-		if (linestart && c == ' ') /* Convert first spaces to tab */
-		{
-			printf("0x%02x,", ('\t' ^ random()) & 0xFF);
+	srandom_deterministic(1);
+
+	while ((c = getc(infile)) != EOF) {
+		if (count++ % LINE == 0)
+			printf("\n\t");
+		if (linestart && c == ' ') { /* Convert first spaces to tab */
+			printf("0x%02x,", (unsigned int)('\t' ^ random()) & 0xFF);
 			while ((c = getc(infile)) == ' ' && c != EOF);
 			/* Drop the non-whitespace character through */
 			linestart = NO;
 		}
-		switch(c)
-		{
-		    case '\t':
+		switch (c) {
+		case '\t':
 			linestart = NO; /* Don't need to convert spaces */
 			break;
-		    case '\n':
+		case '\n':
 			linestart = YES; /* Ready to convert spaces again */
 			break;
 		}
-		if (count++ % LINE == 0)   /* Finished a line? */
+		if (count++ % LINE == 0)
 			printf("\n\t");
-		printf("0x%02x,", (c ^ random()) & 0xFF);
+		printf("0x%02x,", (unsigned int)(c ^ random()) & 0xFF);
 	}
 	puts("\n\t0\n};");
 	fclose(infile);
-	exit(0);
-}
-
-
-void fatal(format, arg)
-char *format;
-{
-	fprintf(stderr, format, arg);
-	exit(1);
+	return 0;
 }

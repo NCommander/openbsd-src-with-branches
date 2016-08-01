@@ -1,4 +1,5 @@
-/*	$NetBSD: mem.c,v 1.11 1995/05/29 23:57:16 pk Exp $ */
+/*	$OpenBSD: mem.c,v 1.23 2014/11/16 12:30:58 deraadt Exp $	*/
+/*	$NetBSD: mem.c,v 1.13 1996/03/30 21:12:16 christos Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,36 +42,50 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/buf.h>
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
+#include <sys/conf.h>
 
 #include <sparc/sparc/vaddrs.h>
 #include <machine/eeprom.h>
+#include <machine/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
-extern vm_offset_t prom_vstart;
-extern vm_offset_t prom_vend;
+extern vaddr_t prom_vstart;
+extern vaddr_t prom_vend;
 caddr_t zeropage;
+vaddr_t mem_page;
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 11:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -87,15 +98,16 @@ mmrw(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	register vm_offset_t o, v;
-	register int c;
-	register struct iovec *iov;
+	off_t o;
+	paddr_t pa;
+	vaddr_t va;
+	size_t c;
+	struct iovec *iov;
 	int error = 0;
 	static int physlock;
-	extern caddr_t vmmap;
 
 	if (minor(dev) == 0) {
-		/* lock against other uses of shared vmmap */
+		/* lock against other uses of shared mem_page */
 		while (physlock > 0) {
 			physlock++;
 			error = tsleep((caddr_t)&physlock, PZERO | PCATCH,
@@ -104,6 +116,10 @@ mmrw(dev, uio, flags)
 				return (error);
 		}
 		physlock = 1;
+		if (mem_page == 0)
+			mem_page = uvm_km_valloc_wait(kernel_map, NBPG);
+		if (mem_page == 0)
+			panic("mmrw: out of space in kernel_map");
 	}
 	while (uio->uio_resid > 0 && error == 0) {
 		iov = uio->uio_iov;
@@ -116,42 +132,44 @@ mmrw(dev, uio, flags)
 		}
 		switch (minor(dev)) {
 
-/* minor device 0 is physical memory */
+		/* minor device 0 is physical memory */
 		case 0:
-			v = uio->uio_offset;
-			if (!pmap_pa_exists(v)) {
+			pa = (paddr_t)uio->uio_offset;
+			if (!pmap_pa_exists(pa)) {
 				error = EFAULT;
 				goto unlock;
 			}
-			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
-			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
+			pmap_enter(pmap_kernel(), mem_page,
+			    trunc_page(pa), uio->uio_rw == UIO_READ ?
+			    PROT_READ : PROT_WRITE, PMAP_WIRED);
+			pmap_update(pmap_kernel());
 			o = uio->uio_offset & PGOFSET;
-			c = min(uio->uio_resid, (int)(NBPG - o));
-			error = uiomove((caddr_t)vmmap + o, c, uio);
-			pmap_remove(pmap_kernel(), (vm_offset_t)vmmap,
-			    (vm_offset_t)vmmap + NBPG);
+			c = ulmin(uio->uio_resid, NBPG - o);
+			error = uiomove((caddr_t)mem_page + o, c, uio);
+			pmap_remove(pmap_kernel(), mem_page, mem_page + NBPG);
+			pmap_update(pmap_kernel());
 			continue;
 
-/* minor device 1 is kernel memory */
+		/* minor device 1 is kernel memory */
 		case 1:
-			v = uio->uio_offset;
-			if (v >= MSGBUF_VA && v < MSGBUF_VA+NBPG) {
-				c = min(iov->iov_len, 4096);
-			} else if (v >= prom_vstart && v < prom_vend &&
+			va = (vaddr_t)uio->uio_offset;
+			if (va >= MSGBUF_VA && va < MSGBUF_VA+NBPG) {
+				c = ulmin(iov->iov_len, 4096);
+			} else if (va >= prom_vstart && va < prom_vend &&
 				   uio->uio_rw == UIO_READ) {
 				/* Allow read-only access to the PROM */
-				c = min(iov->iov_len, prom_vend - prom_vstart);
+				c = ulmin(iov->iov_len,
+				    prom_vend - prom_vstart);
 			} else {
-				c = min(iov->iov_len, MAXPHYS);
-				if (!kernacc((caddr_t)v, c,
+				c = ulmin(iov->iov_len, MAXPHYS);
+				if (!uvm_kernacc((caddr_t)va, c,
 				    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
 					return (EFAULT);
 			}
-			error = uiomove((caddr_t)v, c, uio);
+			error = uiomove((caddr_t)va, c, uio);
 			continue;
 
-/* minor device 2 is EOF/RATHOLE */
+		/* minor device 2 is EOF/RATHOLE */
 		case 2:
 			if (uio->uio_rw == UIO_WRITE)
 				uio->uio_resid = 0;
@@ -173,27 +191,19 @@ mmrw(dev, uio, flags)
 /* minor device 12 (/dev/zero) is source of nulls on read, rathole on write */
 		case 12:
 			if (uio->uio_rw == UIO_WRITE) {
-				c = iov->iov_len;
-				break;
+				uio->uio_resid = 0;
+				return 0;
 			}
-			if (zeropage == NULL) {
-				zeropage = (caddr_t)
-				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
-			}
-			c = min(iov->iov_len, CLBYTES);
+			if (zeropage == NULL)
+				zeropage = malloc(PAGE_SIZE, M_TEMP,
+				    M_WAITOK | M_ZERO);
+			c = ulmin(iov->iov_len, PAGE_SIZE);
 			error = uiomove(zeropage, c, uio);
 			continue;
 
 		default:
 			return (ENXIO);
 		}
-		if (error)
-			break;
-		iov->iov_base += c;
-		iov->iov_len -= c;
-		uio->uio_offset += c;
-		uio->uio_resid -= c;
 	}
 	if (minor(dev) == 0) {
 unlock:
@@ -204,11 +214,24 @@ unlock:
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
         dev_t dev;
-        int off, prot;
+        off_t off;
+	int prot;
 {
 
+	return (-1);
+}
+
+/*ARGSUSED*/
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
 	return (EOPNOTSUPP);
 }
