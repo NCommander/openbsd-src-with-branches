@@ -1,4 +1,4 @@
-/*	$OpenBSD: exf.c,v 1.41 2016/01/06 22:29:38 millert Exp $	*/
+/*	$OpenBSD: exf.c,v 1.43 2016/05/27 09:18:11 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -124,7 +124,7 @@ file_init(SCR *sp, FREF *frp, char *rcv_name, int flags)
 	struct stat sb;
 	size_t psize;
 	int fd, exists, open_err, readonly;
-	char *oname, tname[PATH_MAX];
+	char *oname, tname[] = "/tmp/vi.XXXXXXXXXX";
 
 	open_err = readonly = 0;
 
@@ -180,10 +180,6 @@ file_init(SCR *sp, FREF *frp, char *rcv_name, int flags)
 		 */
 		if (frp->tname != NULL)
 			goto err;
-		if (opts_empty(sp, O_TMP_DIRECTORY, 0))
-			goto err;
-		(void)snprintf(tname, sizeof(tname),
-		    "%s/vi.XXXXXXXXXX", O_STR(sp, O_TMP_DIRECTORY));
 		fd = mkstemp(tname);
 		if (fd == -1 || fstat(fd, &sb) == -1 ||
 		    fchmod(fd, S_IRUSR | S_IWUSR) == -1) {
