@@ -1,4 +1,4 @@
-/*	$OpenBSD: wall.c,v 1.30 2016/05/08 16:19:35 martijn Exp $	*/
+/*	$OpenBSD: wall.c,v 1.31 2016/05/08 17:09:42 schwarze Exp $	*/
 /*	$NetBSD: wall.c,v 1.6 1994/11/17 07:17:58 jtc Exp $	*/
 
 /*
@@ -232,7 +232,7 @@ makemsg(char *fname)
 				putc('\n', fp);
 				cnt = -1;
 			} else if (!isu8cont(ch))
-				putc(isprint(ch) || isspace(ch) ?
+				putc(isprint(ch) || isspace(ch) || ch == '\a' ?
 				    ch : '?', fp);
 		}
 	(void)fprintf(fp, "%79s\r\n", " ");
