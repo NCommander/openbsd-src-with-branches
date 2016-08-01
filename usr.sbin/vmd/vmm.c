@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.33 2016/07/19 09:52:34 natano Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.34 2016/07/29 16:36:51 stefan Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -529,7 +529,7 @@ start_vm(struct imsg *imsg, uint32_t *id)
 		return (0);
 	} else {
 		/* Child */
-		setproctitle(vcp->vcp_name);
+		setproctitle("%s", vcp->vcp_name);
 		log_procinit(vcp->vcp_name);
 
 		create_memory_map(vcp);
