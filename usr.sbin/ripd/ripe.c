@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripe.c,v 1.18 2015/02/09 12:34:07 claudio Exp $ */
+/*	$OpenBSD: ripe.c,v 1.19 2015/12/05 13:13:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -85,7 +85,7 @@ ripe(struct ripd_conf *xconf, int pipe_parent2ripe[2], int pipe_ripe2rde[2],
 	}
 
 	/* create ripd control socket outside chroot */
-	if (control_init() == -1)
+	if (control_init(xconf->csock) == -1)
 		fatalx("control socket setup failed");
 
 	addr.sin_family = AF_INET;
