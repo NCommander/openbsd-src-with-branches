@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.94 2016/03/28 18:14:01 krw Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.95 2016/03/30 23:40:54 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -195,7 +195,7 @@ Xgedit(char *args)
 	gg->gp_lba_start = htole64(bs);
 	gg->gp_lba_end = htole64(bs + ns - 1);
 
-	name = ask_string("partition name", utf16le_to_string(gg->gp_name));
+	name = ask_string("Partition name", utf16le_to_string(gg->gp_name));
 	if (strlen(name) >= GPTPARTNAMESIZE) {
 		printf("partition name must be < %d characters\n",
 		    GPTPARTNAMESIZE);
