@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.c,v 1.41 2016/04/04 09:06:28 patrick Exp $	*/
+/*	$OpenBSD: cpufunc.c,v 1.42 2016/07/31 03:49:51 jsg Exp $	*/
 /*	$NetBSD: cpufunc.c,v 1.65 2003/11/05 12:53:15 scw Exp $	*/
 
 /*
@@ -109,8 +109,8 @@ struct cpu_functions armv7_cpufuncs = {
 
 	armv7_tlb_flushID,		/* tlb_flushID		*/
 	armv7_tlb_flushID_SE,		/* tlb_flushID_SE	*/
-	armv7_tlb_flushI,		/* tlb_flushI		*/
-	armv7_tlb_flushI_SE,		/* tlb_flushI_SE	*/
+	armv7_tlb_flushID,		/* tlb_flushI		*/
+	armv7_tlb_flushID_SE,		/* tlb_flushI_SE	*/
 	armv7_tlb_flushD,		/* tlb_flushD		*/
 	armv7_tlb_flushD_SE,		/* tlb_flushD_SE	*/
 
