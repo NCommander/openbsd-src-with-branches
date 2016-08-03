@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass.c,v 1.71 2015/12/16 14:50:26 mpi Exp $ */
+/*	$OpenBSD: umass.c,v 1.72 2015/12/17 10:21:22 mpi Exp $ */
 /*	$NetBSD: umass.c,v 1.116 2004/06/30 05:53:46 mycroft Exp $	*/
 
 /*
@@ -585,12 +585,9 @@ umass_attach(struct device *parent, struct device *self, void *aux)
 	switch (sc->sc_cmd) {
 	case UMASS_CPROTO_RBC:
 	case UMASS_CPROTO_SCSI:
-		error = umass_scsi_attach(sc);
-		break;
-
 	case UMASS_CPROTO_UFI:
 	case UMASS_CPROTO_ATAPI:
-		error = umass_atapi_attach(sc);
+		error = umass_scsi_attach(sc);
 		break;
 
 	case UMASS_CPROTO_ISD_ATA:
