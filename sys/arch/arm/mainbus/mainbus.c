@@ -1,4 +1,4 @@
-/* $OpenBSD: mainbus.c,v 1.10 2016/05/29 11:03:34 jsg Exp $ */
+/* $OpenBSD: mainbus.c,v 1.11 2016/07/13 20:42:44 patrick Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -92,6 +92,10 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 		config_search(mainbus_legacy_search, self, aux);
 		return;
 	}
+
+#ifdef CPU_ARMv7
+	arm_intr_init_fdt();
+#endif
 
 #ifdef CPU_ARMv7
 	extern struct bus_space armv7_bs_tag;
