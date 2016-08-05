@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.52 2014/07/11 16:48:29 yasuoka Exp $ */
+/*	$OpenBSD: dhcpd.h,v 1.53 2016/02/06 23:50:10 krw Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -532,7 +532,7 @@ int			 tree_evaluate(struct tree_cache *);
 /* dhcp.c */
 extern int	outstanding_pings;
 
-void dhcp(struct packet *);
+void dhcp(struct packet *, int);
 void dhcpdiscover(struct packet *);
 void dhcprequest(struct packet *);
 void dhcprelease(struct packet *);
