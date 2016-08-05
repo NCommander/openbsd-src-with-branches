@@ -1,4 +1,4 @@
-/*	$OpenBSD: route6d.c,v 1.88 2016/07/13 08:40:46 mpi Exp $	*/
+/*	$OpenBSD: route6d.c,v 1.89 2016/08/05 11:32:28 jca Exp $	*/
 /*	$KAME: route6d.c,v 1.111 2006/10/25 06:38:13 jinmei Exp $	*/
 
 /*
@@ -317,7 +317,7 @@ main(int argc, char *argv[])
 
 	init();
 
-	if (pledge("stdio rpath wpath cpath inet route mcast", NULL) == -1)
+	if (pledge("stdio inet route mcast", NULL) == -1)
 		fatal("pledge");
 
 	ifconfig();
