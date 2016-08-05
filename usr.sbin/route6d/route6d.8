@@ -23,7 +23,7 @@
 .Nd RIP6 routing daemon
 .Sh SYNOPSIS
 .Nm route6d
-.Op Fl aDdhlnqSs
+.Op Fl aDdhlnqSsu
 .Sm off
 .Op Fl A No \~ Ar prefix No / Ar preflen , Ar if1 Op , Ar if2 , ...
 .Sm on
@@ -203,6 +203,12 @@ can be decimal, octal prefixed by
 .Li 0 ,
 or hexadecimal prefixed by
 .Li 0x .
+.It Fl u
+Always log route updates (insertions and deletions).
+Route updates are always prefixed with
+.Dq RTADD
+or
+.Dq RTDEL .
 .El
 .Pp
 Upon receipt of signal
