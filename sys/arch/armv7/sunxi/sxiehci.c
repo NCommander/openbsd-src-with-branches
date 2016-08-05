@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxiehci.c,v 1.4 2014/05/19 13:11:31 mpi Exp $ */
+/*	$OpenBSD: sxiehci.c,v 1.5 2016/08/05 19:00:25 kettenis Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -121,6 +121,9 @@ sxiehci_attach(struct device *parent, struct device *self, void *aux)
 	struct fdt_attach_args	*faa = aux;
 	usbd_status		 r;
 	char			*devname = sc->sc.sc_bus.bdev.dv_xname;
+
+	if (faa->fa_nreg < 1)
+		return;
 
 	sc->sc.iot = faa->fa_iot;
 	sc->sc.sc_bus.dmatag = faa->fa_dmat;
