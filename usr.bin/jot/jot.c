@@ -195,9 +195,9 @@ main(int argc, char *argv[])
 			mask = 015;
 			break;
 		case 006:
-			reps = REPS_DEF;
-			mask = 016;
-			break;
+			s = ender > begin ? 1 : -1;
+			mask = 007;
+			/* FALLTHROUGH */
 		case 007:
 			if (randomize) {
 				reps = REPS_DEF;
