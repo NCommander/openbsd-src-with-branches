@@ -1,4 +1,4 @@
-/*	$OpenBSD: bzero.S,v 1.3 2008/06/26 05:42:04 ray Exp $	*/
+/*	$OpenBSD: bzero.S,v 1.4 2015/08/31 02:53:56 guenther Exp $	*/
 /*	$NetBSD: bzero.S,v 1.2 2001/07/16 05:50:06 matt Exp $	*/
 
 /*-
@@ -30,10 +30,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "SYS.h"
+#include "DEFS.h"
 
 ENTRY(bzero)
 	mov	r2, r1
 	mov	r1, #0
-	b	PIC_SYM(_C_LABEL(memset), PLT)
+	b	_HIDDEN(memset)
 END_WEAK(bzero)

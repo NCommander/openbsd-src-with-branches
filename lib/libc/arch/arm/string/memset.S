@@ -1,4 +1,4 @@
-/*	$OpenBSD: memset.S,v 1.3 2015/06/08 14:22:05 jsg Exp $	*/
+/*	$OpenBSD: memset.S,v 1.4 2015/08/31 02:53:56 guenther Exp $	*/
 /*	$NetBSD: memset.S,v 1.3 2003/04/05 23:08:52 bjh21 Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  * SUCH DAMAGE.
  */
 
-#include "SYS.h"
+#include "DEFS.h"
 
 /*
  * Sets a block of memory to the specified value
