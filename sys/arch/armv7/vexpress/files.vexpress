@@ -1,4 +1,4 @@
-#	$OpenBSD: files.vexpress,v 1.3 2016/05/02 08:15:55 patrick Exp $
+#	$OpenBSD: files.vexpress,v 1.4 2016/08/06 00:30:47 jsg Exp $
 
 define vexpress {}
 device vexpress: vexpress
@@ -13,7 +13,7 @@ attach pluart at vexpress
 file	arch/armv7/vexpress/pl011.c	pluart
 
 device plrtc
-attach plrtc at vexpress
+attach plrtc at fdt
 file	arch/armv7/vexpress/pl031.c	plrtc
 
 attach	virtio at fdt with virtio_mmio
