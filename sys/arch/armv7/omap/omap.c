@@ -1,4 +1,4 @@
-/* $OpenBSD: omap.c,v 1.15 2016/06/26 09:06:35 jsg Exp $ */
+/* $OpenBSD: omap.c,v 1.16 2016/07/10 03:04:00 jsg Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  *
@@ -40,7 +40,6 @@ struct cfdriver omap_cd = {
 
 struct board_dev omap3_dev[] = {
 	{ "prcm",	0 },
-	{ "intc",	0 },
 	{ "gptimer",	0 },
 	{ "gptimer",	1 },
 	{ "omgpio",	0 },
@@ -55,7 +54,6 @@ struct board_dev omap3_dev[] = {
 struct board_dev am33xx_dev[] = {
 	{ "prcm",	0 },
 	{ "sitaracm",	0 },
-	{ "intc",	0 },
 	{ "edma",	0 },
 	{ "dmtimer",	0 },
 	{ "dmtimer",	1 },
