@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*-
  * Copyright (c) 2015 Kevin Lo <kevlo@FreeBSD.org>
  * All rights reserved.
