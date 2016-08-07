@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.18 2016/03/21 22:41:29 bluhm Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.19 2016/05/07 19:05:23 guenther Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
@@ -55,6 +55,8 @@ LEAF(_dl_start, FRAMESZ)		/* Not really LEAF, but we simplify */
 
 	PTR_ADDU a0, sp, FRAMESZ	# Where stack info is.
 	PTR_ADDU a1, sp, 0		# Where fast AUX info will be.
+	LA	a2, _DYNAMIC
+	PTR_ADDU a2, s0			# Where _DYNAMIC is
 	LA	t9, _dl_boot_bind
 	PTR_ADDU t9, s0
 	jalr	t9			# Relocate ourself.
