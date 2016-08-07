@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.213 2015/07/18 16:01:28 benno Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.213.4.1 2016/07/23 20:56:02 benno Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -1270,6 +1270,7 @@ void		 purge_table(struct relayd *, struct tablelist *,
 void		 purge_relay(struct relayd *, struct relay *);
 char		*digeststr(enum digest_type, const u_int8_t *, size_t, char *);
 const char	*canonicalize_host(const char *, char *, size_t);
+int		 parse_url(const char *, char **, char **, char **);
 int		 map6to4(struct sockaddr_storage *);
 int		 map4to6(struct sockaddr_storage *, struct sockaddr_storage *);
 void		 imsg_event_add(struct imsgev *);
@@ -1283,7 +1284,7 @@ struct in6_addr *prefixlen2mask6(u_int8_t, u_int32_t *);
 u_int32_t	 prefixlen2mask(u_int8_t);
 int		 accept_reserve(int, struct sockaddr *, socklen_t *, int,
 		     volatile int *);
-struct kv	*kv_add(struct kvtree *, char *, char *);
+struct kv	*kv_add(struct kvtree *, char *, char *, int);
 int		 kv_set(struct kv *, char *, ...);
 int		 kv_setkey(struct kv *, char *, ...);
 void		 kv_delete(struct kvtree *, struct kv *);
