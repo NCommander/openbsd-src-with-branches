@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.136 2016/07/13 17:49:00 kettenis Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.137 2016/07/13 17:52:37 kettenis Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -334,7 +334,7 @@ uvm_wxcheck(struct proc *p, char *call)
 		setsigvec(p, SIGABRT, &sa);
 		psignal(p, SIGABRT);
 	}
-	return (0);		/* ENOTSUP later */
+	return (ENOTSUP);
 }
 
 /*
