@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.16 2016/05/12 00:15:24 renato Exp $ */
+/*	$OpenBSD: rde.c,v 1.17 2016/06/05 03:36:41 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -142,7 +142,7 @@ rde_shutdown(void)
 	free(iev_main);
 
 	log_info("route decision engine exiting");
-	_exit(0);
+	exit(0);
 }
 
 int
