@@ -1,4 +1,4 @@
-/*	$OpenBSD: arm32_machdep.c,v 1.47 2015/01/12 16:33:31 deraadt Exp $	*/
+/*	$OpenBSD: arm32_machdep.c,v 1.48 2016/01/31 00:14:50 jsg Exp $	*/
 /*	$NetBSD: arm32_machdep.c,v 1.42 2003/12/30 12:33:15 pk Exp $	*/
 
 /*
@@ -165,7 +165,7 @@ arm32_vector_init(vaddr_t va, int which)
 		 *
 		 * Note: This has to be done here (and not just in
 		 * cpu_setup()) because the vector page needs to be
-		 * accessible *before* cpu_startup() is called.
+		 * accessible *before* main() is called.
 		 * Think ddb(9) ...
 		 *
 		 * NOTE: If the CPU control register is not readable,
@@ -236,12 +236,6 @@ cpu_startup()
 	u_int loop;
 	paddr_t minaddr;
 	paddr_t maxaddr;
-
-	proc0paddr = (struct user *)kernelstack.pv_va;
-	proc0.p_addr = proc0paddr;
-
-	/* Set the cpu control register */
-	cpu_setup();
 
 	/* Lock down zero page */
 	vector_page_setprot(PROT_READ | PROT_EXEC);
