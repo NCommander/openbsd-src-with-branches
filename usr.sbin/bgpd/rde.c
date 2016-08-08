@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.346 2016/06/03 17:36:37 benno Exp $ */
+/*	$OpenBSD: rde.c,v 1.347 2016/07/21 10:13:58 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -329,7 +329,7 @@ rde_main(int debug, int verbose)
 	free(ibuf_main);
 
 	log_info("route decision engine exiting");
-	_exit(0);
+	exit(0);
 }
 
 struct network_config	 netconf_s, netconf_p;
