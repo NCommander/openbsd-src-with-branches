@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.176 2016/07/15 19:31:53 schwarze Exp $ */
+/*	$OpenBSD: main.c,v 1.177 2016/08/01 10:32:39 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2012, 2014-2016 Ingo Schwarze <schwarze@openbsd.org>
@@ -955,7 +955,8 @@ mmsg(enum mandocerr t, enum mandoclevel lvl,
 {
 	const char	*mparse_msg;
 
-	fprintf(stderr, "%s: %s:", getprogname(), file);
+	fprintf(stderr, "%s: %s:", getprogname(),
+	    file == NULL ? "<stdin>" : file);
 
 	if (line)
 		fprintf(stderr, "%d:%d:", line, col + 1);
