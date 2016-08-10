@@ -1,4 +1,4 @@
-/*	$OpenBSD: pte.h,v 1.3 2011/11/07 15:31:13 miod Exp $	*/
+/*	$OpenBSD: pte.h,v 1.4 2013/04/26 05:05:34 patrick Exp $	*/
 /*	$NetBSD: pte.h,v 1.6 2003/04/18 11:08:28 scw Exp $	*/
 
 /*
@@ -238,6 +238,7 @@ typedef uint32_t	pt_entry_t;	/* L2 table entry */
 #define	AP_V7_KR	0x05
 #define	AP_KRW		0x01		/* kernel read/write */
 #define	AP_KRWUR	0x02		/* kernel read/write usr read */
+#define	AP_V7_KRUR	0x07		/* kernel read usr read */
 #define	AP_KRWURW	0x03		/* kernel read/write usr read/write */
 
 /*
