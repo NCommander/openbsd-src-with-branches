@@ -78,7 +78,7 @@ static char	format[BUFSIZ];
 static void	getformat(void);
 static int	getprec(char *);
 static int	putdata(double, bool);
-static void	usage(void);
+static void __dead	usage(void);
 
 int
 main(int argc, char *argv[])
@@ -336,7 +336,7 @@ putdata(double x, bool last)
 	return (0);
 }
 
-static void
+static void __dead
 usage(void)
 {
 	(void)fprintf(stderr, "usage: jot [-cnr] [-b word] [-p precision] "
