@@ -1,4 +1,4 @@
-/* $OpenBSD: omgpio.c,v 1.8 2016/08/06 18:21:34 patrick Exp $ */
+/* $OpenBSD: omgpio.c,v 1.9 2016/08/11 04:33:06 jsg Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -33,7 +33,6 @@
 
 #include <armv7/armv7/armv7var.h>
 #include <armv7/omap/prcmvar.h>
-#include <armv7/omap/sitara_cm.h>
 #include <armv7/omap/omgpiovar.h>
 
 #include <dev/ofw/fdt.h>
