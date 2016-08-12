@@ -1,4 +1,4 @@
-/*	$OpenBSD: library.c,v 1.77 2016/07/04 21:15:06 guenther Exp $ */
+/*	$OpenBSD: library.c,v 1.78 2016/08/08 21:59:20 guenther Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -278,7 +278,7 @@ _dl_tryload_shlib(const char *libname, int type, int flags)
 		}
 
 		case PT_OPENBSD_RANDOMIZE:
-			_dl_randombuf((char *)(phdp->p_vaddr + loff),
+			_dl_arc4randombuf((char *)(phdp->p_vaddr + loff),
 			    phdp->p_memsz);
 			break;
 
