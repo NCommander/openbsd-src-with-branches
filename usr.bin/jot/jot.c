@@ -348,18 +348,9 @@ usage(void)
 static int
 getprec(char *s)
 {
-	char	*p;
-	char	*q;
-
-	for (p = s; *p != '\0'; p++)
-		if (*p == '.')
-			break;
-	if (*p == '\0')
+	if ((s = strchr(s, '.')) == NULL)
 		return (0);
-	for (q = ++p; *p != '\0'; p++)
-		if (!isdigit((unsigned char)*p))
-			break;
-	return (p - q);
+	return (strspn(s + 1, "0123456789"));
 }
 
 static void
