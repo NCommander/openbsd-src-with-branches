@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.163 2016/08/08 21:59:20 guenther Exp $ */
+/*	$OpenBSD: loader.c,v 1.164 2016/08/12 20:39:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -389,8 +389,6 @@ _dl_boot(const char **argv, char **envp, const long dyn_loff, long *dl_data)
 	Elf_Phdr *ptls = NULL;
 	int align;
 
-	_dl_setup_env(argv[0], envp);
-
 	if (dl_data[AUX_pagesz] != 0)
 		_dl_pagesz = dl_data[AUX_pagesz];
 	else
@@ -419,6 +417,8 @@ _dl_boot(const char **argv, char **envp, const long dyn_loff, long *dl_data)
 		}
 	}
 #endif
+
+	_dl_setup_env(argv[0], envp);
 
 	DL_DEB(("rtld loading: '%s'\n", __progname));
 
