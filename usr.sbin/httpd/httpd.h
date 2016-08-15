@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.104 2016/07/13 16:35:47 jsing Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.105 2016/08/15 13:48:24 jsing Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -561,6 +561,8 @@ struct server_config *
 	 serverconfig_byid(uint32_t);
 int	 server_foreach(int (*)(struct server *,
 	    struct server_config *, void *), void *);
+struct server *
+	 server_match(struct server *, int);
 
 SPLAY_PROTOTYPE(client_tree, client, clt_nodes, server_client_cmp);
 
