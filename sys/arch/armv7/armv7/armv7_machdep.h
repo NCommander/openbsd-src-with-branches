@@ -1,4 +1,4 @@
-/*	$OpenBSD: armv7_machdep.h,v 1.7 2016/06/04 18:09:16 jsg Exp $	*/
+/*	$OpenBSD: armv7_machdep.h,v 1.8 2016/06/08 15:27:05 jsg Exp $	*/
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -17,6 +17,8 @@
 
 #ifndef __PLATFORMVAR_H__
 #define __PLATFORMVAR_H__
+
+extern int stdout_node;
 
 void platform_init(void);
 void platform_powerdown(void);
