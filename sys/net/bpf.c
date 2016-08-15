@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.145 2016/08/15 07:12:11 mpi Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.146 2016/08/15 07:17:10 mpi Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -521,8 +521,6 @@ bpf_wakeup(struct bpf_d *d)
 		    d->bd_siguid, d->bd_sigeuid);
 
 	selwakeup(&d->bd_sel);
-	/* XXX */
-	d->bd_sel.si_selpid = 0;
 }
 
 int
