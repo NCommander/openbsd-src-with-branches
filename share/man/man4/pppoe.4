@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pppoe.4,v 1.30 2016/04/01 04:03:35 jsg Exp $
+.\"	$OpenBSD: pppoe.4,v 1.31 2016/04/01 05:47:34 jmc Exp $
 .\"	$NetBSD: pppoe.4,v 1.26 2003/10/02 07:06:36 wiz Exp $
 .\"
 .\" Copyright (c) 2002 The NetBSD Foundation, Inc.
@@ -102,7 +102,7 @@ inet 0.0.0.0 255.255.255.255 NONE \e
 dest 0.0.0.1
 inet6 eui64
 !/sbin/route add default -ifp pppoe0 0.0.0.1
-!/sbin/route add -inet6 default -ifp pppoe0 fe80::
+!/sbin/route add -inet6 default -ifp pppoe0 fe80::%pppoe0
 .Ed
 .Pp
 The physical interface must also be marked
