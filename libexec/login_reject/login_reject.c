@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_reject.c,v 1.13 2015/11/19 18:37:01 millert Exp $	*/
+/*	$OpenBSD: login_reject.c,v 1.14 2016/04/26 20:30:00 mestre Exp $	*/
 
 /*-
  * Copyright (c) 1995 Berkeley Software Design, Inc. All rights reserved.
@@ -114,7 +114,7 @@ main(int argc, char *argv[])
 	if (mode == 2) {
 		mode = 0;
 		c = -1;
-		while (read(3, passbuf, (size_t)1) == 1) {
+		while (read(3, passbuf, 1) == 1) {
 			if (passbuf[0] == '\0' && ++mode == 2)
 				break;
 		}

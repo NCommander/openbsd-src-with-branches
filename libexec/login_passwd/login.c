@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.11 2015/01/16 06:39:50 deraadt Exp $	*/
+/*	$OpenBSD: login.c,v 1.12 2015/10/05 17:31:17 millert Exp $	*/
 
 /*-
  * Copyright (c) 1995 Berkeley Software Design, Inc. All rights reserved.
@@ -120,7 +120,7 @@ main(int argc, char **argv)
 		mode = 0;
 		count = -1;
 		while (++count < sizeof(response) &&
-		    read(3, &response[count], (size_t)1) == (ssize_t)1) {
+		    read(3, &response[count], 1) == 1) {
 			if (response[count] == '\0' && ++mode == 2)
 				break;
 			if (response[count] == '\0' && mode == 1) {
