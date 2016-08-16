@@ -1,4 +1,4 @@
-/*	$OpenBSD: conflex.c,v 1.32 2015/05/18 17:51:21 krw Exp $	*/
+/*	$OpenBSD: conflex.c,v 1.33 2016/02/06 19:30:52 krw Exp $	*/
 
 /* Lexical scanner for dhclient config file. */
 
@@ -356,6 +356,7 @@ static const struct keywords {
 	{ "select-timeout",			TOK_SELECT_TIMEOUT },
 	{ "send",				TOK_SEND },
 	{ "server-name",			TOK_SERVER_NAME },
+	{ "ssid",				TOK_SSID },
 	{ "supersede",				TOK_SUPERSEDE },
 	{ "timeout",				TOK_TIMEOUT }
 };
