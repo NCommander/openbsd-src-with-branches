@@ -1,4 +1,4 @@
-/*	$OpenBSD: verify.c,v 1.19 2009/10/27 23:59:53 deraadt Exp $	*/
+/*	$OpenBSD: verify.c,v 1.20 2015/01/16 06:40:18 deraadt Exp $	*/
 /*	$NetBSD: verify.c,v 1.10 1995/03/07 21:26:28 cgd Exp $	*/
 
 /*-
@@ -85,7 +85,7 @@ vwalk(void)
 		case FTS_DP:
 			if (specdepth > p->fts_level) {
 				for (level = level->parent; level->prev;
-				      level = level->prev);  
+				      level = level->prev);
 				--specdepth;
 			}
 			continue;
