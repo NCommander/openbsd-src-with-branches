@@ -1,4 +1,4 @@
-/*	$OpenBSD: ls.c,v 1.46 2016/03/28 11:25:35 chl Exp $	*/
+/*	$OpenBSD: ls.c,v 1.47 2016/08/16 16:09:24 krw Exp $	*/
 /*	$NetBSD: ls.c,v 1.18 1996/07/09 09:16:29 mycroft Exp $	*/
 
 /*
@@ -529,7 +529,7 @@ display(FTSENT *p, FTSENT *list)
 
 				if (f_flags) {
 					np->flags = &np->data[ulen + 1 + glen + 1];
-				  	(void)strlcpy(np->flags, flags, flen + 1);
+					(void)strlcpy(np->flags, flags, flen + 1);
 					if (*flags != '-')
 						free(flags);
 				}
