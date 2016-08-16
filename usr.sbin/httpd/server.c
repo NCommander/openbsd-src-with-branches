@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.89 2016/08/16 08:36:29 reyk Exp $	*/
+/*	$OpenBSD: server.c,v 1.90 2016/08/16 17:10:01 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>	/* nitems */
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/time.h>

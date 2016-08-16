@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpe.c,v 1.40 2015/01/16 00:05:13 deraadt Exp $	*/
+/*	$OpenBSD: snmpe.c,v 1.41 2015/10/08 08:17:30 sthen Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>	/* nitems */
 #include <sys/queue.h>
 #include <sys/types.h>
 #include <sys/stat.h>

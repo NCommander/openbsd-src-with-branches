@@ -1,4 +1,4 @@
-/*	$OpenBSD: iscsictl.c,v 1.9 2015/01/16 06:40:17 deraadt Exp $ */
+/*	$OpenBSD: iscsictl.c,v 1.10 2015/11/11 02:55:12 deraadt Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>	/* nitems */
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/uio.h>

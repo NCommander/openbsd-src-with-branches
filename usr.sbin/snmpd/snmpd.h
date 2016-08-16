@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.65 2015/11/23 19:31:52 reyk Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.66 2015/12/07 12:33:08 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -35,6 +35,10 @@
 
 #include "ber.h"
 #include "snmp.h"
+
+#ifndef nitems
+#define nitems(_a) (sizeof((_a)) / sizeof((_a)[0]))
+#endif
 
 /*
  * common definitions for snmpd

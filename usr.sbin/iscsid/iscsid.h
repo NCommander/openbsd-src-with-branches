@@ -1,4 +1,4 @@
-/*	$OpenBSD: iscsid.h,v 1.13 2014/04/21 17:41:52 claudio Exp $ */
+/*	$OpenBSD: iscsid.h,v 1.14 2014/05/10 11:30:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -37,6 +37,10 @@
 #define PDU_DDIGEST	4
 
 #define PDU_LEN(x)	((((x) + 3) / 4) * 4)
+
+#ifndef nitems
+#define nitems(_a) (sizeof((_a)) / sizeof((_a)[0]))
+#endif
 
 /*
  * Common control message header.

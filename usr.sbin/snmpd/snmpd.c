@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.c,v 1.31 2015/11/23 19:31:52 reyk Exp $	*/
+/*	$OpenBSD: snmpd.c,v 1.32 2016/02/02 17:51:11 sthen Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>	/* nitems */ 
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/socket.h>

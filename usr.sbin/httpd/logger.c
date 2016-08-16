@@ -1,4 +1,4 @@
-/*	$OpenBSD: logger.c,v 1.14 2015/11/05 18:00:43 florian Exp $	*/
+/*	$OpenBSD: logger.c,v 1.15 2015/12/02 15:13:00 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>	/* nitems */
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/uio.h>
