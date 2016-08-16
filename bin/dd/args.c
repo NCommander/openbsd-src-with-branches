@@ -1,4 +1,4 @@
-/*	$OpenBSD: args.c,v 1.26 2014/09/14 22:44:47 schwarze Exp $	*/
+/*	$OpenBSD: args.c,v 1.27 2016/08/14 13:40:55 tedu Exp $	*/
 /*	$NetBSD: args.c,v 1.7 1996/03/01 01:18:58 jtc Exp $	*/
 
 /*-
@@ -309,7 +309,7 @@ f_conv(char *arg)
 
 /*
  * Convert an expression of the following forms to a size_t
- * 	1) A positive decimal number, optionally followed by
+ *	1) A positive decimal number, optionally followed by
  *		b - multiply by 512.
  *		k, m or g - multiply by 1024 each.
  *		w - multiply by sizeof int
@@ -392,7 +392,7 @@ erange:
 
 /*
  * Convert an expression of the following forms to an off_t
- * 	1) A positive decimal number, optionally followed by
+ *	1) A positive decimal number, optionally followed by
  *		b - multiply by 512.
  *		k, m or g - multiply by 1024 each.
  *		w - multiply by sizeof int

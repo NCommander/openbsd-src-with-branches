@@ -1,4 +1,4 @@
-/*	$OpenBSD: dd.h,v 1.5 2003/06/02 23:32:07 millert Exp $	*/
+/*	$OpenBSD: dd.h,v 1.6 2014/02/12 01:18:36 bluhm Exp $	*/
 /*	$NetBSD: dd.h,v 1.4 1995/03/21 09:04:08 cgd Exp $	*/
 
 /*-
@@ -50,7 +50,7 @@ typedef struct {
 #define	NOREAD		0x08		/* not readable */
 	u_int	flags;
 
-	char 	*name;			/* name */
+	char	*name;			/* name */
 	int	fd;			/* file descriptor */
 	off_t	offset;			/* # of blocks to skip */
 
