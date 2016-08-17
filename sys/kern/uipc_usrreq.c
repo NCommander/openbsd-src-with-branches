@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.99 2016/07/12 14:28:02 tedu Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.100 2016/07/19 05:30:48 tedu Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -254,6 +254,10 @@ uipc_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 			if (control) {
 				if (sbappendcontrol(rcv, m, control))
 					control = NULL;
+				else {
+					error = ENOBUFS;
+					break;
+				}
 			} else if (so->so_type == SOCK_SEQPACKET)
 				sbappendrecord(rcv, m);
 			else
