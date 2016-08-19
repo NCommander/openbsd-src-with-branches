@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.472 2016/08/13 17:47:41 markus Exp $ */
+/* $OpenBSD: sshd.c,v 1.473 2016/08/15 12:27:56 naddy Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -601,7 +601,7 @@ privsep_preauth(Authctxt *authctxt)
 static void
 privsep_postauth(Authctxt *authctxt)
 {
-	if (authctxt->pw->pw_uid == 0 || options.use_login) {
+	if (authctxt->pw->pw_uid == 0) {
 		/* File descriptor passing is broken or root login */
 		use_privsep = 0;
 		goto skip;
