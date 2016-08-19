@@ -1,4 +1,4 @@
-/*	$OpenBSD: noexec.c,v 1.13 2013/07/30 15:46:32 kettenis Exp $	*/
+/*	$OpenBSD: testfly.S,v 1.1 2014/01/10 13:45:00 jsing Exp $	*/
 
 /*
  * Copyright (c) 2002,2003 Michael Shalayeff
@@ -51,6 +51,11 @@ LEAF_ENTRY(testfly)
 	bv	r0(rp)
 	nop
 EXIT(testfly)
+#endif
+
+#ifdef __arm__
+ENTRY(testfly)
+	mov	pc, lr
 #endif
 
 	.space 8192

@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.12 2004/03/04 07:24:01 david Exp $
+#	$OpenBSD: Makefile,v 1.13 2014/01/10 13:45:00 jsing Exp $
 
 .if ${MACHINE} == "sparc64" || ${MACHINE} == "sparc" || \
-    ${MACHINE} == "alpha" || \
+    ${MACHINE} == "alpha" || ${MACHINE} == "armv7" || \
     ${MACHINE_ARCH} == "amd64" || ${MACHINE} == "i386" || \
     ${MACHINE} == "hppa"
 
