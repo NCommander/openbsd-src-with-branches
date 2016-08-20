@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.4 2013/03/23 16:12:21 deraadt Exp $	*/
+/*	$OpenBSD: param.h,v 1.1 2013/09/04 14:38:28 patrick Exp $	*/
 
 /*
  * Copyright (c) 1994,1995 Mark Brinicombe.
@@ -41,7 +41,7 @@
 #define	MACHINE		"armv7"
 
 #ifndef	MSGBUFSIZE
-#define	MSGBUFSIZE	PAGE_SIZE
+#define	MSGBUFSIZE	(8 * PAGE_SIZE)
 #endif
 
 #endif /* _MACHINE_PARAM_H_ */
