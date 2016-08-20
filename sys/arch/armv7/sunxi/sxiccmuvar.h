@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxiccmuvar.h,v 1.2 2013/11/01 21:15:05 aalm Exp $	*/
+/*	$OpenBSD: sxiccmuvar.h,v 1.3 2016/08/13 21:48:44 kettenis Exp $	*/
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -17,6 +17,8 @@
 
 void sxiccmu_enablemodule(int);
 void sxiccmu_disablemodule(int);
+
+void sxiccmu_set_sd_clock(int, int);
 
 enum CCMU_MODULES {
 	CCMU_EHCI0,
