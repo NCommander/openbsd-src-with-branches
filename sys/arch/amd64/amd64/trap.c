@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.48 2015/09/01 08:11:02 jsg Exp $	*/
+/*	$OpenBSD: trap.c,v 1.49 2016/02/27 13:08:06 mpi Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -244,7 +244,7 @@ copyfault:
 	case T_STKFLT|T_USER:
 	case T_NMI|T_USER:
 #ifdef TRAP_SIGDEBUG
-		printf("pid %d (%s): BUS at rip %lx addr %lx\n",
+		printf("pid %d (%s): BUS at rip %llx addr %llx\n",
 		    p->p_pid, p->p_comm, frame->tf_rip, rcr2());
 		frame_dump(frame);
 #endif
@@ -268,7 +268,7 @@ copyfault:
 		goto out;
 	case T_FPOPFLT|T_USER:		/* coprocessor operand fault */
 #ifdef TRAP_SIGDEBUG
-		printf("pid %d (%s): ILL at rip %lx addr %lx\n",
+		printf("pid %d (%s): ILL at rip %llx addr %llx\n",
 		    p->p_pid, p->p_comm, frame->tf_rip, rcr2());
 		frame_dump(frame);
 #endif
@@ -400,7 +400,7 @@ faultcommon:
 			trapsignal(p, SIGKILL, T_PAGEFLT, SEGV_MAPERR, sv);
 		} else {
 #ifdef TRAP_SIGDEBUG
-			printf("pid %d (%s): SEGV at rip %lx addr %lx\n",
+			printf("pid %d (%s): SEGV at rip %llx addr %lx\n",
 			    p->p_pid, p->p_comm, frame->tf_rip, fa);
 			frame_dump(frame);
 #endif
