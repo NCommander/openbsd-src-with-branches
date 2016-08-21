@@ -1,4 +1,4 @@
-/* $OpenBSD: fusefs.h,v 1.6 2014/01/16 09:31:44 syl Exp $ */
+/* $OpenBSD: fusefs.h,v 1.7 2014/05/20 13:32:22 syl Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -72,7 +72,6 @@ extern struct pool fusefs_fbuf_pool;
 
 /* fuse helpers */
 #define TSLEEP_TIMEOUT 5
-void update_vattr(struct mount *mp, struct vattr *v);
 
 /* files helpers. */
 int fusefs_file_open(struct fusefs_mnt *, struct fusefs_node *, enum fufh_type,
