@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.189 2016/07/13 08:40:46 mpi Exp $	*/
+/*	$OpenBSD: in6.c,v 1.190 2016/08/08 13:09:36 mpi Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -1917,5 +1917,5 @@ in6_domifdetach(struct ifnet *ifp, void *aux)
 	struct in6_ifextra *ext = (struct in6_ifextra *)aux;
 
 	nd6_ifdetach(ext->nd_ifinfo);
-	free(ext, M_IFADDR, 0);
+	free(ext, M_IFADDR, sizeof(*ext));
 }
