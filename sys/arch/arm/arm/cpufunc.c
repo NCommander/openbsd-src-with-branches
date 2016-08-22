@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.c,v 1.45 2016/08/14 10:36:47 kettenis Exp $	*/
+/*	$OpenBSD: cpufunc.c,v 1.46 2016/08/14 11:30:54 jsg Exp $	*/
 /*	$NetBSD: cpufunc.c,v 1.65 2003/11/05 12:53:15 scw Exp $	*/
 
 /*
@@ -122,6 +122,7 @@ struct cpu_functions armv7_cpufuncs = {
 	(void *)cpufunc_nullop,		/* sdcache_wbinv_range	*/
 	(void *)cpufunc_nullop,		/* sdcache_inv_range	*/
 	(void *)cpufunc_nullop,		/* sdcache_wb_range	*/
+	(void *)cpufunc_nullop,		/* sdcache_drain_writebuf */
 
 	/* Other functions */
 
@@ -180,6 +181,7 @@ struct cpu_functions xscale_cpufuncs = {
 	(void *)cpufunc_nullop,		/* sdcache_wbinv_range	*/
 	(void *)cpufunc_nullop,		/* sdcache_inv_range	*/
 	(void *)cpufunc_nullop,		/* sdcache_wb_range	*/
+	(void *)cpufunc_nullop,		/* sdcache_drain_writebuf */
 
 	/* Other functions */
 
