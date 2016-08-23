@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.29 2016/02/03 14:48:36 krw Exp $	*/
+/*	$OpenBSD: packet.c,v 1.30 2016/02/06 19:30:52 krw Exp $	*/
 
 /* Packet assembly code, originally contributed by Archie Cobbs. */
 
@@ -92,7 +92,7 @@ wrapsum(u_int32_t sum)
 }
 
 void
-assemble_eh_header(struct ether_header *eh)
+assemble_eh_header(struct interface_info *ifi, struct ether_header *eh)
 {
 	memset(eh->ether_dhost, 0xff, sizeof(eh->ether_dhost));
 

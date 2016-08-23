@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.h,v 1.29 2016/02/06 19:30:52 krw Exp $ */
+/*	$OpenBSD: privsep.h,v 1.30 2016/07/20 19:40:04 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -58,13 +58,15 @@ struct imsg_hup {
 	struct	in_addr addr;
 };
 
-void	dispatch_imsg(struct imsgbuf *);
-void	priv_delete_address(struct imsg_delete_address *);
-void	priv_add_address(struct imsg_add_address *);
-void	priv_flush_routes(struct imsg_flush_routes *);
-void	priv_add_route(struct imsg_add_route *);
-void	priv_cleanup(struct imsg_hup *);
-void	priv_set_interface_mtu(struct imsg_set_interface_mtu *);
+void	dispatch_imsg(struct interface_info *, struct imsgbuf *);
+void	priv_delete_address(struct interface_info *,
+	    struct imsg_delete_address *);
+void	priv_add_address(struct interface_info *, struct imsg_add_address *);
+void	priv_flush_routes(struct interface_info *, struct imsg_flush_routes *);
+void	priv_add_route(struct interface_info *, struct imsg_add_route *);
+void	priv_cleanup(struct interface_info *, struct imsg_hup *);
+void	priv_set_interface_mtu(struct interface_info *,
+	    struct imsg_set_interface_mtu *);
 void	priv_write_resolv_conf(struct imsg *);
 void	priv_write_option_db(struct imsg *);
 void	priv_write_file(char *, int, mode_t, u_int8_t *, size_t);
