@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: if_em_hw.c,v 1.90 2015/12/14 03:04:10 mmcc Exp $ */
+/* $OpenBSD: if_em_hw.c,v 1.91 2016/02/18 14:24:39 bluhm Exp $ */
 /*
  * if_em_hw.c Shared functions for accessing and configuring the MAC
  */
@@ -5539,7 +5539,6 @@ em_detect_gig_phy(struct em_hw *hw)
 	    (hw->mac_type == em_82542_rev2_0 ||
 	    hw->mac_type == em_82542_rev2_1 ||
 	    hw->mac_type == em_82543 ||
-	    hw->mac_type == em_82574 ||
 	    hw->mac_type == em_82573 ||
 	    hw->mac_type == em_82574 ||
 	    hw->mac_type == em_80003es2lan)) {
