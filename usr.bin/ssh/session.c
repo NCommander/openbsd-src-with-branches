@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.283 2016/08/13 17:47:41 markus Exp $ */
+/* $OpenBSD: session.c,v 1.284 2016/08/19 03:18:06 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -505,8 +505,7 @@ do_exec_pty(Session *s, const char *command)
 		close(ttyfd);
 
 		/* record login, etc. similar to login(1) */
-		if (command != NULL)
-			do_login(s, command);
+		do_login(s, command);
 
 		/*
 		 * Do common processing for the child, such as execing
