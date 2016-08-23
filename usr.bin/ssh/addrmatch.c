@@ -1,4 +1,4 @@
-/*	$OpenBSD: addrmatch.c,v 1.9 2014/01/19 11:21:51 dtucker Exp $ */
+/*	$OpenBSD: addrmatch.c,v 1.10 2015/07/08 19:04:21 markus Exp $ */
 
 /*
  * Copyright (c) 2004-2008 Damien Miller <djm@mindrot.org>
@@ -407,7 +407,8 @@ addr_match_list(const char *addr, const char *_list)
 					break;
 				}
 				ret = 1;
-			}
+			} else if (neg)
+				ret = 1;
 			continue;
 		} else {
 			/* If CIDR parse failed, try wildcard string match */
