@@ -1,4 +1,4 @@
-/*	$OpenBSD: armreg.h,v 1.34 2016/08/14 10:36:47 kettenis Exp $	*/
+/*	$OpenBSD: armreg.h,v 1.35 2016/08/14 11:30:54 jsg Exp $	*/
 /*	$NetBSD: armreg.h,v 1.27 2003/09/06 08:43:02 rearnsha Exp $	*/
 
 /*
@@ -313,6 +313,10 @@
 #define FAULT_DOMAIN_P  0x0b /* Domain -- Page */
 #define FAULT_PERM_S    0x0d /* Permission -- Section */
 #define FAULT_PERM_P    0x0f /* Permission -- Page */
+
+/* Fault type definitions for ARM v7 */
+#define FAULT_ACCESS_1	0x03 /* Access flag fault -- Level 1 */
+#define FAULT_ACCESS_2	0x06 /* Access flag fault -- Level 2 */
 
 #define FAULT_IMPRECISE	0x400	/* Imprecise exception (XSCALE) */
 
