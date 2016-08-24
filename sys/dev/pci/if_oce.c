@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_oce.c,v 1.94 2016/03/14 01:16:39 mikeb Exp $	*/
+/*	$OpenBSD: if_oce.c,v 1.95 2016/04/13 10:34:32 mpi Exp $	*/
 
 /*
  * Copyright (c) 2012 Mike Belopuhov
@@ -588,6 +588,7 @@ oce_attach(struct device *parent, struct device *self, void *aux)
 		}
 		pool_init(oce_pkt_pool, sizeof(struct oce_pkt), 0, 0, 0,
 		    "ocepkts", NULL);
+		pool_setipl(oce_pkt_pool, IPL_NET);
 	}
 
 	/* We allocate a single interrupt resource */
