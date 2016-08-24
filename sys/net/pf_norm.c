@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.188 2016/06/15 11:49:34 mpi Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.189 2016/08/17 03:24:12 procter Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -759,7 +759,7 @@ pf_refragment6(struct mbuf **m0, struct m_tag *mtag, struct sockaddr_in6 *dst,
 		m->m_pkthdr.pf.flags |= PF_TAG_REFRAGMENTED;
 		if (error == 0) {
 			if (ifp == NULL) {
-				ip6_forward(m, 0);
+				ip6_forward(m, NULL, 0);
 			} else if ((u_long)m->m_pkthdr.len <= ifp->if_mtu) {
 				ifp->if_output(ifp, m, sin6tosa(dst), rt);
 			} else {
