@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-display-message.c,v 1.34 2015/12/13 21:53:57 nicm Exp $ */
+/* $OpenBSD: cmd-display-message.c,v 1.35 2015/12/14 00:31:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -78,9 +78,10 @@ cmd_display_message_exec(struct cmd *self, struct cmd_q *cmdq)
 	msg = format_expand_time(ft, template, time(NULL));
 	if (args_has(self->args, 'p'))
 		cmdq_print(cmdq, "%s", msg);
-	else
+	else if (c != NULL)
 		status_message_set(c, "%s", msg);
 	free(msg);
+
 	format_free(ft);
 
 	return (CMD_RETURN_NORMAL);
