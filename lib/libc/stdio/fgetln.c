@@ -1,4 +1,4 @@
-/*	$OpenBSD: fgetln.c,v 1.13 2015/01/05 21:58:52 millert Exp $ */
+/*	$OpenBSD: fgetln.c,v 1.14 2015/08/31 02:53:57 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -115,8 +115,11 @@ fgetln(FILE *fp, size_t *lenp)
 		(void)memcpy((void *)(fp->_lb._base + off), (void *)fp->_p,
 		    len - off);
 		off = len;
-		if (__srefill(fp))
-			break;	/* EOF or error: return partial line */
+		if (__srefill(fp)) {
+			if (fp->_flags & __SEOF)
+				break;
+			goto error;
+		}
 		if ((p = memchr((void *)fp->_p, '\n', fp->_r)) == NULL)
 			continue;
 
