@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_event.c,v 1.73 2016/07/14 02:35:17 tedu Exp $	*/
+/*	$OpenBSD: kern_event.c,v 1.74 2016/07/14 05:55:08 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000,2001 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -165,8 +165,10 @@ kqueue_init(void)
 
 	pool_init(&kqueue_pool, sizeof(struct kqueue), 0, 0, PR_WAITOK,
 	    "kqueuepl", NULL);
+	pool_setipl(&kqueue_pool, IPL_NONE);
 	pool_init(&knote_pool, sizeof(struct knote), 0, 0, PR_WAITOK,
 	    "knotepl", NULL);
+	pool_setipl(&knote_pool, IPL_NONE);
 }
 
 int

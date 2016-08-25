@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.201 2016/07/06 15:53:01 tedu Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.202 2016/07/14 05:55:08 guenther Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -154,6 +154,7 @@ signal_init(void)
 
 	pool_init(&sigacts_pool, sizeof(struct sigacts), 0, 0, PR_WAITOK,
 	    "sigapl", NULL);
+	pool_setipl(&sigacts_pool, IPL_NONE);
 }
 
 /*
