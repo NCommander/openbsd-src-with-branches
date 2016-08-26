@@ -1,4 +1,4 @@
-/* $OpenBSD: magic-test.c,v 1.22 2016/05/01 10:56:03 nicm Exp $ */
+/* $OpenBSD: magic-test.c,v 1.23 2016/05/01 11:26:19 nicm Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <vis.h>
 
