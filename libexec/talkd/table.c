@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.c,v 1.17 2016/02/01 07:25:51 mestre Exp $	*/
+/*	$OpenBSD: table.c,v 1.18 2016/03/16 15:41:10 krw Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -39,6 +39,7 @@
  */
 #include <sys/queue.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <protocols/talkd.h>
 
 #include <stdlib.h>
