@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.c,v 1.56 2016/06/10 12:09:48 florian Exp $	*/
+/*	$OpenBSD: httpd.c,v 1.57 2016/08/16 18:41:57 tedu Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -232,7 +232,6 @@ main(int argc, char *argv[])
 		log_info("startup");
 
 	ps->ps_instances[PROC_SERVER] = env->sc_prefork_server;
-	ps->ps_ninstances = env->sc_prefork_server;
 
 	if (env->sc_chroot == NULL)
 		env->sc_chroot = ps->ps_pw->pw_dir;
