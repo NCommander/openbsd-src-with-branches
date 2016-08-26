@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmwpvs.c,v 1.12 2015/03/14 03:38:49 jsg Exp $ */
+/*	$OpenBSD: vmwpvs.c,v 1.13 2015/09/10 18:10:34 deraadt Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -62,7 +62,7 @@
 #define VMWPVS_INTR_CMPL_MASK	(VMWPVS_INTR_CMPL_0 | VMWPVS_INTR_CMPL_1)
 #define VMWPVS_INTR_MSG_0	(1 << 2)
 #define VMWPVS_INTR_MSG_1	(1 << 3)
-#define VMWPVS_INTR_MSG_MASK	(VMWPVS_INTR_MSG_0 | VMWPVS_INTR_MSG_0)
+#define VMWPVS_INTR_MSG_MASK	(VMWPVS_INTR_MSG_0 | VMWPVS_INTR_MSG_1)
 #define VMWPVS_INTR_ALL_MASK	(VMWPVS_INTR_CMPL_MASK | VMWPVS_INTR_MSG_MASK)
 
 #define VMWPVS_PAGE_SHIFT	12
