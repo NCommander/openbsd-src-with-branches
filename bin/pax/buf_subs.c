@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf_subs.c,v 1.27 2015/03/19 05:14:24 guenther Exp $	*/
+/*	$OpenBSD: buf_subs.c,v 1.28 2016/08/14 18:30:33 guenther Exp $	*/
 /*	$NetBSD: buf_subs.c,v 1.5 1995/03/21 09:07:08 cgd Exp $	*/
 
 /*-
@@ -35,7 +35,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/time.h>
 #include <sys/stat.h>
 #include <stdio.h>
 #include <errno.h>
