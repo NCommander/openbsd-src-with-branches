@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxiccmu.c,v 1.13 2016/08/22 19:43:49 kettenis Exp $	*/
+/*	$OpenBSD: sxiccmu.c,v 1.14 2016/08/23 19:13:37 kettenis Exp $	*/
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Artturi Alm
@@ -60,7 +60,6 @@ struct sxiccmu_softc {
 };
 
 void	sxiccmu_attach(struct device *, struct device *, void *);
-void	sxiccmu_enablemodule(int);
 
 struct cfattach	sxiccmu_ca = {
 	sizeof (struct sxiccmu_softc), NULL, sxiccmu_attach
