@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff3.c,v 1.37 2015/09/05 09:47:08 jsg Exp $	*/
+/*	$OpenBSD: diff3.c,v 1.38 2015/11/02 16:45:21 nicm Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -69,6 +69,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "diff.h"

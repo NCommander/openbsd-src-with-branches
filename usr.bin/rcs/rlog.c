@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlog.c,v 1.70 2014/11/28 15:09:50 otto Exp $	*/
+/*	$OpenBSD: rlog.c,v 1.71 2015/01/16 06:40:11 deraadt Exp $	*/
 /*
  * Copyright (c) 2005, 2009 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "rcsprog.h"

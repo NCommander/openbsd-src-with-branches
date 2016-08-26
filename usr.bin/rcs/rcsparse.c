@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsparse.c,v 1.14 2014/12/01 21:58:46 deraadt Exp $	*/
+/*	$OpenBSD: rcsparse.c,v 1.15 2015/06/13 20:15:21 nicm Exp $	*/
 /*
  * Copyright (c) 2010 Tobias Stoeckmann <tobias@openbsd.org>
  *
@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "rcs.h"
