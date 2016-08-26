@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.652 2016/06/21 21:35:24 benno Exp $	*/
+/*	$OpenBSD: parse.y,v 1.654 2016/07/18 15:21:33 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -655,7 +655,7 @@ option		: SET REASSEMBLE yesno optnodf		{
 		}
 		| SET DEBUG DEBUG {
 			if (pfctl_set_debug(pf, "debug") != 0) {
-				yyerror("error setting debuglevel debug");
+				yyerror("error setting debuglevel %s", "debug");
 				YYERROR;
 			}
 		}
