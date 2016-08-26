@@ -1,4 +1,4 @@
-/* $OpenBSD: transport.h,v 1.18 2006/06/02 19:35:55 hshoexer Exp $	 */
+/* $OpenBSD: transport.h,v 1.19 2015/01/16 06:39:59 deraadt Exp $	 */
 /* $EOM: transport.h,v 1.16 2000/07/17 18:57:59 provos Exp $	 */
 
 /*
@@ -40,6 +40,7 @@
 
 #include <sys/queue.h>
 #include <sys/types.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 
 #include "message.h"
