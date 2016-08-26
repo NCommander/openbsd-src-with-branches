@@ -1,4 +1,4 @@
-/* $Id: cache.c,v 1.5 2014/10/08 04:10:04 doug Exp $ */
+/* $Id: cache.c,v 1.6 2016/01/16 03:30:26 canacar Exp $ */
 /*
  * Copyright (c) 2001, 2007 Can Erkin Acar <canacar@openbsd.org>
  *
@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <assert.h>
 
