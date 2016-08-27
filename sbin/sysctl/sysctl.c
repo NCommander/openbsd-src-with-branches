@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.216 2016/07/27 14:44:59 tedu Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.217 2016/08/14 22:54:56 guenther Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -37,6 +37,7 @@
 #include <sys/shm.h>
 #include <sys/sysctl.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/malloc.h>
 #include <sys/uio.h>
 #include <sys/tty.h>
