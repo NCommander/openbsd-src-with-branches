@@ -1,4 +1,4 @@
-/*	$OpenBSD: uuid.c,v 1.3 2010/06/15 15:14:57 martinh Exp $ */
+/*	$OpenBSD: uuid.c,v 1.4 2010/06/27 18:19:36 martinh Exp $ */
 /*
  * Copyright (c) 2002, Stockholms Universitet
  * (Stockholm University, Stockholm Sweden)
@@ -48,6 +48,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <net/if.h>
 #include <net/if_types.h>
