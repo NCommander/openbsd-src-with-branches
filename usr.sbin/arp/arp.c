@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.74 2016/03/23 08:28:31 mpi Exp $ */
+/*	$OpenBSD: arp.c,v 1.75 2016/05/28 07:00:18 natano Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -40,6 +40,7 @@
 #include <sys/file.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
+#include <sys/time.h>
 #include <sys/ioctl.h>
 #include <net/bpf.h>
 #include <net/if.h>
