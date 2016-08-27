@@ -1,4 +1,4 @@
-/*	$OpenBSD: terminal.c,v 1.11 2016/01/07 21:29:31 mestre Exp $	*/
+/*	$OpenBSD: terminal.c,v 1.12 2016/01/07 21:37:53 mestre Exp $	*/
 /*	$NetBSD: terminal.c,v 1.2 1997/10/10 16:34:05 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -31,6 +31,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/select.h>
 #include <err.h>
 #include <stdarg.h>
 #include <syslog.h>

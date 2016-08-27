@@ -1,4 +1,4 @@
-/*	$OpenBSD: shots.c,v 1.11 2016/01/07 21:29:31 mestre Exp $	*/
+/*	$OpenBSD: shots.c,v 1.12 2016/01/07 21:37:53 mestre Exp $	*/
 /*	$NetBSD: shots.c,v 1.3 1997/10/11 08:13:50 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -31,6 +31,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/select.h>
 #include <stdlib.h>
 #include <syslog.h>
 

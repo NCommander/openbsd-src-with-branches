@@ -1,6 +1,7 @@
-/*	$OpenBSD: conf.c,v 1.9 2016/01/07 21:29:31 mestre Exp $	*/
+/*	$OpenBSD: conf.c,v 1.10 2016/01/07 21:37:53 mestre Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public domain. */
 
+#include <sys/select.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.c,v 1.4 2003/06/11 08:45:33 pjanzen Exp $	*/
+/*	$OpenBSD: extern.c,v 1.5 2016/01/07 21:29:31 mestre Exp $	*/
 /*	$NetBSD: extern.c,v 1.2 1997/10/10 16:33:24 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -31,6 +31,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/select.h>
 #include "hunt.h"
 #include "server.h"
 
