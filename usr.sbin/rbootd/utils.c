@@ -1,4 +1,4 @@
-/*	$OpenBSD: utils.c,v 1.14 2015/08/20 22:39:29 deraadt Exp $	*/
+/*	$OpenBSD: utils.c,v 1.15 2016/05/29 02:19:02 guenther Exp $	*/
 /*	$NetBSD: utils.c,v 1.5.2.1 1995/11/14 08:45:46 thorpej Exp $	*/
 
 /*
@@ -43,6 +43,7 @@
  * Author: Jeff Forys, University of Utah CSS
  */
 
+#include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

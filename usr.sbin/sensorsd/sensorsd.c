@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensorsd.c,v 1.58 2015/11/19 06:08:06 deraadt Exp $ */
+/*	$OpenBSD: sensorsd.c,v 1.59 2015/12/12 20:04:23 mmcc Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <sys/queue.h>
+#include <sys/time.h>
 #include <sys/sensors.h>
 
 #include <err.h>
