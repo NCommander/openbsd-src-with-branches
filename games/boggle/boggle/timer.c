@@ -1,4 +1,4 @@
-/*	$OpenBSD: timer.c,v 1.13 2016/01/10 13:18:07 mestre Exp $	*/
+/*	$OpenBSD: timer.c,v 1.14 2016/01/10 13:35:09 mestre Exp $	*/
 /*	$NetBSD: timer.c,v 1.3 1995/04/24 12:22:45 cgd Exp $	*/
 
 /*-
@@ -33,8 +33,10 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/select.h>
 #include <curses.h>
 #include <setjmp.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "extern.h"
