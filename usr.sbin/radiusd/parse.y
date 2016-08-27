@@ -1,4 +1,4 @@
-/* Adapted from usr.sbin/ntpd/parse.y 1.50 */
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
