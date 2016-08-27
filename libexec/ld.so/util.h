@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.26 2014/06/21 08:00:23 otto Exp $	*/
+/*	$OpenBSD: util.h,v 1.27 2016/08/12 20:39:01 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -33,6 +33,7 @@
 
 #include <sys/utsname.h>
 #include <stdarg.h>
+#include <stddef.h>		/* for NULL */
 
 void *_dl_malloc(size_t size);
 void *_dl_calloc(size_t nmemb, const size_t size);
