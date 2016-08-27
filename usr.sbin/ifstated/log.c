@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.7 2007/09/07 07:52:14 reyk Exp $	*/
+/*	$OpenBSD: log.c,v 1.1 2007/10/25 06:03:31 pyr Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <syslog.h>
 
 void	log_init(int);
