@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.56 2016/04/06 06:42:17 djm Exp $ */
+/* $OpenBSD: misc.h,v 1.57 2016/07/15 00:24:30 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -14,6 +14,8 @@
 
 #ifndef _MISC_H
 #define _MISC_H
+
+#include <sys/time.h>
 
 /* Data structure for representing a forwarding request. */
 struct Forward {
