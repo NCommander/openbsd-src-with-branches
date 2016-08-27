@@ -1,4 +1,4 @@
-/* $OpenBSD: display.c,v 1.49 2015/05/06 07:53:29 mpi Exp $	 */
+/* $OpenBSD: display.c,v 1.50 2015/10/26 12:44:22 tedu Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -46,6 +46,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/sched.h>
 #include <curses.h>
 #include <errno.h>

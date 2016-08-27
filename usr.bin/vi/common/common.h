@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.h,v 1.7 2014/11/12 16:29:04 millert Exp $	*/
+/*	$OpenBSD: common.h,v 1.8 2015/11/19 07:53:31 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -11,6 +11,7 @@
  *	@(#)common.h	10.13 (Berkeley) 9/25/96
  */
 
+#include <sys/time.h>
 #include <db.h>
 #include <regex.h>
 
