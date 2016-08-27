@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.25 2015/10/18 02:39:04 mmcc Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.26 2016/07/18 21:22:09 benno Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -32,6 +32,7 @@
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/queue.h>
 #include <sys/sysctl.h>
