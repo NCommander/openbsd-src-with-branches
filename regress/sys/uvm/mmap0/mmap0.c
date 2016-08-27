@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmap_fixed.c,v 1.1.1.1 2006/04/06 20:39:03 kurt Exp $	*/
+/*	$OpenBSD: mmap0.c,v 1.1 2011/10/07 19:43:07 ariane Exp $	*/
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
  *
@@ -18,9 +18,10 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <err.h>
-#include <fcntl.h>
-#include <sysexits.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <sysexits.h>
 
 
 /*
