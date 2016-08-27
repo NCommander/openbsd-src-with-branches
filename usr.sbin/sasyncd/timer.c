@@ -1,4 +1,4 @@
-/*	$OpenBSD: timer.c,v 1.4 2010/06/29 18:10:04 kjell Exp $	*/
+/*	$OpenBSD: timer.c,v 1.5 2015/08/20 22:39:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -115,7 +115,7 @@ timer_add(char *name, u_int32_t when, void (*function)(void *), void *arg)
 
 	new = calloc(1, sizeof *new);
 	if (!new) {
-		log_err("timer_add: calloc (1, %u) failed", sizeof *new);
+		log_err("timer_add: calloc (1, %zu) failed", sizeof *new);
 		return -1;
 	}
 
