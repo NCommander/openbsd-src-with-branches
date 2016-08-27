@@ -1,4 +1,4 @@
-/*	$OpenBSD: words.c,v 1.9 2003/06/03 03:01:39 millert Exp $	*/
+/*	$OpenBSD: words.c,v 1.10 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: words.c,v 1.3 1995/03/21 15:08:00 cgd Exp $	*/
 
 /*
@@ -30,6 +30,7 @@
  * SUCH DAMAGE.
  */
 
+#include <stdio.h>		/* NULL */
 #include "extern.h"
 
 struct wlist wlist[] = {
