@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.165 2016/08/14 04:30:39 guenther Exp $ */
+/*	$OpenBSD: loader.c,v 1.166 2016/08/23 06:46:17 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -679,7 +679,7 @@ _dl_rtld(elf_object_t *object)
 	    object->obj_flags & DF_1_NOW));
 
 	/*
-	 * Look for W|X segments and make them read-only.
+	 * Look for W&X segments and make them read-only.
 	 */
 	for (llist = object->load_list; llist != NULL; llist = llist->next) {
 		if ((llist->prot & PROT_WRITE) && (llist->prot & PROT_EXEC)) {
