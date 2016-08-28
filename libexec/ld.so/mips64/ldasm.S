@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.19 2016/05/07 19:05:23 guenther Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.20 2016/08/07 03:01:53 guenther Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
@@ -156,10 +156,8 @@ DL_SYSCALL(getdents)
 DL_SYSCALL(getentropy)
 DL_SYSCALL(sendsyslog)
 DL_SYSCALL(pledge)
-DL_SYSCALL(gettimeofday)
 DL_SYSCALL_NOERR(issetugid)
 DL_SYSCALL_NOERR(getthrid)
-DL_SYSCALL(lstat)
 DL_SYSCALL(mprotect)
 DL_SYSCALL(munmap)
 DL_SYSCALL(open)
