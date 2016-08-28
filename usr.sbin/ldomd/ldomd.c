@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldomd.c,v 1.5 2012/11/04 17:37:10 kettenis Exp $	*/
+/*	$OpenBSD: ldomd.c,v 1.6 2012/12/08 20:38:10 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <syslog.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "ds.h"
