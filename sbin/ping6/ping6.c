@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping6.c,v 1.147 2016/08/30 11:15:16 florian Exp $	*/
+/*	$OpenBSD: ping6.c,v 1.148 2016/08/30 12:10:10 florian Exp $	*/
 /*	$KAME: ping6.c,v 1.163 2002/10/25 02:19:06 itojun Exp $	*/
 
 /*
@@ -443,7 +443,7 @@ main(int argc, char *argv[])
 	} else
 		timing = 0;
 	/* in F_VERBOSE case, we may get non-echoreply packets*/
-	if (options & F_VERBOSE)
+	if (options & F_VERBOSE && datalen < 2048)
 		packlen = 2048 + IP6LEN + ICMP6ECHOLEN + EXTRA; /* XXX 2048? */
 	else
 		packlen = datalen + IP6LEN + ICMP6ECHOLEN + EXTRA;
