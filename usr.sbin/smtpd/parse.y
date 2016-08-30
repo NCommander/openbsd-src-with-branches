@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.185 2016/06/21 21:35:25 benno Exp $	*/
+/*	$OpenBSD: parse.y,v 1.186 2016/07/01 17:53:23 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -958,7 +958,7 @@ main		: BOUNCEWARN {
 			}
 		} ca
 		| CIPHERS STRING {
-			env->sc_tls_ciphers = $2;
+			conf->sc_tls_ciphers = $2;
 		}
 		;
 
