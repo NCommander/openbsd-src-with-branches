@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.79 2016/08/08 21:59:20 guenther Exp $ */
+/*	$OpenBSD: resolve.h,v 1.80 2016/08/23 06:46:17 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -32,6 +32,9 @@
 #include <sys/queue.h>
 #include <link.h>
 #include <dlfcn.h>
+
+/* Number of low tags that are used saved internally (0 .. DT_NUM-1) */
+#define DT_NUM	(DT_PREINIT_ARRAYSZ + 1)
 
 struct load_list {
 	struct load_list *next;
