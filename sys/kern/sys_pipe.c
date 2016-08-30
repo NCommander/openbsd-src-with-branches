@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.71 2016/01/06 17:59:30 tedu Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.72 2016/01/15 18:10:48 stefan Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -872,5 +872,6 @@ pipe_init(void)
 {
 	pool_init(&pipe_pool, sizeof(struct pipe), 0, 0, PR_WAITOK, "pipepl",
 	    NULL);
+	pool_setipl(&pipe_pool, IPL_NONE);
 }
 
