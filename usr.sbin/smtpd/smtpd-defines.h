@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd-defines.h,v 1.5 2015/10/09 14:37:38 gilles Exp $	*/
+/*	$OpenBSD: smtpd-defines.h,v 1.6 2015/11/30 14:39:21 gilles Exp $	*/
 
 /*
  * Copyright (c) 2013 Gilles Chehade <gilles@poolp.org>
@@ -37,7 +37,7 @@
 #define SMTPD_QUEUE_GROUP	"_smtpq"
 #define PATH_SPOOL		"/var/spool/smtpd"
 
-#define TAG_CHAR		'+'
+#define SUBADDRESSING_DELIMITER	"+"
 
 
 /* sendmail compat */
