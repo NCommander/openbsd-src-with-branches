@@ -1,4 +1,4 @@
-/*	$OpenBSD: mproc.c,v 1.19 2016/03/25 15:06:58 krw Exp $	*/
+/*	$OpenBSD: mproc.c,v 1.20 2016/06/06 20:48:15 eric Exp $	*/
 
 /*
  * Copyright (c) 2012 Eric Faurot <eric@faurot.net>
@@ -217,11 +217,6 @@ mproc_dispatch(int fd, short event, void *arg)
 
 		imsg_free(&imsg);
 	}
-
-#if 0
-	if (smtpd_process == PROC_QUEUE)
-		queue_flow_control();
-#endif
 
 	mproc_event_add(p);
 }
