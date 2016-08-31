@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.42 2015/10/23 12:36:23 deraadt Exp $	*/
+/*	$OpenBSD: io.c,v 1.43 2015/12/08 19:04:50 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -335,12 +335,15 @@ opencal(void)
 		}
 	}
 
-	if (pipe(pdes) < 0)
+	if (pipe(pdes) < 0) {
+		close(fdin);
 		return (NULL);
+	}
 	switch (vfork()) {
 	case -1:			/* error */
 		(void)close(pdes[0]);
 		(void)close(pdes[1]);
+		close(fdin);
 		return (NULL);
 	case 0:
 		dup2(fdin, STDIN_FILENO);
