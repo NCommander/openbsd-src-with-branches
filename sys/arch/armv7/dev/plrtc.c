@@ -1,4 +1,4 @@
-/*	$OpenBSD: pl031.c,v 1.1 2015/06/14 05:01:31 jsg Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2015 Jonathan Gray <jsg@openbsd.org>
