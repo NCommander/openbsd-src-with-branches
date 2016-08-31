@@ -1,4 +1,4 @@
-/*	$Id: sandbox-pledge.c,v 1.6 2016/06/01 19:18:50 kristaps Exp $ */
+/*	$Id: sandbox-pledge.c,v 1.1 2016/08/31 22:01:42 florian Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -63,7 +63,7 @@ sandbox_after(void)
 		}
 		break;
 	case (COMP_FILE):
-		/* 
+		/*
 		 * Rpath and cpath for rename, wpath and cpath for
 		 * writing to the temporary.
 		 */
