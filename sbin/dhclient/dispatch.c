@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.106 2016/07/21 09:58:55 krw Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.107 2016/08/23 09:26:02 mpi Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -119,6 +119,7 @@ get_hw_address(struct interface_info *ifi)
 void
 dispatch(struct interface_info *ifi)
 {
+	struct client_state *client = ifi->client;
 	int count, to_msec;
 	struct pollfd fds[3];
 	time_t cur_time, howlong;
