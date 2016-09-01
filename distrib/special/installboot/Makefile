@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2016/05/11 21:52:48 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2016/08/10 14:27:15 deraadt Exp $
 
 .PATH: ${.CURDIR}/../../../usr.sbin/installboot
 
@@ -62,10 +62,6 @@ SRCS += stubs.c
 .endif
 
 .if ${MACHINE} == "socppc"
-SRCS += stubs.c
-.endif
-
-.if ${MACHINE} == "sparc"
 SRCS += stubs.c
 .endif
 
