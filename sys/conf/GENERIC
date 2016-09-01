@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.229 2016/07/25 19:52:56 deraadt Exp $
+#	$OpenBSD: GENERIC,v 1.230 2016/07/26 18:27:42 tedu Exp $
 #
 #	Machine-independent option; used by all architectures for their
 #	GENERIC kernel
@@ -107,6 +107,7 @@ pseudo-device	tun		# network tunneling over tty (tun & tap)
 pseudo-device	vether		# Virtual ethernet
 pseudo-device	vxlan		# Virtual extensible LAN
 pseudo-device	vlan		# IEEE 802.1Q VLAN
+#pseudo-device	switch		# Switch
 
 pseudo-device	bio	1	# ioctl multiplexing device
 

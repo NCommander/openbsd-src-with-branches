@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.280 2016/06/07 08:32:13 mpi Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.281 2016/08/31 08:03:20 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -125,8 +125,6 @@ int	bridge_ifenqueue(struct bridge_softc *, struct ifnet *, struct mbuf *);
 void	bridge_ifinput(struct ifnet *, struct mbuf *);
 int	bridge_dummy_output(struct ifnet *, struct mbuf *, struct sockaddr *,
     struct rtentry *);
-void	bridge_fragment(struct bridge_softc *, struct ifnet *,
-    struct ether_header *, struct mbuf *);
 #ifdef IPSEC
 int bridge_ipsec(struct bridge_softc *, struct ifnet *,
     struct ether_header *, int, struct llc *,
