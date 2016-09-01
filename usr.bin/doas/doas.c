@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.c,v 1.60 2016/07/18 16:46:30 zhuk Exp $ */
+/* $OpenBSD: doas.c,v 1.61 2016/09/01 13:16:38 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -204,7 +204,7 @@ checkconfig(const char *confpath, int argc, char **argv,
 }
 
 static void
-authuser(const char *myname, const char *login_style)
+authuser(char *myname, char *login_style)
 {
 	char *challenge = NULL, *response, rbuf[1024], cbuf[128];
 	auth_session_t *as;
