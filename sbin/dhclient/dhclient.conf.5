@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dhclient.conf.5,v 1.32 2016/06/03 02:38:37 tedu Exp $
+.\"	$OpenBSD: dhclient.conf.5,v 1.33 2016/09/01 13:47:24 krw Exp $
 .\"
 .\" Copyright (c) 1997 The Internet Software Consortium.
 .\" All rights reserved.
@@ -36,7 +36,7 @@
 .\" see ``http://www.isc.org/isc''.  To learn more about Vixie
 .\" Enterprises, see ``http://www.vix.com''.
 .\"
-.Dd $Mdocdate: June 3 2016 $
+.Dd $Mdocdate: September 1 2016 $
 .Dt DHCLIENT.CONF 5
 .Os
 .Sh NAME
@@ -127,7 +127,7 @@ has expired, the client will accept the first offer that arrives.
 .Pp
 By default,
 .Ic select-timeout
-is set to zero seconds.
+is set to zero seconds
 i.e. the client will immediately take the first offer it sees.
 .It Ic reboot Ar time ;
 When the client is restarted, it first tries to reacquire the last
