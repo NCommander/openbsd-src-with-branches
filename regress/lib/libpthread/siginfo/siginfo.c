@@ -1,4 +1,4 @@
-/* $OpenBSD: siginfo.c,v 1.9 2003/06/19 00:59:54 pvalchev Exp $ */
+/* $OpenBSD: siginfo.c,v 1.10 2003/07/31 21:48:06 deraadt Exp $ */
 /* PUBLIC DOMAIN Oct 2002 <marc@snafu.org> */
 
 /*
@@ -30,8 +30,8 @@ act_handler(int signal, siginfo_t *siginfo, void *context)
 	write(STDOUT_FILENO, str, strlen(str));
 	free(str);
  	ASSERT(siginfo->si_addr == BOGUS);
-	ASSERT(siginfo->si_code != SI_USER);
-	ASSERT(siginfo->si_code > 0 && siginfo->si_code <= NSIGSEGV);
+	ASSERT(siginfo->si_code == SEGV_MAPERR ||
+	       siginfo->si_code == SEGV_ACCERR);
 	SUCCEED;
 }
  
