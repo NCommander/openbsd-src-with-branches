@@ -1,4 +1,4 @@
-/*	$Id: fileproc.c,v 1.1 2016/08/31 22:01:42 florian Exp $ */
+/*	$Id: fileproc.c,v 1.2 2016/08/31 23:00:17 benno Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -81,12 +81,23 @@ fileproc(int certsock, int backup, const char *certdir)
 
 	/* File-system and sandbox jailing. */
 
-	if ( ! sandbox_before())
+	if (chroot(certdir) == -1) {
+		warn("chroot");
 		goto out;
-	else if ( ! dropfs(certdir))
+	}
+	if (chdir("/") == -1) {
+		warn("chdir");
 		goto out;
-	else if ( ! sandbox_after())
+	}
+
+	/*
+	 * rpath and cpath for rename, wpath and cpath for
+	 * writing to the temporary.
+	 */
+	if (pledge("stdio cpath wpath rpath", NULL) == -1) {
+		warn("pledge");
 		goto out;
+	}
 
 	/* Read our operation. */
 

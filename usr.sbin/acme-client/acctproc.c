@@ -1,4 +1,4 @@
-/*	$Id: acctproc.c,v 1.2 2016/08/31 22:42:19 benno Exp $ */
+/*	$Id: acctproc.c,v 1.3 2016/08/31 23:52:30 benno Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -348,17 +348,12 @@ acctproc(int netsock, const char *acctkey, int newacct)
 
 	/* File-system, user, and sandbox jailing. */
 
-	if ( ! sandbox_before())
-		goto out;
-
 	ERR_load_crypto_strings();
 
-	if ( ! dropfs(PATH_VAR_EMPTY))
+	if (pledge("stdio", NULL) == -1) {
+		warn("pledge");
 		goto out;
-	else if ( ! dropprivs())
-		goto out;
-	else if ( ! sandbox_after())
-		goto out;
+	}
 
 	/*
 	 * Seed our PRNG with data from arc4random().

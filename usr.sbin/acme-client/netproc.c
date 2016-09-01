@@ -1,4 +1,4 @@
-/*	$Id: netproc.c,v 1.2 2016/08/31 22:57:36 deraadt Exp $ */
+/*	$Id: netproc.c,v 1.3 2016/08/31 23:36:16 benno Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -600,16 +600,10 @@ netproc(int kfd, int afd, int Cfd, int cfd, int dfd, int rfd,
 	url = cert = thumb = NULL;
 	chngs = NULL;
 
-	/* File-system, user, and sandbox jail. */
-
-	if ( ! sandbox_before())
+	if (pledge("stdio inet", NULL) == -1) {
+		warn("pledge");
 		goto out;
-	else if ( ! dropfs(PATH_VAR_EMPTY))
-		goto out;
-	else if ( ! dropprivs())
-		goto out;
-	else if ( ! sandbox_after())
-		goto out;
+	}
 
 	/*
 	 * Wait until the acctproc, keyproc, and revokeproc have started
