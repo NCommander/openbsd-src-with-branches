@@ -1,4 +1,4 @@
-#  $OpenBSD: Makefile,v 1.111 2016/03/30 06:38:42 jmc Exp $
+#  $OpenBSD: Makefile,v 1.112 2016/05/11 21:52:49 deraadt Exp $
 #  $NetBSD: Makefile,v 1.28 1995/11/20 22:06:19 jtc Exp $
 #
 #  @(#)Makefile 5.1beta 93/09/24 
@@ -58,8 +58,6 @@ ARCH_SRCS = e_sqrt.c e_sqrtf.c s_fabsf.c
 .PATH:	${.CURDIR}/arch/mips64
 .elif (${MACHINE_ARCH} == "powerpc")
 .PATH:	${.CURDIR}/arch/powerpc
-.elif (${MACHINE_ARCH} == "sparc")
-.PATH:	${.CURDIR}/arch/sparc
 .elif (${MACHINE_ARCH} == "sparc64")
 .PATH:	${.CURDIR}/arch/sparc64
 ARCH_SRCS = e_sqrtl.c
