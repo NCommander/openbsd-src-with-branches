@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.5 2015/12/01 08:13:30 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2016/05/11 21:52:49 deraadt Exp $
 
 PROG=copy
 CFLAGS+= -Wall
 
 # Distinct address space:	hppa m88k powerpc sparc64
-# Shared address space:		alpha amd64 arm i386 mips sparc vax
+# Shared address space:		alpha amd64 arm i386 mips
 
 .if (${MACHINE_ARCH} == "hppa" || ${MACHINE_ARCH} == "m88k" || \
     ${MACHINE_ARCH} == "powerpc" || ${MACHINE_ARCH} == "sparc64")
