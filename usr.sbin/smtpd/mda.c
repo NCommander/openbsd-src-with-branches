@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda.c,v 1.118 2016/03/25 15:06:58 krw Exp $	*/
+/*	$OpenBSD: mda.c,v 1.119 2016/05/22 16:31:21 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -532,11 +532,6 @@ mda_io(struct io *io, int evt)
 				free(ln);
 				return;
 			}
-#if 0
-			log_debug("debug: mda: %zu bytes queued "
-			    "for session %016"PRIx64 " evpid %016"PRIx64,
-			    iobuf_queued(&s->iobuf), s->id, s->evp->id);
-#endif
 		}
 
 		free(ln);
