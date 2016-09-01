@@ -1,4 +1,4 @@
-/*	$OpenBSD: sem.h,v 1.22 2014/07/10 14:16:49 deraadt Exp $	*/
+/*	$OpenBSD: sem.h,v 1.23 2014/11/23 04:31:42 guenther Exp $	*/
 /*	$NetBSD: sem.h,v 1.8 1996/02/09 18:25:29 christos Exp $	*/
 
 /*
@@ -195,4 +195,4 @@ int	semop(int, struct sembuf *, size_t);
 __END_DECLS
 #endif /* !_KERNEL */
 
-#endif /* !_SEM_H_ */
+#endif /* !_SYS_SEM_H_ */
