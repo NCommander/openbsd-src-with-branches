@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_fcgi.c,v 1.68 2016/04/24 20:09:45 chrisz Exp $	*/
+/*	$OpenBSD: server_fcgi.c,v 1.69 2016/08/30 10:54:42 florian Exp $	*/
 
 /*
  * Copyright (c) 2014 Florian Obser <florian@openbsd.org>
@@ -553,7 +553,7 @@ server_fcgi_read(struct bufferevent *bev, void *arg)
 			case FCGI_STDOUT:
 				++clt->clt_chunk;
 				if (!clt->clt_fcgi_headersdone) {
-					clt->clt_fcgi_headersdone = 
+					clt->clt_fcgi_headersdone =
 					    server_fcgi_getheaders(clt);
 					if (clt->clt_fcgi_headersdone) {
 						if (server_fcgi_header(clt,

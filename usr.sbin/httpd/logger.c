@@ -1,4 +1,4 @@
-/*	$OpenBSD: logger.c,v 1.18 2016/08/27 11:13:16 rzalamena Exp $	*/
+/*	$OpenBSD: logger.c,v 1.19 2016/08/30 14:31:53 rzalamena Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -184,8 +184,8 @@ logger_open_priv(struct imsg *imsg)
 		return (-1);
 	}
 
-	proc_compose_imsg(httpd_env->sc_ps, PROC_LOGGER, -1, IMSG_LOG_OPEN, -1, fd,
-	    &id, sizeof(id));
+	proc_compose_imsg(httpd_env->sc_ps, PROC_LOGGER, -1,
+	    IMSG_LOG_OPEN, -1, fd, &id, sizeof(id));
 
 	DPRINTF("%s: opened log file %s, fd %d", __func__, path, fd);
 
