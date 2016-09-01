@@ -1,10 +1,10 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.7 2015/12/03 16:11:32 reyk Exp $
 
 .if ${MACHINE} == "amd64"
 
 PROG=		vmd
-SRCS=		vmm.c loadfile_elf.c pci.c virtio.c
-SRCS+=		vmd.c control.c log.c proc.c config.c
+SRCS=		vmm.c loadfile_elf.c pci.c virtio.c i8259.c mc146818.c
+SRCS+=		vmd.c control.c log.c proc.c config.c ns8250.c i8253.c
 SRCS+=		parse.y
 
 CFLAGS+=	-Wall -I${.CURDIR}
