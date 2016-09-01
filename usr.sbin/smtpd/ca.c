@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.21 2016/02/02 21:18:04 gilles Exp $	*/
+/*	$OpenBSD: ca.c,v 1.22 2016/05/28 21:21:20 eric Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -120,7 +120,6 @@ ca(void)
 	config_peer(PROC_CONTROL);
 	config_peer(PROC_PARENT);
 	config_peer(PROC_PONY);
-	config_done();
 
 	/* Ignore them until we get our config */
 	mproc_disable(p_pony);
