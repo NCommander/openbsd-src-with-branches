@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_subr.h,v 1.8 2013/12/02 16:19:08 jsing Exp $	*/
+/*	$OpenBSD: ntfs_subr.h,v 1.9 2014/01/19 18:35:45 tedu Exp $	*/
 /*	$NetBSD: ntfs_subr.h,v 1.1 2002/12/23 17:38:33 jdolecek Exp $	*/
 
 /*-
@@ -91,8 +91,6 @@ int ntfs_ntvattrget(struct ntfsmount *, struct ntnode *, u_int32_t, const char *
 void ntfs_ntref(struct ntnode *);
 void ntfs_ntrele(struct ntnode *);
 int ntfs_loadntnode( struct ntfsmount *, struct ntnode * );
-int ntfs_writentvattr_plain(struct ntfsmount *, struct ntnode *, struct ntvattr *, off_t, size_t, void *, size_t *, struct uio *);
-int ntfs_writeattr_plain(struct ntfsmount *, struct ntnode *, u_int32_t, char *, off_t, size_t, void *, size_t *, struct uio *);
 int ntfs_fget(struct ntfsmount *, struct ntnode *, int, char *, struct fnode **);
 void ntfs_frele(struct fnode *);
 int ntfs_ntreaddir(struct ntfsmount *, struct fnode *, u_int32_t, struct attr_indexentry **, struct proc *);
