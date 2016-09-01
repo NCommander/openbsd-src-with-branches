@@ -1,4 +1,4 @@
-/*	$Id: extern.h,v 1.2 2016/08/31 22:49:09 benno Exp $ */
+/*	$Id: extern.h,v 1.3 2016/09/01 00:21:36 deraadt Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -16,10 +16,6 @@
  */
 #ifndef EXTERN_H
 #define EXTERN_H
-
-#ifndef PATH_VAR_EMPTY
-#define	PATH_VAR_EMPTY "/var/empty"
-#endif
 
 #define MAX_SERVERS_DNS 8
 
