@@ -1,4 +1,4 @@
-/*	$Id: keyproc.c,v 1.2 2016/08/31 23:25:10 benno Exp $ */
+/*	$Id: keyproc.c,v 1.3 2016/09/01 00:21:36 deraadt Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,9 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 
 #include <sys/stat.h>
 

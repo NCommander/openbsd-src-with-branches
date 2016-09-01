@@ -1,4 +1,4 @@
-/*	$Id: json.c,v 1.1 2016/08/31 22:01:42 florian Exp $ */
+/*	$Id: json.c,v 1.2 2016/08/31 23:19:50 benno Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,9 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 
 #include <assert.h>
 #include <err.h>
