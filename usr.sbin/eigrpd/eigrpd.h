@@ -1,4 +1,4 @@
-/*	$OpenBSD: eigrpd.h,v 1.19 2016/09/02 16:36:33 renato Exp $ */
+/*	$OpenBSD: eigrpd.h,v 1.20 2016/09/02 16:44:33 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -65,7 +65,6 @@ struct imsgev {
 	struct imsgbuf		 ibuf;
 	void			(*handler)(int, short, void *);
 	struct event		 ev;
-	void			*data;
 	short			 events;
 };
 
