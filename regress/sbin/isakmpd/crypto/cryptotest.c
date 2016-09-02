@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptotest.c,v 1.13 2004/04/07 22:45:50 ho Exp $	*/
+/*	$OpenBSD: cryptotest.c,v 1.1 2005/04/08 17:12:48 cloder Exp $	*/
 /*	$EOM: cryptotest.c,v 1.5 1998/10/07 16:40:49 niklas Exp $	*/
 
 /*
@@ -117,8 +117,6 @@ fail:
 int
 main (void)
 {
-  test_crypto (DES_CBC);
-
   test_crypto (TRIPLEDES_CBC);
 
   test_crypto (BLOWFISH_CBC);

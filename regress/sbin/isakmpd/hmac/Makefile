@@ -1,13 +1,13 @@
-#	$OpenBSD: Makefile,v 1.4 1999/02/26 03:28:31 niklas Exp $
+#	$OpenBSD: Makefile,v 1.1 2005/04/08 17:12:49 cloder Exp $
 #	$EOM: Makefile,v 1.3 1999/02/25 15:14:24 niklas Exp $
 
 # Test HMAC:
 
 PROG=		hmactest
-SRCS=		hash.c hmactest.c
+SRCS=		hash.c hmactest.c conf.c log.c monitor.c util.c
 TOPSRC=		${.CURDIR}/../../../../sbin/isakmpd
 TOPOBJ!=	cd ${TOPSRC}; printf "all:\n\t@pwd\n" |${MAKE} -f-
-OS!=		awk '/^OS=/ { print $$2 }' ${.CURDIR}/../../Makefile
+.PATH:		${.CURDIR}/../common
 .PATH:		${TOPSRC} ${TOPSRC}/sysdep/openbsd ${TOPOBJ}
 CFLAGS+=	-I${TOPSRC} -I${TOPSRC}/sysdep/openbsd -I${TOPOBJ} -Wall
 NOMAN=

@@ -1,4 +1,4 @@
-/*	$OpenBSD: utiltest.c,v 1.4 2004/12/14 10:17:28 mcbride Exp $	*/
+/*	$OpenBSD: utiltest.c,v 1.1 2005/04/08 17:12:50 cloder Exp $	*/
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
@@ -28,8 +28,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
-
-#include "sysdep.h"
 
 #include "util.h"
 
