@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.116 2016/09/01 10:59:38 reyk Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.117 2016/09/01 11:13:18 florian Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -705,7 +705,7 @@ __dead void fatalx(const char *, ...)
 enum privsep_procid
 	    proc_getid(struct privsep_proc *, unsigned int, const char *);
 void	 proc_init(struct privsep *, struct privsep_proc *, unsigned int,
-	    int, char **);
+	    int, char **, enum privsep_procid);
 void	 proc_kill(struct privsep *);
 void	 proc_connect(struct privsep *);
 void	 proc_dispatch(int, short event, void *);
