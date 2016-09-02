@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtp.c,v 1.4 2016/01/15 12:36:41 renato Exp $ */
+/*	$OpenBSD: rtp.c,v 1.5 2016/02/21 18:56:49 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -16,14 +16,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+
 #include <stdlib.h>
-#include <string.h>
-#include <arpa/inet.h>
 
 #include "eigrpd.h"
-#include "eigrp.h"
 #include "eigrpe.h"
-#include "rde.h"
 #include "log.h"
 
 void		 rtp_retrans_timer(int, short, void *);

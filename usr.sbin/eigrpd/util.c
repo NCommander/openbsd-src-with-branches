@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.6 2016/02/21 18:52:00 renato Exp $ */
+/*	$OpenBSD: util.c,v 1.7 2016/02/21 18:53:54 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -19,7 +19,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <netinet/in.h>
+#include <sys/types.h>
+
 #include <string.h>
 
 #include "eigrpd.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tlv.c,v 1.11 2016/02/21 18:59:54 renato Exp $ */
+/*	$OpenBSD: tlv.c,v 1.12 2016/07/18 21:14:30 benno Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -16,17 +16,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <sys/uio.h>
+#include <sys/types.h>
 #include <sys/utsname.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "eigrpd.h"
-#include "eigrp.h"
-#include "log.h"
 #include "eigrpe.h"
+#include "log.h"
 
 int
 gen_parameter_tlv(struct ibuf *buf, struct eigrp_iface *ei, int peerterm)
