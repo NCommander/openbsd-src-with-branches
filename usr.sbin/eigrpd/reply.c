@@ -1,4 +1,4 @@
-/*	$OpenBSD: reply.c,v 1.2 2015/10/04 23:00:10 renato Exp $ */
+/*	$OpenBSD: reply.c,v 1.3 2016/09/02 16:29:55 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -26,8 +26,6 @@
 #include "eigrpd.h"
 #include "eigrpe.h"
 #include "log.h"
-
-extern struct eigrpd_conf	*econf;
 
 /* reply packet handling */
 
