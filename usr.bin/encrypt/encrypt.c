@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.41 2015/10/10 17:59:15 deraadt Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.42 2015/10/10 18:14:20 doug Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <login_cap.h>
 #include <limits.h>
+#include <readpassphrase.h>
 
 /*
  * Very simple little program, for encrypting passwords from the command
@@ -123,11 +124,13 @@ main(int argc, char **argv)
 	}
 
 	if (((argc - optind) < 1)) {
-		char line[BUFSIZ], *string;
+		char line[BUFSIZ];
+		char string[_PASSWORD_LEN + 1];
 
 		if (prompt) {
-			if ((string = getpass("Enter string: ")) == NULL)
-				err(1, "getpass");
+			if (readpassphrase("Enter string: ", string,
+			    sizeof(string), RPP_ECHO_OFF) == NULL)
+				err(1, "readpassphrase");
 			print_passwd(string, operation, extra);
 			(void)fputc('\n', stdout);
 		} else {
