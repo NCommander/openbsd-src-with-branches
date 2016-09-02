@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.50 2015/12/29 11:16:14 rpe Exp $
+#	$OpenBSD: install.md,v 1.51 2016/02/08 17:28:08 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -59,10 +59,13 @@ md_prep_fdisk() {
 
 		[[ $MDEFI == y ]] && _d=gpt
 
-		if disk_has $_disk mbr openbsd || disk_has $_disk gpt openbsd; then
-			_q="$_q, (O)penBSD area"
-			_d=OpenBSD
+		if disk_has $_disk mbr || disk_has $_disk gpt; then
 			fdisk $_disk
+			if disk_has $_disk mbr openbsd ||
+				disk_has $_disk gpt openbsd; then
+				_q="$_q, (O)penBSD area"
+				_d=OpenBSD
+			fi
 		else
 			echo "No valid MBR or GPT."
 		fi
