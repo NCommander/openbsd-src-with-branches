@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.27 2015/10/23 15:10:52 claudio Exp $	*/
+/*	$OpenBSD: conf.c,v 1.28 2016/04/25 20:09:14 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -70,6 +70,7 @@
 #include "vscsi.h"
 #include "pppx.h"
 #include "fuse.h"
+#include "switch.h"
 
 struct bdevsw	bdevsw[] =
 {
@@ -156,6 +157,7 @@ struct cdevsw	cdevsw[] =
 	cdev_disk_init(1,diskmap),	/* 54: disk mapper */
 	cdev_pppx_init(NPPPX,pppx),	/* 55: pppx */
 	cdev_tun_init(NTUN,tap),	/* 56: Ethernet network tunnel */
+	cdev_switch_init(NSWITCH,switch), /* 57: switch(4) control interface */
 };
 int	nchrdev = nitems(cdevsw);
 

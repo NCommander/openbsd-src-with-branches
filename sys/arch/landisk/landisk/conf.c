@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.34 2016/03/05 17:16:33 tobiasu Exp $	*/
+/*	$OpenBSD: conf.c,v 1.35 2016/04/25 20:09:14 tedu Exp $	*/
 
 /*
  * Copyright (c) 1994-1998 Mark Brinicombe.
@@ -245,6 +245,7 @@ struct bdevsw bdevsw[] = {
 #include "vscsi.h"
 #include "pppx.h"
 #include "fuse.h"
+#include "switch.h"
 
 struct cdevsw cdevsw[] = {
 	cdev_cn_init(1,cn),			/*  0: virtual console */
@@ -356,6 +357,7 @@ struct cdevsw cdevsw[] = {
 	cdev_pppx_init(NPPPX,pppx),		/* 102: pppx */
 	cdev_fuse_init(NFUSE,fuse),		/* 103: fuse */
 	cdev_tun_init(NTUN,tap),		/* 104: Ethernet network tap */
+	cdev_switch_init(NSWITCH,switch),	/* 105: switch(4) control interface */
 };
 
 int nblkdev = nitems(bdevsw);

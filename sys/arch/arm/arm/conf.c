@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.46 2016/05/23 00:05:34 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.47 2016/07/31 09:18:01 jsg Exp $	*/
 /*	$NetBSD: conf.c,v 1.10 2002/04/19 01:04:38 wiz Exp $	*/
 
 /*
@@ -271,6 +271,8 @@ struct bdevsw bdevsw[] = {
 #define	NSPKR 0
 #endif
 
+#include "switch.h"
+
 struct cdevsw cdevsw[] = {
 	cdev_cn_init(1,cn),			/*  0: virtual console */
 	cdev_ctty_init(1,ctty),			/*  1: controlling terminal */
@@ -381,6 +383,7 @@ struct cdevsw cdevsw[] = {
 	cdev_disk_init(1,diskmap),		/* 102: disk mapper */
 	cdev_pppx_init(NPPPX,pppx),		/* 103: pppx */
 	cdev_tun_init(NTUN,tap),		/* 104: Ethernet tap */
+	cdev_switch_init(NSWITCH,switch),	/* 105: switch(4) control interface */
 };
 
 int nblkdev = nitems(bdevsw);
