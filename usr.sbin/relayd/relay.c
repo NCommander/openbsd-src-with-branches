@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.206 2015/12/30 16:00:57 benno Exp $	*/
+/*	$OpenBSD: relay.c,v 1.207 2016/09/01 10:49:48 claudio Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -108,15 +108,12 @@ static struct privsep_proc procs[] = {
 	{ "hce",	PROC_HCE,	relay_dispatch_hce },
 };
 
-pid_t
+void
 relay(struct privsep *ps, struct privsep_proc *p)
 {
-	pid_t	 pid;
-
 	env = ps->ps_env;
-	pid = proc_run(ps, p, procs, nitems(procs), relay_init, NULL);
+	proc_run(ps, p, procs, nitems(procs), relay_init, NULL);
 	relay_http(env);
-	return (pid);
 }
 
 void
