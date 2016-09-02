@@ -1,4 +1,4 @@
-/* $OpenBSD: grid-view.c,v 1.23 2015/11/13 12:18:52 nicm Exp $ */
+/* $OpenBSD: grid-view.c,v 1.24 2016/01/19 15:59:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -67,6 +67,7 @@ grid_view_clear_history(struct grid *gd)
 		grid_collect_history(gd);
 		grid_scroll_history(gd);
 	}
+	gd->hscrolled = 0;
 }
 
 /* Clear area. */
