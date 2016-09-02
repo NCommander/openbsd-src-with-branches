@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.93 2015/12/03 11:41:06 claudio Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.94 2015/12/05 12:20:13 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -123,6 +123,7 @@ ospfe(struct ospfd_conf *xconf, int pipe_parent2ospfe[2], int pipe_ospfe2rde[2],
 
 	setproctitle("ospf engine");
 	ospfd_process = PROC_OSPF_ENGINE;
+	log_procname = log_procnames[ospfd_process];
 
 	if (setgroups(1, &pw->pw_gid) ||
 	    setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) ||

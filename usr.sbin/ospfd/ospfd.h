@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.93 2015/11/22 13:09:10 claudio Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.94 2015/12/05 12:20:13 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -60,6 +60,12 @@
 #define	F_BLACKHOLE		0x0080
 #define	F_REDISTRIBUTED		0x0100
 #define	F_FORCED_NEXTHOP	0x0200
+
+static const char * const log_procnames[] = {
+	"parent",
+	"ospfe",
+	"rde"
+};
 
 struct imsgev {
 	struct imsgbuf		 ibuf;
