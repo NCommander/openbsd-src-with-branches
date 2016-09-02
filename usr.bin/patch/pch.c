@@ -1,4 +1,4 @@
-/*	$OpenBSD: pch.c,v 1.53 2015/07/31 00:24:14 millert Exp $	*/
+/*	$OpenBSD: pch.c,v 1.54 2015/10/16 07:33:47 tobias Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -225,8 +225,10 @@ there_is_another_patch(void)
 			filearg[0] = fetchname(buf, &exists, 0);
 		}
 		if (!exists) {
-			ask("No file found--skip this patch? [n] ");
-			if (*buf != 'y')
+			int def_skip = *bestguess == '\0';
+			ask("No file found--skip this patch? [%c] ",
+			    def_skip  ? 'y' : 'n');
+			if (*buf == 'n' || (!def_skip && *buf != 'y'))
 				continue;
 			if (verbose)
 				say("Skipping patch...\n");
