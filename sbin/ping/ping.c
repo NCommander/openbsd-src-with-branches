@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.141 2016/08/30 13:58:12 millert Exp $	*/
+/*	$OpenBSD: ping.c,v 1.142 2016/08/30 14:28:31 deraadt Exp $	*/
 /*	$NetBSD: ping.c,v 1.20 1995/08/11 22:37:58 cgd Exp $	*/
 
 /*
@@ -813,7 +813,7 @@ pr_pack(char *buf, int cc, struct msghdr *mhdr)
 				(void)printf("signature mismatch!\n");
 				return;
 			}
-			timinginfo++;
+			timinginfo=1;
 
 			tp.tv_sec = betoh64(tv64->tv64_sec) -
 			    tv64_offset.tv64_sec;
