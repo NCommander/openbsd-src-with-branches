@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.3 2006/08/17 16:48:02 claudio Exp $
+#	$OpenBSD: Makefile,v 1.4 2010/05/26 16:44:32 nicm Exp $
 
 .PATH:		${.CURDIR}/../dvmrpd
 
 PROG=	dvmrpctl
-SRCS=	log.c dvmrpctl.c parser.c
+SRCS=	log.c logmsg.c dvmrpctl.c parser.c
 
 CFLAGS+= -Wall
 CFLAGS+= -Wstrict-prototypes -Wmissing-prototypes
