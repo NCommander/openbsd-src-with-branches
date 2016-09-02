@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trap.c,v 1.24 2016/01/25 14:30:30 mpi Exp $	*/
+/*	$OpenBSD: db_trap.c,v 1.25 2016/03/06 13:33:21 mpi Exp $	*/
 /*	$NetBSD: db_trap.c,v 1.9 1996/02/05 01:57:18 christos Exp $	*/
 
 /*
@@ -84,7 +84,7 @@ db_trap(int type, int code)
 				db_printf("\n");
 			if (! ddb_msg_shown) {
 				db_printf(
-"http://www.openbsd.org/ddb.html describes the minimum info required in bug\n"
+"https://www.openbsd.org/ddb.html describes the minimum info required in bug\n"
 "reports.  Insufficient info makes it difficult to find and fix bugs.\n");
 				ddb_msg_shown = 1;
 			}
