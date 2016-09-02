@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ping6.8,v 1.59 2015/10/25 13:05:56 jmc Exp $
+.\"	$OpenBSD: ping6.8,v 1.60 2015/10/25 14:43:48 florian Exp $
 .\"	$KAME: ping6.8,v 1.57 2002/05/26 13:18:25 itojun Exp $
 .\"
 .\" Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -107,10 +107,7 @@ Only the super-user may use this option.
 This can be very hard on a network and should be used with caution.
 .Ef
 .It Fl H
-Specifies to try reverse-lookup of IPv6 addresses.
-The
-.Nm
-command does not try reverse-lookup unless the option is specified.
+Try reverse lookups for addresses.
 .It Fl h Ar hoplimit
 Set the IPv6 hoplimit.
 .It Fl I Ar sourceaddr
