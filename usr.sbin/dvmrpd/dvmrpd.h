@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpd.h,v 1.20 2009/11/02 20:31:50 claudio Exp $ */
+/*	$OpenBSD: dvmrpd.h,v 1.21 2015/09/27 17:29:45 stsp Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -51,6 +51,12 @@
 #define	F_LONGER		0x0040
 
 #define MAXVIFS			32	/* XXX */
+
+static const char * const log_procnames[] = {
+	"parent",
+	"dvmrpe",
+	"rde"
+};
 
 struct imsgev {
 	struct imsgbuf		 ibuf;
