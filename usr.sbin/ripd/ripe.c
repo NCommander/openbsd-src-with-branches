@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripe.c,v 1.19 2015/12/05 13:13:47 claudio Exp $ */
+/*	$OpenBSD: ripe.c,v 1.20 2016/08/02 16:05:32 jca Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -128,6 +128,7 @@ ripe(struct ripd_conf *xconf, int pipe_parent2ripe[2], int pipe_ripe2rde[2],
 
 	setproctitle("rip engine");
 	ripd_process = PROC_RIP_ENGINE;
+	log_procname = log_procnames[ripd_process];
 
 	if (setgroups(1, &pw->pw_gid) ||
 	    setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) ||

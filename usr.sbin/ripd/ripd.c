@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripd.c,v 1.27 2016/02/02 17:51:11 sthen Exp $ */
+/*	$OpenBSD: ripd.c,v 1.28 2016/08/02 16:05:32 jca Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -128,6 +128,7 @@ main(int argc, char *argv[])
 
 	conffile = CONF_FILE;
 	ripd_process = PROC_MAIN;
+	log_procname = log_procnames[ripd_process];
 	sockname = RIPD_SOCKET;
 
 	log_init(1);	/* log to stderr until daemonized */

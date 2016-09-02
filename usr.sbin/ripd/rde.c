@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.18 2015/01/16 06:40:20 deraadt Exp $ */
+/*	$OpenBSD: rde.c,v 1.19 2015/12/05 13:13:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -102,6 +102,7 @@ rde(struct ripd_conf *xconf, int pipe_parent2rde[2], int pipe_ripe2rde[2],
 
 	setproctitle("route decision engine");
 	ripd_process = PROC_RDE_ENGINE;
+	log_procname = log_procnames[ripd_process];
 
 	if (setgroups(1, &pw->pw_gid) ||
 	    setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) ||
