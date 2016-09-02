@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.h,v 1.7 2016/06/16 17:40:30 tedu Exp $ */
+/* $OpenBSD: doas.h,v 1.8 2016/06/19 19:29:43 martijn Exp $ */
 struct rule {
 	int action;
 	int options;
@@ -22,3 +22,4 @@ char **prepenv(struct rule *);
 
 #define NOPASS		0x1
 #define KEEPENV		0x2
+#define PERSIST		0x4
