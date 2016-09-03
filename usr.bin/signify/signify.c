@@ -1,4 +1,4 @@
-/* $OpenBSD: signify.c,v 1.115 2016/09/02 21:31:22 tedu Exp $ */
+/* $OpenBSD: signify.c,v 1.116 2016/09/02 21:45:37 tedu Exp $ */
 /*
  * Copyright (c) 2013 Ted Unangst <tedu@openbsd.org>
  *
@@ -839,6 +839,8 @@ main(int argc, char **argv)
 	case SIGN:
 		/* no pledge */
 		if (gzip) {
+			if (!msgfile || !seckeyfile || !sigfile)
+				usage("must specify message sigfile seckey");
 			zsign(seckeyfile, msgfile, sigfile);
 		} else {
 			if (!msgfile || !seckeyfile)
