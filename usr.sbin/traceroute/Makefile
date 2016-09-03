@@ -1,6 +1,8 @@
-#	$OpenBSD: Makefile,v 1.8 2014/04/26 11:02:45 florian Exp $
+#	$OpenBSD: Makefile,v 1.9 2016/03/30 06:38:47 jmc Exp $
 
 PROG=	traceroute
+
+SRCS=	traceroute.c worker.c
 
 CFLAGS+= -Wall -I${.CURDIR}
 CFLAGS+= -Wstrict-prototypes -Wmissing-prototypes
