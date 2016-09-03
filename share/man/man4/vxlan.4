@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vxlan.4,v 1.4 2015/10/02 15:26:55 sobrado Exp $
+.\"	$OpenBSD: vxlan.4,v 1.5 2016/09/03 13:46:57 reyk Exp $
 .\"
 .\" Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: October 2 2015 $
+.Dd $Mdocdate: September 3 2016 $
 .Dt VXLAN 4
 .Os
 .Sh NAME
@@ -45,7 +45,7 @@ interface uses a 24-bit
 that distinguishes multiple virtualized layer 2 networks and
 their tunnels between identical tunnel endpoints.
 .Pp
-The interface can operate in three different tunnel modes:
+The interface can operate in the following tunnel modes:
 .Bl -tag -width multicast
 .It Ic unicast mode
 When a unicast IP address is configured as the tunnel destination,
