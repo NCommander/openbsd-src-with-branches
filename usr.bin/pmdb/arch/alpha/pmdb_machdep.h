@@ -1,3 +1,0 @@
-#define BREAKPOINT		{ 0x80, 0, 0, 0 }
-#define BREAKPOINT_LEN		4
-#define BREAKPOINT_DECR_PC	4
