@@ -1,4 +1,4 @@
-/*	$OpenBSD: _time.h,v 1.6 2013/10/06 01:27:49 guenther Exp $	*/
+/*	$OpenBSD: _time.h,v 1.7 2014/10/16 15:50:49 millert Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -39,8 +39,6 @@
 #define CLOCK_UPTIME			5
 
 #if __BSD_VISIBLE
-#define	__CLOCK_USE_TICKET_LOCKS	8	/* flag for __thrsleep() */
-
 /*
  * Per-process and per-thread clocks encode the PID or TID into the
  * high bits, with the type in the bottom bits
