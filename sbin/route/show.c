@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.104 2016/07/13 08:40:46 mpi Exp $	*/
+/*	$OpenBSD: show.c,v 1.105 2016/09/01 09:41:34 bluhm Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -90,6 +90,7 @@ static const struct bits bits[] = {
 	{ RTF_MPATH,	'P' },
 	{ RTF_MPLS,	'T' },
 	{ RTF_LOCAL,	'l' },
+	{ RTF_BFD,	'F' },
 	{ RTF_BROADCAST,'b' },
 	{ RTF_CONNECTED,'n' },
 	{ 0 }
