@@ -8,7 +8,7 @@
  */
 
 
-#include <config.h>
+#include "config.h"
 
 #include <string.h>
 
@@ -64,7 +64,6 @@ edns_parse_record(edns_record_type *edns, buffer_type *packet)
 	uint8_t  opt_owner;
 	uint16_t opt_type;
 	uint16_t opt_class;
-	uint8_t  opt_extended_rcode;
 	uint8_t  opt_version;
 	uint16_t opt_flags;
 	uint16_t opt_rdlen;
@@ -84,17 +83,22 @@ edns_parse_record(edns_record_type *edns, buffer_type *packet)
 	}
 
 	opt_class = buffer_read_u16(packet);
-	opt_extended_rcode = buffer_read_u8(packet);
+	(void)buffer_read_u8(packet); /* opt_extended_rcode */
 	opt_version = buffer_read_u8(packet);
 	opt_flags = buffer_read_u16(packet);
 	opt_rdlen = buffer_read_u16(packet);
 
 	if (opt_version != 0) {
+		/* The only error is VERSION not implemented */
 		edns->status = EDNS_ERROR;
 		return 1;
 	}
 
 	if (opt_rdlen > 0) {
+		if(!buffer_available(packet, opt_rdlen))
+			return 0;
+		if(opt_rdlen < 4)
+			return 0;
 		/* there is more to come, read opt code
 		 * should be NSID - there are no others */
 		opt_nsid = buffer_read_u16(packet);
