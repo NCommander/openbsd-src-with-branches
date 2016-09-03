@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.209 2016/09/02 14:45:51 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.210 2016/09/02 16:14:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -388,7 +388,7 @@ main		: INTERVAL NUMBER	{
 			bcopy(&$2, &conf->sc_conf.timeout, sizeof(struct timeval));
 		}
 		| PREFORK NUMBER	{
-			if ($2 <= 0 || $2 > RELAY_MAXPROC) {
+			if ($2 <= 0 || $2 > PROC_MAX_INSTANCES) {
 				yyerror("invalid number of preforked "
 				    "relays: %d", $2);
 				YYERROR;

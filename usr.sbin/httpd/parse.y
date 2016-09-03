@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.80 2016/08/15 16:12:34 jsing Exp $	*/
+/*	$OpenBSD: parse.y,v 1.81 2016/08/22 15:02:18 jsing Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -193,7 +193,7 @@ opttls		: /*empty*/	{ $$ = 0; }
 main		: PREFORK NUMBER	{
 			if (loadcfg)
 				break;
-			if ($2 <= 0 || $2 > SERVER_MAXPROC) {
+			if ($2 <= 0 || $2 > PROC_MAX_INSTANCES) {
 				yyerror("invalid number of preforked "
 				    "servers: %lld", $2);
 				YYERROR;
