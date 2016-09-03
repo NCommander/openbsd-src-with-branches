@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_xxx.c,v 1.28 2015/03/14 03:38:50 jsg Exp $	*/
+/*	$OpenBSD: kern_xxx.c,v 1.29 2015/12/05 10:11:53 tedu Exp $	*/
 /*	$NetBSD: kern_xxx.c,v 1.32 1996/04/22 01:38:41 christos Exp $	*/
 
 /*
@@ -64,6 +64,8 @@ __dead void
 reboot(int howto)
 {
 	KASSERT((howto & RB_NOSYNC) || curproc != NULL);
+
+	stop_periodic_resettodr();
 
 	boot(howto);
 	/* NOTREACHED */

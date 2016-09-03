@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.113 2016/05/17 23:28:03 bluhm Exp $	*/
+/*	$OpenBSD: systm.h,v 1.114 2016/09/01 12:50:53 akfaew Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -231,6 +231,9 @@ void	cpu_initclocks(void);
 void	startprofclock(struct process *);
 void	stopprofclock(struct process *);
 void	setstatclockrate(int);
+
+void	start_periodic_resettodr(void);
+void	stop_periodic_resettodr(void);
 
 struct sleep_state;
 void	sleep_setup(struct sleep_state *, const volatile void *, int,
