@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.85 2016/07/29 18:35:45 tedu Exp $	*/
+/*	$OpenBSD: md5.c,v 1.86 2016/08/26 05:50:29 guenther Exp $	*/
 
 /*
  * Copyright (c) 2001,2003,2005-2007,2010,2013,2014
@@ -153,6 +153,17 @@ struct hash_function {
 		(void (*)(void *, const unsigned char *, size_t))SHA384Update,
 		(void (*)(unsigned char *, void *))SHA384Final,
 		(char *(*)(void *, char *))SHA384End
+	},
+	{
+		"SHA512/256",
+		SHA512_256_DIGEST_LENGTH,
+		STYLE_MD5,
+		0,
+		NULL,
+		(void (*)(void *))SHA512_256Init,
+		(void (*)(void *, const unsigned char *, size_t))SHA512_256Update,
+		(void (*)(unsigned char *, void *))SHA512_256Final,
+		(char *(*)(void *, char *))SHA512_256End
 	},
 #endif /* !defined(SHA2_ONLY) */
 	{
