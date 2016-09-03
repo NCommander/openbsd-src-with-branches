@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.587 2016/05/21 01:06:53 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.588 2016/06/22 07:22:00 mlarkin Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1004,6 +1004,7 @@ const struct cpu_cpuid_feature i386_cpuid_ecxfeatures[] = {
 	{ CPUIDECX_TM2,		"TM2" },
 	{ CPUIDECX_SSSE3,	"SSSE3" },
 	{ CPUIDECX_CNXTID,	"CNXT-ID" },
+	{ CPUIDECX_SDBG,	"SDBG" },
 	{ CPUIDECX_FMA3,	"FMA3" },
 	{ CPUIDECX_CX16,	"CX16" },
 	{ CPUIDECX_XTPR,	"xTPR" },
