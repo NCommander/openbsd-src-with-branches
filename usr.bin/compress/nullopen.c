@@ -47,18 +47,12 @@ char null_magic[2];
 
 
 void *
-null_open(int fd, const char *mode, char *name, int bits,
-    u_int32_t mtime, int gotmagic)
+null_ropen(int fd, char *name, int gotmagic)
 {
 	null_stream *s;
 
-	if (fd < 0 || !mode)
+	if (fd < 0)
 		return NULL;
-
-	if ((mode[0] != 'r' && mode[0] != 'w') || mode[1] != '\0') {
-		errno = EINVAL;
-		return NULL;
-	}
 
 	if ((s = calloc(1, sizeof(null_stream))) == NULL)
 		return NULL;
@@ -66,7 +60,26 @@ null_open(int fd, const char *mode, char *name, int bits,
 	s->fd = fd;
 	s->gotmagic = gotmagic;
 	s->total_in = s->total_out = 0;
-	s->mode = mode[0];
+	s->mode = 'r';
+
+	return s;
+}
+
+void *
+null_wopen(int fd, char *name, int bits, u_int32_t mtime)
+{
+	null_stream *s;
+
+	if (fd < 0)
+		return NULL;
+
+	if ((s = calloc(1, sizeof(null_stream))) == NULL)
+		return NULL;
+
+	s->fd = fd;
+	s->gotmagic = 0;
+	s->total_in = s->total_out = 0;
+	s->mode = 'w';
 
 	return s;
 }
