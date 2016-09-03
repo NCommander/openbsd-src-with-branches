@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.h,v 1.57 2016/04/15 17:54:17 tedu Exp $ */
+/*	$OpenBSD: rthread.h,v 1.58 2016/05/07 19:05:22 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -37,7 +37,6 @@
 #define RTHREAD_STACK_SIZE_DEF (256 * 1024)
 #endif
 
-#define _USING_TICKETS 0
 /*
  * tickets don't work yet? (or seem much slower, with lots of system time)
  * until then, keep the struct around to avoid excessive changes going
