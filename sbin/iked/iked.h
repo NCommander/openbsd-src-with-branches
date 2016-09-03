@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.95 2015/12/07 12:46:37 reyk Exp $	*/
+/*	$OpenBSD: iked.h,v 1.96 2016/06/01 11:16:41 patrick Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -140,6 +140,7 @@ struct iked_flow {
 	struct iked_addr		 flow_src;
 	struct iked_addr		 flow_dst;
 	unsigned int			 flow_dir;	/* in/out */
+	struct iked_addr		 flow_prenat;
 
 	unsigned int			 flow_loaded;	/* pfkey done */
 
