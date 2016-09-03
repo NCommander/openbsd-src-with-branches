@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.253 2016/05/17 23:28:03 bluhm Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.254 2016/09/02 12:17:33 tb Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -403,15 +403,6 @@ main(void *framep)
 #ifdef GPROF
 	/* Initialize kernel profiling. */
 	kmstartup();
-#endif
-
-#if !defined(NO_PROPOLICE)
-	if (__guard_local == 0) {
-		volatile long newguard;
-
-		arc4random_buf((void *)&newguard, sizeof newguard);
-		__guard_local = newguard;
-	}
 #endif
 
 	/* init exec and emul */
