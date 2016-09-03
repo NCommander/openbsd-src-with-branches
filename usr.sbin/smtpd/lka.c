@@ -1,4 +1,4 @@
-/*	$OpenBSD: lka.c,v 1.193 2016/05/28 21:21:20 eric Exp $	*/
+/*	$OpenBSD: lka.c,v 1.194 2016/09/01 10:54:25 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -419,7 +419,7 @@ lka(void)
 
 	config_process(PROC_LKA);
 
-	if (setgroups(1, &pw->pw_gid) ||
+	if (initgroups(pw->pw_name, pw->pw_gid) ||
 	    setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) ||
 	    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid))
 		fatal("lka: cannot drop privileges");
