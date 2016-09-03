@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_reject.c,v 1.14 2016/04/26 20:30:00 mestre Exp $	*/
+/*	$OpenBSD: login_reject.c,v 1.15 2016/08/16 04:44:38 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1995 Berkeley Software Design, Inc. All rights reserved.
@@ -43,6 +43,7 @@
 #include <errno.h>
 #include <login_cap.h>
 #include <pwd.h>
+#include <readpassphrase.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -123,7 +124,7 @@ main(int argc, char *argv[])
 			exit(1);
 		}
 	} else
-		getpass("Password:");
+		readpassphrase("Password:", passbuf, sizeof(passbuf), 0);
 
 	crypt_checkpass("password", NULL);
 
