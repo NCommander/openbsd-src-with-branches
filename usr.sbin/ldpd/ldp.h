@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldp.h,v 1.33 2016/07/01 23:36:38 renato Exp $ */
+/*	$OpenBSD: ldp.h,v 1.34 2016/07/15 17:09:25 renato Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -238,6 +238,8 @@ struct address_list_tlv {
 	uint16_t	family;
 	/* address entries */
 } __packed;
+
+#define ADDR_LIST_SIZE		6
 
 #define FEC_ELM_WCARD_LEN	1
 #define FEC_ELM_PREFIX_MIN_LEN	4
