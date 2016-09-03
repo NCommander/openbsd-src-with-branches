@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.31 2015/07/18 00:27:32 claudio Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.32 2015/11/03 07:48:03 gerhard Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -1127,8 +1127,7 @@ if_newaddr(u_short if_index, struct sockaddr *ifa, struct sockaddr *mask,
 	if (brd)
 		bcopy(brd, &ka->dstbrd.sa, brd->sa_len);
 	else
-		bzero(&ka->mask, sizeof(ka->mask));
-
+		bzero(&ka->dstbrd, sizeof(ka->dstbrd));
 }
 
 void
