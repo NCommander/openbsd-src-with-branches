@@ -1,4 +1,4 @@
-/*	$OpenBSD: comreg.h,v 1.15 2006/07/31 11:06:30 mickey Exp $	*/
+/*	$OpenBSD: comreg.h,v 1.16 2008/06/08 13:55:06 kettenis Exp $	*/
 /*	$NetBSD: comreg.h,v 1.8 1996/02/05 23:01:50 scottr Exp $	*/
 
 /*
@@ -180,11 +180,7 @@
 #define ISR_TXPL	0x08	/* negative transmit data polarity */
 #define ISR_RXPL	0x10	/* negative receive data polarity */
 
-#ifdef COM_PXA2X0
-#define	COM_NPORTS	9
-#else
 #define	COM_NPORTS	8
-#endif
 
 /*
  * WARNING: Serial console is assumed to be at COM1 address
