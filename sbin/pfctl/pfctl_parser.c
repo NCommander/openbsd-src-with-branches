@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.306 2015/09/03 12:46:47 mikeb Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.307 2016/08/26 06:06:58 guenther Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -701,8 +701,12 @@ print_rule(struct pf_rule *r, const char *anchor_call, int opts)
 	int	verbose = opts & (PF_OPT_VERBOSE2 | PF_OPT_DEBUG);
 	char	*p;
 
+	if ((r->rule_flag & PFRULE_EXPIRED) && (!verbose))
+		return;
+
 	if (verbose)
 		printf("@%d ", r->nr);
+
 	if (r->action > PF_MATCH)
 		printf("action(%d)", r->action);
 	else if (anchor_call[0]) {
