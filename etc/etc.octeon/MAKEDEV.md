@@ -1,6 +1,6 @@
 define(MACHINE,octeon)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.11 2016/07/05 12:55:32 visa Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.12 2016/09/02 17:06:14 goda Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -47,7 +47,7 @@ _DEV(wd, 18, 4)
 _DEV(octcf, 15, 15)
 _TITLE(tap)
 _DEV(ch, 36)
-_DEV(st, 10, 10)
+_DEV(st, 10)
 _TITLE(term)
 _DEV(com, 17)
 _TITLE(pty)
