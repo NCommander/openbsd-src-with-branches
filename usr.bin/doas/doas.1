@@ -1,4 +1,4 @@
-.\" $OpenBSD: doas.1,v 1.17 2016/09/02 18:12:30 tedu Exp $
+.\" $OpenBSD: doas.1,v 1.18 2016/09/02 20:38:05 tedu Exp $
 .\"
 .\"Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
 .\"
@@ -34,7 +34,8 @@ utility executes the given command as another user.
 The
 .Ar command
 argument is mandatory unless
-.Fl C
+.Fl C ,
+.Fl L ,
 or
 .Fl s
 is specified.
