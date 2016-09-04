@@ -1,5 +1,5 @@
 #!/bin/sh
-# $OpenBSD: keywords.sh,v 1.29 2015/10/24 11:53:41 bluhm Exp $
+# $OpenBSD: keywords.sh,v 1.30 2016/09/03 14:23:14 phessler Exp $
 # $NetBSD: keywords.sh,v 1.2 1996/11/15 18:57:21 gwr Exp $
 # @(#)keywords	8.2 (Berkeley) 3/19/94
 #
@@ -47,6 +47,7 @@ mplslabel
 mtu
 net
 netmask
+nobfd
 nojumbo
 nostatic
 ospf
