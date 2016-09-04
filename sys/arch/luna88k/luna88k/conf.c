@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.28 2016/04/25 20:09:14 tedu Exp $	*/
+/*	$OpenBSD: conf.c,v 1.29 2016/09/02 17:06:12 goda Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -79,7 +79,7 @@ struct bdevsw	bdevsw[] =
 	bdev_notdef(),			/* 2 */
 	bdev_swap_init(1,sw),		/* 3: swap pseudo-device */
 	bdev_disk_init(NSD,sd),		/* 4: SCSI disk */
-	bdev_tape_init(NST,st),		/* 5: SCSI tape */
+	bdev_notdef(),			/* 5: was: SCSI tape */
 	bdev_disk_init(NCD,cd),		/* 6: SCSI CD-ROM */
 	bdev_disk_init(NRD,rd),		/* 7: ramdisk */
 	bdev_disk_init(NVND,vnd),	/* 8: vnode disk driver */
@@ -224,6 +224,5 @@ int chrtoblktbl[] = {
 	/* 17 */	NODEV,
 	/* 18 */	7,	/* rd */
 	/* 19 */	8,	/* vnd */
-	/* 20 */	5,	/* st */
 };
 int nchrtoblktbl = nitems(chrtoblktbl);
