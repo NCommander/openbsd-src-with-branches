@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2012/08/02 13:38:39 okan Exp $
+#	$OpenBSD: Makefile,v 1.18 2016/03/30 06:38:43 jmc Exp $
 
 LIB=	z
 HDRS=	zconf.h zlib.h
@@ -19,8 +19,10 @@ includes:
 		eval "$$j"; \
 	done
 
-beforeinstall:
+${PC_FILES}: zlib.h
 	/bin/sh ${.CURDIR}/generate_pkgconfig.sh -c ${.CURDIR} -o ${.OBJDIR}
+
+beforeinstall: ${PC_FILES}
 	${INSTALL} ${INSTALL_COPY} -o root -g ${SHAREGRP} \
 	    -m ${SHAREMODE} ${.OBJDIR}/${PC_FILES} ${DESTDIR}/usr/lib/pkgconfig/
 

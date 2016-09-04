@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2012/07/07 13:35:07 jasper Exp $
+#	$OpenBSD: Makefile,v 1.9 2012/08/02 13:38:38 okan Exp $
 
 .PATH: ${.CURDIR}/lib
 
@@ -17,8 +17,10 @@ includes:
 	  ${INSTALL} ${INSTALL_COPY} -m 444 -o $(BINOWN) -g $(BINGRP) \
 	  ${.CURDIR}/lib/expat_external.h ${DESTDIR}/usr/include/expat_external.h
 
-beforeinstall:
+${PC_FILES}: lib/expat.h
 	/bin/sh ${.CURDIR}/generate_pkgconfig.sh -c ${.CURDIR} -o ${.OBJDIR}
+
+beforeinstall: ${PC_FILES}
 	${INSTALL} ${INSTALL_COPY} -o root -g ${SHAREGRP} \
 	    -m ${SHAREMODE} ${.OBJDIR}/${PC_FILES} ${DESTDIR}/usr/lib/pkgconfig/
 
