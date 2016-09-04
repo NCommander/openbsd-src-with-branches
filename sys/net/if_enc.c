@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.63 2015/10/30 09:39:42 bluhm Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.64 2015/11/09 10:19:10 dlg Exp $	*/
 
 /*
  * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
@@ -174,7 +174,7 @@ enc_output(struct ifnet *ifp, struct mbuf *m, struct sockaddr *sa,
     struct rtentry *rt)
 {
 	m_freem(m);	/* drop packet */
-	return (0);
+	return (EAFNOSUPPORT);
 }
 
 int
