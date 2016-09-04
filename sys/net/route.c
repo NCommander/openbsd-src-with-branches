@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.323 2016/09/04 09:39:01 claudio Exp $	*/
+/*	$OpenBSD: route.c,v 1.324 2016/09/04 10:32:01 mpi Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -904,9 +904,10 @@ rtrequest_delete(struct rt_addrinfo *info, u_int8_t prio, struct ifnet *ifp,
 
 	if (ifp == NULL) {
 		ifp = if_get(rt->rt_ifidx);
-		KASSERT(ifp != NULL);
-		ifp->if_rtrequest(ifp, RTM_DELETE, rt);
-		if_put(ifp);
+		if (ifp != NULL) {
+			ifp->if_rtrequest(ifp, RTM_DELETE, rt);
+			if_put(ifp);
+		}
 	} else {
 		KASSERT(ifp->if_index == rt->rt_ifidx);
 		ifp->if_rtrequest(ifp, RTM_DELETE, rt);
