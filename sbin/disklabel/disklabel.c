@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.222 2016/06/19 13:42:56 tb Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.223 2016/09/02 10:47:17 otto Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -540,7 +540,7 @@ display_partition(FILE *f, struct disklabel *lp, int i, char unit)
 			    pp->p_cpg);
 			break;
 		default:
-			fprintf(f, "%19.19s", "");
+			fprintf(f, "%20.20s", "");
 			break;
 		}
 
