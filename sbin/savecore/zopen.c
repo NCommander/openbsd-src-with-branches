@@ -1,4 +1,4 @@
-/*	$OpenBSD: zopen.c,v 1.20 2015/02/01 11:50:23 tobias Exp $	*/
+/*	$OpenBSD: zopen.c,v 1.1 2016/09/03 13:05:08 tedu Exp $	*/
 /*	$NetBSD: zopen.c,v 1.5 1995/03/26 09:44:53 glass Exp $	*/
 
 /*-
@@ -335,9 +335,6 @@ z_close(void *cookie, struct z_info *info, const char *name, struct stat *sb)
 		info->total_out = (off_t)zs->zs_bytes_out;
 	}
 
-#ifndef SAVECORE
-	setfile(name, zs->zs_fd, sb);
-#endif
 	rval = close(zs->zs_fd);
 	free(zs);
 	return (rval);
