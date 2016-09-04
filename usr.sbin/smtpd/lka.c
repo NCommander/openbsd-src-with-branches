@@ -1,4 +1,4 @@
-/*	$OpenBSD: lka.c,v 1.194 2016/09/01 10:54:25 eric Exp $	*/
+/*	$OpenBSD: lka.c,v 1.195 2016/09/03 15:54:14 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -448,9 +448,8 @@ lka(void)
 	if (pledge("stdio rpath inet dns getpw recvfd proc exec", NULL) == -1)
 		err(1, "pledge");
 
-	if (event_dispatch() < 0)
-		fatal("event_dispatch");
-	lka_shutdown();
+	event_dispatch();
+	fatalx("exited event loop");
 
 	return (0);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.282 2016/09/01 10:54:25 eric Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.283 2016/09/04 09:33:49 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1050,8 +1050,8 @@ smtpd(void) {
 	    "getpw sendfd proc exec id inet unix", NULL) == -1)
 		err(1, "pledge");
 
-	if (event_dispatch() < 0)
-		fatal("smtpd: event_dispatch");
+	event_dispatch();
+	fatalx("exited event loop");
 
 	return (0);
 }
