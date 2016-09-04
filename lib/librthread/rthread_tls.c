@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_tls.c,v 1.16 2013/11/02 22:37:17 tedu Exp $ */
+/*	$OpenBSD: rthread_tls.c,v 1.17 2016/04/02 19:56:53 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -27,7 +27,7 @@
 #include "rthread.h"
 
 static struct rthread_key rkeys[PTHREAD_KEYS_MAX];
-static struct _spinlock rkeyslock = _SPINLOCK_UNLOCKED;
+static _atomic_lock_t rkeyslock = _SPINLOCK_UNLOCKED;
 
 int
 pthread_key_create(pthread_key_t *key, void (*destructor)(void*))
