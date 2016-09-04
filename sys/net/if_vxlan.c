@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.42 2016/08/07 14:26:26 reyk Exp $	*/
+/*	$OpenBSD: if_vxlan.c,v 1.43 2016/09/03 13:46:57 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -791,14 +791,6 @@ vxlan_output(struct ifnet *ifp, struct mbuf *m)
 			m_freem(m);
 			return (EINVAL);
 		}
-
-		/*
-		 * If the LINK0 flag is set, send the packet back to
-		 * the original source port of the endport, otherwise use
-		 * the configured VXLAN port.
-		 */
-		if (ifp->if_flags & IFF_LINK0)
-			vu->vu_u.uh_dport = vxlan_sockaddr_port(dst);
 	} else
 #endif
 	if (sc->sc_vnetid == VXLAN_VNI_ANY) {
