@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.c,v 1.90 2016/09/02 14:02:48 benno Exp $ */
+/*	$OpenBSD: ospfd.c,v 1.91 2016/09/03 10:22:57 renato Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -282,7 +282,7 @@ main(int argc, char *argv[])
 __dead void
 ospfd_shutdown(void)
 {
-	pid_t		 	 pid;
+	pid_t			 pid;
 	int			 status;
 	struct redistribute	*r;
 
