@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.30 2015/06/02 19:54:06 rpe Exp $
+#	$OpenBSD: install.md,v 1.31 2016/02/08 17:28:08 krw Exp $
 #
 # machine dependent section of installation/upgrade script.
 #
@@ -17,7 +17,7 @@ md_installboot() {
 }
 
 md_prep_disklabel() {
-	local _disk=$1 _f=/tmp/fstab.$1
+	local _disk=$1 _f=/tmp/i/fstab.$1
 
 	installboot $_disk
 

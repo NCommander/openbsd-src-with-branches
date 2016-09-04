@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.69 2015/12/29 11:16:14 rpe Exp $
+#	$OpenBSD: install.md,v 1.70 2016/02/08 17:28:08 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -89,7 +89,7 @@ __EOT
 }
 
 md_prep_disklabel() {
-	local _disk=$1 _f=/tmp/fstab.$1
+	local _disk=$1 _f=/tmp/i/fstab.$1
 
 	md_prep_fdisk $_disk
 
