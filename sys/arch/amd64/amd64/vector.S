@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.45 2016/03/03 12:32:23 mpi Exp $	*/
+/*	$OpenBSD: vector.S,v 1.46 2016/06/22 01:12:38 mikeb Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -249,6 +249,23 @@ calltrap:
 #ifdef DIAGNOSTIC
 	movl	CPUVAR(ILEVEL),%ebx
 #endif /* DIAGNOSTIC */
+#if !defined(GPROF) && defined(DDBPROF)
+	cmpl	$T_BPTFLT,TF_TRAPNO(%rsp)
+	jne	.Lreal_trap
+
+	movq	%rsp, %rdi
+	call	_C_LABEL(db_prof_hook)
+	cmpl	$1, %eax
+	jne	.Lreal_trap
+
+	/*
+	 * Abuse the error field to indicate that intr_fast_exit needs
+	 * to emulate the patched instruction.
+	 */
+	movl	$INTR_FAKE_TRAP, TF_ERR(%rsp)
+	jz	2f
+.Lreal_trap:
+#endif /* !defined(GPROF) && defined(DDBPROF) */
 	movq	%rsp, %rdi
 	call	_C_LABEL(trap)
 2:	/* Check for ASTs on exit to user mode. */
