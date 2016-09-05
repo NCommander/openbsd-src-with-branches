@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/01 14:59:52 landry Exp $
 
 LOG=${.CURDIR}/log
 OUT=${.CURDIR}/out
@@ -33,7 +33,7 @@ regress:
 clean:
 	@-${SUDO} rm -Rf ${WRK}
 
-all: connect import perl cpan
+all: connect import perl purge #cpan
 
 connect:
 	-ldapsearch -x -H ldapi://%2ftmp%2fldapi | diff - ${OUT}/empty.log
