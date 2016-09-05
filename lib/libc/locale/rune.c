@@ -1,4 +1,4 @@
-/*	$OpenBSD: rune.c,v 1.5 2015/12/06 11:54:59 tobias Exp $ */
+/*	$OpenBSD: rune.c,v 1.6 2016/02/05 04:10:48 jsg Exp $ */
 /*	$NetBSD: rune.c,v 1.26 2004/05/09 11:26:33 kleink Exp $	*/
 
 /*-
@@ -319,16 +319,3 @@ err:
 	free(hostdata);
 	return NULL;
 }
-
-void
-_NukeRune(_RuneLocale *rl)
-{
-
-	if (rl != &_DefaultRuneLocale) {
-		_freeentry(&rl->rl_runetype_ext);
-		free(rl->rl_tabs);
-		free(rl->rl_codeset);
-		free(rl);
-	}
-}
-
