@@ -121,7 +121,7 @@ struct pool {
 
 	int		pr_ipl;
 
-	RBT_HEAD(phtree, pool_item_header)
+	RB_HEAD(phtree, pool_item_header)
 			pr_phtree;
 
 	u_int		pr_align;
