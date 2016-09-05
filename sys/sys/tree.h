@@ -745,7 +745,7 @@ name##_RB_MINMAX(struct name *head, int val)				\
 	    ((x) != NULL) && ((y) = name##_RB_PREV(x), 1);		\
 	     (x) = (y))
 
-#if 0 && defined(_KERNEL)
+#ifdef _KERNEL
 
 /*
  * Copyright (c) 2016 David Gwynne <dlg@openbsd.org>
