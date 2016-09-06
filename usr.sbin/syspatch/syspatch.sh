@@ -131,18 +131,15 @@ install_file()
 
 install_kernel()
 {
-	local _backup=false _bsd=/bsd _kern=$1
+	local _bsd=/bsd _kern=$1
 	[[ -n ${_kern} ]]
 
 	# we only save the original release kernel once
-	[[ -f /bsd.rollback${_RELINT} ]] || _backup=true
+	[[ -f /bsd.rollback${_RELINT} ]] || \
+		install -FSp /bsd /bsd.rollback${_RELINT}
 
 	if ${_BSDMP}; then
 		[[ ${_kern##*/} == bsd ]] && _bsd=/bsd.sp
-	fi
-
-	if ${_backup}; then
-		install -FSp /bsd /bsd.rollback${_RELINT} || return
 	fi
 
 	if [[ -n ${_bsd} ]]; then
