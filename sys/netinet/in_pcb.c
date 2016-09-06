@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.c,v 1.212 2016/07/22 11:14:41 mpi Exp $	*/
+/*	$OpenBSD: in_pcb.c,v 1.213 2016/08/04 20:46:24 vgross Exp $	*/
 /*	$NetBSD: in_pcb.c,v 1.25 1996/02/13 23:41:53 christos Exp $	*/
 
 /*
@@ -257,6 +257,7 @@ in_pcballoc(struct socket *so, struct inpcbtable *table)
 	if (inpcb_pool_initialized == 0) {
 		pool_init(&inpcb_pool, sizeof(struct inpcb), 0, 0, 0,
 		    "inpcbpl", NULL);
+		pool_setipl(&inpcb_pool, IPL_SOFTNET);
 		inpcb_pool_initialized = 1;
 	}
 	inp = pool_get(&inpcb_pool, PR_NOWAIT|PR_ZERO);
