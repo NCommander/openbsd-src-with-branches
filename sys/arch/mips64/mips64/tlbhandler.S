@@ -1,4 +1,4 @@
-/*	$OpenBSD: tlbhandler.S,v 1.44 2014/08/12 19:33:59 miod Exp $ */
+/*	$OpenBSD: tlbhandler.S,v 1.45 2016/08/14 08:23:52 visa Exp $ */
 
 /*
  * Copyright (c) 1995-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -42,16 +42,6 @@
 #endif
 
 #include "assym.h"
-
-#ifdef MIPS_PTE64
-#define	PTE_LOG		3
-#define	PTE_LOAD	ld
-#define	PTE_OFFS	8
-#else
-#define	PTE_LOG		2
-#define	PTE_LOAD	lw
-#define	PTE_OFFS	4
-#endif
 
 	.set	mips3
 
