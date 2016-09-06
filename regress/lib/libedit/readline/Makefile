@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2016/05/06 15:39:42 schwarze Exp $
 
 # To test /usr/src/gnu/lib/libreadline, run "make READLINE=1".
 # To test /usr/src/lib/libedit/readline, run just "make".
@@ -9,6 +9,7 @@ PROG =		history
 CFLAGS +=	-DREADLINE
 LDADD +=	-lcurses -lreadline
 .else
+CFLAGS +=	-I${BSDSRCDIR}/lib/libedit
 LDADD +=	-lcurses -ledit
 .endif
 
