@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vfsops.c,v 1.26 2016/08/15 07:39:46 natano Exp $ */
+/* $OpenBSD: fuse_vfsops.c,v 1.27 2016/08/30 16:45:54 natano Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -273,7 +273,6 @@ retry:
 	ip->ufs_ino.i_vnode = nvp;
 	ip->ufs_ino.i_dev = fmp->dev;
 	ip->ufs_ino.i_number = ino;
-	ip->parent = 0;
 
 	for (i = 0; i < FUFH_MAXTYPE; i++)
 		ip->fufh[i].fh_type = FUFH_INVALID;
