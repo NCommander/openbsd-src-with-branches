@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping6.c,v 1.154 2016/09/03 21:47:57 florian Exp $	*/
+/*	$OpenBSD: ping6.c,v 1.155 2016/09/04 10:44:28 florian Exp $	*/
 /*	$KAME: ping6.c,v 1.163 2002/10/25 02:19:06 itojun Exp $	*/
 
 /*
@@ -627,7 +627,7 @@ main(int argc, char *argv[])
 	    sizeof(dst)), datalen);
 
 	while (preload--)		/* Fire off them quickies. */
-		(void)pinger();
+		pinger();
 
 	(void)signal(SIGINT, onsignal);
 	(void)signal(SIGINFO, onsignal);
