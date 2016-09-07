@@ -1,4 +1,4 @@
-.\" 	$OpenBSD: rc.subr.8,v 1.30 2016/04/26 17:43:12 ajacoutot Exp $
+.\" 	$OpenBSD: rc.subr.8,v 1.31 2016/04/26 18:30:22 jmc Exp $
 .\"
 .\" Copyright (c) 2011 Robert Nagy, Antoine Jacoutot, Ingo Schwarze
 .\" All rights reserved.
@@ -42,10 +42,14 @@ naming policy:
 .Pp
 .Bl -enum -compact
 .It
-Use the same name as the
+When possible, use the same name as the
 .Nm daemon
 it is referring to.
 .It
+It must follow
+.Xr ksh 1
+variable naming: begin with an alphabetic or underscore character, followed by
+one or more alphanumeric or underscore characters.
 Dashes
 .Pq Sq -
 have to be converted to
