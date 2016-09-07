@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.54 2016/08/16 15:32:07 tb Exp $	*/
+/*	$OpenBSD: edit.c,v 1.55 2016/09/04 17:21:44 nicm Exp $	*/
 
 /*
  * Command line editing - common code
@@ -583,7 +583,7 @@ static int
 x_try_array(const char *buf, int buflen, const char *want, int wantlen,
     int *nwords, char ***words)
 {
-	const char *cmd, *cp, *last;
+	const char *cmd, *cp;
 	int cmdlen, n;
 	char *name, *s;
 	size_t slen;
