@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:48 pascal Exp $
 
 .include <bsd.own.mk>
 
@@ -16,7 +16,7 @@ install:
 depend:
 	# Nothing here so far ...
 
-clean:
+clean cleandir:
 	rm -f ${GEN}
 
 AttrParsedAttrImpl.inc: ${CLANG_INC}/clang/Basic/Attr.td
