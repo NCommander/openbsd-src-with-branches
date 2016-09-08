@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.56 2015/12/30 09:07:00 tedu Exp $	*/
+/*	$OpenBSD: sh.h,v 1.57 2016/03/04 15:11:06 deraadt Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -367,8 +367,9 @@ extern	int	x_cols;	/* tty columns */
 #define KSH_SYSTEM_PROFILE "/etc/profile"
 
 /* Used by v_evaluate() and setstr() to control action when error occurs */
-#define KSH_UNWIND_ERROR	0	/* unwind the stack (longjmp) */
-#define KSH_RETURN_ERROR	1	/* return 1/0 for success/failure */
+#define KSH_UNWIND_ERROR	0x0	/* unwind the stack (longjmp) */
+#define KSH_RETURN_ERROR	0x1	/* return 1/0 for success/failure */
+#define KSH_IGNORE_RDONLY	0x4	/* ignore the read-only flag */
 
 #include "shf.h"
 #include "table.h"
