@@ -1,4 +1,4 @@
-/*	$OpenBSD: region.c,v 1.35 2015/03/19 21:22:15 bcallah Exp $	*/
+/*	$OpenBSD: region.c,v 1.36 2016/09/08 07:50:09 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -650,7 +650,7 @@ preadin(int fd, struct buffer *bp)
 	int len;
 	char buf[BUFSIZ], *p, *q;
 
-	if ((len = read(fd, buf, BUFSIZ - 1)) == 0)
+	if ((len = read(fd, buf, BUFSIZ - 1)) <= 0)
 		return (FALSE);
 
 	buf[len] = '\0';
