@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbrk.S,v 1.7 2015/09/05 06:22:47 guenther Exp $	*/
+/*	$OpenBSD: sbrk.S,v 1.8 2016/05/07 19:05:21 guenther Exp $	*/
 /*	$NetBSD: sbrk.S,v 1.1 2001/06/19 00:25:06 fvdl Exp $	*/
 
 /*-
@@ -53,7 +53,6 @@ __curbrk:	.quad	_end
 	.type	__curbrk,@object
 	.text
 
-	.weak	sbrk
 ENTRY(sbrk)
 	movq	__curbrk(%rip),%rax
 	movslq	%edi,%rsi
@@ -68,3 +67,4 @@ ENTRY(sbrk)
 	SET_ERRNO
 	ret
 END(sbrk)
+	.weak	sbrk
