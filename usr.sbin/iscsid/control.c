@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.8 2014/04/21 17:41:52 claudio Exp $ */
+/*	$OpenBSD: control.c,v 1.9 2016/04/05 00:52:35 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -74,6 +74,7 @@ control_init(char *path)
 	if (strlcpy(sun.sun_path, path, sizeof(sun.sun_path)) >=
 	    sizeof(sun.sun_path)) {
 		log_warnx("control_init: path %s too long", path);
+		close(fd);
 		return -1;
 	}
 
