@@ -1,4 +1,4 @@
-/* $OpenBSD: sximmc.c,v 1.7 2016/08/28 15:26:10 mglocker Exp $ */
+/* $OpenBSD: sximmc.c,v 1.8 2016/09/10 16:00:18 mglocker Exp $ */
 /* $NetBSD: awin_mmc.c,v 1.23 2015/11/14 10:32:40 bouyer Exp $ */
 
 /*-
@@ -432,9 +432,7 @@ sximmc_attach(struct device *parent, struct device *self, void *aux)
 	saa.saa_clkmax = awin_chip_id() == AWIN_CHIP_ID_A80 ? 48000 : 50000;
 #endif
 
-#if 0
 	saa.caps = SMC_CAPS_SD_HIGHSPEED | SMC_CAPS_MMC_HIGHSPEED;
-#endif
 
 	width = OF_getpropint(sc->sc_node, "bus-width", 1);
 	if (width >= 8)
