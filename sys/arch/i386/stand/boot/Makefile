@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.59 2016/03/30 06:38:45 jmc Exp $
+#	$OpenBSD: Makefile,v 1.60 2016/07/30 03:25:48 guenther Exp $
 
 COPTS?=
 MAN?=	boot.8
@@ -44,7 +44,7 @@ SRCS+=	close.c closeall.c cons.c cread.c dev.c disklabel.c dkcksum.c fstat.c \
 SRCS+=	elf32.c elf64.c loadfile.c
 SRCS+=	ufs.c
 .if ${SOFTRAID:L} == "yes"
-SRCS+=	aes_xts.c explicit_bzero.c hmac_sha1.c pbkdf2.c rijndael.c sha1.c
+SRCS+=	aes_xts.c explicit_bzero.c hmac_sha1.c pkcs5_pbkdf2.c rijndael.c sha1.c
 .endif
 
 .PATH:	${S}/lib/libkern

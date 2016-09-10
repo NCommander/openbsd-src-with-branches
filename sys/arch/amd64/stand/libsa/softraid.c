@@ -1,4 +1,4 @@
-/*	$OpenBSD: softraid.c,v 1.24 2016/01/06 02:10:03 krw Exp $	*/
+/*	$OpenBSD: softraid.c,v 1.25 2016/01/06 16:12:20 krw Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Sing <jsing@openbsd.org>
@@ -26,7 +26,7 @@
 
 #include <lib/libsa/aes_xts.h>
 #include <lib/libsa/hmac_sha1.h>
-#include <lib/libsa/pbkdf2.h>
+#include <lib/libsa/pkcs5_pbkdf2.h>
 #include <lib/libsa/rijndael.h>
 #include <lib/libz/zlib.h>
 
