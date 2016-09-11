@@ -1,4 +1,4 @@
-/*	$OpenBSD: com6.c,v 1.21 2015/12/04 17:34:40 tb Exp $	*/
+/*	$OpenBSD: com6.c,v 1.22 2015/12/31 17:51:19 mestre Exp $	*/
 /*	$NetBSD: com6.c,v 1.5 1995/04/27 21:30:23 mycroft Exp $	*/
 
 /*
@@ -36,6 +36,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "extern.h"
 

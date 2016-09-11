@@ -1,4 +1,4 @@
-/*	$OpenBSD: pom.c,v 1.22 2016/03/07 12:07:56 mestre Exp $	*/
+/*	$OpenBSD: pom.c,v 1.23 2016/08/27 02:02:44 guenther Exp $	*/
 /*    $NetBSD: pom.c,v 1.6 1996/02/06 22:47:29 jtc Exp $      */
 
 /*
@@ -51,6 +51,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #ifndef M_PI

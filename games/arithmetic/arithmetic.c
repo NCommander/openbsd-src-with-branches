@@ -1,4 +1,4 @@
-/*	$OpenBSD: arithmetic.c,v 1.25 2016/01/25 21:17:45 mestre Exp $	*/
+/*	$OpenBSD: arithmetic.c,v 1.26 2016/01/27 13:42:08 gsoares Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -67,6 +67,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 int	getrandom(int, int, int);
