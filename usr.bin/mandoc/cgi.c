@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgi.c,v 1.78 2016/09/01 15:07:19 schwarze Exp $ */
+/*	$OpenBSD: cgi.c,v 1.79 2016/09/03 21:24:35 schwarze Exp $ */
 /*
  * Copyright (c) 2011, 2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014, 2015, 2016 Ingo Schwarze <schwarze@usta.de>
@@ -136,7 +136,7 @@ html_putchar(char c)
 
 	switch (c) {
 	case ('"'):
-		printf("&quote;");
+		printf("&quot;");
 		break;
 	case ('&'):
 		printf("&amp;");
