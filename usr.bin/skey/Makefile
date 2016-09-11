@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2014/03/20 20:39:13 naddy Exp $
+#	$OpenBSD: Makefile,v 1.15 2016/03/30 06:38:46 jmc Exp $
 
 PROG=	skey
 MAN=	skey.1 skeyprune.8
@@ -9,7 +9,7 @@ DPADD=	${LIBSKEY}
 LDADD=	-lskey
 
 beforeinstall:
-	${INSTALL} ${INSTALL_COPY} -m 755 ${.CURDIR}/skeyprune.pl \
-		${DESTDIR}${BINDIR}/skeyprune
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 755 \
+	    ${.CURDIR}/skeyprune.pl ${DESTDIR}${BINDIR}/skeyprune
 
 .include <bsd.prog.mk>
