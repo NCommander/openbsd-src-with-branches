@@ -1,4 +1,4 @@
-/*	$OpenBSD: Locore.c,v 1.12 2014/11/26 20:30:41 stsp Exp $	*/
+/*	$OpenBSD: Locore.c,v 1.13 2014/12/11 10:52:07 stsp Exp $	*/
 /*	$NetBSD: Locore.c,v 1.1 2000/08/20 14:58:36 mrg Exp $	*/
 
 /*
@@ -33,6 +33,7 @@
  */
 
 #include <lib/libsa/stand.h>
+
 #include "openfirm.h"
 
 #include <machine/cpu.h>
@@ -666,4 +667,10 @@ getchar(void)
 		if (l != -2 && l != 0)
 			return -1;
 	return ch;
+}
+
+int
+cngetc(void)
+{
+	return getchar();
 }
