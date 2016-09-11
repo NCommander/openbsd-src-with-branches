@@ -1,4 +1,4 @@
-/*	$OpenBSD: softraid.c,v 1.5 2016/09/10 16:38:16 jsing Exp $	*/
+/*	$OpenBSD: softraid.c,v 1.6 2016/09/10 16:53:22 jsing Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Sing <jsing@openbsd.org>
@@ -32,7 +32,7 @@
 
 #include "disk.h"
 #include "ofdev.h"
-#include "softraid.h"
+#include "softraid_sparc64.h"
 
 /* List of softraid volumes. */
 struct sr_boot_volume_head sr_volumes;

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.32 2016/07/30 03:25:48 guenther Exp $
+#	$OpenBSD: Makefile,v 1.33 2016/09/10 16:38:16 jsing Exp $
 
 COPTS?=
 MAN?=	boot.8
@@ -28,7 +28,7 @@ SRCS+=	gidt.S random_i386.S
 SRCS+=	cmd_i386.c dev_i386.c exec_i386.c gateA20.c machdep.c
 SRCS+=	bioscons.c biosdev.c diskprobe.c memprobe.c time.c
 .if ${SOFTRAID:L} == "yes"
-SRCS+=	softraid.c
+SRCS+=	softraid_amd64.c
 .endif
 
 .PATH:	${S}/lib/libsa

@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskprobe.c,v 1.15 2014/07/12 20:58:31 tedu Exp $	*/
+/*	$OpenBSD: diskprobe.c,v 1.16 2015/09/02 01:52:26 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -44,7 +44,7 @@
 #include "libsa.h"
 
 #ifdef SOFTRAID
-#include "softraid.h"
+#include "softraid_amd64.h"
 #endif
 #ifdef EFIBOOT
 #include "efidev.h"
