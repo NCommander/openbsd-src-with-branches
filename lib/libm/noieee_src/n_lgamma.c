@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_lgamma.c,v 1.8 2008/07/18 13:08:58 martynas Exp $	*/
+/*	$OpenBSD: n_lgamma.c,v 1.9 2009/10/27 23:59:29 deraadt Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -141,7 +141,7 @@ lgamma(double x)
 	endian = ((*(int *) &one)) ? 1 : 0;
 #endif
 
-	if (!finite(x))
+	if (!isfinite(x))
 		if (_IEEE)
 			return (x+x);
 		else return (infnan(EDOM));
@@ -197,7 +197,7 @@ large_lgam(double x)
 		v.b = (x - v.a) - 0.5;
 		t.a = u.a*v.a;
 		t.b = x*u.b + v.b*u.a;
-		if (_IEEE == 0 && !finite(t.a))
+		if (_IEEE == 0 && !isfinite(t.a))
 			return(infnan(ERANGE));
 		return(t.a + t.b);
 	}

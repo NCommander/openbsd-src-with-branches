@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_roundf.c,v 1.1 2006/07/12 07:26:08 brad Exp $	*/
 
 /*-
  * Copyright (c) 2003, Steven G. Kargl
@@ -34,7 +34,7 @@ roundf(float x)
 {
 	float t;
 
-	if (isinff(x) || isnanf(x))
+	if (isinf(x) || isnan(x))
 		return (x);
 
 	if (x >= 0.0) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_floor.c,v 1.17 2013/03/28 18:09:38 martynas Exp $	*/
+/*	$OpenBSD: n_floor.c,v 1.19 2013/07/05 05:44:10 espie Exp $	*/
 /*	$NetBSD: n_floor.c,v 1.1 1995/10/10 23:36:48 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -84,7 +84,7 @@ floorf(float x)
 {
 	volatile float y;
 
-	if (isnanf(x) || x >= F)	/* already an even integer */
+	if (isnan(x) || x >= F)		/* already an even integer */
 		return x;
 	else if (x < (float)0)
 		return -ceilf(-x);
@@ -100,7 +100,7 @@ ceilf(float x)
 {
 	volatile float y;
 
-	if (isnanf(x) || x >= F)	/* already an even integer */
+	if (isnan(x) || x >= F)		/* already an even integer */
 		return x;
 	else if (x < (float)0)
 		return -floorf(-x);
@@ -158,7 +158,7 @@ rintf(float x)
 	volatile float t;
 	const float one = 1.0f;
 
-	if (isnanf(x))
+	if (isnan(x))
 		return (x);
 
 	if (copysignf(x, one) >= F)	/* already an integer */

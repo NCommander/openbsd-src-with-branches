@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_j1.c,v 1.6 2008/06/25 17:49:31 martynas Exp $	*/
+/*	$OpenBSD: n_j1.c,v 1.7 2009/10/27 23:59:29 deraadt Exp $	*/
 /*	$NetBSD: n_j1.c,v 1.1 1995/10/10 23:36:53 ragge Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
@@ -143,7 +143,7 @@ j1(double x)
 {
 	double z, s,c,ss,cc,r,u,v,y;
 	y = fabs(x);
-	if (!finite(x))			/* Inf or NaN */
+	if (!isfinite(x))		/* Inf or NaN */
 		if (isnan(x))
 			return(x);
 		else
@@ -206,7 +206,7 @@ y1(double x)
 {
 	double z, s, c, ss, cc, u, v;
     /* if Y1(NaN) is NaN, Y1(-inf) is NaN, Y1(inf) is 0 */
-	if (!finite(x))
+	if (!isfinite(x))
 		if (x < 0)
 			return(zero/zero);
 		else if (x > 0)
