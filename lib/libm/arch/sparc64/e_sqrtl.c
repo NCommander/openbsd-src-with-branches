@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: e_sqrtl.c,v 1.1 2014/09/12 22:07:24 kettenis Exp $	*/
 /*
  * Copyright (c) 2014 Mark Kettenis
  *
@@ -27,3 +27,4 @@ sqrtl(long double x)
 	_Qp_sqrt(&y, &x);
 	return y;
 }
+DEF_STD(sqrtl);

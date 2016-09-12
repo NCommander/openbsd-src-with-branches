@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_csqrtf.c,v 1.2 2010/07/18 18:42:26 guenther Exp $	*/
+/*	$OpenBSD: s_csqrtf.c,v 1.3 2015/12/18 12:10:30 shadchin Exp $	*/
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -129,3 +129,4 @@ csqrtf(float complex z)
 		w = t + r * I;
 	return (w);
 }
+DEF_STD(csqrtf);

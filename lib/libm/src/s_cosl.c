@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_cosl.c,v 1.1 2008/12/09 20:00:35 martynas Exp $	*/
 /*-
  * Copyright (c) 2007 Steven G. Kargl
  * All rights reserved.
@@ -114,3 +114,4 @@ cosl(long double x)
 	
 	return (hi);
 }
+DEF_STD(cosl);

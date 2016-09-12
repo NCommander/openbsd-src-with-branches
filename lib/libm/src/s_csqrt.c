@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_csqrt.c,v 1.6 2013/07/03 04:46:36 espie Exp $	*/
+/*	$OpenBSD: s_csqrt.c,v 1.7 2015/12/18 12:10:30 shadchin Exp $	*/
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -130,7 +130,5 @@ csqrt(double complex z)
 		w = t + r * I;
 	return (w);
 }
-
-#if	LDBL_MANT_DIG == DBL_MANT_DIG
-__strong_alias(csqrtl, csqrt);
-#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+DEF_STD(csqrt);
+LDBL_MAYBE_CLONE(csqrt);

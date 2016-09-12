@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_trunc.c,v 1.7 2015/01/20 04:41:01 krw Exp $	*/
 /*
  * Written by Michael Shalayeff. Public Domain
  */
@@ -22,5 +22,5 @@ trunc(double x)
 	__asm__ volatile("fldds 0(%0), %%fr0" :: "r" (&ofpsr) : "memory");
 	return (x);
 }
-
-__strong_alias(truncl, trunc);
+DEF_STD(trunc);
+LDBL_UNUSED_CLONE(trunc);

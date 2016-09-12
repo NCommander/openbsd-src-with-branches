@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_ilogbl.c,v 1.1 2008/12/09 20:00:35 martynas Exp $	*/
 /*
  * From: @(#)s_ilogb.c 5.1 93/09/24
  * ====================================================
@@ -76,3 +76,4 @@ ilogbl(long double x)
 	else
 		return (INT_MAX);
 }
+DEF_STD(ilogbl);

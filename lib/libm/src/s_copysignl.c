@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_copysignl.c,v 1.1 2008/12/09 20:00:35 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -29,3 +29,4 @@ copysignl(long double x, long double y)
 
 	return x;
 }
+DEF_STD(copysignl);

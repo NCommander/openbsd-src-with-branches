@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: e_logl.c,v 1.1 2011/07/06 00:02:42 martynas Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -281,3 +281,4 @@ logl(long double x)
   y += e * ln2a;
   return y;
 }
+DEF_STD(logl);

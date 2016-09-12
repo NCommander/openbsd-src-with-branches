@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_log1pf.S,v 1.2 2005/08/02 11:17:31 espie Exp $ */
+/*	$OpenBSD: s_log1pf.S,v 1.3 2009/04/08 23:31:34 martynas Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -73,3 +73,4 @@ use_fyl2xp1:
 	fyl2xp1
 	XMM_FLOAT_EPILOGUE
 	ret
+END_STD(log1pf)

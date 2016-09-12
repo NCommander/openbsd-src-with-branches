@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_cimagf.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -23,3 +23,4 @@ cimagf(float complex z)
 {
 	return __imag__ z;
 }
+DEF_STD(cimagf);

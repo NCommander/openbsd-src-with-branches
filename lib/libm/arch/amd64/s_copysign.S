@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_copysign.S,v 1.3 2009/04/08 22:30:41 martynas Exp $ */
+/*	$OpenBSD: s_copysign.S,v 1.4 2011/07/09 18:00:53 martynas Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -18,3 +18,4 @@ ENTRY(copysign)
 	pand	%xmm3,%xmm0
 	por	%xmm1,%xmm0
 	ret
+END(copysign)

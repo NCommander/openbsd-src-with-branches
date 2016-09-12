@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_casinh.c,v 1.5 2013/03/28 18:09:38 martynas Exp $	*/
+/*	$OpenBSD: s_casinh.c,v 1.6 2013/07/03 04:46:36 espie Exp $	*/
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -54,7 +54,5 @@ casinh(double complex z)
 	w = -1.0 * I * casin (z * I);
 	return (w);
 }
-
-#if	LDBL_MANT_DIG == DBL_MANT_DIG
-__strong_alias(casinhl, casinh);
-#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+DEF_STD(casinh);
+LDBL_MAYBE_UNUSED_CLONE(casinh);

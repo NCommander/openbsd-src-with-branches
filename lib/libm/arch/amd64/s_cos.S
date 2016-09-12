@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: s_cos.S,v 1.2 2005/08/02 11:17:31 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -28,3 +28,4 @@ ENTRY(cos)
 	fcos
 	XMM_DOUBLE_EPILOGUE
 	ret
+END_STD(cos)

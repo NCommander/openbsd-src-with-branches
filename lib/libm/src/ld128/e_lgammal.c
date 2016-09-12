@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_lgammal.c,v 1.3 2011/07/09 05:29:06 martynas Exp $	*/
+/*	$OpenBSD: e_lgammal.c,v 1.4 2016/09/12 04:39:47 guenther Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -1036,3 +1036,4 @@ lgammal(long double x)
   q += neval (p, RASY, NRASY) / x;
   return (q);
 }
+DEF_STD(lgammal);

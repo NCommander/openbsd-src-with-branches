@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_cargf.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -23,3 +23,4 @@ cargf(float complex z)
 {
 	return atan2f (__imag__ z, __real__ z);
 }
+DEF_STD(cargf);

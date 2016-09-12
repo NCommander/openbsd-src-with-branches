@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: s_tan.S,v 1.2 2005/08/02 11:17:31 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -30,3 +30,4 @@ ENTRY(tan)
 	fstp	%st(0)
 	XMM_DOUBLE_EPILOGUE
 	ret
+END(tan)

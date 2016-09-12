@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_ctanh.c,v 1.5 2013/03/28 18:09:38 martynas Exp $	*/
+/*	$OpenBSD: s_ctanh.c,v 1.6 2013/07/03 04:46:36 espie Exp $	*/
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -58,7 +58,5 @@ ctanh(double complex z)
 	w = sinh (2.0 * x) / d  +  (sin (2.0 * y) / d) * I;
 	return (w);
 }
-
-#if	LDBL_MANT_DIG == DBL_MANT_DIG
-__strong_alias(ctanhl, ctanh);
-#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+DEF_STD(ctanh);
+LDBL_MAYBE_UNUSED_CLONE(ctanh);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_csqrtl.c,v 1.2 2011/07/20 19:28:33 martynas Exp $	*/
+/*	$OpenBSD: s_csqrtl.c,v 1.3 2015/12/18 12:10:30 shadchin Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -126,3 +126,4 @@ csqrtl(long double complex z)
 		w = t + r * I;
 	return (w);
 }
+DEF_STD(csqrtl);

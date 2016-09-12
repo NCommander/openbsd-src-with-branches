@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_exp.c,v 1.10 2009/10/27 23:59:29 deraadt Exp $	*/
+/*	$OpenBSD: n_exp.c,v 1.11 2016/09/12 04:39:47 guenther Exp $	*/
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -126,6 +126,7 @@ exp(double x)
 	/* exp(INF) is INF, exp(+big#) overflows to INF */
 	    return( isfinite(x) ?  scalbn(1.0,5000)  : x);
 }
+DEF_STD(exp);
 
 /* returns exp(r = x + c) for |c| < |x| with no overlap.  */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_cpow.c,v 1.5 2013/03/28 18:09:38 martynas Exp $	*/
+/*	$OpenBSD: s_cpow.c,v 1.6 2013/07/03 04:46:36 espie Exp $	*/
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -70,7 +70,5 @@ cpow(double complex a, double complex z)
 	w = r * cos (theta) + (r * sin (theta)) * I;
 	return (w);
 }
-
-#if	LDBL_MANT_DIG == DBL_MANT_DIG
-__strong_alias(cpowl, cpow);
-#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+DEF_STD(cpow);
+LDBL_MAYBE_UNUSED_CLONE(cpow);

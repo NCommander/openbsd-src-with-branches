@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_scalb.S,v 1.2 2005/08/02 11:17:31 espie Exp $ */
+/*	$OpenBSD: e_scalb.S,v 1.3 2008/09/07 20:36:08 martynas Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -16,3 +16,4 @@ ENTRY(scalb)
 	fstp	%st(1)			/* bug fix for fp stack overflow */
 	XMM_DOUBLE_EPILOGUE
 	ret
+END_NONSTD(scalb)

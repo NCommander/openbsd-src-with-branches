@@ -1,10 +1,10 @@
-/*	$OpenBSD: e_scalb.S,v 1.3 2005/08/02 11:17:31 espie Exp $ */
+/*	$OpenBSD: e_scalb.S,v 1.4 2008/09/07 20:36:08 martynas Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
+#include "DEFS.h"
 
 ENTRY(scalb)
 	fldl	12(%esp)
@@ -12,3 +12,4 @@ ENTRY(scalb)
 	fscale
 	fstp	%st(1)			/* bug fix for fp stack overflow */
 	ret
+END_NONSTD(scalb)

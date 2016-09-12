@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_floorf.c,v 1.9 2015/01/20 04:41:01 krw Exp $	*/
 /*
  * Written by Michael Shalayeff. Public Domain
  */
@@ -21,3 +21,4 @@ floorf(float x)
 	__asm__ volatile("fldds 0(%0), %%fr0" :: "r" (&ofpsr) : "memory");
 	return (x);
 }
+DEF_STD(floorf);

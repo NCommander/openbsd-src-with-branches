@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_sinl.c,v 1.1 2008/12/09 20:00:35 martynas Exp $	*/
 /*-
  * Copyright (c) 2007 Steven G. Kargl
  * All rights reserved.
@@ -115,3 +115,4 @@ sinl(long double x)
 	
 	return (s ? -hi : hi);
 }
+DEF_STD(sinl);

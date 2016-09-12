@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_powl.c,v 1.4 2013/08/02 20:23:28 kettenis Exp $	*/
+/*	$OpenBSD: e_powl.c,v 1.5 2013/11/12 20:35:19 martynas Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -463,6 +463,7 @@ if( nflg )
 
 return( z );
 }
+DEF_STD(powl);
 
 
 /* Find a multiple of 1/NXT that is within 1/NXT of x. */

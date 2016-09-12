@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_ceil.S,v 1.2 2005/08/02 11:17:31 espie Exp $ */
+/*	$OpenBSD: s_ceil.S,v 1.3 2009/04/08 22:30:41 martynas Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -22,3 +22,4 @@ ENTRY(ceil)
 	fstpl	-8(%rsp)
 	movsd	-8(%rsp),%xmm0
 	ret
+END_STD(ceil)

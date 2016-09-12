@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_cabsf.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -23,3 +23,4 @@ cabsf(float complex z)
 {
 	return hypotf(__real__ z, __imag__ z);
 }
+DEF_STD(cabsf);

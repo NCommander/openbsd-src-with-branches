@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_cimagl.c,v 1.1 2011/07/08 19:25:31 martynas Exp $	*/
 
 /*
  * Copyright (c) 2011 Martynas Venckus <martynas@openbsd.org>
@@ -24,3 +24,4 @@ cimagl(long double complex z)
 {
 	return __imag__ z;
 }
+DEF_STD(cimagl);

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_rintf.c,v 1.5 2015/01/20 04:41:01 krw Exp $	*/
 /*
  * Written by Michael Shalayeff. Public Domain
  */
@@ -12,3 +12,4 @@ rintf(float x)
 
 	return (x);
 }
+DEF_STD(rintf);

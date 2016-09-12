@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_round.c,v 1.7 2015/01/20 04:41:01 krw Exp $	*/
 /*
  * Written by Michael Shalayeff. Public Domain
  */
@@ -22,5 +22,5 @@ round(double x)
 	__asm__ volatile("fldds 0(%0), %%fr0" :: "r" (&ofpsr) : "memory");
 	return (x);
 }
-
-__strong_alias(roundl, round);
+DEF_STD(round);
+LDBL_CLONE(round);

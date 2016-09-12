@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_tan.c,v 1.14 2013/07/15 04:08:26 espie Exp $	*/
+/*	$OpenBSD: n_tan.c,v 1.15 2016/09/12 04:39:47 guenther Exp $	*/
 /*	$NetBSD: n_tan.c,v 1.1 1995/10/10 23:37:07 ragge Exp $	*/
 /*
  * Copyright (c) 1987, 1993
@@ -70,5 +70,5 @@ tan(double x)
 	else
 		return c/(x+x*ss);		/* ... cos/sin */
 }
-
-__strong_alias(tanl, tan);
+DEF_STD(tan);
+LDBL_UNUSED_CLONE(tan);
