@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.91 2016/09/10 19:33:38 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.92 2016/09/11 03:14:04 guenther Exp $	*/
 /*	$NetBSD: trap.c,v 1.73 2001/08/09 01:03:01 eeh Exp $ */
 
 /*
@@ -456,7 +456,7 @@ dopanic:
 		 * XXX Flushing the user windows here should not be
 		 * necessary, but not doing so here causes corruption
 		 * of user windows on sun4v.  Flushing them shouldn't
-		 * be much of a prefermance penalty since we're
+		 * be much of a performance penalty since we're
 		 * probably going to spill any remaining user windows
 		 * anyhow.
 		 */
