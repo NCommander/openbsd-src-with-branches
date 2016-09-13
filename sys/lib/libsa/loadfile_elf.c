@@ -1,5 +1,5 @@
 /* $NetBSD: loadfile.c,v 1.10 2000/12/03 02:53:04 tsutsui Exp $ */
-/* $OpenBSD: loadfile_elf.c,v 1.10 2014/10/26 10:33:48 miod Exp $ */
+/* $OpenBSD: loadfile_elf.c,v 1.11 2015/05/19 20:39:12 miod Exp $ */
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -233,7 +233,8 @@ ELFNAME(exec)(int fd, Elf_Ehdr *elf, u_long *marks, int flags)
 		for (first = 1, i = 0; i < elf->e_shnum; i++) {
 			if (shp[i].sh_type == SHT_SYMTAB ||
 			    shp[i].sh_type == SHT_STRTAB ||
-			    !strcmp(shstr + shp[i].sh_name, ".debug_line")) {
+			    !strcmp(shstr + shp[i].sh_name, ".debug_line") ||
+			    !strcmp(shstr + shp[i].sh_name, ".SUNW_ctf")) {
 				if (havesyms && (flags & LOAD_SYM)) {
 					PROGRESS(("%s%ld", first ? " [" : "+",
 					    (u_long)shp[i].sh_size));
