@@ -1,4 +1,4 @@
-/*	$Id: dbg.c,v 1.2 2016/08/31 22:49:09 benno Exp $ */
+/*	$Id: dbg.c,v 1.3 2016/09/01 00:35:21 florian Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -39,7 +39,7 @@ dodbg(const char *fmt, ...)
 {
 	va_list		 ap;
 
-	if ( ! verbose)
+	if (!verbose)
 		return;
 
 	va_start(ap, fmt);
