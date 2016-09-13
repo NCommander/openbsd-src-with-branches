@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.156 2016/09/03 11:13:36 yasuoka Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.157 2016/09/03 14:09:58 bluhm Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -300,8 +300,9 @@ soabort(struct socket *so)
 int
 soaccept(struct socket *so, struct mbuf *nam)
 {
-	int s = splsoftnet();
 	int error = 0;
+
+	splsoftassert(IPL_SOFTNET);
 
 	if ((so->so_state & SS_NOFDREF) == 0)
 		panic("soaccept !NOFDREF: so %p, so_type %d", so, so->so_type);
@@ -312,7 +313,6 @@ soaccept(struct socket *so, struct mbuf *nam)
 		    nam, NULL, curproc);
 	else
 		error = ECONNABORTED;
-	splx(s);
 	return (error);
 }
 
