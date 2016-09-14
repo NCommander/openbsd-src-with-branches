@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axenreg.h,v 1.4 2015/06/12 15:47:31 mpi Exp $	*/
+/*	$OpenBSD: if_axenreg.h,v 1.5 2015/07/16 00:17:40 yuo Exp $	*/
 
 /*
  * Copyright (c) 2013 Yojiro UO <yuo@openbsd.org>. All right reserved.
@@ -182,6 +182,7 @@
 
 /*   6byte cmd   */ 
 #define AXEN_CMD_MAC_READ_ETHER			0x6001
+#define AXEN_CMD_MAC_WRITE_ETHER		0x6101
 #define   AXEN_CMD_MAC_NODE_ID			  0x10
 
 /*   8byte cmd   */ 
