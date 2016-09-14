@@ -88,7 +88,6 @@ struct ac97_codec_if {
 int ac97_attach(struct ac97_host_if *);
 int ac97_resume(struct ac97_host_if *, struct ac97_codec_if *);
 int ac97_set_rate(struct ac97_codec_if *, int, u_long *);
-void ac97_get_default_params(struct audio_params *);
 
 #define	AC97_REG_RESET			0x00
 #define	AC97_CAPS_MICIN			0x0001

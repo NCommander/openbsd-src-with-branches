@@ -607,12 +607,6 @@ int	ac97debug = 0;
 #define DPRINTFN(n,x)
 #endif
 
-void
-ac97_get_default_params(struct audio_params *params)
-{
-	*params = ac97_audio_default;
-}
-
 int
 ac97_read(struct ac97_softc *as, u_int8_t reg, u_int16_t *val)
 {

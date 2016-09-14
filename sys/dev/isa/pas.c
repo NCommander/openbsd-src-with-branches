@@ -112,8 +112,6 @@ void	pasconf(int, int, int, int);
 struct audio_hw_if pas_hw_if = {
 	sbdsp_open,
 	sbdsp_close,
-	0,
-	sbdsp_query_encoding,
 	sbdsp_set_params,
 	sbdsp_round_blocksize,
 	0,
@@ -132,11 +130,9 @@ struct audio_hw_if pas_hw_if = {
 	sb_malloc,
 	sb_free,
 	sb_round,
-        sb_mappage,
 	sbdsp_get_props,
 	sbdsp_trigger_output,
-	sbdsp_trigger_input,
-	NULL
+	sbdsp_trigger_input
 };
 
 /* The Address Translation code is used to convert I/O register addresses to

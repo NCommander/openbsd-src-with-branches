@@ -674,8 +674,6 @@ typedef struct codec_t {
 
 	struct audio_format *formats;
 	int nformats;
-	struct audio_encoding *encs;
-	int nencs;
 
 	struct io_pin *ipins;
 	int nipins;

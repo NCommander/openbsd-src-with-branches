@@ -143,7 +143,6 @@ void	nec86hw_close(void *);
 
 int	nec86hw_set_params(void *, int, int, struct audio_params *,
 	    struct audio_params *);
-int	nec86hw_query_encoding(void *, struct audio_encoding *);
 
 int	nec86hw_round_blocksize(void *, int);
 

@@ -238,35 +238,6 @@ nec86hw_set_params(void *addr, int mode, int usemode, struct audio_params *p,
 }
 
 int
-nec86hw_query_encoding(void *addr, struct audio_encoding *fp)
-{
-
-	switch (fp->index) {
-	case 0:
-		strlcpy(fp->name, AudioEulinear, sizeof(fp->name));
-		fp->encoding = AUDIO_ENCODING_ULINEAR;
-		fp->precision = 8;
-		fp->bps = 1;
-		fp->msb = 1;
-		fp->flags = 0;
-		break;
-	case 1:
-		strlcpy(fp->name, AudioEslinear_le, sizeof(fp->name));
-		fp->encoding = AUDIO_ENCODING_SLINEAR_LE;
-		fp->precision = 16;
-		fp->bps = 2;
-		fp->msb = 1;	/* is this OK? */
-		fp->flags = 0;
-		break;
-	default:
-		return EINVAL;
-		/*NOTREACHED*/
-	}
-
-	return 0;
-}
-
-int
 nec86hw_round_blocksize(void *addr, int blk)
 {
 	u_int base = NEC86_INTRBLK_UNIT;

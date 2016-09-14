@@ -182,7 +182,6 @@ void	ad1848_close(void *);
     
 void	ad1848_forceintr(struct ad1848_softc *);
 
-int	ad1848_query_encoding(void *, struct audio_encoding *);
 int	ad1848_set_params(void *, int, int, struct audio_params *, struct audio_params *);
 
 int	ad1848_round_blocksize(void *, int);
@@ -214,7 +213,6 @@ void     ad1848_mute_channel(struct ad1848_softc *, int device, int mute);
 void   *ad1848_malloc(void *, int, size_t, int, int);
 void	ad1848_free(void *, void *, int);
 size_t	ad1848_round(void *, int, size_t);
-paddr_t	ad1848_mappage(void *, void *, off_t, int);
 
 int	ad1848_get_props(void *);
 

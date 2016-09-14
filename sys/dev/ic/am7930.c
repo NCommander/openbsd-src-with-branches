@@ -235,27 +235,6 @@ am7930_set_params(void *addr, int setmode, int usemode,
 }
 
 int
-am7930_query_encoding(void *addr, struct audio_encoding *fp)
-{
-	struct am7930_softc *sc = addr;
-
-	switch (fp->index) {
-	case 0:
-		strlcpy(fp->name, AudioEmulaw, sizeof fp->name);
-		fp->encoding = AUDIO_ENCODING_ULAW;
-		fp->precision = sc->sc_glue->precision;
-		fp->bps = AUDIO_BPS(fp->precision);
-		fp->msb = 0;
-		fp->flags = 0;
-		break;
-	default:
-		return EINVAL;
-		/*NOTREACHED*/
-	}
-	return 0;
-}
-
-int
 am7930_round_blocksize(void *addr, int blk)
 {
 	return blk;

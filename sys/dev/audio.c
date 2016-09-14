@@ -1018,7 +1018,6 @@ audio_attach(struct device *parent, struct device *self, void *aux)
 	if (ops == 0 ||
 	    ops->open == 0 ||
 	    ops->close == 0 ||
-	    ops->query_encoding == 0 ||
 	    ops->set_params == 0 ||
 	    (ops->start_output == 0 && ops->trigger_output == 0) ||
 	    (ops->start_input == 0 && ops->trigger_input == 0) ||

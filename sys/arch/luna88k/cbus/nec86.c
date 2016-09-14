@@ -76,8 +76,6 @@ struct audio_device nec86_device = {
 struct audio_hw_if nec86_hw_if = {
 	.open		= nec86hw_open,
 	.close		= nec86hw_close,
-	.drain		= NULL,
-	.query_encoding	= nec86hw_query_encoding,
 	.set_params	= nec86hw_set_params,
 	.round_blocksize	= nec86hw_round_blocksize,
 	.commit_settings	= nec86hw_commit_settings,
@@ -96,11 +94,9 @@ struct audio_hw_if nec86_hw_if = {
 	.allocm		= NULL,
 	.freem		= NULL,
 	.round_buffersize	= NULL,
-	.mappage	=  NULL,
 	.get_props	= nec86_get_props,
 	.trigger_output	= NULL,
-	.trigger_input	= NULL,
-	.get_default_params	= NULL
+	.trigger_input	= NULL
 };
 
 /*

@@ -103,12 +103,10 @@ void	am7930_init(struct am7930_softc *, int);
  */
 
 struct audio_device;
-struct audio_encoding;
 struct audio_params;
 
 int	am7930_open(void *, int);
 void	am7930_close(void *);
-int	am7930_query_encoding(void *, struct audio_encoding *);
 int	am7930_set_params(void *, int, int, struct audio_params *,
 	    struct audio_params *);
 int	am7930_commit_settings(void *);
