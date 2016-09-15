@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pvbus.4,v 1.6 2016/01/28 09:18:54 reyk Exp $
+.\"	$OpenBSD: pvbus.4,v 1.7 2016/01/28 10:42:23 jmc Exp $
 .\"
 .\" Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
 .\" Copyright (c) 2006 Jason McIntyre <jmc@openbsd.org>
@@ -61,6 +61,13 @@ multiple hypervisor interfaces may be available on the same host.
 VMware Tools driver and
 .Dq guestinfo
 information store
+.El
+.Ss Hyper-V paravirtual devices
+.Bl -tag -width 13n -offset ind -compact
+.It Xr hyperv 4
+Hyper-V guest nexus device
+.It Xr hvn 4
+Hyper-V virtual networking interface
 .El
 .Ss Xen paravirtual devices
 .Bl -tag -width 13n -offset ind -compact
