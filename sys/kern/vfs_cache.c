@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cache.c,v 1.49 2016/03/19 12:04:15 natano Exp $	*/
+/*	$OpenBSD: vfs_cache.c,v 1.50 2016/08/25 00:01:13 dlg Exp $	*/
 /*	$NetBSD: vfs_cache.c,v 1.13 1996/02/04 02:18:09 christos Exp $	*/
 
 /*
@@ -417,9 +417,8 @@ nchinit(void)
 {
 	TAILQ_INIT(&nclruhead);
 	TAILQ_INIT(&nclruneghead);
-	pool_init(&nch_pool, sizeof(struct namecache), 0, 0, PR_WAITOK,
+	pool_init(&nch_pool, sizeof(struct namecache), 0, IPL_NONE, PR_WAITOK,
 	    "nchpl", NULL);
-	pool_setipl(&nch_pool, IPL_NONE);
 }
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nep.c,v 1.24 2015/11/25 03:09:59 dlg Exp $	*/
+/*	$OpenBSD: if_nep.c,v 1.25 2016/05/23 15:22:44 tedu Exp $	*/
 /*
  * Copyright (c) 2014, 2015 Mark Kettenis
  *
@@ -605,9 +605,8 @@ nep_attach(struct device *parent, struct device *self, void *aux)
 			    sc->sc_dev.dv_xname);
 			return;
 		}
-		pool_init(nep_block_pool, PAGE_SIZE, 0, 0, 0,
+		pool_init(nep_block_pool, PAGE_SIZE, 0, IPL_NET, 0,
 		    "nepblk", NULL);
-		pool_setipl(nep_block_pool, IPL_NET);
 	}
 
 	val = nep_read(sc, MIF_CONFIG);
