@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.c,v 1.63 2016/09/02 18:12:30 tedu Exp $ */
+/* $OpenBSD: doas.c,v 1.64 2016/09/03 11:03:18 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -161,7 +161,6 @@ static void
 parseconfig(const char *filename, int checkperms)
 {
 	extern FILE *yyfp;
-	extern int yyparse(void);
 	struct stat sb;
 
 	yyfp = fopen(filename, "r");

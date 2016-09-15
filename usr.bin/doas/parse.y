@@ -1,4 +1,4 @@
-/* $OpenBSD: parse.y,v 1.20 2016/09/02 18:12:30 tedu Exp $ */
+/* $OpenBSD: parse.y,v 1.21 2016/09/04 15:11:13 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -46,13 +46,14 @@ typedef struct {
 FILE *yyfp;
 
 struct rule **rules;
-int nrules, maxrules;
-int parse_errors = 0;
-int obsolete_warned = 0;
+int nrules;
+static int maxrules;
 
-void yyerror(const char *, ...);
-int yylex(void);
-int yyparse(void);
+int parse_errors = 0;
+static int obsolete_warned = 0;
+
+static void yyerror(const char *, ...);
+static int yylex(void);
 
 %}
 
@@ -205,7 +206,7 @@ yyerror(const char *fmt, ...)
 	parse_errors++;
 }
 
-struct keyword {
+static struct keyword {
 	const char *word;
 	int token;
 } keywords[] = {
