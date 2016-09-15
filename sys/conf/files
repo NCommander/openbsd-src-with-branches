@@ -692,6 +692,7 @@ file kern/subr_hibernate.c		hibernate
 file kern/subr_log.c
 file kern/subr_poison.c			diagnostic
 file kern/subr_pool.c
+file kern/subr_tree.c
 file kern/dma_alloc.c
 file kern/subr_prf.c
 file kern/subr_prof.c
