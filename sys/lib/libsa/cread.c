@@ -1,4 +1,4 @@
-/*	$OpenBSD: cread.c,v 1.12 2004/04/02 04:39:51 deraadt Exp $	*/
+/*	$OpenBSD: cread.c,v 1.13 2009/01/18 21:46:50 miod Exp $	*/
 /*	$NetBSD: cread.c,v 1.2 1997/02/04 18:38:20 thorpej Exp $	*/
 
 /*
@@ -47,11 +47,7 @@
 
 #define zmemcpy	memcpy
 
-#ifdef SAVE_MEMORY
-#define Z_BUFSIZE 1024
-#else
 #define Z_BUFSIZE 4096
-#endif
 
 static int gz_magic[2] = {0x1f, 0x8b}; /* gzip magic header */
 
@@ -210,11 +206,7 @@ open(const char *fname, int mode)
 		goto errout;
 	bzero(s, sizeof(struct sd));
 
-#ifdef SAVE_MEMORY
-	if (inflateInit2(&(s->stream), -11) != Z_OK)
-#else
 	if (inflateInit2(&(s->stream), -15) != Z_OK)
-#endif
 		goto errout;
 
 	s->stream.next_in  = s->inbuf = (unsigned char *)alloc(Z_BUFSIZE);
