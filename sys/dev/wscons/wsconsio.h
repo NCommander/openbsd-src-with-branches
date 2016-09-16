@@ -1,4 +1,4 @@
-/* $OpenBSD: wsconsio.h,v 1.72 2015/08/30 10:05:09 yasuoka Exp $ */
+/* $OpenBSD: wsconsio.h,v 1.75 2016/09/14 03:25:51 jcs Exp $ */
 /* $NetBSD: wsconsio.h,v 1.74 2005/04/28 07:15:44 martin Exp $ */
 
 /*
@@ -404,6 +404,7 @@ struct wsdisplay_cursor {
 struct wsdisplay_font {
 	char name[WSFONT_NAME_SIZE];
 	int index;
+#define WSDISPLAY_MAXFONTCOUNT	8
 	int firstchar, numchars;
 	int encoding;
 #define WSDISPLAY_FONTENC_ISO 0
