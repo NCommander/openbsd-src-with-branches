@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnode.h,v 1.134 2016/03/19 12:04:16 natano Exp $	*/
+/*	$OpenBSD: vnode.h,v 1.135 2016/05/23 09:31:28 natano Exp $	*/
 /*	$NetBSD: vnode.h,v 1.38 1996/02/29 20:59:05 cgd Exp $	*/
 
 /*
@@ -80,7 +80,9 @@ enum vtagtype	{
  */
 LIST_HEAD(buflists, buf);
 
-RB_HEAD(buf_rb_bufs, buf);
+RBT_HEAD(buf_rb_bufs, buf);
+RBT_PROTOTYPE(buf_rb_bufs, buf, b_rbbufs, rb_buf_compare);
+
 RB_HEAD(namecache_rb_cache, namecache);
 
 struct uvm_vnode;
