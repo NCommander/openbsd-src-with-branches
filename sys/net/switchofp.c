@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchofp.c,v 1.2 2016/09/02 10:01:36 goda Exp $	*/
+/*	$OpenBSD: switchofp.c,v 1.3 2016/09/04 16:47:41 goda Exp $	*/
 
 /*
  * Copyright (c) 2016 Kazuya GODA <goda@openbsd.org>
@@ -3047,7 +3047,7 @@ swofp_action_output_controller(struct switch_softc *sc, struct mbuf *m0,
 	MGETHDR(m, M_DONTWAIT, MT_DATA);
 	if (m == NULL)
 		return (ENOBUFS);
-	if ((sizeof(*pin) + match_len) >= MINCLSIZE){
+	if ((sizeof(*pin) + match_len) >= MHLEN) {
 		MCLGET(m, M_DONTWAIT);
 		if (m == NULL)
 			return (ENOBUFS);
