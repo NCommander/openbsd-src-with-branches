@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.h,v 1.56 2016/08/11 01:17:33 dlg Exp $	*/
+/*	$OpenBSD: uvm_map.h,v 1.57 2016/09/16 01:09:53 dlg Exp $	*/
 /*	$NetBSD: uvm_map.h,v 1.24 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -165,7 +165,7 @@ struct vm_map_entry {
 	} daddrs;
 
 	union {
-		RB_ENTRY(vm_map_entry)	rbtree;	/* Link freespace tree. */
+		RBT_ENTRY(vm_map_entry)	rbtree;	/* Link freespace tree. */
 		TAILQ_ENTRY(vm_map_entry) tailq;/* Link freespace queue. */
 		TAILQ_ENTRY(vm_map_entry) deadq;/* dead entry queue */
 	} dfree;
