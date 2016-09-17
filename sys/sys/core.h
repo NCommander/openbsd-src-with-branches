@@ -1,4 +1,4 @@
-/*	$OpenBSD: core.h,v 1.5 2013/01/15 01:34:27 deraadt Exp $	*/
+/*	$OpenBSD: core.h,v 1.6 2015/05/05 02:13:46 guenther Exp $	*/
 /*	$NetBSD: core.h,v 1.4 1994/10/29 08:20:14 cgd Exp $	*/
 
 /*
@@ -59,6 +59,10 @@
 #ifndef _KERNEL
 /*
  * XXX OBSOLETE, NO LONGER USED
+ * XXX This header file exists to support binutils' netbsd-core format
+ * XXX which is still needed for the a.out-m88k-openbsd use in luna88k
+ * XXX boot block creation.
+ *
  * A core file consists of a header followed by a number of segments.
  * Each segment is preceded by a `coreseg' structure giving the
  * segment's type, the virtual address where the bits resided in
