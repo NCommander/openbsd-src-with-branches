@@ -1,4 +1,4 @@
-.\"	$OpenBSD: elf.5,v 1.31 2016/09/07 07:14:50 guenther Exp $
+.\"	$OpenBSD: elf.5,v 1.32 2016/09/07 18:42:01 jmc Exp $
 .\"Copyright (c) 1999 Jeroen Ruigrok van der Werven
 .\"All rights reserved.
 .\"
@@ -877,6 +877,11 @@ fixed-size entries.
 .Pp
 Various sections hold program and control information:
 .Bl -tag -width ".shstrtab"
+.It .SUNW_ctf
+This section contains the (un)compressed Compact C-Type Format data
+describing the object's types and symbols.
+This section is of type
+.Dv SHT_PROGBITS .
 .It .bss
 This section holds uninitialized data that contribute to the program's
 memory image.
