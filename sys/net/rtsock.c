@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.203 2016/09/05 15:12:30 claudio Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.204 2016/09/07 09:36:49 mpi Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -885,11 +885,11 @@ change:
 
 #ifdef BFD
 			if (ISSET(rtm->rtm_flags, RTF_BFD)) {
-				if ((error = bfd_rtalloc(rt)))
+				if ((error = bfdset(rt)))
 					goto flush;
 			} else if (!ISSET(rtm->rtm_flags, RTF_BFD) &&
 			    ISSET(rtm->rtm_fmask, RTF_BFD)) {
-				bfd_rtfree(rt);
+				bfdclear(rt);
 			}
 #endif
 
