@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2014/07/11 15:29:46 florian Exp $
+#	$OpenBSD: Makefile,v 1.8 2015/10/30 11:00:52 florian Exp $
 
 PROG=	ping
 
@@ -12,6 +12,7 @@ MAN=	ping.8
 LDADD=	-lm
 DPADD=	${LIBM}
 
+LINKS=	${BINDIR}/ping ${BINDIR}/ping6
 BINOWN=	root
 BINMODE=4555
 
