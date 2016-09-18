@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.432 2016/09/11 19:44:32 natano Exp $
+#	$OpenBSD: Makefile,v 1.433 2016/09/18 20:18:25 benno Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -36,7 +36,7 @@ MUTABLE=acme-client.conf changelist daily etc.${MACHINE}/disktab \
 	pf.os protocols rc rc.conf rpc services shells syslog.conf weekly
 
 # -rw-r--r--
-EXAMPLES=acme-client.conf chio.conf dhclient.conf dhcpd.conf exports \
+EXAMPLES=chio.conf dhclient.conf dhcpd.conf exports \
 	httpd.conf ifstated.conf inetd.conf man.conf mixerctl.conf \
 	mrouted.conf ntpd.conf pkg.conf printcap rbootd.conf \
 	remote sensorsd.conf wsconsctl.conf
