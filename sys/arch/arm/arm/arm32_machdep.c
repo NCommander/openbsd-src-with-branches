@@ -1,4 +1,4 @@
-/*	$OpenBSD: arm32_machdep.c,v 1.49 2016/08/08 19:27:12 kettenis Exp $	*/
+/*	$OpenBSD: arm32_machdep.c,v 1.50 2016/09/03 15:07:06 guenther Exp $	*/
 /*	$NetBSD: arm32_machdep.c,v 1.42 2003/12/30 12:33:15 pk Exp $	*/
 
 /*
@@ -103,11 +103,7 @@ extern paddr_t msgbufphys;
 struct user *proc0paddr;
 
 #ifdef APERTURE
-#ifdef INSECURE
-int allowaperture = 1;
-#else
 int allowaperture = 0;
-#endif
 #endif
 
 struct consdev *cn_tab;

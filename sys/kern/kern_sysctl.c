@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.308 2016/09/04 09:22:29 mpi Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.309 2016/09/07 17:30:12 natano Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -259,11 +259,7 @@ char *disknames = NULL;
 size_t disknameslen;
 struct diskstats *diskstats = NULL;
 size_t diskstatslen;
-#ifdef INSECURE
-int securelevel = -1;
-#else
 int securelevel;
-#endif
 
 /*
  * kernel related system variables.
