@@ -1,4 +1,4 @@
-/* $OpenBSD: imx.c,v 1.23 2016/07/10 14:01:10 kettenis Exp $ */
+/* $OpenBSD: imx.c,v 1.24 2016/07/22 13:40:39 jsg Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
@@ -38,8 +38,6 @@ struct cfdriver imx_cd = {
 };
 
 struct board_dev imx_devs[] = {
-	{ "imxccm",	0 },
-	{ "imxiomuxc",	0 },
 	{ "imxocotp",	0 },
 	{ NULL,		0 }
 };
