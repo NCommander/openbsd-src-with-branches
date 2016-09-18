@@ -1,4 +1,4 @@
-/*	$OpenBSD: bfd.c,v 1.26 2016/09/15 08:39:44 phessler Exp $	*/
+/*	$OpenBSD: bfd.c,v 1.27 2016/09/17 07:35:05 phessler Exp $	*/
 
 /*
  * Copyright (c) 2016 Peter Hessler <phessler@openbsd.org>
@@ -885,7 +885,7 @@ bfd_send_control(void *x)
 	m->m_len = m->m_pkthdr.len = sizeof(*bfd);
 	h = mtod(m, struct bfd_header *);
 
-	memset(bfd, 0xff, sizeof(*h));	/* canary */
+	memset(h, 0xff, sizeof(*h));	/* canary */
 
 	h->bfd_ver_diag = ((BFD_VERSION << 5) | (bfd->bc_neighbor->bn_ldiag));
 	h->bfd_sta_flags = (bfd->bc_neighbor->bn_lstate << 6);
