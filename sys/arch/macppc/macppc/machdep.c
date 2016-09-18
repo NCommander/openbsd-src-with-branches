@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.176 2016/05/21 00:56:43 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.177 2016/09/15 02:00:17 dlg Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -115,11 +115,7 @@ void * startsym, *endsym;
 #endif
 
 #ifdef APERTURE
-#ifdef INSECURE
-int allowaperture = 1;
-#else
 int allowaperture = 0;
-#endif
 #endif
 
 void dumpsys(void);
