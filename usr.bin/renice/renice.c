@@ -1,4 +1,4 @@
-/*	$OpenBSD: renice.c,v 1.18 2015/05/15 19:34:31 jmc Exp $	*/
+/*	$OpenBSD: renice.c,v 1.19 2015/10/22 07:52:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2009, 2015 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -149,7 +149,7 @@ main(int argc, char **argv)
 	}
 	if (pri_type == RENICE_NONE)
 		usage();
-	exit(renice(params, p));
+	return(renice(params, p));
 }
 
 static int
