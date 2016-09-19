@@ -1,4 +1,4 @@
-.\" $OpenBSD: signify.1,v 1.37 2016/09/02 18:35:43 jmc Exp $
+.\" $OpenBSD: signify.1,v 1.38 2016/09/02 21:04:26 tedu Exp $
 .\"
 .\"Copyright (c) 2013 Marc Espie <espie@openbsd.org>
 .\"Copyright (c) 2013 Ted Unangst <tedu@openbsd.org>
@@ -108,7 +108,7 @@ to sign a message.
 .It Fl t Ar keytype
 When deducing the correct key to check a signature, make sure
 the actual key matches
-.Pa /etc/signify/<somekey>-keytype.pub .
+.Pa /etc/signify/*-keytype.pub .
 .It Fl x Ar sigfile
 The signature file to create or verify.
 The default is
