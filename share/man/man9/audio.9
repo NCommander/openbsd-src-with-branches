@@ -64,7 +64,6 @@ struct audio_hw_if {
 #define SPKR_ON  1
 #define SPKR_OFF 0
 
-	int	(*getdev)(void *, struct audio_device *);
 	int	(*setfd)(void *, int);
 
 	int	(*set_port)(void *, struct mixer_ctrl *);
@@ -279,11 +278,6 @@ If supplied, it is called when a half duplex device changes between
 playing and recording.
 It can, e.g., be used to turn the speaker on and off.
 This function returns 0 on success, otherwise an error code.
-.It Fn "int (*getdev)" "void *hdl" "struct audio_device *ret"
-This function fills
-.Fa ret
-with relevant information about the driver and returns 0 on success,
-or it returns an error code on failure.
 .It Fn "int (*setfd)" "void *hdl" "int fd"
 This function is optional.
 If supplied, it is called when the device is opened in full-duplex mode,
