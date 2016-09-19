@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.326 2016/08/31 11:05:05 mpi Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.327 2016/09/15 02:00:18 dlg Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -3798,7 +3798,7 @@ syn_cache_get(struct sockaddr *src, struct sockaddr *dst, struct tcphdr *th,
 	(void) m_free(am);
 
 	tp = intotcpcb(inp);
-	tp->t_flags = sototcpcb(oso)->t_flags & TF_NODELAY;
+	tp->t_flags = sototcpcb(oso)->t_flags & (TF_NOPUSH|TF_NODELAY);
 	if (sc->sc_request_r_scale != 15) {
 		tp->requested_s_scale = sc->sc_requested_s_scale;
 		tp->request_r_scale = sc->sc_request_r_scale;
