@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.14 2016/03/01 11:56:00 mpi Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.15 2016/03/09 08:58:50 mpi Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -806,11 +806,8 @@ db_stack_trace_cmd2(db_regs_t *regs, int (*pr)(const char *, ...))
  * printed.
  */
 void
-db_stack_trace_print(db_expr_t addr,
-		   int have_addr,
-		   db_expr_t count,
-		   char *modif,
-		   int (*pr)(const char *, ...))
+db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
+    char *modif, int (*pr)(const char *, ...))
 {
 	enum {
 		Default, Stack, Frame
