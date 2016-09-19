@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2008 Damien Miller <djm@mindrot.org>
  * Copyright (c) 2011 Christiano F. Haesbaert <haesbaert@haesbaert.org>
