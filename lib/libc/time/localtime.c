@@ -1,4 +1,4 @@
-/*	$OpenBSD: localtime.c,v 1.57 2015/12/12 21:25:44 mmcc Exp $ */
+/*	$OpenBSD: localtime.c,v 1.58 2016/03/14 15:26:52 mestre Exp $ */
 /*
 ** This file is in the public domain, so clarified as of
 ** 1996-06-05 by Arthur David Olson.
@@ -1350,8 +1350,7 @@ gmtsub(const time_t *timep, long offset, struct tm *tmp)
 struct tm *
 gmtime_r(const time_t *timep, struct tm *p_tm)
 {
-	gmtsub(timep, 0L, p_tm);
-	return p_tm;
+	return gmtsub(timep, 0L, p_tm);
 }
 DEF_WEAK(gmtime_r);
 
