@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.16 2014/01/30 20:11:14 miod Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.17 2016/04/27 11:03:24 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -217,7 +217,7 @@ trapframe:
 		framesize = 0;
 		for (i = sizeof (int); i <= offset; i += sizeof (int)) {
 			inst = *(u_int *)(pc - i);
-	
+
 			/*
 			 * If by chance we don't have any symbols we have to
 			 * get out somehow anyway.  Check for the preceding
