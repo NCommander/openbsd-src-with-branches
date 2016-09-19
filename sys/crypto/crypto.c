@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto.c,v 1.76 2016/04/18 21:05:55 kettenis Exp $	*/
+/*	$OpenBSD: crypto.c,v 1.77 2016/09/15 02:00:17 dlg Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -254,7 +254,7 @@ crypto_get_driverid(u_int8_t flags)
 			return -1;
 		}
 
-		bcopy(crypto_drivers, newdrv,
+		memcpy(newdrv, crypto_drivers,
 		    crypto_drivers_num * sizeof(struct cryptocap));
 		bzero(&newdrv[crypto_drivers_num],
 		    crypto_drivers_num * sizeof(struct cryptocap));
