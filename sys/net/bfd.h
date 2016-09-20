@@ -1,4 +1,4 @@
-/*	$OpenBSD: bfd.h,v 1.7 2016/09/17 07:35:05 phessler Exp $	*/
+/*	$OpenBSD: bfd.h,v 1.8 2016/09/19 07:28:40 phessler Exp $	*/
 
 /*
  * Copyright (c) 2016 Peter Hessler <phessler@openbsd.org>
@@ -64,6 +64,7 @@ struct bfd_msghdr {
 	uint16_t	bm_mode;
 	uint32_t	bm_mintx;
 	uint32_t	bm_minrx;
+	uint32_t	bm_minecho;
 	uint16_t	bm_multiplier;
 
 	time_t		bm_uptime;
