@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdlib.h,v 1.65 2015/07/14 19:05:11 millert Exp $	*/
+/*	$OpenBSD: stdlib.h,v 1.66 2016/09/09 18:12:37 millert Exp $	*/
 /*	$NetBSD: stdlib.h,v 1.25 1995/12/27 21:19:08 jtc Exp $	*/
 
 /*-
@@ -84,8 +84,6 @@ typedef struct {
 
 extern size_t	__mb_cur_max;
 #define	MB_CUR_MAX	__mb_cur_max
-
-#include <sys/cdefs.h>
 
 /*
  * Some header files may define an abs macro.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: termios.h,v 1.11 2009/12/26 09:46:17 jmc Exp $	*/
+/*	$OpenBSD: termios.h,v 1.12 2013/12/17 22:12:07 millert Exp $	*/
 /*	$NetBSD: termios.h,v 1.14 1996/04/09 20:55:41 cgd Exp $	*/
 
 /*
@@ -247,7 +247,6 @@ struct termios {
 #define TCIOFF		3
 #define TCION		4
 
-#include <sys/cdefs.h>
 #include <sys/_types.h>
 
 #if __XPG_VISIBLE >= 420 || __POSIX_VISIBLE >= 200809
