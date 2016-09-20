@@ -6,19 +6,20 @@
 use strict;
 use vars qw($Is_VMS $Is_W32 $Is_OS2 $Is_Cygwin $Is_Darwin $Is_NetWare
 	    %opts $packlist);
-use subs qw(unlink link chmod);
+use subs qw(unlink link chmod chown);
+require File::Path;
 
-use Config;
 BEGIN {
-    if ($Config{userelocatableinc}) {
+    require Config;
+    if ($Config::Config{userelocatableinc}) {
 	# This might be a considered a hack. Need to get information about the
 	# configuration from Config.pm *before* Config.pm expands any .../
 	# prefixes.
 	#
 	# So we set $^X to pretend that we're the already installed perl, so
-	# Config.pm doesits ... expansion off that location.
+	# Config.pm does its ... expansion off that location.
 
-	my $location = $Config{initialinstalllocation};
+        my $location = $Config::Config{initialinstalllocation};
 	die <<'OS' unless defined $location;
 $Config{initialinstalllocation} is not defined - can't install a relocatable
 perl without this.
@@ -33,8 +34,8 @@ OS
 	# You never saw us. We weren't here.
 
 	require Config;
-	Config->import;
     }
+    Config->import;
 }
 
 if ($Config{d_umask}) {
@@ -95,6 +96,9 @@ sub link {
 		unless -f $to and (chmod(0666, $to), unlink $to)
 			and File::Copy::copy($from, $to) and ++$success;
 	}
+	if (defined($opts{uid}) || defined($opts{gid})) {
+	    chown($opts{uid}, $opts{gid}, $to) if $success;
+	}
 	$packlist->{$xto} = { type => 'file' };
     }
     $success;
@@ -110,21 +114,49 @@ sub chmod {
       unless $opts{notify};
 }
 
+sub chown {
+    my($uid,$gid,$name) = @_;
+
+    return if ($^O eq 'dos');
+    printf "  chown %s:%s %s\n", $uid, $gid, $name if $opts{verbose};
+    CORE::chown($uid,$gid,$name)
+	|| warn sprintf("Couldn't chown %s:%s %s: $!\n", $uid, $gid, $name)
+      unless $opts{notify};
+}
 
 sub samepath {
     my($p1, $p2) = @_;
 
     return (lc($p1) eq lc($p2)) if ($Is_W32 || $Is_NetWare);
 
-    if ($p1 ne $p2) {
-	my($dev1, $ino1, $dev2, $ino2);
-	($dev1, $ino1) = stat($p1);
-	($dev2, $ino2) = stat($p2);
-	($dev1 == $dev2 && $ino1 == $ino2);
+    return 1
+        if $p1 eq $p2;
+
+    my ($dev1, $ino1) = stat $p1;
+    return 0
+        unless defined $dev1;
+    my ($dev2, $ino2) = stat $p2;
+
+    return $dev1 == $dev2 && $ino1 == $ino2;
+}
+
+sub safe_rename {
+    my($from,$to) = @_;
+    if (-f $to and not unlink($to)) {
+        my($i);
+        for ($i = 1; $i < 50; $i++) {
+            last if rename($to, "$to.$i");
+        }
+        warn("Cannot rename to '$to.$i': $!"), return 0
+           if $i >= 50; # Give up!
     }
-    else {
-	1;
-    }
+    link($from,$to) || return 0;
+    unlink($from);
+}
+
+sub mkpath {
+    File::Path::make_path(shift, {owner=>$opts{uid}, group=>$opts{gid},
+        mode=>0777, verbose=>$opts{verbose}}) unless $opts{notify};
 }
 
 1;
