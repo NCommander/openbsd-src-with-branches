@@ -1,4 +1,4 @@
-/*	$OpenBSD: cancel.c,v 1.7 2013/10/06 21:46:10 guenther Exp $	*/
+/*	$OpenBSD: cancel.c,v 1.8 2016/09/20 17:04:34 otto Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public Domain. */
 
 #include <pthread.h>
@@ -57,7 +57,7 @@ child1fn(void *arg)
 	SET_NAME("c1");
 	CHECKr(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL));
 	/* something that will block */
-	CHECKe(openpty(&fd, &dummy, NULL, NULL, NULL));
+	CHECKe(openpty(&dummy, &fd, NULL, NULL, NULL));
 	pthread_cleanup_push(c1handler, (void *)&fd);
 	v();
 	while (1) {
