@@ -1,4 +1,4 @@
-/*	$OpenBSD: link_elf.h,v 1.5 2004/10/14 10:02:28 kettenis Exp $	*/
+/*	$OpenBSD: link_elf.h,v 1.6 2006/02/06 16:51:50 jmc Exp $	*/
 
 /*
  * Public domain.
@@ -36,6 +36,7 @@ struct dl_phdr_info {
 __BEGIN_DECLS
 int	dl_iterate_phdr (int (*)(struct dl_phdr_info *, size_t, void *),
 	   void *);
+void	*dl_unwind_find_exidx(const void *, int *);
 __END_DECLS
 
 #endif /* !_LINK_ELF_H */
