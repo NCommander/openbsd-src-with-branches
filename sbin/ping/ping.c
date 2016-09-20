@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.212 2016/09/18 17:27:25 florian Exp $	*/
+/*	$OpenBSD: ping.c,v 1.213 2016/09/19 07:08:30 florian Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -440,13 +440,13 @@ main(int argc, char *argv[])
 	switch (res->ai_family) {
 	case AF_INET:
 		if (res->ai_addrlen != sizeof(dst4))
-		    errx(1, "size of sockaddr mismatch");
+			errx(1, "size of sockaddr mismatch");
 		dst = (struct sockaddr *)&dst4;
 		from = (struct sockaddr *)&from4;
 		break;
 	case AF_INET6:
 		if (res->ai_addrlen != sizeof(dst6))
-		    errx(1, "size of sockaddr mismatch");
+			errx(1, "size of sockaddr mismatch");
 		dst = (struct sockaddr *)&dst6;
 		from = (struct sockaddr *)&from6;
 		break;
