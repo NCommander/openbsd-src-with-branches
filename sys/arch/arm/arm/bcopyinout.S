@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcopyinout.S,v 1.4 2016/04/04 09:13:44 patrick Exp $	*/
+/*	$OpenBSD: bcopyinout.S,v 1.5 2016/04/25 04:46:56 jsg Exp $	*/
 /*	$NetBSD: bcopyinout.S,v 1.13 2003/10/31 16:54:05 scw Exp $	*/
 
 /*
@@ -46,7 +46,7 @@
 #else
 
 	.text
-	.align	0
+	.align	2
 
 #ifdef MULTIPROCESSOR
 .Lcpu_info:
