@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap.c,v 1.4 2002/01/08 18:55:46 marc Exp $ */
+/*	$OpenBSD: pcap.c,v 1.5 2003/07/31 21:48:05 deraadt Exp $ */
 /*
  *	Placed in the PUBLIC DOMAIN
  */
@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 
 #include "test.h"
 
@@ -30,12 +31,14 @@ pcap_thread(void *arg)
 {
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_t *handle;
+	int on = 1;
 
 	SET_NAME("pcap_thread");
 	CHECKr(pthread_mutex_lock(&dummy));
 	handle = pcap_open_live(LOOPBACK_IF, SNAPLEN, NO_PROMISC, 0, errbuf);
 	if (!handle)
 		PANIC("You may need to run this test as UID 0 (root)");
+	ASSERT(ioctl(pcap_fileno(handle), BIOCIMMEDIATE, &on) != -1);
 	CHECKr(pthread_mutex_unlock(&dummy));
 	CHECKr(pthread_cond_signal(&syncer));
 	ASSERT(pcap_loop(handle, PKTCNT, packet_ignore, 0) != -1);
