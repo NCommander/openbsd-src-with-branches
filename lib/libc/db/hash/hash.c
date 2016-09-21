@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash.c,v 1.27 2015/11/01 03:45:28 guenther Exp $	*/
+/*	$OpenBSD: hash.c,v 1.28 2015/12/28 22:08:18 mmcc Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -477,7 +477,7 @@ flush_meta(HTAB *hashp)
 	whdrp = &whdr;
 	swap_header_copy(&hashp->hdr, whdrp);
 #endif
-	if ((wsize = pwrite(fp, whdrp, sizeof(HASHHDR), (off_t)0)) == -1)
+	if ((wsize = pwrite(fp, whdrp, sizeof(HASHHDR), 0)) == -1)
 		return (-1);
 	else
 		if (wsize != sizeof(HASHHDR)) {

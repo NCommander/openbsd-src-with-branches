@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.22 2016/05/25 21:01:11 schwarze Exp $	*/
+/*	$OpenBSD: engine.c,v 1.23 2016/05/26 05:46:44 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
@@ -156,7 +156,7 @@ matcher(struct re_guts *g, char *string, size_t nmatch, regmatch_t pmatch[],
 	if (g->must != NULL) {
 		for (dp = start; dp < stop; dp++)
 			if (*dp == g->must[0] && stop - dp >= g->mlen &&
-			    memcmp(dp, g->must, (size_t)g->mlen) == 0)
+			    memcmp(dp, g->must, g->mlen) == 0)
 				break;
 		if (dp == stop)		/* we didn't find g->must */
 			return(REG_NOMATCH);
