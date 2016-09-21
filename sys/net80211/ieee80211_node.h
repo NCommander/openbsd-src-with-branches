@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.h,v 1.61 2016/09/15 03:32:48 dlg Exp $	*/
+/*	$OpenBSD: ieee80211_node.h,v 1.62 2016/09/20 13:24:42 stsp Exp $	*/
 /*	$NetBSD: ieee80211_node.h,v 1.9 2004/04/30 22:57:32 dyoung Exp $	*/
 
 /*-
@@ -153,6 +153,8 @@ struct ieee80211_rx_ba {
 	uint16_t		ba_missedsn;
 	/* Window moves forward after this many frames have missed it. */
 #define IEEE80211_BA_MAX_WINMISS	8
+
+	uint8_t			ba_token;
 };
 
 /*
