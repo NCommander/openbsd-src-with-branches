@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkalias.c,v 1.27 2015/01/16 06:40:23 deraadt Exp $ */
+/*	$OpenBSD: mkalias.c,v 1.28 2015/02/09 23:00:15 deraadt Exp $ */
 
 /*
  * Copyright (c) 1997 Mats O Jansson <moj@stacken.kth.se>
@@ -38,6 +38,7 @@
 #include <arpa/nameser.h>
 #include <resolv.h>
 #include <err.h>
+#include <time.h>
 #include "ypdb.h"
 #include "ypdef.h"
 
