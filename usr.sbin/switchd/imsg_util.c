@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg_util.c,v 1.1 2016/07/19 16:54:26 reyk Exp $	*/
+/*	$OpenBSD: imsg_util.c,v 1.2 2016/08/30 13:39:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010-2016 Reyk Floeter <reyk@openbsd.org>
@@ -118,8 +118,8 @@ ibuf_release(struct ibuf *buf)
 {
 	if (buf == NULL)
 		return;
-	if (buf->buf != NULL)
-		free(buf->buf);
+
+	free(buf->buf);
 	free(buf);
 }
 
