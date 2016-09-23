@@ -11306,6 +11306,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "Flashbuster-U",
 	},
 	{
+	    USB_VENDOR_YAMAHA, USB_PRODUCT_YAMAHA_UR22,
+	    "UR22",
+	},
+	{
 	    USB_VENDOR_YAMAHA, USB_PRODUCT_YAMAHA_UX256,
 	    "UX256 MIDI I/F",
 	},
