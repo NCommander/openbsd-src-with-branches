@@ -1,4 +1,4 @@
-/*	$OpenBSD: svc_auth.c,v 1.8 2010/09/01 14:43:34 millert Exp $ */
+/*	$OpenBSD: svc_auth.c,v 1.9 2015/09/13 15:36:56 guenther Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -75,7 +75,7 @@ static struct {
  * set rqst->rq_xprt->verf to the appropriate response verifier;
  * sets rqst->rq_client_cred to the "cooked" form of the credentials.
  *
- * NB: rqst->rq_cxprt->verf must be pre-alloctaed;
+ * NB: rqst->rq_cxprt->verf must be pre-allocated;
  * its length is set appropriately.
  *
  * The caller still owns and is responsible for msg->u.cmb.cred and
