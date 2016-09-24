@@ -1,4 +1,4 @@
-.\"	$OpenBSD: syslogd.8,v 1.47 2016/09/23 16:29:28 bluhm Exp $
+.\"	$OpenBSD: syslogd.8,v 1.48 2016/09/23 19:05:55 bluhm Exp $
 .\"
 .\" Copyright (c) 1983, 1986, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -55,9 +55,11 @@
 .Ek
 .Sh DESCRIPTION
 .Nm
-reads and logs messages to the system console, log files, pipes to
-other programs, other machines and/or users as specified by its
-configuration file.
+writes system messages to log files or a user's terminal.
+Output can be sent to other programs
+for further processing.
+It can also securely send and receive log messages
+to and from remote hosts.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
