@@ -1,4 +1,4 @@
-/*	$OpenBSD: intel_i2c.c,v 1.7 2015/09/26 22:00:00 kettenis Exp $	*/
+/*	$OpenBSD: intel_i2c.c,v 1.8 2016/04/16 17:39:44 kettenis Exp $	*/
 /*
  * Copyright (c) 2012, 2013 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -436,7 +436,7 @@ intel_gmbus_force_bit(struct i2c_controller *controller, bool force_bit)
 	else
 		bus->force_bit--;
 
-	KASSERT(force_bit >= 0);
+	KASSERT(bus->force_bit >= 0);
 
 	if (bus->force_bit) {
 		bus->controller.ic_exec = NULL;
