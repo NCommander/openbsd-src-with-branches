@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_timer.c,v 1.48 2014/07/22 11:06:10 mpi Exp $	*/
+/*	$OpenBSD: tcp_timer.c,v 1.49 2016/03/07 18:44:00 naddy Exp $	*/
 /*	$NetBSD: tcp_timer.c,v 1.14 1996/02/13 23:44:09 christos Exp $	*/
 
 /*
@@ -144,8 +144,7 @@ tcp_slowtimo(void)
  * Cancel all timers for TCP tp.
  */
 void
-tcp_canceltimers(tp)
-	struct tcpcb *tp;
+tcp_canceltimers(struct tcpcb *tp)
 {
 	int i;
 
