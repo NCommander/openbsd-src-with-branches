@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_event.c,v 1.75 2016/08/25 00:00:02 dlg Exp $	*/
+/*	$OpenBSD: kern_event.c,v 1.76 2016/09/15 02:00:16 dlg Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000,2001 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -119,7 +119,6 @@ int kq_timeoutmax = (4 * 1024);
 		knote_enqueue(kn);					\
 } while(0)
 
-#define	KN_HASHSIZE		64		/* XXX should be tunable */
 #define KN_HASH(val, mask)	(((val) ^ (val >> 8)) & (mask))
 
 extern struct filterops sig_filtops;
