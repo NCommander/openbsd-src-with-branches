@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.89 2015/11/14 15:54:27 mpi Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.90 2016/03/07 18:44:00 naddy Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.85 2004/04/26 01:31:57 matt Exp $	*/
 
 /*
@@ -611,7 +611,7 @@ ip_mrouter_done(void)
 	}
 
 	memset(nexpire, 0, sizeof(nexpire));
-	free(mfchashtbl, M_MRTABLE, 0);
+	hashfree(mfchashtbl, MFCTBLSIZ, M_MRTABLE);
 	mfchashtbl = NULL;
 
 	ip_mrouter = NULL;
