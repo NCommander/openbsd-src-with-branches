@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.2 2005/09/15 21:16:35 miod Exp $	*/
+/*	$OpenBSD: proc.h,v 1.3 2011/03/23 16:54:34 pirofti Exp $	*/
 /*	$NetBSD: proc.h,v 1.5 2003/03/01 04:36:39 thorpej Exp $	*/
 
 /*
@@ -46,5 +46,7 @@ struct mdproc {
 	int	pmc_enabled;		/* bitfield of enabled counters */
 	void	*pmc_state;		/* port-specific pmc state */
 };
+
+#define __HAVE_MD_TCB
 
 #endif /* _ARM_PROC_H_ */
