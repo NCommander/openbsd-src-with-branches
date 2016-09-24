@@ -1,4 +1,4 @@
-.\"	$OpenBSD: hashinit.9,v 1.6 2016/09/02 17:37:49 tedu Exp $
+.\"	$OpenBSD: hashinit.9,v 1.7 2016/09/02 18:32:39 jmc Exp $
 .\"
 .\" Copyright (c) 2001 Tobias Weingartner
 .\" All rights reserved.
@@ -29,14 +29,15 @@
 .Dt HASHINIT 9
 .Os
 .Sh NAME
-.Nm hashinit
-.\" This should be ported from netbsd as well...
-.\" .Nm hashdone
+.Nm hashinit ,
+.Nm hashfree
 .Nd kernel hashtable functions
 .Sh SYNOPSIS
 .In sys/systm.h
 .Ft void *
 .Fn hashinit "int num" "int type" "int flags" "u_long *mask"
+.Ft void
+.Fn hashfree "void *hash" "int num" "int type"
 .Sh DESCRIPTION
 The
 .Fn hashinit
