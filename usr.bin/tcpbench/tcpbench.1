@@ -1,4 +1,4 @@
-.\" $OpenBSD: tcpbench.1,v 1.21 2016/07/21 10:11:11 claudio Exp $
+.\" $OpenBSD: tcpbench.1,v 1.22 2016/07/21 10:42:49 jmc Exp $
 .\"
 .\" Copyright (c) 2008 Damien Miller <djm@mindrot.org>
 .\"
@@ -98,7 +98,10 @@ separated with commas.
 This option is only valid in TCP mode.
 The default is not to monitor any variables.
 Using this option requires read access to
-.Pa /dev/kmem .
+.Pa /dev/kmem ,
+which may be restricted based upon the value of the
+.Ar kern.allowkmem
+.Xr sysctl 8 .
 .It Fl l
 List the name of kernel variables available for monitoring and exit.
 .It Fl n Ar connections
