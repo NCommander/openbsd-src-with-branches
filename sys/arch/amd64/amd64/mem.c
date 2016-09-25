@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.29 2016/07/27 21:13:39 tedu Exp $ */
+/*	$OpenBSD: mem.c,v 1.30 2016/08/15 22:01:59 tedu Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -81,9 +81,14 @@ int mem_range_attr_set(struct mem_range_desc *, int *);
 int
 mmopen(dev_t dev, int flag, int mode, struct proc *p)
 {
+	extern int allowkmem;
+
 	switch (minor(dev)) {
 	case 0:
 	case 1:
+		if (securelevel <= 0 || allowkmem)
+			break;
+		return (EPERM);
 	case 2:
 	case 12:
 		break;
