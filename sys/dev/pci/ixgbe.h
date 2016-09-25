@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe.h,v 1.21 2015/12/18 19:08:36 kettenis Exp $	*/
+/*	$OpenBSD: ixgbe.h,v 1.22 2016/03/15 16:45:52 naddy Exp $	*/
 
 /******************************************************************************
 
@@ -55,7 +55,6 @@
 #include <sys/atomic.h>
 
 #include <net/if.h>
-#include <net/bpf.h>
 #include <net/if_media.h>
 
 #include <netinet/in.h>
