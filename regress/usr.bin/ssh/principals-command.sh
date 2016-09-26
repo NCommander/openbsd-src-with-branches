@@ -1,4 +1,4 @@
-#	$OpenBSD: principals-command.sh,v 1.1 2015/05/21 06:44:25 djm Exp $
+#	$OpenBSD: principals-command.sh,v 1.2 2016/09/21 01:35:12 djm Exp $
 #	Placed in the Public Domain.
 
 tid="authorized principals command"
@@ -6,7 +6,7 @@ tid="authorized principals command"
 rm -f $OBJ/user_ca_key* $OBJ/cert_user_key*
 cp $OBJ/sshd_proxy $OBJ/sshd_proxy_bak
 
-if [ -z "$SUDO" ]; then
+if [ -z "$SUDO" -a ! -w /var/run ]; then
 	fatal "need SUDO to create file in /var/run, test won't work without"
 fi
 
