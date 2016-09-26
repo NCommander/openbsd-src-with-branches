@@ -1,4 +1,4 @@
-/*	$OpenBSD: ul.c,v 1.20 2016/01/18 17:34:26 schwarze Exp $	*/
+/*	$OpenBSD: ul.c,v 1.21 2016/03/26 08:59:29 natano Exp $	*/
 /*	$NetBSD: ul.c,v 1.3 1994/12/07 00:28:24 jtc Exp $	*/
 
 /*
@@ -361,7 +361,7 @@ flushln(void)
 	}
 	if (lastmode != NORMAL)
 		msetmode(0);
-	if (must_overstrike && hadmodes)
+	if (must_overstrike && hadmodes && !iflag)
 		overstrike();
 	putwchar(L'\n');
 	if (iflag && hadmodes)
