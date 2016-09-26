@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.30 2015/11/23 19:28:34 reyk Exp $	*/
+/*	$OpenBSD: util.c,v 1.31 2016/09/04 10:26:02 vgross Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -366,7 +366,7 @@ recvfromto(int s, void *buf, size_t len, int flags, struct sockaddr *from,
 	msg.msg_control = &cmsgbuf.buf;
 	msg.msg_controllen = sizeof(cmsgbuf.buf);
 
-	if ((ret = recvmsg(s, &msg, 0)) == -1)
+	if ((ret = recvmsg(s, &msg, flags)) == -1)
 		return (-1);
 
 	*fromlen = from->sa_len;
