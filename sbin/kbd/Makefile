@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.39 2016/03/31 01:28:00 jsg Exp $
+#	$OpenBSD: Makefile,v 1.40 2016/05/11 21:52:49 deraadt Exp $
 
 #
 # Be sure to change src/distrib/special/kbd/Makefile as well if you add or
@@ -9,8 +9,6 @@
 PROG=	kbd
 
 SRCS=	main.c kbd_wscons.c
-LDADD=	-lkvm
-DPADD=	${LIBKVM}
 
 .else
 NOPROG=	Yes
