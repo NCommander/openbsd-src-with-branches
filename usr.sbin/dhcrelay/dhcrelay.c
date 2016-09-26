@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcrelay.c,v 1.41 2016/09/04 10:43:52 jca Exp $ */
+/*	$OpenBSD: dhcrelay.c,v 1.42 2016/09/15 16:16:03 jca Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -368,6 +368,12 @@ usage(void)
 int
 rdaemon(int devnull)
 {
+	if (devnull == -1) {
+		errno = EBADF;
+		return (-1);
+	}
+	if (fcntl(devnull, F_GETFL) == -1)
+		return (-1);
 
 	switch (fork()) {
 	case -1:
