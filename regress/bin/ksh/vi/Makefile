@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2013/12/02 20:39:44 millert Exp $
+# $OpenBSD: Makefile,v 1.1 2016/01/12 09:00:39 schwarze Exp $
 #
 # Author: Ingo Schwarze <schwarze@openbsd.org>, 2016.  Public Domain.
 
@@ -8,7 +8,7 @@ SRCS = vi.c test_vi.c
 CPPFLAGS = -iquote ${.CURDIR}
 CLEANFILES = vi.c
 
-check test:
+check test: test_vi
 	sh ${.CURDIR}/vi.sh
 
 vi.c: ${.CURDIR}/../../../../bin/ksh/vi.c
