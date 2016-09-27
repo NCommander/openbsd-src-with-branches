@@ -1,4 +1,4 @@
-#	$OpenBSD: regress.t,v 1.1 2013/12/02 20:39:44 millert Exp $
+#	$OpenBSD: regress.t,v 1.2 2015/07/30 17:24:08 millert Exp $
 
 #
 # The first 39 of these tests are from the old Bugs script.
@@ -787,8 +787,8 @@ expected-stdout:
 	hi
 	hi
 	there
-expected-stderr: !
-	YYYY
+expected-stderr-pattern:
+	/^YYYY$/m
 ---
 
 name: regression-51
@@ -821,8 +821,8 @@ expected-stdout:
 	mark 1
 	Y X stuff
 	mark 2
-expected-stderr: !
-	PPPPP
+expected-stderr-pattern:
+	/^PPPPP$/m
 ---
 
 name: regression-53
@@ -1107,6 +1107,6 @@ expected-stdout:
 	there
 	there
 	there
-expected-stderr: !
-	YYXXY
+expected-stderr-pattern:
+	/^YYXXY$/m
 ---
