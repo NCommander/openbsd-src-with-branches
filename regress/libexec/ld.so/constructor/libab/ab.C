@@ -1,12 +1,14 @@
 /*
  * Public Domain 2003 Dale Rahn
  *
- * $OpenBSD: ab.C,v 1.1 2003/02/01 19:56:17 drahn Exp $
+ * $OpenBSD: ab.C,v 1.2 2003/02/18 13:14:42 jmc Exp $
  */
 
-#include "iostream.h"
+#include <iostream>
 #include "aa.h"
 #include "ab.h"
+
+using namespace std;
 
 extern int a;
 
