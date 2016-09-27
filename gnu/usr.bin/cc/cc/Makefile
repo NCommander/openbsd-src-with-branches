@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/usr.bin/cc/cc/Makefile,v 1.33.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD: Makefile,v 1.4 2013/03/30 20:34:24 miod Exp $
+# $OpenBSD: Makefile,v 1.5 2016/03/30 06:38:40 jmc Exp $
 
 .include <bsd.own.mk>
 
@@ -15,12 +15,12 @@ SPECDIR= /usr/lib/gcc-lib/${GCC_TARGET}/${BASEVER}
 LINKS=	${BINDIR}/cc ${BINDIR}/gcc
 
 beforeinstall:
-.if !exists(${DESTDIR}${SPECDIR})
-	${INSTALL} -d -o ${BINOWN} -g ${BINGRP} -m ${DIRMODE} \
-		${DESTDIR}${SPECDIR}
-.endif
+.for dir in /usr/lib/gcc-lib /usr/lib/gcc-lib/${GCC_TARGET} ${SPECDIR}
+	${INSTALL} -d -o ${BINOWN} -g ${BINGRP} -m ${DIRMODE} ${DESTDIR}${dir}
+.endfor
 
 afterinstall:
 	${.OBJDIR}/cc -dumpspecs > ${DESTDIR}${SPECDIR}/specs
+	chown ${BINOWN}:${BINGRP} ${DESTDIR}${SPECDIR}/specs
 
 .include <bsd.prog.mk>
