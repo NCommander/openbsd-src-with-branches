@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsmount.h,v 1.19 2009/06/02 23:16:59 thib Exp $	*/
+/*	$OpenBSD: nfsmount.h,v 1.25 2012/09/10 11:10:59 jsing Exp $	*/
 /*	$NetBSD: nfsmount.h,v 1.10 1996/02/18 11:54:03 fvdl Exp $	*/
 
 /*
@@ -45,7 +45,7 @@
  * Holds NFS specific information for mount.
  */
 struct	nfsmount {
-	RB_HEAD(nfs_nodetree, nfsnode)
+	RBT_HEAD(nfs_nodetree, nfsnode)
 		nm_ntree;		/* filehandle/node tree */
 	TAILQ_HEAD(reqs, nfsreq)
 		nm_reqsq;		/* request queue for this mount. */

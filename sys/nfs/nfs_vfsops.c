@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vfsops.c,v 1.109 2016/04/26 18:37:03 natano Exp $	*/
+/*	$OpenBSD: nfs_vfsops.c,v 1.110 2016/08/13 20:53:17 guenther Exp $	*/
 /*	$NetBSD: nfs_vfsops.c,v 1.46.4.1 1996/05/25 22:40:35 fvdl Exp $	*/
 
 /*
@@ -652,7 +652,7 @@ mountnfs(struct nfs_args *argp, struct mount *mp, struct mbuf *nam,
 	nmp->nm_nam = nam;
 	nfs_decode_args(nmp, argp, &mp->mnt_stat.mount_info.nfs_args);
 
-	RB_INIT(&nmp->nm_ntree);
+	nfs_ninit(nmp);
 	TAILQ_INIT(&nmp->nm_reqsq);
 	timeout_set(&nmp->nm_rtimeout, nfs_timer, nmp);
 
