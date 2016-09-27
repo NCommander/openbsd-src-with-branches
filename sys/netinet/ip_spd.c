@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_spd.c,v 1.89 2016/09/06 00:04:15 dlg Exp $ */
+/* $OpenBSD: ip_spd.c,v 1.90 2016/09/15 02:00:18 dlg Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -38,10 +38,6 @@
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/in_pcb.h>
-
-#ifdef INET6
-#endif /* INET6 */
-
 #include <netinet/ip_ipsp.h>
 #include <net/pfkeyv2.h>
 
