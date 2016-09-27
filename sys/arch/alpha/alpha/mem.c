@@ -1,4 +1,4 @@
-/* $OpenBSD: mem.c,v 1.30 2016/08/15 22:01:59 tedu Exp $ */
+/* $OpenBSD: mem.c,v 1.31 2016/09/25 15:23:36 deraadt Exp $ */
 /* $NetBSD: mem.c,v 1.26 2000/03/29 03:48:20 simonb Exp $ */
 
 /*
@@ -78,7 +78,6 @@ mmopen(dev_t dev, int flag, int mode, struct proc *p)
 		if (securelevel <= 0 || allowkmem)
 			break;
 		return (EPERM);
-	}
 	case 2:
 	case 12:
 		break;
