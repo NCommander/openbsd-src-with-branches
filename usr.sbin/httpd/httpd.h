@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.118 2016/09/02 11:25:14 reyk Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.119 2016/09/03 14:44:21 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -267,10 +267,9 @@ struct privsep_proc {
 				    struct imsg *);
 	void			(*p_init)(struct privsep *,
 				    struct privsep_proc *);
-	void			(*p_shutdown)(void);
 	const char		*p_chroot;
 	struct privsep		*p_ps;
-	struct httpd		*p_env;
+	void			(*p_shutdown)(void);
 };
 
 struct privsep_fd {
