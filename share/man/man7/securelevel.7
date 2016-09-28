@@ -1,4 +1,4 @@
-.\"     $OpenBSD: securelevel.7,v 1.26 2016/09/18 14:28:05 deraadt Exp $
+.\"     $OpenBSD: securelevel.7,v 1.27 2016/09/18 15:05:02 jmc Exp $
 .\"
 .\" Copyright (c) 2000 Hugh Graham
 .\"
@@ -89,6 +89,11 @@ variable may not be changed
 .It
 the
 .Va machdep.kbdreset
+.Xr sysctl 8
+variable may not be changed
+.It
+the
+.Va kern.allowkmem
 .Xr sysctl 8
 variable may not be changed
 .It
