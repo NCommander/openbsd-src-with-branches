@@ -1,4 +1,5 @@
 #!/bin/sh
+#	$OpenBSD$
 
 : ${FTP:=ftp}
 
