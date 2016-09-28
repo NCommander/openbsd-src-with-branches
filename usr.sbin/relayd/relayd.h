@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.232 2016/09/03 14:09:04 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.233 2016/09/03 14:44:21 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -1028,10 +1028,9 @@ struct privsep_proc {
 				    struct imsg *);
 	void			(*p_init)(struct privsep *,
 				    struct privsep_proc *);
-	void			(*p_shutdown)(void);
 	const char		*p_chroot;
 	struct privsep		*p_ps;
-	struct relayd		*p_env;
+	void			(*p_shutdown)(void);
 };
 
 struct privsep_fd {
