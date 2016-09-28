@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.c,v 1.91 2016/09/03 10:22:57 renato Exp $ */
+/*	$OpenBSD: ospfd.c,v 1.92 2016/09/04 10:10:23 krw Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -266,7 +266,7 @@ main(int argc, char *argv[])
 	    ospfd_conf->rdomain) == -1)
 		fatalx("kr_init failed");
 
-	/* remove unneded stuff from config */
+	/* remove unneeded stuff from config */
 	while ((a = LIST_FIRST(&ospfd_conf->area_list)) != NULL) {
 		LIST_REMOVE(a, entry);
 		area_del(a);

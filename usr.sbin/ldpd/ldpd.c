@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.57 2016/07/15 17:03:10 renato Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.58 2016/09/02 17:03:24 renato Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -257,7 +257,7 @@ main(int argc, char *argv[])
 	if (ldpd_conf->ipv6.flags & F_LDPD_AF_ENABLED)
 		main_imsg_send_net_sockets(AF_INET6);
 
-	/* remove unneded stuff from config */
+	/* remove unneeded stuff from config */
 		/* ... */
 
 	event_dispatch();
