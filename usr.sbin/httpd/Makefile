@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.27 2015/02/23 10:39:10 reyk Exp $
+#	$OpenBSD: Makefile,v 1.28 2015/06/23 15:23:14 reyk Exp $
 
 PROG=		httpd
 SRCS=		parse.y
@@ -16,7 +16,7 @@ CFLAGS+=	-Wall -I${.CURDIR}
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith
-CFLAGS+=	-Wsign-compare
+CFLAGS+=	-Wsign-compare -Wcast-qual
 CLEANFILES+=	y.tab.h
 
 .include <bsd.prog.mk>
