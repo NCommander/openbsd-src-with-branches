@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_wrap.h,v 1.30 2016/03/07 19:02:43 djm Exp $ */
+/* $OpenBSD: monitor_wrap.h,v 1.31 2016/08/13 17:47:41 markus Exp $ */
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -75,8 +75,5 @@ void mm_send_keystate(struct monitor*);
 /* bsdauth */
 int mm_bsdauth_query(void *, char **, char **, u_int *, char ***, u_int **);
 int mm_bsdauth_respond(void *, u_int, char **);
-
-/* zlib allocation hooks */
-void mm_init_compression(struct mm_master *);
 
 #endif /* _MM_WRAP_H_ */
