@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchd.h,v 1.7 2016/07/21 08:39:23 reyk Exp $	*/
+/*	$OpenBSD: switchd.h,v 1.8 2016/09/14 13:46:51 rzalamena Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -180,7 +180,7 @@ int		 parsehostport(const char *, struct sockaddr *, socklen_t);
 void		 ofp(struct privsep *, struct privsep_proc *);
 void		 ofp_close(struct switch_connection *);
 void		 ofp_read(int, short, void *);
-int		 ofp_send(struct switch_connection *, struct ofp_header *,
+int		 ofp_output(struct switch_connection *, struct ofp_header *,
 		    struct ibuf *);
 void		 ofp_accept(int, short, void *);
 int		 ofp_validate_header(struct switchd *,

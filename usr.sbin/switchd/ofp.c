@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofp.c,v 1.7 2016/09/14 13:46:51 rzalamena Exp $	*/
+/*	$OpenBSD: ofp.c,v 1.8 2016/09/26 08:48:05 rzalamena Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -246,7 +246,7 @@ ofp_read(int fd, short event, void *arg)
 }
 
 int
-ofp_send(struct switch_connection *con, struct ofp_header *oh,
+ofp_output(struct switch_connection *con, struct ofp_header *oh,
     struct ibuf *obuf)
 {
 	struct iovec		 iov[2];
