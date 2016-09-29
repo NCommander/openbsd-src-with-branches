@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.389 2016/09/16 23:35:45 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.390 2016/09/27 15:17:58 jca Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -2007,9 +2007,10 @@ lease_as_string(struct interface_info *ifi, char *type,
 		if (i == DHO_DHCP_CLIENT_IDENTIFIER) {
 			/* Ignore any CLIENT_IDENTIFIER from server. */
 			opt = &config->send_options[i];
-		} else if (lease->options[i].len)
+		} else
 			opt = &lease->options[i];
-		else
+
+		if (opt->len == 0)
 			continue;
 
 		rslt = snprintf(p, sz, "  option %s %s;\n",
