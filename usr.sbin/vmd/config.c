@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.10 2016/07/29 16:36:51 stefan Exp $	*/
+/*	$OpenBSD: config.c,v 1.11 2016/09/03 10:20:06 stefan Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -42,10 +42,8 @@ config_init(struct vmd *env)
 	unsigned int	 what;
 
 	/* Global configuration */
-	if (privsep_process == PROC_PARENT) {
-		ps->ps_what[PROC_PARENT] = CONFIG_ALL;
-		ps->ps_what[PROC_VMM] = CONFIG_VMS;
-	}
+	ps->ps_what[PROC_PARENT] = CONFIG_ALL;
+	ps->ps_what[PROC_VMM] = CONFIG_VMS;
 
 	/* Other configuration */
 	what = ps->ps_what[privsep_process];

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.43 2016/09/02 17:10:08 stefan Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.44 2016/09/03 11:38:08 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -137,10 +137,10 @@ static const struct vcpu_reg_state vcpu_init_flat32 = {
 	.vrs_sregs[VCPU_REGS_TR] = { 0x0, 0xFFFF, 0x008B, 0x0},
 };
 
-pid_t
+void
 vmm(struct privsep *ps, struct privsep_proc *p)
 {
-	return (proc_run(ps, p, procs, nitems(procs), vmm_run, NULL));
+	proc_run(ps, p, procs, nitems(procs), vmm_run, NULL);
 }
 
 void
