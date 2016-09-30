@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.h,v 1.71 2016/03/07 19:02:43 djm Exp $ */
+/* $OpenBSD: packet.h,v 1.72 2016/09/28 16:33:07 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -83,6 +83,10 @@ void     ssh_packet_set_interactive(struct ssh *, int, int, int);
 int      ssh_packet_is_interactive(struct ssh *);
 void     ssh_packet_set_server(struct ssh *);
 void     ssh_packet_set_authenticated(struct ssh *);
+void     ssh_packet_set_mux(struct ssh *);
+int	 ssh_packet_get_mux(struct ssh *);
+
+int	 ssh_packet_log_type(u_char);
 
 int	 ssh_packet_send1(struct ssh *);
 int	 ssh_packet_send2_wrapped(struct ssh *);
