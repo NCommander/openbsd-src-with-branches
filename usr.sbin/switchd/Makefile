@@ -1,10 +1,10 @@
-# $OpenBSD: Makefile,v 1.2 2016/07/19 18:14:08 reyk Exp $
+# $OpenBSD: Makefile,v 1.3 2016/07/20 14:04:51 reyk Exp $
 
 PROG=		switchd
 MAN=		switchd.8 switchd.conf.5
 
-SRCS=		imsg_util.c log.c packet.c switch.c timer.c util.c
-SRCS+=		switchd.c ofp.c ofp10.c ofp13.c control.c proc.c
+SRCS=		imsg_util.c log.c packet.c proc.c switch.c timer.c util.c
+SRCS+=		switchd.c control.c ofp.c ofp10.c ofp13.c ofrelay.c
 SRCS+=		${.OBJDIR}/ofp_map.c ${.OBJDIR}/ofp10_map.c
 SRCS+=		parse.y ofcconn.c
 
