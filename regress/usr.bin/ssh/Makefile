@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.88 2016/06/03 04:10:41 dtucker Exp $
+#	$OpenBSD: Makefile,v 1.89 2016/09/12 02:25:46 dtucker Exp $
 
 .ifndef SKIP_UNIT
 SUBDIR=		unittests
 .endif
 SUBDIR+=	misc
 
-REGRESS_FAIL_EARLY=	yes
+REGRESS_FAIL_EARLY?=	yes
 REGRESS_TARGETS=	t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12
 
 LTESTS= 	connect \

@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile.inc,v 1.6 2015/07/01 23:11:18 djm Exp $
+#	$OpenBSD: Makefile.inc,v 1.7 2016/09/28 20:09:52 bluhm Exp $
+
+REGRESS_FAIL_EARLY?=	yes
 
 .include <bsd.own.mk>
 .include <bsd.obj.mk>
-
-REGRESS_FAIL_EARLY= yes
 
 # XXX detect from ssh binary?
 SSH1?=		no
