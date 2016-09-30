@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofp.c,v 1.9 2016/09/29 18:25:54 reyk Exp $	*/
+/*	$OpenBSD: ofp.c,v 1.10 2016/09/30 11:57:57 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -215,7 +215,8 @@ ofp_output(struct switch_connection *con, struct ofp_header *oh,
 		ibuf_release(buf);
 		return (-1);
 	}
-	ibuf_close(&con->con_wbuf, buf);
+
+	ofrelay_write(con, buf);
 
 	return (0);
 }
