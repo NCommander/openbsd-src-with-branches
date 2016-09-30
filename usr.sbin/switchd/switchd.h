@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchd.h,v 1.11 2016/09/30 11:57:57 reyk Exp $	*/
+/*	$OpenBSD: switchd.h,v 1.12 2016/09/30 12:33:43 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -23,10 +23,11 @@
 #include <sys/tree.h>
 #include <sys/uio.h>
 
+#include <net/ofp.h>
+
 #include <limits.h>
 #include <imsg.h>
 
-#include "ofp.h"
 #include "ofp10.h"
 #include "types.h"
 #include "proc.h"
