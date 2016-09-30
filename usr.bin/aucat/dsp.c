@@ -1,4 +1,4 @@
-/*	$OpenBSD: dsp.c,v 1.1 2015/01/21 08:43:55 ratchov Exp $	*/
+/*	$OpenBSD: dsp.c,v 1.10 2016/09/23 07:29:24 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include <string.h>
 #include "dsp.h"
 #include "utils.h"
 
