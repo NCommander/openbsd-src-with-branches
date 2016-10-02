@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehcireg.h,v 1.19 2014/03/11 10:24:42 mpi Exp $ */
+/*	$OpenBSD: ehcireg.h,v 1.20 2015/04/10 13:56:42 mpi Exp $ */
 /*	$NetBSD: ehcireg.h,v 1.17 2004/06/23 06:45:56 mycroft Exp $	*/
 
 /*
@@ -161,6 +161,13 @@
 #define  EHCI_PS_CLEAR		(EHCI_PS_OCC|EHCI_PS_PEC|EHCI_PS_CSC)
 
 #define EHCI_PORT_RESET_COMPLETE 2 /* ms */
+
+/* Nonstandard register to set controller mode. */
+#define EHCI_USBMODE		0x68
+#define  EHCI_USBMODE_CM_M	0x00000003
+#define  EHCI_USBMODE_CM_IDLE	0x00000000
+#define  EHCI_USBMODE_CM_DEVICE	0x00000002
+#define  EHCI_USBMODE_CM_HOST	0x00000003 	
 
 #define EHCI_FLALIGN_ALIGN	0x1000
 
