@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_cd9660.c,v 1.5 2013/11/16 00:37:11 guenther Exp $	*/
+/*	$OpenBSD: kvm_cd9660.c,v 1.6 2014/12/16 03:21:10 tedu Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -50,6 +50,7 @@ _kvm_stat_cd9660(kvm_t *kd, struct kinfo_file *kf, struct vnode *vp)
 	kf->va_mode = inode.inode.iso_mode;
 	kf->va_size = inode.i_size;
 	kf->va_rdev = inode.i_dev;
+	kf->va_nlink = inode.inode.iso_links;
 
 	return (0);
 }
