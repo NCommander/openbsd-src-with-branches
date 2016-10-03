@@ -1,4 +1,14 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2014/08/27 07:36:14 blambert Exp $
+
+MOUNT_NOSUID != mount | grep ^$$(df -P . | tail -1 | awk '{ print $$1 }') | \
+    grep nosuid || true
+
+.if ! empty (MOUNT_NOSUID)
+regress:
+	echo '${MOUNT_NOSUID}'
+	echo object directory is mounted nosuid, test needs set user id
+	echo SKIPPED
+.endif
 
 CFLAGS			+= -Wall -Wformat -pedantic
 
