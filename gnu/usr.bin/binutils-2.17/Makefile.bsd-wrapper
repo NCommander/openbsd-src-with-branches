@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.bsd-wrapper,v 1.9 2016/09/11 07:42:02 guenther Exp $
+#	$OpenBSD: Makefile.bsd-wrapper,v 1.10 2016/09/18 08:58:13 natano Exp $
 
 .include <bsd.own.mk>
 
@@ -96,6 +96,8 @@ config.status: do-config
 
 # Need to pass SUBDIRS because of install-info
 install: maninstall
+	${INSTALL} -d -o ${BINOWN} -g ${BINGRP} \
+	    ${DESTDIR}${PREFIX}/libdata/ldscripts
 	SUBDIRS='${INST_SUBDIRS}' ${MAKE} DESTDIR='${DESTDIR}' \
 	    INSTALL_MAN= \
 	    scriptdir=${PREFIX}/libdata \
