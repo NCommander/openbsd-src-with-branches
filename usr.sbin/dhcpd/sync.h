@@ -1,4 +1,4 @@
-/*	$OpenBSD: sync.h,v 1.3 2008/05/08 14:15:40 deraadt Exp $	*/
+/*	$OpenBSD: sync.h,v 1.4 2013/04/13 18:08:47 krw Exp $	*/
 
 /*
  * Copyright (c) 2008, Bob Beck <beck@openbsd.org>
@@ -24,11 +24,11 @@
  * dhcpd(8) synchronisation protocol.
  *
  * This protocol has been designed for realtime synchronisation between
- * multiple machines running dhcpd(8), running the same config. 
+ * multiple machines running dhcpd(8), running the same config.
  * It is a simple Type-Length-Value based protocol, it allows easy
  * extension with future subtypes and bulk transfers by sending multiple
  * entries at once. The unencrypted messages will be authenticated using
- * HMAC-SHA1. 
+ * HMAC-SHA1.
  *
  */
 
