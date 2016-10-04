@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.278 2016/06/29 06:46:06 eric Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.284 2016/07/22 12:12:29 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1151,6 +1151,7 @@ smtp_filter_response(uint64_t id, int query, int status, uint32_t code,
 			line = line ? line : "Message rejected";
 			smtp_reply(s, "%d %s", code, line);
 			smtp_enter_state(s, STATE_HELO);
+			s->phase = PHASE_SETUP;
 			io_reload(&s->io);
 			return;
 		}
@@ -1543,6 +1544,7 @@ smtp_data_io_done(struct smtp_session *s)
 			smtp_reply(s, "421 Internal server error");
 		smtp_tx_free(s->tx);
 		smtp_enter_state(s, STATE_HELO);
+		s->phase = PHASE_SETUP;
 		io_reload(&s->io);
 	}
 	else {
