@@ -1,4 +1,4 @@
-/*	$Id: http.h,v 1.1 2016/08/31 22:01:42 florian Exp $ */
+/*	$Id: http.h,v 1.2 2016/08/31 23:08:49 benno Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -62,6 +62,8 @@ struct	httpget {
 };
 
 __BEGIN_DECLS
+
+int		 http_init(void);
 
 /* Convenience functions. */
 struct httpget	*http_get(const struct source *, size_t,
