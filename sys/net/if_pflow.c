@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflow.c,v 1.60 2015/10/03 10:44:23 florian Exp $	*/
+/*	$OpenBSD: if_pflow.c,v 1.61 2016/04/29 08:55:03 krw Exp $	*/
 
 /*
  * Copyright (c) 2011 Florian Obser <florian@narrans.de>
@@ -548,15 +548,16 @@ pflow_init_timeouts(struct pflow_softc *sc)
 		if (timeout_initialized(&sc->sc_tmo_tmpl))
 			timeout_del(&sc->sc_tmo_tmpl);
 		if (!timeout_initialized(&sc->sc_tmo))
-			timeout_set(&sc->sc_tmo, pflow_timeout, sc);
+			timeout_set_proc(&sc->sc_tmo, pflow_timeout, sc);
 		break;
 	case PFLOW_PROTO_10:
 		if (!timeout_initialized(&sc->sc_tmo_tmpl))
-			timeout_set(&sc->sc_tmo_tmpl, pflow_timeout_tmpl, sc);
+			timeout_set_proc(&sc->sc_tmo_tmpl, pflow_timeout_tmpl,
+			    sc);
 		if (!timeout_initialized(&sc->sc_tmo))
-			timeout_set(&sc->sc_tmo, pflow_timeout, sc);
+			timeout_set_proc(&sc->sc_tmo, pflow_timeout, sc);
 		if (!timeout_initialized(&sc->sc_tmo6))
-			timeout_set(&sc->sc_tmo6, pflow_timeout6, sc);
+			timeout_set_proc(&sc->sc_tmo6, pflow_timeout6, sc);
 
 		timeout_add_sec(&sc->sc_tmo_tmpl, PFLOW_TMPL_TIMEOUT);
 		break;
