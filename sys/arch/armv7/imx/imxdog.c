@@ -1,4 +1,4 @@
-/* $OpenBSD: imxdog.c,v 1.3 2016/06/13 23:43:58 kettenis Exp $ */
+/* $OpenBSD: imxdog.c,v 1.4 2016/07/27 11:45:02 patrick Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -27,6 +27,8 @@
 #include <machine/intr.h>
 #include <machine/bus.h>
 #include <machine/fdt.h>
+
+#include <armv7/armv7/armv7_machdep.h>
 
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/fdt.h>
@@ -83,11 +85,13 @@ imxdog_attach(struct device *parent, struct device *self, void *aux)
 		panic("imxdog_attach: bus_space_map failed!");
 
 	printf("\n");
+
 	imxdog_sc = sc;
+	cpuresetfn = imxdog_reset;
 }
 
 void
-imxdog_reset()
+imxdog_reset(void)
 {
 	if (imxdog_sc == NULL)
 		return;
