@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.96 2015/09/21 09:47:15 phessler Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.97 2016/07/13 20:07:38 benno Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -335,6 +335,10 @@ print_network(struct network_config *n, const char *c)
 		break;
 	case NETWORK_CONNECTED:
 		printf("%snetwork %s connected", c, print_af(n->prefix.aid));
+		break;
+	case NETWORK_RTLABEL:
+		printf("%snetwork %s rtlabel \"%s\"", c,
+		    print_af(n->prefix.aid), rtlabel_id2name(n->rtlabel));
 		break;
 	default:
 		printf("%snetwork %s/%u", c, log_addr(&n->prefix),
