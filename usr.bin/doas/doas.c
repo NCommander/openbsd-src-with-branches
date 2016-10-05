@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.c,v 1.64 2016/09/03 11:03:18 tedu Exp $ */
+/* $OpenBSD: doas.c,v 1.65 2016/09/15 00:58:23 deraadt Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -42,18 +42,6 @@ usage(void)
 	fprintf(stderr, "usage: doas [-Lns] [-a style] [-C config] [-u user]"
 	    " command [args]\n");
 	exit(1);
-}
-
-size_t
-arraylen(const char **arr)
-{
-	size_t cnt = 0;
-
-	while (*arr) {
-		cnt++;
-		arr++;
-	}
-	return cnt;
 }
 
 static int
