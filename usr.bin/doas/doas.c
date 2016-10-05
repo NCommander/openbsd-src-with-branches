@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.c,v 1.65 2016/09/15 00:58:23 deraadt Exp $ */
+/* $OpenBSD: doas.c,v 1.66 2016/10/05 17:36:53 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -149,6 +149,7 @@ static void
 parseconfig(const char *filename, int checkperms)
 {
 	extern FILE *yyfp;
+	extern int yyparse(void);
 	struct stat sb;
 
 	yyfp = fopen(filename, "r");
@@ -165,7 +166,6 @@ parseconfig(const char *filename, int checkperms)
 			errx(1, "%s is not owned by root", filename);
 	}
 
-	yyparse();
 	fclose(yyfp);
 	if (parse_errors)
 		exit(1);
