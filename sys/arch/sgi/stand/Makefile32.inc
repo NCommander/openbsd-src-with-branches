@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile32.inc,v 1.4 2010/09/14 08:46:13 miod Exp $
+#	$OpenBSD: Makefile32.inc,v 1.5 2012/10/19 13:51:59 miod Exp $
 
 .ifndef __INCLUDED_STAND_MAKEFILE32_INC
 __INCLUDED_STAND_MAKEFILE32_INC=
@@ -18,6 +18,7 @@ AS+=		-32
 LD?=		ld
 LD+=		-m elf32btsmip
 LIBSA_CPPFLAGS=
+CFLAGS+=	-DLIBSA_LONGLONG_PRINTF
 .endif
 
 ### Figure out what to use for libsa and libz
