@@ -1,4 +1,4 @@
-/*	$OpenBSD: platform.c,v 1.13 2016/08/20 15:44:04 kettenis Exp $	*/
+/*	$OpenBSD: platform.c,v 1.14 2016/08/31 16:19:40 jsg Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -81,7 +81,12 @@ platform_init(void)
 		if (platform != NULL)
 			break;
 	}
-	if (platform && platform->board_init)
+
+	if (platform == NULL)
+		return;
+
+	cpuresetfn = platform_watchdog_reset;
+	if (platform->board_init)
 		platform->board_init();
 }
 
