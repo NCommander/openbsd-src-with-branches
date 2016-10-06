@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.31 2016/10/04 17:17:30 reyk Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.32 2016/10/05 17:30:13 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -52,8 +52,7 @@ static struct privsep_proc procs[] = {
 	/* Keep "priv" on top as procs[0] */
 	{ "priv",	PROC_PRIV,	NULL, priv },
 	{ "control",	PROC_CONTROL,	vmd_dispatch_control, control },
-	{ "vmm",	PROC_VMM,	vmd_dispatch_vmm, vmm },
-
+	{ "vmm",	PROC_VMM,	vmd_dispatch_vmm, vmm, vmm_shutdown },
 };
 
 /* For the privileged process */
