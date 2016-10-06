@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.h,v 1.22 2015/10/21 14:03:07 bluhm Exp $ */
+/*	$OpenBSD: syslogd.h,v 1.23 2015/10/23 16:28:52 bluhm Exp $ */
 
 /*
  * Copyright (c) 2003 Anil Madhavapeddy <anil@recoil.org>
@@ -21,7 +21,8 @@
 #include <sys/uio.h>
 
 /* Privilege separation */
-int   priv_init(char *, int, int, int, char **);
+void  priv_init(int, int, int, char **);
+__dead void priv_exec(char *, int, int, int, char **);
 int   priv_open_tty(const char *);
 int   priv_open_log(const char *);
 FILE *priv_open_utmp(void);
