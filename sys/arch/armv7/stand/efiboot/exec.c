@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.8 2016/06/21 15:39:51 kettenis Exp $	*/
+/*	$OpenBSD: exec.c,v 1.9 2016/09/24 13:40:12 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006, 2016 Mark Kettenis
@@ -42,7 +42,7 @@ run_loadfile(u_long *marks, int howto)
 	char args[256];
 	char *cp;
 	void *fdt;
-	uint32_t board_id;
+	uint32_t board_id = 0;
 	int i;
 
 	/*
