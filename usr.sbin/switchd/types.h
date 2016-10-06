@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.4 2016/09/30 11:57:57 reyk Exp $	*/
+/*	$OpenBSD: types.h,v 1.5 2016/09/30 12:32:31 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -20,7 +20,7 @@
 #define _SWITCHD_TYPES_H
 
 #ifndef SWITCHD_USER
-#define SWITCHD_USER	"_hostapd"
+#define SWITCHD_USER	"_switchd"
 #endif
 
 #define SWITCHD_NAME	"switch"
