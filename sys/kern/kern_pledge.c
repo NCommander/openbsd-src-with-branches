@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.183 2016/09/17 00:42:35 tedu Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.184 2016/10/05 05:22:02 guenther Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -752,7 +752,7 @@ pledge_namei_wlpath(struct proc *p, struct nameidata *ni)
 {
 	struct whitepaths *wl = p->p_p->ps_pledgepaths;
 	char *rdir = NULL, *cwd = NULL, *resolved = NULL;
-	size_t rdirlen, cwdlen, resolvedlen;
+	size_t rdirlen = 0, cwdlen = 0, resolvedlen = 0;
 	int i, error, pardir_found;
 
 	/*
