@@ -1,0 +1,5 @@
+#	$OpenBSD$
+
+device mvacc
+attach mvacc at fdt
+file	arch/armv7/marvell/mvacc.c			mvacc
