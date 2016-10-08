@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_amap.c,v 1.74 2016/07/11 08:38:49 stefan Exp $	*/
+/*	$OpenBSD: uvm_amap.c,v 1.75 2016/07/14 16:23:49 stefan Exp $	*/
 /*	$NetBSD: uvm_amap.c,v 1.27 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -268,7 +268,7 @@ amap_alloc1(int slots, int waitf, int lazyalloc)
 {
 	struct vm_amap *amap;
 	struct vm_amap_chunk *chunk, *tmp;
-	int chunks, chunkperbucket = 1, hashshift = 0;
+	int chunks, log_chunks, chunkperbucket = 1, hashshift = 0;
 	int buckets, i, n;
 	int pwaitf = (waitf == M_WAITOK) ? PR_WAITOK : PR_NOWAIT;
 
@@ -305,8 +305,11 @@ amap_alloc1(int slots, int waitf, int lazyalloc)
 		 * for the hash buckets of all amaps to exceed the maximal
 		 * amount of KVA memory reserved for amaps.
 		 */
+		for (log_chunks = 1; (chunks >> log_chunks) > 0; log_chunks++)
+			continue;
+
 		chunkperbucket = 1 << hashshift;
-		while ((1 << chunkperbucket) * 2 <= chunks) {
+		while (chunkperbucket + 1 < log_chunks) {
 			hashshift++;
 			chunkperbucket = 1 << hashshift;
 		}
