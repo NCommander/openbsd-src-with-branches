@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.92 2016/09/11 03:14:04 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.93 2016/09/12 15:04:15 tedu Exp $	*/
 /*	$NetBSD: trap.c,v 1.73 2001/08/09 01:03:01 eeh Exp $ */
 
 /*
@@ -871,8 +871,8 @@ kfault:
 
 		if (rv == ENOMEM) {
 			printf("UVM: pid %d (%s), uid %d killed: out of swap\n",
-			       p->p_pid, p->p_comm,
-			       p->p_ucred ? (int)p->p_ucred->cr_uid : -1);
+			    p->p_p->ps_pid, p->p_comm,
+			    p->p_ucred ? (int)p->p_ucred->cr_uid : -1);
 			trapsignal(p, SIGKILL, access_type, SEGV_MAPERR, sv);
 		} else {
 			trapsignal(p, SIGSEGV, access_type, SEGV_MAPERR, sv);
