@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.59 2016/10/09 01:40:42 jsg Exp $
+#	$OpenBSD: RAMDISK,v 1.60 2016/10/09 11:14:22 kettenis Exp $
 
 machine		armv7 arm
 
@@ -106,6 +106,8 @@ sysreg*		at fdt?
 pluart*		at fdt?
 plrtc*		at fdt?
 virtio*		at fdt?
+
+psci*		at fdt?
 
 # Exynos
 exynos0		at mainbus?
