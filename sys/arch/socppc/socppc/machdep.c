@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.69 2016/05/23 18:14:47 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.70 2016/09/18 14:28:25 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -684,7 +684,9 @@ haltsys:
 		}
 
 		printf("halted\n\n");
-		for (;;);
+		for (;;)
+			continue;
+		/* NOTREACHED */
 	}
 	printf("rebooting\n\n");
 
@@ -699,7 +701,8 @@ haltsys:
 	}
 
 	printf("boot failed, spinning\n");
-	for (;;) ;
+	for (;;)
+		continue;
 	/* NOTREACHED */
 }
 

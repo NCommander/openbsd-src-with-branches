@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip22_machdep.c,v 1.20 2014/07/17 19:51:58 miod Exp $	*/
+/*	$OpenBSD: ip22_machdep.c,v 1.21 2015/09/05 21:14:07 miod Exp $	*/
 
 /*
  * Copyright (c) 2012 Miodrag Vallat.
@@ -308,7 +308,9 @@ dopanic:
 	bios_printf("Please contact <sgi@openbsd.org>\n"
 	    "Halting system.\n");
 	Bios_Halt();
-	for (;;) ;
+	for (;;)
+		continue;
+	/* NOTREACHED */
 }
 
 void

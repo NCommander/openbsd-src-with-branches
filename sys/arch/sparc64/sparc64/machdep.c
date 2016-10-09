@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.179 2016/09/18 14:28:25 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.180 2016/10/08 05:49:09 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -700,7 +700,8 @@ haltsys:
 		str[0] = 0;
 	OF_boot(str);
 	panic("cpu_reboot -- failed");
-	for (;;) ;
+	for (;;)
+		continue;
 	/* NOTREACHED */
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.74 2016/07/01 15:12:37 visa Exp $ */
+/*	$OpenBSD: machdep.c,v 1.75 2016/08/14 08:23:52 visa Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -734,7 +734,8 @@ haltsys:
 		octeon_xkphys_write_8(OCTEON_CIU_BASE + CIU_SOFT_RST, 1);
 	}
 
-	for (;;) ;
+	for (;;)
+		continue;
 	/* NOTREACHED */
 }
 

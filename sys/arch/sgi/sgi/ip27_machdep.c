@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip27_machdep.c,v 1.72 2016/02/27 13:08:07 mpi Exp $	*/
+/*	$OpenBSD: ip27_machdep.c,v 1.73 2016/03/06 19:42:27 mpi Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -671,7 +671,9 @@ ip27_halt(int howto)
 				printf("Software powerdown not supported, "
 				    "please switch off power manually.\n");
 			}
-			for (;;) ;
+			for (;;)
+				continue;
+			/* NOTREACHED */
 		} else {
 			printf("System halted.\n"
 			    "Press any key to restart\n");

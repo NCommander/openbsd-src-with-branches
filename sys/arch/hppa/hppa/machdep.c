@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.245 2016/05/21 00:56:43 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.246 2016/09/15 02:00:17 dlg Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -956,7 +956,8 @@ haltsys:
 		    :: "r" (CMD_RESET), "r" (HPPA_LBCAST + iomod_command));
 	}
 
-	for (;;) ;
+	for (;;)
+		continue;
 	/* NOTREACHED */
 }
 
