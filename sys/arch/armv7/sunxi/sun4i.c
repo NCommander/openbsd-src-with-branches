@@ -1,4 +1,4 @@
-/*	$OpenBSD: sun4i.c,v 1.4 2016/08/13 13:55:25 kettenis Exp $	*/
+/*	$OpenBSD: sun4i.c,v 1.5 2016/10/08 09:50:14 kettenis Exp $	*/
 /*
  * Copyright (c) 2011 Uwe Stuehler <uwe@openbsd.org>
  *
@@ -24,12 +24,6 @@
 #include <armv7/sunxi/sunxireg.h>
 
 struct armv7_dev sxia1x_devs[] = {
-
-	/* Clock Control Module/Unit */
-	{ .name = "sxiccmu",
-	  .unit = 0,
-	  .mem = { { CCMU_ADDR, CCMU_SIZE } },
-	},
 
 	/* Timers/Counters, resources mapped on first unit */
 	{ .name = "sxitimer",
