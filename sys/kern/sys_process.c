@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_process.c,v 1.69 2016/05/31 22:34:53 jca Exp $	*/
+/*	$OpenBSD: sys_process.c,v 1.70 2016/09/01 12:47:18 akfaew Exp $	*/
 /*	$NetBSD: sys_process.c,v 1.55 1996/05/15 06:17:47 tls Exp $	*/
 
 /*-
@@ -669,7 +669,6 @@ sys_ptrace(struct proc *p, void *v, register_t *retval)
 #endif
 	return 0;
 }
-#endif	/* PTRACE */
 
 /*
  * Check if a process is allowed to fiddle with the memory of another.
@@ -741,7 +740,6 @@ process_domem(struct proc *curp, struct proc *p, struct uio *uio, int req)
 	return (error);
 }
 
-#ifdef PTRACE
 int
 process_auxv_offset(struct proc *curp, struct proc *p, struct uio *uiop)
 {
