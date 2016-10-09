@@ -1,4 +1,4 @@
-/*	$OpenBSD: platform.c,v 1.15 2016/10/05 07:29:59 patrick Exp $	*/
+/*	$OpenBSD: platform.c,v 1.16 2016/10/05 22:06:48 kettenis Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -81,6 +81,7 @@ platform_init(void)
 		return;
 
 	cpuresetfn = platform_watchdog_reset;
+	powerdownfn = platform_powerdown;
 	if (platform->board_init)
 		platform->board_init();
 }
