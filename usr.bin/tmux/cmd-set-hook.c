@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-set-hook.c,v 1.5 2015/12/14 00:31:54 nicm Exp $ */
+/* $OpenBSD: cmd-set-hook.c,v 1.6 2016/05/12 13:21:56 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Thomas Adam <thomas@xteddy.org>
@@ -27,7 +27,7 @@
  * Set or show global or session hooks.
  */
 
-enum cmd_retval cmd_set_hook_exec(struct cmd *, struct cmd_q *);
+static enum cmd_retval cmd_set_hook_exec(struct cmd *, struct cmd_q *);
 
 const struct cmd_entry cmd_set_hook_entry = {
 	.name = "set-hook",
@@ -55,7 +55,7 @@ const struct cmd_entry cmd_show_hooks_entry = {
 	.exec = cmd_set_hook_exec
 };
 
-enum cmd_retval
+static enum cmd_retval
 cmd_set_hook_exec(struct cmd *self, struct cmd_q *cmdq)
 {
 	struct args	*args = self->args;
