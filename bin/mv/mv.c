@@ -1,4 +1,4 @@
-/*	$OpenBSD: mv.c,v 1.42 2015/11/17 17:24:26 tedu Exp $	*/
+/*	$OpenBSD: mv.c,v 1.43 2015/11/17 18:34:00 tedu Exp $	*/
 /*	$NetBSD: mv.c,v 1.9 1995/03/21 09:06:52 cgd Exp $	*/
 
 /*
@@ -48,8 +48,6 @@
 #include <limits.h>
 #include <pwd.h>
 #include <grp.h>
-
-#include "pathnames.h"
 
 extern char *__progname;
 
