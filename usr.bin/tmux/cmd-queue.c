@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-queue.c,v 1.36 2016/04/29 14:05:24 nicm Exp $ */
+/* $OpenBSD: cmd-queue.c,v 1.37 2016/09/28 14:40:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2013 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -26,6 +26,7 @@
 #include "tmux.h"
 
 static enum cmd_retval	cmdq_continue_one(struct cmd_q *);
+static void		cmdq_flush(struct cmd_q *);
 
 /* Create new command queue. */
 struct cmd_q *
@@ -319,7 +320,7 @@ out:
 }
 
 /* Flush command queue. */
-void
+static void
 cmdq_flush(struct cmd_q *cmdq)
 {
 	struct cmd_q_item	*item, *item1;
