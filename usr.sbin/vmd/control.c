@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.7 2016/08/17 05:07:13 deraadt Exp $	*/
+/*	$OpenBSD: control.c,v 1.8 2016/09/29 22:42:04 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2015 Reyk Floeter <reyk@openbsd.org>
@@ -367,6 +367,7 @@ control_dispatch_imsg(int fd, short event, void *arg)
 			break;
 		case IMSG_VMDOP_LOAD:
 		case IMSG_VMDOP_RELOAD:
+		case IMSG_CTL_RESET:
 			proc_forward_imsg(ps, &imsg, PROC_PARENT, -1);
 			break;
 		default:
