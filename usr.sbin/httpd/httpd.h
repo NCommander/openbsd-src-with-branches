@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.120 2016/09/28 12:01:04 reyk Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.121 2016/10/05 16:58:19 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -724,6 +724,7 @@ struct imsgbuf *
 	 proc_ibuf(struct privsep *, enum privsep_procid, int);
 struct imsgev *
 	 proc_iev(struct privsep *, enum privsep_procid, int);
+int	 proc_flush_imsg(struct privsep *, enum privsep_procid, int);
 void	 imsg_event_add(struct imsgev *);
 int	 imsg_compose_event(struct imsgev *, uint16_t, uint32_t,
 	    pid_t, int, void *, uint16_t);
