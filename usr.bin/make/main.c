@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.118 2015/12/29 19:04:46 gsoares Exp $ */
+/*	$OpenBSD: main.c,v 1.119 2016/01/04 10:59:23 tb Exp $ */
 /*	$NetBSD: main.c,v 1.34 1997/03/24 20:56:36 gwr Exp $	*/
 
 /*
@@ -190,7 +190,7 @@ MainParseArgs(int argc, char **argv)
 #define OPTFLAGS "BC:D:I:SV:d:ef:ij:km:npqrst"
 #define OPTLETTERS "BSiknpqrst"
 
-	if (pledge("stdio rpath wpath cpath proc exec", NULL) == -1)
+	if (pledge("stdio rpath wpath cpath fattr proc exec", NULL) == -1)
 		err(2, "pledge");
 
 	optind = 1;	/* since we're called more than once */
