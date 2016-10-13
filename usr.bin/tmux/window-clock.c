@@ -1,4 +1,4 @@
-/* $OpenBSD: window-clock.c,v 1.19 2016/10/10 21:51:39 nicm Exp $ */
+/* $OpenBSD: window-clock.c,v 1.20 2016/10/11 07:23:34 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -221,7 +221,7 @@ window_clock_draw_screen(struct window_pane *wp)
 	} else
 		strftime(tim, sizeof tim, "%H:%M", tm);
 
-	screen_write_clearscreen(&ctx);
+	screen_write_clearscreen(&ctx, 8);
 
 	if (screen_size_x(s) < 6 * strlen(tim) || screen_size_y(s) < 6) {
 		if (screen_size_x(s) >= strlen(tim) && screen_size_y(s) != 0) {
