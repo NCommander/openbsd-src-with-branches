@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.501 2016/10/12 15:26:37 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.502 2016/10/13 09:06:48 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
 .\"
@@ -14,7 +14,7 @@
 .\" IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
 .\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: October 12 2016 $
+.Dd $Mdocdate: October 13 2016 $
 .Dt TMUX 1
 .Os
 .Sh NAME
@@ -2179,13 +2179,9 @@ With
 the key bindings in
 .Ar mode-table
 are listed; this may be one of:
-.Em vi-edit ,
-.Em emacs-edit ,
-.Em vi-choice ,
-.Em emacs-choice ,
-.Em vi-copy
+.Em vi-choice
 or
-.Em emacs-copy .
+.Em emacs-choice .
 .It Xo Ic send-keys
 .Op Fl lMRX
 .Op Fl N Ar repeat-count
