@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-display-message.c,v 1.36 2016/08/25 09:33:14 nicm Exp $ */
+/* $OpenBSD: cmd-display-message.c,v 1.37 2016/10/10 21:51:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -45,7 +45,7 @@ const struct cmd_entry cmd_display_message_entry = {
 	.cflag = CMD_CLIENT_CANFAIL,
 	.tflag = CMD_PANE,
 
-	.flags = 0,
+	.flags = CMD_AFTERHOOK,
 	.exec = cmd_display_message_exec
 };
 
