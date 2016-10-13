@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.157 2015/01/16 06:40:07 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.158 2015/11/05 09:48:21 nicm Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -847,8 +847,8 @@ cvs_revision_select(RCSFILE *file, char *range)
 			}
 		}
 
-		rcsnum_free(lnum);
-		rcsnum_free(rnum);
+		free(lnum);
+		free(rnum);
 	}
 
 	cvs_argv_destroy(revargv);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: add.c,v 1.111 2015/01/16 06:40:06 deraadt Exp $	*/
+/*	$OpenBSD: add.c,v 1.112 2015/11/05 09:48:21 nicm Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -485,8 +485,7 @@ add_file(struct cvs_file *cf)
 		break;
 	}
 
-	if (head != NULL)
-		rcsnum_free(head);
+	free(head);
 
 	if (stop == 1)
 		return;
