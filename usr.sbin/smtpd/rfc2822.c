@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfc2822.c,v 1.7 2016/02/04 22:35:17 eric Exp $	*/
+/*	$OpenBSD: rfc2822.c,v 1.7.6.1 2016/08/23 11:15:17 jasper Exp $	*/
 
 /*
  * Copyright (c) 2014 Gilles Chehade <gilles@poolp.org>
@@ -49,6 +49,9 @@ header_callback(struct rfc2822_parser *rp)
 {
 	struct rfc2822_hdr_cb		*hdr_cb;
 	struct rfc2822_hdr_miss_cb	*hdr_miss_cb;
+
+	if (!rp->in_hdr)
+		goto end;
 
 	TAILQ_FOREACH(hdr_cb, &rp->hdr_cb, next)
 	    if (strcasecmp(hdr_cb->name, rp->header.name) == 0) {
@@ -148,6 +151,8 @@ rfc2822_parser_flush(struct rfc2822_parser *rp)
 		return;
 
 	header_callback(rp);
+
+	missing_headers_callback(rp);
 }
 
 void

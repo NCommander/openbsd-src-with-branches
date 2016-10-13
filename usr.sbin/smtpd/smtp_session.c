@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.284 2016/07/22 12:12:29 eric Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.284.4.1 2016/10/04 00:12:27 jsg Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1343,6 +1343,8 @@ smtp_io(struct io *io, int evt)
 			s->tx->dataeom = 1;
 			if (iobuf_queued(&s->tx->obuf) == 0)
 				smtp_data_io_done(s);
+			else
+				io_reload(&s->tx->oev);
 			return;
 		}
 
