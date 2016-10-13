@@ -1,4 +1,4 @@
-/*	$OpenBSD: identcpu.c,v 1.76 2016/09/27 08:06:22 mlarkin Exp $	*/
+/*	$OpenBSD: identcpu.c,v 1.77 2016/09/30 07:33:06 mlarkin Exp $	*/
 /*	$NetBSD: identcpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*
@@ -799,6 +799,8 @@ cpu_check_vmm_cap(struct cpu_info *ci)
 		else {
 			if (msr & IA32_FEATURE_CONTROL_VMX_EN)
 				ci->ci_vmm_flags |= CI_VMM_VMX;
+			else
+				ci->ci_vmm_flags |= CI_VMM_DIS;
 		}
 	}
 
