@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2013/10/14 00:00:09 guenther Exp $
+#	$OpenBSD: Makefile,v 1.18 2013/10/15 22:46:50 deraadt Exp $
 
 REV=	${OSrev}
 
@@ -45,10 +45,9 @@ ${IMAGE}: rd_setup do_files rd_teardown
 .endif
 
 bsd:
-	cd ${TOP}/../../sys/arch/landisk/conf && config RAMDISK
 	cd ${TOP}/../../sys/arch/landisk/compile/RAMDISK && \
-	    ${MAKE} clean && exec ${MAKE}
-	cp ${TOP}/../../sys/arch/landisk/compile/RAMDISK/bsd bsd
+	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && exec ${MAKE}'
+	cp -p ${TOP}/../../sys/arch/landisk/compile/RAMDISK/obj/bsd bsd
 
 rd_setup:
 	dd if=/dev/zero of=${IMAGE} bs=512 count=${NBLKS}

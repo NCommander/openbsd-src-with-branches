@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2016/05/29 07:38:01 jsg Exp $
+#	$OpenBSD: Makefile,v 1.14 2016/06/05 15:12:56 jsg Exp $
 
 REV=	${OSrev}
 
@@ -46,10 +46,9 @@ ALLBSDRD=	${BSD_RD}
 all:	${ALLBSDRD}
 
 bsd:
-	cd ${TOP}/../../sys/arch/armv7/conf && config RAMDISK
 	cd ${TOP}/../../sys/arch/armv7/compile/RAMDISK && \
-	    ${MAKE} clean && exec ${MAKE}
-	cp ${TOP}/../../sys/arch/armv7/compile/RAMDISK/bsd bsd
+	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && exec ${MAKE}'
+	cp -p ${TOP}/../../sys/arch/armv7/compile/RAMDISK/obj/bsd bsd
 
 ${BSD_RD}: ${CBIN} ${IMAGE} bsd rdsetroot
 	cp bsd ${BSD_RD}

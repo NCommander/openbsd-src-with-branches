@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2013/10/14 00:00:11 guenther Exp $
+#	$OpenBSD: Makefile,v 1.3 2013/10/15 22:46:53 deraadt Exp $
 
 REV=		${OSrev}
 
@@ -36,10 +36,9 @@ ${BSD_RD}: ${CBIN} ${IMAGE} bsd rdsetroot
 ${IMAGE}: rd_setup do_files rd_teardown
 
 bsd:
-	cd ${TOP}/../../sys/arch/octeon/conf && config RAMDISK
 	cd ${TOP}/../../sys/arch/octeon/compile/RAMDISK && \
-	    ${MAKE} clean && exec ${MAKE}
-	cp ${TOP}/../../sys/arch/octeon/compile/RAMDISK/bsd bsd
+	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && exec ${MAKE}'
+	cp -p ${TOP}/../../sys/arch/octeon/compile/RAMDISK/obj/bsd bsd
 
 rd_setup:
 	dd if=/dev/zero of=${IMAGE} bs=512 count=${NBLKS}

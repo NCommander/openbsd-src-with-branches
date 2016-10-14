@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.27 2013/10/23 03:43:27 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.28 2014/10/26 10:42:59 miod Exp $
 
 CBIN=		instbin
 ARCHDIR=	${.CURDIR}/..
@@ -59,10 +59,9 @@ ${CDROM}: bsd ${CDBOOT}
 	dd if=/dev/zero bs=64k count=1 >> ${.OBJDIR}/${CDROM}
 
 obsd:
-	cd ${SRCDIR}/sys/arch/${MACHINE}/conf && config ${KERNEL}
 	cd ${SRCDIR}/sys/arch/${MACHINE}/compile/${KERNEL} && \
-	    ${MAKE} clean && exec ${MAKE}
-	cp ${SRCDIR}/sys/arch/${MACHINE}/compile/${KERNEL}/bsd obsd
+	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && exec ${MAKE}'
+	cp -p ${SRCDIR}/sys/arch/${MACHINE}/compile/${KERNEL}/obj/bsd obsd
 
 bsd.rd:	obsd ${IMAGE} rdsetroot
 	cp obsd bsd.rd
