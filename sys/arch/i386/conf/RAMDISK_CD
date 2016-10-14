@@ -1,9 +1,10 @@
-#	$OpenBSD: RAMDISK_CD,v 1.230 2016/09/03 21:37:29 tedu Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.231 2016/09/04 10:22:06 tedu Exp $
 
 machine		i386
 maxusers	4
 
 option		TIMEZONE=0
+option		COPTS=-Os
 option		DST=0
 option		SMALL_KERNEL
 option		NO_PROPOLICE
