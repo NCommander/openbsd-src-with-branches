@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-resize-pane.c,v 1.24 2016/10/10 17:28:30 nicm Exp $ */
+/* $OpenBSD: cmd-resize-pane.c,v 1.25 2016/10/10 21:51:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -41,7 +41,7 @@ const struct cmd_entry cmd_resize_pane_entry = {
 
 	.tflag = CMD_PANE,
 
-	.flags = 0,
+	.flags = CMD_AFTERHOOK,
 	.exec = cmd_resize_pane_exec
 };
 

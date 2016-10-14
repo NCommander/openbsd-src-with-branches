@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-refresh-client.c,v 1.19 2016/01/19 15:59:12 nicm Exp $ */
+/* $OpenBSD: cmd-refresh-client.c,v 1.20 2016/10/10 21:51:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -35,7 +35,7 @@ const struct cmd_entry cmd_refresh_client_entry = {
 
 	.tflag = CMD_CLIENT,
 
-	.flags = 0,
+	.flags = CMD_AFTERHOOK,
 	.exec = cmd_refresh_client_exec
 };
 

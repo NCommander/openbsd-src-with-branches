@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-display-panes.c,v 1.12 2016/01/19 15:59:12 nicm Exp $ */
+/* $OpenBSD: cmd-display-panes.c,v 1.13 2016/06/16 10:55:47 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -41,7 +41,7 @@ const struct cmd_entry cmd_display_panes_entry = {
 
 	.tflag = CMD_CLIENT,
 
-	.flags = 0,
+	.flags = CMD_AFTERHOOK,
 	.exec = cmd_display_panes_exec
 };
 

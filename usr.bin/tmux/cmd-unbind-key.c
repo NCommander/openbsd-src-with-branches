@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-unbind-key.c,v 1.26 2016/10/10 21:51:39 nicm Exp $ */
+/* $OpenBSD: cmd-unbind-key.c,v 1.27 2016/10/12 14:50:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -37,7 +37,7 @@ const struct cmd_entry cmd_unbind_key_entry = {
 	.args = { "ant:T:", 0, 1 },
 	.usage = "[-an] [-t mode-table] [-T key-table] key",
 
-	.flags = 0,
+	.flags = CMD_AFTERHOOK,
 	.exec = cmd_unbind_key_exec
 };
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-pipe-pane.c,v 1.36 2016/01/19 15:59:12 nicm Exp $ */
+/* $OpenBSD: cmd-pipe-pane.c,v 1.37 2016/10/10 21:51:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -46,7 +46,7 @@ const struct cmd_entry cmd_pipe_pane_entry = {
 
 	.tflag = CMD_PANE,
 
-	.flags = 0,
+	.flags = CMD_AFTERHOOK,
 	.exec = cmd_pipe_pane_exec
 };
 
