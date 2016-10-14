@@ -4,7 +4,6 @@ machine		i386
 maxusers	4
 
 option		TIMEZONE=0
-option		COPTS=-Os
 option		DST=0
 option		SMALL_KERNEL
 option		NO_PROPOLICE
