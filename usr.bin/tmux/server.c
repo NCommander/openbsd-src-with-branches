@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.159 2016/07/07 09:24:09 semarie Exp $ */
+/* $OpenBSD: server.c,v 1.160 2016/10/10 21:29:23 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -192,6 +192,7 @@ server_loop(void)
 	struct client	*c;
 
 	server_client_loop();
+	notify_drain();
 
 	if (!options_get_number(global_options, "exit-unattached")) {
 		if (!RB_EMPTY(&sessions))
