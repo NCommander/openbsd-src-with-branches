@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.65 2016/10/13 21:37:03 nicm Exp $ */
+/* $OpenBSD: session.c,v 1.66 2016/10/15 00:12:58 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -349,7 +349,7 @@ session_new(struct session *s, const char *name, int argc, char **argv,
 		shell = _PATH_BSHELL;
 
 	hlimit = options_get_number(s->options, "history-limit");
-	w = window_create(name, argc, argv, path, shell, cwd, env, s->tio,
+	w = window_create_spawn(name, argc, argv, path, shell, cwd, env, s->tio,
 	    s->sx, s->sy, hlimit, cause);
 	if (w == NULL) {
 		winlink_remove(&s->windows, wl);
