@@ -1,4 +1,4 @@
-/* $OpenBSD: control-notify.c,v 1.15 2015/12/11 12:27:36 nicm Exp $ */
+/* $OpenBSD: control-notify.c,v 1.16 2016/01/19 15:59:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -196,7 +196,7 @@ control_notify_session_created(__unused struct session *s)
 }
 
 void
-control_notify_session_close(__unused struct session *s)
+control_notify_session_closed(__unused struct session *s)
 {
 	struct client	*c;
 
