@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: buf.h,v 1.2 2016/10/16 20:26:56 natano Exp $	*/
 /*	$NetBSD: buf.h,v 1.10 2015/03/29 05:52:59 agc Exp $	*/
 
 /*
@@ -74,7 +74,6 @@ struct buf {
 	TAILQ_ENTRY(buf)	b_tailq;
 };
 
-struct kauth_cred;
 void		bcleanup(void);
 int		bread(struct vnode *, daddr_t, int, int, struct buf **);
 void		brelse(struct buf *, int);
