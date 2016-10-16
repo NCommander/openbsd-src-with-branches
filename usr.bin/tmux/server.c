@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.161 2016/10/15 00:01:01 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.162 2016/10/16 17:55:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -191,8 +191,6 @@ server_loop(void)
 {
 	struct client	*c;
 	u_int		 items;
-
-	notify_drain();
 
 	do {
 		items = cmdq_next(NULL);
