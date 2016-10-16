@@ -1,4 +1,4 @@
-/*	$OpenBSD: ul.c,v 1.21 2016/03/26 08:59:29 natano Exp $	*/
+/*	$OpenBSD: ul.c,v 1.22 2016/09/26 05:32:35 otto Exp $	*/
 /*	$NetBSD: ul.c,v 1.3 1994/12/07 00:28:24 jtc Exp $	*/
 
 /*
@@ -379,7 +379,6 @@ flushln(void)
 void
 overstrike(void)
 {
-	wchar_t wc;
 	int i, j, needspace;
 
 	putwchar(L'\r');
