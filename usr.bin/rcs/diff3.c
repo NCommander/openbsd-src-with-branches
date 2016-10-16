@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff3.c,v 1.38 2015/11/02 16:45:21 nicm Exp $	*/
+/*	$OpenBSD: diff3.c,v 1.39 2016/08/26 09:02:54 guenther Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -887,7 +887,7 @@ edscript(int n)
 		(void)fseek(fp[2], (long)de[n].new.from, SEEK_SET);
 		for (k = de[n].new.to-de[n].new.from; k > 0; k-= j) {
 			j = k > BUFSIZ ? BUFSIZ : k;
-			if (fread(block, 1, j, fp[2]) != j)
+			if (fread(block, 1, j, fp[2]) != (size_t)j)
 				return (-1);
 			block[j] = '\0';
 			diff_output("%s", block);

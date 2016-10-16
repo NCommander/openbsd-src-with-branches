@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlog.c,v 1.72 2016/08/26 09:02:54 guenther Exp $	*/
+/*	$OpenBSD: rlog.c,v 1.73 2016/08/31 13:09:09 jcs Exp $	*/
 /*
  * Copyright (c) 2005, 2009 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -359,7 +359,7 @@ rlog_file(const char *fname, RCSFILE *file)
 	if (rflag == 1)
 		nrev = rcs_rev_select(file, revisions);
 	else if (dflag == 1) {
-		if ((nrev = rlog_select_daterev(file, rlog_dates)) == -1)
+		if ((nrev = rlog_select_daterev(file, rlog_dates)) == (u_int)-1)
 			errx(1, "invalid date: %s", rlog_dates);
 	} else
 		nrev = file->rf_ndelta;
