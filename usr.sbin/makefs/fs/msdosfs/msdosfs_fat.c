@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: msdosfs_fat.c,v 1.31 2016/05/07 16:43:02 mlelstv Exp $	*/
 
 /*-

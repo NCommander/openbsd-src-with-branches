@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: cd9660_debug.c,v 1.13 2013/10/19 17:16:37 christos Exp $	*/
 
 /*

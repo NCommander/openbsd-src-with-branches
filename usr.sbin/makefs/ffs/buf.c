@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: buf.c,v 1.24 2016/06/24 19:24:11 christos Exp $	*/
 
 /*

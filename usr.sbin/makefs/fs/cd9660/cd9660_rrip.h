@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: cd9660_rrip.h,v 1.3 2005/12/03 17:34:43 christos Exp $	*/
 
 /*-

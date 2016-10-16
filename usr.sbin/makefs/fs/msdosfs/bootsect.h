@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: bootsect.h,v 1.6 2016/01/22 22:48:18 dholland Exp $	*/
 
 /*

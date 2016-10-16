@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.17 2016/01/30 09:59:27 mlelstv Exp $ */
 
 /*-

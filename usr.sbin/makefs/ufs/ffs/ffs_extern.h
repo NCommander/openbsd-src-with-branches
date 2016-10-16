@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ffs_extern.h,v 1.83 2016/10/01 13:15:45 jdolecek Exp $	*/
 
 /*-

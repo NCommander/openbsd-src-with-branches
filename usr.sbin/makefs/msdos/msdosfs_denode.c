@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: msdosfs_denode.c,v 1.7 2015/03/29 05:52:59 agc Exp $	*/
 
 /*-

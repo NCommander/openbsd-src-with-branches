@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: makefs.c,v 1.53 2015/11/27 15:10:32 joerg Exp $	*/
 
 /*

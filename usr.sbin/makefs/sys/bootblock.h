@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: bootblock.h,v 1.57 2014/09/14 17:39:06 nonaka Exp $	*/
 
 /*-

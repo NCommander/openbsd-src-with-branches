@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iso9660_rrip.h,v 1.6 2013/01/28 21:03:28 christos Exp $	*/
 
 /*

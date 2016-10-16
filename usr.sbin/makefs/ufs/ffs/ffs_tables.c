@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ffs_tables.c,v 1.9 2005/12/11 12:25:25 christos Exp $	*/
 
 /*

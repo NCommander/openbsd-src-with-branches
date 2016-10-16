@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: bpb.h,v 1.8 2016/01/22 22:53:36 dholland Exp $	*/
 
 /*

@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: quota.h,v 1.12 2012/01/30 00:56:19 dholland Exp $ */
 /*-
   * Copyright (c) 2010 Manuel Bouyer

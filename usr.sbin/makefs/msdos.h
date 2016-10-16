@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: msdos.h,v 1.3 2015/10/16 16:40:02 christos Exp $	*/
 
 /*-

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iso_rrip.h,v 1.4 2005/12/03 17:34:43 christos Exp $	*/
 
 /*-

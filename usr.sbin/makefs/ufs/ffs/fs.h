@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: fs.h,v 1.66 2015/02/14 09:06:11 maxv Exp $	*/
 
 /*

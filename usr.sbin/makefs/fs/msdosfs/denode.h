@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: denode.h,v 1.24 2014/07/08 09:21:52 hannken Exp $	*/
 
 /*-

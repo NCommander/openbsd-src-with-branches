@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: dinode.h,v 1.25 2016/01/22 23:06:10 dholland Exp $	*/
 
 /*

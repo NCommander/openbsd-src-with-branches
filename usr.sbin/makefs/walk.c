@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: walk.c,v 1.29 2015/11/25 00:48:49 christos Exp $	*/
 
 /*
