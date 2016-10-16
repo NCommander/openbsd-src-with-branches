@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/usr.bin/cc/include/Makefile,v 1.9.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD: Makefile,v 1.10 2014/09/10 04:40:02 jsg Exp $
+# $OpenBSD: Makefile,v 1.11 2016/09/01 11:03:09 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -43,6 +43,12 @@ cleandir: _SUBDIRUSE clean
 
 depend:
 	# Nothing here so far...
+
+.if ${TARGET_ARCH} == "i386" || ${TARGET_ARCH} == "amd64"
+prereq: mm_malloc.h unwind.h
+.else
+prereq: unwind.h
+.endif
 
 .if !empty(INCS)
 install includes: ${INCS}
