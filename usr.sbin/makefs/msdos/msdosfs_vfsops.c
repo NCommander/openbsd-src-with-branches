@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vfsops.c,v 1.3 2016/10/16 20:26:56 natano Exp $	*/
+/*	$OpenBSD: msdosfs_vfsops.c,v 1.4 2016/10/16 21:35:27 tedu Exp $	*/
 
 /*-
  * Copyright (C) 1994, 1995, 1997 Wolfgang Solfrank.
@@ -76,10 +76,10 @@
 #endif
 
 struct msdosfsmount *
-msdosfs_mount(struct vnode *devvp, int flags)
+msdosfs_mount(struct mkfsvnode *devvp, int flags)
 {
 	struct msdosfsmount *pmp = NULL;
-	struct buf *bp;
+	struct mkfsbuf *bp;
 	union bootsector *bsp;
 	struct byte_bpb33 *b33;
 	struct byte_bpb50 *b50;
@@ -360,7 +360,7 @@ error_exit:
 }
 
 int
-msdosfs_root(struct msdosfsmount *pmp, struct vnode *vp) {
+msdosfs_root(struct msdosfsmount *pmp, struct mkfsvnode *vp) {
 	struct denode *ndep;
 	int error;
 

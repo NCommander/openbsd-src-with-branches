@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_conv.c,v 1.19 2015/10/23 10:45:31 krw Exp $	*/
+/*	$OpenBSD: msdosfs_conv.c,v 1.2 2016/10/16 18:55:10 natano Exp $	*/
 /*	$NetBSD: msdosfs_conv.c,v 1.24 1997/10/17 11:23:54 ws Exp $	*/
 
 /*-
@@ -54,7 +54,6 @@
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/dirent.h>
-#include <sys/vnode.h>
 #include <sys/lock.h>
 
 /*

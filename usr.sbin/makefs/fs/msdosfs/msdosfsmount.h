@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfsmount.h,v 1.3 2016/10/16 20:26:56 natano Exp $	*/
+/*	$OpenBSD: msdosfsmount.h,v 1.4 2016/10/16 21:35:27 tedu Exp $	*/
 /*	$NetBSD: msdosfsmount.h,v 1.21 2016/01/30 09:59:27 mlelstv Exp $	*/
 
 /*-
@@ -83,7 +83,7 @@ struct msdosfsmount {
 	mode_t pm_dirmask;	/* mask to and with file protection bits
 				   for directories */
 	int pm_minuteswest;	/* of Greenwitch */
-	struct vnode *pm_devvp;	/* vnode for block device mntd */
+	struct mkfsvnode *pm_devvp;	/* mkfsvnode for block device mntd */
 	struct bpb50 pm_bpb;	/* BIOS parameter blk for this fs */
 	u_long pm_FATsecs;	/* actual number of FAT sectors */
 	u_long pm_fatblk;	/* sector # of first FAT */
