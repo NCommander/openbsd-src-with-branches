@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.h,v 1.2 2016/10/16 20:26:56 natano Exp $	*/
+/*	$OpenBSD: dir.h,v 1.3 2016/10/16 21:59:28 tedu Exp $	*/
 /*	$NetBSD: dir.h,v 1.25 2015/09/01 06:16:03 dholland Exp $	*/
 
 /*
@@ -76,7 +76,6 @@
 #undef	UFS_DIRBLKSIZ
 #define	UFS_DIRBLKSIZ	DEV_BSIZE
 #define	FFS_MAXNAMLEN	255
-#define APPLEUFS_DIRBLKSIZ 1024
 
 #define d_ino d_fileno
 struct	direct {
