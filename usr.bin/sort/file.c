@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.19 2015/04/02 22:14:51 deraadt Exp $	*/
+/*	$OpenBSD: file.c,v 1.20 2015/04/03 10:37:24 tobias Exp $	*/
 
 /*-
  * Copyright (C) 2009 Gabor Kovesdan <gabor@FreeBSD.org>
@@ -50,7 +50,7 @@ unsigned long long available_free_memory = 1000000;
 
 bool use_mmap;
 
-const char *tmpdir = "/var/tmp";
+const char *tmpdir = "/tmp";
 const char *compress_program;
 
 size_t max_open_files = 16;
