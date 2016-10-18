@@ -24,13 +24,13 @@ SRCS+=	msdosfs_lookup.c msdosfs_denode.c msdosfs_vnops.c msdosfs_unicode.c
 
 MAN=	makefs.8
 
-CPPFLAGS+=	-I${.CURDIR} -I${.CURDIR}/fs/msdosfs -I${.CURDIR}/newfs_msdos
+CPPFLAGS+=	-I${.CURDIR}
 #CPPFLAGS+=	-DMSDOSFS_DEBUG
 
 DPADD+= ${LIBUTIL}
 LDADD+= -lutil
 
 .PATH:	${.CURDIR}/cd9660 ${.CURDIR}/ffs ${.CURDIR}/ufs/ffs \
-	${.CURDIR}/msdos ${.CURDIR}/fs/msdosfs ${.CURDIR}/newfs_msdos
+	${.CURDIR}/msdos
 
 .include <bsd.prog.mk>

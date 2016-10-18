@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_conv.c,v 1.2 2016/10/16 18:55:10 natano Exp $	*/
+/*	$OpenBSD: msdosfs_conv.c,v 1.3 2016/10/17 01:16:22 tedu Exp $	*/
 /*	$NetBSD: msdosfs_conv.c,v 1.24 1997/10/17 11:23:54 ws Exp $	*/
 
 /*-
@@ -59,8 +59,8 @@
 /*
  * MSDOSFS include files.
  */
-#include <fs/msdosfs/direntry.h>
-#include <fs/msdosfs/denode.h>
+#include "msdos/direntry.h"
+#include "msdos/denode.h"
 
 /*
  * Days in each month in a regular year.
