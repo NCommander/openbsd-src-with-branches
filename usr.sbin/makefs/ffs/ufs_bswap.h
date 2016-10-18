@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_bswap.h,v 1.4 2016/10/16 22:23:08 tedu Exp $	*/
+/*	$OpenBSD: ufs_bswap.h,v 1.5 2016/10/16 22:26:34 tedu Exp $	*/
 /*	$NetBSD: ufs_bswap.h,v 1.21 2016/04/29 03:05:04 christos Exp $	*/
 
 /*

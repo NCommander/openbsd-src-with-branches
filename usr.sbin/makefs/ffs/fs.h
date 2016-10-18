@@ -1,4 +1,4 @@
-/*	$OpenBSD: fs.h,v 1.2 2016/10/16 20:26:56 natano Exp $	*/
+/*	$OpenBSD: fs.h,v 1.3 2016/10/17 14:06:32 natano Exp $	*/
 /*	$NetBSD: fs.h,v 1.66 2015/02/14 09:06:11 maxv Exp $	*/
 
 /*

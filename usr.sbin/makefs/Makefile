@@ -30,7 +30,6 @@ CPPFLAGS+=	-I${.CURDIR}
 DPADD+= ${LIBUTIL}
 LDADD+= -lutil
 
-.PATH:	${.CURDIR}/cd9660 ${.CURDIR}/ffs ${.CURDIR}/ufs/ffs \
-	${.CURDIR}/msdos
+.PATH:	${.CURDIR}/cd9660 ${.CURDIR}/ffs ${.CURDIR}/msdos
 
 .include <bsd.prog.mk>
