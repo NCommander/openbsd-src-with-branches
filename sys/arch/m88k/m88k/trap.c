@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.103 2015/09/13 11:32:29 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.104 2016/06/13 23:51:59 dlg Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -1447,7 +1447,7 @@ ss_get_value(struct proc *p, vaddr_t addr, u_int *value)
 	uio.uio_segflg = UIO_SYSSPACE;
 	uio.uio_rw = UIO_READ;
 	uio.uio_procp = curproc;
-	return (process_domem(curproc, p, &uio, PT_READ_I));
+	return (process_domem(curproc, p->p_p, &uio, PT_READ_I));
 }
 
 int
@@ -1465,7 +1465,7 @@ ss_put_value(struct proc *p, vaddr_t addr, u_int value)
 	uio.uio_segflg = UIO_SYSSPACE;
 	uio.uio_rw = UIO_WRITE;
 	uio.uio_procp = curproc;
-	return (process_domem(curproc, p, &uio, PT_WRITE_I));
+	return (process_domem(curproc, p->p_p, &uio, PT_WRITE_I));
 }
 
 /*
