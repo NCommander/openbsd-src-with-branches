@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.1 2002/04/22 02:40:03 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 2012/10/12 14:07:46 jsing Exp $
 
 .PATH: ${.CURDIR}/../ramdiskA
 BOOT=${DESTDIR}/usr/mdec/fdboot
 RAMDISK=RAMDISK
 NOBSDRD=1
 
-.include "${.CURDIR}/../common/Makefile.inc"
+.include "${.CURDIR}/Makefile.inc"
 
 LISTS+=		${.CURDIR}/list.local
