@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukc.c,v 1.20 2015/10/12 04:43:30 deraadt Exp $ */
+/*	$OpenBSD: ukc.c,v 1.21 2016/10/16 17:50:00 tb Exp $ */
 
 /*
  * Copyright (c) 1999-2001 Mats O Jansson.  All rights reserved.
@@ -174,7 +174,7 @@ WARNING this kernel doesn't support pseudo devices.\n");
 void
 init(void)
 {
-	int i = 0, fd;
+	int i = 0;
 	struct cfdata *cd;
 	short	*ln;
 	int	*p;
@@ -208,7 +208,4 @@ init(void)
 		p = (int *)adjust((caddr_t)nl[I_PDEVSIZE].n_value);
 		maxpseudo = *p;
 	}
-
-	if ((fd = open("/dev/tty", O_RDWR)) < 0)
-		fd = 2;
 }
