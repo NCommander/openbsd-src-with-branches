@@ -1,4 +1,4 @@
-.\" $OpenBSD: switchd.8,v 1.1 2016/07/19 16:54:26 reyk Exp $
+.\" $OpenBSD: switchd.8,v 1.2 2016/09/25 23:05:29 jsg Exp $
 .\"
 .\" Copyright (c) 2016 Reyk Floeter <reyk@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 19 2016 $
+.Dd $Mdocdate: September 25 2016 $
 .Dt SWITCHD 8
 .Os
 .Sh NAME
@@ -68,6 +68,9 @@ options increase the verbosity.
 .It Pa /etc/switchd.conf
 Default configuration file.
 .El
+.Sh SEE ALSO
+.Xr switchd.conf 5 ,
+.Xr switchctl 8
 .Sh STANDARDS
 .Rs
 .%A Open Networking Foundation (ONF)
