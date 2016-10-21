@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs.c,v 1.3 2016/10/16 21:59:28 tedu Exp $	*/
+/*	$OpenBSD: mkfs.c,v 1.4 2016/10/18 17:23:21 natano Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.34 2016/06/24 19:24:11 christos Exp $	*/
 
 /*
@@ -409,7 +409,7 @@ ffs_mkfs(const char *fsys, const fsinfo_t *fsopts, time_t tstamp)
 
 		sblock.fs_maxcluster = lp = space;
 		for (i = 0; i < sblock.fs_ncg; i++)
-		*lp++ = sblock.fs_contigsumsize;
+			*lp++ = sblock.fs_contigsumsize;
 	}
 
 	sblock.fs_sbsize = ffs_fragroundup(&sblock, sizeof(struct fs));
