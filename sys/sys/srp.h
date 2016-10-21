@@ -1,4 +1,4 @@
-/*	$OpenBSD: srp.h,v 1.10 2016/06/01 03:34:32 dlg Exp $ */
+/*	$OpenBSD: srp.h,v 1.11 2016/06/07 07:53:33 mpi Exp $ */
 
 /*
  * Copyright (c) 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -21,11 +21,13 @@
 
 #include <sys/refcnt.h>
 
+#ifndef __upunused
 #ifdef MULTIPROCESSOR
 #define __upunused
 #else
 #define __upunused __attribute__((__unused__))
 #endif
+#endif /* __upunused */
 
 struct srp {
 	void			*ref;
