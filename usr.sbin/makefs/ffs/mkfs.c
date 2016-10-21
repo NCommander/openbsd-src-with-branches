@@ -532,7 +532,7 @@ ffs_write_superblock(struct fs *fs, const fsinfo_t *fsopts)
 	void *space;
 	char *wrbuf;
 
-	memcpy(writebuf, &sblock, SBLOCKSIZE);
+	memcpy(writebuf, fs, SBLOCKSIZE);
 	ffs_wtfs(fs->fs_sblockloc / sectorsize, SBLOCKSIZE, writebuf, fsopts);
 
 	/* Write out the duplicate super blocks */
