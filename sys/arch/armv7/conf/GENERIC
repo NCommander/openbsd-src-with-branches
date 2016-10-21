@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.65 2016/10/09 11:14:22 kettenis Exp $
+#	$OpenBSD: GENERIC,v 1.66 2016/10/09 23:46:23 jsg Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -138,6 +138,7 @@ usb*		at dwctwo?
 mvacc*		at fdt? early 1
 mvagc*		at fdt?
 mvsysctrl*	at fdt?
+mvmbus*		at fdt?
 
 crosec*		at iic?
 wskbd*		at crosec? mux 1
