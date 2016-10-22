@@ -264,42 +264,6 @@ free_fsnodes(fsnode *node)
 
 
 /*
- * dump_fsnodes --
- *	dump the fsnodes from `cur'
- */
-void
-dump_fsnodes(fsnode *root)
-{
-	fsnode	*cur;
-	char	path[MAXPATHLEN + 1];
-
-	printf("dump_fsnodes: %s %p\n", root->path, root);
-	for (cur = root; cur != NULL; cur = cur->next) {
-		if (snprintf(path, sizeof(path), "%s/%s", cur->path,
-		    cur->name) >= (int)sizeof(path))
-			errx(1, "Pathname too long.");
-
-		printf("%7s: %s", inode_type(cur->type), path);
-		if (S_ISLNK(cur->type)) {
-			assert(cur->symlink != NULL);
-			printf(" -> %s", cur->symlink);
-		} else {
-			assert (cur->symlink == NULL);
-		}
-		if (cur->inode->nlink > 1)
-			printf(", nlinks=%d", cur->inode->nlink);
-		putchar('\n');
-
-		if (cur->child) {
-			assert (cur->type == S_IFDIR);
-			dump_fsnodes(cur->child);
-		}
-	}
-	printf("dump_fsnodes: finished %s/%s\n", root->path, root->name);
-}
-
-
-/*
  * inode_type --
  *	for a given inode type `mode', return a descriptive string.
  *	for most cases, uses inotype() from mtree/misc.c
