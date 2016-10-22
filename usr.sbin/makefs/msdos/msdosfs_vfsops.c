@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vfsops.c,v 1.7 2016/10/17 14:25:33 natano Exp $	*/
+/*	$OpenBSD: msdosfs_vfsops.c,v 1.8 2016/10/18 17:05:30 natano Exp $	*/
 
 /*-
  * Copyright (C) 1994, 1995, 1997 Wolfgang Solfrank.
@@ -52,8 +52,8 @@
 
 #include "ffs/buf.h"
 
-#include "msdos/bpb.h"
-#include "msdos/bootsect.h"
+#include <msdosfs/bpb.h>
+#include <msdosfs/bootsect.h>
 #include "msdos/direntry.h"
 #include "msdos/denode.h"
 #include "msdos/msdosfsmount.h"
