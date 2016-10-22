@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap7.c,v 1.53 2016/09/24 13:03:47 kettenis Exp $	*/
+/*	$OpenBSD: pmap7.c,v 1.54 2016/10/19 08:28:19 guenther Exp $	*/
 /*	$NetBSD: pmap.c,v 1.147 2004/01/18 13:03:50 scw Exp $	*/
 
 /*
@@ -1696,6 +1696,9 @@ dab_access(trapframe_t *tf, u_int fsr, u_int far, struct proc *p)
 	struct vm_page *pg;
 	paddr_t pa;
 	u_int l1idx;
+
+	if (!TRAP_USERMODE(tf) && far >= VM_MIN_KERNEL_ADDRESS)
+		pm = pmap_kernel();
 
 	l1idx = L1_IDX(va);
 
