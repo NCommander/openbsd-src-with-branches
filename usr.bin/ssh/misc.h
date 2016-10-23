@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.58 2016/08/27 04:05:12 guenther Exp $ */
+/* $OpenBSD: misc.h,v 1.59 2016/09/12 01:22:38 deraadt Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -30,6 +30,7 @@ struct Forward {
 };
 
 int forward_equals(const struct Forward *, const struct Forward *);
+int bind_permitted(int, uid_t);
 
 /* Common server and client forwarding options. */
 struct ForwardOptions {
