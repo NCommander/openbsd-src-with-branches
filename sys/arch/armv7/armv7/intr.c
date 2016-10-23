@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.c,v 1.8 2016/08/04 12:17:36 kettenis Exp $ */
+/* $OpenBSD: intr.c,v 1.9 2016/08/06 17:25:15 patrick Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -592,6 +592,9 @@ void
 arm_clock_register(void (*initclock)(void), void (*delay)(u_int),
     void (*statclock)(int), void(*mpstartclock)(void))
 {
+	if (arm_clock_func.initclocks)
+		return;
+
 	arm_clock_func.initclocks = initclock;
 	arm_clock_func.delay = delay;
 	arm_clock_func.setstatclockrate = statclock;
