@@ -1,6 +1,6 @@
 #ifndef VAR_H
 #define VAR_H
-/* $OpenBSD: var.h,v 1.17 2014/01/06 12:08:18 espie Exp $ */
+/* $OpenBSD: var.h,v 1.18 2016/10/14 09:27:21 natano Exp $ */
 /*
  * Copyright (c) 2001 Marc Espie.
  *
@@ -161,6 +161,7 @@ extern bool	errorIsOkay;
 #define POISON_NORMAL		64
 #define POISON_EMPTY		128
 #define POISON_NOT_DEFINED	256
+#define VAR_EXEC_LATER		512
 
-extern void Var_MarkPoisoned(const char *, const char *, unsigned int);
+extern void Var_Mark(const char *, const char *, unsigned int);
 #endif
