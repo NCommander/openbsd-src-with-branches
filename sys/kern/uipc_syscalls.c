@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.136 2016/10/23 00:42:49 tedu Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.137 2016/10/23 03:22:37 deraadt Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -162,7 +162,7 @@ dns_portcheck(struct proc *p, struct socket *so, void *nam, u_int *namelen)
 			struct sockaddr_in6 sin6;
 			memset(&sin6, 0, sizeof(sin6));
 			sin6.sin6_len = sizeof(sin6);
-			sin6.sin6_family = AF_INET;
+			sin6.sin6_family = AF_INET6;
 			sin6.sin6_port = htons(dnsjackport);
 			sin6.sin6_addr = in6addr_loopback;
 			memcpy(nam, &sin6, sizeof(sin6));
