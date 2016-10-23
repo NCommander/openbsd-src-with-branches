@@ -1,4 +1,4 @@
-/*	$OpenBSD: pstat.c,v 1.109 2016/09/19 20:08:12 tb Exp $	*/
+/*	$OpenBSD: pstat.c,v 1.110 2016/09/19 20:10:54 tb Exp $	*/
 /*	$NetBSD: pstat.c,v 1.27 1996/10/23 22:50:06 cgd Exp $	*/
 
 /*-
@@ -270,7 +270,7 @@ main(int argc, char *argv[])
 				mask = 0xffff;
 			else if (strcmp(mod, "hh") == 0)
 				mask = 0xff;
-			else
+			else if (strcmp(mod, "") != 0)
 				longformat = 1;
 
 		} else
