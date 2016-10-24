@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530ms.c,v 1.2 2013/04/21 14:44:16 sebastia Exp $	*/
+/*	$OpenBSD: z8530ms.c,v 1.3 2015/09/18 20:22:22 kettenis Exp $	*/
 /*	$NetBSD: ms.c,v 1.12 1997/07/17 01:17:47 jtk Exp $	*/
 
 /*
@@ -88,6 +88,7 @@
 #include <dev/ic/z8530reg.h>
 #include <machine/z8530var.h>
 
+#include <dev/wscons/wsconsio.h>
 #include <dev/wscons/wsmousevar.h>
 #include <dev/sun/sunmsvar.h>
 
