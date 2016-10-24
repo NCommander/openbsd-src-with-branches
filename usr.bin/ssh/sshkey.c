@@ -1,4 +1,4 @@
-/* $OpenBSD: sshkey.c,v 1.39 2016/09/26 21:16:11 djm Exp $ */
+/* $OpenBSD: sshkey.c,v 1.40 2016/10/04 21:34:40 djm Exp $ */
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Alexander von Gernler.  All rights reserved.
@@ -492,7 +492,6 @@ sshkey_new(int type)
 	default:
 		free(k);
 		return NULL;
-		break;
 	}
 
 	if (sshkey_is_cert(k)) {
