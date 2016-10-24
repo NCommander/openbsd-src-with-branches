@@ -1,4 +1,4 @@
-.\"	$OpenBSD: wc.1,v 1.25 2015/04/21 10:46:48 schwarze Exp $
+.\"	$OpenBSD: wc.1,v 1.26 2015/12/08 01:00:44 schwarze Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -32,7 +32,7 @@
 .\"
 .\"     from: @(#)wc.1	8.2 (Berkeley) 4/19/94
 .\"
-.Dd $Mdocdate: April 21 2015 $
+.Dd $Mdocdate: December 8 2015 $
 .Dt WC 1
 .Os
 .Sh NAME
@@ -106,9 +106,9 @@ are integers separated by spaces.
 .Sh ENVIRONMENT
 .Bl -tag -width LC_CTYPE
 .It Ev LC_CTYPE
-The character set
-.Xr locale 1 ,
-defining which byte sequences form characters.
+The character encoding
+.Xr locale 1 .
+It decides which byte sequences form characters.
 If unset or set to
 .Qq C ,
 .Qq POSIX ,
