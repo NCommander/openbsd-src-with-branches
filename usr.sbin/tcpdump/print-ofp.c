@@ -1,4 +1,4 @@
-/*	$$	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2016 Rafael Zalamena <rzalamena@openbsd.org>
