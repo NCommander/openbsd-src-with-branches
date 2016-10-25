@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvmevar.h,v 1.7 2016/04/14 00:10:37 dlg Exp $ */
+/*	$OpenBSD: nvmevar.h,v 1.8 2016/04/14 11:18:32 dlg Exp $ */
 
 /*
  * Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
@@ -102,5 +102,6 @@ struct nvme_softc {
 int	nvme_attach(struct nvme_softc *);
 int	nvme_activate(struct nvme_softc *, int);
 int	nvme_intr(void *);
+int	nvme_intr_intx(void *);
 
 #define DEVNAME(_sc) ((_sc)->sc_dev.dv_xname)
