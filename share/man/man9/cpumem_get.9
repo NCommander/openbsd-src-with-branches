@@ -1,4 +1,4 @@
-.\"	$OpenBSD: cpumem_get.9,v 1.5 2016/10/21 15:00:30 bluhm Exp $
+.\"	$OpenBSD: cpumem_get.9,v 1.6 2016/10/25 00:03:40 dlg Exp $
 .\"
 .\" Copyright (c) 2016 David Gwynne <dlg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: October 21 2016 $
+.Dd $Mdocdate: October 25 2016 $
 .Dt CPUMEM_GET 9
 .Os
 .Sh NAME
@@ -70,11 +70,7 @@ uni-processor systems.
 allocates memory for each CPU from the
 .Fa pp
 pool.
-The memory will be zeroed on allocation by passing
-.Dv PR_ZERO
-to
-.Xr pool_get 9
-internally.
+The memory will be zeroed on allocation.
 .Pp
 .Fn cpumem_put
 returns each CPUs memory allocation referenced by
@@ -90,10 +86,7 @@ bytes of
 .Fa type
 memory for each CPU using
 .Xr malloc 9 .
-The memory will be zeroed on allocation by passing
-.Fn M_ZERO
-to
-.Xr malloc 9 .
+The memory will be zeroed on allocation.
 .Pp
 .Fn cpumem_free
 returns each CPU's memory allocation referenced by
@@ -124,6 +117,7 @@ The allocation is identified by
 and provides the number of bytes specified by the
 .Fa sz
 argument.
+The memory will be initialised to zeros.
 .Pp
 .Fn CPUMEM_BOOT_INITIALIZER
 is used to initialise a cpumem pointer with the memory that was previously
@@ -147,10 +141,7 @@ The
 argument specifies the type of memory that the counters will be
 allocated as via
 .Xr malloc 9 .
-The memory will be zeroed on allocation by passing
-.Fn M_ZERO
-to
-.Xr malloc 9 .
+The memory will be zeroed on allocation.
 .Pp
 Per CPU memory that has been allocated with
 .Fn CPUMEM_BOOT_MEMORY
