@@ -1,4 +1,4 @@
-/*	$OpenBSD: makefs.c,v 1.15 2016/10/23 10:22:21 natano Exp $	*/
+/*	$OpenBSD: makefs.c,v 1.16 2016/10/25 07:59:45 jmc Exp $	*/
 /*	$NetBSD: makefs.c,v 1.53 2015/11/27 15:10:32 joerg Exp $	*/
 
 /*
@@ -240,7 +240,7 @@ set_option_var(const option_t *options, const char *var, const char *val,
 		*(type *)options[i].value = 1; \
 		break; \
 	} \
-	*(type *)options[i].value = (type)strsuftoll(options[i].desc, val, \
+	*(type *)options[i].value = (type)strsuftoll(options[i].name, val, \
 	    options[i].minimum, options[i].maximum); break
 
 	for (i = 0; options[i].name != NULL; i++) {
