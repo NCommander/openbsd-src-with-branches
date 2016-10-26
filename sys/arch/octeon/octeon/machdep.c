@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.75 2016/08/14 08:23:52 visa Exp $ */
+/*	$OpenBSD: machdep.c,v 1.76 2016/10/09 11:25:40 tom Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -859,7 +859,6 @@ hw_cpu_hatch(struct cpu_info *ci)
 	printf("cpu%lu launched\n", cpu_number());
 
 	(*md_startclock)(ci);
-	ncpus++;
 	cpuset_add(&cpus_running, ci);
 	octeon_intr_init();
 	mips64_ipi_init();
