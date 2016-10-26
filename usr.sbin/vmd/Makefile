@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.8 2016/09/01 15:38:03 mlarkin Exp $
+#	$OpenBSD: Makefile,v 1.9 2016/10/04 17:17:30 reyk Exp $
 
-.if ${MACHINE} == "amd64"
+.if ${MACHINE} == "amd64" || ${MACHINE} == "i386"
 
 PROG=		vmd
 SRCS=		vmm.c loadfile_elf.c pci.c virtio.c i8259.c mc146818.c
