@@ -200,8 +200,6 @@ cd9660_set_defaults(iso9660_disk *diskStructure)
 	diskStructure->rock_ridge_move_count = 0;
 	diskStructure->rr_moved_dir = 0;
 
-	diskStructure->chrp_boot = 0;
-
 	diskStructure->include_padding_areas = 1;
 
 	/* Spec breaking functionality */
@@ -258,7 +256,6 @@ cd9660_prep_opts(fsinfo_t *fsopts)
 		OPT_STR("applicationid"),
 		OPT_STR("boot-load-segment"),
 		OPT_STR("bootimage"),
-	        OPT_BOOL("chrp-boot", chrp_boot),
 		OPT_STR("generic-bootimage"),
 		OPT_STR("hard-disk-boot"),
 		OPT_NUM("isolevel", isoLevel, 1, 3),
