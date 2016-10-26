@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.307 2016/08/26 06:06:58 guenther Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.308 2016/09/03 17:11:40 sashan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1517,6 +1517,8 @@ ifa_lookup(const char *ifa_name, int flags)
 			continue;
 		if ((flags & PFI_AFLAG_BROADCAST) &&
 		    !(p->ifa_flags & IFF_BROADCAST))
+			continue;
+		if ((flags & PFI_AFLAG_BROADCAST) && p->bcast.v4.s_addr == 0)
 			continue;
 		if ((flags & PFI_AFLAG_PEER) &&
 		    !(p->ifa_flags & IFF_POINTOPOINT))
