@@ -313,7 +313,7 @@ sock_exit(void *arg)
 }
 
 /*
- * write on the socke fd and handle errors
+ * write on the socket fd and handle errors
  */
 int
 sock_fdwrite(struct sock *f, void *data, int count)
@@ -354,7 +354,7 @@ sock_fdwrite(struct sock *f, void *data, int count)
 }
 
 /*
- * read from the socke fd and handle errors
+ * read from the socket fd and handle errors
  */
 int
 sock_fdread(struct sock *f, void *data, int count)
@@ -508,7 +508,7 @@ sock_rdata(struct sock *f)
 }
 
 /*
- * read data into the slot/midi ring buffer
+ * write data to the slot/midi ring buffer
  */
 int
 sock_wdata(struct sock *f)
