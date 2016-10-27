@@ -1,4 +1,4 @@
-/*	$OpenBSD: pvbus.c,v 1.12 2016/06/06 17:17:54 mikeb Exp $	*/
+/*	$OpenBSD: pvbus.c,v 1.13 2016/09/21 16:00:01 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -36,9 +36,7 @@
 #include <machine/cpu.h>
 #include <machine/conf.h>
 #include <machine/bus.h>
-#ifdef __amd64__
 #include <machine/vmmvar.h>
-#endif
 
 #include <dev/rndvar.h>
 
@@ -92,9 +90,7 @@ struct pvbus_type {
 	{ "VMwareVMware",	"VMware" },
 	{ "XenVMMXenVMM",	"Xen",	pvbus_xen, pvbus_xen_print },
 	{ "bhyve bhyve ",	"bhyve" },
-#ifdef __amd64__
 	{ VMM_HV_SIGNATURE,	"OpenBSD" },
-#endif
 };
 
 struct bus_dma_tag pvbus_dma_tag = {
