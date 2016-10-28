@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwn.c,v 1.173 2016/10/08 14:35:19 stsp Exp $	*/
+/*	$OpenBSD: if_iwn.c,v 1.174 2016/10/08 14:44:36 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -2959,8 +2959,6 @@ iwn_tx(struct iwn_softc *sc, struct mbuf *m, struct ieee80211_node *ni)
 			else if (ic->ic_protmode == IEEE80211_PROT_RTSCTS)
 				flags |= IWN_TX_NEED_RTS;
 		}
-		else if (ni->ni_flags & IEEE80211_NODE_HT)
-			flags |= IWN_TX_NEED_RTS;
 
 		if (flags & (IWN_TX_NEED_RTS | IWN_TX_NEED_CTS)) {
 			if (sc->hw_type != IWN_HW_REV_TYPE_4965) {
