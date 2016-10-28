@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.302 2016/09/27 04:57:17 dlg Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.303 2016/10/26 21:07:22 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -320,6 +320,7 @@ pf_purge_rule(struct pf_rule *rule)
 		rule->nr = nr++;
 	ruleset->rules.active.ticket++;
 	pf_calc_skip_steps(ruleset->rules.active.ptr);
+	pf_remove_if_empty_ruleset(ruleset);
 }
 
 u_int16_t
