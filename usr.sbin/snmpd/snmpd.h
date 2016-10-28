@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.68 2016/09/25 14:58:00 fcambus Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.69 2016/10/03 12:16:41 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -579,6 +579,8 @@ struct trapcmd {
 };
 RB_HEAD(trapcmd_tree, trapcmd);
 extern	struct trapcmd_tree trapcmd_tree;
+
+extern struct snmpd *snmpd_env;
 
 /* control.c */
 int		 control_init(struct privsep *, struct control_sock *);

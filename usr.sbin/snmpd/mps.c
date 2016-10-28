@@ -1,4 +1,4 @@
-/*	$OpenBSD: mps.c,v 1.22 2015/10/08 08:17:30 sthen Exp $	*/
+/*	$OpenBSD: mps.c,v 1.23 2015/12/05 06:42:18 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -44,8 +44,6 @@
 
 #include "snmpd.h"
 #include "mib.h"
-
-extern struct snmpd *env;
 
 struct ber_oid *
 	 mps_table(struct oid *, struct ber_oid *, struct ber_oid *);
