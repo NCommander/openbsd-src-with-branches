@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ip.c,v 1.45 2015/11/16 00:16:39 mmcc Exp $	*/
+/*	$OpenBSD: print-ip.c,v 1.46 2016/10/30 04:03:29 jsg Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -416,6 +416,8 @@ ip_print(const u_char *bp, u_int length)
 	off = ntohs(ip->ip_off);
 	if ((off & 0x1fff) == 0) {
 		cp = (const u_char *)ip + hlen;
+		if (cp > snapend)
+			goto trunc;
 		switch (ip->ip_p) {
 
 		case IPPROTO_TCP:
