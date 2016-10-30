@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ip.c,v 1.44 2015/08/21 02:07:32 deraadt Exp $	*/
+/*	$OpenBSD: print-ip.c,v 1.45 2015/11/16 00:16:39 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -357,11 +357,8 @@ ip_print(const u_char *bp, u_int length)
 	const u_char *pktp = packetp;
 	const u_char *send = snapend;
 
+	TCHECK2(bp[0], 1);
 	ip = (const struct ip *)bp;
-	if ((u_char *)(ip + 1) > snapend) {
-		printf("[|ip]");
-		return;
-	}
 
 	/*
 	 * If the IP header is not aligned, copy into abuf.
