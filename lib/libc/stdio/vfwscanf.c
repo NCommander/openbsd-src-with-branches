@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfwscanf.c,v 1.4 2014/03/19 05:17:01 guenther Exp $ */
+/*	$OpenBSD: vfwscanf.c,v 1.5 2015/08/31 02:53:57 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -43,6 +43,7 @@
 #include "local.h"
 
 #ifdef FLOATING_POINT
+#include <float.h>
 #include "floatio.h"
 #endif
 
