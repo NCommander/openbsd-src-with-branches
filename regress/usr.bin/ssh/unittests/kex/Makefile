@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.1 2015/01/15 23:41:29 markus Exp $
+#	$OpenBSD: Makefile,v 1.2 2015/01/24 10:39:21 miod Exp $
 
-TEST_ENV=      "MALLOC_OPTIONS=AFGJPRX"
+TEST_ENV=      "MALLOC_OPTIONS=FGJRX"
 
 PROG=test_kex
 SRCS=tests.c test_kex.c
