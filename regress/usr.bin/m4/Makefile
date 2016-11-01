@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.30 2012/04/12 16:58:15 espie Exp $
+#	$OpenBSD: Makefile,v 1.31 2014/12/07 14:32:34 jsg Exp $
 
 FIBOMAX=25
 M4=m4
@@ -55,7 +55,7 @@ test-fibo: fibo.out
 	${M4} -DN=${FIBOMAX} ${.CURDIR}/fibo.m4| diff - fibo.out
 
 trip:
-	echo "undefine(\`errprint')"|MALLOC_OPTIONS=A ${M4} -Derrprint=a >/dev/null
+	echo "undefine(\`errprint')" | ${M4} -Derrprint=a >/dev/null
 
 test-quotes:
 	${M4} ${.CURDIR}/quotes.m4 2>&1|	\
