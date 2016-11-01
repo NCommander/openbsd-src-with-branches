@@ -155,6 +155,7 @@ install_kernel()
 
 ls_avail()
 {
+	# XXX see above + catch missing index.txt
 	${_FETCH} -o - "${PATCH_PATH}/index.txt" |
 		sed 's/^.* //;s/^M//;s/.tgz$//' |
 		grep "^syspatch-${_RELINT}-.*$" | sort -V
