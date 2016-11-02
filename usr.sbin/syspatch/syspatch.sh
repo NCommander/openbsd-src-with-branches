@@ -196,6 +196,7 @@ rollback_patch()
 	_patch="$(ls_installed | sort -V | tail -1)"
 	[[ -n ${_patch} ]]
 
+	echo "Reverting ${_patch}"
 	_explodir=${_TMP}/rollback-${_patch}
 	mkdir -p ${_explodir}
 
