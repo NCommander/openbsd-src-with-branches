@@ -212,7 +212,7 @@ rollback_patch()
 
 sp_cleanup()
 {
-	local _d _k
+	local _d _k _m
 
 	# remove non matching release /var/syspatch/ content
 	for _d in ${_PDIR}/*; do
