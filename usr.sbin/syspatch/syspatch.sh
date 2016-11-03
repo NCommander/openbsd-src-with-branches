@@ -166,10 +166,9 @@ ls_avail()
 ls_installed()
 {
 	local _p
-	# no _REL dir = no installed patch
-	cd ${_PDIR}/${_REL} 2>/dev/null && set -- * || return 0
-	for _p; do
-		 [[ ${_p} = rollback-syspatch-${_RELINT}-*.tgz ]] &&
+	for _p in ${_PDIR}/${_REL}/*; do
+		_p=${_p:##*/}
+		[[ ${_p} = rollback-syspatch-${_RELINT}-*.tgz ]] &&
 			_p=${_p#rollback-} && echo ${_p%.tgz}
 	done | sort -V
 }
@@ -224,15 +223,13 @@ sp_cleanup()
 	local _d _k
 
 	# remove non matching release /var/syspatch/ content
-	cd ${_PDIR} && set -- *
-	for _d; do
+	for _d in ${_PDIR}/*; do
 		[[ -e ${_d} ]] || continue
-		[[ ${_d} == ${_REL} ]] || rm -r ${_d}
+		[[ ${_d:##*/} == ${_REL} ]] || rm -r ${_d}
 	done
 
 	# remove non matching release rollback kernel
-	set -- /bsd.rollback*
-	for _k; do
+	for _k in /bsd.rollback*; do
 		[[ -f ${_k} ]] || continue
 		[[ ${_k} == /bsd.rollback${_RELINT} ]] || rm ${_k}
 	done
