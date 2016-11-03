@@ -197,10 +197,10 @@ rollback_patch()
 	for _file in ${_files}; do
 		if [[ ${_file} == @(bsd|bsd.mp) ]]; then
 			install_kernel ${_explodir}/${_file} ||
-				sp_err "Failed to rollback ${_patch} (/${_file})"
+				sp_err "Failed to revert ${_patch} (/${_file})"
 		else
 			install_file ${_explodir}/${_file} /${_file} ||
-				sp_err "Failed to rollback ${_patch} (/${_file})"
+				sp_err "Failed to revert ${_patch} (/${_file})"
 		fi
 	done
 
