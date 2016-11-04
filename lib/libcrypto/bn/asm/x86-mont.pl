@@ -114,7 +114,7 @@ $temp="mm6";
 $mask="mm7";
 
 	&picmeup("eax","OPENSSL_ia32cap_P");
-	&bt	(&DWP(0,"eax"),26);
+	&bt	(&DWP(0,"eax"),"\$IA32CAP_BIT0_SSE2");
 	&jnc	(&label("non_sse2"));
 
 	&mov	("eax",-1);
@@ -527,8 +527,10 @@ $sbit=$num;
 	&jle	(&label("sqradd"));
 
 	&mov	($carry,"edx");
-	&lea	("edx",&DWP(0,$sbit,"edx",2));
+	&add	("edx","edx");
 	&shr	($carry,31);
+	&add	("edx",$sbit);
+	&adc	($carry,0);
 &set_label("sqrlast");
 	&mov	($word,$_n0);
 	&mov	($inp,$_np);
