@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.52 2016/10/26 05:26:36 mlarkin Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.53 2016/10/29 14:56:05 edd Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -180,28 +180,18 @@ vmm_dispatch_parent(int fd, struct privsep_proc *p, struct imsg *imsg)
 {
 	struct privsep		*ps = p->p_ps;
 	int			 res = 0, cmd = 0;
-	struct vmop_create_params vmc;
+	struct vmd_vm		*vm;
 	struct vm_terminate_params vtp;
 	struct vmop_result	 vmr;
 	uint32_t		 id = 0;
-	struct vmd_vm		*vm;
 	unsigned int		 mode;
 
 	switch (imsg->hdr.type) {
 	case IMSG_VMDOP_START_VM_REQUEST:
-		IMSG_SIZE_CHECK(imsg, &vmc);
-		memcpy(&vmc, imsg->data, sizeof(vmc));
-		res = config_registervm(ps, &vmc, &vm);
+		res = config_getvm(ps, imsg);
 		if (res == -1) {
 			res = errno;
 			cmd = IMSG_VMDOP_START_VM_RESPONSE;
-		} else {
-			res = config_getvm(ps, vm, imsg->fd, imsg->hdr.peerid);
-			if (res == -1) {
-				res = errno;
-				cmd = IMSG_VMDOP_START_VM_RESPONSE;
-				vm_remove(vm);
-			}
 		}
 		break;
 	case IMSG_VMDOP_START_VM_DISK:
