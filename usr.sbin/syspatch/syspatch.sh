@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: syspatch.sh,v 1.36 2016/11/04 14:18:45 ajacoutot Exp $
+# $OpenBSD: syspatch.sh,v 1.37 2016/11/04 14:55:29 ajacoutot Exp $
 #
 # Copyright (c) 2016 Antoine Jacoutot <ajacoutot@openbsd.org>
 #
@@ -78,6 +78,7 @@ apply_patches()
 
 checkfs()
 {
+	# XXX make sure we have enough space?
 	local _files="${@}"
 	[[ -n ${_files} ]]
 
