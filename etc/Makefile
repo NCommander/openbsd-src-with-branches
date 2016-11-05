@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.442 2016/10/09 20:55:16 natano Exp $
+#	$OpenBSD: Makefile,v 1.443 2016/10/14 18:45:12 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -228,15 +228,6 @@ distrib-dirs:
 		${INSTALL} -d -o root -g wheel -m 755 ${DESTDIR}; \
 	fi
 	mtree -qdef mtree/4.4BSD.dist -p ${DESTDIR}/ -U
-	if [ ! -d ${DESTDIR}/usr/src ]; then \
-		${INSTALL} -d -o root -g wsrc -m 775 ${DESTDIR}/usr/src; \
-	fi
-	if [ ! -d ${DESTDIR}/usr/obj ]; then \
-		${INSTALL} -d -o root -g wsrc -m 775 ${DESTDIR}/usr/obj; \
-	fi
-	if [ ! -d ${DESTDIR}/usr/xobj ]; then \
-		${INSTALL} -d -o root -g wsrc -m 775 ${DESTDIR}/usr/xobj; \
-	fi
 	cd ${DESTDIR}/; ln -fhs usr/src/sys sys
 	chown -h root:wheel ${DESTDIR}/sys
 
