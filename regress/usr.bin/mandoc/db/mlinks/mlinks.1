@@ -1,4 +1,4 @@
-.\"	$OpenBSD: mlinks.1,v 1.1 2016/11/04 19:57:27 schwarze Exp $
+.\"	$OpenBSD: mlinks.1,v 1.2 2016/11/05 08:45:51 schwarze Exp $
 .\"
 .\" Copyright (c) 2016 Ingo Schwarze <schwarze@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: November 4 2016 $
+.Dd $Mdocdate: November 5 2016 $
 .Dt MLINKS 1
 .Os
 .Sh NAME
@@ -79,8 +79,8 @@ make
 cd /usr/src/regress/usr.bin/mandoc/db/mlinks/
 make obj
 make
-makewhatis -a /usr/src/lib/libssl/doc
-\&./obj/mlinks /usr/src/lib/libssl/doc/mandoc.db > ssl.mlinks
+makewhatis -a /usr/src/lib/libssl/man
+\&./obj/mlinks /usr/src/lib/libssl/man/mandoc.db > ssl.mlinks
 .Ed
 .Sh AUTHORS
 .An Ingo Schwarze Aq Mt schwarze@openbsd.org
