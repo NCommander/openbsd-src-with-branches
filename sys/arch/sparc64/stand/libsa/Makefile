@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2014/11/19 20:01:36 miod Exp $
+#	$OpenBSD: Makefile,v 1.11 2015/11/16 19:33:52 miod Exp $
 
 LIB=	sa
 
@@ -37,7 +37,8 @@ ${OBJS}:	${.CURDIR}/../Makefile.inc
 NOPROFILE=
 NOPIC=
 
-.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(obj)
+.if !make(clean) && !make(cleandir) && !make(includes) && !make(libdep) && \
+    !make(sadep) && !make(salibdir) && !make(obj)
 .BEGIN:
 	@([ -h machine ] || ln -s ${.CURDIR}/../../include machine)
 .endif
