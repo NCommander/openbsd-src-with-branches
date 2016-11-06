@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2014/07/13 09:26:08 jasper Exp $
+#	$OpenBSD: Makefile,v 1.5 2015/11/16 19:33:52 miod Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -39,7 +39,7 @@ ${OBJS}:	${.CURDIR}/../Makefile.inc
 NOPROFILE=
 NOPIC=
 
-.if !make(obj)
+.if !make(clean) && !make(cleandir) && !make(includes) && !make(obj)
 .BEGIN:
 	@([ -h machine ] || ln -s ${.CURDIR}/../../include machine)
 	@([ -h mips64 ] || ln -s ${.CURDIR}/../../../mips64/include mips64)
