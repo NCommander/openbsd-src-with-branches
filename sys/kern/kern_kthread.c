@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_kthread.c,v 1.37 2014/11/03 03:08:00 deraadt Exp $	*/
+/*	$OpenBSD: kern_kthread.c,v 1.38 2015/03/14 03:38:50 jsg Exp $	*/
 /*	$NetBSD: kern_kthread.c,v 1.3 1998/12/22 21:21:36 kleink Exp $	*/
 
 /*-
@@ -94,7 +94,7 @@ kthread_exit(int ecode)
 	 */
 	if (ecode != 0)
 		printf("WARNING: thread `%s' (%d) exits with status %d\n",
-		    curproc->p_comm, curproc->p_pid, ecode);
+		    curproc->p_comm, curproc->p_tid, ecode);
 
 	exit1(curproc, W_EXITCODE(ecode, 0), EXIT_NORMAL);
 

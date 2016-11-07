@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_proc.c,v 1.56 2016/05/26 13:37:26 stefan Exp $	*/
+/*	$OpenBSD: kvm_proc.c,v 1.57 2016/09/16 04:03:27 dlg Exp $	*/
 /*	$NetBSD: kvm_proc.c,v 1.30 1999/03/24 05:50:50 mrg Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -404,9 +404,9 @@ proc_verify(kvm_t *kd, const struct kinfo_proc *p)
 	 */
 	if (KREAD(kd, (u_long)p->p_paddr, &kernproc))
 		return (0);
-	if (p->p_pid != kernproc.p_pid)
-		return (0);
 	if (KREAD(kd, (u_long)kernproc.p_p, &kernprocess))
+		return (0);
+	if (p->p_pid != kernprocess.ps_pid)
 		return (0);
 	return ((kernprocess.ps_flags & (PS_EMBRYO | PS_ZOMBIE)) == 0);
 }

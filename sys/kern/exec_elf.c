@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.127 2016/09/12 00:35:54 schwarze Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.128 2016/10/05 02:31:52 guenther Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -1335,7 +1335,7 @@ ELFNAMEEND(coredump_note)(struct proc *p, void *iocookie, size_t *sizep)
 	size = 0;
 
 	snprintf(name, sizeof(name)-ELFROUNDSIZE, "%s@%d",
-	    "OpenBSD", p->p_pid);
+	    "OpenBSD", p->p_tid + THREAD_PID_OFFSET);
 	namesize = strlen(name) + 1;
 	memset(name + namesize, 0, elfround(namesize) - namesize);
 
