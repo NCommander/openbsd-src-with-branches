@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.116 2016/08/13 17:47:41 markus Exp $ */
+/* $OpenBSD: auth.c,v 1.117 2016/11/06 05:46:37 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -132,7 +132,7 @@ allowed_user(struct passwd * pw)
 			if (r < 0) {
 				fatal("Invalid DenyUsers pattern \"%.100s\"",
 				    options.deny_users[i]);
-			} else if (r != 1) {
+			} else if (r != 0) {
 				logit("User %.100s from %.100s not allowed "
 				    "because listed in DenyUsers",
 				    pw->pw_name, hostname);
