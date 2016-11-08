@@ -54,6 +54,8 @@ typedef struct {
 	int	version;	/* filesystem version (1 = FFS, 2 = UFS2) */
 	int	maxbsize;	/* maximum extent size */
 	int	maxblkspercg;	/* max # of blocks per cylinder group */
+
+	struct disklabel *lp;	/* disk label */
 } ffs_opt_t;
 
 #endif /* _FFS_H */
