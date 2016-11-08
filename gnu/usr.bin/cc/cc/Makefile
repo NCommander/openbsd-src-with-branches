@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/usr.bin/cc/cc/Makefile,v 1.33.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD: Makefile,v 1.5 2016/03/30 06:38:40 jmc Exp $
+# $OpenBSD: Makefile,v 1.6 2016/09/27 19:30:01 natano Exp $
 
 .include <bsd.own.mk>
 
@@ -22,5 +22,6 @@ beforeinstall:
 afterinstall:
 	${.OBJDIR}/cc -dumpspecs > ${DESTDIR}${SPECDIR}/specs
 	chown ${BINOWN}:${BINGRP} ${DESTDIR}${SPECDIR}/specs
+	chmod ${NONBINMODE} ${DESTDIR}${SPECDIR}/specs
 
 .include <bsd.prog.mk>
