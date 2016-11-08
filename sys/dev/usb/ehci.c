@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.193 2016/09/15 02:00:17 dlg Exp $ */
+/*	$OpenBSD: ehci.c,v 1.194 2016/10/02 06:36:39 kettenis Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -3102,9 +3102,6 @@ ehci_device_bulk_done(struct usbd_xfer *xfer)
 
 	if (xfer->status != USBD_NOMEM) {
 		ehci_free_sqtd_chain(sc, ex);
-		usb_syncmem(&xfer->dmabuf, 0, xfer->length,
-		    usbd_xfer_isread(xfer) ?
-		    BUS_DMASYNC_POSTREAD : BUS_DMASYNC_POSTWRITE);
 	}
 }
 
@@ -3265,9 +3262,6 @@ ehci_device_intr_done(struct usbd_xfer *xfer)
 		splx(s);
 	} else if (xfer->status != USBD_NOMEM) {
 		ehci_free_sqtd_chain(sc, ex);
-		usb_syncmem(&xfer->dmabuf, 0, xfer->length,
-		    usbd_xfer_isread(xfer) ?
-		    BUS_DMASYNC_POSTREAD : BUS_DMASYNC_POSTWRITE);
 	}
 }
 
