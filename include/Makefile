@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.213 2016/09/23 09:18:05 sthen Exp $
+#	$OpenBSD: Makefile,v 1.214 2016/10/16 19:28:44 tb Exp $
 #	$NetBSD: Makefile,v 1.59 1996/05/15 21:36:43 jtc Exp $
 
 #	@(#)Makefile	5.45.1.1 (Berkeley) 5/6/91
@@ -92,15 +92,15 @@ includes:
 		rm -f ${DESTDIR}/usr/include/$$i && \
 		ln -s machine/$$i ${DESTDIR}/usr/include/$$i; \
 	done
-	chown -R ${BINOWN}:${BINGRP} ${DESTDIR}/usr/include
-	find ${DESTDIR}/usr/include -type f -print0 | \
-		xargs -0r chmod a=r
-	find ${DESTDIR}/usr/include -type d -print0 | \
-		xargs -0r chmod u=rwx,go=rx
 	@for i in ${RDIRS}; do \
 		echo installing in ${.CURDIR}/$$i; \
 		cd ${.CURDIR}/$$i && ${RUN_MAKE}; \
 	done
+	chown -RP ${BINOWN}:${BINGRP} ${DESTDIR}/usr/include
+	find ${DESTDIR}/usr/include -type f -print0 | \
+		xargs -0r chmod a=r
+	find ${DESTDIR}/usr/include \( -type d -o -type l \) -print0 | \
+		xargs -0r chmod -h u=rwx,go=rx
 
 copies:
 	@echo copies: ${LDIRS}
