@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.syspatch.mk,v 1.4 2016/11/03 14:46:48 robert Exp $
+#	$OpenBSD: bsd.syspatch.mk,v 1.5 2016/11/09 15:43:22 ajacoutot Exp $
 #
 # Copyright (c) 2016 Robert Nagy <robert@openbsd.org>
 #
@@ -25,7 +25,7 @@ FETCH=		/usr/bin/ftp -Vm
 MIRROR=		https://ftp.openbsd.org/pub/OpenBSD/patches/${OSREV}/common
 
 # the final name of the syspatch tarball
-SYSPATCH=	syspatch${OSREV}-${ERRATA}.tgz
+SYSPATCH=	syspatch${OSrev}-${ERRATA}.tgz
 
 # arguments used by different tools
 MTREE_FILES=	/etc/mtree/4.4BSD.dist
