@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctf.h,v 1.1 2016/09/17 17:45:37 jasper Exp $	*/
+/*	$OpenBSD: ctf.h,v 1.2 2016/10/02 08:08:11 jasper Exp $	*/
 
 /*
  * Copyright (c) 2016 Martin Pieuchot <mpi@openbsd.org>
@@ -17,7 +17,7 @@
  */
 
 #ifndef _SYS_CTF_H_
-#define _SYS_CTF_H
+#define _SYS_CTF_H_
 
 /*
  * CTF ``Compact ANSI-C Type Format'' ABI header file.
@@ -180,4 +180,4 @@ struct ctf_enum {
 #define CTF_LMEM_OFFSET(m) \
 	(((uint64_t)(m)->ctlm_offsethi) << 32 | (m)->ctlm_offsetlo)
 
-#endif /* _SYS_CTF_H */
+#endif /* _SYS_CTF_H_ */
