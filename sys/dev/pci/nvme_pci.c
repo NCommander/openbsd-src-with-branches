@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvme_pci.c,v 1.3 2016/04/14 11:18:32 dlg Exp $ */
+/*	$OpenBSD: nvme_pci.c,v 1.4 2016/10/25 06:20:41 dlg Exp $ */
 
 /*
  * Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
@@ -69,6 +69,10 @@ nvme_pci_match(struct device *parent, void *match, void *aux)
 	    PCI_SUBCLASS(pa->pa_class) == PCI_SUBCLASS_MASS_STORAGE_NVM &&
 	    PCI_INTERFACE(pa->pa_class) == NVME_PCI_INTERFACE)
 		return (1);
+
+	if (PCI_VENDOR(pa->pa_id) == PCI_VENDOR_APPLE &&
+	    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_APPLE_NVME)
+	    	return (1);
 
 	return (0);
 }
