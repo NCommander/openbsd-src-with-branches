@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs.h,v 1.7 2016/11/10 08:26:38 natano Exp $	*/
+/*	$OpenBSD: ffs.h,v 1.6 2016/11/08 19:22:29 natano Exp $	*/
 /*	$NetBSD: ffs.h,v 1.2 2011/10/09 21:33:43 christos Exp $	*/
 
 /*
@@ -54,6 +54,7 @@ typedef struct {
 	int	maxblkspercg;	/* max # of blocks per cylinder group */
 
 	struct disklabel *lp;	/* disk label */
+	struct partition *pp;	/* matching FFS partition in disklabel */
 } ffs_opt_t;
 
 #endif /* _FFS_H */
