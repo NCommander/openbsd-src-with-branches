@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.327 2016/09/04 17:18:56 mpi Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.328 2016/11/14 03:51:53 dlg Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -211,7 +211,7 @@ reroute:
 
 		ia = ifatoia(ro->ro_rt->rt_ifa);
 		if (ISSET(ro->ro_rt->rt_flags, RTF_LOCAL))
-			ifp = if_get(lo0ifidx);
+			ifp = if_get(rtable_loindex(m->m_pkthdr.ph_rtableid));
 		else
 			ifp = if_get(ro->ro_rt->rt_ifidx);
 		if (ifp == NULL) {
