@@ -1,4 +1,4 @@
-.\"	$OpenBSD: httpd.conf.5,v 1.74 2016/11/06 10:49:38 beck Exp $
+.\"	$OpenBSD: httpd.conf.5,v 1.75 2016/11/06 11:27:04 jmc Exp $
 .\"
 .\" Copyright (c) 2014, 2015 Reyk Floeter <reyk@openbsd.org>
 .\"
@@ -358,6 +358,11 @@ Specify server configuration rules for a specific location.
 The
 .Ar path
 argument will be matched against the request path with shell globbing rules.
+In case of multiple location statements in the same context, the
+first matching location statement will be put into effect, while all
+later ones will be ignored.
+Therefore it is advisable to match for more specific paths first
+and for generic ones later on.
 A location section may include most of the server configuration rules
 except
 .Ic alias ,
