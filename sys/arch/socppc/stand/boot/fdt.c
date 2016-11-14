@@ -1,4 +1,4 @@
-/*     $OpenBSD: fdt.c,v 1.4 2010/06/26 23:24:44 guenther Exp $       */
+/*     $OpenBSD: fdt.c,v 1.5 2015/12/14 03:25:59 mmcc Exp $       */
 
 /*
  * Copyright (c) 2009 Dariusz Swiderski <sfires@sfires.net>
@@ -19,8 +19,8 @@
 
 #include <sys/types.h>
 #include <sys/param.h>
-#include <machine/fdt.h>
 
+#include "fdt.h"
 #include "libsa.h"
 
 
