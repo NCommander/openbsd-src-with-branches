@@ -78,13 +78,22 @@ apply_patches()
 
 checkfs()
 {
-	# XXX check for available space
-	local _d _files="${@}"
+	local _d _df _dev _files="${@}" _sz
 	[[ -n ${_files} ]]
 
-	for _d in $(stat -qf "%Sd" ${_files} | sort -u); do
+	eval $(cd / &&
+		stat -qf "_dev=\"\${_dev} %Sd\" %Sd=\"\${%Sd:+\${%Sd}\+}%Uz\"" \
+		${_files})
+
+	for _d in $(printf '%s\n' ${_dev} | sort -u); do
+		# make sure the fs is local and RW
 		mount | grep -v read-only | grep -q "^/dev/${_d} " ||
-		sp_err "Remote or read-only filesystem, aborting"
+			sp_err "Remote or read-only filesystem, aborting"
+		# make sure we have enough space
+		_df=$(df -Pk | grep "^/dev/${_d} " | tr -s ' ' | cut -d ' ' -f4)
+		_sz=$(($((${_d}))/1024))
+		[[ ${_df} -gt ${_sz} ]] ||
+			sp_err "No space left on device ${_d}, aborting"
 	done
 }
 
