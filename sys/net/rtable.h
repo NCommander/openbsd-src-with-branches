@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtable.h,v 1.15 2016/01/18 15:38:52 mpi Exp $ */
+/*	$OpenBSD: rtable.h,v 1.16 2016/09/07 09:36:49 mpi Exp $ */
 
 /*
  * Copyright (c) 2014-2015 Martin Pieuchot
@@ -25,9 +25,6 @@
  * Traditional BSD routing table implementation based on a radix tree.
  */
 #include <net/radix.h>
-#ifndef SMALL_KERNEL
-#include <net/radix_mpath.h>
-#endif
 
 #define	rt_key(rt)	(((struct sockaddr *)(rt)->rt_nodes[0].rn_key))
 #define	rt_mask(rt)	(((struct sockaddr *)(rt)->rt_nodes[0].rn_mask))
