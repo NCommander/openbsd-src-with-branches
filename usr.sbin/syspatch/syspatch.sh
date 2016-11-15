@@ -86,12 +86,12 @@ checkfs()
 		${_files})
 
 	for _d in $(printf '%s\n' ${_dev} | sort -u); do
-		# make sure the fs is local and RW
 		mount | grep -v read-only | grep -q "^/dev/${_d} " ||
 			sp_err "Remote or read-only filesystem, aborting"
-		# make sure we have enough space
 		_df=$(df -Pk | grep "^/dev/${_d} " | tr -s ' ' | cut -d ' ' -f4)
-		_sz=$(($((${_d}))/1024))
+		# double the required size to make sure we have enough space for
+		# install(1) safe copy, the rollback tarball and new files
+		_sz=$(($((${_d}))/1024*2))
 		[[ ${_df} -gt ${_sz} ]] ||
 			sp_err "No space left on device ${_d}, aborting"
 	done
