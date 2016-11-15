@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp.c,v 1.13 2014/10/25 03:23:49 lteo Exp $ */
+/*	$OpenBSD: icmp.c,v 1.14 2016/02/06 23:50:10 krw Exp $ */
 
 /*
  * Copyright (c) 1997, 1998 The Internet Software Consortium.
@@ -100,7 +100,7 @@ icmp_echorequest(struct iaddr *addr)
 	if (!icmp_protocol_initialized)
 		error("attempt to use ICMP protocol before initialization.");
 
-	bzero(&to, sizeof(to));
+	memset(&to, 0, sizeof(to));
 	to.sin_len = sizeof to;
 	to.sin_family = AF_INET;
 	memcpy(&to.sin_addr, addr->iabuf, sizeof to.sin_addr);	/* XXX */
