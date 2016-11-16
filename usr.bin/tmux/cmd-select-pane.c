@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-select-pane.c,v 1.33 2016/10/10 21:51:39 nicm Exp $ */
+/* $OpenBSD: cmd-select-pane.c,v 1.34 2016/10/16 19:04:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -63,7 +63,6 @@ cmd_select_pane_exec(struct cmd *self, struct cmdq_item *item)
 	const char		*style;
 
 	if (self->entry == &cmd_last_pane_entry || args_has(args, 'l')) {
-
 		if (wl->window->last == NULL) {
 			cmdq_error(item, "no last pane");
 			return (CMD_RETURN_ERROR);
