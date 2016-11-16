@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.3 2016/09/18 13:17:40 rzalamena Exp $	*/
+/*	$OpenBSD: proc.h,v 1.4 2016/10/05 16:58:19 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2015 Reyk Floeter <reyk@openbsd.org>
@@ -155,6 +155,7 @@ struct imsgev *
 	 proc_iev(struct privsep *, enum privsep_procid, int);
 enum privsep_procid
 	 proc_getid(struct privsep_proc *, unsigned int, const char *);
+int	 proc_flush_imsg(struct privsep *, enum privsep_procid, int);
 
 /* control.c */
 int	 control_init(struct privsep *, struct control_sock *);
