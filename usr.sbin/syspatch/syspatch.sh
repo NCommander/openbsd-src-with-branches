@@ -81,6 +81,14 @@ checkfs()
 	local _d _df _dev _files="${@}" _sz
 	[[ -n ${_files} ]]
 
+	# if we install a new kernel, add /bsd twice (for size checking) when:
+	# - we are on an MP system (/bsd.mp does not exist there)
+	# - /bsd.syspatchXX is not present (create_rollback will add it)
+	if echo "${_files}" | grep -qw bsd; then
+		${_BSDMP} || [[ ! -f /bsd.syspatch${_RELINT} ]] &&
+			_files="bsd ${_files}"
+	fi
+
 	# assume old files are about the same size as new ones
 	eval $(cd / &&
 		stat -qf "_dev=\"\${_dev} %Sd\" %Sd=\"\${%Sd:+\${%Sd}\+}%Uz\"" \
