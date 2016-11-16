@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.154 2016/06/14 20:44:43 sthen Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.155 2016/07/11 13:06:31 bluhm Exp $	*/
 /*
  * Synchronous PPP link level subroutines.
  *
@@ -4835,7 +4835,7 @@ void
 sppp_set_phase(struct sppp *sp)
 {
 	STDDCL;
-	int lstate, s;
+	int lstate;
 
 	if (debug)
 		log(LOG_INFO, SPP_FMT "phase %s\n", SPP_ARGS(ifp),
@@ -4849,8 +4849,6 @@ sppp_set_phase(struct sppp *sp)
 
 	if (ifp->if_link_state != lstate) {
 		ifp->if_link_state = lstate;
-		s = splsoftnet();
 		if_link_state_change(ifp);
-		splx(s);
 	}
 }
