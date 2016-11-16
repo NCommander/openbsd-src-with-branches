@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-rename-session.c,v 1.23 2016/10/16 19:04:05 nicm Exp $ */
+/* $OpenBSD: cmd-rename-session.c,v 1.24 2016/10/16 22:06:40 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -19,6 +19,7 @@
 #include <sys/types.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "tmux.h"
 
@@ -50,6 +51,9 @@ cmd_rename_session_exec(struct cmd *self, struct cmdq_item *item)
 	const char	*newname;
 
 	newname = args->argv[0];
+	if (strcmp(newname, s->name) == 0)
+		return (CMD_RETURN_NORMAL);
+
 	if (!session_check_name(newname)) {
 		cmdq_error(item, "bad session name: %s", newname);
 		return (CMD_RETURN_ERROR);
