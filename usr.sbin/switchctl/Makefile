@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2016/07/19 18:14:08 reyk Exp $
+# $OpenBSD: Makefile,v 1.3 2016/11/15 08:15:07 reyk Exp $
 
 SWITCHD=	${.CURDIR}/../switchd
 
@@ -7,7 +7,7 @@ SWITCHD=	${.CURDIR}/../switchd
 PROG=		switchctl
 MAN=		switchctl.8
 SRCS=		log.c ofpclient.c parser.c util.c imsg_util.c switchctl.c
-SRCS+=		ofp13.c ofp_common.c packet.c
+SRCS+=		ofp10.c ofp13.c ofp_common.c packet.c
 
 LDADD=		-lutil
 DPADD=		${LIBUTIL}

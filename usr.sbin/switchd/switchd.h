@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchd.h,v 1.20 2016/11/15 09:05:14 reyk Exp $	*/
+/*	$OpenBSD: switchd.h,v 1.21 2016/11/17 09:42:11 rzalamena Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -259,6 +259,9 @@ struct ofp_flow_mod *
 int		 ofp_validate_header(struct switchd *,
 		    struct sockaddr_storage *, struct sockaddr_storage *,
 		    struct ofp_header *, uint8_t);
+int		 ofp_validate(struct switchd *,
+		    struct sockaddr_storage *, struct sockaddr_storage *,
+		    struct ofp_header *, struct ibuf *, uint8_t);
 int		 ofp_output(struct switch_connection *, struct ofp_header *,
 		    struct ibuf *);
 int		 ofp_multipart_add(struct switch_connection *, uint32_t,
