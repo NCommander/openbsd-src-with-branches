@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2016/09/02 21:30:34 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.13 2016/10/19 14:31:19 tb Exp $
 
 # The following ports must be installed:
 #
@@ -102,6 +102,13 @@ run-regress-frag6-ext: addr.py
 	@echo '\n======== $@ ========'
 	@echo Check ping6 extension header reassembly
 	${SUDO} ${PYTHON}frag6_ext.py
+
+# An hop by hop options extension header after the fragment header
+TARGETS +=	frag6-hop
+run-regress-frag6-hop: addr.py
+	@echo '\n======== $@ ========'
+	@echo Check ping6 not initial hop by hop extension header
+	${SUDO} ${PYTHON}frag6_hop.py
 
 # An destination options extension header after the fragment header
 TARGETS +=	frag6-opt
