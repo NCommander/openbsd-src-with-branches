@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofp10.c,v 1.12 2016/10/05 15:42:28 reyk Exp $	*/
+/*	$OpenBSD: ofp10.c,v 1.13 2016/11/11 22:07:40 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -305,7 +305,8 @@ ofp10_packet_match(struct packet *pkt, struct ofp10_match *m, uint32_t flags)
 	bzero(m, sizeof(*m));
 	m->m_wildcards = htonl(~flags);
 
-	if ((flags & (OFP10_WILDCARD_DL_SRC|OFP10_WILDCARD_DL_DST)) && (eh == NULL))
+	if ((flags & (OFP10_WILDCARD_DL_SRC|OFP10_WILDCARD_DL_DST)) &&
+	    (eh == NULL))
 		return (-1);
 
 	if (flags & OFP10_WILDCARD_DL_SRC)
