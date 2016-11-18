@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofp13.c,v 1.30 2016/11/18 13:05:12 reyk Exp $	*/
+/*	$OpenBSD: ofp13.c,v 1.31 2016/11/18 13:15:42 rzalamena Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -644,7 +644,7 @@ ofp13_features_reply(struct switchd *sc, struct switch_connection *con,
 {
 #if 0
 	/* Let's not ask this while we don't use it. */
-	ofp13_flow_stats(sc, con, OFP_PORT_ANY, OFP_GROUP_ANY,
+	ofp13_flow_stats(sc, con, OFP_PORT_ANY, OFP_GROUP_ID_ANY,
 	    OFP_TABLE_ID_ALL);
 	ofp13_table_features(sc, con, 0);
 	ofp13_desc(sc, con);
