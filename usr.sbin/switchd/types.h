@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.7 2016/10/12 19:07:42 reyk Exp $	*/
+/*	$OpenBSD: types.h,v 1.8 2016/11/17 12:40:56 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -16,8 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _SWITCHD_TYPES_H
-#define _SWITCHD_TYPES_H
+#ifndef SWITCHD_TYPES_H
+#define SWITCHD_TYPES_H
 
 #ifndef SWITCHD_USER
 #define SWITCHD_USER	"_switchd"
@@ -112,4 +112,4 @@ enum oflowmod_state {
 #define nitems(_a)   (sizeof((_a)) / sizeof((_a)[0]))
 #endif
 
-#endif /* _SWITCHD_TYPES_H */
+#endif /* SWITCHD_TYPES_H */
