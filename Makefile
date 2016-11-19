@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.129 2016/10/06 18:56:17 natano Exp $
+#	$OpenBSD: Makefile,v 1.130 2016/10/18 02:47:07 tb Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -71,6 +71,9 @@ build:
 	@false
 .else
 build:
+	umask ${WOBJUMASK}; exec ${MAKE} do-build
+
+do-build:
 .ifdef GLOBAL_AUTOCONF_CACHE
 	cp /dev/null ${GLOBAL_AUTOCONF_CACHE}
 .endif
