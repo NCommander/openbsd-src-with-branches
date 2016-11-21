@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.h,v 1.30 2015/12/18 19:08:36 kettenis Exp $	*/
+/*	$OpenBSD: if_ix.h,v 1.31 2015/12/31 19:07:37 kettenis Exp $	*/
 
 /******************************************************************************
 
@@ -247,7 +247,6 @@ struct ix_softc {
 	/* Info about the interface */
 	uint64_t		optics;
 	uint32_t		fc; /* local flow ctrl setting */
-	int			advertise;  /* link speeds */
 	uint16_t		max_frame_size;
 	uint16_t		num_segs;
 	uint32_t		link_speed;
