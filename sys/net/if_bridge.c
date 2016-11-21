@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.287 2016/10/03 15:53:09 rzalamena Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.288 2016/11/14 03:51:53 dlg Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -270,6 +270,8 @@ bridge_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	s = splnet();
 	switch (cmd) {
 	case SIOCBRDGADD:
+	/* bridge(4) does not distinguish between routing/forwarding ports */
+	case SIOCBRDGADDL:
 		if ((error = suser(curproc, 0)) != 0)
 			break;
 
