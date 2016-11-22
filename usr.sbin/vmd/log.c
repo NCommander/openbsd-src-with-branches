@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.3 2016/10/12 11:47:34 reyk Exp $	*/
+/*	$OpenBSD: log.c,v 1.4 2016/10/31 02:57:27 guenther Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -130,6 +130,8 @@ log_warn(const char *emsg, ...)
 		}
 		va_end(ap);
 	}
+
+	errno = saved_errno;
 }
 
 void
