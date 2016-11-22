@@ -243,7 +243,7 @@ rollback_patch()
 	mkdir -p ${_explodir}
 
 	_files="$(tar xvzphf ${_PDIR}/${_REL}/${_rbpatch} -C ${_explodir})"
-	checkfs ${_files}
+	checkfs ${_files} ${_PDIR}/${_REL} # check for ro /var/syspatch/${OSREV}
 
 	for _file in ${_files}; do
 		[[ ${_ret} == 0 ]] || break
