@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmon.h,v 1.2 2010/02/14 22:39:33 miod Exp $	*/
+/*	$OpenBSD: pmon.h,v 1.3 2014/03/29 23:59:49 miod Exp $	*/
 
 /*
  * Copyright (c) 2009, 2012 Miodrag Vallat.
@@ -132,7 +132,8 @@ struct pmon_env_cpu {
 #define	PMON_CPUTYPE_LS1A	4
 #define	PMON_CPUTYPE_LS1B	5
 	uint32_t		node;		/* total number of NUMA nodes */
-	uint32_t		coreid;		/* boot CPU core id */
+	uint16_t		coreid;		/* boot CPU core id */
+	uint16_t		reserved_cores;	/* mask of reserved cores */
 	uint32_t		speed;
 	uint32_t		ncpus;
 } __packed;
