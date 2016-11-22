@@ -1,4 +1,4 @@
-/*	$OpenBSD: bounce.c,v 1.74 2016/11/20 08:43:36 eric Exp $	*/
+/*	$OpenBSD: bounce.c,v 1.75 2016/11/21 13:00:43 eric Exp $	*/
 
 /*
  * Copyright (c) 2009 Gilles Chehade <gilles@poolp.org>
@@ -728,10 +728,8 @@ bounce_io(struct io *io, int evt, void *arg)
 			return;
 		}
 
-		if (line == NULL) {
-			iobuf_normalize(&s->iobuf);
+		if (line == NULL)
 			break;
-		}
 
 		log_trace(TRACE_BOUNCE, "bounce: %p: <<< %s", s, line);
 
