@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.295 2016/11/22 07:28:42 eric Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.296 2016/11/24 07:57:48 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1381,7 +1381,7 @@ smtp_io(struct io *io, int evt, void *arg)
 	case IO_ERROR:
 		log_info("%016"PRIx64" smtp event=closed address=%s host=%s "
 		    "reason=\"io-error: %s\"",
-		    s->id, ss_to_text(&s->ss), s->hostname, io->error);
+		    s->id, ss_to_text(&s->ss), s->hostname, io_error(io));
 		smtp_free(s, "IO error");
 		break;
 
