@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.53 2016/04/15 02:57:10 djm Exp $
+#	$OpenBSD: test-exec.sh,v 1.54 2016/08/23 06:36:23 djm Exp $
 #	Placed in the Public Domain.
 
 USER=`id -un`
@@ -310,7 +310,7 @@ Host *
 EOF
 
 if [ ! -z "$TEST_SSH_SSH_CONFOPTS" ]; then
-	trace "adding ssh_config option $TEST_SSH_SSHD_CONFOPTS"
+	trace "adding ssh_config option $TEST_SSH_SSH_CONFOPTS"
 	echo "$TEST_SSH_SSH_CONFOPTS" >> $OBJ/ssh_config
 fi
 
