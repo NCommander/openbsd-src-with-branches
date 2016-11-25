@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbim.h,v 1.1 2016/06/15 19:39:34 gerhard Exp $ */
+/*	$OpenBSD: mbim.h,v 1.2 2016/11/21 08:19:36 gerhard Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -599,6 +599,28 @@ struct mbim_descriptor {
 	uByte	bMaxFilterSize;
 	uWord	wMaxSegmentSize;
 	uByte	bmNetworkCapabilities;
+} __packed;
+
+/*
+ * NCM Parameters
+ */
+#define NCM_GET_NTB_PARAMETERS	0x80
+
+struct ncm_ntb_parameters {
+	uWord	wLength;
+	uWord	bmNtbFormatsSupported;
+#define NCM_FORMAT_NTB16	0x0001
+#define NCM_FORMAT_NTB32	0x0002
+	uDWord	dwNtbInMaxSize;
+	uWord	wNtbInDivisor;
+	uWord	wNtbInPayloadRemainder;
+	uWord	wNtbInAlignment;
+	uWord	wReserved1;
+	uDWord	dwNtbOutMaxSize;
+	uWord	wNtbOutDivisor;
+	uWord	wNtbOutPayloadRemainder;
+	uWord	wNtbOutAlignment;
+	uWord	wNtbOutMaxDatagrams;
 } __packed;
 
 /*
