@@ -311,8 +311,8 @@ set -A _KERNV -- $(sysctl -n kern.version |
 	sed 's/^OpenBSD \([0-9]\.[0-9]\)\([^ ]*\).*/\1 \2/;q')
 [[ -z ${_KERNV[1]} ]]
 
-[[ $@ == @(|-c|-r) ]] && [[ $(id -u) -ne 0 ]] && \
-	sp_err "${0##*/}: need root privileges"
+[[ $@ == @(|-[[:alpha:]]) ]] || usage; [[ $@ == @(|-(c|r)) ]] &&
+	[[ $(id -u) -ne 0 ]] && sp_err "${0##*/}: need root privileges"
 
 # XXX to be discussed; check for $ARCH?
 [[ -d ${PATCH_PATH} ]] && PATCH_PATH="file://$(readlink -f ${PATCH_PATH})"
