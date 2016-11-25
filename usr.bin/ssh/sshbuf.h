@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshbuf.h,v 1.6 2015/12/10 07:01:35 mmcc Exp $	*/
+/*	$OpenBSD: sshbuf.h,v 1.7 2016/05/02 08:49:03 djm Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller
  *
@@ -133,6 +133,14 @@ u_char *sshbuf_mutable_ptr(const struct sshbuf *buf);
  * Returns 0 on success, or a negative SSH_ERR_* error code on failure.
  */
 int	sshbuf_check_reserve(const struct sshbuf *buf, size_t len);
+
+/*
+ * Preallocates len additional bytes in buf.
+ * Useful for cases where the caller knows how many bytes will ultimately be
+ * required to avoid realloc in the buffer code.
+ * Returns 0 on success, or a negative SSH_ERR_* error code on failure.
+ */
+int	sshbuf_allocate(struct sshbuf *buf, size_t len);
 
 /*
  * Reserve len bytes in buf.
