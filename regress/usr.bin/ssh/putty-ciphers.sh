@@ -1,4 +1,4 @@
-#	$OpenBSD: putty-ciphers.sh,v 1.3 2008/11/10 02:06:35 djm Exp $
+#	$OpenBSD: putty-ciphers.sh,v 1.4 2013/05/17 04:29:14 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="putty ciphers"
@@ -15,7 +15,7 @@ for c in aes blowfish 3des arcfour aes128-ctr aes192-ctr aes256-ctr ; do
 
 	rm -f ${COPY}
 	env HOME=$PWD ${PLINK} -load cipher_$c -batch -i putty.rsa2 \
-	    127.0.0.1 cat ${DATA} > ${COPY}
+	    cat ${DATA} > ${COPY}
 	if [ $? -ne 0 ]; then
 		fail "ssh cat $DATA failed"
 	fi
