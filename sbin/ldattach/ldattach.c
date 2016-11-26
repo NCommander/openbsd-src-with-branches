@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldattach.c,v 1.15 2014/08/10 02:09:35 guenther Exp $	*/
+/*	$OpenBSD: ldattach.c,v 1.16 2015/01/15 00:48:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -197,10 +197,7 @@ main(int argc, char *argv[])
 		dev = devn;
 	}
 
-	if (!strcmp(disc, "slip")) {
-		bits = 8;		/* make sure we use 8 databits */
-		ldisc = SLIPDISC;
-	} else if (!strcmp(disc, "nmea")) {
+	if (!strcmp(disc, "nmea")) {
 		ldisc = NMEADISC;
 		if (speed == 0)
 			speed = B4800;	/* default is 4800 baud for nmea */
@@ -279,8 +276,6 @@ main(int argc, char *argv[])
 			goto bail_out;
 		}
 		tty.c_cflag |= CLOCAL;
-		/* FALLTHROUGH */
-	case SLIPDISC:
 		tty.c_iflag = 0;
 		tty.c_lflag = 0;
 		tty.c_oflag = 0;

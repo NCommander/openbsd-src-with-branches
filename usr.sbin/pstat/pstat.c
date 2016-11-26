@@ -1,4 +1,4 @@
-/*	$OpenBSD: pstat.c,v 1.110 2016/09/19 20:10:54 tb Exp $	*/
+/*	$OpenBSD: pstat.c,v 1.111 2016/10/23 18:14:01 kettenis Exp $	*/
 /*	$NetBSD: pstat.c,v 1.27 1996/10/23 22:50:06 cgd Exp $	*/
 
 /*-
@@ -989,17 +989,8 @@ ttyprt(struct itty *tp)
 	case TTYDISC:
 		(void)printf("term\n");
 		break;
-	case TABLDISC:
-		(void)printf("tab\n");
-		break;
-	case SLIPDISC:
-		(void)printf("slip\n");
-		break;
 	case PPPDISC:
 		(void)printf("ppp\n");
-		break;
-	case STRIPDISC:
-		(void)printf("strip\n");
 		break;
 	case NMEADISC:
 		(void)printf("nmea\n");
