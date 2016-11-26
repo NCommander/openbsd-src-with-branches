@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.h,v 1.35 2016/11/22 11:31:38 edd Exp $	*/
+/*	$OpenBSD: vmd.h,v 1.36 2016/11/24 07:58:55 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -43,6 +43,7 @@
 #define MAX_TAP			256
 #define NR_BACKLOG		5
 #define VMD_SWITCH_TYPE		"bridge"
+#define VM_DEFAULT_MEMORY	512
 
 #ifdef VMD_DEBUG
 #define dprintf(x...)   do { log_debug(x); } while(0)
