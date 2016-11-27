@@ -1,4 +1,4 @@
-/*	$OpenBSD: fs.h,v 1.40 2014/05/29 12:02:50 krw Exp $	*/
+/*	$OpenBSD: fs.h,v 1.41 2015/01/20 18:08:16 deraadt Exp $	*/
 /*	$NetBSD: fs.h,v 1.6 1995/04/12 21:21:02 mycroft Exp $	*/
 
 /*
@@ -550,16 +550,16 @@ struct ocg {
  */
 #define blksize(fs, ip, lbn) \
 	(((lbn) >= NDADDR || DIP((ip), size) >= ((lbn) + 1) << (fs)->fs_bshift) \
-	    ? (fs)->fs_bsize \
+	    ? (u_int64_t)(fs)->fs_bsize \
 	    : (fragroundup(fs, blkoff(fs, DIP((ip), size)))))
 #define dblksize(fs, dip, lbn) \
 	(((lbn) >= NDADDR || (dip)->di_size >= ((lbn) + 1) << (fs)->fs_bshift) \
-	    ? (fs)->fs_bsize \
+	    ? (u_int64_t)(fs)->fs_bsize \
 	    : (fragroundup(fs, blkoff(fs, (dip)->di_size))))
 
 #define sblksize(fs, size, lbn) \
         (((lbn) >= NDADDR || (size) >= ((lbn) + 1) << (fs)->fs_bshift) \
-            ? (fs)->fs_bsize \
+            ? (u_int64_t)(fs)->fs_bsize \
             : (fragroundup(fs, blkoff(fs, (size)))))
 
 
