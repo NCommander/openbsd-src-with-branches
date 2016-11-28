@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2016/03/30 06:38:45 jmc Exp $
+#	$OpenBSD: Makefile,v 1.13 2016/07/30 03:25:48 guenther Exp $
 
 MAN=	boot.8
 
@@ -23,7 +23,7 @@ SRCS+=	boot.c cmd.c vars.c bootarg.c
 
 .PATH:	${S}/lib/libkern/arch/sh ${S}/lib/libkern
 SRCS+=	getchar.c putchar.c strlen.c strlcpy.c
-SRCS+=	ashrdi3.c moddi3.c sdivsi3.S udivsi3.S
+SRCS+=	ashldi3.c ashrdi3.c moddi3.c sdivsi3.S udivsi3.S
 
 SAREL=
 SA_ZLIB=
