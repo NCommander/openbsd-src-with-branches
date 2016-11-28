@@ -1,4 +1,4 @@
-/*	$OpenBSD: frag6.c,v 1.69 2016/08/24 09:41:12 mpi Exp $	*/
+/*	$OpenBSD: frag6.c,v 1.70 2016/10/24 11:09:05 bluhm Exp $	*/
 /*	$KAME: frag6.c,v 1.40 2002/05/27 21:40:31 itojun Exp $	*/
 
 /*
@@ -602,9 +602,9 @@ void
 frag6_slowtimo(void)
 {
 	struct ip6q *q6, *nq6;
-	int s;
 
-	s = splsoftnet();
+	splsoftassert(IPL_SOFTNET);
+
 	IP6Q_LOCK();
 	TAILQ_FOREACH_SAFE(q6, &frag6_queue, ip6q_queue, nq6)
 		if (--q6->ip6q_ttl == 0) {
@@ -623,7 +623,6 @@ frag6_slowtimo(void)
 		frag6_freef(TAILQ_LAST(&frag6_queue, ip6q_head));
 	}
 	IP6Q_UNLOCK();
-	splx(s);
 }
 
 /*
