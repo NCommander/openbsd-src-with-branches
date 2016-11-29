@@ -1,4 +1,4 @@
-/* $OpenBSD: usermgmt.h,v 1.4 2002/02/16 21:28:10 millert Exp $ */
+/* $OpenBSD: usermgmt.h,v 1.5 2011/12/31 14:05:51 ajacoutot Exp $ */
 /* $NetBSD: usermgmt.h,v 1.4 1999/12/24 09:08:51 agc Exp $ */
 
 /*
@@ -12,10 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Alistair G. Crooks.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
