@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.31 2016/09/05 15:12:30 claudio Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.32 2016/11/07 10:04:57 mpi Exp $	*/
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -186,8 +186,7 @@ pfkey_output(struct mbuf *mbuf, struct socket *socket)
 	    message, mbuf->m_pkthdr.len);
 
 ret:
-	if (mbuf)
-		m_freem(mbuf);
+	m_freem(mbuf);
 	return (error);
 }
 

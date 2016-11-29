@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.90 2016/03/07 18:44:00 naddy Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.91 2016/09/24 18:39:48 tedu Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.85 2004/04/26 01:31:57 matt Exp $	*/
 
 /*
@@ -317,8 +317,7 @@ ip_mrouter_set(struct socket *so, int optname, struct mbuf **mp)
 			break;
 		}
 
-	if (*mp)
-		m_free(*mp);
+	m_free(*mp);
 	return (error);
 }
 

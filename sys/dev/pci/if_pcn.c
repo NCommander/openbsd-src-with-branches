@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pcn.c,v 1.40 2015/11/25 03:09:59 dlg Exp $	*/
+/*	$OpenBSD: if_pcn.c,v 1.41 2016/04/13 10:34:32 mpi Exp $	*/
 /*	$NetBSD: if_pcn.c,v 1.26 2005/05/07 09:15:44 is Exp $	*/
 
 /*
@@ -896,8 +896,7 @@ pcn_start(struct ifnet *ifp)
 			 */
 			ifq_set_oactive(&ifp->if_snd);
 			bus_dmamap_unload(sc->sc_dmat, dmamap);
-			if (m != NULL)
-				m_freem(m);
+			m_freem(m);
 			ifq_deq_rollback(&ifp->if_snd, m0);
 			break;
 		}

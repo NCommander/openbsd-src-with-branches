@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc_gmac.c,v 1.2 2016/08/15 18:31:28 kettenis Exp $	*/
+/*	$OpenBSD: dwc_gmac.c,v 1.3 2016/10/08 11:20:26 kettenis Exp $	*/
 /* $NetBSD: dwc_gmac.c,v 1.34 2015/08/21 20:12:29 jmcneill Exp $ */
 
 /*-
@@ -564,8 +564,7 @@ dwc_gmac_free_rx_ring(struct dwc_gmac_softc *sc, struct dwc_gmac_rx_ring *ring)
 			bus_dmamap_unload(sc->sc_dmat, data->rd_map);
 			bus_dmamap_destroy(sc->sc_dmat, data->rd_map);
 		}
-		if (data->rd_m != NULL)
-			m_freem(data->rd_m);
+		m_freem(data->rd_m);
 	}
 }
 
