@@ -1,4 +1,4 @@
-/* $OpenBSD: sshpty.h,v 1.11 2008/05/19 15:45:07 djm Exp $ */
+/* $OpenBSD: sshpty.h,v 1.12 2010/01/09 05:04:24 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -25,3 +25,4 @@ void	 pty_release(const char *);
 void	 pty_make_controlling_tty(int *, const char *);
 void	 pty_change_window_size(int, u_int, u_int, u_int, u_int);
 void	 pty_setowner(struct passwd *, const char *);
+void	 disconnect_controlling_tty(void);
