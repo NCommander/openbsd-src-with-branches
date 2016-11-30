@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.284 2016/08/19 03:18:06 djm Exp $ */
+/* $OpenBSD: session.c,v 1.285 2016/08/23 16:21:45 otto Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -239,7 +239,7 @@ do_authenticated(Authctxt *authctxt)
 
 	/* setup the channel layer */
 	/* XXX - streamlocal? */
-	if (no_port_forwarding_flag ||
+	if (no_port_forwarding_flag || options.disable_forwarding ||
 	    (options.allow_tcp_forwarding & FORWARD_LOCAL) == 0)
 		channel_disable_adm_local_opens();
 	else
