@@ -158,16 +158,14 @@ install_file()
 
 install_kernel()
 {
-	local _bsd=/bsd _kern=$1
+	local _bsd _kern=$1
 	[[ -n ${_kern} ]]
 
 	if ${_BSDMP}; then
-		[[ ${_kern##*/} == bsd ]] && _bsd=/bsd.sp
+		[[ ${_kern##*/} == bsd ]] && _bsd=bsd.sp
+		[[ ${_kern##*/} == bsd.mp ]] && _bsd=bsd
 	fi
-
-	if [[ -n ${_bsd} ]]; then
-		install -FS ${_kern} ${_bsd}
-	fi
+	install -FS ${_kern} /${_bsd:-${_kern##*/}}
 }
 
 ls_installed()
