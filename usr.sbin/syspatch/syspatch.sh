@@ -161,9 +161,9 @@ install_kernel()
 	[[ -n ${_kern} ]]
 
 	if ${_BSDMP}; then
-		[[ ${_kern##*/} == bsd ]] && _bsd=bsd.sp
-		[[ ${_kern##*/} == bsd.mp ]] && _bsd=bsd
+		[[ ${_kern##*/} == bsd ]] && _bsd=bsd.sp || _bsd=bsd
 	fi
+
 	install -FS ${_kern} /${_bsd:-${_kern##*/}}
 }
 
