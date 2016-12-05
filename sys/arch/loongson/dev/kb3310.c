@@ -1,4 +1,4 @@
-/*	$OpenBSD: kb3310.c,v 1.20 2016/01/08 15:54:13 jcs Exp $	*/
+/*	$OpenBSD: kb3310.c,v 1.21 2016/11/15 13:53:35 fcambus Exp $	*/
 /*
  * Copyright (c) 2010 Otto Moerbeek <otto@drijf.net>
  *
@@ -408,8 +408,7 @@ ykbec_refresh(void *arg)
 			ykbec_apmdata.battery_state = APM_BATT_CHARGING;
 		else if (ISSET(bat_status, BAT_STATUS_BAT_LOW))
 			ykbec_apmdata.battery_state = APM_BATT_CRITICAL;
-		/* XXX arbitrary */
-		else if (cap_pct > 60)
+		else if (cap_pct > 50)
 			ykbec_apmdata.battery_state = APM_BATT_HIGH;
 		else
 			ykbec_apmdata.battery_state = APM_BATT_LOW;
