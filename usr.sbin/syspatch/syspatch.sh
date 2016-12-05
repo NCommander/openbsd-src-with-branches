@@ -271,7 +271,7 @@ unpriv()
 # only run on release (not -current nor -stable)
 set -A _KERNV -- $(sysctl -n kern.version |
 	sed 's/^OpenBSD \([0-9]\.[0-9]\)\([^ ]*\).*/\1 \2/;q')
-[[ -z ${_KERNV[1]} ]]
+((${#_KERNV[*]} > 1)) && sp_err "Unsupported release ${_KERNV[*]}"
 
 [[ $@ == @(|-[[:alpha:]]) ]] || usage; [[ $@ == @(|-(c|r)) ]] &&
 	(($(id -u) != 0)) && sp_err "${0##*/}: need root privileges"
