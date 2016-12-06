@@ -235,7 +235,7 @@ sp_cleanup()
 	done
 
 	# remove non matching release backup kernel
-	for _k in /bsd.syspatch*; do
+	for _k in /bsd.syspatch+([[:digit:]]); do
 		[[ -f ${_k} ]] || continue
 		[[ ${_k} == /bsd.syspatch${_OSrev} ]] || rm ${_k}
 	done
