@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1002 2016/11/23 12:13:23 bluhm Exp $ */
+/*	$OpenBSD: pf.c,v 1.1003 2016/11/28 23:15:30 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5257,7 +5257,7 @@ pf_test_state_icmp(struct pf_pdesc *pd, struct pf_state **state,
 					pf_patch_16(pd,
 					    &uh->uh_dport, nk->port[didx]);
 
-					m_copyback(pd2.m, pd2.off, sizeof(uh),
+					m_copyback(pd2.m, pd2.off, sizeof(*uh),
 					    uh, M_NOWAIT);
 					return (PF_AFRT);
 				}
