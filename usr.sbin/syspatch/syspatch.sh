@@ -95,6 +95,7 @@ checkfs()
 
 create_rollback()
 {
+	# XXX annotate new files so we can remove them if we rollback?
 	local _file _patch=$1 _rbfiles _ret=0
 	[[ -n ${_patch} ]]
 	shift
@@ -121,7 +122,7 @@ create_rollback()
 			_ret=$?
 	fi
 
-	# XXX missing archive (empty _rbfiles list) probably means a missing set
+	# missing archive (empty _rbfiles list)
 	[[ -f ${_PDIR}/${_patch}/rollback.tgz ]] || _ret=$?
 
 	if ((_ret != 0)); then
