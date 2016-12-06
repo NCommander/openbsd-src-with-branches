@@ -245,10 +245,9 @@ sp_cleanup()
 		[[ ${_k} == /bsd.syspatch${_OSrev} ]] || rm ${_k}
 	done
 
-	# in case a patch added a new directory (install -D);
-	# non-fatal in case some mount point is read-only or remote
+	# in case a patch added a new directory (install -D)
 	for _m in /etc/mtree/{4.4BSD,BSD.x11}.dist; do
-		[[ -f ${_m} ]] && mtree -qdef ${_m} -p / -U >/dev/null || true
+		[[ -f ${_m} ]] && mtree -qdef ${_m} -p / -U >/dev/null
 	done
 }
 
