@@ -1,4 +1,4 @@
-.\"	$OpenBSD: xbf.4,v 1.6 2016/01/15 22:21:56 jmc Exp $
+.\"	$OpenBSD: xbf.4,v 1.1 2016/12/07 15:51:27 mikeb Exp $
 .\"
 .\" Copyright (c) 2016 Mike Belopuhov
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: January 15 2016 $
+.Dd $Mdocdate: December 7 2016 $
 .Dt XBF 4
 .Os
 .Sh NAME
@@ -26,7 +26,7 @@
 The
 .Nm
 driver provides support for a paravirtual disk interface
-.Dq Blkfront
+.Qq Blkfront ,
 native to the Xen hypervisor.
 .Pp
 During attach the
@@ -51,7 +51,7 @@ based on the
 .Xr vdsk 4
 driver by
 .An -nosplit
-.An Mark Kettenis Aq Mt kettenis@openbsd.org
+.An Mark Kettenis Aq Mt kettenis@openbsd.org ,
 inspired by the
 .Fx
 implementation.
