@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcrelay.c,v 1.43 2016/09/26 17:15:19 jca Exp $ */
+/*	$OpenBSD: dhcrelay.c,v 1.44 2016/12/07 13:19:18 rzalamena Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -247,6 +247,9 @@ main(int argc, char *argv[])
 			error("rdaemon: %m");
 		log_perror = 0;
 	}
+
+	if (pledge("stdio route", NULL) == -1)
+		error("pledge");
 
 	dispatch();
 	/* not reached */
