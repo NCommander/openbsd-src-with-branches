@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.13 2016/02/02 23:15:15 sthen Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.14 2016/02/07 00:49:28 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -121,7 +121,8 @@ ssize_t receive_packet(struct interface_info *, unsigned char *, size_t,
 extern void (*bootp_packet_handler)(struct interface_info *,
     struct dhcp_packet *, int, unsigned int, struct iaddr,
     struct hardware *);
-void discover_interfaces(struct interface_info *);
+struct interface_info *get_interface(const char *,
+    void (*)(struct protocol *));
 void dispatch(void);
 void got_one(struct protocol *);
 void add_protocol(char *, int, void (*)(struct protocol *), void *);
