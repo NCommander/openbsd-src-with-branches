@@ -231,7 +231,7 @@ sp_cleanup()
 	# remove non matching release /var/syspatch/ content
 	for _d in ${_PDIR}/*; do
 		[[ ${_d##*/} == ${_OSrev}-+([[:digit:]])_+([[:alnum:]]|_) ]] &&
-			[[ -d ${_d} ]] || rm -r ${_d}
+			[[ -f ${_d}/rollback.tgz ]] || rm -r ${_d}
 	done
 
 	# remove non matching release backup kernel
