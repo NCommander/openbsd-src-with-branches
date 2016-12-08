@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.6 2015/09/26 04:05:42 visa Exp $ */
+/*	$OpenBSD: intr.h,v 1.7 2016/03/06 19:42:27 mpi Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -201,6 +201,8 @@ void	dosoftint(void);
 void	octeon_intr_init(void);
 void	octeon_setintrmask(int);
 void   *octeon_intr_establish(int, int, int (*)(void *),
+	    void *, const char *);
+void	*octeon_intr_establish_fdt_idx(int, int, int, int (*)(void *),
 	    void *, const char *);
 void	octeon_intr_disestablish(void *);
 void	octeon_intr_init(void);
