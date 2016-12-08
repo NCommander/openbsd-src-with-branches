@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.14 2016/02/07 00:49:28 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.15 2016/12/07 13:19:18 rzalamena Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -76,7 +76,7 @@ struct interface_info {
 	size_t			 rbuf_max;
 	size_t			 rbuf_offset;
 	size_t			 rbuf_len;
-	struct ifreq		*ifp;
+	struct ifreq		 ifr;
 	int			 noifmedia;
 	int			 errors;
 	int			 dead;
