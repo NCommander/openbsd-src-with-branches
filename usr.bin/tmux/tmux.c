@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.c,v 1.171 2016/10/10 21:29:23 nicm Exp $ */
+/* $OpenBSD: tmux.c,v 1.172 2016/10/11 13:21:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -321,7 +321,7 @@ main(int argc, char **argv)
 		s = getenv("TMUX");
 		if (s != NULL && *s != '\0' && *s != ',') {
 			path = xstrdup(s);
-			path[strcspn (path, ",")] = '\0';
+			path[strcspn(path, ",")] = '\0';
 		}
 	}
 	if (path == NULL && (path = make_label(label)) == NULL) {
