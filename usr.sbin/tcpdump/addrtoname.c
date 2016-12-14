@@ -1,4 +1,4 @@
-/*	$OpenBSD: addrtoname.c,v 1.35 2015/11/01 21:41:23 mmcc Exp $	*/
+/*	$OpenBSD: addrtoname.c,v 1.36 2015/11/18 15:36:20 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -693,11 +693,11 @@ init_ipprotoarray(void)
 		}
 }
 
-/*XXX from libbpfc.a */
-extern struct eproto {
+/* XXX from libpcap */
+extern const struct eproto {
 	char *s;
 	u_short p;
-} eproto_db[];
+} * const eproto_db;
 
 static void
 init_eprotoarray(void)
