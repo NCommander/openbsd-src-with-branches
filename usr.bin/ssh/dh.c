@@ -1,4 +1,4 @@
-/* $OpenBSD: dh.c,v 1.60 2016/05/02 10:26:04 djm Exp $ */
+/* $OpenBSD: dh.c,v 1.61 2016/09/12 01:22:38 deraadt Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  *
@@ -149,7 +149,7 @@ choose_dh(int min, int wantbits, int max)
 	struct dhgroup dhg;
 
 	if ((f = fopen(_PATH_DH_MODULI, "r")) == NULL) {
-		logit("WARNING: could open open %s (%s), using fixed modulus",
+		logit("WARNING: could not open %s (%s), using fixed modulus",
 		    _PATH_DH_MODULI, strerror(errno));
 		return (dh_new_group_fallback(max));
 	}
