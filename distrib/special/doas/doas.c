@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.c,v 1.60 2016/07/18 16:46:30 zhuk Exp $ */
+/* $OpenBSD: doas.c,v 1.1 2016/08/16 04:55:33 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -60,8 +60,7 @@ main(int argc, char **argv)
 	uid_t uid;
 	uid_t target = 0;
 	gid_t groups[1];
-	int ngroups;
-	int i, ch;
+	int ch;
 
 	setprogname("doas");
 
