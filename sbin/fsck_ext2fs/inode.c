@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.c,v 1.25 2015/01/16 06:39:57 deraadt Exp $	*/
+/*	$OpenBSD: inode.c,v 1.26 2016/04/28 12:17:15 krw Exp $	*/
 /*	$NetBSD: inode.c,v 1.8 2000/01/28 16:01:46 bouyer Exp $	*/
 
 /*
@@ -560,7 +560,9 @@ pinode(ino_t ino)
 {
 	struct ext2fs_dinode *dp;
 	char *p;
+#ifndef SMALL
 	struct passwd *pw;
+#endif
 	time_t t;
 	u_int32_t uid;
 
