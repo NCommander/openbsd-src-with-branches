@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_ioctl.c,v 1.43 2016/08/31 13:33:52 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_ioctl.c,v 1.44 2016/09/15 03:32:48 dlg Exp $	*/
 /*	$NetBSD: ieee80211_ioctl.c,v 1.15 2004/05/06 02:58:16 dyoung Exp $	*/
 
 /*-
@@ -71,6 +71,8 @@ ieee80211_node2req(struct ieee80211com *ic, const struct ieee80211_node *ni,
 	/* Channel and rates */
 	nr->nr_channel = ieee80211_chan2ieee(ic, ni->ni_chan);
 	nr->nr_chan_flags = ni->ni_chan->ic_flags;
+	if (ic->ic_curmode != IEEE80211_MODE_11N)
+		nr->nr_chan_flags &= ~IEEE80211_CHAN_HT;
 	nr->nr_nrates = ni->ni_rates.rs_nrates;
 	bcopy(ni->ni_rates.rs_rates, nr->nr_rates, IEEE80211_RATE_MAXSIZE);
 
