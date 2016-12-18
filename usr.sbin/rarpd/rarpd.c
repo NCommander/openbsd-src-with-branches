@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.67 2015/11/19 19:31:20 deraadt Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.68 2016/05/28 07:00:18 natano Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -104,8 +104,7 @@ main(int argc, char *argv[])
 {
 	extern char *__progname;
 	extern int optind, opterr;
-	int op, devnull, f;
-	pid_t pid;
+	int op;
 
 	/* All error reporting is done through syslogs. */
 	openlog(__progname, LOG_PID | LOG_CONS, LOG_DAEMON);
