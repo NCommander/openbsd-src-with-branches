@@ -1,4 +1,4 @@
-/* $OpenBSD: pftop.c,v 1.33 2016/01/16 03:30:26 canacar Exp $	 */
+/* $OpenBSD: pftop.c,v 1.34 2016/04/13 05:25:45 jasper Exp $	 */
 /*
  * Copyright (c) 2001, 2007 Can Erkin Acar
  * Copyright (c) 2001 Daniel Hartmeier
@@ -140,7 +140,7 @@ field_def fields[] = {
 	{"LOG", 1, 3, 2, FLD_ALIGN_LEFT, -1, 0, 0, 0},
 	{"QUICK", 1, 1, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
 	{"KS", 1, 1, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
-	{"IF", 4, 6, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
+	{"IF", 4, 7, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
 	{"INFO", 40, 80, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
 	{"MAX", 3, 5, 2, FLD_ALIGN_RIGHT, -1, 0, 0},
 	{"RATE", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
