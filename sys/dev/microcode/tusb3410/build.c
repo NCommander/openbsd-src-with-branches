@@ -1,4 +1,4 @@
-/*	$OpenBSD: build.c,v 1.3 2009/08/07 00:10:17 martynas Exp $	*/
+/*	$OpenBSD: build.c,v 1.4 2014/07/13 07:06:23 mpi Exp $	*/
 
 /*
  * Copyright (c) 2004 Theo de Raadt <deraadt@openbsd.org>
@@ -32,7 +32,7 @@ main(int argc, char *argv[])
 	ssize_t rlen;
 	int fd;
 
-	printf("creating %s length %d\n", FILENAME, sizeof uticom_fw_3410);
+	printf("creating %s length %zu\n", FILENAME, sizeof uticom_fw_3410);
 	fd = open(FILENAME, O_WRONLY|O_CREAT|O_TRUNC, 0644);
 	if (fd == -1)
 		err(1, "%s", FILENAME);
