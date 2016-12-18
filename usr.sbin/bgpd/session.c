@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.353 2016/09/02 14:00:29 benno Exp $ */
+/*	$OpenBSD: session.c,v 1.354 2016/09/03 16:22:17 renato Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -1377,7 +1377,7 @@ session_sendmsg(struct bgp_msg *msg, struct peer *p)
 		    mrt->type == MRT_UPDATE_OUT)))
 			continue;
 		if ((mrt->peer_id == 0 && mrt->group_id == 0) ||
-		    mrt->peer_id == p->conf.id || (mrt->group_id == 0 &&
+		    mrt->peer_id == p->conf.id || (mrt->group_id != 0 &&
 		    mrt->group_id == p->conf.groupid))
 			mrt_dump_bgp_msg(mrt, msg->buf->buf, msg->len, p);
 	}
