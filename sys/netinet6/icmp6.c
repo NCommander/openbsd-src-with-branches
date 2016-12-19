@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.193 2016/11/16 12:48:19 bluhm Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.194 2016/11/28 14:14:39 mpi Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -1953,7 +1953,7 @@ icmp6_mtudisc_timeout(struct rtentry *rt, struct rttimer *r)
 {
 	struct ifnet *ifp;
 
-	splsoftassert(IPL_SOFTNET);
+	NET_ASSERT_LOCKED();
 
 	ifp = if_get(rt->rt_ifidx);
 	if (ifp == NULL)
@@ -1974,7 +1974,7 @@ icmp6_redirect_timeout(struct rtentry *rt, struct rttimer *r)
 {
 	struct ifnet *ifp;
 
-	splsoftassert(IPL_SOFTNET);
+	NET_ASSERT_LOCKED();
 
 	ifp = if_get(rt->rt_ifidx);
 	if (ifp == NULL)

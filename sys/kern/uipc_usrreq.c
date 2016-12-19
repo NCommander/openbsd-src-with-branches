@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.102 2016/08/26 07:12:30 guenther Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.103 2016/11/29 10:22:30 jsg Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -131,7 +131,10 @@ uipc_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 		break;
 
 	case PRU_BIND:
+		/* XXXSMP breaks atomicity */
+		rw_exit_write(&netlock);
 		error = unp_bind(unp, nam, p);
+		rw_enter_write(&netlock);
 		break;
 
 	case PRU_LISTEN:

@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_usrreq.c,v 1.25 2016/10/08 03:32:25 claudio Exp $	*/
+/*	$OpenBSD: raw_usrreq.c,v 1.26 2016/11/21 09:09:06 mpi Exp $	*/
 /*	$NetBSD: raw_usrreq.c,v 1.11 1996/02/13 22:00:43 christos Exp $	*/
 
 /*
@@ -139,7 +139,7 @@ raw_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 	int error = 0;
 	int len;
 
-	splsoftassert(IPL_SOFTNET);
+	NET_ASSERT_LOCKED();
 
 	if (req == PRU_CONTROL)
 		return (EOPNOTSUPP);
