@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/04 12:48:33 patrick Exp $
+# $OpenBSD: Makefile,v 1.2 2016/09/19 11:22:39 kettenis Exp $
 
 HDRDIR=		${.CURDIR}/include
 SRCDIR=		${.CURDIR}/src
@@ -8,7 +8,8 @@ CXXINCLUDEDIR=	/usr/include/c++/v1
 
 .PATH:	${SRCDIR}
 
-CXX=eg++
+CC=		clang
+CXX=		clang++
 
 LIB=		c++
 
