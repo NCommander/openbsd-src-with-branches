@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_var.h,v 1.63 2016/11/14 03:51:53 dlg Exp $	*/
+/*	$OpenBSD: ip_var.h,v 1.64 2016/11/28 23:15:31 bluhm Exp $	*/
 /*	$NetBSD: ip_var.h,v 1.16 1996/02/13 23:43:20 christos Exp $	*/
 
 /*
@@ -194,7 +194,7 @@ extern struct ipstat ipstat;
 extern LIST_HEAD(ipqhead, ipq)	ipq;	/* ip reass. queue */
 extern int ip_defttl;			/* default IP ttl */
 #ifdef MROUTING
-extern struct socket *ip_mrouter;	/* multicast routing daemon */
+extern struct socket *ip_mrouter[];	/* multicast routing daemon */
 #endif
 
 #define IPMTUDISCTIMEOUT (10 * 60)	/* as per RFC 1191 */
