@@ -1,4 +1,4 @@
-/*	$OpenBSD: db.c,v 1.1 2005/08/03 22:33:59 espie Exp $	*/
+/*	$OpenBSD: db.c,v 1.2 2015/09/05 16:51:50 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -55,6 +55,8 @@ dbopen(const char *fname, int flags, int mode, DBTYPE type,
 		case DB_HASH:
 			return (__hash_open(fname, flags & USE_OPEN_FLAGS,
 			    mode, openinfo, flags & DB_FLAGS));
+		default:
+			break;
 		}
 	errno = EINVAL;
 	return (NULL);

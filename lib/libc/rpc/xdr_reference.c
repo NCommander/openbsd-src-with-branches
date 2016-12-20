@@ -1,4 +1,4 @@
-/*	$OpenBSD: xdr_reference.c,v 1.10 2015/09/01 19:54:01 deraadt Exp $ */
+/*	$OpenBSD: xdr_reference.c,v 1.11 2015/09/13 15:36:56 guenther Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -71,6 +71,8 @@ xdr_reference(XDR *xdrs,
 			*pp = loc = (caddr_t) calloc(size, 1);
 			if (loc == NULL)
 				return (FALSE);
+			break;
+		default:
 			break;
 	}
 
