@@ -1,4 +1,4 @@
-/*	$OpenBSD: xenvar.h,v 1.43 2016/12/09 17:24:55 mikeb Exp $	*/
+/*	$OpenBSD: xenvar.h,v 1.44 2016/12/19 21:07:10 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Belopuhov
@@ -114,14 +114,11 @@ struct xen_softc {
 	 * Xenstore
 	 */
 	struct xs_softc		*sc_xs;		/* xenstore softc */
-
 	struct task		 sc_ctltsk;	/* control task */
-
 	struct xen_devlists	 sc_devlists;	/* device lists heads */
-	struct rwlock		 sc_devlck;
 };
 
-extern struct xen_softc *xen_sc;
+extern struct xen_softc		*xen_sc;
 
 struct xen_attach_args {
 	char			 xa_name[16];
