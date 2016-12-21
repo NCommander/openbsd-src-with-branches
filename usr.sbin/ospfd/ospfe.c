@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.95 2016/09/02 14:02:48 benno Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.96 2016/09/03 10:22:57 renato Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -318,6 +318,7 @@ ospfe_dispatch_main(int fd, short event, void *bula)
 						iface->flags = kif->flags;
 						iface->linkstate =
 						    kif->link_state;
+						iface->mtu = kif->mtu;
 
 						if (link_ok) {
 							if_fsm(iface,
