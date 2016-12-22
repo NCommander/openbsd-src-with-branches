@@ -1,4 +1,4 @@
-/*	$OpenBSD: mroute6.c,v 1.20 2015/02/13 13:28:17 dcoppa Exp $	*/
+/*	$OpenBSD: mroute6.c,v 1.21 2016/08/27 04:13:43 guenther Exp $	*/
 
 /*
  * Copyright (C) 1998 WIDE Project.
@@ -107,8 +107,6 @@ mroute6pr(void)
 	case 0:
 		printf("no IPv6 multicast routing compiled into this system\n");
 		return;
-	case IPPROTO_PIM:
-		break;
 	default:
 		printf("IPv6 multicast routing protocol %u, unknown\n",
 		    mrtproto);
@@ -212,8 +210,6 @@ mrt6_stats(void)
 	case 0:
 		printf("no IPv6 multicast routing compiled into this system\n");
 		return;
-	case IPPROTO_PIM:
-		break;
 	default:
 		printf("IPv6 multicast routing protocol %u, unknown\n",
 		    mrt6proto);

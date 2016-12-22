@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.235 2016/09/18 14:28:05 deraadt Exp $
+#	$OpenBSD: GENERIC,v 1.236 2016/11/29 09:08:34 mpi Exp $
 #
 #	Machine-independent option; used by all architectures for their
 #	GENERIC kernel
@@ -58,7 +58,6 @@ option		PPP_BSDCOMP	# PPP BSD compression
 option		PPP_DEFLATE
 option		PIPEX		# Ppp IP EXtension, for npppd
 option		MROUTING	# Multicast router
-#option		PIM		# Protocol Independent Multicast
 option		MPLS		# Multi-Protocol Label Switching
 #option		BFD		# Bi-directional Forwarding Detection
 
