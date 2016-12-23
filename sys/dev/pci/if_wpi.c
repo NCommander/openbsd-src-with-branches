@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpi.c,v 1.135 2016/09/05 08:18:40 tedu Exp $	*/
+/*	$OpenBSD: if_wpi.c,v 1.136 2016/10/05 21:26:54 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -494,6 +494,8 @@ wpi_prph_write_region_4(struct wpi_softc *sc, uint32_t addr,
 		wpi_prph_write(sc, addr, *data);
 }
 
+#ifdef WPI_DEBUG
+
 static __inline uint32_t
 wpi_mem_read(struct wpi_softc *sc, uint32_t addr)
 {
@@ -517,6 +519,8 @@ wpi_mem_read_region_4(struct wpi_softc *sc, uint32_t addr, uint32_t *data,
 	for (; count > 0; count--, addr += 4)
 		*data++ = wpi_mem_read(sc, addr);
 }
+
+#endif
 
 int
 wpi_read_prom_data(struct wpi_softc *sc, uint32_t addr, void *data, int count)
