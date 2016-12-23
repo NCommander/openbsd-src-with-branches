@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.222 2016/11/21 16:36:10 mestre Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.223 2016/11/30 07:59:04 mestre Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -489,7 +489,8 @@ main(int argc, char *argv[])
 	} else
 		LocalDomain = "";
 
-	linesize = getmsgbufsize();
+	/* Reserve space for kernel message buffer plus buffer full message. */
+	linesize = getmsgbufsize() + 64;
 	if (linesize < MAXLINE)
 		linesize = MAXLINE;
 	linesize++;
