@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.h,v 1.24 2016/12/19 18:30:50 krw Exp $ */
+/*	$OpenBSD: boot.h,v 1.25 2016/12/24 15:55:07 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -237,7 +237,7 @@ _dl_boot_bind(const long sp, long *dl_data, Elf_Dyn *dynamicp)
 			 * GNU_RELRO (a) covers the GOT, and (b) comes after
 			 * all LOAD sections, so if we found it then we're done
 			 */
-			return;
+			break;
 		}
 	}
 }
