@@ -1,4 +1,4 @@
-/* $OpenBSD: ampintc.c,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
+/* $OpenBSD: ampintc.c,v 1.2 2016/12/23 10:29:14 patrick Exp $ */
 /*
  * Copyright (c) 2007,2009,2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -188,6 +188,7 @@ static char *ampintc_compatibles[] = {
 	"arm,cortex-a7-gic",
 	"arm,cortex-a9-gic",
 	"arm,cortex-a15-gic",
+	"arm,gic-400",
 	NULL
 };
 
