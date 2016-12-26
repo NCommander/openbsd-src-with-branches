@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.96 2016/11/08 07:10:55 mlarkin Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.97 2016/11/15 11:25:38 jsg Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -3766,8 +3766,8 @@ vmx_handle_cpuid(struct vcpu *vcpu)
 	case 0x01:	/* Version, brand, feature info */
 		*rax = cpu_id;
 		/* mask off host's APIC ID, reset to vcpu id */
-		*rbx = cpu_ebxfeature & 0x00FFFFFF;
-		*rbx &= (vcpu->vc_id & 0xFF) << 24;
+		*rbx = cpu_ebxfeature & 0x0000FFFF;
+		*rbx |= (vcpu->vc_id & 0xFF) << 24;
 		/*
 		 * clone host capabilities minus:
 		 *  debug store (CPUIDECX_DTES64, CPUIDECX_DSCPL, CPUID_DS)
