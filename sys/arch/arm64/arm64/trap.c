@@ -1,4 +1,4 @@
-/* $OpenBSD: trap.c,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
+/* $OpenBSD: trap.c,v 1.2 2016/12/18 17:46:52 patrick Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * All rights reserved.
@@ -100,7 +100,7 @@ cpu_fetch_syscall_args(struct thread *td, struct syscall_args *sa)
 	sa->narg = sa->callp->sy_narg;
 	memcpy(sa->args, ap, nap * sizeof(register_t));
 	if (sa->narg > nap)
-		panic("TODO: Could we have more then 8 args?");
+		panic("TODO: Could we have more than 8 args?");
 
 	td->td_retval[0] = 0;
 	td->td_retval[1] = 0;
