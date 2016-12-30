@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK_CD,v 1.231 2016/09/04 10:22:06 tedu Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.233 2016/10/14 19:50:07 deraadt Exp $
 
 machine		i386
 maxusers	4
@@ -10,7 +10,7 @@ option		NO_PROPOLICE
 option		BOOT_CONFIG
 
 option		RAMDISK_HOOKS
-option		MINIROOTSIZE=3872
+option		MINIROOTSIZE=6400
 
 option		PCIVERBOSE
 option		SCSITERSE
