@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.2 2016/10/19 17:45:38 natano Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 2016/11/24 16:32:33 natano Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -62,7 +62,7 @@ unconfig:
 	-vnconfig -u ${VND}
 
 
-DISKTYPE=	rdroot
+DISKTYPE?=	rdroot
 MAKEFSARGS_RD=	-o disklabel=${DISKTYPE},minfree=0,density=4096
 
 bsd.gz: bsd.rd
@@ -90,6 +90,9 @@ mr.fs: instbin
 	    sh ${UTILS}/runlist.sh ${LISTS}
 	rm $@.d/instbin
 	makefs ${MAKEFSARGS_RD} $@ $@.d
+	vnconfig -v -c ${VND} mr.fs
+	df -i /dev/${VND}a
+	vnconfig -u ${VND}
 
 rdsetroot:	${TOP}/../common/elfrdsetroot.c
 	${HOSTCC} ${HOSTCFLAGS} -o rdsetroot \
