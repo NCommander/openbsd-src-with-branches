@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.24 2015/11/23 19:28:34 reyk Exp $	*/
+/*	$OpenBSD: types.h,v 1.25 2016/01/27 20:20:30 gsoares Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -108,7 +108,9 @@ enum imsg_type {
 	IMSG_CERTINVALID,
 	IMSG_OCSP_FD,
 	IMSG_OCSP_URL,
-	IMSG_AUTH
+	IMSG_AUTH,
+	IMSG_PRIVKEY,
+	IMSG_PUBKEY
 };
 
 enum privsep_procid {
