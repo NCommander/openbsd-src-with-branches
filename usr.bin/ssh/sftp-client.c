@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-client.c,v 1.124 2016/05/25 23:48:45 schwarze Exp $ */
+/* $OpenBSD: sftp-client.c,v 1.125 2016/09/12 01:22:38 deraadt Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -580,6 +580,8 @@ do_lsreaddir(struct sftp_conn *conn, const char *path, int print_flag,
 
 		if ((r = sshbuf_get_u32(msg, &count)) != 0)
 			fatal("%s: buffer error: %s", __func__, ssh_err(r));
+		if (count > SSHBUF_SIZE_MAX)
+			fatal("%s: nonsensical number of entries", __func__);
 		if (count == 0)
 			break;
 		debug3("Received %d SSH2_FXP_NAME responses", count);
