@@ -1,4 +1,4 @@
-/*	$OpenBSD: umidi_quirks.c,v 1.12 2013/03/28 03:58:03 tedu Exp $	*/
+/*	$OpenBSD: umidi_quirks.c,v 1.13 2015/03/14 03:38:50 jsg Exp $	*/
 /*	$NetBSD: umidi_quirks.c,v 1.4 2002/06/19 13:55:30 tshiozak Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/malloc.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/conf.h>
