@@ -1,4 +1,4 @@
-/*	$OpenBSD: _types.h,v 1.19 2014/03/19 05:14:13 guenther Exp $	*/
+/*	$OpenBSD: _types.h,v 1.20 2015/09/26 16:01:00 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -144,9 +144,6 @@ typedef struct label_t {
 	long val[14];
 } label_t;
 #endif
-
-/* XXX check why this still has to be defined. pmap.c issue? */
-#define __SWAP_BROKEN
 
 /* Feature test macros */
 #define	__HAVE_EXEC_MD_MAP
