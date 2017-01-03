@@ -1,0 +1,8 @@
+#	$OpenBSD$
+#
+# Config file and device description for machine-independent FDT code.
+# Included by ports that need it.
+
+device	simplefb: wsemuldisplaydev, rasops15, rasops16, rasops24, rasops32
+attach	simplefb at fdt
+file	dev/fdt/simplefb.c		simplefb
