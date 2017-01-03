@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_nbr.c,v 1.112 2016/12/21 12:30:19 mpi Exp $	*/
+/*	$OpenBSD: nd6_nbr.c,v 1.113 2016/12/22 13:39:32 mpi Exp $	*/
 /*	$KAME: nd6_nbr.c,v 1.61 2001/02/10 16:06:14 jinmei Exp $	*/
 
 /*
@@ -453,8 +453,7 @@ nd6_ns_output(struct ifnet *ifp, struct in6_addr *daddr6,
 
 		if (ln && ln->ln_hold) {
 			hip6 = mtod(ln->ln_hold, struct ip6_hdr *);
-			/* XXX pullup? */
-			if (sizeof(*hip6) < ln->ln_hold->m_len)
+			if (sizeof(*hip6) <= ln->ln_hold->m_len)
 				saddr6 = &hip6->ip6_src;
 			else
 				saddr6 = NULL;
