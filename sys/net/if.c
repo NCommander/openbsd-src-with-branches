@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.469 2016/12/29 12:12:43 mpi Exp $	*/
+/*	$OpenBSD: if.c,v 1.470 2017/01/03 13:11:55 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -624,6 +624,9 @@ if_input(struct ifnet *ifp, struct mbuf_list *ml)
 	caddr_t if_bpf;
 #endif
 
+	if (ml_empty(ml))
+		return;
+
 	MBUF_LIST_FOREACH(ml, m) {
 		m->m_pkthdr.ph_ifidx = ifp->if_index;
 		m->m_pkthdr.ph_rtableid = ifp->if_rdomain;
@@ -649,6 +652,9 @@ if_input(struct ifnet *ifp, struct mbuf_list *ml)
 				ml_enqueue(ml, m);
 		}
 	}
+
+	if (ml_empty(ml))
+		return;
 #endif
 
 	mq_enlist(&ifp->if_inputqueue, ml);
