@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.214 2016/09/12 01:22:38 deraadt Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.215 2016/11/30 03:07:37 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -76,7 +76,7 @@
 #endif
 
 #ifndef DEFAULT_PKCS11_WHITELIST
-# define DEFAULT_PKCS11_WHITELIST "/usr/lib/*,/usr/local/lib/*"
+# define DEFAULT_PKCS11_WHITELIST "/usr/lib*/*,/usr/local/lib*/*"
 #endif
 
 typedef enum {
