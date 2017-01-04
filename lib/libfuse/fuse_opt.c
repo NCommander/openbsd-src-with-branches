@@ -344,7 +344,7 @@ fuse_opt_insert_arg(struct fuse_args *args, int p, const char *name)
 	char *this_arg, *next_arg;
 	int i;
 
-	if (name == NULL || *name == '\0')
+	if (name == NULL)
 		return (-1);
 
 	if (!args->allocated && alloc_argv(args))
