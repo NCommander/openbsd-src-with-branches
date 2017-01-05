@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.85 2016/11/17 14:52:48 jsing Exp $	*/
+/*	$OpenBSD: parse.y,v 1.86 2017/01/05 12:42:18 krw Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -1598,8 +1598,7 @@ parse_config(const char *filename, struct httpd *x_conf)
 	endprotoent();
 
 	/* Free macros */
-	for (sym = TAILQ_FIRST(&symhead); sym != NULL; sym = next) {
-		next = TAILQ_NEXT(sym, entry);
+	TAILQ_FOREACH_SAFE(sym, &symhead, entry, next) {
 		if (!sym->persist) {
 			free(sym->nam);
 			free(sym->val);

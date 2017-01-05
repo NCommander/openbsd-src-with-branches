@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.191 2016/11/25 09:21:21 gilles Exp $	*/
+/*	$OpenBSD: parse.y,v 1.192 2017/01/05 12:42:19 krw Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -2011,8 +2011,7 @@ parse_config(struct smtpd *x_conf, const char *filename, int opts)
 	}
 
 	/* Free macros and check which have not been used. */
-	for (sym = TAILQ_FIRST(&symhead); sym != NULL; sym = next) {
-		next = TAILQ_NEXT(sym, entry);
+	TAILQ_FOREACH_SAFE(sym, &symhead, entry, next) {
 		if ((conf->sc_opts & SMTPD_OPT_VERBOSE) && !sym->used)
 			fprintf(stderr, "warning: macro '%s' not "
 			    "used\n", sym->nam);
