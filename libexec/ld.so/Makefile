@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.61 2016/05/07 19:05:23 guenther Exp $
+#	$OpenBSD: Makefile,v 1.62 2016/07/04 21:15:06 guenther Exp $
 
 SUBDIR=ldconfig ldd
 MAN=	ld.so.1
@@ -31,6 +31,7 @@ SRCS+=	library.c
 .PATH:	${.CURDIR}/${MACHINE_CPU}
 
 DEBUG?=	-g
+CFLAGS += -fno-builtin
 CFLAGS += -Wall -Werror
 CFLAGS += -I${.CURDIR} -I${.CURDIR}/${MACHINE_CPU} \
 	-D'DEF_WEAK(x)=asm("")' -D'DEF_STRONG(x)=asm("")' \
