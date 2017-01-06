@@ -1,5 +1,5 @@
 
-/* $OpenBSD: servconf.c,v 1.300 2016/11/23 23:14:15 markus Exp $ */
+/* $OpenBSD: servconf.c,v 1.301 2016/11/30 03:00:05 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -253,7 +253,7 @@ fill_default_server_options(ServerOptions *options)
 	if (options->gss_cleanup_creds == -1)
 		options->gss_cleanup_creds = 1;
 	if (options->gss_strict_acceptor == -1)
-		options->gss_strict_acceptor = 0;
+		options->gss_strict_acceptor = 1;
 	if (options->password_authentication == -1)
 		options->password_authentication = 1;
 	if (options->kbd_interactive_authentication == -1)
