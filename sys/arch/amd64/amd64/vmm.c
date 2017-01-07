@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.98 2016/12/26 08:55:09 mlarkin Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.99 2017/01/03 09:48:15 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -1365,7 +1365,8 @@ vcpu_writeregs_vmx(struct vcpu *vcpu, uint64_t regmask, int loadvmcs,
     struct vcpu_reg_state *vrs)
 {
 	int i, ret = 0;
-	uint64_t sel, limit, ar;
+	uint16_t sel;
+	uint64_t limit, ar;
 	uint64_t *gprs = vrs->vrs_gprs;
 	uint64_t *crs = vrs->vrs_crs;
 	struct vcpu_segment_info *sregs = vrs->vrs_sregs;
