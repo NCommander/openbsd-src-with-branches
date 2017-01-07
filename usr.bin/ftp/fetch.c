@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.154 2016/12/28 17:48:04 deraadt Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.155 2017/01/03 17:00:04 deraadt Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -741,7 +741,7 @@ noslash:
 
 #ifndef NOSSL
 	free(buf);
-#endif /* !SMALL */
+#endif /* !NOSSL */
 	buf = NULL;
 
 	if (fin != NULL && fflush(fin) == EOF) {
