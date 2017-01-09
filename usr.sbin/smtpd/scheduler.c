@@ -1,4 +1,4 @@
-/*	$OpenBSD: scheduler.c,v 1.54 2016/09/04 16:10:31 eric Exp $	*/
+/*	$OpenBSD: scheduler.c,v 1.55 2016/09/08 12:06:43 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -306,7 +306,7 @@ scheduler_imsg(struct mproc *p, struct imsg *imsg)
 		m_msg(&m, imsg);
 		m_get_int(&m, &v);
 		m_end(&m);
-		log_verbose(v);
+		log_setverbose(v);
 		return;
 
 	case IMSG_CTL_PROFILE:

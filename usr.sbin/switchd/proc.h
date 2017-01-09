@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.4 2016/10/05 16:58:19 reyk Exp $	*/
+/*	$OpenBSD: proc.h,v 1.5 2016/11/16 15:32:42 rzalamena Exp $	*/
 
 /*
  * Copyright (c) 2010-2015 Reyk Floeter <reyk@openbsd.org>
@@ -168,7 +168,8 @@ void	 control(struct privsep *, struct privsep_proc *);
 /* log.c */
 void	log_init(int, int);
 void	log_procinit(const char *);
-void	log_verbose(int);
+void	log_setverbose(int);
+int	log_getverbose(void);
 void	log_warn(const char *, ...)
 	    __attribute__((__format__ (printf, 1, 2)));
 void	log_warnx(const char *, ...)

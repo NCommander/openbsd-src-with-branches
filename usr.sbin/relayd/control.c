@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.54 2016/09/26 16:25:16 reyk Exp $	*/
+/*	$OpenBSD: control.c,v 1.55 2017/01/09 14:04:31 krw Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -387,7 +387,7 @@ control_dispatch_imsg(int fd, short event, void *arg)
 
 			memcpy(imsg.data, &verbose, sizeof(verbose));
 			control_imsg_forward(ps, &imsg);
-			log_verbose(verbose);
+			log_setverbose(verbose);
 			break;
 		default:
 			log_debug("%s: error handling imsg %d",

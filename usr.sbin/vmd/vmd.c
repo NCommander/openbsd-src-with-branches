@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.46 2016/12/14 06:59:12 reyk Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.47 2016/12/14 21:17:25 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -421,7 +421,7 @@ main(int argc, char **argv)
 	env->vmd_conffile = conffile;
 
 	log_init(env->vmd_debug, LOG_DAEMON);
-	log_verbose(env->vmd_verbose);
+	log_setverbose(env->vmd_verbose);
 
 	if (env->vmd_noaction)
 		ps->ps_noaction = 1;
