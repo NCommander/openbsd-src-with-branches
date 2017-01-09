@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.9 2014/12/30 11:26:48 kettenis Exp $ */
+/*	$OpenBSD: archdep.h,v 1.10 2015/12/06 23:36:12 guenther Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
@@ -89,7 +89,5 @@ do {									\
 		sp++;							\
 	}								\
 } while (0)
-
-#define GOT_PERMS PROT_READ
 
 #endif /* _MIPS_ARCHDEP_H_ */

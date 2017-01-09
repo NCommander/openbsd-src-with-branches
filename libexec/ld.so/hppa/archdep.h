@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.10 2015/12/06 23:36:12 guenther Exp $	*/
+/*	$OpenBSD: archdep.h,v 1.11 2016/05/18 20:40:20 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Michael Shalayeff
@@ -84,8 +84,6 @@ RELOC_DYN(Elf_RelA *r, const Elf_Sym *s, Elf_Addr *p, unsigned long v)
 }
 
 #define RELOC_GOT(obj, offs)
-
-#define GOT_PERMS PROT_READ
 
 void _hppa_dl_dtors(void);
 Elf_Addr _dl_md_plabel(Elf_Addr, Elf_Addr *);

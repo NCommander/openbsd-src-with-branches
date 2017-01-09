@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.16 2014/12/27 13:13:25 kettenis Exp $ */
+/*	$OpenBSD: archdep.h,v 1.17 2015/12/06 23:36:12 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -64,7 +64,5 @@ RELOC_DYN(Elf64_Rela *r, const Elf64_Sym *s, Elf64_Addr *p, unsigned long v)
 }
 
 #define RELOC_GOT(obj, offs)
-
-#define GOT_PERMS PROT_READ
 
 #endif /* _ALPHA_ARCHDEP_H_ */
