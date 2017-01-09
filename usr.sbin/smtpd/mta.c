@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta.c,v 1.201 2016/05/22 16:31:21 gilles Exp $	*/
+/*	$OpenBSD: mta.c,v 1.202 2016/09/03 22:59:06 giovanni Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -400,7 +400,7 @@ mta_imsg(struct mproc *p, struct imsg *imsg)
 			m_msg(&m, imsg);
 			m_get_int(&m, &v);
 			m_end(&m);
-			log_verbose(v);
+			log_trace_verbose(v);
 			return;
 
 		case IMSG_CTL_PROFILE:

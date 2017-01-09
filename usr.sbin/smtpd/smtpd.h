@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.526 2016/11/30 11:52:48 eric Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.527 2016/11/30 18:38:32 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1018,7 +1018,7 @@ struct msg {
 
 extern enum smtp_proc_type	smtpd_process;
 
-extern int verbose;
+extern int tracing;
 extern int foreground_log;
 extern int profiling;
 
