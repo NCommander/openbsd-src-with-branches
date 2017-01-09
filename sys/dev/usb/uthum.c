@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthum.c,v 1.30 2016/01/09 04:14:42 jcs Exp $   */
+/*	$OpenBSD: uthum.c,v 1.31 2016/03/19 11:34:22 mpi Exp $   */
 
 /*
  * Copyright (c) 2009, 2010 Yojiro UO <yuo@nui.org>
@@ -21,7 +21,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/malloc.h>
 #include <sys/device.h>
 #include <sys/conf.h>
 #include <sys/sensors.h>

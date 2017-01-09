@@ -1,4 +1,4 @@
-/*	$OpenBSD: ugold.c,v 1.11 2016/01/08 15:54:14 jcs Exp $   */
+/*	$OpenBSD: ugold.c,v 1.12 2016/01/09 04:14:42 jcs Exp $   */
 
 /*
  * Copyright (c) 2013 Takayoshi SASANO <uaa@openbsd.org>
@@ -26,7 +26,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/malloc.h>
 #include <sys/device.h>
 #include <sys/sensors.h>
 
