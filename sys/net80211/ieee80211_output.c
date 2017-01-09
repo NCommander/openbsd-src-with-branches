@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_output.c,v 1.112 2017/01/09 09:30:02 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_output.c,v 1.113 2017/01/09 13:01:37 stsp Exp $	*/
 /*	$NetBSD: ieee80211_output.c,v 1.13 2004/05/31 11:02:55 dyoung Exp $	*/
 
 /*-
@@ -306,7 +306,7 @@ static const struct ieee80211_edca_ac_params
 #endif
 
 #ifndef IEEE80211_STA_ONLY
-static const struct ieee80211_edca_ac_params
+const struct ieee80211_edca_ac_params
     ieee80211_qap_edca_table[IEEE80211_MODE_MAX][EDCA_NUM_AC] = {
 	[IEEE80211_MODE_11B] = {
 		[EDCA_AC_BK] = { 5, 10, 7,   0 },
