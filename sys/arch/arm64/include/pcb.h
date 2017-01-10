@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: pcb.h,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -40,6 +40,6 @@ struct pcb {
 	struct cpu_info	*pcb_fpcpu;
 	paddr_t		pcb_pagedir;	// ttbr0
 
-	uint64_t	pcb_tcb;
+	void		*pcb_tcb;
 };
 #endif	/* _MACHINE_PCB_H_ */
