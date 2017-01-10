@@ -1,4 +1,4 @@
-/*	$OpenBSD: pvvar.h,v 1.7 2016/01/27 09:04:19 reyk Exp $	*/
+/*	$OpenBSD: pvvar.h,v 1.8 2016/06/06 17:17:54 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -77,6 +77,8 @@ struct pv_attach_args {
 
 void	 pvbus_identify(void);
 int	 pvbus_probe(void);
+void	 pvbus_reboot(struct device *);
+void	 pvbus_shutdown(struct device *);
 
 #endif /* _KERNEL */
 #endif /* _DEV_PV_PVBUS_H_ */
