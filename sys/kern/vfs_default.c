@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_default.c,v 1.41 2015/03/14 03:38:51 jsg Exp $  */
+/*	$OpenBSD: vfs_default.c,v 1.42 2016/03/12 00:27:15 bluhm Exp $  */
 
 /*
  * Portions of this code are:
@@ -76,7 +76,7 @@ vop_generic_revoke(void *v)
 		 * point laying around in VFS.
 		 */
 		if (!vfs_busy(mp, VB_WRITE|VB_WAIT)) {
-			dounmount(mp, MNT_FORCE | MNT_DOOMED, p, NULL);
+			dounmount(mp, MNT_FORCE | MNT_DOOMED, p);
 			break;
 		}
 	}
