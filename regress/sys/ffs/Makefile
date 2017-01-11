@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2011/04/18 16:52:11 thib Exp $
+# $OpenBSD: Makefile,v 1.5 2017/01/10 23:16:15 bluhm Exp $
 
 PROG=	fstest
 
@@ -29,7 +29,7 @@ chmod: ${PROG} mount
 chown: ${PROG} mount
 	cd /mnt && env FSTEST=${.OBJDIR}/fstest /bin/sh ${.CURDIR}/run\
 		${.CURDIR}/tests/chown/*.t
-	
+
 link: ${PROG} mount
 	cd /mnt && env FSTEST=${.OBJDIR}/fstest /bin/sh ${.CURDIR}/run\
 		${.CURDIR}/tests/link/*.t
