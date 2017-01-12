@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.472 2017/01/04 03:42:33 dlg Exp $	*/
+/*	$OpenBSD: if.c,v 1.473 2017/01/04 03:56:15 dlg Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -597,6 +597,10 @@ if_enqueue(struct ifnet *ifp, struct mbuf *m)
 
 	length = m->m_pkthdr.len;
 	mflags = m->m_flags;
+
+#if NPF > 0
+	pf_pkt_unlink_state_key(m);
+#endif	/* NPF > 0 */
 
 	/*
 	 * Queue message on interface, and start output if interface
