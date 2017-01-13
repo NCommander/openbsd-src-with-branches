@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.c,v 1.26 2016/12/05 09:28:11 reyk Exp $	*/
+/*	$OpenBSD: virtio.c,v 1.27 2017/01/13 14:50:56 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -1241,9 +1241,6 @@ vmmci_io(int dir, uint16_t reg, uint32_t *data, uint8_t *intr,
 	} else {
 		switch (reg) {
 		case VIRTIO_CONFIG_DEVICE_CONFIG_NOMSI:
-			*data = vmmci.cmd;
-			break;
-		case VIRTIO_CONFIG_DEVICE_CONFIG_NOMSI + 1:
 			*data = vmmci.cmd;
 			break;
 		case VIRTIO_CONFIG_DEVICE_FEATURES:
