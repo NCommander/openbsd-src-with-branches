@@ -1,4 +1,4 @@
-/* $OpenBSD: options.c,v 1.22 2017/01/12 15:36:35 nicm Exp $ */
+/* $OpenBSD: options.c,v 1.23 2017/01/13 11:56:43 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -221,7 +221,7 @@ options_set_style(struct options *oo, const char *name, int append,
 	return (o);
 }
 
-struct grid_cell *
+const struct grid_cell *
 options_get_style(struct options *oo, const char *name)
 {
 	struct options_entry	*o;
