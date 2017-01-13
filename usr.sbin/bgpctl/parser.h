@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.27 2015/04/17 07:51:09 phessler Exp $ */
+/*	$OpenBSD: parser.h,v 1.28 2016/10/14 16:05:35 phessler Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -66,6 +66,7 @@ struct parse_result {
 	struct filter_largecommunity  large_community;
 	char			 peerdesc[PEER_DESCR_LEN];
 	char			 rib[PEER_DESCR_LEN];
+	char			 shutcomm[SHUT_COMM_LEN];
 	char			*irr_outdir;
 	int			 flags;
 	u_int			 rtableid;
