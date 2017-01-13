@@ -1,4 +1,4 @@
-/*	$OpenBSD: traceroute.c,v 1.145 2016/02/12 05:11:29 semarie Exp $	*/
+/*	$OpenBSD: worker.c,v 1.1 2016/09/03 22:00:06 benno Exp $	*/
 /*	$NetBSD: traceroute.c,v 1.10 1995/05/21 15:50:45 mycroft Exp $	*/
 
 /*
@@ -227,7 +227,7 @@ wait_for_reply(int sock, struct msghdr *mhdr)
 	pfd[0].events = POLLIN;
 	pfd[0].revents = 0;
 
-	if (poll(pfd, 1, waittime * 1000) > 0)
+	if (poll(pfd, 1, curwaittime) > 0)
 		cc = recvmsg(rcvsock, mhdr, 0);
 
 	return (cc);
