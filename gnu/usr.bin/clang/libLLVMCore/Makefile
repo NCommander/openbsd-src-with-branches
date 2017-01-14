@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:49 pascal Exp $
 
 LIB=	LLVMCore
 NOPIC=
@@ -41,12 +41,14 @@ SRCS=	AsmWriter.cpp \
 	Mangler.cpp \
 	Metadata.cpp \
 	Module.cpp \
+	ModuleSummaryIndex.cpp \
 	Operator.cpp \
+	OptBisect.cpp \
 	Pass.cpp \
 	PassManager.cpp \
 	PassRegistry.cpp \
+	ProfileSummary.cpp \
 	Statepoint.cpp \
-	FunctionInfo.cpp \
 	Type.cpp \
 	TypeFinder.cpp \
 	Use.cpp \

@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:49 pascal Exp $
 
 LIB=	LLVMSelectionDAG
 NOPIC=
@@ -25,10 +25,10 @@ SRCS=	DAGCombiner.cpp \
 	SelectionDAGDumper.cpp \
 	SelectionDAGISel.cpp \
 	SelectionDAGPrinter.cpp \
+	SelectionDAGTargetInfo.cpp \
 	StatepointLowering.cpp \
 	ScheduleDAGVLIW.cpp \
-	TargetLowering.cpp \
-	TargetSelectionDAGInfo.cpp
+	TargetLowering.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/CodeGen/SelectionDAG
 

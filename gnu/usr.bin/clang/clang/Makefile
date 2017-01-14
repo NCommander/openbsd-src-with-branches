@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:48 pascal Exp $
 
 PROG=	clang
 BINDIR=	/usr/bin
@@ -52,6 +52,9 @@ LLVM_LIBDEPS=	clangFrontendTool \
 		LLVMInstCombine \
 		LLVMInstrumentation \
 		LLVMProfileData \
+		LLVMCoverage \
+		LLVMDebugInfoCodeView \
+		LLVMGlobalISel \
 		LLVMTransformUtils \
 		LLVMBitWriter \
 		LLVMAnalysis \

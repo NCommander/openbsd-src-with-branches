@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:50 pascal Exp $
 
 LIB=	clangBasic
 NOPIC=
@@ -10,6 +10,7 @@ CPPFLAGS+=	${CLANG_INCLUDES}
 SRCS=	Attributes.cpp \
 	Builtins.cpp \
 	CharInfo.cpp \
+	Cuda.cpp \
 	Diagnostic.cpp \
 	DiagnosticIDs.cpp \
 	DiagnosticOptions.cpp \
