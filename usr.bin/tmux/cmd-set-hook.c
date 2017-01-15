@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-set-hook.c,v 1.8 2016/10/14 22:14:22 nicm Exp $ */
+/* $OpenBSD: cmd-set-hook.c,v 1.9 2016/10/16 19:04:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Thomas Adam <thomas@xteddy.org>
@@ -115,7 +115,8 @@ cmd_set_hook_exec(struct cmd *self, struct cmdq_item *item)
 		cmdq_error(item, "no command to set hook: %s", name);
 		return (CMD_RETURN_ERROR);
 	}
-	if (cmd_string_parse(cmd, &cmdlist, NULL, 0, &cause) != 0) {
+	cmdlist = cmd_string_parse(cmd, NULL, 0, &cause);
+	if (cmdlist == NULL) {
 		if (cause != NULL) {
 			cmdq_error(item, "%s", cause);
 			free(cause);
