@@ -1,4 +1,4 @@
-/*	$OpenBSD: sfb.c,v 1.20 2010/12/26 15:40:58 miod Exp $	*/
+/*	$OpenBSD: sfb.c,v 1.21 2013/10/20 20:07:22 miod Exp $	*/
 /*	$NetBSD: sfb.c,v 1.7 1996/12/05 01:39:44 cgd Exp $	*/
 
 /*
@@ -255,7 +255,7 @@ sfbattach(parent, self, aux)
 		printf(": can't map mem space\n");
 		return;
 	}
-	printf(": %d x %d, %dbpp\n", sc->sc_dc->dc_wid, sc->sc_dc->dc_ht,
+	printf(": %dx%d, %dbpp\n", sc->sc_dc->dc_wid, sc->sc_dc->dc_ht,
 	    sc->sc_dc->dc_depth);
 
 #if 0

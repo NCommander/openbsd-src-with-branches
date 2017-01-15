@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: radeonfb.c,v 1.1 2016/10/07 04:08:30 visa Exp $	*/
 
 /*
  * Copyright (c) 2009 Mark Kettenis.
@@ -229,7 +229,7 @@ radeonfb_attach(struct device *parent, struct device *self, void *aux)
 		}
 	}
 
-	printf(": %dx%dx%d frame buffer\n",
+	printf(": %dx%d, %dbpp\n",
 	    fb->ri.ri_width, fb->ri.ri_height, fb->ri.ri_depth);
 
 	sc->sc_scrlist[0] = &fb->wsd;
