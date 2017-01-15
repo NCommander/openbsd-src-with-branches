@@ -1,4 +1,4 @@
-/* $OpenBSD: locore.S,v 1.2 2016/12/18 14:40:25 patrick Exp $ */
+/* $OpenBSD: locore.S,v 1.3 2017/01/15 18:13:56 patrick Exp $ */
 /*-
  * Copyright (c) 2012-2014 Andrew Turner
  * All rights reserved.
@@ -237,12 +237,13 @@ drop_to_el1:
 
 	mrs	x2, icc_sre_el2
 	orr	x2, x2, #ICC_SRE_EL2_EN	/* Enable access from insecure EL1 */
+	orr	x2, x2, #ICC_SRE_EL2_SRE	/* Enable system registers */
 	msr	icc_sre_el2, x2
-	isb
 2:
 
 	/* Set the address to return to our return address */
 	msr	elr_el2, x30
+	isb
 
 	eret
 
