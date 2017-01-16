@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $OpenBSD: flow.pl,v 1.2 2013/09/11 20:37:09 florian Exp $
+# $OpenBSD: flow.pl,v 1.3 2016/10/26 14:06:33 bluhm Exp $
 
 # Copyright (c) 2013 Florian Obser <florian@openbsd.org>
 #
@@ -220,9 +220,7 @@ while ($sock->recv($packet,1548)) {
 					    $flow_ref->{name2id($name)});
 				}
 			}
-			my $duration = ($end-$start);
-			say 'duration >= 9 && duration <= 12: '.
-			    ($duration >= 9 && $duration <= 12 );
+
 			say 'ingressInterface == egressInterface && '.
 			    'egressInterface > 0: ', ($iif == $eif && $eif > 0);
 		}
