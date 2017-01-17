@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.20 2014/09/13 16:06:37 doug Exp $	*/
+/*	$OpenBSD: config.c,v 1.21 2014/09/28 18:42:50 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -869,7 +869,7 @@ hvmd_finalize_maus(struct md *md)
 
 	node = md_add_node(md, "maus");
 	md_link_node(md, parent, node);
-	
+
 	if (have_cwqs) {
 		node = md_add_node(md, "cwqs");
 		md_link_node(md, parent, node);
@@ -2306,7 +2306,7 @@ build_config(const char *filename)
 	pri_alloc_memory(hv_membase, hv_memsize);
 
 	num_cpus = primary_num_cpus = 0;
-	memory = primary_memory = 0; 
+	memory = primary_memory = 0;
 	SIMPLEQ_FOREACH(domain, &conf.domain_list, entry) {
 		if (strcmp(domain->name, "primary") == 0) {
 			primary_num_cpus = domain->vcpu;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.62 2015/12/01 11:58:31 claudio Exp $ */
+/*	$OpenBSD: config.c,v 1.63 2016/01/26 18:35:01 mmcc Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -179,7 +179,7 @@ merge_config(struct bgpd_config *xconf, struct bgpd_config *conf,
 
 	/* clear all current filters and take over the new ones */
 	filterlist_free(xconf->filters);
-	xconf->filters = conf->filters;	
+	xconf->filters = conf->filters;
 	conf->filters = NULL;
 
 	/* switch the network statements, but first remove the old ones */

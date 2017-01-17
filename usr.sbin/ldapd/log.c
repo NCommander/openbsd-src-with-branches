@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.3 2010/11/10 08:00:54 martinh Exp $	*/
+/*	$OpenBSD: log.c,v 1.4 2013/11/02 13:31:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -77,7 +77,7 @@ vlog(int pri, const char *fmt, va_list ap)
 	time_t		 now;
 
 	if (debug) {
-		gettimeofday(&tv, NULL); 
+		gettimeofday(&tv, NULL);
 		now = tv.tv_sec;
 		tm = localtime(&now);
 		rc = strftime(datebuf, sizeof(datebuf), "%b %e %H:%M:%S", tm);
