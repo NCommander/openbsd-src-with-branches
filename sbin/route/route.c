@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.192 2016/09/24 19:36:49 phessler Exp $	*/
+/*	$OpenBSD: route.c,v 1.193 2016/12/13 08:40:54 mpi Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -1318,9 +1318,10 @@ print_rtmsg(struct rt_msghdr *rtm, int msglen)
 		(void) printf(", if# %d, ", ifm->ifm_index);
 		if (if_indextoname(ifm->ifm_index, ifname) != NULL)
 			printf("name: %s, ", ifname);
-		printf("link: %s, flags:",
+		printf("link: %s, mtu: %u, flags:",
 		    get_linkstate(ifm->ifm_data.ifi_type,
-		    ifm->ifm_data.ifi_link_state));
+		        ifm->ifm_data.ifi_link_state),
+		    ifm->ifm_data.ifi_mtu);
 		bprintf(stdout, ifm->ifm_flags, ifnetflags);
 		pmsg_addrs((char *)ifm + ifm->ifm_hdrlen, ifm->ifm_addrs);
 		break;
