@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_addr.h,v 1.5 2015/03/30 21:05:17 miod Exp $	*/
+/*	$OpenBSD: uvm_addr.h,v 1.6 2016/09/16 01:51:40 dlg Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -90,7 +90,6 @@ int			 uvm_addr_invoke(struct vm_map *,
 struct uvm_addr_state	*uaddr_lin_create(vaddr_t, vaddr_t);
 #endif
 struct uvm_addr_state	*uaddr_rnd_create(vaddr_t, vaddr_t);
-struct uvm_addr_state	*uaddr_hint_create(vaddr_t, vaddr_t, vsize_t);
 #ifndef SMALL_KERNEL
 struct uvm_addr_state	*uaddr_bestfit_create(vaddr_t, vaddr_t);
 struct uvm_addr_state	*uaddr_pivot_create(vaddr_t, vaddr_t);
