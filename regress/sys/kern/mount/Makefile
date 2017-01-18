@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.1.1.1 2017/01/11 17:10:32 bluhm Exp $
+# $OpenBSD: Makefile,v 1.2 2017/01/13 01:33:14 bluhm Exp $
 
-CLEANFILES=	diskimage
+CLEANFILES=	diskimage stamp-*
 
 .PHONY: disk mount unconfig clean
 
@@ -30,10 +30,6 @@ unconfig:
 	-rmdir /mnt/regress-mount 2>/dev/null || true
 	-vnconfig -u vnd0 2>/dev/null || true
 	-rm -f stamp-setup
-
-clean: _SUBDIRUSE unconfig
-	rm -f a.out [Ee]rrs mklog *.core y.tab.h stamp-* \
-	    ${PROG} ${OBJS} ${_LEXINTM} ${_YACCINTM} ${CLEANFILES}
 
 stamp-setup:
 	@echo '\n======== $@ ========'
