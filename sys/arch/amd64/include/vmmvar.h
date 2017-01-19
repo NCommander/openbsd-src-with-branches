@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmvar.h,v 1.25 2017/01/12 09:02:47 mlarkin Exp $	*/
+/*	$OpenBSD: vmmvar.h,v 1.26 2017/01/13 02:27:37 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -688,6 +688,12 @@ struct vcpu {
 	paddr_t vc_vmx_msr_exit_load_pa;
 	vaddr_t vc_vmx_msr_entry_load_va;
 	paddr_t vc_vmx_msr_entry_load_pa;
+
+	/* SVM only */
+	vaddr_t vc_svm_hsa_va;
+	paddr_t vc_svm_hsa_pa;
+	vaddr_t vc_svm_ioio_va;
+	paddr_t vc_svm_ioio_pa;
 };
 
 SLIST_HEAD(vcpu_head, vcpu);
