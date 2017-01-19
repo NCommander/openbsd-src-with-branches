@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD$
+# $OpenBSD: xargs-L.sh,v 1.1 2010/03/25 01:43:47 schwarze Exp $
 #
 # written by Ingo Schwarze <schwarze@openbsd.org> 2010
 # and placed in the public domain
@@ -76,18 +76,18 @@ test_xargs 'a \\\nb'     '-0'      'a \\\nb|'
 test_xargs 'a\\\n b'     '-0'      'a\\\n b|'
 test_xargs 'a \\\n b'    '-0'      'a \\\n b|'
 
-test_xargs 'a b\0c'      '-0 -L 1' 'a b|c|'
-test_xargs 'a  b\0c'     '-0 -L 1' 'a  b|c|'
+test_xargs 'a b\0c'      '-0 -L 1' 'a b|\nc|'
+test_xargs 'a  b\0c'     '-0 -L 1' 'a  b|\nc|'
 test_xargs 'a\nb\0c'     '-0 -L 1' 'a\nb|\nc|'
 test_xargs 'a\n\nb\0c'   '-0 -L 1' 'a\n\nb|\nc|'
-test_xargs 'a \nb\0c'    '-0 -L 1' 'a \nb|c|'
+test_xargs 'a \nb\0c'    '-0 -L 1' 'a \nb|\nc|'
 test_xargs 'a\n b\0c'    '-0 -L 1' 'a\n b|\nc|'
-test_xargs 'a \n b\0c'   '-0 -L 1' 'a \n b|c|'
+test_xargs 'a \n b\0c'   '-0 -L 1' 'a \n b|\nc|'
 test_xargs 'a\n \nb\0c'  '-0 -L 1' 'a\n \nb|\nc|'
-test_xargs 'a \n\nb\0c'  '-0 -L 1' 'a \n\nb|c|'
+test_xargs 'a \n\nb\0c'  '-0 -L 1' 'a \n\nb|\nc|'
 
-test_xargs 'a\\ b\0c'    '-0 -L 1' 'a\\ b|c|'
-test_xargs 'a\\ \nb\0c'  '-0 -L 1' 'a\\ \nb|c|'
+test_xargs 'a\\ b\0c'    '-0 -L 1' 'a\\ b|\nc|'
+test_xargs 'a\\ \nb\0c'  '-0 -L 1' 'a\\ \nb|\nc|'
 test_xargs 'a\n\\ b\0c'  '-0 -L 1' 'a\n\\ b|\nc|'
 
 test_xargs 'a\\\nb\0c'   '-0 -L 1' 'a\\\nb|\nc|'
