@@ -247,8 +247,7 @@ sp_cleanup()
 
 unpriv()
 {
-	# XXX use a dedicated user?
-	local _file=$2 _user=_pkgfetch
+	local _file=$2 _user=_syspatch
 
 	if [[ $1 == -f && -n ${_file} ]]; then
 		>${_file}
