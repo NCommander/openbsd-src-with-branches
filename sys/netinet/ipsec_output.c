@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.63 2016/09/13 19:56:55 markus Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.64 2016/10/11 22:08:01 mikeb Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -567,9 +567,8 @@ ipsec_adjust_mtu(struct mbuf *m, u_int32_t mtu)
 	struct tdb *tdbp;
 	struct m_tag *mtag;
 	ssize_t adjust;
-	int s;
 
-	s = splsoftnet();
+	splsoftassert(IPL_SOFTNET);
 
 	for (mtag = m_tag_find(m, PACKET_TAG_IPSEC_OUT_DONE, NULL); mtag;
 	     mtag = m_tag_find(m, PACKET_TAG_IPSEC_OUT_DONE, mtag)) {
@@ -590,6 +589,4 @@ ipsec_adjust_mtu(struct mbuf *m, u_int32_t mtu)
 		    ntohl(tdbp->tdb_spi), tdbp->tdb_mtu,
 		    adjust, m));
 	}
-
-	splx(s);
 }
