@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.3 2017/01/13 09:18:11 fcambus Exp $ */
+/* $OpenBSD: machdep.c,v 1.4 2017/01/15 18:19:00 patrick Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -48,9 +48,6 @@ char *boot_args = NULL;
 char *boot_file = "";
 
 extern uint64_t esym;
-
-int comcnspeed;
-int comcnmode;
 
 int stdout_node = 0;
 
