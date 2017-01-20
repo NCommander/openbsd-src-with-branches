@@ -1,4 +1,4 @@
-/*	$OpenBSD: xen.c,v 1.70 2016/12/21 12:17:15 mikeb Exp $	*/
+/*	$OpenBSD: xen.c,v 1.71 2017/01/10 17:16:39 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Belopuhov
@@ -1364,9 +1364,8 @@ xen_hotplug(void *arg)
 	/* Detect all removed and kept devices */
 	LIST_FOREACH_SAFE(xdv, &xdl->dl_devs, dv_entry, xvdn) {
 		for (i = 0, keep = 0; i < iov_cnt; i++) {
-			if (seen[i])
-				continue;
-			if (!strcmp(xdv->dv_unit, (char *)iovp[i].iov_base)) {
+			if (!seen[i] &&
+			    !strcmp(xdv->dv_unit, (char *)iovp[i].iov_base)) {
 				seen[i]++;
 				keep++;
 				break;
