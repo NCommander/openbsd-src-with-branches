@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypldap.h,v 1.16 2015/01/16 06:40:22 deraadt Exp $ */
+/*	$OpenBSD: ypldap.h,v 1.17 2016/04/10 09:59:21 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -50,6 +50,11 @@ enum {
 	PROC_MAIN,
 	PROC_CLIENT
 } ypldap_process;
+
+static const char * const log_procnames[] = {
+	"parent",
+	"ldapclient"
+};
 
 struct userent {
 	RB_ENTRY(userent)		 ue_name_node;

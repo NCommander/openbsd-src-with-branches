@@ -1,4 +1,4 @@
-/* $OpenBSD: ldapclient.c,v 1.36 2016/04/10 09:59:21 jmatthew Exp $ */
+/* $OpenBSD: ldapclient.c,v 1.37 2016/11/29 17:15:27 mestre Exp $ */
 
 /*
  * Copyright (c) 2008 Alexander Schrijver <aschrijver@openbsd.org>
@@ -39,6 +39,7 @@
 #include <limits.h>
 
 #include "aldap.h"
+#include "log.h"
 #include "ypldap.h"
 
 void    client_sig_handler(int, short, void *);
@@ -383,6 +384,7 @@ ldapclient(int pipe_main2client[2])
 #endif
 	setproctitle("ldap client");
 	ypldap_process = PROC_CLIENT;
+	log_procname = log_procnames[ypldap_process];
 
 #ifndef DEBUG
 	if (setgroups(1, &pw->pw_gid) ||
