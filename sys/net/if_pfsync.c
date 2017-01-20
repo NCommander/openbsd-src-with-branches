@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.238 2016/11/22 19:29:54 procter Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.239 2016/12/19 15:46:28 mpi Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1241,7 +1241,6 @@ pfsyncioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	switch (cmd) {
 #if 0
 	case SIOCSIFADDR:
-	case SIOCAIFADDR:
 	case SIOCSIFDSTADDR:
 #endif
 	case SIOCSIFFLAGS:
