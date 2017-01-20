@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg_util.c,v 1.9 2014/05/06 11:11:14 reyk Exp $	*/
+/*	$OpenBSD: imsg_util.c,v 1.10 2015/08/21 11:59:27 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -49,7 +49,7 @@ ibuf_zero(struct ibuf *buf)
 }
 
 struct ibuf *
-ibuf_new(void *data, size_t len)
+ibuf_new(const void *data, size_t len)
 {
 	struct ibuf	*buf;
 
