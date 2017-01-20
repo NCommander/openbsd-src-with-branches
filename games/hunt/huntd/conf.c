@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.10 2016/01/07 21:37:53 mestre Exp $	*/
+/*	$OpenBSD: conf.c,v 1.11 2016/08/27 02:06:40 guenther Exp $	*/
 /* David Leonard <d@openbsd.org>, 1999. Public domain. */
 
 #include <sys/select.h>
@@ -211,7 +211,7 @@ parse_line(char *buf, char *fnm, int *line)
 	if (kvp->kw == NULL) {
 		logx(LOG_ERR, 
 		    "%s:%d: unrecognised variable \"%.*s\"", 
-		    fnm, *line, endword - word, word);
+		    fnm, *line, (int)(endword - word), word);
 		return;
 	}
 
