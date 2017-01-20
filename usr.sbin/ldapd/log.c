@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.5 2017/01/17 22:10:55 krw Exp $	*/
+/*	$OpenBSD: log.c,v 1.6 2017/01/20 11:55:08 benno Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -16,6 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/time.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
