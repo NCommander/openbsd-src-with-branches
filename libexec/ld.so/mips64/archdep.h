@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.10 2015/12/06 23:36:12 guenther Exp $ */
+/*	$OpenBSD: archdep.h,v 1.11 2017/01/09 22:51:04 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
@@ -36,7 +36,6 @@
 #include "util.h"
 
 #define	RELOC_TAG	DT_REL
-#define	DL_MALLOC_ALIGN	8	/* Arch constraint or otherwise */
 #define	MACHID	EM_MIPS		/* ELF e_machine ID value checked */
 
 
