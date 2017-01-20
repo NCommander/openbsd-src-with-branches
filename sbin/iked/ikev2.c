@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2.c,v 1.131 2016/06/02 07:14:26 patrick Exp $	*/
+/*	$OpenBSD: ikev2.c,v 1.132 2017/01/20 13:51:08 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -5154,8 +5154,10 @@ ikev2_cp_setaddr(struct iked *env, struct iked_sa *sa, sa_family_t family)
 		/* but skip broadcast and network address */
 		if (host >= upper || host < lower)
 			host = lower;
-		if (host == start)
+		if (host == start) {
+			log_warnx("%s: address pool exhausted", __func__);
 			return (-1);		/* exhausted */
+		}
 	}
 
 	switch (addr.addr_af) {
