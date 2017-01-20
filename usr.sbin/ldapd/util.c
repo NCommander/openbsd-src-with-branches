@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.6 2015/11/02 06:32:51 jmatthew Exp $ */
+/*	$OpenBSD: util.c,v 1.7 2015/12/24 17:47:57 mmcc Exp $ */
 
 /*
  * Copyright (c) 2009 Martin Hedenfalk <martin@bzero.se>
@@ -32,6 +32,7 @@
 #include <errno.h>
 
 #include "ldapd.h"
+#include "log.h"
 
 int
 bsnprintf(char *str, size_t size, const char *format, ...)

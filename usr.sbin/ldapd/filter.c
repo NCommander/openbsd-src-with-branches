@@ -1,4 +1,4 @@
-/*	$OpenBSD: filter.c,v 1.2 2010/11/03 10:33:17 martinh Exp $ */
+/*	$OpenBSD: filter.c,v 1.3 2014/09/21 05:33:49 daniel Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martinh@openbsd.org>
@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include "ldapd.h"
+#include "log.h"
 
 static int	 ldap_filt_eq(struct ber_element *root, struct plan *plan);
 static int	 ldap_filt_subs(struct ber_element *root, struct plan *plan);

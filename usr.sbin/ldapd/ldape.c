@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldape.c,v 1.23 2015/12/24 17:47:57 mmcc Exp $ */
+/*	$OpenBSD: ldape.c,v 1.24 2016/05/01 00:32:37 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -31,6 +31,7 @@
 #include <unistd.h>
 
 #include "ldapd.h"
+#include "log.h"
 
 void			 ldape_sig_handler(int fd, short why, void *data);
 static void		 ldape_auth_result(struct imsg *imsg);

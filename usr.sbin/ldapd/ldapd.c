@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldapd.c,v 1.19 2016/02/04 12:48:06 jca Exp $ */
+/*	$OpenBSD: ldapd.c,v 1.20 2016/05/01 00:32:37 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -38,6 +38,7 @@
 #include <unistd.h>
 
 #include "ldapd.h"
+#include "log.h"
 
 void		 usage(void);
 void		 ldapd_sig_handler(int fd, short why, void *data);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: validate.c,v 1.8 2010/09/03 09:39:17 martinh Exp $ */
+/*	$OpenBSD: validate.c,v 1.9 2010/09/03 09:53:24 martinh Exp $ */
 
 /*
  * Copyright (c) 2010 Martin Hedenfalk <martin@bzero.se>
@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "ldapd.h"
+#include "log.h"
 
 static int
 validate_required_attributes(struct ber_element *entry, struct object *obj)

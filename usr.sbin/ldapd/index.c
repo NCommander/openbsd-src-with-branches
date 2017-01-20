@@ -1,4 +1,4 @@
-/*	$OpenBSD: index.c,v 1.9 2015/06/03 02:24:36 millert Exp $ */
+/*	$OpenBSD: index.c,v 1.10 2015/12/24 17:47:57 mmcc Exp $ */
 
 /*
  * Copyright (c) 2009 Martin Hedenfalk <martin@bzero.se>
@@ -79,6 +79,7 @@
 #include <string.h>
 
 #include "ldapd.h"
+#include "log.h"
 
 static int
 index_attribute(struct namespace *ns, char *attr, struct btval *dn,
