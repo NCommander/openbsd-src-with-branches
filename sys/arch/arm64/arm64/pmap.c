@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.c,v 1.8 2017/01/13 12:36:45 patrick Exp $ */
+/* $OpenBSD: pmap.c,v 1.9 2017/01/14 00:32:34 jsg Exp $ */
 /*
  * Copyright (c) 2008-2009,2014-2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -2379,7 +2379,10 @@ pmap_setttb(struct proc *p, paddr_t pagedir, struct pcb *pcb)
 		}
 		//printf("switching userland to %p %p asid %d new asid %d\n",
 		//    pm, pmap_kernel(), oasid, pm->pm_asid);
-	}
 
-	__asm volatile ("msr     ttbr0_el1, %x0" :: "r"(pagedir));
+		__asm volatile("msr ttbr0_el1, %x0" :: "r"(pagedir));
+		__asm volatile("dsb sy");
+	} else {
+		// XXX what to do if switching to kernel pmap !?!?
+	}
 }
