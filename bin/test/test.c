@@ -1,4 +1,4 @@
-/*	$OpenBSD: test.c,v 1.15 2015/10/09 01:37:06 deraadt Exp $	*/
+/*	$OpenBSD: test.c,v 1.16 2016/01/13 13:13:04 gsoares Exp $	*/
 /*	$NetBSD: test.c,v 1.15 1995/03/21 07:04:06 cgd Exp $	*/
 
 /*
@@ -150,7 +150,7 @@ static int getn(const char *s);
 static int newerf(const char *, const char *);
 static int olderf(const char *, const char *);
 static int equalf(const char *, const char *);
-static void syntax(const char *op, char *msg);
+static __dead void syntax(const char *op, char *msg);
 
 int
 main(int argc, char *argv[])
@@ -331,7 +331,8 @@ binop(void)
 	case FILEQ:
 		return equalf(opnd1, opnd2);
 	}
-	/* NOTREACHED */
+
+	syntax(op->op_text, "not a binary operator");
 }
 
 static enum token
