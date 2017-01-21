@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_log1pl.c,v 1.3 2013/11/12 20:35:19 martynas Exp $	*/
+/*	$OpenBSD: s_log1pl.c,v 1.4 2016/09/12 19:47:03 guenther Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -147,7 +147,7 @@ if( x < SQRTH )
 	e -= 1;
 	z = x - 0.5L;
 	y = 0.5L * z + 0.5L;
-	}	
+	}
 else
 	{ /*  2 (x-1)/(x+1)   */
 	z = x - 0.5L;
@@ -173,7 +173,7 @@ if( x < SQRTH )
 	  x = 2.0 * x - 1.0L;
 	else
 	  x = xm1;
-	}	
+	}
 else
 	{
 	  if (e != 0)

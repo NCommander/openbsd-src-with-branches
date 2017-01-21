@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: k_cosl.c,v 1.1 2008/12/09 20:00:35 martynas Exp $	*/
 /* From: @(#)k_cos.c 1.3 95/01/18 */
 /*
  * ====================================================
@@ -7,7 +7,7 @@
  *
  * Developed at SunSoft, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_nanl.c,v 1.1 2008/12/09 20:00:35 martynas Exp $	*/
 /*-
  * Copyright (c) 2007 David Schultz
  * All rights reserved.
@@ -30,7 +30,7 @@
 #include <sys/types.h>
 #include <machine/ieee.h>
 #include <math.h>
- 
+
 #include "math_private.h"
 
 long double

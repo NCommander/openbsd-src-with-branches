@@ -1,4 +1,4 @@
-/*	$OpenBSD: xdr.c,v 1.14 2015/09/13 15:36:56 guenther Exp $ */
+/*	$OpenBSD: xdr.c,v 1.15 2016/12/20 22:19:08 krw Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -66,7 +66,7 @@ void
 xdr_free(xdrproc_t proc, char *objp)
 {
 	XDR x;
-	
+
 	x.x_op = XDR_FREE;
 	(*proc)(&x, objp);
 }
@@ -666,8 +666,8 @@ xdr_string(XDR *xdrs, char **cpp, u_int maxsize)
 }
 DEF_WEAK(xdr_string);
 
-/* 
- * Wrapper for xdr_string that can be called directly from 
+/*
+ * Wrapper for xdr_string that can be called directly from
  * routines like clnt_call
  */
 bool_t
