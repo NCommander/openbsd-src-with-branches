@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.obj.mk,v 1.15 2016/10/06 15:34:18 natano Exp $
+#	$OpenBSD: bsd.obj.mk,v 1.16 2016/11/19 14:20:58 tb Exp $
 #	$NetBSD: bsd.obj.mk,v 1.9 1996/04/10 21:08:05 thorpej Exp $
 
 .if !target(obj)
@@ -27,7 +27,7 @@ obj! _SUBDIRUSE
 			}; \
 			MKDIRS=_mkdirs; \
 		fi; \
-	elif [[ $$here == $$subdir ]]; then \
+	elif [[ `id` == *'('${WOBJGROUP}')'* && $$here == $$subdir ]]; then \
 		SETOWNER="chown :${WOBJGROUP}"; \
 	else \
 		SETOWNER=:; \
