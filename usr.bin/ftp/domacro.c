@@ -1,4 +1,4 @@
-/*	$OpenBSD: domacro.c,v 1.17 2009/05/05 19:35:30 martynas Exp $	*/
+/*	$OpenBSD: domacro.c,v 1.18 2015/10/18 03:04:11 mmcc Exp $	*/
 /*	$NetBSD: domacro.c,v 1.10 1997/07/20 09:45:45 lukem Exp $	*/
 
 /*
@@ -71,7 +71,7 @@ TOP:
 		cp2 = line;
 		while (*cp1 != '\0') {
 		      switch(*cp1) {
-		   	    case '\\':
+			    case '\\':
 				 *cp2++ = *++cp1;
 				 break;
 			    case '$':
