@@ -1,4 +1,4 @@
-.\"     $OpenBSD: autoinstall.8,v 1.19 2016/11/13 09:56:05 tb Exp $
+.\"     $OpenBSD: autoinstall.8,v 1.20 2016/11/13 21:56:59 rpe Exp $
 .\"
 .\" Copyright (c) 2013 Robert Peichaer <rpe@openbsd.org>
 .\"
@@ -50,7 +50,9 @@ If either
 .Pa /auto_install.conf
 or
 .Pa /auto_upgrade.conf
-is found during boot,
+is found on
+.Pa bsd.rd Ns 's
+built-in RAM disk,
 .Nm
 behaves as if the machine is netbooted, but uses the local response file.
 In case both files exist,
