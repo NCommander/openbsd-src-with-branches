@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.8 2017/01/21 08:55:09 florian Exp $ */
+/*	$OpenBSD: parse.y,v 1.9 2017/01/21 09:00:29 benno Exp $ */
 
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -235,7 +235,18 @@ domain		: DOMAIN STRING {
 				YYERROR;
 			}
 		} '{' optnl domainopts_l '}' {
-			/* XXX enforce minimum config here */
+			/* enforce minimum config here */
+			if (domain->key == NULL) {
+				yyerror("no domain key file specified for "
+				    "domain %s", domain->domain);
+				YYERROR;
+			}
+			if (domain->cert == NULL && domain->fullchain == NULL) {
+				yyerror("at least certificate file or full "
+				    "certificate chain file must be specified "
+				    "for domain %s", domain->domain);
+				YYERROR;
+			}
 			domain = NULL;
 		}
 		;
