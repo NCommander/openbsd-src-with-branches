@@ -1,4 +1,4 @@
-/*	$OpenBSD: showmount.c,v 1.19 2015/11/17 15:01:28 deraadt Exp $	*/
+/*	$OpenBSD: showmount.c,v 1.20 2016/03/16 15:41:11 krw Exp $	*/
 /*	$NetBSD: showmount.c,v 1.7 1996/05/01 18:14:10 cgd Exp $	*/
 
 /*
@@ -150,7 +150,6 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 	bzero(&clnt_sin, sizeof clnt_sin);
-	clnt_sin.sin_len = sizeof clnt_sin;
 	clnt_sin.sin_family = AF_INET;
 	bcopy(hp->h_addr, (char *)&clnt_sin.sin_addr, hp->h_length);
 	clnt_sock = RPC_ANYSOCK;
