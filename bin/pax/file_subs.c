@@ -1,4 +1,4 @@
-/*	$OpenBSD: file_subs.c,v 1.51 2016/08/23 06:00:28 guenther Exp $	*/
+/*	$OpenBSD: file_subs.c,v 1.52 2016/08/26 04:11:16 guenther Exp $	*/
 /*	$NetBSD: file_subs.c,v 1.4 1995/03/21 09:07:18 cgd Exp $	*/
 
 /*-
@@ -719,7 +719,7 @@ fset_ftime(const char *fnm, int fd, const struct timespec *mtimp,
 {
 	struct timespec tv[2];
 
-	
+
 	tv[0] = *atimp;
 	tv[1] = *mtimp;
 
