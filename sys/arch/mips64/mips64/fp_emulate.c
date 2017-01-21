@@ -1,4 +1,4 @@
-/*	$OpenBSD: fp_emulate.c,v 1.13 2015/09/10 14:37:20 miod Exp $	*/
+/*	$OpenBSD: fp_emulate.c,v 1.14 2016/03/06 19:42:27 mpi Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -201,11 +201,11 @@ MipsFPTrap(struct trapframe *tf)
 #ifdef DEBUG
 #ifdef DDB
 	printf("%s: unimplemented FPU completion, fsr 0x%08x\n0x%lx: ",
-	    p->p_comm, fsr, pc);
+	    p->p_p->ps_comm, fsr, pc);
 	dbmd_print_insn(insn, pc, printf);
 #else
 	printf("%s: unimplemented FPU completion, insn 0x%08x fsr 0x%08x\n",
-	    p->p_comm, insn, fsr);
+	    p->p_p->ps_comm, insn, fsr);
 #endif
 #endif
 

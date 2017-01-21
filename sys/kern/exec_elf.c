@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.128 2016/10/05 02:31:52 guenther Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.129 2016/11/07 00:26:32 guenther Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -1216,7 +1216,7 @@ ELFNAMEEND(coredump_notes)(struct proc *p, void *iocookie, size_t *sizep)
 		cpi.cpi_egid = p->p_ucred->cr_gid;
 		cpi.cpi_svgid = p->p_ucred->cr_svgid;
 
-		(void)strlcpy(cpi.cpi_name, p->p_comm, sizeof(cpi.cpi_name));
+		(void)strlcpy(cpi.cpi_name, pr->ps_comm, sizeof(cpi.cpi_name));
 
 		nhdr.namesz = sizeof("OpenBSD");
 		nhdr.descsz = sizeof(cpi);

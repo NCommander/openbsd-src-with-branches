@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.263 2016/11/14 10:32:46 mpi Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.264 2017/01/01 07:00:56 jsg Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -293,7 +293,7 @@ main(void *framep)
 	p->p_stat = SONPROC;
 	pr->ps_nice = NZERO;
 	pr->ps_emul = &emul_native;
-	strlcpy(p->p_comm, "swapper", sizeof(p->p_comm));
+	strlcpy(pr->ps_comm, "swapper", sizeof(pr->ps_comm));
 
 	/* Init timeouts. */
 	timeout_set(&p->p_sleep_to, endtsleep, p);
