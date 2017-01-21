@@ -1,4 +1,4 @@
-/*	$OpenBSD: look.c,v 1.18 2015/10/09 01:37:08 deraadt Exp $	*/
+/*	$OpenBSD: look.c,v 1.19 2016/09/13 15:27:47 millert Exp $	*/
 /*	$NetBSD: look.c,v 1.7 1995/08/31 22:41:02 jtc Exp $	*/
 
 /*-
@@ -134,7 +134,7 @@ look(char *string, char *front, char *back)
 	char *readp, *writep;
 
 	/* Reformat string to avoid doing it multiple times later. */
-	for (readp = writep = string; ch = *readp++;) {
+	for (readp = writep = string; (ch = *readp++);) {
 		if (fflag)
 			ch = tolower((unsigned char)ch);
 		if (!dflag || isalnum((unsigned char)ch))
