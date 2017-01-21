@@ -1,4 +1,4 @@
-/*	$OpenBSD: device.c,v 1.15 2013/07/05 21:02:07 miod Exp $ */
+/*	$OpenBSD: device.c,v 1.16 2013/11/24 21:32:31 deraadt Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -157,7 +157,7 @@ deviceInitOne(char *ifname)
 	snprintf(interface, sizeof(interface), "%s", ifname);
 #endif /* _AIX */
 
-	/* Ok, init it just once */	
+	/* Ok, init it just once */
 	p = iflist;
 	for (p = iflist; p; p = p->next)
 		if (strcmp(p->if_name, interface) == 0)
