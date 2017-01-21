@@ -1,4 +1,4 @@
-/* $OpenBSD: sxidog.c,v 1.10 2016/09/04 11:56:59 mglocker Exp $ */
+/* $OpenBSD: sxidog.c,v 1.11 2016/10/08 11:21:41 kettenis Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -23,7 +23,7 @@
 #include <machine/fdt.h>
 
 #include <armv7/armv7/armv7_machdep.h>
-#include <armv7/sunxi/sunxireg.h>
+#include <dev/fdt/sunxireg.h>
 
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/fdt.h>

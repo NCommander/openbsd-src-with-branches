@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxipiovar.h,v 1.6 2016/12/27 14:37:02 kettenis Exp $	*/
+/*	$OpenBSD: sxipiovar.h,v 1.7 2017/01/04 12:15:37 kettenis Exp $	*/
 /*
  * Copyright (c) 2013 Artturi Alm
  *

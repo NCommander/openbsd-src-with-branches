@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunxireg.h,v 1.8 2016/02/02 21:40:47 jsg Exp $	*/
+/*	$OpenBSD: sunxireg.h,v 1.9 2016/10/21 20:03:57 kettenis Exp $	*/
 /*
  * Copyright (c) 2013 Artturi Alm
  *

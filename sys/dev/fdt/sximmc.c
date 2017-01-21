@@ -1,4 +1,4 @@
-/* $OpenBSD: sximmc.c,v 1.10 2016/09/11 10:46:26 kettenis Exp $ */
+/* $OpenBSD: sximmc.c,v 1.11 2016/11/27 02:25:58 jsg Exp $ */
 /* $NetBSD: awin_mmc.c,v 1.23 2015/11/14 10:32:40 bouyer Exp $ */
 
 /*-
