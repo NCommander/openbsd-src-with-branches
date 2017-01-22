@@ -1,5 +1,4 @@
-#	$OpenBSD: install.md,v 1.40 2016/09/04 09:52:03 rpe Exp $
-#
+#	$OpenBSD: install.md,v 1.41 2016/10/05 16:06:02 visa Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.

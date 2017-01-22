@@ -1,4 +1,5 @@
-#       $OpenBSD: install.md,v 1.22 2016/02/08 17:28:09 krw Exp $
+#       $OpenBSD: install.md,v 1.23 2016/09/04 09:52:03 rpe Exp $
+#
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
@@ -28,7 +29,6 @@
 #
 #
 # machine dependent section of installation/upgrade script.
-#
 #
 
 MDTERM=vt100

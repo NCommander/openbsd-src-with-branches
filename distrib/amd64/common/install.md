@@ -1,5 +1,4 @@
-#	$OpenBSD: install.md,v 1.52 2016/09/02 12:22:09 pirofti Exp $
-#
+#	$OpenBSD: install.md,v 1.53 2016/09/04 09:52:03 rpe Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.

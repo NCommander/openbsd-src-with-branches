@@ -1,5 +1,4 @@
-#	$OpenBSD: install.md,v 1.68 2016/02/23 02:34:09 krw Exp $
-#
+#	$OpenBSD: install.md,v 1.69 2016/09/04 09:52:03 rpe Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
