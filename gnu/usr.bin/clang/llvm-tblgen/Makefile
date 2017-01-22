@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:50 pascal Exp $
+# $OpenBSD: Makefile,v 1.2 2017/01/14 20:12:42 patrick Exp $
 
 PROG=	llvm-tblgen
 NOMAN=
@@ -6,6 +6,7 @@ NOMAN=
 LDADD+=	-ltermlib
 DPADD+=	${LIBTERMLIB}
 
+.include <bsd.own.mk>
 SRCS=	AsmMatcherEmitter.cpp \
 	AsmWriterEmitter.cpp \
 	AsmWriterInst.cpp \
