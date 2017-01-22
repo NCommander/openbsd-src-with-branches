@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.147 2016/12/06 16:13:01 mikeb Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.148 2016/12/09 17:41:39 mikeb Exp $	*/
 
 /******************************************************************************
 
@@ -2386,7 +2386,6 @@ ixgbe_txeof(struct tx_ring *txr)
 			    &txr->tx_base[first];
 		}
 		++txr->packets;
-		++ifp->if_opackets;
 		/* See if there is more work now */
 		last = tx_buffer->eop_index;
 		if (last != -1) {

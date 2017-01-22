@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tsec.c,v 1.42 2015/11/25 03:09:58 dlg Exp $	*/
+/*	$OpenBSD: if_tsec.c,v 1.43 2016/04/13 11:34:00 mpi Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -824,7 +824,6 @@ tsec_tx_proc(struct tsec_softc *sc)
 
 			m_freem(txb->tb_m);
 			txb->tb_m = NULL;
-			ifp->if_opackets++;
 		}
 
 		ifq_clr_oactive(&ifp->if_snd);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.150 2016/04/13 10:49:26 mpi Exp $	*/
+/*	$OpenBSD: dc.c,v 1.151 2016/05/04 18:38:57 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2264,7 +2264,6 @@ dc_txeof(struct dc_softc *sc)
 
 		ifp->if_collisions += (txstat & DC_TXSTAT_COLLCNT) >> 3;
 
-		ifp->if_opackets++;
 		if (sc->dc_cdata.dc_tx_chain[idx].sd_map->dm_nsegs != 0) {
 			bus_dmamap_t map = sc->dc_cdata.dc_tx_chain[idx].sd_map;
 

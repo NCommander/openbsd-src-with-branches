@@ -1,4 +1,4 @@
-/* $OpenBSD: if_cpsw.c,v 1.40 2016/08/12 03:22:41 jsg Exp $ */
+/* $OpenBSD: if_cpsw.c,v 1.41 2016/10/02 23:38:32 jsg Exp $ */
 /*	$NetBSD: if_cpsw.c,v 1.3 2013/04/17 14:36:34 bouyer Exp $	*/
 
 /*
@@ -1199,8 +1199,6 @@ cpsw_txintr(void *arg)
 
 		m_freem(rdp->tx_mb[sc->sc_txhead]);
 		rdp->tx_mb[sc->sc_txhead] = NULL;
-
-		ifp->if_opackets++;
 
 		handled = true;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urndis.c,v 1.61 2016/04/13 11:03:37 mpi Exp $ */
+/*	$OpenBSD: if_urndis.c,v 1.62 2016/09/16 11:13:37 mikeb Exp $ */
 
 /*
  * Copyright (c) 2010 Jonathan Armani <armani@openbsd.org>
@@ -1271,8 +1271,6 @@ urndis_txeof(struct usbd_xfer *xfer,
 
 	if (err)
 		ifp->if_oerrors++;
-	else
-		ifp->if_opackets++;
 
 	if (IFQ_IS_EMPTY(&ifp->if_snd) == 0)
 		urndis_start(ifp);

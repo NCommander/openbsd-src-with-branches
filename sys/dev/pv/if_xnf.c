@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xnf.c,v 1.45 2016/12/19 21:08:57 mikeb Exp $	*/
+/*	$OpenBSD: if_xnf.c,v 1.46 2017/01/05 13:23:51 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015, 2016 Mike Belopuhov
@@ -510,7 +510,6 @@ xnf_start(struct ifnet *ifp)
 			m_freem(m);
 			continue;
 		}
-		ifp->if_opackets++;
 
 #if NBPFILTER > 0
 		if (ifp->if_bpf)

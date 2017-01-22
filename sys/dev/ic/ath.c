@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.110 2016/01/12 09:28:09 stsp Exp $  */
+/*      $OpenBSD: ath.c,v 1.111 2016/04/13 10:49:26 mpi Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -874,7 +874,6 @@ ath_start(struct ifnet *ifp)
 				splx(s);
 				break;
 			}
-			ifp->if_opackets++;
 
 #if NBPFILTER > 0
 			if (ifp->if_bpf)

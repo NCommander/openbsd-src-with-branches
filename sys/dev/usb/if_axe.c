@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axe.c,v 1.136 2015/11/25 03:10:00 dlg Exp $	*/
+/*	$OpenBSD: if_axe.c,v 1.137 2016/04/13 11:03:37 mpi Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Jonathan Gray <jsg@openbsd.org>
@@ -1130,7 +1130,6 @@ axe_txeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 	if (IFQ_IS_EMPTY(&ifp->if_snd) == 0)
 		axe_start(ifp);
 
-	ifp->if_opackets++;
 	splx(s);
 	return;
 }

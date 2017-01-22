@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtw.c,v 1.95 2015/12/08 13:34:22 tedu Exp $	*/
+/*	$OpenBSD: rtw.c,v 1.96 2016/04/13 10:49:26 mpi Exp $	*/
 /*	$NetBSD: rtw.c,v 1.29 2004/12/27 19:49:16 dyoung Exp $ */
 
 /*-
@@ -2775,7 +2775,6 @@ rtw_dequeue(struct ifnet *ifp, struct rtw_txsoft_blk **tsbp,
 		return 0;
 	}
 	DPRINTF(sc, RTW_DEBUG_XMIT, ("%s: dequeue data frame\n", __func__));
-	ifp->if_opackets++;
 #if NBPFILTER > 0
 	if (ifp->if_bpf)
 		bpf_mtap(ifp->if_bpf, m0, BPF_DIRECTION_OUT);

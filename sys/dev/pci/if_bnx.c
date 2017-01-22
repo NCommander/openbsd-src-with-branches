@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnx.c,v 1.121 2016/04/13 10:34:32 mpi Exp $	*/
+/*	$OpenBSD: if_bnx.c,v 1.122 2016/05/05 23:01:28 jmatthew Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -4563,8 +4563,6 @@ bnx_tx_intr(struct bnx_softc *sc)
 			/* Free the mbuf. */
 			m_freem(sc->tx_mbuf_ptr[sw_tx_chain_cons]);
 			sc->tx_mbuf_ptr[sw_tx_chain_cons] = NULL;
-
-			ifp->if_opackets++;
 		}
 		
 		freed++;

@@ -1,4 +1,4 @@
-/*    $OpenBSD: if_el.c,v 1.32 2015/12/08 13:34:22 tedu Exp $       */
+/*    $OpenBSD: if_el.c,v 1.33 2016/04/13 10:49:26 mpi Exp $       */
 /*	$NetBSD: if_el.c,v 1.39 1996/05/12 23:52:32 mycroft Exp $	*/
 
 /*
@@ -365,7 +365,6 @@ elstart(ifp)
 					break;
 				}
 			} else {
-				ifp->if_opackets++;
 				break;
 			}
 		}

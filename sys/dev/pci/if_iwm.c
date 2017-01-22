@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwm.c,v 1.156 2017/01/12 18:06:57 stsp Exp $	*/
+/*	$OpenBSD: if_iwm.c,v 1.157 2017/01/21 11:21:41 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014, 2016 genua gmbh <info@genua.de>
@@ -3437,8 +3437,6 @@ iwm_rx_tx_cmd_single(struct iwm_softc *sc, struct iwm_rx_packet *pkt,
 
 	if (txfail)
 		ifp->if_oerrors++;
-	else
-		ifp->if_opackets++;
 }
 
 void

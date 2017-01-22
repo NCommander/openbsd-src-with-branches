@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_run.c,v 1.115 2015/11/25 03:10:00 dlg Exp $	*/
+/*	$OpenBSD: if_run.c,v 1.116 2016/04/13 11:03:37 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2008-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -2374,7 +2374,6 @@ run_txeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 	}
 
 	sc->sc_tx_timer = 0;
-	ifp->if_opackets++;
 	ifq_clr_oactive(&ifp->if_snd);
 	run_start(ifp);
 	splx(s);

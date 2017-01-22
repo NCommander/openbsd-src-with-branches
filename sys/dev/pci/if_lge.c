@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.71 2015/11/25 03:09:59 dlg Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.72 2016/04/13 10:34:32 mpi Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -777,7 +777,6 @@ lge_txeof(struct lge_softc *sc)
 	while (idx != sc->lge_cdata.lge_tx_prod && txdone) {
 		cur_tx = &sc->lge_ldata->lge_tx_list[idx];
 
-		ifp->if_opackets++;
 		if (cur_tx->lge_mbuf != NULL) {
 			m_freem(cur_tx->lge_mbuf);
 			cur_tx->lge_mbuf = NULL;

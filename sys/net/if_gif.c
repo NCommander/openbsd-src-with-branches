@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.86 2016/09/13 07:48:45 mpi Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.87 2016/12/13 06:51:11 dlg Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -226,7 +226,6 @@ gif_start(struct ifnet *ifp)
 			m->m_pkthdr.len += offset;
 		}
 #endif
-		ifp->if_opackets++;
 
 		/* XXX we should cache the outgoing route */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_athn_usb.c,v 1.43 2016/11/29 10:22:30 jsg Exp $	*/
+/*	$OpenBSD: if_athn_usb.c,v 1.44 2017/01/12 16:32:28 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2011 Damien Bergamini <damien.bergamini@free.fr>
@@ -1918,7 +1918,6 @@ athn_usb_txeof(struct usbd_xfer *xfer, void *priv,
 		return;
 	}
 	sc->sc_tx_timer = 0;
-	ifp->if_opackets++;
 
 	/* We just released a Tx buffer, notify Tx. */
 	if (ifq_is_oactive(&ifp->if_snd)) {

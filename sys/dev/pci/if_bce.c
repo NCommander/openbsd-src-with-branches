@@ -1,4 +1,4 @@
-/* $OpenBSD: if_bce.c,v 1.50 2015/11/25 03:09:59 dlg Exp $ */
+/* $OpenBSD: if_bce.c,v 1.51 2016/04/13 10:34:32 mpi Exp $ */
 /* $NetBSD: if_bce.c,v 1.3 2003/09/29 01:53:02 mrg Exp $	 */
 
 /*
@@ -771,7 +771,6 @@ bce_txintr(struct bce_softc *sc)
 		/* do any post dma memory ops on transmit data */
 		bus_dmamap_sync(sc->bce_dmatag, sc->bce_txdata_map,
 		    i * MCLBYTES, MCLBYTES, BUS_DMASYNC_POSTWRITE);
-		ifp->if_opackets++;
 	}
 	sc->bce_txin = curr;
 

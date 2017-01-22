@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bm.c,v 1.39 2015/12/08 13:34:22 tedu Exp $	*/
+/*	$OpenBSD: if_bm.c,v 1.40 2016/04/13 11:34:00 mpi Exp $	*/
 /*	$NetBSD: if_bm.c,v 1.1 1999/01/01 01:27:52 tsubai Exp $	*/
 
 /*-
@@ -484,7 +484,6 @@ bmac_intr(void *v)
 	if (stat & IntFrameSent) {
 		ifq_clr_oactive(&ifp->if_snd);
 		ifp->if_timer = 0;
-		ifp->if_opackets++;
 		bmac_start(ifp);
 	}
 
@@ -633,7 +632,6 @@ bmac_start(struct ifnet *ifp)
 
 		/* 5 seconds to watch for failing to transmit */
 		ifp->if_timer = 5;
-		ifp->if_opackets++;		/* # of pkts */
 
 		bmac_transmit_packet(sc, sc->sc_txbuf_pa, tlen);
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: atw.c,v 1.93 2016/03/15 20:50:22 krw Exp $	*/
+/*	$OpenBSD: atw.c,v 1.94 2016/04/13 10:49:26 mpi Exp $	*/
 /*	$NetBSD: atw.c,v 1.69 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -3292,8 +3292,6 @@ atw_txintr(struct atw_softc *sc)
 			    MASK_AND_RSHIFT(txstat, ATW_TXSTAT_ARC_MASK);
 		else
 			ifp->if_oerrors++;
-
-		ifp->if_opackets++;
 	}
 
 	/*

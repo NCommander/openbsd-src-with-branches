@@ -1,4 +1,4 @@
-/*	$OpenBSD: dp8390.c,v 1.59 2015/12/08 13:34:22 tedu Exp $	*/
+/*	$OpenBSD: dp8390.c,v 1.60 2016/04/13 10:49:26 mpi Exp $	*/
 /*	$NetBSD: dp8390.c,v 1.13 1998/07/05 06:49:11 jonathan Exp $	*/
 
 /*
@@ -692,12 +692,6 @@ dp8390_intr(void *arg)
 				 * and late collisions here.
 				 */
 				(void)NIC_GET(regt, regh, ED_P0_TSR);
-
-				/*
-				 * Update total number of successfully
-				 * transmitted packets.
-				 */
-				++ifp->if_opackets;
 			}
 
 			/* Clear watchdog timer. */

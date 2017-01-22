@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_zyd.c,v 1.114 2015/12/11 16:07:02 mpi Exp $	*/
+/*	$OpenBSD: if_zyd.c,v 1.115 2016/04/13 11:03:37 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2006 by Damien Bergamini <damien.bergamini@free.fr>
@@ -2079,7 +2079,6 @@ zyd_txeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 	data->ni = NULL;
 
 	sc->tx_queued--;
-	ifp->if_opackets++;
 
 	sc->tx_timer = 0;
 	ifq_clr_oactive(&ifp->if_snd);

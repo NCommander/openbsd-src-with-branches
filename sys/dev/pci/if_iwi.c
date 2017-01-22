@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwi.c,v 1.132 2016/04/13 10:34:32 mpi Exp $	*/
+/*	$OpenBSD: if_iwi.c,v 1.133 2016/09/05 08:17:48 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -1126,8 +1126,6 @@ iwi_tx_intr(struct iwi_softc *sc, struct iwi_tx_ring *txq)
 		data->m = NULL;
 		ieee80211_release_node(ic, data->ni);
 		data->ni = NULL;
-
-		ifp->if_opackets++;
 
 		txq->queued--;
 		txq->next = (txq->next + 1) % IWI_TX_RING_COUNT;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_se.c,v 1.18 2015/11/25 03:09:59 dlg Exp $	*/
+/*	$OpenBSD: if_se.c,v 1.19 2016/04/13 10:34:32 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009, 2010 Christopher Zimmermann <madroach@zakweb.de>
@@ -1002,8 +1002,7 @@ se_txeof(struct se_softc *sc)
 				    ifp->if_xname, txstat, TX_ERR_BITS);
 			ifp->if_oerrors++;
 			/* TODO: better error differentiation */
-		} else
-			ifp->if_opackets++;
+		}
 
 		if (cd->se_tx_mbuf[i] != NULL) {
 			bus_dmamap_sync(sc->sc_dmat, cd->se_tx_map[i], 0,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9003.c,v 1.41 2016/11/29 10:22:30 jsg Exp $	*/
+/*	$OpenBSD: ar9003.c,v 1.42 2017/01/12 16:32:28 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1098,7 +1098,6 @@ ar9003_tx_process(struct athn_softc *sc)
 		return (0);
 	}
 	SIMPLEQ_REMOVE_HEAD(&txq->head, bf_list);
-	ifp->if_opackets++;
 
 	sc->sc_tx_timer = 0;
 

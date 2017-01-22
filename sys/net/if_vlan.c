@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.166 2016/09/03 13:46:57 reyk Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.167 2016/10/10 02:44:17 dlg Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -298,7 +298,6 @@ vlan_start(struct ifnet *ifp)
 			ifp->if_oerrors++;
 			continue;
 		}
-		ifp->if_opackets++;
 	}
 
 leave:

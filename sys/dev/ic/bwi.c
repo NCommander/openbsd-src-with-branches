@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.122 2015/11/25 03:09:58 dlg Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.123 2016/04/13 10:49:26 mpi Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -9152,8 +9152,6 @@ bwi_txeof(struct bwi_softc *sc)
 			continue;
 
 		_bwi_txeof(sc, letoh16(tx_id));
-
-		ifp->if_opackets++;
 	}
 
 	if (ifq_is_oactive(&ifp->if_snd) == 0)

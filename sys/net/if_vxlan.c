@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.55 2017/01/03 15:35:34 reyk Exp $	*/
+/*	$OpenBSD: if_vxlan.c,v 1.56 2017/01/04 12:49:49 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -309,8 +309,6 @@ vxlanstart(struct ifnet *ifp)
 		IFQ_DEQUEUE(&ifp->if_snd, m);
 		if (m == NULL)
 			return;
-
-		ifp->if_opackets++;
 
 #if NBPFILTER > 0
 		if (ifp->if_bpf)

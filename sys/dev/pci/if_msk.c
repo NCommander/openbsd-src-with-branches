@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_msk.c,v 1.123 2016/04/13 10:34:32 mpi Exp $	*/
+/*	$OpenBSD: if_msk.c,v 1.124 2017/01/08 18:08:14 visa Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -1697,8 +1697,6 @@ msk_txeof(struct sk_if_softc *sc_if)
 		if (mskdebug >= 2)
 			msk_dump_txdesc(cur_tx, idx);
 #endif
-		if (sk_ctl & SK_Y2_TXCTL_LASTFRAG)
-			ifp->if_opackets++;
 		if (sc_if->sk_cdata.sk_tx_chain[idx].sk_mbuf != NULL) {
 			entry = sc_if->sk_cdata.sk_tx_map[idx];
 

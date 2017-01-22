@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.118 2016/04/13 10:49:26 mpi Exp $ */
+/*	$OpenBSD: acx.c,v 1.119 2016/09/02 09:04:56 tom Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -1178,8 +1178,7 @@ acx_txeof(struct acx_softc *sc)
 		if (error) {
 			acx_txerr(sc, error);
 			ifp->if_oerrors++;
-		} else
-			ifp->if_opackets++;
+		}
 
 		/* Update rate control statistics for the node */
 		if (buf->tb_node != NULL) {

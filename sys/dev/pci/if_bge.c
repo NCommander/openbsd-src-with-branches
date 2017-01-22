@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.381 2015/12/29 12:47:22 dlg Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.382 2016/04/13 10:34:32 mpi Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -3645,8 +3645,6 @@ bge_txeof(struct bge_softc *sc)
 	freed = 0;
 	while (cons != newcons) {
 		cur_tx = &sc->bge_rdata->bge_tx_ring[cons];
-		if (cur_tx->bge_flags & BGE_TXBDFLAG_END)
-			ifp->if_opackets++;
 		m = sc->bge_cdata.bge_tx_chain[cons];
 		if (m != NULL) {
 			dmamap = sc->bge_cdata.bge_tx_map[cons];

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pair.c,v 1.7 2016/04/13 11:41:15 mpi Exp $	*/
+/*	$OpenBSD: if_pair.c,v 1.8 2016/11/29 10:09:57 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -180,7 +180,6 @@ pairstart(struct ifnet *ifp)
 			bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_OUT);
 #endif /* NBPFILTER > 0 */
 
-		ifp->if_opackets++;
 		if (pairedifp != NULL) {
 			if (m->m_flags & M_PKTHDR)
 				m_resethdr(m);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.138 2015/12/11 16:07:02 mpi Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.139 2016/04/13 10:34:32 mpi Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -1152,8 +1152,6 @@ tht_start(struct ifnet *ifp)
 
 		bus_dmamap_sync(sc->sc_thtc->sc_dmat, pkt->tp_dmap, 0,
 		    pkt->tp_dmap->dm_mapsize, BUS_DMASYNC_PREWRITE);
-
-		ifp->if_opackets++;
 
 	} while (sc->sc_txt.tf_ready > THT_FIFO_DESC_LEN);
 

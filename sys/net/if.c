@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.473 2017/01/04 03:56:15 dlg Exp $	*/
+/*	$OpenBSD: if.c,v 1.474 2017/01/12 09:07:46 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -610,6 +610,7 @@ if_enqueue(struct ifnet *ifp, struct mbuf *m)
 	if (error)
 		return (error);
 
+	ifp->if_opackets++;
 	ifp->if_obytes += length;
 	if (mflags & M_MCAST)
 		ifp->if_omcasts++;

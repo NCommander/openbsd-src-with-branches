@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upl.c,v 1.71 2016/04/13 11:03:37 mpi Exp $ */
+/*	$OpenBSD: if_upl.c,v 1.72 2016/11/06 12:58:01 mpi Exp $ */
 /*	$NetBSD: if_upl.c,v 1.19 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -506,8 +506,6 @@ upl_txeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 		splx(s);
 		return;
 	}
-
-	ifp->if_opackets++;
 
 	m_freem(c->upl_mbuf);
 	c->upl_mbuf = NULL;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.134 2015/12/08 13:34:22 tedu Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.135 2016/04/13 10:34:32 mpi Exp $	*/
 /*	$NetBSD: if_de.c,v 1.58 1998/01/12 09:39:58 thorpej Exp $	*/
 
 /*-
@@ -3557,7 +3557,6 @@ tulip_tx_intr(tulip_softc_t * const sc)
 	sc->tulip_txtimer = 0;
     else if (xmits > 0)
 	sc->tulip_txtimer = TULIP_TXTIMER;
-    sc->tulip_if.if_opackets += xmits;
     TULIP_PERFEND(txintr);
     return (descs);
 }

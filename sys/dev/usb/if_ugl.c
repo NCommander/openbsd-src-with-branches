@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ugl.c,v 1.19 2016/04/12 10:15:25 mpi Exp $	*/
+/*	$OpenBSD: if_ugl.c,v 1.20 2016/04/13 11:03:37 mpi Exp $	*/
 /*	$NetBSD: if_upl.c,v 1.19 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 2013 SASANO Takayoshi <uaa@uaa.org.uk>
@@ -525,8 +525,6 @@ ugl_txeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 		splx(s);
 		return;
 	}
-
-	ifp->if_opackets++;
 
 	m_freem(c->ugl_mbuf);
 	c->ugl_mbuf = NULL;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_smsc.c,v 1.27 2016/04/13 11:03:37 mpi Exp $	*/
+/*	$OpenBSD: if_smsc.c,v 1.28 2016/07/31 12:51:49 kettenis Exp $	*/
 /* $FreeBSD: src/sys/dev/usb/net/if_smsc.c,v 1.1 2012/08/15 04:03:55 gonzo Exp $ */
 /*-
  * Copyright (c) 2012
@@ -1262,7 +1262,6 @@ smsc_txeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 	if (IFQ_IS_EMPTY(&ifp->if_snd) == 0)
 		smsc_start(ifp);
 
-	ifp->if_opackets++;
 	splx(s);
 }
 

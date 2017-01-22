@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc91cxx.c,v 1.47 2016/04/13 10:49:26 mpi Exp $	*/
+/*	$OpenBSD: smc91cxx.c,v 1.48 2016/07/13 15:40:26 deraadt Exp $	*/
 /*	$NetBSD: smc91cxx.c,v 1.11 1998/08/08 23:51:41 mycroft Exp $	*/
 
 /*-
@@ -685,7 +685,6 @@ smc91cxx_start(ifp)
 		bpf_mtap(ifp->if_bpf, top, BPF_DIRECTION_OUT);
 #endif
 
-	ifp->if_opackets++;
 	m_freem(top);
 
  readcheck:

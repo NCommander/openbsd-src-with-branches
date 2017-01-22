@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_atu.c,v 1.119 2016/04/13 11:03:37 mpi Exp $ */
+/*	$OpenBSD: if_atu.c,v 1.120 2016/11/06 12:58:01 mpi Exp $ */
 /*
  * Copyright (c) 2003, 2004
  *	Daan Vreeken <Danovitsch@Vitsch.net>.  All rights reserved.
@@ -1775,8 +1775,6 @@ atu_txeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 
 	if (err)
 		ifp->if_oerrors++;
-	else
-		ifp->if_opackets++;
 
 	s = splnet();
 	SLIST_INSERT_HEAD(&sc->atu_cdata.atu_tx_free, c, atu_list);

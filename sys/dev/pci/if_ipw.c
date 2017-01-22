@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ipw.c,v 1.117 2016/09/05 09:59:20 kettenis Exp $	*/
+/*	$OpenBSD: if_ipw.c,v 1.118 2016/09/05 10:17:30 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -1019,9 +1019,6 @@ ipw_tx_intr(struct ipw_softc *sc)
 
 	for (i = (sc->txold + 1) % IPW_NTBD; i != r; i = (i + 1) % IPW_NTBD) {
 		sbd = &sc->stbd_list[i];
-
-		if (sbd->type == IPW_SBD_TYPE_DATA)
-			ifp->if_opackets++;
 
 		ipw_release_sbd(sc, sbd);
 		sc->txfree++;
