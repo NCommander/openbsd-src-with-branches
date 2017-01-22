@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/01/22 03:56:33 jsg Exp $
+# $OpenBSD: Makefile,v 1.3 2017/01/22 06:00:14 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -9,6 +9,10 @@ NOMAN=
 
 LDADD+=	-ltermlib
 DPADD+=	${LIBTERMLIB}
+
+.if ${COMPILER_VERSION:L} == "clang"
+LINKS=	${BINDIR}/ld.lld ${BINDIR}/ld
+.endif
 
 CPPFLAGS+=	${CLANG_INCLUDES}
 CPPFLAGS+=	-I${.CURDIR}/../../../llvm/tools/lld/include
