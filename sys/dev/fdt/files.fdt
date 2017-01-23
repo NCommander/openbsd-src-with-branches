@@ -1,4 +1,4 @@
-#	$OpenBSD: files.fdt,v 1.1 2017/01/03 19:57:01 kettenis Exp $
+#	$OpenBSD: files.fdt,v 1.2 2017/01/21 08:26:49 patrick Exp $
 #
 # Config file and device description for machine-independent FDT code.
 # Included by ports that need it.
@@ -25,3 +25,7 @@ file	dev/fdt/sximmc.c		sximmc
 
 attach	ehci at fdt with sxiehci
 file	dev/fdt/sxiehci.c		sxiehci
+
+device	bcmdog
+attach	bcmdog at fdt
+file	dev/fdt/bcm2835_dog.c		bcmdog
