@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.15 2016/08/10 14:27:17 deraadt Exp $
+# $OpenBSD: Makefile,v 1.16 2016/09/03 13:37:44 guenther Exp $
 
 NOPROG=
 NOMAN=
@@ -7,7 +7,7 @@ CC=${HOSTCC}
 # USB capable systems only
 .if (${MACHINE_ARCH} == "powerpc" || \
     ${MACHINE} == "alpha" || ${MACHINE} == "amd64" || \
-    ${MACHINE} == "armv7" || \
+    ${MACHINE} == "arm64" || ${MACHINE} == "armv7" || \
     ${MACHINE} == "hppa" || ${MACHINE} == "i386" || \
     ${MACHINE} == "landisk" || ${MACHINE} == "loongson" || \
     ${MACHINE} == "octeon" || ${MACHINE} == "sgi" || \
