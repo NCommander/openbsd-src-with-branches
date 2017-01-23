@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.101 2016/12/22 11:04:44 rzalamena Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.102 2017/01/10 09:01:18 mpi Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -115,11 +115,6 @@ rip6_init(void)
 	in_pcbinit(&rawin6pcbtable, 1);
 }
 
-/*
- * Setup generic address and protocol structures
- * for raw_input routine, then pass them along with
- * mbuf chain.
- */
 int
 rip6_input(struct mbuf **mp, int *offp, int proto)
 {
