@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.188 2016/11/13 00:40:09 tb Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.189 2017/01/21 05:42:03 guenther Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1601,11 +1601,11 @@ canonpath(const char *input, char *buf, size_t bufsize)
 			*q++ = *p++;
 		}
 	}
-        if ((*p == '\0') && (q - buf < bufsize)) {
-                *q = 0;
-                return 0;
-        } else
-                return ENAMETOOLONG;
+	if ((*p == '\0') && (q - buf < bufsize)) {
+		*q = 0;
+		return 0;
+	} else
+		return ENAMETOOLONG;
 }
 
 int
