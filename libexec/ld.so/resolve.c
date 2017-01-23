@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.c,v 1.75 2016/08/23 06:46:17 kettenis Exp $ */
+/*	$OpenBSD: resolve.c,v 1.76 2017/01/22 01:20:36 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -404,7 +404,7 @@ _dl_tailq_free(struct dep_node *n)
 	}
 }
 
-elf_object_t *free_objects;
+static elf_object_t *free_objects;
 
 void
 _dl_cleanup_objects()
@@ -758,3 +758,4 @@ _dl_debug_state(void)
 {
 	/* Debugger stub */
 }
+DEF(_dl_debug_state);
