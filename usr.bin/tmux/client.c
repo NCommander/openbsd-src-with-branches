@@ -1,4 +1,4 @@
-/* $OpenBSD: client.c,v 1.117 2017/01/16 14:52:25 nicm Exp $ */
+/* $OpenBSD: client.c,v 1.118 2017/01/20 14:02:33 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -303,6 +303,8 @@ client_main(struct event_base *base, int argc, char **argv, int flags,
 		fatal("pledge failed");
 
 	/* Free stuff that is not used in the client. */
+	if (ptm_fd != -1)
+		close(ptm_fd);
 	options_free(global_options);
 	options_free(global_s_options);
 	options_free(global_w_options);
