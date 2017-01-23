@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.22 2016/03/20 01:33:39 millert Exp $	*/
+/*	$OpenBSD: lex.c,v 1.23 2016/04/16 18:32:29 krw Exp $	*/
 /*	$NetBSD: lex.c,v 1.9 1995/09/27 00:38:46 jtc Exp $	*/
 
 /*-
@@ -1337,7 +1337,7 @@ reread:
 	    if (wanteof)
 		return (-1);
 	    /* was isatty but raw with ignoreeof yields problems */
-	    if (tcgetattr(SHIN, &tty) == 0 && (tty.c_lflag & ICANON))
+	    if (isatty(SHIN) && tcgetattr(SHIN, &tty) == 0 && (tty.c_lflag & ICANON))
 	    {
 		pid_t     ctpgrp;
 
