@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.c,v 1.77 2017/01/23 13:00:09 guenther Exp $ */
+/*	$OpenBSD: resolve.c,v 1.78 2017/01/23 13:13:12 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -760,4 +760,3 @@ _dl_debug_state(void)
 {
 	/* Debugger stub */
 }
-DEF(_dl_debug_state);
