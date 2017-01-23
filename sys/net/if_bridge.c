@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.290 2016/12/19 15:49:28 mpi Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.291 2017/01/11 08:47:48 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -181,6 +181,7 @@ bridge_clone_create(struct if_clone *ifc, int unit)
 	ifp->if_mtu = ETHERMTU;
 	ifp->if_ioctl = bridge_ioctl;
 	ifp->if_output = bridge_dummy_output;
+	ifp->if_xflags = IFXF_CLONED;
 	ifp->if_start = NULL;
 	ifp->if_type = IFT_BRIDGE;
 	ifp->if_hdrlen = ETHER_HDR_LEN;

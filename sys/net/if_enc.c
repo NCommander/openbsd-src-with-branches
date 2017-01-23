@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.65 2016/09/04 21:46:36 krw Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.66 2017/01/20 00:51:56 mpi Exp $	*/
 
 /*
  * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
@@ -86,6 +86,7 @@ enc_clone_create(struct if_clone *ifc, int unit)
 	ifp = &sc->sc_if;
 	ifp->if_softc = sc;
 	ifp->if_type = IFT_ENC;
+	ifp->if_xflags = IFXF_CLONED;
 	ifp->if_start = enc_start;
 	ifp->if_output = enc_output;
 	ifp->if_ioctl = enc_ioctl;
