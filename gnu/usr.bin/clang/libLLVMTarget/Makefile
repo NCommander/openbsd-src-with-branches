@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:50 pascal Exp $
 
 LIB=	LLVMTarget
 NOPIC=
@@ -11,9 +11,7 @@ SRCS=	Target.cpp \
 	TargetIntrinsicInfo.cpp \
 	TargetLoweringObjectFile.cpp \
 	TargetMachine.cpp \
-	TargetMachineC.cpp \
-	TargetRecip.cpp \
-	TargetSubtargetInfo.cpp
+	TargetMachineC.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Target
 
