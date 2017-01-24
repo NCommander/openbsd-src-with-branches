@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.525 2017/01/13 10:12:12 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.526 2017/01/24 19:53:37 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
 .\"
@@ -14,7 +14,7 @@
 .\" IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
 .\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: January 13 2017 $
+.Dd $Mdocdate: January 24 2017 $
 .Dt TMUX 1
 .Os
 .Sh NAME
@@ -2525,12 +2525,6 @@ terminal type, the option could be set to the string:
 The terminal entry value is passed through
 .Xr strunvis 3
 before interpretation.
-The default value forcibly corrects the
-.Ql colors
-entry for terminals which support 256 colours:
-.Bd -literal -offset indent
-"*256col*:colors=256,xterm*:XT"
-.Ed
 .El
 .Pp
 Available session options are:
