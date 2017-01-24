@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflow.h,v 1.13 2015/07/20 23:15:54 florian Exp $	*/
+/*	$OpenBSD: if_pflow.h,v 1.14 2015/10/03 10:44:23 florian Exp $	*/
 
 /*
  * Copyright (c) 2008 Henning Brauer <henning@openbsd.org>
@@ -112,7 +112,7 @@ struct pflow_ipfix_tmpl_ipv4 {
 
 /* update pflow_clone_create() when changing pflow_ipfix_tmpl_v6 */
 struct pflow_ipfix_tmpl_ipv6 {
-	struct pflow_tmpl_hdr 	h;
+	struct pflow_tmpl_hdr	h;
 	struct pflow_tmpl_fspec	src_ip;
 	struct pflow_tmpl_fspec	dest_ip;
 	struct pflow_tmpl_fspec	if_index_in;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgestp.c,v 1.62 2015/11/07 12:37:18 mpi Exp $	*/
+/*	$OpenBSD: bridgestp.c,v 1.63 2016/09/20 12:14:49 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -2017,7 +2017,7 @@ bstp_getstate(struct bstp_state *bs, struct bstp_port *bp)
 
 	/*
 	 * Translate RSTP roles and states to STP port states
-	 * (IEEE Std 802.1D-2004 Table 17-1). 
+	 * (IEEE Std 802.1D-2004 Table 17-1).
 	 */
 	if (bp->bp_role == BSTP_ROLE_DISABLED)
 		state = BSTP_IFSTATE_DISABLED;
