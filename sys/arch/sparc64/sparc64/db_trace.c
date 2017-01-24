@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.11 2016/09/10 17:59:53 guenther Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.12 2016/09/11 03:14:04 guenther Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.23 2001/07/10 06:06:16 eeh Exp $ */
 
 /*
@@ -78,7 +78,7 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 			struct proc *p;
 			struct user *u;
 			(*pr)("trace: pid %d ", (int)addr);
-			p = pfind(addr);
+			p = tfind(addr);
 			if (p == NULL) {
 				(*pr)("not found\n");
 				return;

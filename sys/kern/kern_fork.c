@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.191 2016/10/22 02:55:36 guenther Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.192 2016/11/07 00:26:32 guenther Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -559,7 +559,7 @@ alloctid(void)
 	do {
 		/* (0 .. TID_MASK+1] */
 		tid = 1 + (arc4random() & TID_MASK);
-	} while (pfind(tid) != NULL);
+	} while (tfind(tid) != NULL);
 
 	return (tid);
 }
