@@ -1,4 +1,4 @@
-/*	$OpenBSD: keyword.c,v 1.43 2015/12/30 14:59:10 tedu Exp $	*/
+/*	$OpenBSD: keyword.c,v 1.44 2016/09/08 15:11:29 tedu Exp $	*/
 /*	$NetBSD: keyword.c,v 1.12.6.1 1996/05/30 21:25:13 cgd Exp $	*/
 
 /*-
@@ -33,7 +33,6 @@
 #include <sys/param.h>	/* MAXCOMLEN */
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <sys/proc.h>
 
 #include <err.h>
 #include <errno.h>
