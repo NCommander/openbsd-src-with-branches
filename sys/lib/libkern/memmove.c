@@ -1,4 +1,4 @@
-/*	$OpenBSD: memcpy.c,v 1.2 2009/01/25 22:06:44 grange Exp $	*/
+/*	$OpenBSD: memmove.c,v 1.1 2013/06/11 18:04:41 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -31,6 +31,8 @@
 
 #include <sys/types.h>
 #include <sys/systm.h>
+
+#undef memmove
 
 /*
  * This is designed to be small, not fast.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcopy.c,v 1.5 2005/08/08 08:05:37 espie Exp $ */
+/*	$OpenBSD: bcopy.c,v 1.1 2013/06/13 04:33:26 deraadt Exp $ */
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -34,6 +34,8 @@
 
 #include <sys/types.h>
 #include <sys/systm.h>
+
+#undef bcopy
 
 /*
  * sizeof(word) MUST BE A POWER OF TWO

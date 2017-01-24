@@ -1,4 +1,4 @@
-/*	$OpenBSD: bzero.c,v 1.8 2009/10/27 23:59:35 deraadt Exp $	*/
+/*	$OpenBSD: bzero.c,v 1.9 2014/06/10 04:16:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1987 Regents of the University of California.
@@ -30,6 +30,8 @@
  */
 
 #include <lib/libkern/libkern.h>
+
+#undef bzero
 
 /*
  * bzero -- vax movc5 instruction
