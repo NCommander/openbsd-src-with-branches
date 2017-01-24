@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.14 2017/01/21 13:16:40 benno Exp $ */
+/*	$OpenBSD: parse.y,v 1.15 2017/01/23 03:31:33 deraadt Exp $ */
 
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -1012,9 +1012,9 @@ int
 domain_valid(const char *cp)
 {
 
-	for ( ; '\0' != *cp; cp++)
-		if (!('.' == *cp || '-' == *cp ||
-		    '_' == *cp || isalnum((int)*cp)))
+	for ( ; *cp != '\0'; cp++)
+		if (!(*cp == '.' || *cp == '-' ||
+		    *cp == '_' || isalnum((int)*cp)))
 			return (0);
 	return (1);
 }
