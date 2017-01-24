@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.229 2017/01/21 05:42:03 guenther Exp $	*/
+/*	$OpenBSD: proc.h,v 1.230 2017/01/24 00:58:55 mpi Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -41,6 +41,7 @@
 #define	_SYS_PROC_H_
 
 #include <machine/proc.h>		/* Machine-dependent proc substruct. */
+#include <sys/atomic.h>
 #include <sys/selinfo.h>		/* For struct selinfo */
 #include <sys/syslimits.h>		/* For LOGIN_NAME_MAX */
 #include <sys/queue.h>
@@ -48,7 +49,6 @@
 #include <sys/event.h>			/* For struct klist */
 #include <sys/mutex.h>			/* For struct mutex */
 #include <sys/resource.h>		/* For struct rusage */
-#include <machine/atomic.h>
 
 #ifdef _KERNEL
 #define __need_process
