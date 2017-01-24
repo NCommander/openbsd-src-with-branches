@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_attr.c,v 1.95 2015/10/24 08:00:42 claudio Exp $ */
+/*	$OpenBSD: rde_attr.c,v 1.96 2016/10/14 16:05:36 phessler Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -31,6 +31,7 @@
 
 #include "bgpd.h"
 #include "rde.h"
+#include "log.h"
 
 int
 attr_write(void *p, u_int16_t p_len, u_int8_t flags, u_int8_t type,

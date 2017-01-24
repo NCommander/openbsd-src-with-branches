@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.209 2016/04/08 12:27:05 phessler Exp $ */
+/*	$OpenBSD: kroute.c,v 1.210 2016/10/05 07:38:06 phessler Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -36,6 +36,7 @@
 #include <unistd.h>
 
 #include "bgpd.h"
+#include "log.h"
 
 struct ktable		**krt;
 u_int			  krt_size;

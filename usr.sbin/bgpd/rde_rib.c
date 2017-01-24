@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.148 2017/01/23 22:47:59 claudio Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.149 2017/01/23 22:53:52 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -26,6 +26,7 @@
 
 #include "bgpd.h"
 #include "rde.h"
+#include "log.h"
 
 /*
  * BGP RIB -- Routing Information Base

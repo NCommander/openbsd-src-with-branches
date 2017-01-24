@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_update.c,v 1.82 2014/12/18 19:28:44 tedu Exp $ */
+/*	$OpenBSD: rde_update.c,v 1.83 2017/01/23 11:33:41 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -25,6 +25,7 @@
 
 #include "bgpd.h"
 #include "rde.h"
+#include "log.h"
 
 in_addr_t	up_get_nexthop(struct rde_peer *, struct rde_aspath *);
 int		up_generate_mp_reach(struct rde_peer *, struct update_attr *,

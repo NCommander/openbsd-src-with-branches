@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_decide.c,v 1.62 2012/07/04 20:43:26 claudio Exp $ */
+/*	$OpenBSD: rde_decide.c,v 1.63 2017/01/23 22:47:59 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -24,6 +24,7 @@
 
 #include "bgpd.h"
 #include "rde.h"
+#include "log.h"
 
 int	prefix_cmp(struct prefix *, struct prefix *);
 /*

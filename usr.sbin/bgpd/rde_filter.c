@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.78 2016/10/14 16:05:36 phessler Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.79 2016/11/10 09:20:51 phessler Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -26,6 +26,7 @@
 
 #include "bgpd.h"
 #include "rde.h"
+#include "log.h"
 
 int	rde_filter_match(struct filter_rule *, struct rde_aspath *,
 	    struct bgpd_addr *, u_int8_t, struct rde_peer *, struct rde_peer *);

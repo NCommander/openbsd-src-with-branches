@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.44 2015/02/10 05:18:39 claudio Exp $ */
+/*	$OpenBSD: pfkey.c,v 1.45 2015/09/13 10:22:16 florian Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -31,6 +31,7 @@
 
 #include "bgpd.h"
 #include "session.h"
+#include "log.h"
 
 #define	PFKEY2_CHUNK sizeof(u_int64_t)
 #define	ROUNDUP(x) (((x) + (PFKEY2_CHUNK - 1)) & ~(PFKEY2_CHUNK - 1))

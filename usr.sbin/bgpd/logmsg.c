@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.60 2016/08/08 21:44:00 renato Exp $ */
+/*	$OpenBSD: logmsg.c,v 1.1 2016/09/02 14:04:51 benno Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -26,6 +26,7 @@
 
 #include "bgpd.h"
 #include "session.h"
+#include "log.h"
 
 char *
 log_fmt_peer(const struct peer_config *peer)

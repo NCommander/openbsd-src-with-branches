@@ -1,4 +1,4 @@
-/*	$OpenBSD: timer.c,v 1.15 2012/04/12 17:26:09 claudio Exp $ */
+/*	$OpenBSD: timer.c,v 1.16 2015/01/16 06:40:15 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003-2007 Henning Brauer <henning@openbsd.org>
@@ -21,6 +21,7 @@
 
 #include "bgpd.h"
 #include "session.h"
+#include "log.h"
 
 #define MAXIMUM(a, b)	(((a) > (b)) ? (a) : (b))
 
