@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.24 2016/05/07 19:05:23 guenther Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.25 2016/08/28 06:15:32 guenther Exp $	*/
 
 /*
  * Copyright (c) 2002,2004 Dale Rahn
@@ -101,6 +101,7 @@ DL_SYSCALL2(getcwd,__getcwd)
 DL_SYSCALL2(set_tcb,__set_tcb)
 DL_SYSCALL2(_syscall,__syscall)
 DL_SYSCALL(sysctl)
+DL_SYSCALL(thrkill)
 
 1:
 	/* error: result = -errno; - handled here. */

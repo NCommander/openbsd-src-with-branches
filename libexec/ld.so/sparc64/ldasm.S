@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.43 2016/05/07 19:05:23 guenther Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.44 2016/08/28 06:15:33 guenther Exp $	*/
 /*	$NetBSD: rtld_start.S,v 1.5 2001/08/14 22:17:48 eeh Exp $	*/
 
 /*
@@ -337,6 +337,13 @@ _ENTRY(_dl_sendsyslog)
 
 _ENTRY(_dl_pledge)
 	mov SYS_pledge | SYSCALL_G2RFLAG, %g1	! calling sys_pledge
+	add %o7, 8, %g2				! just return on success
+	t ST_SYSCALL				! off to wonderland
+	retl
+	 sub %g0, %o0, %o0			! error: result = -errno
+
+_ENTRY(_dl_thrkill)
+	mov SYS_thrkill | SYSCALL_G2RFLAG, %g1	! calling sys_thrkill
 	add %o7, 8, %g2				! just return on success
 	t ST_SYSCALL				! off to wonderland
 	retl

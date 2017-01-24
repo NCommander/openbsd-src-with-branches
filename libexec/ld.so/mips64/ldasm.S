@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.20 2016/08/07 03:01:53 guenther Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.21 2016/08/28 06:15:32 guenther Exp $ */
 
 /*
  * Copyright (c) 1998-2002 Opsycon AB, Sweden.
@@ -168,3 +168,4 @@ DL_SYSCALL2_NOERR(set_tcb,__set_tcb)
 DL_SYSCALL(sysctl)
 DL_SYSCALL(utrace)
 DL_SYSCALL(write)
+DL_SYSCALL(thrkill)

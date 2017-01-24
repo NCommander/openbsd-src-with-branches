@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: ldasm.S,v 1.1 2017/01/11 14:11:27 patrick Exp $ */
 
 /*
  * Copyright (c) 2016 Dale Rahn
@@ -154,6 +154,7 @@ DL_SYSCALL(pledge)
 DL_SYSCALL2(getcwd,__getcwd)
 DL_SYSCALL(sysctl)
 DL_SYSCALL2(set_tcb,__set_tcb)
+DL_SYSCALL(thrkill)
 
 DL_SYSCALL(getdents)
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: library.c,v 1.78 2016/08/08 21:59:20 guenther Exp $ */
+/*	$OpenBSD: library.c,v 1.79 2016/08/12 20:39:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -236,7 +236,7 @@ _dl_tryload_shlib(const char *libname, int type, int flags)
 				res = NULL;	/* silence gcc */
 			next_load = _dl_calloc(1, sizeof(struct load_list));
 			if (next_load == NULL)
-				_dl_exit(7);
+				_dl_oom();
 			next_load->next = load_list;
 			load_list = next_load;
 			next_load->start = start;

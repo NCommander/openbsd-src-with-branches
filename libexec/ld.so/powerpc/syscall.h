@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.h,v 1.42 2016/07/04 21:15:07 guenther Exp $ */
+/*	$OpenBSD: syscall.h,v 1.43 2016/08/28 06:15:32 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -58,5 +58,7 @@ int	_dl_utrace(const char *, const void *, size_t);
 ssize_t	_dl_write(int, const char *, size_t);
 int	_dl_getentropy(char *, size_t);
 int	_dl_sendsyslog(const char *, size_t, int);
+__dead
+void	_dl_thrkill(pid_t, int, void *);
 
 #endif /*__DL_SYSCALL_H__*/
