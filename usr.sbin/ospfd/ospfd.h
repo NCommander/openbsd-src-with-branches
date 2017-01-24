@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.95 2016/09/02 14:02:48 benno Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.96 2017/01/23 00:12:36 jca Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -31,6 +31,7 @@
 
 #include <imsg.h>
 #include "ospf.h"
+#include "log.h"
 
 #define CONF_FILE		"/etc/ospfd.conf"
 #define	OSPFD_SOCKET		"/var/run/ospfd.sock"
@@ -578,7 +579,7 @@ void		 kr_reload(void);
 u_int8_t	mask2prefixlen(in_addr_t);
 in_addr_t	prefixlen2mask(u_int8_t);
 
-/* log.h */
+/* logmsg.h */
 const char	*nbr_state_name(int);
 const char	*if_state_name(int);
 const char	*if_type_name(enum iface_type);
