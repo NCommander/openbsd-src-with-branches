@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.163 2016/10/16 19:15:02 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.164 2016/11/12 19:04:41 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -157,7 +157,6 @@ server_start(struct event_base *base, int lockfd, char *lockfile)
 	TAILQ_INIT(&clients);
 	RB_INIT(&sessions);
 	TAILQ_INIT(&session_groups);
-	mode_key_init_trees();
 	key_bindings_init();
 
 	gettimeofday(&start_time, NULL);

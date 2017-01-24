@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.83 2015/12/08 01:10:31 nicm Exp $
+# $OpenBSD: Makefile,v 1.84 2017/01/23 10:09:43 nicm Exp $
 
 PROG=	tmux
 SRCS=	alerts.c \
@@ -89,7 +89,6 @@ SRCS=	alerts.c \
 	layout-set.c \
 	layout.c \
 	log.c \
-	mode-key.c \
 	names.c \
 	notify.c \
 	options-table.c \
