@@ -1,6 +1,4 @@
-dnl	$OpenBSD: whatis,v 1.4 2015/05/16 10:44:44 jsg Exp $
+dnl	$OpenBSD: whatis,v 1.1 2017/01/25 02:29:25 patrick Exp $
 
-OpenBSD/MACHINE runs on the BeagleBoard and newer xM models, as well as
-PandaBoard, PandaBoard ES, BeagleBone, BeagleBone Black, SABRE Lite,
-Nitrogen6X, Wandboard, CuBox-i4Pro, Utilite and Novena. Hardware support is
-currently limited, but this port is a heavy work in progress.
+OpenBSD/MACHINE runs on the Pine64 and the Raspberry Pi 3.  Hardware support
+is currently limited, but this port is a heavy work in progress.
