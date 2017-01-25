@@ -1,4 +1,4 @@
-/*	$OpenBSD: igmp_var.h,v 1.9 2008/04/18 06:42:20 djm Exp $	*/
+/*	$OpenBSD: igmp_var.h,v 1.10 2017/01/04 04:56:24 dlg Exp $	*/
 /*	$NetBSD: igmp_var.h,v 1.9 1996/02/13 23:41:31 christos Exp $	*/
 
 /*
@@ -110,7 +110,7 @@ igmpstat_inc(enum igmpstat_counters c)
 #define	IGMP_RANDOM_DELAY(X)	(arc4random_uniform(X) + 1)
 
 void	igmp_init(void);
-void	igmp_input(struct mbuf *, ...);
+void	igmp_input(struct mbuf *, int, int);
 void	igmp_joingroup(struct in_multi *);
 void	igmp_leavegroup(struct in_multi *);
 void	igmp_fasttimo(void);

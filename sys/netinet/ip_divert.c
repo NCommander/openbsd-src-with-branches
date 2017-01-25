@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_divert.c,v 1.40 2016/11/21 09:09:06 mpi Exp $ */
+/*      $OpenBSD: ip_divert.c,v 1.41 2016/12/19 08:36:49 mpi Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -72,7 +72,7 @@ divert_init(void)
 }
 
 void
-divert_input(struct mbuf *m, ...)
+divert_input(struct mbuf *m, int iphlen, int proto)
 {
 	m_freem(m);
 }
