@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2017/01/22 03:13:07 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2017/01/24 08:44:47 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -48,7 +48,11 @@ SUBDIR+=libLLVMPasses
 SUBDIR+=libLLVMCoroutines
 SUBDIR+=libLLVMDemangle
 
-SUBDIR+=include/llvm/${LLVM_ARCH}
+.for arch in ${LLVM_ARCHS}
+.if "${arch}" == ${LLVM_ARCH} || make(obj)
+SUBDIR+=include/llvm/${arch}
+.endif
+.endfor
 
 .for _l in ${BACKEND_LIBS}
 SUBDIR+=lib${_l}
