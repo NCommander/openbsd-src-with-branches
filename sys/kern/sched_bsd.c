@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched_bsd.c,v 1.42 2015/11/08 20:45:57 naddy Exp $	*/
+/*	$OpenBSD: sched_bsd.c,v 1.43 2016/03/09 13:38:50 mpi Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -296,6 +296,8 @@ yield(void)
 {
 	struct proc *p = curproc;
 	int s;
+
+	NET_ASSERT_UNLOCKED();
 
 	SCHED_LOCK(s);
 	p->p_priority = p->p_usrpri;
