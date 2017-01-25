@@ -1,4 +1,4 @@
-/* $OpenBSD: support.S,v 1.2 2016/12/18 14:40:25 patrick Exp $ */
+/* $OpenBSD: support.S,v 1.3 2017/01/24 10:23:11 patrick Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * Copyright (c) 2014-2015 The FreeBSD Foundation
@@ -110,3 +110,15 @@ ENTRY(pagezero_cache)
 	ret
 
 END(pagezero_cache)
+
+ENTRY(smc_call)
+	smc	#0
+	ret
+
+END(smc_call)
+
+ENTRY(hvc_call)
+	hvc	#0
+	ret
+
+END(hvc_call)
