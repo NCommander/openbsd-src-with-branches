@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cerror.S,v 1.1 2017/01/11 18:09:24 patrick Exp $	*/
 /*-
  * Copyright (c) 2014 Andrew Turner
  * All rights reserved.
@@ -32,7 +32,7 @@ _ENTRY(CERROR)
 	stp	x0, x30, [sp,#-16]!
 	bl	_C_LABEL(__errno)
 	ldp	x1, x30, [sp],#16
-	str	x1, [x0]
+	str	w1, [x0]
 	movn	x0, #0
 	movn	x1, #0
 	ret
