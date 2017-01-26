@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.9 2010/06/21 16:55:52 phessler Exp $
+#	$OpenBSD: Makefile,v 1.10 2011/07/06 19:48:10 matthew Exp $
 #	$NetBSD: Makefile,v 1.3 1998/03/02 21:57:38 cgd Exp $
 
-PROG=	unfdpass
+PROG=		unfdpass
+WARNINGS=	Yes
 
 CLEANFILES+=file1 file2 file3 output test-sock
 REGRESS_TARGETS=do-unfdpass1 do-unfdpass2 do-unfdpass3 do-unfdpass4
