@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: syspatch.sh,v 1.86 2017/01/19 23:41:57 ajacoutot Exp $
+# $OpenBSD: syspatch.sh,v 1.87 2017/01/26 03:55:25 rpe Exp $
 #
 # Copyright (c) 2016 Antoine Jacoutot <ajacoutot@openbsd.org>
 #
@@ -276,7 +276,7 @@ _MIRROR=$(while read _line; do _line=${_line%%#*}; [[ -n ${_line} ]] &&
 _MIRROR="${_MIRROR}/syspatch/${_KERNV[0]}/$(machine)"
 
 (($(sysctl -n hw.ncpufound) > 1)) && _BSDMP=true || _BSDMP=false
-_OSrev=${_KERNV[0]%\.*}${_KERNV[0]#*\.}
+_OSrev=${_KERNV[0]%.*}${_KERNV[0]#*.}
 _PDIR="/var/syspatch"
 _TMP=$(mktemp -d -p /tmp syspatch.XXXXXXXXXX)
 
