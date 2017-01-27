@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.215 2016/11/08 19:56:56 tb Exp $
+#	$OpenBSD: Makefile,v 1.216 2016/11/12 03:04:27 jca Exp $
 #	$NetBSD: Makefile,v 1.59 1996/05/15 21:36:43 jtc Exp $
 
 #	@(#)Makefile	5.45.1.1 (Berkeley) 5/6/91
@@ -45,9 +45,11 @@ RDIRS=	../lib/libcurses ../lib/libedit \
 .if ${COMPILER_VERSION:L} == "gcc3"
 RDIRS+= ../gnu/usr.bin/gcc ../gnu/lib/libobjc
 PRDIRS+= ../gnu/lib/libstdc++
-.else
+.elif ${COMPILER_VERSION:L} == "gcc4"
 RDIRS+= ../gnu/usr.bin/cc/libobjc
 PRDIRS+= ../gnu/lib/libstdc++-v3 ../gnu/usr.bin/cc/include
+.elif ${COMPILER_VERSION:L} == "clang"
+RDIRS+= ../lib/libcxxabi ../lib/libcxx
 .endif
 
 # prereq implies includes
