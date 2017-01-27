@@ -1,4 +1,4 @@
-/*	$OpenBSD: unpcb.h,v 1.12 2015/08/28 04:38:47 guenther Exp $	*/
+/*	$OpenBSD: unpcb.h,v 1.13 2017/01/23 23:44:04 deraadt Exp $	*/
 /*	$NetBSD: unpcb.h,v 1.6 1994/06/29 06:46:08 cgd Exp $	*/
 
 /*
@@ -86,6 +86,11 @@ struct	unpcb {
 #define	sotounpcb(so)	((struct unpcb *)((so)->so_pcb))
 
 #ifdef _KERNEL
+struct fdpass {
+	struct file	*fp;
+	int		 flags;
+};
+
 int	unp_attach(struct socket *);
 int	unp_bind(struct unpcb *, struct mbuf *, struct proc *);
 int	unp_connect(struct socket *, struct mbuf *, struct proc *);
