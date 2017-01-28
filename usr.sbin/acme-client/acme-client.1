@@ -1,4 +1,4 @@
-.\"	$OpenBSD: acme-client.1,v 1.18 2017/01/21 09:05:31 benno Exp $
+.\"	$OpenBSD: acme-client.1,v 1.19 2017/01/21 15:53:15 jmc Exp $
 .\"
 .\" Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -100,11 +100,9 @@ or 0 if certificates were changed (revoked or updated).
 .Sh EXAMPLES
 To create and submit a new key for a single domain, assuming that the
 web server has already been configured to map the challenge directory
-as in the
-.Sx Challenges
-section:
+as above:
 .Pp
-.Dl # acme-client -vN www.example.com
+.Dl # acme-client -vD www.example.com
 .Pp
 A daily
 .Xr cron 8
