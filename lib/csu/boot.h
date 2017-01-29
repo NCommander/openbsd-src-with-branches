@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.h,v 1.26 2016/12/24 16:00:35 kettenis Exp $ */
+/*	$OpenBSD: boot.h,v 1.27 2017/01/02 15:25:50 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -93,8 +93,6 @@ _dl_boot_bind(const long sp, long *dl_data, Elf_Dyn *dynamicp)
 	AuxInfo		*auxstack;
 	long		*stack;
 	Elf_Dyn		*dynp;
-	Elf_Addr	start;
-	size_t		size;
 	int		n, argc;
 	char		**argv, **envp;
 	long		loff;
