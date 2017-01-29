@@ -1,4 +1,4 @@
-.\" $OpenBSD: pledge.2,v 1.38 2017/01/23 04:25:05 deraadt Exp $
+.\" $OpenBSD: pledge.2,v 1.39 2017/01/23 07:19:39 jmc Exp $
 .\"
 .\" Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
 .\"
@@ -528,15 +528,15 @@ devices:
 .Dv AUDIO_SETPAR ,
 .Dv AUDIO_START ,
 .Dv AUDIO_STOP .
-.It Va bpf
-Allow
-.Dv BIOCGSTATS
-operation for statistics collection from a bpf device.
 .Pp
 See
 .Xr sio_open 3
 for more information on using the sndio API in combination with
 .Fn pledge .
+.It Va bpf
+Allow
+.Dv BIOCGSTATS
+operation for statistics collection from a bpf device.
 .El
 .Pp
 A whitelist of permitted paths may be provided in
