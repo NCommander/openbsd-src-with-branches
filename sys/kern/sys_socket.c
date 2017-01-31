@@ -121,14 +121,7 @@ soo_ioctl(struct file *fp, u_long cmd, caddr_t data, struct proc *p)
 	 */
 	if (IOCGROUP(cmd) == 'i') {
 		NET_LOCK(s);
-#if 1
-		extern int inifioctl;
-		inifioctl = 1;
-#endif
 		error = ifioctl(so, cmd, data, p);
-#if 1
-		inifioctl = 0;
-#endif
 		NET_UNLOCK(s);
 		return (error);
 	}

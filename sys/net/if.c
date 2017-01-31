@@ -234,10 +234,6 @@ struct task if_input_task_locked = TASK_INITIALIZER(if_netisr, NULL);
  * are introduced in IP output paths.
  */
 struct rwlock netlock = RWLOCK_INITIALIZER("netlock");
-#if 1
-/* tsleep() is ok if inside ifioctl(). */
-int inifioctl;
-#endif
 
 /*
  * Network interface utility routines.
