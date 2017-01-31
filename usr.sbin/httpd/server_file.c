@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_file.c,v 1.61 2016/03/08 09:33:15 florian Exp $	*/
+/*	$OpenBSD: server_file.c,v 1.62 2016/05/17 03:12:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -65,7 +65,6 @@ server_file_access(struct httpd *env, struct client *clt,
 	struct http_descriptor	*desc = clt->clt_descreq;
 	struct server_config	*srv_conf = clt->clt_srv_conf;
 	struct stat		 st;
-	struct kv		*r, key;
 	char			*newpath, *encodedpath;
 	int			 ret;
 
@@ -145,13 +144,7 @@ server_file_access(struct httpd *env, struct client *clt,
 		goto fail;
 	}
 
-	key.kv_key = "Range";
-	r = kv_find(&desc->http_headers, &key);
-	if (r != NULL)
-		return (server_partial_file_request(env, clt, path, &st,
-		    r->kv_value));
-	else
-		return (server_file_request(env, clt, path, &st));
+	return (server_file_request(env, clt, path, &st));
 
  fail:
 	switch (errno) {
