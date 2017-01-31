@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.228 2017/01/26 13:03:47 bluhm Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.229 2017/01/29 19:58:47 bluhm Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -1352,7 +1352,7 @@ udp_sysctl_udpstat(void *oldp, size_t *oldlenp, void *newp)
 	u_long *words = (u_long *)&udpstat;
 	int i;
 
-	KASSERT(sizeof(udpstat) == (nitems(counters) * sizeof(u_long)));
+	CTASSERT(sizeof(udpstat) == (nitems(counters) * sizeof(u_long)));
 
 	counters_read(udpcounters, counters, nitems(counters));
 
