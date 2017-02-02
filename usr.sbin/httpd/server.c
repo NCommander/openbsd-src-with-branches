@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.104 2017/01/31 17:25:05 beck Exp $	*/
+/*	$OpenBSD: server.c,v 1.105 2017/01/31 20:08:13 beck Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -836,8 +836,6 @@ server_write(struct bufferevent *bev, void *arg)
 
 	if (clt->clt_done)
 		goto done;
-
-	bufferevent_enable(bev, EV_READ);
 
 	if (clt->clt_srvbev && clt->clt_srvbev_throttled) {
 		bufferevent_enable(clt->clt_srvbev, EV_READ);

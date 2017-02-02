@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.111 2017/01/31 12:21:27 reyk Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.112 2017/01/31 14:39:47 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2017 Reyk Floeter <reyk@openbsd.org>
@@ -1184,6 +1184,10 @@ server_response(struct httpd *httpd, struct client *clt)
 	}
 
 	if (clt->clt_persist >= srv_conf->maxrequests)
+		clt->clt_persist = 0;
+
+	/* pipelining should end after the first "idempotent" method */
+	if (clt->clt_pipelining && clt->clt_toread > 0)
 		clt->clt_persist = 0;
 
 	/*
