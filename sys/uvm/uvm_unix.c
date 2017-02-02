@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_unix.c,v 1.59 2016/08/12 22:46:02 kettenis Exp $	*/
+/*	$OpenBSD: uvm_unix.c,v 1.60 2016/09/16 01:09:53 dlg Exp $	*/
 /*	$NetBSD: uvm_unix.c,v 1.18 2000/09/13 15:00:25 thorpej Exp $	*/
 
 /*
@@ -163,6 +163,16 @@ uvm_coredump_walkmap(struct proc *p, void *iocookie,
 		if (!(entry->protection & PROT_WRITE) &&
 		    entry->aref.ar_amap == NULL &&
 		    entry->start != p->p_p->ps_sigcode)
+			continue;
+
+		/*
+		 * Skip pages marked as unreadable, as uiomove(UIO_USERSPACE)
+		 * will fail on them.  Maybe this really should be a test of
+		 * entry->max_protection, but doing
+		 *	uvm_map_extract(UVM_EXTRACT_FIXPROT)
+		 * when dumping such a mapping would suck.
+		 */
+		if ((entry->protection & PROT_READ) == 0)
 			continue;
 
 		/* Don't dump mmaped devices. */
