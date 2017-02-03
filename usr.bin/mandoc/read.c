@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.130 2017/01/09 01:36:22 schwarze Exp $ */
+/*	$OpenBSD: read.c,v 1.131 2017/01/28 23:26:56 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -818,6 +818,7 @@ mparse_reset(struct mparse *curp)
 
 	free(curp->sodest);
 	curp->sodest = NULL;
+	curp->gzip = 0;
 }
 
 void
