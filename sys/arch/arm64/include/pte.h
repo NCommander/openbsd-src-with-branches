@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: pte.h,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
 /*
  * Copyright (c) 2014 Dale Rahn <drahn@dalerahn.com>
  *
@@ -97,7 +97,7 @@
 #define		Ln_TABLE_MASK	((1 << 12) - 1)
 
 /* physical page mask */
-#define PTE_RPGN 0x3ffffff000ULL
+#define PTE_RPGN (((1ULL << 48) - 1) & ~PAGE_MASK)
 
 /* XXX */
 #ifndef _LOCORE
