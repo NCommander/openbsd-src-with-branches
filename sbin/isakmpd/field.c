@@ -1,4 +1,4 @@
-/* $OpenBSD: field.c,v 1.19 2005/11/15 21:49:04 cloder Exp $	 */
+/* $OpenBSD: field.c,v 1.20 2015/06/03 02:24:36 millert Exp $	 */
 /* $EOM: field.c,v 1.11 2000/02/20 19:58:37 niklas Exp $	 */
 
 /*
@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <netinet/in.h>
 
 #include "constants.h"
 #include "field.h"

@@ -1,4 +1,4 @@
-/* $OpenBSD: cookie.c,v 1.15 2005/04/08 23:15:25 hshoexer Exp $	 */
+/* $OpenBSD: cookie.c,v 1.16 2014/01/23 01:04:28 deraadt Exp $	 */
 /* $EOM: cookie.c,v 1.21 1999/08/05 15:00:04 niklas Exp $	 */
 
 /*
@@ -31,6 +31,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
 
