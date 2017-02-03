@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.c,v 1.1 2016/12/17 23:38:33 patrick Exp $	*/
+/*	$OpenBSD: efiboot.c,v 1.2 2017/01/22 04:18:52 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -515,7 +515,11 @@ efi_memprobe_find(UINTN pages, UINTN align, EFI_PHYSICAL_ADDRESS *addr)
 				break;
 
 			paddr = mm->PhysicalStart + (j * EFI_PAGE_SIZE);
-			if (!(paddr & (align - 1))) {
+			if (paddr & (align - 1))
+				continue;
+
+			if (EFI_CALL(BS->AllocatePages, AllocateAddress,
+			    EfiLoaderData, pages, &paddr) == EFI_SUCCESS) {
 				*addr = paddr;
 				free(mm0, siz);
 				return EFI_SUCCESS;
