@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc2.c,v 1.37 2016/09/15 02:00:18 dlg Exp $	*/
+/*	$OpenBSD: dwc2.c,v 1.38 2016/09/24 12:59:42 kettenis Exp $	*/
 /*	$NetBSD: dwc2.c,v 1.32 2014/09/02 23:26:20 macallan Exp $	*/
 
 /*-
@@ -47,12 +47,12 @@ __KERNEL_RCSID(0, "$NetBSD: dwc2.c,v 1.32 2014/09/02 23:26:20 macallan Exp $");
 #include <sys/select.h>
 #include <sys/proc.h>
 #include <sys/queue.h>
+#include <sys/endian.h>
 #if 0
 #include <sys/cpu.h>
 #endif
 
 #include <machine/bus.h>
-#include <machine/endian.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
