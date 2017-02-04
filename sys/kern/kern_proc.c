@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.74 2017/01/24 04:50:48 mpi Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.75 2017/01/24 05:32:00 mpi Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -457,7 +457,7 @@ db_show_all_procs(db_expr_t addr, int haddr, db_expr_t count, char *modif)
 		db_printf("usage: show all procs [/a] [/n] [/w]\n");
 		db_printf("\t/a == show process address info\n");
 		db_printf("\t/n == show normal process info [default]\n");
-		db_printf("\t/w == show process wait/emul info\n");
+		db_printf("\t/w == show process pgrp/wait info\n");
 		db_printf("\t/o == show normal info for non-idle SONPROC\n");
 		return;
 	}
