@@ -3,22 +3,30 @@
 BEGIN {
     unshift @INC, 't/lib';
 }
-chdir 't';
 
 use strict;
-use Test::More tests => 9;
 
 use File::Spec;
+use File::Temp qw[tempdir];
 use MakeMaker::Test::Setup::PL_FILES;
 use MakeMaker::Test::Utils;
+use Config;
+use Test::More;
+use ExtUtils::MM;
+plan !MM->can_run(make()) && $ENV{PERL_CORE} && $Config{'usecrosscompile'}
+    ? (skip_all => "cross-compiling and make not available")
+    : (tests => 9);
 
 my $perl = which_perl();
 my $make = make_run();
 perl_lib();
 
+my $tmpdir = tempdir( DIR => 't', CLEANUP => 1 );
+chdir $tmpdir;
+
 setup;
 
-END { 
+END {
     ok( chdir File::Spec->updir );
     ok( teardown );
 }

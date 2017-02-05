@@ -9,6 +9,8 @@
 BEGIN {
     chdir 't' if -d 't';
     @INC = '../lib';
+    require './test.pl';
+    skip_all_without_dynamic_extension('Fcntl');
 }
 
 use warnings;
@@ -49,9 +51,11 @@ if (exists $ENV{PERLIO} && $ENV{PERLIO} =~ /stdio/  ) {
 # Also skip on release builds, to avoid other possibly problematic
 # platforms
 
-if ($^O eq 'VMS' || $^O eq 'MSWin32' || $^O eq 'cygwin' || $^O =~ /freebsd/ || 
-     ($^O eq 'solaris' && $Config{osvers} eq '2.8')
-	|| ((int($]*1000) & 1) == 0)
+my ($osmajmin) = $Config{osvers} =~ /^(\d+\.\d+)/;
+if ($^O eq 'VMS' || $^O eq 'MSWin32' || $^O eq 'cygwin' || $^O =~ /freebsd/ || $^O eq 'midnightbsd' ||
+     ($^O eq 'solaris' && $Config{osvers} eq '2.8') || $^O eq 'nto' ||
+     ($^O eq 'darwin' && $osmajmin < 9) ||
+    ((int($]*1000) & 1) == 0)
 ) {
 	skip_all('various portability issues');
 	exit 0;
@@ -65,6 +69,7 @@ plan(tests => 10);
 # make two handles that will always block
 
 sub fresh_io {
+	close $in if $in; close $out if $out;
 	undef $in; undef $out; # use fresh handles each time
 	pipe $in, $out;
 	$sigst = "";
@@ -93,11 +98,20 @@ alarm(0);
 ok(!$st, 'read/die: read status');
 ok(close($in), 'read/die: close status');
 
+# This used to be 1_000_000, but on Linux/ppc64 (POWER7) this kept
+# consistently failing. At exactly 0x100000 it started passing
+# again. Now we're asking the kernel what the pipe buffer is, and if
+# that fails, hoping this number is bigger than any pipe buffer.
+my $surely_this_arbitrary_number_is_fine = (eval {
+    use Fcntl qw(F_GETPIPE_SZ);
+    fcntl($out, F_GETPIPE_SZ, 0);
+} || 0xfffff) + 1;
+
 # close during print
 
 fresh_io;
 $SIG{ALRM} = sub { $sigst = close($out) ? "ok" : "nok" };
-$buf = "a" x 1_000_000 . "\n"; # bigger than any pipe buffer hopefully
+$buf = "a" x $surely_this_arbitrary_number_is_fine . "\n";
 select $out; $| = 1; select STDOUT;
 alarm(1);
 $st = print $out $buf;
@@ -110,7 +124,7 @@ ok(!close($out), 'print/close: close status');
 
 fresh_io;
 $SIG{ALRM} = sub { die };
-$buf = "a" x 1_000_000 . "\n"; # bigger than any pipe buffer hopefully
+$buf = "a" x $surely_this_arbitrary_number_is_fine . "\n";
 select $out; $| = 1; select STDOUT;
 alarm(1);
 $st = eval { print $out $buf };

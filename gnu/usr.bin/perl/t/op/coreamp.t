@@ -9,10 +9,12 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = qw(. ../lib);
-    require "test.pl";
+    @INC = qw(. ../lib ../dist/if);
+    require "./test.pl"; require './charset_tools.pl';
     $^P |= 0x100;
 }
+
+no warnings 'experimental::smartmatch';
 
 sub lis($$;$) {
   &is(map(@$_ ? "[@{[map $_//'~~u~~', @$_]}]" : 'nought', @_[0,1]), $_[2]);
@@ -28,10 +30,13 @@ package sov {
 my %op_desc = (
  evalbytes=> 'eval "string"',
  join     => 'join or string',
+ pos      => 'match position',
+ prototype=> 'subroutine prototype',
  readline => '<HANDLE>',
  readpipe => 'quoted execution (``, qx)',
  reset    => 'symbol reset',
  ref      => 'reference-type operator',
+ undef    => 'undef operator',
 );
 sub op_desc($) {
   return $op_desc{$_[0]} || $_[0];
@@ -56,7 +61,7 @@ sub test_proto {
     like $@, qr/^Too many arguments for $o at /, "&$o with too many args";
 
   }
-  elsif ($p eq '_') {
+  elsif ($p =~ /^_;?\z/) {
     $tests ++;
 
     eval " &CORE::$o(1,2) ";
@@ -66,7 +71,7 @@ sub test_proto {
 
     if (!@_) { return }
 
-    $tests += 6;
+    $tests += 3;
 
     my($in,$out) = @_; # for testing implied $_
 
@@ -78,31 +83,6 @@ sub test_proto {
 
     $_ = $in;
     is &{"CORE::$o"}(), $out, "&$o with no args";
-
-    # Since there is special code to deal with lexical $_, make sure it
-    # works in all cases.
-    undef $_;
-    {
-      my $_ = $in;
-      is &{"CORE::$o"}(), $out, "&$o with no args uses lexical \$_";
-    }
-    # Make sure we get the right pad under recursion
-    my $r;
-    $r = sub {
-      if($_[0]) {
-        my $_ = $in;
-        is &{"CORE::$o"}(), $out,
-           "&$o with no args uses the right lexical \$_ under recursion";
-      }
-      else {
-        &$r(1)
-      }
-    };
-    &$r(0);
-    my $_ = $in;
-    eval {
-       is "CORE::$o"->(), $out, "&$o with the right lexical \$_ in an eval"
-    };   
   }
   elsif ($p =~ '^;([$*]+)\z') { # ;$ ;* ;$$ etc.
     my $maxargs = length $1;
@@ -187,46 +167,73 @@ sub test_proto {
     like $@, qr/^Type of arg 1 to &CORE::$o must be hash reference at /,
         "&$o with non-hash arg with hash overload (which does not count)";
   }
-  elsif ($p =~ /^\\\[(\$\@%&?\*)](\$\@)?\z/) {
-    $tests += 4;
+  elsif ($p =~ /^(;)?\\\[(\$\@%&?\*)](\$\@)?\z/) {
+    $tests += 3;
 
-    unless ($2) {
+    unless ($3) {
       $tests ++;
       eval " &CORE::$o(1,2) ";
-      like $@, qr/^Too many arguments for $o at /,
+      like $@, qr/^Too many arguments for ${\op_desc($o)} at /,
         "&$o with too many args";
     }
-    eval { &{"CORE::$o"}($2 ? 1 : ()) };
-    like $@, qr/^Not enough arguments for $o at /,
+    unless ($1) {
+      $tests ++;
+      eval { &{"CORE::$o"}($3 ? 1 : ()) };
+      like $@, qr/^Not enough arguments for $o at /,
          "&$o with too few args";
-    my $more_args = $2 ? ',1' : '';
+    }
+    my $more_args = $3 ? ',1' : '';
     eval " &CORE::$o(2$more_args) ";
     like $@, qr/^Type of arg 1 to &CORE::$o must be reference to one of(?x:
-                ) \[\Q$1\E] at /,
+                ) \[\Q$2\E] at /,
         "&$o with non-ref arg";
     eval " &CORE::$o(*STDOUT{IO}$more_args) ";
     like $@, qr/^Type of arg 1 to &CORE::$o must be reference to one of(?x:
-                ) \[\Q$1\E] at /,
+                ) \[\Q$2\E] at /,
         "&$o with ioref arg";
     my $class = ref *DATA{IO};
     eval " &CORE::$o(bless(*DATA{IO}, 'hov')$more_args) ";
     like $@, qr/^Type of arg 1 to &CORE::$o must be reference to one of(?x:
-                ) \[\Q$1\E] at /,
+                ) \[\Q$2\E] at /,
         "&$o with ioref arg with hash overload (which does not count)";
     bless *DATA{IO}, $class;
-    if (do {$1 !~ /&/}) {
+    if (do {$2 !~ /&/}) {
       $tests++;
       eval " &CORE::$o(\\&scriggle$more_args) ";
       like $@, qr/^Type of arg 1 to &CORE::$o must be reference to one (?x:
-                  )of \[\Q$1\E] at /,
+                  )of \[\Q$2\E] at /,
         "&$o with coderef arg";
     }    
+  }
+  elsif ($p eq ';\[$*]') {
+    $tests += 4;
+
+    my $desc = quotemeta op_desc($o);
+    eval " &CORE::$o(1,2) ";
+    like $@, qr/^Too many arguments for $desc at /,
+        "&$o with too many args";
+    eval " &CORE::$o([]) ";
+    like $@, qr/^Type of arg 1 to &CORE::$o must be scalar reference at /,
+        "&$o with array ref arg";
+    eval " &CORE::$o(1) ";
+    like $@, qr/^Type of arg 1 to &CORE::$o must be scalar reference at /,
+        "&$o with scalar arg";
+    eval " &CORE::$o(bless([], 'sov')) ";
+    like $@, qr/^Type of arg 1 to &CORE::$o must be scalar reference at /,
+        "&$o with non-scalar arg w/scalar overload (which does not count)";
   }
 
   else {
     die "Please add tests for the $p prototype";
   }
 }
+
+# Test that &CORE::foo calls without parentheses (no new @_) can handle the
+# total absence of any @_ without crashing.
+undef *_;
+&CORE::wantarray;
+$tests++;
+pass('no crash with &CORE::foo when *_{ARRAY} is undef');
 
 test_proto '__FILE__';
 test_proto '__LINE__';
@@ -241,32 +248,45 @@ is __SUB__test, \&__SUB__test, '&__SUB__';                  ++ $tests;
 
 test_proto 'abs', -5, 5;
 
-test_proto 'accept';
-$tests += 6; eval q{
-  is &CORE::accept(qw{foo bar}), undef, "&accept";
-  lis [&{"CORE::accept"}(qw{foo bar})], [undef], "&accept in list context";
+SKIP:
+{
+    if ($^O eq "MSWin32" && is_miniperl) {
+        $tests += 8;
+        skip "accept() not available in Win32 miniperl", 8
+    }
+    $tests += 6;
+    test_proto 'accept';
+    eval q{
+      is &CORE::accept(qw{foo bar}), undef, "&accept";
+      lis [&{"CORE::accept"}(qw{foo bar})], [undef], "&accept in list context";
 
-  &myaccept(my $foo, my $bar);
-  is ref $foo, 'GLOB', 'CORE::accept autovivifies its first argument';
-  is $bar, undef, 'CORE::accept does not autovivify its second argument';
-  use strict;
-  undef $foo;
-  eval { 'myaccept'->($foo, $bar) };
-  like $@, qr/^Can't use an undefined value as a symbol reference at/,
+      &myaccept(my $foo, my $bar);
+      is ref $foo, 'GLOB', 'CORE::accept autovivifies its first argument';
+      is $bar, undef, 'CORE::accept does not autovivify its second argument';
+      use strict;
+      undef $foo;
+      eval { 'myaccept'->($foo, $bar) };
+      like $@, qr/^Can't use an undefined value as a symbol reference at/,
       'CORE::accept will not accept undef 2nd arg under strict';
-  is ref $foo, 'GLOB', 'CORE::accept autovivs its first arg under strict';
-};
+      is ref $foo, 'GLOB', 'CORE::accept autovivs its first arg under strict';
+    };
+}
 
 test_proto 'alarm';
 test_proto 'atan2';
 
 test_proto 'bind';
 $tests += 3;
-is &CORE::bind('foo', 'bear'), undef, "&bind";
-lis [&CORE::bind('foo', 'bear')], [undef], "&bind in list context";
-eval { &mybind(my $foo, "bear") };
-like $@, qr/^Bad symbol for filehandle at/,
-     'CORE::bind dies with undef first arg';
+SKIP:
+{
+    skip "bind() not available in Win32 miniperl", 3
+      if $^O eq "MSWin32" && is_miniperl();
+    is &CORE::bind('foo', 'bear'), undef, "&bind";
+    lis [&CORE::bind('foo', 'bear')], [undef], "&bind in list context";
+    eval { &mybind(my $foo, "bear") };
+    like $@, qr/^Bad symbol for filehandle at/,
+         'CORE::bind dies with undef first arg';
+}
 
 test_proto 'binmode';
 $tests += 3;
@@ -362,8 +382,13 @@ lis [&CORE::closedir(foo)], [undef], '&CORE::closedir in list context';
 
 test_proto 'connect';
 $tests += 2;
-is &CORE::connect('foo','bar'), undef, '&connect';
-lis [&myconnect('foo','bar')], [undef], '&connect in list context';
+SKIP:
+{
+    skip "connect() not available in Win32 miniperl", 2
+      if $^O eq "MSWin32" && is_miniperl();
+    is &CORE::connect('foo','bar'), undef, '&connect';
+    lis [&myconnect('foo','bar')], [undef], '&connect in list context';
+}
 
 test_proto 'continue';
 $tests ++;
@@ -387,6 +412,15 @@ test_proto 'dbmopen';
   $db{1} = 2; $db{3} = 4;
   &mydbmclose(\%db);
   is scalar keys %db, 0, '&dbmopen and &dbmclose';
+  my $Dfile = "$filename.pag";
+  if (! -e $Dfile) {
+    ($Dfile) = <$filename*>;
+  }
+  if ($^O eq 'VMS') {
+    unlink "$filename.sdbm_dir", $Dfile;
+  } else {
+    unlink "$filename.dir", $Dfile;
+  }
 }
 
 test_proto 'die';
@@ -400,7 +434,8 @@ test_proto $_ for qw(
 test_proto 'evalbytes';
 $tests += 4;
 {
-  chop(my $upgraded = "use utf8; '\xc4\x80'" . chr 256);
+  my $U_100_bytes = byte_utf8a_to_utf8n("\xc4\x80");
+  chop(my $upgraded = "use utf8; $U_100_bytes" . chr 256);
   is &myevalbytes($upgraded), chr 256, '&evalbytes';
   # Test hints
   require strict;
@@ -438,7 +473,7 @@ test_proto 'exp';
 test_proto 'fc';
 $tests += 2;
 {
-  my $sharp_s = "\xdf";
+  my $sharp_s = uni_to_native("\xdf");
   is &myfc($sharp_s), $sharp_s, '&fc, no unicode_strings';
   use feature 'unicode_strings';
   is &myfc($sharp_s), "ss", '&fc, unicode_strings';
@@ -479,6 +514,20 @@ test_proto "get$_" for qw '
   ppid priority protobyname protobynumber protoent
   pwent pwnam pwuid servbyname servbyport servent sockname sockopt
 ';
+
+# Make sure the following tests test what we think they are testing.
+ok ! $CORE::{glob}, '*CORE::glob not autovivified yet'; $tests ++;
+{
+  # Make sure ck_glob does not respect the override when &CORE::glob is
+  # autovivified (by test_proto).
+  local *CORE::GLOBAL::glob = sub {};
+  test_proto 'glob';
+}
+$_ = "t/*.t";
+@_ = &myglob($_);
+is join($", &myglob()), "@_", '&glob without arguments';
+is join($", &myglob("t/*.t")), "@_", '&glob with an arg';
+$tests += 2;
 
 test_proto 'gmtime';
 &CORE::gmtime;
@@ -556,21 +605,48 @@ close file;
 }
 
 test_proto 'opendir';
-test_proto 'ord', chr(64), 64;
+test_proto 'ord', chr(utf8::unicode_to_native(64)), utf8::unicode_to_native(64);
 
 test_proto 'pack';
 $tests += 2;
-is &mypack("H*", '5065726c'), 'Perl', '&pack';
-lis [&mypack("H*", '5065726c')], ['Perl'], '&pack in list context';
+my $Perl_as_a_hex_string = join "", map
+                                    { sprintf("%2X", utf8::unicode_to_native($_)) }
+                                    0x50, 0x65, 0x72, 0x6c;
+is &mypack("H*", $Perl_as_a_hex_string), 'Perl', '&pack';
+lis [&mypack("H*", $Perl_as_a_hex_string)], ['Perl'], '&pack in list context';
 
 test_proto 'pipe';
+
+test_proto 'pos';
+$tests += 4;
+$_ = "hello";
+pos = 3;
+is &mypos, 3, 'reading &pos without args';
+&mypos = 4;
+is pos, 4, 'writing to &pos without args';
+{
+  my $x = "gubai";
+  pos $x = 3;
+  is &mypos(\$x), 3, 'reading &pos without args';
+  &mypos(\$x) = 4;
+  is pos $x, 4, 'writing to &pos without args';
+}
+
+test_proto 'prototype';
+$tests++;
+is &myprototype(\&myprototype), prototype("CORE::prototype"), '&prototype';
+
 test_proto 'quotemeta', '$', '\$';
 
 test_proto 'rand';
 $tests += 3;
-like &CORE::rand, qr/^0[.\d]*\z/, '&rand';
+my $r = &CORE::rand;
+ok eval {
+    use warnings FATAL => qw{numeric uninitialized};
+    $r >= 0 && $r < 1;
+}, '&rand returns a valid number';
 unlike join(" ", &CORE::rand), qr/ /, '&rand in list context';
-&cmp_ok(&CORE::rand(78), qw '< 78', '&rand with 2 args');
+&cmp_ok(&CORE::rand(78), qw '< 78', '&rand with 1 arg');
 
 test_proto 'read';
 {
@@ -637,12 +713,12 @@ $tests += 2;
 my $oncer = sub { "a" =~ m?a? };
 &$oncer;
 &myreset;
-ok &$oncer, '&reset with one arg';
+ok &$oncer, '&reset with no args';
 package resettest {
   $b = "c";
   $banana = "cream";
   &::myreset('b');
-  ::lis [$b,$banana],[(undef)x2], '2-arg &reset';
+  ::lis [$b,$banana],[(undef)x2], '1-arg &reset';
 }
 
 test_proto 'reverse';
@@ -660,6 +736,11 @@ lis [&myrindex("foffooo","o",2)],[1],'&rindex in list context';
 is &myrindex("foffooo","o"),6,'&rindex with 2 args';
 
 test_proto 'rmdir';
+
+test_proto 'scalar';
+$tests += 2;
+is &myscalar(3), 3, '&scalar';
+lis [&myscalar(3)], [3], '&scalar in list cx';
 
 test_proto 'seek';
 {
@@ -694,9 +775,12 @@ like $@, qr/^Not enough arguments for select system call at /,
 eval { &myselect(1,2,3,4,5) };
 like $@, qr/^Too many arguments for select system call at /,
       ,'&myselect($a,$total,$of,$five,$args)';
-&myselect((undef)x3,.25);
-# Just have to assume that worked. :-) If we get here, at least it didn’t
-# crash or anything.
+unless ($^O eq "MSWin32" && is_miniperl) {
+    &myselect((undef)x3,.25);
+    # Just have to assume that worked. :-) If we get here, at least it didn’t
+    # crash or anything.
+    # select() is unimplemented in Win32 miniperl
+}
 
 test_proto "sem$_" for qw "ctl get op";
 
@@ -733,7 +817,10 @@ test_proto 'sqrt', 4, 2;
 test_proto 'srand';
 $tests ++;
 &CORE::srand;
+() = &CORE::srand;
 pass '&srand with no args does not crash';
+
+test_proto 'study';
 
 test_proto 'substr';
 $tests += 5;
@@ -792,13 +879,13 @@ $tests += 3;
 
 test_proto 'time';
 $tests += 2;
-like &mytime, '^\d+\z', '&time in scalar context';
-like join('-', &mytime), '^\d+\z', '&time in list context';
+like &mytime, qr/^\d+\z/, '&time in scalar context';
+like join('-', &mytime), qr/^\d+\z/, '&time in list context';
 
 test_proto 'times';
 $tests += 2;
-like &mytimes, '^[\d.]+\z', '&times in scalar context';
-like join('-',&mytimes), '^[\d.]+-[\d.]+-[\d.]+-[\d.]+\z',
+like &mytimes, qr/^[\d.]+\z/, '&times in scalar context';
+like join('-',&mytimes), qr/^[\d.]+-[\d.]+-[\d.]+-[\d.]+\z/,
    '&times in list context';
 
 test_proto 'uc', 'aa', 'AA';
@@ -808,11 +895,45 @@ test_proto 'umask';
 $tests ++;
 is &myumask, umask, '&umask with no args';
 
+test_proto 'undef';
+$tests += 12;
+is &myundef(), undef, '&undef returns undef';
+lis [&myundef()], [undef], '&undef returns undef in list cx';
+lis [&myundef(\$_)], [undef], '&undef(...) returns undef in list cx';
+is \&myundef(), \undef, '&undef returns the right undef';
+$_ = 'anserine questions';
+&myundef(\$_);
+is $_, undef, '&undef(\$_) undefines $_';
+@_ = 1..3;
+&myundef(\@_);
+is @_, 0, '&undef(\@_) undefines @_';
+%_ = 1..4;
+&myundef(\%_);
+ok !%_, '&undef(\%_) undefines %_';
+&myundef(\&utf8::valid); # nobody should be using this :-)
+ok !defined &utf8::valid, '&undef(\&foo) undefines &foo';
+@_ = \*_;
+&myundef;
+is *_{ARRAY}, undef, '@_=\*_, &undef undefines *_';
+@_ = \*_;
+&myundef(\*_);
+is *_{ARRAY}, undef, '&undef(\*_) undefines *_';
+(&myundef(), @_) = 1..10;
+lis \@_, [2..10], 'list assignment to &undef()';
+ok !defined undef, 'list assignment to &undef() does not affect undef'; 
+undef @_;
+
 test_proto 'unpack';
 $tests += 2;
+my $abcd_as_a_hex_string = join "", map
+                                    { sprintf("%2X", utf8::unicode_to_native($_)) }
+                                    0x61, 0x62, 0x63, 0x64;
+my $bcde_as_a_hex_string = join "", map
+                                    { sprintf("%2X", utf8::unicode_to_native($_)) }
+                                    0x62, 0x63, 0x64, 0x65;
 $_ = 'abcd';
-is &myunpack("H*"), '61626364', '&unpack with one arg';
-is &myunpack("H*", "bcde"), '62636465', '&unpack with two arg';
+is &myunpack("H*"), $abcd_as_a_hex_string, '&unpack with one arg';
+is &myunpack("H*", "bcde"), $bcde_as_a_hex_string, '&unpack with two arg';
 
 
 test_proto 'untie'; # behaviour already tested along with tie(d)
@@ -875,10 +996,17 @@ like $@, qr'^Undefined format "STDOUT" called',
   open my $kh, $keywords_file
     or die "$0 cannot open $keywords_file: $!";
   while(<$kh>) {
-    if (m?__END__?..${\0} and /^[-](.*)/) {
+    if (m?__END__?..${\0} and /^[-+](.*)/) {
       my $word = $1;
       next if
-       $word =~ /^(?:CORE|and|cmp|dump|eq|ge|gt|le|lt|ne|or|x|xor)\z/;
+       $word =~ /^(?:s(?:tate|ort|ay|ub)?|d(?:ef
+                  ault|ump|o)|p(?:rintf?|ackag
+                  e)|e(?:ls(?:if|e)|val|q)|g(?:[et]|iven|oto
+                  |rep)|u(?:n(?:less|til)|se)|l(?:(?:as)?t|ocal|e)|re
+                  (?:quire|turn|do)|__(?:DATA|END)__|for(?:each|mat)?|(?:
+                  AUTOLOA|EN)D|n(?:e(?:xt)?|o)|C(?:HECK|ORE)|wh(?:ile|en)
+                  |(?:ou?|t)r|m(?:ap|y)?|UNITCHECK|q[qrwx]?|x(?:or)?|DEST
+                  ROY|BEGIN|INIT|and|cmp|if|y)\z/x;
       $tests ++;
       ok   exists &{"my$word"}
         || (eval{&{"CORE::$word"}}, $@ =~ /cannot be called directly/),
@@ -906,7 +1034,7 @@ like $@, qr'^Undefined format "STDOUT" called',
   my $warnings;
   local $SIG{__WARN__} = sub { ++$warnings };
 
-  my $_ = 'Phoo';
+  local $_ = 'Phoo';
   ok &mymkdir(), '&mkdir';
   like <*>, qr/^phoo(.DIR)?\z/i, 'mkdir works with implicit $_';
 
@@ -931,7 +1059,7 @@ sub main::pakg { &CORE::__PACKAGE__ }
 package main;
 CORE::__DATA__
 I wandered lonely as a cloud
-That floats on high o’er vales and hills,
+That floats on high o'er vales and hills,
 And all at once I saw a crowd, 
 A host of golden daffodils!
 Beside the lake, beneath the trees,

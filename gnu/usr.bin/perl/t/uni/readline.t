@@ -1,9 +1,9 @@
 #!./perl
 
 BEGIN {
-    chdir 't';
-    @INC = '../lib';
+    chdir 't' if -d 't';
     require './test.pl';
+    set_up_inc('../lib');
 }
 
 plan tests => 7;
@@ -13,15 +13,16 @@ use open qw( :utf8 :std );
 
 # [perl #19566]: sv_gets writes directly to its argument via
 # TARG. Test that we respect SvREADONLY.
-eval { for (\2) { $_ = <Fʜ> } };
-like($@, 'Modification of a read-only value attempted', '[perl #19566]');
+use constant roref=>\2;
+eval { for (roref) { $_ = <Fʜ> } };
+like($@, qr/Modification of a read-only value attempted/, '[perl #19566]');
 
 # [perl #21628]
 {
   my $file = tempfile();
   open Ạ,'+>',$file; $a = 3;
   is($a .= <Ạ>, 3, '#21628 - $a .= <A> , A eof');
-  close A; $a = 4;
+  close Ạ; $a = 4;
   is($a .= <Ạ>, 4, '#21628 - $a .= <A> , A closed');
 }
 

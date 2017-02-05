@@ -2,8 +2,13 @@
 
 use strict;
 use warnings;
+use Config;
 
 require './test.pl';
+
+if ( $Config{usecrosscompile} ) {
+  skip_all( "Not all files are available during cross-compilation" );
+}
 
 plan('no_plan');
 
@@ -16,7 +21,7 @@ my $prefix = '';
 
 unless (-d 't' && -f 'MANIFEST') {
     # we'll assume that we are in t then.
-    # All files are interal to perl, so Unix-style is sufficiently portable.
+    # All files are internal to perl, so Unix-style is sufficiently portable.
     $prefix = '../';
 }
 
@@ -26,7 +31,7 @@ unless (-d 't' && -f 'MANIFEST') {
     open my $fh, '<', $proto or die "Can't open $proto: $!";
 
     while (<$fh>) {
-	$declared{$1}++ if /^#define\s+(PERL_ARGS_ASSERT[A-Za-z_]+)\s+/;
+	$declared{$1}++ if /^#define\s+(PERL_ARGS_ASSERT[A-Za-z0-9_]+)\s+/;
     }
 }
 
@@ -38,11 +43,13 @@ if (!@ARGV) {
     while (<$fh>) {
 	# *.c or */*.c
 	push @ARGV, $prefix . $1 if m!^((?:[^/]+/)?[^/]+\.c)\t!;
+        # Special case the *inline.h since they behave like *.c
+	push @ARGV, $prefix . $1 if m!^(([^/]+)?inline\.h)\t!;
     }
 }
 
 while (<>) {
-    $used{$1}++ if /^\s+(PERL_ARGS_ASSERT_[A-Za-z_]+);$/;
+    $used{$1}++ if /^\s+(PERL_ARGS_ASSERT_[A-Za-z0-9_]+);$/;
 }
 
 my %unused;

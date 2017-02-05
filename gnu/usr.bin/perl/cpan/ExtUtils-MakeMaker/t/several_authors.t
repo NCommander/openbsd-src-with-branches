@@ -8,12 +8,18 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 20;
 
 use TieOut;
 use MakeMaker::Test::Utils;
 use MakeMaker::Test::Setup::SAS;
+use Config;
+use Test::More;
+use ExtUtils::MM;
+plan !MM->can_run(make()) && $ENV{PERL_CORE} && $Config{'usecrosscompile'}
+    ? (skip_all => "cross-compiling and make not available")
+    : (tests => 20);
 use File::Path;
+use File::Temp qw[tempdir];
 
 use ExtUtils::MakeMaker;
 
@@ -24,7 +30,8 @@ my $perl     = which_perl();
 my $make     = make_run();
 my $makefile = makefile_name();
 
-chdir 't';
+my $tmpdir = tempdir( DIR => 't', CLEANUP => 1 );
+chdir $tmpdir;
 
 perl_lib();
 
@@ -68,7 +75,7 @@ note "argument verification via CONFIGURE"; {
     eval {
         WriteMakefile(
             NAME             => 'Multiple::Authors',
-            CONFIGURE => sub { 
+            CONFIGURE => sub {
                return {AUTHOR => 'John Doe <jd@example.com>',};
             },
         );

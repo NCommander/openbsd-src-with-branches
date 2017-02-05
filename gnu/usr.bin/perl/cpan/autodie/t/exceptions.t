@@ -9,6 +9,7 @@ BEGIN { plan skip_all => "Perl 5.10 only tests" if $] < 5.010; }
 
 use 5.010;
 use constant NO_SUCH_FILE => 'this_file_had_better_not_exist_xyzzy';
+no if $] >= 5.017011, warnings => "experimental::smartmatch";
 
 plan 'no_plan';
 
@@ -43,3 +44,5 @@ ok($@ ~~ ':file',	"Exception from close / class :file"	);
 ok($@ ~~ ':io',		"Exception from close / class :io"	);
 ok($@ ~~ ':all',	"Exception from close / class :all"	);
 
+ok $@ eq $@.'',                 "string overloading is complete (eq)";
+ok( ($@ cmp $@.'') == 0,        "string overloading is complete (cmp)" );

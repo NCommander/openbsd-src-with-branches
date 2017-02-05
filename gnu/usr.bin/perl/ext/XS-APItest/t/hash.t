@@ -1,22 +1,9 @@
 #!perl -w
 
-BEGIN {
-  chdir 't' if -d 't';
-  @INC = '../lib';
-  push @INC, "::lib:$MacPerl::Architecture:" if $^O eq 'MacOS';
-  require Config; import Config;
-  if ($Config{'extensions'} !~ /\bXS\/APItest\b/) {
-    # Look, I'm using this fully-qualified variable more than once!
-    my $arch = $MacPerl::Architecture;
-    print "1..0 # Skip: XS::APItest was not built\n";
-    exit 0;
-  }
-}
-
 use strict;
 use utf8;
 use Tie::Hash;
-use Test::More 'no_plan';
+use Test::More;
 
 BEGIN {use_ok('XS::APItest')};
 
@@ -33,7 +20,7 @@ sub test_fetch_absent;
 my $utf8_for_258 = chr 258;
 utf8::encode $utf8_for_258;
 
-my @testkeys = ('N', chr 198, chr 256);
+my @testkeys = ('N', chr utf8::unicode_to_native(198), chr 256);
 my @keys = (@testkeys, $utf8_for_258);
 
 foreach (@keys) {
@@ -53,12 +40,12 @@ main_tests (\@keys, \@testkeys, ' [utf8 hash]');
   my $result = ($] > 5.009) ? undef : 1;
 
   is (XS::APItest::Hash::store(\%h, chr 258,  1), $result);
-    
+
   ok (!exists $h{$utf8_for_258},
       "hv_store doesn't insert a key with the raw utf8 on a tied hash");
 }
 
-if ($] > 5.009) {
+{
     my $strtab = strtab();
     is (ref $strtab, 'HASH', "The shared string table quacks like a hash");
     my $wibble = "\0";
@@ -98,7 +85,7 @@ foreach my $in ("", "N", "a\0b") {
     is ($got, $in, "test_share_unshare_pvn");
 }
 
-if ($] > 5.009) {
+{
     foreach ([\&XS::APItest::Hash::rot13_hash, \&rot13, "rot 13"],
 	     [\&XS::APItest::Hash::bitflip_hash, \&bitflip, "bitflip"],
 	    ) {
@@ -115,11 +102,21 @@ if ($] > 5.009) {
 	foreach my $upgrade_n (0, 1) {
 	    my (%hash, %placebo);
 	    XS::APItest::Hash::bitflip_hash(\%hash);
-	    foreach my $new (["7", 65, 67, 80],
-			     ["8", 163, 171, 215],
+	    foreach my $new (["7", utf8::unicode_to_native(65),
+                                   utf8::unicode_to_native(67),
+                                   utf8::unicode_to_native(80)
+                             ],
+			     ["8", utf8::unicode_to_native(163),
+                                   utf8::unicode_to_native(171),
+                                   utf8::unicode_to_native(215)
+                             ],
 			     ["U", 2603, 2604, 2604],
-			    ) {
-		foreach my $code (78, 240, 256, 1336) {
+                ) {
+		foreach my $code (utf8::unicode_to_native(78),
+                                  utf8::unicode_to_native(240),
+                                  256,
+                                  1336
+                ) {
 		    my $key = chr $code;
 		    # This is the UTF-8 byte sequence for the key.
 		    my $key_utf8 = $key;
@@ -193,6 +190,108 @@ sub test_precomputed_hashes {
     }
 }
 
+{
+    use Scalar::Util 'weaken';
+    my %h;
+    fill_hash_with_nulls(\%h);
+    my @objs;
+    for("a".."z","A".."Z") {
+	weaken($objs[@objs] = $h{$_} = []);
+    }
+    undef %h;
+    no warnings 'uninitialized';
+    local $" = "";
+    is "@objs", "",
+      'explicitly undeffing a hash with nulls frees all entries';
+
+    my $h = {};
+    fill_hash_with_nulls($h);
+    @objs = ();
+    for("a".."z","A".."Z") {
+	weaken($objs[@objs] = $$h{$_} = []);
+    }
+    undef $h;
+    is "@objs", "", 'freeing a hash with nulls frees all entries';
+}
+
+# Tests for HvENAME and UTF8
+{
+    no strict;
+    no warnings 'void';
+    my $hvref;
+
+    *{"\xff::bar"}; # autovivify %ÿ:: without UTF8
+    *{"\xff::bαr::"} = $hvref = \%foo::;
+    undef *foo::;
+    is HvENAME($hvref), "\xff::bαr",
+	'stash alias (utf8 inside bytes) does not create malformed UTF8';
+
+    *{"é::foo"}; # autovivify %é:: with UTF8
+    *{"\xe9::\xe9::"} = $hvref = \%bar::;
+    undef *bar::;
+    is HvENAME($hvref), "\xe9::\xe9",
+	'stash alias (bytes inside utf8) does not create malformed UTF8';
+
+    *{"\xfe::bar"}; *{"\xfd::bar"};
+    *{"\xfe::bαr::"} = \%goo::;
+    *{"\xfd::bαr::"} = $hvref = \%goo::;
+    undef *goo::;
+    like HvENAME($hvref), qr/^[\xfe\xfd]::bαr\z/,
+	'multiple stash aliases (utf8 inside bytes) do not cause bad UTF8';
+
+    *{"è::foo"}; *{"ë::foo"};
+    *{"\xe8::\xe9::"} = $hvref = \%bear::;
+    *{"\xeb::\xe9::"} = \%bear::;
+    undef *bear::;
+    like HvENAME($hvref), qr"^[\xe8\xeb]::\xe9\z",
+	'multiple stash aliases (bytes inside utf8) do not cause bad UTF8';
+}
+
+{ # newHVhv
+    use Tie::Hash;
+    tie my %h, 'Tie::StdHash';
+    %h = 1..10;
+    is join(' ', sort %{newHVhv \%h}), '1 10 2 3 4 5 6 7 8 9',
+      'newHVhv on tied hash';
+}
+
+# helem and hslice on entry with null value
+# This is actually a test for a Perl operator, not an XS API test.  But it
+# requires a hash that can only be produced by XS (although recently it
+# could be encountered when tying hint hashes).
+{
+    my %h;
+    fill_hash_with_nulls(\%h);
+    eval{ $h{84} = 1 };
+    pass 'no crash when writing to hash elem with null value';
+    eval{ no # silly
+	  warnings; # thank you!
+	  @h{85} = 1 };
+    pass 'no crash when writing to hash elem with null value via slice';
+    eval { delete local $h{86} };
+    pass 'no crash during local deletion of hash elem with null value';
+    eval { delete local @h{87,88} };
+    pass 'no crash during local deletion of hash slice with null values';
+}
+
+# [perl #111000] Bug number eleventy-one thousand:
+#                hv_store should work on hint hashes
+eval q{
+    BEGIN {
+	XS::APItest::Hash::store \%^H, "XS::APItest/hash.t", undef;
+	delete $^H{"XS::APItest/hash.t"};
+    }
+};
+pass("hv_store works on the hint hash");
+
+{
+    # [perl #79074] HeSVKEY_force loses UTF8ness
+    my %hash = ( "\xff" => 1, "\x{100}" => 1 );
+    my @keys = sort ( XS::APItest::Hash::test_force_keys(\%hash) );
+    is_deeply(\@keys, [ sort keys %hash ], "check HeSVKEY_force()");
+}
+
+done_testing;
 exit;
 
 ################################   The End   ################################
@@ -307,7 +406,7 @@ sub test_U_hash {
 sub main_tests {
   my ($keys, $testkeys, $description) = @_;
   foreach my $key (@$testkeys) {
-    my $lckey = ($key eq chr 198) ? chr 230 : lc $key;
+    my $lckey = ($key eq chr utf8::unicode_to_native(198)) ? chr utf8::unicode_to_native(230) : lc $key;
     my $unikey = $key;
     utf8::encode $unikey;
 
@@ -482,6 +581,7 @@ sub rot13 {
 }
 
 sub bitflip {
-    my @results = map {join '', map {chr(32 ^ ord $_)} split '', $_} @_;
+    my $flip_bit = ord("A") ^ ord("a");
+    my @results = map {join '', map {chr($flip_bit ^ ord $_)} split '', $_} @_;
     wantarray ? @results : $results[0];
 }

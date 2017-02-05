@@ -1,46 +1,71 @@
 use ExtUtils::MakeMaker;
-use Config;
+use ExtUtils::Constant 0.23 'WriteConstants';
+use File::Spec;
+use strict;
+use warnings;
 
-my $e = $Config{'exe_ext'};
-my $o = $Config{'obj_ext'};
-my $exeout_flag = '-o ';
-if ($^O eq 'MSWin32') {
-    if ($Config{'cc'} =~ /^cl/i) {
-	$exeout_flag = '-Fe';
+my $core = grep { $_ eq 'PERL_CORE=1' } @ARGV;
+
+my $headerpath;
+if ($core) {
+    $headerpath = File::Spec->catdir(File::Spec->updir, File::Spec->updir);
+} else {
+	require Config;
+    $headerpath = File::Spec->catdir($Config::Config{archlibexp}, "CORE");
+}
+
+my @names = ({ name => 'HEf_SVKEY', macro => 1, type => "IV" },
+             qw(SVTYPEMASK SVt_PVGV SVt_PVHV PAD_FAKELEX_ANON
+                PAD_FAKELEX_MULTI SVpad_STATE SVpad_TYPED SVpad_OUR));
+
+my @depend;
+
+# First element in each tuple is the file; second is a regex snippet
+# giving the prefix to limit the names of symbols to define that come
+# from that file.  If none, all symbols will be defined whose values
+# match the pattern below.
+foreach my $tuple (['cop.h'],
+                   ['cv.h', 'CVf'],
+                   ['gv.h', 'G[PV]f'],
+                   ['op.h'],
+                   ['opcode.h', 'OPp'],
+                   ['op_reg_common.h','(?:(?:RXf_)?PMf_)'],
+                   ['pad.h','PADNAMEt_'],
+                   ['regexp.h','RXf_'],
+                   ['sv.h', 'SV(?:[fps]|pad)_'],
+                  ) {
+    my $file = $tuple->[0];
+    my $pfx = $tuple->[1] || '';
+    my $path = File::Spec->catfile($headerpath, $file);
+    push @depend, $path;
+    open my $fh, '<', $path or die "Cannot open $path: $!";
+    while (<$fh>) {
+	push @names, $1 if (/ \#define \s+ ( $pfx \w+ ) \s+
+            ( [()|\dx]+ [UuLl]{0,2}            # Parens, '|', digits, 'x',
+                                               # followed by optional long,
+                                               # unsigned qualifiers
+            | 0x[0-9a-fA-F]+                   # hex values
+            | \(? \d+ [UuLl]{0,2} \s* << .*?   # digits left shifted by anything
+                                               # followed by optional
+                                               # long, unsigned qualifiers
+            ) \s* (?: $| \/ \* )               # ending at comment or $
+        /x);
     }
-    elsif ($Config{'cc'} =~ /^bcc/i) {
-	$exeout_flag = '-e';
-    }
+    close $fh;
 }
 
 WriteMakefile(
-    NAME	=> "B",
-    VERSION	=> "a5",
-    MAN3PODS => {},
-    clean	=> {
-	FILES		=> "perl$e byteperl$e *$o B.c *~"
-    }
+    NAME	    => "B",
+    VERSION_FROM    => "B.pm",
+    realclean	    => {FILES=> 'const-c.inc const-xs.inc'},
+    depend          => {'Makefile' => "@depend"},
 );
 
-sub MY::post_constants {
-    "\nLIBS = $Config{libs}\n"
-}
-
-# Leave out doing byteperl for now. Probably should be built in the
-# core directory or somewhere else rather than here
-#sub MY::top_targets {
-#    my $self = shift;
-#    my $targets = $self->MM::top_targets();
-#    $targets =~ s/^(all ::.*)$/$1 byteperl$e/m;
-#    return <<"EOT" . $targets;
-
-#
-# byteperl is *not* a standard perl+XSUB executable. It's a special
-# program for running standalone bytecode executables. It isn't an XSUB
-# at the moment because a standlone Perl program needs to set up curpad
-# which is overwritten on exit from an XSUB.
-#
-#byteperl$e : byteperl$o B$o \$(PERL_SRC)/byterun$o
-#	\$(CC) ${exeout_flag}byteperl$e byteperl$o B$o byterun$o \$(LDFLAGS) \$(PERL_ARCHLIB)/CORE/$Config{libperl} \$(LIBS)
-#EOT
-#}
+# Currently only SVt_PVGV and SVt_PVHV aren't macros, but everything we name
+# should exist, so ensure that the C compile breaks if anything does not.
+WriteConstants(
+    PROXYSUBS => {push => 'EXPORT_OK'},
+    NAME => 'B',
+    NAMES => [map {ref $_ ? $_ : {name=>$_, macro=>1, type=>"UV"}} @names],
+    XS_SUBNAME => undef,
+);

@@ -10,7 +10,7 @@ use Fcntl qw( O_RDONLY O_RDWR O_WRONLY O_APPEND O_BINARY O_TEXT );
 use vars qw( $VERSION @ISA );
 use vars qw( @EXPORT @EXPORT_OK @EXPORT_FAIL %EXPORT_TAGS );
 
-$VERSION= '0.1101';
+$VERSION= '0.1203';
 
 use base qw( Exporter DynaLoader Tie::Handle IO::File );
 
@@ -146,6 +146,9 @@ my $FFFFFFFF   = $_64BITINT ? 0xFFFFFFFF : Math::BigInt->new(0xFFFFFFFF);
 	PARTITION_XINT13		PARTITION_XINT13_EXTENDED
 	PARTITION_PREP			PARTITION_UNIX
 	VALID_NTFT			PARTITION_NTFT )],
+    STD_HANDLE_ =>		[qw(
+	STD_INPUT_HANDLE		STD_OUTPUT_HANDLE
+	STD_ERROR_HANDLE )],
 );
 @EXPORT_OK= ();
 {
@@ -314,8 +317,8 @@ sub OsFHandleOpen {
     if ($@) {
 	return tie *{$fh}, __PACKAGE__, $osfh;
     }
-    return  undef if  $fd < 0;
-    return  open( $fh, $pref."&=".$fd );
+    return  undef unless  $fd;
+    return  open( $fh, $pref."&=".(0+$fd) );
 }
 
 sub GetOsFHandle {
@@ -716,7 +719,7 @@ sub READLINE {
 	my $self = shift;
 	my $line = "";
 
-	while ((index $line, $/) == $[-1) { # read until end of line marker
+	while ((index $line, $/) == -1) { # read until end of line marker
 		my $char = $self->GETC();
 
 		last if !defined $char || $char eq '';
@@ -943,7 +946,7 @@ This is a Perl-friendly wrapper around C<CreateFile>.
 
 On failure, C<$hObject> gets set to a false value and C<regLastError()>
 and C<$^E> are set to the reason for the failure.  Otherwise,
-C<$hObject> gets set to a Win32 native file handle which is alwasy
+C<$hObject> gets set to a Win32 native file handle which is always
 a true value [returns C<"0 but true"> in the impossible(?) case of
 the handle having a value of C<0>].
 
@@ -1160,7 +1163,7 @@ indicate the type of access desired.  C<GENERIC_READ> is the default.
 
 =item Create => $uCreate
 
-C<$sCreate> should be a string constaing zero or one character from
+C<$sCreate> should be a string containing zero or one character from
 C<"ktn"> and zero or one character from C<"ce">.  These stand for
 "Keep if exists", "Truncate if exists", "New file only", "Create if
 none", and "Existing file only".  These are translated into a
@@ -1202,7 +1205,7 @@ Examples:
 =item C<@roots= getLogicalDrives()>
 
 Returns the paths to the root directories of all logical drives
-currently defined.  This includes all types of drive lettters, such
+currently defined.  This includes all types of drive letters, such
 as floppies, CD-ROMs, hard disks, and network shares.  A typical
 return value on a poorly equipped computer would be C<("A:\\","C:\\")>.
 
@@ -1226,7 +1229,7 @@ same file name.
 
 If C<$bFailIfExists> is true and C<$sNewFileName> is the path to
 a file that already exists, then C<CopyFile> will fail.  If
-C<$bFailIfExists> is falsea, then the copy of the C<$sOldFileNmae>
+C<$bFailIfExists> is false, then the copy of the C<$sOldFileNmae>
 file will overwrite the C<$sNewFileName> file if it already exists.
 
 Like most routines, returns a true value if successful and a false
@@ -1298,7 +1301,7 @@ on that partition.
 The raw floppy disk.  Doesn't work under Windows 95.  This allows
 you to read or write raw sectors of the floppy disk and to use
 C<DeviceIoControl> to perform miscellaneous queries and operations
-to the floopy disk or drive.
+to the floppy disk or drive.
 
 Locking this for exclusive access prevents all access to the floppy.
 
@@ -1324,7 +1327,7 @@ If another process currently has read, write, and/or delete access to
 the file and you don't allow that level of sharing, then your call to
 C<CreateFile> will fail.  If you requested read, write, and/or delete
 access and another process already has the file open but doesn't allow
-that level of sharing, thenn your call to C<createFile> will fail.  Once
+that level of sharing, then your call to C<createFile> will fail.  Once
 you have the file open, if another process tries to open it with read,
 write, and/or delete access and you don't allow that level of sharing,
 then that process won't be allowed to open the file.
@@ -2194,8 +2197,8 @@ Only bits set in C<$uMask> will be modified by C<SetHandleInformation>.
 
 C<$uFlags> is an unsigned value having zero or more of the bits
 C<HANDLE_FLAG_INHERIT> and C<HANDLE_FLAG_PROTECT_FROM_CLOSE> set.
-For each bit set in C<$uMask>, the cooresponding bit in the handle's
-flags is set to the value of the cooresponding bit in C<$uFlags>.
+For each bit set in C<$uMask>, the corresponding bit in the handle's
+flags is set to the value of the corresponding bit in C<$uFlags>.
 
 If C<$uOldFlags> were the value of the handle's flags before the
 call to C<SetHandleInformation>, then the value of the handle's
@@ -2471,7 +2474,7 @@ the media is currently accessible.
 
 Allows the device's media to be locked or unlocked.  C<$opOutBuf> should
 be C<[]>.  C<$pInBuf> should be a C<PREVENT_MEDIA_REMOVAL> data structure,
-which is simply an interger containing a boolean value:
+which is simply an integer containing a boolean value:
 
     $pInBuf= pack( "i", $bPreventMediaRemoval );
 
@@ -2559,7 +2562,7 @@ argument to C<DeviceIoControl>.  Most of these are to be used on
 physical drive devices like C<"//./PhysicalDrive0">.  However,
 C<IOCTL_DISK_GET_PARTITION_INFO> and C<IOCTL_DISK_SET_PARTITION_INFO>
 should only be used on a single-partition device like C<"//./C:">.  Also,
-C<IOCTL_DISK_GET_MEDIA_TYPES> is documented as having been superceded but
+C<IOCTL_DISK_GET_MEDIA_TYPES> is documented as having been superseded but
 is still useful when used on a floppy device like C<"//./A:">.
 
 Includes C<IOCTL_DISK_FORMAT_TRACKS>, C<IOCTL_DISK_FORMAT_TRACKS_EX>,
@@ -2631,7 +2634,7 @@ offset of the partition, measured in bytes.
 =item C<$ucHiddenSects>
 
 The number of "hidden" sectors for this partition.  Actually this is
-the number of sectors found prior to this partiton, that is, the
+the number of sectors found prior to this partition, that is, the
 starting offset [as found in C<$uStartLow> and C<$ivStartHigh>]
 divided by the number of bytes per sector.
 
@@ -2640,7 +2643,7 @@ divided by the number of bytes per sector.
 The sequence number of this partition.  Partitions are numbered
 starting as C<1> [with "partition 0" meaning the entire disk].  
 Sometimes this field may be C<0> and you'll have to infer the
-partition sequence number from how many partitions preceed it on
+partition sequence number from how many partitions precede it on
 the disk.
 
 =item C<$uPartitionType>
@@ -2670,7 +2673,7 @@ value for any partitions you wish to have changed, added, or deleted.
 
 Change the type of the partition.  C<$opOutBuf> should be C<[]>.
 C<$pInBuf> should be a C<SET_PARTITION_INFORMATION> data structure
-which is just a single byte containing the new parition type [see
+which is just a single byte containing the new partition type [see
 the C<":PARTITION_"> export class for a list of known types]:
 
     $pInBuf= pack( "C", $uPartitionType );
@@ -2828,13 +2831,13 @@ driver of size C<$uLogBufferSize>:
 
 =item DISK_LOGGING_STOP
 
-Stop loggin each disk request:
+Stop logging each disk request:
 
     $pInBuf= pack( "C L L", 1, 0, 0 );
 
 =item DISK_LOGGING_DUMP
 
-Copy the interal log into the supplied buffer:
+Copy the internal log into the supplied buffer:
 
     $pLogBuffer= ' ' x $uLogBufferSize
     $pInBuf= pack( "C P L", 2, $pLogBuffer, $uLogBufferSize );
@@ -3014,6 +3017,14 @@ Constants describing partition types.
 	PARTITION_PREP			PARTITION_UNIX
 	VALID_NTFT			PARTITION_NTFT
 
+=item C<":STD_HANDLE_">
+
+Constants for GetStdHandle and SetStdHandle
+
+    STD_ERROR_HANDLE
+    STD_INPUT_HANDLE
+    STD_OUTPUT_HANDLE
+
 =item C<":ALL">
 
 All of the above.
@@ -3026,7 +3037,7 @@ None known at this time.
 
 =head1 AUTHOR
 
-Tye McQueen, tye@metronet.com, http://www.metronet.com/~tye/.
+Tye McQueen, tye@metronet.com, http://perlmonks.org/?node=tye.
 
 =head1 SEE ALSO
 

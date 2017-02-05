@@ -2,7 +2,7 @@
 #
 # regen_perly.pl, DAPM 12-Feb-04
 #
-# Copyright (c) 2004, 2005 Larry Wall
+# Copyright (c) 2004, 2005, 2006, 2009, 2010, 2011 Larry Wall
 #
 # Given an input file perly.y, run bison on it and produce
 # the following output files:
@@ -29,10 +29,13 @@
 # it may work elsewhere but no specific attempt has been made to make it
 # portable.
 
+use 5.006;
 sub usage { die "usage: $0 [ -b bison_executable ] [ file.y ]\n" }
 
 use warnings;
 use strict;
+
+BEGIN { require 'regen/regen_lib.pl'; }
 
 my $bison = 'bison';
 
@@ -61,46 +64,52 @@ die "$0: must be run on an ASCII system\n" unless ord 'A' == 65;
 #    this; 1.35+ does
 #  * Must produce output which is extractable by the regexes below
 #  * Must produce the right values.
-# These last two contstraints  may well be met by earlier versions, but
+# These last two constraints  may well be met by earlier versions, but
 # I simply haven't tested them yet. If it works for you, then modify
 # the test below to allow that version too. DAPM Feb 04.
 
 my $version = `$bison -V`;
-unless ($version =~ /\b(1\.875[a-z]?|2\.[013])\b/) { die <<EOF; }
+unless ($version) { die <<EOF; }
+Could not find a version of bison in your path. Please install bison.
+EOF
 
-You have the wrong version of bison in your path; currently 1.875
-2.0, 2.1 or 2.3 is required.  Try installing
-    http://ftp.gnu.org/gnu/bison/bison-2.1.tar.gz
+# Don't change this to add new bison versions without testing that the generated
+# files actually work :-) Win32 in particular may not like them. :-(
+unless ($version =~ /\b(1\.875[a-z]?|2\.[0134567]|3\.[0])\b/) { die <<EOF; }
+
+You have the wrong version of bison in your path; currently versions
+1.875, 2.0-2.7 or 3.0 are known toi work.  Try installing
+    http://ftp.gnu.org/gnu/bison/bison-2.5.1.tar.gz
 or similar.  Your bison identifies itself as:
 
 $version
 EOF
 
+# bison's version number, not the entire string, is most useful later on.
+$version = $1;
+
 # creates $tmpc_file and $tmph_file
 my_system("$bison -d -o $tmpc_file $y_file");
 
-open CTMPFILE, $tmpc_file or die "Can't open $tmpc_file: $!\n";
+open my $ctmp_fh, '<', $tmpc_file or die "Can't open $tmpc_file: $!\n";
 my $clines;
-{ local $/; $clines = <CTMPFILE>; }
+{ local $/; $clines = <$ctmp_fh>; }
 die "failed to read $tmpc_file: length mismatch\n"
     unless length $clines == -s $tmpc_file;
-close CTMPFILE;
+close $ctmp_fh;
 
 my ($actlines, $tablines) = extract($clines);
 
+our %tokens;
 $tablines .= make_type_tab($y_file, $tablines);
 
-chmod 0644, $act_file;
-open ACTFILE, ">$act_file" or die "can't open $act_file: $!\n";
-print ACTFILE $actlines;
-close ACTFILE;
-chmod 0444, $act_file;
+my ($act_fh, $tab_fh, $h_fh) = map {
+    open_new($_, '>', { by => $0, from => $y_file });
+} $act_file, $tab_file, $h_file;
 
-chmod 0644, $tab_file;
-open TABFILE, ">$tab_file" or die "can't open $tab_file: $!\n";
-print TABFILE $tablines;
-close TABFILE;
-chmod 0444, $tab_file;
+print $act_fh $actlines;
+
+print $tab_fh $tablines;
 
 unlink $tmpc_file;
 
@@ -108,41 +117,91 @@ unlink $tmpc_file;
 # C<#line 30 "perly.y"> confuses the Win32 resource compiler and the
 # C<#line 188 "perlytmp.h"> gets picked up by make depend, so remove them.
 
-open TMPH_FILE, $tmph_file or die "Can't open $tmph_file: $!\n";
-chmod 0644, $h_file;
-open H_FILE, ">$h_file" or die "Can't open $h_file: $!\n";
+open my $tmph_fh, '<', $tmph_file or die "Can't open $tmph_file: $!\n";
+
+# add integer-encoded #def of the bison version
+
+{
+    $version =~ /^(\d+)\.(\d+)/
+        or die "Can't handle bison version format: '$version'";
+    my ($v1,$v2) = ($1,$2);
+    die "Unexpectedly large bison version '$v1'"    if $v1 > 99;
+    die "Unexpectedly large bison subversion '$v2'" if $v2 > 9999;
+
+    printf $h_fh "#define PERL_BISON_VERSION %2d%04d\n\n", $v1, $v2;
+}
+
 my $endcore_done = 0;
-while (<TMPH_FILE>) {
-    print H_FILE "#ifdef PERL_CORE\n" if $. == 1;
+# Token macros need to be generated manually from bison 2.4 on
+my $gather_tokens = $version >= 2.4 ? undef : 0;
+my $tokens;
+while (<$tmph_fh>) {
+    # bison 2.6 adds header guards, which break things because of where we
+    # insert #ifdef PERL_CORE, so strip them because they aren't important
+    next if /YY_PERLYTMP_H/;
+
+    print $h_fh "#ifdef PERL_CORE\n" if $. == 1;
     if (!$endcore_done and /YYSTYPE_IS_DECLARED/) {
-	print H_FILE "#endif /* PERL_CORE */\n";
+	print $h_fh <<h;
+#ifdef PERL_IN_TOKE_C
+static bool
+S_is_opval_token(int type) {
+    switch (type) {
+h
+	print $h_fh <<i for sort grep $tokens{$_} eq 'opval', keys %tokens;
+    case $_:
+i
+	print $h_fh <<j;
+	return 1;
+    }
+    return 0;
+}
+#endif /* PERL_IN_TOKE_C */
+#endif /* PERL_CORE */
+j
 	$endcore_done = 1;
     }
     next if /^#line \d+ ".*"/;
-    print H_FILE $_;
+    if (not defined $gather_tokens) {
+	$gather_tokens = 1 if /^\s* enum \s* yytokentype \s* \{/x;
+    }
+    elsif ($gather_tokens) {
+	if (/^\# \s* endif/x) { # The #endif just after the end of the token enum
+	    $gather_tokens = 0;
+	    $_ .= "\n/* Tokens.  */\n$tokens";
+	}
+	else {
+	    my ($tok, $val) = /(\w+) \s* = \s* (\d+)/x;
+	    $tokens .= "#define $tok $val\n" if $tok;
+	}
+    }
+    print $h_fh $_;
 }
-close TMPH_FILE;
-close H_FILE;
-chmod 0444, $h_file;
+close $tmph_fh;
 unlink $tmph_file;
 
-print "rebuilt:  $h_file $tab_file $act_file\n";
+foreach ($act_fh, $tab_fh, $h_fh) {
+    read_only_bottom_close_and_rename($_, ['regen_perly.pl', $y_file]);
+}
 
 exit 0;
 
+
+# extract the tables and actions from the generated .c file
 
 sub extract {
     my $clines = shift;
     my $tablines;
     my $actlines;
 
+    my $last_table = $version >= 3 ? 'yyr2' : 'yystos';
     $clines =~ m@
 	(?:
 	    ^/* YYFINAL[^\n]+\n		#optional comment
 	)?
 	\# \s* define \s* YYFINAL	# first #define
 	.*?				# other defines + most tables
-	yystos\[\]\s*=			# start of last table
+	$last_table\[\]\s*=		# start of last table
 	.*?
 	}\s*;				# end of last table
     @xms
@@ -150,27 +209,18 @@ sub extract {
     $tablines = $&;
 
 
+    # extract all the cases in the big action switch statement
+
     $clines =~ m@
-	switch \s* \( \s* \w+ \s* \) \s* { \s*
-	(
-	    case \s* \d+ \s* : \s*
-	    \#line [^\n]+"\Q$y_file\E"
-	    .*?
-	)
-	}
-	\s*
-	( \s* /\* .*? \*/ \s* )*	# optional C-comments
-	\s*
-	(
-	    \#line[^\n]+\.c"
-	|
-	    \#line[^\n]+\.simple"
-	|
-	    YY_SYMBOL_PRINT
-	)
+	switch \s* \( \s* yyn \s* \) \s* { \s*
+            ( .*?  default: \s* break; \s* )
+        }
     @xms
 	or die "Can't extract actions from $tmpc_file\n";
     $actlines = $1;
+
+    # Remove extraneous comments from bison 2.4
+    $actlines =~ s!\s* /\* \s* Line \s* \d+ \s* of \s* yacc\.c \s* \*/!!gx;
 
     # C<#line 188 "perlytmp.c"> gets picked up by make depend, so remove them.
     $actlines =~ s/^#line \d+ "\Q$tmpc_file\E".*$//gm;
@@ -216,12 +266,13 @@ sub extract {
 
 sub make_type_tab {
     my ($y_file, $tablines) = @_;
+    my %just_tokens;
     my %tokens;
     my %types;
     my $default_token;
     open my $fh, '<', $y_file or die "Can't open $y_file: $!\n";
     while (<$fh>) {
-	if (/(\$\d+)\s*=/) {
+	if (/(\$\d+)\s*=[^=]/) {
 	    warn "$y_file:$.: dangerous assignment to $1: $_";
 	}
 
@@ -235,16 +286,22 @@ sub make_type_tab {
 	}
 
 	next unless /^%(token|type)/;
-	s/^%(token|type)\s+<(\w+)>\s+//
+	s/^%((token)|type)\s+<(\w+)>\s+//
 	    or die "$y_file: unparseable token/type line: $_";
-	$tokens{$_} = $2 for (split ' ', $_);
-	$types{$2} = 1;
+	for (split ' ', $_) {
+	    $tokens{$_} = $3;
+	    if ($2) {
+		$just_tokens{$_} = $3;
+	    }
+	}
+	$types{$3} = 1;
     }
+    *tokens = \%just_tokens; # perly.h needs this
     die "$y_file: no __DEFAULT__ token defined\n" unless $default_token;
     $types{$default_token} = 1;
 
     $tablines =~ /^\Qstatic const char *const yytname[] =\E\n
-	    {\n
+	    \{\n
 	    (.*?)
 	    ^};
 	    /xsm
@@ -254,7 +311,7 @@ sub make_type_tab {
 		{ "toketype_" .
 		    (defined $tokens{$1} ? $tokens{$1} : $default_token)
 		}ge;
-    $fields =~ s/, \s* 0 \s* $//x
+    $fields =~ s/, \s* (?:0|YY_NULL|YY_NULLPTR) \s* $//x
 	or die "make_type_tab: couldn't delete trailing ',0'\n";
 
     return 
@@ -269,6 +326,9 @@ sub make_type_tab {
 
 
 sub my_system {
+    if ($Verbose) {
+        print "executing: @_\n";
+    }
     system(@_);
     if ($? == -1) {
 	die "failed to execute command '@_': $!\n";

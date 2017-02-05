@@ -1,6 +1,6 @@
 /*    mydtrace.h
  *
- *    Copyright (C) 2008, by Larry Wall and others
+ *    Copyright (C) 2008, 2010, 2011 by Larry Wall and others
  *
  *    You may distribute under the terms of either the GNU General Public
  *    License or the Artistic License, as specified in the README file.
@@ -13,30 +13,42 @@
 
 #  include "perldtrace.h"
 
-#  define ENTRY_PROBE(func, file, line) 	\
-    if (PERL_SUB_ENTRY_ENABLED()) {		\
-	PERL_SUB_ENTRY(func, file, line); 	\
-    }
+#  define PERL_DTRACE_PROBE_ENTRY(cv)               \
+    if (PERL_SUB_ENTRY_ENABLED())                   \
+        Perl_dtrace_probe_call(aTHX_ cv, TRUE);
 
-#  define RETURN_PROBE(func, file, line)	\
-    if (PERL_SUB_RETURN_ENABLED()) {		\
-	PERL_SUB_RETURN(func, file, line); 	\
-    }
+#  define PERL_DTRACE_PROBE_RETURN(cv)              \
+    if (PERL_SUB_ENTRY_ENABLED())                   \
+        Perl_dtrace_probe_call(aTHX_ cv, FALSE);
+
+#  define PERL_DTRACE_PROBE_FILE_LOADING(name)      \
+    if (PERL_SUB_ENTRY_ENABLED())                   \
+        Perl_dtrace_probe_load(aTHX_ name, TRUE);
+
+#  define PERL_DTRACE_PROBE_FILE_LOADED(name)       \
+    if (PERL_SUB_ENTRY_ENABLED())                   \
+        Perl_dtrace_probe_load(aTHX_ name, FALSE);
+
+#  define PERL_DTRACE_PROBE_OP(op)                  \
+    if (PERL_OP_ENTRY_ENABLED())                    \
+        Perl_dtrace_probe_op(aTHX_ op);
+
+#  define PERL_DTRACE_PROBE_PHASE(phase)            \
+    if (PERL_OP_ENTRY_ENABLED())                    \
+        Perl_dtrace_probe_phase(aTHX_ phase);
 
 #else
 
 /* NOPs */
-#  define ENTRY_PROBE(func, file, line)
-#  define RETURN_PROBE(func, file, line)
+#  define PERL_DTRACE_PROBE_ENTRY(cv)
+#  define PERL_DTRACE_PROBE_RETURN(cv)
+#  define PERL_DTRACE_PROBE_FILE_LOADING(cv)
+#  define PERL_DTRACE_PROBE_FILE_LOADED(cv)
+#  define PERL_DTRACE_PROBE_OP(op)
+#  define PERL_DTRACE_PROBE_PHASE(phase)
 
 #endif
 
 /*
- * Local variables:
- * c-indentation-style: bsd
- * c-basic-offset: 4
- * indent-tabs-mode: t
- * End:
- *
- * ex: set ts=8 sts=4 sw=4 noet:
+ * ex: set ts=8 sts=4 sw=4 et:
  */

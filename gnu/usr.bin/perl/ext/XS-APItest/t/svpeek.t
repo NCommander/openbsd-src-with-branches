@@ -1,18 +1,7 @@
-BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
-    push @INC, "::lib:$MacPerl::Architecture:" if $^O eq 'MacOS';
-    require Config; import Config;
-    if ($Config{'extensions'} !~ /\bXS\/APItest\b/) {
-        print "1..0 # Skip: XS::APItest was not built\n";
-        exit 0;
-    }
-}
-
 use strict;
 use warnings;
 
-use Test::More tests => 50;
+use Test::More tests => 52;
 
 BEGIN { use_ok('XS::APItest') };
 
@@ -21,7 +10,7 @@ $| = 1;
   is (DPeek ($/),    'PVMG("\n"\0)',		'$/');
   is (DPeek ($\),    'PVMG()',			'$\\');
   is (DPeek ($.),    'PVMG()',			'$.');
-  is (DPeek ($,),    'PVMG()',			'$,');
+  is (DPeek ($,),    'UNDEF',			'$,');
   is (DPeek ($;),    'PV("\34"\0)',		'$;');
   is (DPeek ($"),    'PV(" "\0)',		'$"');
   is (DPeek ($:),    'PVMG(" \n-"\0)',		'$:');
@@ -38,8 +27,9 @@ if ($^O eq 'VMS') {
 }
   is (DPeek ($|),    'PVMG(1)',			'$|');
 
-  "abc" =~ m/(b)/;	# Don't know why these magic vars have this content
-like (DPeek ($1), qr'^PVMG\("',			' $1');
+  "abc" =~ m/b/;	# Don't know why these magic vars have this content
+  () = $1 || '';
+  is (DPeek ($1),    'PVMG()',			' $1');
   is (DPeek ($`),    'PVMG()',			' $`');
   is (DPeek ($&),    'PVMG()',			' $&');
   is (DPeek ($'),    'PVMG()',			" \$'");
@@ -58,7 +48,12 @@ like (DPeek ($1), qr'^PVMG\("',			' $1');
   is (DPeek (sub {}),	'\CV(__ANON__)',	'sub {}');
 
 { our ($VAR, @VAR, %VAR);
+if ($^O eq 'vos') {
+  # VOS uses .pm as a required executable suffix
+  open VAR, "<", "$^X.pm" or die "Can't open $^X.pm: $!";
+} else {
   open VAR, "<", $^X or die "Can't open $^X: $!";
+}
   sub VAR {}
   format VAR =
 .
@@ -71,18 +66,23 @@ like (DPeek ($1), qr'^PVMG\("',			' $1');
   $VAR = "";
   is (DPeek ($VAR),	'PVIV(""\0)',		' $VAR ""');
   is (DPeek (\$VAR),	'\PVIV(""\0)',		'\$VAR ""');
-  $VAR = "\xa8";
-  is (DPeek ($VAR),	'PVIV("\250"\0)',	' $VAR "\xa8"');
-  is (DPeek (\$VAR),	'\PVIV("\250"\0)',	'\$VAR "\xa8"');
+  $VAR = "\xdf";    # \xdf works for both ASCII and EBCDIC
+  is (DPeek ($VAR),	'PVIV("\337"\0)',	' $VAR "\xdf"');
+  is (DPeek (\$VAR),	'\PVIV("\337"\0)',	'\$VAR "\xdf"');
   SKIP: {
-      $] <= 5.008001 and skip "UTF8 tests useless in this ancient perl version", 1;
-      $VAR = "a\x0a\x{20ac}";
-      is (DPeek ($VAR), 'PVIV("a\n\342\202\254"\0) [UTF8 "a\n\x{20ac}"]',
-						  ' $VAR "a\x0a\x{20ac}"');
-      }
+    skip("ASCII-centric tests", 1) if ord "A" == 193;
+    $VAR = "a\x0a\x{20ac}";
+    is (DPeek ($VAR), 'PVIV("a\n\342\202\254"\0) [UTF8 "a\n\x{20ac}"]',
+					' $VAR "a\x0a\x{20ac}"');
+  }
   $VAR = sub { "VAR" };
   is (DPeek ($VAR),	'\CV(__ANON__)',	' $VAR sub { "VAR" }');
   is (DPeek (\$VAR),	'\\\CV(__ANON__)',	'\$VAR sub { "VAR" }');
+  
+  $VAR = eval qq{sub \x{30cd} { "VAR" } \\&\x{30cd}};
+  is (DPeek ($VAR),     '\CV(\x{30cd})',        ' $VAR sub \x{30cd} { "VAR" }');
+  is (DPeek (\$VAR),    '\\\\CV(\x{30cd})',      '\$VAR sub \x{30cd} { "VAR" }');
+
   $VAR = 0;
 
   is (DPeek (\&VAR),	'\CV(VAR)',		'\&VAR');

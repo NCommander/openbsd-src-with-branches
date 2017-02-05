@@ -25,36 +25,55 @@ my %feature = (
     say             => 'say',
     state           => 'state',
     switch          => 'switch',
+    bitwise         => 'bitwise',
     evalbytes       => 'evalbytes',
+    postderef       => 'postderef',
     array_base      => 'arybase',
     current_sub     => '__SUB__',
+    refaliasing     => 'refaliasing',
+    lexical_subs    => 'lexsubs',
+    postderef_qq    => 'postderef_qq',
     unicode_eval    => 'unieval',
     unicode_strings => 'unicode',
     fc              => 'fc',
+    signatures      => 'signatures',
 );
 
 # NOTE: If a feature is ever enabled in a non-contiguous range of Perl
 #       versions, any code below that uses %BundleRanges will have to
 #       be changed to account.
 
+# 5.odd implies the next 5.even, but an explicit 5.even can override it.
 my %feature_bundle = (
      all     => [ keys %feature ],
      default =>	[qw(array_base)],
     "5.9.5"  =>	[qw(say state switch array_base)],
     "5.10"   =>	[qw(say state switch array_base)],
     "5.11"   =>	[qw(say state switch unicode_strings array_base)],
-    "5.12"   =>	[qw(say state switch unicode_strings array_base)],
     "5.13"   =>	[qw(say state switch unicode_strings array_base)],
-    "5.14"   =>	[qw(say state switch unicode_strings array_base)],
     "5.15"   =>	[qw(say state switch unicode_strings unicode_eval
 		    evalbytes current_sub fc)],
-    "5.16"   =>	[qw(say state switch unicode_strings unicode_eval
+    "5.17"   =>	[qw(say state switch unicode_strings unicode_eval
 		    evalbytes current_sub fc)],
+    "5.19"   =>	[qw(say state switch unicode_strings unicode_eval
+		    evalbytes current_sub fc)],
+    "5.21"   =>	[qw(say state switch unicode_strings unicode_eval
+		    evalbytes current_sub fc)],
+    "5.23"   =>	[qw(say state switch unicode_strings unicode_eval
+		    evalbytes current_sub fc postderef_qq)],
 );
+
+# not actually used currently
+my @experimental = qw( lexical_subs );
 
 
 ###########################################################################
 # More data generated from the above
+
+for (keys %feature_bundle) {
+    next unless /^5\.(\d*[13579])\z/;
+    $feature_bundle{"5.".($1+1)} ||= $feature_bundle{$_};
+}
 
 my %UniqueBundles; # "say state switch" => 5.10
 my %Aliases;       #  5.12 => 5.11
@@ -147,7 +166,7 @@ sub longest {
 
 print $pm "our %feature = (\n";
 my $width = length longest keys %feature;
-for(sort { length $a <=> length $b } keys %feature) {
+for(sort { length $a <=> length $b || $a cmp $b } keys %feature) {
     print $pm "    $_" . " "x($width-length)
 	    . " => 'feature_$feature{$_}',\n";
 }
@@ -167,6 +186,10 @@ for (sort keys %Aliases) {
     print $pm
 	qq'\$feature_bundle{"$_"} = \$feature_bundle{"$Aliases{$_}"};\n';
 };
+
+#print $pm "my \%experimental = (\n";
+#print $pm "    $_ => 1,\n", for @experimental;
+#print $pm ");\n";
 
 print $pm <<EOPM;
 
@@ -247,13 +270,13 @@ print $h <<EOL;
 EOL
 
 for (
-    sort { length $a <=> length $b } keys %feature
+    sort { length $a <=> length $b || $a cmp $b } keys %feature
 ) {
     my($first,$last) =
 	map { (my $__ = uc) =~ y/.//d; $__ } @{$BundleRanges{$_}};
     my $name = $feature{$_};
     my $NAME = uc $name;
-    if ($last && $first eq 'DEFAULT') { #  ‘>= DEFAULT’ warns
+    if ($last && $first eq 'DEFAULT') { #  '>= DEFAULT' warns
 	print $h <<EOI;
 #define FEATURE_$NAME\_IS_ENABLED \\
     ( \\
@@ -276,7 +299,7 @@ EOI
 
 EOH3
     }
-    else {
+    elsif ($first) {
 	print $h <<EOH4;
 #define FEATURE_$NAME\_IS_ENABLED \\
     ( \\
@@ -286,6 +309,16 @@ EOH3
     )
 
 EOH4
+    }
+    else {
+	print $h <<EOH5;
+#define FEATURE_$NAME\_IS_ENABLED \\
+    ( \\
+	CURRENT_FEATURE_BUNDLE == FEATURE_BUNDLE_CUSTOM && \\
+	 FEATURE_IS_ENABLED("$name") \\
+    )
+
+EOH5
     }
 }
 
@@ -334,7 +367,7 @@ read_only_bottom_close_and_rename($h);
 __END__
 package feature;
 
-our $VERSION = '1.27';
+our $VERSION = '1.42';
 
 FEATURES
 
@@ -373,7 +406,7 @@ pragma.)
 =head2 Lexical effect
 
 Like other pragmas (C<use strict>, for example), features have a lexical
-effect. C<use feature qw(foo)> will only make the feature "foo" available
+effect.  C<use feature qw(foo)> will only make the feature "foo" available
 from that point to the end of the enclosing block.
 
     {
@@ -420,6 +453,12 @@ This feature is available starting with Perl 5.10.
 
 =head2 The 'switch' feature
 
+B<WARNING>: Because the L<smartmatch operator|perlop/"Smartmatch Operator"> is
+experimental, Perl will warn when you use this feature, unless you have
+explicitly disabled the warning:
+
+    no warnings "experimental::smartmatch";
+
 C<use feature 'switch'> tells the compiler to enable the Perl 6
 given/when construct.
 
@@ -429,14 +468,15 @@ This feature is available starting with Perl 5.10.
 
 =head2 The 'unicode_strings' feature
 
-C<use feature 'unicode_strings'> tells the compiler to use Unicode semantics
+C<use feature 'unicode_strings'> tells the compiler to use Unicode rules
 in all string operations executed within its scope (unless they are also
 within the scope of either C<use locale> or C<use bytes>).  The same applies
 to all regular expressions compiled within the scope, even if executed outside
-it.
+it.  It does not change the internal representation of strings, but only how
+they are interpreted.
 
 C<no feature 'unicode_strings'> tells the compiler to use the traditional
-Perl semantics wherein the native character set semantics is used unless it is
+Perl rules wherein the native character set rules is used unless it is
 clear to Perl that Unicode is desired.  This can lead to some surprises
 when the behavior suddenly changes.  (See
 L<perlunicode/The "Unicode Bug"> for details.)  For this reason, if you are
@@ -519,6 +559,108 @@ See L<perlfunc/fc> for details.
 
 This feature is available from Perl 5.16 onwards.
 
+=head2 The 'lexical_subs' feature
+
+B<WARNING>: This feature is still experimental and the implementation may
+change in future versions of Perl.  For this reason, Perl will
+warn when you use the feature, unless you have explicitly disabled the
+warning:
+
+    no warnings "experimental::lexical_subs";
+
+This enables declaration of subroutines via C<my sub foo>, C<state sub foo>
+and C<our sub foo> syntax.  See L<perlsub/Lexical Subroutines> for details.
+
+This feature is available from Perl 5.18 onwards.
+
+=head2 The 'postderef' and 'postderef_qq' features
+
+The 'postderef_qq' feature extends the applicability of L<postfix
+dereference syntax|perlref/Postfix Dereference Syntax> so that postfix array
+and scalar dereference are available in double-quotish interpolations. For
+example, it makes the following two statements equivalent:
+
+  my $s = "[@{ $h->{a} }]";
+  my $s = "[$h->{a}->@*]";
+
+This feature is available from Perl 5.20 onwards. In Perl 5.20 and 5.22, it
+was classed as experimental, and Perl emitted a warning for its
+usage, except when explicitly disabled:
+
+  no warnings "experimental::postderef";
+
+As of Perl 5.24, use of this feature no longer triggers a warning, though
+the C<experimental::postderef> warning category still exists (for
+compatibility with code that disables it).
+
+The 'postderef' feature was used in Perl 5.20 and Perl 5.22 to enable
+postfix dereference syntax outside double-quotish interpolations. In those
+versions, using it triggered the C<experimental::postderef> warning in the
+same way as the 'postderef_qq' feature did. As of Perl 5.24, this syntax is
+not only no longer experimental, but it is enabled for all Perl code,
+regardless of what feature declarations are in scope.
+
+=head2 The 'signatures' feature
+
+B<WARNING>: This feature is still experimental and the implementation may
+change in future versions of Perl.  For this reason, Perl will
+warn when you use the feature, unless you have explicitly disabled the
+warning:
+
+    no warnings "experimental::signatures";
+
+This enables unpacking of subroutine arguments into lexical variables
+by syntax such as
+
+    sub foo ($left, $right) {
+	return $left + $right;
+    }
+
+See L<perlsub/Signatures> for details.
+
+This feature is available from Perl 5.20 onwards.
+
+=head2 The 'refaliasing' feature
+
+B<WARNING>: This feature is still experimental and the implementation may
+change in future versions of Perl.  For this reason, Perl will
+warn when you use the feature, unless you have explicitly disabled the
+warning:
+
+    no warnings "experimental::refaliasing";
+
+This enables aliasing via assignment to references:
+
+    \$a = \$b; # $a and $b now point to the same scalar
+    \@a = \@b; #                     to the same array
+    \%a = \%b;
+    \&a = \&b;
+    foreach \%hash (@array_of_hash_refs) {
+        ...
+    }
+
+See L<perlref/Assigning to References> for details.
+
+This feature is available from Perl 5.22 onwards.
+
+=head2 The 'bitwise' feature
+
+B<WARNING>: This feature is still experimental and the implementation may
+change in future versions of Perl.  For this reason, Perl will
+warn when you use the feature, unless you have explicitly disabled the
+warning:
+
+    no warnings "experimental::bitwise";
+
+This makes the four standard bitwise operators (C<& | ^ ~>) treat their
+operands consistently as numbers, and introduces four new dotted operators
+(C<&. |. ^. ~.>) that treat their operands consistently as strings.  The
+same applies to the assignment variants (C<&= |= ^= &.= |.= ^.=>).
+
+See L<perlop/Bitwise String Operators> for details.
+
+This feature is available from Perl 5.22 onwards.
+
 =head1 FEATURE BUNDLES
 
 It's possible to load multiple features together, using
@@ -586,7 +728,7 @@ bundle is automatically loaded instead.
 =cut
 
 sub import {
-    my $class = shift;
+    shift;
 
     if (!@_) {
         croak("No features specified");
@@ -596,7 +738,7 @@ sub import {
 }
 
 sub unimport {
-    my $class = shift;
+    shift;
 
     # A bare C<no feature> should reset to the default bundle
     if (!@_) {

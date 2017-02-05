@@ -1,44 +1,53 @@
-#!perl
+#!/usr/bin/perl
+#
+# Special wrapper script to generate the actual pod2man script.  This is
+# required for proper start-up code on non-UNIX platforms, and is used inside
+# Perl core.
 
-use Config;
-use File::Basename qw(&basename &dirname);
-use Cwd;
+use 5.006;
+use strict;
+use warnings;
 
-# List explicitly here the variables you want Configure to
-# generate.  Metaconfig only looks for shell variables, so you
-# have to mention them as if they were shell variables, not
-# %Config entries.  Thus you write
+use Config qw(%Config);
+use Cwd qw(cwd);
+use File::Basename qw(basename dirname);
+
+# List explicitly here the variables you want Configure to generate.
+# Metaconfig only looks for shell variables, so you have to mention them as if
+# they were shell variables, not %Config entries.  Thus you write
 #  $startperl
 # to ensure Configure will look for $Config{startperl}.
 
 # This forces PL files to create target in same directory as PL file.
 # This is so that make depend always knows where to find PL derivatives.
-$origdir = cwd;
-chdir dirname($0);
-$file = basename($0, '.PL');
-$file .= '.com' if $^O eq 'VMS';
+chdir(dirname($0)) or die "Cannot change directories: $!\n";
+my $file = basename($0, '.PL');
+if ($^O eq 'VMS') {
+    $file .= '.com';
+}
 
-open OUT,">$file" or die "Can't create $file: $!";
-
+# Create the generated script.
+## no critic (InputOutput::RequireBriefOpen)
+## no critic (InputOutput::RequireCheckedSyscalls)
+open(my $out, '>', $file) or die "Cannot create $file: $!\n";
 print "Extracting $file (with variable substitutions)\n";
+## use critic
 
-# In this section, perl variables will be expanded during extraction.
-# You can use $Config{...} to use Configure variables.
-
-print OUT <<"!GROK!THIS!";
+# In this section, Perl variables will be expanded during extraction.  You can
+# use $Config{...} to use Configure variables.
+print {$out} <<"PREAMBLE" or die "Cannot write to $file: $!\n";
 $Config{startperl}
     eval 'exec $Config{perlpath} -S \$0 \${1+"\$@"}'
         if \$running_under_some_shell;
-!GROK!THIS!
+PREAMBLE
 
-# In the following, perl variables are not expanded during extraction.
-
-print OUT <<'!NO!SUBS!';
+# In the following, Perl variables are not expanded during extraction.
+print {$out} <<'SCRIPT_BODY' or die "Cannot write to $file: $!\n";
 
 # pod2text -- Convert POD data to formatted ASCII text.
 #
-# Copyright 1999, 2000, 2001, 2004, 2006, 2008, 2010
-#     Russ Allbery <rra@stanford.edu>
+# Copyright 1999, 2000, 2001, 2004, 2006, 2008, 2010, 2012, 2013, 2014, 2015,
+#     2016 Russ Allbery <rra@cpan.org>
 #
 # This program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -46,13 +55,16 @@ print OUT <<'!NO!SUBS!';
 # The driver script for Pod::Text, Pod::Text::Termcap, and Pod::Text::Color,
 # invoked by perldoc -t among other things.
 
-require 5.004;
+use 5.006;
+use strict;
+use warnings;
 
 use Getopt::Long qw(GetOptions);
 use Pod::Text ();
 use Pod::Usage qw(pod2usage);
 
-use strict;
+# Clean up $0 for error reporting.
+$0 =~ s%.*/%%;
 
 # Take an initial pass through our options, looking for one of the form
 # -<number>.  We turn that into -w <number> for compatibility with the
@@ -75,10 +87,10 @@ my $stdin;
 my %options;
 $options{sentence} = 0;
 Getopt::Long::config ('bundling');
-GetOptions (\%options, 'alt|a', 'code', 'color|c', 'help|h', 'indent|i=i',
-            'loose|l', 'margin|left-margin|m=i', 'overstrike|o',
-            'quotes|q=s', 'sentence|s', 'stderr', 'termcap|t', 'utf8|u',
-            'width|w=i')
+GetOptions (\%options, 'alt|a', 'code', 'color|c', 'errors=s', 'help|h',
+            'indent|i=i', 'loose|l', 'margin|left-margin|m=i', 'nourls',
+            'overstrike|o', 'quotes|q=s', 'sentence|s', 'stderr', 'termcap|t',
+            'utf8|u', 'width|w=i')
     or exit 1;
 pod2usage (1) if $options{help};
 
@@ -98,27 +110,42 @@ if ($options{color}) {
 }
 delete @options{'color', 'termcap', 'overstrike'};
 
+# If neither stderr nor errors is set, default to errors = die.
+if (!defined $options{stderr} && !defined $options{errors}) {
+    $options{errors} = 'die';
+}
+
 # Initialize and run the formatter.
 my $parser = $formatter->new (%options);
+my $status = 0;
 do {
     my ($input, $output) = splice (@ARGV, 0, 2);
     $parser->parse_from_file ($input, $output);
+    if ($parser->{CONTENTLESS}) {
+        $status = 1;
+        warn "$0: unable to format $input\n";
+        if (defined ($output) and $output ne '-') {
+            unlink $output unless (-s $output);
+        }
+    }
 } while (@ARGV);
+exit $status;
 
 __END__
+
+=for stopwords
+-aclostu --alt --stderr Allbery --overstrike overstrike --termcap --utf8
+UTF-8 subclasses --nourls
 
 =head1 NAME
 
 pod2text - Convert POD data to formatted ASCII text
 
-=for stopwords
--aclostu --alt --stderr Allbery --overstrike overstrike --termcap --utf8
-UTF-8
-
 =head1 SYNOPSIS
 
-pod2text [B<-aclostu>] [B<--code>] [B<-i> I<indent>] S<[B<-q> I<quotes>]>
-    [B<--stderr>] S<[B<-w> I<width>]> [I<input> [I<output> ...]]
+pod2text [B<-aclostu>] [B<--code>] [B<--errors>=I<style>] [B<-i> I<indent>]
+    S<[B<-q> I<quotes>]> [B<--nourls>] [B<--stderr>] S<[B<-w> I<width>]>
+    [I<input> [I<output> ...]]
 
 pod2text B<-h>
 
@@ -156,6 +183,16 @@ code left intact.
 Format the output with ANSI color escape sequences.  Using this option
 requires that Term::ANSIColor be installed on your system.
 
+=item B<--errors>=I<style>
+
+Set the error handling style.  C<die> says to throw an exception on any
+POD formatting error.  C<stderr> says to report errors on standard error,
+but not to throw an exception.  C<pod> says to include a POD ERRORS
+section in the resulting documentation summarizing the errors.  C<none>
+ignores POD errors entirely, as much as possible.
+
+The default is C<die>.
+
 =item B<-i> I<indent>, B<--indent=>I<indent>
 
 Set the number of spaces to indent regular text, and the default indentation
@@ -178,6 +215,21 @@ The width of the left margin in spaces.  Defaults to 0.  This is the margin
 for all text, including headings, not the amount by which regular text is
 indented; for the latter, see B<-i> option.
 
+=item B<--nourls>
+
+Normally, LZ<><> formatting codes with a URL but anchor text are formatted
+to show both the anchor text and the URL.  In other words:
+
+    L<foo|http://example.com/>
+
+is formatted as:
+
+    foo <http://example.com/>
+
+This flag, if given, suppresses the URL when anchor text is given, so this
+example would be formatted as just C<foo>.  This can produce less
+cluttered output in cases where the URLs are not particularly important.
+
 =item B<-o>, B<--overstrike>
 
 Format the output with overstrike printing.  Bold text is rendered as
@@ -189,10 +241,8 @@ to convert this to bold or underlined text.
 
 Sets the quote marks used to surround CE<lt>> text to I<quotes>.  If
 I<quotes> is a single character, it is used as both the left and right
-quote; if I<quotes> is two characters, the first character is used as the
-left quote and the second as the right quoted; and if I<quotes> is four
-characters, the first two are used as the left quote and the second two as
-the right quote.
+quote.  Otherwise, it is split in half, and the first half of the string
+is used as the left quote and the second is used as the right quote.
 
 I<quotes> may also be set to the special value C<none>, in which case no
 quote marks are added around CE<lt>> text.
@@ -205,10 +255,11 @@ is compressed into a single space.
 
 =item B<--stderr>
 
-By default, B<pod2text> puts any errors detected in the POD input in a POD
-ERRORS section in the output manual page.  If B<--stderr> is given, errors
-are sent to standard error instead and the POD ERRORS section is
-suppressed.
+By default, B<pod2text> dies if any errors are detected in the POD input.
+If B<--stderr> is given and no B<--errors> flag is present, errors are
+sent to standard error, but B<pod2text> does not abort.  This is
+equivalent to C<--errors=stderr> and is supported for backward
+compatibility.
 
 =item B<-t>, B<--termcap>
 
@@ -227,10 +278,11 @@ encoding (to be backward-compatible with older versions).  This option
 says to instead force the output encoding to UTF-8.
 
 Be aware that, when using this option, the input encoding of your POD
-source must be properly declared unless it is US-ASCII or Latin-1.  POD
-input without an C<=encoding> command will be assumed to be in Latin-1,
-and if it's actually in UTF-8, the output will be double-encoded.  See
-L<perlpod(1)> for more information on the C<=encoding> command.
+source should be properly declared unless it's US-ASCII.  Pod::Simple
+will attempt to guess the encoding and may be successful if it's
+Latin-1 or UTF-8, but it will warn, which by default results in a
+B<pod2text> failure.  Use the C<=encoding> command to declare the
+encoding.  See L<perlpod(1)> for more information.
 
 =item B<-w>, B<--width=>I<width>, B<->I<width>
 
@@ -239,6 +291,16 @@ unless B<-t> is given, in which case it's two columns less than the width of
 your terminal device.
 
 =back
+
+=head1 EXIT STATUS
+
+As long as all documents processed result in some output, even if that
+output includes errata (a C<POD ERRORS> section generated with
+C<--errors=pod>), B<pod2text> will exit with status 0.  If any of the
+documents being processed do not result in an output document, B<pod2text>
+will exit with status 1.  If there are syntax errors in a POD document
+being processed and the error handling style is set to the default of
+C<die>, B<pod2text> will abort immediately with exit status 255.
 
 =head1 DIAGNOSTICS
 
@@ -291,20 +353,22 @@ Perl core distribution as of 5.6.0.
 
 =head1 AUTHOR
 
-Russ Allbery <rra@stanford.edu>.
+Russ Allbery <rra@cpan.org>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1999, 2000, 2001, 2004, 2006, 2008, 2010 Russ Allbery
-<rra@stanford.edu>.
+Copyright 1999, 2000, 2001, 2004, 2006, 2008, 2010, 2012, 2013, 2014, 2015,
+2016 Russ Allbery <rra@cpan.org>
 
 This program is free software; you may redistribute it and/or modify it
 under the same terms as Perl itself.
 
 =cut
-!NO!SUBS!
+SCRIPT_BODY
 
-close OUT or die "Can't close $file: $!";
-chmod 0755, $file or die "Can't reset permissions for $file: $!\n";
-exec("$Config{'eunicefix'} $file") if $Config{'eunicefix'} ne ':';
-chdir $origdir;
+# Finish the generation of the script.
+close($out) or die "Cannot close $file: $!\n";
+chmod(0755, $file) or die "Cannot reset permissions for $file: $!\n";
+if ($Config{'eunicefix'} ne ':') {
+    exec("$Config{'eunicefix'} $file");
+}

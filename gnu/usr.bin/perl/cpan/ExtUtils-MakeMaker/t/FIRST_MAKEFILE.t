@@ -3,7 +3,10 @@
 BEGIN {
     unshift @INC, 't/lib';
 }
-chdir 't';
+
+use File::Temp qw[tempdir];
+my $tmpdir = tempdir( DIR => 't', CLEANUP => 1 );
+chdir $tmpdir;
 
 use strict;
 use Test::More tests => 7;
@@ -18,7 +21,7 @@ perl_lib();
 
 ok( setup_recurs(), 'setup' );
 END {
-    ok( chdir File::Spec->updir );
+    ok( chdir File::Spec->updir, 'chdir updir' );
     ok( teardown_recurs(), 'teardown' );
 }
 
@@ -31,4 +34,4 @@ cmp_ok( $?, '==', 0, 'Makefile.PL exited with zero' ) || diag @mpl_out;
 ok( -e 'jakefile', 'FIRST_MAKEFILE honored' );
 
 ok( grep(/^Writing jakefile(?:\.)? for Big::Dummy/, @mpl_out) == 1,
-					'Makefile.PL output looks right' );
+    'Makefile.PL output looks right' );

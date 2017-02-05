@@ -21,7 +21,6 @@ use Locale::Country;
 %type = ( "LOCALE_CODE_ALPHA_2" => LOCALE_CODE_ALPHA_2,
           "LOCALE_CODE_ALPHA_3" => LOCALE_CODE_ALPHA_3,
           "LOCALE_CODE_NUMERIC" => LOCALE_CODE_NUMERIC,
-          "LOCALE_CODE_FIPS"    => LOCALE_CODE_FIPS,
         );
 
 sub test {
@@ -92,7 +91,7 @@ $tests = "
 
 gb
    ~
-   United Kingdom
+   United Kingdom of Great Britain and Northern Ireland
 
 rename_country x1 NewName ~ 0
 
@@ -104,7 +103,7 @@ rename_country gb NewName LOCALE_CODE_ALPHA_3 ~ 0
 
 gb
    ~
-   United Kingdom
+   United Kingdom of Great Britain and Northern Ireland
 
 rename_country gb NewName ~ 1
 

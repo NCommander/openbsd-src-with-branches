@@ -11,7 +11,7 @@ use t::Util    qw[tmpfile rewind slurp monkey_patch dir_list parse_case
 use HTTP::Tiny;
 BEGIN { monkey_patch() }
 
-for my $file ( dir_list("t/cases", qr/^form/ ) ) {
+for my $file ( dir_list("corpus", qr/^form/ ) ) {
   my $data = do { local (@ARGV,$/) = $file; <> };
   my ($params, $expect_req, $give_res) = split /--+\n/, $data;
   # cleanup source data
@@ -33,7 +33,7 @@ for my $file ( dir_list("t/cases", qr/^form/ ) ) {
 
   my @params = split "\\|", $case->{content}[0];
   my $formdata;
-  if ( $case->{datatype} eq 'HASH' ) {
+  if ( $case->{datatype}[0] eq 'HASH' ) {
     while ( @params ) {
       my ($key, $value) = splice( @params, 0, 2 );
       if ( ref $formdata->{$key} ) {
@@ -55,7 +55,7 @@ for my $file ( dir_list("t/cases", qr/^form/ ) ) {
   my $res_fh = tmpfile($give_res);
   my $req_fh = tmpfile();
 
-  my $http = HTTP::Tiny->new;
+  my $http = HTTP::Tiny->new( keep_alive => 0 );
   set_socket_source($req_fh, $res_fh);
 
   (my $url_basename = $url) =~ s{.*/}{};
@@ -65,6 +65,7 @@ for my $file ( dir_list("t/cases", qr/^form/ ) ) {
   my $got_req = slurp($req_fh);
 
   my $label = basename($file);
+
 
   is( sort_headers($got_req), sort_headers($expect_req), "$label request" );
 

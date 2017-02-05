@@ -24,7 +24,7 @@ my %timestamp = (
   'not-modified.txt'  => $known_epoch - 2 * $day,
 );
 
-for my $file ( dir_list("t/cases", qr/^mirror/ ) ) {
+for my $file ( dir_list("corpus", qr/^mirror/ ) ) {
   1 while unlink $tempfile;
   my $data = do { local (@ARGV,$/) = $file; <> };
   my ($params, $expect_req, $give_res) = split /--+\n/, $data;
@@ -57,7 +57,7 @@ for my $file ( dir_list("t/cases", qr/^mirror/ ) ) {
   my $res_fh = tmpfile($give_res);
   my $req_fh = tmpfile();
 
-  my $http = HTTP::Tiny->new;
+  my $http = HTTP::Tiny->new( keep_alive => 0 );
   set_socket_source($req_fh, $res_fh);
 
   my @call_args = %options ? ($url, $tempfile, \%options) : ($url, $tempfile);

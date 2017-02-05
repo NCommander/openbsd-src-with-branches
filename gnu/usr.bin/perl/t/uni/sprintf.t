@@ -3,10 +3,10 @@
 BEGIN {
     chdir 't' if -d 't';
     @INC = qw(../lib .);
-    require "test.pl";
+    require "./test.pl";
 }
 
-plan tests => 25;
+plan tests => 52;
 
 $a = "B\x{fc}f";
 $b = "G\x{100}r";
@@ -136,4 +136,20 @@ $c = 0x200;
 
     $sprintf = sprintf "%s%s", $w, "$w\x{100}";    
     is(substr($sprintf,0,2), $w, "utf8 echo echo");
+}
+
+my @values =(chr 110, chr 255, chr 256);
+
+foreach my $prefix (@values) {
+    foreach my $vector (map {$_ . $_} @values) {
+
+	my $format = "$prefix%*vd";
+
+	foreach my $dot (@values) {
+	    my $result = sprintf $format, $dot, $vector;
+	    is (length $result, 8)
+		or print "# ", join (',', map {ord $_} $prefix, $dot, $vector),
+		  "\n";
+	}
+    }
 }

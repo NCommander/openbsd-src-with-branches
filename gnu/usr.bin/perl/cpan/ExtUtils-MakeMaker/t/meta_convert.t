@@ -105,7 +105,7 @@ note "Non-camel case metadata"; {
     );
     my $res = eval { $mm->metafile_target };
     ok $res, q|we know how to deal with non-camel-cased custom meta resource keys defined in Makefile.PL|;
-    like $res, qr/x_Repositoryclone:/, "they're camel-cased";
+    like $res, qr/x_Repositoryclone/, "they're camel-cased";
 }
 
 
@@ -116,7 +116,7 @@ note "version object in provides"; {
         META_ADD => {
             provides => {
                 "CPAN::Testers::ParseReport" => {
-                    version => version->declare("v1.2.3"),
+                    version => version->new("v1.2.3"),
                     file    => "lib/CPAN/Testers/ParseReport.pm"
                 }
             }

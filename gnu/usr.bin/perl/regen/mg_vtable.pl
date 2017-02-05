@@ -2,6 +2,8 @@
 #
 # Regenerate (overwriting only if changed):
 #
+#    mg_names.inc
+#    mg_raw.h
 #    mg_vtable.h
 #    pod/perlguts.pod
 #
@@ -23,11 +25,11 @@ BEGIN {
 
 my %mg =
     (
-     sv => { char => '\0', vtable => 'sv', readonly_acceptable => 1,
+     sv => { char => "\0", vtable => 'sv', readonly_acceptable => 1,
 	     desc => 'Special scalar variable' },
-     overload => { char => 'A', vtable => 'amagic', desc => '%OVERLOAD hash' },
-     overload_elem => { char => 'a', vtable => 'amagicelem',
-			desc => '%OVERLOAD hash element' },
+     # overload, or type "A" magic, used to be here.  Hence overloaded is
+     # often called AMAGIC internally, even though it does not use "A"
+     # magic any more.
      overload_table => { char => 'c', vtable => 'ovrld',
 			 desc => 'Holds overload table (AMT) on stash' },
      bm => { char => 'B', vtable => 'regexp', value_magic => 1,
@@ -40,10 +42,8 @@ my %mg =
      env => { char => 'E', vtable => 'env', desc => '%ENV hash' },
      envelem => { char => 'e', vtable => 'envelem',
 		  desc => '%ENV hash element' },
-     fm => { char => 'f', vtable => 'regdata', value_magic => 1,
+     fm => { char => 'f', vtable => 'regexp', value_magic => 1,
 	     readonly_acceptable => 1, desc => "Formline ('compiled' format)" },
-     study => { char => 'G', vtable => 'regexp', value_magic => 1,
-		readonly_acceptable => 1, desc => 'study()ed string' },
      regex_global => { char => 'g', vtable => 'mglob', value_magic => 1,
 		       readonly_acceptable => 1, desc => 'm//g target' },
      hints => { char => 'H', vtable => 'hints', desc => '%^H hash' },
@@ -72,7 +72,7 @@ my %mg =
      tiedscalar => { char => 'q', vtable => 'packelem',
 		     desc => 'Tied scalar or handle' },
      qr => { char => 'r', vtable => 'regexp', value_magic => 1, 
-	     desc => 'precompiled qr// regex' },
+	     readonly_acceptable => 1, desc => 'Precompiled qr// regex' },
      sig => { char => 'S', desc => '%SIG hash' },
      sigelem => { char => 's', vtable => 'sigelem',
 		  desc => '%SIG hash element' },
@@ -84,7 +84,7 @@ my %mg =
 		    unknown_to_sv_magic => 1 },
      vec => { char => 'v', vtable => 'vec', value_magic => 1,
 	      desc => 'vec() lvalue' },
-     vstring => { char => 'V', value_magic => 1, vtable => 'vstring',
+     vstring => { char => 'V', value_magic => 1,
 		  desc => 'SV was vstring literal' },
      utf8 => { char => 'w', vtable => 'utf8', value_magic => 1,
 	       desc => 'Cached UTF-8 information' },
@@ -97,22 +97,27 @@ my %mg =
      pos => { char => '.', vtable => 'pos', value_magic => 1,
 	      desc => 'pos() lvalue' },
      backref => { char => '<', vtable => 'backref', value_magic => 1,
-		  readonly_acceptable => 1, desc => 'for weak ref data' },
+		  readonly_acceptable => 1, desc => 'For weak ref data' },
      symtab => { char => ':', value_magic => 1,
-		 desc => 'extra data for symbol tables' },
+		 desc => 'Extra data for symbol tables' },
      rhash => { char => '%', value_magic => 1,
-		desc => 'extra data for restricted hashes' },
+		desc => 'Extra data for restricted hashes' },
      arylen_p => { char => '@', value_magic => 1,
-		   desc => 'to move arylen out of XPVAV' },
-     ext => { char => '~', desc => 'Available for use by extensions' },
-     checkcall => { char => ']', value_magic => 1,
-		    desc => 'inlining/mutation of call to this CV'},
+		   desc => 'To move arylen out of XPVAV' },
+     ext => { char => '~', desc => 'Available for use by extensions',
+	      readonly_acceptable => 1 },
+     checkcall => { char => ']', value_magic => 1, vtable => 'checkcall',
+		    desc => 'Inlining/mutation of call to this CV'},
+     debugvar => { char => '*', desc => '$DB::single, signal, trace vars',
+		   vtable => 'debugvar' },
+     lvref => { char => '\\', vtable => 'lvref',
+		  desc => "Lvalue reference constructor" },
 );
 
 # These have a subtly different "namespace" from the magic types.
 my %sig =
     (
-     'sv' => {get => 'get', set => 'set', len => 'len'},
+     'sv' => {get => 'get', set => 'set'},
      'env' => {set => 'set_all_env', clear => 'clear_all_env'},
      'envelem' => {set => 'setenv', clear => 'clearenv'},
      'sigelem' => {get => 'getsig', set => 'setsig', clear => 'clearsig',
@@ -123,7 +128,7 @@ my %sig =
      'isa' => {set => 'setisa', clear => 'clearisa'},
      'isaelem' => {set => 'setisa'},
      'arylen' => {get => 'getarylen', set => 'setarylen', const => 1},
-     'arylen_p' => {free => 'freearylen_p'},
+     'arylen_p' => {clear => 'cleararylen_p', free => 'freearylen_p'},
      'mglob' => {set => 'setmglob'},
      'nkeys' => {get => 'getnkeys', set => 'setnkeys'},
      'taint' => {get => 'gettaint', set => 'settaint'},
@@ -135,8 +140,6 @@ my %sig =
      'regexp' => {set => 'setregexp', alias => [qw(bm fm)]},
      'regdata' => {len => 'regdata_cnt'},
      'regdatum' => {get => 'regdatum_get', set => 'regdatum_set'},
-     'amagic' => {set => 'setamagic', free => 'setamagic'},
-     'amagicelem' => {set => 'setamagic', free => 'setamagic'},
      'backref' => {free => 'killbackrefs'},
      'ovrld' => {free => 'freeovrld'},
      'utf8' => {set => 'setutf8'},
@@ -144,13 +147,15 @@ my %sig =
 		    cond => '#ifdef USE_LOCALE_COLLATE'},
      'hintselem' => {set => 'sethint', clear => 'clearhint'},
      'hints' => {clear => 'clearhints'},
-     'vstring' => {set => 'setvstring'},
+     'checkcall' => {copy => 'copycallchecker'},
+     'debugvar' => { set => 'setdebugvar', get => 'getdebugvar' },
+     'lvref' => {set => 'setlvref'},
 );
 
 my ($vt, $raw, $names) = map {
     open_new($_, '>',
 	     { by => 'regen/mg_vtable.pl', file => $_, style => '*' });
-} 'mg_vtable.h', 'mg_raw.h', 'mg_names.c';
+} 'mg_vtable.h', 'mg_raw.h', 'mg_names.inc';
 my $guts = open_new("pod/perlguts.pod", ">");
 
 print $vt <<'EOH';
@@ -181,39 +186,45 @@ EOH
 
     my %mg_order;
     while (my ($name, $data) = each %mg) {
-	my $byte = eval qq{"$data->{char}"};
-	$data->{byte} = $byte;
+	my $byte = $data->{char};
+	if ($byte =~ /[[:print:]]/) {
+	    $data->{r_char} = $byte; # readable char
+	    ($data->{c_char} = $byte) =~ s/([\\"])/\\$1/g; # for C strings
+	}
+	else {
+	    $data->{c_char} = $data->{r_char} = '\\'.ord $byte;
+	}
 	$mg_order{(uc $byte) . $byte} = $name;
     }
     my @rows;
     foreach (sort keys %mg_order) {
 	my $name = $mg_order{$_};
 	my $data = $mg{$name};
-	my $i = ord $data->{byte};
+	my $i = ord $data->{char};
 	unless ($data->{unknown_to_sv_magic}) {
 	    my $value = $data->{vtable}
 		? "want_vtbl_$data->{vtable}" : 'magic_vtable_max';
 	    $value .= ' | PERL_MAGIC_READONLY_ACCEPTABLE'
 		if $data->{readonly_acceptable};
 	    $value .= ' | PERL_MAGIC_VALUE_MAGIC' if $data->{value_magic};
-	    my $comment = "/* $name '$data->{char}' $data->{desc} */";
+	    my $comment = "/* $name '$data->{r_char}' $data->{desc} */";
 	    $comment =~ s/([\\"])/\\$1/g;
 	    $comment =~ tr/\n/ /;
-	    print $raw qq{    { '$data->{char}', "$value",\n      "$comment" },\n};
+	    print $raw qq{    { '$data->{c_char}', "$value",\n      "$comment" },\n};
 	}
 
 	my $comment = $data->{desc};
 	my $leader = ' ' x ($longest + 27);
 	$comment =~ s/\n/\n$leader/s;
 	printf $vt "#define PERL_MAGIC_%-${longest}s '%s' /* %s */\n",
-	    $name, $data->{char}, $comment;
+	    $name, $data->{c_char}, $comment;
 
-	my $char = $data->{char};
+	my $char = $data->{r_char};
 	$char =~ s/([\\"])/\\$1/g;
 	printf $names qq[\t{ PERL_MAGIC_%-${longest_p1}s "%s(%s)" },\n],
 	    "$name,", $name, $char;
 
-	push @rows, [(sprintf "%-2s PERL_MAGIC_%s", $data->{char}, $name),
+	push @rows, [(sprintf "%-2s PERL_MAGIC_%s", $data->{r_char},$name),
 		     $data->{vtable} ? "vtbl_$data->{vtable}" : '(none)',
 		     $data->{desc}];
     }
@@ -279,11 +290,11 @@ enum {		/* pass one of these to get_vtbl */
 };
 
 #ifdef DOINIT
-EXTCONST char *PL_magic_vtable_names[magic_vtable_max] = {
+EXTCONST char * const PL_magic_vtable_names[magic_vtable_max] = {
     "$names"
 };
 #else
-EXTCONST char *PL_magic_vtable_names[magic_vtable_max];
+EXTCONST char * const PL_magic_vtable_names[magic_vtable_max];
 #endif
 
 EOH

@@ -7,11 +7,10 @@ static bool
 _runops_debug(int flag)
 {
     dTHX;
-    const bool d = PL_runops == MEMBER_TO_FPTR(Perl_runops_debug);
+    const bool d = PL_runops == Perl_runops_debug;
 
     if (flag >= 0)
-	PL_runops 
-	    = MEMBER_TO_FPTR(flag ? Perl_runops_debug : Perl_runops_standard);
+	PL_runops = flag ? Perl_runops_debug : Perl_runops_standard;
     return d;
 }
 
@@ -24,7 +23,7 @@ DeadCode(pTHX)
     SV* sva;
     SV* sv;
     SV* ret = newRV_noinc((SV*)newAV());
-    register SV* svend;
+    SV* svend;
     int tm = 0, tref = 0, ts = 0, ta = 0, tas = 0;
 
     for (sva = PL_sv_arenaroot; sva; sva = (SV*)SvANY(sva)) {
@@ -32,7 +31,8 @@ DeadCode(pTHX)
 	for (sv = sva + 1; sv < svend; ++sv) {
 	    if (SvTYPE(sv) == SVt_PVCV) {
 		CV *cv = (CV*)sv;
-		AV* padlist = CvPADLIST(cv), *argav;
+		PADLIST* padlist;
+                AV *argav;
 		SV** svp;
 		SV** pad;
 		int i = 0, j, levelm, totm = 0, levelref, totref = 0;
@@ -54,10 +54,12 @@ DeadCode(pTHX)
 		    PerlIO_printf(Perl_debug_log, "  busy\n");
 		    continue;
 		}
-		svp = AvARRAY(padlist);
-		while (++i <= AvFILL(padlist)) { /* Depth. */
+		padlist = CvPADLIST(cv);
+		svp = (SV**) PadlistARRAY(padlist);
+		while (++i <= PadlistMAX(padlist)) { /* Depth. */
 		    SV **args;
 		    
+		    if (!svp[i]) continue;
 		    pad = AvARRAY((AV*)svp[i]);
 		    argav = (AV*)pad[0];
 		    if (!argav || (SV*)argav == &PL_sv_undef) {
@@ -80,6 +82,7 @@ DeadCode(pTHX)
 			}
 		    }
 		    for (j = 1; j < AvFILL((AV*)svp[1]); j++) {	/* Vars. */
+			if (!pad[j]) continue;
 			if (SvROK(pad[j])) {
 			    levelref++;
 			    do_sv_dump(0, Perl_debug_log, pad[j], 0, 4, 0, 0);
@@ -109,7 +112,7 @@ DeadCode(pTHX)
 		    if (dumpit)
 			do_sv_dump(0, Perl_debug_log, (SV*)cv, 0, 2, 0, 0);
 		}
-		if (AvFILL(padlist) > 1) {
+		if (PadlistMAX(padlist) > 1) {
 		    PerlIO_printf(Perl_debug_log, "  total: refs: %i, strings: %i in %i,\targsarrays: %i, argsstrings: %i\n", 
 			    totref, totm, tots, tota, totas);
 		}
@@ -164,7 +167,7 @@ fill_mstats(SV *sv, int level)
 
     if (SvREADONLY(sv))
 	croak("Cannot modify a readonly value");
-    SvGROW(sv, sizeof(struct mstats_buffer)+1);
+    sv_grow(sv, sizeof(struct mstats_buffer)+1);
     _fill_mstats((struct mstats_buffer*)SvPVX(sv),level);
     SvCUR_set(sv, sizeof(struct mstats_buffer));
     *SvEND(sv) = '\0';
@@ -295,18 +298,25 @@ mstats2hash(SV *sv, SV *rv, int level)
 static void
 fill_mstats(SV *sv, int level)
 {
+    PERL_UNUSED_ARG(sv);
+    PERL_UNUSED_ARG(level);
     croak("Cannot report mstats without Perl malloc");
 }
 
 static void
 mstats_fillhash(SV *sv, int level)
 {
+    PERL_UNUSED_ARG(sv);
+    PERL_UNUSED_ARG(level);
     croak("Cannot report mstats without Perl malloc");
 }
 
 static void
 mstats2hash(SV *sv, SV *rv, int level)
 {
+    PERL_UNUSED_ARG(sv);
+    PERL_UNUSED_ARG(rv);
+    PERL_UNUSED_ARG(level);
     croak("Cannot report mstats without Perl malloc");
 }
 #endif	/* defined(MYMALLOC) */ 
@@ -314,6 +324,95 @@ mstats2hash(SV *sv, SV *rv, int level)
 #define _CvGV(cv)					\
 	(SvROK(cv) && (SvTYPE(SvRV(cv))==SVt_PVCV)	\
 	 ? SvREFCNT_inc(CvGV((CV*)SvRV(cv))) : &PL_sv_undef)
+
+static void
+S_do_dump(pTHX_ SV *const sv, I32 lim)
+{
+    dVAR;
+    SV *pv_lim_sv = perl_get_sv("Devel::Peek::pv_limit", 0);
+    const STRLEN pv_lim = pv_lim_sv ? SvIV(pv_lim_sv) : 0;
+    SV *dumpop = perl_get_sv("Devel::Peek::dump_ops", 0);
+    const U16 save_dumpindent = PL_dumpindent;
+    PL_dumpindent = 2;
+    do_sv_dump(0, Perl_debug_log, sv, 0, lim,
+	       (bool)(dumpop && SvTRUE(dumpop)), pv_lim);
+    PL_dumpindent = save_dumpindent;
+}
+
+static OP *
+S_pp_dump(pTHX)
+{
+    dSP;
+    const I32 lim = PL_op->op_private == 2 ? (I32)POPi : 4;
+    dPOPss;
+    S_do_dump(aTHX_ sv, lim);
+    RETPUSHUNDEF;
+}
+
+static OP *
+S_ck_dump(pTHX_ OP *entersubop, GV *namegv, SV *cv)
+{
+    OP *parent, *pm, *first, *second;
+    BINOP *newop;
+
+    PERL_UNUSED_ARG(cv);
+
+    ck_entersub_args_proto(entersubop, namegv,
+			   newSVpvn_flags("$;$", 3, SVs_TEMP));
+
+    parent = entersubop;
+    pm = cUNOPx(entersubop)->op_first;
+    if (!OpHAS_SIBLING(pm)) {
+        parent = pm;
+	pm = cUNOPx(pm)->op_first;
+    }
+    first = OpSIBLING(pm);
+    second = OpSIBLING(first);
+    if (!second) {
+	/* It doesn’t really matter what we return here, as this only
+	   occurs after yyerror.  */
+	return entersubop;
+    }
+    /* we either have Dump($x):   [pushmark]->[first]->[ex-cvop]
+     * or             Dump($x,1); [pushmark]->[first]->[second]->[ex-cvop]
+     */
+    if (!OpHAS_SIBLING(second))
+        second = NULL;
+
+    if (first->op_type == OP_RV2AV ||
+	first->op_type == OP_PADAV ||
+	first->op_type == OP_RV2HV ||
+	first->op_type == OP_PADHV
+    )
+	first->op_flags |= OPf_REF;
+    else
+	first->op_flags &= ~OPf_MOD;
+
+    /* splice out first (and optionally second) ops, then discard the rest
+     * of the op tree */
+
+    op_sibling_splice(parent, pm, second ? 2 : 1, NULL);
+    op_free(entersubop);
+
+    /* then attach first (and second) to a new binop */
+
+    NewOp(1234, newop, 1, BINOP);
+    newop->op_type   = OP_CUSTOM;
+    newop->op_ppaddr = S_pp_dump;
+    newop->op_private= second ? 2 : 1;
+    newop->op_flags  = OPf_KIDS|OPf_WANT_SCALAR;
+    op_sibling_splice((OP*)newop, NULL, 0, first);
+
+    return (OP *)newop;
+}
+
+static const XOP my_xop = {
+    XOPf_xop_name|XOPf_xop_desc|XOPf_xop_class,		/* xop_flags */
+    "Devel_Peek_Dump",					/* xop_name */
+    "Dump",						/* xop_desc */
+    OA_BINOP,						/* xop_class */
+    NULL						/* xop_peep */
+};
 
 MODULE = Devel::Peek		PACKAGE = Devel::Peek
 
@@ -338,14 +437,15 @@ SV *	sv
 I32	lim
 PPCODE:
 {
-    SV *pv_lim_sv = perl_get_sv("Devel::Peek::pv_limit", 0);
-    const STRLEN pv_lim = pv_lim_sv ? SvIV(pv_lim_sv) : 0;
-    SV *dumpop = perl_get_sv("Devel::Peek::dump_ops", 0);
-    const U16 save_dumpindent = PL_dumpindent;
-    PL_dumpindent = 2;
-    do_sv_dump(0, Perl_debug_log, sv, 0, lim,
-	       (bool)(dumpop && SvTRUE(dumpop)), pv_lim);
-    PL_dumpindent = save_dumpindent;
+    S_do_dump(aTHX_ sv, lim);
+}
+
+BOOT:
+{
+    CV * const cv = get_cvn_flags("Devel::Peek::Dump", 17, 0);
+    assert(cv);
+    cv_set_call_checker(cv, S_ck_dump, (SV *)cv);
+    Perl_custom_op_register(aTHX_ S_pp_dump, &my_xop);
 }
 
 void
@@ -377,31 +477,17 @@ PPCODE:
 	op_dump(PL_main_root);
 }
 
-I32
+U32
 SvREFCNT(sv)
 SV *	sv
-
-# PPCODE needed since otherwise sv_2mortal is inserted that will kill the value.
-
-SV *
-SvREFCNT_inc(sv)
-SV *	sv
-PPCODE:
-{
-    RETVAL = SvREFCNT_inc(sv);
-    PUSHs(RETVAL);
-}
-
-# PPCODE needed since by default it is void
-
-void
-SvREFCNT_dec(sv)
-SV *	sv
-PPCODE:
-{
-    SvREFCNT_dec(sv);
-    PUSHs(sv);
-}
+PROTOTYPE: \[$@%&*]
+CODE:
+    SvGETMAGIC(sv);
+    if (!SvROK(sv))
+        croak_xs_usage(cv, "SCALAR");
+    RETVAL = SvREFCNT(SvRV(sv)) - 1; /* -1 because our ref doesn't count */
+OUTPUT:
+    RETVAL
 
 SV *
 DeadCode()

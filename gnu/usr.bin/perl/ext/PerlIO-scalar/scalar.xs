@@ -6,13 +6,16 @@
 
 #include "perliol.h"
 
+static const char code_point_warning[] =
+ "Strings with code points over 0xFF may not be mapped into in-memory file handles\n";
+
 typedef struct {
     struct _PerlIO base;	/* Base "class" info */
     SV *var;
     Off_t posn;
 } PerlIOScalar;
 
-IV
+static IV
 PerlIOScalar_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg,
 		    PerlIO_funcs * tab)
 {
@@ -22,9 +25,10 @@ PerlIOScalar_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg,
      * using, otherwise arg (from binmode presumably) is either NULL
      * or the _name_ of the scalar
      */
-    if (arg) {
+    if (arg && SvOK(arg)) {
 	if (SvROK(arg)) {
-	    if (SvREADONLY(SvRV(arg)) && mode && *mode != 'r') {
+	    if (SvREADONLY(SvRV(arg)) && !SvIsCOW(SvRV(arg))
+	     && mode && *mode != 'r') {
 		if (ckWARN(WARN_LAYER))
 		    Perl_warner(aTHX_ packWARN(WARN_LAYER), "%s", PL_no_modify);
 		SETERRNO(EINVAL, SS_IVCHAN);
@@ -42,20 +46,34 @@ PerlIOScalar_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg,
 	}
     }
     else {
-	s->var = newSVpvn("", 0);
+	s->var = newSVpvs("");
     }
     SvUPGRADE(s->var, SVt_PV);
+
     code = PerlIOBase_pushed(aTHX_ f, mode, Nullsv, tab);
     if (!SvOK(s->var) || (PerlIOBase(f)->flags) & PERLIO_F_TRUNCATE)
+    {
+	sv_force_normal(s->var);
 	SvCUR_set(s->var, 0);
+	if (SvPOK(s->var)) *SvPVX(s->var) = 0;
+    }
+    if (SvUTF8(s->var) && !sv_utf8_downgrade(s->var, TRUE)) {
+	if (ckWARN(WARN_UTF8))
+	    Perl_warner(aTHX_ packWARN(WARN_UTF8), code_point_warning);
+	SETERRNO(EINVAL, SS_IVCHAN);
+	SvREFCNT_dec(s->var);
+	s->var = Nullsv;
+	return -1;
+    }
     if ((PerlIOBase(f)->flags) & PERLIO_F_APPEND)
-	s->posn = SvCUR(s->var);
+	s->posn = SvOK(s->var) ? sv_len(s->var) : 0;
     else
 	s->posn = 0;
+    SvSETMAGIC(s->var);
     return code;
 }
 
-IV
+static IV
 PerlIOScalar_popped(pTHX_ PerlIO * f)
 {
     PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
@@ -66,7 +84,7 @@ PerlIOScalar_popped(pTHX_ PerlIO * f)
     return 0;
 }
 
-IV
+static IV
 PerlIOScalar_close(pTHX_ PerlIO * f)
 {
     IV code = PerlIOBase_close(aTHX_ f);
@@ -74,57 +92,102 @@ PerlIOScalar_close(pTHX_ PerlIO * f)
     return code;
 }
 
-IV
+static IV
 PerlIOScalar_fileno(pTHX_ PerlIO * f)
 {
+    PERL_UNUSED_ARG(f);
     return -1;
 }
 
-IV
+static IV
 PerlIOScalar_seek(pTHX_ PerlIO * f, Off_t offset, int whence)
 {
     PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
-    STRLEN oldcur = SvCUR(s->var);
-    STRLEN newlen;
+    Off_t new_posn;
+
     switch (whence) {
     case SEEK_SET:
-	s->posn = offset;
+	new_posn = offset;
 	break;
     case SEEK_CUR:
-	s->posn = offset + s->posn;
+	new_posn = offset + s->posn;
 	break;
     case SEEK_END:
-	s->posn = offset + SvCUR(s->var);
+      {
+	STRLEN oldcur;
+	(void)SvPV(s->var, oldcur);
+	new_posn = offset + oldcur;
 	break;
+      }
+    default:
+        SETERRNO(EINVAL, SS_IVCHAN);
+        return -1;
     }
-    if (s->posn < 0) {
+    if (new_posn < 0) {
         if (ckWARN(WARN_LAYER))
 	    Perl_warner(aTHX_ packWARN(WARN_LAYER), "Offset outside string");
 	SETERRNO(EINVAL, SS_IVCHAN);
 	return -1;
     }
-    newlen = (STRLEN) s->posn;
-    if (newlen > oldcur) {
-	(void) SvGROW(s->var, newlen);
-	Zero(SvPVX(s->var) + oldcur, newlen - oldcur, char);
-	/* No SvCUR_set(), though.  This is just a seek, not a write. */
-    }
-    else if (!SvPVX(s->var)) {
-	/* ensure there's always a character buffer */
-	(void)SvGROW(s->var,1);
-    }
-    SvPOK_on(s->var);
+    s->posn = new_posn;
     return 0;
 }
 
-Off_t
+static Off_t
 PerlIOScalar_tell(pTHX_ PerlIO * f)
 {
     PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
     return s->posn;
 }
 
-SSize_t
+
+static SSize_t
+PerlIOScalar_read(pTHX_ PerlIO *f, void *vbuf, Size_t count)
+{
+    if (!f)
+	return 0;
+    if (!(PerlIOBase(f)->flags & PERLIO_F_CANREAD)) {
+	PerlIOBase(f)->flags |= PERLIO_F_ERROR;
+	SETERRNO(EBADF, SS_IVCHAN);
+	Perl_PerlIO_save_errno(aTHX_ f);
+	return 0;
+    }
+    {
+	PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
+	SV *sv = s->var;
+	char *p;
+	STRLEN len;
+        STRLEN got;
+	p = SvPV(sv, len);
+	if (SvUTF8(sv)) {
+	    if (sv_utf8_downgrade(sv, TRUE)) {
+	        p = SvPV_nomg(sv, len);
+	    }
+	    else {
+	        if (ckWARN(WARN_UTF8))
+		    Perl_warner(aTHX_ packWARN(WARN_UTF8), code_point_warning);
+	        SETERRNO(EINVAL, SS_IVCHAN);
+	        return -1;
+	    }
+	}
+        /* I assume that Off_t is at least as large as len (which 
+         * seems safe) and that the size of the buffer in our SV is
+         * always less than half the size of the address space
+         */
+        assert(sizeof(Off_t) >= sizeof(len));
+        assert((Off_t)len >= 0);
+        if ((Off_t)len <= s->posn)
+	    return 0;
+	got = len - (STRLEN)(s->posn);
+	if ((STRLEN)got > (STRLEN)count)
+	    got = (STRLEN)count;
+	Copy(p + (STRLEN)(s->posn), vbuf, got, STDCHAR);
+	s->posn += (Off_t)got;
+	return (SSize_t)got;
+    }
+}
+
+static SSize_t
 PerlIOScalar_write(pTHX_ PerlIO * f, const void *vbuf, Size_t count)
 {
     if (PerlIOBase(f)->flags & PERLIO_F_CANWRITE) {
@@ -132,52 +195,87 @@ PerlIOScalar_write(pTHX_ PerlIO * f, const void *vbuf, Size_t count)
 	PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
 	SV *sv = s->var;
 	char *dst;
+	SvGETMAGIC(sv);
+	if (!SvROK(sv)) sv_force_normal(sv);
+	if (SvOK(sv)) SvPV_force_nomg_nolen(sv);
+	if (SvUTF8(sv) && !sv_utf8_downgrade(sv, TRUE)) {
+	    if (ckWARN(WARN_UTF8))
+	        Perl_warner(aTHX_ packWARN(WARN_UTF8), code_point_warning);
+	    SETERRNO(EINVAL, SS_IVCHAN);
+	    return 0;
+	}
 	if ((PerlIOBase(f)->flags) & PERLIO_F_APPEND) {
-	    dst = SvGROW(sv, SvCUR(sv) + count);
+	    dst = SvGROW(sv, SvCUR(sv) + count + 1);
 	    offset = SvCUR(sv);
 	    s->posn = offset + count;
 	}
 	else {
-	    if ((s->posn + count) > SvCUR(sv))
-		dst = SvGROW(sv, (STRLEN)s->posn + count);
+	    STRLEN const cur = SvCUR(sv);
+
+            /* ensure we don't try to create ridiculously large
+             * SVs on small platforms
+             */
+#if Size_t_size < Off_t_size
+            if (s->posn > SSize_t_MAX) {
+#ifdef EFBIG
+                SETERRNO(EFBIG, SS_BUFFEROVF);
+#else
+                SETERRNO(ENOSPC, SS_BUFFEROVF);
+#endif
+                return 0;
+            }
+#endif
+
+	    if ((STRLEN)s->posn > cur) {
+		dst = SvGROW(sv, (STRLEN)s->posn + count + 1);
+		Zero(SvPVX(sv) + cur, (STRLEN)s->posn - cur, char);
+	    }
+	    else if ((s->posn + count) >= cur)
+		dst = SvGROW(sv, (STRLEN)s->posn + count + 1);
 	    else
-		dst = SvPV_nolen(sv);
+		dst = SvPVX(sv);
 	    offset = s->posn;
 	    s->posn += count;
 	}
 	Move(vbuf, dst + offset, count, char);
-	if ((STRLEN) s->posn > SvCUR(sv))
+	if ((STRLEN) s->posn > SvCUR(sv)) {
 	    SvCUR_set(sv, (STRLEN)s->posn);
-	SvPOK_on(s->var);
+	    dst[(STRLEN) s->posn] = 0;
+	}
+	SvPOK_on(sv);
+	SvSETMAGIC(sv);
 	return count;
     }
     else
 	return 0;
 }
 
-IV
+static IV
 PerlIOScalar_fill(pTHX_ PerlIO * f)
 {
+    PERL_UNUSED_ARG(f);
     return -1;
 }
 
-IV
+static IV
 PerlIOScalar_flush(pTHX_ PerlIO * f)
 {
+    PERL_UNUSED_ARG(f);
     return 0;
 }
 
-STDCHAR *
+static STDCHAR *
 PerlIOScalar_get_base(pTHX_ PerlIO * f)
 {
     PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
     if (PerlIOBase(f)->flags & PERLIO_F_CANREAD) {
+	SvGETMAGIC(s->var);
 	return (STDCHAR *) SvPV_nolen(s->var);
     }
     return (STDCHAR *) NULL;
 }
 
-STDCHAR *
+static STDCHAR *
 PerlIOScalar_get_ptr(pTHX_ PerlIO * f)
 {
     if (PerlIOBase(f)->flags & PERLIO_F_CANREAD) {
@@ -187,42 +285,51 @@ PerlIOScalar_get_ptr(pTHX_ PerlIO * f)
     return (STDCHAR *) NULL;
 }
 
-SSize_t
+static SSize_t
 PerlIOScalar_get_cnt(pTHX_ PerlIO * f)
 {
     if (PerlIOBase(f)->flags & PERLIO_F_CANREAD) {
 	PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
-	if (SvCUR(s->var) > (STRLEN) s->posn)
-	    return SvCUR(s->var) - (STRLEN)s->posn;
+	STRLEN len;
+	(void)SvPV(s->var,len);
+	if ((Off_t)len > s->posn)
+	    return len - (STRLEN)s->posn;
 	else
 	    return 0;
     }
     return 0;
 }
 
-Size_t
+static Size_t
 PerlIOScalar_bufsiz(pTHX_ PerlIO * f)
 {
     if (PerlIOBase(f)->flags & PERLIO_F_CANREAD) {
 	PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
+	SvGETMAGIC(s->var);
 	return SvCUR(s->var);
     }
     return 0;
 }
 
-void
+static void
 PerlIOScalar_set_ptrcnt(pTHX_ PerlIO * f, STDCHAR * ptr, SSize_t cnt)
 {
     PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
-    s->posn = SvCUR(s->var) - cnt;
+    STRLEN len;
+    PERL_UNUSED_ARG(ptr);
+    (void)SvPV(s->var,len);
+    s->posn = len - cnt;
 }
 
-PerlIO *
+static PerlIO *
 PerlIOScalar_open(pTHX_ PerlIO_funcs * self, PerlIO_list_t * layers, IV n,
 		  const char *mode, int fd, int imode, int perm,
 		  PerlIO * f, int narg, SV ** args)
 {
     SV *arg = (narg > 0) ? *args : PerlIOArg;
+    PERL_UNUSED_ARG(fd);
+    PERL_UNUSED_ARG(imode);
+    PERL_UNUSED_ARG(perm);
     if (SvROK(arg) || SvPOK(arg)) {
 	if (!f) {
 	    f = PerlIO_allocate(aTHX);
@@ -235,7 +342,7 @@ PerlIOScalar_open(pTHX_ PerlIO_funcs * self, PerlIO_list_t * layers, IV n,
     return NULL;
 }
 
-SV *
+static SV *
 PerlIOScalar_arg(pTHX_ PerlIO * f, CLONE_PARAMS * param, int flags)
 {
     PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
@@ -252,20 +359,34 @@ PerlIOScalar_arg(pTHX_ PerlIO * f, CLONE_PARAMS * param, int flags)
     return newRV_noinc(var);
 }
 
-PerlIO *
+static PerlIO *
 PerlIOScalar_dup(pTHX_ PerlIO * f, PerlIO * o, CLONE_PARAMS * param,
 		 int flags)
 {
+    /* Duplication causes the scalar layer to be pushed on to clone, caus-
+       ing the cloned scalar to be set to the empty string by
+       PerlIOScalar_pushed.  So set aside our scalar temporarily. */
+    PerlIOScalar * const os = PerlIOSelf(o, PerlIOScalar);
+    PerlIOScalar *fs = NULL; /* avoid "may be used uninitialized" warning */
+    SV * const var = os->var;
+    os->var = newSVpvs("");
     if ((f = PerlIOBase_dup(aTHX_ f, o, param, flags))) {
-	PerlIOScalar *fs = PerlIOSelf(f, PerlIOScalar);
-	PerlIOScalar *os = PerlIOSelf(o, PerlIOScalar);
-	/* var has been set by implicit push */
+	fs = PerlIOSelf(f, PerlIOScalar);
+	/* var has been set by implicit push, so replace it */
+	SvREFCNT_dec(fs->var);
+    }
+    SvREFCNT_dec(os->var);
+    os->var = var;
+    if (f) {
+	SV * const rv = PerlIOScalar_arg(aTHX_ o, param, flags);
+	fs->var = SvREFCNT_inc(SvRV(rv));
+	SvREFCNT_dec(rv);
 	fs->posn = os->posn;
     }
     return f;
 }
 
-PERLIO_FUNCS_DECL(PerlIO_scalar) = {
+static PERLIO_FUNCS_DECL(PerlIO_scalar) = {
     sizeof(PerlIO_funcs),
     "scalar",
     sizeof(PerlIOScalar),
@@ -277,7 +398,7 @@ PERLIO_FUNCS_DECL(PerlIO_scalar) = {
     PerlIOScalar_arg,
     PerlIOScalar_fileno,
     PerlIOScalar_dup,
-    PerlIOBase_read,
+    PerlIOScalar_read,
     NULL, /* unread */
     PerlIOScalar_write,
     PerlIOScalar_seek,

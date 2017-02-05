@@ -1,8 +1,11 @@
 
 BEGIN {
-    unless ("A" eq pack('U', 0x41)) {
-	print "1..0 # Unicode::Normalize " .
-	    "cannot stringify a Unicode code point\n";
+    unless ('A' eq pack('U', 0x41)) {
+	print "1..0 # Unicode::Normalize cannot pack a Unicode code point\n";
+	exit 0;
+    }
+    unless (0x41 == unpack('U', 'A')) {
+	print "1..0 # Unicode::Normalize cannot get a Unicode code point\n";
 	exit 0;
     }
 }
@@ -16,29 +19,45 @@ BEGIN {
 
 #########################
 
-use Test;
 use strict;
 use warnings;
-BEGIN { plan tests => 211 };
+BEGIN { $| = 1; print "1..217\n"; }
+my $count = 0;
+sub ok ($;$) {
+    my $p = my $r = shift;
+    if (@_) {
+	my $x = shift;
+	$p = !defined $x ? !defined $r : !defined $r ? 0 : $r eq $x;
+    }
+    print $p ? "ok" : "not ok", ' ', ++$count, "\n";
+}
+
 use Unicode::Normalize qw(:all);
-ok(1); # If we made it this far, we're ok.
+
+ok(1);
 
 sub _pack_U { Unicode::Normalize::pack_U(@_) }
 sub hexU { _pack_U map hex, split ' ', shift }
 
+# This won't work on EBCDIC platforms prior to v5.8.0, which is when this
+# translation function was defined
+*to_native = (defined &utf8::unicode_to_native)
+             ? \&utf8::unicode_to_native
+             : sub { return shift };
+
 #########################
 
-ok(getCombinClass(   0),   0);
-ok(getCombinClass(  41),   0);
-ok(getCombinClass(  65),   0);
+ok(getCombinClass( to_native(0)),   0);
+ok(getCombinClass(to_native(41)),   0);
+ok(getCombinClass(to_native(65)),   0);
 ok(getCombinClass( 768), 230);
 ok(getCombinClass(1809),  36);
 
-ok(getCanon(   0), undef);
-ok(getCanon(0x29), undef);
-ok(getCanon(0x41), undef);
-ok(getCanon(0x00C0), _pack_U(0x0041, 0x0300));
-ok(getCanon(0x00EF), _pack_U(0x0069, 0x0308));
+ok(getCanon(to_native(   0)), undef);
+ok(getCanon(to_native(0x29)), undef);
+ok(getCanon(to_native(0x41)), undef);
+ok(getCanon(to_native(0x00C0)), _pack_U(0x0041, 0x0300));
+ok(getCanon(to_native(0x00EF)), _pack_U(0x0069, 0x0308));
 ok(getCanon(0x304C), _pack_U(0x304B, 0x3099));
 ok(getCanon(0x1EA4), _pack_U(0x0041, 0x0302, 0x0301));
 ok(getCanon(0x1F82), _pack_U(0x03B1, 0x0313, 0x0300, 0x0345));
@@ -49,11 +68,13 @@ ok(getCanon(0x212C), undef);
 ok(getCanon(0x3243), undef);
 ok(getCanon(0xFA2D), _pack_U(0x9DB4));
 
-ok(getCompat(   0), undef);
-ok(getCompat(0x29), undef);
-ok(getCompat(0x41), undef);
-ok(getCompat(0x00C0), _pack_U(0x0041, 0x0300));
-ok(getCompat(0x00EF), _pack_U(0x0069, 0x0308));
+# 20
+
+ok(getCompat(to_native(   0)), undef);
+ok(getCompat(to_native(0x29)), undef);
+ok(getCompat(to_native(0x41)), undef);
+ok(getCompat(to_native(0x00C0)), _pack_U(0x0041, 0x0300));
+ok(getCompat(to_native(0x00EF)), _pack_U(0x0069, 0x0308));
 ok(getCompat(0x304C), _pack_U(0x304B, 0x3099));
 ok(getCompat(0x1EA4), _pack_U(0x0041, 0x0302, 0x0301));
 ok(getCompat(0x1F82), _pack_U(0x03B1, 0x0313, 0x0300, 0x0345));
@@ -64,17 +85,19 @@ ok(getCompat(0xAC00), _pack_U(0x1100, 0x1161));
 ok(getCompat(0xAE00), _pack_U(0x1100, 0x1173, 0x11AF));
 ok(getCompat(0xFA2D), _pack_U(0x9DB4));
 
-ok(getComposite(   0,    0), undef);
-ok(getComposite(   0, 0x29), undef);
-ok(getComposite(0x29,    0), undef);
-ok(getComposite(0x29, 0x29), undef);
-ok(getComposite(   0, 0x41), undef);
-ok(getComposite(0x41,    0), undef);
-ok(getComposite(0x41, 0x41), undef);
-ok(getComposite(12, 0x0300), undef);
-ok(getComposite(0x0055, 0xFF00), undef);
-ok(getComposite(0x0041, 0x0300), 0x00C0);
-ok(getComposite(0x0055, 0x0300), 0x00D9);
+# 34
+
+ok(getComposite(to_native(   0), to_native(   0)), undef);
+ok(getComposite(to_native(   0), to_native(0x29)), undef);
+ok(getComposite(to_native(0x29), to_native(   0)), undef);
+ok(getComposite(to_native(0x29), to_native(0x29)), undef);
+ok(getComposite(to_native(   0), to_native(0x41)), undef);
+ok(getComposite(to_native(0x41), to_native(   0)), undef);
+ok(getComposite(to_native(0x41), to_native(0x41)), undef);
+ok(getComposite(to_native(12), to_native(0x0300)), undef);
+ok(getComposite(to_native(0x0055), 0xFF00), undef);
+ok(getComposite(to_native(0x0041), 0x0300), to_native(0x00C0));
+ok(getComposite(to_native(0x0055), 0x0300), to_native(0x00D9));
 ok(getComposite(0x0112, 0x0300), 0x1E14);
 ok(getComposite(0x1100, 0x1161), 0xAC00);
 ok(getComposite(0x1100, 0x1173), 0xADF8);
@@ -83,6 +106,8 @@ ok(getComposite(0x1173, 0x11AF), undef);
 ok(getComposite(0xAC00, 0x11A7), undef);
 ok(getComposite(0xAC00, 0x11A8), 0xAC01);
 ok(getComposite(0xADF8, 0x11AF), 0xAE00);
+
+# 53
 
 sub uprops {
   my $uv = shift;
@@ -101,11 +126,11 @@ sub uprops {
   return $r;
 }
 
-ok(uprops(0x0000), 'xsnfbdmckyg'); # NULL
-ok(uprops(0x0029), 'xsnfbdmckyg'); # RIGHT PARENTHESIS
-ok(uprops(0x0041), 'xsnfbdmckyg'); # LATIN CAPITAL LETTER A
-ok(uprops(0x00A0), 'xsnfbdmcKyG'); # NO-BREAK SPACE
-ok(uprops(0x00C0), 'xsnfbDmcKyg'); # LATIN CAPITAL LETTER A WITH GRAVE
+ok(uprops(to_native(0x0000)), 'xsnfbdmckyg'); # NULL
+ok(uprops(to_native(0x0029)), 'xsnfbdmckyg'); # RIGHT PARENTHESIS
+ok(uprops(to_native(0x0041)), 'xsnfbdmckyg'); # LATIN CAPITAL LETTER A
+ok(uprops(to_native(0x00A0)), 'xsnfbdmcKyG'); # NO-BREAK SPACE
+ok(uprops(to_native(0x00C0)), 'xsnfbDmcKyg'); # LATIN CAPITAL LETTER A WITH GRAVE
 ok(uprops(0x0300), 'xsnfBdMckYg'); # COMBINING GRAVE ACCENT
 ok(uprops(0x0344), 'xsNFbDmCKyG'); # COMBINING GREEK DIALYTIKA TONOS
 ok(uprops(0x0387), 'xSnFbDmCKyG'); # GREEK ANO TELEIA
@@ -119,6 +144,8 @@ ok(uprops(0xAC00), 'xsnfbDmcKyg'); # HANGUL SYLLABLE GA
 ok(uprops(0xF900), 'xSnFbDmCKyG'); # CJK COMPATIBILITY IDEOGRAPH-F900
 ok(uprops(0xFB4E), 'XsnFbDmCKyG'); # HEBREW LETTER PE WITH RAFE
 ok(uprops(0xFF71), 'xsnfbdmcKyG'); # HALFWIDTH KATAKANA LETTER A
+
+# 71
 
 ok(decompose(""), "");
 ok(decompose("A"), "A");
@@ -138,6 +165,8 @@ my $sDec = "\x{FA19}";
 ok(decompose($sDec), "\x{795E}");
 ok($sDec, "\x{FA19}");
 
+# 83
+
 ok(reorder(""), "");
 ok(reorder("A"), "A");
 ok(reorder(hexU("0041 0300 0315 0313 031b 0061")),
@@ -149,6 +178,8 @@ ok(reorder(hexU("00C1 0300 0315 0313 031b 0061 309A 3099")),
 my $sReord = "\x{3000}\x{300}\x{31b}";
 ok(reorder($sReord), "\x{3000}\x{31b}\x{300}");
 ok($sReord, "\x{3000}\x{300}\x{31b}");
+
+# 89
 
 ok(compose(""), "");
 ok(compose("A"), "A");
@@ -165,6 +196,8 @@ my $sCom = "\x{304B}\x{3099}";
 ok(compose($sCom), "\x{304C}");
 ok($sCom, "\x{304B}\x{3099}");
 
+# 100
+
 ok(composeContiguous(""), "");
 ok(composeContiguous("A"), "A");
 ok(composeContiguous(hexU("0061 0300")),      hexU("00E0"));
@@ -179,6 +212,8 @@ ok(composeContiguous(hexU("0061 0313 0300")), hexU("0061 0313 0300"));
 my $sCtg = "\x{30DB}\x{309A}";
 ok(composeContiguous($sCtg), "\x{30DD}");
 ok($sCtg, "\x{30DB}\x{309A}");
+
+# 111
 
 sub answer { defined $_[0] ? $_[0] ? "YES" : "NO" : "MAYBE" }
 
@@ -220,6 +255,8 @@ ok(answer(checkNFKC(hexU("0041 0327 030A"))), "MAYBE"); # A+cedilla+ring
 ok(answer(checkNFKC(hexU("0041 030A 0327"))), "NO");    # A+ring+cedilla
 ok(answer(check("NFKC", hexU("20 C1 212B 300"))), "NO");
 
+# 145
+
 "012ABC" =~ /(\d+)(\w+)/;
 ok("012" eq NFC $1 && "ABC" eq NFC $2);
 
@@ -230,15 +267,18 @@ ok(normalize('NFC', $1), "012");
 ok(normalize('NFC', $2), "ABC");
  # s/^NF// in normalize() must not prevent using $1, $&, etc.
 
+# 150
+
 # a string with initial zero should be treated like a number
 
 # LATIN CAPITAL LETTER A WITH GRAVE
-ok(getCombinClass("0192"), 0);
-ok(getCanon ("0192"), _pack_U(0x41, 0x300));
-ok(getCompat("0192"), _pack_U(0x41, 0x300));
-ok(getComposite("065", "0768"), 192);
-ok(isNFD_NO ("0192"));
-ok(isNFKD_NO("0192"));
+ok(getCombinClass(sprintf("0%d", to_native(192))), 0);
+ok(getCanon (sprintf("0%d", to_native(192))), _pack_U(0x41, 0x300));
+ok(getCompat(sprintf("0%d", to_native(192))), _pack_U(0x41, 0x300));
+my $lead_zero = sprintf "0%d", to_native(65);
+ok(getComposite($lead_zero, "0768"), to_native(192));
+ok(isNFD_NO (sprintf("0%d", to_native(192))));
+ok(isNFKD_NO(sprintf("0%d", to_native(192))));
 
 # DEVANAGARI LETTER QA
 ok(isExclusion("02392"));
@@ -276,6 +316,8 @@ ok(getCanon("044032"),  _pack_U(0x1100, 0x1161));
 ok(getCompat("044032"), _pack_U(0x1100, 0x1161));
 ok(getComposite("04352", "04449"), 0xAC00);
 
+# 182
+
 # string with 22 combining characters: (0x300..0x315)
 my $str_cc22 = _pack_U(0x3041, 0x300..0x315, 0x3042);
 ok(decompose($str_cc22), $str_cc22);
@@ -289,6 +331,8 @@ ok(NFKC($str_cc22), $str_cc22);
 ok(FCD($str_cc22), $str_cc22);
 ok(FCC($str_cc22), $str_cc22);
 
+# 192
+
 # string with 40 combining characters of the same class: (0x300..0x313)x2
 my $str_cc40 = _pack_U(0x3041, 0x300..0x313, 0x300..0x313, 0x3042);
 ok(decompose($str_cc40), $str_cc40);
@@ -301,6 +345,8 @@ ok(NFKD($str_cc40), $str_cc40);
 ok(NFKC($str_cc40), $str_cc40);
 ok(FCD($str_cc40), $str_cc40);
 ok(FCC($str_cc40), $str_cc40);
+
+# 202
 
 my $precomp = hexU("304C 304E 3050 3052 3054");
 my $combseq = hexU("304B 3099 304D 3099 304F 3099 3051 3099 3053 3099");
@@ -319,4 +365,22 @@ ok(decompose($precomp . $notcomp),     $combseq . $notcomp);
 ok(decompose($precomp . $notcomp x 5), $combseq . $notcomp x 5);
 ok(decompose($precomp . $notcomp x10), $combseq . $notcomp x10);
 
+# 211
+
+my $preUnicode3_1 = !defined getCanon(0x1D15E);
+my $preUnicode3_2 = !defined getCanon(0x2ADC);
+
+# HEBREW LETTER YOD WITH HIRIQ
+ok($preUnicode3_1 xor isExclusion(0xFB1D));
+ok($preUnicode3_1 xor isComp_Ex  (0xFB1D));
+
+# MUSICAL SYMBOL HALF NOTE
+ok($preUnicode3_1 xor isExclusion(0x1D15E));
+ok($preUnicode3_1 xor isComp_Ex  (0x1D15E));
+
+# FORKING
+ok($preUnicode3_2 xor isExclusion(0x2ADC));
+ok($preUnicode3_2 xor isComp_Ex  (0x2ADC));
+
+# 217
 

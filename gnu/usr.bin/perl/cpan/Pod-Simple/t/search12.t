@@ -8,7 +8,7 @@ BEGIN {
 use strict;
 use Pod::Simple::Search;
 use Test;
-BEGIN { plan tests => 7 }
+BEGIN { plan tests => 11 }
 
 print "# ", __FILE__,
  ": Testing the surveying of the current directory...\n";
@@ -26,10 +26,7 @@ print "# CWD: $cwd\n";
 sub source_path {
     my $file = shift;
     if ($ENV{PERL_CORE}) {
-        require File::Spec;
-        my $updir = File::Spec->updir;
-        my $dir = File::Spec->catdir($updir, 'lib', 'Pod', 'Simple', 't');
-        return File::Spec->catdir ($dir, $file);
+        return "../lib/Pod/Simple/t/$file";
     } else {
         return $file;
     }
@@ -59,13 +56,24 @@ $p =~ s/, +/,\n/g;
 $p =~ s/^/#  /mg;
 print $p;
 
+my $ascii_order;
+if(     -e ($ascii_order = source_path('ascii_order.pl'))) {
+  #
+} elsif(-e ($ascii_order = File::Spec->catfile($cwd, 't', 'ascii_order.pl'))) {
+  #
+} else {
+  die "Can't find ascii_order.pl";
+}
+
+require $ascii_order;
+
 {
-my $names = join "|", sort values %$where2name;
+my $names = join "|", sort ascii_order values %$where2name;
 ok $names, "Blorm|Zonk::Pronk|hinkhonk::Glunk|hinkhonk::Vliff|perlflif|perlthng|squaa|squaa::Glunk|squaa::Vliff|zikzik";
 }
 
 {
-my $names = join "|", sort keys %$name2where;
+my $names = join "|", sort ascii_order keys %$name2where;
 ok $names, "Blorm|Zonk::Pronk|hinkhonk::Glunk|hinkhonk::Vliff|perlflif|perlthng|squaa|squaa::Glunk|squaa::Vliff|zikzik";
 }
 
@@ -73,7 +81,35 @@ ok( ($name2where->{'squaa'} || 'huh???'), '/squaa\.pm$/');
 
 ok grep( m/squaa\.pm/, keys %$where2name ), 1;
 
+###### Now with recurse(0)
+
+print "# Testing the surveying of a subdirectory with recursing off...\n";
+
+$x->recurse(0);
+($name2where, $where2name) = $x->survey(
+                             File::Spec->catdir($cwd, 't', 'testlib2'));
+
+$p = pretty( $where2name, $name2where )."\n";
+$p =~ s/, +/,\n/g;
+$p =~ s/^/#  /mg;
+print $p;
+
+{
+my $names = lc join "|", sort ascii_order values %$where2name;
+ok $names, "suzzle";
+}
+
+{
+my $names = lc join "|", sort ascii_order keys %$name2where;
+ok $names, "suzzle";
+}
+
+ok( ($name2where->{'Vliff'} || 'huh???'), 'huh???');
+
+ok grep( m/Vliff\.pm/, keys %$where2name ), 0;
+
 ok 1;
 
 __END__
+
 

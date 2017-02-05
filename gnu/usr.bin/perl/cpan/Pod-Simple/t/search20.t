@@ -8,7 +8,7 @@ BEGIN {
 use strict;
 use Pod::Simple::Search;
 use Test;
-BEGIN { plan tests => 7 }
+BEGIN { plan tests => 11 }
 
 print "# ", __FILE__,
  ": Testing the scanning of several (well, two) docroots...\n";
@@ -31,9 +31,7 @@ print "# CWD: $cwd\n";
 sub source_path {
     my $file = shift;
     if ($ENV{PERL_CORE}) {
-        my $updir = File::Spec->updir;
-        my $dir = File::Spec->catdir($updir, 'lib', 'Pod', 'Simple', 't');
-        return File::Spec->catdir ($dir, $file);
+        return "../lib/Pod/Simple/t/$file";
     } else {
         return $file;
     }
@@ -67,18 +65,60 @@ $p =~ s/, +/,\n/g;
 $p =~ s/^/#  /mg;
 print $p;
 
+my $ascii_order;
+if(     -e ($ascii_order = source_path('ascii_order.pl'))) {
+  #
+} elsif(-e ($ascii_order = File::Spec->catfile($cwd, 't', 'ascii_order.pl'))) {
+  #
+} else {
+  die "Can't find ascii_order.pl";
+}
+
+require $ascii_order;
+
 {
-my $names = join "|", sort values %$where2name;
+my $names = join "|", sort ascii_order values %$where2name;
 skip $^O eq 'VMS' ? '-- case may or may not be preserved' : 0, 
      $names, 
      "Blorm|Suzzle|Zonk::Pronk|hinkhonk::Glunk|hinkhonk::Vliff|perlflif|perlthng|perlzuk|squaa|squaa::Glunk|squaa::Vliff|squaa::Wowo|zikzik";
 }
 
 {
-my $names = join "|", sort keys %$name2where;
+my $names = join "|", sort ascii_order keys %$name2where;
 skip $^O eq 'VMS' ? '-- case may or may not be preserved' : 0, 
      $names, 
      "Blorm|Suzzle|Zonk::Pronk|hinkhonk::Glunk|hinkhonk::Vliff|perlflif|perlthng|perlzuk|squaa|squaa::Glunk|squaa::Vliff|squaa::Wowo|zikzik";
+}
+
+ok( ($name2where->{'squaa'} || 'huh???'), '/squaa\.pm$/');
+
+ok grep( m/squaa\.pm/, keys %$where2name ), 1;
+
+###### Now with recurse(0)
+
+$x->recurse(0);
+
+print "# OK, starting run without recurse...\n# [[\n";
+($name2where, $where2name) = $x->survey($here1, $here2);
+print "# ]]\n#OK, run without recurse done.\n";
+
+$p = pretty( $where2name, $name2where )."\n";
+$p =~ s/, +/,\n/g;
+$p =~ s/^/#  /mg;
+print $p;
+
+{
+my $names = join "|", sort ascii_order values %$where2name;
+skip $^O eq 'VMS' ? '-- case may or may not be preserved' : 0, 
+     $names, 
+     "Blorm|Suzzle|squaa|zikzik";
+}
+
+{
+my $names = join "|", sort ascii_order keys %$name2where;
+skip $^O eq 'VMS' ? '-- case may or may not be preserved' : 0, 
+     $names, 
+     "Blorm|Suzzle|squaa|zikzik";
 }
 
 ok( ($name2where->{'squaa'} || 'huh???'), '/squaa\.pm$/');

@@ -1,12 +1,5 @@
 use Test::More tests => 10;
 
-BEGIN {
-    if ($ENV{PERL_CORE}) {
-        chdir('t') if -d 't';
-        @INC = qw(../lib);
-    }
-}
-
 BEGIN { use_ok('NEXT') };
 my $order = 0;
 
@@ -40,5 +33,5 @@ my $foo = {};
 bless($foo,"A");
 
 eval{ $foo->test }
-	? fail("Didn't die on missing ancestor") 
+	? fail("Didn't die on missing ancestor")
 	: pass("Correctly dies after full traversal");

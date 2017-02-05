@@ -5,7 +5,7 @@ use 5.008;
 use strict;
 use warnings;
 
-our $VERSION = '1.86';
+our $VERSION = '2.07';
 my $XS_VERSION = $VERSION;
 $VERSION = eval $VERSION;
 
@@ -134,7 +134,17 @@ threads - Perl interpreter-based threads
 
 =head1 VERSION
 
-This document describes threads version 1.86
+This document describes threads version 2.07
+
+=head1 WARNING
+
+The "interpreter-based threads" provided by Perl are not the fast, lightweight
+system for multitasking that one might expect or hope for.  Threads are
+implemented in a way that make them easy to misuse.  Few people know how to
+use them correctly or will be able to provide help.
+
+The use of interpreter-based threads in perl is officially
+L<discouraged|perlpolicy/discouraged>.
 
 =head1 SYNOPSIS
 
@@ -356,7 +366,7 @@ key) will cause its ID to be used as the value:
     use threads qw(stringify);
 
     my $thr = threads->create(...);
-    print("Thread $thr started...\n");  # Prints out: Thread 1 started...
+    print("Thread $thr started\n");  # Prints: Thread 1 started
 
 =item threads->object($tid)
 
@@ -424,11 +434,12 @@ C<$@> associated with the thread's execution status in its C<eval> context.
 
 =item $thr->_handle()
 
-This I<private> method returns the memory location of the internal thread
-structure associated with a threads object.  For Win32, this is a pointer to
-the C<HANDLE> value returned by C<CreateThread> (i.e., C<HANDLE *>); for other
-platforms, it is a pointer to the C<pthread_t> structure used in the
-C<pthread_create> call (i.e., C<pthread_t *>).
+This I<private> method returns a pointer (i.e., the memory location expressed
+as an unsigned integer) to the internal thread structure associated with a
+threads object.  For Win32, this is a pointer to the C<HANDLE> value returned
+by C<CreateThread> (i.e., C<HANDLE *>); for other platforms, it is a pointer
+to the C<pthread_t> structure used in the C<pthread_create> call (i.e.,
+C<pthread_t *>).
 
 This method is of no use for general Perl threads programming.  Its intent is
 to provide other (XS-based) thread modules with the capability to access, and
@@ -680,7 +691,8 @@ threaded applications.
 To specify a particular stack size for any individual thread, call
 C<-E<gt>create()> with a hash reference as the first argument:
 
-    my $thr = threads->create({'stack_size' => 32*4096}, \&foo, @args);
+    my $thr = threads->create({'stack_size' => 32*4096},
+                              \&foo, @args);
 
 =item $thr2 = $thr1->create(FUNCTION, ARGS)
 
@@ -688,7 +700,8 @@ This creates a new thread (C<$thr2>) that inherits the stack size from an
 existing thread (C<$thr1>).  This is shorthand for the following:
 
     my $stack_size = $thr1->get_stack_size();
-    my $thr2 = threads->create({'stack_size' => $stack_size}, FUNCTION, ARGS);
+    my $thr2 = threads->create({'stack_size' => $stack_size},
+                               FUNCTION, ARGS);
 
 =back
 
@@ -785,7 +798,7 @@ current operation has completed.  For instance, if the thread is I<stuck> on
 an I/O call, sending it a signal will not cause the I/O call to be interrupted
 such that the signal is acted up immediately.
 
-Sending a signal to a terminated thread is ignored.
+Sending a signal to a terminated/finished thread is ignored.
 
 =head1 WARNINGS
 
@@ -841,7 +854,7 @@ C<useithreads> configuration option.
 Having threads support requires all of Perl and all of the XS modules in the
 Perl installation to be rebuilt; it is not just a question of adding the
 L<threads> module (i.e., threaded and non-threaded Perls are binary
-incompatible.)
+incompatible).
 
 =item Cannot change stack size of an existing thread
 
@@ -951,7 +964,7 @@ alarms in threads, set up a signal handler in the main thread, and then use
 L</"THREAD SIGNALLING"> to relay the signal to the thread:
 
   # Create thread with a task that may time out
-  my $thr->create(sub {
+  my $thr = threads->create(sub {
       threads->yield();
       eval {
           $SIG{ALRM} = sub { die("Timeout\n"); };
@@ -995,7 +1008,8 @@ signalling behavior is only in effect in the following situations:
 
 =item * Perl has been built with C<PERL_OLD_SIGNALS> (see C<perl -V>).
 
-=item * The environment variable C<PERL_SIGNALS> is set to C<unsafe> (see L<perlrun/"PERL_SIGNALS">).
+=item * The environment variable C<PERL_SIGNALS> is set to C<unsafe>
+(see L<perlrun/"PERL_SIGNALS">).
 
 =item * The module L<Perl::Unsafe::Signals> is used.
 
@@ -1006,7 +1020,7 @@ the C<-E<gt>kill()> signalling method cannot be used.
 
 =item Returning closures from threads
 
-Returning closures from threads should not be relied upon.  Depending of the
+Returning closures from threads should not be relied upon.  Depending on the
 Perl version and the application code, results may range from success, to
 (apparently harmless) warnings of leaked scalar, or all the way up to crashing
 of the Perl interpreter.

@@ -15,12 +15,52 @@ $::NO_ENDING = $::NO_ENDING = 1;
 if ( $^O eq "VMS" ) {
   skip_all( "- regen.pl needs porting." );
 }
+if ($^O eq 'dec_osf') {
+    skip_all("$^O cannot handle this test");
+}
+if ( $::IS_EBCDIC || $::IS_EBCDIC) {
+  skip_all( "- We don't regen on EBCDIC." );
+}
+use Config;
+if ( $Config{usecrosscompile} ) {
+  skip_all( "Not all files are available during cross-compilation" );
+}
 
-my $in_regen_pl = 22; # I can't see a clean way to calculate this automatically.
-my @files = qw(perly.act perly.h perly.tab keywords.c keywords.h uconfig.h);
-my @progs = qw(Porting/makemeta regen/regcharclass.pl regen/mk_PL_charclass.pl);
+my $tests = 26; # I can't see a clean way to calculate this automatically.
 
-plan (tests => $in_regen_pl + @files + @progs);
+my %skip = ("regen_perly.pl"    => [qw(perly.act perly.h perly.tab)],
+            "regen/keywords.pl" => [qw(keywords.c keywords.h)],
+            "regen/uconfig_h.h" => [qw(uconfig.h)],
+            "regen/mk_invlists.pl" => [qw(charclass_invlists.h)],
+            "regen/regcharclass.pl" => [qw(regcharclass.h)],
+           );
+
+my @files = map {@$_} sort values %skip;
+
+open my $fh, '<', 'regen.pl'
+    or die "Can't open regen.pl: $!";
+
+while (<$fh>) {
+    last if /^__END__/;
+}
+die "Can't find __END__ in regen.pl"
+    if eof $fh;
+
+foreach (qw(embed_lib.pl regen_lib.pl uconfig_h.pl
+            regcharclass_multi_char_folds.pl
+            charset_translations.pl
+            ),
+         map {chomp $_; $_} <$fh>) {
+    ++$skip{"regen/$_"};
+}
+
+close $fh
+    or die "Can't close regen.pl: $!";
+
+my @progs = grep {!$skip{$_}} <regen/*.pl>;
+push @progs, 'regen.pl', map {"Porting/makemeta $_"} qw(-j -y);
+
+plan (tests => $tests + @files + @progs);
 
 OUTER: foreach my $file (@files) {
     open my $fh, '<', $file or die "Can't open $file: $!";
@@ -37,6 +77,7 @@ OUTER: foreach my $file (@files) {
 	    fail("Bad line in $file: '$_'");
 	    next OUTER;
 	}
+
 	my $digest = digest($2);
 	note("$digest $2");
 	push @bad, $2 unless $digest eq $1;
@@ -44,6 +85,8 @@ OUTER: foreach my $file (@files) {
     is("@bad", '', "generated $file is up to date");
 }
 
-foreach (@progs, 'regen.pl') {
-  system "$^X $_ --tap";
+foreach (@progs) {
+    my $command = "$^X $_ --tap";
+    system $command
+        and die "Failed to run $command: $?";
 }

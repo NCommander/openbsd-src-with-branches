@@ -9,7 +9,7 @@
  *
  */
 
-
+#define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -101,9 +101,10 @@ static const char my_z_errmsg[][32] = {
 # define NO_WRITEABLE_DATA
 #endif
 
+/* Set TRACE_DEFAULT to a non-zero value to enable tracing */
 #define TRACE_DEFAULT 0
 
-#ifdef NO_WRITEABLE_DATA
+#if defined(NO_WRITEABLE_DATA) || TRACE_DEFAULT == 0
 #  define trace TRACE_DEFAULT
 #else
   static int trace = TRACE_DEFAULT ;
@@ -133,18 +134,7 @@ GetErrorString(error_no)
 int error_no ;
 #endif
 {
-    dTHX;
-    char * errstr ;
-  
-#if 0
-    if (error_no == BZ_ERRNO) {
-        errstr = Strerror(errno) ;
-    }
-    else
-#endif
-        errstr = (char*) my_z_errmsg[4 - error_no]; 
-
-    return errstr ;
+    return(char*) my_z_errmsg[4 - error_no]; 
 }
 
 static void
@@ -166,11 +156,11 @@ DispHex(ptr, length)
 
 static void
 #ifdef CAN_PROTOTYPE
-DispStream(di_stream * s, char * message)
+DispStream(di_stream * s, const char * message)
 #else
 DispStream(s, message)
     di_stream * s;
-    char * message;
+    const char * message;
 #endif
 {
 
@@ -281,9 +271,8 @@ char * string;
             croak("%s: buffer parameter is a reference to a reference", string) ;
     }
 
-    if (!SvOK(sv)) { 
-        sv = newSVpv("", 0);
-    }
+    if (!SvOK(sv))
+        sv = sv_2mortal(newSVpv("", 0));
 
     return sv ;
 }
@@ -299,6 +288,7 @@ char * string ;
 {
     dTHX;
     bool wipe = 0 ;
+    STRLEN na;
     
     SvGETMAGIC(sv);
     wipe = ! SvOK(sv) ;
@@ -326,10 +316,9 @@ char * string ;
     SvUPGRADE(sv, SVt_PV);
 
     if (wipe)
-        SvCUR_set(sv, 0);
-    
-    SvOOK_off(sv);
-    SvPOK_only(sv);
+        sv_setpv(sv, "") ;
+    else
+        (void)SvPVbyte_force(sv, na) ;
 
     return sv ;
 }
@@ -345,9 +334,6 @@ PROTOTYPES:	DISABLE
 INCLUDE: constants.xs
 
 BOOT:
-#ifndef NO_WRITEABLE_DATA
-  trace = TRACE_DEFAULT ;
-#endif
     /* Check this version of bzip2 is == 1 */
     if (BZ2_bzlibVersion()[0] != '1')
 	croak(COMPRESS_CLASS " needs bzip2 version 1.x, you have %s\n", BZ2_bzlibVersion()) ;
@@ -475,7 +461,7 @@ MODULE = Compress::Raw::Bzip2 PACKAGE = Compress::Raw::Bzip2
 void
 DispStream(s, message=NULL)
     Compress::Raw::Bzip2   s
-    char *  message
+    const char *  message
 
 DualType 
 bzdeflate (s, buf, output)
@@ -486,6 +472,7 @@ bzdeflate (s, buf, output)
     uInt	increment = NO_INIT
     int		RETVAL = 0;
     uInt   bufinc = NO_INIT
+    STRLEN   origlen = NO_INIT
   CODE:
     bufinc = s->bufsize;
 
@@ -497,8 +484,8 @@ bzdeflate (s, buf, output)
     if (DO_UTF8(buf) && !sv_utf8_downgrade(buf, 1))
          croak("Wide character in " COMPRESS_CLASS "::bzdeflate input parameter");
 #endif         
-    s->stream.next_in = (char*)SvPVbyte_nolen(buf) ;
-    s->stream.avail_in = SvCUR(buf) ;
+    s->stream.next_in = (char*)SvPV_nomg(buf, origlen) ;
+    s->stream.avail_in = origlen;
      
     /* and retrieve the output buffer */
     output = deRef_l(output, "deflate") ;
@@ -512,16 +499,16 @@ bzdeflate (s, buf, output)
         /* sv_setpvn(output, "", 0); */
     }
     cur_length =  SvCUR(output) ;
-    s->stream.next_out = (char*) SvPVbyte_nolen(output) + cur_length;
+    s->stream.next_out = (char*) SvPVX(output) + cur_length;
     increment =  SvLEN(output) -  cur_length;
     s->stream.avail_out =  increment;
     while (s->stream.avail_in != 0) {
 
         if (s->stream.avail_out == 0) {
 	    /* out of space in the output buffer so make it bigger */
-            Sv_Grow(output, SvLEN(output) + bufinc) ;
+            s->stream.next_out = Sv_Grow(output, SvLEN(output) + bufinc) ;
             cur_length += increment ;
-            s->stream.next_out = (char*) SvPVbyte_nolen(output) + cur_length ;
+            s->stream.next_out += cur_length ;
             increment = bufinc ;
             s->stream.avail_out = increment;
             bufinc *= 2 ;
@@ -533,7 +520,7 @@ bzdeflate (s, buf, output)
     }
 
     s->compressedBytes    += cur_length + increment - s->stream.avail_out ;
-    s->uncompressedBytes  += SvCUR(buf) - s->stream.avail_in  ;
+    s->uncompressedBytes  += origlen - s->stream.avail_in  ;
 
     s->last_error = RETVAL ;
     if (RETVAL == BZ_RUN_OK) {
@@ -576,16 +563,16 @@ bzclose(s, output)
         /* sv_setpvn(output, "", 0); */
     }
     cur_length =  SvCUR(output) ;
-    s->stream.next_out = (char*) SvPVbyte_nolen(output) + cur_length;
+    s->stream.next_out = (char*) SvPVX(output) + cur_length;
     increment =  SvLEN(output) -  cur_length;
     s->stream.avail_out =  increment;
 
     for (;;) {
         if (s->stream.avail_out == 0) {
 	    /* consumed all the available output, so extend it */
-            Sv_Grow(output, SvLEN(output) + bufinc) ;
+            s->stream.next_out = Sv_Grow(output, SvLEN(output) + bufinc) ;
             cur_length += increment ;
-            s->stream.next_out = (char*) SvPVbyte_nolen(output) + cur_length ;
+            s->stream.next_out += cur_length ;
             increment = bufinc ;
             s->stream.avail_out = increment;
             bufinc *= 2 ;
@@ -637,16 +624,16 @@ bzflush(s, output)
         /* sv_setpvn(output, "", 0); */
     }
     cur_length =  SvCUR(output) ;
-    s->stream.next_out = (char*) SvPVbyte_nolen(output) + cur_length;
+    s->stream.next_out = (char*) SvPVX(output) + cur_length;
     increment =  SvLEN(output) -  cur_length;
     s->stream.avail_out =  increment;
 
     for (;;) {
         if (s->stream.avail_out == 0) {
 	    /* consumed all the available output, so extend it */
-            Sv_Grow(output, SvLEN(output) + bufinc) ;
+            s->stream.next_out = Sv_Grow(output, SvLEN(output) + bufinc) ;
             cur_length += increment ;
-            s->stream.next_out = (char*) SvPVbyte_nolen(output) + cur_length ;
+            s->stream.next_out += cur_length ;
             increment = bufinc ;
             s->stream.avail_out = increment;
             bufinc *= 2 ;
@@ -714,7 +701,7 @@ MODULE = Compress::Raw::Bunzip2 PACKAGE = Compress::Raw::Bunzip2
 void
 DispStream(s, message=NULL)
     Compress::Raw::Bunzip2   s
-    char *  message
+    const char *  message
 
 DualType 
 bzinflate (s, buf, output)
@@ -724,8 +711,9 @@ bzinflate (s, buf, output)
     uInt	cur_length = 0;
     uInt	prefix_length = 0;
     uInt	increment = 0;
-    STRLEN  stmp   = NO_INIT
     uInt    bufinc = NO_INIT
+    STRLEN  na = NO_INIT ;
+    STRLEN    origlen = NO_INIT
   PREINIT:
 #ifdef UTF8_AVAILABLE    
     bool	out_utf8  = FALSE;
@@ -735,16 +723,19 @@ bzinflate (s, buf, output)
     /* If the buffer is a reference, dereference it */
     buf = deRef(buf, "bzinflate") ;
 
-    if (s->flags & FLAG_CONSUME_INPUT && SvREADONLY(buf))
-        croak(UNCOMPRESS_CLASS "::bzinflate input parameter cannot be read-only when ConsumeInput is specified");
+    if (s->flags & FLAG_CONSUME_INPUT) {
+        if (SvREADONLY(buf))
+            croak(UNCOMPRESS_CLASS "::bzinflate input parameter cannot be read-only when ConsumeInput is specified");
+        SvPV_force(buf, na);
+    }
 #ifdef UTF8_AVAILABLE    
     if (DO_UTF8(buf) && !sv_utf8_downgrade(buf, 1))
          croak("Wide character in " UNCOMPRESS_CLASS "::bzinflate input parameter");
 #endif         
     
     /* initialise the input buffer */
-    s->stream.next_in = (char*)SvPVbyte_force(buf, stmp) ;
-    s->stream.avail_in = SvCUR(buf);
+    s->stream.next_in = (char*)SvPV_nomg(buf, origlen) ;
+    s->stream.avail_in = origlen;
 	
     /* and retrieve the output buffer */
     output = deRef_l(output, "bzinflate") ;
@@ -774,7 +765,7 @@ bzinflate (s, buf, output)
         */
         if (SvLEN(output) > cur_length + 1)
         {
-            s->stream.next_out = (char*) SvPVbyte_nolen(output) + cur_length;
+            s->stream.next_out = (char*) SvPVX(output) + cur_length;
             increment = SvLEN(output) -  cur_length - 1;
             s->stream.avail_out = increment;
         }
@@ -788,9 +779,9 @@ bzinflate (s, buf, output)
 
         if (s->stream.avail_out == 0) {
 	    /* out of space in the output buffer so make it bigger */
-            Sv_Grow(output, SvLEN(output) + bufinc + 1) ;
+            s->stream.next_out = Sv_Grow(output, SvLEN(output) + bufinc + 1) ;
             cur_length += increment ;
-            s->stream.next_out = (char*) SvPVbyte_nolen(output) + cur_length ;
+            s->stream.next_out += cur_length ;
             increment = bufinc ;
             s->stream.avail_out = increment;
             bufinc *= 2 ;
@@ -799,7 +790,10 @@ bzinflate (s, buf, output)
         /* DispStream(s, "pre"); */
         RETVAL = BZ2_bzDecompress (&(s->stream));
 
-        /* DispStream(s, "apres"); */
+        /* 
+        printf("Status %d\n", RETVAL);
+        DispStream(s, "apres"); 
+        */ 
         if (RETVAL != BZ_OK || s->flags & FLAG_LIMIT_OUTPUT) 
             break ;
 
@@ -819,7 +813,7 @@ bzinflate (s, buf, output)
 
         s->bytesInflated = cur_length + increment - s->stream.avail_out - prefix_length;
         s->uncompressedBytes += s->bytesInflated ;
-        s->compressedBytes   += SvCUR(buf) - s->stream.avail_in  ;
+        s->compressedBytes   += origlen - s->stream.avail_in  ;
 
         SvPOK_only(output);
         SvCUR_set(output, prefix_length + s->bytesInflated) ;
@@ -835,7 +829,7 @@ bzinflate (s, buf, output)
 	    in = s->stream.avail_in ;
 	    SvCUR_set(buf, in) ;
 	    if (in)
-	        Move(s->stream.next_in, SvPVbyte_nolen(buf), in, char) ;	
+	        Move(s->stream.next_in, SvPVX(buf), in, char) ;	
             *SvEND(buf) = '\0';
             SvSETMAGIC(buf);
 	}

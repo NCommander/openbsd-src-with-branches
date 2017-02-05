@@ -1,7 +1,5 @@
 #!./perl
 
-use strict;
-use warnings;
 BEGIN {
     unless (-d 'blib') {
         chdir 't' if -d 't';
@@ -9,7 +7,12 @@ BEGIN {
     }
 }
 
+use strict;
+use warnings;
+
 require q(./test.pl); plan(tests => 1);
+
+require mro;
 
 =pod
 
@@ -44,4 +47,5 @@ except TypeError:
 }
 
 eval { mro::get_linear_isa('Z', 'c3') };
-like($@, qr/^Inconsistent /, '... got the right error with an inconsistent hierarchy');
+like($@, qr/^Inconsistent hierarchy during C3 merge of class 'Z'/,
+     '... got the right error with an inconsistent hierarchy');

@@ -13,6 +13,7 @@
 #define Perl_regprop            my_regprop
 #define Perl_re_intuit_start    my_re_intuit_start
 #define Perl_re_compile         my_re_compile
+#define Perl_re_op_compile      my_re_op_compile
 #define Perl_regfree_internal   my_regfree
 #define Perl_re_intuit_string   my_re_intuit_string
 #define Perl_regdupe_internal   my_regdupe
@@ -32,11 +33,5 @@
 #define PERL_NO_GET_CONTEXT
 
 /*
- * Local variables:
- * c-indentation-style: bsd
- * c-basic-offset: 4
- * indent-tabs-mode: t
- * End:
- *
- * ex: set ts=8 sts=4 sw=4 noet:
+ * ex: set ts=8 sts=4 sw=4 et:
  */

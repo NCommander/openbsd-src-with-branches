@@ -7,12 +7,12 @@ use Config;
 require Exporter;
 our @ISA = qw(Exporter);
 
-our $Is_VMS   = $^O eq 'VMS';
-our $Is_MacOS = $^O eq 'MacOS';
+our $Is_VMS     = $^O eq 'VMS';
+our $Is_MacOS   = $^O eq 'MacOS';
+our $Is_FreeBSD = $^O eq 'freebsd';
 
 our @EXPORT = qw(which_perl perl_lib makefile_name makefile_backup
                  make make_run run make_macro calibrate_mtime
-                 setup_mm_test_root
                  have_compiler slurp
                  $Is_VMS $Is_MacOS
                  run_ok
@@ -30,13 +30,26 @@ our @EXPORT = qw(which_perl perl_lib makefile_name makefile_backup
         HARNESS_VERBOSE
         PREFIX
         MAKEFLAGS
+        PERL_INSTALL_QUIET
     );
+
+    my %default_env_keys;
+
+    # Inform the BSDPAN hacks not to register modules installed for testing.
+    $default_env_keys{PORTOBJFORMAT} = 1 if $Is_FreeBSD;
+
+    # https://github.com/Perl-Toolchain-Gang/ExtUtils-MakeMaker/issues/65
+    $default_env_keys{ACTIVEPERL_CONFIG_SILENT} = 1;
 
     # Remember the ENV values because on VMS %ENV is global
     # to the user, not the process.
     my %restore_env_keys;
 
     sub clean_env {
+        for my $key (keys %default_env_keys) {
+            $ENV{$key} = $default_env_keys{$key} unless $ENV{$key};
+        }
+
         for my $key (@delete_env_keys) {
             if( exists $ENV{$key} ) {
                 $restore_env_keys{$key} = delete $ENV{$key};
@@ -85,7 +98,7 @@ MakeMaker::Test::Utils - Utility routines for testing MakeMaker
 
 =head1 DESCRIPTION
 
-A consolidation of little utility functions used through out the
+A consolidation of little utility functions used throughout the
 MakeMaker test suite.
 
 =head2 Functions
@@ -118,7 +131,7 @@ sub which_perl {
 
         # When building in the core, *don't* go off and find
         # another perl
-        die "Can't find a perl to use (\$^X=$^X), (\$perlpath=$perlpath)" 
+        die "Can't find a perl to use (\$^X=$^X), (\$perlpath=$perlpath)"
           if $ENV{PERL_CORE};
 
         foreach my $path (File::Spec->path) {
@@ -126,6 +139,7 @@ sub which_perl {
             last if -x $perlpath;
         }
     }
+    $perlpath = qq{"$perlpath"}; # "safe... in a command line" even with spaces
 
     return $perlpath;
 }
@@ -152,7 +166,7 @@ sub perl_lib {
     unshift @INC, $lib;
 }
 
-END { 
+END {
     if( $had5lib ) {
         $ENV{PERL5LIB} = $old5lib;
     }
@@ -173,7 +187,7 @@ should generate.
 
 sub makefile_name {
     return $Is_VMS ? 'Descrip.MMS' : 'Makefile';
-}   
+}
 
 =item B<makefile_backup>
 
@@ -201,7 +215,7 @@ sub make {
     my $make = $Config{make};
     $make = $ENV{MAKE} if exists $ENV{MAKE};
 
-    return $make;
+    return $Is_VMS ? $make : qq{"$make"};
 }
 
 =item B<make_run>
@@ -226,7 +240,7 @@ sub make_run {
 Returns the command necessary to run $make on the given $target using
 the given %macros.
 
-  my $make_test_verbose = make_macro(make_run(), 'test', 
+  my $make_test_verbose = make_macro(make_run(), 'test',
                                      TEST_VERBOSE => 1);
 
 This is important because VMS's make utilities have a completely
@@ -290,12 +304,9 @@ sub run {
 
     use ExtUtils::MM;
 
-    # Unix, modern Windows and OS/2 from 5.005_54 up can handle 2>&1 
+    # Unix, modern Windows and OS/2 from 5.005_54 up can handle 2>&1
     # This makes our failure diagnostics nicer to read.
-    if( MM->os_flavor_is('Unix')                                   or
-        (MM->os_flavor_is('Win32') and !MM->os_flavor_is('Win9x')) or
-        ($] > 5.00554 and MM->os_flavor_is('OS/2'))
-      ) {
+    if (MM->can_redirect_error) {
         return `$cmd 2>&1`;
     }
     else {
@@ -322,32 +333,6 @@ sub run_ok {
     $tb->cmp_ok( $?, '==', 0, "run(@_)" ) || $tb->diag(@out);
 
     return wantarray ? @out : join "", @out;
-}
-
-=item B<setup_mm_test_root>
-
-Creates a rooted logical to avoid the 8-level limit on older VMS systems.  
-No action taken on non-VMS systems.
-
-=cut
-
-sub setup_mm_test_root {
-    if( $Is_VMS ) {
-        # On older systems we might exceed the 8-level directory depth limit
-        # imposed by RMS.  We get around this with a rooted logical, but we
-        # can't create logical names with attributes in Perl, so we do it
-        # in a DCL subprocess and put it in the job table so the parent sees it.
-        open( MMTMP, '>mmtesttmp.com' ) || 
-          die "Error creating command file; $!";
-        print MMTMP <<'COMMAND';
-$ MM_TEST_ROOT = F$PARSE("SYS$DISK:[--]",,,,"NO_CONCEAL")-".][000000"-"]["-"].;"+".]"
-$ DEFINE/JOB/NOLOG/TRANSLATION=CONCEALED MM_TEST_ROOT 'MM_TEST_ROOT'
-COMMAND
-        close MMTMP;
-
-        system '@mmtesttmp.com';
-        1 while unlink 'mmtesttmp.com';
-    }
 }
 
 =item have_compiler

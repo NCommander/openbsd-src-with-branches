@@ -7,7 +7,7 @@ BEGIN {
 }
 
 use strict;
-plan(tests => 9);
+plan(tests => 41);
 
 
 # heredoc without newline (#65838)
@@ -69,17 +69,41 @@ HEREDOC
         "string terminator must start at newline"
     );
 
-    fresh_perl_like(
-        "print <<;\nno more newlines",
-        qr/find string terminator/,
-        { switches => ['-X'] },
-        "empty string terminator still needs a newline"
-    );
+    # Loop over various lengths to try to force at least one to cause a
+    # reallocation in S_scan_heredoc()
+    # Timing on a modern machine suggests that this loop executes in less than
+    # 0.1s, so it's a very small cost for the default build. The benefit is
+    # that building with ASAN will reveal the bug and any related regressions.
+    for (1..31) {
+        fresh_perl_like(
+            "print <<;\n" . "x" x $_,
+            qr/find string terminator/,
+            { switches => ['-X'] },
+            "empty string terminator still needs a newline (length $_)"
+        );
+    }
 
     fresh_perl_like(
         "print <<ThisTerminatorIsLongerThanTheData;\nno more newlines",
         qr/find string terminator/,
         {},
         "long terminator fails correctly"
+    );
+
+    # this would read freed memory
+    fresh_perl_like(
+        qq(0<<<<""0\n\n),
+        # valgrind and asan reports an error between these two lines
+        qr/^Number found where operator expected at - line 1, near "<<""0"\s+\(Missing operator/,
+        {},
+        "don't use an invalid oldoldbufptr"
+    );
+
+    # [perl #125540] this asserted or crashed
+    fresh_perl_like(
+	q(map d$#<<<<),
+	qr/Can't find string terminator "" anywhere before EOF at - line 1\./,
+	{},
+	"Don't assert parsing a here-doc if we hit EOF early"
     );
 }

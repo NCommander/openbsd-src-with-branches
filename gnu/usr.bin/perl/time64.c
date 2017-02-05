@@ -33,25 +33,28 @@ long' type can use localtime64_r() and gmtime64_r() which correctly
 converts the time even on 32-bit systems. Whether you have 64-bit time
 values will depend on the operating system.
 
-S_localtime64_r() is a 64-bit equivalent of localtime_r().
+Perl_localtime64_r() is a 64-bit equivalent of localtime_r().
 
-S_gmtime64_r() is a 64-bit equivalent of gmtime_r().
+Perl_gmtime64_r() is a 64-bit equivalent of gmtime_r().
 
 */
 
+#include "EXTERN.h"
+#define PERL_IN_TIME64_C
+#include "perl.h"
 #include "time64.h"
 
-static const int days_in_month[2][12] = {
+static const char days_in_month[2][12] = {
     {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
     {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
 };
 
-static const int julian_days_by_month[2][12] = {
+static const short julian_days_by_month[2][12] = {
     {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
     {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335},
 };
 
-static const int length_of_year[2] = { 365, 366 };
+static const short length_of_year[2] = { 365, 366 };
 
 /* Number of days in a 400 year Gregorian cycle */
 static const Year years_in_gregorian_cycle = 400;
@@ -59,7 +62,7 @@ static const int days_in_gregorian_cycle  = (365 * 400) + 100 - 4 + 1;
 
 /* 28 year calendar cycle between 2010 and 2037 */
 #define SOLAR_CYCLE_LENGTH 28
-static const int safe_years[SOLAR_CYCLE_LENGTH] = {
+static const short safe_years[SOLAR_CYCLE_LENGTH] = {
     2016, 2017, 2018, 2019,
     2020, 2021, 2022, 2023,
     2024, 2025, 2026, 2027,
@@ -67,16 +70,6 @@ static const int safe_years[SOLAR_CYCLE_LENGTH] = {
     2032, 2033, 2034, 2035,
     2036, 2037, 2010, 2011,
     2012, 2013, 2014, 2015
-};
-
-static const int dow_year_start[SOLAR_CYCLE_LENGTH] = {
-    5, 0, 1, 2,     /* 0       2016 - 2019 */
-    3, 5, 6, 0,     /* 4  */
-    1, 3, 4, 5,     /* 8  */
-    6, 1, 2, 3,     /* 12 */
-    4, 6, 0, 1,     /* 16 */
-    2, 4, 5, 6,     /* 20      2036, 2037, 2010, 2011 */
-    0, 2, 3, 4      /* 24      2012, 2013, 2014, 2015 */
 };
 
 /* Let's assume people are going to be looking for dates in the future.
@@ -88,6 +81,7 @@ static const int dow_year_start[SOLAR_CYCLE_LENGTH] = {
 #define CHEAT_YEARS 108
 
 #define IS_LEAP(n)	((!(((n) + 1900) % 400) || (!(((n) + 1900) % 4) && (((n) + 1900) % 100))) != 0)
+#undef WRAP /* some <termios.h> define this */
 #define WRAP(a,b,m)	((a) = ((a) <  0  ) ? ((b)--, (a) + (m)) : (a))
 
 #ifdef USE_SYSTEM_LOCALTIME
@@ -269,41 +263,40 @@ static int S_safe_year(Year year)
 
 
 static void S_copy_little_tm_to_big_TM(const struct tm *src, struct TM *dest) {
-    if( src == NULL ) {
-        memset(dest, 0, sizeof(*dest));
-    }
-    else {
-#       ifdef USE_TM64
-            dest->tm_sec        = src->tm_sec;
-            dest->tm_min        = src->tm_min;
-            dest->tm_hour       = src->tm_hour;
-            dest->tm_mday       = src->tm_mday;
-            dest->tm_mon        = src->tm_mon;
-            dest->tm_year       = (Year)src->tm_year;
-            dest->tm_wday       = src->tm_wday;
-            dest->tm_yday       = src->tm_yday;
-            dest->tm_isdst      = src->tm_isdst;
+    assert(src);
+    assert(dest);
+#ifdef USE_TM64
+    dest->tm_sec        = src->tm_sec;
+    dest->tm_min        = src->tm_min;
+    dest->tm_hour       = src->tm_hour;
+    dest->tm_mday       = src->tm_mday;
+    dest->tm_mon        = src->tm_mon;
+    dest->tm_year       = (Year)src->tm_year;
+    dest->tm_wday       = src->tm_wday;
+    dest->tm_yday       = src->tm_yday;
+    dest->tm_isdst      = src->tm_isdst;
 
-#           ifdef HAS_TM_TM_GMTOFF
-                dest->tm_gmtoff  = src->tm_gmtoff;
-#           endif
+#  ifdef HAS_TM_TM_GMTOFF
+    dest->tm_gmtoff     = src->tm_gmtoff;
+#  endif
 
-#           ifdef HAS_TM_TM_ZONE
-                dest->tm_zone  = src->tm_zone;
-#           endif
+#  ifdef HAS_TM_TM_ZONE
+    dest->tm_zone       = src->tm_zone;
+#  endif
 
-#       else
-            /* They're the same type */
-            memcpy(dest, src, sizeof(*dest));
-#       endif
-    }
+#else
+    /* They're the same type */
+    memcpy(dest, src, sizeof(*dest));
+#endif
 }
 
 
 #ifndef HAS_LOCALTIME_R
 /* Simulate localtime_r() to the best of our ability */
 static struct tm * S_localtime_r(const time_t *clock, struct tm *result) {
-    dTHX;    /* in case the following is defined as Perl_my_localtime(aTHX_ ...) */
+#ifdef __VMS
+    dTHX;    /* the following is defined as Perl_my_localtime(aTHX_ ...) */
+#endif
     const struct tm *static_result = localtime(clock);
 
     assert(result != NULL);
@@ -322,7 +315,9 @@ static struct tm * S_localtime_r(const time_t *clock, struct tm *result) {
 #ifndef HAS_GMTIME_R
 /* Simulate gmtime_r() to the best of our ability */
 static struct tm * S_gmtime_r(const time_t *clock, struct tm *result) {
-    dTHX;    /* in case the following is defined as Perl_my_gmtime(aTHX_ ...) */
+#ifdef __VMS
+    dTHX;    /* the following is defined as Perl_my_localtime(aTHX_ ...) */
+#endif
     const struct tm *static_result = gmtime(clock);
 
     assert(result != NULL);
@@ -338,7 +333,7 @@ static struct tm * S_gmtime_r(const time_t *clock, struct tm *result) {
 }
 #endif
 
-static struct TM *S_gmtime64_r (const Time64_T *in_time, struct TM *p)
+struct TM *Perl_gmtime64_r (const Time64_T *in_time, struct TM *p)
 {
     int v_tm_sec, v_tm_min, v_tm_hour, v_tm_mon, v_tm_wday;
     Time64_T v_tm_tday;
@@ -368,22 +363,22 @@ static struct TM *S_gmtime64_r (const Time64_T *in_time, struct TM *p)
     p->tm_isdst  = 0;
 
 #ifdef HAS_TM_TM_ZONE
-    p->tm_zone   = "UTC";
+    p->tm_zone   = (char *)"UTC";
 #endif
 
-    v_tm_sec  = (int)fmod(time, 60.0);
-    time      = time >= 0 ? floor(time / 60.0) : ceil(time / 60.0);
-    v_tm_min  = (int)fmod(time, 60.0);
-    time      = time >= 0 ? floor(time / 60.0) : ceil(time / 60.0);
-    v_tm_hour = (int)fmod(time, 24.0);
-    time      = time >= 0 ? floor(time / 24.0) : ceil(time / 24.0);
+    v_tm_sec  = (int)Perl_fmod(time, 60.0);
+    time      = time >= 0 ? Perl_floor(time / 60.0) : Perl_ceil(time / 60.0);
+    v_tm_min  = (int)Perl_fmod(time, 60.0);
+    time      = time >= 0 ? Perl_floor(time / 60.0) : Perl_ceil(time / 60.0);
+    v_tm_hour = (int)Perl_fmod(time, 24.0);
+    time      = time >= 0 ? Perl_floor(time / 24.0) : Perl_ceil(time / 24.0);
     v_tm_tday = time;
 
     WRAP (v_tm_sec, v_tm_min, 60);
     WRAP (v_tm_min, v_tm_hour, 60);
     WRAP (v_tm_hour, v_tm_tday, 24);
 
-    v_tm_wday = (int)fmod((v_tm_tday + 4.0), 7.0);
+    v_tm_wday = (int)Perl_fmod((v_tm_tday + 4.0), 7.0);
     if (v_tm_wday < 0)
         v_tm_wday += 7;
     m = v_tm_tday;
@@ -395,7 +390,7 @@ static struct TM *S_gmtime64_r (const Time64_T *in_time, struct TM *p)
 
     if (m >= 0) {
         /* Gregorian cycles, this is huge optimization for distant times */
-        cycles = (int)floor(m / (Time64_T) days_in_gregorian_cycle);
+        cycles = (int)Perl_floor(m / (Time64_T) days_in_gregorian_cycle);
         if( cycles ) {
             m -= (cycles * (Time64_T) days_in_gregorian_cycle);
             year += (cycles * years_in_gregorian_cycle);
@@ -419,7 +414,7 @@ static struct TM *S_gmtime64_r (const Time64_T *in_time, struct TM *p)
         year--;
 
         /* Gregorian cycles */
-        cycles = (int)ceil((m / (Time64_T) days_in_gregorian_cycle) + 1);
+        cycles = (int)Perl_ceil((m / (Time64_T) days_in_gregorian_cycle) + 1);
         if( cycles ) {
             m -= (cycles * (Time64_T) days_in_gregorian_cycle);
             year += (cycles * years_in_gregorian_cycle);
@@ -465,7 +460,7 @@ static struct TM *S_gmtime64_r (const Time64_T *in_time, struct TM *p)
 }
 
 
-static struct TM *S_localtime64_r (const Time64_T *time, struct TM *local_tm)
+struct TM *Perl_localtime64_r (const Time64_T *time, struct TM *local_tm)
 {
     time_t safe_time;
     struct tm safe_date;
@@ -489,7 +484,7 @@ static struct TM *S_localtime64_r (const Time64_T *time, struct TM *local_tm)
         return local_tm;
     }
 
-    if( S_gmtime64_r(time, &gm_tm) == NULL ) {
+    if( Perl_gmtime64_r(time, &gm_tm) == NULL ) {
         TIME64_TRACE1("gmtime64_r returned null for %lld\n", *time);
         return NULL;
     }
@@ -543,7 +538,7 @@ static struct TM *S_localtime64_r (const Time64_T *time, struct TM *local_tm)
     /* GMT is Jan 1st, xx01 year, but localtime is still Dec 31st
        in a non-leap xx00.  There is one point in the cycle
        we can't account for which the safe xx00 year is a leap
-       year.  So we need to correct for Dec 31st comming out as
+       year.  So we need to correct for Dec 31st coming out as
        the 366th day of the year.
     */
     if( !IS_LEAP(local_tm->tm_year) && local_tm->tm_yday == 365 )

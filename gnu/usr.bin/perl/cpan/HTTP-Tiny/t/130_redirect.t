@@ -12,7 +12,7 @@ use t::Util qw[tmpfile rewind slurp monkey_patch dir_list parse_case
 use HTTP::Tiny;
 BEGIN { monkey_patch() }
 
-for my $file ( dir_list("t/cases", qr/^redirect/ ) ) {
+for my $file ( dir_list("corpus", qr/^redirect/ ) ) {
   my $label = basename($file);
   my $data = do { local (@ARGV,$/) = $file; <> };
   my ($params, @case_pairs) = split /--+\n/, $data;
@@ -47,7 +47,7 @@ for my $file ( dir_list("t/cases", qr/^redirect/ ) ) {
   clear_socket_source();
   set_socket_source(@$_) for @socket_pairs;
 
-  my $http = HTTP::Tiny->new(%new_args);
+  my $http = HTTP::Tiny->new(keep_alive => 0, %new_args);
   my $response  = $http->request(@$call_args);
 
   my $calls = 0
@@ -65,6 +65,11 @@ for my $file ( dir_list("t/cases", qr/^redirect/ ) ) {
                   ? join("$CRLF", @{$case->{expected}}) : '';
 
   is ( $response->{content}, $exp_content, "$label content" );
+
+  if ( $case->{expected_url} ) {
+    is ( $response->{url}, $case->{expected_url}[0], "$label response URL" );
+  }
+
 }
 
 done_testing;

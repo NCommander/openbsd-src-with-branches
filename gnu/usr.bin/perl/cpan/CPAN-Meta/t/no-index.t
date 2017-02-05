@@ -10,9 +10,9 @@ my %distmeta = (
   name     => 'Module-Billed',
   abstract => 'inscrutable',
   version  => '1',
-  author   => 'Joe',
+  author   => [ 'Joe' ],
   release_status => 'stable',
-  license  => 'perl_5',
+  license  => [ 'perl_5' ],
   'meta-spec' => {
     version => '2',
     url     => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec',
@@ -86,3 +86,4 @@ my %distmeta = (
 }
 
 done_testing;
+# vim: ts=2 sts=2 sw=2 et :

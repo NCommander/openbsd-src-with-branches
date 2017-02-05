@@ -5,16 +5,19 @@ BEGIN {
 }
 
 use strict;
+use warnings;
 
 use Test::More;
 use File::Spec;
 
 use App::Prove;
+use Getopt::Long;
+
+use Text::ParseWords qw(shellwords);
 
 package FakeProve;
-use vars qw( @ISA );
 
-@ISA = qw( App::Prove );
+use base qw( App::Prove );
 
 sub new {
     my $class = shift;
@@ -69,15 +72,17 @@ sub mabs {
     }
 }
 
-my ( @ATTR, %DEFAULT_ASSERTION, @SCHEDULE );
+my ( @ATTR, %DEFAULT_ASSERTION, @SCHEDULE, $HAS_YAML );
 
 # see the "ACTUAL TEST" section at the bottom
 
 BEGIN {    # START PLAN
+    $HAS_YAML = 0;
+    eval { require YAML; $HAS_YAML = 1; };
 
     # list of attributes
     @ATTR = qw(
-      archive argv blib color directives exec extension failures
+      archive argv blib color directives exec extensions failures
       formatter harness includes lib merge parse quiet really_quiet
       recurse backwards shuffle taint_fail taint_warn verbose
       warnings_fail warnings_warn
@@ -169,7 +174,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -188,7 +192,6 @@ BEGIN {    # START PLAN
         #     runlog => [
         #         [   {   archive => 1,
         #             },
-        #             'TAP::Harness',
         #             'one', 'two',
         #             'three'
         #         ]
@@ -204,7 +207,6 @@ BEGIN {    # START PLAN
             runlog => [
                 [   '_runtests',
                     { verbosity => 0, show_count => 1 },
-                    'TAP::Harness',
                     'one', 'two',
                     'three'
                 ]
@@ -224,7 +226,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -244,7 +245,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -264,7 +264,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -283,7 +282,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -302,7 +300,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -322,7 +319,6 @@ BEGIN {    # START PLAN
                         verbosity       => 0,
                         show_count      => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -342,7 +338,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -361,7 +356,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -380,7 +374,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -399,7 +392,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -417,7 +409,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => -1,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -435,7 +426,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => -2,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -453,7 +443,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -471,7 +460,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'three', 'two', 'one'
                 ]
             ],
@@ -490,7 +478,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'xxxone', 'xxxtwo',
                     'xxxthree'
                 ]
@@ -510,7 +497,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -529,7 +515,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -547,7 +532,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 1,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -566,7 +550,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -585,7 +568,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     'one', 'two', 'three'
                 ]
             ],
@@ -605,7 +587,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 1,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -624,7 +605,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 1,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -642,7 +622,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -660,7 +639,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -678,7 +656,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -696,7 +673,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -714,7 +690,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -732,7 +707,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -749,7 +723,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     "xxx$dummy_test"
                 ]
             ],
@@ -766,7 +739,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     "xxx$dummy_test"
                 ]
             ],
@@ -784,7 +756,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -801,7 +772,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -818,7 +788,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -835,7 +804,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     reverse @dummy_tests
                 ]
             ],
@@ -855,7 +823,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -875,7 +842,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -892,7 +858,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => -1,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -909,7 +874,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => -1,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -926,7 +890,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => -2,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -943,7 +906,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => -2,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -961,7 +923,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -979,7 +940,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -997,7 +957,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -1017,7 +976,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -1036,7 +994,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -1055,7 +1012,6 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -1074,7 +1030,101 @@ BEGIN {    # START PLAN
                         verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
+                    $dummy_test
+                ]
+            ],
+        },
+
+        # Specify an oddball extension
+        {   name     => 'Switch --ext=.wango',
+            switches => ['--ext=.wango'],
+            expect   => { extensions => ['.wango'] },
+            runlog   => [
+                [   '_runtests',
+                    {   verbosity  => 0,
+                        show_count => 1,
+                    },
+                ]
+            ],
+        },
+
+        # Handle multiple extensions
+        {   name     => 'Switch --ext=.foo --ext=.bar',
+            switches => [ '--ext=.foo', '--ext=.bar', ],
+            expect   => { extensions => [ '.foo', '.bar' ] },
+            runlog   => [
+                [   '_runtests',
+                    {   verbosity  => 0,
+                        show_count => 1,
+                    },
+                ]
+            ],
+        },
+
+        # Source handlers
+        {   name     => 'Switch --source simple',
+            args     => { argv => [qw( one two three )] },
+            switches => [ '--source', 'MyCustom', $dummy_test ],
+            expect   => {
+                sources => {
+                    MyCustom => {},
+                },
+            },
+            runlog => [
+                [   '_runtests',
+                    {   sources => {
+                            MyCustom => {},
+                        },
+                        verbosity  => 0,
+                        show_count => 1,
+                    },
+                    $dummy_test
+                ]
+            ],
+        },
+
+        {   name => 'Switch --sources with config',
+            args => { argv => [qw( one two three )] },
+            skip => $Getopt::Long::VERSION >= 2.28 && $HAS_YAML ? 0 : 1,
+            skip_reason => "YAML not available or Getopt::Long too old",
+            switches    => [
+                '--source',      'Perl',
+                '--perl-option', 'foo=bar baz',
+                '--perl-option', 'avg=0.278',
+                '--source',      'MyCustom',
+                '--source',      'File',
+                '--file-option', 'extensions=.txt',
+                '--file-option', 'extensions=.tmp',
+                '--file-option', 'hash=this=that',
+                '--file-option', 'hash=foo=bar',
+                '--file-option', 'sep=foo\\=bar',
+                $dummy_test
+            ],
+            expect => {
+                sources => {
+                    Perl     => { foo => 'bar baz', avg => 0.278 },
+                    MyCustom => {},
+                    File     => {
+                        extensions => [ '.txt', '.tmp' ],
+                        hash => { this => 'that', foo => 'bar' },
+                        sep  => 'foo=bar',
+                    },
+                },
+            },
+            runlog => [
+                [   '_runtests',
+                    {   sources => {
+                            Perl     => { foo => 'bar baz', avg => 0.278 },
+                            MyCustom => {},
+                            File     => {
+                                extensions => [ '.txt', '.tmp' ],
+                                hash => { this => 'that', foo => 'bar' },
+                                sep  => 'foo=bar',
+                            },
+                        },
+                        verbosity  => 0,
+                        show_count => 1,
+                    },
                     $dummy_test
                 ]
             ],
@@ -1100,7 +1150,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -1129,7 +1178,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -1154,7 +1202,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -1195,7 +1242,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -1220,7 +1266,6 @@ BEGIN {    # START PLAN
                     {   verbosity  => 0,
                         show_count => 1,
                     },
-                    'TAP::Harness',
                     $dummy_test
                 ]
             ],
@@ -1237,7 +1282,6 @@ BEGIN {    # START PLAN
         #     runlog   => [
         #         [   '_runtests',
         #             {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1251,7 +1295,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1264,7 +1307,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1278,7 +1320,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1292,7 +1333,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1306,7 +1346,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1320,7 +1359,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1334,7 +1372,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1364,7 +1401,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1378,7 +1414,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1392,7 +1427,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1406,7 +1440,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1420,7 +1453,6 @@ BEGIN {    # START PLAN
         #     expect   => {},
         #     runlog   => [
         #         [   {},
-        #             'TAP::Harness',
         #             $dummy_test
         #         ]
         #     ],
@@ -1433,9 +1465,12 @@ BEGIN {    # START PLAN
 
     my $extra_plan = 0;
     for my $test (@SCHEDULE) {
-        $extra_plan += $test->{plan} || 0;
-        $extra_plan += 2 if $test->{runlog};
-        $extra_plan += 1 if $test->{switches};
+        my $plan = 0;
+        $plan += $test->{plan} || 0;
+        $plan += 2 if $test->{runlog};
+        $plan += 1 if $test->{switches};
+        $test->{_planned} = $plan + 3 + @ATTR;
+        $extra_plan += $plan;
     }
 
     plan tests => @SCHEDULE * ( 3 + @ATTR ) + $extra_plan;
@@ -1446,80 +1481,94 @@ for my $test (@SCHEDULE) {
     my $name = $test->{name};
     my $class = $test->{class} || 'FakeProve';
 
-    local $ENV{HARNESS_TIMER};
+    SKIP:
+    {
+        skip $test->{skip_reason}, $test->{_planned} if $test->{skip};
 
-    ok my $app = $class->new( exists $test->{args} ? $test->{args} : () ),
-      "$name: App::Prove created OK";
+        local $ENV{HARNESS_TIMER};
 
-    isa_ok $app, 'App::Prove';
-    isa_ok $app, $class;
+        ok my $app = $class->new( exists $test->{args} ? $test->{args} : () ),
+          "$name: App::Prove created OK";
 
-    # Optionally parse command args
-    if ( my $switches = $test->{switches} ) {
-        if ( my $proverc = $test->{proverc} ) {
-            $app->add_rc_file( File::Spec->catfile( split /\//, $proverc ) );
-        }
-        eval { $app->process_args( '--norc', @$switches ) };
-        if ( my $err_pattern = $test->{parse_error} ) {
-            like $@, $err_pattern, "$name: expected parse error";
-        }
-        else {
-            ok !$@, "$name: no parse error";
-        }
-    }
+        isa_ok $app, 'App::Prove';
+        isa_ok $app, $class;
 
-    my $expect = $test->{expect} || {};
-    for my $attr ( sort @ATTR ) {
-        my $val = $app->$attr();
-        my $assertion
-          = exists $expect->{$attr}
-          ? $expect->{$attr}
-          : $DEFAULT_ASSERTION{$attr};
-        my $is_ok = undef;
-
-        if ( 'CODE' eq ref $assertion ) {
-            $is_ok = ok $assertion->( $val, $attr ),
-              "$name: $attr has the expected value";
-        }
-        elsif ( 'Regexp' eq ref $assertion ) {
-            $is_ok = like $val, $assertion, "$name: $attr matches $assertion";
-        }
-        else {
-            $is_ok = is_deeply $val, $assertion,
-              "$name: $attr has the expected value";
-        }
-
-        unless ($is_ok) {
-            diag "got $val for $attr";
-        }
-    }
-
-    if ( my $runlog = $test->{runlog} ) {
-        eval { $app->run };
-        if ( my $err_pattern = $test->{run_error} ) {
-            like $@, $err_pattern, "$name: expected error OK";
-            pass;
-            pass for 1 .. $test->{plan};
-        }
-        else {
-            unless ( ok !$@, "$name: no error OK" ) {
-                diag "$name: error: $@\n";
+        # Optionally parse command args
+        if ( my $switches = $test->{switches} ) {
+            if ( my $proverc = $test->{proverc} ) {
+                $app->add_rc_file(
+                    File::Spec->catfile( split /\//, $proverc ) );
             }
-
-            my $gotlog = [ $app->get_log ];
-
-            if ( my $extra = $test->{extra} ) {
-                $extra->($gotlog);
+            eval { $app->process_args( '--norc', @$switches ) };
+            if ( my $err_pattern = $test->{parse_error} ) {
+                like $@, $err_pattern, "$name: expected parse error";
             }
-
-            unless (
-                is_deeply $gotlog, $runlog,
-                "$name: run results match"
-              )
-            {
-                use Data::Dumper;
-                diag Dumper( { wanted => $runlog, got => $gotlog } );
+            else {
+                ok !$@, "$name: no parse error";
             }
         }
-    }
+
+        my $expect = $test->{expect} || {};
+        for my $attr ( sort @ATTR ) {
+            my $val = $app->$attr();
+            my $assertion
+              = exists $expect->{$attr}
+              ? $expect->{$attr}
+              : $DEFAULT_ASSERTION{$attr};
+            my $is_ok = undef;
+
+            if ( 'CODE' eq ref $assertion ) {
+                $is_ok = ok $assertion->( $val, $attr ),
+                  "$name: $attr has the expected value";
+            }
+            elsif ( 'Regexp' eq ref $assertion ) {
+                $is_ok = like $val, $assertion,
+                  "$name: $attr matches $assertion";
+            }
+            else {
+                $is_ok = is_deeply $val, $assertion,
+                  "$name: $attr has the expected value";
+            }
+
+            unless ($is_ok) {
+                diag "got $val for $attr";
+            }
+        }
+
+        if ( my $runlog = $test->{runlog} ) {
+            eval { $app->run };
+            if ( my $err_pattern = $test->{run_error} ) {
+                like $@, $err_pattern, "$name: expected error OK";
+                pass;
+                pass for 1 .. $test->{plan};
+            }
+            else {
+                unless ( ok !$@, "$name: no error OK" ) {
+                    diag "$name: error: $@\n";
+                }
+
+                my $gotlog = [ $app->get_log ];
+
+                if ( my $extra = $test->{extra} ) {
+                    $extra->($gotlog);
+                }
+
+                # adapt our expectations if HARNESS_PERL_SWITCHES is set
+                push @{ $runlog->[0][1]{switches} },
+                  shellwords( $ENV{HARNESS_PERL_SWITCHES} )
+                  if $ENV{HARNESS_PERL_SWITCHES};
+
+                unless (
+                    is_deeply $gotlog, $runlog,
+                    "$name: run results match"
+                  )
+                {
+                    use Data::Dumper;
+                    diag Dumper( { wanted => $runlog, got => $gotlog } );
+                }
+            }
+        }
+
+    }    # SKIP
 }
+

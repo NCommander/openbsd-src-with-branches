@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use Benchmark;
+chdir 't' if -d 't';
 require './test.pl';
 plan(tests => 6);
 
@@ -81,10 +82,3 @@ about_as_fast_ok( $res, 'lex_scalar_big', 'scalar_big',"Checking the count of ha
 about_as_fast_ok( $res, 'lex_big', 'big', "Checking the list of hash keys in an empty hash, global vs. lexical");
 
 __END__
-
-# code written
-    /* quick bailout if the hash is empty anyway.
-       I don't know if placeholders are included in the KEYS count, so a defensive check
-    */
-    if (! HvKEYS(hv) && !(flags & HV_ITERNEXT_WANTPLACEHOLDERS) )
-        return NULL;

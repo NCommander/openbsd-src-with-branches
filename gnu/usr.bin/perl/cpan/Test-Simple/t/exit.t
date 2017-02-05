@@ -30,8 +30,9 @@ if( $^O eq 'VMS' ) {
     # Quiet noisy 'SYS$ABORT'
     $Perl .= q{ -"I../lib"} if $ENV{PERL_CORE};
     $Perl .= q{ -"Mvmsish=hushed"};
+} else {
+    $Perl = qq("$Perl"); # protect from shell if spaces
 }
-
 
 eval { require POSIX; &POSIX::WEXITSTATUS(0) };
 if( $@ ) {
@@ -87,6 +88,8 @@ my %Tests = (
              'require.plx'              => 0,
              'death_with_handler.plx'   => 255,
              'exit.plx'                 => 1,
+             'one_fail_without_plan.plx'    => 1,
+             'missing_done_testing.plx'     => 254,
             );
 
 chdir 't';

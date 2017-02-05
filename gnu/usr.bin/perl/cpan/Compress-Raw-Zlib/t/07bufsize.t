@@ -15,6 +15,11 @@ use CompTestUtils;
 
 BEGIN 
 { 
+    plan skip_all => "Lengthy Tests Disabled\n" .
+                     "set COMPRESS_ZLIB_RUN_ALL or COMPRESS_ZLIB_RUN_MOST to run this test suite"
+        unless defined $ENV{COMPRESS_ZLIB_RUN_ALL} or defined $ENV{COMPRESS_ZLIB_RUN_MOST};
+
+    
     # use Test::NoWarnings, if available
     my $extra = 0 ;
     $extra = 1
@@ -34,7 +39,12 @@ EOM
 my $len   = length $hello ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
-is Compress::Raw::Zlib::zlib_version, ZLIB_VERSION ;
+SKIP: {
+    skip "TEST_SKIP_VERSION_CHECK is set", 1 
+        if $ENV{TEST_SKIP_VERSION_CHECK};
+    is Compress::Raw::Zlib::zlib_version, ZLIB_VERSION,
+        "ZLIB_VERSION matches Compress::Raw::Zlib::zlib_version" ;
+}
 
 
 for my $i (1 .. 13)

@@ -1,13 +1,5 @@
 # Pod::Text::Overstrike -- Convert POD data to formatted overstrike text
 #
-# Created by Joe Smith <Joe.Smith@inwap.com> 30-Nov-2000
-#   (based on Pod::Text::Color by Russ Allbery <rra@stanford.edu>)
-# Copyright 2000 Joe Smith <Joe.Smith@inwap.com>.
-# Copyright 2001, 2004, 2008 Russ Allbery <rra@stanford.edu>.
-#
-# This program is free software; you may redistribute it and/or modify it
-# under the same terms as Perl itself.
-#
 # This was written because the output from:
 #
 #     pod2text Text.pm > plain.txt; less plain.txt
@@ -18,6 +10,14 @@
 #
 # and because both Pod::Text::Color and Pod::Text::Termcap are not device
 # independent.
+#
+# Created by Joe Smith <Joe.Smith@inwap.com> 30-Nov-2000
+#   (based on Pod::Text::Color by Russ Allbery <rra@cpan.org>)
+# Copyright 2000 Joe Smith <Joe.Smith@inwap.com>.
+# Copyright 2001, 2004, 2008, 2014 Russ Allbery <rra@cpan.org>.
+#
+# This program is free software; you may redistribute it and/or modify it
+# under the same terms as Perl itself.
 
 ##############################################################################
 # Modules and declarations
@@ -25,16 +25,17 @@
 
 package Pod::Text::Overstrike;
 
-require 5.004;
+use 5.006;
+use strict;
+use warnings;
+
+use vars qw(@ISA $VERSION);
 
 use Pod::Text ();
 
-use strict;
-use vars qw(@ISA $VERSION);
-
 @ISA = qw(Pod::Text);
 
-$VERSION = '2.04';
+$VERSION = '4.07';
 
 ##############################################################################
 # Overrides
@@ -195,12 +196,12 @@ Perl core distribution as of 5.6.0.
 =head1 AUTHOR
 
 Joe Smith <Joe.Smith@inwap.com>, using the framework created by Russ Allbery
-<rra@stanford.edu>.
+<rra@cpan.org>.
 
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2000 by Joe Smith <Joe.Smith@inwap.com>.
-Copyright 2001, 2004, 2008 by Russ Allbery <rra@stanford.edu>.
+Copyright 2001, 2004, 2008 by Russ Allbery <rra@cpan.org>.
 
 This program is free software; you may redistribute it and/or modify it
 under the same terms as Perl itself.

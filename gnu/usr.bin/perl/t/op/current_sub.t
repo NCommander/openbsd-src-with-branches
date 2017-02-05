@@ -1,10 +1,10 @@
 #!./perl
 
 BEGIN {
-    chdir 't';
+    chdir 't' if -d 't';
     @INC = qw(../lib);
     require './test.pl';
-    plan (tests => 13);
+    plan (tests => 22);
 }
 
 is __SUB__, "__SUB__", '__SUB__ is a bareword outside of use feature';
@@ -45,3 +45,52 @@ BEGIN {
     return "begin 2" if @_;
     is &CORE::__SUB__->(0), "begin 2", 'in BEGIN block via & (unoptimised)'
 }
+
+sub bar;
+sub bar {
+    () = sort {
+          is  CORE::__SUB__, \&bar,   'in sort block in sub with forw decl'
+         } 1,2;
+}
+bar();
+sub bur;
+sub bur {
+    () = sort {
+          is &CORE::__SUB__, \&bur, '& in sort block in sub with forw decl'
+         } 1,2;
+}
+bur();
+
+sub squog;
+sub squog {
+    grep { is  CORE::__SUB__, \&squog,
+          'in grep block in sub with forw decl'
+    } 1;
+}
+squog();
+sub squag;
+sub squag {
+    grep { is &CORE::__SUB__, \&squag,
+          '& in grep block in sub with forw decl'
+    } 1;
+}
+squag();
+
+sub f () { __SUB__ }
+is f, \&f, 'sub named () { __SUB__ } returns self ref';
+my $f = sub () { __SUB__ };
+is &$f, $f, 'anonymous sub(){__SUB__} returns self ref';
+my $f2 = sub () { $f++ if 0; __SUB__ };
+is &$f2, $f2, 'sub(){__SUB__} anonymous closure returns self ref';
+$f = sub () { eval ""; __SUB__ };
+is &$f, $f, 'anonymous sub(){eval ""; __SUB__} returns self ref';
+{
+    local $ENV{PERL5DB} = 'sub DB::DB {}';
+    is runperl(
+        switches => [ '-d' ],
+        prog => '$f = sub(){CORE::__SUB__}; print qq-ok\n- if $f == &$f;',
+       ),
+      "ok\n",
+      'sub(){__SUB__} under -d';
+}
+
