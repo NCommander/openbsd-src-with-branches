@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xnf.c,v 1.47 2017/01/22 10:17:39 dlg Exp $	*/
+/*	$OpenBSD: if_xnf.c,v 1.48 2017/01/24 03:57:35 dlg Exp $	*/
 
 /*
  * Copyright (c) 2015, 2016 Mike Belopuhov
@@ -53,6 +53,13 @@
 #include <net/bpf.h>
 #endif
 
+/* #define XNF_DEBUG */
+
+#ifdef XNF_DEBUG
+#define DPRINTF(x...)		printf(x)
+#else
+#define DPRINTF(x...)
+#endif
 
 /*
  * Rx ring
