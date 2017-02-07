@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.h,v 1.67 2015/12/10 21:00:51 naddy Exp $	*/
+/*	$OpenBSD: cryptodev.h,v 1.68 2016/04/18 21:05:55 kettenis Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -181,7 +181,7 @@ struct cryptop {
 	void 		*crp_opaque;	/* Opaque pointer, passed along */
 	struct cryptodesc *crp_desc;	/* Linked list of processing descriptors */
 
-	int (*crp_callback)(struct cryptop *); /* Callback function */
+	void (*crp_callback)(struct cryptop *); /* Callback function */
 
 	caddr_t		crp_mac;
 };
