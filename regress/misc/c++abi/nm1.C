@@ -1,6 +1,7 @@
-/* $OpenBSD$ */
+/* $OpenBSD: nm1.C,v 1.1 2013/07/06 23:06:36 espie Exp $ */
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #define D(T)	void witness_##T(T) {}
 
