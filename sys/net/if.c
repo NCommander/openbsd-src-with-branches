@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.484 2017/02/01 01:25:19 jsg Exp $	*/
+/*	$OpenBSD: if.c,v 1.485 2017/02/01 02:02:01 jsg Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -2029,7 +2029,10 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 	case SIOCGIFPARENT:
 		if (ifp->if_ioctl == 0)
 			return (EOPNOTSUPP);
+		/* XXXSMP breaks atomicity */
+		rw_exit_write(&netlock);
 		error = (*ifp->if_ioctl)(ifp, cmd, data);
+		rw_enter_write(&netlock);
 		break;
 
 	case SIOCGIFDESCR:
