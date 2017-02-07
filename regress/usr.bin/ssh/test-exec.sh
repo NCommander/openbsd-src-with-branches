@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.57 2016/11/25 03:02:01 dtucker Exp $
+#	$OpenBSD: test-exec.sh,v 1.58 2016/12/16 01:06:27 dtucker Exp $
 #	Placed in the Public Domain.
 
 USER=`id -un`
@@ -303,12 +303,10 @@ Host *
 	User			$USER
 	GlobalKnownHostsFile	$OBJ/known_hosts
 	UserKnownHostsFile	$OBJ/known_hosts
-	RSAAuthentication	yes
 	PubkeyAuthentication	yes
 	ChallengeResponseAuthentication	no
 	HostbasedAuthentication	no
 	PasswordAuthentication	no
-	RhostsRSAAuthentication	no
 	BatchMode		yes
 	StrictHostKeyChecking	yes
 	LogLevel		DEBUG3
