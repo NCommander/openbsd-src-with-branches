@@ -1,4 +1,4 @@
-/* $OpenBSD: input.c,v 1.111 2017/02/06 19:26:49 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.112 2017/02/06 22:05:11 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -920,7 +920,6 @@ input_parse(struct window_pane *wp)
 /* Split the parameter list (if any). */
 static int
 input_split(struct input_ctx *ictx)
-
 {
 	const char	*errstr;
 	char		*ptr, *out;
