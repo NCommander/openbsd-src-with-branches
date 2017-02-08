@@ -1,4 +1,4 @@
-/* $OpenBSD: grid-view.c,v 1.25 2016/09/02 20:57:20 nicm Exp $ */
+/* $OpenBSD: grid-view.c,v 1.26 2016/10/13 20:27:27 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -43,6 +43,15 @@ grid_view_set_cell(struct grid *gd, u_int px, u_int py,
     const struct grid_cell *gc)
 {
 	grid_set_cell(gd, grid_view_x(gd, px), grid_view_y(gd, py), gc);
+}
+
+/* Set cells. */
+void
+grid_view_set_cells(struct grid *gd, u_int px, u_int py,
+    const struct grid_cell *gc, const char *s, size_t slen)
+{
+	grid_set_cells(gd, grid_view_x(gd, px), grid_view_y(gd, py), gc, s,
+	    slen);
 }
 
 /* Clear into history. */
