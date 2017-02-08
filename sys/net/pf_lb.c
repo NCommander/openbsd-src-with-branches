@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_lb.c,v 1.57 2016/09/27 04:57:17 dlg Exp $ */
+/*	$OpenBSD: pf_lb.c,v 1.58 2016/10/26 21:07:22 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -846,7 +846,7 @@ pf_postprocess_addr(struct pf_state *cur)
 
 	/* decrease counter */
 
-	sks = cur ? cur->key[PF_SK_STACK] : NULL;
+	sks = cur->key[PF_SK_STACK];
 
 	/* check for outgoing or ingoing balancing */
 	if (nr->rt == PF_ROUTETO)
