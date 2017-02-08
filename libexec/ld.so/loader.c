@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.168 2017/01/09 22:51:04 kettenis Exp $ */
+/*	$OpenBSD: loader.c,v 1.169 2017/01/24 07:48:36 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -416,7 +416,7 @@ _dl_boot(const char **argv, char **envp, const long dyn_loff, long *dl_data)
 	exe_obj = NULL;
 	_dl_loading_object = NULL;
 
-	minva = ELFDEFNNAME(NO_ADDR);
+	minva = ELF_NO_ADDR;
 	maxva = exe_loff = 0;
 
 	/*
