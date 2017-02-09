@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_table.c,v 1.122 2017/01/23 09:08:24 mpi Exp $	*/
+/*	$OpenBSD: pf_table.c,v 1.123 2017/01/24 10:08:30 krw Exp $	*/
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -36,6 +36,7 @@
 #include <sys/mbuf.h>
 #include <sys/pool.h>
 #include <sys/syslog.h>
+#include <sys/proc.h>
 
 #include <net/if.h>
 
@@ -72,11 +73,8 @@
 	(bcopy((from), (to), (size)), 0))
 
 #define YIELD(cnt, ok)				\
-	do {					\
-		if ((cnt % 1024 == 1023) &&	\
-		    (ok))			\
-			yield();		\
-	} while (0)
+	if (curcpu()->ci_schedstate.spc_schedflags & SPCF_SHOULDYIELD) \
+		preempt(NULL)			\
 
 #define	FILLIN_SIN(sin, addr)			\
 	do {					\
