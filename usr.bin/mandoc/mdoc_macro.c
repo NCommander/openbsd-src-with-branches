@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdoc_macro.c,v 1.166 2017/01/10 13:46:53 schwarze Exp $ */
+/*	$OpenBSD: mdoc_macro.c,v 1.167 2017/02/10 15:44:31 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010, 2012-2016 Ingo Schwarze <schwarze@openbsd.org>
