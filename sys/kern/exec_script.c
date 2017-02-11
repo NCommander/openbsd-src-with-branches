@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_script.c,v 1.38 2016/03/19 12:04:15 natano Exp $	*/
+/*	$OpenBSD: exec_script.c,v 1.39 2016/04/25 20:00:33 tedu Exp $	*/
 /*	$NetBSD: exec_script.c,v 1.13 1996/02/04 02:15:06 christos Exp $	*/
 
 /*
@@ -169,7 +169,7 @@ check_shell:
 #endif
 
 		fdplock(p->p_fd);
-		error = falloc(p, &fp, &epp->ep_fd);
+		error = falloc(p, 0, &fp, &epp->ep_fd);
 		fdpunlock(p->p_fd);
 		if (error)
 			goto fail;

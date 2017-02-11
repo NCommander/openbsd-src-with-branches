@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_event.c,v 1.76 2016/09/15 02:00:16 dlg Exp $	*/
+/*	$OpenBSD: kern_event.c,v 1.77 2016/09/24 18:39:17 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000,2001 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -440,7 +440,7 @@ sys_kqueue(struct proc *p, void *v, register_t *retval)
 	int fd, error;
 
 	fdplock(fdp);
-	error = falloc(p, &fp, &fd);
+	error = falloc(p, 0, &fp, &fd);
 	fdpunlock(fdp);
 	if (error)
 		return (error);
