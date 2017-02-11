@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.14 2016/05/29 07:38:01 jsg Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2017/01/11 17:05:29 patrick Exp $
 
 bootblocks:
 	cp ${DESTDIR}/usr/mdec/BOOTAA64.EFI ${RELEASEDIR}
 
-MDEXT=	bsd.rd BOOTAA64.EFI
+MDEXT=	bsd.rd BOOTAA64.EFI miniroot${OSrev}.fs
