@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.h,v 1.7 2009/01/03 18:41:41 aschrijver Exp $ */
+/*	$OpenBSD: ber.h,v 1.1 2010/05/31 17:36:31 martinh Exp $ */
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@vantronix.net>
@@ -120,6 +120,7 @@ ssize_t			 ber_get_writebuf(struct ber *, void **);
 int			 ber_write_elements(struct ber *, struct ber_element *);
 void			 ber_set_readbuf(struct ber *, void *, size_t);
 struct ber_element	*ber_read_elements(struct ber *, struct ber_element *);
+void			 ber_free_element(struct ber_element *);
 void			 ber_free_elements(struct ber_element *);
 size_t			 ber_calc_len(struct ber_element *);
 void			 ber_set_application(struct ber *,
