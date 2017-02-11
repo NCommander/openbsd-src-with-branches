@@ -1,4 +1,4 @@
-.\"     $OpenBSD: file.9,v 1.16 2015/11/23 17:53:57 jmc Exp $
+.\"     $OpenBSD: file.9,v 1.17 2017/02/11 19:51:06 guenther Exp $
 .\"
 .\" Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
 .\" All rights reserved.
@@ -22,7 +22,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: November 23 2015 $
+.Dd $Mdocdate: February 11 2017 $
 .Dt FALLOC 9
 .Os
 .Sh NAME
@@ -84,7 +84,7 @@ initializes the new file to have a reference count of two:
 one for the reference from the file descriptor table and one
 for the caller to release with
 .Fn FRELE
-when it done initializing it.
+when it's done initializing it.
 .Pp
 A file descriptor is freed with
 .Fn fdrelease .
