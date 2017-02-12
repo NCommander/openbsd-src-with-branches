@@ -1,4 +1,4 @@
-/*	$OpenBSD: xenstore.c,v 1.39 2017/02/06 21:52:02 mikeb Exp $	*/
+/*	$OpenBSD: xenstore.c,v 1.40 2017/02/07 11:52:07 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Belopuhov
@@ -1033,8 +1033,7 @@ xs_cmpprop(void *xsc, const char *path, const char *property, const char *value,
 	if ((error = xs_cmd(&xst, XS_READ, key, &iovp, &iov_cnt)) != 0)
 		return (error);
 
-	if (*result)
-		*result = strcmp(value, (char *)iovp->iov_base);
+	*result = strcmp(value, (char *)iovp->iov_base);
 
 	xs_resfree(&xst, iovp, iov_cnt);
 
