@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.192 2017/01/05 12:42:19 krw Exp $	*/
+/*	$OpenBSD: parse.y,v 1.193 2017/01/05 13:53:09 krw Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -272,8 +272,9 @@ tagged		: TAGGED negation STRING       		{
 		}
 		;
 
-authenticated  	: AUTHENTICATED	{
+authenticated  	: negation AUTHENTICATED	{
 			rule->r_wantauth = 1;
+			rule->r_negwantauth = $1;
 		}
 		;
 
