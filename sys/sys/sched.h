@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched.h,v 1.40 2016/03/09 13:38:50 mpi Exp $	*/
+/*	$OpenBSD: sched.h,v 1.41 2016/03/17 13:18:47 mpi Exp $	*/
 /* $NetBSD: sched.h,v 1.2 1999/02/28 18:14:58 ross Exp $ */
 
 /*-
@@ -180,9 +180,9 @@ void remrunqueue(struct proc *);
 } while (0)
 
 /* Allow other processes to progress */
-#define	sched_pause() do {						\
+#define	sched_pause(func) do {						\
 	if (curcpu()->ci_schedstate.spc_schedflags & SPCF_SHOULDYIELD)	\
-		yield();						\
+		func();							\
 } while (0)
 
 #if defined(MULTIPROCESSOR)

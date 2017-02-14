@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.54 2015/03/14 03:38:51 jsg Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.55 2016/03/19 12:04:15 natano Exp $  */
 
 /*
  *  Portions of this code are:
@@ -195,7 +195,7 @@ sched_sync(struct proc *p)
 				vn_syncer_add_to_worklist(vp, syncdelay);
 			}
 
-			sched_pause();
+			sched_pause(yield);
 		}
 
 		splx(s);

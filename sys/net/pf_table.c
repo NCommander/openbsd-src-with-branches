@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_table.c,v 1.123 2017/01/24 10:08:30 krw Exp $	*/
+/*	$OpenBSD: pf_table.c,v 1.124 2017/02/09 10:29:37 mpi Exp $	*/
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -73,8 +73,7 @@
 	(bcopy((from), (to), (size)), 0))
 
 #define YIELD(cnt, ok)				\
-	if (curcpu()->ci_schedstate.spc_schedflags & SPCF_SHOULDYIELD) \
-		preempt(NULL)			\
+	sched_pause(preempt)
 
 #define	FILLIN_SIN(sin, addr)			\
 	do {					\

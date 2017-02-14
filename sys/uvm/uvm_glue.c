@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_glue.c,v 1.69 2014/12/15 20:38:22 tedu Exp $	*/
+/*	$OpenBSD: uvm_glue.c,v 1.70 2015/09/13 17:08:03 guenther Exp $	*/
 /*	$NetBSD: uvm_glue.c,v 1.44 2001/02/06 19:54:44 eeh Exp $	*/
 
 /* 
@@ -473,8 +473,7 @@ uvm_pause(void)
 		KERNEL_UNLOCK();
 		KERNEL_LOCK();
 	}
-	if (curcpu()->ci_schedstate.spc_schedflags & SPCF_SHOULDYIELD)
-		preempt(NULL);
+	sched_pause(preempt);
 }
 
 #ifndef SMALL_KERNEL

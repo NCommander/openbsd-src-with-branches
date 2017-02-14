@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall_mi.h,v 1.15 2015/11/03 16:14:14 deraadt Exp $	*/
+/*	$OpenBSD: syscall_mi.h,v 1.16 2016/04/25 20:00:33 tedu Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -146,7 +146,7 @@ mi_ast(struct proc *p, int resched)
 		KERNEL_UNLOCK();
 	}
 	if (resched)
-		preempt(NULL);
+		preempt();
 
 	/*
 	 * XXX could move call to userret() here, but
