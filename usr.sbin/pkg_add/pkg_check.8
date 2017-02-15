@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pkg_check.8,v 1.7 2016/08/25 14:58:43 espie Exp $
+.\"	$OpenBSD: pkg_check.8,v 1.8 2016/08/25 16:27:16 jmc Exp $
 .\"
 .\" Copyright (c) 2010 Marc Espie <espie@openbsd.org>
 .\"
@@ -80,10 +80,9 @@ The options are as follows:
 .Xc
 Extra options.
 Recognized keywords include:
-.Pp
-.Bl -tag -width "nosigXXX" -compact
+.Bl -tag -width "nosigXXX"
 .It Ar nosig
-do not check digital signatures.
+Do not check digital signatures.
 .El
 .It Fl F
 Check the filesystem for random objects.
