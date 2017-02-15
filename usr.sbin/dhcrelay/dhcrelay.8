@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dhcrelay.8,v 1.14 2016/12/13 06:55:32 jmc Exp $
+.\"	$OpenBSD: dhcrelay.8,v 1.15 2016/12/16 18:38:39 rzalamena Exp $
 .\"
 .\" Copyright (c) 1997 The Internet Software Consortium.
 .\" All rights reserved.
@@ -36,7 +36,7 @@
 .\" see ``http://www.isc.org/isc''.  To learn more about Vixie
 .\" Enterprises, see ``http://www.vix.com''.
 .\"
-.Dd $Mdocdate: December 13 2016 $
+.Dd $Mdocdate: December 16 2016 $
 .Dt DHCRELAY 8
 .Os
 .Sh NAME
@@ -94,12 +94,11 @@ relay agent information sub-option value that
 should append on relayed packets.
 If this option is not specified it will use the interface number by default.
 .It Fl d
+Do not daemonize.
+If this option is specified,
 .Nm
-normally runs in the foreground until it has configured
-an interface, and then reverts to running in the background.
-This option forces
-.Nm
-to always run as a foreground process.
+will run in the foreground and log to
+.Em stderr .
 .It Fl i Ar interface
 The name of the network interface that
 .Nm
