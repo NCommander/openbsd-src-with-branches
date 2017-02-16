@@ -1,4 +1,4 @@
-/* $OpenBSD: screen-write.c,v 1.111 2017/02/09 09:33:15 nicm Exp $ */
+/* $OpenBSD: screen-write.c,v 1.112 2017/02/09 10:09:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1260,6 +1260,7 @@ screen_write_cell(struct screen_write_ctx *ctx, const struct grid_cell *gc)
 
 	/* Create space for character in insert mode. */
 	if (s->mode & MODE_INSERT) {
+		screen_write_collect_flush(ctx, 0);
 		ttyctx.num = width;
 		tty_write(tty_cmd_insertcharacter, &ttyctx);
 	}
