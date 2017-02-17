@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.447 2016/09/30 09:19:13 markus Exp $ */
+/* $OpenBSD: ssh.c,v 1.448 2016/12/06 07:48:01 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1072,7 +1072,7 @@ main(int ac, char **av)
 		options.proxy_use_fdpass = 0;
 		snprintf(port_s, sizeof(port_s), "%d", options.jump_port);
 		xasprintf(&options.proxy_command,
-		    "ssh%s%s%s%s%s%s%s%s%s%.*s -W %%h:%%p %s",
+		    "ssh%s%s%s%s%s%s%s%s%s%.*s -W [%%h]:%%p %s",
 		    /* Optional "-l user" argument if jump_user set */
 		    options.jump_user == NULL ? "" : " -l ",
 		    options.jump_user == NULL ? "" : options.jump_user,
