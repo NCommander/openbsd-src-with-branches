@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -59,9 +59,10 @@ bin_init(struct lruhash_bin* array, size_t size)
 }
 
 struct lruhash* 
-lruhash_create(size_t start_size, size_t maxmem, lruhash_sizefunc_t sizefunc, 
-	lruhash_compfunc_t compfunc, lruhash_delkeyfunc_t delkeyfunc, 
-	lruhash_deldatafunc_t deldatafunc, void* arg)
+lruhash_create(size_t start_size, size_t maxmem,
+	lruhash_sizefunc_type sizefunc, lruhash_compfunc_type compfunc,
+	lruhash_delkeyfunc_type delkeyfunc,
+	lruhash_deldatafunc_type deldatafunc, void* arg)
 {
 	struct lruhash* table = (struct lruhash*)calloc(1, 
 		sizeof(struct lruhash));
@@ -215,7 +216,7 @@ reclaim_space(struct lruhash* table, struct lruhash_entry** list)
 
 struct lruhash_entry* 
 bin_find_entry(struct lruhash* table, 
-	struct lruhash_bin* bin, hashvalue_t hash, void* key)
+	struct lruhash_bin* bin, hashvalue_type hash, void* key)
 {
 	struct lruhash_entry* p = bin->overflow_list;
 	while(p) {
@@ -296,7 +297,7 @@ lru_touch(struct lruhash* table, struct lruhash_entry* entry)
 }
 
 void 
-lruhash_insert(struct lruhash* table, hashvalue_t hash,
+lruhash_insert(struct lruhash* table, hashvalue_type hash,
         struct lruhash_entry* entry, void* data, void* cb_arg)
 {
 	struct lruhash_bin* bin;
@@ -352,7 +353,7 @@ lruhash_insert(struct lruhash* table, hashvalue_t hash,
 }
 
 struct lruhash_entry* 
-lruhash_lookup(struct lruhash* table, hashvalue_t hash, void* key, int wr)
+lruhash_lookup(struct lruhash* table, hashvalue_type hash, void* key, int wr)
 {
 	struct lruhash_entry* entry;
 	struct lruhash_bin* bin;
@@ -374,7 +375,7 @@ lruhash_lookup(struct lruhash* table, hashvalue_t hash, void* key, int wr)
 }
 
 void 
-lruhash_remove(struct lruhash* table, hashvalue_t hash, void* key)
+lruhash_remove(struct lruhash* table, hashvalue_type hash, void* key)
 {
 	struct lruhash_entry* entry;
 	struct lruhash_bin* bin;
@@ -512,7 +513,7 @@ lruhash_get_mem(struct lruhash* table)
 }
 
 void 
-lruhash_setmarkdel(struct lruhash* table, lruhash_markdelfunc_t md)
+lruhash_setmarkdel(struct lruhash* table, lruhash_markdelfunc_type md)
 {
 	lock_quick_lock(&table->lock);
 	table->markdelfunc = md;

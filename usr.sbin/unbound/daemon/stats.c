@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -40,17 +40,26 @@
  * numbers. These 'statistics' may be of interest to the operator.
  */
 #include "config.h"
-#include <ldns/wire2host.h>
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+#include <sys/time.h>
+#include <sys/types.h>
 #include "daemon/stats.h"
 #include "daemon/worker.h"
 #include "daemon/daemon.h"
 #include "services/mesh.h"
 #include "services/outside_network.h"
+#include "services/listen_dnsport.h"
 #include "util/config_file.h"
 #include "util/tube.h"
 #include "util/timehist.h"
 #include "util/net_help.h"
 #include "validator/validator.h"
+#include "sldns/sbuffer.h"
+#include "services/cache/rrset.h"
+#include "services/cache/infra.h"
+#include "validator/val_kcache.h"
 
 /** add timers and the values do not overflow or become negative */
 static void
@@ -93,12 +102,14 @@ void server_stats_log(struct server_stats* stats, struct worker* worker,
 	int threadnum)
 {
 	log_info("server stats for thread %d: %u queries, "
-		"%u answers from cache, %u recursions, %u prefetch", 
+		"%u answers from cache, %u recursions, %u prefetch, %u rejected by "
+		"ip ratelimiting",
 		threadnum, (unsigned)stats->num_queries, 
 		(unsigned)(stats->num_queries - 
 			stats->num_queries_missed_cache),
 		(unsigned)stats->num_queries_missed_cache,
-		(unsigned)stats->num_queries_prefetch);
+		(unsigned)stats->num_queries_prefetch,
+		(unsigned)stats->num_queries_ip_ratelimited);
 	log_info("server stats for thread %d: requestlist max %u avg %g "
 		"exceeded %u jostled %u", threadnum,
 		(unsigned)stats->max_query_list_size,
@@ -132,6 +143,7 @@ void
 server_stats_compile(struct worker* worker, struct stats_info* s, int reset)
 {
 	int i;
+	struct listen_list* lp;
 
 	s->svr = worker->stats;
 	s->mesh_num_states = worker->env.mesh->all.count;
@@ -153,9 +165,25 @@ server_stats_compile(struct worker* worker, struct stats_info* s, int reset)
 		NUM_BUCKETS_HIST);
 	/* values from outside network */
 	s->svr.unwanted_replies = worker->back->unwanted_replies;
+	s->svr.qtcp_outgoing = worker->back->num_tcp_outgoing;
 
 	/* get and reset validator rrset bogus number */
 	s->svr.rrset_bogus = get_rrset_bogus(worker);
+
+	/* get cache sizes */
+	s->svr.msg_cache_count = count_slabhash_entries(worker->env.msg_cache);
+	s->svr.rrset_cache_count = count_slabhash_entries(&worker->env.rrset_cache->table);
+	s->svr.infra_cache_count = count_slabhash_entries(worker->env.infra_cache->hosts);
+	if(worker->env.key_cache)
+		s->svr.key_cache_count = count_slabhash_entries(worker->env.key_cache->slab);
+	else	s->svr.key_cache_count = 0;
+
+	/* get tcp accept usage */
+	s->svr.tcp_accept_usage = 0;
+	for(lp = worker->front->cps; lp; lp = lp->next) {
+		if(lp->com->type == comm_tcp_accept)
+			s->svr.tcp_accept_usage += lp->com->cur_tcp_count;
+	}
 
 	if(reset && !worker->env.cfg->stat_cumulative) {
 		worker_stats_clear(worker);
@@ -200,6 +228,7 @@ void server_stats_reply(struct worker* worker, int reset)
 void server_stats_add(struct stats_info* total, struct stats_info* a)
 {
 	total->svr.num_queries += a->svr.num_queries;
+	total->svr.num_queries_ip_ratelimited += a->svr.num_queries_ip_ratelimited;
 	total->svr.num_queries_missed_cache += a->svr.num_queries_missed_cache;
 	total->svr.num_queries_prefetch += a->svr.num_queries_prefetch;
 	total->svr.sum_query_list_size += a->svr.sum_query_list_size;
@@ -212,6 +241,7 @@ void server_stats_add(struct stats_info* total, struct stats_info* a)
 		total->svr.qtype_big += a->svr.qtype_big;
 		total->svr.qclass_big += a->svr.qclass_big;
 		total->svr.qtcp += a->svr.qtcp;
+		total->svr.qtcp_outgoing += a->svr.qtcp_outgoing;
 		total->svr.qipv6 += a->svr.qipv6;
 		total->svr.qbit_QR += a->svr.qbit_QR;
 		total->svr.qbit_AA += a->svr.qbit_AA;
@@ -224,11 +254,13 @@ void server_stats_add(struct stats_info* total, struct stats_info* a)
 		total->svr.qEDNS += a->svr.qEDNS;
 		total->svr.qEDNS_DO += a->svr.qEDNS_DO;
 		total->svr.ans_rcode_nodata += a->svr.ans_rcode_nodata;
+		total->svr.zero_ttl_responses += a->svr.zero_ttl_responses;
 		total->svr.ans_secure += a->svr.ans_secure;
 		total->svr.ans_bogus += a->svr.ans_bogus;
 		total->svr.rrset_bogus += a->svr.rrset_bogus;
 		total->svr.unwanted_replies += a->svr.unwanted_replies;
 		total->svr.unwanted_queries += a->svr.unwanted_queries;
+		total->svr.tcp_accept_usage += a->svr.tcp_accept_usage;
 		for(i=0; i<STATS_QTYPE_NUM; i++)
 			total->svr.qtype[i] += a->svr.qtype[i];
 		for(i=0; i<STATS_QCLASS_NUM; i++)
@@ -257,14 +289,14 @@ void server_stats_insquery(struct server_stats* stats, struct comm_point* c,
 	uint16_t qtype, uint16_t qclass, struct edns_data* edns,
 	struct comm_reply* repinfo)
 {
-	uint16_t flags = ldns_buffer_read_u16_at(c->buffer, 2);
+	uint16_t flags = sldns_buffer_read_u16_at(c->buffer, 2);
 	if(qtype < STATS_QTYPE_NUM)
 		stats->qtype[qtype]++;
 	else	stats->qtype_big++;
 	if(qclass < STATS_QCLASS_NUM)
 		stats->qclass[qclass]++;
 	else	stats->qclass_big++;
-	stats->qopcode[ LDNS_OPCODE_WIRE(ldns_buffer_begin(c->buffer)) ]++;
+	stats->qopcode[ LDNS_OPCODE_WIRE(sldns_buffer_begin(c->buffer)) ]++;
 	if(c->type != comm_udp)
 		stats->qtcp++;
 	if(repinfo && addr_is_ip6(&repinfo->addr, repinfo->addrlen))
@@ -292,12 +324,12 @@ void server_stats_insquery(struct server_stats* stats, struct comm_point* c,
 	}
 }
 
-void server_stats_insrcode(struct server_stats* stats, ldns_buffer* buf)
+void server_stats_insrcode(struct server_stats* stats, sldns_buffer* buf)
 {
-	if(stats->extended && ldns_buffer_limit(buf) != 0) {
-		int r = (int)LDNS_RCODE_WIRE( ldns_buffer_begin(buf) );
+	if(stats->extended && sldns_buffer_limit(buf) != 0) {
+		int r = (int)LDNS_RCODE_WIRE( sldns_buffer_begin(buf) );
 		stats->ans_rcode[r] ++;
-		if(r == 0 && LDNS_ANCOUNT( ldns_buffer_begin(buf) ) == 0)
+		if(r == 0 && LDNS_ANCOUNT( sldns_buffer_begin(buf) ) == 0)
 			stats->ans_rcode_nodata ++;
 	}
 }

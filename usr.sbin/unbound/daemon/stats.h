@@ -21,16 +21,16 @@
  * specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -43,12 +43,12 @@
 #ifndef DAEMON_STATS_H
 #define DAEMON_STATS_H
 #include "util/timehist.h"
-#include <ldns/buffer.h>
 struct worker;
 struct config_file;
 struct comm_point;
 struct comm_reply;
 struct edns_data;
+struct sldns_buffer;
 
 /** number of qtype that is stored for in array */
 #define STATS_QTYPE_NUM 256
@@ -63,6 +63,8 @@ struct edns_data;
 struct server_stats {
 	/** number of queries from clients received. */
 	size_t num_queries;
+	/** number of queries that have been dropped/ratelimited by ip. */
+	size_t num_queries_ip_ratelimited;
 	/** number of queries that had a cache-miss. */
 	size_t num_queries_missed_cache;
 	/** number of prefetch queries - cachehits with prefetch */
@@ -91,6 +93,8 @@ struct server_stats {
 	size_t qopcode[STATS_OPCODE_NUM];
 	/** number of queries over TCP */
 	size_t qtcp;
+	/** number of outgoing queries over TCP */
+	size_t qtcp_outgoing;
 	/** number of queries over IPv6 */
 	size_t qipv6;
 	/** number of queries with QR bit */
@@ -127,12 +131,24 @@ struct server_stats {
 	size_t unwanted_replies;
 	/** unwanted traffic received on client-facing ports */
 	size_t unwanted_queries;
-
+	/** usage of tcp accept list */
+	size_t tcp_accept_usage;
+	/** answers served from expired cache */
+	size_t zero_ttl_responses;
 	/** histogram data exported to array 
 	 * if the array is the same size, no data is lost, and
 	 * if all histograms are same size (is so by default) then
 	 * adding up works well. */
 	size_t hist[NUM_BUCKETS_HIST];
+	
+	/** number of message cache entries */
+	size_t msg_cache_count;
+	/** number of rrset cache entries */
+	size_t rrset_cache_count;
+	/** number of infra cache entries */
+	size_t infra_cache_count;
+	/** number of key cache entries */
+	size_t key_cache_count;
 };
 
 /** 
@@ -230,6 +246,6 @@ void server_stats_insquery(struct server_stats* stats, struct comm_point* c,
  * @param stats: the stats
  * @param buf: buffer with rcode. If buffer is length0: not counted.
  */
-void server_stats_insrcode(struct server_stats* stats, ldns_buffer* buf);
+void server_stats_insrcode(struct server_stats* stats, struct sldns_buffer* buf);
 
 #endif /* DAEMON_STATS_H */
