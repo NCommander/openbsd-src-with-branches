@@ -1,4 +1,4 @@
-/*	$OpenBSD: arm64_bus_space.c,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
+/*	$OpenBSD: arm64_bus_space.c,v 1.2 2016/12/18 22:19:36 patrick Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -213,7 +213,7 @@ generic_space_map(bus_space_tag_t t, bus_addr_t offs, bus_size_t size,
 	u_long startpa, endpa, pa;
 	vaddr_t va;
 	int cache = flags & BUS_SPACE_MAP_CACHEABLE ?
-	    PMAP_CACHE_WB : PMAP_CACHE_CI;
+	    PMAP_CACHE_WB : PMAP_CACHE_DEV;
 
 	startpa = trunc_page(offs);
 	endpa = round_page(offs + size);
