@@ -1,4 +1,4 @@
-/*	$OpenBSD: chmod.c,v 1.39 2015/12/31 23:38:16 guenther Exp $	*/
+/*	$OpenBSD: chmod.c,v 1.40 2016/10/19 18:20:25 schwarze Exp $	*/
 /*	$NetBSD: chmod.c,v 1.12 1995/03/21 09:02:09 cgd Exp $	*/
 
 /*
@@ -146,8 +146,10 @@ done:
 			fts_options |= FTS_LOGICAL;
 			atflags = 0;
 		}
-	} else if (!hflag)
+	} else if (!hflag) {
+		fts_options |= FTS_COMFOLLOW;
 		atflags = 0;
+	}
 
 	if (ischflags) {
 		if (pledge("stdio rpath fattr", NULL) == -1)
