@@ -1,4 +1,4 @@
-/*	$OpenBSD: res_send_async.c,v 1.28 2015/10/18 15:15:00 deraadt Exp $	*/
+/*	$OpenBSD: res_send_async.c,v 1.29 2015/10/23 00:52:09 deraadt Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -449,7 +449,9 @@ udp_recv(struct asr_query *as)
 	ssize_t		 n;
 	int		 save_errno;
 
-	if (ensure_ibuf(as, PACKETSZ) == -1) {
+#define MAXPACKETSZ	4096
+
+	if (ensure_ibuf(as, MAXPACKETSZ) == -1) {
 		save_errno = errno;
 		close(as->as_fd);
 		errno = save_errno;
