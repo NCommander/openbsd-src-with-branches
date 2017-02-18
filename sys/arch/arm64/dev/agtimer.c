@@ -1,4 +1,4 @@
-/* $OpenBSD: agtimer.c,v 1.3 2017/01/23 10:15:53 kettenis Exp $ */
+/* $OpenBSD: agtimer.c,v 1.4 2017/02/07 21:51:03 patrick Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
@@ -393,10 +393,10 @@ agtimer_startclock(void)
 void
 agtimer_init(void)
 {
-	uint32_t cntfrq = 0;
+	uint64_t cntfrq = 0;
 
 	/* XXX: Check for Generic Timer support. */
-	__asm volatile("MRS %x0, CNTFRQ_EL0" : "=r" (cntfrq));
+	cntfrq = agtimer_get_freq();
 
 	if (cntfrq != 0) {
 		agtimer_frequency = cntfrq;
