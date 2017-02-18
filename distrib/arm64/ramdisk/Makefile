@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2016/11/30 15:46:45 natano Exp $
+#	$OpenBSD: Makefile,v 1.1 2017/01/23 02:24:00 patrick Exp $
 
 REV=	${OSrev}
 
@@ -16,6 +16,9 @@ MTREE=		${UTILS}/mtree.conf
 
 DISKTYPE=	rdroot
 MAKEFSARGS_RD=	-o disklabel=${DISKTYPE},minfree=0,density=4096
+
+DIRS=\
+	rpi
 
 .ifndef DESTDIR
 all ${IMAGE}:
@@ -39,6 +42,9 @@ ${BSD_RD}: ${IMAGE} bsd rdsetroot
 ${IMAGE}: ${CBIN}
 	rm -rf $@.d
 	install -d -o root -g wheel $@.d
+.for DIR in ${DIRS}
+	mkdir -p $@.d/usr/mdec/${DIR}
+.endfor
 	mtree -def ${MTREE} -p $@.d -u
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} REV=${REV} \
 	    TARGDIR=$@.d UTILS=${UTILS} RELEASEDIR=${RELEASEDIR} \
