@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.h,v 1.71 2017/02/08 05:09:25 guenther Exp $	*/
+/*	$OpenBSD: exec_elf.h,v 1.72 2017/02/18 06:09:01 jsg Exp $	*/
 /*
  * Copyright (c) 1995, 1996 Erik Theisen.  All rights reserved.
  *
@@ -530,6 +530,21 @@ typedef struct {
 
 /* Standard ELF hashing function */
 unsigned int elf_hash(const unsigned char *name);
+
+/*
+ * Note header
+ */
+typedef struct {
+	Elf32_Word n_namesz;
+	Elf32_Word n_descsz;
+	Elf32_Word n_type;
+} Elf32_Nhdr;
+
+typedef struct {
+	Elf64_Half n_namesz;
+	Elf64_Half n_descsz;
+	Elf64_Half n_type;
+} Elf64_Nhdr;
 
 /*
  * Note Definitions
