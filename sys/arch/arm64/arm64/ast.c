@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: ast.c,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
 /*
  * Copyright (c) 2015 Dale Rahn <drahn@dalerahn.com>
  *
@@ -38,6 +38,8 @@ ast(struct trapframe *tf)
 {
 	struct proc *p = curcpu()->ci_curproc;
 	int want_resched = curcpu()->ci_want_resched;
+
+	p->p_md.md_astpending = 0;
 
 	uvmexp.softs++;
 	mi_ast(p, want_resched);
