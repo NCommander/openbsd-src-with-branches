@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.13 2016/12/11 07:57:14 visa Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.14 2017/01/19 15:09:04 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -93,6 +93,11 @@ extern const struct platform *sys_platform;
 extern uint loongson_cpumask;
 extern uint loongson_ver;
 extern int nnodes;
+
+#ifdef MULTIPROCESSOR
+extern uint64_t cpu_spinup_a0;
+extern uint64_t cpu_spinup_sp;
+#endif
 
 struct mainbus_attach_args {
 	const char	*maa_name;

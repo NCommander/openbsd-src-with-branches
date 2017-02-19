@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.10 2016/11/17 14:41:21 visa Exp $ */
+/*	$OpenBSD: intr.h,v 1.11 2017/01/19 15:09:04 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -176,7 +176,8 @@ void	intr_barrier(void *);
  */
 
 /* Schedule priorities for base interrupts (CPU) */
-#define	INTPRI_CLOCK	0
+#define	INTPRI_IPI	0
+#define	INTPRI_CLOCK	1
 /* other values are system-specific */
 
 #define NLOWINT	4		/* Number of low level registrations possible */
