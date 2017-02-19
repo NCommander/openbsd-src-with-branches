@@ -1,5 +1,6 @@
-#	$OpenBSD: Makefile,v 1.2 1996/06/23 14:19:01 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:34:39 deraadt Exp $
 
 PROG=	cat
+
 
 .include <bsd.prog.mk>
