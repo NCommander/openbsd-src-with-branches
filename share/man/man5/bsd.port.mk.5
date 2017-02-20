@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.453 2017/02/19 16:12:28 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.454 2017/02/20 14:21:45 espie Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -24,7 +24,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: February 19 2017 $
+.Dd $Mdocdate: February 20 2017 $
 .Dt BSD.PORT.MK 5
 .Os
 .Sh NAME
@@ -349,7 +349,9 @@ See
 .Ev SUPDISTFILES ,
 .Ev REFETCH .
 .It Cm fetch-all
-Also fetches
+Like
+.Cm fetch ,
+but also fetches
 .Ev SUPDISTFILES ,
 for use with e.g.,
 .Cm makesum .
@@ -357,16 +359,10 @@ for use with e.g.,
 Top-level target, see
 .Xr ports 7 .
 .It Cm install-depends
-Before package installation, Install and verify dependencies constructed from
-.Ev RUN_DEPENDS ,
-.Ev LIB_DEPENDS ,
+Before package installation, install and verify dependencies constructed from
+.Ev RUN_DEPENDS , LIB_DEPENDS ,
 and
 .Ev WANTLIB .
-In
-.Ev MULTI_PACKAGES
-setups,
-see
-.Sx FLAVORS AND MULTI_PACKAGES .
 .It Cm install
 Install the package after building.
 See the description of
