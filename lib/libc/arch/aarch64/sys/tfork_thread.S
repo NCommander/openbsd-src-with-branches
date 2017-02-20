@@ -1,4 +1,4 @@
-/* $OpenBSD: tfork_thread.S,v 1.2 2012/06/21 00:56:59 guenther Exp $ */
+/* $OpenBSD: tfork_thread.S,v 1.1 2017/01/11 18:09:24 patrick Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@openbsd.org>
  *
@@ -28,7 +28,7 @@ ENTRY(__tfork_thread)
 	bcs	CERROR
 
 	/* check if we are parent or child */
-	cbz	x1, 1f
+	cbz	x0, 1f
 	ret
 
 1:
