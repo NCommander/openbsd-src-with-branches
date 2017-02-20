@@ -1446,8 +1446,10 @@ pool_gc_pages(void *null)
 {
 	struct pool *pp;
 	struct pool_page_header *ph, *freeph;
+	int s;
 
 	rw_enter_read(&pool_lock);
+	s = splvm(); /* XXX go to splvm until all pools _setipl properly */
 	SIMPLEQ_FOREACH(pp, &pool_head, pr_poollist) {
 		if (pp->pr_nidle <= pp->pr_minpages || /* guess */
 		    !mtx_enter_try(&pp->pr_mtx)) /* try */
@@ -1467,6 +1469,7 @@ pool_gc_pages(void *null)
 		if (freeph != NULL)
 			pool_p_free(pp, freeph);
 	}
+	splx(s);
 	rw_exit_read(&pool_lock);
 
 	timeout_add_sec(&pool_gc_tick, 1);
