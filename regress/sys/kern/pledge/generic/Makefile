@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile,v 1.6 2015/11/03 11:03:10 semarie Exp $
+#	$OpenBSD: Makefile,v 1.7 2016/04/25 19:30:10 tedu Exp $
 PROG=	generic
 SRCS+=	main.c manager.c test_stdio.c test_tty.c
 NOMAN=	yes
 
+LDADD+=		-lutil
 CFLAGS+=	-Wall -Werror
 
 REGRESS_TARGETS+=	test_normal
