@@ -1,4 +1,4 @@
-/*	$OpenBSD: getnetnamadr_async.c,v 1.22 2015/09/14 11:52:49 guenther Exp $	*/
+/*	$OpenBSD: getnetnamadr_async.c,v 1.23 2015/09/20 14:19:21 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -173,6 +173,7 @@ getnetnamadr_async_run(struct asr_query *as, struct asr_result *ar)
 				ar->ar_errno = errno;
 				ar->ar_h_errno = NETDB_INTERNAL;
 				async_set_state(as, ASR_STATE_HALT);
+				break;
 			}
 			async_set_state(as, ASR_STATE_SUBQUERY);
 			break;
