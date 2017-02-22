@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.h,v 1.60 2016/11/16 13:47:27 reyk Exp $	*/
+/*	$OpenBSD: bpf.h,v 1.61 2016/11/17 15:41:14 sthen Exp $	*/
 /*	$NetBSD: bpf.h,v 1.15 1996/12/13 07:57:33 mikel Exp $	*/
 
 /*
@@ -202,7 +202,7 @@ struct bpf_hdr {
 #define DLT_USER14		161	/* Reserved for private use */
 #define DLT_USER15		162	/* Reserved for private use */
 #define DLT_MPLS		219	/* MPLS Provider Edge header */
-#define DLT_OPENFLOW		DLT_USER0
+#define DLT_OPENFLOW		267	/* in-kernel OpenFlow, by pcap */
 
 /*
  * The instruction encodings.
