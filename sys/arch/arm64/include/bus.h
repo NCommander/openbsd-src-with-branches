@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: bus.h,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
 /*
  * Copyright (c) 2003-2004 Opsycon AB Sweden.  All rights reserved.
  *
@@ -353,6 +353,7 @@ typedef struct machine_bus_dma_segment	bus_dma_segment_t;
 
 struct machine_bus_dma_tag {
 	void	*_cookie;		/* cookie used in the guts */
+	int	_flags;			/* misc. flags */
 
 	/*
 	 * DMA mapping methods.
