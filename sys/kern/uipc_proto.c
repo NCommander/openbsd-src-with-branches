@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_proto.c,v 1.10 2017/01/23 16:31:24 bluhm Exp $	*/
+/*	$OpenBSD: uipc_proto.c,v 1.11 2017/02/05 07:57:08 guenther Exp $	*/
 /*	$NetBSD: uipc_proto.c,v 1.8 1996/02/13 21:10:47 christos Exp $	*/
 
 /*-
@@ -49,20 +49,26 @@
 extern	struct domain unixdomain;		/* or at least forward */
 
 struct protosw unixsw[] = {
-{ SOCK_STREAM,	&unixdomain,	PF_LOCAL,	PR_CONNREQUIRED|PR_WANTRCVD|PR_RIGHTS,
-  0,		0,		0,		0,
-  uipc_usrreq,
-  0,		0,		0,		0,
+{
+  .pr_type	= SOCK_STREAM,
+  .pr_domain	= &unixdomain,
+  .pr_protocol	= PF_LOCAL,
+  .pr_flags	= PR_CONNREQUIRED|PR_WANTRCVD|PR_RIGHTS,
+  .pr_usrreq	= uipc_usrreq,
 },
-{ SOCK_SEQPACKET,&unixdomain,	PF_LOCAL,	PR_ATOMIC|PR_CONNREQUIRED|PR_WANTRCVD|PR_RIGHTS,
-  0,		0,		0,		0,
-  uipc_usrreq,
-  0,		0,		0,		0,
+{
+  .pr_type	= SOCK_SEQPACKET,
+  .pr_domain	= &unixdomain,
+  .pr_protocol	= PF_LOCAL,
+  .pr_flags	= PR_ATOMIC|PR_CONNREQUIRED|PR_WANTRCVD|PR_RIGHTS,
+  .pr_usrreq	= uipc_usrreq,
 },
-{ SOCK_DGRAM,	&unixdomain,	PF_LOCAL,	PR_ATOMIC|PR_ADDR|PR_RIGHTS,
-  0,		0,		0,		0,
-  uipc_usrreq,
-  0,		0,		0,		0,
+{
+  .pr_type	= SOCK_DGRAM,
+  .pr_domain	= &unixdomain,
+  .pr_protocol	= PF_LOCAL,
+  .pr_flags	= PR_ATOMIC|PR_ADDR|PR_RIGHTS,
+  .pr_usrreq	= uipc_usrreq,
 }
 };
 
