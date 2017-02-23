@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: bc.y,v 1.48 2015/10/10 19:28:54 deraadt Exp $	*/
+/*	$OpenBSD: bc.y,v 1.49 2015/11/23 09:58:55 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -969,7 +969,7 @@ yyerror(char *s)
 			putchar('\\');
 		putchar(*p);
 	}
-	fputs("]pc\n", stdout);
+	fputs("]ec\n", stdout);
 	free(str);
 }
 
@@ -1135,7 +1135,8 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	interactive = isatty(STDIN_FILENO);
+	interactive = isatty(STDIN_FILENO) && isatty(STDOUT_FILENO) &&
+	    isatty(STDERR_FILENO);
 	for (i = 0; i < argc; i++)
 		sargv[sargc++] = argv[i];
 
