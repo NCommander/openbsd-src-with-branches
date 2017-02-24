@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.8 2016/12/08 16:27:46 visa Exp $ */
+/*	$OpenBSD: intr.h,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -156,6 +156,8 @@ void	 arm_intr_register_fdt(struct interrupt_controller *);
 void	*arm_intr_establish_fdt(int, int, int (*)(void *),
 	    void *, char *);
 void	*arm_intr_establish_fdt_idx(int, int, int, int (*)(void *),
+	    void *, char *);
+void	*arm_intr_establish_fdt_imap(int, int *, int, int, int, int (*)(void *),
 	    void *, char *);
 void	 arm_intr_disestablish_fdt(void *);
 
