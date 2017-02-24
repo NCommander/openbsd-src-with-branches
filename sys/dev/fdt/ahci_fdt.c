@@ -1,4 +1,4 @@
-/* $OpenBSD: ahci_fdt.c,v 1.7 2016/08/04 15:52:52 kettenis Exp $ */
+/* $OpenBSD: ahci_fdt.c,v 1.1 2017/02/22 23:01:15 patrick Exp $ */
 /*
  * Copyright (c) 2013,2017 Patrick Wildt <patrick@blueri.se>
  *
@@ -89,7 +89,7 @@ ahci_fdt_attach(struct device *parent, struct device *self, void *aux)
 
 	return;
 irq:
-	arm_intr_disestablish(sc->sc_ih);
+	arm_intr_disestablish_fdt(sc->sc_ih);
 unmap:
 	bus_space_unmap(sc->sc_iot, sc->sc_ioh, sc->sc_ios);
 }
