@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.481 2017/02/03 02:56:00 dtucker Exp $ */
+/* $OpenBSD: sshd.c,v 1.482 2017/02/06 09:22:51 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -991,6 +991,11 @@ server_listen(void)
 			continue;
 		}
 		if (set_nonblock(listen_sock) == -1) {
+			close(listen_sock);
+			continue;
+		}
+		if (fcntl(listen_sock, F_SETFD, FD_CLOEXEC) == -1) {
+			verbose("socket: CLOEXEC: %s", strerror(errno));
 			close(listen_sock);
 			continue;
 		}
