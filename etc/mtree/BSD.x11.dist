@@ -1,4 +1,4 @@
-#       $OpenBSD: BSD.x11.dist,v 1.42 2016/03/20 09:33:56 jsg Exp $
+#       $OpenBSD: BSD.x11.dist,v 1.43 2016/09/11 14:05:04 matthieu Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 .
@@ -8,7 +8,7 @@
             ..
             twm
             ..
-            xdm
+            xenodm
                 pixmaps
                 ..
             ..
