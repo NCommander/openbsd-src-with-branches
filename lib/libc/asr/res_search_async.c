@@ -1,4 +1,4 @@
-/*	$OpenBSD: res_search_async.c,v 1.19 2015/12/16 16:32:30 deraadt Exp $	*/
+/*	$OpenBSD: res_search_async.c,v 1.20 2017/02/23 17:04:02 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -169,9 +169,9 @@ res_search_async_run(struct asr_query *as, struct asr_result *ar)
 
 		if (as->as_dom_flags & ASYNC_DOM_DOMAIN) {
 			if (ar->ar_h_errno == NO_DATA)
-				as->as.search.flags |= ASYNC_NODATA;
+				as->as_flags |= ASYNC_NODATA;
 			else if (ar->ar_h_errno == TRY_AGAIN)
-				as->as.search.flags |= ASYNC_AGAIN;
+				as->as_flags |= ASYNC_AGAIN;
 		}
 
 		async_set_state(as, ASR_STATE_NEXT_DOMAIN);
@@ -181,9 +181,9 @@ res_search_async_run(struct asr_query *as, struct asr_result *ar)
 
 		if (as->as.search.saved_h_errno != HERRNO_UNSET)
 			ar->ar_h_errno = as->as.search.saved_h_errno;
-		else if (as->as.search.flags & ASYNC_NODATA)
+		else if (as->as_flags & ASYNC_NODATA)
 			ar->ar_h_errno = NO_DATA;
-		else if (as->as.search.flags & ASYNC_AGAIN)
+		else if (as->as_flags & ASYNC_AGAIN)
 			ar->ar_h_errno = TRY_AGAIN;
 		/*
 		 * Else, we got the ar_h_errno value set by res_query_async()

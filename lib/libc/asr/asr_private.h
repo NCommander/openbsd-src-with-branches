@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_private.h,v 1.42 2017/02/18 19:23:05 jca Exp $	*/
+/*	$OpenBSD: asr_private.h,v 1.43 2017/02/23 17:04:02 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -165,6 +165,7 @@ struct asr_query {
 	int		(*as_run)(struct asr_query *, struct asr_result *);
 	struct asr_ctx	*as_ctx;
 	int		 as_type;
+	int		 as_flags;
 	int		 as_state;
 
 	/* cond */
@@ -183,7 +184,6 @@ struct asr_query {
 
 	union {
 		struct {
-			int		 flags;
 			uint16_t	 reqid;
 			int		 class;
 			int		 type;
@@ -206,7 +206,6 @@ struct asr_query {
 		} dns;
 
 		struct {
-			int		 flags;
 			int		 class;
 			int		 type;
 			char		*name;
@@ -249,7 +248,6 @@ struct asr_query {
 			char		*fqdn;
 			struct addrinfo	*aifirst;
 			struct addrinfo	*ailast;
-			int		 flags;
 		} ai;
 
 		struct {
