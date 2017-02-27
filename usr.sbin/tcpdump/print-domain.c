@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-domain.c,v 1.22 2015/11/16 00:16:39 mmcc Exp $	*/
+/*	$OpenBSD: print-domain.c,v 1.23 2016/03/07 19:33:26 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -526,7 +526,7 @@ ns_rprint(const u_char *cp, const u_char *bp, int is_mdns)
 	case T_OPT:
 		printf(" UDPsize=%u", class);
 		if (opt_flags & 0x8000)
-			printf(" OK");
+			printf(" DO");
 		break;
 
 	case T_UNSPECA:		/* One long string */
