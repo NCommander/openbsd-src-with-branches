@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.h,v 1.170 2016/11/07 00:26:32 guenther Exp $	*/
+/*	$OpenBSD: sysctl.h,v 1.171 2017/01/21 05:42:03 guenther Exp $	*/
 /*	$NetBSD: sysctl.h,v 1.16 1996/04/09 20:55:36 cgd Exp $	*/
 
 /*
@@ -976,6 +976,7 @@ extern void (*cpu_setperf)(int);
 int bpf_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 int pflow_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 int pipex_sysctl(int *, u_int, void *, size_t *, void *, size_t);
+int mpls_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 
 #else	/* !_KERNEL */
 

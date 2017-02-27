@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls.h,v 1.34 2015/07/29 00:04:03 rzalamena Exp $	*/
+/*	$OpenBSD: mpls.h,v 1.35 2015/12/02 08:47:00 claudio Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -182,13 +182,10 @@ extern int		mpls_mapttl_ip6;
 extern int		mpls_inkloop;
 
 
-void	mpls_init(void);
-
 struct mbuf	*mpls_shim_pop(struct mbuf *);
 struct mbuf	*mpls_shim_swap(struct mbuf *, struct rt_mpls *);
 struct mbuf	*mpls_shim_push(struct mbuf *, struct rt_mpls *);
 
-int		 mpls_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 int		 mpls_output(struct ifnet *, struct mbuf *, struct sockaddr *,
 		    struct rtentry *);
 void		 mpls_input(struct mbuf *);

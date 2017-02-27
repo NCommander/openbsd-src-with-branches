@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.56 2016/07/11 09:23:06 mpi Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.57 2016/08/22 15:37:23 mpi Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -51,11 +51,6 @@ int	mpls_ip6_adjttl(struct mbuf *, u_int8_t);
 #endif
 
 struct mbuf	*mpls_do_error(struct mbuf *, int, int, int);
-
-void
-mpls_init(void)
-{
-}
 
 void
 mpls_input(struct mbuf *m)
