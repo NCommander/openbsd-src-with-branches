@@ -1,4 +1,4 @@
-/* $OpenBSD: acpibtn.c,v 1.41 2015/01/27 19:40:14 kettenis Exp $ */
+/* $OpenBSD: acpibtn.c,v 1.42 2016/01/07 12:08:18 mpi Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -244,7 +244,7 @@ sleep:
 			/* Request to go to sleep */
 			if (acpi_record_event(sc->sc_acpi, APM_USER_SUSPEND_REQ))
 				acpi_addtask(sc->sc_acpi, acpi_sleep_task,
-				    sc->sc_acpi, ACPI_STATE_S3);
+				    sc->sc_acpi, ACPI_SLEEP_SUSPEND);
 			break;
 		}
 #endif /* SMALL_KERNEL */
