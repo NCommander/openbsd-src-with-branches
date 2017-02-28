@@ -1,4 +1,4 @@
-/*	$OpenBSD: art.c,v 1.25 2017/01/23 01:02:11 claudio Exp $ */
+/*	$OpenBSD: art.c,v 1.26 2017/01/24 10:08:30 krw Exp $ */
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -703,7 +703,6 @@ art_walk_apply(struct art_root *ar,
 	int error = 0;
 
 	if ((an != NULL) && (an != next)) {
-		/* this assumes an->an_dst is not used by f */
 		rw_exit_write(&ar->ar_lock);
 		error = (*f)(an, arg);
 		rw_enter_write(&ar->ar_lock);
@@ -930,7 +929,6 @@ art_get(void *dst, uint8_t plen)
 	if (an == NULL)
 		return (NULL);
 
-	an->an_dst = dst;
 	an->an_plen = plen;
 	SRPL_INIT(&an->an_rtlist);
 
