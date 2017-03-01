@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.h,v 1.59 2016/02/11 17:15:43 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_node.h,v 1.60 2016/04/28 08:18:10 stsp Exp $	*/
 /*	$NetBSD: ieee80211_node.h,v 1.9 2004/04/30 22:57:32 dyoung Exp $	*/
 
 /*-
@@ -97,6 +97,14 @@ enum {
 	RSNA_REKEYNEGOTIATING,
 	RSNA_REKEYESTABLISHED,
 	RSNA_KEYERROR
+};
+
+/* Supplicant state machine: 4-Way Handshake (not documented in standard) */
+enum {
+	RSNA_SUPP_INITIALIZE,		/* not expecting any messages */
+	RSNA_SUPP_PTKSTART,		/* awaiting handshake message 1 */
+	RSNA_SUPP_PTKNEGOTIATING,	/* got message 1 and derived PTK */
+	RNSA_SUPP_PTKDONE		/* got message 3 and authenticated AP */
 };
 
 struct ieee80211_rxinfo {
@@ -205,6 +213,7 @@ struct ieee80211_node {
 	/* RSN */
 	struct timeout		ni_eapol_to;
 	u_int			ni_rsn_state;
+	u_int			ni_rsn_supp_state;
 	u_int			ni_rsn_gstate;
 	u_int			ni_rsn_retries;
 	u_int			ni_rsnprotos;
