@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.57 2016/08/22 15:37:23 mpi Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.58 2017/02/27 19:16:56 claudio Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -151,7 +151,7 @@ do_v6:
 		}
 	}
 
-	rt = rtalloc(smplstosa(smpls), RT_RESOLVE, 0);
+	rt = rtalloc(smplstosa(smpls), RT_RESOLVE, m->m_pkthdr.ph_rtableid);
 	if (rt == NULL) {
 		/* no entry for this label */
 #ifdef MPLS_DEBUG
