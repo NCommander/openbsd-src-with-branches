@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.116 2017/03/02 02:34:56 mlarkin Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.117 2017/03/02 02:57:35 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -2570,7 +2570,7 @@ exit:
 	} else {
 		if (vmclear(&vcpu->vc_control_pa))
 			ret = EINVAL;
-	}	
+	}
 
 	return (ret);
 }
