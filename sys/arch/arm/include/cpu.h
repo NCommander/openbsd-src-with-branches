@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.43 2017/01/06 00:06:02 jsg Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.44 2017/03/02 10:38:10 natano Exp $	*/
 /*	$NetBSD: cpu.h,v 1.34 2003/06/23 11:01:08 martin Exp $	*/
 
 /*
@@ -82,8 +82,8 @@
 	{ 0, 0 }, \
 	{ 0, 0 }, \
 	{ "maxspeed", CTLTYPE_INT }, \
-	{ "lidsuspend", CTLTYPE_INT } \
-	{ "lidaction", CTLTYPE_INT } \
+	{ "lidsuspend", CTLTYPE_INT }, \
+	{ "lidaction", CTLTYPE_INT }, \
 }
 
 #ifdef _KERNEL
