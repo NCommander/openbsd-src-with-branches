@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $OpenBSD: flow.pl,v 1.4 2017/01/16 07:04:50 florian Exp $
+# $OpenBSD: flow.pl,v 1.5 2017/02/27 21:56:09 bluhm Exp $
 
 # Copyright (c) 2013 Florian Obser <florian@openbsd.org>
 #
@@ -20,8 +20,6 @@ use strict;
 use warnings;
 use 5.010;
 use Config;
-
-use lib '.';
 
 use Data::Dumper;
 use IO::Socket::INET;

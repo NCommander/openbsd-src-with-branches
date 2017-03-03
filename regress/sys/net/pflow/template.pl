@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $OpenBSD: template.pl,v 1.3 2013/08/13 08:47:10 florian Exp $
+# $OpenBSD: template.pl,v 1.4 2016/10/26 14:06:33 bluhm Exp $
 
 # Copyright (c) 2013 Florian Obser <florian@openbsd.org>
 #
@@ -19,7 +19,6 @@
 use strict;
 use warnings;
 
-use lib '.';
 use IO::Socket::INET;
 use Net::Flow;
 
