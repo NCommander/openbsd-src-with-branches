@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.47 2016/07/01 23:29:55 renato Exp $ */
+/*	$OpenBSD: interface.c,v 1.48 2016/09/03 16:07:08 renato Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -61,6 +61,7 @@ if_new(struct kif *kif)
 	/* get index and flags */
 	LIST_INIT(&iface->addr_list);
 	iface->ifindex = kif->ifindex;
+	iface->rdomain = kif->rdomain;
 	iface->flags = kif->flags;
 	iface->linkstate = kif->link_state;
 	iface->if_type = kif->if_type;
