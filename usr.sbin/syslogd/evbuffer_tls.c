@@ -1,4 +1,4 @@
-/*	$OpenBSD: evbuffer_tls.c,v 1.8 2015/09/20 21:49:54 bluhm Exp $ */
+/*	$OpenBSD: evbuffer_tls.c,v 1.9 2015/10/09 16:58:25 bluhm Exp $ */
 
 /*
  * Copyright (c) 2002-2004 Niels Provos <provos@citi.umich.edu>
@@ -289,7 +289,7 @@ buffertls_connect(struct buffertls *buftls, int fd)
  * Reads data from a file descriptor into a buffer.
  */
 
-#define EVBUFFER_MAX_READ	4096
+#define EVBUFFER_MAX_READ	16384
 
 int
 evtls_read(struct evbuffer *buf, int fd, int howmuch, struct tls *ctx)
