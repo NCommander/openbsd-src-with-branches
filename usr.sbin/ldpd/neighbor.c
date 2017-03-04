@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.77 2016/07/01 23:29:55 renato Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.78 2016/09/03 16:07:08 renato Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -740,6 +740,7 @@ nbr_act_session_operational(struct nbr *nbr)
 	lde_nbr.id = nbr->id;
 	lde_nbr.v4_enabled = nbr->v4_enabled;
 	lde_nbr.v6_enabled = nbr->v6_enabled;
+	lde_nbr.flags = nbr->flags;
 	return (ldpe_imsg_compose_lde(IMSG_NEIGHBOR_UP, nbr->peerid, 0,
 	    &lde_nbr, sizeof(lde_nbr)));
 }
