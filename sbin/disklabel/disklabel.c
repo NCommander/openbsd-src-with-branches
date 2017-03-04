@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.223 2016/09/02 10:47:17 otto Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.224 2016/09/04 11:35:30 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -85,6 +85,7 @@ int	dflag;
 int	tflag;
 int	uidflag;
 int	verbose;
+int	quiet;
 int	donothing;
 char	print_unit;
 
