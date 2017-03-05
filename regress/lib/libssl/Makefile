@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2015/09/01 17:02:17 jsing Exp $
+#	$OpenBSD: Makefile,v 1.24 2016/11/04 19:45:12 jsing Exp $
 
 SUBDIR= \
 	asn1 \
@@ -6,6 +6,7 @@ SUBDIR= \
 	ciphers \
 	client \
 	pqueue \
+	server \
 	ssl \
 	unit
 
