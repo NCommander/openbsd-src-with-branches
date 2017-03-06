@@ -1,4 +1,4 @@
-/*	$OpenBSD: platform.c,v 1.19 2016/10/23 18:50:34 kettenis Exp $	*/
+/*	$OpenBSD: platform.c,v 1.20 2016/10/25 00:04:59 jsg Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -44,9 +44,6 @@ struct armv7_platform *exynos_platform_match(void);
 struct armv7_platform * (*plat_match[])(void) = {
 #if NOMAP > 0
 	omap_platform_match,
-#endif
-#if NEXYNOS > 0
-	exynos_platform_match,
 #endif
 };
 
