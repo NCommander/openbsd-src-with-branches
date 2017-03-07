@@ -1,4 +1,4 @@
-/*	$OpenBSD: platform.c,v 1.20 2016/10/25 00:04:59 jsg Exp $	*/
+/*	$OpenBSD: platform.c,v 1.21 2017/03/06 07:41:58 kettenis Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -27,7 +27,6 @@
 #include <arm/cortex/smc.h>
 
 #include "omap.h"
-#include "exynos.h"
 
 static struct armv7_platform *platform;
 
@@ -39,7 +38,6 @@ void	com_fdt_init_cons(void);
 void	pluart_init_cons(void);
 
 struct armv7_platform *omap_platform_match(void);
-struct armv7_platform *exynos_platform_match(void);
 
 struct armv7_platform * (*plat_match[])(void) = {
 #if NOMAP > 0
