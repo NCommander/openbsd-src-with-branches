@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.161 2017/02/28 06:31:12 guenther Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.162 2017/03/02 09:29:53 sthen Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -1031,7 +1031,9 @@ improper:
 cleanup_url_get:
 #ifndef NOSSL
 	if (tls != NULL) {
-		tls_close(tls);
+		do {
+			i = tls_close(tls);
+		} while (i == TLS_WANT_POLLIN || i == TLS_WANT_POLLOUT);
 		tls_free(tls);
 	}
 	free(full_host);
