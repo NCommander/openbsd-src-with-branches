@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.S,v 1.8 2010/09/24 13:21:30 matthew Exp $	*/
+/*	$OpenBSD: mutex.S,v 1.9 2013/07/10 21:31:11 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -77,6 +77,7 @@ ENTRY(mtx_enter)
 	movl	%ebp, %esp
 	movl	SOFF(%ebp), %ecx		# %ecx clobbered
 4:
+	pause
 #ifdef DIAGNOSTIC
 	movl	CPUVAR(SELF), %edx
 	cmpl	MTX_OWNER(%ecx), %edx
