@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock_machdep.c,v 1.18 2015/05/30 08:41:30 kettenis Exp $	*/
+/*	$OpenBSD: lock_machdep.c,v 1.19 2016/03/19 11:34:22 mpi Exp $	*/
 /* $NetBSD: lock_machdep.c,v 1.1.2.3 2000/05/03 14:40:30 sommerfeld Exp $ */
 
 /*-
@@ -82,12 +82,14 @@ __mp_lock_spin(struct __mp_lock *mpl, u_int me)
 #else
 	int nticks = __mp_lock_spinout;
 
-	while (mpl->mpl_ticket != me && --nticks > 0)
+	while (mpl->mpl_ticket != me) {
 		SPINLOCK_SPIN_HOOK;
 
-	if (nticks == 0) {
-		db_printf("__mp_lock(%p): lock spun out", mpl);
-		Debugger();
+		if (--nticks <= 0) {
+			db_printf("__mp_lock(%p): lock spun out", mpl);
+			Debugger();
+			nticks = __mp_lock_spinout;
+		}
 	}
 #endif
 }
