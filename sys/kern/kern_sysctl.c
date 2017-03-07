@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.320 2016/11/11 18:59:09 mikeb Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.321 2017/01/21 05:42:03 guenther Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1284,7 +1284,7 @@ sysctl_file(int *name, u_int namelen, char *where, size_t *sizep,
 			struct inpcb *inp;
 			int s;
 
-			s = splnet();
+			NET_LOCK(s);
 			TAILQ_FOREACH(inp, &tcbtable.inpt_queue, inp_queue)
 				FILLSO(inp->inp_socket);
 			TAILQ_FOREACH(inp, &udbtable.inpt_queue, inp_queue)
@@ -1296,7 +1296,7 @@ sysctl_file(int *name, u_int namelen, char *where, size_t *sizep,
 			    inp_queue)
 				FILLSO(inp->inp_socket);
 #endif
-			splx(s);
+			NET_UNLOCK(s);
 		}
 		fp = LIST_FIRST(&filehead);
 		/* don't FREF when f_count == 0 to avoid race in fdrop() */
