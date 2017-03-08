@@ -1,9 +1,10 @@
-# $OpenBSD: Makefile.inc,v 1.1.1.1 2015/01/01 12:53:46 schwarze Exp $
+# $OpenBSD: Makefile.inc,v 1.2 2015/02/03 19:37:25 schwarze Exp $
 
 EQN = /usr/local/bin/eqn
 
 SKIP_GROFF ?= ${REGRESS_TARGETS}
 SKIP_TMAN ?= ALL
+SKIP_MARKDOWN ?= ALL
 
 _FULLHTMLFILES = ${HTML_TARGETS:S/$/.html/}
 

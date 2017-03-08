@@ -1,7 +1,11 @@
-# $OpenBSD: Makefile,v 1.3 2014/07/02 11:42:56 schwarze Exp $
+# $OpenBSD: Makefile,v 1.4 2014/07/04 16:11:42 schwarze Exp $
 
 REGRESS_TARGETS	= nest multiargs badargs break broken
 LINT_TARGETS	= multiargs badargs break broken
+
+# mandoc -T markdown ignores .Bf, at least for now
+
+SKIP_MARKDOWN ?= ALL
 
 # groff-1.22.2 defects:
 #  - If the first argument to .Bf is a bad one,
