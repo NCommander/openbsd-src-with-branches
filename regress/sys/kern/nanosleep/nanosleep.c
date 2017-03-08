@@ -1,4 +1,4 @@
-/*	$OpenBSD: nanosleep.c,v 1.4 2002/02/17 05:39:49 art Exp $	*/
+/*	$OpenBSD: nanosleep.c,v 1.5 2003/08/02 01:24:36 david Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain.
  */
@@ -79,7 +79,7 @@ trivial(void)
 	 * If we receive any signal, something is wrong anyway.
 	 */
 	if (rts.tv_sec != 0 || rts.tv_nsec != 0) {
-		warnx("trivial: non-zero time? %d/%d", rts.tv_sec,
+		warnx("trivial: non-zero time? %lld/%ld", (long long)rts.tv_sec,
 		    rts.tv_nsec);
 		return 1;
 	}
