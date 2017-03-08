@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.204 2017/03/02 09:24:02 mpi Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.205 2017/03/03 08:01:59 mpi Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -747,6 +747,8 @@ nd6_free(struct rtentry *rt, int gc)
 	struct ifnet *ifp;
 
 	splsoftassert(IPL_SOFTNET);
+
+	nd6_invalidate(rt);
 
 	/*
 	 * we used to have pfctlinput(PRC_HOSTDEAD) here.
