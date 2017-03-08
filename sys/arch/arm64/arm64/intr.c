@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.c,v 1.4 2017/02/24 17:16:41 patrick Exp $ */
+/* $OpenBSD: intr.c,v 1.5 2017/02/25 16:53:09 patrick Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -457,6 +457,16 @@ arm_intr_parent_disestablish_fdt(void *cookie)
 
 	ic->ic_disestablish(ih->ih_ih);
 	free(ih, M_DEVBUF, sizeof(*ih));
+}
+
+void
+arm_intr_route(void *cookie, int enable, int cpuid)
+{
+	struct arm_intr_handle *ih = cookie;
+	struct interrupt_controller *ic = ih->ih_ic;
+
+	if (ic->ic_route)
+		ic->ic_route(ih->ih_ih, enable, cpuid);
 }
 
 int
