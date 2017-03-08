@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.488 2017/02/28 15:35:02 yasuoka Exp $	*/
+/*	$OpenBSD: if.c,v 1.489 2017/03/06 08:56:39 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -1499,8 +1499,6 @@ if_downall(void)
 		if ((ifp->if_flags & IFF_UP) == 0)
 			continue;
 		if_down(ifp);
-		ifp->if_flags &= ~IFF_UP;
-
 		if (ifp->if_ioctl) {
 			ifrq.ifr_flags = ifp->if_flags;
 			(void) (*ifp->if_ioctl)(ifp, SIOCSIFFLAGS,
