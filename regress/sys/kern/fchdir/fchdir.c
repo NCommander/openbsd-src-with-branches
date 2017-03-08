@@ -1,4 +1,5 @@
-/*	$OpenBSD$
+/*	$OpenBSD: fchdir.c,v 1.1 2011/07/06 04:43:01 guenther Exp $ */
+
 /*
  *	Written by Philip Guenther <guenther@openbsd.org> 2011 Public Domain.
  *
