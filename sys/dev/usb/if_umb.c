@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.c,v 1.8 2016/11/25 12:43:26 gerhard Exp $ */
+/*	$OpenBSD: if_umb.c,v 1.9 2017/01/22 10:17:39 dlg Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -919,8 +919,6 @@ umb_state_task(void *arg)
 void
 umb_up(struct umb_softc *sc)
 {
-	struct ifnet *ifp = GET_IFP(sc);
-
 	splassert(IPL_NET);
 
 	switch (sc->sc_state) {
@@ -974,7 +972,6 @@ umb_up(struct umb_softc *sc)
 		DPRINTF("%s: init: reached state UP\n", DEVNAM(sc));
 		if (!umb_alloc_bulkpipes(sc)) {
 			printf("%s: opening bulk pipes failed\n", DEVNAM(sc));
-			ifp->if_flags &= ~IFF_UP;
 			umb_down(sc, 1);
 		}
 		break;
