@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.213 2017/02/14 18:13:05 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.214 2017/03/09 17:06:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1153,6 +1153,10 @@ server_client_reset_state(struct client *c)
 		if (~mode & MODE_MOUSE_ALL)
 			mode |= MODE_MOUSE_BUTTON;
 	}
+
+	/* Clear bracketed paste mode if at the prompt. */
+	if (c->prompt_string != NULL)
+		mode &= ~MODE_BRACKETPASTE;
 
 	/* Set the terminal mode and reset attributes. */
 	tty_update_mode(&c->tty, mode, s);
