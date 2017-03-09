@@ -1,4 +1,4 @@
-/*	$OpenBSD: roff.c,v 1.163 2017/03/03 13:55:06 schwarze Exp $ */
+/*	$OpenBSD: roff.c,v 1.164 2017/03/08 13:17:28 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2015, 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -3090,6 +3090,8 @@ roff_userdef(ROFF_ARGS)
 		else if (++expand_count > EXPAND_LIMIT) {
 			mandoc_msg(MANDOCERR_ROFFLOOP, r->parse,
 			    ln, (int)(cp - n1), NULL);
+			free(buf->buf);
+			buf->buf = n1;
 			return ROFF_IGN;
 		}
 
