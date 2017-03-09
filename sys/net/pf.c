@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.962 2015/12/23 21:04:55 jasper Exp $ */
+/*	$OpenBSD: pf.c,v 1.965 2016/01/31 00:18:07 sashan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1164,7 +1164,7 @@ pf_purge_thread(void *v)
 int32_t
 pf_state_expires(const struct pf_state *state)
 {
-	int32_t		timeout;
+	u_int32_t	timeout;
 	u_int32_t	start;
 	u_int32_t	end;
 	u_int32_t	states;
@@ -1193,7 +1193,7 @@ pf_state_expires(const struct pf_state *state)
 		if (states >= end)
 			return (0);
 
-		timeout = timeout * (end - states) / (end - start);
+		timeout = (u_int64_t)timeout * (end - states) / (end - start);
 	}
 
 	return (state->expire + timeout);
