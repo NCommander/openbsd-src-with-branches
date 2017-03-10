@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.267 2017/02/03 05:05:56 djm Exp $ */
+/* $OpenBSD: readconf.c,v 1.268 2017/02/03 23:01:19 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1485,6 +1485,7 @@ parse_keytypes:
 			if (r == GLOB_NOMATCH) {
 				debug("%.200s line %d: include %s matched no "
 				    "files",filename, linenum, arg2);
+				free(arg2);
 				continue;
 			} else if (r != 0 || gl.gl_pathc < 0)
 				fatal("%.200s line %d: glob failed for %s.",
