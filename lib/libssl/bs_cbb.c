@@ -1,4 +1,4 @@
-/*	$OpenBSD: bs_cbb.c,v 1.12 2015/06/18 23:25:07 doug Exp $	*/
+/*	$OpenBSD: bs_cbb.c,v 1.13 2015/09/01 13:35:39 jsing Exp $	*/
 /*
  * Copyright (c) 2014, Google Inc.
  *
@@ -110,7 +110,7 @@ cbb_buffer_add(struct cbb_buffer_st *base, uint8_t **out, size_t len)
 		if (newcap < base->cap || newcap < newlen)
 			newcap = newlen;
 
-		newbuf = realloc(base->buf, newcap);
+		newbuf = recallocarray(base->buf, base->cap, newcap, 1);
 		if (newbuf == NULL)
 			return 0;
 
