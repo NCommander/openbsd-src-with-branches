@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc2.c,v 1.41 2017/02/16 14:09:00 visa Exp $	*/
+/*	$OpenBSD: dwc2.c,v 1.42 2017/03/10 09:14:06 mpi Exp $	*/
 /*	$NetBSD: dwc2.c,v 1.32 2014/09/02 23:26:20 macallan Exp $	*/
 
 /*-
@@ -841,7 +841,7 @@ fail:
 	usb_transfer_complete(xfer);
 	splx(s);
 
-	return USBD_IN_PROGRESS;
+	return err;
 }
 
 STATIC void
