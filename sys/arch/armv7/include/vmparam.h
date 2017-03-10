@@ -1,4 +1,4 @@
-/* 	$OpenBSD: vmparam.h,v 1.4 2015/06/24 21:35:01 miod Exp $	*/
+/* 	$OpenBSD: vmparam.h,v 1.5 2017/01/24 13:33:06 jca Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.23 2003/05/22 05:47:07 thorpej Exp $	*/
 
 /*
@@ -83,8 +83,8 @@
  * max number of non-contig chunks of physical RAM you can have
  */
 
-#define	VM_PHYSSEG_MAX		2
-#define	VM_PHYSSEG_STRAT	VM_PSTRAT_RANDOM
+#define	VM_PHYSSEG_MAX		32
+#define	VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
 
 /*
  * this indicates that we can't add RAM to the VM system after the
