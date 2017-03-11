@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.c,v 1.4 2017/02/04 22:43:46 patrick Exp $	*/
+/*	$OpenBSD: efiboot.c,v 1.5 2017/02/08 09:13:25 patrick Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -353,7 +353,7 @@ efi_timer_init(void)
 {
 	EFI_STATUS status;
 
-	status = BS->CreateEvent(EVT_TIMER, TPL_CALLBACK,
+	status = BS->CreateEvent(EVT_TIMER | EVT_NOTIFY_SIGNAL, TPL_CALLBACK,
 	    efi_timer, NULL, &timer);
 	if (status == EFI_SUCCESS)
 		status = BS->SetTimer(timer, TimerPeriodic, 10000000);
