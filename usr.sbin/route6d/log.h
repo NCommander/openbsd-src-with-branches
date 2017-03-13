@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 20083, 2004 Henning Brauer <henning@openbsd.org>
  *
