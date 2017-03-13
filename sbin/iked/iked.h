@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.103 2017/03/13 14:33:33 patrick Exp $	*/
+/*	$OpenBSD: iked.h,v 1.104 2017/03/13 14:57:55 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -157,6 +157,7 @@ struct iked_flow {
 
 	RB_ENTRY(iked_flow)		 flow_node;
 	TAILQ_ENTRY(iked_flow)		 flow_entry;
+	int				 flow_ipcomp;
 };
 RB_HEAD(iked_flows, iked_flow);
 TAILQ_HEAD(iked_saflows, iked_flow);
