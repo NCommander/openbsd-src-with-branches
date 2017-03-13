@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.10 2017/02/06 19:23:45 patrick Exp $ */
+/* $OpenBSD: machdep.c,v 1.11 2017/02/17 19:20:22 patrick Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -844,8 +844,6 @@ initarm(struct arm64_bootparams *abp)
 
 	memstart = reg.addr;
 	memsize = reg.size;
-	if (reg.size >  0x80000000)
-		memsize = 0x80000000;
 
 	/* Set the pcpu data, this is needed by pmap_bootstrap */
 	// smp
