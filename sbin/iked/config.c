@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.42 2016/06/01 11:16:41 patrick Exp $	*/
+/*	$OpenBSD: config.c,v 1.43 2017/01/03 17:51:38 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -127,6 +127,8 @@ config_free_sa(struct iked *env, struct iked_sa *sa)
 		group_free(sa->sa_dhgroup);
 	ibuf_release(sa->sa_dhiexchange);
 	ibuf_release(sa->sa_dhrexchange);
+
+	ibuf_release(sa->sa_simult);
 
 	hash_free(sa->sa_prf);
 	hash_free(sa->sa_integr);
