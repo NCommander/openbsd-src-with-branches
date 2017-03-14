@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.226 2016/12/30 23:21:26 bluhm Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.227 2017/01/02 15:58:02 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -743,11 +743,11 @@ main(int argc, char *argv[])
 	    (ev_sendsys = malloc(sizeof(struct event))) == NULL ||
 	    (ev_udp = malloc(sizeof(struct event))) == NULL ||
 	    (ev_udp6 = malloc(sizeof(struct event))) == NULL ||
-	    (ev_bind = reallocarray(NULL,nbind,sizeof(struct event))) == NULL ||
-	    (ev_listen = reallocarray(NULL,nlisten,sizeof(struct event)))
+	    (ev_bind = reallocarray(NULL, nbind, sizeof(struct event))) == NULL ||
+	    (ev_listen = reallocarray(NULL, nlisten, sizeof(struct event)))
 		== NULL ||
 	    (ev_tls = malloc(sizeof(struct event))) == NULL ||
-	    (ev_unix = reallocarray(NULL,nunix,sizeof(struct event))) == NULL ||
+	    (ev_unix = reallocarray(NULL, nunix, sizeof(struct event))) == NULL ||
 	    (ev_hup = malloc(sizeof(struct event))) == NULL ||
 	    (ev_int = malloc(sizeof(struct event))) == NULL ||
 	    (ev_quit = malloc(sizeof(struct event))) == NULL ||
