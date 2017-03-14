@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.193 2017/03/11 07:03:38 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.194 2017/03/11 16:54:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1293,6 +1293,7 @@ pledge_ioctl(struct proc *p, long com, struct file *fp)
 		case SIOCGIFRDOMAIN:
 		case SIOCGIFDSTADDR_IN6:
 		case SIOCGIFNETMASK_IN6:
+		case SIOCGIFXFLAGS:
 		case SIOCGNBRINFO_IN6:
 		case SIOCGIFINFO_IN6:
 		case SIOCGIFMEDIA:
