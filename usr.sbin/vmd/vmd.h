@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.h,v 1.46 2017/03/01 18:00:50 reyk Exp $	*/
+/*	$OpenBSD: vmd.h,v 1.47 2017/03/02 07:33:37 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -236,6 +236,7 @@ int	 vmm_pipe(struct vmd_vm *, int, void (*)(int, short, void *));
 
 /* vm.c */
 int	 start_vm(struct vmd_vm *, int);
+__dead void vm_shutdown(unsigned int);
 
 /* control.c */
 int	 config_init(struct vmd *);
