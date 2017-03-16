@@ -1,4 +1,4 @@
-/*	$OpenBSD: necsb.c,v 1.2 2015/02/14 14:54:13 aoyama Exp $	*/
+/*	$OpenBSD: necsb.c,v 1.3 2015/02/18 22:42:04 aoyama Exp $	*/
 /*	$NecBSD: nec86_isa.c,v 1.9 1998/09/26 11:31:11 kmatsuda Exp $	*/
 /*	$NetBSD$	*/
 
@@ -63,7 +63,7 @@ struct cfdriver necsb_cd = {
 
 /* bus space tag for necsb */
 struct luna88k_bus_space_tag necsb_bst = {
-	1,	/* when reading/writing 1 byte, the stride is 1. */
+	0,	/* when reading/writing 1 byte, no shift is needed. */
 	0,
 	0,
 	0,
