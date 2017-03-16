@@ -1,4 +1,4 @@
-/* $OpenBSD: buffer.c,v 1.21 2014/07/11 08:44:48 jsing Exp $ */
+/* $OpenBSD: buffer.c,v 1.22 2017/01/29 17:49:22 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -73,14 +73,11 @@ BUF_MEM_new(void)
 {
 	BUF_MEM *ret;
 
-	ret = malloc(sizeof(BUF_MEM));
-	if (ret == NULL) {
+	if ((ret = calloc(1, sizeof(BUF_MEM))) == NULL) {
 		BUFerror(ERR_R_MALLOC_FAILURE);
 		return (NULL);
 	}
-	ret->length = 0;
-	ret->max = 0;
-	ret->data = NULL;
+
 	return (ret);
 }
 
