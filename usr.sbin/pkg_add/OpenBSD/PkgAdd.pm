@@ -89,9 +89,16 @@ sub tie_files
 	if (defined $sha->{$self->{d}->key}) {
 		my $tied = $sha->{$self->{d}->key};
 		# don't tie if there's a problem with the file
-		return unless -f $tied->realname($state);
+		my $realname = $tied->realname($state);
+		return unless -f $realname;
 		# and do a sanity check that this file wasn't altered
 		return unless (stat _)[7] == $self->{size};
+		if (!$state->{quick}) {
+			my $d = $self->compute_digest($realname, $self->{d});
+			# XXX we don't have to display anything here
+			# because delete will take care of that
+			return unless $d->equals($self->{d});
+		}
 		$self->{tieto} = $tied;
 		$tied->{tied} = 1;
 		$state->say("Tieing #1 to #2", $self->stringize,
