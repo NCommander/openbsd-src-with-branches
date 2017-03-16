@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-kill-pane.c,v 1.22 2016/10/16 19:04:05 nicm Exp $ */
+/* $OpenBSD: cmd-kill-pane.c,v 1.23 2017/01/14 18:53:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -56,6 +56,7 @@ cmd_kill_pane_exec(struct cmd *self, struct cmdq_item *item)
 			layout_close_pane(loopwp);
 			window_remove_pane(wl->window, loopwp);
 		}
+		server_redraw_window(wl->window);
 		return (CMD_RETURN_NORMAL);
 	}
 
