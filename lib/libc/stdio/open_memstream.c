@@ -1,4 +1,4 @@
-/*	$OpenBSD: open_memstream.c,v 1.5 2015/02/05 12:59:57 millert Exp $	*/
+/*	$OpenBSD: open_memstream.c,v 1.6 2015/08/31 02:53:57 guenther Exp $	*/
 
 /*
  * Copyright (c) 2011 Martin Pieuchot <mpi@openbsd.org>
@@ -50,7 +50,7 @@ memstream_write(void *v, const char *b, int l)
 
 		if (sz < end + 1)
 			sz = end + 1;
-		p = realloc(st->string, sz);
+		p = recallocarray(st->string, st->size, sz, 1);
 		if (!p)
 			return (-1);
 		bzero(p + st->size, sz - st->size);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fgetln.c,v 1.15 2016/08/25 19:21:33 schwarze Exp $ */
+/*	$OpenBSD: fgetln.c,v 1.16 2016/09/21 04:38:56 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -46,7 +46,7 @@ __slbexpand(FILE *fp, size_t newsize)
 
 	if (fp->_lb._size >= newsize)
 		return (0);
-	if ((p = realloc(fp->_lb._base, newsize)) == NULL)
+	if ((p = recallocarray(fp->_lb._base, fp->_lb._size, newsize, 1)) == NULL)
 		return (-1);
 	fp->_lb._base = p;
 	fp->_lb._size = newsize;
