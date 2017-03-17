@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.197 2016/11/03 16:39:28 ajacoutot Exp $
+#	$OpenBSD: Makefile,v 1.198 2017/01/24 12:14:44 beck Exp $
 
 .include <bsd.own.mk>
 
 SUBDIR=	ac accton acme-client acpidump adduser amd apm apmd arp \
 	authpf bgpctl bgpd bind chroot config cron crunchgen dev_mkdb \
-	dhcpd dhcrelay dvmrpctl dvmrpd edquota eeprom eigrpd eigrpctl \
+	dhcpd dhcrelay dhcrelay6 dvmrpctl dvmrpd edquota eeprom eigrpd eigrpctl \
 	fdformat ftp-proxy gpioctl hostapd hostctl hotplugd httpd identd \
 	ifstated ikectl inetd installboot iostat iscsictl iscsid kgmon \
 	kvm_mkdb ldapd ldapctl ldomctl ldomd ldpd ldpctl lpr makefs \
