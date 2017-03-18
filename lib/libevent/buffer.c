@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.29 2015/02/05 12:59:57 millert Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.30 2016/09/03 11:31:17 nayden Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Niels Provos <provos@citi.umich.edu>
@@ -359,7 +359,8 @@ evbuffer_expand(struct evbuffer *buf, size_t datlen)
 
 		if (buf->orig_buffer != buf->buffer)
 			evbuffer_align(buf);
-		if ((newbuf = realloc(buf->buffer, length)) == NULL)
+		if ((newbuf = recallocarray(buf->buffer, buf->totallen,
+		    length, 1)) == NULL)
 			return (-1);
 
 		buf->orig_buffer = buf->buffer = newbuf;
