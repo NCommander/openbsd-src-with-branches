@@ -1,4 +1,4 @@
-/* $OpenBSD: i8259.c,v 1.5 2017/01/17 21:51:01 krw Exp $ */
+/* $OpenBSD: i8259.c,v 1.6 2017/03/19 03:10:57 mlarkin Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -150,7 +150,7 @@ i8259_ack(void)
 			if (pics[MASTER].irr == 0)
 				pics[MASTER].asserted = 0;
 
-			return i;
+			return i + pics[MASTER].vec;
 		}
 
 		i++;
@@ -177,7 +177,7 @@ i8259_ack(void)
 					pics[MASTER].asserted = 0;
 			}
 
-			ret = i + 8;
+			ret = i + pics[SLAVE].vec;
 
 			return ret;
 		}
