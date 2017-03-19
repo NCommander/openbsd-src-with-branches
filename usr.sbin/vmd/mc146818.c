@@ -1,4 +1,4 @@
-/* $OpenBSD: mc146818.c,v 1.4 2016/10/26 05:26:36 mlarkin Exp $ */
+/* $OpenBSD: mc146818.c,v 1.5 2017/01/17 21:51:01 krw Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -132,7 +132,7 @@ mc146818_init(uint32_t vm_id)
 	memset(&rtc, 0, sizeof(rtc));
 	time(&rtc.now);
 
-	rtc.regs[MC_REGB] = MC_REGB_24HR | MC_REGB_BINARY;
+	rtc.regs[MC_REGB] = MC_REGB_24HR;
 	rtc_updateregs();
 	rtc.vm_id = vm_id;
 
