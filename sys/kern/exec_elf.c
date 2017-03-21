@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.125 2016/06/08 12:07:52 kettenis Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.126 2016/06/11 21:04:08 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -818,6 +818,7 @@ ELFNAME2(exec,fixup)(struct proc *p, struct exec_package *epp)
 	 * linked binaries
 	 */
 	if (error == 0) {
+		memset(&ai, 0, sizeof ai);
 		a = ai;
 
 		a->au_id = AUX_phdr;
