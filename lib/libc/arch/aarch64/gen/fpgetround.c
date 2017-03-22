@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: fpgetround.c,v 1.1 2017/01/11 18:09:24 patrick Exp $	*/
 /*
  * Copyright (C) 2014 Andrew Turner
  * All rights reserved.
@@ -31,10 +31,6 @@
 #include <sys/types.h>
 #include <ieeefp.h>
 
-#ifdef __weak_alias
-__weak_alias(_fpgetround,fpgetround);
-#endif
-
 fp_rnd
 fpgetround(void)
 {
@@ -44,3 +40,4 @@ fpgetround(void)
 
 	return ((fpscr >> 22) & 3);
 }
+DEF_WEAK(fpgetround);
