@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.302 2017/02/20 06:29:42 jca Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.303 2017/03/17 17:06:25 mpi Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -947,11 +947,8 @@ carp_ifdetach(struct ifnet *ifp0)
 
 	KERNEL_ASSERT_LOCKED(); /* touching vhif_vrs */
 
-	for (sc = SRPL_FIRST_LOCKED(&cif->vhif_vrs); sc != NULL; sc = nextsc) {
-		nextsc = SRPL_NEXT_LOCKED(sc, sc_list);
-
+	SRPL_FOREACH_SAFE_LOCKED(sc, &cif->vhif_vrs, sc_list, nextsc)
 		carpdetach(sc); /* this can free cif */
-	}
 }
 
 void
