@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto_wep.c,v 1.13 2015/07/15 22:16:42 deraadt Exp $	*/
+/*	$OpenBSD: ieee80211_crypto_wep.c,v 1.14 2015/11/24 13:45:06 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -66,8 +66,10 @@ ieee80211_wep_set_key(struct ieee80211com *ic, struct ieee80211_key *k)
 void
 ieee80211_wep_delete_key(struct ieee80211com *ic, struct ieee80211_key *k)
 {
-	if (k->k_priv != NULL)
-		free(k->k_priv, M_DEVBUF, 0);
+	if (k->k_priv != NULL) {
+		explicit_bzero(k->k_priv, sizeof(struct ieee80211_wep_ctx));
+		free(k->k_priv, M_DEVBUF, sizeof(struct ieee80211_wep_ctx));
+	}
 	k->k_priv = NULL;
 }
 
