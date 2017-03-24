@@ -1,4 +1,4 @@
-/*	$OpenBSD: malloc.c,v 1.215 2017/02/15 12:31:57 jsg Exp $	*/
+/*	$OpenBSD: malloc.c,v 1.216 2017/03/24 16:15:31 otto Exp $	*/
 /*
  * Copyright (c) 2008, 2010, 2011, 2016 Otto Moerbeek <otto@drijf.net>
  * Copyright (c) 2012 Matthew Dempsky <matthew@openbsd.org>
@@ -211,6 +211,8 @@ static void fill_canary(char *ptr, size_t sz, size_t allocated);
 #ifdef MALLOC_STATS
 void malloc_dump(int, int, struct dir_info *);
 PROTO_NORMAL(malloc_dump);
+void malloc_gdump(int);
+PROTO_NORMAL(malloc_gdump);
 static void malloc_exit(void);
 #define CALLER	__builtin_return_address(0)
 #else
@@ -2243,6 +2245,19 @@ malloc_dump(int fd, int poolno, struct dir_info *pool)
 	errno = saved_errno;
 }
 DEF_WEAK(malloc_dump);
+
+void
+malloc_gdump(int fd)
+{
+	int i;
+	int saved_errno = errno;
+
+	for (i = 0; i < _MALLOC_MUTEXES; i++)
+		malloc_dump(fd, i, mopts.malloc_pool[i]);
+
+	errno = saved_errno;
+}
+DEF_WEAK(malloc_gdump);
 
 static void
 malloc_exit(void)
