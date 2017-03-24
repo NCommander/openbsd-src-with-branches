@@ -556,7 +556,7 @@ static void
 i8259_io_write(union vm_exit *vei)
 {
 	uint16_t port = vei->vei.vei_port;
-	uint8_t data = get_input_data(vei);
+	uint8_t data = vei->vei.vei_data;
 	uint8_t n = 0;
 
 	switch (port) {

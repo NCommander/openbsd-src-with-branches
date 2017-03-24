@@ -133,7 +133,7 @@ vcpu_exit_i8253(struct vm_run_params *vrp)
 	struct timeval now, delta;
 	union vm_exit *vei = vrp->vrp_exit;
 
-	out_data = get_input_data(vei);
+	out_data = vei->vei.vei_data & 0xFF;
 
 	if (vei->vei.vei_port == TIMER_CTRL) {
 		if (vei->vei.vei_dir == VEI_DIR_OUT) { /* OUT instruction */
