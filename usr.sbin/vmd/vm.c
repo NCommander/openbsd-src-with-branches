@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm.c,v 1.4 2017/03/21 03:29:57 mlarkin Exp $	*/
+/*	$OpenBSD: vm.c,v 1.5 2017/03/23 07:59:41 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -1002,6 +1002,7 @@ vcpu_exit(struct vm_run_params *vrp)
 
 	switch (vrp->vrp_exit_reason) {
 	case VMX_EXIT_INT_WINDOW:
+	case VMX_EXIT_CPUID:
 	case VMX_EXIT_EXTINT:
 	case VMX_EXIT_EPT_VIOLATION:
 	case SVM_VMEXIT_NPF:
