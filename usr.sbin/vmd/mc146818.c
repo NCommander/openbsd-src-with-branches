@@ -1,4 +1,4 @@
-/* $OpenBSD: mc146818.c,v 1.8 2017/03/23 07:59:41 mlarkin Exp $ */
+/* $OpenBSD: mc146818.c,v 1.9 2017/03/25 07:46:24 mlarkin Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -251,7 +251,7 @@ vcpu_exit_mc146818(struct vm_run_params *vrp)
 	uint8_t dir = vei->vei.vei_dir;
 	uint32_t data;
 
-	data = get_input_data(vei);
+	get_input_data(vei, &data);
 
 	if (port == IO_RTC) {
 		/* Discard NMI bit */
