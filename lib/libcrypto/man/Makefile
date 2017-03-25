@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.114 2017/01/31 05:40:26 schwarze Exp $
+# $OpenBSD: Makefile,v 1.115 2017/02/20 23:21:19 beck Exp $
 
 .include <bsd.own.mk>
 
@@ -26,6 +26,7 @@ MAN=	\
 	BIO_find_type.3 \
 	BIO_get_ex_new_index.3 \
 	BIO_new.3 \
+	BIO_printf.3 \
 	BIO_push.3 \
 	BIO_read.3 \
 	BIO_s_accept.3 \
