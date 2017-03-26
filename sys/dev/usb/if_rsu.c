@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rsu.c,v 1.36 2016/07/26 18:18:04 stsp Exp $	*/
+/*	$OpenBSD: if_rsu.c,v 1.37 2017/01/22 10:17:39 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -2139,7 +2139,7 @@ rsu_load_firmware(struct rsu_softc *sc)
 		goto fail;
 	}
  fail:
-	free(fw, M_DEVBUF, 0);
+	free(fw, M_DEVBUF, size);
 	return (error);
 }
 

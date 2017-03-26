@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.78 2016/11/06 12:58:01 mpi Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.79 2017/01/22 10:17:39 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -213,7 +213,7 @@ uath_attachhook(struct device *self)
 	}
 
 	error = uath_loadfirmware(sc, fw, size);
-	free(fw, M_DEVBUF, 0);
+	free(fw, M_DEVBUF, size);
 
 	if (error == 0) {
 		/*
