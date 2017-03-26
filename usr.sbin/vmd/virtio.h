@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.h,v 1.11 2017/03/15 18:06:18 reyk Exp $	*/
+/*	$OpenBSD: virtio.h,v 1.12 2017/03/25 15:47:37 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -104,6 +104,7 @@ struct vioblk_dev {
 
 	int fd;
 	uint64_t sz;
+	uint32_t max_xfer;
 };
 
 struct vionet_dev {
