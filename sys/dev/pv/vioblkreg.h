@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioblkreg.h,v 1.2 2012/10/12 21:12:19 reyk Exp $	*/
+/*	$OpenBSD: vioblkreg.h,v 1.1 2017/01/21 11:22:34 reyk Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch.
@@ -63,6 +63,7 @@
 /* Status */
 #define VIRTIO_BLK_S_OK		0
 #define VIRTIO_BLK_S_IOERR	1
+#define VIRTIO_BLK_S_UNSUPP	2
 
 #define VIRTIO_BLK_ID_BYTES	20 /* length of serial number */
 
