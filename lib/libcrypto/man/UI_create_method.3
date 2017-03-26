@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: UI_create_method.3,v 1.1 2017/03/26 00:06:10 schwarze Exp $
 .\"	OpenSSL UI_create_method.pod 8e3d46e5 Mar 11 10:51:04 2017 +0100
 .\"
 .\" This file was written by Richard Levitte <levitte@openssl.org>.
@@ -48,7 +48,7 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 .\" OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: March 24 2017 $
+.Dd $Mdocdate: March 26 2017 $
 .Dt UI_CREATE_METHOD 3
 .Os
 .Sh NAME
@@ -169,8 +169,8 @@ by closing the channel to the tty, maybe by destroying a dialog box.
 All of these functions are expected to return 0 on error, 1 on success,
 or -1 on out-off-band events, for example if some prompting has been
 cancelled (by pressing Ctrl-C, for example).
-Only the flusher or the reader are expected to return -1. If returned by
-another of the functions, it's treated as if 0 was returned.
+Only the flusher or the reader are expected to return -1.
+If returned by another of the functions, it's treated as if 0 was returned.
 .Pp
 Regarding the writer and the reader, don't assume the former should only
 write and don't assume the latter should only read.
