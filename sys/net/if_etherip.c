@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_etherip.c,v 1.14 2017/01/29 19:58:47 bluhm Exp $	*/
+/*	$OpenBSD: if_etherip.c,v 1.15 2017/03/07 23:35:06 jca Exp $	*/
 /*
  * Copyright (c) 2015 Kazuya GODA <goda@openbsd.org>
  *
@@ -423,7 +423,7 @@ ip_etherip_input(struct mbuf **mp, int *offp, int proto)
 		return IPPROTO_DONE;
 	}
 
-	if (!etherip_allow) {
+	if (!etherip_allow && (m->m_flags & (M_AUTH|M_CONF)) == 0) {
 		m_freem(m);
 		etheripstat.etherips_pdrops++;
 		return IPPROTO_DONE;
@@ -579,7 +579,7 @@ ip6_etherip_input(struct mbuf **mp, int *offp, int proto)
 	struct ifnet *ifp = NULL;
 
 
-	if (!etherip_allow) {
+	if (!etherip_allow && (m->m_flags & (M_AUTH|M_CONF)) == 0) {
 		m_freem(m);
 		etheripstat.etherips_pdrops++;
 		return IPPROTO_NONE;
