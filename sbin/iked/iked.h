@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.108 2017/03/13 18:48:16 mikeb Exp $	*/
+/*	$OpenBSD: iked.h,v 1.109 2017/03/13 18:49:20 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -753,6 +753,7 @@ struct ibuf *
 	 dsa_setkey(struct iked_dsa *, void *, size_t, uint8_t);
 void	 dsa_free(struct iked_dsa *);
 int	 dsa_init(struct iked_dsa *, const void *, size_t);
+size_t	 dsa_prefix(struct iked_dsa *);
 size_t	 dsa_length(struct iked_dsa *);
 int	 dsa_update(struct iked_dsa *, const void *, size_t);
 ssize_t	 dsa_sign_final(struct iked_dsa *, void *, size_t);
