@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm.c,v 1.9 2017/03/25 16:28:25 reyk Exp $	*/
+/*	$OpenBSD: vm.c,v 1.10 2017/03/25 22:36:53 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -1413,7 +1413,7 @@ set_return_data(union vm_exit *vei, uint32_t data)
 		break;
 	case 4:
 		vei->vei.vei_data = data;
-		break;	
+		break;
 	}
 }
 
