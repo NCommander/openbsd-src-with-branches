@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.324 2017/03/12 21:30:44 jcs Exp $ */
+/* $OpenBSD: acpi.c,v 1.325 2017/03/13 01:50:49 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -2489,9 +2489,9 @@ fail_quiesce:
 	config_suspend_all(DVACT_WAKEUP);
 
 #ifdef HIBERNATE
-fail_alloc:
 	if (sleepmode == ACPI_SLEEP_HIBERNATE) {
 		hibernate_free();
+fail_alloc:
 		hibernate_resume_bufcache();
 	}
 #endif /* HIBERNATE */
