@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.61 2017/01/20 13:56:51 mikeb Exp $	*/
+/*	$OpenBSD: parse.y,v 1.62 2017/03/27 10:06:41 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -2859,6 +2859,7 @@ create_ike(char *name, int af, uint8_t ipproto, struct ipsec_hosts *hosts,
 	}
 
 	config_setpolicy(env, &pol, PROC_IKEV2);
+	config_setflow(env, &pol, PROC_IKEV2);
 
 	rules++;
 	return (0);
