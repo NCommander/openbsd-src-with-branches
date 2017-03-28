@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs_msdos.c,v 1.2 2016/10/23 10:58:45 natano Exp $	*/
+/*	$OpenBSD: mkfs_msdos.c,v 1.3 2016/12/17 16:43:30 krw Exp $	*/
 /*	$NetBSD: mkfs_msdos.c,v 1.10 2016/04/03 11:00:13 mlelstv Exp $	*/
 
 /*
@@ -797,10 +797,11 @@ getbpbinfo(int fd, const char *fname, const char *dtype, int iflag,
 		return -1;
 	    bpb->spt = nsectors;
 	}
-	if (!bpb->hds)
+	if (!bpb->hds) {
 	    if (ckgeom(fname, ntracks, "drive heads") == -1)
 		return -1;
 	    bpb->hds = ntracks;
+	}
 	if (!bpb->bsec)
 	    bpb->bsec = size;
     }
