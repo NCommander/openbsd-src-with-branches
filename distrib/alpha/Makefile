@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.10 2015/08/29 16:48:22 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.11 2017/01/27 17:59:09 natano Exp $
 
-SUBDIR= bsd.rd miniroot floppy floppyB floppyC cdfs
+SUBDIR= bsd.rd miniroot floppy floppyC cdfs
 
 .if	make(obj) || make(cleandir) || make(clean)
 SUBDIR+= iso
