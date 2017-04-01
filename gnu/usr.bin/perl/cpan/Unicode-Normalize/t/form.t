@@ -1,8 +1,11 @@
 
 BEGIN {
-    unless ("A" eq pack('U', 0x41)) {
-	print "1..0 # Unicode::Normalize " .
-	    "cannot stringify a Unicode code point\n";
+    unless ('A' eq pack('U', 0x41)) {
+	print "1..0 # Unicode::Normalize cannot pack a Unicode code point\n";
+	exit 0;
+    }
+    unless (0x41 == unpack('U', 'A')) {
+	print "1..0 # Unicode::Normalize cannot get a Unicode code point\n";
 	exit 0;
     }
 }
@@ -16,12 +19,22 @@ BEGIN {
 
 #########################
 
-use Test;
 use strict;
 use warnings;
-BEGIN { plan tests => 37 };
+BEGIN { $| = 1; print "1..37\n"; }
+my $count = 0;
+sub ok ($;$) {
+    my $p = my $r = shift;
+    if (@_) {
+	my $x = shift;
+	$p = !defined $x ? !defined $r : !defined $r ? 0 : $r eq $x;
+    }
+    print $p ? "ok" : "not ok", ' ', ++$count, "\n";
+}
+
 use Unicode::Normalize qw(:all);
-ok(1); # If we made it this far, we're ok.
+
+ok(1);
 
 sub answer { defined $_[0] ? $_[0] ? "YES" : "NO" : "MAYBE" }
 

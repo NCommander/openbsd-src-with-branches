@@ -44,11 +44,17 @@ public:
   const X86Subtarget *STI;
   const X86InstrInfo *TII;
   const X86RegisterInfo *TRI;
+  const X86MachineFunctionInfo *X86FI;
   const X86FrameLowering *X86FL;
 
   bool runOnMachineFunction(MachineFunction &Fn) override;
 
-  const char *getPassName() const override {
+  MachineFunctionProperties getRequiredProperties() const override {
+    return MachineFunctionProperties().set(
+        MachineFunctionProperties::Property::NoVRegs);
+  }
+
+  StringRef getPassName() const override {
     return "X86 pseudo instruction expansion pass";
   }
 
@@ -83,24 +89,39 @@ bool X86ExpandPseudo::ExpandMI(MachineBasicBlock &MBB,
 
     // Adjust stack pointer.
     int StackAdj = StackAdjust.getImm();
+    int MaxTCDelta = X86FI->getTCReturnAddrDelta();
+    int Offset = 0;
+    assert(MaxTCDelta <= 0 && "MaxTCDelta should never be positive");
 
-    if (StackAdj) {
+    // Incoporate the retaddr area.
+    Offset = StackAdj - MaxTCDelta;
+    assert(Offset >= 0 && "Offset should never be negative");
+
+    if (Offset) {
       // Check for possible merge with preceding ADD instruction.
-      StackAdj += X86FL->mergeSPUpdates(MBB, MBBI, true);
-      X86FL->emitSPUpdate(MBB, MBBI, StackAdj, /*InEpilogue=*/true);
+      Offset += X86FL->mergeSPUpdates(MBB, MBBI, true);
+      X86FL->emitSPUpdate(MBB, MBBI, Offset, /*InEpilogue=*/true);
     }
 
     // Jump to label or value in register.
     bool IsWin64 = STI->isTargetWin64();
     if (Opcode == X86::TCRETURNdi || Opcode == X86::TCRETURNdi64) {
-      unsigned Op = (Opcode == X86::TCRETURNdi)
-                        ? X86::TAILJMPd
-                        : (IsWin64 ? X86::TAILJMPd64_REX : X86::TAILJMPd64);
+      unsigned Op;
+      switch (Opcode) {
+      case X86::TCRETURNdi:
+        Op = X86::TAILJMPd;
+        break;
+      default:
+        // Note: Win64 uses REX prefixes indirect jumps out of functions, but
+        // not direct ones.
+        Op = X86::TAILJMPd64;
+        break;
+      }
       MachineInstrBuilder MIB = BuildMI(MBB, MBBI, DL, TII->get(Op));
-      if (JumpTarget.isGlobal())
+      if (JumpTarget.isGlobal()) {
         MIB.addGlobalAddress(JumpTarget.getGlobal(), JumpTarget.getOffset(),
                              JumpTarget.getTargetFlags());
-      else {
+      } else {
         assert(JumpTarget.isSymbol());
         MIB.addExternalSymbol(JumpTarget.getSymbolName(),
                               JumpTarget.getTargetFlags());
@@ -121,8 +142,8 @@ bool X86ExpandPseudo::ExpandMI(MachineBasicBlock &MBB,
           .addReg(JumpTarget.getReg(), RegState::Kill);
     }
 
-    MachineInstr *NewMI = std::prev(MBBI);
-    NewMI->copyImplicitOps(*MBBI->getParent()->getParent(), MBBI);
+    MachineInstr &NewMI = *std::prev(MBBI);
+    NewMI.copyImplicitOps(*MBBI->getParent()->getParent(), *MBBI);
 
     // Delete the pseudo instruction TCRETURN.
     MBB.erase(MBBI);
@@ -149,6 +170,32 @@ bool X86ExpandPseudo::ExpandMI(MachineBasicBlock &MBB,
     // Replace pseudo with machine iret
     BuildMI(MBB, MBBI, DL,
             TII->get(STI->is64Bit() ? X86::IRET64 : X86::IRET32));
+    MBB.erase(MBBI);
+    return true;
+  }
+  case X86::RET: {
+    // Adjust stack to erase error code
+    int64_t StackAdj = MBBI->getOperand(0).getImm();
+    MachineInstrBuilder MIB;
+    if (StackAdj == 0) {
+      MIB = BuildMI(MBB, MBBI, DL,
+                    TII->get(STI->is64Bit() ? X86::RETQ : X86::RETL));
+    } else if (isUInt<16>(StackAdj)) {
+      MIB = BuildMI(MBB, MBBI, DL,
+                    TII->get(STI->is64Bit() ? X86::RETIQ : X86::RETIL))
+                .addImm(StackAdj);
+    } else {
+      assert(!STI->is64Bit() &&
+             "shouldn't need to do this for x86_64 targets!");
+      // A ret can only handle immediates as big as 2**16-1.  If we need to pop
+      // off bytes before the return address, we must do it manually.
+      BuildMI(MBB, MBBI, DL, TII->get(X86::POP32r)).addReg(X86::ECX, RegState::Define);
+      X86FL->emitSPUpdate(MBB, MBBI, StackAdj, /*InEpilogue=*/true);
+      BuildMI(MBB, MBBI, DL, TII->get(X86::PUSH32r)).addReg(X86::ECX);
+      MIB = BuildMI(MBB, MBBI, DL, TII->get(X86::RETL));
+    }
+    for (unsigned I = 1, E = MBBI->getNumOperands(); I != E; ++I)
+      MIB.addOperand(MBBI->getOperand(I));
     MBB.erase(MBBI);
     return true;
   }
@@ -216,6 +263,7 @@ bool X86ExpandPseudo::runOnMachineFunction(MachineFunction &MF) {
   STI = &static_cast<const X86Subtarget &>(MF.getSubtarget());
   TII = STI->getInstrInfo();
   TRI = STI->getRegisterInfo();
+  X86FI = MF.getInfo<X86MachineFunctionInfo>();
   X86FL = STI->getFrameLowering();
 
   bool Modified = false;
