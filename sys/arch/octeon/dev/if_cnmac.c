@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnmac.c,v 1.61 2016/11/05 05:14:18 visa Exp $	*/
+/*	$OpenBSD: if_cnmac.c,v 1.62 2017/01/24 03:57:34 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -626,7 +626,7 @@ octeon_eth_buf_free_work(struct octeon_eth_softc *sc, uint64_t *work)
 	    PIP_WQE_WORD2_IP_BUFS_SHIFT;
 	word3 = work[3];
 	while (nbufs-- > 0) {
-		addr = word3 & PIP_WQE_WORD3_ADDR, CCA_CACHED;
+		addr = word3 & PIP_WQE_WORD3_ADDR;
 		back = (word3 & PIP_WQE_WORD3_BACK) >>
 		    PIP_WQE_WORD3_BACK_SHIFT;
 		pktbuf = (addr & ~(CACHE_LINE_SIZE - 1)) -
