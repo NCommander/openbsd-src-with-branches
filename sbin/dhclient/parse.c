@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.42 2017/02/12 13:15:50 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.43 2017/02/15 20:00:16 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -138,7 +138,7 @@ parse_string(FILE *cfile)
 
 	token = next_token(&val, cfile);
 	if (token != TOK_STRING) {
-		parse_warn("filename must be a string");
+		parse_warn("expecting a string");
 		if (token != ';')
 			skip_to_semi(cfile);
 		return (NULL);
