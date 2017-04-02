@@ -1,4 +1,4 @@
-.\"	$OpenBSD: spamd.8,v 1.132 2017/03/16 15:07:45 jmc Exp $
+.\"	$OpenBSD: spamd.8,v 1.133 2017/03/16 15:16:21 jmc Exp $
 .\"
 .\" Copyright (c) 2002 Theo de Raadt.  All rights reserved.
 .\"
@@ -247,6 +247,8 @@ to track these connections to
 by connecting IP address, HELO/EHLO, envelope-from, and envelope-to, or
 .Em tuple
 for short.
+Hosts which connect but do not attempt to deliver mail
+will not generate a tuple and always be ignored.
 .Pp
 A previously unseen tuple is added to the
 .Pa /var/db/spamd
