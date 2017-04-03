@@ -1,4 +1,4 @@
-/*	$OpenBSD: comsat.c,v 1.45 2016/04/02 16:33:28 millert Exp $	*/
+/*	$OpenBSD: comsat.c,v 1.46 2017/04/02 00:53:37 guenther Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -186,7 +186,8 @@ doreadutmp(void)
 			    sizeof(struct utmp);
 			struct utmp *u;
 
-			if ((u = realloc(utmp, nutmpsize)) == NULL) {
+			if ((u = recallocarray(utmp, utmpsize,
+			    nutmpsize, 1)) == NULL) {
 				free(utmp);
 				syslog(LOG_ERR, "%s", strerror(errno));
 				exit(1);
