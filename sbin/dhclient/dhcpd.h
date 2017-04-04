@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.162 2017/04/03 19:59:39 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.163 2017/04/04 13:01:20 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -131,6 +131,7 @@ struct client_state {
 	struct in_addr		 destination;
 	int			 flags;
 #define IS_RESPONSIBLE	0x1
+#define IN_CHARGE	0x2
 	u_int32_t		 xid;
 	u_int16_t		 secs;
 	time_t			 first_sending;
