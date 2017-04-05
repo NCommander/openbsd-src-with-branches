@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.202 2017/03/02 09:06:59 mpi Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.203 2017/03/03 13:19:40 bluhm Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -1997,7 +1997,7 @@ icmp6_sysctl_icmp6stat(void *oldp, size_t *oldlenp, void *newp)
 	int ret;
 
 	CTASSERT(sizeof(*icmp6stat) == icp6s_ncounters * sizeof(uint64_t));
-	icmp6stat = malloc(sizeof(*icmp6stat), M_TEMP, M_WAITOK);
+	icmp6stat = malloc(sizeof(*icmp6stat), M_TEMP, M_WAITOK|M_ZERO);
 	counters_read(icmp6counters, (uint64_t *)icmp6stat, icp6s_ncounters);
 	ret = sysctl_rdstruct(oldp, oldlenp, newp,
 	    icmp6stat, sizeof(*icmp6stat));
