@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.c,v 1.82 2016/09/26 17:15:19 jca Exp $	*/
+/*	$OpenBSD: rtadvd.c,v 1.83 2017/01/20 23:29:58 benno Exp $	*/
 /*	$KAME: rtadvd.c,v 1.66 2002/05/29 14:18:36 itojun Exp $	*/
 
 /*
@@ -1218,7 +1218,7 @@ ra_output(struct rainfo *rainfo)
 {
 	struct cmsghdr *cm;
 	struct in6_pktinfo *pi;
-	size_t len;
+	ssize_t len;
 
 	if ((iflist[rainfo->ifindex]->ifm_flags & IFF_UP) == 0) {
 		log_debug("%s is not up, skip sending RA", rainfo->ifname);
